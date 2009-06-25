@@ -58,82 +58,6 @@ void volume_finish(void)
 		g_timer_destroy(hardware_volume_timer);
 }
 
-/**
- * Finds the first audio_output configuration section with the
- * specified type.
- */
-static struct config_param *
-find_output_config(const char *type)
-{
-	struct config_param *param = NULL;
-
-	while ((param = config_get_next_param(CONF_AUDIO_OUTPUT,
-					      param)) != NULL) {
-		const char *param_type =
-			config_get_block_string(param, "type", NULL);
-		if (param_type != NULL && strcmp(param_type, type) == 0)
-			return param;
-	}
-
-	return NULL;
-}
-
-/**
- * Copy a (top-level) legacy mixer configuration parameter to the
- * audio_output section.
- */
-static void
-mixer_copy_legacy_param(const char *type, const char *name)
-{
-	const struct config_param *param;
-	struct config_param *output;
-	const struct block_param *bp;
-
-	/* see if the deprecated configuration exists */
-
-	param = config_get_param(name);
-	if (param == NULL)
-		return;
-
-	g_warning("deprecated option '%s' found, moving to '%s' audio output",
-		  name, type);
-
-	/* determine the configuration section */
-
-	output = find_output_config(type);
-	if (output == NULL) {
-		/* if there is no output configuration at all, create
-		   a new and empty configuration section for the
-		   legacy mixer */
-
-		if (config_get_next_param(CONF_AUDIO_OUTPUT, NULL) != NULL)
-			/* there is an audio_output configuration, but
-			   it does not match the mixer_type setting */
-			g_error("no '%s' audio output found", type);
-
-		output = config_new_param(NULL, param->line);
-		config_add_block_param(output, "type", type, param->line);
-		config_add_block_param(output, "name", type, param->line);
-		config_add_param(CONF_AUDIO_OUTPUT, output);
-	}
-
-	bp = config_get_block_param(output, name);
-	if (bp != NULL)
-		g_error("the '%s' audio output already has a '%s' setting",
-			type, name);
-
-	/* duplicate the parameter in the configuration section */
-
-	config_add_block_param(output, name, param->value, param->line);
-}
-
-static void
-mixer_reconfigure(const char *type)
-{
-	mixer_copy_legacy_param(type, CONF_MIXER_DEVICE);
-	mixer_copy_legacy_param(type, CONF_MIXER_CONTROL);
-}
-
 void volume_init(void)
 {
 	const struct config_param *param = config_get_param(CONF_MIXER_TYPE);
@@ -148,15 +72,8 @@ void volume_init(void)
 		} else if (strcmp(param->value, VOLUME_MIXER_HARDWARE) == 0) {
 			//nothing to do
 		} else {
-			//fallback to old config behaviour
-			if (strcmp(param->value, VOLUME_MIXER_OSS) == 0) {
-				mixer_reconfigure(param->value);
-			} else if (strcmp(param->value, VOLUME_MIXER_ALSA) == 0) {
-				mixer_reconfigure(param->value);
-			} else {
-				g_error("unknown mixer type %s at line %i\n",
-					param->value, param->line);
-			}
+			g_error("unknown mixer type %s at line %i\n",
+				param->value, param->line);
 		}
 	}
 

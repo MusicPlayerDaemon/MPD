@@ -44,8 +44,6 @@
 #define CONF_AUDIO_OUTPUT               "audio_output"
 #define CONF_AUDIO_OUTPUT_FORMAT        "audio_output_format"
 #define CONF_MIXER_TYPE                 "mixer_type"
-#define CONF_MIXER_DEVICE               "mixer_device"
-#define CONF_MIXER_CONTROL              "mixer_control"
 #define CONF_REPLAYGAIN                 "replaygain"
 #define CONF_REPLAYGAIN_PREAMP          "replaygain_preamp"
 #define CONF_REPLAYGAIN_MISSING_PREAMP  "replaygain_missing_preamp"

@@ -1,4 +1,6 @@
 ver 0.16 (20??/??/??)
+* mixers:
+  - removed support for legacy mixer configuration
 * commands:
   - added new "status" line with more precise "elapsed time"
 

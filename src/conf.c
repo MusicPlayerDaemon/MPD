@@ -192,8 +192,6 @@ void config_global_init(void)
 	registerConfigParam(CONF_AUDIO_OUTPUT,                  1,     1);
 	registerConfigParam(CONF_AUDIO_OUTPUT_FORMAT,           0,     0);
 	registerConfigParam(CONF_MIXER_TYPE,                    0,     0);
-	registerConfigParam(CONF_MIXER_DEVICE,                  0,     0);
-	registerConfigParam(CONF_MIXER_CONTROL,                 0,     0);
 	registerConfigParam(CONF_REPLAYGAIN,                    0,     0);
 	registerConfigParam(CONF_REPLAYGAIN_PREAMP,             0,     0);
 	registerConfigParam(CONF_REPLAYGAIN_MISSING_PREAMP,     0,     0);
