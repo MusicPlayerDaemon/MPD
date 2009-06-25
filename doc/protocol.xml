@@ -279,6 +279,16 @@
               </listitem>
               <listitem>
                 <para>
+                  <varname>elapsed</varname>:
+                  <footnote id="since_0_16"><simpara>Since MPD 0.16</simpara></footnote>
+                  <returnvalue>
+                    Total time elapsed within the current song, but
+                    with higher resolution.
+                  </returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
                   <varname>bitrate</varname>:
                   <returnvalue>instantaneous bitrate in
                   kbps</returnvalue>

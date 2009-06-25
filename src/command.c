@@ -501,9 +501,11 @@ handle_status(struct client *client,
 		const struct audio_format *af = player_get_audio_format();
 		client_printf(client,
 			      COMMAND_STATUS_TIME ": %i:%i\n"
+			      "elapsed: %1.3f\n"
 			      COMMAND_STATUS_BITRATE ": %li\n"
 			      COMMAND_STATUS_AUDIO ": %u:%u:%u\n",
 			      getPlayerElapsedTime(), getPlayerTotalTime(),
+			      pc.elapsed_time,
 			      getPlayerBitRate(),
 			      af->sample_rate, af->bits, af->channels);
 	}
