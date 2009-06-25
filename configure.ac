@@ -398,7 +398,7 @@ AC_ARG_ENABLE(audiofile,
 
 AC_ARG_ENABLE(ffmpeg,
 	AS_HELP_STRING([--disable-ffmpeg],
-		[enable FFMPEG support (default: enable)]),,
+		[disable FFMPEG support (default: enable)]),,
 	enable_ffmpeg=yes)
 
 AC_ARG_ENABLE(flac,
