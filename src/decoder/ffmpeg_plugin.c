@@ -342,8 +342,9 @@ static void
 ffmpeg_copy_metadata(struct tag *tag, AVMetadata *m,
 		     enum tag_type type, const char *name)
 {
-	AVMetadataTag *mt = av_metadata_get(m, name, NULL, 0);
-	if (mt != NULL)
+	AVMetadataTag *mt = NULL;
+
+	while ((mt = av_metadata_get(m, name, mt, 0)) != NULL)
 		tag_add_item(tag, type, mt->value);
 }
 #endif
