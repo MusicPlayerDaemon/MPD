@@ -66,8 +66,12 @@ playlist_state_save(FILE *fp, const struct playlist *playlist)
 						playlist->current));
 		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_TIME,
 			getPlayerElapsedTime());
-	} else
+	} else {
 		fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_STOP);
+		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CURRENT,
+				queue_order_to_position(&playlist->queue,
+					playlist->current));
+	}
 
 	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_RANDOM,
 		playlist->queue.random);
@@ -172,19 +176,19 @@ playlist_state_restore(FILE *fp, struct playlist *playlist)
 					  (PLAYLIST_STATE_FILE_CURRENT)]));
 		} else if (g_str_has_prefix(buffer,
 					    PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)) {
-			if (state == PLAYER_STATE_STOP)
-				current = -1;
 			playlist_state_load(fp, playlist, buffer);
 		}
 	}
 
 	setPlaylistRandomStatus(playlist, random_mode);
 
-	if (state != PLAYER_STATE_STOP && !queue_is_empty(&playlist->queue)) {
+	if (!queue_is_empty(&playlist->queue)) {
 		if (!queue_valid_position(&playlist->queue, current))
 			current = 0;
 
-		if (seek_time == 0)
+		if (state == PLAYER_STATE_STOP /* && config_option */)
+			playlist->current = current;
+		else if (seek_time == 0)
 			playPlaylist(playlist, current);
 		else
 			seekSongInPlaylist(playlist, current, seek_time);

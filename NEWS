@@ -6,6 +6,7 @@ ver 0.16 (20??/??/??)
 * commands:
   - added new "status" line with more precise "elapsed time"
 * log unused/unknown block parameters
+* save state when stopped
 
 
 ver 0.15 (2009/06/23)
