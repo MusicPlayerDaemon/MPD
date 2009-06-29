@@ -68,9 +68,11 @@ playlist_state_save(FILE *fp, const struct playlist *playlist)
 			getPlayerElapsedTime());
 	} else {
 		fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_STOP);
-		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CURRENT,
+
+		if (playlist->current >= 0)
+			fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CURRENT,
 				queue_order_to_position(&playlist->queue,
-					playlist->current));
+							playlist->current));
 	}
 
 	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_RANDOM,
