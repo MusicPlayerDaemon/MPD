@@ -318,10 +318,11 @@ db_load(GError **error)
 			if (old_charset != NULL
 			    && strcmp(new_charset, old_charset)) {
 				fclose(fp);
-				g_message("Existing database has charset \"%s\" "
-					  "instead of \"%s\"; "
-					  "discarding database file",
-					  new_charset, old_charset);
+				g_set_error(error, db_quark(), 0,
+					    "Existing database has charset "
+					    "\"%s\" instead of \"%s\"; "
+					    "discarding database file",
+					    new_charset, old_charset);
 				return false;
 			}
 		} else {

@@ -1,6 +1,7 @@
 ver 0.15.1 (2009/??/??)
 * commands:
   - don't resume playback when stopping during pause
+* database: fixed NULL pointer dereference after charset change
 
 
 ver 0.15 (2009/06/23)
