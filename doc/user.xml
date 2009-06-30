@@ -11,6 +11,30 @@
       This document is work in progress.  Most of it may be incomplete
       yet.  Please help!
     </para>
+
+    <para>
+      MPD (Music Player Daemon) is, as the name suggests, a server
+      software allowing you to remotely play your music, handle
+      playlists, deliver music (HTTP STREAMS with various
+      sub-protocols) and organizze playlists.
+    </para>
+
+    <para>
+      It has been written with minimal resource usage and stability in
+      mind!  Infact, it runs fine on a Pentium 75, allowing you to use
+      your cheap old PC to create a stereo system!
+    </para>
+
+    <para>
+      MPD supports also Gapless playback, buffered audio output, and
+      crossfading!
+    </para>
+
+    <para>
+      The separate client and server design allows users to choose a
+      user interface that best suites their tastes independently of
+      the underlying daemon, which actually plays music!
+    </para>
   </chapter>
 
   <chapter>
@@ -26,10 +50,16 @@
       <title>Installing on Debian/Ubuntu</title>
 
       <para>
-        Install the package <filename>mpd</filename>:
+        Install the package <filename>mpd</filename> via APT:
       </para>
 
       <programlisting>apt-get install mpd</programlisting>
+
+      <para>
+        When installed this way, MPD by default looks for music in
+        /var/lib/mpd/music/; this may not be correct. Look at your
+        /etc/mpd.conf file...
+      </para>
     </section>
 
     <section>
@@ -41,8 +71,8 @@
         page</ulink> and unpack it:
       </para>
 
-      <programlisting>tar xjf mpd-0.14.2.tar.bz
-cd mpd-0.14.2</programlisting>
+      <programlisting>tar xjf mpd-version.tar.bz
+cd mpd-version</programlisting>
 
       <para>
         Make sure that all the required libraries and build tools are
