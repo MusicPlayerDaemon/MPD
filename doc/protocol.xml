@@ -134,7 +134,7 @@
               <listitem>
                 <para>
                   <returnvalue>database</returnvalue>: the song database
-                  has been updated
+                  has been modified after <command>update</command>.
                 </para>
               </listitem>
               <listitem>
