@@ -27,6 +27,7 @@
 #define MPD_FILTER_REGISTRY_H
 
 extern const struct filter_plugin null_filter_plugin;
+extern const struct filter_plugin volume_filter_plugin;
 
 const struct filter_plugin *
 filter_plugin_by_name(const char *name);

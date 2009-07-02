@@ -25,6 +25,7 @@
 
 const struct filter_plugin *const filter_plugins[] = {
 	&null_filter_plugin,
+	&volume_filter_plugin,
 	NULL,
 };
 

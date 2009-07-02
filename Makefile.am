@@ -194,6 +194,7 @@ src_mpd_SOURCES = \
 	src/filter_plugin.c \
 	src/filter_registry.c \
 	src/filter/null_filter_plugin.c \
+	src/filter/volume_filter_plugin.c \
 	src/update.c \
 	src/client.c \
 	src/listen.c \
