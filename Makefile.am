@@ -42,6 +42,9 @@ mpd_headers = \
 	src/output_state.h \
 	src/output_print.h \
 	src/output_command.h \
+	src/filter_internal.h \
+	src/filter_plugin.h \
+	src/filter_registry.h \
 	src/buffer2array.h \
 	src/command.h \
 	src/idle.h \
@@ -188,6 +191,9 @@ src_mpd_SOURCES = \
 	src/database.c \
 	src/dirvec.c \
 	src/fifo_buffer.c \
+	src/filter_plugin.c \
+	src/filter_registry.c \
+	src/filter/null_filter_plugin.c \
 	src/update.c \
 	src/client.c \
 	src/listen.c \
