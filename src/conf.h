@@ -97,6 +97,16 @@ struct config_param {
 	bool used;
 };
 
+/**
+ * A GQuark for GError instances, resulting from malformed
+ * configuration.
+ */
+static inline GQuark
+config_quark(void)
+{
+	return g_quark_from_static_string("config");
+}
+
 void config_global_init(void);
 void config_global_finish(void);
 
