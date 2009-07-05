@@ -171,6 +171,7 @@ src_mpd_SOURCES = \
 	$(ENCODER_SRC) \
 	$(OUTPUT_API_SRC) $(OUTPUT_SRC) \
 	$(MIXER_API_SRC) $(MIXER_SRC) \
+	$(FILTER_SRC) \
 	src/notify.c \
 	src/audio.c \
 	src/audio_parser.c \
@@ -193,8 +194,6 @@ src_mpd_SOURCES = \
 	src/fifo_buffer.c \
 	src/filter_plugin.c \
 	src/filter_registry.c \
-	src/filter/null_filter_plugin.c \
-	src/filter/volume_filter_plugin.c \
 	src/update.c \
 	src/client.c \
 	src/listen.c \
@@ -576,6 +575,15 @@ endif
 
 
 #
+# Filter plugins
+#
+
+FILTER_SRC = \
+	src/filter/null_filter_plugin.c \
+	src/filter/volume_filter_plugin.c
+
+
+#
 # Sparse code analysis
 #
 # sparse is a semantic parser
@@ -606,6 +614,7 @@ noinst_PROGRAMS = \
 	test/run_input \
 	test/run_decoder \
 	test/read_tags \
+	test/run_filter \
 	test/run_encoder \
 	test/run_output \
 	test/read_mixer \
@@ -668,6 +677,17 @@ test_read_tags_SOURCES = test/read_tags.c \
 	$(INPUT_SRC) \
 	$(TAG_SRC) \
 	$(DECODER_SRC)
+
+test_run_filter_CPPFLAGS = $(AM_CPPFLAGS)
+test_run_filter_LDADD = $(MPD_LIBS) \
+	$(GLIB_LIBS)
+test_run_filter_SOURCES = test/run_filter.c \
+	src/filter_plugin.c \
+	src/filter_registry.c \
+	src/conf.c src/buffer2array.c src/utils.c \
+	src/pcm_volume.c \
+	src/audio_parser.c \
+	$(FILTER_SRC)
 
 test_run_encoder_SOURCES = test/run_encoder.c \
 	src/conf.c src/buffer2array.c \
