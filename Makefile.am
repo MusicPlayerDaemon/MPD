@@ -45,6 +45,7 @@ mpd_headers = \
 	src/filter_internal.h \
 	src/filter_plugin.h \
 	src/filter_registry.h \
+	src/filter/volume_filter_plugin.h \
 	src/buffer2array.h \
 	src/command.h \
 	src/idle.h \

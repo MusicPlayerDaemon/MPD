@@ -21,7 +21,6 @@
 #include "audio_parser.h"
 #include "audio_format.h"
 #include "filter_plugin.h"
-#include "volume.h"
 #include "pcm_volume.h"
 
 #include <glib.h>
@@ -30,11 +29,6 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-
-int volume_level_get(void)
-{
-	return PCM_VOLUME_1;
-}
 
 static const struct config_param *
 find_named_config_block(const char *block, const char *name)

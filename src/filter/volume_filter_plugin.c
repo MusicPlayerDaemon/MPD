@@ -17,13 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "filter/volume_filter_plugin.h"
 #include "filter_plugin.h"
 #include "filter_internal.h"
 #include "filter_registry.h"
 #include "conf.h"
 #include "pcm_buffer.h"
 #include "pcm_volume.h"
-#include "volume.h"
 #include "audio_format.h"
 
 #include <assert.h>
@@ -31,6 +31,11 @@
 
 struct volume_filter {
 	struct filter filter;
+
+	/**
+	 * The current volume, from 0 to #PCM_VOLUME_1.
+	 */
+	unsigned volume;
 
 	struct audio_format audio_format;
 
@@ -50,6 +55,8 @@ volume_filter_init(G_GNUC_UNUSED const struct config_param *param,
 	struct volume_filter *filter = g_new(struct volume_filter, 1);
 
 	filter_init(&filter->filter, &volume_filter_plugin);
+	filter->volume = PCM_VOLUME_1;
+
 	return &filter->filter;
 }
 
@@ -92,12 +99,10 @@ volume_filter_filter(struct filter *_filter, const void *src, size_t src_size,
 		     size_t *dest_size_r, GError **error_r)
 {
 	struct volume_filter *filter = (struct volume_filter *)_filter;
-	int volume;
 	bool success;
 	void *dest;
 
-	volume = volume_level_get(); /* XXX don't use volume_level_get() */
-	if (volume < 0 || volume >= PCM_VOLUME_1) {
+	if (filter->volume >= PCM_VOLUME_1) {
 		/* optimized special case: 100% volume = no-op */
 		*dest_size_r = src_size;
 		return src;
@@ -106,7 +111,7 @@ volume_filter_filter(struct filter *_filter, const void *src, size_t src_size,
 	dest = pcm_buffer_get(&filter->buffer, src_size);
 	*dest_size_r = src_size;
 
-	if (volume == 0) {
+	if (filter->volume <= 0) {
 		/* optimized special case: 0% volume = memset(0) */
 		/* XXX is this valid for all sample formats? What
 		   about floating point? */
@@ -116,7 +121,8 @@ volume_filter_filter(struct filter *_filter, const void *src, size_t src_size,
 
 	memcpy(dest, src, src_size);
 
-	success = pcm_volume(dest, src_size, &filter->audio_format, volume);
+	success = pcm_volume(dest, src_size, &filter->audio_format,
+			     filter->volume);
 	if (!success) {
 		g_set_error(error_r, volume_quark(), 0,
 			    "pcm_volume() has failed");
@@ -134,3 +140,27 @@ const struct filter_plugin volume_filter_plugin = {
 	.close = volume_filter_close,
 	.filter = volume_filter_filter,
 };
+
+unsigned
+volume_filter_get(const struct filter *_filter)
+{
+	const struct volume_filter *filter =
+		(const struct volume_filter *)_filter;
+
+	assert(filter->filter.plugin == &volume_filter_plugin);
+	assert(filter->volume <= PCM_VOLUME_1);
+
+	return filter->volume;
+}
+
+void
+volume_filter_set(struct filter *_filter, unsigned volume)
+{
+	struct volume_filter *filter = (struct volume_filter *)_filter;
+
+	assert(filter->filter.plugin == &volume_filter_plugin);
+	assert(volume <= PCM_VOLUME_1);
+
+	filter->volume = volume;
+}
+
