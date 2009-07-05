@@ -27,7 +27,7 @@ struct directory;
 
 void songvec_save(FILE *fp, struct songvec *sv);
 
-void readSongInfoIntoList(FILE * fp, struct songvec *sv,
-			  struct directory *parent);
+void
+songvec_load(FILE *fp, struct songvec *sv, struct directory *parent);
 
 #endif

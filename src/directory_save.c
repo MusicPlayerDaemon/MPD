@@ -138,7 +138,7 @@ directory_load(FILE *fp, struct directory *directory, GError **error)
 			if (!success)
 				return false;
 		} else if (g_str_has_prefix(buffer, SONG_BEGIN)) {
-			readSongInfoIntoList(fp, &directory->songs, directory);
+			songvec_load(fp, &directory->songs, directory);
 		} else {
 			g_set_error(error, directory_quark(), 0,
 				    "Malformed line: %s", buffer);

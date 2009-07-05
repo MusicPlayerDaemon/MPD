@@ -70,7 +70,7 @@ void songvec_save(FILE *fp, struct songvec *sv)
 }
 
 static void
-insertSongIntoList(struct songvec *sv, struct song *newsong)
+commit_song(struct songvec *sv, struct song *newsong)
 {
 	struct song *existing = songvec_find(sv, newsong->url);
 
@@ -93,7 +93,7 @@ insertSongIntoList(struct songvec *sv, struct song *newsong)
 }
 
 static char *
-matchesAnMpdTagItemKey(char *buffer, enum tag_type *itemType)
+parse_tag_value(char *buffer, enum tag_type *type_r)
 {
 	int i;
 
@@ -102,7 +102,7 @@ matchesAnMpdTagItemKey(char *buffer, enum tag_type *itemType)
 
 		if (0 == strncmp(tag_item_names[i], buffer, len) &&
 		    buffer[len] == ':') {
-			*itemType = i;
+			*type_r = i;
 			return g_strchug(buffer + len + 1);
 		}
 	}
@@ -110,12 +110,12 @@ matchesAnMpdTagItemKey(char *buffer, enum tag_type *itemType)
 	return NULL;
 }
 
-void readSongInfoIntoList(FILE *fp, struct songvec *sv,
-			  struct directory *parent)
+void
+songvec_load(FILE *fp, struct songvec *sv, struct directory *parent)
 {
 	char buffer[MPD_PATH_MAX + 1024];
 	struct song *song = NULL;
-	enum tag_type itemType;
+	enum tag_type type;
 	const char *value;
 
 	while (fgets(buffer, sizeof(buffer), fp) &&
@@ -124,7 +124,7 @@ void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 
 		if (0 == strncmp(SONG_KEY, buffer, strlen(SONG_KEY))) {
 			if (song)
-				insertSongIntoList(sv, song);
+				commit_song(sv, song);
 
 			song = song_file_new(buffer + strlen(SONG_KEY),
 					     parent);
@@ -134,14 +134,14 @@ void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 			g_error("Problems reading song info");
 		} else if (0 == strncmp(SONG_FILE, buffer, strlen(SONG_FILE))) {
 			/* we don't need this info anymore */
-		} else if ((value = matchesAnMpdTagItemKey(buffer,
-							   &itemType)) != NULL) {
+		} else if ((value = parse_tag_value(buffer,
+						    &type)) != NULL) {
 			if (!song->tag) {
 				song->tag = tag_new();
 				tag_begin_add(song->tag);
 			}
 
-			tag_add_item(song->tag, itemType, value);
+			tag_add_item(song->tag, type, value);
 		} else if (0 == strncmp(SONG_TIME, buffer, strlen(SONG_TIME))) {
 			if (!song->tag) {
 				song->tag = tag_new();
@@ -157,5 +157,5 @@ void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 	}
 
 	if (song)
-		insertSongIntoList(sv, song);
+		commit_song(sv, song);
 }
