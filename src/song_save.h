@@ -20,6 +20,9 @@
 #ifndef MPD_SONG_SAVE_H
 #define MPD_SONG_SAVE_H
 
+#include <glib.h>
+
+#include <stdbool.h>
 #include <stdio.h>
 
 struct songvec;
@@ -27,7 +30,16 @@ struct directory;
 
 void songvec_save(FILE *fp, struct songvec *sv);
 
-void
-songvec_load(FILE *fp, struct songvec *sv, struct directory *parent);
+/**
+ * Loads songs from the input file and add the to the specified
+ * directory.
+ *
+ * @param error_r location to store the error occuring, or NULL to
+ * ignore errors
+ * @return true on success, false on error
+ */
+bool
+songvec_load(FILE *file, struct songvec *sv, struct directory *parent,
+	     GError **error_r);
 
 #endif

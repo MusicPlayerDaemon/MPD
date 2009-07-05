@@ -34,6 +34,12 @@
 #define SONG_KEY	"key: "
 #define SONG_MTIME	"mtime: "
 
+static GQuark
+song_save_quark(void)
+{
+	return g_quark_from_static_string("song_save");
+}
+
 static void
 song_save_url(FILE *fp, struct song *song)
 {
@@ -110,8 +116,9 @@ parse_tag_value(char *buffer, enum tag_type *type_r)
 	return NULL;
 }
 
-void
-songvec_load(FILE *fp, struct songvec *sv, struct directory *parent)
+bool
+songvec_load(FILE *fp, struct songvec *sv, struct directory *parent,
+	     GError **error_r)
 {
 	char buffer[MPD_PATH_MAX + 1024];
 	struct song *song = NULL;
@@ -131,7 +138,9 @@ songvec_load(FILE *fp, struct songvec *sv, struct directory *parent)
 		} else if (*buffer == 0) {
 			/* ignore empty lines (starting with '\0') */
 		} else if (song == NULL) {
-			g_error("Problems reading song info");
+			g_set_error(error_r, song_save_quark(), 0,
+				    "Problems reading song info");
+			return false;
 		} else if (0 == strncmp(SONG_FILE, buffer, strlen(SONG_FILE))) {
 			/* we don't need this info anymore */
 		} else if ((value = parse_tag_value(buffer,
@@ -151,11 +160,15 @@ songvec_load(FILE *fp, struct songvec *sv, struct directory *parent)
 			song->tag->time = atoi(&(buffer[strlen(SONG_TIME)]));
 		} else if (0 == strncmp(SONG_MTIME, buffer, strlen(SONG_MTIME))) {
 			song->mtime = atoi(&(buffer[strlen(SONG_MTIME)]));
+		} else {
+			g_set_error(error_r, song_save_quark(), 0,
+				    "unknown line in db: %s", buffer);
+			return false;
 		}
-		else
-			g_error("unknown line in db: %s", buffer);
 	}
 
 	if (song)
 		commit_song(sv, song);
+
+	return true;
 }
