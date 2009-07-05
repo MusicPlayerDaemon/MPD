@@ -50,9 +50,13 @@ struct sticker;
 
 /**
  * Opens the sticker database (if path is not NULL).
+ *
+ * @param error_r location to store the error occuring, or NULL to
+ * ignore errors
+ * @return true on success, false on error
  */
-void
-sticker_global_init(const char *path);
+bool
+sticker_global_init(const char *path, GError **error_r);
 
 /**
  * Close the sticker database.

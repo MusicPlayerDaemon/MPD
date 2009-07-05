@@ -72,50 +72,69 @@ static const char sticker_sql_create[] =
 static sqlite3 *sticker_db;
 static sqlite3_stmt *sticker_stmt[G_N_ELEMENTS(sticker_sql)];
 
+static GQuark
+sticker_quark(void)
+{
+	return g_quark_from_static_string("sticker");
+}
+
 static sqlite3_stmt *
-sticker_prepare(const char *sql)
+sticker_prepare(const char *sql, GError **error_r)
 {
 	int ret;
 	sqlite3_stmt *stmt;
 
 	ret = sqlite3_prepare_v2(sticker_db, sql, -1, &stmt, NULL);
-	if (ret != SQLITE_OK)
-		g_error("sqlite3_prepare_v2() failed: %s",
-			sqlite3_errmsg(sticker_db));
+	if (ret != SQLITE_OK) {
+		g_set_error(error_r, sticker_quark(), ret,
+			    "sqlite3_prepare_v2() failed: %s",
+			    sqlite3_errmsg(sticker_db));
+		return NULL;
+	}
 
 	return stmt;
 }
 
-void
-sticker_global_init(const char *path)
+bool
+sticker_global_init(const char *path, GError **error_r)
 {
 	int ret;
 
 	if (path == NULL)
 		/* not configured */
-		return;
+		return true;
 
 	/* open/create the sqlite database */
 
 	ret = sqlite3_open(path, &sticker_db);
-	if (ret != SQLITE_OK)
-		g_error("Failed to open sqlite database '%s': %s",
-			path, sqlite3_errmsg(sticker_db));
+	if (ret != SQLITE_OK) {
+		g_set_error(error_r, sticker_quark(), ret,
+			    "Failed to open sqlite database '%s': %s",
+			    path, sqlite3_errmsg(sticker_db));
+		return false;
+	}
 
 	/* create the table and index */
 
 	ret = sqlite3_exec(sticker_db, sticker_sql_create, NULL, NULL, NULL);
-	if (ret != SQLITE_OK)
-		g_error("Failed to create sticker table: %s",
-			sqlite3_errmsg(sticker_db));
+	if (ret != SQLITE_OK) {
+		g_set_error(error_r, sticker_quark(), ret,
+			    "Failed to create sticker table: %s",
+			    sqlite3_errmsg(sticker_db));
+		return false;
+	}
 
 	/* prepare the statements we're going to use */
 
 	for (unsigned i = 0; i < G_N_ELEMENTS(sticker_sql); ++i) {
 		assert(sticker_sql[i] != NULL);
 
-		sticker_stmt[i] = sticker_prepare(sticker_sql[i]);
+		sticker_stmt[i] = sticker_prepare(sticker_sql[i], error_r);
+		if (sticker_stmt[i] == NULL)
+			return false;
 	}
+
+	return true;
 }
 
 void

@@ -231,6 +231,8 @@ int main(int argc, char *argv[])
 	Options options;
 	clock_t start;
 	bool create_db;
+	bool success;
+	GError *error = NULL;
 
 	daemonize_close_stdin();
 
@@ -288,7 +290,10 @@ int main(int argc, char *argv[])
 	create_db = !openDB(&options);
 
 #ifdef ENABLE_SQLITE
-	sticker_global_init(config_get_path(CONF_STICKER_FILE));
+	success = sticker_global_init(config_get_path(CONF_STICKER_FILE),
+				      &error);
+	if (!success)
+		g_error("%s", error->message);
 #endif
 
 	command_init();
