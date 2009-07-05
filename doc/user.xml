@@ -302,6 +302,63 @@ cd mpd-0.14.2</programlisting>
         </tgroup>
       </informaltable>
     </section>
+
+    <section>
+      <title>Configuring filters</title>
+
+      <para>
+        Filters are plugins which modify an audio stream.
+      </para>
+
+      <para>
+        To configure a filter, add a <varname>filter</varname> block
+        to <filename>mpd.conf</filename>:
+      </para>
+
+      <programlisting>filter {
+    plugin "volume"
+    name "software volume"
+}
+      </programlisting>
+
+      <para>
+        The following table lists the <varname>filter</varname>
+        options valid for all plugins:
+      </para>
+
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>
+                Name
+              </entry>
+              <entry>
+                Description
+              </entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <varname>plugin</varname>
+              </entry>
+              <entry>
+                The name of the plugin.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>name</varname>
+              </entry>
+              <entry>
+                The name of the filter.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </section>
   </chapter>
 
   <chapter>

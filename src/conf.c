@@ -94,6 +94,7 @@ static struct config_entry config_entries[] = {
 	{ .name = CONF_DECODER, true, true },
 	{ .name = CONF_INPUT, true, true },
 	{ .name = CONF_GAPLESS_MP3_PLAYBACK, false, false },
+	{ .name = "filter", true, true },
 };
 
 static bool
