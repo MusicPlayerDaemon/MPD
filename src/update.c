@@ -822,6 +822,9 @@ directory_update_init(char *path)
 		return next_task_id > update_task_id_max ?  1 : next_task_id;
 	}
 	spawn_update_task(path);
+
+	idle_add(IDLE_UPDATE);
+
 	return update_task_id;
 }
 
@@ -860,6 +863,8 @@ static void update_finished_event(void)
 	assert(progress == UPDATE_PROGRESS_DONE);
 
 	g_thread_join(update_thr);
+
+	idle_add(IDLE_UPDATE);
 
 	if (modified) {
 		/* send "idle" events */

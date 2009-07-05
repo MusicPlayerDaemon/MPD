@@ -134,7 +134,16 @@
               <listitem>
                 <para>
                   <returnvalue>database</returnvalue>: the song database
-                  has been updated
+                  has been modified
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <returnvalue>update</returnvalue>: a database update
+                  has started or finished.  If the database was
+                  modified during the update, the
+                  <returnvalue>database</returnvalue> event is also
+                  emitted.
                 </para>
               </listitem>
               <listitem>

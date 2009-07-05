@@ -50,6 +50,9 @@ enum {
 
 	/** a sticker has been modified. */
 	IDLE_STICKER = 0x80,
+
+	/** a database update has started or finished. */
+	IDLE_UPDATE = 0x100,
 };
 
 /**
