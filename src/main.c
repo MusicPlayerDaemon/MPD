@@ -231,8 +231,10 @@ int main(int argc, char *argv[])
 	Options options;
 	clock_t start;
 	bool create_db;
+#ifdef ENABLE_SQLITE
 	bool success;
 	GError *error = NULL;
+#endif
 
 	daemonize_close_stdin();
 
