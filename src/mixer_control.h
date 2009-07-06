@@ -31,9 +31,6 @@ struct mixer;
 struct mixer_plugin;
 struct config_param;
 
-void
-mixer_disable_all(void);
-
 struct mixer *
 mixer_new(const struct mixer_plugin *plugin, const struct config_param *param);
 

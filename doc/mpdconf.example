@@ -179,6 +179,7 @@ input {
 #	name		"My ALSA Device"
 #	device		"hw:0,0"	# optional
 #	format		"44100:16:2"	# optional
+#	mixer_type      "hardware"	# optional
 #	mixer_device	"default"	# optional
 #	mixer_control	"PCM"		# optional
 #	mixer_index	"0"		# optional
@@ -191,6 +192,7 @@ input {
 #	name		"My OSS Device"
 #	device		"/dev/dsp"	# optional
 #	format		"44100:16:2"	# optional
+#	mixer_type      "hardware"	# optional
 #	mixer_device	"/dev/mixer"	# optional
 #	mixer_control	"PCM"		# optional
 #}
@@ -214,6 +216,7 @@ input {
 #	genre		"jazz"			# optional
 #	public		"no"			# optional
 #	timeout		"2"			# optional
+#	mixer_type      "software"		# optional
 #}
 #
 # An example of a httpd output (built-in HTTP streaming server):
@@ -255,6 +258,7 @@ input {
 #audio_output {
 #	type		"null"
 #	name		"My Null Output"
+#	mixer_type      "none"			# optional
 #}
 #
 # This setting will change all decoded audio to be converted to the specified
@@ -269,33 +273,6 @@ input {
 # setting is disabled.
 #
 #samplerate_converter		"Fastest Sinc Interpolator"
-#
-###############################################################################
-
-
-# Volume control mixer ########################################################
-#
-# These are the global volume control settings. By default, this setting will
-# be detected to the available audio output device, with preference going to 
-# hardware mixing. Hardware and software mixers for individual audio_output
-# sections cannot yet be mixed.
-#
-# An example for controlling an ALSA, OSS or Pulseaudio mixer; If this
-# setting is used other sound applications will be affected by the volume
-# being controlled by MPD.
-#
-#mixer_type			"hardware"
-#
-# An example for controlling all mixers through software. This will control
-# all controls, even if the mixer is not supported by the device and will not
-# affect any other sound producing applications.
-#
-#mixer_type			"software"
-#
-# This example will not allow MPD to touch the mixer at all and will disable
-# all volume controls.
-#
-#mixer_type			"disabled"
 #
 ###############################################################################
 

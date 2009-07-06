@@ -23,6 +23,9 @@
 #include "output_list.h"
 #include "audio_parser.h"
 #include "mixer_control.h"
+#include "mixer_type.h"
+#include "mixer_list.h"
+#include "mixer/software_mixer_plugin.h"
 #include "filter_plugin.h"
 #include "filter_registry.h"
 #include "filter/chain_filter_plugin.h"
@@ -61,17 +64,59 @@ audio_output_detect(GError **error)
 	return NULL;
 }
 
+/**
+ * Determines the mixer type which should be used for the specified
+ * configuration block.
+ *
+ * This handles the deprecated options mixer_type (global) and
+ * mixer_enabled, if the mixer_type setting is not configured.
+ */
+static enum mixer_type
+audio_output_mixer_type(const struct config_param *param)
+{
+	/* read the local "mixer_type" setting */
+	const char *p = config_get_block_string(param, "mixer_type", NULL);
+	if (p != NULL)
+		return mixer_type_parse(p);
+
+	/* try the local "mixer_enabled" setting next (deprecated) */
+	if (!config_get_block_bool(param, "mixer_enabled", true))
+		return MIXER_TYPE_NONE;
+
+	/* fall back to the global "mixer_type" setting (also
+	   deprecated) */
+	return mixer_type_parse(config_get_string("mixer_type", "hardware"));
+}
+
 static struct mixer *
 audio_output_load_mixer(const struct config_param *param,
-			const struct mixer_plugin *plugin)
+			const struct mixer_plugin *plugin,
+			struct filter *filter_chain)
 {
-	if (!config_get_block_bool(param, "mixer_enabled", true))
+	struct mixer *mixer;
+
+	switch (audio_output_mixer_type(param)) {
+	case MIXER_TYPE_NONE:
+	case MIXER_TYPE_UNKNOWN:
 		return NULL;
 
-	if (plugin == NULL)
-		return NULL;
+	case MIXER_TYPE_HARDWARE:
+		if (plugin == NULL)
+			return NULL;
 
-	return mixer_new(plugin, param);
+		return mixer_new(plugin, param);
+
+	case MIXER_TYPE_SOFTWARE:
+		mixer = mixer_new(&software_mixer_plugin, NULL);
+		assert(mixer != NULL);
+
+		filter_chain_append(filter_chain,
+				    software_mixer_get_filter(mixer));
+		return mixer;
+	}
+
+	assert(false);
+	return NULL;
 }
 
 bool
@@ -152,7 +197,8 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	if (ao->data == NULL)
 		return false;
 
-	ao->mixer = audio_output_load_mixer(param, plugin->mixer_plugin);
+	ao->mixer = audio_output_load_mixer(param, plugin->mixer_plugin,
+					    ao->filter);
 
 	/* the "convert" filter must be the last one in the chain */
 

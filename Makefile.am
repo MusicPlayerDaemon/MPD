@@ -740,6 +740,7 @@ test_run_output_SOURCES = test/run_output.c \
 	$(ENCODER_SRC) \
 	src/mixer_api.c \
 	src/mixer_control.c \
+	src/mixer_type.c \
 	$(MIXER_SRC) \
 	src/filter_plugin.c src/filter/chain_filter_plugin.c \
 	src/filter/convert_filter_plugin.c \

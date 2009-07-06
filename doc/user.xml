@@ -289,13 +289,15 @@ cd mpd-0.14.2</programlisting>
             </row>
             <row>
               <entry>
-                <varname>mixer_enabled</varname>
-                <parameter>yes|no</parameter>
+                <varname>mixer_type</varname>
+                <parameter>hardware|software|none</parameter>
               </entry>
               <entry>
-                Specifies whether the hardware mixer of this audio
-                output should be used.  By default, all hardware
-                mixers are enabled if available.
+                Specifies which mixer should be used for this audio
+                output: the hardware mixer (available for ALSA, OSS
+                and PulseAudio), the software mixer or no mixer
+                ("none").  By default, the hardware mixer is used for
+                devices which support it, and none for the others.
               </entry>
             </row>
           </tbody>

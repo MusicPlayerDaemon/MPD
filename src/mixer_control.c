@@ -28,24 +28,11 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "mixer"
 
-static bool mixers_enabled = true;
-
-void
-mixer_disable_all(void)
-{
-	g_debug("mixer api is disabled");
-	mixers_enabled = false;
-}
-
 struct mixer *
 mixer_new(const struct mixer_plugin *plugin, const struct config_param *param)
 {
 	struct mixer *mixer;
 
-	//mixers are disabled (by using software volume)
-	if (!mixers_enabled) {
-		return NULL;
-	}
 	assert(plugin != NULL);
 
 	mixer = plugin->init(param);

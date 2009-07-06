@@ -81,7 +81,6 @@ struct player_control {
 	struct song *errored_song;
 	volatile double seek_where;
 	float cross_fade_seconds;
-	uint16_t software_volume;
 	double total_play_time;
 };
 
@@ -144,8 +143,6 @@ pc_seek(struct song *song, float seek_time);
 void setPlayerCrossFade(float crossFadeInSeconds);
 
 float getPlayerCrossFade(void);
-
-void setPlayerSoftwareVolume(int volume);
 
 double getPlayerTotalPlayTime(void);
 

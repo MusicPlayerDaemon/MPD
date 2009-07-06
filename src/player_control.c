@@ -40,7 +40,6 @@ void pc_init(unsigned buffer_chunks, unsigned int buffered_before_play)
 	pc.error = PLAYER_ERROR_NOERROR;
 	pc.state = PLAYER_STATE_STOP;
 	pc.cross_fade_seconds = 0;
-	pc.software_volume = PCM_VOLUME_1;
 }
 
 void pc_deinit(void)
@@ -251,16 +250,6 @@ void setPlayerCrossFade(float crossFadeInSeconds)
 	pc.cross_fade_seconds = crossFadeInSeconds;
 
 	idle_add(IDLE_OPTIONS);
-}
-
-void setPlayerSoftwareVolume(int volume)
-{
-	if (volume > PCM_VOLUME_1)
-		volume = PCM_VOLUME_1;
-	else if (volume < 0)
-		volume = 0;
-
-	pc.software_volume = volume;
 }
 
 double getPlayerTotalPlayTime(void)

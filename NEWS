@@ -7,6 +7,8 @@ ver 0.16 (20??/??/??)
   - ffmpeg: support multiple tags
 * mixers:
   - removed support for legacy mixer configuration
+  - reimplemented software volume as mixer+filter plugin
+  - per-device software/hardware mixer setting
 * commands:
   - added new "status" line with more precise "elapsed time"
 * log unused/unknown block parameters

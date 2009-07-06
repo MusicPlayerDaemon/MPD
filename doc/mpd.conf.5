@@ -285,6 +285,12 @@ whatever audio format is passed to the audio output.
 .B device <dev>
 This specifies the device to use for audio output.  The default is "default".
 .TP
+.B mixer_type <hardware, software or none>
+Specifies which mixer should be used for this audio output: the
+hardware mixer (available for ALSA, OSS and PulseAudio), the software
+mixer or no mixer ("none").  By default, the hardware mixer is used
+for devices which support it, and none for the others.
+.TP
 .B mixer_device <mixer dev>
 This specifies which mixer to use.  The default is "default".  To use
 the second sound card in a system, use "hw:1".
