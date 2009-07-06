@@ -51,20 +51,24 @@ song_print_info(struct client *client, struct song *song)
 	song_print_url(client, song);
 
 	if (song->mtime > 0) {
-		time_t t = song->mtime;
 #ifndef G_OS_WIN32
 		struct tm tm;
 #endif
-		char timestamp[32];
+		const struct tm *tm2;
 
-		strftime(timestamp, sizeof(timestamp), "%FT%TZ",
 #ifdef G_OS_WIN32
-			 gmtime(&t)
+		tm2 = gmtime(&song->mtime);
 #else
-			 gmtime_r(&t, &tm)
+		tm2 = gmtime_r(&song->mtime, &tm);
 #endif
-			 );
-		client_printf(client, "Last-Modified: %s\n", timestamp);
+
+		if (tm2 != NULL) {
+			char timestamp[32];
+
+			strftime(timestamp, sizeof(timestamp), "%FT%TZ", tm2);
+			client_printf(client, "Last-Modified: %s\n",
+				      timestamp);
+		}
 	}
 
 	if (song->tag)
