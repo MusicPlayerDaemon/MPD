@@ -567,7 +567,13 @@ play_next_chunk(struct player *player)
 static bool
 player_song_border(struct player *player)
 {
+	char *uri;
+
 	player->xfade = XFADE_UNKNOWN;
+
+	uri = song_get_uri(player->song);
+	g_message("played \"%s\"", uri);
+	g_free(uri);
 
 	music_pipe_free(player->pipe);
 	player->pipe = dc.pipe;
