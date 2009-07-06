@@ -140,11 +140,6 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	ao->filter = filter_chain_new();
 	assert(ao->filter != NULL);
 
-	ao->convert_filter = filter_new(&convert_filter_plugin, NULL, NULL);
-	assert(ao->convert_filter != NULL);
-
-	filter_chain_append(ao->filter, ao->convert_filter);
-
 	ao->thread = NULL;
 	notify_init(&ao->notify);
 	ao->command = AO_COMMAND_NONE;
@@ -158,6 +153,15 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 		return false;
 
 	ao->mixer = audio_output_load_mixer(param, plugin->mixer_plugin);
+
+	/* the "convert" filter must be the last one in the chain */
+
+	ao->convert_filter = filter_new(&convert_filter_plugin, NULL, NULL);
+	assert(ao->convert_filter != NULL);
+
+	filter_chain_append(ao->filter, ao->convert_filter);
+
+	/* done */
 
 	return true;
 }
