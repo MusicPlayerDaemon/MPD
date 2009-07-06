@@ -25,6 +25,7 @@
 #include "pcm_buffer.h"
 #include "pcm_volume.h"
 #include "audio_format.h"
+#include "player_control.h"
 
 #include <assert.h>
 #include <string.h>

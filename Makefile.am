@@ -97,6 +97,7 @@ mpd_headers = \
 	src/event_pipe.h \
 	src/mixer_plugin.h \
 	src/mixer_type.h \
+	src/mixer/software_mixer_plugin.h \
 	src/daemon.h \
 	src/normalize.h \
 	src/compress.h \
@@ -522,7 +523,8 @@ MIXER_API_SRC = \
 	src/mixer_all.c \
 	src/mixer_api.c
 
-MIXER_SRC =
+MIXER_SRC = \
+	src/mixer/software_mixer_plugin.c
 
 if HAVE_ALSA
 OUTPUT_SRC += src/output/alsa_plugin.c
@@ -741,6 +743,8 @@ test_run_output_SOURCES = test/run_output.c \
 	$(MIXER_SRC) \
 	src/filter_plugin.c src/filter/chain_filter_plugin.c \
 	src/filter/convert_filter_plugin.c \
+	src/filter/volume_filter_plugin.c \
+	src/pcm_volume.c \
 	$(OUTPUT_SRC)
 
 test_read_mixer_CPPFLAGS = $(AM_CPPFLAGS) \
@@ -751,6 +755,8 @@ test_read_mixer_LDADD = $(MPD_LIBS) \
 test_read_mixer_SOURCES = test/read_mixer.c \
 	src/conf.c src/buffer2array.c src/utils.c src/log.c \
 	src/mixer_control.c src/mixer_api.c \
+	src/filter_plugin.c \
+	src/filter/volume_filter_plugin.c \
 	$(MIXER_SRC)
 
 endif

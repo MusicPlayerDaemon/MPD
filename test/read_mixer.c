@@ -19,12 +19,30 @@
 
 #include "mixer_control.h"
 #include "mixer_list.h"
+#include "filter_registry.h"
+#include "pcm_volume.h"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
+
+const struct filter_plugin *
+filter_plugin_by_name(G_GNUC_UNUSED const char *name)
+{
+	assert(false);
+	return NULL;
+}
+
+bool
+pcm_volume(G_GNUC_UNUSED void *buffer, G_GNUC_UNUSED int length,
+	   G_GNUC_UNUSED const struct audio_format *format,
+	   G_GNUC_UNUSED int volume)
+{
+	assert(false);
+	return false;
+}
 
 int main(int argc, G_GNUC_UNUSED char **argv)
 {

@@ -17,17 +17,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/** \file
- *
- * This header provides "extern" declarations for all mixer plugins.
+#ifndef SOFTWARE_MIXER_PLUGIN_H
+#define SOFTWARE_MIXER_PLUGIN_H
+
+struct mixer;
+struct filter;
+
+/**
+ * Returns the (volume) filter associated with this mixer.  All users
+ * of this mixer plugin should install this filter.
  */
-
-#ifndef MPD_MIXER_LIST_H
-#define MPD_MIXER_LIST_H
-
-extern const struct mixer_plugin software_mixer_plugin;
-extern const struct mixer_plugin alsa_mixer;
-extern const struct mixer_plugin oss_mixer;
-extern const struct mixer_plugin pulse_mixer;
+struct filter *
+software_mixer_get_filter(struct mixer *mixer);
 
 #endif
