@@ -1,4 +1,6 @@
 ver 0.15.1 (2009/??/??)
+* output:
+  - httpd: include sys/types.h (fixes Mac OS X)
 * commands:
   - don't resume playback when stopping during pause
 * database: fixed NULL pointer dereference after charset change
