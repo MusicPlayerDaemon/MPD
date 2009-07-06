@@ -49,6 +49,7 @@ song_alloc(const char *url, struct directory *parent)
 	song->tag = NULL;
 	memcpy(song->url, url, urllen + 1);
 	song->parent = parent;
+	song->mtime = 0;
 
 	return song;
 }
