@@ -17,22 +17,31 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_VOLUME_H
-#define MPD_VOLUME_H
+#ifndef MPD_MIXER_TYPE_H
+#define MPD_MIXER_TYPE_H
 
-#include <stdbool.h>
-#include <stdio.h>
+enum mixer_type {
+	/** parser error */
+	MIXER_TYPE_UNKNOWN,
 
-void volume_init(void);
+	/** mixer disabled */
+	MIXER_TYPE_NONE,
 
-void volume_finish(void);
+	/** software mixer with pcm_volume() */
+	MIXER_TYPE_SOFTWARE,
 
-int volume_level_get(void);
+	/** hardware mixer (output's plugin) */
+	MIXER_TYPE_HARDWARE,
+};
 
-bool volume_level_change(int change, bool rel);
-
-void read_sw_volume_state(FILE *fp);
-
-void save_sw_volume_state(FILE *fp);
+/**
+ * Parses a "mixer_type" setting from the configuration file.
+ *
+ * @param input the configured string value; must not be NULL
+ * @return a #mixer_type value; MIXER_TYPE_UNKNOWN means #input could
+ * not be parsed
+ */
+enum mixer_type
+mixer_type_parse(const char *input);
 
 #endif

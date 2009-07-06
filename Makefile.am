@@ -94,6 +94,7 @@ mpd_headers = \
 	src/mixer_list.h \
 	src/event_pipe.h \
 	src/mixer_plugin.h \
+	src/mixer_type.h \
 	src/daemon.h \
 	src/normalize.h \
 	src/compress.h \
@@ -515,6 +516,7 @@ OUTPUT_SRC = \
 
 MIXER_API_SRC = \
 	src/mixer_control.c \
+	src/mixer_type.c \
 	src/mixer_all.c \
 	src/mixer_api.c
 

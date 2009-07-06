@@ -17,22 +17,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_VOLUME_H
-#define MPD_VOLUME_H
+#include "mixer_type.h"
 
-#include <stdbool.h>
-#include <stdio.h>
+#include <assert.h>
+#include <string.h>
 
-void volume_init(void);
+enum mixer_type
+mixer_type_parse(const char *input)
+{
+	assert(input != NULL);
 
-void volume_finish(void);
-
-int volume_level_get(void);
-
-bool volume_level_change(int change, bool rel);
-
-void read_sw_volume_state(FILE *fp);
-
-void save_sw_volume_state(FILE *fp);
-
-#endif
+	if (strcmp(input, "none") == 0 || strcmp(input, "disabled") == 0)
+		return MIXER_TYPE_NONE;
+	else if (strcmp(input, "hardware") == 0)
+		return MIXER_TYPE_HARDWARE;
+	else if (strcmp(input, "software") == 0)
+		return MIXER_TYPE_SOFTWARE;
+	else
+		return MIXER_TYPE_UNKNOWN;
+}

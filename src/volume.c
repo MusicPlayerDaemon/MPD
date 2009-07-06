@@ -26,6 +26,7 @@
 #include "output_all.h"
 #include "mixer_control.h"
 #include "mixer_all.h"
+#include "mixer_type.h"
 
 #include <glib.h>
 
@@ -39,11 +40,7 @@
 
 #define SW_VOLUME_STATE                         "sw_volume: "
 
-static enum {
-	VOLUME_MIXER_TYPE_SOFTWARE,
-	VOLUME_MIXER_TYPE_HARDWARE,
-	VOLUME_MIXER_TYPE_DISABLED,
-} volume_mixer_type = VOLUME_MIXER_TYPE_HARDWARE;
+static enum mixer_type volume_mixer_type = MIXER_TYPE_HARDWARE;
 
 static int volume_software_set = 100;
 
@@ -54,7 +51,7 @@ static GTimer *hardware_volume_timer;
 
 void volume_finish(void)
 {
-	if (volume_mixer_type == VOLUME_MIXER_TYPE_HARDWARE)
+	if (volume_mixer_type == MIXER_TYPE_HARDWARE)
 		g_timer_destroy(hardware_volume_timer);
 }
 
@@ -63,21 +60,24 @@ void volume_init(void)
 	const struct config_param *param = config_get_param(CONF_MIXER_TYPE);
 	//hw mixing is by default
 	if (param) {
-		if (strcmp(param->value, VOLUME_MIXER_SOFTWARE) == 0) {
-			volume_mixer_type = VOLUME_MIXER_TYPE_SOFTWARE;
+		volume_mixer_type = mixer_type_parse(param->value);
+		switch (volume_mixer_type) {
+		case MIXER_TYPE_NONE:
+		case MIXER_TYPE_SOFTWARE:
 			mixer_disable_all();
-		} else if (strcmp(param->value, VOLUME_MIXER_DISABLED) == 0) {
-			volume_mixer_type = VOLUME_MIXER_TYPE_DISABLED;
-			mixer_disable_all();
-		} else if (strcmp(param->value, VOLUME_MIXER_HARDWARE) == 0) {
+			break;
+
+		case MIXER_TYPE_HARDWARE:
 			//nothing to do
-		} else {
+			break;
+
+		case MIXER_TYPE_UNKNOWN:
 			g_error("unknown mixer type %s at line %i\n",
 				param->value, param->line);
 		}
 	}
 
-	if (volume_mixer_type == VOLUME_MIXER_TYPE_HARDWARE)
+	if (volume_mixer_type == MIXER_TYPE_HARDWARE)
 		hardware_volume_timer = g_timer_new();
 }
 
@@ -103,11 +103,12 @@ static int software_volume_get(void)
 int volume_level_get(void)
 {
 	switch (volume_mixer_type) {
-	case VOLUME_MIXER_TYPE_SOFTWARE:
+	case MIXER_TYPE_SOFTWARE:
 		return software_volume_get();
-	case VOLUME_MIXER_TYPE_HARDWARE:
+	case MIXER_TYPE_HARDWARE:
 		return hardware_volume_get();
-	case VOLUME_MIXER_TYPE_DISABLED:
+	case MIXER_TYPE_NONE:
+	case MIXER_TYPE_UNKNOWN:
 		return -1;
 	}
 
@@ -157,9 +158,9 @@ bool volume_level_change(int change, bool rel)
 	idle_add(IDLE_MIXER);
 
 	switch (volume_mixer_type) {
-	case VOLUME_MIXER_TYPE_HARDWARE:
+	case MIXER_TYPE_HARDWARE:
 		return hardware_volume_change(change, rel);
-	case VOLUME_MIXER_TYPE_SOFTWARE:
+	case MIXER_TYPE_SOFTWARE:
 		return software_volume_change(change, rel);
 	default:
 		return true;
@@ -172,7 +173,7 @@ void read_sw_volume_state(FILE *fp)
 	char *end = NULL;
 	long int sv;
 
-	if (volume_mixer_type != VOLUME_MIXER_TYPE_SOFTWARE)
+	if (volume_mixer_type != MIXER_TYPE_SOFTWARE)
 		return;
 	while (fgets(buf, sizeof(buf), fp)) {
 		if (!g_str_has_prefix(buf, SW_VOLUME_STATE))
@@ -190,6 +191,6 @@ void read_sw_volume_state(FILE *fp)
 
 void save_sw_volume_state(FILE *fp)
 {
-	if (volume_mixer_type == VOLUME_MIXER_TYPE_SOFTWARE)
+	if (volume_mixer_type == MIXER_TYPE_SOFTWARE)
 		fprintf(fp, SW_VOLUME_STATE "%d\n", volume_software_set);
 }
