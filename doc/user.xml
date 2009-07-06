@@ -708,6 +708,28 @@ cd mpd-version</programlisting>
           The <varname>pipe</varname> plugin starts a program and
           writes raw PCM data into its standard input.
         </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>command</varname>
+                  <parameter>CMD</parameter>
+                </entry>
+                <entry>
+                  This command is invoked with the shell.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
 
       <section>
