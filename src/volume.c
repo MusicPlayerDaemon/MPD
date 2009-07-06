@@ -117,51 +117,45 @@ int volume_level_get(void)
 	return -1;
 }
 
-static bool software_volume_change(int change, bool rel)
+static bool software_volume_change(int volume)
 {
-	int new = change;
+	if (volume > 100)
+		volume = 100;
+	else if (volume < 0)
+		volume = 0;
 
-	if (rel)
-		new += volume_software_set;
+	volume_software_set = volume;
 
-	if (new > 100)
-		new = 100;
-	else if (new < 0)
-		new = 0;
-
-	volume_software_set = new;
-
-	/*new = 100.0*(exp(new/50.0)-1)/(M_E*M_E-1)+0.5; */
-	if (new >= 100)
-		new = PCM_VOLUME_1;
-	else if (new <= 0)
-		new = 0;
+	if (volume >= 100)
+		volume = PCM_VOLUME_1;
+	else if (volume <= 0)
+		volume = 0;
 	else
-		new = pcm_float_to_volume((exp(new / 25.0) - 1) /
-					  (54.5981500331F - 1));
+		volume = pcm_float_to_volume((exp(volume / 25.0) - 1) /
+					     (54.5981500331F - 1));
 
-	setPlayerSoftwareVolume(new);
+	setPlayerSoftwareVolume(volume);
 
 	return true;
 }
 
-static bool hardware_volume_change(int change, bool rel)
+static bool hardware_volume_change(int volume)
 {
 	/* reset the cache */
 	last_hardware_volume = -1;
 
-	return mixer_all_set_volume(change, rel);
+	return mixer_all_set_volume(volume);
 }
 
-bool volume_level_change(int change, bool rel)
+bool volume_level_change(int volume)
 {
 	idle_add(IDLE_MIXER);
 
 	switch (volume_mixer_type) {
 	case MIXER_TYPE_HARDWARE:
-		return hardware_volume_change(change, rel);
+		return hardware_volume_change(volume);
 	case MIXER_TYPE_SOFTWARE:
-		return software_volume_change(change, rel);
+		return software_volume_change(volume);
 	default:
 		return true;
 	}
@@ -182,7 +176,7 @@ void read_sw_volume_state(FILE *fp)
 		g_strchomp(buf);
 		sv = strtol(buf + strlen(SW_VOLUME_STATE), &end, 10);
 		if (G_LIKELY(!*end))
-			software_volume_change(sv, 0);
+			software_volume_change(sv);
 		else
 			g_warning("Can't parse software volume: %s\n", buf);
 		return;

@@ -37,11 +37,10 @@ mixer_all_get_volume(void);
 /**
  * Sets the volume on all available mixers.
  *
- * @param volume the volume (range 0..100 or -100..100 if #relative)
- * @param relative if true, then the #volume is added to the current value
+ * @param volume the volume (range 0..100)
  * @return true on success, false on failure
  */
 bool
-mixer_all_set_volume(int volume, bool relative);
+mixer_all_set_volume(int volume);
 
 #endif
