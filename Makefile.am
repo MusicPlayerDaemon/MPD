@@ -46,6 +46,7 @@ mpd_headers = \
 	src/filter_plugin.h \
 	src/filter_registry.h \
 	src/filter/chain_filter_plugin.h \
+	src/filter/convert_filter_plugin.h \
 	src/filter/volume_filter_plugin.h \
 	src/buffer2array.h \
 	src/command.h \
@@ -585,6 +586,7 @@ endif
 FILTER_SRC = \
 	src/filter/null_filter_plugin.c \
 	src/filter/chain_filter_plugin.c \
+	src/filter/convert_filter_plugin.c \
 	src/filter/volume_filter_plugin.c
 
 
@@ -685,14 +687,21 @@ test_read_tags_SOURCES = test/read_tags.c \
 
 test_run_filter_CPPFLAGS = $(AM_CPPFLAGS)
 test_run_filter_LDADD = $(MPD_LIBS) \
+	$(SAMPLERATE_LIBS) \
 	$(GLIB_LIBS)
 test_run_filter_SOURCES = test/run_filter.c \
 	src/filter_plugin.c \
 	src/filter_registry.c \
 	src/conf.c src/buffer2array.c src/utils.c \
-	src/pcm_volume.c \
+	src/pcm_volume.c src/pcm_convert.c \
+	src/pcm_format.c src/pcm_channels.c src/pcm_dither.c \
+	src/pcm_resample.c src/pcm_resample_fallback.c \
 	src/audio_parser.c \
 	$(FILTER_SRC)
+
+if HAVE_LIBSAMPLERATE
+test_run_filter_SOURCES += src/pcm_resample_libsamplerate.c
+endif
 
 test_run_encoder_SOURCES = test/run_encoder.c \
 	src/conf.c src/buffer2array.c \

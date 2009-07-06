@@ -17,21 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/** \file
- *
- * This library manages all filter plugins which are enabled at
- * compile time.
+#ifndef CONVERT_FILTER_PLUGIN_H
+#define CONVERT_FILTER_PLUGIN_H
+
+struct filter;
+struct audio_format;
+
+/**
+ * Sets the output audio format for the specified filter.  You must
+ * call this after the filter has been opened.  Since this audio
+ * format switch is a violation of the filter API, this filter must be
+ * the last in a chain.
  */
-
-#ifndef MPD_FILTER_REGISTRY_H
-#define MPD_FILTER_REGISTRY_H
-
-extern const struct filter_plugin null_filter_plugin;
-extern const struct filter_plugin chain_filter_plugin;
-extern const struct filter_plugin convert_filter_plugin;
-extern const struct filter_plugin volume_filter_plugin;
-
-const struct filter_plugin *
-filter_plugin_by_name(const char *name);
+void
+convert_filter_set(struct filter *filter,
+		   const struct audio_format *out_audio_format);
 
 #endif
