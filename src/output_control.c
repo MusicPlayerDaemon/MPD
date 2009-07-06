@@ -82,26 +82,13 @@ audio_output_open(struct audio_output *ao,
 	ao->in_audio_format = *audio_format;
 	ao->chunk = NULL;
 
-	if (!ao->config_audio_format) {
-		if (ao->open)
-			audio_output_close(ao);
-
-		/* no audio format is configured: copy in->out, let
-		   the output's open() method determine the effective
-		   out_audio_format */
-		ao->out_audio_format = ao->in_audio_format;
-	}
-
 	ao->pipe = mp;
 
 	if (ao->thread == NULL)
 		audio_output_thread_start(ao);
 
+	ao_command(ao, ao->open ? AO_COMMAND_REOPEN : AO_COMMAND_OPEN);
 	open = ao->open;
-	if (!open) {
-		ao_command(ao, AO_COMMAND_OPEN);
-		open = ao->open;
-	}
 
 	if (open && ao->mixer != NULL)
 		mixer_open(ao->mixer);

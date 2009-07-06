@@ -105,6 +105,26 @@ ao_close(struct audio_output *ao)
 	g_debug("closed plugin=%s name=\"%s\"", ao->plugin->name, ao->name);
 }
 
+static void
+ao_reopen(struct audio_output *ao)
+{
+	if (!ao->config_audio_format) {
+		if (ao->open) {
+			const struct music_pipe *mp = ao->pipe;
+			ao_close(ao);
+			ao->pipe = mp;
+		}
+
+		/* no audio format is configured: copy in->out, let
+		   the output's open() method determine the effective
+		   out_audio_format */
+		ao->out_audio_format = ao->in_audio_format;
+	}
+
+	if (!ao->open)
+		ao_open(ao);
+}
+
 static bool
 ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 {
@@ -234,6 +254,11 @@ static gpointer audio_output_task(gpointer arg)
 
 		case AO_COMMAND_OPEN:
 			ao_open(ao);
+			ao_command_finished(ao);
+			break;
+
+		case AO_COMMAND_REOPEN:
+			ao_reopen(ao);
 			ao_command_finished(ao);
 			break;
 

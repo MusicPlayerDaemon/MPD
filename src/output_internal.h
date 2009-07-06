@@ -29,6 +29,13 @@
 enum audio_output_command {
 	AO_COMMAND_NONE = 0,
 	AO_COMMAND_OPEN,
+
+	/**
+	 * This command is invoked when the input audio format
+	 * changes.
+	 */
+	AO_COMMAND_REOPEN,
+
 	AO_COMMAND_CLOSE,
 	AO_COMMAND_PAUSE,
 	AO_COMMAND_CANCEL,
