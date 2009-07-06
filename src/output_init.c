@@ -78,11 +78,11 @@ bool
 audio_output_init(struct audio_output *ao, const struct config_param *param,
 		  GError **error)
 {
-	const char *format;
 	const struct audio_output_plugin *plugin = NULL;
 
 	if (param) {
 		const char *type = NULL;
+		const char *format;
 
 		type = config_get_block_string(param, AUDIO_OUTPUT_TYPE, NULL);
 		if (type == NULL) {
@@ -109,6 +109,14 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 
 		format = config_get_block_string(param, AUDIO_OUTPUT_FORMAT,
 						 NULL);
+		ao->config_audio_format = format != NULL;
+		if (format != NULL) {
+			bool success =
+				audio_format_parse(&ao->out_audio_format,
+						   format, error);
+			if (!success)
+				return false;
+		}
 	} else {
 		g_warning("No \"%s\" defined in config file\n",
 			  CONF_AUDIO_OUTPUT);
@@ -121,7 +129,7 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 			  plugin->name);
 
 		ao->name = "default detected output";
-		format = NULL;
+		ao->config_audio_format = false;
 	}
 
 	ao->plugin = plugin;
@@ -138,16 +146,6 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	assert(ao->convert_filter != NULL);
 
 	filter_chain_append(ao->filter, ao->convert_filter);
-
-	ao->config_audio_format = format != NULL;
-	if (ao->config_audio_format) {
-		bool ret;
-
-		ret = audio_format_parse(&ao->out_audio_format, format,
-					 error);
-		if (!ret)
-			return false;
-	}
 
 	ao->thread = NULL;
 	notify_init(&ao->notify);
