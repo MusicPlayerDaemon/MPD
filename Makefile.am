@@ -624,7 +624,6 @@ noinst_PROGRAMS = \
 	test/run_decoder \
 	test/read_tags \
 	test/run_filter \
-	test/run_encoder \
 	test/run_output \
 	test/read_mixer \
 	test/software_volume
@@ -705,6 +704,8 @@ if HAVE_LIBSAMPLERATE
 test_run_filter_SOURCES += src/pcm_resample_libsamplerate.c
 endif
 
+if ENABLE_ENCODER
+noinst_PROGRAMS += test/run_encoder
 test_run_encoder_SOURCES = test/run_encoder.c \
 	src/conf.c src/buffer2array.c \
 	src/utils.c \
@@ -714,6 +715,7 @@ test_run_encoder_SOURCES = test/run_encoder.c \
 test_run_encoder_LDADD = $(MPD_LIBS) \
 	$(ENCODER_LIBS) \
 	$(GLIB_LIBS)
+endif
 
 test_software_volume_SOURCES = test/software_volume.c \
 	src/audio_parser.c \
