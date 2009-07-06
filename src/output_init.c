@@ -81,21 +81,19 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	const struct audio_output_plugin *plugin = NULL;
 
 	if (param) {
-		const char *type = NULL;
-		const char *format;
+		const char *p;
 
-		type = config_get_block_string(param, AUDIO_OUTPUT_TYPE, NULL);
-		if (type == NULL) {
+		p = config_get_block_string(param, AUDIO_OUTPUT_TYPE, NULL);
+		if (p == NULL) {
 			g_set_error(error, audio_output_quark(), 0,
 				    "Missing \"type\" configuration");
 			return false;
 		}
 
-		plugin = audio_output_plugin_get(type);
+		plugin = audio_output_plugin_get(p);
 		if (plugin == NULL) {
 			g_set_error(error, audio_output_quark(), 0,
-				    "No such audio output plugin: %s",
-				    type);
+				    "No such audio output plugin: %s", p);
 			return false;
 		}
 
@@ -107,13 +105,13 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 			return false;
 		}
 
-		format = config_get_block_string(param, AUDIO_OUTPUT_FORMAT,
+		p = config_get_block_string(param, AUDIO_OUTPUT_FORMAT,
 						 NULL);
-		ao->config_audio_format = format != NULL;
-		if (format != NULL) {
+		ao->config_audio_format = p != NULL;
+		if (p != NULL) {
 			bool success =
 				audio_format_parse(&ao->out_audio_format,
-						   format, error);
+						   p, error);
 			if (!success)
 				return false;
 		}
