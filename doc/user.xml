@@ -782,6 +782,129 @@ cd mpd-version</programlisting>
           The <varname>shout</varname> plugin connects to a ShoutCast
           or IceCast server.  It forwards tags to this server.
         </para>
+
+        <para>
+          You must set a <varname>format</varname>.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>host</varname>
+                  <parameter>HOSTNAME</parameter>
+                </entry>
+                <entry>
+                  Sets the host name of the Shoutcast/Icecast server.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>port</varname>
+                  <parameter>PORTNUMBER</parameter>
+                </entry>
+                <entry>
+                  Connect to this port number on the specified host.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>timeout</varname>
+                  <parameter>SECONDS</parameter>
+                </entry>
+                <entry>
+                  Set the timeout for the shout connection in seconds.
+                  Defaults to 2 seconds.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>mount</varname>
+                  <parameter>URI</parameter>
+                </entry>
+                <entry>
+                  Mounts the MPD stream in the specified URI.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>user</varname>
+                  <parameter>USERNAME</parameter>
+                </entry>
+                <entry>
+                  Sets the user name for submitting the stream to the
+                  server.  Default is "source".
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>password</varname>
+                  <parameter>PWD</parameter>
+                </entry>
+                <entry>
+                  Sets the password for submitting the stream to the
+                  server.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>name</varname>
+                  <parameter>NAME</parameter>
+                </entry>
+                <entry>
+                  Sets the name of the stream.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>genre</varname>
+                  <parameter>GENRE</parameter>
+                </entry>
+                <entry>
+                  Sets the genre of the stream (optional).
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>description</varname>
+                  <parameter>DESCRIPTION</parameter>
+                </entry>
+                <entry>
+                  Sets a short description of the stream (optional).
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>public</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  Specifies whether the stream should be "public".
+                  Default is "no".
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>encoder</varname>
+                  <parameter>PLUGIN</parameter>
+                </entry>
+                <entry>
+                  Sets the name of the encoder plugin.  Default is
+                  "vorbis".  "vorbis" and "lame" are valid encoder
+                  plugins (provided that you enabled them at compile
+                  time).
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
 
       <section>
