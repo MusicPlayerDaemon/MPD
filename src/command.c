@@ -58,7 +58,6 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#define COMMAND_STATUS_VOLUME           "volume"
 #define COMMAND_STATUS_STATE            "state"
 #define COMMAND_STATUS_REPEAT           "repeat"
 #define COMMAND_STATUS_SINGLE           "single"
@@ -470,7 +469,7 @@ handle_status(struct client *client,
 	}
 
 	client_printf(client,
-		      COMMAND_STATUS_VOLUME ": %i\n"
+		      "volume: %i\n"
 		      COMMAND_STATUS_REPEAT ": %i\n"
 		      COMMAND_STATUS_RANDOM ": %i\n"
 		      COMMAND_STATUS_SINGLE ": %i\n"
@@ -1051,25 +1050,6 @@ handle_listall(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 			      "directory or file not found");
 
 	return ret;
-}
-
-static enum command_return
-handle_volume(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
-{
-	int change;
-	bool success;
-
-	if (!check_int(client, &change, argv[1], need_integer))
-		return COMMAND_RETURN_ERROR;
-
-	success = volume_level_change(change, true);
-	if (!success) {
-		command_error(client, ACK_ERROR_SYSTEM,
-			      "problems setting volume");
-		return COMMAND_RETURN_ERROR;
-	}
-
-	return COMMAND_RETURN_OK;
 }
 
 static enum command_return
@@ -1740,7 +1720,6 @@ static const struct command commands[] = {
 	{ "tagtypes", PERMISSION_READ, 0, 0, handle_tagtypes },
 	{ "update", PERMISSION_ADMIN, 0, 1, handle_update },
 	{ "urlhandlers", PERMISSION_READ, 0, 0, handle_urlhandlers },
-	{ "volume", PERMISSION_CONTROL, 1, 1, handle_volume },
 };
 
 static const unsigned num_commands = sizeof(commands) / sizeof(commands[0]);
