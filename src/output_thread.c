@@ -41,6 +41,53 @@ static void ao_command_finished(struct audio_output *ao)
 }
 
 static void
+ao_open(struct audio_output *ao)
+{
+	bool success;
+	GError *error = NULL;
+
+	assert(!ao->open);
+	assert(ao->fail_timer == NULL);
+	assert(ao->pipe != NULL);
+	assert(ao->chunk == NULL);
+
+	success = ao_plugin_open(ao->plugin, ao->data,
+				 &ao->out_audio_format,
+				 &error);
+
+	assert(!ao->open);
+
+	if (!success) {
+		g_warning("Failed to open \"%s\" [%s]: %s",
+			  ao->name, ao->plugin->name, error->message);
+		g_error_free(error);
+
+		ao->fail_timer = g_timer_new();
+		return;
+	}
+
+	pcm_convert_init(&ao->convert_state);
+
+	g_mutex_lock(ao->mutex);
+	ao->open = true;
+	g_mutex_unlock(ao->mutex);
+
+	g_debug("opened plugin=%s name=\"%s\" "
+		"audio_format=%u:%u:%u",
+		ao->plugin->name, ao->name,
+		ao->out_audio_format.sample_rate,
+		ao->out_audio_format.bits,
+		ao->out_audio_format.channels);
+
+	if (!audio_format_equals(&ao->in_audio_format,
+				 &ao->out_audio_format))
+		g_debug("converting from %u:%u:%u",
+			ao->in_audio_format.sample_rate,
+			ao->in_audio_format.bits,
+			ao->in_audio_format.channels);
+}
+
+static void
 ao_close(struct audio_output *ao)
 {
 	assert(ao->open);
@@ -179,8 +226,6 @@ static void ao_pause(struct audio_output *ao)
 static gpointer audio_output_task(gpointer arg)
 {
 	struct audio_output *ao = arg;
-	bool ret;
-	GError *error;
 
 	while (1) {
 		switch (ao->command) {
@@ -188,47 +233,7 @@ static gpointer audio_output_task(gpointer arg)
 			break;
 
 		case AO_COMMAND_OPEN:
-			assert(!ao->open);
-			assert(ao->fail_timer == NULL);
-			assert(ao->pipe != NULL);
-			assert(ao->chunk == NULL);
-
-			error = NULL;
-			ret = ao_plugin_open(ao->plugin, ao->data,
-					     &ao->out_audio_format,
-					     &error);
-
-			assert(!ao->open);
-			if (ret) {
-				pcm_convert_init(&ao->convert_state);
-
-				g_mutex_lock(ao->mutex);
-				ao->open = true;
-				g_mutex_unlock(ao->mutex);
-
-				g_debug("opened plugin=%s name=\"%s\" "
-					"audio_format=%u:%u:%u",
-					ao->plugin->name,
-					ao->name,
-					ao->out_audio_format.sample_rate,
-					ao->out_audio_format.bits,
-					ao->out_audio_format.channels);
-
-				if (!audio_format_equals(&ao->in_audio_format,
-							 &ao->out_audio_format))
-					g_debug("converting from %u:%u:%u",
-						ao->in_audio_format.sample_rate,
-						ao->in_audio_format.bits,
-						ao->in_audio_format.channels);
-			} else {
-				g_warning("Failed to open \"%s\" [%s]: %s",
-					  ao->name, ao->plugin->name,
-					  error->message);
-				g_error_free(error);
-
-				ao->fail_timer = g_timer_new();
-			}
-
+			ao_open(ao);
 			ao_command_finished(ao);
 			break;
 
