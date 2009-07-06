@@ -599,7 +599,6 @@ noinst_PROGRAMS = \
 	test/run_input \
 	test/run_decoder \
 	test/read_tags \
-	test/run_encoder \
 	test/run_output \
 	test/read_mixer \
 	test/software_volume
@@ -662,6 +661,8 @@ test_read_tags_SOURCES = test/read_tags.c \
 	$(TAG_SRC) \
 	$(DECODER_SRC)
 
+if ENABLE_ENCODER
+noinst_PROGRAMS += test/run_encoder
 test_run_encoder_SOURCES = test/run_encoder.c \
 	src/conf.c src/buffer2array.c \
 	src/utils.c \
@@ -671,6 +672,7 @@ test_run_encoder_SOURCES = test/run_encoder.c \
 test_run_encoder_LDADD = $(MPD_LIBS) \
 	$(ENCODER_LIBS) \
 	$(GLIB_LIBS)
+endif
 
 test_software_volume_SOURCES = test/software_volume.c \
 	src/audio_parser.c \
