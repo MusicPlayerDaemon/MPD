@@ -29,7 +29,7 @@ void volume_finish(void);
 
 int volume_level_get(void);
 
-bool volume_level_change(int volume);
+bool volume_level_change(unsigned volume);
 
 void read_sw_volume_state(FILE *fp);
 

@@ -41,6 +41,6 @@ mixer_all_get_volume(void);
  * @return true on success, false on failure
  */
 bool
-mixer_all_set_volume(int volume);
+mixer_all_set_volume(unsigned volume);
 
 #endif

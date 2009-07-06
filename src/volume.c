@@ -42,7 +42,7 @@
 
 static enum mixer_type volume_mixer_type = MIXER_TYPE_HARDWARE;
 
-static int volume_software_set = 100;
+static unsigned volume_software_set = 100;
 
 /** the cached hardware mixer value; invalid if negative */
 static int last_hardware_volume = -1;
@@ -117,12 +117,9 @@ int volume_level_get(void)
 	return -1;
 }
 
-static bool software_volume_change(int volume)
+static bool software_volume_change(unsigned volume)
 {
-	if (volume > 100)
-		volume = 100;
-	else if (volume < 0)
-		volume = 0;
+	assert(volume <= 100);
 
 	volume_software_set = volume;
 
@@ -139,7 +136,7 @@ static bool software_volume_change(int volume)
 	return true;
 }
 
-static bool hardware_volume_change(int volume)
+static bool hardware_volume_change(unsigned volume)
 {
 	/* reset the cache */
 	last_hardware_volume = -1;
@@ -147,8 +144,10 @@ static bool hardware_volume_change(int volume)
 	return mixer_all_set_volume(volume);
 }
 
-bool volume_level_change(int volume)
+bool volume_level_change(unsigned volume)
 {
+	assert(volume <= 100);
+
 	idle_add(IDLE_MIXER);
 
 	switch (volume_mixer_type) {
@@ -175,7 +174,7 @@ void read_sw_volume_state(FILE *fp)
 
 		g_strchomp(buf);
 		sv = strtol(buf + strlen(SW_VOLUME_STATE), &end, 10);
-		if (G_LIKELY(!*end))
+		if (G_LIKELY(!*end) && sv >= 0 && sv <= 100)
 			software_volume_change(sv);
 		else
 			g_warning("Can't parse software volume: %s\n", buf);
@@ -186,5 +185,5 @@ void read_sw_volume_state(FILE *fp)
 void save_sw_volume_state(FILE *fp)
 {
 	if (volume_mixer_type == MIXER_TYPE_SOFTWARE)
-		fprintf(fp, SW_VOLUME_STATE "%d\n", volume_software_set);
+		fprintf(fp, SW_VOLUME_STATE "%u\n", volume_software_set);
 }

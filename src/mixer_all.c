@@ -70,12 +70,13 @@ mixer_all_get_volume(void)
 }
 
 static bool
-output_mixer_set_volume(unsigned i, int volume)
+output_mixer_set_volume(unsigned i, unsigned volume)
 {
 	struct audio_output *output;
 	struct mixer *mixer;
 
 	assert(i < audio_output_count());
+	assert(volume <= 100);
 
 	output = audio_output_get(i);
 	if (!output->enabled)
@@ -85,19 +86,16 @@ output_mixer_set_volume(unsigned i, int volume)
 	if (mixer == NULL)
 		return false;
 
-	if (volume > 100)
-		volume = 100;
-	else if (volume < 0)
-		volume = 0;
-
 	return mixer_set_volume(mixer, volume);
 }
 
 bool
-mixer_all_set_volume(int volume)
+mixer_all_set_volume(unsigned volume)
 {
 	bool success = false;
 	unsigned count = audio_output_count();
+
+	assert(volume <= 100);
 
 	for (unsigned i = 0; i < count; i++)
 		success = output_mixer_set_volume(i, volume)
