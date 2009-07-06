@@ -518,7 +518,7 @@ config_get_block_bool(const struct config_param *param, const char *name,
 	if (bp == NULL)
 		return default_value;
 
-	success = get_bool(param->value, &value);
+	success = get_bool(bp->value, &value);
 	if (!success)
 		g_error("%s is not a boolean value (yes, true, 1) or "
 			"(no, false, 0) on line %i\n",
