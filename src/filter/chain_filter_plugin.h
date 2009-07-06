@@ -19,18 +19,30 @@
 
 /** \file
  *
- * This library manages all filter plugins which are enabled at
- * compile time.
+ * A filter chain is a container for several filters.  They are
+ * chained together, i.e. called in a row, one filter passing its
+ * output to the next one.
  */
 
-#ifndef MPD_FILTER_REGISTRY_H
-#define MPD_FILTER_REGISTRY_H
+#ifndef MPD_FILTER_CHAIN_H
+#define MPD_FILTER_CHAIN_H
 
-extern const struct filter_plugin null_filter_plugin;
-extern const struct filter_plugin chain_filter_plugin;
-extern const struct filter_plugin volume_filter_plugin;
+struct filter;
 
-const struct filter_plugin *
-filter_plugin_by_name(const char *name);
+/**
+ * Creates a new filter chain.
+ */
+struct filter *
+filter_chain_new(void);
+
+/**
+ * Appends a new filter at the end of the filter chain.  You must call
+ * this function before the first filter_open() call.
+ *
+ * @param chain the filter chain created with filter_chain_new()
+ * @param filter the filter to be appended to #chain
+ */
+void
+filter_chain_append(struct filter *chain, struct filter *filter);
 
 #endif

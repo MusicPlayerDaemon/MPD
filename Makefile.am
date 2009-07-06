@@ -45,6 +45,7 @@ mpd_headers = \
 	src/filter_internal.h \
 	src/filter_plugin.h \
 	src/filter_registry.h \
+	src/filter/chain_filter_plugin.h \
 	src/filter/volume_filter_plugin.h \
 	src/buffer2array.h \
 	src/command.h \
@@ -583,6 +584,7 @@ endif
 
 FILTER_SRC = \
 	src/filter/null_filter_plugin.c \
+	src/filter/chain_filter_plugin.c \
 	src/filter/volume_filter_plugin.c
 
 
