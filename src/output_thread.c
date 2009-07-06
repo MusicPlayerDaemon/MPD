@@ -23,6 +23,8 @@
 #include "chunk.h"
 #include "pipe.h"
 #include "player_control.h"
+#include "filter_plugin.h"
+#include "filter/convert_filter_plugin.h"
 
 #include <glib.h>
 
@@ -45,11 +47,28 @@ ao_open(struct audio_output *ao)
 {
 	bool success;
 	GError *error = NULL;
+	const struct audio_format *filter_audio_format;
 
 	assert(!ao->open);
 	assert(ao->fail_timer == NULL);
 	assert(ao->pipe != NULL);
 	assert(ao->chunk == NULL);
+
+	/* open the filter */
+
+	filter_audio_format = filter_open(ao->filter, &ao->in_audio_format,
+					  &error);
+	if (filter_audio_format == NULL) {
+		g_warning("Failed to open filter for \"%s\" [%s]: %s",
+			  ao->name, ao->plugin->name, error->message);
+		g_error_free(error);
+
+		ao->fail_timer = g_timer_new();
+		return;
+	}
+
+	if (!ao->config_audio_format)
+		ao->out_audio_format = *filter_audio_format;
 
 	success = ao_plugin_open(ao->plugin, ao->data,
 				 &ao->out_audio_format,
@@ -62,11 +81,12 @@ ao_open(struct audio_output *ao)
 			  ao->name, ao->plugin->name, error->message);
 		g_error_free(error);
 
+		filter_close(ao->filter);
 		ao->fail_timer = g_timer_new();
 		return;
 	}
 
-	pcm_convert_init(&ao->convert_state);
+	convert_filter_set(ao->convert_filter, &ao->out_audio_format);
 
 	g_mutex_lock(ao->mutex);
 	ao->open = true;
@@ -100,9 +120,43 @@ ao_close(struct audio_output *ao)
 	g_mutex_unlock(ao->mutex);
 
 	ao_plugin_close(ao->plugin, ao->data);
-	pcm_convert_deinit(&ao->convert_state);
+	filter_close(ao->filter);
 
 	g_debug("closed plugin=%s name=\"%s\"", ao->plugin->name, ao->name);
+}
+
+static void
+ao_reopen_filter(struct audio_output *ao)
+{
+	const struct audio_format *filter_audio_format;
+	GError *error = NULL;
+
+	filter_close(ao->filter);
+	filter_audio_format = filter_open(ao->filter, &ao->in_audio_format,
+					  &error);
+	if (filter_audio_format == NULL) {
+		g_warning("Failed to open filter for \"%s\" [%s]: %s",
+			  ao->name, ao->plugin->name, error->message);
+		g_error_free(error);
+
+		/* this is a little code duplication fro ao_close(),
+		   but we cannot call this function because we must
+		   not call filter_close(ao->filter) again */
+
+		ao->pipe = NULL;
+
+		g_mutex_lock(ao->mutex);
+		ao->chunk = NULL;
+		ao->open = false;
+		g_mutex_unlock(ao->mutex);
+
+		ao_plugin_close(ao->plugin, ao->data);
+
+		ao->fail_timer = g_timer_new();
+		return;
+	}
+
+	convert_filter_set(ao->convert_filter, &ao->out_audio_format);
 }
 
 static void
@@ -121,7 +175,11 @@ ao_reopen(struct audio_output *ao)
 		ao->out_audio_format = ao->in_audio_format;
 	}
 
-	if (!ao->open)
+	if (ao->open)
+		/* the audio format has changed, and all filters have
+		   to be reconfigured */
+		ao_reopen_filter(ao);
+	else
 		ao_open(ao);
 }
 
@@ -132,6 +190,8 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 	size_t size = chunk->length;
 	GError *error = NULL;
 
+	assert(ao != NULL);
+	assert(ao->filter != NULL);
 	assert(!music_chunk_is_empty(chunk));
 	assert(music_chunk_check_format(chunk, &ao->in_audio_format));
 	assert(size % audio_format_frame_size(&ao->in_audio_format) == 0);
@@ -142,18 +202,19 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 	if (size == 0)
 		return true;
 
-	if (!audio_format_equals(&ao->in_audio_format,
-				 &ao->out_audio_format)) {
-		data = pcm_convert(&ao->convert_state,
-				   &ao->in_audio_format, data, size,
-				   &ao->out_audio_format, &size);
+	data = filter_filter(ao->filter, data, size, &size, &error);
+	if (data == NULL) {
+		g_warning("\"%s\" [%s] failed to filter: %s",
+			  ao->name, ao->plugin->name, error->message);
+		g_error_free(error);
 
-		/* under certain circumstances, pcm_convert() may
-		   return an empty buffer - this condition should be
-		   investigated further, but for now, do this check as
-		   a workaround: */
-		if (data == NULL)
-			return true;
+		ao_plugin_cancel(ao->plugin, ao->data);
+		ao_close(ao);
+
+		/* don't automatically reopen this device for 10
+		   seconds */
+		ao->fail_timer = g_timer_new();
+		return false;
 	}
 
 	while (size > 0 && ao->command == AO_COMMAND_NONE) {
@@ -271,6 +332,7 @@ static gpointer audio_output_task(gpointer arg)
 
 			ao_plugin_cancel(ao->plugin, ao->data);
 			ao_close(ao);
+			filter_close(ao->filter);
 			ao_command_finished(ao);
 			break;
 

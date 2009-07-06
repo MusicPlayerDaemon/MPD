@@ -23,6 +23,7 @@
 #include "output_thread.h"
 #include "mixer_control.h"
 #include "mixer_plugin.h"
+#include "filter_plugin.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -171,4 +172,6 @@ void audio_output_finish(struct audio_output *ao)
 
 	notify_deinit(&ao->notify);
 	g_mutex_free(ao->mutex);
+
+	filter_free(ao->filter);
 }

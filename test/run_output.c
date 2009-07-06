@@ -22,6 +22,8 @@
 #include "output_control.h"
 #include "conf.h"
 #include "audio_parser.h"
+#include "filter_registry.h"
+#include "pcm_convert.h"
 
 #include <glib.h>
 
@@ -33,8 +35,29 @@ void pcm_convert_init(G_GNUC_UNUSED struct pcm_convert_state *state)
 {
 }
 
+void pcm_convert_deinit(G_GNUC_UNUSED struct pcm_convert_state *state)
+{
+}
+
+const void *
+pcm_convert(G_GNUC_UNUSED struct pcm_convert_state *state,
+	    G_GNUC_UNUSED const struct audio_format *src_format,
+	    G_GNUC_UNUSED const void *src, G_GNUC_UNUSED size_t src_size,
+	    G_GNUC_UNUSED const struct audio_format *dest_format,
+	    G_GNUC_UNUSED size_t *dest_size_r)
+{
+	return NULL;
+}
+
 void notify_init(G_GNUC_UNUSED struct notify *notify)
 {
+}
+
+const struct filter_plugin *
+filter_plugin_by_name(G_GNUC_UNUSED const char *name)
+{
+	assert(false);
+	return NULL;
 }
 
 static const struct config_param *

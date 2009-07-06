@@ -739,6 +739,8 @@ test_run_output_SOURCES = test/run_output.c \
 	src/mixer_api.c \
 	src/mixer_control.c \
 	$(MIXER_SRC) \
+	src/filter_plugin.c src/filter/chain_filter_plugin.c \
+	src/filter/convert_filter_plugin.c \
 	$(OUTPUT_SRC)
 
 test_read_mixer_CPPFLAGS = $(AM_CPPFLAGS) \

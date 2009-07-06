@@ -21,7 +21,6 @@
 #define MPD_OUTPUT_INTERNAL_H
 
 #include "audio_format.h"
-#include "pcm_convert.h"
 #include "notify.h"
 
 #include <time.h>
@@ -108,7 +107,19 @@ struct audio_output {
 	 */
 	struct audio_format out_audio_format;
 
-	struct pcm_convert_state convert_state;
+	/**
+	 * The filter object of this audio output.  This is an
+	 * instance of chain_filter_plugin.
+	 */
+	struct filter *filter;
+
+	/**
+	 * The convert_filter_plugin instance of this audio output.
+	 * It is the last item in the filter chain, and is responsible
+	 * for converting the input data into the appropriate format
+	 * for this audio output.
+	 */
+	struct filter *convert_filter;
 
 	/**
 	 * The thread handle, or NULL if the output thread isn't

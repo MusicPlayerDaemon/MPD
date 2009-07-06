@@ -23,8 +23,13 @@
 #include "output_list.h"
 #include "audio_parser.h"
 #include "mixer_control.h"
+#include "filter_plugin.h"
+#include "filter_registry.h"
+#include "filter/chain_filter_plugin.h"
 
 #include <glib.h>
+
+#include <assert.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "output"
@@ -124,7 +129,15 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	ao->open = false;
 	ao->fail_timer = NULL;
 
-	pcm_convert_init(&ao->convert_state);
+	/* set up the filter chain */
+
+	ao->filter = filter_chain_new();
+	assert(ao->filter != NULL);
+
+	ao->convert_filter = filter_new(&convert_filter_plugin, NULL, NULL);
+	assert(ao->convert_filter != NULL);
+
+	filter_chain_append(ao->filter, ao->convert_filter);
 
 	ao->config_audio_format = format != NULL;
 	if (ao->config_audio_format) {
