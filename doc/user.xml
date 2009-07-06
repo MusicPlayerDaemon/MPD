@@ -739,6 +739,40 @@ cd mpd-version</programlisting>
           The <varname>pulse</varname> plugin connects to a PulseAudio
           server.
         </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>server</varname>
+                  <parameter>HOSTNAME</parameter>
+                </entry>
+                <entry>
+                  Sets the host name of the PulseAudio server.  By
+                  default, MPD connects to the local PulseAudio
+                  server.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>sink</varname>
+                  <parameter>NAME</parameter>
+                </entry>
+                <entry>
+                  Specifies the name of the PulseAudio sink MPD should
+                  play on.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
 
       <section>
