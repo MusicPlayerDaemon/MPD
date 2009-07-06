@@ -43,4 +43,20 @@ mixer_all_get_volume(void);
 bool
 mixer_all_set_volume(unsigned volume);
 
+/**
+ * Similar to mixer_all_get_volume(), but gets the volume only for
+ * software mixers.  See #software_mixer_plugin.  This function fails
+ * if no software mixer is configured.
+ */
+int
+mixer_all_get_software_volume(void);
+
+/**
+ * Similar to mixer_all_set_volume(), but sets the volume only for
+ * software mixers.  See #software_mixer_plugin.  This function cannot
+ * fail, because the underlying software mixers cannot fail either.
+ */
+void
+mixer_all_set_software_volume(unsigned volume);
+
 #endif

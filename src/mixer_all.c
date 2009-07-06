@@ -22,6 +22,9 @@
 #include "output_all.h"
 #include "output_plugin.h"
 #include "output_internal.h"
+#include "pcm_volume.h"
+#include "mixer_api.h"
+#include "mixer_list.h"
 
 #include <glib.h>
 
@@ -102,4 +105,58 @@ mixer_all_set_volume(unsigned volume)
 			|| success;
 
 	return success;
+}
+
+static int
+output_mixer_get_software_volume(unsigned i)
+{
+	struct audio_output *output;
+	struct mixer *mixer;
+
+	assert(i < audio_output_count());
+
+	output = audio_output_get(i);
+	if (!output->enabled)
+		return -1;
+
+	mixer = output->mixer;
+	if (mixer == NULL || mixer->plugin != &software_mixer_plugin)
+		return -1;
+
+	return mixer_get_volume(mixer);
+}
+
+int
+mixer_all_get_software_volume(void)
+{
+	unsigned count = audio_output_count(), ok = 0;
+	int volume, total = 0;
+
+	for (unsigned i = 0; i < count; i++) {
+		volume = output_mixer_get_software_volume(i);
+		if (volume >= 0) {
+			total += volume;
+			++ok;
+		}
+	}
+
+	if (ok == 0)
+		return -1;
+
+	return total / ok;
+}
+
+void
+mixer_all_set_software_volume(unsigned volume)
+{
+	unsigned count = audio_output_count();
+
+	assert(volume <= PCM_VOLUME_1);
+
+	for (unsigned i = 0; i < count; i++) {
+		struct audio_output *output = audio_output_get(i);
+		if (output->mixer != NULL &&
+		    output->mixer->plugin == &software_mixer_plugin)
+			mixer_set_volume(output->mixer, volume);
+	}
 }
