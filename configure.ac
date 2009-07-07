@@ -470,6 +470,27 @@ AC_ARG_ENABLE(vorbis,
 		[disable Ogg Vorbis support (default: enable)]),,
 	enable_vorbis=yes)
 
+AC_ARG_ENABLE(sndfile,
+	AS_HELP_STRING([--enable-sndfile],
+		[enable sndfile support]),,
+	enable_sndfile=auto)
+
+if test x$enable_sndfile = xauto && test x$enable_modplug = xyes; then
+	dnl If modplug is enabled, enable sndfile only if explicitly
+	dnl requested - modplug's modplug/sndfile.h is known to
+	dnl conflict with libsndfile's sndfile.h.
+	AC_MSG_NOTICE([disabling libsndfile auto-detection, because the modplug decoder is enabled])
+	enable_sndfile=no
+fi
+
+MPD_AUTO_PKG(sndfile, SNDFILE, [sndfile],
+	[libsndfile decoder plugin], [libsndfile not found])
+AM_CONDITIONAL(ENABLE_SNDFILE, test x$enable_sndfile = xyes)
+if test x$enable_sndfile = xyes; then
+	AC_DEFINE(ENABLE_SNDFILE, 1, [Define to enable the sndfile decoder plugin])
+fi
+
+
 dnl ###
 dnl Ogg Tremor
 dnl ###
@@ -1380,6 +1401,12 @@ else
 	echo " Ogg Vorbis support ............disabled"
 fi
 
+if test x$enable_sndfile = xyes; then
+	echo " libsndfile ....................enabled"
+else
+	echo " libsndfile ....................disabled"
+fi
+
 if test x$enable_audiofile = xyes; then
 	echo " Wave file support .............enabled"
 else
@@ -1491,6 +1518,11 @@ fi
 echo ""
 echo "##########################################"
 echo ""
+
+if test x$enable_sndfile = xyes && test x$enable_modplug = xyes; then
+	AC_MSG_WARN([compilation may fail, because libmodplug conflicts with libsndfile])
+	AC_MSG_WARN([libmodplug ships modplug/sndfile.h, which hides libsndfile's sndfile.h])
+fi
 
 echo "Generating needed files for compilation"
 echo ""

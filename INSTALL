@@ -104,6 +104,9 @@ For MIDI support (DO NOT USE - use libwildmidi instead)
 libwildmidi - http://wildmidi.sourceforge.net/
 For MIDI support.
 
+libsndfile - http://www.mega-nerd.com/libsndfile/
+WAVE, AIFF, and many others.
+
 
 Optional Miscellaneous Dependencies
 -----------------------------------

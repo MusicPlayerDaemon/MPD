@@ -8,6 +8,7 @@ ver 0.16 (20??/??/??)
   - id3: revised "performer" tag support
 * decoders:
   - ffmpeg: support multiple tags
+  - sndfile: new decoder plugin based on libsndfile
 * mixers:
   - removed support for legacy mixer configuration
   - reimplemented software volume as mixer+filter plugin

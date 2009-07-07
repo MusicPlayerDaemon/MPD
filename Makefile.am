@@ -325,6 +325,7 @@ endif
 DECODER_CFLAGS = \
 	$(VORBIS_CFLAGS) $(TREMOR_CFLAGS) \
 	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
+	$(SNDFILE_CFLAGS) \
 	$(AUDIOFILE_CFLAGS) \
 	$(LIBMIKMOD_CFLAGS) \
 	$(MODPLUG_CFLAGS) \
@@ -338,6 +339,7 @@ DECODER_CFLAGS = \
 DECODER_LIBS = \
 	$(VORBIS_LIBS) $(TREMOR_LIBS) \
 	$(FLAC_LIBS) \
+	$(SNDFILE_LIBS) \
 	$(AUDIOFILE_LIBS) $(LIBMIKMOD_LIBS) \
 	$(MODPLUG_LIBS) \
 	$(SIDPLAY_LIBS) \
@@ -418,6 +420,10 @@ endif
 
 if HAVE_FFMPEG
 DECODER_SRC += src/decoder/ffmpeg_plugin.c
+endif
+
+if ENABLE_SNDFILE
+DECODER_SRC += src/decoder/sndfile_decoder_plugin.c
 endif
 
 # encoder plugins

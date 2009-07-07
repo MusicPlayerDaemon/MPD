@@ -31,6 +31,7 @@ extern const struct decoder_plugin mad_decoder_plugin;
 extern const struct decoder_plugin vorbis_decoder_plugin;
 extern const struct decoder_plugin flac_decoder_plugin;
 extern const struct decoder_plugin oggflac_decoder_plugin;
+extern const struct decoder_plugin sndfile_decoder_plugin;
 extern const struct decoder_plugin audiofile_decoder_plugin;
 extern const struct decoder_plugin mp4ff_decoder_plugin;
 extern const struct decoder_plugin faad_decoder_plugin;
@@ -55,6 +56,9 @@ static const struct decoder_plugin *const decoder_plugins[] = {
 #endif
 #ifdef HAVE_FLAC
 	&flac_decoder_plugin,
+#endif
+#ifdef ENABLE_SNDFILE
+	&sndfile_decoder_plugin,
 #endif
 #ifdef HAVE_AUDIOFILE
 	&audiofile_decoder_plugin,
