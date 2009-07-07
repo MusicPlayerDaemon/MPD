@@ -5,6 +5,7 @@ ver 0.16 (20??/??/??)
   - removed the deprecated "volume" command
 * tags:
   - added tag "AlbumArtistSort"
+  - id3: revised "performer" tag support
 * decoders:
   - ffmpeg: support multiple tags
 * mixers:
