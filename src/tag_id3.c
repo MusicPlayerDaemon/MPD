@@ -237,6 +237,7 @@ tag_id3_parse_txxx_name(const char *name)
 		enum tag_type type;
 		const char *name;
 	} musicbrainz_txxx[] = {
+		{ TAG_ALBUM_ARTIST_SORT, "ALBUMARTISTSORT" },
 		{ TAG_MUSICBRAINZ_ARTISTID, "MusicBrainz Artist Id" },
 		{ TAG_MUSICBRAINZ_ALBUMID, "MusicBrainz Album Id" },
 		{ TAG_MUSICBRAINZ_ALBUMARTISTID,
@@ -332,7 +333,7 @@ struct tag *tag_id3_import(struct id3_tag * tag)
 	getID3Info(tag, ID3_FRAME_ALBUM_ARTIST,
 		   TAG_ITEM_ALBUM_ARTIST, ret);
 	getID3Info(tag, ID3_FRAME_ALBUM_ARTIST_SORT,
-		   TAG_ITEM_ALBUM_ARTIST, ret);
+		   TAG_ALBUM_ARTIST_SORT, ret);
 	getID3Info(tag, ID3_FRAME_TITLE, TAG_ITEM_TITLE, ret);
 	getID3Info(tag, ID3_FRAME_ALBUM, TAG_ITEM_ALBUM, ret);
 	getID3Info(tag, ID3_FRAME_TRACK, TAG_ITEM_TRACK, ret);
