@@ -9,6 +9,7 @@ ver 0.16 (20??/??/??)
 * decoders:
   - ffmpeg: support multiple tags
   - sndfile: new decoder plugin based on libsndfile
+  - flac: load external cue sheet when no internal one
 * mixers:
   - removed support for legacy mixer configuration
   - reimplemented software volume as mixer+filter plugin

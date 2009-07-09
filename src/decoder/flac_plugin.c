@@ -300,6 +300,8 @@ flac_cue_tag_load(const char *file)
 	FLAC__uint64 track_time = 0;
 #ifdef HAVE_CUE /* libcue */
 	FLAC__StreamMetadata* vc = FLAC__metadata_object_new(FLAC__METADATA_TYPE_VORBIS_COMMENT);
+	char* cs_filename;
+	FILE* cs_file;
 #endif /* libcue */
 	FLAC__StreamMetadata* si = FLAC__metadata_object_new(FLAC__METADATA_TYPE_STREAMINFO);
 	FLAC__StreamMetadata* cs = FLAC__metadata_object_new(FLAC__METADATA_TYPE_CUESHEET);
@@ -327,6 +329,18 @@ flac_cue_tag_load(const char *file)
 			}
 		}
 		FLAC__metadata_object_delete(vc);
+	}
+
+	if (tag == NULL) {
+		cs_filename = g_strconcat(file, ".cue", NULL);
+
+		cs_file = fopen(cs_filename, "rt");
+		g_free(cs_filename);
+
+		if (cs_file != NULL) {
+			tag = cue_tag_file(cs_file, tnum);
+			fclose(cs_file);
+		}
 	}
 #endif /* libcue */
 
