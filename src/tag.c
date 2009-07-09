@@ -43,6 +43,7 @@ static struct {
 
 const char *tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
 	"Artist",
+	[TAG_ARTIST_SORT] = "ArtistSort",
 	"Album",
 	"AlbumArtist",
 	[TAG_ALBUM_ARTIST_SORT] = "AlbumArtistSort",

@@ -42,8 +42,12 @@
 #    define ID3_FRAME_DISC "TPOS"
 #  endif
 
+#ifndef ID3_FRAME_ARTIST_SORT
+#define ID3_FRAME_ARTIST_SORT "TSOP"
+#endif
+
 #ifndef ID3_FRAME_ALBUM_ARTIST_SORT
-#define ID3_FRAME_ALBUM_ARTIST_SORT "TSO2"
+#define ID3_FRAME_ALBUM_ARTIST_SORT "TSO2" /* this one is unofficial, introduced by Itunes */
 #endif
 
 #ifndef ID3_FRAME_ALBUM_ARTIST
@@ -329,6 +333,8 @@ struct tag *tag_id3_import(struct id3_tag * tag)
 	getID3Info(tag, ID3_FRAME_ARTIST, TAG_ITEM_ARTIST, ret);
 	getID3Info(tag, ID3_FRAME_ALBUM_ARTIST,
 		   TAG_ITEM_ALBUM_ARTIST, ret);
+	getID3Info(tag, ID3_FRAME_ARTIST_SORT,
+		   TAG_ARTIST_SORT, ret);
 	getID3Info(tag, ID3_FRAME_ALBUM_ARTIST_SORT,
 		   TAG_ALBUM_ARTIST_SORT, ret);
 	getID3Info(tag, ID3_FRAME_TITLE, TAG_ITEM_TITLE, ret);
