@@ -1,5 +1,5 @@
 ver 0.15.1 (2009/??/??)
-* dcecoders:
+* decoders:
   - flac: fix assertion failure in tag_free() call
 * output:
   - httpd: include sys/types.h (fixes Mac OS X)
