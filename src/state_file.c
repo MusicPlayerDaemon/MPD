@@ -30,15 +30,6 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "state_file"
 
-static struct _sf_cb {
-	void (*reader)(FILE *);
-	void (*writer)(FILE *);
-} sf_callbacks [] = {
-	{ read_sw_volume_state, save_sw_volume_state },
-	{ readAudioDevicesState, saveAudioDevicesState },
-	{ readPlaylistState, savePlaylistState },
-};
-
 static char *state_file_path;
 
 /** the GLib source id for the save timer */
@@ -47,7 +38,6 @@ static guint save_state_source_id;
 static void
 state_file_write(void)
 {
-	unsigned int i;
 	FILE *fp;
 
 	if (state_file_path == NULL)
@@ -60,8 +50,9 @@ state_file_write(void)
 		return;
 	}
 
-	for (i = 0; i < G_N_ELEMENTS(sf_callbacks); i++)
-		sf_callbacks[i].writer(fp);
+	save_sw_volume_state(fp);
+	saveAudioDevicesState(fp);
+	savePlaylistState(fp);
 
 	while(fclose(fp) && errno == EINTR) /* nothing */;
 }
@@ -69,7 +60,6 @@ state_file_write(void)
 static void
 state_file_read(void)
 {
-	unsigned int i;
 	FILE *fp;
 
 	assert(state_file_path != NULL);
@@ -82,10 +72,12 @@ state_file_read(void)
 			  state_file_path, strerror(errno));
 		return;
 	}
-	for (i = 0; i < G_N_ELEMENTS(sf_callbacks); i++) {
-		sf_callbacks[i].reader(fp);
-		rewind(fp);
-	}
+
+	read_sw_volume_state(fp);
+	rewind(fp);
+	readAudioDevicesState(fp);
+	rewind(fp);
+	readPlaylistState(fp);
 
 	while(fclose(fp) && errno == EINTR) /* nothing */;
 }
