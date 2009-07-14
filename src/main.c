@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
 	path_global_init();
 	mapper_init();
 	initPermissions();
-	initPlaylist();
+	playlist_global_init();
 	spl_global_init();
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_init_all();
@@ -344,7 +344,7 @@ int main(int argc, char *argv[])
 	finishZeroconf();
 	client_manager_deinit();
 	listen_global_finish();
-	finishPlaylist();
+	playlist_global_finish();
 
 	start = clock();
 	db_finish();

@@ -849,7 +849,7 @@ static void song_delete_event(void)
 		sticker_song_delete(delete);
 #endif
 
-	deleteASongFromPlaylist(&g_playlist, delete);
+	playlist_delete_song(&g_playlist, delete);
 	delete = NULL;
 
 	notify_signal(&update_notify);

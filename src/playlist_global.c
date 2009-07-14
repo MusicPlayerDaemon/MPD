@@ -40,7 +40,8 @@ playlist_event(void)
 	syncPlayerAndPlaylist(&g_playlist);
 }
 
-void initPlaylist(void)
+void
+playlist_global_init(void)
 {
 	playlist_init(&g_playlist);
 
@@ -48,7 +49,8 @@ void initPlaylist(void)
 	event_pipe_register(PIPE_EVENT_PLAYLIST, playlist_event);
 }
 
-void finishPlaylist(void)
+void
+playlist_global_finish(void)
 {
 	playlist_finish(&g_playlist);
 }

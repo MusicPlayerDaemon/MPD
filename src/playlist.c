@@ -109,7 +109,7 @@ static void syncPlaylistWithQueue(struct playlist *playlist)
 		playlist->queued = -1;
 
 		if(playlist->queue.consume)
-			deleteFromPlaylist(playlist, queue_order_to_position(&playlist->queue, current));
+			playlist_delete(playlist, queue_order_to_position(&playlist->queue, current));
 
 		idle_add(IDLE_PLAYER);
 	}

@@ -183,7 +183,7 @@ nextSongInPlaylist(struct playlist *playlist)
 
 	/* Consume mode removes each played songs. */
 	if(playlist->queue.consume)
-		deleteFromPlaylist(playlist, queue_order_to_position(&playlist->queue, current));
+		playlist_delete(playlist, queue_order_to_position(&playlist->queue, current));
 }
 
 void previousSongInPlaylist(struct playlist *playlist)
