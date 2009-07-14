@@ -618,6 +618,11 @@ AC_ARG_ENABLE(lame-encoder,
 		[enable the LAME mp3 encoder]),,
 	enable_lame_encoder=auto)
 
+AC_ARG_ENABLE(twolame-encoder,
+	AS_HELP_STRING([--enable-twolame-encoder],
+		[enable the TwoLAME mp2 encoder]),,
+	enable_twolame_encoder=auto)
+
 
 dnl
 dnl audio output plugins
@@ -1002,6 +1007,7 @@ else
 	# don't bother to check for encoder plugins
 	enable_vorbis_encoder=no
 	enable_lame_encoder=no
+	enable_twolame_encoder=no
 fi
 
 MPD_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc],
@@ -1016,8 +1022,12 @@ fi
 AC_SUBST(LAME_CFLAGS)
 AC_SUBST(LAME_LIBS)
 
+MPD_AUTO_PKG(twolame_encoder, TWOLAME, [twolame],
+	[TwoLAME encoder], [libtwolame not found])
+
 if test x$enable_vorbis_encoder != xno ||
-	test x$enable_lame_encoder != xno; then
+	test x$enable_lame_encoder != xno ||
+	test x$enable_twolame_encoder != xno; then
 	# at least one encoder plugin is enabled
 	enable_encoder=yes
 else
@@ -1074,6 +1084,12 @@ AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_lame_encoder = xyes)
 if test x$enable_lame_encoder = xyes; then
 	AC_DEFINE(ENABLE_LAME_ENCODER, 1,
 		[Define to enable the lame encoder plugin])
+fi
+
+AM_CONDITIONAL(ENABLE_TWOLAME_ENCODER, test x$enable_twolame_encoder = xyes)
+if test x$enable_twolame_encoder = xyes; then
+	AC_DEFINE(ENABLE_TWOLAME_ENCODER, 1,
+		[Define to enable the TwoLAME encoder plugin])
 fi
 
 
@@ -1305,6 +1321,13 @@ if
 		else
 			echo " Ogg Vorbis encoder ............disabled"
 		fi
+
+		if test x$enable_twolame_encoder = xyes; then
+			echo " TwoLAME mp3 encoder ...........enabled"
+		else
+			echo " TwoLAME mp3 encoder ...........disabled"
+		fi
+
 		echo ""
 fi
 
