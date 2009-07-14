@@ -829,11 +829,8 @@ AM_CONDITIONAL(HAVE_MPCDEC, test x$enable_mpc = xyes)
 
 if test x$enable_wavpack = xyes; then
 	PKG_CHECK_MODULES([WAVPACK], [wavpack],
-		[enable_wavpack=yes;
-			AC_DEFINE([HAVE_WAVPACK], 1,
-				[Define to enable WavPack support])]
-		MPD_LIBS="$MPD_LIBS $WAVPACK_LIBS"
-		MPD_CFLAGS="$MPD_CFLAGS $WAVPACK_CFLAGS",
+		[AC_DEFINE([HAVE_WAVPACK], 1,
+			[Define to enable WavPack support])],
 		enable_wavpack=no)
 fi
 
