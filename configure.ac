@@ -389,12 +389,17 @@ dnl
 dnl decoder plugins
 dnl
 
-
-
 AC_ARG_ENABLE(audiofile,
-	AS_HELP_STRING([--disable-audiofile],
-		[disable audiofile support, disables wave support (default: enable)]),,
+	AS_HELP_STRING([--enable-audiofile],
+		[enable audiofile support, disables wave support]),,
 	enable_audiofile=yes)
+
+MPD_AUTO_PKG(audiofile, AUDIOFILE, [audiofile >= 0.1.7],
+	[audiofile decoder plugin], [libaudiofile not found])
+AM_CONDITIONAL(HAVE_AUDIOFILE, test x$enable_audiofile = xyes)
+if test x$enable_audiofile = xyes; then
+	AC_DEFINE(HAVE_AUDIOFILE, 1, [Define for audiofile support])
+fi
 
 AC_ARG_ENABLE(ffmpeg,
 	AS_HELP_STRING([--disable-ffmpeg],
@@ -561,9 +566,16 @@ AC_ARG_ENABLE(wildmidi,
 	enable_wildmidi=no)
 
 AC_ARG_ENABLE(wavpack,
-	AS_HELP_STRING([--disable-wavpack],
-		[disable WavPack support (default: enable)]),,
-	enable_wavpack=yes)
+	AS_HELP_STRING([--enable-wavpack],
+		[enable WavPack support]),,
+	enable_wavpack=auto)
+
+MPD_AUTO_PKG(wavpack, WAVPACK, [wavpack],
+	[WavPack decoder plugin], [libwavpack not found])
+AM_CONDITIONAL(HAVE_WAVPACK, test x$enable_wavpack = xyes)
+if test x$enable_wavpack = xyes; then
+	AC_DEFINE([HAVE_WAVPACK], 1, [Define to enable WavPack support])
+fi
 
 
 dnl
@@ -827,15 +839,6 @@ fi
 
 AM_CONDITIONAL(HAVE_MPCDEC, test x$enable_mpc = xyes)
 
-if test x$enable_wavpack = xyes; then
-	PKG_CHECK_MODULES([WAVPACK], [wavpack],
-		[AC_DEFINE([HAVE_WAVPACK], 1,
-			[Define to enable WavPack support])],
-		enable_wavpack=no)
-fi
-
-AM_CONDITIONAL(HAVE_WAVPACK, test x$enable_wavpack = xyes)
-
 AM_PATH_FAAD()
 
 AM_CONDITIONAL(HAVE_FAAD, test x$enable_aac = xyes)
@@ -923,14 +926,6 @@ AM_CONDITIONAL(HAVE_FLAC_COMMON,
 	  test x$enable_flac = xyes || test x$enable_oggflac = xyes)
 AM_CONDITIONAL(HAVE_OGG_COMMON,
 	  test x$enable_vorbis = xyes || test x$enable_oggflac = xyes || test x$enable_flac = xyes)
-
-if test x$enable_audiofile = xyes; then
-	PKG_CHECK_MODULES(AUDIOFILE, [audiofile >= 0.1.7],
-		AC_DEFINE(HAVE_AUDIOFILE, 1, [Define for audiofile support]),
-		enable_audiofile=no)
-fi
-
-AM_CONDITIONAL(HAVE_AUDIOFILE, test x$enable_audiofile = xyes)
 
 if test x$enable_ffmpeg = xyes; then
 	PKG_CHECK_MODULES(FFMPEG, [libavformat libavcodec libavutil],,
