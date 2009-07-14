@@ -34,10 +34,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-#ifdef HAVE_OSX
-#include <sys/types.h>
-#endif
-
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "httpd_output"
 
