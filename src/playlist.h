@@ -23,7 +23,6 @@
 #include "queue.h"
 
 #include <stdbool.h>
-#include <stdio.h>
 
 #define PLAYLIST_COMMENT	'#'
 
@@ -115,10 +114,6 @@ playlist_get_queue(const struct playlist *playlist)
 {
 	return &playlist->queue;
 }
-
-void readPlaylistState(FILE *);
-
-void savePlaylistState(FILE *);
 
 void clearPlaylist(struct playlist *playlist);
 

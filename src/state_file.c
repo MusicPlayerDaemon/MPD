@@ -20,6 +20,7 @@
 #include "state_file.h"
 #include "output_state.h"
 #include "playlist.h"
+#include "playlist_state.h"
 #include "volume.h"
 
 #include <glib.h>
@@ -52,7 +53,7 @@ state_file_write(void)
 
 	save_sw_volume_state(fp);
 	saveAudioDevicesState(fp);
-	savePlaylistState(fp);
+	playlist_state_save(fp, &g_playlist);
 
 	while(fclose(fp) && errno == EINTR) /* nothing */;
 }
@@ -77,7 +78,7 @@ state_file_read(void)
 	rewind(fp);
 	readAudioDevicesState(fp);
 	rewind(fp);
-	readPlaylistState(fp);
+	playlist_state_restore(fp, &g_playlist);
 
 	while(fclose(fp) && errno == EINTR) /* nothing */;
 }

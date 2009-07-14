@@ -52,13 +52,3 @@ void finishPlaylist(void)
 {
 	playlist_finish(&g_playlist);
 }
-
-void savePlaylistState(FILE *fp)
-{
-	playlist_state_save(fp, &g_playlist);
-}
-
-void readPlaylistState(FILE *fp)
-{
-	playlist_state_restore(fp, &g_playlist);
-}
