@@ -77,7 +77,7 @@ static const char *summary =
 	"Music Player Daemon - a daemon for playing music.";
 #endif
 
-void parseOptions(int argc, char **argv, Options *options)
+void parse_cmdline(int argc, char **argv, struct options *options)
 {
 	GError *error = NULL;
 	GOptionContext *context;
@@ -96,7 +96,7 @@ void parseOptions(int argc, char **argv, Options *options)
 		  "don't create database, even if it doesn't exist", NULL },
 		{ "no-daemon", 0, 0, G_OPTION_ARG_NONE, &option_no_daemon,
 		  "don't detach from console", NULL },
-		{ "stdout", 0, 0, G_OPTION_ARG_NONE, &options->stdOutput,
+		{ "stdout", 0, 0, G_OPTION_ARG_NONE, &options->stderr,
 		  "print messages to stderr", NULL },
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &options->verbose,
 		  "verbose logging", NULL },
@@ -107,9 +107,9 @@ void parseOptions(int argc, char **argv, Options *options)
 
 	options->kill = false;
 	options->daemon = true;
-	options->stdOutput = false;
+	options->stderr = false;
 	options->verbose = false;
-	options->createDB = 0;
+	options->create_db = 0;
 
 	context = g_option_context_new("[path/to/mpd.conf]");
 	g_option_context_add_main_entries(context, entries, NULL);
@@ -137,9 +137,9 @@ void parseOptions(int argc, char **argv, Options *options)
 		g_error("Cannot use both --create-db and --no-create-db\n");
 
 	if (option_no_create_db)
-		options->createDB = -1;
+		options->create_db = -1;
 	else if (option_create_db)
-		options->createDB = 1;
+		options->create_db = 1;
 
 	options->daemon = !option_no_daemon;
 

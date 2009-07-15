@@ -22,14 +22,14 @@
 
 #include <glib.h>
 
-typedef struct _Options {
+struct options {
 	gboolean kill;
 	gboolean daemon;
-	gboolean stdOutput;
+	gboolean stderr;
 	gboolean verbose;
-	int createDB;
-} Options;
+	int create_db;
+};
 
-void parseOptions(int argc, char **argv, Options *options);
+void parse_cmdline(int argc, char **argv, struct options *options);
 
 #endif

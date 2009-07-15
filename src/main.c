@@ -96,7 +96,7 @@ struct notify main_notify;
  * process has been daemonized.
  */
 static bool
-openDB(const Options *options)
+openDB(const struct options *options)
 {
 	const char *path = config_get_path(CONF_DB_FILE);
 	bool ret;
@@ -115,7 +115,7 @@ openDB(const Options *options)
 
 	db_init(path);
 
-	if (options->createDB > 0)
+	if (options->create_db > 0)
 		/* don't attempt to load the old database */
 		return false;
 
@@ -124,7 +124,7 @@ openDB(const Options *options)
 		g_warning("Failed to load database: %s", error->message);
 		g_error_free(error);
 
-		if (options->createDB < 0)
+		if (options->create_db < 0)
 			g_error("can't open db file and using "
 				"\"--no-create-db\" command line option");
 
@@ -228,7 +228,7 @@ idle_event_emitted(void)
 
 int main(int argc, char *argv[])
 {
-	Options options;
+	struct options options;
 	clock_t start;
 	bool create_db;
 #ifdef ENABLE_SQLITE
@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
 	tag_pool_init();
 	config_global_init();
 
-	parseOptions(argc, argv, &options);
+	parse_cmdline(argc, argv, &options);
 
 	daemonize_init(config_get_string(CONF_USER, NULL),
 		       config_get_path(CONF_PID_FILE));
@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
 
 	stats_global_init();
 	tag_lib_init();
-	log_init(options.verbose, options.stdOutput);
+	log_init(options.verbose, options.stderr);
 
 	listen_global_init();
 
@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
 
 	daemonize(options.daemon);
 
-	setup_log_output(options.stdOutput);
+	setup_log_output(options.stderr);
 
 	initSigHandlers();
 
