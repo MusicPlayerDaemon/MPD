@@ -115,8 +115,8 @@ playlist_state_load(FILE *fp, struct playlist *playlist, char *buffer)
 	queue_increment_version(&playlist->queue);
 }
 
-void
-playlist_state_restore(FILE *fp, struct playlist *playlist)
+bool
+playlist_state_restore(const char *line, FILE *fp, struct playlist *playlist)
 {
 	int current = -1;
 	int seek_time = 0;
@@ -124,21 +124,20 @@ playlist_state_restore(FILE *fp, struct playlist *playlist)
 	char buffer[PLAYLIST_BUFFER_SIZE];
 	bool random_mode = false;
 
+	if (!g_str_has_prefix(line, PLAYLIST_STATE_FILE_STATE))
+		return false;
+
+	line += sizeof(PLAYLIST_STATE_FILE_STATE) - 1;
+
+	if (strcmp(line, PLAYLIST_STATE_FILE_STATE_PLAY) == 0)
+		state = PLAYER_STATE_PLAY;
+	else if (strcmp(line, PLAYLIST_STATE_FILE_STATE_PAUSE) == 0)
+		state = PLAYER_STATE_PAUSE;
+
 	while (fgets(buffer, sizeof(buffer), fp)) {
 		g_strchomp(buffer);
 
-		if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_STATE)) {
-			if (strcmp(&(buffer[strlen(PLAYLIST_STATE_FILE_STATE)]),
-				   PLAYLIST_STATE_FILE_STATE_PLAY) == 0) {
-				state = PLAYER_STATE_PLAY;
-			} else
-			    if (strcmp
-				(&(buffer[strlen(PLAYLIST_STATE_FILE_STATE)]),
-				 PLAYLIST_STATE_FILE_STATE_PAUSE)
-				== 0) {
-				state = PLAYER_STATE_PAUSE;
-			}
-		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_TIME)) {
+		if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_TIME)) {
 			seek_time =
 			    atoi(&(buffer[strlen(PLAYLIST_STATE_FILE_TIME)]));
 		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_REPEAT)) {
@@ -198,4 +197,6 @@ playlist_state_restore(FILE *fp, struct playlist *playlist)
 		if (state == PLAYER_STATE_PAUSE)
 			playerPause();
 	}
+
+	return true;
 }

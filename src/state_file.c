@@ -63,6 +63,8 @@ static void
 state_file_read(void)
 {
 	FILE *fp;
+	char line[1024];
+	bool success;
 
 	assert(state_file_path != NULL);
 
@@ -75,11 +77,15 @@ state_file_read(void)
 		return;
 	}
 
-	read_sw_volume_state(fp);
-	rewind(fp);
-	readAudioDevicesState(fp);
-	rewind(fp);
-	playlist_state_restore(fp, &g_playlist);
+	while (fgets(line, sizeof(line), fp) != NULL) {
+		g_strchomp(line);
+
+		success = read_sw_volume_state(line) ||
+			readAudioDevicesState(line) ||
+			playlist_state_restore(line, fp, &g_playlist);
+		if (!success)
+			g_warning("Unrecognized line in state file: %s", line);
+	}
 
 	while(fclose(fp) && errno == EINTR) /* nothing */;
 }

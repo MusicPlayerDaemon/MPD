@@ -25,10 +25,11 @@
 #ifndef OUTPUT_STATE_H
 #define OUTPUT_STATE_H
 
+#include <stdbool.h>
 #include <stdio.h>
 
-void
-readAudioDevicesState(FILE *fp);
+bool
+readAudioDevicesState(const char *line);
 
 void
 saveAudioDevicesState(FILE *fp);

@@ -25,6 +25,7 @@
 #ifndef PLAYLIST_STATE_H
 #define PLAYLIST_STATE_H
 
+#include <stdbool.h>
 #include <stdio.h>
 
 struct playlist;
@@ -32,7 +33,7 @@ struct playlist;
 void
 playlist_state_save(FILE *fp, const struct playlist *playlist);
 
-void
-playlist_state_restore(FILE *fp, struct playlist *playlist);
+bool
+playlist_state_restore(const char *line, FILE *fp, struct playlist *playlist);
 
 #endif

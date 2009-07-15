@@ -49,35 +49,34 @@ saveAudioDevicesState(FILE *fp)
 	}
 }
 
-void
-readAudioDevicesState(FILE *fp)
+bool
+readAudioDevicesState(const char *line)
 {
-	char buffer[1024];
+	long value;
+	char *endptr;
+	const char *name;
+	struct audio_output *ao;
 
-	while (fgets(buffer, sizeof(buffer), fp)) {
-		char *c, *name;
-		struct audio_output *ao;
+	if (!g_str_has_prefix(line, AUDIO_DEVICE_STATE))
+		return false;
 
-		g_strchomp(buffer);
+	line += sizeof(AUDIO_DEVICE_STATE) - 1;
 
-		if (!g_str_has_prefix(buffer, AUDIO_DEVICE_STATE))
-			continue;
+	value = strtol(line, &endptr, 10);
+	if (*endptr != ':' || (value != 0 && value != 1))
+		return false;
 
-		c = strchr(buffer, ':');
-		if (!c || !(++c))
-			goto errline;
+	if (value != 0)
+		/* state is "enabled": no-op */
+		return true;
 
-		name = strchr(c, ':');
-		if (!name || !(++name))
-			goto errline;
-
-		ao = audio_output_find(name);
-		if (ao != NULL && atoi(c) == 0)
-			ao->enabled = false;
-
-		continue;
-errline:
-		/* nonfatal */
-		g_warning("invalid line in state_file: %s\n", buffer);
+	name = endptr + 1;
+	ao = audio_output_find(name);
+	if (ao == NULL) {
+		g_debug("Ignoring device state for '%s'", name);
+		return true;
 	}
+
+	ao->enabled = false;
+	return true;
 }

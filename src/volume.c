@@ -100,24 +100,22 @@ bool volume_level_change(unsigned volume)
 	return hardware_volume_change(volume);
 }
 
-void read_sw_volume_state(FILE *fp)
+bool
+read_sw_volume_state(const char *line)
 {
-	char buf[sizeof(SW_VOLUME_STATE) + sizeof("100") - 1];
 	char *end = NULL;
 	long int sv;
 
-	while (fgets(buf, sizeof(buf), fp)) {
-		if (!g_str_has_prefix(buf, SW_VOLUME_STATE))
-			continue;
+	if (!g_str_has_prefix(line, SW_VOLUME_STATE))
+		return false;
 
-		g_strchomp(buf);
-		sv = strtol(buf + strlen(SW_VOLUME_STATE), &end, 10);
-		if (G_LIKELY(!*end) && sv >= 0 && sv <= 100)
-			software_volume_change(sv);
-		else
-			g_warning("Can't parse software volume: %s\n", buf);
-		return;
-	}
+	line += sizeof(SW_VOLUME_STATE) - 1;
+	sv = strtol(line, &end, 10);
+	if (*end == 0 && sv >= 0 && sv <= 100)
+		software_volume_change(sv);
+	else
+		g_warning("Can't parse software volume: %s\n", line);
+	return true;
 }
 
 void save_sw_volume_state(FILE *fp)
