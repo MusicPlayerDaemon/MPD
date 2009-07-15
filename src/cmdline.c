@@ -97,6 +97,8 @@ void parse_cmdline(int argc, char **argv, struct options *options)
 		{ "no-daemon", 0, 0, G_OPTION_ARG_NONE, &option_no_daemon,
 		  "don't detach from console", NULL },
 		{ "stdout", 0, 0, G_OPTION_ARG_NONE, &options->stderr,
+		  NULL, NULL },
+		{ "stderr", 0, 0, G_OPTION_ARG_NONE, &options->stderr,
 		  "print messages to stderr", NULL },
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &options->verbose,
 		  "verbose logging", NULL },

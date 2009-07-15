@@ -20,6 +20,7 @@ ver 0.16 (20??/??/??)
   - added new "status" line with more precise "elapsed time"
 * log unused/unknown block parameters
 * save state when stopped
+* renamed option "--stdout" to "--stderr"
 
 
 ver 0.15 (2009/06/23)
