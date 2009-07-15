@@ -44,6 +44,8 @@ state_file_write(void)
 	if (state_file_path == NULL)
 		return;
 
+	g_debug("Saving state file %s", state_file_path);
+
 	fp = fopen(state_file_path, "w");
 	if (G_UNLIKELY(!fp)) {
 		g_warning("failed to create %s: %s",
@@ -65,7 +67,7 @@ state_file_read(void)
 
 	assert(state_file_path != NULL);
 
-	g_debug("Saving state file");
+	g_debug("Loading state file %s", state_file_path);
 
 	fp = fopen(state_file_path, "r");
 	if (G_UNLIKELY(!fp)) {
