@@ -96,7 +96,7 @@ struct notify main_notify;
  * process has been daemonized.
  */
 static bool
-openDB(const struct options *options)
+glue_db_init_and_load(const struct options *options)
 {
 	const char *path = config_get_path(CONF_DB_FILE);
 	bool ret;
@@ -289,7 +289,7 @@ int main(int argc, char *argv[])
 	decoder_plugin_init_all();
 	update_global_init();
 
-	create_db = !openDB(&options);
+	create_db = !glue_db_init_and_load(&options);
 
 #ifdef ENABLE_SQLITE
 	success = sticker_global_init(config_get_path(CONF_STICKER_FILE),
