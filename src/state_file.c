@@ -41,8 +41,7 @@ state_file_write(void)
 {
 	FILE *fp;
 
-	if (state_file_path == NULL)
-		return;
+	assert(state_file_path != NULL);
 
 	g_debug("Saving state file %s", state_file_path);
 
@@ -114,11 +113,14 @@ state_file_init(const char *path)
 void
 state_file_finish(void)
 {
+	if (state_file_path == NULL)
+		/* no state file configured, no cleanup required */
+		return;
+
 	if (save_state_source_id != 0)
 		g_source_remove(save_state_source_id);
 
-	if (state_file_path != NULL)
-		state_file_write();
+	state_file_write();
 
 	g_free(state_file_path);
 }
