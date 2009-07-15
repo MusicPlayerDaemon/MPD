@@ -186,7 +186,7 @@ static struct tag *mod_tagdup(const char *file)
 		return NULL;
         }
 	ret = tag_new();
-	ret->time = 0;
+	ret->time = ModPlug_GetLength(f) / 1000;
 
 	title = g_strdup(ModPlug_GetName(f));
 	if (title)
