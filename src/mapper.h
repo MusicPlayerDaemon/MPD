@@ -31,7 +31,7 @@
 struct directory;
 struct song;
 
-void mapper_init(void);
+void mapper_init(const char *_music_dir, const char *_playlist_dir);
 
 void mapper_finish(void);
 

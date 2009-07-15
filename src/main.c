@@ -100,6 +100,22 @@ glue_daemonize_init(const struct options *options)
 		daemonize_kill();
 }
 
+static void
+glue_mapper_init(void)
+{
+	const char *music_dir, *playlist_dir;
+
+	music_dir = config_get_path(CONF_MUSIC_DIR);
+#if GLIB_CHECK_VERSION(2,14,0)
+	if (music_dir == NULL)
+		music_dir = g_get_user_special_dir(G_USER_DIRECTORY_MUSIC);
+#endif
+
+	playlist_dir = config_get_path(CONF_PLAYLIST_DIR);
+
+	mapper_init(music_dir, playlist_dir);
+}
+
 /**
  * Returns the database.  If this function returns false, this has not
  * succeeded, and the caller should create the database after the
@@ -304,7 +320,7 @@ int main(int argc, char *argv[])
 	event_pipe_register(PIPE_EVENT_IDLE, idle_event_emitted);
 
 	path_global_init();
-	mapper_init();
+	glue_mapper_init();
 	initPermissions();
 	playlist_global_init();
 	spl_global_init();

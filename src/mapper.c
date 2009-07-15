@@ -25,7 +25,6 @@
 #include "directory.h"
 #include "song.h"
 #include "path.h"
-#include "conf.h"
 
 #include <glib.h>
 
@@ -90,24 +89,13 @@ mapper_set_playlist_dir(const char *path)
 			  playlist_dir);
 }
 
-void mapper_init(void)
+void mapper_init(const char *_music_dir, const char *_playlist_dir)
 {
-	const char *path;
+	if (_music_dir != NULL)
+		mapper_set_music_dir(_music_dir);
 
-	path = config_get_path(CONF_MUSIC_DIR);
-	if (path != NULL)
-		mapper_set_music_dir(path);
-#if GLIB_CHECK_VERSION(2,14,0)
-	else {
-		path = g_get_user_special_dir(G_USER_DIRECTORY_MUSIC);
-		if (path != NULL)
-			mapper_set_music_dir(path);
-	}
-#endif
-
-	path = config_get_path(CONF_PLAYLIST_DIR);
-	if (path != NULL)
-		mapper_set_playlist_dir(path);
+	if (_playlist_dir != NULL)
+		mapper_set_playlist_dir(_playlist_dir);
 }
 
 void mapper_finish(void)
