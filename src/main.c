@@ -90,6 +90,16 @@ GMainLoop *main_loop;
 
 struct notify main_notify;
 
+static void
+glue_daemonize_init(const struct options *options)
+{
+	daemonize_init(config_get_string(CONF_USER, NULL),
+		       config_get_path(CONF_PID_FILE));
+
+	if (options->kill)
+		daemonize_kill();
+}
+
 /**
  * Returns the database.  If this function returns false, this has not
  * succeeded, and the caller should create the database after the
@@ -138,6 +148,29 @@ glue_db_init_and_load(const struct options *options)
 	}
 
 	return true;
+}
+
+/**
+ * Configure and initialize the sticker subsystem.
+ */
+static void
+glue_sticker_init(void)
+{
+#ifdef ENABLE_SQLITE
+	bool success;
+	GError *error = NULL;
+
+	success = sticker_global_init(config_get_path(CONF_STICKER_FILE),
+				      &error);
+	if (!success)
+		g_error("%s", error->message);
+#endif
+}
+
+static void
+glue_state_file_init(void)
+{
+	state_file_init(config_get_path(CONF_STATE_FILE));
 }
 
 /**
@@ -231,10 +264,6 @@ int main(int argc, char *argv[])
 	struct options options;
 	clock_t start;
 	bool create_db;
-#ifdef ENABLE_SQLITE
-	bool success;
-	GError *error = NULL;
-#endif
 
 	daemonize_close_stdin();
 
@@ -257,11 +286,7 @@ int main(int argc, char *argv[])
 
 	parse_cmdline(argc, argv, &options);
 
-	daemonize_init(config_get_string(CONF_USER, NULL),
-		       config_get_path(CONF_PID_FILE));
-
-	if (options.kill)
-		daemonize_kill();
+	glue_daemonize_init(&options);
 
 	stats_global_init();
 	tag_lib_init();
@@ -291,12 +316,7 @@ int main(int argc, char *argv[])
 
 	create_db = !glue_db_init_and_load(&options);
 
-#ifdef ENABLE_SQLITE
-	success = sticker_global_init(config_get_path(CONF_STICKER_FILE),
-				      &error);
-	if (!success)
-		g_error("%s", error->message);
-#endif
+	glue_sticker_init();
 
 	command_init();
 	initialize_decoder_and_player();
@@ -326,8 +346,7 @@ int main(int argc, char *argv[])
 			g_error("directory update failed");
 	}
 
-
-	state_file_init(config_get_path(CONF_STATE_FILE));
+	glue_state_file_init();
 
 	config_global_check();
 
