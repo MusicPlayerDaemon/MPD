@@ -29,11 +29,7 @@
 #include <glib.h>
 
 #include <assert.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <string.h>
-#include <errno.h>
 
 static char *music_dir;
 static size_t music_dir_length;
@@ -57,17 +53,10 @@ strdup_chop_slash(const char *path_fs)
 static void
 mapper_set_music_dir(const char *path)
 {
-	int ret;
-	struct stat st;
-
 	music_dir = strdup_chop_slash(path);
 	music_dir_length = strlen(music_dir);
 
-	ret = stat(music_dir, &st);
-	if (ret < 0)
-		g_warning("failed to stat music directory \"%s\": %s",
-			  music_dir, g_strerror(errno));
-	else if (!S_ISDIR(st.st_mode))
+	if (!g_file_test(music_dir, G_FILE_TEST_IS_DIR))
 		g_warning("music directory is not a directory: \"%s\"",
 			  music_dir);
 }
@@ -75,16 +64,9 @@ mapper_set_music_dir(const char *path)
 static void
 mapper_set_playlist_dir(const char *path)
 {
-	int ret;
-	struct stat st;
-
 	playlist_dir = g_strdup(path);
 
-	ret = stat(playlist_dir, &st);
-	if (ret < 0)
-		g_warning("failed to stat playlist directory \"%s\": %s",
-			  playlist_dir, g_strerror(errno));
-	else if (!S_ISDIR(st.st_mode))
+	if (!g_file_test(playlist_dir, G_FILE_TEST_IS_DIR))
 		g_warning("playlist directory is not a directory: \"%s\"",
 			  playlist_dir);
 }
