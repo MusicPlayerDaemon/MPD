@@ -1,4 +1,4 @@
-ver 0.15.1 (2009/??/??)
+ver 0.15.1 (2009/07/15)
 * decoders:
   - flac: fix assertion failure in tag_free() call
 * output:
