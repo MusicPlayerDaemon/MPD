@@ -338,7 +338,11 @@ static gpointer audio_output_task(gpointer arg)
 
 		case AO_COMMAND_PAUSE:
 			ao_pause(ao);
-			break;
+			/* don't "break" here: this might cause
+			   ao_play() to be called when command==CLOSE
+			   ends the paused state - "continue" checks
+			   the new command first */
+			continue;
 
 		case AO_COMMAND_CANCEL:
 			ao->chunk = NULL;

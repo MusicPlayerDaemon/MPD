@@ -23,6 +23,17 @@ ver 0.16 (20??/??/??)
 * renamed option "--stdout" to "--stderr"
 
 
+ver 0.15.1 (2009/07/15)
+* decoders:
+  - flac: fix assertion failure in tag_free() call
+* output:
+  - httpd: include sys/types.h (fixes Mac OS X)
+* commands:
+  - don't resume playback when stopping during pause
+* database: fixed NULL pointer dereference after charset change
+* log: fix double free() bug during shutdown
+
+
 ver 0.15 (2009/06/23)
 * input:
   - parse Icy-Metadata

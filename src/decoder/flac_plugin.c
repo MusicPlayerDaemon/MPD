@@ -408,6 +408,7 @@ flac_decode_internal(struct decoder * decoder,
 	if (!(flac_dec = flac_new()))
 		return;
 	flac_data_init(&data, decoder, input_stream);
+	data.tag = tag_new();
 
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
         if(!FLAC__stream_decoder_set_metadata_respond(flac_dec, FLAC__METADATA_TYPE_VORBIS_COMMENT))
@@ -435,8 +436,6 @@ flac_decode_internal(struct decoder * decoder,
 			goto fail;
 		}
 	}
-
-	data.tag = tag_new();
 
 	if (!flac_process_metadata(flac_dec)) {
 		err = "problem reading metadata";

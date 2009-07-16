@@ -439,8 +439,6 @@ audio_output_all_cancel(void)
 {
 	unsigned int i;
 
-	audio_output_all_update();
-
 	/* send the cancel() command to all audio outputs */
 
 	for (i = 0; i < num_audio_outputs; ++i) {

@@ -402,9 +402,9 @@ if test x$enable_audiofile = xyes; then
 fi
 
 AC_ARG_ENABLE(ffmpeg,
-	AS_HELP_STRING([--disable-ffmpeg],
-		[enable FFMPEG support (default: enable)]),,
-	enable_ffmpeg=yes)
+	AS_HELP_STRING([--enable-ffmpeg],
+		[enable FFMPEG support]),,
+	enable_ffmpeg=auto)
 
 AC_ARG_ENABLE(flac,
 	AS_HELP_STRING([--disable-flac],
@@ -932,10 +932,8 @@ AM_CONDITIONAL(HAVE_FLAC_COMMON,
 AM_CONDITIONAL(HAVE_OGG_COMMON,
 	  test x$enable_vorbis = xyes || test x$enable_oggflac = xyes || test x$enable_flac = xyes)
 
-if test x$enable_ffmpeg = xyes; then
-	PKG_CHECK_MODULES(FFMPEG, [libavformat libavcodec libavutil],,
-		enable_ffmpeg=no)
-fi
+MPD_AUTO_PKG(ffmpeg, FFMPEG, [libavformat libavcodec libavutil],
+	[ffmpeg decoder library], [libavformat+libavcodec+libavutil not found])
 
 if test x$enable_ffmpeg = xyes; then
 	old_LIBS=$LIBS

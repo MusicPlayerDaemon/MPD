@@ -259,12 +259,8 @@ void log_init(bool verbose, bool use_stdout)
 			log_init_syslog();
 #endif
 		} else {
-			char *path = parsePath(param->value);
-			g_free(param->value);
-
-			if (path == NULL)
-				g_error("error parsing \"%s\" at line %i\n",
-					CONF_LOG_FILE, param->line);
+			const char *path = config_get_path(CONF_LOG_FILE);
+			assert(path != NULL);
 
 			log_init_file(path, param->line);
 		}
