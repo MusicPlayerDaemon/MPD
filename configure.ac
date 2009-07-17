@@ -591,8 +591,7 @@ dnl audio output plugins
 dnl
 
 AC_ARG_ENABLE(alsa,
-	AS_HELP_STRING([--enable-alsa],
-		[disable ALSA support]),,
+	AS_HELP_STRING([--enable-alsa], [enable ALSA support]),,
 	enable_alsa=auto)
 
 AC_ARG_ENABLE(ao,
