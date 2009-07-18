@@ -112,7 +112,7 @@ tag_ape_load(const char *file)
 
 		/* get the key */
 		key = p;
-		while (tagLen - size > 0 && *p != '\0') {
+		while (tagLen > size && *p != '\0') {
 			p++;
 			tagLen--;
 		}
