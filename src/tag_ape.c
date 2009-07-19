@@ -44,6 +44,26 @@ static const int tagItems[7] = {
 	TAG_ITEM_DATE,
 };
 
+static struct tag *
+tag_ape_import_item(struct tag *tag, unsigned long flags,
+		    const char *key, const char *value, size_t value_length)
+{
+	/* we only care about utf-8 text tags */
+	if ((flags & (0x3 << 1)) != 0)
+		return tag;
+
+	for (unsigned i = 0; i < 7; i++) {
+		if (g_ascii_strcasecmp(key, apeItems[i]) == 0) {
+			if (tag == NULL)
+				tag = tag_new();
+			tag_add_item_n(tag, tagItems[i],
+				       value, value_length);
+		}
+	}
+
+	return tag;
+}
+
 struct tag *
 tag_ape_load(const char *file)
 {
@@ -55,7 +75,6 @@ tag_ape_load(const char *file)
 	size_t tagLen;
 	size_t size;
 	unsigned long flags;
-	int i;
 	char *key;
 
 	struct {
@@ -123,17 +142,8 @@ tag_ape_load(const char *file)
 		if (tagLen < size)
 			goto fail;
 
-		/* we only care about utf-8 text tags */
-		if (!(flags & (0x3 << 1))) {
-			for (i = 0; i < 7; i++) {
-				if (g_ascii_strcasecmp(key, apeItems[i]) == 0) {
-					if (!ret)
-						ret = tag_new();
-					tag_add_item_n(ret, tagItems[i],
-						       p, size);
-				}
-			}
-		}
+		ret = tag_ape_import_item(ret, flags, key, p, size);
+
 		p += size;
 		tagLen -= size;
 	}
