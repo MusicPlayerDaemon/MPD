@@ -22,6 +22,7 @@
 
 #include <glib.h>
 
+#include <assert.h>
 #include <stdio.h>
 
 struct tag *
@@ -86,15 +87,15 @@ tag_ape_load(const char *file)
 
 	/* find beginning of ape tag */
 	tagLen = GUINT32_FROM_LE(footer.length);
-	if (tagLen < sizeof(footer))
+	if (tagLen <= sizeof(footer) + 10)
 		goto fail;
 	if (fseek(fp, size - tagLen, SEEK_SET))
 		goto fail;
 
 	/* read tag into buffer */
 	tagLen -= sizeof(footer);
-	if (tagLen <= 0)
-		goto fail;
+	assert(tagLen > 10);
+
 	buffer = g_malloc(tagLen);
 	if (fread(buffer, 1, tagLen, fp) != tagLen)
 		goto fail;
