@@ -32,7 +32,7 @@
 #include "volume.h"
 #include "stats.h"
 #include "permission.h"
-#include "buffer2array.h"
+#include "tokenizer.h"
 #include "stored_playlist.h"
 #include "ack.h"
 #include "output_command.h"
@@ -1878,15 +1878,61 @@ command_checked_lookup(struct client *client, unsigned permission,
 }
 
 enum command_return
-command_process(struct client *client, char *commandString)
+command_process(struct client *client, char *line)
 {
+	GError *error = NULL;
 	int argc;
 	char *argv[COMMAND_ARGV_MAX] = { NULL };
 	const struct command *cmd;
 	enum command_return ret = COMMAND_RETURN_ERROR;
 
-	if (!(argc = buffer2array(commandString, argv, COMMAND_ARGV_MAX)))
-		return COMMAND_RETURN_OK;
+	/* get the command name (first word on the line) */
+
+	argv[0] = tokenizer_next_word(&line, &error);
+	if (argv[0] == NULL) {
+		current_command = "";
+		if (*line == 0)
+			command_error(client, ACK_ERROR_UNKNOWN,
+				      "No command given");
+		else {
+			command_error(client, ACK_ERROR_UNKNOWN,
+				      "%s", error->message);
+			g_error_free(error);
+		}
+		current_command = NULL;
+
+		return COMMAND_RETURN_ERROR;
+	}
+
+	argc = 1;
+
+	/* now parse the arguments (quoted or unquoted) */
+
+	while (argc < (int)G_N_ELEMENTS(argv) &&
+	       (argv[argc] =
+		tokenizer_next_word_or_string(&line, &error)) != NULL)
+		++argc;
+
+	/* some error checks; we have to set current_command because
+	   command_error() expects it to be set */
+
+	current_command = argv[0];
+
+	if (argc >= (int)G_N_ELEMENTS(argv)) {
+		command_error(client, ACK_ERROR_ARG, "Too many arguments");
+		current_command = NULL;
+		return COMMAND_RETURN_ERROR;
+	}
+
+	if (*line != 0) {
+		command_error(client, ACK_ERROR_ARG,
+			      "%s", error->message);
+		current_command = NULL;
+		g_error_free(error);
+		return COMMAND_RETURN_ERROR;
+	}
+
+	/* look up and invoke the command handler */
 
 	cmd = command_checked_lookup(client, client_get_permission(client),
 				     argc, argv);
