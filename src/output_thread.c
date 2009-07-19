@@ -93,18 +93,20 @@ ao_open(struct audio_output *ao)
 	g_mutex_unlock(ao->mutex);
 
 	g_debug("opened plugin=%s name=\"%s\" "
-		"audio_format=%u:%u:%u",
+		"audio_format=%u:%u:%u:%u",
 		ao->plugin->name, ao->name,
 		ao->out_audio_format.sample_rate,
 		ao->out_audio_format.bits,
-		ao->out_audio_format.channels);
+		ao->out_audio_format.channels,
+		ao->out_audio_format.reverse_endian);
 
 	if (!audio_format_equals(&ao->in_audio_format,
 				 &ao->out_audio_format))
-		g_debug("converting from %u:%u:%u",
+		g_debug("converting from %u:%u:%u:%u",
 			ao->in_audio_format.sample_rate,
 			ao->in_audio_format.bits,
-			ao->in_audio_format.channels);
+			ao->in_audio_format.channels,
+			ao->in_audio_format.reverse_endian);
 }
 
 static void
