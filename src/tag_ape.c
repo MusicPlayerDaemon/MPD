@@ -25,24 +25,14 @@
 #include <assert.h>
 #include <stdio.h>
 
-static const char *const apeItems[7] = {
-	"title",
-	"artist",
-	"album",
-	"comment",
-	"genre",
-	"track",
-	"year"
-};
-
-static const int tagItems[7] = {
-	TAG_ITEM_TITLE,
-	TAG_ITEM_ARTIST,
-	TAG_ITEM_ALBUM,
-	TAG_ITEM_COMMENT,
-	TAG_ITEM_GENRE,
-	TAG_ITEM_TRACK,
-	TAG_ITEM_DATE,
+static const char *const ape_tag_names[] = {
+	[TAG_ITEM_TITLE] = "title",
+	[TAG_ITEM_ARTIST] = "artist",
+	[TAG_ITEM_ALBUM] = "album",
+	[TAG_ITEM_COMMENT] = "comment",
+	[TAG_ITEM_GENRE] = "genre",
+	[TAG_ITEM_TRACK] = "track",
+	[TAG_ITEM_DATE] = "year"
 };
 
 static struct tag *
@@ -53,12 +43,12 @@ tag_ape_import_item(struct tag *tag, unsigned long flags,
 	if ((flags & (0x3 << 1)) != 0)
 		return tag;
 
-	for (unsigned i = 0; i < 7; i++) {
-		if (g_ascii_strcasecmp(key, apeItems[i]) == 0) {
+	for (unsigned i = 0; i < G_N_ELEMENTS(ape_tag_names); i++) {
+		if (ape_tag_names[i] != NULL &&
+		    g_ascii_strcasecmp(key, ape_tag_names[i]) == 0) {
 			if (tag == NULL)
 				tag = tag_new();
-			tag_add_item_n(tag, tagItems[i],
-				       value, value_length);
+			tag_add_item_n(tag, i, value, value_length);
 		}
 	}
 
