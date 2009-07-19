@@ -267,6 +267,7 @@ ffmpeg_decode_internal(struct ffmpeg_context *ctx)
 	struct audio_format audio_format;
 	enum decoder_command cmd;
 	int total_time;
+	uint8_t bits;
 
 	total_time = 0;
 
@@ -275,13 +276,13 @@ ffmpeg_decode_internal(struct ffmpeg_context *ctx)
 	}
 
 #if LIBAVCODEC_VERSION_INT >= ((51<<16)+(41<<8)+0)
-	audio_format.bits = (uint8_t) av_get_bits_per_sample_format(codec_context->sample_fmt);
+	bits = (uint8_t) av_get_bits_per_sample_format(codec_context->sample_fmt);
 #else
 	/* XXX fixme 16-bit for older ffmpeg (13 Aug 2007) */
-	audio_format.bits = (uint8_t) 16;
+	bits = (uint8_t) 16;
 #endif
-	audio_format.sample_rate = (unsigned int)codec_context->sample_rate;
-	audio_format.channels = codec_context->channels;
+	audio_format_init(&audio_format, codec_context->sample_rate, bits,
+			  codec_context->channels);
 
 	if (!audio_format_valid(&audio_format)) {
 		g_warning("Invalid audio format: %u:%u:%u\n",

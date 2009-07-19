@@ -41,6 +41,8 @@ audio_format_parse(struct audio_format *dest, const char *src, GError **error)
 {
 	char *endptr;
 	unsigned long value;
+	uint32_t rate;
+	uint8_t bits, channels;
 
 	audio_format_clear(dest);
 
@@ -61,7 +63,7 @@ audio_format_parse(struct audio_format *dest, const char *src, GError **error)
 		return false;
 	}
 
-	dest->sample_rate = value;
+	rate = value;
 
 	/* parse sample format */
 
@@ -81,7 +83,7 @@ audio_format_parse(struct audio_format *dest, const char *src, GError **error)
 		return false;
 	}
 
-	dest->bits = value;
+	bits = value;
 
 	/* parse channel count */
 
@@ -93,7 +95,9 @@ audio_format_parse(struct audio_format *dest, const char *src, GError **error)
 		return false;
 	}
 
-	dest->channels = value;
+	channels = value;
+
+	audio_format_init(dest, rate, bits, channels);
 
 	return true;
 }

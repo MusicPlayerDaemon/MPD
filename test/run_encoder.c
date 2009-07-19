@@ -41,11 +41,7 @@ encoder_to_stdout(struct encoder *encoder)
 int main(int argc, char **argv)
 {
 	GError *error = NULL;
-	struct audio_format audio_format = {
-		.sample_rate = 44100,
-		.bits = 16,
-		.channels = 2,
-	};
+	struct audio_format audio_format;
 	bool ret;
 	const char *encoder_name;
 	const struct encoder_plugin *plugin;
@@ -65,6 +61,8 @@ int main(int argc, char **argv)
 		encoder_name = argv[1];
 	else
 		encoder_name = "vorbis";
+
+	audio_format_init(&audio_format, 44100, 16, 2);
 
 	/* create the encoder */
 

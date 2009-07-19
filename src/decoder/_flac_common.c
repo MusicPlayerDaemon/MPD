@@ -195,9 +195,8 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 
 	switch (block->type) {
 	case FLAC__METADATA_TYPE_STREAMINFO:
-		data->audio_format.bits = (int8_t)si->bits_per_sample;
-		data->audio_format.sample_rate = si->sample_rate;
-		data->audio_format.channels = (int8_t)si->channels;
+		audio_format_init(&data->audio_format, si->sample_rate,
+				  si->bits_per_sample, si->channels);
 		data->total_time = ((float)si->total_samples) / (si->sample_rate);
 		break;
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:

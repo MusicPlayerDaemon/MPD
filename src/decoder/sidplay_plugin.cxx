@@ -103,9 +103,7 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 	/* initialize the MPD decoder */
 
 	struct audio_format audio_format;
-	audio_format.sample_rate = 48000;
-	audio_format.bits = 16;
-	audio_format.channels = 2;
+	audio_format_init(&audio_format, 48000, 16, 2);
 
 	decoder_initialized(decoder, &audio_format, false, -1);
 

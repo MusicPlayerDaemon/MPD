@@ -131,11 +131,7 @@ mp4_faad_new(mp4ff_t *mp4fh, int *track_r, struct audio_format *audio_format)
 	}
 
 	*track_r = track;
-	*audio_format = (struct audio_format){
-		.bits = 16,
-		.channels = channels,
-		.sample_rate = sample_rate,
-	};
+	audio_format_init(audio_format, sample_rate, 16, channels);
 
 	if (!audio_format_valid(audio_format)) {
 		g_warning("Invalid audio format: %u:%u:%u\n",

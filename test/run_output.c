@@ -100,11 +100,7 @@ load_audio_output(struct audio_output *ao, const char *name)
 int main(int argc, char **argv)
 {
 	struct audio_output ao;
-	struct audio_format audio_format = {
-		.sample_rate = 44100,
-		.bits = 16,
-		.channels = 2,
-	};
+	struct audio_format audio_format;
 	bool success;
 	GError *error = NULL;
 	char buffer[4096];
@@ -115,6 +111,8 @@ int main(int argc, char **argv)
 		g_printerr("Usage: run_output CONFIG NAME [FORMAT] <IN\n");
 		return 1;
 	}
+
+	audio_format_init(&audio_format, 44100, 16, 2);
 
 	g_thread_init(NULL);
 

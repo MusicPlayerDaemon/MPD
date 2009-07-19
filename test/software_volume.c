@@ -35,11 +35,7 @@
 int main(int argc, char **argv)
 {
 	GError *error = NULL;
-	struct audio_format audio_format = {
-		.sample_rate = 48000,
-		.bits = 16,
-		.channels = 2,
-	};
+	struct audio_format audio_format;
 	bool ret;
 	static char buffer[4096];
 	ssize_t nbytes;
@@ -57,6 +53,7 @@ int main(int argc, char **argv)
 			return 1;
 		}
 	}
+	audio_format_init(&audio_format, 48000, 16, 2);
 
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
 		pcm_volume(buffer, nbytes, &audio_format, PCM_VOLUME_1 / 2);

@@ -36,6 +36,15 @@ static inline void audio_format_clear(struct audio_format *af)
 	af->channels = 0;
 }
 
+static inline void audio_format_init(struct audio_format *af,
+				     uint32_t sample_rate,
+				     uint8_t bits, uint8_t channels)
+{
+	af->sample_rate = sample_rate;
+	af->bits = bits;
+	af->channels = channels;
+}
+
 static inline bool audio_format_defined(const struct audio_format *af)
 {
 	return af->sample_rate != 0;
