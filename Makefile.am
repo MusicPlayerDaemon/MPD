@@ -649,7 +649,7 @@ test_read_conf_CPPFLAGS = $(AM_CPPFLAGS) \
 test_read_conf_LDADD = $(MPD_LIBS) \
 	$(GLIB_LIBS)
 test_read_conf_SOURCES = test/read_conf.c \
-	src/conf.c src/buffer2array.c src/utils.c
+	src/conf.c src/tokenizer.c src/utils.c
 
 test_run_input_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ARCHIVE_CFLAGS) \
@@ -659,7 +659,7 @@ test_run_input_LDADD = $(MPD_LIBS) \
 	$(INPUT_LIBS) \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.c \
-	src/conf.c src/buffer2array.c src/utils.c \
+	src/conf.c src/tokenizer.c src/utils.c \
 	src/tag.c src/tag_pool.c src/tag_save.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC)
@@ -674,7 +674,7 @@ test_run_decoder_LDADD = $(MPD_LIBS) \
 	$(INPUT_LIBS) $(DECODER_LIBS) \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.c \
-	src/conf.c src/buffer2array.c src/utils.c src/log.c \
+	src/conf.c src/tokenizer.c src/utils.c src/log.c \
 	src/tag.c src/tag_pool.c \
 	src/replay_gain.c \
 	src/uri.c \
@@ -693,7 +693,7 @@ test_read_tags_LDADD = $(MPD_LIBS) \
 	$(INPUT_LIBS) $(DECODER_LIBS) \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.c \
-	src/conf.c src/buffer2array.c src/utils.c src/log.c \
+	src/conf.c src/tokenizer.c src/utils.c src/log.c \
 	src/tag.c src/tag_pool.c \
 	src/replay_gain.c \
 	src/uri.c \
@@ -709,7 +709,7 @@ test_run_filter_LDADD = $(MPD_LIBS) \
 test_run_filter_SOURCES = test/run_filter.c \
 	src/filter_plugin.c \
 	src/filter_registry.c \
-	src/conf.c src/buffer2array.c src/utils.c \
+	src/conf.c src/tokenizer.c src/utils.c \
 	src/pcm_volume.c src/pcm_convert.c \
 	src/pcm_format.c src/pcm_channels.c src/pcm_dither.c \
 	src/pcm_resample.c src/pcm_resample_fallback.c \
@@ -723,7 +723,7 @@ endif
 if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
 test_run_encoder_SOURCES = test/run_encoder.c \
-	src/conf.c src/buffer2array.c \
+	src/conf.c src/tokenizer.c \
 	src/utils.c \
 	src/tag.c src/tag_pool.c \
 	src/audio_parser.c \
@@ -747,7 +747,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	$(OUTPUT_LIBS) \
 	$(GLIB_LIBS)
 test_run_output_SOURCES = test/run_output.c \
-	src/conf.c src/buffer2array.c src/utils.c src/log.c \
+	src/conf.c src/tokenizer.c src/utils.c src/log.c \
 	src/audio_parser.c \
 	src/timer.c \
 	src/tag.c src/tag_pool.c \
@@ -772,7 +772,7 @@ test_read_mixer_LDADD = $(MPD_LIBS) \
 	$(OUTPUT_LIBS) \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.c \
-	src/conf.c src/buffer2array.c src/utils.c src/log.c \
+	src/conf.c src/tokenizer.c src/utils.c src/log.c \
 	src/mixer_control.c src/mixer_api.c \
 	src/filter_plugin.c \
 	src/filter/volume_filter_plugin.c \

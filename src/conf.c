@@ -19,7 +19,7 @@
 
 #include "conf.h"
 #include "utils.h"
-#include "buffer2array.h"
+#include "tokenizer.h"
 #include "path.h"
 
 #include <glib.h>
@@ -36,10 +36,6 @@
 #define MAX_STRING_SIZE	MPD_PATH_MAX+80
 
 #define CONF_COMMENT		'#'
-#define CONF_BLOCK_BEGIN	"{"
-#define CONF_BLOCK_END		"}"
-
-#define CONF_LINE_TOKEN_MAX	3
 
 struct config_entry {
 	const char *const name;
@@ -250,60 +246,59 @@ config_read_block(FILE *fp, int *count, char *string)
 {
 	struct config_param *ret = config_new_param(NULL, *count);
 
-	int i;
-	int numberOfArgs;
-	int argsMinusComment;
+	while (true) {
+		char *line;
+		const char *name, *value;
+		GError *error = NULL;
 
-	while (fgets(string, MAX_STRING_SIZE, fp)) {
-		char *array[CONF_LINE_TOKEN_MAX] = { NULL };
+		line = fgets(string, MAX_STRING_SIZE, fp);
+		if (line == NULL)
+			g_error("Expected '}' before end-of-file");
 
 		(*count)++;
-
-		numberOfArgs = buffer2array(string, array, CONF_LINE_TOKEN_MAX);
-
-		for (i = 0; i < numberOfArgs; i++) {
-			if (array[i][0] == CONF_COMMENT)
-				break;
-		}
-
-		argsMinusComment = i;
-
-		if (0 == argsMinusComment) {
+		line = g_strchug(line);
+		if (*line == 0 || *line == CONF_COMMENT)
 			continue;
+
+		if (*line == '}') {
+			/* end of this block; return from the function
+			   (and from this "while" loop) */
+
+			line = g_strchug(line + 1);
+			if (*line != 0 && *line != CONF_COMMENT)
+				g_error("line %i: Unknown tokens after '}'",
+					*count);
+
+			return ret;
 		}
 
-		if (1 == argsMinusComment &&
-		    0 == strcmp(array[0], CONF_BLOCK_END)) {
-			break;
+		/* parse name and value */
+
+		name = tokenizer_next_word(&line, &error);
+		if (name == NULL) {
+			assert(*line != 0);
+			g_error("line %i: %s", *count, error->message);
 		}
 
-		if (2 != argsMinusComment) {
-			g_error("improperly formatted config file at line %i:"
-				" %s\n", *count, string);
+		value = tokenizer_next_string(&line, &error);
+		if (value == NULL) {
+			if (*line == 0)
+				g_error("line %i: Value missing", *count);
+			else
+				g_error("line %i: %s", *count, error->message);
 		}
 
-		if (0 == strcmp(array[0], CONF_BLOCK_BEGIN) ||
-		    0 == strcmp(array[1], CONF_BLOCK_BEGIN) ||
-		    0 == strcmp(array[0], CONF_BLOCK_END) ||
-		    0 == strcmp(array[1], CONF_BLOCK_END)) {
-			g_error("improperly formatted config file at line %i: %s "
-				"in block beginning at line %i\n",
-				*count, string, ret->line);
-		}
+		if (*line != 0 && *line != CONF_COMMENT)
+			g_error("line %i: Unknown tokens after value", *count);
 
-		config_add_block_param(ret, array[0], array[1], *count);
+		config_add_block_param(ret, name, value, *count);
 	}
-
-	return ret;
 }
 
 void config_read_file(const char *file)
 {
 	FILE *fp;
 	char string[MAX_STRING_SIZE + 1];
-	int i;
-	int numberOfArgs;
-	int argsMinusComment;
 	int count = 0;
 	struct config_entry *entry;
 	struct config_param *param;
@@ -316,48 +311,73 @@ void config_read_file(const char *file)
 	}
 
 	while (fgets(string, MAX_STRING_SIZE, fp)) {
-		char *array[CONF_LINE_TOKEN_MAX] = { NULL };
+		char *line;
+		const char *name, *value;
+		GError *error = NULL;
 
 		count++;
 
-		numberOfArgs = buffer2array(string, array, CONF_LINE_TOKEN_MAX);
-
-		for (i = 0; i < numberOfArgs; i++) {
-			if (array[i][0] == CONF_COMMENT)
-				break;
-		}
-
-		argsMinusComment = i;
-
-		if (0 == argsMinusComment) {
+		line = g_strchug(string);
+		if (*line == 0 || *line == CONF_COMMENT)
 			continue;
+
+		/* the first token in each line is the name, followed
+		   by either the value or '{' */
+
+		name = tokenizer_next_word(&line, &error);
+		if (name == NULL) {
+			assert(*line != 0);
+			g_error("line %i: %s", count, error->message);
 		}
 
-		if (2 != argsMinusComment) {
-			g_error("improperly formatted config file at line %i:"
-				" %s\n", count, string);
-		}
+		/* get the definition of that option, and check the
+		   "repeatable" flag */
 
-		entry = config_entry_get(array[0]);
+		entry = config_entry_get(name);
 		if (entry == NULL)
 			g_error("unrecognized parameter in config file at "
-				"line %i: %s\n", count, string);
+				"line %i: %s\n", count, name);
 
 		if (entry->params != NULL && !entry->repeatable) {
 			param = entry->params->data;
 			g_error("config parameter \"%s\" is first defined on "
 				"line %i and redefined on line %i\n",
-				array[0], param->line, count);
+				name, param->line, count);
 		}
 
+		/* now parse the block or the value */
+
 		if (entry->block) {
-			if (0 != strcmp(array[1], CONF_BLOCK_BEGIN)) {
-				g_error("improperly formatted config file at "
-					"line %i: %s\n", count, string);
-			}
+			/* it's a block, call config_read_block() */
+
+			if (*line != '{')
+				g_error("line %i: '{' expected", count);
+
+			line = g_strchug(line + 1);
+			if (*line != 0 && *line != CONF_COMMENT)
+				g_error("line %i: Unknown tokens after '{'",
+					count);
+
 			param = config_read_block(fp, &count, string);
-		} else
-			param = config_new_param(array[1], count);
+		} else {
+			/* a string value */
+
+			value = tokenizer_next_string(&line, &error);
+			if (value == NULL) {
+				if (*line == 0)
+					g_error("line %i: Value missing",
+						count);
+				else
+					g_error("line %i: %s", count,
+						error->message);
+			}
+
+			if (*line != 0 && *line != CONF_COMMENT)
+				g_error("line %i: Unknown tokens after value",
+					count);
+
+			param = config_new_param(value, count);
+		}
 
 		entry->params = g_slist_append(entry->params, param);
 	}
