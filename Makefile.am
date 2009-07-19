@@ -48,7 +48,6 @@ mpd_headers = \
 	src/filter/chain_filter_plugin.h \
 	src/filter/convert_filter_plugin.h \
 	src/filter/volume_filter_plugin.h \
-	src/buffer2array.h \
 	src/command.h \
 	src/idle.h \
 	src/cmdline.h \
@@ -181,7 +180,6 @@ src_mpd_SOURCES = \
 	src/notify.c \
 	src/audio.c \
 	src/audio_parser.c \
-	src/buffer2array.c \
 	src/command.c \
 	src/idle.c \
 	src/cmdline.c \
