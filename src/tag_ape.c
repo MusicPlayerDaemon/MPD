@@ -25,6 +25,26 @@
 #include <assert.h>
 #include <stdio.h>
 
+static const char *const apeItems[7] = {
+	"title",
+	"artist",
+	"album",
+	"comment",
+	"genre",
+	"track",
+	"year"
+};
+
+static const int tagItems[7] = {
+	TAG_ITEM_TITLE,
+	TAG_ITEM_ARTIST,
+	TAG_ITEM_ALBUM,
+	TAG_ITEM_COMMENT,
+	TAG_ITEM_GENRE,
+	TAG_ITEM_TRACK,
+	TAG_ITEM_DATE,
+};
+
 struct tag *
 tag_ape_load(const char *file)
 {
@@ -47,26 +67,6 @@ tag_ape_load(const char *file)
 		unsigned char flags[4];
 		unsigned char reserved[8];
 	} footer;
-
-	const char *apeItems[7] = {
-		"title",
-		"artist",
-		"album",
-		"comment",
-		"genre",
-		"track",
-		"year"
-	};
-
-	int tagItems[7] = {
-		TAG_ITEM_TITLE,
-		TAG_ITEM_ARTIST,
-		TAG_ITEM_ALBUM,
-		TAG_ITEM_COMMENT,
-		TAG_ITEM_GENRE,
-		TAG_ITEM_TRACK,
-		TAG_ITEM_DATE,
-	};
 
 	fp = fopen(file, "r");
 	if (!fp)
