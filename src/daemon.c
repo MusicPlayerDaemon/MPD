@@ -56,12 +56,10 @@ static char *pidfile;
 /* whether "group" conf. option was given */
 static bool had_group = false;
 
-#endif
 
 void
 daemonize_kill(void)
 {
-#ifndef WIN32
 	FILE *fp;
 	int pid, ret;
 
@@ -85,10 +83,9 @@ daemonize_kill(void)
 			pid, g_strerror(errno));
 
 	exit(EXIT_SUCCESS);
-#else
-	g_error("--kill is not available on WIN32");
-#endif
 }
+
+#endif
 
 void
 daemonize_close_stdin(void)
@@ -103,10 +100,11 @@ daemonize_close_stdin(void)
 	}
 }
 
+#ifndef WIN32
+
 void
 daemonize_set_user(void)
 {
-#ifndef WIN32
 	if (user_name == NULL)
 		return;
 
@@ -135,10 +133,8 @@ daemonize_set_user(void)
 		g_error("cannot change to uid of user \"%s\": %s",
 			user_name, g_strerror(errno));
 	}
-#endif
 }
 
-#ifndef G_OS_WIN32
 static void
 daemonize_detach(void)
 {
@@ -169,12 +165,10 @@ daemonize_detach(void)
 
 	g_debug("daemonized!");
 }
-#endif
 
 void
 daemonize(bool detach)
 {
-#ifndef WIN32
 	FILE *fp = NULL;
 
 	if (pidfile != NULL) {
@@ -196,16 +190,11 @@ daemonize(bool detach)
 		fprintf(fp, "%lu\n", (unsigned long)getpid());
 		fclose(fp);
 	}
-#else
-	/* no daemonization on WIN32 */
-	(void)detach;
-#endif
 }
 
 void
 daemonize_init(const char *user, const char *group, const char *_pidfile)
 {
-#ifndef WIN32
 	if (user) {
 		struct passwd *pwd = getpwnam(user);
 		if (!pwd)
@@ -230,20 +219,16 @@ daemonize_init(const char *user, const char *group, const char *_pidfile)
 
 
 	pidfile = g_strdup(_pidfile);
-#else
-	(void)user;
-	(void)_pidfile;
-#endif
 }
 
 void
 daemonize_finish(void)
 {
-#ifndef WIN32
 	if (pidfile != NULL)
 		unlink(pidfile);
 
 	g_free(user_name);
 	g_free(pidfile);
-#endif
 }
+
+#endif
