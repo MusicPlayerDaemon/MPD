@@ -102,7 +102,6 @@ struct config_param {
  * A GQuark for GError instances, resulting from malformed
  * configuration.
  */
-G_GNUC_CONST
 static inline GQuark
 config_quark(void)
 {
@@ -122,18 +121,25 @@ void config_read_file(const char *file);
 
 /* don't free the returned value
    set _last_ to NULL to get first entry */
-G_GNUC_CONST
+G_GNUC_PURE
 struct config_param *
 config_get_next_param(const char *name, const struct config_param *last);
 
-G_GNUC_CONST
+G_GNUC_PURE
 static inline struct config_param *
 config_get_param(const char *name)
 {
 	return config_get_next_param(name, NULL);
 }
 
-G_GNUC_CONST
+/* Note on G_GNUC_PURE: Some of the functions declared pure are not
+   really pure in strict sense.  They have side effect such that they
+   validate parameter's value and signal an error if it's invalid.
+   However, if the argument was already validated or we don't care
+   about the argument at all, this may be ignored so in the end, we
+   should be fine with calling those functions pure.  */
+
+G_GNUC_PURE
 const char *
 config_get_string(const char *name, const char *default_value);
 
@@ -142,27 +148,31 @@ config_get_string(const char *name, const char *default_value);
  * absolute path.  If there is a tilde prefix, it is expanded.  Aborts
  * MPD if the path is not a valid absolute path.
  */
-G_GNUC_CONST
+/* We lie here really.  This function is not pure as it has side
+   effects -- it parse the value and creates new string freeing
+   previous one.  However, because this works the very same way each
+   time (ie. from the outside it appears as if function had no side
+   effects) we should be in the clear declaring it pure. */
+G_GNUC_PURE
 const char *
 config_get_path(const char *name);
 
-G_GNUC_CONST
+G_GNUC_PURE
 unsigned
 config_get_positive(const char *name, unsigned default_value);
 
-G_GNUC_CONST
+G_GNUC_PURE
 struct block_param *
 config_get_block_param(const struct config_param *param, const char *name);
 
-G_GNUC_CONST
+G_GNUC_PURE
 bool config_get_bool(const char *name, bool default_value);
 
-G_GNUC_CONST
+G_GNUC_PURE
 const char *
 config_get_block_string(const struct config_param *param, const char *name,
 			const char *default_value);
 
-G_GNUC_CONST
 static inline char *
 config_dup_block_string(const struct config_param *param, const char *name,
 			const char *default_value)
@@ -170,17 +180,16 @@ config_dup_block_string(const struct config_param *param, const char *name,
 	return g_strdup(config_get_block_string(param, name, default_value));
 }
 
-G_GNUC_CONST
+G_GNUC_PURE
 unsigned
 config_get_block_unsigned(const struct config_param *param, const char *name,
 			  unsigned default_value);
 
-G_GNUC_CONST
+G_GNUC_PURE
 bool
 config_get_block_bool(const struct config_param *param, const char *name,
 		      bool default_value);
 
-G_GNUC_CONST
 struct config_param *
 config_new_param(const char *value, int line);
 
