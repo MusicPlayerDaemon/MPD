@@ -34,6 +34,7 @@
 #define CONF_PID_FILE                   "pid_file"
 #define CONF_STATE_FILE                 "state_file"
 #define CONF_USER                       "user"
+#define CONF_GROUP                      "group"
 #define CONF_BIND_TO_ADDRESS            "bind_to_address"
 #define CONF_PORT                       "port"
 #define CONF_LOG_LEVEL                  "log_level"

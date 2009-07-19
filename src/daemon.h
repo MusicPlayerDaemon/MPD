@@ -23,7 +23,7 @@
 #include <stdbool.h>
 
 void
-daemonize_init(const char *user, const char *pidfile);
+daemonize_init(const char *user, const char *group, const char *pidfile);
 
 void
 daemonize_finish(void);

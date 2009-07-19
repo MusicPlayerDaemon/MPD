@@ -45,13 +45,16 @@
 static char *user_name;
 
 /** the Unix user id which MPD runs as */
-static uid_t user_uid;
+static uid_t user_uid = (uid_t)-1;
 
 /** the Unix group id which MPD runs as */
-static gid_t user_gid;
+static gid_t user_gid = (pid_t)-1;
 
 /** the absolute path of the pidfile */
 static char *pidfile;
+
+/* whether "group" conf. option was given */
+static bool had_group = false;
 
 #endif
 
@@ -107,16 +110,19 @@ daemonize_set_user(void)
 	if (user_name == NULL)
 		return;
 
-	/* get uid */
-	if (setgid(user_gid) == -1) {
-		g_error("cannot setgid for user \"%s\": %s",
-			user_name, g_strerror(errno));
+	/* set gid */
+	if (user_gid != (gid_t)-1 && user_gid != getgid()) {
+		if (setgid(user_gid) == -1) {
+			g_error("cannot setgid to %d: %s",
+				(int)user_gid, g_strerror(errno));
+		}
 	}
+
 #ifdef _BSD_SOURCE
 	/* init suplementary groups
 	 * (must be done before we change our uid)
 	 */
-	if (initgroups(user_name, user_gid) == -1) {
+	if (!had_group && initgroups(user_name, user_gid) == -1) {
 		g_warning("cannot init supplementary groups "
 			  "of user \"%s\": %s",
 			  user_name, g_strerror(errno));
@@ -124,7 +130,8 @@ daemonize_set_user(void)
 #endif
 
 	/* set uid */
-	if (setuid(user_uid) == -1) {
+	if (user_uid != (uid_t)-1 && user_uid != getuid() &&
+	    setuid(user_uid) == -1) {
 		g_error("cannot change to uid of user \"%s\": %s",
 			user_name, g_strerror(errno));
 	}
@@ -196,24 +203,31 @@ daemonize(bool detach)
 }
 
 void
-daemonize_init(const char *user, const char *_pidfile)
+daemonize_init(const char *user, const char *group, const char *_pidfile)
 {
 #ifndef WIN32
-	if (user != NULL && strcmp(user, g_get_user_name()) != 0) {
-		struct passwd *pwd;
-
-		user_name = g_strdup(user);
-
-		pwd = getpwnam(user_name);
-		if (pwd == NULL)
-			g_error("no such user \"%s\"", user_name);
+	if (user) {
+		struct passwd *pwd = getpwnam(user);
+		if (!pwd)
+			g_error("no such user \"%s\"", user);
 
 		user_uid = pwd->pw_uid;
 		user_gid = pwd->pw_gid;
 
+		user_name = g_strdup(user);
+
 		/* this is needed by libs such as arts */
 		g_setenv("HOME", pwd->pw_dir, true);
 	}
+
+	if (group) {
+		struct group *grp = grp = getgrnam(group);
+		if (!grp)
+			g_error("no such group \"%s\"", group);
+		user_gid = grp->gr_gid;
+		had_group = true;
+	}
+
 
 	pidfile = g_strdup(_pidfile);
 #else

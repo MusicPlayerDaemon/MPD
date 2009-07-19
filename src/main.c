@@ -94,6 +94,7 @@ static void
 glue_daemonize_init(const struct options *options)
 {
 	daemonize_init(config_get_string(CONF_USER, NULL),
+		       config_get_string(CONF_GROUP, NULL),
 		       config_get_path(CONF_PID_FILE));
 
 	if (options->kill)
