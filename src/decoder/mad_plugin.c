@@ -1148,13 +1148,6 @@ mp3_read(struct mp3_data *data, struct replay_gain_info **replay_gain_info_r)
 	return ret != DECODE_BREAK;
 }
 
-static void mp3_audio_format(struct mp3_data *data, struct audio_format *af)
-{
-	af->bits = 24;
-	af->sample_rate = (data->frame).header.samplerate;
-	af->channels = MAD_NCHANNELS(&(data->frame).header);
-}
-
 static void
 mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 {
@@ -1170,7 +1163,8 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 		return;
 	}
 
-	mp3_audio_format(&data, &audio_format);
+	audio_format_init(&audio_format, data.frame.header.samplerate, 24,
+			  MAD_NCHANNELS(&data.frame.header));
 
 	decoder_initialized(decoder, &audio_format,
 			    data.input_stream->seekable, data.total_time);

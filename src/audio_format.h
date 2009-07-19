@@ -27,6 +27,7 @@ struct audio_format {
 	uint32_t sample_rate;
 	uint8_t bits;
 	uint8_t channels;
+	uint8_t reverse_endian;
 };
 
 static inline void audio_format_clear(struct audio_format *af)
@@ -34,6 +35,16 @@ static inline void audio_format_clear(struct audio_format *af)
 	af->sample_rate = 0;
 	af->bits = 0;
 	af->channels = 0;
+	af->reverse_endian = 0;
+}
+
+static inline void audio_format_init(struct audio_format *af,
+				     uint32_t sample_rate,
+				     uint8_t bits, uint8_t channels)
+{
+	af->sample_rate = sample_rate;
+	af->bits = bits;
+	af->channels = channels;
 }
 
 static inline bool audio_format_defined(const struct audio_format *af)
@@ -88,7 +99,8 @@ static inline bool audio_format_equals(const struct audio_format *a,
 {
 	return a->sample_rate == b->sample_rate &&
 		a->bits == b->bits &&
-		a->channels == b->channels;
+		a->channels == b->channels &&
+		a->reverse_endian == b->reverse_endian;
 }
 
 /**

@@ -324,8 +324,7 @@ vorbis_stream_decode(struct decoder *decoder,
 			vorbis_info *vi = ov_info(&vf, -1);
 			struct replay_gain_info *new_rgi;
 
-			audio_format.channels = vi->channels;
-			audio_format.sample_rate = vi->rate;
+			audio_format_init(&audio_format, vi->rate, 16, vi->channels);
 
 			if (!audio_format_valid(&audio_format)) {
 				g_warning("Invalid audio format: %u:%u:%u\n",

@@ -193,9 +193,7 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	mpc_demux_get_info(demux, &info);
 #endif
 
-	audio_format.bits = 24;
-	audio_format.channels = info.channels;
-	audio_format.sample_rate = info.sample_freq;
+	audio_format_init(&audio_format, info.sample_freq, 24, info.channels);
 
 	if (!audio_format_valid(&audio_format)) {
 #ifndef MPC_IS_OLD_API

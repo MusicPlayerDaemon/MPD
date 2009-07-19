@@ -113,6 +113,7 @@ mpd_headers = \
 	src/pcm_convert.h \
 	src/pcm_volume.h \
 	src/pcm_mix.h \
+	src/pcm_byteswap.h \
 	src/pcm_channels.h \
 	src/pcm_format.h \
 	src/pcm_resample.h \
@@ -217,6 +218,7 @@ src_mpd_SOURCES = \
 	src/pcm_convert.c \
 	src/pcm_volume.c \
 	src/pcm_mix.c \
+	src/pcm_byteswap.c \
 	src/pcm_channels.c \
 	src/pcm_format.c \
 	src/pcm_resample.c \
@@ -708,7 +710,7 @@ test_run_filter_SOURCES = test/run_filter.c \
 	src/filter_plugin.c \
 	src/filter_registry.c \
 	src/conf.c src/tokenizer.c src/utils.c \
-	src/pcm_volume.c src/pcm_convert.c \
+	src/pcm_volume.c src/pcm_convert.c src/pcm_byteswap.c \
 	src/pcm_format.c src/pcm_channels.c src/pcm_dither.c \
 	src/pcm_resample.c src/pcm_resample_fallback.c \
 	src/audio_parser.c \

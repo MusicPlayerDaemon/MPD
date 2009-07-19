@@ -145,9 +145,9 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek,
 	int bytes_per_sample, output_sample_size;
 	int position;
 
-	audio_format.sample_rate = WavpackGetSampleRate(wpc);
-	audio_format.channels = WavpackGetReducedChannels(wpc);
-	audio_format.bits = WavpackGetBitsPerSample(wpc);
+	audio_format_init(&audio_format, WavpackGetSampleRate(wpc),
+			  WavpackGetBitsPerSample(wpc), 
+			  WavpackGetReducedChannels(wpc));
 
 	/* round bitwidth to 8-bit units */
 	audio_format.bits = (audio_format.bits + 7) & (~7);

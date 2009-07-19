@@ -124,12 +124,10 @@ sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 		return;
 	}
 
-	audio_format.sample_rate = info.samplerate;
 	/* for now, always read 32 bit samples.  Later, we could lower
 	   MPD's CPU usage by reading 16 bit samples with
 	   sf_readf_short() on low-quality source files. */
-	audio_format.bits = 32;
-	audio_format.channels = info.channels;
+	audio_format_init(&audio_format, info.samplerate, 32, info.channels);
 
 	if (!audio_format_valid(&audio_format)) {
 		g_warning("invalid audio format");

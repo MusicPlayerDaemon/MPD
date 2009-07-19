@@ -136,11 +136,9 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	afSetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK,
 	                         AF_SAMPFMT_TWOSCOMP, bits);
 	afGetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
-	audio_format.bits = (uint8_t)bits;
-	audio_format.sample_rate =
-	                      (unsigned int)afGetRate(af_fp, AF_DEFAULT_TRACK);
-	audio_format.channels =
-	              (uint8_t)afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK);
+
+	audio_format_init(&audio_format, afGetRate(af_fp, AF_DEFAULT_TRACK),
+			  bits, afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK)); 
 
 	if (!audio_format_valid(&audio_format)) {
 		g_warning("Invalid audio format: %u:%u:%u\n",

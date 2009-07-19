@@ -70,11 +70,7 @@ load_filter(const char *name)
 
 int main(int argc, char **argv)
 {
-	struct audio_format audio_format = {
-		.sample_rate = 44100,
-		.bits = 16,
-		.channels = 2,
-	};
+	struct audio_format audio_format;
 	bool success;
 	GError *error = NULL;
 	struct filter *filter;
@@ -86,6 +82,8 @@ int main(int argc, char **argv)
 		g_printerr("Usage: run_filter CONFIG NAME [FORMAT] <IN\n");
 		return 1;
 	}
+
+	audio_format_init(&audio_format, 44100, 16, 2);
 
 	g_thread_init(NULL);
 

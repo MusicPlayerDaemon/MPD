@@ -20,6 +20,7 @@
 #include "pcm_convert.h"
 #include "pcm_channels.h"
 #include "pcm_format.h"
+#include "pcm_byteswap.h"
 #include "audio_format.h"
 
 #include <assert.h>
@@ -83,6 +84,12 @@ pcm_convert_16(struct pcm_convert_state *state,
 				      dest_format->sample_rate,
 				      &len);
 
+	if (dest_format->reverse_endian) {
+		buf = pcm_byteswap_16(&state->format_buffer, buf, len);
+		if (!buf)
+			g_error("pcm_byteswap_16() failed");
+	}
+
 	*dest_size_r = len;
 	return buf;
 }
@@ -120,6 +127,12 @@ pcm_convert_24(struct pcm_convert_state *state,
 				      dest_format->sample_rate,
 				      &len);
 
+	if (dest_format->reverse_endian) {
+		buf = pcm_byteswap_32(&state->format_buffer, buf, len);
+		if (!buf)
+			g_error("pcm_byteswap_32() failed");
+	}
+
 	*dest_size_r = len;
 	return buf;
 }
@@ -156,6 +169,12 @@ pcm_convert_32(struct pcm_convert_state *state,
 				      src_format->sample_rate, buf, len,
 				      dest_format->sample_rate,
 				      &len);
+
+	if (dest_format->reverse_endian) {
+		buf = pcm_byteswap_32(&state->format_buffer, buf, len);
+		if (!buf)
+			g_error("pcm_byteswap_32() failed");
+	}
 
 	*dest_size_r = len;
 	return buf;
