@@ -284,9 +284,10 @@ void client_new(int fd, const struct sockaddr *sa, size_t sa_length, int uid)
 	g_free(remote);
 }
 
-static int client_process_line(struct client *client, char *line)
+static enum command_return
+client_process_line(struct client *client, char *line)
 {
-	int ret = 1;
+	enum command_return ret;
 
 	if (strcmp(line, "noidle") == 0) {
 		if (client->idle_waiting) {
@@ -300,7 +301,7 @@ static int client_process_line(struct client *client, char *line)
 		   has already received the full idle response from
 		   client_idle_notify(), which he can now evaluate */
 
-		return 0;
+		return COMMAND_RETURN_OK;
 	} else if (client->idle_waiting) {
 		/* during idle mode, clients must not send anything
 		   except "noidle" */
@@ -329,7 +330,7 @@ static int client_process_line(struct client *client, char *line)
 			    client_is_expired(client))
 				return COMMAND_RETURN_CLOSE;
 
-			if (ret == 0)
+			if (ret == COMMAND_RETURN_OK)
 				command_success(client);
 
 			client_write_output(client);
@@ -347,16 +348,18 @@ static int client_process_line(struct client *client, char *line)
 					  (unsigned long)client->cmd_list_size,
 					  (unsigned long)client_max_command_list_size);
 				return COMMAND_RETURN_CLOSE;
-			} else
-				new_cmd_list_ptr(client, line);
+			}
+
+			new_cmd_list_ptr(client, line);
+			ret = COMMAND_RETURN_OK;
 		}
 	} else {
 		if (strcmp(line, CLIENT_LIST_MODE_BEGIN) == 0) {
 			client->cmd_list_OK = 0;
-			ret = 1;
+			ret = COMMAND_RETURN_OK;
 		} else if (strcmp(line, CLIENT_LIST_OK_MODE_BEGIN) == 0) {
 			client->cmd_list_OK = 1;
-			ret = 1;
+			ret = COMMAND_RETURN_OK;
 		} else {
 			g_debug("[%u] process command \"%s\"",
 				client->num, line);
@@ -368,7 +371,7 @@ static int client_process_line(struct client *client, char *line)
 			    client_is_expired(client))
 				return COMMAND_RETURN_CLOSE;
 
-			if (ret == 0)
+			if (ret == COMMAND_RETURN_OK)
 				command_success(client);
 
 			client_write_output(client);
@@ -399,17 +402,17 @@ client_read_line(struct client *client)
 	return g_strchomp(line);
 }
 
-static int client_input_received(struct client *client, size_t bytesRead)
+static enum command_return
+client_input_received(struct client *client, size_t bytesRead)
 {
 	char *line;
-	int ret;
 
 	fifo_buffer_append(client->input, bytesRead);
 
 	/* process all lines */
 
 	while ((line = client_read_line(client)) != NULL) {
-		ret = client_process_line(client, line);
+		enum command_return ret = client_process_line(client, line);
 		g_free(line);
 
 		if (ret == COMMAND_RETURN_KILL ||
@@ -419,10 +422,11 @@ static int client_input_received(struct client *client, size_t bytesRead)
 			return COMMAND_RETURN_CLOSE;
 	}
 
-	return 0;
+	return COMMAND_RETURN_OK;
 }
 
-static int client_read(struct client *client)
+static enum command_return
+client_read(struct client *client)
 {
 	char *p;
 	size_t max_length;
@@ -447,7 +451,7 @@ static int client_read(struct client *client)
 
 	case G_IO_STATUS_AGAIN:
 		/* try again later, after select() */
-		return 0;
+		return COMMAND_RETURN_OK;
 
 	case G_IO_STATUS_EOF:
 		/* peer disconnected */
@@ -475,7 +479,7 @@ client_in_event(G_GNUC_UNUSED GIOChannel *source,
 		gpointer data)
 {
 	struct client *client = data;
-	int ret;
+	enum command_return ret;
 
 	assert(!client_is_expired(client));
 
@@ -488,6 +492,10 @@ client_in_event(G_GNUC_UNUSED GIOChannel *source,
 
 	ret = client_read(client);
 	switch (ret) {
+	case COMMAND_RETURN_OK:
+	case COMMAND_RETURN_ERROR:
+		break;
+
 	case COMMAND_RETURN_KILL:
 		client_close(client);
 		g_main_loop_quit(main_loop);
