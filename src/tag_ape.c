@@ -89,6 +89,9 @@ tag_ape_load(const char *file)
 	tagLen = GUINT32_FROM_LE(footer.length);
 	if (tagLen <= sizeof(footer) + 10)
 		goto fail;
+	if (tagLen > 1024 * 1024)
+		/* refuse to load more than one megabyte of tag data */
+		goto fail;
 	if (fseek(fp, size - tagLen, SEEK_SET))
 		goto fail;
 
