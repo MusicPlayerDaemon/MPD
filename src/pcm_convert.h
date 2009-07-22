@@ -41,6 +41,9 @@ struct pcm_convert_state {
 
 	/** the buffer for converting the channel count */
 	struct pcm_buffer channels_buffer;
+
+	/** the buffer for swapping the byte order */
+	struct pcm_buffer byteswap_buffer;
 };
 
 /**

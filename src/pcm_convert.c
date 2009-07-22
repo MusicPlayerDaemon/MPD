@@ -40,6 +40,7 @@ void pcm_convert_init(struct pcm_convert_state *state)
 
 	pcm_buffer_init(&state->format_buffer);
 	pcm_buffer_init(&state->channels_buffer);
+	pcm_buffer_init(&state->byteswap_buffer);
 }
 
 void pcm_convert_deinit(struct pcm_convert_state *state)
@@ -48,6 +49,7 @@ void pcm_convert_deinit(struct pcm_convert_state *state)
 
 	pcm_buffer_deinit(&state->format_buffer);
 	pcm_buffer_deinit(&state->channels_buffer);
+	pcm_buffer_deinit(&state->byteswap_buffer);
 }
 
 static const int16_t *
@@ -85,7 +87,7 @@ pcm_convert_16(struct pcm_convert_state *state,
 				      &len);
 
 	if (dest_format->reverse_endian) {
-		buf = pcm_byteswap_16(&state->format_buffer, buf, len);
+		buf = pcm_byteswap_16(&state->byteswap_buffer, buf, len);
 		if (!buf)
 			g_error("pcm_byteswap_16() failed");
 	}
@@ -128,7 +130,7 @@ pcm_convert_24(struct pcm_convert_state *state,
 				      &len);
 
 	if (dest_format->reverse_endian) {
-		buf = pcm_byteswap_32(&state->format_buffer, buf, len);
+		buf = pcm_byteswap_32(&state->byteswap_buffer, buf, len);
 		if (!buf)
 			g_error("pcm_byteswap_32() failed");
 	}
@@ -171,7 +173,7 @@ pcm_convert_32(struct pcm_convert_state *state,
 				      &len);
 
 	if (dest_format->reverse_endian) {
-		buf = pcm_byteswap_32(&state->format_buffer, buf, len);
+		buf = pcm_byteswap_32(&state->byteswap_buffer, buf, len);
 		if (!buf)
 			g_error("pcm_byteswap_32() failed");
 	}
