@@ -81,6 +81,13 @@ volume_filter_open(struct filter *_filter,
 		return false;
 	}
 
+	if (audio_format->reverse_endian) {
+		g_set_error(error_r, volume_quark(), 0,
+			    "Software volume for reverse endian "
+			    "samples is not implemented");
+		return false;
+	}
+
 	filter->audio_format = *audio_format;
 	pcm_buffer_init(&filter->buffer);
 
