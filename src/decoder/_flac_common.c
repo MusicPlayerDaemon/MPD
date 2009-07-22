@@ -44,27 +44,28 @@ static bool
 flac_find_float_comment(const FLAC__StreamMetadata *block,
 			const char *cmnt, float *fl)
 {
-	int offset =
-	    FLAC__metadata_object_vorbiscomment_find_entry_from(block, 0, cmnt);
+	int offset;
+	size_t pos;
+	int len;
+	unsigned char tmp, *p;
 
-	if (offset >= 0) {
-		size_t pos = strlen(cmnt) + 1;	/* 1 is for '=' */
-		int len = block->data.vorbis_comment.comments[offset].length
-		    - pos;
-		if (len > 0) {
-			unsigned char tmp;
-			unsigned char *p = &(block->data.vorbis_comment.
-					     comments[offset].entry[pos]);
-			tmp = p[len];
-			p[len] = '\0';
-			*fl = (float)atof((char *)p);
-			p[len] = tmp;
+	offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block, 0,
+								     cmnt);
+	if (offset < 0)
+		return false;
 
-			return true;
-		}
-	}
+	pos = strlen(cmnt) + 1; /* 1 is for '=' */
+	len = block->data.vorbis_comment.comments[offset].length - pos;
+	if (len <= 0)
+		return false;
 
-	return false;
+	p = &block->data.vorbis_comment.comments[offset].entry[pos];
+	tmp = p[len];
+	p[len] = '\0';
+	*fl = (float)atof((char *)p);
+	p[len] = tmp;
+
+	return true;
 }
 
 static void
