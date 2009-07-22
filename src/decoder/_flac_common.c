@@ -110,25 +110,27 @@ flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 	size_t char_tnum_length = 0;
 	const char *comment = (const char*)entry->entry;
 
-	if (entry->length > name_length &&
-	    g_ascii_strncasecmp(comment, name, name_length) == 0) {
-	        if (char_tnum != NULL) {
-	            char_tnum_length = strlen(char_tnum);
-		    if (entry->length > name_length + char_tnum_length + 2 &&
-		        comment[name_length] == '[' &&
-		        g_ascii_strncasecmp(comment + name_length + 1,
-			char_tnum, char_tnum_length) == 0 &&
-			comment[name_length + char_tnum_length + 1] == ']')
-			    name_length = name_length + char_tnum_length + 2;
-		    else if (entry->length > name_length + char_tnum_length &&
-		        g_ascii_strncasecmp(comment + name_length,
-		        char_tnum, char_tnum_length) == 0)
-			    name_length = name_length + char_tnum_length;
-	        }
-	        if (comment[name_length] == '=') {
-		    *length_r = entry->length - name_length - 1;
-		    return comment + name_length + 1;
-		}
+	if (entry->length <= name_length ||
+	    g_ascii_strncasecmp(comment, name, name_length) != 0)
+		return NULL;
+
+	if (char_tnum != NULL) {
+		char_tnum_length = strlen(char_tnum);
+		if (entry->length > name_length + char_tnum_length + 2 &&
+		    comment[name_length] == '[' &&
+		    g_ascii_strncasecmp(comment + name_length + 1,
+					char_tnum, char_tnum_length) == 0 &&
+		    comment[name_length + char_tnum_length + 1] == ']')
+			name_length = name_length + char_tnum_length + 2;
+		else if (entry->length > name_length + char_tnum_length &&
+			 g_ascii_strncasecmp(comment + name_length,
+					     char_tnum, char_tnum_length) == 0)
+			name_length = name_length + char_tnum_length;
+	}
+
+	if (comment[name_length] == '=') {
+		*length_r = entry->length - name_length - 1;
+		return comment + name_length + 1;
 	}
 
 	return NULL;
