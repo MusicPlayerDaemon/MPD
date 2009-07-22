@@ -74,8 +74,7 @@ const int32_t *
 pcm_resample_fallback_32(struct pcm_resample_state *state,
 			 uint8_t channels,
 			 unsigned src_rate,
-			 const int32_t *src_buffer,
-			 G_GNUC_UNUSED size_t src_size,
+			 const int32_t *src_buffer, size_t src_size,
 			 unsigned dest_rate,
 			 size_t *dest_size_r)
 {
