@@ -45,6 +45,7 @@ static inline void audio_format_init(struct audio_format *af,
 	af->sample_rate = sample_rate;
 	af->bits = bits;
 	af->channels = channels;
+	af->reverse_endian = 0;
 }
 
 static inline bool audio_format_defined(const struct audio_format *af)
