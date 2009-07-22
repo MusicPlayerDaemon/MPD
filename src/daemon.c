@@ -85,22 +85,12 @@ daemonize_kill(void)
 	exit(EXIT_SUCCESS);
 }
 
-#endif
-
 void
 daemonize_close_stdin(void)
 {
-	int fd = open("/dev/null", O_RDONLY);
-
-	if (fd < 0)
-		close(STDIN_FILENO);
-	else if (fd != STDIN_FILENO) {
-		dup2(fd, STDIN_FILENO);
-		close(fd);
-	}
+	close(STDIN_FILENO);
+	open("/dev/null", O_RDONLY);
 }
-
-#ifndef WIN32
 
 void
 daemonize_set_user(void)

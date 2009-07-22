@@ -56,8 +56,13 @@ daemonize_kill(void)
 /**
  * Close stdin (fd 0) and re-open it as /dev/null.
  */
+#ifndef WIN32
 void
 daemonize_close_stdin(void);
+#else
+static inline void
+daemonize_close_stdin(void) {}
+#endif
 
 /**
  * Change to the configured Unix user.
