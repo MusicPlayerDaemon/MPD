@@ -88,8 +88,7 @@ pcm_convert_16(struct pcm_convert_state *state,
 
 	if (dest_format->reverse_endian) {
 		buf = pcm_byteswap_16(&state->byteswap_buffer, buf, len);
-		if (!buf)
-			g_error("pcm_byteswap_16() failed");
+		assert(buf != NULL);
 	}
 
 	*dest_size_r = len;
@@ -131,8 +130,7 @@ pcm_convert_24(struct pcm_convert_state *state,
 
 	if (dest_format->reverse_endian) {
 		buf = pcm_byteswap_32(&state->byteswap_buffer, buf, len);
-		if (!buf)
-			g_error("pcm_byteswap_32() failed");
+		assert(buf != NULL);
 	}
 
 	*dest_size_r = len;
@@ -174,8 +172,7 @@ pcm_convert_32(struct pcm_convert_state *state,
 
 	if (dest_format->reverse_endian) {
 		buf = pcm_byteswap_32(&state->byteswap_buffer, buf, len);
-		if (!buf)
-			g_error("pcm_byteswap_32() failed");
+		assert(buf != NULL);
 	}
 
 	*dest_size_r = len;

@@ -38,8 +38,7 @@ const int16_t *pcm_byteswap_16(struct pcm_buffer *buffer,
 	unsigned i;
 	int16_t *buf = pcm_buffer_get(buffer, len);
 
-	if (!buf)
-		return NULL;
+	assert(buf != NULL);
 
 	for (i = 0; i < len / 2; i++)
 		buf[i] = swab16(src[i]);
@@ -61,8 +60,7 @@ const int32_t *pcm_byteswap_32(struct pcm_buffer *buffer,
 	unsigned i;
 	int32_t *buf = pcm_buffer_get(buffer, len);
 
-	if (!buf)
-		return NULL;
+	assert(buf != NULL);
 
 	for (i = 0; i < len / 4; i++)
 		buf[i] = swab32(src[i]);
