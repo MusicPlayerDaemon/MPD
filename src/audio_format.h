@@ -23,13 +23,42 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+/**
+ * This structure describes the format of a raw PCM stream.
+ */
 struct audio_format {
+	/**
+	 * The sample rate in Hz.  A better name for this attribute is
+	 * "frame rate", because technically, you have two samples per
+	 * frame in stereo sound.
+	 */
 	uint32_t sample_rate;
+
+	/**
+	 * The number of significant bits per sample.  Samples are
+	 * currently always signed.  Supported values are 8, 16, 24,
+	 * 32.  24 bit samples are packed in 32 bit integers.
+	 */
 	uint8_t bits;
+
+	/**
+	 * The number of channels.  Only mono (1) and stereo (2) are
+	 * fully supported currently.
+	 */
 	uint8_t channels;
+
+	/**
+	 * If zero, then samples are stored in host byte order.  If
+	 * nonzero, then samples are stored in the reverse host byte
+	 * order.
+	 */
 	uint8_t reverse_endian;
 };
 
+/**
+ * Clears the #audio_format object, i.e. sets all attributes to an
+ * undefined (invalid) value.
+ */
 static inline void audio_format_clear(struct audio_format *af)
 {
 	af->sample_rate = 0;
@@ -38,6 +67,10 @@ static inline void audio_format_clear(struct audio_format *af)
 	af->reverse_endian = 0;
 }
 
+/**
+ * Initializes an #audio_format object, i.e. sets all
+ * attributes to valid values.
+ */
 static inline void audio_format_init(struct audio_format *af,
 				     uint32_t sample_rate,
 				     uint8_t bits, uint8_t channels)
@@ -48,6 +81,10 @@ static inline void audio_format_init(struct audio_format *af,
 	af->reverse_endian = 0;
 }
 
+/**
+ * Checks whether the specified #audio_format object has a defined
+ * value.
+ */
 static inline bool audio_format_defined(const struct audio_format *af)
 {
 	return af->sample_rate != 0;
@@ -117,17 +154,28 @@ static inline unsigned audio_format_sample_size(const struct audio_format *af)
 		return 4;
 }
 
+/**
+ * Returns the size of each full frame in bytes.
+ */
 static inline unsigned
 audio_format_frame_size(const struct audio_format *af)
 {
 	return audio_format_sample_size(af) * af->channels;
 }
 
+/**
+ * Returns the floating point factor which converts a time span to a
+ * storage size in bytes.
+ */
 static inline double audio_format_time_to_size(const struct audio_format *af)
 {
 	return af->sample_rate * audio_format_frame_size(af);
 }
 
+/**
+ * Returns the floating point factor which converts a storage size in
+ * bytes to a time span.
+ */
 static inline double audioFormatSizeToTime(const struct audio_format *af)
 {
 	return 1.0 / audio_format_time_to_size(af);
