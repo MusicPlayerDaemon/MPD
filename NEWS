@@ -2,6 +2,8 @@ ver 0.15.2 (2009/??/??)
 * tags:
   - ape: check the tag size (fixes integer underflow)
   - ape: added protection against large memory allocations
+* decoders:
+  - mad: skip ID3 frames when libid3tag is disabled
 
 
 ver 0.15.1 (2009/07/15)

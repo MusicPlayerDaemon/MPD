@@ -350,11 +350,11 @@ parse_id3_replay_gain_info(struct id3_tag *tag)
 }
 #endif
 
-#ifdef HAVE_ID3TAG
 static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 			  struct tag **mpd_tag,
 			  struct replay_gain_info **replay_gain_info_r)
 {
+#ifdef HAVE_ID3TAG
 	struct id3_tag *id3_tag = NULL;
 	id3_length_t count;
 	id3_byte_t const *id3_data;
@@ -418,8 +418,34 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 	id3_tag_delete(id3_tag);
 
 	g_free(allocated);
-}
+#else /* !HAVE_ID3TAG */
+	(void)mpd_tag;
+	(void)replay_gain_info_r;
+
+	/* This code is enabled when libid3tag is disabled.  Instead
+	   of parsing the ID3 frame, it just skips it. */
+
+	mad_stream_skip(&data->stream, tagsize);
 #endif
+}
+
+#ifndef HAVE_ID3TAG
+/**
+ * This function emulates libid3tag when it is disabled.  Instead of
+ * doing a real analyzation of the frame, it just checks whether the
+ * frame begins with the string "ID3".  If so, it returns the full
+ * length.
+ */
+static signed long
+id3_tag_query(const void *p0, size_t length)
+{
+	const char *p = p0;
+
+	return length > 3 && memcmp(p, "ID3", 3) == 0
+		? length
+		: 0;
+}
+#endif /* !HAVE_ID3TAG */
 
 static enum mp3_action
 decode_next_frame_header(struct mp3_data *data, G_GNUC_UNUSED struct tag **tag,
@@ -433,7 +459,6 @@ decode_next_frame_header(struct mp3_data *data, G_GNUC_UNUSED struct tag **tag,
 			return DECODE_BREAK;
 	}
 	if (mad_header_decode(&data->frame.header, &data->stream)) {
-#ifdef HAVE_ID3TAG
 		if ((data->stream).error == MAD_ERROR_LOSTSYNC &&
 		    (data->stream).this_frame) {
 			signed long tagsize = id3_tag_query((data->stream).
@@ -454,7 +479,6 @@ decode_next_frame_header(struct mp3_data *data, G_GNUC_UNUSED struct tag **tag,
 				return DECODE_CONT;
 			}
 		}
-#endif
 		if (MAD_RECOVERABLE((data->stream).error)) {
 			return DECODE_SKIP;
 		} else {
@@ -493,7 +517,6 @@ decodeNextFrame(struct mp3_data *data)
 			return DECODE_BREAK;
 	}
 	if (mad_frame_decode(&data->frame, &data->stream)) {
-#ifdef HAVE_ID3TAG
 		if ((data->stream).error == MAD_ERROR_LOSTSYNC) {
 			signed long tagsize = id3_tag_query((data->stream).
 							    this_frame,
@@ -506,7 +529,6 @@ decodeNextFrame(struct mp3_data *data)
 				return DECODE_CONT;
 			}
 		}
-#endif
 		if (MAD_RECOVERABLE((data->stream).error)) {
 			return DECODE_SKIP;
 		} else {
