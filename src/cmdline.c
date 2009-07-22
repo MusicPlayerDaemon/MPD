@@ -96,9 +96,9 @@ void parse_cmdline(int argc, char **argv, struct options *options)
 		  "don't create database, even if it doesn't exist", NULL },
 		{ "no-daemon", 0, 0, G_OPTION_ARG_NONE, &option_no_daemon,
 		  "don't detach from console", NULL },
-		{ "stdout", 0, 0, G_OPTION_ARG_NONE, &options->stderr,
+		{ "stdout", 0, 0, G_OPTION_ARG_NONE, &options->log_stderr,
 		  NULL, NULL },
-		{ "stderr", 0, 0, G_OPTION_ARG_NONE, &options->stderr,
+		{ "stderr", 0, 0, G_OPTION_ARG_NONE, &options->log_stderr,
 		  "print messages to stderr", NULL },
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &options->verbose,
 		  "verbose logging", NULL },
@@ -109,7 +109,7 @@ void parse_cmdline(int argc, char **argv, struct options *options)
 
 	options->kill = false;
 	options->daemon = true;
-	options->stderr = false;
+	options->log_stderr = false;
 	options->verbose = false;
 	options->create_db = 0;
 

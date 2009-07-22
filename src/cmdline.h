@@ -25,7 +25,7 @@
 struct options {
 	gboolean kill;
 	gboolean daemon;
-	gboolean stderr;
+	gboolean log_stderr;
 	gboolean verbose;
 	int create_db;
 };

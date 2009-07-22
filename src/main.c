@@ -307,7 +307,7 @@ int main(int argc, char *argv[])
 
 	stats_global_init();
 	tag_lib_init();
-	log_init(options.verbose, options.stderr);
+	log_init(options.verbose, options.log_stderr);
 
 	listen_global_init();
 
@@ -347,7 +347,7 @@ int main(int argc, char *argv[])
 
 	daemonize(options.daemon);
 
-	setup_log_output(options.stderr);
+	setup_log_output(options.log_stderr);
 
 	initSigHandlers();
 
