@@ -20,7 +20,6 @@
 #include "pcm_resample_internal.h"
 
 #include <assert.h>
-#include <glib.h>
 
 void
 pcm_resample_fallback_deinit(struct pcm_resample_state *state)
