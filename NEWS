@@ -4,6 +4,7 @@ ver 0.15.2 (2009/??/??)
   - ape: added protection against large memory allocations
 * decoders:
   - mad: skip ID3 frames when libid3tag is disabled
+  - flac: parse all replaygain tags
 
 
 ver 0.15.1 (2009/07/15)

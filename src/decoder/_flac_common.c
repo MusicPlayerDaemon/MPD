@@ -40,9 +40,9 @@ flac_data_init(struct flac_data *data, struct decoder * decoder,
 	data->tag = NULL;
 }
 
-static bool
+static void
 flac_find_float_comment(const FLAC__StreamMetadata *block,
-			const char *cmnt, float *fl)
+			const char *cmnt, float *fl, bool *found_r)
 {
 	int offset;
 	size_t pos;
@@ -52,12 +52,12 @@ flac_find_float_comment(const FLAC__StreamMetadata *block,
 	offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block, 0,
 								     cmnt);
 	if (offset < 0)
-		return false;
+		return;
 
 	pos = strlen(cmnt) + 1; /* 1 is for '=' */
 	len = block->data.vorbis_comment.comments[offset].length - pos;
 	if (len <= 0)
-		return false;
+		return;
 
 	p = &block->data.vorbis_comment.comments[offset].entry[pos];
 	tmp = p[len];
@@ -65,28 +65,32 @@ flac_find_float_comment(const FLAC__StreamMetadata *block,
 	*fl = (float)atof((char *)p);
 	p[len] = tmp;
 
-	return true;
+	*found_r = true;
 }
 
 static void
 flac_parse_replay_gain(const FLAC__StreamMetadata *block,
 		       struct flac_data *data)
 {
-	bool found;
+	bool found = false;
 
 	if (data->replay_gain_info)
 		replay_gain_info_free(data->replay_gain_info);
 
 	data->replay_gain_info = replay_gain_info_new();
 
-	found = flac_find_float_comment(block, "replaygain_album_gain",
-					&data->replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain) ||
-		flac_find_float_comment(block, "replaygain_album_peak",
-					&data->replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak) ||
-		flac_find_float_comment(block, "replaygain_track_gain",
-					&data->replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain) ||
-		flac_find_float_comment(block, "replaygain_track_peak",
-					&data->replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak);
+	flac_find_float_comment(block, "replaygain_album_gain",
+				&data->replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain,
+				&found);
+	flac_find_float_comment(block, "replaygain_album_peak",
+				&data->replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak,
+				&found);
+	flac_find_float_comment(block, "replaygain_track_gain",
+				&data->replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain,
+				&found);
+	flac_find_float_comment(block, "replaygain_track_peak",
+				&data->replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak,
+				&found);
 
 	if (!found) {
 		replay_gain_info_free(data->replay_gain_info);
