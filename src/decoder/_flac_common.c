@@ -67,7 +67,6 @@ flac_find_float_comment(const FLAC__StreamMetadata *block,
 	return false;
 }
 
-/* replaygain stuff by AliasMrJones */
 static void
 flac_parse_replay_gain(const FLAC__StreamMetadata *block,
 		       struct flac_data *data)
