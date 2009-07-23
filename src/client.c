@@ -103,6 +103,49 @@ static GList *clients;
 static unsigned num_clients;
 static guint expire_source_id;
 
+static bool
+client_list_is_empty(void)
+{
+	return num_clients == 0;
+}
+
+static bool
+client_list_is_full(void)
+{
+	return num_clients >= client_max_connections;
+}
+
+static struct client *
+client_list_get_first(void)
+{
+	assert(clients != NULL);
+
+	return clients->data;
+}
+
+static void
+client_list_foreach(GFunc func, gpointer user_data)
+{
+	g_list_foreach(clients, func, user_data);
+}
+
+static void
+client_list_add(struct client *client)
+{
+	clients = g_list_prepend(clients, client);
+	++num_clients;
+}
+
+static void
+client_list_remove(struct client *client)
+{
+	assert(num_clients > 0);
+	assert(clients != NULL);
+
+	clients = g_list_remove(clients, client);
+	--num_clients;
+}
+
 static void client_write_deferred(struct client *client);
 
 static void client_write_output(struct client *client);
@@ -223,11 +266,7 @@ deferred_buffer_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 
 static void client_close(struct client *client)
 {
-	assert(num_clients > 0);
-	assert(clients != NULL);
-
-	clients = g_list_remove(clients, client);
-	--num_clients;
+	client_list_remove(client);
 
 	client_set_expired(client);
 
@@ -253,15 +292,14 @@ void client_new(int fd, const struct sockaddr *sa, size_t sa_length, int uid)
 	struct client *client;
 	char *remote;
 
-	if (num_clients >= client_max_connections) {
+	if (client_list_is_full()) {
 		g_warning("Max Connections Reached!");
 		close(fd);
 		return;
 	}
 
 	client = g_new0(struct client, 1);
-	clients = g_list_prepend(clients, client);
-	++num_clients;
+	client_list_add(client);
 
 	client_init(client, fd);
 	client->uid = uid;
@@ -568,13 +606,13 @@ void client_manager_init(void)
 
 static void client_close_all(void)
 {
-	while (clients != NULL) {
-		struct client *client = clients->data;
+	while (!client_list_is_empty()) {
+		struct client *client = client_list_get_first();
 
 		client_close(client);
 	}
 
-	assert(num_clients == 0);
+	assert(client_list_is_empty());
 }
 
 void client_manager_deinit(void)
@@ -607,7 +645,7 @@ client_check_expired_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 static void
 client_manager_expire(void)
 {
-	g_list_foreach(clients, client_check_expired_callback, NULL);
+	client_list_foreach(client_check_expired_callback, NULL);
 }
 
 static size_t
@@ -902,7 +940,7 @@ void client_manager_idle_add(unsigned flags)
 {
 	assert(flags != 0);
 
-	g_list_foreach(clients, client_idle_callback, GUINT_TO_POINTER(flags));
+	client_list_foreach(client_idle_callback, GUINT_TO_POINTER(flags));
 }
 
 bool client_idle_wait(struct client *client, unsigned flags)
