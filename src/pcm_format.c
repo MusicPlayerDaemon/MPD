@@ -21,8 +21,6 @@
 #include "pcm_dither.h"
 #include "pcm_buffer.h"
 
-#include <glib.h>
-
 static void
 pcm_convert_8_to_16(int16_t *out, const int8_t *in,
 		    unsigned num_samples)
@@ -93,7 +91,6 @@ pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 		return dest;
 	}
 
-	g_warning("only 8 or 16 bits are supported for conversion!\n");
 	return NULL;
 }
 
@@ -168,7 +165,6 @@ pcm_convert_to_24(struct pcm_buffer *buffer,
 		return dest;
 	}
 
-	g_warning("only 8 or 24 bits are supported for conversion!\n");
 	return NULL;
 }
 
@@ -243,6 +239,5 @@ pcm_convert_to_32(struct pcm_buffer *buffer,
 		return src;
 	}
 
-	g_warning("only 8 or 32 bits are supported for conversion!\n");
 	return NULL;
 }

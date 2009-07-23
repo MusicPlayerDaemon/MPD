@@ -53,12 +53,6 @@ struct convert_filter {
 	struct pcm_convert_state state;
 };
 
-static inline GQuark
-convert_quark(void)
-{
-	return g_quark_from_static_string("pcm_convert");
-}
-
 static struct filter *
 convert_filter_init(G_GNUC_UNUSED const struct config_param *param,
 		    G_GNUC_UNUSED GError **error_r)
@@ -119,12 +113,10 @@ convert_filter_filter(struct filter *_filter, const void *src, size_t src_size,
 
 	dest = pcm_convert(&filter->state, &filter->in_audio_format,
 			   src, src_size,
-			   &filter->out_audio_format, dest_size_r);
-	if (dest == NULL) {
-		g_set_error(error_r, convert_quark(), 0,
-			    "pcm_convert() has failed");
+			   &filter->out_audio_format, dest_size_r,
+			   error_r);
+	if (dest == NULL)
 		return NULL;
-	}
 
 	return dest;
 }

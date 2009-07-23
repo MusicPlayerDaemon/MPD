@@ -44,8 +44,11 @@ pcm_convert(G_GNUC_UNUSED struct pcm_convert_state *state,
 	    G_GNUC_UNUSED const struct audio_format *src_format,
 	    G_GNUC_UNUSED const void *src, G_GNUC_UNUSED size_t src_size,
 	    G_GNUC_UNUSED const struct audio_format *dest_format,
-	    G_GNUC_UNUSED size_t *dest_size_r)
+	    G_GNUC_UNUSED size_t *dest_size_r,
+	    GError **error_r)
 {
+	g_set_error(error_r, pcm_convert_quark(), 0,
+		    "Not implemented");
 	return NULL;
 }
 

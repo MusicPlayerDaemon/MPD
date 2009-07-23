@@ -56,8 +56,8 @@ static const int16_t *
 pcm_convert_16(struct pcm_convert_state *state,
 	       const struct audio_format *src_format,
 	       const void *src_buffer, size_t src_size,
-	       const struct audio_format *dest_format,
-	       size_t *dest_size_r)
+	       const struct audio_format *dest_format, size_t *dest_size_r,
+	       GError **error_r)
 {
 	const int16_t *buf;
 	size_t len;
@@ -67,24 +67,37 @@ pcm_convert_16(struct pcm_convert_state *state,
 	buf = pcm_convert_to_16(&state->format_buffer, &state->dither,
 				src_format->bits, src_buffer, src_size,
 				&len);
-	if (!buf)
-		g_error("pcm_convert_to_16() failed");
+	if (buf == NULL) {
+		g_set_error(error_r, pcm_convert_quark(), 0,
+			    "Conversion from %u to 16 bit is not implemented",
+			    src_format->bits);
+		return NULL;
+	}
 
 	if (src_format->channels != dest_format->channels) {
 		buf = pcm_convert_channels_16(&state->channels_buffer,
 					      dest_format->channels,
 					      src_format->channels,
 					      buf, len, &len);
-		if (!buf)
-			g_error("pcm_convert_channels_16() failed");
+		if (buf == NULL) {
+			g_set_error(error_r, pcm_convert_quark(), 0,
+				    "Conversion from %u to %u channels "
+				    "is not implemented",
+				    src_format->channels,
+				    dest_format->channels);
+			return NULL;
+		}
 	}
 
-	if (src_format->sample_rate != dest_format->sample_rate)
+	if (src_format->sample_rate != dest_format->sample_rate) {
 		buf = pcm_resample_16(&state->resample,
 				      dest_format->channels,
 				      src_format->sample_rate, buf, len,
-				      dest_format->sample_rate,
-				      &len);
+				      dest_format->sample_rate, &len,
+				      error_r);
+		if (buf == NULL)
+			return NULL;
+	}
 
 	if (dest_format->reverse_endian) {
 		buf = pcm_byteswap_16(&state->byteswap_buffer, buf, len);
@@ -99,8 +112,8 @@ static const int32_t *
 pcm_convert_24(struct pcm_convert_state *state,
 	       const struct audio_format *src_format,
 	       const void *src_buffer, size_t src_size,
-	       const struct audio_format *dest_format,
-	       size_t *dest_size_r)
+	       const struct audio_format *dest_format, size_t *dest_size_r,
+	       GError **error_r)
 {
 	const int32_t *buf;
 	size_t len;
@@ -109,24 +122,37 @@ pcm_convert_24(struct pcm_convert_state *state,
 
 	buf = pcm_convert_to_24(&state->format_buffer, src_format->bits,
 				src_buffer, src_size, &len);
-	if (!buf)
-		g_error("pcm_convert_to_24() failed");
+	if (buf == NULL) {
+		g_set_error(error_r, pcm_convert_quark(), 0,
+			    "Conversion from %u to 24 bit is not implemented",
+			    src_format->bits);
+		return NULL;
+	}
 
 	if (src_format->channels != dest_format->channels) {
 		buf = pcm_convert_channels_24(&state->channels_buffer,
 					      dest_format->channels,
 					      src_format->channels,
 					      buf, len, &len);
-		if (!buf)
-			g_error("pcm_convert_channels_24() failed");
+		if (buf == NULL) {
+			g_set_error(error_r, pcm_convert_quark(), 0,
+				    "Conversion from %u to %u channels "
+				    "is not implemented",
+				    src_format->channels,
+				    dest_format->channels);
+			return NULL;
+		}
 	}
 
-	if (src_format->sample_rate != dest_format->sample_rate)
+	if (src_format->sample_rate != dest_format->sample_rate) {
 		buf = pcm_resample_24(&state->resample,
 				      dest_format->channels,
 				      src_format->sample_rate, buf, len,
-				      dest_format->sample_rate,
-				      &len);
+				      dest_format->sample_rate, &len,
+				      error_r);
+		if (buf == NULL)
+			return NULL;
+	}
 
 	if (dest_format->reverse_endian) {
 		buf = pcm_byteswap_32(&state->byteswap_buffer, buf, len);
@@ -141,8 +167,8 @@ static const int32_t *
 pcm_convert_32(struct pcm_convert_state *state,
 	       const struct audio_format *src_format,
 	       const void *src_buffer, size_t src_size,
-	       const struct audio_format *dest_format,
-	       size_t *dest_size_r)
+	       const struct audio_format *dest_format, size_t *dest_size_r,
+	       GError **error_r)
 {
 	const int32_t *buf;
 	size_t len;
@@ -151,24 +177,37 @@ pcm_convert_32(struct pcm_convert_state *state,
 
 	buf = pcm_convert_to_32(&state->format_buffer, src_format->bits,
 				src_buffer, src_size, &len);
-	if (!buf)
-		g_error("pcm_convert_to_32() failed");
+	if (buf == NULL) {
+		g_set_error(error_r, pcm_convert_quark(), 0,
+			    "Conversion from %u to 24 bit is not implemented",
+			    src_format->bits);
+		return NULL;
+	}
 
 	if (src_format->channels != dest_format->channels) {
 		buf = pcm_convert_channels_32(&state->channels_buffer,
 					      dest_format->channels,
 					      src_format->channels,
 					      buf, len, &len);
-		if (!buf)
-			g_error("pcm_convert_channels_32() failed");
+		if (buf == NULL) {
+			g_set_error(error_r, pcm_convert_quark(), 0,
+				    "Conversion from %u to %u channels "
+				    "is not implemented",
+				    src_format->channels,
+				    dest_format->channels);
+			return NULL;
+		}
 	}
 
-	if (src_format->sample_rate != dest_format->sample_rate)
+	if (src_format->sample_rate != dest_format->sample_rate) {
 		buf = pcm_resample_32(&state->resample,
 				      dest_format->channels,
 				      src_format->sample_rate, buf, len,
-				      dest_format->sample_rate,
-				      &len);
+				      dest_format->sample_rate, &len,
+				      error_r);
+		if (buf == NULL)
+			return buf;
+	}
 
 	if (dest_format->reverse_endian) {
 		buf = pcm_byteswap_32(&state->byteswap_buffer, buf, len);
@@ -184,26 +223,32 @@ pcm_convert(struct pcm_convert_state *state,
 	    const struct audio_format *src_format,
 	    const void *src, size_t src_size,
 	    const struct audio_format *dest_format,
-	    size_t *dest_size_r)
+	    size_t *dest_size_r,
+	    GError **error_r)
 {
 	switch (dest_format->bits) {
 	case 16:
 		return pcm_convert_16(state,
 				      src_format, src, src_size,
-				      dest_format, dest_size_r);
+				      dest_format, dest_size_r,
+				      error_r);
 
 	case 24:
 		return pcm_convert_24(state,
 				      src_format, src, src_size,
-				      dest_format, dest_size_r);
+				      dest_format, dest_size_r,
+				      error_r);
 
 	case 32:
 		return pcm_convert_32(state,
 				      src_format, src, src_size,
-				      dest_format, dest_size_r);
+				      dest_format, dest_size_r,
+				      error_r);
 
 	default:
-		g_error("cannot convert to %u bit\n", dest_format->bits);
+		g_set_error(error_r, pcm_convert_quark(), 0,
+			    "PCM conversion to %u bit is not implemented",
+			    dest_format->bits);
 		return NULL;
 	}
 }

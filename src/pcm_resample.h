@@ -48,7 +48,7 @@ struct pcm_resample_state {
 		uint8_t channels;
 	} prev;
 
-	bool error;
+	int error;
 #endif
 
 	struct pcm_buffer buffer;
@@ -82,8 +82,8 @@ pcm_resample_16(struct pcm_resample_state *state,
 		uint8_t channels,
 		unsigned src_rate,
 		const int16_t *src_buffer, size_t src_size,
-		unsigned dest_rate,
-		size_t *dest_size_r);
+		unsigned dest_rate, size_t *dest_size_r,
+		GError **error_r);
 
 /**
  * Resamples 32 bit PCM data.
@@ -102,8 +102,8 @@ pcm_resample_32(struct pcm_resample_state *state,
 		uint8_t channels,
 		unsigned src_rate,
 		const int32_t *src_buffer, size_t src_size,
-		unsigned dest_rate,
-		size_t *dest_size_r);
+		unsigned dest_rate, size_t *dest_size_r,
+		GError **error_r);
 
 /**
  * Resamples 24 bit PCM data.
@@ -122,14 +122,14 @@ pcm_resample_24(struct pcm_resample_state *state,
 		uint8_t channels,
 		unsigned src_rate,
 		const int32_t *src_buffer, size_t src_size,
-		unsigned dest_rate,
-		size_t *dest_size_r)
+		unsigned dest_rate, size_t *dest_size_r,
+		GError **error_r)
 {
 	/* reuse the 32 bit code - the resampler code doesn't care if
 	   the upper 8 bits are actually used */
 	return pcm_resample_32(state, channels,
 			       src_rate, src_buffer, src_size,
-			       dest_rate, dest_size_r);
+			       dest_rate, dest_size_r, error_r);
 }
 
 #endif

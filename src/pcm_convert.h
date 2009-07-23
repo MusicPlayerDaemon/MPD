@@ -46,6 +46,12 @@ struct pcm_convert_state {
 	struct pcm_buffer byteswap_buffer;
 };
 
+static inline GQuark
+pcm_convert_quark(void)
+{
+	return g_quark_from_static_string("pcm_convert");
+}
+
 /**
  * Initializes a pcm_convert_state object.
  */
@@ -66,13 +72,16 @@ void pcm_convert_deinit(struct pcm_convert_state *state);
  * @param src_size the size of #src in bytes
  * @param dest_format the requested destination audio format
  * @param dest_size_r returns the number of bytes of the destination buffer
- * @return the destination buffer
+ * @param error_r location to store the error occuring, or NULL to
+ * ignore errors
+ * @return the destination buffer, or NULL on error
  */
 const void *
 pcm_convert(struct pcm_convert_state *state,
 	    const struct audio_format *src_format,
 	    const void *src, size_t src_size,
 	    const struct audio_format *dest_format,
-	    size_t *dest_size_r);
+	    size_t *dest_size_r,
+	    GError **error_r);
 
 #endif

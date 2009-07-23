@@ -225,6 +225,7 @@ decoder_data(struct decoder *decoder,
 	     struct replay_gain_info *replay_gain_info)
 {
 	const char *data = _data;
+	GError *error = NULL;
 
 	assert(dc.state == DECODE_STATE_DECODE);
 	assert(dc.pipe != NULL);
@@ -259,14 +260,15 @@ decoder_data(struct decoder *decoder,
 	if (!audio_format_equals(&dc.in_audio_format, &dc.out_audio_format)) {
 		data = pcm_convert(&decoder->conv_state,
 				   &dc.in_audio_format, data, length,
-				   &dc.out_audio_format, &length);
-
-		/* under certain circumstances, pcm_convert() may
-		   return an empty buffer - this condition should be
-		   investigated further, but for now, do this check as
-		   a workaround: */
-		if (data == NULL)
-			return DECODE_COMMAND_NONE;
+				   &dc.out_audio_format, &length,
+				   &error);
+		if (data == NULL) {
+			/* the PCM conversion has failed - stop
+			   playback, since we have no better way to
+			   bail out */
+			g_warning("%s", error->message);
+			return DECODE_COMMAND_STOP;
+		}
 	}
 
 	while (length > 0) {
