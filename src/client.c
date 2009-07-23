@@ -35,16 +35,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <errno.h>
-
-#ifdef WIN32
-#include <ws2tcpip.h>
-#include <winsock.h>
-#else
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#endif
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "client"
