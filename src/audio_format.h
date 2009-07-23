@@ -172,13 +172,4 @@ static inline double audio_format_time_to_size(const struct audio_format *af)
 	return af->sample_rate * audio_format_frame_size(af);
 }
 
-/**
- * Returns the floating point factor which converts a storage size in
- * bytes to a time span.
- */
-static inline double audioFormatSizeToTime(const struct audio_format *af)
-{
-	return 1.0 / audio_format_time_to_size(af);
-}
-
 #endif

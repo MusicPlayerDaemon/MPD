@@ -93,12 +93,6 @@ struct player {
 	 * The current audio format for the audio outputs.
 	 */
 	struct audio_format play_audio_format;
-
-	/**
-	 * Coefficient for converting a PCM buffer size into a time
-	 * span.
-	 */
-	double size_to_time;
 };
 
 static struct music_buffer *player_buffer;
@@ -200,8 +194,6 @@ player_check_decoder_startup(struct player *player)
 		pc.total_time = dc.total_time;
 		pc.audio_format = dc.in_audio_format;
 		player->play_audio_format = dc.out_audio_format;
-		player->size_to_time =
-			audioFormatSizeToTime(&dc.out_audio_format);
 		player->decoder_starting = false;
 
 		if (!player->paused &&
@@ -446,7 +438,7 @@ update_song_tag(struct song *song, const struct tag *new_tag)
  */
 static bool
 play_chunk(struct song *song, struct music_chunk *chunk,
-	   const struct audio_format *format, double sizeToTime)
+	   const struct audio_format *format)
 {
 	assert(music_chunk_check_format(chunk, format));
 
@@ -469,7 +461,8 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 		return false;
 	}
 
-	pc.total_play_time += sizeToTime * chunk->length;
+	pc.total_play_time += (double)chunk->length /
+		audio_format_time_to_size(format);
 	return true;
 }
 
@@ -540,8 +533,7 @@ play_next_chunk(struct player *player)
 
 	/* play the current chunk */
 
-	success = play_chunk(player->song, chunk, &player->play_audio_format,
-			     player->size_to_time);
+	success = play_chunk(player->song, chunk, &player->play_audio_format);
 
 	if (!success) {
 		music_buffer_return(player_buffer, chunk);
@@ -608,7 +600,6 @@ static void do_play(void)
 		.xfade = XFADE_UNKNOWN,
 		.cross_fading = false,
 		.cross_fade_chunks = 0,
-		.size_to_time = 0.0,
 	};
 
 	player.pipe = music_pipe_new();
