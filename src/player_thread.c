@@ -414,6 +414,31 @@ static void player_process_command(struct player *player)
 	}
 }
 
+static void
+update_song_tag(struct song *song, const struct tag *new_tag)
+{
+	struct tag *old_tag;
+
+	if (song_is_file(song))
+		/* don't update tags of local files, only remote
+		   streams may change tags dynamically */
+		return;
+
+	old_tag = song->tag;
+	song->tag = tag_dup(new_tag);
+
+	if (old_tag != NULL)
+		tag_free(old_tag);
+
+	/* the main thread will update the playlist version when he
+	   receives this event */
+	event_pipe_emit(PIPE_EVENT_TAG);
+
+	/* notify all clients that the tag of the current song has
+	   changed */
+	idle_add(IDLE_PLAYER);
+}
+
 /**
  * Plays a #music_chunk object (after applying software volume).  If
  * it contains a (stream) tag, copy it to the current song, so MPD's
@@ -425,25 +450,8 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 {
 	assert(music_chunk_check_format(chunk, format));
 
-	if (chunk->tag != NULL) {
-		if (!song_is_file(song)) {
-			/* always update the tag of remote streams */
-			struct tag *old_tag = song->tag;
-
-			song->tag = tag_dup(chunk->tag);
-
-			if (old_tag != NULL)
-				tag_free(old_tag);
-
-			/* the main thread will update the playlist
-			   version when he receives this event */
-			event_pipe_emit(PIPE_EVENT_TAG);
-
-			/* notify all clients that the tag of the
-			   current song has changed */
-			idle_add(IDLE_PLAYER);
-		}
-	}
+	if (chunk->tag != NULL)
+		update_song_tag(song, chunk->tag);
 
 	if (chunk->length == 0) {
 		music_buffer_return(player_buffer, chunk);
