@@ -21,6 +21,7 @@ ver 0.16 (20??/??/??)
 * log unused/unknown block parameters
 * save state when stopped
 * renamed option "--stdout" to "--stderr"
+* obey $(sysconfdir) for default mpd.conf location
 
 
 ver 0.15.1 (2009/07/15)

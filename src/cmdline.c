@@ -35,7 +35,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define SYSTEM_CONFIG_FILE_LOCATION	"/etc/mpd.conf"
 #define USER_CONFIG_FILE_LOCATION1	".mpdconf"
 #define USER_CONFIG_FILE_LOCATION2	".mpd/mpd.conf"
 

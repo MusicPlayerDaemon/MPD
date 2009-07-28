@@ -3,6 +3,8 @@ AUTOMAKE_OPTIONS = foreign 1.10 dist-bzip2
 
 AM_CPPFLAGS = -I$(srcdir)/src $(GLIB_CFLAGS)
 
+AM_CPPFLAGS += -DSYSTEM_CONFIG_FILE_LOCATION='"$(sysconfdir)/mpd.conf"'
+
 bin_PROGRAMS = src/mpd
 
 src_mpd_CFLAGS = $(AM_CFLAGS) $(MPD_CFLAGS)
