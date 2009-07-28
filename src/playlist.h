@@ -117,7 +117,8 @@ playlist_get_queue(const struct playlist *playlist)
 	return &playlist->queue;
 }
 
-void playlist_clear(struct playlist *playlist);
+void
+playlist_clear(struct playlist *playlist);
 
 #ifndef WIN32
 /**
@@ -143,19 +144,23 @@ playlist_delete(struct playlist *playlist, unsigned song);
 enum playlist_result
 playlist_delete_id(struct playlist *playlist, unsigned song);
 
-void stopPlaylist(struct playlist *playlist);
+void
+playlist_stop(struct playlist *playlist);
 
 enum playlist_result
-playPlaylist(struct playlist *playlist, int song);
+playlist_play(struct playlist *playlist, int song);
 
 enum playlist_result
-playPlaylistById(struct playlist *playlist, int song);
+playlist_play_id(struct playlist *playlist, int song);
 
-void nextSongInPlaylist(struct playlist *playlist);
+void
+playlist_next(struct playlist *playlist);
 
-void syncPlayerAndPlaylist(struct playlist *playlist);
+void
+playlist_sync(struct playlist *playlist);
 
-void previousSongInPlaylist(struct playlist *playlist);
+void
+playlist_previous(struct playlist *playlist);
 
 void
 playlist_shuffle(struct playlist *playlist, unsigned start, unsigned end);
@@ -176,46 +181,52 @@ enum playlist_result
 playlist_swap_songs_id(struct playlist *playlist, unsigned id1, unsigned id2);
 
 bool
-getPlaylistRepeatStatus(const struct playlist *playlist);
+playlist_get_repeat(const struct playlist *playlist);
 
-void setPlaylistRepeatStatus(struct playlist *playlist, bool status);
-
-bool
-getPlaylistRandomStatus(const struct playlist *playlist);
-
-void setPlaylistRandomStatus(struct playlist *playlist, bool status);
+void
+playlist_set_repeat(struct playlist *playlist, bool status);
 
 bool
-getPlaylistSingleStatus(const struct playlist *playlist);
+playlist_get_random(const struct playlist *playlist);
 
-void setPlaylistSingleStatus(struct playlist *playlist, bool status);
+void
+playlist_set_random(struct playlist *playlist, bool status);
 
 bool
-getPlaylistConsumeStatus(const struct playlist *playlist);
+playlist_get_single(const struct playlist *playlist);
 
-void setPlaylistConsumeStatus(struct playlist *playlist, bool status);
+void
+playlist_set_single(struct playlist *playlist, bool status);
 
-int getPlaylistCurrentSong(const struct playlist *playlist);
+bool
+playlist_get_consume(const struct playlist *playlist);
 
-int getPlaylistNextSong(const struct playlist *playlist);
+void
+playlist_set_consume(struct playlist *playlist, bool status);
+
+int
+playlist_get_current_song(const struct playlist *playlist);
+
+int
+playlist_get_next_song(const struct playlist *playlist);
 
 unsigned
-getPlaylistSongId(const struct playlist *playlist, unsigned song);
+playlist_get_song_id(const struct playlist *playlist, unsigned song);
 
-int getPlaylistLength(const struct playlist *playlist);
+int
+playlist_get_length(const struct playlist *playlist);
 
 unsigned long
-getPlaylistVersion(const struct playlist *playlist);
+playlist_get_version(const struct playlist *playlist);
 
 enum playlist_result
-seekSongInPlaylist(struct playlist *playlist, unsigned song, float seek_time);
+playlist_seek_song(struct playlist *playlist, unsigned song, float seek_time);
 
 enum playlist_result
-seekSongInPlaylistById(struct playlist *playlist,
+playlist_seek_song_id(struct playlist *playlist,
 		       unsigned id, float seek_time);
 
-void playlistVersionChange(struct playlist *playlist);
-
-int is_valid_playlist_name(const char *utf8path);
+void
+playlist_increment_version_all(struct playlist *playlist);
 
 #endif

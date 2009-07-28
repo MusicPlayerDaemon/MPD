@@ -69,7 +69,7 @@ playlist_print_id(struct client *client, const struct playlist *playlist,
 bool
 playlist_print_current(struct client *client, const struct playlist *playlist)
 {
-	int current_position = getPlaylistCurrentSong(playlist);
+	int current_position = playlist_get_current_song(playlist);
 
 	if (current_position < 0)
 		return false;

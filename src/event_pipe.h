@@ -32,7 +32,7 @@ enum pipe_event {
 	/** an idle event was emitted */
 	PIPE_EVENT_IDLE,
 
-	/** must call syncPlayerAndPlaylist() */
+	/** must call playlist_sync() */
 	PIPE_EVENT_PLAYLIST,
 
 	/** the current song's tag has changed */

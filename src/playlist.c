@@ -34,7 +34,8 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "playlist"
 
-void playlistVersionChange(struct playlist *playlist)
+void
+playlist_increment_version_all(struct playlist *playlist)
 {
 	queue_modify_all(&playlist->queue);
 	idle_add(IDLE_PLAYLIST);
@@ -98,7 +99,8 @@ playlist_queue_song_order(struct playlist *playlist, unsigned order)
  * Check if the player thread has already started playing the "queued"
  * song.
  */
-static void syncPlaylistWithQueue(struct playlist *playlist)
+static void
+playlist_sync_with_queue(struct playlist *playlist)
 {
 	if (pc.next_song == NULL && playlist->queued != -1) {
 		/* queued song has started: copy queued to current,
@@ -178,7 +180,7 @@ playlist_update_queued_song(struct playlist *playlist, const struct song *prev)
 }
 
 void
-playPlaylistOrderNumber(struct playlist *playlist, int orderNum)
+playlist_play_order(struct playlist *playlist, int orderNum)
 {
 	struct song *song;
 	char *uri;
@@ -197,13 +199,14 @@ playPlaylistOrderNumber(struct playlist *playlist, int orderNum)
 }
 
 static void
-playPlaylistIfPlayerStopped(struct playlist *playlist);
+playlist_resume_playback(struct playlist *playlist);
 
 /**
  * This is the "PLAYLIST" event handler.  It is invoked by the player
  * thread whenever it requests a new queued song, or when it exits.
  */
-void syncPlayerAndPlaylist(struct playlist *playlist)
+void
+playlist_sync(struct playlist *playlist)
 {
 	if (!playlist->playing)
 		/* this event has reached us out of sync: we aren't
@@ -215,11 +218,11 @@ void syncPlayerAndPlaylist(struct playlist *playlist)
 		   should be restarted with the next song.  That can
 		   happen if the playlist isn't filling the queue fast
 		   enough */
-		playPlaylistIfPlayerStopped(playlist);
+		playlist_resume_playback(playlist);
 	else {
 		/* check if the player thread has already started
 		   playing the queued song */
-		syncPlaylistWithQueue(playlist);
+		playlist_sync_with_queue(playlist);
 
 		/* make sure the queued song is always set (if
 		   possible) */
@@ -233,7 +236,7 @@ void syncPlayerAndPlaylist(struct playlist *playlist)
  * decide whether to re-start playback
  */
 static void
-playPlaylistIfPlayerStopped(struct playlist *playlist)
+playlist_resume_playback(struct playlist *playlist)
 {
 	enum player_error error;
 
@@ -251,37 +254,38 @@ playPlaylistIfPlayerStopped(struct playlist *playlist)
 	    playlist->error_count >= queue_length(&playlist->queue))
 		/* too many errors, or critical error: stop
 		   playback */
-		stopPlaylist(playlist);
+		playlist_stop(playlist);
 	else
 		/* continue playback at the next song */
-		nextSongInPlaylist(playlist);
+		playlist_next(playlist);
 }
 
 bool
-getPlaylistRepeatStatus(const struct playlist *playlist)
+playlist_get_repeat(const struct playlist *playlist)
 {
 	return playlist->queue.repeat;
 }
 
 bool
-getPlaylistRandomStatus(const struct playlist *playlist)
+playlist_get_random(const struct playlist *playlist)
 {
 	return playlist->queue.random;
 }
 
 bool
-getPlaylistSingleStatus(const struct playlist *playlist)
+playlist_get_single(const struct playlist *playlist)
 {
 	return playlist->queue.single;
 }
 
 bool
-getPlaylistConsumeStatus(const struct playlist *playlist)
+playlist_get_consume(const struct playlist *playlist)
 {
 	return playlist->queue.consume;
 }
 
-void setPlaylistRepeatStatus(struct playlist *playlist, bool status)
+void
+playlist_set_repeat(struct playlist *playlist, bool status)
 {
 	if (status == playlist->queue.repeat)
 		return;
@@ -296,7 +300,8 @@ void setPlaylistRepeatStatus(struct playlist *playlist, bool status)
 	idle_add(IDLE_OPTIONS);
 }
 
-static void orderPlaylist(struct playlist *playlist)
+static void
+playlist_order(struct playlist *playlist)
 {
 	if (playlist->current >= 0)
 		/* update playlist.current, order==position now */
@@ -306,7 +311,8 @@ static void orderPlaylist(struct playlist *playlist)
 	queue_restore_order(&playlist->queue);
 }
 
-void setPlaylistSingleStatus(struct playlist *playlist, bool status)
+void
+playlist_set_single(struct playlist *playlist, bool status)
 {
 	if (status == playlist->queue.single)
 		return;
@@ -321,7 +327,8 @@ void setPlaylistSingleStatus(struct playlist *playlist, bool status)
 	idle_add(IDLE_OPTIONS);
 }
 
-void setPlaylistConsumeStatus(struct playlist *playlist, bool status)
+void
+playlist_set_consume(struct playlist *playlist, bool status)
 {
 	if (status == playlist->queue.consume)
 		return;
@@ -330,7 +337,8 @@ void setPlaylistConsumeStatus(struct playlist *playlist, bool status)
 	idle_add(IDLE_OPTIONS);
 }
 
-void setPlaylistRandomStatus(struct playlist *playlist, bool status)
+void
+playlist_set_random(struct playlist *playlist, bool status)
 {
 	const struct song *queued;
 
@@ -365,14 +373,15 @@ void setPlaylistRandomStatus(struct playlist *playlist, bool status)
 		} else
 			playlist->current = -1;
 	} else
-		orderPlaylist(playlist);
+		playlist_order(playlist);
 
 	playlist_update_queued_song(playlist, queued);
 
 	idle_add(IDLE_OPTIONS);
 }
 
-int getPlaylistCurrentSong(const struct playlist *playlist)
+int
+playlist_get_current_song(const struct playlist *playlist)
 {
 	if (playlist->current >= 0)
 		return queue_order_to_position(&playlist->queue,
@@ -381,7 +390,8 @@ int getPlaylistCurrentSong(const struct playlist *playlist)
 	return -1;
 }
 
-int getPlaylistNextSong(const struct playlist *playlist)
+int
+playlist_get_next_song(const struct playlist *playlist)
 {
 	if (playlist->current >= 0)
 	{
@@ -404,19 +414,19 @@ int getPlaylistNextSong(const struct playlist *playlist)
 }
 
 unsigned long
-getPlaylistVersion(const struct playlist *playlist)
+playlist_get_version(const struct playlist *playlist)
 {
 	return playlist->queue.version;
 }
 
 int
-getPlaylistLength(const struct playlist *playlist)
+playlist_get_length(const struct playlist *playlist)
 {
 	return queue_length(&playlist->queue);
 }
 
 unsigned
-getPlaylistSongId(const struct playlist *playlist, unsigned song)
+playlist_get_song_id(const struct playlist *playlist, unsigned song)
 {
 	return queue_position_to_id(&playlist->queue, song);
 }

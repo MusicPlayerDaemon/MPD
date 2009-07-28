@@ -47,6 +47,6 @@ playlist_update_queued_song(struct playlist *playlist,
 			    const struct song *prev);
 
 void
-playPlaylistOrderNumber(struct playlist *playlist, int orderNum);
+playlist_play_order(struct playlist *playlist, int orderNum);
 
 #endif

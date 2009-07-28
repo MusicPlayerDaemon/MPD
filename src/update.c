@@ -868,7 +868,7 @@ static void update_finished_event(void)
 
 	if (modified) {
 		/* send "idle" events */
-		playlistVersionChange(&g_playlist);
+		playlist_increment_version_all(&g_playlist);
 		idle_add(IDLE_DATABASE);
 	}
 

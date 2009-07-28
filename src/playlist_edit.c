@@ -44,7 +44,7 @@ static void playlist_increment_version(struct playlist *playlist)
 
 void playlist_clear(struct playlist *playlist)
 {
-	stopPlaylist(playlist);
+	playlist_stop(playlist);
 
 	/* make sure there are no references to allocated songs
 	   anymore */
@@ -238,11 +238,11 @@ playlist_delete(struct playlist *playlist, unsigned song)
 
 		if (playlist->current >= 0 && !paused)
 			/* play the song after the deleted one */
-			playPlaylistOrderNumber(playlist, playlist->current);
+			playlist_play_order(playlist, playlist->current);
 		else
 			/* no songs left to play, stop playback
 			   completely */
-			stopPlaylist(playlist);
+			playlist_stop(playlist);
 
 		queued = NULL;
 	} else if (playlist->current == (int)songOrder)

@@ -37,7 +37,7 @@ playlist_tag_event(void)
 static void
 playlist_event(void)
 {
-	syncPlayerAndPlaylist(&g_playlist);
+	playlist_sync(&g_playlist);
 }
 
 void

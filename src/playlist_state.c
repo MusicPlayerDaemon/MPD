@@ -144,23 +144,23 @@ playlist_state_restore(const char *line, FILE *fp, struct playlist *playlist)
 			if (strcmp
 			    (&(buffer[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
 			     "1") == 0) {
-				setPlaylistRepeatStatus(playlist, true);
+				playlist_set_repeat(playlist, true);
 			} else
-				setPlaylistRepeatStatus(playlist, false);
+				playlist_set_repeat(playlist, false);
 		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_SINGLE)) {
 			if (strcmp
 			    (&(buffer[strlen(PLAYLIST_STATE_FILE_SINGLE)]),
 			     "1") == 0) {
-				setPlaylistSingleStatus(playlist, true);
+				playlist_set_single(playlist, true);
 			} else
-				setPlaylistSingleStatus(playlist, false);
+				playlist_set_single(playlist, false);
 		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CONSUME)) {
 			if (strcmp
 			    (&(buffer[strlen(PLAYLIST_STATE_FILE_CONSUME)]),
 			     "1") == 0) {
-				setPlaylistConsumeStatus(playlist, true);
+				playlist_set_consume(playlist, true);
 			} else
-				setPlaylistConsumeStatus(playlist, false);
+				playlist_set_consume(playlist, false);
 		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CROSSFADE)) {
 			setPlayerCrossFade(atoi
 					   (&
@@ -181,7 +181,7 @@ playlist_state_restore(const char *line, FILE *fp, struct playlist *playlist)
 		}
 	}
 
-	setPlaylistRandomStatus(playlist, random_mode);
+	playlist_set_random(playlist, random_mode);
 
 	if (!queue_is_empty(&playlist->queue)) {
 		if (!queue_valid_position(&playlist->queue, current))
@@ -190,9 +190,9 @@ playlist_state_restore(const char *line, FILE *fp, struct playlist *playlist)
 		if (state == PLAYER_STATE_STOP /* && config_option */)
 			playlist->current = current;
 		else if (seek_time == 0)
-			playPlaylist(playlist, current);
+			playlist_play(playlist, current);
 		else
-			seekSongInPlaylist(playlist, current, seek_time);
+			playlist_seek_song(playlist, current, seek_time);
 
 		if (state == PLAYER_STATE_PAUSE)
 			playerPause();

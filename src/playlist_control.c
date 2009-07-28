@@ -38,7 +38,7 @@ enum {
 	PLAYLIST_PREV_UNLESS_ELAPSED = 10,
 };
 
-void stopPlaylist(struct playlist *playlist)
+void playlist_stop(struct playlist *playlist)
 {
 	if (!playlist->playing)
 		return;
@@ -68,7 +68,7 @@ void stopPlaylist(struct playlist *playlist)
 	}
 }
 
-enum playlist_result playPlaylist(struct playlist *playlist, int song)
+enum playlist_result playlist_play(struct playlist *playlist, int song)
 {
 	unsigned i = song;
 
@@ -115,28 +115,28 @@ enum playlist_result playPlaylist(struct playlist *playlist, int song)
 	playlist->stop_on_error = false;
 	playlist->error_count = 0;
 
-	playPlaylistOrderNumber(playlist, i);
+	playlist_play_order(playlist, i);
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
 enum playlist_result
-playPlaylistById(struct playlist *playlist, int id)
+playlist_play_id(struct playlist *playlist, int id)
 {
 	int song;
 
 	if (id == -1) {
-		return playPlaylist(playlist, id);
+		return playlist_play(playlist, id);
 	}
 
 	song = queue_id_to_position(&playlist->queue, id);
 	if (song < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
-	return playPlaylist(playlist, song);
+	return playlist_play(playlist, song);
 }
 
 void
-nextSongInPlaylist(struct playlist *playlist)
+playlist_next(struct playlist *playlist)
 {
 	int next_order;
 	int current;
@@ -157,7 +157,7 @@ nextSongInPlaylist(struct playlist *playlist)
 		/* cancel single */
 		playlist->queue.single = false;
 		/* no song after this one: stop playback */
-		stopPlaylist(playlist);
+		playlist_stop(playlist);
 
 		/* reset "current song" */
 		playlist->current = -1;
@@ -174,11 +174,11 @@ nextSongInPlaylist(struct playlist *playlist)
 			queue_shuffle_order(&playlist->queue);
 
 			/* note that playlist->current and playlist->queued are
-			   now invalid, but playPlaylistOrderNumber() will
+			   now invalid, but playlist_play_order() will
 			   discard them anyway */
 		}
 
-		playPlaylistOrderNumber(playlist, next_order);
+		playlist_play_order(playlist, next_order);
 	}
 
 	/* Consume mode removes each played songs. */
@@ -186,7 +186,7 @@ nextSongInPlaylist(struct playlist *playlist)
 		playlist_delete(playlist, queue_order_to_position(&playlist->queue, current));
 }
 
-void previousSongInPlaylist(struct playlist *playlist)
+void playlist_previous(struct playlist *playlist)
 {
 	if (!playlist->playing)
 		return;
@@ -196,20 +196,20 @@ void previousSongInPlaylist(struct playlist *playlist)
 		/* re-start playing the current song (just like the
 		   "prev" button on CD players) */
 
-		playPlaylistOrderNumber(playlist, playlist->current);
+		playlist_play_order(playlist, playlist->current);
 	} else {
 		if (playlist->current > 0) {
 			/* play the preceding song */
-			playPlaylistOrderNumber(playlist,
+			playlist_play_order(playlist,
 						playlist->current - 1);
 		} else if (playlist->queue.repeat) {
 			/* play the last song in "repeat" mode */
-			playPlaylistOrderNumber(playlist,
+			playlist_play_order(playlist,
 						queue_length(&playlist->queue) - 1);
 		} else {
 			/* re-start playing the current song if it's
 			   the first one */
-			playPlaylistOrderNumber(playlist, playlist->current);
+			playlist_play_order(playlist, playlist->current);
 		}
 	}
 
@@ -217,7 +217,7 @@ void previousSongInPlaylist(struct playlist *playlist)
 }
 
 enum playlist_result
-seekSongInPlaylist(struct playlist *playlist, unsigned song, float seek_time)
+playlist_seek_song(struct playlist *playlist, unsigned song, float seek_time)
 {
 	const struct song *queued;
 	unsigned i;
@@ -241,7 +241,7 @@ seekSongInPlaylist(struct playlist *playlist, unsigned song, float seek_time)
 		/* seeking is not within the current song - first
 		   start playing the new song */
 
-		playPlaylistOrderNumber(playlist, i);
+		playlist_play_order(playlist, i);
 		queued = NULL;
 	}
 
@@ -259,11 +259,11 @@ seekSongInPlaylist(struct playlist *playlist, unsigned song, float seek_time)
 }
 
 enum playlist_result
-seekSongInPlaylistById(struct playlist *playlist, unsigned id, float seek_time)
+playlist_seek_song_id(struct playlist *playlist, unsigned id, float seek_time)
 {
 	int song = queue_id_to_position(&playlist->queue, id);
 	if (song < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
-	return seekSongInPlaylist(playlist, song, seek_time);
+	return playlist_seek_song(playlist, song, seek_time);
 }
