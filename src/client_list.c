@@ -19,22 +19,50 @@
 
 #include "client_internal.h"
 
-bool client_is_expired(const struct client *client)
+#include <assert.h>
+
+static GList *clients;
+static unsigned num_clients;
+
+bool
+client_list_is_empty(void)
 {
-	return client->channel == NULL;
+	return num_clients == 0;
 }
 
-int client_get_uid(const struct client *client)
+bool
+client_list_is_full(void)
 {
-	return client->uid;
+	return num_clients >= client_max_connections;
 }
 
-unsigned client_get_permission(const struct client *client)
+struct client *
+client_list_get_first(void)
 {
-	return client->permission;
+	assert(clients != NULL);
+
+	return clients->data;
 }
 
-void client_set_permission(struct client *client, unsigned permission)
+void
+client_list_add(struct client *client)
 {
-	client->permission = permission;
+	clients = g_list_prepend(clients, client);
+	++num_clients;
+}
+
+void
+client_list_foreach(GFunc func, gpointer user_data)
+{
+	g_list_foreach(clients, func, user_data);
+}
+
+void
+client_list_remove(struct client *client)
+{
+	assert(num_clients > 0);
+	assert(clients != NULL);
+
+	clients = g_list_remove(clients, client);
+	--num_clients;
 }

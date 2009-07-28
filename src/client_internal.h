@@ -21,6 +21,10 @@
 #define MPD_CLIENT_INTERNAL_H
 
 #include "client.h"
+#include "command.h"
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "client"
 
 struct deferred_buffer {
 	size_t size;
@@ -64,5 +68,78 @@ struct client {
 	/** idle flags that the client wants to receive */
 	unsigned idle_subscriptions;
 };
+
+extern unsigned int client_max_connections;
+extern int client_timeout;
+extern size_t client_max_command_list_size;
+extern size_t client_max_output_buffer_size;
+
+bool
+client_list_is_empty(void);
+
+bool
+client_list_is_full(void);
+
+struct client *
+client_list_get_first(void);
+
+void
+client_list_add(struct client *client);
+
+void
+client_list_foreach(GFunc func, gpointer user_data);
+
+void
+client_list_remove(struct client *client);
+
+void
+client_close(struct client *client);
+
+static inline void
+new_cmd_list_ptr(struct client *client, const char *s)
+{
+	client->cmd_list = g_slist_prepend(client->cmd_list, g_strdup(s));
+}
+
+static inline void
+free_cmd_list(GSList *list)
+{
+	for (GSList *tmp = list; tmp != NULL; tmp = g_slist_next(tmp))
+		g_free(tmp->data);
+
+	g_slist_free(list);
+}
+
+void
+client_set_expired(struct client *client);
+
+/**
+ * Schedule an "expired" check for all clients: permanently delete
+ * clients which have been set "expired" with client_set_expired().
+ */
+void
+client_schedule_expire(void);
+
+/**
+ * Removes a scheduled "expired" check.
+ */
+void
+client_deinit_expire(void);
+
+enum command_return
+client_read(struct client *client);
+
+enum command_return
+client_process_line(struct client *client, char *line);
+
+void
+client_write_deferred(struct client *client);
+
+void
+client_write_output(struct client *client);
+
+gboolean
+client_in_event(GIOChannel *source, GIOCondition condition,
+		gpointer data);
 
 #endif

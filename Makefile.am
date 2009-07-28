@@ -204,6 +204,15 @@ src_mpd_SOURCES = \
 	src/filter_registry.c \
 	src/update.c \
 	src/client.c \
+	src/client_event.c \
+	src/client_expire.c \
+	src/client_global.c \
+	src/client_idle.c \
+	src/client_list.c \
+	src/client_new.c \
+	src/client_process.c \
+	src/client_read.c \
+	src/client_write.c \
 	src/listen.c \
 	src/log.c \
 	src/ls.c \
