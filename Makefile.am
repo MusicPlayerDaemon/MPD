@@ -87,6 +87,7 @@ mpd_headers = \
 	src/icy_server.h \
 	src/icy_metadata.h \
 	src/client.h \
+	src/client_internal.h \
 	src/listen.h \
 	src/log.h \
 	src/ls.h \
