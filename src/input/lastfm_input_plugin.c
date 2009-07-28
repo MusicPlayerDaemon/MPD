@@ -175,13 +175,12 @@ lastfm_xmldecode(const char *value)
 	unsigned int i;
 
 	for (i = 0; i < sizeof(entities)/sizeof(entities[0]); ++i) {
+		char *p;
 		int slen = strlen(entities[i].text);
-		char *p = strstr(txt, entities[i].text);
-		if (p == NULL)
-			continue;
-
-		*p = entities[i].repl;
-		g_strlcpy(p + 1, p + slen, strlen(p) - slen);
+		while ((p = strstr(txt, entities[i].text))) {
+			*p = entities[i].repl;
+			g_strlcpy(p + 1, p + slen, strlen(p) - slen);
+		}
 	}
 	return txt;
 }
