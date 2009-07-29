@@ -39,11 +39,7 @@ void command_init(void);
 void command_finish(void);
 
 enum command_return
-command_process_list(struct client *client,
-		     bool list_ok, GSList *list);
-
-enum command_return
-command_process(struct client *client, char *commandString);
+command_process(struct client *client, unsigned num, char *line);
 
 void command_success(struct client *client);
 

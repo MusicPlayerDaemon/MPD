@@ -25,6 +25,28 @@
 #define CLIENT_LIST_OK_MODE_BEGIN "command_list_ok_begin"
 #define CLIENT_LIST_MODE_END "command_list_end"
 
+static enum command_return
+client_process_command_list(struct client *client, bool list_ok, GSList *list)
+{
+	enum command_return ret = COMMAND_RETURN_OK;
+	unsigned num = 0;
+
+	for (GSList *cur = list; cur != NULL; cur = g_slist_next(cur)) {
+		char *cmd = cur->data;
+
+		g_debug("command_process_list: process command \"%s\"",
+			cmd);
+		ret = command_process(client, num++, cmd);
+		g_debug("command_process_list: command returned %i", ret);
+		if (ret != COMMAND_RETURN_OK || client_is_expired(client))
+			break;
+		else if (list_ok)
+			client_puts(client, "list_OK\n");
+	}
+
+	return ret;
+}
+
 enum command_return
 client_process_line(struct client *client, char *line)
 {
@@ -61,9 +83,9 @@ client_process_line(struct client *client, char *line)
 			   to restore the correct order */
 			client->cmd_list = g_slist_reverse(client->cmd_list);
 
-			ret = command_process_list(client,
-						   client->cmd_list_OK,
-						   client->cmd_list);
+			ret = client_process_command_list(client,
+							  client->cmd_list_OK,
+							  client->cmd_list);
 			g_debug("[%u] process command "
 				"list returned %i", client->num, ret);
 
@@ -104,7 +126,7 @@ client_process_line(struct client *client, char *line)
 		} else {
 			g_debug("[%u] process command \"%s\"",
 				client->num, line);
-			ret = command_process(client, line);
+			ret = command_process(client, 0, line);
 			g_debug("[%u] command returned %i",
 				client->num, ret);
 

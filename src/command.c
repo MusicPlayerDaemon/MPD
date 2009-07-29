@@ -1878,13 +1878,15 @@ command_checked_lookup(struct client *client, unsigned permission,
 }
 
 enum command_return
-command_process(struct client *client, char *line)
+command_process(struct client *client, unsigned num, char *line)
 {
 	GError *error = NULL;
 	int argc;
 	char *argv[COMMAND_ARGV_MAX] = { NULL };
 	const struct command *cmd;
 	enum command_return ret = COMMAND_RETURN_ERROR;
+
+	command_list_num = num;
 
 	/* get the command name (first word on the line) */
 
@@ -1940,32 +1942,7 @@ command_process(struct client *client, char *line)
 		ret = cmd->handler(client, argc, argv);
 
 	current_command = NULL;
-
-	return ret;
-}
-
-enum command_return
-command_process_list(struct client *client,
-		     bool list_ok, GSList *list)
-{
-	enum command_return ret = COMMAND_RETURN_OK;
-
 	command_list_num = 0;
 
-	for (GSList *cur = list; cur != NULL; cur = g_slist_next(cur)) {
-		char *cmd = cur->data;
-
-		g_debug("command_process_list: process command \"%s\"",
-			cmd);
-		ret = command_process(client, cmd);
-		g_debug("command_process_list: command returned %i", ret);
-		if (ret != COMMAND_RETURN_OK || client_is_expired(client))
-			break;
-		else if (list_ok)
-			client_puts(client, "list_OK\n");
-		command_list_num++;
-	}
-
-	command_list_num = 0;
 	return ret;
 }
