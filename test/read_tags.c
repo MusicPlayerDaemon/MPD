@@ -24,11 +24,16 @@
 #include "pcm_volume.h"
 #include "tag_ape.h"
 #include "tag_id3.h"
+#include "config.h"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <unistd.h>
+
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
 
 /**
  * No-op dummy.
@@ -118,6 +123,11 @@ int main(int argc, char **argv)
 	const struct decoder_plugin *plugin;
 	struct tag *tag;
 	bool empty;
+
+#ifdef HAVE_LOCALE_H
+	/* initialize locale */
+	setlocale(LC_CTYPE,"");
+#endif
 
 	if (argc != 3) {
 		g_printerr("Usage: read_tags DECODER FILE\n");
