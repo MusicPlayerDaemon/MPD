@@ -353,13 +353,15 @@ ffmpeg_copy_metadata(struct tag *tag, AVMetadata *m,
 static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
 {
 	struct tag *tag = (struct tag *) ctx->tag;
-	const AVFormatContext *f = ctx->format_context;
+	AVFormatContext *f = ctx->format_context;
 
 	tag->time = 0;
 	if (f->duration != (int64_t)AV_NOPTS_VALUE)
 		tag->time = f->duration / AV_TIME_BASE;
 
 #if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
+	av_metadata_conv(f, NULL, f->iformat->metadata_conv);
+
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_TITLE, "title");
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_ARTIST, "author");
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_ALBUM, "album");

@@ -10,6 +10,7 @@ ver 0.16 (20??/??/??)
   - id3: revised "performer" tag support
 * decoders:
   - ffmpeg: support multiple tags
+  - ffmpeg: convert metadata to generic format
   - sndfile: new decoder plugin based on libsndfile
   - flac: load external cue sheet when no internal one
 * encoders:
