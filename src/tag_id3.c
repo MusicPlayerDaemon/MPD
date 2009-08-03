@@ -34,7 +34,6 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "id3"
 
-#  define tag_is_id3v1(tag) (id3_tag_options(tag, 0, 0) & ID3_TAG_OPTION_ID3V1)
 #  ifndef ID3_FRAME_COMPOSER
 #    define ID3_FRAME_COMPOSER "TCOM"
 #  endif
@@ -53,6 +52,12 @@
 #ifndef ID3_FRAME_ALBUM_ARTIST
 #define ID3_FRAME_ALBUM_ARTIST "TPE2"
 #endif
+
+static inline bool
+tag_is_id3v1(struct id3_tag *tag)
+{
+	return (id3_tag_options(tag, 0, 0) & ID3_TAG_OPTION_ID3V1) != 0;
+}
 
 static id3_utf8_t *
 tag_id3_getstring(const struct id3_frame *frame, unsigned i)
