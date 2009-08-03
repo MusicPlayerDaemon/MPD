@@ -119,9 +119,16 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4, enum tag_type type)
 	return utf8_stripped;
 }
 
+/**
+ * Import a "Text information frame" (ID3v2.4.0 section 4.2).  It
+ * contains 2 fields:
+ *
+ * - encoding
+ * - string list
+ */
 static void
-tag_id3_import_frame(struct tag *dest, struct id3_tag *tag, const char *id,
-		     enum tag_type type)
+tag_id3_import_text(struct tag *dest, struct id3_tag *tag, const char *id,
+		    enum tag_type type)
 {
 	struct id3_frame const *frame;
 	id3_ucs4_t const *ucs4;
@@ -130,110 +137,75 @@ tag_id3_import_frame(struct tag *dest, struct id3_tag *tag, const char *id,
 	unsigned int nstrings, i;
 
 	frame = id3_tag_findframe(tag, id, 0);
-	/* Check frame */
-	if (!frame)
-	{
+	if (frame == NULL || frame->nfields != 2)
 		return;
-	}
-	/* Check fields in frame */
-	if(frame->nfields == 0)
-	{
-		g_debug("Frame has no fields");
+
+	/* check the encoding field */
+
+	field = id3_frame_field(frame, 0);
+	if (field == NULL || field->type != ID3_FIELD_TYPE_TEXTENCODING)
 		return;
-	}
 
-	/* Starting with T is a stringlist */
-	if (id[0] == 'T')
-	{
-		/* This one contains 2 fields:
-		 * 1st: Text encoding
-		 * 2: Stringlist
-		 * Shamefully this isn't the RL case.
-		 * But I am going to enforce it anyway. 
-		 */
-		if(frame->nfields != 2) 
-		{
-			g_debug("Invalid number '%i' of fields for TXX frame",
-				frame->nfields);
-			return;
-		}
-		field = &frame->fields[0];
-		/**
-		 * First field is encoding field.
-		 * This is ignored by mpd.
-		 */
-		if(field->type != ID3_FIELD_TYPE_TEXTENCODING)
-		{
-			g_debug("Expected encoding, found: %i",
-				field->type);
-		}
-		/* Process remaining fields, should be only one */
-		field = &frame->fields[1];
-		/* Encoding field */
-		if(field->type == ID3_FIELD_TYPE_STRINGLIST) {
-			/* Get the number of strings available */
-			nstrings = id3_field_getnstrings(field);
-			for (i = 0; i < nstrings; i++) {
-				ucs4 = id3_field_getstrings(field,i);
-				if(!ucs4)
-					continue;
-				utf8 = import_id3_string(tag_is_id3v1(tag),
-							 ucs4, type);
-				if(!utf8)
-					continue;
+	/* process the value(s) */
 
-				tag_add_item(dest, type, (char *)utf8);
-				g_free(utf8);
-			}
-		}
-		else {
-			g_warning("Field type not processed: %i",
-				  (int)id3_field_gettextencoding(field));
-		}
+	field = id3_frame_field(frame, 1);
+	if (field == NULL || field->type != ID3_FIELD_TYPE_STRINGLIST)
+		return;
+
+	/* Get the number of strings available */
+	nstrings = id3_field_getnstrings(field);
+	for (i = 0; i < nstrings; i++) {
+		ucs4 = id3_field_getstrings(field, i);
+		if (ucs4 == NULL)
+			continue;
+
+		utf8 = import_id3_string(tag_is_id3v1(tag),
+					 ucs4, type);
+		if (utf8 == NULL)
+			continue;
+
+		tag_add_item(dest, type, (char *)utf8);
+		g_free(utf8);
 	}
-	/* A comment frame */
-	else if(!strcmp(ID3_FRAME_COMMENT, id))
-	{
-		/* A comment frame is different... */
-	/* 1st: encoding
-         * 2nd: Language
-         * 3rd: String
-         * 4th: FullString.
-         * The 'value' we want is in the 4th field
-         */
-		if(frame->nfields == 4)
-		{
-			/* for now I only read the 4th field, with the fullstring */
-			field = &frame->fields[3];
-			if(field->type == ID3_FIELD_TYPE_STRINGFULL)
-			{
-				ucs4 = id3_field_getfullstring(field);
-				if(ucs4)
-				{
-					utf8 = import_id3_string(tag_is_id3v1(tag),
-								 ucs4, type);
-					if(utf8)
-					{
-						tag_add_item(dest, type, (char *)utf8);
-						g_free(utf8);
-					}
-				}
-			}
-			else
-			{
-				g_debug("4th field in comment frame differs from expected, got '%i': ignoring",
-					field->type);
-			}
-		}
-		else
-		{
-			g_debug("Invalid 'comments' tag, got '%i' fields instead of 4",
-				frame->nfields);
-		}
-	}
-	/* Unsupported */
-	else
-		g_debug("Unsupported tag type requrested");
+}
+
+/**
+ * Import a "Comment frame" (ID3v2.4.0 section 4.10).  It
+ * contains 4 fields:
+ *
+ * - encoding
+ * - language
+ * - string
+ * - full string (we use this one)
+ */
+static void
+tag_id3_import_comment(struct tag *dest, struct id3_tag *tag, const char *id,
+		       enum tag_type type)
+{
+	struct id3_frame const *frame;
+	id3_ucs4_t const *ucs4;
+	id3_utf8_t *utf8;
+	union id3_field const *field;
+
+	frame = id3_tag_findframe(tag, id, 0);
+	if (frame == NULL || frame->nfields != 4)
+		return;
+
+	/* for now I only read the 4th field, with the fullstring */
+	field = id3_frame_field(frame, 3);
+	if (field == NULL)
+		return;
+
+	ucs4 = id3_field_getfullstring(field);
+	if (ucs4 == NULL)
+		return;
+
+	utf8 = import_id3_string(tag_is_id3v1(tag), ucs4, type);
+	if (utf8 == NULL)
+		return;
+
+	tag_add_item(dest, type, (char *)utf8);
+	g_free(utf8);
 }
 
 /**
@@ -339,23 +311,23 @@ struct tag *tag_id3_import(struct id3_tag * tag)
 {
 	struct tag *ret = tag_new();
 
-	tag_id3_import_frame(ret, tag, ID3_FRAME_ARTIST, TAG_ITEM_ARTIST);
-	tag_id3_import_frame(ret, tag, ID3_FRAME_ALBUM_ARTIST,
-			     TAG_ITEM_ALBUM_ARTIST);
-	tag_id3_import_frame(ret, tag, ID3_FRAME_ARTIST_SORT,
-			     TAG_ARTIST_SORT);
-	tag_id3_import_frame(ret, tag, ID3_FRAME_ALBUM_ARTIST_SORT,
-			     TAG_ALBUM_ARTIST_SORT);
-	tag_id3_import_frame(ret, tag, ID3_FRAME_TITLE, TAG_ITEM_TITLE);
-	tag_id3_import_frame(ret, tag, ID3_FRAME_ALBUM, TAG_ITEM_ALBUM);
-	tag_id3_import_frame(ret, tag, ID3_FRAME_TRACK, TAG_ITEM_TRACK);
-	tag_id3_import_frame(ret, tag, ID3_FRAME_YEAR, TAG_ITEM_DATE);
-	tag_id3_import_frame(ret, tag, ID3_FRAME_GENRE, TAG_ITEM_GENRE);
-	tag_id3_import_frame(ret, tag, ID3_FRAME_COMPOSER, TAG_ITEM_COMPOSER);
-	tag_id3_import_frame(ret, tag, "TPE3", TAG_ITEM_PERFORMER);
-	tag_id3_import_frame(ret, tag, "TPE4", TAG_ITEM_PERFORMER);
-	tag_id3_import_frame(ret, tag, ID3_FRAME_COMMENT, TAG_ITEM_COMMENT);
-	tag_id3_import_frame(ret, tag, ID3_FRAME_DISC, TAG_ITEM_DISC);
+	tag_id3_import_text(ret, tag, ID3_FRAME_ARTIST, TAG_ITEM_ARTIST);
+	tag_id3_import_text(ret, tag, ID3_FRAME_ALBUM_ARTIST,
+			    TAG_ITEM_ALBUM_ARTIST);
+	tag_id3_import_text(ret, tag, ID3_FRAME_ARTIST_SORT,
+			    TAG_ARTIST_SORT);
+	tag_id3_import_text(ret, tag, ID3_FRAME_ALBUM_ARTIST_SORT,
+			    TAG_ALBUM_ARTIST_SORT);
+	tag_id3_import_text(ret, tag, ID3_FRAME_TITLE, TAG_ITEM_TITLE);
+	tag_id3_import_text(ret, tag, ID3_FRAME_ALBUM, TAG_ITEM_ALBUM);
+	tag_id3_import_text(ret, tag, ID3_FRAME_TRACK, TAG_ITEM_TRACK);
+	tag_id3_import_text(ret, tag, ID3_FRAME_YEAR, TAG_ITEM_DATE);
+	tag_id3_import_text(ret, tag, ID3_FRAME_GENRE, TAG_ITEM_GENRE);
+	tag_id3_import_text(ret, tag, ID3_FRAME_COMPOSER, TAG_ITEM_COMPOSER);
+	tag_id3_import_text(ret, tag, "TPE3", TAG_ITEM_PERFORMER);
+	tag_id3_import_text(ret, tag, "TPE4", TAG_ITEM_PERFORMER);
+	tag_id3_import_comment(ret, tag, ID3_FRAME_COMMENT, TAG_ITEM_COMMENT);
+	tag_id3_import_text(ret, tag, ID3_FRAME_DISC, TAG_ITEM_DISC);
 
 	tag_id3_import_musicbrainz(ret, tag);
 	tag_id3_import_ufid(ret, tag);
