@@ -79,7 +79,7 @@ tag_id3_getstring(const struct id3_frame *frame, unsigned i)
 /* This will try to convert a string to utf-8,
  */
 static id3_utf8_t *
-import_id3_string(int is_id3v1, const id3_ucs4_t *ucs4, int type)
+import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4, enum tag_type type)
 {
 	id3_utf8_t *utf8, *utf8_stripped;
 	id3_latin1_t *isostr;
@@ -120,7 +120,8 @@ import_id3_string(int is_id3v1, const id3_ucs4_t *ucs4, int type)
 }
 
 static void
-tag_id3_import_frame(struct tag *dest, struct id3_tag *tag, const char *id, int type)
+tag_id3_import_frame(struct tag *dest, struct id3_tag *tag, const char *id,
+		     enum tag_type type)
 {
 	struct id3_frame const *frame;
 	id3_ucs4_t const *ucs4;
