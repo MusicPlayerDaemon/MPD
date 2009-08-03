@@ -79,14 +79,12 @@ tag_id3_getstring(const struct id3_frame *frame, unsigned i)
 /* This will try to convert a string to utf-8,
  */
 static id3_utf8_t *
-import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4, enum tag_type type)
+import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
 {
 	id3_utf8_t *utf8, *utf8_stripped;
 	id3_latin1_t *isostr;
 	const char *encoding;
 
-	if (type == TAG_ITEM_GENRE)
-		ucs4 = id3_genre_name(ucs4);
 	/* use encoding field here? */
 	if (is_id3v1 &&
 	    (encoding = config_get_string(CONF_ID3V1_ENCODING, NULL)) != NULL) {
@@ -159,8 +157,10 @@ tag_id3_import_text(struct tag *dest, struct id3_tag *tag, const char *id,
 		if (ucs4 == NULL)
 			continue;
 
-		utf8 = import_id3_string(tag_is_id3v1(tag),
-					 ucs4, type);
+		if (type == TAG_ITEM_GENRE)
+			ucs4 = id3_genre_name(ucs4);
+
+		utf8 = import_id3_string(tag_is_id3v1(tag), ucs4);
 		if (utf8 == NULL)
 			continue;
 
@@ -200,7 +200,7 @@ tag_id3_import_comment(struct tag *dest, struct id3_tag *tag, const char *id,
 	if (ucs4 == NULL)
 		return;
 
-	utf8 = import_id3_string(tag_is_id3v1(tag), ucs4, type);
+	utf8 = import_id3_string(tag_is_id3v1(tag), ucs4);
 	if (utf8 == NULL)
 		return;
 
