@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "daemon.h"
 
 #include <glib.h>
@@ -128,21 +129,28 @@ daemonize_set_user(void)
 static void
 daemonize_detach(void)
 {
-	pid_t pid;
-
 	/* flush all file handles before duplicating the buffers */
 
 	fflush(NULL);
 
+#ifdef HAVE_DAEMON
+
+	if (daemon(0, 1))
+		g_error("daemon() failed: %s", g_strerror(errno));
+
+#elif defined(HAVE_FORK)
+
 	/* detach from parent process */
 
-	pid = fork();
-	if (pid < 0)
+	switch (fork()) {
+	case -1:
 		g_error("fork() failed: %s", g_strerror(errno));
-
-	if (pid > 0)
+	case 0:
+		break;
+	default:
 		/* exit the parent process */
 		_exit(EXIT_SUCCESS);
+	}
 
 	/* release the current working directory */
 
@@ -152,6 +160,10 @@ daemonize_detach(void)
 	/* detach from the current session */
 
 	setsid();
+
+#else
+	g_error("no support for daemonizing");
+#endif
 
 	g_debug("daemonized!");
 }
