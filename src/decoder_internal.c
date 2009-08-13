@@ -28,6 +28,24 @@
 #include <assert.h>
 
 /**
+ * This is a wrapper for input_stream_buffer().  It assumes that the
+ * decoder is currently locked, and temporarily unlocks it while
+ * calling input_stream_buffer().  We shouldn't hold the lock during a
+ * potentially blocking operation.
+ */
+static int
+decoder_input_buffer(struct input_stream *is)
+{
+	int ret;
+
+	decoder_unlock();
+	ret = input_stream_buffer(is) > 0;
+	decoder_lock();
+
+	return ret;
+}
+
+/**
  * All chunks are full of decoded data; wait for the player to free
  * one.
  */
@@ -38,9 +56,12 @@ need_chunks(struct input_stream *is, bool do_wait)
 	    dc.command == DECODE_COMMAND_SEEK)
 		return dc.command;
 
-	if ((is == NULL || input_stream_buffer(is) <= 0) && do_wait) {
-		notify_wait(&dc.notify);
+	if ((is == NULL || decoder_input_buffer(is) <= 0) && do_wait) {
+		decoder_wait();
+
+		decoder_unlock();
 		notify_signal(&pc.notify);
+		decoder_lock();
 
 		return dc.command;
 	}
@@ -63,7 +84,9 @@ decoder_get_chunk(struct decoder *decoder, struct input_stream *is)
 		if (decoder->chunk != NULL)
 			return decoder->chunk;
 
+		decoder_lock();
 		cmd = need_chunks(is, true);
+		decoder_unlock();
 	} while (cmd == DECODE_COMMAND_NONE);
 
 	return NULL;

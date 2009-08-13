@@ -135,7 +135,7 @@ player_wait_for_decoder(struct player *player)
 {
 	dc_command_wait(&pc.notify);
 
-	if (decoder_has_failed()) {
+	if (decoder_lock_has_failed()) {
 		assert(dc.next_song == NULL || dc.next_song->url != NULL);
 		pc.errored_song = dc.next_song;
 		pc.error = PLAYER_ERROR_FILE;
@@ -174,9 +174,13 @@ player_check_decoder_startup(struct player *player)
 {
 	assert(player->decoder_starting);
 
+	decoder_lock();
+
 	if (decoder_has_failed()) {
 		/* the decoder failed */
 		assert(dc.next_song == NULL || dc.next_song->url != NULL);
+
+		decoder_unlock();
 
 		pc.errored_song = dc.next_song;
 		pc.error = PLAYER_ERROR_FILE;
@@ -184,6 +188,8 @@ player_check_decoder_startup(struct player *player)
 		return false;
 	} else if (!decoder_is_starting()) {
 		/* the decoder is ready and ok */
+
+		decoder_unlock();
 
 		if (audio_format_defined(&player->play_audio_format) &&
 		    !audio_output_all_wait(1))
@@ -219,6 +225,7 @@ player_check_decoder_startup(struct player *player)
 	} else {
 		/* the decoder is not yet ready; wait
 		   some more */
+		decoder_unlock();
 		notify_wait(&pc.notify);
 
 		return true;
@@ -512,13 +519,20 @@ play_next_chunk(struct player *player)
 			music_buffer_return(player_buffer, other_chunk);
 		} else {
 			/* there are not enough decoded chunks yet */
+
+			decoder_lock();
+
 			if (decoder_is_idle()) {
 				/* the decoder isn't running, abort
 				   cross fading */
+				decoder_unlock();
+
 				player->xfade = XFADE_DISABLED;
 			} else {
 				/* wait for the decoder */
-				notify_signal(&dc.notify);
+				decoder_signal();
+				decoder_unlock();
+
 				notify_wait(&pc.notify);
 
 				return true;
@@ -549,10 +563,12 @@ play_next_chunk(struct player *player)
 	/* this formula should prevent that the decoder gets woken up
 	   with each chunk; it is more efficient to make it decode a
 	   larger block at a time */
+	decoder_lock();
 	if (!decoder_is_idle() &&
 	    music_pipe_size(dc.pipe) <= (pc.buffered_before_play +
 					 music_buffer_size(player_buffer) * 3) / 4)
-		notify_signal(&dc.notify);
+		decoder_signal();
+	decoder_unlock();
 
 	return true;
 }
@@ -634,7 +650,7 @@ static void do_play(void)
 			   prevent stuttering on slow machines */
 
 			if (music_pipe_size(player.pipe) < pc.buffered_before_play &&
-			    !decoder_is_idle()) {
+			    !decoder_lock_is_idle()) {
 				/* not enough decoded buffer space yet */
 
 				if (!player.paused &&
@@ -669,7 +685,7 @@ static void do_play(void)
 		*/
 #endif
 
-		if (decoder_is_idle() && player.queued) {
+		if (decoder_lock_is_idle() && player.queued) {
 			/* the decoder has finished the current song;
 			   make it decode the next song */
 			assert(pc.next_song != NULL);
@@ -682,7 +698,7 @@ static void do_play(void)
 
 		if (dc.pipe != NULL && dc.pipe != player.pipe &&
 		    player.xfade == XFADE_UNKNOWN &&
-		    !decoder_is_starting()) {
+		    !decoder_lock_is_starting()) {
 			/* enable cross fading in this song?  if yes,
 			   calculate how many chunks will be required
 			   for it */
@@ -720,7 +736,7 @@ static void do_play(void)
 
 			if (!player_song_border(&player))
 				break;
-		} else if (decoder_is_idle()) {
+		} else if (decoder_lock_is_idle()) {
 			/* check the size of the pipe again, because
 			   the decoder thread may have added something
 			   since we last checked */

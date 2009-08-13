@@ -57,7 +57,10 @@ void decoder_initialized(G_GNUC_UNUSED struct decoder * decoder,
 	dc.seekable = seekable;
 	dc.total_time = total_time;
 
+	decoder_lock();
 	dc.state = DECODE_STATE_DECODE;
+	decoder_unlock();
+
 	notify_signal(&pc.notify);
 
 	g_debug("audio_format=%u:%u:%u, seekable=%s",
@@ -88,6 +91,8 @@ enum decoder_command decoder_get_command(G_GNUC_UNUSED struct decoder * decoder)
 
 void decoder_command_finished(G_GNUC_UNUSED struct decoder * decoder)
 {
+	decoder_lock();
+
 	assert(dc.command != DECODE_COMMAND_NONE);
 	assert(dc.command != DECODE_COMMAND_SEEK ||
 	       dc.seek_error || decoder->seeking);
@@ -105,6 +110,8 @@ void decoder_command_finished(G_GNUC_UNUSED struct decoder * decoder)
 	}
 
 	dc.command = DECODE_COMMAND_NONE;
+	decoder_unlock();
+
 	notify_signal(&pc.notify);
 }
 
@@ -226,21 +233,23 @@ decoder_data(struct decoder *decoder,
 {
 	const char *data = _data;
 	GError *error = NULL;
+	enum decoder_command cmd;
 
 	assert(dc.state == DECODE_STATE_DECODE);
 	assert(dc.pipe != NULL);
 	assert(length % audio_format_frame_size(&dc.in_audio_format) == 0);
 
-	if (dc.command == DECODE_COMMAND_STOP ||
-	    dc.command == DECODE_COMMAND_SEEK ||
+	decoder_lock();
+	cmd = dc.command;
+	decoder_unlock();
+
+	if (cmd == DECODE_COMMAND_STOP || cmd == DECODE_COMMAND_SEEK ||
 	    length == 0)
-		return dc.command;
+		return cmd;
 
 	/* send stream tags */
 
 	if (update_stream_tag(decoder, is)) {
-		enum decoder_command cmd;
-
 		if (decoder->decoder_tag != NULL) {
 			/* merge with tag from decoder plugin */
 			struct tag *tag;

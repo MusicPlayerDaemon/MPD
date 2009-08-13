@@ -18,6 +18,7 @@
  */
 
 #include "decoder_control.h"
+#include "notify.h"
 
 #include <assert.h>
 
@@ -25,36 +26,63 @@ struct decoder_control dc;
 
 void dc_init(void)
 {
-	notify_init(&dc.notify);
+	dc.mutex = g_mutex_new();
+	dc.cond = g_cond_new();
+
 	dc.state = DECODE_STATE_STOP;
 	dc.command = DECODE_COMMAND_NONE;
 }
 
 void dc_deinit(void)
 {
-	notify_deinit(&dc.notify);
+	g_cond_free(dc.cond);
+	g_mutex_free(dc.mutex);
+}
+
+static void
+dc_command_wait_locked(struct notify *notify)
+{
+	while (dc.command != DECODE_COMMAND_NONE) {
+		decoder_signal();
+		decoder_unlock();
+
+		notify_wait(notify);
+
+		decoder_lock();
+	}
 }
 
 void
 dc_command_wait(struct notify *notify)
 {
-	while (dc.command != DECODE_COMMAND_NONE) {
-		notify_signal(&dc.notify);
-		notify_wait(notify);
-	}
+	decoder_lock();
+	dc_command_wait_locked(notify);
+	decoder_unlock();
+}
+
+static void
+dc_command_locked(struct notify *notify, enum decoder_command cmd)
+{
+	dc.command = cmd;
+	dc_command_wait_locked(notify);
 }
 
 static void
 dc_command(struct notify *notify, enum decoder_command cmd)
 {
-	dc.command = cmd;
-	dc_command_wait(notify);
+	decoder_lock();
+	dc_command_locked(notify, cmd);
+	decoder_unlock();
 }
 
 static void dc_command_async(enum decoder_command cmd)
 {
+	decoder_lock();
+
 	dc.command = cmd;
-	notify_signal(&dc.notify);
+	decoder_signal();
+
+	decoder_unlock();
 }
 
 void
@@ -80,15 +108,19 @@ dc_start_async(struct song *song)
 void
 dc_stop(struct notify *notify)
 {
+	decoder_lock();
+
 	if (dc.command != DECODE_COMMAND_NONE)
 		/* Attempt to cancel the current command.  If it's too
 		   late and the decoder thread is already executing
 		   the old command, we'll call STOP again in this
 		   function (see below). */
-		dc_command(notify, DECODE_COMMAND_STOP);
+		dc_command_locked(notify, DECODE_COMMAND_STOP);
 
 	if (dc.state != DECODE_STATE_STOP && dc.state != DECODE_STATE_ERROR)
-		dc_command(notify, DECODE_COMMAND_STOP);
+		dc_command_locked(notify, DECODE_COMMAND_STOP);
+
+	decoder_unlock();
 }
 
 bool
