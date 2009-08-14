@@ -377,12 +377,14 @@ char*
 flac_cue_track(	const char* pathname,
 		const unsigned int tnum)
 {
-	FLAC__StreamMetadata* cs = FLAC__metadata_object_new(FLAC__METADATA_TYPE_CUESHEET);
+	FLAC__bool success;
+	FLAC__StreamMetadata* cs;
 
-	FLAC__metadata_get_cuesheet(pathname, &cs);
-
-	if (cs == NULL)
+	success = FLAC__metadata_get_cuesheet(pathname, &cs);
+	if (!success)
 		return NULL;
+
+	assert(cs != NULL);
 
 	if (cs->data.cue_sheet.num_tracks <= 1)
 	{

@@ -5,6 +5,7 @@ ver 0.15.2 (2009/??/??)
 * decoders:
   - mad: skip ID3 frames when libid3tag is disabled
   - flac: parse all replaygain tags
+  - flac: don't allocate cuesheet twice (memleak)
 * update: free empty path string (memleak)
 
 
