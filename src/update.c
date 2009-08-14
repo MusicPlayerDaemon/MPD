@@ -767,7 +767,6 @@ static void * update_task(void *_path)
 {
 	if (_path != NULL && !isRootDirectory(_path)) {
 		updatePath((char *)_path);
-		g_free(_path);
 	} else {
 		struct directory *directory = db_get_root();
 		struct stat st;
@@ -775,6 +774,8 @@ static void * update_task(void *_path)
 		if (stat_directory(directory, &st) == 0)
 			updateDirectory(directory, &st);
 	}
+
+	g_free(_path);
 
 	if (modified || !db_exists())
 		db_save();
