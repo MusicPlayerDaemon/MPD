@@ -76,6 +76,17 @@ audio_output_open(struct audio_output *ao,
 	    audio_format_equals(audio_format, &ao->in_audio_format)) {
 		assert(ao->pipe == mp);
 
+		if (ao->pause) {
+			/* unpause with the CANCEL command; this is a
+			   hack, but suits well for forcing the thread
+			   to leave the ao_pause() thread, and we need
+			   to flush the device buffer anyway */
+
+			/* we're not using audio_output_cancel() here,
+			   because that function is asynchronous */
+			ao_command(ao, AO_COMMAND_CANCEL);
+		}
+
 		return true;
 	}
 

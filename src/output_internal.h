@@ -81,6 +81,12 @@ struct audio_output {
 	bool open;
 
 	/**
+	 * Is the device paused?  i.e. the output thread is in the
+	 * ao_pause() loop.
+	 */
+	bool pause;
+
+	/**
 	 * If not NULL, the device has failed, and this timer is used
 	 * to estimate how long it should stay disabled (unless
 	 * explicitly reopened with "play").
