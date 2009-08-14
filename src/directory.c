@@ -73,9 +73,14 @@ directory_prune_empty(struct directory *directory)
 	struct dirvec *dv = &directory->children;
 
 	for (i = dv->nr; --i >= 0; ) {
-		directory_prune_empty(dv->base[i]);
-		if (directory_is_empty(dv->base[i]))
-			dirvec_delete(dv, dv->base[i]);
+		struct directory *child = dv->base[i];
+
+		directory_prune_empty(child);
+
+		if (directory_is_empty(child)) {
+			dirvec_delete(dv, child);
+			directory_free(child);
+		}
 	}
 	if (!dv->nr)
 		dirvec_destroy(dv);
