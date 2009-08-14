@@ -8,6 +8,7 @@ ver 0.15.2 (2009/??/??)
   - flac: don't allocate cuesheet twice (memleak)
 * output:
   - shout: fixed stuck pause bug
+  - shout: minimize the unpause latency
 * update: free empty path string (memleak)
 * update: free temporary string in container scan (memleak)
 * directory: free empty directories after removing them (memleak)
