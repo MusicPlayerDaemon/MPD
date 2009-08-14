@@ -430,7 +430,7 @@ update_container_file(	struct directory* directory,
 {
 	char* vtrack = NULL;
 	unsigned int tnum = 0;
-	const char* pathname = map_directory_child_fs(directory, name);
+	char* pathname = map_directory_child_fs(directory, name);
 	struct directory* contdir = dirvec_find(&directory->children, name);
 
 	// directory exists already
@@ -446,8 +446,10 @@ update_container_file(	struct directory* directory,
 
 			modified = true;
 		}
-		else
+		else {
+			g_free(pathname);
 			return true;
+		}
 	}
 
 	contdir = make_subdir(directory, name);
@@ -472,6 +474,8 @@ update_container_file(	struct directory* directory,
 
 		g_free(vtrack);
 	}
+
+	g_free(pathname);
 
 	if (tnum == 1)
 	{

@@ -7,6 +7,7 @@ ver 0.15.2 (2009/??/??)
   - flac: parse all replaygain tags
   - flac: don't allocate cuesheet twice (memleak)
 * update: free empty path string (memleak)
+* update: free temporary string in container scan (memleak)
 
 
 ver 0.15.1 (2009/07/15)
