@@ -40,53 +40,57 @@ flac_data_init(struct flac_data *data, struct decoder * decoder,
 	data->tag = NULL;
 }
 
-static bool
+static void
 flac_find_float_comment(const FLAC__StreamMetadata *block,
-			const char *cmnt, float *fl)
+			const char *cmnt, float *fl, bool *found_r)
 {
-	int offset =
-	    FLAC__metadata_object_vorbiscomment_find_entry_from(block, 0, cmnt);
+	int offset;
+	size_t pos;
+	int len;
+	unsigned char tmp, *p;
 
-	if (offset >= 0) {
-		size_t pos = strlen(cmnt) + 1;	/* 1 is for '=' */
-		int len = block->data.vorbis_comment.comments[offset].length
-		    - pos;
-		if (len > 0) {
-			unsigned char tmp;
-			unsigned char *p = &(block->data.vorbis_comment.
-					     comments[offset].entry[pos]);
-			tmp = p[len];
-			p[len] = '\0';
-			*fl = (float)atof((char *)p);
-			p[len] = tmp;
+	offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block, 0,
+								     cmnt);
+	if (offset < 0)
+		return;
 
-			return true;
-		}
-	}
+	pos = strlen(cmnt) + 1; /* 1 is for '=' */
+	len = block->data.vorbis_comment.comments[offset].length - pos;
+	if (len <= 0)
+		return;
 
-	return false;
+	p = &block->data.vorbis_comment.comments[offset].entry[pos];
+	tmp = p[len];
+	p[len] = '\0';
+	*fl = (float)atof((char *)p);
+	p[len] = tmp;
+
+	*found_r = true;
 }
 
-/* replaygain stuff by AliasMrJones */
 static void
 flac_parse_replay_gain(const FLAC__StreamMetadata *block,
 		       struct flac_data *data)
 {
-	bool found;
+	bool found = false;
 
 	if (data->replay_gain_info)
 		replay_gain_info_free(data->replay_gain_info);
 
 	data->replay_gain_info = replay_gain_info_new();
 
-	found = flac_find_float_comment(block, "replaygain_album_gain",
-					&data->replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain) ||
-		flac_find_float_comment(block, "replaygain_album_peak",
-					&data->replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak) ||
-		flac_find_float_comment(block, "replaygain_track_gain",
-					&data->replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain) ||
-		flac_find_float_comment(block, "replaygain_track_peak",
-					&data->replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak);
+	flac_find_float_comment(block, "replaygain_album_gain",
+				&data->replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain,
+				&found);
+	flac_find_float_comment(block, "replaygain_album_peak",
+				&data->replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak,
+				&found);
+	flac_find_float_comment(block, "replaygain_track_gain",
+				&data->replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain,
+				&found);
+	flac_find_float_comment(block, "replaygain_track_peak",
+				&data->replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak,
+				&found);
 
 	if (!found) {
 		replay_gain_info_free(data->replay_gain_info);
@@ -106,25 +110,27 @@ flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 	size_t char_tnum_length = 0;
 	const char *comment = (const char*)entry->entry;
 
-	if (entry->length > name_length &&
-	    g_ascii_strncasecmp(comment, name, name_length) == 0) {
-	        if (char_tnum != NULL) {
-	            char_tnum_length = strlen(char_tnum);
-		    if (entry->length > name_length + char_tnum_length + 2 &&
-		        comment[name_length] == '[' &&
-		        g_ascii_strncasecmp(comment + name_length + 1,
-			char_tnum, char_tnum_length) == 0 &&
-			comment[name_length + char_tnum_length + 1] == ']')
-			    name_length = name_length + char_tnum_length + 2;
-		    else if (entry->length > name_length + char_tnum_length &&
-		        g_ascii_strncasecmp(comment + name_length,
-		        char_tnum, char_tnum_length) == 0)
-			    name_length = name_length + char_tnum_length;
-	        }
-	        if (comment[name_length] == '=') {
-		    *length_r = entry->length - name_length - 1;
-		    return comment + name_length + 1;
-		}
+	if (entry->length <= name_length ||
+	    g_ascii_strncasecmp(comment, name, name_length) != 0)
+		return NULL;
+
+	if (char_tnum != NULL) {
+		char_tnum_length = strlen(char_tnum);
+		if (entry->length > name_length + char_tnum_length + 2 &&
+		    comment[name_length] == '[' &&
+		    g_ascii_strncasecmp(comment + name_length + 1,
+					char_tnum, char_tnum_length) == 0 &&
+		    comment[name_length + char_tnum_length + 1] == ']')
+			name_length = name_length + char_tnum_length + 2;
+		else if (entry->length > name_length + char_tnum_length &&
+			 g_ascii_strncasecmp(comment + name_length,
+					     char_tnum, char_tnum_length) == 0)
+			name_length = name_length + char_tnum_length;
+	}
+
+	if (comment[name_length] == '=') {
+		*length_r = entry->length - name_length - 1;
+		return comment + name_length + 1;
 	}
 
 	return NULL;
@@ -370,12 +376,14 @@ char*
 flac_cue_track(	const char* pathname,
 		const unsigned int tnum)
 {
-	FLAC__StreamMetadata* cs = FLAC__metadata_object_new(FLAC__METADATA_TYPE_CUESHEET);
+	FLAC__bool success;
+	FLAC__StreamMetadata* cs;
 
-	FLAC__metadata_get_cuesheet(pathname, &cs);
-
-	if (cs == NULL)
+	success = FLAC__metadata_get_cuesheet(pathname, &cs);
+	if (!success)
 		return NULL;
+
+	assert(cs != NULL);
 
 	if (cs->data.cue_sheet.num_tracks <= 1)
 	{

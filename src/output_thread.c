@@ -295,6 +295,7 @@ static void ao_pause(struct audio_output *ao)
 	bool ret;
 
 	ao_plugin_cancel(ao->plugin, ao->data);
+	ao->pause = true;
 	ao_command_finished(ao);
 
 	do {
@@ -304,6 +305,8 @@ static void ao_pause(struct audio_output *ao)
 			break;
 		}
 	} while (ao->command == AO_COMMAND_NONE);
+
+	ao->pause = false;
 }
 
 static gpointer audio_output_task(gpointer arg)

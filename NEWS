@@ -27,6 +27,22 @@ ver 0.16 (20??/??/??)
 * obey $(sysconfdir) for default mpd.conf location
 
 
+ver 0.15.2 (2009/08/15)
+* tags:
+  - ape: check the tag size (fixes integer underflow)
+  - ape: added protection against large memory allocations
+* decoders:
+  - mad: skip ID3 frames when libid3tag is disabled
+  - flac: parse all replaygain tags
+  - flac: don't allocate cuesheet twice (memleak)
+* output:
+  - shout: fixed stuck pause bug
+  - shout: minimize the unpause latency
+* update: free empty path string (memleak)
+* update: free temporary string in container scan (memleak)
+* directory: free empty directories after removing them (memleak)
+
+
 ver 0.15.1 (2009/07/15)
 * decoders:
   - flac: fix assertion failure in tag_free() call

@@ -448,7 +448,14 @@ my_shout_play(void *data, const void *chunk, size_t size, GError **error)
 static bool
 my_shout_pause(void *data)
 {
+	struct shout_data *sd = (struct shout_data *)data;
 	static const char silence[1020];
+
+	if (shout_delay(sd->shout_conn) > 500) {
+		/* cap the latency for unpause */
+		g_usleep(500000);
+		return true;
+	}
 
 	return my_shout_play(data, silence, sizeof(silence), NULL);
 }

@@ -22,6 +22,7 @@
 
 #include <glib.h>
 
+#include <assert.h>
 #include <stdio.h>
 
 static const char *const ape_tag_names[] = {
@@ -95,15 +96,18 @@ tag_ape_load(const char *file)
 
 	/* find beginning of ape tag */
 	tagLen = GUINT32_FROM_LE(footer.length);
-	if (tagLen < sizeof(footer))
+	if (tagLen <= sizeof(footer) + 10)
+		goto fail;
+	if (tagLen > 1024 * 1024)
+		/* refuse to load more than one megabyte of tag data */
 		goto fail;
 	if (fseek(fp, size - tagLen, SEEK_SET))
 		goto fail;
 
 	/* read tag into buffer */
 	tagLen -= sizeof(footer);
-	if (tagLen <= 0)
-		goto fail;
+	assert(tagLen > 10);
+
 	buffer = g_malloc(tagLen);
 	if (fread(buffer, 1, tagLen, fp) != tagLen)
 		goto fail;
@@ -121,7 +125,7 @@ tag_ape_load(const char *file)
 
 		/* get the key */
 		key = p;
-		while (tagLen - size > 0 && *p != '\0') {
+		while (tagLen > size && *p != '\0') {
 			p++;
 			tagLen--;
 		}
