@@ -1,4 +1,4 @@
-ver 0.15.2 (2009/??/??)
+ver 0.15.2 (2009/08/15)
 * tags:
   - ape: check the tag size (fixes integer underflow)
   - ape: added protection against large memory allocations
