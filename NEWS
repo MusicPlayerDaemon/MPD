@@ -1,4 +1,6 @@
 ver 0.15.3 (2009/??/??)
+* output:
+  - fix stuttering due to uninitialized variable
 
 
 ver 0.15.2 (2009/08/15)
