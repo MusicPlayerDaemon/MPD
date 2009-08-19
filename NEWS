@@ -1,6 +1,7 @@
 ver 0.15.3 (2009/??/??)
 * output:
   - fix stuttering due to uninitialized variable
+* update: don't re-read unchanged container files
 
 
 ver 0.15.2 (2009/08/15)
