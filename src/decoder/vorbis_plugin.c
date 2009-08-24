@@ -377,7 +377,7 @@ vorbis_tag_dup(const char *file)
 	FILE *fp;
 	OggVorbis_File vf;
 
-	fp = fopen(file, "r");
+	fp = fopen(file, "rb");
 	if (!fp) {
 		return NULL;
 	}
