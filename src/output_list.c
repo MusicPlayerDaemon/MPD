@@ -34,6 +34,7 @@ extern const struct audio_output_plugin pulse_plugin;
 extern const struct audio_output_plugin mvp_output_plugin;
 extern const struct audio_output_plugin jackPlugin;
 extern const struct audio_output_plugin httpd_output_plugin;
+extern const struct audio_output_plugin recorder_output_plugin;
 
 const struct audio_output_plugin *audio_output_plugins[] = {
 #ifdef HAVE_SHOUT
@@ -72,6 +73,9 @@ const struct audio_output_plugin *audio_output_plugins[] = {
 #endif
 #ifdef ENABLE_HTTPD_OUTPUT
 	&httpd_output_plugin,
+#endif
+#ifdef ENABLE_RECORDER_OUTPUT
+	&recorder_output_plugin,
 #endif
 	NULL
 };

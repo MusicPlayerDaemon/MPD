@@ -597,6 +597,10 @@ if HAVE_SHOUT
 OUTPUT_SRC += src/output/shout_plugin.c
 endif
 
+if ENABLE_RECORDER_OUTPUT
+OUTPUT_SRC += src/output/recorder_output_plugin.c
+endif
+
 if ENABLE_HTTPD_OUTPUT
 OUTPUT_SRC += \
 	src/icy_server.c \

@@ -226,6 +226,18 @@ input {
 #	mixer_type      "software"		# optional
 #}
 #
+# An example of a recorder output:
+#
+#audio_output {
+#	type		"recorder"
+#	name		"My recorder"
+#	encoder		"vorbis"		# optional, vorbis or lame
+#	path		"/var/lib/mpd/recorder/mpd.ogg"
+#	quality		"5.0"			# do not define if bitrate is defined
+#	bitrate		"128"			# do not define if quality is defined
+#	format		"44100:16:1"
+#}
+#
 # An example of a httpd output (built-in HTTP streaming server):
 #
 #audio_output {

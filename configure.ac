@@ -708,6 +708,11 @@ fi
 
 AM_CONDITIONAL(HAVE_PULSE, test x$enable_pulse = xyes)
 
+AC_ARG_ENABLE(recorder-output,
+	AS_HELP_STRING([--enable-recorder-output],
+		[enables the HTTP server output]),,
+	[enable_recorder_output=auto])
+
 AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],
 		[enables the HTTP server output]),,
@@ -992,10 +997,14 @@ dnl
 dnl Encoder API and shout/httpd output plugin
 dnl
 
-if test x$enable_shout = xyes || test x$enable_httpd_output = xyes; then
+if test x$enable_shout = xyes || \
+	test x$enable_recorder_output = xyes || \
+	test x$enable_httpd_output = xyes; then
 	# at least one output using encoders is explicitly enabled
 	need_encoder=yes
-elif test x$enable_shout = xauto || test x$enable_httpd_output = xauto; then
+elif test x$enable_shout = xauto || \
+	test x$enable_recorder_output = xauto || \
+	test x$enable_httpd_output = xauto; then
 	need_encoder=auto
 else
 	# all outputs using encoders are disabled
@@ -1048,6 +1057,17 @@ if test x$enable_shout = xauto; then
 	fi
 fi
 
+if test x$enable_recorder_output = xauto; then
+	# handle recorder auto-detection: disable if no encoder is
+	# available
+	if test x$enable_encoder = xyes; then
+		enable_recorder_output=yes
+	else
+		AC_MSG_WARN([No encoder plugin -- disabling the recorder output plugin])
+		enable_recorder_output=no
+	fi
+fi
+
 if test x$enable_httpd_output = xauto; then
 	# handle HTTPD auto-detection: disable if no encoder is
 	# available
@@ -1062,6 +1082,11 @@ fi
 AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
 if test x$enable_shout = xyes; then
 	AC_DEFINE(HAVE_SHOUT, 1, [Define to enable the shoutcast output])
+fi
+
+AM_CONDITIONAL(ENABLE_RECORDER_OUTPUT, test x$enable_recorder_output = xyes)
+if test x$enable_recorder_output = xyes; then
+	AC_DEFINE(ENABLE_RECORDER_OUTPUT, 1, [Define to enable the recorder output])
 fi
 
 AM_CONDITIONAL(ENABLE_HTTPD_OUTPUT, test x$enable_httpd_output = xyes)
@@ -1225,6 +1250,12 @@ else
 	echo " FIFO support ..................disabled"
 fi
 
+if test x$enable_recorder_output = xyes; then
+	echo " recorder support ..............enabled"
+else
+	echo " recorder support ..............disabled"
+fi
+
 if test x$enable_httpd_output = xyes; then
 	echo " HTTP daemon support ...........enabled"
 else
@@ -1291,6 +1322,7 @@ if
 	test x$enable_ao = xno &&
 	test x$enable_oss = xno &&
 	test x$enable_shout = xno &&
+	test x$enable_recorder_output = xno &&
 	test x$enable_httpd_output = xno &&
 	test x$enable_solaris_output = xno &&
 	test x$enable_alsa = xno &&
@@ -1305,6 +1337,7 @@ fi
 
 if
 	test x$enable_shout = xyes ||
+	test x$enable_recorder = xyes ||
 	test x$enable_httpd_output = xyes; then
 		echo " Streaming Encoder Support:"
 		if test x$enable_lame_encoder = xyes; then

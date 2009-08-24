@@ -835,6 +835,73 @@ cd mpd-version</programlisting>
       </section>
 
       <section>
+        <title><varname>recorder</varname></title>
+
+        <para>
+          The <varname>recorder</varname> plugin writes the audio
+          played by MPD to a file.  This may be useful for recording
+          radio streams.
+        </para>
+
+        <para>
+          You must configure either <varname>quality</varname> or
+          <varname>bitrate</varname>.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>path</varname>
+                  <parameter>P</parameter>
+                </entry>
+                <entry>
+                  Write to this file.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>encoder</varname>
+                  <parameter>NAME</parameter>
+                </entry>
+                <entry>
+                  Chooses an encoder plugin,
+                  e.g. <parameter>vorbis</parameter>.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>quality</varname>
+                  <parameter>Q</parameter>
+                </entry>
+                <entry>
+                  Configures the encoder quality (for VBR) in the
+                  range -1 .. 10.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>bitrate</varname>
+                  <parameter>BR</parameter>
+                </entry>
+                <entry>
+                  Sets a constant encoder bit rate, in kilobit per
+                  second.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
         <title><varname>shout</varname></title>
 
         <para>
