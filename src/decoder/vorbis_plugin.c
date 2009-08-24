@@ -383,7 +383,7 @@ vorbis_tag_dup(const char *file)
 		return NULL;
 	}
 
-	if (ov_open(fp, &vf, NULL, 0) < 0) {
+	if (ov_test_callbacks(fp, &vf, NULL, 0, OV_CALLBACKS_STREAMONLY) < 0) {
 		fclose(fp);
 		return NULL;
 	}
