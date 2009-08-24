@@ -53,7 +53,6 @@ static struct config_entry config_entries[] = {
 	{ .name = CONF_DB_FILE, false, false },
 	{ .name = CONF_STICKER_FILE, false, false },
 	{ .name = CONF_LOG_FILE, false, false },
-	{ .name = CONF_ERROR_FILE, false, false },
 	{ .name = CONF_PID_FILE, false, false },
 	{ .name = CONF_STATE_FILE, false, false },
 	{ .name = CONF_USER, false, false },

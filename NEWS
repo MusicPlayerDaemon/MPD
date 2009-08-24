@@ -22,6 +22,7 @@ ver 0.16 (20??/??/??)
 * commands:
   - added new "status" line with more precise "elapsed time"
 * log unused/unknown block parameters
+* removed the deprecated "error_file" option
 * save state when stopped
 * renamed option "--stdout" to "--stderr"
 * obey $(sysconfdir) for default mpd.conf location
