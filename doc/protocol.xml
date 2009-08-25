@@ -1100,6 +1100,23 @@ OK
             </para>
           </listitem>
         </varlistentry>
+        <varlistentry id="command_findadd">
+          <term>
+            <cmdsynopsis>
+              <command>findadd</command>
+              <arg choice="req"><replaceable>TYPE</replaceable></arg>
+              <arg choice="req"><replaceable>WHAT</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Finds songs in the db that are exactly
+              <varname>WHAT</varname> and adds them to current playlist.
+              <varname>TYPE</varname> can be any tag supported by MPD.
+              <varname>WHAT</varname> is what to find.
+            </para>
+          </listitem>
+        </varlistentry>
         <varlistentry id="command_list">
           <term>
             <cmdsynopsis>

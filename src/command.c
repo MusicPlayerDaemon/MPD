@@ -870,6 +870,30 @@ handle_find(struct client *client, int argc, char *argv[])
 }
 
 static enum command_return
+handle_findadd(struct client *client, int argc, char *argv[])
+{
+    int ret;
+    struct locate_item_list *list =
+	    locate_item_list_parse(argv + 1, argc - 1);
+    if (list == NULL || list->length == 0) {
+	    if (list != NULL)
+		    locate_item_list_free(list);
+
+	    command_error(client, ACK_ERROR_ARG, "incorrect arguments");
+	    return COMMAND_RETURN_ERROR;
+    }
+
+    ret = findAddIn(client, NULL, list);
+    if (ret == -1)
+	    command_error(client, ACK_ERROR_NO_EXIST,
+			  "directory or file not found");
+
+    locate_item_list_free(list);
+
+    return ret;
+}
+
+static enum command_return
 handle_search(struct client *client, int argc, char *argv[])
 {
 	int ret;
@@ -1671,6 +1695,7 @@ static const struct command commands[] = {
 	{ "disableoutput", PERMISSION_ADMIN, 1, 1, handle_disableoutput },
 	{ "enableoutput", PERMISSION_ADMIN, 1, 1, handle_enableoutput },
 	{ "find", PERMISSION_READ, 2, -1, handle_find },
+	{ "findadd", PERMISSION_READ, 2, -1, handle_findadd},
 	{ "idle", PERMISSION_READ, 0, -1, handle_idle },
 	{ "kill", PERMISSION_ADMIN, -1, -1, handle_kill },
 	{ "list", PERMISSION_READ, 1, -1, handle_list },

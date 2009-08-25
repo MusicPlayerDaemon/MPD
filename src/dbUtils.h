@@ -40,6 +40,10 @@ findSongsIn(struct client *client, const char *name,
 	    const struct locate_item_list *criteria);
 
 int
+findAddIn(struct client *client, const char *name,
+	  const struct locate_item_list *criteria);
+
+int
 searchStatsForSongsIn(struct client *client, const char *name,
 		      const struct locate_item_list *criteria);
 

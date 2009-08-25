@@ -200,6 +200,28 @@ int addAllInToStoredPlaylist(const char *name, const char *utf8file)
 }
 
 static int
+findAddInDirectory(struct song *song, void *_data)
+{
+	struct search_data *data = _data;
+
+	if (locate_song_match(song, data->criteria))
+		return directoryAddSongToPlaylist(song, data);
+
+	return 0;
+}
+
+int findAddIn(struct client *client, const char *name,
+	      const struct locate_item_list *criteria)
+{
+	struct search_data data;
+
+	data.client   = client;
+	data.criteria = criteria;
+
+	return db_walk(name, findAddInDirectory, NULL, &data);
+}
+
+static int
 directoryPrintSongInfo(struct song *song, void *data)
 {
 	struct client *client = data;
