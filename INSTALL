@@ -69,6 +69,9 @@ MAD - http://www.underbit.com/products/mad/
 For MP3 support.  You will need libmad, and optionally libid3tag if you want
 ID3 tag support.
 
+libmpg123 - http://www.mpg123.de/
+Alternative for MP3 support.
+
 Ogg Vorbis - http://www.xiph.org/ogg/vorbis/
 For Ogg Vorbis support.  You will need libogg and libvorbis.
 

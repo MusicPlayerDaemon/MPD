@@ -348,6 +348,7 @@ DECODER_CFLAGS = \
 	$(WILDMIDI_CFLAGS) \
 	$(WAVPACK_CFLAGS) \
 	$(MAD_CFLAGS) \
+	$(MPG123_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
 	$(CUE_CFLAGS)
 
@@ -362,6 +363,7 @@ DECODER_LIBS = \
 	$(WILDMIDI_LIBS) \
 	$(WAVPACK_LIBS) \
 	$(MAD_LIBS) \
+	$(MPG123_LIBS) \
 	$(MP4FF_LIBS) \
 	$(FFMPEG_LIBS) \
 	$(CUE_LIBS)
@@ -372,6 +374,10 @@ DECODER_SRC = \
 
 if HAVE_MAD
 DECODER_SRC += src/decoder/mad_plugin.c
+endif
+
+if HAVE_MPG123
+DECODER_SRC += src/decoder/mpg123_decoder_plugin.c
 endif
 
 if HAVE_MPCDEC

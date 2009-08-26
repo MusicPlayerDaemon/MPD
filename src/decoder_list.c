@@ -28,6 +28,7 @@
 #include <string.h>
 
 extern const struct decoder_plugin mad_decoder_plugin;
+extern const struct decoder_plugin mpg123_decoder_plugin;
 extern const struct decoder_plugin vorbis_decoder_plugin;
 extern const struct decoder_plugin flac_decoder_plugin;
 extern const struct decoder_plugin oggflac_decoder_plugin;
@@ -47,6 +48,9 @@ extern const struct decoder_plugin ffmpeg_decoder_plugin;
 static const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef HAVE_MAD
 	&mad_decoder_plugin,
+#endif
+#ifdef HAVE_MPG123
+	&mpg123_decoder_plugin,
 #endif
 #ifdef ENABLE_VORBIS_DECODER
 	&vorbis_decoder_plugin,

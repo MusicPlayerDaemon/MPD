@@ -427,6 +427,18 @@ if test x$enable_mad = xyes; then
 fi
 AM_CONDITIONAL(HAVE_MAD, test x$enable_mad = xyes)
 
+AC_ARG_ENABLE(mpg123,
+	AS_HELP_STRING([--enable-mpg123],
+		[enable libmpg123 decoder plugin]),,
+	enable_mpg123=auto)
+
+MPD_AUTO_PKG(mpg123, MPG123, [libmpg123],
+	[libmpg123 decoder plugin], [libmpg123 not found])
+if test x$enable_mpg123 = xyes; then
+	AC_DEFINE(HAVE_MPG123, 1, [Define to use libmpg123])
+fi
+AM_CONDITIONAL(HAVE_MPG123, test x$enable_mpg123 = xyes)
+
 AC_ARG_ENABLE(mikmod,
 	AS_HELP_STRING([--enable-mikmod],
 		[enable the mikmod decoder (default: disable)]),,
@@ -1411,6 +1423,12 @@ else
 	echo " MAD mp3 decoder support .......disabled"
 fi
 
+if test x$enable_mpg123 = xyes; then
+	echo " libmpg123 decoder support .....enabled"
+else
+	echo " libmpg123 decoder support .....disabled"
+fi
+
 if test x$enable_mp4 = xyes; then
 	echo " MP4 support ...................enabled"
 else
@@ -1474,6 +1492,7 @@ fi
 
 if
 	test x$enable_mad = xno &&
+	test x$enable_mpg123 = xno &&
 	test x$enable_vorbis = xno &&
 	test x$enable_flac = xno && 
 	test x$enable_oggflac = xno &&
