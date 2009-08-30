@@ -198,6 +198,9 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 	int song_num=get_song_num(path_fs);
 	tune.selectSong(song_num);
 
+	int song_len=get_song_length(path_fs);
+	if(song_len==-1) song_len=default_songlength;
+
 	/* initialize the player */
 
 	sidplay2 player;
@@ -259,10 +262,12 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 	struct audio_format audio_format;
 	audio_format_init(&audio_format, 48000, 16, 2);
 
-	decoder_initialized(decoder, &audio_format, false, -1);
+	decoder_initialized(decoder, &audio_format, true, (float)song_len);
 
 	/* .. and play */
 
+	float data_time=0;
+	int timebase=player.timebase();
 	enum decoder_command cmd;
 	do {
 		char buffer[4096];
@@ -273,8 +278,34 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 			break;
 
 		cmd = decoder_data(decoder, NULL, buffer, nbytes,
-				   0, 0, NULL);
-	} while (cmd == DECODE_COMMAND_NONE);
+				   data_time, 0, NULL);
+
+		data_time=player.time()/timebase;
+
+		if(cmd==DECODE_COMMAND_SEEK) {
+			int target_time=decoder_seek_where(decoder);
+
+			/* can't rewind so return to zero and seek forward */
+			if(target_time<data_time) {
+				player.stop();
+				data_time=0;
+			}
+
+			/* ignore data until target time is reached */
+			while(data_time<target_time) {
+				nbytes=player.play(buffer, sizeof(buffer));
+				if(nbytes==0)
+					break;
+				data_time=player.time()/timebase;
+			}
+
+			decoder_command_finished(decoder);
+		}
+
+		if(song_len && data_time>=(float)song_len)
+			break;
+
+	} while (cmd != DECODE_COMMAND_STOP);
 }
 
 static struct tag *

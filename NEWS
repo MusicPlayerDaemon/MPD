@@ -17,6 +17,7 @@ ver 0.16 (20??/??/??)
   - mpg123: new decoder plugin based on libmpg123
   - sidplay: support sub-tunes
   - sidplay: implemented songlength database
+  - sidplay: support seeking
 * encoders:
   - twolame: new encoder plugin based on libtwolame
 * output:
