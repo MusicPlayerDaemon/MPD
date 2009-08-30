@@ -27,6 +27,7 @@ extern "C" {
 
 #include <sidplay/sidplay2.h>
 #include <sidplay/builders/resid.h>
+#include <sidplay/utils/SidTuneMod.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "sidplay"
@@ -34,12 +35,48 @@ extern "C" {
 #define SUBTUNE_PREFIX "tune_"
 
 static GPatternSpec *path_with_subtune;
+static const char *songlength_file;
+static GKeyFile *songlength_database;
 
 static bool all_files_are_containers;
+static unsigned default_songlength;
 
 static bool
 sidplay_init(const struct config_param *param)
 {
+	GError *err=NULL;
+	gchar *songlen_data;
+	gsize songlen_data_size;
+
+	/* read the songlengths database file */
+	songlength_file=config_get_block_string(param,
+		"songlength_database", NULL);
+	if(songlength_file) {
+		if(g_file_get_contents(songlength_file, &songlen_data, &songlen_data_size, NULL)) {
+			/* replace any ; comment characters with # */
+			for(int i=0; i<songlen_data_size; i++)
+				if(songlen_data[i]==';') songlen_data[i]='#';
+
+			songlength_database=g_key_file_new();
+			if(!g_key_file_load_from_data(songlength_database,
+				songlen_data, songlen_data_size,
+				G_KEY_FILE_NONE, &err)) {
+					g_warning("unable to parse songlengths file %s: %s",
+						songlength_file, err->message);
+					g_key_file_free(songlength_database);
+					songlength_database=NULL;
+				}
+			g_key_file_set_list_separator(songlength_database, ' ');
+			g_free(songlen_data);
+		} else {
+			g_warning("unable to read songlengths file %s: %s",
+				songlength_file, err->message);
+		}
+	}
+
+	default_songlength=config_get_block_unsigned(param,
+		"default_songlength", 0);
+
 	all_files_are_containers=config_get_block_bool(param,
 		"all_files_are_containers", true);
 
@@ -53,6 +90,9 @@ void
 sidplay_finish()
 {
 	g_pattern_spec_free(path_with_subtune);
+
+	if(songlength_database)
+		g_key_file_free(songlength_database);
 }
 
 /**
@@ -95,6 +135,49 @@ get_song_num(const char *path_fs)
 			return song_num;
 	} else
 		return 1;
+}
+
+/* get the song length in seconds */
+static int
+get_song_length(const char *path_fs)
+{
+	if (songlength_database == NULL)
+		return -1;
+
+	gchar *sid_file=get_container_name(path_fs);
+	SidTuneMod tune(sid_file);
+	g_free(sid_file);
+	if(!tune) {
+		g_warning("failed to load file for calculating md5 sum");
+		return -1;
+	}
+	char md5sum[SIDTUNE_MD5_LENGTH+1];
+	tune.createMD5(md5sum);
+
+	int song_num=get_song_num(path_fs);
+
+	gsize num_items;
+	gchar **values=g_key_file_get_string_list(songlength_database,
+		"Database", md5sum, &num_items, NULL);
+	if(!values || song_num>num_items) {
+		g_strfreev(values);
+		return -1;
+	}
+
+	int minutes=strtol(values[song_num-1], NULL, 10);
+	if(errno==EINVAL) minutes=0;
+
+	int seconds;
+	char *ptr=strchr(values[song_num-1], ':');
+	if(ptr) {
+		seconds=strtol(ptr+1, NULL, 10);
+		if(errno==EINVAL) seconds=0;
+	} else
+		seconds=0;
+
+	g_strfreev(values);
+
+	return (minutes*60)+seconds;
 }
 
 static void
@@ -231,6 +314,10 @@ sidplay_tag_dup(const char *path_fs)
 	char *track=g_strdup_printf("%d", song_num);
 	tag_add_item(tag, TAG_ITEM_TRACK, track);
 	g_free(track);
+
+	/* time */
+	int song_len=get_song_length(path_fs);
+	if(song_len!=-1) tag->time=song_len;
 
 	return tag;
 }

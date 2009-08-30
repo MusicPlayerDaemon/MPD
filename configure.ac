@@ -554,12 +554,17 @@ if test x$enable_sidplay != xno; then
 	# library name triggers an autoconf bug
 	AC_CHECK_LIB(resid-builder, main,
 		[found_sidplay=yes], [found_sidplay=no])
+
+	if test x$found_sidplay = xyes; then
+		AC_HAVE_LIBRARY(sidutils,, [found_sidplay=no])
+	fi
+
 	MPD_AUTO_RESULT(sidplay, [sidplay decoder plugin],
-		[libresid-builder not found])
+		[libresid-builder or libsidutils not found])
 fi
 
 if test x$enable_sidplay = xyes; then
-	AC_SUBST(SIDPLAY_LIBS,"-lsidplay2 -lresid-builder")
+	AC_SUBST(SIDPLAY_LIBS,"-lsidplay2 -lresid-builder -lsidutils")
 	AC_SUBST(SIDPLAY_CFLAGS,)
 
 	AC_DEFINE(ENABLE_SIDPLAY, 1, [Define for libsidplay2 support])

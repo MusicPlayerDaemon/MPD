@@ -16,6 +16,7 @@ ver 0.16 (20??/??/??)
   - flac: load external cue sheet when no internal one
   - mpg123: new decoder plugin based on libmpg123
   - sidplay: support sub-tunes
+  - sidplay: implemented songlength database
 * encoders:
   - twolame: new encoder plugin based on libtwolame
 * output:
