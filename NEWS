@@ -15,6 +15,7 @@ ver 0.16 (20??/??/??)
   - sndfile: new decoder plugin based on libsndfile
   - flac: load external cue sheet when no internal one
   - mpg123: new decoder plugin based on libmpg123
+  - sidplay: support sub-tunes
 * encoders:
   - twolame: new encoder plugin based on libtwolame
 * output:

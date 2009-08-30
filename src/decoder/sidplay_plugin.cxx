@@ -21,6 +21,8 @@ extern "C" {
 #include "../decoder_api.h"
 }
 
+#include <errno.h>
+#include <stdlib.h>
 #include <glib.h>
 
 #include <sidplay/sidplay2.h>
@@ -29,6 +31,72 @@ extern "C" {
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "sidplay"
 
+#define SUBTUNE_PREFIX "tune_"
+
+static GPatternSpec *path_with_subtune;
+
+static bool all_files_are_containers;
+
+static bool
+sidplay_init(const struct config_param *param)
+{
+	all_files_are_containers=config_get_block_bool(param,
+		"all_files_are_containers", true);
+
+	path_with_subtune=g_pattern_spec_new(
+			"*/" SUBTUNE_PREFIX "???.sid");
+
+	return true;
+}
+
+void
+sidplay_finish()
+{
+	g_pattern_spec_free(path_with_subtune);
+}
+
+/**
+ * returns the file path stripped of any /tune_xxx.sid subtune
+ * suffix
+ */
+static char *
+get_container_name(const char *path_fs)
+{
+	char *path_container=g_strdup(path_fs);
+
+	if(!g_pattern_match(path_with_subtune,
+		strlen(path_container), path_container, NULL))
+		return path_container;
+
+	char *ptr=g_strrstr(path_container, "/" SUBTUNE_PREFIX);
+	if(ptr) *ptr='\0';
+
+	return path_container;
+}
+
+/**
+ * returns tune number from file.sid/tune_xxx.sid style path or 1 if
+ * no subtune is appended
+ */
+static int
+get_song_num(const char *path_fs)
+{
+	if(g_pattern_match(path_with_subtune,
+		strlen(path_fs), path_fs, NULL)) {
+		char *sub=g_strrstr(path_fs, "/" SUBTUNE_PREFIX);
+		if(!sub) return 1;
+
+		sub+=strlen("/" SUBTUNE_PREFIX);
+		int song_num=strtol(sub, NULL, 10);
+
+		if (errno == EINVAL)
+			return 1;
+		else
+			return song_num;
+	} else
+		return 1;
+}
+
 static void
 sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 {
@@ -36,13 +104,16 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 
 	/* load the tune */
 
-	SidTune tune(path_fs, NULL, true);
+	char *path_container=get_container_name(path_fs);
+	SidTune tune(path_container, NULL, true);
+	g_free(path_container);
 	if (!tune) {
 		g_warning("failed to load file");
 		return;
 	}
 
-	tune.selectSong(1);
+	int song_num=get_song_num(path_fs);
+	tune.selectSong(song_num);
 
 	/* initialize the player */
 
@@ -126,20 +197,66 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 static struct tag *
 sidplay_tag_dup(const char *path_fs)
 {
-	SidTune tune(path_fs, NULL, true);
+	int song_num=get_song_num(path_fs);
+	char *path_container=get_container_name(path_fs);
+
+	SidTune tune(path_container, NULL, true);
+	g_free(path_container);
 	if (!tune)
 		return NULL;
 
 	const SidTuneInfo &info = tune.getInfo();
 	struct tag *tag = tag_new();
 
+	/* title */
+	const char *title;
 	if (info.numberOfInfoStrings > 0 && info.infoString[0] != NULL)
-		tag_add_item(tag, TAG_ITEM_TITLE, info.infoString[0]);
+		title=info.infoString[0];
+	else
+		title="";
 
+	if(info.songs>1) {
+		char *tag_title=g_strdup_printf("%s (%d/%d)",
+			title, song_num, info.songs);
+		tag_add_item(tag, TAG_ITEM_TITLE, tag_title);
+		g_free(tag_title);
+	} else
+		tag_add_item(tag, TAG_ITEM_TITLE, title);
+
+	/* artist */
 	if (info.numberOfInfoStrings > 1 && info.infoString[1] != NULL)
 		tag_add_item(tag, TAG_ITEM_ARTIST, info.infoString[1]);
 
+	/* track */
+	char *track=g_strdup_printf("%d", song_num);
+	tag_add_item(tag, TAG_ITEM_TRACK, track);
+	g_free(track);
+
 	return tag;
+}
+
+static char *
+sidplay_container_scan(const char *path_fs, const unsigned int tnum)
+{
+	SidTune tune(path_fs, NULL, true);
+	if (!tune)
+		return NULL;
+
+	const SidTuneInfo &info=tune.getInfo();
+
+	/* Don't treat sids containing a single tune
+		as containers */
+	if(!all_files_are_containers && info.songs<2)
+		return NULL;
+
+	/* Construct container/tune path names, eg.
+		Delta.sid/tune_001.sid */
+	if(tnum<=info.songs) {
+		char *subtune= g_strdup_printf(
+			SUBTUNE_PREFIX "%03u.sid", tnum);
+		return subtune;
+	} else
+		return NULL;
 }
 
 static const char *const sidplay_suffixes[] = {
@@ -150,12 +267,12 @@ static const char *const sidplay_suffixes[] = {
 extern const struct decoder_plugin sidplay_decoder_plugin;
 const struct decoder_plugin sidplay_decoder_plugin = {
 	"sidplay",
-	NULL, /* init() */
-	NULL, /* finish() */
+	sidplay_init,
+	sidplay_finish,
 	NULL, /* stream_decode() */
 	sidplay_file_decode,
 	sidplay_tag_dup,
-	NULL, /* container_scan */
+	sidplay_container_scan,
 	sidplay_suffixes,
 	NULL, /* mime_types */
 };
