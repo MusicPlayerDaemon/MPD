@@ -502,7 +502,8 @@ update_regular_file(struct directory *directory,
 	{
 		struct song* song = songvec_find(&directory->songs, name);
 
-		if (plugin->container_scan != NULL)
+		if (!(song != NULL && st->st_mtime == song->mtime) &&
+			plugin->container_scan != NULL)
 		{
 			if (update_container_file(directory, name, st, plugin))
 			{

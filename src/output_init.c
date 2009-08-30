@@ -178,6 +178,7 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	ao->plugin = plugin;
 	ao->enabled = config_get_block_bool(param, "enabled", true);
 	ao->open = false;
+	ao->pause = false;
 	ao->fail_timer = NULL;
 
 	/* set up the filter chain */

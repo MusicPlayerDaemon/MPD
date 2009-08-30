@@ -281,6 +281,24 @@
               </listitem>
               <listitem>
                 <para>
+                  <varname>nextsong</varname>:
+                  <footnoteref linkend="since_0_15"/>
+                  <returnvalue> playlist song number of the next
+                  song to be played
+                  </returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>nextsongid</varname>:
+                  <footnoteref linkend="since_0_15"/>
+                  <returnvalue>playlist songid of the next song
+                  to be played
+                  </returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
                   <varname>time</varname>:
                   <returnvalue>total time elapsed (of current
                   playing/paused song)</returnvalue>
