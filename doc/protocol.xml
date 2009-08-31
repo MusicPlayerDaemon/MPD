@@ -200,9 +200,6 @@
               MPD will only send notifications when something changed in
               one of the specified subsytems.
             </para>
-            <simpara>
-              Since <application>MPD</application> 0.14
-            </simpara>
           </listitem>
         </varlistentry>
         <varlistentry id="command_status">
