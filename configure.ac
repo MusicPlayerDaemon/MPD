@@ -711,6 +711,11 @@ AC_ARG_ENABLE(oss,
 		[disable OSS support (default: enable)]),,
 	enable_oss=yes)
 
+AC_ARG_ENABLE(openal,
+	AS_HELP_STRING([--enable-openal],
+		[enable OpenAL support (default: disable)]),,
+	enable_openal=no)
+
 AC_ARG_ENABLE(pulse,
 	AS_HELP_STRING([--enable-pulse],
 		[enable support for the PulseAudio sound server]),,
@@ -778,6 +783,19 @@ if test x$enable_oss = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_OSS, test x$enable_oss = xyes)
+
+if test x$enable_openal = xyes; then
+	PKG_CHECK_MODULES([OPENAL], [openal],
+		AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support]),
+		enable_openal=no)
+fi
+
+if test x$enable_openal = xyes; then
+	MPD_CFLAGS="$MPD_CFLAGS $OPENAL_CFLAGS"
+	MPD_LIBS="$MPD_LIBS $OPENAL_LIBS"
+fi
+
+AM_CONDITIONAL(HAVE_OPENAL, test x$enable_openal = xyes)
 
 if test x$enable_fifo = xyes; then
 	AC_CHECK_FUNC([mkfifo],
@@ -1297,6 +1315,12 @@ else
 	echo " OSS support ...................disabled"
 fi
 
+if test x$enable_openal = xyes; then
+	echo " OpenAL support ................enabled"
+else
+	echo " OpenAL support ................disabled"
+fi
+
 if test x$enable_osx = xyes; then
 	echo " OS X support ..................enabled"
 else
@@ -1338,6 +1362,7 @@ echo ""
 if
 	test x$enable_ao = xno &&
 	test x$enable_oss = xno &&
+	test x$enable_openal = xno &&
 	test x$enable_shout = xno &&
 	test x$enable_recorder_output = xno &&
 	test x$enable_httpd_output = xno &&

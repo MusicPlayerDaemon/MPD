@@ -590,6 +590,10 @@ OUTPUT_SRC += src/output/oss_plugin.c
 MIXER_SRC += src/mixer/oss_mixer.c
 endif
 
+if HAVE_OPENAL
+OUTPUT_SRC += src/output/openal_plugin.c
+endif
+
 if HAVE_OSX
 OUTPUT_SRC += src/output/osx_plugin.c
 endif
