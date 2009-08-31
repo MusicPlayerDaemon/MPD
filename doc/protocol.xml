@@ -123,7 +123,7 @@
           </term>
           <listitem>
             <para>
-              <footnote id="since_0_14"><simpara>Since MPD 0.14</simpara></footnote>
+              <footnote id="since_0_14"><simpara>Introduced with MPD 0.14</simpara></footnote>
               Waits until there is a noteworthy change in one or more
               of MPD's subsystems.  As soon as there is one, it lists
               all changed systems in a line in the format
@@ -229,15 +229,15 @@
               <listitem>
                <para>
                 <varname>single</varname>:
+                <footnote id="since_0_15"><simpara>Introduced with MPD 0.15</simpara></footnote>
                 <returnvalue>0 or 1</returnvalue>
-                <footnote id="since_0_15"><simpara>Since MPD 0.15</simpara></footnote>
                </para>
               </listitem>
               <listitem>
                <para>
                 <varname>consume</varname>:
-                <returnvalue>0 or 1</returnvalue>
                 <footnoteref linkend="since_0_15"/>
+                <returnvalue>0 or 1</returnvalue>
                </para>
               </listitem>
               <listitem>
@@ -286,7 +286,7 @@
               <listitem>
                 <para>
                   <varname>elapsed</varname>:
-                  <footnote id="since_0_16"><simpara>Since MPD 0.16</simpara></footnote>
+                  <footnote id="since_0_16"><simpara>Introduced with MPD 0.16</simpara></footnote>
                   <returnvalue>
                     Total time elapsed within the current song, but
                     with higher resolution.
