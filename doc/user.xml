@@ -753,6 +753,39 @@ cd mpd-version</programlisting>
       </section>
 
       <section>
+        <title><varname>openal</varname></title>
+
+        <para>
+          The "OpenAL" plugin uses <filename>libopenal</filename>.
+          It is supported on many platforms.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>device</varname>
+                  <parameter>NAME</parameter>
+                </entry>
+                <entry>
+                  Sets the device which should be used.  This can be
+                  any valid OpenAL device name. If not specified, then
+                  <filename>libopenal</filename> will choose a default device.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
         <title><varname>osx</varname></title>
 
         <para>

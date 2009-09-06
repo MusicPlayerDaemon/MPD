@@ -22,6 +22,7 @@ ver 0.16 (20??/??/??)
   - twolame: new encoder plugin based on libtwolame
 * output:
   - recorder: new output plugin for recording radio streams
+  - openal: new output plugin
 * mixers:
   - removed support for legacy mixer configuration
   - reimplemented software volume as mixer+filter plugin
