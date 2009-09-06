@@ -123,12 +123,12 @@ openal_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	const char *device_name = config_get_block_string(param, "device", NULL);
 	struct openal_data *od;
 
-	od = g_new(struct openal_data, 1);
-	od->device_name = device_name;
-
 	if (device_name == NULL) {
 		device_name = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
 	}
+
+	od = g_new(struct openal_data, 1);
+	od->device_name = device_name;
 
 	return od;
 }
