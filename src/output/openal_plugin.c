@@ -19,11 +19,17 @@
 
 #include "../output_api.h"
 #include "../timer.h"
+#include "config.h"
 
 #include <glib.h>
 
+#ifndef HAVE_OSX
 #include <AL/al.h>
 #include <AL/alc.h>
+#else
+#include <OpenAL/al.h>
+#include <OpenAL/alc.h>
+#endif
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "openal"

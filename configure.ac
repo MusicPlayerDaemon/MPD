@@ -791,9 +791,19 @@ fi
 AM_CONDITIONAL(HAVE_OSS, test x$enable_oss = xyes)
 
 if test x$enable_openal = xyes; then
-	PKG_CHECK_MODULES([OPENAL], [openal],
-		AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support]),
-		enable_openal=no)
+	if test x$enable_osx = xyes; then
+		AC_CHECK_HEADERS([OpenAL/al.h OpenAL/alc.h], [], [enable_openal=no])
+		if test x$enable_openal = xyes; then
+			OPENAL_LIBS="-framework OpenAL"
+			AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support])
+		else
+			AC_MSG_WARN(OpenAL headers not found -- disabling OpenAL support)
+		fi
+	else
+		PKG_CHECK_MODULES([OPENAL], [openal],
+			AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support]),
+			enable_openal=no)
+	fi
 fi
 
 if test x$enable_openal = xyes; then
