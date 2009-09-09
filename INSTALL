@@ -56,6 +56,9 @@ libshout - http://www.icecast.org/
 For streaming to an Icecast or Shoutcast server.
 You also need an encoder: either libvorbisenc (ogg), or liblame (mp3).
 
+OpenAL - http://kcat.strangesoft.net/openal.html
+Open Audio Library
+
 
 Optional Input Dependencies
 ---------------------------
@@ -109,6 +112,9 @@ For MIDI support.
 
 libsndfile - http://www.mega-nerd.com/libsndfile/
 WAVE, AIFF, and many others.
+
+libwavpack - http://www.wavpack.com/
+For WavPack playback.
 
 
 Optional Miscellaneous Dependencies
