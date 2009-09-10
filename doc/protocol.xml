@@ -1224,29 +1224,24 @@ OK
           <term>
             <cmdsynopsis>
               <command>update</command>
-              <arg><replaceable>URI</replaceable></arg>
+              <arg choice="opt"><replaceable>URI</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Updates the music database.
+              Updates the music database: find new files, remove
+              deleted files, update modified files.
             </para>
             <para>
               <varname>URI</varname> is a particular directory or
-              song/file to update.
+              song/file to update.  If you do not specify it,
+              everything is updated.
             </para>
             <para>
               Prints "updating_db: JOBID" where
-              <varname>JOBID</varname> is the job id requested for
-              your update, and is displayed in status, while the
-              requested update is happening.
-            </para>
-            <para>
-              To update a number of paths/songs at once, use
-              command_list, it will be much more faster/efficient.
-              Also, if you use a command_list for updating, only one
-              <command>update</command> job id will be returned per
-              sequence of updates.
+              <varname>JOBID</varname> is a positive number
+              identifying the update job.  You can read the current
+              job id in the <command>status</command> response.
             </para>
           </listitem>
         </varlistentry>
