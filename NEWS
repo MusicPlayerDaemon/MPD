@@ -1,4 +1,6 @@
 ver 0.15.4 (2009/??/??)
+* decoders:
+  - vorbis: revert "faster tag scanning with ov_test_callback()"
 
 
 ver 0.15.3 (2009/08/29)
