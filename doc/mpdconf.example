@@ -177,11 +177,11 @@ input {
 #audio_output {
 #	type		"alsa"
 #	name		"My ALSA Device"
-#	device		"hw:0,0"	# optional
-#	format		"44100:16:2"	# optional
-#	mixer_device	"default"	# optional
-#	mixer_control	"PCM"		# optional
-#	mixer_index	"0"		# optional
+##	device		"hw:0,0"	# optional
+##	format		"44100:16:2"	# optional
+##	mixer_device	"default"	# optional
+##	mixer_control	"PCM"		# optional
+##	mixer_index	"0"		# optional
 #}
 #
 # An example of an OSS output:
@@ -189,10 +189,10 @@ input {
 #audio_output {
 #	type		"oss"
 #	name		"My OSS Device"
-#	device		"/dev/dsp"	# optional
-#	format		"44100:16:2"	# optional
-#	mixer_device	"/dev/mixer"	# optional
-#	mixer_control	"PCM"		# optional
+##	device		"/dev/dsp"	# optional
+##	format		"44100:16:2"	# optional
+##	mixer_device	"/dev/mixer"	# optional
+##	mixer_control	"PCM"		# optional
 #}
 #
 # An example of a shout output (for streaming to Icecast):
@@ -208,12 +208,12 @@ input {
 #	quality		"5.0"
 #	bitrate		"128"
 #	format		"44100:16:1"
-#	protocol	"icecast2"		# optional
-#	user		"source"		# optional
-#	description	"My Stream Description"	# optional
-#	genre		"jazz"			# optional
-#	public		"no"			# optional
-#	timeout		"2"			# optional
+##	protocol	"icecast2"		# optional
+##	user		"source"		# optional
+##	description	"My Stream Description"	# optional
+##	genre		"jazz"			# optional
+##	public		"no"			# optional
+##	timeout		"2"			# optional
 #}
 #
 # An example of a httpd output (built-in HTTP streaming server):
@@ -223,7 +223,7 @@ input {
 #	name		"My HTTP Stream"
 #	encoder		"vorbis"		# optional, vorbis or lame
 #	port		"8000"
-#	quality		"5.0"			# do not define if bitrate is defined
+##	quality		"5.0"			# do not define if bitrate is defined
 #	bitrate		"128"			# do not define if quality is defined
 #	format		"44100:16:1"
 #}
@@ -233,8 +233,8 @@ input {
 #audio_output {
 #	type		"pulse"
 #	name		"My Pulse Output"
-#	server		"remote_server"		# optional
-#	sink		"remote_server_sink"	# optional
+##	server		"remote_server"		# optional
+##	sink		"remote_server_sink"	# optional
 #}
 #
 ## Example "pipe" output:
