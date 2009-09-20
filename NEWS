@@ -33,6 +33,7 @@ ver 0.16 (20??/??/??)
 * removed the deprecated "error_file" option
 * save state when stopped
 * renamed option "--stdout" to "--stderr"
+* removed options --create-db and --no-create-db
 * obey $(sysconfdir) for default mpd.conf location
 
 

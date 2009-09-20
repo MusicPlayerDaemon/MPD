@@ -123,7 +123,7 @@ glue_mapper_init(void)
  * process has been daemonized.
  */
 static bool
-glue_db_init_and_load(const struct options *options)
+glue_db_init_and_load(void)
 {
 	const char *path = config_get_path(CONF_DB_FILE);
 	bool ret;
@@ -142,18 +142,10 @@ glue_db_init_and_load(const struct options *options)
 
 	db_init(path);
 
-	if (options->create_db > 0)
-		/* don't attempt to load the old database */
-		return false;
-
 	ret = db_load(&error);
 	if (!ret) {
 		g_warning("Failed to load database: %s", error->message);
 		g_error_free(error);
-
-		if (options->create_db < 0)
-			g_error("can't open db file and using "
-				"\"--no-create-db\" command line option");
 
 		if (!db_check())
 			exit(EXIT_FAILURE);
@@ -331,7 +323,7 @@ int main(int argc, char *argv[])
 	decoder_plugin_init_all();
 	update_global_init();
 
-	create_db = !glue_db_init_and_load(&options);
+	create_db = !glue_db_init_and_load();
 
 	glue_sticker_init();
 
@@ -356,8 +348,8 @@ int main(int argc, char *argv[])
 	player_create();
 
 	if (create_db) {
-		/* the database failed to load, or MPD was started
-		   with --create-db: recreate a new database */
+		/* the database failed to load: recreate the
+		   database */
 		unsigned job = directory_update_init(NULL);
 		if (job == 0)
 			g_error("directory update failed");

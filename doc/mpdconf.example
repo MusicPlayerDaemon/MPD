@@ -353,8 +353,7 @@ input {
 # Character Encoding ##########################################################
 #
 # If file or directory names do not display correctly for your locale then you 
-# may need to modify this setting. After modification of this setting mpd 
-# --create-db must be run to change the database.
+# may need to modify this setting.
 #
 #filesystem_charset		"UTF-8"
 #

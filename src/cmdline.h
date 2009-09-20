@@ -27,7 +27,6 @@ struct options {
 	gboolean daemon;
 	gboolean log_stderr;
 	gboolean verbose;
-	int create_db;
 };
 
 void parse_cmdline(int argc, char **argv, struct options *options);
