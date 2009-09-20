@@ -27,7 +27,7 @@
 #include <errno.h>
 
 #undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "jack"
+#define G_LOG_DOMAIN "input_mms"
 
 struct input_mms {
 	mmsx_t *mms;
