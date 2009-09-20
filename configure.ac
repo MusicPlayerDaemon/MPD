@@ -748,12 +748,6 @@ case "$host_os" in
 		enable_osx=yes ;;
 esac
 
-case "$host_os" in
-	darwin10*)
-		CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
-		;;
-esac
-
 AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
 
 AC_ARG_ENABLE(shout,
