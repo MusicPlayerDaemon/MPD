@@ -61,8 +61,10 @@ sidplay_load_songlength_db(const char *path)
 			data[i] = '#';
 
 	GKeyFile *db = g_key_file_new();
-	if (!g_key_file_load_from_data(db, data, size,
-				       G_KEY_FILE_NONE, &error)) {
+	bool success = g_key_file_load_from_data(db, data, size,
+						 G_KEY_FILE_NONE, &error);
+	g_free(data);
+	if (!success) {
 		g_warning("unable to parse songlengths file %s: %s",
 			  path, error->message);
 		g_error_free(error);
@@ -71,7 +73,6 @@ sidplay_load_songlength_db(const char *path)
 	}
 
 	g_key_file_set_list_separator(db, ' ');
-	g_free(data);
 	return db;
 }
 
