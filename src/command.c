@@ -1018,12 +1018,12 @@ handle_playlistmove(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_update(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	char *path = NULL;
+	const char *path = NULL;
 	unsigned ret;
 
 	assert(argc <= 2);
 	if (argc == 2)
-		path = g_strdup(argv[1]);
+		path = argv[1];
 
 	ret = update_enqueue(path);
 	if (ret > 0) {

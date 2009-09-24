@@ -790,7 +790,8 @@ static void * update_task(void *_path)
 	return NULL;
 }
 
-static void spawn_update_task(char *path)
+static void
+spawn_update_task(const char *path)
 {
 	GError *e = NULL;
 
@@ -798,15 +799,18 @@ static void spawn_update_task(char *path)
 
 	progress = UPDATE_PROGRESS_RUNNING;
 	modified = false;
-	if (!(update_thr = g_thread_create(update_task, path, TRUE, &e)))
+
+	update_thr = g_thread_create(update_task, g_strdup(path), TRUE, &e);
+	if (update_thr == NULL)
 		g_error("Failed to spawn update task: %s", e->message);
+
 	if (++update_task_id > update_task_id_max)
 		update_task_id = 1;
 	g_debug("spawned thread for update job id %i", update_task_id);
 }
 
 unsigned
-update_enqueue(char *path)
+update_enqueue(const char *path)
 {
 	assert(g_thread_self() == main_task);
 
@@ -816,17 +820,16 @@ update_enqueue(char *path)
 	if (progress != UPDATE_PROGRESS_IDLE) {
 		unsigned next_task_id;
 
-		if (update_paths_nr == G_N_ELEMENTS(update_paths)) {
-			g_free(path);
+		if (update_paths_nr == G_N_ELEMENTS(update_paths))
 			return 0;
-		}
 
 		assert(update_paths_nr < G_N_ELEMENTS(update_paths));
-		update_paths[update_paths_nr++] = path;
+		update_paths[update_paths_nr++] = g_strdup(path);
 		next_task_id = update_task_id + update_paths_nr;
 
 		return next_task_id > update_task_id_max ?  1 : next_task_id;
 	}
+
 	spawn_update_task(path);
 
 	idle_add(IDLE_UPDATE);
@@ -884,6 +887,7 @@ static void update_finished_event(void)
 		memmove(&update_paths[0], &update_paths[1],
 		        --update_paths_nr * sizeof(char *));
 		spawn_update_task(path);
+		g_free(path);
 	} else {
 		progress = UPDATE_PROGRESS_IDLE;
 

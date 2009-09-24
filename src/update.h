@@ -27,12 +27,14 @@ void update_global_finish(void);
 unsigned
 isUpdatingDB(void);
 
-/*
- * returns the positive update job ID on success,
- * returns 0 if busy
- * @path will be freed by this function and should not be reused
+/**
+ * Add this path to the database update queue.
+ *
+ * @param path a path to update; if NULL or an empty string,
+ * the whole music directory is updated
+ * @return the job id, or 0 on error
  */
 unsigned
-update_enqueue(char *path);
+update_enqueue(const char *path);
 
 #endif
