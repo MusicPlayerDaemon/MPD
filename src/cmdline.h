@@ -22,6 +22,8 @@
 
 #include <glib.h>
 
+#include <stdbool.h>
+
 struct options {
 	gboolean kill;
 	gboolean daemon;
@@ -29,6 +31,8 @@ struct options {
 	gboolean verbose;
 };
 
-void parse_cmdline(int argc, char **argv, struct options *options);
+bool
+parse_cmdline(int argc, char **argv, struct options *options,
+	      GError **error_r);
 
 #endif

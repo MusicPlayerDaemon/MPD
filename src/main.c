@@ -295,7 +295,12 @@ int main(int argc, char *argv[])
 	tag_pool_init();
 	config_global_init();
 
-	parse_cmdline(argc, argv, &options);
+	success = parse_cmdline(argc, argv, &options, &error);
+	if (!success) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return EXIT_FAILURE;
+	}
 
 	glue_daemonize_init(&options);
 

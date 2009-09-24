@@ -38,6 +38,12 @@
 #define USER_CONFIG_FILE_LOCATION1	".mpdconf"
 #define USER_CONFIG_FILE_LOCATION2	".mpd/mpd.conf"
 
+static GQuark
+cmdline_quark(void)
+{
+	return g_quark_from_static_string("cmdline");
+}
+
 G_GNUC_NORETURN
 static void version(void)
 {
@@ -76,7 +82,9 @@ static const char *summary =
 	"Music Player Daemon - a daemon for playing music.";
 #endif
 
-void parse_cmdline(int argc, char **argv, struct options *options)
+bool
+parse_cmdline(int argc, char **argv, struct options *options,
+	      GError **error_r)
 {
 	GError *error = NULL;
 	GOptionContext *context;
@@ -133,6 +141,7 @@ void parse_cmdline(int argc, char **argv, struct options *options)
 
 	if (option_no_config) {
 		g_debug("Ignoring config, using daemon defaults\n");
+		return true;
 	} else if (argc <= 1) {
 		/* default configuration file path */
 		char *path1;
@@ -151,9 +160,16 @@ void parse_cmdline(int argc, char **argv, struct options *options)
 			config_read_file(SYSTEM_CONFIG_FILE_LOCATION);
 		g_free(path1);
 		g_free(path2);
+
+		return true;
 	} else if (argc == 2) {
 		/* specified configuration file */
 		config_read_file(argv[1]);
-	} else
-		g_error("too many arguments");
+
+		return true;
+	} else {
+		g_set_error(error_r, cmdline_quark(), 0,
+			    "too many arguments");
+		return false;
+	}
 }
