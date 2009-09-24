@@ -73,6 +73,7 @@ mpd_headers = \
 	src/encoder_api.h \
 	src/fifo_buffer.h \
 	src/update.h \
+	src/update_internal.h \
 	src/dirvec.h \
 	src/gcc.h \
 	src/decoder_list.h \
@@ -203,6 +204,9 @@ src_mpd_SOURCES = \
 	src/filter_plugin.c \
 	src/filter_registry.c \
 	src/update.c \
+	src/update_queue.c \
+	src/update_walk.c \
+	src/update_remove.c \
 	src/client.c \
 	src/client_event.c \
 	src/client_expire.c \
