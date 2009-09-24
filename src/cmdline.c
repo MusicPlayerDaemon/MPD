@@ -152,21 +152,20 @@ parse_cmdline(int argc, char **argv, struct options *options,
 		path2 = g_build_filename(g_get_home_dir(),
 					USER_CONFIG_FILE_LOCATION2, NULL);
 		if (g_file_test(path1, G_FILE_TEST_IS_REGULAR))
-			config_read_file(path1);
+			ret = config_read_file(path1, error_r);
 		else if (g_file_test(path2, G_FILE_TEST_IS_REGULAR))
-			config_read_file(path2);
+			ret = config_read_file(path2, error_r);
 		else if (g_file_test(SYSTEM_CONFIG_FILE_LOCATION,
 				     G_FILE_TEST_IS_REGULAR))
-			config_read_file(SYSTEM_CONFIG_FILE_LOCATION);
+			ret = config_read_file(SYSTEM_CONFIG_FILE_LOCATION,
+					       error_r);
 		g_free(path1);
 		g_free(path2);
 
-		return true;
+		return ret;
 	} else if (argc == 2) {
 		/* specified configuration file */
-		config_read_file(argv[1]);
-
-		return true;
+		return config_read_file(argv[1], error_r);
 	} else {
 		g_set_error(error_r, cmdline_quark(), 0,
 			    "too many arguments");

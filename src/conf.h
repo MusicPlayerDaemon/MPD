@@ -116,7 +116,8 @@ void config_global_finish(void);
  */
 void config_global_check(void);
 
-void config_read_file(const char *file);
+bool
+config_read_file(const char *file, GError **error_r);
 
 /* don't free the returned value
    set _last_ to NULL to get first entry */
@@ -192,8 +193,8 @@ config_get_block_bool(const struct config_param *param, const char *name,
 struct config_param *
 config_new_param(const char *value, int line);
 
-void
-config_add_block_param(struct config_param *param, const char *name,
-		       const char *value, int line);
+bool
+config_add_block_param(struct config_param * param, const char *name,
+		       const char *value, int line, GError **error_r);
 
 #endif

@@ -90,7 +90,12 @@ int main(int argc, char **argv)
 	/* read configuration file (mpd.conf) */
 
 	config_global_init();
-	config_read_file(argv[1]);
+	success = config_read_file(argv[1], &error);
+	if (!success) {
+		g_printerr("%s:", error->message);
+		g_error_free(error);
+		return 1;
+	}
 
 	/* parse the audio format */
 
