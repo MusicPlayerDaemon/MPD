@@ -90,6 +90,60 @@ tokenizer_next_word(char **input_p, GError **error_r)
 	return word;
 }
 
+static inline bool
+valid_unquoted_char(char ch)
+{
+	return (unsigned char)ch > 0x20 && ch != '"' && ch != '\'';
+}
+
+char *
+tokenizer_next_unquoted(char **input_p, GError **error_r)
+{
+	char *word, *input;
+
+	assert(input_p != NULL);
+	assert(*input_p != NULL);
+
+	word = input = *input_p;
+
+	if (*input == 0)
+		return NULL;
+
+	/* check the first character */
+
+	if (!valid_unquoted_char(*input)) {
+		g_set_error(error_r, tokenizer_quark(), 0,
+			    "Invalid unquoted character");
+		return NULL;
+	}
+
+	/* now iterate over the other characters until we find a
+	   whitespace or end-of-string */
+
+	while (*++input != 0) {
+		if (g_ascii_isspace(*input)) {
+			/* a whitespace: the word ends here */
+			*input = 0;
+			/* skip all following spaces, too */
+			input = g_strchug(input + 1);
+			break;
+		}
+
+		if (!valid_unquoted_char(*input)) {
+			*input_p = input;
+			g_set_error(error_r, tokenizer_quark(), 0,
+				    "Invalid unquoted character");
+			return NULL;
+		}
+	}
+
+	/* end of string: the string is already null-terminated
+	   here */
+
+	*input_p = input;
+	return word;
+}
+
 char *
 tokenizer_next_string(char **input_p, GError **error_r)
 {
@@ -155,7 +209,7 @@ tokenizer_next_string(char **input_p, GError **error_r)
 }
 
 char *
-tokenizer_next_word_or_string(char **input_p, GError **error_r)
+tokenizer_next_param(char **input_p, GError **error_r)
 {
 	assert(input_p != NULL);
 	assert(*input_p != NULL);
@@ -163,5 +217,5 @@ tokenizer_next_word_or_string(char **input_p, GError **error_r)
 	if (**input_p == '"')
 		return tokenizer_next_string(input_p, error_r);
 	else
-		return tokenizer_next_word(input_p, error_r);
+		return tokenizer_next_unquoted(input_p, error_r);
 }

@@ -37,6 +37,20 @@ char *
 tokenizer_next_word(char **input_p, GError **error_r);
 
 /**
+ * Reads the next unquoted word from the input string.  This function
+ * modifies the input string.
+ *
+ * @param input_p the input string; this function returns a pointer to
+ * the first non-whitespace character of the following token
+ * @param error_r if this function returns NULL and **input_p!=0, it
+ * optionally provides a GError object in this argument
+ * @return a pointer to the null-terminated word, or NULL on error or
+ * end of line
+ */
+char *
+tokenizer_next_unquoted(char **input_p, GError **error_r);
+
+/**
  * Reads the next quoted string from the input string.  A backslash
  * escapes the following character.  This function modifies the input
  * string.
@@ -52,8 +66,9 @@ char *
 tokenizer_next_string(char **input_p, GError **error_r);
 
 /**
- * Reads the next word or quoted string from the input.  This is a
- * wrapper for tokenizer_next_word() and tokenizer_next_string().
+ * Reads the next unquoted word or quoted string from the input.  This
+ * is a wrapper for tokenizer_next_unquoted() and
+ * tokenizer_next_string().
  *
  * @param input_p the input string; this function returns a pointer to
  * the first non-whitespace character of the following token
@@ -63,6 +78,6 @@ tokenizer_next_string(char **input_p, GError **error_r);
  * or end of line
  */
 char *
-tokenizer_next_word_or_string(char **input_p, GError **error_r);
+tokenizer_next_param(char **input_p, GError **error_r);
 
 #endif

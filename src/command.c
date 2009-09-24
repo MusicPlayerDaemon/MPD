@@ -1959,7 +1959,7 @@ command_process(struct client *client, unsigned num, char *line)
 
 	while (argc < (int)G_N_ELEMENTS(argv) &&
 	       (argv[argc] =
-		tokenizer_next_word_or_string(&line, &error)) != NULL)
+		tokenizer_next_param(&line, &error)) != NULL)
 		++argc;
 
 	/* some error checks; we have to set current_command because
