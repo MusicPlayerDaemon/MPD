@@ -1025,7 +1025,7 @@ handle_update(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (argc == 2)
 		path = g_strdup(argv[1]);
 
-	ret = directory_update_init(path);
+	ret = update_enqueue(path);
 	if (ret > 0) {
 		client_printf(client, "updating_db: %i\n", ret);
 		return COMMAND_RETURN_OK;

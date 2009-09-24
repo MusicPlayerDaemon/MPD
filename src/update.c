@@ -806,7 +806,7 @@ static void spawn_update_task(char *path)
 }
 
 unsigned
-directory_update_init(char *path)
+update_enqueue(char *path)
 {
 	assert(g_thread_self() == main_task);
 

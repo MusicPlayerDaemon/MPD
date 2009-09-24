@@ -350,7 +350,7 @@ int main(int argc, char *argv[])
 	if (create_db) {
 		/* the database failed to load: recreate the
 		   database */
-		unsigned job = directory_update_init(NULL);
+		unsigned job = update_enqueue(NULL);
 		if (job == 0)
 			g_error("directory update failed");
 	}

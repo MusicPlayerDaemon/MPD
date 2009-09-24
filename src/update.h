@@ -33,6 +33,6 @@ isUpdatingDB(void);
  * @path will be freed by this function and should not be reused
  */
 unsigned
-directory_update_init(char *path);
+update_enqueue(char *path);
 
 #endif
