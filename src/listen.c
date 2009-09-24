@@ -347,7 +347,8 @@ listen_add_config_param(unsigned int port,
 	}
 }
 
-void listen_global_init(void)
+bool
+listen_global_init(GError **error_r)
 {
 	int port = config_get_positive(CONF_PORT, DEFAULT_PORT);
 	const struct config_param *param =
@@ -361,10 +362,12 @@ void listen_global_init(void)
 
 		do {
 			success = listen_add_config_param(port, param, &error);
-			if (!success)
-				g_error("Failed to listen on %s (line %i): %s",
-					param->value, param->line,
-					error->message);
+			if (!success) {
+				g_propagate_prefixed_error(error_r, error,
+							   "Failed to listen on %s (line %i): ",
+							   param->value, param->line);
+				return false;
+			}
 
 			param = config_get_next_param(CONF_BIND_TO_ADDRESS,
 						      param);
@@ -374,12 +377,16 @@ void listen_global_init(void)
 		   configured port on all interfaces */
 
 		success = listen_add_port(port, &error);
-		if (!success)
-			g_error("Failed to listen on *:%d: %s",
-				port, error->message);
+		if (!success) {
+			g_propagate_prefixed_error(error_r, error,
+						   "Failed to listen on *:%d: ",
+						   port);
+			return false;
+		}
 	}
 
 	listen_port = port;
+	return true;
 }
 
 void listen_global_finish(void)

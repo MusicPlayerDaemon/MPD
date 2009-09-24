@@ -273,6 +273,8 @@ int main(int argc, char *argv[])
 	struct options options;
 	clock_t start;
 	bool create_db;
+	GError *error = NULL;
+	bool success;
 
 	daemonize_close_stdin();
 
@@ -301,7 +303,12 @@ int main(int argc, char *argv[])
 	tag_lib_init();
 	log_init(options.verbose, options.log_stderr);
 
-	listen_global_init();
+	success = listen_global_init(&error);
+	if (!success) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return EXIT_FAILURE;
+	}
 
 	daemonize_set_user();
 
