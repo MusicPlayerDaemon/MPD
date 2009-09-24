@@ -142,10 +142,8 @@ config_new_param(const char *value, int line)
 }
 
 static void
-config_param_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
+config_param_free(struct config_param *param)
 {
-	struct config_param *param = data;
-
 	g_free(param->value);
 
 	for (unsigned i = 0; i < param->num_block_params; i++) {
@@ -157,6 +155,14 @@ config_param_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 		g_free(param->block_params);
 
 	g_free(param);
+}
+
+static void
+config_param_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
+{
+	struct config_param *param = data;
+
+	config_param_free(param);
 }
 
 static struct config_entry *
@@ -176,7 +182,8 @@ void config_global_finish(void)
 	for (unsigned i = 0; i < G_N_ELEMENTS(config_entries); ++i) {
 		struct config_entry *entry = &config_entries[i];
 
-		g_slist_foreach(entry->params, config_param_free, NULL);
+		g_slist_foreach(entry->params,
+				config_param_free_callback, NULL);
 		g_slist_free(entry->params);
 	}
 }
