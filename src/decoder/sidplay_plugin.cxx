@@ -41,41 +41,48 @@ static GKeyFile *songlength_database;
 static bool all_files_are_containers;
 static unsigned default_songlength;
 
+static GKeyFile *
+sidplay_load_songlength_db(const char *path)
+{
+	GError *error = NULL;
+	gchar *data;
+	gsize size;
+
+	if (!g_file_get_contents(path, &data, &size, &error)) {
+		g_warning("unable to read songlengths file %s: %s",
+			  path, error->message);
+		g_error_free(error);
+		return NULL;
+	}
+
+	/* replace any ; comment characters with # */
+	for (gsize i = 0; i < size; i++)
+		if (data[i] == ';')
+			data[i] = '#';
+
+	GKeyFile *db = g_key_file_new();
+	if (!g_key_file_load_from_data(db, data, size,
+				       G_KEY_FILE_NONE, &error)) {
+		g_warning("unable to parse songlengths file %s: %s",
+			  path, error->message);
+		g_error_free(error);
+		g_key_file_free(db);
+		return NULL;
+	}
+
+	g_key_file_set_list_separator(db, ' ');
+	g_free(data);
+	return db;
+}
+
 static bool
 sidplay_init(const struct config_param *param)
 {
-	GError *err=NULL;
-	gchar *songlen_data;
-	gsize songlen_data_size;
-
 	/* read the songlengths database file */
 	songlength_file=config_get_block_string(param,
 		"songlength_database", NULL);
-	if(songlength_file) {
-		if (g_file_get_contents(songlength_file, &songlen_data,
-					&songlen_data_size, &err)) {
-			/* replace any ; comment characters with # */
-			for(int i=0; i<songlen_data_size; i++)
-				if(songlen_data[i]==';') songlen_data[i]='#';
-
-			songlength_database=g_key_file_new();
-			if(!g_key_file_load_from_data(songlength_database,
-				songlen_data, songlen_data_size,
-				G_KEY_FILE_NONE, &err)) {
-					g_warning("unable to parse songlengths file %s: %s",
-						songlength_file, err->message);
-					g_error_free(err);
-					g_key_file_free(songlength_database);
-					songlength_database=NULL;
-				}
-			g_key_file_set_list_separator(songlength_database, ' ');
-			g_free(songlen_data);
-		} else {
-			g_warning("unable to read songlengths file %s: %s",
-				songlength_file, err->message);
-			g_error_free(err);
-		}
-	}
+	if (songlength_file != NULL)
+		songlength_database = sidplay_load_songlength_db(songlength_file);
 
 	default_songlength=config_get_block_unsigned(param,
 		"default_songlength", 0);
