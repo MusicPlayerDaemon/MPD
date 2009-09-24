@@ -32,7 +32,7 @@
   * connected by IPC socket.
   */
 static const char *remoteUrlPrefixes[] = {
-#ifdef HAVE_CURL
+#ifdef ENABLE_CURL
 	"http://",
 #endif
 #ifdef ENABLE_LASTFM

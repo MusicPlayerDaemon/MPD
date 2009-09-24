@@ -280,9 +280,9 @@ AC_ARG_ENABLE(curl,
 MPD_AUTO_PKG(curl, CURL, [libcurl],
 	[libcurl HTTP streaming], [libcurl not found])
 if test x$enable_curl = xyes; then
-	AC_DEFINE(HAVE_CURL, 1, [Define when libcurl is used for HTTP streaming])
+	AC_DEFINE(ENABLE_CURL, 1, [Define when libcurl is used for HTTP streaming])
 fi
-AM_CONDITIONAL(HAVE_CURL, test x$enable_curl = xyes)
+AM_CONDITIONAL(ENABLE_CURL, test x$enable_curl = xyes)
 
 AC_ARG_ENABLE(lastfm,
 	AS_HELP_STRING([--enable-lastfm],

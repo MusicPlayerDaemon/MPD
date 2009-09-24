@@ -27,7 +27,7 @@
 #include "input/archive_input_plugin.h"
 #endif
 
-#ifdef HAVE_CURL
+#ifdef ENABLE_CURL
 #include "input/curl_input_plugin.h"
 #endif
 
@@ -46,7 +46,7 @@ static const struct input_plugin *const input_plugins[] = {
 #ifdef ENABLE_ARCHIVE
 	&input_plugin_archive,
 #endif
-#ifdef HAVE_CURL
+#ifdef ENABLE_CURL
 	&input_plugin_curl,
 #endif
 #ifdef ENABLE_LASTFM

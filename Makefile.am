@@ -515,7 +515,7 @@ INPUT_SRC = \
 	src/input_stream.c \
 	src/input/file_input_plugin.c
 
-if HAVE_CURL
+if ENABLE_CURL
 INPUT_SRC += src/input/curl_input_plugin.c src/icy_metadata.c
 endif
 
