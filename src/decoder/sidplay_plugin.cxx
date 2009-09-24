@@ -52,7 +52,8 @@ sidplay_init(const struct config_param *param)
 	songlength_file=config_get_block_string(param,
 		"songlength_database", NULL);
 	if(songlength_file) {
-		if(g_file_get_contents(songlength_file, &songlen_data, &songlen_data_size, NULL)) {
+		if (g_file_get_contents(songlength_file, &songlen_data,
+					&songlen_data_size, &err)) {
 			/* replace any ; comment characters with # */
 			for(int i=0; i<songlen_data_size; i++)
 				if(songlen_data[i]==';') songlen_data[i]='#';
