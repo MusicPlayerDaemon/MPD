@@ -35,6 +35,6 @@ isUpdatingDB(void);
  * @return the job id, or 0 on error
  */
 unsigned
-update_enqueue(const char *path);
+update_enqueue(const char *path, bool discard);
 
 #endif

@@ -33,10 +33,10 @@ struct directory;
 extern struct notify update_notify;
 
 unsigned
-update_queue_push(const char *path, unsigned base);
+update_queue_push(const char *path, bool discard, unsigned base);
 
 char *
-update_queue_shift(void);
+update_queue_shift(bool *discard_r);
 
 void
 update_walk_global_init(void);
@@ -48,7 +48,7 @@ update_walk_global_finish(void);
  * Returns true if the database was modified.
  */
 bool
-update_walk(const char *path);
+update_walk(const char *path, bool discard);
 
 void
 update_remove_global_init(void);

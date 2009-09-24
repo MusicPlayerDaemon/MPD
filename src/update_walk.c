@@ -39,6 +39,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
+static bool walk_discard;
 static bool modified;
 
 #ifndef WIN32
@@ -350,7 +351,8 @@ update_archive_file(struct directory *parent, const char *name,
 	char *filepath;
 
 	directory = dirvec_find(&parent->children, name);
-	if (directory != NULL && directory->mtime == st->st_mtime)
+	if (directory != NULL && directory->mtime == st->st_mtime &&
+	    !walk_discard)
 		/* MPD has already scanned the archive, and it hasn't
 		   changed since - don't consider updating it */
 		return;
@@ -405,7 +407,7 @@ update_container_file(	struct directory* directory,
 	if (contdir != NULL)
 	{
 		// modification time not eq. file mod. time
-		if (contdir->mtime != st->st_mtime)
+		if (contdir->mtime != st->st_mtime || walk_discard)
 		{
 			g_message("removing container file: %s", pathname);
 
@@ -470,7 +472,8 @@ update_regular_file(struct directory *directory,
 	{
 		struct song* song = songvec_find(&directory->songs, name);
 
-		if (!(song != NULL && st->st_mtime == song->mtime) &&
+		if (!(song != NULL && st->st_mtime == song->mtime &&
+		      !walk_discard) &&
 			plugin->container_scan != NULL)
 		{
 			if (update_container_file(directory, name, st, plugin))
@@ -491,7 +494,7 @@ update_regular_file(struct directory *directory,
 			modified = true;
 			g_message("added %s/%s",
 				  directory_get_path(directory), name);
-		} else if (st->st_mtime != song->mtime) {
+		} else if (st->st_mtime != song->mtime || walk_discard) {
 			g_message("updating %s/%s",
 				  directory_get_path(directory), name);
 			if (!song_file_update(song))
@@ -737,8 +740,9 @@ updatePath(const char *path)
 }
 
 bool
-update_walk(const char *path)
+update_walk(const char *path, bool discard)
 {
+	walk_discard = discard;
 	modified = false;
 
 	if (path != NULL && !isRootDirectory(path)) {

@@ -52,6 +52,9 @@ static unsigned update_task_id;
 /** used by the main thread to notify the update thread */
 struct notify update_notify;
 
+/* XXX this flag is passed to update_task() */
+static bool discard;
+
 unsigned
 isUpdatingDB(void)
 {
@@ -62,7 +65,7 @@ static void * update_task(void *_path)
 {
 	const char *path = _path;
 
-	modified = update_walk(path);
+	modified = update_walk(path, discard);
 	g_free(_path);
 
 	if (modified || !db_exists())
@@ -93,7 +96,7 @@ spawn_update_task(const char *path)
 }
 
 unsigned
-update_enqueue(const char *path)
+update_enqueue(const char *path, bool _discard)
 {
 	assert(g_thread_self() == main_task);
 
@@ -102,13 +105,14 @@ update_enqueue(const char *path)
 
 	if (progress != UPDATE_PROGRESS_IDLE) {
 		unsigned next_task_id =
-			update_queue_push(path, update_task_id);
+			update_queue_push(path, discard, update_task_id);
 		if (next_task_id == 0)
 			return 0;
 
 		return next_task_id > update_task_id_max ?  1 : next_task_id;
 	}
 
+	discard = _discard;
 	spawn_update_task(path);
 
 	idle_add(IDLE_UPDATE);
@@ -135,7 +139,7 @@ static void update_finished_event(void)
 		idle_add(IDLE_DATABASE);
 	}
 
-	path = update_queue_shift();
+	path = update_queue_shift(&discard);
 	if (path != NULL) {
 		/* schedule the next path */
 		spawn_update_task(path);

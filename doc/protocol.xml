@@ -1245,6 +1245,20 @@ OK
             </para>
           </listitem>
         </varlistentry>
+        <varlistentry id="command_rescan">
+          <term>
+            <cmdsynopsis>
+              <command>rescan</command>
+              <arg choice="opt"><replaceable>URI</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Same as <command>update</command>, but also rescans
+              unmodified files.
+            </para>
+          </listitem>
+        </varlistentry>
       </variablelist>
     </section>
 

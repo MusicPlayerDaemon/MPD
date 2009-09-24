@@ -25,31 +25,41 @@
 #include <string.h>
 
 /* make this dynamic?, or maybe this is big enough... */
-static char *update_paths[32];
-static size_t update_paths_nr;
+static struct {
+	char *path;
+	bool discard;
+} update_queue[32];
+
+static size_t update_queue_length;
 
 unsigned
-update_queue_push(const char *path, unsigned base)
+update_queue_push(const char *path, bool discard, unsigned base)
 {
-	assert(update_paths_nr <= G_N_ELEMENTS(update_paths));
+	assert(update_queue_length <= G_N_ELEMENTS(update_queue));
 
-	if (update_paths_nr == G_N_ELEMENTS(update_paths))
+	if (update_queue_length == G_N_ELEMENTS(update_queue))
 		return 0;
 
-	update_paths[update_paths_nr++] = g_strdup(path);
-	return base + update_paths_nr;
+	update_queue[update_queue_length].path = g_strdup(path);
+	update_queue[update_queue_length].discard = discard;
+
+	++update_queue_length;
+
+	return base + update_queue_length;
 }
 
 char *
-update_queue_shift(void)
+update_queue_shift(bool *discard_r)
 {
 	char *path;
 
-	if (update_paths_nr == 0)
+	if (update_queue_length == 0)
 		return NULL;
 
-	path = update_paths[0];
-	memmove(&update_paths[0], &update_paths[1],
-		--update_paths_nr * sizeof(char *));
+	path = update_queue[0].path;
+	*discard_r = update_queue[0].discard;
+
+	memmove(&update_queue[0], &update_queue[1],
+		--update_queue_length * sizeof(update_queue[0]));
 	return path;
 }

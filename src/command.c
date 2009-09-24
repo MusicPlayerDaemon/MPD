@@ -1025,7 +1025,28 @@ handle_update(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (argc == 2)
 		path = argv[1];
 
-	ret = update_enqueue(path);
+	ret = update_enqueue(path, false);
+	if (ret > 0) {
+		client_printf(client, "updating_db: %i\n", ret);
+		return COMMAND_RETURN_OK;
+	} else {
+		command_error(client, ACK_ERROR_UPDATE_ALREADY,
+			      "already updating");
+		return COMMAND_RETURN_ERROR;
+	}
+}
+
+static enum command_return
+handle_rescan(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+{
+	const char *path = NULL;
+	unsigned ret;
+
+	assert(argc <= 2);
+	if (argc == 2)
+		path = argv[1];
+
+	ret = update_enqueue(path, true);
 	if (ret > 0) {
 		client_printf(client, "updating_db: %i\n", ret);
 		return COMMAND_RETURN_OK;
@@ -1731,6 +1752,7 @@ static const struct command commands[] = {
 	{ "random", PERMISSION_CONTROL, 1, 1, handle_random },
 	{ "rename", PERMISSION_CONTROL, 2, 2, handle_rename },
 	{ "repeat", PERMISSION_CONTROL, 1, 1, handle_repeat },
+	{ "rescan", PERMISSION_ADMIN, 0, 1, handle_rescan },
 	{ "rm", PERMISSION_CONTROL, 1, 1, handle_rm },
 	{ "save", PERMISSION_CONTROL, 1, 1, handle_save },
 	{ "search", PERMISSION_READ, 2, -1, handle_search },
