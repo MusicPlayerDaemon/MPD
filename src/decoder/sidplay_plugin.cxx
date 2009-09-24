@@ -64,6 +64,7 @@ sidplay_init(const struct config_param *param)
 				G_KEY_FILE_NONE, &err)) {
 					g_warning("unable to parse songlengths file %s: %s",
 						songlength_file, err->message);
+					g_error_free(err);
 					g_key_file_free(songlength_database);
 					songlength_database=NULL;
 				}
@@ -72,6 +73,7 @@ sidplay_init(const struct config_param *param)
 		} else {
 			g_warning("unable to read songlengths file %s: %s",
 				songlength_file, err->message);
+			g_error_free(err);
 		}
 	}
 
