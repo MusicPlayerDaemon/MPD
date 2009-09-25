@@ -20,6 +20,8 @@
 #ifndef MPD_UPDATE_H
 #define MPD_UPDATE_H
 
+#include <stdbool.h>
+
 void update_global_init(void);
 
 void update_global_finish(void);
