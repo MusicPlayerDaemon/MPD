@@ -55,6 +55,7 @@
 #include "dirvec.h"
 #include "songvec.h"
 #include "tag_pool.h"
+#include "inotify_update.h"
 
 #ifdef ENABLE_SQLITE
 #include "sticker.h"
@@ -369,6 +370,9 @@ int main(int argc, char *argv[])
 
 	glue_state_file_init();
 
+	if (mapper_has_music_directory())
+		mpd_inotify_init();
+
 	config_global_check();
 
 	/* run the main loop */
@@ -378,6 +382,8 @@ int main(int argc, char *argv[])
 	/* cleanup */
 
 	g_main_loop_unref(main_loop);
+
+	mpd_inotify_finish();
 
 	state_file_finish();
 	playerKill();

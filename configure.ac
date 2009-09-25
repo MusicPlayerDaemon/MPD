@@ -118,6 +118,9 @@ AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
 AC_CHECK_HEADERS(locale.h)
 AC_CHECK_HEADERS(valgrind/memcheck.h)
 
+AC_CHECK_FUNCS(inotify_init)
+AM_CONDITIONAL(HAVE_INOTIFY, test x$ac_cv_func_inotify_init = xyes)
+
 
 dnl
 dnl mandatory libraries

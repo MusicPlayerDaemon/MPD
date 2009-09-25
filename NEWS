@@ -34,6 +34,7 @@ ver 0.16 (20??/??/??)
 * save state when stopped
 * renamed option "--stdout" to "--stderr"
 * removed options --create-db and --no-create-db
+* automatically update the database with Linux inotify
 * obey $(sysconfdir) for default mpd.conf location
 
 

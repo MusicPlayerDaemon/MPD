@@ -74,6 +74,9 @@ mpd_headers = \
 	src/fifo_buffer.h \
 	src/update.h \
 	src/update_internal.h \
+	src/inotify_source.h \
+	src/inotify_queue.h \
+	src/inotify_update.h \
 	src/dirvec.h \
 	src/gcc.h \
 	src/decoder_list.h \
@@ -274,6 +277,13 @@ src_mpd_SOURCES = \
 	src/locate.c \
 	src/stored_playlist.c \
 	src/timer.c
+
+if HAVE_INOTIFY
+src_mpd_SOURCES += \
+	src/inotify_source.c \
+	src/inotify_queue.c \
+	src/inotify_update.c
+endif
 
 if ENABLE_SQLITE
 src_mpd_SOURCES += \
