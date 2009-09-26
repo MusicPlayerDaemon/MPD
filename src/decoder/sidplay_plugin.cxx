@@ -41,6 +41,8 @@ static GKeyFile *songlength_database;
 static bool all_files_are_containers;
 static unsigned default_songlength;
 
+static bool filter_setting;
+
 static GKeyFile *
 sidplay_load_songlength_db(const char *path)
 {
@@ -93,6 +95,8 @@ sidplay_init(const struct config_param *param)
 
 	path_with_subtune=g_pattern_spec_new(
 			"*/" SUBTUNE_PREFIX "???.sid");
+
+	filter_setting=config_get_block_bool(param, "filter", true);
 
 	return true;
 }
@@ -235,7 +239,7 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 		return;
 	}
 
-	builder.filter(false);
+	builder.filter(filter_setting);
 	if (!builder) {
 		g_warning("ReSIDBuilder.filter() failed");
 		return;
