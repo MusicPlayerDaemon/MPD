@@ -376,10 +376,14 @@ input {
 #  songlength database, or in case you're not using a database.
 #  A value of 0 means play indefinitely.
 #
+# filter:
+#  Turns the SID filter emulation on or off.
+#
 #decoder {
 #	plugin			"sidplay"
 #	songlength_database	"/media/C64Music/DOCUMENTS/Songlengths.txt"
 #	default_songlength	"120"
+#	filter "true"
 #}
 #
 ###############################################################################
