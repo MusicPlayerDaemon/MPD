@@ -632,13 +632,13 @@ handle_addid(struct client *client, int argc, char *argv[])
 static enum command_return
 handle_delete(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	int song;
+	unsigned start, end;
 	enum playlist_result result;
 
-	if (!check_int(client, &song, argv[1], need_positive))
+	if (!check_range(client, &start, &end, argv[1], need_range))
 		return COMMAND_RETURN_ERROR;
 
-	result = playlist_delete(&g_playlist, song);
+	result = playlist_delete_range(&g_playlist, start, end);
 	return print_playlist_result(client, result);
 }
 

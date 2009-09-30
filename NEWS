@@ -4,6 +4,7 @@ ver 0.16 (20??/??/??)
   - added "update" idle event
   - removed the deprecated "volume" command
   - added the "findadd" command
+  - range support for "delete"
 * input:
   - lastfm: use metadata
 * tags:

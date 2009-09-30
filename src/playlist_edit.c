@@ -280,6 +280,32 @@ playlist_delete(struct playlist *playlist, unsigned song)
 }
 
 enum playlist_result
+playlist_delete_range(struct playlist *playlist, unsigned start, unsigned end)
+{
+	const struct song *queued;
+
+	if (start >= queue_length(&playlist->queue))
+		return PLAYLIST_RESULT_BAD_RANGE;
+
+	if (end > queue_length(&playlist->queue))
+		end = queue_length(&playlist->queue);
+
+	if (start >= end)
+		return PLAYLIST_RESULT_SUCCESS;
+
+	queued = playlist_get_queued_song(playlist);
+
+	do {
+		playlist_delete_internal(playlist, --end, &queued);
+	} while (end != start);
+
+	playlist_increment_version(playlist);
+	playlist_update_queued_song(playlist, queued);
+
+	return PLAYLIST_RESULT_SUCCESS;
+}
+
+enum playlist_result
 playlist_delete_id(struct playlist *playlist, unsigned id)
 {
 	int song = queue_id_to_position(&playlist->queue, id);
