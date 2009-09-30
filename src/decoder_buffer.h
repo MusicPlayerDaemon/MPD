@@ -93,4 +93,14 @@ decoder_buffer_read(const struct decoder_buffer *buffer, size_t *length_r);
 void
 decoder_buffer_consume(struct decoder_buffer *buffer, size_t nbytes);
 
+/**
+ * Skips the specified number of bytes, discarding its data.
+ *
+ * @param buffer the decoder_buffer object
+ * @param nbytes the number of bytes to skip
+ * @return true on success, false on error
+ */
+bool
+decoder_buffer_skip(struct decoder_buffer *buffer, size_t nbytes);
+
 #endif
