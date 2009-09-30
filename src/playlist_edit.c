@@ -208,16 +208,13 @@ playlist_swap_songs_id(struct playlist *playlist, unsigned id1, unsigned id2)
 	return playlist_swap_songs(playlist, song1, song2);
 }
 
-enum playlist_result
-playlist_delete(struct playlist *playlist, unsigned song)
+static void
+playlist_delete_internal(struct playlist *playlist, unsigned song,
+			 const struct song **queued_p)
 {
-	const struct song *queued;
 	unsigned songOrder;
 
-	if (song >= queue_length(&playlist->queue))
-		return PLAYLIST_RESULT_BAD_RANGE;
-
-	queued = playlist_get_queued_song(playlist);
+	assert(song < queue_length(&playlist->queue));
 
 	songOrder = queue_position_to_order(&playlist->queue, song);
 
@@ -244,7 +241,7 @@ playlist_delete(struct playlist *playlist, unsigned song)
 			   completely */
 			playlist_stop(playlist);
 
-		queued = NULL;
+		*queued_p = NULL;
 	} else if (playlist->current == (int)songOrder)
 		/* there's a "current song" but we're not playing
 		   currently - clear "current" */
@@ -257,14 +254,26 @@ playlist_delete(struct playlist *playlist, unsigned song)
 
 	queue_delete(&playlist->queue, song);
 
-	playlist_increment_version(playlist);
-
 	/* update the "current" and "queued" variables */
 
 	if (playlist->current > (int)songOrder) {
 		playlist->current--;
 	}
+}
 
+enum playlist_result
+playlist_delete(struct playlist *playlist, unsigned song)
+{
+	const struct song *queued;
+
+	if (song >= queue_length(&playlist->queue))
+		return PLAYLIST_RESULT_BAD_RANGE;
+
+	queued = playlist_get_queued_song(playlist);
+
+	playlist_delete_internal(playlist, song, &queued);
+
+	playlist_increment_version(playlist);
 	playlist_update_queued_song(playlist, queued);
 
 	return PLAYLIST_RESULT_SUCCESS;
