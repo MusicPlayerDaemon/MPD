@@ -338,13 +338,14 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 }
 
 #if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
-static void
+static bool
 ffmpeg_copy_metadata(struct tag *tag, AVMetadata *m,
 		     enum tag_type type, const char *name)
 {
 	AVMetadataTag *mt = av_metadata_get(m, name, NULL, 0);
 	if (mt != NULL)
 		tag_add_item(tag, type, mt->value);
+	return mt != NULL;
 }
 #endif
 
@@ -359,7 +360,9 @@ static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
 
 #if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_TITLE, "title");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_ARTIST, "author");
+	if (!ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_ARTIST, "author"))
+		ffmpeg_copy_metadata(tag, f->metadata,
+				     TAG_ITEM_ARTIST, "artist");
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_ALBUM, "album");
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_COMMENT, "comment");
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_GENRE, "genre");
