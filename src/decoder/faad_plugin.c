@@ -162,6 +162,7 @@ faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
 	size_t tagsize;
 	const unsigned char *data;
 	size_t length;
+	bool success;
 
 	fileread = is->size >= 0 ? is->size : 0;
 
@@ -179,8 +180,11 @@ faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
 
 		tagsize += 10;
 
-		decoder_buffer_consume(buffer, tagsize);
-		decoder_buffer_fill(buffer);
+		success = decoder_buffer_skip(buffer, tagsize) &&
+			decoder_buffer_fill(buffer);
+		if (!success)
+			return -1;
+
 		data = decoder_buffer_read(buffer, &length);
 		if (data == NULL)
 			return -1;

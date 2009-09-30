@@ -1,6 +1,7 @@
 ver 0.15.4 (2009/??/??)
 * decoders:
   - vorbis: revert "faster tag scanning with ov_test_callback()"
+  - faad: skip assertion failure on large ID3 tags
 * output:
   - osx: fix the OS X 10.6 build
 
