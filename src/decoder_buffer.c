@@ -138,3 +138,29 @@ decoder_buffer_consume(struct decoder_buffer *buffer, size_t nbytes)
 
 	assert(buffer->consumed <= buffer->length);
 }
+
+bool
+decoder_buffer_skip(struct decoder_buffer *buffer, size_t nbytes)
+{
+	size_t length;
+	const void *data;
+	bool success;
+
+	/* this could probably be optimized by seeking */
+
+	while (true) {
+		data = decoder_buffer_read(buffer, &length);
+		if (data != NULL) {
+			if (length > nbytes)
+				length = nbytes;
+			decoder_buffer_consume(buffer, length);
+			nbytes -= length;
+			if (nbytes == 0)
+				return true;
+		}
+
+		success = decoder_buffer_fill(buffer);
+		if (!success)
+			return false;
+	}
+}
