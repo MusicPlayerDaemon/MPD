@@ -1,4 +1,4 @@
-ver 0.15.4 (2009/??/??)
+ver 0.15.4 (2009/10/03)
 * decoders:
   - vorbis: revert "faster tag scanning with ov_test_callback()"
   - faad: skip assertion failure on large ID3 tags
