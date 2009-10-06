@@ -53,7 +53,7 @@ state_file_write(void)
 	}
 
 	save_sw_volume_state(fp);
-	saveAudioDevicesState(fp);
+	audio_output_state_save(fp);
 	playlist_state_save(fp, &g_playlist);
 
 	while(fclose(fp) && errno == EINTR) /* nothing */;
@@ -81,7 +81,7 @@ state_file_read(void)
 		g_strchomp(line);
 
 		success = read_sw_volume_state(line) ||
-			readAudioDevicesState(line) ||
+			audio_output_state_read(line) ||
 			playlist_state_restore(line, fp, &g_playlist);
 		if (!success)
 			g_warning("Unrecognized line in state file: %s", line);

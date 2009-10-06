@@ -35,7 +35,7 @@
 #define AUDIO_DEVICE_STATE "audio_device_state:"
 
 void
-saveAudioDevicesState(FILE *fp)
+audio_output_state_save(FILE *fp)
 {
 	unsigned n = audio_output_count();
 
@@ -50,7 +50,7 @@ saveAudioDevicesState(FILE *fp)
 }
 
 bool
-readAudioDevicesState(const char *line)
+audio_output_state_read(const char *line)
 {
 	long value;
 	char *endptr;

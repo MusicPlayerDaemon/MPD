@@ -29,9 +29,9 @@
 #include <stdio.h>
 
 bool
-readAudioDevicesState(const char *line);
+audio_output_state_read(const char *line);
 
 void
-saveAudioDevicesState(FILE *fp);
+audio_output_state_save(FILE *fp);
 
 #endif
