@@ -454,6 +454,7 @@ handle_status(struct client *client,
 {
 	const char *state = NULL;
 	int updateJobId;
+	char *error;
 	int song;
 
 	switch (getPlayerState()) {
@@ -515,10 +516,12 @@ handle_status(struct client *client,
 			      updateJobId);
 	}
 
-	if (getPlayerError() != PLAYER_ERROR_NOERROR) {
+	error = getPlayerErrorStr();
+	if (error != NULL) {
 		client_printf(client,
 			      COMMAND_STATUS_ERROR ": %s\n",
-			      getPlayerErrorStr());
+			      error);
+		g_free(error);
 	}
 
 	song = playlist_get_next_song(&g_playlist);

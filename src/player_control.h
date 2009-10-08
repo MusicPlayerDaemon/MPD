@@ -122,6 +122,11 @@ enum player_state getPlayerState(void);
 
 void clearPlayerError(void);
 
+/**
+ * Returns the human-readable message describing the last error during
+ * playback, NULL if no error occurred.  The caller has to free the
+ * returned string.
+ */
 char *getPlayerErrorStr(void);
 
 enum player_error getPlayerError(void);

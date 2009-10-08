@@ -167,46 +167,40 @@ pc_errored_song_uri(void)
 
 char *getPlayerErrorStr(void)
 {
-	/* static OK here, only one user in main task */
-	static char error[MPD_PATH_MAX + 64]; /* still too much */
-	static const size_t errorlen = sizeof(error);
+	char *error;
 	char *uri;
-
-	*error = '\0'; /* likely */
 
 	switch (pc.error) {
 	case PLAYER_ERROR_NOERROR:
-		break;
+		return NULL;
 
 	case PLAYER_ERROR_FILENOTFOUND:
 		uri = pc_errored_song_uri();
-		snprintf(error, errorlen,
-			 "file \"%s\" does not exist or is inaccessible", uri);
+		error = g_strdup_printf("file \"%s\" does not exist or is inaccessible", uri);
 		g_free(uri);
-		break;
+		return error;
 
 	case PLAYER_ERROR_FILE:
 		uri = pc_errored_song_uri();
-		snprintf(error, errorlen, "problems decoding \"%s\"", uri);
+		error = g_strdup_printf("problems decoding \"%s\"", uri);
 		g_free(uri);
-		break;
+		return error;
 
 	case PLAYER_ERROR_AUDIO:
-		strcpy(error, "problems opening audio device");
-		break;
+		return g_strdup("problems opening audio device");
 
 	case PLAYER_ERROR_SYSTEM:
-		strcpy(error, "system error occured");
-		break;
+		return g_strdup("system error occured");
 
 	case PLAYER_ERROR_UNKTYPE:
 		uri = pc_errored_song_uri();
-		snprintf(error, errorlen,
-			 "file type of \"%s\" is unknown", uri);
+		error = g_strdup_printf("file type of \"%s\" is unknown", uri);
 		g_free(uri);
-		break;
+		return error;
 	}
-	return *error ? error : NULL;
+
+	assert(false);
+	return NULL;
 }
 
 void
