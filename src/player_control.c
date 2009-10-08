@@ -75,8 +75,12 @@ pc_play(struct song *song)
 	if (pc.state != PLAYER_STATE_STOP)
 		player_command(PLAYER_COMMAND_STOP);
 
+	assert(pc.next_song == NULL);
+
 	pc.next_song = song;
 	player_command(PLAYER_COMMAND_PLAY);
+
+	assert(pc.next_song == NULL);
 
 	idle_add(IDLE_PLAYER);
 }
@@ -84,12 +88,14 @@ pc_play(struct song *song)
 void pc_cancel(void)
 {
 	player_command(PLAYER_COMMAND_CANCEL);
+	assert(pc.next_song == NULL);
 }
 
 void
 pc_stop(void)
 {
 	player_command(PLAYER_COMMAND_CLOSE_AUDIO);
+	assert(pc.next_song == NULL);
 
 	idle_add(IDLE_PLAYER);
 }
