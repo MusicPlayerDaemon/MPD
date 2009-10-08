@@ -453,11 +453,14 @@ handle_status(struct client *client,
 	      G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	const char *state = NULL;
+	struct player_status player_status;
 	int updateJobId;
 	char *error;
 	int song;
 
-	switch (getPlayerState()) {
+	pc_get_status(&player_status);
+
+	switch (player_status.state) {
 	case PLAYER_STATE_STOP:
 		state = "stop";
 		break;
@@ -497,17 +500,19 @@ handle_status(struct client *client,
 			      song, playlist_get_song_id(&g_playlist, song));
 	}
 
-	if (getPlayerState() != PLAYER_STATE_STOP) {
-		const struct audio_format *af = player_get_audio_format();
+	if (player_status.state != PLAYER_STATE_STOP) {
 		client_printf(client,
 			      COMMAND_STATUS_TIME ": %i:%i\n"
 			      "elapsed: %1.3f\n"
-			      COMMAND_STATUS_BITRATE ": %li\n"
+			      COMMAND_STATUS_BITRATE ": %u\n"
 			      COMMAND_STATUS_AUDIO ": %u:%u:%u\n",
-			      getPlayerElapsedTime(), getPlayerTotalTime(),
-			      pc.elapsed_time,
-			      getPlayerBitRate(),
-			      af->sample_rate, af->bits, af->channels);
+			      (int)(player_status.elapsed_time + 0.5),
+			      (int)(player_status.total_time + 0.5),
+			      player_status.elapsed_time,
+			      player_status.bit_rate,
+			      player_status.audio_format.sample_rate,
+			      player_status.audio_format.bits,
+			      player_status.audio_format.channels);
 	}
 
 	if ((updateJobId = isUpdatingDB())) {

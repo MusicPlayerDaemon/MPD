@@ -129,19 +129,17 @@ void playerSetPause(int pause_flag)
 	}
 }
 
-int getPlayerElapsedTime(void)
+void
+pc_get_status(struct player_status *status)
 {
-	return (int)(pc.elapsed_time + 0.5);
-}
+	status->state = pc.state;
 
-unsigned long getPlayerBitRate(void)
-{
-	return pc.bit_rate;
-}
-
-int getPlayerTotalTime(void)
-{
-	return (int)(pc.total_time + 0.5);
+	if (pc.state != PLAYER_STATE_STOP) {
+		status->bit_rate = pc.bit_rate;
+		status->audio_format = pc.audio_format;
+		status->total_time = pc.total_time;
+		status->elapsed_time = pc.elapsed_time;
+	}
 }
 
 enum player_state getPlayerState(void)

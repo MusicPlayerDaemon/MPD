@@ -60,6 +60,14 @@ enum player_error {
 	PLAYER_ERROR_FILENOTFOUND,
 };
 
+struct player_status {
+	enum player_state state;
+	uint16_t bit_rate;
+	struct audio_format audio_format;
+	float total_time;
+	float elapsed_time;
+};
+
 struct player_control {
 	unsigned buffer_chunks;
 
@@ -112,11 +120,8 @@ void playerPause(void);
 
 void playerKill(void);
 
-int getPlayerTotalTime(void);
-
-int getPlayerElapsedTime(void);
-
-unsigned long getPlayerBitRate(void);
+void
+pc_get_status(struct player_status *status);
 
 enum player_state getPlayerState(void);
 
@@ -150,12 +155,6 @@ void setPlayerCrossFade(float crossFadeInSeconds);
 float getPlayerCrossFade(void);
 
 double getPlayerTotalPlayTime(void);
-
-static inline const struct audio_format *
-player_get_audio_format(void)
-{
-	return &pc.audio_format;
-}
 
 void playerInit(void);
 

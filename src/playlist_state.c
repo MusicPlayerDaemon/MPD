@@ -51,10 +51,14 @@
 void
 playlist_state_save(FILE *fp, const struct playlist *playlist)
 {
+	struct player_status player_status;
+
+	pc_get_status(&player_status);
+
 	fprintf(fp, "%s", PLAYLIST_STATE_FILE_STATE);
 
 	if (playlist->playing) {
-		switch (getPlayerState()) {
+		switch (player_status.state) {
 		case PLAYER_STATE_PAUSE:
 			fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_PAUSE);
 			break;
@@ -65,7 +69,7 @@ playlist_state_save(FILE *fp, const struct playlist *playlist)
 			queue_order_to_position(&playlist->queue,
 						playlist->current));
 		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_TIME,
-			getPlayerElapsedTime());
+			(int)player_status.elapsed_time);
 	} else {
 		fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_STOP);
 
@@ -204,14 +208,20 @@ playlist_state_restore(const char *line, FILE *fp, struct playlist *playlist)
 unsigned
 playlist_state_get_hash(const struct playlist *playlist)
 {
+	struct player_status player_status;
+
+	pc_get_status(&player_status);
+
 	return playlist->queue.version ^
-		(getPlayerElapsedTime() << 8) ^
+		(player_status.state != PLAYER_STATE_STOP
+		 ? ((int)player_status.elapsed_time << 8)
+		 : 0) ^
 		(playlist->current >= 0
 		 ? (queue_order_to_position(&playlist->queue,
 					    playlist->current) << 16)
 		 : 0) ^
 		((int)getPlayerCrossFade() << 20) ^
-		(getPlayerState() << 24) ^
+		(player_status.state << 24) ^
 		(playlist->queue.random << 27) ^
 		(playlist->queue.repeat << 28) ^
 		(playlist->queue.single << 29) ^
