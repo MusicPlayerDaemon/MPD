@@ -34,6 +34,8 @@
 
 #define AUDIO_DEVICE_STATE "audio_device_state:"
 
+unsigned audio_output_state_version;
+
 void
 audio_output_state_save(FILE *fp)
 {
@@ -79,4 +81,10 @@ audio_output_state_read(const char *line)
 
 	ao->enabled = false;
 	return true;
+}
+
+unsigned
+audio_output_state_get_version(void)
+{
+	return audio_output_state_version;
 }

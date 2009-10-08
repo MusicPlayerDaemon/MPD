@@ -36,6 +36,13 @@ static char *state_file_path;
 /** the GLib source id for the save timer */
 static guint save_state_source_id;
 
+/**
+ * These version numbers determine whether we need to save the state
+ * file.  If nothing has changed, we won't let the hard drive spin up.
+ */
+static unsigned prev_volume_version, prev_output_version,
+	prev_playlist_version;
+
 static void
 state_file_write(void)
 {
@@ -57,6 +64,10 @@ state_file_write(void)
 	playlist_state_save(fp, &g_playlist);
 
 	while(fclose(fp) && errno == EINTR) /* nothing */;
+
+	prev_volume_version = sw_volume_state_get_hash();
+	prev_output_version = audio_output_state_get_version();
+	prev_playlist_version = playlist_state_get_hash(&g_playlist);
 }
 
 static void
@@ -88,6 +99,10 @@ state_file_read(void)
 	}
 
 	while(fclose(fp) && errno == EINTR) /* nothing */;
+
+	prev_volume_version = sw_volume_state_get_hash();
+	prev_output_version = audio_output_state_get_version();
+	prev_playlist_version = playlist_state_get_hash(&g_playlist);
 }
 
 /**
@@ -97,6 +112,13 @@ state_file_read(void)
 static gboolean
 timer_save_state_file(G_GNUC_UNUSED gpointer data)
 {
+	if (prev_volume_version == sw_volume_state_get_hash() &&
+	    prev_output_version == audio_output_state_get_version() &&
+	    prev_playlist_version == playlist_state_get_hash(&g_playlist))
+		/* nothing has changed - don't save the state file,
+		   don't spin up the hard disk */
+		return true;
+
 	state_file_write();
 	return true;
 }

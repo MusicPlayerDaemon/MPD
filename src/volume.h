@@ -36,4 +36,13 @@ read_sw_volume_state(const char *line);
 
 void save_sw_volume_state(FILE *fp);
 
+/**
+ * Generates a hash number for the current state of the software
+ * volume control.  This is used by timer_save_state_file() to
+ * determine whether the state has changed and the state file should
+ * be saved.
+ */
+unsigned
+sw_volume_state_get_hash(void);
+
 #endif

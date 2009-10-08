@@ -31,6 +31,8 @@
 #include "mixer_control.h"
 #include "idle.h"
 
+extern unsigned audio_output_state_version;
+
 bool
 audio_output_enable_index(unsigned idx)
 {
@@ -43,6 +45,8 @@ audio_output_enable_index(unsigned idx)
 
 	ao->enabled = true;
 	idle_add(IDLE_OUTPUT);
+
+	++audio_output_state_version;
 
 	return true;
 }
@@ -66,6 +70,8 @@ audio_output_disable_index(unsigned idx)
 		mixer_close(mixer);
 		idle_add(IDLE_MIXER);
 	}
+
+	++audio_output_state_version;
 
 	return true;
 }

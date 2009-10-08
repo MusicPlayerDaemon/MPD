@@ -200,3 +200,21 @@ playlist_state_restore(const char *line, FILE *fp, struct playlist *playlist)
 
 	return true;
 }
+
+unsigned
+playlist_state_get_hash(const struct playlist *playlist)
+{
+	return playlist->queue.version ^
+		(getPlayerElapsedTime() << 8) ^
+		(playlist->current >= 0
+		 ? (queue_order_to_position(&playlist->queue,
+					    playlist->current) << 16)
+		 : 0) ^
+		((int)getPlayerCrossFade() << 20) ^
+		(getPlayerState() << 24) ^
+		(playlist->queue.random << 27) ^
+		(playlist->queue.repeat << 28) ^
+		(playlist->queue.single << 29) ^
+		(playlist->queue.consume << 30) ^
+		(playlist->queue.random << 31);
+}

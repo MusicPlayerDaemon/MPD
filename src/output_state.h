@@ -34,4 +34,12 @@ audio_output_state_read(const char *line);
 void
 audio_output_state_save(FILE *fp);
 
+/**
+ * Generates a version number for the current state of the audio
+ * outputs.  This is used by timer_save_state_file() to determine
+ * whether the state has changed and the state file should be saved.
+ */
+unsigned
+audio_output_state_get_version(void);
+
 #endif

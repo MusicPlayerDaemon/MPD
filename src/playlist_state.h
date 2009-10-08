@@ -36,4 +36,13 @@ playlist_state_save(FILE *fp, const struct playlist *playlist);
 bool
 playlist_state_restore(const char *line, FILE *fp, struct playlist *playlist);
 
+/**
+ * Generates a hash number for the current state of the playlist and
+ * the playback options.  This is used by timer_save_state_file() to
+ * determine whether the state has changed and the state file should
+ * be saved.
+ */
+unsigned
+playlist_state_get_hash(const struct playlist *playlist);
+
 #endif

@@ -122,3 +122,9 @@ void save_sw_volume_state(FILE *fp)
 {
 	fprintf(fp, SW_VOLUME_STATE "%u\n", volume_software_set);
 }
+
+unsigned
+sw_volume_state_get_hash(void)
+{
+	return volume_software_set;
+}
