@@ -347,7 +347,6 @@ static void player_process_command(struct player *player)
 {
 	switch (pc.command) {
 	case PLAYER_COMMAND_NONE:
-	case PLAYER_COMMAND_PLAY:
 	case PLAYER_COMMAND_STOP:
 	case PLAYER_COMMAND_EXIT:
 	case PLAYER_COMMAND_CLOSE_AUDIO:
@@ -773,7 +772,6 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 
 	while (1) {
 		switch (pc.command) {
-		case PLAYER_COMMAND_PLAY:
 		case PLAYER_COMMAND_QUEUE:
 			assert(pc.next_song != NULL);
 

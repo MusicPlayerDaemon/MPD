@@ -77,8 +77,7 @@ pc_play(struct song *song)
 
 	assert(pc.next_song == NULL);
 
-	pc.next_song = song;
-	player_command(PLAYER_COMMAND_PLAY);
+	pc_enqueue_song(song);
 
 	assert(pc.next_song == NULL);
 
