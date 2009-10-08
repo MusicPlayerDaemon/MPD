@@ -38,6 +38,7 @@ ver 0.16 (20??/??/??)
 * automatically update the database with Linux inotify
 * state_file: save only if something has changed
 * obey $(sysconfdir) for default mpd.conf location
+* build with large file support by default
 
 
 ver 0.15.4 (2009/10/03)

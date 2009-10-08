@@ -100,6 +100,8 @@ dnl
 dnl libc features
 dnl
 
+AC_SYS_LARGEFILE
+
 AC_CHECK_FUNCS(daemon fork syslog)
 if test $ac_cv_func_syslog = no; then
 	# syslog is not in the default libraries.  See if it's in some other.
