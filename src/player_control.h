@@ -48,6 +48,12 @@ enum player_command {
 	 * stop
 	 */
 	PLAYER_COMMAND_CANCEL,
+
+	/**
+	 * Refresh status information in the #player_control struct,
+	 * e.g. elapsed_time.
+	 */
+	PLAYER_COMMAND_REFRESH,
 };
 
 enum player_error {

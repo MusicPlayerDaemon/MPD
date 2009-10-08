@@ -128,4 +128,11 @@ audio_output_all_pause(void);
 void
 audio_output_all_cancel(void);
 
+/**
+ * Returns the "elapsed_time" stamp of the most recently finished
+ * chunk.
+ */
+float
+audio_output_all_get_elapsed_time(void);
+
 #endif

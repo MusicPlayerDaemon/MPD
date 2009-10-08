@@ -151,7 +151,6 @@ player_wait_for_decoder(struct player *player)
 
 	player->song = pc.next_song;
 	pc.next_song = NULL;
-	pc.elapsed_time = 0;
 	player->queued = false;
 
 	/* set the "starting" flag, which will be cleared by
@@ -330,7 +329,6 @@ static bool player_seek_decoder(struct player *player)
 		return false;
 	}
 
-	pc.elapsed_time = where;
 	player_command_finished();
 
 	player->xfade = XFADE_UNKNOWN;
@@ -409,6 +407,14 @@ static void player_process_command(struct player *player)
 		player->queued = false;
 		player_command_finished();
 		break;
+
+	case PLAYER_COMMAND_REFRESH:
+		if (audio_format_defined(&player->play_audio_format))
+			audio_output_all_check();
+
+		pc.elapsed_time = audio_output_all_get_elapsed_time();
+		player_command_finished();
+		break;
 	}
 }
 
@@ -456,7 +462,6 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 		return true;
 	}
 
-	pc.elapsed_time = chunk->times;
 	pc.bit_rate = chunk->bit_rate;
 
 	/* send the chunk to the audio outputs */
@@ -630,7 +635,6 @@ static void do_play(void)
 		return;
 	}
 
-	pc.elapsed_time = 0;
 	pc.state = PLAYER_STATE_PLAY;
 	player_command_finished();
 
@@ -810,6 +814,11 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 
 		case PLAYER_COMMAND_CANCEL:
 			pc.next_song = NULL;
+			player_command_finished();
+			break;
+
+		case PLAYER_COMMAND_REFRESH:
+			/* no-op when not playing */
 			player_command_finished();
 			break;
 

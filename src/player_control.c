@@ -142,6 +142,8 @@ pc_set_pause(bool pause_flag)
 void
 pc_get_status(struct player_status *status)
 {
+	player_command(PLAYER_COMMAND_REFRESH);
+
 	status->state = pc.state;
 
 	if (pc.state != PLAYER_STATE_STOP) {
