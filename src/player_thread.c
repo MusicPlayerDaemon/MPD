@@ -750,12 +750,10 @@ static void do_play(void)
 		}
 	}
 
-	if (player.queued) {
-		assert(pc.next_song != NULL);
-		pc.next_song = NULL;
-	}
-
 	player_dc_stop(&player);
+
+	assert(!player.queued || pc.next_song != NULL);
+	pc.next_song = NULL;
 
 	music_pipe_clear(player.pipe, player_buffer);
 	music_pipe_free(player.pipe);
