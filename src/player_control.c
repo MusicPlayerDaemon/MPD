@@ -149,7 +149,8 @@ enum player_state getPlayerState(void)
 
 void clearPlayerError(void)
 {
-	pc.error = 0;
+	pc.error = PLAYER_ERROR_NOERROR;
+	pc.errored_song = NULL;
 }
 
 enum player_error getPlayerError(void)
