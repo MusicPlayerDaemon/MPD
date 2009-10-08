@@ -107,39 +107,47 @@ void
 pc_song_deleted(const struct song *song);
 
 void
-playerPlay(struct song *song);
+pc_play(struct song *song);
 
 /**
  * see PLAYER_COMMAND_CANCEL
  */
 void pc_cancel(void);
 
-void playerSetPause(int pause_flag);
+void
+pc_set_pause(bool pause_flag);
 
-void playerPause(void);
+void
+pc_pause(void);
 
-void playerKill(void);
+void
+pc_kill(void);
 
 void
 pc_get_status(struct player_status *status);
 
-enum player_state getPlayerState(void);
+enum player_state
+pc_get_state(void);
 
-void clearPlayerError(void);
+void
+pc_clear_error(void);
 
 /**
  * Returns the human-readable message describing the last error during
  * playback, NULL if no error occurred.  The caller has to free the
  * returned string.
  */
-char *getPlayerErrorStr(void);
+char *
+pc_get_error_message(void);
 
-enum player_error getPlayerError(void);
-
-void playerWait(void);
+enum player_error
+pc_get_error(void);
 
 void
-queueSong(struct song *song);
+pc_stop(void);
+
+void
+pc_enqueue_song(struct song *song);
 
 /**
  * Makes the player thread seek the specified song to a position.
@@ -150,12 +158,13 @@ queueSong(struct song *song);
 bool
 pc_seek(struct song *song, float seek_time);
 
-void setPlayerCrossFade(float crossFadeInSeconds);
+void
+pc_set_cross_fade(float cross_fade_seconds);
 
-float getPlayerCrossFade(void);
+float
+pc_get_cross_fade(void);
 
-double getPlayerTotalPlayTime(void);
-
-void playerInit(void);
+double
+pc_get_total_play_time(void);
 
 #endif

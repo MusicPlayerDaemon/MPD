@@ -88,7 +88,7 @@ playlist_queue_song_order(struct playlist *playlist, unsigned order)
 	g_debug("queue song %i:\"%s\"", playlist->queued, uri);
 	g_free(uri);
 
-	queueSong(song);
+	pc_enqueue_song(song);
 }
 
 /**
@@ -190,7 +190,7 @@ playlist_play_order(struct playlist *playlist, int orderNum)
 	g_debug("play %i:\"%s\"", orderNum, uri);
 	g_free(uri);
 
-	playerPlay(song);
+	pc_play(song);
 	playlist->current = orderNum;
 }
 
@@ -209,7 +209,7 @@ playlist_sync(struct playlist *playlist)
 		   playing anymore; ignore the event */
 		return;
 
-	if (getPlayerState() == PLAYER_STATE_STOP)
+	if (pc_get_state() == PLAYER_STATE_STOP)
 		/* the player thread has stopped: check if playback
 		   should be restarted with the next song.  That can
 		   happen if the playlist isn't filling the queue fast
@@ -237,9 +237,9 @@ playlist_resume_playback(struct playlist *playlist)
 	enum player_error error;
 
 	assert(playlist->playing);
-	assert(getPlayerState() == PLAYER_STATE_STOP);
+	assert(pc_get_state() == PLAYER_STATE_STOP);
 
-	error = getPlayerError();
+	error = pc_get_error();
 	if (error == PLAYER_ERROR_NOERROR)
 		playlist->error_count = 0;
 	else

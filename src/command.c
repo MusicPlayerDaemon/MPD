@@ -440,11 +440,11 @@ handle_pause(struct client *client,
 		bool pause_flag;
 		if (!check_bool(client, &pause_flag, argv[1]))
 			return COMMAND_RETURN_ERROR;
-		playerSetPause(pause_flag);
-		return COMMAND_RETURN_OK;
-	}
 
-	playerPause();
+		pc_set_pause(pause_flag);
+	} else
+		pc_pause();
+
 	return COMMAND_RETURN_OK;
 }
 
@@ -489,7 +489,7 @@ handle_status(struct client *client,
 		      playlist_get_consume(&g_playlist),
 		      playlist_get_version(&g_playlist),
 		      playlist_get_length(&g_playlist),
-		      (int)(getPlayerCrossFade() + 0.5),
+		      (int)(pc_get_cross_fade() + 0.5),
 		      state);
 
 	song = playlist_get_current_song(&g_playlist);
@@ -521,7 +521,7 @@ handle_status(struct client *client,
 			      updateJobId);
 	}
 
-	error = getPlayerErrorStr();
+	error = pc_get_error_message();
 	if (error != NULL) {
 		client_printf(client,
 			      COMMAND_STATUS_ERROR ": %s\n",
@@ -1212,7 +1212,7 @@ static enum command_return
 handle_clearerror(G_GNUC_UNUSED struct client *client,
 		  G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	clearPlayerError();
+	pc_clear_error();
 	return COMMAND_RETURN_OK;
 }
 
@@ -1403,7 +1403,7 @@ handle_crossfade(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 
 	if (!check_unsigned(client, &xfade_time, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	setPlayerCrossFade(xfade_time);
+	pc_set_cross_fade(xfade_time);
 
 	return COMMAND_RETURN_OK;
 }

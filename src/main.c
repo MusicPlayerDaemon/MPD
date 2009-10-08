@@ -386,7 +386,7 @@ int main(int argc, char *argv[])
 	mpd_inotify_finish();
 
 	state_file_finish();
-	playerKill();
+	pc_kill();
 	finishZeroconf();
 	client_manager_deinit();
 	listen_global_finish();

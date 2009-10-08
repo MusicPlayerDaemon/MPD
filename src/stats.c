@@ -113,7 +113,7 @@ int stats_print(struct client *client)
 		      stats.album_count,
 		      stats.song_count,
 		      (long)g_timer_elapsed(stats.timer, NULL),
-		      (long)(getPlayerTotalPlayTime() + 0.5),
+		      (long)(pc_get_total_play_time() + 0.5),
 		      stats.song_duration,
 		      db_get_mtime());
 	return 0;

@@ -68,7 +68,7 @@ static void player_command(enum player_command cmd)
 }
 
 void
-playerPlay(struct song *song)
+pc_play(struct song *song)
 {
 	assert(song != NULL);
 
@@ -86,14 +86,16 @@ void pc_cancel(void)
 	player_command(PLAYER_COMMAND_CANCEL);
 }
 
-void playerWait(void)
+void
+pc_stop(void)
 {
 	player_command(PLAYER_COMMAND_CLOSE_AUDIO);
 
 	idle_add(IDLE_PLAYER);
 }
 
-void playerKill(void)
+void
+pc_kill(void)
 {
 	assert(pc.thread != NULL);
 
@@ -104,7 +106,8 @@ void playerKill(void)
 	idle_add(IDLE_PLAYER);
 }
 
-void playerPause(void)
+void
+pc_pause(void)
 {
 	if (pc.state != PLAYER_STATE_STOP) {
 		player_command(PLAYER_COMMAND_PAUSE);
@@ -112,7 +115,8 @@ void playerPause(void)
 	}
 }
 
-void playerSetPause(int pause_flag)
+void
+pc_set_pause(bool pause_flag)
 {
 	switch (pc.state) {
 	case PLAYER_STATE_STOP:
@@ -120,11 +124,12 @@ void playerSetPause(int pause_flag)
 
 	case PLAYER_STATE_PLAY:
 		if (pause_flag)
-			playerPause();
+			pc_pause();
 		break;
+
 	case PLAYER_STATE_PAUSE:
 		if (!pause_flag)
-			playerPause();
+			pc_pause();
 		break;
 	}
 }
@@ -142,18 +147,21 @@ pc_get_status(struct player_status *status)
 	}
 }
 
-enum player_state getPlayerState(void)
+enum player_state
+pc_get_state(void)
 {
 	return pc.state;
 }
 
-void clearPlayerError(void)
+void
+pc_clear_error(void)
 {
 	pc.error = PLAYER_ERROR_NOERROR;
 	pc.errored_song = NULL;
 }
 
-enum player_error getPlayerError(void)
+enum player_error
+pc_get_error(void)
 {
 	return pc.error;
 }
@@ -164,7 +172,8 @@ pc_errored_song_uri(void)
 	return song_get_uri(pc.errored_song);
 }
 
-char *getPlayerErrorStr(void)
+char *
+pc_get_error_message(void)
 {
 	char *error;
 	char *uri;
@@ -203,7 +212,7 @@ char *getPlayerErrorStr(void)
 }
 
 void
-queueSong(struct song *song)
+pc_enqueue_song(struct song *song)
 {
 	assert(song != NULL);
 	assert(pc.next_song == NULL);
@@ -231,21 +240,24 @@ pc_seek(struct song *song, float seek_time)
 	return true;
 }
 
-float getPlayerCrossFade(void)
+float
+pc_get_cross_fade(void)
 {
 	return pc.cross_fade_seconds;
 }
 
-void setPlayerCrossFade(float crossFadeInSeconds)
+void
+pc_set_cross_fade(float cross_fade_seconds)
 {
-	if (crossFadeInSeconds < 0)
-		crossFadeInSeconds = 0;
-	pc.cross_fade_seconds = crossFadeInSeconds;
+	if (cross_fade_seconds < 0)
+		cross_fade_seconds = 0;
+	pc.cross_fade_seconds = cross_fade_seconds;
 
 	idle_add(IDLE_OPTIONS);
 }
 
-double getPlayerTotalPlayTime(void)
+double
+pc_get_total_play_time(void)
 {
 	return pc.total_play_time;
 }

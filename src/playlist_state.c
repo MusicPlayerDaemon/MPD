@@ -88,7 +88,7 @@ playlist_state_save(FILE *fp, const struct playlist *playlist)
 	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CONSUME,
 		playlist->queue.consume);
 	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CROSSFADE,
-		(int)(getPlayerCrossFade()));
+		(int)(pc_get_cross_fade()));
 	fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_BEGIN);
 	queue_save(fp, &playlist->queue);
 	fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_END);
@@ -166,11 +166,7 @@ playlist_state_restore(const char *line, FILE *fp, struct playlist *playlist)
 			} else
 				playlist_set_consume(playlist, false);
 		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CROSSFADE)) {
-			setPlayerCrossFade(atoi
-					   (&
-					    (buffer
-					     [strlen
-					      (PLAYLIST_STATE_FILE_CROSSFADE)])));
+			pc_set_cross_fade(atoi(buffer + strlen(PLAYLIST_STATE_FILE_CROSSFADE)));
 		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_RANDOM)) {
 			random_mode =
 				strcmp(buffer + strlen(PLAYLIST_STATE_FILE_RANDOM),
@@ -199,7 +195,7 @@ playlist_state_restore(const char *line, FILE *fp, struct playlist *playlist)
 			playlist_seek_song(playlist, current, seek_time);
 
 		if (state == PLAYER_STATE_PAUSE)
-			playerPause();
+			pc_pause();
 	}
 
 	return true;
@@ -220,7 +216,7 @@ playlist_state_get_hash(const struct playlist *playlist)
 		 ? (queue_order_to_position(&playlist->queue,
 					    playlist->current) << 16)
 		 : 0) ^
-		((int)getPlayerCrossFade() << 20) ^
+		((int)pc_get_cross_fade() << 20) ^
 		(player_status.state << 24) ^
 		(playlist->queue.random << 27) ^
 		(playlist->queue.repeat << 28) ^

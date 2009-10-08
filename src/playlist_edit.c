@@ -219,11 +219,11 @@ playlist_delete_internal(struct playlist *playlist, unsigned song,
 	songOrder = queue_position_to_order(&playlist->queue, song);
 
 	if (playlist->playing && playlist->current == (int)songOrder) {
-		bool paused = getPlayerState() == PLAYER_STATE_PAUSE;
+		bool paused = pc_get_state() == PLAYER_STATE_PAUSE;
 
 		/* the current song is going to be deleted: stop the player */
 
-		playerWait();
+		pc_stop();
 		playlist->playing = false;
 
 		/* see which song is going to be played instead */

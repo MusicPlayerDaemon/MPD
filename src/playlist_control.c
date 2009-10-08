@@ -38,7 +38,7 @@ void playlist_stop(struct playlist *playlist)
 	assert(playlist->current >= 0);
 
 	g_debug("stop");
-	playerWait();
+	pc_stop();
 	playlist->queued = -1;
 	playlist->playing = false;
 
@@ -64,7 +64,7 @@ enum playlist_result playlist_play(struct playlist *playlist, int song)
 {
 	unsigned i = song;
 
-	clearPlayerError();
+	pc_clear_error();
 
 	if (song == -1) {
 		/* play any song ("current" song, or the first song */
@@ -75,7 +75,7 @@ enum playlist_result playlist_play(struct playlist *playlist, int song)
 		if (playlist->playing) {
 			/* already playing: unpause playback, just in
 			   case it was paused, and return */
-			playerSetPause(0);
+			pc_set_pause(false);
 			return PLAYLIST_RESULT_SUCCESS;
 		}
 
@@ -217,7 +217,7 @@ playlist_seek_song(struct playlist *playlist, unsigned song, float seek_time)
 	else
 		i = song;
 
-	clearPlayerError();
+	pc_clear_error();
 	playlist->stop_on_error = true;
 	playlist->error_count = 0;
 
