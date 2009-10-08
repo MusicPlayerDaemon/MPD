@@ -30,14 +30,6 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "playlist"
 
-enum {
-	/**
-	 * When the "prev" command is received, rewind the current
-	 * track if this number of seconds has already elapsed.
-	 */
-	PLAYLIST_PREV_UNLESS_ELAPSED = 10,
-};
-
 void playlist_stop(struct playlist *playlist)
 {
 	if (!playlist->playing)
@@ -191,29 +183,21 @@ void playlist_previous(struct playlist *playlist)
 	if (!playlist->playing)
 		return;
 
-	if (g_timer_elapsed(playlist->prev_elapsed, NULL) >= 1.0 &&
-	    getPlayerElapsedTime() > PLAYLIST_PREV_UNLESS_ELAPSED) {
-		/* re-start playing the current song (just like the
-		   "prev" button on CD players) */
+	assert(queue_length(&playlist->queue) > 0);
 
-		playlist_play_order(playlist, playlist->current);
+	if (playlist->current > 0) {
+		/* play the preceding song */
+		playlist_play_order(playlist,
+				    playlist->current - 1);
+	} else if (playlist->queue.repeat) {
+		/* play the last song in "repeat" mode */
+		playlist_play_order(playlist,
+				    queue_length(&playlist->queue) - 1);
 	} else {
-		if (playlist->current > 0) {
-			/* play the preceding song */
-			playlist_play_order(playlist,
-						playlist->current - 1);
-		} else if (playlist->queue.repeat) {
-			/* play the last song in "repeat" mode */
-			playlist_play_order(playlist,
-						queue_length(&playlist->queue) - 1);
-		} else {
-			/* re-start playing the current song if it's
-			   the first one */
-			playlist_play_order(playlist, playlist->current);
-		}
+		/* re-start playing the current song if it's
+		   the first one */
+		playlist_play_order(playlist, playlist->current);
 	}
-
-	g_timer_start(playlist->prev_elapsed);
 }
 
 enum playlist_result

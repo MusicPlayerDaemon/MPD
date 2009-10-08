@@ -5,6 +5,7 @@ ver 0.16 (20??/??/??)
   - removed the deprecated "volume" command
   - added the "findadd" command
   - range support for "delete"
+  - "previous" really plays the previous song
 * input:
   - lastfm: use metadata
 * tags:
