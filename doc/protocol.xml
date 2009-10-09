@@ -645,10 +645,7 @@
             </para>
             <para>
               <varname>URI</varname> is always a single file or
-              URL.  <varname>POSITION</varname> is optional, a
-              negative number means it is relative to the currently
-              playing song in the playlist (if there is one).
-              For example:
+              URL.  For example:
             </para>
             <screen>
 addid "foo.mp3"

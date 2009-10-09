@@ -6,6 +6,7 @@ ver 0.16 (20??/??/??)
   - added the "findadd" command
   - range support for "delete"
   - "previous" really plays the previous song
+  - "addid" with negative position is deprecated
 * input:
   - lastfm: use metadata
 * tags:
