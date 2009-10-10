@@ -737,7 +737,7 @@ AM_CONDITIONAL(HAVE_PULSE, test x$enable_pulse = xyes)
 
 AC_ARG_ENABLE(recorder-output,
 	AS_HELP_STRING([--enable-recorder-output],
-		[enables the HTTP server output]),,
+		[enables the recorder file output plugin (default: disable)]),,
 	[enable_recorder_output=auto])
 
 AC_ARG_ENABLE(httpd-output,
@@ -1301,9 +1301,9 @@ else
 fi
 
 if test x$enable_recorder_output = xyes; then
-	echo " recorder support ..............enabled"
+	echo " File Recorder support .........enabled"
 else
-	echo " recorder support ..............disabled"
+	echo " File Recorder support .........disabled"
 fi
 
 if test x$enable_httpd_output = xyes; then
