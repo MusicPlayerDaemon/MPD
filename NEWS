@@ -1,4 +1,6 @@
 ver 0.15.5 (2009/??/??)
+* input:
+  - curl: don't abort if a packet has only metadata
 
 
 ver 0.15.4 (2009/10/03)

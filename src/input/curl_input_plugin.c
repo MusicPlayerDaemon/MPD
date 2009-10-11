@@ -443,31 +443,33 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size)
 	}
 #endif
 
-	/* fill the buffer */
+	do {
+		/* fill the buffer */
 
-	success = fill_buffer(is);
-	if (!success)
-		return 0;
+		success = fill_buffer(is);
+		if (!success)
+			return 0;
 
-	/* send buffer contents */
+		/* send buffer contents */
 
-	if (c->rewind != NULL &&
-	    (!g_queue_is_empty(c->rewind) || is->offset == 0))
-		/* at the beginning or already writing the rewind
-		   buffer list */
-		rewind_buffers = c->rewind;
-	else
-		/* we don't need the rewind buffers anymore */
-		rewind_buffers = NULL;
+		if (c->rewind != NULL &&
+		    (!g_queue_is_empty(c->rewind) || is->offset == 0))
+			/* at the beginning or already writing the rewind
+			   buffer list */
+			rewind_buffers = c->rewind;
+		else
+			/* we don't need the rewind buffers anymore */
+			rewind_buffers = NULL;
 
-	while (size > 0 && !g_queue_is_empty(c->buffers)) {
-		size_t copy = read_from_buffer(&c->icy_metadata, c->buffers,
-					       dest + nbytes, size,
-					       rewind_buffers);
+		while (size > 0 && !g_queue_is_empty(c->buffers)) {
+			size_t copy = read_from_buffer(&c->icy_metadata, c->buffers,
+						       dest + nbytes, size,
+						       rewind_buffers);
 
-		nbytes += copy;
-		size -= copy;
-	}
+			nbytes += copy;
+			size -= copy;
+		}
+	} while (nbytes == 0);
 
 	if (icy_defined(&c->icy_metadata))
 		copy_icy_tag(c);
