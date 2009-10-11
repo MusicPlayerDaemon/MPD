@@ -189,7 +189,7 @@ static void decoder_run_song(const struct song *song, const char *uri)
 		if (plugin == NULL) {
 			/* we already know our mp3Plugin supports streams, no
 			 * need to check for stream{Types,DecodeFunc} */
-			if ((plugin = decoder_plugin_from_name("mp3"))) {
+			if ((plugin = decoder_plugin_from_name("mad"))) {
 				ret = decoder_stream_decode(plugin, &decoder,
 							    &input_stream);
 			}

@@ -282,6 +282,42 @@ input_curl_select(struct input_curl *c)
 	return ret;
 }
 
+static bool
+fill_buffer(struct input_stream *is)
+{
+	struct input_curl *c = is->data;
+	CURLMcode mcode = CURLM_CALL_MULTI_PERFORM;
+
+	while (!c->eof && g_queue_is_empty(c->buffers)) {
+		int running_handles;
+		bool bret;
+
+		if (mcode != CURLM_CALL_MULTI_PERFORM) {
+			/* if we're still here, there is no input yet
+			   - wait for input */
+			int ret = input_curl_select(c);
+			if (ret <= 0)
+				/* no data yet or error */
+				return false;
+		}
+
+		mcode = curl_multi_perform(c->multi, &running_handles);
+		if (mcode != CURLM_OK && mcode != CURLM_CALL_MULTI_PERFORM) {
+			g_warning("curl_multi_perform() failed: %s\n",
+				  curl_multi_strerror(mcode));
+			c->eof = true;
+			is->ready = true;
+			return false;
+		}
+
+		bret = input_curl_multi_info_read(is);
+		if (!bret)
+			return false;
+	}
+
+	return true;
+}
+
 /**
  * Mark a part of the buffer object as consumed.
  */
@@ -381,7 +417,7 @@ static size_t
 input_curl_read(struct input_stream *is, void *ptr, size_t size)
 {
 	struct input_curl *c = is->data;
-	CURLMcode mcode = CURLM_CALL_MULTI_PERFORM;
+	bool success;
 	GQueue *rewind_buffers;
 	size_t nbytes = 0;
 	char *dest = ptr;
@@ -407,54 +443,33 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size)
 	}
 #endif
 
-	/* fill the buffer */
+	do {
+		/* fill the buffer */
 
-	while (!c->eof && g_queue_is_empty(c->buffers)) {
-		int running_handles;
-		bool bret;
-
-		if (mcode != CURLM_CALL_MULTI_PERFORM) {
-			/* if we're still here, there is no input yet
-			   - wait for input */
-			int ret = input_curl_select(c);
-			if (ret <= 0)
-				/* no data yet or error */
-				return 0;
-		}
-
-		mcode = curl_multi_perform(c->multi, &running_handles);
-		if (mcode != CURLM_OK && mcode != CURLM_CALL_MULTI_PERFORM) {
-			g_warning("curl_multi_perform() failed: %s\n",
-				  curl_multi_strerror(mcode));
-			c->eof = true;
-			is->ready = true;
+		success = fill_buffer(is);
+		if (!success)
 			return 0;
+
+		/* send buffer contents */
+
+		if (c->rewind != NULL &&
+		    (!g_queue_is_empty(c->rewind) || is->offset == 0))
+			/* at the beginning or already writing the rewind
+			   buffer list */
+			rewind_buffers = c->rewind;
+		else
+			/* we don't need the rewind buffers anymore */
+			rewind_buffers = NULL;
+
+		while (size > 0 && !g_queue_is_empty(c->buffers)) {
+			size_t copy = read_from_buffer(&c->icy_metadata, c->buffers,
+						       dest + nbytes, size,
+						       rewind_buffers);
+
+			nbytes += copy;
+			size -= copy;
 		}
-
-		bret = input_curl_multi_info_read(is);
-		if (!bret)
-			return 0;
-	}
-
-	/* send buffer contents */
-
-	if (c->rewind != NULL &&
-	    (!g_queue_is_empty(c->rewind) || is->offset == 0))
-		/* at the beginning or already writing the rewind
-		   buffer list */
-		rewind_buffers = c->rewind;
-	else
-		/* we don't need the rewind buffers anymore */
-		rewind_buffers = NULL;
-
-	while (size > 0 && !g_queue_is_empty(c->buffers)) {
-		size_t copy = read_from_buffer(&c->icy_metadata, c->buffers,
-					       dest + nbytes, size,
-					       rewind_buffers);
-
-		nbytes += copy;
-		size -= copy;
-	}
+	} while (nbytes == 0);
 
 	if (icy_defined(&c->icy_metadata))
 		copy_icy_tag(c);
