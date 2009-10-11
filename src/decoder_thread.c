@@ -164,7 +164,7 @@ static void decoder_run_song(const struct song *song, const char *uri)
 			if (ret)
 				break;
 
-			plugin = NULL;
+			assert(dc.state == DECODE_STATE_START);
 		}
 
 		/* if that fails, try suffix matching the URL: */
@@ -180,7 +180,6 @@ static void decoder_run_song(const struct song *song, const char *uri)
 					break;
 
 				assert(dc.state == DECODE_STATE_START);
-				plugin = NULL;
 			}
 		}
 		/* fallback to mp3: */
