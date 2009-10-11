@@ -84,6 +84,11 @@ aiff_seek_id3(FILE *file)
 			return 0;
 
 		size = GUINT32_FROM_BE(chunk.size);
+		if (size > G_MAXINT32)
+			/* too dangerous, bail out: possible integer
+			   underflow when casting to off_t */
+			return 0;
+
 		if (size % 2 != 0)
 			/* pad byte */
 			++size;
@@ -91,11 +96,6 @@ aiff_seek_id3(FILE *file)
 		if (memcmp(chunk.id, "ID3 ", 4) == 0)
 			/* found it! */
 			return size;
-
-		if ((off_t)size < 0)
-			/* integer underflow after cast to signed
-			   type */
-			return 0;
 
 		ret = fseek(file, size, SEEK_CUR);
 		if (ret != 0)
