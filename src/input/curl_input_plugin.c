@@ -42,7 +42,7 @@
 #define G_LOG_DOMAIN "input_curl"
 
 /** rewinding is possible after up to 64 kB */
-static const off_t max_rewind_size = 64 * 1024;
+static const goffset max_rewind_size = 64 * 1024;
 
 /**
  * Buffers created by input_curl_writefunction().
@@ -425,7 +425,7 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size)
 #ifndef NDEBUG
 	if (c->rewind != NULL &&
 	    (!g_queue_is_empty(c->rewind) || is->offset == 0)) {
-		off_t offset = 0;
+		goffset offset = 0;
 		struct buffer *buffer;
 
 		for (GList *list = g_queue_peek_head_link(c->rewind);
@@ -474,11 +474,11 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size)
 	if (icy_defined(&c->icy_metadata))
 		copy_icy_tag(c);
 
-	is->offset += (off_t)nbytes;
+	is->offset += (goffset)nbytes;
 
 #ifndef NDEBUG
 	if (rewind_buffers != NULL) {
-		off_t offset = 0;
+		goffset offset = 0;
 		struct buffer *buffer;
 
 		for (GList *list = g_queue_peek_head_link(c->rewind);
@@ -772,7 +772,7 @@ input_curl_can_rewind(struct input_stream *is)
 	/* rewind is possible if this is the very first buffer of the
 	   resource */
 	buffer = (struct buffer*)g_queue_peek_head(c->buffers);
-	return (off_t)buffer->consumed == is->offset;
+	return (goffset)buffer->consumed == is->offset;
 }
 
 static void
@@ -780,7 +780,7 @@ input_curl_rewind(struct input_stream *is)
 {
 	struct input_curl *c = is->data;
 #ifndef NDEBUG
-	off_t offset = 0;
+	goffset offset = 0;
 #endif
 
 	assert(c->rewind != NULL);
@@ -818,7 +818,7 @@ input_curl_rewind(struct input_stream *is)
 }
 
 static bool
-input_curl_seek(struct input_stream *is, off_t offset, int whence)
+input_curl_seek(struct input_stream *is, goffset offset, int whence)
 {
 	struct input_curl *c = is->data;
 	bool ret;
@@ -884,7 +884,7 @@ input_curl_seek(struct input_stream *is, off_t offset, int whence)
 		buffer = (struct buffer *)g_queue_pop_head(c->buffers);
 
 		length = buffer->size - buffer->consumed;
-		if (offset - is->offset < (off_t)length)
+		if (offset - is->offset < (goffset)length)
 			length = offset - is->offset;
 
 		buffer = consume_buffer(buffer, length, rewind_buffers);

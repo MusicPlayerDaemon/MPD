@@ -779,10 +779,10 @@ mp3_frame_duration(const struct mad_frame *frame)
 			       MAD_UNITS_MILLISECONDS) / 1000.0;
 }
 
-static off_t
+static goffset
 mp3_this_frame_offset(const struct mp3_data *data)
 {
-	off_t offset = data->input_stream->offset;
+	goffset offset = data->input_stream->offset;
 
 	if (data->stream.this_frame != NULL)
 		offset -= data->stream.bufend - data->stream.this_frame;
@@ -792,7 +792,7 @@ mp3_this_frame_offset(const struct mp3_data *data)
 	return offset;
 }
 
-static off_t
+static goffset
 mp3_rest_including_this_frame(const struct mp3_data *data)
 {
 	return data->input_stream->size - mp3_this_frame_offset(data);
@@ -804,7 +804,7 @@ mp3_rest_including_this_frame(const struct mp3_data *data)
 static void
 mp3_filesize_to_song_length(struct mp3_data *data)
 {
-	off_t rest = mp3_rest_including_this_frame(data);
+	goffset rest = mp3_rest_including_this_frame(data);
 
 	if (rest > 0) {
 		float frame_duration = mp3_frame_duration(&data->frame);

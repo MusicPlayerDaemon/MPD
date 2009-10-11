@@ -20,13 +20,11 @@
 #ifndef MPD_INPUT_STREAM_H
 #define MPD_INPUT_STREAM_H
 
-#include "config.h"
+#include <glib.h>
 
 #include <stddef.h>
 #include <stdbool.h>
 #include <sys/types.h>
-
-struct input_stream;
 
 struct input_stream {
 	/**
@@ -58,12 +56,12 @@ struct input_stream {
 	/**
 	 * the size of the resource, or -1 if unknown
 	 */
-	off_t size;
+	goffset size;
 
 	/**
 	 * the current offset within the stream
 	 */
-	off_t offset;
+	goffset offset;
 
 	/**
 	 * the MIME content type of the resource, or NULL if unknown
@@ -108,7 +106,7 @@ input_stream_close(struct input_stream *is);
  * @param whence the base of the seek, one of SEEK_SET, SEEK_CUR, SEEK_END
  */
 bool
-input_stream_seek(struct input_stream *is, off_t offset, int whence);
+input_stream_seek(struct input_stream *is, goffset offset, int whence);
 
 /**
  * Returns true if the stream has reached end-of-file.

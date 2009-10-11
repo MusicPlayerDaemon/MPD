@@ -53,7 +53,7 @@ struct input_plugin {
 	int (*buffer)(struct input_stream *is);
 	size_t (*read)(struct input_stream *is, void *ptr, size_t size);
 	bool (*eof)(struct input_stream *is);
-	bool (*seek)(struct input_stream *is, off_t offset, int whence);
+	bool (*seek)(struct input_stream *is, goffset offset, int whence);
 };
 
 #endif

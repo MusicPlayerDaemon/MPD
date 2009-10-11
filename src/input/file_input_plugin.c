@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h" /* must be first for large file support */
 #include "input/file_input_plugin.h"
 #include "input_plugin.h"
 
@@ -92,11 +93,11 @@ input_file_open(struct input_stream *is, const char *filename)
 }
 
 static bool
-input_file_seek(struct input_stream *is, off_t offset, int whence)
+input_file_seek(struct input_stream *is, goffset offset, int whence)
 {
 	int fd = GPOINTER_TO_INT(is->data);
 
-	offset = lseek(fd, offset, whence);
+	offset = (goffset)lseek(fd, (off_t)offset, whence);
 	if (offset < 0) {
 		is->error = errno;
 		return false;

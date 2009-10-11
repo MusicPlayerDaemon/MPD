@@ -110,7 +110,7 @@ input_mms_buffer(G_GNUC_UNUSED struct input_stream *is)
 
 static bool
 input_mms_seek(G_GNUC_UNUSED struct input_stream *is,
-	       G_GNUC_UNUSED off_t offset, G_GNUC_UNUSED int whence)
+	       G_GNUC_UNUSED goffset offset, G_GNUC_UNUSED int whence)
 {
 	return false;
 }

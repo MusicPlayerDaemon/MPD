@@ -285,7 +285,7 @@ lastfm_input_eof_wrap(struct input_stream *is)
 }
 
 static bool
-lastfm_input_seek_wrap(struct input_stream *is, off_t offset, int whence)
+lastfm_input_seek_wrap(struct input_stream *is, goffset offset, int whence)
 {
 	bool ret;
 	struct lastfm_input *d = is->data;
