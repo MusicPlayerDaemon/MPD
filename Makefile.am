@@ -259,6 +259,7 @@ src_mpd_SOURCES = \
 	src/replay_gain.c \
 	src/sig_handlers.c \
 	src/song.c \
+	src/song_update.c \
 	src/song_print.c \
 	src/song_save.c \
 	src/songvec.c \
