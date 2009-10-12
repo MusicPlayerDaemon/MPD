@@ -136,6 +136,9 @@ mpd_headers = \
 	src/playlist_print.h \
 	src/playlist_save.h \
 	src/playlist_state.h \
+	src/playlist_plugin.h \
+	src/playlist_list.h \
+	src/playlist/m3u_playlist_plugin.h \
 	src/poison.h \
 	src/riff.h \
 	src/aiff.h \
@@ -180,6 +183,7 @@ src_mpd_SOURCES = \
 	$(mpd_headers) \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
+	$(PLAYLIST_SRC) \
 	$(TAG_SRC) \
 	$(DECODER_SRC) \
 	$(ENCODER_SRC) \
@@ -641,6 +645,15 @@ endif
 
 
 #
+# Playlist plugins
+#
+
+PLAYLIST_SRC = \
+	src/playlist/m3u_playlist_plugin.c \
+	src/playlist_list.c
+
+
+#
 # Filter plugins
 #
 
@@ -680,6 +693,7 @@ if ENABLE_TEST
 noinst_PROGRAMS = \
 	test/read_conf \
 	test/run_input \
+	test/dump_playlist \
 	test/run_decoder \
 	test/read_tags \
 	test/run_filter \
@@ -706,6 +720,22 @@ test_run_input_SOURCES = test/run_input.c \
 	src/tag.c src/tag_pool.c src/tag_save.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC)
+
+test_dump_playlist_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(ARCHIVE_CFLAGS) \
+	$(INPUT_CFLAGS)
+test_dump_playlist_LDADD = $(MPD_LIBS) \
+	$(ARCHIVE_LIBS) \
+	$(INPUT_LIBS) \
+	$(GLIB_LIBS)
+test_dump_playlist_SOURCES = test/dump_playlist.c \
+	src/conf.c src/tokenizer.c src/utils.c \
+	src/uri.c \
+	src/song.c src/tag.c src/tag_pool.c src/tag_save.c \
+	src/text_input_stream.c src/fifo_buffer.c \
+	$(ARCHIVE_SRC) \
+	$(INPUT_SRC) \
+	$(PLAYLIST_SRC)
 
 test_run_decoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(TAG_CFLAGS) \
