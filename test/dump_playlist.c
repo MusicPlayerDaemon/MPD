@@ -44,15 +44,16 @@ int main(int argc, char **argv)
 	const char *uri;
 	struct input_stream is;
 	bool success;
+	GError *error = NULL;
 	struct playlist_provider *playlist;
 	struct song *song;
 
-	if (argc != 2) {
-		g_printerr("Usage: dump_playlist URI\n");
+	if (argc != 3) {
+		g_printerr("Usage: dump_playlist CONFIG URI\n");
 		return 1;
 	}
 
-	uri = argv[1];
+	uri = argv[2];
 
 	/* initialize GLib */
 
@@ -63,6 +64,13 @@ int main(int argc, char **argv)
 
 	tag_pool_init();
 	config_global_init();
+	success = config_read_file(argv[1], &error);
+	if (!success) {
+		g_printerr("%s:", error->message);
+		g_error_free(error);
+		return 1;
+	}
+
 	input_stream_global_init();
 	playlist_list_global_init();
 
