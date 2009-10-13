@@ -134,8 +134,9 @@ state_file_init(const char *path)
 	state_file_path = g_strdup(path);
 	state_file_read();
 
-	save_state_source_id = g_timeout_add(5 * 60 * 1000,
-					     timer_save_state_file, NULL);
+	save_state_source_id = g_timeout_add_seconds(5 * 60,
+						     timer_save_state_file,
+						     NULL);
 }
 
 void
