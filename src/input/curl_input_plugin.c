@@ -315,7 +315,7 @@ fill_buffer(struct input_stream *is)
 			return false;
 	}
 
-	return true;
+	return !g_queue_is_empty(c->buffers);
 }
 
 /**

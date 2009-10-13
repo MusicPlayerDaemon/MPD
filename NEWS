@@ -1,6 +1,7 @@
 ver 0.15.5 (2009/??/??)
 * input:
   - curl: don't abort if a packet has only metadata
+  - curl: fixed endless loop during buffering
 * tags:
   - riff, aiff: fixed "limited range" gcc warning
 * decoder_thread: change the fallback decoder name to "mad"
