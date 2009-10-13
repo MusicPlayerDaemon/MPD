@@ -20,6 +20,7 @@
 #include "playlist_list.h"
 #include "playlist_plugin.h"
 #include "playlist/m3u_playlist_plugin.h"
+#include "playlist/xspf_playlist_plugin.h"
 #include "input_stream.h"
 #include "uri.h"
 #include "utils.h"
@@ -32,6 +33,7 @@
 
 static const struct playlist_plugin *const playlist_plugins[] = {
 	&m3u_playlist_plugin,
+	&xspf_playlist_plugin,
 	NULL
 };
 
