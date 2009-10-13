@@ -23,10 +23,12 @@
 #include "input_stream.h"
 #include "uri.h"
 #include "utils.h"
+#include "conf.h"
 
 #include <glib.h>
 
 #include <assert.h>
+#include <string.h>
 
 static const struct playlist_plugin *const playlist_plugins[] = {
 	&m3u_playlist_plugin,
@@ -36,12 +38,48 @@ static const struct playlist_plugin *const playlist_plugins[] = {
 /** which plugins have been initialized successfully? */
 static bool playlist_plugins_enabled[G_N_ELEMENTS(playlist_plugins)];
 
+/**
+ * Find the "playlist" configuration block for the specified plugin.
+ *
+ * @param plugin_name the name of the playlist plugin
+ * @return the configuration block, or NULL if none was configured
+ */
+static const struct config_param *
+playlist_plugin_config(const char *plugin_name)
+{
+	const struct config_param *param = NULL;
+
+	assert(plugin_name != NULL);
+
+	while ((param = config_get_next_param(CONF_PLAYLIST_PLUGIN, param)) != NULL) {
+		const char *name =
+			config_get_block_string(param, "name", NULL);
+		if (name == NULL)
+			g_error("playlist configuration without 'plugin' name in line %d",
+				param->line);
+
+		if (strcmp(name, plugin_name) == 0)
+			return param;
+	}
+
+	return NULL;
+}
+
 void
 playlist_list_global_init(void)
 {
-	for (unsigned i = 0; playlist_plugins[i] != NULL; ++i)
+	for (unsigned i = 0; playlist_plugins[i] != NULL; ++i) {
+		const struct playlist_plugin *plugin = playlist_plugins[i];
+		const struct config_param *param =
+			playlist_plugin_config(plugin->name);
+
+		if (!config_get_block_bool(param, "enabled", true))
+			/* the plugin is disabled in mpd.conf */
+			continue;
+
 		playlist_plugins_enabled[i] =
-			playlist_plugin_init(playlist_plugins[i], NULL);
+			playlist_plugin_init(playlist_plugins[i], param);
+	}
 }
 
 void

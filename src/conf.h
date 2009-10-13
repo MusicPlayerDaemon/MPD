@@ -67,6 +67,7 @@
 #define CONF_DECODER "decoder"
 #define CONF_INPUT "input"
 #define CONF_GAPLESS_MP3_PLAYBACK	"gapless_mp3_playback"
+#define CONF_PLAYLIST_PLUGIN "playlist_plugin"
 
 #define DEFAULT_PLAYLIST_MAX_LENGTH (1024*16)
 #define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS false

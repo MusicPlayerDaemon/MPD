@@ -391,6 +391,68 @@ cd mpd-version</programlisting>
         </tgroup>
       </informaltable>
     </section>
+
+    <section>
+      <title>Configuring playlist plugins</title>
+
+      <para>
+        Playlist plugins are used to load remote playlists.  This is
+        not related to MPD's playlist directory.
+      </para>
+
+      <para>
+        To configure a filter, add a
+        <varname>playlist_plugin</varname> block to
+        <filename>mpd.conf</filename>:
+      </para>
+
+      <programlisting>playlist_plugin {
+    name "m3u"
+    enabled "true"
+}
+      </programlisting>
+
+      <para>
+        The following table lists the
+        <varname>playlist_plugin</varname> options valid for all
+        plugins:
+      </para>
+
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>
+                Name
+              </entry>
+              <entry>
+                Description
+              </entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <varname>name</varname>
+              </entry>
+              <entry>
+                The name of the plugin.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>enabled</varname>
+                <parameter>yes|no</parameter>
+              </entry>
+              <entry>
+                Allows you to disable a input plugin without
+                recompiling.  By default, all plugins are enabled.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </section>
   </chapter>
 
   <chapter>
