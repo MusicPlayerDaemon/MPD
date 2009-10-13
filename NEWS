@@ -9,7 +9,7 @@ ver 0.16 (20??/??/??)
   - "addid" with negative position is deprecated
   - "load" supports remote playlists (m3u, xspf, lastfm://)
 * input:
-  - lastfm: use metadata
+  - lastfm: obsolete plugin removed
 * tags:
   - added tags "ArtistSort", "AlbumArtistSort"
   - id3: revised "performer" tag support
