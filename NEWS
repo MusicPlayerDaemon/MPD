@@ -41,6 +41,7 @@ ver 0.16 (20??/??/??)
 * state_file: save only if something has changed
 * obey $(sysconfdir) for default mpd.conf location
 * build with large file support by default
+* require GLib 2.16
 
 
 ver 0.15.5 (2009/??/??)

@@ -77,10 +77,8 @@ static void version(void)
 	exit(EXIT_SUCCESS);
 }
 
-#if GLIB_CHECK_VERSION(2,12,0)
 static const char *summary =
 	"Music Player Daemon - a daemon for playing music.";
-#endif
 
 bool
 parse_cmdline(int argc, char **argv, struct options *options,
@@ -118,9 +116,7 @@ parse_cmdline(int argc, char **argv, struct options *options,
 	context = g_option_context_new("[path/to/mpd.conf]");
 	g_option_context_add_main_entries(context, entries, NULL);
 
-#if GLIB_CHECK_VERSION(2,12,0)
 	g_option_context_set_summary(context, summary);
-#endif
 
 	ret = g_option_context_parse(context, &argc, &argv, &error);
 	g_option_context_free(context);

@@ -55,18 +55,12 @@ lastfm_input_init(const struct config_param *param)
 	if (passwd == NULL || user == NULL)
 		return false;
 
-#if GLIB_CHECK_VERSION(2,16,0)
 	lastfm_data.user = g_uri_escape_string(user, NULL, false);
-#else
-	lastfm_data.user = g_strdup(user);
-#endif
 
-#if GLIB_CHECK_VERSION(2,16,0)
 	if (strlen(passwd) != 32)
 		lastfm_data.md5 = g_compute_checksum_for_string(G_CHECKSUM_MD5,
 						    passwd, strlen(passwd));
 	else
-#endif
 		lastfm_data.md5 = g_strdup(passwd);
 
 	return true;
@@ -364,23 +358,16 @@ lastfm_input_open(struct input_stream *is, const char *url)
 		return false;
 	}
 
-#if GLIB_CHECK_VERSION(2,16,0)
 	q = g_uri_escape_string(session, NULL, false);
 	g_free(session);
 	session = q;
-#endif
 
 	/* "adjust" last.fm radio */
 
 	if (strlen(url) > 9) {
 		char *escaped_url;
 
-#if GLIB_CHECK_VERSION(2,16,0)
 		escaped_url = g_uri_escape_string(url, NULL, false);
-#else
-		escaped_url = g_strdup(url);
-#endif
-
 		p = g_strconcat("http://ws.audioscrobbler.com/radio/adjust.php?"
 				"session=", session, "&url=", escaped_url, "&debug=0",
 				NULL);
