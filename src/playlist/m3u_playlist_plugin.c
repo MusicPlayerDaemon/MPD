@@ -80,6 +80,8 @@ static const char *const m3u_mime_types[] = {
 };
 
 const struct playlist_plugin m3u_playlist_plugin = {
+	.name = "m3u",
+
 	.open_stream = m3u_open_stream,
 	.close = m3u_close,
 	.read = m3u_read,
