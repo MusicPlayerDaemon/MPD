@@ -13,64 +13,64 @@ cue_tag_cd(struct Cdtext* cdtext, struct Rem* rem)
 
 	tag_begin_add(tag);
 
-	{ /* TAG_ITEM_ALBUM_ARTIST */
+	{ /* TAG_ALBUM_ARTIST */
 	if ((tmp = cdtext_get(PTI_PERFORMER, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_ALBUM_ARTIST, tmp);
+		tag_add_item(tag, TAG_ALBUM_ARTIST, tmp);
 
 	else if ((tmp = cdtext_get(PTI_SONGWRITER, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_ALBUM_ARTIST, tmp);
+		tag_add_item(tag, TAG_ALBUM_ARTIST, tmp);
 
 	else if ((tmp = cdtext_get(PTI_COMPOSER, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_ALBUM_ARTIST, tmp);
+		tag_add_item(tag, TAG_ALBUM_ARTIST, tmp);
 
 	else if ((tmp = cdtext_get(PTI_ARRANGER, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_ALBUM_ARTIST, tmp);
-	/* TAG_ITEM_ALBUM_ARTIST */ }
+		tag_add_item(tag, TAG_ALBUM_ARTIST, tmp);
+	/* TAG_ALBUM_ARTIST */ }
 
-	{ /* TAG_ITEM_ARTIST */
+	{ /* TAG_ARTIST */
 	if ((tmp = cdtext_get(PTI_PERFORMER, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_ARTIST, tmp);
+		tag_add_item(tag, TAG_ARTIST, tmp);
 
 	else if ((tmp = cdtext_get(PTI_SONGWRITER, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_ARTIST, tmp);
+		tag_add_item(tag, TAG_ARTIST, tmp);
 
 	else if ((tmp = cdtext_get(PTI_COMPOSER, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_ARTIST, tmp);
+		tag_add_item(tag, TAG_ARTIST, tmp);
 
 	else if ((tmp = cdtext_get(PTI_ARRANGER, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_ARTIST, tmp);
-	/* TAG_ITEM_ARTIST */ }
+		tag_add_item(tag, TAG_ARTIST, tmp);
+	/* TAG_ARTIST */ }
 
-	/* TAG_ITEM_PERFORMER */
+	/* TAG_PERFORMER */
 	if ((tmp = cdtext_get(PTI_PERFORMER, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_PERFORMER, tmp);
+		tag_add_item(tag, TAG_PERFORMER, tmp);
 
-	/* TAG_ITEM_COMPOSER */
+	/* TAG_COMPOSER */
 	if ((tmp = cdtext_get(PTI_COMPOSER, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_COMPOSER, tmp);
+		tag_add_item(tag, TAG_COMPOSER, tmp);
 
-	/* TAG_ITEM_ALBUM */
+	/* TAG_ALBUM */
 	if ((tmp = cdtext_get(PTI_TITLE, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_ALBUM, tmp);
+		tag_add_item(tag, TAG_ALBUM, tmp);
 
-	/* TAG_ITEM_GENRE */
+	/* TAG_GENRE */
 	if ((tmp = cdtext_get(PTI_GENRE, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_GENRE, tmp);
+		tag_add_item(tag, TAG_GENRE, tmp);
 
-	/* TAG_ITEM_DATE */
+	/* TAG_DATE */
 	if ((tmp = rem_get(REM_DATE, rem)) != NULL)
-		tag_add_item(tag, TAG_ITEM_DATE, tmp);
+		tag_add_item(tag, TAG_DATE, tmp);
 
-	/* TAG_ITEM_COMMENT */
+	/* TAG_COMMENT */
 	if ((tmp = cdtext_get(PTI_MESSAGE, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_COMMENT, tmp);
+		tag_add_item(tag, TAG_COMMENT, tmp);
 
-	/* TAG_ITEM_DISC */
+	/* TAG_DISC */
 	if ((tmp = cdtext_get(PTI_DISC_ID, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_DISC, tmp);
+		tag_add_item(tag, TAG_DISC, tmp);
 
 	/* stream name, usually empty
-	 * tag_add_item(tag, TAG_ITEM_NAME,);
+	 * tag_add_item(tag, TAG_NAME,);
 	 */
 
 	/* REM MUSICBRAINZ entry?
@@ -109,47 +109,47 @@ cue_tag_track(struct Cdtext* cdtext, struct Rem* rem)
 
 	tag_begin_add(tag);
 
-	{ /* TAG_ITEM_ARTIST */
+	{ /* TAG_ARTIST */
 	if ((tmp = cdtext_get(PTI_PERFORMER, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_ARTIST, tmp);
+		tag_add_item(tag, TAG_ARTIST, tmp);
 
 	else if ((tmp = cdtext_get(PTI_SONGWRITER, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_ARTIST, tmp);
+		tag_add_item(tag, TAG_ARTIST, tmp);
 
 	else if ((tmp = cdtext_get(PTI_COMPOSER, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_ARTIST, tmp);
+		tag_add_item(tag, TAG_ARTIST, tmp);
 
 	else if ((tmp = cdtext_get(PTI_ARRANGER, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_ARTIST, tmp);
-	/* TAG_ITEM_ARTIST */ }
+		tag_add_item(tag, TAG_ARTIST, tmp);
+	/* TAG_ARTIST */ }
 
-	/* TAG_ITEM_TITLE */
+	/* TAG_TITLE */
 	if ((tmp = cdtext_get(PTI_TITLE, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_TITLE, tmp);
+		tag_add_item(tag, TAG_TITLE, tmp);
 
-	/* TAG_ITEM_GENRE */
+	/* TAG_GENRE */
 	if ((tmp = cdtext_get(PTI_GENRE, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_GENRE, tmp);
+		tag_add_item(tag, TAG_GENRE, tmp);
 
-	/* TAG_ITEM_DATE */
+	/* TAG_DATE */
 	if ((tmp = rem_get(REM_DATE, rem)) != NULL)
-		tag_add_item(tag, TAG_ITEM_DATE, tmp);
+		tag_add_item(tag, TAG_DATE, tmp);
 
-	/* TAG_ITEM_COMPOSER */
+	/* TAG_COMPOSER */
 	if ((tmp = cdtext_get(PTI_COMPOSER, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_COMPOSER, tmp);
+		tag_add_item(tag, TAG_COMPOSER, tmp);
 
-	/* TAG_ITEM_PERFORMER */
+	/* TAG_PERFORMER */
 	if ((tmp = cdtext_get(PTI_PERFORMER, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_PERFORMER, tmp);
+		tag_add_item(tag, TAG_PERFORMER, tmp);
 
-	/* TAG_ITEM_COMMENT */
+	/* TAG_COMMENT */
 	if ((tmp = cdtext_get(PTI_MESSAGE, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_COMMENT, tmp);
+		tag_add_item(tag, TAG_COMMENT, tmp);
 
-	/* TAG_ITEM_DISC */
+	/* TAG_DISC */
 	if ((tmp = cdtext_get(PTI_DISC_ID, cdtext)) != NULL)
-		tag_add_item(tag, TAG_ITEM_DISC, tmp);
+		tag_add_item(tag, TAG_DISC, tmp);
 
 	tag_end_add(tag);
 

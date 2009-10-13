@@ -223,9 +223,9 @@ lastfm_read_tag(const char *response)
 		enum tag_type type;
 		const char *xmltag;
 	} aliases[] = {
-		{TAG_ITEM_ARTIST, "creator"},
-		{TAG_ITEM_TITLE, "title"},
-		{TAG_ITEM_ALBUM, "album"}
+		{TAG_ARTIST, "creator"},
+		{TAG_TITLE, "title"},
+		{TAG_ALBUM, "album"}
 	};
 	struct tag *tag = tag_new();
 	unsigned int i;

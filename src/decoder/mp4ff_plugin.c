@@ -391,22 +391,22 @@ mp4_tag_dup(const char *file)
 		mp4ff_meta_get_by_index(mp4fh, i, &item, &value);
 
 		if (0 == g_ascii_strcasecmp("artist", item)) {
-			tag_add_item(ret, TAG_ITEM_ARTIST, value);
+			tag_add_item(ret, TAG_ARTIST, value);
 		} else if (0 == g_ascii_strcasecmp("title", item)) {
-			tag_add_item(ret, TAG_ITEM_TITLE, value);
+			tag_add_item(ret, TAG_TITLE, value);
 		} else if (0 == g_ascii_strcasecmp("album", item)) {
-			tag_add_item(ret, TAG_ITEM_ALBUM, value);
+			tag_add_item(ret, TAG_ALBUM, value);
 		} else if (0 == g_ascii_strcasecmp("track", item)) {
-			tag_add_item(ret, TAG_ITEM_TRACK, value);
+			tag_add_item(ret, TAG_TRACK, value);
 		} else if (0 == g_ascii_strcasecmp("disc", item)) {
 			/* Is that the correct id? */
-			tag_add_item(ret, TAG_ITEM_DISC, value);
+			tag_add_item(ret, TAG_DISC, value);
 		} else if (0 == g_ascii_strcasecmp("genre", item)) {
-			tag_add_item(ret, TAG_ITEM_GENRE, value);
+			tag_add_item(ret, TAG_GENRE, value);
 		} else if (0 == g_ascii_strcasecmp("date", item)) {
-			tag_add_item(ret, TAG_ITEM_DATE, value);
+			tag_add_item(ret, TAG_DATE, value);
 		} else if (0 == g_ascii_strcasecmp("writer", item)) {
-			tag_add_item(ret, TAG_ITEM_COMPOSER, value);
+			tag_add_item(ret, TAG_COMPOSER, value);
 		}
 
 		free(item);

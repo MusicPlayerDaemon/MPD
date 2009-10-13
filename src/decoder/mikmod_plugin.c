@@ -220,7 +220,7 @@ static struct tag *modTagDup(const char *file)
 	title = g_strdup(Player_LoadTitle(path2));
 	g_free(path2);
 	if (title)
-		tag_add_item(ret, TAG_ITEM_TITLE, title);
+		tag_add_item(ret, TAG_TITLE, title);
 
 	return ret;
 }

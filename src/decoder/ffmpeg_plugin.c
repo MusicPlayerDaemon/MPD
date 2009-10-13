@@ -363,37 +363,36 @@ static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
 #if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
 	av_metadata_conv(f, NULL, f->iformat->metadata_conv);
 
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_TITLE, "title");
-	if (!ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_ARTIST, "author"))
-		ffmpeg_copy_metadata(tag, f->metadata,
-				     TAG_ITEM_ARTIST, "artist");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_ALBUM, "album");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_COMMENT, "comment");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_GENRE, "genre");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_TRACK, "track");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_DATE, "year");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_TITLE, "title");
+	if (!ffmpeg_copy_metadata(tag, f->metadata, TAG_ARTIST, "author"))
+		ffmpeg_copy_metadata(tag, f->metadata, TAG_ARTIST, "artist");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_ALBUM, "album");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_COMMENT, "comment");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_GENRE, "genre");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_TRACK, "track");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_DATE, "year");
 #else
 	if (f->author[0])
-		tag_add_item(tag, TAG_ITEM_ARTIST, f->author);
+		tag_add_item(tag, TAG_ARTIST, f->author);
 	if (f->title[0])
-		tag_add_item(tag, TAG_ITEM_TITLE, f->title);
+		tag_add_item(tag, TAG_TITLE, f->title);
 	if (f->album[0])
-		tag_add_item(tag, TAG_ITEM_ALBUM, f->album);
+		tag_add_item(tag, TAG_ALBUM, f->album);
 
 	if (f->track > 0) {
 		char buffer[16];
 		snprintf(buffer, sizeof(buffer), "%d", f->track);
-		tag_add_item(tag, TAG_ITEM_TRACK, buffer);
+		tag_add_item(tag, TAG_TRACK, buffer);
 	}
 
 	if (f->comment[0])
-		tag_add_item(tag, TAG_ITEM_COMMENT, f->comment);
+		tag_add_item(tag, TAG_COMMENT, f->comment);
 	if (f->genre[0])
-		tag_add_item(tag, TAG_ITEM_GENRE, f->genre);
+		tag_add_item(tag, TAG_GENRE, f->genre);
 	if (f->year > 0) {
 		char buffer[16];
 		snprintf(buffer, sizeof(buffer), "%d", f->year);
-		tag_add_item(tag, TAG_ITEM_DATE, buffer);
+		tag_add_item(tag, TAG_DATE, buffer);
 	}
 
 #endif

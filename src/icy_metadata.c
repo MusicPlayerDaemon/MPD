@@ -95,7 +95,7 @@ icy_parse_tag_item(struct tag *tag, const char *item)
 
 	if (p[0] != NULL && p[1] != NULL) {
 		if (strcmp(p[0], "StreamTitle") == 0)
-			icy_add_item(tag, TAG_ITEM_TITLE, p[1]);
+			icy_add_item(tag, TAG_TITLE, p[1]);
 		else
 			g_debug("unknown icy-tag: '%s'", p[0]);
 	}

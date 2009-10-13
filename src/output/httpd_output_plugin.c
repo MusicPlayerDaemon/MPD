@@ -433,9 +433,8 @@ httpd_output_tag(void *data, const struct tag *tag)
 			page_unref (httpd->metadata);
 
 		httpd->metadata =
-			icy_server_metadata_page(tag, TAG_ITEM_ALBUM,
-						 TAG_ITEM_ARTIST,
-						 TAG_ITEM_TITLE,
+			icy_server_metadata_page(tag, TAG_ALBUM,
+						 TAG_ARTIST, TAG_TITLE,
 						 TAG_NUM_OF_ITEM_TYPES);
 		if (httpd->metadata != NULL) {
 			g_mutex_lock(httpd->mutex);

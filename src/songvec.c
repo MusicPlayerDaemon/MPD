@@ -69,12 +69,12 @@ static int songvec_cmp(const void *s1, const void *s2)
 	int ret;
 
 	/* first sort by disc */
-	ret = compare_tag_item(a->tag, b->tag, TAG_ITEM_DISC);
+	ret = compare_tag_item(a->tag, b->tag, TAG_DISC);
 	if (ret != 0)
 		return ret;
 
 	/* then by track number */
-	ret = compare_tag_item(a->tag, b->tag, TAG_ITEM_TRACK);
+	ret = compare_tag_item(a->tag, b->tag, TAG_TRACK);
 	if (ret != 0)
 		return ret;
 

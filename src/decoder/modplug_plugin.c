@@ -188,7 +188,7 @@ static struct tag *mod_tagdup(const char *file)
 
 	title = g_strdup(ModPlug_GetName(f));
 	if (title)
-		tag_add_item(ret, TAG_ITEM_TITLE, title);
+		tag_add_item(ret, TAG_TITLE, title);
 	g_free(title);
 
 	ModPlug_Unload(f);

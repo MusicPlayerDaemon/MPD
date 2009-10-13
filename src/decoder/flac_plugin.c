@@ -347,11 +347,8 @@ flac_cue_tag_load(const char *file)
 	if (tag == NULL)
 		tag = flac_tag_load(file, char_tnum);
 
-	if (char_tnum != NULL)
-	{
-		tag_add_item(	tag,
-				TAG_ITEM_TRACK,
-				char_tnum);
+	if (char_tnum != NULL) {
+		tag_add_item(tag, TAG_TRACK, char_tnum);
 		g_free(char_tnum);
 	}
 

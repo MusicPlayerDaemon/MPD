@@ -402,8 +402,8 @@ copy_icy_tag(struct input_curl *c)
 	if (c->tag != NULL)
 		tag_free(c->tag);
 
-	if (c->meta_name != NULL && !tag_has_type(tag, TAG_ITEM_NAME))
-		tag_add_item(tag, TAG_ITEM_NAME, c->meta_name);
+	if (c->meta_name != NULL && !tag_has_type(tag, TAG_NAME))
+		tag_add_item(tag, TAG_NAME, c->meta_name);
 
 	c->tag = tag;
 }
@@ -609,7 +609,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 			tag_free(c->tag);
 
 		c->tag = tag_new();
-		tag_add_item(c->tag, TAG_ITEM_NAME, c->meta_name);
+		tag_add_item(c->tag, TAG_NAME, c->meta_name);
 	} else if (g_ascii_strcasecmp(name, "icy-metaint") == 0) {
 		char buffer[64];
 		size_t icy_metaint;

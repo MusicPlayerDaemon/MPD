@@ -190,15 +190,15 @@ sndfile_tag_dup(const char *path_fs)
 
 	p = sf_get_string(sf, SF_STR_TITLE);
 	if (p != NULL)
-		tag_add_item(tag, TAG_ITEM_TITLE, p);
+		tag_add_item(tag, TAG_TITLE, p);
 
 	p = sf_get_string(sf, SF_STR_ARTIST);
 	if (p != NULL)
-		tag_add_item(tag, TAG_ITEM_ARTIST, p);
+		tag_add_item(tag, TAG_ARTIST, p);
 
 	p = sf_get_string(sf, SF_STR_DATE);
 	if (p != NULL)
-		tag_add_item(tag, TAG_ITEM_DATE, p);
+		tag_add_item(tag, TAG_DATE, p);
 
 	sf_close(sf);
 

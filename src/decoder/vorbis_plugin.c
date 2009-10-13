@@ -176,11 +176,11 @@ vorbis_parse_comment(struct tag *tag, const char *comment)
 	assert(tag != NULL);
 
 	if (vorbis_copy_comment(tag, comment, VORBIS_COMMENT_TRACK_KEY,
-				TAG_ITEM_TRACK) ||
+				TAG_TRACK) ||
 	    vorbis_copy_comment(tag, comment, VORBIS_COMMENT_DISC_KEY,
-				TAG_ITEM_DISC) ||
+				TAG_DISC) ||
 	    vorbis_copy_comment(tag, comment, "album artist",
-				TAG_ITEM_ALBUM_ARTIST))
+				TAG_ALBUM_ARTIST))
 		return;
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)

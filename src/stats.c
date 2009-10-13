@@ -52,11 +52,11 @@ visit_tag(struct visit_data *data, const struct tag *tag)
 		const struct tag_item *item = tag->items[i];
 
 		switch (item->type) {
-		case TAG_ITEM_ARTIST:
+		case TAG_ARTIST:
 			strset_add(data->artists, item->value);
 			break;
 
-		case TAG_ITEM_ALBUM:
+		case TAG_ALBUM:
 			strset_add(data->albums, item->value);
 			break;
 

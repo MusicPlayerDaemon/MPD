@@ -1236,17 +1236,17 @@ handle_list(struct client *client, int argc, char *argv[])
 
 	/* for compatibility with < 0.12.0 */
 	if (argc == 3) {
-		if (tagType != TAG_ITEM_ALBUM) {
+		if (tagType != TAG_ALBUM) {
 			command_error(client, ACK_ERROR_ARG,
 				      "should be \"%s\" for 3 arguments",
-				      tag_item_names[TAG_ITEM_ALBUM]);
+				      tag_item_names[TAG_ALBUM]);
 			return COMMAND_RETURN_ERROR;
 		}
 
 		locate_item_list_parse(argv + 1, argc - 1);
 
 		conditionals = locate_item_list_new(1);
-		conditionals->items[0].tag = TAG_ITEM_ARTIST;
+		conditionals->items[0].tag = TAG_ARTIST;
 		conditionals->items[0].needle = g_strdup(argv[2]);
 	} else {
 		conditionals =

@@ -347,18 +347,18 @@ sidplay_tag_dup(const char *path_fs)
 	if(info.songs>1) {
 		char *tag_title=g_strdup_printf("%s (%d/%d)",
 			title, song_num, info.songs);
-		tag_add_item(tag, TAG_ITEM_TITLE, tag_title);
+		tag_add_item(tag, TAG_TITLE, tag_title);
 		g_free(tag_title);
 	} else
-		tag_add_item(tag, TAG_ITEM_TITLE, title);
+		tag_add_item(tag, TAG_TITLE, title);
 
 	/* artist */
 	if (info.numberOfInfoStrings > 1 && info.infoString[1] != NULL)
-		tag_add_item(tag, TAG_ITEM_ARTIST, info.infoString[1]);
+		tag_add_item(tag, TAG_ARTIST, info.infoString[1]);
 
 	/* track */
 	char *track=g_strdup_printf("%d", song_num);
-	tag_add_item(tag, TAG_ITEM_TRACK, track);
+	tag_add_item(tag, TAG_TRACK, track);
 	g_free(track);
 
 	/* time */

@@ -157,7 +157,7 @@ tag_id3_import_text(struct tag *dest, struct id3_tag *tag, const char *id,
 		if (ucs4 == NULL)
 			continue;
 
-		if (type == TAG_ITEM_GENRE)
+		if (type == TAG_GENRE)
 			ucs4 = id3_genre_name(ucs4);
 
 		utf8 = import_id3_string(tag_is_id3v1(tag), ucs4);
@@ -311,23 +311,23 @@ struct tag *tag_id3_import(struct id3_tag * tag)
 {
 	struct tag *ret = tag_new();
 
-	tag_id3_import_text(ret, tag, ID3_FRAME_ARTIST, TAG_ITEM_ARTIST);
+	tag_id3_import_text(ret, tag, ID3_FRAME_ARTIST, TAG_ARTIST);
 	tag_id3_import_text(ret, tag, ID3_FRAME_ALBUM_ARTIST,
-			    TAG_ITEM_ALBUM_ARTIST);
+			    TAG_ALBUM_ARTIST);
 	tag_id3_import_text(ret, tag, ID3_FRAME_ARTIST_SORT,
 			    TAG_ARTIST_SORT);
 	tag_id3_import_text(ret, tag, ID3_FRAME_ALBUM_ARTIST_SORT,
 			    TAG_ALBUM_ARTIST_SORT);
-	tag_id3_import_text(ret, tag, ID3_FRAME_TITLE, TAG_ITEM_TITLE);
-	tag_id3_import_text(ret, tag, ID3_FRAME_ALBUM, TAG_ITEM_ALBUM);
-	tag_id3_import_text(ret, tag, ID3_FRAME_TRACK, TAG_ITEM_TRACK);
-	tag_id3_import_text(ret, tag, ID3_FRAME_YEAR, TAG_ITEM_DATE);
-	tag_id3_import_text(ret, tag, ID3_FRAME_GENRE, TAG_ITEM_GENRE);
-	tag_id3_import_text(ret, tag, ID3_FRAME_COMPOSER, TAG_ITEM_COMPOSER);
-	tag_id3_import_text(ret, tag, "TPE3", TAG_ITEM_PERFORMER);
-	tag_id3_import_text(ret, tag, "TPE4", TAG_ITEM_PERFORMER);
-	tag_id3_import_comment(ret, tag, ID3_FRAME_COMMENT, TAG_ITEM_COMMENT);
-	tag_id3_import_text(ret, tag, ID3_FRAME_DISC, TAG_ITEM_DISC);
+	tag_id3_import_text(ret, tag, ID3_FRAME_TITLE, TAG_TITLE);
+	tag_id3_import_text(ret, tag, ID3_FRAME_ALBUM, TAG_ALBUM);
+	tag_id3_import_text(ret, tag, ID3_FRAME_TRACK, TAG_TRACK);
+	tag_id3_import_text(ret, tag, ID3_FRAME_YEAR, TAG_DATE);
+	tag_id3_import_text(ret, tag, ID3_FRAME_GENRE, TAG_GENRE);
+	tag_id3_import_text(ret, tag, ID3_FRAME_COMPOSER, TAG_COMPOSER);
+	tag_id3_import_text(ret, tag, "TPE3", TAG_PERFORMER);
+	tag_id3_import_text(ret, tag, "TPE4", TAG_PERFORMER);
+	tag_id3_import_comment(ret, tag, ID3_FRAME_COMMENT, TAG_COMMENT);
+	tag_id3_import_text(ret, tag, ID3_FRAME_DISC, TAG_DISC);
 
 	tag_id3_import_musicbrainz(ret, tag);
 	tag_id3_import_ufid(ret, tag);

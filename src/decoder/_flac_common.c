@@ -170,11 +170,11 @@ flac_parse_comment(struct tag *tag, const char *char_tnum,
 	assert(tag != NULL);
 
 	if (flac_copy_comment(tag, entry, VORBIS_COMMENT_TRACK_KEY,
-			      TAG_ITEM_TRACK, char_tnum) ||
+			      TAG_TRACK, char_tnum) ||
 	    flac_copy_comment(tag, entry, VORBIS_COMMENT_DISC_KEY,
-			      TAG_ITEM_DISC, char_tnum) ||
+			      TAG_DISC, char_tnum) ||
 	    flac_copy_comment(tag, entry, "album artist",
-			      TAG_ITEM_ALBUM_ARTIST, char_tnum))
+			      TAG_ALBUM_ARTIST, char_tnum))
 		return;
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)

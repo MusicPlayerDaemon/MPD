@@ -41,17 +41,17 @@ static struct {
 	const char *name;
 	enum tag_type type;
 } tagtypes[] = {
-	{ "artist", TAG_ITEM_ARTIST },
-	{ "album", TAG_ITEM_ALBUM },
-	{ "title", TAG_ITEM_TITLE },
-	{ "track", TAG_ITEM_TRACK },
-	{ "name", TAG_ITEM_NAME },
-	{ "genre", TAG_ITEM_GENRE },
-	{ "date", TAG_ITEM_DATE },
-	{ "composer", TAG_ITEM_COMPOSER },
-	{ "performer", TAG_ITEM_PERFORMER },
-	{ "comment", TAG_ITEM_COMMENT },
-	{ "disc", TAG_ITEM_DISC },
+	{ "artist", TAG_ARTIST },
+	{ "album", TAG_ALBUM },
+	{ "title", TAG_TITLE },
+	{ "track", TAG_TRACK },
+	{ "name", TAG_NAME },
+	{ "genre", TAG_GENRE },
+	{ "date", TAG_DATE },
+	{ "composer", TAG_COMPOSER },
+	{ "performer", TAG_PERFORMER },
+	{ "comment", TAG_COMMENT },
+	{ "disc", TAG_DISC },
 };
 
 /** A pointer type for format converter function. */
