@@ -7,6 +7,7 @@ ver 0.16 (20??/??/??)
   - range support for "delete"
   - "previous" really plays the previous song
   - "addid" with negative position is deprecated
+  - "load" supports remote playlists (m3u, xspf, lastfm://)
 * input:
   - lastfm: use metadata
 * tags:
