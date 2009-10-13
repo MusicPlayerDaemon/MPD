@@ -56,7 +56,7 @@ struct playlist_provider *
 playlist_list_open_uri(const char *uri)
 {
 	char *scheme;
-	struct playlist_provider *playlist;
+	struct playlist_provider *playlist = NULL;
 
 	assert(uri != NULL);
 
