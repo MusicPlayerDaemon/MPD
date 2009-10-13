@@ -33,7 +33,7 @@ queue_generate_id(const struct queue *queue)
 
 		if (cur >= queue->max_length * QUEUE_HASH_MULT)
 			cur = 0;
-	} while (queue->idToPosition[cur] != -1);
+	} while (queue->id_to_position[cur] != -1);
 
 	return cur;
 }
@@ -111,7 +111,7 @@ queue_append(struct queue *queue, struct song *song)
 	};
 
 	queue->order[queue->length] = queue->length;
-	queue->idToPosition[id] = queue->length;
+	queue->id_to_position[id] = queue->length;
 
 	++queue->length;
 
@@ -132,8 +132,8 @@ queue_swap(struct queue *queue, unsigned position1, unsigned position2)
 	queue->items[position1].version = queue->version;
 	queue->items[position2].version = queue->version;
 
-	queue->idToPosition[id1] = position2;
-	queue->idToPosition[id2] = position1;
+	queue->id_to_position[id1] = position2;
+	queue->id_to_position[id2] = position1;
 }
 
 static void
@@ -143,7 +143,7 @@ queue_move_song_to(struct queue *queue, unsigned from, unsigned to)
 
 	queue->items[to] = queue->items[from];
 	queue->items[to].version = queue->version;
-	queue->idToPosition[from_id] = to;
+	queue->id_to_position[from_id] = to;
 }
 
 void
@@ -163,7 +163,7 @@ queue_move(struct queue *queue, unsigned from, unsigned to)
 
 	/* put song at _to_ */
 
-	queue->idToPosition[item.id] = to;
+	queue->id_to_position[item.id] = to;
 	queue->items[to] = item;
 	queue->items[to].version = queue->version;
 
@@ -203,7 +203,7 @@ queue_move_range(struct queue *queue, unsigned start, unsigned end, unsigned to)
 	// Copy the original block back in, starting at to.
 	for (unsigned i = start; i< end; i++)
 	{
-		queue->idToPosition[items[i-start].id] = to + i - start;
+		queue->id_to_position[items[i-start].id] = to + i - start;
 		queue->items[to + i - start] = items[i-start];
 		queue->items[to + i - start].version = queue->version;
 	}
@@ -243,7 +243,7 @@ queue_delete(struct queue *queue, unsigned position)
 
 	/* release the song id */
 
-	queue->idToPosition[id] = -1;
+	queue->id_to_position[id] = -1;
 
 	/* delete song from songs array */
 
@@ -271,7 +271,7 @@ queue_clear(struct queue *queue)
 		if (!song_in_database(item->song))
 			song_free(item->song);
 
-		queue->idToPosition[item->id] = -1;
+		queue->id_to_position[item->id] = -1;
 	}
 
 	queue->length = 0;
@@ -291,11 +291,11 @@ queue_init(struct queue *queue, unsigned max_length)
 	queue->items = g_new(struct queue_item, max_length);
 	queue->order = g_malloc(sizeof(queue->order[0]) *
 				  max_length);
-	queue->idToPosition = g_malloc(sizeof(queue->idToPosition[0]) *
+	queue->id_to_position = g_malloc(sizeof(queue->id_to_position[0]) *
 				       max_length * QUEUE_HASH_MULT);
 
 	for (unsigned i = 0; i < max_length * QUEUE_HASH_MULT; ++i)
-		queue->idToPosition[i] = -1;
+		queue->id_to_position[i] = -1;
 
 	queue->rand = g_rand_new();
 }
@@ -307,7 +307,7 @@ queue_finish(struct queue *queue)
 
 	g_free(queue->items);
 	g_free(queue->order);
-	g_free(queue->idToPosition);
+	g_free(queue->id_to_position);
 
 	g_rand_free(queue->rand);
 }
