@@ -140,6 +140,7 @@ mpd_headers = \
 	src/playlist_list.h \
 	src/playlist/m3u_playlist_plugin.h \
 	src/playlist/xspf_playlist_plugin.h \
+	src/playlist/lastfm_playlist_plugin.h \
 	src/poison.h \
 	src/riff.h \
 	src/aiff.h \
@@ -653,6 +654,10 @@ PLAYLIST_SRC = \
 	src/playlist/m3u_playlist_plugin.c \
 	src/playlist/xspf_playlist_plugin.c \
 	src/playlist_list.c
+
+if ENABLE_LASTFM
+PLAYLIST_SRC += src/playlist/lastfm_playlist_plugin.c
+endif
 
 
 #
