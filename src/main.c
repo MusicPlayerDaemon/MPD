@@ -45,6 +45,7 @@
 #include "replay_gain.h"
 #include "decoder_list.h"
 #include "input_stream.h"
+#include "playlist_list.h"
 #include "state_file.h"
 #include "tag.h"
 #include "dbUtils.h"
@@ -347,6 +348,7 @@ int main(int argc, char *argv[])
 	replay_gain_global_init();
 	initNormalization();
 	input_stream_global_init();
+	playlist_list_global_init();
 
 	daemonize(options.daemon);
 
@@ -402,6 +404,7 @@ int main(int argc, char *argv[])
 	notify_deinit(&main_notify);
 	event_pipe_deinit();
 
+	playlist_list_global_finish();
 	input_stream_global_finish();
 	finishNormalization();
 	audio_output_all_finish();
