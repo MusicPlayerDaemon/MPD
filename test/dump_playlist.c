@@ -43,6 +43,7 @@ int main(int argc, char **argv)
 {
 	const char *uri;
 	struct input_stream is;
+	bool stream_open = false;
 	bool success;
 	GError *error = NULL;
 	struct playlist_provider *playlist;
@@ -74,32 +75,39 @@ int main(int argc, char **argv)
 	input_stream_global_init();
 	playlist_list_global_init();
 
-	/* open the stream and wait until it becomes ready */
-
-	success = input_stream_open(&is, uri);
-	if (!success) {
-		g_printerr("input_stream_open() failed\n");
-		return 2;
-	}
-
-	while (!is.ready) {
-		int ret = input_stream_buffer(&is);
-		if (ret < 0)
-			/* error */
-			return 2;
-
-		if (ret == 0)
-			/* nothing was buffered - wait */
-			g_usleep(10000);
-	}
-
 	/* open the playlist */
 
-	playlist = playlist_list_open_stream(&is, uri);
+	playlist = playlist_list_open_uri(uri);
 	if (playlist == NULL) {
-		input_stream_close(&is);
-		g_printerr("Failed to open playlist\n");
-		return 2;
+		/* open the stream and wait until it becomes ready */
+
+		success = input_stream_open(&is, uri);
+		if (!success) {
+			g_printerr("input_stream_open() failed\n");
+			return 2;
+		}
+
+		while (!is.ready) {
+			int ret = input_stream_buffer(&is);
+			if (ret < 0)
+				/* error */
+				return 2;
+
+			if (ret == 0)
+				/* nothing was buffered - wait */
+				g_usleep(10000);
+		}
+
+		stream_open = true;
+
+		/* open the playlist */
+
+		playlist = playlist_list_open_stream(&is, uri);
+		if (playlist == NULL) {
+			input_stream_close(&is);
+			g_printerr("Failed to open playlist\n");
+			return 2;
+		}
 	}
 
 	/* dump the playlist */
@@ -115,7 +123,8 @@ int main(int argc, char **argv)
 	/* deinitialize everything */
 
 	playlist_plugin_close(playlist);
-	input_stream_close(&is);
+	if (stream_open)
+		input_stream_close(&is);
 	playlist_list_global_finish();
 	input_stream_global_finish();
 	config_global_finish();
