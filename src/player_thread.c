@@ -136,7 +136,7 @@ player_wait_for_decoder(struct player *player)
 	dc_command_wait(&pc.notify);
 
 	if (decoder_lock_has_failed()) {
-		assert(dc.next_song == NULL || dc.next_song->url != NULL);
+		assert(dc.next_song == NULL || dc.next_song->uri != NULL);
 		pc.errored_song = dc.next_song;
 		pc.error = PLAYER_ERROR_FILE;
 		pc.next_song = NULL;
@@ -177,7 +177,7 @@ player_check_decoder_startup(struct player *player)
 
 	if (decoder_has_failed()) {
 		/* the decoder failed */
-		assert(dc.next_song == NULL || dc.next_song->url != NULL);
+		assert(dc.next_song == NULL || dc.next_song->uri != NULL);
 
 		decoder_unlock();
 
@@ -209,7 +209,7 @@ player_check_decoder_startup(struct player *player)
 				  "while playing \"%s\"", uri);
 			g_free(uri);
 
-			assert(dc.next_song == NULL || dc.next_song->url != NULL);
+			assert(dc.next_song == NULL || dc.next_song->uri != NULL);
 			pc.errored_song = dc.next_song;
 			pc.error = PLAYER_ERROR_AUDIO;
 
@@ -375,7 +375,7 @@ static void player_process_command(struct player *player)
 		} else {
 			/* the audio device has failed - rollback to
 			   pause mode */
-			assert(dc.next_song == NULL || dc.next_song->url != NULL);
+			assert(dc.next_song == NULL || dc.next_song->uri != NULL);
 			pc.errored_song = dc.next_song;
 			pc.error = PLAYER_ERROR_AUDIO;
 

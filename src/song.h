@@ -34,12 +34,12 @@ struct song {
 	struct tag *tag;
 	struct directory *parent;
 	time_t mtime;
-	char url[sizeof(int)];
+	char uri[sizeof(int)];
 };
 
 /** allocate a new song with a remote URL */
 struct song *
-song_remote_new(const char *url);
+song_remote_new(const char *uri);
 
 /** allocate a new song with a local file name */
 struct song *
@@ -81,7 +81,7 @@ song_in_database(const struct song *song)
 static inline bool
 song_is_file(const struct song *song)
 {
-	return song_in_database(song) || song->url[0] == '/';
+	return song_in_database(song) || song->uri[0] == '/';
 }
 
 #endif

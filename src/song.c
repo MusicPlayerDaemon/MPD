@@ -27,18 +27,18 @@
 #include <assert.h>
 
 static struct song *
-song_alloc(const char *url, struct directory *parent)
+song_alloc(const char *uri, struct directory *parent)
 {
-	size_t urllen;
+	size_t uri_length;
 	struct song *song;
 
-	assert(url);
-	urllen = strlen(url);
-	assert(urllen);
-	song = g_malloc(sizeof(*song) - sizeof(song->url) + urllen + 1);
+	assert(uri);
+	uri_length = strlen(uri);
+	assert(uri_length);
+	song = g_malloc(sizeof(*song) - sizeof(song->uri) + uri_length + 1);
 
 	song->tag = NULL;
-	memcpy(song->url, url, urllen + 1);
+	memcpy(song->uri, uri, uri_length + 1);
 	song->parent = parent;
 	song->mtime = 0;
 
@@ -46,9 +46,9 @@ song_alloc(const char *url, struct directory *parent)
 }
 
 struct song *
-song_remote_new(const char *url)
+song_remote_new(const char *uri)
 {
-	return song_alloc(url, NULL);
+	return song_alloc(uri, NULL);
 }
 
 struct song *
@@ -71,11 +71,11 @@ char *
 song_get_uri(const struct song *song)
 {
 	assert(song != NULL);
-	assert(*song->url);
+	assert(*song->uri);
 
 	if (!song_in_database(song) || directory_is_root(song->parent))
-		return g_strdup(song->url);
+		return g_strdup(song->uri);
 	else
 		return g_strconcat(directory_get_path(song->parent),
-				   "/", song->url, NULL);
+				   "/", song->uri, NULL);
 }

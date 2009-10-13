@@ -79,7 +79,7 @@ static int songvec_cmp(const void *s1, const void *s2)
 		return ret;
 
 	/* still no difference?  compare file name */
-	return g_utf8_collate(a->url, b->url);
+	return g_utf8_collate(a->uri, b->uri);
 }
 
 static size_t sv_size(const struct songvec *sv)
@@ -108,14 +108,14 @@ void songvec_sort(struct songvec *sv)
 }
 
 struct song *
-songvec_find(const struct songvec *sv, const char *url)
+songvec_find(const struct songvec *sv, const char *uri)
 {
 	int i;
 	struct song *ret = NULL;
 
 	g_mutex_lock(nr_lock);
 	for (i = sv->nr; --i >= 0; ) {
-		if (strcmp(sv->base[i]->url, url))
+		if (strcmp(sv->base[i]->uri, uri))
 			continue;
 		ret = sv->base[i];
 		break;
@@ -182,7 +182,7 @@ songvec_for_each(const struct songvec *sv,
 		struct song *song = sv->base[i];
 
 		assert(song);
-		assert(*song->url);
+		assert(*song->uri);
 
 		prev_nr = sv->nr;
 		g_mutex_unlock(nr_lock); /* fn() may block */

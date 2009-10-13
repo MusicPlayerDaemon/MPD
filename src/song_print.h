@@ -30,6 +30,6 @@ song_print_info(struct client *client, struct song *song);
 int songvec_print(struct client *client, const struct songvec *sv);
 
 void
-song_print_url(struct client *client, struct song *song);
+song_print_uri(struct client *client, struct song *song);
 
 #endif

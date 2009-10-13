@@ -34,7 +34,7 @@ void songvec_deinit(void);
 void songvec_sort(struct songvec *sv);
 
 struct song *
-songvec_find(const struct songvec *sv, const char *url);
+songvec_find(const struct songvec *sv, const char *uri);
 
 int
 songvec_delete(struct songvec *sv, const struct song *del);

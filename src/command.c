@@ -1559,7 +1559,7 @@ sticker_song_find_print_cb(struct song *song, const char *value,
 {
 	struct sticker_song_find_data *data = user_data;
 
-	song_print_url(data->client, song);
+	song_print_uri(data->client, song);
 	sticker_print_value(data->client, data->name, value);
 }
 

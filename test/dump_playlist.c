@@ -113,7 +113,7 @@ int main(int argc, char **argv)
 	/* dump the playlist */
 
 	while ((song = playlist_plugin_read(playlist)) != NULL) {
-		g_print("%s\n", song->url);
+		g_print("%s\n", song->uri);
 		if (song->tag != NULL)
 			tag_save(stdout, song->tag);
 

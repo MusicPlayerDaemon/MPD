@@ -59,7 +59,7 @@ static int
 printSongInDirectory(struct song *song, G_GNUC_UNUSED void *data)
 {
 	struct client *client = data;
-	song_print_url(client, song);
+	song_print_uri(client, song);
 	return 0;
 }
 
@@ -258,7 +258,7 @@ visitTag(struct client *client, struct strset *set,
 	struct tag *tag = song->tag;
 
 	if (tagType == LOCATE_TAG_FILE_TYPE) {
-		song_print_url(client, song);
+		song_print_uri(client, song);
 		return;
 	}
 

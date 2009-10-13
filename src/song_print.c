@@ -26,18 +26,18 @@
 #include "uri.h"
 
 void
-song_print_url(struct client *client, struct song *song)
+song_print_uri(struct client *client, struct song *song)
 {
 	if (song_in_database(song) && !directory_is_root(song->parent)) {
 		client_printf(client, "%s%s/%s\n", SONG_FILE,
-			      directory_get_path(song->parent), song->url);
+			      directory_get_path(song->parent), song->uri);
 	} else {
 		char *allocated;
 		const char *uri;
 
-		uri = allocated = uri_remove_auth(song->url);
+		uri = allocated = uri_remove_auth(song->uri);
 		if (uri == NULL)
-			uri = song->url;
+			uri = song->uri;
 
 		client_printf(client, "%s%s\n", SONG_FILE, uri);
 
@@ -48,7 +48,7 @@ song_print_url(struct client *client, struct song *song)
 int
 song_print_info(struct client *client, struct song *song)
 {
-	song_print_url(client, song);
+	song_print_uri(client, song);
 
 	if (song->mtime > 0) {
 #ifndef G_OS_WIN32

@@ -41,14 +41,13 @@ song_save_quark(void)
 }
 
 static void
-song_save_url(FILE *fp, struct song *song)
+song_save_uri(FILE *fp, struct song *song)
 {
 	if (song->parent != NULL && song->parent->path != NULL)
 		fprintf(fp, SONG_FILE "%s/%s\n",
-			directory_get_path(song->parent), song->url);
+			directory_get_path(song->parent), song->uri);
 	else
-		fprintf(fp, SONG_FILE "%s\n",
-			song->url);
+		fprintf(fp, SONG_FILE "%s\n", song->uri);
 }
 
 static int
@@ -56,9 +55,9 @@ song_save(struct song *song, void *data)
 {
 	FILE *fp = data;
 
-	fprintf(fp, SONG_KEY "%s\n", song->url);
+	fprintf(fp, SONG_KEY "%s\n", song->uri);
 
-	song_save_url(fp, song);
+	song_save_uri(fp, song);
 
 	if (song->tag != NULL)
 		tag_save(fp, song->tag);
@@ -78,7 +77,7 @@ void songvec_save(FILE *fp, struct songvec *sv)
 static void
 commit_song(struct songvec *sv, struct song *newsong)
 {
-	struct song *existing = songvec_find(sv, newsong->url);
+	struct song *existing = songvec_find(sv, newsong->uri);
 
 	if (!existing) {
 		songvec_add(sv, newsong);

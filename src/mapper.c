@@ -159,9 +159,9 @@ map_song_fs(const struct song *song)
 	assert(song_is_file(song));
 
 	if (song_in_database(song))
-		return map_directory_child_fs(song->parent, song->url);
+		return map_directory_child_fs(song->parent, song->uri);
 	else
-		return utf8_to_fs_charset(song->url);
+		return utf8_to_fs_charset(song->uri);
 }
 
 char *
