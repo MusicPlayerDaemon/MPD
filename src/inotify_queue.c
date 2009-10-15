@@ -33,7 +33,7 @@ enum {
 	 * update_enqueue().  This increases the probability that
 	 * updates can be bundled.
 	 */
-	INOTIFY_UPDATE_DELAY_MS = 5000,
+	INOTIFY_UPDATE_DELAY_S = 5,
 };
 
 static GSList *inotify_queue;
@@ -102,7 +102,7 @@ mpd_inotify_enqueue(char *uri_utf8)
 
 	if (queue_source_id != 0)
 		g_source_remove(queue_source_id);
-	queue_source_id = g_timeout_add(INOTIFY_UPDATE_DELAY_MS,
+	queue_source_id = g_timeout_add_seconds(INOTIFY_UPDATE_DELAY_S,
 					mpd_inotify_run_update, NULL);
 
 	inotify_queue = NULL;
