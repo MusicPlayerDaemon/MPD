@@ -409,7 +409,8 @@ static void player_process_command(struct player *player)
 		break;
 
 	case PLAYER_COMMAND_REFRESH:
-		if (audio_format_defined(&player->play_audio_format))
+		if (audio_format_defined(&player->play_audio_format) &&
+		    !player->paused)
 			audio_output_all_check();
 
 		pc.elapsed_time = audio_output_all_get_elapsed_time();
