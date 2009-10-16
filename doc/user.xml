@@ -497,6 +497,12 @@ cd mpd-version</programlisting>
         Depending on the size of your music collection and the speed
         of the storage, this can take a while.
       </para>
+
+      <para>
+        To exclude a file from the update, create a file called
+        <filename>.mpdignore</filename> in its parent directory.  Each
+        line of that file may contain a list of shell wildcards.
+      </para>
     </section>
 
     <section>

@@ -19,6 +19,7 @@
 
 #include "update_internal.h"
 #include "database.h"
+#include "exclude.h"
 #include "directory.h"
 #include "song.h"
 #include "uri.h"
@@ -152,6 +153,48 @@ delete_name_in(struct directory *parent, const char *name)
 		delete_song(parent, song);
 		modified = true;
 	}
+}
+
+/* passed to songvec_for_each */
+static int
+delete_song_if_excluded(struct song *song, void *_data)
+{
+	GSList *exclude_list = _data;
+	char *name_fs;
+
+	assert(song->parent != NULL);
+
+	name_fs = utf8_to_fs_charset(song->uri);
+	if (exclude_list_check(exclude_list, name_fs)) {
+		delete_song(song->parent, song);
+		modified = true;
+	}
+
+	g_free(name_fs);
+	return 0;
+}
+
+static void
+remove_excluded_from_directory(struct directory *directory,
+			       GSList *exclude_list)
+{
+	int i;
+	struct dirvec *dv = &directory->children;
+
+	for (i = dv->nr; --i >= 0; ) {
+		struct directory *child = dv->base[i];
+		char *name_fs = utf8_to_fs_charset(directory_get_name(child));
+
+		if (exclude_list_check(exclude_list, name_fs)) {
+			delete_directory(child);
+			modified = true;
+		}
+
+		g_free(name_fs);
+	}
+
+	songvec_for_each(&directory->songs,
+			 delete_song_if_excluded, exclude_list);
 }
 
 /* passed to songvec_for_each */
@@ -613,7 +656,8 @@ updateDirectory(struct directory *directory, const struct stat *st)
 {
 	DIR *dir;
 	struct dirent *ent;
-	char *path_fs;
+	char *path_fs, *exclude_path_fs;
+	GSList *exclude_list;
 
 	assert(S_ISDIR(st->st_mode));
 
@@ -631,7 +675,15 @@ updateDirectory(struct directory *directory, const struct stat *st)
 		return false;
 	}
 
+	exclude_path_fs  = g_strconcat(path_fs, G_DIR_SEPARATOR_S,
+				       ".mpdignore", NULL);
+	exclude_list = exclude_list_load(exclude_path_fs);
+	g_free(exclude_path_fs);
+
 	g_free(path_fs);
+
+	if (exclude_list != NULL)
+		remove_excluded_from_directory(directory, exclude_list);
 
 	removeDeletedFromDirectory(directory);
 
@@ -639,7 +691,8 @@ updateDirectory(struct directory *directory, const struct stat *st)
 		char *utf8;
 		struct stat st2;
 
-		if (skip_path(ent->d_name))
+		if (skip_path(ent->d_name) ||
+		    exclude_list_check(exclude_list, ent->d_name))
 			continue;
 
 		utf8 = fs_charset_to_utf8(ent->d_name);
@@ -655,6 +708,8 @@ updateDirectory(struct directory *directory, const struct stat *st)
 
 		g_free(utf8);
 	}
+
+	exclude_list_free(exclude_list);
 
 	closedir(dir);
 

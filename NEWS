@@ -33,12 +33,14 @@ ver 0.16 (20??/??/??)
   - per-device software/hardware mixer setting
 * commands:
   - added new "status" line with more precise "elapsed time"
+* update:
+  - automatically update the database with Linux inotify
+  - support .mpdignore files in the music directory
 * log unused/unknown block parameters
 * removed the deprecated "error_file" option
 * save state when stopped
 * renamed option "--stdout" to "--stderr"
 * removed options --create-db and --no-create-db
-* automatically update the database with Linux inotify
 * state_file: save only if something has changed
 * obey $(sysconfdir) for default mpd.conf location
 * build with large file support by default

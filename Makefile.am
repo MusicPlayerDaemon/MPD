@@ -71,6 +71,7 @@ mpd_headers = \
 	src/encoder_plugin.h \
 	src/encoder_list.h \
 	src/encoder_api.h \
+	src/exclude.h \
 	src/fifo_buffer.h \
 	src/update.h \
 	src/update_internal.h \
@@ -211,6 +212,7 @@ src_mpd_SOURCES = \
 	src/directory_print.c \
 	src/database.c \
 	src/dirvec.c \
+	src/exclude.c \
 	src/fifo_buffer.c \
 	src/filter_plugin.c \
 	src/filter_registry.c \
