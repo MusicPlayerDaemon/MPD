@@ -508,15 +508,6 @@ cd mpd-version</programlisting>
       </section>
 
       <section>
-        <title><varname>lastfm</varname></title>
-
-        <para>
-          Plays last.fm radio.  This plugin is experimental, and will
-          be superseded by a better solution in MPD 0.16.
-        </para>
-      </section>
-
-      <section>
         <title><varname>mms</varname></title>
 
         <para>
@@ -1158,6 +1149,74 @@ cd mpd-version</programlisting>
             </tbody>
           </tgroup>
         </informaltable>
+      </section>
+    </section>
+
+    <section>
+      <title>Playlist plugins</title>
+
+      <section>
+        <title><varname>lastfm</varname></title>
+
+        <para>
+          Plays last.fm radio.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>user</varname>
+                  <parameter>USERNAME</parameter>
+                </entry>
+                <entry>
+                  The last.fm user name.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>password</varname>
+                  <parameter>PWD</parameter>
+                </entry>
+                <entry>
+                  The last.fm password.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
+        <title><varname>m3u</varname></title>
+
+        <para>
+          Reads <filename>.m3u</filename> playlist files.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>pls</varname></title>
+
+        <para>
+          Reads <filename>.pls</filename> playlist files.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>xspf</varname></title>
+
+        <para>
+          Reads <ulink url="http://www.xspf.org/">XSPF</ulink>
+          playlist files.
+        </para>
       </section>
     </section>
   </chapter>
