@@ -6,6 +6,7 @@ ver 0.15.5 (2009/??/??)
   - riff, aiff: fixed "limited range" gcc warning
 * decoder_thread: change the fallback decoder name to "mad"
 * output_thread: check again if output is open on CANCEL
+* update: fixed memory leak during container scan
 
 
 ver 0.15.4 (2009/10/03)
