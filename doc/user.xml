@@ -456,6 +456,62 @@ cd mpd-version</programlisting>
   </chapter>
 
   <chapter>
+    <title>Using MPD</title>
+
+    <section>
+      <title>The client</title>
+
+      <para>
+        After you have installed, configured and started MPD, you
+        choose a client to control the playback.
+      </para>
+
+      <para>
+        The most basic client is <filename>mpc</filename>, which
+        provides a command line interface.  It is useful in shell
+        scripts.  Many people bind specific <filename>mpc</filename>
+        commands to hotkeys.
+      </para>
+
+      <para>
+        The <ulink url="http://mpd.wikia.com/wiki/Clients">MPD
+        Wiki</ulink> contains an extensive list of clients to choose
+        from.
+      </para>
+    </section>
+
+    <section>
+      <title>The music directory and the database</title>
+
+      <para>
+        The "music directory" is where you store your music files.
+        MPD stores all relevant meta information about all songs in
+        its "database".  Whenever you add, modify or remove songs in
+        the music directory, you have to update the database, for
+        example with <filename>mpc</filename>:
+      </para>
+
+      <programlisting>mpc update</programlisting>
+
+      <para>
+        Depending on the size of your music collection and the speed
+        of the storage, this can take a while.
+      </para>
+    </section>
+
+    <section>
+      <title>The queue</title>
+
+      <para>
+        The queue (sometimes called "current playlist") is a list of
+        songs to be played by MPD.  To play a song, add it to the
+        queue and start playback.  Most clients offer an interface to
+        edit the queue.
+      </para>
+    </section>
+  </chapter>
+
+  <chapter>
     <title>Plugin reference</title>
 
     <section>
