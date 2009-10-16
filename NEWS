@@ -4,6 +4,8 @@ ver 0.15.5 (2009/??/??)
   - curl: fixed endless loop during buffering
 * tags:
   - riff, aiff: fixed "limited range" gcc warning
+* decoders:
+  - flac: fixed two memory leaks in the CUE tag loader
 * decoder_thread: change the fallback decoder name to "mad"
 * output_thread: check again if output is open on CANCEL
 * update: fixed memory leak during container scan
