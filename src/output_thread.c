@@ -257,7 +257,8 @@ static gpointer audio_output_task(gpointer arg)
 
 		case AO_COMMAND_CANCEL:
 			ao->chunk = NULL;
-			ao_plugin_cancel(ao->plugin, ao->data);
+			if (ao->open)
+				ao_plugin_cancel(ao->plugin, ao->data);
 			ao_command_finished(ao);
 
 			/* the player thread will now clear our music
