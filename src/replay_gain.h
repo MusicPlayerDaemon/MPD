@@ -23,6 +23,8 @@
 #ifndef MPD_REPLAY_GAIN_H
 #define MPD_REPLAY_GAIN_H
 
+#include <stdbool.h>
+
 enum replay_gain_mode {
 	REPLAY_GAIN_OFF = -1,
 	REPLAY_GAIN_ALBUM,
@@ -51,6 +53,20 @@ replay_gain_info_new(void);
 void replay_gain_info_free(struct replay_gain_info *info);
 
 void replay_gain_global_init(void);
+
+/**
+ * Returns the current replay gain mode as a machine-readable string.
+ */
+const char *
+replay_gain_get_mode_string(void);
+
+/**
+ * Sets the replay gain mode, parsed from a string.
+ *
+ * @return true on success, false if the string could not be parsed
+ */
+bool
+replay_gain_set_mode_string(const char *p);
 
 void
 replay_gain_apply(struct replay_gain_info *info, char *buffer, int bufferSize,

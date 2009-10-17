@@ -42,7 +42,26 @@ enum replay_gain_mode replay_gain_mode = REPLAY_GAIN_OFF;
 static float replay_gain_preamp = 1.0;
 static float replay_gain_missing_preamp = 1.0;
 
-static bool
+const char *
+replay_gain_get_mode_string(void)
+{
+	switch (replay_gain_mode) {
+	case REPLAY_GAIN_OFF:
+		return "off";
+
+	case REPLAY_GAIN_TRACK:
+		return "track";
+
+	case REPLAY_GAIN_ALBUM:
+		return "album";
+	}
+
+	/* unreachable */
+	assert(false);
+	return "off";
+}
+
+bool
 replay_gain_set_mode_string(const char *p)
 {
 	assert(p != NULL);

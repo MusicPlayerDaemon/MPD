@@ -487,6 +487,41 @@
             </para>
           </listitem>
         </varlistentry>
+        <varlistentry id="command_replay_gain_mode">
+          <term>
+            <cmdsynopsis>
+              <command>replay_gain_mode</command>
+              <arg choice="req"><replaceable>MODE</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Sets the replay gain mode.  One of
+              <parameter>off</parameter>,
+              <parameter>track</parameter>,
+              <parameter>album</parameter>.
+            </para>
+            <para>
+              Changing the mode during playback may take several
+              seconds, because the new settings does not affect the
+              buffered data.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_replay_gain_status">
+          <term>
+            <cmdsynopsis>
+              <command>replay_gain_status</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Prints replay gain options.  Currently, only the
+              variable <varname>replay_gain_mode</varname> is
+              returned.
+            </para>
+          </listitem>
+        </varlistentry>
       </variablelist>
     </section>
 

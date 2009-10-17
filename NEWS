@@ -8,6 +8,7 @@ ver 0.16 (20??/??/??)
   - "previous" really plays the previous song
   - "addid" with negative position is deprecated
   - "load" supports remote playlists (m3u, pls, xspf, lastfm://)
+  - allow changing replay gain mode on-the-fly
 * input:
   - lastfm: obsolete plugin removed
 * tags:

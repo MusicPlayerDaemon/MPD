@@ -44,6 +44,7 @@
 #include "client.h"
 #include "tag_print.h"
 #include "path.h"
+#include "replay_gain.h"
 #include "idle.h"
 #include "config.h"
 
@@ -1522,6 +1523,28 @@ handle_listplaylists(struct client *client,
 }
 
 static enum command_return
+handle_replay_gain_mode(struct client *client,
+			G_GNUC_UNUSED int argc, char *argv[])
+{
+	if (!replay_gain_set_mode_string(argv[1])) {
+		command_error(client, ACK_ERROR_ARG,
+			      "Unrecognized replay gain mode");
+		return COMMAND_RETURN_ERROR;
+	}
+
+	return COMMAND_RETURN_OK;
+}
+
+static enum command_return
+handle_replay_gain_status(struct client *client,
+			  G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
+{
+	client_printf(client, "replay_gain_mode: %s\n",
+		      replay_gain_get_mode_string());
+	return COMMAND_RETURN_OK;
+}
+
+static enum command_return
 handle_idle(struct client *client,
 	    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
@@ -1765,6 +1788,10 @@ static const struct command commands[] = {
 	{ "random", PERMISSION_CONTROL, 1, 1, handle_random },
 	{ "rename", PERMISSION_CONTROL, 2, 2, handle_rename },
 	{ "repeat", PERMISSION_CONTROL, 1, 1, handle_repeat },
+	{ "replay_gain_mode", PERMISSION_CONTROL, 1, 1,
+	  handle_replay_gain_mode },
+	{ "replay_gain_status", PERMISSION_READ, 0, 0,
+	  handle_replay_gain_status },
 	{ "rescan", PERMISSION_ADMIN, 0, 1, handle_rescan },
 	{ "rm", PERMISSION_CONTROL, 1, 1, handle_rm },
 	{ "save", PERMISSION_CONTROL, 1, 1, handle_save },
