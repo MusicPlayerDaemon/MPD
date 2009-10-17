@@ -26,6 +26,8 @@
 #include "pcm_volume.h"
 
 #include <glib.h>
+
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -40,17 +42,28 @@ enum replay_gain_mode replay_gain_mode = REPLAY_GAIN_OFF;
 static float replay_gain_preamp = 1.0;
 static float replay_gain_missing_preamp = 1.0;
 
+static bool
+replay_gain_set_mode_string(const char *p)
+{
+	assert(p != NULL);
+
+	if (strcmp(p, "off") == 0)
+		replay_gain_mode = REPLAY_GAIN_OFF;
+	else if (strcmp(p, "track") == 0)
+		replay_gain_mode = REPLAY_GAIN_TRACK;
+	else if (strcmp(p, "album") == 0)
+		replay_gain_mode = REPLAY_GAIN_ALBUM;
+	else
+		return false;
+
+	return true;
+}
+
 void replay_gain_global_init(void)
 {
 	const struct config_param *param = config_get_param(CONF_REPLAYGAIN);
 
-	if (param == NULL || strcmp(param->value, "off") == 0) {
-		replay_gain_mode = REPLAY_GAIN_OFF;
-	} else if (strcmp(param->value, "track") == 0) {
-		replay_gain_mode = REPLAY_GAIN_TRACK;
-	} else if (strcmp(param->value, "album") == 0) {
-		replay_gain_mode = REPLAY_GAIN_ALBUM;
-	} else {
+	if (param != NULL && !replay_gain_set_mode_string(param->value)) {
 		g_error("replaygain value \"%s\" at line %i is invalid\n",
 			param->value, param->line);
 	}
