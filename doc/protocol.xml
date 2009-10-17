@@ -705,7 +705,10 @@ OK
           <term>
             <cmdsynopsis>
               <command>delete</command>
-              <arg choice="req"><replaceable>SONGPOS</replaceable></arg>
+              <group>
+                <arg choice="req"><replaceable>POS</replaceable></arg>
+                <arg choice="req"><replaceable>START:END</replaceable></arg>
+              </group>
             </cmdsynopsis>
           </term>
           <listitem>
