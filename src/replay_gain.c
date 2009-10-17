@@ -44,7 +44,7 @@ void replay_gain_global_init(void)
 {
 	const struct config_param *param = config_get_param(CONF_REPLAYGAIN);
 
-	if (param == NULL) {
+	if (param == NULL || strcmp(param->value, "off") == 0) {
 		replay_gain_mode = REPLAY_GAIN_OFF;
 	} else if (strcmp(param->value, "track") == 0) {
 		replay_gain_mode = REPLAY_GAIN_TRACK;

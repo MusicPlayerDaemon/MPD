@@ -299,8 +299,8 @@ input {
 # Normalization automatic volume adjustments ##################################
 #
 # This setting specifies the type of ReplayGain to use. This setting can have
-# the argument "album" or "track". See <http://www.replaygain.org> for more
-# details. This setting is disabled by default.
+# the argument "off", "album" or "track". See <http://www.replaygain.org>
+# for more details. This setting is off by default.
 #
 #replaygain			"album"
 #
