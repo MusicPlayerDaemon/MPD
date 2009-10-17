@@ -67,6 +67,20 @@
         successful command executed in the command list.
       </para>
     </section>
+
+    <section>
+      <title>Ranges</title>
+
+      <para>
+        Some commands (e.g. <link
+        linkend="command_delete"><command>delete</command></link>)
+        allow specifying a range in the form
+        <parameter>START:END</parameter> (the <varname>END</varname>
+        item is not included in the range, similar to ranges in the
+        Python programming language).  If <varname>END</varname> is
+        omitted, then the maximum possible value is assumed.
+      </para>
+    </section>
   </chapter>
 
   <chapter>

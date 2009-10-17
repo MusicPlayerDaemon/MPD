@@ -221,13 +221,16 @@ check_range(struct client *client, unsigned *value_r1, unsigned *value_r2,
 
 	if (*test == ':') {
 		value = strtol(++test, &test2, 10);
-		if (*test2 != '\0' || test == test2) {
+		if (*test2 != '\0') {
 			va_list args;
 			va_start(args, fmt);
 			command_error_v(client, ACK_ERROR_ARG, fmt, args);
 			va_end(args);
 			return false;
 		}
+
+		if (test == test2)
+			value = G_MAXUINT;
 
 		if (value < 0) {
 			command_error(client, ACK_ERROR_ARG,
