@@ -167,8 +167,8 @@ check_int(struct client *client, int *value_r,
 		return false;
 	}
 
-#if LONG_MAX > INT_MAX
-	if (value < INT_MIN || value > INT_MAX) {
+#if G_MAXLONG > G_MAXINT
+	if (value < G_MININT || value > G_MAXINT) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Number too large: %s", s);
 		return false;
@@ -199,7 +199,7 @@ check_range(struct client *client, unsigned *value_r1, unsigned *value_r2,
 		/* compatibility with older MPD versions: specifying
 		   "-1" makes MPD display the whole list */
 		*value_r1 = 0;
-		*value_r2 = UINT_MAX;
+		*value_r2 = G_MAXUINT;
 		return true;
 	}
 
@@ -209,8 +209,8 @@ check_range(struct client *client, unsigned *value_r1, unsigned *value_r2,
 		return false;
 	}
 
-#if LONG_MAX > UINT_MAX
-	if (value > UINT_MAX) {
+#if G_MAXLONG > G_MAXUINT
+	if (value > G_MAXUINT) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Number too large: %s", s);
 		return false;
@@ -235,8 +235,8 @@ check_range(struct client *client, unsigned *value_r1, unsigned *value_r2,
 			return false;
 		}
 
-#if LONG_MAX > UINT_MAX
-		if (value > UINT_MAX) {
+#if G_MAXLONG > G_MAXUINT
+		if (value > G_MAXUINT) {
 			command_error(client, ACK_ERROR_ARG,
 				      "Number too large: %s", s);
 			return false;
@@ -263,7 +263,7 @@ check_unsigned(struct client *client, unsigned *value_r, const char *s)
 		return false;
 	}
 
-	if (value > UINT_MAX) {
+	if (value > G_MAXUINT) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Number too large: %s", s);
 		return false;
@@ -823,7 +823,7 @@ handle_plchangesposid(struct client *client, G_GNUC_UNUSED int argc, char *argv[
 static enum command_return
 handle_playlistinfo(struct client *client, int argc, char *argv[])
 {
-	unsigned start = 0, end = UINT_MAX;
+	unsigned start = 0, end = G_MAXUINT;
 	bool ret;
 
 	if (argc == 2 && !check_range(client, &start, &end,
@@ -852,7 +852,7 @@ handle_playlistid(struct client *client, int argc, char *argv[])
 			return print_playlist_result(client,
 						     PLAYLIST_RESULT_NO_SUCH_SONG);
 	} else {
-		playlist_print_info(client, &g_playlist, 0, UINT_MAX);
+		playlist_print_info(client, &g_playlist, 0, G_MAXUINT);
 	}
 
 	return COMMAND_RETURN_OK;
