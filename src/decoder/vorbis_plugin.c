@@ -24,6 +24,7 @@
 #include "uri.h"
 
 #ifndef HAVE_TREMOR
+#define OV_EXCLUDE_STATIC_CALLBACKS
 #include <vorbis/vorbisfile.h>
 #else
 #include <tremor/ivorbisfile.h>
