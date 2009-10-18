@@ -472,20 +472,20 @@ update_container_file(	struct directory* directory,
 	while ((vtrack = plugin->container_scan(pathname, ++tnum)) != NULL)
 	{
 		struct song* song = song_file_new(vtrack, contdir);
-		if (song == NULL)
-			return true;
+		char *child_path_fs;
 
 		// shouldn't be necessary but it's there..
 		song->mtime = st->st_mtime;
 
-		song->tag = plugin->tag_dup(map_directory_child_fs(contdir, vtrack));
+		child_path_fs = map_directory_child_fs(contdir, vtrack);
+		g_free(vtrack);
+
+		song->tag = plugin->tag_dup(child_path_fs);
+		g_free(child_path_fs);
 
 		songvec_add(&contdir->songs, song);
-		song = NULL;
 
 		modified = true;
-
-		g_free(vtrack);
 	}
 
 	g_free(pathname);

@@ -49,13 +49,17 @@ ver 0.16 (20??/??/??)
 * require GLib 2.16
 
 
-ver 0.15.5 (2009/??/??)
+ver 0.15.5 (2009/10/18)
 * input:
   - curl: don't abort if a packet has only metadata
   - curl: fixed endless loop during buffering
 * tags:
   - riff, aiff: fixed "limited range" gcc warning
+* decoders:
+  - flac: fixed two memory leaks in the CUE tag loader
 * decoder_thread: change the fallback decoder name to "mad"
+* output_thread: check again if output is open on CANCEL
+* update: fixed memory leak during container scan
 
 
 ver 0.15.4 (2009/10/03)
