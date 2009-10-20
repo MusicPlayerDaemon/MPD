@@ -25,6 +25,8 @@
 #ifndef MPD_MIXER_CONTROL_H
 #define MPD_MIXER_CONTROL_H
 
+#include <glib.h>
+
 #include <stdbool.h>
 
 struct mixer;
@@ -32,13 +34,14 @@ struct mixer_plugin;
 struct config_param;
 
 struct mixer *
-mixer_new(const struct mixer_plugin *plugin, const struct config_param *param);
+mixer_new(const struct mixer_plugin *plugin, const struct config_param *param,
+	  GError **error_r);
 
 void
 mixer_free(struct mixer *mixer);
 
 bool
-mixer_open(struct mixer *mixer);
+mixer_open(struct mixer *mixer, GError **error_r);
 
 void
 mixer_close(struct mixer *mixer);
@@ -51,9 +54,9 @@ void
 mixer_auto_close(struct mixer *mixer);
 
 int
-mixer_get_volume(struct mixer *mixer);
+mixer_get_volume(struct mixer *mixer, GError **error_r);
 
 bool
-mixer_set_volume(struct mixer *mixer, unsigned volume);
+mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r);
 
 #endif

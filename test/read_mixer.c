@@ -46,6 +46,7 @@ pcm_volume(G_GNUC_UNUSED void *buffer, G_GNUC_UNUSED int length,
 
 int main(int argc, G_GNUC_UNUSED char **argv)
 {
+	GError *error = NULL;
 	struct mixer *mixer;
 	bool success;
 	int volume;
@@ -57,27 +58,34 @@ int main(int argc, G_GNUC_UNUSED char **argv)
 
 	g_thread_init(NULL);
 
-	mixer = mixer_new(&alsa_mixer_plugin, NULL);
+	mixer = mixer_new(&alsa_mixer_plugin, NULL, &error);
 	if (mixer == NULL) {
-		g_printerr("mixer_new() failed\n");
+		g_printerr("mixer_new() failed: %s\n", error->message);
+		g_error_free(error);
 		return 2;
 	}
 
-	success = mixer_open(mixer);
+	success = mixer_open(mixer, &error);
 	if (!success) {
 		mixer_free(mixer);
-		g_printerr("failed to open the mixer\n");
+		g_printerr("failed to open the mixer: %s\n", error->message);
+		g_error_free(error);
 		return 2;
 	}
 
-	volume = mixer_get_volume(mixer);
+	volume = mixer_get_volume(mixer, &error);
 	mixer_close(mixer);
 	mixer_free(mixer);
 
 	assert(volume >= -1 && volume <= 100);
 
 	if (volume < 0) {
-		g_printerr("failed to read volume\n");
+		if (error != NULL) {
+			g_printerr("failed to read volume: %s\n",
+				   error->message);
+			g_error_free(error);
+		} else
+			g_printerr("failed to read volume\n");
 		return 2;
 	}
 

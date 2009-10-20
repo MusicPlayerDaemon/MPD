@@ -20,8 +20,6 @@
 #include "mixer_control.h"
 #include "mixer_api.h"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <stddef.h>
 
@@ -29,13 +27,14 @@
 #define G_LOG_DOMAIN "mixer"
 
 struct mixer *
-mixer_new(const struct mixer_plugin *plugin, const struct config_param *param)
+mixer_new(const struct mixer_plugin *plugin, const struct config_param *param,
+	  GError **error_r)
 {
 	struct mixer *mixer;
 
 	assert(plugin != NULL);
 
-	mixer = plugin->init(param);
+	mixer = plugin->init(param, error_r);
 
 	assert(mixer == NULL || mixer->plugin == plugin);
 
@@ -55,7 +54,7 @@ mixer_free(struct mixer *mixer)
 }
 
 bool
-mixer_open(struct mixer *mixer)
+mixer_open(struct mixer *mixer, GError **error_r)
 {
 	bool success;
 
@@ -67,7 +66,7 @@ mixer_open(struct mixer *mixer)
 	if (mixer->open)
 		success = true;
 	else
-		success = mixer->open = mixer->plugin->open(mixer);
+		success = mixer->open = mixer->plugin->open(mixer, error_r);
 
 	mixer->failed = !success;
 
@@ -123,19 +122,20 @@ mixer_failed(struct mixer *mixer)
 }
 
 int
-mixer_get_volume(struct mixer *mixer)
+mixer_get_volume(struct mixer *mixer, GError **error_r)
 {
 	int volume;
 
 	assert(mixer != NULL);
 
-	if (mixer->plugin->global && !mixer->failed && !mixer_open(mixer))
+	if (mixer->plugin->global && !mixer->failed &&
+	    !mixer_open(mixer, error_r))
 		return -1;
 
 	g_mutex_lock(mixer->mutex);
 
 	if (mixer->open) {
-		volume = mixer->plugin->get_volume(mixer);
+		volume = mixer->plugin->get_volume(mixer, error_r);
 		if (volume < 0)
 			mixer_failed(mixer);
 	} else
@@ -147,20 +147,21 @@ mixer_get_volume(struct mixer *mixer)
 }
 
 bool
-mixer_set_volume(struct mixer *mixer, unsigned volume)
+mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
 {
 	bool success;
 
 	assert(mixer != NULL);
 	assert(volume <= 100);
 
-	if (mixer->plugin->global && !mixer->failed && !mixer_open(mixer))
+	if (mixer->plugin->global && !mixer->failed &&
+	    !mixer_open(mixer, error_r))
 		return false;
 
 	g_mutex_lock(mixer->mutex);
 
 	if (mixer->open) {
-		success = mixer->plugin->set_volume(mixer, volume);
+		success = mixer->plugin->set_volume(mixer, volume, error_r);
 		if (!success)
 			mixer_failed(mixer);
 	} else

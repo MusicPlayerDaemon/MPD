@@ -102,8 +102,15 @@ audio_output_open(struct audio_output *ao,
 	ao_command(ao, ao->open ? AO_COMMAND_REOPEN : AO_COMMAND_OPEN);
 	open = ao->open;
 
-	if (open && ao->mixer != NULL)
-		mixer_open(ao->mixer);
+	if (open && ao->mixer != NULL) {
+		GError *error = NULL;
+
+		if (!mixer_open(ao->mixer, &error)) {
+			g_warning("Failed to open mixer for '%s': %s",
+				  ao->name, error->message);
+			g_error_free(error);
+		}
+	}
 
 	return open;
 }

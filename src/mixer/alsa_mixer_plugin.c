@@ -42,8 +42,18 @@ struct alsa_mixer {
 	int volume_set;
 };
 
+/**
+ * The quark used for GError.domain.
+ */
+static inline GQuark
+alsa_mixer_quark(void)
+{
+	return g_quark_from_static_string("alsa_mixer");
+}
+
 static struct mixer *
-alsa_mixer_init(const struct config_param *param)
+alsa_mixer_init(const struct config_param *param,
+		G_GNUC_UNUSED GError **error_r)
 {
 	struct alsa_mixer *am = g_new(struct alsa_mixer, 1);
 
@@ -81,7 +91,7 @@ alsa_mixer_close(struct mixer *data)
 }
 
 static bool
-alsa_mixer_open(struct mixer *data)
+alsa_mixer_open(struct mixer *data, GError **error_r)
 {
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
 	int err;
@@ -91,29 +101,33 @@ alsa_mixer_open(struct mixer *data)
 
 	err = snd_mixer_open(&am->handle, 0);
 	if (err < 0) {
-		g_warning("problems opening alsa mixer: %s\n", snd_strerror(err));
+		g_set_error(error_r, alsa_mixer_quark(), err,
+			    "snd_mixer_open() failed: %s", snd_strerror(err));
 		return false;
 	}
 
 	if ((err = snd_mixer_attach(am->handle, am->device)) < 0) {
-		g_warning("problems attaching alsa mixer: %s\n",
-			snd_strerror(err));
 		alsa_mixer_close(data);
+		g_set_error(error_r, alsa_mixer_quark(), err,
+			    "failed to attach to %s: %s",
+			    am->device, snd_strerror(err));
 		return false;
 	}
 
 	if ((err = snd_mixer_selem_register(am->handle, NULL,
 		    NULL)) < 0) {
-		g_warning("problems snd_mixer_selem_register'ing: %s\n",
-			snd_strerror(err));
 		alsa_mixer_close(data);
+		g_set_error(error_r, alsa_mixer_quark(), err,
+			    "snd_mixer_selem_register() failed: %s",
+			    snd_strerror(err));
 		return false;
 	}
 
 	if ((err = snd_mixer_load(am->handle)) < 0) {
-		g_warning("problems snd_mixer_selem_register'ing: %s\n",
-			snd_strerror(err));
 		alsa_mixer_close(data);
+		g_set_error(error_r, alsa_mixer_quark(), err,
+			    "snd_mixer_load() failed: %s\n",
+			    snd_strerror(err));
 		return false;
 	}
 
@@ -138,14 +152,14 @@ alsa_mixer_open(struct mixer *data)
 		return true;
 	}
 
-	g_warning("can't find alsa mixer control \"%s\"\n", am->control);
-
 	alsa_mixer_close(data);
+	g_set_error(error_r, alsa_mixer_quark(), 0,
+		    "no such mixer control: %s", am->control);
 	return false;
 }
 
 static int
-alsa_mixer_get_volume(struct mixer *mixer)
+alsa_mixer_get_volume(struct mixer *mixer, GError **error_r)
 {
 	struct alsa_mixer *am = (struct alsa_mixer *)mixer;
 	int err;
@@ -156,8 +170,9 @@ alsa_mixer_get_volume(struct mixer *mixer)
 
 	err = snd_mixer_handle_events(am->handle);
 	if (err < 0) {
-		g_warning("problems getting alsa volume: %s (snd_mixer_%s)\n",
-			  snd_strerror(err), "handle_events");
+		g_set_error(error_r, alsa_mixer_quark(), err,
+			    "snd_mixer_handle_events() failed: %s",
+			    snd_strerror(err));
 		return false;
 	}
 
@@ -165,8 +180,9 @@ alsa_mixer_get_volume(struct mixer *mixer)
 						  SND_MIXER_SCHN_FRONT_LEFT,
 						  &level);
 	if (err < 0) {
-		g_warning("problems getting alsa volume: %s (snd_mixer_%s)\n",
-			  snd_strerror(err), "selem_get_playback_volume");
+		g_set_error(error_r, alsa_mixer_quark(), err,
+			    "failed to read ALSA volume: %s",
+			    snd_strerror(err));
 		return false;
 	}
 
@@ -183,7 +199,7 @@ alsa_mixer_get_volume(struct mixer *mixer)
 }
 
 static bool
-alsa_mixer_set_volume(struct mixer *mixer, unsigned volume)
+alsa_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
 {
 	struct alsa_mixer *am = (struct alsa_mixer *)mixer;
 	float vol;
@@ -203,8 +219,9 @@ alsa_mixer_set_volume(struct mixer *mixer, unsigned volume)
 
 	err = snd_mixer_selem_set_playback_volume_all(am->elem, level);
 	if (err < 0) {
-		g_warning("problems setting alsa volume: %s\n",
-			  snd_strerror(err));
+		g_set_error(error_r, alsa_mixer_quark(), err,
+			    "failed to set ALSA volume: %s",
+			    snd_strerror(err));
 		return false;
 	}
 

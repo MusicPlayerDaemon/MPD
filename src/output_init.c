@@ -91,7 +91,8 @@ audio_output_mixer_type(const struct config_param *param)
 static struct mixer *
 audio_output_load_mixer(const struct config_param *param,
 			const struct mixer_plugin *plugin,
-			struct filter *filter_chain)
+			struct filter *filter_chain,
+			GError **error_r)
 {
 	struct mixer *mixer;
 
@@ -104,10 +105,10 @@ audio_output_load_mixer(const struct config_param *param,
 		if (plugin == NULL)
 			return NULL;
 
-		return mixer_new(plugin, param);
+		return mixer_new(plugin, param, error_r);
 
 	case MIXER_TYPE_SOFTWARE:
-		mixer = mixer_new(&software_mixer_plugin, NULL);
+		mixer = mixer_new(&software_mixer_plugin, NULL, NULL);
 		assert(mixer != NULL);
 
 		filter_chain_append(filter_chain,
@@ -124,6 +125,7 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 		  GError **error_r)
 {
 	const struct audio_output_plugin *plugin = NULL;
+	GError *error = NULL;
 
 	if (param) {
 		const char *p;
@@ -199,7 +201,12 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 		return false;
 
 	ao->mixer = audio_output_load_mixer(param, plugin->mixer_plugin,
-					    ao->filter);
+					    ao->filter, &error);
+	if (ao->mixer == NULL && error != NULL) {
+		g_warning("Failed to initialize hardware mixer for '%s': %s",
+			  ao->name, error->message);
+		g_error_free(error);
+	}
 
 	/* the "convert" filter must be the last one in the chain */
 

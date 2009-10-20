@@ -46,6 +46,15 @@ struct pulse_mixer {
 };
 
 /**
+ * The quark used for GError.domain.
+ */
+static inline GQuark
+pulse_mixer_quark(void)
+{
+	return g_quark_from_static_string("pulse_mixer");
+}
+
+/**
  * \brief waits for a pulseaudio operation to finish, frees it and
  *     unlocks the mainloop
  * \param operation the operation to wait for
@@ -203,7 +212,8 @@ context_state_cb(pa_context *context, void *userdata)
 
 
 static struct mixer *
-pulse_mixer_init(const struct config_param *param)
+pulse_mixer_init(const struct config_param *param,
+		 G_GNUC_UNUSED GError **error_r)
 {
 	struct pulse_mixer *pm = g_new(struct pulse_mixer,1);
 	mixer_init(&pm->base, &pulse_mixer_plugin);
@@ -226,13 +236,14 @@ pulse_mixer_finish(struct mixer *data)
 }
 
 static bool
-pulse_mixer_setup(struct pulse_mixer *pm)
+pulse_mixer_setup(struct pulse_mixer *pm, GError **error_r)
 {
 	pa_context_set_state_callback(pm->context, context_state_cb, pm);
 
 	if (pa_context_connect(pm->context, pm->server,
 			       (pa_context_flags_t)0, NULL) < 0) {
-		g_debug("context server fail");
+		g_set_error(error_r, pulse_mixer_quark(), 0,
+			    "pa_context_connect() has failed");
 		return false;
 	}
 
@@ -240,15 +251,18 @@ pulse_mixer_setup(struct pulse_mixer *pm)
 
 	if (pa_threaded_mainloop_start(pm->mainloop) < 0) {
 		pa_threaded_mainloop_unlock(pm->mainloop);
-		g_debug("error start mainloop");
+		g_set_error(error_r, pulse_mixer_quark(), 0,
+			    "pa_threaded_mainloop_start() has failed");
 		return false;
 	}
 
 	pa_threaded_mainloop_wait(pm->mainloop);
 
 	if (pa_context_get_state(pm->context) != PA_CONTEXT_READY) {
+		g_set_error(error_r, pulse_mixer_quark(), 0,
+			    "failed to connect: %s",
+			    pa_strerror(pa_context_errno(pm->context)));
 		pa_threaded_mainloop_unlock(pm->mainloop);
-		g_debug("error context not ready");
 		return false;
 	}
 
@@ -258,7 +272,7 @@ pulse_mixer_setup(struct pulse_mixer *pm)
 }
 
 static bool
-pulse_mixer_open(struct mixer *data)
+pulse_mixer_open(struct mixer *data, GError **error_r)
 {
 	struct pulse_mixer *pm = (struct pulse_mixer *) data;
 
@@ -269,7 +283,8 @@ pulse_mixer_open(struct mixer *data)
 
 	pm->mainloop = pa_threaded_mainloop_new();
 	if (pm->mainloop == NULL) {
-		g_debug("failed mainloop");
+		g_set_error(error_r, pulse_mixer_quark(), 0,
+			    "pa_threaded_mainloop_new() has failed");
 		return false;
 	}
 
@@ -278,11 +293,12 @@ pulse_mixer_open(struct mixer *data)
 	if (pm->context == NULL) {
 		pa_threaded_mainloop_stop(pm->mainloop);
 		pa_threaded_mainloop_free(pm->mainloop);
-		g_debug("failed context");
+		g_set_error(error_r, pulse_mixer_quark(), 0,
+			    "pa_context_new() has failed");
 		return false;
 	}
 
-	if (!pulse_mixer_setup(pm)) {
+	if (!pulse_mixer_setup(pm, error_r)) {
 		pa_threaded_mainloop_stop(pm->mainloop);
 		pa_context_disconnect(pm->context);
 		pa_context_unref(pm->context);
@@ -307,7 +323,7 @@ pulse_mixer_close(struct mixer *data)
 }
 
 static int
-pulse_mixer_get_volume(struct mixer *mixer)
+pulse_mixer_get_volume(struct mixer *mixer, GError **error_r)
 {
 	struct pulse_mixer *pm = (struct pulse_mixer *) mixer;
 	int ret;
@@ -324,12 +340,15 @@ pulse_mixer_get_volume(struct mixer *mixer)
 					   sink_input_vol, pm);
 	if (o == NULL) {
 		pa_threaded_mainloop_unlock(pm->mainloop);
-		g_debug("pa_context_get_sink_input_info() failed");
+		g_set_error(error_r, pulse_mixer_quark(), 0,
+			    "pa_context_get_sink_input_info() has failed");
 		return false;
 	}
 
 	if (!pulse_wait_for_operation(pm->mainloop, o)) {
 		pa_threaded_mainloop_unlock(pm->mainloop);
+		g_set_error(error_r, pulse_mixer_quark(), 0,
+			    "failed to read PulseAudio volume");
 		return false;
 	}
 
@@ -343,7 +362,7 @@ pulse_mixer_get_volume(struct mixer *mixer)
 }
 
 static bool
-pulse_mixer_set_volume(struct mixer *mixer, unsigned volume)
+pulse_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
 {
 	struct pulse_mixer *pm = (struct pulse_mixer *) mixer;
 	struct pa_cvolume cvolume;
@@ -353,6 +372,7 @@ pulse_mixer_set_volume(struct mixer *mixer, unsigned volume)
 
 	if (!pm->online) {
 		pa_threaded_mainloop_unlock(pm->mainloop);
+		g_set_error(error_r, pulse_mixer_quark(), 0, "disconnected");
 		return false;
 	}
 
@@ -363,7 +383,8 @@ pulse_mixer_set_volume(struct mixer *mixer, unsigned volume)
 					     &cvolume, NULL, NULL);
 	pa_threaded_mainloop_unlock(pm->mainloop);
 	if (o == NULL) {
-		g_debug("pa_context_set_sink_input_volume() failed");
+		g_set_error(error_r, pulse_mixer_quark(), 0,
+			    "failed to set PulseAudio volume");
 		return false;
 	}
 
