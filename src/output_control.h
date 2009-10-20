@@ -38,7 +38,7 @@ audio_output_quark(void)
 
 bool
 audio_output_init(struct audio_output *ao, const struct config_param *param,
-		  GError **error);
+		  GError **error_r);
 
 /**
  * Opens or closes the device, depending on the "enabled" flag.

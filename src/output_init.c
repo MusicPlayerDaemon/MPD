@@ -121,7 +121,7 @@ audio_output_load_mixer(const struct config_param *param,
 
 bool
 audio_output_init(struct audio_output *ao, const struct config_param *param,
-		  GError **error)
+		  GError **error_r)
 {
 	const struct audio_output_plugin *plugin = NULL;
 
@@ -130,14 +130,14 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 
 		p = config_get_block_string(param, AUDIO_OUTPUT_TYPE, NULL);
 		if (p == NULL) {
-			g_set_error(error, audio_output_quark(), 0,
+			g_set_error(error_r, audio_output_quark(), 0,
 				    "Missing \"type\" configuration");
 			return false;
 		}
 
 		plugin = audio_output_plugin_get(p);
 		if (plugin == NULL) {
-			g_set_error(error, audio_output_quark(), 0,
+			g_set_error(error_r, audio_output_quark(), 0,
 				    "No such audio output plugin: %s", p);
 			return false;
 		}
@@ -145,7 +145,7 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 		ao->name = config_get_block_string(param, AUDIO_OUTPUT_NAME,
 						   NULL);
 		if (ao->name == NULL) {
-			g_set_error(error, audio_output_quark(), 0,
+			g_set_error(error_r, audio_output_quark(), 0,
 				    "Missing \"name\" configuration");
 			return false;
 		}
@@ -156,7 +156,7 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 		if (p != NULL) {
 			bool success =
 				audio_format_parse(&ao->out_audio_format,
-						   p, error);
+						   p, error_r);
 			if (!success)
 				return false;
 		}
@@ -164,7 +164,7 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 		g_warning("No \"%s\" defined in config file\n",
 			  CONF_AUDIO_OUTPUT);
 
-		plugin = audio_output_detect(error);
+		plugin = audio_output_detect(error_r);
 		if (plugin == NULL)
 			return false;
 
@@ -194,7 +194,7 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	ao->data = ao_plugin_init(plugin,
 				  ao->config_audio_format
 				  ? &ao->out_audio_format : NULL,
-				  param, error);
+				  param, error_r);
 	if (ao->data == NULL)
 		return false;
 
