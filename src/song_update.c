@@ -39,7 +39,7 @@ song_file_load(const char *path, struct directory *parent)
 	struct song *song;
 	bool ret;
 
-	assert((parent == NULL) == (*path == '/'));
+	assert((parent == NULL) == g_path_is_absolute(path));
 	assert(!uri_has_scheme(path));
 	assert(strchr(path, '\n') == NULL);
 

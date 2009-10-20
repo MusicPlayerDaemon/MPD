@@ -54,7 +54,7 @@ playlist_print_uri(FILE *file, const char *uri)
 	char *s;
 
 	if (playlist_saveAbsolutePaths && !uri_has_scheme(uri) &&
-	    uri[0] != '/')
+	    !g_path_is_absolute(uri))
 		s = map_uri_fs(uri);
 	else
 		s = utf8_to_fs_charset(uri);

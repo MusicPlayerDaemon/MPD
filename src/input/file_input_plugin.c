@@ -39,7 +39,7 @@ input_file_open(struct input_stream *is, const char *filename)
 
 	char* pathname = g_strdup(filename);
 
-	if (filename[0] != '/')
+	if (!g_path_is_absolute(filename))
 	{
 		g_free(pathname);
 		return false;

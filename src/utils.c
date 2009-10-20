@@ -44,7 +44,7 @@
 char *parsePath(char *path)
 {
 #ifndef WIN32
-	if (path[0] != '/' && path[0] != '~') {
+	if (!g_path_is_absolute(path) && path[0] != '~') {
 		g_warning("\"%s\" is not an absolute path", path);
 		return NULL;
 	} else if (path[0] == '~') {

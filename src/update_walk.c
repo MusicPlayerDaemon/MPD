@@ -620,7 +620,7 @@ skip_symlink(const struct directory *directory, const char *utf8_name)
 
 	p = buffer;
 	while (*p == '.') {
-		if (p[1] == '.' && p[2] == '/') {
+		if (p[1] == '.' && G_IS_DIR_SEPARATOR(p[2])) {
 			/* "../" moves to parent directory */
 			directory = directory->parent;
 			if (directory == NULL) {
@@ -630,7 +630,7 @@ skip_symlink(const struct directory *directory, const char *utf8_name)
 				return !follow_outside_symlinks;
 			}
 			p += 3;
-		} else if (p[1] == '/')
+		} else if (G_IS_DIR_SEPARATOR(p[1]))
 			/* eliminate "./" */
 			p += 2;
 		else
@@ -675,8 +675,7 @@ updateDirectory(struct directory *directory, const struct stat *st)
 		return false;
 	}
 
-	exclude_path_fs  = g_strconcat(path_fs, G_DIR_SEPARATOR_S,
-				       ".mpdignore", NULL);
+	exclude_path_fs  = g_build_filename(path_fs, ".mpdignore", NULL);
 	exclude_list = exclude_list_load(exclude_path_fs);
 	g_free(exclude_path_fs);
 

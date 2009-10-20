@@ -169,10 +169,10 @@ map_fs_to_utf8(const char *path_fs)
 {
 	if (music_dir != NULL &&
 	    strncmp(path_fs, music_dir, music_dir_length) == 0 &&
-	    path_fs[music_dir_length] == '/')
+	    G_IS_DIR_SEPARATOR(path_fs[music_dir_length]))
 		/* remove musicDir prefix */
 		path_fs += music_dir_length + 1;
-	else if (path_fs[0] == '/')
+	else if (G_IS_DIR_SEPARATOR(path_fs[0]))
 		/* not within musicDir */
 		return NULL;
 

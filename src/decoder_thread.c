@@ -74,7 +74,7 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 	assert(decoder->stream_tag == NULL);
 	assert(decoder->decoder_tag == NULL);
 	assert(path != NULL);
-	assert(path[0] == '/');
+	assert(g_path_is_absolute(path));
 	assert(dc.state == DECODE_STATE_START);
 
 	decoder_unlock();
