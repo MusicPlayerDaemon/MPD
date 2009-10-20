@@ -206,7 +206,7 @@ static struct mixer *
 pulse_mixer_init(const struct config_param *param)
 {
 	struct pulse_mixer *pm = g_new(struct pulse_mixer,1);
-	mixer_init(&pm->base, &pulse_mixer);
+	mixer_init(&pm->base, &pulse_mixer_plugin);
 
 	pm->online = false;
 
@@ -372,7 +372,7 @@ pulse_mixer_set_volume(struct mixer *mixer, unsigned volume)
 	return true;
 }
 
-const struct mixer_plugin pulse_mixer = {
+const struct mixer_plugin pulse_mixer_plugin = {
 	.init = pulse_mixer_init,
 	.finish = pulse_mixer_finish,
 	.open = pulse_mixer_open,

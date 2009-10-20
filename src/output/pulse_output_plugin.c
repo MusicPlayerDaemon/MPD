@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "../output_api.h"
+#include "output_api.h"
 #include "mixer_list.h"
 
 #include <glib.h>
@@ -168,8 +168,9 @@ pulse_play(void *data, const void *chunk, size_t size, GError **error_r)
 	return size;
 }
 
-const struct audio_output_plugin pulse_plugin = {
+const struct audio_output_plugin pulse_output_plugin = {
 	.name = "pulse",
+
 	.test_default_device = pulse_test_default_device,
 	.init = pulse_init,
 	.finish = pulse_finish,
@@ -177,5 +178,6 @@ const struct audio_output_plugin pulse_plugin = {
 	.play = pulse_play,
 	.cancel = pulse_cancel,
 	.close = pulse_close,
-	.mixer_plugin = &pulse_mixer,
+
+	.mixer_plugin = &pulse_mixer_plugin,
 };

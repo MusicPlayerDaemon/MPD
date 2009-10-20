@@ -31,7 +31,7 @@ extern const struct audio_output_plugin oss_output_plugin;
 extern const struct audio_output_plugin openal_output_plugin;
 extern const struct audio_output_plugin osxPlugin;
 extern const struct audio_output_plugin solaris_output_plugin;
-extern const struct audio_output_plugin pulse_plugin;
+extern const struct audio_output_plugin pulse_output_plugin;
 extern const struct audio_output_plugin mvp_output_plugin;
 extern const struct audio_output_plugin jackPlugin;
 extern const struct audio_output_plugin httpd_output_plugin;
@@ -67,7 +67,7 @@ const struct audio_output_plugin *audio_output_plugins[] = {
 	&solaris_output_plugin,
 #endif
 #ifdef HAVE_PULSE
-	&pulse_plugin,
+	&pulse_output_plugin,
 #endif
 #ifdef HAVE_MVP
 	&mvp_output_plugin,
