@@ -283,6 +283,8 @@ int main(int argc, char *argv[])
 	setlocale(LC_CTYPE,"");
 #endif
 
+	g_set_application_name("Music Player Daemon");
+
 	/* enable GLib's thread safety code */
 	g_thread_init(NULL);
 
