@@ -66,6 +66,8 @@ pulse_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 {
 	struct pulse_data *pd;
 
+	g_setenv("PULSE_PROP_media.role", "music", true);
+
 	pd = pulse_new_data();
 	pd->name = config_get_block_string(param, "name", "mpd_pulse");
 	pd->server = config_get_block_string(param, "server", NULL);

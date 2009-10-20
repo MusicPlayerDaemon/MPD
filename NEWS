@@ -29,6 +29,7 @@ ver 0.16 (20??/??/??)
 * output:
   - recorder: new output plugin for recording radio streams
   - openal: new output plugin
+  - pulse: announce "media.role=music"
 * mixers:
   - removed support for legacy mixer configuration
   - reimplemented software volume as mixer+filter plugin
