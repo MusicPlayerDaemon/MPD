@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "../output_api.h"
-#include "../mixer_api.h"
+#include "mixer_api.h"
+#include "output_api.h"
 
 #include <glib.h>
 #include <alsa/asoundlib.h>
@@ -47,7 +47,7 @@ alsa_mixer_init(const struct config_param *param)
 {
 	struct alsa_mixer *am = g_new(struct alsa_mixer, 1);
 
-	mixer_init(&am->base, &alsa_mixer);
+	mixer_init(&am->base, &alsa_mixer_plugin);
 
 	am->device = config_get_block_string(param, "mixer_device",
 					     VOLUME_MIXER_ALSA_DEFAULT);
@@ -211,7 +211,7 @@ alsa_mixer_set_volume(struct mixer *mixer, unsigned volume)
 	return true;
 }
 
-const struct mixer_plugin alsa_mixer = {
+const struct mixer_plugin alsa_mixer_plugin = {
 	.init = alsa_mixer_init,
 	.finish = alsa_mixer_finish,
 	.open = alsa_mixer_open,

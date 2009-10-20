@@ -601,5 +601,6 @@ const struct audio_output_plugin oss_output_plugin = {
 	.close = oss_output_close,
 	.play = oss_output_play,
 	.cancel = oss_output_cancel,
-	.mixer_plugin = &oss_mixer,
+
+	.mixer_plugin = &oss_mixer_plugin,
 };

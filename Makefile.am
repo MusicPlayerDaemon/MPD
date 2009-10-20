@@ -585,7 +585,7 @@ MIXER_SRC = \
 
 if HAVE_ALSA
 OUTPUT_SRC += src/output/alsa_plugin.c
-MIXER_SRC += src/mixer/alsa_mixer.c
+MIXER_SRC += src/mixer/alsa_mixer_plugin.c
 endif
 
 if HAVE_AO
@@ -610,7 +610,7 @@ endif
 
 if HAVE_OSS
 OUTPUT_SRC += src/output/oss_plugin.c
-MIXER_SRC += src/mixer/oss_mixer.c
+MIXER_SRC += src/mixer/oss_mixer_plugin.c
 endif
 
 if HAVE_OPENAL

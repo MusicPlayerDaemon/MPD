@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "../output_api.h"
-#include "../mixer_api.h"
+#include "mixer_api.h"
+#include "output_api.h"
 
 #include <glib.h>
 
@@ -69,7 +69,7 @@ oss_mixer_init(const struct config_param *param)
 {
 	struct oss_mixer *om = g_new(struct oss_mixer, 1);
 
-	mixer_init(&om->base, &oss_mixer);
+	mixer_init(&om->base, &oss_mixer_plugin);
 
 	om->device = config_get_block_string(param, "mixer_device",
 					     VOLUME_MIXER_OSS_DEFAULT);
@@ -184,7 +184,7 @@ oss_mixer_set_volume(struct mixer *mixer, unsigned volume)
 	return true;
 }
 
-const struct mixer_plugin oss_mixer = {
+const struct mixer_plugin oss_mixer_plugin = {
 	.init = oss_mixer_init,
 	.finish = oss_mixer_finish,
 	.open = oss_mixer_open,

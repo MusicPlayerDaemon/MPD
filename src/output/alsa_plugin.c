@@ -544,5 +544,6 @@ const struct audio_output_plugin alsaPlugin = {
 	.play = alsa_play,
 	.cancel = alsa_cancel,
 	.close = alsa_close,
-	.mixer_plugin = &alsa_mixer,
+
+	.mixer_plugin = &alsa_mixer_plugin,
 };
