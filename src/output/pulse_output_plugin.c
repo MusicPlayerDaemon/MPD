@@ -24,7 +24,7 @@
 #include <pulse/simple.h>
 #include <pulse/error.h>
 
-#define MPD_PULSE_NAME "mpd"
+#define MPD_PULSE_NAME "Music Player Daemon"
 
 struct pulse_data {
 	const char *name;
