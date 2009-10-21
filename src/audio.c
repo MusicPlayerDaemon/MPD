@@ -46,7 +46,7 @@ void initAudioConfig(void)
 	GError *error = NULL;
 	bool ret;
 
-	if (NULL == param || NULL == param->value)
+	if (param == NULL)
 		return;
 
 	ret = audio_format_parse(&configured_audio_format, param->value,
