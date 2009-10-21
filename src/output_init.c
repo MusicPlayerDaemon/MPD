@@ -157,7 +157,7 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 		if (p != NULL) {
 			bool success =
 				audio_format_parse(&ao->config_audio_format,
-						   p, error_r);
+						   p, true, error_r);
 			if (!success)
 				return false;
 		} else
@@ -195,8 +195,7 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	ao->mutex = g_mutex_new();
 
 	ao->data = ao_plugin_init(plugin,
-				  audio_format_defined(&ao->config_audio_format)
-				  ? &ao->config_audio_format : NULL,
+				  &ao->config_audio_format,
 				  param, error_r);
 	if (ao->data == NULL)
 		return false;

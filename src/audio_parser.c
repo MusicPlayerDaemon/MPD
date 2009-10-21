@@ -37,11 +37,17 @@ audio_parser_quark(void)
 }
 
 static bool
-parse_sample_rate(const char *src, uint32_t *sample_rate_r,
+parse_sample_rate(const char *src, bool mask, uint32_t *sample_rate_r,
 		  const char **endptr_r, GError **error_r)
 {
 	unsigned long value;
 	char *endptr;
+
+	if (mask && *src == '*') {
+		*sample_rate_r = 0;
+		*endptr_r = src + 1;
+		return true;
+	}
 
 	value = strtoul(src, &endptr, 10);
 	if (endptr == src) {
@@ -60,11 +66,17 @@ parse_sample_rate(const char *src, uint32_t *sample_rate_r,
 }
 
 static bool
-parse_sample_format(const char *src, uint8_t *bits_r,
+parse_sample_format(const char *src, bool mask, uint8_t *bits_r,
 		    const char **endptr_r, GError **error_r)
 {
 	unsigned long value;
 	char *endptr;
+
+	if (mask && *src == '*') {
+		*bits_r = 0;
+		*endptr_r = src + 1;
+		return true;
+	}
 
 	value = strtoul(src, &endptr, 10);
 	if (endptr == src) {
@@ -83,11 +95,17 @@ parse_sample_format(const char *src, uint8_t *bits_r,
 }
 
 static bool
-parse_channel_count(const char *src, uint8_t *channels_r,
+parse_channel_count(const char *src, bool mask, uint8_t *channels_r,
 		    const char **endptr_r, GError **error_r)
 {
 	unsigned long value;
 	char *endptr;
+
+	if (mask && *src == '*') {
+		*channels_r = 0;
+		*endptr_r = src + 1;
+		return true;
+	}
 
 	value = strtoul(src, &endptr, 10);
 	if (endptr == src) {
@@ -107,7 +125,7 @@ parse_channel_count(const char *src, uint8_t *channels_r,
 
 bool
 audio_format_parse(struct audio_format *dest, const char *src,
-		   GError **error_r)
+		   bool mask, GError **error_r)
 {
 	uint32_t rate;
 	uint8_t bits, channels;
@@ -116,7 +134,7 @@ audio_format_parse(struct audio_format *dest, const char *src,
 
 	/* parse sample rate */
 
-	if (!parse_sample_rate(src, &rate, &src, error_r))
+	if (!parse_sample_rate(src, mask, &rate, &src, error_r))
 		return false;
 
 	if (*src++ != ':') {
@@ -127,7 +145,7 @@ audio_format_parse(struct audio_format *dest, const char *src,
 
 	/* parse sample format */
 
-	if (!parse_sample_format(src, &bits, &src, error_r))
+	if (!parse_sample_format(src, mask, &bits, &src, error_r))
 		return false;
 
 	if (*src++ != ':') {
@@ -138,7 +156,7 @@ audio_format_parse(struct audio_format *dest, const char *src,
 
 	/* parse channel count */
 
-	if (!parse_channel_count(src, &channels, &src, error_r))
+	if (!parse_channel_count(src, mask, &channels, &src, error_r))
 		return false;
 
 	if (*src != 0) {

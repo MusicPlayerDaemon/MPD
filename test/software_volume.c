@@ -46,7 +46,8 @@ int main(int argc, char **argv)
 	}
 
 	if (argc > 1) {
-		ret = audio_format_parse(&audio_format, argv[1], &error);
+		ret = audio_format_parse(&audio_format, argv[1],
+					 false, &error);
 		if (!ret) {
 			g_printerr("Failed to parse audio format: %s\n",
 				   error->message);

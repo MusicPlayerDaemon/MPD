@@ -34,6 +34,7 @@ ver 0.16 (20??/??/??)
   - pulse: connect to server on MPD startup, implement pause
   - jack: don't disconnect during pause
   - jack: connect to server on MPD startup
+  - wildcards allowed in audio_format configuration
 * mixers:
   - removed support for legacy mixer configuration
   - reimplemented software volume as mixer+filter plugin

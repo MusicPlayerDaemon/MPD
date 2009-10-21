@@ -35,9 +35,8 @@ static struct audio_format configured_audio_format;
 void getOutputAudioFormat(const struct audio_format *inAudioFormat,
 			  struct audio_format *outAudioFormat)
 {
-	*outAudioFormat = audio_format_defined(&configured_audio_format)
-		? configured_audio_format
-		: *inAudioFormat;
+	*outAudioFormat = *inAudioFormat;
+	audio_format_mask_apply(outAudioFormat, &configured_audio_format);
 }
 
 void initAudioConfig(void)
@@ -50,7 +49,7 @@ void initAudioConfig(void)
 		return;
 
 	ret = audio_format_parse(&configured_audio_format, param->value,
-				 &error);
+				 true, &error);
 	if (!ret)
 		g_error("error parsing \"%s\" at line %i: %s",
 			CONF_AUDIO_OUTPUT_FORMAT, param->line, error->message);

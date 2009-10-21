@@ -37,12 +37,13 @@ struct audio_format;
  *
  * @param dest the destination #audio_format struct
  * @param src the input string
+ * @param mask if true, then "*" is allowed for any number of items
  * @param error_r location to store the error occuring, or NULL to
  * ignore errors
  * @return true on success
  */
 bool
 audio_format_parse(struct audio_format *dest, const char *src,
-		   GError **error_r);
+		   bool mask, GError **error_r);
 
 #endif

@@ -129,6 +129,8 @@ audio that is sent to each audio output.  Note that audio outputs may specify
 their own audio format which will be used for actual output to the audio
 device.  An example is "44100:16:2" for 44100Hz, 16 bits, and 2 channels.  The
 default is to use the audio format of the input file.
+Any of the three attributes may be an asterisk to specify that this
+attribute should not be enforced
 .TP
 .B samplerate_converter <integer or prefix>
 This specifies the libsamplerate converter to use.  The supplied value should
@@ -261,6 +263,8 @@ This specifies the sample rate, bits per sample, and number of channels of
 audio that is sent to the audio output device.  See documentation for the
 \fBaudio_output_format\fP parameter for more details.  The default is to use
 whatever audio format is passed to the audio output.
+Any of the three attributes may be an asterisk to specify that this
+attribute should not be enforced
 .SH OPTIONAL ALSA OUTPUT PARAMETERS
 .TP
 .B device <dev>

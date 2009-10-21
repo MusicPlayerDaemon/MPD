@@ -126,6 +126,13 @@ my_shout_init_driver(const struct audio_format *audio_format,
 	struct block_param *block_param;
 	int public;
 
+	if (audio_format == NULL ||
+	    !audio_format_fully_defined(audio_format)) {
+		g_set_error(error, shout_output_quark(), 0,
+			    "Need full audio format specification");
+		return NULL;
+	}
+
 	sd = new_shout_data();
 
 	if (shout_init_count == 0)
@@ -190,8 +197,6 @@ my_shout_init_driver(const struct audio_format *audio_format,
 			return NULL;
 		}
 	}
-
-	check_block_param("format");
 
 	encoding = config_get_block_string(param, "encoding", "ogg");
 	encoder_plugin = shout_encoder_plugin_get(encoding);
