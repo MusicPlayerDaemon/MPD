@@ -58,6 +58,12 @@ struct jack_data {
 	jack_ringbuffer_t *ringbuffer[2];
 
 	bool shutdown;
+
+	/**
+	 * While this flag is set, the "process" callback generates
+	 * silence.
+	 */
+	bool pause;
 };
 
 /**
@@ -115,6 +121,19 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 
 	if (nframes <= 0)
 		return 0;
+
+	if (jd->pause) {
+		/* generate silence while MPD is paused */
+
+		for (unsigned i = 0; i < G_N_ELEMENTS(jd->ringbuffer); ++i) {
+			out = jack_port_get_buffer(jd->ports[i], nframes);
+
+			for (jack_nframes_t f = 0; f < nframes; ++f)
+				out[f] = 0.0;
+		}
+
+		return 0;
+	}
 
 	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ringbuffer); ++i) {
 		available = jack_ringbuffer_read_space(jd->ringbuffer[i]);
@@ -308,6 +327,8 @@ mpd_jack_open(void *data, struct audio_format *audio_format, GError **error)
 
 	assert(jd != NULL);
 
+	jd->pause = false;
+
 	if (!mpd_jack_connect(jd, error)) {
 		mpd_jack_client_free(jd);
 		return false;
@@ -405,6 +426,8 @@ mpd_jack_play(void *data, const void *chunk, size_t size, GError **error)
 	const size_t frame_size = audio_format_frame_size(&jd->audio_format);
 	size_t space = 0, space1;
 
+	jd->pause = false;
+
 	assert(size % frame_size == 0);
 	size /= frame_size;
 
@@ -438,6 +461,23 @@ mpd_jack_play(void *data, const void *chunk, size_t size, GError **error)
 	return size * frame_size;
 }
 
+static bool
+mpd_jack_pause(void *data)
+{
+	struct jack_data *jd = data;
+
+	if (jd->shutdown)
+		return false;
+
+	jd->pause = true;
+
+	/* due to a MPD API limitation, we have to sleep a little bit
+	   here, to avoid hogging the CPU */
+	g_usleep(50000);
+
+	return true;
+}
+
 const struct audio_output_plugin jack_output_plugin = {
 	.name = "jack",
 	.test_default_device = mpd_jack_test_default_device,
@@ -446,5 +486,6 @@ const struct audio_output_plugin jack_output_plugin = {
 	.open = mpd_jack_open,
 	.play = mpd_jack_play,
 	.cancel = mpd_jack_cancel,
+	.pause = mpd_jack_pause,
 	.close = mpd_jack_close,
 };
