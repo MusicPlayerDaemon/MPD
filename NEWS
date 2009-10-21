@@ -1,4 +1,5 @@
 ver 0.15.6 (2009/??/??)
+* output_thread: check again if output is open on PAUSE
 
 
 ver 0.15.5 (2009/10/18)

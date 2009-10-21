@@ -248,6 +248,15 @@ static gpointer audio_output_task(gpointer arg)
 			break;
 
 		case AO_COMMAND_PAUSE:
+			if (!ao->open) {
+				/* the output has failed after
+				   audio_output_all_pause() has
+				   submitted the PAUSE command; bail
+				   out */
+				ao_command_finished(ao);
+				break;
+			}
+
 			ao_pause(ao);
 			/* don't "break" here: this might cause
 			   ao_play() to be called when command==CLOSE
