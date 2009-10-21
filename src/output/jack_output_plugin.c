@@ -187,7 +187,7 @@ mpd_jack_info(const char *msg)
 
 static void *
 mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-	      const struct config_param *param, GError **error)
+	      const struct config_param *param, GError **error_r)
 {
 	struct jack_data *jd;
 	const char *value;
@@ -202,7 +202,7 @@ mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		char **ports = g_strsplit(value, ",", 0);
 
 		if (ports[0] == NULL || ports[1] == NULL || ports[2] != NULL) {
-			g_set_error(error, jack_output_quark(), 0,
+			g_set_error(error_r, jack_output_quark(), 0,
 				    "two port names expected in line %d",
 				    param->line);
 			return NULL;
@@ -236,7 +236,7 @@ mpd_jack_test_default_device(void)
 }
 
 static bool
-mpd_jack_connect(struct jack_data *jd, GError **error)
+mpd_jack_connect(struct jack_data *jd, GError **error_r)
 {
 	const char *output_ports[2], **jports;
 
@@ -247,7 +247,7 @@ mpd_jack_connect(struct jack_data *jd, GError **error)
 	jd->shutdown = false;
 
 	if ((jd->client = jack_client_new(jd->name)) == NULL) {
-		g_set_error(error, jack_output_quark(), 0,
+		g_set_error(error_r, jack_output_quark(), 0,
 			    "Failed to connect to JACK server");
 		return false;
 	}
@@ -260,7 +260,7 @@ mpd_jack_connect(struct jack_data *jd, GError **error)
 						  JACK_DEFAULT_AUDIO_TYPE,
 						  JackPortIsOutput, 0);
 		if (jd->ports[i] == NULL) {
-			g_set_error(error, jack_output_quark(), 0,
+			g_set_error(error_r, jack_output_quark(), 0,
 				    "Cannot register output port \"%s\"",
 				    port_names[i]);
 			return false;
@@ -268,7 +268,7 @@ mpd_jack_connect(struct jack_data *jd, GError **error)
 	}
 
 	if ( jack_activate(jd->client) ) {
-		g_set_error(error, jack_output_quark(), 0,
+		g_set_error(error_r, jack_output_quark(), 0,
 			    "cannot activate client");
 		return false;
 	}
@@ -279,7 +279,7 @@ mpd_jack_connect(struct jack_data *jd, GError **error)
 		jports = jack_get_ports(jd->client, NULL, NULL,
 					JackPortIsPhysical | JackPortIsInput);
 		if (jports == NULL) {
-			g_set_error(error, jack_output_quark(), 0,
+			g_set_error(error_r, jack_output_quark(), 0,
 				    "no ports found");
 			return false;
 		}
@@ -303,7 +303,7 @@ mpd_jack_connect(struct jack_data *jd, GError **error)
 		ret = jack_connect(jd->client, jack_port_name(jd->ports[i]),
 				   output_ports[i]);
 		if (ret != 0) {
-			g_set_error(error, jack_output_quark(), 0,
+			g_set_error(error_r, jack_output_quark(), 0,
 				    "Not a valid JACK port: %s",
 				    output_ports[i]);
 
@@ -321,7 +321,7 @@ mpd_jack_connect(struct jack_data *jd, GError **error)
 }
 
 static bool
-mpd_jack_open(void *data, struct audio_format *audio_format, GError **error)
+mpd_jack_open(void *data, struct audio_format *audio_format, GError **error_r)
 {
 	struct jack_data *jd = data;
 
@@ -329,7 +329,7 @@ mpd_jack_open(void *data, struct audio_format *audio_format, GError **error)
 
 	jd->pause = false;
 
-	if (!mpd_jack_connect(jd, error)) {
+	if (!mpd_jack_connect(jd, error_r)) {
 		mpd_jack_client_free(jd);
 		return false;
 	}
@@ -420,7 +420,7 @@ mpd_jack_write_samples(struct jack_data *jd, const void *src,
 }
 
 static size_t
-mpd_jack_play(void *data, const void *chunk, size_t size, GError **error)
+mpd_jack_play(void *data, const void *chunk, size_t size, GError **error_r)
 {
 	struct jack_data *jd = data;
 	const size_t frame_size = audio_format_frame_size(&jd->audio_format);
@@ -433,7 +433,7 @@ mpd_jack_play(void *data, const void *chunk, size_t size, GError **error)
 
 	while (true) {
 		if (jd->shutdown) {
-			g_set_error(error, jack_output_quark(), 0,
+			g_set_error(error_r, jack_output_quark(), 0,
 				    "Refusing to play, because "
 				    "there is no client thread");
 			return 0;
