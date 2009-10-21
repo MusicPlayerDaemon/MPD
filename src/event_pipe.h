@@ -41,6 +41,9 @@ enum pipe_event {
 	/** SIGHUP received: reload configuration, roll log file */
 	PIPE_EVENT_RELOAD,
 
+	/** a hardware mixer plugin has detected a change */
+	PIPE_EVENT_MIXER,
+
 	PIPE_EVENT_MAX
 };
 

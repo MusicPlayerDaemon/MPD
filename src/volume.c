@@ -27,6 +27,7 @@
 #include "mixer_control.h"
 #include "mixer_all.h"
 #include "mixer_type.h"
+#include "event_pipe.h"
 
 #include <glib.h>
 
@@ -47,6 +48,19 @@ static int last_hardware_volume = -1;
 /** the age of #last_hardware_volume */
 static GTimer *hardware_volume_timer;
 
+/**
+ * Handler for #PIPE_EVENT_MIXER.
+ */
+static void
+mixer_event_callback(void)
+{
+	/* flush the hardware volume cache */
+	last_hardware_volume = -1;
+
+	/* notify clients */
+	idle_add(IDLE_MIXER);
+}
+
 void volume_finish(void)
 {
 	g_timer_destroy(hardware_volume_timer);
@@ -55,6 +69,8 @@ void volume_finish(void)
 void volume_init(void)
 {
 	hardware_volume_timer = g_timer_new();
+
+	event_pipe_register(PIPE_EVENT_MIXER, mixer_event_callback);
 }
 
 int volume_level_get(void)
