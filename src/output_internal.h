@@ -66,12 +66,6 @@ struct audio_output {
 	struct mixer *mixer;
 
 	/**
-	 * This flag is true, when the audio_format of this device is
-	 * configured in mpd.conf.
-	 */
-	bool config_audio_format;
-
-	/**
 	 * Has the user enabled this device?
 	 */
 	bool enabled;
@@ -98,6 +92,11 @@ struct audio_output {
 	 * explicitly reopened with "play").
 	 */
 	GTimer *fail_timer;
+
+	/**
+	 * The configured audio format.
+	 */
+	struct audio_format config_audio_format;
 
 	/**
 	 * The audio_format in which audio data is received from the

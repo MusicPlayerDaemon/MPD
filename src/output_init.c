@@ -154,14 +154,14 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 
 		p = config_get_block_string(param, AUDIO_OUTPUT_FORMAT,
 						 NULL);
-		ao->config_audio_format = p != NULL;
 		if (p != NULL) {
 			bool success =
-				audio_format_parse(&ao->out_audio_format,
+				audio_format_parse(&ao->config_audio_format,
 						   p, error_r);
 			if (!success)
 				return false;
-		}
+		} else
+			audio_format_clear(&ao->config_audio_format);
 	} else {
 		g_warning("No \"%s\" defined in config file\n",
 			  CONF_AUDIO_OUTPUT);
@@ -174,7 +174,8 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 			  plugin->name);
 
 		ao->name = "default detected output";
-		ao->config_audio_format = false;
+
+		audio_format_clear(&ao->config_audio_format);
 	}
 
 	ao->plugin = plugin;
@@ -194,8 +195,8 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	ao->mutex = g_mutex_new();
 
 	ao->data = ao_plugin_init(plugin,
-				  ao->config_audio_format
-				  ? &ao->out_audio_format : NULL,
+				  audio_format_defined(&ao->config_audio_format)
+				  ? &ao->config_audio_format : NULL,
 				  param, error_r);
 	if (ao->data == NULL)
 		return false;

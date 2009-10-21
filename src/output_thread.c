@@ -67,7 +67,9 @@ ao_open(struct audio_output *ao)
 		return;
 	}
 
-	if (!ao->config_audio_format)
+	if (audio_format_defined(&ao->config_audio_format))
+		ao->out_audio_format = ao->config_audio_format;
+	else
 		ao->out_audio_format = *filter_audio_format;
 
 	success = ao_plugin_open(ao->plugin, ao->data,
@@ -164,7 +166,7 @@ ao_reopen_filter(struct audio_output *ao)
 static void
 ao_reopen(struct audio_output *ao)
 {
-	if (!ao->config_audio_format) {
+	if (!audio_format_defined(&ao->config_audio_format)) {
 		if (ao->open) {
 			const struct music_pipe *mp = ao->pipe;
 			ao_close(ao);
