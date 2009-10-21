@@ -348,11 +348,6 @@ mpd_jack_close(G_GNUC_UNUSED void *data)
 	mpd_jack_client_free(jd);
 }
 
-static void
-mpd_jack_cancel (G_GNUC_UNUSED void *data)
-{
-}
-
 static inline jack_default_audio_sample_t
 sample_16_to_jack(int16_t sample)
 {
@@ -485,7 +480,6 @@ const struct audio_output_plugin jack_output_plugin = {
 	.finish = mpd_jack_finish,
 	.open = mpd_jack_open,
 	.play = mpd_jack_play,
-	.cancel = mpd_jack_cancel,
 	.pause = mpd_jack_pause,
 	.close = mpd_jack_close,
 };
