@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "../output_api.h"
+#include "output_api.h"
 #include "config.h"
 
 #include <assert.h>
@@ -438,7 +438,7 @@ mpd_jack_play(void *data, const void *chunk, size_t size, GError **error)
 	return size * frame_size;
 }
 
-const struct audio_output_plugin jackPlugin = {
+const struct audio_output_plugin jack_output_plugin = {
 	.name = "jack",
 	.test_default_device = mpd_jack_test_default_device,
 	.init = mpd_jack_init,

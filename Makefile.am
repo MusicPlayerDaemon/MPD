@@ -602,7 +602,7 @@ OUTPUT_SRC += src/output/pipe_output_plugin.c
 endif
 
 if HAVE_JACK
-OUTPUT_SRC += src/output/jack_plugin.c
+OUTPUT_SRC += src/output/jack_output_plugin.c
 endif
 
 if HAVE_MVP
