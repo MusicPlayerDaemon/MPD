@@ -24,12 +24,18 @@
 #include "audio_parser.h"
 #include "filter_registry.h"
 #include "pcm_convert.h"
+#include "event_pipe.h"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
+
+void
+event_pipe_emit(G_GNUC_UNUSED enum pipe_event event)
+{
+}
 
 void pcm_convert_init(G_GNUC_UNUSED struct pcm_convert_state *state)
 {

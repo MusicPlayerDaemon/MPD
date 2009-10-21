@@ -21,12 +21,25 @@
 #include "mixer_list.h"
 #include "filter_registry.h"
 #include "pcm_volume.h"
+#include "output/pulse_output_plugin.h"
+#include "event_pipe.h"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
+
+void
+pulse_output_context_state_cb(G_GNUC_UNUSED struct pa_context *context,
+			      G_GNUC_UNUSED void *userdata)
+{
+}
+
+void
+event_pipe_emit(G_GNUC_UNUSED enum pipe_event event)
+{
+}
 
 const struct filter_plugin *
 filter_plugin_by_name(G_GNUC_UNUSED const char *name)

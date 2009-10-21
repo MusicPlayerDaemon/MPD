@@ -115,6 +115,7 @@ mpd_headers = \
 	src/mapper.h \
 	src/output/httpd_client.h \
 	src/output/httpd_internal.h \
+	src/output/pulse_output_plugin.h \
 	src/page.h \
 	src/pcm_buffer.h \
 	src/pcm_utils.h \

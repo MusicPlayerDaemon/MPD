@@ -726,7 +726,7 @@ AC_ARG_ENABLE(pulse,
 		[enable support for the PulseAudio sound server]),,
 	enable_pulse=auto)
 
-MPD_AUTO_PKG(pulse, PULSE, [libpulse-simple],
+MPD_AUTO_PKG(pulse, PULSE, [libpulse],
 	[PulseAudio output plugin], [libpulse not found])
 if test x$enable_pulse = xyes; then
 	AC_DEFINE([HAVE_PULSE], 1,

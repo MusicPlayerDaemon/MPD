@@ -31,6 +31,7 @@ ver 0.16 (20??/??/??)
   - openal: new output plugin
   - pulse: announce "media.role=music"
   - pulse: renamed context to "Music Player Daemon"
+  - pulse: connect to server on MPD startup, implement pause
 * mixers:
   - removed support for legacy mixer configuration
   - reimplemented software volume as mixer+filter plugin
