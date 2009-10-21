@@ -170,6 +170,8 @@ xspf_text(G_GNUC_UNUSED GMarkupParseContext *context,
 	case ROOT:
 	case PLAYLIST:
 	case TRACKLIST:
+		break;
+
 	case TRACK:
 		if (parser->song != NULL &&
 		    parser->tag != TAG_NUM_OF_ITEM_TYPES) {
