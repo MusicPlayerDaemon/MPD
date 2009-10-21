@@ -47,7 +47,7 @@ struct jack_data {
 
 	/* configuration */
 	char *output_ports[2];
-	int ringbuffer_size;
+	size_t ringbuffer_size;
 
 	/* the current audio format */
 	struct audio_format audio_format;
