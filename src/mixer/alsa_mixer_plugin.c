@@ -52,7 +52,7 @@ alsa_mixer_quark(void)
 }
 
 static struct mixer *
-alsa_mixer_init(const struct config_param *param,
+alsa_mixer_init(G_GNUC_UNUSED void *ao, const struct config_param *param,
 		G_GNUC_UNUSED GError **error_r)
 {
 	struct alsa_mixer *am = g_new(struct alsa_mixer, 1);

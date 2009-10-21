@@ -38,11 +38,14 @@ struct mixer_plugin {
 	/**
          * Alocates and configures a mixer device.
 	 *
+	 * @param ao the pointer returned by audio_output_plugin.init
+	 * @param param the configuration section, or NULL if there is
+	 * no configuration
 	 * @param error_r location to store the error occuring, or
 	 * NULL to ignore errors
 	 * @return a mixer object, or NULL on error
 	 */
-	struct mixer *(*init)(const struct config_param *param,
+	struct mixer *(*init)(void *ao, const struct config_param *param,
 			      GError **error_r);
 
 	/**

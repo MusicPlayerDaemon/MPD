@@ -212,7 +212,7 @@ context_state_cb(pa_context *context, void *userdata)
 
 
 static struct mixer *
-pulse_mixer_init(const struct config_param *param,
+pulse_mixer_init(G_GNUC_UNUSED void *ao, const struct config_param *param,
 		 G_GNUC_UNUSED GError **error_r)
 {
 	struct pulse_mixer *pm = g_new(struct pulse_mixer,1);

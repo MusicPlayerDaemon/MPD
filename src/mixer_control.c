@@ -27,14 +27,15 @@
 #define G_LOG_DOMAIN "mixer"
 
 struct mixer *
-mixer_new(const struct mixer_plugin *plugin, const struct config_param *param,
+mixer_new(const struct mixer_plugin *plugin, void *ao,
+	  const struct config_param *param,
 	  GError **error_r)
 {
 	struct mixer *mixer;
 
 	assert(plugin != NULL);
 
-	mixer = plugin->init(param, error_r);
+	mixer = plugin->init(ao, param, error_r);
 
 	assert(mixer == NULL || mixer->plugin == plugin);
 

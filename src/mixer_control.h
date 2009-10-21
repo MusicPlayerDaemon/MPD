@@ -34,7 +34,8 @@ struct mixer_plugin;
 struct config_param;
 
 struct mixer *
-mixer_new(const struct mixer_plugin *plugin, const struct config_param *param,
+mixer_new(const struct mixer_plugin *plugin, void *ao,
+	  const struct config_param *param,
 	  GError **error_r);
 
 void

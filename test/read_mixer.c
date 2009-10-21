@@ -58,7 +58,7 @@ int main(int argc, G_GNUC_UNUSED char **argv)
 
 	g_thread_init(NULL);
 
-	mixer = mixer_new(&alsa_mixer_plugin, NULL, &error);
+	mixer = mixer_new(&alsa_mixer_plugin, NULL, NULL, &error);
 	if (mixer == NULL) {
 		g_printerr("mixer_new() failed: %s\n", error->message);
 		g_error_free(error);

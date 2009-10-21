@@ -74,7 +74,8 @@ oss_find_mixer(const char *name)
 }
 
 static struct mixer *
-oss_mixer_init(const struct config_param *param, GError **error_r)
+oss_mixer_init(G_GNUC_UNUSED void *ao, const struct config_param *param,
+	       GError **error_r)
 {
 	struct oss_mixer *om = g_new(struct oss_mixer, 1);
 

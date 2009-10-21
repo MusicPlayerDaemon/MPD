@@ -37,7 +37,8 @@ struct software_mixer {
 };
 
 static struct mixer *
-software_mixer_init(G_GNUC_UNUSED const struct config_param *param,
+software_mixer_init(G_GNUC_UNUSED void *ao,
+		    G_GNUC_UNUSED const struct config_param *param,
 		    G_GNUC_UNUSED GError **error_r)
 {
 	struct software_mixer *sm = g_new(struct software_mixer, 1);
