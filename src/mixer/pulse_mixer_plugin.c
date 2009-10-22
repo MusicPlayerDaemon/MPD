@@ -98,7 +98,8 @@ pulse_mixer_update(struct pulse_mixer *pm)
 
 	assert(pm->output->stream != NULL);
 
-	if (pm->output->context == NULL)
+	if (pm->output->context == NULL ||
+	    pa_stream_get_state(pm->output->stream) != PA_STREAM_READY)
 		return;
 
 	o = pa_context_get_sink_input_info(pm->output->context,
@@ -243,8 +244,7 @@ pulse_mixer_open(struct mixer *data, G_GNUC_UNUSED GError **error_r)
 	struct pulse_mixer *pm = (struct pulse_mixer *) data;
 
 	pa_threaded_mainloop_lock(pm->output->mainloop);
-	if (pm->output->stream != NULL &&
-	    pa_stream_get_state(pm->output->stream) == PA_STREAM_READY)
+	if (pm->output->stream != NULL)
 		pulse_mixer_update(pm);
 	pa_threaded_mainloop_unlock(pm->output->mainloop);
 
