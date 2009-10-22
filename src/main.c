@@ -185,9 +185,9 @@ glue_state_file_init(void)
 /**
  * Windows-only initialization of the Winsock2 library.
  */
-#ifdef WIN32
 static void winsock_init(void)
 {
+#ifdef WIN32
 	WSADATA sockinfo;
 	int retval;
 
@@ -203,9 +203,8 @@ static void winsock_init(void)
 		g_error("We use Winsock2 but your version is either too new or "
 			"old; please install Winsock 2.x\n");
 	}
-
-}
 #endif
+}
 
 /**
  * Initialize the decoder and player core, including the music pipe.
@@ -288,9 +287,7 @@ int main(int argc, char *argv[])
 	/* enable GLib's thread safety code */
 	g_thread_init(NULL);
 
-#ifdef WIN32
 	winsock_init();
-#endif
 	idle_init();
 	dirvec_init();
 	songvec_init();
