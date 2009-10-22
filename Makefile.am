@@ -595,7 +595,7 @@ OUTPUT_SRC += src/output/ao_plugin.c
 endif
 
 if HAVE_FIFO
-OUTPUT_SRC += src/output/fifo_plugin.c
+OUTPUT_SRC += src/output/fifo_output_plugin.c
 endif
 
 if ENABLE_PIPE_OUTPUT

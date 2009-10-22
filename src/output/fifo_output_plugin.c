@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "../output_api.h"
-#include "../utils.h"
-#include "../timer.h"
+#include "output_api.h"
+#include "utils.h"
+#include "timer.h"
 
 #include <glib.h>
 
