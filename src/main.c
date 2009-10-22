@@ -407,7 +407,6 @@ int main(int argc, char *argv[])
 	input_stream_global_finish();
 	finishNormalization();
 	audio_output_all_finish();
-	finishAudioConfig();
 	volume_finish();
 	mapper_finish();
 	path_global_finish();

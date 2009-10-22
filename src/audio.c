@@ -54,8 +54,3 @@ void initAudioConfig(void)
 		g_error("error parsing \"%s\" at line %i: %s",
 			CONF_AUDIO_OUTPUT_FORMAT, param->line, error->message);
 }
-
-void finishAudioConfig(void)
-{
-	audio_format_clear(&configured_audio_format);
-}

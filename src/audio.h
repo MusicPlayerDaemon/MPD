@@ -30,6 +30,4 @@ void getOutputAudioFormat(const struct audio_format *inFormat,
 /* make sure initPlayerData is called before this function!! */
 void initAudioConfig(void);
 
-void finishAudioConfig(void);
-
 #endif
