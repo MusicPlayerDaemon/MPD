@@ -27,7 +27,7 @@
 #define PERMISSION_ADMIN   8
 
 
-int getPermissionFromPassword(char *password, unsigned *permission);
+int getPermissionFromPassword(char const* password, unsigned* permission);
 
 void finishPermissions(void);
 
