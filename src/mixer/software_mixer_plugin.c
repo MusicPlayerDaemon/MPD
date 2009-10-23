@@ -61,23 +61,6 @@ software_mixer_finish(struct mixer *data)
 	g_free(sm);
 }
 
-static bool
-software_mixer_open(struct mixer *data, G_GNUC_UNUSED GError **error_r)
-{
-	struct software_mixer *sm = (struct software_mixer *)data;
-
-	(void)sm;
-	return true;
-}
-
-static void
-software_mixer_close(struct mixer *data)
-{
-	struct software_mixer *sm = (struct software_mixer *)data;
-
-	(void)sm;
-}
-
 static int
 software_mixer_get_volume(struct mixer *mixer, G_GNUC_UNUSED GError **error_r)
 {
@@ -109,8 +92,6 @@ software_mixer_set_volume(struct mixer *mixer, unsigned volume,
 const struct mixer_plugin software_mixer_plugin = {
 	.init = software_mixer_init,
 	.finish = software_mixer_finish,
-	.open = software_mixer_open,
-	.close = software_mixer_close,
 	.get_volume = software_mixer_get_volume,
 	.set_volume = software_mixer_set_volume,
 	.global = true,

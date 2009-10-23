@@ -66,6 +66,8 @@ mixer_open(struct mixer *mixer, GError **error_r)
 
 	if (mixer->open)
 		success = true;
+	else if (mixer->plugin->open == NULL)
+		success = mixer->open = true;
 	else
 		success = mixer->open = mixer->plugin->open(mixer, error_r);
 
@@ -83,7 +85,9 @@ mixer_close_internal(struct mixer *mixer)
 	assert(mixer->plugin != NULL);
 	assert(mixer->open);
 
-	mixer->plugin->close(mixer);
+	if (mixer->plugin->close != NULL)
+		mixer->plugin->close(mixer);
+
 	mixer->open = false;
 }
 
