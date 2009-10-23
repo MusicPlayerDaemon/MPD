@@ -171,8 +171,6 @@ mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
 
 	if (mixer->open) {
 		success = mixer->plugin->set_volume(mixer, volume, error_r);
-		if (!success)
-			mixer_failed(mixer);
 	} else
 		success = false;
 
