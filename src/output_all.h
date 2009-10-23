@@ -66,6 +66,13 @@ struct audio_output *
 audio_output_find(const char *name);
 
 /**
+ * Checks the "enabled" flag of all audio outputs, and if one has
+ * changed, commit the change.
+ */
+void
+audio_output_all_enable_disable(void);
+
+/**
  * Opens all audio outputs which are not disabled.
  *
  * @param audio_format the preferred audio format, or NULL to reuse

@@ -309,6 +309,8 @@ pulse_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 
 	pa_threaded_mainloop_unlock(po->mainloop);
 
+	po->stream = NULL;
+
 	return po;
 }
 

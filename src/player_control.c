@@ -100,6 +100,12 @@ pc_stop(void)
 }
 
 void
+pc_update_audio(void)
+{
+	player_command(PLAYER_COMMAND_UPDATE_AUDIO);
+}
+
+void
 pc_kill(void)
 {
 	assert(pc.thread != NULL);

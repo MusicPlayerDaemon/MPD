@@ -41,6 +41,18 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 		  GError **error_r);
 
 /**
+ * Enables the device.
+ */
+void
+audio_output_enable(struct audio_output *ao);
+
+/**
+ * Disables the device.
+ */
+void
+audio_output_disable(struct audio_output *ao);
+
+/**
  * Opens or closes the device, depending on the "enabled" flag.
  *
  * @return true if the device is open

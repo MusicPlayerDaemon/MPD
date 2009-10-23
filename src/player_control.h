@@ -39,6 +39,12 @@ enum player_command {
 	PLAYER_COMMAND_SEEK,
 	PLAYER_COMMAND_CLOSE_AUDIO,
 
+	/**
+	 * At least one audio_output.enabled flag has been modified;
+	 * commit those changes to the output threads.
+	 */
+	PLAYER_COMMAND_UPDATE_AUDIO,
+
 	/** player_control.next_song has been updated */
 	PLAYER_COMMAND_QUEUE,
 
@@ -150,6 +156,9 @@ pc_get_error(void);
 
 void
 pc_stop(void);
+
+void
+pc_update_audio(void);
 
 void
 pc_enqueue_song(struct song *song);

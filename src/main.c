@@ -374,6 +374,10 @@ int main(int argc, char *argv[])
 
 	config_global_check();
 
+	/* enable all audio outputs (if not already done by
+	   playlist_state_restore() */
+	pc_update_audio();
+
 	/* run the main loop */
 
 	g_main_loop_run(main_loop);

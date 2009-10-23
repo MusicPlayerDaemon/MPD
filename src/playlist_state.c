@@ -187,6 +187,12 @@ playlist_state_restore(const char *line, FILE *fp, struct playlist *playlist)
 		if (!queue_valid_position(&playlist->queue, current))
 			current = 0;
 
+		/* enable all devices for the first time; this must be
+		   called here, after the audio output states were
+		   restored, before playback begins */
+		if (state != PLAYER_STATE_STOP)
+			pc_update_audio();
+
 		if (state == PLAYER_STATE_STOP /* && config_option */)
 			playlist->current = current;
 		else if (seek_time == 0)

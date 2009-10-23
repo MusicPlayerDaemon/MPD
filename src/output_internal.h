@@ -27,6 +27,8 @@
 
 enum audio_output_command {
 	AO_COMMAND_NONE = 0,
+	AO_COMMAND_ENABLE,
+	AO_COMMAND_DISABLE,
 	AO_COMMAND_OPEN,
 
 	/**
@@ -69,6 +71,12 @@ struct audio_output {
 	 * Has the user enabled this device?
 	 */
 	bool enabled;
+
+	/**
+	 * Is this device actually enabled, i.e. the "enable" method
+	 * has succeeded?
+	 */
+	bool really_enabled;
 
 	/**
 	 * Is the device (already) open and functional?

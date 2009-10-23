@@ -153,6 +153,25 @@ audio_output_all_finish(void)
 	notify_deinit(&audio_output_client_notify);
 }
 
+void
+audio_output_all_enable_disable(void)
+{
+	for (unsigned i = 0; i < num_audio_outputs; i++) {
+		struct audio_output *ao = &audio_outputs[i];
+		bool enabled;
+
+		g_mutex_lock(ao->mutex);
+		enabled = ao->really_enabled;
+		g_mutex_unlock(ao->mutex);
+
+		if (ao->enabled != enabled) {
+			if (ao->enabled)
+				audio_output_enable(ao);
+			else
+				audio_output_disable(ao);
+		}
+	}
+}
 
 /**
  * Determine if all (active) outputs have finished the current

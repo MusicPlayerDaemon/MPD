@@ -350,6 +350,11 @@ static void player_process_command(struct player *player)
 	case PLAYER_COMMAND_CLOSE_AUDIO:
 		break;
 
+	case PLAYER_COMMAND_UPDATE_AUDIO:
+		audio_output_all_enable_disable();
+		player_command_finished();
+		break;
+
 	case PLAYER_COMMAND_QUEUE:
 		assert(pc.next_song != NULL);
 		assert(!player->queued);
@@ -803,6 +808,11 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 			player_buffer = music_buffer_new(pc.buffer_chunks);
 #endif
 
+			break;
+
+		case PLAYER_COMMAND_UPDATE_AUDIO:
+			audio_output_all_enable_disable();
+			player_command_finished();
 			break;
 
 		case PLAYER_COMMAND_EXIT:

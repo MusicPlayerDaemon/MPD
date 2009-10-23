@@ -29,6 +29,7 @@
 #include "output_internal.h"
 #include "output_plugin.h"
 #include "mixer_control.h"
+#include "player_control.h"
 #include "idle.h"
 
 extern unsigned audio_output_state_version;
@@ -42,9 +43,13 @@ audio_output_enable_index(unsigned idx)
 		return false;
 
 	ao = audio_output_get(idx);
+	if (ao->enabled)
+		return true;
 
 	ao->enabled = true;
 	idle_add(IDLE_OUTPUT);
+
+	pc_update_audio();
 
 	++audio_output_state_version;
 
@@ -61,6 +66,8 @@ audio_output_disable_index(unsigned idx)
 		return false;
 
 	ao = audio_output_get(idx);
+	if (!ao->enabled)
+		return true;
 
 	ao->enabled = false;
 	idle_add(IDLE_OUTPUT);
@@ -70,6 +77,8 @@ audio_output_disable_index(unsigned idx)
 		mixer_close(mixer);
 		idle_add(IDLE_MIXER);
 	}
+
+	pc_update_audio();
 
 	++audio_output_state_version;
 

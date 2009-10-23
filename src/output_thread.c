@@ -42,6 +42,40 @@ static void ao_command_finished(struct audio_output *ao)
 	notify_signal(&audio_output_client_notify);
 }
 
+static bool
+ao_enable(struct audio_output *ao)
+{
+	GError *error = NULL;
+
+	if (ao->really_enabled)
+		return true;
+
+	if (!ao_plugin_enable(ao->plugin, ao->data, &error)) {
+		g_warning("Failed to enable \"%s\" [%s]: %s\n",
+			  ao->name, ao->plugin->name, error->message);
+		g_error_free(error);
+		return false;
+	}
+
+	ao->really_enabled = true;
+	return true;
+}
+
+static void
+ao_close(struct audio_output *ao);
+
+static void
+ao_disable(struct audio_output *ao)
+{
+	if (ao->open)
+		ao_close(ao);
+
+	if (ao->really_enabled) {
+		ao->really_enabled = false;
+		ao_plugin_disable(ao->plugin, ao->data);
+	}
+}
+
 static void
 ao_open(struct audio_output *ao)
 {
@@ -53,6 +87,12 @@ ao_open(struct audio_output *ao)
 	assert(ao->fail_timer == NULL);
 	assert(ao->pipe != NULL);
 	assert(ao->chunk == NULL);
+
+	/* enable the device (just in case the last enable has failed) */
+
+	if (!ao_enable(ao))
+		/* still no luck */
+		return;
 
 	/* open the filter */
 
@@ -319,6 +359,16 @@ static gpointer audio_output_task(gpointer arg)
 	while (1) {
 		switch (ao->command) {
 		case AO_COMMAND_NONE:
+			break;
+
+		case AO_COMMAND_ENABLE:
+			ao_enable(ao);
+			ao_command_finished(ao);
+			break;
+
+		case AO_COMMAND_DISABLE:
+			ao_disable(ao);
+			ao_command_finished(ao);
 			break;
 
 		case AO_COMMAND_OPEN:

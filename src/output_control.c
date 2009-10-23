@@ -59,6 +59,41 @@ static void ao_command_async(struct audio_output *ao,
 	notify_signal(&ao->notify);
 }
 
+void
+audio_output_enable(struct audio_output *ao)
+{
+	if (ao->thread == NULL) {
+		if (ao->plugin->enable == NULL) {
+			/* don't bother to start the thread now if the
+			   device doesn't even have a enable() method;
+			   just assign the variable and we're done */
+			ao->really_enabled = true;
+			return;
+		}
+
+		audio_output_thread_start(ao);
+	}
+
+	ao_command(ao, AO_COMMAND_ENABLE);
+}
+
+void
+audio_output_disable(struct audio_output *ao)
+{
+	if (ao->thread == NULL) {
+		if (ao->plugin->disable == NULL)
+			ao->really_enabled = false;
+		else
+			/* if there's no thread yet, the device cannot
+			   be enabled */
+			assert(!ao->really_enabled);
+
+		return;
+	}
+
+	ao_command(ao, AO_COMMAND_DISABLE);
+}
+
 static bool
 audio_output_open(struct audio_output *ao,
 		  const struct audio_format *audio_format,
@@ -122,7 +157,7 @@ audio_output_update(struct audio_output *ao,
 {
 	assert(mp != NULL);
 
-	if (ao->enabled) {
+	if (ao->enabled && ao->really_enabled) {
 		if (ao->fail_timer == NULL ||
 		    g_timer_elapsed(ao->fail_timer, NULL) > REOPEN_AFTER)
 			return audio_output_open(ao, audio_format, mp);
