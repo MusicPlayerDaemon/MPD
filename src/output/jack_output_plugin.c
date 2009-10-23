@@ -210,7 +210,6 @@ mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 {
 	struct jack_data *jd;
 	const char *value;
-	GError *error = NULL;
 
 	jd = g_new(struct jack_data, 1);
 	jd->name = config_get_block_string(param, "name", "mpd_jack");
@@ -240,21 +239,11 @@ mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	jd->ringbuffer_size =
 		config_get_block_unsigned(param, "ringbuffer_size", 32768);
 
-	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ringbuffer); ++i)
-		jd->ringbuffer[i] = NULL;
-
 	jack_set_error_function(mpd_jack_error);
 
 #ifdef HAVE_JACK_SET_INFO_FUNCTION
 	jack_set_info_function(mpd_jack_info);
 #endif
-
-	if (!mpd_jack_connect(jd, &error)) {
-		/* this is non-fatal - it's enough to connect when
-		   playback starts */
-		g_warning("%s", error->message);
-		g_error_free(error);
-	}
 
 	return jd;
 }
@@ -263,6 +252,28 @@ static void
 mpd_jack_finish(void *data)
 {
 	struct jack_data *jd = data;
+
+	for (unsigned i = 0; i < G_N_ELEMENTS(jd->output_ports); ++i)
+		g_free(jd->output_ports[i]);
+
+	g_free(jd);
+}
+
+static bool
+mpd_jack_enable(void *data, GError **error_r)
+{
+	struct jack_data *jd = (struct jack_data *)data;
+
+	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ringbuffer); ++i)
+		jd->ringbuffer[i] = NULL;
+
+	return mpd_jack_connect(jd, error_r);
+}
+
+static void
+mpd_jack_disable(void *data)
+{
+	struct jack_data *jd = (struct jack_data *)data;
 
 	if (jd->client != NULL)
 		mpd_jack_disconnect(jd);
@@ -273,11 +284,6 @@ mpd_jack_finish(void *data)
 			jd->ringbuffer[i] = NULL;
 		}
 	}
-
-	for (unsigned i = 0; i < G_N_ELEMENTS(jd->output_ports); ++i)
-		g_free(jd->output_ports[i]);
-
-	g_free(jd);
 }
 
 /**
@@ -528,6 +534,8 @@ const struct audio_output_plugin jack_output_plugin = {
 	.test_default_device = mpd_jack_test_default_device,
 	.init = mpd_jack_init,
 	.finish = mpd_jack_finish,
+	.enable = mpd_jack_enable,
+	.disable = mpd_jack_disable,
 	.open = mpd_jack_open,
 	.play = mpd_jack_play,
 	.pause = mpd_jack_pause,
