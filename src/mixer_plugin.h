@@ -72,8 +72,8 @@ struct mixer_plugin {
 	 *
 	 * @param error_r location to store the error occuring, or
 	 * NULL to ignore errors
-	 * @return the current volume (0..100 including) or -1 on
-	 * error
+	 * @return the current volume (0..100 including) or -1 if
+	 * unavailable or on error (error_r set, mixer will be closed)
 	 */
 	int (*get_volume)(struct mixer *mixer, GError **error_r);
 

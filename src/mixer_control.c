@@ -140,9 +140,13 @@ mixer_get_volume(struct mixer *mixer, GError **error_r)
 	g_mutex_lock(mixer->mutex);
 
 	if (mixer->open) {
-		volume = mixer->plugin->get_volume(mixer, error_r);
-		if (volume < 0)
+		GError *error = NULL;
+
+		volume = mixer->plugin->get_volume(mixer, &error);
+		if (volume < 0 && error != NULL) {
+			g_propagate_error(error_r, error);
 			mixer_failed(mixer);
+		}
 	} else
 		volume = -1;
 
