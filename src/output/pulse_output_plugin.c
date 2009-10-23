@@ -53,6 +53,9 @@ pulse_output_set_mixer(struct pulse_output *po, struct pulse_mixer *pm)
 
 	po->mixer = pm;
 
+	if (po->mainloop == NULL)
+		return;
+
 	pa_threaded_mainloop_lock(po->mainloop);
 
 	if (po->context != NULL &&
@@ -259,7 +262,8 @@ pulse_output_delete_context(struct pulse_output *po)
 
 static void *
 pulse_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-		  const struct config_param *param, GError **error_r)
+		  const struct config_param *param,
+		  G_GNUC_UNUSED GError **error_r)
 {
 	struct pulse_output *po;
 
@@ -270,6 +274,29 @@ pulse_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	po->server = config_get_block_string(param, "server", NULL);
 	po->sink = config_get_block_string(param, "sink", NULL);
 
+	po->mainloop = NULL;
+	po->context = NULL;
+	po->stream = NULL;
+
+	return po;
+}
+
+static void
+pulse_output_finish(void *data)
+{
+	struct pulse_output *po = data;
+
+	g_free(po);
+}
+
+static bool
+pulse_output_enable(void *data, GError **error_r)
+{
+	struct pulse_output *po = data;
+
+	assert(po->mainloop == NULL);
+	assert(po->context == NULL);
+
 	/* create the libpulse mainloop and start the thread */
 
 	po->mainloop = pa_threaded_mainloop_new();
@@ -278,7 +305,7 @@ pulse_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 
 		g_set_error(error_r, pulse_output_quark(), 0,
 			    "pa_threaded_mainloop_new() has failed");
-		return NULL;
+		return false;
 	}
 
 	pa_threaded_mainloop_lock(po->mainloop);
@@ -304,18 +331,16 @@ pulse_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		pa_threaded_mainloop_stop(po->mainloop);
 		pa_threaded_mainloop_free(po->mainloop);
 		g_free(po);
-		return NULL;
+		return false;
 	}
 
 	pa_threaded_mainloop_unlock(po->mainloop);
 
-	po->stream = NULL;
-
-	return po;
+	return true;
 }
 
 static void
-pulse_output_finish(void *data)
+pulse_output_disable(void *data)
 {
 	struct pulse_output *po = data;
 
@@ -323,8 +348,7 @@ pulse_output_finish(void *data)
 	if (po->context != NULL)
 		pulse_output_delete_context(po);
 	pa_threaded_mainloop_free(po->mainloop);
-
-	g_free(po);
+	po->mainloop = NULL;
 }
 
 /**
@@ -786,6 +810,8 @@ const struct audio_output_plugin pulse_output_plugin = {
 	.test_default_device = pulse_output_test_default_device,
 	.init = pulse_output_init,
 	.finish = pulse_output_finish,
+	.enable = pulse_output_enable,
+	.disable = pulse_output_disable,
 	.open = pulse_output_open,
 	.play = pulse_output_play,
 	.cancel = pulse_output_cancel,
