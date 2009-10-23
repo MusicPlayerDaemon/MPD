@@ -23,6 +23,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include <glib.h>
+
 #if !defined(PA_CHECK_VERSION)
 /**
  * This macro was implemented in libpulse 0.9.16.
@@ -31,11 +33,14 @@
 #endif
 
 struct pa_operation;
+struct pa_cvolume;
 
 struct pulse_output {
 	const char *name;
 	const char *server;
 	const char *sink;
+
+	struct pulse_mixer *mixer;
 
 	struct pa_threaded_mainloop *mainloop;
 	struct pa_context *context;
@@ -53,6 +58,13 @@ struct pulse_output {
 };
 
 void
-pulse_output_context_state_cb(struct pa_context *context, void *userdata);
+pulse_output_set_mixer(struct pulse_output *po, struct pulse_mixer *pm);
+
+void
+pulse_output_clear_mixer(struct pulse_output *po, struct pulse_mixer *pm);
+
+bool
+pulse_output_set_volume(struct pulse_output *po,
+			const struct pa_cvolume *volume, GError **error_r);
 
 #endif

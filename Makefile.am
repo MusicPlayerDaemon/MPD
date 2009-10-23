@@ -105,6 +105,7 @@ mpd_headers = \
 	src/mixer_plugin.h \
 	src/mixer_type.h \
 	src/mixer/software_mixer_plugin.h \
+	src/mixer/pulse_mixer_plugin.h \
 	src/daemon.h \
 	src/normalize.h \
 	src/compress.h \

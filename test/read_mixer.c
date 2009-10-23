@@ -31,9 +31,23 @@
 #include <unistd.h>
 
 void
-pulse_output_context_state_cb(G_GNUC_UNUSED struct pa_context *context,
-			      G_GNUC_UNUSED void *userdata)
+pulse_output_set_mixer(G_GNUC_UNUSED struct pulse_output *po,
+		       G_GNUC_UNUSED struct pulse_mixer *pm)
 {
+}
+
+void
+pulse_output_clear_mixer(G_GNUC_UNUSED struct pulse_output *po,
+			 G_GNUC_UNUSED struct pulse_mixer *pm)
+{
+}
+
+bool
+pulse_output_set_volume(G_GNUC_UNUSED struct pulse_output *po,
+			G_GNUC_UNUSED const struct pa_cvolume *volume,
+			G_GNUC_UNUSED GError **error_r)
+{
+	return false;
 }
 
 void

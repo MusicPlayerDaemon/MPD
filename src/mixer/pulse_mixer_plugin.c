@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "pulse_mixer_plugin.h"
 #include "mixer_api.h"
 #include "output/pulse_output_plugin.h"
 #include "conf.h"
@@ -92,22 +93,21 @@ pulse_mixer_volume_cb(G_GNUC_UNUSED pa_context *context, const pa_sink_input_inf
 }
 
 static void
-pulse_mixer_update(struct pulse_mixer *pm)
+pulse_mixer_update(struct pulse_mixer *pm,
+		   struct pa_context *context, struct pa_stream *stream)
 {
 	pa_operation *o;
 
-	assert(pm->output->stream != NULL);
+	assert(context != NULL);
+	assert(stream != NULL);
+	assert(pa_stream_get_state(stream) == PA_STREAM_READY);
 
-	if (pm->output->context == NULL ||
-	    pa_stream_get_state(pm->output->stream) != PA_STREAM_READY)
-		return;
-
-	o = pa_context_get_sink_input_info(pm->output->context,
-					   pa_stream_get_index(pm->output->stream),
+	o = pa_context_get_sink_input_info(context,
+					   pa_stream_get_index(stream),
 					   pulse_mixer_volume_cb, pm);
 	if (o == NULL) {
 		g_warning("pa_context_get_sink_input_info() failed: %s",
-			  pa_strerror(pa_context_errno(pm->output->context)));
+			  pa_strerror(pa_context_errno(context)));
 		pulse_mixer_offline(pm);
 		return;
 	}
@@ -115,66 +115,37 @@ pulse_mixer_update(struct pulse_mixer *pm)
 	pa_operation_unref(o);
 }
 
-static void
-pulse_mixer_handle_sink_input(struct pulse_mixer *pm,
-			      pa_subscription_event_type_t t,
-			      uint32_t idx)
+void
+pulse_mixer_on_connect(G_GNUC_UNUSED struct pulse_mixer *pm,
+		       struct pa_context *context)
 {
-	if (pm->output->stream == NULL) {
-		pulse_mixer_offline(pm);
-		return;
-	}
-
-	if (idx != pa_stream_get_index(pm->output->stream))
-		return;
-
-	if (t == PA_SUBSCRIPTION_EVENT_NEW ||
-	    t == PA_SUBSCRIPTION_EVENT_CHANGE)
-		pulse_mixer_update(pm);
-}
-
-static void
-pulse_mixer_subscribe_cb(G_GNUC_UNUSED pa_context *c, pa_subscription_event_type_t t,
-	     uint32_t idx, void *userdata)
-{
-	struct pulse_mixer *pm = userdata;
-
-	switch (t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) {
-	case PA_SUBSCRIPTION_EVENT_SINK_INPUT:
-		pulse_mixer_handle_sink_input(pm,
-					      t & PA_SUBSCRIPTION_EVENT_TYPE_MASK,
-					      idx);
-		break;
-	}
-}
-
-static void
-pulxe_mixer_context_state_cb(pa_context *context, void *userdata)
-{
-	struct pulse_mixer *pm = userdata;
 	pa_operation *o;
 
-	/* pass event to the output's callback function */
-	pulse_output_context_state_cb(context, pm->output);
+	assert(context != NULL);
 
-	if (pa_context_get_state(context) == PA_CONTEXT_READY) {
-		/* subscribe to sink_input events after the connection
-		   has been established */
-
-		o = pa_context_subscribe(context,
-					 (pa_subscription_mask_t)PA_SUBSCRIPTION_MASK_SINK_INPUT,
-					 NULL, NULL);
-		if (o == NULL) {
-			g_warning("pa_context_subscribe() failed: %s",
-				  pa_strerror(pa_context_errno(context)));
-			return;
-		}
-
-		pa_operation_unref(o);
-
-		if (pm->output->stream != NULL)
-			pulse_mixer_update(pm);
+	o = pa_context_subscribe(context,
+				 (pa_subscription_mask_t)PA_SUBSCRIPTION_MASK_SINK_INPUT,
+				 NULL, NULL);
+	if (o == NULL) {
+		g_warning("pa_context_subscribe() failed: %s",
+			  pa_strerror(pa_context_errno(context)));
+		return;
 	}
+
+	pa_operation_unref(o);
+}
+
+void
+pulse_mixer_on_disconnect(struct pulse_mixer *pm)
+{
+	pulse_mixer_offline(pm);
+}
+
+void
+pulse_mixer_on_change(struct pulse_mixer *pm,
+		      struct pa_context *context, struct pa_stream *stream)
+{
+	pulse_mixer_update(pm, context, stream);
 }
 
 static struct mixer *
@@ -182,6 +153,7 @@ pulse_mixer_init(void *ao, G_GNUC_UNUSED const struct config_param *param,
 		 GError **error_r)
 {
 	struct pulse_mixer *pm;
+	struct pulse_output *po = ao;
 
 	if (ao == NULL) {
 		g_set_error(error_r, pulse_mixer_quark(), 0,
@@ -192,24 +164,10 @@ pulse_mixer_init(void *ao, G_GNUC_UNUSED const struct config_param *param,
 	pm = g_new(struct pulse_mixer,1);
 	mixer_init(&pm->base, &pulse_mixer_plugin);
 
-	pm->output = ao;
 	pm->online = false;
+	pm->output = po;
 
-	pa_threaded_mainloop_lock(pm->output->mainloop);
-
-	/* register callbacks (override the output's context state
-	   callback) */
-
-	pa_context_set_state_callback(pm->output->context,
-				      pulxe_mixer_context_state_cb, pm);
-	pa_context_set_subscribe_callback(pm->output->context,
-					  pulse_mixer_subscribe_cb, pm);
-
-	/* check the current state now (we might have missed the first
-	   events!) */
-	pulxe_mixer_context_state_cb(pm->output->context, pm);
-
-	pa_threaded_mainloop_unlock(pm->output->mainloop);
+	pulse_output_set_mixer(po, pm);
 
 	return &pm->base;
 }
@@ -219,44 +177,11 @@ pulse_mixer_finish(struct mixer *data)
 {
 	struct pulse_mixer *pm = (struct pulse_mixer *) data;
 
-	/* restore callbacks */
-
-	pa_threaded_mainloop_lock(pm->output->mainloop);
-
-	if (pm->output->context != NULL) {
-		pa_context_set_state_callback(pm->output->context,
-					      pulse_output_context_state_cb,
-					      pm->output);
-		pa_context_set_subscribe_callback(pm->output->context,
-						  NULL, NULL);
-	}
-
-	pa_threaded_mainloop_unlock(pm->output->mainloop);
+	pulse_output_clear_mixer(pm->output, pm);
 
 	/* free resources */
 
 	g_free(pm);
-}
-
-static bool
-pulse_mixer_open(struct mixer *data, G_GNUC_UNUSED GError **error_r)
-{
-	struct pulse_mixer *pm = (struct pulse_mixer *) data;
-
-	pa_threaded_mainloop_lock(pm->output->mainloop);
-	if (pm->output->stream != NULL)
-		pulse_mixer_update(pm);
-	pa_threaded_mainloop_unlock(pm->output->mainloop);
-
-	return true;
-}
-
-static void
-pulse_mixer_close(struct mixer *data)
-{
-	struct pulse_mixer *pm = (struct pulse_mixer *) data;
-
-	pulse_mixer_offline(pm);
 }
 
 static int
@@ -281,12 +206,10 @@ pulse_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
 {
 	struct pulse_mixer *pm = (struct pulse_mixer *) mixer;
 	struct pa_cvolume cvolume;
-	pa_operation *o;
+	bool success;
 
 	pa_threaded_mainloop_lock(pm->output->mainloop);
-
-	if (!pm->online || pm->output->stream == NULL ||
-	    pm->output->context == NULL) {
+	if (!pm->online) {
 		pa_threaded_mainloop_unlock(pm->output->mainloop);
 		g_set_error(error_r, pulse_mixer_quark(), 0, "disconnected");
 		return false;
@@ -294,27 +217,17 @@ pulse_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
 
 	pa_cvolume_set(&cvolume, pm->volume.channels,
 		       (pa_volume_t)volume * PA_VOLUME_NORM / 100 + 0.5);
-
-	o = pa_context_set_sink_input_volume(pm->output->context,
-					     pa_stream_get_index(pm->output->stream),
-					     &cvolume, NULL, NULL);
+	success = pulse_output_set_volume(pm->output, &cvolume, error_r);
+	if (success)
+		pm->volume = cvolume;
 	pa_threaded_mainloop_unlock(pm->output->mainloop);
-	if (o == NULL) {
-		g_set_error(error_r, pulse_mixer_quark(), 0,
-			    "failed to set PulseAudio volume");
-		return false;
-	}
 
-	pa_operation_unref(o);
-
-	return true;
+	return success;
 }
 
 const struct mixer_plugin pulse_mixer_plugin = {
 	.init = pulse_mixer_init,
 	.finish = pulse_mixer_finish,
-	.open = pulse_mixer_open,
-	.close = pulse_mixer_close,
 	.get_volume = pulse_mixer_get_volume,
 	.set_volume = pulse_mixer_set_volume,
 };
