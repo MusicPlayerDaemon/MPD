@@ -494,6 +494,7 @@ ENCODER_SRC =
 
 if ENABLE_ENCODER
 ENCODER_SRC += src/encoder_list.c
+ENCODER_SRC += src/encoder/none_encoder.c
 
 if ENABLE_VORBIS_ENCODER
 ENCODER_SRC += src/encoder/vorbis_encoder.c
