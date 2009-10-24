@@ -294,7 +294,7 @@ src_mpd_SOURCES = \
 	src/stored_playlist.c \
 	src/timer.c
 
-if HAVE_INOTIFY
+if ENABLE_INOTIFY
 src_mpd_SOURCES += \
 	src/inotify_source.c \
 	src/inotify_queue.c \

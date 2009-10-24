@@ -121,8 +121,19 @@ AC_CHECK_HEADERS(locale.h)
 AC_CHECK_HEADERS(valgrind/memcheck.h)
 
 AC_CHECK_FUNCS(inotify_init)
-AM_CONDITIONAL(HAVE_INOTIFY, test x$ac_cv_func_inotify_init = xyes)
+AC_ARG_ENABLE(inotify,
+	AS_HELP_STRING([--disable-inotify],
+		[disable support Inotify automatic database update (default: enabled) ]),,
+	[enable_inotify=yes])
 
+if test x$ac_cv_func_inotify_init = xno; then
+	enable_inotify=no
+fi
+
+if test x$enable_inotify = xyes; then
+	AC_DEFINE([ENABLE_INOTIFY], 1, [Define to enable inotify support])
+fi
+AM_CONDITIONAL(ENABLE_INOTIFY, test x$enable_inotify = xyes)
 
 dnl
 dnl mandatory libraries
@@ -271,6 +282,7 @@ if test x$enable_sqlite = xyes; then
 fi
 
 AM_CONDITIONAL(ENABLE_SQLITE, test x$enable_sqlite = xyes)
+
 
 
 dnl
@@ -1622,6 +1634,12 @@ if test x$enable_cue = xyes; then
         echo " libcue support ................enabled"
 else
         echo " libcue support ................disabled"
+fi
+
+if test x$enable_inotify = xyes; then
+        echo " Inotify support (autoupdate) ..enabled"
+else
+        echo " Inotify support (autoupdate) ..disabled"
 fi
 
 echo ""

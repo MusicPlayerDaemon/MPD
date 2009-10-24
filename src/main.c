@@ -56,7 +56,10 @@
 #include "dirvec.h"
 #include "songvec.h"
 #include "tag_pool.h"
+
+#ifdef ENABLE_INOTIFY
 #include "inotify_update.h"
+#endif
 
 #ifdef ENABLE_SQLITE
 #include "sticker.h"
@@ -369,8 +372,10 @@ int main(int argc, char *argv[])
 
 	glue_state_file_init();
 
+#ifdef ENABLE_INOTIFY
 	if (mapper_has_music_directory())
 		mpd_inotify_init();
+#endif
 
 	config_global_check();
 
@@ -386,7 +391,9 @@ int main(int argc, char *argv[])
 
 	g_main_loop_unref(main_loop);
 
+#ifdef ENABLE_INOTIFY
 	mpd_inotify_finish();
+#endif
 
 	state_file_finish();
 	pc_kill();
