@@ -23,13 +23,13 @@
 
 #include <string.h>
 
-extern const struct encoder_plugin none_encoder_plugin;
+extern const struct encoder_plugin null_encoder_plugin;
 extern const struct encoder_plugin vorbis_encoder_plugin;
 extern const struct encoder_plugin lame_encoder_plugin;
 extern const struct encoder_plugin twolame_encoder_plugin;
 
 static const struct encoder_plugin *encoder_plugins[] = {
-	&none_encoder_plugin,
+	&null_encoder_plugin,
 #ifdef ENABLE_VORBIS_ENCODER
 	&vorbis_encoder_plugin,
 #endif

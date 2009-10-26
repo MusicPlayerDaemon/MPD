@@ -26,7 +26,7 @@
 
 #define MAX_BUFFER 32768
 
-struct none_encoder {
+struct null_encoder {
 	struct encoder encoder;
 
 	struct audio_format audio_format;
@@ -35,39 +35,39 @@ struct none_encoder {
 	size_t buffer_length;
 };
 
-extern const struct encoder_plugin none_encoder_plugin;
+extern const struct encoder_plugin null_encoder_plugin;
 
 static inline GQuark
-none_encoder_quark(void)
+null_encoder_quark(void)
 {
-	return g_quark_from_static_string("none_encoder");
+	return g_quark_from_static_string("null_encoder");
 }
 
 static struct encoder *
-none_encoder_init(G_GNUC_UNUSED const struct config_param *param,
+null_encoder_init(G_GNUC_UNUSED const struct config_param *param,
 		  G_GNUC_UNUSED GError **error)
 {
-	struct none_encoder *encoder;
+	struct null_encoder *encoder;
 
-	encoder = g_new(struct none_encoder, 1);
-	encoder_struct_init(&encoder->encoder, &none_encoder_plugin);
+	encoder = g_new(struct null_encoder, 1);
+	encoder_struct_init(&encoder->encoder, &null_encoder_plugin);
 
 	return &encoder->encoder;
 }
 
 static void
-none_encoder_finish(struct encoder *_encoder)
+null_encoder_finish(struct encoder *_encoder)
 {
-	struct none_encoder *encoder = (struct none_encoder *)_encoder;
+	struct null_encoder *encoder = (struct null_encoder *)_encoder;
 
 	g_free(encoder);
 }
 
 static bool
-none_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
+null_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 		  G_GNUC_UNUSED GError **error)
 {
-	struct none_encoder *encoder = (struct none_encoder *)_encoder;
+	struct null_encoder *encoder = (struct null_encoder *)_encoder;
 
 	encoder->audio_format = *audio_format;
 	encoder->buffer_length = 0;
@@ -76,16 +76,16 @@ none_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 }
 
 static void
-none_encoder_close(G_GNUC_UNUSED struct encoder *_encoder)
+null_encoder_close(G_GNUC_UNUSED struct encoder *_encoder)
 {
 }
 
 static bool
-none_encoder_write(struct encoder *_encoder,
+null_encoder_write(struct encoder *_encoder,
 		   const void *data, size_t length,
 		   G_GNUC_UNUSED GError **error)
 {
-	struct none_encoder *encoder = (struct none_encoder *)_encoder;
+	struct null_encoder *encoder = (struct null_encoder *)_encoder;
 
 	assert(length + encoder->buffer_length < MAX_BUFFER);
 
@@ -97,9 +97,9 @@ none_encoder_write(struct encoder *_encoder,
 }
 
 static size_t
-none_encoder_read(struct encoder *_encoder, void *dest, size_t length)
+null_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 {
-	struct none_encoder *encoder = (struct none_encoder *)_encoder;
+	struct null_encoder *encoder = (struct null_encoder *)_encoder;
 
 	if (length > encoder->buffer_length)
 		length = encoder->buffer_length;
@@ -113,12 +113,12 @@ none_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 	return length;
 }
 
-const struct encoder_plugin none_encoder_plugin = {
-	.name = "none",
-	.init = none_encoder_init,
-	.finish = none_encoder_finish,
-	.open = none_encoder_open,
-	.close = none_encoder_close,
-	.write = none_encoder_write,
-	.read = none_encoder_read,
+const struct encoder_plugin null_encoder_plugin = {
+	.name = "null",
+	.init = null_encoder_init,
+	.finish = null_encoder_finish,
+	.open = null_encoder_open,
+	.close = null_encoder_close,
+	.write = null_encoder_write,
+	.read = null_encoder_read,
 };
