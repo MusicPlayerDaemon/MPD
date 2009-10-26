@@ -372,9 +372,13 @@ int main(int argc, char *argv[])
 
 	glue_state_file_init();
 
+	success = config_get_bool(CONF_AUTO_UPDATE, false);
 #ifdef ENABLE_INOTIFY
-	if (mapper_has_music_directory())
-		mpd_inotify_init();
+	if (success && mapper_has_music_directory())
+    		mpd_inotify_init();
+#else
+	if (success)
+		g_warning("inotify: auto_update was disabled. enable during compilation phase");
 #endif
 
 	config_global_check();

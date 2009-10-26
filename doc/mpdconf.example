@@ -109,6 +109,10 @@
 #
 #metadata_to_use	"artist,album,title,track,name,genre,date,composer,performer,disc"
 #
+# This setting enables automatic update of MPD's database when files in 
+# music_directory are changed.
+#
+#auto_update	"yes"
 ###############################################################################
 
 
