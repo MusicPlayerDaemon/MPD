@@ -25,6 +25,8 @@
 
 #include <glib.h>
 
+#include <pulse/version.h>
+
 #if !defined(PA_CHECK_VERSION)
 /**
  * This macro was implemented in libpulse 0.9.16.
