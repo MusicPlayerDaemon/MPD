@@ -672,7 +672,11 @@ updateDirectory(struct directory *directory, const struct stat *st)
 			continue;
 
 		utf8 = fs_charset_to_utf8(ent->d_name);
-		if (utf8 == NULL || skip_symlink(directory, utf8)) {
+		if (utf8 == NULL)
+			continue;
+
+		if (skip_symlink(directory, utf8)) {
+			delete_name_in(directory, utf8);
 			g_free(utf8);
 			continue;
 		}
