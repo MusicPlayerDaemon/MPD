@@ -364,8 +364,7 @@ static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
 	av_metadata_conv(f, NULL, f->iformat->metadata_conv);
 
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_TITLE, "title");
-	if (!ffmpeg_copy_metadata(tag, f->metadata, TAG_ARTIST, "author"))
-		ffmpeg_copy_metadata(tag, f->metadata, TAG_ARTIST, "artist");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_ARTIST, "author");
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_ALBUM, "album");
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_COMMENT, "comment");
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_GENRE, "genre");
