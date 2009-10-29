@@ -117,6 +117,11 @@ struct audio_output_plugin {
 		       GError **error);
 
 	/**
+	 * Wait until the device has finished playing.
+	 */
+	void (*drain)(void *data);
+
+	/**
 	 * Try to cancel data which may still be in the device's
 	 * buffers.
 	 */
@@ -211,6 +216,13 @@ ao_plugin_play(const struct audio_output_plugin *plugin,
 	       GError **error)
 {
 	return plugin->play(data, chunk, size, error);
+}
+
+static inline void
+ao_plugin_drain(const struct audio_output_plugin *plugin, void *data)
+{
+	if (plugin->drain != NULL)
+		plugin->drain(data);
 }
 
 static inline void

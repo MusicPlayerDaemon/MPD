@@ -496,6 +496,14 @@ alsa_recover(struct alsa_data *ad, int err)
 }
 
 static void
+alsa_drain(void *data)
+{
+	struct alsa_data *ad = data;
+
+	snd_pcm_drain(ad->pcm);
+}
+
+static void
 alsa_cancel(void *data)
 {
 	struct alsa_data *ad = data;
@@ -507,9 +515,6 @@ static void
 alsa_close(void *data)
 {
 	struct alsa_data *ad = data;
-
-	if (snd_pcm_state(ad->pcm) == SND_PCM_STATE_RUNNING)
-		snd_pcm_drain(ad->pcm);
 
 	snd_pcm_close(ad->pcm);
 }
@@ -542,6 +547,7 @@ const struct audio_output_plugin alsaPlugin = {
 	.finish = alsa_finish,
 	.open = alsa_open,
 	.play = alsa_play,
+	.drain = alsa_drain,
 	.cancel = alsa_cancel,
 	.close = alsa_close,
 

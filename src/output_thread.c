@@ -62,13 +62,13 @@ ao_enable(struct audio_output *ao)
 }
 
 static void
-ao_close(struct audio_output *ao);
+ao_close(struct audio_output *ao, bool drain);
 
 static void
 ao_disable(struct audio_output *ao)
 {
 	if (ao->open)
-		ao_close(ao);
+		ao_close(ao, false);
 
 	if (ao->really_enabled) {
 		ao->really_enabled = false;
@@ -151,7 +151,7 @@ ao_open(struct audio_output *ao)
 }
 
 static void
-ao_close(struct audio_output *ao)
+ao_close(struct audio_output *ao, bool drain)
 {
 	assert(ao->open);
 
@@ -161,6 +161,11 @@ ao_close(struct audio_output *ao)
 	ao->chunk = NULL;
 	ao->open = false;
 	g_mutex_unlock(ao->mutex);
+
+	if (drain)
+		ao_plugin_drain(ao->plugin, ao->data);
+	else
+		ao_plugin_cancel(ao->plugin, ao->data);
 
 	ao_plugin_close(ao->plugin, ao->data);
 	filter_close(ao->filter);
@@ -208,7 +213,7 @@ ao_reopen(struct audio_output *ao)
 	if (!audio_format_fully_defined(&ao->config_audio_format)) {
 		if (ao->open) {
 			const struct music_pipe *mp = ao->pipe;
-			ao_close(ao);
+			ao_close(ao, true);
 			ao->pipe = mp;
 		}
 
@@ -253,8 +258,7 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 			  ao->name, ao->plugin->name, error->message);
 		g_error_free(error);
 
-		ao_plugin_cancel(ao->plugin, ao->data);
-		ao_close(ao);
+		ao_close(ao, false);
 
 		/* don't automatically reopen this device for 10
 		   seconds */
@@ -273,8 +277,7 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 				  ao->name, ao->plugin->name, error->message);
 			g_error_free(error);
 
-			ao_plugin_cancel(ao->plugin, ao->data);
-			ao_close(ao);
+			ao_close(ao, false);
 
 			/* don't automatically reopen this device for
 			   10 seconds */
@@ -344,7 +347,7 @@ static void ao_pause(struct audio_output *ao)
 	do {
 		ret = ao_plugin_pause(ao->plugin, ao->data);
 		if (!ret) {
-			ao_close(ao);
+			ao_close(ao, false);
 			break;
 		}
 	} while (ao->command == AO_COMMAND_NONE);
@@ -385,8 +388,7 @@ static gpointer audio_output_task(gpointer arg)
 			assert(ao->open);
 			assert(ao->pipe != NULL);
 
-			ao_plugin_cancel(ao->plugin, ao->data);
-			ao_close(ao);
+			ao_close(ao, false);
 			ao_command_finished(ao);
 			break;
 
