@@ -312,7 +312,16 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 	return true;
 }
 
-static void ao_play(struct audio_output *ao)
+/**
+ * Plays all remaining chunks, until the tail of the pipe has been
+ * reached (and no more chunks are queued), or until a command is
+ * received.
+ *
+ * @return true if at least one chunk has been available, false if the
+ * tail of the pipe was already reached
+ */
+static bool
+ao_play(struct audio_output *ao)
 {
 	bool success;
 	const struct music_chunk *chunk;
@@ -323,8 +332,13 @@ static void ao_play(struct audio_output *ao)
 	if (chunk != NULL)
 		/* continue the previous play() call */
 		chunk = chunk->next;
-	else
+	else {
 		chunk = music_pipe_peek(ao->pipe);
+		if (chunk == NULL)
+			/* no chunk available */
+			return false;
+	}
+
 	ao->chunk_finished = false;
 
 	while (chunk != NULL && ao->command == AO_COMMAND_NONE) {
@@ -347,6 +361,8 @@ static void ao_play(struct audio_output *ao)
 	g_mutex_unlock(ao->mutex);
 	notify_signal(&pc.notify);
 	g_mutex_lock(ao->mutex);
+
+	return true;
 }
 
 static void ao_pause(struct audio_output *ao)
@@ -440,8 +456,10 @@ static gpointer audio_output_task(gpointer arg)
 			return NULL;
 		}
 
-		if (ao->open)
-			ao_play(ao);
+		if (ao->open && ao_play(ao))
+			/* don't wait for an event if there are more
+			   chunks in the pipe */
+			continue;
 
 		if (ao->command == AO_COMMAND_NONE)
 			g_cond_wait(ao->cond, ao->mutex);
