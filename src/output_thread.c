@@ -385,12 +385,8 @@ static gpointer audio_output_task(gpointer arg)
 			assert(ao->open);
 			assert(ao->pipe != NULL);
 
-			ao->pipe = NULL;
-			ao->chunk = NULL;
-
 			ao_plugin_cancel(ao->plugin, ao->data);
 			ao_close(ao);
-			filter_close(ao->filter);
 			ao_command_finished(ao);
 			break;
 
