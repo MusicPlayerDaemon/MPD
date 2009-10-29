@@ -274,6 +274,7 @@ pulse_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	po->server = config_get_block_string(param, "server", NULL);
 	po->sink = config_get_block_string(param, "sink", NULL);
 
+	po->mixer = NULL;
 	po->mainloop = NULL;
 	po->context = NULL;
 	po->stream = NULL;
