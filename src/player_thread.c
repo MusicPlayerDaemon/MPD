@@ -472,11 +472,8 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 
 	/* send the chunk to the audio outputs */
 
-	if (!audio_output_all_play(chunk)) {
-		pc.errored_song = dc.current_song;
-		pc.error = PLAYER_ERROR_AUDIO;
+	if (!audio_output_all_play(chunk))
 		return false;
-	}
 
 	pc.total_play_time += (double)chunk->length /
 		audio_format_time_to_size(format);
@@ -561,6 +558,8 @@ play_next_chunk(struct player *player)
 
 	if (!success) {
 		music_buffer_return(player_buffer, chunk);
+
+		pc.error = PLAYER_ERROR_AUDIO;
 
 		/* pause: the user may resume playback as soon as an
 		   audio output becomes available */
