@@ -191,9 +191,9 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	assert(ao->filter != NULL);
 
 	ao->thread = NULL;
-	notify_init(&ao->notify);
 	ao->command = AO_COMMAND_NONE;
 	ao->mutex = g_mutex_new();
+	ao->cond = g_cond_new();
 
 	ao->data = ao_plugin_init(plugin,
 				  &ao->config_audio_format,

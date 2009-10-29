@@ -58,10 +58,6 @@ pcm_convert(G_GNUC_UNUSED struct pcm_convert_state *state,
 	return NULL;
 }
 
-void notify_init(G_GNUC_UNUSED struct notify *notify)
-{
-}
-
 const struct filter_plugin *
 filter_plugin_by_name(G_GNUC_UNUSED const char *name)
 {

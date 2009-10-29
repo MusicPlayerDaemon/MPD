@@ -21,7 +21,8 @@
 #define MPD_OUTPUT_INTERNAL_H
 
 #include "audio_format.h"
-#include "notify.h"
+
+#include <glib.h>
 
 #include <time.h>
 
@@ -141,11 +142,6 @@ struct audio_output {
 	GThread *thread;
 
 	/**
-	 * Notify object for the thread.
-	 */
-	struct notify notify;
-
-	/**
 	 * The next command to be performed by the output thread.
 	 */
 	enum audio_output_command command;
@@ -159,6 +155,12 @@ struct audio_output {
 	 * This mutex protects #open, #chunk and #chunk_finished.
 	 */
 	GMutex *mutex;
+
+	/**
+	 * This condition object wakes up the output thread after
+	 * #command has been set.
+	 */
+	GCond *cond;
 
 	/**
 	 * The #music_chunk which is currently being played.  All

@@ -180,10 +180,18 @@ audio_output_all_enable_disable(void)
 static bool
 audio_output_all_finished(void)
 {
-	for (unsigned i = 0; i < num_audio_outputs; ++i)
-		if (audio_output_is_open(&audio_outputs[i]) &&
-		    !audio_output_command_is_finished(&audio_outputs[i]))
+	for (unsigned i = 0; i < num_audio_outputs; ++i) {
+		struct audio_output *ao = &audio_outputs[i];
+		bool not_finished;
+
+		g_mutex_lock(ao->mutex);
+		not_finished = audio_output_is_open(ao) &&
+			!audio_output_command_is_finished(ao);
+		g_mutex_unlock(ao->mutex);
+
+		if (not_finished)
 			return false;
+	}
 
 	return true;
 }
@@ -261,8 +269,7 @@ audio_output_all_play(struct music_chunk *chunk)
 	music_pipe_push(g_mp, chunk);
 
 	for (i = 0; i < num_audio_outputs; ++i)
-		if (audio_output_is_open(&audio_outputs[i]))
-			audio_output_play(&audio_outputs[i]);
+		audio_output_play(&audio_outputs[i]);
 
 	return true;
 }
@@ -454,8 +461,7 @@ audio_output_all_pause(void)
 	audio_output_all_update();
 
 	for (i = 0; i < num_audio_outputs; ++i)
-		if (audio_output_is_open(&audio_outputs[i]))
-			audio_output_pause(&audio_outputs[i]);
+		audio_output_pause(&audio_outputs[i]);
 
 	audio_output_wait_all();
 }
@@ -467,10 +473,8 @@ audio_output_all_cancel(void)
 
 	/* send the cancel() command to all audio outputs */
 
-	for (i = 0; i < num_audio_outputs; ++i) {
-		if (audio_output_is_open(&audio_outputs[i]))
-			audio_output_cancel(&audio_outputs[i]);
-	}
+	for (i = 0; i < num_audio_outputs; ++i)
+		audio_output_cancel(&audio_outputs[i]);
 
 	audio_output_wait_all();
 
