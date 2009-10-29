@@ -35,6 +35,7 @@ ver 0.16 (20??/??/??)
   - jack: don't disconnect during pause
   - jack: connect to server on MPD startup
   - wildcards allowed in audio_format configuration
+  - alsa: don't recover on CANCEL
 * mixers:
   - removed support for legacy mixer configuration
   - reimplemented software volume as mixer+filter plugin

@@ -500,7 +500,7 @@ alsa_cancel(void *data)
 {
 	struct alsa_data *ad = data;
 
-	alsa_recover(ad, snd_pcm_drop(ad->pcm));
+	snd_pcm_drop(ad->pcm);
 }
 
 static void
