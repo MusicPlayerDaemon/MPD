@@ -803,6 +803,16 @@ cd mpd-version</programlisting>
                   second.
                 </entry>
               </row>
+              <row>
+                <entry>
+                  <varname>max_clients</varname>
+                  <parameter>MC</parameter>
+                </entry>
+                <entry>
+                  Sets a limit, number of concurrent clients. When set
+                  to 0 no limit will apply.
+                </entry>
+              </row>
             </tbody>
           </tgroup>
         </informaltable>

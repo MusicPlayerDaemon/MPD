@@ -76,6 +76,8 @@ httpd_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	else
 		httpd->content_type = "application/octet-stream";
 
+	httpd->clients_max = config_get_block_unsigned(param,"max_clients", 0);
+
 	/* initialize listen address */
 
 	sin = (struct sockaddr_in *)&httpd->address;
@@ -124,6 +126,7 @@ httpd_client_add(struct httpd_output *httpd, int fd)
 				 httpd->encoder->plugin->tag == NULL);
 
 	httpd->clients = g_list_prepend(httpd->clients, client);
+	httpd->clients_cnt++;
 
 	/* pass metadata to client */
 	if (httpd->metadata)
@@ -146,10 +149,16 @@ httpd_listen_in_event(G_GNUC_UNUSED GIOChannel *source,
 	   connected */
 
 	fd = accept(httpd->fd, (struct sockaddr*)&sa, &sa_length);
-	if (fd >= 0)
-		httpd_client_add(httpd, fd);
-	else if (fd < 0 && errno != EINTR)
+	if (fd >= 0) {
+		/* can we allow additional client */
+		if (!httpd->clients_max ||
+		     httpd->clients_cnt < httpd->clients_max)
+			httpd_client_add(httpd, fd);
+		else
+			close(fd);
+	} else if (fd < 0 && errno != EINTR) {
 		g_warning("accept() failed: %s", g_strerror(errno));
+	}
 
 	g_mutex_unlock(httpd->mutex);
 
@@ -237,6 +246,7 @@ httpd_output_open(void *data, struct audio_format *audio_format,
 	/* initialize other attributes */
 
 	httpd->clients = NULL;
+	httpd->clients_cnt = 0;
 	httpd->timer = timer_new(audio_format);
 
 	g_mutex_unlock(httpd->mutex);
@@ -281,6 +291,7 @@ httpd_output_remove_client(struct httpd_output *httpd,
 	assert(client != NULL);
 
 	httpd->clients = g_list_remove(httpd->clients, client);
+	httpd->clients_cnt--;
 }
 
 void
