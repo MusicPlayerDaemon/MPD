@@ -93,6 +93,15 @@ struct player {
 	 * The current audio format for the audio outputs.
 	 */
 	struct audio_format play_audio_format;
+
+	/**
+	 * The time stamp of the chunk most recently sent to the
+	 * output thread.  This attribute is only used if
+	 * audio_output_all_get_elapsed_time() didn't return a usable
+	 * value; the output thread can estimate the elapsed time more
+	 * precisly.
+	 */
+	float elapsed_time;
 };
 
 static struct music_buffer *player_buffer;
@@ -152,6 +161,7 @@ player_wait_for_decoder(struct player *player)
 	player->song = pc.next_song;
 	pc.next_song = NULL;
 	player->queued = false;
+	player->elapsed_time = 0.0;
 
 	/* set the "starting" flag, which will be cleared by
 	   player_check_decoder_startup() */
@@ -329,6 +339,8 @@ static bool player_seek_decoder(struct player *player)
 		return false;
 	}
 
+	player->elapsed_time = where;
+
 	player_command_finished();
 
 	player->xfade = XFADE_UNKNOWN;
@@ -419,6 +431,9 @@ static void player_process_command(struct player *player)
 			audio_output_all_check();
 
 		pc.elapsed_time = audio_output_all_get_elapsed_time();
+		if (pc.elapsed_time < 0.0)
+			pc.elapsed_time = player->elapsed_time;
+
 		player_command_finished();
 		break;
 	}
@@ -625,6 +640,7 @@ static void do_play(void)
 		.xfade = XFADE_UNKNOWN,
 		.cross_fading = false,
 		.cross_fade_chunks = 0,
+		.elapsed_time = 0.0,
 	};
 
 	player.pipe = music_pipe_new();

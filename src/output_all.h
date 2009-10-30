@@ -137,7 +137,8 @@ audio_output_all_cancel(void);
 
 /**
  * Returns the "elapsed_time" stamp of the most recently finished
- * chunk.
+ * chunk.  A negative value is returned when no chunk has been
+ * finished yet.
  */
 float
 audio_output_all_get_elapsed_time(void);

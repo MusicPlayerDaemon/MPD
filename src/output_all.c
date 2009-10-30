@@ -55,7 +55,7 @@ static struct music_pipe *g_mp;
 /**
  * The "elapsed_time" stamp of the most recently finished chunk.
  */
-static float audio_output_all_elapsed_time;
+static float audio_output_all_elapsed_time = -1.0;
 
 unsigned int audio_output_count(void)
 {
@@ -482,6 +482,8 @@ audio_output_all_cancel(void)
 
 	if (g_mp != NULL)
 		music_pipe_clear(g_mp, g_music_buffer);
+
+	audio_output_all_elapsed_time = -1.0;
 }
 
 void
@@ -498,12 +500,13 @@ audio_output_all_close(void)
 		music_pipe_clear(g_mp, g_music_buffer);
 		music_pipe_free(g_mp);
 		g_mp = NULL;
-		audio_output_all_elapsed_time = 0.0;
 	}
 
 	g_music_buffer = NULL;
 
 	audio_format_clear(&input_audio_format);
+
+	audio_output_all_elapsed_time = -1.0;
 }
 
 float
