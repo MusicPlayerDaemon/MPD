@@ -37,6 +37,30 @@ tag_get_value_checked(const struct tag *tag, enum tag_type type)
 		: NULL;
 }
 
+static int
+compare_utf8_string(const char *a, const char *b)
+{
+	if (a == NULL)
+		return b == NULL ? 0 : -1;
+
+	if (b == NULL)
+		return 1;
+
+	return g_utf8_collate(a, b);
+}
+
+/**
+ * Compare two string tag values, ignoring case.  Either one may be
+ * NULL.
+ */
+static int
+compare_string_tag_item(const struct tag *a, const struct tag *b,
+			enum tag_type type)
+{
+	return compare_utf8_string(tag_get_value_checked(a, type),
+				   tag_get_value_checked(b, type));
+}
+
 /**
  * Compare two tag values which should contain an integer value
  * (e.g. disc or track number).  Either one may be NULL.
@@ -70,7 +94,12 @@ static int songvec_cmp(const void *s1, const void *s2)
 	const struct song *b = ((const struct song * const *)s2)[0];
 	int ret;
 
-	/* first sort by disc */
+	/* first sort by album */
+	ret = compare_string_tag_item(a->tag, b->tag, TAG_ALBUM);
+	if (ret != 0)
+		return ret;
+
+	/* then sort by disc */
 	ret = compare_tag_item(a->tag, b->tag, TAG_DISC);
 	if (ret != 0)
 		return ret;

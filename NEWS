@@ -46,6 +46,7 @@ ver 0.16 (20??/??/??)
 * update:
   - automatically update the database with Linux inotify
   - support .mpdignore files in the music directory
+  - sort songs by album name first, then disc/track number
 * log unused/unknown block parameters
 * removed the deprecated "error_file" option
 * save state when stopped
