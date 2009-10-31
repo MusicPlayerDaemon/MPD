@@ -53,11 +53,11 @@ void pc_deinit(void)
 }
 
 void
-player_wait_decoder(void)
+player_wait_decoder(struct decoder_control *dc)
 {
 	/* during this function, the decoder lock is held, because
 	   we're waiting for the decoder thread */
-	g_cond_wait(pc.cond, dc.mutex);
+	g_cond_wait(pc.cond, dc->mutex);
 }
 
 void

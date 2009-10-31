@@ -33,7 +33,6 @@
 #include "path.h"
 #include "mapper.h"
 #include "chunk.h"
-#include "decoder_control.h"
 #include "player_control.h"
 #include "stats.h"
 #include "sig_handlers.h"
@@ -254,7 +253,6 @@ initialize_decoder_and_player(void)
 		buffered_before_play = buffered_chunks;
 
 	pc_init(buffered_chunks, buffered_before_play);
-	dc_init();
 }
 
 /**
@@ -426,7 +424,6 @@ int main(int argc, char *argv[])
 	mapper_finish();
 	path_global_finish();
 	finishPermissions();
-	dc_deinit();
 	pc_deinit();
 	command_finish();
 	update_global_finish();

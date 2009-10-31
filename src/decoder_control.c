@@ -22,131 +22,134 @@
 
 #include <assert.h>
 
-struct decoder_control dc;
-
-void dc_init(void)
+void
+dc_init(struct decoder_control *dc)
 {
-	dc.mutex = g_mutex_new();
-	dc.cond = g_cond_new();
+	dc->thread = NULL;
 
-	dc.state = DECODE_STATE_STOP;
-	dc.command = DECODE_COMMAND_NONE;
+	dc->mutex = g_mutex_new();
+	dc->cond = g_cond_new();
+
+	dc->state = DECODE_STATE_STOP;
+	dc->command = DECODE_COMMAND_NONE;
 }
 
-void dc_deinit(void)
+void
+dc_deinit(struct decoder_control *dc)
 {
-	g_cond_free(dc.cond);
-	g_mutex_free(dc.mutex);
+	g_cond_free(dc->cond);
+	g_mutex_free(dc->mutex);
 }
 
 static void
-dc_command_wait_locked(void)
+dc_command_wait_locked(struct decoder_control *dc)
 {
-	while (dc.command != DECODE_COMMAND_NONE) {
-		decoder_signal();
-		player_wait_decoder();
+	while (dc->command != DECODE_COMMAND_NONE) {
+		decoder_signal(dc);
+		player_wait_decoder(dc);
 	}
 }
 
 void
-dc_command_wait(void)
+dc_command_wait(struct decoder_control *dc)
 {
-	decoder_lock();
-	dc_command_wait_locked();
-	decoder_unlock();
+	decoder_lock(dc);
+	dc_command_wait_locked(dc);
+	decoder_unlock(dc);
 }
 
 static void
-dc_command_locked(enum decoder_command cmd)
+dc_command_locked(struct decoder_control *dc, enum decoder_command cmd)
 {
-	dc.command = cmd;
-	dc_command_wait_locked();
+	dc->command = cmd;
+	dc_command_wait_locked(dc);
 }
 
 static void
-dc_command(enum decoder_command cmd)
+dc_command(struct decoder_control *dc, enum decoder_command cmd)
 {
-	decoder_lock();
-	dc_command_locked(cmd);
-	decoder_unlock();
+	decoder_lock(dc);
+	dc_command_locked(dc, cmd);
+	decoder_unlock(dc);
 }
 
-static void dc_command_async(enum decoder_command cmd)
+static void
+dc_command_async(struct decoder_control *dc, enum decoder_command cmd)
 {
-	decoder_lock();
+	decoder_lock(dc);
 
-	dc.command = cmd;
-	decoder_signal();
+	dc->command = cmd;
+	decoder_signal(dc);
 
-	decoder_unlock();
+	decoder_unlock(dc);
 }
 
 void
-dc_start(struct song *song)
+dc_start(struct decoder_control *dc, struct song *song)
 {
-	assert(dc.pipe != NULL);
+	assert(dc->pipe != NULL);
 	assert(song != NULL);
 
-	dc.next_song = song;
-	dc_command(DECODE_COMMAND_START);
+	dc->next_song = song;
+	dc_command(dc, DECODE_COMMAND_START);
 }
 
 void
-dc_start_async(struct song *song)
+dc_start_async(struct decoder_control *dc, struct song *song)
 {
-	assert(dc.pipe != NULL);
+	assert(dc->pipe != NULL);
 	assert(song != NULL);
 
-	dc.next_song = song;
-	dc_command_async(DECODE_COMMAND_START);
+	dc->next_song = song;
+	dc_command_async(dc, DECODE_COMMAND_START);
 }
 
 void
-dc_stop(void)
+dc_stop(struct decoder_control *dc)
 {
-	decoder_lock();
+	decoder_lock(dc);
 
-	if (dc.command != DECODE_COMMAND_NONE)
+	if (dc->command != DECODE_COMMAND_NONE)
 		/* Attempt to cancel the current command.  If it's too
 		   late and the decoder thread is already executing
 		   the old command, we'll call STOP again in this
 		   function (see below). */
-		dc_command_locked(DECODE_COMMAND_STOP);
+		dc_command_locked(dc, DECODE_COMMAND_STOP);
 
-	if (dc.state != DECODE_STATE_STOP && dc.state != DECODE_STATE_ERROR)
-		dc_command_locked(DECODE_COMMAND_STOP);
+	if (dc->state != DECODE_STATE_STOP && dc->state != DECODE_STATE_ERROR)
+		dc_command_locked(dc, DECODE_COMMAND_STOP);
 
-	decoder_unlock();
+	decoder_unlock(dc);
 }
 
 bool
-dc_seek(double where)
+dc_seek(struct decoder_control *dc, double where)
 {
-	assert(dc.state != DECODE_STATE_START);
+	assert(dc->state != DECODE_STATE_START);
 	assert(where >= 0.0);
 
-	if (dc.state == DECODE_STATE_STOP ||
-	    dc.state == DECODE_STATE_ERROR || !dc.seekable)
+	if (dc->state == DECODE_STATE_STOP ||
+	    dc->state == DECODE_STATE_ERROR || !dc->seekable)
 		return false;
 
-	dc.seek_where = where;
-	dc.seek_error = false;
-	dc_command(DECODE_COMMAND_SEEK);
+	dc->seek_where = where;
+	dc->seek_error = false;
+	dc_command(dc, DECODE_COMMAND_SEEK);
 
-	if (dc.seek_error)
+	if (dc->seek_error)
 		return false;
 
 	return true;
 }
 
 void
-dc_quit(void)
+dc_quit(struct decoder_control *dc)
 {
-	assert(dc.thread != NULL);
+	assert(dc->thread != NULL);
 
-	dc.quit = true;
-	dc_command_async(DECODE_COMMAND_STOP);
+	dc->quit = true;
+	dc_command_async(dc, DECODE_COMMAND_STOP);
 
-	g_thread_join(dc.thread);
-	dc.thread = NULL;
+	g_thread_join(dc->thread);
+	dc->thread = NULL;
 }

@@ -25,6 +25,8 @@
 
 #include <stdint.h>
 
+struct decoder_control;
+
 enum player_state {
 	PLAYER_STATE_STOP = 0,
 	PLAYER_STATE_PAUSE,
@@ -155,7 +157,7 @@ player_wait(void)
  * Note the small difference to the player_wait() function!
  */
 void
-player_wait_decoder(void);
+player_wait_decoder(struct decoder_control *dc);
 
 /**
  * Signals the #player_control object.  The object should be locked

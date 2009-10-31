@@ -20,6 +20,9 @@
 #ifndef MPD_DECODER_THREAD_H
 #define MPD_DECODER_THREAD_H
 
-void decoder_thread_start(void);
+struct decoder_control;
+
+void
+decoder_thread_start(struct decoder_control *dc);
 
 #endif

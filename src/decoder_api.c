@@ -37,12 +37,15 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "decoder"
 
-void decoder_initialized(G_GNUC_UNUSED struct decoder * decoder,
-			 const struct audio_format *audio_format,
-			 bool seekable, float total_time)
+void
+decoder_initialized(struct decoder *decoder,
+		    const struct audio_format *audio_format,
+		    bool seekable, float total_time)
 {
-	assert(dc.state == DECODE_STATE_START);
-	assert(dc.pipe != NULL);
+	struct decoder_control *dc = decoder->dc;
+
+	assert(dc->state == DECODE_STATE_START);
+	assert(dc->pipe != NULL);
 	assert(decoder != NULL);
 	assert(decoder->stream_tag == NULL);
 	assert(decoder->decoder_tag == NULL);
@@ -51,86 +54,98 @@ void decoder_initialized(G_GNUC_UNUSED struct decoder * decoder,
 	assert(audio_format_defined(audio_format));
 	assert(audio_format_valid(audio_format));
 
-	dc.in_audio_format = *audio_format;
-	getOutputAudioFormat(audio_format, &dc.out_audio_format);
+	dc->in_audio_format = *audio_format;
+	getOutputAudioFormat(audio_format, &dc->out_audio_format);
 
-	dc.seekable = seekable;
-	dc.total_time = total_time;
+	dc->seekable = seekable;
+	dc->total_time = total_time;
 
-	decoder_lock();
-	dc.state = DECODE_STATE_DECODE;
-	decoder_unlock();
+	decoder_lock(dc);
+	dc->state = DECODE_STATE_DECODE;
+	decoder_unlock(dc);
 
 	player_lock_signal();
 
 	g_debug("audio_format=%u:%u:%u, seekable=%s",
-		dc.in_audio_format.sample_rate, dc.in_audio_format.bits,
-		dc.in_audio_format.channels,
+		dc->in_audio_format.sample_rate,
+		dc->in_audio_format.bits,
+		dc->in_audio_format.channels,
 		seekable ? "true" : "false");
 
-	if (!audio_format_equals(&dc.in_audio_format, &dc.out_audio_format))
+	if (!audio_format_equals(&dc->in_audio_format,
+				 &dc->out_audio_format))
 		g_debug("converting to %u:%u:%u",
-			dc.out_audio_format.sample_rate,
-			dc.out_audio_format.bits,
-			dc.out_audio_format.channels);
+			dc->out_audio_format.sample_rate,
+			dc->out_audio_format.bits,
+			dc->out_audio_format.channels);
 }
 
 char *decoder_get_uri(G_GNUC_UNUSED struct decoder *decoder)
 {
-	assert(dc.pipe != NULL);
+	const struct decoder_control *dc = decoder->dc;
 
-	return song_get_uri(dc.current_song);
+	assert(dc->pipe != NULL);
+
+	return song_get_uri(dc->current_song);
 }
 
 enum decoder_command decoder_get_command(G_GNUC_UNUSED struct decoder * decoder)
 {
-	assert(dc.pipe != NULL);
+	const struct decoder_control *dc = decoder->dc;
 
-	return dc.command;
+	assert(dc->pipe != NULL);
+
+	return dc->command;
 }
 
 void decoder_command_finished(G_GNUC_UNUSED struct decoder * decoder)
 {
-	decoder_lock();
+	struct decoder_control *dc = decoder->dc;
 
-	assert(dc.command != DECODE_COMMAND_NONE);
-	assert(dc.command != DECODE_COMMAND_SEEK ||
-	       dc.seek_error || decoder->seeking);
-	assert(dc.pipe != NULL);
+	decoder_lock(dc);
 
-	if (dc.command == DECODE_COMMAND_SEEK) {
+	assert(dc->command != DECODE_COMMAND_NONE);
+	assert(dc->command != DECODE_COMMAND_SEEK ||
+	       dc->seek_error || decoder->seeking);
+	assert(dc->pipe != NULL);
+
+	if (dc->command == DECODE_COMMAND_SEEK) {
 		/* delete frames from the old song position */
 
 		if (decoder->chunk != NULL) {
-			music_buffer_return(dc.buffer, decoder->chunk);
+			music_buffer_return(dc->buffer, decoder->chunk);
 			decoder->chunk = NULL;
 		}
 
-		music_pipe_clear(dc.pipe, dc.buffer);
+		music_pipe_clear(dc->pipe, dc->buffer);
 	}
 
-	dc.command = DECODE_COMMAND_NONE;
-	decoder_unlock();
+	dc->command = DECODE_COMMAND_NONE;
+	decoder_unlock(dc);
 
 	player_lock_signal();
 }
 
 double decoder_seek_where(G_GNUC_UNUSED struct decoder * decoder)
 {
-	assert(dc.command == DECODE_COMMAND_SEEK);
-	assert(dc.pipe != NULL);
+	const struct decoder_control *dc = decoder->dc;
+
+	assert(dc->command == DECODE_COMMAND_SEEK);
+	assert(dc->pipe != NULL);
 
 	decoder->seeking = true;
 
-	return dc.seek_where;
+	return dc->seek_where;
 }
 
 void decoder_seek_error(struct decoder * decoder)
 {
-	assert(dc.command == DECODE_COMMAND_SEEK);
-	assert(dc.pipe != NULL);
+	struct decoder_control *dc = decoder->dc;
 
-	dc.seek_error = true;
+	assert(dc->command == DECODE_COMMAND_SEEK);
+	assert(dc->pipe != NULL);
+
+	dc->seek_error = true;
 	decoder_command_finished(decoder);
 }
 
@@ -138,11 +153,12 @@ size_t decoder_read(struct decoder *decoder,
 		    struct input_stream *is,
 		    void *buffer, size_t length)
 {
+	const struct decoder_control *dc = decoder->dc;
 	size_t nbytes;
 
 	assert(decoder == NULL ||
-	       dc.state == DECODE_STATE_START ||
-	       dc.state == DECODE_STATE_DECODE);
+	       dc->state == DECODE_STATE_START ||
+	       dc->state == DECODE_STATE_DECODE);
 	assert(is != NULL);
 	assert(buffer != NULL);
 
@@ -155,9 +171,9 @@ size_t decoder_read(struct decoder *decoder,
 		    /* ignore the SEEK command during initialization,
 		       the plugin should handle that after it has
 		       initialized successfully */
-		    (dc.command != DECODE_COMMAND_SEEK ||
-		     (dc.state != DECODE_STATE_START && !decoder->seeking)) &&
-		    dc.command != DECODE_COMMAND_NONE)
+		    (dc->command != DECODE_COMMAND_SEEK ||
+		     (dc->state != DECODE_STATE_START && !decoder->seeking)) &&
+		    dc->command != DECODE_COMMAND_NONE)
 			return 0;
 
 		nbytes = input_stream_read(is, buffer, length);
@@ -191,8 +207,8 @@ do_send_tag(struct decoder *decoder, struct input_stream *is,
 
 	chunk = decoder_get_chunk(decoder, is);
 	if (chunk == NULL) {
-		assert(dc.command != DECODE_COMMAND_NONE);
-		return dc.command;
+		assert(decoder->dc->command != DECODE_COMMAND_NONE);
+		return decoder->dc->command;
 	}
 
 	chunk->tag = tag_dup(tag);
@@ -231,17 +247,18 @@ decoder_data(struct decoder *decoder,
 	     float data_time, uint16_t bitRate,
 	     struct replay_gain_info *replay_gain_info)
 {
+	struct decoder_control *dc = decoder->dc;
 	const char *data = _data;
 	GError *error = NULL;
 	enum decoder_command cmd;
 
-	assert(dc.state == DECODE_STATE_DECODE);
-	assert(dc.pipe != NULL);
-	assert(length % audio_format_frame_size(&dc.in_audio_format) == 0);
+	assert(dc->state == DECODE_STATE_DECODE);
+	assert(dc->pipe != NULL);
+	assert(length % audio_format_frame_size(&dc->in_audio_format) == 0);
 
-	decoder_lock();
-	cmd = dc.command;
-	decoder_unlock();
+	decoder_lock(dc);
+	cmd = dc->command;
+	decoder_unlock(dc);
 
 	if (cmd == DECODE_COMMAND_STOP || cmd == DECODE_COMMAND_SEEK ||
 	    length == 0)
@@ -266,10 +283,10 @@ decoder_data(struct decoder *decoder,
 			return cmd;
 	}
 
-	if (!audio_format_equals(&dc.in_audio_format, &dc.out_audio_format)) {
+	if (!audio_format_equals(&dc->in_audio_format, &dc->out_audio_format)) {
 		data = pcm_convert(&decoder->conv_state,
-				   &dc.in_audio_format, data, length,
-				   &dc.out_audio_format, &length,
+				   &dc->in_audio_format, data, length,
+				   &dc->out_audio_format, &length,
 				   &error);
 		if (data == NULL) {
 			/* the PCM conversion has failed - stop
@@ -288,11 +305,11 @@ decoder_data(struct decoder *decoder,
 
 		chunk = decoder_get_chunk(decoder, is);
 		if (chunk == NULL) {
-			assert(dc.command != DECODE_COMMAND_NONE);
-			return dc.command;
+			assert(dc->command != DECODE_COMMAND_NONE);
+			return dc->command;
 		}
 
-		dest = music_chunk_write(chunk, &dc.out_audio_format,
+		dest = music_chunk_write(chunk, &dc->out_audio_format,
 					 data_time, bitRate, &nbytes);
 		if (dest == NULL) {
 			/* the chunk is full, flush it */
@@ -314,13 +331,13 @@ decoder_data(struct decoder *decoder,
 
 		if (replay_gain_mode != REPLAY_GAIN_OFF)
 			replay_gain_apply(replay_gain_info, dest, nbytes,
-					  &dc.out_audio_format);
+					  &dc->out_audio_format);
 		else if (normalizationEnabled)
-			normalizeData(dest, nbytes, &dc.out_audio_format);
+			normalizeData(dest, nbytes, &dc->out_audio_format);
 
 		/* expand the music pipe chunk */
 
-		full = music_chunk_expand(chunk, &dc.out_audio_format, nbytes);
+		full = music_chunk_expand(chunk, &dc->out_audio_format, nbytes);
 		if (full) {
 			/* the chunk is full, flush it */
 			decoder_flush_chunk(decoder);
@@ -338,10 +355,11 @@ enum decoder_command
 decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
 	    const struct tag *tag)
 {
+	const struct decoder_control *dc = decoder->dc;
 	enum decoder_command cmd;
 
-	assert(dc.state == DECODE_STATE_DECODE);
-	assert(dc.pipe != NULL);
+	assert(dc->state == DECODE_STATE_DECODE);
+	assert(dc->pipe != NULL);
 	assert(tag != NULL);
 
 	/* save the tag */

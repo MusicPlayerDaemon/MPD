@@ -26,6 +26,8 @@
 struct input_stream;
 
 struct decoder {
+	struct decoder_control *dc;
+
 	struct pcm_convert_state conv_state;
 
 	bool seeking;
