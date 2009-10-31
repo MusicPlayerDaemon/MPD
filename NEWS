@@ -58,6 +58,13 @@ ver 0.16 (20??/??/??)
 * require GLib 2.16
 
 
+ver 0.15.6 (2009/??/??)
+* decoders:
+  - ffmpeg: convert metadata
+* output_thread: check again if output is open on PAUSE
+* update: delete ignored symlinks from database
+
+
 ver 0.15.5 (2009/10/18)
 * input:
   - curl: don't abort if a packet has only metadata

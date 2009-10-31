@@ -27,9 +27,6 @@
 
 #include <assert.h>
 
-#define DECODE_TYPE_FILE	0
-#define DECODE_TYPE_URL		1
-
 enum decoder_state {
 	DECODE_STATE_STOP = 0,
 	DECODE_STATE_START,
