@@ -18,6 +18,7 @@
  */
 
 #include "player_control.h"
+#include "decoder_control.h"
 #include "path.h"
 #include "log.h"
 #include "tag.h"
@@ -35,7 +36,10 @@ void pc_init(unsigned buffer_chunks, unsigned int buffered_before_play)
 {
 	pc.buffer_chunks = buffer_chunks;
 	pc.buffered_before_play = buffered_before_play;
-	notify_init(&pc.notify);
+
+	pc.mutex = g_mutex_new();
+	pc.cond = g_cond_new();
+
 	pc.command = PLAYER_COMMAND_NONE;
 	pc.error = PLAYER_ERROR_NOERROR;
 	pc.state = PLAYER_STATE_STOP;
@@ -44,7 +48,16 @@ void pc_init(unsigned buffer_chunks, unsigned int buffered_before_play)
 
 void pc_deinit(void)
 {
-	notify_deinit(&pc.notify);
+	g_cond_free(pc.cond);
+	g_mutex_free(pc.mutex);
+}
+
+void
+player_wait_decoder(void)
+{
+	/* during this function, the decoder lock is held, because
+	   we're waiting for the decoder thread */
+	g_cond_wait(pc.cond, dc.mutex);
 }
 
 void
@@ -56,15 +69,30 @@ pc_song_deleted(const struct song *song)
 	}
 }
 
-static void player_command(enum player_command cmd)
+static void
+player_command_wait_locked(void)
+{
+	while (pc.command != PLAYER_COMMAND_NONE) {
+		player_signal();
+		g_cond_wait(main_cond, pc.mutex);
+	}
+}
+
+static void
+player_command_locked(enum player_command cmd)
 {
 	assert(pc.command == PLAYER_COMMAND_NONE);
 
 	pc.command = cmd;
-	while (pc.command != PLAYER_COMMAND_NONE) {
-		notify_signal(&pc.notify);
-		notify_wait(&main_notify);
-	}
+	player_command_wait_locked();
+}
+
+static void
+player_command(enum player_command cmd)
+{
+	player_lock();
+	player_command_locked(cmd);
+	player_unlock();
 }
 
 void

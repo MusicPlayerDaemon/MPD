@@ -58,10 +58,7 @@ need_chunks(struct input_stream *is, bool do_wait)
 
 	if ((is == NULL || decoder_input_buffer(is) <= 0) && do_wait) {
 		decoder_wait();
-
-		decoder_unlock();
-		notify_signal(&pc.notify);
-		decoder_lock();
+		player_signal();
 
 		return dc.command;
 	}

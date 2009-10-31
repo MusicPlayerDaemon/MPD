@@ -30,8 +30,6 @@
 #define DECODE_TYPE_FILE	0
 #define DECODE_TYPE_URL		1
 
-struct notify;
-
 enum decoder_state {
 	DECODE_STATE_STOP = 0,
 	DECODE_STATE_START,
@@ -205,19 +203,19 @@ decoder_current_song(void)
 }
 
 void
-dc_command_wait(struct notify *notify);
+dc_command_wait(void);
 
 void
-dc_start(struct notify *notify, struct song *song);
+dc_start(struct song *song);
 
 void
 dc_start_async(struct song *song);
 
 void
-dc_stop(struct notify *notify);
+dc_stop(void);
 
 bool
-dc_seek(struct notify *notify, double where);
+dc_seek(double where);
 
 void
 dc_quit(void);

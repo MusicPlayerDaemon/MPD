@@ -93,7 +93,7 @@ enum {
 GThread *main_task;
 GMainLoop *main_loop;
 
-struct notify main_notify;
+GCond *main_cond;
 
 static void
 glue_daemonize_init(const struct options *options)
@@ -321,7 +321,7 @@ int main(int argc, char *argv[])
 
 	main_task = g_thread_self();
 	main_loop = g_main_loop_new(NULL, FALSE);
-	notify_init(&main_notify);
+	main_cond = g_cond_new();
 
 	event_pipe_init();
 	event_pipe_register(PIPE_EVENT_IDLE, idle_event_emitted);
@@ -415,7 +415,7 @@ int main(int argc, char *argv[])
 	sticker_global_finish();
 #endif
 
-	notify_deinit(&main_notify);
+	g_cond_free(main_cond);
 	event_pipe_deinit();
 
 	playlist_list_global_finish();

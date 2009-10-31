@@ -18,7 +18,7 @@
  */
 
 #include "decoder_control.h"
-#include "notify.h"
+#include "player_control.h"
 
 #include <assert.h>
 
@@ -40,38 +40,34 @@ void dc_deinit(void)
 }
 
 static void
-dc_command_wait_locked(struct notify *notify)
+dc_command_wait_locked(void)
 {
 	while (dc.command != DECODE_COMMAND_NONE) {
 		decoder_signal();
-		decoder_unlock();
-
-		notify_wait(notify);
-
-		decoder_lock();
+		player_wait_decoder();
 	}
 }
 
 void
-dc_command_wait(struct notify *notify)
+dc_command_wait(void)
 {
 	decoder_lock();
-	dc_command_wait_locked(notify);
+	dc_command_wait_locked();
 	decoder_unlock();
 }
 
 static void
-dc_command_locked(struct notify *notify, enum decoder_command cmd)
+dc_command_locked(enum decoder_command cmd)
 {
 	dc.command = cmd;
-	dc_command_wait_locked(notify);
+	dc_command_wait_locked();
 }
 
 static void
-dc_command(struct notify *notify, enum decoder_command cmd)
+dc_command(enum decoder_command cmd)
 {
 	decoder_lock();
-	dc_command_locked(notify, cmd);
+	dc_command_locked(cmd);
 	decoder_unlock();
 }
 
@@ -86,13 +82,13 @@ static void dc_command_async(enum decoder_command cmd)
 }
 
 void
-dc_start(struct notify *notify, struct song *song)
+dc_start(struct song *song)
 {
 	assert(dc.pipe != NULL);
 	assert(song != NULL);
 
 	dc.next_song = song;
-	dc_command(notify, DECODE_COMMAND_START);
+	dc_command(DECODE_COMMAND_START);
 }
 
 void
@@ -106,7 +102,7 @@ dc_start_async(struct song *song)
 }
 
 void
-dc_stop(struct notify *notify)
+dc_stop(void)
 {
 	decoder_lock();
 
@@ -115,16 +111,16 @@ dc_stop(struct notify *notify)
 		   late and the decoder thread is already executing
 		   the old command, we'll call STOP again in this
 		   function (see below). */
-		dc_command_locked(notify, DECODE_COMMAND_STOP);
+		dc_command_locked(DECODE_COMMAND_STOP);
 
 	if (dc.state != DECODE_STATE_STOP && dc.state != DECODE_STATE_ERROR)
-		dc_command_locked(notify, DECODE_COMMAND_STOP);
+		dc_command_locked(DECODE_COMMAND_STOP);
 
 	decoder_unlock();
 }
 
 bool
-dc_seek(struct notify *notify, double where)
+dc_seek(double where)
 {
 	assert(dc.state != DECODE_STATE_START);
 	assert(where >= 0.0);
@@ -135,7 +131,7 @@ dc_seek(struct notify *notify, double where)
 
 	dc.seek_where = where;
 	dc.seek_error = false;
-	dc_command(notify, DECODE_COMMAND_SEEK);
+	dc_command(DECODE_COMMAND_SEEK);
 
 	if (dc.seek_error)
 		return false;

@@ -112,9 +112,7 @@ static void decoder_run_song(const struct song *song, const char *uri)
 	dc.state = DECODE_STATE_START;
 	dc.command = DECODE_COMMAND_NONE;
 
-	decoder_unlock();
-	notify_signal(&pc.notify);
-	decoder_lock();
+	player_signal();
 
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
@@ -294,17 +292,13 @@ static gpointer decoder_task(G_GNUC_UNUSED gpointer arg)
 
 			dc.command = DECODE_COMMAND_NONE;
 
-			decoder_unlock();
-			notify_signal(&pc.notify);
-			decoder_lock();
+			player_signal();
 			break;
 
 		case DECODE_COMMAND_STOP:
 			dc.command = DECODE_COMMAND_NONE;
 
-			decoder_unlock();
-			notify_signal(&pc.notify);
-			decoder_lock();
+			player_signal();
 			break;
 
 		case DECODE_COMMAND_NONE:

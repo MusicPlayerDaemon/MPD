@@ -26,6 +26,6 @@ extern GThread *main_task;
 
 extern GMainLoop *main_loop;
 
-extern struct notify main_notify;
+extern GCond *main_cond;
 
 #endif

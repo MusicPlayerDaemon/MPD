@@ -61,7 +61,7 @@ void decoder_initialized(G_GNUC_UNUSED struct decoder * decoder,
 	dc.state = DECODE_STATE_DECODE;
 	decoder_unlock();
 
-	notify_signal(&pc.notify);
+	player_lock_signal();
 
 	g_debug("audio_format=%u:%u:%u, seekable=%s",
 		dc.in_audio_format.sample_rate, dc.in_audio_format.bits,
@@ -112,7 +112,7 @@ void decoder_command_finished(G_GNUC_UNUSED struct decoder * decoder)
 	dc.command = DECODE_COMMAND_NONE;
 	decoder_unlock();
 
-	notify_signal(&pc.notify);
+	player_lock_signal();
 }
 
 double decoder_seek_where(G_GNUC_UNUSED struct decoder * decoder)
@@ -184,7 +184,7 @@ do_send_tag(struct decoder *decoder, struct input_stream *is,
 		/* there is a partial chunk - flush it, we want the
 		   tag in a new chunk */
 		decoder_flush_chunk(decoder);
-		notify_signal(&pc.notify);
+		player_lock_signal();
 	}
 
 	assert(decoder->chunk == NULL);
@@ -297,7 +297,7 @@ decoder_data(struct decoder *decoder,
 		if (dest == NULL) {
 			/* the chunk is full, flush it */
 			decoder_flush_chunk(decoder);
-			notify_signal(&pc.notify);
+			player_lock_signal();
 			continue;
 		}
 
@@ -324,7 +324,7 @@ decoder_data(struct decoder *decoder,
 		if (full) {
 			/* the chunk is full, flush it */
 			decoder_flush_chunk(decoder);
-			notify_signal(&pc.notify);
+			player_lock_signal();
 		}
 
 		data += nbytes;

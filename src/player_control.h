@@ -88,10 +88,19 @@ struct player_control {
 	    thread isn't running */
 	GThread *thread;
 
-	struct notify notify;
-	volatile enum player_command command;
-	volatile enum player_state state;
-	volatile enum player_error error;
+	/**
+	 * This lock protects #command, #state, #error.
+	 */
+	GMutex *mutex;
+
+	/**
+	 * Trigger this object after you have modified #command.
+	 */
+	GCond *cond;
+
+	enum player_command command;
+	enum player_state state;
+	enum player_error error;
 	uint16_t bit_rate;
 	struct audio_format audio_format;
 	float total_time;
@@ -108,6 +117,67 @@ extern struct player_control pc;
 void pc_init(unsigned buffer_chunks, unsigned buffered_before_play);
 
 void pc_deinit(void);
+
+/**
+ * Locks the #player_control object.
+ */
+static inline void
+player_lock(void)
+{
+	g_mutex_lock(pc.mutex);
+}
+
+/**
+ * Unlocks the #player_control object.
+ */
+static inline void
+player_unlock(void)
+{
+	g_mutex_unlock(pc.mutex);
+}
+
+/**
+ * Waits for a signal on the #player_control object.  This function is
+ * only valid in the player thread.  The object must be locked prior
+ * to calling this function.
+ */
+static inline void
+player_wait(void)
+{
+	g_cond_wait(pc.cond, pc.mutex);
+}
+
+/**
+ * Waits for a signal on the #player_control object.  This function is
+ * only valid in the player thread.  The #decoder_control object must
+ * be locked prior to calling this function.
+ *
+ * Note the small difference to the player_wait() function!
+ */
+void
+player_wait_decoder(void);
+
+/**
+ * Signals the #player_control object.  The object should be locked
+ * prior to calling this function.
+ */
+static inline void
+player_signal(void)
+{
+	g_cond_signal(pc.cond);
+}
+
+/**
+ * Signals the #player_control object.  The object is temporarily
+ * locked by this function.
+ */
+static inline void
+player_lock_signal(void)
+{
+	player_lock();
+	player_signal();
+	player_unlock();
+}
 
 /**
  * Call this function when the specified song pointer is about to be

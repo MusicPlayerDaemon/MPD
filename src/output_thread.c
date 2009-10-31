@@ -359,7 +359,7 @@ ao_play(struct audio_output *ao)
 	ao->chunk_finished = true;
 
 	g_mutex_unlock(ao->mutex);
-	notify_signal(&pc.notify);
+	player_lock_signal();
 	g_mutex_lock(ao->mutex);
 
 	return true;

@@ -445,10 +445,15 @@ audio_output_all_check(void)
 bool
 audio_output_all_wait(unsigned threshold)
 {
-	if (audio_output_all_check() < threshold)
-		return true;
+	player_lock();
 
-	notify_wait(&pc.notify);
+	if (audio_output_all_check() < threshold) {
+		player_unlock();
+		return true;
+	}
+
+	player_wait();
+	player_unlock();
 
 	return audio_output_all_check() < threshold;
 }
