@@ -29,6 +29,14 @@
 
 static GMutex *nr_lock = NULL;
 
+static const char *
+tag_get_value_checked(const struct tag *tag, enum tag_type type)
+{
+	return tag != NULL
+		? tag_get_value(tag, type)
+		: NULL;
+}
+
 /**
  * Compare two tag values which should contain an integer value
  * (e.g. disc or track number).  Either one may be NULL.
@@ -51,14 +59,8 @@ compare_number_string(const char *a, const char *b)
 static int
 compare_tag_item(const struct tag *a, const struct tag *b, enum tag_type type)
 {
-	if (a == NULL)
-		return b == NULL ? 0 : -1;
-
-	if (b == NULL)
-		return 1;
-
-	return compare_number_string(tag_get_value(a, type),
-				     tag_get_value(b, type));
+	return compare_number_string(tag_get_value_checked(a, type),
+				     tag_get_value_checked(b, type));
 }
 
 /* Only used for sorting/searchin a songvec, not general purpose compares */
