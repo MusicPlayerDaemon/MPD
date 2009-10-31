@@ -744,6 +744,7 @@ static void do_play(void)
 				/* XXX race condition: check decoder again */
 				player_wait_decoder();
 				decoder_unlock();
+				player_lock();
 				continue;
 			} else {
 				/* buffering is complete */
@@ -920,8 +921,7 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 			music_buffer_free(player_buffer);
 
 			player_command_finished();
-			g_thread_exit(NULL);
-			break;
+			return NULL;
 
 		case PLAYER_COMMAND_CANCEL:
 			pc.next_song = NULL;
@@ -938,8 +938,6 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 			break;
 		}
 	}
-
-	return NULL;
 }
 
 void player_create(void)
