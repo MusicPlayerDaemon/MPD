@@ -86,6 +86,12 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 	struct directory *directory;
 	bool success;
 
+	if (directory_get_child(parent, name) != NULL) {
+		g_set_error(error_r, directory_quark(), 0,
+			    "Duplicate subdirectory '%s'", name);
+		return NULL;
+	}
+
 	if (!fgets(buffer, sizeof(buffer), fp)) {
 		g_set_error(error_r, directory_quark(), 0,
 			    "Unexpected end of file");
@@ -119,13 +125,7 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 		return NULL;
 	}
 
-	directory = directory_get_child(parent, name);
-	if (directory != NULL) {
-		assert(directory->parent == parent);
-	} else {
-		directory = directory_new(name, parent);
-		dirvec_add(&parent->children, directory);
-	}
+	directory = directory_new(name, parent);
 
 	success = directory_load(fp, directory, error_r);
 	if (!success)
@@ -151,6 +151,8 @@ directory_load(FILE *fp, struct directory *directory, GError **error)
 						      error);
 			if (subdir == NULL)
 				return false;
+
+			dirvec_add(&directory->children, subdir);
 		} else if (g_str_has_prefix(buffer, SONG_BEGIN)) {
 			success = songvec_load(fp, &directory->songs,
 					       directory, error);
