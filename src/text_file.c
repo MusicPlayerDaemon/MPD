@@ -17,29 +17,46 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_SONG_SAVE_H
-#define MPD_SONG_SAVE_H
+#include "text_file.h"
 
-#include <glib.h>
+#include <assert.h>
+#include <string.h>
 
-#include <stdbool.h>
-#include <stdio.h>
+char *
+read_text_line(FILE *file, GString *buffer)
+{
+	enum {
+		max_length = 512 * 1024,
+		step = 1024,
+	};
 
-struct songvec;
-struct directory;
+	gsize length = 0, i;
+	char *p;
 
-void songvec_save(FILE *fp, struct songvec *sv);
+	assert(file != NULL);
+	assert(buffer != NULL);
 
-/**
- * Loads songs from the input file and add the to the specified
- * directory.
- *
- * @param error_r location to store the error occuring, or NULL to
- * ignore errors
- * @return true on success, false on error
- */
-bool
-songvec_load(FILE *file, struct songvec *sv, struct directory *parent,
-	     GString *buffer, GError **error_r);
+	if (buffer->allocated_len < step)
+		g_string_set_size(buffer, step);
 
-#endif
+	while (buffer->len < max_length) {
+		p = fgets(buffer->str + length,
+			  buffer->allocated_len - length, file);
+		if (p == NULL) {
+			if (length == 0 || ferror(file))
+				return NULL;
+			break;
+		}
+
+		i = strlen(buffer->str + length);
+		length += i;
+		if (i < step - 1 || buffer->str[length - 1] == '\n')
+			break;
+
+		g_string_set_size(buffer, length + step);
+	}
+
+	g_string_set_size(buffer, length);
+	g_strchomp(buffer->str);
+	return buffer->str;
+}

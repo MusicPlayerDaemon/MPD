@@ -20,7 +20,7 @@
 #include "directory_save.h"
 #include "directory.h"
 #include "song.h"
-#include "path.h"
+#include "text_file.h"
 #include "song_save.h"
 
 #include <assert.h>
@@ -80,10 +80,10 @@ directory_save(FILE *fp, struct directory *directory)
 
 static struct directory *
 directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
-		      GError **error_r)
+		      GString *buffer, GError **error_r)
 {
-	char buffer[MPD_PATH_MAX * 2];
 	struct directory *directory;
+	const char *line;
 	bool success;
 
 	if (directory_get_child(parent, name) != NULL) {
@@ -101,19 +101,21 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 		g_free(path);
 	}
 
-	if (!fgets(buffer, sizeof(buffer), fp)) {
+	line = read_text_line(fp, buffer);
+	if (line == NULL) {
 		g_set_error(error_r, directory_quark(), 0,
 			    "Unexpected end of file");
 		directory_free(directory);
 		return NULL;
 	}
 
-	if (g_str_has_prefix(buffer, DIRECTORY_MTIME)) {
+	if (g_str_has_prefix(line, DIRECTORY_MTIME)) {
 		directory->mtime =
-			g_ascii_strtoull(buffer + sizeof(DIRECTORY_MTIME) - 1,
+			g_ascii_strtoull(line + sizeof(DIRECTORY_MTIME) - 1,
 					 NULL, 10);
 
-		if (!fgets(buffer, sizeof(buffer), fp)) {
+		line = read_text_line(fp, buffer);
+		if (line == NULL) {
 			g_set_error(error_r, directory_quark(), 0,
 				    "Unexpected end of file");
 			directory_free(directory);
@@ -121,14 +123,14 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 		}
 	}
 
-	if (!g_str_has_prefix(buffer, DIRECTORY_BEGIN)) {
+	if (!g_str_has_prefix(line, DIRECTORY_BEGIN)) {
 		g_set_error(error_r, directory_quark(), 0,
-			    "Malformed line: %s", buffer);
+			    "Malformed line: %s", line);
 		directory_free(directory);
 		return NULL;
 	}
 
-	success = directory_load(fp, directory, error_r);
+	success = directory_load(fp, directory, buffer, error_r);
 	if (!success) {
 		directory_free(directory);
 		return NULL;
@@ -138,32 +140,31 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 }
 
 bool
-directory_load(FILE *fp, struct directory *directory, GError **error)
+directory_load(FILE *fp, struct directory *directory,
+	       GString *buffer, GError **error)
 {
-	char buffer[MPD_PATH_MAX * 2];
+	const char *line;
 	bool success;
 
-	while (fgets(buffer, sizeof(buffer), fp)
-	       && !g_str_has_prefix(buffer, DIRECTORY_END)) {
-		g_strchomp(buffer);
-
-		if (g_str_has_prefix(buffer, DIRECTORY_DIR)) {
+	while ((line = read_text_line(fp, buffer)) != NULL &&
+	       !g_str_has_prefix(line, DIRECTORY_END)) {
+		if (g_str_has_prefix(line, DIRECTORY_DIR)) {
 			struct directory *subdir =
 				directory_load_subdir(fp, directory,
-						      buffer + sizeof(DIRECTORY_DIR) - 1,
-						      error);
+						      line + sizeof(DIRECTORY_DIR) - 1,
+						      buffer, error);
 			if (subdir == NULL)
 				return false;
 
 			dirvec_add(&directory->children, subdir);
-		} else if (g_str_has_prefix(buffer, SONG_BEGIN)) {
+		} else if (g_str_has_prefix(line, SONG_BEGIN)) {
 			success = songvec_load(fp, &directory->songs,
-					       directory, error);
+					       directory, buffer, error);
 			if (!success)
 				return false;
 		} else {
 			g_set_error(error, directory_quark(), 0,
-				    "Malformed line: %s", buffer);
+				    "Malformed line: %s", line);
 			return false;
 		}
 	}

@@ -21,8 +21,8 @@
 #include "song.h"
 #include "tag_save.h"
 #include "directory.h"
-#include "path.h"
 #include "tag.h"
+#include "text_file.h"
 
 #include <glib.h>
 
@@ -117,32 +117,31 @@ parse_tag_value(char *buffer, enum tag_type *type_r)
 
 bool
 songvec_load(FILE *fp, struct songvec *sv, struct directory *parent,
-	     GError **error_r)
+	     GString *buffer, GError **error_r)
 {
-	char buffer[MPD_PATH_MAX + 1024];
+	char *line;
 	struct song *song = NULL;
 	enum tag_type type;
 	const char *value;
 
-	while (fgets(buffer, sizeof(buffer), fp) &&
-	       !g_str_has_prefix(buffer, SONG_END)) {
-		g_strchomp(buffer);
+	while ((line = read_text_line(fp, buffer)) != NULL &&
+	       !g_str_has_prefix(line, SONG_END)) {
 
-		if (0 == strncmp(SONG_KEY, buffer, strlen(SONG_KEY))) {
+		if (0 == strncmp(SONG_KEY, line, strlen(SONG_KEY))) {
 			if (song)
 				commit_song(sv, song);
 
-			song = song_file_new(buffer + strlen(SONG_KEY),
+			song = song_file_new(line + strlen(SONG_KEY),
 					     parent);
-		} else if (*buffer == 0) {
+		} else if (*line == 0) {
 			/* ignore empty lines (starting with '\0') */
 		} else if (song == NULL) {
 			g_set_error(error_r, song_save_quark(), 0,
 				    "Problems reading song info");
 			return false;
-		} else if (0 == strncmp(SONG_FILE, buffer, strlen(SONG_FILE))) {
+		} else if (0 == strncmp(SONG_FILE, line, strlen(SONG_FILE))) {
 			/* we don't need this info anymore */
-		} else if ((value = parse_tag_value(buffer,
+		} else if ((value = parse_tag_value(line,
 						    &type)) != NULL) {
 			if (!song->tag) {
 				song->tag = tag_new();
@@ -150,18 +149,18 @@ songvec_load(FILE *fp, struct songvec *sv, struct directory *parent,
 			}
 
 			tag_add_item(song->tag, type, value);
-		} else if (0 == strncmp(SONG_TIME, buffer, strlen(SONG_TIME))) {
+		} else if (0 == strncmp(SONG_TIME, line, strlen(SONG_TIME))) {
 			if (!song->tag) {
 				song->tag = tag_new();
 				tag_begin_add(song->tag);
 			}
 
-			song->tag->time = atoi(&(buffer[strlen(SONG_TIME)]));
-		} else if (0 == strncmp(SONG_MTIME, buffer, strlen(SONG_MTIME))) {
-			song->mtime = atoi(&(buffer[strlen(SONG_MTIME)]));
+			song->tag->time = atoi(&(line[strlen(SONG_TIME)]));
+		} else if (0 == strncmp(SONG_MTIME, line, strlen(SONG_MTIME))) {
+			song->mtime = atoi(&(line[strlen(SONG_MTIME)]));
 		} else {
 			g_set_error(error_r, song_save_quark(), 0,
-				    "unknown line in db: %s", buffer);
+				    "unknown line in db: %s", line);
 			return false;
 		}
 	}

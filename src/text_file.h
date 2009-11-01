@@ -17,29 +17,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_SONG_SAVE_H
-#define MPD_SONG_SAVE_H
+#ifndef MPD_TEXT_FILE_H
+#define MPD_TEXT_FILE_H
 
 #include <glib.h>
 
-#include <stdbool.h>
 #include <stdio.h>
 
-struct songvec;
-struct directory;
-
-void songvec_save(FILE *fp, struct songvec *sv);
-
 /**
- * Loads songs from the input file and add the to the specified
- * directory.
+ * Reads a line from the input file, and strips trailing space.  There
+ * is a reasonable maximum line length, only to prevent denial of
+ * service.
  *
- * @param error_r location to store the error occuring, or NULL to
- * ignore errors
- * @return true on success, false on error
+ * @param file the source file, opened in text mode
+ * @param buffer an allocator for the buffer
+ * @return a pointer to the line, or NULL on end-of-file or error
  */
-bool
-songvec_load(FILE *file, struct songvec *sv, struct directory *parent,
-	     GString *buffer, GError **error_r);
+char *
+read_text_line(FILE *file, GString *buffer);
 
 #endif

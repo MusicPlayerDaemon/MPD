@@ -88,6 +88,7 @@ mpd_headers = \
 	src/input/file_input_plugin.h \
 	src/input/curl_input_plugin.h \
 	src/input/mms_input_plugin.h \
+	src/text_file.h \
 	src/text_input_stream.h \
 	src/icy_server.h \
 	src/icy_metadata.h \
@@ -285,6 +286,7 @@ src_mpd_SOURCES = \
 	src/tag_print.c \
 	src/tag_save.c \
 	src/tokenizer.c \
+	src/text_file.c \
 	src/text_input_stream.c \
 	src/strset.c \
 	src/uri.c \

@@ -23,6 +23,7 @@
 #include "song.h"
 #include "path.h"
 #include "stats.h"
+#include "text_file.h"
 #include "config.h"
 
 #include <glib.h>
@@ -256,7 +257,8 @@ db_load(GError **error)
 {
 	FILE *fp = NULL;
 	struct stat st;
-	char buffer[100];
+	GString *buffer = g_string_sized_new(1024);
+	char *line;
 	bool found_charset = false, found_version = false;
 	bool success;
 
@@ -270,50 +272,45 @@ db_load(GError **error)
 		g_set_error(error, db_quark(), errno,
 			    "Failed to open database file \"%s\": %s",
 			    database_path, strerror(errno));
+		g_string_free(buffer, true);
 		return false;
 	}
 
 	/* get initial info */
-	if (!fgets(buffer, sizeof(buffer), fp)) {
-		fclose(fp);
-		g_set_error(error, db_quark(), 0, "Unexpected end of file");
-		return false;
-	}
-
-	g_strchomp(buffer);
-
-	if (0 != strcmp(DIRECTORY_INFO_BEGIN, buffer)) {
+	line = read_text_line(fp, buffer);
+	if (line == NULL || strcmp(DIRECTORY_INFO_BEGIN, line) != 0) {
 		fclose(fp);
 		g_set_error(error, db_quark(), 0, "Database corrupted");
+		g_string_free(buffer, true);
 		return false;
 	}
 
-	while (fgets(buffer, sizeof(buffer), fp) &&
-	       !g_str_has_prefix(buffer, DIRECTORY_INFO_END)) {
-		g_strchomp(buffer);
-
-		if (g_str_has_prefix(buffer, DIRECTORY_MPD_VERSION)) {
+	while ((line = read_text_line(fp, buffer)) != NULL &&
+	       !g_str_has_prefix(line, DIRECTORY_INFO_END)) {
+		if (g_str_has_prefix(line, DIRECTORY_MPD_VERSION)) {
 			if (found_version) {
 				fclose(fp);
 				g_set_error(error, db_quark(), 0,
 					    "Duplicate version line");
+				g_string_free(buffer, true);
 				return false;
 			}
 
 			found_version = true;
-		} else if (g_str_has_prefix(buffer, DIRECTORY_FS_CHARSET)) {
+		} else if (g_str_has_prefix(line, DIRECTORY_FS_CHARSET)) {
 			const char *new_charset, *old_charset;
 
 			if (found_charset) {
 				fclose(fp);
 				g_set_error(error, db_quark(), 0,
 					    "Duplicate charset line");
+				g_string_free(buffer, true);
 				return false;
 			}
 
 			found_charset = true;
 
-			new_charset = &(buffer[strlen(DIRECTORY_FS_CHARSET)]);
+			new_charset = line + sizeof(DIRECTORY_FS_CHARSET) - 1;
 			old_charset = path_get_fs_charset();
 			if (old_charset != NULL
 			    && strcmp(new_charset, old_charset)) {
@@ -323,19 +320,22 @@ db_load(GError **error)
 					    "\"%s\" instead of \"%s\"; "
 					    "discarding database file",
 					    new_charset, old_charset);
+				g_string_free(buffer, true);
 				return false;
 			}
 		} else {
 			fclose(fp);
 			g_set_error(error, db_quark(), 0,
-				    "Malformed line: %s", buffer);
+				    "Malformed line: %s", line);
+			g_string_free(buffer, true);
 			return false;
 		}
 	}
 
 	g_debug("reading DB");
 
-	success = directory_load(fp, music_root, error);
+	success = directory_load(fp, music_root, buffer, error);
+	g_string_free(buffer, true);
 	while (fclose(fp) && errno == EINTR) ;
 
 	if (!success)

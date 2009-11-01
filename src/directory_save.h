@@ -31,6 +31,7 @@ int
 directory_save(FILE *fp, struct directory *directory);
 
 bool
-directory_load(FILE *fp, struct directory *directory, GError **error);
+directory_load(FILE *fp, struct directory *directory,
+	       GString *buffer, GError **error);
 
 #endif
