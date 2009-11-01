@@ -41,8 +41,13 @@
 
 #define DIRECTORY_INFO_BEGIN "info_begin"
 #define DIRECTORY_INFO_END "info_end"
+#define DB_FORMAT_PREFIX "format: "
 #define DIRECTORY_MPD_VERSION "mpd_version: "
 #define DIRECTORY_FS_CHARSET "fs_charset: "
+
+enum {
+	DB_FORMAT = 0,
+};
 
 static char *database_path;
 
@@ -233,6 +238,7 @@ db_save(void)
 
 	/* block signals when writing the db so we don't get a corrupted db */
 	fprintf(fp, "%s\n", DIRECTORY_INFO_BEGIN);
+	fprintf(fp, DB_FORMAT_PREFIX "%u\n", DB_FORMAT);
 	fprintf(fp, "%s%s\n", DIRECTORY_MPD_VERSION, VERSION);
 	fprintf(fp, "%s%s\n", DIRECTORY_FS_CHARSET, path_get_fs_charset());
 	fprintf(fp, "%s\n", DIRECTORY_INFO_END);
@@ -259,6 +265,7 @@ db_load(GError **error)
 	struct stat st;
 	GString *buffer = g_string_sized_new(1024);
 	char *line;
+	int format = 0;
 	bool found_charset = false, found_version = false;
 	bool success;
 
@@ -285,7 +292,9 @@ db_load(GError **error)
 
 	while ((line = read_text_line(fp, buffer)) != NULL &&
 	       strcmp(line, DIRECTORY_INFO_END) != 0) {
-		if (g_str_has_prefix(line, DIRECTORY_MPD_VERSION)) {
+		if (g_str_has_prefix(line, DB_FORMAT_PREFIX)) {
+			format = atoi(line + sizeof(DB_FORMAT_PREFIX) - 1);
+		} else if (g_str_has_prefix(line, DIRECTORY_MPD_VERSION)) {
 			if (found_version) {
 				fclose(fp);
 				g_set_error(error, db_quark(), 0,
@@ -328,6 +337,13 @@ db_load(GError **error)
 			g_string_free(buffer, true);
 			return false;
 		}
+	}
+
+	if (format != DB_FORMAT) {
+		g_set_error(error, db_quark(), 0,
+			    "Database format mismatch, "
+			    "discarding database file");
+		return false;
 	}
 
 	g_debug("reading DB");
