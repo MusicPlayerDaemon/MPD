@@ -284,7 +284,7 @@ db_load(GError **error)
 	}
 
 	while ((line = read_text_line(fp, buffer)) != NULL &&
-	       !g_str_has_prefix(line, DIRECTORY_INFO_END)) {
+	       strcmp(line, DIRECTORY_INFO_END) != 0) {
 		if (g_str_has_prefix(line, DIRECTORY_MPD_VERSION)) {
 			if (found_version) {
 				fclose(fp);

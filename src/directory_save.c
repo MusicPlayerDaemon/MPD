@@ -123,7 +123,7 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 		}
 	}
 
-	if (!g_str_has_prefix(line, DIRECTORY_BEGIN)) {
+	if (strcmp(line, DIRECTORY_BEGIN) != 0) {
 		g_set_error(error_r, directory_quark(), 0,
 			    "Malformed line: %s", line);
 		directory_free(directory);
@@ -147,7 +147,7 @@ directory_load(FILE *fp, struct directory *directory,
 	bool success;
 
 	while ((line = read_text_line(fp, buffer)) != NULL &&
-	       !g_str_has_prefix(line, DIRECTORY_END)) {
+	       strcmp(line, DIRECTORY_END) != 0) {
 		if (g_str_has_prefix(line, DIRECTORY_DIR)) {
 			struct directory *subdir =
 				directory_load_subdir(fp, directory,
@@ -157,7 +157,7 @@ directory_load(FILE *fp, struct directory *directory,
 				return false;
 
 			dirvec_add(&directory->children, subdir);
-		} else if (g_str_has_prefix(line, SONG_BEGIN)) {
+		} else if (strcmp(line, SONG_BEGIN) == 0) {
 			success = songvec_load(fp, &directory->songs,
 					       directory, buffer, error);
 			if (!success)

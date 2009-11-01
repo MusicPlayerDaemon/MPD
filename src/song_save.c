@@ -125,8 +125,7 @@ songvec_load(FILE *fp, struct songvec *sv, struct directory *parent,
 	const char *value;
 
 	while ((line = read_text_line(fp, buffer)) != NULL &&
-	       !g_str_has_prefix(line, SONG_END)) {
-
+	       strcmp(line, SONG_END) != 0) {
 		if (0 == strncmp(SONG_KEY, line, strlen(SONG_KEY))) {
 			if (song)
 				commit_song(sv, song);
