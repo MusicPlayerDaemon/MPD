@@ -144,7 +144,6 @@ directory_load(FILE *fp, struct directory *directory,
 	       GString *buffer, GError **error)
 {
 	const char *line;
-	bool success;
 
 	while ((line = read_text_line(fp, buffer)) != NULL &&
 	       !g_str_has_prefix(line, DIRECTORY_END)) {
@@ -157,11 +156,22 @@ directory_load(FILE *fp, struct directory *directory,
 				return false;
 
 			dirvec_add(&directory->children, subdir);
-		} else if (strcmp(line, SONG_BEGIN) == 0) {
-			success = songvec_load(fp, &directory->songs,
-					       directory, buffer, error);
-			if (!success)
+		} else if (g_str_has_prefix(line, SONG_BEGIN)) {
+			const char *name = line + sizeof(SONG_BEGIN) - 1;
+			struct song *song;
+
+			if (songvec_find(&directory->songs, name) != NULL) {
+				g_set_error(error, directory_quark(), 0,
+					    "Duplicate song '%s'", name);
+				return NULL;
+			}
+
+			song = song_load(fp, directory, name,
+					 buffer, error);
+			if (song == NULL)
 				return false;
+
+			songvec_add(&directory->songs, song);
 		} else {
 			g_set_error(error, directory_quark(), 0,
 				    "Malformed line: %s", line);

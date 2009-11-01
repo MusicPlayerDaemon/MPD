@@ -46,7 +46,7 @@
 #define DIRECTORY_FS_CHARSET "fs_charset: "
 
 enum {
-	DB_FORMAT = 0,
+	DB_FORMAT = 1,
 };
 
 static char *database_path;

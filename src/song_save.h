@@ -25,21 +25,23 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#define SONG_BEGIN "song_begin: "
+
 struct songvec;
 struct directory;
 
 void songvec_save(FILE *fp, struct songvec *sv);
 
 /**
- * Loads songs from the input file and add the to the specified
- * directory.
+ * Loads a song from the input file.  Reading stops after the
+ * "song_end" line.
  *
  * @param error_r location to store the error occuring, or NULL to
  * ignore errors
  * @return true on success, false on error
  */
-bool
-songvec_load(FILE *file, struct songvec *sv, struct directory *parent,
-	     GString *buffer, GError **error_r);
+struct song *
+song_load(FILE *fp, struct directory *parent, const char *uri,
+	  GString *buffer, GError **error_r);
 
 #endif

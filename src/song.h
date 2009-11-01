@@ -24,9 +24,6 @@
 #include <stdbool.h>
 #include <sys/time.h>
 
-#define SONG_BEGIN	"songList begin"
-#define SONG_END	"songList end"
-
 #define SONG_FILE	"file: "
 #define SONG_TIME	"Time: "
 
