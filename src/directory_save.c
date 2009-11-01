@@ -128,8 +128,10 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 	directory = directory_new(name, parent);
 
 	success = directory_load(fp, directory, error_r);
-	if (!success)
+	if (!success) {
+		directory_free(directory);
 		return NULL;
+	}
 
 	return directory;
 }
