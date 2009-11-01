@@ -265,8 +265,6 @@ db_load(GError **error)
 	assert(database_path != NULL);
 	assert(music_root != NULL);
 
-	if (!music_root)
-		music_root = directory_new("", NULL);
 	while (!(fp = fopen(database_path, "r")) && errno == EINTR) ;
 	if (fp == NULL) {
 		g_set_error(error, db_quark(), errno,
