@@ -78,64 +78,78 @@ directory_save(FILE *fp, struct directory *directory)
 	return 0;
 }
 
+static struct directory *
+directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
+		      GError **error_r)
+{
+	char buffer[MPD_PATH_MAX * 2];
+	struct directory *directory;
+	bool success;
+
+	if (!fgets(buffer, sizeof(buffer), fp)) {
+		g_set_error(error_r, directory_quark(), 0,
+			    "Unexpected end of file");
+		return NULL;
+	}
+
+	if (g_str_has_prefix(buffer, DIRECTORY_MTIME)) {
+		parent->mtime =
+			g_ascii_strtoull(buffer + sizeof(DIRECTORY_MTIME) - 1,
+					 NULL, 10);
+
+		if (!fgets(buffer, sizeof(buffer), fp)) {
+			g_set_error(error_r, directory_quark(), 0,
+				    "Unexpected end of file");
+			return NULL;
+		}
+	}
+
+	if (!g_str_has_prefix(buffer, DIRECTORY_BEGIN)) {
+		g_set_error(error_r, directory_quark(), 0,
+			    "Malformed line: %s", buffer);
+		return NULL;
+	}
+
+	g_strchomp(buffer);
+	name = &(buffer[strlen(DIRECTORY_BEGIN)]);
+	if (!g_str_has_prefix(name, parent->path) != 0) {
+		g_set_error(error_r, directory_quark(), 0,
+			    "Wrong path in database: '%s' in '%s'",
+			    name, parent->path);
+		return NULL;
+	}
+
+	directory = directory_get_child(parent, name);
+	if (directory != NULL) {
+		assert(directory->parent == parent);
+	} else {
+		directory = directory_new(name, parent);
+		dirvec_add(&parent->children, directory);
+	}
+
+	success = directory_load(fp, directory, error_r);
+	if (!success)
+		return NULL;
+
+	return directory;
+}
+
 bool
 directory_load(FILE *fp, struct directory *directory, GError **error)
 {
 	char buffer[MPD_PATH_MAX * 2];
-	char key[MPD_PATH_MAX * 2];
-	char *name;
 	bool success;
 
 	while (fgets(buffer, sizeof(buffer), fp)
 	       && !g_str_has_prefix(buffer, DIRECTORY_END)) {
+		g_strchomp(buffer);
+
 		if (g_str_has_prefix(buffer, DIRECTORY_DIR)) {
-			struct directory *subdir;
-
-			g_strchomp(buffer);
-			strcpy(key, &(buffer[strlen(DIRECTORY_DIR)]));
-			if (!fgets(buffer, sizeof(buffer), fp)) {
-				g_set_error(error, directory_quark(), 0,
-					    "Unexpected end of file");
-				return false;
-			}
-
-			if (g_str_has_prefix(buffer, DIRECTORY_MTIME)) {
-				directory->mtime =
-					g_ascii_strtoull(buffer + sizeof(DIRECTORY_MTIME) - 1,
-							 NULL, 10);
-
-				if (!fgets(buffer, sizeof(buffer), fp)) {
-					g_set_error(error, directory_quark(), 0,
-						    "Unexpected end of file");
-					return false;
-				}
-			}
-
-			if (!g_str_has_prefix(buffer, DIRECTORY_BEGIN)) {
-				g_set_error(error, directory_quark(), 0,
-					    "Malformed line: %s", buffer);
-				return false;
-			}
-
-			g_strchomp(buffer);
-			name = &(buffer[strlen(DIRECTORY_BEGIN)]);
-			if (!g_str_has_prefix(name, directory->path) != 0) {
-				g_set_error(error, directory_quark(), 0,
-					    "Wrong path in database: '%s' in '%s'",
-					    name, directory->path);
-				return false;
-			}
-
-			subdir = directory_get_child(directory, name);
-			if (subdir != NULL) {
-				assert(subdir->parent == directory);
-			} else {
-				subdir = directory_new(name, directory);
-				dirvec_add(&directory->children, subdir);
-			}
-
-			success = directory_load(fp, subdir, error);
-			if (!success)
+			struct directory *subdir =
+				directory_load_subdir(fp, directory,
+						      buffer + sizeof(DIRECTORY_DIR) - 1,
+						      error);
+			if (subdir == NULL)
 				return false;
 		} else if (g_str_has_prefix(buffer, SONG_BEGIN)) {
 			success = songvec_load(fp, &directory->songs,
