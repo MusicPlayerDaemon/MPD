@@ -107,6 +107,10 @@ song_load(FILE *fp, struct directory *parent, const char *uri,
 		} else if (0 == strncmp(SONG_MTIME, line, strlen(SONG_MTIME))) {
 			song->mtime = atoi(&(line[strlen(SONG_MTIME)]));
 		} else {
+			if (song->tag != NULL)
+				tag_end_add(song->tag);
+			song_free(song);
+
 			g_set_error(error_r, song_save_quark(), 0,
 				    "unknown line in db: %s", line);
 			return false;
