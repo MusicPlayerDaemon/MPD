@@ -25,6 +25,7 @@
 #include "tag_ape.h"
 #include "tag_id3.h"
 #include "config.h"
+#include "idle.h"
 
 #include <glib.h>
 
@@ -34,6 +35,14 @@
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
+
+/**
+ * No-op dummy.
+ */
+void
+idle_add(G_GNUC_UNUSED unsigned flags)
+{
+}
 
 /**
  * No-op dummy.

@@ -22,11 +22,20 @@
 #include "input_stream.h"
 #include "audio_format.h"
 #include "pcm_volume.h"
+#include "idle.h"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <unistd.h>
+
+/**
+ * No-op dummy.
+ */
+void
+idle_add(G_GNUC_UNUSED unsigned flags)
+{
+}
 
 /**
  * No-op dummy.

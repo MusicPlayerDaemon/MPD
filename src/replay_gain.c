@@ -24,6 +24,7 @@
 #include "conf.h"
 #include "audio_format.h"
 #include "pcm_volume.h"
+#include "idle.h"
 
 #include <glib.h>
 
@@ -74,6 +75,8 @@ replay_gain_set_mode_string(const char *p)
 		replay_gain_mode = REPLAY_GAIN_ALBUM;
 	else
 		return false;
+
+	idle_add(IDLE_OPTIONS);
 
 	return true;
 }

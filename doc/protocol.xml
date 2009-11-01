@@ -195,7 +195,7 @@
                 <para>
                   <returnvalue>options</returnvalue>: options like
                   <option>repeat</option>, <option>random</option>,
-                  <option>crossfade</option>
+                  <option>crossfade</option>, replay gain
                 </para>
               </listitem>
             </itemizedlist>
@@ -519,6 +519,10 @@
               Changing the mode during playback may take several
               seconds, because the new settings does not affect the
               buffered data.
+            </para>
+            <para>
+              This command triggers the
+              <returnvalue>options</returnvalue> idle event.
             </para>
           </listitem>
         </varlistentry>
