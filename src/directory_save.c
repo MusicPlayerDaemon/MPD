@@ -123,7 +123,7 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 		}
 	}
 
-	if (strcmp(line, DIRECTORY_BEGIN) != 0) {
+	if (!g_str_has_prefix(line, DIRECTORY_BEGIN)) {
 		g_set_error(error_r, directory_quark(), 0,
 			    "Malformed line: %s", line);
 		directory_free(directory);
@@ -147,7 +147,7 @@ directory_load(FILE *fp, struct directory *directory,
 	bool success;
 
 	while ((line = read_text_line(fp, buffer)) != NULL &&
-	       strcmp(line, DIRECTORY_END) != 0) {
+	       !g_str_has_prefix(line, DIRECTORY_END)) {
 		if (g_str_has_prefix(line, DIRECTORY_DIR)) {
 			struct directory *subdir =
 				directory_load_subdir(fp, directory,
