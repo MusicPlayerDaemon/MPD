@@ -92,20 +92,31 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 		return NULL;
 	}
 
+	if (directory_is_root(parent)) {
+		directory = directory_new(name, parent);
+	} else {
+		char *path = g_strconcat(directory_get_path(parent), "/",
+					 name, NULL);
+		directory = directory_new(path, parent);
+		g_free(path);
+	}
+
 	if (!fgets(buffer, sizeof(buffer), fp)) {
 		g_set_error(error_r, directory_quark(), 0,
 			    "Unexpected end of file");
+		directory_free(directory);
 		return NULL;
 	}
 
 	if (g_str_has_prefix(buffer, DIRECTORY_MTIME)) {
-		parent->mtime =
+		directory->mtime =
 			g_ascii_strtoull(buffer + sizeof(DIRECTORY_MTIME) - 1,
 					 NULL, 10);
 
 		if (!fgets(buffer, sizeof(buffer), fp)) {
 			g_set_error(error_r, directory_quark(), 0,
 				    "Unexpected end of file");
+			directory_free(directory);
 			return NULL;
 		}
 	}
@@ -113,19 +124,9 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 	if (!g_str_has_prefix(buffer, DIRECTORY_BEGIN)) {
 		g_set_error(error_r, directory_quark(), 0,
 			    "Malformed line: %s", buffer);
+		directory_free(directory);
 		return NULL;
 	}
-
-	g_strchomp(buffer);
-	name = &(buffer[strlen(DIRECTORY_BEGIN)]);
-	if (!g_str_has_prefix(name, parent->path) != 0) {
-		g_set_error(error_r, directory_quark(), 0,
-			    "Wrong path in database: '%s' in '%s'",
-			    name, parent->path);
-		return NULL;
-	}
-
-	directory = directory_new(name, parent);
 
 	success = directory_load(fp, directory, error_r);
 	if (!success) {
