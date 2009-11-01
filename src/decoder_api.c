@@ -153,7 +153,8 @@ size_t decoder_read(struct decoder *decoder,
 		    struct input_stream *is,
 		    void *buffer, size_t length)
 {
-	const struct decoder_control *dc = decoder->dc;
+	const struct decoder_control *dc =
+		decoder != NULL ? decoder->dc : NULL;
 	size_t nbytes;
 
 	assert(decoder == NULL ||
