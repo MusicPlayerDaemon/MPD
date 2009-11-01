@@ -3,6 +3,7 @@ ver 0.15.6 (2009/??/??)
   - ffmpeg: convert metadata
 * output_thread: check again if output is open on PAUSE
 * update: delete ignored symlinks from database
+* database: increased maximum line length to 32 kB
 
 
 ver 0.15.5 (2009/10/18)

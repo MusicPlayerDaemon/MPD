@@ -21,7 +21,6 @@
 #include "song.h"
 #include "tag_save.h"
 #include "directory.h"
-#include "path.h"
 #include "tag.h"
 
 #include <glib.h>
@@ -113,12 +112,15 @@ matchesAnMpdTagItemKey(char *buffer, enum tag_type *itemType)
 void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 			  struct directory *parent)
 {
-	char buffer[MPD_PATH_MAX + 1024];
+	enum {
+		buffer_size = 32768,
+	};
+	char *buffer = g_malloc(buffer_size);
 	struct song *song = NULL;
 	enum tag_type itemType;
 	const char *value;
 
-	while (fgets(buffer, sizeof(buffer), fp) &&
+	while (fgets(buffer, buffer_size, fp) &&
 	       !g_str_has_prefix(buffer, SONG_END)) {
 		g_strchomp(buffer);
 
@@ -155,6 +157,8 @@ void readSongInfoIntoList(FILE *fp, struct songvec *sv,
 		else
 			g_error("unknown line in db: %s", buffer);
 	}
+
+	g_free(buffer);
 
 	if (song)
 		insertSongIntoList(sv, song);
