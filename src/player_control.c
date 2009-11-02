@@ -72,10 +72,8 @@ pc_song_deleted(const struct song *song)
 static void
 player_command_wait_locked(void)
 {
-	while (pc.command != PLAYER_COMMAND_NONE) {
-		player_signal();
+	while (pc.command != PLAYER_COMMAND_NONE)
 		g_cond_wait(main_cond, pc.mutex);
-	}
 }
 
 static void
@@ -84,6 +82,7 @@ player_command_locked(enum player_command cmd)
 	assert(pc.command == PLAYER_COMMAND_NONE);
 
 	pc.command = cmd;
+	player_signal();
 	player_command_wait_locked();
 }
 

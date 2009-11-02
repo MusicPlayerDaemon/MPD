@@ -44,10 +44,8 @@ dc_deinit(struct decoder_control *dc)
 static void
 dc_command_wait_locked(struct decoder_control *dc)
 {
-	while (dc->command != DECODE_COMMAND_NONE) {
-		decoder_signal(dc);
+	while (dc->command != DECODE_COMMAND_NONE)
 		player_wait_decoder(dc);
-	}
 }
 
 void
@@ -62,6 +60,7 @@ static void
 dc_command_locked(struct decoder_control *dc, enum decoder_command cmd)
 {
 	dc->command = cmd;
+	decoder_signal(dc);
 	dc_command_wait_locked(dc);
 }
 

@@ -40,7 +40,6 @@ struct notify audio_output_client_notify;
 static void ao_command_wait(struct audio_output *ao)
 {
 	while (ao->command != AO_COMMAND_NONE) {
-		g_cond_signal(ao->cond);
 		g_mutex_unlock(ao->mutex);
 		notify_wait(&audio_output_client_notify);
 		g_mutex_lock(ao->mutex);
@@ -51,6 +50,7 @@ static void ao_command(struct audio_output *ao, enum audio_output_command cmd)
 {
 	assert(ao->command == AO_COMMAND_NONE);
 	ao->command = cmd;
+	g_cond_signal(ao->cond);
 	ao_command_wait(ao);
 }
 
