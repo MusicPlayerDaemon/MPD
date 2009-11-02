@@ -455,7 +455,8 @@ static gpointer audio_output_task(gpointer arg)
 			/* the player thread will now clear our music
 			   pipe - wait for a notify, to give it some
 			   time */
-			g_cond_wait(ao->cond, ao->mutex);
+			if (ao->command == AO_COMMAND_NONE)
+				g_cond_wait(ao->cond, ao->mutex);
 			continue;
 
 		case AO_COMMAND_KILL:
