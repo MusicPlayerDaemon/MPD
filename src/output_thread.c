@@ -332,12 +332,11 @@ ao_play(struct audio_output *ao)
 	if (chunk != NULL)
 		/* continue the previous play() call */
 		chunk = chunk->next;
-	else {
+	else
 		chunk = music_pipe_peek(ao->pipe);
-		if (chunk == NULL)
-			/* no chunk available */
-			return false;
-	}
+	if (chunk == NULL)
+		/* no chunk available */
+		return false;
 
 	ao->chunk_finished = false;
 
