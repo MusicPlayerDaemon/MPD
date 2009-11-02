@@ -819,7 +819,9 @@ static void do_play(struct decoder_control *dc)
 
 		if (player.paused) {
 			player_lock();
-			player_wait();
+
+			if (pc.command == PLAYER_COMMAND_NONE)
+				player_wait();
 			continue;
 		} else if (music_pipe_size(player.pipe) > 0) {
 			/* at least one music chunk is ready - send it
