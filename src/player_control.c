@@ -258,8 +258,10 @@ pc_enqueue_song(struct song *song)
 	assert(song != NULL);
 	assert(pc.next_song == NULL);
 
+	player_lock();
 	pc.next_song = song;
-	player_command(PLAYER_COMMAND_QUEUE);
+	player_command_locked(PLAYER_COMMAND_QUEUE);
+	player_unlock();
 }
 
 bool
@@ -270,9 +272,11 @@ pc_seek(struct song *song, float seek_time)
 	if (pc.state == PLAYER_STATE_STOP)
 		return false;
 
+	player_lock();
 	pc.next_song = song;
 	pc.seek_where = seek_time;
-	player_command(PLAYER_COMMAND_SEEK);
+	player_command_locked(PLAYER_COMMAND_SEEK);
+	player_unlock();
 
 	assert(pc.next_song == NULL);
 
