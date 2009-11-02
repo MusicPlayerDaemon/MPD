@@ -24,7 +24,6 @@
 #include "archive_list.h"
 #include "playlist.h"
 #include "event_pipe.h"
-#include "notify.h"
 #include "update.h"
 #include "idle.h"
 #include "stats.h"
@@ -48,9 +47,6 @@ static GThread *update_thr;
 static const unsigned update_task_id_max = 1 << 15;
 
 static unsigned update_task_id;
-
-/** used by the main thread to notify the update thread */
-struct notify update_notify;
 
 /* XXX this flag is passed to update_task() */
 static bool discard;
@@ -153,8 +149,6 @@ static void update_finished_event(void)
 
 void update_global_init(void)
 {
-	notify_init(&update_notify);
-
 	event_pipe_register(PIPE_EVENT_UPDATE, update_finished_event);
 
 	update_remove_global_init();
@@ -165,6 +159,4 @@ void update_global_finish(void)
 {
 	update_walk_global_finish();
 	update_remove_global_finish();
-
-	notify_deinit(&update_notify);
 }

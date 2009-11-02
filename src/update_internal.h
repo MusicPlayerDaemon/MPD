@@ -29,9 +29,6 @@ struct stat;
 struct song;
 struct directory;
 
-/** used by the main thread to notify the update thread */
-extern struct notify update_notify;
-
 unsigned
 update_queue_push(const char *path, bool discard, unsigned base);
 
