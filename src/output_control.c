@@ -128,6 +128,10 @@ audio_output_open(struct audio_output *ao,
 			/* we're not using audio_output_cancel() here,
 			   because that function is asynchronous */
 			ao_command(ao, AO_COMMAND_CANCEL);
+
+			/* the audio output is now waiting for a
+			   signal; wake it up immediately */
+			g_cond_signal(ao->cond);
 		}
 
 		return true;
