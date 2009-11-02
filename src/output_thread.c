@@ -312,6 +312,16 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 	return true;
 }
 
+static const struct music_chunk *
+ao_next_chunk(struct audio_output *ao)
+{
+	return ao->chunk != NULL
+		/* continue the previous play() call */
+		? ao->chunk->next
+		/* get the first chunk from the pipe */
+		: music_pipe_peek(ao->pipe);
+}
+
 /**
  * Plays all remaining chunks, until the tail of the pipe has been
  * reached (and no more chunks are queued), or until a command is
@@ -328,12 +338,7 @@ ao_play(struct audio_output *ao)
 
 	assert(ao->pipe != NULL);
 
-	chunk = ao->chunk;
-	if (chunk != NULL)
-		/* continue the previous play() call */
-		chunk = chunk->next;
-	else
-		chunk = music_pipe_peek(ao->pipe);
+	chunk = ao_next_chunk(ao);
 	if (chunk == NULL)
 		/* no chunk available */
 		return false;
