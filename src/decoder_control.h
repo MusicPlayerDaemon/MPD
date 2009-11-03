@@ -212,9 +212,6 @@ void
 dc_start(struct decoder_control *dc, struct song *song);
 
 void
-dc_start_async(struct decoder_control *dc, struct song *song);
-
-void
 dc_stop(struct decoder_control *dc);
 
 bool

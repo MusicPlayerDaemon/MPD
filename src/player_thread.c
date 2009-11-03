@@ -159,8 +159,6 @@ player_wait_for_decoder(struct player *player)
 {
 	struct decoder_control *dc = player->dc;
 
-	dc_command_wait(dc);
-
 	if (decoder_lock_has_failed(dc)) {
 		assert(dc->next_song == NULL || dc->next_song->uri != NULL);
 
@@ -331,7 +329,7 @@ static bool player_seek_decoder(struct player *player)
 		dc->pipe = player->pipe;
 
 		/* re-start the decoder */
-		dc_start_async(dc, pc.next_song);
+		dc_start(dc, pc.next_song);
 		ret = player_wait_for_decoder(player);
 		if (!ret) {
 			/* decoder failure */
@@ -793,7 +791,7 @@ static void do_play(struct decoder_control *dc)
 
 			player.queued = false;
 			dc->pipe = music_pipe_new();
-			dc_start_async(dc, pc.next_song);
+			dc_start(dc, pc.next_song);
 		}
 
 		if (dc->pipe != NULL && dc->pipe != player.pipe &&

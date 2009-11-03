@@ -94,16 +94,6 @@ dc_start(struct decoder_control *dc, struct song *song)
 }
 
 void
-dc_start_async(struct decoder_control *dc, struct song *song)
-{
-	assert(dc->pipe != NULL);
-	assert(song != NULL);
-
-	dc->next_song = song;
-	dc_command_async(dc, DECODE_COMMAND_START);
-}
-
-void
 dc_stop(struct decoder_control *dc)
 {
 	decoder_lock(dc);
