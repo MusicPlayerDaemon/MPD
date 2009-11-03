@@ -889,14 +889,18 @@ static void do_play(struct decoder_control *dc)
 
 	player_dc_stop(&player);
 
-	assert(!player.queued || pc.next_song != NULL);
-	pc.next_song = NULL;
-
 	music_pipe_clear(player.pipe, player_buffer);
 	music_pipe_free(player.pipe);
 
 	player_lock();
+
+	if (player.queued) {
+		assert(pc.next_song != NULL);
+		pc.next_song = NULL;
+	}
+
 	pc.state = PLAYER_STATE_STOP;
+
 	player_unlock();
 
 	event_pipe_emit(PIPE_EVENT_PLAYLIST);
