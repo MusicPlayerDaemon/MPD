@@ -236,8 +236,10 @@ player_check_decoder_startup(struct player *player)
 		/* the decoder failed */
 		decoder_unlock(dc);
 
+		player_lock();
 		pc.errored_song = dc->song;
 		pc.error = PLAYER_ERROR_FILE;
+		player_unlock();
 
 		return false;
 	} else if (!decoder_is_starting(dc)) {
@@ -251,8 +253,11 @@ player_check_decoder_startup(struct player *player)
 			   all chunks yet - wait for that */
 			return true;
 
+		player_lock();
 		pc.total_time = dc->total_time;
 		pc.audio_format = dc->in_audio_format;
+		player_unlock();
+
 		player->play_audio_format = dc->out_audio_format;
 		player->decoder_starting = false;
 
@@ -264,11 +269,14 @@ player_check_decoder_startup(struct player *player)
 				  "while playing \"%s\"", uri);
 			g_free(uri);
 
+			player_lock();
 			pc.error = PLAYER_ERROR_AUDIO;
 
 			/* pause: the user may resume playback as soon
 			   as an audio output becomes available */
 			pc.state = PLAYER_STATE_PAUSE;
+			player_unlock();
+
 			player->paused = true;
 			return true;
 		}
