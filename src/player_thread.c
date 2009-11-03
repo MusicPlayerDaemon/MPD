@@ -175,6 +175,11 @@ player_wait_for_decoder(struct player *player)
 {
 	struct decoder_control *dc = player->dc;
 
+	assert(player->queued);
+	assert(pc.next_song != NULL);
+
+	player->queued = false;
+
 	if (decoder_lock_has_failed(dc)) {
 		player_lock();
 		pc.errored_song = dc->song;
@@ -182,23 +187,28 @@ player_wait_for_decoder(struct player *player)
 		pc.next_song = NULL;
 		player_unlock();
 
-		player->queued = false;
 		return false;
 	}
 
-	pc.total_time = pc.next_song->tag != NULL
-		? pc.next_song->tag->time : 0;
-	pc.bit_rate = 0;
-	audio_format_clear(&pc.audio_format);
-
 	player->song = pc.next_song;
-	pc.next_song = NULL;
-	player->queued = false;
 	player->elapsed_time = 0.0;
 
 	/* set the "starting" flag, which will be cleared by
 	   player_check_decoder_startup() */
 	player->decoder_starting = true;
+
+	player_lock();
+
+	/* update player_control's song information */
+	pc.total_time = pc.next_song->tag != NULL
+		? pc.next_song->tag->time : 0;
+	pc.bit_rate = 0;
+	audio_format_clear(&pc.audio_format);
+
+	/* clear the queued song */
+	pc.next_song = NULL;
+
+	player_unlock();
 
 	/* call syncPlaylistWithQueue() in the main thread */
 	event_pipe_emit(PIPE_EVENT_PLAYLIST);
