@@ -101,11 +101,6 @@ decoder_run_song(struct decoder_control *dc,
 	struct input_stream input_stream;
 	const struct decoder_plugin *plugin;
 
-	if (!input_stream_open(&input_stream, uri)) {
-		dc->state = DECODE_STATE_ERROR;
-		return;
-	}
-
 	decoder.seeking = false;
 	decoder.song_tag = song->tag != NULL && song_is_file(song)
 		? tag_dup(song->tag) : NULL;
@@ -117,6 +112,16 @@ decoder_run_song(struct decoder_control *dc,
 	dc->command = DECODE_COMMAND_NONE;
 
 	player_signal();
+
+	decoder_unlock(dc);
+
+	if (!input_stream_open(&input_stream, uri)) {
+		decoder_lock(dc);
+		dc->state = DECODE_STATE_ERROR;
+		return;
+	}
+
+	decoder_lock(dc);
 
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
