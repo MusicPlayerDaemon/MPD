@@ -137,16 +137,14 @@ decoder_signal(struct decoder_control *dc)
 static inline bool
 decoder_is_idle(const struct decoder_control *dc)
 {
-	return (dc->state == DECODE_STATE_STOP ||
-		dc->state == DECODE_STATE_ERROR) &&
-		dc->command != DECODE_COMMAND_START;
+	return dc->state == DECODE_STATE_STOP ||
+		dc->state == DECODE_STATE_ERROR;
 }
 
 static inline bool
 decoder_is_starting(const struct decoder_control *dc)
 {
-	return dc->command == DECODE_COMMAND_START ||
-		dc->state == DECODE_STATE_START;
+	return dc->state == DECODE_STATE_START;
 }
 
 static inline bool
