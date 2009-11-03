@@ -72,8 +72,8 @@ struct decoder_control {
 	/** the format being sent to the music pipe */
 	struct audio_format out_audio_format;
 
-	struct song *current_song;
-	struct song *next_song;
+	const struct song *current_song;
+	const struct song *next_song;
 	float total_time;
 
 	/** the #music_chunk allocator */

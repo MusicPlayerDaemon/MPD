@@ -108,7 +108,7 @@ struct player_control {
 	float total_time;
 	float elapsed_time;
 	struct song *volatile next_song;
-	struct song *errored_song;
+	const struct song *errored_song;
 	volatile double seek_where;
 	float cross_fade_seconds;
 	double total_play_time;
