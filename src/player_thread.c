@@ -817,7 +817,8 @@ static void do_play(struct decoder_control *dc)
 		*/
 #endif
 
-		if (decoder_lock_is_idle(dc) && player.queued) {
+		if (decoder_lock_is_idle(dc) && player.queued &&
+		    dc->pipe == player.pipe) {
 			/* the decoder has finished the current song;
 			   make it decode the next song */
 			assert(dc->pipe == NULL || dc->pipe == player.pipe);
