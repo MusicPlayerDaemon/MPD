@@ -28,6 +28,7 @@
 #include "event_pipe.h"
 #include "idle.h"
 #include "playlist.h"
+#include "player_control.h"
 #include "stdbin.h"
 
 #include <glib.h>
@@ -104,7 +105,9 @@ load_audio_output(struct audio_output *ao, const char *name)
 		return false;
 	}
 
-	success = audio_output_init(ao, param, &error);
+	static struct player_control dummy_player_control;
+
+	success = audio_output_init(ao, param, &dummy_player_control, &error);
 	if (!success) {
 		g_printerr("%s\n", error->message);
 		g_error_free(error);

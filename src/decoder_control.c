@@ -28,8 +28,9 @@
 #define G_LOG_DOMAIN "decoder_control"
 
 void
-dc_init(struct decoder_control *dc)
+dc_init(struct decoder_control *dc, struct player_control *pc)
 {
+	dc->player_control = pc;
 	dc->thread = NULL;
 
 	dc->mutex = g_mutex_new();
@@ -62,7 +63,7 @@ static void
 dc_command_wait_locked(struct decoder_control *dc)
 {
 	while (dc->command != DECODE_COMMAND_NONE)
-		player_wait_decoder(dc);
+		player_wait_decoder(dc->player_control, dc);
 }
 
 void

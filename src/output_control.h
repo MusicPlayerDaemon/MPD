@@ -29,6 +29,7 @@ struct audio_output;
 struct audio_format;
 struct config_param;
 struct music_pipe;
+struct player_control;
 
 static inline GQuark
 audio_output_quark(void)
@@ -38,6 +39,7 @@ audio_output_quark(void)
 
 bool
 audio_output_init(struct audio_output *ao, const struct config_param *param,
+		  struct player_control *pc,
 		  GError **error_r);
 
 /**

@@ -94,6 +94,8 @@ GMainLoop *main_loop;
 
 GCond *main_cond;
 
+struct player_control *global_player_control;
+
 static void
 glue_daemonize_init(const struct options *options)
 {
@@ -183,7 +185,8 @@ glue_sticker_init(void)
 static void
 glue_state_file_init(void)
 {
-	state_file_init(config_get_path(CONF_STATE_FILE));
+	state_file_init(config_get_path(CONF_STATE_FILE),
+			global_player_control);
 }
 
 /**
@@ -254,7 +257,7 @@ initialize_decoder_and_player(void)
 	if (buffered_before_play > buffered_chunks)
 		buffered_before_play = buffered_chunks;
 
-	pc_init(buffered_chunks, buffered_before_play);
+	global_player_control = pc_new(buffered_chunks, buffered_before_play);
 }
 
 /**
@@ -364,7 +367,7 @@ int mpd_main(int argc, char *argv[])
 	initialize_decoder_and_player();
 	volume_init();
 	initAudioConfig();
-	audio_output_all_init();
+	audio_output_all_init(global_player_control);
 	client_manager_init();
 	replay_gain_global_init();
 
@@ -384,7 +387,7 @@ int mpd_main(int argc, char *argv[])
 
 	initZeroconf();
 
-	player_create();
+	player_create(global_player_control);
 
 	if (create_db) {
 		/* the database failed to load: recreate the
@@ -410,7 +413,7 @@ int mpd_main(int argc, char *argv[])
 
 	/* enable all audio outputs (if not already done by
 	   playlist_state_restore() */
-	pc_update_audio();
+	pc_update_audio(global_player_control);
 
 #ifdef WIN32
 	win32_app_started();
@@ -431,8 +434,8 @@ int mpd_main(int argc, char *argv[])
 	mpd_inotify_finish();
 #endif
 
-	state_file_finish();
-	pc_kill();
+	state_file_finish(global_player_control);
+	pc_kill(global_player_control);
 	finishZeroconf();
 	client_manager_deinit();
 	listen_global_finish();
@@ -457,7 +460,7 @@ int mpd_main(int argc, char *argv[])
 	mapper_finish();
 	path_global_finish();
 	finishPermissions();
-	pc_deinit();
+	pc_free(global_player_control);
 	command_finish();
 	update_global_finish();
 	decoder_plugin_deinit_all();

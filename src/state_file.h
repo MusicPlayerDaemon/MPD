@@ -20,11 +20,13 @@
 #ifndef MPD_STATE_FILE_H
 #define MPD_STATE_FILE_H
 
-void
-state_file_init(const char *path);
+struct player_control;
 
 void
-state_file_finish(void);
+state_file_init(const char *path, struct player_control *pc);
+
+void
+state_file_finish(struct player_control *pc);
 
 void write_state_file(void);
 

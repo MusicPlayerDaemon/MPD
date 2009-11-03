@@ -22,10 +22,12 @@
 
 struct client;
 struct locate_item_list;
+struct player_control;
 
 int printAllIn(struct client *client, const char *name);
 
-int addAllIn(const char *name);
+int
+addAllIn(struct player_control *pc, const char *name);
 
 int addAllInToStoredPlaylist(const char *name, const char *utf8file);
 

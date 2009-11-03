@@ -49,6 +49,7 @@ spl_save_playlist(const char *name_utf8, const struct playlist *playlist);
  * playlist.
  */
 enum playlist_result
-playlist_load_spl(struct playlist *playlist, const char *name_utf8);
+playlist_load_spl(struct playlist *playlist, struct player_control *pc,
+		  const char *name_utf8);
 
 #endif

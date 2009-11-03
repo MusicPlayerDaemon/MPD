@@ -65,7 +65,7 @@ need_chunks(struct decoder_control *dc, struct input_stream *is, bool do_wait)
 
 	if ((is == NULL || !decoder_input_buffer(dc, is)) && do_wait) {
 		decoder_wait(dc);
-		player_signal();
+		player_signal(dc->player_control);
 
 		return dc->command;
 	}

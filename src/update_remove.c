@@ -23,6 +23,7 @@
 #include "event_pipe.h"
 #include "song.h"
 #include "playlist.h"
+#include "main.h"
 
 #ifdef ENABLE_SQLITE
 #include "sticker.h"
@@ -58,7 +59,7 @@ song_remove_event(void)
 		sticker_song_delete(removed_song);
 #endif
 
-	playlist_delete_song(&g_playlist, removed_song);
+	playlist_delete_song(&g_playlist, global_player_control, removed_song);
 	removed_song = NULL;
 
 	notify_signal(&remove_notify);

@@ -29,6 +29,7 @@
 #include "tag.h"
 #include "strset.h"
 #include "stored_playlist.h"
+#include "client_internal.h"
 
 #include <glib.h>
 
@@ -166,9 +167,11 @@ int printAllIn(struct client *client, const char *name)
 }
 
 static int
-directoryAddSongToPlaylist(struct song *song, G_GNUC_UNUSED void *data)
+directoryAddSongToPlaylist(struct song *song, void *data)
 {
-	return playlist_append_song(&g_playlist, song, NULL);
+	struct player_control *pc = data;
+
+	return playlist_append_song(&g_playlist, pc, song, NULL);
 }
 
 struct add_data {
@@ -185,9 +188,10 @@ directoryAddSongToStoredPlaylist(struct song *song, void *_data)
 	return 0;
 }
 
-int addAllIn(const char *name)
+int
+addAllIn(struct player_control *pc, const char *name)
 {
-	return db_walk(name, directoryAddSongToPlaylist, NULL, NULL);
+	return db_walk(name, directoryAddSongToPlaylist, NULL, pc);
 }
 
 int addAllInToStoredPlaylist(const char *name, const char *utf8file)
@@ -205,7 +209,9 @@ findAddInDirectory(struct song *song, void *_data)
 	struct search_data *data = _data;
 
 	if (locate_song_match(song, data->criteria))
-		return playlist_append_song(&g_playlist, song, NULL);
+		return playlist_append_song(&g_playlist,
+					    data->client->player_control,
+					    song, NULL);
 
 	return 0;
 }

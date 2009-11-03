@@ -32,6 +32,8 @@ struct deferred_buffer {
 };
 
 struct client {
+	struct player_control *player_control;
+
 	GIOChannel *channel;
 	guint source_id;
 

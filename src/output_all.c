@@ -100,7 +100,7 @@ audio_output_config_count(void)
 }
 
 void
-audio_output_all_init(void)
+audio_output_all_init(struct player_control *pc)
 {
 	const struct config_param *param = NULL;
 	unsigned int i;
@@ -121,7 +121,7 @@ audio_output_all_init(void)
 		/* only allow param to be NULL if there just one audioOutput */
 		assert(param || (num_audio_outputs == 1));
 
-		if (!audio_output_init(output, param, &error)) {
+		if (!audio_output_init(output, param, pc, &error)) {
 			if (param != NULL)
 				MPD_ERROR("line %i: %s",
 					  param->line, error->message);
@@ -473,17 +473,17 @@ audio_output_all_check(void)
 }
 
 bool
-audio_output_all_wait(unsigned threshold)
+audio_output_all_wait(struct player_control *pc, unsigned threshold)
 {
-	player_lock();
+	player_lock(pc);
 
 	if (audio_output_all_check() < threshold) {
-		player_unlock();
+		player_unlock(pc);
 		return true;
 	}
 
-	player_wait();
-	player_unlock();
+	player_wait(pc);
+	player_unlock(pc);
 
 	return audio_output_all_check() < threshold;
 }

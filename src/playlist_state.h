@@ -30,13 +30,15 @@
 #include <stdio.h>
 
 struct playlist;
+struct player_control;
 
 void
-playlist_state_save(FILE *fp, const struct playlist *playlist);
+playlist_state_save(FILE *fp, const struct playlist *playlist,
+		    struct player_control *pc);
 
 bool
 playlist_state_restore(const char *line, FILE *fp, GString *buffer,
-		       struct playlist *playlist);
+		       struct playlist *playlist, struct player_control *pc);
 
 /**
  * Generates a hash number for the current state of the playlist and
@@ -45,6 +47,7 @@ playlist_state_restore(const char *line, FILE *fp, GString *buffer,
  * be saved.
  */
 unsigned
-playlist_state_get_hash(const struct playlist *playlist);
+playlist_state_get_hash(const struct playlist *playlist,
+			struct player_control *pc);
 
 #endif

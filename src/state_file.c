@@ -47,7 +47,7 @@ static unsigned prev_volume_version, prev_output_version,
 	prev_playlist_version;
 
 static void
-state_file_write(void)
+state_file_write(struct player_control *pc)
 {
 	FILE *fp;
 
@@ -64,17 +64,17 @@ state_file_write(void)
 
 	save_sw_volume_state(fp);
 	audio_output_state_save(fp);
-	playlist_state_save(fp, &g_playlist);
+	playlist_state_save(fp, &g_playlist, pc);
 
 	fclose(fp);
 
 	prev_volume_version = sw_volume_state_get_hash();
 	prev_output_version = audio_output_state_get_version();
-	prev_playlist_version = playlist_state_get_hash(&g_playlist);
+	prev_playlist_version = playlist_state_get_hash(&g_playlist, pc);
 }
 
 static void
-state_file_read(void)
+state_file_read(struct player_control *pc)
 {
 	FILE *fp;
 	bool success;
@@ -95,7 +95,8 @@ state_file_read(void)
 	while ((line = read_text_line(fp, buffer)) != NULL) {
 		success = read_sw_volume_state(line) ||
 			audio_output_state_read(line) ||
-			playlist_state_restore(line, fp, buffer, &g_playlist);
+			playlist_state_restore(line, fp, buffer,
+					       &g_playlist, pc);
 		if (!success)
 			g_warning("Unrecognized line in state file: %s", line);
 	}
@@ -104,7 +105,7 @@ state_file_read(void)
 
 	prev_volume_version = sw_volume_state_get_hash();
 	prev_output_version = audio_output_state_get_version();
-	prev_playlist_version = playlist_state_get_hash(&g_playlist);
+	prev_playlist_version = playlist_state_get_hash(&g_playlist, pc);
 
 
 	g_string_free(buffer, true);
@@ -115,21 +116,23 @@ state_file_read(void)
  * saves the state file.
  */
 static gboolean
-timer_save_state_file(G_GNUC_UNUSED gpointer data)
+timer_save_state_file(gpointer data)
 {
+	struct player_control *pc = data;
+
 	if (prev_volume_version == sw_volume_state_get_hash() &&
 	    prev_output_version == audio_output_state_get_version() &&
-	    prev_playlist_version == playlist_state_get_hash(&g_playlist))
+	    prev_playlist_version == playlist_state_get_hash(&g_playlist, pc))
 		/* nothing has changed - don't save the state file,
 		   don't spin up the hard disk */
 		return true;
 
-	state_file_write();
+	state_file_write(pc);
 	return true;
 }
 
 void
-state_file_init(const char *path)
+state_file_init(const char *path, struct player_control *pc)
 {
 	assert(state_file_path == NULL);
 
@@ -137,15 +140,15 @@ state_file_init(const char *path)
 		return;
 
 	state_file_path = g_strdup(path);
-	state_file_read();
+	state_file_read(pc);
 
 	save_state_source_id = g_timeout_add_seconds(5 * 60,
 						     timer_save_state_file,
-						     NULL);
+						     pc);
 }
 
 void
-state_file_finish(void)
+state_file_finish(struct player_control *pc)
 {
 	if (state_file_path == NULL)
 		/* no state file configured, no cleanup required */
@@ -154,7 +157,7 @@ state_file_finish(void)
 	if (save_state_source_id != 0)
 		g_source_remove(save_state_source_id);
 
-	state_file_write();
+	state_file_write(pc);
 
 	g_free(state_file_path);
 }

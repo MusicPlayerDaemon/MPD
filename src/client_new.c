@@ -41,12 +41,15 @@
 
 static const char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
 
-void client_new(int fd, const struct sockaddr *sa, size_t sa_length, int uid)
+void
+client_new(struct player_control *player_control,
+	   int fd, const struct sockaddr *sa, size_t sa_length, int uid)
 {
 	static unsigned int next_client_num;
 	struct client *client;
 	char *remote;
 
+	assert(player_control != NULL);
 	assert(fd >= 0);
 
 #ifdef HAVE_LIBWRAP
@@ -81,6 +84,7 @@ void client_new(int fd, const struct sockaddr *sa, size_t sa_length, int uid)
 	}
 
 	client = g_new0(struct client, 1);
+	client->player_control = player_control;
 
 #ifndef G_OS_WIN32
 	client->channel = g_io_channel_unix_new(fd);

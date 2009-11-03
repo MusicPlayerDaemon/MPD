@@ -109,7 +109,8 @@ spl_save_playlist(const char *name_utf8, const struct playlist *playlist)
 }
 
 enum playlist_result
-playlist_load_spl(struct playlist *playlist, const char *name_utf8)
+playlist_load_spl(struct playlist *playlist, struct player_control *pc,
+		  const char *name_utf8)
 {
 	GPtrArray *list;
 
@@ -119,7 +120,7 @@ playlist_load_spl(struct playlist *playlist, const char *name_utf8)
 
 	for (unsigned i = 0; i < list->len; ++i) {
 		const char *temp = g_ptr_array_index(list, i);
-		if ((playlist_append_uri(playlist, temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
+		if ((playlist_append_uri(playlist, pc, temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
 			/* for windows compatibility, convert slashes */
 			char *temp2 = g_strdup(temp);
 			char *p = temp2;
@@ -128,7 +129,7 @@ playlist_load_spl(struct playlist *playlist, const char *name_utf8)
 					*p = '/';
 				p++;
 			}
-			if ((playlist_append_uri(playlist, temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
+			if ((playlist_append_uri(playlist, pc, temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
 				g_warning("can't add file \"%s\"", temp2);
 			}
 			g_free(temp2);

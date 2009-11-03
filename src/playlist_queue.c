@@ -27,7 +27,8 @@
 
 enum playlist_result
 playlist_load_into_queue(const char *uri, struct playlist_provider *source,
-			 struct playlist *dest, bool secure)
+			 struct playlist *dest, struct player_control *pc,
+			 bool secure)
 {
 	enum playlist_result result;
 	struct song *song;
@@ -38,7 +39,7 @@ playlist_load_into_queue(const char *uri, struct playlist_provider *source,
 		if (song == NULL)
 			continue;
 
-		result = playlist_append_song(dest, song, NULL);
+		result = playlist_append_song(dest, pc, song, NULL);
 		if (result != PLAYLIST_RESULT_SUCCESS) {
 			if (!song_in_database(song))
 				song_free(song);
@@ -53,7 +54,9 @@ playlist_load_into_queue(const char *uri, struct playlist_provider *source,
 }
 
 enum playlist_result
-playlist_open_into_queue(const char *uri, struct playlist *dest, bool secure)
+playlist_open_into_queue(const char *uri,
+			 struct playlist *dest, struct player_control *pc,
+			 bool secure)
 {
 	struct input_stream *is;
 	struct playlist_provider *playlist = playlist_open_any(uri, &is);
@@ -61,7 +64,7 @@ playlist_open_into_queue(const char *uri, struct playlist *dest, bool secure)
 		return PLAYLIST_RESULT_NO_SUCH_LIST;
 
 	enum playlist_result result =
-		playlist_load_into_queue(uri, playlist, dest, secure);
+		playlist_load_into_queue(uri, playlist, dest, pc, secure);
 	playlist_plugin_close(playlist);
 
 	if (is != NULL)

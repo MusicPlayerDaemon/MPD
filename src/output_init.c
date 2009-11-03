@@ -127,8 +127,12 @@ audio_output_load_mixer(void *ao, const struct config_param *param,
 
 bool
 audio_output_init(struct audio_output *ao, const struct config_param *param,
+		  struct player_control *pc,
 		  GError **error_r)
 {
+	assert(ao != NULL);
+	assert(pc != NULL);
+
 	const struct audio_output_plugin *plugin = NULL;
 	GError *error = NULL;
 
@@ -249,6 +253,7 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	ao->command = AO_COMMAND_NONE;
 	ao->mutex = g_mutex_new();
 	ao->cond = g_cond_new();
+	ao->player_control = pc;
 
 	ao->data = ao_plugin_init(plugin,
 				  &ao->config_audio_format,

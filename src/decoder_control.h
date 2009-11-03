@@ -27,6 +27,8 @@
 
 #include <assert.h>
 
+struct player_control;
+
 enum decoder_state {
 	DECODE_STATE_STOP = 0,
 	DECODE_STATE_START,
@@ -42,6 +44,12 @@ enum decoder_state {
 };
 
 struct decoder_control {
+	/**
+	 * The player thread which calls us.  This pointer is used to
+	 * signal command completion.
+	 */
+	struct player_control *player_control;
+
 	/** the handle of the decoder thread, or NULL if the decoder
 	    thread isn't running */
 	GThread *thread;
@@ -98,7 +106,7 @@ struct decoder_control {
 };
 
 void
-dc_init(struct decoder_control *dc);
+dc_init(struct decoder_control *dc, struct player_control *pc);
 
 void
 dc_deinit(struct decoder_control *dc);

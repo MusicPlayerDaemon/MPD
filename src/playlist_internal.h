@@ -27,6 +27,8 @@
 
 #include "playlist.h"
 
+struct player_control;
+
 /**
  * Returns the song object which is currently queued.  Returns none if
  * there is none (yet?) or if MPD isn't playing.
@@ -44,9 +46,11 @@ playlist_get_queued_song(struct playlist *playlist);
  */
 void
 playlist_update_queued_song(struct playlist *playlist,
+			    struct player_control *pc,
 			    const struct song *prev);
 
 void
-playlist_play_order(struct playlist *playlist, int orderNum);
+playlist_play_order(struct playlist *playlist, struct player_control *pc,
+		    int orderNum);
 
 #endif

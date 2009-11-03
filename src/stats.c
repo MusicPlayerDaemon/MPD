@@ -25,6 +25,7 @@
 #include "client.h"
 #include "player_control.h"
 #include "strset.h"
+#include "client_internal.h"
 
 struct stats stats;
 
@@ -114,7 +115,7 @@ int stats_print(struct client *client)
 		      stats.album_count,
 		      stats.song_count,
 		      (long)g_timer_elapsed(stats.timer, NULL),
-		      (long)(pc_get_total_play_time() + 0.5),
+		      (long)(pc_get_total_play_time(client->player_control) + 0.5),
 		      stats.song_duration,
 		      db_get_mtime());
 	return 0;

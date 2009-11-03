@@ -50,7 +50,7 @@ audio_output_enable_index(unsigned idx)
 	ao->enabled = true;
 	idle_add(IDLE_OUTPUT);
 
-	pc_update_audio();
+	pc_update_audio(ao->player_control);
 
 	++audio_output_state_version;
 
@@ -79,7 +79,7 @@ audio_output_disable_index(unsigned idx)
 		idle_add(IDLE_MIXER);
 	}
 
-	pc_update_audio();
+	pc_update_audio(ao->player_control);
 
 	++audio_output_state_version;
 

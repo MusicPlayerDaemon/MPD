@@ -37,6 +37,9 @@
 #ifndef MPD_PLAYER_THREAD_H
 #define MPD_PLAYER_THREAD_H
 
-void player_create(void);
+struct player_control;
+
+void
+player_create(struct player_control *pc);
 
 #endif

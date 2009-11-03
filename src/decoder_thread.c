@@ -383,7 +383,7 @@ decoder_run_song(struct decoder_control *dc,
 	dc->state = DECODE_STATE_START;
 	dc->command = DECODE_COMMAND_NONE;
 
-	player_signal();
+	player_signal(dc->player_control);
 
 	pcm_convert_init(&decoder.conv_state);
 
@@ -464,13 +464,13 @@ decoder_task(gpointer arg)
 
 			dc->command = DECODE_COMMAND_NONE;
 
-			player_signal();
+			player_signal(dc->player_control);
 			break;
 
 		case DECODE_COMMAND_STOP:
 			dc->command = DECODE_COMMAND_NONE;
 
-			player_signal();
+			player_signal(dc->player_control);
 			break;
 
 		case DECODE_COMMAND_NONE:

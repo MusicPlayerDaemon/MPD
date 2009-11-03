@@ -208,6 +208,12 @@ struct audio_output {
 	GCond *cond;
 
 	/**
+	 * The player_control object which "owns" this output.  This
+	 * object is needed to signal command completion.
+	 */
+	struct player_control *player_control;
+
+	/**
 	 * The #music_chunk which is currently being played.  All
 	 * chunks before this one may be returned to the
 	 * #music_buffer, because they are not going to be used by

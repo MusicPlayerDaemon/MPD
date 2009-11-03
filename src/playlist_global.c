@@ -26,6 +26,7 @@
 #include "playlist.h"
 #include "playlist_state.h"
 #include "event_pipe.h"
+#include "main.h"
 
 struct playlist g_playlist;
 
@@ -38,7 +39,7 @@ playlist_tag_event(void)
 static void
 playlist_event(void)
 {
-	playlist_sync(&g_playlist);
+	playlist_sync(&g_playlist, global_player_control);
 }
 
 void

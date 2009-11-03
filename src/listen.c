@@ -23,6 +23,7 @@
 #include "client.h"
 #include "conf.h"
 #include "glib_compat.h"
+#include "main.h"
 
 #include <string.h>
 #include <assert.h>
@@ -39,7 +40,7 @@ static void
 listen_callback(int fd, const struct sockaddr *address,
 		size_t address_length, int uid, G_GNUC_UNUSED void *ctx)
 {
-	client_new(fd, address, address_length, uid);
+	client_new(global_player_control, fd, address, address_length, uid);
 }
 
 static bool

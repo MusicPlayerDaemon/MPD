@@ -28,6 +28,8 @@ extern GMainLoop *main_loop;
 
 extern GCond *main_cond;
 
+extern struct player_control *global_player_control;
+
 /**
  * A entry point for application.
  * On non-Windows platforms this is called directly from main()
