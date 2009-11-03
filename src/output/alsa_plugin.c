@@ -500,7 +500,8 @@ alsa_drain(void *data)
 {
 	struct alsa_data *ad = data;
 
-	snd_pcm_drain(ad->pcm);
+	if (snd_pcm_state(ad->pcm) == SND_PCM_STATE_RUNNING)
+		snd_pcm_drain(ad->pcm);
 }
 
 static void
