@@ -243,7 +243,6 @@ player_check_decoder_startup(struct player *player)
 			g_free(uri);
 
 			assert(dc->next_song == NULL || dc->next_song->uri != NULL);
-			pc.errored_song = dc->next_song;
 			pc.error = PLAYER_ERROR_AUDIO;
 
 			/* pause: the user may resume playback as soon
@@ -435,7 +434,6 @@ static void player_process_command(struct player *player)
 			/* the audio device has failed - rollback to
 			   pause mode */
 			assert(dc->next_song == NULL || dc->next_song->uri != NULL);
-			pc.errored_song = dc->next_song;
 			pc.error = PLAYER_ERROR_AUDIO;
 
 			player->paused = true;
