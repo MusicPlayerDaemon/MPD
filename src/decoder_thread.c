@@ -121,12 +121,11 @@ decoder_run_song(struct decoder_control *dc,
 		return;
 	}
 
-	decoder_lock(dc);
-
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
 
 	while (!input_stream.ready) {
+		decoder_lock(dc);
 		if (dc->command == DECODE_COMMAND_STOP) {
 			decoder_unlock(dc);
 			input_stream_close(&input_stream);
@@ -136,6 +135,7 @@ decoder_run_song(struct decoder_control *dc,
 		}
 
 		decoder_unlock(dc);
+
 		ret = input_stream_buffer(&input_stream);
 		if (ret < 0) {
 			input_stream_close(&input_stream);
@@ -143,9 +143,9 @@ decoder_run_song(struct decoder_control *dc,
 			dc->state = DECODE_STATE_ERROR;
 			return;
 		}
-
-		decoder_lock(dc);
 	}
+
+	decoder_lock(dc);
 
 	if (dc->command == DECODE_COMMAND_STOP) {
 		decoder_unlock(dc);
