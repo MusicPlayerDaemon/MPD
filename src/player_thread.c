@@ -164,6 +164,17 @@ player_dc_stop(struct player *player)
 }
 
 /**
+ * Returns true if the decoder is decoding the next song (or has begun
+ * decoding it, or has finished doing it), and the player hasn't
+ * switched to that song yet.
+ */
+static bool
+decoding_next_song(const struct player *player)
+{
+	return player->dc->pipe != NULL && player->dc->pipe != player->pipe;
+}
+
+/**
  * After the decoder has been started asynchronously, wait for the
  * "START" command to finish.  The decoder may not be initialized yet,
  * i.e. there is no audio_format information yet.
@@ -486,7 +497,7 @@ static void player_process_command(struct player *player)
 			return;
 		}
 
-		if (dc->pipe != NULL && dc->pipe != player->pipe) {
+		if (decoding_next_song(player)) {
 			/* the decoder is already decoding the song -
 			   stop it and reset the position */
 			player_unlock();
@@ -594,7 +605,7 @@ play_next_chunk(struct player *player)
 		return true;
 
 	if (player->xfade == XFADE_ENABLED &&
-	    dc->pipe != NULL && dc->pipe != player->pipe &&
+	    decoding_next_song(player) &&
 	    (cross_fade_position = music_pipe_size(player->pipe))
 	    <= player->cross_fade_chunks) {
 		/* perform cross fade */
@@ -814,7 +825,7 @@ static void do_play(struct decoder_control *dc)
 			player_dc_start(&player, music_pipe_new());
 		}
 
-		if (dc->pipe != NULL && dc->pipe != player.pipe &&
+		if (decoding_next_song(&player) &&
 		    player.xfade == XFADE_UNKNOWN &&
 		    !decoder_lock_is_starting(dc)) {
 			/* enable cross fading in this song?  if yes,
@@ -853,7 +864,7 @@ static void do_play(struct decoder_control *dc)
 
 			/* XXX synchronize in a better way */
 			g_usleep(10000);
-		} else if (dc->pipe != NULL && dc->pipe != player.pipe) {
+		} else if (decoding_next_song(&player)) {
 			/* at the beginning of a new song */
 
 			if (!player_song_border(&player))
