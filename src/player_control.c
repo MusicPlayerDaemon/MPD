@@ -255,9 +255,10 @@ void
 pc_enqueue_song(struct song *song)
 {
 	assert(song != NULL);
-	assert(pc.next_song == NULL);
 
 	player_lock();
+	assert(pc.next_song == NULL);
+
 	pc.next_song = song;
 	player_command_locked(PLAYER_COMMAND_QUEUE);
 	player_unlock();
