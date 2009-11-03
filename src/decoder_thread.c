@@ -268,8 +268,10 @@ decoder_run_song(struct decoder_control *dc,
 static void
 decoder_run(struct decoder_control *dc)
 {
-	const struct song *song = dc->next_song;
+	const struct song *song = dc->song;
 	char *uri;
+
+	assert(song != NULL);
 
 	if (song_is_file(song))
 		uri = map_song_fs(song);
@@ -281,7 +283,6 @@ decoder_run(struct decoder_control *dc)
 		return;
 	}
 
-	dc->current_song = dc->next_song; /* NEED LOCK */
 	decoder_run_song(dc, song, uri);
 	g_free(uri);
 

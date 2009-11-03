@@ -72,8 +72,13 @@ struct decoder_control {
 	/** the format being sent to the music pipe */
 	struct audio_format out_audio_format;
 
-	const struct song *current_song;
-	const struct song *next_song;
+	/**
+	 * The song currently being decoded.  This attribute is set by
+	 * the player thread, when it sends the #DECODE_COMMAND_START
+	 * command.
+	 */
+	const struct song *song;
+
 	float total_time;
 
 	/** the #music_chunk allocator */
@@ -198,7 +203,7 @@ decoder_current_song(const struct decoder_control *dc)
 
 	case DECODE_STATE_START:
 	case DECODE_STATE_DECODE:
-		return dc->current_song;
+		return dc->song;
 	}
 
 	assert(false);

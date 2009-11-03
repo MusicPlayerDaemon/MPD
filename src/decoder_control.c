@@ -89,7 +89,7 @@ dc_start(struct decoder_control *dc, struct song *song)
 	assert(dc->pipe != NULL);
 	assert(song != NULL);
 
-	dc->next_song = song;
+	dc->song = song;
 	dc_command(dc, DECODE_COMMAND_START);
 }
 

@@ -86,7 +86,7 @@ char *decoder_get_uri(G_GNUC_UNUSED struct decoder *decoder)
 
 	assert(dc->pipe != NULL);
 
-	return song_get_uri(dc->current_song);
+	return song_get_uri(dc->song);
 }
 
 enum decoder_command decoder_get_command(G_GNUC_UNUSED struct decoder * decoder)
