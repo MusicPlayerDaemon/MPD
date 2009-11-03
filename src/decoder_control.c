@@ -84,12 +84,16 @@ dc_command_async(struct decoder_control *dc, enum decoder_command cmd)
 }
 
 void
-dc_start(struct decoder_control *dc, struct song *song)
+dc_start(struct decoder_control *dc, struct song *song,
+	 struct music_buffer *buffer, struct music_pipe *pipe)
 {
-	assert(dc->pipe != NULL);
 	assert(song != NULL);
+	assert(buffer != NULL);
+	assert(pipe != NULL);
 
 	dc->song = song;
+	dc->buffer = buffer;
+	dc->pipe = pipe;
 	dc_command(dc, DECODE_COMMAND_START);
 }
 

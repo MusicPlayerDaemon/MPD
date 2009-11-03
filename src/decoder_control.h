@@ -84,7 +84,10 @@ struct decoder_control {
 	/** the #music_chunk allocator */
 	struct music_buffer *buffer;
 
-	/** the destination pipe for decoded chunks */
+	/**
+	 * The destination pipe for decoded chunks.  The caller thread
+	 * owns this object, and is responsible for freeing it.
+	 */
 	struct music_pipe *pipe;
 };
 
@@ -211,8 +214,17 @@ decoder_current_song(const struct decoder_control *dc)
 void
 dc_command_wait(struct decoder_control *dc);
 
+/**
+ * Start the decoder.
+ *
+ * @param the decoder
+ * @param song the song to be decoded
+ * @param pipe the pipe which receives the decoded chunks (owned by
+ * the caller)
+ */
 void
-dc_start(struct decoder_control *dc, struct song *song);
+dc_start(struct decoder_control *dc, struct song *song,
+	 struct music_buffer *buffer, struct music_pipe *pipe);
 
 void
 dc_stop(struct decoder_control *dc);

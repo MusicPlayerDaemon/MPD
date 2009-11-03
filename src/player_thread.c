@@ -129,14 +129,14 @@ static void player_command_finished(void)
  * Player lock is not held.
  */
 static void
-player_dc_start(struct player *player)
+player_dc_start(struct player *player, struct music_pipe *pipe)
 {
 	struct decoder_control *dc = player->dc;
 
 	assert(player->queued);
 	assert(pc.next_song != NULL);
 
-	dc_start(dc, pc.next_song);
+	dc_start(dc, pc.next_song, player_buffer, pipe);
 }
 
 /**
@@ -346,10 +346,9 @@ static bool player_seek_decoder(struct player *player)
 		/* clear music chunks which might still reside in the
 		   pipe */
 		music_pipe_clear(player->pipe, player_buffer);
-		dc->pipe = player->pipe;
 
 		/* re-start the decoder */
-		player_dc_start(player);
+		player_dc_start(player, player->pipe);
 		ret = player_wait_for_decoder(player);
 		if (!ret) {
 			/* decoder failure */
@@ -726,9 +725,7 @@ static void do_play(struct decoder_control *dc)
 
 	player.pipe = music_pipe_new();
 
-	dc->buffer = player_buffer;
-	dc->pipe = player.pipe;
-	player_dc_start(&player);
+	player_dc_start(&player, player.pipe);
 	if (!player_wait_for_decoder(&player)) {
 		player_dc_stop(&player);
 		player_command_finished();
@@ -804,11 +801,9 @@ static void do_play(struct decoder_control *dc)
 		if (decoder_lock_is_idle(dc) && player.queued) {
 			/* the decoder has finished the current song;
 			   make it decode the next song */
-			assert(pc.next_song != NULL);
 			assert(dc->pipe == NULL || dc->pipe == player.pipe);
 
-			dc->pipe = music_pipe_new();
-			player_dc_start(&player);
+			player_dc_start(&player, music_pipe_new());
 		}
 
 		if (dc->pipe != NULL && dc->pipe != player.pipe &&
