@@ -333,6 +333,8 @@ decoder_thread_start(struct decoder_control *dc)
 
 	assert(dc->thread == NULL);
 
+	dc->quit = false;
+
 	dc->thread = g_thread_create(decoder_task, dc, true, &e);
 	if (dc->thread == NULL)
 		g_error("Failed to spawn decoder task: %s", e->message);
