@@ -61,19 +61,6 @@ void songvec_save(FILE *fp, struct songvec *sv)
 	songvec_for_each(sv, song_save, fp);
 }
 
-static enum tag_type
-parse_tag_name(const char *name)
-{
-	int i;
-
-	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
-		if (strcmp(name, tag_item_names[i]) == 0)
-			return i;
-	}
-
-	return TAG_NUM_OF_ITEM_TYPES;
-}
-
 struct song *
 song_load(FILE *fp, struct directory *parent, const char *uri,
 	  GString *buffer, GError **error_r)
@@ -99,7 +86,7 @@ song_load(FILE *fp, struct directory *parent, const char *uri,
 		*colon++ = 0;
 		value = g_strchug(colon);
 
-		if ((type = parse_tag_name(line)) != TAG_NUM_OF_ITEM_TYPES) {
+		if ((type = tag_name_parse(line)) != TAG_NUM_OF_ITEM_TYPES) {
 			if (!song->tag) {
 				song->tag = tag_new();
 				tag_begin_add(song->tag);
