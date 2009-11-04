@@ -49,6 +49,11 @@
 #
 #state_file			"~/.mpd/state"
 #
+# The location of the sticker database.  This is a database which
+# manages dynamic information attached to songs.
+#
+#sticker_file			"~/.mpd/sticker.sql"
+#
 ###############################################################################
 
 

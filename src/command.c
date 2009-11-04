@@ -1597,6 +1597,7 @@ sticker_song_find_print_cb(struct song *song, const char *value,
 static enum command_return
 handle_sticker_song(struct client *client, int argc, char *argv[])
 {
+	/* get song song_id key */
 	if (argc == 5 && strcmp(argv[1], "get") == 0) {
 		struct song *song;
 		char *value;
@@ -1619,6 +1620,7 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 		g_free(value);
 
 		return COMMAND_RETURN_OK;
+	/* list song song_id */
 	} else if (argc == 4 && strcmp(argv[1], "list") == 0) {
 		struct song *song;
 		struct sticker *sticker;
@@ -1641,6 +1643,7 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 		sticker_free(sticker);
 
 		return COMMAND_RETURN_OK;
+	/* set song song_id id key */
 	} else if (argc == 6 && strcmp(argv[1], "set") == 0) {
 		struct song *song;
 		bool ret;
@@ -1660,6 +1663,7 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 		}
 
 		return COMMAND_RETURN_OK;
+	/* delete song song_id [key] */
 	} else if ((argc == 4 || argc == 5) &&
 		   strcmp(argv[1], "delete") == 0) {
 		struct song *song;
@@ -1682,6 +1686,7 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 		}
 
 		return COMMAND_RETURN_OK;
+	/* find song dir key */
 	} else if (argc == 5 && strcmp(argv[1], "find") == 0) {
 		/* "sticker find song a/directory name" */
 		struct directory *directory;
