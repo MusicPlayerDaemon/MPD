@@ -31,7 +31,7 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "song"
 
-#define SONG_MTIME	"mtime: "
+#define SONG_MTIME "mtime"
 #define SONG_END "song_end"
 
 static GQuark
@@ -50,7 +50,7 @@ song_save(struct song *song, void *data)
 	if (song->tag != NULL)
 		tag_save(fp, song->tag);
 
-	fprintf(fp, SONG_MTIME "%li\n", (long)song->mtime);
+	fprintf(fp, SONG_MTIME ": %li\n", (long)song->mtime);
 	fprintf(fp, SONG_END "\n");
 
 	return 0;
@@ -61,22 +61,17 @@ void songvec_save(FILE *fp, struct songvec *sv)
 	songvec_for_each(sv, song_save, fp);
 }
 
-static char *
-parse_tag_value(char *buffer, enum tag_type *type_r)
+static enum tag_type
+parse_tag_name(const char *name)
 {
 	int i;
 
 	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
-		size_t len = strlen(tag_item_names[i]);
-
-		if (0 == strncmp(tag_item_names[i], buffer, len) &&
-		    buffer[len] == ':') {
-			*type_r = i;
-			return g_strchug(buffer + len + 1);
-		}
+		if (strcmp(name, tag_item_names[i]) == 0)
+			return i;
 	}
 
-	return NULL;
+	return TAG_NUM_OF_ITEM_TYPES;
 }
 
 struct song *
@@ -84,28 +79,42 @@ song_load(FILE *fp, struct directory *parent, const char *uri,
 	  GString *buffer, GError **error_r)
 {
 	struct song *song = song_file_new(uri, parent);
-	char *line;
+	char *line, *colon;
 	enum tag_type type;
 	const char *value;
 
 	while ((line = read_text_line(fp, buffer)) != NULL &&
 	       strcmp(line, SONG_END) != 0) {
-		if ((value = parse_tag_value(line, &type)) != NULL) {
+		colon = strchr(line, ':');
+		if (colon == NULL || colon == line) {
+			if (song->tag != NULL)
+				tag_end_add(song->tag);
+			song_free(song);
+
+			g_set_error(error_r, song_save_quark(), 0,
+				    "unknown line in db: %s", line);
+			return false;
+		}
+
+		*colon++ = 0;
+		value = g_strchug(colon);
+
+		if ((type = parse_tag_name(line)) != TAG_NUM_OF_ITEM_TYPES) {
 			if (!song->tag) {
 				song->tag = tag_new();
 				tag_begin_add(song->tag);
 			}
 
 			tag_add_item(song->tag, type, value);
-		} else if (0 == strncmp(SONG_TIME, line, strlen(SONG_TIME))) {
+		} else if (strcmp(line, "Time") == 0) {
 			if (!song->tag) {
 				song->tag = tag_new();
 				tag_begin_add(song->tag);
 			}
 
-			song->tag->time = atoi(&(line[strlen(SONG_TIME)]));
-		} else if (0 == strncmp(SONG_MTIME, line, strlen(SONG_MTIME))) {
-			song->mtime = atoi(&(line[strlen(SONG_MTIME)]));
+			song->tag->time = atoi(value);
+		} else if (strcmp(line, SONG_MTIME) == 0) {
+			song->mtime = atoi(value);
 		} else {
 			if (song->tag != NULL)
 				tag_end_add(song->tag);
