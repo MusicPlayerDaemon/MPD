@@ -24,6 +24,8 @@
 #include "path.h"
 #include "stats.h"
 #include "text_file.h"
+#include "tag.h"
+#include "tag_internal.h"
 #include "config.h"
 
 #include <glib.h>
@@ -44,6 +46,7 @@
 #define DB_FORMAT_PREFIX "format: "
 #define DIRECTORY_MPD_VERSION "mpd_version: "
 #define DIRECTORY_FS_CHARSET "fs_charset: "
+#define DB_TAG_PREFIX "tag: "
 
 enum {
 	DB_FORMAT = 1,
@@ -241,6 +244,11 @@ db_save(void)
 	fprintf(fp, DB_FORMAT_PREFIX "%u\n", DB_FORMAT);
 	fprintf(fp, "%s%s\n", DIRECTORY_MPD_VERSION, VERSION);
 	fprintf(fp, "%s%s\n", DIRECTORY_FS_CHARSET, path_get_fs_charset());
+
+	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
+		if (!ignore_tag_items[i])
+			fprintf(fp, DB_TAG_PREFIX "%s\n", tag_item_names[i]);
+
 	fprintf(fp, "%s\n", DIRECTORY_INFO_END);
 
 	if (directory_save(fp, music_root) < 0) {
@@ -268,6 +276,7 @@ db_load(GError **error)
 	int format = 0;
 	bool found_charset = false, found_version = false;
 	bool success;
+	bool tags[TAG_NUM_OF_ITEM_TYPES];
 
 	assert(database_path != NULL);
 	assert(music_root != NULL);
@@ -289,6 +298,8 @@ db_load(GError **error)
 		g_string_free(buffer, true);
 		return false;
 	}
+
+	memset(tags, false, sizeof(tags));
 
 	while ((line = read_text_line(fp, buffer)) != NULL &&
 	       strcmp(line, DIRECTORY_INFO_END) != 0) {
@@ -330,6 +341,18 @@ db_load(GError **error)
 				g_string_free(buffer, true);
 				return false;
 			}
+		} else if (g_str_has_prefix(line, DB_TAG_PREFIX)) {
+			const char *name = line + sizeof(DB_TAG_PREFIX) - 1;
+			enum tag_type tag = tag_name_parse(name);
+			if (tag == TAG_NUM_OF_ITEM_TYPES) {
+				g_set_error(error, db_quark(), 0,
+					    "Unrecognized tag '%s', "
+					    "discarding database file",
+					    name);
+				return false;
+			}
+
+			tags[tag] = true;
 		} else {
 			fclose(fp);
 			g_set_error(error, db_quark(), 0,
@@ -344,6 +367,15 @@ db_load(GError **error)
 			    "Database format mismatch, "
 			    "discarding database file");
 		return false;
+	}
+
+	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
+		if (!ignore_tag_items[i] && !tags[i]) {
+			g_set_error(error, db_quark(), 0,
+				    "Tag list mismatch, "
+				    "discarding database file");
+			return false;
+		}
 	}
 
 	g_debug("reading DB");
