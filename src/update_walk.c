@@ -530,8 +530,11 @@ update_regular_file(struct directory *directory,
 
 		if (song == NULL) {
 			song = song_file_load(name, directory);
-			if (song == NULL)
+			if (song == NULL) {
+				g_debug("ignoring unrecognized file %s/%s",
+					directory_get_path(directory), name);
 				return;
+			}
 
 			songvec_add(&directory->songs, song);
 			modified = true;
@@ -540,8 +543,12 @@ update_regular_file(struct directory *directory,
 		} else if (st->st_mtime != song->mtime || walk_discard) {
 			g_message("updating %s/%s",
 				  directory_get_path(directory), name);
-			if (!song_file_update(song))
+			if (!song_file_update(song)) {
+				g_debug("deleting unrecognized file %s/%s",
+					directory_get_path(directory), name);
 				delete_song(directory, song);
+			}
+
 			modified = true;
 		}
 #ifdef ENABLE_ARCHIVE
