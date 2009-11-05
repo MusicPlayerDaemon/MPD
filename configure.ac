@@ -700,7 +700,7 @@ AC_ARG_ENABLE(jack,
 		[enable jack support]),,
 	enable_jack=auto)
 
-MPD_AUTO_PKG(jack, JACK, [jack >= 0.4],
+MPD_AUTO_PKG(jack, JACK, [jack >= 0.100],
 	[JACK output plugin], [libjack not found])
 if test x$enable_jack = xyes; then
 	AC_DEFINE([HAVE_JACK], 1, [Define to enable JACK support])

@@ -43,6 +43,11 @@ static const char *const port_names[2] = {
 };
 
 struct jack_data {
+	/**
+	 * libjack options passed to jack_client_open().
+	 */
+	jack_options_t options;
+
 	const char *name;
 
 	/* configuration */
@@ -169,13 +174,17 @@ mpd_jack_disconnect(struct jack_data *jd)
 static bool
 mpd_jack_connect(struct jack_data *jd, GError **error_r)
 {
+	jack_status_t status;
+
 	assert(jd != NULL);
 
 	jd->shutdown = false;
 
-	if ((jd->client = jack_client_new(jd->name)) == NULL) {
+	jd->client = jack_client_open(jd->name, jd->options, &status);
+	if (jd->client == NULL) {
 		g_set_error(error_r, jack_output_quark(), 0,
-			    "Failed to connect to JACK server");
+			    "Failed to connect to JACK server, status=%d",
+			    status);
 		return false;
 	}
 
@@ -212,8 +221,18 @@ mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	const char *value;
 
 	jd = g_new(struct jack_data, 1);
-	jd->name = config_get_block_string(param, "client_name",
-					   "Music Player Daemon");
+	jd->options = JackNullOption;
+
+	jd->name = config_get_block_string(param, "client_name", NULL);
+	if (jd->name != NULL)
+		jd->options |= JackUseExactName;
+	else
+		/* if there's a no configured client name, we don't
+		   care about the JackUseExactName option */
+		jd->name = "Music Player Daemon";
+
+	if (!config_get_block_bool(param, "autostart", false))
+		jd->options |= JackNoStartServer;
 
 	value = config_get_block_string(param, "ports", NULL);
 	if (value != NULL) {

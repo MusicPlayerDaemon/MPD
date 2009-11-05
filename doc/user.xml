@@ -747,6 +747,17 @@ cd mpd-version</programlisting>
               </row>
               <row>
                 <entry>
+                  <varname>autostart</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  If set to <parameter>yes</parameter>, then
+                  <filename>libjack</filename> will automatically
+                  launch the JACK daemon.  Disabled by default.
+                </entry>
+              </row>
+              <row>
+                <entry>
                   <varname>ports</varname>
                   <parameter>A,B</parameter>
                 </entry>

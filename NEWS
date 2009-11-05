@@ -32,6 +32,7 @@ ver 0.16 (20??/??/??)
   - pulse: announce "media.role=music"
   - pulse: renamed context to "Music Player Daemon"
   - pulse: connect to server on MPD startup, implement pause
+  - jack: require libjack 0.100
   - jack: don't disconnect during pause
   - jack: connect to server on MPD startup
   - jack: added option "client_name"
