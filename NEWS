@@ -34,6 +34,7 @@ ver 0.16 (20??/??/??)
   - pulse: connect to server on MPD startup, implement pause
   - jack: don't disconnect during pause
   - jack: connect to server on MPD startup
+  - jack: added option "client_name"
   - wildcards allowed in audio_format configuration
   - alsa: don't recover on CANCEL
   - consistently lock audio output objects

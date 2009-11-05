@@ -212,9 +212,8 @@ mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	const char *value;
 
 	jd = g_new(struct jack_data, 1);
-	jd->name = config_get_block_string(param, "name", "mpd_jack");
-
-	g_debug("mpd_jack_init (pid=%d)", getpid());
+	jd->name = config_get_block_string(param, "client_name",
+					   "Music Player Daemon");
 
 	value = config_get_block_string(param, "ports", NULL);
 	if (value != NULL) {

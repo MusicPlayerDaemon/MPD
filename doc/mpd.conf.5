@@ -348,13 +348,12 @@ after another until it successfully establishes a connection.
 .TP
 .B sink <sink>
 The sink to output to.  The default is to let PulseAudio choose a sink.
-.SH REQUIRED JACK OUTPUT PARAMETERS
+.SH OPTIONAL JACK OUTPUT PARAMETERS
 .TP
-.B name <name>
+.B client_name <name>
 The client name to use when connecting to JACK.  The output ports <name>:left
 and <name>:right will also be created for the left and right channels,
 respectively.
-.SH OPTIONAL JACK OUTPUT PARAMETERS
 .TP
 .B ports <left_port,right_port>
 This specifies the left and right ports to connect to for the left and right
