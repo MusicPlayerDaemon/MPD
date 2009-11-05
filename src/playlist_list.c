@@ -19,6 +19,7 @@
 
 #include "playlist_list.h"
 #include "playlist_plugin.h"
+#include "playlist/extm3u_playlist_plugin.h"
 #include "playlist/m3u_playlist_plugin.h"
 #include "playlist/xspf_playlist_plugin.h"
 #include "playlist/lastfm_playlist_plugin.h"
@@ -37,6 +38,7 @@
 #include <stdio.h>
 
 static const struct playlist_plugin *const playlist_plugins[] = {
+	&extm3u_playlist_plugin,
 	&m3u_playlist_plugin,
 	&xspf_playlist_plugin,
 	&pls_playlist_plugin,

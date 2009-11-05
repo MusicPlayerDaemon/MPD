@@ -142,6 +142,7 @@ mpd_headers = \
 	src/playlist_plugin.h \
 	src/playlist_list.h \
 	src/playlist_queue.h \
+	src/playlist/extm3u_playlist_plugin.h \
 	src/playlist/m3u_playlist_plugin.h \
 	src/playlist/pls_playlist_plugin.h \
 	src/playlist/xspf_playlist_plugin.h \
@@ -657,6 +658,7 @@ endif
 #
 
 PLAYLIST_SRC = \
+	src/playlist/extm3u_playlist_plugin.c \
 	src/playlist/m3u_playlist_plugin.c \
 	src/playlist/pls_playlist_plugin.c \
 	src/playlist/xspf_playlist_plugin.c \

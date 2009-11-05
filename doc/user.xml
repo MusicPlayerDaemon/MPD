@@ -1338,6 +1338,14 @@ cd mpd-version</programlisting>
       </section>
 
       <section>
+        <title><varname>extm3u</varname></title>
+
+        <para>
+          Reads extended <filename>.m3u</filename> playlist files.
+        </para>
+      </section>
+
+      <section>
         <title><varname>pls</varname></title>
 
         <para>
