@@ -64,7 +64,7 @@ m3u_read(struct playlist_provider *_playlist)
 
 		while (*line != 0 && g_ascii_isspace(*line))
 			++line;
-	} while (line[0] == '#' || !uri_has_scheme(line));
+	} while (line[0] == '#' || *line == 0);
 
 	return song_remote_new(line);
 }

@@ -66,12 +66,6 @@ static void pls_parser(GKeyFile *keyfile, struct pls_playlist *playlist)
 		}
 		g_free(key);
 
-		/* Don't load local path */
-		if(!uri_has_scheme(value)){
-			g_free(value);
-			continue;
-		}
-
 		song = song_remote_new(value);
 		g_free(value);
 
