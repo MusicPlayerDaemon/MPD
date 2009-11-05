@@ -28,6 +28,7 @@ ver 0.16 (20??/??/??)
   - twolame: new encoder plugin based on libtwolame
 * output:
   - recorder: new output plugin for recording radio streams
+  - alsa: don't recover on CANCEL
   - openal: new output plugin
   - pulse: announce "media.role=music"
   - pulse: renamed context to "Music Player Daemon"
@@ -38,8 +39,8 @@ ver 0.16 (20??/??/??)
   - jack: added option "client_name"
   - jack: clear ring buffers before activating
   - jack: support mono input
+  - httpd: bind port when output is enabled
   - wildcards allowed in audio_format configuration
-  - alsa: don't recover on CANCEL
   - consistently lock audio output objects
 * mixers:
   - removed support for legacy mixer configuration
