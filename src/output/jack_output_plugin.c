@@ -335,10 +335,15 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 	   persist until MPD exits.  It's too unsafe to delete them
 	   because we can never know when mpd_jack_process() gets
 	   called */
-	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ringbuffer); ++i)
+	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ringbuffer); ++i) {
 		if (jd->ringbuffer[i] == NULL)
 			jd->ringbuffer[i] =
 				jack_ringbuffer_create(jd->ringbuffer_size);
+
+		/* clear the ring buffer to be sure that data from
+		   previous playbacks are gone */
+		jack_ringbuffer_reset(jd->ringbuffer[i]);
+	}
 
 	if ( jack_activate(jd->client) ) {
 		g_set_error(error_r, jack_output_quark(), 0,

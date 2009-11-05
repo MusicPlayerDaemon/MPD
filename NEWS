@@ -36,6 +36,7 @@ ver 0.16 (20??/??/??)
   - jack: don't disconnect during pause
   - jack: connect to server on MPD startup
   - jack: added option "client_name"
+  - jack: clear ring buffers before activating
   - wildcards allowed in audio_format configuration
   - alsa: don't recover on CANCEL
   - consistently lock audio output objects
