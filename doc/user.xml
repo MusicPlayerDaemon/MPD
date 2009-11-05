@@ -725,6 +725,49 @@ cd mpd-version</programlisting>
           The <varname>jack</varname> plugin connects to a JACK
           server.
         </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>client_name</varname>
+                  <parameter>NAME</parameter>
+                </entry>
+                <entry>
+                  The name of the JACK client.  Defaults to "Music
+                  Player Daemon".
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>ports</varname>
+                  <parameter>A,B</parameter>
+                </entry>
+                <entry>
+                  The name of the JACK source ports created by MPD.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>ringbuffer_size</varname>
+                  <parameter>NBYTES</parameter>
+                </entry>
+                <entry>
+                  Sets the size of the ring buffer for each channel.
+                  Do not configure this value unless you know what
+                  you're doing.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
 
       <section>
