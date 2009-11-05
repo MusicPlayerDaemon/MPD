@@ -34,6 +34,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 
 static const struct playlist_plugin *const playlist_plugins[] = {
 	&m3u_playlist_plugin,
@@ -141,6 +142,10 @@ playlist_list_open_stream_mime(struct input_stream *is)
 
 		if (playlist_plugins_enabled[i] &&
 		    stringFoundInStringArray(plugin->mime_types, is->mime)) {
+			/* rewind the stream, so each plugin gets a
+			   fresh start */
+			input_stream_seek(is, 0, SEEK_SET);
+
 			playlist = playlist_plugin_open_stream(plugin, is);
 			if (playlist != NULL)
 				return playlist;
@@ -163,6 +168,10 @@ playlist_list_open_stream_suffix(struct input_stream *is, const char *suffix)
 
 		if (playlist_plugins_enabled[i] &&
 		    stringFoundInStringArray(plugin->suffixes, suffix)) {
+			/* rewind the stream, so each plugin gets a
+			   fresh start */
+			input_stream_seek(is, 0, SEEK_SET);
+
 			playlist = playlist_plugin_open_stream(plugin, is);
 			if (playlist != NULL)
 				return playlist;
