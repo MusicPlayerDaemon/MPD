@@ -36,6 +36,10 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "jack"
 
+enum {
+	MAX_PORTS = 16,
+};
+
 static const size_t sample_size = sizeof(jack_default_audio_sample_t);
 
 static const char *const port_names[2] = {
@@ -52,7 +56,8 @@ struct jack_data {
 
 	/* configuration */
 
-	char *destination_ports[2];
+	char *destination_ports[MAX_PORTS];
+	unsigned num_destination_ports;
 
 	size_t ringbuffer_size;
 
@@ -217,6 +222,35 @@ mpd_jack_test_default_device(void)
 	return true;
 }
 
+static unsigned
+parse_port_list(int line, const char *source, char **dest, GError **error_r)
+{
+	char **list = g_strsplit(source, ",", 0);
+	unsigned n = 0;
+
+	for (n = 0; list[n] != NULL; ++n) {
+		if (n >= MAX_PORTS) {
+			g_set_error(error_r, jack_output_quark(), 0,
+				    "too many port names in line %d",
+				    line);
+			return 0;
+		}
+
+		dest[n] = list[n];
+	}
+
+	g_free(list);
+
+	if (n == 0) {
+		g_set_error(error_r, jack_output_quark(), 0,
+			    "at least one port name expected in line %d",
+			    line);
+		return 0;
+	}
+
+	return n;
+}
+
 static void *
 mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	      const struct config_param *param, GError **error_r)
@@ -248,22 +282,13 @@ mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	}
 
 	if (value != NULL) {
-		char **ports = g_strsplit(value, ",", 0);
-
-		if (ports[0] == NULL || ports[1] == NULL || ports[2] != NULL) {
-			g_set_error(error_r, jack_output_quark(), 0,
-				    "two port names expected in line %d",
-				    param->line);
+		jd->num_destination_ports =
+			parse_port_list(param->line, value,
+					jd->destination_ports, error_r);
+		if (jd->num_destination_ports == 0)
 			return NULL;
-		}
-
-		jd->destination_ports[0] = ports[0];
-		jd->destination_ports[1] = ports[1];
-
-		g_free(ports);
 	} else {
-		jd->destination_ports[0] = NULL;
-		jd->destination_ports[1] = NULL;
+		jd->num_destination_ports = 0;
 	}
 
 	jd->ringbuffer_size =
@@ -283,7 +308,7 @@ mpd_jack_finish(void *data)
 {
 	struct jack_data *jd = data;
 
-	for (unsigned i = 0; i < G_N_ELEMENTS(jd->destination_ports); ++i)
+	for (unsigned i = 0; i < jd->num_destination_ports; ++i)
 		g_free(jd->destination_ports[i]);
 
 	g_free(jd);
@@ -338,7 +363,8 @@ mpd_jack_stop(struct jack_data *jd)
 static bool
 mpd_jack_start(struct jack_data *jd, GError **error_r)
 {
-	const char *destination_ports[2], **jports;
+	const char *destination_ports[MAX_PORTS], **jports;
+	unsigned num_destination_ports;
 
 	assert(jd->client != NULL);
 
@@ -363,7 +389,7 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 		return false;
 	}
 
-	if (jd->destination_ports[1] == NULL) {
+	if (jd->num_destination_ports == 0) {
 		/* no output ports were configured - ask libjack for
 		   defaults */
 		jports = jack_get_ports(jd->client, NULL, NULL,
@@ -375,18 +401,38 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 			return false;
 		}
 
-		destination_ports[0] = jports[0];
-		destination_ports[1] = jports[1] != NULL ? jports[1] : jports[0];
+		assert(*jports != NULL);
 
-		g_debug("destination_ports: %s %s", jports[0], jports[1]);
+		for (num_destination_ports = 0;
+		     num_destination_ports < MAX_PORTS &&
+			     jports[num_destination_ports] != NULL;
+		     ++num_destination_ports) {
+			g_debug("destination_port[%u] = '%s'\n",
+				num_destination_ports,
+				jports[num_destination_ports]);
+			destination_ports[num_destination_ports] =
+				jports[num_destination_ports];
+		}
 	} else {
 		/* use the configured output ports */
 
-		destination_ports[0] = jd->destination_ports[0];
-		destination_ports[1] = jd->destination_ports[1];
+		num_destination_ports = jd->num_destination_ports;
+		memcpy(destination_ports, jd->destination_ports,
+		       num_destination_ports * sizeof(*destination_ports));
 
 		jports = NULL;
 	}
+
+	assert(num_destination_ports > 0);
+
+	if (jd->audio_format.channels == 2 && num_destination_ports == 1) {
+		/* mix stereo signal on one speaker */
+
+		destination_ports[1] = destination_ports[0];
+		num_destination_ports = 2;
+	}
+
+	assert(jd->audio_format.channels <= num_destination_ports);
 
 	for (unsigned i = 0; i < jd->audio_format.channels; ++i) {
 		int ret;
@@ -406,7 +452,7 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 		}
 	}
 
-	if (jd->audio_format.channels == 1) {
+	if (jd->audio_format.channels == 1 && num_destination_ports == 2) {
 		/* mono input file: connect the one source channel to
 		   the both destination channels */
 		int ret;
