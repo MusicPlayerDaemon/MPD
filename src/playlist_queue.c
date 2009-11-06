@@ -20,6 +20,8 @@
 #include "playlist_queue.h"
 #include "playlist_list.h"
 #include "playlist_plugin.h"
+#include "stored_playlist.h"
+#include "mapper.h"
 #include "song.h"
 #include "uri.h"
 #include "ls.h"
@@ -91,11 +93,42 @@ playlist_open_remote_into_queue(const char *uri, struct playlist *dest)
 	return result;
 }
 
+static enum playlist_result
+playlist_open_local_into_queue(const char *uri, struct playlist *dest)
+{
+	struct playlist_provider *playlist;
+	const char *playlist_directory_fs;
+	char *path_fs;
+	struct input_stream is;
+	enum playlist_result result;
+
+	assert(spl_valid_name(uri));
+
+	playlist_directory_fs = map_spl_path();
+	if (playlist_directory_fs == NULL)
+		return PLAYLIST_RESULT_DISABLED;
+
+	path_fs = g_build_filename(playlist_directory_fs, uri, NULL);
+	playlist = playlist_list_open_path(&is, path_fs);
+	g_free(path_fs);
+	if (playlist == NULL)
+		return PLAYLIST_RESULT_NO_SUCH_LIST;
+
+	result = playlist_load_into_queue(playlist, dest);
+	playlist_plugin_close(playlist);
+
+	input_stream_close(&is);
+
+	return result;
+}
+
 enum playlist_result
 playlist_open_into_queue(const char *uri, struct playlist *dest)
 {
 	if (uri_has_scheme(uri))
 		return playlist_open_remote_into_queue(uri, dest);
+	else if (spl_valid_name(uri))
+		return playlist_open_local_into_queue(uri, dest);
 	else
 		return PLAYLIST_RESULT_NO_SUCH_LIST;
 }
