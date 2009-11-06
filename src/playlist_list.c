@@ -204,3 +204,39 @@ playlist_list_open_stream(struct input_stream *is, const char *uri)
 
 	return NULL;
 }
+
+static bool
+playlist_suffix_supported(const char *suffix)
+{
+	assert(suffix != NULL);
+
+	for (unsigned i = 0; playlist_plugins[i] != NULL; ++i) {
+		const struct playlist_plugin *plugin = playlist_plugins[i];
+
+		if (playlist_plugins_enabled[i] &&
+		    stringFoundInStringArray(plugin->suffixes, suffix))
+			return true;
+	}
+
+	return false;
+}
+
+struct playlist_provider *
+playlist_list_open_path(struct input_stream *is, const char *path_fs)
+{
+	const char *suffix;
+	struct playlist_provider *playlist;
+
+	assert(path_fs != NULL);
+
+	suffix = uri_get_suffix(path_fs);
+	if (suffix == NULL || !playlist_suffix_supported(suffix) ||
+	    !input_stream_open(is, path_fs))
+		return NULL;
+
+	playlist = playlist_list_open_stream_suffix(is, suffix);
+	if (playlist == NULL)
+		input_stream_close(is);
+
+	return playlist;
+}
