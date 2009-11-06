@@ -132,13 +132,15 @@ int set_nonblocking(int fd)
 #endif
 }
 
-int stringFoundInStringArray(const char *const*array, const char *suffix)
+bool
+string_array_contains(const char *const* haystack, const char *needle)
 {
-	while (array && *array) {
-		if (g_ascii_strcasecmp(*array, suffix) == 0)
-			return 1;
-		array++;
-	}
+	assert(haystack != NULL);
+	assert(needle != NULL);
 
-	return 0;
+	for (; *haystack != NULL; ++haystack)
+		if (g_ascii_strcasecmp(*haystack, needle) == 0)
+			return true;
+
+	return false;
 }

@@ -96,16 +96,6 @@ static struct config_entry config_entries[] = {
 };
 
 static bool
-string_array_contains(const char *const* array, const char *value)
-{
-	for (const char *const* x = array; *x; x++)
-		if (g_ascii_strcasecmp(*x, value) == 0)
-			return true;
-
-	return false;
-}
-
-static bool
 get_bool(const char *value, bool *value_r)
 {
 	static const char *t[] = { "yes", "true", "1", NULL };
