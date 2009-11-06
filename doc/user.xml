@@ -762,7 +762,7 @@ cd mpd-version</programlisting>
                   <parameter>A,B</parameter>
                 </entry>
                 <entry>
-                  The name of the JACK source ports created by MPD.
+                  The names of the JACK destination ports to connect to.
                 </entry>
               </row>
               <row>

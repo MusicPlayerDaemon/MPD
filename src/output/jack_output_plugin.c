@@ -51,7 +51,9 @@ struct jack_data {
 	const char *name;
 
 	/* configuration */
-	char *output_ports[2];
+
+	char *destination_ports[2];
+
 	size_t ringbuffer_size;
 
 	/* the current audio format */
@@ -247,13 +249,13 @@ mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 			return NULL;
 		}
 
-		jd->output_ports[0] = ports[0];
-		jd->output_ports[1] = ports[1];
+		jd->destination_ports[0] = ports[0];
+		jd->destination_ports[1] = ports[1];
 
 		g_free(ports);
 	} else {
-		jd->output_ports[0] = NULL;
-		jd->output_ports[1] = NULL;
+		jd->destination_ports[0] = NULL;
+		jd->destination_ports[1] = NULL;
 	}
 
 	jd->ringbuffer_size =
@@ -273,8 +275,8 @@ mpd_jack_finish(void *data)
 {
 	struct jack_data *jd = data;
 
-	for (unsigned i = 0; i < G_N_ELEMENTS(jd->output_ports); ++i)
-		g_free(jd->output_ports[i]);
+	for (unsigned i = 0; i < G_N_ELEMENTS(jd->destination_ports); ++i)
+		g_free(jd->destination_ports[i]);
 
 	g_free(jd);
 }
@@ -328,7 +330,7 @@ mpd_jack_stop(struct jack_data *jd)
 static bool
 mpd_jack_start(struct jack_data *jd, GError **error_r)
 {
-	const char *output_ports[2], **jports;
+	const char *destination_ports[2], **jports;
 
 	assert(jd->client != NULL);
 
@@ -353,7 +355,7 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 		return false;
 	}
 
-	if (jd->output_ports[1] == NULL) {
+	if (jd->destination_ports[1] == NULL) {
 		/* no output ports were configured - ask libjack for
 		   defaults */
 		jports = jack_get_ports(jd->client, NULL, NULL,
@@ -365,15 +367,15 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 			return false;
 		}
 
-		output_ports[0] = jports[0];
-		output_ports[1] = jports[1] != NULL ? jports[1] : jports[0];
+		destination_ports[0] = jports[0];
+		destination_ports[1] = jports[1] != NULL ? jports[1] : jports[0];
 
-		g_debug("output_ports: %s %s", jports[0], jports[1]);
+		g_debug("destination_ports: %s %s", jports[0], jports[1]);
 	} else {
 		/* use the configured output ports */
 
-		output_ports[0] = jd->output_ports[0];
-		output_ports[1] = jd->output_ports[1];
+		destination_ports[0] = jd->destination_ports[0];
+		destination_ports[1] = jd->destination_ports[1];
 
 		jports = NULL;
 	}
@@ -382,11 +384,11 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 		int ret;
 
 		ret = jack_connect(jd->client, jack_port_name(jd->ports[i]),
-				   output_ports[i]);
+				   destination_ports[i]);
 		if (ret != 0) {
 			g_set_error(error_r, jack_output_quark(), 0,
 				    "Not a valid JACK port: %s",
-				    output_ports[i]);
+				    destination_ports[i]);
 
 			if (jports != NULL)
 				free(jports);
@@ -402,11 +404,11 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 		int ret;
 
 		ret = jack_connect(jd->client, jack_port_name(jd->ports[0]),
-				   output_ports[1]);
+				   destination_ports[1]);
 		if (ret != 0) {
 			g_set_error(error_r, jack_output_quark(), 0,
 				    "Not a valid JACK port: %s",
-				    output_ports[1]);
+				    destination_ports[1]);
 
 			if (jports != NULL)
 				free(jports);
