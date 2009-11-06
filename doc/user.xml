@@ -758,7 +758,7 @@ cd mpd-version</programlisting>
               </row>
               <row>
                 <entry>
-                  <varname>ports</varname>
+                  <varname>destination_ports</varname>
                   <parameter>A,B</parameter>
                 </entry>
                 <entry>

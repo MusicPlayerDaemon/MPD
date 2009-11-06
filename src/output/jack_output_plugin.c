@@ -238,7 +238,15 @@ mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	if (!config_get_block_bool(param, "autostart", false))
 		jd->options |= JackNoStartServer;
 
-	value = config_get_block_string(param, "ports", NULL);
+	value = config_get_block_string(param, "destination_ports", NULL);
+	if (value == NULL) {
+		/* compatibility with MPD < 0.16 */
+		value = config_get_block_string(param, "ports", NULL);
+		if (value != NULL)
+			g_warning("deprecated option 'ports' in line %d",
+				  param->line);
+	}
+
 	if (value != NULL) {
 		char **ports = g_strsplit(value, ",", 0);
 
