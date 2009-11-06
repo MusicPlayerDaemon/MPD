@@ -758,6 +758,18 @@ cd mpd-version</programlisting>
               </row>
               <row>
                 <entry>
+                  <varname>source_ports</varname>
+                  <parameter>A,B</parameter>
+                </entry>
+                <entry>
+                  The names of the JACK source ports to be created.
+                  By default, the ports "left" and "right" are
+                  created.  To use more ports, you have to tweak this
+                  option.
+                </entry>
+              </row>
+              <row>
+                <entry>
                   <varname>destination_ports</varname>
                   <parameter>A,B</parameter>
                 </entry>

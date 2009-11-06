@@ -42,10 +42,6 @@ enum {
 
 static const size_t sample_size = sizeof(jack_default_audio_sample_t);
 
-static const char *const port_names[2] = {
-	"left", "right",
-};
-
 struct jack_data {
 	/**
 	 * libjack options passed to jack_client_open().
@@ -56,6 +52,9 @@ struct jack_data {
 
 	/* configuration */
 
+	char *source_ports[MAX_PORTS];
+	unsigned num_source_ports;
+
 	char *destination_ports[MAX_PORTS];
 	unsigned num_destination_ports;
 
@@ -65,9 +64,9 @@ struct jack_data {
 	struct audio_format audio_format;
 
 	/* jack library stuff */
-	jack_port_t *ports[2];
+	jack_port_t *ports[MAX_PORTS];
 	jack_client_t *client;
-	jack_ringbuffer_t *ringbuffer[2];
+	jack_ringbuffer_t *ringbuffer[MAX_PORTS];
 
 	bool shutdown;
 
@@ -126,6 +125,16 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 			out[available++] = 0.0;
 	}
 
+	/* generate silence for the unused source ports */
+
+	for (unsigned i = jd->audio_format.channels;
+	     i < jd->num_source_ports; ++i) {
+		out = jack_port_get_buffer(jd->ports[i], nframes);
+
+		for (jack_nframes_t f = 0; f < nframes; ++f)
+			out[f] = 0.0;
+	}
+
 	return 0;
 }
 
@@ -141,7 +150,9 @@ set_audioformat(struct jack_data *jd, struct audio_format *audio_format)
 {
 	audio_format->sample_rate = jack_get_sample_rate(jd->client);
 
-	if (audio_format->channels > 2)
+	if (jd->num_source_ports == 1)
+		audio_format->channels = 1;
+	else if (audio_format->channels > jd->num_source_ports)
 		audio_format->channels = 2;
 
 	if (audio_format->bits != 16 && audio_format->bits != 24)
@@ -200,14 +211,15 @@ mpd_jack_connect(struct jack_data *jd, GError **error_r)
 	jack_set_process_callback(jd->client, mpd_jack_process, jd);
 	jack_on_shutdown(jd->client, mpd_jack_shutdown, jd);
 
-	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ports); ++i) {
-		jd->ports[i] = jack_port_register(jd->client, port_names[i],
+	for (unsigned i = 0; i < jd->num_source_ports; ++i) {
+		jd->ports[i] = jack_port_register(jd->client,
+						  jd->source_ports[i],
 						  JACK_DEFAULT_AUDIO_TYPE,
 						  JackPortIsOutput, 0);
 		if (jd->ports[i] == NULL) {
 			g_set_error(error_r, jack_output_quark(), 0,
 				    "Cannot register output port \"%s\"",
-				    port_names[i]);
+				    jd->source_ports[i]);
 			mpd_jack_disconnect(jd);
 			return false;
 		}
@@ -272,6 +284,16 @@ mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	if (!config_get_block_bool(param, "autostart", false))
 		jd->options |= JackNoStartServer;
 
+	/* configure the source ports */
+
+	value = config_get_block_string(param, "source_ports", "left,right");
+	jd->num_source_ports = parse_port_list(param->line, value,
+					       jd->source_ports, error_r);
+	if (jd->num_source_ports == 0)
+		return NULL;
+
+	/* configure the destination ports */
+
 	value = config_get_block_string(param, "destination_ports", NULL);
 	if (value == NULL) {
 		/* compatibility with MPD < 0.16 */
@@ -290,6 +312,13 @@ mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	} else {
 		jd->num_destination_ports = 0;
 	}
+
+	if (jd->num_destination_ports > 0 &&
+	    jd->num_destination_ports != jd->num_source_ports)
+		g_warning("number of source ports (%u) mismatches the "
+			  "number of destination ports (%u) in line %d",
+			  jd->num_source_ports, jd->num_destination_ports,
+			  param->line);
 
 	jd->ringbuffer_size =
 		config_get_block_unsigned(param, "ringbuffer_size", 32768);
@@ -319,7 +348,7 @@ mpd_jack_enable(void *data, GError **error_r)
 {
 	struct jack_data *jd = (struct jack_data *)data;
 
-	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ringbuffer); ++i)
+	for (unsigned i = 0; i < jd->num_source_ports; ++i)
 		jd->ringbuffer[i] = NULL;
 
 	return mpd_jack_connect(jd, error_r);
@@ -333,7 +362,7 @@ mpd_jack_disable(void *data)
 	if (jd->client != NULL)
 		mpd_jack_disconnect(jd);
 
-	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ringbuffer); ++i) {
+	for (unsigned i = 0; i < jd->num_source_ports; ++i) {
 		if (jd->ringbuffer[i] != NULL) {
 			jack_ringbuffer_free(jd->ringbuffer[i]);
 			jd->ringbuffer[i] = NULL;
@@ -364,15 +393,17 @@ static bool
 mpd_jack_start(struct jack_data *jd, GError **error_r)
 {
 	const char *destination_ports[MAX_PORTS], **jports;
+	const char *duplicate_port = NULL;
 	unsigned num_destination_ports;
 
 	assert(jd->client != NULL);
+	assert(jd->audio_format.channels <= jd->num_source_ports);
 
 	/* allocate the ring buffers on the first open(); these
 	   persist until MPD exits.  It's too unsafe to delete them
 	   because we can never know when mpd_jack_process() gets
 	   called */
-	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ringbuffer); ++i) {
+	for (unsigned i = 0; i < jd->num_source_ports; ++i) {
 		if (jd->ringbuffer[i] == NULL)
 			jd->ringbuffer[i] =
 				jack_ringbuffer_create(jd->ringbuffer_size);
@@ -425,16 +456,26 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 
 	assert(num_destination_ports > 0);
 
-	if (jd->audio_format.channels == 2 && num_destination_ports == 1) {
+	if (jd->audio_format.channels >= 2 && num_destination_ports == 1) {
 		/* mix stereo signal on one speaker */
 
-		destination_ports[1] = destination_ports[0];
-		num_destination_ports = 2;
+		while (num_destination_ports < jd->audio_format.channels)
+			destination_ports[num_destination_ports++] =
+				destination_ports[0];
+	} else if (num_destination_ports > jd->audio_format.channels) {
+		if (jd->audio_format.channels == 1 && num_destination_ports > 2) {
+			/* mono input file: connect the one source
+			   channel to the both destination channels */
+			duplicate_port = destination_ports[1];
+			num_destination_ports = 1;
+		} else
+			/* connect only as many ports as we need */
+			num_destination_ports = jd->audio_format.channels;
 	}
 
-	assert(jd->audio_format.channels <= num_destination_ports);
+	assert(num_destination_ports <= jd->num_source_ports);
 
-	for (unsigned i = 0; i < jd->audio_format.channels; ++i) {
+	for (unsigned i = 0; i < num_destination_ports; ++i) {
 		int ret;
 
 		ret = jack_connect(jd->client, jack_port_name(jd->ports[i]),
@@ -452,17 +493,17 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 		}
 	}
 
-	if (jd->audio_format.channels == 1 && num_destination_ports == 2) {
+	if (duplicate_port != NULL) {
 		/* mono input file: connect the one source channel to
 		   the both destination channels */
 		int ret;
 
 		ret = jack_connect(jd->client, jack_port_name(jd->ports[0]),
-				   destination_ports[1]);
+				   duplicate_port);
 		if (ret != 0) {
 			g_set_error(error_r, jack_output_quark(), 0,
 				    "Not a valid JACK port: %s",
-				    destination_ports[1]);
+				    duplicate_port);
 
 			if (jports != NULL)
 				free(jports);
@@ -518,15 +559,12 @@ mpd_jack_write_samples_16(struct jack_data *jd, const int16_t *src,
 			  unsigned num_samples)
 {
 	jack_default_audio_sample_t sample;
+	unsigned i;
 
 	while (num_samples-- > 0) {
-		sample = sample_16_to_jack(*src++);
-		jack_ringbuffer_write(jd->ringbuffer[0], (void*)&sample,
-				      sizeof(sample));
-
-		if (jd->audio_format.channels >= 2) {
+		for (i = 0; i < jd->audio_format.channels; ++i) {
 			sample = sample_16_to_jack(*src++);
-			jack_ringbuffer_write(jd->ringbuffer[1], (void*)&sample,
+			jack_ringbuffer_write(jd->ringbuffer[i], (void*)&sample,
 					      sizeof(sample));
 		}
 	}
@@ -543,15 +581,12 @@ mpd_jack_write_samples_24(struct jack_data *jd, const int32_t *src,
 			  unsigned num_samples)
 {
 	jack_default_audio_sample_t sample;
+	unsigned i;
 
 	while (num_samples-- > 0) {
-		sample = sample_24_to_jack(*src++);
-		jack_ringbuffer_write(jd->ringbuffer[0], (void*)&sample,
-				      sizeof(sample));
-
-		if (jd->audio_format.channels >= 2) {
+		for (i = 0; i < jd->audio_format.channels; ++i) {
 			sample = sample_24_to_jack(*src++);
-			jack_ringbuffer_write(jd->ringbuffer[1], (void*)&sample,
+			jack_ringbuffer_write(jd->ringbuffer[i], (void*)&sample,
 					      sizeof(sample));
 		}
 	}
@@ -598,10 +633,12 @@ mpd_jack_play(void *data, const void *chunk, size_t size, GError **error_r)
 		}
 
 		space = jack_ringbuffer_write_space(jd->ringbuffer[0]);
-		space1 = jack_ringbuffer_write_space(jd->ringbuffer[1]);
-		if (space > space1)
-			/* send data symmetrically */
-			space = space1;
+		for (unsigned i = 1; i < jd->audio_format.channels; ++i) {
+			space1 = jack_ringbuffer_write_space(jd->ringbuffer[i]);
+			if (space > space1)
+				/* send data symmetrically */
+				space = space1;
+		}
 
 		if (space >= frame_size)
 			break;
