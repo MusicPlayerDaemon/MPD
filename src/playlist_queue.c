@@ -59,17 +59,15 @@ playlist_load_into_queue(struct playlist_provider *source,
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-enum playlist_result
-playlist_open_into_queue(const char *uri, struct playlist *dest)
+static enum playlist_result
+playlist_open_remote_into_queue(const char *uri, struct playlist *dest)
 {
 	struct playlist_provider *playlist;
 	bool stream = false;
 	struct input_stream is;
 	enum playlist_result result;
 
-	if (!uri_has_scheme(uri))
-		/* don't allow local playlist files for now */
-		return PLAYLIST_RESULT_NO_SUCH_LIST;
+	assert(uri_has_scheme(uri));
 
 	playlist = playlist_list_open_uri(uri);
 	if (playlist == NULL) {
@@ -91,4 +89,13 @@ playlist_open_into_queue(const char *uri, struct playlist *dest)
 		input_stream_close(&is);
 
 	return result;
+}
+
+enum playlist_result
+playlist_open_into_queue(const char *uri, struct playlist *dest)
+{
+	if (uri_has_scheme(uri))
+		return playlist_open_remote_into_queue(uri, dest);
+	else
+		return PLAYLIST_RESULT_NO_SUCH_LIST;
 }
