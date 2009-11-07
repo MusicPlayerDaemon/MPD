@@ -50,6 +50,8 @@ struct jack_data {
 
 	const char *name;
 
+	const char *server_name;
+
 	/* configuration */
 
 	char *source_ports[MAX_PORTS];
@@ -200,7 +202,8 @@ mpd_jack_connect(struct jack_data *jd, GError **error_r)
 
 	jd->shutdown = false;
 
-	jd->client = jack_client_open(jd->name, jd->options, &status);
+	jd->client = jack_client_open(jd->name, jd->options, &status,
+				      jd->server_name);
 	if (jd->client == NULL) {
 		g_set_error(error_r, jack_output_quark(), 0,
 			    "Failed to connect to JACK server, status=%d",
@@ -280,6 +283,10 @@ mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		/* if there's a no configured client name, we don't
 		   care about the JackUseExactName option */
 		jd->name = "Music Player Daemon";
+
+	jd->server_name = config_get_block_string(param, "server_name", NULL);
+	if (jd->server_name != NULL)
+		jd->options |= JackServerName;
 
 	if (!config_get_block_bool(param, "autostart", false))
 		jd->options |= JackNoStartServer;

@@ -747,6 +747,15 @@ cd mpd-version</programlisting>
               </row>
               <row>
                 <entry>
+                  <varname>server_name</varname>
+                  <parameter>NAME</parameter>
+                </entry>
+                <entry>
+                  Optional name of the JACK server.
+                </entry>
+              </row>
+              <row>
+                <entry>
                   <varname>autostart</varname>
                   <parameter>yes|no</parameter>
                 </entry>
