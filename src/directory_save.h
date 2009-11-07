@@ -27,7 +27,7 @@
 
 struct directory;
 
-int
+void
 directory_save(FILE *fp, struct directory *directory);
 
 bool

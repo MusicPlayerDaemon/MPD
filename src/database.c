@@ -251,7 +251,9 @@ db_save(void)
 
 	fprintf(fp, "%s\n", DIRECTORY_INFO_END);
 
-	if (directory_save(fp, music_root) < 0) {
+	directory_save(fp, music_root);
+
+	if (ferror(fp)) {
 		g_warning("Failed to write to database file: %s",
 			  strerror(errno));
 		while (fclose(fp) && errno == EINTR);

@@ -39,43 +39,38 @@ directory_quark(void)
 	return g_quark_from_static_string("directory");
 }
 
-/* TODO error checking */
-int
+void
 directory_save(FILE *fp, struct directory *directory)
 {
 	struct dirvec *children = &directory->children;
 	size_t i;
-	int retv;
 
 	if (!directory_is_root(directory)) {
 		fprintf(fp, DIRECTORY_MTIME "%lu\n",
 			(unsigned long)directory->mtime);
 
-		retv = fprintf(fp, "%s%s\n", DIRECTORY_BEGIN,
-			       directory_get_path(directory));
-		if (retv < 0)
-			return -1;
+		fprintf(fp, "%s%s\n", DIRECTORY_BEGIN,
+			directory_get_path(directory));
 	}
 
 	for (i = 0; i < children->nr; ++i) {
 		struct directory *cur = children->base[i];
 		char *base = g_path_get_basename(cur->path);
 
-		retv = fprintf(fp, DIRECTORY_DIR "%s\n", base);
+		fprintf(fp, DIRECTORY_DIR "%s\n", base);
 		g_free(base);
-		if (retv < 0)
-			return -1;
-		if (directory_save(fp, cur) < 0)
-			return -1;
+
+		directory_save(fp, cur);
+
+		if (ferror(fp))
+			return;
 	}
 
 	songvec_save(fp, &directory->songs);
 
-	if (!directory_is_root(directory) &&
-	    fprintf(fp, DIRECTORY_END "%s\n",
-		    directory_get_path(directory)) < 0)
-		return -1;
-	return 0;
+	if (!directory_is_root(directory))
+		fprintf(fp, DIRECTORY_END "%s\n",
+			directory_get_path(directory));
 }
 
 static struct directory *
