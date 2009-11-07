@@ -46,6 +46,52 @@ httpd_output_quark(void)
 	return g_quark_from_static_string("httpd_output");
 }
 
+static gboolean
+httpd_listen_in_event(G_GNUC_UNUSED GIOChannel *source,
+		      G_GNUC_UNUSED GIOCondition condition,
+		      gpointer data);
+
+static bool
+httpd_output_bind(struct httpd_output *httpd, GError **error_r)
+{
+	GIOChannel *channel;
+
+	httpd->open = false;
+
+	/* create and set up listener socket */
+
+	httpd->fd = socket_bind_listen(PF_INET, SOCK_STREAM, 0,
+				       (struct sockaddr *)&httpd->address,
+				       httpd->address_size,
+				       16, error_r);
+	if (httpd->fd < 0)
+		return false;
+
+	g_mutex_lock(httpd->mutex);
+
+	channel = g_io_channel_unix_new(httpd->fd);
+	httpd->source_id = g_io_add_watch(channel, G_IO_IN,
+					  httpd_listen_in_event, httpd);
+	g_io_channel_unref(channel);
+
+	g_mutex_unlock(httpd->mutex);
+
+	return true;
+}
+
+static void
+httpd_output_unbind(struct httpd_output *httpd)
+{
+	assert(!httpd->open);
+
+	g_mutex_lock(httpd->mutex);
+
+	g_source_remove(httpd->source_id);
+	close(httpd->fd);
+
+	g_mutex_unlock(httpd->mutex);
+}
+
 static void *
 httpd_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		  const struct config_param *param,
@@ -212,29 +258,8 @@ static bool
 httpd_output_enable(void *data, GError **error_r)
 {
 	struct httpd_output *httpd = data;
-	GIOChannel *channel;
 
-	httpd->open = false;
-
-	/* create and set up listener socket */
-
-	httpd->fd = socket_bind_listen(PF_INET, SOCK_STREAM, 0,
-				       (struct sockaddr *)&httpd->address,
-				       httpd->address_size,
-				       16, error_r);
-	if (httpd->fd < 0)
-		return false;
-
-	g_mutex_lock(httpd->mutex);
-
-	channel = g_io_channel_unix_new(httpd->fd);
-	httpd->source_id = g_io_add_watch(channel, G_IO_IN,
-					  httpd_listen_in_event, httpd);
-	g_io_channel_unref(channel);
-
-	g_mutex_unlock(httpd->mutex);
-
-	return true;
+	return httpd_output_bind(httpd, error_r);
 }
 
 static void
@@ -242,12 +267,7 @@ httpd_output_disable(void *data)
 {
 	struct httpd_output *httpd = data;
 
-	g_mutex_lock(httpd->mutex);
-
-	g_source_remove(httpd->source_id);
-	close(httpd->fd);
-
-	g_mutex_unlock(httpd->mutex);
+	httpd_output_unbind(httpd);
 }
 
 static bool
