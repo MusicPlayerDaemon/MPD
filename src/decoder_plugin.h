@@ -161,4 +161,18 @@ decoder_plugin_container_scan(	const struct decoder_plugin *plugin,
 	return plugin->container_scan(pathname, tnum);
 }
 
+/**
+ * Does the plugin announce the specified file name suffix?
+ */
+bool
+decoder_plugin_supports_suffix(const struct decoder_plugin *plugin,
+			       const char *suffix);
+
+/**
+ * Does the plugin announce the specified MIME type?
+ */
+bool
+decoder_plugin_supports_mime_type(const struct decoder_plugin *plugin,
+				  const char *mime_type);
+
 #endif

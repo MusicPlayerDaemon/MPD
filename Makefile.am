@@ -403,6 +403,7 @@ DECODER_LIBS = \
 
 DECODER_SRC = \
 	src/decoder_buffer.c \
+	src/decoder_plugin.c \
 	src/decoder_list.c
 
 if HAVE_MAD

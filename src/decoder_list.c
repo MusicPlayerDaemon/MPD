@@ -119,8 +119,8 @@ decoder_plugin_from_suffix(const char *suffix, unsigned int next)
 		i = 0;
 	for (; decoder_plugins[i] != NULL; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
-		if (decoder_plugins_enabled[i] && plugin->suffixes != NULL &&
-		    string_array_contains(plugin->suffixes, suffix)) {
+		if (decoder_plugins_enabled[i] &&
+		    decoder_plugin_supports_suffix(plugin, suffix)) {
 			++i;
 			return plugin;
 		}
@@ -141,8 +141,8 @@ decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
 		i = 0;
 	for (; decoder_plugins[i] != NULL; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
-		if (decoder_plugins_enabled[i] && plugin->mime_types != NULL &&
-		    string_array_contains(plugin->mime_types, mimeType)) {
+		if (decoder_plugins_enabled[i] &&
+		    decoder_plugin_supports_suffix(plugin, mimeType)) {
 			++i;
 			return plugin;
 		}
