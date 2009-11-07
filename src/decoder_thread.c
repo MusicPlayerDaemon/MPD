@@ -35,6 +35,53 @@
 
 #include <unistd.h>
 
+static enum decoder_command
+decoder_lock_get_command(struct decoder_control *dc)
+{
+	enum decoder_command command;
+
+	decoder_lock(dc);
+	command = dc->command;
+	decoder_unlock(dc);
+
+	return command;
+}
+
+/**
+ * Opens the input stream with input_stream_open(), and waits until
+ * the stream gets ready.  If a decoder STOP command is received
+ * during that, it cancels the operation (but does not close the
+ * stream).
+ *
+ * Unlock the decoder before calling this function.
+ *
+ * @return true on success of if #DECODE_COMMAND_STOP is received,
+ * false on error
+ */
+static bool
+decoder_input_stream_open(struct decoder_control *dc,
+			  struct input_stream *is, const char *uri)
+{
+	if (!input_stream_open(is, uri))
+		return false;
+
+	/* wait for the input stream to become ready; its metadata
+	   will be available then */
+
+	while (!is->ready &&
+	       decoder_lock_get_command(dc) != DECODE_COMMAND_STOP) {
+		int ret;
+
+		ret = input_stream_buffer(is);
+		if (ret < 0) {
+			input_stream_close(is);
+			return false;
+		}
+	}
+
+	return true;
+}
+
 static bool
 decoder_stream_decode(const struct decoder_plugin *plugin,
 		      struct decoder *decoder,
@@ -156,34 +203,9 @@ decoder_run_stream(struct decoder *decoder, const char *uri)
 
 	decoder_unlock(dc);
 
-	if (!input_stream_open(&input_stream, uri)) {
+	if (!decoder_input_stream_open(dc, &input_stream, uri)) {
 		decoder_lock(dc);
-		dc->state = DECODE_STATE_ERROR;
 		return false;
-	}
-
-	/* wait for the input stream to become ready; its metadata
-	   will be available then */
-
-	while (!input_stream.ready) {
-		int ret;
-
-		decoder_lock(dc);
-		if (dc->command == DECODE_COMMAND_STOP) {
-			decoder_unlock(dc);
-			input_stream_close(&input_stream);
-			decoder_lock(dc);
-			return true;
-		}
-
-		decoder_unlock(dc);
-
-		ret = input_stream_buffer(&input_stream);
-		if (ret < 0) {
-			input_stream_close(&input_stream);
-			decoder_lock(dc);
-			return false;
-		}
 	}
 
 	decoder_lock(dc);
@@ -230,7 +252,8 @@ decoder_run_file(struct decoder *decoder, const char *path_fs)
 		} else if (plugin->stream_decode != NULL) {
 			struct input_stream input_stream;
 
-			if (!input_stream_open(&input_stream, path_fs))
+			if (!decoder_input_stream_open(dc, &input_stream,
+						       path_fs))
 				continue;
 
 			decoder_lock(dc);
