@@ -337,6 +337,9 @@ mpd_jack_finish(void *data)
 {
 	struct jack_data *jd = data;
 
+	for (unsigned i = 0; i < jd->num_source_ports; ++i)
+		g_free(jd->source_ports[i]);
+
 	for (unsigned i = 0; i < jd->num_destination_ports; ++i)
 		g_free(jd->destination_ports[i]);
 
