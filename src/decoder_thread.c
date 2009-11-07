@@ -149,24 +149,67 @@ decoder_run_stream_fallback(struct decoder *decoder, struct input_stream *is)
  * Try decoding a stream.
  */
 static bool
-decoder_run_stream(struct decoder *decoder, struct input_stream *is,
-		   const char *uri)
+decoder_run_stream(struct decoder *decoder, const char *uri)
 {
-	/* first we try mime types: */
-	return decoder_run_stream_mime_type(decoder, is) ||
+	struct decoder_control *dc = decoder->dc;
+	struct input_stream input_stream;
+	bool success;
+
+	decoder_unlock(dc);
+
+	if (!input_stream_open(&input_stream, uri)) {
+		decoder_lock(dc);
+		dc->state = DECODE_STATE_ERROR;
+		return false;
+	}
+
+	/* wait for the input stream to become ready; its metadata
+	   will be available then */
+
+	while (!input_stream.ready) {
+		int ret;
+
+		decoder_lock(dc);
+		if (dc->command == DECODE_COMMAND_STOP) {
+			decoder_unlock(dc);
+			input_stream_close(&input_stream);
+			decoder_lock(dc);
+			return true;
+		}
+
+		decoder_unlock(dc);
+
+		ret = input_stream_buffer(&input_stream);
+		if (ret < 0) {
+			input_stream_close(&input_stream);
+			decoder_lock(dc);
+			return false;
+		}
+	}
+
+	decoder_lock(dc);
+
+	success = dc->command == DECODE_COMMAND_STOP ||
+		/* first we try mime types: */
+		decoder_run_stream_mime_type(decoder, &input_stream) ||
 		/* if that fails, try suffix matching the URL: */
-		decoder_run_stream_suffix(decoder, is, uri) ||
+		decoder_run_stream_suffix(decoder, &input_stream, uri) ||
 		/* fallback to mp3: this is needed for bastard streams
 		   that don't have a suffix or set the mimeType */
-		decoder_run_stream_fallback(decoder, is);
+		decoder_run_stream_fallback(decoder, &input_stream);
+
+	decoder_unlock(dc);
+	input_stream_close(&input_stream);
+	decoder_lock(dc);
+
+	return success;
 }
 
 /**
  * Try decoding a file.
  */
 static bool
-decoder_run_file(struct decoder *decoder, struct input_stream *is,
-		 const char *path_fs, bool *close_instream_p)
+decoder_run_file(struct decoder *decoder, const char *path_fs)
 {
 	const char *suffix = uri_get_suffix(path_fs);
 	const struct decoder_plugin *plugin;
@@ -179,9 +222,6 @@ decoder_run_file(struct decoder *decoder, struct input_stream *is,
 
 	while ((plugin = decoder_plugin_from_suffix(suffix, next++))) {
 		if (plugin->file_decode != NULL) {
-			input_stream_close(is);
-			*close_instream_p = false;
-
 			decoder_lock(decoder->dc);
 
 			if (decoder_file_decode(plugin, decoder, path_fs))
@@ -189,19 +229,15 @@ decoder_run_file(struct decoder *decoder, struct input_stream *is,
 
 			decoder_unlock(decoder->dc);
 		} else if (plugin->stream_decode != NULL) {
-			if (!*close_instream_p) {
-				/* the input_stream object has been
-				   closed before decoder_file_decode()
-				   - reopen it */
-				if (input_stream_open(is, path_fs))
-					*close_instream_p = true;
-				else
-					continue;
-			}
+			struct input_stream input_stream;
+
+			if (!input_stream_open(&input_stream, path_fs))
+				continue;
 
 			decoder_lock(decoder->dc);
 
-			if (decoder_stream_decode(plugin, decoder, is))
+			if (decoder_stream_decode(plugin, decoder,
+						  &input_stream))
 				return true;
 
 			decoder_unlock(decoder->dc);
@@ -220,8 +256,6 @@ decoder_run_song(struct decoder_control *dc,
 		.dc = dc,
 	};
 	int ret;
-	bool close_instream = true;
-	struct input_stream input_stream;
 
 	decoder.seeking = false;
 	decoder.song_tag = song->tag != NULL && song_is_file(song)
@@ -235,55 +269,11 @@ decoder_run_song(struct decoder_control *dc,
 
 	player_signal();
 
-	decoder_unlock(dc);
-
-	if (!input_stream_open(&input_stream, uri)) {
-		decoder_lock(dc);
-		dc->state = DECODE_STATE_ERROR;
-		return;
-	}
-
-	/* wait for the input stream to become ready; its metadata
-	   will be available then */
-
-	while (!input_stream.ready) {
-		decoder_lock(dc);
-		if (dc->command == DECODE_COMMAND_STOP) {
-			decoder_unlock(dc);
-			input_stream_close(&input_stream);
-			decoder_lock(dc);
-			dc->state = DECODE_STATE_STOP;
-			return;
-		}
-
-		decoder_unlock(dc);
-
-		ret = input_stream_buffer(&input_stream);
-		if (ret < 0) {
-			input_stream_close(&input_stream);
-			decoder_lock(dc);
-			dc->state = DECODE_STATE_ERROR;
-			return;
-		}
-	}
-
-	decoder_lock(dc);
-
-	if (dc->command == DECODE_COMMAND_STOP) {
-		decoder_unlock(dc);
-		input_stream_close(&input_stream);
-		decoder_lock(dc);
-
-		dc->state = DECODE_STATE_STOP;
-		return;
-	}
-
 	pcm_convert_init(&decoder.conv_state);
 
 	ret = song_is_file(song)
-		? decoder_run_file(&decoder, &input_stream, uri,
-				   &close_instream)
-		: decoder_run_stream(&decoder, &input_stream, uri);
+		? decoder_run_file(&decoder, uri)
+		: decoder_run_stream(&decoder, uri);
 
 	decoder_unlock(dc);
 
@@ -292,9 +282,6 @@ decoder_run_song(struct decoder_control *dc,
 	/* flush the last chunk */
 	if (decoder.chunk != NULL)
 		decoder_flush_chunk(&decoder);
-
-	if (close_instream)
-		input_stream_close(&input_stream);
 
 	if (decoder.song_tag != NULL)
 		tag_free(decoder.song_tag);
