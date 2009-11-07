@@ -19,6 +19,7 @@
 
 #include "event_pipe.h"
 #include "utils.h"
+#include "fd_util.h"
 
 #include <stdbool.h>
 #include <assert.h>
@@ -84,11 +85,7 @@ void event_pipe_init(void)
 	GIOChannel *channel;
 	int ret;
 
-#ifdef WIN32
-	ret = _pipe(event_pipe, 512, _O_BINARY);
-#else
-	ret = pipe(event_pipe);
-#endif
+	ret = pipe_cloexec(event_pipe);
 	if (ret < 0)
 		g_error("Couldn't open pipe: %s", strerror(errno));
 #ifndef WIN32

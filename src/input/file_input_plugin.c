@@ -20,6 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "input/file_input_plugin.h"
 #include "input_plugin.h"
+#include "fd_util.h"
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -50,7 +51,7 @@ input_file_open(struct input_stream *is, const char *filename)
 		*slash = '\0';
 	}
 
-	fd = open(pathname, O_RDONLY);
+	fd = open_cloexec(pathname, O_RDONLY);
 	if (fd < 0) {
 		is->error = errno;
 		g_debug("Failed to open \"%s\": %s",

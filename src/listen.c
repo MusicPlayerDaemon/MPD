@@ -22,6 +22,7 @@
 #include "client.h"
 #include "conf.h"
 #include "utils.h"
+#include "fd_util.h"
 #include "config.h"
 
 #include <sys/types.h>
@@ -426,9 +427,9 @@ listen_in_event(G_GNUC_UNUSED GIOChannel *source,
 {
 	int listen_fd = GPOINTER_TO_INT(data), fd;
 	struct sockaddr_storage sa;
-	socklen_t sa_length = sizeof(sa);
+	size_t sa_length = sizeof(sa);
 
-	fd = accept(listen_fd, (struct sockaddr*)&sa, &sa_length);
+	fd = accept_cloexec(listen_fd, (struct sockaddr*)&sa, &sa_length);
 	if (fd >= 0) {
 		set_nonblocking(fd);
 

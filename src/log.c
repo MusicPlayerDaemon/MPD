@@ -20,6 +20,7 @@
 #include "log.h"
 #include "conf.h"
 #include "utils.h"
+#include "fd_util.h"
 #include "config.h"
 
 #include <assert.h>
@@ -128,7 +129,7 @@ open_log_file(void)
 {
 	assert(out_filename != NULL);
 
-	return open(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
+	return open_cloexec(out_filename, O_CREAT | O_WRONLY | O_APPEND);
 }
 
 static void

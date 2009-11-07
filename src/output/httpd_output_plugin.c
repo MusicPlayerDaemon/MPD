@@ -25,6 +25,7 @@
 #include "socket_util.h"
 #include "page.h"
 #include "icy_server.h"
+#include "fd_util.h"
 
 #include <assert.h>
 
@@ -187,14 +188,14 @@ httpd_listen_in_event(G_GNUC_UNUSED GIOChannel *source,
 	struct httpd_output *httpd = data;
 	int fd;
 	struct sockaddr_storage sa;
-	socklen_t sa_length = sizeof(sa);
+	size_t sa_length = sizeof(sa);
 
 	g_mutex_lock(httpd->mutex);
 
 	/* the listener socket has become readable - a client has
 	   connected */
 
-	fd = accept(httpd->fd, (struct sockaddr*)&sa, &sa_length);
+	fd = accept_cloexec(httpd->fd, (struct sockaddr*)&sa, &sa_length);
 	if (fd >= 0) {
 		/* can we allow additional client */
 		if (httpd->open &&

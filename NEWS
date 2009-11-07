@@ -62,6 +62,7 @@ ver 0.16 (20??/??/??)
 * state_file: save only if something has changed
 * database: eliminated maximum line length
 * log: redirect stdout/stderr to /dev/null if syslog is used
+* set the close-on-exec flag on all file descriptors
 * obey $(sysconfdir) for default mpd.conf location
 * build with large file support by default
 * require GLib 2.16

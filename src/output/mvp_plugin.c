@@ -22,7 +22,8 @@
  * http://mvpmc.sourceforge.net/
  */
 
-#include "../output_api.h"
+#include "output_api.h"
+#include "fd_util.h"
 
 #include <glib.h>
 
@@ -115,7 +116,7 @@ mvp_output_test_default_device(void)
 {
 	int fd;
 
-	fd = open("/dev/adec_pcm", O_WRONLY);
+	fd = open_cloexec("/dev/adec_pcm", O_WRONLY);
 
 	if (fd >= 0) {
 		close(fd);
@@ -230,7 +231,8 @@ mvp_output_open(void *data, struct audio_format *audio_format, GError **error)
 	int mix[5] = { 0, 2, 7, 1, 0 };
 	bool success;
 
-	if ((md->fd = open("/dev/adec_pcm", O_RDWR | O_NONBLOCK)) < 0) {
+	md->fd = open_cloexec("/dev/adec_pcm", O_RDWR | O_NONBLOCK);
+	if (md->fd < 0) {
 		g_set_error(error, mvp_output_quark(), errno,
 			    "Error opening /dev/adec_pcm: %s",
 			    strerror(errno));

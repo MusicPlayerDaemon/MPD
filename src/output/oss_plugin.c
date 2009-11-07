@@ -17,8 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "../output_api.h"
+#include "output_api.h"
 #include "mixer_list.h"
+#include "fd_util.h"
 
 #include <glib.h>
 
@@ -343,7 +344,9 @@ oss_output_test_default_device(void)
 	int fd, i;
 
 	for (i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
-		if ((fd = open(default_devices[i], O_WRONLY)) >= 0) {
+		fd = open_cloexec(default_devices[i], O_WRONLY);
+
+		if (fd >= 0) {
 			close(fd);
 			return true;
 		}
@@ -516,7 +519,8 @@ oss_open(struct oss_data *od, GError **error)
 {
 	bool success;
 
-	if ((od->fd = open(od->device, O_WRONLY)) < 0) {
+	od->fd = open_cloexec(od->device, O_WRONLY);
+	if (od->fd < 0) {
 		g_set_error(error, oss_output_quark(), errno,
 			    "Error opening OSS device \"%s\": %s",
 			    od->device, strerror(errno));

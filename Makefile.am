@@ -72,6 +72,7 @@ mpd_headers = \
 	src/encoder_list.h \
 	src/encoder_api.h \
 	src/exclude.h \
+	src/fd_util.h \
 	src/fifo_buffer.h \
 	src/update.h \
 	src/update_internal.h \
@@ -220,6 +221,7 @@ src_mpd_SOURCES = \
 	src/database.c \
 	src/dirvec.c \
 	src/exclude.c \
+	src/fd_util.c \
 	src/fifo_buffer.c \
 	src/filter_plugin.c \
 	src/filter_registry.c \
@@ -738,6 +740,7 @@ test_run_input_LDADD = $(MPD_LIBS) \
 test_run_input_SOURCES = test/run_input.c \
 	src/conf.c src/tokenizer.c src/utils.c \
 	src/tag.c src/tag_pool.c src/tag_save.c \
+	src/fd_util.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC)
 
@@ -753,6 +756,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.c \
 	src/uri.c \
 	src/song.c src/tag.c src/tag_pool.c src/tag_save.c \
 	src/text_input_stream.c src/fifo_buffer.c \
+	src/fd_util.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
 	$(PLAYLIST_SRC)
@@ -771,6 +775,7 @@ test_run_decoder_SOURCES = test/run_decoder.c \
 	src/tag.c src/tag_pool.c \
 	src/replay_gain.c \
 	src/uri.c \
+	src/fd_util.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
 	$(TAG_SRC) \
@@ -790,6 +795,7 @@ test_read_tags_SOURCES = test/read_tags.c \
 	src/tag.c src/tag_pool.c \
 	src/replay_gain.c \
 	src/uri.c \
+	src/fd_util.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
 	$(TAG_SRC) \
@@ -857,6 +863,7 @@ test_run_output_SOURCES = test/run_output.c \
 	src/filter/convert_filter_plugin.c \
 	src/filter/volume_filter_plugin.c \
 	src/pcm_volume.c \
+	src/fd_util.c \
 	$(OUTPUT_SRC)
 
 test_read_mixer_CPPFLAGS = $(AM_CPPFLAGS) \
@@ -869,6 +876,7 @@ test_read_mixer_SOURCES = test/read_mixer.c \
 	src/mixer_control.c src/mixer_api.c \
 	src/filter_plugin.c \
 	src/filter/volume_filter_plugin.c \
+	src/fd_util.c \
 	$(MIXER_SRC)
 
 endif

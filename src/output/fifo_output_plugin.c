@@ -20,6 +20,7 @@
 #include "output_api.h"
 #include "utils.h"
 #include "timer.h"
+#include "fd_util.h"
 
 #include <glib.h>
 
@@ -152,7 +153,7 @@ fifo_open(struct fifo_data *fd, GError **error)
 	if (!fifo_check(fd, error))
 		return false;
 
-	fd->input = open(fd->path, O_RDONLY|O_NONBLOCK);
+	fd->input = open_cloexec(fd->path, O_RDONLY|O_NONBLOCK);
 	if (fd->input < 0) {
 		g_set_error(error, fifo_output_quark(), errno,
 			    "Could not open FIFO \"%s\" for reading: %s",
@@ -161,7 +162,7 @@ fifo_open(struct fifo_data *fd, GError **error)
 		return false;
 	}
 
-	fd->output = open(fd->path, O_WRONLY|O_NONBLOCK);
+	fd->output = open_cloexec(fd->path, O_WRONLY|O_NONBLOCK);
 	if (fd->output < 0) {
 		g_set_error(error, fifo_output_quark(), errno,
 			    "Could not open FIFO \"%s\" for writing: %s",

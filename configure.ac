@@ -115,12 +115,14 @@ fi
 AC_CHECK_LIB(socket,socket,MPD_LIBS="$MPD_LIBS -lsocket",)
 AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
 
+AC_CHECK_FUNCS(pipe2 accept4)
+
 AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
 
 AC_CHECK_HEADERS(locale.h)
 AC_CHECK_HEADERS(valgrind/memcheck.h)
 
-AC_CHECK_FUNCS(inotify_init)
+AC_CHECK_FUNCS(inotify_init inotify_init1)
 AC_ARG_ENABLE(inotify,
 	AS_HELP_STRING([--disable-inotify],
 		[disable support Inotify automatic database update (default: enabled) ]),,
