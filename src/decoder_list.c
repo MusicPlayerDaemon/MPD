@@ -97,10 +97,11 @@ static const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef HAVE_FFMPEG
 	&ffmpeg_decoder_plugin,
 #endif
+	NULL
 };
 
 enum {
-	num_decoder_plugins = G_N_ELEMENTS(decoder_plugins),
+	num_decoder_plugins = G_N_ELEMENTS(decoder_plugins) - 1,
 };
 
 /** which plugins have been initialized successfully? */
@@ -116,7 +117,7 @@ decoder_plugin_from_suffix(const char *suffix, unsigned int next)
 
 	if (!next)
 		i = 0;
-	for (; i < num_decoder_plugins; ++i) {
+	for (; decoder_plugins[i] != NULL; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
 		if (decoder_plugins_enabled[i] && plugin->suffixes != NULL &&
 		    string_array_contains(plugin->suffixes, suffix)) {
@@ -138,7 +139,7 @@ decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
 
 	if (!next)
 		i = 0;
-	for (; i < num_decoder_plugins; ++i) {
+	for (; decoder_plugins[i] != NULL; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
 		if (decoder_plugins_enabled[i] && plugin->mime_types != NULL &&
 		    string_array_contains(plugin->mime_types, mimeType)) {
@@ -153,7 +154,7 @@ decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
 const struct decoder_plugin *
 decoder_plugin_from_name(const char *name)
 {
-	for (unsigned i = 0; i < num_decoder_plugins; ++i) {
+	for (unsigned i = 0; decoder_plugins[i] != NULL; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
 		if (decoder_plugins_enabled[i] &&
 		    strcmp(plugin->name, name) == 0)
@@ -165,7 +166,7 @@ decoder_plugin_from_name(const char *name)
 
 void decoder_plugin_print_all_decoders(FILE * fp)
 {
-	for (unsigned i = 0; i < num_decoder_plugins; ++i) {
+	for (unsigned i = 0; decoder_plugins[i] != NULL; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
 		const char *const*suffixes;
 
@@ -211,7 +212,7 @@ decoder_plugin_config(const char *plugin_name)
 
 void decoder_plugin_init_all(void)
 {
-	for (unsigned i = 0; i < num_decoder_plugins; ++i) {
+	for (unsigned i = 0; decoder_plugins[i] != NULL; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
 		const struct config_param *param =
 			decoder_plugin_config(plugin->name);
@@ -227,7 +228,7 @@ void decoder_plugin_init_all(void)
 
 void decoder_plugin_deinit_all(void)
 {
-	for (unsigned i = 0; i < num_decoder_plugins; ++i) {
+	for (unsigned i = 0; decoder_plugins[i] != NULL; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
 
 		if (decoder_plugins_enabled[i])
