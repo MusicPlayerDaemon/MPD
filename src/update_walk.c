@@ -478,7 +478,6 @@ update_container_file(	struct directory* directory,
 		song->mtime = st->st_mtime;
 
 		child_path_fs = map_directory_child_fs(contdir, vtrack);
-		g_free(vtrack);
 
 		song->tag = plugin->tag_dup(child_path_fs);
 		g_free(child_path_fs);
@@ -486,6 +485,10 @@ update_container_file(	struct directory* directory,
 		songvec_add(&contdir->songs, song);
 
 		modified = true;
+
+		g_message("added %s/%s",
+			  directory_get_path(directory), vtrack);
+		g_free(vtrack);
 	}
 
 	g_free(pathname);
