@@ -29,7 +29,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
-#include <fnmatch.h>
 
 GSList *
 exclude_list_load(const char *path_fs)
@@ -59,7 +58,7 @@ exclude_list_load(const char *path_fs)
 
 		p = g_strstrip(line);
 		if (*p != 0)
-			list = g_slist_prepend(list, g_strdup(p));
+			list = g_slist_prepend(list, g_pattern_spec_new(p));
 	}
 
 	fclose(file);
@@ -71,7 +70,8 @@ void
 exclude_list_free(GSList *list)
 {
 	while (list != NULL) {
-		g_free(list->data);
+		GPatternSpec *pattern = list->data;
+		g_pattern_spec_free(pattern);
 		list = g_slist_remove(list, list->data);
 	}
 }
@@ -84,9 +84,9 @@ exclude_list_check(GSList *list, const char *name_fs)
 	/* XXX include full path name in check */
 
 	for (; list != NULL; list = list->next) {
-		const char *pattern = list->data;
+		GPatternSpec *pattern = list->data;
 
-		if (fnmatch(pattern, name_fs, FNM_PATHNAME|FNM_PERIOD) == 0)
+		if (g_pattern_match_string(pattern, name_fs))
 			return true;
 	}
 
