@@ -327,6 +327,7 @@ audio_output_all_open(const struct audio_format *audio_format,
 	input_audio_format = *audio_format;
 
 	audio_output_all_reset_reopen();
+	audio_output_all_enable_disable();
 	audio_output_all_update();
 
 	for (i = 0; i < num_audio_outputs; ++i) {
