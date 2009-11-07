@@ -257,6 +257,7 @@ decoder_run_file(struct decoder *decoder, const char *path_fs)
 			decoder_unlock(dc);
 		} else if (plugin->stream_decode != NULL) {
 			struct input_stream input_stream;
+			bool success;
 
 			if (!decoder_input_stream_open(dc, &input_stream,
 						       path_fs))
@@ -264,11 +265,17 @@ decoder_run_file(struct decoder *decoder, const char *path_fs)
 
 			decoder_lock(dc);
 
-			if (decoder_stream_decode(plugin, decoder,
-						  &input_stream))
-				return true;
+			success = decoder_stream_decode(plugin, decoder,
+							&input_stream);
 
 			decoder_unlock(dc);
+
+			input_stream_close(&input_stream);
+
+			if (success) {
+				decoder_lock(dc);
+				return true;
+			}
 		}
 	}
 
