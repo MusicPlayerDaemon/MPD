@@ -26,8 +26,16 @@ struct decoder_plugin;
 
 /* interface for using plugins */
 
+/**
+ * Find the next enabled decoder plugin which supports the specified suffix.
+ *
+ * @param suffix the file name suffix
+ * @param plugin the previous plugin, or NULL to find the first plugin
+ * @return a plugin, or NULL if none matches
+ */
 const struct decoder_plugin *
-decoder_plugin_from_suffix(const char *suffix, unsigned int next);
+decoder_plugin_from_suffix(const char *suffix,
+			   const struct decoder_plugin *plugin);
 
 const struct decoder_plugin *
 decoder_plugin_from_mime_type(const char *mimeType, unsigned int next);

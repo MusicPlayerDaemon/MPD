@@ -107,7 +107,7 @@ song_file_update(struct song *song)
 	if (suffix == NULL)
 		return false;
 
-	plugin = decoder_plugin_from_suffix(suffix, false);
+	plugin = decoder_plugin_from_suffix(suffix, NULL);
 	if (plugin == NULL)
 		return false;
 
@@ -132,7 +132,7 @@ song_file_update(struct song *song)
 		if (song->tag != NULL)
 			break;
 
-		plugin = decoder_plugin_from_suffix(suffix, true);
+		plugin = decoder_plugin_from_suffix(suffix, plugin);
 	} while (plugin != NULL);
 
 	if (song->tag != NULL && tag_is_empty(song->tag))

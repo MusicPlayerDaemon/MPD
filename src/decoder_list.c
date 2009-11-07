@@ -107,23 +107,38 @@ enum {
 /** which plugins have been initialized successfully? */
 static bool decoder_plugins_enabled[num_decoder_plugins];
 
-const struct decoder_plugin *
-decoder_plugin_from_suffix(const char *suffix, unsigned int next)
+static unsigned
+decoder_plugin_index(const struct decoder_plugin *plugin)
 {
-	static unsigned i = num_decoder_plugins;
+	unsigned i = 0;
 
+	while (decoder_plugins[i] != plugin)
+		++i;
+
+	return i;
+}
+
+static unsigned
+decoder_plugin_next_index(const struct decoder_plugin *plugin)
+{
+	return plugin == 0
+		? 0 /* start with first plugin */
+		: decoder_plugin_index(plugin) + 1;
+}
+
+const struct decoder_plugin *
+decoder_plugin_from_suffix(const char *suffix,
+			   const struct decoder_plugin *plugin)
+{
 	if (suffix == NULL)
 		return NULL;
 
-	if (!next)
-		i = 0;
-	for (; decoder_plugins[i] != NULL; ++i) {
-		const struct decoder_plugin *plugin = decoder_plugins[i];
+	for (unsigned i = decoder_plugin_next_index(plugin);
+	     decoder_plugins[i] != NULL; ++i) {
+		plugin = decoder_plugins[i];
 		if (decoder_plugins_enabled[i] &&
-		    decoder_plugin_supports_suffix(plugin, suffix)) {
-			++i;
+		    decoder_plugin_supports_suffix(plugin, suffix))
 			return plugin;
-		}
 	}
 
 	return NULL;

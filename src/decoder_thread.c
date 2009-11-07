@@ -118,13 +118,12 @@ decoder_run_stream_suffix(struct decoder *decoder, struct input_stream *is,
 			  const char *uri)
 {
 	const char *suffix = uri_get_suffix(uri);
-	const struct decoder_plugin *plugin;
-	unsigned int next = 0;
+	const struct decoder_plugin *plugin = NULL;
 
 	if (suffix == NULL)
 		return false;
 
-	while ((plugin = decoder_plugin_from_suffix(suffix, next++)))
+	while ((plugin = decoder_plugin_from_suffix(suffix, plugin)) != NULL)
 		if (plugin->stream_decode != NULL &&
 		    decoder_stream_decode(plugin, decoder, is))
 			return true;
@@ -212,15 +211,14 @@ static bool
 decoder_run_file(struct decoder *decoder, const char *path_fs)
 {
 	const char *suffix = uri_get_suffix(path_fs);
-	const struct decoder_plugin *plugin;
-	unsigned int next = 0;
+	const struct decoder_plugin *plugin = NULL;
 
 	if (suffix == NULL)
 		return false;
 
 	decoder_unlock(decoder->dc);
 
-	while ((plugin = decoder_plugin_from_suffix(suffix, next++))) {
+	while ((plugin = decoder_plugin_from_suffix(suffix, plugin)) != NULL) {
 		if (plugin->file_decode != NULL) {
 			decoder_lock(decoder->dc);
 
