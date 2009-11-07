@@ -210,39 +210,40 @@ decoder_run_stream(struct decoder *decoder, const char *uri)
 static bool
 decoder_run_file(struct decoder *decoder, const char *path_fs)
 {
+	struct decoder_control *dc = decoder->dc;
 	const char *suffix = uri_get_suffix(path_fs);
 	const struct decoder_plugin *plugin = NULL;
 
 	if (suffix == NULL)
 		return false;
 
-	decoder_unlock(decoder->dc);
+	decoder_unlock(dc);
 
 	while ((plugin = decoder_plugin_from_suffix(suffix, plugin)) != NULL) {
 		if (plugin->file_decode != NULL) {
-			decoder_lock(decoder->dc);
+			decoder_lock(dc);
 
 			if (decoder_file_decode(plugin, decoder, path_fs))
 				return true;
 
-			decoder_unlock(decoder->dc);
+			decoder_unlock(dc);
 		} else if (plugin->stream_decode != NULL) {
 			struct input_stream input_stream;
 
 			if (!input_stream_open(&input_stream, path_fs))
 				continue;
 
-			decoder_lock(decoder->dc);
+			decoder_lock(dc);
 
 			if (decoder_stream_decode(plugin, decoder,
 						  &input_stream))
 				return true;
 
-			decoder_unlock(decoder->dc);
+			decoder_unlock(dc);
 		}
 	}
 
-	decoder_lock(decoder->dc);
+	decoder_lock(dc);
 	return false;
 }
 
