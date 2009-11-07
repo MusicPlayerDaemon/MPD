@@ -1589,6 +1589,25 @@ OK
             </para>
           </listitem>
         </varlistentry>
+        <varlistentry id="command_decoders">
+          <term>
+            <cmdsynopsis>
+              <command>decoders</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Print a list of decoder plugins, followed by their
+              supported suffixes and MIME types.  Example response:
+            </para>
+            <programlisting>plugin: mad
+suffix: mp3
+suffix: mp2
+mime_type: audio/mpeg
+plugin: mpcdec
+suffix: mpc</programlisting>
+          </listitem>
+        </varlistentry>
       </variablelist>
     </section>
   </chapter>

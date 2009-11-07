@@ -26,6 +26,7 @@
 #include "queue_print.h"
 #include "ls.h"
 #include "uri.h"
+#include "decoder_print.h"
 #include "directory.h"
 #include "directory_print.h"
 #include "database.h"
@@ -385,6 +386,14 @@ handle_urlhandlers(struct client *client,
 	if (client_get_uid(client) > 0)
 		client_puts(client, "handler: file://\n");
 	print_supported_uri_schemes(client);
+	return COMMAND_RETURN_OK;
+}
+
+static enum command_return
+handle_decoders(struct client *client,
+		G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
+{
+	decoder_list_print(client);
 	return COMMAND_RETURN_OK;
 }
 
@@ -1755,6 +1764,7 @@ static const struct command commands[] = {
 	{ "count", PERMISSION_READ, 2, -1, handle_count },
 	{ "crossfade", PERMISSION_CONTROL, 1, 1, handle_crossfade },
 	{ "currentsong", PERMISSION_READ, 0, 0, handle_currentsong },
+	{ "decoders", PERMISSION_READ, 0, 0, handle_decoders },
 	{ "delete", PERMISSION_CONTROL, 1, 1, handle_delete },
 	{ "deleteid", PERMISSION_CONTROL, 1, 1, handle_deleteid },
 	{ "disableoutput", PERMISSION_ADMIN, 1, 1, handle_disableoutput },

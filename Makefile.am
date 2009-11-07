@@ -81,6 +81,7 @@ mpd_headers = \
 	src/dirvec.h \
 	src/gcc.h \
 	src/decoder_list.h \
+	src/decoder_print.h \
 	src/decoder/_flac_common.h \
 	src/decoder/_ogg_common.h \
 	src/input_plugin.h \
@@ -212,6 +213,7 @@ src_mpd_SOURCES = \
 	src/decoder_control.c \
 	src/decoder_api.c \
 	src/decoder_internal.c \
+	src/decoder_print.c \
 	src/directory.c \
 	src/directory_save.c \
 	src/directory_print.c \
