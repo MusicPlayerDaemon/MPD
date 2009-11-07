@@ -89,6 +89,129 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 	return decoder->dc->state != DECODE_STATE_START;
 }
 
+/**
+ * Try decoding a stream, using plugins matching the stream's MIME type.
+ */
+static bool
+decoder_run_stream_mime_type(struct decoder *decoder, struct input_stream *is)
+{
+	const struct decoder_plugin *plugin;
+	unsigned int next = 0;
+
+	if (is->mime == NULL)
+		return false;
+
+	while ((plugin = decoder_plugin_from_mime_type(is->mime, next++)))
+		if (plugin->stream_decode != NULL &&
+		    decoder_stream_decode(plugin, decoder, is))
+			return true;
+
+	return false;
+}
+
+/**
+ * Try decoding a stream, using plugins matching the stream's URI
+ * suffix.
+ */
+static bool
+decoder_run_stream_suffix(struct decoder *decoder, struct input_stream *is,
+			  const char *uri)
+{
+	const char *suffix = uri_get_suffix(uri);
+	const struct decoder_plugin *plugin;
+	unsigned int next = 0;
+
+	if (suffix == NULL)
+		return false;
+
+	while ((plugin = decoder_plugin_from_suffix(suffix, next++)))
+		if (plugin->stream_decode != NULL &&
+		    decoder_stream_decode(plugin, decoder, is))
+			return true;
+
+	return false;
+}
+
+/**
+ * Try decoding a stream, using the fallback plugin.
+ */
+static bool
+decoder_run_stream_fallback(struct decoder *decoder, struct input_stream *is)
+{
+	const struct decoder_plugin *plugin;
+
+	plugin = decoder_plugin_from_name("mad");
+	return plugin != NULL && plugin->stream_decode != NULL &&
+		decoder_stream_decode(plugin, decoder, is);
+}
+
+/**
+ * Try decoding a stream.
+ */
+static bool
+decoder_run_stream(struct decoder *decoder, struct input_stream *is,
+		   const char *uri)
+{
+	/* first we try mime types: */
+	return decoder_run_stream_mime_type(decoder, is) ||
+		/* if that fails, try suffix matching the URL: */
+		decoder_run_stream_suffix(decoder, is, uri) ||
+		/* fallback to mp3: this is needed for bastard streams
+		   that don't have a suffix or set the mimeType */
+		decoder_run_stream_fallback(decoder, is);
+}
+
+/**
+ * Try decoding a file.
+ */
+static bool
+decoder_run_file(struct decoder *decoder, struct input_stream *is,
+		 const char *path_fs, bool *close_instream_p)
+{
+	const char *suffix = uri_get_suffix(path_fs);
+	const struct decoder_plugin *plugin;
+	unsigned int next = 0;
+
+	if (suffix == NULL)
+		return false;
+
+	decoder_unlock(decoder->dc);
+
+	while ((plugin = decoder_plugin_from_suffix(suffix, next++))) {
+		if (plugin->file_decode != NULL) {
+			input_stream_close(is);
+			*close_instream_p = false;
+
+			decoder_lock(decoder->dc);
+
+			if (decoder_file_decode(plugin, decoder, path_fs))
+				return true;
+
+			decoder_unlock(decoder->dc);
+		} else if (plugin->stream_decode != NULL) {
+			if (!*close_instream_p) {
+				/* the input_stream object has been
+				   closed before decoder_file_decode()
+				   - reopen it */
+				if (input_stream_open(is, path_fs))
+					*close_instream_p = true;
+				else
+					continue;
+			}
+
+			decoder_lock(decoder->dc);
+
+			if (decoder_stream_decode(plugin, decoder, is))
+				return true;
+
+			decoder_unlock(decoder->dc);
+		}
+	}
+
+	decoder_lock(decoder->dc);
+	return false;
+}
+
 static void
 decoder_run_song(struct decoder_control *dc,
 		 const struct song *song, const char *uri)
@@ -99,7 +222,6 @@ decoder_run_song(struct decoder_control *dc,
 	int ret;
 	bool close_instream = true;
 	struct input_stream input_stream;
-	const struct decoder_plugin *plugin;
 
 	decoder.seeking = false;
 	decoder.song_tag = song->tag != NULL && song_is_file(song)
@@ -158,87 +280,10 @@ decoder_run_song(struct decoder_control *dc,
 
 	pcm_convert_init(&decoder.conv_state);
 
-	ret = false;
-	if (!song_is_file(song)) {
-		unsigned int next = 0;
-
-		/* first we try mime types: */
-		while ((plugin = decoder_plugin_from_mime_type(input_stream.mime, next++))) {
-			if (plugin->stream_decode == NULL)
-				continue;
-			ret = decoder_stream_decode(plugin, &decoder,
-						    &input_stream);
-			if (ret)
-				break;
-
-			assert(dc->state == DECODE_STATE_START);
-		}
-
-		/* if that fails, try suffix matching the URL: */
-		if (plugin == NULL) {
-			const char *s = uri_get_suffix(uri);
-			next = 0;
-			while ((plugin = decoder_plugin_from_suffix(s, next++))) {
-				if (plugin->stream_decode == NULL)
-					continue;
-				ret = decoder_stream_decode(plugin, &decoder,
-							    &input_stream);
-				if (ret)
-					break;
-
-				assert(dc->state == DECODE_STATE_START);
-			}
-		}
-		/* fallback to mp3: */
-		/* this is needed for bastard streams that don't have a suffix
-		   or set the mimeType */
-		if (plugin == NULL) {
-			/* we already know our mp3Plugin supports streams, no
-			 * need to check for stream{Types,DecodeFunc} */
-			if ((plugin = decoder_plugin_from_name("mad"))) {
-				ret = decoder_stream_decode(plugin, &decoder,
-							    &input_stream);
-			}
-		}
-	} else {
-		unsigned int next = 0;
-		const char *s = uri_get_suffix(uri);
-		while ((plugin = decoder_plugin_from_suffix(s, next++))) {
-			if (plugin->file_decode != NULL) {
-				decoder_unlock(dc);
-				input_stream_close(&input_stream);
-				decoder_lock(dc);
-
-				close_instream = false;
-				ret = decoder_file_decode(plugin,
-							  &decoder, uri);
-				if (ret)
-					break;
-			} else if (plugin->stream_decode != NULL) {
-				if (!close_instream) {
-					/* the input_stream object has
-					   been closed before
-					   decoder_file_decode() -
-					   reopen it */
-					bool success;
-
-					decoder_unlock(dc);
-					success = input_stream_open(&input_stream, uri);
-					decoder_lock(dc);
-
-					if (success)
-						close_instream = true;
-					else
-						continue;
-				}
-
-				ret = decoder_stream_decode(plugin, &decoder,
-							    &input_stream);
-				if (ret)
-					break;
-			}
-		}
-	}
+	ret = song_is_file(song)
+		? decoder_run_file(&decoder, &input_stream, uri,
+				   &close_instream)
+		: decoder_run_stream(&decoder, &input_stream, uri);
 
 	decoder_unlock(dc);
 
