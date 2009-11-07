@@ -22,6 +22,7 @@
 #include "log.h"
 #include "conf.h"
 #include "decoder_list.h"
+#include "decoder_plugin.h"
 #include "config.h"
 #include "output_list.h"
 #include "ls.h"
@@ -44,6 +45,25 @@ cmdline_quark(void)
 	return g_quark_from_static_string("cmdline");
 }
 
+static void
+print_all_decoders(FILE *fp)
+{
+	for (unsigned i = 0; decoder_plugins[i] != NULL; ++i) {
+		const struct decoder_plugin *plugin = decoder_plugins[i];
+		const char *const*suffixes;
+
+		fprintf(fp, "[%s]", plugin->name);
+
+		for (suffixes = plugin->suffixes;
+		     suffixes != NULL && *suffixes != NULL;
+		     ++suffixes) {
+			fprintf(fp, " %s", *suffixes);
+		}
+
+		fprintf(fp, "\n");
+	}
+}
+
 G_GNUC_NORETURN
 static void version(void)
 {
@@ -56,8 +76,7 @@ static void version(void)
 	     "\n"
 	     "Supported decoders:\n");
 
-	decoder_plugin_init_all();
-	decoder_plugin_print_all_decoders(stdout);
+	print_all_decoders(stdout);
 
 	puts("\n"
 	     "Supported outputs:\n");

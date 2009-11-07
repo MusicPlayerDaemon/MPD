@@ -20,9 +20,12 @@
 #ifndef MPD_DECODER_LIST_H
 #define MPD_DECODER_LIST_H
 
-#include <stdio.h>
+#include <stdbool.h>
 
 struct decoder_plugin;
+
+extern const struct decoder_plugin *const decoder_plugins[];
+extern bool decoder_plugins_enabled[];
 
 /* interface for using plugins */
 
@@ -42,8 +45,6 @@ decoder_plugin_from_mime_type(const char *mimeType, unsigned int next);
 
 const struct decoder_plugin *
 decoder_plugin_from_name(const char *name);
-
-void decoder_plugin_print_all_decoders(FILE * fp);
 
 /* this is where we "load" all the "plugins" ;-) */
 void decoder_plugin_init_all(void);

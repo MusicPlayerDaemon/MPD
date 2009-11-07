@@ -45,7 +45,7 @@ extern const struct decoder_plugin wildmidi_decoder_plugin;
 extern const struct decoder_plugin fluidsynth_decoder_plugin;
 extern const struct decoder_plugin ffmpeg_decoder_plugin;
 
-static const struct decoder_plugin *const decoder_plugins[] = {
+const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef HAVE_MAD
 	&mad_decoder_plugin,
 #endif
@@ -105,7 +105,7 @@ enum {
 };
 
 /** which plugins have been initialized successfully? */
-static bool decoder_plugins_enabled[num_decoder_plugins];
+bool decoder_plugins_enabled[num_decoder_plugins];
 
 static unsigned
 decoder_plugin_index(const struct decoder_plugin *plugin)
@@ -177,27 +177,6 @@ decoder_plugin_from_name(const char *name)
 	}
 
 	return NULL;
-}
-
-void decoder_plugin_print_all_decoders(FILE * fp)
-{
-	for (unsigned i = 0; decoder_plugins[i] != NULL; ++i) {
-		const struct decoder_plugin *plugin = decoder_plugins[i];
-		const char *const*suffixes;
-
-		if (!decoder_plugins_enabled[i])
-			continue;
-
-		fprintf(fp, "[%s]", plugin->name);
-
-		for (suffixes = plugin->suffixes;
-		     suffixes != NULL && *suffixes != NULL;
-		     ++suffixes) {
-			fprintf(fp, " %s", *suffixes);
-		}
-
-		fprintf(fp, "\n");
-	}
 }
 
 /**
