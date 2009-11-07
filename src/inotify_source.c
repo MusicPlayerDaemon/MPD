@@ -19,6 +19,7 @@
 
 #include "inotify_source.h"
 #include "fifo_buffer.h"
+#include "fd_util.h"
 
 #include <sys/inotify.h>
 #include <unistd.h>
@@ -105,7 +106,7 @@ mpd_inotify_source_new(mpd_inotify_callback_t callback, void *callback_ctx,
 	struct mpd_inotify_source *source =
 		g_new(struct mpd_inotify_source, 1);
 
-	source->fd = inotify_init();
+	source->fd = inotify_init_cloexec();
 	if (source->fd < 0) {
 		g_set_error(error_r, mpd_inotify_quark(), errno,
 			    "inotify_init() has failed: %s",

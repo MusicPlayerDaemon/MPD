@@ -35,6 +35,10 @@
 #include <sys/socket.h>
 #endif
 
+#ifdef HAVE_INOTIFY_INIT
+#include <sys/inotify.h>
+#endif
+
 #ifndef WIN32
 
 static int
@@ -169,3 +173,25 @@ accept_cloexec(int fd, struct sockaddr *address, size_t *address_length_r)
 
 	return ret;
 }
+
+#ifdef HAVE_INOTIFY_INIT
+
+int
+inotify_init_cloexec(void)
+{
+	int fd;
+
+#ifdef HAVE_INOTIFY_INIT1
+	fd = inotify_init1(IN_CLOEXEC);
+	if (fd >= 0 || errno != ENOSYS)
+		return fd;
+#endif
+
+	fd = inotify_init();
+	if (fd >= 0)
+		fd_set_cloexec(fd, true);
+
+	return fd;
+}
+
+#endif

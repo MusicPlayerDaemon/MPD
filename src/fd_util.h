@@ -50,4 +50,7 @@ socket_cloexec(int domain, int type, int protocol);
 int
 accept_cloexec(int fd, struct sockaddr *address, size_t *address_length_r);
 
+int
+inotify_init_cloexec(void);
+
 #endif
