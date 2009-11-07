@@ -271,7 +271,10 @@ void setup_log_output(bool use_stdout)
 {
 	fflush(NULL);
 	if (!use_stdout) {
-		if (out_filename != NULL) {
+		if (out_filename == NULL)
+			out_fd = open("/dev/null", O_WRONLY);
+
+		if (out_fd >= 0) {
 			redirect_logs(out_fd);
 			close(out_fd);
 		}

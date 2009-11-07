@@ -61,6 +61,7 @@ ver 0.16 (20??/??/??)
 * removed options --create-db and --no-create-db
 * state_file: save only if something has changed
 * database: eliminated maximum line length
+* log: redirect stdout/stderr to /dev/null if syslog is used
 * obey $(sysconfdir) for default mpd.conf location
 * build with large file support by default
 * require GLib 2.16
