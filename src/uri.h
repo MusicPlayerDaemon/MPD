@@ -20,14 +20,18 @@
 #ifndef MPD_URI_H
 #define MPD_URI_H
 
+#include <glib.h>
+
 #include <stdbool.h>
 
 /**
  * Checks whether the specified URI has a schema in the form
  * "scheme://".
  */
+G_GNUC_PURE
 bool uri_has_scheme(const char *uri);
 
+G_GNUC_PURE
 const char *
 uri_get_suffix(const char *uri);
 
@@ -37,6 +41,7 @@ uri_get_suffix(const char *uri);
  * NULL if nothing needs to be removed, or if the URI is not
  * recognized.
  */
+G_GNUC_MALLOC
 char *
 uri_remove_auth(const char *uri);
 
