@@ -19,7 +19,6 @@
 
 #include "encoder_api.h"
 #include "encoder_plugin.h"
-#include "audio_format.h"
 
 #include <assert.h>
 #include <string.h>
@@ -28,8 +27,6 @@
 
 struct null_encoder {
 	struct encoder encoder;
-
-	struct audio_format audio_format;
 
 	unsigned char buffer[MAX_BUFFER];
 	size_t buffer_length;
@@ -64,12 +61,12 @@ null_encoder_finish(struct encoder *_encoder)
 }
 
 static bool
-null_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
+null_encoder_open(struct encoder *_encoder,
+		  G_GNUC_UNUSED struct audio_format *audio_format,
 		  G_GNUC_UNUSED GError **error)
 {
 	struct null_encoder *encoder = (struct null_encoder *)_encoder;
 
-	encoder->audio_format = *audio_format;
 	encoder->buffer_length = 0;
 
 	return true;
