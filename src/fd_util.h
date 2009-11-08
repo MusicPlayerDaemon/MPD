@@ -33,42 +33,42 @@
 struct sockaddr;
 
 /**
- * Wrapper for open(), which sets to CLOEXEC flag (atomically if
+ * Wrapper for open(), which sets the CLOEXEC flag (atomically if
  * supported by the OS).
  */
 int
 open_cloexec(const char *path_fs, int flags);
 
 /**
- * Wrapper for creat(), which sets to CLOEXEC flag (atomically if
+ * Wrapper for creat(), which sets the CLOEXEC flag (atomically if
  * supported by the OS).
  */
 int
 creat_cloexec(const char *path_fs, int mode);
 
 /**
- * Wrapper for pipe(), which sets to CLOEXEC flag (atomically if
+ * Wrapper for pipe(), which sets the CLOEXEC flag (atomically if
  * supported by the OS).
  */
 int
 pipe_cloexec(int fd[2]);
 
 /**
- * Wrapper for socket(), which sets to CLOEXEC flag (atomically if
+ * Wrapper for socket(), which sets the CLOEXEC flag (atomically if
  * supported by the OS).
  */
 int
 socket_cloexec(int domain, int type, int protocol);
 
 /**
- * Wrapper for accept(), which sets to CLOEXEC flag (atomically if
+ * Wrapper for accept(), which sets the CLOEXEC flag (atomically if
  * supported by the OS).
  */
 int
 accept_cloexec(int fd, struct sockaddr *address, size_t *address_length_r);
 
 /**
- * Wrapper for inotify_init(), which sets to CLOEXEC flag (atomically
+ * Wrapper for inotify_init(), which sets the CLOEXEC flag (atomically
  * if supported by the OS).
  */
 int
