@@ -57,7 +57,7 @@ fd_mask_flags(int fd, int and_mask, int xor_mask)
 
 #endif /* !WIN32 */
 
-int
+static int
 fd_set_cloexec(int fd, bool enable)
 {
 #ifndef WIN32

@@ -33,9 +33,6 @@
 struct sockaddr;
 
 int
-fd_set_cloexec(int fd, bool enable);
-
-int
 open_cloexec(const char *path_fs, int flags);
 
 int
