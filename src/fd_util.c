@@ -180,8 +180,10 @@ socket_cloexec_nonblock(int domain, int type, int protocol)
 #endif
 
 	fd = socket(domain, type, protocol);
-	if (fd >= 0)
+	if (fd >= 0) {
 		fd_set_cloexec(fd, true);
+		fd_set_nonblock(fd);
+	}
 
 	return fd;
 }
