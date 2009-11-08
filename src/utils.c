@@ -102,36 +102,6 @@ char *parsePath(char *path)
 #endif
 }
 
-int set_nonblocking(int fd)
-{
-#ifdef WIN32
-	u_long val = 1;
-	int retval;
-	int lasterr = 0;
-	retval = ioctlsocket(fd, FIONBIO, &val);
-	if(retval == SOCKET_ERROR)
-		g_error("Error: ioctlsocket could not set FIONBIO;"
-		" Error %d on socket %d", lasterr = WSAGetLastError(), fd);
-	if(lasterr == 10038)
-		g_debug("Code-up error! Attempt to set non-blocking I/O on "
-			"something that is not a Winsock2 socket. This can't "
-			"be done on Windows!\n");
-	return retval;
-#else
-	int ret, flags;
-
-	assert(fd >= 0);
-
-	while ((flags = fcntl(fd, F_GETFL)) < 0 && errno == EINTR) ;
-	if (flags < 0)
-		return flags;
-
-	flags |= O_NONBLOCK;
-	while ((ret = fcntl(fd, F_SETFL, flags)) < 0 && errno == EINTR) ;
-	return ret;
-#endif
-}
-
 bool
 string_array_contains(const char *const* haystack, const char *needle)
 {

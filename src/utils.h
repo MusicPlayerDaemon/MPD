@@ -33,8 +33,6 @@
 
 char *parsePath(char *path);
 
-int set_nonblocking(int fd);
-
 /**
  * Checks whether a string array contains the specified string.
  *
