@@ -68,6 +68,29 @@ fd_set_cloexec(int fd, bool enable)
 #endif
 }
 
+/**
+ * Enables non-blocking mode for the specified file descriptor.  On
+ * WIN32, this function only works for sockets.
+ */
+static int
+fd_set_nonblock(int fd)
+{
+#ifdef WIN32
+	u_long val = 1;
+	return ioctlsocket(fd, FIONBIO, &val);
+#else
+	int flags;
+
+	assert(fd >= 0);
+
+	flags = fcntl(fd, F_GETFL);
+	if (flags < 0)
+		return flags;
+
+	return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+#endif
+}
+
 int
 open_cloexec(const char *path_fs, int flags)
 {
@@ -108,7 +131,7 @@ creat_cloexec(const char *path_fs, int mode)
 }
 
 int
-pipe_cloexec(int fd[2])
+pipe_cloexec_nonblock(int fd[2])
 {
 #ifdef WIN32
 	return _pipe(event_pipe, 512, _O_BINARY);
@@ -116,7 +139,7 @@ pipe_cloexec(int fd[2])
 	int ret;
 
 #ifdef HAVE_PIPE2
-	ret = pipe2(fd, O_CLOEXEC);
+	ret = pipe2(fd, O_CLOEXEC|O_NONBLOCK);
 	if (ret >= 0 || errno != ENOSYS)
 		return ret;
 #endif
@@ -125,6 +148,11 @@ pipe_cloexec(int fd[2])
 	if (ret >= 0) {
 		fd_set_cloexec(fd[0], true);
 		fd_set_cloexec(fd[1], true);
+
+#ifndef WIN32
+		fd_set_nonblock(fd[0]);
+		fd_set_nonblock(fd[1]);
+#endif
 	}
 
 	return ret;
@@ -132,12 +160,12 @@ pipe_cloexec(int fd[2])
 }
 
 int
-socket_cloexec(int domain, int type, int protocol)
+socket_cloexec_nonblock(int domain, int type, int protocol)
 {
 	int fd;
 
-#ifdef SOCK_CLOEXEC
-	fd = socket(domain, type | SOCK_CLOEXEC, protocol);
+#if defined(SOCK_CLOEXEC) && defined(SOCK_NONBLOCK)
+	fd = socket(domain, type | SOCK_CLOEXEC | SOCK_NONBLOCK, protocol);
 	if (fd >= 0 || errno != EINVAL)
 		return fd;
 #endif
@@ -150,13 +178,15 @@ socket_cloexec(int domain, int type, int protocol)
 }
 
 int
-accept_cloexec(int fd, struct sockaddr *address, size_t *address_length_r)
+accept_cloexec_nonblock(int fd, struct sockaddr *address,
+			size_t *address_length_r)
 {
 	int ret;
 	socklen_t address_length = *address_length_r;
 
 #ifdef HAVE_ACCEPT4
-	ret = accept4(fd, address, &address_length, SOCK_CLOEXEC);
+	ret = accept4(fd, address, &address_length,
+		      SOCK_CLOEXEC|SOCK_NONBLOCK);
 	if (ret >= 0 || errno != ENOSYS) {
 		if (ret >= 0)
 			*address_length_r = address_length;
@@ -168,6 +198,7 @@ accept_cloexec(int fd, struct sockaddr *address, size_t *address_length_r)
 	ret = accept(fd, address, &address_length);
 	if (ret >= 0) {
 		fd_set_cloexec(ret, true);
+		fd_set_nonblock(ret);
 		*address_length_r = address_length;
 	}
 

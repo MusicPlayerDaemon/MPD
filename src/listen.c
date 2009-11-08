@@ -21,7 +21,6 @@
 #include "socket_util.h"
 #include "client.h"
 #include "conf.h"
-#include "utils.h"
 #include "fd_util.h"
 #include "config.h"
 
@@ -429,10 +428,9 @@ listen_in_event(G_GNUC_UNUSED GIOChannel *source,
 	struct sockaddr_storage sa;
 	size_t sa_length = sizeof(sa);
 
-	fd = accept_cloexec(listen_fd, (struct sockaddr*)&sa, &sa_length);
+	fd = accept_cloexec_nonblock(listen_fd, (struct sockaddr*)&sa,
+				     &sa_length);
 	if (fd >= 0) {
-		set_nonblocking(fd);
-
 		client_new(fd, (struct sockaddr*)&sa, sa_length,
 			   get_remote_uid(fd));
 	} else if (fd < 0 && errno != EINTR) {

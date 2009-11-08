@@ -49,23 +49,27 @@ creat_cloexec(const char *path_fs, int mode);
 /**
  * Wrapper for pipe(), which sets the CLOEXEC flag (atomically if
  * supported by the OS).
+ *
+ * On systems that supports it (everybody except for Windows), it also
+ * sets the NONBLOCK flag.
  */
 int
-pipe_cloexec(int fd[2]);
+pipe_cloexec_nonblock(int fd[2]);
 
 /**
- * Wrapper for socket(), which sets the CLOEXEC flag (atomically if
- * supported by the OS).
+ * Wrapper for socket(), which sets the CLOEXEC and the NONBLOCK flag
+ * (atomically if supported by the OS).
  */
 int
-socket_cloexec(int domain, int type, int protocol);
+socket_cloexec_nonblock(int domain, int type, int protocol);
 
 /**
- * Wrapper for accept(), which sets the CLOEXEC flag (atomically if
- * supported by the OS).
+ * Wrapper for accept(), which sets the CLOEXEC and the NONBLOCK flags
+ * (atomically if supported by the OS).
  */
 int
-accept_cloexec(int fd, struct sockaddr *address, size_t *address_length_r);
+accept_cloexec_nonblock(int fd, struct sockaddr *address,
+			size_t *address_length_r);
 
 /**
  * Wrapper for inotify_init(), which sets the CLOEXEC flag (atomically

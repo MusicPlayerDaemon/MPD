@@ -195,7 +195,8 @@ httpd_listen_in_event(G_GNUC_UNUSED GIOChannel *source,
 	/* the listener socket has become readable - a client has
 	   connected */
 
-	fd = accept_cloexec(httpd->fd, (struct sockaddr*)&sa, &sa_length);
+	fd = accept_cloexec_nonblock(httpd->fd, (struct sockaddr*)&sa,
+				     &sa_length);
 	if (fd >= 0) {
 		/* can we allow additional client */
 		if (httpd->open &&
