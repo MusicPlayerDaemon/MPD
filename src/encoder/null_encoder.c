@@ -72,11 +72,6 @@ null_encoder_open(struct encoder *_encoder,
 	return true;
 }
 
-static void
-null_encoder_close(G_GNUC_UNUSED struct encoder *_encoder)
-{
-}
-
 static bool
 null_encoder_write(struct encoder *_encoder,
 		   const void *data, size_t length,
@@ -115,7 +110,6 @@ const struct encoder_plugin null_encoder_plugin = {
 	.init = null_encoder_init,
 	.finish = null_encoder_finish,
 	.open = null_encoder_open,
-	.close = null_encoder_close,
 	.write = null_encoder_write,
 	.read = null_encoder_read,
 };
