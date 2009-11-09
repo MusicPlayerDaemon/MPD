@@ -40,6 +40,13 @@ enum audio_output_command {
 
 	AO_COMMAND_CLOSE,
 	AO_COMMAND_PAUSE,
+
+	/**
+	 * Drains the internal (hardware) buffers of the device.  This
+	 * operation may take a while to complete.
+	 */
+	AO_COMMAND_DRAIN,
+
 	AO_COMMAND_CANCEL,
 	AO_COMMAND_KILL
 };

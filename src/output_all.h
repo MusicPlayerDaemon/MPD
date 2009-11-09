@@ -130,6 +130,12 @@ void
 audio_output_all_pause(void);
 
 /**
+ * Drain all audio outputs.
+ */
+void
+audio_output_all_drain(void);
+
+/**
  * Try to cancel data which may still be in the device's buffers.
  */
 void

@@ -67,6 +67,9 @@ audio_output_play(struct audio_output *ao);
 
 void audio_output_pause(struct audio_output *ao);
 
+void
+audio_output_drain_async(struct audio_output *ao);
+
 void audio_output_cancel(struct audio_output *ao);
 void audio_output_close(struct audio_output *ao);
 void audio_output_finish(struct audio_output *ao);

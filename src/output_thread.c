@@ -450,6 +450,19 @@ static gpointer audio_output_task(gpointer arg)
 			   the new command first */
 			continue;
 
+		case AO_COMMAND_DRAIN:
+			if (ao->open) {
+				assert(ao->chunk == NULL);
+				assert(music_pipe_peek(ao->pipe) == NULL);
+
+				g_mutex_unlock(ao->mutex);
+				ao_plugin_drain(ao->plugin, ao->data);
+				g_mutex_lock(ao->mutex);
+			}
+
+			ao_command_finished(ao);
+			continue;
+
 		case AO_COMMAND_CANCEL:
 			ao->chunk = NULL;
 			if (ao->open)

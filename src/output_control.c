@@ -229,6 +229,15 @@ void audio_output_pause(struct audio_output *ao)
 	g_mutex_unlock(ao->mutex);
 }
 
+void
+audio_output_drain_async(struct audio_output *ao)
+{
+	g_mutex_lock(ao->mutex);
+	if (audio_output_is_open(ao))
+		ao_command_async(ao, AO_COMMAND_DRAIN);
+	g_mutex_unlock(ao->mutex);
+}
+
 void audio_output_cancel(struct audio_output *ao)
 {
 	g_mutex_lock(ao->mutex);

@@ -496,6 +496,15 @@ audio_output_all_pause(void)
 }
 
 void
+audio_output_all_drain(void)
+{
+	for (unsigned i = 0; i < num_audio_outputs; ++i)
+		audio_output_drain_async(&audio_outputs[i]);
+
+	audio_output_wait_all();
+}
+
+void
 audio_output_all_cancel(void)
 {
 	unsigned int i;
