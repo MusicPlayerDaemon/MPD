@@ -874,8 +874,12 @@ static void do_play(struct decoder_control *dc)
 			/* check the size of the pipe again, because
 			   the decoder thread may have added something
 			   since we last checked */
-			if (music_pipe_size(player.pipe) == 0)
+			if (music_pipe_size(player.pipe) == 0) {
+				/* wait for the hardware to finish
+				   playback */
+				audio_output_all_drain();
 				break;
+			}
 		} else {
 			/* the decoder is too busy and hasn't provided
 			   new PCM data in time: send silence (if the
