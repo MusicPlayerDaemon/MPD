@@ -157,7 +157,7 @@ decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
 	for (; decoder_plugins[i] != NULL; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
 		if (decoder_plugins_enabled[i] &&
-		    decoder_plugin_supports_suffix(plugin, mimeType)) {
+		    decoder_plugin_supports_mime_type(plugin, mimeType)) {
 			++i;
 			return plugin;
 		}
