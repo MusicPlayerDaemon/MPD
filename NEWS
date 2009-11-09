@@ -29,6 +29,7 @@ ver 0.16 (20??/??/??)
 * output:
   - recorder: new output plugin for recording radio streams
   - alsa: don't recover on CANCEL
+  - alsa: fill period buffer with silence before draining
   - openal: new output plugin
   - pulse: announce "media.role=music"
   - pulse: renamed context to "Music Player Daemon"
