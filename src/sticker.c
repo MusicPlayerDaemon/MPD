@@ -27,6 +27,10 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "sticker"
 
+#if SQLITE_VERSION_NUMBER < 3003009
+#define sqlite3_prepare_v2 sqlite3_prepare
+#endif
+
 struct sticker {
 	GHashTable *table;
 };

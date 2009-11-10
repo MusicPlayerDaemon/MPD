@@ -6,6 +6,7 @@ ver 0.15.6 (2009/??/??)
 * output_thread: check again if output is open on PAUSE
 * update: delete ignored symlinks from database
 * database: increased maximum line length to 32 kB
+* sticker: added fallback for sqlite3_prepare_v2()
 
 
 ver 0.15.5 (2009/10/18)
