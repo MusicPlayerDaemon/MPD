@@ -159,6 +159,13 @@ struct flac_data {
 	struct tag *tag;
 };
 
+static inline unsigned
+flac_duration(const FLAC__StreamMetadata_StreamInfo *stream_info)
+{
+	return (stream_info->total_samples + stream_info->sample_rate - 1) /
+		stream_info->sample_rate;
+}
+
 /* initializes a given FlacData struct */
 void
 flac_data_init(struct flac_data *data, struct decoder * decoder,
