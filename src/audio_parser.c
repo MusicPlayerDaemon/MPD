@@ -25,6 +25,7 @@
 #include "config.h"
 #include "audio_parser.h"
 #include "audio_format.h"
+#include "audio_check.h"
 
 #include <stdlib.h>
 
@@ -55,11 +56,8 @@ parse_sample_rate(const char *src, bool mask, uint32_t *sample_rate_r,
 		g_set_error(error_r, audio_parser_quark(), 0,
 			    "Failed to parse the sample rate");
 		return false;
-	} else if (!audio_valid_sample_rate(value)) {
-		g_set_error(error_r, audio_parser_quark(), 0,
-			    "Invalid sample rate: %lu", value);
+	} else if (!audio_check_sample_rate(value, error_r))
 		return false;
-	}
 
 	*sample_rate_r = value;
 	*endptr_r = endptr;
@@ -84,11 +82,8 @@ parse_sample_format(const char *src, bool mask, uint8_t *bits_r,
 		g_set_error(error_r, audio_parser_quark(), 0,
 			    "Failed to parse the sample format");
 		return false;
-	} else if (!audio_valid_sample_format(value)) {
-		g_set_error(error_r, audio_parser_quark(), 0,
-			    "Invalid sample format: %lu", value);
+	} else if (!audio_check_sample_format(value, error_r))
 		return false;
-	}
 
 	*bits_r = value;
 	*endptr_r = endptr;
@@ -113,11 +108,8 @@ parse_channel_count(const char *src, bool mask, uint8_t *channels_r,
 		g_set_error(error_r, audio_parser_quark(), 0,
 			    "Failed to parse the channel count");
 		return false;
-	} else if (!audio_valid_channel_count(value)) {
-		g_set_error(error_r, audio_parser_quark(), 0,
-			    "Invalid channel count: %lu", value);
+	} else if (!audio_check_channel_count(value, error_r))
 		return false;
-	}
 
 	*channels_r = value;
 	*endptr_r = endptr;

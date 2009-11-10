@@ -34,6 +34,7 @@ mpd_headers = \
 	src/ack.h \
 	src/audio.h \
 	src/audio_format.h \
+	src/audio_check.h \
 	src/audio_parser.h \
 	src/output_internal.h \
 	src/output_api.h \
@@ -207,6 +208,7 @@ src_mpd_SOURCES = \
 	$(FILTER_SRC) \
 	src/notify.c \
 	src/audio.c \
+	src/audio_check.c \
 	src/audio_parser.c \
 	src/command.c \
 	src/idle.c \
@@ -823,6 +825,7 @@ test_run_filter_SOURCES = test/run_filter.c \
 	src/pcm_volume.c src/pcm_convert.c src/pcm_byteswap.c \
 	src/pcm_format.c src/pcm_channels.c src/pcm_dither.c \
 	src/pcm_resample.c src/pcm_resample_fallback.c \
+	src/audio_check.c \
 	src/audio_parser.c \
 	$(FILTER_SRC)
 
@@ -836,6 +839,7 @@ test_run_encoder_SOURCES = test/run_encoder.c \
 	src/conf.c src/tokenizer.c \
 	src/utils.c \
 	src/tag.c src/tag_pool.c \
+	src/audio_check.c \
 	src/audio_parser.c \
 	$(ENCODER_SRC)
 test_run_encoder_LDADD = $(MPD_LIBS) \
@@ -844,6 +848,7 @@ test_run_encoder_LDADD = $(MPD_LIBS) \
 endif
 
 test_software_volume_SOURCES = test/software_volume.c \
+	src/audio_check.c \
 	src/audio_parser.c \
 	src/pcm_volume.c
 test_software_volume_LDADD = \
@@ -858,6 +863,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	$(GLIB_LIBS)
 test_run_output_SOURCES = test/run_output.c \
 	src/conf.c src/tokenizer.c src/utils.c src/log.c \
+	src/audio_check.c \
 	src/audio_parser.c \
 	src/timer.c \
 	src/tag.c src/tag_pool.c \
