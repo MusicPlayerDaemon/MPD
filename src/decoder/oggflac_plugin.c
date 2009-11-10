@@ -170,16 +170,7 @@ static void of_metadata_dup_cb(G_GNUC_UNUSED const OggFLAC__SeekableStreamDecode
 
 	assert(data->tag != NULL);
 
-	switch (block->type) {
-	case FLAC__METADATA_TYPE_STREAMINFO:
-		data->tag->time = flac_duration(&block->data.stream_info);
-		return;
-	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
-		flac_vorbis_comments_to_tag(data->tag, NULL,
-					    &block->data.vorbis_comment);
-	default:
-		break;
-	}
+	flac_tag_apply_metadata(data->tag, NULL, block);
 }
 
 /* used by decode */

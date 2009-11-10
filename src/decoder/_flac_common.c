@@ -197,12 +197,31 @@ flac_parse_comment(struct tag *tag, const char *char_tnum,
 			return;
 }
 
-void
+static void
 flac_vorbis_comments_to_tag(struct tag *tag, const char *char_tnum,
 			    const FLAC__StreamMetadata_VorbisComment *comment)
 {
 	for (unsigned i = 0; i < comment->num_comments; ++i)
 		flac_parse_comment(tag, char_tnum, &comment->comments[i]);
+}
+
+void
+flac_tag_apply_metadata(struct tag *tag, const char *track,
+			const FLAC__StreamMetadata *block)
+{
+	switch (block->type) {
+	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
+		flac_vorbis_comments_to_tag(tag, track,
+					    &block->data.vorbis_comment);
+		break;
+
+	case FLAC__METADATA_TYPE_STREAMINFO:
+		tag->time = flac_duration(&block->data.stream_info);
+		break;
+
+	default:
+		break;
+	}
 }
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
