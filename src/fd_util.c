@@ -140,6 +140,30 @@ creat_cloexec(const char *path_fs, int mode)
 }
 
 int
+pipe_cloexec(int fd[2])
+{
+#ifdef WIN32
+	return _pipe(event_pipe, 512, _O_BINARY);
+#else
+	int ret;
+
+#ifdef HAVE_PIPE2
+	ret = pipe2(fd, O_CLOEXEC);
+	if (ret >= 0 || errno != ENOSYS)
+		return ret;
+#endif
+
+	ret = pipe(fd);
+	if (ret >= 0) {
+		fd_set_cloexec(fd[0], true);
+		fd_set_cloexec(fd[1], true);
+	}
+
+	return ret;
+#endif
+}
+
+int
 pipe_cloexec_nonblock(int fd[2])
 {
 #ifdef WIN32
@@ -158,10 +182,8 @@ pipe_cloexec_nonblock(int fd[2])
 		fd_set_cloexec(fd[0], true);
 		fd_set_cloexec(fd[1], true);
 
-#ifndef WIN32
 		fd_set_nonblock(fd[0]);
 		fd_set_nonblock(fd[1]);
-#endif
 	}
 
 	return ret;

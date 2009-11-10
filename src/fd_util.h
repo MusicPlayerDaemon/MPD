@@ -58,6 +58,13 @@ creat_cloexec(const char *path_fs, int mode);
 /**
  * Wrapper for pipe(), which sets the CLOEXEC flag (atomically if
  * supported by the OS).
+ */
+int
+pipe_cloexec(int fd[2]);
+
+/**
+ * Wrapper for pipe(), which sets the CLOEXEC flag (atomically if
+ * supported by the OS).
  *
  * On systems that supports it (everybody except for Windows), it also
  * sets the NONBLOCK flag.
