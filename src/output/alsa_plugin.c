@@ -185,13 +185,22 @@ alsa_test_default_device(void)
 static snd_pcm_format_t
 get_bitformat(const struct audio_format *af)
 {
-	switch (af->bits) {
-	case 8: return SND_PCM_FORMAT_S8;
-	case 16: return SND_PCM_FORMAT_S16;
-	case 24: return SND_PCM_FORMAT_S24;
-	case 32: return SND_PCM_FORMAT_S32;
+	switch (af->format) {
+	case SAMPLE_FORMAT_S8:
+		return SND_PCM_FORMAT_S8;
+
+	case SAMPLE_FORMAT_S16:
+		return SND_PCM_FORMAT_S16;
+
+	case SAMPLE_FORMAT_S24_P32:
+		return SND_PCM_FORMAT_S24;
+
+	case SAMPLE_FORMAT_S32:
+		return SND_PCM_FORMAT_S32;
+
+	default:
+		return SND_PCM_FORMAT_UNKNOWN;
 	}
-	return SND_PCM_FORMAT_UNKNOWN;
 }
 
 static snd_pcm_format_t
@@ -264,61 +273,67 @@ configure_hw:
 		err = snd_pcm_hw_params_set_format(ad->pcm, hwparams,
 						   byteswap_bitformat(bitformat));
 		if (err == 0) {
-			g_debug("ALSA device \"%s\": converting %u bit to reverse-endian\n",
-				alsa_device(ad), audio_format->bits);
+			g_debug("ALSA device \"%s\": converting format %s to reverse-endian",
+				alsa_device(ad),
+				sample_format_to_string(audio_format->format));
 			audio_format->reverse_endian = 1;
 		}
 	}
-	if (err == -EINVAL && (audio_format->bits == 24 ||
-			       audio_format->bits == 16)) {
+	if (err == -EINVAL && (audio_format->format == SAMPLE_FORMAT_S24_P32 ||
+			       audio_format->format == SAMPLE_FORMAT_S16)) {
 		/* fall back to 32 bit, let pcm_convert.c do the conversion */
 		err = snd_pcm_hw_params_set_format(ad->pcm, hwparams,
 						   SND_PCM_FORMAT_S32);
 		if (err == 0) {
-			g_debug("ALSA device \"%s\": converting %u bit to 32 bit\n",
-				alsa_device(ad), audio_format->bits);
-			audio_format->bits = 32;
+			g_debug("ALSA device \"%s\": converting format %s to 32 bit\n",
+				alsa_device(ad),
+				sample_format_to_string(audio_format->format));
+			audio_format->format = SAMPLE_FORMAT_S32;
 		}
 	}
-	if (err == -EINVAL && (audio_format->bits == 24 ||
-			       audio_format->bits == 16)) {
+	if (err == -EINVAL && (audio_format->format == SAMPLE_FORMAT_S24_P32 ||
+			       audio_format->format == SAMPLE_FORMAT_S16)) {
 		/* fall back to 32 bit, let pcm_convert.c do the conversion */
 		err = snd_pcm_hw_params_set_format(ad->pcm, hwparams,
 						   byteswap_bitformat(SND_PCM_FORMAT_S32));
 		if (err == 0) {
-			g_debug("ALSA device \"%s\": converting %u bit to 32 bit backward-endian\n",
-				alsa_device(ad), audio_format->bits);
-			audio_format->bits = 32;
+			g_debug("ALSA device \"%s\": converting format %s to 32 bit backward-endian\n",
+				alsa_device(ad),
+				sample_format_to_string(audio_format->format));
+			audio_format->format = SAMPLE_FORMAT_S32;
 			audio_format->reverse_endian = 1;
 		}
 	}
 
-	if (err == -EINVAL && audio_format->bits != 16) {
+	if (err == -EINVAL && audio_format->format != SAMPLE_FORMAT_S16) {
 		/* fall back to 16 bit, let pcm_convert.c do the conversion */
 		err = snd_pcm_hw_params_set_format(ad->pcm, hwparams,
 						   SND_PCM_FORMAT_S16);
 		if (err == 0) {
-			g_debug("ALSA device \"%s\": converting %u bit to 16 bit\n",
-				alsa_device(ad), audio_format->bits);
-			audio_format->bits = 16;
+			g_debug("ALSA device \"%s\": converting format %s to 16 bit\n",
+				alsa_device(ad),
+				sample_format_to_string(audio_format->format));
+			audio_format->format = SAMPLE_FORMAT_S16;
 		}
 	}
-	if (err == -EINVAL && audio_format->bits != 16) {
+	if (err == -EINVAL && audio_format->format != SAMPLE_FORMAT_S16) {
 		/* fall back to 16 bit, let pcm_convert.c do the conversion */
 		err = snd_pcm_hw_params_set_format(ad->pcm, hwparams,
 						   byteswap_bitformat(SND_PCM_FORMAT_S16));
 		if (err == 0) {
-			g_debug("ALSA device \"%s\": converting %u bit to 16 bit backward-endian\n",
-				alsa_device(ad), audio_format->bits);
-			audio_format->bits = 16;
+			g_debug("ALSA device \"%s\": converting format %s to 16 bit backward-endian\n",
+				alsa_device(ad),
+				sample_format_to_string(audio_format->format));
+			audio_format->format = SAMPLE_FORMAT_S16;
 			audio_format->reverse_endian = 1;
 		}
 	}
 
 	if (err < 0) {
 		g_set_error(error, alsa_output_quark(), err,
-			    "ALSA device \"%s\" does not support %u bit audio: %s",
-			    alsa_device(ad), audio_format->bits,
+			    "ALSA device \"%s\" does not support format %s: %s",
+			    alsa_device(ad),
+			    sample_format_to_string(audio_format->format),
 			    snd_strerror(-err));
 		return false;
 	}
@@ -449,7 +464,7 @@ alsa_open(void *data, struct audio_format *audio_format, GError **error)
 		/* sample format is not supported by this plugin -
 		   fall back to 16 bit samples */
 
-		audio_format->bits = 16;
+		audio_format->format = SAMPLE_FORMAT_S16;
 		bitformat = SND_PCM_FORMAT_S16;
 	}
 

@@ -283,7 +283,7 @@ faad_decoder_init(faacDecHandle decoder, struct decoder_buffer *buffer,
 	decoder_buffer_consume(buffer, nbytes);
 
 	return audio_format_init_checked(audio_format, sample_rate,
-					 16, channels, error_r);
+					 SAMPLE_FORMAT_S16, channels, error_r);
 }
 
 /**

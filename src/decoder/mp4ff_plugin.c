@@ -132,7 +132,8 @@ mp4_faad_new(mp4ff_t *mp4fh, int *track_r, struct audio_format *audio_format)
 		return NULL;
 	}
 
-	if (!audio_format_init_checked(audio_format, sample_rate, 16, channels,
+	if (!audio_format_init_checked(audio_format, sample_rate,
+				       SAMPLE_FORMAT_S16, channels,
 				       &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);

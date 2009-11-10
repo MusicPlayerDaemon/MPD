@@ -87,7 +87,7 @@ mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 		return false;
 	}
 
-	if (!audio_format_init_checked(audio_format, rate, 16,
+	if (!audio_format_init_checked(audio_format, rate, SAMPLE_FORMAT_S16,
 				       channels, &gerror)) {
 		g_warning("%s", gerror->message);
 		g_error_free(gerror);

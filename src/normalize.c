@@ -47,7 +47,8 @@ void finishNormalization(void)
 void normalizeData(void *buffer, int bufferSize,
 		   const struct audio_format *format)
 {
-	if ((format->bits != 16) || (format->channels != 2)) return;
+	if (format->format != SAMPLE_FORMAT_S16 || format->channels != 2)
+		return;
 
 	Compressor_Process_int16(compressor, buffer, bufferSize / 2);
 }

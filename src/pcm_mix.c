@@ -103,18 +103,18 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 	int vol1, int vol2,
 	const struct audio_format *format)
 {
-	switch (format->bits) {
-	case 8:
+	switch (format->format) {
+	case SAMPLE_FORMAT_S8:
 		pcm_add_8((int8_t *)buffer1, (const int8_t *)buffer2,
 			  size, vol1, vol2);
 		break;
 
-	case 16:
+	case SAMPLE_FORMAT_S16:
 		pcm_add_16((int16_t *)buffer1, (const int16_t *)buffer2,
 			   size / 2, vol1, vol2);
 		break;
 
-	case 24:
+	case SAMPLE_FORMAT_S24_P32:
 		pcm_add_24((int32_t*)buffer1,
 			   (const int32_t*)buffer2,
 			   size / 4, vol1, vol2);
@@ -127,7 +127,8 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 		break;
 
 	default:
-		g_error("%u bits not supported by pcm_add!\n", format->bits);
+		g_error("format %s not supported by pcm_add",
+			sample_format_to_string(format->format));
 	}
 }
 

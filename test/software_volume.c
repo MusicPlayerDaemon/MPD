@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 			return 1;
 		}
 	} else
-		audio_format_init(&audio_format, 48000, 16, 2);
+		audio_format_init(&audio_format, 48000, SAMPLE_FORMAT_S16, 2);
 
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
 		if (!pcm_volume(buffer, nbytes, &audio_format,

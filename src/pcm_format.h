@@ -20,6 +20,8 @@
 #ifndef PCM_FORMAT_H
 #define PCM_FORMAT_H
 
+#include "audio_format.h"
+
 #include <stdint.h>
 #include <stddef.h>
 
@@ -40,7 +42,7 @@ struct pcm_dither;
  */
 const int16_t *
 pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
-		  uint8_t bits, const void *src,
+		  enum sample_format src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r);
 
 /**
@@ -55,7 +57,7 @@ pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
  */
 const int32_t *
 pcm_convert_to_24(struct pcm_buffer *buffer,
-		  uint8_t bits, const void *src,
+		  enum sample_format src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r);
 
 /**
@@ -70,7 +72,7 @@ pcm_convert_to_24(struct pcm_buffer *buffer,
  */
 const int32_t *
 pcm_convert_to_32(struct pcm_buffer *buffer,
-		  uint8_t bits, const void *src,
+		  enum sample_format src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r);
 
 #endif

@@ -23,6 +23,21 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+enum sample_format {
+	SAMPLE_FORMAT_UNDEFINED = 0,
+
+	SAMPLE_FORMAT_S8,
+	SAMPLE_FORMAT_S16,
+
+	/**
+	 * Signed 24 bit integer samples, packed in 32 bit integers
+	 * (the most significant byte is filled with the sign bit).
+	 */
+	SAMPLE_FORMAT_S24_P32,
+
+	SAMPLE_FORMAT_S32,
+};
+
 /**
  * This structure describes the format of a raw PCM stream.
  */
@@ -35,11 +50,10 @@ struct audio_format {
 	uint32_t sample_rate;
 
 	/**
-	 * The number of significant bits per sample.  Samples are
-	 * currently always signed.  Supported values are 8, 16, 24,
-	 * 32.  24 bit samples are packed in 32 bit integers.
+	 * The format samples are stored in.  See the #sample_format
+	 * enum for valid values.
 	 */
-	uint8_t bits;
+	uint8_t format;
 
 	/**
 	 * The number of channels.  Only mono (1) and stereo (2) are
@@ -69,7 +83,7 @@ struct audio_format_string {
 static inline void audio_format_clear(struct audio_format *af)
 {
 	af->sample_rate = 0;
-	af->bits = 0;
+	af->format = SAMPLE_FORMAT_UNDEFINED;
 	af->channels = 0;
 	af->reverse_endian = 0;
 }
@@ -80,10 +94,10 @@ static inline void audio_format_clear(struct audio_format *af)
  */
 static inline void audio_format_init(struct audio_format *af,
 				     uint32_t sample_rate,
-				     uint8_t bits, uint8_t channels)
+				     enum sample_format format, uint8_t channels)
 {
 	af->sample_rate = sample_rate;
-	af->bits = bits;
+	af->format = (uint8_t)format;
 	af->channels = channels;
 	af->reverse_endian = 0;
 }
@@ -105,7 +119,8 @@ static inline bool audio_format_defined(const struct audio_format *af)
 static inline bool
 audio_format_fully_defined(const struct audio_format *af)
 {
-	return af->sample_rate != 0 && af->bits != 0 && af->channels != 0;
+	return af->sample_rate != 0 && af->format != SAMPLE_FORMAT_UNDEFINED &&
+		af->channels != 0;
 }
 
 /**
@@ -115,7 +130,8 @@ audio_format_fully_defined(const struct audio_format *af)
 static inline bool
 audio_format_mask_defined(const struct audio_format *af)
 {
-	return af->sample_rate != 0 || af->bits != 0 || af->channels != 0;
+	return af->sample_rate != 0 || af->format != SAMPLE_FORMAT_UNDEFINED ||
+		af->channels != 0;
 }
 
 /**
@@ -135,9 +151,20 @@ audio_valid_sample_rate(unsigned sample_rate)
  * @param bits the number of significant bits per sample
  */
 static inline bool
-audio_valid_sample_format(unsigned bits)
+audio_valid_sample_format(enum sample_format format)
 {
-	return bits == 16 || bits == 24 || bits == 32 || bits == 8;
+	switch (format) {
+	case SAMPLE_FORMAT_S8:
+	case SAMPLE_FORMAT_S16:
+	case SAMPLE_FORMAT_S24_P32:
+	case SAMPLE_FORMAT_S32:
+		return true;
+
+	case SAMPLE_FORMAT_UNDEFINED:
+		break;
+	}
+
+	return false;
 }
 
 /**
@@ -156,7 +183,7 @@ audio_valid_channel_count(unsigned channels)
 static inline bool audio_format_valid(const struct audio_format *af)
 {
 	return audio_valid_sample_rate(af->sample_rate) &&
-		audio_valid_sample_format(af->bits) &&
+		audio_valid_sample_format((enum sample_format)af->format) &&
 		audio_valid_channel_count(af->channels);
 }
 
@@ -168,7 +195,8 @@ static inline bool audio_format_mask_valid(const struct audio_format *af)
 {
 	return (af->sample_rate == 0 ||
 		audio_valid_sample_rate(af->sample_rate)) &&
-		(af->bits == 0 || audio_valid_sample_format(af->bits)) &&
+		(af->format == SAMPLE_FORMAT_UNDEFINED ||
+		 audio_valid_sample_format((enum sample_format)af->format)) &&
 		(af->channels == 0 || audio_valid_channel_count(af->channels));
 }
 
@@ -176,7 +204,7 @@ static inline bool audio_format_equals(const struct audio_format *a,
 				       const struct audio_format *b)
 {
 	return a->sample_rate == b->sample_rate &&
-		a->bits == b->bits &&
+		a->format == b->format &&
 		a->channels == b->channels &&
 		a->reverse_endian == b->reverse_endian;
 }
@@ -188,8 +216,8 @@ audio_format_mask_apply(struct audio_format *af,
 	if (mask->sample_rate != 0)
 		af->sample_rate = mask->sample_rate;
 
-	if (mask->bits != 0)
-		af->bits = mask->bits;
+	if (mask->format != SAMPLE_FORMAT_UNDEFINED)
+		af->format = mask->format;
 
 	if (mask->channels != 0)
 		af->channels = mask->channels;
@@ -200,12 +228,22 @@ audio_format_mask_apply(struct audio_format *af,
  */
 static inline unsigned audio_format_sample_size(const struct audio_format *af)
 {
-	if (af->bits <= 8)
+	switch (af->format) {
+	case SAMPLE_FORMAT_S8:
 		return 1;
-	else if (af->bits <= 16)
+
+	case SAMPLE_FORMAT_S16:
 		return 2;
-	else
+
+	case SAMPLE_FORMAT_S24_P32:
+	case SAMPLE_FORMAT_S32:
 		return 4;
+
+	case SAMPLE_FORMAT_UNDEFINED:
+		break;
+	}
+
+	return 0;
 }
 
 /**
@@ -225,6 +263,16 @@ static inline double audio_format_time_to_size(const struct audio_format *af)
 {
 	return af->sample_rate * audio_format_frame_size(af);
 }
+
+/**
+ * Renders a #sample_format enum into a string, e.g. for printing it
+ * in a log file.
+ *
+ * @param format a #sample_format enum value
+ * @return the string
+ */
+const char *
+sample_format_to_string(enum sample_format format);
 
 /**
  * Renders the #audio_format object into a string, e.g. for printing

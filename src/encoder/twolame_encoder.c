@@ -192,7 +192,7 @@ twolame_encoder_open(struct encoder *_encoder, struct audio_format *audio_format
 {
 	struct twolame_encoder *encoder = (struct twolame_encoder *)_encoder;
 
-	audio_format->bits = 16;
+	audio_format->format = SAMPLE_FORMAT_S16;
 	audio_format->channels = 2;
 
 	encoder->audio_format = *audio_format;

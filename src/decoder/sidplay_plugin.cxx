@@ -277,7 +277,7 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 	/* initialize the MPD decoder */
 
 	struct audio_format audio_format;
-	audio_format_init(&audio_format, 48000, 16, 2);
+	audio_format_init(&audio_format, 48000, SAMPLE_FORMAT_S16, 2);
 	assert(audio_format_valid(&audio_format));
 
 	decoder_initialized(decoder, &audio_format, true, (float)song_len);

@@ -172,19 +172,19 @@ mvp_set_pcm_params(struct mvp_data *md, struct audio_format *audio_format,
 	}
 
 	/* 0,1=24bit(24) , 2,3=16bit */
-	switch (audio_format->bits) {
-	case 16:
+	switch (audio_format->format) {
+	case SAMPLE_FORMAT_S16:
 		mix[1] = 2;
 		break;
 
-	case 24:
+	case SAMPLE_FORMAT_S24_P32:
 		mix[1] = 0;
 		break;
 
 	default:
-		g_debug("unsupported sample format %u - falling back to stereo",
-			audio_format->bits);
-		audio_format->bits = 16;
+		g_debug("unsupported sample format %s - falling back to 16 bit",
+			sample_format_to_string(audio_format->format));
+		audio_format->format = SAMPLE_FORMAT_S16;
 		mix[1] = 2;
 		break;
 	}

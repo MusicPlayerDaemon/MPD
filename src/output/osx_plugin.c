@@ -166,9 +166,6 @@ osx_output_open(void *data, struct audio_format *audio_format, GError **error)
 	OSStatus status;
 	ComponentResult result;
 
-	if (audio_format->bits > 16)
-		audio_format->bits = 16;
-
 	desc.componentType = kAudioUnitType_Output;
 	desc.componentSubType = kAudioUnitSubType_DefaultOutput;
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
@@ -226,7 +223,21 @@ osx_output_open(void *data, struct audio_format *audio_format, GError **error)
 	stream_description.mFramesPerPacket = 1;
 	stream_description.mBytesPerFrame = stream_description.mBytesPerPacket;
 	stream_description.mChannelsPerFrame = audio_format->channels;
-	stream_description.mBitsPerChannel = audio_format->bits;
+
+	switch (audio_format->format) {
+	case SAMPLE_FORMAT_S8:
+		stream_description.mBitsPerChannel = 8;
+		break;
+
+	case SAMPLE_FORMAT_S16:
+		stream_description.mBitsPerChannel = 16;
+		break;
+
+	default:
+		audio_format->format = SAMPLE_FORMAT_S16;
+		stream_description.mBitsPerChannel = 16;
+		break;
+	}
 
 	result = AudioUnitSetProperty(od->au, kAudioUnitProperty_StreamFormat,
 				      kAudioUnitScope_Input, 0,

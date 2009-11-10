@@ -170,13 +170,24 @@ ao_output_open(void *data, struct audio_format *audio_format,
 	ao_sample_format format;
 	struct ao_data *ad = (struct ao_data *)data;
 
-	/* support for 24 bit samples in libao is currently dubious,
-	   and until we have sorted that out, resample everything to
-	   16 bit */
-	if (audio_format->bits > 16)
-		audio_format->bits = 16;
+	switch (audio_format->format) {
+	case SAMPLE_FORMAT_S8:
+		format.bits = 8;
+		break;
 
-	format.bits = audio_format->bits;
+	case SAMPLE_FORMAT_S16:
+		format.bits = 16;
+		break;
+
+	default:
+		/* support for 24 bit samples in libao is currently
+		   dubious, and until we have sorted that out,
+		   convert everything to 16 bit */
+		audio_format->format = SAMPLE_FORMAT_S16;
+		format.bits = 16;
+		break;
+	}
+
 	format.rate = audio_format->sample_rate;
 	format.byte_format = AO_FMT_NATIVE;
 	format.channels = audio_format->channels;

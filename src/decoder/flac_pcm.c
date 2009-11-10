@@ -20,6 +20,8 @@
 #include "config.h"
 #include "flac_pcm.h"
 
+#include <assert.h>
+
 static void flac_convert_stereo16(int16_t *dest,
 				  const FLAC__int32 * const buf[],
 				  unsigned int position, unsigned int end)
@@ -74,12 +76,12 @@ flac_convert_8(int8_t *dest,
 
 void
 flac_convert(void *dest,
-	     unsigned int num_channels, unsigned sample_format,
+	     unsigned int num_channels, enum sample_format sample_format,
 	     const FLAC__int32 *const buf[],
 	     unsigned int position, unsigned int end)
 {
 	switch (sample_format) {
-	case 16:
+	case SAMPLE_FORMAT_S16:
 		if (num_channels == 2)
 			flac_convert_stereo16((int16_t*)dest, buf,
 					      position, end);
@@ -88,15 +90,19 @@ flac_convert(void *dest,
 					position, end);
 		break;
 
-	case 24:
-	case 32:
+	case SAMPLE_FORMAT_S24_P32:
+	case SAMPLE_FORMAT_S32:
 		flac_convert_32((int32_t*)dest, num_channels, buf,
 				position, end);
 		break;
 
-	case 8:
+	case SAMPLE_FORMAT_S8:
 		flac_convert_8((int8_t*)dest, num_channels, buf,
 			       position, end);
 		break;
+
+	case SAMPLE_FORMAT_UNDEFINED:
+		/* unreachable */
+		assert(false);
 	}
 }

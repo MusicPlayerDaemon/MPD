@@ -122,7 +122,7 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 		return;
 	}
 
-	audio_format_init(&audio_format, 44100, 16, 2);
+	audio_format_init(&audio_format, 44100, SAMPLE_FORMAT_S16, 2);
 	assert(audio_format_valid(&audio_format));
 
 	decoder_initialized(decoder, &audio_format,

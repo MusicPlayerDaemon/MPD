@@ -59,7 +59,7 @@ wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 {
 	static const struct audio_format audio_format = {
 		.sample_rate = WILDMIDI_SAMPLE_RATE,
-		.bits = 16,
+		.format = SAMPLE_FORMAT_S16,
 		.channels = 2,
 	};
 	midi *wm;

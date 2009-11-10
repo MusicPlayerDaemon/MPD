@@ -212,7 +212,7 @@ vorbis_encoder_open(struct encoder *_encoder,
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 	bool ret;
 
-	audio_format->bits = 16;
+	audio_format->format = SAMPLE_FORMAT_S16;
 
 	encoder->audio_format = *audio_format;
 

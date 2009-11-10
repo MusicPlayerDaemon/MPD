@@ -163,7 +163,7 @@ mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 	/* Prevent module from looping forever */
 	handle->loop = 0;
 
-	audio_format_init(&audio_format, mikmod_sample_rate, 16, 2);
+	audio_format_init(&audio_format, mikmod_sample_rate, SAMPLE_FORMAT_S16, 2);
 	assert(audio_format_valid(&audio_format));
 
 	decoder_initialized(decoder, &audio_format, false, 0);

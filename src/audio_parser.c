@@ -27,6 +27,7 @@
 #include "audio_format.h"
 #include "audio_check.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 /**
@@ -65,14 +66,16 @@ parse_sample_rate(const char *src, bool mask, uint32_t *sample_rate_r,
 }
 
 static bool
-parse_sample_format(const char *src, bool mask, uint8_t *bits_r,
+parse_sample_format(const char *src, bool mask,
+		    enum sample_format *sample_format_r,
 		    const char **endptr_r, GError **error_r)
 {
 	unsigned long value;
 	char *endptr;
+	enum sample_format sample_format;
 
 	if (mask && *src == '*') {
-		*bits_r = 0;
+		*sample_format_r = SAMPLE_FORMAT_UNDEFINED;
 		*endptr_r = src + 1;
 		return true;
 	}
@@ -82,10 +85,34 @@ parse_sample_format(const char *src, bool mask, uint8_t *bits_r,
 		g_set_error(error_r, audio_parser_quark(), 0,
 			    "Failed to parse the sample format");
 		return false;
-	} else if (!audio_check_sample_format(value, error_r))
-		return false;
+	}
 
-	*bits_r = value;
+	switch (value) {
+	case 8:
+		sample_format = SAMPLE_FORMAT_S8;
+		break;
+
+	case 16:
+		sample_format = SAMPLE_FORMAT_S16;
+		break;
+
+	case 24:
+		sample_format = SAMPLE_FORMAT_S24_P32;
+		break;
+
+	case 32:
+		sample_format = SAMPLE_FORMAT_S32;
+		break;
+
+	default:
+		g_set_error(error_r, audio_parser_quark(), 0,
+			    "Invalid sample format: %lu", value);
+		return false;
+	}
+
+	assert(audio_valid_sample_format(sample_format));
+
+	*sample_format_r = sample_format;
 	*endptr_r = endptr;
 	return true;
 }
@@ -121,7 +148,8 @@ audio_format_parse(struct audio_format *dest, const char *src,
 		   bool mask, GError **error_r)
 {
 	uint32_t rate;
-	uint8_t bits, channels;
+	enum sample_format sample_format;
+	uint8_t channels;
 
 	audio_format_clear(dest);
 
@@ -138,7 +166,7 @@ audio_format_parse(struct audio_format *dest, const char *src,
 
 	/* parse sample format */
 
-	if (!parse_sample_format(src, mask, &bits, &src, error_r))
+	if (!parse_sample_format(src, mask, &sample_format, &src, error_r))
 		return false;
 
 	if (*src++ != ':') {
@@ -158,7 +186,7 @@ audio_format_parse(struct audio_format *dest, const char *src,
 		return false;
 	}
 
-	audio_format_init(dest, rate, bits, channels);
+	audio_format_init(dest, rate, sample_format, channels);
 
 	return true;
 }

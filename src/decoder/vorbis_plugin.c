@@ -311,7 +311,8 @@ vorbis_stream_decode(struct decoder *decoder,
 		return;
 	}
 
-	if (!audio_format_init_checked(&audio_format, vi->rate, 16,
+	if (!audio_format_init_checked(&audio_format, vi->rate,
+				       SAMPLE_FORMAT_S16,
 				       vi->channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);

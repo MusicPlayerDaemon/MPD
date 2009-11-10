@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 	else
 		encoder_name = "vorbis";
 
-	audio_format_init(&audio_format, 44100, 16, 2);
+	audio_format_init(&audio_format, 44100, SAMPLE_FORMAT_S16, 2);
 
 	/* create the encoder */
 

@@ -157,8 +157,9 @@ set_audioformat(struct jack_data *jd, struct audio_format *audio_format)
 	else if (audio_format->channels > jd->num_source_ports)
 		audio_format->channels = 2;
 
-	if (audio_format->bits != 16 && audio_format->bits != 24)
-		audio_format->bits = 24;
+	if (audio_format->format != SAMPLE_FORMAT_S16 &&
+	    audio_format->format != SAMPLE_FORMAT_S24_P32)
+		audio_format->format = SAMPLE_FORMAT_S24_P32;
 }
 
 static void
@@ -606,13 +607,13 @@ static void
 mpd_jack_write_samples(struct jack_data *jd, const void *src,
 		       unsigned num_samples)
 {
-	switch (jd->audio_format.bits) {
-	case 16:
+	switch (jd->audio_format.format) {
+	case SAMPLE_FORMAT_S16:
 		mpd_jack_write_samples_16(jd, (const int16_t*)src,
 					  num_samples);
 		break;
 
-	case 24:
+	case SAMPLE_FORMAT_S24_P32:
 		mpd_jack_write_samples_24(jd, (const int32_t*)src,
 					  num_samples);
 		break;

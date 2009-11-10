@@ -63,15 +63,15 @@ pcm_convert_16(struct pcm_convert_state *state,
 	const int16_t *buf;
 	size_t len;
 
-	assert(dest_format->bits == 16);
+	assert(dest_format->format == SAMPLE_FORMAT_S16);
 
 	buf = pcm_convert_to_16(&state->format_buffer, &state->dither,
-				src_format->bits, src_buffer, src_size,
+				src_format->format, src_buffer, src_size,
 				&len);
 	if (buf == NULL) {
 		g_set_error(error_r, pcm_convert_quark(), 0,
-			    "Conversion from %u to 16 bit is not implemented",
-			    src_format->bits);
+			    "Conversion from %s to 16 bit is not implemented",
+			    sample_format_to_string(src_format->format));
 		return NULL;
 	}
 
@@ -119,14 +119,14 @@ pcm_convert_24(struct pcm_convert_state *state,
 	const int32_t *buf;
 	size_t len;
 
-	assert(dest_format->bits == 24);
+	assert(dest_format->format == SAMPLE_FORMAT_S24_P32);
 
-	buf = pcm_convert_to_24(&state->format_buffer, src_format->bits,
+	buf = pcm_convert_to_24(&state->format_buffer, src_format->format,
 				src_buffer, src_size, &len);
 	if (buf == NULL) {
 		g_set_error(error_r, pcm_convert_quark(), 0,
-			    "Conversion from %u to 24 bit is not implemented",
-			    src_format->bits);
+			    "Conversion from %s to 24 bit is not implemented",
+			    sample_format_to_string(src_format->format));
 		return NULL;
 	}
 
@@ -174,14 +174,14 @@ pcm_convert_32(struct pcm_convert_state *state,
 	const int32_t *buf;
 	size_t len;
 
-	assert(dest_format->bits == 32);
+	assert(dest_format->format == SAMPLE_FORMAT_S32);
 
-	buf = pcm_convert_to_32(&state->format_buffer, src_format->bits,
+	buf = pcm_convert_to_32(&state->format_buffer, src_format->format,
 				src_buffer, src_size, &len);
 	if (buf == NULL) {
 		g_set_error(error_r, pcm_convert_quark(), 0,
-			    "Conversion from %u to 24 bit is not implemented",
-			    src_format->bits);
+			    "Conversion from %s to 24 bit is not implemented",
+			    sample_format_to_string(src_format->format));
 		return NULL;
 	}
 
@@ -227,20 +227,20 @@ pcm_convert(struct pcm_convert_state *state,
 	    size_t *dest_size_r,
 	    GError **error_r)
 {
-	switch (dest_format->bits) {
-	case 16:
+	switch (dest_format->format) {
+	case SAMPLE_FORMAT_S16:
 		return pcm_convert_16(state,
 				      src_format, src, src_size,
 				      dest_format, dest_size_r,
 				      error_r);
 
-	case 24:
+	case SAMPLE_FORMAT_S24_P32:
 		return pcm_convert_24(state,
 				      src_format, src, src_size,
 				      dest_format, dest_size_r,
 				      error_r);
 
-	case 32:
+	case SAMPLE_FORMAT_S32:
 		return pcm_convert_32(state,
 				      src_format, src, src_size,
 				      dest_format, dest_size_r,
@@ -248,8 +248,8 @@ pcm_convert(struct pcm_convert_state *state,
 
 	default:
 		g_set_error(error_r, pcm_convert_quark(), 0,
-			    "PCM conversion to %u bit is not implemented",
-			    dest_format->bits);
+			    "PCM conversion to %s is not implemented",
+			    sample_format_to_string(dest_format->format));
 		return NULL;
 	}
 }

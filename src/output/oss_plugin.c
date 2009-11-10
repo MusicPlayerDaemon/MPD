@@ -490,17 +490,18 @@ oss_setup(struct oss_data *od, GError **error)
 	}
 	od->audio_format.sample_rate = tmp;
 
-	switch (od->audio_format.bits) {
-	case 8:
+	switch (od->audio_format.format) {
+	case SAMPLE_FORMAT_S8:
 		tmp = AFMT_S8;
 		break;
-	case 16:
+
+	case SAMPLE_FORMAT_S16:
 		tmp = AFMT_S16_MPD;
 		break;
 
 	default:
 		/* not supported by OSS - fall back to 16 bit */
-		od->audio_format.bits = 16;
+		od->audio_format.format = SAMPLE_FORMAT_S16;
 		tmp = AFMT_S16_MPD;
 		break;
 	}

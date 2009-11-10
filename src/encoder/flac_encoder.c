@@ -89,7 +89,8 @@ flac_encoder_finish(struct encoder *_encoder)
 }
 
 static bool
-flac_encoder_setup(struct flac_encoder *encoder, GError **error)
+flac_encoder_setup(struct flac_encoder *encoder, unsigned bits_per_sample,
+		   GError **error)
 {
 	if ( !FLAC__stream_encoder_set_compression_level(encoder->fse,
 					encoder->compression)) {
@@ -106,10 +107,10 @@ flac_encoder_setup(struct flac_encoder *encoder, GError **error)
 		return false;
 	}
 	if ( !FLAC__stream_encoder_set_bits_per_sample(encoder->fse,
-					encoder->audio_format.bits)) {
+						       bits_per_sample)) {
 		g_set_error(error, flac_encoder_quark(), 0,
 			    "error setting flac bit format to %d",
-			    encoder->audio_format.bits);
+			    bits_per_sample);
 		return false;
 	}
 	if ( !FLAC__stream_encoder_set_sample_rate(encoder->fse,
@@ -143,13 +144,29 @@ flac_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 		     GError **error)
 {
 	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
+	unsigned bits_per_sample;
 	FLAC__StreamEncoderInitStatus init_status;
 
 	encoder->audio_format = *audio_format;
 
 	/* FIXME: flac should support 32bit as well */
-	if (audio_format->bits > 24)
-		audio_format->bits = 24;
+	switch (audio_format->format) {
+	case SAMPLE_FORMAT_S8:
+		bits_per_sample = 8;
+		break;
+
+	case SAMPLE_FORMAT_S16:
+		bits_per_sample = 16;
+		break;
+
+	case SAMPLE_FORMAT_S24_P32:
+		bits_per_sample = 24;
+		break;
+
+	default:
+		bits_per_sample = 24;
+		audio_format->format = SAMPLE_FORMAT_S24_P32;
+	}
 
 	/* allocate the encoder */
 	encoder->fse = FLAC__stream_encoder_new();
@@ -159,7 +176,7 @@ flac_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 		return false;
 	}
 
-	if (!flac_encoder_setup(encoder, error)) {
+	if (!flac_encoder_setup(encoder, bits_per_sample, error)) {
 		FLAC__stream_encoder_delete(encoder->fse);
 		return false;
 	}
@@ -237,20 +254,23 @@ flac_encoder_write(struct encoder *_encoder,
 	num_frames = length / audio_format_frame_size(&encoder->audio_format);
 	num_samples = num_frames * encoder->audio_format.channels;
 
-	switch (encoder->audio_format.bits) {
-	case 8:
+	switch (encoder->audio_format.format) {
+	case SAMPLE_FORMAT_S8:
 		exbuffer = pcm_buffer_get(&encoder->expand_buffer, length*4);
 		pcm8_to_flac(exbuffer, data, num_samples);
 		buffer = exbuffer;
 		break;
-	case 16:
+
+	case SAMPLE_FORMAT_S16:
 		exbuffer = pcm_buffer_get(&encoder->expand_buffer, length*2);
 		pcm16_to_flac(exbuffer, data, num_samples);
 		buffer = exbuffer;
 		break;
-	case 24:
-	case 32: /* nothing need to be done
-		  * format is the same for both mpd and libFLAC */
+
+	case SAMPLE_FORMAT_S24_P32:
+	case SAMPLE_FORMAT_S32:
+		/* nothing need to be done; format is the same for
+		   both mpd and libFLAC */
 		buffer = data;
 		break;
 	}

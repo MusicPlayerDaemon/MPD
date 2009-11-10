@@ -88,7 +88,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 {
 	static const struct audio_format audio_format = {
 		.sample_rate = 48000,
-		.bits = 16,
+		.format = SAMPLE_FORMAT_S16,
 		.channels = 2,
 	};
 	char setting_sample_rate[] = "synth.sample-rate";

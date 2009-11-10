@@ -101,13 +101,33 @@ setup_virtual_fops(struct input_stream *stream)
 	return vf;
 }
 
-static uint8_t
+static enum sample_format
+audiofile_bits_to_sample_format(int bits)
+{
+	switch (bits) {
+	case 8:
+		return SAMPLE_FORMAT_S8;
+
+	case 16:
+		return SAMPLE_FORMAT_S16;
+
+	case 24:
+		return SAMPLE_FORMAT_S24_P32;
+
+	case 32:
+		return SAMPLE_FORMAT_S32;
+	}
+
+	return SAMPLE_FORMAT_UNDEFINED;
+}
+
+static enum sample_format
 audiofile_setup_sample_format(AFfilehandle af_fp)
 {
 	int fs, bits;
 
 	afGetSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
-	if (!audio_valid_sample_format(bits)) {
+	if (!audio_valid_sample_format(audiofile_bits_to_sample_format(bits))) {
 		g_debug("input file has %d bit samples, converting to 16",
 			bits);
 		bits = 16;
@@ -117,7 +137,7 @@ audiofile_setup_sample_format(AFfilehandle af_fp)
 	                         AF_SAMPFMT_TWOSCOMP, bits);
 	afGetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
 
-	return bits;
+	return audiofile_bits_to_sample_format(bits);
 }
 
 static void

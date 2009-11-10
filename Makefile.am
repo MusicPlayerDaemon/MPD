@@ -877,6 +877,7 @@ test_run_normalize_LDADD = \
 	$(GLIB_LIBS)
 
 test_run_convert_SOURCES = test/run_convert.c \
+	src/audio_format.c \
 	src/audio_check.c \
 	src/audio_parser.c \
 	src/pcm_channels.c \

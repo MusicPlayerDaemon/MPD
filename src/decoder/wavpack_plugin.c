@@ -123,6 +123,33 @@ format_samples_float(G_GNUC_UNUSED int bytes_per_sample, void *buffer,
 	}
 }
 
+/**
+ * Choose a MPD sample format from libwavpacks' number of bits.
+ */
+static enum sample_format
+wavpack_bits_to_sample_format(bool is_float, int bytes_per_sample)
+{
+	if (is_float)
+		return SAMPLE_FORMAT_S24_P32;
+
+	switch (bytes_per_sample) {
+	case 1:
+		return SAMPLE_FORMAT_S8;
+
+	case 2:
+		return SAMPLE_FORMAT_S16;
+
+	case 3:
+		return SAMPLE_FORMAT_S24_P32;
+
+	case 4:
+		return SAMPLE_FORMAT_S32;
+
+	default:
+		return SAMPLE_FORMAT_UNDEFINED;
+	}
+}
+
 /*
  * This does the main decoding thing.
  * Requires an already opened WavpackContext.
@@ -132,7 +159,8 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek,
 	       struct replay_gain_info *replay_gain_info)
 {
 	GError *error = NULL;
-	unsigned bits;
+	bool is_float;
+	enum sample_format sample_format;
 	struct audio_format audio_format;
 	format_samples_t format_samples;
 	char chunk[CHUNK_SIZE];
@@ -141,19 +169,14 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek,
 	int bytes_per_sample, output_sample_size;
 	int position;
 
-	bits = WavpackGetBitsPerSample(wpc);
-
-	/* round bitwidth to 8-bit units */
-	bits = (bits + 7) & (~7);
-	/* MPD handles max 32-bit samples */
-	if (bits > 32)
-		bits = 32;
-
-	if ((WavpackGetMode(wpc) & MODE_FLOAT) == MODE_FLOAT)
-		bits = 24;
+	is_float = (WavpackGetMode(wpc) & MODE_FLOAT) != 0;
+	sample_format =
+		wavpack_bits_to_sample_format(is_float,
+					      WavpackGetBytesPerSample(wpc));
 
 	if (!audio_format_init_checked(&audio_format,
-				       WavpackGetSampleRate(wpc), bits,
+				       WavpackGetSampleRate(wpc),
+				       sample_format,
 				       WavpackGetNumChannels(wpc), &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);

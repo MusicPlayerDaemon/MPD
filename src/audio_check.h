@@ -20,10 +20,10 @@
 #ifndef MPD_AUDIO_CHECK_H
 #define MPD_AUDIO_CHECK_H
 
+#include "audio_format.h"
+
 #include <glib.h>
 #include <stdbool.h>
-
-struct audio_format;
 
 /**
  * The GLib quark used for errors reported by this library.
@@ -48,7 +48,7 @@ audio_check_channel_count(unsigned sample_format, GError **error_r);
  */
 bool
 audio_format_init_checked(struct audio_format *af, unsigned long sample_rate,
-			  unsigned sample_format, unsigned channels,
+			  enum sample_format sample_format, unsigned channels,
 			  GError **error_r);
 
 #endif

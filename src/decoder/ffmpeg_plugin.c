@@ -277,6 +277,26 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 	return cmd;
 }
 
+static enum sample_format
+ffmpeg_sample_format(G_GNUC_UNUSED const AVCodecContext *codec_context)
+{
+#if LIBAVCODEC_VERSION_INT >= ((51<<16)+(41<<8)+0)
+	int bits = (uint8_t) av_get_bits_per_sample_format(codec_context->sample_fmt);
+
+	/* XXX implement & test other sample formats */
+
+	switch (bits) {
+	case 16:
+		return SAMPLE_FORMAT_S16;
+	}
+
+	return SAMPLE_FORMAT_UNDEFINED;
+#else
+	/* XXX fixme 16-bit for older ffmpeg (13 Aug 2007) */
+	return SAMPLE_FORMAT_S16;
+#endif
+}
+
 static bool
 ffmpeg_decode_internal(struct ffmpeg_context *ctx)
 {
@@ -288,7 +308,6 @@ ffmpeg_decode_internal(struct ffmpeg_context *ctx)
 	struct audio_format audio_format;
 	enum decoder_command cmd;
 	int total_time;
-	uint8_t bits;
 
 	total_time = 0;
 
@@ -296,14 +315,9 @@ ffmpeg_decode_internal(struct ffmpeg_context *ctx)
 		codec_context->channels = 2;
 	}
 
-#if LIBAVCODEC_VERSION_INT >= ((51<<16)+(41<<8)+0)
-	bits = (uint8_t) av_get_bits_per_sample_format(codec_context->sample_fmt);
-#else
-	/* XXX fixme 16-bit for older ffmpeg (13 Aug 2007) */
-	bits = (uint8_t) 16;
-#endif
 	if (!audio_format_init_checked(&audio_format,
-				       codec_context->sample_rate, bits,
+				       codec_context->sample_rate,
+				       ffmpeg_sample_format(codec_context),
 				       codec_context->channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);

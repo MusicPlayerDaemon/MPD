@@ -38,6 +38,8 @@
 struct flac_data {
 	struct pcm_buffer buffer;
 
+	enum sample_format sample_format;
+
 	/**
 	 * The size of one frame in the output buffer.
 	 */

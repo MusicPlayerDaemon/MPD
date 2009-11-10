@@ -467,7 +467,7 @@ pulse_output_open(void *data, struct audio_format *audio_format,
 
 	/* MPD doesn't support the other pulseaudio sample formats, so
 	   we just force MPD to send us everything as 16 bit */
-	audio_format->bits = 16;
+	audio_format->format = SAMPLE_FORMAT_S16;
 
 	ss.format = PA_SAMPLE_S16NE;
 	ss.rate = audio_format->sample_rate;

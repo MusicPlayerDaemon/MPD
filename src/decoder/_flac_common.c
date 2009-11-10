@@ -60,6 +60,27 @@ flac_data_deinit(struct flac_data *data)
 		tag_free(data->tag);
 }
 
+static enum sample_format
+flac_sample_format(const FLAC__StreamMetadata_StreamInfo *si)
+{
+	switch (si->bits_per_sample) {
+	case 8:
+		return SAMPLE_FORMAT_S8;
+
+	case 16:
+		return SAMPLE_FORMAT_S16;
+
+	case 24:
+		return SAMPLE_FORMAT_S24_P32;
+
+	case 32:
+		return SAMPLE_FORMAT_S32;
+
+	default:
+		return SAMPLE_FORMAT_UNDEFINED;
+	}
+}
+
 bool
 flac_data_get_audio_format(struct flac_data *data,
 			   struct audio_format *audio_format)
@@ -71,9 +92,11 @@ flac_data_get_audio_format(struct flac_data *data,
 		return false;
 	}
 
+	data->sample_format = flac_sample_format(&data->stream_info);
+
 	if (!audio_format_init_checked(audio_format,
 				       data->stream_info.sample_rate,
-				       data->stream_info.bits_per_sample,
+				       data->sample_format,
 				       data->stream_info.channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
@@ -144,7 +167,7 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 	buffer = pcm_buffer_get(&data->buffer, buffer_size);
 
 	flac_convert(buffer, frame->header.channels,
-		     frame->header.bits_per_sample, buf,
+		     data->sample_format, buf,
 		     0, frame->header.blocksize);
 
 	if (data->next_frame >= data->first_frame)

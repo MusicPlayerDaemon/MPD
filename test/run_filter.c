@@ -85,7 +85,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	audio_format_init(&audio_format, 44100, 16, 2);
+	audio_format_init(&audio_format, 44100, SAMPLE_FORMAT_S16, 2);
 
 	g_thread_init(NULL);
 

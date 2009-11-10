@@ -89,7 +89,7 @@ solaris_output_open(void *data, struct audio_format *audio_format,
 
 	/* support only 16 bit mono/stereo for now; nothing else has
 	   been tested */
-	audio_format->bits = 16;
+	audio_format->format = SAMPLE_FORMAT_S16;
 
 	/* open the device in non-blocking mode */
 
@@ -119,7 +119,7 @@ solaris_output_open(void *data, struct audio_format *audio_format,
 
 	info.play.sample_rate = audio_format->sample_rate;
 	info.play.channels = audio_format->channels;
-	info.play.precision = audio_format->bits;
+	info.play.precision = 16;
 	info.play.encoding = AUDIO_ENCODING_LINEAR;
 
 	ret = ioctl(so->fd, AUDIO_SETINFO, &info);

@@ -29,14 +29,39 @@
 #endif
 
 const char *
+sample_format_to_string(enum sample_format format)
+{
+	switch (format) {
+	case SAMPLE_FORMAT_UNDEFINED:
+		return "?";
+
+	case SAMPLE_FORMAT_S8:
+		return "8";
+
+	case SAMPLE_FORMAT_S16:
+		return "16";
+
+	case SAMPLE_FORMAT_S24_P32:
+		return "24";
+
+	case SAMPLE_FORMAT_S32:
+		return "32";
+	}
+
+	/* unreachable */
+	assert(false);
+	return "?";
+}
+
+const char *
 audio_format_to_string(const struct audio_format *af,
 		       struct audio_format_string *s)
 {
 	assert(af != NULL);
 	assert(s != NULL);
 
-	snprintf(s->buffer, sizeof(s->buffer), "%u:%u%s:%u",
-		 af->sample_rate, af->bits,
+	snprintf(s->buffer, sizeof(s->buffer), "%u:%s%s:%u",
+		 af->sample_rate, sample_format_to_string(af->format),
 		 af->reverse_endian ? REVERSE_ENDIAN_SUFFIX : "",
 		 af->channels);
 

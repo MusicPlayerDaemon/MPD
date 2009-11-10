@@ -1188,7 +1188,8 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 	}
 
 	if (!audio_format_init_checked(&audio_format,
-				       data.frame.header.samplerate, 24,
+				       data.frame.header.samplerate,
+				       SAMPLE_FORMAT_S24_P32,
 				       MAD_NCHANNELS(&data.frame.header),
 				       &error)) {
 		g_warning("%s", error->message);
