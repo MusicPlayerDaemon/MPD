@@ -44,6 +44,7 @@ decoder_initialized(struct decoder *decoder,
 		    bool seekable, float total_time)
 {
 	struct decoder_control *dc = decoder->dc;
+	struct audio_format_string af_string;
 
 	assert(dc->state == DECODE_STATE_START);
 	assert(dc->pipe != NULL);
@@ -67,18 +68,15 @@ decoder_initialized(struct decoder *decoder,
 
 	player_lock_signal();
 
-	g_debug("audio_format=%u:%u:%u, seekable=%s",
-		dc->in_audio_format.sample_rate,
-		dc->in_audio_format.bits,
-		dc->in_audio_format.channels,
+	g_debug("audio_format=%s, seekable=%s",
+		audio_format_to_string(&dc->in_audio_format, &af_string),
 		seekable ? "true" : "false");
 
 	if (!audio_format_equals(&dc->in_audio_format,
 				 &dc->out_audio_format))
-		g_debug("converting to %u:%u:%u",
-			dc->out_audio_format.sample_rate,
-			dc->out_audio_format.bits,
-			dc->out_audio_format.channels);
+		g_debug("converting to %s",
+			audio_format_to_string(&dc->out_audio_format,
+					       &af_string));
 }
 
 char *decoder_get_uri(G_GNUC_UNUSED struct decoder *decoder)

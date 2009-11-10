@@ -515,18 +515,19 @@ handle_status(struct client *client,
 	}
 
 	if (player_status.state != PLAYER_STATE_STOP) {
+		struct audio_format_string af_string;
+
 		client_printf(client,
 			      COMMAND_STATUS_TIME ": %i:%i\n"
 			      "elapsed: %1.3f\n"
 			      COMMAND_STATUS_BITRATE ": %u\n"
-			      COMMAND_STATUS_AUDIO ": %u:%u:%u\n",
+			      COMMAND_STATUS_AUDIO ": %s\n",
 			      (int)(player_status.elapsed_time + 0.5),
 			      (int)(player_status.total_time + 0.5),
 			      player_status.elapsed_time,
 			      player_status.bit_rate,
-			      player_status.audio_format.sample_rate,
-			      player_status.audio_format.bits,
-			      player_status.audio_format.channels);
+			      audio_format_to_string(&player_status.audio_format,
+						     &af_string));
 	}
 
 	if ((updateJobId = isUpdatingDB())) {

@@ -72,6 +72,7 @@ load_filter(const char *name)
 int main(int argc, char **argv)
 {
 	struct audio_format audio_format;
+	struct audio_format_string af_string;
 	bool success;
 	GError *error = NULL;
 	struct filter *filter;
@@ -127,9 +128,8 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-
-	g_printerr("audio_format=%u:%u:%u\n", out_audio_format->sample_rate,
-		   out_audio_format->bits, out_audio_format->channels);
+	g_printerr("audio_format=%s\n",
+		   audio_format_to_string(out_audio_format, &af_string));
 
 	frame_size = audio_format_frame_size(&audio_format);
 

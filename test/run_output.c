@@ -107,6 +107,7 @@ int main(int argc, char **argv)
 {
 	struct audio_output ao;
 	struct audio_format audio_format;
+	struct audio_format_string af_string;
 	bool success;
 	GError *error = NULL;
 	char buffer[4096];
@@ -160,8 +161,8 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	g_printerr("audio_format=%u:%u:%u\n", audio_format.sample_rate,
-		   audio_format.bits, audio_format.channels);
+	g_printerr("audio_format=%s\n",
+		   audio_format_to_string(&audio_format, &af_string));
 
 	frame_size = audio_format_frame_size(&audio_format);
 

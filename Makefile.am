@@ -209,6 +209,7 @@ src_mpd_SOURCES = \
 	src/notify.c \
 	src/audio.c \
 	src/audio_check.c \
+	src/audio_format.c \
 	src/audio_parser.c \
 	src/command.c \
 	src/idle.c \
@@ -790,6 +791,7 @@ test_run_decoder_SOURCES = test/run_decoder.c \
 	src/uri.c \
 	src/fd_util.c \
 	src/audio_check.c \
+	src/audio_format.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
 	$(TAG_SRC) \
@@ -828,6 +830,7 @@ test_run_filter_SOURCES = test/run_filter.c \
 	src/pcm_format.c src/pcm_channels.c src/pcm_dither.c \
 	src/pcm_resample.c src/pcm_resample_fallback.c \
 	src/audio_check.c \
+	src/audio_format.c \
 	src/audio_parser.c \
 	$(FILTER_SRC)
 
@@ -842,6 +845,7 @@ test_run_encoder_SOURCES = test/run_encoder.c \
 	src/utils.c \
 	src/tag.c src/tag_pool.c \
 	src/audio_check.c \
+	src/audio_format.c \
 	src/audio_parser.c \
 	$(ENCODER_SRC)
 test_run_encoder_LDADD = $(MPD_LIBS) \
@@ -866,6 +870,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 test_run_output_SOURCES = test/run_output.c \
 	src/conf.c src/tokenizer.c src/utils.c src/log.c \
 	src/audio_check.c \
+	src/audio_format.c \
 	src/audio_parser.c \
 	src/timer.c \
 	src/tag.c src/tag_pool.c \

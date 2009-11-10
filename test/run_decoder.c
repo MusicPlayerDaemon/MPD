@@ -63,11 +63,13 @@ decoder_initialized(struct decoder *decoder,
 		    G_GNUC_UNUSED bool seekable,
 		    G_GNUC_UNUSED float total_time)
 {
+	struct audio_format_string af_string;
+
 	assert(!decoder->initialized);
 	assert(audio_format_valid(audio_format));
 
-	g_printerr("audio_format=%u:%u:%u\n", audio_format->sample_rate,
-		   audio_format->bits, audio_format->channels);
+	g_printerr("audio_format=%s\n",
+		   audio_format_to_string(audio_format, &af_string));
 
 	decoder->initialized = true;
 }

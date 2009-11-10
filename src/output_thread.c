@@ -93,6 +93,7 @@ ao_open(struct audio_output *ao)
 	bool success;
 	GError *error = NULL;
 	const struct audio_format *filter_audio_format;
+	struct audio_format_string af_string;
 
 	assert(!ao->open);
 	assert(ao->fail_timer == NULL);
@@ -145,20 +146,15 @@ ao_open(struct audio_output *ao)
 	ao->open = true;
 
 	g_debug("opened plugin=%s name=\"%s\" "
-		"audio_format=%u:%u:%u:%u",
+		"audio_format=%s",
 		ao->plugin->name, ao->name,
-		ao->out_audio_format.sample_rate,
-		ao->out_audio_format.bits,
-		ao->out_audio_format.channels,
-		ao->out_audio_format.reverse_endian);
+		audio_format_to_string(&ao->out_audio_format, &af_string));
 
 	if (!audio_format_equals(&ao->in_audio_format,
 				 &ao->out_audio_format))
-		g_debug("converting from %u:%u:%u:%u",
-			ao->in_audio_format.sample_rate,
-			ao->in_audio_format.bits,
-			ao->in_audio_format.channels,
-			ao->in_audio_format.reverse_endian);
+		g_debug("converting from %s",
+			audio_format_to_string(&ao->in_audio_format,
+					       &af_string));
 }
 
 static void

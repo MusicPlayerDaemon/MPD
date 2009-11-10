@@ -56,6 +56,13 @@ struct audio_format {
 };
 
 /**
+ * Buffer for audio_format_string().
+ */
+struct audio_format_string {
+	char buffer[24];
+};
+
+/**
  * Clears the #audio_format object, i.e. sets all attributes to an
  * undefined (invalid) value.
  */
@@ -218,5 +225,17 @@ static inline double audio_format_time_to_size(const struct audio_format *af)
 {
 	return af->sample_rate * audio_format_frame_size(af);
 }
+
+/**
+ * Renders the #audio_format object into a string, e.g. for printing
+ * it in a log file.
+ *
+ * @param af the #audio_format object
+ * @param s a buffer to print into
+ * @return the string, or NULL if the #audio_format object is invalid
+ */
+const char *
+audio_format_to_string(const struct audio_format *af,
+		       struct audio_format_string *s);
 
 #endif
