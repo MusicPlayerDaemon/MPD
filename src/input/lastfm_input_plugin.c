@@ -112,7 +112,7 @@ lastfm_input_open(struct input_stream *is, const char *url)
 #if GLIB_CHECK_VERSION(2,16,0)
 	q = g_uri_escape_string(lastfm_user, NULL, false);
 #else
-	q = g_strdup(lastfm_username);
+	q = g_strdup(lastfm_user);
 #endif
 
 #if GLIB_CHECK_VERSION(2,16,0)
