@@ -199,13 +199,10 @@ flac_parse_comment(struct tag *tag, const char *char_tnum,
 
 void
 flac_vorbis_comments_to_tag(struct tag *tag, const char *char_tnum,
-			    const FLAC__StreamMetadata *block)
+			    const FLAC__StreamMetadata_VorbisComment *comment)
 {
-	FLAC__StreamMetadata_VorbisComment_Entry *comments =
-		block->data.vorbis_comment.comments;
-
-	for (unsigned i = block->data.vorbis_comment.num_comments; i > 0; --i)
-		flac_parse_comment(tag, char_tnum, comments++);
+	for (unsigned i = 0; i < comment->num_comments; ++i)
+		flac_parse_comment(tag, char_tnum, &comment->comments[i]);
 }
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
@@ -223,7 +220,8 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 		flac_parse_replay_gain(block, data);
 
 		if (data->tag != NULL)
-			flac_vorbis_comments_to_tag(data->tag, NULL, block);
+			flac_vorbis_comments_to_tag(data->tag, NULL,
+						    &block->data.vorbis_comment);
 
 	default:
 		break;

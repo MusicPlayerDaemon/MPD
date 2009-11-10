@@ -269,7 +269,8 @@ flac_tag_load(const char *file, const char *char_tnum)
 		if (!block)
 			break;
 		if (block->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) {
-			flac_vorbis_comments_to_tag(tag, char_tnum, block);
+			flac_vorbis_comments_to_tag(tag, char_tnum,
+						    &block->data.vorbis_comment);
 		} else if (block->type == FLAC__METADATA_TYPE_STREAMINFO) {
 			tag->time = ((float)block->data.stream_info.total_samples) /
 			    block->data.stream_info.sample_rate + 0.5;
@@ -849,7 +850,8 @@ oggflac_tag_dup(const char *file)
 		if (!(block = FLAC__metadata_iterator_get_block(it)))
 			break;
 		if (block->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) {
-			flac_vorbis_comments_to_tag(ret, NULL, block);
+			flac_vorbis_comments_to_tag(ret, NULL,
+						    &block->data.vorbis_comment);
 		} else if (block->type == FLAC__METADATA_TYPE_STREAMINFO) {
 			ret->time = ((float)block->data.stream_info.
 				     total_samples) /

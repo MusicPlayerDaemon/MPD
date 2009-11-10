@@ -177,7 +177,8 @@ static void of_metadata_dup_cb(G_GNUC_UNUSED const OggFLAC__SeekableStreamDecode
 		    block->data.stream_info.sample_rate + 0.5;
 		return;
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
-		flac_vorbis_comments_to_tag(data->tag, NULL, block);
+		flac_vorbis_comments_to_tag(data->tag, NULL,
+					    &block->data.vorbis_comment);
 	default:
 		break;
 	}
