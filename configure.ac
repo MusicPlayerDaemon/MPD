@@ -322,7 +322,7 @@ AC_ARG_ENABLE(mms,
 		[enable the MMS protocol with libmms]),,
 	[enable_mms=auto])
 
-MPD_AUTO_PKG(mms, MMS, [libmms],
+MPD_AUTO_PKG(mms, MMS, [libmms >= 0.4],
 	[libmms mms:// protocol support], [libmms not found])
 if test x$enable_mms = xyes; then
 	AC_DEFINE(ENABLE_MMS, 1,
@@ -358,7 +358,7 @@ AC_ARG_ENABLE(zip,
 		[enable zip archive support (default: disabled)]),,
 	enable_zip=no)
 
-MPD_AUTO_PKG(zip, ZZIP, [zziplib],
+MPD_AUTO_PKG(zip, ZZIP, [zziplib >= 0.13],
 	[libzzip archive library], [libzzip not found])
 
 AM_CONDITIONAL(HAVE_ZIP, test x$enable_zip = xyes)
