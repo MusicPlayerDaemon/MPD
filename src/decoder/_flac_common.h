@@ -24,7 +24,8 @@
 #ifndef MPD_FLAC_COMMON_H
 #define MPD_FLAC_COMMON_H
 
-#include "../decoder_api.h"
+#include "decoder_api.h"
+#include "pcm_buffer.h"
 #include "config.h"
 
 #include <glib.h>
@@ -145,7 +146,8 @@ typedef size_t flac_read_status_size_t;
 #define FLAC_CHUNK_SIZE 4080
 
 struct flac_data {
-	unsigned char chunk[FLAC_CHUNK_SIZE];
+	struct pcm_buffer buffer;
+
 	float time;
 	unsigned int bit_rate;
 	struct audio_format audio_format;

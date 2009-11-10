@@ -31,6 +31,8 @@ void
 flac_data_init(struct flac_data *data, struct decoder * decoder,
 	       struct input_stream *input_stream)
 {
+	pcm_buffer_init(&data->buffer);
+
 	data->time = 0;
 	data->position = 0;
 	data->bit_rate = 0;
@@ -43,6 +45,8 @@ flac_data_init(struct flac_data *data, struct decoder * decoder,
 void
 flac_data_deinit(struct flac_data *data)
 {
+	pcm_buffer_deinit(&data->buffer);
+
 	if (data->replay_gain_info != NULL)
 		replay_gain_info_free(data->replay_gain_info);
 
@@ -333,45 +337,31 @@ FLAC__StreamDecoderWriteStatus
 flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 		  const FLAC__int32 *const buf[])
 {
-	unsigned int c_samp;
-	const unsigned sample_format = data->audio_format.bits;
-	const unsigned int num_channels = frame->header.channels;
-	const unsigned int bytes_per_sample =
-		audio_format_sample_size(&data->audio_format);
-	const unsigned int bytes_per_channel =
-		bytes_per_sample * frame->header.channels;
-	const unsigned int max_samples = FLAC_CHUNK_SIZE / bytes_per_channel;
-	unsigned int num_samples;
 	enum decoder_command cmd;
+	size_t buffer_size = frame->header.blocksize *
+		audio_format_frame_size(&data->audio_format);
+	void *buffer;
 
-	for (c_samp = 0; c_samp < frame->header.blocksize;
-	     c_samp += num_samples) {
-		num_samples = frame->header.blocksize - c_samp;
-		if (num_samples > max_samples)
-			num_samples = max_samples;
+	buffer = pcm_buffer_get(&data->buffer, buffer_size);
 
-		flac_convert(data->chunk,
-			     num_channels, sample_format, buf,
-			     c_samp, c_samp + num_samples);
+	flac_convert(buffer, data->audio_format.channels,
+		     data->audio_format.bits, buf,
+		     0, frame->header.blocksize);
 
-		cmd = decoder_data(data->decoder, data->input_stream,
-				   data->chunk,
-				   num_samples * bytes_per_channel,
-				   data->time, data->bit_rate,
-				   data->replay_gain_info);
-		switch (cmd) {
-		case DECODE_COMMAND_NONE:
-		case DECODE_COMMAND_START:
-			break;
+	cmd = decoder_data(data->decoder, data->input_stream,
+			   buffer, buffer_size,
+			   data->time, data->bit_rate,
+			   data->replay_gain_info);
+	switch (cmd) {
+	case DECODE_COMMAND_NONE:
+	case DECODE_COMMAND_START:
+		break;
 
-		case DECODE_COMMAND_STOP:
-			return
-				FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
+	case DECODE_COMMAND_STOP:
+		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 
-		case DECODE_COMMAND_SEEK:
-			return
-				FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
-		}
+	case DECODE_COMMAND_SEEK:
+		return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 	}
 
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
