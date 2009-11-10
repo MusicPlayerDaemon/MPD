@@ -504,6 +504,10 @@ if ENABLE_ENCODER
 ENCODER_SRC += src/encoder_list.c
 ENCODER_SRC += src/encoder/null_encoder.c
 
+if ENABLE_WAVE_ENCODER
+ENCODER_SRC += src/encoder/wave_encoder.c
+endif
+
 if ENABLE_VORBIS_ENCODER
 ENCODER_SRC += src/encoder/vorbis_encoder.c
 endif

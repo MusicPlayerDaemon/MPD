@@ -27,6 +27,7 @@ extern const struct encoder_plugin null_encoder_plugin;
 extern const struct encoder_plugin vorbis_encoder_plugin;
 extern const struct encoder_plugin lame_encoder_plugin;
 extern const struct encoder_plugin twolame_encoder_plugin;
+extern const struct encoder_plugin wave_encoder_plugin;
 
 static const struct encoder_plugin *encoder_plugins[] = {
 	&null_encoder_plugin,
@@ -38,6 +39,9 @@ static const struct encoder_plugin *encoder_plugins[] = {
 #endif
 #ifdef ENABLE_TWOLAME_ENCODER
 	&twolame_encoder_plugin,
+#endif
+#ifdef ENABLE_WAVE_ENCODER
+	&wave_encoder_plugin,
 #endif
 	NULL
 };

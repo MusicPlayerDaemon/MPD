@@ -659,6 +659,11 @@ AC_ARG_ENABLE(twolame-encoder,
 		[enable the TwoLAME mp2 encoder]),,
 	enable_twolame_encoder=auto)
 
+AC_ARG_ENABLE(wave-encoder,
+	AS_HELP_STRING([--enable-wave-encoder],
+		[enable the PCM wave encoder]),,
+	enable_wave_encoder=yes)
+
 
 dnl
 dnl audio output plugins
@@ -1078,6 +1083,7 @@ else
 	enable_vorbis_encoder=no
 	enable_lame_encoder=no
 	enable_twolame_encoder=no
+	enable_wave_encoder=no
 fi
 
 MPD_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc],
@@ -1097,7 +1103,8 @@ MPD_AUTO_PKG(twolame_encoder, TWOLAME, [twolame],
 
 if test x$enable_vorbis_encoder != xno ||
 	test x$enable_lame_encoder != xno ||
-	test x$enable_twolame_encoder != xno; then
+	test x$enable_twolame_encoder != xno ||
+	test x$enable_wave_encoder != xno; then
 	# at least one encoder plugin is enabled
 	enable_encoder=yes
 else
@@ -1178,6 +1185,11 @@ if test x$enable_twolame_encoder = xyes; then
 		[Define to enable the TwoLAME encoder plugin])
 fi
 
+AM_CONDITIONAL(ENABLE_WAVE_ENCODER, test x$enable_wave_encoder = xyes)
+if test x$enable_wave_encoder = xyes; then
+	AC_DEFINE(ENABLE_WAVE_ENCODER, 1,
+		[Define to enable the PCM wave encoder plugin])
+fi
 
 dnl
 dnl Documentation
@@ -1427,6 +1439,12 @@ if
 			echo " TwoLAME mp3 encoder ...........enabled"
 		else
 			echo " TwoLAME mp3 encoder ...........disabled"
+		fi
+
+		if test x$enable_wave_encoder = xyes; then
+			echo " PCM wave encoder ..............enabled"
+		else
+			echo " PCM wave encoder ..............disabled"
 		fi
 
 		echo ""
