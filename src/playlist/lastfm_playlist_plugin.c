@@ -24,6 +24,7 @@
 #include "uri.h"
 #include "song.h"
 #include "input_stream.h"
+#include "glib_compat.h"
 
 #include <glib.h>
 
@@ -55,11 +56,7 @@ lastfm_init(const struct config_param *param)
 		return false;
 	}
 
-#if GLIB_CHECK_VERSION(2,16,0)
 	lastfm_config.user = g_uri_escape_string(user, NULL, false);
-#else
-	lastfm_config.user = g_strdup(user);
-#endif
 
 #if GLIB_CHECK_VERSION(2,16,0)
 	if (strlen(passwd) != 32)
@@ -178,11 +175,9 @@ lastfm_open_uri(const char *uri)
 		return NULL;
 	}
 
-#if GLIB_CHECK_VERSION(2,16,0)
 	q = g_uri_escape_string(session, NULL, false);
 	g_free(session);
 	session = q;
-#endif
 
 	g_debug("session='%s'", session);
 
@@ -191,11 +186,7 @@ lastfm_open_uri(const char *uri)
 	if (strlen(uri) > 9) {
 		char *escaped_uri;
 
-#if GLIB_CHECK_VERSION(2,16,0)
 		escaped_uri = g_uri_escape_string(uri, NULL, false);
-#else
-		escaped_uri = g_strdup(uri);
-#endif
 
 		p = g_strconcat("http://ws.audioscrobbler.com/radio/adjust.php?"
 				"session=", session, "&url=", escaped_uri, "&debug=0",
