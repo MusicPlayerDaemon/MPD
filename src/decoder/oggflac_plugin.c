@@ -283,7 +283,8 @@ oggflac_tag_dup(const char *file)
 	if (tag_is_defined(data.tag)) {
 		tag = data.tag;
 		data.tag = NULL;
-	}
+	} else
+		tag = NULL;
 
 	flac_data_deinit(&data);
 
