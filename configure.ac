@@ -410,8 +410,8 @@ dnl
 
 AC_ARG_ENABLE(audiofile,
 	AS_HELP_STRING([--enable-audiofile],
-		[enable audiofile support, disables wave support]),,
-	enable_audiofile=yes)
+		[enable audiofile support (WAV and others)]),,
+	enable_audiofile=auto)
 
 MPD_AUTO_PKG(audiofile, AUDIOFILE, [audiofile >= 0.1.7],
 	[audiofile decoder plugin], [libaudiofile not found])
