@@ -292,12 +292,12 @@ flac_convert_8(int8_t *dest,
 
 static void flac_convert(unsigned char *dest,
 			 unsigned int num_channels,
-			 unsigned int bytes_per_sample,
+			 unsigned sample_format,
 			 const FLAC__int32 * const buf[],
 			 unsigned int position, unsigned int end)
 {
-	switch (bytes_per_sample) {
-	case 2:
+	switch (sample_format) {
+	case 16:
 		if (num_channels == 2)
 			flac_convert_stereo16((int16_t*)dest, buf,
 					      position, end);
@@ -306,12 +306,13 @@ static void flac_convert(unsigned char *dest,
 					position, end);
 		break;
 
-	case 4:
+	case 24:
+	case 32:
 		flac_convert_32((int32_t*)dest, num_channels, buf,
 				position, end);
 		break;
 
-	case 1:
+	case 8:
 		flac_convert_8((int8_t*)dest, num_channels, buf,
 			       position, end);
 		break;
@@ -323,6 +324,7 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 		  const FLAC__int32 *const buf[])
 {
 	unsigned int c_samp;
+	const unsigned sample_format = data->audio_format.bits;
 	const unsigned int num_channels = frame->header.channels;
 	const unsigned int bytes_per_sample =
 		audio_format_sample_size(&data->audio_format);
@@ -332,11 +334,6 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 	unsigned int num_samples;
 	enum decoder_command cmd;
 
-	if (bytes_per_sample != 1 && bytes_per_sample != 2 &&
-	    bytes_per_sample != 4)
-		/* exotic unsupported bit rate */
-		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
-
 	for (c_samp = 0; c_samp < frame->header.blocksize;
 	     c_samp += num_samples) {
 		num_samples = frame->header.blocksize - c_samp;
@@ -344,7 +341,7 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 			num_samples = max_samples;
 
 		flac_convert(data->chunk,
-			     num_channels, bytes_per_sample, buf,
+			     num_channels, sample_format, buf,
 			     c_samp, c_samp + num_samples);
 
 		cmd = decoder_data(data->decoder, data->input_stream,
