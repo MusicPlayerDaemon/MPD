@@ -303,7 +303,7 @@ AC_ARG_ENABLE(mms,
 		[enable the MMS protocol with libmms]),,
 	[enable_mms=auto])
 
-MPD_AUTO_PKG(mms, MMS, [libmms],
+MPD_AUTO_PKG(mms, MMS, [libmms >= 0.4],
 	[libmms mms:// protocol support], [libmms not found])
 if test x$enable_mms = xyes; then
 	AC_DEFINE(ENABLE_MMS, 1,
