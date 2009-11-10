@@ -104,6 +104,18 @@ playlist_list_global_finish(void)
 			playlist_plugin_finish(playlist_plugins[i]);
 }
 
+/* g_uri_parse_scheme() was introduced in GLib 2.16 */
+#if !GLIB_CHECK_VERSION(2,16,0)
+static char *
+g_uri_parse_scheme(const char *uri)
+{
+	const char *end = strstr(uri, "://");
+	if (end == NULL)
+		return NULL;
+	return g_strndup(uri, end - uri);
+}
+#endif
+
 struct playlist_provider *
 playlist_list_open_uri(const char *uri)
 {

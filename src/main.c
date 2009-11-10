@@ -111,8 +111,10 @@ glue_mapper_init(void)
 	const char *music_dir, *playlist_dir;
 
 	music_dir = config_get_path(CONF_MUSIC_DIR);
+#if GLIB_CHECK_VERSION(2,14,0)
 	if (music_dir == NULL)
 		music_dir = g_get_user_special_dir(G_USER_DIRECTORY_MUSIC);
+#endif
 
 	playlist_dir = config_get_path(CONF_PLAYLIST_DIR);
 

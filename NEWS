@@ -68,7 +68,7 @@ ver 0.16 (20??/??/??)
 * set the close-on-exec flag on all file descriptors
 * obey $(sysconfdir) for default mpd.conf location
 * build with large file support by default
-* require GLib 2.16
+* require GLib 2.12
 
 
 ver 0.15.6 (2009/??/??)

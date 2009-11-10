@@ -21,6 +21,7 @@
 #include "utils.h"
 #include "tokenizer.h"
 #include "path.h"
+#include "glib_compat.h"
 
 #include <glib.h>
 

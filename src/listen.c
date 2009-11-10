@@ -22,6 +22,7 @@
 #include "client.h"
 #include "conf.h"
 #include "fd_util.h"
+#include "glib_compat.h"
 #include "config.h"
 
 #include <sys/types.h>

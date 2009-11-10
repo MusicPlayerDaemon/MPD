@@ -141,8 +141,8 @@ dnl
 dnl mandatory libraries
 dnl
 
-PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.16 gthread-2.0],,
-		[AC_MSG_ERROR([glib-2.16 is required])])
+PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.12 gthread-2.0],,
+		[AC_MSG_ERROR([GLib 2.12 is required])])
 
 
 dnl

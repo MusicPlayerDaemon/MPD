@@ -23,6 +23,7 @@
 #include "config.h"
 #include "tag.h"
 #include "icy_metadata.h"
+#include "glib_compat.h"
 
 #include <assert.h>
 
