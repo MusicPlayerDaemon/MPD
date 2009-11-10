@@ -21,14 +21,17 @@
 #include "mixer_list.h"
 #include "filter_registry.h"
 #include "pcm_volume.h"
-#include "output/pulse_output_plugin.h"
 #include "event_pipe.h"
+#include "config.h"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
+
+#ifdef HAVE_PULSE
+#include "output/pulse_output_plugin.h"
 
 void
 pulse_output_set_mixer(G_GNUC_UNUSED struct pulse_output *po,
@@ -49,6 +52,8 @@ pulse_output_set_volume(G_GNUC_UNUSED struct pulse_output *po,
 {
 	return false;
 }
+
+#endif
 
 void
 event_pipe_emit(G_GNUC_UNUSED enum pipe_event event)
