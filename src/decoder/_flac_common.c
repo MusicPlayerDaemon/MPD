@@ -290,11 +290,11 @@ flac_convert_8(int8_t *dest,
 			*dest++ = buf[c_chan][position];
 }
 
-static void flac_convert(unsigned char *dest,
-			 unsigned int num_channels,
-			 unsigned sample_format,
-			 const FLAC__int32 * const buf[],
-			 unsigned int position, unsigned int end)
+static void
+flac_convert(void *dest,
+	     unsigned int num_channels, unsigned sample_format,
+	     const FLAC__int32 *const buf[],
+	     unsigned int position, unsigned int end)
 {
 	switch (sample_format) {
 	case 16:
