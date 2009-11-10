@@ -19,6 +19,7 @@
 
 #include "config.h" /* must be first for large file support */
 #include "decoder_api.h"
+#include "audio_check.h"
 
 #include <glib.h>
 
@@ -54,6 +55,7 @@ static bool
 mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 		struct audio_format *audio_format)
 {
+	GError *gerror = NULL;
 	char *path_dup;
 	int error;
 	int channels, encoding;
@@ -85,9 +87,10 @@ mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 		return false;
 	}
 
-	audio_format_init(audio_format, rate, 16, channels);
-	if (!audio_format_valid(audio_format)) {
-		g_warning("invalid audio format");
+	if (!audio_format_init_checked(audio_format, rate, 16,
+				       channels, &gerror)) {
+		g_warning("%s", gerror->message);
+		g_error_free(gerror);
 		return false;
 	}
 

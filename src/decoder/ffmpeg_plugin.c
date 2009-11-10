@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "decoder_api.h"
+#include "audio_check.h"
 
 #include <glib.h>
 
@@ -260,6 +261,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 static bool
 ffmpeg_decode_internal(struct ffmpeg_context *ctx)
 {
+	GError *error = NULL;
 	struct decoder *decoder = ctx->decoder;
 	AVCodecContext *codec_context = ctx->codec_context;
 	AVFormatContext *format_context = ctx->format_context;
@@ -281,13 +283,11 @@ ffmpeg_decode_internal(struct ffmpeg_context *ctx)
 	/* XXX fixme 16-bit for older ffmpeg (13 Aug 2007) */
 	bits = (uint8_t) 16;
 #endif
-	audio_format_init(&audio_format, codec_context->sample_rate, bits,
-			  codec_context->channels);
-
-	if (!audio_format_valid(&audio_format)) {
-		g_warning("Invalid audio format: %u:%u:%u\n",
-			  audio_format.sample_rate, audio_format.bits,
-			  audio_format.channels);
+	if (!audio_format_init_checked(&audio_format,
+				       codec_context->sample_rate, bits,
+				       codec_context->channels, &error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
 		return false;
 	}
 

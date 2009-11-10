@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "_ogg_common.h"
+#include "audio_check.h"
 #include "uri.h"
 
 #ifndef HAVE_TREMOR
@@ -264,6 +265,7 @@ static void
 vorbis_stream_decode(struct decoder *decoder,
 		     struct input_stream *input_stream)
 {
+	GError *error = NULL;
 	OggVorbis_File vf;
 	ov_callbacks callbacks;
 	struct vorbis_decoder_data data;
@@ -309,13 +311,10 @@ vorbis_stream_decode(struct decoder *decoder,
 		return;
 	}
 
-	audio_format_init(&audio_format, vi->rate, 16, vi->channels);
-
-	if (!audio_format_valid(&audio_format)) {
-		g_warning("Invalid audio format: %u:%u:%u\n",
-			  audio_format.sample_rate,
-			  audio_format.bits,
-			  audio_format.channels);
+	if (!audio_format_init_checked(&audio_format, vi->rate, 16,
+				       vi->channels, &error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
 		return;
 	}
 

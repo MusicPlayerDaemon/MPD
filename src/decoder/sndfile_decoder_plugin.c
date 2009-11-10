@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "decoder_api.h"
+#include "audio_check.h"
 
 #include <sndfile.h>
 
@@ -109,6 +110,7 @@ time_to_frame(float t, const struct audio_format *audio_format)
 static void
 sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 {
+	GError *error = NULL;
 	SNDFILE *sf;
 	SF_INFO info;
 	struct audio_format audio_format;
@@ -128,10 +130,10 @@ sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	/* for now, always read 32 bit samples.  Later, we could lower
 	   MPD's CPU usage by reading 16 bit samples with
 	   sf_readf_short() on low-quality source files. */
-	audio_format_init(&audio_format, info.samplerate, 32, info.channels);
-
-	if (!audio_format_valid(&audio_format)) {
-		g_warning("invalid audio format");
+	if (!audio_format_init_checked(&audio_format, info.samplerate, 32,
+				       info.channels, &error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
 		return;
 	}
 

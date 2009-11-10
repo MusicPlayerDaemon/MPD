@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "decoder_api.h"
+#include "audio_check.h"
 #include "path.h"
 #include "utils.h"
 
@@ -130,6 +131,8 @@ static void
 wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek,
 	       struct replay_gain_info *replay_gain_info)
 {
+	GError *error = NULL;
+	unsigned bits;
 	struct audio_format audio_format;
 	format_samples_t format_samples;
 	char chunk[CHUNK_SIZE];
@@ -138,24 +141,22 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek,
 	int bytes_per_sample, output_sample_size;
 	int position;
 
-	audio_format_init(&audio_format, WavpackGetSampleRate(wpc),
-			  WavpackGetBitsPerSample(wpc), 
-			  WavpackGetNumChannels(wpc));
+	bits = WavpackGetBitsPerSample(wpc);
 
 	/* round bitwidth to 8-bit units */
-	audio_format.bits = (audio_format.bits + 7) & (~7);
+	bits = (bits + 7) & (~7);
 	/* MPD handles max 32-bit samples */
-	if (audio_format.bits > 32)
-		audio_format.bits = 32;
+	if (bits > 32)
+		bits = 32;
 
 	if ((WavpackGetMode(wpc) & MODE_FLOAT) == MODE_FLOAT)
-		audio_format.bits = 24;
+		bits = 24;
 
-	if (!audio_format_valid(&audio_format)) {
-		g_warning("Invalid audio format: %u:%u:%u\n",
-			  audio_format.sample_rate,
-			  audio_format.bits,
-			  audio_format.channels);
+	if (!audio_format_init_checked(&audio_format,
+				       WavpackGetSampleRate(wpc), bits,
+				       WavpackGetNumChannels(wpc), &error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
 		return;
 	}
 

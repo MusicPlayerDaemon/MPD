@@ -22,6 +22,7 @@
 
 #include <glib.h>
 #include <modplug.h>
+#include <assert.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "modplug"
@@ -123,6 +124,7 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 	}
 
 	audio_format_init(&audio_format, 44100, 16, 2);
+	assert(audio_format_valid(&audio_format));
 
 	sec_perbyte =
 	    1.0 / ((audio_format.bits * audio_format.channels / 8.0) *

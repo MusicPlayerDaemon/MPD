@@ -25,6 +25,7 @@
 #include "_flac_common.h"
 #include "flac_metadata.h"
 #include "flac_pcm.h"
+#include "audio_check.h"
 
 #include <glib.h>
 
@@ -63,20 +64,19 @@ bool
 flac_data_get_audio_format(struct flac_data *data,
 			   struct audio_format *audio_format)
 {
+	GError *error = NULL;
+
 	if (!data->have_stream_info) {
 		g_warning("no STREAMINFO packet found");
 		return false;
 	}
 
-	audio_format_init(audio_format, data->stream_info.sample_rate,
-			  data->stream_info.bits_per_sample,
-			  data->stream_info.channels);
-
-	if (!audio_format_valid(audio_format)) {
-		g_warning("Invalid audio format: %u:%u:%u\n",
-			  audio_format->sample_rate,
-			  audio_format->bits,
-			  audio_format->channels);
+	if (!audio_format_init_checked(audio_format,
+				       data->stream_info.sample_rate,
+				       data->stream_info.bits_per_sample,
+				       data->stream_info.channels, &error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
 		return false;
 	}
 

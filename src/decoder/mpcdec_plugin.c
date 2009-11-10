@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "decoder_api.h"
+#include "audio_check.h"
 
 #ifdef MPC_IS_OLD_API
 #include <mpcdec/mpcdec.h>
@@ -27,6 +28,7 @@
 #endif
 
 #include <glib.h>
+#include <assert.h>
 #include <unistd.h>
 
 #undef G_LOG_DOMAIN
@@ -140,6 +142,7 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 #endif
 	mpc_reader reader;
 	mpc_streaminfo info;
+	GError *error = NULL;
 	struct audio_format audio_format;
 
 	struct mpc_decoder_data data;
@@ -193,16 +196,13 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	mpc_demux_get_info(demux, &info);
 #endif
 
-	audio_format_init(&audio_format, info.sample_freq, 24, info.channels);
-
-	if (!audio_format_valid(&audio_format)) {
+	if (!audio_format_init_checked(&audio_format, info.sample_freq, 16,
+				       info.channels, &error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
 #ifndef MPC_IS_OLD_API
 		mpc_demux_exit(demux);
 #endif
-		g_warning("Invalid audio format: %u:%u:%u\n",
-			  audio_format.sample_rate,
-			  audio_format.bits,
-			  audio_format.channels);
 		return;
 	}
 

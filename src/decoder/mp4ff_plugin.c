@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "decoder_api.h"
+#include "audio_check.h"
 
 #include <glib.h>
 
@@ -110,6 +111,7 @@ mp4_faad_new(mp4ff_t *mp4fh, int *track_r, struct audio_format *audio_format)
 	int track;
 	uint32_t sample_rate;
 	unsigned char channels;
+	GError *error = NULL;
 
 	decoder = faacDecOpen();
 
@@ -130,17 +132,15 @@ mp4_faad_new(mp4ff_t *mp4fh, int *track_r, struct audio_format *audio_format)
 		return NULL;
 	}
 
-	*track_r = track;
-	audio_format_init(audio_format, sample_rate, 16, channels);
-
-	if (!audio_format_valid(audio_format)) {
-		g_warning("Invalid audio format: %u:%u:%u\n",
-			  audio_format->sample_rate,
-			  audio_format->bits,
-			  audio_format->channels);
+	if (!audio_format_init_checked(audio_format, sample_rate, 16, channels,
+				       &error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
 		faacDecClose(decoder);
 		return NULL;
 	}
+
+	*track_r = track;
 
 	return decoder;
 }

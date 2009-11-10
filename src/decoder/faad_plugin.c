@@ -20,6 +20,7 @@
 #include "config.h"
 #include "decoder_api.h"
 #include "decoder_buffer.h"
+#include "audio_check.h"
 
 #define AAC_MAX_CHANNELS	6
 
@@ -35,6 +36,15 @@ static const unsigned adts_sample_rates[] =
     { 96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050,
 	16000, 12000, 11025, 8000, 7350, 0, 0, 0
 };
+
+/**
+ * The GLib quark used for errors reported by this plugin.
+ */
+static inline GQuark
+faad_decoder_quark(void)
+{
+	return g_quark_from_static_string("faad");
+}
 
 /**
  * Check whether the buffer head is an AAC frame, and return the frame
@@ -232,7 +242,7 @@ faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
  */
 static bool
 faad_decoder_init(faacDecHandle decoder, struct decoder_buffer *buffer,
-		  struct audio_format *audio_format)
+		  struct audio_format *audio_format, GError **error_r)
 {
 	union {
 		/* deconst hack for libfaad */
@@ -247,28 +257,33 @@ faad_decoder_init(faacDecHandle decoder, struct decoder_buffer *buffer,
 	/* neaacdec.h declares all arguments as "unsigned long", but
 	   internally expects uint32_t pointers.  To avoid gcc
 	   warnings, use this workaround. */
-	unsigned long *sample_rate_r = (unsigned long *)(void *)&sample_rate;
+	unsigned long *sample_rate_p = (unsigned long *)(void *)&sample_rate;
 #else
-	uint32_t *sample_rate_r = &sample_rate;
+	uint32_t *sample_rate_p = &sample_rate;
 #endif
 
 	u.in = decoder_buffer_read(buffer, &length);
-	if (u.in == NULL)
+	if (u.in == NULL) {
+		g_set_error(error_r, faad_decoder_quark(), 0,
+			    "Empty file");
 		return false;
+	}
 
 	nbytes = faacDecInit(decoder, u.out,
 #ifdef HAVE_FAAD_BUFLEN_FUNCS
 			     length,
 #endif
-			     sample_rate_r, &channels);
-	if (nbytes < 0)
+			     sample_rate_p, &channels);
+	if (nbytes < 0) {
+		g_set_error(error_r, faad_decoder_quark(), 0,
+			    "Not an AAC stream");
 		return false;
+	}
 
 	decoder_buffer_consume(buffer, nbytes);
 
-	audio_format_init(audio_format, sample_rate, 16, channels);
-
-	return true;
+	return audio_format_init_checked(audio_format, sample_rate,
+					 16, channels, error_r);
 }
 
 /**
@@ -334,8 +349,8 @@ faad_get_file_time_float(const char *file)
 
 		decoder_buffer_fill(buffer);
 
-		ret = faad_decoder_init(decoder, buffer, &audio_format);
-		if (ret && audio_format_valid(&audio_format))
+		ret = faad_decoder_init(decoder, buffer, &audio_format, NULL);
+		if (ret)
 			length = 0;
 
 		faacDecClose(decoder);
@@ -367,6 +382,7 @@ faad_get_file_time(const char *file)
 static void
 faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 {
+	GError *error = NULL;
 	float file_time;
 	float total_time = 0;
 	faacDecHandle decoder;
@@ -404,15 +420,10 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 	/* initialize it */
 
-	ret = faad_decoder_init(decoder, buffer, &audio_format);
+	ret = faad_decoder_init(decoder, buffer, &audio_format, &error);
 	if (!ret) {
-		g_warning("Error not a AAC stream.\n");
-		faacDecClose(decoder);
-		return;
-	}
-
-	if (!audio_format_valid(&audio_format)) {
-		g_warning("invalid audio format\n");
+		g_warning("%s", error->message);
+		g_error_free(error);
 		faacDecClose(decoder);
 		return;
 	}
