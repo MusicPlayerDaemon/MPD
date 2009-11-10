@@ -339,7 +339,7 @@ AC_ARG_ENABLE(zip,
 		[enable zip archive support (default: disabled)]),,
 	enable_zip=no)
 
-MPD_AUTO_PKG(zip, ZZIP, [zziplib],
+MPD_AUTO_PKG(zip, ZZIP, [zziplib >= 0.13],
 	[libzzip archive library], [libzzip not found])
 
 AM_CONDITIONAL(HAVE_ZIP, test x$enable_zip = xyes)

@@ -2,6 +2,8 @@ ver 0.15.6 (2009/??/??)
 * input:
   - lastfm: fixed variable name in GLib<2.16 code path
   - input/mms: require libmms 0.4
+* archive:
+  - zzip: require libzzip 0.13
 * decoders:
   - ffmpeg: convert metadata
 * output_thread: check again if output is open on PAUSE
