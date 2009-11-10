@@ -29,11 +29,8 @@
 #include <assert.h>
 #include <unistd.h>
 
-static void oggflac_cleanup(struct flac_data *data,
-			    OggFLAC__SeekableStreamDecoder * decoder)
+static void oggflac_cleanup(OggFLAC__SeekableStreamDecoder * decoder)
 {
-	if (data->replay_gain_info)
-		replay_gain_info_free(data->replay_gain_info);
 	if (decoder)
 		OggFLAC__seekable_stream_decoder_delete(decoder);
 }
@@ -264,6 +261,7 @@ oggflac_tag_dup(const char *file)
 	struct input_stream input_stream;
 	OggFLAC__SeekableStreamDecoder *decoder;
 	struct flac_data data;
+	struct tag *tag;
 
 	if (!input_stream_open(&input_stream, file))
 		return NULL;
@@ -280,15 +278,17 @@ oggflac_tag_dup(const char *file)
 	 * data.tag will be set or unset, that's all we care about */
 	decoder = full_decoder_init_and_read_metadata(&data, 1);
 
-	oggflac_cleanup(&data, decoder);
+	oggflac_cleanup(decoder);
 	input_stream_close(&input_stream);
 
-	if (!tag_is_defined(data.tag)) {
-		tag_free(data.tag);
+	if (tag_is_defined(data.tag)) {
+		tag = data.tag;
 		data.tag = NULL;
 	}
 
-	return data.tag;
+	flac_data_deinit(&data);
+
+	return tag;
 }
 
 static void
@@ -344,7 +344,8 @@ oggflac_decode(struct decoder * mpd_decoder, struct input_stream *input_stream)
 	}
 
 fail:
-	oggflac_cleanup(&data, decoder);
+	oggflac_cleanup(decoder);
+	flac_data_deinit(&data);
 }
 
 static const char *const oggflac_suffixes[] = { "ogg", "oga", NULL };

@@ -40,6 +40,16 @@ flac_data_init(struct flac_data *data, struct decoder * decoder,
 	data->tag = NULL;
 }
 
+void
+flac_data_deinit(struct flac_data *data)
+{
+	if (data->replay_gain_info != NULL)
+		replay_gain_info_free(data->replay_gain_info);
+
+	if (data->tag != NULL)
+		tag_free(data->tag);
+}
+
 static void
 flac_find_float_comment(const FLAC__StreamMetadata *block,
 			const char *cmnt, float *fl, bool *found_r)

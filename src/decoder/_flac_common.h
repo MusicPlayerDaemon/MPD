@@ -162,6 +162,9 @@ void
 flac_data_init(struct flac_data *data, struct decoder * decoder,
 	       struct input_stream *input_stream);
 
+void
+flac_data_deinit(struct flac_data *data);
+
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 			     struct flac_data *data);
 

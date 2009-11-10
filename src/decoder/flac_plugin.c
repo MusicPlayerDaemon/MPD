@@ -485,10 +485,7 @@ flac_decode_internal(struct decoder * decoder,
 	}
 
 fail:
-	if (data.replay_gain_info)
-		replay_gain_info_free(data.replay_gain_info);
-
-	tag_free(data.tag);
+	flac_data_deinit(&data);
 
 	if (flac_dec)
 		flac_delete(flac_dec);
@@ -670,8 +667,7 @@ fail:
 	if (pathname)
 		g_free(pathname);
 
-	if (data.replay_gain_info)
-		replay_gain_info_free(data.replay_gain_info);
+	flac_data_deinit(&data);
 
 	if (flac_dec)
 		flac_delete(flac_dec);
@@ -793,8 +789,7 @@ flac_filedecode_internal(struct decoder* decoder,
 	}
 
 fail:
-	if (data.replay_gain_info)
-		replay_gain_info_free(data.replay_gain_info);
+	flac_data_deinit(&data);
 
 	if (flac_dec)
 		flac_delete(flac_dec);
