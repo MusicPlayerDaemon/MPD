@@ -123,7 +123,7 @@ oss_mixer_open(struct mixer *data, GError **error_r)
 {
 	struct oss_mixer *om = (struct oss_mixer *) data;
 
-	om->device_fd = open_cloexec(om->device, O_RDONLY);
+	om->device_fd = open_cloexec(om->device, O_RDONLY, 0);
 	if (om->device_fd < 0) {
 		g_set_error(error_r, oss_mixer_quark(), errno,
 			    "failed to open %s: %s",

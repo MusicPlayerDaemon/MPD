@@ -51,7 +51,7 @@ input_file_open(struct input_stream *is, const char *filename)
 		*slash = '\0';
 	}
 
-	fd = open_cloexec(pathname, O_RDONLY);
+	fd = open_cloexec(pathname, O_RDONLY, 0);
 	if (fd < 0) {
 		is->error = errno;
 		g_debug("Failed to open \"%s\": %s",

@@ -129,7 +129,7 @@ open_log_file(void)
 {
 	assert(out_filename != NULL);
 
-	return open_cloexec(out_filename, O_CREAT | O_WRONLY | O_APPEND);
+	return open_cloexec(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
 }
 
 static void

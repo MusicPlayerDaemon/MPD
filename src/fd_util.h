@@ -46,14 +46,7 @@ struct sockaddr;
  * supported by the OS).
  */
 int
-open_cloexec(const char *path_fs, int flags);
-
-/**
- * Wrapper for creat(), which sets the CLOEXEC flag (atomically if
- * supported by the OS).
- */
-int
-creat_cloexec(const char *path_fs, int mode);
+open_cloexec(const char *path_fs, int flags, int mode);
 
 /**
  * Wrapper for pipe(), which sets the CLOEXEC flag (atomically if

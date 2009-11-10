@@ -344,7 +344,7 @@ oss_output_test_default_device(void)
 	int fd, i;
 
 	for (i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
-		fd = open_cloexec(default_devices[i], O_WRONLY);
+		fd = open_cloexec(default_devices[i], O_WRONLY, 0);
 
 		if (fd >= 0) {
 			close(fd);
@@ -519,7 +519,7 @@ oss_open(struct oss_data *od, GError **error)
 {
 	bool success;
 
-	od->fd = open_cloexec(od->device, O_WRONLY);
+	od->fd = open_cloexec(od->device, O_WRONLY, 0);
 	if (od->fd < 0) {
 		g_set_error(error, oss_output_quark(), errno,
 			    "Error opening OSS device \"%s\": %s",

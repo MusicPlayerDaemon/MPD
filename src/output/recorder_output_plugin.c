@@ -157,7 +157,8 @@ recorder_output_open(void *data, struct audio_format *audio_format,
 
 	/* create the output file */
 
-	recorder->fd = creat_cloexec(recorder->path, 0666);
+	recorder->fd = open_cloexec(recorder->path, O_CREAT|O_WRONLY|O_TRUNC,
+				    0666);
 	if (recorder->fd < 0) {
 		g_set_error(error_r, recorder_output_quark(), 0,
 			    "Failed to create '%s': %s",

@@ -101,28 +101,8 @@ fd_set_nonblock(int fd)
 }
 
 int
-open_cloexec(const char *path_fs, int flags)
+open_cloexec(const char *path_fs, int flags, int mode)
 {
-	int fd;
-
-#ifdef O_CLOEXEC
-	flags |= O_CLOEXEC;
-#endif
-
-#ifdef O_NOCTTY
-	flags |= O_NOCTTY;
-#endif
-
-	fd = open(path_fs, flags, 0666);
-	fd_set_cloexec(fd, true);
-
-	return fd;
-}
-
-int
-creat_cloexec(const char *path_fs, int mode)
-{
-	int flags = O_CREAT|O_WRONLY|O_TRUNC;
 	int fd;
 
 #ifdef O_CLOEXEC
