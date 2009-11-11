@@ -232,12 +232,6 @@ full_decoder_init_and_read_metadata(struct flac_data *data,
 		goto fail;
 	}
 
-	if (!data->have_stream_info) {
-		OggFLAC__seekable_stream_decoder_delete(decoder);
-		g_warning("no STREAMINFO packet found");
-		return NULL;
-	}
-
 	return decoder;
 
 fail:
@@ -305,6 +299,11 @@ oggflac_decode(struct decoder * mpd_decoder, struct input_stream *input_stream)
 	flac_data_init(&data, mpd_decoder, input_stream);
 
 	if (!(decoder = full_decoder_init_and_read_metadata(&data, 0))) {
+		goto fail;
+	}
+
+	if (!data.have_stream_info) {
+		g_warning("no STREAMINFO packet found");
 		goto fail;
 	}
 
