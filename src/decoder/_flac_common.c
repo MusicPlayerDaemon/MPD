@@ -121,13 +121,13 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 
 	buffer = pcm_buffer_get(&data->buffer, buffer_size);
 
-	flac_convert(buffer, data->audio_format.channels,
-		     data->audio_format.bits, buf,
+	flac_convert(buffer, frame->header.channels,
+		     frame->header.bits_per_sample, buf,
 		     0, frame->header.blocksize);
 
 	if (data->next_frame >= data->first_frame)
 		position = (float)(data->next_frame - data->first_frame) /
-			data->audio_format.sample_rate;
+			frame->header.sample_rate;
 	else
 		position = 0;
 
