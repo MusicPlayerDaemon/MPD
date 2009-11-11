@@ -27,97 +27,55 @@
 #include <FLAC/export.h>
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
 #  include <FLAC/seekable_stream_decoder.h>
-#  define flac_decoder           FLAC__SeekableStreamDecoder
-#  define flac_new()             FLAC__seekable_stream_decoder_new()
 
-#  define flac_get_decode_position(x,y) \
-                 FLAC__seekable_stream_decoder_get_decode_position(x,y)
-#  define flac_get_state(x)      FLAC__seekable_stream_decoder_get_state(x)
-#  define flac_process_single(x) FLAC__seekable_stream_decoder_process_single(x)
-#  define flac_process_metadata(x) \
-                 FLAC__seekable_stream_decoder_process_until_end_of_metadata(x)
-#  define flac_seek_absolute(x,y) \
-                 FLAC__seekable_stream_decoder_seek_absolute(x,y)
-#  define flac_finish(x)         FLAC__seekable_stream_decoder_finish(x)
-#  define flac_delete(x)         FLAC__seekable_stream_decoder_delete(x)
+/* starting with libFLAC 1.1.3, the SeekableStreamDecoder has been
+   merged into the StreamDecoder.  The following macros try to emulate
+   the new API for libFLAC 1.1.2 by mapping MPD's StreamDecoder calls
+   to the old SeekableStreamDecoder API. */
 
-#  define flac_decoder_eof       FLAC__SEEKABLE_STREAM_DECODER_END_OF_STREAM
+#define FLAC__StreamDecoder FLAC__SeekableStreamDecoder
+#define FLAC__stream_decoder_new FLAC__seekable_stream_decoder_new
+#define FLAC__stream_decoder_get_decode_position FLAC__seekable_stream_decoder_get_decode_position
+#define FLAC__stream_decoder_get_state FLAC__seekable_stream_decoder_get_state
+#define FLAC__stream_decoder_process_single FLAC__seekable_stream_decoder_process_single
+#define FLAC__stream_decoder_process_until_end_of_metadata FLAC__seekable_stream_decoder_process_until_end_of_metadata
+#define FLAC__stream_decoder_seek_absolute FLAC__seekable_stream_decoder_seek_absolute
+#define FLAC__stream_decoder_finish FLAC__seekable_stream_decoder_finish
+#define FLAC__stream_decoder_delete FLAC__seekable_stream_decoder_delete
+
+#define FLAC__STREAM_DECODER_END_OF_STREAM FLAC__SEEKABLE_STREAM_DECODER_END_OF_STREAM
 
 typedef unsigned flac_read_status_size_t;
-#  define flac_read_status       FLAC__SeekableStreamDecoderReadStatus
-#  define flac_read_status_continue \
-                                 FLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_OK
-#  define flac_read_status_eof   FLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_OK
-#  define flac_read_status_abort \
-                               FLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_ERROR
 
-#  define flac_seek_status       FLAC__SeekableStreamDecoderSeekStatus
-#  define flac_seek_status_ok    FLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_OK
-#  define flac_seek_status_error FLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_ERROR
+#define FLAC__StreamDecoderReadStatus FLAC__SeekableStreamDecoderReadStatus
+#define FLAC__STREAM_DECODER_READ_STATUS_CONTINUE FLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_OK
+#define FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM FLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_OK
+#define FLAC__STREAM_DECODER_READ_STATUS_ABORT FLAC__SEEKABLE_STREAM_DECODER_READ_STATUS_ERROR
 
-#  define flac_tell_status         FLAC__SeekableStreamDecoderTellStatus
-#  define flac_tell_status_ok      FLAC__SEEKABLE_STREAM_DECODER_TELL_STATUS_OK
-#  define flac_tell_status_error \
-                                FLAC__SEEKABLE_STREAM_DECODER_TELL_STATUS_ERROR
-#  define flac_tell_status_unsupported \
-                                FLAC__SEEKABLE_STREAM_DECODER_TELL_STATUS_ERROR
+#define FLAC__StreamDecoderSeekStatus FLAC__SeekableStreamDecoderSeekStatus
+#define FLAC__STREAM_DECODER_SEEK_STATUS_OK FLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_OK
+#define FLAC__STREAM_DECODER_SEEK_STATUS_ERROR FLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_ERROR
+#define FLAC__STREAM_DECODER_SEEK_STATUS_UNSUPPORTED FLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_ERROR
 
-#  define flac_length_status       FLAC__SeekableStreamDecoderLengthStatus
-#  define flac_length_status_ok  FLAC__SEEKABLE_STREAM_DECODER_LENGTH_STATUS_OK
-#  define flac_length_status_error \
-                              FLAC__SEEKABLE_STREAM_DECODER_LENGTH_STATUS_ERROR
-#  define flac_length_status_unsupported \
-                              FLAC__SEEKABLE_STREAM_DECODER_LENGTH_STATUS_ERROR
+#define FLAC__StreamDecoderTellStatus FLAC__SeekableStreamDecoderTellStatus
+#define FLAC__STREAM_DECODER_TELL_STATUS_OK FLAC__SEEKABLE_STREAM_DECODER_TELL_STATUS_OK
+#define FLAC__STREAM_DECODER_TELL_STATUS_ERROR FLAC__SEEKABLE_STREAM_DECODER_TELL_STATUS_ERROR
+#define FLAC__STREAM_DECODER_TELL_STATUS_UNSUPPORTED FLAC__SEEKABLE_STREAM_DECODER_TELL_STATUS_ERROR
+
+#define FLAC__StreamDecoderLengthStatus FLAC__SeekableStreamDecoderLengthStatus
+#define FLAC__STREAM_DECODER_LENGTH_STATUS_OK FLAC__SEEKABLE_STREAM_DECODER_LENGTH_STATUS_OK
+#define FLAC__STREAM_DECODER_LENGTH_STATUS_ERROR FLAC__SEEKABLE_STREAM_DECODER_LENGTH_STATUS_ERROR
+#define FLAC__STREAM_DECODER_LENGTH_STATUS_UNSUPPORTED FLAC__SEEKABLE_STREAM_DECODER_LENGTH_STATUS_ERROR
 
 #else /* FLAC_API_VERSION_CURRENT > 7 */
 
 #  include <FLAC/stream_decoder.h>
-#  define flac_decoder           FLAC__StreamDecoder
-#  define flac_new()             FLAC__stream_decoder_new()
 
 #  define flac_init(a,b,c,d,e,f,g,h,i,j) \
         (FLAC__stream_decoder_init_stream(a,b,c,d,e,f,g,h,i,j) \
          == FLAC__STREAM_DECODER_INIT_STATUS_OK)
-#  define flac_ogg_init(a,b,c,d,e,f,g,h,i,j) \
-        (FLAC__stream_decoder_init_ogg_stream(a,b,c,d,e,f,g,h,i,j) \
-         == FLAC__STREAM_DECODER_INIT_STATUS_OK)
-
-#  define flac_get_decode_position(x,y) \
-                 FLAC__stream_decoder_get_decode_position(x,y)
-#  define flac_get_state(x)      FLAC__stream_decoder_get_state(x)
-#  define flac_process_single(x) FLAC__stream_decoder_process_single(x)
-#  define flac_process_metadata(x) \
-                          FLAC__stream_decoder_process_until_end_of_metadata(x)
-#  define flac_seek_absolute(x,y)  FLAC__stream_decoder_seek_absolute(x,y)
-#  define flac_finish(x)         FLAC__stream_decoder_finish(x)
-#  define flac_delete(x)         FLAC__stream_decoder_delete(x)
-
-#  define flac_decoder_eof       FLAC__STREAM_DECODER_END_OF_STREAM
 
 typedef size_t flac_read_status_size_t;
-#  define flac_read_status       FLAC__StreamDecoderReadStatus
-#  define flac_read_status_continue \
-                                 FLAC__STREAM_DECODER_READ_STATUS_CONTINUE
-#  define flac_read_status_eof   FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM
-#  define flac_read_status_abort FLAC__STREAM_DECODER_READ_STATUS_ABORT
-
-#  define flac_seek_status       FLAC__StreamDecoderSeekStatus
-#  define flac_seek_status_ok    FLAC__STREAM_DECODER_SEEK_STATUS_OK
-#  define flac_seek_status_error FLAC__STREAM_DECODER_SEEK_STATUS_ERROR
-#  define flac_seek_status_unsupported \
-                                 FLAC__STREAM_DECODER_SEEK_STATUS_UNSUPPORTED
-
-#  define flac_tell_status         FLAC__StreamDecoderTellStatus
-#  define flac_tell_status_ok      FLAC__STREAM_DECODER_TELL_STATUS_OK
-#  define flac_tell_status_error   FLAC__STREAM_DECODER_TELL_STATUS_ERROR
-#  define flac_tell_status_unsupported \
-                                   FLAC__STREAM_DECODER_TELL_STATUS_UNSUPPORTED
-
-#  define flac_length_status       FLAC__StreamDecoderLengthStatus
-#  define flac_length_status_ok    FLAC__STREAM_DECODER_LENGTH_STATUS_OK
-#  define flac_length_status_error FLAC__STREAM_DECODER_LENGTH_STATUS_ERROR
-#  define flac_length_status_unsupported \
-                                 FLAC__STREAM_DECODER_LENGTH_STATUS_UNSUPPORTED
 
 #endif /* FLAC_API_VERSION_CURRENT >= 7 */
 
