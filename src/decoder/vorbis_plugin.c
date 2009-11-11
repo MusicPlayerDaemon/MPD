@@ -271,6 +271,7 @@ vorbis_stream_decode(struct decoder *decoder,
 	ov_callbacks callbacks;
 	struct vorbis_decoder_data data;
 	struct audio_format audio_format;
+	float total_time;
 	int current_section;
 	int prev_section = -1;
 	long ret;
@@ -278,8 +279,7 @@ vorbis_stream_decode(struct decoder *decoder,
 	long bitRate = 0;
 	long test;
 	struct replay_gain_info *replay_gain_info = NULL;
-	char **comments;
-	bool initialized = false;
+	const vorbis_info *vi;
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
 	if (ogg_stream_type_detect(input_stream) != VORBIS)
@@ -306,6 +306,28 @@ vorbis_stream_decode(struct decoder *decoder,
 		return;
 	}
 
+	vi = ov_info(&vf, -1);
+	if (vi == NULL) {
+		g_warning("ov_info() has failed");
+		return;
+	}
+
+	audio_format_init(&audio_format, vi->rate, 16, vi->channels);
+
+	if (!audio_format_valid(&audio_format)) {
+		g_warning("Invalid audio format: %u:%u:%u\n",
+			  audio_format.sample_rate,
+			  audio_format.bits,
+			  audio_format.channels);
+		return;
+	}
+
+	total_time = ov_time_total(&vf, -1);
+	if (total_time < 0)
+		total_time = 0;
+
+	decoder_initialized(decoder, &audio_format, data.seekable, total_time);
+
 	do {
 		if (cmd == DECODE_COMMAND_SEEK) {
 			double seek_where = decoder_seek_where(decoder);
@@ -324,29 +346,23 @@ vorbis_stream_decode(struct decoder *decoder,
 			break;
 
 		if (current_section != prev_section) {
-			/*printf("new song!\n"); */
-			vorbis_info *vi = ov_info(&vf, -1);
+			char **comments;
 			struct replay_gain_info *new_rgi;
 
-			audio_format_init(&audio_format, vi->rate, 16, vi->channels);
-
-			if (!audio_format_valid(&audio_format)) {
-				g_warning("Invalid audio format: %u:%u:%u\n",
-					  audio_format.sample_rate,
-					  audio_format.bits,
-					  audio_format.channels);
+			vi = ov_info(&vf, -1);
+			if (vi == NULL) {
+				g_warning("ov_info() has failed");
 				break;
 			}
 
-			if (!initialized) {
-				float total_time = ov_time_total(&vf, -1);
-				if (total_time < 0)
-					total_time = 0;
-				decoder_initialized(decoder, &audio_format,
-						    data.seekable,
-						    total_time);
-				initialized = true;
+			if (vi->rate != audio_format.sample_rate ||
+			    vi->channels != audio_format.channels) {
+				/* we don't support audio format
+				   change yet */
+				g_warning("audio format change, stopping here");
+				break;
 			}
+
 			comments = ov_comment(&vf, -1)->user_comments;
 			vorbis_send_comments(decoder, input_stream, comments);
 			new_rgi = vorbis_comments_to_replay_gain(comments);
@@ -355,9 +371,9 @@ vorbis_stream_decode(struct decoder *decoder,
 					replay_gain_info_free(replay_gain_info);
 				replay_gain_info = new_rgi;
 			}
-		}
 
-		prev_section = current_section;
+			prev_section = current_section;
+		}
 
 		if ((test = ov_bitrate_instant(&vf)) > 0)
 			bitRate = test / 1000;
