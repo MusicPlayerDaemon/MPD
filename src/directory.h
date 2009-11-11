@@ -20,6 +20,7 @@
 #ifndef MPD_DIRECTORY_H
 #define MPD_DIRECTORY_H
 
+#include "config.h" /* must be first for large file support */
 #include "dirvec.h"
 #include "songvec.h"
 
