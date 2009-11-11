@@ -150,31 +150,6 @@ static void flacPrintErroredState(FLAC__SeekableStreamDecoderState state)
 
 	g_warning("%s\n", str);
 }
-
-static bool
-flac_init(FLAC__SeekableStreamDecoder *dec,
-	  FLAC__SeekableStreamDecoderReadCallback read_cb,
-	  FLAC__SeekableStreamDecoderSeekCallback seek_cb,
-	  FLAC__SeekableStreamDecoderTellCallback tell_cb,
-	  FLAC__SeekableStreamDecoderLengthCallback length_cb,
-	  FLAC__SeekableStreamDecoderEofCallback eof_cb,
-	  FLAC__SeekableStreamDecoderWriteCallback write_cb,
-	  FLAC__SeekableStreamDecoderMetadataCallback metadata_cb,
-	  FLAC__SeekableStreamDecoderErrorCallback error_cb,
-	  void *data)
-{
-	return FLAC__seekable_stream_decoder_set_read_callback(dec, read_cb) &&
-		FLAC__seekable_stream_decoder_set_seek_callback(dec, seek_cb) &&
-		FLAC__seekable_stream_decoder_set_tell_callback(dec, tell_cb) &&
-		FLAC__seekable_stream_decoder_set_length_callback(dec, length_cb) &&
-		FLAC__seekable_stream_decoder_set_eof_callback(dec, eof_cb) &&
-		FLAC__seekable_stream_decoder_set_write_callback(dec, write_cb) &&
-		FLAC__seekable_stream_decoder_set_metadata_callback(dec, metadata_cb) &&
-		FLAC__seekable_stream_decoder_set_metadata_respond(dec, FLAC__METADATA_TYPE_VORBIS_COMMENT) &&
-		FLAC__seekable_stream_decoder_set_error_callback(dec, error_cb) &&
-		FLAC__seekable_stream_decoder_set_client_data(dec, data) &&
-		FLAC__seekable_stream_decoder_init(dec) == FLAC__SEEKABLE_STREAM_DECODER_OK;
-}
 #else /* FLAC_API_VERSION_CURRENT >= 7 */
 static void flacPrintErroredState(FLAC__StreamDecoderState state)
 {
@@ -489,11 +464,18 @@ flac_decode_internal(struct decoder * decoder,
 		goto fail;
 #endif
 	} else {
-		if (!flac_init(flac_dec, flac_read_cb,
-			       flac_seek_cb, flac_tell_cb,
-			       flac_length_cb, flac_eof_cb,
-			       flac_write_cb, flacMetadata,
-			       flac_error_cb, (void *)&data)) {
+		FLAC__StreamDecoderInitStatus status =
+			FLAC__stream_decoder_init_stream(flac_dec,
+							 flac_read_cb,
+							 flac_seek_cb,
+							 flac_tell_cb,
+							 flac_length_cb,
+							 flac_eof_cb,
+							 flac_write_cb,
+							 flacMetadata,
+							 flac_error_cb,
+							 (void *)&data);
+		if (status != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
 			err = "doing init()";
 			goto fail;
 		}

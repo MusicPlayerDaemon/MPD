@@ -67,6 +67,38 @@ typedef unsigned flac_read_status_size_t;
 #define FLAC__STREAM_DECODER_LENGTH_STATUS_ERROR FLAC__SEEKABLE_STREAM_DECODER_LENGTH_STATUS_ERROR
 #define FLAC__STREAM_DECODER_LENGTH_STATUS_UNSUPPORTED FLAC__SEEKABLE_STREAM_DECODER_LENGTH_STATUS_ERROR
 
+typedef enum {
+	FLAC__STREAM_DECODER_INIT_STATUS_OK,
+	FLAC__STREAM_DECODER_INIT_STATUS_ERROR,
+} FLAC__StreamDecoderInitStatus;
+
+static inline FLAC__StreamDecoderInitStatus
+FLAC__stream_decoder_init_stream(FLAC__SeekableStreamDecoder *decoder,
+				 FLAC__SeekableStreamDecoderReadCallback read_cb,
+				 FLAC__SeekableStreamDecoderSeekCallback seek_cb,
+				 FLAC__SeekableStreamDecoderTellCallback tell_cb,
+				 FLAC__SeekableStreamDecoderLengthCallback length_cb,
+				 FLAC__SeekableStreamDecoderEofCallback eof_cb,
+				 FLAC__SeekableStreamDecoderWriteCallback write_cb,
+				 FLAC__SeekableStreamDecoderMetadataCallback metadata_cb,
+				 FLAC__SeekableStreamDecoderErrorCallback error_cb,
+				 void *data)
+{
+	return FLAC__seekable_stream_decoder_set_read_callback(decoder, read_cb) &&
+		FLAC__seekable_stream_decoder_set_seek_callback(decoder, seek_cb) &&
+		FLAC__seekable_stream_decoder_set_tell_callback(decoder, tell_cb) &&
+		FLAC__seekable_stream_decoder_set_length_callback(decoder, length_cb) &&
+		FLAC__seekable_stream_decoder_set_eof_callback(decoder, eof_cb) &&
+		FLAC__seekable_stream_decoder_set_write_callback(decoder, write_cb) &&
+		FLAC__seekable_stream_decoder_set_metadata_callback(decoder, metadata_cb) &&
+		FLAC__seekable_stream_decoder_set_metadata_respond(decoder, FLAC__METADATA_TYPE_VORBIS_COMMENT) &&
+		FLAC__seekable_stream_decoder_set_error_callback(decoder, error_cb) &&
+		FLAC__seekable_stream_decoder_set_client_data(decoder, data) &&
+		FLAC__seekable_stream_decoder_init(decoder) == FLAC__SEEKABLE_STREAM_DECODER_OK
+		? FLAC__STREAM_DECODER_INIT_STATUS_OK
+		: FLAC__STREAM_DECODER_INIT_STATUS_ERROR;
+}
+
 #else /* FLAC_API_VERSION_CURRENT > 7 */
 
 #  include <FLAC/stream_decoder.h>
