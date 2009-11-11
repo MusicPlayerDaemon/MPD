@@ -629,21 +629,15 @@ flac_container_decode(struct decoder* decoder,
 			FLAC__uint64 seek_sample = t_start +
 				(decoder_seek_where(decoder) * data.audio_format.sample_rate);
 
-			//if (seek_sample >= t_start && seek_sample <= t_end && data.total_time > 30)
-			if (seek_sample >= t_start && seek_sample <= t_end)
-			{
-				if (flac_seek_absolute(flac_dec, (FLAC__uint64)seek_sample))
-				{
-					data.time = (float)(seek_sample - t_start) /
-					    data.audio_format.sample_rate;
-					data.position = 0;
+			if (seek_sample >= t_start && seek_sample <= t_end &&
+			    flac_seek_absolute(flac_dec, (FLAC__uint64)seek_sample)) {
+				data.time = (float)(seek_sample - t_start) /
+					data.audio_format.sample_rate;
+				data.position = 0;
 
-					decoder_command_finished(decoder);
-				}
-				else
-					decoder_seek_error(decoder);
-					//decoder_command_finished(decoder);
-			}
+				decoder_command_finished(decoder);
+			} else
+				decoder_seek_error(decoder);
 		}
 		else if (flac_get_state(flac_dec) == flac_decoder_eof)
 			break;
