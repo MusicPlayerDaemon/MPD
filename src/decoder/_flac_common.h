@@ -39,6 +39,19 @@ struct flac_data {
 	struct pcm_buffer buffer;
 
 	/**
+	 * Is the #stream_info member valid?
+	 */
+	bool have_stream_info;
+
+	/**
+	 * A copy of the stream info object passed to the metadata
+	 * callback.  Once we drop support for libFLAC 1.1.2, we can
+	 * remove this attribute, and use
+	 * FLAC__stream_decoder_get_total_samples() etc.
+	 */
+	FLAC__StreamMetadata_StreamInfo stream_info;
+
+	/**
 	 * The number of the next frame which is going to be decoded.
 	 */
 	FLAC__uint64 next_frame;
@@ -46,7 +59,6 @@ struct flac_data {
 	float time;
 	unsigned int bit_rate;
 	struct audio_format audio_format;
-	float total_time;
 	FLAC__uint64 position;
 	struct decoder *decoder;
 	struct input_stream *input_stream;

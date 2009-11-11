@@ -35,6 +35,7 @@ flac_data_init(struct flac_data *data, struct decoder * decoder,
 {
 	pcm_buffer_init(&data->buffer);
 
+	data->have_stream_info = false;
 	data->next_frame = 0;
 
 	data->time = 0;
@@ -65,9 +66,11 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 
 	switch (block->type) {
 	case FLAC__METADATA_TYPE_STREAMINFO:
+		data->stream_info = block->data.stream_info;
+		data->have_stream_info = true;
+
 		audio_format_init(&data->audio_format, si->sample_rate,
 				  si->bits_per_sample, si->channels);
-		data->total_time = ((float)si->total_samples) / (si->sample_rate);
 		break;
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
 		if (data->replay_gain_info)

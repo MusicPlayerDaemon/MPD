@@ -400,6 +400,11 @@ flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd,
 		return false;
 	}
 
+	if (!data->have_stream_info) {
+		g_warning("no STREAMINFO packet found");
+		return false;
+	}
+
 	if (!audio_format_valid(&data->audio_format)) {
 		g_warning("Invalid audio format: %u:%u:%u\n",
 			  data->audio_format.sample_rate,
@@ -408,12 +413,13 @@ flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd,
 		return false;
 	}
 
-	if (duration != 0)
-		data->total_time = (float)duration /
-			(float)data->audio_format.sample_rate;
+	if (duration == 0)
+		duration = data->stream_info.total_samples;
 
 	decoder_initialized(data->decoder, &data->audio_format,
-			    seekable, data->total_time);
+			    seekable,
+			    (float)duration /
+			    (float)data->audio_format.sample_rate);
 	return true;
 }
 

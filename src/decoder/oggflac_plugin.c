@@ -237,6 +237,12 @@ full_decoder_init_and_read_metadata(struct flac_data *data,
 		goto fail;
 	}
 
+	if (!data->have_stream_info) {
+		OggFLAC__seekable_stream_decoder_delete(decoder);
+		g_warning("no STREAMINFO packet found");
+		return NULL;
+	}
+
 	return decoder;
 
 fail:
@@ -316,7 +322,9 @@ oggflac_decode(struct decoder * mpd_decoder, struct input_stream *input_stream)
 	}
 
 	decoder_initialized(mpd_decoder, &data.audio_format,
-			    input_stream->seekable, data.total_time);
+			    input_stream->seekable,
+			    (float)data.stream_info.total_samples /
+			    (float)data.audio_format.sample_rate);
 
 	while (true) {
 		OggFLAC__seekable_stream_decoder_process_single(decoder);
