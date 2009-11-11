@@ -101,6 +101,30 @@ static long ogg_tell_cb(void *vdata)
 }
 
 static const char *
+vorbis_strerror(int code)
+{
+	switch (code) {
+	case OV_EREAD:
+		return "read error";
+
+	case OV_ENOTVORBIS:
+		return "not vorbis stream";
+
+	case OV_EVERSION:
+		return "vorbis version mismatch";
+
+	case OV_EBADHEADER:
+		return "invalid vorbis header";
+
+	case OV_EFAULT:
+		return "internal logic error";
+
+	default:
+		return "unknown error";
+	}
+}
+
+static const char *
 vorbis_comment_value(const char *comment, const char *needle)
 {
 	size_t len = strlen(needle);
@@ -274,33 +298,11 @@ vorbis_stream_decode(struct decoder *decoder,
 	callbacks.close_func = ogg_close_cb;
 	callbacks.tell_func = ogg_tell_cb;
 	if ((ret = ov_open_callbacks(&data, &vf, NULL, 0, callbacks)) < 0) {
-		const char *error;
-
 		if (decoder_get_command(decoder) != DECODE_COMMAND_NONE)
 			return;
 
-		switch (ret) {
-		case OV_EREAD:
-			error = "read error";
-			break;
-		case OV_ENOTVORBIS:
-			error = "not vorbis stream";
-			break;
-		case OV_EVERSION:
-			error = "vorbis version mismatch";
-			break;
-		case OV_EBADHEADER:
-			error = "invalid vorbis header";
-			break;
-		case OV_EFAULT:
-			error = "internal logic error";
-			break;
-		default:
-			error = "unknown error";
-			break;
-		}
-
-		g_warning("Error decoding Ogg Vorbis stream: %s", error);
+		g_warning("Error decoding Ogg Vorbis stream: %s",
+			  vorbis_strerror(ret));
 		return;
 	}
 
