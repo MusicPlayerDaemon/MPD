@@ -35,6 +35,8 @@ flac_data_init(struct flac_data *data, struct decoder * decoder,
 {
 	pcm_buffer_init(&data->buffer);
 
+	data->next_frame = 0;
+
 	data->time = 0;
 	data->position = 0;
 	data->bit_rate = 0;
@@ -122,6 +124,7 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 			   buffer, buffer_size,
 			   data->time, data->bit_rate,
 			   data->replay_gain_info);
+	data->next_frame += frame->header.blocksize;
 	switch (cmd) {
 	case DECODE_COMMAND_NONE:
 	case DECODE_COMMAND_START:

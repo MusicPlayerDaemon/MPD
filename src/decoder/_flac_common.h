@@ -148,6 +148,11 @@ typedef size_t flac_read_status_size_t;
 struct flac_data {
 	struct pcm_buffer buffer;
 
+	/**
+	 * The number of the next frame which is going to be decoded.
+	 */
+	FLAC__uint64 next_frame;
+
 	float time;
 	unsigned int bit_rate;
 	struct audio_format audio_format;

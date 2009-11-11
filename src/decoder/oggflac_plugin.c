@@ -328,6 +328,7 @@ oggflac_decode(struct decoder * mpd_decoder, struct input_stream *input_stream)
 			    data.audio_format.sample_rate + 0.5;
 			if (OggFLAC__seekable_stream_decoder_seek_absolute
 			    (decoder, seek_sample)) {
+				data.next_frame = seek_sample;
 				data.time = ((float)seek_sample) /
 				    data.audio_format.sample_rate;
 				data.position = 0;
