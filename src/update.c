@@ -21,7 +21,6 @@
 #include "update.h"
 #include "database.h"
 #include "mapper.h"
-#include "archive_list.h"
 #include "playlist.h"
 #include "event_pipe.h"
 #include "update.h"
