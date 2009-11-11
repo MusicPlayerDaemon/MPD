@@ -272,6 +272,10 @@ oggflac_tag_dup(const char *file)
 		return NULL;
 	}
 
+	/* rewind the stream, because ogg_stream_type_detect() has
+	   moved it */
+	input_stream_seek(&input_stream, 0, SEEK_SET);
+
 	flac_data_init(&data, NULL, &input_stream);
 
 	data.tag = tag_new();
@@ -299,6 +303,10 @@ oggflac_decode(struct decoder * mpd_decoder, struct input_stream *input_stream)
 
 	if (ogg_stream_type_detect(input_stream) != FLAC)
 		return;
+
+	/* rewind the stream, because ogg_stream_type_detect() has
+	   moved it */
+	input_stream_seek(input_stream, 0, SEEK_SET);
 
 	flac_data_init(&data, mpd_decoder, input_stream);
 
