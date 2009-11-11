@@ -139,7 +139,7 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek,
 
 	audio_format_init(&audio_format, WavpackGetSampleRate(wpc),
 			  WavpackGetBitsPerSample(wpc), 
-			  WavpackGetReducedChannels(wpc));
+			  WavpackGetNumChannels(wpc));
 
 	/* round bitwidth to 8-bit units */
 	audio_format.bits = (audio_format.bits + 7) & (~7);
@@ -503,7 +503,7 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 	char error[ERRORLEN];
 	WavpackContext *wpc;
 	struct input_stream is_wvc;
-	int open_flags = OPEN_2CH_MAX | OPEN_NORMALIZE;
+	int open_flags = OPEN_NORMALIZE;
 	struct wavpack_input isp, isp_wvc;
 	bool can_seek = is->seekable;
 
@@ -548,7 +548,7 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 
 	wpc = WavpackOpenFileInput(
 		fname, error,
-		OPEN_TAGS | OPEN_WVC | OPEN_2CH_MAX | OPEN_NORMALIZE, 23
+		OPEN_TAGS | OPEN_WVC | OPEN_NORMALIZE, 23
 	);
 	if (wpc == NULL) {
 		g_warning(
