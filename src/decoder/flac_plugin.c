@@ -531,6 +531,7 @@ flac_container_decode(struct decoder* decoder,
 	FLAC__StreamMetadata* cs = NULL;
 
 	FLAC__StreamDecoder *flac_dec;
+	FLAC__StreamDecoderInitStatus init_status;
 	struct flac_data data;
 	const char *err = NULL;
 
@@ -578,34 +579,20 @@ flac_container_decode(struct decoder* decoder,
         }
 #endif
 
-
-	if (is_ogg)
-	{
-		if (FLAC__stream_decoder_init_ogg_file(	flac_dec,
-							pathname,
-							flac_write_cb,
-							flacMetadata,
-							flac_error_cb,
-							(void*) &data	)
-			!= FLAC__STREAM_DECODER_INIT_STATUS_OK		)
-		{
-			err = "doing Ogg init()";
-			goto fail;
-		}
-	}
-	else
-	{
-		if (FLAC__stream_decoder_init_file(	flac_dec,
-							pathname,
-							flac_write_cb,
-							flacMetadata,
-							flac_error_cb,
-							(void*) &data	)
-			!= FLAC__STREAM_DECODER_INIT_STATUS_OK		)
-		{
-			err = "doing init()";
-			goto fail;
-		}
+	init_status = is_ogg
+		? FLAC__stream_decoder_init_ogg_file(flac_dec, pathname,
+						     flac_write_cb,
+						     flacMetadata,
+						     flac_error_cb,
+						     &data)
+		: FLAC__stream_decoder_init_file(flac_dec,
+						 pathname, flac_write_cb,
+						 flacMetadata, flac_error_cb,
+						 &data);
+	g_free(pathname);
+	if (init_status != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
+		err = "doing init()";
+		goto fail;
 	}
 
 	if (!FLAC__stream_decoder_process_until_end_of_metadata(flac_dec))
@@ -637,9 +624,6 @@ flac_container_decode(struct decoder* decoder,
 	flac_decoder_loop(&data, flac_dec, t_start, t_end);
 
 fail:
-	if (pathname)
-		g_free(pathname);
-
 	flac_data_deinit(&data);
 	FLAC__stream_decoder_delete(flac_dec);
 
