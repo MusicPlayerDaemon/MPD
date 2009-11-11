@@ -24,6 +24,7 @@ ver 0.16 (20??/??/??)
   - sidplay: support sub-tunes
   - sidplay: implemented songlength database
   - sidplay: support seeking
+  - wavpack: activate 32 bit support
 * encoders:
   - twolame: new encoder plugin based on libtwolame
 * output:

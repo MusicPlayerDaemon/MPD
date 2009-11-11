@@ -97,19 +97,11 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t count)
 		}
 		break;
 	}
+
 	case 3:
+	case 4:
 		/* do nothing */
 		break;
-	case 4: {
-		uint32_t *dst = buffer;
-		assert_static(sizeof(*dst) <= sizeof(*src));
-
-		/* downsample to 24-bit */
-		while (count--) {
-			*dst++ = *src++ >> 8;
-		}
-		break;
-	}
 	}
 }
 
@@ -151,10 +143,12 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek,
 
 	/* round bitwidth to 8-bit units */
 	audio_format.bits = (audio_format.bits + 7) & (~7);
-	/* mpd handles max 24-bit samples */
-	if (audio_format.bits > 24) {
+	/* MPD handles max 32-bit samples */
+	if (audio_format.bits > 32)
+		audio_format.bits = 32;
+
+	if ((WavpackGetMode(wpc) & MODE_FLOAT) == MODE_FLOAT)
 		audio_format.bits = 24;
-	}
 
 	if (!audio_format_valid(&audio_format)) {
 		g_warning("Invalid audio format: %u:%u:%u\n",
