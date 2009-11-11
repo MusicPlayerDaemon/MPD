@@ -19,6 +19,7 @@
 
 /* TODO 'ogg' should probably be replaced with 'oggvorbis' in all instances */
 
+#include "config.h" /* must be first for large file support */
 #include "_ogg_common.h"
 #include "config.h"
 #include "uri.h"

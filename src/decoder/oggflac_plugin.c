@@ -21,6 +21,7 @@
  * OggFLAC support (half-stolen from flac_plugin.c :))
  */
 
+#include "config.h" /* must be first for large file support */
 #include "_flac_common.h"
 #include "_ogg_common.h"
 #include "flac_metadata.h"
