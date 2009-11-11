@@ -159,13 +159,6 @@ struct flac_data {
 	struct tag *tag;
 };
 
-static inline unsigned
-flac_duration(const FLAC__StreamMetadata_StreamInfo *stream_info)
-{
-	return (stream_info->total_samples + stream_info->sample_rate - 1) /
-		stream_info->sample_rate;
-}
-
 /* initializes a given FlacData struct */
 void
 flac_data_init(struct flac_data *data, struct decoder * decoder,
@@ -180,10 +173,6 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 void flac_error_common_cb(const char *plugin,
 			  FLAC__StreamDecoderErrorStatus status,
 			  struct flac_data *data);
-
-void
-flac_tag_apply_metadata(struct tag *tag, const char *track,
-			const FLAC__StreamMetadata *block);
 
 FLAC__StreamDecoderWriteStatus
 flac_common_write(struct flac_data *data, const FLAC__Frame * frame,

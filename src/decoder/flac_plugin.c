@@ -18,6 +18,7 @@
  */
 
 #include "_flac_common.h"
+#include "flac_metadata.h"
 
 #include <glib.h>
 

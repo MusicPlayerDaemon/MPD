@@ -83,6 +83,7 @@ mpd_headers = \
 	src/gcc.h \
 	src/decoder_list.h \
 	src/decoder_print.h \
+	src/decoder/flac_metadata.h \
 	src/decoder/_flac_common.h \
 	src/decoder/_ogg_common.h \
 	src/input_plugin.h \
@@ -439,7 +440,9 @@ DECODER_SRC += src/decoder/_ogg_common.c
 endif
 
 if HAVE_FLAC_COMMON
-DECODER_SRC += src/decoder/_flac_common.c
+DECODER_SRC += \
+	src/decoder/flac_metadata.c \
+	src/decoder/_flac_common.c
 endif
 
 if ENABLE_VORBIS_DECODER

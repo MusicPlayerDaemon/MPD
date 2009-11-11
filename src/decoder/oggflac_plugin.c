@@ -23,6 +23,7 @@
 
 #include "_flac_common.h"
 #include "_ogg_common.h"
+#include "flac_metadata.h"
 
 #include <glib.h>
 #include <OggFLAC/seekable_stream_decoder.h>
