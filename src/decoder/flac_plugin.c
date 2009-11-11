@@ -415,7 +415,7 @@ flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd,
 	decoder_initialized(data->decoder, &data->audio_format,
 			    seekable,
 			    (float)duration /
-			    (float)data->audio_format.sample_rate);
+			    (float)data->stream_info.sample_rate);
 	return true;
 }
 
@@ -440,7 +440,7 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 		if (cmd == DECODE_COMMAND_SEEK) {
 			FLAC__uint64 seek_sample = t_start +
 				decoder_seek_where(decoder) *
-				data->audio_format.sample_rate;
+				data->stream_info.sample_rate;
 			if (seek_sample >= t_start &&
 			    (t_end == 0 || seek_sample <= t_end) &&
 			    FLAC__stream_decoder_seek_absolute(flac_dec, seek_sample)) {
