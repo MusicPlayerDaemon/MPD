@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h" /* must be first for large file support */
 #include "update_internal.h"
 #include "notify.h"
 #include "event_pipe.h"
@@ -54,7 +55,7 @@ song_remove_event(void)
 #ifdef ENABLE_SQLITE
 	/* if the song has a sticker, remove it */
 	if (sticker_enabled())
-		sticker_song_remove(song);
+		sticker_song_delete(removed_song);
 #endif
 
 	playlist_delete_song(&g_playlist, removed_song);

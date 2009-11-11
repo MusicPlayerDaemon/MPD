@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h" /* must be first for large file support */
 #include "update_internal.h"
 #include "database.h"
 #include "exclude.h"
@@ -28,6 +29,10 @@
 #include "decoder_list.h"
 #include "decoder_plugin.h"
 #include "conf.h"
+
+#ifdef ENABLE_ARCHIVE
+#include "archive_list.h"
+#endif
 
 #include <glib.h>
 
