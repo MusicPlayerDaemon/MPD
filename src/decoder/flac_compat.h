@@ -30,8 +30,6 @@
 #  define flac_decoder           FLAC__SeekableStreamDecoder
 #  define flac_new()             FLAC__seekable_stream_decoder_new()
 
-#  define flac_ogg_init(a,b,c,d,e,f,g,h,i,j) (0)
-
 #  define flac_get_decode_position(x,y) \
                  FLAC__seekable_stream_decoder_get_decode_position(x,y)
 #  define flac_get_state(x)      FLAC__seekable_stream_decoder_get_state(x)

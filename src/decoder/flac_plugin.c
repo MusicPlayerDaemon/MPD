@@ -469,6 +469,7 @@ flac_decode_internal(struct decoder * decoder,
 #endif
 
 	if (is_ogg) {
+#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
 		if (!flac_ogg_init(flac_dec, flac_read_cb,
 				   flac_seek_cb, flac_tell_cb,
 				   flac_length_cb, flac_eof_cb,
@@ -477,6 +478,9 @@ flac_decode_internal(struct decoder * decoder,
 			err = "doing Ogg init()";
 			goto fail;
 		}
+#else
+		goto fail;
+#endif
 	} else {
 		if (!flac_init(flac_dec, flac_read_cb,
 			       flac_seek_cb, flac_tell_cb,
