@@ -79,6 +79,8 @@ ver 0.15.6 (2009/??/??)
   - zzip: require libzzip 0.13
 * decoders:
   - ffmpeg: convert metadata
+  - oggflac: rewind stream after FLAC detection
+  - flac: fixed CUE seeking range check
 * output_thread: check again if output is open on PAUSE
 * update: delete ignored symlinks from database
 * database: increased maximum line length to 32 kB
