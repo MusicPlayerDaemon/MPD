@@ -483,9 +483,7 @@ flac_decode_internal(struct decoder * decoder,
 
 fail:
 	flac_data_deinit(&data);
-
-	if (flac_dec)
-		flac_delete(flac_dec);
+	flac_delete(flac_dec);
 
 	if (err)
 		g_warning("%s\n", err);
@@ -665,9 +663,7 @@ fail:
 		g_free(pathname);
 
 	flac_data_deinit(&data);
-
-	if (flac_dec)
-		flac_delete(flac_dec);
+	flac_delete(flac_dec);
 
 	if (err)
 		g_warning("%s\n", err);
@@ -787,9 +783,7 @@ flac_filedecode_internal(struct decoder* decoder,
 
 fail:
 	flac_data_deinit(&data);
-
-	if (flac_dec)
-		flac_delete(flac_dec);
+	flac_delete(flac_dec);
 
 	if (err)
 		g_warning("%s\n", err);
