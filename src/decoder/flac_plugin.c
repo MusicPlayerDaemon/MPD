@@ -191,13 +191,8 @@ static FLAC__StreamDecoderWriteStatus
 flac_write_cb(const FLAC__StreamDecoder *dec, const FLAC__Frame *frame,
 	      const FLAC__int32 *const buf[], void *vdata)
 {
-	FLAC__uint32 samples = frame->header.blocksize;
 	struct flac_data *data = (struct flac_data *) vdata;
-	float timeChange;
 	FLAC__uint64 nbytes = 0;
-
-	timeChange = ((float)samples) / frame->header.sample_rate;
-	data->time += timeChange;
 
 	if (FLAC__stream_decoder_get_decode_position(dec, &nbytes)) {
 		if (data->position > 0 && nbytes > data->position) {
@@ -431,6 +426,8 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 	struct decoder *decoder = data->decoder;
 	enum decoder_command cmd;
 
+	data->first_frame = t_start;
+
 	while (true) {
 		if (data->tag != NULL && !tag_is_empty(data->tag)) {
 			cmd = decoder_tag(data->decoder, data->input_stream,
@@ -448,8 +445,6 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 			    (t_end == 0 || seek_sample <= t_end) &&
 			    FLAC__stream_decoder_seek_absolute(flac_dec, seek_sample)) {
 				data->next_frame = seek_sample;
-				data->time = (float)(seek_sample - t_start) /
-					data->audio_format.sample_rate;
 				data->position = 0;
 				decoder_command_finished(decoder);
 			} else

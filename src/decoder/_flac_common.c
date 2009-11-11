@@ -36,9 +36,9 @@ flac_data_init(struct flac_data *data, struct decoder * decoder,
 	pcm_buffer_init(&data->buffer);
 
 	data->have_stream_info = false;
+	data->first_frame = 0;
 	data->next_frame = 0;
 
-	data->time = 0;
 	data->position = 0;
 	data->decoder = decoder;
 	data->input_stream = input_stream;
@@ -116,6 +116,7 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 	size_t buffer_size = frame->header.blocksize *
 		audio_format_frame_size(&data->audio_format);
 	void *buffer;
+	float position;
 	unsigned bit_rate;
 
 	buffer = pcm_buffer_get(&data->buffer, buffer_size);
@@ -123,6 +124,12 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 	flac_convert(buffer, data->audio_format.channels,
 		     data->audio_format.bits, buf,
 		     0, frame->header.blocksize);
+
+	if (data->next_frame >= data->first_frame)
+		position = (float)(data->next_frame - data->first_frame) /
+			data->audio_format.sample_rate;
+	else
+		position = 0;
 
 	if (nbytes > 0)
 		bit_rate = nbytes * 8 * frame->header.sample_rate /
@@ -132,7 +139,7 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 
 	cmd = decoder_data(data->decoder, data->input_stream,
 			   buffer, buffer_size,
-			   data->time, bit_rate,
+			   position, bit_rate,
 			   data->replay_gain_info);
 	data->next_frame += frame->header.blocksize;
 	switch (cmd) {

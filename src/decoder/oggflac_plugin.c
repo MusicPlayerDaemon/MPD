@@ -155,11 +155,6 @@ oggflac_write_cb(G_GNUC_UNUSED const OggFLAC__SeekableStreamDecoder *decoder,
 		 void *vdata)
 {
 	struct flac_data *data = (struct flac_data *) vdata;
-	FLAC__uint32 samples = frame->header.blocksize;
-	float time_change;
-
-	time_change = ((float)samples) / frame->header.sample_rate;
-	data->time += time_change;
 
 	return flac_common_write(data, frame, buf, 0);
 }
@@ -338,8 +333,6 @@ oggflac_decode(struct decoder * mpd_decoder, struct input_stream *input_stream)
 			if (OggFLAC__seekable_stream_decoder_seek_absolute
 			    (decoder, seek_sample)) {
 				data.next_frame = seek_sample;
-				data.time = ((float)seek_sample) /
-				    data.audio_format.sample_rate;
 				data.position = 0;
 				decoder_command_finished(mpd_decoder);
 			} else
