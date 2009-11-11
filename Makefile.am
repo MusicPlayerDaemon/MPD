@@ -84,6 +84,7 @@ mpd_headers = \
 	src/decoder_list.h \
 	src/decoder_print.h \
 	src/decoder/flac_metadata.h \
+	src/decoder/flac_pcm.h \
 	src/decoder/_flac_common.h \
 	src/decoder/_ogg_common.h \
 	src/input_plugin.h \
@@ -442,6 +443,7 @@ endif
 if HAVE_FLAC_COMMON
 DECODER_SRC += \
 	src/decoder/flac_metadata.c \
+	src/decoder/flac_pcm.c \
 	src/decoder/_flac_common.c
 endif
 

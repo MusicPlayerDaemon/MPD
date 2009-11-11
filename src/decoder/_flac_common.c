@@ -23,6 +23,7 @@
 
 #include "_flac_common.h"
 #include "flac_metadata.h"
+#include "flac_pcm.h"
 
 #include <glib.h>
 
@@ -99,87 +100,6 @@ void flac_error_common_cb(const char *plugin,
 		break;
 	default:
 		g_warning("unknown %s error\n", plugin);
-	}
-}
-
-static void flac_convert_stereo16(int16_t *dest,
-				  const FLAC__int32 * const buf[],
-				  unsigned int position, unsigned int end)
-{
-	for (; position < end; ++position) {
-		*dest++ = buf[0][position];
-		*dest++ = buf[1][position];
-	}
-}
-
-static void
-flac_convert_16(int16_t *dest,
-		unsigned int num_channels,
-		const FLAC__int32 * const buf[],
-		unsigned int position, unsigned int end)
-{
-	unsigned int c_chan;
-
-	for (; position < end; ++position)
-		for (c_chan = 0; c_chan < num_channels; c_chan++)
-			*dest++ = buf[c_chan][position];
-}
-
-/**
- * Note: this function also handles 24 bit files!
- */
-static void
-flac_convert_32(int32_t *dest,
-		unsigned int num_channels,
-		const FLAC__int32 * const buf[],
-		unsigned int position, unsigned int end)
-{
-	unsigned int c_chan;
-
-	for (; position < end; ++position)
-		for (c_chan = 0; c_chan < num_channels; c_chan++)
-			*dest++ = buf[c_chan][position];
-}
-
-static void
-flac_convert_8(int8_t *dest,
-	       unsigned int num_channels,
-	       const FLAC__int32 * const buf[],
-	       unsigned int position, unsigned int end)
-{
-	unsigned int c_chan;
-
-	for (; position < end; ++position)
-		for (c_chan = 0; c_chan < num_channels; c_chan++)
-			*dest++ = buf[c_chan][position];
-}
-
-static void
-flac_convert(void *dest,
-	     unsigned int num_channels, unsigned sample_format,
-	     const FLAC__int32 *const buf[],
-	     unsigned int position, unsigned int end)
-{
-	switch (sample_format) {
-	case 16:
-		if (num_channels == 2)
-			flac_convert_stereo16((int16_t*)dest, buf,
-					      position, end);
-		else
-			flac_convert_16((int16_t*)dest, num_channels, buf,
-					position, end);
-		break;
-
-	case 24:
-	case 32:
-		flac_convert_32((int32_t*)dest, num_channels, buf,
-				position, end);
-		break;
-
-	case 8:
-		flac_convert_8((int8_t*)dest, num_channels, buf,
-			       position, end);
-		break;
 	}
 }
 
