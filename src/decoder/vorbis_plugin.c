@@ -57,17 +57,17 @@
 #define OGG_DECODE_USE_BIGENDIAN	0
 #endif
 
-typedef struct _OggCallbackData {
+struct vorbis_decoder_data {
 	struct decoder *decoder;
 
 	struct input_stream *input_stream;
 	bool seekable;
-} OggCallbackData;
+};
 
 static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
 {
+	struct vorbis_decoder_data *data = (struct vorbis_decoder_data *)vdata;
 	size_t ret;
-	OggCallbackData *data = (OggCallbackData *) vdata;
 
 	ret = decoder_read(data->decoder, data->input_stream, ptr, size * nmemb);
 
@@ -78,7 +78,7 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
 
 static int ogg_seek_cb(void *vdata, ogg_int64_t offset, int whence)
 {
-	const OggCallbackData *data = (const OggCallbackData *) vdata;
+	struct vorbis_decoder_data *data = (struct vorbis_decoder_data *)vdata;
 
 	return data->seekable &&
 		decoder_get_command(data->decoder) != DECODE_COMMAND_STOP &&
@@ -94,7 +94,8 @@ static int ogg_close_cb(G_GNUC_UNUSED void *vdata)
 
 static long ogg_tell_cb(void *vdata)
 {
-	const OggCallbackData *data = (const OggCallbackData *) vdata;
+	const struct vorbis_decoder_data *data =
+		(const struct vorbis_decoder_data *)vdata;
 
 	return (long)data->input_stream->offset;
 }
@@ -244,7 +245,7 @@ vorbis_stream_decode(struct decoder *decoder,
 {
 	OggVorbis_File vf;
 	ov_callbacks callbacks;
-	OggCallbackData data;
+	struct vorbis_decoder_data data;
 	struct audio_format audio_format;
 	int current_section;
 	int prev_section = -1;
