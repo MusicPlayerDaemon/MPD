@@ -288,6 +288,7 @@ oggflac_decode(struct decoder * mpd_decoder, struct input_stream *input_stream)
 {
 	OggFLAC__SeekableStreamDecoder *decoder = NULL;
 	struct flac_data data;
+	struct audio_format audio_format;
 
 	if (ogg_stream_type_detect(input_stream) != FLAC)
 		return;
@@ -302,20 +303,10 @@ oggflac_decode(struct decoder * mpd_decoder, struct input_stream *input_stream)
 		goto fail;
 	}
 
-	if (!data.have_stream_info) {
-		g_warning("no STREAMINFO packet found");
+	if (!flac_data_get_audio_format(&data, &audio_format))
 		goto fail;
-	}
 
-	if (!audio_format_valid(&data.audio_format)) {
-		g_warning("Invalid audio format: %u:%u:%u\n",
-			  data.audio_format.sample_rate,
-			  data.audio_format.bits,
-			  data.audio_format.channels);
-		goto fail;
-	}
-
-	decoder_initialized(mpd_decoder, &data.audio_format,
+	decoder_initialized(mpd_decoder, &audio_format,
 			    input_stream->seekable,
 			    (float)data.stream_info.total_samples /
 			    (float)data.stream_info.sample_rate);

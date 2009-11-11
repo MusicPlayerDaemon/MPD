@@ -39,6 +39,11 @@ struct flac_data {
 	struct pcm_buffer buffer;
 
 	/**
+	 * The size of one frame in the output buffer.
+	 */
+	unsigned frame_size;
+
+	/**
 	 * Is the #stream_info member valid?
 	 */
 	bool have_stream_info;
@@ -62,7 +67,6 @@ struct flac_data {
 	 */
 	FLAC__uint64 next_frame;
 
-	struct audio_format audio_format;
 	FLAC__uint64 position;
 	struct decoder *decoder;
 	struct input_stream *input_stream;
@@ -77,6 +81,17 @@ flac_data_init(struct flac_data *data, struct decoder * decoder,
 
 void
 flac_data_deinit(struct flac_data *data);
+
+/**
+ * Obtains the audio format from the stream_info attribute, and copies
+ * it to the specified #audio_format object.  This also updates the
+ * frame_size attribute.
+ *
+ * @return true on success, false the audio format is not supported
+ */
+bool
+flac_data_get_audio_format(struct flac_data *data,
+			   struct audio_format *audio_format);
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 			     struct flac_data *data);

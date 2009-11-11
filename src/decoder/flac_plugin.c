@@ -391,28 +391,20 @@ static bool
 flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd,
 			bool seekable, FLAC__uint64 duration)
 {
+	struct audio_format audio_format;
+
 	if (!FLAC__stream_decoder_process_until_end_of_metadata(sd)) {
 		g_warning("problem reading metadata");
 		return false;
 	}
 
-	if (!data->have_stream_info) {
-		g_warning("no STREAMINFO packet found");
+	if (!flac_data_get_audio_format(data, &audio_format))
 		return false;
-	}
-
-	if (!audio_format_valid(&data->audio_format)) {
-		g_warning("Invalid audio format: %u:%u:%u\n",
-			  data->audio_format.sample_rate,
-			  data->audio_format.bits,
-			  data->audio_format.channels);
-		return false;
-	}
 
 	if (duration == 0)
 		duration = data->stream_info.total_samples;
 
-	decoder_initialized(data->decoder, &data->audio_format,
+	decoder_initialized(data->decoder, &audio_format,
 			    seekable,
 			    (float)duration /
 			    (float)data->stream_info.sample_rate);

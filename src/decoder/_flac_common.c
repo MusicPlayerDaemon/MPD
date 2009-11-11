@@ -58,19 +58,41 @@ flac_data_deinit(struct flac_data *data)
 		tag_free(data->tag);
 }
 
+bool
+flac_data_get_audio_format(struct flac_data *data,
+			   struct audio_format *audio_format)
+{
+	if (!data->have_stream_info) {
+		g_warning("no STREAMINFO packet found");
+		return false;
+	}
+
+	audio_format_init(audio_format, data->stream_info.sample_rate,
+			  data->stream_info.bits_per_sample,
+			  data->stream_info.channels);
+
+	if (!audio_format_valid(audio_format)) {
+		g_warning("Invalid audio format: %u:%u:%u\n",
+			  audio_format->sample_rate,
+			  audio_format->bits,
+			  audio_format->channels);
+		return false;
+	}
+
+	data->frame_size = audio_format_frame_size(audio_format);
+
+	return true;
+}
+
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 			     struct flac_data *data)
 {
-	const FLAC__StreamMetadata_StreamInfo *si = &(block->data.stream_info);
-
 	switch (block->type) {
 	case FLAC__METADATA_TYPE_STREAMINFO:
 		data->stream_info = block->data.stream_info;
 		data->have_stream_info = true;
-
-		audio_format_init(&data->audio_format, si->sample_rate,
-				  si->bits_per_sample, si->channels);
 		break;
+
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
 		if (data->replay_gain_info)
 			replay_gain_info_free(data->replay_gain_info);
@@ -113,8 +135,7 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 		  FLAC__uint64 nbytes)
 {
 	enum decoder_command cmd;
-	size_t buffer_size = frame->header.blocksize *
-		audio_format_frame_size(&data->audio_format);
+	size_t buffer_size = frame->header.blocksize * data->frame_size;
 	void *buffer;
 	float position;
 	unsigned bit_rate;
