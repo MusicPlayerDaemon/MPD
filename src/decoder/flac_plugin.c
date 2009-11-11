@@ -391,13 +391,63 @@ flac_tag_dup(const char *file)
 }
 
 static void
+flac_decoder_loop(struct flac_data *data, flac_decoder *flac_dec,
+		  FLAC__uint64 t_start, FLAC__uint64 t_end)
+{
+	struct decoder *decoder = data->decoder;
+	enum decoder_command cmd;
+
+	while (true) {
+		if (data->tag != NULL && !tag_is_empty(data->tag)) {
+			cmd = decoder_tag(data->decoder, data->input_stream,
+					  data->tag);
+			tag_free(data->tag);
+			data->tag = tag_new();
+		} else
+			cmd = decoder_get_command(decoder);
+
+		if (cmd == DECODE_COMMAND_SEEK) {
+			FLAC__uint64 seek_sample = t_start +
+				decoder_seek_where(decoder) *
+				data->audio_format.sample_rate;
+			if (seek_sample >= t_start &&
+			    (t_end == 0 || seek_sample <= t_end) &&
+			    flac_seek_absolute(flac_dec, seek_sample)) {
+				data->next_frame = seek_sample;
+				data->time = (float)(seek_sample - t_start) /
+					data->audio_format.sample_rate;
+				data->position = 0;
+				decoder_command_finished(decoder);
+			} else
+				decoder_seek_error(decoder);
+		} else if (cmd == DECODE_COMMAND_STOP ||
+			   flac_get_state(flac_dec) == flac_decoder_eof)
+			break;
+
+		if (t_end != 0 && data->next_frame >= t_end)
+			/* end of this sub track */
+			break;
+
+		if (!flac_process_single(flac_dec)) {
+			cmd = decoder_get_command(decoder);
+			if (cmd != DECODE_COMMAND_SEEK)
+				break;
+		}
+	}
+
+	if (cmd != DECODE_COMMAND_STOP) {
+		flacPrintErroredState(flac_get_state(flac_dec));
+		flac_finish(flac_dec);
+	}
+}
+
+static void
 flac_decode_internal(struct decoder * decoder,
 		     struct input_stream *input_stream,
 		     bool is_ogg)
 {
 	flac_decoder *flac_dec;
 	struct flac_data data;
-	enum decoder_command cmd;
 	const char *err = NULL;
 
 	if (!(flac_dec = flac_new()))
@@ -448,39 +498,7 @@ flac_decode_internal(struct decoder * decoder,
 	decoder_initialized(decoder, &data.audio_format,
 			    input_stream->seekable, data.total_time);
 
-	while (true) {
-		if (!tag_is_empty(data.tag)) {
-			cmd = decoder_tag(decoder, input_stream, data.tag);
-			tag_free(data.tag);
-			data.tag = tag_new();
-		} else
-			cmd = decoder_get_command(decoder);
-
-		if (cmd == DECODE_COMMAND_SEEK) {
-			FLAC__uint64 seek_sample = decoder_seek_where(decoder) *
-			    data.audio_format.sample_rate + 0.5;
-			if (flac_seek_absolute(flac_dec, seek_sample)) {
-				data.next_frame = seek_sample;
-				data.time = ((float)seek_sample) /
-				    data.audio_format.sample_rate;
-				data.position = 0;
-				decoder_command_finished(decoder);
-			} else
-				decoder_seek_error(decoder);
-		} else if (cmd == DECODE_COMMAND_STOP ||
-			   flac_get_state(flac_dec) == flac_decoder_eof)
-			break;
-
-		if (!flac_process_single(flac_dec)) {
-			cmd = decoder_get_command(decoder);
-			if (cmd != DECODE_COMMAND_SEEK)
-				break;
-		}
-	}
-	if (cmd != DECODE_COMMAND_STOP) {
-		flacPrintErroredState(flac_get_state(flac_dec));
-		flac_finish(flac_dec);
-	}
+	flac_decoder_loop(&data, flac_dec, 0, 0);
 
 fail:
 	flac_data_deinit(&data);
@@ -615,44 +633,9 @@ flac_container_decode(struct decoder* decoder,
 
 	// seek to song start (order is important: after decoder init)
 	flac_seek_absolute(flac_dec, (FLAC__uint64)t_start);
+	data.next_frame = t_start;
 
-	while (true)
-	{
-		if (!flac_process_single(flac_dec))
-			break;
-
-		// we only need to break at the end of track if we are in "cue mode"
-		if (data.time >= data.total_time)
-		{
-			flacPrintErroredState(flac_get_state(flac_dec));
-			flac_finish(flac_dec);
-		}
-
-		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK)
-		{
-			FLAC__uint64 seek_sample = t_start +
-				(decoder_seek_where(decoder) * data.audio_format.sample_rate);
-
-			if (seek_sample >= t_start && seek_sample <= t_end &&
-			    flac_seek_absolute(flac_dec, (FLAC__uint64)seek_sample)) {
-				data.next_frame = seek_sample;
-				data.time = (float)(seek_sample - t_start) /
-					data.audio_format.sample_rate;
-				data.position = 0;
-
-				decoder_command_finished(decoder);
-			} else
-				decoder_seek_error(decoder);
-		}
-		else if (flac_get_state(flac_dec) == flac_decoder_eof)
-			break;
-	}
-
-	if (decoder_get_command(decoder) != DECODE_COMMAND_STOP)
-	{
-		flacPrintErroredState(flac_get_state(flac_dec));
-		flac_finish(flac_dec);
-	}
+	flac_decoder_loop(&data, flac_dec, t_start, t_end);
 
 fail:
 	if (pathname)
@@ -747,36 +730,7 @@ flac_filedecode_internal(struct decoder* decoder,
 	decoder_initialized(decoder, &data.audio_format,
 			    true, data.total_time);
 
-	while (true)
-	{
-		if (!flac_process_single(flac_dec))
-			break;
-
-		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK)
-		{
-			FLAC__uint64 seek_sample = decoder_seek_where(decoder) *
-			    data.audio_format.sample_rate + 0.5;
-			if (flac_seek_absolute(flac_dec, seek_sample))
-			{
-				data.next_frame = seek_sample;
-				data.time = ((float)seek_sample) /
-				    data.audio_format.sample_rate;
-				data.position = 0;
-				decoder_command_finished(decoder);
-			}
-			else
-				decoder_seek_error(decoder);
-
-		}
-		else if (flac_get_state(flac_dec) == flac_decoder_eof)
-			break;
-	}
-
-	if (decoder_get_command(decoder) != DECODE_COMMAND_STOP)
-	{
-		flacPrintErroredState(flac_get_state(flac_dec));
-		flac_finish(flac_dec);
-	}
+	flac_decoder_loop(&data, flac_dec, 0, 0);
 
 fail:
 	flac_data_deinit(&data);
