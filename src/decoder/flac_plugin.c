@@ -371,6 +371,26 @@ flac_tag_dup(const char *file)
 		return flac_tag_load(file, NULL);
 }
 
+/**
+ * Some glue code around FLAC__stream_decoder_new().
+ */
+static FLAC__StreamDecoder *
+flac_decoder_new(void)
+{
+	FLAC__StreamDecoder *sd = FLAC__stream_decoder_new();
+	if (sd == NULL) {
+		g_warning("FLAC__stream_decoder_new() failed");
+		return NULL;
+	}
+
+#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
+	if(!FLAC__stream_decoder_set_metadata_respond(sd, FLAC__METADATA_TYPE_VORBIS_COMMENT))
+		g_debug("FLAC__stream_decoder_set_metadata_respond() has failed");
+#endif
+
+	return sd;
+}
+
 static void
 flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 		  FLAC__uint64 t_start, FLAC__uint64 t_end)
@@ -431,17 +451,12 @@ flac_decode_internal(struct decoder * decoder,
 	struct flac_data data;
 	const char *err = NULL;
 
-	if (!(flac_dec = FLAC__stream_decoder_new()))
+	flac_dec = flac_decoder_new();
+	if (flac_dec == NULL)
 		return;
+
 	flac_data_init(&data, decoder, input_stream);
 	data.tag = tag_new();
-
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
-        if(!FLAC__stream_decoder_set_metadata_respond(flac_dec, FLAC__METADATA_TYPE_VORBIS_COMMENT))
-        {
-                g_debug("Failed to set metadata respond\n");
-        }
-#endif
 
 	if (is_ogg) {
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
@@ -564,20 +579,11 @@ flac_container_decode(struct decoder* decoder,
 		return;
 	}
 
-	if (!(flac_dec = FLAC__stream_decoder_new()))
-	{
-		g_free(pathname);
+	flac_dec = flac_decoder_new();
+	if (flac_dec == NULL)
 		return;
-	}
 
 	flac_data_init(&data, decoder, NULL);
-
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
-        if(!FLAC__stream_decoder_set_metadata_respond(flac_dec, FLAC__METADATA_TYPE_VORBIS_COMMENT))
-        {
-                g_debug("Failed to set metadata respond\n");
-        }
-#endif
 
 	init_status = is_ogg
 		? FLAC__stream_decoder_init_ogg_file(flac_dec, pathname,
@@ -645,18 +651,11 @@ flac_filedecode_internal(struct decoder* decoder,
 	const char *err = NULL;
 	unsigned int flac_err_state = 0;
 
-	if (!(flac_dec = FLAC__stream_decoder_new()))
+	flac_dec = flac_decoder_new();
+	if (flac_dec == NULL)
 		return;
 
 	flac_data_init(&data, decoder, NULL);
-
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
-        if(!FLAC__stream_decoder_set_metadata_respond(flac_dec, FLAC__METADATA_TYPE_VORBIS_COMMENT))
-        {
-                g_debug("Failed to set metadata respond\n");
-        }
-#endif
-
 
 	if (is_ogg)
 	{
