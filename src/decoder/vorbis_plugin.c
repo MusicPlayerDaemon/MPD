@@ -302,7 +302,6 @@ vorbis_stream_decode(struct decoder *decoder,
 		g_warning("Error decoding Ogg Vorbis stream: %s", error);
 		return;
 	}
-	audio_format.bits = 16;
 
 	do {
 		if (cmd == DECODE_COMMAND_SEEK) {
