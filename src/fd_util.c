@@ -114,7 +114,8 @@ open_cloexec(const char *path_fs, int flags, int mode)
 #endif
 
 	fd = open(path_fs, flags, mode);
-	fd_set_cloexec(fd, true);
+	if (fd >= 0)
+		fd_set_cloexec(fd, true);
 
 	return fd;
 }
