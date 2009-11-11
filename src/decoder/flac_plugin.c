@@ -391,6 +391,32 @@ flac_decoder_new(void)
 	return sd;
 }
 
+static bool
+flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd,
+			bool seekable, FLAC__uint64 duration)
+{
+	if (!FLAC__stream_decoder_process_until_end_of_metadata(sd)) {
+		g_warning("problem reading metadata");
+		return false;
+	}
+
+	if (!audio_format_valid(&data->audio_format)) {
+		g_warning("Invalid audio format: %u:%u:%u\n",
+			  data->audio_format.sample_rate,
+			  data->audio_format.bits,
+			  data->audio_format.channels);
+		return false;
+	}
+
+	if (duration != 0)
+		data->total_time = (float)duration /
+			(float)data->audio_format.sample_rate;
+
+	decoder_initialized(data->decoder, &data->audio_format,
+			    seekable, data->total_time);
+	return true;
+}
+
 static void
 flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 		  FLAC__uint64 t_start, FLAC__uint64 t_end)
@@ -496,21 +522,12 @@ flac_decode_internal(struct decoder * decoder,
 		}
 	}
 
-	if (!FLAC__stream_decoder_process_until_end_of_metadata(flac_dec)) {
-		err = "problem reading metadata";
-		goto fail;
+	if (!flac_decoder_initialize(&data, flac_dec,
+				     input_stream->seekable, 0)) {
+		flac_data_deinit(&data);
+		FLAC__stream_decoder_delete(flac_dec);
+		return;
 	}
-
-	if (!audio_format_valid(&data.audio_format)) {
-		g_warning("Invalid audio format: %u:%u:%u\n",
-			  data.audio_format.sample_rate,
-			  data.audio_format.bits,
-			  data.audio_format.channels);
-		goto fail;
-	}
-
-	decoder_initialized(decoder, &data.audio_format,
-			    input_stream->seekable, data.total_time);
 
 	flac_decoder_loop(&data, flac_dec, 0, 0);
 
@@ -601,27 +618,11 @@ flac_container_decode(struct decoder* decoder,
 		goto fail;
 	}
 
-	if (!FLAC__stream_decoder_process_until_end_of_metadata(flac_dec))
-	{
-		err = "problem reading metadata";
-		goto fail;
+	if (!flac_decoder_initialize(&data, flac_dec, true, track_time)) {
+		flac_data_deinit(&data);
+		FLAC__stream_decoder_delete(flac_dec);
+		return;
 	}
-
-	if (!audio_format_valid(&data.audio_format))
-	{
-		g_warning("Invalid audio format: %u:%u:%u\n",
-			  data.audio_format.sample_rate,
-			  data.audio_format.bits,
-			  data.audio_format.channels);
-		goto fail;
-	}
-
-	// set track time (order is important: after stream init)
-	data.total_time = ((float)track_time / (float)data.audio_format.sample_rate);
-	data.position = 0;
-
-	decoder_initialized(decoder, &data.audio_format,
-			    true, data.total_time);
 
 	// seek to song start (order is important: after decoder init)
 	FLAC__stream_decoder_seek_absolute(flac_dec, (FLAC__uint64)t_start);
@@ -694,23 +695,11 @@ flac_filedecode_internal(struct decoder* decoder,
 		}
 	}
 
-	if (!FLAC__stream_decoder_process_until_end_of_metadata(flac_dec))
-	{
-		err = "problem reading metadata";
-		goto fail;
+	if (!flac_decoder_initialize(&data, flac_dec, true, 0)) {
+		flac_data_deinit(&data);
+		FLAC__stream_decoder_delete(flac_dec);
+		return;
 	}
-
-	if (!audio_format_valid(&data.audio_format))
-	{
-		g_warning("Invalid audio format: %u:%u:%u\n",
-			  data.audio_format.sample_rate,
-			  data.audio_format.bits,
-			  data.audio_format.channels);
-		goto fail;
-	}
-
-	decoder_initialized(decoder, &data.audio_format,
-			    true, data.total_time);
 
 	flac_decoder_loop(&data, flac_dec, 0, 0);
 
