@@ -57,7 +57,6 @@ struct flac_data {
 	FLAC__uint64 next_frame;
 
 	float time;
-	unsigned int bit_rate;
 	struct audio_format audio_format;
 	FLAC__uint64 position;
 	struct decoder *decoder;
@@ -83,7 +82,8 @@ void flac_error_common_cb(const char *plugin,
 
 FLAC__StreamDecoderWriteStatus
 flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
-		  const FLAC__int32 *const buf[]);
+		  const FLAC__int32 *const buf[],
+		  FLAC__uint64 nbytes);
 
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
 

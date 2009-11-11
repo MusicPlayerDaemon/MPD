@@ -161,7 +161,7 @@ oggflac_write_cb(G_GNUC_UNUSED const OggFLAC__SeekableStreamDecoder *decoder,
 	time_change = ((float)samples) / frame->header.sample_rate;
 	data->time += time_change;
 
-	return flac_common_write(data, frame, buf);
+	return flac_common_write(data, frame, buf, 0);
 }
 
 /* used by TagDup */

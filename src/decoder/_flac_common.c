@@ -40,7 +40,6 @@ flac_data_init(struct flac_data *data, struct decoder * decoder,
 
 	data->time = 0;
 	data->position = 0;
-	data->bit_rate = 0;
 	data->decoder = decoder;
 	data->input_stream = input_stream;
 	data->replay_gain_info = NULL;
@@ -110,12 +109,14 @@ void flac_error_common_cb(const char *plugin,
 
 FLAC__StreamDecoderWriteStatus
 flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
-		  const FLAC__int32 *const buf[])
+		  const FLAC__int32 *const buf[],
+		  FLAC__uint64 nbytes)
 {
 	enum decoder_command cmd;
 	size_t buffer_size = frame->header.blocksize *
 		audio_format_frame_size(&data->audio_format);
 	void *buffer;
+	unsigned bit_rate;
 
 	buffer = pcm_buffer_get(&data->buffer, buffer_size);
 
@@ -123,9 +124,15 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 		     data->audio_format.bits, buf,
 		     0, frame->header.blocksize);
 
+	if (nbytes > 0)
+		bit_rate = nbytes * 8 * frame->header.sample_rate /
+			(1000 * frame->header.blocksize);
+	else
+		bit_rate = 0;
+
 	cmd = decoder_data(data->decoder, data->input_stream,
 			   buffer, buffer_size,
-			   data->time, data->bit_rate,
+			   data->time, bit_rate,
 			   data->replay_gain_info);
 	data->next_frame += frame->header.blocksize;
 	switch (cmd) {

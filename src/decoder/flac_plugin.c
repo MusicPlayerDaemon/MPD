@@ -194,22 +194,23 @@ flac_write_cb(const FLAC__StreamDecoder *dec, const FLAC__Frame *frame,
 	FLAC__uint32 samples = frame->header.blocksize;
 	struct flac_data *data = (struct flac_data *) vdata;
 	float timeChange;
-	FLAC__uint64 newPosition = 0;
+	FLAC__uint64 nbytes = 0;
 
 	timeChange = ((float)samples) / frame->header.sample_rate;
 	data->time += timeChange;
 
-	FLAC__stream_decoder_get_decode_position(dec, &newPosition);
-	if (data->position && newPosition >= data->position) {
-		assert(timeChange >= 0);
+	if (FLAC__stream_decoder_get_decode_position(dec, &nbytes)) {
+		if (data->position > 0 && nbytes > data->position) {
+			nbytes -= data->position;
+			data->position += nbytes;
+		} else {
+			data->position = nbytes;
+			nbytes = 0;
+		}
+	} else
+		nbytes = 0;
 
-		data->bit_rate =
-		    ((newPosition - data->position) * 8.0 / timeChange)
-		    / 1000 + 0.5;
-	}
-	data->position = newPosition;
-
-	return flac_common_write(data, frame, buf);
+	return flac_common_write(data, frame, buf, nbytes);
 }
 
 static struct tag *
