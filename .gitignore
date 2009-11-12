@@ -35,6 +35,7 @@ mpd
 stamp-h1
 tags
 *~
+.#*
 .stgit*
 doc/protocol.html
 doc/protocol
