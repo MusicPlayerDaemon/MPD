@@ -355,8 +355,8 @@ vorbis_stream_decode(struct decoder *decoder,
 				break;
 			}
 
-			if (vi->rate != audio_format.sample_rate ||
-			    vi->channels != audio_format.channels) {
+			if (vi->rate != (long)audio_format.sample_rate ||
+			    vi->channels != (int)audio_format.channels) {
 				/* we don't support audio format
 				   change yet */
 				g_warning("audio format change, stopping here");
