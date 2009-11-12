@@ -176,7 +176,8 @@ pc_set_pause(bool pause_flag)
 void
 pc_get_status(struct player_status *status)
 {
-	player_command(PLAYER_COMMAND_REFRESH);
+	player_lock();
+	player_command_locked(PLAYER_COMMAND_REFRESH);
 
 	status->state = pc.state;
 
@@ -186,6 +187,8 @@ pc_get_status(struct player_status *status)
 		status->total_time = pc.total_time;
 		status->elapsed_time = pc.elapsed_time;
 	}
+
+	player_unlock();
 }
 
 enum player_state
