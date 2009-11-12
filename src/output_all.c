@@ -441,7 +441,10 @@ audio_output_all_check(void)
 			   this chunk */
 			return music_pipe_size(g_mp);
 
-		audio_output_all_elapsed_time = chunk->times;
+		if (chunk->length > 0 && chunk->times >= 0.0)
+			/* only update elapsed_time if the chunk
+			   provides a defined value */
+			audio_output_all_elapsed_time = chunk->times;
 
 		is_tail = chunk->next == NULL;
 		if (is_tail)

@@ -333,6 +333,7 @@ player_send_silence(struct player *player)
 	chunk->audio_format = player->play_audio_format;
 #endif
 
+	chunk->times = -1.0; /* undefined time stamp */
 	chunk->length = num_frames * frame_size;
 	memset(chunk->data, 0, chunk->length);
 
