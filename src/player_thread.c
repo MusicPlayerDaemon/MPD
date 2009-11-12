@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "player_thread.h"
 #include "player_control.h"
 #include "decoder_control.h"

@@ -21,9 +21,9 @@
   * single bz2 archive handling (requires libbz2)
   */
 
+#include "config.h"
 #include "archive_api.h"
 #include "input_plugin.h"
-#include "config.h"
 
 #include <stdint.h>
 #include <stddef.h>

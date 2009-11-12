@@ -17,12 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "mixer_control.h"
 #include "mixer_list.h"
 #include "filter_registry.h"
 #include "pcm_volume.h"
 #include "event_pipe.h"
-#include "config.h"
 
 #include <glib.h>
 

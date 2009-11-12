@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "stored_playlist.h"
 #include "playlist_save.h"
 #include "song.h"

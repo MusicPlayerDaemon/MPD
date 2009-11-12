@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "input_plugin.h"
 #include "config.h"
+#include "input_plugin.h"
 #include "conf.h"
 
 #include "input/file_input_plugin.h"

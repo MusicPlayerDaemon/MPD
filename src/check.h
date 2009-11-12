@@ -17,21 +17,31 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ZEROCONF_H
-#define MPD_ZEROCONF_H
+#ifndef MPD_CHECK_H
+#define MPD_CHECK_H
 
-#include "check.h"
+/*
+ * All sources must include config.h on the first line to ensure that
+ * Large File Support is configured properly.  This header checks
+ * whether this has happened.
+ *
+ * Usage: include this header before you use any of the above types.
+ * It will stop the compiler if something went wrong.
+ *
+ * This is Linux/glibc specific, and only enabled in the debug build,
+ * so bugs in this headers don't affect users with production builds.
+ *
+ */
 
-#ifdef HAVE_ZEROCONF
+#ifndef PACKAGE_VERSION
+#error config.h missing
+#endif
 
-void initZeroconf(void);
-void finishZeroconf(void);
-
-#else /* ! HAVE_ZEROCONF */
-
-static void initZeroconf(void) { }
-static void finishZeroconf(void) { }
-
-#endif /* ! HAVE_ZEROCONF */
+#if defined(__linux__) && !defined(NDEBUG) && defined(ENABLE_LARGEFILE) && \
+	defined(_FEATURES_H) && defined(__i386__) && \
+	!defined(__USE_FILE_OFFSET64)
+/* on i386, check if LFS is enabled */
+#error config.h was included too late
+#endif
 
 #endif

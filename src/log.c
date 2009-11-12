@@ -17,11 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "log.h"
 #include "conf.h"
 #include "utils.h"
 #include "fd_util.h"
-#include "config.h"
 
 #include <assert.h>
 #include <sys/types.h>

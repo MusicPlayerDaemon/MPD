@@ -20,6 +20,7 @@
  * (c)2004 replayGain code by AliasMrJones
  */
 
+#include "config.h"
 #include "replay_gain.h"
 #include "conf.h"
 #include "audio_format.h"

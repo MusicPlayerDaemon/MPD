@@ -22,6 +22,7 @@
  *
  */
 
+#include "config.h"
 #include "output_state.h"
 #include "output_internal.h"
 #include "output_all.h"

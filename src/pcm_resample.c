@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "pcm_resample_internal.h"
 #include "config.h"
+#include "pcm_resample_internal.h"
 
 #ifdef HAVE_LIBSAMPLERATE
 #include "conf.h"

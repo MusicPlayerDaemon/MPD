@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "filter/volume_filter_plugin.h"
 #include "filter_plugin.h"
 #include "filter_internal.h"

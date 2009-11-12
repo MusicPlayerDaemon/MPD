@@ -24,6 +24,7 @@
  *
  */
 
+#include "config.h"
 #include "output_command.h"
 #include "output_all.h"
 #include "output_internal.h"

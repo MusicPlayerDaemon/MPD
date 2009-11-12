@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "../decoder_api.h"
-#include "decoder_buffer.h"
 #include "config.h"
+#include "decoder_api.h"
+#include "decoder_buffer.h"
 
 #define AAC_MAX_CHANNELS	6
 

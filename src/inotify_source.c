@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "inotify_source.h"
 #include "fifo_buffer.h"
 #include "fd_util.h"

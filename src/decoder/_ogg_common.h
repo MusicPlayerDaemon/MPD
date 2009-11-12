@@ -24,7 +24,7 @@
 #ifndef MPD_OGG_COMMON_H
 #define MPD_OGG_COMMON_H
 
-#include "../decoder_api.h"
+#include "decoder_api.h"
 
 typedef enum _ogg_stream_type { VORBIS, FLAC } ogg_stream_type;
 

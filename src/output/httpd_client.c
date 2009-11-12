@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "httpd_client.h"
 #include "httpd_internal.h"
 #include "fifo_buffer.h"

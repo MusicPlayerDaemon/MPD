@@ -20,8 +20,8 @@
 #ifndef MPD_PCM_RESAMPLE_H
 #define MPD_PCM_RESAMPLE_H
 
+#include "check.h"
 #include "pcm_buffer.h"
-#include "config.h"
 
 #include <stdint.h>
 #include <stddef.h>

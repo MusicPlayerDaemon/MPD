@@ -27,8 +27,8 @@
 #ifndef MPD_PCM_RESAMPLE_INTERNAL_H
 #define MPD_PCM_RESAMPLE_INTERNAL_H
 
+#include "check.h"
 #include "pcm_resample.h"
-#include "config.h"
 
 #ifdef HAVE_LIBSAMPLERATE
 

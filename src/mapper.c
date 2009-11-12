@@ -21,6 +21,7 @@
  * Maps directory and song objects to file system paths.
  */
 
+#include "config.h"
 #include "mapper.h"
 #include "directory.h"
 #include "song.h"

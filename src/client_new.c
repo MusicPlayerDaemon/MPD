@@ -17,11 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "client_internal.h"
 #include "fifo_buffer.h"
 #include "socket_util.h"
 #include "permission.h"
-#include "config.h"
 
 #include <assert.h>
 #include <unistd.h>

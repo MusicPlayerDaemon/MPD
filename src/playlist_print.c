@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "playlist_print.h"
 #include "queue_print.h"
 #include "stored_playlist.h"

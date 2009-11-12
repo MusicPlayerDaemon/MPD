@@ -22,6 +22,7 @@
  *
  */
 
+#include "config.h"
 #include "audio_parser.h"
 #include "audio_format.h"
 

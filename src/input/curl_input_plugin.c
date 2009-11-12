@@ -17,10 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "input/curl_input_plugin.h"
 #include "input_plugin.h"
 #include "conf.h"
-#include "config.h"
 #include "tag.h"
 #include "icy_metadata.h"
 #include "glib_compat.h"

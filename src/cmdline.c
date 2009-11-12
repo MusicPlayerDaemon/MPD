@@ -17,13 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "cmdline.h"
 #include "path.h"
 #include "log.h"
 #include "conf.h"
 #include "decoder_list.h"
 #include "decoder_plugin.h"
-#include "config.h"
 #include "output_list.h"
 #include "ls.h"
 

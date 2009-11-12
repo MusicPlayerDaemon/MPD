@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "input/archive_input_plugin.h"
 #include "archive_api.h"
 #include "archive_list.h"

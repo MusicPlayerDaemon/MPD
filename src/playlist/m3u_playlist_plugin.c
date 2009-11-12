@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "playlist/m3u_playlist_plugin.h"
 #include "playlist_plugin.h"
 #include "text_input_stream.h"

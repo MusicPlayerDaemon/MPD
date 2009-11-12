@@ -21,6 +21,7 @@
  * Common data structures and functions used by FLAC and OggFLAC
  */
 
+#include "config.h"
 #include "_flac_common.h"
 #include "flac_metadata.h"
 #include "flac_pcm.h"

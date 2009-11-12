@@ -21,6 +21,7 @@
   * zip archive handling (requires zziplib)
   */
 
+#include "config.h"
 #include "archive_api.h"
 #include "archive_api.h"
 #include "input_plugin.h"

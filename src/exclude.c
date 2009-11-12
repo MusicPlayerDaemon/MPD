@@ -22,6 +22,7 @@
  *
  */
 
+#include "config.h"
 #include "exclude.h"
 #include "path.h"
 

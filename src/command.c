@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "command.h"
 #include "player_control.h"
 #include "playlist.h"
@@ -47,7 +48,6 @@
 #include "path.h"
 #include "replay_gain.h"
 #include "idle.h"
-#include "config.h"
 
 #ifdef ENABLE_SQLITE
 #include "sticker.h"

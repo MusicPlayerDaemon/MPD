@@ -22,6 +22,7 @@
  *
  */
 
+#include "config.h"
 #include "playlist_state.h"
 #include "playlist.h"
 #include "player_control.h"

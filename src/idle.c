@@ -22,6 +22,7 @@
  *
  */
 
+#include "config.h"
 #include "idle.h"
 #include "event_pipe.h"
 

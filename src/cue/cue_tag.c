@@ -1,3 +1,4 @@
+#include "config.h"
 #include "cue_tag.h"
 
 static struct tag*

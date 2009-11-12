@@ -29,6 +29,7 @@ src_mpd_LDADD = $(MPD_LIBS) \
 	$(GLIB_LIBS)
 
 mpd_headers = \
+	src/check.h \
 	src/notify.h \
 	src/ack.h \
 	src/audio.h \

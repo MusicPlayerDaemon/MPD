@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "update_internal.h"
 #include "update.h"
 #include "database.h"
@@ -27,7 +28,6 @@
 #include "idle.h"
 #include "stats.h"
 #include "main.h"
-#include "config.h"
 
 #include <glib.h>
 

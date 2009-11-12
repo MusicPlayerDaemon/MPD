@@ -23,6 +23,7 @@
  *
  */
 
+#include "config.h"
 #include "playlist_internal.h"
 #include "player_control.h"
 #include "database.h"

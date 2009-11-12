@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "audio.h"
 #include "audio_format.h"
 #include "audio_parser.h"

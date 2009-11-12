@@ -21,6 +21,7 @@
   * iso archive handling (requires cdio, and iso9660)
   */
 
+#include "config.h"
 #include "archive_api.h"
 #include "input_plugin.h"
 

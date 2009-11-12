@@ -27,6 +27,7 @@
 #ifndef MPD_DECODER_API_H
 #define MPD_DECODER_API_H
 
+#include "check.h"
 #include "decoder_command.h"
 #include "decoder_plugin.h"
 #include "input_stream.h"

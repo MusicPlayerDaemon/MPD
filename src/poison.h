@@ -20,8 +20,9 @@
 #ifndef MPD_POISON_H
 #define MPD_POISON_H
 
+#include "check.h"
+
 #ifndef NDEBUG
-#include "config.h"
 
 #ifdef HAVE_VALGRIND_MEMCHECK_H
 #include <valgrind/memcheck.h>

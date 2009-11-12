@@ -26,9 +26,10 @@
  *
  */
 
-#include "../decoder_api.h"
-#include "../timer.h"
-#include "../conf.h"
+#include "config.h"
+#include "decoder_api.h"
+#include "timer.h"
+#include "conf.h"
 
 #include <glib.h>
 

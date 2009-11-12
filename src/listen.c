@@ -17,13 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "listen.h"
 #include "socket_util.h"
 #include "client.h"
 #include "conf.h"
 #include "fd_util.h"
 #include "glib_compat.h"
-#include "config.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

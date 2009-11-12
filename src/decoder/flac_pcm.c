@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "flac_pcm.h"
 
 static void flac_convert_stereo16(int16_t *dest,

@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "input_stream.h"
 #include "tag_pool.h"
 #include "tag_save.h"

@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "crossfade.h"
 #include "pcm_mix.h"
 #include "chunk.h"

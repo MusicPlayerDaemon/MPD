@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "main.h"
 #include "daemon.h"
 #include "client.h"
@@ -48,7 +49,6 @@
 #include "state_file.h"
 #include "tag.h"
 #include "dbUtils.h"
-#include "config.h"
 #include "normalize.h"
 #include "zeroconf.h"
 #include "event_pipe.h"

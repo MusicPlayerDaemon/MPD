@@ -17,7 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "../decoder_api.h"
+#include "config.h"
+#include "decoder_api.h"
 
 #include <audiofile.h>
 #include <af_vfs.h>

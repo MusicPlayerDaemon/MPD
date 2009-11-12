@@ -17,10 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "zeroconf.h"
 #include "zeroconf-internal.h"
 #include "conf.h"
-#include "config.h"
 
 #include <glib.h>
 

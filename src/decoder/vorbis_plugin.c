@@ -17,11 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/* TODO 'ogg' should probably be replaced with 'oggvorbis' in all instances */
-
-#include "config.h" /* must be first for large file support */
-#include "_ogg_common.h"
 #include "config.h"
+#include "_ogg_common.h"
 #include "uri.h"
 
 #ifndef HAVE_TREMOR

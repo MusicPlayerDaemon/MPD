@@ -101,6 +101,9 @@ dnl libc features
 dnl
 
 AC_SYS_LARGEFILE
+if test x$enable_largefile != xno; then
+	AC_DEFINE([ENABLE_LARGEFILE], 1, [Define if large file support is enabled])
+fi
 
 AC_CHECK_FUNCS(daemon fork syslog)
 if test $ac_cv_func_syslog = no; then

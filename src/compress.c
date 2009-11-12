@@ -21,6 +21,7 @@
  * Imported from AudioCompress by J. Shagam <fluffy@beesbuzz.biz>
  */
 
+#include "config.h"
 #include "compress.h"
 
 #include <glib.h>

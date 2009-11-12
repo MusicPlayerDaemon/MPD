@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "playlist_list.h"
 #include "playlist_plugin.h"
 #include "playlist/extm3u_playlist_plugin.h"
@@ -29,7 +30,6 @@
 #include "uri.h"
 #include "utils.h"
 #include "conf.h"
-#include "config.h"
 
 #include <glib.h>
 

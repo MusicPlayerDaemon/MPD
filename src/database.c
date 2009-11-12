@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "database.h"
 #include "directory.h"
 #include "directory_save.h"
@@ -26,7 +27,6 @@
 #include "text_file.h"
 #include "tag.h"
 #include "tag_internal.h"
-#include "config.h"
 
 #include <glib.h>
 

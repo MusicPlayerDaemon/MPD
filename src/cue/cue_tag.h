@@ -1,12 +1,13 @@
 #ifndef MPD_CUE_TAG_H
 #define MPD_CUE_TAG_H
 
-#include "config.h"
+#include "check.h"
 
 #ifdef HAVE_CUE /* libcue */
 
+#include "tag.h"
+
 #include <libcue/libcue.h>
-#include "../tag.h"
 
 struct tag*
 cue_tag_file(	FILE*,
