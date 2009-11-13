@@ -134,7 +134,7 @@ player_dc_start(struct player *player, struct music_pipe *pipe)
 {
 	struct decoder_control *dc = player->dc;
 
-	assert(player->queued);
+	assert(player->queued || pc.command == PLAYER_COMMAND_SEEK);
 	assert(pc.next_song != NULL);
 
 	dc_start(dc, pc.next_song, player_buffer, pipe);
@@ -187,7 +187,7 @@ player_wait_for_decoder(struct player *player)
 {
 	struct decoder_control *dc = player->dc;
 
-	assert(player->queued);
+	assert(player->queued || pc.command == PLAYER_COMMAND_SEEK);
 	assert(pc.next_song != NULL);
 
 	player->queued = false;
