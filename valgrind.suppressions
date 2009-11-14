@@ -57,6 +57,17 @@
 }
 
 {
+   g_main_context_default
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slist_prepend
+   fun:g_main_context_new
+   fun:g_main_context_default
+}
+
+{
    g_main_loop_run
    Memcheck:Leak
    fun:malloc
