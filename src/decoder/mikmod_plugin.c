@@ -100,10 +100,19 @@ static MDRIVER drv_mpd = {
 	VC_VoiceRealVolume
 };
 
+static unsigned mikmod_sample_rate;
+
 static bool
-mikmod_decoder_init(G_GNUC_UNUSED const struct config_param *param)
+mikmod_decoder_init(const struct config_param *param)
 {
+	unsigned sample_rate;
 	static char params[] = "";
+
+	mikmod_sample_rate = config_get_block_unsigned(param, "sample_rate",
+						       44100);
+	if (!audio_valid_sample_rate(mikmod_sample_rate))
+		g_error("Invalid sample rate in line %d: %u",
+			param->line, sample_rate);
 
 	md_device = 0;
 	md_reverb = 0;
@@ -112,7 +121,7 @@ mikmod_decoder_init(G_GNUC_UNUSED const struct config_param *param)
 	MikMod_RegisterAllLoaders();
 
 	md_pansep = 64;
-	md_mixfreq = 44100;
+	md_mixfreq = mikmod_sample_rate;
 	md_mode = (DMODE_SOFT_MUSIC | DMODE_INTERP | DMODE_STEREO |
 		   DMODE_16BITS);
 
@@ -155,7 +164,7 @@ mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 	/* Prevent module from looping forever */
 	handle->loop = 0;
 
-	audio_format_init(&audio_format, 44100, 16, 2);
+	audio_format_init(&audio_format, mikmod_sample_rate, 16, 2);
 	assert(audio_format_valid(&audio_format));
 
 	secPerByte =
