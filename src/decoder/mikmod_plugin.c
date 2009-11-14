@@ -54,11 +54,11 @@ mikmod_mpd_is_present(void)
 	return true;
 }
 
-static char drv_name[] = "MPD";
-static char drv_version[] = "MPD Output Driver v0.1";
+static char drv_name[] = PACKAGE_NAME;
+static char drv_version[] = VERSION;
 
 #if (LIBMIKMOD_VERSION > 0x030106)
-static char drv_alias[] = "mpd";
+static char drv_alias[] = PACKAGE;
 #endif
 
 static MDRIVER drv_mpd = {
