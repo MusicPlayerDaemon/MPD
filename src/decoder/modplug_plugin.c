@@ -139,10 +139,8 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 
 	do {
 		ret = ModPlug_Read(f, audio_buffer, MODPLUG_FRAME_SIZE);
-
-		if (ret == 0) {
+		if (ret <= 0)
 			break;
-		}
 
 		total_time += ret * sec_perbyte;
 		cmd = decoder_data(decoder, NULL,
