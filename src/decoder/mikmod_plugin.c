@@ -146,10 +146,9 @@ mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 	char *path2;
 	MODULE *handle;
 	struct audio_format audio_format;
-	float total_time = 0.0;
 	int ret;
-	float secPerByte;
 	SBYTE buffer[MIKMOD_FRAME_SIZE];
+	unsigned frame_size, current_frame = 0;
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
 	path2 = g_strdup(path_fs);
@@ -167,18 +166,17 @@ mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 	audio_format_init(&audio_format, mikmod_sample_rate, 16, 2);
 	assert(audio_format_valid(&audio_format));
 
-	secPerByte =
-	    1.0 / ((audio_format.bits * audio_format.channels / 8.0) *
-		   (float)audio_format.sample_rate);
-
 	decoder_initialized(decoder, &audio_format, false, 0);
+
+	frame_size = audio_format_frame_size(&audio_format);
 
 	Player_Start(handle);
 	while (cmd == DECODE_COMMAND_NONE && Player_Active()) {
 		ret = VC_WriteBytes(buffer, sizeof(buffer));
-		total_time += ret * secPerByte;
+		current_frame += ret / frame_size;
 		cmd = decoder_data(decoder, NULL, buffer, ret,
-				   total_time, 0, NULL);
+				   (float)current_frame / (float)mikmod_sample_rate,
+				   0, NULL);
 	}
 
 	Player_Stop();
