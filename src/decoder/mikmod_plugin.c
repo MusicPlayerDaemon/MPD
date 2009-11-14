@@ -31,23 +31,27 @@
 
 #define MIKMOD_FRAME_SIZE	4096
 
-static BOOL mod_mpd_Init(void)
+static BOOL
+mikmod_mpd_init(void)
 {
 	return VC_Init();
 }
 
-static void mod_mpd_Exit(void)
+static void
+mikmod_mpd_exit(void)
 {
 	VC_Exit();
 }
 
-static void mod_mpd_Update(void)
+static void
+mikmod_mpd_update(void)
 {
 }
 
-static BOOL mod_mpd_IsThere(void)
+static BOOL
+mikmod_mpd_is_present(void)
 {
-	return 1;
+	return true;
 }
 
 static char drv_name[] = "MPD";
@@ -70,18 +74,18 @@ static MDRIVER drv_mpd = {
 #endif
 	NULL,  /* CommandLine */
 #endif
-	mod_mpd_IsThere,
+	mikmod_mpd_is_present,
 	VC_SampleLoad,
 	VC_SampleUnload,
 	VC_SampleSpace,
 	VC_SampleLength,
-	mod_mpd_Init,
-	mod_mpd_Exit,
+	mikmod_mpd_init,
+	mikmod_mpd_exit,
 	NULL,
 	VC_SetNumVoices,
 	VC_PlayStart,
 	VC_PlayStop,
-	mod_mpd_Update,
+	mikmod_mpd_update,
 	NULL,
 	VC_VoiceSetVolume,
 	VC_VoiceGetVolume,
@@ -97,7 +101,7 @@ static MDRIVER drv_mpd = {
 };
 
 static bool
-mod_initMikMod(G_GNUC_UNUSED const struct config_param *param)
+mikmod_decoder_init(G_GNUC_UNUSED const struct config_param *param)
 {
 	static char params[] = "";
 
@@ -121,13 +125,14 @@ mod_initMikMod(G_GNUC_UNUSED const struct config_param *param)
 	return true;
 }
 
-static void mod_finishMikMod(void)
+static void
+mikmod_decoder_finish(void)
 {
 	MikMod_Exit();
 }
 
 static void
-mod_decode(struct decoder *decoder, const char *path)
+mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 {
 	char *path2;
 	MODULE *handle;
@@ -138,12 +143,12 @@ mod_decode(struct decoder *decoder, const char *path)
 	SBYTE buffer[MIKMOD_FRAME_SIZE];
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
-	path2 = g_strdup(path);
+	path2 = g_strdup(path_fs);
 	handle = Player_Load(path2, 128, 0);
 	g_free(path2);
 
 	if (handle == NULL) {
-		g_warning("failed to open mod: %s\n", path);
+		g_warning("failed to open mod: %s", path_fs);
 		return;
 	}
 
@@ -171,29 +176,30 @@ mod_decode(struct decoder *decoder, const char *path)
 	Player_Free(handle);
 }
 
-static struct tag *modTagDup(const char *file)
+static struct tag *
+mikmod_decoder_tag_dup(const char *path_fs)
 {
 	char *path2;
 	struct tag *ret = NULL;
-	MODULE *moduleHandle;
+	MODULE *handle;
 	char *title;
 
-	path2 = g_strdup(file);
-	moduleHandle = Player_Load(path2, 128, 0);
+	path2 = g_strdup(path_fs);
+	handle = Player_Load(path2, 128, 0);
 	g_free(path2);
 
-	if (moduleHandle == NULL) {
-		g_debug("Failed to open file: %s", file);
+	if (handle == NULL) {
+		g_debug("Failed to open file: %s", path_fs);
 		return NULL;
 
 	}
-	Player_Free(moduleHandle);
+	Player_Free(handle);
 
 	ret = tag_new();
 
 	ret->time = 0;
 
-	path2 = g_strdup(file);
+	path2 = g_strdup(path_fs);
 	title = g_strdup(Player_LoadTitle(path2));
 	g_free(path2);
 	if (title)
@@ -202,7 +208,7 @@ static struct tag *modTagDup(const char *file)
 	return ret;
 }
 
-static const char *const modSuffixes[] = {
+static const char *const mikmod_decoder_suffixes[] = {
 	"amf",
 	"dsm",
 	"far",
@@ -223,9 +229,9 @@ static const char *const modSuffixes[] = {
 
 const struct decoder_plugin mikmod_decoder_plugin = {
 	.name = "mikmod",
-	.init = mod_initMikMod,
-	.finish = mod_finishMikMod,
-	.file_decode = mod_decode,
-	.tag_dup = modTagDup,
-	.suffixes = modSuffixes,
+	.init = mikmod_decoder_init,
+	.finish = mikmod_decoder_finish,
+	.file_decode = mikmod_decoder_file_decode,
+	.tag_dup = mikmod_decoder_tag_dup,
+	.suffixes = mikmod_decoder_suffixes,
 };
