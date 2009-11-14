@@ -127,7 +127,6 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	AFvirtualfile *vf;
 	int fs, frame_count;
 	AFfilehandle af_fp;
-	int bits;
 	struct audio_format audio_format;
 	float total_time;
 	uint16_t bit_rate;
@@ -148,11 +147,9 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 		return;
 	}
 
-	bits = audiofile_setup_sample_format(af_fp);
-
 	if (!audio_format_init_checked(&audio_format,
 				       afGetRate(af_fp, AF_DEFAULT_TRACK),
-				       bits,
+				       audiofile_setup_sample_format(af_fp),
 				       afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK),
 				       &error)) {
 		g_warning("%s", error->message);
