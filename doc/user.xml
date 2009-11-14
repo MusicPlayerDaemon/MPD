@@ -588,6 +588,12 @@ cd mpd-version</programlisting>
     </section>
 
     <section>
+      <title>Decoder plugins</title>
+
+      <para></para>
+    </section>
+
+    <section>
       <title>Output plugins</title>
 
       <section>
