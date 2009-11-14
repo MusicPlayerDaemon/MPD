@@ -130,10 +130,8 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 	    1.0 / ((audio_format.bits * audio_format.channels / 8.0) *
 		   (float)audio_format.sample_rate);
 
-	total_time = ModPlug_GetLength(f) / 1000;
-
 	decoder_initialized(decoder, &audio_format,
-			    is->seekable, total_time);
+			    is->seekable, ModPlug_GetLength(f) / 1000.0);
 
 	total_time = 0;
 
