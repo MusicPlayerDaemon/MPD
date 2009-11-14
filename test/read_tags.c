@@ -93,7 +93,7 @@ decoder_read(G_GNUC_UNUSED struct decoder *decoder,
 	     struct input_stream *is,
 	     void *buffer, size_t length)
 {
-	return input_stream_read(is, buffer, length);
+	return input_stream_read(is, buffer, length, NULL);
 }
 
 enum decoder_command

@@ -115,9 +115,18 @@ pls_open_stream(struct input_stream *is)
 	GString *kf_data = g_string_new("");
 
 	do {
-		nbytes = input_stream_read(is, buffer, sizeof(buffer));
-		if(nbytes ==0)
+		nbytes = input_stream_read(is, buffer, sizeof(buffer), &error);
+		if (nbytes == 0) {
+			if (error != NULL) {
+				g_string_free(kf_data, TRUE);
+				g_warning("%s", error->message);
+				g_error_free(error);
+				return NULL;
+			}
+
 			break;
+		}
+
 		kf_data = g_string_append_len(kf_data, buffer,nbytes);
 		/* Limit to 64k */
 	} while(kf_data->len < 65536);

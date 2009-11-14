@@ -165,7 +165,7 @@ mp3_data_init(struct mp3_data *data, struct decoder *decoder,
 
 static bool mp3_seek(struct mp3_data *data, long offset)
 {
-	if (!input_stream_seek(data->input_stream, offset, SEEK_SET))
+	if (!input_stream_seek(data->input_stream, offset, SEEK_SET, NULL))
 		return false;
 
 	mad_stream_buffer(&data->stream, data->input_buffer, 0);
@@ -920,7 +920,7 @@ static int mp3_total_file_time(const char *file)
 	struct mp3_data data;
 	int ret;
 
-	if (!input_stream_open(&input_stream, file))
+	if (!input_stream_open(&input_stream, file, NULL))
 		return -1;
 	mp3_data_init(&data, NULL, &input_stream);
 	if (!mp3_decode_first_frame(&data, NULL, NULL))

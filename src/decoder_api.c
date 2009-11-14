@@ -154,6 +154,7 @@ size_t decoder_read(struct decoder *decoder,
 {
 	const struct decoder_control *dc =
 		decoder != NULL ? decoder->dc : NULL;
+	GError *error = NULL;
 	size_t nbytes;
 
 	assert(decoder == NULL ||
@@ -176,7 +177,14 @@ size_t decoder_read(struct decoder *decoder,
 		    dc->command != DECODE_COMMAND_NONE)
 			return 0;
 
-		nbytes = input_stream_read(is, buffer, length);
+		nbytes = input_stream_read(is, buffer, length, &error);
+
+		if (G_UNLIKELY(nbytes == 0 && error != NULL)) {
+			g_warning("%s", error->message);
+			g_error_free(error);
+			return 0;
+		}
+
 		if (nbytes > 0 || input_stream_eof(is))
 			return nbytes;
 

@@ -63,8 +63,16 @@ static bool
 decoder_input_stream_open(struct decoder_control *dc,
 			  struct input_stream *is, const char *uri)
 {
-	if (!input_stream_open(is, uri))
+	GError *error = NULL;
+
+	if (!input_stream_open(is, uri, &error)) {
+		if (error != NULL) {
+			g_warning("%s", error->message);
+			g_error_free(error);
+		}
+
 		return false;
+	}
 
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
@@ -73,9 +81,11 @@ decoder_input_stream_open(struct decoder_control *dc,
 	       decoder_lock_get_command(dc) != DECODE_COMMAND_STOP) {
 		int ret;
 
-		ret = input_stream_buffer(is);
+		ret = input_stream_buffer(is, &error);
 		if (ret < 0) {
 			input_stream_close(is);
+			g_warning("%s", error->message);
+			g_error_free(error);
 			return false;
 		}
 	}
@@ -103,7 +113,7 @@ decoder_stream_decode(const struct decoder_plugin *plugin,
 	decoder_unlock(decoder->dc);
 
 	/* rewind the stream, so each plugin gets a fresh start */
-	input_stream_seek(input_stream, 0, SEEK_SET);
+	input_stream_seek(input_stream, 0, SEEK_SET, NULL);
 
 	decoder_plugin_stream_decode(plugin, decoder, input_stream);
 

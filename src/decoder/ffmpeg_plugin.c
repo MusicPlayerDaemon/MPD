@@ -101,7 +101,7 @@ static int64_t mpd_ffmpeg_seek(URLContext *h, int64_t pos, int whence)
 	if (whence == AVSEEK_SIZE)
 		return stream->input->size;
 
-	ret = input_stream_seek(stream->input, pos, whence);
+	ret = input_stream_seek(stream->input, pos, whence, NULL);
 	if (!ret)
 		return -1;
 
@@ -434,7 +434,7 @@ static struct tag *ffmpeg_tag(const char *file)
 	struct ffmpeg_context ctx;
 	bool ret;
 
-	if (!input_stream_open(&input, file)) {
+	if (!input_stream_open(&input, file, NULL)) {
 		g_warning("failed to open %s\n", file);
 		return NULL;
 	}

@@ -45,6 +45,7 @@ my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
 static int
 dump_input_stream(struct input_stream *is)
 {
+	GError *error = NULL;
 	char buffer[4096];
 	size_t num_read;
 	ssize_t num_written;
@@ -52,10 +53,13 @@ dump_input_stream(struct input_stream *is)
 	/* wait until the stream becomes ready */
 
 	while (!is->ready) {
-		int ret = input_stream_buffer(is);
-		if (ret < 0)
+		int ret = input_stream_buffer(is, &error);
+		if (ret < 0) {
 			/* error */
+			g_warning("%s", error->message);
+			g_error_free(error);
 			return 2;
+		}
 
 		if (ret == 0)
 			/* nothing was buffered - wait */
@@ -77,9 +81,16 @@ dump_input_stream(struct input_stream *is)
 			tag_free(tag);
 		}
 
-		num_read = input_stream_read(is, buffer, sizeof(buffer));
-		if (num_read == 0)
+		num_read = input_stream_read(is, buffer, sizeof(buffer),
+					     &error);
+		if (num_read == 0) {
+			if (error != NULL) {
+				g_warning("%s", error->message);
+				g_error_free(error);
+			}
+
 			break;
+		}
 
 		num_written = write(1, buffer, num_read);
 		if (num_written <= 0)
@@ -122,11 +133,15 @@ int main(int argc, char **argv)
 
 	/* open the stream and dump it */
 
-	if (input_stream_open(&is, argv[1])) {
+	if (input_stream_open(&is, argv[1], &error)) {
 		ret = dump_input_stream(&is);
 		input_stream_close(&is);
 	} else {
-		g_printerr("input_stream_open() failed\n");
+		if (error != NULL) {
+			g_warning("%s", error->message);
+			g_error_free(error);
+		} else
+			g_printerr("input_stream_open() failed\n");
 		ret = 2;
 	}
 

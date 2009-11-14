@@ -40,7 +40,7 @@ sndfile_vio_seek(sf_count_t offset, int whence, void *user_data)
 	struct input_stream *is = user_data;
 	bool success;
 
-	success = input_stream_seek(is, offset, whence);
+	success = input_stream_seek(is, offset, whence, NULL);
 	if (!success)
 		return -1;
 
@@ -51,11 +51,15 @@ static sf_count_t
 sndfile_vio_read(void *ptr, sf_count_t count, void *user_data)
 {
 	struct input_stream *is = user_data;
+	GError *error = NULL;
 	size_t nbytes;
 
-	nbytes = input_stream_read(is, ptr, count);
-	if (nbytes == 0 && is->error != 0)
+	nbytes = input_stream_read(is, ptr, count, &error);
+	if (nbytes == 0 && error != NULL) {
+		g_warning("%s", error->message);
+		g_error_free(error);
 		return -1;
+	}
 
 	return nbytes;
 }

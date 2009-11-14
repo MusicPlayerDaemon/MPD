@@ -44,6 +44,12 @@ typedef struct {
 
 static const struct input_plugin iso_inputplugin;
 
+static inline GQuark
+iso9660_quark(void)
+{
+	return g_quark_from_static_string("iso9660");
+}
+
 /* archive open && listing routine */
 
 static void
@@ -141,7 +147,7 @@ iso_close(struct archive_file *file)
 
 static bool
 iso_open_stream(struct archive_file *file, struct input_stream *is,
-		const char *pathname)
+		const char *pathname, GError **error_r)
 {
 	iso_context *context = (iso_context *) file;
 	//setup file ops
@@ -154,7 +160,8 @@ iso_open_stream(struct archive_file *file, struct input_stream *is,
 	context->statbuf = iso9660_ifs_stat_translate (context->iso, pathname);
 
 	if (context->statbuf == NULL) {
-		g_warning("file %s not found in iso\n", pathname);
+		g_set_error(error_r, iso9660_quark(), 0,
+			    "not found in the ISO file: %s", pathname);
 		return false;
 	}
 	context->cur_ofs = 0;
@@ -173,7 +180,7 @@ iso_is_close(struct input_stream *is)
 
 
 static size_t
-iso_is_read(struct input_stream *is, void *ptr, size_t size)
+iso_is_read(struct input_stream *is, void *ptr, size_t size, GError **error_r)
 {
 	iso_context *context = (iso_context *) is->data;
 	int toread, readed = 0;
@@ -197,9 +204,10 @@ iso_is_read(struct input_stream *is, void *ptr, size_t size)
 			context->statbuf->lsn + cur_block, no_blocks);
 
 		if (readed != no_blocks * ISO_BLOCKSIZE) {
-			g_warning("error reading ISO file at lsn %lu\n",
-				(long unsigned int) cur_block );
-			return -1;
+			g_set_error(error_r, iso9660_quark(), 0,
+				    "error reading ISO file at lsn %lu",
+				    (long unsigned int) cur_block);
+			return 0;
 		}
 		if (left_bytes < size) {
 			readed = left_bytes;

@@ -65,6 +65,7 @@ playlist_load_into_queue(struct playlist_provider *source,
 static enum playlist_result
 playlist_open_remote_into_queue(const char *uri, struct playlist *dest)
 {
+	GError *error = NULL;
 	struct playlist_provider *playlist;
 	bool stream = false;
 	struct input_stream is;
@@ -74,9 +75,16 @@ playlist_open_remote_into_queue(const char *uri, struct playlist *dest)
 
 	playlist = playlist_list_open_uri(uri);
 	if (playlist == NULL) {
-		stream = input_stream_open(&is, uri);
-		if (!stream)
+		stream = input_stream_open(&is, uri, &error);
+		if (!stream) {
+			if (error != NULL) {
+				g_warning("Failed to open %s: %s",
+					  uri, error->message);
+				g_error_free(error);
+			}
+
 			return PLAYLIST_RESULT_NO_SUCH_LIST;
+		}
 
 		playlist = playlist_list_open_stream(&is, uri);
 		if (playlist == NULL) {

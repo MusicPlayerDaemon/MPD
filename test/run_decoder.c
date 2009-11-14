@@ -114,7 +114,7 @@ decoder_read(G_GNUC_UNUSED struct decoder *decoder,
 	     struct input_stream *is,
 	     void *buffer, size_t length)
 {
-	return input_stream_read(is, buffer, length);
+	return input_stream_read(is, buffer, length, NULL);
 }
 
 enum decoder_command
@@ -175,9 +175,16 @@ int main(int argc, char **argv)
 	} else if (decoder.plugin->stream_decode != NULL) {
 		struct input_stream is;
 
-		ret = input_stream_open(&is, decoder.uri);
-		if (!ret)
+		ret = input_stream_open(&is, decoder.uri, &error);
+		if (!ret) {
+			if (error != NULL) {
+				g_warning("%s", error->message);
+				g_error_free(error);
+			} else
+				g_printerr("input_stream_open() failed\n");
+
 			return 1;
+		}
 
 		decoder_plugin_stream_decode(decoder.plugin, &decoder, &is);
 

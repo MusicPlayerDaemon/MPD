@@ -20,6 +20,8 @@
 #ifndef MPD_ARCHIVE_PLUGIN_H
 #define MPD_ARCHIVE_PLUGIN_H
 
+#include <glib.h>
+
 #include <stdbool.h>
 
 struct input_stream;
@@ -69,9 +71,11 @@ struct archive_plugin {
 	 * the archive file and will automatically close it.
 	 *
 	 * @param path the path within the archive
+	 * @param error_r location to store the error occuring, or
+	 * NULL to ignore errors
 	 */
 	bool (*open_stream)(struct archive_file *, struct input_stream *is,
-			    const char *path);
+			    const char *path, GError **error_r);
 
 	/**
 	 * closes archive file.

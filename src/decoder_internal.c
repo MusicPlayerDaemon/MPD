@@ -37,10 +37,16 @@
 static bool
 decoder_input_buffer(struct decoder_control *dc, struct input_stream *is)
 {
+	GError *error = NULL;
 	int ret;
 
 	decoder_unlock(dc);
-	ret = input_stream_buffer(is);
+	ret = input_stream_buffer(is, &error);
+	if (ret < 0) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+	}
+
 	decoder_lock(dc);
 
 	return ret > 0;

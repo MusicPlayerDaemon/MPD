@@ -25,20 +25,32 @@
 #include <glib.h>
 #include <assert.h>
 
-bool
-input_stream_open(struct input_stream *is, const char *url)
+static inline GQuark
+input_quark(void)
 {
+	return g_quark_from_static_string("input");
+}
+
+bool
+input_stream_open(struct input_stream *is, const char *url, GError **error_r)
+{
+	GError *error = NULL;
+
+	assert(error_r == NULL || *error_r == NULL);
+
 	is->seekable = false;
 	is->ready = false;
 	is->offset = 0;
 	is->size = -1;
-	is->error = 0;
 	is->mime = NULL;
 
 	for (unsigned i = 0; input_plugins[i] != NULL; ++i) {
 		const struct input_plugin *plugin = input_plugins[i];
 
-		if (input_plugins_enabled[i] && plugin->open(is, url)) {
+		if (!input_plugins_enabled[i])
+			continue;
+
+		if (plugin->open(is, url, &error)) {
 			assert(is->plugin != NULL);
 			assert(is->plugin->close != NULL);
 			assert(is->plugin->read != NULL);
@@ -46,19 +58,24 @@ input_stream_open(struct input_stream *is, const char *url)
 			assert(!is->seekable || is->plugin->seek != NULL);
 
 			return true;
+		} else if (error != NULL) {
+			g_propagate_error(error_r, error);
+			return false;
 		}
 	}
 
+	g_set_error(error_r, input_quark(), 0, "Unrecognized URI");
 	return false;
 }
 
 bool
-input_stream_seek(struct input_stream *is, goffset offset, int whence)
+input_stream_seek(struct input_stream *is, goffset offset, int whence,
+		  GError **error_r)
 {
 	if (is->plugin->seek == NULL)
 		return false;
 
-	return is->plugin->seek(is, offset, whence);
+	return is->plugin->seek(is, offset, whence, error_r);
 }
 
 struct tag *
@@ -72,12 +89,13 @@ input_stream_tag(struct input_stream *is)
 }
 
 size_t
-input_stream_read(struct input_stream *is, void *ptr, size_t size)
+input_stream_read(struct input_stream *is, void *ptr, size_t size,
+		  GError **error_r)
 {
 	assert(ptr != NULL);
 	assert(size > 0);
 
-	return is->plugin->read(is, ptr, size);
+	return is->plugin->read(is, ptr, size, error_r);
 }
 
 void input_stream_close(struct input_stream *is)
@@ -92,10 +110,11 @@ bool input_stream_eof(struct input_stream *is)
 	return is->plugin->eof(is);
 }
 
-int input_stream_buffer(struct input_stream *is)
+int
+input_stream_buffer(struct input_stream *is, GError **error_r)
 {
 	if (is->plugin->buffer == NULL)
 		return 0;
 
-	return is->plugin->buffer(is);
+	return is->plugin->buffer(is, error_r);
 }

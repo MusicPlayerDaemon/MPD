@@ -36,8 +36,14 @@ struct input_mms {
 	bool eof;
 };
 
+static inline GQuark
+mms_quark(void)
+{
+	return g_quark_from_static_string("mms");
+}
+
 static bool
-input_mms_open(struct input_stream *is, const char *url)
+input_mms_open(struct input_stream *is, const char *url, GError **error_r)
 {
 	struct input_mms *m;
 
@@ -50,7 +56,7 @@ input_mms_open(struct input_stream *is, const char *url)
 	m = g_new(struct input_mms, 1);
 	m->mms = mmsx_connect(NULL, NULL, url, 128 * 1024);
 	if (m->mms == NULL) {
-		g_warning("mmsx_connect() failed");
+		g_set_error(error_r, mms_quark(), 0, "mmsx_connect() failed");
 		return false;
 	}
 
@@ -65,7 +71,8 @@ input_mms_open(struct input_stream *is, const char *url)
 }
 
 static size_t
-input_mms_read(struct input_stream *is, void *ptr, size_t size)
+input_mms_read(struct input_stream *is, void *ptr, size_t size,
+	       GError **error_r)
 {
 	struct input_mms *m = is->data;
 	int ret;
@@ -73,8 +80,9 @@ input_mms_read(struct input_stream *is, void *ptr, size_t size)
 	ret = mmsx_read(NULL, m->mms, ptr, size);
 	if (ret <= 0) {
 		if (ret < 0) {
-			is->error = errno;
-			g_warning("mmsx_read() failed: %s", g_strerror(errno));
+			g_set_error(error_r, mms_quark(), errno,
+				    "mmsx_read() failed: %s",
+				    g_strerror(errno));
 		}
 
 		m->eof = true;
@@ -104,14 +112,16 @@ input_mms_eof(struct input_stream *is)
 }
 
 static int
-input_mms_buffer(G_GNUC_UNUSED struct input_stream *is)
+input_mms_buffer(G_GNUC_UNUSED struct input_stream *is,
+		 G_GNUC_UNUSED GError **error_r)
 {
 	return 0;
 }
 
 static bool
 input_mms_seek(G_GNUC_UNUSED struct input_stream *is,
-	       G_GNUC_UNUSED goffset offset, G_GNUC_UNUSED int whence)
+	       G_GNUC_UNUSED goffset offset, G_GNUC_UNUSED int whence,
+	       G_GNUC_UNUSED GError **error_r)
 {
 	return false;
 }

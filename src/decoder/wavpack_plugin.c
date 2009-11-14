@@ -417,13 +417,13 @@ wavpack_input_get_pos(void *id)
 static int
 wavpack_input_set_pos_abs(void *id, uint32_t pos)
 {
-	return input_stream_seek(wpin(id)->is, pos, SEEK_SET) ? 0 : -1;
+	return input_stream_seek(wpin(id)->is, pos, SEEK_SET, NULL) ? 0 : -1;
 }
 
 static int
 wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 {
-	return input_stream_seek(wpin(id)->is, delta, mode) ? 0 : -1;
+	return input_stream_seek(wpin(id)->is, delta, mode, NULL) ? 0 : -1;
 }
 
 static int
@@ -494,7 +494,7 @@ wavpack_open_wvc(struct decoder *decoder, struct input_stream *is_wvc,
 	wvc_url = g_strconcat(utf8url, "c", NULL);
 	g_free(utf8url);
 
-	ret = input_stream_open(is_wvc, wvc_url);
+	ret = input_stream_open(is_wvc, wvc_url, NULL);
 	g_free(wvc_url);
 
 	if (!ret) {

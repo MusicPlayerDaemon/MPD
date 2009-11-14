@@ -80,7 +80,7 @@ static int ogg_seek_cb(void *vdata, ogg_int64_t offset, int whence)
 
 	return data->seekable &&
 		decoder_get_command(data->decoder) != DECODE_COMMAND_STOP &&
-		input_stream_seek(data->input_stream, offset, whence)
+		input_stream_seek(data->input_stream, offset, whence, NULL)
 		? 0 : -1;
 }
 
@@ -286,7 +286,7 @@ vorbis_stream_decode(struct decoder *decoder,
 
 	/* rewind the stream, because ogg_stream_type_detect() has
 	   moved it */
-	input_stream_seek(input_stream, 0, SEEK_SET);
+	input_stream_seek(input_stream, 0, SEEK_SET, NULL);
 
 	data.decoder = decoder;
 	data.input_stream = input_stream;

@@ -48,14 +48,17 @@ struct input_plugin {
 	 */
 	void (*finish)(void);
 
-	bool (*open)(struct input_stream *is, const char *url);
+	bool (*open)(struct input_stream *is, const char *url,
+		     GError **error_r);
 	void (*close)(struct input_stream *is);
 
 	struct tag *(*tag)(struct input_stream *is);
-	int (*buffer)(struct input_stream *is);
-	size_t (*read)(struct input_stream *is, void *ptr, size_t size);
+	int (*buffer)(struct input_stream *is, GError **error_r);
+	size_t (*read)(struct input_stream *is, void *ptr, size_t size,
+		       GError **error_r);
 	bool (*eof)(struct input_stream *is);
-	bool (*seek)(struct input_stream *is, goffset offset, int whence);
+	bool (*seek)(struct input_stream *is, goffset offset, int whence,
+		     GError **error_r);
 };
 
 #endif

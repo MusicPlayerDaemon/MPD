@@ -40,6 +40,12 @@ struct zzip_archive {
 
 static const struct input_plugin zzip_input_plugin;
 
+static inline GQuark
+zzip_quark(void)
+{
+	return g_quark_from_static_string("zzip");
+}
+
 /* archive open && listing routine */
 
 static struct archive_file *
@@ -108,7 +114,7 @@ zzip_archive_close(struct archive_file *file)
 
 static bool
 zzip_archive_open_stream(struct archive_file *file, struct input_stream *is,
-			 const char *pathname)
+			 const char *pathname, GError **error_r)
 {
 	struct zzip_archive *context = (struct zzip_archive *) file;
 	ZZIP_STAT z_stat;
@@ -122,7 +128,8 @@ zzip_archive_open_stream(struct archive_file *file, struct input_stream *is,
 
 	context->file = zzip_file_open(context->dir, pathname, 0);
 	if (!context->file) {
-		g_warning("file %s not found in the zipfile\n", pathname);
+		g_set_error(error_r, zzip_quark(), 0,
+			    "not found in the ZIP file: %s", pathname);
 		return false;
 	}
 	zzip_file_stat(context->file, &z_stat);
@@ -140,13 +147,15 @@ zzip_input_close(struct input_stream *is)
 }
 
 static size_t
-zzip_input_read(struct input_stream *is, void *ptr, size_t size)
+zzip_input_read(struct input_stream *is, void *ptr, size_t size,
+		GError **error_r)
 {
 	struct zzip_archive *context = (struct zzip_archive *) is->data;
 	int ret;
 	ret = zzip_file_read(context->file, ptr, size);
 	if (ret < 0) {
-		g_warning("error %d reading zipfile\n", ret);
+		g_set_error(error_r, zzip_quark(), ret,
+			    "zzip_file_read() has failed");
 		return 0;
 	}
 	return ret;
@@ -160,12 +169,14 @@ zzip_input_eof(struct input_stream *is)
 }
 
 static bool
-zzip_input_seek(G_GNUC_UNUSED struct input_stream *is,
-		G_GNUC_UNUSED goffset offset, G_GNUC_UNUSED int whence)
+zzip_input_seek(struct input_stream *is,
+		goffset offset, int whence, GError **error_r)
 {
 	struct zzip_archive *context = (struct zzip_archive *) is->data;
 	zzip_off_t ofs = zzip_seek(context->file, offset, whence);
 	if (ofs != -1) {
+		g_set_error(error_r, zzip_quark(), ofs,
+			    "zzip_seek() has failed");
 		is->offset = ofs;
 		return true;
 	}

@@ -159,7 +159,7 @@ playlist_list_open_stream_mime(struct input_stream *is)
 		    string_array_contains(plugin->mime_types, is->mime)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
-			input_stream_seek(is, 0, SEEK_SET);
+			input_stream_seek(is, 0, SEEK_SET, NULL);
 
 			playlist = playlist_plugin_open_stream(plugin, is);
 			if (playlist != NULL)
@@ -185,7 +185,7 @@ playlist_list_open_stream_suffix(struct input_stream *is, const char *suffix)
 		    string_array_contains(plugin->suffixes, suffix)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
-			input_stream_seek(is, 0, SEEK_SET);
+			input_stream_seek(is, 0, SEEK_SET, NULL);
 
 			playlist = playlist_plugin_open_stream(plugin, is);
 			if (playlist != NULL)
@@ -237,15 +237,24 @@ playlist_suffix_supported(const char *suffix)
 struct playlist_provider *
 playlist_list_open_path(struct input_stream *is, const char *path_fs)
 {
+	GError *error = NULL;
 	const char *suffix;
 	struct playlist_provider *playlist;
 
 	assert(path_fs != NULL);
 
 	suffix = uri_get_suffix(path_fs);
-	if (suffix == NULL || !playlist_suffix_supported(suffix) ||
-	    !input_stream_open(is, path_fs))
+	if (suffix == NULL || !playlist_suffix_supported(suffix))
 		return NULL;
+
+	if (!input_stream_open(is, path_fs, &error)) {
+		if (error != NULL) {
+			g_warning("%s", error->message);
+			g_error_free(error);
+		}
+
+		return NULL;
+	}
 
 	playlist = playlist_list_open_stream_suffix(is, suffix);
 	if (playlist == NULL)

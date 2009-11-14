@@ -233,9 +233,17 @@ asx_open_stream(struct input_stream *is)
 					     &parser, asx_parser_destroy);
 
 	while (true) {
-		nbytes = input_stream_read(is, buffer, sizeof(buffer));
-		if (nbytes == 0)
+		nbytes = input_stream_read(is, buffer, sizeof(buffer), &error);
+		if (nbytes == 0) {
+			if (error != NULL) {
+				g_markup_parse_context_free(context);
+				g_warning("%s", error->message);
+				g_error_free(error);
+				return NULL;
+			}
+
 			break;
+		}
 
 		success = g_markup_parse_context_parse(context, buffer, nbytes,
 						       &error);

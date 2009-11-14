@@ -51,11 +51,19 @@ typedef struct {
 
 static const struct input_plugin bz2_inputplugin;
 
+static inline GQuark
+bz2_quark(void)
+{
+	return g_quark_from_static_string("bz2");
+}
+
 /* single archive handling allocation helpers */
 
 static bool
-bz2_alloc(bz2_context *data)
+bz2_alloc(bz2_context *data, GError **error_r)
 {
+	int ret;
+
 	data->bzstream.bzalloc = NULL;
 	data->bzstream.bzfree  = NULL;
 	data->bzstream.opaque  = NULL;
@@ -64,9 +72,13 @@ bz2_alloc(bz2_context *data)
 	data->bzstream.next_in = (void *) data->buffer;
 	data->bzstream.avail_in = 0;
 
-	if (BZ2_bzDecompressInit(&data->bzstream, 0, 0) != BZ_OK) {
+	ret = BZ2_bzDecompressInit(&data->bzstream, 0, 0);
+	if (ret != BZ_OK) {
 		g_free(data->buffer);
 		g_free(data);
+
+		g_set_error(error_r, bz2_quark(), ret,
+			    "BZ2_bzDecompressInit() has failed");
 		return false;
 	}
 
@@ -92,7 +104,7 @@ bz2_open(char *pathname)
 	context = g_malloc(sizeof(*context));
 
 	//open archive
-	if (!input_stream_open(&context->istream, pathname)) {
+	if (!input_stream_open(&context->istream, pathname, NULL)) {
 		g_warning("failed to open an bzip2 archive %s\n",pathname);
 		g_free(context);
 		return NULL;
@@ -153,7 +165,7 @@ bz2_close(struct archive_file *file)
 
 static bool
 bz2_open_stream(struct archive_file *file, struct input_stream *is,
-		G_GNUC_UNUSED const char *path)
+		G_GNUC_UNUSED const char *path, GError **error_r)
 {
 	bz2_context *context = (bz2_context *) file;
 
@@ -163,10 +175,8 @@ bz2_open_stream(struct archive_file *file, struct input_stream *is,
 	is->data = context;
 	is->seekable = false;
 
-	if (!bz2_alloc(context)) {
-		g_warning("alloc bz2 failed\n");
+	if (!bz2_alloc(context, error_r))
 		return false;
-	}
 
 	context->eof = false;
 
@@ -184,7 +194,7 @@ bz2_is_close(struct input_stream *is)
 }
 
 static bool
-bz2_fillbuffer(bz2_context *context)
+bz2_fillbuffer(bz2_context *context, GError **error_r)
 {
 	size_t count;
 	bz_stream *bzstream;
@@ -195,7 +205,8 @@ bz2_fillbuffer(bz2_context *context)
 		return true;
 
 	count = input_stream_read(&context->istream,
-				  context->buffer, BZ_BUFSIZE);
+				  context->buffer, BZ_BUFSIZE,
+				  error_r);
 	if (count == 0)
 		return false;
 
@@ -205,7 +216,8 @@ bz2_fillbuffer(bz2_context *context)
 }
 
 static size_t
-bz2_is_read(struct input_stream *is, void *ptr, size_t length)
+bz2_is_read(struct input_stream *is, void *ptr, size_t length,
+	    GError **error_r)
 {
 	bz2_context *context = (bz2_context *) is->data;
 	bz_stream *bzstream;
@@ -220,10 +232,8 @@ bz2_is_read(struct input_stream *is, void *ptr, size_t length)
 	bzstream->avail_out = length;
 
 	do {
-		if (!bz2_fillbuffer(context)) {
-			is->error = -1;
+		if (!bz2_fillbuffer(context, error_r))
 			return 0;
-		}
 
 		bz_result = BZ2_bzDecompress(bzstream);
 
@@ -233,7 +243,8 @@ bz2_is_read(struct input_stream *is, void *ptr, size_t length)
 		}
 
 		if (bz_result != BZ_OK) {
-			is->error = bz_result;
+			g_set_error(error_r, bz2_quark(), bz_result,
+				    "BZ2_bzDecompress() has failed");
 			return 0;
 		}
 	} while (bzstream->avail_out == length);

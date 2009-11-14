@@ -47,10 +47,20 @@ static int audiofile_get_duration(const char *file)
 }
 
 static ssize_t
-audiofile_file_read(AFvirtualfile *vfile, void *data, size_t nbytes)
+audiofile_file_read(AFvirtualfile *vfile, void *data, size_t length)
 {
 	struct input_stream *is = (struct input_stream *) vfile->closure;
-	return input_stream_read(is, data, nbytes);
+	GError *error = NULL;
+	size_t nbytes;
+
+	nbytes = input_stream_read(is, data, length, &error);
+	if (nbytes == 0 && error != NULL) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return -1;
+	}
+
+	return nbytes;
 }
 
 static long
@@ -80,7 +90,7 @@ audiofile_file_seek(AFvirtualfile *vfile, long offset, int is_relative)
 {
 	struct input_stream *is = (struct input_stream *) vfile->closure;
 	int whence = (is_relative ? SEEK_CUR : SEEK_SET);
-	if (input_stream_seek(is, offset, whence)) {
+	if (input_stream_seek(is, offset, whence, NULL)) {
 		return is->offset;
 	} else {
 		return -1;

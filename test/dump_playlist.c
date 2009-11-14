@@ -88,17 +88,24 @@ int main(int argc, char **argv)
 	if (playlist == NULL) {
 		/* open the stream and wait until it becomes ready */
 
-		success = input_stream_open(&is, uri);
+		success = input_stream_open(&is, uri, &error);
 		if (!success) {
-			g_printerr("input_stream_open() failed\n");
+			if (error != NULL) {
+				g_warning("%s", error->message);
+				g_error_free(error);
+			} else
+				g_printerr("input_stream_open() failed\n");
 			return 2;
 		}
 
 		while (!is.ready) {
-			int ret = input_stream_buffer(&is);
-			if (ret < 0)
+			int ret = input_stream_buffer(&is, &error);
+			if (ret < 0) {
 				/* error */
+				g_warning("%s", error->message);
+				g_error_free(error);
 				return 2;
+			}
 
 			if (ret == 0)
 				/* nothing was buffered - wait */

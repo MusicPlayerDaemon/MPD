@@ -55,11 +55,6 @@ struct input_stream {
 	bool seekable;
 
 	/**
-	 * an optional errno error code, set to non-zero after an error occured
-	 */
-	int error;
-
-	/**
 	 * the size of the resource, or -1 if unknown
 	 */
 	goffset size;
@@ -83,7 +78,7 @@ struct input_stream {
  * @return true on success
  */
 bool
-input_stream_open(struct input_stream *is, const char *url);
+input_stream_open(struct input_stream *is, const char *url, GError **error_r);
 
 /**
  * Closes the input stream and free resources.  This does not free the
@@ -102,7 +97,8 @@ input_stream_close(struct input_stream *is);
  * @param whence the base of the seek, one of SEEK_SET, SEEK_CUR, SEEK_END
  */
 bool
-input_stream_seek(struct input_stream *is, goffset offset, int whence);
+input_stream_seek(struct input_stream *is, goffset offset, int whence,
+		  GError **error_r);
 
 /**
  * Returns true if the stream has reached end-of-file.
@@ -126,7 +122,7 @@ input_stream_tag(struct input_stream *is);
  * The semantics of this function are not well-defined, and it will
  * eventually be removed.
  */
-int input_stream_buffer(struct input_stream *is);
+int input_stream_buffer(struct input_stream *is, GError **error_r);
 
 /**
  * Reads data from the stream into the caller-supplied buffer.
@@ -138,6 +134,7 @@ int input_stream_buffer(struct input_stream *is);
  * @return the number of bytes read
  */
 size_t
-input_stream_read(struct input_stream *is, void *ptr, size_t size);
+input_stream_read(struct input_stream *is, void *ptr, size_t size,
+		  GError **error_r);
 
 #endif

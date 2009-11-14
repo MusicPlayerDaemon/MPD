@@ -66,7 +66,7 @@ static OggFLAC__SeekableStreamDecoderSeekStatus of_seek_cb(G_GNUC_UNUSED const
 {
 	struct flac_data *data = (struct flac_data *) fdata;
 
-	if (!input_stream_seek(data->input_stream, offset, SEEK_SET))
+	if (!input_stream_seek(data->input_stream, offset, SEEK_SET, NULL))
 		return OggFLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_ERROR;
 
 	return OggFLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_OK;
@@ -245,13 +245,21 @@ fail:
 static struct tag *
 oggflac_tag_dup(const char *file)
 {
+	GError *error = NULL;
 	struct input_stream input_stream;
 	OggFLAC__SeekableStreamDecoder *decoder;
 	struct flac_data data;
 	struct tag *tag;
 
-	if (!input_stream_open(&input_stream, file))
+	if (!input_stream_open(&input_stream, file, &error)) {
+		if (error != NULL) {
+			g_warning("%s", error->message);
+			g_error_free(error);
+		}
+
 		return NULL;
+	}
+
 	if (ogg_stream_type_detect(&input_stream) != FLAC) {
 		input_stream_close(&input_stream);
 		return NULL;
@@ -259,7 +267,7 @@ oggflac_tag_dup(const char *file)
 
 	/* rewind the stream, because ogg_stream_type_detect() has
 	   moved it */
-	input_stream_seek(&input_stream, 0, SEEK_SET);
+	input_stream_seek(&input_stream, 0, SEEK_SET, NULL);
 
 	flac_data_init(&data, NULL, &input_stream);
 
@@ -295,7 +303,7 @@ oggflac_decode(struct decoder * mpd_decoder, struct input_stream *input_stream)
 
 	/* rewind the stream, because ogg_stream_type_detect() has
 	   moved it */
-	input_stream_seek(input_stream, 0, SEEK_SET);
+	input_stream_seek(input_stream, 0, SEEK_SET, NULL);
 
 	flac_data_init(&data, mpd_decoder, input_stream);
 

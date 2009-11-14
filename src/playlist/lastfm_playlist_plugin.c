@@ -86,27 +86,41 @@ static char *
 lastfm_get(const char *url)
 {
 	struct input_stream input_stream;
+	GError *error = NULL;
 	bool success;
 	int ret;
 	char buffer[4096];
 	size_t length = 0, nbytes;
 
-	success = input_stream_open(&input_stream, url);
-	if (!success)
+	success = input_stream_open(&input_stream, url, &error);
+	if (!success) {
+		if (error != NULL) {
+			g_warning("%s", error->message);
+			g_error_free(error);
+		}
+
 		return NULL;
+	}
 
 	while (!input_stream.ready) {
-		ret = input_stream_buffer(&input_stream);
+		ret = input_stream_buffer(&input_stream, &error);
 		if (ret < 0) {
 			input_stream_close(&input_stream);
+			g_warning("%s", error->message);
+			g_error_free(error);
 			return NULL;
 		}
 	}
 
 	do {
 		nbytes = input_stream_read(&input_stream, buffer + length,
-					   sizeof(buffer) - length);
+					   sizeof(buffer) - length, &error);
 		if (nbytes == 0) {
+			if (error != NULL) {
+				g_warning("%s", error->message);
+				g_error_free(error);
+			}
+
 			if (input_stream_eof(&input_stream))
 				break;
 
@@ -152,6 +166,7 @@ static struct playlist_provider *
 lastfm_open_uri(const char *uri)
 {
 	struct lastfm_playlist *playlist;
+	GError *error = NULL;
 	char *p, *q, *response, *session;
 	bool success;
 
@@ -216,20 +231,27 @@ lastfm_open_uri(const char *uri)
 			NULL);
 	g_free(session);
 
-	success = input_stream_open(&playlist->is, p);
+	success = input_stream_open(&playlist->is, p, &error);
 	g_free(p);
 
 	if (!success) {
-		g_warning("Failed to load XSPF playlist");
+		if (error != NULL) {
+			g_warning("Failed to load XSPF playlist: %s",
+				  error->message);
+			g_error_free(error);
+		} else
+			g_warning("Failed to load XSPF playlist");
 		g_free(playlist);
 		return NULL;
 	}
 
 	while (!playlist->is.ready) {
-		int ret = input_stream_buffer(&playlist->is);
+		int ret = input_stream_buffer(&playlist->is, &error);
 		if (ret < 0) {
 			input_stream_close(&playlist->is);
 			g_free(playlist);
+			g_warning("%s", error->message);
+			g_error_free(error);
 			return NULL;
 		}
 

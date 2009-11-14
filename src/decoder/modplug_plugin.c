@@ -163,7 +163,7 @@ static struct tag *mod_tagdup(const char *file)
 	char *title;
 	struct input_stream is;
 
-	if (!input_stream_open(&is, file)) {
+	if (!input_stream_open(&is, file, NULL)) {
 		g_warning("cant open file %s\n", file);
 		return NULL;
 	}

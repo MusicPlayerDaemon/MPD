@@ -34,7 +34,8 @@
  * plugin and gzip fetches file from disk
  */
 static bool
-input_archive_open(struct input_stream *is, const char *pathname)
+input_archive_open(struct input_stream *is, const char *pathname,
+		   GError **error_r)
 {
 	const struct archive_plugin *arplug;
 	struct archive_file *file;
@@ -63,15 +64,15 @@ input_archive_open(struct input_stream *is, const char *pathname)
 	file = arplug->open(archive);
 
 	//setup fileops
-	opened = arplug->open_stream(file, is, filename);
+	opened = arplug->open_stream(file, is, filename, error_r);
+	g_free(pname);
 
 	if (!opened) {
-		g_warning("open inarchive file %s failed\n\n",filename);
 		arplug->close(file);
 	} else {
 		is->ready = true;
 	}
-	g_free(pname);
+
 	return opened;
 }
 
