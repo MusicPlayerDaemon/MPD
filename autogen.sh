@@ -9,7 +9,7 @@ srcdir="`dirname $0`"
 test -z "$srcdir" && srcdir=.
 cd "$srcdir"
 DIE=
-AM_VERSIONGREP="sed -e s/.*[^0-9\.]\([0-9]\.[0-9]\).*/\1/"
+AM_VERSIONGREP="sed -e s/.*[^0-9\.]\([0-9]\.[0-9]\+\).*/\1/"
 AC_VERSIONGREP="sed -e s/.*[^0-9\.]\([0-9]\.[0-9][0-9]\).*/\1/"
 VERSIONMKINT="sed -e s/[^0-9]//"
 if test -n "$AM_FORCE_VERSION"
