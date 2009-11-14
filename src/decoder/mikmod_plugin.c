@@ -126,33 +126,29 @@ static void mod_finishMikMod(void)
 	MikMod_Exit();
 }
 
-typedef struct _mod_Data {
-	MODULE *moduleHandle;
-	SBYTE audio_buffer[MIKMOD_FRAME_SIZE];
-} mod_Data;
-
 static void
 mod_decode(struct decoder *decoder, const char *path)
 {
 	char *path2;
-	mod_Data data;
+	MODULE *handle;
 	struct audio_format audio_format;
 	float total_time = 0.0;
 	int ret;
 	float secPerByte;
+	SBYTE buffer[MIKMOD_FRAME_SIZE];
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
 	path2 = g_strdup(path);
-	data.moduleHandle = Player_Load(path2, 128, 0);
+	handle = Player_Load(path2, 128, 0);
 	g_free(path2);
 
-	if (data.moduleHandle == NULL) {
+	if (handle == NULL) {
 		g_warning("failed to open mod: %s\n", path);
 		return;
 	}
 
 	/* Prevent module from looping forever */
-	data.moduleHandle->loop = 0;
+	handle->loop = 0;
 
 	audio_format_init(&audio_format, 44100, 16, 2);
 	assert(audio_format_valid(&audio_format));
@@ -163,17 +159,16 @@ mod_decode(struct decoder *decoder, const char *path)
 
 	decoder_initialized(decoder, &audio_format, false, 0);
 
-	Player_Start(data.moduleHandle);
+	Player_Start(handle);
 	while (cmd == DECODE_COMMAND_NONE && Player_Active()) {
-		ret = VC_WriteBytes(data.audio_buffer, MIKMOD_FRAME_SIZE);
+		ret = VC_WriteBytes(buffer, sizeof(buffer));
 		total_time += ret * secPerByte;
-		cmd = decoder_data(decoder, NULL,
-				   data.audio_buffer, ret,
+		cmd = decoder_data(decoder, NULL, buffer, ret,
 				   total_time, 0, NULL);
 	}
 
 	Player_Stop();
-	Player_Free(data.moduleHandle);
+	Player_Free(handle);
 }
 
 static struct tag *modTagDup(const char *file)
