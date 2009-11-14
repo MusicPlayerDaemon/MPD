@@ -101,6 +101,25 @@ setup_virtual_fops(struct input_stream *stream)
 	return vf;
 }
 
+static uint8_t
+audiofile_setup_sample_format(AFfilehandle af_fp)
+{
+	int fs, bits;
+
+	afGetSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
+	if (!audio_valid_sample_format(bits)) {
+		g_debug("input file has %d bit samples, converting to 16",
+			bits);
+		bits = 16;
+	}
+
+	afSetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK,
+	                         AF_SAMPFMT_TWOSCOMP, bits);
+	afGetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
+
+	return bits;
+}
+
 static void
 audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 {
@@ -129,16 +148,7 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 		return;
 	}
 
-	afGetSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
-	if (!audio_valid_sample_format(bits)) {
-		g_debug("input file has %d bit samples, converting to 16",
-			bits);
-		bits = 16;
-	}
-
-	afSetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK,
-	                         AF_SAMPFMT_TWOSCOMP, bits);
-	afGetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
+	bits = audiofile_setup_sample_format(af_fp);
 
 	if (!audio_format_init_checked(&audio_format,
 				       afGetRate(af_fp, AF_DEFAULT_TRACK),
