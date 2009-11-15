@@ -209,6 +209,21 @@ ffmpeg_helper(struct input_stream *input,
 	return ret;
 }
 
+/**
+ * On some platforms, libavcodec wants the output buffer aligned to 16
+ * bytes (because it uses SSE/Altivec internally).  This function
+ * returns the aligned version of the specified buffer, and corrects
+ * the buffer size.
+ */
+static void *
+align16(void *p, size_t *length_p)
+{
+	unsigned add = 16 - (size_t)p % 16;
+
+	*length_p -= add;
+	return (char *)p + add;
+}
+
 static enum decoder_command
 ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		   const AVPacket *packet,
@@ -217,7 +232,9 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 {
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 	int position;
-	uint8_t audio_buf[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2];
+	uint8_t audio_buf[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2 + 16];
+	int16_t *aligned_buffer;
+	size_t buffer_size;
 	int len, audio_size;
 	uint8_t *packet_data;
 	int packet_size;
@@ -225,11 +242,13 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 	packet_data = packet->data;
 	packet_size = packet->size;
 
+	buffer_size = sizeof(audio_buf);
+	aligned_buffer = align16(audio_buf, &buffer_size);
+
 	while ((packet_size > 0) && (cmd == DECODE_COMMAND_NONE)) {
-		audio_size = sizeof(audio_buf);
+		audio_size = buffer_size;
 		len = avcodec_decode_audio2(codec_context,
-					    (int16_t *)audio_buf,
-					    &audio_size,
+					    aligned_buffer, &audio_size,
 					    packet_data, packet_size);
 
 		if (len < 0) {
@@ -250,7 +269,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 			: 0;
 
 		cmd = decoder_data(decoder, is,
-				   audio_buf, audio_size,
+				   aligned_buffer, audio_size,
 				   position,
 				   codec_context->bit_rate / 1000, NULL);
 	}

@@ -6,6 +6,7 @@ ver 0.15.6 (2009/??/??)
   - zzip: require libzzip 0.13
 * decoders:
   - ffmpeg: convert metadata
+  - ffmpeg: align the output buffer
   - oggflac: rewind stream after FLAC detection
   - flac: fixed CUE seeking range check
 * output_thread: check again if output is open on PAUSE
