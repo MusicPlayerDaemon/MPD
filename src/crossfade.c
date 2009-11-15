@@ -40,9 +40,7 @@ unsigned cross_fade_calc(float duration, float total_time,
 		return 0;
 
 	assert(duration > 0);
-	assert(af->bits > 0);
-	assert(af->channels > 0);
-	assert(af->sample_rate > 0);
+	assert(audio_format_valid(af));
 
 	chunks = audio_format_time_to_size(af) / CHUNK_SIZE;
 	chunks = (chunks * duration + 0.5);
