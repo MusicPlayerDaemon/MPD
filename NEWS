@@ -4,6 +4,8 @@ ver 0.15.6 (2009/??/??)
   - input/mms: require libmms 0.4
 * archive:
   - zzip: require libzzip 0.13
+* tags:
+  - id3: allow 4 MB RIFF/AIFF tags
 * decoders:
   - ffmpeg: convert metadata
   - ffmpeg: align the output buffer

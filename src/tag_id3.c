@@ -481,7 +481,7 @@ tag_id3_riff_aiff_load(FILE *file)
 	if (size == 0)
 		return NULL;
 
-	if (size > 256 * 1024)
+	if (size > 4 * 1024 * 1024)
 		/* too large, don't allocate so much memory */
 		return NULL;
 
