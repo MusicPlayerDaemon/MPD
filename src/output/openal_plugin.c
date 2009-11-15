@@ -156,10 +156,10 @@ openal_open(void *data, struct audio_format *audio_format,
 	od->format = openal_audio_format(audio_format);
 
 	if (!od->format) {
+		struct audio_format_string s;
 		g_set_error(error, openal_output_quark(), 0,
-			    "Unsupported audio format (%i channels, %i bps)",
-			    audio_format->channels,
-			    audio_format->bits);
+			    "Unsupported audio format: %s",
+			    audio_format_to_string(audio_format, &s));
 		return false;
 	}
 
