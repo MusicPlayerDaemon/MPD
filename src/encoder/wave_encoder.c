@@ -20,17 +20,16 @@
 #include "config.h"
 #include "encoder_api.h"
 #include "encoder_plugin.h"
+#include "pcm_buffer.h"
 
 #include <assert.h>
 #include <string.h>
-
-#define MAX_BUFFER 32768
 
 struct wave_encoder {
 	struct encoder encoder;
 	unsigned bits;
 
-	uint8_t buffer[MAX_BUFFER];
+	struct pcm_buffer buffer;
 	size_t buffer_length;
 };
 
@@ -93,6 +92,7 @@ wave_encoder_init(G_GNUC_UNUSED const struct config_param *param,
 
 	encoder = g_new(struct wave_encoder, 1);
 	encoder_struct_init(&encoder->encoder, &wave_encoder_plugin);
+	pcm_buffer_init(&encoder->buffer);
 
 	return &encoder->encoder;
 }
@@ -102,6 +102,7 @@ wave_encoder_finish(struct encoder *_encoder)
 {
 	struct wave_encoder *encoder = (struct wave_encoder *)_encoder;
 
+	pcm_buffer_deinit(&encoder->buffer);
 	g_free(encoder);
 }
 
@@ -111,11 +112,14 @@ wave_encoder_open(struct encoder *_encoder,
 		  G_GNUC_UNUSED GError **error)
 {
 	struct wave_encoder *encoder = (struct wave_encoder *)_encoder;
+	void *buffer;
 
 	encoder->bits = audio_format->bits;
 
+	buffer = pcm_buffer_get(&encoder->buffer, sizeof(struct wave_header) );
+
 	/* create PCM wave header in initial buffer */
-	fill_wave_header((struct wave_header *) encoder->buffer, 
+	fill_wave_header((struct wave_header *) buffer, 
 			audio_format->channels,
 			audio_format->bits,
 			audio_format->sample_rate,
@@ -126,47 +130,43 @@ wave_encoder_open(struct encoder *_encoder,
 }
 
 static inline size_t
-pcm16_to_wave(void *dst, const void *src, size_t length)
+pcm16_to_wave(uint16_t *dst16, const uint16_t *src16, size_t length)
 {
-	uint32_t scnt;
-	const uint16_t *src16 = (const uint16_t *) src;
-	uint16_t *dst16 = (uint16_t *) dst;
-
-	for(scnt = length >> 1; scnt>0; scnt--){
+	size_t cnt = length >> 1;
+	while (cnt > 0) {
 		*dst16++ = GUINT16_TO_LE(*src16++);
+		cnt--;
 	}
 	return length;
 }
 
 static inline size_t
-pcm32_to_wave(void *dst, const void *src, size_t length)
+pcm32_to_wave(uint32_t *dst32, const uint32_t *src32, size_t length)
 {
-	uint32_t scnt;
-	const uint32_t *src32 = (const uint32_t *) src;
-	uint32_t *dst32 = (uint32_t *) dst;
-
-	for(scnt = length >> 2; scnt>0; scnt--){
+	size_t cnt = length >> 2;
+	while (cnt > 0){
 		*dst32++ = GUINT32_TO_LE(*src32++);
+		cnt--;
 	}
 	return length;
 }
 
 static inline size_t
-pcm24_to_wave(void *dst, const void *src, size_t length)
+pcm24_to_wave(uint8_t *dst8, const uint32_t *src32, size_t length)
 {
-	uint32_t scnt, value;
-	const uint32_t *src32 = (const uint32_t *) src;
-	uint8_t *dst8  = (uint8_t *) dst;
+	uint32_t value;
+	uint8_t *dst_old = dst8;
 
-	for(scnt = length >> 2; scnt>0; scnt--){
+	length = length >> 2;
+	while (length > 0){
 		value = *src32++;
 		*dst8++ = (value) & 0xFF;
 		*dst8++ = (value >> 8) & 0xFF;
 		*dst8++ = (value >> 16) & 0xFF;
+		length--;
 	}
 	//correct buffer length
-	length = dst8 - ((uint8_t *)dst);
-	return length;
+	return (dst8 - dst_old);
 }
 
 static bool
@@ -177,9 +177,7 @@ wave_encoder_write(struct encoder *_encoder,
 	struct wave_encoder *encoder = (struct wave_encoder *)_encoder;
 	void *dst;
 
-	assert(length + encoder->buffer_length < MAX_BUFFER);
-
-	dst = encoder->buffer + encoder->buffer_length;
+	dst = pcm_buffer_get(&encoder->buffer, encoder->buffer_length + length);
 
 #if (G_BYTE_ORDER == G_LITTLE_ENDIAN)
 	switch (encoder->bits) {
@@ -219,15 +217,15 @@ static size_t
 wave_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 {
 	struct wave_encoder *encoder = (struct wave_encoder *)_encoder;
+	uint8_t *buffer = pcm_buffer_get(&encoder->buffer, encoder->buffer_length );
 
 	if (length > encoder->buffer_length)
 		length = encoder->buffer_length;
 
-	memcpy(dest, encoder->buffer, length);
+	memcpy(dest, buffer, length);
 
 	encoder->buffer_length -= length;
-	memmove(encoder->buffer, encoder->buffer + length,
-		encoder->buffer_length);
+	memmove(buffer, buffer + length, encoder->buffer_length);
 
 	return length;
 }
