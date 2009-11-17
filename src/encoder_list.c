@@ -59,3 +59,13 @@ encoder_plugin_get(const char *name)
 
 	return NULL;
 }
+
+void
+encoder_plugin_print_all_types(FILE * fp)
+{
+	for (unsigned i = 0; encoder_plugins[i] != NULL; ++i)
+		fprintf(fp, "%s ", encoder_plugins[i]->name);
+
+	fprintf(fp, "\n");
+	fflush(fp);
+}

@@ -27,6 +27,10 @@
 #include "output_list.h"
 #include "ls.h"
 
+#ifdef ENABLE_ENCODER
+#include "encoder_list.h"
+#endif
+
 #ifdef ENABLE_ARCHIVE
 #include "archive_list.h"
 #endif
@@ -81,6 +85,13 @@ static void version(void)
 	puts("\n"
 	     "Supported outputs:\n");
 	audio_output_plugin_print_all_types(stdout);
+
+#ifdef ENABLE_ENCODER
+	puts("\n"
+	     "Supported encoders:\n");
+	encoder_plugin_print_all_types(stdout);
+#endif
+
 
 #ifdef ENABLE_ARCHIVE
 	puts("\n"

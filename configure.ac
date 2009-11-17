@@ -1173,6 +1173,10 @@ if test x$enable_httpd_output = xyes; then
 fi
 
 AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_encoder = xyes)
+if test x$enable_encoder = xyes; then
+	AC_DEFINE(ENABLE_ENCODER, 1,
+		[Define to enable the encoder plugins])
+fi
 
 AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_vorbis_encoder = xyes)
 if test x$enable_vorbis_encoder = xyes; then
