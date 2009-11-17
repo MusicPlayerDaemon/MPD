@@ -501,11 +501,13 @@ endif
 ENCODER_CFLAGS = \
 	$(LAME_CFLAGS) \
 	$(TWOLAME_CFLAGS) \
+	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
 	$(VORBISENC_CFLAGS)
 
 ENCODER_LIBS = \
 	$(LAME_LIBS) \
 	$(TWOLAME_LIBS) \
+	$(FLAC_LIBS) \
 	$(VORBISENC_LIBS)
 
 ENCODER_SRC =
@@ -528,6 +530,10 @@ endif
 
 if ENABLE_TWOLAME_ENCODER
 ENCODER_SRC += src/encoder/twolame_encoder.c
+endif
+
+if ENABLE_FLAC_ENCODER
+ENCODER_SRC += src/encoder/flac_encoder.c
 endif
 endif
 

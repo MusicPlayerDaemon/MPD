@@ -29,6 +29,8 @@ ver 0.16 (20??/??/??)
   - wavpack: allow more than 2 channels
 * encoders:
   - twolame: new encoder plugin based on libtwolame
+  - flac: new encoder plugin based on libFLAC
+  - wave: new encoder plugin for PCM WAV format
 * output:
   - recorder: new output plugin for recording radio streams
   - alsa: don't recover on CANCEL

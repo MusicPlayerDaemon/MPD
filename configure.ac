@@ -989,6 +989,8 @@ fi
 
 AM_CONDITIONAL(HAVE_FLAC, test x$enable_flac = xyes)
 
+enable_flac_encoder=$enable_flac
+
 if test x$enable_oggflac = xyes; then
 	oldmpdcflags="$MPD_CFLAGS"
 	oldmpdlibs="$MPD_LIBS"
@@ -1087,6 +1089,7 @@ else
 	enable_lame_encoder=no
 	enable_twolame_encoder=no
 	enable_wave_encoder=no
+	enable_flac_encoder=no
 fi
 
 MPD_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc],
@@ -1107,6 +1110,7 @@ MPD_AUTO_PKG(twolame_encoder, TWOLAME, [twolame],
 if test x$enable_vorbis_encoder != xno ||
 	test x$enable_lame_encoder != xno ||
 	test x$enable_twolame_encoder != xno ||
+	test x$enable_flac_encoder != xno ||
 	test x$enable_wave_encoder != xno; then
 	# at least one encoder plugin is enabled
 	enable_encoder=yes
@@ -1192,6 +1196,12 @@ AM_CONDITIONAL(ENABLE_WAVE_ENCODER, test x$enable_wave_encoder = xyes)
 if test x$enable_wave_encoder = xyes; then
 	AC_DEFINE(ENABLE_WAVE_ENCODER, 1,
 		[Define to enable the PCM wave encoder plugin])
+fi
+
+AM_CONDITIONAL(ENABLE_FLAC_ENCODER, test x$enable_flac_encoder = xyes)
+if test x$enable_flac_encoder = xyes; then
+	AC_DEFINE(ENABLE_FLAC_ENCODER, 1,
+		[Define to enable the FLAC encoder plugin])
 fi
 
 dnl
@@ -1442,6 +1452,12 @@ if
 			echo " TwoLAME mp3 encoder ...........enabled"
 		else
 			echo " TwoLAME mp3 encoder ...........disabled"
+		fi
+
+		if test x$enable_flac_encoder = xyes; then
+			echo " FLAC encoder ..................enabled"
+		else
+			echo " FLAC encoder ..................disabled"
 		fi
 
 		if test x$enable_wave_encoder = xyes; then
