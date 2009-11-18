@@ -11,6 +11,7 @@ ver 0.15.6 (2009/??/??)
   - ffmpeg: align the output buffer
   - oggflac: rewind stream after FLAC detection
   - flac: fixed CUE seeking range check
+  - flac: fixed NULL pointer dereference in CUE code
 * output_thread: check again if output is open on PAUSE
 * update: delete ignored symlinks from database
 * database: increased maximum line length to 32 kB

@@ -415,6 +415,8 @@ flac_vtrack_tnum(const char* fname)
 	 * another/better way would be to use tag struct
 	 */
 	char* ptr = strrchr(fname, '_');
+	if (ptr == NULL)
+		return 0;
 
 	// copy ascii tracknumber to int
 	char vtrack[4];
