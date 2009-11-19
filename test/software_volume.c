@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 	ssize_t nbytes;
 
 	if (argc > 2) {
-		g_printerr("Usage: software_voluem [FORMAT] <IN >OUT\n");
+		g_printerr("Usage: software_volume [FORMAT] <IN >OUT\n");
 		return 1;
 	}
 
@@ -54,8 +54,8 @@ int main(int argc, char **argv)
 				   error->message);
 			return 1;
 		}
-	}
-	audio_format_init(&audio_format, 48000, 16, 2);
+	} else
+		audio_format_init(&audio_format, 48000, 16, 2);
 
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
 		pcm_volume(buffer, nbytes, &audio_format, PCM_VOLUME_1 / 2);
