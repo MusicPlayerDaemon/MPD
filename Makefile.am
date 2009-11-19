@@ -741,6 +741,7 @@ noinst_PROGRAMS = \
 	test/run_filter \
 	test/run_output \
 	test/read_mixer \
+	test/run_convert \
 	test/software_volume
 
 test_read_conf_CPPFLAGS = $(AM_CPPFLAGS) \
@@ -865,6 +866,25 @@ test_software_volume_SOURCES = test/software_volume.c \
 	src/pcm_volume.c
 test_software_volume_LDADD = \
 	$(GLIB_LIBS)
+
+test_run_convert_SOURCES = test/run_convert.c \
+	src/audio_check.c \
+	src/audio_parser.c \
+	src/pcm_channels.c \
+	src/pcm_format.c \
+	src/pcm_dither.c \
+	src/pcm_byteswap.c \
+	src/pcm_resample.c \
+	src/pcm_resample_fallback.c \
+	src/pcm_convert.c
+test_run_convert_CPPFLAGS = $(AM_CPPFLAGS) $(SAMPLERATE_CFLAGS)
+test_run_convert_LDADD = \
+	$(SAMPLERATE_LIBS) \
+	$(GLIB_LIBS)
+
+if HAVE_LIBSAMPLERATE
+test_run_convert_SOURCES += src/pcm_resample_libsamplerate.c
+endif
 
 test_run_output_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ENCODER_CFLAGS) \

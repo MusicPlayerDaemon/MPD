@@ -44,6 +44,7 @@ doc/developer
 doc/sticker
 doc/api
 test/software_volume
+test/run_convert
 test/run_decoder
 test/read_tags
 test/run_filter
