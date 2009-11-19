@@ -58,7 +58,12 @@ int main(int argc, char **argv)
 		audio_format_init(&audio_format, 48000, 16, 2);
 
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
-		pcm_volume(buffer, nbytes, &audio_format, PCM_VOLUME_1 / 2);
+		if (!pcm_volume(buffer, nbytes, &audio_format,
+				PCM_VOLUME_1 / 2)) {
+			g_printerr("pcm_volume() has failed\n");
+			return 2;
+		}
+
 		write(1, buffer, nbytes);
 	}
 }
