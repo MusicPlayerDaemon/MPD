@@ -114,6 +114,29 @@ pcm_volume_change_24(int32_t *buffer, unsigned num_samples, int volume)
 	}
 }
 
+static void
+pcm_volume_change_32(int32_t *buffer, unsigned num_samples, int volume)
+{
+	while (num_samples > 0) {
+#ifdef __i386__
+		/* assembly version for i386 */
+		int32_t sample = *buffer;
+
+		*buffer++ = pcm_volume_sample_24(sample, volume, 0);
+#else
+		/* portable version */
+		int64_t sample = *buffer;
+
+		sample = (sample * volume + pcm_volume_dither() +
+			  PCM_VOLUME_1 / 2)
+			/ PCM_VOLUME_1;
+		*buffer++ = pcm_range_64(sample, 32);
+#endif
+
+		--num_samples;
+	}
+}
+
 bool
 pcm_volume(void *buffer, int length,
 	   const struct audio_format *format,
@@ -139,6 +162,11 @@ pcm_volume(void *buffer, int length,
 
 	case 24:
 		pcm_volume_change_24((int32_t*)buffer, length / 4,
+				     volume);
+		return true;
+
+	case 32:
+		pcm_volume_change_32((int32_t*)buffer, length / 4,
 				     volume);
 		return true;
 

@@ -38,4 +38,18 @@ pcm_range(int32_t sample, unsigned bits)
 	return sample;
 }
 
+/**
+ * Check if the value is within the range of the provided bit size,
+ * and caps it if necessary.
+ */
+static inline int64_t
+pcm_range_64(int64_t sample, unsigned bits)
+{
+	if (G_UNLIKELY(sample < ((int64_t)-1 << (bits - 1))))
+		return (int64_t)-1 << (bits - 1);
+	if (G_UNLIKELY(sample >= ((int64_t)1 << (bits - 1))))
+		return ((int64_t)1 << (bits - 1)) - 1;
+	return sample;
+}
+
 #endif
