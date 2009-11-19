@@ -419,9 +419,7 @@ flac_vtrack_tnum(const char* fname)
 		return 0;
 
 	// copy ascii tracknumber to int
-	char vtrack[4];
-	g_strlcpy(vtrack, ++ptr, 4);
-	return (unsigned int)strtol(vtrack, NULL, 10);
+	return (unsigned int)strtol(++ptr, NULL, 10);
 }
 
 #endif /* FLAC_API_VERSION_CURRENT >= 7 */
