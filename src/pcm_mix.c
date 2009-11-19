@@ -82,6 +82,23 @@ pcm_add_24(int32_t *buffer1, const int32_t *buffer2,
 }
 
 static void
+pcm_add_32(int32_t *buffer1, const int32_t *buffer2,
+	   unsigned num_samples, unsigned volume1, unsigned volume2)
+{
+	while (num_samples > 0) {
+		int64_t sample1 = *buffer1;
+		int64_t sample2 = *buffer2++;
+
+		sample1 = ((sample1 * volume1 + sample2 * volume2) +
+			   pcm_volume_dither() + PCM_VOLUME_1 / 2)
+			/ PCM_VOLUME_1;
+
+		*buffer1++ = pcm_range_64(sample1, 32);
+		--num_samples;
+	}
+}
+
+static void
 pcm_add(void *buffer1, const void *buffer2, size_t size,
 	int vol1, int vol2,
 	const struct audio_format *format)
@@ -99,6 +116,12 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 
 	case 24:
 		pcm_add_24((int32_t*)buffer1,
+			   (const int32_t*)buffer2,
+			   size / 4, vol1, vol2);
+		break;
+
+	case 32:
+		pcm_add_32((int32_t*)buffer1,
 			   (const int32_t*)buffer2,
 			   size / 4, vol1, vol2);
 		break;
