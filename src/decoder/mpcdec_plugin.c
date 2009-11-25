@@ -196,7 +196,7 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	mpc_demux_get_info(demux, &info);
 #endif
 
-	if (!audio_format_init_checked(&audio_format, info.sample_freq, 16,
+	if (!audio_format_init_checked(&audio_format, info.sample_freq, 24,
 				       info.channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
