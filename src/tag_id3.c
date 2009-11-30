@@ -90,7 +90,7 @@ static id3_utf8_t * processID3FieldString (int is_id3v1, const id3_ucs4_t *ucs4,
 
 		utf8 = (id3_utf8_t *)
 			g_convert_with_fallback((const char*)isostr, -1,
-						encoding, "utf-8",
+						"utf-8", encoding,
 						NULL, NULL, NULL, NULL);
 		if (utf8 == NULL) {
 			g_debug("Unable to convert %s string to UTF-8: '%s'",
