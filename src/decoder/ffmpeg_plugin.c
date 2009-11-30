@@ -289,10 +289,6 @@ ffmpeg_decode_internal(struct ffmpeg_context *ctx)
 
 	total_time = 0;
 
-	if (codec_context->channels > 2) {
-		codec_context->channels = 2;
-	}
-
 #if LIBAVCODEC_VERSION_INT >= ((51<<16)+(41<<8)+0)
 	audio_format.bits = (uint8_t) av_get_bits_per_sample_format(codec_context->sample_fmt);
 #else

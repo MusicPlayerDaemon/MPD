@@ -1,4 +1,6 @@
 ver 0.15.7 (2009/??/??)
+* decoders:
+  - ffmpeg: don't try to force stereo
 
 
 ver 0.15.6 (2009/11/18)
