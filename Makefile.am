@@ -706,6 +706,7 @@ FILTER_SRC = \
 	src/filter/chain_filter_plugin.c \
 	src/filter/convert_filter_plugin.c \
 	src/filter/route_filter_plugin.c \
+	src/filter/normalize_filter_plugin.c \
 	src/filter/volume_filter_plugin.c
 
 
@@ -843,6 +844,7 @@ test_run_filter_SOURCES = test/run_filter.c \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \
+	src/AudioCompress/compress.c \
 	$(FILTER_SRC)
 
 if HAVE_LIBSAMPLERATE
