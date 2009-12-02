@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "normalize.h"
-#include "compress.h"
+#include "AudioCompress/compress.h"
 #include "conf.h"
 #include "audio_format.h"
 
@@ -27,24 +27,27 @@
 
 int normalizationEnabled;
 
+static struct Compressor *compressor;
+
 void initNormalization(void)
 {
 	normalizationEnabled = config_get_bool(CONF_VOLUME_NORMALIZATION,
 					       DEFAULT_VOLUME_NORMALIZATION);
 
 	if (normalizationEnabled)
-		CompressCfg(0, ANTICLIP, TARGET, GAINMAX, GAINSMOOTH, BUCKETS);
+		compressor = Compressor_new(0);
 }
 
 void finishNormalization(void)
 {
-	if (normalizationEnabled) CompressFree();
+	if (normalizationEnabled)
+		Compressor_delete(compressor);
 }
 
-void normalizeData(char *buffer, int bufferSize,
+void normalizeData(void *buffer, int bufferSize,
 		   const struct audio_format *format)
 {
 	if ((format->bits != 16) || (format->channels != 2)) return;
 
-	CompressDo(buffer, bufferSize);
+	Compressor_Process_int16(compressor, buffer, bufferSize / 2);
 }

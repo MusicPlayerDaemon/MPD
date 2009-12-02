@@ -28,7 +28,7 @@ void initNormalization(void);
 
 void finishNormalization(void);
 
-void normalizeData(char *buffer, int bufferSize,
+void normalizeData(void *buffer, int bufferSize,
 		   const struct audio_format *format);
 
 #endif /* !NORMALIZE_H */

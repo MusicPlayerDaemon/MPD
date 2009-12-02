@@ -116,7 +116,7 @@ mpd_headers = \
 	src/mixer/pulse_mixer_plugin.h \
 	src/daemon.h \
 	src/normalize.h \
-	src/compress.h \
+	src/AudioCompress/compress.h \
 	src/buffer.h \
 	src/pipe.h \
 	src/chunk.h \
@@ -253,7 +253,7 @@ src_mpd_SOURCES = \
 	src/event_pipe.c \
 	src/daemon.c \
 	src/normalize.c \
-	src/compress.c \
+	src/AudioCompress/compress.c \
 	src/buffer.c \
 	src/pipe.c \
 	src/chunk.c \

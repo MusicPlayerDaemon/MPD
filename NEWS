@@ -62,6 +62,7 @@ ver 0.16 (20??/??/??)
   - support .mpdignore files in the music directory
   - sort songs by album name first, then disc/track number
   - rescan after metadata_to_use change
+* normalize: upgraded to AudioCompress 2.0
 * log unused/unknown block parameters
 * removed the deprecated "error_file" option
 * save state when stopped
