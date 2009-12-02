@@ -742,6 +742,7 @@ noinst_PROGRAMS = \
 	test/run_output \
 	test/read_mixer \
 	test/run_convert \
+	test/run_normalize \
 	test/software_volume
 
 test_read_conf_CPPFLAGS = $(AM_CPPFLAGS) \
@@ -865,6 +866,14 @@ test_software_volume_SOURCES = test/software_volume.c \
 	src/audio_parser.c \
 	src/pcm_volume.c
 test_software_volume_LDADD = \
+	$(GLIB_LIBS)
+
+test_run_normalize_SOURCES = test/run_normalize.c \
+	src/audio_check.c \
+	src/audio_parser.c \
+	src/AudioCompress/compress.c \
+	src/normalize.c
+test_run_normalize_LDADD = \
 	$(GLIB_LIBS)
 
 test_run_convert_SOURCES = test/run_convert.c \
