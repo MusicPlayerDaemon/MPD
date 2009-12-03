@@ -288,12 +288,10 @@ twolame_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 	return length;
 }
 
-static const char *twolame_encoder_mime_type = "audio/mpeg";
-
 static const char *
 twolame_encoder_get_mime_type(G_GNUC_UNUSED struct encoder *_encoder)
 {
-	return twolame_encoder_mime_type;
+	return "audio/mpeg";
 }
 
 const struct encoder_plugin twolame_encoder_plugin = {

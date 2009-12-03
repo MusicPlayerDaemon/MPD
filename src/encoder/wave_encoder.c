@@ -253,12 +253,10 @@ wave_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 	return length;
 }
 
-static const char *wave_encoder_mime_type = "audio/wav";
-
 static const char *
 wave_encoder_get_mime_type(G_GNUC_UNUSED struct encoder *_encoder)
 {
-	return wave_encoder_mime_type;
+	return "audio/wav";
 }
 
 const struct encoder_plugin wave_encoder_plugin = {
