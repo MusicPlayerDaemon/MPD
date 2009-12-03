@@ -44,6 +44,7 @@ struct flac_encoder {
 
 extern const struct encoder_plugin flac_encoder_plugin;
 
+
 static inline GQuark
 flac_encoder_quark(void)
 {
@@ -92,6 +93,8 @@ static bool
 flac_encoder_setup(struct flac_encoder *encoder, unsigned bits_per_sample,
 		   GError **error)
 {
+#if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
+#else
 	if ( !FLAC__stream_encoder_set_compression_level(encoder->fse,
 					encoder->compression)) {
 		g_set_error(error, flac_encoder_quark(), 0,
@@ -99,6 +102,7 @@ flac_encoder_setup(struct flac_encoder *encoder, unsigned bits_per_sample,
 			    encoder->compression);
 		return false;
 	}
+#endif
 	if ( !FLAC__stream_encoder_set_channels(encoder->fse,
 					encoder->audio_format.channels)) {
 		g_set_error(error, flac_encoder_quark(), 0,
@@ -107,7 +111,7 @@ flac_encoder_setup(struct flac_encoder *encoder, unsigned bits_per_sample,
 		return false;
 	}
 	if ( !FLAC__stream_encoder_set_bits_per_sample(encoder->fse,
-						       bits_per_sample)) {
+							bits_per_sample)) {
 		g_set_error(error, flac_encoder_quark(), 0,
 			    "error setting flac bit format to %d",
 			    bits_per_sample);
@@ -139,13 +143,23 @@ flac_write_callback(G_GNUC_UNUSED const FLAC__StreamEncoder *fse,
 	return FLAC__STREAM_ENCODER_WRITE_STATUS_OK;
 }
 
+static void
+flac_encoder_close(struct encoder *_encoder)
+{
+	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
+
+	FLAC__stream_encoder_delete(encoder->fse);
+
+	pcm_buffer_deinit(&encoder->buffer);
+	pcm_buffer_deinit(&encoder->expand_buffer);
+}
+
 static bool
 flac_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 		     GError **error)
 {
 	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
 	unsigned bits_per_sample;
-	FLAC__StreamEncoderInitStatus init_status;
 
 	encoder->audio_format = *audio_format;
 
@@ -187,38 +201,52 @@ flac_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 
 	/* this immediatelly outputs data throught callback */
 
-	init_status = FLAC__stream_encoder_init_stream(encoder->fse,
+#if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
+	{
+		FLAC__StreamEncoderState init_status;
+
+		FLAC__stream_encoder_set_write_callback(encoder->fse,
+					    flac_write_callback);
+
+		init_status = FLAC__stream_encoder_init(encoder->fse);
+
+		if (init_status != FLAC__STREAM_ENCODER_OK) {
+			g_set_error(error, flac_encoder_quark(), 0,
+			    "failed to initialize encoder: %s\n", 
+			    FLAC__StreamEncoderStateString[init_status]);
+			flac_encoder_close(_encoder);
+			return false;
+		}
+	}
+#else
+	{
+		FLAC__StreamEncoderInitStatus init_status;
+
+		init_status = FLAC__stream_encoder_init_stream(encoder->fse,
 			    flac_write_callback,
 			    NULL, NULL, NULL, encoder);
 
-	if(init_status != FLAC__STREAM_ENCODER_INIT_STATUS_OK) {
-		g_set_error(error, flac_encoder_quark(), 0,
+		if(init_status != FLAC__STREAM_ENCODER_INIT_STATUS_OK) {
+			g_set_error(error, flac_encoder_quark(), 0,
 			    "failed to initialize encoder: %s\n", 
 			    FLAC__StreamEncoderInitStatusString[init_status]);
-		FLAC__stream_encoder_delete(encoder->fse);
-		return false;
+			flac_encoder_close(_encoder);
+			return false;
+		}
 	}
+#endif
 
 	return true;
 }
 
-static void
-flac_encoder_close(struct encoder *_encoder)
-{
-	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
-
-	FLAC__stream_encoder_delete(encoder->fse);
-
-	pcm_buffer_deinit(&encoder->buffer);
-	pcm_buffer_deinit(&encoder->expand_buffer);
-}
 
 static bool
 flac_encoder_flush(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
 {
 	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
 
-	return FLAC__stream_encoder_finish(encoder->fse);
+	(void) FLAC__stream_encoder_finish(encoder->fse);
+	return true;
 }
 
 static inline void
@@ -314,3 +342,4 @@ const struct encoder_plugin flac_encoder_plugin = {
 	.write = flac_encoder_write,
 	.read = flac_encoder_read,
 };
+
