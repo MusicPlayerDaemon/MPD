@@ -120,7 +120,7 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 			   size / 4, vol1, vol2);
 		break;
 
-	case 32:
+	case SAMPLE_FORMAT_S32:
 		pcm_add_32((int32_t*)buffer1,
 			   (const int32_t*)buffer2,
 			   size / 4, vol1, vol2);
