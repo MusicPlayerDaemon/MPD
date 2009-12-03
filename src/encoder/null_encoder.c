@@ -20,16 +20,15 @@
 #include "config.h"
 #include "encoder_api.h"
 #include "encoder_plugin.h"
+#include "pcm_buffer.h"
 
 #include <assert.h>
 #include <string.h>
 
-#define MAX_BUFFER 32768
-
 struct null_encoder {
 	struct encoder encoder;
 
-	unsigned char buffer[MAX_BUFFER];
+	struct pcm_buffer buffer;
 	size_t buffer_length;
 };
 
@@ -61,6 +60,15 @@ null_encoder_finish(struct encoder *_encoder)
 	g_free(encoder);
 }
 
+static void
+null_encoder_close(struct encoder *_encoder)
+{
+	struct null_encoder *encoder = (struct null_encoder *)_encoder;
+
+	pcm_buffer_deinit(&encoder->buffer);
+}
+
+
 static bool
 null_encoder_open(struct encoder *_encoder,
 		  G_GNUC_UNUSED struct audio_format *audio_format,
@@ -69,6 +77,7 @@ null_encoder_open(struct encoder *_encoder,
 	struct null_encoder *encoder = (struct null_encoder *)_encoder;
 
 	encoder->buffer_length = 0;
+	pcm_buffer_init(&encoder->buffer);
 
 	return true;
 }
@@ -79,11 +88,9 @@ null_encoder_write(struct encoder *_encoder,
 		   G_GNUC_UNUSED GError **error)
 {
 	struct null_encoder *encoder = (struct null_encoder *)_encoder;
+	char *buffer = pcm_buffer_get(&encoder->buffer, encoder->buffer_length + length);
 
-	assert(length + encoder->buffer_length < MAX_BUFFER);
-
-	memcpy(encoder->buffer+encoder->buffer_length,
-		data, length);
+	memcpy(buffer+encoder->buffer_length, data, length);
 
 	encoder->buffer_length += length;
 	return true;
@@ -93,15 +100,15 @@ static size_t
 null_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 {
 	struct null_encoder *encoder = (struct null_encoder *)_encoder;
+	char *buffer = pcm_buffer_get(&encoder->buffer, encoder->buffer_length);
 
 	if (length > encoder->buffer_length)
 		length = encoder->buffer_length;
 
-	memcpy(dest, encoder->buffer, length);
+	memcpy(dest, buffer, length);
 
 	encoder->buffer_length -= length;
-	memmove(encoder->buffer, encoder->buffer + length,
-		encoder->buffer_length);
+	memmove(buffer, buffer + length, encoder->buffer_length);
 
 	return length;
 }
@@ -111,6 +118,7 @@ const struct encoder_plugin null_encoder_plugin = {
 	.init = null_encoder_init,
 	.finish = null_encoder_finish,
 	.open = null_encoder_open,
+	.close = null_encoder_close,
 	.write = null_encoder_write,
 	.read = null_encoder_read,
 };
