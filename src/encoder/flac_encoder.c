@@ -332,6 +332,14 @@ flac_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 	return length;
 }
 
+static const char *flac_encoder_mime_type = "audio/flac";
+
+static const char *
+flac_encoder_get_mime_type(G_GNUC_UNUSED struct encoder *_encoder)
+{
+	return flac_encoder_mime_type;
+}
+
 const struct encoder_plugin flac_encoder_plugin = {
 	.name = "flac",
 	.init = flac_encoder_init,
@@ -341,5 +349,6 @@ const struct encoder_plugin flac_encoder_plugin = {
 	.flush = flac_encoder_flush,
 	.write = flac_encoder_write,
 	.read = flac_encoder_read,
+	.get_mime_type = flac_encoder_get_mime_type,
 };
 

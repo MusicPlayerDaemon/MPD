@@ -382,6 +382,14 @@ vorbis_encoder_read(struct encoder *_encoder, void *_dest, size_t length)
 	return nbytes;
 }
 
+static const char *vorbis_encoder_mime_type = "application/x-ogg";
+
+static const char *
+vorbis_encoder_get_mime_type(G_GNUC_UNUSED struct encoder *_encoder)
+{
+	return vorbis_encoder_mime_type;
+}
+
 const struct encoder_plugin vorbis_encoder_plugin = {
 	.name = "vorbis",
 	.init = vorbis_encoder_init,
@@ -392,4 +400,5 @@ const struct encoder_plugin vorbis_encoder_plugin = {
 	.tag = vorbis_encoder_tag,
 	.write = vorbis_encoder_write,
 	.read = vorbis_encoder_read,
+	.get_mime_type = vorbis_encoder_get_mime_type,
 };

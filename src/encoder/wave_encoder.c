@@ -253,6 +253,14 @@ wave_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 	return length;
 }
 
+static const char *wave_encoder_mime_type = "audio/wav";
+
+static const char *
+wave_encoder_get_mime_type(G_GNUC_UNUSED struct encoder *_encoder)
+{
+	return wave_encoder_mime_type;
+}
+
 const struct encoder_plugin wave_encoder_plugin = {
 	.name = "wave",
 	.init = wave_encoder_init,
@@ -260,4 +268,5 @@ const struct encoder_plugin wave_encoder_plugin = {
 	.open = wave_encoder_open,
 	.write = wave_encoder_write,
 	.read = wave_encoder_read,
+	.get_mime_type = wave_encoder_get_mime_type,
 };

@@ -275,6 +275,14 @@ lame_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 	return length;
 }
 
+static const char *lame_encoder_mime_type = "audio/mpeg";
+
+static const char *
+lame_encoder_get_mime_type(G_GNUC_UNUSED struct encoder *_encoder)
+{
+	return lame_encoder_mime_type;
+}
+
 const struct encoder_plugin lame_encoder_plugin = {
 	.name = "lame",
 	.init = lame_encoder_init,
@@ -283,4 +291,5 @@ const struct encoder_plugin lame_encoder_plugin = {
 	.close = lame_encoder_close,
 	.write = lame_encoder_write,
 	.read = lame_encoder_read,
+	.get_mime_type = lame_encoder_get_mime_type,
 };
