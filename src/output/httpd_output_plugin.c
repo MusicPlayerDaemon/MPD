@@ -117,13 +117,6 @@ httpd_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		return NULL;
 	}
 
-	if (strcmp(encoder_name, "vorbis") == 0)
-		httpd->content_type = "application/x-ogg";
-	else if (strcmp(encoder_name, "lame") == 0)
-		httpd->content_type = "audio/mpeg";
-	else
-		httpd->content_type = "application/octet-stream";
-
 	httpd->clients_max = config_get_block_unsigned(param,"max_clients", 0);
 
 	/* initialize listen address */
@@ -143,6 +136,12 @@ httpd_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	httpd->encoder = encoder_init(encoder_plugin, param, error);
 	if (httpd->encoder == NULL)
 		return NULL;
+
+	/* determine content type */
+	httpd->content_type = encoder_get_mime_type(httpd->encoder);
+	if (httpd->content_type == NULL) {
+		httpd->content_type = "application/octet-stream";
+	}
 
 	httpd->mutex = g_mutex_new();
 
