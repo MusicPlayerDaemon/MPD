@@ -58,6 +58,8 @@ struct encoder_plugin {
 		      GError **error);
 
 	size_t (*read)(struct encoder *encoder, void *dest, size_t length);
+
+	const char *(*get_mime_type)(struct encoder *encoder);
 };
 
 /**
@@ -190,6 +192,21 @@ static inline size_t
 encoder_read(struct encoder *encoder, void *dest, size_t length)
 {
 	return encoder->plugin->read(encoder, dest, length);
+}
+
+/**
+ * Get mime type of encoded content.
+ *
+ * @param plugin the encoder plugin
+ * @return an constant string, NULL on failure
+ */
+static inline const char *
+encoder_get_mime_type(struct encoder *encoder)
+{
+	/* this method is optional */
+	return encoder->plugin->get_mime_type != NULL
+		? encoder->plugin->get_mime_type(encoder)
+		: NULL;
 }
 
 #endif
