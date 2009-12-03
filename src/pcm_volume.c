@@ -165,7 +165,7 @@ pcm_volume(void *buffer, int length,
 				     volume);
 		return true;
 
-	case 32:
+	case SAMPLE_FORMAT_S32:
 		pcm_volume_change_32((int32_t*)buffer, length / 4,
 				     volume);
 		return true;
