@@ -271,8 +271,8 @@ decoder_data(struct decoder *decoder,
 			/* merge with tag from decoder plugin */
 			struct tag *tag;
 
-			tag = tag_merge(decoder->stream_tag,
-					decoder->decoder_tag);
+			tag = tag_merge(decoder->decoder_tag,
+					decoder->stream_tag);
 			cmd = do_send_tag(decoder, is, tag);
 			tag_free(tag);
 		} else
