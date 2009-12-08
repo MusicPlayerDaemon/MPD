@@ -71,12 +71,15 @@ spl_save_queue(const char *name_utf8, const struct queue *queue)
 	char *path_fs;
 	FILE *file;
 
+	if (map_spl_path() == NULL)
+		return PLAYLIST_RESULT_DISABLED;
+
 	if (!spl_valid_name(name_utf8))
 		return PLAYLIST_RESULT_BAD_NAME;
 
 	path_fs = map_spl_utf8_to_fs(name_utf8);
 	if (path_fs == NULL)
-		return PLAYLIST_RESULT_DISABLED;
+		return PLAYLIST_RESULT_BAD_NAME;
 
 	if (g_file_test(path_fs, G_FILE_TEST_EXISTS)) {
 		g_free(path_fs);

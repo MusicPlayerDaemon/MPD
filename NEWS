@@ -4,6 +4,7 @@ ver 0.15.7 (2009/??/??)
 * decoders:
   - ffmpeg: don't try to force stereo
 * mapper: fix memory leak when playlist_directory is not set
+* mapper: apply filesystem_charset to playlists
 * command: verify playlist name in the "rm" command
 
 
