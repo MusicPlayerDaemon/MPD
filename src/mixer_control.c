@@ -62,6 +62,10 @@ mixer_free(struct mixer *mixer)
 	assert(mixer->plugin != NULL);
 	assert(mixer->mutex != NULL);
 
+	/* mixers with the "global" flag set might still be open at
+	   this point (see mixer_auto_close()) */
+	mixer_close(mixer);
+
 	g_mutex_free(mixer->mutex);
 
 	mixer->plugin->finish(mixer);
