@@ -323,6 +323,9 @@ spl_delete(const char *name_utf8)
 	char *path_fs;
 	int ret;
 
+	if (!spl_valid_name(name_utf8))
+		return PLAYLIST_RESULT_BAD_NAME;
+
 	path_fs = map_spl_utf8_to_fs(name_utf8);
 	if (path_fs == NULL)
 		return PLAYLIST_RESULT_DISABLED;
