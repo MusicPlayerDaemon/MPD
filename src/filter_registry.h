@@ -29,6 +29,7 @@
 extern const struct filter_plugin null_filter_plugin;
 extern const struct filter_plugin chain_filter_plugin;
 extern const struct filter_plugin convert_filter_plugin;
+extern const struct filter_plugin route_filter_plugin;
 extern const struct filter_plugin volume_filter_plugin;
 
 const struct filter_plugin *

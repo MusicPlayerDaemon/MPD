@@ -703,6 +703,7 @@ FILTER_SRC = \
 	src/filter/null_filter_plugin.c \
 	src/filter/chain_filter_plugin.c \
 	src/filter/convert_filter_plugin.c \
+	src/filter/route_filter_plugin.c \
 	src/filter/volume_filter_plugin.c
 
 
