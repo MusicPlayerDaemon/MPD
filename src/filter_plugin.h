@@ -108,10 +108,10 @@ filter_free(struct filter *filter);
  * Opens the filter, preparing it for filter_filter().
  *
  * @param filter the filter object
- * @param audio_format the audio format of incoming and outgoing data
+ * @param audio_format the audio format of incoming data
  * @param error location to store the error occuring, or NULL to
  * ignore errors.
- * @return true on success, false on error
+ * @return the format of outgoing data
  */
 const struct audio_format *
 filter_open(struct filter *filter, const struct audio_format *audio_format,
