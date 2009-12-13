@@ -42,6 +42,7 @@
 #define CONF_PASSWORD                   "password"
 #define CONF_DEFAULT_PERMS              "default_permissions"
 #define CONF_AUDIO_OUTPUT               "audio_output"
+#define CONF_AUDIO_FILTER               "filter"
 #define CONF_AUDIO_OUTPUT_FORMAT        "audio_output_format"
 #define CONF_MIXER_TYPE                 "mixer_type"
 #define CONF_REPLAYGAIN                 "replaygain"
@@ -72,6 +73,8 @@
 
 #define DEFAULT_PLAYLIST_MAX_LENGTH (1024*16)
 #define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS false
+
+#define MAX_FILTER_CHAIN_LENGTH 255
 
 struct block_param {
 	char *name;

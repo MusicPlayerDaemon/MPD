@@ -45,4 +45,16 @@ filter_chain_new(void);
 void
 filter_chain_append(struct filter *chain, struct filter *filter);
 
+/**
+ * Builds a filter chain from a configuration string on the form
+ * "name1, name2, name3, ..." by looking up each name among the
+ * configured filter sections. If no filters are specified, a
+ * null filter is automatically appended.
+ * @param chain the chain to append filters on
+ * @param spec the filter chain specification
+ * @return the number of filters which were successfully added
+ */
+unsigned int
+filter_chain_parse(struct filter *chain, const char *spec);
+
 #endif

@@ -41,6 +41,7 @@
 #define AUDIO_OUTPUT_TYPE	"type"
 #define AUDIO_OUTPUT_NAME	"name"
 #define AUDIO_OUTPUT_FORMAT	"format"
+#define AUDIO_FILTERS		"filters"
 
 static const struct audio_output_plugin *
 audio_output_detect(GError **error)
@@ -190,6 +191,9 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 
 	ao->filter = filter_chain_new();
 	assert(ao->filter != NULL);
+	filter_chain_parse(ao->filter,
+	                   config_get_block_string(param, AUDIO_FILTERS, "")
+	);
 
 	ao->thread = NULL;
 	ao->command = AO_COMMAND_NONE;
