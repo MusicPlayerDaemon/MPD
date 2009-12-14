@@ -19,30 +19,28 @@
 
 /** \file
  *
- * A filter chain is a container for several filters.  They are
- * chained together, i.e. called in a row, one filter passing its
- * output to the next one.
+ * Utility functions for filter configuration
  */
 
-#ifndef MPD_FILTER_CHAIN_H
-#define MPD_FILTER_CHAIN_H
+#ifndef MPD_FILTER_CONFIG_H
+#define MPD_FILTER_CONFIG_H
 
-struct filter;
+#include "conf.h"
+#include "filter/chain_filter_plugin.h"
+#include "filter_plugin.h"
+#include "filter_internal.h"
+#include "filter_registry.h"
+
 
 /**
- * Creates a new filter chain.
+ * Builds a filter chain from a configuration string on the form
+ * "name1, name2, name3, ..." by looking up each name among the
+ * configured filter sections.
+ * @param chain the chain to append filters on
+ * @param spec the filter chain specification
+ * @return the number of filters which were successfully added
  */
-struct filter *
-filter_chain_new(void);
-
-/**
- * Appends a new filter at the end of the filter chain.  You must call
- * this function before the first filter_open() call.
- *
- * @param chain the filter chain created with filter_chain_new()
- * @param filter the filter to be appended to #chain
- */
-void
-filter_chain_append(struct filter *chain, struct filter *filter);
+unsigned int
+filter_chain_parse(struct filter *chain, const char *spec);
 
 #endif

@@ -47,6 +47,7 @@ mpd_headers = \
 	src/output_print.h \
 	src/output_command.h \
 	src/filter_internal.h \
+	src/filter_config.h \
 	src/filter_plugin.h \
 	src/filter_registry.h \
 	src/filter/chain_filter_plugin.h \
@@ -230,6 +231,7 @@ src_mpd_SOURCES = \
 	src/exclude.c \
 	src/fd_util.c \
 	src/fifo_buffer.c \
+	src/filter_config.c \
 	src/filter_plugin.c \
 	src/filter_registry.c \
 	src/update.c \
@@ -921,6 +923,7 @@ test_run_output_SOURCES = test/run_output.c \
 	src/mixer_type.c \
 	$(MIXER_SRC) \
 	src/filter_plugin.c src/filter/chain_filter_plugin.c \
+	src/filter_config.c \
 	src/filter/convert_filter_plugin.c \
 	src/filter/volume_filter_plugin.c \
 	src/pcm_volume.c \

@@ -29,6 +29,7 @@
 #include "mixer/software_mixer_plugin.h"
 #include "filter_plugin.h"
 #include "filter_registry.h"
+#include "filter_config.h"
 #include "filter/chain_filter_plugin.h"
 
 #include <glib.h>
