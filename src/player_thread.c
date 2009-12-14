@@ -426,7 +426,7 @@ static bool player_seek_decoder(struct player *player)
  */
 static void player_process_command(struct player *player)
 {
-	struct decoder_control *dc = player->dc;
+	G_GNUC_UNUSED struct decoder_control *dc = player->dc;
 
 	switch (pc.command) {
 	case PLAYER_COMMAND_NONE:

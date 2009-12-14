@@ -80,6 +80,7 @@ tree_add_watch_directory(struct watch_directory *directory)
 static void
 tree_remove_watch_directory(struct watch_directory *directory)
 {
+	G_GNUC_UNUSED
 	bool found = g_tree_remove(inotify_directories,
 				   GINT_TO_POINTER(directory->descriptor));
 	assert(found);

@@ -355,7 +355,7 @@ enum decoder_command
 decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
 	    const struct tag *tag)
 {
-	const struct decoder_control *dc = decoder->dc;
+	G_GNUC_UNUSED const struct decoder_control *dc = decoder->dc;
 	enum decoder_command cmd;
 
 	assert(dc->state == DECODE_STATE_DECODE);
