@@ -25,8 +25,6 @@
 #include "audio.h"
 #include "song.h"
 #include "buffer.h"
-
-#include "normalize.h"
 #include "pipe.h"
 #include "chunk.h"
 
@@ -340,8 +338,6 @@ decoder_data(struct decoder *decoder,
 		if (replay_gain_mode != REPLAY_GAIN_OFF)
 			replay_gain_apply(replay_gain_info, dest, nbytes,
 					  &dc->out_audio_format);
-		else if (normalizationEnabled)
-			normalizeData(dest, nbytes, &dc->out_audio_format);
 
 		/* expand the music pipe chunk */
 

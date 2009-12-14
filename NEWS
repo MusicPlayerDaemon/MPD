@@ -66,6 +66,7 @@ ver 0.16 (20??/??/??)
   - sort songs by album name first, then disc/track number
   - rescan after metadata_to_use change
 * normalize: upgraded to AudioCompress 2.0
+  - automatically convert to 16 bit samples
 * log unused/unknown block parameters
 * removed the deprecated "error_file" option
 * save state when stopped

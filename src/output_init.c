@@ -31,6 +31,7 @@
 #include "filter_registry.h"
 #include "filter_config.h"
 #include "filter/chain_filter_plugin.h"
+#include "filter/autoconvert_filter_plugin.h"
 
 #include <glib.h>
 
@@ -192,6 +193,16 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 
 	ao->filter = filter_chain_new();
 	assert(ao->filter != NULL);
+
+	if (config_get_bool(CONF_VOLUME_NORMALIZATION, false)) {
+		struct filter *normalize_filter =
+			filter_new(&normalize_filter_plugin, NULL, NULL);
+		assert(normalize_filter != NULL);
+
+		filter_chain_append(ao->filter,
+				    autoconvert_filter_new(normalize_filter));
+	}
+
 	filter_chain_parse(ao->filter,
 	                   config_get_block_string(param, AUDIO_FILTERS, ""),
 	                   &error

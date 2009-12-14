@@ -49,7 +49,6 @@
 #include "state_file.h"
 #include "tag.h"
 #include "dbUtils.h"
-#include "normalize.h"
 #include "zeroconf.h"
 #include "event_pipe.h"
 #include "dirvec.h"
@@ -348,7 +347,6 @@ int main(int argc, char *argv[])
 	audio_output_all_init();
 	client_manager_init();
 	replay_gain_global_init();
-	initNormalization();
 
 	if (!input_stream_global_init(&error)) {
 		g_warning("%s", error->message);
@@ -426,7 +424,6 @@ int main(int argc, char *argv[])
 
 	playlist_list_global_finish();
 	input_stream_global_finish();
-	finishNormalization();
 	audio_output_all_finish();
 	volume_finish();
 	mapper_finish();

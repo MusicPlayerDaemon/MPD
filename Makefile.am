@@ -120,7 +120,6 @@ mpd_headers = \
 	src/mixer/software_mixer_plugin.h \
 	src/mixer/pulse_mixer_plugin.h \
 	src/daemon.h \
-	src/normalize.h \
 	src/AudioCompress/config.h \
 	src/AudioCompress/compress.h \
 	src/buffer.h \
@@ -264,7 +263,6 @@ src_mpd_SOURCES = \
 	src/main.c \
 	src/event_pipe.c \
 	src/daemon.c \
-	src/normalize.c \
 	src/AudioCompress/compress.c \
 	src/buffer.c \
 	src/pipe.c \
@@ -902,8 +900,7 @@ test_software_volume_LDADD = \
 test_run_normalize_SOURCES = test/run_normalize.c \
 	src/audio_check.c \
 	src/audio_parser.c \
-	src/AudioCompress/compress.c \
-	src/normalize.c
+	src/AudioCompress/compress.c
 test_run_normalize_LDADD = \
 	$(GLIB_LIBS)
 
@@ -952,9 +949,12 @@ test_run_output_SOURCES = test/run_output.c \
 	$(MIXER_SRC) \
 	src/filter_plugin.c src/filter/chain_filter_plugin.c \
 	src/filter_config.c \
+	src/filter/autoconvert_filter_plugin.c \
 	src/filter/convert_filter_plugin.c \
+	src/filter/normalize_filter_plugin.c \
 	src/filter/volume_filter_plugin.c \
 	src/pcm_volume.c \
+	src/AudioCompress/compress.c \
 	src/fd_util.c \
 	$(OUTPUT_SRC)
 

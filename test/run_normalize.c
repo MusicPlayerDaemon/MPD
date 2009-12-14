@@ -24,10 +24,9 @@
  */
 
 #include "config.h"
-#include "normalize.h"
+#include "AudioCompress/compress.h"
 #include "audio_parser.h"
 #include "audio_format.h"
-#include "conf.h"
 
 #include <glib.h>
 
@@ -35,20 +34,12 @@
 #include <unistd.h>
 #include <string.h>
 
-bool
-config_get_bool(const char *name, bool default_value)
-{
-	if (strcmp(name, CONF_VOLUME_NORMALIZATION) == 0)
-		return true;
-	else
-		return default_value;
-}
-
 int main(int argc, char **argv)
 {
 	GError *error = NULL;
 	struct audio_format audio_format;
 	bool ret;
+	struct Compressor *compressor;
 	static char buffer[4096];
 	ssize_t nbytes;
 
@@ -68,12 +59,13 @@ int main(int argc, char **argv)
 	} else
 		audio_format_init(&audio_format, 48000, 16, 2);
 
-	initNormalization();
+	compressor = Compressor_new(0);
 
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
-		normalizeData(buffer, nbytes, &audio_format);
+		Compressor_Process_int16(compressor,
+					 (int16_t *)buffer, nbytes / 2);
 		write(1, buffer, nbytes);
 	}
 
-	finishNormalization();
+	Compressor_delete(compressor);
 }
