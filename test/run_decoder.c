@@ -30,6 +30,16 @@
 #include <assert.h>
 #include <unistd.h>
 
+static void
+my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
+	    const gchar *message, G_GNUC_UNUSED gpointer user_data)
+{
+	if (log_domain != NULL)
+		g_printerr("%s: %s\n", log_domain, message);
+	else
+		g_printerr("%s\n", message);
+}
+
 /**
  * No-op dummy.
  */
@@ -138,6 +148,8 @@ int main(int argc, char **argv)
 
 	decoder_name = argv[1];
 	decoder.uri = argv[2];
+
+	g_log_set_default_handler(my_log_func, NULL);
 
 	input_stream_global_init();
 	decoder_plugin_init_all();

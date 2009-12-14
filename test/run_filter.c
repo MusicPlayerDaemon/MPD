@@ -31,6 +31,16 @@
 #include <errno.h>
 #include <unistd.h>
 
+static void
+my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
+	    const gchar *message, G_GNUC_UNUSED gpointer user_data)
+{
+	if (log_domain != NULL)
+		g_printerr("%s: %s\n", log_domain, message);
+	else
+		g_printerr("%s\n", message);
+}
+
 static const struct config_param *
 find_named_config_block(const char *block, const char *name)
 {
@@ -87,7 +97,10 @@ int main(int argc, char **argv)
 
 	audio_format_init(&audio_format, 44100, SAMPLE_FORMAT_S16, 2);
 
+	/* initialize GLib */
+
 	g_thread_init(NULL);
+	g_log_set_default_handler(my_log_func, NULL);
 
 	/* read configuration file (mpd.conf) */
 
