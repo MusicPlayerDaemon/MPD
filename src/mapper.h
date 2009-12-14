@@ -99,6 +99,8 @@ map_spl_path(void);
  * Maps a playlist name (without the ".m3u" suffix) to a file system
  * path.  The return value is allocated on the heap and must be freed
  * with g_free().
+ *
+ * @return the path in file system encoding, or NULL if mapping failed
  */
 char *
 map_spl_utf8_to_fs(const char *name);

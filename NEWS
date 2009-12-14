@@ -79,6 +79,14 @@ ver 0.16 (20??/??/??)
 
 
 ver 0.15.7 (2009/??/??)
+* tags:
+  - id3: fix ID3v1 charset conversion
+* decoders:
+  - ffmpeg: don't try to force stereo
+* mixer: explicitly close all mixers on shutdown
+* mapper: fix memory leak when playlist_directory is not set
+* mapper: apply filesystem_charset to playlists
+* command: verify playlist name in the "rm" command
 
 
 ver 0.15.6 (2009/11/18)

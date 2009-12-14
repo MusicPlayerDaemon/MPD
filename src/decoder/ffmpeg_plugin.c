@@ -311,10 +311,6 @@ ffmpeg_decode_internal(struct ffmpeg_context *ctx)
 
 	total_time = 0;
 
-	if (codec_context->channels > 2) {
-		codec_context->channels = 2;
-	}
-
 	if (!audio_format_init_checked(&audio_format,
 				       codec_context->sample_rate,
 				       ffmpeg_sample_format(codec_context),

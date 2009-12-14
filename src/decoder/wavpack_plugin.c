@@ -74,7 +74,7 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t count)
 
 	switch (bytes_per_sample) {
 	case 1: {
-		uchar *dst = buffer;
+		int8_t *dst = buffer;
 		/*
 		 * The asserts like the following one are because we do the
 		 * formatting of samples within a single buffer. The size

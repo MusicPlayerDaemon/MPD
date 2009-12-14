@@ -153,9 +153,12 @@ spl_save(GPtrArray *list, const char *utf8path)
 
 	assert(utf8path != NULL);
 
+	if (map_spl_path() == NULL)
+		return PLAYLIST_RESULT_DISABLED;
+
 	path_fs = map_spl_utf8_to_fs(utf8path);
 	if (path_fs == NULL)
-		return PLAYLIST_RESULT_DISABLED;
+		return PLAYLIST_RESULT_BAD_NAME;
 
 	while (!(file = fopen(path_fs, "w")) && errno == EINTR);
 	g_free(path_fs);
@@ -179,7 +182,7 @@ spl_load(const char *utf8path)
 	char buffer[MPD_PATH_MAX];
 	char *path_fs;
 
-	if (!spl_valid_name(utf8path))
+	if (!spl_valid_name(utf8path) || map_spl_path() == NULL)
 		return NULL;
 
 	path_fs = map_spl_utf8_to_fs(utf8path);
@@ -300,12 +303,15 @@ spl_clear(const char *utf8path)
 	char *path_fs;
 	FILE *file;
 
+	if (map_spl_path() == NULL)
+		return PLAYLIST_RESULT_DISABLED;
+
 	if (!spl_valid_name(utf8path))
 		return PLAYLIST_RESULT_BAD_NAME;
 
 	path_fs = map_spl_utf8_to_fs(utf8path);
 	if (path_fs == NULL)
-		return PLAYLIST_RESULT_DISABLED;
+		return PLAYLIST_RESULT_BAD_NAME;
 
 	while (!(file = fopen(path_fs, "w")) && errno == EINTR);
 	g_free(path_fs);
@@ -324,9 +330,15 @@ spl_delete(const char *name_utf8)
 	char *path_fs;
 	int ret;
 
+	if (map_spl_path() == NULL)
+		return PLAYLIST_RESULT_DISABLED;
+
+	if (!spl_valid_name(name_utf8))
+		return PLAYLIST_RESULT_BAD_NAME;
+
 	path_fs = map_spl_utf8_to_fs(name_utf8);
 	if (path_fs == NULL)
-		return PLAYLIST_RESULT_DISABLED;
+		return PLAYLIST_RESULT_BAD_NAME;
 
 	ret = unlink(path_fs);
 	g_free(path_fs);
@@ -371,12 +383,15 @@ spl_append_song(const char *utf8path, struct song *song)
 	struct stat st;
 	char *path_fs;
 
+	if (map_spl_path() == NULL)
+		return PLAYLIST_RESULT_DISABLED;
+
 	if (!spl_valid_name(utf8path))
 		return PLAYLIST_RESULT_BAD_NAME;
 
 	path_fs = map_spl_utf8_to_fs(utf8path);
 	if (path_fs == NULL)
-		return PLAYLIST_RESULT_DISABLED;
+		return PLAYLIST_RESULT_BAD_NAME;
 
 	while (!(file = fopen(path_fs, "a")) && errno == EINTR);
 	g_free(path_fs);
@@ -446,6 +461,9 @@ spl_rename(const char *utf8from, const char *utf8to)
 	char *from_path_fs, *to_path_fs;
 	static enum playlist_result ret;
 
+	if (map_spl_path() == NULL)
+		return PLAYLIST_RESULT_DISABLED;
+
 	if (!spl_valid_name(utf8from) || !spl_valid_name(utf8to))
 		return PLAYLIST_RESULT_BAD_NAME;
 
@@ -455,7 +473,7 @@ spl_rename(const char *utf8from, const char *utf8to)
 	if (from_path_fs != NULL && to_path_fs != NULL)
 		ret = spl_rename_internal(from_path_fs, to_path_fs);
 	else
-		ret = PLAYLIST_RESULT_DISABLED;
+		ret = PLAYLIST_RESULT_BAD_NAME;
 
 	g_free(from_path_fs);
 	g_free(to_path_fs);
