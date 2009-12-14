@@ -77,6 +77,7 @@ mpd_headers = \
 	src/exclude.h \
 	src/fd_util.h \
 	src/fifo_buffer.h \
+	src/glib_compat.h \
 	src/update.h \
 	src/update_internal.h \
 	src/inotify_source.h \
