@@ -105,14 +105,13 @@ static unsigned mikmod_sample_rate;
 static bool
 mikmod_decoder_init(const struct config_param *param)
 {
-	unsigned sample_rate;
 	static char params[] = "";
 
 	mikmod_sample_rate = config_get_block_unsigned(param, "sample_rate",
 						       44100);
 	if (!audio_valid_sample_rate(mikmod_sample_rate))
 		g_error("Invalid sample rate in line %d: %u",
-			param->line, sample_rate);
+			param->line, mikmod_sample_rate);
 
 	md_device = 0;
 	md_reverb = 0;
