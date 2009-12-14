@@ -88,8 +88,6 @@ filter_chain_parse(struct filter *chain, const char *spec, GError **error_r)
 	// Add each name to the filter chain by instantiating an actual filter
 	char **template_names = tokens;
 	while (*template_names != NULL) {
-		const char *plugin_name;
-		const struct filter_plugin *fp;
 		struct filter *f;
 		const struct config_param *cfg;
 
@@ -102,29 +100,10 @@ filter_chain_parse(struct filter *chain, const char *spec, GError **error_r)
 			break;
 		}
 
-		// Figure out what kind of a plugin that is
-		plugin_name = config_get_block_string(cfg, "plugin", NULL);
-		if (plugin_name == NULL) {
-			g_set_error(error_r, filter_quark(), 1,
-				    "filter configuration without 'plugin' at line %d",
-				cfg->line);
-			break;
-		}
-
 		// Instantiate one of those filter plugins with the template name as a hint
-		fp = filter_plugin_by_name(plugin_name);
-		if (fp == NULL) {
-			g_set_error(error_r, filter_quark(), 2,
-				    "filter plugin not found: %s",
-				plugin_name);
-			break;
-		}
-
-		f = filter_new(fp, cfg, NULL);
+		f = filter_configured_new(cfg, error_r);
 		if (f == NULL) {
-			g_set_error(error_r, filter_quark(), 3,
-				    "filter plugin initialization failed: %s",
-				plugin_name);
+			// The error has already been set, just stop.
 			break;
 		}
 

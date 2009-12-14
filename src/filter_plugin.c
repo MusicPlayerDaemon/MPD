@@ -49,14 +49,18 @@ filter_configured_new(const struct config_param *param, GError **error_r)
 	assert(error_r == NULL || *error_r == NULL);
 
 	plugin_name = config_get_block_string(param, "plugin", NULL);
-	if (plugin_name == NULL)
+	if (plugin_name == NULL) {
 		g_set_error(error_r, config_quark(), 0,
 			    "No filter plugin specified");
+		return NULL;
+	}
 
 	plugin = filter_plugin_by_name(plugin_name);
-	if (plugin == NULL)
+	if (plugin == NULL) {
 		g_set_error(error_r, config_quark(), 0,
 			    "No such filter plugin: %s", plugin_name);
+		return NULL;
+	}
 
 	return filter_new(plugin, param, error_r);
 }
