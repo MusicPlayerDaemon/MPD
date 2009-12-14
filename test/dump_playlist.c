@@ -74,7 +74,12 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	input_stream_global_init();
+	if (!input_stream_global_init(&error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return 2;
+	}
+
 	playlist_list_global_init();
 
 	/* open the playlist */

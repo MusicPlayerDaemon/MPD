@@ -41,6 +41,7 @@ my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
 int main(int argc, char **argv)
 {
 	struct input_stream is;
+	GError *error = NULL;
 	bool success;
 	char buffer[4096];
 	size_t num_read;
@@ -60,7 +61,12 @@ int main(int argc, char **argv)
 
 	tag_pool_init();
 	config_global_init();
-	input_stream_global_init();
+
+	if (!input_stream_global_init(&error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return 2;
+	}
 
 	/* open the stream and wait until it becomes ready */
 

@@ -349,7 +349,13 @@ int main(int argc, char *argv[])
 	client_manager_init();
 	replay_gain_global_init();
 	initNormalization();
-	input_stream_global_init();
+
+	if (!input_stream_global_init(&error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return EXIT_FAILURE;
+	}
+
 	playlist_list_global_init();
 
 	daemonize(options.daemon);

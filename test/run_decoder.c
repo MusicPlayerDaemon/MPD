@@ -138,6 +138,7 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder,
 
 int main(int argc, char **argv)
 {
+	GError *error = NULL;
 	bool ret;
 	const char *decoder_name;
 	struct decoder decoder;
@@ -152,7 +153,12 @@ int main(int argc, char **argv)
 
 	g_log_set_default_handler(my_log_func, NULL);
 
-	input_stream_global_init();
+	if (!input_stream_global_init(&error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return 2;
+	}
+
 	decoder_plugin_init_all();
 
 	decoder.plugin = decoder_plugin_from_name(decoder_name);

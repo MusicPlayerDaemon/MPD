@@ -22,10 +22,17 @@
 
 #include "check.h"
 
+#include <glib.h>
+#include <stdbool.h>
+
 /**
  * Initializes this library and all input_stream implementations.
+ *
+ * @param error_r location to store the error occuring, or NULL to
+ * ignore errors
  */
-void input_stream_global_init(void);
+bool
+input_stream_global_init(GError **error_r);
 
 /**
  * Deinitializes this library and all input_stream implementations.

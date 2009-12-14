@@ -104,7 +104,8 @@ static const char *proxy, *proxy_user, *proxy_password;
 static unsigned proxy_port;
 
 static bool
-input_curl_init(const struct config_param *param)
+input_curl_init(const struct config_param *param,
+		G_GNUC_UNUSED GError **error_r)
 {
 	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
 	if (code != CURLE_OK) {

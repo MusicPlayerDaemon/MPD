@@ -129,6 +129,7 @@ print_tag(const struct tag *tag)
 
 int main(int argc, char **argv)
 {
+	GError *error = NULL;
 	const char *decoder_name, *path;
 	const struct decoder_plugin *plugin;
 	struct tag *tag;
@@ -147,7 +148,12 @@ int main(int argc, char **argv)
 	decoder_name = argv[1];
 	path = argv[2];
 
-	input_stream_global_init();
+	if (!input_stream_global_init(&error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return 2;
+	}
+
 	decoder_plugin_init_all();
 
 	plugin = decoder_plugin_from_name(decoder_name);
