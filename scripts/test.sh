@@ -18,6 +18,7 @@ test -x configure || NOCONFIGURE=1 ./autogen.sh
 ./configure --prefix=$PREFIX/full \
     --disable-dependency-tracking --enable-debug --enable-werror \
     --enable-un \
+    --enable-modplug \
     --enable-ao --enable-mikmod --enable-mvp
 $MAKE install
 $MAKE distclean
@@ -47,6 +48,7 @@ $MAKE install
 $MAKE distclean
 
 # shout: ogg without mp3
+# sndfile instead of modplug
 ./configure --prefix=$PREFIX/shout_ogg \
     --disable-dependency-tracking --disable-debug --enable-werror \
     --disable-tcp \
@@ -56,6 +58,7 @@ $MAKE distclean
     --enable-shout-ogg --disable-shout-mp3 --disable-lame-encoder \
     --disable-ffmpeg --disable-wavpack --disable-mpc --disable-aac \
     --disable-flac --enable-vorbis --disable-oggflac --disable-audiofile \
+    --disable-modplug --enable-sndfile \
     --with-zeroconf=no
 $MAKE install
 $MAKE distclean
