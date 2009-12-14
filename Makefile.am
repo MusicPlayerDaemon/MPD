@@ -92,6 +92,7 @@ mpd_headers = \
 	src/decoder/_flac_common.h \
 	src/decoder/_ogg_common.h \
 	src/input_plugin.h \
+	src/input_registry.h \
 	src/input_stream.h \
 	src/input/file_input_plugin.h \
 	src/input/curl_input_plugin.h \
@@ -569,6 +570,7 @@ INPUT_LIBS = \
 	$(MMS_LIBS)
 
 INPUT_SRC = \
+	src/input_registry.c \
 	src/input_stream.c \
 	src/input/file_input_plugin.c
 

@@ -18,42 +18,14 @@
  */
 
 #include "config.h"
+#include "input_stream.h"
+#include "input_registry.h"
 #include "input_plugin.h"
 #include "conf.h"
-
-#include "input/file_input_plugin.h"
-
-#ifdef ENABLE_ARCHIVE
-#include "input/archive_input_plugin.h"
-#endif
-
-#ifdef ENABLE_CURL
-#include "input/curl_input_plugin.h"
-#endif
-
-#ifdef ENABLE_MMS
-#include "input/mms_input_plugin.h"
-#endif
 
 #include <glib.h>
 #include <assert.h>
 #include <string.h>
-
-static const struct input_plugin *const input_plugins[] = {
-	&input_plugin_file,
-#ifdef ENABLE_ARCHIVE
-	&input_plugin_archive,
-#endif
-#ifdef ENABLE_CURL
-	&input_plugin_curl,
-#endif
-#ifdef ENABLE_MMS
-	&input_plugin_mms,
-#endif
-	NULL
-};
-
-static bool input_plugins_enabled[G_N_ELEMENTS(input_plugins) - 1];
 
 /**
  * Find the "input" configuration block for the specified plugin.
