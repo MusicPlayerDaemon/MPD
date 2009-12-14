@@ -50,12 +50,10 @@ static const struct input_plugin *const input_plugins[] = {
 #ifdef ENABLE_MMS
 	&input_plugin_mms,
 #endif
+	NULL
 };
 
-static bool input_plugins_enabled[G_N_ELEMENTS(input_plugins)];
-
-static const unsigned num_input_plugins =
-	sizeof(input_plugins) / sizeof(input_plugins[0]);
+static bool input_plugins_enabled[G_N_ELEMENTS(input_plugins) - 1];
 
 /**
  * Find the "input" configuration block for the specified plugin.
@@ -84,7 +82,7 @@ input_plugin_config(const char *plugin_name)
 
 void input_stream_global_init(void)
 {
-	for (unsigned i = 0; i < num_input_plugins; ++i) {
+	for (unsigned i = 0; input_plugins[i] != NULL; ++i) {
 		const struct input_plugin *plugin = input_plugins[i];
 		const struct config_param *param =
 			input_plugin_config(plugin->name);
@@ -100,7 +98,7 @@ void input_stream_global_init(void)
 
 void input_stream_global_finish(void)
 {
-	for (unsigned i = 0; i < num_input_plugins; ++i)
+	for (unsigned i = 0; input_plugins[i] != NULL; ++i)
 		if (input_plugins_enabled[i] &&
 		    input_plugins[i]->finish != NULL)
 			input_plugins[i]->finish();
@@ -116,7 +114,7 @@ input_stream_open(struct input_stream *is, const char *url)
 	is->error = 0;
 	is->mime = NULL;
 
-	for (unsigned i = 0; i < num_input_plugins; ++i) {
+	for (unsigned i = 0; input_plugins[i] != NULL; ++i) {
 		const struct input_plugin *plugin = input_plugins[i];
 
 		if (input_plugins_enabled[i] && plugin->open(is, url)) {
