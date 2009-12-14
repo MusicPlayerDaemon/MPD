@@ -193,8 +193,17 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	ao->filter = filter_chain_new();
 	assert(ao->filter != NULL);
 	filter_chain_parse(ao->filter,
-	                   config_get_block_string(param, AUDIO_FILTERS, "")
+	                   config_get_block_string(param, AUDIO_FILTERS, ""),
+	                   &error
 	);
+
+	// It's not really fatal - Part of the filter chain has been set up already
+	// and even an empty one will work (if only with unexpected behaviour)
+	if (error != NULL) {
+		g_warning("Failed to initialize filter chain for '%s': %s",
+			  ao->name, error->message);
+		g_error_free(error);
+	}
 
 	ao->thread = NULL;
 	ao->command = AO_COMMAND_NONE;

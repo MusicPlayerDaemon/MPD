@@ -38,9 +38,10 @@
  * configured filter sections.
  * @param chain the chain to append filters on
  * @param spec the filter chain specification
+ * @param error_r space to return an error description
  * @return the number of filters which were successfully added
  */
 unsigned int
-filter_chain_parse(struct filter *chain, const char *spec);
+filter_chain_parse(struct filter *chain, const char *spec, GError **error_r);
 
 #endif

@@ -27,27 +27,42 @@
 
 #include <string.h>
 
+
+static GQuark
+filter_quark(void)
+{
+	return g_quark_from_static_string("filter");
+}
+
 /**
  * Find the "filter" configuration block for the specified name.
  *
  * @param filter_template_name the name of the filter template
+ * @param error_r space to return an error description
  * @return the configuration block, or NULL if none was configured
  */
 static const struct config_param *
-filter_plugin_config(const char *filter_template_name)
+filter_plugin_config(const char *filter_template_name, GError **error_r)
 {
 	const struct config_param *param = NULL;
 
 	while ((param = config_get_next_param(CONF_AUDIO_FILTER, param)) != NULL) {
 		const char *name =
 			config_get_block_string(param, "name", NULL);
-		if (name == NULL)
-			g_error("filter configuration without 'name' name in line %d",
-				param->line);
+		if (name == NULL) {
+			g_set_error(error_r, filter_quark(), 1,
+				    "filter configuration without 'name' name in line %d",
+				    param->line);
+			return NULL;
+		}
 
 		if (strcmp(name, filter_template_name) == 0)
 			return param;
 	}
+
+	g_set_error(error_r, filter_quark(), 1,
+		    "filter template not found: %s",
+		    filter_template_name);
 
 	return NULL;
 }
@@ -58,10 +73,11 @@ filter_plugin_config(const char *filter_template_name)
  * configured filter sections.
  * @param chain the chain to append filters on
  * @param spec the filter chain specification
+ * @param error_r space to return an error description
  * @return the number of filters which were successfully added
  */
 unsigned int
-filter_chain_parse(struct filter *chain, const char *spec)
+filter_chain_parse(struct filter *chain, const char *spec, GError **error_r)
 {
 
 	// Split on comma
@@ -80,38 +96,36 @@ filter_chain_parse(struct filter *chain, const char *spec)
 		// Squeeze whitespace
 		g_strstrip(*template_names);
 
-		cfg = filter_plugin_config(*template_names);
+		cfg = filter_plugin_config(*template_names, error_r);
 		if (cfg == NULL) {
-			g_error("Unable to locate filter template %s",
-				*template_names);
-			++template_names;
-			continue;
+			// The error has already been set, just stop.
+			break;
 		}
 
 		// Figure out what kind of a plugin that is
 		plugin_name = config_get_block_string(cfg, "plugin", NULL);
 		if (plugin_name == NULL) {
-			g_error("filter configuration without 'plugin' at line %d",
+			g_set_error(error_r, filter_quark(), 1,
+				    "filter configuration without 'plugin' at line %d",
 				cfg->line);
-			++template_names;
-			continue;
+			break;
 		}
 
 		// Instantiate one of those filter plugins with the template name as a hint
 		fp = filter_plugin_by_name(plugin_name);
 		if (fp == NULL) {
-			g_error("filter plugin not found: %s",
+			g_set_error(error_r, filter_quark(), 2,
+				    "filter plugin not found: %s",
 				plugin_name);
-			++template_names;
-			continue;
+			break;
 		}
 
 		f = filter_new(fp, cfg, NULL);
 		if (f == NULL) {
-			g_error("filter plugin initialization failed: %s",
+			g_set_error(error_r, filter_quark(), 3,
+				    "filter plugin initialization failed: %s",
 				plugin_name);
-			++template_names;
-			continue;
+			break;
 		}
 
 		filter_chain_append(chain, f);
