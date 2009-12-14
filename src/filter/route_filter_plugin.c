@@ -42,9 +42,11 @@
 #include "config.h"
 #include "conf.h"
 #include "audio_format.h"
+#include "audio_check.h"
 #include "filter_plugin.h"
 #include "filter_internal.h"
 #include "filter_registry.h"
+#include "pcm_buffer.h"
 
 #include <assert.h>
 #include <string.h>
@@ -91,26 +93,21 @@ struct route_filter {
 	struct audio_format output_format;
 
 	/**
-	 * The size, in bytes, of each multichannel sample in the
+	 * The size, in bytes, of each multichannel frame in the
 	 * input buffer
 	 */
-	size_t input_sample_size;
+	size_t input_frame_size;
 
 	/**
-	 * The size, in bytes, of each multichannel sample in the
+	 * The size, in bytes, of each multichannel frame in the
 	 * output buffer
 	 */
-	size_t output_sample_size;
+	size_t output_frame_size;
 
 	/**
 	 * The output buffer used last time around, can be reused if the size doesn't differ.
 	 */
-	void *output_buffer;
-
-	/**
-	 * The size in bytes of the currently allocated output buffer
-	 */
-	size_t output_buffer_size;
+	struct pcm_buffer output_buffer;
 
 };
 
@@ -123,7 +120,9 @@ struct route_filter {
  * @param filter a route_filter whose min_channels and sources[] to set
  */
 static void
-route_filter_parse(const struct config_param *param, struct route_filter *filter) {
+route_filter_parse(const struct config_param *param,
+		   struct route_filter *filter,
+		   GError **error_r) {
 
 	/* TODO:
 	 * With a more clever way of marking "don't copy to output N",
@@ -157,9 +156,10 @@ route_filter_parse(const struct config_param *param, struct route_filter *filter
 		// Split the a>b string into source and destination
 		sd = g_strsplit(tokens[c], ">", 2);
 		if (g_strv_length(sd) != 2) {
-			g_error("Invalid copy around %d in routes spec: %s",
-					param->line, tokens[c]);
-			continue;
+			g_set_error(error_r, config_quark(), 1,
+				"Invalid copy around %d in routes spec: %s",
+				param->line, tokens[c]);
+			return;
 		}
 
 		source = strtol(sd[0], NULL, 10);
@@ -193,9 +193,10 @@ route_filter_parse(const struct config_param *param, struct route_filter *filter
 		// Split the a>b string into source and destination
 		sd = g_strsplit(tokens[c], ">", 2);
 		if (g_strv_length(sd) != 2) {
-			g_error("Invalid copy around %d in routes spec: %s",
-					param->line, tokens[c]);
-			continue;
+			g_set_error(error_r, config_quark(), 1,
+				"Invalid copy around %d in routes spec: %s",
+				param->line, tokens[c]);
+			return;
 		}
 
 		source = strtol(sd[0], NULL, 10);
@@ -217,7 +218,7 @@ route_filter_init(const struct config_param *param,
 	filter_init(&filter->base, &route_filter_plugin);
 
 	// Allocate and set the filter->sources[] array
-	route_filter_parse(param, filter);
+	route_filter_parse(param, filter, error_r);
 
 	return &filter->base;
 }
@@ -234,15 +235,21 @@ route_filter_finish(struct filter *_filter)
 static const struct audio_format *
 route_filter_open(struct filter *_filter,
 		 const struct audio_format *audio_format,
-		 G_GNUC_UNUSED GError **error_r)
+		 GError **error_r)
 {
 	struct route_filter *filter = (struct route_filter *)_filter;
 
 	// Copy the input format for later reference
 	filter->input_format = *audio_format;
-	filter->input_sample_size =
-		audio_format_sample_size(&filter->input_format) *
-		filter->input_format.channels;
+	filter->input_frame_size =
+		audio_format_frame_size(&filter->input_format);
+
+	if (!audio_valid_channel_count(filter->min_output_channels)) {
+		g_set_error(error_r, audio_format_quark(), 2,
+			"Invalid number of output channels requested: %d",
+			filter->min_output_channels);
+		return NULL;
+	}
 
 	// Decide on an output format which has enough channels,
 	// and is otherwise identical
@@ -250,13 +257,11 @@ route_filter_open(struct filter *_filter,
 	filter->output_format.channels = filter->min_output_channels;
 
 	// Precalculate this simple value, to speed up allocation later
-	filter->output_sample_size =
-		audio_format_sample_size(&filter->output_format) *
-		filter->output_format.channels;
+	filter->output_frame_size =
+		audio_format_frame_size(&filter->output_format);
 
 	// This buffer grows as needed
-	filter->output_buffer_size = filter->output_sample_size;
-	filter->output_buffer = g_malloc0(filter->output_buffer_size);
+	pcm_buffer_init(&filter->output_buffer);
 
 	return &filter->output_format;
 }
@@ -266,8 +271,7 @@ route_filter_close(struct filter *_filter)
 {
 	struct route_filter *filter = (struct route_filter *)_filter;
 
-	filter->output_buffer_size = 0;
-	g_free(filter->output_buffer);
+	pcm_buffer_deinit(&filter->output_buffer);
 }
 
 static const void *
@@ -277,32 +281,24 @@ route_filter_filter(struct filter *_filter,
 {
 	struct route_filter *filter = (struct route_filter *)_filter;
 
-	size_t number_of_samples = src_size / filter->input_sample_size;
+	size_t number_of_frames = src_size / filter->input_frame_size;
 
-	size_t bytes_per_sample_per_channel =
+	size_t bytes_per_frame_per_channel =
 		audio_format_sample_size(&filter->input_format);
 
-	// A moving pointer that always refers to channel 0 in the input, at the currently handled sample
+	// A moving pointer that always refers to channel 0 in the input, at the currently handled frame
 	const uint8_t *base_source = src;
 
-	// A moving pointer that always refers to the currently filled channel of the currently handled sample, in the output
+	// A moving pointer that always refers to the currently filled channel of the currently handled frame, in the output
 	uint8_t *chan_destination;
 
-	// Grow our reusable buffer, if needed
-	*dest_size_r = number_of_samples * filter->output_sample_size;
-	if (*dest_size_r > filter->output_buffer_size) {
-		filter->output_buffer_size = *dest_size_r;
+	// Grow our reusable buffer, if needed, and set the moving pointer
+	*dest_size_r = number_of_frames * filter->output_frame_size;
+	chan_destination = pcm_buffer_get(&filter->output_buffer, *dest_size_r);
 
-		filter->output_buffer =
-			g_realloc(filter->output_buffer,
-				  filter->output_buffer_size);
-	}
-
-	// A moving pointer that always refers to the currently filled channel of the currently handled sample, in the output
-	chan_destination = filter->output_buffer;
 
 	// Perform our copy operations, with N input channels and M output channels
-	for (unsigned int s=0; s<number_of_samples; ++s) {
+	for (unsigned int s=0; s<number_of_frames; ++s) {
 
 		// Need to perform one copy per output channel
 		for (unsigned int c=0; c<filter->min_output_channels; ++c) {
@@ -312,27 +308,27 @@ route_filter_filter(struct filter *_filter,
 				// give it zeroes as input
 				memset(chan_destination,
 					0x00,
-					bytes_per_sample_per_channel);
+					bytes_per_frame_per_channel);
 			} else {
 				// Get the data from channel sources[c]
 				// and copy it to the output
 				const uint8_t *data = base_source +
-					(filter->sources[c] * bytes_per_sample_per_channel);
-				g_memmove(chan_destination,
+					(filter->sources[c] * bytes_per_frame_per_channel);
+				memcpy(chan_destination,
 					  data,
-					  bytes_per_sample_per_channel);
+					  bytes_per_frame_per_channel);
 			}
 			// Move on to the next output channel
-			chan_destination += bytes_per_sample_per_channel;
+			chan_destination += bytes_per_frame_per_channel;
 		}
 
 
 		// Go on to the next N input samples
-		base_source += filter->input_sample_size;
+		base_source += filter->input_frame_size;
 	}
 
 	// Here it is, ladies and gentlemen! Rerouted data!
-	return filter->output_buffer;
+	return (void *) filter->output_buffer.buffer;
 }
 
 const struct filter_plugin route_filter_plugin = {
