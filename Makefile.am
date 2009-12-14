@@ -91,6 +91,7 @@ mpd_headers = \
 	src/decoder/flac_pcm.h \
 	src/decoder/_flac_common.h \
 	src/decoder/_ogg_common.h \
+	src/input_init.h \
 	src/input_plugin.h \
 	src/input_registry.h \
 	src/input_stream.h \
@@ -570,6 +571,7 @@ INPUT_LIBS = \
 	$(MMS_LIBS)
 
 INPUT_SRC = \
+	src/input_init.c \
 	src/input_registry.c \
 	src/input_stream.c \
 	src/input/file_input_plugin.c

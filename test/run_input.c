@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "input_init.h"
 #include "input_stream.h"
 #include "tag_pool.h"
 #include "tag_save.h"

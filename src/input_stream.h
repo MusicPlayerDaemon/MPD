@@ -76,16 +76,6 @@ struct input_stream {
 };
 
 /**
- * Initializes this library and all input_stream implementations.
- */
-void input_stream_global_init(void);
-
-/**
- * Deinitializes this library and all input_stream implementations.
- */
-void input_stream_global_finish(void);
-
-/**
  * Opens a new input stream.  You may not access it until the "ready"
  * flag is set.
  *

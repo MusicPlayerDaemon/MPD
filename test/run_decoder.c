@@ -20,6 +20,7 @@
 #include "config.h"
 #include "decoder_list.h"
 #include "decoder_api.h"
+#include "input_init.h"
 #include "input_stream.h"
 #include "audio_format.h"
 #include "pcm_volume.h"

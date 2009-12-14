@@ -21,60 +21,9 @@
 #include "input_stream.h"
 #include "input_registry.h"
 #include "input_plugin.h"
-#include "conf.h"
 
 #include <glib.h>
 #include <assert.h>
-#include <string.h>
-
-/**
- * Find the "input" configuration block for the specified plugin.
- *
- * @param plugin_name the name of the input plugin
- * @return the configuration block, or NULL if none was configured
- */
-static const struct config_param *
-input_plugin_config(const char *plugin_name)
-{
-	const struct config_param *param = NULL;
-
-	while ((param = config_get_next_param(CONF_INPUT, param)) != NULL) {
-		const char *name =
-			config_get_block_string(param, "plugin", NULL);
-		if (name == NULL)
-			g_error("input configuration without 'plugin' name in line %d",
-				param->line);
-
-		if (strcmp(name, plugin_name) == 0)
-			return param;
-	}
-
-	return NULL;
-}
-
-void input_stream_global_init(void)
-{
-	for (unsigned i = 0; input_plugins[i] != NULL; ++i) {
-		const struct input_plugin *plugin = input_plugins[i];
-		const struct config_param *param =
-			input_plugin_config(plugin->name);
-
-		if (!config_get_block_bool(param, "enabled", true))
-			/* the plugin is disabled in mpd.conf */
-			continue;
-
-		if (plugin->init == NULL || plugin->init(param))
-			input_plugins_enabled[i] = true;
-	}
-}
-
-void input_stream_global_finish(void)
-{
-	for (unsigned i = 0; input_plugins[i] != NULL; ++i)
-		if (input_plugins_enabled[i] &&
-		    input_plugins[i]->finish != NULL)
-			input_plugins[i]->finish();
-}
 
 bool
 input_stream_open(struct input_stream *is, const char *url)

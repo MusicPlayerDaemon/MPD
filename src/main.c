@@ -44,7 +44,7 @@
 #include "permission.h"
 #include "replay_gain.h"
 #include "decoder_list.h"
-#include "input_stream.h"
+#include "input_init.h"
 #include "playlist_list.h"
 #include "state_file.h"
 #include "tag.h"
