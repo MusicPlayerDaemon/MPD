@@ -159,6 +159,8 @@ route_filter_parse(const struct config_param *param,
 			g_set_error(error_r, config_quark(), 1,
 				"Invalid copy around %d in routes spec: %s",
 				param->line, tokens[c]);
+			g_strfreev(sd);
+			g_strfreev(tokens);
 			return;
 		}
 
@@ -196,6 +198,8 @@ route_filter_parse(const struct config_param *param,
 			g_set_error(error_r, config_quark(), 1,
 				"Invalid copy around %d in routes spec: %s",
 				param->line, tokens[c]);
+			g_strfreev(sd);
+			g_strfreev(tokens);
 			return;
 		}
 
