@@ -354,8 +354,8 @@ if HAVE_BZ2
 ARCHIVE_SRC += src/archive/bz2_plugin.c
 endif
 
-if HAVE_ZIP
-ARCHIVE_SRC += src/archive/zip_plugin.c
+if HAVE_ZZIP
+ARCHIVE_SRC += src/archive/zzip_archive_plugin.c
 endif
 
 if HAVE_ISO

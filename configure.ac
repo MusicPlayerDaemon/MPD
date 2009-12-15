@@ -355,18 +355,18 @@ if test x$enable_bzip2 = xyes; then
 	AC_DEFINE(HAVE_BZ2, 1, [Define to have bz2 archive support])
 fi
 
-dnl zip
-AC_ARG_ENABLE(zip,
-	AS_HELP_STRING([--enable-zip],
+dnl zzip
+AC_ARG_ENABLE(zzip,
+	AS_HELP_STRING([--enable-zzip],
 		[enable zip archive support (default: disabled)]),,
-	enable_zip=no)
+	enable_zzip=no)
 
-MPD_AUTO_PKG(zip, ZZIP, [zziplib >= 0.13],
+MPD_AUTO_PKG(zzip, ZZIP, [zziplib >= 0.13],
 	[libzzip archive library], [libzzip not found])
 
-AM_CONDITIONAL(HAVE_ZIP, test x$enable_zip = xyes)
-if test x$enable_zip = xyes; then
-	AC_DEFINE(HAVE_ZIP, 1, [Define to have zip archive support])
+AM_CONDITIONAL(HAVE_ZZIP, test x$enable_zzip = xyes)
+if test x$enable_zzip = xyes; then
+	AC_DEFINE(HAVE_ZZIP, 1, [Define to have zip archive support])
 fi
 
 dnl iso9660
@@ -386,7 +386,7 @@ fi
 dnl archive API
 if
 	test x$enable_bzip2 = xyes ||
-	test x$enable_zip = xyes ||
+	test x$enable_zzip = xyes ||
 	test x$enable_iso9660 = xyes; then
 		enable_archive=yes
 		AC_DEFINE(ENABLE_ARCHIVE, 1, [The archive API is available])
@@ -1625,7 +1625,7 @@ else
 	echo " ISO 9660 archives support .....disabled"
 fi
 
-if test x$enable_zip = xyes; then
+if test x$enable_zzip = xyes; then
 	echo " ZIP archives support ..........enabled"
 else
 	echo " ZIP archives support ..........disabled"

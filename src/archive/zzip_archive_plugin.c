@@ -38,12 +38,12 @@ typedef struct {
 	GSList	*iter;
 } zip_context;
 
-static const struct input_plugin zip_inputplugin;
+static const struct input_plugin zzip_input_plugin;
 
 /* archive open && listing routine */
 
 static struct archive_file *
-zip_open(char * pathname)
+zzip_archive_open(char *pathname)
 {
 	zip_context *context = g_malloc(sizeof(zip_context));
 	ZZIP_DIRENT dirent;
@@ -68,7 +68,7 @@ zip_open(char * pathname)
 }
 
 static void
-zip_scan_reset(struct archive_file *file)
+zzip_archive_scan_reset(struct archive_file *file)
 {
 	zip_context *context = (zip_context *) file;
 	//reset iterator
@@ -76,7 +76,7 @@ zip_scan_reset(struct archive_file *file)
 }
 
 static char *
-zip_scan_next(struct archive_file *file)
+zzip_archive_scan_next(struct archive_file *file)
 {
 	zip_context *context = (zip_context *) file;
 	char *data = NULL;
@@ -89,7 +89,7 @@ zip_scan_next(struct archive_file *file)
 }
 
 static void
-zip_close(struct archive_file *file)
+zzip_archive_close(struct archive_file *file)
 {
 	zip_context *context = (zip_context *) file;
 	if (context->list) {
@@ -107,14 +107,14 @@ zip_close(struct archive_file *file)
 /* single archive handling */
 
 static bool
-zip_open_stream(struct archive_file *file, struct input_stream *is,
-		const char *pathname)
+zzip_archive_open_stream(struct archive_file *file, struct input_stream *is,
+			 const char *pathname)
 {
 	zip_context *context = (zip_context *) file;
 	ZZIP_STAT z_stat;
 
 	//setup file ops
-	is->plugin = &zip_inputplugin;
+	is->plugin = &zzip_input_plugin;
 	//insert back reference
 	is->data = context;
 	//we are seekable (but its not recommendent to do so)
@@ -131,16 +131,16 @@ zip_open_stream(struct archive_file *file, struct input_stream *is,
 }
 
 static void
-zip_is_close(struct input_stream *is)
+zzip_input_close(struct input_stream *is)
 {
 	zip_context *context = (zip_context *) is->data;
 	zzip_file_close (context->file);
 
-	zip_close((struct archive_file *)context);
+	zzip_archive_close((struct archive_file *)context);
 }
 
 static size_t
-zip_is_read(struct input_stream *is, void *ptr, size_t size)
+zzip_input_read(struct input_stream *is, void *ptr, size_t size)
 {
 	zip_context *context = (zip_context *) is->data;
 	int ret;
@@ -153,15 +153,15 @@ zip_is_read(struct input_stream *is, void *ptr, size_t size)
 }
 
 static bool
-zip_is_eof(struct input_stream *is)
+zzip_input_eof(struct input_stream *is)
 {
 	zip_context *context = (zip_context *) is->data;
 	return ((size_t) zzip_tell(context->file) == context->length);
 }
 
 static bool
-zip_is_seek(G_GNUC_UNUSED struct input_stream *is,
-	    G_GNUC_UNUSED goffset offset, G_GNUC_UNUSED int whence)
+zzip_input_seek(G_GNUC_UNUSED struct input_stream *is,
+		G_GNUC_UNUSED goffset offset, G_GNUC_UNUSED int whence)
 {
 	zip_context *context = (zip_context *) is->data;
 	zzip_off_t ofs = zzip_seek(context->file, offset, whence);
@@ -174,24 +174,24 @@ zip_is_seek(G_GNUC_UNUSED struct input_stream *is,
 
 /* exported structures */
 
-static const char *const zip_extensions[] = {
+static const char *const zzip_archive_extensions[] = {
 	"zip",
 	NULL
 };
 
-static const struct input_plugin zip_inputplugin = {
-	.close = zip_is_close,
-	.read = zip_is_read,
-	.eof = zip_is_eof,
-	.seek = zip_is_seek,
+static const struct input_plugin zzip_input_plugin = {
+	.close = zzip_input_close,
+	.read = zzip_input_read,
+	.eof = zzip_input_eof,
+	.seek = zzip_input_seek,
 };
 
-const struct archive_plugin zip_plugin = {
-	.name = "zip",
-	.open = zip_open,
-	.scan_reset = zip_scan_reset,
-	.scan_next = zip_scan_next,
-	.open_stream = zip_open_stream,
-	.close = zip_close,
-	.suffixes = zip_extensions
+const struct archive_plugin zzip_archive_plugin = {
+	.name = "zzip",
+	.open = zzip_archive_open,
+	.scan_reset = zzip_archive_scan_reset,
+	.scan_next = zzip_archive_scan_next,
+	.open_stream = zzip_archive_open_stream,
+	.close = zzip_archive_close,
+	.suffixes = zzip_archive_extensions
 };

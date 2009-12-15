@@ -10,6 +10,8 @@ ver 0.16 (20??/??/??)
   - "load" supports remote playlists (extm3u, pls, asx, xspf, lastfm://)
   - allow changing replay gain mode on-the-fly
   - omitting the range end is possible
+* archive:
+  - zip: renamed plugin to "zzip"
 * input:
   - lastfm: obsolete plugin removed
 * tags:
