@@ -183,7 +183,7 @@ bz2_is_close(struct input_stream *is)
 }
 
 static bool
-bz2_fillbuffer(bz2_context *context, size_t numBytes)
+bz2_fillbuffer(bz2_context *context, size_t length)
 {
 	size_t count;
 	bz_stream *bzstream;
@@ -197,7 +197,7 @@ bz2_fillbuffer(bz2_context *context, size_t numBytes)
 				  context->buffer, BZ_BUFSIZE);
 
 	if (count == 0) {
-		if (bzstream->avail_out == numBytes)
+		if (bzstream->avail_out == length)
 			return false;
 
 		if (!input_stream_eof(&context->istream))
@@ -211,13 +211,12 @@ bz2_fillbuffer(bz2_context *context, size_t numBytes)
 }
 
 static size_t
-bz2_is_read(struct input_stream *is, void *ptr, size_t size)
+bz2_is_read(struct input_stream *is, void *ptr, size_t length)
 {
 	bz2_context *context = (bz2_context *) is->data;
 	bz_stream *bzstream;
 	int bz_result;
-	size_t numBytes = size;
-	size_t bytesRead = 0;
+	size_t nbytes = 0;
 
 	if (context->last_bz_result != BZ_OK)
 		return 0;
@@ -226,16 +225,16 @@ bz2_is_read(struct input_stream *is, void *ptr, size_t size)
 
 	bzstream = &context->bzstream;
 	bzstream->next_out = ptr;
-	bzstream->avail_out = numBytes;
+	bzstream->avail_out = length;
 
 	while (bzstream->avail_out != 0) {
-		if (!bz2_fillbuffer(context, numBytes))
+		if (!bz2_fillbuffer(context, length))
 			break;
 
 		bz_result = BZ2_bzDecompress(bzstream);
 
 		if (context->last_bz_result != BZ_OK
-		    && bzstream->avail_out == numBytes) {
+		    && bzstream->avail_out == length) {
 			context->last_bz_result = bz_result;
 			break;
 		}
@@ -246,10 +245,10 @@ bz2_is_read(struct input_stream *is, void *ptr, size_t size)
 		}
 	}
 
-	bytesRead = numBytes - bzstream->avail_out;
-	is->offset += bytesRead;
+	nbytes = length - bzstream->avail_out;
+	is->offset += nbytes;
 
-	return bytesRead;
+	return nbytes;
 }
 
 static bool
