@@ -32,22 +32,21 @@
 #include <bzlib.h>
 
 #ifdef HAVE_OLDER_BZIP2
-#define BZ2_bzDecompressInit  bzDecompressInit
-#define BZ2_bzDecompress      bzDecompress
+#define BZ2_bzDecompressInit bzDecompressInit
+#define BZ2_bzDecompress bzDecompress
 #endif
 
 #define BZ_BUFSIZE   5000
 
 typedef struct {
-	char		*name;
-	bool		reset;
+	char *name;
+	bool reset;
 	struct input_stream istream;
-	int		last_bz_result;
-	int		last_parent_result;
-	bz_stream	bzstream;
-	char		*buffer;
+	int last_bz_result;
+	int last_parent_result;
+	bz_stream bzstream;
+	char *buffer;
 } bz2_context;
-
 
 static const struct input_plugin bz2_inputplugin;
 
@@ -85,7 +84,7 @@ bz2_destroy(bz2_context *data)
 /* archive open && listing routine */
 
 static struct archive_file *
-bz2_open(char * pathname)
+bz2_open(char *pathname)
 {
 	bz2_context *context;
 	char *name;
@@ -99,6 +98,7 @@ bz2_open(char * pathname)
 		g_free(context);
 		return NULL;
 	}
+
 	//capture filename
 	name = strrchr(pathname, '/');
 	if (name == NULL) {
@@ -106,12 +106,15 @@ bz2_open(char * pathname)
 		g_free(context);
 		return NULL;
 	}
-	context->name = g_strdup(name+1);
+
+	context->name = g_strdup(name + 1);
+
 	//remove suffix
 	len = strlen(context->name);
 	if (len > 4) {
-		context->name[len-4] = 0; //remove .bz2 suffix
+		context->name[len - 4] = 0; //remove .bz2 suffix
 	}
+
 	return (struct archive_file *) context;
 }
 
@@ -127,10 +130,12 @@ bz2_scan_next(struct archive_file *file)
 {
 	bz2_context *context = (bz2_context *) file;
 	char *name = NULL;
+
 	if (context->reset) {
 		name = context->name;
 		context->reset = false;
 	}
+
 	return name;
 }
 
@@ -138,6 +143,7 @@ static void
 bz2_close(struct archive_file *file)
 {
 	bz2_context *context = (bz2_context *) file;
+
 	if (context->name)
 		g_free(context->name);
 
@@ -152,6 +158,7 @@ bz2_open_stream(struct archive_file *file, struct input_stream *is,
 		G_GNUC_UNUSED const char *path)
 {
 	bz2_context *context = (bz2_context *) file;
+
 	//setup file ops
 	is->plugin = &bz2_inputplugin;
 	//insert back reference
@@ -162,6 +169,7 @@ bz2_open_stream(struct archive_file *file, struct input_stream *is,
 		g_warning("alloc bz2 failed\n");
 		return false;
 	}
+
 	return true;
 }
 
@@ -174,8 +182,7 @@ bz2_is_close(struct input_stream *is)
 }
 
 static int
-bz2_fillbuffer(bz2_context *context,
-	size_t numBytes)
+bz2_fillbuffer(bz2_context *context, size_t numBytes)
 {
 	size_t count;
 	bz_stream *bzstream;
@@ -186,7 +193,7 @@ bz2_fillbuffer(bz2_context *context,
 		return 0;
 
 	count = input_stream_read(&context->istream,
-			context->buffer, BZ_BUFSIZE);
+				  context->buffer, BZ_BUFSIZE);
 
 	if (count == 0) {
 		if (bzstream->avail_out == numBytes)
