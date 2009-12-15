@@ -120,6 +120,7 @@ mpd_headers = \
 	src/mixer/pulse_mixer_plugin.h \
 	src/daemon.h \
 	src/normalize.h \
+	src/AudioCompress/config.h \
 	src/AudioCompress/compress.h \
 	src/buffer.h \
 	src/pipe.h \
