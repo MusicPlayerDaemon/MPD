@@ -20,8 +20,6 @@
 #ifndef MPD_ARCHIVE_LIST_H
 #define MPD_ARCHIVE_LIST_H
 
-#include "archive_api.h"
-
 #include <stdio.h>
 
 struct archive_plugin;
