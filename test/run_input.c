@@ -17,10 +17,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "input_stream.h"
 #include "tag_pool.h"
 #include "tag_save.h"
 #include "conf.h"
+
+#ifdef ENABLE_ARCHIVE
+#include "archive_list.h"
+#endif
 
 #include <glib.h>
 
@@ -58,6 +63,11 @@ int main(int argc, char **argv)
 
 	tag_pool_init();
 	config_global_init();
+
+#ifdef ENABLE_ARCHIVE
+	archive_plugin_init_all();
+#endif
+
 	input_stream_global_init();
 
 	/* open the stream and wait until it becomes ready */
@@ -107,6 +117,11 @@ int main(int argc, char **argv)
 
 	input_stream_close(&is);
 	input_stream_global_finish();
+
+#ifdef ENABLE_ARCHIVE
+	archive_plugin_deinit_all();
+#endif
+
 	config_global_finish();
 	tag_pool_deinit();
 
