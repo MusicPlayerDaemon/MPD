@@ -91,10 +91,8 @@ bz2_open(char * pathname)
 	char *name;
 	int len;
 
-	context = g_malloc(sizeof(bz2_context));
-	if (!context) {
-		return NULL;
-	}
+	context = g_malloc(sizeof(*context));
+
 	//open archive
 	if (!input_stream_open(&context->istream, pathname)) {
 		g_warning("failed to open an bzip2 archive %s\n",pathname);
