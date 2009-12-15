@@ -1,6 +1,7 @@
 ver 0.15.7 (2009/??/??)
 * input:
   - file: don't fall back to parent directory
+  - archive: fixed memory leak in error handler
 * tags:
   - id3: fix ID3v1 charset conversion
 * decoders:
