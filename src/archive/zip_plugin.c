@@ -99,7 +99,8 @@ zip_close(struct archive_file *file)
 	}
 	//close archive
 	zzip_dir_close (context->dir);
-	context->dir = NULL;
+
+	g_free(context);
 }
 
 /* single archive handling */

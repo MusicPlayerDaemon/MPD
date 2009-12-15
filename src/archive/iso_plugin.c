@@ -132,7 +132,8 @@ iso_close(struct archive_file *file)
 	}
 	//close archive
 	iso9660_close(context->iso);
-	context->iso = NULL;
+
+	g_free(context);
 }
 
 /* single archive handling */
