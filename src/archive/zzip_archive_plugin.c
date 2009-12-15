@@ -30,13 +30,13 @@
 #include <glib.h>
 #include <string.h>
 
-typedef struct {
+struct zzip_archive {
 	ZZIP_DIR *dir;
 	ZZIP_FILE *file;
 	size_t	length;
 	GSList	*list;
 	GSList	*iter;
-} zip_context;
+};
 
 static const struct input_plugin zzip_input_plugin;
 
@@ -45,7 +45,7 @@ static const struct input_plugin zzip_input_plugin;
 static struct archive_file *
 zzip_archive_open(char *pathname)
 {
-	zip_context *context = g_malloc(sizeof(zip_context));
+	struct zzip_archive *context = g_malloc(sizeof(*context));
 	ZZIP_DIRENT dirent;
 
 	// open archive
@@ -70,7 +70,7 @@ zzip_archive_open(char *pathname)
 static void
 zzip_archive_scan_reset(struct archive_file *file)
 {
-	zip_context *context = (zip_context *) file;
+	struct zzip_archive *context = (struct zzip_archive *) file;
 	//reset iterator
 	context->iter = context->list;
 }
@@ -78,7 +78,7 @@ zzip_archive_scan_reset(struct archive_file *file)
 static char *
 zzip_archive_scan_next(struct archive_file *file)
 {
-	zip_context *context = (zip_context *) file;
+	struct zzip_archive *context = (struct zzip_archive *) file;
 	char *data = NULL;
 	if (context->iter != NULL) {
 		///fetch data and goto next
@@ -91,7 +91,7 @@ zzip_archive_scan_next(struct archive_file *file)
 static void
 zzip_archive_close(struct archive_file *file)
 {
-	zip_context *context = (zip_context *) file;
+	struct zzip_archive *context = (struct zzip_archive *) file;
 	if (context->list) {
 		//free list
 		for (GSList *tmp = context->list; tmp != NULL; tmp = g_slist_next(tmp))
@@ -110,7 +110,7 @@ static bool
 zzip_archive_open_stream(struct archive_file *file, struct input_stream *is,
 			 const char *pathname)
 {
-	zip_context *context = (zip_context *) file;
+	struct zzip_archive *context = (struct zzip_archive *) file;
 	ZZIP_STAT z_stat;
 
 	//setup file ops
@@ -133,7 +133,7 @@ zzip_archive_open_stream(struct archive_file *file, struct input_stream *is,
 static void
 zzip_input_close(struct input_stream *is)
 {
-	zip_context *context = (zip_context *) is->data;
+	struct zzip_archive *context = (struct zzip_archive *) is->data;
 	zzip_file_close (context->file);
 
 	zzip_archive_close((struct archive_file *)context);
@@ -142,7 +142,7 @@ zzip_input_close(struct input_stream *is)
 static size_t
 zzip_input_read(struct input_stream *is, void *ptr, size_t size)
 {
-	zip_context *context = (zip_context *) is->data;
+	struct zzip_archive *context = (struct zzip_archive *) is->data;
 	int ret;
 	ret = zzip_file_read(context->file, ptr, size);
 	if (ret < 0) {
@@ -155,7 +155,7 @@ zzip_input_read(struct input_stream *is, void *ptr, size_t size)
 static bool
 zzip_input_eof(struct input_stream *is)
 {
-	zip_context *context = (zip_context *) is->data;
+	struct zzip_archive *context = (struct zzip_archive *) is->data;
 	return ((size_t) zzip_tell(context->file) == context->length);
 }
 
@@ -163,7 +163,7 @@ static bool
 zzip_input_seek(G_GNUC_UNUSED struct input_stream *is,
 		G_GNUC_UNUSED goffset offset, G_GNUC_UNUSED int whence)
 {
-	zip_context *context = (zip_context *) is->data;
+	struct zzip_archive *context = (struct zzip_archive *) is->data;
 	zzip_off_t ofs = zzip_seek(context->file, offset, whence);
 	if (ofs != -1) {
 		is->offset = ofs;
