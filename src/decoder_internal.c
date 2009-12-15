@@ -34,16 +34,16 @@
  * calling input_stream_buffer().  We shouldn't hold the lock during a
  * potentially blocking operation.
  */
-static int
+static bool
 decoder_input_buffer(struct decoder_control *dc, struct input_stream *is)
 {
 	int ret;
 
 	decoder_unlock(dc);
-	ret = input_stream_buffer(is) > 0;
+	ret = input_stream_buffer(is);
 	decoder_lock(dc);
 
-	return ret;
+	return ret > 0;
 }
 
 /**
@@ -57,7 +57,7 @@ need_chunks(struct decoder_control *dc, struct input_stream *is, bool do_wait)
 	    dc->command == DECODE_COMMAND_SEEK)
 		return dc->command;
 
-	if ((is == NULL || decoder_input_buffer(dc, is) <= 0) && do_wait) {
+	if ((is == NULL || !decoder_input_buffer(dc, is)) && do_wait) {
 		decoder_wait(dc);
 		player_signal();
 
