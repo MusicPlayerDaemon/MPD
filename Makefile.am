@@ -811,6 +811,7 @@ test_run_decoder_SOURCES = test/run_decoder.c \
 	src/fd_util.c \
 	src/audio_check.c \
 	src/audio_format.c \
+	src/timer.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
 	$(TAG_SRC) \
@@ -832,6 +833,7 @@ test_read_tags_SOURCES = test/read_tags.c \
 	src/uri.c \
 	src/fd_util.c \
 	src/audio_check.c \
+	src/timer.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
 	$(TAG_SRC) \
