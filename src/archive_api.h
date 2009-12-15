@@ -27,68 +27,10 @@
  */
 
 #include "archive_internal.h"
+#include "archive_plugin.h"
 #include "input_stream.h"
 
 #include <stdbool.h>
-
-struct archive_file;
-
-struct archive_plugin {
-	const char *name;
-
-	/**
-	 * optional, set this to NULL if the archive plugin doesn't
-	 * have/need one this must false if there is an error and
-	 * true otherwise
-	 */
-	bool (*init)(void);
-
-	/**
-	 * optional, set this to NULL if the archive plugin doesn't
-	 * have/need one
-	 */
-	void (*finish)(void);
-
-	/**
-	 * tryes to open archive file and associates handle with archive
-	 * returns pointer to handle used is all operations with this archive
-	 * or NULL when opening fails
-	 */
-	struct archive_file *(*open)(char * pathname);
-
-	/**
-	 * reset routine will move current read index in archive to default
-	 * position and then the filenames from archives can be read
-	 * via scan_next routine
-	 */
-	void  (*scan_reset)(struct archive_file *);
-
-	/**
-	 * the read method will return corresponding files from archive
-	 * (as pathnames) and move read index to next file. When there is no
-	 * next file it return NULL.
-	 */
-	char *(*scan_next)(struct archive_file *);
-
-	/**
-	 * Opens an input_stream of a file within the archive.
-	 *
-	 * @param path the path within the archive
-	 */
-	bool (*open_stream)(struct archive_file *, struct input_stream *is,
-			    const char *path);
-
-	/**
-	 * closes archive file.
-	 */
-	void (*close)(struct archive_file *);
-
-	/**
-	 * suffixes handled by this plugin.
-	 * last element in these arrays must always be a NULL
-	 */
-	const char *const*suffixes;
-};
 
 bool archive_lookup(char *pathname, char **archive, char **inpath, char **suffix);
 

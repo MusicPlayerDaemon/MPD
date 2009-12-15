@@ -197,6 +197,7 @@ mpd_headers = \
 	src/archive_api.h \
 	src/archive_internal.h \
 	src/archive_list.h \
+	src/archive_plugin.h \
 	src/input/archive_input_plugin.h \
 	src/cue/cue_tag.h
 

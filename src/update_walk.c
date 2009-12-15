@@ -32,7 +32,7 @@
 
 #ifdef ENABLE_ARCHIVE
 #include "archive_list.h"
-#include "archive_api.h"
+#include "archive_plugin.h"
 #endif
 
 #include <glib.h>
