@@ -36,25 +36,14 @@ input_file_open(struct input_stream *is, const char *filename)
 	int fd, ret;
 	struct stat st;
 
-	char* pathname = g_strdup(filename);
-
 	if (filename[0] != '/')
-	{
-		g_free(pathname);
 		return false;
-	}
 
-	if (stat(filename, &st) < 0) {
-		char* slash = strrchr(pathname, '/');
-		*slash = '\0';
-	}
-
-	fd = open(pathname, O_RDONLY);
+	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
 		is->error = errno;
 		g_debug("Failed to open \"%s\": %s",
-			pathname, g_strerror(errno));
-		g_free(pathname);
+			filename, g_strerror(errno));
 		return false;
 	}
 
@@ -64,15 +53,13 @@ input_file_open(struct input_stream *is, const char *filename)
 	if (ret < 0) {
 		is->error = errno;
 		close(fd);
-		g_free(pathname);
 		return false;
 	}
 
 	if (!S_ISREG(st.st_mode)) {
-		g_debug("Not a regular file: %s", pathname);
+		g_debug("Not a regular file: %s", filename);
 		is->error = EINVAL;
 		close(fd);
-		g_free(pathname);
 		return false;
 	}
 
@@ -85,8 +72,6 @@ input_file_open(struct input_stream *is, const char *filename)
 	is->plugin = &input_plugin_file;
 	is->data = GINT_TO_POINTER(fd);
 	is->ready = true;
-
-	g_free(pathname);
 
 	return true;
 }
