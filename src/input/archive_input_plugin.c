@@ -41,7 +41,7 @@ input_archive_open(struct input_stream *is, const char *pathname)
 	char *archive, *filename, *suffix, *pname;
 	bool opened;
 
-	if (pathname[0] != '/')
+	if (!g_path_is_absolute(pathname))
 		return false;
 
 	pname = g_strdup(pathname);
