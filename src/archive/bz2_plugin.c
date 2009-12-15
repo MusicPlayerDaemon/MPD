@@ -42,8 +42,9 @@ typedef struct {
 	char *name;
 	bool reset;
 	struct input_stream istream;
-	int last_bz_result;
-	int last_parent_result;
+
+	bool eof;
+
 	bz_stream bzstream;
 	char *buffer;
 } bz2_context;
@@ -69,8 +70,6 @@ bz2_alloc(bz2_context *data)
 		return false;
 	}
 
-	data->last_bz_result = BZ_OK;
-	data->last_parent_result = 0;
 	return true;
 }
 
@@ -169,6 +168,8 @@ bz2_open_stream(struct archive_file *file, struct input_stream *is,
 		return false;
 	}
 
+	context->eof = false;
+
 	return true;
 }
 
@@ -183,7 +184,7 @@ bz2_is_close(struct input_stream *is)
 }
 
 static bool
-bz2_fillbuffer(bz2_context *context, size_t length)
+bz2_fillbuffer(bz2_context *context)
 {
 	size_t count;
 	bz_stream *bzstream;
@@ -195,18 +196,11 @@ bz2_fillbuffer(bz2_context *context, size_t length)
 
 	count = input_stream_read(&context->istream,
 				  context->buffer, BZ_BUFSIZE);
+	if (count == 0)
+		return false;
 
-	if (count == 0) {
-		if (bzstream->avail_out == length)
-			return false;
-
-		if (!input_stream_eof(&context->istream))
-			context->last_parent_result = 1;
-	} else {
-		bzstream->next_in = context->buffer;
-		bzstream->avail_in = count;
-	}
-
+	bzstream->next_in = context->buffer;
+	bzstream->avail_in = count;
 	return true;
 }
 
@@ -218,32 +212,31 @@ bz2_is_read(struct input_stream *is, void *ptr, size_t length)
 	int bz_result;
 	size_t nbytes = 0;
 
-	if (context->last_bz_result != BZ_OK)
-		return 0;
-	if (context->last_parent_result != 0)
+	if (context->eof)
 		return 0;
 
 	bzstream = &context->bzstream;
 	bzstream->next_out = ptr;
 	bzstream->avail_out = length;
 
-	while (bzstream->avail_out != 0) {
-		if (!bz2_fillbuffer(context, length))
-			break;
+	do {
+		if (!bz2_fillbuffer(context)) {
+			is->error = -1;
+			return 0;
+		}
 
 		bz_result = BZ2_bzDecompress(bzstream);
 
-		if (context->last_bz_result != BZ_OK
-		    && bzstream->avail_out == length) {
-			context->last_bz_result = bz_result;
+		if (bz_result == BZ_STREAM_END) {
+			context->eof = true;
 			break;
 		}
 
-		if (bz_result == BZ_STREAM_END) {
-			context->last_bz_result = bz_result;
-			break;
+		if (bz_result != BZ_OK) {
+			is->error = bz_result;
+			return 0;
 		}
-	}
+	} while (bzstream->avail_out == length);
 
 	nbytes = length - bzstream->avail_out;
 	is->offset += nbytes;
@@ -256,11 +249,7 @@ bz2_is_eof(struct input_stream *is)
 {
 	bz2_context *context = (bz2_context *) is->data;
 
-	if (context->last_bz_result == BZ_STREAM_END) {
-		return true;
-	}
-
-	return false;
+	return context->eof;
 }
 
 /* exported structures */
