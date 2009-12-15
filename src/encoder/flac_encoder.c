@@ -129,7 +129,13 @@ flac_encoder_setup(struct flac_encoder *encoder, unsigned bits_per_sample,
 
 static FLAC__StreamEncoderWriteStatus
 flac_write_callback(G_GNUC_UNUSED const FLAC__StreamEncoder *fse,
-	const FLAC__byte data[], size_t bytes, G_GNUC_UNUSED unsigned samples,
+		    const FLAC__byte data[],
+#if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
+		    unsigned bytes,
+#else
+		    size_t bytes,
+#endif
+		    G_GNUC_UNUSED unsigned samples,
 	G_GNUC_UNUSED unsigned current_frame, void *client_data)
 {
 	struct flac_encoder *encoder = (struct flac_encoder *) client_data;
