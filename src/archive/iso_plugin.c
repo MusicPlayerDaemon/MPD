@@ -133,7 +133,8 @@ iso_close(struct archive_file *file)
 	}
 	//close archive
 	iso9660_close(context->iso);
-	context->iso = NULL;
+
+	g_free(context);
 }
 
 /* single archive handling */
@@ -166,6 +167,8 @@ iso_is_close(struct input_stream *is)
 {
 	iso_context *context = (iso_context *) is->data;
 	g_free(context->statbuf);
+
+	iso_close((struct archive_file *)context);
 }
 
 

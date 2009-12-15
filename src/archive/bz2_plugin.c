@@ -144,8 +144,7 @@ bz2_close(struct archive_file *file)
 {
 	bz2_context *context = (bz2_context *) file;
 
-	if (context->name)
-		g_free(context->name);
+	g_free(context->name);
 
 	input_stream_close(&context->istream);
 	g_free(context);
@@ -179,6 +178,8 @@ bz2_is_close(struct input_stream *is)
 	bz2_context *context = (bz2_context *) is->data;
 	bz2_destroy(context);
 	is->data = NULL;
+
+	bz2_close((struct archive_file *)context);
 }
 
 static bool

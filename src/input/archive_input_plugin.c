@@ -67,6 +67,7 @@ input_archive_open(struct input_stream *is, const char *pathname)
 
 	if (!opened) {
 		g_warning("open inarchive file %s failed\n\n",filename);
+		arplug->close(file);
 	} else {
 		is->ready = true;
 	}

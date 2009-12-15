@@ -24,6 +24,10 @@
 #include "tag_save.h"
 #include "conf.h"
 
+#ifdef ENABLE_ARCHIVE
+#include "archive_list.h"
+#endif
+
 #include <glib.h>
 
 #include <unistd.h>
@@ -38,14 +42,58 @@ my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
 		g_printerr("%s\n", message);
 }
 
-int main(int argc, char **argv)
+static int
+dump_input_stream(struct input_stream *is)
 {
-	struct input_stream is;
-	GError *error = NULL;
-	bool success;
 	char buffer[4096];
 	size_t num_read;
 	ssize_t num_written;
+
+	/* wait until the stream becomes ready */
+
+	while (!is->ready) {
+		int ret = input_stream_buffer(is);
+		if (ret < 0)
+			/* error */
+			return 2;
+
+		if (ret == 0)
+			/* nothing was buffered - wait */
+			g_usleep(10000);
+	}
+
+	/* print meta data */
+
+	if (is->mime != NULL)
+		g_printerr("MIME type: %s\n", is->mime);
+
+	/* read data and tags from the stream */
+
+	while (!input_stream_eof(is)) {
+		struct tag *tag = input_stream_tag(is);
+		if (tag != NULL) {
+			g_printerr("Received a tag:\n");
+			tag_save(stderr, tag);
+			tag_free(tag);
+		}
+
+		num_read = input_stream_read(is, buffer, sizeof(buffer));
+		if (num_read == 0)
+			break;
+
+		num_written = write(1, buffer, num_read);
+		if (num_written <= 0)
+			break;
+	}
+
+	return 0;
+}
+
+int main(int argc, char **argv)
+{
+	GError *error = NULL;
+	struct input_stream is;
+	int ret;
 
 	if (argc != 2) {
 		g_printerr("Usage: run_input URI\n");
@@ -62,61 +110,36 @@ int main(int argc, char **argv)
 	tag_pool_init();
 	config_global_init();
 
+#ifdef ENABLE_ARCHIVE
+	archive_plugin_init_all();
+#endif
+
 	if (!input_stream_global_init(&error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
 		return 2;
 	}
 
-	/* open the stream and wait until it becomes ready */
+	/* open the stream and dump it */
 
-	success = input_stream_open(&is, argv[1]);
-	if (!success) {
+	if (input_stream_open(&is, argv[1])) {
+		ret = dump_input_stream(&is);
+		input_stream_close(&is);
+	} else {
 		g_printerr("input_stream_open() failed\n");
-		return 2;
-	}
-
-	while (!is.ready) {
-		int ret = input_stream_buffer(&is);
-		if (ret < 0)
-			/* error */
-			return 2;
-
-		if (ret == 0)
-			/* nothing was buffered - wait */
-			g_usleep(10000);
-	}
-
-	/* print meta data */
-
-	if (is.mime != NULL)
-		g_printerr("MIME type: %s\n", is.mime);
-
-	/* read data and tags from the stream */
-
-	while (!input_stream_eof(&is)) {
-		struct tag *tag = input_stream_tag(&is);
-		if (tag != NULL) {
-			g_printerr("Received a tag:\n");
-			tag_save(stderr, tag);
-			tag_free(tag);
-		}
-
-		num_read = input_stream_read(&is, buffer, sizeof(buffer));
-		if (num_read == 0)
-			break;
-
-		num_written = write(1, buffer, num_read);
-		if (num_written <= 0)
-			break;
+		ret = 2;
 	}
 
 	/* deinitialize everything */
 
-	input_stream_close(&is);
 	input_stream_global_finish();
+
+#ifdef ENABLE_ARCHIVE
+	archive_plugin_deinit_all();
+#endif
+
 	config_global_finish();
 	tag_pool_deinit();
 
-	return 0;
+	return ret;
 }
