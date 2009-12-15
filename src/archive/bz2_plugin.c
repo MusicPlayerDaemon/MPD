@@ -173,6 +173,8 @@ bz2_is_close(struct input_stream *is)
 	bz2_context *context = (bz2_context *) is->data;
 	bz2_destroy(context);
 	is->data = NULL;
+
+	bz2_close((struct archive_file *)context);
 }
 
 static int

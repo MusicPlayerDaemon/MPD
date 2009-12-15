@@ -165,6 +165,8 @@ iso_is_close(struct input_stream *is)
 {
 	iso_context *context = (iso_context *) is->data;
 	g_free(context->statbuf);
+
+	iso_close((struct archive_file *)context);
 }
 
 

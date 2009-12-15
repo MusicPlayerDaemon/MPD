@@ -133,6 +133,8 @@ zip_is_close(struct input_stream *is)
 {
 	zip_context *context = (zip_context *) is->data;
 	zzip_file_close (context->file);
+
+	zip_close((struct archive_file *)context);
 }
 
 static size_t
