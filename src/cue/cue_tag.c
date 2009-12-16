@@ -155,6 +155,22 @@ cue_tag_track(struct Cdtext *cdtext, struct Rem *rem)
 	return tag;
 }
 
+static struct tag *
+cue_tag_merge(struct tag *a, struct tag *b)
+{
+	if (a != NULL && b != NULL) {
+		struct tag *merge_tag = tag_merge(a, b);
+		tag_free(a);
+		tag_free(b);
+		return merge_tag;
+	} else if (a != NULL)
+		return a;
+	else if (b != NULL)
+		return b;
+	else
+		return NULL;
+}
+
 struct tag *
 cue_tag_file(FILE *fp, unsigned tnum)
 {
@@ -179,17 +195,7 @@ cue_tag_file(FILE *fp, unsigned tnum)
 
 	cd_delete(cd);
 
-	if (cd_tag != NULL && track_tag != NULL) {
-		struct tag *merge_tag = tag_merge(cd_tag, track_tag);
-		tag_free(cd_tag);
-		tag_free(track_tag);
-		return merge_tag;
-	} else if (cd_tag != NULL)
-		return cd_tag;
-	else if (track_tag != NULL)
-		return track_tag;
-	else
-		return NULL;
+	return cue_tag_merge(cd_tag, track_tag);
 }
 
 struct tag *
@@ -216,15 +222,5 @@ cue_tag_string(const char *str, unsigned tnum)
 
 	cd_delete(cd);
 
-	if (cd_tag != NULL && track_tag != NULL) {
-		struct tag *merge_tag = tag_merge(cd_tag, track_tag);
-		tag_free(cd_tag);
-		tag_free(track_tag);
-		return merge_tag;
-	} else if (cd_tag != NULL)
-		return cd_tag;
-	else if (track_tag != NULL)
-		return track_tag;
-	else
-		return NULL;
+	return cue_tag_merge(cd_tag, track_tag);
 }
