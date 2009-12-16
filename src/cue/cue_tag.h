@@ -5,9 +5,9 @@
 
 #ifdef HAVE_CUE /* libcue */
 
-#include "tag.h"
+#include <stdio.h>
 
-#include <libcue/libcue.h>
+struct tag;
 
 struct tag*
 cue_tag_file(	FILE*,

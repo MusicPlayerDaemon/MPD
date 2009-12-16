@@ -1,5 +1,8 @@
 #include "config.h"
 #include "cue_tag.h"
+#include "tag.h"
+
+#include <libcue/libcue.h>
 
 static struct tag*
 cue_tag_cd(struct Cdtext* cdtext, struct Rem* rem)
