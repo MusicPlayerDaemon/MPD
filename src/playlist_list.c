@@ -131,7 +131,8 @@ playlist_list_open_uri(const char *uri)
 	for (unsigned i = 0; playlist_plugins[i] != NULL; ++i) {
 		const struct playlist_plugin *plugin = playlist_plugins[i];
 
-		if (playlist_plugins_enabled[i] && plugin->schemes != NULL &&
+		if (playlist_plugins_enabled[i] && plugin->open_uri != NULL &&
+		    plugin->schemes != NULL &&
 		    string_array_contains(plugin->schemes, scheme)) {
 			playlist = playlist_plugin_open_uri(plugin, uri);
 			if (playlist != NULL)
@@ -155,6 +156,7 @@ playlist_list_open_stream_mime(struct input_stream *is)
 		const struct playlist_plugin *plugin = playlist_plugins[i];
 
 		if (playlist_plugins_enabled[i] &&
+		    plugin->open_stream != NULL &&
 		    plugin->mime_types != NULL &&
 		    string_array_contains(plugin->mime_types, is->mime)) {
 			/* rewind the stream, so each plugin gets a
@@ -181,7 +183,9 @@ playlist_list_open_stream_suffix(struct input_stream *is, const char *suffix)
 	for (unsigned i = 0; playlist_plugins[i] != NULL; ++i) {
 		const struct playlist_plugin *plugin = playlist_plugins[i];
 
-		if (playlist_plugins_enabled[i] && plugin->suffixes != NULL &&
+		if (playlist_plugins_enabled[i] &&
+		    plugin->open_stream != NULL &&
+		    plugin->suffixes != NULL &&
 		    string_array_contains(plugin->suffixes, suffix)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
