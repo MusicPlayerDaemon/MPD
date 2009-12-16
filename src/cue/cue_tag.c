@@ -86,18 +86,12 @@ cue_tag_cd(struct Cdtext* cdtext, struct Rem* rem)
 
 	tag_end_add(tag);
 
-	if (tag != NULL)
-	{
-		if (tag_is_empty(tag))
-		{
-			tag_free(tag);
-			return NULL;
-		}
-		else
-			return tag;
-	}
-	else
+	if (tag_is_empty(tag)) {
+		tag_free(tag);
 		return NULL;
+	}
+
+	return tag;
 }
 
 static struct tag*
@@ -157,18 +151,12 @@ cue_tag_track(struct Cdtext* cdtext, struct Rem* rem)
 
 	tag_end_add(tag);
 
-	if (tag != NULL)
-	{
-		if (tag_is_empty(tag))
-		{
-			tag_free(tag);
-			return NULL;
-		}
-		else
-			return tag;
-	}
-	else
+	if (tag_is_empty(tag)) {
+		tag_free(tag);
 		return NULL;
+	}
+
+	return tag;
 }
 
 struct tag*
