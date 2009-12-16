@@ -13,7 +13,7 @@ struct tag *
 cue_tag_file(FILE *file, unsigned tnum);
 
 struct tag *
-cue_tag_string(char *str, unsigned tnum);
+cue_tag_string(const char *str, unsigned tnum);
 
 #endif /* libcue */
 #endif

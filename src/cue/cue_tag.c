@@ -193,7 +193,7 @@ cue_tag_file(FILE *fp, unsigned tnum)
 }
 
 struct tag *
-cue_tag_string(char *str, unsigned tnum)
+cue_tag_string(const char *str, unsigned tnum)
 {
 	struct Cd *cd;
 	struct tag *cd_tag, *track_tag;
