@@ -32,6 +32,8 @@
 #include <string.h>
 
 struct zzip_archive {
+	struct archive_file base;
+
 	ZZIP_DIR *dir;
 	ZZIP_FILE *file;
 	size_t	length;
@@ -55,6 +57,8 @@ zzip_archive_open(const char *pathname)
 	struct zzip_archive *context = g_malloc(sizeof(*context));
 	ZZIP_DIRENT dirent;
 
+	archive_file_init(&context->base, &zzip_archive_plugin);
+
 	// open archive
 	context->list = NULL;
 	context->dir = zzip_dir_open(pathname, NULL);
@@ -71,7 +75,7 @@ zzip_archive_open(const char *pathname)
 		}
 	}
 
-	return (struct archive_file *)context;
+	return &context->base;
 }
 
 static void

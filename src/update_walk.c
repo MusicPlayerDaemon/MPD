@@ -409,7 +409,7 @@ update_archive_file(struct directory *parent, const char *name,
 	path_fs = map_directory_child_fs(parent, name);
 
 	/* open archive */
-	file = plugin->open(path_fs);
+	file = archive_file_open(plugin, path_fs);
 	if (file == NULL) {
 		g_warning("unable to open archive %s", path_fs);
 		g_free(path_fs);
@@ -429,15 +429,15 @@ update_archive_file(struct directory *parent, const char *name,
 
 	directory->mtime = st->st_mtime;
 
-	plugin->scan_reset(file);
+	archive_file_scan_reset(file);
 
-	while ((filepath = plugin->scan_next(file)) != NULL) {
+	while ((filepath = archive_file_scan_next(file)) != NULL) {
 		/* split name into directory and file */
 		g_debug("adding archive file: %s", filepath);
 		update_archive_tree(directory, filepath);
 	}
 
-	plugin->close(file);
+	archive_file_close(file);
 }
 #endif
 

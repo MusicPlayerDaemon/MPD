@@ -21,7 +21,14 @@
 #define MPD_ARCHIVE_INTERNAL_H
 
 struct archive_file {
-	int placeholder;
+	const struct archive_plugin *plugin;
 };
+
+static inline void
+archive_file_init(struct archive_file *archive_file,
+		  const struct archive_plugin *plugin)
+{
+	archive_file->plugin = plugin;
+}
 
 #endif

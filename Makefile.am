@@ -369,6 +369,7 @@ if ENABLE_ARCHIVE
 ARCHIVE_SRC += \
 	src/archive_api.c \
 	src/archive_list.c \
+	src/archive_plugin.c \
 	src/input/archive_input_plugin.c
 endif
 

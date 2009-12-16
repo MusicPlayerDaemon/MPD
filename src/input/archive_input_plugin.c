@@ -61,14 +61,14 @@ input_archive_open(struct input_stream *is, const char *pathname,
 		return false;
 	}
 
-	file = arplug->open(archive);
+	file = archive_file_open(arplug, archive);
 
 	//setup fileops
-	opened = arplug->open_stream(file, is, filename, error_r);
+	opened = archive_file_open_stream(file, is, filename, error_r);
 	g_free(pname);
 
 	if (!opened) {
-		arplug->close(file);
+		archive_file_close(file);
 	} else {
 		is->ready = true;
 	}

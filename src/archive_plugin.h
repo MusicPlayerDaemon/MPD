@@ -89,5 +89,20 @@ struct archive_plugin {
 	const char *const*suffixes;
 };
 
-#endif
+struct archive_file *
+archive_file_open(const struct archive_plugin *plugin, const char *path);
 
+void
+archive_file_close(struct archive_file *file);
+
+void
+archive_file_scan_reset(struct archive_file *file);
+
+char *
+archive_file_scan_next(struct archive_file *file);
+
+bool
+archive_file_open_stream(struct archive_file *file, struct input_stream *is,
+			 const char *path, GError **error_r);
+
+#endif

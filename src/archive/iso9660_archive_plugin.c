@@ -35,6 +35,8 @@
 #define CEILING(x, y) ((x+(y-1))/y)
 
 struct iso9660_archive_file {
+	struct archive_file base;
+
 	iso9660_t *iso;
 	iso9660_stat_t *statbuf;
 	size_t cur_ofs;
@@ -93,6 +95,8 @@ iso9660_archive_open(const char *pathname)
 	struct iso9660_archive_file *context =
 		g_new(struct iso9660_archive_file, 1);
 
+	archive_file_init(&context->base, &iso9660_archive_plugin);
+
 	context->list = NULL;
 
 	/* open archive */
@@ -104,7 +108,7 @@ iso9660_archive_open(const char *pathname)
 
 	listdir_recur("/", context);
 
-        return (struct archive_file *)context;
+	return &context->base;
 }
 
 static void

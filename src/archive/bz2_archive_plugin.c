@@ -40,6 +40,8 @@
 #define BZ_BUFSIZE   5000
 
 struct bz2_archive_file {
+	struct archive_file base;
+
 	char *name;
 	bool reset;
 	struct input_stream istream;
@@ -102,6 +104,7 @@ bz2_open(const char *pathname)
 	int len;
 
 	context = g_malloc(sizeof(*context));
+	archive_file_init(&context->base, &bz2_archive_plugin);
 
 	//open archive
 	if (!input_stream_open(&context->istream, pathname, NULL)) {
@@ -118,7 +121,7 @@ bz2_open(const char *pathname)
 		context->name[len - 4] = 0; //remove .bz2 suffix
 	}
 
-	return (struct archive_file *) context;
+	return &context->base;
 }
 
 static void
