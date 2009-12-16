@@ -50,7 +50,7 @@ zzip_quark(void)
 /* archive open && listing routine */
 
 static struct archive_file *
-zzip_archive_open(char *pathname)
+zzip_archive_open(const char *pathname)
 {
 	struct zzip_archive *context = g_malloc(sizeof(*context));
 	ZZIP_DIRENT dirent;

@@ -88,7 +88,7 @@ listdir_recur(const char *psz_path, struct iso9660_archive_file *context)
 }
 
 static struct archive_file *
-iso9660_archive_open(char * pathname)
+iso9660_archive_open(const char *pathname)
 {
 	struct iso9660_archive_file *context =
 		g_new(struct iso9660_archive_file, 1);

@@ -96,7 +96,7 @@ bz2_destroy(struct bz2_archive_file *data)
 /* archive open && listing routine */
 
 static struct archive_file *
-bz2_open(char *pathname)
+bz2_open(const char *pathname)
 {
 	struct bz2_archive_file *context;
 	int len;
