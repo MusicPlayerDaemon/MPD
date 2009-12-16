@@ -116,8 +116,8 @@ g_uri_parse_scheme(const char *uri)
 }
 #endif
 
-struct playlist_provider *
-playlist_list_open_uri(const char *uri)
+static struct playlist_provider *
+playlist_list_open_uri_scheme(const char *uri, bool *tried)
 {
 	char *scheme;
 	struct playlist_provider *playlist = NULL;
@@ -131,16 +131,68 @@ playlist_list_open_uri(const char *uri)
 	for (unsigned i = 0; playlist_plugins[i] != NULL; ++i) {
 		const struct playlist_plugin *plugin = playlist_plugins[i];
 
+		assert(!tried[i]);
+
 		if (playlist_plugins_enabled[i] && plugin->open_uri != NULL &&
 		    plugin->schemes != NULL &&
 		    string_array_contains(plugin->schemes, scheme)) {
 			playlist = playlist_plugin_open_uri(plugin, uri);
 			if (playlist != NULL)
 				break;
+
+			tried[i] = true;
 		}
 	}
 
 	g_free(scheme);
+	return playlist;
+}
+
+static struct playlist_provider *
+playlist_list_open_uri_suffix(const char *uri, const bool *tried)
+{
+	const char *suffix;
+	struct playlist_provider *playlist = NULL;
+
+	assert(uri != NULL);
+
+	suffix = strrchr(uri, '.');
+	if (suffix == NULL || strchr(suffix, '/') != NULL)
+		return NULL;
+
+	++suffix;
+
+	for (unsigned i = 0; playlist_plugins[i] != NULL; ++i) {
+		const struct playlist_plugin *plugin = playlist_plugins[i];
+
+		if (playlist_plugins_enabled[i] && !tried[i] &&
+		    plugin->open_uri != NULL && plugin->suffixes != NULL &&
+		    string_array_contains(plugin->suffixes, suffix)) {
+			playlist = playlist_plugin_open_uri(plugin, uri);
+			if (playlist != NULL)
+				break;
+		}
+	}
+
+	return playlist;
+}
+
+struct playlist_provider *
+playlist_list_open_uri(const char *uri)
+{
+	struct playlist_provider *playlist;
+	/** this array tracks which plugins have already been tried by
+	    playlist_list_open_uri_scheme() */
+	bool tried[G_N_ELEMENTS(playlist_plugins) - 1];
+
+	assert(uri != NULL);
+
+	memset(tried, false, sizeof(tried));
+
+	playlist = playlist_list_open_uri_scheme(uri, tried);
+	if (playlist == NULL)
+		playlist = playlist_list_open_uri_suffix(uri, tried);
+
 	return playlist;
 }
 
