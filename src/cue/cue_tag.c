@@ -172,10 +172,30 @@ cue_tag_merge(struct tag *a, struct tag *b)
 }
 
 struct tag *
+cue_tag(struct Cd *cd, unsigned tnum)
+{
+	struct tag *cd_tag, *track_tag;
+
+	assert(cd != NULL);
+
+	if (tnum > 256)
+		return NULL;
+
+	/* tag from CDtext info */
+	cd_tag = cue_tag_cd(cd_get_cdtext(cd), cd_get_rem(cd));
+
+	/* tag from TRACKtext info */
+	track_tag = cue_tag_track(track_get_cdtext(cd_get_track(cd, tnum)),
+				  track_get_rem(cd_get_track(cd, tnum)));
+
+	return cue_tag_merge(cd_tag, track_tag);
+}
+
+struct tag *
 cue_tag_file(FILE *fp, unsigned tnum)
 {
 	struct Cd *cd;
-	struct tag *cd_tag, *track_tag;
+	struct tag *tag;
 
 	assert(fp != NULL);
 
@@ -186,23 +206,17 @@ cue_tag_file(FILE *fp, unsigned tnum)
 	if (cd == NULL)
 		return NULL;
 
-	/* tag from CDtext info */
-	cd_tag = cue_tag_cd(cd_get_cdtext(cd), cd_get_rem(cd));
-
-	/* tag from TRACKtext info */
-	track_tag = cue_tag_track(track_get_cdtext(cd_get_track(cd, tnum)),
-				  track_get_rem(cd_get_track(cd, tnum)));
-
+	tag = cue_tag(cd, tnum);
 	cd_delete(cd);
 
-	return cue_tag_merge(cd_tag, track_tag);
+	return tag;
 }
 
 struct tag *
 cue_tag_string(const char *str, unsigned tnum)
 {
 	struct Cd *cd;
-	struct tag *cd_tag, *track_tag;
+	struct tag *tag;
 
 	assert(str != NULL);
 
@@ -213,14 +227,8 @@ cue_tag_string(const char *str, unsigned tnum)
 	if (cd == NULL)
 		return NULL;
 
-	/* tag from CDtext info */
-	cd_tag = cue_tag_cd(cd_get_cdtext(cd), cd_get_rem(cd));
-
-	/* tag from TRACKtext info */
-	track_tag = cue_tag_track(track_get_cdtext(cd_get_track(cd, tnum)),
-				  track_get_rem(cd_get_track(cd, tnum)));
-
+	tag = cue_tag(cd, tnum);
 	cd_delete(cd);
 
-	return cue_tag_merge(cd_tag, track_tag);
+	return tag;
 }

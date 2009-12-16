@@ -8,6 +8,10 @@
 #include <stdio.h>
 
 struct tag;
+struct Cd;
+
+struct tag *
+cue_tag(struct Cd *cd, unsigned tnum);
 
 struct tag *
 cue_tag_file(FILE *file, unsigned tnum);
