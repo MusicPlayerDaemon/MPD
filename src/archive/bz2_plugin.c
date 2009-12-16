@@ -98,7 +98,6 @@ static struct archive_file *
 bz2_open(char *pathname)
 {
 	bz2_context *context;
-	char *name;
 	int len;
 
 	context = g_malloc(sizeof(*context));
@@ -110,15 +109,7 @@ bz2_open(char *pathname)
 		return NULL;
 	}
 
-	//capture filename
-	name = strrchr(pathname, '/');
-	if (name == NULL) {
-		g_warning("failed to get bzip2 name from %s\n",pathname);
-		g_free(context);
-		return NULL;
-	}
-
-	context->name = g_strdup(name + 1);
+	context->name = g_path_get_basename(pathname);
 
 	//remove suffix
 	len = strlen(context->name);
