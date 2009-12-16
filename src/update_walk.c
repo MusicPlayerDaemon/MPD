@@ -394,6 +394,7 @@ update_archive_file(struct directory *parent, const char *name,
 		    const struct stat *st,
 		    const struct archive_plugin *plugin)
 {
+	GError *error = NULL;
 	char *path_fs;
 	struct archive_file *file;
 	struct directory *directory;
@@ -409,10 +410,11 @@ update_archive_file(struct directory *parent, const char *name,
 	path_fs = map_directory_child_fs(parent, name);
 
 	/* open archive */
-	file = archive_file_open(plugin, path_fs);
+	file = archive_file_open(plugin, path_fs, &error);
 	if (file == NULL) {
-		g_warning("unable to open archive %s", path_fs);
 		g_free(path_fs);
+		g_warning("%s", error->message);
+		g_error_free(error);
 		return;
 	}
 

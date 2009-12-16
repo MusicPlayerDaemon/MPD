@@ -90,7 +90,7 @@ listdir_recur(const char *psz_path, struct iso9660_archive_file *context)
 }
 
 static struct archive_file *
-iso9660_archive_open(const char *pathname)
+iso9660_archive_open(const char *pathname, GError **error_r)
 {
 	struct iso9660_archive_file *context =
 		g_new(struct iso9660_archive_file, 1);
@@ -102,7 +102,8 @@ iso9660_archive_open(const char *pathname)
 	/* open archive */
 	context->iso = iso9660_open (pathname);
 	if (context->iso   == NULL) {
-		g_warning("iso %s open failed\n", pathname);
+		g_set_error(error_r, iso9660_quark(), 0,
+			    "Failed to open ISO9660 file %s", pathname);
 		return NULL;
 	}
 

@@ -48,7 +48,7 @@ struct archive_plugin {
 	 * returns pointer to handle used is all operations with this archive
 	 * or NULL when opening fails
 	 */
-	struct archive_file *(*open)(const char *path_fs);
+	struct archive_file *(*open)(const char *path_fs, GError **error_r);
 
 	/**
 	 * reset routine will move current read index in archive to default
@@ -90,7 +90,8 @@ struct archive_plugin {
 };
 
 struct archive_file *
-archive_file_open(const struct archive_plugin *plugin, const char *path);
+archive_file_open(const struct archive_plugin *plugin, const char *path,
+		  GError **error_r);
 
 void
 archive_file_close(struct archive_file *file);

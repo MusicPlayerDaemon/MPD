@@ -23,15 +23,17 @@
 #include <assert.h>
 
 struct archive_file *
-archive_file_open(const struct archive_plugin *plugin, const char *path)
+archive_file_open(const struct archive_plugin *plugin, const char *path,
+		  GError **error_r)
 {
 	struct archive_file *file;
 
 	assert(plugin != NULL);
 	assert(plugin->open != NULL);
 	assert(path != NULL);
+	assert(error_r == NULL || *error_r == NULL);
 
-	file = plugin->open(path);
+	file = plugin->open(path, error_r);
 
 	if (file != NULL) {
 		assert(file->plugin != NULL);
@@ -39,6 +41,9 @@ archive_file_open(const struct archive_plugin *plugin, const char *path)
 		assert(file->plugin->scan_reset != NULL);
 		assert(file->plugin->scan_next != NULL);
 		assert(file->plugin->open_stream != NULL);
+		assert(error_r == NULL || *error_r == NULL);
+	} else {
+		assert(error_r == NULL || *error_r != NULL);
 	}
 
 	return file;

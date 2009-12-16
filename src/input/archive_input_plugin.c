@@ -61,7 +61,7 @@ input_archive_open(struct input_stream *is, const char *pathname,
 		return false;
 	}
 
-	file = archive_file_open(arplug, archive);
+	file = archive_file_open(arplug, archive, error_r);
 	if (file == NULL)
 		return false;
 

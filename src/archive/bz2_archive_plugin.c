@@ -98,7 +98,7 @@ bz2_destroy(struct bz2_archive_file *data)
 /* archive open && listing routine */
 
 static struct archive_file *
-bz2_open(const char *pathname)
+bz2_open(const char *pathname, GError **error_r)
 {
 	struct bz2_archive_file *context;
 	int len;
@@ -107,8 +107,7 @@ bz2_open(const char *pathname)
 	archive_file_init(&context->base, &bz2_archive_plugin);
 
 	//open archive
-	if (!input_stream_open(&context->istream, pathname, NULL)) {
-		g_warning("failed to open an bzip2 archive %s\n",pathname);
+	if (!input_stream_open(&context->istream, pathname, error_r)) {
 		g_free(context);
 		return NULL;
 	}

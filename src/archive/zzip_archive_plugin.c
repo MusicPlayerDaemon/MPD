@@ -52,7 +52,7 @@ zzip_quark(void)
 /* archive open && listing routine */
 
 static struct archive_file *
-zzip_archive_open(const char *pathname)
+zzip_archive_open(const char *pathname, GError **error_r)
 {
 	struct zzip_archive *context = g_malloc(sizeof(*context));
 	ZZIP_DIRENT dirent;
@@ -63,7 +63,8 @@ zzip_archive_open(const char *pathname)
 	context->list = NULL;
 	context->dir = zzip_dir_open(pathname, NULL);
 	if (context->dir  == NULL) {
-		g_warning("zipfile %s open failed\n", pathname);
+		g_set_error(error_r, zzip_quark(), 0,
+			    "Failed to open ZIP file %s", pathname);
 		return NULL;
 	}
 
