@@ -62,6 +62,8 @@ input_archive_open(struct input_stream *is, const char *pathname,
 	}
 
 	file = archive_file_open(arplug, archive);
+	if (file == NULL)
+		return false;
 
 	//setup fileops
 	opened = archive_file_open_stream(file, is, filename, error_r);
