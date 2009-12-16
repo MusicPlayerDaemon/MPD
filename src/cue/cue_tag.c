@@ -174,7 +174,7 @@ cue_tag_merge(struct tag *a, struct tag *b)
 struct tag *
 cue_tag(struct Cd *cd, unsigned tnum)
 {
-	struct tag *cd_tag, *track_tag;
+	struct tag *cd_tag, *track_tag, *tag;
 	struct Track *track;
 
 	assert(cd != NULL);
@@ -190,7 +190,15 @@ cue_tag(struct Cd *cd, unsigned tnum)
 	track_tag = cue_tag_track(track_get_cdtext(track),
 				  track_get_rem(track));
 
-	return cue_tag_merge(cd_tag, track_tag);
+	tag = cue_tag_merge(cd_tag, track_tag);
+	if (tag == NULL)
+		return NULL;
+
+	/* libcue returns the track duration in frames, and there are
+	   75 frames per second; this formula rounds up */
+	tag->time = (track_get_length(track) + 74) / 75;
+
+	return tag;
 }
 
 struct tag *
