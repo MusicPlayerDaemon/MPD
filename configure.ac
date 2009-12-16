@@ -378,9 +378,9 @@ AC_ARG_ENABLE(iso9660,
 MPD_AUTO_PKG(iso9660, ISO9660, [libiso9660],
 	[libiso9660 archive library], [libiso9660 not found])
 
-AM_CONDITIONAL(HAVE_ISO, test x$enable_iso9660 = xyes)
+AM_CONDITIONAL(HAVE_ISO9660, test x$enable_iso9660 = xyes)
 if test x$enable_iso9660 = xyes; then
-	AC_DEFINE(HAVE_ISO, 1, [Define to have iso archive support])
+	AC_DEFINE(HAVE_ISO9660, 1, [Define to have ISO9660 archive support])
 fi
 
 dnl archive API

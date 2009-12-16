@@ -33,16 +33,16 @@
 
 #define CEILING(x, y) ((x+(y-1))/y)
 
-typedef struct {
+struct iso9660_archive_file {
 	iso9660_t *iso;
 	iso9660_stat_t *statbuf;
 	size_t cur_ofs;
 	size_t max_blocks;
 	GSList	*list;
 	GSList	*iter;
-} iso_context;
+};
 
-static const struct input_plugin iso_inputplugin;
+static const struct input_plugin iso9660_input_plugin;
 
 static inline GQuark
 iso9660_quark(void)
@@ -53,7 +53,7 @@ iso9660_quark(void)
 /* archive open && listing routine */
 
 static void
-listdir_recur(const char *psz_path, iso_context *context)
+listdir_recur(const char *psz_path, struct iso9660_archive_file *context)
 {
 	iso9660_t *iso = context->iso;
 	CdioList_t *entlist;
@@ -87,9 +87,10 @@ listdir_recur(const char *psz_path, iso_context *context)
 }
 
 static struct archive_file *
-iso_open(char * pathname)
+iso9660_archive_open(char * pathname)
 {
-	iso_context *context = g_malloc(sizeof(iso_context));
+	struct iso9660_archive_file *context =
+		g_new(struct iso9660_archive_file, 1);
 
 	context->list = NULL;
 
@@ -106,17 +107,21 @@ iso_open(char * pathname)
 }
 
 static void
-iso_scan_reset(struct archive_file *file)
+iso9660_archive_scan_reset(struct archive_file *file)
 {
-	iso_context *context = (iso_context *) file;
+	struct iso9660_archive_file *context =
+		(struct iso9660_archive_file *)file;
+
 	//reset iterator
 	context->iter = context->list;
 }
 
 static char *
-iso_scan_next(struct archive_file *file)
+iso9660_archive_scan_next(struct archive_file *file)
 {
-	iso_context *context = (iso_context *) file;
+	struct iso9660_archive_file *context =
+		(struct iso9660_archive_file *)file;
+
 	char *data = NULL;
 	if (context->iter != NULL) {
 		///fetch data and goto next
@@ -127,9 +132,11 @@ iso_scan_next(struct archive_file *file)
 }
 
 static void
-iso_close(struct archive_file *file)
+iso9660_archive_close(struct archive_file *file)
 {
-	iso_context *context = (iso_context *) file;
+	struct iso9660_archive_file *context =
+		(struct iso9660_archive_file *)file;
+
 	GSList *tmp;
 	if (context->list) {
 		//free list
@@ -146,12 +153,14 @@ iso_close(struct archive_file *file)
 /* single archive handling */
 
 static bool
-iso_open_stream(struct archive_file *file, struct input_stream *is,
+iso9660_archive_open_stream(struct archive_file *file, struct input_stream *is,
 		const char *pathname, GError **error_r)
 {
-	iso_context *context = (iso_context *) file;
+	struct iso9660_archive_file *context =
+		(struct iso9660_archive_file *)file;
+
 	//setup file ops
-	is->plugin = &iso_inputplugin;
+	is->plugin = &iso9660_input_plugin;
 	//insert back reference
 	is->data = context;
 	//we are not seekable
@@ -170,19 +179,19 @@ iso_open_stream(struct archive_file *file, struct input_stream *is,
 }
 
 static void
-iso_is_close(struct input_stream *is)
+iso9660_input_close(struct input_stream *is)
 {
-	iso_context *context = (iso_context *) is->data;
+	struct iso9660_archive_file *context = is->data;
 	g_free(context->statbuf);
 
-	iso_close((struct archive_file *)context);
+	iso9660_archive_close((struct archive_file *)context);
 }
 
 
 static size_t
-iso_is_read(struct input_stream *is, void *ptr, size_t size, GError **error_r)
+iso9660_input_read(struct input_stream *is, void *ptr, size_t size, GError **error_r)
 {
-	iso_context *context = (iso_context *) is->data;
+	struct iso9660_archive_file *context = (struct iso9660_archive_file *) is->data;
 	int toread, readed = 0;
 	int no_blocks, cur_block;
 	size_t left_bytes = context->statbuf->size - context->cur_ofs;
@@ -218,31 +227,32 @@ iso_is_read(struct input_stream *is, void *ptr, size_t size, GError **error_r)
 }
 
 static bool
-iso_is_eof(struct input_stream *is)
+iso9660_input_eof(struct input_stream *is)
 {
-	iso_context *context = (iso_context *) is->data;
+	struct iso9660_archive_file *context = is->data;
+
 	return (context->cur_ofs == context->statbuf->size);
 }
 
 /* exported structures */
 
-static const char *const iso_extensions[] = {
+static const char *const iso9660_archive_extensions[] = {
 	"iso",
 	NULL
 };
 
-static const struct input_plugin iso_inputplugin = {
-	.close = iso_is_close,
-	.read = iso_is_read,
-	.eof = iso_is_eof,
+static const struct input_plugin iso9660_input_plugin = {
+	.close = iso9660_input_close,
+	.read = iso9660_input_read,
+	.eof = iso9660_input_eof,
 };
 
-const struct archive_plugin iso_plugin = {
+const struct archive_plugin iso9660_archive_plugin = {
 	.name = "iso",
-	.open = iso_open,
-	.scan_reset = iso_scan_reset,
-	.scan_next = iso_scan_next,
-	.open_stream = iso_open_stream,
-	.close = iso_close,
-	.suffixes = iso_extensions
+	.open = iso9660_archive_open,
+	.scan_reset = iso9660_archive_scan_reset,
+	.scan_next = iso9660_archive_scan_next,
+	.open_stream = iso9660_archive_open_stream,
+	.close = iso9660_archive_close,
+	.suffixes = iso9660_archive_extensions
 };

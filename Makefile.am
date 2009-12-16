@@ -358,8 +358,8 @@ if HAVE_ZZIP
 ARCHIVE_SRC += src/archive/zzip_archive_plugin.c
 endif
 
-if HAVE_ISO
-ARCHIVE_SRC += src/archive/iso_plugin.c
+if HAVE_ISO9660
+ARCHIVE_SRC += src/archive/iso9660_archive_plugin.c
 endif
 
 if ENABLE_ARCHIVE

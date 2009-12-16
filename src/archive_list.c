@@ -27,7 +27,7 @@
 
 extern const struct archive_plugin bz2_plugin;
 extern const struct archive_plugin zzip_archive_plugin;
-extern const struct archive_plugin iso_plugin;
+extern const struct archive_plugin iso9660_archive_plugin;
 
 static const struct archive_plugin *const archive_plugins[] = {
 #ifdef HAVE_BZ2
@@ -36,8 +36,8 @@ static const struct archive_plugin *const archive_plugins[] = {
 #ifdef HAVE_ZZIP
 	&zzip_archive_plugin,
 #endif
-#ifdef HAVE_ISO
-	&iso_plugin,
+#ifdef HAVE_ISO9660
+	&iso9660_archive_plugin,
 #endif
 	NULL
 };
