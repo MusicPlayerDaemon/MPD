@@ -99,7 +99,7 @@ mp4_seek(void *user_data, uint64_t position)
 {
 	struct mp4_context *ctx = user_data;
 
-	return input_stream_seek(ctx->input_stream, position, SEEK_SET)
+	return input_stream_seek(ctx->input_stream, position, SEEK_SET, NULL)
 		? 0 : -1;
 }
 
@@ -356,7 +356,7 @@ mp4_tag_dup(const char *file)
 	int32_t scale;
 	int i;
 
-	if (!input_stream_open(&input_stream, file)) {
+	if (!input_stream_open(&input_stream, file, NULL)) {
 		g_warning("Failed to open file: %s", file);
 		return NULL;
 	}
