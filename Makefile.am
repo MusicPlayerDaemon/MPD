@@ -198,6 +198,9 @@ mpd_headers = \
 	src/archive_internal.h \
 	src/archive_list.h \
 	src/archive_plugin.h \
+	src/archive/bz2_archive_plugin.h \
+	src/archive/iso9660_archive_plugin.h \
+	src/archive/zzip_archive_plugin.h \
 	src/input/archive_input_plugin.h \
 	src/cue/cue_tag.h
 

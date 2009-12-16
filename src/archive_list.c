@@ -21,13 +21,12 @@
 #include "archive_list.h"
 #include "archive_plugin.h"
 #include "utils.h"
+#include "archive/bz2_archive_plugin.h"
+#include "archive/iso9660_archive_plugin.h"
+#include "archive/zzip_archive_plugin.h"
 
 #include <string.h>
 #include <glib.h>
-
-extern const struct archive_plugin bz2_archive_plugin;
-extern const struct archive_plugin zzip_archive_plugin;
-extern const struct archive_plugin iso9660_archive_plugin;
 
 static const struct archive_plugin *const archive_plugins[] = {
 #ifdef HAVE_BZ2

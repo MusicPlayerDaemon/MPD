@@ -22,6 +22,7 @@
   */
 
 #include "config.h"
+#include "archive/bz2_archive_plugin.h"
 #include "archive_api.h"
 #include "input_plugin.h"
 
