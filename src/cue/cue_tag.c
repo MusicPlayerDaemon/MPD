@@ -4,11 +4,11 @@
 
 #include <libcue/libcue.h>
 
-static struct tag*
-cue_tag_cd(struct Cdtext* cdtext, struct Rem* rem)
+static struct tag *
+cue_tag_cd(struct Cdtext *cdtext, struct Rem *rem)
 {
-	char* tmp = NULL;
-	struct tag* tag = NULL;
+	struct tag *tag;
+	char *tmp;
 
 	//if (cdtext == NULL)
 		//return NULL;
@@ -17,7 +17,7 @@ cue_tag_cd(struct Cdtext* cdtext, struct Rem* rem)
 
 	tag_begin_add(tag);
 
-	{ /* TAG_ALBUM_ARTIST */
+	/* TAG_ALBUM_ARTIST */
 	if ((tmp = cdtext_get(PTI_PERFORMER, cdtext)) != NULL)
 		tag_add_item(tag, TAG_ALBUM_ARTIST, tmp);
 
@@ -29,9 +29,8 @@ cue_tag_cd(struct Cdtext* cdtext, struct Rem* rem)
 
 	else if ((tmp = cdtext_get(PTI_ARRANGER, cdtext)) != NULL)
 		tag_add_item(tag, TAG_ALBUM_ARTIST, tmp);
-	/* TAG_ALBUM_ARTIST */ }
 
-	{ /* TAG_ARTIST */
+	/* TAG_ARTIST */
 	if ((tmp = cdtext_get(PTI_PERFORMER, cdtext)) != NULL)
 		tag_add_item(tag, TAG_ARTIST, tmp);
 
@@ -43,7 +42,6 @@ cue_tag_cd(struct Cdtext* cdtext, struct Rem* rem)
 
 	else if ((tmp = cdtext_get(PTI_ARRANGER, cdtext)) != NULL)
 		tag_add_item(tag, TAG_ARTIST, tmp);
-	/* TAG_ARTIST */ }
 
 	/* TAG_PERFORMER */
 	if ((tmp = cdtext_get(PTI_PERFORMER, cdtext)) != NULL)
@@ -94,11 +92,11 @@ cue_tag_cd(struct Cdtext* cdtext, struct Rem* rem)
 	return tag;
 }
 
-static struct tag*
-cue_tag_track(struct Cdtext* cdtext, struct Rem* rem)
+static struct tag *
+cue_tag_track(struct Cdtext *cdtext, struct Rem *rem)
 {
-	char* tmp = NULL;
-	struct tag* tag = NULL;
+	struct tag *tag;
+	char *tmp;
 
 	//if (cdtext == NULL)
 		//return NULL;
@@ -107,7 +105,7 @@ cue_tag_track(struct Cdtext* cdtext, struct Rem* rem)
 
 	tag_begin_add(tag);
 
-	{ /* TAG_ARTIST */
+	/* TAG_ARTIST */
 	if ((tmp = cdtext_get(PTI_PERFORMER, cdtext)) != NULL)
 		tag_add_item(tag, TAG_ARTIST, tmp);
 
@@ -119,7 +117,6 @@ cue_tag_track(struct Cdtext* cdtext, struct Rem* rem)
 
 	else if ((tmp = cdtext_get(PTI_ARRANGER, cdtext)) != NULL)
 		tag_add_item(tag, TAG_ARTIST, tmp);
-	/* TAG_ARTIST */ }
 
 	/* TAG_TITLE */
 	if ((tmp = cdtext_get(PTI_TITLE, cdtext)) != NULL)
@@ -159,14 +156,11 @@ cue_tag_track(struct Cdtext* cdtext, struct Rem* rem)
 	return tag;
 }
 
-struct tag*
-cue_tag_file(	FILE* fp,
-		const unsigned int tnum)
+struct tag *
+cue_tag_file(FILE *fp, unsigned tnum)
 {
-	struct tag* cd_tag = NULL;
-	struct tag* track_tag = NULL;
-	struct tag* merge_tag = NULL;
-	struct Cd* cd = NULL;
+	struct Cd *cd;
+	struct tag *cd_tag, *track_tag;
 
 	if (tnum > 256)
 		return NULL;
@@ -178,49 +172,34 @@ cue_tag_file(	FILE* fp,
 
 	if (cd == NULL)
 		return NULL;
-	else
-	{
-		/* tag from CDtext info */
-		cd_tag = cue_tag_cd(	cd_get_cdtext(cd),
-					cd_get_rem(cd));
 
-		/* tag from TRACKtext info */
-		track_tag = cue_tag_track(	track_get_cdtext(	cd_get_track(cd, tnum)),
-						track_get_rem(		cd_get_track(cd, tnum)));
+	/* tag from CDtext info */
+	cd_tag = cue_tag_cd(cd_get_cdtext(cd), cd_get_rem(cd));
 
-		cd_delete(cd);
-	}
+	/* tag from TRACKtext info */
+	track_tag = cue_tag_track(track_get_cdtext(cd_get_track(cd, tnum)),
+				  track_get_rem(cd_get_track(cd, tnum)));
 
-	if ((cd_tag != NULL) && (track_tag != NULL))
-	{
-		merge_tag = tag_merge(cd_tag, track_tag);
+	cd_delete(cd);
+
+	if (cd_tag != NULL && track_tag != NULL) {
+		struct tag *merge_tag = tag_merge(cd_tag, track_tag);
 		tag_free(cd_tag);
 		tag_free(track_tag);
 		return merge_tag;
-	}
-
-	else if (cd_tag != NULL)
-	{
+	} else if (cd_tag != NULL)
 		return cd_tag;
-	}
-
 	else if (track_tag != NULL)
-	{
 		return track_tag;
-	}
-
 	else
 		return NULL;
 }
 
-struct tag*
-cue_tag_string(	char* str,
-		const unsigned int tnum)
+struct tag *
+cue_tag_string(char *str, unsigned tnum)
 {
-	struct tag* cd_tag = NULL;
-	struct tag* track_tag = NULL;
-	struct tag* merge_tag = NULL;
-	struct Cd* cd = NULL;
+	struct Cd *cd;
+	struct tag *cd_tag, *track_tag;
 
 	if (tnum > 256)
 		return NULL;
@@ -232,37 +211,25 @@ cue_tag_string(	char* str,
 
 	if (cd == NULL)
 		return NULL;
-	else
-	{
-		/* tag from CDtext info */
-		cd_tag = cue_tag_cd(	cd_get_cdtext(cd),
-					cd_get_rem(cd));
 
-		/* tag from TRACKtext info */
-		track_tag = cue_tag_track(	track_get_cdtext(	cd_get_track(cd, tnum)),
-						track_get_rem(		cd_get_track(cd, tnum)));
+	/* tag from CDtext info */
+	cd_tag = cue_tag_cd(cd_get_cdtext(cd), cd_get_rem(cd));
 
-		cd_delete(cd);
-	}
+	/* tag from TRACKtext info */
+	track_tag = cue_tag_track(track_get_cdtext(cd_get_track(cd, tnum)),
+				  track_get_rem(cd_get_track(cd, tnum)));
 
-	if ((cd_tag != NULL) && (track_tag != NULL))
-	{
-		merge_tag = tag_merge(cd_tag, track_tag);
+	cd_delete(cd);
+
+	if (cd_tag != NULL && track_tag != NULL) {
+		struct tag *merge_tag = tag_merge(cd_tag, track_tag);
 		tag_free(cd_tag);
 		tag_free(track_tag);
 		return merge_tag;
-	}
-
-	else if (cd_tag != NULL)
-	{
+	} else if (cd_tag != NULL)
 		return cd_tag;
-	}
-
 	else if (track_tag != NULL)
-	{
 		return track_tag;
-	}
-
 	else
 		return NULL;
 }
