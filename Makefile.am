@@ -160,6 +160,7 @@ mpd_headers = \
 	src/playlist/xspf_playlist_plugin.h \
 	src/playlist/asx_playlist_plugin.h \
 	src/playlist/lastfm_playlist_plugin.h \
+	src/playlist/cue_playlist_plugin.h \
 	src/poison.h \
 	src/riff.h \
 	src/aiff.h \
@@ -707,6 +708,10 @@ if ENABLE_LASTFM
 PLAYLIST_SRC += src/playlist/lastfm_playlist_plugin.c
 endif
 
+if HAVE_CUE
+PLAYLIST_SRC += src/playlist/cue_playlist_plugin.c
+endif
+
 
 #
 # Filter plugins
@@ -782,9 +787,11 @@ test_run_input_SOURCES = test/run_input.c \
 	$(INPUT_SRC)
 
 test_dump_playlist_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(CUE_CFLAGS) \
 	$(ARCHIVE_CFLAGS) \
 	$(INPUT_CFLAGS)
 test_dump_playlist_LDADD = $(MPD_LIBS) \
+	$(CUE_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(INPUT_LIBS) \
 	$(GLIB_LIBS)
@@ -797,6 +804,10 @@ test_dump_playlist_SOURCES = test/dump_playlist.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
 	$(PLAYLIST_SRC)
+
+if HAVE_CUE
+test_dump_playlist_SOURCES += src/cue/cue_tag.c
+endif
 
 test_run_decoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(TAG_CFLAGS) \
