@@ -175,18 +175,20 @@ struct tag *
 cue_tag(struct Cd *cd, unsigned tnum)
 {
 	struct tag *cd_tag, *track_tag;
+	struct Track *track;
 
 	assert(cd != NULL);
 
-	if (tnum > 256)
+	track = cd_get_track(cd, tnum);
+	if (track == NULL)
 		return NULL;
 
 	/* tag from CDtext info */
 	cd_tag = cue_tag_cd(cd_get_cdtext(cd), cd_get_rem(cd));
 
 	/* tag from TRACKtext info */
-	track_tag = cue_tag_track(track_get_cdtext(cd_get_track(cd, tnum)),
-				  track_get_rem(cd_get_track(cd, tnum)));
+	track_tag = cue_tag_track(track_get_cdtext(track),
+				  track_get_rem(track));
 
 	return cue_tag_merge(cd_tag, track_tag);
 }
