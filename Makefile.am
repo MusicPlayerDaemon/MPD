@@ -351,7 +351,7 @@ ARCHIVE_LIBS = \
 ARCHIVE_SRC =
 
 if HAVE_BZ2
-ARCHIVE_SRC += src/archive/bz2_plugin.c
+ARCHIVE_SRC += src/archive/bz2_archive_plugin.c
 endif
 
 if HAVE_ZZIP

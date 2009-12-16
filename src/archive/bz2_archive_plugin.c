@@ -267,7 +267,7 @@ static const struct input_plugin bz2_inputplugin = {
 	.eof = bz2_is_eof,
 };
 
-const struct archive_plugin bz2_plugin = {
+const struct archive_plugin bz2_archive_plugin = {
 	.name = "bz2",
 	.open = bz2_open,
 	.scan_reset = bz2_scan_reset,

@@ -25,13 +25,13 @@
 #include <string.h>
 #include <glib.h>
 
-extern const struct archive_plugin bz2_plugin;
+extern const struct archive_plugin bz2_archive_plugin;
 extern const struct archive_plugin zzip_archive_plugin;
 extern const struct archive_plugin iso9660_archive_plugin;
 
 static const struct archive_plugin *const archive_plugins[] = {
 #ifdef HAVE_BZ2
-	&bz2_plugin,
+	&bz2_archive_plugin,
 #endif
 #ifdef HAVE_ZZIP
 	&zzip_archive_plugin,
