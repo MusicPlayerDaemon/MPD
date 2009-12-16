@@ -3,6 +3,7 @@
 #include "tag.h"
 
 #include <libcue/libcue.h>
+#include <assert.h>
 
 static struct tag *
 cue_tag_cd(struct Cdtext *cdtext, struct Rem *rem)
@@ -10,8 +11,7 @@ cue_tag_cd(struct Cdtext *cdtext, struct Rem *rem)
 	struct tag *tag;
 	char *tmp;
 
-	//if (cdtext == NULL)
-		//return NULL;
+	assert(cdtext != NULL);
 
 	tag = tag_new();
 
@@ -98,8 +98,7 @@ cue_tag_track(struct Cdtext *cdtext, struct Rem *rem)
 	struct tag *tag;
 	char *tmp;
 
-	//if (cdtext == NULL)
-		//return NULL;
+	assert(cdtext != NULL);
 
 	tag = tag_new();
 
@@ -162,14 +161,12 @@ cue_tag_file(FILE *fp, unsigned tnum)
 	struct Cd *cd;
 	struct tag *cd_tag, *track_tag;
 
+	assert(fp != NULL);
+
 	if (tnum > 256)
 		return NULL;
 
-	if (fp == NULL)
-		return NULL;
-	else
-		cd = cue_parse_file(fp);
-
+	cd = cue_parse_file(fp);
 	if (cd == NULL)
 		return NULL;
 
@@ -201,14 +198,12 @@ cue_tag_string(char *str, unsigned tnum)
 	struct Cd *cd;
 	struct tag *cd_tag, *track_tag;
 
+	assert(str != NULL);
+
 	if (tnum > 256)
 		return NULL;
 
-	if (str == NULL)
-		return NULL;
-	else
-		cd = cue_parse_string(str);
-
+	cd = cue_parse_string(str);
 	if (cd == NULL)
 		return NULL;
 
