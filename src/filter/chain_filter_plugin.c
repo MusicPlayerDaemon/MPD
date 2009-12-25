@@ -143,7 +143,7 @@ chain_filter_filter(struct filter *_filter,
 		   into the current one */
 		src = filter_filter(filter, src, src_size, &src_size, error_r);
 		if (src == NULL)
-			chain_close_until(chain, filter);
+			return NULL;
 	}
 
 	/* return the output of the last filter */
