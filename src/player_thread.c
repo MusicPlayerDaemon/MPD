@@ -228,6 +228,26 @@ player_wait_for_decoder(struct player *player)
 }
 
 /**
+ * Returns the real duration of the song, comprising the duration
+ * indicated by the decoder plugin.
+ */
+static double
+real_song_duration(const struct song *song, double decoder_duration)
+{
+	assert(song != NULL);
+
+	if (decoder_duration <= 0.0)
+		/* the decoder plugin didn't provide information; fall
+		   back to song_get_duration() */
+		return song_get_duration(song);
+
+	if (song->end_ms > 0 && song->end_ms / 1000.0 < decoder_duration)
+		return (song->end_ms - song->start_ms) / 1000.0;
+
+	return decoder_duration - song->start_ms / 1000.0;
+}
+
+/**
  * The decoder has acknowledged the "START" command (see
  * player_wait_for_decoder()).  This function checks if the decoder
  * initialization has completed yet.
@@ -265,7 +285,7 @@ player_check_decoder_startup(struct player *player)
 			return true;
 
 		player_lock();
-		pc.total_time = dc->total_time;
+		pc.total_time = real_song_duration(dc->song, dc->total_time);
 		pc.audio_format = dc->in_audio_format;
 		player_unlock();
 
@@ -351,13 +371,14 @@ player_send_silence(struct player *player)
  */
 static bool player_seek_decoder(struct player *player)
 {
+	struct song *song = pc.next_song;
 	struct decoder_control *dc = player->dc;
 	double where;
 	bool ret;
 
 	assert(pc.next_song != NULL);
 
-	if (decoder_current_song(dc) != pc.next_song) {
+	if (decoder_current_song(dc) != song) {
 		/* the decoder is already decoding the "next" song -
 		   stop it and start the previous song again */
 
@@ -399,7 +420,7 @@ static bool player_seek_decoder(struct player *player)
 	if (where < 0.0)
 		where = 0.0;
 
-	ret = dc_seek(dc, where);
+	ret = dc_seek(dc, where + song->start_ms / 1000.0);
 	if (!ret) {
 		/* decoder failure */
 		player_command_finished();
@@ -801,10 +822,17 @@ static void do_play(struct decoder_control *dc)
 		if (player.decoder_starting) {
 			/* wait until the decoder is initialized completely */
 			bool success;
+			const struct song *song;
 
 			success = player_check_decoder_startup(&player);
 			if (!success)
 				break;
+
+			/* seek to the beginning of the range */
+			song = decoder_current_song(dc);
+			if (song != NULL && song->start_ms > 0 &&
+			    !dc_seek(dc, song->start_ms / 1000.0))
+				player_dc_stop(&player);
 
 			player_lock();
 			continue;

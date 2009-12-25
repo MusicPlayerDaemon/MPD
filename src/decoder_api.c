@@ -328,8 +328,9 @@ decoder_data(struct decoder *decoder,
 		}
 
 		dest = music_chunk_write(chunk, &dc->out_audio_format,
-					 decoder->timestamp, kbit_rate,
-					 &nbytes);
+					 decoder->timestamp -
+					 dc->song->start_ms / 1000.0,
+					 kbit_rate, &nbytes);
 		if (dest == NULL) {
 			/* the chunk is full, flush it */
 			decoder_flush_chunk(decoder);
@@ -366,6 +367,12 @@ decoder_data(struct decoder *decoder,
 
 		decoder->timestamp += (double)nbytes /
 			audio_format_time_to_size(&dc->in_audio_format);
+
+		if (dc->song->end_ms > 0 &&
+		    decoder->timestamp >= dc->song->end_ms / 1000.0)
+			/* the end of this range has been reached:
+			   stop decoding */
+			return DECODE_COMMAND_STOP;
 	}
 
 	return DECODE_COMMAND_NONE;
