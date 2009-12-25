@@ -9,6 +9,7 @@ ver 0.15.7 (2009/??/??)
   - id3: fix ID3v1 charset conversion
 * decoders:
   - ffmpeg: don't try to force stereo
+  - wavpack: allow fine-grained seeking
 * mixer: explicitly close all mixers on shutdown
 * mapper: fix memory leak when playlist_directory is not set
 * mapper: apply filesystem_charset to playlists
