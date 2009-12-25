@@ -178,6 +178,14 @@ route_filter_parse(const struct config_param *param,
 		g_strfreev(sd);
 	}
 
+	if (!audio_valid_channel_count(filter->min_output_channels)) {
+		g_strfreev(tokens);
+		g_set_error(error_r, audio_format_quark(), 0,
+			    "Invalid number of output channels requested: %d",
+			    filter->min_output_channels);
+		return false;
+	}
+
 	// Allocate a map of "copy nothing to me"
 	filter->sources =
 		g_malloc(filter->min_output_channels * sizeof(signed char));
@@ -242,7 +250,7 @@ route_filter_finish(struct filter *_filter)
 static const struct audio_format *
 route_filter_open(struct filter *_filter,
 		 const struct audio_format *audio_format,
-		 GError **error_r)
+		  G_GNUC_UNUSED GError **error_r)
 {
 	struct route_filter *filter = (struct route_filter *)_filter;
 
@@ -250,13 +258,6 @@ route_filter_open(struct filter *_filter,
 	filter->input_format = *audio_format;
 	filter->input_frame_size =
 		audio_format_frame_size(&filter->input_format);
-
-	if (!audio_valid_channel_count(filter->min_output_channels)) {
-		g_set_error(error_r, audio_format_quark(), 2,
-			"Invalid number of output channels requested: %d",
-			filter->min_output_channels);
-		return NULL;
-	}
 
 	// Decide on an output format which has enough channels,
 	// and is otherwise identical
