@@ -75,14 +75,6 @@ volume_filter_open(struct filter *_filter,
 {
 	struct volume_filter *filter = (struct volume_filter *)_filter;
 
-	if (audio_format->format != SAMPLE_FORMAT_S8 &&
-	    audio_format->format != SAMPLE_FORMAT_S16 &&
-	    audio_format->format != SAMPLE_FORMAT_S24_P32) {
-		g_set_error(error_r, volume_quark(), 0,
-			    "Unsupported audio format");
-		return false;
-	}
-
 	if (audio_format->reverse_endian) {
 		g_set_error(error_r, volume_quark(), 0,
 			    "Software volume for reverse endian "
