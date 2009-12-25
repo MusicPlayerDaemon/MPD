@@ -31,6 +31,18 @@ struct song {
 	struct tag *tag;
 	struct directory *parent;
 	time_t mtime;
+
+	/**
+	 * Start of this sub-song within the file in milliseconds.
+	 */
+	unsigned start_ms;
+
+	/**
+	 * End of this sub-song within the file in milliseconds.
+	 * Unused if zero.
+	 */
+	unsigned end_ms;
+
 	char uri[sizeof(int)];
 };
 

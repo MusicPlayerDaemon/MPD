@@ -128,6 +128,14 @@ int main(int argc, char **argv)
 
 	while ((song = playlist_plugin_read(playlist)) != NULL) {
 		g_print("%s\n", song->uri);
+
+		if (song->start_ms > 0 || song->end_ms > 0)
+			g_print("range: %u:%02u..%u:%02u\n",
+				song->start_ms / 60000,
+				(song->start_ms / 1000) % 60,
+				song->end_ms / 60000,
+				(song->end_ms / 1000) % 60);
+
 		if (song->tag != NULL)
 			tag_save(stdout, song->tag);
 
