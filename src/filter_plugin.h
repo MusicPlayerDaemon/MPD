@@ -50,10 +50,14 @@ struct filter_plugin {
 
 	/**
 	 * Opens a filter.
+	 *
+	 * @param audio_format the audio format of incoming data; the
+	 * plugin may modify the object to enforce another input
+	 * format
 	 */
 	const struct audio_format *
 	(*open)(struct filter *filter,
-		const struct audio_format *audio_format,
+		struct audio_format *audio_format,
 		GError **error_r);
 
 	/**
@@ -108,13 +112,14 @@ filter_free(struct filter *filter);
  * Opens the filter, preparing it for filter_filter().
  *
  * @param filter the filter object
- * @param audio_format the audio format of incoming data
+ * @param audio_format the audio format of incoming data; the plugin
+ * may modify the object to enforce another input format
  * @param error location to store the error occuring, or NULL to
  * ignore errors.
  * @return the format of outgoing data
  */
 const struct audio_format *
-filter_open(struct filter *filter, const struct audio_format *audio_format,
+filter_open(struct filter *filter, struct audio_format *audio_format,
 	    GError **error_r);
 
 /**

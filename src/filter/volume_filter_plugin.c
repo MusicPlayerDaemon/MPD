@@ -69,18 +69,12 @@ volume_filter_finish(struct filter *filter)
 }
 
 static const struct audio_format *
-volume_filter_open(struct filter *_filter,
-		   const struct audio_format *audio_format,
-		   GError **error_r)
+volume_filter_open(struct filter *_filter, struct audio_format *audio_format,
+		   G_GNUC_UNUSED GError **error_r)
 {
 	struct volume_filter *filter = (struct volume_filter *)_filter;
 
-	if (audio_format->reverse_endian) {
-		g_set_error(error_r, volume_quark(), 0,
-			    "Software volume for reverse endian "
-			    "samples is not implemented");
-		return false;
-	}
+	audio_format->reverse_endian = false;
 
 	filter->audio_format = *audio_format;
 	pcm_buffer_init(&filter->buffer);

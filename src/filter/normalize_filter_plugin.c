@@ -61,23 +61,13 @@ normalize_filter_finish(struct filter *filter)
 
 static const struct audio_format *
 normalize_filter_open(struct filter *_filter,
-		      const struct audio_format *audio_format,
-		      GError **error_r)
+		      struct audio_format *audio_format,
+		      G_GNUC_UNUSED GError **error_r)
 {
 	struct normalize_filter *filter = (struct normalize_filter *)_filter;
 
-	if (audio_format->format != SAMPLE_FORMAT_S16) {
-		g_set_error(error_r, normalize_quark(), 0,
-			    "Unsupported audio format");
-		return false;
-	}
-
-	if (audio_format->reverse_endian) {
-		g_set_error(error_r, normalize_quark(), 0,
-			    "Normalize for reverse endian "
-			    "samples is not implemented");
-		return false;
-	}
+	audio_format->format = SAMPLE_FORMAT_S16;
+	audio_format->reverse_endian = false;
 
 	filter->compressor = Compressor_new(0);
 

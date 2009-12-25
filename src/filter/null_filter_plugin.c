@@ -54,8 +54,7 @@ null_filter_finish(struct filter *_filter)
 }
 
 static const struct audio_format *
-null_filter_open(struct filter *_filter,
-		 const struct audio_format *audio_format,
+null_filter_open(struct filter *_filter, struct audio_format *audio_format,
 		 G_GNUC_UNUSED GError **error_r)
 {
 	struct null_filter *filter = (struct null_filter *)_filter;

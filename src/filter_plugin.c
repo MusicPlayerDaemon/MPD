@@ -74,18 +74,23 @@ filter_free(struct filter *filter)
 }
 
 const struct audio_format *
-filter_open(struct filter *filter, const struct audio_format *audio_format,
+filter_open(struct filter *filter, struct audio_format *audio_format,
 	    GError **error_r)
 {
+	const struct audio_format *out_audio_format;
+
 	assert(filter != NULL);
 	assert(audio_format != NULL);
 	assert(audio_format_valid(audio_format));
 	assert(error_r == NULL || *error_r == NULL);
 
-	audio_format = filter->plugin->open(filter, audio_format, error_r);
-	assert(audio_format == NULL || audio_format_valid(audio_format));
+	out_audio_format = filter->plugin->open(filter, audio_format, error_r);
 
-	return audio_format;
+	assert(out_audio_format == NULL || audio_format_valid(audio_format));
+	assert(out_audio_format == NULL ||
+	       audio_format_valid(out_audio_format));
+
+	return out_audio_format;
 }
 
 void
