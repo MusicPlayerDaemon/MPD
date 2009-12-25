@@ -50,6 +50,7 @@ mpd_headers = \
 	src/filter_config.h \
 	src/filter_plugin.h \
 	src/filter_registry.h \
+	src/filter/autoconvert_filter_plugin.h \
 	src/filter/chain_filter_plugin.h \
 	src/filter/convert_filter_plugin.h \
 	src/filter/volume_filter_plugin.h \
@@ -720,6 +721,7 @@ endif
 FILTER_SRC = \
 	src/filter/null_filter_plugin.c \
 	src/filter/chain_filter_plugin.c \
+	src/filter/autoconvert_filter_plugin.c \
 	src/filter/convert_filter_plugin.c \
 	src/filter/route_filter_plugin.c \
 	src/filter/normalize_filter_plugin.c \
