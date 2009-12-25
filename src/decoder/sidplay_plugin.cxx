@@ -284,7 +284,6 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 
 	/* .. and play */
 
-	unsigned data_time = 0;
 	const unsigned timebase = player.timebase();
 	song_len *= timebase;
 
@@ -297,12 +296,13 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 		if (nbytes == 0)
 			break;
 
+		decoder_timestamp(decoder, (double)player.time() / timebase);
+
 		cmd = decoder_data(decoder, NULL, buffer, nbytes,
-				   (float)data_time / (float)timebase,
 				   0, NULL);
-		data_time = player.time();
 
 		if(cmd==DECODE_COMMAND_SEEK) {
+			unsigned data_time = player.time();
 			unsigned target_time = (unsigned)
 				(decoder_seek_where(decoder) * timebase);
 
@@ -323,7 +323,7 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 			decoder_command_finished(decoder);
 		}
 
-		if (song_len > 0 && data_time >= song_len)
+		if (song_len > 0 && player.time() >= song_len)
 			break;
 
 	} while (cmd != DECODE_COMMAND_STOP);

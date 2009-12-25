@@ -96,7 +96,6 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 	struct audio_format audio_format;
 	int ret;
 	char audio_buffer[MODPLUG_FRAME_SIZE];
-	unsigned frame_size, current_frame = 0;
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
 	bdatas = mod_loadfile(decoder, is);
@@ -128,24 +127,19 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 	decoder_initialized(decoder, &audio_format,
 			    is->seekable, ModPlug_GetLength(f) / 1000.0);
 
-	frame_size = audio_format_frame_size(&audio_format);
-
 	do {
 		ret = ModPlug_Read(f, audio_buffer, MODPLUG_FRAME_SIZE);
 		if (ret <= 0)
 			break;
 
-		current_frame += (unsigned)ret / frame_size;
 		cmd = decoder_data(decoder, NULL,
 				   audio_buffer, ret,
-				   (float)current_frame / (float)audio_format.sample_rate,
 				   0, NULL);
 
 		if (cmd == DECODE_COMMAND_SEEK) {
 			float where = decoder_seek_where(decoder);
 
 			ModPlug_Seek(f, (int)(where * 1000.0));
-			current_frame = (unsigned)(where * audio_format.sample_rate);
 
 			decoder_command_finished(decoder);
 		}

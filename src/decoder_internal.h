@@ -30,6 +30,11 @@ struct decoder {
 
 	struct pcm_convert_state conv_state;
 
+	/**
+	 * The time stamp of the next data chunk, in seconds.
+	 */
+	double timestamp;
+
 	bool seeking;
 
 	/**

@@ -119,7 +119,7 @@ sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	SF_INFO info;
 	struct audio_format audio_format;
 	size_t frame_size;
-	sf_count_t read_frames, num_frames, position = 0;
+	sf_count_t read_frames, num_frames;
 	int buffer[4096];
 	enum decoder_command cmd;
 
@@ -155,7 +155,6 @@ sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 
 		cmd = decoder_data(decoder, is,
 				   buffer, num_frames * frame_size,
-				   frame_to_time(position, &audio_format),
 				   0, NULL);
 		if (cmd == DECODE_COMMAND_SEEK) {
 			sf_count_t c =

@@ -303,6 +303,7 @@ decoder_run_song(struct decoder_control *dc,
 	};
 	int ret;
 
+	decoder.timestamp = 0.0;
 	decoder.seeking = false;
 	decoder.song_tag = song->tag != NULL && song_is_file(song)
 		? tag_dup(song->tag) : NULL;

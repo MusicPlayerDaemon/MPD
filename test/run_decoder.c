@@ -117,11 +117,17 @@ decoder_read(G_GNUC_UNUSED struct decoder *decoder,
 	return input_stream_read(is, buffer, length, NULL);
 }
 
+void
+decoder_timestamp(G_GNUC_UNUSED struct decoder *decoder,
+		  G_GNUC_UNUSED double t)
+{
+}
+
 enum decoder_command
 decoder_data(G_GNUC_UNUSED struct decoder *decoder,
 	     G_GNUC_UNUSED struct input_stream *is,
 	     const void *data, size_t datalen,
-	     G_GNUC_UNUSED float data_time, G_GNUC_UNUSED uint16_t bit_rate,
+	     G_GNUC_UNUSED uint16_t kbit_rate,
 	     G_GNUC_UNUSED struct replay_gain_info *replay_gain_info)
 {
 	write(1, data, datalen);

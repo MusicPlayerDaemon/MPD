@@ -92,8 +92,6 @@ wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 			break;
 
 		cmd = decoder_data(decoder, NULL, buffer, len,
-				   (float)info->current_sample /
-				   (float)WILDMIDI_SAMPLE_RATE,
 				   0, NULL);
 
 		if (cmd == DECODE_COMMAND_SEEK) {

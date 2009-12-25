@@ -204,7 +204,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 			break;
 
 		cmd = decoder_data(decoder, NULL, buffer, sizeof(buffer),
-				   0, 0, NULL);
+				   0, NULL);
 	} while (cmd == DECODE_COMMAND_NONE);
 
 	/* clean up */

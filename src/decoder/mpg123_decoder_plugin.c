@@ -103,7 +103,7 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 	struct audio_format audio_format;
 	mpg123_handle *handle;
 	int error;
-	off_t num_samples, position;
+	off_t num_samples;
 	enum decoder_command cmd;
 
 	/* open the file */
@@ -134,8 +134,6 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 		unsigned char buffer[8192];
 		size_t nbytes;
 
-		position = mpg123_tell(handle);
-
 		/* decode */
 
 		error = mpg123_read(handle, buffer, sizeof(buffer), &nbytes);
@@ -149,8 +147,6 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 		/* send to MPD */
 
 		cmd = decoder_data(decoder, NULL, buffer, nbytes,
-				   (float)position /
-				   (float)audio_format.sample_rate,
 				   0, NULL);
 
 		/* seeking not yet implemented */

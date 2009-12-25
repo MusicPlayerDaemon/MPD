@@ -1025,7 +1025,6 @@ mp3_send_pcm(struct mp3_data *data, unsigned i, unsigned pcm_length,
 		cmd = decoder_data(data->decoder, data->input_stream,
 				   data->output_buffer,
 				   sizeof(data->output_buffer[0]) * num_samples,
-				   data->elapsed_time,
 				   data->bit_rate / 1000,
 				   replay_gain_info);
 		if (cmd != DECODE_COMMAND_NONE)

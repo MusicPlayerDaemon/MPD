@@ -152,10 +152,8 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	mpc_uint32_t ret;
 	int32_t chunk[G_N_ELEMENTS(sample_buffer)];
 	long bit_rate = 0;
-	unsigned long sample_pos = 0;
 	mpc_uint32_t vbr_update_acc;
 	mpc_uint32_t vbr_update_bits;
-	float total_time;
 	struct replay_gain_info *replay_gain_info = NULL;
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
@@ -219,16 +217,14 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 	do {
 		if (cmd == DECODE_COMMAND_SEEK) {
+			mpc_int64_t where = decoder_seek_where(mpd_decoder) *
+				audio_format.sample_rate;
 			bool success;
 
-			sample_pos = decoder_seek_where(mpd_decoder) *
-				audio_format.sample_rate;
-
 #ifdef MPC_IS_OLD_API
-			success = mpc_decoder_seek_sample(&decoder,
-							  sample_pos);
+			success = mpc_decoder_seek_sample(&decoder, where);
 #else
-			success = mpc_demux_seek_sample(demux, sample_pos)
+			success = mpc_demux_seek_sample(demux, where)
 				== MPC_STATUS_OK;
 #endif
 			if (success)
@@ -259,19 +255,15 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 		ret = frame.samples;
 #endif
 
-		sample_pos += ret;
-
 		ret *= info.channels;
 
 		mpc_to_mpd_buffer(chunk, sample_buffer, ret);
 
-		total_time = ((float)sample_pos) / audio_format.sample_rate;
 		bit_rate = vbr_update_bits * audio_format.sample_rate
 			/ 1152 / 1000;
 
 		cmd = decoder_data(mpd_decoder, is,
 				   chunk, ret * sizeof(chunk[0]),
-				   total_time,
 				   bit_rate, replay_gain_info);
 	} while (cmd != DECODE_COMMAND_STOP);
 

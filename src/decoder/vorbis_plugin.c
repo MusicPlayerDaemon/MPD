@@ -377,7 +377,6 @@ vorbis_stream_decode(struct decoder *decoder,
 
 		cmd = decoder_data(decoder, input_stream,
 				   chunk, ret,
-				   ov_pcm_tell(&vf) / audio_format.sample_rate,
 				   bitRate, replay_gain_info);
 	} while (cmd != DECODE_COMMAND_STOP);
 

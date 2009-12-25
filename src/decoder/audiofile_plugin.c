@@ -160,7 +160,7 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	struct audio_format audio_format;
 	float total_time;
 	uint16_t bit_rate;
-	int ret, current = 0;
+	int ret;
 	char chunk[CHUNK_SIZE];
 	enum decoder_command cmd;
 
@@ -204,17 +204,14 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 		if (ret <= 0)
 			break;
 
-		current += ret;
 		cmd = decoder_data(decoder, NULL,
 				   chunk, ret * fs,
-				   (float)current /
-				   (float)audio_format.sample_rate,
 				   bit_rate, NULL);
 
 		if (cmd == DECODE_COMMAND_SEEK) {
-			current = decoder_seek_where(decoder) *
+			AFframecount frame = decoder_seek_where(decoder) *
 				audio_format.sample_rate;
-			afSeekFrame(af_fp, AF_DEFAULT_TRACK, current);
+			afSeekFrame(af_fp, AF_DEFAULT_TRACK, frame);
 
 			decoder_command_finished(decoder);
 			cmd = DECODE_COMMAND_NONE;

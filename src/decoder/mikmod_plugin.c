@@ -147,7 +147,6 @@ mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 	struct audio_format audio_format;
 	int ret;
 	SBYTE buffer[MIKMOD_FRAME_SIZE];
-	unsigned frame_size, current_frame = 0;
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
 	path2 = g_strdup(path_fs);
@@ -167,14 +166,10 @@ mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 
 	decoder_initialized(decoder, &audio_format, false, 0);
 
-	frame_size = audio_format_frame_size(&audio_format);
-
 	Player_Start(handle);
 	while (cmd == DECODE_COMMAND_NONE && Player_Active()) {
 		ret = VC_WriteBytes(buffer, sizeof(buffer));
-		current_frame += ret / frame_size;
 		cmd = decoder_data(decoder, NULL, buffer, ret,
-				   (float)current_frame / (float)mikmod_sample_rate,
 				   0, NULL);
 	}
 

@@ -232,7 +232,6 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		   const AVRational *time_base)
 {
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
-	int position;
 	uint8_t audio_buf[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2 + 16];
 	int16_t *aligned_buffer;
 	size_t buffer_size;
@@ -264,14 +263,13 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		if (audio_size <= 0)
 			continue;
 
-		position = packet->pts != (int64_t)AV_NOPTS_VALUE
-			? av_rescale_q(packet->pts, *time_base,
-				       (AVRational){1, 1})
-			: 0;
+		if (packet->pts != (int64_t)AV_NOPTS_VALUE)
+			decoder_timestamp(decoder,
+					  av_rescale_q(packet->pts, *time_base,
+						       (AVRational){1, 1}));
 
 		cmd = decoder_data(decoder, is,
 				   aligned_buffer, audio_size,
-				   position,
 				   codec_context->bit_rate / 1000, NULL);
 	}
 	return cmd;

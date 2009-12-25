@@ -115,6 +115,15 @@ decoder_read(struct decoder *decoder, struct input_stream *is,
 	     void *buffer, size_t length);
 
 /**
+ * Sets the time stamp for the next data chunk [seconds].  The MPD
+ * core automatically counts it up, and a decoder plugin only needs to
+ * use this function if it thinks that adding to the time stamp based
+ * on the buffer size won't work.
+ */
+void
+decoder_timestamp(struct decoder *decoder, double t);
+
+/**
  * This function is called by the decoder plugin when it has
  * successfully decoded block of input data.
  *
@@ -129,7 +138,7 @@ decoder_read(struct decoder *decoder, struct input_stream *is,
 enum decoder_command
 decoder_data(struct decoder *decoder, struct input_stream *is,
 	     const void *data, size_t length,
-	     float data_time, uint16_t bitRate,
+	     uint16_t kbit_rate,
 	     struct replay_gain_info *replay_gain_info);
 
 /**

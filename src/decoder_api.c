@@ -95,7 +95,8 @@ enum decoder_command decoder_get_command(G_GNUC_UNUSED struct decoder * decoder)
 	return dc->command;
 }
 
-void decoder_command_finished(G_GNUC_UNUSED struct decoder * decoder)
+void
+decoder_command_finished(struct decoder *decoder)
 {
 	struct decoder_control *dc = decoder->dc;
 
@@ -115,6 +116,8 @@ void decoder_command_finished(G_GNUC_UNUSED struct decoder * decoder)
 		}
 
 		music_pipe_clear(dc->pipe, dc->buffer);
+
+		decoder->timestamp = dc->seek_where;
 	}
 
 	dc->command = DECODE_COMMAND_NONE;
@@ -192,6 +195,15 @@ size_t decoder_read(struct decoder *decoder,
 	}
 }
 
+void
+decoder_timestamp(struct decoder *decoder, double t)
+{
+	assert(decoder != NULL);
+	assert(t >= 0);
+
+	decoder->timestamp = t;
+}
+
 /**
  * Sends a #tag as-is to the music pipe.  Flushes the current chunk
  * (decoder.chunk) if there is one.
@@ -250,7 +262,7 @@ enum decoder_command
 decoder_data(struct decoder *decoder,
 	     struct input_stream *is,
 	     const void *_data, size_t length,
-	     float data_time, uint16_t bitRate,
+	     uint16_t kbit_rate,
 	     struct replay_gain_info *replay_gain_info)
 {
 	struct decoder_control *dc = decoder->dc;
@@ -316,7 +328,8 @@ decoder_data(struct decoder *decoder,
 		}
 
 		dest = music_chunk_write(chunk, &dc->out_audio_format,
-					 data_time, bitRate, &nbytes);
+					 decoder->timestamp, kbit_rate,
+					 &nbytes);
 		if (dest == NULL) {
 			/* the chunk is full, flush it */
 			decoder_flush_chunk(decoder);
@@ -350,6 +363,9 @@ decoder_data(struct decoder *decoder,
 
 		data += nbytes;
 		length -= nbytes;
+
+		decoder->timestamp += (double)nbytes /
+			audio_format_time_to_size(&dc->in_audio_format);
 	}
 
 	return DECODE_COMMAND_NONE;

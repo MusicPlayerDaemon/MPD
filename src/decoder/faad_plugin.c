@@ -383,7 +383,6 @@ static void
 faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 {
 	GError *error = NULL;
-	float file_time;
 	float total_time = 0;
 	faacDecHandle decoder;
 	struct audio_format audio_format;
@@ -434,8 +433,6 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 	/* the decoder loop */
 
-	file_time = 0.0;
-
 	do {
 		size_t frame_size;
 		const void *decoded;
@@ -481,15 +478,12 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 			bit_rate = frame_info.bytesconsumed * 8.0 *
 			    frame_info.channels * audio_format.sample_rate /
 			    frame_info.samples / 1000 + 0.5;
-			file_time +=
-			    (float)(frame_info.samples) / frame_info.channels /
-			    audio_format.sample_rate;
 		}
 
 		/* send PCM samples to MPD */
 
 		cmd = decoder_data(mpd_decoder, is, decoded,
-				   (size_t)frame_info.samples * 2, file_time,
+				   (size_t)frame_info.samples * 2,
 				   bit_rate, NULL);
 	} while (cmd != DECODE_COMMAND_STOP);
 
