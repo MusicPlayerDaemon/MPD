@@ -118,8 +118,9 @@ struct route_filter {
  * and input channel a gets copied to output channel b, etc.
  * @param param the configuration block to read
  * @param filter a route_filter whose min_channels and sources[] to set
+ * @return true on success, false on error
  */
-static void
+static bool
 route_filter_parse(const struct config_param *param,
 		   struct route_filter *filter,
 		   GError **error_r) {
@@ -161,7 +162,7 @@ route_filter_parse(const struct config_param *param,
 				param->line, tokens[c]);
 			g_strfreev(sd);
 			g_strfreev(tokens);
-			return;
+			return false;
 		}
 
 		source = strtol(sd[0], NULL, 10);
@@ -200,7 +201,7 @@ route_filter_parse(const struct config_param *param,
 				param->line, tokens[c]);
 			g_strfreev(sd);
 			g_strfreev(tokens);
-			return;
+			return false;
 		}
 
 		source = strtol(sd[0], NULL, 10);
@@ -212,6 +213,8 @@ route_filter_parse(const struct config_param *param,
 	}
 
 	g_strfreev(tokens);
+
+	return true;
 }
 
 static struct filter *
