@@ -32,9 +32,12 @@ struct playlist;
 /**
  * Loads the contents of a playlist and append it to the specified
  * play queue.
+ *
+ * @param uri the URI of the playlist, used to resolve relative song
+ * URIs
  */
 enum playlist_result
-playlist_load_into_queue(struct playlist_provider *source,
+playlist_load_into_queue(const char *uri, struct playlist_provider *source,
 			 struct playlist *dest);
 
 /**
