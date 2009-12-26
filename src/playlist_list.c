@@ -160,11 +160,9 @@ playlist_list_open_uri_suffix(const char *uri, const bool *tried)
 
 	assert(uri != NULL);
 
-	suffix = strrchr(uri, '.');
-	if (suffix == NULL || strchr(suffix, '/') != NULL)
+	suffix = uri_get_suffix(uri);
+	if (suffix == NULL)
 		return NULL;
-
-	++suffix;
 
 	for (unsigned i = 0; playlist_plugins[i] != NULL; ++i) {
 		const struct playlist_plugin *plugin = playlist_plugins[i];
