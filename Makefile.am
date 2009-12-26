@@ -748,6 +748,7 @@ DOCBOOK_HTML =
 endif
 
 doc/api/html/index.html: doc/doxygen.conf
+	@mkdir -p $(@D)
 	$(DOXYGEN) $<
 
 all-local: $(DOCBOOK_HTML) doc/api/html/index.html
