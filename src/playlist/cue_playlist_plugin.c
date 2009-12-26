@@ -102,6 +102,9 @@ cue_playlist_read(struct playlist_provider *_playlist)
 
 	song = song_remote_new(filename);
 	song->tag = tag;
+	song->start_ms = (track_get_start(track) * 1000) / 75;
+	song->end_ms = ((track_get_start(track) + track_get_length(track))
+			* 1000) / 75;
 
 	return song;
 }

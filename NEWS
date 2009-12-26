@@ -77,6 +77,7 @@ ver 0.16 (20??/??/??)
 * log: redirect stdout/stderr to /dev/null if syslog is used
 * set the close-on-exec flag on all file descriptors
 * pcm_volume, pcm_mix: implemented 32 bit support
+* CUE sheet support
 * obey $(sysconfdir) for default mpd.conf location
 * build with large file support by default
 * require GLib 2.12
