@@ -122,6 +122,9 @@ playlist_open_path_into_queue(const char *path_fs, struct playlist *dest)
 	return result;
 }
 
+/**
+ * Load a playlist from the configured playlist directory.
+ */
 static enum playlist_result
 playlist_open_local_into_queue(const char *uri, struct playlist *dest)
 {
@@ -142,13 +145,42 @@ playlist_open_local_into_queue(const char *uri, struct playlist *dest)
 	return result;
 }
 
+/**
+ * Load a playlist from the configured music directory.
+ */
+static enum playlist_result
+playlist_open_local_into_queue2(const char *uri, struct playlist *dest)
+{
+	char *path_fs;
+	enum playlist_result result;
+
+	assert(uri_safe_local(uri));
+
+	path_fs = map_uri_fs(uri);
+	if (path_fs == NULL)
+		return PLAYLIST_RESULT_NO_SUCH_LIST;
+
+	result = playlist_open_path_into_queue(path_fs, dest);
+	g_free(path_fs);
+
+	return result;
+}
+
 enum playlist_result
 playlist_open_into_queue(const char *uri, struct playlist *dest)
 {
 	if (uri_has_scheme(uri))
 		return playlist_open_remote_into_queue(uri, dest);
-	else if (spl_valid_name(uri))
-		return playlist_open_local_into_queue(uri, dest);
-	else
-		return PLAYLIST_RESULT_NO_SUCH_LIST;
+
+	if (spl_valid_name(uri)) {
+		enum playlist_result result =
+			playlist_open_local_into_queue(uri, dest);
+		if (result != PLAYLIST_RESULT_NO_SUCH_LIST)
+			return result;
+	}
+
+	if (uri_safe_local(uri))
+		return playlist_open_local_into_queue2(uri, dest);
+
+	return PLAYLIST_RESULT_NO_SUCH_LIST;
 }
