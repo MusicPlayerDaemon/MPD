@@ -212,8 +212,7 @@ player_wait_for_decoder(struct player *player)
 	player_lock();
 
 	/* update player_control's song information */
-	pc.total_time = pc.next_song->tag != NULL
-		? pc.next_song->tag->time : 0;
+	pc.total_time = song_get_duration(pc.next_song);
 	pc.bit_rate = 0;
 	audio_format_clear(&pc.audio_format);
 

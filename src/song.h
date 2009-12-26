@@ -69,6 +69,9 @@ song_file_update_inarchive(struct song *song);
 char *
 song_get_uri(const struct song *song);
 
+double
+song_get_duration(const struct song *song);
+
 static inline bool
 song_in_database(const struct song *song)
 {

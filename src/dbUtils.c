@@ -135,8 +135,7 @@ searchStatsInDirectory(struct song *song, void *data)
 
 	if (locate_song_match(song, stats->criteria)) {
 		stats->numberOfSongs++;
-		if (song->tag->time > 0)
-			stats->playTime += song->tag->time;
+		stats->playTime += song_get_duration(song);
 	}
 
 	return 0;

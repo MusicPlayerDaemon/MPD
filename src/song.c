@@ -80,3 +80,12 @@ song_get_uri(const struct song *song)
 		return g_strconcat(directory_get_path(song->parent),
 				   "/", song->uri, NULL);
 }
+
+double
+song_get_duration(const struct song *song)
+{
+	if (song->tag == NULL)
+		return 0;
+
+	return song->tag->time;
+}
