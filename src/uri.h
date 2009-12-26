@@ -36,6 +36,18 @@ const char *
 uri_get_suffix(const char *uri);
 
 /**
+ * Returns true if this is a safe "local" URI:
+ *
+ * - non-empty
+ * - does not begin or end with a slash
+ * - no double slashes
+ * - no path component begins with a dot
+ */
+G_GNUC_PURE
+bool
+uri_safe_local(const char *uri);
+
+/**
  * Removes HTTP username and password from the URI.  This may be
  * useful for displaying an URI without disclosing secrets.  Returns
  * NULL if nothing needs to be removed, or if the URI is not

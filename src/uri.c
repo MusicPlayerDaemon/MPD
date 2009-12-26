@@ -22,6 +22,7 @@
 
 #include <glib.h>
 
+#include <assert.h>
 #include <string.h>
 
 bool uri_has_scheme(const char *uri)
@@ -43,6 +44,35 @@ uri_get_suffix(const char *uri)
 		return NULL;
 
 	return suffix;
+}
+
+static const char *
+verify_uri_segment(const char *p)
+{
+	const char *q;
+
+	if (*p == 0 || *p == '/' || *p == '.')
+		return NULL;
+
+	q = strchr(p + 1, '/');
+	return q != NULL ? q : "";
+}
+
+bool
+uri_safe_local(const char *uri)
+{
+	while (true) {
+		uri = verify_uri_segment(uri);
+		if (uri == NULL)
+			return false;
+
+		if (*uri == 0)
+			return true;
+
+		assert(*uri == '/');
+
+		++uri;
+	}
 }
 
 char *
