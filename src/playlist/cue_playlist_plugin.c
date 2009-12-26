@@ -38,8 +38,6 @@ struct cue_playlist {
 	struct Cd *cd;
 
 	unsigned next;
-
-	char *path;
 };
 
 static struct playlist_provider *
@@ -62,7 +60,6 @@ cue_playlist_open_uri(const char *uri)
 	playlist_provider_init(&playlist->base, &cue_playlist_plugin);
 	playlist->cd = cd;
 	playlist->next = 1;
-	playlist->path = g_path_get_dirname(uri);
 
 	return &playlist->base;
 }
@@ -72,7 +69,6 @@ cue_playlist_close(struct playlist_provider *_playlist)
 {
 	struct cue_playlist *playlist = (struct cue_playlist *)_playlist;
 
-	g_free(playlist->path);
 	cd_delete(playlist->cd);
 	g_free(playlist);
 }
@@ -84,7 +80,6 @@ cue_playlist_read(struct playlist_provider *_playlist)
 	struct Track *track;
 	struct tag *tag;
 	const char *filename;
-	char *uri;
 	struct song *song;
 
 	track = cd_get_track(playlist->cd, playlist->next);
@@ -105,12 +100,8 @@ cue_playlist_read(struct playlist_provider *_playlist)
 		return NULL;
 	}
 
-	uri = g_strconcat(playlist->path, "/", filename, NULL);
-
-	song = song_file_new(uri, NULL);
+	song = song_remote_new(filename);
 	song->tag = tag;
-
-	g_free(uri);
 
 	return song;
 }
