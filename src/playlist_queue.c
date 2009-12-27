@@ -103,7 +103,7 @@ playlist_open_remote_into_queue(const char *uri, struct playlist *dest)
 }
 
 static enum playlist_result
-playlist_open_path_into_queue(char *path_fs, struct playlist *dest)
+playlist_open_path_into_queue(const char *path_fs, struct playlist *dest)
 {
 	struct playlist_provider *playlist;
 	struct input_stream is;
