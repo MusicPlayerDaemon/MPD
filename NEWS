@@ -15,6 +15,7 @@ ver 0.15.7 (2009/??/??)
 * mapper: fix memory leak when playlist_directory is not set
 * mapper: apply filesystem_charset to playlists
 * command: verify playlist name in the "rm" command
+* database: return multiple tag values per song
 
 
 ver 0.15.6 (2009/11/18)
