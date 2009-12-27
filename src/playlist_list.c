@@ -314,6 +314,16 @@ playlist_list_open_path(struct input_stream *is, const char *path_fs)
 		return NULL;
 	}
 
+	while (!is->ready) {
+		int ret = input_stream_buffer(is, &error);
+		if (ret < 0) {
+			input_stream_close(is);
+			g_warning("%s", error->message);
+			g_error_free(error);
+			return NULL;
+		}
+	}
+
 	playlist = playlist_list_open_stream_suffix(is, suffix);
 	if (playlist == NULL)
 		input_stream_close(is);
