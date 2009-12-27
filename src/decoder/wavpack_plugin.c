@@ -201,10 +201,9 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek,
 	do {
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			if (can_seek) {
-				int where;
+				unsigned where = decoder_seek_where(decoder) *
+					audio_format.sample_rate;
 
-				where = decoder_seek_where(decoder);
-				where *= audio_format.sample_rate;
 				if (WavpackSeekSample(wpc, where)) {
 					decoder_command_finished(decoder);
 				} else {

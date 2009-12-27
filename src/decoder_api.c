@@ -107,7 +107,9 @@ decoder_command_finished(struct decoder *decoder)
 	       dc->seek_error || decoder->seeking);
 	assert(dc->pipe != NULL);
 
-	if (dc->command == DECODE_COMMAND_SEEK) {
+	if (decoder->seeking) {
+		decoder->seeking = false;
+
 		/* delete frames from the old song position */
 
 		if (decoder->chunk != NULL) {
@@ -146,6 +148,8 @@ void decoder_seek_error(struct decoder * decoder)
 	assert(dc->pipe != NULL);
 
 	dc->seek_error = true;
+	decoder->seeking = false;
+
 	decoder_command_finished(decoder);
 }
 

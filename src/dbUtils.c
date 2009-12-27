@@ -268,7 +268,6 @@ visitTag(struct client *client, struct strset *set,
 	for (unsigned i = 0; i < tag->num_items; i++) {
 		if (tag->items[i]->type == tagType) {
 			strset_add(set, tag->items[i]->value);
-			return;
 		}
 	}
 
