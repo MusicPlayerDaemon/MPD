@@ -732,6 +732,18 @@ input_curl_easy_init(struct input_stream *is)
 	return true;
 }
 
+void
+input_curl_reinit(struct input_stream *is)
+{
+	struct input_curl *c = is->data;
+
+	assert(is->plugin == &input_plugin_curl);
+	assert(c->easy != NULL);
+
+	curl_easy_setopt(c->easy, CURLOPT_WRITEHEADER, is);
+	curl_easy_setopt(c->easy, CURLOPT_WRITEDATA, is);
+}
+
 static bool
 input_curl_send_request(struct input_curl *c)
 {

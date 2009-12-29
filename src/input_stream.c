@@ -22,6 +22,7 @@
 #include "conf.h"
 
 #include "input/file_input_plugin.h"
+#include "input/rewind_input_plugin.h"
 
 #ifdef ENABLE_ARCHIVE
 #include "input/archive_input_plugin.h"
@@ -130,6 +131,8 @@ input_stream_open(struct input_stream *is, const char *url)
 			assert(is->plugin->read != NULL);
 			assert(is->plugin->eof != NULL);
 			assert(!is->seekable || is->plugin->seek != NULL);
+
+			input_rewind_open(is);
 
 			return true;
 		}
