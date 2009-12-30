@@ -48,8 +48,7 @@ struct input_plugin {
 	 */
 	void (*finish)(void);
 
-	bool (*open)(struct input_stream *is, const char *url,
-		     GError **error_r);
+	struct input_stream *(*open)(const char *uri, GError **error_r);
 	void (*close)(struct input_stream *is);
 
 	struct tag *(*tag)(struct input_stream *is);

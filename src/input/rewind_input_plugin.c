@@ -32,7 +32,9 @@
 #define G_LOG_DOMAIN "input_rewind"
 
 struct input_rewind {
-	struct input_stream input;
+	struct input_stream base;
+
+	struct input_stream *input;
 
 	/**
 	 * The read position within the buffer.  Undefined as long as
@@ -61,11 +63,9 @@ struct input_rewind {
  * contain more data for the next read operation?
  */
 static bool
-reading_from_buffer(const struct input_stream *is)
+reading_from_buffer(const struct input_rewind *r)
 {
-	const struct input_rewind *r = is->data;
-
-	return r->tail > 0 && is->offset < r->input.offset;
+	return r->tail > 0 && r->base.offset < r->input->offset;
 }
 
 /**
@@ -75,10 +75,10 @@ reading_from_buffer(const struct input_stream *is)
  * attributes.
  */
 static void
-copy_attributes(struct input_stream *dest)
+copy_attributes(struct input_rewind *r)
 {
-	const struct input_rewind *r = dest->data;
-	const struct input_stream *src = &r->input;
+	struct input_stream *dest = &r->base;
+	const struct input_stream *src = r->input;
 
 	dest->ready = src->ready;
 	dest->seekable = src->seekable;
@@ -94,9 +94,9 @@ copy_attributes(struct input_stream *dest)
 static void
 input_rewind_close(struct input_stream *is)
 {
-	struct input_rewind *r = is->data;
+	struct input_rewind *r = (struct input_rewind *)is;
 
-	input_stream_close(&r->input);
+	input_stream_close(r->input);
 
 	g_free(r);
 }
@@ -104,19 +104,19 @@ input_rewind_close(struct input_stream *is)
 static struct tag *
 input_rewind_tag(struct input_stream *is)
 {
-	struct input_rewind *r = is->data;
+	struct input_rewind *r = (struct input_rewind *)is;
 
-	return input_stream_tag(&r->input);
+	return input_stream_tag(r->input);
 }
 
 static int
 input_rewind_buffer(struct input_stream *is, GError **error_r)
 {
-	struct input_rewind *r = is->data;
+	struct input_rewind *r = (struct input_rewind *)is;
 
-	int ret = input_stream_buffer(&r->input, error_r);
-	if (ret < 0 || !reading_from_buffer(is))
-		copy_attributes(is);
+	int ret = input_stream_buffer(r->input, error_r);
+	if (ret < 0 || !reading_from_buffer(r))
+		copy_attributes(r);
 
 	return ret;
 }
@@ -125,13 +125,13 @@ static size_t
 input_rewind_read(struct input_stream *is, void *ptr, size_t size,
 		  GError **error_r)
 {
-	struct input_rewind *r = is->data;
+	struct input_rewind *r = (struct input_rewind *)is;
 
-	if (reading_from_buffer(is)) {
+	if (reading_from_buffer(r)) {
 		/* buffered read */
 
 		assert(r->head == (size_t)is->offset);
-		assert(r->tail == (size_t)r->input.offset);
+		assert(r->tail == (size_t)r->input->offset);
 
 		if (size > r->tail - r->head)
 			size = r->tail - r->head;
@@ -144,9 +144,9 @@ input_rewind_read(struct input_stream *is, void *ptr, size_t size,
 	} else {
 		/* pass method call to underlying stream */
 
-		size_t nbytes = input_stream_read(&r->input, ptr, size, error_r);
+		size_t nbytes = input_stream_read(r->input, ptr, size, error_r);
 
-		if (r->input.offset > (goffset)sizeof(r->buffer))
+		if (r->input->offset > (goffset)sizeof(r->buffer))
 			/* disable buffering */
 			r->tail = 0;
 		else if (r->tail == (size_t)is->offset) {
@@ -155,46 +155,46 @@ input_rewind_read(struct input_stream *is, void *ptr, size_t size,
 			memcpy(r->buffer + r->tail, ptr, nbytes);
 			r->tail += nbytes;
 
-			assert(r->tail == (size_t)r->input.offset);
+			assert(r->tail == (size_t)r->input->offset);
 		}
 
-		copy_attributes(is);
+		copy_attributes(r);
 
 		return nbytes;
 	}
 }
 
 static bool
-input_rewind_eof(G_GNUC_UNUSED struct input_stream *is)
+input_rewind_eof(struct input_stream *is)
 {
-	struct input_rewind *r = is->data;
+	struct input_rewind *r = (struct input_rewind *)is;
 
-	return !reading_from_buffer(is) && input_stream_eof(&r->input);
+	return !reading_from_buffer(r) && input_stream_eof(r->input);
 }
 
 static bool
 input_rewind_seek(struct input_stream *is, goffset offset, int whence,
 		  GError **error_r)
 {
-	struct input_rewind *r = is->data;
+	struct input_rewind *r = (struct input_rewind *)is;
 
 	assert(is->ready);
 
 	if (whence == SEEK_SET && r->tail > 0 && offset <= (goffset)r->tail) {
 		/* buffered seek */
 
-		assert(!reading_from_buffer(is) ||
+		assert(!reading_from_buffer(r) ||
 		       r->head == (size_t)is->offset);
-		assert(r->tail == (size_t)r->input.offset);
+		assert(r->tail == (size_t)r->input->offset);
 
 		r->head = (size_t)offset;
 		is->offset = offset;
 
 		return true;
 	} else {
-		bool success = input_stream_seek(&r->input, offset, whence,
+		bool success = input_stream_seek(r->input, offset, whence,
 						 error_r);
-		copy_attributes(is);
+		copy_attributes(r);
 
 		/* disable the buffer, because r->input has left the
 		   buffered range now */
@@ -213,7 +213,7 @@ static const struct input_plugin rewind_input_plugin = {
 	.seek = input_rewind_seek,
 };
 
-void
+struct input_stream *
 input_rewind_open(struct input_stream *is)
 {
 	struct input_rewind *c;
@@ -224,17 +224,12 @@ input_rewind_open(struct input_stream *is)
 	if (is->plugin != &input_plugin_curl)
 		/* due to limitations in the input_plugin API, we only
 		   (explicitly) support the CURL input plugin */
-		return;
+		return is;
 
 	c = g_new(struct input_rewind, 1);
+	input_stream_init(&c->base, &rewind_input_plugin);
 	c->tail = 0;
+	c->input = is;
 
-	/* move the CURL input stream to c->input */
-	c->input = *is;
-	input_curl_reinit(&c->input);
-
-	/* convert the existing input_stream pointer to a "rewind"
-	   input stream */
-	is->plugin = &rewind_input_plugin;
-	is->data = c;
+	return &c->base;
 }

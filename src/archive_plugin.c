@@ -80,13 +80,13 @@ archive_file_scan_next(struct archive_file *file)
 	return file->plugin->scan_next(file);
 }
 
-bool
-archive_file_open_stream(struct archive_file *file, struct input_stream *is,
+struct input_stream *
+archive_file_open_stream(struct archive_file *file,
 			 const char *path, GError **error_r)
 {
 	assert(file != NULL);
 	assert(file->plugin != NULL);
 	assert(file->plugin->open_stream != NULL);
 
-	return file->plugin->open_stream(file, is, path, error_r);
+	return file->plugin->open_stream(file, path, error_r);
 }

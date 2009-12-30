@@ -464,13 +464,12 @@ wavpack_input_init(struct wavpack_input *isp, struct decoder *decoder,
 	isp->last_byte = EOF;
 }
 
-static bool
-wavpack_open_wvc(struct decoder *decoder, struct input_stream *is_wvc,
-		 struct wavpack_input *wpi)
+static struct input_stream *
+wavpack_open_wvc(struct decoder *decoder, struct wavpack_input *wpi)
 {
+	struct input_stream *is_wvc;
 	char *utf8url;
 	char *wvc_url = NULL;
-	bool ret;
 	char first_byte;
 	size_t nbytes;
 
@@ -486,12 +485,11 @@ wavpack_open_wvc(struct decoder *decoder, struct input_stream *is_wvc,
 	wvc_url = g_strconcat(utf8url, "c", NULL);
 	g_free(utf8url);
 
-	ret = input_stream_open(is_wvc, wvc_url, NULL);
+	is_wvc = input_stream_open(wvc_url, NULL);
 	g_free(wvc_url);
 
-	if (!ret) {
-		return false;
-	}
+	if (is_wvc == NULL)
+		return NULL;
 
 	/*
 	 * And we try to buffer in order to get know
@@ -502,13 +500,13 @@ wavpack_open_wvc(struct decoder *decoder, struct input_stream *is_wvc,
 	);
 	if (nbytes == 0) {
 		input_stream_close(is_wvc);
-		return false;
+		return NULL;
 	}
 
 	/* push it back */
 	wavpack_input_init(wpi, decoder, is_wvc);
 	wpi->last_byte = first_byte;
-	return true;
+	return is_wvc;
 }
 
 /*
@@ -519,14 +517,15 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
-	struct input_stream is_wvc;
+	struct input_stream *is_wvc;
 	int open_flags = OPEN_NORMALIZE;
 	struct wavpack_input isp, isp_wvc;
 	bool can_seek = is->seekable;
 
-	if (wavpack_open_wvc(decoder, &is_wvc, &isp_wvc)) {
+	is_wvc = wavpack_open_wvc(decoder, &isp_wvc);
+	if (is_wvc != NULL) {
 		open_flags |= OPEN_WVC;
-		can_seek &= is_wvc.seekable;
+		can_seek &= is_wvc->seekable;
 	}
 
 	if (!can_seek) {
@@ -549,7 +548,7 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 
 	WavpackCloseFile(wpc);
 	if (open_flags & OPEN_WVC) {
-		input_stream_close(&is_wvc);
+		input_stream_close(is_wvc);
 	}
 }
 

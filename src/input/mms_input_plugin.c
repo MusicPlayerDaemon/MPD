@@ -31,6 +31,8 @@
 #define G_LOG_DOMAIN "input_mms"
 
 struct input_mms {
+	struct input_stream base;
+
 	mmsx_t *mms;
 
 	bool eof;
@@ -42,8 +44,8 @@ mms_quark(void)
 	return g_quark_from_static_string("mms");
 }
 
-static bool
-input_mms_open(struct input_stream *is, const char *url, GError **error_r)
+static struct input_stream *
+input_mms_open(const char *url, GError **error_r)
 {
 	struct input_mms *m;
 
@@ -51,30 +53,31 @@ input_mms_open(struct input_stream *is, const char *url, GError **error_r)
 	    !g_str_has_prefix(url, "mmsh://") &&
 	    !g_str_has_prefix(url, "mmst://") &&
 	    !g_str_has_prefix(url, "mmsu://"))
-		return false;
+		return NULL;
 
 	m = g_new(struct input_mms, 1);
+	input_stream_init(&m->base, &input_plugin_mms);
+
 	m->mms = mmsx_connect(NULL, NULL, url, 128 * 1024);
 	if (m->mms == NULL) {
 		g_set_error(error_r, mms_quark(), 0, "mmsx_connect() failed");
-		return false;
+		return NULL;
 	}
 
 	/* XX is this correct?  at least this selects the ffmpeg
 	   decoder, which seems to work fine*/
-	is->mime = g_strdup("audio/x-ms-wma");
+	m->base.mime = g_strdup("audio/x-ms-wma");
 
-	is->plugin = &input_plugin_mms;
-	is->data = m;
-	is->ready = true;
-	return true;
+	m->base.ready = true;
+
+	return &m->base;
 }
 
 static size_t
 input_mms_read(struct input_stream *is, void *ptr, size_t size,
 	       GError **error_r)
 {
-	struct input_mms *m = is->data;
+	struct input_mms *m = (struct input_mms *)is;
 	int ret;
 
 	ret = mmsx_read(NULL, m->mms, ptr, size);
@@ -97,7 +100,7 @@ input_mms_read(struct input_stream *is, void *ptr, size_t size,
 static void
 input_mms_close(struct input_stream *is)
 {
-	struct input_mms *m = is->data;
+	struct input_mms *m = (struct input_mms *)is;
 
 	mmsx_close(m->mms);
 	g_free(m);
@@ -106,7 +109,7 @@ input_mms_close(struct input_stream *is)
 static bool
 input_mms_eof(struct input_stream *is)
 {
-	struct input_mms *m = is->data;
+	struct input_mms *m = (struct input_mms *)is;
 
 	return m->eof;
 }

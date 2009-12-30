@@ -163,16 +163,15 @@ playlist_open_remote_into_queue(const char *uri, struct playlist *dest)
 {
 	GError *error = NULL;
 	struct playlist_provider *playlist;
-	bool stream = false;
-	struct input_stream is;
+	struct input_stream *is = NULL;
 	enum playlist_result result;
 
 	assert(uri_has_scheme(uri));
 
 	playlist = playlist_list_open_uri(uri);
 	if (playlist == NULL) {
-		stream = input_stream_open(&is, uri, &error);
-		if (!stream) {
+		is = input_stream_open(uri, &error);
+		if (is == NULL) {
 			if (error != NULL) {
 				g_warning("Failed to open %s: %s",
 					  uri, error->message);
@@ -182,9 +181,9 @@ playlist_open_remote_into_queue(const char *uri, struct playlist *dest)
 			return PLAYLIST_RESULT_NO_SUCH_LIST;
 		}
 
-		playlist = playlist_list_open_stream(&is, uri);
+		playlist = playlist_list_open_stream(is, uri);
 		if (playlist == NULL) {
-			input_stream_close(&is);
+			input_stream_close(is);
 			return PLAYLIST_RESULT_NO_SUCH_LIST;
 		}
 	}
@@ -192,8 +191,8 @@ playlist_open_remote_into_queue(const char *uri, struct playlist *dest)
 	result = playlist_load_into_queue(uri, playlist, dest);
 	playlist_plugin_close(playlist);
 
-	if (stream)
-		input_stream_close(&is);
+	if (is != NULL)
+		input_stream_close(is);
 
 	return result;
 }
@@ -203,15 +202,13 @@ playlist_open_path_into_queue(const char *path_fs, const char *uri,
 			      struct playlist *dest)
 {
 	struct playlist_provider *playlist;
-	struct input_stream is;
 	enum playlist_result result;
 
 	if ((playlist = playlist_list_open_uri(path_fs)) != NULL)
 		result = playlist_load_into_queue(uri, playlist, dest);
-	else if ((playlist = playlist_list_open_path(&is, path_fs)) != NULL) {
+	else if ((playlist = playlist_list_open_path(path_fs)) != NULL)
 		result = playlist_load_into_queue(uri, playlist, dest);
-		input_stream_close(&is);
-	} else
+	else
 		return PLAYLIST_RESULT_NO_SUCH_LIST;
 
 	playlist_plugin_close(playlist);

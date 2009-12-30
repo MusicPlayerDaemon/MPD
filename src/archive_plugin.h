@@ -71,8 +71,9 @@ struct archive_plugin {
 	 * @param error_r location to store the error occuring, or
 	 * NULL to ignore errors
 	 */
-	bool (*open_stream)(struct archive_file *, struct input_stream *is,
-			    const char *path, GError **error_r);
+	struct input_stream *(*open_stream)(struct archive_file *af,
+					    const char *path,
+					    GError **error_r);
 
 	/**
 	 * closes archive file.
@@ -99,8 +100,8 @@ archive_file_scan_reset(struct archive_file *file);
 char *
 archive_file_scan_next(struct archive_file *file);
 
-bool
-archive_file_open_stream(struct archive_file *file, struct input_stream *is,
+struct input_stream *
+archive_file_open_stream(struct archive_file *file,
 			 const char *path, GError **error_r);
 
 #endif

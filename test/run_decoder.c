@@ -145,7 +145,6 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder,
 int main(int argc, char **argv)
 {
 	GError *error = NULL;
-	bool ret;
 	const char *decoder_name;
 	struct decoder decoder;
 
@@ -179,10 +178,9 @@ int main(int argc, char **argv)
 		decoder_plugin_file_decode(decoder.plugin, &decoder,
 					   decoder.uri);
 	} else if (decoder.plugin->stream_decode != NULL) {
-		struct input_stream is;
-
-		ret = input_stream_open(&is, decoder.uri, &error);
-		if (!ret) {
+		struct input_stream *is =
+			input_stream_open(decoder.uri, &error);
+		if (is == NULL) {
 			if (error != NULL) {
 				g_warning("%s", error->message);
 				g_error_free(error);
@@ -192,9 +190,9 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		decoder_plugin_stream_decode(decoder.plugin, &decoder, &is);
+		decoder_plugin_stream_decode(decoder.plugin, &decoder, is);
 
-		input_stream_close(&is);
+		input_stream_close(is);
 	} else {
 		g_printerr("Decoder plugin is not usable\n");
 		return 1;

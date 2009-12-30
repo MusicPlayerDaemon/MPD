@@ -35,7 +35,7 @@
 struct lastfm_playlist {
 	struct playlist_provider base;
 
-	struct input_stream is;
+	struct input_stream *is;
 
 	struct playlist_provider *xspf;
 };
@@ -85,15 +85,14 @@ lastfm_finish(void)
 static char *
 lastfm_get(const char *url)
 {
-	struct input_stream input_stream;
+	struct input_stream *input_stream;
 	GError *error = NULL;
-	bool success;
 	int ret;
 	char buffer[4096];
 	size_t length = 0, nbytes;
 
-	success = input_stream_open(&input_stream, url, &error);
-	if (!success) {
+	input_stream = input_stream_open(url, &error);
+	if (input_stream == NULL) {
 		if (error != NULL) {
 			g_warning("%s", error->message);
 			g_error_free(error);
@@ -102,10 +101,10 @@ lastfm_get(const char *url)
 		return NULL;
 	}
 
-	while (!input_stream.ready) {
-		ret = input_stream_buffer(&input_stream, &error);
+	while (!input_stream->ready) {
+		ret = input_stream_buffer(input_stream, &error);
 		if (ret < 0) {
-			input_stream_close(&input_stream);
+			input_stream_close(input_stream);
 			g_warning("%s", error->message);
 			g_error_free(error);
 			return NULL;
@@ -113,7 +112,7 @@ lastfm_get(const char *url)
 	}
 
 	do {
-		nbytes = input_stream_read(&input_stream, buffer + length,
+		nbytes = input_stream_read(input_stream, buffer + length,
 					   sizeof(buffer) - length, &error);
 		if (nbytes == 0) {
 			if (error != NULL) {
@@ -121,18 +120,18 @@ lastfm_get(const char *url)
 				g_error_free(error);
 			}
 
-			if (input_stream_eof(&input_stream))
+			if (input_stream_eof(input_stream))
 				break;
 
 			/* I/O error */
-			input_stream_close(&input_stream);
+			input_stream_close(input_stream);
 			return NULL;
 		}
 
 		length += nbytes;
 	} while (length < sizeof(buffer));
 
-	input_stream_close(&input_stream);
+	input_stream_close(input_stream);
 	return g_strndup(buffer, length);
 }
 
@@ -168,7 +167,6 @@ lastfm_open_uri(const char *uri)
 	struct lastfm_playlist *playlist;
 	GError *error = NULL;
 	char *p, *q, *response, *session;
-	bool success;
 
 	/* handshake */
 
@@ -231,10 +229,10 @@ lastfm_open_uri(const char *uri)
 			NULL);
 	g_free(session);
 
-	success = input_stream_open(&playlist->is, p, &error);
+	playlist->is = input_stream_open(p, &error);
 	g_free(p);
 
-	if (!success) {
+	if (playlist->is == NULL) {
 		if (error != NULL) {
 			g_warning("Failed to load XSPF playlist: %s",
 				  error->message);
@@ -245,10 +243,10 @@ lastfm_open_uri(const char *uri)
 		return NULL;
 	}
 
-	while (!playlist->is.ready) {
-		int ret = input_stream_buffer(&playlist->is, &error);
+	while (!playlist->is->ready) {
+		int ret = input_stream_buffer(playlist->is, &error);
 		if (ret < 0) {
-			input_stream_close(&playlist->is);
+			input_stream_close(playlist->is);
 			g_free(playlist);
 			g_warning("%s", error->message);
 			g_error_free(error);
@@ -262,14 +260,14 @@ lastfm_open_uri(const char *uri)
 
 	/* last.fm does not send a MIME type, we have to fake it here
 	   :-( */
-	g_free(playlist->is.mime);
-	playlist->is.mime = g_strdup("application/xspf+xml");
+	g_free(playlist->is->mime);
+	playlist->is->mime = g_strdup("application/xspf+xml");
 
 	/* parse the XSPF playlist */
 
-	playlist->xspf = playlist_list_open_stream(&playlist->is, NULL);
+	playlist->xspf = playlist_list_open_stream(playlist->is, NULL);
 	if (playlist->xspf == NULL) {
-		input_stream_close(&playlist->is);
+		input_stream_close(playlist->is);
 		g_free(playlist);
 		g_warning("Failed to parse XSPF playlist");
 		return NULL;
@@ -284,7 +282,7 @@ lastfm_close(struct playlist_provider *_playlist)
 	struct lastfm_playlist *playlist = (struct lastfm_playlist *)_playlist;
 
 	playlist_plugin_close(playlist->xspf);
-	input_stream_close(&playlist->is);
+	input_stream_close(playlist->is);
 	g_free(playlist);
 }
 

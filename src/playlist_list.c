@@ -293,10 +293,11 @@ playlist_suffix_supported(const char *suffix)
 }
 
 struct playlist_provider *
-playlist_list_open_path(struct input_stream *is, const char *path_fs)
+playlist_list_open_path(const char *path_fs)
 {
 	GError *error = NULL;
 	const char *suffix;
+	struct input_stream *is;
 	struct playlist_provider *playlist;
 
 	assert(path_fs != NULL);
@@ -305,7 +306,8 @@ playlist_list_open_path(struct input_stream *is, const char *path_fs)
 	if (suffix == NULL || !playlist_suffix_supported(suffix))
 		return NULL;
 
-	if (!input_stream_open(is, path_fs, &error)) {
+	is = input_stream_open(path_fs, &error);
+	if (is == NULL) {
 		if (error != NULL) {
 			g_warning("%s", error->message);
 			g_error_free(error);

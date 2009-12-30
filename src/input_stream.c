@@ -32,38 +32,34 @@ input_quark(void)
 	return g_quark_from_static_string("input");
 }
 
-bool
-input_stream_open(struct input_stream *is, const char *url, GError **error_r)
+struct input_stream *
+input_stream_open(const char *url, GError **error_r)
 {
 	GError *error = NULL;
 
 	assert(error_r == NULL || *error_r == NULL);
 
-	is->seekable = false;
-	is->ready = false;
-	is->offset = 0;
-	is->size = -1;
-	is->mime = NULL;
-
 	for (unsigned i = 0; input_plugins[i] != NULL; ++i) {
 		const struct input_plugin *plugin = input_plugins[i];
+		struct input_stream *is;
 
 		if (!input_plugins_enabled[i])
 			continue;
 
-		if (plugin->open(is, url, &error)) {
+		is = plugin->open(url, &error);
+		if (is != NULL) {
 			assert(is->plugin != NULL);
 			assert(is->plugin->close != NULL);
 			assert(is->plugin->read != NULL);
 			assert(is->plugin->eof != NULL);
 			assert(!is->seekable || is->plugin->seek != NULL);
 
-			input_rewind_open(is);
+			is = input_rewind_open(is);
 
-			return true;
+			return is;
 		} else if (error != NULL) {
 			g_propagate_error(error_r, error);
-			return false;
+			return NULL;
 		}
 	}
 
@@ -103,9 +99,9 @@ input_stream_read(struct input_stream *is, void *ptr, size_t size,
 
 void input_stream_close(struct input_stream *is)
 {
-	is->plugin->close(is);
-
 	g_free(is->mime);
+
+	is->plugin->close(is);
 }
 
 bool input_stream_eof(struct input_stream *is)

@@ -56,22 +56,23 @@ decoder_lock_get_command(struct decoder_control *dc)
  *
  * Unlock the decoder before calling this function.
  *
- * @return true on success of if #DECODE_COMMAND_STOP is received,
- * false on error
+ * @return an input_stream on success or if #DECODE_COMMAND_STOP is
+ * received, NULL on error
  */
-static bool
-decoder_input_stream_open(struct decoder_control *dc,
-			  struct input_stream *is, const char *uri)
+static struct input_stream *
+decoder_input_stream_open(struct decoder_control *dc, const char *uri)
 {
 	GError *error = NULL;
+	struct input_stream *is;
 
-	if (!input_stream_open(is, uri, &error)) {
+	is = input_stream_open(uri, &error);
+	if (is == NULL) {
 		if (error != NULL) {
 			g_warning("%s", error->message);
 			g_error_free(error);
 		}
 
-		return false;
+		return NULL;
 	}
 
 	/* wait for the input stream to become ready; its metadata
@@ -86,11 +87,11 @@ decoder_input_stream_open(struct decoder_control *dc,
 			input_stream_close(is);
 			g_warning("%s", error->message);
 			g_error_free(error);
-			return false;
+			return NULL;
 		}
 	}
 
-	return true;
+	return is;
 }
 
 static bool
@@ -215,12 +216,13 @@ static bool
 decoder_run_stream(struct decoder *decoder, const char *uri)
 {
 	struct decoder_control *dc = decoder->dc;
-	struct input_stream input_stream;
+	struct input_stream *input_stream;
 	bool success;
 
 	decoder_unlock(dc);
 
-	if (!decoder_input_stream_open(dc, &input_stream, uri)) {
+	input_stream = decoder_input_stream_open(dc, uri);
+	if (input_stream == NULL) {
 		decoder_lock(dc);
 		return false;
 	}
@@ -229,15 +231,15 @@ decoder_run_stream(struct decoder *decoder, const char *uri)
 
 	success = dc->command == DECODE_COMMAND_STOP ||
 		/* first we try mime types: */
-		decoder_run_stream_mime_type(decoder, &input_stream) ||
+		decoder_run_stream_mime_type(decoder, input_stream) ||
 		/* if that fails, try suffix matching the URL: */
-		decoder_run_stream_suffix(decoder, &input_stream, uri) ||
+		decoder_run_stream_suffix(decoder, input_stream, uri) ||
 		/* fallback to mp3: this is needed for bastard streams
 		   that don't have a suffix or set the mimeType */
-		decoder_run_stream_fallback(decoder, &input_stream);
+		decoder_run_stream_fallback(decoder, input_stream);
 
 	decoder_unlock(dc);
-	input_stream_close(&input_stream);
+	input_stream_close(input_stream);
 	decoder_lock(dc);
 
 	return success;
@@ -267,21 +269,21 @@ decoder_run_file(struct decoder *decoder, const char *path_fs)
 
 			decoder_unlock(dc);
 		} else if (plugin->stream_decode != NULL) {
-			struct input_stream input_stream;
+			struct input_stream *input_stream;
 			bool success;
 
-			if (!decoder_input_stream_open(dc, &input_stream,
-						       path_fs))
+			input_stream = decoder_input_stream_open(dc, path_fs);
+			if (input_stream == NULL)
 				continue;
 
 			decoder_lock(dc);
 
 			success = decoder_stream_decode(plugin, decoder,
-							&input_stream);
+							input_stream);
 
 			decoder_unlock(dc);
 
-			input_stream_close(&input_stream);
+			input_stream_close(input_stream);
 
 			if (success) {
 				decoder_lock(dc);

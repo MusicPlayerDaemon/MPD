@@ -33,24 +33,23 @@
  * parent_stream so tar plugin fetches file data from gzip
  * plugin and gzip fetches file from disk
  */
-static bool
-input_archive_open(struct input_stream *is, const char *pathname,
-		   GError **error_r)
+static struct input_stream *
+input_archive_open(const char *pathname, GError **error_r)
 {
 	const struct archive_plugin *arplug;
 	struct archive_file *file;
 	char *archive, *filename, *suffix, *pname;
-	bool opened;
+	struct input_stream *is;
 
 	if (!g_path_is_absolute(pathname))
-		return false;
+		return NULL;
 
 	pname = g_strdup(pathname);
 	// archive_lookup will modify pname when true is returned
 	if (!archive_lookup(pname, &archive, &filename, &suffix)) {
 		g_debug("not an archive, lookup %s failed\n", pname);
 		g_free(pname);
-		return false;
+		return NULL;
 	}
 
 	//check which archive plugin to use (by ext)
@@ -58,19 +57,19 @@ input_archive_open(struct input_stream *is, const char *pathname,
 	if (!arplug) {
 		g_warning("can't handle archive %s\n",archive);
 		g_free(pname);
-		return false;
+		return NULL;
 	}
 
 	file = archive_file_open(arplug, archive, error_r);
 	if (file == NULL)
-		return false;
+		return NULL;
 
 	//setup fileops
-	opened = archive_file_open_stream(file, is, filename, error_r);
+	is = archive_file_open_stream(file, filename, error_r);
 	archive_file_close(file);
 	g_free(pname);
 
-	return opened;
+	return is;
 }
 
 const struct input_plugin input_plugin_archive = {

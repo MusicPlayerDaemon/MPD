@@ -33,15 +33,15 @@ struct input_stream;
 
 #ifdef ENABLE_CURL
 
-void
+struct input_stream *
 input_rewind_open(struct input_stream *is);
 
 #else
 
-static inline void
+static inline struct input_stream *
 input_rewind_open(struct input_stream *is)
 {
-	(void)is;
+	return is;
 }
 
 #endif

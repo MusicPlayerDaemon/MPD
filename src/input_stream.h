@@ -39,11 +39,6 @@ struct input_stream {
 	const struct input_plugin *plugin;
 
 	/**
-	 * an opaque pointer managed by the plugin
-	 */
-	void *data;
-
-	/**
 	 * indicates whether the stream is ready for reading and
 	 * whether the other attributes in this struct are valid
 	 */
@@ -70,20 +65,28 @@ struct input_stream {
 	char *mime;
 };
 
+static inline void
+input_stream_init(struct input_stream *is, const struct input_plugin *plugin)
+{
+	is->plugin = plugin;
+	is->ready = false;
+	is->seekable = false;
+	is->size = -1;
+	is->offset = 0;
+	is->mime = NULL;
+}
+
 /**
  * Opens a new input stream.  You may not access it until the "ready"
  * flag is set.
  *
- * @param is the input_stream object allocated by the caller
- * @return true on success
+ * @return an #input_stream object on success, NULL on error
  */
-bool
-input_stream_open(struct input_stream *is, const char *url, GError **error_r);
+struct input_stream *
+input_stream_open(const char *uri, GError **error_r);
 
 /**
- * Closes the input stream and free resources.  This does not free the
- * input_stream pointer itself, because it is assumed to be allocated
- * by the caller.
+ * Close the input stream and free resources.
  */
 void
 input_stream_close(struct input_stream *is);

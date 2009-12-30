@@ -125,13 +125,15 @@ zzip_archive_close(struct archive_file *file)
 /* single archive handling */
 
 struct zzip_input_stream {
+	struct input_stream base;
+
 	struct zzip_archive *archive;
 
 	ZZIP_FILE *file;
 };
 
-static bool
-zzip_archive_open_stream(struct archive_file *file, struct input_stream *is,
+static struct input_stream *
+zzip_archive_open_stream(struct archive_file *file,
 			 const char *pathname, GError **error_r)
 {
 	struct zzip_archive *context = (struct zzip_archive *) file;
@@ -139,6 +141,7 @@ zzip_archive_open_stream(struct archive_file *file, struct input_stream *is,
 	ZZIP_STAT z_stat;
 
 	zis = g_new(struct zzip_input_stream, 1);
+	input_stream_init(&zis->base, &zzip_input_plugin);
 
 	zis->archive = context;
 	zis->file = zzip_file_open(context->dir, pathname, 0);
@@ -146,29 +149,25 @@ zzip_archive_open_stream(struct archive_file *file, struct input_stream *is,
 		g_free(zis);
 		g_set_error(error_r, zzip_quark(), 0,
 			    "not found in the ZIP file: %s", pathname);
-		return false;
+		return NULL;
 	}
 
-	//setup file ops
-	is->plugin = &zzip_input_plugin;
-	//insert back reference
-	is->data = zis;
-	is->ready = true;
+	zis->base.ready = true;
 	//we are seekable (but its not recommendent to do so)
-	is->seekable = true;
+	zis->base.seekable = true;
 
 	zzip_file_stat(zis->file, &z_stat);
-	is->size = z_stat.st_size;
+	zis->base.size = z_stat.st_size;
 
 	refcount_inc(&context->ref);
 
-	return true;
+	return &zis->base;
 }
 
 static void
 zzip_input_close(struct input_stream *is)
 {
-	struct zzip_input_stream *zis = (struct zzip_input_stream *)is->data;
+	struct zzip_input_stream *zis = (struct zzip_input_stream *)is;
 
 	zzip_file_close(zis->file);
 	zzip_archive_close(&zis->archive->base);
@@ -179,7 +178,7 @@ static size_t
 zzip_input_read(struct input_stream *is, void *ptr, size_t size,
 		GError **error_r)
 {
-	struct zzip_input_stream *zis = (struct zzip_input_stream *)is->data;
+	struct zzip_input_stream *zis = (struct zzip_input_stream *)is;
 	int ret;
 
 	ret = zzip_file_read(zis->file, ptr, size);
@@ -197,7 +196,7 @@ zzip_input_read(struct input_stream *is, void *ptr, size_t size,
 static bool
 zzip_input_eof(struct input_stream *is)
 {
-	struct zzip_input_stream *zis = (struct zzip_input_stream *)is->data;
+	struct zzip_input_stream *zis = (struct zzip_input_stream *)is;
 
 	return (goffset)zzip_tell(zis->file) == is->size;
 }
@@ -206,7 +205,7 @@ static bool
 zzip_input_seek(struct input_stream *is,
 		goffset offset, int whence, GError **error_r)
 {
-	struct zzip_input_stream *zis = (struct zzip_input_stream *)is->data;
+	struct zzip_input_stream *zis = (struct zzip_input_stream *)is;
 	zzip_off_t ofs = zzip_seek(zis->file, offset, whence);
 	if (ofs != -1) {
 		g_set_error(error_r, zzip_quark(), ofs,

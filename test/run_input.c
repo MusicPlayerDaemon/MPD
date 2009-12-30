@@ -103,7 +103,7 @@ dump_input_stream(struct input_stream *is)
 int main(int argc, char **argv)
 {
 	GError *error = NULL;
-	struct input_stream is;
+	struct input_stream *is;
 	int ret;
 
 	if (argc != 2) {
@@ -133,9 +133,10 @@ int main(int argc, char **argv)
 
 	/* open the stream and dump it */
 
-	if (input_stream_open(&is, argv[1], &error)) {
-		ret = dump_input_stream(&is);
-		input_stream_close(&is);
+	is = input_stream_open(argv[1], &error);
+	if (is != NULL) {
+		ret = dump_input_stream(is);
+		input_stream_close(is);
 	} else {
 		if (error != NULL) {
 			g_warning("%s", error->message);

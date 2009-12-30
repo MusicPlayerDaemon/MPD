@@ -57,6 +57,8 @@ struct buffer {
 };
 
 struct input_curl {
+	struct input_stream base;
+
 	/* some buffers which were passed to libcurl, which we have
 	   too free */
 	char *url, *range;
@@ -179,10 +181,8 @@ input_curl_easy_free(struct input_curl *c)
  * Frees this stream (but not the input_stream struct itself).
  */
 static void
-input_curl_free(struct input_stream *is)
+input_curl_free(struct input_curl *c)
 {
-	struct input_curl *c = is->data;
-
 	if (c->tag != NULL)
 		tag_free(c->tag);
 	g_free(c->meta_name);
@@ -201,7 +201,7 @@ input_curl_free(struct input_stream *is)
 static struct tag *
 input_curl_tag(struct input_stream *is)
 {
-	struct input_curl *c = is->data;
+	struct input_curl *c = (struct input_curl *)is;
 	struct tag *tag = c->tag;
 
 	c->tag = NULL;
@@ -209,9 +209,8 @@ input_curl_tag(struct input_stream *is)
 }
 
 static bool
-input_curl_multi_info_read(struct input_stream *is, GError **error_r)
+input_curl_multi_info_read(struct input_curl *c, GError **error_r)
 {
-	struct input_curl *c = is->data;
 	CURLMsg *msg;
 	int msgs_in_queue;
 
@@ -219,7 +218,7 @@ input_curl_multi_info_read(struct input_stream *is, GError **error_r)
 					   &msgs_in_queue)) != NULL) {
 		if (msg->msg == CURLMSG_DONE) {
 			c->eof = true;
-			is->ready = true;
+			c->base.ready = true;
 
 			if (msg->data.result != CURLE_OK) {
 				g_set_error(error_r, curl_quark(),
@@ -279,7 +278,7 @@ input_curl_select(struct input_curl *c, GError **error_r)
 static bool
 fill_buffer(struct input_stream *is, GError **error_r)
 {
-	struct input_curl *c = is->data;
+	struct input_curl *c = (struct input_curl *)is;
 	CURLMcode mcode = CURLM_CALL_MULTI_PERFORM;
 
 	while (!c->eof && g_queue_is_empty(c->buffers)) {
@@ -305,7 +304,7 @@ fill_buffer(struct input_stream *is, GError **error_r)
 			return false;
 		}
 
-		bret = input_curl_multi_info_read(is, error_r);
+		bret = input_curl_multi_info_read(c, error_r);
 		if (!bret)
 			return false;
 	}
@@ -407,7 +406,7 @@ static size_t
 input_curl_read(struct input_stream *is, void *ptr, size_t size,
 		GError **error_r)
 {
-	struct input_curl *c = is->data;
+	struct input_curl *c = (struct input_curl *)is;
 	bool success;
 	size_t nbytes = 0;
 	char *dest = ptr;
@@ -441,13 +440,15 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size,
 static void
 input_curl_close(struct input_stream *is)
 {
-	input_curl_free(is);
+	struct input_curl *c = (struct input_curl *)is;
+
+	input_curl_free(c);
 }
 
 static bool
 input_curl_eof(G_GNUC_UNUSED struct input_stream *is)
 {
-	struct input_curl *c = is->data;
+	struct input_curl *c = (struct input_curl *)is;
 
 	return c->eof && g_queue_is_empty(c->buffers);
 }
@@ -455,7 +456,7 @@ input_curl_eof(G_GNUC_UNUSED struct input_stream *is)
 static int
 input_curl_buffer(struct input_stream *is, GError **error_r)
 {
-	struct input_curl *c = is->data;
+	struct input_curl *c = (struct input_curl *)is;
 	CURLMcode mcode;
 	int running_handles;
 	bool ret;
@@ -483,7 +484,7 @@ input_curl_buffer(struct input_stream *is, GError **error_r)
 		return -1;
 	}
 
-	ret = input_curl_multi_info_read(is, error_r);
+	ret = input_curl_multi_info_read(c, error_r);
 	if (!ret)
 		return -1;
 
@@ -494,8 +495,7 @@ input_curl_buffer(struct input_stream *is, GError **error_r)
 static size_t
 input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 {
-	struct input_stream *is = stream;
-	struct input_curl *c = is->data;
+	struct input_curl *c = (struct input_curl *)stream;
 	const char *header = ptr, *end, *value;
 	char name[64];
 
@@ -524,7 +524,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	if (g_ascii_strcasecmp(name, "accept-ranges") == 0) {
 		/* a stream with icy-metadata is not seekable */
 		if (!icy_defined(&c->icy_metadata))
-			is->seekable = true;
+			c->base.seekable = true;
 	} else if (g_ascii_strcasecmp(name, "content-length") == 0) {
 		char buffer[64];
 
@@ -534,10 +534,10 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 		memcpy(buffer, value, end - value);
 		buffer[end - value] = 0;
 
-		is->size = is->offset + g_ascii_strtoull(buffer, NULL, 10);
+		c->base.size = c->base.offset + g_ascii_strtoull(buffer, NULL, 10);
 	} else if (g_ascii_strcasecmp(name, "content-type") == 0) {
-		g_free(is->mime);
-		is->mime = g_strndup(value, end - value);
+		g_free(c->base.mime);
+		c->base.mime = g_strndup(value, end - value);
 	} else if (g_ascii_strcasecmp(name, "icy-name") == 0 ||
 		   g_ascii_strcasecmp(name, "ice-name") == 0 ||
 		   g_ascii_strcasecmp(name, "x-audiocast-name") == 0) {
@@ -568,7 +568,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 
 			/* a stream with icy-metadata is not
 			   seekable */
-			is->seekable = false;
+			c->base.seekable = false;
 		}
 	}
 
@@ -579,8 +579,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 static size_t
 input_curl_writefunction(void *ptr, size_t size, size_t nmemb, void *stream)
 {
-	struct input_stream *is = stream;
-	struct input_curl *c = is->data;
+	struct input_curl *c = (struct input_curl *)stream;
 	struct buffer *buffer;
 
 	size *= nmemb;
@@ -594,15 +593,14 @@ input_curl_writefunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	g_queue_push_tail(c->buffers, buffer);
 
 	c->buffered = true;
-	is->ready = true;
+	c->base.ready = true;
 
 	return size;
 }
 
 static bool
-input_curl_easy_init(struct input_stream *is, GError **error_r)
+input_curl_easy_init(struct input_curl *c, GError **error_r)
 {
-	struct input_curl *c = is->data;
 	CURLcode code;
 	CURLMcode mcode;
 
@@ -627,10 +625,10 @@ input_curl_easy_init(struct input_stream *is, GError **error_r)
 			 "Music Player Daemon " VERSION);
 	curl_easy_setopt(c->easy, CURLOPT_HEADERFUNCTION,
 			 input_curl_headerfunction);
-	curl_easy_setopt(c->easy, CURLOPT_WRITEHEADER, is);
+	curl_easy_setopt(c->easy, CURLOPT_WRITEHEADER, c);
 	curl_easy_setopt(c->easy, CURLOPT_WRITEFUNCTION,
 			 input_curl_writefunction);
-	curl_easy_setopt(c->easy, CURLOPT_WRITEDATA, is);
+	curl_easy_setopt(c->easy, CURLOPT_WRITEDATA, c);
 	curl_easy_setopt(c->easy, CURLOPT_HTTP200ALIASES, http_200_aliases);
 	curl_easy_setopt(c->easy, CURLOPT_FOLLOWLOCATION, 1);
 	curl_easy_setopt(c->easy, CURLOPT_MAXREDIRS, 5);
@@ -669,9 +667,9 @@ input_curl_easy_init(struct input_stream *is, GError **error_r)
 void
 input_curl_reinit(struct input_stream *is)
 {
-	struct input_curl *c = is->data;
+	struct input_curl *c = (struct input_curl *)is;
 
-	assert(is->plugin == &input_plugin_curl);
+	assert(c->base.plugin == &input_plugin_curl);
 	assert(c->easy != NULL);
 
 	curl_easy_setopt(c->easy, CURLOPT_WRITEHEADER, is);
@@ -702,7 +700,7 @@ static bool
 input_curl_seek(struct input_stream *is, goffset offset, int whence,
 		GError **error_r)
 {
-	struct input_curl *c = is->data;
+	struct input_curl *c = (struct input_curl *)is;
 	bool ret;
 
 	assert(is->ready);
@@ -774,7 +772,7 @@ input_curl_seek(struct input_stream *is, goffset offset, int whence,
 		return true;
 	}
 
-	ret = input_curl_easy_init(is, error_r);
+	ret = input_curl_easy_init(c, error_r);
 	if (!ret)
 		return false;
 
@@ -789,55 +787,54 @@ input_curl_seek(struct input_stream *is, goffset offset, int whence,
 	if (!ret)
 		return false;
 
-	return input_curl_multi_info_read(is, error_r);
+	return input_curl_multi_info_read(c, error_r);
 }
 
-static bool
-input_curl_open(struct input_stream *is, const char *url, GError **error_r)
+static struct input_stream *
+input_curl_open(const char *url, GError **error_r)
 {
 	struct input_curl *c;
 	bool ret;
 
 	if (strncmp(url, "http://", 7) != 0)
-		return false;
+		return NULL;
 
 	c = g_new0(struct input_curl, 1);
+	input_stream_init(&c->base, &input_plugin_curl);
+
 	c->url = g_strdup(url);
 	c->buffers = g_queue_new();
-
-	is->plugin = &input_plugin_curl;
-	is->data = c;
 
 	c->multi = curl_multi_init();
 	if (c->multi == NULL) {
 		g_set_error(error_r, curl_quark(), 0,
 			    "curl_multi_init() failed");
-		input_curl_free(is);
-		return false;
+		input_curl_free(c);
+		return NULL;
 	}
 
 	icy_clear(&c->icy_metadata);
 	c->tag = NULL;
 
-	ret = input_curl_easy_init(is, error_r);
+	ret = input_curl_easy_init(c, error_r);
 	if (!ret) {
-		input_curl_free(is);
-		return false;
+		input_curl_free(c);
+		return NULL;
 	}
 
 	ret = input_curl_send_request(c, error_r);
 	if (!ret) {
-		input_curl_free(is);
-		return false;
+		input_curl_free(c);
+		return NULL;
 	}
 
-	ret = input_curl_multi_info_read(is, error_r);
+	ret = input_curl_multi_info_read(c, error_r);
 	if (!ret) {
-		input_curl_free(is);
-		return false;
+		input_curl_free(c);
+		return NULL;
 	}
 
-	return true;
+	return &c->base;
 }
 
 const struct input_plugin input_plugin_curl = {

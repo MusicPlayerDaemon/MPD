@@ -170,17 +170,17 @@ int main(int argc, char **argv)
 
 	tag = decoder_plugin_tag_dup(plugin, path);
 	if (tag == NULL && plugin->stream_tag != NULL) {
-		struct input_stream is;
+		struct input_stream *is = input_stream_open(path, &error);
 
-		if (!input_stream_open(&is, path, &error)) {
+		if (is == NULL) {
 			g_printerr("Failed to open %s: %s\n",
 				   path, error->message);
 			g_error_free(error);
 			return 1;
 		}
 
-		tag = decoder_plugin_stream_tag(plugin, &is);
-		input_stream_close(&is);
+		tag = decoder_plugin_stream_tag(plugin, is);
+		input_stream_close(is);
 	}
 
 	decoder_plugin_deinit_all();

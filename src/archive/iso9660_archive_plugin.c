@@ -163,14 +163,16 @@ iso9660_archive_close(struct archive_file *file)
 /* single archive handling */
 
 struct iso9660_input_stream {
+	struct input_stream base;
+
 	struct iso9660_archive_file *archive;
 
 	iso9660_stat_t *statbuf;
 	size_t max_blocks;
 };
 
-static bool
-iso9660_archive_open_stream(struct archive_file *file, struct input_stream *is,
+static struct input_stream *
+iso9660_archive_open_stream(struct archive_file *file,
 		const char *pathname, GError **error_r)
 {
 	struct iso9660_archive_file *context =
@@ -178,6 +180,7 @@ iso9660_archive_open_stream(struct archive_file *file, struct input_stream *is,
 	struct iso9660_input_stream *iis;
 
 	iis = g_new(struct iso9660_input_stream, 1);
+	input_stream_init(&iis->base, &iso9660_input_plugin);
 
 	iis->archive = context;
 	iis->statbuf = iso9660_ifs_stat_translate(context->iso, pathname);
@@ -185,31 +188,26 @@ iso9660_archive_open_stream(struct archive_file *file, struct input_stream *is,
 		g_free(iis);
 		g_set_error(error_r, iso9660_quark(), 0,
 			    "not found in the ISO file: %s", pathname);
-		return false;
+		return NULL;
 	}
 
-	//setup file ops
-	is->plugin = &iso9660_input_plugin;
-	//insert back reference
-	is->data = iis;
-	is->ready = true;
+	iis->base.ready = true;
 	//we are not seekable
-	is->seekable = false;
+	iis->base.seekable = false;
 
-	is->size = iis->statbuf->size;
+	iis->base.size = iis->statbuf->size;
 
 	iis->max_blocks = CEILING(iis->statbuf->size, ISO_BLOCKSIZE);
 
 	refcount_inc(&context->ref);
 
-	return true;
+	return &iis->base;
 }
 
 static void
 iso9660_input_close(struct input_stream *is)
 {
-	struct iso9660_input_stream *iis =
-		(struct iso9660_input_stream *)is->data;
+	struct iso9660_input_stream *iis = (struct iso9660_input_stream *)is;
 
 	g_free(iis->statbuf);
 
@@ -220,8 +218,7 @@ iso9660_input_close(struct input_stream *is)
 static size_t
 iso9660_input_read(struct input_stream *is, void *ptr, size_t size, GError **error_r)
 {
-	struct iso9660_input_stream *iis =
-		(struct iso9660_input_stream *)is->data;
+	struct iso9660_input_stream *iis = (struct iso9660_input_stream *)is;
 	int toread, readed = 0;
 	int no_blocks, cur_block;
 	size_t left_bytes = iis->statbuf->size - is->offset;

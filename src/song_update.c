@@ -101,7 +101,7 @@ song_file_update(struct song *song)
 	char *path_fs;
 	const struct decoder_plugin *plugin;
 	struct stat st;
-	struct input_stream is = { .plugin = NULL };
+	struct input_stream *is = NULL;
 
 	assert(song_is_file(song));
 
@@ -141,26 +141,25 @@ song_file_update(struct song *song)
 		if (plugin->stream_tag != NULL) {
 			/* open the input_stream (if not already
 			   open) */
-			if (is.plugin == NULL &&
-			    !input_stream_open(&is, path_fs, NULL))
-				is.plugin = NULL;
+			if (is == NULL)
+				is = input_stream_open(path_fs, NULL);
 
 			/* now try the stream_tag() method */
-			if (is.plugin != NULL) {
+			if (is != NULL) {
 				song->tag = decoder_plugin_stream_tag(plugin,
-								      &is);
+								      is);
 				if (song->tag != NULL)
 					break;
 
-				input_stream_seek(&is, 0, SEEK_SET, NULL);
+				input_stream_seek(is, 0, SEEK_SET, NULL);
 			}
 		}
 
 		plugin = decoder_plugin_from_suffix(suffix, plugin);
 	} while (plugin != NULL);
 
-	if (is.plugin != NULL)
-		input_stream_close(&is);
+	if (is != NULL)
+		input_stream_close(is);
 
 	if (song->tag != NULL && tag_is_empty(song->tag))
 		song->tag = tag_fallback(path_fs, song->tag);

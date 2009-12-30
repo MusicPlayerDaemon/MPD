@@ -45,10 +45,12 @@ struct bz2_archive_file {
 
 	char *name;
 	bool reset;
-	struct input_stream istream;
+	struct input_stream *istream;
 };
 
 struct bz2_input_stream {
+	struct input_stream base;
+
 	struct bz2_archive_file *archive;
 
 	bool eof;
@@ -111,7 +113,8 @@ bz2_open(const char *pathname, GError **error_r)
 	refcount_init(&context->ref);
 
 	//open archive
-	if (!input_stream_open(&context->istream, pathname, error_r)) {
+	context->istream = input_stream_open(pathname, error_r);
+	if (context->istream == NULL) {
 		g_free(context);
 		return NULL;
 	}
@@ -158,44 +161,42 @@ bz2_close(struct archive_file *file)
 
 	g_free(context->name);
 
-	input_stream_close(&context->istream);
+	input_stream_close(context->istream);
 	g_free(context);
 }
 
 /* single archive handling */
 
-static bool
-bz2_open_stream(struct archive_file *file, struct input_stream *is,
+static struct input_stream *
+bz2_open_stream(struct archive_file *file,
 		G_GNUC_UNUSED const char *path, GError **error_r)
 {
 	struct bz2_archive_file *context = (struct bz2_archive_file *) file;
 	struct bz2_input_stream *bis = g_new(struct bz2_input_stream, 1);
 
+	input_stream_init(&bis->base, &bz2_inputplugin);
+
 	bis->archive = context;
 
-	//setup file ops
-	is->plugin = &bz2_inputplugin;
-	//insert back reference
-	is->data = bis;
-	is->ready = true;
-	is->seekable = false;
+	bis->base.ready = true;
+	bis->base.seekable = false;
 
 	if (!bz2_alloc(bis, error_r)) {
 		g_free(bis);
-		return false;
+		return NULL;
 	}
 
 	bis->eof = false;
 
 	refcount_inc(&context->ref);
 
-	return true;
+	return &bis->base;
 }
 
 static void
 bz2_is_close(struct input_stream *is)
 {
-	struct bz2_input_stream *bis = (struct bz2_input_stream *)is->data;
+	struct bz2_input_stream *bis = (struct bz2_input_stream *)is;
 
 	bz2_destroy(bis);
 
@@ -215,7 +216,7 @@ bz2_fillbuffer(struct bz2_input_stream *bis, GError **error_r)
 	if (bzstream->avail_in > 0)
 		return true;
 
-	count = input_stream_read(&bis->archive->istream,
+	count = input_stream_read(bis->archive->istream,
 				  bis->buffer, sizeof(bis->buffer),
 				  error_r);
 	if (count == 0)
@@ -230,7 +231,7 @@ static size_t
 bz2_is_read(struct input_stream *is, void *ptr, size_t length,
 	    GError **error_r)
 {
-	struct bz2_input_stream *bis = (struct bz2_input_stream *)is->data;
+	struct bz2_input_stream *bis = (struct bz2_input_stream *)is;
 	bz_stream *bzstream;
 	int bz_result;
 	size_t nbytes = 0;
@@ -269,7 +270,7 @@ bz2_is_read(struct input_stream *is, void *ptr, size_t length,
 static bool
 bz2_is_eof(struct input_stream *is)
 {
-	struct bz2_input_stream *bis = (struct bz2_input_stream *)is->data;
+	struct bz2_input_stream *bis = (struct bz2_input_stream *)is;
 
 	return bis->eof;
 }
