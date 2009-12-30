@@ -83,6 +83,13 @@ ver 0.16 (20??/??/??)
 * require GLib 2.12
 
 
+ver 0.15.8 (2009/??/??)
+* input:
+  - curl: allow rewinding with Icy-Metadata
+* decoders:
+  - ffmpeg, flac, vorbis: added more flac/vorbis MIME types
+
+
 ver 0.15.7 (2009/12/27)
 * archive:
   - close archive when stream is closed

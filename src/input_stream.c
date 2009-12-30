@@ -21,6 +21,7 @@
 #include "input_stream.h"
 #include "input_registry.h"
 #include "input_plugin.h"
+#include "input/rewind_input_plugin.h"
 
 #include <glib.h>
 #include <assert.h>
@@ -56,6 +57,8 @@ input_stream_open(struct input_stream *is, const char *url, GError **error_r)
 			assert(is->plugin->read != NULL);
 			assert(is->plugin->eof != NULL);
 			assert(!is->seekable || is->plugin->seek != NULL);
+
+			input_rewind_open(is);
 
 			return true;
 		} else if (error != NULL) {

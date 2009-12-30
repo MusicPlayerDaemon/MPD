@@ -791,9 +791,11 @@ oggflac_decode(struct decoder *decoder, struct input_stream *input_stream)
 
 static const char *const oggflac_suffixes[] = { "ogg", "oga", NULL };
 static const char *const oggflac_mime_types[] = {
-	"audio/x-flac+ogg",
 	"application/ogg",
 	"application/x-ogg",
+	"audio/ogg",
+	"audio/x-flac+ogg",
+	"audio/x-ogg",
 	NULL
 };
 
@@ -814,7 +816,11 @@ const struct decoder_plugin oggflac_decoder_plugin = {
 
 static const char *const flac_suffixes[] = { "flac", NULL };
 static const char *const flac_mime_types[] = {
-	"audio/x-flac", "application/x-flac", NULL
+	"application/flac",
+	"application/x-flac",
+	"audio/flac",
+	"audio/x-flac",
+	NULL
 };
 
 const struct decoder_plugin flac_decoder_plugin = {

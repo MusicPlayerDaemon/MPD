@@ -420,8 +420,13 @@ static const char *const vorbis_suffixes[] = {
 
 static const char *const vorbis_mime_types[] = {
 	"application/ogg",
-	"audio/x-vorbis+ogg",
 	"application/x-ogg",
+	"audio/ogg",
+	"audio/vorbis",
+	"audio/vorbis+ogg",
+	"audio/x-ogg",
+	"audio/x-vorbis",
+	"audio/x-vorbis+ogg",
 	NULL
 };
 

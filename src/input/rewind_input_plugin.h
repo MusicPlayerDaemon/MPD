@@ -17,19 +17,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_INPUT_CURL_H
-#define MPD_INPUT_CURL_H
+/** \file
+ *
+ * A wrapper for an input_stream object which allows cheap buffered
+ * rewinding.  This is useful while detecting the stream codec (let
+ * each decoder plugin peek a portion from the stream).
+ */
+
+#ifndef MPD_INPUT_REWIND_H
+#define MPD_INPUT_REWIND_H
+
+#include "check.h"
 
 struct input_stream;
 
-extern const struct input_plugin input_plugin_curl;
+#ifdef ENABLE_CURL
 
-/**
- * This is a workaround for an input_stream API deficiency; after
- * exchanging the input_stream pointer in input_rewind_open(), this
- * function is called to reinitialize CURL's data pointers.
- */
 void
-input_curl_reinit(struct input_stream *is);
+input_rewind_open(struct input_stream *is);
+
+#else
+
+static inline void
+input_rewind_open(struct input_stream *is)
+{
+	(void)is;
+}
+
+#endif
 
 #endif

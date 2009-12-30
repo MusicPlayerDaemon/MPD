@@ -99,6 +99,7 @@ mpd_headers = \
 	src/input_stream.h \
 	src/input/file_input_plugin.h \
 	src/input/curl_input_plugin.h \
+	src/input/rewind_input_plugin.h \
 	src/input/mms_input_plugin.h \
 	src/text_file.h \
 	src/text_input_stream.h \
@@ -584,7 +585,9 @@ INPUT_SRC = \
 	src/input/file_input_plugin.c
 
 if ENABLE_CURL
-INPUT_SRC += src/input/curl_input_plugin.c src/icy_metadata.c
+INPUT_SRC += src/input/curl_input_plugin.c \
+	src/input/rewind_input_plugin.c \
+	src/icy_metadata.c
 endif
 
 if ENABLE_MMS
