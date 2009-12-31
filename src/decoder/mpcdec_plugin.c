@@ -275,9 +275,8 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 }
 
 static float
-mpcdec_get_file_duration(const char *file)
+mpcdec_get_file_duration(struct input_stream *is)
 {
-	struct input_stream is;
 	float total_time = -1;
 
 	mpc_reader reader;
@@ -287,10 +286,7 @@ mpcdec_get_file_duration(const char *file)
 	mpc_streaminfo info;
 	struct mpc_decoder_data data;
 
-	if (!input_stream_open(&is, file, NULL))
-		return -1;
-
-	data.is = &is;
+	data.is = is;
 	data.decoder = NULL;
 
 	reader.read = mpc_read_cb;
@@ -303,16 +299,12 @@ mpcdec_get_file_duration(const char *file)
 #ifdef MPC_IS_OLD_API
 	mpc_streaminfo_init(&info);
 
-	if (mpc_streaminfo_read(&info, &reader) != ERROR_CODE_OK) {
-		input_stream_close(&is);
+	if (mpc_streaminfo_read(&info, &reader) != ERROR_CODE_OK)
 		return -1;
-	}
 #else
 	demux = mpc_demux_init(&reader);
-	if (demux == NULL) {
-		input_stream_close(&is);
+	if (demux == NULL)
 		return -1;
-	}
 
 	mpc_demux_get_info(demux, &info);
 	mpc_demux_exit(demux);
@@ -320,21 +312,17 @@ mpcdec_get_file_duration(const char *file)
 
 	total_time = mpc_streaminfo_get_length(&info);
 
-	input_stream_close(&is);
-
 	return total_time;
 }
 
 static struct tag *
-mpcdec_tag_dup(const char *file)
+mpcdec_stream_tag(struct input_stream *is)
 {
-	float total_time = mpcdec_get_file_duration(file);
+	float total_time = mpcdec_get_file_duration(is);
 	struct tag *tag;
 
-	if (total_time < 0) {
-		g_debug("Failed to get duration of file: %s", file);
+	if (total_time < 0)
 		return NULL;
-	}
 
 	tag = tag_new();
 	tag->time = total_time;
@@ -346,6 +334,6 @@ static const char *const mpcdec_suffixes[] = { "mpc", NULL };
 const struct decoder_plugin mpcdec_decoder_plugin = {
 	.name = "mpcdec",
 	.stream_decode = mpcdec_decode,
-	.tag_dup = mpcdec_tag_dup,
+	.stream_tag = mpcdec_stream_tag,
 	.suffixes = mpcdec_suffixes,
 };

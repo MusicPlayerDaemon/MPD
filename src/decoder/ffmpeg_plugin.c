@@ -426,27 +426,20 @@ static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
 }
 
 //no tag reading in ffmpeg, check if playable
-static struct tag *ffmpeg_tag(const char *file)
+static struct tag *
+ffmpeg_stream_tag(struct input_stream *is)
 {
-	struct input_stream input;
 	struct ffmpeg_context ctx;
 	bool ret;
-
-	if (!input_stream_open(&input, file, NULL)) {
-		g_warning("failed to open %s\n", file);
-		return NULL;
-	}
 
 	ctx.decoder = NULL;
 	ctx.tag = tag_new();
 
-	ret = ffmpeg_helper(&input, ffmpeg_tag_internal, &ctx);
+	ret = ffmpeg_helper(is, ffmpeg_tag_internal, &ctx);
 	if (!ret) {
 		tag_free(ctx.tag);
 		ctx.tag = NULL;
 	}
-
-	input_stream_close(&input);
 
 	return ctx.tag;
 }
@@ -553,7 +546,7 @@ const struct decoder_plugin ffmpeg_decoder_plugin = {
 	.name = "ffmpeg",
 	.init = ffmpeg_init,
 	.stream_decode = ffmpeg_decode,
-	.tag_dup = ffmpeg_tag,
+	.stream_tag = ffmpeg_stream_tag,
 	.suffixes = ffmpeg_suffixes,
 	.mime_types = ffmpeg_mime_types
 };

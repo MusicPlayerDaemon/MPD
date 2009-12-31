@@ -914,21 +914,18 @@ static void mp3_data_finish(struct mp3_data *data)
 }
 
 /* this is primarily used for getting total time for tags */
-static int mp3_total_file_time(const char *file)
+static int
+mad_decoder_total_file_time(struct input_stream *is)
 {
-	struct input_stream input_stream;
 	struct mp3_data data;
 	int ret;
 
-	if (!input_stream_open(&input_stream, file, NULL))
-		return -1;
-	mp3_data_init(&data, NULL, &input_stream);
+	mp3_data_init(&data, NULL, is);
 	if (!mp3_decode_first_frame(&data, NULL, NULL))
 		ret = -1;
 	else
 		ret = data.total_time + 0.5;
 	mp3_data_finish(&data);
-	input_stream_close(&input_stream);
 
 	return ret;
 }
@@ -1222,16 +1219,15 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 	mp3_data_finish(&data);
 }
 
-static struct tag *mp3_tag_dup(const char *file)
+static struct tag *
+mad_decoder_stream_tag(struct input_stream *is)
 {
 	struct tag *tag;
 	int total_time;
 
-	total_time = mp3_total_file_time(file);
-	if (total_time < 0) {
-		g_debug("Failed to get total song time from: %s", file);
+	total_time = mad_decoder_total_file_time(is);
+	if (total_time < 0)
 		return NULL;
-	}
 
 	tag = tag_new();
 	tag->time = total_time;
@@ -1245,7 +1241,7 @@ const struct decoder_plugin mad_decoder_plugin = {
 	.name = "mad",
 	.init = mp3_plugin_init,
 	.stream_decode = mp3_decode,
-	.tag_dup = mp3_tag_dup,
+	.stream_tag = mad_decoder_stream_tag,
 	.suffixes = mp3_suffixes,
 	.mime_types = mp3_mime_types
 };

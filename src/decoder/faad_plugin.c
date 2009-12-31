@@ -322,20 +322,16 @@ faad_decoder_decode(faacDecHandle decoder, struct decoder_buffer *buffer,
  * file is invalid.
  */
 static float
-faad_get_file_time_float(const char *file)
+faad_get_file_time_float(struct input_stream *is)
 {
 	struct decoder_buffer *buffer;
 	float length;
 	faacDecHandle decoder;
 	faacDecConfigurationPtr config;
-	struct input_stream is;
 
-	if (!input_stream_open(&is, file, NULL))
-		return -1;
-
-	buffer = decoder_buffer_new(NULL, &is,
+	buffer = decoder_buffer_new(NULL, is,
 				    FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
-	length = faad_song_duration(buffer, &is);
+	length = faad_song_duration(buffer, is);
 
 	if (length < 0) {
 		bool ret;
@@ -357,7 +353,6 @@ faad_get_file_time_float(const char *file)
 	}
 
 	decoder_buffer_free(buffer);
-	input_stream_close(&is);
 
 	return length;
 }
@@ -368,12 +363,12 @@ faad_get_file_time_float(const char *file)
  * file is invalid.
  */
 static int
-faad_get_file_time(const char *file)
+faad_get_file_time(struct input_stream *is)
 {
 	int file_time = -1;
 	float length;
 
-	if ((length = faad_get_file_time_float(file)) >= 0)
+	if ((length = faad_get_file_time_float(is)) >= 0)
 		file_time = length + 0.5;
 
 	return file_time;
@@ -493,15 +488,13 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 }
 
 static struct tag *
-faad_tag_dup(const char *file)
+faad_stream_tag(struct input_stream *is)
 {
-	int file_time = faad_get_file_time(file);
+	int file_time = faad_get_file_time(is);
 	struct tag *tag;
 
-	if (file_time < 0) {
-		g_debug("Failed to get total song time from: %s", file);
+	if (file_time < 0)
 		return NULL;
-	}
 
 	tag = tag_new();
 	tag->time = file_time;
@@ -516,7 +509,7 @@ static const char *const faad_mime_types[] = {
 const struct decoder_plugin faad_decoder_plugin = {
 	.name = "faad",
 	.stream_decode = faad_stream_decode,
-	.tag_dup = faad_tag_dup,
+	.stream_tag = faad_stream_tag,
 	.suffixes = faad_suffixes,
 	.mime_types = faad_mime_types,
 };

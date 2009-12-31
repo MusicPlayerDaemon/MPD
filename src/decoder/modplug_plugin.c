@@ -149,31 +149,23 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 	ModPlug_Unload(f);
 }
 
-static struct tag *mod_tagdup(const char *file)
+static struct tag *
+modplug_stream_tag(struct input_stream *is)
 {
 	ModPlugFile *f;
 	struct tag *ret = NULL;
 	GByteArray *bdatas;
 	char *title;
-	struct input_stream is;
 
-	if (!input_stream_open(&is, file, NULL)) {
-		g_warning("cant open file %s\n", file);
+	bdatas = mod_loadfile(NULL, is);
+	if (!bdatas)
 		return NULL;
-	}
-
-	bdatas = mod_loadfile(NULL, &is);
-	if (!bdatas) {
-		g_warning("cant load file %s\n", file);
-		return NULL;
-	}
 
 	f = ModPlug_Load(bdatas->data, bdatas->len);
 	g_byte_array_free(bdatas, TRUE);
-	if (!f) {
-		g_warning("could not decode file %s\n", file);
+	if (f == NULL)
 		return NULL;
-        }
+
 	ret = tag_new();
 	ret->time = ModPlug_GetLength(f) / 1000;
 
@@ -183,8 +175,6 @@ static struct tag *mod_tagdup(const char *file)
 	g_free(title);
 
 	ModPlug_Unload(f);
-
-	input_stream_close(&is);
 
 	return ret;
 }
@@ -199,6 +189,6 @@ static const char *const mod_suffixes[] = {
 const struct decoder_plugin modplug_decoder_plugin = {
 	.name = "modplug",
 	.stream_decode = mod_decode,
-	.tag_dup = mod_tagdup,
+	.stream_tag = modplug_stream_tag,
 	.suffixes = mod_suffixes,
 };

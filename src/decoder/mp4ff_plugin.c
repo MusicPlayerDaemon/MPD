@@ -337,13 +337,12 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 }
 
 static struct tag *
-mp4_tag_dup(const char *file)
+mp4_stream_tag(struct input_stream *is)
 {
 	struct tag *ret = NULL;
-	struct input_stream input_stream;
 	struct mp4_context ctx = {
 		.decoder = NULL,
-		.input_stream = &input_stream,
+		.input_stream = is,
 	};
 	mp4ff_callback_t callback = {
 		.read = mp4_read,
@@ -356,21 +355,13 @@ mp4_tag_dup(const char *file)
 	int32_t scale;
 	int i;
 
-	if (!input_stream_open(&input_stream, file, NULL)) {
-		g_warning("Failed to open file: %s", file);
-		return NULL;
-	}
-
 	mp4fh = mp4ff_open_read(&callback);
-	if (!mp4fh) {
-		input_stream_close(&input_stream);
+	if (mp4fh == NULL)
 		return NULL;
-	}
 
 	track = mp4_get_aac_track(mp4fh, NULL, NULL, NULL);
 	if (track < 0) {
 		mp4ff_close(mp4fh);
-		input_stream_close(&input_stream);
 		return NULL;
 	}
 
@@ -379,7 +370,6 @@ mp4_tag_dup(const char *file)
 	scale = mp4ff_time_scale(mp4fh, track);
 	if (scale < 0) {
 		mp4ff_close(mp4fh);
-		input_stream_close(&input_stream);
 		tag_free(ret);
 		return NULL;
 	}
@@ -415,7 +405,6 @@ mp4_tag_dup(const char *file)
 	}
 
 	mp4ff_close(mp4fh);
-	input_stream_close(&input_stream);
 
 	return ret;
 }
@@ -426,7 +415,7 @@ static const char *const mp4_mime_types[] = { "audio/mp4", "audio/m4a", NULL };
 const struct decoder_plugin mp4ff_decoder_plugin = {
 	.name = "mp4",
 	.stream_decode = mp4_decode,
-	.tag_dup = mp4_tag_dup,
+	.stream_tag = mp4_stream_tag,
 	.suffixes = mp4_suffixes,
 	.mime_types = mp4_mime_types,
 };

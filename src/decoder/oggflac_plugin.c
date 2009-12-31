@@ -243,33 +243,20 @@ fail:
 
 /* public functions: */
 static struct tag *
-oggflac_tag_dup(const char *file)
+oggflac_stream_tag(struct input_stream *is)
 {
-	GError *error = NULL;
-	struct input_stream input_stream;
 	OggFLAC__SeekableStreamDecoder *decoder;
 	struct flac_data data;
 	struct tag *tag;
 
-	if (!input_stream_open(&input_stream, file, &error)) {
-		if (error != NULL) {
-			g_warning("%s", error->message);
-			g_error_free(error);
-		}
-
+	if (ogg_stream_type_detect(is) != FLAC)
 		return NULL;
-	}
-
-	if (ogg_stream_type_detect(&input_stream) != FLAC) {
-		input_stream_close(&input_stream);
-		return NULL;
-	}
 
 	/* rewind the stream, because ogg_stream_type_detect() has
 	   moved it */
-	input_stream_seek(&input_stream, 0, SEEK_SET, NULL);
+	input_stream_seek(is, 0, SEEK_SET, NULL);
 
-	flac_data_init(&data, NULL, &input_stream);
+	flac_data_init(&data, NULL, is);
 
 	data.tag = tag_new();
 
@@ -278,7 +265,6 @@ oggflac_tag_dup(const char *file)
 	decoder = full_decoder_init_and_read_metadata(&data, 1);
 
 	oggflac_cleanup(decoder);
-	input_stream_close(&input_stream);
 
 	if (tag_is_defined(data.tag)) {
 		tag = data.tag;
@@ -362,7 +348,7 @@ static const char *const oggflac_mime_types[] = {
 const struct decoder_plugin oggflac_decoder_plugin = {
 	.name = "oggflac",
 	.stream_decode = oggflac_decode,
-	.tag_dup = oggflac_tag_dup,
+	.stream_tag = oggflac_stream_tag,
 	.suffixes = oggflac_suffixes,
 	.mime_types = oggflac_mime_types
 };
