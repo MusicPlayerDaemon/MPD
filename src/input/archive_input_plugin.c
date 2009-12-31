@@ -71,8 +71,6 @@ input_archive_open(struct input_stream *is, const char *pathname,
 
 	if (!opened) {
 		archive_file_close(file);
-	} else {
-		is->ready = true;
 	}
 
 	return opened;

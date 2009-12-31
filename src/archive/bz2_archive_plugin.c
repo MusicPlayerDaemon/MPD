@@ -170,6 +170,7 @@ bz2_open_stream(struct archive_file *file, struct input_stream *is,
 	is->plugin = &bz2_inputplugin;
 	//insert back reference
 	is->data = bis;
+	is->ready = true;
 	is->seekable = false;
 
 	if (!bz2_alloc(bis, error_r)) {

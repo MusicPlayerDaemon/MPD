@@ -145,6 +145,7 @@ zzip_archive_open_stream(struct archive_file *file, struct input_stream *is,
 	is->plugin = &zzip_input_plugin;
 	//insert back reference
 	is->data = zis;
+	is->ready = true;
 	//we are seekable (but its not recommendent to do so)
 	is->seekable = true;
 

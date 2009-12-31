@@ -185,6 +185,7 @@ iso9660_archive_open_stream(struct archive_file *file, struct input_stream *is,
 	is->plugin = &iso9660_input_plugin;
 	//insert back reference
 	is->data = iis;
+	is->ready = true;
 	//we are not seekable
 	is->seekable = false;
 
