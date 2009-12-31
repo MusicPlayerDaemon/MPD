@@ -353,7 +353,13 @@ fi
 AM_CONDITIONAL(HAVE_BZ2, test x$enable_bzip2 = xyes)
 if test x$enable_bzip2 = xyes; then
 	AC_DEFINE(HAVE_BZ2, 1, [Define to have bz2 archive support])
+
+	AC_PATH_PROG(BZIP2, bzip2, no)
+else
+	BZIP2="no"
 fi
+
+AM_CONDITIONAL(ENABLE_BZIP2_TEST, test x$BZIP2 != xno)
 
 dnl zzip
 AC_ARG_ENABLE(zzip,
@@ -367,7 +373,13 @@ MPD_AUTO_PKG(zzip, ZZIP, [zziplib >= 0.13],
 AM_CONDITIONAL(HAVE_ZZIP, test x$enable_zzip = xyes)
 if test x$enable_zzip = xyes; then
 	AC_DEFINE(HAVE_ZZIP, 1, [Define to have zip archive support])
+
+	AC_PATH_PROG(ZIP, zip, no)
+else
+	ZIP="no"
 fi
+
+AM_CONDITIONAL(ENABLE_ZZIP_TEST, test x$ZIP != xno)
 
 dnl iso9660
 AC_ARG_ENABLE(iso9660,
@@ -381,7 +393,13 @@ MPD_AUTO_PKG(iso9660, ISO9660, [libiso9660],
 AM_CONDITIONAL(HAVE_ISO9660, test x$enable_iso9660 = xyes)
 if test x$enable_iso9660 = xyes; then
 	AC_DEFINE(HAVE_ISO9660, 1, [Define to have ISO9660 archive support])
+
+	AC_PATH_PROG(MKISOFS, mkisofs, no)
+else
+	MKISOFS="no"
 fi
+
+AM_CONDITIONAL(ENABLE_ISO9660_TEST, test x$MKISOFS != xno)
 
 dnl archive API
 if

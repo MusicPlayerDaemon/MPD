@@ -80,6 +80,7 @@ ver 0.16 (20??/??/??)
 * CUE sheet support
 * obey $(sysconfdir) for default mpd.conf location
 * build with large file support by default
+* added test suite ("make check")
 * require GLib 2.12
 
 

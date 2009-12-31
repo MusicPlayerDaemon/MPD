@@ -755,6 +755,8 @@ sparse-check:
 
 if ENABLE_TEST
 
+TESTS =
+
 noinst_PROGRAMS = \
 	test/read_conf \
 	test/run_input \
@@ -973,6 +975,18 @@ test_read_mixer_SOURCES = test/read_mixer.c \
 	src/filter/volume_filter_plugin.c \
 	src/fd_util.c \
 	$(MIXER_SRC)
+
+if ENABLE_BZIP2_TEST
+TESTS += test/test_archive_bzip2.sh
+endif
+
+if ENABLE_ZZIP_TEST
+TESTS += test/test_archive_zzip.sh
+endif
+
+if ENABLE_ISO9660_TEST
+TESTS += test/test_archive_iso9660.sh
+endif
 
 endif
 

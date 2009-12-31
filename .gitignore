@@ -55,3 +55,4 @@ test/run_input
 test/read_mixer
 test/dump_playlist
 test/run_normalize
+test/tmp
