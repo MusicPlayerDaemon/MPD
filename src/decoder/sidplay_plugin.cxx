@@ -411,6 +411,7 @@ const struct decoder_plugin sidplay_decoder_plugin = {
 	NULL, /* stream_decode() */
 	sidplay_file_decode,
 	sidplay_tag_dup,
+	NULL, /* stream_tag() */
 	sidplay_container_scan,
 	sidplay_suffixes,
 	NULL, /* mime_types */

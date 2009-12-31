@@ -27,12 +27,14 @@
 #include "tag_ape.h"
 #include "tag_id3.h"
 #include "tag.h"
+#include "input_stream.h"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <stdio.h>
 
 struct song *
 song_file_load(const char *path, struct directory *parent)
@@ -99,6 +101,7 @@ song_file_update(struct song *song)
 	char *path_fs;
 	const struct decoder_plugin *plugin;
 	struct stat st;
+	struct input_stream is = { .plugin = NULL };
 
 	assert(song_is_file(song));
 
@@ -129,12 +132,35 @@ song_file_update(struct song *song)
 	song->mtime = st.st_mtime;
 
 	do {
+		/* load file tag */
 		song->tag = decoder_plugin_tag_dup(plugin, path_fs);
 		if (song->tag != NULL)
 			break;
 
+		/* fall back to stream tag */
+		if (plugin->stream_tag != NULL) {
+			/* open the input_stream (if not already
+			   open) */
+			if (is.plugin == NULL &&
+			    !input_stream_open(&is, path_fs, NULL))
+				is.plugin = NULL;
+
+			/* now try the stream_tag() method */
+			if (is.plugin != NULL) {
+				song->tag = decoder_plugin_stream_tag(plugin,
+								      &is);
+				if (song->tag != NULL)
+					break;
+
+				input_stream_seek(&is, 0, SEEK_SET, NULL);
+			}
+		}
+
 		plugin = decoder_plugin_from_suffix(suffix, plugin);
 	} while (plugin != NULL);
+
+	if (is.plugin != NULL)
+		input_stream_close(&is);
 
 	if (song->tag != NULL && tag_is_empty(song->tag))
 		song->tag = tag_fallback(path_fs, song->tag);

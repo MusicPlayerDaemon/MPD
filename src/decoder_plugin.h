@@ -77,6 +77,13 @@ struct decoder_plugin {
 	struct tag *(*tag_dup)(const char *path_fs);
 
 	/**
+	 * Read the tags of a stream.
+	 *
+	 * @return NULL if the operation has failed
+	 */
+	struct tag *(*stream_tag)(struct input_stream *is);
+
+	/**
 	 * @brief Return a "virtual" filename for subtracks in
 	 * container formats like flac
 	 * @param const char* pathname full pathname for the file on fs
@@ -147,7 +154,21 @@ static inline struct tag *
 decoder_plugin_tag_dup(const struct decoder_plugin *plugin,
 		       const char *path_fs)
 {
-	return plugin->tag_dup(path_fs);
+	return plugin->tag_dup != NULL
+		? plugin->tag_dup(path_fs)
+		: NULL;
+}
+
+/**
+ * Read the tag of a stream.
+ */
+static inline struct tag *
+decoder_plugin_stream_tag(const struct decoder_plugin *plugin,
+			  struct input_stream *is)
+{
+	return plugin->stream_tag != NULL
+		? plugin->stream_tag(is)
+		: NULL;
 }
 
 /**
