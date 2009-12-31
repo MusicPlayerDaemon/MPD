@@ -129,7 +129,7 @@ song_file_update(struct song *song)
 	song->mtime = st.st_mtime;
 
 	do {
-		song->tag = plugin->tag_dup(path_fs);
+		song->tag = decoder_plugin_tag_dup(plugin, path_fs);
 		if (song->tag != NULL)
 			break;
 
