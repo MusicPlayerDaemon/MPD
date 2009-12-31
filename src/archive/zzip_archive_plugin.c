@@ -26,6 +26,7 @@
 #include "archive_api.h"
 #include "archive_api.h"
 #include "input_plugin.h"
+#include "refcount.h"
 
 #include <zzip/zzip.h>
 #include <glib.h>
@@ -33,6 +34,8 @@
 
 struct zzip_archive {
 	struct archive_file base;
+
+	struct refcount ref;
 
 	ZZIP_DIR *dir;
 	GSList	*list;
@@ -56,6 +59,7 @@ zzip_archive_open(const char *pathname, GError **error_r)
 	ZZIP_DIRENT dirent;
 
 	archive_file_init(&context->base, &zzip_archive_plugin);
+	refcount_init(&context->ref);
 
 	// open archive
 	context->list = NULL;
@@ -102,6 +106,10 @@ static void
 zzip_archive_close(struct archive_file *file)
 {
 	struct zzip_archive *context = (struct zzip_archive *) file;
+
+	if (!refcount_dec(&context->ref))
+		return;
+
 	if (context->list) {
 		//free list
 		for (GSList *tmp = context->list; tmp != NULL; tmp = g_slist_next(tmp))
@@ -151,6 +159,9 @@ zzip_archive_open_stream(struct archive_file *file, struct input_stream *is,
 
 	zzip_file_stat(zis->file, &z_stat);
 	is->size = z_stat.st_size;
+
+	refcount_inc(&context->ref);
+
 	return true;
 }
 

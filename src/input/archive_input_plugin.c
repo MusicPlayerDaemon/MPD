@@ -67,11 +67,8 @@ input_archive_open(struct input_stream *is, const char *pathname,
 
 	//setup fileops
 	opened = archive_file_open_stream(file, is, filename, error_r);
+	archive_file_close(file);
 	g_free(pname);
-
-	if (!opened) {
-		archive_file_close(file);
-	}
 
 	return opened;
 }

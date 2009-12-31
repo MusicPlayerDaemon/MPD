@@ -25,6 +25,7 @@
 #include "archive/iso9660_archive_plugin.h"
 #include "archive_api.h"
 #include "input_plugin.h"
+#include "refcount.h"
 
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
@@ -36,6 +37,8 @@
 
 struct iso9660_archive_file {
 	struct archive_file base;
+
+	struct refcount ref;
 
 	iso9660_t *iso;
 	GSList	*list;
@@ -93,6 +96,7 @@ iso9660_archive_open(const char *pathname, GError **error_r)
 		g_new(struct iso9660_archive_file, 1);
 
 	archive_file_init(&context->base, &iso9660_archive_plugin);
+	refcount_init(&context->ref);
 
 	context->list = NULL;
 
@@ -139,8 +143,11 @@ iso9660_archive_close(struct archive_file *file)
 {
 	struct iso9660_archive_file *context =
 		(struct iso9660_archive_file *)file;
-
 	GSList *tmp;
+
+	if (!refcount_dec(&context->ref))
+		return;
+
 	if (context->list) {
 		//free list
 		for (tmp = context->list; tmp != NULL; tmp = g_slist_next(tmp))
@@ -192,6 +199,9 @@ iso9660_archive_open_stream(struct archive_file *file, struct input_stream *is,
 	is->size = iis->statbuf->size;
 
 	iis->max_blocks = CEILING(iis->statbuf->size, ISO_BLOCKSIZE);
+
+	refcount_inc(&context->ref);
+
 	return true;
 }
 

@@ -67,9 +67,6 @@ struct archive_plugin {
 	/**
 	 * Opens an input_stream of a file within the archive.
 	 *
-	 * If this function succeeds, then the #input_stream "owns"
-	 * the archive file and will automatically close it.
-	 *
 	 * @param path the path within the archive
 	 * @param error_r location to store the error occuring, or
 	 * NULL to ignore errors

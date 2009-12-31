@@ -25,6 +25,7 @@
 #include "archive/bz2_archive_plugin.h"
 #include "archive_api.h"
 #include "input_plugin.h"
+#include "refcount.h"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -39,6 +40,8 @@
 
 struct bz2_archive_file {
 	struct archive_file base;
+
+	struct refcount ref;
 
 	char *name;
 	bool reset;
@@ -105,6 +108,7 @@ bz2_open(const char *pathname, GError **error_r)
 
 	context = g_malloc(sizeof(*context));
 	archive_file_init(&context->base, &bz2_archive_plugin);
+	refcount_init(&context->ref);
 
 	//open archive
 	if (!input_stream_open(&context->istream, pathname, error_r)) {
@@ -149,6 +153,9 @@ bz2_close(struct archive_file *file)
 {
 	struct bz2_archive_file *context = (struct bz2_archive_file *) file;
 
+	if (!refcount_dec(&context->ref))
+		return;
+
 	g_free(context->name);
 
 	input_stream_close(&context->istream);
@@ -179,6 +186,8 @@ bz2_open_stream(struct archive_file *file, struct input_stream *is,
 	}
 
 	bis->eof = false;
+
+	refcount_inc(&context->ref);
 
 	return true;
 }
