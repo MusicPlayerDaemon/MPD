@@ -37,8 +37,6 @@
 #define BZ2_bzDecompress bzDecompress
 #endif
 
-#define BZ_BUFSIZE   5000
-
 struct bz2_archive_file {
 	struct archive_file base;
 
@@ -53,7 +51,8 @@ struct bz2_input_stream {
 	bool eof;
 
 	bz_stream bzstream;
-	char *buffer;
+
+	char buffer[5000];
 };
 
 static const struct input_plugin bz2_inputplugin;
@@ -75,13 +74,11 @@ bz2_alloc(struct bz2_input_stream *data, GError **error_r)
 	data->bzstream.bzfree  = NULL;
 	data->bzstream.opaque  = NULL;
 
-	data->buffer = g_malloc(BZ_BUFSIZE);
 	data->bzstream.next_in = (void *) data->buffer;
 	data->bzstream.avail_in = 0;
 
 	ret = BZ2_bzDecompressInit(&data->bzstream, 0, 0);
 	if (ret != BZ_OK) {
-		g_free(data->buffer);
 		g_free(data);
 
 		g_set_error(error_r, bz2_quark(), ret,
@@ -96,7 +93,6 @@ static void
 bz2_destroy(struct bz2_input_stream *data)
 {
 	BZ2_bzDecompressEnd(&data->bzstream);
-	g_free(data->buffer);
 }
 
 /* archive open && listing routine */
@@ -210,7 +206,7 @@ bz2_fillbuffer(struct bz2_input_stream *bis, GError **error_r)
 		return true;
 
 	count = input_stream_read(&bis->archive->istream,
-				  bis->buffer, BZ_BUFSIZE,
+				  bis->buffer, sizeof(bis->buffer),
 				  error_r);
 	if (count == 0)
 		return false;
