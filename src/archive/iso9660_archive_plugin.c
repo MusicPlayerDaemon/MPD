@@ -39,7 +39,6 @@ struct iso9660_archive_file {
 
 	iso9660_t *iso;
 	iso9660_stat_t *statbuf;
-	size_t cur_ofs;
 	size_t max_blocks;
 	GSList	*list;
 	GSList	*iter;
@@ -179,7 +178,9 @@ iso9660_archive_open_stream(struct archive_file *file, struct input_stream *is,
 			    "not found in the ISO file: %s", pathname);
 		return false;
 	}
-	context->cur_ofs = 0;
+
+	is->size = context->statbuf->size;
+
 	context->max_blocks = CEILING(context->statbuf->size, ISO_BLOCKSIZE);
 	return true;
 }
@@ -200,7 +201,7 @@ iso9660_input_read(struct input_stream *is, void *ptr, size_t size, GError **err
 	struct iso9660_archive_file *context = (struct iso9660_archive_file *) is->data;
 	int toread, readed = 0;
 	int no_blocks, cur_block;
-	size_t left_bytes = context->statbuf->size - context->cur_ofs;
+	size_t left_bytes = context->statbuf->size - is->offset;
 
 	size = (size * ISO_BLOCKSIZE) / ISO_BLOCKSIZE;
 
@@ -213,7 +214,7 @@ iso9660_input_read(struct input_stream *is, void *ptr, size_t size, GError **err
 	}
 	if (no_blocks > 0) {
 
-		cur_block = context->cur_ofs / ISO_BLOCKSIZE;
+		cur_block = is->offset / ISO_BLOCKSIZE;
 
 		readed = iso9660_iso_seek_read (context->iso, ptr,
 			context->statbuf->lsn + cur_block, no_blocks);
@@ -227,7 +228,8 @@ iso9660_input_read(struct input_stream *is, void *ptr, size_t size, GError **err
 		if (left_bytes < size) {
 			readed = left_bytes;
 		}
-		context->cur_ofs += readed;
+
+		is->offset += readed;
 	}
 	return readed;
 }
@@ -235,9 +237,7 @@ iso9660_input_read(struct input_stream *is, void *ptr, size_t size, GError **err
 static bool
 iso9660_input_eof(struct input_stream *is)
 {
-	struct iso9660_archive_file *context = is->data;
-
-	return (context->cur_ofs == context->statbuf->size);
+	return is->offset == is->size;
 }
 
 /* exported structures */
