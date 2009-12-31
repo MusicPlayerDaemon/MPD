@@ -36,7 +36,6 @@ struct zzip_archive {
 
 	ZZIP_DIR *dir;
 	ZZIP_FILE *file;
-	size_t	length;
 	GSList	*list;
 	GSList	*iter;
 };
@@ -139,7 +138,7 @@ zzip_archive_open_stream(struct archive_file *file, struct input_stream *is,
 		return false;
 	}
 	zzip_file_stat(context->file, &z_stat);
-	context->length = z_stat.st_size;
+	is->size = z_stat.st_size;
 	return true;
 }
 
@@ -164,6 +163,9 @@ zzip_input_read(struct input_stream *is, void *ptr, size_t size,
 			    "zzip_file_read() has failed");
 		return 0;
 	}
+
+	is->offset = zzip_tell(context->file);
+
 	return ret;
 }
 
@@ -171,7 +173,7 @@ static bool
 zzip_input_eof(struct input_stream *is)
 {
 	struct zzip_archive *context = (struct zzip_archive *) is->data;
-	return ((size_t) zzip_tell(context->file) == context->length);
+	return (goffset)zzip_tell(context->file) == is->size;
 }
 
 static bool
