@@ -38,8 +38,6 @@ struct iso9660_archive_file {
 	struct archive_file base;
 
 	iso9660_t *iso;
-	iso9660_stat_t *statbuf;
-	size_t max_blocks;
 	GSList	*list;
 	GSList	*iter;
 };
@@ -157,51 +155,65 @@ iso9660_archive_close(struct archive_file *file)
 
 /* single archive handling */
 
+struct iso9660_input_stream {
+	struct iso9660_archive_file *archive;
+
+	iso9660_stat_t *statbuf;
+	size_t max_blocks;
+};
+
 static bool
 iso9660_archive_open_stream(struct archive_file *file, struct input_stream *is,
 		const char *pathname, GError **error_r)
 {
 	struct iso9660_archive_file *context =
 		(struct iso9660_archive_file *)file;
+	struct iso9660_input_stream *iis;
 
-	//setup file ops
-	is->plugin = &iso9660_input_plugin;
-	//insert back reference
-	is->data = context;
-	//we are not seekable
-	is->seekable = false;
+	iis = g_new(struct iso9660_input_stream, 1);
 
-	context->statbuf = iso9660_ifs_stat_translate (context->iso, pathname);
-
-	if (context->statbuf == NULL) {
+	iis->archive = context;
+	iis->statbuf = iso9660_ifs_stat_translate(context->iso, pathname);
+	if (iis->statbuf == NULL) {
+		g_free(iis);
 		g_set_error(error_r, iso9660_quark(), 0,
 			    "not found in the ISO file: %s", pathname);
 		return false;
 	}
 
-	is->size = context->statbuf->size;
+	//setup file ops
+	is->plugin = &iso9660_input_plugin;
+	//insert back reference
+	is->data = iis;
+	//we are not seekable
+	is->seekable = false;
 
-	context->max_blocks = CEILING(context->statbuf->size, ISO_BLOCKSIZE);
+	is->size = iis->statbuf->size;
+
+	iis->max_blocks = CEILING(iis->statbuf->size, ISO_BLOCKSIZE);
 	return true;
 }
 
 static void
 iso9660_input_close(struct input_stream *is)
 {
-	struct iso9660_archive_file *context = is->data;
-	g_free(context->statbuf);
+	struct iso9660_input_stream *iis =
+		(struct iso9660_input_stream *)is->data;
 
-	iso9660_archive_close((struct archive_file *)context);
+	g_free(iis->statbuf);
+
+	iso9660_archive_close(&iis->archive->base);
 }
 
 
 static size_t
 iso9660_input_read(struct input_stream *is, void *ptr, size_t size, GError **error_r)
 {
-	struct iso9660_archive_file *context = (struct iso9660_archive_file *) is->data;
+	struct iso9660_input_stream *iis =
+		(struct iso9660_input_stream *)is->data;
 	int toread, readed = 0;
 	int no_blocks, cur_block;
-	size_t left_bytes = context->statbuf->size - is->offset;
+	size_t left_bytes = iis->statbuf->size - is->offset;
 
 	size = (size * ISO_BLOCKSIZE) / ISO_BLOCKSIZE;
 
@@ -216,8 +228,8 @@ iso9660_input_read(struct input_stream *is, void *ptr, size_t size, GError **err
 
 		cur_block = is->offset / ISO_BLOCKSIZE;
 
-		readed = iso9660_iso_seek_read (context->iso, ptr,
-			context->statbuf->lsn + cur_block, no_blocks);
+		readed = iso9660_iso_seek_read (iis->archive->iso, ptr,
+			iis->statbuf->lsn + cur_block, no_blocks);
 
 		if (readed != no_blocks * ISO_BLOCKSIZE) {
 			g_set_error(error_r, iso9660_quark(), 0,
