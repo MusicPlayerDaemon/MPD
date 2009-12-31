@@ -45,6 +45,10 @@ struct bz2_archive_file {
 	char *name;
 	bool reset;
 	struct input_stream istream;
+};
+
+struct bz2_input_stream {
+	struct bz2_archive_file *archive;
 
 	bool eof;
 
@@ -63,7 +67,7 @@ bz2_quark(void)
 /* single archive handling allocation helpers */
 
 static bool
-bz2_alloc(struct bz2_archive_file *data, GError **error_r)
+bz2_alloc(struct bz2_input_stream *data, GError **error_r)
 {
 	int ret;
 
@@ -89,7 +93,7 @@ bz2_alloc(struct bz2_archive_file *data, GError **error_r)
 }
 
 static void
-bz2_destroy(struct bz2_archive_file *data)
+bz2_destroy(struct bz2_input_stream *data)
 {
 	BZ2_bzDecompressEnd(&data->bzstream);
 	g_free(data->buffer);
@@ -162,17 +166,22 @@ bz2_open_stream(struct archive_file *file, struct input_stream *is,
 		G_GNUC_UNUSED const char *path, GError **error_r)
 {
 	struct bz2_archive_file *context = (struct bz2_archive_file *) file;
+	struct bz2_input_stream *bis = g_new(struct bz2_input_stream, 1);
+
+	bis->archive = context;
 
 	//setup file ops
 	is->plugin = &bz2_inputplugin;
 	//insert back reference
-	is->data = context;
+	is->data = bis;
 	is->seekable = false;
 
-	if (!bz2_alloc(context, error_r))
+	if (!bz2_alloc(bis, error_r)) {
+		g_free(bis);
 		return false;
+	}
 
-	context->eof = false;
+	bis->eof = false;
 
 	return true;
 }
@@ -180,31 +189,33 @@ bz2_open_stream(struct archive_file *file, struct input_stream *is,
 static void
 bz2_is_close(struct input_stream *is)
 {
-	struct bz2_archive_file *context = (struct bz2_archive_file *) is->data;
-	bz2_destroy(context);
-	is->data = NULL;
+	struct bz2_input_stream *bis = (struct bz2_input_stream *)is->data;
 
-	bz2_close((struct archive_file *)context);
+	bz2_destroy(bis);
+
+	bz2_close(&bis->archive->base);
+
+	g_free(bis);
 }
 
 static bool
-bz2_fillbuffer(struct bz2_archive_file *context, GError **error_r)
+bz2_fillbuffer(struct bz2_input_stream *bis, GError **error_r)
 {
 	size_t count;
 	bz_stream *bzstream;
 
-	bzstream = &context->bzstream;
+	bzstream = &bis->bzstream;
 
 	if (bzstream->avail_in > 0)
 		return true;
 
-	count = input_stream_read(&context->istream,
-				  context->buffer, BZ_BUFSIZE,
+	count = input_stream_read(&bis->archive->istream,
+				  bis->buffer, BZ_BUFSIZE,
 				  error_r);
 	if (count == 0)
 		return false;
 
-	bzstream->next_in = context->buffer;
+	bzstream->next_in = bis->buffer;
 	bzstream->avail_in = count;
 	return true;
 }
@@ -213,26 +224,26 @@ static size_t
 bz2_is_read(struct input_stream *is, void *ptr, size_t length,
 	    GError **error_r)
 {
-	struct bz2_archive_file *context = (struct bz2_archive_file *) is->data;
+	struct bz2_input_stream *bis = (struct bz2_input_stream *)is->data;
 	bz_stream *bzstream;
 	int bz_result;
 	size_t nbytes = 0;
 
-	if (context->eof)
+	if (bis->eof)
 		return 0;
 
-	bzstream = &context->bzstream;
+	bzstream = &bis->bzstream;
 	bzstream->next_out = ptr;
 	bzstream->avail_out = length;
 
 	do {
-		if (!bz2_fillbuffer(context, error_r))
+		if (!bz2_fillbuffer(bis, error_r))
 			return 0;
 
 		bz_result = BZ2_bzDecompress(bzstream);
 
 		if (bz_result == BZ_STREAM_END) {
-			context->eof = true;
+			bis->eof = true;
 			break;
 		}
 
@@ -252,9 +263,9 @@ bz2_is_read(struct input_stream *is, void *ptr, size_t length,
 static bool
 bz2_is_eof(struct input_stream *is)
 {
-	struct bz2_archive_file *context = (struct bz2_archive_file *) is->data;
+	struct bz2_input_stream *bis = (struct bz2_input_stream *)is->data;
 
-	return context->eof;
+	return bis->eof;
 }
 
 /* exported structures */
