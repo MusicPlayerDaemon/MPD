@@ -829,6 +829,9 @@ fi
 
 AM_CONDITIONAL(HAVE_OSS, test x$enable_oss = xyes)
 
+AC_SUBST(OPENAL_CFLAGS,"")
+AC_SUBST(OPENAL_LIBS,"")
+
 if test x$enable_openal = xyes; then
 	if test x$enable_osx = xyes; then
 		AC_CHECK_HEADERS([OpenAL/al.h OpenAL/alc.h], [], [enable_openal=no])
@@ -843,11 +846,6 @@ if test x$enable_openal = xyes; then
 			AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support]),
 			enable_openal=no)
 	fi
-fi
-
-if test x$enable_openal = xyes; then
-	MPD_CFLAGS="$MPD_CFLAGS $OPENAL_CFLAGS"
-	MPD_LIBS="$MPD_LIBS $OPENAL_LIBS"
 fi
 
 AM_CONDITIONAL(HAVE_OPENAL, test x$enable_openal = xyes)
