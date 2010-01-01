@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2009 The Music Player Daemon Project
+ * Copyright (C) 2003-2010 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -74,7 +74,7 @@ static void version(void)
 	puts(PACKAGE " (MPD: Music Player Daemon) " VERSION " \n"
 	     "\n"
 	     "Copyright (C) 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
-	     "Copyright (C) 2008 Max Kellermann <max@duempel.org>\n"
+	     "Copyright (C) 2008-2010 Max Kellermann <max@duempel.org>\n"
 	     "This is free software; see the source for copying conditions.  There is NO\n"
 	     "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 	     "\n"
