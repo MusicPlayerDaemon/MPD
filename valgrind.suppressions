@@ -112,6 +112,17 @@
 {
    g_get_language_names
    Memcheck:Leak
+   fun:memalign
+   fun:posix_memalign
+   fun:slab_allocator_alloc_chunk
+   fun:g_slice_alloc
+   fun:g_hash_table_new_full
+   fun:g_get_language_names
+}
+
+{
+   g_get_language_names
+   Memcheck:Leak
    fun:calloc
    fun:g_malloc0
    fun:g_get_language_names
@@ -174,6 +185,18 @@
    fun:g_hash_table_new_full
    fun:g_get_language_names
    fun:main
+}
+
+{
+   g_get_language_names
+   Memcheck:Leak
+   fun:memalign
+   fun:posix_memalign
+   fun:slab_allocator_alloc_chunk
+   fun:g_slice_alloc
+   fun:g_slist_prepend
+   fun:g_strsplit
+   fun:g_get_language_names
 }
 
 {
@@ -289,10 +312,33 @@
 }
 
 {
-   g_get_filename_charsets2
+   g_get_filename_charsets
    Memcheck:Leak
    fun:calloc
    fun:g_malloc0
+   fun:g_get_filename_charsets
+}
+
+{
+   g_get_filename_charsets
+   Memcheck:Leak
+   fun:memalign
+   fun:posix_memalign
+   fun:slab_allocator_alloc_chunk
+   fun:g_slice_alloc
+   fun:g_array_sized_new
+   fun:g_static_private_set
+   fun:g_get_filename_charsets
+}
+
+{
+   g_get_filename_charsets
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_slice_alloc
+   fun:g_array_sized_new
+   fun:g_static_private_set
    fun:g_get_filename_charsets
 }
 
@@ -325,10 +371,33 @@
 }
 
 {
-   g_get_charset2
+   g_get_charset
    Memcheck:Leak
    fun:calloc
    fun:g_malloc0
+   fun:g_get_charset
+}
+
+{
+   g_get_charset
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_slice_alloc
+   fun:g_array_sized_new
+   fun:g_static_private_set
+   fun:g_get_charset
+}
+
+{
+   g_get_charset
+   Memcheck:Leak
+   fun:memalign
+   fun:posix_memalign
+   fun:slab_allocator_alloc_chunk
+   fun:g_slice_alloc
+   fun:g_array_sized_new
+   fun:g_static_private_set
    fun:g_get_charset
 }
 
@@ -384,6 +453,31 @@
 }
 
 {
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:ERR_get_state
+   fun:ERR_clear_error
+   fun:Curl_ossl_init
+   fun:curl_global_init
+}
+
+{
+   openssl
+   Memcheck:Leak
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:lh_new
+   obj:/usr/lib/libcrypto.so.0.9.8
+   obj:/usr/lib/libcrypto.so.0.9.8
+   fun:ERR_get_state
+   fun:ERR_clear_error
+   fun:Curl_ossl_init
+   fun:curl_global_init
+}
+
+{
    openssl
    Memcheck:Leak
    fun:malloc
@@ -407,6 +501,100 @@
    fun:dlerror_run
    fun:__libc_dlopen_mode
    fun:pthread_cancel_init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:calloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:local_strdup
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:calloc
+   fun:_dl_check_map_versions
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_error
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:local_strdup
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_error
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
 }
 
 {
