@@ -234,6 +234,7 @@ visitTag(struct client *client, struct strset *set,
 	 struct song *song, enum tag_type tagType)
 {
 	struct tag *tag = song->tag;
+	bool found = false;
 
 	if (tagType == LOCATE_TAG_FILE_TYPE) {
 		song_print_url(client, song);
@@ -246,10 +247,12 @@ visitTag(struct client *client, struct strset *set,
 	for (unsigned i = 0; i < tag->num_items; i++) {
 		if (tag->items[i]->type == tagType) {
 			strset_add(set, tag->items[i]->value);
+			found = true;
 		}
 	}
 
-	strset_add(set, "");
+	if (!found)
+		strset_add(set, "");
 }
 
 struct list_tags_data {
