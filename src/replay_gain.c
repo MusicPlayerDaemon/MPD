@@ -191,7 +191,6 @@ replay_gain_apply(struct replay_gain_info *info, char *buffer, int size,
 	}
 	else {
 	    scale = replay_gain_missing_preamp;
-	    g_debug("ReplayGain is missing, computing scale %f\n", scale);
 	}
 
 	pcm_volume(buffer, size, format, pcm_float_to_volume(scale));
