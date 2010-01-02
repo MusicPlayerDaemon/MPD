@@ -1139,7 +1139,6 @@ then
 	MPD_CHECK_FLAG([-Wextra])
 	MPD_CHECK_FLAG([-Wno-deprecated-declarations])
 	MPD_CHECK_FLAG([-Wmissing-prototypes])
-	MPD_CHECK_FLAG([-Wdeclaration-after-statement])
 	MPD_CHECK_FLAG([-Wshadow])
 	MPD_CHECK_FLAG([-Wpointer-arith])
 	MPD_CHECK_FLAG([-Wstrict-prototypes])
