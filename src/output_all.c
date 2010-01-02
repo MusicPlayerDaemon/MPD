@@ -558,6 +558,14 @@ audio_output_all_close(void)
 	audio_output_all_elapsed_time = -1.0;
 }
 
+void
+audio_output_all_song_border(void)
+{
+	/* clear the elapsed_time pointer at the beginning of a new
+	   song */
+	audio_output_all_elapsed_time = 0.0;
+}
+
 float
 audio_output_all_get_elapsed_time(void)
 {

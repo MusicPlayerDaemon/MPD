@@ -142,6 +142,12 @@ void
 audio_output_all_cancel(void);
 
 /**
+ * Indicate that a new song will begin now.
+ */
+void
+audio_output_all_song_border(void);
+
+/**
  * Returns the "elapsed_time" stamp of the most recently finished
  * chunk.  A negative value is returned when no chunk has been
  * finished yet.

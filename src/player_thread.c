@@ -736,6 +736,8 @@ player_song_border(struct player *player)
 	music_pipe_free(player->pipe);
 	player->pipe = player->dc->pipe;
 
+	audio_output_all_song_border();
+
 	if (!player_wait_for_decoder(player))
 		return false;
 
