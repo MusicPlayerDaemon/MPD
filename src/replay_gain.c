@@ -162,6 +162,12 @@ struct replay_gain_info *replay_gain_info_new(void)
 	return ret;
 }
 
+struct replay_gain_info *
+replay_gain_info_dup(const struct replay_gain_info *src)
+{
+	return g_memdup(src, sizeof(*src));
+}
+
 void replay_gain_info_free(struct replay_gain_info *info)
 {
 	g_free(info);

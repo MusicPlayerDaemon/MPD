@@ -50,6 +50,12 @@ struct replay_gain_info {
 struct replay_gain_info *
 replay_gain_info_new(void);
 
+/**
+ * Duplicate a #replay_gain_info object.
+ */
+struct replay_gain_info *
+replay_gain_info_dup(const struct replay_gain_info *src);
+
 void replay_gain_info_free(struct replay_gain_info *info);
 
 void replay_gain_global_init(void);
