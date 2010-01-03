@@ -169,8 +169,7 @@ mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 	Player_Start(handle);
 	while (cmd == DECODE_COMMAND_NONE && Player_Active()) {
 		ret = VC_WriteBytes(buffer, sizeof(buffer));
-		cmd = decoder_data(decoder, NULL, buffer, ret,
-				   0, NULL);
+		cmd = decoder_data(decoder, NULL, buffer, ret, 0);
 	}
 
 	Player_Stop();

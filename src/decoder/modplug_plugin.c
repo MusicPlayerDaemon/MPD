@@ -134,7 +134,7 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 
 		cmd = decoder_data(decoder, NULL,
 				   audio_buffer, ret,
-				   0, NULL);
+				   0);
 
 		if (cmd == DECODE_COMMAND_SEEK) {
 			float where = decoder_seek_where(decoder);

@@ -138,8 +138,7 @@ decoder_timestamp(struct decoder *decoder, double t);
 enum decoder_command
 decoder_data(struct decoder *decoder, struct input_stream *is,
 	     const void *data, size_t length,
-	     uint16_t kbit_rate,
-	     struct replay_gain_info *replay_gain_info);
+	     uint16_t kbit_rate);
 
 /**
  * This function is called by the decoder plugin when it has
@@ -155,5 +154,16 @@ decoder_data(struct decoder *decoder, struct input_stream *is,
 enum decoder_command
 decoder_tag(struct decoder *decoder, struct input_stream *is,
 	    const struct tag *tag);
+
+/**
+ * Set replay gain values for the following chunks.
+ *
+ * @param decoder the decoder object
+ * @param rgi the replay_gain_info object; may be NULL to invalidate
+ * the previous replay gain values
+ */
+void
+decoder_replay_gain(struct decoder *decoder,
+		    const struct replay_gain_info *replay_gain_info);
 
 #endif

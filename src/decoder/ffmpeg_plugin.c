@@ -270,7 +270,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 
 		cmd = decoder_data(decoder, is,
 				   aligned_buffer, audio_size,
-				   codec_context->bit_rate / 1000, NULL);
+				   codec_context->bit_rate / 1000);
 	}
 	return cmd;
 }

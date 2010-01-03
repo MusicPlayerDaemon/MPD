@@ -266,8 +266,7 @@ enum decoder_command
 decoder_data(struct decoder *decoder,
 	     struct input_stream *is,
 	     const void *_data, size_t length,
-	     uint16_t kbit_rate,
-	     struct replay_gain_info *replay_gain_info)
+	     uint16_t kbit_rate)
 {
 	struct decoder_control *dc = decoder->dc;
 	const char *data = _data;
@@ -354,7 +353,8 @@ decoder_data(struct decoder *decoder,
 		/* apply replay gain or normalization */
 
 		if (replay_gain_mode != REPLAY_GAIN_OFF)
-			replay_gain_apply(replay_gain_info, dest, nbytes,
+			replay_gain_apply(decoder->replay_gain,
+					  dest, nbytes,
 					  &dc->out_audio_format);
 
 		/* expand the music pipe chunk */
@@ -417,4 +417,18 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
 		cmd = do_send_tag(decoder, is, tag);
 
 	return cmd;
+}
+
+void
+decoder_replay_gain(struct decoder *decoder,
+		    const struct replay_gain_info *replay_gain_info)
+{
+	assert(decoder != NULL);
+
+	if (decoder->replay_gain != NULL)
+		replay_gain_info_free(decoder->replay_gain);
+
+	decoder->replay_gain = replay_gain_info != NULL
+		? replay_gain_info_dup(replay_gain_info)
+		: NULL;
 }

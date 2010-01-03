@@ -298,8 +298,7 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 
 		decoder_timestamp(decoder, (double)player.time() / timebase);
 
-		cmd = decoder_data(decoder, NULL, buffer, nbytes,
-				   0, NULL);
+		cmd = decoder_data(decoder, NULL, buffer, nbytes, 0);
 
 		if(cmd==DECODE_COMMAND_SEEK) {
 			unsigned data_time = player.time();

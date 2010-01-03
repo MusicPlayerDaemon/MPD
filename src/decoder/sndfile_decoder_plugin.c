@@ -155,7 +155,7 @@ sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 
 		cmd = decoder_data(decoder, is,
 				   buffer, num_frames * frame_size,
-				   0, NULL);
+				   0);
 		if (cmd == DECODE_COMMAND_SEEK) {
 			sf_count_t c =
 				time_to_frame(decoder_seek_where(decoder),

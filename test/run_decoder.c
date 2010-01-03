@@ -127,8 +127,7 @@ enum decoder_command
 decoder_data(G_GNUC_UNUSED struct decoder *decoder,
 	     G_GNUC_UNUSED struct input_stream *is,
 	     const void *data, size_t datalen,
-	     G_GNUC_UNUSED uint16_t kbit_rate,
-	     G_GNUC_UNUSED struct replay_gain_info *replay_gain_info)
+	     G_GNUC_UNUSED uint16_t kbit_rate)
 {
 	write(1, data, datalen);
 	return DECODE_COMMAND_NONE;
@@ -140,6 +139,12 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder,
 	    G_GNUC_UNUSED const struct tag *tag)
 {
 	return DECODE_COMMAND_NONE;
+}
+
+void
+decoder_replay_gain(G_GNUC_UNUSED struct decoder *decoder,
+		    G_GNUC_UNUSED const struct replay_gain_info *replay_gain_info)
+{
 }
 
 int main(int argc, char **argv)

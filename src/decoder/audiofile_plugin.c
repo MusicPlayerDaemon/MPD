@@ -206,7 +206,7 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 
 		cmd = decoder_data(decoder, NULL,
 				   chunk, ret * fs,
-				   bit_rate, NULL);
+				   bit_rate);
 
 		if (cmd == DECODE_COMMAND_SEEK) {
 			AFframecount frame = decoder_seek_where(decoder) *

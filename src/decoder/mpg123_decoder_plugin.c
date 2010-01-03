@@ -146,8 +146,7 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 
 		/* send to MPD */
 
-		cmd = decoder_data(decoder, NULL, buffer, nbytes,
-				   0, NULL);
+		cmd = decoder_data(decoder, NULL, buffer, nbytes, 0);
 
 		/* seeking not yet implemented */
 	} while (cmd == DECODE_COMMAND_NONE);

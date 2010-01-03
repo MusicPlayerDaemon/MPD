@@ -277,7 +277,6 @@ vorbis_stream_decode(struct decoder *decoder,
 	char chunk[OGG_CHUNK_SIZE];
 	long bitRate = 0;
 	long test;
-	struct replay_gain_info *replay_gain_info = NULL;
 	const vorbis_info *vi;
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
@@ -364,9 +363,8 @@ vorbis_stream_decode(struct decoder *decoder,
 			vorbis_send_comments(decoder, input_stream, comments);
 			new_rgi = vorbis_comments_to_replay_gain(comments);
 			if (new_rgi != NULL) {
-				if (replay_gain_info != NULL)
-					replay_gain_info_free(replay_gain_info);
-				replay_gain_info = new_rgi;
+				decoder_replay_gain(decoder, new_rgi);
+				replay_gain_info_free(new_rgi);
 			}
 
 			prev_section = current_section;
@@ -377,11 +375,8 @@ vorbis_stream_decode(struct decoder *decoder,
 
 		cmd = decoder_data(decoder, input_stream,
 				   chunk, ret,
-				   bitRate, replay_gain_info);
+				   bitRate);
 	} while (cmd != DECODE_COMMAND_STOP);
-
-	if (replay_gain_info)
-		replay_gain_info_free(replay_gain_info);
 
 	ov_clear(&vf);
 }

@@ -44,7 +44,6 @@ flac_data_init(struct flac_data *data, struct decoder * decoder,
 	data->position = 0;
 	data->decoder = decoder;
 	data->input_stream = input_stream;
-	data->replay_gain_info = NULL;
 	data->tag = NULL;
 }
 
@@ -52,9 +51,6 @@ void
 flac_data_deinit(struct flac_data *data)
 {
 	pcm_buffer_deinit(&data->buffer);
-
-	if (data->replay_gain_info != NULL)
-		replay_gain_info_free(data->replay_gain_info);
 
 	if (data->tag != NULL)
 		tag_free(data->tag);
@@ -111,6 +107,8 @@ flac_data_get_audio_format(struct flac_data *data,
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 			     struct flac_data *data)
 {
+	struct replay_gain_info *rgi;
+
 	switch (block->type) {
 	case FLAC__METADATA_TYPE_STREAMINFO:
 		data->stream_info = block->data.stream_info;
@@ -118,9 +116,11 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 		break;
 
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
-		if (data->replay_gain_info)
-			replay_gain_info_free(data->replay_gain_info);
-		data->replay_gain_info = flac_parse_replay_gain(block);
+		rgi = flac_parse_replay_gain(block);
+		if (rgi != NULL) {
+			decoder_replay_gain(data->decoder, rgi);
+			replay_gain_info_free(rgi);
+		}
 
 		if (data->tag != NULL)
 			flac_vorbis_comments_to_tag(data->tag, NULL,
@@ -177,8 +177,7 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 
 	cmd = decoder_data(data->decoder, data->input_stream,
 			   buffer, buffer_size,
-			   bit_rate,
-			   data->replay_gain_info);
+			   bit_rate);
 	data->next_frame += frame->header.blocksize;
 	switch (cmd) {
 	case DECODE_COMMAND_NONE:

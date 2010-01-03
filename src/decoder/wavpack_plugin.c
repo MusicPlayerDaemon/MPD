@@ -155,8 +155,7 @@ wavpack_bits_to_sample_format(bool is_float, int bytes_per_sample)
  * Requires an already opened WavpackContext.
  */
 static void
-wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek,
-	       struct replay_gain_info *replay_gain_info)
+wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
 {
 	GError *error = NULL;
 	bool is_float;
@@ -233,8 +232,7 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek,
 			decoder_data(
 				decoder, NULL, chunk,
 				samples_got * output_sample_size,
-				bitrate,
-				replay_gain_info
+				bitrate
 			);
 		}
 	} while (samples_got > 0);
@@ -544,7 +542,7 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 		return;
 	}
 
-	wavpack_decode(decoder, wpc, can_seek, NULL);
+	wavpack_decode(decoder, wpc, can_seek);
 
 	WavpackCloseFile(wpc);
 	if (open_flags & OPEN_WVC) {
@@ -575,12 +573,12 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 	}
 
 	replay_gain_info = wavpack_replaygain(wpc);
-
-	wavpack_decode(decoder, wpc, true, replay_gain_info);
-
-	if (replay_gain_info) {
+	if (replay_gain_info != NULL) {
+		decoder_replay_gain(decoder, replay_gain_info);
 		replay_gain_info_free(replay_gain_info);
 	}
+
+	wavpack_decode(decoder, wpc, true);
 
 	WavpackCloseFile(wpc);
 }

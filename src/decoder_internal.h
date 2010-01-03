@@ -52,6 +52,8 @@ struct decoder {
 
 	/** the chunk currently being written to */
 	struct music_chunk *chunk;
+
+	struct replay_gain_info *replay_gain;
 };
 
 /**

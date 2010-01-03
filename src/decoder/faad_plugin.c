@@ -479,7 +479,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 		cmd = decoder_data(mpd_decoder, is, decoded,
 				   (size_t)frame_info.samples * 2,
-				   bit_rate, NULL);
+				   bit_rate);
 	} while (cmd != DECODE_COMMAND_STOP);
 
 	/* cleanup */

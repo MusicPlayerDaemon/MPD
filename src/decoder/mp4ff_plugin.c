@@ -328,7 +328,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 
 		cmd = decoder_data(mpd_decoder, input_stream,
 				   sample_buffer, sample_buffer_length,
-				   bit_rate, NULL);
+				   bit_rate);
 	}
 
 	g_free(seek_table);

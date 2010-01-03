@@ -72,7 +72,6 @@ struct flac_data {
 	FLAC__uint64 position;
 	struct decoder *decoder;
 	struct input_stream *input_stream;
-	struct replay_gain_info *replay_gain_info;
 	struct tag *tag;
 };
 

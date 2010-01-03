@@ -210,6 +210,8 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak = info.peak_album / 32767.0;
 	replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = info.gain_title * 0.01;
 	replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak = info.peak_title / 32767.0;
+	decoder_replay_gain(mpd_decoder, replay_gain_info);
+	replay_gain_info_free(replay_gain_info);
 
 	decoder_initialized(mpd_decoder, &audio_format,
 			    is->seekable,
@@ -264,10 +266,8 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 		cmd = decoder_data(mpd_decoder, is,
 				   chunk, ret * sizeof(chunk[0]),
-				   bit_rate, replay_gain_info);
+				   bit_rate);
 	} while (cmd != DECODE_COMMAND_STOP);
-
-	replay_gain_info_free(replay_gain_info);
 
 #ifndef MPC_IS_OLD_API
 	mpc_demux_exit(demux);
