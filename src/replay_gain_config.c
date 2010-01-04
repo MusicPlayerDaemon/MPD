@@ -16,12 +16,9 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-/*
- * (c)2004 replayGain code by AliasMrJones
- */
 
 #include "config.h"
-#include "replay_gain.h"
+#include "replay_gain_config.h"
 #include "conf.h"
 #include "idle.h"
 

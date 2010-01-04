@@ -46,7 +46,7 @@
 #include "client.h"
 #include "tag_print.h"
 #include "path.h"
-#include "replay_gain.h"
+#include "replay_gain_config.h"
 #include "idle.h"
 
 #ifdef ENABLE_SQLITE

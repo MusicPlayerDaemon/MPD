@@ -16,12 +16,9 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-/*
- * (c)2004 replayGain code by AliasMrJones
- */
 
-#ifndef MPD_REPLAY_GAIN_H
-#define MPD_REPLAY_GAIN_H
+#ifndef MPD_REPLAY_GAIN_CONFIG_H
+#define MPD_REPLAY_GAIN_CONFIG_H
 
 #include "check.h"
 #include "replay_gain_info.h"
