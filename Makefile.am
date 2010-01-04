@@ -434,7 +434,7 @@ DECODER_SRC = \
 	src/decoder_list.c
 
 if HAVE_MAD
-DECODER_SRC += src/decoder/mad_plugin.c
+DECODER_SRC += src/decoder/mad_decoder_plugin.c
 endif
 
 if HAVE_MPG123
@@ -442,19 +442,19 @@ DECODER_SRC += src/decoder/mpg123_decoder_plugin.c
 endif
 
 if HAVE_MPCDEC
-DECODER_SRC += src/decoder/mpcdec_plugin.c
+DECODER_SRC += src/decoder/mpcdec_decoder_plugin.c
 endif
 
 if HAVE_WAVPACK
-DECODER_SRC += src/decoder/wavpack_plugin.c
+DECODER_SRC += src/decoder/wavpack_decoder_plugin.c
 endif
 
 if HAVE_FAAD
-DECODER_SRC += src/decoder/faad_plugin.c
+DECODER_SRC += src/decoder/faad_decoder_plugin.c
 endif
 
 if HAVE_MP4
-DECODER_SRC += src/decoder/mp4ff_plugin.c
+DECODER_SRC += src/decoder/mp4ff_decoder_plugin.c
 endif
 
 if HAVE_OGG_COMMON
@@ -469,43 +469,43 @@ DECODER_SRC += \
 endif
 
 if ENABLE_VORBIS_DECODER
-DECODER_SRC += src/decoder/vorbis_plugin.c
+DECODER_SRC += src/decoder/vorbis_decoder_plugin.c
 endif
 
 if HAVE_FLAC
-DECODER_SRC += src/decoder/flac_plugin.c
+DECODER_SRC += src/decoder/flac_decoder_plugin.c
 endif
 
 if HAVE_OGGFLAC
-DECODER_SRC += src/decoder/oggflac_plugin.c
+DECODER_SRC += src/decoder/oggflac_decoder_plugin.c
 endif
 
 if HAVE_AUDIOFILE
-DECODER_SRC += src/decoder/audiofile_plugin.c
+DECODER_SRC += src/decoder/audiofile_decoder_plugin.c
 endif
 
 if ENABLE_MIKMOD_DECODER
-DECODER_SRC += src/decoder/mikmod_plugin.c
+DECODER_SRC += src/decoder/mikmod_decoder_plugin.c
 endif
 
 if HAVE_MODPLUG
-DECODER_SRC += src/decoder/modplug_plugin.c
+DECODER_SRC += src/decoder/modplug_decoder_plugin.c
 endif
 
 if ENABLE_SIDPLAY
-DECODER_SRC += src/decoder/sidplay_plugin.cxx
+DECODER_SRC += src/decoder/sidplay_decoder_plugin.cxx
 endif
 
 if ENABLE_FLUIDSYNTH
-DECODER_SRC += src/decoder/fluidsynth_plugin.c
+DECODER_SRC += src/decoder/fluidsynth_decoder_plugin.c
 endif
 
 if ENABLE_WILDMIDI
-DECODER_SRC += src/decoder/wildmidi_plugin.c
+DECODER_SRC += src/decoder/wildmidi_decoder_plugin.c
 endif
 
 if HAVE_FFMPEG
-DECODER_SRC += src/decoder/ffmpeg_plugin.c
+DECODER_SRC += src/decoder/ffmpeg_decoder_plugin.c
 endif
 
 if ENABLE_SNDFILE
