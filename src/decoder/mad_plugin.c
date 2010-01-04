@@ -422,7 +422,6 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 	g_free(allocated);
 #else /* !HAVE_ID3TAG */
 	(void)mpd_tag;
-	(void)replay_gain_info_r;
 
 	/* This code is enabled when libid3tag is disabled.  Instead
 	   of parsing the ID3 frame, it just skips it. */
