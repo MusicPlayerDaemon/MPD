@@ -31,19 +31,7 @@
 
 struct input_stream;
 
-#ifdef ENABLE_CURL
-
 struct input_stream *
 input_rewind_open(struct input_stream *is);
-
-#else
-
-static inline struct input_stream *
-input_rewind_open(struct input_stream *is)
-{
-	return is;
-}
-
-#endif
 
 #endif

@@ -221,9 +221,8 @@ input_rewind_open(struct input_stream *is)
 	assert(is != NULL);
 	assert(is->offset == 0);
 
-	if (is->plugin != &input_plugin_curl)
-		/* due to limitations in the input_plugin API, we only
-		   (explicitly) support the CURL input plugin */
+	if (is->seekable)
+		/* seekable resources don't need this plugin */
 		return is;
 
 	c = g_new(struct input_rewind, 1);

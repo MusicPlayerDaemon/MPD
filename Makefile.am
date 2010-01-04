@@ -586,11 +586,11 @@ INPUT_SRC = \
 	src/input_init.c \
 	src/input_registry.c \
 	src/input_stream.c \
+	src/input/rewind_input_plugin.c \
 	src/input/file_input_plugin.c
 
 if ENABLE_CURL
 INPUT_SRC += src/input/curl_input_plugin.c \
-	src/input/rewind_input_plugin.c \
 	src/icy_metadata.c
 endif
 
