@@ -209,6 +209,15 @@
 }
 
 {
+   g_set_application_name
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:g_set_application_name
+}
+
+{
    g_thread_init_glib
    Memcheck:Leak
    fun:malloc
@@ -737,6 +746,16 @@
    fun:malloc
    fun:realloc
    fun:g_realloc
+   fun:g_quark_from_string
+}
+
+{
+   g_quark_from_string
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_hash_table_new_full
    fun:g_quark_from_string
 }
 
