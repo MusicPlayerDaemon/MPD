@@ -31,9 +31,9 @@ enum replay_gain_mode {
 	REPLAY_GAIN_TRACK,
 };
 
-struct audio_format;
-
 extern enum replay_gain_mode replay_gain_mode;
+extern float replay_gain_preamp;
+extern float replay_gain_missing_preamp;
 
 struct replay_gain_tuple {
 	float gain;
@@ -42,9 +42,6 @@ struct replay_gain_tuple {
 
 struct replay_gain_info {
 	struct replay_gain_tuple tuples[2];
-
-	/* used internally by mpd, to mess with it */
-	float scale;
 };
 
 struct replay_gain_info *
@@ -73,9 +70,5 @@ replay_gain_get_mode_string(void);
  */
 bool
 replay_gain_set_mode_string(const char *p);
-
-void
-replay_gain_apply(struct replay_gain_info *info, char *buffer, int bufferSize,
-		  const struct audio_format *format);
 
 #endif

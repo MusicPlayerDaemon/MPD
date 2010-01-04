@@ -23,8 +23,6 @@
 #include "config.h"
 #include "replay_gain.h"
 #include "conf.h"
-#include "audio_format.h"
-#include "pcm_volume.h"
 #include "idle.h"
 
 #include <glib.h>
@@ -41,8 +39,8 @@ static const char *const replay_gain_mode_names[] = {
 
 enum replay_gain_mode replay_gain_mode = REPLAY_GAIN_OFF;
 
-static float replay_gain_preamp = 1.0;
-static float replay_gain_missing_preamp = 1.0;
+float replay_gain_preamp = 1.0;
+float replay_gain_missing_preamp = 1.0;
 
 const char *
 replay_gain_get_mode_string(void)
@@ -130,23 +128,6 @@ void replay_gain_global_init(void)
 	}
 }
 
-static float calc_replay_gain_scale(float gain, float peak)
-{
-	float scale;
-
-	if (gain == 0.0)
-		return (1);
-	scale = pow(10.0, gain / 20.0);
-	scale *= replay_gain_preamp;
-	if (scale > 15.0)
-		scale = 15.0;
-
-	if (scale * peak > 1.0) {
-		scale = 1.0 / peak;
-	}
-	return (scale);
-}
-
 struct replay_gain_info *replay_gain_info_new(void)
 {
 	struct replay_gain_info *ret = g_new(struct replay_gain_info, 1);
@@ -155,9 +136,6 @@ struct replay_gain_info *replay_gain_info_new(void)
 		ret->tuples[i].gain = 0.0;
 		ret->tuples[i].peak = 0.0;
 	}
-
-	/* set to -1 so that we know in replay_gain_apply to compute the scale */
-	ret->scale = -1.0;
 
 	return ret;
 }
@@ -171,33 +149,4 @@ replay_gain_info_dup(const struct replay_gain_info *src)
 void replay_gain_info_free(struct replay_gain_info *info)
 {
 	g_free(info);
-}
-
-void
-replay_gain_apply(struct replay_gain_info *info, char *buffer, int size,
-		  const struct audio_format *format)
-{
-	float scale;
-
-	if (replay_gain_mode == REPLAY_GAIN_OFF)
-		return;
-
-	if (info) {
-	    if (info->scale < 0) {
-		    const struct replay_gain_tuple *tuple =
-			    &info->tuples[replay_gain_mode];
-
-		    g_debug("computing ReplayGain %s scale with gain %f, peak %f\n",
-			    replay_gain_mode_names[replay_gain_mode],
-			    tuple->gain, tuple->peak);
-
-		    info->scale = calc_replay_gain_scale(tuple->gain, tuple->peak);
-	    }
-	    scale = info->scale;
-	}
-	else {
-	    scale = replay_gain_missing_preamp;
-	}
-
-	pcm_volume(buffer, size, format, pcm_float_to_volume(scale));
 }

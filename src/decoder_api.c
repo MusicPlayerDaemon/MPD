@@ -27,6 +27,7 @@
 #include "buffer.h"
 #include "pipe.h"
 #include "chunk.h"
+#include "replay_gain_state.h"
 
 #include <glib.h>
 
@@ -352,10 +353,10 @@ decoder_data(struct decoder *decoder,
 
 		/* apply replay gain or normalization */
 
-		if (replay_gain_mode != REPLAY_GAIN_OFF)
-			replay_gain_apply(decoder->replay_gain,
-					  dest, nbytes,
-					  &dc->out_audio_format);
+		replay_gain_state_set_mode(decoder->replay_gain,
+					   replay_gain_mode);
+		replay_gain_state_apply(decoder->replay_gain,
+					dest, nbytes, &dc->out_audio_format);
 
 		/* expand the music pipe chunk */
 
@@ -425,10 +426,5 @@ decoder_replay_gain(struct decoder *decoder,
 {
 	assert(decoder != NULL);
 
-	if (decoder->replay_gain != NULL)
-		replay_gain_info_free(decoder->replay_gain);
-
-	decoder->replay_gain = replay_gain_info != NULL
-		? replay_gain_info_dup(replay_gain_info)
-		: NULL;
+	replay_gain_state_set_info(decoder->replay_gain, replay_gain_info);
 }
