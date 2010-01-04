@@ -127,26 +127,3 @@ void replay_gain_global_init(void)
 		replay_gain_missing_preamp = pow(10, f / 20.0);
 	}
 }
-
-struct replay_gain_info *replay_gain_info_new(void)
-{
-	struct replay_gain_info *ret = g_new(struct replay_gain_info, 1);
-
-	for (unsigned i = 0; i < G_N_ELEMENTS(ret->tuples); ++i) {
-		ret->tuples[i].gain = 0.0;
-		ret->tuples[i].peak = 0.0;
-	}
-
-	return ret;
-}
-
-struct replay_gain_info *
-replay_gain_info_dup(const struct replay_gain_info *src)
-{
-	return g_memdup(src, sizeof(*src));
-}
-
-void replay_gain_info_free(struct replay_gain_info *info)
-{
-	g_free(info);
-}

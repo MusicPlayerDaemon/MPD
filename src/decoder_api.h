@@ -31,7 +31,7 @@
 #include "decoder_command.h"
 #include "decoder_plugin.h"
 #include "input_stream.h"
-#include "replay_gain.h"
+#include "replay_gain_info.h"
 #include "tag.h"
 #include "audio_format.h"
 #include "conf.h"

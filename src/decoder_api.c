@@ -28,6 +28,7 @@
 #include "pipe.h"
 #include "chunk.h"
 #include "replay_gain_state.h"
+#include "replay_gain.h"
 
 #include <glib.h>
 

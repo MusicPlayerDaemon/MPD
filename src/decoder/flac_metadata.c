@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "flac_metadata.h"
-#include "replay_gain.h"
+#include "replay_gain_info.h"
 #include "tag.h"
 
 #include <glib.h>

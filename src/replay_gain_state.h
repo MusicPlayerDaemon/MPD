@@ -21,7 +21,7 @@
 #define MPD_REPLAY_GAIN_STATE_H
 
 #include "check.h"
-#include "replay_gain.h"
+#include "replay_gain_info.h"
 
 #include <stddef.h>
 

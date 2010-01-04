@@ -169,6 +169,7 @@ mpd_headers = \
 	src/queue_print.h \
 	src/queue_save.h \
 	src/replay_gain.h \
+	src/replay_gain_info.h \
 	src/replay_gain_state.h \
 	src/sig_handlers.h \
 	src/song.h \
@@ -296,6 +297,7 @@ src_mpd_SOURCES = \
 	src/queue_print.c \
 	src/queue_save.c \
 	src/replay_gain.c \
+	src/replay_gain_info.c \
 	src/replay_gain_state.c \
 	src/sig_handlers.c \
 	src/song.c \
@@ -830,7 +832,7 @@ test_run_decoder_LDADD = $(MPD_LIBS) \
 test_run_decoder_SOURCES = test/run_decoder.c \
 	src/conf.c src/tokenizer.c src/utils.c src/log.c \
 	src/tag.c src/tag_pool.c \
-	src/replay_gain.c \
+	src/replay_gain_info.c \
 	src/uri.c \
 	src/fd_util.c \
 	src/audio_check.c \
@@ -853,7 +855,7 @@ test_read_tags_LDADD = $(MPD_LIBS) \
 test_read_tags_SOURCES = test/read_tags.c \
 	src/conf.c src/tokenizer.c src/utils.c src/log.c \
 	src/tag.c src/tag_pool.c \
-	src/replay_gain.c \
+	src/replay_gain_info.c \
 	src/uri.c \
 	src/fd_util.c \
 	src/audio_check.c \

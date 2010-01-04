@@ -32,6 +32,7 @@
 #include "path.h"
 #include "uri.h"
 #include "replay_gain_state.h"
+#include "replay_gain.h"
 
 #include <glib.h>
 

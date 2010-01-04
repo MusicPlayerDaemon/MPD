@@ -16,36 +16,33 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-/*
- * (c)2004 replayGain code by AliasMrJones
- */
 
-#ifndef MPD_REPLAY_GAIN_H
-#define MPD_REPLAY_GAIN_H
-
-#include "check.h"
+#include "config.h"
 #include "replay_gain_info.h"
 
-#include <stdbool.h>
+#include <glib.h>
 
-extern enum replay_gain_mode replay_gain_mode;
-extern float replay_gain_preamp;
-extern float replay_gain_missing_preamp;
+struct replay_gain_info *
+replay_gain_info_new(void)
+{
+	struct replay_gain_info *ret = g_new(struct replay_gain_info, 1);
 
-void replay_gain_global_init(void);
+	for (unsigned i = 0; i < G_N_ELEMENTS(ret->tuples); ++i) {
+		ret->tuples[i].gain = 0.0;
+		ret->tuples[i].peak = 0.0;
+	}
 
-/**
- * Returns the current replay gain mode as a machine-readable string.
- */
-const char *
-replay_gain_get_mode_string(void);
+	return ret;
+}
 
-/**
- * Sets the replay gain mode, parsed from a string.
- *
- * @return true on success, false if the string could not be parsed
- */
-bool
-replay_gain_set_mode_string(const char *p);
+struct replay_gain_info *
+replay_gain_info_dup(const struct replay_gain_info *src)
+{
+	return g_memdup(src, sizeof(*src));
+}
 
-#endif
+void
+replay_gain_info_free(struct replay_gain_info *info)
+{
+	g_free(info);
+}
