@@ -162,6 +162,7 @@ mpd_headers = \
 	src/playlist/asx_playlist_plugin.h \
 	src/playlist/lastfm_playlist_plugin.h \
 	src/playlist/cue_playlist_plugin.h \
+	src/playlist/flac_playlist_plugin.h \
 	src/poison.h \
 	src/riff.h \
 	src/aiff.h \
@@ -720,6 +721,10 @@ if HAVE_CUE
 PLAYLIST_SRC += src/playlist/cue_playlist_plugin.c
 endif
 
+if HAVE_FLAC
+PLAYLIST_SRC += src/playlist/flac_playlist_plugin.c
+endif
+
 
 #
 # Filter plugins
@@ -799,10 +804,12 @@ test_run_input_SOURCES = test/run_input.c \
 
 test_dump_playlist_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(CUE_CFLAGS) \
+	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
 	$(ARCHIVE_CFLAGS) \
 	$(INPUT_CFLAGS)
 test_dump_playlist_LDADD = $(MPD_LIBS) \
 	$(CUE_LIBS) \
+	$(FLAC_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(INPUT_LIBS) \
 	$(GLIB_LIBS)
@@ -818,6 +825,12 @@ test_dump_playlist_SOURCES = test/dump_playlist.c \
 
 if HAVE_CUE
 test_dump_playlist_SOURCES += src/cue/cue_tag.c
+endif
+
+if HAVE_FLAC
+test_dump_playlist_SOURCES += \
+	src/replay_gain_info.c \
+	src/decoder/flac_metadata.c
 endif
 
 test_run_decoder_CPPFLAGS = $(AM_CPPFLAGS) \
