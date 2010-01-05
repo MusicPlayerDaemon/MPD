@@ -297,7 +297,7 @@ oggflac_decode(struct decoder * mpd_decoder, struct input_stream *input_stream)
 		goto fail;
 	}
 
-	if (!flac_data_get_audio_format(&data, &audio_format))
+	if (!data.initialized)
 		goto fail;
 
 	decoder_initialized(mpd_decoder, &audio_format,

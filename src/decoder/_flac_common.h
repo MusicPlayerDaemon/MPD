@@ -44,9 +44,9 @@ struct flac_data {
 	unsigned frame_size;
 
 	/**
-	 * Is the #stream_info member valid?
+	 * Has decoder_initialized() been called yet?
 	 */
-	bool have_stream_info;
+	bool initialized;
 
 	/**
 	 * Does the FLAC file contain an unsupported audio format?
@@ -55,12 +55,14 @@ struct flac_data {
 
 	/**
 	 * The validated audio format of the FLAC file.  This
-	 * attribute is defined if "have_stream_info" is true.
+	 * attribute is defined if "initialized" is true.
 	 */
 	struct audio_format audio_format;
 
 	/**
-	 * The total number of frames in this song.
+	 * The total number of frames in this song.  The decoder
+	 * plugin may initialize this attribute to override the value
+	 * provided by libFLAC (e.g. for sub songs from a CUE sheet).
 	 */
 	FLAC__uint64 total_frames;
 
@@ -88,17 +90,6 @@ flac_data_init(struct flac_data *data, struct decoder * decoder,
 
 void
 flac_data_deinit(struct flac_data *data);
-
-/**
- * Obtains the audio format from the stream_info attribute, and copies
- * it to the specified #audio_format object.  This also updates the
- * frame_size attribute.
- *
- * @return true on success, false the audio format is not supported
- */
-bool
-flac_data_get_audio_format(struct flac_data *data,
-			   struct audio_format *audio_format);
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 			     struct flac_data *data);

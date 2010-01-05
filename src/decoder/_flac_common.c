@@ -38,7 +38,8 @@ flac_data_init(struct flac_data *data, struct decoder * decoder,
 	pcm_buffer_init(&data->buffer);
 
 	data->unsupported = false;
-	data->have_stream_info = false;
+	data->initialized = false;
+	data->total_frames = 0;
 	data->first_frame = 0;
 	data->next_frame = 0;
 
@@ -78,27 +79,11 @@ flac_sample_format(const FLAC__StreamMetadata_StreamInfo *si)
 	}
 }
 
-bool
-flac_data_get_audio_format(struct flac_data *data,
-			   struct audio_format *audio_format)
-{
-	if (data->unsupported)
-		return false;
-
-	if (!data->have_stream_info) {
-		g_warning("no STREAMINFO packet found");
-		return false;
-	}
-
-	*audio_format = data->audio_format;
-	return true;
-}
-
 static void
 flac_got_stream_info(struct flac_data *data,
 		     const FLAC__StreamMetadata_StreamInfo *stream_info)
 {
-	if (data->have_stream_info || data->unsupported)
+	if (data->initialized || data->unsupported)
 		return;
 
 	GError *error = NULL;
@@ -114,8 +99,15 @@ flac_got_stream_info(struct flac_data *data,
 
 	data->frame_size = audio_format_frame_size(&data->audio_format);
 
-	data->total_frames = stream_info->total_samples;
-	data->have_stream_info = true;
+	if (data->total_frames == 0)
+		data->total_frames = stream_info->total_samples;
+
+	decoder_initialized(data->decoder, &data->audio_format,
+			    data->input_stream->seekable,
+			    (float)data->total_frames /
+			    (float)data->audio_format.sample_rate);
+
+	data->initialized = true;
 }
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,

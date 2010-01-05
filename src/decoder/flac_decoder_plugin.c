@@ -238,26 +238,16 @@ flac_decoder_new(void)
 
 static bool
 flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd,
-			bool seekable, FLAC__uint64 duration)
+			FLAC__uint64 duration)
 {
-	struct audio_format audio_format;
+	data->total_frames = duration;
 
 	if (!FLAC__stream_decoder_process_until_end_of_metadata(sd)) {
 		g_warning("problem reading metadata");
 		return false;
 	}
 
-	if (!flac_data_get_audio_format(data, &audio_format))
-		return false;
-
-	if (duration == 0)
-		duration = data->total_frames;
-
-	decoder_initialized(data->decoder, &audio_format,
-			    seekable,
-			    (float)duration /
-			    (float)data->audio_format.sample_rate);
-	return true;
+	return data->initialized;
 }
 
 static void
@@ -365,8 +355,7 @@ flac_decode_internal(struct decoder * decoder,
 		}
 	}
 
-	if (!flac_decoder_initialize(&data, flac_dec,
-				     input_stream->seekable, 0)) {
+	if (!flac_decoder_initialize(&data, flac_dec, 0)) {
 		flac_data_deinit(&data);
 		FLAC__stream_decoder_delete(flac_dec);
 		return;
