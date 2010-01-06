@@ -191,3 +191,56 @@ flac_tag_apply_metadata(struct tag *tag, const char *track,
 		break;
 	}
 }
+
+struct tag *
+flac_tag_load(const char *file, const char *char_tnum)
+{
+	struct tag *tag;
+	FLAC__Metadata_SimpleIterator *it;
+	FLAC__StreamMetadata *block = NULL;
+
+	it = FLAC__metadata_simple_iterator_new();
+	if (!FLAC__metadata_simple_iterator_init(it, file, 1, 0)) {
+		const char *err;
+		FLAC_API FLAC__Metadata_SimpleIteratorStatus s;
+
+		s = FLAC__metadata_simple_iterator_status(it);
+
+		switch (s) { /* slightly more human-friendly messages: */
+		case FLAC__METADATA_SIMPLE_ITERATOR_STATUS_ILLEGAL_INPUT:
+			err = "illegal input";
+			break;
+		case FLAC__METADATA_SIMPLE_ITERATOR_STATUS_ERROR_OPENING_FILE:
+			err = "error opening file";
+			break;
+		case FLAC__METADATA_SIMPLE_ITERATOR_STATUS_NOT_A_FLAC_FILE:
+			err = "not a FLAC file";
+			break;
+		default:
+			err = FLAC__Metadata_SimpleIteratorStatusString[s];
+		}
+		g_debug("Reading '%s' metadata gave the following error: %s\n",
+			file, err);
+		FLAC__metadata_simple_iterator_delete(it);
+		return NULL;
+	}
+
+	tag = tag_new();
+	do {
+		block = FLAC__metadata_simple_iterator_get_block(it);
+		if (!block)
+			break;
+
+		flac_tag_apply_metadata(tag, char_tnum, block);
+		FLAC__metadata_object_delete(block);
+	} while (FLAC__metadata_simple_iterator_next(it));
+
+	FLAC__metadata_simple_iterator_delete(it);
+
+	if (!tag_is_defined(tag)) {
+		tag_free(tag);
+		tag = NULL;
+	}
+
+	return tag;
+}

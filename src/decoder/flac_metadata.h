@@ -42,4 +42,7 @@ void
 flac_tag_apply_metadata(struct tag *tag, const char *track,
 			const FLAC__StreamMetadata *block);
 
+struct tag *
+flac_tag_load(const char *file, const char *char_tnum);
+
 #endif
