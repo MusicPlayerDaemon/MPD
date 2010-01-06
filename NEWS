@@ -22,7 +22,7 @@ ver 0.16 (20??/??/??)
   - ffmpeg: support multiple tags
   - ffmpeg: convert metadata to generic format
   - sndfile: new decoder plugin based on libsndfile
-  - flac: load external cue sheet when no internal one
+  - flac: moved CUE sheet support to a playlist plugin
   - mikmod: sample rate is configurable
   - mpg123: new decoder plugin based on libmpg123
   - sidplay: support sub-tunes

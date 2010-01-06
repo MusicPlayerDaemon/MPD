@@ -106,15 +106,4 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 		  const FLAC__int32 *const buf[],
 		  FLAC__uint64 nbytes);
 
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
-
-char*
-flac_cue_track(		const char* pathname,
-			const unsigned int tnum);
-
-unsigned int
-flac_vtrack_tnum(	const char*);
-
-#endif /* FLAC_API_VERSION_CURRENT >= 7 */
-
 #endif /* _FLAC_COMMON_H */

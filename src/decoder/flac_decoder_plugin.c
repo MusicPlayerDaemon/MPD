@@ -34,10 +34,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#ifdef HAVE_CUE /* libcue */
-#include "../cue/cue_tag.h"
-#endif
-
 /* this code was based on flac123, from flac-tools */
 
 static FLAC__StreamDecoderReadStatus
@@ -214,110 +210,10 @@ flac_write_cb(const FLAC__StreamDecoder *dec, const FLAC__Frame *frame,
 	return flac_common_write(data, frame, buf, nbytes);
 }
 
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
-
-static struct tag *
-flac_cue_tag_load(const char *file)
-{
-	struct tag* tag = NULL;
-	char* char_tnum = NULL;
-	char* ptr = NULL;
-	unsigned int tnum = 0;
-	unsigned int sample_rate = 0;
-	FLAC__uint64 track_time = 0;
-#ifdef HAVE_CUE /* libcue */
-	FLAC__StreamMetadata* vc;
-	char* cs_filename;
-	FILE* cs_file;
-#endif /* libcue */
-	FLAC__StreamMetadata* si = FLAC__metadata_object_new(FLAC__METADATA_TYPE_STREAMINFO);
-	FLAC__StreamMetadata* cs;
-
-	tnum = flac_vtrack_tnum(file);
-	char_tnum = g_strdup_printf("%u", tnum);
-
-	ptr = strrchr(file, '/');
-	*ptr = '\0';
-
-#ifdef HAVE_CUE /* libcue */
-	if (FLAC__metadata_get_tags(file, &vc))
-	{
-		for (unsigned i = 0; i < vc->data.vorbis_comment.num_comments;
-		     i++)
-		{
-			if ((ptr = (char*)vc->data.vorbis_comment.comments[i].entry) != NULL)
-			{
-				if (g_ascii_strncasecmp(ptr, "cuesheet", 8) == 0)
-				{
-					while (*(++ptr) != '=');
-					tag = cue_tag_string(   ++ptr,
-								tnum);
-				}
-			}
-		}
-
-		FLAC__metadata_object_delete(vc);
-	}
-
-	if (tag == NULL) {
-		cs_filename = g_strconcat(file, ".cue", NULL);
-
-		cs_file = fopen(cs_filename, "rt");
-		g_free(cs_filename);
-
-		if (cs_file != NULL) {
-			tag = cue_tag_file(cs_file, tnum);
-			fclose(cs_file);
-		}
-	}
-#endif /* libcue */
-
-	if (tag == NULL)
-		tag = flac_tag_load(file, char_tnum);
-
-	if (char_tnum != NULL) {
-		tag_add_item(tag, TAG_TRACK, char_tnum);
-		g_free(char_tnum);
-	}
-
-	if (FLAC__metadata_get_streaminfo(file, si))
-	{
-		sample_rate = si->data.stream_info.sample_rate;
-		FLAC__metadata_object_delete(si);
-	}
-
-	if (FLAC__metadata_get_cuesheet(file, &cs))
-	{
-		if (cs->data.cue_sheet.tracks != NULL
-				&& (tnum <= cs->data.cue_sheet.num_tracks - 1))
-		{
-			track_time = cs->data.cue_sheet.tracks[tnum].offset
-				- cs->data.cue_sheet.tracks[tnum - 1].offset;
-		}
-		FLAC__metadata_object_delete(cs);
-	}
-
-	if (sample_rate != 0)
-	{
-		tag->time = (unsigned int)(track_time/sample_rate);
-	}
-
-	return tag;
-}
-
-#endif /* FLAC_API_VERSION_CURRENT >= 7 */
-
 static struct tag *
 flac_tag_dup(const char *file)
 {
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
-	struct stat st;
-
-	if (stat(file, &st) < 0)
-		return flac_cue_tag_load(file);
-	else
-#endif /* FLAC_API_VERSION_CURRENT >= 7 */
-		return flac_tag_load(file, NULL);
+	return flac_tag_load(file, NULL);
 }
 
 /**
@@ -492,190 +388,6 @@ flac_decode(struct decoder * decoder, struct input_stream *input_stream)
 	flac_decode_internal(decoder, input_stream, false);
 }
 
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
-
-/**
- * @brief Decode a flac file with embedded cue sheets
- * @param const char* fname filename on fs
- */
-static void
-flac_container_decode(struct decoder* decoder,
-		     const char* fname,
-		     bool is_ogg)
-{
-	unsigned int tnum = 0;
-	FLAC__uint64 t_start = 0;
-	FLAC__uint64 t_end = 0;
-	FLAC__uint64 track_time = 0;
-	FLAC__StreamMetadata* cs = NULL;
-
-	FLAC__StreamDecoder *flac_dec;
-	FLAC__StreamDecoderInitStatus init_status;
-	struct flac_data data;
-	const char *err = NULL;
-
-	char* pathname = g_strdup(fname);
-	char* slash = strrchr(pathname, '/');
-	*slash = '\0';
-
-	tnum = flac_vtrack_tnum(fname);
-
-	cs = FLAC__metadata_object_new(FLAC__METADATA_TYPE_CUESHEET);
-
-	FLAC__metadata_get_cuesheet(pathname, &cs);
-
-	if (cs != NULL)
-	{
-		if (cs->data.cue_sheet.tracks != NULL
-				&& (tnum <= cs->data.cue_sheet.num_tracks - 1))
-		{
-			t_start = cs->data.cue_sheet.tracks[tnum - 1].offset;
-			t_end = cs->data.cue_sheet.tracks[tnum].offset;
-			track_time = cs->data.cue_sheet.tracks[tnum].offset
-				- cs->data.cue_sheet.tracks[tnum - 1].offset;
-		}
-
-		FLAC__metadata_object_delete(cs);
-	}
-	else
-	{
-		g_free(pathname);
-		return;
-	}
-
-	flac_dec = flac_decoder_new();
-	if (flac_dec == NULL)
-		return;
-
-	flac_data_init(&data, decoder, NULL);
-
-	init_status = is_ogg
-		? FLAC__stream_decoder_init_ogg_file(flac_dec, pathname,
-						     flac_write_cb,
-						     flacMetadata,
-						     flac_error_cb,
-						     &data)
-		: FLAC__stream_decoder_init_file(flac_dec,
-						 pathname, flac_write_cb,
-						 flacMetadata, flac_error_cb,
-						 &data);
-	g_free(pathname);
-	if (init_status != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
-		err = "doing init()";
-		goto fail;
-	}
-
-	if (!flac_decoder_initialize(&data, flac_dec, true, track_time)) {
-		flac_data_deinit(&data);
-		FLAC__stream_decoder_delete(flac_dec);
-		return;
-	}
-
-	// seek to song start (order is important: after decoder init)
-	FLAC__stream_decoder_seek_absolute(flac_dec, (FLAC__uint64)t_start);
-	data.next_frame = t_start;
-
-	flac_decoder_loop(&data, flac_dec, t_start, t_end);
-
-fail:
-	flac_data_deinit(&data);
-	FLAC__stream_decoder_delete(flac_dec);
-
-	if (err)
-		g_warning("%s\n", err);
-}
-
-/**
- * @brief Open a flac file for decoding
- * @param const char* fname filename on fs
- */
-static void
-flac_filedecode_internal(struct decoder* decoder,
-		     const char* fname,
-		     bool is_ogg)
-{
-	FLAC__StreamDecoder *flac_dec;
-	struct flac_data data;
-	const char *err = NULL;
-	unsigned int flac_err_state = 0;
-
-	flac_dec = flac_decoder_new();
-	if (flac_dec == NULL)
-		return;
-
-	flac_data_init(&data, decoder, NULL);
-
-	if (is_ogg)
-	{
-		if (	(flac_err_state = FLAC__stream_decoder_init_ogg_file(	flac_dec,
-										fname,
-										flac_write_cb,
-										flacMetadata,
-										flac_error_cb,
-										(void*) &data	))
-			== FLAC__STREAM_DECODER_INIT_STATUS_ERROR_OPENING_FILE)
-		{
-			flac_container_decode(decoder, fname, is_ogg);
-		}
-		else if (flac_err_state != FLAC__STREAM_DECODER_INIT_STATUS_OK)
-		{
-			err = "doing Ogg init()";
-			goto fail;
-		}
-	}
-	else
-	{
-		if (	(flac_err_state = FLAC__stream_decoder_init_file(	flac_dec,
-										fname,
-										flac_write_cb,
-										flacMetadata,
-										flac_error_cb,
-										(void*) &data	))
-			== FLAC__STREAM_DECODER_INIT_STATUS_ERROR_OPENING_FILE)
-		{
-			flac_container_decode(decoder, fname, is_ogg);
-		}
-		else if (flac_err_state != FLAC__STREAM_DECODER_INIT_STATUS_OK)
-		{
-			err = "doing init()";
-			goto fail;
-		}
-	}
-
-	if (!flac_decoder_initialize(&data, flac_dec, true, 0)) {
-		flac_data_deinit(&data);
-		FLAC__stream_decoder_delete(flac_dec);
-		return;
-	}
-
-	flac_decoder_loop(&data, flac_dec, 0, 0);
-
-fail:
-	flac_data_deinit(&data);
-	FLAC__stream_decoder_delete(flac_dec);
-
-	if (err)
-		g_warning("%s\n", err);
-}
-
-/**
- * @brief	wrapper function for
- * 		flac_filedecode_internal method
- * 		for decoding without ogg
- */
-static void
-flac_filedecode(struct decoder *decoder, const char *fname)
-{
-	struct stat st;
-
-	if (stat(fname, &st) < 0) {
-		flac_container_decode(decoder, fname, false);
-	} else 
-		flac_filedecode_internal(decoder, fname, false);
-}
-
-#endif /* FLAC_API_VERSION_CURRENT >= 7 */
-
 #ifndef HAVE_OGGFLAC
 
 static bool
@@ -773,13 +485,7 @@ static const char *const flac_mime_types[] = {
 const struct decoder_plugin flac_decoder_plugin = {
 	.name = "flac",
 	.stream_decode = flac_decode,
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
-	.file_decode = flac_filedecode,
-#endif /* FLAC_API_VERSION_CURRENT >= 7 */
 	.tag_dup = flac_tag_dup,
 	.suffixes = flac_suffixes,
 	.mime_types = flac_mime_types,
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
-	.container_scan = flac_cue_track,
-#endif /* FLAC_API_VERSION_CURRENT >= 7 */
 };
