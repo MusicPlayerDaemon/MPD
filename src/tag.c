@@ -172,7 +172,7 @@ static void tag_delete_item(struct tag *tag, unsigned idx)
 
 	if (tag->num_items - idx > 0) {
 		memmove(tag->items + idx, tag->items + idx + 1,
-			tag->num_items - idx);
+			(tag->num_items - idx) * sizeof(tag->items[0]));
 	}
 
 	if (tag->num_items > 0) {
