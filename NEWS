@@ -23,6 +23,7 @@ ver 0.16 (20??/??/??)
   - ffmpeg: convert metadata to generic format
   - sndfile: new decoder plugin based on libsndfile
   - flac: moved CUE sheet support to a playlist plugin
+  - flac: support streams without STREAMINFO block
   - mikmod: sample rate is configurable
   - mpg123: new decoder plugin based on libmpg123
   - sidplay: support sub-tunes

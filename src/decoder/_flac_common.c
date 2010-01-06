@@ -161,16 +161,55 @@ void flac_error_common_cb(const char *plugin,
 	}
 }
 
+/**
+ * This function attempts to call decoder_initialized() in case there
+ * was no STREAMINFO block.  This is allowed for nonseekable streams,
+ * where the server sends us only a part of the file, without
+ * providing the STREAMINFO block from the beginning of the file
+ * (e.g. when seeking with SqueezeBox Server).
+ */
+static bool
+flac_got_first_frame(struct flac_data *data, const FLAC__FrameHeader *header)
+{
+	if (data->unsupported)
+		return false;
+
+	GError *error = NULL;
+	if (!audio_format_init_checked(&data->audio_format,
+				       header->sample_rate,
+				       flac_sample_format(header->bits_per_sample),
+				       header->channels, &error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		data->unsupported = true;
+		return false;
+	}
+
+	data->frame_size = audio_format_frame_size(&data->audio_format);
+
+	decoder_initialized(data->decoder, &data->audio_format,
+			    data->input_stream->seekable,
+			    (float)data->total_frames /
+			    (float)data->audio_format.sample_rate);
+
+	data->initialized = true;
+
+	return true;
+}
+
 FLAC__StreamDecoderWriteStatus
 flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 		  const FLAC__int32 *const buf[],
 		  FLAC__uint64 nbytes)
 {
 	enum decoder_command cmd;
-	size_t buffer_size = frame->header.blocksize * data->frame_size;
 	void *buffer;
 	unsigned bit_rate;
 
+	if (!data->initialized && !flac_got_first_frame(data, &frame->header))
+		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
+
+	size_t buffer_size = frame->header.blocksize * data->frame_size;
 	buffer = pcm_buffer_get(&data->buffer, buffer_size);
 
 	flac_convert(buffer, frame->header.channels,

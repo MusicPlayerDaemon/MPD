@@ -247,6 +247,18 @@ flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd,
 		return false;
 	}
 
+	if (data->initialized)
+		/* done */
+		return true;
+
+	if (data->input_stream->seekable)
+		/* allow the workaround below only for nonseekable
+		   streams*/
+		return false;
+
+	/* no stream_info packet found; try to initialize the decoder
+	   from the first frame header */
+	FLAC__stream_decoder_process_single(sd);
 	return data->initialized;
 }
 
