@@ -37,6 +37,7 @@ flac_data_init(struct flac_data *data, struct decoder * decoder,
 {
 	pcm_buffer_init(&data->buffer);
 
+	data->unsupported = false;
 	data->have_stream_info = false;
 	data->first_frame = 0;
 	data->next_frame = 0;
@@ -81,38 +82,53 @@ bool
 flac_data_get_audio_format(struct flac_data *data,
 			   struct audio_format *audio_format)
 {
-	GError *error = NULL;
+	if (data->unsupported)
+		return false;
 
 	if (!data->have_stream_info) {
 		g_warning("no STREAMINFO packet found");
 		return false;
 	}
 
-	data->sample_format = flac_sample_format(&data->stream_info);
+	*audio_format = data->audio_format;
+	return true;
+}
 
-	if (!audio_format_init_checked(audio_format,
-				       data->stream_info.sample_rate,
-				       data->sample_format,
-				       data->stream_info.channels, &error)) {
+static void
+flac_got_stream_info(struct flac_data *data,
+		     const FLAC__StreamMetadata_StreamInfo *stream_info)
+{
+	if (data->have_stream_info || data->unsupported)
+		return;
+
+	GError *error = NULL;
+	if (!audio_format_init_checked(&data->audio_format,
+				       stream_info->sample_rate,
+				       flac_sample_format(stream_info),
+				       stream_info->channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
-		return false;
+		data->unsupported = true;
+		return;
 	}
 
-	data->frame_size = audio_format_frame_size(audio_format);
+	data->frame_size = audio_format_frame_size(&data->audio_format);
 
-	return true;
+	data->total_frames = stream_info->total_samples;
+	data->have_stream_info = true;
 }
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 			     struct flac_data *data)
 {
+	if (data->unsupported)
+		return;
+
 	struct replay_gain_info *rgi;
 
 	switch (block->type) {
 	case FLAC__METADATA_TYPE_STREAMINFO:
-		data->stream_info = block->data.stream_info;
-		data->have_stream_info = true;
+		flac_got_stream_info(data, &block->data.stream_info);
 		break;
 
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
@@ -166,7 +182,7 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 	buffer = pcm_buffer_get(&data->buffer, buffer_size);
 
 	flac_convert(buffer, frame->header.channels,
-		     data->sample_format, buf,
+		     data->audio_format.format, buf,
 		     0, frame->header.blocksize);
 
 	if (nbytes > 0)

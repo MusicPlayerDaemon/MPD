@@ -302,8 +302,8 @@ oggflac_decode(struct decoder * mpd_decoder, struct input_stream *input_stream)
 
 	decoder_initialized(mpd_decoder, &audio_format,
 			    input_stream->seekable,
-			    (float)data.stream_info.total_samples /
-			    (float)data.stream_info.sample_rate);
+			    (float)data.total_frames /
+			    (float)data.audio_format.sample_rate);
 
 	while (true) {
 		OggFLAC__seekable_stream_decoder_process_single(decoder);
@@ -313,7 +313,7 @@ oggflac_decode(struct decoder * mpd_decoder, struct input_stream *input_stream)
 		}
 		if (decoder_get_command(mpd_decoder) == DECODE_COMMAND_SEEK) {
 			FLAC__uint64 seek_sample = decoder_seek_where(mpd_decoder) *
-			    data.stream_info.sample_rate;
+			    data.audio_format.sample_rate;
 			if (OggFLAC__seekable_stream_decoder_seek_absolute
 			    (decoder, seek_sample)) {
 				data.next_frame = seek_sample;

@@ -38,8 +38,6 @@
 struct flac_data {
 	struct pcm_buffer buffer;
 
-	enum sample_format sample_format;
-
 	/**
 	 * The size of one frame in the output buffer.
 	 */
@@ -51,12 +49,20 @@ struct flac_data {
 	bool have_stream_info;
 
 	/**
-	 * A copy of the stream info object passed to the metadata
-	 * callback.  Once we drop support for libFLAC 1.1.2, we can
-	 * remove this attribute, and use
-	 * FLAC__stream_decoder_get_total_samples() etc.
+	 * Does the FLAC file contain an unsupported audio format?
 	 */
-	FLAC__StreamMetadata_StreamInfo stream_info;
+	bool unsupported;
+
+	/**
+	 * The validated audio format of the FLAC file.  This
+	 * attribute is defined if "have_stream_info" is true.
+	 */
+	struct audio_format audio_format;
+
+	/**
+	 * The total number of frames in this song.
+	 */
+	FLAC__uint64 total_frames;
 
 	/**
 	 * The number of the first frame in this song.  This is only
