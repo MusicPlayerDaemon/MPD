@@ -59,9 +59,9 @@ flac_data_deinit(struct flac_data *data)
 }
 
 static enum sample_format
-flac_sample_format(const FLAC__StreamMetadata_StreamInfo *si)
+flac_sample_format(unsigned bits_per_sample)
 {
-	switch (si->bits_per_sample) {
+	switch (bits_per_sample) {
 	case 8:
 		return SAMPLE_FORMAT_S8;
 
@@ -89,7 +89,7 @@ flac_got_stream_info(struct flac_data *data,
 	GError *error = NULL;
 	if (!audio_format_init_checked(&data->audio_format,
 				       stream_info->sample_rate,
-				       flac_sample_format(stream_info),
+				       flac_sample_format(stream_info->bits_per_sample),
 				       stream_info->channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
