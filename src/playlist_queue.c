@@ -102,10 +102,22 @@ check_translate_song(struct song *song, const char *base_uri)
 	}
 
 	if (g_path_is_absolute(uri)) {
-		/* local files must be relative to the music
-		   directory */
-		song_free(song);
-		return NULL;
+		/* XXX fs_charset vs utf8? */
+		char *prefix = base_uri != NULL
+			? map_uri_fs(base_uri)
+			: map_directory_fs(db_get_root());
+
+		if (prefix == NULL || !g_str_has_prefix(uri, prefix) ||
+		    uri[strlen(prefix)] != '/') {
+			/* local files must be relative to the music
+			   directory */
+			g_free(prefix);
+			song_free(song);
+			return NULL;
+		}
+
+		uri += strlen(prefix) + 1;
+		g_free(prefix);
 	}
 
 	if (base_uri != NULL)
