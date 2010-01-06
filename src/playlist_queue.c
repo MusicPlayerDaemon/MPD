@@ -83,14 +83,15 @@ static struct song *
 check_translate_song(struct song *song, const char *base_uri)
 {
 	struct song *dest;
-	char *uri;
 
 	if (song_in_database(song))
 		/* already ok */
 		return song;
 
-	if (uri_has_scheme(song->uri)) {
-		if (uri_supported_scheme(song->uri))
+	char *uri = song->uri;
+
+	if (uri_has_scheme(uri)) {
+		if (uri_supported_scheme(uri))
 			/* valid remote song */
 			return song;
 		else {
@@ -100,7 +101,7 @@ check_translate_song(struct song *song, const char *base_uri)
 		}
 	}
 
-	if (g_path_is_absolute(song->uri)) {
+	if (g_path_is_absolute(uri)) {
 		/* local files must be relative to the music
 		   directory */
 		song_free(song);
@@ -108,9 +109,9 @@ check_translate_song(struct song *song, const char *base_uri)
 	}
 
 	if (base_uri != NULL)
-		uri = g_build_filename(base_uri, song->uri, NULL);
+		uri = g_build_filename(base_uri, uri, NULL);
 	else
-		uri = g_strdup(song->uri);
+		uri = g_strdup(uri);
 
 	if (uri_has_scheme(base_uri)) {
 		dest = song_remote_new(uri);
