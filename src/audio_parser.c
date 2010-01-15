@@ -28,6 +28,7 @@
 #include "audio_check.h"
 
 #include <assert.h>
+#include <string.h>
 #include <stdlib.h>
 
 /**
@@ -97,7 +98,11 @@ parse_sample_format(const char *src, bool mask,
 		break;
 
 	case 24:
-		sample_format = SAMPLE_FORMAT_S24_P32;
+		if (memcmp(endptr, "_3", 2) == 0) {
+			sample_format = SAMPLE_FORMAT_S24;
+			endptr += 2;
+		} else
+			sample_format = SAMPLE_FORMAT_S24_P32;
 		break;
 
 	case 32:

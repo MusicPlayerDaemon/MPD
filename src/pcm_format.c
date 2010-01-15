@@ -21,6 +21,7 @@
 #include "pcm_format.h"
 #include "pcm_dither.h"
 #include "pcm_buffer.h"
+#include "pcm_pack.h"
 
 static void
 pcm_convert_8_to_16(int16_t *out, const int8_t *in,
@@ -48,6 +49,15 @@ pcm_convert_32_to_16(struct pcm_dither *dither,
 	pcm_dither_32_to_16(dither, out, in, num_samples);
 }
 
+static int32_t *
+pcm_convert_24_to_24p32(struct pcm_buffer *buffer, const uint8_t *src,
+			unsigned num_samples)
+{
+	int32_t *dest = pcm_buffer_get(buffer, num_samples * 4);
+	pcm_unpack_24(dest, src, num_samples, false);
+	return dest;
+}
+
 const int16_t *
 pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 		  enum sample_format src_format, const void *src,
@@ -55,6 +65,7 @@ pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 {
 	unsigned num_samples;
 	int16_t *dest;
+	int32_t *dest32;
 
 	switch (src_format) {
 	case SAMPLE_FORMAT_UNDEFINED:
@@ -73,6 +84,19 @@ pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 	case SAMPLE_FORMAT_S16:
 		*dest_size_r = src_size;
 		return src;
+
+	case SAMPLE_FORMAT_S24:
+		/* convert to S24_P32 first */
+		num_samples = src_size / 3;
+
+		dest32 = pcm_convert_24_to_24p32(buffer, src, num_samples);
+		dest = (int16_t *)dest32;
+
+		/* convert to 16 bit in-place */
+		*dest_size_r = num_samples * sizeof(*dest);
+		pcm_convert_24_to_16(dither, dest, dest32,
+				     num_samples);
+		return dest;
 
 	case SAMPLE_FORMAT_S24_P32:
 		num_samples = src_size / 4;
@@ -158,6 +182,12 @@ pcm_convert_to_24(struct pcm_buffer *buffer,
 				     num_samples);
 		return dest;
 
+	case SAMPLE_FORMAT_S24:
+		num_samples = src_size / 3;
+		*dest_size_r = num_samples * sizeof(*dest);
+
+		return pcm_convert_24_to_24p32(buffer, src, num_samples);
+
 	case SAMPLE_FORMAT_S24_P32:
 		*dest_size_r = src_size;
 		return src;
@@ -233,6 +263,17 @@ pcm_convert_to_32(struct pcm_buffer *buffer,
 
 		pcm_convert_16_to_32(dest, (const int16_t *)src,
 				     num_samples);
+		return dest;
+
+	case SAMPLE_FORMAT_S24:
+		/* convert to S24_P32 first */
+		num_samples = src_size / 3;
+
+		dest = pcm_convert_24_to_24p32(buffer, src, num_samples);
+
+		/* convert to 32 bit in-place */
+		*dest_size_r = num_samples * sizeof(*dest);
+		pcm_convert_24_to_32(dest, dest, num_samples);
 		return dest;
 
 	case SAMPLE_FORMAT_S24_P32:

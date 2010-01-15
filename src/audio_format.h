@@ -30,6 +30,11 @@ enum sample_format {
 	SAMPLE_FORMAT_S16,
 
 	/**
+	 * Signed 24 bit integer samples, without padding.
+	 */
+	SAMPLE_FORMAT_S24,
+
+	/**
 	 * Signed 24 bit integer samples, packed in 32 bit integers
 	 * (the most significant byte is filled with the sign bit).
 	 */
@@ -156,6 +161,7 @@ audio_valid_sample_format(enum sample_format format)
 	switch (format) {
 	case SAMPLE_FORMAT_S8:
 	case SAMPLE_FORMAT_S16:
+	case SAMPLE_FORMAT_S24:
 	case SAMPLE_FORMAT_S24_P32:
 	case SAMPLE_FORMAT_S32:
 		return true;
@@ -234,6 +240,9 @@ static inline unsigned audio_format_sample_size(const struct audio_format *af)
 
 	case SAMPLE_FORMAT_S16:
 		return 2;
+
+	case SAMPLE_FORMAT_S24:
+		return 3;
 
 	case SAMPLE_FORMAT_S24_P32:
 	case SAMPLE_FORMAT_S32:

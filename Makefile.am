@@ -279,6 +279,7 @@ src_mpd_SOURCES = \
 	src/pcm_mix.c \
 	src/pcm_byteswap.c \
 	src/pcm_channels.c \
+	src/pcm_pack.c \
 	src/pcm_format.c \
 	src/pcm_resample.c \
 	src/pcm_resample_fallback.c \
@@ -888,6 +889,7 @@ test_run_filter_SOURCES = test/run_filter.c \
 	src/conf.c src/tokenizer.c src/utils.c \
 	src/pcm_volume.c src/pcm_convert.c src/pcm_byteswap.c \
 	src/pcm_format.c src/pcm_channels.c src/pcm_dither.c \
+	src/pcm_pack.c \
 	src/pcm_resample.c src/pcm_resample_fallback.c \
 	src/audio_check.c \
 	src/audio_format.c \
@@ -935,6 +937,7 @@ test_run_convert_SOURCES = test/run_convert.c \
 	src/audio_parser.c \
 	src/pcm_channels.c \
 	src/pcm_format.c \
+	src/pcm_pack.c \
 	src/pcm_dither.c \
 	src/pcm_byteswap.c \
 	src/pcm_resample.c \

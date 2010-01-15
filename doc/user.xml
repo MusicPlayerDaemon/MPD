@@ -313,6 +313,17 @@ cd mpd-version</programlisting>
                   <parameter>*:*:*</parameter> is equal to not having
                   a <varname>format</varname> specification.
                 </para>
+                <para>
+                  The following values are valid for
+                  <varname>bits</varname>: <varname>8</varname>
+                  (signed 8 bit integer samples),
+                  <varname>16</varname>, <varname>24</varname> (signed
+                  24 bit integer samples padded to 32 bit),
+                  <varname>24_3</varname> (signed 24 bit integer
+                  samples, no padding, 3 bytes per sample),
+                  <varname>32</varname> (signed 32 bit integer
+                  samples).
+                </para>
               </entry>
             </row>
             <row>

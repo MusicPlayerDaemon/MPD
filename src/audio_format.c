@@ -41,6 +41,9 @@ sample_format_to_string(enum sample_format format)
 	case SAMPLE_FORMAT_S16:
 		return "16";
 
+	case SAMPLE_FORMAT_S24:
+		return "24_3";
+
 	case SAMPLE_FORMAT_S24_P32:
 		return "24";
 
