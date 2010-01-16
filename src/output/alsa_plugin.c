@@ -195,6 +195,11 @@ get_bitformat(enum sample_format sample_format)
 	case SAMPLE_FORMAT_S24_P32:
 		return SND_PCM_FORMAT_S24;
 
+	case SAMPLE_FORMAT_S24:
+		return G_BYTE_ORDER == G_BIG_ENDIAN
+			? SND_PCM_FORMAT_S24_3BE
+			: SND_PCM_FORMAT_S24_3LE;
+
 	case SAMPLE_FORMAT_S32:
 		return SND_PCM_FORMAT_S32;
 
@@ -212,6 +217,13 @@ byteswap_bitformat(snd_pcm_format_t fmt)
 	case SND_PCM_FORMAT_S32_LE: return SND_PCM_FORMAT_S32_BE;
 	case SND_PCM_FORMAT_S16_BE: return SND_PCM_FORMAT_S16_LE;
 	case SND_PCM_FORMAT_S24_BE: return SND_PCM_FORMAT_S24_LE;
+
+	case SND_PCM_FORMAT_S24_3BE:
+		return SND_PCM_FORMAT_S24_3LE;
+
+	case SND_PCM_FORMAT_S24_3LE:
+		return SND_PCM_FORMAT_S24_3BE;
+
 	case SND_PCM_FORMAT_S32_BE: return SND_PCM_FORMAT_S32_LE;
 	default: return SND_PCM_FORMAT_UNKNOWN;
 	}
@@ -296,6 +308,7 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 	static const enum sample_format probe_formats[] = {
 		SAMPLE_FORMAT_S24_P32,
 		SAMPLE_FORMAT_S32,
+		SAMPLE_FORMAT_S24,
 		SAMPLE_FORMAT_S16,
 		SAMPLE_FORMAT_S8,
 		SAMPLE_FORMAT_UNDEFINED,
