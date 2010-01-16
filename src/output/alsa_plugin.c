@@ -216,13 +216,92 @@ byteswap_bitformat(snd_pcm_format_t fmt)
 	default: return SND_PCM_FORMAT_UNKNOWN;
 	}
 }
+
+/**
+ * Configure a sample format, and probe other formats if that fails.
+ */
+static int
+alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+			 struct audio_format *audio_format)
+{
+	snd_pcm_format_t bitformat = get_bitformat(audio_format);
+	if (bitformat == SND_PCM_FORMAT_UNKNOWN) {
+		/* sample format is not supported by this plugin -
+		   fall back to 16 bit samples */
+
+		audio_format->format = SAMPLE_FORMAT_S16;
+		bitformat = SND_PCM_FORMAT_S16;
+	}
+
+	int err = snd_pcm_hw_params_set_format(pcm, hwparams, bitformat);
+	if (err == -EINVAL &&
+	    byteswap_bitformat(bitformat) != SND_PCM_FORMAT_UNKNOWN) {
+		err = snd_pcm_hw_params_set_format(pcm, hwparams,
+						   byteswap_bitformat(bitformat));
+		if (err == 0) {
+			g_debug("converting format %s to reverse-endian",
+				sample_format_to_string(audio_format->format));
+			audio_format->reverse_endian = 1;
+		}
+	}
+
+	if (err == -EINVAL && (audio_format->format == SAMPLE_FORMAT_S24_P32 ||
+			       audio_format->format == SAMPLE_FORMAT_S16)) {
+		/* fall back to 32 bit, let pcm_convert.c do the conversion */
+		err = snd_pcm_hw_params_set_format(pcm, hwparams,
+						   SND_PCM_FORMAT_S32);
+		if (err == 0) {
+			g_debug("converting format %s to 32 bit\n",
+				sample_format_to_string(audio_format->format));
+			audio_format->format = SAMPLE_FORMAT_S32;
+		}
+	}
+
+	if (err == -EINVAL && (audio_format->format == SAMPLE_FORMAT_S24_P32 ||
+			       audio_format->format == SAMPLE_FORMAT_S16)) {
+		/* fall back to 32 bit, let pcm_convert.c do the conversion */
+		err = snd_pcm_hw_params_set_format(pcm, hwparams,
+						   byteswap_bitformat(SND_PCM_FORMAT_S32));
+		if (err == 0) {
+			g_debug("converting format %s to 32 bit backward-endian\n",
+				sample_format_to_string(audio_format->format));
+			audio_format->format = SAMPLE_FORMAT_S32;
+			audio_format->reverse_endian = 1;
+		}
+	}
+
+	if (err == -EINVAL && audio_format->format != SAMPLE_FORMAT_S16) {
+		/* fall back to 16 bit, let pcm_convert.c do the conversion */
+		err = snd_pcm_hw_params_set_format(pcm, hwparams,
+						   SND_PCM_FORMAT_S16);
+		if (err == 0) {
+			g_debug("converting format %s to 16 bit\n",
+				sample_format_to_string(audio_format->format));
+			audio_format->format = SAMPLE_FORMAT_S16;
+		}
+	}
+
+	if (err == -EINVAL && audio_format->format != SAMPLE_FORMAT_S16) {
+		/* fall back to 16 bit, let pcm_convert.c do the conversion */
+		err = snd_pcm_hw_params_set_format(pcm, hwparams,
+						   byteswap_bitformat(SND_PCM_FORMAT_S16));
+		if (err == 0) {
+			g_debug("converting format %s to 16 bit backward-endian\n",
+				sample_format_to_string(audio_format->format));
+			audio_format->format = SAMPLE_FORMAT_S16;
+			audio_format->reverse_endian = 1;
+		}
+	}
+
+	return err;
+}
+
 /**
  * Set up the snd_pcm_t object which was opened by the caller.  Set up
  * the configured settings and the audio format.
  */
 static bool
 alsa_setup(struct alsa_data *ad, struct audio_format *audio_format,
-	   snd_pcm_format_t bitformat,
 	   GError **error)
 {
 	snd_pcm_hw_params_t *hwparams;
@@ -267,68 +346,7 @@ configure_hw:
 		ad->writei = snd_pcm_writei;
 	}
 
-	err = snd_pcm_hw_params_set_format(ad->pcm, hwparams, bitformat);
-	if (err == -EINVAL &&
-	    byteswap_bitformat(bitformat) != SND_PCM_FORMAT_UNKNOWN) {
-		err = snd_pcm_hw_params_set_format(ad->pcm, hwparams,
-						   byteswap_bitformat(bitformat));
-		if (err == 0) {
-			g_debug("ALSA device \"%s\": converting format %s to reverse-endian",
-				alsa_device(ad),
-				sample_format_to_string(audio_format->format));
-			audio_format->reverse_endian = 1;
-		}
-	}
-	if (err == -EINVAL && (audio_format->format == SAMPLE_FORMAT_S24_P32 ||
-			       audio_format->format == SAMPLE_FORMAT_S16)) {
-		/* fall back to 32 bit, let pcm_convert.c do the conversion */
-		err = snd_pcm_hw_params_set_format(ad->pcm, hwparams,
-						   SND_PCM_FORMAT_S32);
-		if (err == 0) {
-			g_debug("ALSA device \"%s\": converting format %s to 32 bit\n",
-				alsa_device(ad),
-				sample_format_to_string(audio_format->format));
-			audio_format->format = SAMPLE_FORMAT_S32;
-		}
-	}
-	if (err == -EINVAL && (audio_format->format == SAMPLE_FORMAT_S24_P32 ||
-			       audio_format->format == SAMPLE_FORMAT_S16)) {
-		/* fall back to 32 bit, let pcm_convert.c do the conversion */
-		err = snd_pcm_hw_params_set_format(ad->pcm, hwparams,
-						   byteswap_bitformat(SND_PCM_FORMAT_S32));
-		if (err == 0) {
-			g_debug("ALSA device \"%s\": converting format %s to 32 bit backward-endian\n",
-				alsa_device(ad),
-				sample_format_to_string(audio_format->format));
-			audio_format->format = SAMPLE_FORMAT_S32;
-			audio_format->reverse_endian = 1;
-		}
-	}
-
-	if (err == -EINVAL && audio_format->format != SAMPLE_FORMAT_S16) {
-		/* fall back to 16 bit, let pcm_convert.c do the conversion */
-		err = snd_pcm_hw_params_set_format(ad->pcm, hwparams,
-						   SND_PCM_FORMAT_S16);
-		if (err == 0) {
-			g_debug("ALSA device \"%s\": converting format %s to 16 bit\n",
-				alsa_device(ad),
-				sample_format_to_string(audio_format->format));
-			audio_format->format = SAMPLE_FORMAT_S16;
-		}
-	}
-	if (err == -EINVAL && audio_format->format != SAMPLE_FORMAT_S16) {
-		/* fall back to 16 bit, let pcm_convert.c do the conversion */
-		err = snd_pcm_hw_params_set_format(ad->pcm, hwparams,
-						   byteswap_bitformat(SND_PCM_FORMAT_S16));
-		if (err == 0) {
-			g_debug("ALSA device \"%s\": converting format %s to 16 bit backward-endian\n",
-				alsa_device(ad),
-				sample_format_to_string(audio_format->format));
-			audio_format->format = SAMPLE_FORMAT_S16;
-			audio_format->reverse_endian = 1;
-		}
-	}
-
+	err = alsa_output_setup_format(ad->pcm, hwparams, audio_format);
 	if (err < 0) {
 		g_set_error(error, alsa_output_quark(), err,
 			    "ALSA device \"%s\" does not support format %s: %s",
@@ -455,18 +473,8 @@ static bool
 alsa_open(void *data, struct audio_format *audio_format, GError **error)
 {
 	struct alsa_data *ad = data;
-	snd_pcm_format_t bitformat;
 	int err;
 	bool success;
-
-	bitformat = get_bitformat(audio_format);
-	if (bitformat == SND_PCM_FORMAT_UNKNOWN) {
-		/* sample format is not supported by this plugin -
-		   fall back to 16 bit samples */
-
-		audio_format->format = SAMPLE_FORMAT_S16;
-		bitformat = SND_PCM_FORMAT_S16;
-	}
 
 	err = snd_pcm_open(&ad->pcm, alsa_device(ad),
 			   SND_PCM_STREAM_PLAYBACK, ad->mode);
@@ -477,7 +485,7 @@ alsa_open(void *data, struct audio_format *audio_format, GError **error)
 		return false;
 	}
 
-	success = alsa_setup(ad, audio_format, bitformat, error);
+	success = alsa_setup(ad, audio_format, error);
 	if (!success) {
 		snd_pcm_close(ad->pcm);
 		return false;
