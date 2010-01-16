@@ -4,6 +4,7 @@ ver 0.15.8 (2009/??/??)
 * decoders:
   - ffmpeg, flac, vorbis: added more flac/vorbis MIME types
 * dbUtils: return empty tag value only if no value was found
+* decoder_thread: fix CUE track playback
 
 
 ver 0.15.7 (2009/12/27)

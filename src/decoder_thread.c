@@ -89,7 +89,8 @@ static void decoder_run_song(const struct song *song, const char *uri)
 	struct input_stream input_stream;
 	const struct decoder_plugin *plugin;
 
-	if (!input_stream_open(&input_stream, uri)) {
+	close_instream = input_stream_open(&input_stream, uri);
+	if (!close_instream && !song_is_file(song)) {
 		dc.state = DECODE_STATE_ERROR;
 		return;
 	}
@@ -108,7 +109,7 @@ static void decoder_run_song(const struct song *song, const char *uri)
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
 
-	while (!input_stream.ready) {
+	while (close_instream && !input_stream.ready) {
 		if (dc.command == DECODE_COMMAND_STOP) {
 			input_stream_close(&input_stream);
 			dc.state = DECODE_STATE_STOP;
@@ -124,7 +125,8 @@ static void decoder_run_song(const struct song *song, const char *uri)
 	}
 
 	if (dc.command == DECODE_COMMAND_STOP) {
-		input_stream_close(&input_stream);
+		if (close_instream)
+			input_stream_close(&input_stream);
 		dc.state = DECODE_STATE_STOP;
 		return;
 	}
@@ -179,8 +181,11 @@ static void decoder_run_song(const struct song *song, const char *uri)
 		const char *s = uri_get_suffix(uri);
 		while ((plugin = decoder_plugin_from_suffix(s, next++))) {
 			if (plugin->file_decode != NULL) {
-				input_stream_close(&input_stream);
-				close_instream = false;
+				if (close_instream) {
+					input_stream_close(&input_stream);
+					close_instream = false;
+				}
+
 				ret = decoder_file_decode(plugin,
 							  &decoder, uri);
 				if (ret)
