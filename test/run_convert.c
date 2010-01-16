@@ -36,6 +36,16 @@
 #include <stddef.h>
 #include <unistd.h>
 
+static void
+my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
+	    const gchar *message, G_GNUC_UNUSED gpointer user_data)
+{
+	if (log_domain != NULL)
+		g_printerr("%s: %s\n", log_domain, message);
+	else
+		g_printerr("%s\n", message);
+}
+
 const char *
 config_get_string(G_GNUC_UNUSED const char *name, const char *default_value)
 {
@@ -55,6 +65,8 @@ int main(int argc, char **argv)
 		g_printerr("Usage: run_convert IN_FORMAT OUT_FORMAT <IN >OUT\n");
 		return 1;
 	}
+
+	g_log_set_default_handler(my_log_func, NULL);
 
 	if (!audio_format_parse(&in_audio_format, argv[1],
 				false, &error)) {
