@@ -260,55 +260,53 @@ alsa_output_try_reverse(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 }
 
 /**
+ * Attempts to configure the specified sample format, and tries the
+ * reversed host byte order if was not supported.
+ */
+static int
+alsa_output_try_format_both(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+			    struct audio_format *audio_format,
+			    enum sample_format sample_format)
+{
+	int err = alsa_output_try_format(pcm, hwparams, audio_format,
+					 sample_format);
+	if (err == -EINVAL)
+		err = alsa_output_try_reverse(pcm, hwparams, audio_format,
+					      sample_format);
+
+	return err;
+}
+
+/**
  * Configure a sample format, and probe other formats if that fails.
  */
 static int
 alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 			 struct audio_format *audio_format)
 {
-	snd_pcm_format_t bitformat = get_bitformat(audio_format->format);
-	if (bitformat == SND_PCM_FORMAT_UNKNOWN) {
-		/* sample format is not supported by this plugin -
-		   fall back to 16 bit samples */
+	/* try the input format first */
 
-		audio_format->format = SAMPLE_FORMAT_S16;
-		bitformat = SND_PCM_FORMAT_S16;
-	}
-
-	int err = snd_pcm_hw_params_set_format(pcm, hwparams, bitformat);
+	int err = alsa_output_try_format_both(pcm, hwparams, audio_format,
+					      audio_format->format);
 	if (err != -EINVAL)
 		return err;
 
-	err = alsa_output_try_reverse(pcm, hwparams, audio_format,
-				      audio_format->format);
-	if (err != -EINVAL)
-		return err;
+	/* if unsupported by the hardware, try other formats */
 
-	if (audio_format->format == SAMPLE_FORMAT_S24_P32 ||
-	    audio_format->format == SAMPLE_FORMAT_S16) {
-		/* fall back to 32 bit, let pcm_convert.c do the conversion */
+	static const enum sample_format probe_formats[] = {
+		SAMPLE_FORMAT_S24_P32,
+		SAMPLE_FORMAT_S32,
+		SAMPLE_FORMAT_S16,
+		SAMPLE_FORMAT_S8,
+		SAMPLE_FORMAT_UNDEFINED,
+	};
 
-		err = alsa_output_try_format(pcm, hwparams, audio_format,
-					     SAMPLE_FORMAT_S24_P32);
-		if (err != -EINVAL)
-			return err;
+	for (unsigned i = 0; probe_formats[i] != SAMPLE_FORMAT_UNDEFINED; ++i) {
+		if (probe_formats[i] == audio_format->format)
+			continue;
 
-		err = alsa_output_try_reverse(pcm, hwparams, audio_format,
-					      SAMPLE_FORMAT_S24_P32);
-		if (err != -EINVAL)
-			return err;
-	}
-
-	if (audio_format->format != SAMPLE_FORMAT_S16) {
-		/* fall back to 16 bit, let pcm_convert.c do the conversion */
-
-		err = alsa_output_try_format(pcm, hwparams, audio_format,
-					     SAMPLE_FORMAT_S16);
-		if (err != -EINVAL)
-			return err;
-
-		err = alsa_output_try_reverse(pcm, hwparams, audio_format,
-					      SAMPLE_FORMAT_S16);
+		err = alsa_output_try_format_both(pcm, hwparams, audio_format,
+						  probe_formats[i]);
 		if (err != -EINVAL)
 			return err;
 	}
