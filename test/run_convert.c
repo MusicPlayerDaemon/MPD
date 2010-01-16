@@ -28,9 +28,11 @@
 #include "audio_format.h"
 #include "pcm_convert.h"
 #include "conf.h"
+#include "fifo_buffer.h"
 
 #include <glib.h>
 
+#include <assert.h>
 #include <stddef.h>
 #include <unistd.h>
 
@@ -45,7 +47,6 @@ int main(int argc, char **argv)
 	GError *error = NULL;
 	struct audio_format in_audio_format, out_audio_format;
 	struct pcm_convert_state state;
-	static char buffer[4096];
 	const void *output;
 	ssize_t nbytes;
 	size_t length;
@@ -69,10 +70,32 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	const size_t in_frame_size = audio_format_frame_size(&in_audio_format);
+
 	pcm_convert_init(&state);
 
-	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
-		output = pcm_convert(&state, &in_audio_format, buffer, nbytes,
+	struct fifo_buffer *buffer = fifo_buffer_new(4096);
+
+	while (true) {
+		void *p = fifo_buffer_write(buffer, &length);
+		assert(p != NULL);
+
+		nbytes = read(0, p, length);
+		if (nbytes <= 0)
+			break;
+
+		fifo_buffer_append(buffer, nbytes);
+
+		const void *src = fifo_buffer_read(buffer, &length);
+		assert(src != NULL);
+
+		length -= length % in_frame_size;
+		if (length == 0)
+			continue;
+
+		fifo_buffer_consume(buffer, length);
+
+		output = pcm_convert(&state, &in_audio_format, src, length,
 				     &out_audio_format, &length, &error);
 		if (output == NULL) {
 			g_printerr("Failed to convert: %s\n", error->message);
