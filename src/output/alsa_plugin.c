@@ -183,9 +183,9 @@ alsa_test_default_device(void)
 }
 
 static snd_pcm_format_t
-get_bitformat(const struct audio_format *af)
+get_bitformat(enum sample_format sample_format)
 {
-	switch (af->format) {
+	switch (sample_format) {
 	case SAMPLE_FORMAT_S8:
 		return SND_PCM_FORMAT_S8;
 
@@ -224,7 +224,7 @@ static int
 alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 			 struct audio_format *audio_format)
 {
-	snd_pcm_format_t bitformat = get_bitformat(audio_format);
+	snd_pcm_format_t bitformat = get_bitformat(audio_format->format);
 	if (bitformat == SND_PCM_FORMAT_UNKNOWN) {
 		/* sample format is not supported by this plugin -
 		   fall back to 16 bit samples */
