@@ -218,6 +218,48 @@ byteswap_bitformat(snd_pcm_format_t fmt)
 }
 
 /**
+ * Attempts to configure the specified sample format.
+ */
+static int
+alsa_output_try_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+		       struct audio_format *audio_format,
+		       enum sample_format sample_format)
+{
+	snd_pcm_format_t alsa_format = get_bitformat(sample_format);
+	if (alsa_format == SND_PCM_FORMAT_UNKNOWN)
+		return -EINVAL;
+
+	int err = snd_pcm_hw_params_set_format(pcm, hwparams, alsa_format);
+	if (err == 0)
+		audio_format->format = sample_format;
+
+	return err;
+}
+
+/**
+ * Attempts to configure the specified sample format with reversed
+ * host byte order.
+ */
+static int
+alsa_output_try_reverse(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+		       struct audio_format *audio_format,
+		       enum sample_format sample_format)
+{
+	snd_pcm_format_t alsa_format =
+		byteswap_bitformat(get_bitformat(sample_format));
+	if (alsa_format == SND_PCM_FORMAT_UNKNOWN)
+		return -EINVAL;
+
+	int err = snd_pcm_hw_params_set_format(pcm, hwparams, alsa_format);
+	if (err == 0) {
+		audio_format->format = sample_format;
+		audio_format->reverse_endian = true;
+	}
+
+	return err;
+}
+
+/**
  * Configure a sample format, and probe other formats if that fails.
  */
 static int
@@ -234,66 +276,44 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 	}
 
 	int err = snd_pcm_hw_params_set_format(pcm, hwparams, bitformat);
-	if (err == -EINVAL &&
-	    byteswap_bitformat(bitformat) != SND_PCM_FORMAT_UNKNOWN) {
-		err = snd_pcm_hw_params_set_format(pcm, hwparams,
-						   byteswap_bitformat(bitformat));
-		if (err == 0) {
-			g_debug("converting format %s to reverse-endian",
-				sample_format_to_string(audio_format->format));
-			audio_format->reverse_endian = 1;
-		}
-	}
+	if (err != -EINVAL)
+		return err;
 
-	if (err == -EINVAL && (audio_format->format == SAMPLE_FORMAT_S24_P32 ||
-			       audio_format->format == SAMPLE_FORMAT_S16)) {
+	err = alsa_output_try_reverse(pcm, hwparams, audio_format,
+				      audio_format->format);
+	if (err != -EINVAL)
+		return err;
+
+	if (audio_format->format == SAMPLE_FORMAT_S24_P32 ||
+	    audio_format->format == SAMPLE_FORMAT_S16) {
 		/* fall back to 32 bit, let pcm_convert.c do the conversion */
-		err = snd_pcm_hw_params_set_format(pcm, hwparams,
-						   SND_PCM_FORMAT_S32);
-		if (err == 0) {
-			g_debug("converting format %s to 32 bit\n",
-				sample_format_to_string(audio_format->format));
-			audio_format->format = SAMPLE_FORMAT_S32;
-		}
+
+		err = alsa_output_try_format(pcm, hwparams, audio_format,
+					     SAMPLE_FORMAT_S24_P32);
+		if (err != -EINVAL)
+			return err;
+
+		err = alsa_output_try_reverse(pcm, hwparams, audio_format,
+					      SAMPLE_FORMAT_S24_P32);
+		if (err != -EINVAL)
+			return err;
 	}
 
-	if (err == -EINVAL && (audio_format->format == SAMPLE_FORMAT_S24_P32 ||
-			       audio_format->format == SAMPLE_FORMAT_S16)) {
-		/* fall back to 32 bit, let pcm_convert.c do the conversion */
-		err = snd_pcm_hw_params_set_format(pcm, hwparams,
-						   byteswap_bitformat(SND_PCM_FORMAT_S32));
-		if (err == 0) {
-			g_debug("converting format %s to 32 bit backward-endian\n",
-				sample_format_to_string(audio_format->format));
-			audio_format->format = SAMPLE_FORMAT_S32;
-			audio_format->reverse_endian = 1;
-		}
-	}
-
-	if (err == -EINVAL && audio_format->format != SAMPLE_FORMAT_S16) {
+	if (audio_format->format != SAMPLE_FORMAT_S16) {
 		/* fall back to 16 bit, let pcm_convert.c do the conversion */
-		err = snd_pcm_hw_params_set_format(pcm, hwparams,
-						   SND_PCM_FORMAT_S16);
-		if (err == 0) {
-			g_debug("converting format %s to 16 bit\n",
-				sample_format_to_string(audio_format->format));
-			audio_format->format = SAMPLE_FORMAT_S16;
-		}
+
+		err = alsa_output_try_format(pcm, hwparams, audio_format,
+					     SAMPLE_FORMAT_S16);
+		if (err != -EINVAL)
+			return err;
+
+		err = alsa_output_try_reverse(pcm, hwparams, audio_format,
+					      SAMPLE_FORMAT_S16);
+		if (err != -EINVAL)
+			return err;
 	}
 
-	if (err == -EINVAL && audio_format->format != SAMPLE_FORMAT_S16) {
-		/* fall back to 16 bit, let pcm_convert.c do the conversion */
-		err = snd_pcm_hw_params_set_format(pcm, hwparams,
-						   byteswap_bitformat(SND_PCM_FORMAT_S16));
-		if (err == 0) {
-			g_debug("converting format %s to 16 bit backward-endian\n",
-				sample_format_to_string(audio_format->format));
-			audio_format->format = SAMPLE_FORMAT_S16;
-			audio_format->reverse_endian = 1;
-		}
-	}
-
-	return err;
+	return -EINVAL;
 }
 
 /**
