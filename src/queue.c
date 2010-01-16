@@ -45,14 +45,14 @@ queue_next_order(const struct queue *queue, unsigned order)
 
 	if (queue->single)
 	{
-		if (queue->repeat)
+		if (queue->repeat && !queue->consume)
 			return order;
 		else
 			return -1;
 	}
 	if (order + 1 < queue->length)
 		return order + 1;
-	else if (queue->repeat)
+	else if (queue->repeat && (order > 0 || !queue->consume))
 		/* restart at first song */
 		return 0;
 	else
