@@ -282,7 +282,8 @@ decoder_run_stream(struct decoder *decoder, const char *uri)
 					  &tried) ||
 		/* fallback to mp3: this is needed for bastard streams
 		   that don't have a suffix or set the mimeType */
-		decoder_run_stream_fallback(decoder, input_stream);
+		(tried == NULL &&
+		 decoder_run_stream_fallback(decoder, input_stream));
 
 	g_slist_free(tried);
 

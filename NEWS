@@ -20,6 +20,7 @@ ver 0.16 (20??/??/??)
   - id3: revised "performer" tag support
 * decoders:
   - don't try a plugin twice (MIME type & suffix)
+  - don't fall back to "mad" unless no plugin matches
   - ffmpeg: support multiple tags
   - ffmpeg: convert metadata to generic format
   - sndfile: new decoder plugin based on libsndfile
