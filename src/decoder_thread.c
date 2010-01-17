@@ -157,21 +157,49 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 }
 
 /**
+ * Hack to allow tracking const decoder plugins in a GSList.
+ */
+static inline gpointer
+deconst_plugin(const struct decoder_plugin *plugin)
+{
+	union {
+		const struct decoder_plugin *in;
+		gpointer out;
+	} u = { .in = plugin };
+
+	return u.out;
+}
+
+/**
  * Try decoding a stream, using plugins matching the stream's MIME type.
+ *
+ * @param tried_r a list of plugins which were tried
  */
 static bool
-decoder_run_stream_mime_type(struct decoder *decoder, struct input_stream *is)
+decoder_run_stream_mime_type(struct decoder *decoder, struct input_stream *is,
+			     GSList **tried_r)
 {
+	assert(tried_r != NULL);
+
 	const struct decoder_plugin *plugin;
 	unsigned int next = 0;
 
 	if (is->mime == NULL)
 		return false;
 
-	while ((plugin = decoder_plugin_from_mime_type(is->mime, next++)))
-		if (plugin->stream_decode != NULL &&
-		    decoder_stream_decode(plugin, decoder, is))
+	while ((plugin = decoder_plugin_from_mime_type(is->mime, next++))) {
+		if (plugin->stream_decode == NULL)
+			continue;
+
+		if (g_slist_find(*tried_r, plugin) != NULL)
+			/* don't try a plugin twice */
+			continue;
+
+		if (decoder_stream_decode(plugin, decoder, is))
 			return true;
+
+		*tried_r = g_slist_prepend(*tried_r, deconst_plugin(plugin));
+	}
 
 	return false;
 }
@@ -179,21 +207,34 @@ decoder_run_stream_mime_type(struct decoder *decoder, struct input_stream *is)
 /**
  * Try decoding a stream, using plugins matching the stream's URI
  * suffix.
+ *
+ * @param tried_r a list of plugins which were tried
  */
 static bool
 decoder_run_stream_suffix(struct decoder *decoder, struct input_stream *is,
-			  const char *uri)
+			  const char *uri, GSList **tried_r)
 {
+	assert(tried_r != NULL);
+
 	const char *suffix = uri_get_suffix(uri);
 	const struct decoder_plugin *plugin = NULL;
 
 	if (suffix == NULL)
 		return false;
 
-	while ((plugin = decoder_plugin_from_suffix(suffix, plugin)) != NULL)
-		if (plugin->stream_decode != NULL &&
-		    decoder_stream_decode(plugin, decoder, is))
+	while ((plugin = decoder_plugin_from_suffix(suffix, plugin)) != NULL) {
+		if (plugin->stream_decode == NULL)
+			continue;
+
+		if (g_slist_find(*tried_r, plugin) != NULL)
+			/* don't try a plugin twice */
+			continue;
+
+		if (decoder_stream_decode(plugin, decoder, is))
 			return true;
+
+		*tried_r = g_slist_prepend(*tried_r, deconst_plugin(plugin));
+	}
 
 	return false;
 }
@@ -231,14 +272,19 @@ decoder_run_stream(struct decoder *decoder, const char *uri)
 
 	decoder_lock(dc);
 
+	GSList *tried = NULL;
+
 	success = dc->command == DECODE_COMMAND_STOP ||
 		/* first we try mime types: */
-		decoder_run_stream_mime_type(decoder, input_stream) ||
+		decoder_run_stream_mime_type(decoder, input_stream, &tried) ||
 		/* if that fails, try suffix matching the URL: */
-		decoder_run_stream_suffix(decoder, input_stream, uri) ||
+		decoder_run_stream_suffix(decoder, input_stream, uri,
+					  &tried) ||
 		/* fallback to mp3: this is needed for bastard streams
 		   that don't have a suffix or set the mimeType */
 		decoder_run_stream_fallback(decoder, input_stream);
+
+	g_slist_free(tried);
 
 	decoder_unlock(dc);
 	input_stream_close(input_stream);

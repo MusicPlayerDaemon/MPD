@@ -19,6 +19,7 @@ ver 0.16 (20??/??/??)
   - added tags "ArtistSort", "AlbumArtistSort"
   - id3: revised "performer" tag support
 * decoders:
+  - don't try a plugin twice (MIME type & suffix)
   - ffmpeg: support multiple tags
   - ffmpeg: convert metadata to generic format
   - sndfile: new decoder plugin based on libsndfile
