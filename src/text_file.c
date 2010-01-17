@@ -57,7 +57,12 @@ read_text_line(FILE *file, GString *buffer)
 		g_string_set_size(buffer, length + step);
 	}
 
+	/* remove the newline characters */
+	if (buffer->str[length - 1] == '\n')
+		--length;
+	if (buffer->str[length - 1] == '\r')
+		--length;
+
 	g_string_set_size(buffer, length);
-	g_strchomp(buffer->str);
 	return buffer->str;
 }
