@@ -244,6 +244,7 @@ pulse_output_setup_context(struct pulse_output *po, GError **error_r)
 
 	if (!pulse_output_connect(po, error_r)) {
 		pa_context_unref(po->context);
+		po->context = NULL;
 		return false;
 	}
 
@@ -315,7 +316,7 @@ pulse_output_enable(void *data, GError **error_r)
 	if (pa_threaded_mainloop_start(po->mainloop) < 0) {
 		pa_threaded_mainloop_unlock(po->mainloop);
 		pa_threaded_mainloop_free(po->mainloop);
-		g_free(po);
+		po->mainloop = NULL;
 
 		g_set_error(error_r, pulse_output_quark(), 0,
 			    "pa_threaded_mainloop_start() has failed");
@@ -332,7 +333,7 @@ pulse_output_enable(void *data, GError **error_r)
 		pa_threaded_mainloop_unlock(po->mainloop);
 		pa_threaded_mainloop_stop(po->mainloop);
 		pa_threaded_mainloop_free(po->mainloop);
-		g_free(po);
+		po->mainloop = NULL;
 		return false;
 	}
 
