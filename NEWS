@@ -3,6 +3,7 @@ ver 0.15.8 (2009/??/??)
   - curl: allow rewinding with Icy-Metadata
 * decoders:
   - ffmpeg, flac, vorbis: added more flac/vorbis MIME types
+  - ffmpeg: enabled libavformat's file name extension detection
 * dbUtils: return empty tag value only if no value was found
 * decoder_thread: fix CUE track playback
 * queue: don't repeat current song in consume mode
