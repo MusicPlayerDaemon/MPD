@@ -124,7 +124,7 @@ int
 pipe_cloexec(int fd[2])
 {
 #ifdef WIN32
-	return _pipe(event_pipe, 512, _O_BINARY);
+	return _pipe(fd, 512, _O_BINARY);
 #else
 	int ret;
 
@@ -148,7 +148,7 @@ int
 pipe_cloexec_nonblock(int fd[2])
 {
 #ifdef WIN32
-	return _pipe(event_pipe, 512, _O_BINARY);
+	return _pipe(fd, 512, _O_BINARY);
 #else
 	int ret;
 
