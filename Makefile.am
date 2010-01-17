@@ -640,6 +640,7 @@ test_run_decoder_SOURCES = test/run_decoder.c \
 	src/tag.c src/tag_pool.c \
 	src/replay_gain.c \
 	src/uri.c \
+	src/timer.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
 	$(TAG_SRC) \
@@ -659,6 +660,7 @@ test_read_tags_SOURCES = test/read_tags.c \
 	src/tag.c src/tag_pool.c \
 	src/replay_gain.c \
 	src/uri.c \
+	src/timer.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
 	$(TAG_SRC) \
