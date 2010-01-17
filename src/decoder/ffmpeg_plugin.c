@@ -486,6 +486,7 @@ static const char *const ffmpeg_suffixes[] = {
 };
 
 static const char *const ffmpeg_mime_types[] = {
+	"application/m4a",
 	"application/mp4",
 	"application/octet-stream",
 	"application/ogg",
@@ -498,9 +499,12 @@ static const char *const ffmpeg_mime_types[] = {
 	"audio/16sv",
 	"audio/aac",
 	"audio/ac3",
+	"audio/aiff"
 	"audio/amr",
 	"audio/basic",
 	"audio/flac",
+	"audio/m4a",
+	"audio/mp4",
 	"audio/mpeg",
 	"audio/musepack",
 	"audio/ogg",
@@ -519,6 +523,7 @@ static const char *const ffmpeg_mime_types[] = {
 	"audio/x-flac",
 	"audio/x-gsm",
 	"audio/x-mace",
+	"audio/x-matroska",
 	"audio/x-monkeys-audio",
 	"audio/x-mpeg",
 	"audio/x-ms-wma",
@@ -531,6 +536,7 @@ static const char *const ffmpeg_mime_types[] = {
 	"audio/x-pn-multirate-realaudio",
 	"audio/x-speex",
 	"audio/x-tta"
+	"audio/x-voc",
 	"audio/x-wav",
 	"audio/x-wma",
 	"audio/x-wv",
