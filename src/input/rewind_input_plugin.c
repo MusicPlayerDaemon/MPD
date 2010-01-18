@@ -227,7 +227,7 @@ input_rewind_open(struct input_stream *is)
 		return is;
 
 	c = g_new(struct input_rewind, 1);
-	input_stream_init(&c->base, &rewind_input_plugin);
+	input_stream_init(&c->base, &rewind_input_plugin, is->uri);
 	c->tail = 0;
 	c->input = is;
 

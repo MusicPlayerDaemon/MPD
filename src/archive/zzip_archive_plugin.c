@@ -141,7 +141,7 @@ zzip_archive_open_stream(struct archive_file *file,
 	ZZIP_STAT z_stat;
 
 	zis = g_new(struct zzip_input_stream, 1);
-	input_stream_init(&zis->base, &zzip_input_plugin);
+	input_stream_init(&zis->base, &zzip_input_plugin, pathname);
 
 	zis->archive = context;
 	zis->file = zzip_file_open(context->dir, pathname, 0);

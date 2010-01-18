@@ -39,6 +39,12 @@ struct input_stream {
 	const struct input_plugin *plugin;
 
 	/**
+	 * The absolute URI which was used to open this stream.  May
+	 * be NULL if this is unknown.
+	 */
+	char *uri;
+
+	/**
 	 * indicates whether the stream is ready for reading and
 	 * whether the other attributes in this struct are valid
 	 */
@@ -66,9 +72,11 @@ struct input_stream {
 };
 
 static inline void
-input_stream_init(struct input_stream *is, const struct input_plugin *plugin)
+input_stream_init(struct input_stream *is, const struct input_plugin *plugin,
+		  const char *uri)
 {
 	is->plugin = plugin;
+	is->uri = g_strdup(uri);
 	is->ready = false;
 	is->seekable = false;
 	is->size = -1;
@@ -79,6 +87,7 @@ input_stream_init(struct input_stream *is, const struct input_plugin *plugin)
 static inline void
 input_stream_deinit(struct input_stream *is)
 {
+	g_free(is->uri);
 	g_free(is->mime);
 }
 

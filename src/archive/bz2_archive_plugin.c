@@ -168,13 +168,12 @@ bz2_close(struct archive_file *file)
 /* single archive handling */
 
 static struct input_stream *
-bz2_open_stream(struct archive_file *file,
-		G_GNUC_UNUSED const char *path, GError **error_r)
+bz2_open_stream(struct archive_file *file, const char *path, GError **error_r)
 {
 	struct bz2_archive_file *context = (struct bz2_archive_file *) file;
 	struct bz2_input_stream *bis = g_new(struct bz2_input_stream, 1);
 
-	input_stream_init(&bis->base, &bz2_inputplugin);
+	input_stream_init(&bis->base, &bz2_inputplugin, path);
 
 	bis->archive = context;
 

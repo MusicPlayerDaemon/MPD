@@ -84,7 +84,7 @@ input_file_open(const char *filename, GError **error_r)
 #endif
 
 	fis = g_new(struct file_input_stream, 1);
-	input_stream_init(&fis->base, &input_plugin_file);
+	input_stream_init(&fis->base, &input_plugin_file, filename);
 
 	fis->base.size = st.st_size;
 	fis->base.seekable = true;

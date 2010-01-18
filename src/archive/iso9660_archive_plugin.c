@@ -180,7 +180,7 @@ iso9660_archive_open_stream(struct archive_file *file,
 	struct iso9660_input_stream *iis;
 
 	iis = g_new(struct iso9660_input_stream, 1);
-	input_stream_init(&iis->base, &iso9660_input_plugin);
+	input_stream_init(&iis->base, &iso9660_input_plugin, pathname);
 
 	iis->archive = context;
 	iis->statbuf = iso9660_ifs_stat_translate(context->iso, pathname);

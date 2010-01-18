@@ -801,7 +801,7 @@ input_curl_open(const char *url, GError **error_r)
 		return NULL;
 
 	c = g_new0(struct input_curl, 1);
-	input_stream_init(&c->base, &input_plugin_curl);
+	input_stream_init(&c->base, &input_plugin_curl, url);
 
 	c->url = g_strdup(url);
 	c->buffers = g_queue_new();

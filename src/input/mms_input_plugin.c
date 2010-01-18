@@ -56,7 +56,7 @@ input_mms_open(const char *url, GError **error_r)
 		return NULL;
 
 	m = g_new(struct input_mms, 1);
-	input_stream_init(&m->base, &input_plugin_mms);
+	input_stream_init(&m->base, &input_plugin_mms, url);
 
 	m->mms = mmsx_connect(NULL, NULL, url, 128 * 1024);
 	if (m->mms == NULL) {
