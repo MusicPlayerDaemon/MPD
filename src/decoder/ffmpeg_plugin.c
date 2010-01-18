@@ -192,12 +192,14 @@ ffmpeg_helper(const char *uri, struct input_stream *input,
 
 	if (av_find_stream_info(format_context)<0) {
 		g_warning("Couldn't find stream info\n");
+		av_close_input_file(format_context);
 		return false;
 	}
 
 	audio_stream = ffmpeg_find_audio_stream(format_context);
 	if (audio_stream == -1) {
 		g_warning("No audio stream inside\n");
+		av_close_input_file(format_context);
 		return false;
 	}
 
@@ -209,11 +211,13 @@ ffmpeg_helper(const char *uri, struct input_stream *input,
 
 	if (!codec) {
 		g_warning("Unsupported audio codec\n");
+		av_close_input_file(format_context);
 		return false;
 	}
 
 	if (avcodec_open(codec_context, codec)<0) {
 		g_warning("Could not open codec\n");
+		av_close_input_file(format_context);
 		return false;
 	}
 
