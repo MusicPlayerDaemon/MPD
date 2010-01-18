@@ -171,6 +171,7 @@ zzip_input_close(struct input_stream *is)
 
 	zzip_file_close(zis->file);
 	zzip_archive_close(&zis->archive->base);
+	input_stream_deinit(&zis->base);
 	g_free(zis);
 }
 

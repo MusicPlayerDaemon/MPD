@@ -195,6 +195,7 @@ input_curl_free(struct input_curl *c)
 	g_queue_free(c->buffers);
 
 	g_free(c->url);
+	input_stream_deinit(&c->base);
 	g_free(c);
 }
 

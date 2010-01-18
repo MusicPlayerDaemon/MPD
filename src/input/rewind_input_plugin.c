@@ -98,6 +98,7 @@ input_rewind_close(struct input_stream *is)
 
 	input_stream_close(r->input);
 
+	input_stream_deinit(&r->base);
 	g_free(r);
 }
 

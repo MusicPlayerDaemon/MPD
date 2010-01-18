@@ -76,6 +76,12 @@ input_stream_init(struct input_stream *is, const struct input_plugin *plugin)
 	is->mime = NULL;
 }
 
+static inline void
+input_stream_deinit(struct input_stream *is)
+{
+	g_free(is->mime);
+}
+
 /**
  * Opens a new input stream.  You may not access it until the "ready"
  * flag is set.

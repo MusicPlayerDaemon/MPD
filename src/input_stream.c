@@ -99,8 +99,6 @@ input_stream_read(struct input_stream *is, void *ptr, size_t size,
 
 void input_stream_close(struct input_stream *is)
 {
-	g_free(is->mime);
-
 	is->plugin->close(is);
 }
 

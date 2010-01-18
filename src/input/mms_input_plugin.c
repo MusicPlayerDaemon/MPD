@@ -103,6 +103,7 @@ input_mms_close(struct input_stream *is)
 	struct input_mms *m = (struct input_mms *)is;
 
 	mmsx_close(m->mms);
+	input_stream_deinit(&m->base);
 	g_free(m);
 }
 

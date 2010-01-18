@@ -136,6 +136,7 @@ input_file_close(struct input_stream *is)
 	struct file_input_stream *fis = (struct file_input_stream *)is;
 
 	close(fis->fd);
+	input_stream_deinit(&fis->base);
 	g_free(fis);
 }
 

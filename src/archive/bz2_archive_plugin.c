@@ -182,6 +182,7 @@ bz2_open_stream(struct archive_file *file,
 	bis->base.seekable = false;
 
 	if (!bz2_alloc(bis, error_r)) {
+		input_stream_deinit(&bis->base);
 		g_free(bis);
 		return NULL;
 	}
@@ -202,6 +203,7 @@ bz2_is_close(struct input_stream *is)
 
 	bz2_close(&bis->archive->base);
 
+	input_stream_deinit(&bis->base);
 	g_free(bis);
 }
 

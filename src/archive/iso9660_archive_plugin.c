@@ -212,6 +212,9 @@ iso9660_input_close(struct input_stream *is)
 	g_free(iis->statbuf);
 
 	iso9660_archive_close(&iis->archive->base);
+
+	input_stream_deinit(&iis->base);
+	g_free(iis);
 }
 
 
