@@ -56,7 +56,7 @@ struct ffmpeg_context {
 
 struct ffmpeg_stream {
 	/** hack - see url_to_struct() */
-	char url[8];
+	char url[64];
 
 	struct decoder *decoder;
 	struct input_stream *input;
@@ -141,8 +141,28 @@ ffmpeg_find_audio_stream(const AVFormatContext *format_context)
 	return -1;
 }
 
+/**
+ * Append the suffix of the original URI to the virtual stream URI.
+ * Without this, libavformat cannot detect some of the codecs
+ * (e.g. "shorten").
+ */
+static void
+append_uri_suffix(struct ffmpeg_stream *stream, const char *uri)
+{
+	assert(stream != NULL);
+	assert(uri != NULL);
+
+	char *base = g_path_get_basename(uri);
+
+	const char *suffix = strrchr(base, '.');
+	if (suffix != NULL && suffix[1] != 0)
+		g_strlcat(stream->url, suffix, sizeof(stream->url));
+
+	g_free(base);
+}
+
 static bool
-ffmpeg_helper(struct input_stream *input,
+ffmpeg_helper(const char *uri, struct input_stream *input,
 	      bool (*callback)(struct ffmpeg_context *ctx),
 	      struct ffmpeg_context *ctx)
 {
@@ -154,6 +174,9 @@ ffmpeg_helper(struct input_stream *input,
 		.url = "mpd://X", /* only the mpd:// prefix matters */
 	};
 	bool ret;
+
+	if (uri != NULL)
+		append_uri_suffix(&stream, uri);
 
 	stream.input = input;
 	if (ctx && ctx->decoder) {
@@ -362,7 +385,8 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	ctx.input = input;
 	ctx.decoder = decoder;
 
-	ffmpeg_helper(input, ffmpeg_decode_internal, &ctx);
+	ffmpeg_helper(decoder_get_uri(decoder), input,
+		      ffmpeg_decode_internal, &ctx);
 }
 
 #if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
@@ -435,7 +459,7 @@ ffmpeg_stream_tag(struct input_stream *is)
 	ctx.decoder = NULL;
 	ctx.tag = tag_new();
 
-	ret = ffmpeg_helper(is, ffmpeg_tag_internal, &ctx);
+	ret = ffmpeg_helper(NULL, is, ffmpeg_tag_internal, &ctx);
 	if (!ret) {
 		tag_free(ctx.tag);
 		ctx.tag = NULL;
@@ -469,6 +493,7 @@ static const char *const ffmpeg_suffixes[] = {
 };
 
 static const char *const ffmpeg_mime_types[] = {
+	"application/m4a",
 	"application/mp4",
 	"application/octet-stream",
 	"application/ogg",
@@ -481,9 +506,12 @@ static const char *const ffmpeg_mime_types[] = {
 	"audio/16sv",
 	"audio/aac",
 	"audio/ac3",
+	"audio/aiff"
 	"audio/amr",
 	"audio/basic",
 	"audio/flac",
+	"audio/m4a",
+	"audio/mp4",
 	"audio/mpeg",
 	"audio/musepack",
 	"audio/ogg",
@@ -502,6 +530,7 @@ static const char *const ffmpeg_mime_types[] = {
 	"audio/x-flac",
 	"audio/x-gsm",
 	"audio/x-mace",
+	"audio/x-matroska",
 	"audio/x-monkeys-audio",
 	"audio/x-mpeg",
 	"audio/x-ms-wma",
@@ -514,6 +543,7 @@ static const char *const ffmpeg_mime_types[] = {
 	"audio/x-pn-multirate-realaudio",
 	"audio/x-speex",
 	"audio/x-tta"
+	"audio/x-voc",
 	"audio/x-wav",
 	"audio/x-wma",
 	"audio/x-wv",
