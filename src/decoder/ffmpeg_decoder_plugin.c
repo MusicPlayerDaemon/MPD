@@ -181,6 +181,11 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 	uint8_t *packet_data;
 	int packet_size;
 
+	if (packet->pts != (int64_t)AV_NOPTS_VALUE)
+		decoder_timestamp(decoder,
+				  av_rescale_q(packet->pts, *time_base,
+					       (AVRational){1, 1}));
+
 	packet_data = packet->data;
 	packet_size = packet->size;
 
@@ -204,11 +209,6 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 
 		if (audio_size <= 0)
 			continue;
-
-		if (packet->pts != (int64_t)AV_NOPTS_VALUE)
-			decoder_timestamp(decoder,
-					  av_rescale_q(packet->pts, *time_base,
-						       (AVRational){1, 1}));
 
 		cmd = decoder_data(decoder, is,
 				   aligned_buffer, audio_size,
