@@ -466,7 +466,6 @@ static struct input_stream *
 wavpack_open_wvc(struct decoder *decoder, struct wavpack_input *wpi)
 {
 	struct input_stream *is_wvc;
-	char *utf8url;
 	char *wvc_url = NULL;
 	char first_byte;
 	size_t nbytes;
@@ -475,14 +474,10 @@ wavpack_open_wvc(struct decoder *decoder, struct wavpack_input *wpi)
 	 * As we use dc->utf8url, this function will be bad for
 	 * single files. utf8url is not absolute file path :/
 	 */
-	utf8url = decoder_get_uri(decoder);
-	if (utf8url == NULL) {
+	if (wpi->is->uri == NULL)
 		return false;
-	}
 
-	wvc_url = g_strconcat(utf8url, "c", NULL);
-	g_free(utf8url);
-
+	wvc_url = g_strconcat(wpi->is->uri, "c", NULL);
 	is_wvc = input_stream_open(wvc_url, NULL);
 	g_free(wvc_url);
 

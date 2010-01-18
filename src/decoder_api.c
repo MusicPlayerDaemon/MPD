@@ -79,15 +79,6 @@ decoder_initialized(struct decoder *decoder,
 					       &af_string));
 }
 
-char *decoder_get_uri(G_GNUC_UNUSED struct decoder *decoder)
-{
-	const struct decoder_control *dc = decoder->dc;
-
-	assert(dc->pipe != NULL);
-
-	return song_get_uri(dc->song);
-}
-
 enum decoder_command decoder_get_command(G_GNUC_UNUSED struct decoder * decoder)
 {
 	const struct decoder_control *dc = decoder->dc;

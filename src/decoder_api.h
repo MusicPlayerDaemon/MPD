@@ -54,15 +54,6 @@ decoder_initialized(struct decoder *decoder,
 		    bool seekable, float total_time);
 
 /**
- * Returns the URI of the current song in UTF-8 encoding.
- *
- * @param decoder the decoder object
- * @return an allocated string which must be freed with g_free()
- */
-char *
-decoder_get_uri(struct decoder *decoder);
-
-/**
  * Determines the pending decoder command.
  *
  * @param decoder the decoder object

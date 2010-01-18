@@ -162,7 +162,7 @@ append_uri_suffix(struct ffmpeg_stream *stream, const char *uri)
 }
 
 static bool
-ffmpeg_helper(const char *uri, struct input_stream *input,
+ffmpeg_helper(struct input_stream *input,
 	      bool (*callback)(struct ffmpeg_context *ctx),
 	      struct ffmpeg_context *ctx)
 {
@@ -175,8 +175,8 @@ ffmpeg_helper(const char *uri, struct input_stream *input,
 	};
 	bool ret;
 
-	if (uri != NULL)
-		append_uri_suffix(&stream, uri);
+	if (input->uri != NULL)
+		append_uri_suffix(&stream, input->uri);
 
 	stream.input = input;
 	if (ctx && ctx->decoder) {
@@ -385,8 +385,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	ctx.input = input;
 	ctx.decoder = decoder;
 
-	ffmpeg_helper(decoder_get_uri(decoder), input,
-		      ffmpeg_decode_internal, &ctx);
+	ffmpeg_helper(input, ffmpeg_decode_internal, &ctx);
 }
 
 #if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
@@ -459,7 +458,7 @@ ffmpeg_stream_tag(struct input_stream *is)
 	ctx.decoder = NULL;
 	ctx.tag = tag_new();
 
-	ret = ffmpeg_helper(NULL, is, ffmpeg_tag_internal, &ctx);
+	ret = ffmpeg_helper(is, ffmpeg_tag_internal, &ctx);
 	if (!ret) {
 		tag_free(ctx.tag);
 		ctx.tag = NULL;

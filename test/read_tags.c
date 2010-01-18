@@ -64,11 +64,6 @@ decoder_initialized(G_GNUC_UNUSED struct decoder *decoder,
 {
 }
 
-char *decoder_get_uri(G_GNUC_UNUSED struct decoder *decoder)
-{
-	return NULL;
-}
-
 enum decoder_command
 decoder_get_command(G_GNUC_UNUSED struct decoder *decoder)
 {

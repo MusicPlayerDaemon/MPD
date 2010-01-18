@@ -245,19 +245,10 @@ vorbis_send_comments(struct decoder *decoder, struct input_stream *is,
 }
 
 static bool
-oggvorbis_seekable(struct decoder *decoder)
+oggvorbis_seekable(const struct input_stream *is)
 {
-	char *uri;
-	bool seekable;
-
-	uri = decoder_get_uri(decoder);
-	/* disable seeking on remote streams, because libvorbis seeks
-	   around like crazy, and due to being very expensive, this
-	   delays song playback by 10 or 20 seconds */
-	seekable = !uri_has_scheme(uri);
-	g_free(uri);
-
-	return seekable;
+	return is->seekable &&
+		(is->uri == NULL || !uri_has_scheme(is->uri));
 }
 
 /* public */
@@ -289,7 +280,7 @@ vorbis_stream_decode(struct decoder *decoder,
 
 	data.decoder = decoder;
 	data.input_stream = input_stream;
-	data.seekable = input_stream->seekable && oggvorbis_seekable(decoder);
+	data.seekable = oggvorbis_seekable(input_stream);
 
 	callbacks.read_func = ogg_read_cb;
 	callbacks.seek_func = ogg_seek_cb;
