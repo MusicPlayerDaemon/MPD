@@ -45,14 +45,6 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "ffmpeg"
 
-struct ffmpeg_context {
-	int audio_stream;
-	AVFormatContext *format_context;
-	AVCodecContext *codec_context;
-	struct decoder *decoder;
-	struct input_stream *input;
-};
-
 struct ffmpeg_stream {
 	/** hack - see url_to_struct() */
 	char url[64];
@@ -160,82 +152,6 @@ append_uri_suffix(struct ffmpeg_stream *stream, const char *uri)
 	g_free(base);
 }
 
-static bool
-ffmpeg_helper(struct input_stream *input,
-	      bool (*callback)(struct ffmpeg_context *ctx),
-	      struct ffmpeg_context *ctx)
-{
-	AVFormatContext *format_context;
-	AVCodecContext *codec_context;
-	AVCodec *codec;
-	int audio_stream;
-	struct ffmpeg_stream stream = {
-		.url = "mpd://X", /* only the mpd:// prefix matters */
-	};
-	bool ret;
-
-	if (input->uri != NULL)
-		append_uri_suffix(&stream, input->uri);
-
-	stream.input = input;
-	if (ctx && ctx->decoder) {
-		stream.decoder = ctx->decoder; //are we in decoding loop ?
-	} else {
-		stream.decoder = NULL;
-	}
-
-	//ffmpeg works with ours "fileops" helper
-	if (av_open_input_file(&format_context, stream.url, NULL, 0, NULL) != 0) {
-		g_warning("Open failed\n");
-		return false;
-	}
-
-	if (av_find_stream_info(format_context)<0) {
-		g_warning("Couldn't find stream info\n");
-		av_close_input_file(format_context);
-		return false;
-	}
-
-	audio_stream = ffmpeg_find_audio_stream(format_context);
-	if (audio_stream == -1) {
-		g_warning("No audio stream inside\n");
-		av_close_input_file(format_context);
-		return false;
-	}
-
-	codec_context = format_context->streams[audio_stream]->codec;
-	if (codec_context->codec_name[0] != 0)
-		g_debug("codec '%s'", codec_context->codec_name);
-
-	codec = avcodec_find_decoder(codec_context->codec_id);
-
-	if (!codec) {
-		g_warning("Unsupported audio codec\n");
-		av_close_input_file(format_context);
-		return false;
-	}
-
-	if (avcodec_open(codec_context, codec)<0) {
-		g_warning("Could not open codec\n");
-		av_close_input_file(format_context);
-		return false;
-	}
-
-	if (callback) {
-		ctx->audio_stream = audio_stream;
-		ctx->format_context = format_context;
-		ctx->codec_context = codec_context;
-
-		ret = callback(ctx);
-	} else
-		ret = true;
-
-	avcodec_close(codec_context);
-	av_close_input_file(format_context);
-
-	return ret;
-}
-
 /**
  * On some platforms, libavcodec wants the output buffer aligned to 16
  * bytes (because it uses SSE/Altivec internally).  This function
@@ -321,46 +237,91 @@ ffmpeg_sample_format(G_GNUC_UNUSED const AVCodecContext *codec_context)
 #endif
 }
 
-static bool
-ffmpeg_decode_internal(struct ffmpeg_context *ctx)
+static void
+ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 {
+	struct ffmpeg_stream stream = {
+		.url = "mpd://X", /* only the mpd:// prefix matters */
+		.decoder = decoder,
+		.input = input,
+	};
+	AVFormatContext *format_context;
+	AVCodecContext *codec_context;
+	AVCodec *codec;
+	int audio_stream;
+
+	if (input->uri != NULL)
+		append_uri_suffix(&stream, input->uri);
+
+	//ffmpeg works with ours "fileops" helper
+	if (av_open_input_file(&format_context, stream.url, NULL, 0, NULL) != 0) {
+		g_warning("Open failed\n");
+		av_close_input_file(format_context);
+		return;
+	}
+
+	if (av_find_stream_info(format_context)<0) {
+		g_warning("Couldn't find stream info\n");
+		av_close_input_file(format_context);
+		return;
+	}
+
+	audio_stream = ffmpeg_find_audio_stream(format_context);
+	if (audio_stream == -1) {
+		g_warning("No audio stream inside\n");
+		av_close_input_file(format_context);
+		return;
+	}
+
+	codec_context = format_context->streams[audio_stream]->codec;
+	if (codec_context->codec_name[0] != 0)
+		g_debug("codec '%s'", codec_context->codec_name);
+
+	codec = avcodec_find_decoder(codec_context->codec_id);
+
+	if (!codec) {
+		g_warning("Unsupported audio codec\n");
+		av_close_input_file(format_context);
+		return;
+	}
+
+	if (avcodec_open(codec_context, codec)<0) {
+		g_warning("Could not open codec\n");
+		av_close_input_file(format_context);
+		return;
+	}
+
 	GError *error = NULL;
-	struct decoder *decoder = ctx->decoder;
-	AVCodecContext *codec_context = ctx->codec_context;
-	AVFormatContext *format_context = ctx->format_context;
-	AVPacket packet;
 	struct audio_format audio_format;
-	enum decoder_command cmd;
-	int total_time;
-
-	total_time = 0;
-
 	if (!audio_format_init_checked(&audio_format,
 				       codec_context->sample_rate,
 				       ffmpeg_sample_format(codec_context),
 				       codec_context->channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
-		return false;
+		avcodec_close(codec_context);
+		av_close_input_file(format_context);
+		return;
 	}
 
-	//there is some problem with this on some demux (mp3 at least)
-	if (format_context->duration != (int64_t)AV_NOPTS_VALUE) {
-		total_time = format_context->duration / AV_TIME_BASE;
-	}
+	int total_time = format_context->duration != (int64_t)AV_NOPTS_VALUE
+		? format_context->duration / AV_TIME_BASE
+		: 0;
 
 	decoder_initialized(decoder, &audio_format,
-			    ctx->input->seekable, total_time);
+			    input->seekable, total_time);
 
+	enum decoder_command cmd;
 	do {
+		AVPacket packet;
 		if (av_read_frame(format_context, &packet) < 0)
 			/* end of file */
 			break;
 
-		if (packet.stream_index == ctx->audio_stream)
-			cmd = ffmpeg_send_packet(decoder, ctx->input,
+		if (packet.stream_index == audio_stream)
+			cmd = ffmpeg_send_packet(decoder, input,
 						 &packet, codec_context,
-						 &format_context->streams[ctx->audio_stream]->time_base);
+						 &format_context->streams[audio_stream]->time_base);
 		else
 			cmd = decoder_get_command(decoder);
 
@@ -377,18 +338,8 @@ ffmpeg_decode_internal(struct ffmpeg_context *ctx)
 		}
 	} while (cmd != DECODE_COMMAND_STOP);
 
-	return true;
-}
-
-static void
-ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
-{
-	struct ffmpeg_context ctx;
-
-	ctx.input = input;
-	ctx.decoder = decoder;
-
-	ffmpeg_helper(input, ffmpeg_decode_internal, &ctx);
+	avcodec_close(codec_context);
+	av_close_input_file(format_context);
 }
 
 #if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
