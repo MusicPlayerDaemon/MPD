@@ -51,7 +51,6 @@ struct ffmpeg_context {
 	AVCodecContext *codec_context;
 	struct decoder *decoder;
 	struct input_stream *input;
-	struct tag *tag;
 };
 
 struct ffmpeg_stream {
@@ -405,14 +404,33 @@ ffmpeg_copy_metadata(struct tag *tag, AVMetadata *m,
 }
 #endif
 
-static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
+//no tag reading in ffmpeg, check if playable
+static struct tag *
+ffmpeg_stream_tag(struct input_stream *is)
 {
-	struct tag *tag = (struct tag *) ctx->tag;
-	AVFormatContext *f = ctx->format_context;
+	struct ffmpeg_stream stream = {
+		.url = "mpd://X", /* only the mpd:// prefix matters */
+		.decoder = NULL,
+		.input = is,
+	};
 
-	tag->time = 0;
-	if (f->duration != (int64_t)AV_NOPTS_VALUE)
-		tag->time = f->duration / AV_TIME_BASE;
+	if (is->uri != NULL)
+		append_uri_suffix(&stream, is->uri);
+
+	AVFormatContext *f;
+	if (av_open_input_file(&f, stream.url, NULL, 0, NULL) != 0)
+		return NULL;
+
+	if (av_find_stream_info(f) < 0) {
+		av_close_input_file(f);
+		return NULL;
+	}
+
+	struct tag *tag = tag_new();
+
+	tag->time = f->duration != (int64_t)AV_NOPTS_VALUE
+		? f->duration / AV_TIME_BASE
+		: 0;
 
 #if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
 	av_metadata_conv(f, NULL, f->iformat->metadata_conv);
@@ -449,26 +467,10 @@ static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
 	}
 
 #endif
-	return true;
-}
 
-//no tag reading in ffmpeg, check if playable
-static struct tag *
-ffmpeg_stream_tag(struct input_stream *is)
-{
-	struct ffmpeg_context ctx;
-	bool ret;
+	av_close_input_file(f);
 
-	ctx.decoder = NULL;
-	ctx.tag = tag_new();
-
-	ret = ffmpeg_helper(is, ffmpeg_tag_internal, &ctx);
-	if (!ret) {
-		tag_free(ctx.tag);
-		ctx.tag = NULL;
-	}
-
-	return ctx.tag;
+	return tag;
 }
 
 /**
