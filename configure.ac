@@ -205,7 +205,20 @@ dnl ##
 dnl misc libraries
 dnl ##
 
-AC_CHECK_LIBWRAP
+AC_ARG_ENABLE([libwrap],
+	AS_HELP_STRING([--enable-libwrap], [use libwrap]),,
+	[enable_libwrap=auto])
+
+if test x$enable_libwrap != xno; then
+	AC_CHECK_LIBWRAP(found_libwrap=yes, found_libwrap=no)
+	MPD_AUTO_RESULT(libwrap, libwrap, [libwrap not found])
+fi
+
+if test x$enable_libwrap = xyes; then
+	AC_SUBST(LIBWRAP_CFLAGS)
+	AC_SUBST(LIBWRAP_LDFLAGS)
+	AC_DEFINE(HAVE_LIBWRAP, 1, [define to enable libwrap library])
+fi
 
 AC_ARG_ENABLE(cue,
 	AS_HELP_STRING([--enable-cue],
