@@ -9,6 +9,7 @@ bin_PROGRAMS = src/mpd
 
 src_mpd_CFLAGS = $(AM_CFLAGS) $(MPD_CFLAGS)
 src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(LIBWRAP_CFLAGS) \
 	$(SQLITE_CFLAGS) \
 	$(ARCHIVE_CFLAGS) \
 	$(INPUT_CFLAGS) \
@@ -18,6 +19,7 @@ src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(FILTER_CFLAGS) \
 	$(OUTPUT_CFLAGS)
 src_mpd_LDADD = $(MPD_LIBS) \
+	$(LIBWRAP_LDFLAGS) \
 	$(SQLITE_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(INPUT_LIBS) \

@@ -26,6 +26,11 @@
 #include <assert.h>
 #include <unistd.h>
 
+#ifdef HAVE_LIBWRAP
+#include <tcpd.h>
+#endif
+
+
 #define LOG_LEVEL_SECURE G_LOG_LEVEL_INFO
 
 static const char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
@@ -37,6 +42,31 @@ void client_new(int fd, const struct sockaddr *sa, size_t sa_length, int uid)
 	char *remote;
 
 	assert(fd >= 0);
+
+#ifdef HAVE_LIBWRAP
+	if (sa->sa_family != AF_UNIX) {
+		char *hostaddr = sockaddr_to_string(sa, sa_length, NULL);
+		const char *progname = g_get_prgname();
+
+		struct request_info req;
+		request_init(&req, RQ_FILE, fd, RQ_DAEMON, progname, 0);
+
+		fromhost(&req);
+
+		if (!hosts_access(&req)) {
+			/* tcp wrappers says no */
+			g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
+			      "libwrap refused connection (libwrap=%s) from %s",
+			      progname, hostaddr);
+
+			g_free(hostaddr);
+			close(fd);
+			return;
+		}
+
+		g_free(hostaddr);
+	}
+#endif	/* HAVE_WRAP */
 
 	if (client_list_is_full()) {
 		g_warning("Max Connections Reached!");

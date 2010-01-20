@@ -205,6 +205,8 @@ dnl ##
 dnl misc libraries
 dnl ##
 
+AC_CHECK_LIBWRAP
+
 AC_ARG_ENABLE(cue,
 	AS_HELP_STRING([--enable-cue],
 		[enable support for libcue support]),,

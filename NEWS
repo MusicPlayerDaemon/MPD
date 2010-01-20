@@ -86,6 +86,7 @@ ver 0.16 (20??/??/??)
 * build with large file support by default
 * added test suite ("make check")
 * require GLib 2.12
+* added libwrap support
 
 
 ver 0.15.8 (2010/01/17)
