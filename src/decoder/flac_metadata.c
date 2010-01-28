@@ -64,14 +64,19 @@ flac_parse_replay_gain(const FLAC__StreamMetadata *block)
 
 	rgi = replay_gain_info_new();
 
-	found = flac_find_float_comment(block, "replaygain_album_gain",
-					&rgi->tuples[REPLAY_GAIN_ALBUM].gain) ||
-		flac_find_float_comment(block, "replaygain_album_peak",
-					&rgi->tuples[REPLAY_GAIN_ALBUM].peak) ||
-		flac_find_float_comment(block, "replaygain_track_gain",
-					&rgi->tuples[REPLAY_GAIN_TRACK].gain) ||
-		flac_find_float_comment(block, "replaygain_track_peak",
-					&rgi->tuples[REPLAY_GAIN_TRACK].peak);
+	if (flac_find_float_comment(block, "replaygain_album_gain",
+				    &rgi->tuples[REPLAY_GAIN_ALBUM].gain))
+		found = true;
+	if (flac_find_float_comment(block, "replaygain_album_peak",
+				    &rgi->tuples[REPLAY_GAIN_ALBUM].peak))
+		found = true;
+	if (flac_find_float_comment(block, "replaygain_track_gain",
+				    &rgi->tuples[REPLAY_GAIN_TRACK].gain))
+		found = true;
+	if (flac_find_float_comment(block, "replaygain_track_peak",
+				    &rgi->tuples[REPLAY_GAIN_TRACK].peak))
+		found = true;
+
 	if (!found) {
 		replay_gain_info_free(rgi);
 		rgi = NULL;
