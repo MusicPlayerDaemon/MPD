@@ -405,12 +405,21 @@ static bool ffmpeg_tag_internal(struct ffmpeg_context *ctx)
 	av_metadata_conv(f, NULL, f->iformat->metadata_conv);
 
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_TITLE, "title");
+#if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(50<<8))
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_ARTIST, "artist");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_DATE, "date");
+#else
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_ARTIST, "author");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_DATE, "year");
+#endif
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_ALBUM, "album");
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_COMMENT, "comment");
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_GENRE, "genre");
 	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_TRACK, "track");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_DATE, "year");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_ALBUM_ARTIST, "album_artist");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_COMPOSER, "composer");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_PERFORMER, "performer");
+	ffmpeg_copy_metadata(tag, f->metadata, TAG_ITEM_DISC, "disc");
 #else
 	if (f->author[0])
 		tag_add_item(tag, TAG_ITEM_ARTIST, f->author);
