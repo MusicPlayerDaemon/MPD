@@ -21,128 +21,12 @@
 #include "playlist_queue.h"
 #include "playlist_list.h"
 #include "playlist_plugin.h"
+#include "playlist_song.h"
 #include "stored_playlist.h"
-#include "database.h"
 #include "mapper.h"
 #include "song.h"
-#include "tag.h"
 #include "uri.h"
-#include "ls.h"
 #include "input_stream.h"
-
-static void
-merge_song_metadata(struct song *dest, const struct song *base,
-		    const struct song *add)
-{
-	dest->tag = base->tag != NULL
-		? (add->tag != NULL
-		   ? tag_merge(base->tag, add->tag)
-		   : tag_dup(base->tag))
-		: (add->tag != NULL
-		   ? tag_dup(add->tag)
-		   : NULL);
-
-	dest->mtime = base->mtime;
-	dest->start_ms = add->start_ms;
-	dest->end_ms = add->end_ms;
-}
-
-static struct song *
-apply_song_metadata(struct song *dest, const struct song *src)
-{
-	struct song *tmp;
-
-	assert(dest != NULL);
-	assert(src != NULL);
-
-	if (src->tag == NULL && src->start_ms == 0 && src->end_ms == 0)
-		return dest;
-
-	if (song_in_database(dest)) {
-		char *path_fs = map_song_fs(dest);
-		if (path_fs == NULL)
-			return dest;
-
-		tmp = song_file_new(path_fs, NULL);
-		merge_song_metadata(tmp, dest, src);
-	} else {
-		tmp = song_file_new(dest->uri, NULL);
-		merge_song_metadata(tmp, dest, src);
-		song_free(dest);
-	}
-
-	return tmp;
-}
-
-/**
- * Verifies the song, returns NULL if it is unsafe.  Translate the
- * song to a new song object within the database, if it is a local
- * file.  The old song object is freed.
- */
-static struct song *
-check_translate_song(struct song *song, const char *base_uri)
-{
-	struct song *dest;
-
-	if (song_in_database(song))
-		/* already ok */
-		return song;
-
-	char *uri = song->uri;
-
-	if (uri_has_scheme(uri)) {
-		if (uri_supported_scheme(uri))
-			/* valid remote song */
-			return song;
-		else {
-			/* unsupported remote song */
-			song_free(song);
-			return NULL;
-		}
-	}
-
-	if (g_path_is_absolute(uri)) {
-		/* XXX fs_charset vs utf8? */
-		char *prefix = base_uri != NULL
-			? map_uri_fs(base_uri)
-			: map_directory_fs(db_get_root());
-
-		if (prefix == NULL || !g_str_has_prefix(uri, prefix) ||
-		    uri[strlen(prefix)] != '/') {
-			/* local files must be relative to the music
-			   directory */
-			g_free(prefix);
-			song_free(song);
-			return NULL;
-		}
-
-		uri += strlen(prefix) + 1;
-		g_free(prefix);
-	}
-
-	if (base_uri != NULL)
-		uri = g_build_filename(base_uri, uri, NULL);
-	else
-		uri = g_strdup(uri);
-
-	if (uri_has_scheme(base_uri)) {
-		dest = song_remote_new(uri);
-		g_free(uri);
-	} else {
-		dest = db_get_song(uri);
-		g_free(uri);
-		if (dest == NULL) {
-			/* not found in database */
-			song_free(song);
-			return dest;
-		}
-	}
-
-	dest = apply_song_metadata(dest, song);
-	song_free(song);
-
-	return dest;
-}
 
 enum playlist_result
 playlist_load_into_queue(const char *uri, struct playlist_provider *source,
@@ -153,7 +37,7 @@ playlist_load_into_queue(const char *uri, struct playlist_provider *source,
 	char *base_uri = uri != NULL ? g_path_get_dirname(uri) : NULL;
 
 	while ((song = playlist_plugin_read(source)) != NULL) {
-		song = check_translate_song(song, base_uri);
+		song = playlist_check_translate_song(song, base_uri);
 		if (song == NULL)
 			continue;
 
