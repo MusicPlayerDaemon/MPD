@@ -21,6 +21,7 @@
 #include "playlist_queue.h"
 #include "playlist_list.h"
 #include "playlist_plugin.h"
+#include "playlist_mapper.h"
 #include "playlist_song.h"
 #include "stored_playlist.h"
 #include "mapper.h"
@@ -94,84 +95,19 @@ playlist_open_remote_into_queue(const char *uri, struct playlist *dest)
 	return result;
 }
 
-static enum playlist_result
-playlist_open_path_into_queue(const char *path_fs, const char *uri,
-			      struct playlist *dest)
-{
-	struct playlist_provider *playlist;
-	enum playlist_result result;
-
-	if ((playlist = playlist_list_open_uri(path_fs)) != NULL)
-		result = playlist_load_into_queue(uri, playlist, dest);
-	else if ((playlist = playlist_list_open_path(path_fs)) != NULL)
-		result = playlist_load_into_queue(uri, playlist, dest);
-	else
-		return PLAYLIST_RESULT_NO_SUCH_LIST;
-
-	playlist_plugin_close(playlist);
-
-	return result;
-}
-
-/**
- * Load a playlist from the configured playlist directory.
- */
-static enum playlist_result
-playlist_open_local_into_queue(const char *uri, struct playlist *dest)
-{
-	const char *playlist_directory_fs;
-	char *path_fs;
-	enum playlist_result result;
-
-	assert(spl_valid_name(uri));
-
-	playlist_directory_fs = map_spl_path();
-	if (playlist_directory_fs == NULL)
-		return PLAYLIST_RESULT_DISABLED;
-
-	path_fs = g_build_filename(playlist_directory_fs, uri, NULL);
-	result = playlist_open_path_into_queue(path_fs, NULL, dest);
-	g_free(path_fs);
-
-	return result;
-}
-
-/**
- * Load a playlist from the configured music directory.
- */
-static enum playlist_result
-playlist_open_local_into_queue2(const char *uri, struct playlist *dest)
-{
-	char *path_fs;
-	enum playlist_result result;
-
-	assert(uri_safe_local(uri));
-
-	path_fs = map_uri_fs(uri);
-	if (path_fs == NULL)
-		return PLAYLIST_RESULT_NO_SUCH_LIST;
-
-	result = playlist_open_path_into_queue(path_fs, uri, dest);
-	g_free(path_fs);
-
-	return result;
-}
-
 enum playlist_result
 playlist_open_into_queue(const char *uri, struct playlist *dest)
 {
 	if (uri_has_scheme(uri))
 		return playlist_open_remote_into_queue(uri, dest);
 
-	if (spl_valid_name(uri)) {
+	struct playlist_provider *playlist = playlist_mapper_open(uri);
+	if (playlist != NULL) {
 		enum playlist_result result =
-			playlist_open_local_into_queue(uri, dest);
-		if (result != PLAYLIST_RESULT_NO_SUCH_LIST)
-			return result;
+			playlist_load_into_queue(uri, playlist, dest);
+		playlist_plugin_close(playlist);
+		return result;
 	}
-
-	if (uri_safe_local(uri))
-		return playlist_open_local_into_queue2(uri, dest);
 
 	return PLAYLIST_RESULT_NO_SUCH_LIST;
 }
