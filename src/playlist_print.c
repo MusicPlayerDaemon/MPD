@@ -19,6 +19,10 @@
 
 #include "config.h"
 #include "playlist_print.h"
+#include "playlist_list.h"
+#include "playlist_plugin.h"
+#include "playlist_mapper.h"
+#include "playlist_song.h"
 #include "queue_print.h"
 #include "stored_playlist.h"
 #include "song_print.h"
@@ -137,5 +141,38 @@ spl_print(struct client *client, const char *name_utf8, bool detail)
 	}
 
 	spl_free(list);
+	return true;
+}
+
+static void
+playlist_provider_print(struct client *client, const char *uri,
+			struct playlist_provider *playlist, bool detail)
+{
+	struct song *song;
+	char *base_uri = uri != NULL ? g_path_get_dirname(uri) : NULL;
+
+	while ((song = playlist_plugin_read(playlist)) != NULL) {
+		song = playlist_check_translate_song(song, base_uri);
+		if (song == NULL)
+			continue;
+
+		if (detail)
+			song_print_info(client, song);
+		else
+			song_print_uri(client, song);
+	}
+
+	g_free(base_uri);
+}
+
+bool
+playlist_file_print(struct client *client, const char *uri, bool detail)
+{
+	struct playlist_provider *playlist = playlist_mapper_open(uri);
+	if (playlist == NULL)
+		return false;
+
+	playlist_provider_print(client, uri, playlist, detail);
+	playlist_plugin_close(playlist);
 	return true;
 }

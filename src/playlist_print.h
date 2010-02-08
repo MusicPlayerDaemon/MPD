@@ -101,4 +101,15 @@ playlist_print_changes_position(struct client *client,
 bool
 spl_print(struct client *client, const char *name_utf8, bool detail);
 
+/**
+ * Send the playlist file to the client.
+ *
+ * @param client the client which requested the playlist
+ * @param uri the URI of the playlist file in UTF-8 encoding
+ * @param detail true if all details should be printed
+ * @return true on success, false if the playlist does not exist
+ */
+bool
+playlist_file_print(struct client *client, const char *uri, bool detail);
+
 #endif

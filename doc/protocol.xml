@@ -960,6 +960,20 @@ OK
     <section>
       <title>Stored playlists</title>
 
+      <para>
+        Playlists are stored inside the configured playlist directory.
+        They are addressed with their file name (without the directory
+        and without the <filename>.m3u</filename> suffix).
+      </para>
+
+      <para>
+        Some of the commands described in this section can be used to
+        run playlist plugins instead of the hard-coded simple
+        <filename>m3u</filename> parser.  They can access playlists in
+        the music directory (relative path including the suffix) or
+        remote playlists (absolute URI with a supported scheme).
+      </para>
+
       <variablelist>
         <varlistentry id="command_listplaylist">
           <term>
@@ -970,8 +984,8 @@ OK
           </term>
           <listitem>
             <para>
-              Lists the files in the playlist
-              <filename>NAME.m3u</filename>.
+              Lists the songs in the playlist.  Playlist plugins are
+              supported.
             </para>
           </listitem>
         </varlistentry>
@@ -984,7 +998,8 @@ OK
           </term>
           <listitem>
             <para>
-              Lists songs in the playlist <filename>NAME.m3u</filename>.
+              Lists the songs with metadata in the playlist.  Playlist
+              plugins are supported.
             </para>
           </listitem>
         </varlistentry>
@@ -1016,8 +1031,8 @@ OK
           </term>
           <listitem>
             <para>
-              Loads the playlist <filename>NAME.m3u</filename> from
-              the playlist directory.
+              Loads the playlist into the current queue.  Playlist
+              plugins are supported.
             </para>
           </listitem>
         </varlistentry>

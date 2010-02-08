@@ -733,6 +733,9 @@ handle_load(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_listplaylist(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
+	if (playlist_file_print(client, argv[1], false))
+		return COMMAND_RETURN_OK;
+
 	bool ret;
 
 	ret = spl_print(client, argv[1], false);
@@ -748,6 +751,9 @@ static enum command_return
 handle_listplaylistinfo(struct client *client,
 			G_GNUC_UNUSED int argc, char *argv[])
 {
+	if (playlist_file_print(client, argv[1], true))
+		return COMMAND_RETURN_OK;
+
 	bool ret;
 
 	ret = spl_print(client, argv[1], true);
