@@ -75,7 +75,7 @@ searchInDirectory(struct song *song, void *_data)
 	struct search_data *data = _data;
 
 	if (locate_song_search(song, data->criteria))
-		return song_print_info(data->client, song);
+		song_print_info(data->client, song);
 
 	return 0;
 }
@@ -105,7 +105,7 @@ findInDirectory(struct song *song, void *_data)
 	struct search_data *data = _data;
 
 	if (locate_song_match(song, data->criteria))
-		return song_print_info(data->client, song);
+		song_print_info(data->client, song);
 
 	return 0;
 }

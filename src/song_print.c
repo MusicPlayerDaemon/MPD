@@ -46,7 +46,7 @@ song_print_uri(struct client *client, struct song *song)
 	}
 }
 
-int
+void
 song_print_info(struct client *client, struct song *song)
 {
 	song_print_uri(client, song);
@@ -87,18 +87,19 @@ song_print_info(struct client *client, struct song *song)
 
 	if (song->tag)
 		tag_print(client, song->tag);
-
-	return 0;
 }
 
 static int
 song_print_info_x(struct song *song, void *data)
 {
 	struct client *client = data;
-	return song_print_info(client, song);
+	song_print_info(client, song);
+
+	return 0;
 }
 
-int songvec_print(struct client *client, const struct songvec *sv)
+void
+songvec_print(struct client *client, const struct songvec *sv)
 {
-	return songvec_for_each(sv, song_print_info_x, client);
+	songvec_for_each(sv, song_print_info_x, client);
 }
