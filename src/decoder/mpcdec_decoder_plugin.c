@@ -154,7 +154,6 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	long bit_rate = 0;
 	mpc_uint32_t vbr_update_acc;
 	mpc_uint32_t vbr_update_bits;
-	struct replay_gain_info *replay_gain_info = NULL;
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
 	data.is = is;
@@ -205,13 +204,13 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 		return;
 	}
 
-	replay_gain_info = replay_gain_info_new();
-	replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain = info.gain_album * 0.01;
-	replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak = info.peak_album / 32767.0;
-	replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = info.gain_title * 0.01;
-	replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak = info.peak_title / 32767.0;
-	decoder_replay_gain(mpd_decoder, replay_gain_info);
-	replay_gain_info_free(replay_gain_info);
+	struct replay_gain_info replay_gain_info;
+	replay_gain_info_init(&replay_gain_info);
+	replay_gain_info.tuples[REPLAY_GAIN_ALBUM].gain = info.gain_album * 0.01;
+	replay_gain_info.tuples[REPLAY_GAIN_ALBUM].peak = info.peak_album / 32767.0;
+	replay_gain_info.tuples[REPLAY_GAIN_TRACK].gain = info.gain_title * 0.01;
+	replay_gain_info.tuples[REPLAY_GAIN_TRACK].peak = info.peak_title / 32767.0;
+	decoder_replay_gain(mpd_decoder, &replay_gain_info);
 
 	decoder_initialized(mpd_decoder, &audio_format,
 			    is->seekable,

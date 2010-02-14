@@ -40,17 +40,19 @@ struct replay_gain_info {
 	struct replay_gain_tuple tuples[2];
 };
 
-struct replay_gain_info *
-replay_gain_info_new(void);
+static inline void
+replay_gain_tuple_init(struct replay_gain_tuple *tuple)
+{
+	tuple->gain = INFINITY;
+	tuple->peak = 0.0;
+}
 
-/**
- * Duplicate a #replay_gain_info object.
- */
-struct replay_gain_info *
-replay_gain_info_dup(const struct replay_gain_info *src);
-
-void
-replay_gain_info_free(struct replay_gain_info *info);
+static inline void
+replay_gain_info_init(struct replay_gain_info *info)
+{
+	replay_gain_tuple_init(&info->tuples[REPLAY_GAIN_ALBUM]);
+	replay_gain_tuple_init(&info->tuples[REPLAY_GAIN_TRACK]);
+}
 
 static inline bool
 replay_gain_tuple_defined(const struct replay_gain_tuple *tuple)

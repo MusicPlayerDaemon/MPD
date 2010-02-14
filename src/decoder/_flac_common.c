@@ -116,7 +116,7 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 	if (data->unsupported)
 		return;
 
-	struct replay_gain_info *rgi;
+	struct replay_gain_info rgi;
 
 	switch (block->type) {
 	case FLAC__METADATA_TYPE_STREAMINFO:
@@ -124,11 +124,8 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 		break;
 
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
-		rgi = flac_parse_replay_gain(block);
-		if (rgi != NULL) {
-			decoder_replay_gain(data->decoder, rgi);
-			replay_gain_info_free(rgi);
-		}
+		if (flac_parse_replay_gain(&rgi, block))
+			decoder_replay_gain(data->decoder, &rgi);
 
 		if (data->tag != NULL)
 			flac_vorbis_comments_to_tag(data->tag, NULL,

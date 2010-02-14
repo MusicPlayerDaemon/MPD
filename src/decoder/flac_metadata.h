@@ -20,9 +20,11 @@
 #ifndef MPD_FLAC_METADATA_H
 #define MPD_FLAC_METADATA_H
 
+#include <stdbool.h>
 #include <FLAC/metadata.h>
 
 struct tag;
+struct replay_gain_info;
 
 static inline unsigned
 flac_duration(const FLAC__StreamMetadata_StreamInfo *stream_info)
@@ -31,8 +33,9 @@ flac_duration(const FLAC__StreamMetadata_StreamInfo *stream_info)
 		stream_info->sample_rate;
 }
 
-struct replay_gain_info *
-flac_parse_replay_gain(const FLAC__StreamMetadata *block);
+bool
+flac_parse_replay_gain(struct replay_gain_info *rgi,
+		       const FLAC__StreamMetadata *block);
 
 void
 flac_vorbis_comments_to_tag(struct tag *tag, const char *char_tnum,

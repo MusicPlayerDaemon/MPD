@@ -300,17 +300,17 @@ static int parse_rva2(struct id3_tag * tag, struct replay_gain_info * replay_gai
 #endif
 
 #ifdef HAVE_ID3TAG
-static struct replay_gain_info *
-parse_id3_replay_gain_info(struct id3_tag *tag)
+static bool
+parse_id3_replay_gain_info(struct replay_gain_info *replay_gain_info,
+			   struct id3_tag *tag)
 {
 	int i;
 	char *key;
 	char *value;
 	struct id3_frame *frame;
 	bool found = false;
-	struct replay_gain_info *replay_gain_info;
 
-	replay_gain_info = replay_gain_info_new();
+	replay_gain_info_init(replay_gain_info);
 
 	for (i = 0; (frame = id3_tag_findframe(tag, "TXXX", i)); i++) {
 		if (frame->nfields < 3)
@@ -341,15 +341,9 @@ parse_id3_replay_gain_info(struct id3_tag *tag)
 		free(value);
 	}
 
-	if (!found) {
+	return found ||
 		/* fall back on RVA2 if no replaygain tags found */
-		found = parse_rva2(tag, replay_gain_info);
-	}
-
-	if (found)
-		return replay_gain_info;
-	replay_gain_info_free(replay_gain_info);
-	return NULL;
+		parse_rva2(tag, replay_gain_info);
 }
 #endif
 
@@ -408,11 +402,9 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 	}
 
 	if (data->decoder != NULL) {
-		struct replay_gain_info *tmp_rgi =
-			parse_id3_replay_gain_info(id3_tag);
-		if (tmp_rgi != NULL) {
-			decoder_replay_gain(data->decoder, tmp_rgi);
-			replay_gain_info_free(tmp_rgi);
+		struct replay_gain_info rgi;
+		if (parse_id3_replay_gain_info(&rgi, id3_tag)) {
+			decoder_replay_gain(data->decoder, &rgi);
 			data->found_replay_gain = true;
 		}
 	}
@@ -879,15 +871,14 @@ mp3_decode_first_frame(struct mp3_data *data, struct tag **tag)
 			if (data->decoder != NULL &&
 			    !data->found_replay_gain &&
 			    lame.track_gain) {
-				struct replay_gain_info *rgi
-					= replay_gain_info_new();
-				rgi->tuples[REPLAY_GAIN_TRACK].gain = lame.track_gain;
-				rgi->tuples[REPLAY_GAIN_TRACK].peak = lame.peak;
-				decoder_replay_gain(data->decoder, rgi);
-				replay_gain_info_free(rgi);
+				struct replay_gain_info rgi;
+				replay_gain_info_init(&rgi);
+				rgi.tuples[REPLAY_GAIN_TRACK].gain = lame.track_gain;
+				rgi.tuples[REPLAY_GAIN_TRACK].peak = lame.peak;
+				decoder_replay_gain(data->decoder, &rgi);
 			}
 		}
-	} 
+	}
 
 	if (!data->max_frames)
 		return false;

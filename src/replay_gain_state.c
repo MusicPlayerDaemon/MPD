@@ -30,7 +30,7 @@ struct replay_gain_state {
 
 	enum replay_gain_mode mode;
 
-	struct replay_gain_info *info;
+	struct replay_gain_info info;
 
 	float scale;
 };
@@ -43,7 +43,7 @@ replay_gain_state_new(float preamp, float missing_preamp)
 	state->preamp = preamp;
 	state->scale = state->missing_preamp = missing_preamp;
 	state->mode = REPLAY_GAIN_OFF;
-	state->info = NULL;
+	replay_gain_info_init(&state->info);
 
 	return state;
 }
@@ -53,9 +53,6 @@ replay_gain_state_free(struct replay_gain_state *state)
 {
 	assert(state != NULL);
 
-	if (state->info != NULL)
-		replay_gain_info_free(state->info);
-
 	g_free(state);
 }
 
@@ -64,11 +61,11 @@ replay_gain_state_calc_scale(struct replay_gain_state *state)
 {
 	assert(state != NULL);
 
-	if (state->mode == REPLAY_GAIN_OFF || state->info == NULL)
+	if (state->mode == REPLAY_GAIN_OFF)
 		return;
 
 	const struct replay_gain_tuple *tuple =
-		&state->info->tuples[state->mode];
+		&state->info.tuples[state->mode];
 	if (replay_gain_tuple_defined(tuple)) {
 		g_debug("computing ReplayGain scale with gain %f, peak %f",
 			tuple->gain, tuple->peak);
@@ -98,12 +95,10 @@ replay_gain_state_set_info(struct replay_gain_state *state,
 {
 	assert(state != NULL);
 
-	if (state->info != NULL)
-		replay_gain_info_free(state->info);
-
-	state->info = info != NULL
-		? replay_gain_info_dup(info)
-		: NULL;
+	if (info != NULL)
+		state->info = *info;
+	else
+		replay_gain_info_init(&state->info);
 
 	replay_gain_state_calc_scale(state);
 }

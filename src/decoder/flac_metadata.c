@@ -56,13 +56,13 @@ flac_find_float_comment(const FLAC__StreamMetadata *block,
 	return true;
 }
 
-struct replay_gain_info *
-flac_parse_replay_gain(const FLAC__StreamMetadata *block)
+bool
+flac_parse_replay_gain(struct replay_gain_info *rgi,
+		       const FLAC__StreamMetadata *block)
 {
-	struct replay_gain_info *rgi;
 	bool found = false;
 
-	rgi = replay_gain_info_new();
+	replay_gain_info_init(rgi);
 
 	if (flac_find_float_comment(block, "replaygain_album_gain",
 				    &rgi->tuples[REPLAY_GAIN_ALBUM].gain))
@@ -77,12 +77,7 @@ flac_parse_replay_gain(const FLAC__StreamMetadata *block)
 				    &rgi->tuples[REPLAY_GAIN_TRACK].peak))
 		found = true;
 
-	if (!found) {
-		replay_gain_info_free(rgi);
-		rgi = NULL;
-	}
-
-	return rgi;
+	return found;
 }
 
 /**

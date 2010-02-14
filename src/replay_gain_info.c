@@ -20,33 +20,6 @@
 #include "config.h"
 #include "replay_gain_info.h"
 
-#include <glib.h>
-
-struct replay_gain_info *
-replay_gain_info_new(void)
-{
-	struct replay_gain_info *ret = g_new(struct replay_gain_info, 1);
-
-	for (unsigned i = 0; i < G_N_ELEMENTS(ret->tuples); ++i) {
-		ret->tuples[i].gain = INFINITY;
-		ret->tuples[i].peak = 0.0;
-	}
-
-	return ret;
-}
-
-struct replay_gain_info *
-replay_gain_info_dup(const struct replay_gain_info *src)
-{
-	return g_memdup(src, sizeof(*src));
-}
-
-void
-replay_gain_info_free(struct replay_gain_info *info)
-{
-	g_free(info);
-}
-
 float
 replay_gain_tuple_scale(const struct replay_gain_tuple *tuple, float preamp)
 {

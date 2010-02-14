@@ -134,14 +134,13 @@ vorbis_comment_value(const char *comment, const char *needle)
 	return NULL;
 }
 
-static struct replay_gain_info *
-vorbis_comments_to_replay_gain(char **comments)
+static bool
+vorbis_comments_to_replay_gain(struct replay_gain_info *rgi, char **comments)
 {
-	struct replay_gain_info *rgi;
 	const char *temp;
 	bool found = false;
 
-	rgi = replay_gain_info_new();
+	replay_gain_info_init(rgi);
 
 	while (*comments) {
 		if ((temp =
@@ -165,12 +164,7 @@ vorbis_comments_to_replay_gain(char **comments)
 		comments++;
 	}
 
-	if (!found) {
-		replay_gain_info_free(rgi);
-		rgi = NULL;
-	}
-
-	return rgi;
+	return found;
 }
 
 static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
@@ -334,7 +328,6 @@ vorbis_stream_decode(struct decoder *decoder,
 
 		if (current_section != prev_section) {
 			char **comments;
-			struct replay_gain_info *new_rgi;
 
 			vi = ov_info(&vf, -1);
 			if (vi == NULL) {
@@ -352,11 +345,10 @@ vorbis_stream_decode(struct decoder *decoder,
 
 			comments = ov_comment(&vf, -1)->user_comments;
 			vorbis_send_comments(decoder, input_stream, comments);
-			new_rgi = vorbis_comments_to_replay_gain(comments);
-			if (new_rgi != NULL) {
-				decoder_replay_gain(decoder, new_rgi);
-				replay_gain_info_free(new_rgi);
-			}
+
+			struct replay_gain_info rgi;
+			if (vorbis_comments_to_replay_gain(&rgi, comments))
+				decoder_replay_gain(decoder, &rgi);
 
 			prev_section = current_section;
 		}
