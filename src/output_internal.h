@@ -135,6 +135,18 @@ struct audio_output {
 	struct filter *filter;
 
 	/**
+	 * The replay_gain_filter_plugin instance of this audio
+	 * output.
+	 */
+	struct filter *replay_gain_filter;
+
+	/**
+	 * The serial number of the last replay gain info.  0 means no
+	 * replay gain info was available.
+	 */
+	unsigned replay_gain_serial;
+
+	/**
 	 * The convert_filter_plugin instance of this audio output.
 	 * It is the last item in the filter chain, and is responsible
 	 * for converting the input data into the appropriate format

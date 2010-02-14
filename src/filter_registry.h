@@ -32,6 +32,7 @@ extern const struct filter_plugin convert_filter_plugin;
 extern const struct filter_plugin route_filter_plugin;
 extern const struct filter_plugin normalize_filter_plugin;
 extern const struct filter_plugin volume_filter_plugin;
+extern const struct filter_plugin replay_gain_filter_plugin;
 
 const struct filter_plugin *
 filter_plugin_by_name(const char *name);

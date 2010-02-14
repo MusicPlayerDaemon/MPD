@@ -194,6 +194,17 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	ao->filter = filter_chain_new();
 	assert(ao->filter != NULL);
 
+	/* create the replay_gain filter */
+
+	ao->replay_gain_filter = filter_new(&replay_gain_filter_plugin,
+					    param, NULL);
+	assert(ao->replay_gain_filter != NULL);
+
+	filter_chain_append(ao->filter, ao->replay_gain_filter);
+	ao->replay_gain_serial = 0;
+
+	/* create the normalization filter (if configured) */
+
 	if (config_get_bool(CONF_VOLUME_NORMALIZATION, false)) {
 		struct filter *normalize_filter =
 			filter_new(&normalize_filter_plugin, NULL, NULL);

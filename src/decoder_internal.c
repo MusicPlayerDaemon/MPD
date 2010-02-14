@@ -86,8 +86,15 @@ decoder_get_chunk(struct decoder *decoder, struct input_stream *is)
 
 	do {
 		decoder->chunk = music_buffer_allocate(dc->buffer);
-		if (decoder->chunk != NULL)
+		if (decoder->chunk != NULL) {
+			decoder->chunk->replay_gain_serial =
+				decoder->replay_gain_serial;
+			if (decoder->replay_gain_serial != 0)
+				decoder->chunk->replay_gain_info =
+					decoder->replay_gain_info;
+
 			return decoder->chunk;
+		}
 
 		decoder_lock(dc);
 		cmd = need_chunks(dc, is, true);

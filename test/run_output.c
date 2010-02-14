@@ -26,12 +26,18 @@
 #include "filter_registry.h"
 #include "pcm_convert.h"
 #include "event_pipe.h"
+#include "idle.h"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
+
+void
+idle_add(G_GNUC_UNUSED unsigned flags)
+{
+}
 
 void
 event_pipe_emit(G_GNUC_UNUSED enum pipe_event event)

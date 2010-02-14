@@ -70,6 +70,8 @@ ver 0.16 (20??/??/??)
   - rescan after metadata_to_use change
 * normalize: upgraded to AudioCompress 2.0
   - automatically convert to 16 bit samples
+* replay gain:
+  - reimplemented as a filter plugin
 * log unused/unknown block parameters
 * removed the deprecated "error_file" option
 * save state when stopped

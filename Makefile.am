@@ -55,6 +55,7 @@ mpd_headers = \
 	src/filter/autoconvert_filter_plugin.h \
 	src/filter/chain_filter_plugin.h \
 	src/filter/convert_filter_plugin.h \
+	src/filter/replay_gain_filter_plugin.h \
 	src/filter/volume_filter_plugin.h \
 	src/command.h \
 	src/idle.h \
@@ -175,7 +176,6 @@ mpd_headers = \
 	src/queue_save.h \
 	src/replay_gain_config.h \
 	src/replay_gain_info.h \
-	src/replay_gain_state.h \
 	src/sig_handlers.h \
 	src/song.h \
 	src/song_print.h \
@@ -306,7 +306,6 @@ src_mpd_SOURCES = \
 	src/queue_save.c \
 	src/replay_gain_config.c \
 	src/replay_gain_info.c \
-	src/replay_gain_state.c \
 	src/sig_handlers.c \
 	src/song.c \
 	src/song_update.c \
@@ -744,6 +743,7 @@ FILTER_SRC = \
 	src/filter/convert_filter_plugin.c \
 	src/filter/route_filter_plugin.c \
 	src/filter/normalize_filter_plugin.c \
+	src/filter/replay_gain_filter_plugin.c \
 	src/filter/volume_filter_plugin.c
 
 
@@ -900,6 +900,8 @@ test_run_filter_SOURCES = test/run_filter.c \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \
+	src/replay_gain_config.c \
+	src/replay_gain_info.c \
 	src/AudioCompress/compress.c \
 	$(FILTER_SRC)
 
@@ -985,10 +987,13 @@ test_run_output_SOURCES = test/run_output.c \
 	src/filter_config.c \
 	src/filter/autoconvert_filter_plugin.c \
 	src/filter/convert_filter_plugin.c \
+	src/filter/replay_gain_filter_plugin.c \
 	src/filter/normalize_filter_plugin.c \
 	src/filter/volume_filter_plugin.c \
 	src/pcm_volume.c \
 	src/AudioCompress/compress.c \
+	src/replay_gain_info.c \
+	src/replay_gain_config.c \
 	src/fd_util.c \
 	$(OUTPUT_SRC)
 

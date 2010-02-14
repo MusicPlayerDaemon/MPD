@@ -22,6 +22,7 @@
 
 #include "decoder_command.h"
 #include "pcm_convert.h"
+#include "replay_gain_info.h"
 
 struct input_stream;
 
@@ -53,7 +54,13 @@ struct decoder {
 	/** the chunk currently being written to */
 	struct music_chunk *chunk;
 
-	struct replay_gain_state *replay_gain;
+	struct replay_gain_info replay_gain_info;
+
+	/**
+	 * A positive serial number for checking if replay gain info
+	 * has changed since the last check.
+	 */
+	unsigned replay_gain_serial;
 };
 
 /**

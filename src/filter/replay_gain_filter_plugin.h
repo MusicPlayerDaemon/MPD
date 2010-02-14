@@ -17,34 +17,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_REPLAY_GAIN_STATE_H
-#define MPD_REPLAY_GAIN_STATE_H
+#ifndef REPLAY_GAIN_FILTER_PLUGIN_H
+#define REPLAY_GAIN_FILTER_PLUGIN_H
 
-#include "check.h"
 #include "replay_gain_info.h"
 
-#include <stddef.h>
+struct filter;
 
-struct replay_gain_state;
-struct audio_format;
-
-struct replay_gain_state *
-replay_gain_state_new(float preamp, float missing_preamp);
-
+/**
+ * Sets a new #replay_gain_info at the beginning of a new song.
+ *
+ * @param info the new #replay_gain_info value, or NULL if no replay
+ * gain data is available for the current song
+ */
 void
-replay_gain_state_free(struct replay_gain_state *state);
-
-void
-replay_gain_state_set_mode(struct replay_gain_state *state,
-			   enum replay_gain_mode mode);
-
-void
-replay_gain_state_set_info(struct replay_gain_state *state,
-			   const struct replay_gain_info *info);
-
-void
-replay_gain_state_apply(const struct replay_gain_state *state,
-			void *buffer, size_t size,
-			const struct audio_format *format);
+replay_gain_filter_set_info(struct filter *filter,
+			    const struct replay_gain_info *info);
 
 #endif

@@ -20,6 +20,8 @@
 #ifndef MPD_CHUNK_H
 #define MPD_CHUNK_H
 
+#include "replay_gain_info.h"
+
 #ifndef NDEBUG
 #include "audio_format.h"
 #endif
@@ -58,6 +60,19 @@ struct music_chunk {
 	 * chunk is deinitialized in music_chunk_free()
 	 */
 	struct tag *tag;
+
+	/**
+	 * Replay gain information associated with this chunk.
+	 * Only valid if the serial is not 0.
+	 */
+	struct replay_gain_info replay_gain_info;
+
+	/**
+	 * A serial number for checking if replay gain info has
+	 * changed since the last chunk.  The magic value 0 indicates
+	 * that there is no replay gain info available.
+	 */
+	unsigned replay_gain_serial;
 
 	/** the data (probably PCM) */
 	char data[CHUNK_SIZE];

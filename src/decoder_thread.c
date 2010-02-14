@@ -31,8 +31,6 @@
 #include "mapper.h"
 #include "path.h"
 #include "uri.h"
-#include "replay_gain_state.h"
-#include "replay_gain_config.h"
 
 #include <glib.h>
 
@@ -351,8 +349,6 @@ decoder_run_song(struct decoder_control *dc,
 {
 	struct decoder decoder = {
 		.dc = dc,
-		.replay_gain = replay_gain_state_new(replay_gain_preamp,
-						     replay_gain_missing_preamp),
 	};
 	int ret;
 
@@ -380,8 +376,6 @@ decoder_run_song(struct decoder_control *dc,
 	pcm_convert_deinit(&decoder.conv_state);
 
 	/* flush the last chunk */
-	if (decoder.replay_gain != NULL)
-		replay_gain_state_free(decoder.replay_gain);
 
 	if (decoder.chunk != NULL)
 		decoder_flush_chunk(&decoder);

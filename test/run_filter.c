@@ -23,6 +23,7 @@
 #include "audio_format.h"
 #include "filter_plugin.h"
 #include "pcm_volume.h"
+#include "idle.h"
 
 #include <glib.h>
 
@@ -30,6 +31,11 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+
+void
+idle_add(G_GNUC_UNUSED unsigned flags)
+{
+}
 
 static void
 my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,

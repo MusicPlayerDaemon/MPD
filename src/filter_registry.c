@@ -29,6 +29,7 @@ const struct filter_plugin *const filter_plugins[] = {
 	&route_filter_plugin,
 	&normalize_filter_plugin,
 	&volume_filter_plugin,
+	&replay_gain_filter_plugin,
 	NULL,
 };
 
