@@ -42,7 +42,7 @@ replay_gain_state_new(float preamp, float missing_preamp)
 	struct replay_gain_state *state = g_new(struct replay_gain_state, 1);
 
 	state->preamp = preamp;
-	state->missing_preamp = missing_preamp;
+	state->scale = state->missing_preamp = missing_preamp;
 	state->mode = REPLAY_GAIN_OFF;
 	state->info = NULL;
 
@@ -65,8 +65,6 @@ calc_replay_gain_scale(float gain, float peak, float preamp)
 {
 	float scale;
 
-	if (gain == 0.0)
-		return (1);
 	scale = pow(10.0, gain / 20.0);
 	scale *= preamp;
 	if (scale > 15.0)
@@ -88,12 +86,14 @@ replay_gain_state_calc_scale(struct replay_gain_state *state)
 
 	const struct replay_gain_tuple *tuple =
 		&state->info->tuples[state->mode];
+	if (replay_gain_tuple_defined(tuple)) {
+		g_debug("computing ReplayGain scale with gain %f, peak %f",
+			tuple->gain, tuple->peak);
 
-	g_debug("computing ReplayGain scale with gain %f, peak %f",
-		tuple->gain, tuple->peak);
-
-	state->scale = calc_replay_gain_scale(tuple->gain, tuple->peak,
-					      state->preamp);
+		state->scale = calc_replay_gain_scale(tuple->gain, tuple->peak,
+						      state->preamp);
+	} else
+		state->scale = state->missing_preamp;
 }
 
 void
@@ -136,7 +136,5 @@ replay_gain_state_apply(const struct replay_gain_state *state,
 	if (state->mode == REPLAY_GAIN_OFF)
 		return;
 
-	float scale = state->info != NULL
-		? state->scale : state->missing_preamp;
-	pcm_volume(buffer, size, format, pcm_float_to_volume(scale));
+	pcm_volume(buffer, size, format, pcm_float_to_volume(state->scale));
 }

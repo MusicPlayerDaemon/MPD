@@ -22,6 +22,8 @@
 
 #include "check.h"
 
+#include <stdbool.h>
+
 enum replay_gain_mode {
 	REPLAY_GAIN_OFF = -1,
 	REPLAY_GAIN_ALBUM,
@@ -48,5 +50,11 @@ replay_gain_info_dup(const struct replay_gain_info *src);
 
 void
 replay_gain_info_free(struct replay_gain_info *info);
+
+static inline bool
+replay_gain_tuple_defined(const struct replay_gain_tuple *tuple)
+{
+	return tuple->gain > 0.0;
+}
 
 #endif
