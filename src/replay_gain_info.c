@@ -21,6 +21,7 @@
 #include "replay_gain_info.h"
 
 #include <glib.h>
+#include <math.h>
 
 struct replay_gain_info *
 replay_gain_info_new(void)
@@ -45,4 +46,20 @@ void
 replay_gain_info_free(struct replay_gain_info *info)
 {
 	g_free(info);
+}
+
+float
+replay_gain_tuple_scale(const struct replay_gain_tuple *tuple, float preamp)
+{
+	float scale;
+
+	scale = pow(10.0, tuple->gain / 20.0);
+	scale *= preamp;
+	if (scale > 15.0)
+		scale = 15.0;
+
+	if (scale * tuple->peak > 1.0)
+		scale = 1.0 / tuple->peak;
+
+	return scale;
 }

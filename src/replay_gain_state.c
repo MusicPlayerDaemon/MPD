@@ -24,7 +24,6 @@
 #include <glib.h>
 
 #include <assert.h>
-#include <math.h>
 
 struct replay_gain_state {
 	float preamp, missing_preamp;
@@ -60,22 +59,6 @@ replay_gain_state_free(struct replay_gain_state *state)
 	g_free(state);
 }
 
-static float
-calc_replay_gain_scale(float gain, float peak, float preamp)
-{
-	float scale;
-
-	scale = pow(10.0, gain / 20.0);
-	scale *= preamp;
-	if (scale > 15.0)
-		scale = 15.0;
-
-	if (scale * peak > 1.0) {
-		scale = 1.0 / peak;
-	}
-	return (scale);
-}
-
 static void
 replay_gain_state_calc_scale(struct replay_gain_state *state)
 {
@@ -90,8 +73,7 @@ replay_gain_state_calc_scale(struct replay_gain_state *state)
 		g_debug("computing ReplayGain scale with gain %f, peak %f",
 			tuple->gain, tuple->peak);
 
-		state->scale = calc_replay_gain_scale(tuple->gain, tuple->peak,
-						      state->preamp);
+		state->scale = replay_gain_tuple_scale(tuple, state->preamp);
 	} else
 		state->scale = state->missing_preamp;
 }

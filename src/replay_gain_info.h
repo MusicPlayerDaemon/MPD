@@ -57,4 +57,7 @@ replay_gain_tuple_defined(const struct replay_gain_tuple *tuple)
 	return tuple->gain > 0.0;
 }
 
+float
+replay_gain_tuple_scale(const struct replay_gain_tuple *tuple, float preamp);
+
 #endif
