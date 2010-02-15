@@ -98,14 +98,13 @@ volume_filter_filter(struct filter *_filter, const void *src, size_t src_size,
 	bool success;
 	void *dest;
 
-	if (filter->volume >= PCM_VOLUME_1) {
+	*dest_size_r = src_size;
+
+	if (filter->volume >= PCM_VOLUME_1)
 		/* optimized special case: 100% volume = no-op */
-		*dest_size_r = src_size;
 		return src;
-	}
 
 	dest = pcm_buffer_get(&filter->buffer, src_size);
-	*dest_size_r = src_size;
 
 	if (filter->volume <= 0) {
 		/* optimized special case: 0% volume = memset(0) */
