@@ -270,6 +270,12 @@ audio that is sent to the audio output device.  See documentation for the
 whatever audio format is passed to the audio output.
 Any of the three attributes may be an asterisk to specify that this
 attribute should not be enforced
+.TP
+.B replay_gain_handler <software, mixer or none>
+Specifies how replay gain is applied.  The default is "software",
+which uses an internal software volume control.  "mixer" uses the
+configured (hardware) mixer control.  "none" disables replay gain on
+this audio output.
 .SH OPTIONAL ALSA OUTPUT PARAMETERS
 .TP
 .B device <dev>

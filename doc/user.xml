@@ -350,6 +350,19 @@ cd mpd-version</programlisting>
                 devices which support it, and none for the others.
               </entry>
             </row>
+            <row>
+              <entry>
+                <varname>replay_gain_handler</varname>
+                <parameter>software|mixer|none</parameter>
+              </entry>
+              <entry>
+                Specifies how replay gain is applied.  The default is
+                "software", which uses an internal software volume
+                control.  "mixer" uses the configured (hardware) mixer
+                control.  "none" disables replay gain on this audio
+                output.
+              </entry>
+            </row>
           </tbody>
         </tgroup>
       </informaltable>

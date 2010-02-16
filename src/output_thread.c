@@ -264,7 +264,8 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 
 	/* update replay gain */
 
-	if (chunk->replay_gain_serial != ao->replay_gain_serial) {
+	if (ao->replay_gain_filter != NULL &&
+	    chunk->replay_gain_serial != ao->replay_gain_serial) {
 		replay_gain_filter_set_info(ao->replay_gain_filter,
 					    chunk->replay_gain_serial != 0
 					    ? &chunk->replay_gain_info

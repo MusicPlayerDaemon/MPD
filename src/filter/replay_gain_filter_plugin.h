@@ -23,6 +23,19 @@
 #include "replay_gain_info.h"
 
 struct filter;
+struct mixer;
+
+/**
+ * Enables or disables the hardware mixer for applying replay gain.
+ *
+ * @param mixer the hardware mixer, or NULL to fall back to software
+ * volume
+ * @param base the base volume level for scale=1.0, between 1 and 100
+ * (including).
+ */
+void
+replay_gain_filter_set_mixer(struct filter *_filter, struct mixer *mixer,
+			     unsigned base);
 
 /**
  * Sets a new #replay_gain_info at the beginning of a new song.

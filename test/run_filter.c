@@ -24,6 +24,7 @@
 #include "filter_plugin.h"
 #include "pcm_volume.h"
 #include "idle.h"
+#include "mixer_control.h"
 
 #include <glib.h>
 
@@ -35,6 +36,13 @@
 void
 idle_add(G_GNUC_UNUSED unsigned flags)
 {
+}
+
+bool
+mixer_set_volume(G_GNUC_UNUSED struct mixer *mixer,
+		 G_GNUC_UNUSED unsigned volume, G_GNUC_UNUSED GError **error_r)
+{
+	return true;
 }
 
 static void

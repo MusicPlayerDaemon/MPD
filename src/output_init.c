@@ -32,6 +32,7 @@
 #include "filter_config.h"
 #include "filter/chain_filter_plugin.h"
 #include "filter/autoconvert_filter_plugin.h"
+#include "filter/replay_gain_filter_plugin.h"
 
 #include <glib.h>
 
@@ -196,12 +197,19 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 
 	/* create the replay_gain filter */
 
-	ao->replay_gain_filter = filter_new(&replay_gain_filter_plugin,
-					    param, NULL);
-	assert(ao->replay_gain_filter != NULL);
+	const char *replay_gain_handler =
+		config_get_block_string(param, "replay_gain_handler",
+					"software");
 
-	filter_chain_append(ao->filter, ao->replay_gain_filter);
-	ao->replay_gain_serial = 0;
+	if (strcmp(replay_gain_handler, "none") != 0) {
+		ao->replay_gain_filter = filter_new(&replay_gain_filter_plugin,
+						    param, NULL);
+		assert(ao->replay_gain_filter != NULL);
+
+		filter_chain_append(ao->filter, ao->replay_gain_filter);
+		ao->replay_gain_serial = 0;
+	} else
+		ao->replay_gain_filter = NULL;
 
 	/* create the normalization filter (if configured) */
 
@@ -245,6 +253,21 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 		g_warning("Failed to initialize hardware mixer for '%s': %s",
 			  ao->name, error->message);
 		g_error_free(error);
+	}
+
+	/* use the hardware mixer for replay gain? */
+
+	if (strcmp(replay_gain_handler, "mixer") == 0) {
+		if (ao->mixer != NULL)
+			replay_gain_filter_set_mixer(ao->replay_gain_filter,
+						     ao->mixer, 100);
+		else
+			g_warning("No such mixer for output '%s'", ao->name);
+	} else if (strcmp(replay_gain_handler, "software") != 0 &&
+		   ao->replay_gain_filter != NULL) {
+		g_set_error(error_r, audio_output_quark(), 0,
+			    "Invalid \"replay_gain_handler\" value");
+		return false;
 	}
 
 	/* the "convert" filter must be the last one in the chain */
