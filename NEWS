@@ -72,6 +72,7 @@ ver 0.16 (20??/??/??)
   - automatically convert to 16 bit samples
 * replay gain:
   - reimplemented as a filter plugin
+  - fall back to track gain if album gain is unavailable
 * log unused/unknown block parameters
 * removed the deprecated "error_file" option
 * save state when stopped

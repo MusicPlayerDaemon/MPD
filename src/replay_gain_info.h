@@ -63,4 +63,11 @@ replay_gain_tuple_defined(const struct replay_gain_tuple *tuple)
 float
 replay_gain_tuple_scale(const struct replay_gain_tuple *tuple, float preamp);
 
+/**
+ * Attempt to auto-complete missing data.  In particular, if album
+ * information is missing, track gain is used.
+ */
+void
+replay_gain_info_complete(struct replay_gain_info *info);
+
 #endif

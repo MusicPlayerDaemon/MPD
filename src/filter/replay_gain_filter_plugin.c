@@ -184,9 +184,10 @@ replay_gain_filter_set_info(struct filter *_filter,
 	struct replay_gain_filter *filter =
 		(struct replay_gain_filter *)_filter;
 
-	if (info != NULL)
+	if (info != NULL) {
 		filter->info = *info;
-	else
+		replay_gain_info_complete(&filter->info);
+	} else
 		replay_gain_info_init(&filter->info);
 
 	replay_gain_filter_update(filter);
