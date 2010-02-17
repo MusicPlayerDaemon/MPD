@@ -21,7 +21,6 @@
 #include "replay_gain_info.h"
 
 #include <glib.h>
-#include <math.h>
 
 struct replay_gain_info *
 replay_gain_info_new(void)
@@ -29,7 +28,7 @@ replay_gain_info_new(void)
 	struct replay_gain_info *ret = g_new(struct replay_gain_info, 1);
 
 	for (unsigned i = 0; i < G_N_ELEMENTS(ret->tuples); ++i) {
-		ret->tuples[i].gain = 0.0;
+		ret->tuples[i].gain = INFINITY;
 		ret->tuples[i].peak = 0.0;
 	}
 
