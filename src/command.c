@@ -1055,8 +1055,15 @@ handle_update(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	unsigned ret;
 
 	assert(argc <= 2);
-	if (argc == 2)
+	if (argc == 2) {
 		path = argv[1];
+
+		if (!uri_safe_local(path)) {
+			command_error(client, ACK_ERROR_ARG,
+				      "Malformed path");
+			return COMMAND_RETURN_ERROR;
+		}
+	}
 
 	ret = update_enqueue(path, false);
 	if (ret > 0) {
@@ -1076,8 +1083,15 @@ handle_rescan(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	unsigned ret;
 
 	assert(argc <= 2);
-	if (argc == 2)
+	if (argc == 2) {
 		path = argv[1];
+
+		if (!uri_safe_local(path)) {
+			command_error(client, ACK_ERROR_ARG,
+				      "Malformed path");
+			return COMMAND_RETURN_ERROR;
+		}
+	}
 
 	ret = update_enqueue(path, true);
 	if (ret > 0) {

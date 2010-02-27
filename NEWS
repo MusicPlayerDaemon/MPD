@@ -10,6 +10,7 @@ ver 0.16 (20??/??/??)
   - "load" supports remote playlists (extm3u, pls, asx, xspf, lastfm://)
   - allow changing replay gain mode on-the-fly
   - omitting the range end is possible
+  - "update" checks if the path is malformed
 * archive:
   - iso: renamed plugin to "iso9660"
   - zip: renamed plugin to "zzip"
