@@ -256,7 +256,6 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	//ffmpeg works with ours "fileops" helper
 	if (av_open_input_file(&format_context, stream.url, NULL, 0, NULL) != 0) {
 		g_warning("Open failed\n");
-		av_close_input_file(format_context);
 		return;
 	}
 
