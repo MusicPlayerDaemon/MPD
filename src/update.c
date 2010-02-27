@@ -60,11 +60,21 @@ static void * update_task(void *_path)
 {
 	const char *path = _path;
 
+	if (path != NULL && *path != 0)
+		g_debug("starting: %s", path);
+	else
+		g_debug("starting");
+
 	modified = update_walk(path, discard);
-	g_free(_path);
 
 	if (modified || !db_exists())
 		db_save();
+
+	if (path != NULL && *path != 0)
+		g_debug("finished: %s", path);
+	else
+		g_debug("finished");
+	g_free(_path);
 
 	progress = UPDATE_PROGRESS_DONE;
 	event_pipe_emit(PIPE_EVENT_UPDATE);
