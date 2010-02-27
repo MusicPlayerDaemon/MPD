@@ -40,10 +40,37 @@
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavformat/avio.h>
+#include <libavutil/log.h>
 #endif
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "ffmpeg"
+
+#ifndef OLD_FFMPEG_INCLUDES
+
+static GLogLevelFlags
+level_ffmpeg_to_glib(int level)
+{
+	if (level <= AV_LOG_FATAL)
+		return G_LOG_LEVEL_CRITICAL;
+
+	if (level <= AV_LOG_ERROR)
+		return G_LOG_LEVEL_WARNING;
+
+	if (level <= AV_LOG_INFO)
+		return G_LOG_LEVEL_MESSAGE;
+
+	return G_LOG_LEVEL_DEBUG;
+}
+
+static void
+mpd_ffmpeg_log_callback(G_GNUC_UNUSED void *ptr, int level,
+			const char *fmt, va_list vl)
+{
+	g_logv(G_LOG_DOMAIN, level_ffmpeg_to_glib(level), fmt, vl);
+}
+
+#endif /* !OLD_FFMPEG_INCLUDES */
 
 struct ffmpeg_stream {
 	/** hack - see url_to_struct() */
@@ -116,6 +143,10 @@ static URLProtocol mpd_ffmpeg_fileops = {
 static bool
 ffmpeg_init(G_GNUC_UNUSED const struct config_param *param)
 {
+#ifndef OLD_FFMPEG_INCLUDES
+	av_log_set_callback(mpd_ffmpeg_log_callback);
+#endif
+
 	av_register_all();
 	register_protocol(&mpd_ffmpeg_fileops);
 	return true;

@@ -24,6 +24,7 @@ ver 0.16 (20??/??/??)
   - don't fall back to "mad" unless no plugin matches
   - ffmpeg: support multiple tags
   - ffmpeg: convert metadata to generic format
+  - ffmpeg: implement the libavutil log callback
   - sndfile: new decoder plugin based on libsndfile
   - flac: moved CUE sheet support to a playlist plugin
   - flac: support streams without STREAMINFO block
