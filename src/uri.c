@@ -51,7 +51,10 @@ verify_uri_segment(const char *p)
 {
 	const char *q;
 
-	if (*p == 0 || *p == '/' || *p == '.')
+	unsigned dots = 0;
+	while (*p == '.')
+		++p;
+	if (dots <= 2 && (*p == 0 || *p == '/'))
 		return NULL;
 
 	q = strchr(p + 1, '/');
