@@ -1,4 +1,6 @@
 ver 0.15.9 (2009/??/??)
+* decoders:
+  - mad: fix crash when seeking at end of song
 
 
 ver 0.15.8 (2010/01/17)

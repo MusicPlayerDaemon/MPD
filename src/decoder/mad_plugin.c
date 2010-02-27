@@ -1207,10 +1207,6 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 	if (replay_gain_info)
 		replay_gain_info_free(replay_gain_info);
 
-	if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK &&
-	    data.mute_frame == MUTEFRAME_SEEK)
-		decoder_command_finished(decoder);
-
 	mp3_data_finish(&data);
 }
 
