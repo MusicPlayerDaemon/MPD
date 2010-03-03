@@ -339,6 +339,18 @@ cd mpd-version</programlisting>
             </row>
             <row>
               <entry>
+                <varname>always_on</varname>
+                  <parameter>yes|no</parameter>
+              </entry>
+              <entry>
+                If set to "yes", then MPD attempts to keep this audio
+                output always open.  This may be useful for streaming
+                servers, when you don't want to disconnect all
+                listeners even when playback is accidently stopped.
+              </entry>
+            </row>
+            <row>
+              <entry>
                 <varname>mixer_type</varname>
                 <parameter>hardware|software|none</parameter>
               </entry>

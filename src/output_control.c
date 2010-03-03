@@ -118,9 +118,13 @@ audio_output_open(struct audio_output *ao,
 
 	if (ao->open &&
 	    audio_format_equals(audio_format, &ao->in_audio_format)) {
-		assert(ao->pipe == mp);
+		assert(ao->pipe == mp ||
+		       (ao->always_on && ao->pause));
 
 		if (ao->pause) {
+			ao->chunk = NULL;
+			ao->pipe = mp;
+
 			/* unpause with the CANCEL command; this is a
 			   hack, but suits well for forcing the thread
 			   to leave the ao_pause() thread, and we need
@@ -264,6 +268,15 @@ void audio_output_close(struct audio_output *ao)
 	}
 
 	g_mutex_unlock(ao->mutex);
+}
+
+void
+audio_output_release(struct audio_output *ao)
+{
+	if (ao->always_on)
+		audio_output_pause(ao);
+	else
+		audio_output_close(ao);
 }
 
 void audio_output_finish(struct audio_output *ao)

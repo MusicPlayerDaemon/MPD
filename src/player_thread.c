@@ -978,7 +978,7 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 		case PLAYER_COMMAND_CLOSE_AUDIO:
 			player_unlock();
 
-			audio_output_all_close();
+			audio_output_all_release();
 
 			player_lock();
 			player_command_finished_locked();

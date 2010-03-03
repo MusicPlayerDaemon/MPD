@@ -559,6 +559,29 @@ audio_output_all_close(void)
 }
 
 void
+audio_output_all_release(void)
+{
+	unsigned int i;
+
+	for (i = 0; i < num_audio_outputs; ++i)
+		audio_output_release(&audio_outputs[i]);
+
+	if (g_mp != NULL) {
+		assert(g_music_buffer != NULL);
+
+		music_pipe_clear(g_mp, g_music_buffer);
+		music_pipe_free(g_mp);
+		g_mp = NULL;
+	}
+
+	g_music_buffer = NULL;
+
+	audio_format_clear(&input_audio_format);
+
+	audio_output_all_elapsed_time = -1.0;
+}
+
+void
 audio_output_all_song_border(void)
 {
 	/* clear the elapsed_time pointer at the beginning of a new

@@ -92,6 +92,13 @@ void
 audio_output_all_close(void);
 
 /**
+ * Closes all audio outputs.  Outputs with the "always_on" flag are
+ * put into pause mode.
+ */
+void
+audio_output_all_release(void);
+
+/**
  * Enqueue a #music_chunk object for playing, i.e. pushes it to a
  * #music_pipe.
  *

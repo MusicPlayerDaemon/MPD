@@ -71,7 +71,16 @@ void
 audio_output_drain_async(struct audio_output *ao);
 
 void audio_output_cancel(struct audio_output *ao);
+
 void audio_output_close(struct audio_output *ao);
+
+/**
+ * Closes the audio output, but if the "always_on" flag is set, put it
+ * into pause mode instead.
+ */
+void
+audio_output_release(struct audio_output *ao);
+
 void audio_output_finish(struct audio_output *ao);
 
 #endif

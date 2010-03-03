@@ -76,6 +76,12 @@ struct audio_output {
 	struct mixer *mixer;
 
 	/**
+	 * Shall this output always play something (i.e. silence),
+	 * even when playback is stopped?
+	 */
+	bool always_on;
+
+	/**
 	 * Has the user enabled this device?
 	 */
 	bool enabled;
