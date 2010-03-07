@@ -1,6 +1,7 @@
 ver 0.15.9 (2009/??/??)
 * decoders:
   - mad: fix crash when seeking at end of song
+* playlist: fix single+repeat in random mode
 
 
 ver 0.15.8 (2010/01/17)
