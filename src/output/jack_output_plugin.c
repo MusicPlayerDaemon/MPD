@@ -88,12 +88,31 @@ jack_output_quark(void)
 	return g_quark_from_static_string("jack_output");
 }
 
+/**
+ * Determine the number of frames guaranteed to be available on all
+ * channels.
+ */
+static jack_nframes_t
+mpd_jack_available(const struct jack_data *jd)
+{
+	size_t min = jack_ringbuffer_read_space(jd->ringbuffer[0]);
+
+	for (unsigned i = 1; i < jd->audio_format.channels; ++i) {
+		size_t current = jack_ringbuffer_read_space(jd->ringbuffer[i]);
+		if (current < min)
+			min = current;
+	}
+
+	assert(min % sample_size == 0);
+
+	return min / sample_size;
+}
+
 static int
 mpd_jack_process(jack_nframes_t nframes, void *arg)
 {
 	struct jack_data *jd = (struct jack_data *) arg;
 	jack_default_audio_sample_t *out;
-	size_t available;
 
 	if (nframes <= 0)
 		return 0;
@@ -111,20 +130,18 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 		return 0;
 	}
 
-	for (unsigned i = 0; i < jd->audio_format.channels; ++i) {
-		available = jack_ringbuffer_read_space(jd->ringbuffer[i]);
-		assert(available % sample_size == 0);
-		available /= sample_size;
-		if (available > nframes)
-			available = nframes;
+	jack_nframes_t available = mpd_jack_available(jd);
+	if (available > nframes)
+		available = nframes;
 
+	for (unsigned i = 0; i < jd->audio_format.channels; ++i) {
 		out = jack_port_get_buffer(jd->ports[i], nframes);
 		jack_ringbuffer_read(jd->ringbuffer[i],
 				     (char *)out, available * sample_size);
 
-		while (available < nframes)
+		for (jack_nframes_t f = available; f < nframes; ++f)
 			/* ringbuffer underrun, fill with silence */
-			out[available++] = 0.0;
+			out[f] = 0.0;
 	}
 
 	/* generate silence for the unused source ports */
