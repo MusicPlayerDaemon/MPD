@@ -118,6 +118,13 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 		return 0;
 
 	if (jd->pause) {
+		/* empty the ring buffers */
+
+		const jack_nframes_t available = mpd_jack_available(jd);
+		for (unsigned i = 0; i < jd->audio_format.channels; ++i)
+			jack_ringbuffer_read_advance(jd->ringbuffer[i],
+						     available * sample_size);
+
 		/* generate silence while MPD is paused */
 
 		for (unsigned i = 0; i < jd->audio_format.channels; ++i) {
