@@ -1058,7 +1058,10 @@ handle_update(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (argc == 2) {
 		path = argv[1];
 
-		if (!uri_safe_local(path)) {
+		if (*path == 0 || strcmp(path, "/") == 0)
+			/* backwards compatibility with MPD 0.15 */
+			path = NULL;
+		else if (!uri_safe_local(path)) {
 			command_error(client, ACK_ERROR_ARG,
 				      "Malformed path");
 			return COMMAND_RETURN_ERROR;
