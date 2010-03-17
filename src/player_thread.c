@@ -90,6 +90,13 @@ struct player {
 	unsigned cross_fade_chunks;
 
 	/**
+	 * The tag of the "next" song during cross-fade.  It is
+	 * postponed, and sent to the output thread when the new song
+	 * really begins.
+	 */
+	struct tag *cross_fade_tag;
+
+	/**
 	 * The current audio format for the audio outputs.
 	 */
 	struct audio_format play_audio_format;
@@ -518,6 +525,14 @@ play_next_chunk(struct player *player)
 			chunk = music_pipe_shift(player->pipe);
 			assert(chunk != NULL);
 
+			/* don't send the tags of the new song (which
+			   is being faded in) yet; postpone it until
+			   the current song is faded out */
+			player->cross_fade_tag =
+				tag_merge_replace(player->cross_fade_tag,
+						  other_chunk->tag);
+			other_chunk->tag = NULL;
+
 			cross_fade_apply(chunk, other_chunk,
 					 &dc.out_audio_format,
 					 cross_fade_position,
@@ -543,6 +558,14 @@ play_next_chunk(struct player *player)
 		chunk = music_pipe_shift(player->pipe);
 
 	assert(chunk != NULL);
+
+	/* insert the postponed tag if cross-fading is finished */
+
+	if (player->xfade != XFADE_ENABLED && player->cross_fade_tag != NULL) {
+		chunk->tag = tag_merge_replace(chunk->tag,
+					       player->cross_fade_tag);
+		player->cross_fade_tag = NULL;
+	}
 
 	/* play the current chunk */
 
@@ -608,6 +631,7 @@ static void do_play(void)
 		.xfade = XFADE_UNKNOWN,
 		.cross_fading = false,
 		.cross_fade_chunks = 0,
+		.cross_fade_tag = NULL,
 		.size_to_time = 0.0,
 	};
 
@@ -753,6 +777,9 @@ static void do_play(void)
 
 	music_pipe_clear(player.pipe, player_buffer);
 	music_pipe_free(player.pipe);
+
+	if (player.cross_fade_tag != NULL)
+		tag_free(player.cross_fade_tag);
 
 	pc.state = PLAYER_STATE_STOP;
 	event_pipe_emit(PIPE_EVENT_PLAYLIST);

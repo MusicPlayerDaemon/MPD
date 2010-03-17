@@ -3,6 +3,7 @@ ver 0.15.9 (2009/??/??)
   - mad: fix crash when seeking at end of song
   - mpcdec: fix negative shift on fixed-point samples
 * playlist: fix single+repeat in random mode
+* player: postpone song tags during cross-fade
 
 
 ver 0.15.8 (2010/01/17)
