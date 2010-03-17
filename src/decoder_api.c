@@ -354,7 +354,7 @@ decoder_data(struct decoder *decoder,
 		length -= nbytes;
 
 		decoder->timestamp += (double)nbytes /
-			audio_format_time_to_size(&dc->in_audio_format);
+			audio_format_time_to_size(&dc->out_audio_format);
 
 		if (dc->song->end_ms > 0 &&
 		    decoder->timestamp >= dc->song->end_ms / 1000.0)
