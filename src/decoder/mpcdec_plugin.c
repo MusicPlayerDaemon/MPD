@@ -103,7 +103,7 @@ mpc_to_mpd_sample(MPC_SAMPLE_FORMAT sample)
 	const int shift = bits - MPC_FIXED_POINT_SCALE_SHIFT;
 
 	if (shift < 0)
-		val = sample << -shift;
+		val = sample >> -shift;
 	else
 		val = sample << shift;
 #else
