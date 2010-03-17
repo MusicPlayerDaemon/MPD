@@ -173,7 +173,6 @@ cue_tag_file(	FILE* fp,
 {
 	struct tag* cd_tag = NULL;
 	struct tag* track_tag = NULL;
-	struct tag* merge_tag = NULL;
 	struct Cd* cd = NULL;
 
 	if (tnum > 256)
@@ -199,26 +198,7 @@ cue_tag_file(	FILE* fp,
 		cd_delete(cd);
 	}
 
-	if ((cd_tag != NULL) && (track_tag != NULL))
-	{
-		merge_tag = tag_merge(cd_tag, track_tag);
-		tag_free(cd_tag);
-		tag_free(track_tag);
-		return merge_tag;
-	}
-
-	else if (cd_tag != NULL)
-	{
-		return cd_tag;
-	}
-
-	else if (track_tag != NULL)
-	{
-		return track_tag;
-	}
-
-	else
-		return NULL;
+	return tag_merge_replace(cd_tag, track_tag);
 }
 
 struct tag*
