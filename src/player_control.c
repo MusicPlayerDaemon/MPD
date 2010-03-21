@@ -30,6 +30,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <math.h>
 
 struct player_control pc;
 
@@ -45,6 +46,8 @@ void pc_init(unsigned buffer_chunks, unsigned int buffered_before_play)
 	pc.error = PLAYER_ERROR_NOERROR;
 	pc.state = PLAYER_STATE_STOP;
 	pc.cross_fade_seconds = 0;
+	pc.mixramp_db = 0;
+	pc.mixramp_delay_seconds = nanf("");
 }
 
 void pc_deinit(void)
@@ -301,6 +304,34 @@ pc_set_cross_fade(float cross_fade_seconds)
 	if (cross_fade_seconds < 0)
 		cross_fade_seconds = 0;
 	pc.cross_fade_seconds = cross_fade_seconds;
+
+	idle_add(IDLE_OPTIONS);
+}
+
+float
+pc_get_mixramp_db(void)
+{
+	return pc.mixramp_db;
+}
+
+void
+pc_set_mixramp_db(float mixramp_db)
+{
+	pc.mixramp_db = mixramp_db;
+
+	idle_add(IDLE_OPTIONS);
+}
+
+float
+pc_get_mixramp_delay(void)
+{
+	return pc.mixramp_delay_seconds;
+}
+
+void
+pc_set_mixramp_delay(float mixramp_delay_seconds)
+{
+	pc.mixramp_delay_seconds = mixramp_delay_seconds;
 
 	idle_add(IDLE_OPTIONS);
 }

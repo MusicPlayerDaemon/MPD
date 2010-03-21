@@ -40,6 +40,8 @@
 #define PLAYLIST_STATE_FILE_CURRENT		"current: "
 #define PLAYLIST_STATE_FILE_TIME		"time: "
 #define PLAYLIST_STATE_FILE_CROSSFADE		"crossfade: "
+#define PLAYLIST_STATE_FILE_MIXRAMPDB		"mixrampdb: "
+#define PLAYLIST_STATE_FILE_MIXRAMPDELAY	"mixrampdelay: "
 #define PLAYLIST_STATE_FILE_PLAYLIST_BEGIN	"playlist_begin"
 #define PLAYLIST_STATE_FILE_PLAYLIST_END	"playlist_end"
 
@@ -90,6 +92,10 @@ playlist_state_save(FILE *fp, const struct playlist *playlist)
 		playlist->queue.consume);
 	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CROSSFADE,
 		(int)(pc_get_cross_fade()));
+	fprintf(fp, "%s%f\n", PLAYLIST_STATE_FILE_MIXRAMPDB,
+		pc_get_mixramp_db());
+	fprintf(fp, "%s%f\n", PLAYLIST_STATE_FILE_MIXRAMPDELAY,
+		pc_get_mixramp_delay());
 	fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_BEGIN);
 	queue_save(fp, &playlist->queue);
 	fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_END);
@@ -168,6 +174,10 @@ playlist_state_restore(const char *line, FILE *fp, struct playlist *playlist)
 				playlist_set_consume(playlist, false);
 		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CROSSFADE)) {
 			pc_set_cross_fade(atoi(buffer + strlen(PLAYLIST_STATE_FILE_CROSSFADE)));
+		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_MIXRAMPDB)) {
+			pc_set_mixramp_db(atof(buffer + strlen(PLAYLIST_STATE_FILE_MIXRAMPDB)));
+		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_MIXRAMPDELAY)) {
+			pc_set_mixramp_delay(atof(buffer + strlen(PLAYLIST_STATE_FILE_MIXRAMPDELAY)));
 		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_RANDOM)) {
 			random_mode =
 				strcmp(buffer + strlen(PLAYLIST_STATE_FILE_RANDOM),

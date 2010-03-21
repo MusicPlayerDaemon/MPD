@@ -427,3 +427,15 @@ decoder_replay_gain(struct decoder *decoder,
 	} else
 		decoder->replay_gain_serial = 0;
 }
+
+void
+decoder_mixramp(struct decoder *decoder,
+		char *mixramp_start, char *mixramp_end)
+{
+	assert(decoder != NULL);
+	struct decoder_control *dc = decoder->dc;
+	assert(dc != NULL);
+
+	dc_mixramp_start(dc, mixramp_start);
+	dc_mixramp_end(dc, mixramp_end);
+}

@@ -157,4 +157,15 @@ void
 decoder_replay_gain(struct decoder *decoder,
 		    const struct replay_gain_info *replay_gain_info);
 
+/**
+ * Store MixRamp tags.
+ *
+ * @param decoder the decoder object
+ * @param mixramp_start the mixramp_start tag; may be NULL to invalidate
+ * @param mixramp_end the mixramp_end tag; may be NULL to invalidate
+ */
+void
+decoder_mixramp(struct decoder *decoder,
+		char *mixramp_start, char *mixramp_end);
+
 #endif

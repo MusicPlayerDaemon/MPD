@@ -121,6 +121,14 @@ decoder_replay_gain(G_GNUC_UNUSED struct decoder *decoder,
 {
 }
 
+void
+decoder_mixramp(G_GNUC_UNUSED struct decoder *decoder,
+		char *mixramp_start, char *mixramp_end)
+{
+	g_free(mixramp_start);
+	g_free(mixramp_end);
+}
+
 static void
 print_tag(const struct tag *tag)
 {

@@ -347,6 +347,47 @@ parse_id3_replay_gain_info(struct replay_gain_info *replay_gain_info,
 }
 #endif
 
+#ifdef HAVE_ID3TAG
+static bool
+parse_id3_mixramp(char **mixramp_start, char **mixramp_end,
+		  struct id3_tag *tag)
+{
+	int i;
+	char *key;
+	char *value;
+	struct id3_frame *frame;
+	bool found = false;
+
+	*mixramp_start = NULL;
+	*mixramp_end = NULL;
+
+	for (i = 0; (frame = id3_tag_findframe(tag, "TXXX", i)); i++) {
+		if (frame->nfields < 3)
+			continue;
+
+		key = (char *)
+		    id3_ucs4_latin1duplicate(id3_field_getstring
+					     (&frame->fields[1]));
+		value = (char *)
+		    id3_ucs4_latin1duplicate(id3_field_getstring
+					     (&frame->fields[2]));
+
+		if (g_ascii_strcasecmp(key, "mixramp_start") == 0) {
+			*mixramp_start = strdup(value);
+			found = true;
+		} else if (g_ascii_strcasecmp(key, "mixramp_end") == 0) {
+			*mixramp_end = strdup(value);
+			found = true;
+		}
+
+		free(key);
+		free(value);
+	}
+
+	return found;
+}
+#endif
+
 static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 			  struct tag **mpd_tag)
 {
@@ -403,9 +444,15 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 
 	if (data->decoder != NULL) {
 		struct replay_gain_info rgi;
+		char *mixramp_start;
+		char *mixramp_end;
 		if (parse_id3_replay_gain_info(&rgi, id3_tag)) {
 			decoder_replay_gain(data->decoder, &rgi);
 			data->found_replay_gain = true;
+		}
+		if (parse_id3_mixramp(&mixramp_start, &mixramp_end, id3_tag)) {
+			g_debug("setting mixramp_tags");
+			decoder_mixramp(data->decoder, mixramp_start, mixramp_end);
 		}
 	}
 

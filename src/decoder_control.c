@@ -22,6 +22,10 @@
 #include "player_control.h"
 
 #include <assert.h>
+#include <malloc.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "decoder_control"
 
 void
 dc_init(struct decoder_control *dc)
@@ -33,6 +37,10 @@ dc_init(struct decoder_control *dc)
 
 	dc->state = DECODE_STATE_STOP;
 	dc->command = DECODE_COMMAND_NONE;
+
+	dc->mixramp_start = NULL;
+	dc->mixramp_end = NULL;
+	dc->mixramp_prev_end = NULL;
 }
 
 void
@@ -40,6 +48,15 @@ dc_deinit(struct decoder_control *dc)
 {
 	g_cond_free(dc->cond);
 	g_mutex_free(dc->mutex);
+	if (dc->mixramp_start)
+		free(dc->mixramp_start);
+	if (dc->mixramp_end)
+		free(dc->mixramp_end);
+	if (dc->mixramp_prev_end)
+		free(dc->mixramp_prev_end);
+	dc->mixramp_start = NULL;
+	dc->mixramp_end = NULL;
+	dc->mixramp_prev_end = NULL;
 }
 
 static void
@@ -146,4 +163,37 @@ dc_quit(struct decoder_control *dc)
 
 	g_thread_join(dc->thread);
 	dc->thread = NULL;
+}
+
+void
+dc_mixramp_start(struct decoder_control *dc, char *mixramp_start)
+{
+	assert(dc != NULL);
+
+	if (dc->mixramp_start)
+		free(dc->mixramp_start);
+	dc->mixramp_start = mixramp_start;
+	g_debug("mixramp_start = %s", mixramp_start ? mixramp_start : "NULL");
+}
+
+void
+dc_mixramp_end(struct decoder_control *dc, char *mixramp_end)
+{
+	assert(dc != NULL);
+
+	if (dc->mixramp_end)
+		free(dc->mixramp_end);
+	dc->mixramp_end = mixramp_end;
+	g_debug("mixramp_end = %s", mixramp_end ? mixramp_end : "NULL");
+}
+
+void
+dc_mixramp_prev_end(struct decoder_control *dc, char *mixramp_prev_end)
+{
+	assert(dc != NULL);
+
+	if (dc->mixramp_prev_end)
+		free(dc->mixramp_prev_end);
+	dc->mixramp_prev_end = mixramp_prev_end;
+	g_debug("mixramp_prev_end = %s", mixramp_prev_end ? mixramp_prev_end : "NULL");
 }

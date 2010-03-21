@@ -137,7 +137,16 @@ pcm_mix(void *buffer1, const void *buffer2, size_t size,
 	const struct audio_format *format, float portion1)
 {
 	int vol1;
-	float s = sin(M_PI_2 * portion1);
+	float s;
+
+	/* portion1 is between 0.0 and 1.0 for crossfading, MixRamp uses NaN
+	 * to signal mixing rather than fading */
+	if (isnan(portion1)) {
+		pcm_add(buffer1, buffer2, size, PCM_VOLUME_1, PCM_VOLUME_1, format);
+		return;
+	}
+
+	s = sin(M_PI_2 * portion1);
 	s *= s;
 
 	vol1 = s * PCM_VOLUME_1 + 0.5;

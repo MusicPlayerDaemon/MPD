@@ -37,6 +37,10 @@ bool
 flac_parse_replay_gain(struct replay_gain_info *rgi,
 		       const FLAC__StreamMetadata *block);
 
+bool
+flac_parse_mixramp(char **mixramp_start, char **mixramp_end,
+		   const FLAC__StreamMetadata *block);
+
 void
 flac_vorbis_comments_to_tag(struct tag *tag, const char *char_tnum,
 			    const FLAC__StreamMetadata_VorbisComment *comment);

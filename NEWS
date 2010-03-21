@@ -88,6 +88,7 @@ ver 0.16 (20??/??/??)
 * pcm_volume, pcm_mix: implemented 32 bit support
 * support packed 24 bit samples
 * CUE sheet support
+* support for MixRamp tags
 * obey $(sysconfdir) for default mpd.conf location
 * build with large file support by default
 * added test suite ("make check")

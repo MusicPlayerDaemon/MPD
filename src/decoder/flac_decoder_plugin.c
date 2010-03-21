@@ -247,9 +247,14 @@ flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd,
 		return false;
 	}
 
-	if (data->initialized)
+	if (data->initialized) {
 		/* done */
+		decoder_initialized(data->decoder, &data->audio_format,
+				    data->input_stream->seekable,
+				    (float)data->total_frames /
+				    (float)data->audio_format.sample_rate);
 		return true;
+	}
 
 	if (data->input_stream->seekable)
 		/* allow the workaround below only for nonseekable

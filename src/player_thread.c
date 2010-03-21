@@ -644,13 +644,21 @@ play_next_chunk(struct player *player)
 		}
 
 		if (other_chunk != NULL) {
+			float mix_ratio;
+
 			chunk = music_pipe_shift(player->pipe);
 			assert(chunk != NULL);
 
+			if (isnan(pc.mixramp_delay_seconds)) {
+				mix_ratio = ((float)cross_fade_position)
+					     / player->cross_fade_chunks;
+			} else {
+				mix_ratio = nan("");
+			}
+
 			cross_fade_apply(chunk, other_chunk,
 					 &dc->out_audio_format,
-					 cross_fade_position,
-					 player->cross_fade_chunks);
+					 mix_ratio);
 			music_buffer_return(player_buffer, other_chunk);
 		} else {
 			/* there are not enough decoded chunks yet */
@@ -865,6 +873,10 @@ static void do_play(struct decoder_control *dc)
 			   for it */
 			player.cross_fade_chunks =
 				cross_fade_calc(pc.cross_fade_seconds, dc->total_time,
+						pc.mixramp_db,
+						pc.mixramp_delay_seconds,
+						dc->mixramp_start,
+						dc->mixramp_prev_end,
 						&dc->out_audio_format,
 						&player.play_audio_format,
 						music_buffer_size(player_buffer) -

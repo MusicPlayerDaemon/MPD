@@ -89,6 +89,10 @@ struct decoder_control {
 	 * owns this object, and is responsible for freeing it.
 	 */
 	struct music_pipe *pipe;
+
+	char *mixramp_start;
+	char *mixramp_end;
+	char *mixramp_prev_end;
 };
 
 void
@@ -234,5 +238,14 @@ dc_seek(struct decoder_control *dc, double where);
 
 void
 dc_quit(struct decoder_control *dc);
+
+void
+dc_mixramp_start(struct decoder_control *dc, char *mixramp_start);
+
+void
+dc_mixramp_end(struct decoder_control *dc, char *mixramp_end);
+
+void
+dc_mixramp_prev_end(struct decoder_control *dc, char *mixramp_prev_end);
 
 #endif

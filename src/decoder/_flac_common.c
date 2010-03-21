@@ -102,11 +102,6 @@ flac_got_stream_info(struct flac_data *data,
 	if (data->total_frames == 0)
 		data->total_frames = stream_info->total_samples;
 
-	decoder_initialized(data->decoder, &data->audio_format,
-			    data->input_stream->seekable,
-			    (float)data->total_frames /
-			    (float)data->audio_format.sample_rate);
-
 	data->initialized = true;
 }
 
@@ -117,6 +112,8 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 		return;
 
 	struct replay_gain_info rgi;
+	char *mixramp_start;
+	char *mixramp_end;
 
 	switch (block->type) {
 	case FLAC__METADATA_TYPE_STREAMINFO:
@@ -126,6 +123,10 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
 		if (flac_parse_replay_gain(&rgi, block))
 			decoder_replay_gain(data->decoder, &rgi);
+		if (flac_parse_mixramp(&mixramp_start, &mixramp_end, block)) {
+			g_debug("setting mixramp_tags");
+			decoder_mixramp(data->decoder, mixramp_start, mixramp_end);
+		}
 
 		if (data->tag != NULL)
 			flac_vorbis_comments_to_tag(data->tag, NULL,

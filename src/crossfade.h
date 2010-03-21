@@ -28,6 +28,10 @@ struct music_chunk;
  *
  * @param duration the requested crossfade duration
  * @param total_time total_time the duration of the new song
+ * @param mixramp_db the current mixramp_db setting
+ * @param mixramp_delay the current mixramp_delay setting
+ * @param mixramp_start the next songs mixramp_start tag
+ * @param mixramp_prev_end the last songs mixramp_end setting
  * @param af the audio format of the new song
  * @param old_format the audio format of the current song
  * @param max_chunks the maximum number of chunks
@@ -35,6 +39,8 @@ struct music_chunk;
  * should be disabled for this song change
  */
 unsigned cross_fade_calc(float duration, float total_time,
+			 float mixramp_db, float mixramp_delay,
+			 char *mixramp_start, char *mixramp_prev_end,
 			 const struct audio_format *af,
 			 const struct audio_format *old_format,
 			 unsigned max_chunks);
@@ -51,6 +57,6 @@ unsigned cross_fade_calc(float duration, float total_time,
  */
 void cross_fade_apply(struct music_chunk *a, const struct music_chunk *b,
 		      const struct audio_format *format,
-		      unsigned int current_chunk, unsigned int num_chunks);
+		      float mix_ratio);
 
 #endif

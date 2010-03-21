@@ -111,6 +111,8 @@ struct player_control {
 	const struct song *errored_song;
 	double seek_where;
 	float cross_fade_seconds;
+	float mixramp_db;
+	float mixramp_delay_seconds;
 	double total_play_time;
 };
 
@@ -249,6 +251,18 @@ pc_set_cross_fade(float cross_fade_seconds);
 
 float
 pc_get_cross_fade(void);
+
+void
+pc_set_mixramp_db(float mixramp_db);
+
+float
+pc_get_mixramp_db(void);
+
+void
+pc_set_mixramp_delay(float mixramp_delay_seconds);
+
+float
+pc_get_mixramp_delay(void);
 
 double
 pc_get_total_play_time(void);

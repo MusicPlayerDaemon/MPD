@@ -23,6 +23,7 @@
 #include "decoder_internal.h"
 #include "decoder_list.h"
 #include "decoder_plugin.h"
+#include "decoder_api.h"
 #include "input_stream.h"
 #include "player_control.h"
 #include "pipe.h"
@@ -35,6 +36,9 @@
 #include <glib.h>
 
 #include <unistd.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "decoder_thread"
 
 static enum decoder_command
 decoder_lock_get_command(struct decoder_control *dc)
@@ -430,6 +434,13 @@ decoder_task(gpointer arg)
 
 		switch (dc->command) {
 		case DECODE_COMMAND_START:
+			g_debug("clearing mixramp tags");
+			dc_mixramp_start(dc, NULL);
+			dc_mixramp_prev_end(dc, dc->mixramp_end);
+			dc->mixramp_end = NULL; /* Don't free, it's copied above. */
+
+                        /* fall through */
+
 		case DECODE_COMMAND_SEEK:
 			decoder_run(dc);
 

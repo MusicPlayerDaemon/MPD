@@ -80,6 +80,49 @@ flac_parse_replay_gain(struct replay_gain_info *rgi,
 	return found;
 }
 
+static bool
+flac_find_string_comment(const FLAC__StreamMetadata *block,
+			 const char *cmnt, char **str)
+{
+	int offset;
+	size_t pos;
+	int len;
+	unsigned char tmp, *p;
+
+	*str = NULL;
+	offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block, 0,
+								     cmnt);
+	if (offset < 0)
+		return false;
+
+	pos = strlen(cmnt) + 1; /* 1 is for '=' */
+	len = block->data.vorbis_comment.comments[offset].length - pos;
+	if (len <= 0)
+		return false;
+
+	p = &block->data.vorbis_comment.comments[offset].entry[pos];
+	tmp = p[len];
+	p[len] = '\0';
+	*str = strdup((char *)p);
+	p[len] = tmp;
+
+	return true;
+}
+
+bool
+flac_parse_mixramp(char **mixramp_start, char **mixramp_end,
+		   const FLAC__StreamMetadata *block)
+{
+	bool found = false;
+
+	if (flac_find_string_comment(block, "mixramp_start", mixramp_start))
+		found = true;
+	if (flac_find_string_comment(block, "mixramp_end", mixramp_end))
+		found = true;
+
+	return found;
+}
+
 /**
  * Checks if the specified name matches the entry's name, and if yes,
  * returns the comment value (not null-temrinated).
