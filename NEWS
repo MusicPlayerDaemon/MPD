@@ -1,4 +1,4 @@
-ver 0.15.9 (2009/??/??)
+ver 0.15.9 (2010/03/21)
 * decoders:
   - mad: fix crash when seeking at end of song
   - mpcdec: fix negative shift on fixed-point samples
