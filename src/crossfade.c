@@ -32,6 +32,10 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "crossfade"
 
+#ifdef G_OS_WIN32
+  #define strtok_r(s,d,p) strtok(s,d)
+#endif
+
 static float mixramp_interpolate(char *ramp_list, float required_db)
 {
 	float db, secs, last_db = nan(""), last_secs = 0;
