@@ -29,7 +29,12 @@
 
 #include <glib.h>
 
+#ifdef WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
 #include <sys/socket.h>
+#endif
 #include <stdbool.h>
 
 struct httpd_client;
