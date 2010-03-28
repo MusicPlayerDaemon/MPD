@@ -67,7 +67,11 @@ static void
 mpd_ffmpeg_log_callback(G_GNUC_UNUSED void *ptr, int level,
 			const char *fmt, va_list vl)
 {
-	g_logv(G_LOG_DOMAIN, level_ffmpeg_to_glib(level), fmt, vl);
+	const AVClass *cls = *(const AVClass *const*)ptr;
+	char *domain = g_strconcat(G_LOG_DOMAIN, "/", cls->item_name(ptr), NULL);
+
+	g_logv(domain, level_ffmpeg_to_glib(level), fmt, vl);
+	g_free(domain);
 }
 
 #endif /* !OLD_FFMPEG_INCLUDES */
