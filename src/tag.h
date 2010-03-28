@@ -184,6 +184,15 @@ struct tag *
 tag_merge(const struct tag *base, const struct tag *add);
 
 /**
+ * Merges the data from two tags.  Any of the two may be NULL.  Both
+ * are freed by this function.
+ *
+ * @return a newly allocated tag, which must be freed with tag_free()
+ */
+struct tag *
+tag_merge_replace(struct tag *base, struct tag *add);
+
+/**
  * Returns true if the tag contains no items.  This ignores the "time"
  * attribute.
  */

@@ -96,6 +96,15 @@ ver 0.16 (20??/??/??)
 * added libwrap support
 
 
+ver 0.15.9 (2010/03/21)
+* decoders:
+  - mad: fix crash when seeking at end of song
+  - mpcdec: fix negative shift on fixed-point samples
+  - mpcdec: fix replay gain formula with v8
+* playlist: fix single+repeat in random mode
+* player: postpone song tags during cross-fade
+
+
 ver 0.15.8 (2010/01/17)
 * input:
   - curl: allow rewinding with Icy-Metadata

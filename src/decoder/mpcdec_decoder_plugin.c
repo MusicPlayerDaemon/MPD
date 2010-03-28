@@ -25,6 +25,7 @@
 #include <mpcdec/mpcdec.h>
 #else
 #include <mpc/mpcdec.h>
+#include <math.h>
 #endif
 
 #include <glib.h>
@@ -105,7 +106,7 @@ mpc_to_mpd_sample(MPC_SAMPLE_FORMAT sample)
 	const int shift = bits - MPC_FIXED_POINT_SCALE_SHIFT;
 
 	if (shift < 0)
-		val = sample << -shift;
+		val = sample >> -shift;
 	else
 		val = sample << shift;
 #else
@@ -206,10 +207,18 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 	struct replay_gain_info replay_gain_info;
 	replay_gain_info_init(&replay_gain_info);
+#ifdef MPC_IS_OLD_API
 	replay_gain_info.tuples[REPLAY_GAIN_ALBUM].gain = info.gain_album * 0.01;
 	replay_gain_info.tuples[REPLAY_GAIN_ALBUM].peak = info.peak_album / 32767.0;
 	replay_gain_info.tuples[REPLAY_GAIN_TRACK].gain = info.gain_title * 0.01;
 	replay_gain_info.tuples[REPLAY_GAIN_TRACK].peak = info.peak_title / 32767.0;
+#else
+	replay_gain_info.tuples[REPLAY_GAIN_ALBUM].gain = MPC_OLD_GAIN_REF  - (info.gain_album  / 256.);
+	replay_gain_info.tuples[REPLAY_GAIN_ALBUM].peak = pow(10, info.peak_album / 256. / 20) / 32767;
+	replay_gain_info.tuples[REPLAY_GAIN_TRACK].gain = MPC_OLD_GAIN_REF  - (info.gain_title  / 256.);
+	replay_gain_info.tuples[REPLAY_GAIN_TRACK].peak = pow(10, info.peak_title / 256. / 20) / 32767;
+#endif
+
 	decoder_replay_gain(mpd_decoder, &replay_gain_info);
 
 	decoder_initialized(mpd_decoder, &audio_format,

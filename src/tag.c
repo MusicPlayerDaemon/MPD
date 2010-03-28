@@ -282,6 +282,22 @@ tag_merge(const struct tag *base, const struct tag *add)
 	return ret;
 }
 
+struct tag *
+tag_merge_replace(struct tag *base, struct tag *add)
+{
+	if (add == NULL)
+		return base;
+
+	if (base == NULL)
+		return add;
+
+	struct tag *tag = tag_merge(base, add);
+	tag_free(base);
+	tag_free(add);
+
+	return tag;
+}
+
 const char *
 tag_get_value(const struct tag *tag, enum tag_type type)
 {
