@@ -146,6 +146,7 @@ mpd_headers = \
 	src/pcm_resample.h \
 	src/pcm_resample_internal.h \
 	src/pcm_dither.h \
+	src/pcm_pack.h \
 	src/pcm_prng.h \
 	src/permission.h \
 	src/player_thread.h \
