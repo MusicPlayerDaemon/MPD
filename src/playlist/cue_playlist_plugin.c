@@ -107,15 +107,14 @@ cue_playlist_read(struct playlist_provider *_playlist)
 			   - track_get_zero_pre(track)) * 1000) / 75;
 	song->end_ms = ((track_get_start(track) + track_get_length(track)
 			 - track_get_index(track, 1)
-			 + track_get_zero_pre(track))
-			* 1000) / 75;
+			 + track_get_zero_pre(track)) * 1000) / 75;
 
 	/* append pregap of the next track to the end of this one */
 	track = cd_get_track(playlist->cd, playlist->next);
 	if (track != NULL)
-	  song->end_ms = ((track_get_start(track)
-			   + track_get_index(track, 1)
-			   - track_get_zero_pre(track)) * 1000) / 75;
+		song->end_ms = ((track_get_start(track)
+				 + track_get_index(track, 1)
+				 - track_get_zero_pre(track)) * 1000) / 75;
 
 	return song;
 }

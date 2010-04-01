@@ -179,12 +179,12 @@ cue_tag(struct Cd *cd, unsigned tnum)
 		return NULL;
 
 	tag->time = track_get_length(track)
-	  - track_get_index(track, 1)
-	  + track_get_zero_pre(track);
-	track = cd_get_track(cd, tnum+1);
+	    - track_get_index(track, 1)
+	    + track_get_zero_pre(track);
+	track = cd_get_track(cd, tnum + 1);
 	if (track != NULL)
-	  tag->time += track_get_index(track, 1)
-	    - track_get_zero_pre(track);
+		tag->time += track_get_index(track, 1)
+		    - track_get_zero_pre(track);
 	/* libcue returns the track duration in frames, and there are
 	   75 frames per second; this formula rounds down */
 	tag->time = tag->time / 75;
