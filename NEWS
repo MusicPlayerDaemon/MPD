@@ -55,6 +55,7 @@ ver 0.16 (20??/??/??)
   - jack: renamed option "ports" to "destination_ports"
   - jack: support more than two audio channels
   - httpd: bind port when output is enabled
+  - httpd: added name/genre/website configuration
   - wildcards allowed in audio_format configuration
   - consistently lock audio output objects
 * player:

@@ -282,11 +282,12 @@ httpd_client_send_response(struct httpd_client *client)
 	} else {
 		gchar *metadata_header;
 
-		metadata_header = icy_server_metadata_header("Add config information here!", /* TODO */
-							     "Add config information here!", /* TODO */
-							     "Add config information here!", /* TODO */
-							     client->httpd->content_type,
-							     client->metaint);
+		metadata_header = icy_server_metadata_header(
+			client->httpd->name,
+			client->httpd->genre,
+			client->httpd->website,
+			client->httpd->content_type,
+			client->metaint);
 
 		g_strlcpy(buffer, metadata_header, sizeof(buffer));
 

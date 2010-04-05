@@ -99,6 +99,19 @@ struct httpd_output {
 	struct page *metadata;
 
 	/**
+	 * The configured name.
+	 */
+	char const *name;
+	/**
+	 * The configured genre.
+	 */
+	char const *genre;
+	/**
+	 * The configured website address.
+	 */
+	char const *website;
+
+	/**
 	 * A linked list containing all clients which are currently
 	 * connected.
 	 */

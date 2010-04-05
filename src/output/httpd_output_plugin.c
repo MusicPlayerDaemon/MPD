@@ -111,6 +111,12 @@ httpd_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	struct sockaddr_in *sin;
 
 	/* read configuration */
+	httpd->name =
+		config_get_block_string(param, "name", "Set name in config");
+	httpd->genre =
+		config_get_block_string(param, "genre", "Set genre in config");
+	httpd->website =
+		config_get_block_string(param, "website", "Set website in config");
 
 	port = config_get_block_unsigned(param, "port", 8000);
 
