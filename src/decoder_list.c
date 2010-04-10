@@ -44,6 +44,7 @@ extern const struct decoder_plugin sidplay_decoder_plugin;
 extern const struct decoder_plugin wildmidi_decoder_plugin;
 extern const struct decoder_plugin fluidsynth_decoder_plugin;
 extern const struct decoder_plugin ffmpeg_decoder_plugin;
+extern const struct decoder_plugin gme_decoder_plugin;
 
 const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef HAVE_MAD
@@ -96,6 +97,9 @@ const struct decoder_plugin *const decoder_plugins[] = {
 #endif
 #ifdef HAVE_FFMPEG
 	&ffmpeg_decoder_plugin,
+#endif
+#ifdef HAVE_GME
+	&gme_decoder_plugin,
 #endif
 	NULL
 };

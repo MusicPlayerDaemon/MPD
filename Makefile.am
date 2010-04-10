@@ -411,6 +411,7 @@ DECODER_CFLAGS = \
 	$(AUDIOFILE_CFLAGS) \
 	$(LIBMIKMOD_CFLAGS) \
 	$(MODPLUG_CFLAGS) \
+	$(GME_CFLAGS) \
 	$(SIDPLAY_CFLAGS) \
 	$(FLUIDSYNTH_CFLAGS) \
 	$(WILDMIDI_CFLAGS) \
@@ -426,6 +427,7 @@ DECODER_LIBS = \
 	$(SNDFILE_LIBS) \
 	$(AUDIOFILE_LIBS) $(LIBMIKMOD_LIBS) \
 	$(MODPLUG_LIBS) \
+	$(GME_LIBS) \
 	$(SIDPLAY_LIBS) \
 	$(FLUIDSYNTH_LIBS) \
 	$(WILDMIDI_LIBS) \
@@ -518,6 +520,10 @@ endif
 
 if ENABLE_SNDFILE
 DECODER_SRC += src/decoder/sndfile_decoder_plugin.c
+endif
+
+if HAVE_GME
+DECODER_SRC += src/decoder/gme_decoder_plugin.c
 endif
 
 # encoder plugins
