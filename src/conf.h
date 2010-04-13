@@ -164,6 +164,10 @@ config_get_path(const char *name);
 
 G_GNUC_PURE
 unsigned
+config_get_unsigned(const char *name, unsigned default_value);
+
+G_GNUC_PURE
+unsigned
 config_get_positive(const char *name, unsigned default_value);
 
 G_GNUC_PURE

@@ -504,6 +504,23 @@ config_get_path(const char *name)
 }
 
 unsigned
+config_get_unsigned(const char *name, unsigned default_value)
+{
+	const struct config_param *param = config_get_param(name);
+	long value;
+	char *endptr;
+
+	if (param == NULL)
+		return default_value;
+
+	value = strtol(param->value, &endptr, 0);
+	if (*endptr != 0 || value < 0)
+		g_error("Not a valid non-negative number in line %i", param->line);
+
+	return (unsigned)value;
+}
+
+unsigned
 config_get_positive(const char *name, unsigned default_value)
 {
 	const struct config_param *param = config_get_param(name);
