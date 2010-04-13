@@ -1,4 +1,6 @@
 ver 0.15.10 (2010/??/??)
+* decoders:
+  - mad: properly calculate ID3 size without libid3tag
 
 
 ver 0.15.9 (2010/03/21)
