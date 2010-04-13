@@ -275,8 +275,12 @@ mpd_inotify_callback(int wd, unsigned mask,
 		g_free(path_fs);
 	}
 
-	if ((mask & (IN_CLOSE_WRITE|IN_MOVE|IN_DELETE)) != 0) {
-		/* a file was changed, or a direectory was
+	if ((mask & (IN_CLOSE_WRITE|IN_MOVE|IN_DELETE)) != 0 ||
+	    /* at the maximum depth, we watch out for newly created
+	       directories */
+	    (watch_directory_depth(directory) == inotify_max_depth &&
+	     (mask & (IN_CREATE|IN_ISDIR)) == (IN_CREATE|IN_ISDIR))) {
+		/* a file was changed, or a directory was
 		   moved/deleted: queue a database update */
 		char *uri_utf8 = uri_fs != NULL
 			? fs_charset_to_utf8(uri_fs)
