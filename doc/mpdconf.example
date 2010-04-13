@@ -118,6 +118,12 @@
 # music_directory are changed.
 #
 #auto_update	"yes"
+#
+# Limit the depth of the directories being watched, 0 means only watch
+# the music directory itself.  There is no limit by default.
+#
+#auto_update_depth "3"
+#
 ###############################################################################
 
 

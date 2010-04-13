@@ -253,6 +253,10 @@ comments.
 This specifies the wheter to support automatic update of music database when
 files are changed in music_directory. The default is to disable autoupdate
 of database.
+.TP
+.B auto_update_depth <N>
+Limit the depth of the directories being watched, 0 means only watch
+the music directory itself.  There is no limit by default.
 .SH REQUIRED AUDIO OUTPUT PARAMETERS
 .TP
 .B type <type>

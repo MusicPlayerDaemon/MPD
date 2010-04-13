@@ -56,6 +56,7 @@ struct watch_directory {
 
 static struct mpd_inotify_source *inotify_source;
 
+static unsigned inotify_max_depth;
 static struct watch_directory inotify_root;
 static GTree *inotify_directories;
 
@@ -140,14 +141,20 @@ static bool skip_path(const char *path)
 
 static void
 recursive_watch_subdirectories(struct watch_directory *directory,
-			       const char *path_fs)
+			       const char *path_fs, unsigned depth)
 {
 	GError *error = NULL;
 	DIR *dir;
 	struct dirent *ent;
 
 	assert(directory != NULL);
+	assert(depth <= inotify_max_depth);
 	assert(path_fs != NULL);
+
+	++depth;
+
+	if (depth > inotify_max_depth)
+		return;
 
 	dir = opendir(path_fs);
 	if (dir == NULL) {
@@ -209,11 +216,24 @@ recursive_watch_subdirectories(struct watch_directory *directory,
 
 		tree_add_watch_directory(child);
 
-		recursive_watch_subdirectories(child, child_path_fs);
+		recursive_watch_subdirectories(child, child_path_fs, depth);
 		g_free(child_path_fs);
 	}
 
 	closedir(dir);
+}
+
+G_GNUC_PURE
+static unsigned
+watch_directory_depth(const struct watch_directory *d)
+{
+	assert(d != NULL);
+
+	unsigned depth = 0;
+	while ((d = d->parent) != NULL)
+		++depth;
+
+	return depth;
 }
 
 static void
@@ -250,7 +270,8 @@ mpd_inotify_callback(int wd, unsigned mask,
 		} else
 			path_fs = root;
 
-		recursive_watch_subdirectories(directory, path_fs);
+		recursive_watch_subdirectories(directory, path_fs,
+					       watch_directory_depth(directory));
 		g_free(path_fs);
 	}
 
@@ -271,7 +292,7 @@ mpd_inotify_callback(int wd, unsigned mask,
 }
 
 void
-mpd_inotify_init(void)
+mpd_inotify_init(unsigned max_depth)
 {
 	struct directory *root;
 	char *path;
@@ -300,6 +321,8 @@ mpd_inotify_init(void)
 		return;
 	}
 
+	inotify_max_depth = max_depth;
+
 	inotify_root.name = path;
 	inotify_root.descriptor = mpd_inotify_source_add(inotify_source, path,
 							 IN_MASK, &error);
@@ -315,7 +338,7 @@ mpd_inotify_init(void)
 	inotify_directories = g_tree_new(compare);
 	tree_add_watch_directory(&inotify_root);
 
-	recursive_watch_subdirectories(&inotify_root, path);
+	recursive_watch_subdirectories(&inotify_root, path, 0);
 
 	mpd_inotify_queue_init();
 

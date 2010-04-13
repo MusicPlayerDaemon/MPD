@@ -379,7 +379,8 @@ int main(int argc, char *argv[])
 	success = config_get_bool(CONF_AUTO_UPDATE, false);
 #ifdef ENABLE_INOTIFY
 	if (success && mapper_has_music_directory())
-    		mpd_inotify_init();
+		mpd_inotify_init(config_get_unsigned(CONF_AUTO_UPDATE_DEPTH,
+						     G_MAXUINT));
 #else
 	if (success)
 		g_warning("inotify: auto_update was disabled. enable during compilation phase");

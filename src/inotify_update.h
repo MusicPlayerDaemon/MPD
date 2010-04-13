@@ -25,7 +25,7 @@
 #ifdef HAVE_INOTIFY_INIT
 
 void
-mpd_inotify_init(void);
+mpd_inotify_init(unsigned max_depth);
 
 void
 mpd_inotify_finish(void);
@@ -33,7 +33,7 @@ mpd_inotify_finish(void);
 #else /* !HAVE_INOTIFY_INIT */
 
 static inline void
-mpd_inotify_init(void)
+mpd_inotify_init(G_GNUC_UNUSED unsigned max_depth)
 {
 }
 
