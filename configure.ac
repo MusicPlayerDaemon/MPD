@@ -195,6 +195,12 @@ AC_ARG_ENABLE(un,
 		[disable support for clients connecting via unix domain sockets (default: enable)]),,
 	[enable_un=yes])
 
+case "$host_os" in
+mingw* | windows*)
+	enable_un=no
+	;;
+esac
+
 if test x$enable_un = xyes; then
 	AC_DEFINE(HAVE_UN, 1, [Define if unix domain socket support is enabled])
 	STRUCT_UCRED
