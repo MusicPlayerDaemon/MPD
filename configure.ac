@@ -1133,12 +1133,20 @@ MPD_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc],
 	[Ogg Vorbis encoder], [libvorbisenc not found])
 
 if test x$enable_lame_encoder != xno; then
-	AM_PATH_LAME([found_lame_encoder=yes], [found_lame_encoder=no])
-	MPD_AUTO_RESULT(lame_encoder, [LAME encoder plugin],
-		[LAME not found])
+	AC_CHECK_HEADERS(lame/lame.h,,
+		[AC_CHECK_HEADERS(lame.h,, using_lame=no)])
+	AC_CHECK_LIB(mp3lame, lame_init,, using_lame=no)
+	if test x$using_lame != xno; then
+		AC_DEFINE(HAVE_LAME, 1, [Define to 1 if you have lame 3.98 or greater.])
+		LAME_LIBS="-lmp3lame -lm"
+		enable_lame_encoder=yes
+	fi
+
+	if test "$enable_lame_encoder" = "yes" -a "$using_lame" = "no"; then
+		AC_MSG_ERROR([LAME libraries and development support files not found.])
+	fi
 fi
 
-AC_SUBST(LAME_CFLAGS)
 AC_SUBST(LAME_LIBS)
 
 MPD_AUTO_PKG(twolame_encoder, TWOLAME, [twolame],
