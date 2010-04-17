@@ -978,6 +978,7 @@ if test x$enable_sndfile = xauto && test x$enable_modplug = xyes; then
 fi
 
 dnl -------------------------------- libsndfile -------------------------------
+dnl See above test, which may disable this.
 MPD_AUTO_PKG(sndfile, SNDFILE, [sndfile],
 	[libsndfile decoder plugin], [libsndfile not found])
 
