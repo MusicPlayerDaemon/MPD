@@ -488,6 +488,19 @@ fi
 
 AM_CONDITIONAL(HAVE_CUE, test x$enable_cue = xyes)
 
+if test x$enable_id3 = xyes; then
+	PKG_CHECK_MODULES([ID3TAG], [id3tag],,
+		AC_CHECK_LIB(id3tag, id3_file_open,
+			[ID3TAG_LIBS="-lid3tag -lz" ID3TAG_CFLAGS=""],
+			enable_id3=no))
+fi
+
+if test x$enable_id3 = xyes; then
+	AC_DEFINE(HAVE_ID3TAG, 1, [Define to use id3tag])
+fi
+
+AM_CONDITIONAL(HAVE_ID3TAG, test x$enable_id3 = xyes)
+
 dnl ---------------------------------------------------------------------------
 dnl Autodiscovery
 dnl ---------------------------------------------------------------------------
@@ -953,18 +966,7 @@ fi
 
 AM_CONDITIONAL(HAVE_ALSA, test x$enable_alsa = xyes)
 
-if test x$enable_id3 = xyes; then
-	PKG_CHECK_MODULES([ID3TAG], [id3tag],,
-		AC_CHECK_LIB(id3tag, id3_file_open,
-			[ID3TAG_LIBS="-lid3tag -lz" ID3TAG_CFLAGS=""],
-			enable_id3=no))
-fi
 
-if test x$enable_id3 = xyes; then
-	AC_DEFINE(HAVE_ID3TAG, 1, [Define to use id3tag])
-fi
-
-AM_CONDITIONAL(HAVE_ID3TAG, test x$enable_id3 = xyes)
 
 if test x$enable_mpc = xyes; then
 	if test "x$mpcdec_libraries" != "x" ; then
