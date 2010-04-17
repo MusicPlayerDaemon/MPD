@@ -906,7 +906,27 @@ fi
 
 AM_CONDITIONAL(HAVE_AO, test x$enable_ao = xyes)
 
+dnl ---------------------------------- OpenAL ---------------------------------
+AC_SUBST(OPENAL_CFLAGS,"")
+AC_SUBST(OPENAL_LIBS,"")
 
+if test x$enable_openal = xyes; then
+	if test x$enable_osx = xyes; then
+		AC_CHECK_HEADERS([OpenAL/al.h OpenAL/alc.h], [], [enable_openal=no])
+		if test x$enable_openal = xyes; then
+			OPENAL_LIBS="-framework OpenAL"
+			AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support])
+		else
+			AC_MSG_WARN(OpenAL headers not found -- disabling OpenAL support)
+		fi
+	else
+		PKG_CHECK_MODULES([OPENAL], [openal],
+			AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support]),
+			enable_openal=no)
+	fi
+fi
+
+AM_CONDITIONAL(HAVE_OPENAL, test x$enable_openal = xyes)
 
 if test x$enable_pipe_output = xyes; then
 	AC_DEFINE([ENABLE_PIPE_OUTPUT], 1,
@@ -964,26 +984,7 @@ fi
 
 AM_CONDITIONAL(HAVE_OSS, test x$enable_oss = xyes)
 
-AC_SUBST(OPENAL_CFLAGS,"")
-AC_SUBST(OPENAL_LIBS,"")
 
-if test x$enable_openal = xyes; then
-	if test x$enable_osx = xyes; then
-		AC_CHECK_HEADERS([OpenAL/al.h OpenAL/alc.h], [], [enable_openal=no])
-		if test x$enable_openal = xyes; then
-			OPENAL_LIBS="-framework OpenAL"
-			AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support])
-		else
-			AC_MSG_WARN(OpenAL headers not found -- disabling OpenAL support)
-		fi
-	else
-		PKG_CHECK_MODULES([OPENAL], [openal],
-			AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support]),
-			enable_openal=no)
-	fi
-fi
-
-AM_CONDITIONAL(HAVE_OPENAL, test x$enable_openal = xyes)
 
 
 
