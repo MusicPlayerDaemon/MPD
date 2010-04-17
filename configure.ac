@@ -878,22 +878,7 @@ fi
 
 AM_CONDITIONAL(HAVE_FIFO, test x$enable_fifo = xyes)
 
-
-
-MPD_AUTO_PKG(ao, AO, [ao],
-	[libao output plugin], [libao not found])
-if test x$enable_ao = xyes; then
-	AC_DEFINE(HAVE_AO, 1, [Define to play with ao])
-fi
-
-AM_CONDITIONAL(HAVE_AO, test x$enable_ao = xyes)
-
-if test x$enable_pipe_output = xyes; then
-	AC_DEFINE([ENABLE_PIPE_OUTPUT], 1,
-		[Define to enable support for writing audio to a pipe])
-fi
-AM_CONDITIONAL(ENABLE_PIPE_OUTPUT, test x$enable_pipe_output = xyes)
-
+dnl ----------------------------------- JACK ----------------------------------
 MPD_AUTO_PKG(jack, JACK, [jack >= 0.100],
 	[JACK output plugin], [libjack not found])
 if test x$enable_jack = xyes; then
@@ -911,6 +896,25 @@ if test x$enable_jack = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_JACK, test x$enable_jack = xyes)
+
+
+
+
+MPD_AUTO_PKG(ao, AO, [ao],
+	[libao output plugin], [libao not found])
+if test x$enable_ao = xyes; then
+	AC_DEFINE(HAVE_AO, 1, [Define to play with ao])
+fi
+
+AM_CONDITIONAL(HAVE_AO, test x$enable_ao = xyes)
+
+if test x$enable_pipe_output = xyes; then
+	AC_DEFINE([ENABLE_PIPE_OUTPUT], 1,
+		[Define to enable support for writing audio to a pipe])
+fi
+AM_CONDITIONAL(ENABLE_PIPE_OUTPUT, test x$enable_pipe_output = xyes)
+
+
 
 MPD_AUTO_PKG(pulse, PULSE, [libpulse],
 	[PulseAudio output plugin], [libpulse not found])
