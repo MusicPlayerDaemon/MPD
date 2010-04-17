@@ -705,12 +705,7 @@ dnl ###
 dnl MAD mp3 decoder
 dnl ###
 
-MPD_AUTO_PKG(mad, MAD, [mad],
-	[libmad MP3 decoder plugin], [libmad not found])
-if test x$enable_mad = xyes; then
-	AC_DEFINE(HAVE_MAD, 1, [Define to use libmad])
-fi
-AM_CONDITIONAL(HAVE_MAD, test x$enable_mad = xyes)
+
 
 MPD_AUTO_PKG(mpg123, MPG123, [libmpg123],
 	[libmpg123 decoder plugin], [libmpg123 not found])
@@ -1031,6 +1026,13 @@ fi
 
 AM_CONDITIONAL(ENABLE_FLUIDSYNTH, test x$enable_fluidsynth = xyes)
 
+dnl ---------------------------------- libmad ---------------------------------
+MPD_AUTO_PKG(mad, MAD, [mad],
+	[libmad MP3 decoder plugin], [libmad not found])
+if test x$enable_mad = xyes; then
+	AC_DEFINE(HAVE_MAD, 1, [Define to use libmad])
+fi
+AM_CONDITIONAL(HAVE_MAD, test x$enable_mad = xyes)
 
 enable_shout2="$enable_shout"
 MPD_AUTO_PKG(shout, SHOUT, [shout],
