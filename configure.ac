@@ -1327,6 +1327,7 @@ if test x$enable_recorder_output = xyes; then
 fi
 AM_CONDITIONAL(ENABLE_RECORDER_OUTPUT, test x$enable_recorder_output = xyes)
 
+dnl -------------------------------- SHOUTcast --------------------------------
 if test x$enable_shout = xauto; then
 	# handle shout auto-detection: disable if no encoder is
 	# available
@@ -1338,12 +1339,10 @@ if test x$enable_shout = xauto; then
 	fi
 fi
 
-
-
-AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
 if test x$enable_shout = xyes; then
 	AC_DEFINE(HAVE_SHOUT, 1, [Define to enable the shoutcast output])
 fi
+AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
 
 dnl ---------------------------------------------------------------------------
 dnl Documentation
