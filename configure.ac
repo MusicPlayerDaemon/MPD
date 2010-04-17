@@ -993,8 +993,11 @@ if test x$enable_audiofile = xyes; then
 	AC_DEFINE(HAVE_AUDIOFILE, 1, [Define for audiofile support])
 fi
 
+dnl ----------------------------------- FAAD ----------------------------------
+AM_PATH_FAAD()
 
-
+AM_CONDITIONAL(HAVE_FAAD, test x$enable_aac = xyes)
+AM_CONDITIONAL(HAVE_MP4, test x$enable_mp4 = xyes)
 
 
 
@@ -1065,11 +1068,7 @@ fi
 
 AM_CONDITIONAL(HAVE_MPCDEC, test x$enable_mpc = xyes)
 
-AM_PATH_FAAD()
 
-AM_CONDITIONAL(HAVE_FAAD, test x$enable_aac = xyes)
-
-AM_CONDITIONAL(HAVE_MP4, test x$enable_mp4 = xyes)
 
 if test x$use_tremor = xyes; then
 	if test "x$tremor_libraries" != "x" ; then
