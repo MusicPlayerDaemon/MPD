@@ -1069,18 +1069,20 @@ fi
 if test x$use_tremor = xyes; then
 	AC_DEFINE(HAVE_TREMOR,1,
 		[Define to use tremor (libvorbisidec) for ogg support])
-	if test x$enable_oggflac = xyes; then
-		AC_MSG_WARN([disabling OggFLAC support because it is incompatible with tremor])
-		enable_oggflac=no
-	fi
 fi
 
 AC_SUBST(TREMOR_CFLAGS)
 AC_SUBST(TREMOR_LIBS)
 
 dnl --------------------------------- OggFLAC ---------------------------------
-dnl OggFLAC must go after Ogg Tremor 
-if test x$enable_oggflac = xyes; then
+dnl OggFLAC must go after Ogg Tremor
+
+if test x$use_tremor = xyes -a test $xenable_oggflac = yes; then
+	AC_MSG_WARN([disabling OggFLAC support because it is incompatible with tremor])
+		enable_oggflac=no
+fi
+
+if test x$enable_oggflac = xyes; then	
 	oldmpdcflags="$MPD_CFLAGS"
 	oldmpdlibs="$MPD_LIBS"
 	AM_PATH_LIBOGGFLAC(MPD_LIBS="$MPD_LIBS $LIBOGGFLAC_LIBS"
