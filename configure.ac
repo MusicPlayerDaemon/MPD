@@ -1214,8 +1214,15 @@ if test x$enable_flac_encoder = xyes; then
 fi
 AM_CONDITIONAL(ENABLE_FLAC_ENCODER, test x$enable_flac_encoder = xyes)
 
+dnl ---------------------------- Ogg Vorbis Encoder ---------------------------
 MPD_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc],
 	[Ogg Vorbis encoder], [libvorbisenc not found])
+
+if test x$enable_vorbis_encoder = xyes; then
+	AC_DEFINE(ENABLE_VORBIS_ENCODER, 1,
+		[Define to enable the vorbis encoder plugin])
+fi
+AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_vorbis_encoder = xyes)
 
 if test x$enable_lame_encoder != xno; then
 	AC_CHECK_HEADERS(lame/lame.h,,
@@ -1306,12 +1313,6 @@ AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_encoder = xyes)
 if test x$enable_encoder = xyes; then
 	AC_DEFINE(ENABLE_ENCODER, 1,
 		[Define to enable the encoder plugins])
-fi
-
-AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_vorbis_encoder = xyes)
-if test x$enable_vorbis_encoder = xyes; then
-	AC_DEFINE(ENABLE_VORBIS_ENCODER, 1,
-		[Define to enable the vorbis encoder plugin])
 fi
 
 AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_lame_encoder = xyes)
