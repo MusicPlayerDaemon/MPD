@@ -1478,7 +1478,7 @@ results(mad, [MAD])
 results(mpg123, [MPG123])
 results(mp4, [MP4])
 results(mpc, [Musepack])
-results(oggflac, [OggFLAC])
+results(oggflac, [OggFLAC], flac)
 echo -ne '\n\t'
 results(with_tremor, [OggTremor])
 results(vorbis, [OggVorbis])
