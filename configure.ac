@@ -700,12 +700,6 @@ dnl
 dnl decoder plugins
 dnl
 
-MPD_AUTO_PKG(audiofile, AUDIOFILE, [audiofile >= 0.1.7],
-	[audiofile decoder plugin], [libaudiofile not found])
-AM_CONDITIONAL(HAVE_AUDIOFILE, test x$enable_audiofile = xyes)
-if test x$enable_audiofile = xyes; then
-	AC_DEFINE(HAVE_AUDIOFILE, 1, [Define for audiofile support])
-fi
 
 dnl ###
 dnl MAD mp3 decoder
@@ -987,8 +981,17 @@ esac
 
 AM_CONDITIONAL(ENABLE_SOLARIS_OUTPUT, test x$enable_solaris_output = xyes)
 
+dnl ---------------------------------------------------------------------------
+dnl Decoder Plugins
+dnl ---------------------------------------------------------------------------
 
-
+dnl -------------------------------- audiofile --------------------------------
+MPD_AUTO_PKG(audiofile, AUDIOFILE, [audiofile >= 0.1.7],
+	[audiofile decoder plugin], [libaudiofile not found])
+AM_CONDITIONAL(HAVE_AUDIOFILE, test x$enable_audiofile = xyes)
+if test x$enable_audiofile = xyes; then
+	AC_DEFINE(HAVE_AUDIOFILE, 1, [Define for audiofile support])
+fi
 
 
 
