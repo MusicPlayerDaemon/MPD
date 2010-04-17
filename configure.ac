@@ -966,7 +966,12 @@ fi
 
 AM_CONDITIONAL(HAVE_PULSE, test x$enable_pulse = xyes)
 
+dnl ----------------------------------- MVP -----------------------------------
+if test x$enable_mvp = xyes; then
+   AC_DEFINE(HAVE_MVP,1,[Define to enable Hauppauge Media MVP support])
+fi
 
+AM_CONDITIONAL(HAVE_MVP, test x$enable_mvp = xyes)
 
 enable_shout2="$enable_shout"
 MPD_AUTO_PKG(shout, SHOUT, [shout],
@@ -994,11 +999,7 @@ AM_CONDITIONAL(ENABLE_SOLARIS_OUTPUT, test x$enable_solaris_output = xyes)
 
 
 
-if test x$enable_mvp = xyes; then
-   AC_DEFINE(HAVE_MVP,1,[Define to enable Hauppauge Media MVP support])
-fi
 
-AM_CONDITIONAL(HAVE_MVP, test x$enable_mvp = xyes)
 
 if test x$enable_mpc = xyes; then
 	if test "x$mpcdec_libraries" != "x" ; then
