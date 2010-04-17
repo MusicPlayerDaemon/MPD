@@ -1097,9 +1097,6 @@ fi
 
 AM_CONDITIONAL(HAVE_OGGFLAC, test x$enable_oggflac = xyes)
 
-AM_CONDITIONAL(HAVE_FLAC_COMMON,
-	  test x$enable_flac = xyes || test x$enable_oggflac = xyes)
-
 dnl -------------------------------- Ogg Vorbis -------------------------------
 if test x$enable_tremor != xyes -a test x$enable_vorbis = xyes; then
 	PKG_CHECK_MODULES(VORBIS, [ogg vorbis vorbisfile],
@@ -1108,9 +1105,6 @@ if test x$enable_tremor != xyes -a test x$enable_vorbis = xyes; then
 fi
 
 AM_CONDITIONAL(ENABLE_VORBIS_DECODER, test x$enable_vorbis = xyes)
-
-AM_CONDITIONAL(HAVE_OGG_COMMON,
-	  test x$enable_vorbis = xyes || test x$enable_oggflac = xyes || test x$enable_flac = xyes)
 
 dnl --------------------------------- sidplay ---------------------------------
 found_sidplay=$HAVE_CXX
@@ -1175,6 +1169,14 @@ if test x$enable_wildmidi = xyes; then
 fi
 
 AM_CONDITIONAL(ENABLE_WILDMIDI, test x$enable_wildmidi = xyes)
+
+dnl ------------------------ Post Decoder Plugins Tests -----------------------
+
+AM_CONDITIONAL(HAVE_OGG_COMMON,
+	  test x$enable_vorbis = xyes || test x$enable_oggflac = xyes || test x$enable_flac = xyes)
+
+AM_CONDITIONAL(HAVE_FLAC_COMMON,
+	  test x$enable_flac = xyes || test x$enable_oggflac = xyes)
 
 dnl
 dnl Encoder API and shout/httpd output plugin
