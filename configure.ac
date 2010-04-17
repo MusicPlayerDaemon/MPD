@@ -1051,6 +1051,14 @@ if test x$enable_modplug = xyes; then
 fi
 AM_CONDITIONAL(HAVE_MODPLUG, test x$enable_modplug = xyes)
 
+dnl --------------------------- sndfile/modplug test --------------------------
+if test x$enable_sndfile = xauto && test x$enable_modplug = xyes; then
+	dnl If modplug is enabled, enable sndfile only if explicitly
+	dnl requested - modplug's modplug/sndfile.h is known to
+	dnl conflict with libsndfile's sndfile.h.
+	AC_MSG_NOTICE([disabling libsndfile auto-detection, because the modplug decoder is enabled])
+	enable_sndfile=no
+fi
 
 
 if test x$enable_mpc = xyes; then
