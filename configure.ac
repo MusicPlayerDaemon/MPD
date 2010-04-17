@@ -447,6 +447,13 @@ if test x$enable_un = xyes; then
 	STRUCT_UCRED
 fi
 
+dnl --------------------------- Post Protocol Tests ---------------------------
+if
+	test x$enable_tcp = xno &&
+	test x$enable_un = xno; then
+	AC_MSG_ERROR([No client interfaces configured!])
+fi
+
 dnl ---------------------------------------------------------------------------
 dnl LIBC Features
 dnl ---------------------------------------------------------------------------
@@ -1442,12 +1449,6 @@ echo -ne '\nClient support:\n\t'
 results(ipv6, "IPv6")
 results(tcp, "TCP")
 results(un,[UNIX Domain Sockets])
-
-if
-	test x$enable_tcp = xno &&
-	test x$enable_un = xno; then
-	AC_MSG_ERROR([No client interfaces configured!])
-fi
 
 echo -ne '\nFile format support:\n\t'
 results(aac, [AAC])
