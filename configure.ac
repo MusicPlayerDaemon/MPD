@@ -999,7 +999,28 @@ AM_PATH_FAAD()
 AM_CONDITIONAL(HAVE_FAAD, test x$enable_aac = xyes)
 AM_CONDITIONAL(HAVE_MP4, test x$enable_mp4 = xyes)
 
+dnl ----------------------------------- FLAC ----------------------------------
+if test x$enable_flac = xyes; then
+	PKG_CHECK_MODULES(FLAC, [flac >= 1.1],
+		AC_DEFINE(HAVE_FLAC, 1, [Define for FLAC support]),
+		enable_flac=no)
 
+	oldcflags="$CFLAGS"
+	oldlibs="$LIBS"
+	CFLAGS="$CFLAGS $FLAC_CFLAGS"
+	LIBS="$LIBS $FLAC_LIBS"
+	if test x$enable_flac = xyes && test x$enable_oggflac = xyes; then
+		AC_CHECK_DECL(FLAC_API_SUPPORTS_OGG_FLAC,
+			[enable_oggflac=flac], [],
+			[#include <FLAC/export.h>])
+	fi
+	CFLAGS="$oldcflags"
+	LIBS="$oldlibs"
+fi
+
+AM_CONDITIONAL(HAVE_FLAC, test x$enable_flac = xyes)
+
+enable_flac_encoder=$enable_flac
 
 
 enable_shout2="$enable_shout"
@@ -1113,27 +1134,7 @@ fi
 AC_SUBST(TREMOR_CFLAGS)
 AC_SUBST(TREMOR_LIBS)
 
-if test x$enable_flac = xyes; then
-	PKG_CHECK_MODULES(FLAC, [flac >= 1.1],
-		AC_DEFINE(HAVE_FLAC, 1, [Define for FLAC support]),
-		enable_flac=no)
 
-	oldcflags="$CFLAGS"
-	oldlibs="$LIBS"
-	CFLAGS="$CFLAGS $FLAC_CFLAGS"
-	LIBS="$LIBS $FLAC_LIBS"
-	if test x$enable_flac = xyes && test x$enable_oggflac = xyes; then
-		AC_CHECK_DECL(FLAC_API_SUPPORTS_OGG_FLAC,
-			[enable_oggflac=flac], [],
-			[#include <FLAC/export.h>])
-	fi
-	CFLAGS="$oldcflags"
-	LIBS="$oldlibs"
-fi
-
-AM_CONDITIONAL(HAVE_FLAC, test x$enable_flac = xyes)
-
-enable_flac_encoder=$enable_flac
 
 if test x$enable_oggflac = xyes; then
 	oldmpdcflags="$MPD_CFLAGS"
