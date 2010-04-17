@@ -1367,6 +1367,25 @@ if test x$enable_shout = xyes; then
 fi
 AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
 
+dnl --------------------- Post Audio Output Plugins Tests ---------------------
+if
+	test x$enable_ao = xno &&
+	test x$enable_oss = xno &&
+	test x$enable_openal = xno &&
+	test x$enable_shout = xno &&
+	test x$enable_recorder_output = xno &&
+	test x$enable_httpd_output = xno &&
+	test x$enable_solaris_output = xno &&
+	test x$enable_alsa = xno &&
+	test x$enable_osx = xno &&
+	test x$enable_pulse = xno &&
+	test x$enable_jack = xno &&
+	test x$enable_fifo = xno &&
+	test x$enable_pipe_output = xno &&
+	test x$enable_mvp = xno; then
+		AC_MSG_ERROR([No Audio Output types configured!])
+fi
+
 dnl ---------------------------------------------------------------------------
 dnl Documentation
 dnl ---------------------------------------------------------------------------
@@ -1499,24 +1518,6 @@ results(mvp, [Media MVP])
 results(shout, [SHOUTcast])
 echo -ne '\n\t'
 results(solaris, [Solaris])
-
-if
-	test x$enable_ao = xno &&
-	test x$enable_oss = xno &&
-	test x$enable_openal = xno &&
-	test x$enable_shout = xno &&
-	test x$enable_recorder_output = xno &&
-	test x$enable_httpd_output = xno &&
-	test x$enable_solaris_output = xno &&
-	test x$enable_alsa = xno &&
-	test x$enable_osx = xno &&
-	test x$enable_pulse = xno &&
-	test x$enable_jack = xno &&
-	test x$enable_fifo = xno &&
-	test x$enable_pipe_output = xno &&
-	test x$enable_mvp = xno; then
-		AC_MSG_ERROR([No Audio Output types configured!])
-fi
 
 if
 	test x$enable_shout = xyes ||
