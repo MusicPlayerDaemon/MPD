@@ -1022,6 +1022,15 @@ AM_CONDITIONAL(HAVE_FLAC, test x$enable_flac = xyes)
 
 enable_flac_encoder=$enable_flac
 
+dnl -------------------------------- FluidSynth -------------------------------
+if test x$enable_fluidsynth = xyes; then
+	PKG_CHECK_MODULES(FLUIDSYNTH, [fluidsynth],
+		AC_DEFINE(ENABLE_FLUIDSYNTH, 1, [Define for fluidsynth support]),
+		enable_fluidsynth=no)
+fi
+
+AM_CONDITIONAL(ENABLE_FLUIDSYNTH, test x$enable_fluidsynth = xyes)
+
 
 enable_shout2="$enable_shout"
 MPD_AUTO_PKG(shout, SHOUT, [shout],
@@ -1183,13 +1192,7 @@ fi
 
 AM_CONDITIONAL(HAVE_FFMPEG, test x$enable_ffmpeg = xyes)
 
-if test x$enable_fluidsynth = xyes; then
-	PKG_CHECK_MODULES(FLUIDSYNTH, [fluidsynth],
-		AC_DEFINE(ENABLE_FLUIDSYNTH, 1, [Define for fluidsynth support]),
-		enable_fluidsynth=no)
-fi
 
-AM_CONDITIONAL(ENABLE_FLUIDSYNTH, test x$enable_fluidsynth = xyes)
 
 if test x$enable_wildmidi = xyes; then
 	oldcflags=$CFLAGS
