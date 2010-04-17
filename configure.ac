@@ -1265,6 +1265,7 @@ if test x$enable_wave_encoder = xyes; then
 		[Define to enable the PCM wave encoder plugin])
 fi
 
+dnl --------------------------- encoder plugins test --------------------------
 if test x$enable_vorbis_encoder != xno ||
 	test x$enable_lame_encoder != xno ||
 	test x$enable_twolame_encoder != xno ||
@@ -1281,6 +1282,11 @@ else
 	fi
 fi
 
+if test x$enable_encoder = xyes; then
+	AC_DEFINE(ENABLE_ENCODER, 1,
+		[Define to enable the encoder plugins])
+fi
+AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_encoder = xyes)
 
 if test x$enable_shout = xauto; then
 	# handle shout auto-detection: disable if no encoder is
@@ -1328,12 +1334,6 @@ fi
 AM_CONDITIONAL(ENABLE_HTTPD_OUTPUT, test x$enable_httpd_output = xyes)
 if test x$enable_httpd_output = xyes; then
 	AC_DEFINE(ENABLE_HTTPD_OUTPUT, 1, [Define to enable the HTTP server output])
-fi
-
-AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_encoder = xyes)
-if test x$enable_encoder = xyes; then
-	AC_DEFINE(ENABLE_ENCODER, 1,
-		[Define to enable the encoder plugins])
 fi
 
 dnl ---------------------------------------------------------------------------
