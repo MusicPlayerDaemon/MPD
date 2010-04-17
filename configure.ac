@@ -1174,6 +1174,27 @@ AM_CONDITIONAL(ENABLE_WILDMIDI, test x$enable_wildmidi = xyes)
 
 dnl ------------------------ Post Decoder Plugins Tests -----------------------
 
+if
+	test x$enable_aac = xno &&
+	test x$enable_audiofile = xno &&
+	test x$enable_ffmpeg = xno &&
+	test x$enable_flac = xno &&
+	test x$enable_fluidsynth = xno &&
+	test x$enable_mad = xno &&
+	test x$enable_mikmod = xno; then
+	test x$enable_modplug = xno &&
+	test x$enable_mp4 = xno &&
+	test x$enable_mpc = xno &&
+	test x$enable_mpg123 = xno &&
+	test x$enable_oggflac = xno &&
+	test x$enable_sidplay = xno &&
+	test x$enable_vorbis = xno &&
+	test x$enable_wavpack = xno &&
+	test x$enable_wildmidi = xno &&
+
+		AC_MSG_ERROR([No input plugins supported!])
+fi
+
 AM_CONDITIONAL(HAVE_OGG_COMMON,
 	  test x$enable_vorbis = xyes || test x$enable_oggflac = xyes || test x$enable_flac = xyes)
 
@@ -1455,25 +1476,6 @@ results(audiofile, [WAVE])
 results(wavpack, [WavPack])
 results(wildmidi, [WildMidi])
 
-if
-	test x$enable_mad = xno &&
-	test x$enable_mpg123 = xno &&
-	test x$enable_vorbis = xno &&
-	test x$enable_flac = xno && 
-	test x$enable_oggflac = xno &&
-	test x$enable_audiofile = xno && 
-	test x$enable_aac = xno &&
-	test x$enable_mpc = xno &&
-	test x$enable_wavpack = xno &&
-	test x$enable_ffmpeg = xno &&
-	test x$enable_modplug = xno &&
-	test x$enable_sidplay = xno &&
-	test x$enable_fluidsynth = xno &&
-	test x$enable_wildmidi = xno &&
-	test x$enable_mp4 = xno &&
-	test x$enable_mikmod = xno; then
-		AC_MSG_ERROR([No input plugins supported!])
-fi
 
 echo -en '\nOther features:\n\t'
 results(lsr, [libsamplerate])
