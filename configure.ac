@@ -695,102 +695,6 @@ fi
 
 AM_CONDITIONAL(ENABLE_ARCHIVE, test x$enable_archive = xyes)
 
-dnl
-dnl metadata
-dnl
-
-
-dnl
-dnl decoder plugins
-dnl
-
-
-dnl ###
-dnl MAD mp3 decoder
-dnl ###
-
-
-
-
-
-
-
-
-
-
-
-
-
-AC_ARG_ENABLE(mpc,
-	AS_HELP_STRING([--disable-mpc],
-		[disable musepack (MPC) support (default: enable)]),,
-	enable_mpc=yes)
-
-AC_ARG_ENABLE(oggflac,
-	AS_HELP_STRING([--disable-oggflac],
-		[disable OggFLAC support (default: enable)]),,
-	enable_oggflac=yes)
-
-AC_ARG_ENABLE(vorbis,
-	AS_HELP_STRING([--disable-vorbis],
-		[disable Ogg Vorbis support (default: enable)]),,
-	enable_vorbis=yes)
-
-AC_ARG_ENABLE(sndfile,
-	AS_HELP_STRING([--enable-sndfile],
-		[enable sndfile support]),,
-	enable_sndfile=auto)
-
-if test x$enable_sndfile = xauto && test x$enable_modplug = xyes; then
-	dnl If modplug is enabled, enable sndfile only if explicitly
-	dnl requested - modplug's modplug/sndfile.h is known to
-	dnl conflict with libsndfile's sndfile.h.
-	AC_MSG_NOTICE([disabling libsndfile auto-detection, because the modplug decoder is enabled])
-	enable_sndfile=no
-fi
-
-MPD_AUTO_PKG(sndfile, SNDFILE, [sndfile],
-	[libsndfile decoder plugin], [libsndfile not found])
-AM_CONDITIONAL(ENABLE_SNDFILE, test x$enable_sndfile = xyes)
-if test x$enable_sndfile = xyes; then
-	AC_DEFINE(ENABLE_SNDFILE, 1, [Define to enable the sndfile decoder plugin])
-fi
-
-
-found_sidplay=$HAVE_CXX
-MPD_AUTO_PRE(sidplay, [sidplay decoder plugin], [No C++ compiler found])
-
-if test x$enable_sidplay != xno; then
-	# we're not using pkg-config here
-	# because libsidplay2's .pc file requires libtool
-	AC_HAVE_LIBRARY(sidplay2, [found_sidplay=yes], [found_sidplay=no])
-	MPD_AUTO_PRE(sidplay, [sidplay decoder plugin],
-		[libsidplay2 not found])
-fi
-
-if test x$enable_sidplay != xno; then
-	# can't use AC_HAVE_LIBRARY here, because the dash in the
-	# library name triggers an autoconf bug
-	AC_CHECK_LIB(resid-builder, main,
-		[found_sidplay=yes], [found_sidplay=no])
-
-	if test x$found_sidplay = xyes; then
-		AC_HAVE_LIBRARY(sidutils,, [found_sidplay=no])
-	fi
-
-	MPD_AUTO_RESULT(sidplay, [sidplay decoder plugin],
-		[libresid-builder or libsidutils not found])
-fi
-
-if test x$enable_sidplay = xyes; then
-	AC_SUBST(SIDPLAY_LIBS,"-lsidplay2 -lresid-builder -lsidutils")
-	AC_SUBST(SIDPLAY_CFLAGS,)
-
-	AC_DEFINE(ENABLE_SIDPLAY, 1, [Define for libsidplay2 support])
-fi
-
-AM_CONDITIONAL(ENABLE_SIDPLAY, test x$enable_sidplay = xyes)
-
 MPD_AUTO_PKG(wavpack, WAVPACK, [wavpack],
 	[WavPack decoder plugin], [libwavpack not found])
 AM_CONDITIONAL(HAVE_WAVPACK, test x$enable_wavpack = xyes)
@@ -1187,6 +1091,42 @@ AM_CONDITIONAL(ENABLE_VORBIS_DECODER, test x$enable_vorbis = xyes)
 
 AM_CONDITIONAL(HAVE_OGG_COMMON,
 	  test x$enable_vorbis = xyes || test x$enable_oggflac = xyes || test x$enable_flac = xyes)
+
+dnl --------------------------------- sidplay ---------------------------------
+found_sidplay=$HAVE_CXX
+MPD_AUTO_PRE(sidplay, [sidplay decoder plugin], [No C++ compiler found])
+
+if test x$enable_sidplay != xno; then
+	# we're not using pkg-config here
+	# because libsidplay2's .pc file requires libtool
+	AC_HAVE_LIBRARY(sidplay2, [found_sidplay=yes], [found_sidplay=no])
+	MPD_AUTO_PRE(sidplay, [sidplay decoder plugin],
+		[libsidplay2 not found])
+fi
+
+if test x$enable_sidplay != xno; then
+	# can't use AC_HAVE_LIBRARY here, because the dash in the
+	# library name triggers an autoconf bug
+	AC_CHECK_LIB(resid-builder, main,
+		[found_sidplay=yes], [found_sidplay=no])
+
+	if test x$found_sidplay = xyes; then
+		AC_HAVE_LIBRARY(sidutils,, [found_sidplay=no])
+	fi
+
+	MPD_AUTO_RESULT(sidplay, [sidplay decoder plugin],
+		[libresid-builder or libsidutils not found])
+fi
+
+if test x$enable_sidplay = xyes; then
+	AC_SUBST(SIDPLAY_LIBS,"-lsidplay2 -lresid-builder -lsidutils")
+	AC_SUBST(SIDPLAY_CFLAGS,)
+
+	AC_DEFINE(ENABLE_SIDPLAY, 1, [Define for libsidplay2 support])
+fi
+
+AM_CONDITIONAL(ENABLE_SIDPLAY, test x$enable_sidplay = xyes)
+
 
 MPD_AUTO_PKG(ffmpeg, FFMPEG, [libavformat libavcodec libavutil],
 	[ffmpeg decoder library], [libavformat+libavcodec+libavutil not found])
