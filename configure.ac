@@ -1248,8 +1248,15 @@ if test x$enable_lame_encoder = xyes; then
 fi
 AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_lame_encoder = xyes)
 
+dnl ----------------------------- TwoLAME Encoder -----------------------------
 MPD_AUTO_PKG(twolame_encoder, TWOLAME, [twolame],
 	[TwoLAME encoder], [libtwolame not found])
+
+if test x$enable_twolame_encoder = xyes; then
+	AC_DEFINE(ENABLE_TWOLAME_ENCODER, 1,
+		[Define to enable the TwoLAME encoder plugin])
+fi
+AM_CONDITIONAL(ENABLE_TWOLAME_ENCODER, test x$enable_twolame_encoder = xyes)
 
 if test x$enable_vorbis_encoder != xno ||
 	test x$enable_lame_encoder != xno ||
@@ -1320,13 +1327,6 @@ AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_encoder = xyes)
 if test x$enable_encoder = xyes; then
 	AC_DEFINE(ENABLE_ENCODER, 1,
 		[Define to enable the encoder plugins])
-fi
-
-
-AM_CONDITIONAL(ENABLE_TWOLAME_ENCODER, test x$enable_twolame_encoder = xyes)
-if test x$enable_twolame_encoder = xyes; then
-	AC_DEFINE(ENABLE_TWOLAME_ENCODER, 1,
-		[Define to enable the TwoLAME encoder plugin])
 fi
 
 AM_CONDITIONAL(ENABLE_WAVE_ENCODER, test x$enable_wave_encoder = xyes)
