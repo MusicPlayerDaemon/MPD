@@ -973,13 +973,7 @@ fi
 
 AM_CONDITIONAL(HAVE_MVP, test x$enable_mvp = xyes)
 
-enable_shout2="$enable_shout"
-MPD_AUTO_PKG(shout, SHOUT, [shout],
-	[shout output plugin], [libshout not found])
-if test x$enable_shout = xyes && test x$enable_shout2 = xauto; then
-	enable_shout=auto
-fi
-
+dnl --------------------------------- Solaris ---------------------------------
 case "$host_os" in
 	solaris*)
 		AC_DEFINE(ENABLE_SOLARIS_OUTPUT, 1, [Define to enable Solaris /dev/audio support])
@@ -992,6 +986,24 @@ case "$host_os" in
 esac
 
 AM_CONDITIONAL(ENABLE_SOLARIS_OUTPUT, test x$enable_solaris_output = xyes)
+
+
+
+
+
+
+
+
+
+
+enable_shout2="$enable_shout"
+MPD_AUTO_PKG(shout, SHOUT, [shout],
+	[shout output plugin], [libshout not found])
+if test x$enable_shout = xyes && test x$enable_shout2 = xauto; then
+	enable_shout=auto
+fi
+
+
 
 
 
