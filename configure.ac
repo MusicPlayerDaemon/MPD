@@ -1288,6 +1288,28 @@ if test x$enable_encoder = xyes; then
 fi
 AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_encoder = xyes)
 
+dnl ---------------------------------------------------------------------------
+dnl Audio Output Plugins (Streaming)
+dnl ---------------------------------------------------------------------------
+
+
+dnl ------------------------------- HTTPD Output ------------------------------
+if test x$enable_httpd_output = xauto; then
+	# handle HTTPD auto-detection: disable if no encoder is
+	# available
+	if test x$enable_encoder = xyes; then
+		enable_httpd_output=yes
+	else
+		AC_MSG_WARN([No encoder plugin -- disabling the HTTP output plugin])
+		enable_httpd_output=no
+	fi
+fi
+
+if test x$enable_httpd_output = xyes; then
+	AC_DEFINE(ENABLE_HTTPD_OUTPUT, 1, [Define to enable the HTTP server output])
+fi
+AM_CONDITIONAL(ENABLE_HTTPD_OUTPUT, test x$enable_httpd_output = xyes)
+
 if test x$enable_shout = xauto; then
 	# handle shout auto-detection: disable if no encoder is
 	# available
@@ -1310,17 +1332,6 @@ if test x$enable_recorder_output = xauto; then
 	fi
 fi
 
-if test x$enable_httpd_output = xauto; then
-	# handle HTTPD auto-detection: disable if no encoder is
-	# available
-	if test x$enable_encoder = xyes; then
-		enable_httpd_output=yes
-	else
-		AC_MSG_WARN([No encoder plugin -- disabling the HTTP output plugin])
-		enable_httpd_output=no
-	fi
-fi
-
 AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
 if test x$enable_shout = xyes; then
 	AC_DEFINE(HAVE_SHOUT, 1, [Define to enable the shoutcast output])
@@ -1331,10 +1342,6 @@ if test x$enable_recorder_output = xyes; then
 	AC_DEFINE(ENABLE_RECORDER_OUTPUT, 1, [Define to enable the recorder output])
 fi
 
-AM_CONDITIONAL(ENABLE_HTTPD_OUTPUT, test x$enable_httpd_output = xyes)
-if test x$enable_httpd_output = xyes; then
-	AC_DEFINE(ENABLE_HTTPD_OUTPUT, 1, [Define to enable the HTTP server output])
-fi
 
 dnl ---------------------------------------------------------------------------
 dnl Documentation
