@@ -393,21 +393,6 @@ AC_ARG_WITH(tremor-includes,
 		[directory where Tremor header files are installed (optional)]),,
 	tremor_includes="")
 
-
-
-
-
-AC_CHECK_FUNCS(inotify_init inotify_init1)
-
-if test x$ac_cv_func_inotify_init = xno; then
-	enable_inotify=no
-fi
-
-if test x$enable_inotify = xyes; then
-	AC_DEFINE([ENABLE_INOTIFY], 1, [Define to enable inotify support])
-fi
-AM_CONDITIONAL(ENABLE_INOTIFY, test x$enable_inotify = xyes)
-
 dnl ---------------------------------------------------------------------------
 dnl Mandatory Libraries
 dnl ---------------------------------------------------------------------------
@@ -465,8 +450,19 @@ if test x$enable_largefile != xno; then
 fi
 
 dnl ---------------------------------------------------------------------------
-dnl Optional Libraries
+dnl Miscellaneous Libraries
 dnl ---------------------------------------------------------------------------
+
+AC_CHECK_FUNCS(inotify_init inotify_init1)
+
+if test x$ac_cv_func_inotify_init = xno; then
+	enable_inotify=no
+fi
+
+if test x$enable_inotify = xyes; then
+	AC_DEFINE([ENABLE_INOTIFY], 1, [Define to enable inotify support])
+fi
+AM_CONDITIONAL(ENABLE_INOTIFY, test x$enable_inotify = xyes)
 
 if test x$enable_libwrap != xno; then
 	AC_CHECK_LIBWRAP(found_libwrap=yes, found_libwrap=no)
