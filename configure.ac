@@ -608,6 +608,22 @@ dnl ---------------------------------------------------------------------------
 dnl Archive Plugins
 dnl ---------------------------------------------------------------------------
 
+dnl --------------------------------- iso9660 ---------------------------------
+MPD_AUTO_PKG(iso9660, ISO9660, [libiso9660],
+	[libiso9660 archive library], [libiso9660 not found])
+
+AM_CONDITIONAL(HAVE_ISO9660, test x$enable_iso9660 = xyes)
+if test x$enable_iso9660 = xyes; then
+	AC_DEFINE(HAVE_ISO9660, 1, [Define to have ISO9660 archive support])
+
+	AC_PATH_PROG(MKISOFS, mkisofs, no)
+else
+	MKISOFS="no"
+fi
+
+AM_CONDITIONAL(ENABLE_ISO9660_TEST, test x$MKISOFS != xno)
+
+dnl ---------------------------------- libbz2 ---------------------------------
 if test x$enable_bzip2 = xyes; then
 	AC_CHECK_LIB(bz2, BZ2_bzDecompressInit,
 		[MPD_LIBS="$MPD_LIBS -lbz2"],
@@ -625,6 +641,7 @@ fi
 
 AM_CONDITIONAL(ENABLE_BZIP2_TEST, test x$BZIP2 != xno)
 
+dnl --------------------------------- libzzip ---------------------------------
 MPD_AUTO_PKG(zzip, ZZIP, [zziplib >= 0.13],
 	[libzzip archive library], [libzzip not found])
 
@@ -639,21 +656,7 @@ fi
 
 AM_CONDITIONAL(ENABLE_ZZIP_TEST, test x$ZIP != xno)
 
-MPD_AUTO_PKG(iso9660, ISO9660, [libiso9660],
-	[libiso9660 archive library], [libiso9660 not found])
-
-AM_CONDITIONAL(HAVE_ISO9660, test x$enable_iso9660 = xyes)
-if test x$enable_iso9660 = xyes; then
-	AC_DEFINE(HAVE_ISO9660, 1, [Define to have ISO9660 archive support])
-
-	AC_PATH_PROG(MKISOFS, mkisofs, no)
-else
-	MKISOFS="no"
-fi
-
-AM_CONDITIONAL(ENABLE_ISO9660_TEST, test x$MKISOFS != xno)
-
-dnl archive API
+dnl ------------------------------- Archive API -------------------------------
 if
 	test x$enable_bzip2 = xyes ||
 	test x$enable_zzip = xyes ||
