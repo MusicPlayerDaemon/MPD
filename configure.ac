@@ -1181,10 +1181,11 @@ AM_CONDITIONAL(HAVE_OGG_COMMON,
 AM_CONDITIONAL(HAVE_FLAC_COMMON,
 	  test x$enable_flac = xyes || test x$enable_oggflac = xyes)
 
-dnl
-dnl Encoder API and shout/httpd output plugin
-dnl
+dnl ---------------------------------------------------------------------------
+dnl Encoders for Streaming Audio Output Plugins
+dnl ---------------------------------------------------------------------------
 
+dnl ------------------------------- Encoder API -------------------------------
 if test x$enable_shout = xyes || \
 	test x$enable_recorder_output = xyes || \
 	test x$enable_httpd_output = xyes; then
