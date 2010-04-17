@@ -1143,13 +1143,7 @@ if test x$use_tremor = xyes; then
 	if test x$enable_vorbis = xyes; then
 		AC_DEFINE(ENABLE_VORBIS_DECODER, 1, [Define for Ogg Vorbis support])
 	fi
-elif test x$enable_vorbis = xyes; then
-	PKG_CHECK_MODULES(VORBIS, [ogg vorbis vorbisfile],
-		AC_DEFINE(ENABLE_VORBIS_DECODER, 1, [Define for Ogg Vorbis support]),
-		enable_vorbis=no)
 fi
-
-AM_CONDITIONAL(ENABLE_VORBIS_DECODER, test x$enable_vorbis = xyes)
 
 if test x$use_tremor = xyes; then
 	AC_DEFINE(HAVE_TREMOR,1,
@@ -1181,6 +1175,16 @@ AM_CONDITIONAL(HAVE_OGGFLAC, test x$enable_oggflac = xyes)
 
 AM_CONDITIONAL(HAVE_FLAC_COMMON,
 	  test x$enable_flac = xyes || test x$enable_oggflac = xyes)
+
+dnl -------------------------------- Ogg Vorbis -------------------------------
+if test x$enable_tremor != xyes -a test x$enable_vorbis = xyes; then
+	PKG_CHECK_MODULES(VORBIS, [ogg vorbis vorbisfile],
+		AC_DEFINE(ENABLE_VORBIS_DECODER, 1, [Define for Ogg Vorbis support]),
+		enable_vorbis=no)
+fi
+
+AM_CONDITIONAL(ENABLE_VORBIS_DECODER, test x$enable_vorbis = xyes)
+
 AM_CONDITIONAL(HAVE_OGG_COMMON,
 	  test x$enable_vorbis = xyes || test x$enable_oggflac = xyes || test x$enable_flac = xyes)
 
