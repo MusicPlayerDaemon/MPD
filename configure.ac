@@ -703,139 +703,6 @@ fi
 AM_CONDITIONAL(ENABLE_ARCHIVE, test x$enable_archive = xyes)
 
 dnl ---------------------------------------------------------------------------
-dnl Audio Output Plugins (Nonstreaming)
-dnl ---------------------------------------------------------------------------
-
-dnl ----------------------------------- ALSA ----------------------------------
-MPD_AUTO_PKG(alsa, ALSA, [alsa >= 0.9.0],
-	[ALSA output plugin], [libasound not found])
-
-if test x$enable_alsa = xyes; then
-	AC_DEFINE(HAVE_ALSA, 1, [Define to enable ALSA support])
-fi
-
-AM_CONDITIONAL(HAVE_ALSA, test x$enable_alsa = xyes)
-
-dnl ----------------------------------- FIFO ----------------------------------
-if test x$enable_fifo = xyes; then
-	AC_CHECK_FUNC([mkfifo],
-		[enable_fifo=yes;AC_DEFINE([HAVE_FIFO], 1,
-			[Define to enable support for writing audio to a FIFO])],
-		[enable_fifo=no;AC_MSG_WARN([mkfifo not found -- disabling support for writing audio to a FIFO])])
-fi
-
-AM_CONDITIONAL(HAVE_FIFO, test x$enable_fifo = xyes)
-
-dnl ----------------------------------- JACK ----------------------------------
-MPD_AUTO_PKG(jack, JACK, [jack >= 0.100],
-	[JACK output plugin], [libjack not found])
-if test x$enable_jack = xyes; then
-	AC_DEFINE([HAVE_JACK], 1, [Define to enable JACK support])
-fi
-
-if test x$enable_jack = xyes; then
-	# check whether jack_set_info_function() is available
-	old_LIBS=$LIBS
-	LIBS="$LIBS $JACK_LIBS"
-
-	AC_CHECK_FUNCS(jack_set_info_function)
-
-	LIBS=$old_LIBS
-fi
-
-AM_CONDITIONAL(HAVE_JACK, test x$enable_jack = xyes)
-
-dnl ---------------------------------- libao ----------------------------------
-MPD_AUTO_PKG(ao, AO, [ao],
-	[libao output plugin], [libao not found])
-if test x$enable_ao = xyes; then
-	AC_DEFINE(HAVE_AO, 1, [Define to play with ao])
-fi
-
-AM_CONDITIONAL(HAVE_AO, test x$enable_ao = xyes)
-
-dnl ---------------------------------- OpenAL ---------------------------------
-AC_SUBST(OPENAL_CFLAGS,"")
-AC_SUBST(OPENAL_LIBS,"")
-
-if test x$enable_openal = xyes; then
-	if test x$enable_osx = xyes; then
-		AC_CHECK_HEADERS([OpenAL/al.h OpenAL/alc.h], [], [enable_openal=no])
-		if test x$enable_openal = xyes; then
-			OPENAL_LIBS="-framework OpenAL"
-			AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support])
-		else
-			AC_MSG_WARN(OpenAL headers not found -- disabling OpenAL support)
-		fi
-	else
-		PKG_CHECK_MODULES([OPENAL], [openal],
-			AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support]),
-			enable_openal=no)
-	fi
-fi
-
-AM_CONDITIONAL(HAVE_OPENAL, test x$enable_openal = xyes)
-
-dnl ---------------------------- Open Sound System ----------------------------
-if test x$enable_oss = xyes; then
-	AC_CHECK_HEADER(sys/soundcard.h,
-		[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],
-		[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);
-			enable_oss=no])
-fi
-
-AM_CONDITIONAL(HAVE_OSS, test x$enable_oss = xyes)
-
-dnl ----------------------------------- OSX -----------------------------------
-enable_osx=no
-case "$host_os" in
-	darwin*)
-		AC_DEFINE(HAVE_OSX, 1, [Define for compiling OS X support])
-		MPD_LIBS="$MPD_LIBS -framework AudioUnit -framework CoreServices"
-		enable_osx=yes ;;
-esac
-
-AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
-
-dnl ------------------------------- Pipe Output -------------------------------
-if test x$enable_pipe_output = xyes; then
-	AC_DEFINE([ENABLE_PIPE_OUTPUT], 1,
-		[Define to enable support for writing audio to a pipe])
-fi
-AM_CONDITIONAL(ENABLE_PIPE_OUTPUT, test x$enable_pipe_output = xyes)
-
-dnl -------------------------------- PulseAudio -------------------------------
-MPD_AUTO_PKG(pulse, PULSE, [libpulse],
-	[PulseAudio output plugin], [libpulse not found])
-if test x$enable_pulse = xyes; then
-	AC_DEFINE([HAVE_PULSE], 1,
-		[Define to enable PulseAudio support])
-fi
-
-AM_CONDITIONAL(HAVE_PULSE, test x$enable_pulse = xyes)
-
-dnl ----------------------------------- MVP -----------------------------------
-if test x$enable_mvp = xyes; then
-   AC_DEFINE(HAVE_MVP,1,[Define to enable Hauppauge Media MVP support])
-fi
-
-AM_CONDITIONAL(HAVE_MVP, test x$enable_mvp = xyes)
-
-dnl --------------------------------- Solaris ---------------------------------
-case "$host_os" in
-	solaris*)
-		AC_DEFINE(ENABLE_SOLARIS_OUTPUT, 1, [Define to enable Solaris /dev/audio support])
-		enable_solaris_output=yes
-		;;
-
-	*)
-		enable_solaris_output=no
-		;;
-esac
-
-AM_CONDITIONAL(ENABLE_SOLARIS_OUTPUT, test x$enable_solaris_output = xyes)
-
-dnl ---------------------------------------------------------------------------
 dnl Decoder Plugins
 dnl ---------------------------------------------------------------------------
 
@@ -1204,6 +1071,211 @@ AM_CONDITIONAL(HAVE_OGG_COMMON,
 AM_CONDITIONAL(HAVE_FLAC_COMMON,
 	  test x$enable_flac = xyes || test x$enable_oggflac = xyes)
 
+
+dnl ---------------------------------------------------------------------------
+dnl Audio Output Plugins
+dnl ---------------------------------------------------------------------------
+
+dnl ----------------------------------- ALSA ----------------------------------
+MPD_AUTO_PKG(alsa, ALSA, [alsa >= 0.9.0],
+	[ALSA output plugin], [libasound not found])
+
+if test x$enable_alsa = xyes; then
+	AC_DEFINE(HAVE_ALSA, 1, [Define to enable ALSA support])
+fi
+
+AM_CONDITIONAL(HAVE_ALSA, test x$enable_alsa = xyes)
+
+dnl ----------------------------------- FIFO ----------------------------------
+if test x$enable_fifo = xyes; then
+	AC_CHECK_FUNC([mkfifo],
+		[enable_fifo=yes;AC_DEFINE([HAVE_FIFO], 1,
+			[Define to enable support for writing audio to a FIFO])],
+		[enable_fifo=no;AC_MSG_WARN([mkfifo not found -- disabling support for writing audio to a FIFO])])
+fi
+
+AM_CONDITIONAL(HAVE_FIFO, test x$enable_fifo = xyes)
+
+dnl ------------------------------- HTTPD Output ------------------------------
+if test x$enable_httpd_output = xauto; then
+	# handle HTTPD auto-detection: disable if no encoder is
+	# available
+	if test x$enable_encoder = xyes; then
+		enable_httpd_output=yes
+	else
+		AC_MSG_WARN([No encoder plugin -- disabling the HTTP output plugin])
+		enable_httpd_output=no
+	fi
+fi
+
+if test x$enable_httpd_output = xyes; then
+	AC_DEFINE(ENABLE_HTTPD_OUTPUT, 1, [Define to enable the HTTP server output])
+fi
+AM_CONDITIONAL(ENABLE_HTTPD_OUTPUT, test x$enable_httpd_output = xyes)
+
+dnl ----------------------------------- JACK ----------------------------------
+MPD_AUTO_PKG(jack, JACK, [jack >= 0.100],
+	[JACK output plugin], [libjack not found])
+if test x$enable_jack = xyes; then
+	AC_DEFINE([HAVE_JACK], 1, [Define to enable JACK support])
+fi
+
+if test x$enable_jack = xyes; then
+	# check whether jack_set_info_function() is available
+	old_LIBS=$LIBS
+	LIBS="$LIBS $JACK_LIBS"
+
+	AC_CHECK_FUNCS(jack_set_info_function)
+
+	LIBS=$old_LIBS
+fi
+
+AM_CONDITIONAL(HAVE_JACK, test x$enable_jack = xyes)
+
+dnl ---------------------------------- libao ----------------------------------
+MPD_AUTO_PKG(ao, AO, [ao],
+	[libao output plugin], [libao not found])
+if test x$enable_ao = xyes; then
+	AC_DEFINE(HAVE_AO, 1, [Define to play with ao])
+fi
+
+AM_CONDITIONAL(HAVE_AO, test x$enable_ao = xyes)
+
+dnl ----------------------------------- MVP -----------------------------------
+if test x$enable_mvp = xyes; then
+   AC_DEFINE(HAVE_MVP,1,[Define to enable Hauppauge Media MVP support])
+fi
+
+AM_CONDITIONAL(HAVE_MVP, test x$enable_mvp = xyes)
+
+dnl ---------------------------------- OpenAL ---------------------------------
+AC_SUBST(OPENAL_CFLAGS,"")
+AC_SUBST(OPENAL_LIBS,"")
+
+if test x$enable_openal = xyes; then
+	if test x$enable_osx = xyes; then
+		AC_CHECK_HEADERS([OpenAL/al.h OpenAL/alc.h], [], [enable_openal=no])
+		if test x$enable_openal = xyes; then
+			OPENAL_LIBS="-framework OpenAL"
+			AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support])
+		else
+			AC_MSG_WARN(OpenAL headers not found -- disabling OpenAL support)
+		fi
+	else
+		PKG_CHECK_MODULES([OPENAL], [openal],
+			AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support]),
+			enable_openal=no)
+	fi
+fi
+
+AM_CONDITIONAL(HAVE_OPENAL, test x$enable_openal = xyes)
+
+dnl ---------------------------- Open Sound System ----------------------------
+if test x$enable_oss = xyes; then
+	AC_CHECK_HEADER(sys/soundcard.h,
+		[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],
+		[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);
+			enable_oss=no])
+fi
+
+AM_CONDITIONAL(HAVE_OSS, test x$enable_oss = xyes)
+
+dnl ----------------------------------- OSX -----------------------------------
+enable_osx=no
+case "$host_os" in
+	darwin*)
+		AC_DEFINE(HAVE_OSX, 1, [Define for compiling OS X support])
+		MPD_LIBS="$MPD_LIBS -framework AudioUnit -framework CoreServices"
+		enable_osx=yes ;;
+esac
+
+AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
+
+dnl ------------------------------- Pipe Output -------------------------------
+if test x$enable_pipe_output = xyes; then
+	AC_DEFINE([ENABLE_PIPE_OUTPUT], 1,
+		[Define to enable support for writing audio to a pipe])
+fi
+AM_CONDITIONAL(ENABLE_PIPE_OUTPUT, test x$enable_pipe_output = xyes)
+
+dnl -------------------------------- PulseAudio -------------------------------
+MPD_AUTO_PKG(pulse, PULSE, [libpulse],
+	[PulseAudio output plugin], [libpulse not found])
+if test x$enable_pulse = xyes; then
+	AC_DEFINE([HAVE_PULSE], 1,
+		[Define to enable PulseAudio support])
+fi
+
+AM_CONDITIONAL(HAVE_PULSE, test x$enable_pulse = xyes)
+
+dnl --------------------------------- Recorder --------------------------------
+if test x$enable_recorder_output = xauto; then
+	# handle recorder auto-detection: disable if no encoder is
+	# available
+	if test x$enable_encoder = xyes; then
+		enable_recorder_output=yes
+	else
+		AC_MSG_WARN([No encoder plugin -- disabling the recorder output plugin])
+		enable_recorder_output=no
+	fi
+fi
+
+if test x$enable_recorder_output = xyes; then
+	AC_DEFINE(ENABLE_RECORDER_OUTPUT, 1, [Define to enable the recorder output])
+fi
+AM_CONDITIONAL(ENABLE_RECORDER_OUTPUT, test x$enable_recorder_output = xyes)
+
+dnl -------------------------------- SHOUTcast --------------------------------
+if test x$enable_shout = xauto; then
+	# handle shout auto-detection: disable if no encoder is
+	# available
+	if test x$enable_encoder = xyes; then
+		enable_shout=yes
+	else
+		AC_MSG_WARN([No encoder plugin -- disabling the shout output plugin])
+		enable_shout=no
+	fi
+fi
+
+if test x$enable_shout = xyes; then
+	AC_DEFINE(HAVE_SHOUT, 1, [Define to enable the shoutcast output])
+fi
+AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
+
+dnl --------------------------------- Solaris ---------------------------------
+case "$host_os" in
+	solaris*)
+		AC_DEFINE(ENABLE_SOLARIS_OUTPUT, 1, [Define to enable Solaris /dev/audio support])
+		enable_solaris_output=yes
+		;;
+
+	*)
+		enable_solaris_output=no
+		;;
+esac
+
+AM_CONDITIONAL(ENABLE_SOLARIS_OUTPUT, test x$enable_solaris_output = xyes)
+
+dnl --------------------- Post Audio Output Plugins Tests ---------------------
+if
+	test x$enable_alsa = xno &&
+	test x$enable_ao = xno &&
+	test x$enable_fifo = xno &&
+	test x$enable_httpd_output = xno &&
+	test x$enable_jack = xno &&
+	test x$enable_mvp = xno; then
+	test x$enable_openal = xno &&
+	test x$enable_oss = xno &&
+	test x$enable_osx = xno &&
+	test x$enable_pipe_output = xno &&
+	test x$enable_pulse = xno &&
+	test x$enable_recorder_output = xno &&
+	test x$enable_shout = xno &&
+	test x$enable_solaris_output = xno &&
+
+		AC_MSG_ERROR([No Audio Output types configured!])
+fi
+
 dnl ---------------------------------------------------------------------------
 dnl Encoders for Streaming Audio Output Plugins
 dnl ---------------------------------------------------------------------------
@@ -1312,81 +1384,6 @@ fi
 AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_encoder = xyes)
 
 dnl ---------------------------------------------------------------------------
-dnl Audio Output Plugins (Streaming)
-dnl ---------------------------------------------------------------------------
-
-
-dnl ------------------------------- HTTPD Output ------------------------------
-if test x$enable_httpd_output = xauto; then
-	# handle HTTPD auto-detection: disable if no encoder is
-	# available
-	if test x$enable_encoder = xyes; then
-		enable_httpd_output=yes
-	else
-		AC_MSG_WARN([No encoder plugin -- disabling the HTTP output plugin])
-		enable_httpd_output=no
-	fi
-fi
-
-if test x$enable_httpd_output = xyes; then
-	AC_DEFINE(ENABLE_HTTPD_OUTPUT, 1, [Define to enable the HTTP server output])
-fi
-AM_CONDITIONAL(ENABLE_HTTPD_OUTPUT, test x$enable_httpd_output = xyes)
-
-dnl --------------------------------- Recorder --------------------------------
-if test x$enable_recorder_output = xauto; then
-	# handle recorder auto-detection: disable if no encoder is
-	# available
-	if test x$enable_encoder = xyes; then
-		enable_recorder_output=yes
-	else
-		AC_MSG_WARN([No encoder plugin -- disabling the recorder output plugin])
-		enable_recorder_output=no
-	fi
-fi
-
-if test x$enable_recorder_output = xyes; then
-	AC_DEFINE(ENABLE_RECORDER_OUTPUT, 1, [Define to enable the recorder output])
-fi
-AM_CONDITIONAL(ENABLE_RECORDER_OUTPUT, test x$enable_recorder_output = xyes)
-
-dnl -------------------------------- SHOUTcast --------------------------------
-if test x$enable_shout = xauto; then
-	# handle shout auto-detection: disable if no encoder is
-	# available
-	if test x$enable_encoder = xyes; then
-		enable_shout=yes
-	else
-		AC_MSG_WARN([No encoder plugin -- disabling the shout output plugin])
-		enable_shout=no
-	fi
-fi
-
-if test x$enable_shout = xyes; then
-	AC_DEFINE(HAVE_SHOUT, 1, [Define to enable the shoutcast output])
-fi
-AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
-
-dnl --------------------- Post Audio Output Plugins Tests ---------------------
-if
-	test x$enable_ao = xno &&
-	test x$enable_oss = xno &&
-	test x$enable_openal = xno &&
-	test x$enable_shout = xno &&
-	test x$enable_recorder_output = xno &&
-	test x$enable_httpd_output = xno &&
-	test x$enable_solaris_output = xno &&
-	test x$enable_alsa = xno &&
-	test x$enable_osx = xno &&
-	test x$enable_pulse = xno &&
-	test x$enable_jack = xno &&
-	test x$enable_fifo = xno &&
-	test x$enable_pipe_output = xno &&
-	test x$enable_mvp = xno; then
-		AC_MSG_ERROR([No Audio Output types configured!])
-fi
-
-dnl ---------------------------------------------------------------------------
 dnl Documentation
 dnl ---------------------------------------------------------------------------
 if test x$enable_documentation = xyes; then
@@ -1491,7 +1488,6 @@ results(vorbis, [OggVorbis])
 results(audiofile, [WAVE])
 results(wavpack, [WavPack])
 results(wildmidi, [WildMidi])
-
 
 echo -en '\nOther features:\n\t'
 results(lsr, [libsamplerate])
