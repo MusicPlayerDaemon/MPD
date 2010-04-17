@@ -695,15 +695,6 @@ fi
 
 AM_CONDITIONAL(ENABLE_ARCHIVE, test x$enable_archive = xyes)
 
-MPD_AUTO_PKG(wavpack, WAVPACK, [wavpack],
-	[WavPack decoder plugin], [libwavpack not found])
-AM_CONDITIONAL(HAVE_WAVPACK, test x$enable_wavpack = xyes)
-if test x$enable_wavpack = xyes; then
-	AC_DEFINE([HAVE_WAVPACK], 1, [Define to enable WavPack support])
-fi
-
-
-
 dnl ---------------------------------------------------------------------------
 dnl Encoders for Streaming Audio Output Plugins
 dnl ---------------------------------------------------------------------------
@@ -1126,6 +1117,16 @@ if test x$enable_sidplay = xyes; then
 fi
 
 AM_CONDITIONAL(ENABLE_SIDPLAY, test x$enable_sidplay = xyes)
+
+dnl --------------------------------- wavpack ---------------------------------
+MPD_AUTO_PKG(wavpack, WAVPACK, [wavpack],
+	[WavPack decoder plugin], [libwavpack not found])
+AM_CONDITIONAL(HAVE_WAVPACK, test x$enable_wavpack = xyes)
+if test x$enable_wavpack = xyes; then
+	AC_DEFINE([HAVE_WAVPACK], 1, [Define to enable WavPack support])
+fi
+
+
 
 
 MPD_AUTO_PKG(ffmpeg, FFMPEG, [libavformat libavcodec libavutil],
