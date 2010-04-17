@@ -707,12 +707,7 @@ dnl ###
 
 
 
-MPD_AUTO_PKG(mpg123, MPG123, [libmpg123],
-	[libmpg123 decoder plugin], [libmpg123 not found])
-if test x$enable_mpg123 = xyes; then
-	AC_DEFINE(HAVE_MPG123, 1, [Define to use libmpg123])
-fi
-AM_CONDITIONAL(HAVE_MPG123, test x$enable_mpg123 = xyes)
+
 
 if test x$enable_mikmod = xyes; then
 	AC_PATH_PROG(LIBMIKMOD_CONFIG, libmikmod-config)
@@ -1041,7 +1036,13 @@ if test x$enable_shout = xyes && test x$enable_shout2 = xauto; then
 	enable_shout=auto
 fi
 
-
+dnl -------------------------------- libmpg123 --------------------------------
+MPD_AUTO_PKG(mpg123, MPG123, [libmpg123],
+	[libmpg123 decoder plugin], [libmpg123 not found])
+if test x$enable_mpg123 = xyes; then
+	AC_DEFINE(HAVE_MPG123, 1, [Define to use libmpg123])
+fi
+AM_CONDITIONAL(HAVE_MPG123, test x$enable_mpg123 = xyes)
 
 
 
