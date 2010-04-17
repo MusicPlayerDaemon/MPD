@@ -1407,30 +1407,24 @@ fi
 dnl ---------------------------------------------------------------------------
 dnl Pretty-Print Results
 dnl ---------------------------------------------------------------------------
-echo ""
-echo "########### MPD CONFIGURATION ############"
-echo ""
+echo ''
+echo '########### MPD CONFIGURATION ############'
 
-echo " Client Support:"
-if test x$enable_ipv6 = xyes; then
-	echo " IPv6 support ..................enabled"
-else
-	echo " IPv6 support ..................disabled"
+echo -ne '\nArchive support:\n\t'
+results(bzip2,[bzip2])
+results(iso9660,[ISO9660])
+results(zzip,[ZIP])
+
+if test x$with_zeroconf != xno; then
+	echo -ne '\nAutodiscovery support:\n\t'
+	results(avahi, [Avahi])
+	results(bonjour, [Bonjour])
 fi
 
-if test x$enable_tcp = xyes; then
-	echo " TCP support ...................enabled"
-else
-	echo " TCP support ...................disabled"
-fi
-
-if test x$enable_un = xyes; then
-	echo " Unix domain socket support ....enabled"
-else
-	echo " Unix domain socket support ....disabled"
-fi
-
-echo ""
+echo -ne '\nClient support:\n\t'
+results(ipv6, "IPv6")
+results(tcp, "TCP")
+results(un,[UNIX Domain Sockets])
 
 if
 	test x$enable_tcp = xno &&
@@ -1438,92 +1432,74 @@ if
 	AC_MSG_ERROR([No client interfaces configured!])
 fi
 
-echo " Playback Support:"
-if test x$enable_alsa = xyes; then
-	echo " ALSA support ..................enabled"
-else
-	echo " ALSA support ..................disabled"
+echo -ne '\nFile format support:\n\t'
+results(aac, [AAC])
+results(sidplay, [C64 SID])
+results(ffmpeg, [FFMPEG])
+results(flac, [FLAC])
+results(fluidsynth, [FluidSynth])
+results(gme, [GME])
+results(sndfile, [libsndfile])
+echo -ne '\n\t'
+results(mikmod, [MikMod])
+results(modplug, [MODPLUG])
+results(mad, [MAD])
+results(mpg123, [MPG123])
+results(mp4, [MP4])
+results(mpc, [Musepack])
+results(oggflac, [OggFLAC])
+echo -ne '\n\t'
+results(with_tremor, [OggTremor])
+results(vorbis, [OggVorbis])
+results(audiofile, [WAVE])
+results(wavpack, [WavPack])
+results(wildmidi, [WildMidi])
+
+if
+	test x$enable_mad = xno &&
+	test x$enable_mpg123 = xno &&
+	test x$enable_vorbis = xno &&
+	test x$enable_flac = xno && 
+	test x$enable_oggflac = xno &&
+	test x$enable_audiofile = xno && 
+	test x$enable_aac = xno &&
+	test x$enable_mpc = xno &&
+	test x$enable_wavpack = xno &&
+	test x$enable_ffmpeg = xno &&
+	test x$enable_modplug = xno &&
+	test x$enable_sidplay = xno &&
+	test x$enable_fluidsynth = xno &&
+	test x$enable_wildmidi = xno &&
+	test x$enable_mp4 = xno &&
+	test x$enable_mikmod = xno; then
+		AC_MSG_ERROR([No input plugins supported!])
 fi
 
-if test x$enable_fifo = xyes; then
-	echo " FIFO support ..................enabled"
-else
-	echo " FIFO support ..................disabled"
-fi
+echo -en '\nOther features:\n\t'
+results(lsr, [libsamplerate])
+results(inotify, [inotify])
 
-if test x$enable_recorder_output = xyes; then
-	echo " File Recorder support .........enabled"
-else
-	echo " File Recorder support .........disabled"
-fi
+echo -en '\nMetadata support:\n\t'
+results(cue,[cue])
+results(id3,[ID3])
 
-if test x$enable_httpd_output = xyes; then
-	echo " HTTP daemon support ...........enabled"
-else
-	echo " HTTP daemon support ...........disabled"
-fi
-
-if test x$enable_jack = xyes; then
-	echo " JACK support ..................enabled"
-else
-	echo " JACK support ..................disabled"
-fi
-
-if test x$enable_ao = xyes; then
-	echo " libao support .................enabled"
-else
-	echo " libao support .................disabled"
-fi
-
-if test x$enable_oss = xyes; then
-	echo " OSS support ...................enabled"
-else
-	echo " OSS support ...................disabled"
-fi
-
-if test x$enable_openal = xyes; then
-	echo " OpenAL support ................enabled"
-else
-	echo " OpenAL support ................disabled"
-fi
-
-if test x$enable_osx = xyes; then
-	echo " OS X support ..................enabled"
-else
-	echo " OS X support ..................disabled"
-fi
-
-if test x$enable_pipe_output = xyes; then
-	echo " Pipeline output support .......enabled"
-else
-	echo " Pipeline output support .......disabled"
-fi
-
-if test x$enable_pulse = xyes; then
-	echo " PulseAudio support ............enabled"
-else
-	echo " PulseAudio support ............disabled"
-fi
-
-if test x$enable_mvp = xyes; then
-	echo " Media MVP support .............enabled"
-else
-	echo " Media MVP support .............disabled"
-fi
-
-if test x$enable_shout = xyes; then
-	echo " SHOUTcast support .............enabled"
-else
-	echo " SHOUTcast support .............disabled"
-fi
-
-if test x$enable_solaris_output = xyes; then
-	echo " Solaris /dev/audio support ....enabled"
-else
-	echo " Solaris /dev/audio support ....disabled"
-fi
-
-echo ""
+echo -en '\nPlayback support:\n\t'
+results(alsa,ALSA)
+results(fifo,FIFO)
+results(recorder_output,[File Recorder])
+results(httpd_output,[HTTP Daemon])
+results(jack,[JACK])
+results(ao,[libao])
+results(oss,[OSS])
+echo -ne '\n\t'
+results(openal,[OpenAL])
+results(osx, [OS X])
+results(pipe_output, [Pipeline])
+results(pulse, [PulseAudio])
+results(mvp, [Media MVP])
+results(shout, [SHOUTcast])
+echo -ne '\n\t'
+results(solaris, [Solaris])
 
 if
 	test x$enable_ao = xno &&
@@ -1547,262 +1523,21 @@ if
 	test x$enable_shout = xyes ||
 	test x$enable_recorder = xyes ||
 	test x$enable_httpd_output = xyes; then
-		echo " Streaming Encoder Support:"
-		if test x$enable_lame_encoder = xyes; then
-			echo " LAME mp3 encoder ..............enabled"
-		else
-			echo " LAME mp3 encoder ..............disabled"
-		fi
-
-		if test x$enable_vorbis_encoder = xyes; then
-			echo " Ogg Vorbis encoder ............enabled"
-		else
-			echo " Ogg Vorbis encoder ............disabled"
-		fi
-
-		if test x$enable_twolame_encoder = xyes; then
-			echo " TwoLAME mp3 encoder ...........enabled"
-		else
-			echo " TwoLAME mp3 encoder ...........disabled"
-		fi
-
-		if test x$enable_flac_encoder = xyes; then
-			echo " FLAC encoder ..................enabled"
-		else
-			echo " FLAC encoder ..................disabled"
-		fi
-
-		if test x$enable_wave_encoder = xyes; then
-			echo " PCM wave encoder ..............enabled"
-		else
-			echo " PCM wave encoder ..............disabled"
-		fi
-
-		echo ""
+		echo -en '\nStreaming encoder support:\n\t'
+		results(flac_encoder, [FLAC])
+		results(lame_encoder, [LAME])
+		results(vorbis_encoder, [Ogg Vorbis])
+		results(twolame_encoder, [TwoLAME])
+		results(wave_encoder, [WAVE])
 fi
 
-echo " File Format Support:"
-
-if test x$enable_aac = xyes; then
-	echo " AAC support ...................enabled"
-else
-	echo " AAC support ...................disabled"
-fi
-
-if test x$enable_sidplay = xyes; then
-	echo " C64 SID support ...............enabled"
-else
-	echo " C64 SID support ...............disabled"
-fi
-
-if test x$enable_ffmpeg = xyes; then
-	echo " FFMPEG support ................enabled"
-else
-	echo " FFMPEG support ................disabled"
-fi
-
-if test x$enable_flac = xyes; then
-	echo " FLAC support ..................enabled"
-else
-	echo " FLAC support ..................disabled"
-fi
-
-if test x$enable_fluidsynth = xyes; then
-	echo " fluidsynth MIDI support .......enabled"
-else
-	echo " fluidsynth MIDI support .......disabled"
-fi
-
-if test x$enable_mikmod = xyes; then
-	echo " MikMod support ................enabled"
-else
-	echo " MikMod support ................disabled"
-fi
-
-if test x$enable_modplug = xyes; then
-	echo " MODPLUG support ...............enabled"
-else
-	echo " MODPLUG support ...............disabled"
-fi
-
-if test x$enable_gme = xyes; then
-	echo " GME support ....................enabled"
-else
-	echo " GME support ...................disabled"
-fi
-
-if test x$enable_mad = xyes; then
-	echo " MAD mp3 decoder support .......enabled"
-else
-	echo " MAD mp3 decoder support .......disabled"
-fi
-
-if test x$enable_mpg123 = xyes; then
-	echo " libmpg123 decoder support .....enabled"
-else
-	echo " libmpg123 decoder support .....disabled"
-fi
-
-if test x$enable_mp4 = xyes; then
-	echo " MP4 support ...................enabled"
-else
-	echo " MP4 support ...................disabled"
-fi
-
-if test x$enable_mpc = xyes; then
-	echo " Musepack (MPC) support ........enabled"
-else
-	echo " Musepack (MPC) support ........disabled"
-fi
-
-case $enable_oggflac in
-yes)
-	echo " OggFLAC support ...............enabled"
-	;;
-flac)
-	echo " OggFLAC support ...............enabled(FLAC 1.1.3)"
-	;;
-*)
-	echo " OggFLAC support ...............disabled"
-	;;
-esac
-
-if test x$enable_vorbis = xyes; then
-	echo " Ogg Vorbis support ............enabled"
-	if test x$use_tremor = xyes; then
-		echo "   using tremor.................yes"
-	else
-		echo "   using tremor.................no"
-	fi
-else
-	echo " Ogg Vorbis support ............disabled"
-fi
-
-if test x$enable_sndfile = xyes; then
-	echo " libsndfile ....................enabled"
-else
-	echo " libsndfile ....................disabled"
-fi
-
-if test x$enable_audiofile = xyes; then
-	echo " Wave file support .............enabled"
-else
-	echo " Wave file support .............disabled"
-fi
-
-if test x$enable_wavpack = xyes; then
-	echo " WavPack support ...............enabled"
-else
-	echo " WavPack support ...............disabled"
-fi
-
-if test x$enable_wildmidi = xyes; then
-	echo " wildmidi MIDI support .........enabled"
-else
-	echo " wildmidi MIDI support .........disabled"
-fi
+echo -en '\nStreaming support:\n\t'
+results(curl,[CURL])
+results(lastfm,[Last.FM])
+results(mms,[MMS])
 
 
-
-if
-	test x$enable_mad = xno &&
-	test x$enable_mpg123 = xno &&
-	test x$enable_vorbis = xno &&
-	test x$enable_flac = xno && 
-	test x$enable_oggflac = xno &&
-	test x$enable_audiofile = xno && 
-	test x$enable_aac = xno &&
-	test x$enable_mpc = xno &&
-	test x$enable_wavpack = xno &&
-	test x$enable_ffmpeg = xno &&
-	test x$enable_modplug = xno &&
-	test x$enable_sidplay = xno &&
-	test x$enable_gme = xno &&
-	test x$enable_fluidsynth = xno &&
-	test x$enable_wildmidi = xno &&
-	test x$enable_mp4 = xno &&
-	test x$enable_mikmod = xno; then
-		AC_MSG_ERROR([No input plugins supported!])
-fi
-
-echo ""
-echo " Archive support:"
-
-if test x$enable_bzip2 = xyes; then
-	echo " BZ2 archives support ..........enabled"
-else
-	echo " BZ2 archives support ..........disabled"
-fi
-
-if test x$enable_iso9660 = xyes; then
-	echo " ISO 9660 archives support .....enabled"
-else
-	echo " ISO 9660 archives support .....disabled"
-fi
-
-if test x$enable_zzip = xyes; then
-	echo " ZIP archives support ..........enabled"
-else
-	echo " ZIP archives support ..........disabled"
-fi
-
-echo ""
-echo " Streaming support:"
-
-if test x$enable_lastfm = xyes; then
-        echo " last.fm radio support .........enabled"
-else
-        echo " last.fm radio support .........disabled"
-fi
-
-if test x$enable_curl = xyes; then
-        echo " libcurl support (streaming) ...enabled"
-else
-        echo " libcurl support (streaming) ...disabled"
-fi
-
-if test x$enable_mms = xyes; then
-        echo " libmms support ................enabled"
-else
-        echo " libmms support ................disabled"
-fi
-
-echo ""
-echo " Other features:"
-
-if test x$enable_id3 = xyes; then
-	echo " ID3 tag support ...............enabled"
-else
-	echo " ID3 tag support ...............disabled"
-fi
-
-if test x$enable_lsr = xyes; then
-        echo " libsamplerate support .........enabled"
-else
-	echo " libsamplerate support .........disabled"
-fi
-
-if test x$with_zeroconf != xno; then
-	echo " Zeroconf support ..............$with_zeroconf"
-else
-	echo " Zeroconf support ..............disabled"
-fi
-
-if test x$enable_cue = xyes; then
-        echo " libcue support ................enabled"
-else
-        echo " libcue support ................disabled"
-fi
-
-if test x$enable_inotify = xyes; then
-        echo " Inotify support (autoupdate) ..enabled"
-else
-        echo " Inotify support (autoupdate) ..disabled"
-fi
-
-echo ""
-echo "##########################################"
-echo ""
+echo -ne '\n\n##########################################\n'
 
 if test x$enable_sndfile = xyes && test x$enable_modplug = xyes; then
 	AC_MSG_WARN([compilation may fail, because libmodplug conflicts with libsndfile])
