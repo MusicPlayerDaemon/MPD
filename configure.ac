@@ -711,15 +711,7 @@ dnl ###
 
 
 
-found_modplug=$HAVE_CXX
-MPD_AUTO_PRE(modplug, [modplug decoder plugin], [No C++ compiler found])
 
-MPD_AUTO_PKG(modplug, MODPLUG, [libmodplug],
-	[modplug decoder plugin], [libmodplug not found])
-AM_CONDITIONAL(HAVE_MODPLUG, test x$enable_modplug = xyes)
-if test x$enable_modplug = xyes; then
-	AC_DEFINE(HAVE_MODPLUG, 1, [Define for modplug support])
-fi
 
 AC_ARG_ENABLE(gme,
 	AS_HELP_STRING([--enable-gme],
@@ -1047,8 +1039,17 @@ fi
 
 AM_CONDITIONAL(ENABLE_MIKMOD_DECODER, test x$enable_mikmod = xyes)
 
+dnl -------------------------------- libmodplug -------------------------------
+found_modplug=$HAVE_CXX
+MPD_AUTO_PRE(modplug, [modplug decoder plugin], [No C++ compiler found])
 
+MPD_AUTO_PKG(modplug, MODPLUG, [libmodplug],
+	[modplug decoder plugin], [libmodplug not found])
 
+if test x$enable_modplug = xyes; then
+	AC_DEFINE(HAVE_MODPLUG, 1, [Define for modplug support])
+fi
+AM_CONDITIONAL(HAVE_MODPLUG, test x$enable_modplug = xyes)
 
 
 
