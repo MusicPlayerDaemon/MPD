@@ -897,9 +897,7 @@ fi
 
 AM_CONDITIONAL(HAVE_JACK, test x$enable_jack = xyes)
 
-
-
-
+dnl ---------------------------------- libao ----------------------------------
 MPD_AUTO_PKG(ao, AO, [ao],
 	[libao output plugin], [libao not found])
 if test x$enable_ao = xyes; then
@@ -907,6 +905,8 @@ if test x$enable_ao = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_AO, test x$enable_ao = xyes)
+
+
 
 if test x$enable_pipe_output = xyes; then
 	AC_DEFINE([ENABLE_PIPE_OUTPUT], 1,
