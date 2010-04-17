@@ -949,14 +949,14 @@ esac
 
 AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
 
+dnl ------------------------------- Pipe Output -------------------------------
 if test x$enable_pipe_output = xyes; then
 	AC_DEFINE([ENABLE_PIPE_OUTPUT], 1,
 		[Define to enable support for writing audio to a pipe])
 fi
 AM_CONDITIONAL(ENABLE_PIPE_OUTPUT, test x$enable_pipe_output = xyes)
 
-
-
+dnl -------------------------------- PulseAudio -------------------------------
 MPD_AUTO_PKG(pulse, PULSE, [libpulse],
 	[PulseAudio output plugin], [libpulse not found])
 if test x$enable_pulse = xyes; then
