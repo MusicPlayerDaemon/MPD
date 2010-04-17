@@ -938,6 +938,17 @@ fi
 
 AM_CONDITIONAL(HAVE_OSS, test x$enable_oss = xyes)
 
+dnl ----------------------------------- OSX -----------------------------------
+enable_osx=no
+case "$host_os" in
+	darwin*)
+		AC_DEFINE(HAVE_OSX, 1, [Define for compiling OS X support])
+		MPD_LIBS="$MPD_LIBS -framework AudioUnit -framework CoreServices"
+		enable_osx=yes ;;
+esac
+
+AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
+
 if test x$enable_pipe_output = xyes; then
 	AC_DEFINE([ENABLE_PIPE_OUTPUT], 1,
 		[Define to enable support for writing audio to a pipe])
@@ -955,15 +966,7 @@ fi
 
 AM_CONDITIONAL(HAVE_PULSE, test x$enable_pulse = xyes)
 
-enable_osx=no
-case "$host_os" in
-	darwin*)
-		AC_DEFINE(HAVE_OSX, 1, [Define for compiling OS X support])
-		MPD_LIBS="$MPD_LIBS -framework AudioUnit -framework CoreServices"
-		enable_osx=yes ;;
-esac
 
-AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
 
 enable_shout2="$enable_shout"
 MPD_AUTO_PKG(shout, SHOUT, [shout],
