@@ -1064,9 +1064,7 @@ if test x$use_tremor = xyes; then
 		AC_MSG_WARN([vorbisidec lib needed for ogg support with tremor -- disabling ogg support]))
 	CFLAGS="$ac_save_CFLAGS"
 	LIBS="$ac_save_LIBS"
-fi
 
-if test x$use_tremor = xyes; then
 	AC_DEFINE(HAVE_TREMOR,1,
 		[Define to use tremor (libvorbisidec) for ogg support])
 fi
