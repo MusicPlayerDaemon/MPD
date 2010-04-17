@@ -709,18 +709,7 @@ dnl ###
 
 
 
-if test x$enable_mikmod = xyes; then
-	AC_PATH_PROG(LIBMIKMOD_CONFIG, libmikmod-config)
-	if test x$LIBMIKMOD_CONFIG != x ; then
-		AC_SUBST(LIBMIKMOD_CFLAGS, `$LIBMIKMOD_CONFIG --cflags`)
-		AC_SUBST(LIBMIKMOD_LIBS, `$LIBMIKMOD_CONFIG --libs`)
-		AC_DEFINE(ENABLE_MIKMOD_DECODER, 1, [Define for mikmod support])
-	else
-		enable_mikmod=no
-	fi
-fi
 
-AM_CONDITIONAL(ENABLE_MIKMOD_DECODER, test x$enable_mikmod = xyes)
 
 found_modplug=$HAVE_CXX
 MPD_AUTO_PRE(modplug, [modplug decoder plugin], [No C++ compiler found])
@@ -1044,8 +1033,19 @@ if test x$enable_mpg123 = xyes; then
 fi
 AM_CONDITIONAL(HAVE_MPG123, test x$enable_mpg123 = xyes)
 
+dnl -------------------------------- libmikmod --------------------------------
+if test x$enable_mikmod = xyes; then
+	AC_PATH_PROG(LIBMIKMOD_CONFIG, libmikmod-config)
+	if test x$LIBMIKMOD_CONFIG != x ; then
+		AC_SUBST(LIBMIKMOD_CFLAGS, `$LIBMIKMOD_CONFIG --cflags`)
+		AC_SUBST(LIBMIKMOD_LIBS, `$LIBMIKMOD_CONFIG --libs`)
+		AC_DEFINE(ENABLE_MIKMOD_DECODER, 1, [Define for mikmod support])
+	else
+		enable_mikmod=no
+	fi
+fi
 
-
+AM_CONDITIONAL(ENABLE_MIKMOD_DECODER, test x$enable_mikmod = xyes)
 
 
 
