@@ -1069,6 +1069,7 @@ if test x$enable_sndfile = xyes; then
 fi
 AM_CONDITIONAL(ENABLE_SNDFILE, test x$enable_sndfile = xyes)
 
+dnl --------------------------------- musepack --------------------------------
 if test x$enable_mpc = xyes; then
 	if test "x$mpcdec_libraries" != "x" ; then
 		MPCDEC_LIBS="-L$mpcdec_libraries"
