@@ -868,6 +868,15 @@ fi
 
 AM_CONDITIONAL(HAVE_ALSA, test x$enable_alsa = xyes)
 
+dnl ----------------------------------- FIFO ----------------------------------
+if test x$enable_fifo = xyes; then
+	AC_CHECK_FUNC([mkfifo],
+		[enable_fifo=yes;AC_DEFINE([HAVE_FIFO], 1,
+			[Define to enable support for writing audio to a FIFO])],
+		[enable_fifo=no;AC_MSG_WARN([mkfifo not found -- disabling support for writing audio to a FIFO])])
+fi
+
+AM_CONDITIONAL(HAVE_FIFO, test x$enable_fifo = xyes)
 
 
 
@@ -972,14 +981,7 @@ fi
 
 AM_CONDITIONAL(HAVE_OPENAL, test x$enable_openal = xyes)
 
-if test x$enable_fifo = xyes; then
-	AC_CHECK_FUNC([mkfifo],
-		[enable_fifo=yes;AC_DEFINE([HAVE_FIFO], 1,
-			[Define to enable support for writing audio to a FIFO])],
-		[enable_fifo=no;AC_MSG_WARN([mkfifo not found -- disabling support for writing audio to a FIFO])])
-fi
 
-AM_CONDITIONAL(HAVE_FIFO, test x$enable_fifo = xyes)
 
 if test x$enable_mvp = xyes; then
    AC_DEFINE(HAVE_MVP,1,[Define to enable Hauppauge Media MVP support])
