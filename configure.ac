@@ -1207,6 +1207,13 @@ else
 	enable_flac_encoder=no
 fi
 
+dnl ------------------------------- FLAC Encoder ------------------------------
+if test x$enable_flac_encoder = xyes; then
+	AC_DEFINE(ENABLE_FLAC_ENCODER, 1,
+		[Define to enable the FLAC encoder plugin])
+fi
+AM_CONDITIONAL(ENABLE_FLAC_ENCODER, test x$enable_flac_encoder = xyes)
+
 MPD_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc],
 	[Ogg Vorbis encoder], [libvorbisenc not found])
 
@@ -1323,12 +1330,6 @@ AM_CONDITIONAL(ENABLE_WAVE_ENCODER, test x$enable_wave_encoder = xyes)
 if test x$enable_wave_encoder = xyes; then
 	AC_DEFINE(ENABLE_WAVE_ENCODER, 1,
 		[Define to enable the PCM wave encoder plugin])
-fi
-
-AM_CONDITIONAL(ENABLE_FLAC_ENCODER, test x$enable_flac_encoder = xyes)
-if test x$enable_flac_encoder = xyes; then
-	AC_DEFINE(ENABLE_FLAC_ENCODER, 1,
-		[Define to enable the FLAC encoder plugin])
 fi
 
 dnl ---------------------------------------------------------------------------
