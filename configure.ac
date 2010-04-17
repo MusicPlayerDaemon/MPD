@@ -1126,7 +1126,26 @@ if test x$enable_wavpack = xyes; then
 	AC_DEFINE([HAVE_WAVPACK], 1, [Define to enable WavPack support])
 fi
 
+dnl --------------------------------- WildMidi --------------------------------
+if test x$enable_wildmidi = xyes; then
+	oldcflags=$CFLAGS
+	oldlibs=$LIBS
+	oldcppflags=$CPPFLAGS
 
+	AC_CHECK_LIB(WildMidi, WildMidi_Init,,
+		AC_MSG_ERROR([libwildmidi not found]))
+
+	CFLAGS=$oldcflags
+	LIBS=$oldlibs
+	CPPFLAGS=$oldcppflags
+
+	AC_SUBST(WILDMIDI_LIBS,-lWildMidi)
+	AC_SUBST(WILDMIDI_CFLAGS,)
+
+	AC_DEFINE(ENABLE_WILDMIDI, 1, [Define for wildmidi support])
+fi
+
+AM_CONDITIONAL(ENABLE_WILDMIDI, test x$enable_wildmidi = xyes)
 
 
 MPD_AUTO_PKG(ffmpeg, FFMPEG, [libavformat libavcodec libavutil],
@@ -1159,25 +1178,7 @@ AM_CONDITIONAL(HAVE_FFMPEG, test x$enable_ffmpeg = xyes)
 
 
 
-if test x$enable_wildmidi = xyes; then
-	oldcflags=$CFLAGS
-	oldlibs=$LIBS
-	oldcppflags=$CPPFLAGS
 
-	AC_CHECK_LIB(WildMidi, WildMidi_Init,,
-		AC_MSG_ERROR([libwildmidi not found]))
-
-	CFLAGS=$oldcflags
-	LIBS=$oldlibs
-	CPPFLAGS=$oldcppflags
-
-	AC_SUBST(WILDMIDI_LIBS,-lWildMidi)
-	AC_SUBST(WILDMIDI_CFLAGS,)
-
-	AC_DEFINE(ENABLE_WILDMIDI, 1, [Define for wildmidi support])
-fi
-
-AM_CONDITIONAL(ENABLE_WILDMIDI, test x$enable_wildmidi = xyes)
 
 
 dnl
