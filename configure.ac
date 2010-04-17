@@ -951,16 +951,13 @@ if test x$use_tremor = xyes && test $xenable_oggflac = xyes; then
 		enable_oggflac=no
 fi
 
-if test x$enable_oggflac = xyes; then	
-	oldmpdcflags="$MPD_CFLAGS"
-	oldmpdlibs="$MPD_LIBS"
-	AM_PATH_LIBOGGFLAC(MPD_LIBS="$MPD_LIBS $LIBOGGFLAC_LIBS"
-				MPD_CFLAGS="$MPD_CFLAGS $LIBOGGFLAC_CFLAGS",
-			   enable_oggflac=no)
+if test x$enable_oggflac = xyes; then
+	AC_CHECK_HEADER([OggFLAC/stream_decoder.h],, enable_oggflac=no)
 fi
 
 if test x$enable_oggflac = xyes; then
 	AC_DEFINE(HAVE_OGGFLAC,1,[Define for OggFLAC support])
+	MPD_LIBS="$MPD_LIBS -lOggFLAC -lFLAC -lm"
 fi
 
 AM_CONDITIONAL(HAVE_OGGFLAC, test x$enable_oggflac = xyes)
