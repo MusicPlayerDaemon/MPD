@@ -453,6 +453,7 @@ dnl ---------------------------------------------------------------------------
 dnl Miscellaneous Libraries
 dnl ---------------------------------------------------------------------------
 
+dnl --------------------------------- inotify ---------------------------------
 AC_CHECK_FUNCS(inotify_init inotify_init1)
 
 if test x$ac_cv_func_inotify_init = xno; then
@@ -464,6 +465,7 @@ if test x$enable_inotify = xyes; then
 fi
 AM_CONDITIONAL(ENABLE_INOTIFY, test x$enable_inotify = xyes)
 
+dnl --------------------------------- libwrap ---------------------------------
 if test x$enable_libwrap != xno; then
 	AC_CHECK_LIBWRAP(found_libwrap=yes, found_libwrap=no)
 	MPD_AUTO_RESULT(libwrap, libwrap, [libwrap not found])
@@ -479,6 +481,7 @@ dnl ---------------------------------------------------------------------------
 dnl Metadata Plugins
 dnl ---------------------------------------------------------------------------
 
+dnl ---------------------------------- libcue ---------------------------------
 MPD_AUTO_PKG(cue, CUE, [libcue],
 	[libcue parsing library], [libcue not found])
 if test x$enable_cue = xyes; then
@@ -488,6 +491,7 @@ fi
 
 AM_CONDITIONAL(HAVE_CUE, test x$enable_cue = xyes)
 
+dnl -------------------------------- libid3tag --------------------------------
 if test x$enable_id3 = xyes; then
 	PKG_CHECK_MODULES([ID3TAG], [id3tag],,
 		AC_CHECK_LIB(id3tag, id3_file_open,
@@ -504,6 +508,8 @@ AM_CONDITIONAL(HAVE_ID3TAG, test x$enable_id3 = xyes)
 dnl ---------------------------------------------------------------------------
 dnl Autodiscovery
 dnl ---------------------------------------------------------------------------
+
+dnl --------------------------------- zeroconf --------------------------------
 
 case $with_zeroconf in
 no|avahi|bonjour)
@@ -557,6 +563,8 @@ dnl ---------------------------------------------------------------------------
 dnl Sticker Database
 dnl ---------------------------------------------------------------------------
 
+dnl ---------------------------------- sqlite ---------------------------------
+
 MPD_AUTO_PKG(sqlite, SQLITE, [sqlite3],
 	[SQLite database support], [sqlite not found])
 if test x$enable_sqlite = xyes; then
@@ -569,6 +577,7 @@ dnl ---------------------------------------------------------------------------
 dnl Input Plugins
 dnl ---------------------------------------------------------------------------
 
+dnl ----------------------------------- CURL ----------------------------------
 MPD_AUTO_PKG(curl, CURL, [libcurl],
 	[libcurl HTTP streaming], [libcurl not found])
 if test x$enable_curl = xyes; then
@@ -576,6 +585,7 @@ if test x$enable_curl = xyes; then
 fi
 AM_CONDITIONAL(ENABLE_CURL, test x$enable_curl = xyes)
 
+dnl --------------------------------- Last.FM ---------------------------------
 if test x$enable_lastfm = xyes; then
 	if test x$enable_curl != xyes; then
 		AC_MSG_ERROR([Cannot enable last.fm radio without curl])
@@ -585,6 +595,7 @@ if test x$enable_lastfm = xyes; then
 fi
 AM_CONDITIONAL(ENABLE_LASTFM, test x$enable_lastfm = xyes)
 
+dnl ---------------------------------- libmms ---------------------------------
 MPD_AUTO_PKG(mms, MMS, [libmms >= 0.4],
 	[libmms mms:// protocol support], [libmms not found])
 if test x$enable_mms = xyes; then
