@@ -1532,24 +1532,18 @@ results(curl,[CURL])
 results(lastfm,[Last.FM])
 results(mms,[MMS])
 
-
-echo -ne '\n\n##########################################\n'
+echo -ne '\n\n##########################################\n\n'
 
 if test x$enable_sndfile = xyes && test x$enable_modplug = xyes; then
 	AC_MSG_WARN([compilation may fail, because libmodplug conflicts with libsndfile])
 	AC_MSG_WARN([libmodplug ships modplug/sndfile.h, which hides libsndfile's sndfile.h])
 fi
 
-echo "Generating needed files for compilation"
-echo ""
+echo -ne 'Generating files needed for compilation\n'
 
-dnl
-dnl generate files
-dnl
-
+dnl ---------------------------------------------------------------------------
+dnl Generate files
+dnl ---------------------------------------------------------------------------
 AC_OUTPUT(Makefile)
 
-echo ""
-
-echo "You are now ready to compile MPD"
-echo "Type \"make\" to compile MPD"
+echo 'MPD is ready for compilation, type "make" to begin.'
