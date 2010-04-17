@@ -946,7 +946,7 @@ AC_SUBST(TREMOR_LIBS)
 dnl --------------------------------- OggFLAC ---------------------------------
 dnl OggFLAC must go after Ogg Tremor
 
-if test x$use_tremor = xyes -a test $xenable_oggflac = yes; then
+if test x$use_tremor = xyes && test $xenable_oggflac = xyes; then
 	AC_MSG_WARN([disabling OggFLAC support because it is incompatible with tremor])
 		enable_oggflac=no
 fi
@@ -966,7 +966,7 @@ fi
 AM_CONDITIONAL(HAVE_OGGFLAC, test x$enable_oggflac = xyes)
 
 dnl -------------------------------- Ogg Vorbis -------------------------------
-if test x$enable_tremor != xyes -a test x$enable_vorbis = xyes; then
+if test x$enable_tremor != xyes && test x$enable_vorbis = xyes; then
 	PKG_CHECK_MODULES(VORBIS, [ogg vorbis vorbisfile],
 		
 fi
