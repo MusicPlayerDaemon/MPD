@@ -1364,25 +1364,6 @@ fi
 
 AM_CONDITIONAL(ENABLE_DOCUMENTATION, test x$enable_documentation = xyes)
 
-dnl
-dnl build options
-dnl
-
-
-if test "x$enable_werror" = xyes; then
-	AM_CFLAGS="$AM_CFLAGS -Werror -pedantic-errors"
-fi
-
-#if test "x$enable_debug" = xno; then
-	# don't set NDEBUG for now, until MPD is stable
-	#AM_CFLAGS="$AM_CFLAGS -DNDEBUG"
-#fi
-
-if test "x$enable_gprof" = xyes; then
-	MPD_CFLAGS="$MPD_CFLAGS -pg"
-	MPD_LIBS="$MPD_LIBS -pg"
-fi
-
 dnl ---------------------------------------------------------------------------
 dnl test suite
 dnl ---------------------------------------------------------------------------
@@ -1391,6 +1372,14 @@ AM_CONDITIONAL(ENABLE_TEST, test "x$enable_test" = xyes)
 dnl ---------------------------------------------------------------------------
 dnl CFLAGS
 dnl ---------------------------------------------------------------------------
+
+dnl ---------------------------------- debug ----------------------------------
+#if test "x$enable_debug" = xno; then
+	# don't set NDEBUG for now, until MPD is stable
+	#AM_CFLAGS="$AM_CFLAGS -DNDEBUG"
+#fi
+
+dnl ----------------------------------- GCC -----------------------------------
 if test x$GCC = xyes
 then
 	MPD_CHECK_FLAG([-Wall])
@@ -1403,6 +1392,17 @@ then
 	MPD_CHECK_FLAG([-Wcast-qual])
 	MPD_CHECK_FLAG([-Wwrite-strings])
 	MPD_CHECK_FLAG([-pedantic])
+fi
+
+dnl ------------------------------ gprof profiler -----------------------------
+if test "x$enable_gprof" = xyes; then
+	MPD_CFLAGS="$MPD_CFLAGS -pg"
+	MPD_LIBS="$MPD_LIBS -pg"
+fi
+
+dnl ---------------------------- warnings as errors ---------------------------
+if test "x$enable_werror" = xyes; then
+	AM_CFLAGS="$AM_CFLAGS -Werror -pedantic-errors"
 fi
 
 dnl ---------------------------------------------------------------------------
