@@ -850,6 +850,35 @@ AM_PATH_FAAD()
 AM_CONDITIONAL(HAVE_FAAD, test x$enable_aac = xyes)
 AM_CONDITIONAL(HAVE_MP4, test x$enable_mp4 = xyes)
 
+dnl ---------------------------------- ffmpeg ---------------------------------
+MPD_AUTO_PKG(ffmpeg, FFMPEG, [libavformat libavcodec libavutil],
+	[ffmpeg decoder library], [libavformat+libavcodec+libavutil not found])
+
+if test x$enable_ffmpeg = xyes; then
+	old_LIBS=$LIBS
+	LIBS="$LIBS $FFMPEG_LIBS"
+	AC_CHECK_LIB(avcodec, avcodec_decode_audio2,,
+		enable_ffmpeg=no)
+	LIBS=$old_LIBS
+fi
+
+if test x$enable_ffmpeg = xyes; then
+	# prior to ffmpeg svn12865, you had to specify include files
+	# without path prefix
+	old_CPPCFLAGS=$CPPFLAGS
+	CPPFLAGS="$CPPFLAGS $FFMPEG_CFLAGS"
+	AC_CHECK_HEADER(libavcodec/avcodec.h,,
+		AC_DEFINE(OLD_FFMPEG_INCLUDES, 1,
+			[Define if avcodec.h instead of libavcodec/avcodec.h should be included]))
+	CPPCFLAGS=$old_CPPFLAGS
+fi
+
+if test x$enable_ffmpeg = xyes; then
+	AC_DEFINE(HAVE_FFMPEG, 1, [Define for FFMPEG support])
+fi
+
+AM_CONDITIONAL(HAVE_FFMPEG, test x$enable_ffmpeg = xyes)
+
 dnl ----------------------------------- FLAC ----------------------------------
 if test x$enable_flac = xyes; then
 	PKG_CHECK_MODULES(FLAC, [flac >= 1.1],
@@ -1146,40 +1175,6 @@ if test x$enable_wildmidi = xyes; then
 fi
 
 AM_CONDITIONAL(ENABLE_WILDMIDI, test x$enable_wildmidi = xyes)
-
-
-MPD_AUTO_PKG(ffmpeg, FFMPEG, [libavformat libavcodec libavutil],
-	[ffmpeg decoder library], [libavformat+libavcodec+libavutil not found])
-
-if test x$enable_ffmpeg = xyes; then
-	old_LIBS=$LIBS
-	LIBS="$LIBS $FFMPEG_LIBS"
-	AC_CHECK_LIB(avcodec, avcodec_decode_audio2,,
-		enable_ffmpeg=no)
-	LIBS=$old_LIBS
-fi
-
-if test x$enable_ffmpeg = xyes; then
-	# prior to ffmpeg svn12865, you had to specify include files
-	# without path prefix
-	old_CPPCFLAGS=$CPPFLAGS
-	CPPFLAGS="$CPPFLAGS $FFMPEG_CFLAGS"
-	AC_CHECK_HEADER(libavcodec/avcodec.h,,
-		AC_DEFINE(OLD_FFMPEG_INCLUDES, 1,
-			[Define if avcodec.h instead of libavcodec/avcodec.h should be included]))
-	CPPCFLAGS=$old_CPPFLAGS
-fi
-
-if test x$enable_ffmpeg = xyes; then
-	AC_DEFINE(HAVE_FFMPEG, 1, [Define for FFMPEG support])
-fi
-
-AM_CONDITIONAL(HAVE_FFMPEG, test x$enable_ffmpeg = xyes)
-
-
-
-
-
 
 dnl
 dnl Encoder API and shout/httpd output plugin
