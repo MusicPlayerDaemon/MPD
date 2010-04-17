@@ -175,6 +175,11 @@ AC_ARG_ENABLE(fluidsynth,
 		[enable MIDI support via fluidsynth (default: disable)]),,
 	enable_fluidsynth=no)
 
+AC_ARG_ENABLE(gme,
+	AS_HELP_STRING([--enable-gme],
+		[enable Blargg's game music emulator plugin]),,
+	enable_gme=auto)
+
 AC_ARG_ENABLE(gprof,
 	AS_HELP_STRING([--enable-gprof],
 		[enable profiling via gprof (default: disabled)]),,
@@ -690,7 +695,6 @@ fi
 
 AM_CONDITIONAL(ENABLE_ARCHIVE, test x$enable_archive = xyes)
 
-
 dnl
 dnl metadata
 dnl
@@ -713,17 +717,9 @@ dnl ###
 
 
 
-AC_ARG_ENABLE(gme,
-	AS_HELP_STRING([--enable-gme],
-		[enable Blargg's game music emulator plugin]),,
-	enable_gme=auto)
 
-MPD_AUTO_PKG(gme, GME, [libgme],
-	[gme decoder plugin], [libgme not found])
-AM_CONDITIONAL(HAVE_GME, test x$enable_gme = xyes)
-if test x$enable_gme = xyes; then
-	AC_DEFINE(HAVE_GME, 1, [Define for gme support])
-fi
+
+
 
 AC_ARG_ENABLE(mpc,
 	AS_HELP_STRING([--disable-mpc],
@@ -760,17 +756,6 @@ if test x$enable_sndfile = xyes; then
 	AC_DEFINE(ENABLE_SNDFILE, 1, [Define to enable the sndfile decoder plugin])
 fi
 
-
-dnl ###
-dnl Ogg Tremor
-dnl ###
-
-if test x$with_tremor = xyes || test x$with_tremor = xno; then
-	use_tremor="$with_tremor"
-else
-	tremor_prefix="$with_tremor"
-	use_tremor=yes
-fi
 
 found_sidplay=$HAVE_CXX
 MPD_AUTO_PRE(sidplay, [sidplay decoder plugin], [No C++ compiler found])
@@ -1002,6 +987,14 @@ fi
 
 AM_CONDITIONAL(ENABLE_FLUIDSYNTH, test x$enable_fluidsynth = xyes)
 
+dnl ---------------------------------- libgme ---------------------------------
+MPD_AUTO_PKG(gme, GME, [libgme],
+	[gme decoder plugin], [libgme not found])
+AM_CONDITIONAL(HAVE_GME, test x$enable_gme = xyes)
+if test x$enable_gme = xyes; then
+	AC_DEFINE(HAVE_GME, 1, [Define for gme support])
+fi
+
 dnl ---------------------------------- libmad ---------------------------------
 MPD_AUTO_PKG(mad, MAD, [mad],
 	[libmad MP3 decoder plugin], [libmad not found])
@@ -1119,7 +1112,13 @@ fi
 
 AM_CONDITIONAL(HAVE_MPCDEC, test x$enable_mpc = xyes)
 
-
+dnl -------------------------------- Ogg Tremor -------------------------------
+if test x$with_tremor = xyes || test x$with_tremor = xno; then
+	use_tremor="$with_tremor"
+else
+	tremor_prefix="$with_tremor"
+	use_tremor=yes
+fi
 
 if test x$use_tremor = xyes; then
 	if test "x$tremor_libraries" != "x" ; then
