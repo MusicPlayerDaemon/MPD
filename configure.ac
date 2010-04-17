@@ -928,6 +928,16 @@ fi
 
 AM_CONDITIONAL(HAVE_OPENAL, test x$enable_openal = xyes)
 
+dnl ---------------------------- Open Sound System ----------------------------
+if test x$enable_oss = xyes; then
+	AC_CHECK_HEADER(sys/soundcard.h,
+		[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],
+		[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);
+			enable_oss=no])
+fi
+
+AM_CONDITIONAL(HAVE_OSS, test x$enable_oss = xyes)
+
 if test x$enable_pipe_output = xyes; then
 	AC_DEFINE([ENABLE_PIPE_OUTPUT], 1,
 		[Define to enable support for writing audio to a pipe])
@@ -975,14 +985,7 @@ esac
 
 AM_CONDITIONAL(ENABLE_SOLARIS_OUTPUT, test x$enable_solaris_output = xyes)
 
-if test x$enable_oss = xyes; then
-	AC_CHECK_HEADER(sys/soundcard.h,
-		[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],
-		[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);
-			enable_oss=no])
-fi
 
-AM_CONDITIONAL(HAVE_OSS, test x$enable_oss = xyes)
 
 
 
