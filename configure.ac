@@ -1060,6 +1060,14 @@ if test x$enable_sndfile = xauto && test x$enable_modplug = xyes; then
 	enable_sndfile=no
 fi
 
+dnl -------------------------------- libsndfile -------------------------------
+MPD_AUTO_PKG(sndfile, SNDFILE, [sndfile],
+	[libsndfile decoder plugin], [libsndfile not found])
+
+if test x$enable_sndfile = xyes; then
+	AC_DEFINE(ENABLE_SNDFILE, 1, [Define to enable the sndfile decoder plugin])
+fi
+AM_CONDITIONAL(ENABLE_SNDFILE, test x$enable_sndfile = xyes)
 
 if test x$enable_mpc = xyes; then
 	if test "x$mpcdec_libraries" != "x" ; then
