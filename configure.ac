@@ -1218,6 +1218,7 @@ dnl ---------------------------- Ogg Vorbis Encoder ---------------------------
 MPD_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc],
 	[Ogg Vorbis encoder], [libvorbisenc not found])
 
+dnl ------------------------------- LAME Encoder ------------------------------
 if test x$enable_vorbis_encoder = xyes; then
 	AC_DEFINE(ENABLE_VORBIS_ENCODER, 1,
 		[Define to enable the vorbis encoder plugin])
@@ -1240,6 +1241,12 @@ if test x$enable_lame_encoder != xno; then
 fi
 
 AC_SUBST(LAME_LIBS)
+
+if test x$enable_lame_encoder = xyes; then
+	AC_DEFINE(ENABLE_LAME_ENCODER, 1,
+		[Define to enable the lame encoder plugin])
+fi
+AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_lame_encoder = xyes)
 
 MPD_AUTO_PKG(twolame_encoder, TWOLAME, [twolame],
 	[TwoLAME encoder], [libtwolame not found])
@@ -1315,11 +1322,6 @@ if test x$enable_encoder = xyes; then
 		[Define to enable the encoder plugins])
 fi
 
-AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_lame_encoder = xyes)
-if test x$enable_lame_encoder = xyes; then
-	AC_DEFINE(ENABLE_LAME_ENCODER, 1,
-		[Define to enable the lame encoder plugin])
-fi
 
 AM_CONDITIONAL(ENABLE_TWOLAME_ENCODER, test x$enable_twolame_encoder = xyes)
 if test x$enable_twolame_encoder = xyes; then
