@@ -1347,8 +1347,6 @@ AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
 dnl ---------------------------------------------------------------------------
 dnl Documentation
 dnl ---------------------------------------------------------------------------
-
-
 if test x$enable_documentation = xyes; then
 	AC_PATH_PROG(XMLTO, xmlto)
 	AC_SUBST(XMLTO)
@@ -1365,7 +1363,6 @@ else
 fi
 
 AM_CONDITIONAL(ENABLE_DOCUMENTATION, test x$enable_documentation = xyes)
-
 
 dnl
 dnl build options
