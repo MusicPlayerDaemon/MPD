@@ -1163,8 +1163,8 @@ fi
 AC_SUBST(TREMOR_CFLAGS)
 AC_SUBST(TREMOR_LIBS)
 
-
-
+dnl --------------------------------- OggFLAC ---------------------------------
+dnl OggFLAC must go after Ogg Tremor 
 if test x$enable_oggflac = xyes; then
 	oldmpdcflags="$MPD_CFLAGS"
 	oldmpdlibs="$MPD_LIBS"
