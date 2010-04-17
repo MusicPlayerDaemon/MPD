@@ -8,10 +8,9 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_DEFINE(PROTOCOL_VERSION, "0.16.0", [The MPD protocol version])
 
 
-dnl
-dnl programs
-dnl
-
+dnl ---------------------------------------------------------------------------
+dnl Programs
+dnl ---------------------------------------------------------------------------
 AC_PROG_CC_C99
 AC_PROG_CXX
 
@@ -34,11 +33,9 @@ AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 PKG_PROG_PKG_CONFIG
 
-
-dnl
-dnl declare variables
-dnl
-
+dnl ---------------------------------------------------------------------------
+dnl Declare Variables
+dnl ---------------------------------------------------------------------------
 AC_SUBST(AM_CFLAGS,"")
 
 AC_SUBST(MPD_LIBS)
@@ -46,11 +43,9 @@ AC_SUBST(MPD_CFLAGS)
 MPD_LIBS=""
 MPD_CFLAGS=""
 
-
-dnl
-dnl OS specific defaults
-dnl
-
+dnl ---------------------------------------------------------------------------
+dnl OS Specific Defaults
+dnl ---------------------------------------------------------------------------
 AC_CANONICAL_HOST
 
 case "$host_os" in
@@ -105,6 +100,9 @@ if test x$enable_largefile != xno; then
 	AC_DEFINE([ENABLE_LARGEFILE], 1, [Define if large file support is enabled])
 fi
 
+dnl ---------------------------------------------------------------------------
+dnl Header/Library Checks
+dnl ---------------------------------------------------------------------------
 AC_CHECK_FUNCS(daemon fork syslog)
 if test $ac_cv_func_syslog = no; then
 	# syslog is not in the default libraries.  See if it's in some other.
@@ -140,18 +138,15 @@ if test x$enable_inotify = xyes; then
 fi
 AM_CONDITIONAL(ENABLE_INOTIFY, test x$enable_inotify = xyes)
 
-dnl
-dnl mandatory libraries
-dnl
-
+dnl ---------------------------------------------------------------------------
+dnl Mandatory Libraries
+dnl ---------------------------------------------------------------------------
 PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.12 gthread-2.0],,
 		[AC_MSG_ERROR([GLib 2.12 is required])])
 
-
-dnl
-dnl protocol options
-dnl
-
+dnl ---------------------------------------------------------------------------
+dnl Protocol Options
+dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(tcp,
 	AS_HELP_STRING([--disable-tcp],
 		[disable support for clients connecting via TCP (default: enable)]),,
@@ -207,9 +202,9 @@ if test x$enable_un = xyes; then
 fi
 
 
-dnl ##
-dnl misc libraries
-dnl ##
+dnl ---------------------------------------------------------------------------
+dnl Optional Libraries
+dnl ---------------------------------------------------------------------------
 
 AC_ARG_ENABLE([libwrap],
 	AS_HELP_STRING([--enable-libwrap], [use libwrap]),,
@@ -226,6 +221,9 @@ if test x$enable_libwrap = xyes; then
 	AC_DEFINE(HAVE_LIBWRAP, 1, [define to enable libwrap library])
 fi
 
+dnl ---------------------------------------------------------------------------
+dnl Metadata Plugins
+dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(cue,
 	AS_HELP_STRING([--enable-cue],
 		[enable support for libcue support]),,
@@ -240,9 +238,9 @@ fi
 
 AM_CONDITIONAL(HAVE_CUE, test x$enable_cue = xyes)
 
-dnl ##
-dnl Avahi / Zeroconf
-dnl ##
+dnl ---------------------------------------------------------------------------
+dnl Autodiscovery
+dnl ---------------------------------------------------------------------------
 AC_ARG_WITH(zeroconf,
 	AS_HELP_STRING([--with-zeroconf=@<:@auto|avahi|bonjour|no@:>@],
 		[enable zeroconf backend (default=auto)]),,
@@ -296,6 +294,9 @@ AM_CONDITIONAL(HAVE_ZEROCONF, test x$with_zeroconf != xno)
 AM_CONDITIONAL(HAVE_AVAHI, test x$with_zeroconf = xavahi)
 AM_CONDITIONAL(HAVE_BONJOUR, test x$with_zeroconf = xbonjour)
 
+dnl ---------------------------------------------------------------------------
+dnl Sticker Database
+dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(sqlite,
 	AS_HELP_STRING([--enable-sqlite],
 		[enable support for the SQLite database]),,
@@ -309,12 +310,9 @@ fi
 
 AM_CONDITIONAL(ENABLE_SQLITE, test x$enable_sqlite = xyes)
 
-
-
-dnl
-dnl input plugins
-dnl
-
+dnl ---------------------------------------------------------------------------
+dnl Input Plugins
+dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(curl,
 	AS_HELP_STRING([--enable-curl],
 		[enable support for libcurl HTTP streaming (default: auto)]),,
@@ -354,11 +352,9 @@ if test x$enable_mms = xyes; then
 fi
 AM_CONDITIONAL(ENABLE_MMS, test x$enable_mms = xyes)
 
-
-dnl
-dnl archive plugins
-dnl
-
+dnl ---------------------------------------------------------------------------
+dnl Archive Plugins
+dnl ---------------------------------------------------------------------------
 dnl bzip2
 AC_ARG_ENABLE(bzip2,
 	AS_HELP_STRING([--enable-bzip2],
@@ -667,11 +663,9 @@ if test x$enable_wavpack = xyes; then
 	AC_DEFINE([HAVE_WAVPACK], 1, [Define to enable WavPack support])
 fi
 
-
-dnl
-dnl converters
-dnl
-
+dnl ---------------------------------------------------------------------------
+dnl Converter Plugins
+dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(lsr,
 	AS_HELP_STRING([--enable-lsr],
 		[enable libsamplerate support]),,
@@ -693,11 +687,9 @@ fi
 
 AM_CONDITIONAL(HAVE_LIBSAMPLERATE, test x$enable_lsr = xyes)
 
-
-dnl
-dnl encoder plugins
-dnl
-
+dnl ---------------------------------------------------------------------------
+dnl Encoders for Streaming Audio Output Plugins
+dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(vorbis-encoder,
 	AS_HELP_STRING([--enable-vorbis-encoder],
 		[enable the Ogg Vorbis encoder]),,
@@ -718,11 +710,9 @@ AC_ARG_ENABLE(wave-encoder,
 		[enable the PCM wave encoder]),,
 	enable_wave_encoder=yes)
 
-
-dnl
-dnl audio output plugins
-dnl
-
+dnl ---------------------------------------------------------------------------
+dnl Audio Output Plugins (Nonstreaming)
+dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(alsa,
 	AS_HELP_STRING([--enable-alsa], [enable ALSA support]),,
 	enable_alsa=auto)
@@ -1265,10 +1255,9 @@ if test x$enable_flac_encoder = xyes; then
 		[Define to enable the FLAC encoder plugin])
 fi
 
-dnl
+dnl ---------------------------------------------------------------------------
 dnl Documentation
-dnl
-
+dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(documentation,
 	AS_HELP_STRING([--enable-documentation],
 		[build documentation (default: disable)]),,
@@ -1330,13 +1319,14 @@ AC_ARG_ENABLE(test,
 		[build the test programs (default: disabled)]),,
 	enable_test=no)
 
+dnl ---------------------------------------------------------------------------
+dnl test suite
+dnl ---------------------------------------------------------------------------
 AM_CONDITIONAL(ENABLE_TEST, test "x$enable_test" = xyes)
 
-
-dnl
+dnl ---------------------------------------------------------------------------
 dnl CFLAGS
-dnl
-
+dnl ---------------------------------------------------------------------------
 if test x$GCC = xyes
 then
 	MPD_CHECK_FLAG([-Wall])
@@ -1351,10 +1341,9 @@ then
 	MPD_CHECK_FLAG([-pedantic])
 fi
 
-dnl
-dnl pretty-print result
-dnl
-
+dnl ---------------------------------------------------------------------------
+dnl Pretty-Print Results
+dnl ---------------------------------------------------------------------------
 echo ""
 echo "########### MPD CONFIGURATION ############"
 echo ""
