@@ -90,16 +90,6 @@ if test -z "$prefix" || test "x$prefix" = xNONE; then
 	done
 fi
 
-
-dnl
-dnl libc features
-dnl
-
-AC_SYS_LARGEFILE
-if test x$enable_largefile != xno; then
-	AC_DEFINE([ENABLE_LARGEFILE], 1, [Define if large file support is enabled])
-fi
-
 dnl ---------------------------------------------------------------------------
 dnl Header/Library Checks
 dnl ---------------------------------------------------------------------------
@@ -123,11 +113,291 @@ AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
 AC_CHECK_HEADERS(locale.h)
 AC_CHECK_HEADERS(valgrind/memcheck.h)
 
-AC_CHECK_FUNCS(inotify_init inotify_init1)
+dnl ---------------------------------------------------------------------------
+dnl Allow tools to be specifically built
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(alsa,
+	AS_HELP_STRING([--enable-alsa], [enable ALSA support]),,
+	[enable_alsa=auto])
+
+AC_ARG_ENABLE(ao,
+	AS_HELP_STRING([--enable-ao],
+		[enable support for libao]),,
+	enable_ao=auto)
+
+AC_ARG_ENABLE(audiofile,
+	AS_HELP_STRING([--enable-audiofile],
+		[enable audiofile support (WAV and others)]),,
+	enable_audiofile=auto)
+
+AC_ARG_ENABLE(bzip2,
+	AS_HELP_STRING([--enable-bzip2],
+		[enable bzip2 archive support (default: disabled)]),,
+	enable_bzip2=no)
+
+AC_ARG_ENABLE(cue,
+	AS_HELP_STRING([--enable-cue],
+		[enable support for libcue support]),,
+	enable_cue=auto)
+
+AC_ARG_ENABLE(curl,
+	AS_HELP_STRING([--enable-curl],
+		[enable support for libcurl HTTP streaming (default: auto)]),,
+	[enable_curl=auto])
+
+AC_ARG_ENABLE(debug,
+	AS_HELP_STRING([--enable-debug],
+		[enable debugging (default: disabled)]),,
+	enable_debug=no)
+
+AC_ARG_ENABLE(documentation,
+	AS_HELP_STRING([--enable-documentation],
+		[build documentation (default: disable)]),,
+	[enable_documentation=no])
+
+AC_ARG_ENABLE(ffmpeg,
+	AS_HELP_STRING([--enable-ffmpeg],
+		[enable FFMPEG support]),,
+	enable_ffmpeg=auto)
+
+AC_ARG_ENABLE(fifo,
+	AS_HELP_STRING([--disable-fifo],
+		[disable support for writing audio to a FIFO (default: enable)]),,
+	enable_fifo=yes)
+
+AC_ARG_ENABLE(flac,
+	AS_HELP_STRING([--disable-flac],
+		[disable flac support (default: enable)]),,
+	enable_flac=yes)
+
+AC_ARG_ENABLE(fluidsynth,
+	AS_HELP_STRING([--enable-fluidsynth],
+		[enable MIDI support via fluidsynth (default: disable)]),,
+	enable_fluidsynth=no)
+
+AC_ARG_ENABLE(gprof,
+	AS_HELP_STRING([--enable-gprof],
+		[enable profiling via gprof (default: disabled)]),,
+	enable_gprof=no)
+
+AC_ARG_ENABLE(httpd-output,
+	AS_HELP_STRING([--enable-httpd-output],
+		[enables the HTTP server output]),,
+	[enable_httpd_output=auto])
+
+AC_ARG_ENABLE(id3,
+	AS_HELP_STRING([--disable-id3],
+		[disable id3 support (default: enable)]),,
+	enable_id3=yes)
+
 AC_ARG_ENABLE(inotify,
 	AS_HELP_STRING([--disable-inotify],
 		[disable support Inotify automatic database update (default: enabled) ]),,
 	[enable_inotify=yes])
+
+AC_ARG_ENABLE(ipv6,
+	AS_HELP_STRING([--disable-ipv6],
+		[disable IPv6 support (default: enable)]),,
+	[enable_ipv6=yes])
+
+AC_ARG_ENABLE(iso9660,
+	AS_HELP_STRING([--enable-iso9660],
+		[enable iso9660 archive support (default: disabled)]),,
+	enable_iso9660=no)
+
+AC_ARG_ENABLE(jack,
+	AS_HELP_STRING([--enable-jack],
+		[enable jack support]),,
+	enable_jack=auto)
+
+AC_SYS_LARGEFILE
+
+AC_ARG_ENABLE(lastfm,
+	AS_HELP_STRING([--enable-lastfm],
+		[enable support for last.fm radio (default: disable)]),,
+	[enable_lastfm=no])
+
+AC_ARG_ENABLE(lame-encoder,
+	AS_HELP_STRING([--enable-lame-encoder],
+		[enable the LAME mp3 encoder]),,
+	enable_lame_encoder=auto)
+
+AC_ARG_ENABLE([libwrap],
+	AS_HELP_STRING([--enable-libwrap], [use libwrap]),,
+	[enable_libwrap=auto])
+
+AC_ARG_ENABLE(lsr,
+	AS_HELP_STRING([--enable-lsr],
+		[enable libsamplerate support]),,
+	enable_lsr=auto)
+
+AC_ARG_ENABLE(mad,
+	AS_HELP_STRING([--enable-mad],
+		[enable libmad mp3 decoder plugin]),,
+	enable_mad=auto)
+
+AC_ARG_ENABLE(mikmod,
+	AS_HELP_STRING([--enable-mikmod],
+		[enable the mikmod decoder (default: disable)]),,
+	enable_mikmod=no)
+
+AC_ARG_ENABLE(mms,
+	AS_HELP_STRING([--enable-mms],
+		[enable the MMS protocol with libmms]),,
+	[enable_mms=auto])
+
+AC_ARG_ENABLE(modplug,
+	AS_HELP_STRING([--enable-modplug],
+		[enable modplug decoder plugin]),,
+	enable_modplug=auto)
+
+AC_ARG_ENABLE(mpc,
+	AS_HELP_STRING([--disable-mpc],
+		[disable musepack (MPC) support (default: enable)]),,
+	enable_mpc=yes)
+
+AC_ARG_ENABLE(mpg123,
+	AS_HELP_STRING([--enable-mpg123],
+		[enable libmpg123 decoder plugin]),,
+	enable_mpg123=auto)
+
+AC_ARG_ENABLE(mvp,
+	AS_HELP_STRING([--enable-mvp],
+		[enable support for Hauppauge Media MVP (default: disable)]),,
+	enable_mvp=no)
+
+AC_ARG_ENABLE(oggflac,
+	AS_HELP_STRING([--disable-oggflac],
+		[disable OggFLAC support (default: enable)]),,
+	enable_oggflac=yes)
+
+AC_ARG_ENABLE(openal,
+	AS_HELP_STRING([--enable-openal],
+		[enable OpenAL support (default: disable)]),,
+	enable_openal=no)
+
+AC_ARG_ENABLE(oss,
+	AS_HELP_STRING([--disable-oss],
+		[disable OSS support (default: enable)]),,
+	enable_oss=yes)
+
+AC_ARG_ENABLE(pipe-output,
+	AS_HELP_STRING([--enable-pipe-output],
+		[enable support for writing audio to a pipe (default: disable)]),,
+	enable_pipe_output=no)
+
+AC_ARG_ENABLE(pulse,
+	AS_HELP_STRING([--enable-pulse],
+		[enable support for the PulseAudio sound server]),,
+	enable_pulse=auto)
+
+AC_ARG_ENABLE(recorder-output,
+	AS_HELP_STRING([--enable-recorder-output],
+		[enables the recorder file output plugin (default: disable)]),,
+	[enable_recorder_output=auto])
+
+AC_ARG_ENABLE(sidplay,
+	AS_HELP_STRING([--enable-sidplay],
+		[enable C64 SID support via libsidplay2]),,
+	enable_sidplay=auto)
+
+
+AC_ARG_ENABLE(shout,
+	AS_HELP_STRING([--enable-shout],
+		[enables the shoutcast streaming output]),,
+	[enable_shout=auto])
+
+AC_ARG_ENABLE(sndfile,
+	AS_HELP_STRING([--enable-sndfile],
+		[enable sndfile support]),,
+	enable_sndfile=auto)
+
+AC_ARG_ENABLE(sqlite,
+	AS_HELP_STRING([--enable-sqlite],
+		[enable support for the SQLite database]),,
+	[enable_sqlite=auto])
+
+AC_ARG_ENABLE(tcp,
+	AS_HELP_STRING([--disable-tcp],
+		[disable support for clients connecting via TCP (default: enable)]),,
+	[enable_tcp=yes])
+
+AC_ARG_ENABLE(test,
+	AS_HELP_STRING([--enable-test],
+		[build the test programs (default: disabled)]),,
+	enable_test=no)
+
+AC_ARG_WITH(tremor,
+	AS_HELP_STRING([--with-tremor=PFX],
+		[use Tremor (vorbisidec) integer Ogg Vorbis decoder (with optional prefix)]),,
+	with_tremor=no)
+
+AC_ARG_ENABLE(twolame-encoder,
+	AS_HELP_STRING([--enable-twolame-encoder],
+		[enable the TwoLAME mp2 encoder]),,
+	enable_twolame_encoder=auto)
+
+AC_ARG_ENABLE(un,
+	AS_HELP_STRING([--disable-un],
+		[disable support for clients connecting via unix domain sockets (default: enable)]),,
+	[enable_un=yes])
+
+AC_ARG_ENABLE(vorbis,
+	AS_HELP_STRING([--disable-vorbis],
+		[disable Ogg Vorbis support (default: enable)]),,
+	enable_vorbis=yes)
+
+AC_ARG_ENABLE(vorbis-encoder,
+	AS_HELP_STRING([--enable-vorbis-encoder],
+		[enable the Ogg Vorbis encoder]),,
+	[enable_vorbis_encoder=auto])
+
+AC_ARG_ENABLE(wave-encoder,
+	AS_HELP_STRING([--enable-wave-encoder],
+		[enable the PCM wave encoder]),,
+	enable_wave_encoder=yes)
+
+AC_ARG_ENABLE(wavpack,
+	AS_HELP_STRING([--enable-wavpack],
+		[enable WavPack support]),,
+	enable_wavpack=auto)
+
+AC_ARG_ENABLE(werror,
+	AS_HELP_STRING([--enable-werror],
+		[treat warnings as errors (default: disabled)]),,
+	enable_werror=no)
+
+AC_ARG_ENABLE(wildmidi,
+	AS_HELP_STRING([--enable-wildmidi],
+		[enable MIDI support via wildmidi (default: disable)]),,
+	enable_wildmidi=no)
+
+AC_ARG_WITH(zeroconf,
+	AS_HELP_STRING([--with-zeroconf=@<:@auto|avahi|bonjour|no@:>@],
+		[enable zeroconf backend (default=auto)]),,
+	with_zeroconf="auto")
+
+AC_ARG_ENABLE(zzip,
+	AS_HELP_STRING([--enable-zzip],
+		[enable zip archive support (default: disabled)]),,
+	enable_zzip=no)
+
+
+AC_ARG_WITH(tremor-libraries,
+	AS_HELP_STRING([--with-tremor-libraries=DIR],
+		[directory where Tremor library is installed (optional)]),,
+	tremor_libraries="")
+
+AC_ARG_WITH(tremor-includes,
+	AS_HELP_STRING([--with-tremor-includes=DIR],
+		[directory where Tremor header files are installed (optional)]),,
+	tremor_includes="")
+
+
+
+
+
+AC_CHECK_FUNCS(inotify_init inotify_init1)
 
 if test x$ac_cv_func_inotify_init = xno; then
 	enable_inotify=no
@@ -147,15 +417,6 @@ PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.12 gthread-2.0],,
 dnl ---------------------------------------------------------------------------
 dnl Protocol Options
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(tcp,
-	AS_HELP_STRING([--disable-tcp],
-		[disable support for clients connecting via TCP (default: enable)]),,
-	[enable_tcp=yes])
-
-AC_ARG_ENABLE(ipv6,
-	AS_HELP_STRING([--disable-ipv6],
-		[disable IPv6 support (default: enable)]),,
-	[enable_ipv6=yes])
 
 if test x$enable_tcp = xno; then
 	# if we don't support TCP, we don't need IPv6 either
@@ -185,11 +446,6 @@ if test x$enable_tcp = xyes; then
 	AC_DEFINE(HAVE_TCP, 1, [Define if TCP socket support is enabled])
 fi
 
-AC_ARG_ENABLE(un,
-	AS_HELP_STRING([--disable-un],
-		[disable support for clients connecting via unix domain sockets (default: enable)]),,
-	[enable_un=yes])
-
 case "$host_os" in
 mingw* | windows*)
 	enable_un=no
@@ -201,14 +457,16 @@ if test x$enable_un = xyes; then
 	STRUCT_UCRED
 fi
 
+dnl ---------------------------------------------------------------------------
+dnl LIBC Features
+dnl ---------------------------------------------------------------------------
+if test x$enable_largefile != xno; then
+	AC_DEFINE([ENABLE_LARGEFILE], 1, [Define if large file support is enabled])
+fi
 
 dnl ---------------------------------------------------------------------------
 dnl Optional Libraries
 dnl ---------------------------------------------------------------------------
-
-AC_ARG_ENABLE([libwrap],
-	AS_HELP_STRING([--enable-libwrap], [use libwrap]),,
-	[enable_libwrap=auto])
 
 if test x$enable_libwrap != xno; then
 	AC_CHECK_LIBWRAP(found_libwrap=yes, found_libwrap=no)
@@ -224,10 +482,6 @@ fi
 dnl ---------------------------------------------------------------------------
 dnl Metadata Plugins
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(cue,
-	AS_HELP_STRING([--enable-cue],
-		[enable support for libcue support]),,
-	enable_cue=auto)
 
 MPD_AUTO_PKG(cue, CUE, [libcue],
 	[libcue parsing library], [libcue not found])
@@ -241,10 +495,6 @@ AM_CONDITIONAL(HAVE_CUE, test x$enable_cue = xyes)
 dnl ---------------------------------------------------------------------------
 dnl Autodiscovery
 dnl ---------------------------------------------------------------------------
-AC_ARG_WITH(zeroconf,
-	AS_HELP_STRING([--with-zeroconf=@<:@auto|avahi|bonjour|no@:>@],
-		[enable zeroconf backend (default=auto)]),,
-	with_zeroconf="auto")
 
 case $with_zeroconf in
 no|avahi|bonjour)
@@ -297,10 +547,6 @@ AM_CONDITIONAL(HAVE_BONJOUR, test x$with_zeroconf = xbonjour)
 dnl ---------------------------------------------------------------------------
 dnl Sticker Database
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(sqlite,
-	AS_HELP_STRING([--enable-sqlite],
-		[enable support for the SQLite database]),,
-	[enable_sqlite=auto])
 
 MPD_AUTO_PKG(sqlite, SQLITE, [sqlite3],
 	[SQLite database support], [sqlite not found])
@@ -313,10 +559,6 @@ AM_CONDITIONAL(ENABLE_SQLITE, test x$enable_sqlite = xyes)
 dnl ---------------------------------------------------------------------------
 dnl Input Plugins
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(curl,
-	AS_HELP_STRING([--enable-curl],
-		[enable support for libcurl HTTP streaming (default: auto)]),,
-	[enable_curl=auto])
 
 MPD_AUTO_PKG(curl, CURL, [libcurl],
 	[libcurl HTTP streaming], [libcurl not found])
@@ -324,11 +566,6 @@ if test x$enable_curl = xyes; then
 	AC_DEFINE(ENABLE_CURL, 1, [Define when libcurl is used for HTTP streaming])
 fi
 AM_CONDITIONAL(ENABLE_CURL, test x$enable_curl = xyes)
-
-AC_ARG_ENABLE(lastfm,
-	AS_HELP_STRING([--enable-lastfm],
-		[enable support for last.fm radio (default: disable)]),,
-	[enable_lastfm=no])
 
 if test x$enable_lastfm = xyes; then
 	if test x$enable_curl != xyes; then
@@ -338,11 +575,6 @@ if test x$enable_lastfm = xyes; then
 	AC_DEFINE(ENABLE_LASTFM, 1, [Define when last.fm radio is enabled])
 fi
 AM_CONDITIONAL(ENABLE_LASTFM, test x$enable_lastfm = xyes)
-
-AC_ARG_ENABLE(mms,
-	AS_HELP_STRING([--enable-mms],
-		[enable the MMS protocol with libmms]),,
-	[enable_mms=auto])
 
 MPD_AUTO_PKG(mms, MMS, [libmms >= 0.4],
 	[libmms mms:// protocol support], [libmms not found])
@@ -355,11 +587,6 @@ AM_CONDITIONAL(ENABLE_MMS, test x$enable_mms = xyes)
 dnl ---------------------------------------------------------------------------
 dnl Archive Plugins
 dnl ---------------------------------------------------------------------------
-dnl bzip2
-AC_ARG_ENABLE(bzip2,
-	AS_HELP_STRING([--enable-bzip2],
-		[enable bzip2 archive support (default: disabled)]),,
-	enable_bzip2=no)
 
 if test x$enable_bzip2 = xyes; then
 	AC_CHECK_LIB(bz2, BZ2_bzDecompressInit,
@@ -378,12 +605,6 @@ fi
 
 AM_CONDITIONAL(ENABLE_BZIP2_TEST, test x$BZIP2 != xno)
 
-dnl zzip
-AC_ARG_ENABLE(zzip,
-	AS_HELP_STRING([--enable-zzip],
-		[enable zip archive support (default: disabled)]),,
-	enable_zzip=no)
-
 MPD_AUTO_PKG(zzip, ZZIP, [zziplib >= 0.13],
 	[libzzip archive library], [libzzip not found])
 
@@ -397,12 +618,6 @@ else
 fi
 
 AM_CONDITIONAL(ENABLE_ZZIP_TEST, test x$ZIP != xno)
-
-dnl iso9660
-AC_ARG_ENABLE(iso9660,
-	AS_HELP_STRING([--enable-iso9660],
-		[enable iso9660 archive support (default: disabled)]),,
-	enable_iso9660=no)
 
 MPD_AUTO_PKG(iso9660, ISO9660, [libiso9660],
 	[libiso9660 archive library], [libiso9660 not found])
@@ -436,20 +651,10 @@ dnl
 dnl metadata
 dnl
 
-AC_ARG_ENABLE(id3,
-	AS_HELP_STRING([--disable-id3],
-		[disable id3 support (default: enable)]),,
-	enable_id3=yes)
-
 
 dnl
 dnl decoder plugins
 dnl
-
-AC_ARG_ENABLE(audiofile,
-	AS_HELP_STRING([--enable-audiofile],
-		[enable audiofile support (WAV and others)]),,
-	enable_audiofile=auto)
 
 MPD_AUTO_PKG(audiofile, AUDIOFILE, [audiofile >= 0.1.7],
 	[audiofile decoder plugin], [libaudiofile not found])
@@ -458,24 +663,9 @@ if test x$enable_audiofile = xyes; then
 	AC_DEFINE(HAVE_AUDIOFILE, 1, [Define for audiofile support])
 fi
 
-AC_ARG_ENABLE(ffmpeg,
-	AS_HELP_STRING([--enable-ffmpeg],
-		[enable FFMPEG support]),,
-	enable_ffmpeg=auto)
-
-AC_ARG_ENABLE(flac,
-	AS_HELP_STRING([--disable-flac],
-		[disable flac support (default: enable)]),,
-	enable_flac=yes)
-
 dnl ###
 dnl MAD mp3 decoder
 dnl ###
-
-AC_ARG_ENABLE(mad,
-	AS_HELP_STRING([--enable-mad],
-		[enable libmad mp3 decoder plugin]),,
-	enable_mad=auto)
 
 MPD_AUTO_PKG(mad, MAD, [mad],
 	[libmad MP3 decoder plugin], [libmad not found])
@@ -484,22 +674,12 @@ if test x$enable_mad = xyes; then
 fi
 AM_CONDITIONAL(HAVE_MAD, test x$enable_mad = xyes)
 
-AC_ARG_ENABLE(mpg123,
-	AS_HELP_STRING([--enable-mpg123],
-		[enable libmpg123 decoder plugin]),,
-	enable_mpg123=auto)
-
 MPD_AUTO_PKG(mpg123, MPG123, [libmpg123],
 	[libmpg123 decoder plugin], [libmpg123 not found])
 if test x$enable_mpg123 = xyes; then
 	AC_DEFINE(HAVE_MPG123, 1, [Define to use libmpg123])
 fi
 AM_CONDITIONAL(HAVE_MPG123, test x$enable_mpg123 = xyes)
-
-AC_ARG_ENABLE(mikmod,
-	AS_HELP_STRING([--enable-mikmod],
-		[enable the mikmod decoder (default: disable)]),,
-	enable_mikmod=no)
 
 if test x$enable_mikmod = xyes; then
 	AC_PATH_PROG(LIBMIKMOD_CONFIG, libmikmod-config)
@@ -513,11 +693,6 @@ if test x$enable_mikmod = xyes; then
 fi
 
 AM_CONDITIONAL(ENABLE_MIKMOD_DECODER, test x$enable_mikmod = xyes)
-
-AC_ARG_ENABLE(modplug,
-	AS_HELP_STRING([--enable-modplug],
-		[enable modplug decoder plugin]),,
-	enable_modplug=auto)
 
 found_modplug=$HAVE_CXX
 MPD_AUTO_PRE(modplug, [modplug decoder plugin], [No C++ compiler found])
@@ -580,10 +755,6 @@ fi
 dnl ###
 dnl Ogg Tremor
 dnl ###
-AC_ARG_WITH(tremor,
-	AS_HELP_STRING([--with-tremor=PFX],
-		[use Tremor (vorbisidec) integer Ogg Vorbis decoder (with optional prefix)]),,
-	with_tremor=no)
 
 if test x$with_tremor = xyes || test x$with_tremor = xno; then
 	use_tremor="$with_tremor"
@@ -591,21 +762,6 @@ else
 	tremor_prefix="$with_tremor"
 	use_tremor=yes
 fi
-
-AC_ARG_WITH(tremor-libraries,
-	AS_HELP_STRING([--with-tremor-libraries=DIR],
-		[directory where Tremor library is installed (optional)]),,
-	tremor_libraries="")
-
-AC_ARG_WITH(tremor-includes,
-	AS_HELP_STRING([--with-tremor-includes=DIR],
-		[directory where Tremor header files are installed (optional)]),,
-	tremor_includes="")
-
-AC_ARG_ENABLE(sidplay,
-	AS_HELP_STRING([--enable-sidplay],
-		[enable C64 SID support via libsidplay2]),,
-	enable_sidplay=auto)
 
 found_sidplay=$HAVE_CXX
 MPD_AUTO_PRE(sidplay, [sidplay decoder plugin], [No C++ compiler found])
@@ -641,21 +797,6 @@ fi
 
 AM_CONDITIONAL(ENABLE_SIDPLAY, test x$enable_sidplay = xyes)
 
-AC_ARG_ENABLE(fluidsynth,
-	AS_HELP_STRING([--enable-fluidsynth],
-		[enable MIDI support via fluidsynth (default: disable)]),,
-	enable_fluidsynth=no)
-
-AC_ARG_ENABLE(wildmidi,
-	AS_HELP_STRING([--enable-wildmidi],
-		[enable MIDI support via wildmidi (default: disable)]),,
-	enable_wildmidi=no)
-
-AC_ARG_ENABLE(wavpack,
-	AS_HELP_STRING([--enable-wavpack],
-		[enable WavPack support]),,
-	enable_wavpack=auto)
-
 MPD_AUTO_PKG(wavpack, WAVPACK, [wavpack],
 	[WavPack decoder plugin], [libwavpack not found])
 AM_CONDITIONAL(HAVE_WAVPACK, test x$enable_wavpack = xyes)
@@ -666,10 +807,6 @@ fi
 dnl ---------------------------------------------------------------------------
 dnl Converter Plugins
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(lsr,
-	AS_HELP_STRING([--enable-lsr],
-		[enable libsamplerate support]),,
-	enable_lsr=auto)
 
 MPD_AUTO_PKG(lsr, SAMPLERATE, [samplerate >= 0.0.15],
 	[libsamplerate resampling], [libsamplerate not found])
@@ -690,37 +827,10 @@ AM_CONDITIONAL(HAVE_LIBSAMPLERATE, test x$enable_lsr = xyes)
 dnl ---------------------------------------------------------------------------
 dnl Encoders for Streaming Audio Output Plugins
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(vorbis-encoder,
-	AS_HELP_STRING([--enable-vorbis-encoder],
-		[enable the Ogg Vorbis encoder]),,
-	[enable_vorbis_encoder=auto])
-
-AC_ARG_ENABLE(lame-encoder,
-	AS_HELP_STRING([--enable-lame-encoder],
-		[enable the LAME mp3 encoder]),,
-	enable_lame_encoder=auto)
-
-AC_ARG_ENABLE(twolame-encoder,
-	AS_HELP_STRING([--enable-twolame-encoder],
-		[enable the TwoLAME mp2 encoder]),,
-	enable_twolame_encoder=auto)
-
-AC_ARG_ENABLE(wave-encoder,
-	AS_HELP_STRING([--enable-wave-encoder],
-		[enable the PCM wave encoder]),,
-	enable_wave_encoder=yes)
 
 dnl ---------------------------------------------------------------------------
 dnl Audio Output Plugins (Nonstreaming)
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(alsa,
-	AS_HELP_STRING([--enable-alsa], [enable ALSA support]),,
-	enable_alsa=auto)
-
-AC_ARG_ENABLE(ao,
-	AS_HELP_STRING([--enable-ao],
-		[enable support for libao]),,
-	enable_ao=auto)
 
 MPD_AUTO_PKG(ao, AO, [ao],
 	[libao output plugin], [libao not found])
@@ -730,26 +840,11 @@ fi
 
 AM_CONDITIONAL(HAVE_AO, test x$enable_ao = xyes)
 
-AC_ARG_ENABLE(fifo,
-	AS_HELP_STRING([--disable-fifo],
-		[disable support for writing audio to a FIFO (default: enable)]),,
-	enable_fifo=yes)
-
-AC_ARG_ENABLE(pipe-output,
-	AS_HELP_STRING([--enable-pipe-output],
-		[enable support for writing audio to a pipe (default: disable)]),,
-	enable_pipe_output=no)
-
 if test x$enable_pipe_output = xyes; then
 	AC_DEFINE([ENABLE_PIPE_OUTPUT], 1,
 		[Define to enable support for writing audio to a pipe])
 fi
 AM_CONDITIONAL(ENABLE_PIPE_OUTPUT, test x$enable_pipe_output = xyes)
-
-AC_ARG_ENABLE(jack,
-	AS_HELP_STRING([--enable-jack],
-		[enable jack support]),,
-	enable_jack=auto)
 
 MPD_AUTO_PKG(jack, JACK, [jack >= 0.100],
 	[JACK output plugin], [libjack not found])
@@ -769,26 +864,6 @@ fi
 
 AM_CONDITIONAL(HAVE_JACK, test x$enable_jack = xyes)
 
-AC_ARG_ENABLE(mvp,
-	AS_HELP_STRING([--enable-mvp],
-		[enable support for Hauppauge Media MVP (default: disable)]),,
-	enable_mvp=no)
-
-AC_ARG_ENABLE(oss,
-	AS_HELP_STRING([--disable-oss],
-		[disable OSS support (default: enable)]),,
-	enable_oss=yes)
-
-AC_ARG_ENABLE(openal,
-	AS_HELP_STRING([--enable-openal],
-		[enable OpenAL support (default: disable)]),,
-	enable_openal=no)
-
-AC_ARG_ENABLE(pulse,
-	AS_HELP_STRING([--enable-pulse],
-		[enable support for the PulseAudio sound server]),,
-	enable_pulse=auto)
-
 MPD_AUTO_PKG(pulse, PULSE, [libpulse],
 	[PulseAudio output plugin], [libpulse not found])
 if test x$enable_pulse = xyes; then
@@ -797,16 +872,6 @@ if test x$enable_pulse = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_PULSE, test x$enable_pulse = xyes)
-
-AC_ARG_ENABLE(recorder-output,
-	AS_HELP_STRING([--enable-recorder-output],
-		[enables the recorder file output plugin (default: disable)]),,
-	[enable_recorder_output=auto])
-
-AC_ARG_ENABLE(httpd-output,
-	AS_HELP_STRING([--enable-httpd-output],
-		[enables the HTTP server output]),,
-	[enable_httpd_output=auto])
 
 enable_osx=no
 case "$host_os" in
@@ -817,11 +882,6 @@ case "$host_os" in
 esac
 
 AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
-
-AC_ARG_ENABLE(shout,
-	AS_HELP_STRING([--enable-shout],
-		[enables the shoutcast streaming output]),,
-	[enable_shout=auto])
 
 enable_shout2="$enable_shout"
 MPD_AUTO_PKG(shout, SHOUT, [shout],
@@ -1258,10 +1318,7 @@ fi
 dnl ---------------------------------------------------------------------------
 dnl Documentation
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(documentation,
-	AS_HELP_STRING([--enable-documentation],
-		[build documentation (default: disable)]),,
-	[enable_documentation=no])
+
 
 if test x$enable_documentation = xyes; then
 	AC_PATH_PROG(XMLTO, xmlto)
@@ -1285,39 +1342,20 @@ dnl
 dnl build options
 dnl
 
-AC_ARG_ENABLE(werror,
-	AS_HELP_STRING([--enable-werror],
-		[treat warnings as errors (default: disabled)]),,
-	enable_werror=no)
 
 if test "x$enable_werror" = xyes; then
 	AM_CFLAGS="$AM_CFLAGS -Werror -pedantic-errors"
 fi
-
-AC_ARG_ENABLE(debug,
-	AS_HELP_STRING([--enable-debug],
-		[enable debugging (default: disabled)]),,
-	enable_debug=no)
 
 #if test "x$enable_debug" = xno; then
 	# don't set NDEBUG for now, until MPD is stable
 	#AM_CFLAGS="$AM_CFLAGS -DNDEBUG"
 #fi
 
-AC_ARG_ENABLE(gprof,
-	AS_HELP_STRING([--enable-gprof],
-		[enable profiling via gprof (default: disabled)]),,
-	enable_gprof=no)
-
 if test "x$enable_gprof" = xyes; then
 	MPD_CFLAGS="$MPD_CFLAGS -pg"
 	MPD_LIBS="$MPD_LIBS -pg"
 fi
-
-AC_ARG_ENABLE(test,
-	AS_HELP_STRING([--enable-test],
-		[build the test programs (default: disabled)]),,
-	enable_test=no)
 
 dnl ---------------------------------------------------------------------------
 dnl test suite
