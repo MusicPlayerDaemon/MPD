@@ -858,6 +858,19 @@ dnl ---------------------------------------------------------------------------
 dnl Audio Output Plugins (Nonstreaming)
 dnl ---------------------------------------------------------------------------
 
+dnl ----------------------------------- ALSA ----------------------------------
+MPD_AUTO_PKG(alsa, ALSA, [alsa >= 0.9.0],
+	[ALSA output plugin], [libasound not found])
+
+if test x$enable_alsa = xyes; then
+	AC_DEFINE(HAVE_ALSA, 1, [Define to enable ALSA support])
+fi
+
+AM_CONDITIONAL(HAVE_ALSA, test x$enable_alsa = xyes)
+
+
+
+
 MPD_AUTO_PKG(ao, AO, [ao],
 	[libao output plugin], [libao not found])
 if test x$enable_ao = xyes; then
@@ -973,17 +986,6 @@ if test x$enable_mvp = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_MVP, test x$enable_mvp = xyes)
-
-MPD_AUTO_PKG(alsa, ALSA, [alsa >= 0.9.0],
-	[ALSA output plugin], [libasound not found])
-
-if test x$enable_alsa = xyes; then
-	AC_DEFINE(HAVE_ALSA, 1, [Define to enable ALSA support])
-fi
-
-AM_CONDITIONAL(HAVE_ALSA, test x$enable_alsa = xyes)
-
-
 
 if test x$enable_mpc = xyes; then
 	if test "x$mpcdec_libraries" != "x" ; then
