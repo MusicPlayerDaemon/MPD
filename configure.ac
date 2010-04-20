@@ -533,6 +533,18 @@ if test x$enable_modplug = xyes; then
 	AC_DEFINE(HAVE_MODPLUG, 1, [Define for modplug support])
 fi
 
+AC_ARG_ENABLE(gme,
+	AS_HELP_STRING([--enable-gme],
+		[enable Blargg's game music emulator plugin]),,
+	enable_gme=auto)
+
+MPD_AUTO_PKG(gme, GME, [libgme],
+	[gme decoder plugin], [libgme not found])
+AM_CONDITIONAL(HAVE_GME, test x$enable_gme = xyes)
+if test x$enable_gme = xyes; then
+	AC_DEFINE(HAVE_GME, 1, [Define for gme support])
+fi
+
 AC_ARG_ENABLE(mpc,
 	AS_HELP_STRING([--disable-mpc],
 		[disable musepack (MPC) support (default: enable)]),,
@@ -1561,6 +1573,12 @@ else
 	echo " MODPLUG support ...............disabled"
 fi
 
+if test x$enable_gme = xyes; then
+	echo " GME support ....................enabled"
+else
+	echo " GME support ...................disabled"
+fi
+
 if test x$enable_mad = xyes; then
 	echo " MAD mp3 decoder support .......enabled"
 else
@@ -1647,6 +1665,7 @@ if
 	test x$enable_ffmpeg = xno &&
 	test x$enable_modplug = xno &&
 	test x$enable_sidplay = xno &&
+	test x$enable_gme = xno &&
 	test x$enable_fluidsynth = xno &&
 	test x$enable_wildmidi = xno &&
 	test x$enable_mp4 = xno &&
