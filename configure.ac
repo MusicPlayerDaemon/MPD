@@ -628,6 +628,9 @@ if test x$enable_lastfm = xyes; then
 fi
 AM_CONDITIONAL(ENABLE_LASTFM, test x$enable_lastfm = xyes)
 
+dnl ---------------------------------- libogg ---------------------------------
+PKG_CHECK_MODULES(OGG, [ogg], enable_ogg=yes, enable_ogg=no)
+
 dnl ---------------------------------- libmms ---------------------------------
 MPD_AUTO_PKG(mms, MMS, [libmms >= 0.4],
 	[libmms mms:// protocol support], [libmms not found])
@@ -768,9 +771,12 @@ if test x$enable_flac = xyes; then
 	LIBS="$oldlibs"
 
 	if test x$enable_oggflac = xflac; then
-		PKG_CHECK_MODULES(OGG, [ogg], FLAC_LIBS="${FLAC_LIBS} -logg",
-			enable_oggflac=yes; 
-			AC_MSG_WARN("FLAC has the ogg API built in, but couldn't find ogg. Disabling oggflac."))
+		if test x$enable_ogg = xyes; then
+			FLAC_LIBS="${FLAC_LIBS} -logg",
+		else
+			enable_oggflac=yes
+			AC_MSG_WARN("FLAC has the ogg API built in, but couldn't find ogg. Disabling oggflac.")
+		fi
 	fi
 fi
 
@@ -970,9 +976,14 @@ AM_CONDITIONAL(HAVE_OGGFLAC, test x$enable_oggflac = xyes)
 
 dnl -------------------------------- Ogg Vorbis -------------------------------
 if test x$enable_tremor != xno && test x$enable_vorbis = xyes; then
-	PKG_CHECK_MODULES(VORBIS, [ogg vorbis vorbisfile],
-		AC_DEFINE(ENABLE_VORBIS_DECODER, 1, [Define for Ogg Vorbis support]),
-		enable_vorbis=no)
+	if test x$enable_ogg = xyes; then
+		PKG_CHECK_MODULES(VORBIS, [vorbis vorbisfile],
+			AC_DEFINE(ENABLE_VORBIS_DECODER, 1, [Define for Ogg Vorbis support]),
+			enable_vorbis=no)
+	else
+		AC_MSG_WARN("Ogg not detected, could not enable Vorbis.")
+		enable_vorbis=no
+	fi
 fi
 
 AM_CONDITIONAL(ENABLE_VORBIS_DECODER, test x$enable_vorbis = xyes)
