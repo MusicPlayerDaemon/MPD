@@ -766,6 +766,12 @@ if test x$enable_flac = xyes; then
 	fi
 	CFLAGS="$oldcflags"
 	LIBS="$oldlibs"
+
+	if test x$enable_oggflac = xflac; then
+		PKG_CHECK_MODULES(OGG, [ogg], FLAC_LIBS="${FLAC_LIBS} -logg",
+			enable_oggflac=yes; 
+			AC_MSG_WARN("FLAC has the ogg API built in, but couldn't find ogg. Disabling oggflac."))
+	fi
 fi
 
 AM_CONDITIONAL(HAVE_FLAC, test x$enable_flac = xyes)
