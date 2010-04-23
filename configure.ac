@@ -1310,13 +1310,13 @@ dnl ---------------------------- Ogg Vorbis Encoder ---------------------------
 MPD_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc],
 	[Ogg Vorbis encoder], [libvorbisenc not found])
 
-dnl ------------------------------- LAME Encoder ------------------------------
 if test x$enable_vorbis_encoder = xyes; then
 	AC_DEFINE(ENABLE_VORBIS_ENCODER, 1,
 		[Define to enable the vorbis encoder plugin])
 fi
 AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_vorbis_encoder = xyes)
 
+dnl ------------------------------- LAME Encoder ------------------------------
 if test x$enable_lame_encoder != xno; then
 	AC_CHECK_HEADERS(lame/lame.h,,
 		[AC_CHECK_HEADERS(lame.h,, using_lame=no)])
