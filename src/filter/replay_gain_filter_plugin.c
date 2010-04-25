@@ -28,6 +28,7 @@
 #include "replay_gain_info.h"
 #include "replay_gain_config.h"
 #include "mixer_control.h"
+#include "playlist.h"
 
 #include <assert.h>
 #include <string.h>
@@ -114,7 +115,11 @@ replay_gain_filter_init(G_GNUC_UNUSED const struct config_param *param,
 	filter_init(&filter->filter, &replay_gain_filter_plugin);
 	filter->mixer = NULL;
 
-	filter->mode = replay_gain_mode;
+	if (replay_gain_mode == REPLAY_GAIN_AUTO) {
+	    filter->mode = g_playlist.queue.random ? REPLAY_GAIN_TRACK : REPLAY_GAIN_ALBUM;
+	} else {
+	    filter->mode = replay_gain_mode;
+	}
 	replay_gain_info_init(&filter->info);
 	filter->volume = PCM_VOLUME_1;
 
@@ -161,10 +166,18 @@ replay_gain_filter_filter(struct filter *_filter,
 		(struct replay_gain_filter *)_filter;
 	bool success;
 	void *dest;
+	enum replay_gain_mode rg_mode;
 
 	/* check if the mode has been changed since the last call */
-	if (filter->mode != replay_gain_mode) {
-		filter->mode = replay_gain_mode;
+	if (replay_gain_mode == REPLAY_GAIN_AUTO) {
+	    rg_mode = g_playlist.queue.random ? REPLAY_GAIN_TRACK : REPLAY_GAIN_ALBUM;
+	} else {
+	    rg_mode = replay_gain_mode;
+	}
+
+	if (filter->mode != rg_mode) {
+		g_debug("replay gain mode has changed %d->%d\n", filter->mode, rg_mode);
+		filter->mode = rg_mode;
 		replay_gain_filter_update(filter);
 	}
 

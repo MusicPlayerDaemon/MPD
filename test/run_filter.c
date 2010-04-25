@@ -25,6 +25,7 @@
 #include "pcm_volume.h"
 #include "idle.h"
 #include "mixer_control.h"
+#include "playlist.h"
 
 #include <glib.h>
 
@@ -32,6 +33,8 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+
+struct playlist g_playlist;
 
 void
 idle_add(G_GNUC_UNUSED unsigned flags)

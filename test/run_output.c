@@ -27,12 +27,15 @@
 #include "pcm_convert.h"
 #include "event_pipe.h"
 #include "idle.h"
+#include "playlist.h"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
+
+struct playlist g_playlist;
 
 void
 idle_add(G_GNUC_UNUSED unsigned flags)

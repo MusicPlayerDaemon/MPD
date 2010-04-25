@@ -26,7 +26,8 @@
 #include <math.h>
 
 enum replay_gain_mode {
-	REPLAY_GAIN_OFF = -1,
+	REPLAY_GAIN_AUTO = -2,
+	REPLAY_GAIN_OFF,
 	REPLAY_GAIN_ALBUM,
 	REPLAY_GAIN_TRACK,
 };

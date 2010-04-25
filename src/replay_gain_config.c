@@ -43,6 +43,9 @@ const char *
 replay_gain_get_mode_string(void)
 {
 	switch (replay_gain_mode) {
+	case REPLAY_GAIN_AUTO:
+		return "auto";
+
 	case REPLAY_GAIN_OFF:
 		return "off";
 
@@ -69,6 +72,8 @@ replay_gain_set_mode_string(const char *p)
 		replay_gain_mode = REPLAY_GAIN_TRACK;
 	else if (strcmp(p, "album") == 0)
 		replay_gain_mode = REPLAY_GAIN_ALBUM;
+	else if (strcmp(p, "auto") == 0)
+		replay_gain_mode = REPLAY_GAIN_AUTO;
 	else
 		return false;
 

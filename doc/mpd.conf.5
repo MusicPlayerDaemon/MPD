@@ -170,12 +170,14 @@ only choice) if MPD was compiled without libsamplerate.
 For an up-to-date list of available converters, please see the libsamplerate
 documentation (available online at <\fBhttp://www.mega-nerd.com/SRC/\fP>).
 .TP
-.B replaygain <off or album or track>
+.B replaygain <off or album or track or auto>
 If specified, mpd will adjust the volume of songs played using ReplayGain tags
 (see <\fBhttp://www.replaygain.org/\fP>).  Setting this to "album" will adjust
 volume using the album's ReplayGain tags, while setting it to "track" will
-adjust it using the track ReplayGain tags.  Currently only FLAC, Ogg Vorbis,
-Musepack, and MP3 (through ID3v2 ReplayGain tags, not APEv2) are supported.
+adjust it using the track ReplayGain tags.  "auto" uses the track ReplayGain
+tags if random play is activated otherwise the album ReplayGain tags. Currently
+only FLAC, Ogg Vorbis, Musepack, and MP3 (through ID3v2 ReplayGain tags, not
+APEv2) are supported.
 .TP
 .B replaygain_preamp <-15 to 15>
 This is the gain (in dB) applied to songs with ReplayGain tags.
