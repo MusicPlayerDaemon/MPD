@@ -772,7 +772,7 @@ if test x$enable_flac = xyes; then
 
 	if test x$enable_oggflac = xflac; then
 		if test x$enable_ogg = xyes; then
-			FLAC_LIBS="${FLAC_LIBS} -logg",
+			FLAC_LIBS="${FLAC_LIBS} -logg"
 		else
 			enable_oggflac=yes
 			AC_MSG_WARN("FLAC has the ogg API built in, but couldn't find ogg. Disabling oggflac.")
