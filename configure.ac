@@ -1081,6 +1081,112 @@ AM_CONDITIONAL(HAVE_OGG_COMMON,
 AM_CONDITIONAL(HAVE_FLAC_COMMON,
 	  test x$enable_flac = xyes || test x$enable_oggflac = xyes)
 
+dnl ---------------------------------------------------------------------------
+dnl Encoders for Streaming Audio Output Plugins
+dnl ---------------------------------------------------------------------------
+
+dnl ------------------------------- Encoder API -------------------------------
+if test x$enable_shout = xyes || \
+	test x$enable_recorder_output = xyes || \
+	test x$enable_httpd_output = xyes; then
+	# at least one output using encoders is explicitly enabled
+	need_encoder=yes
+elif test x$enable_shout = xauto || \
+	test x$enable_recorder_output = xauto || \
+	test x$enable_httpd_output = xauto; then
+	need_encoder=auto
+else
+	# all outputs using encoders are disabled
+	need_encoder=no
+
+	# don't bother to check for encoder plugins
+	enable_vorbis_encoder=no
+	enable_lame_encoder=no
+	enable_twolame_encoder=no
+	enable_wave_encoder=no
+	enable_flac_encoder=no
+fi
+
+dnl ------------------------------- FLAC Encoder ------------------------------
+if test x$enable_flac_encoder = xyes; then
+	AC_DEFINE(ENABLE_FLAC_ENCODER, 1,
+		[Define to enable the FLAC encoder plugin])
+fi
+AM_CONDITIONAL(ENABLE_FLAC_ENCODER, test x$enable_flac_encoder = xyes)
+
+dnl ---------------------------- Ogg Vorbis Encoder ---------------------------
+MPD_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc],
+	[Ogg Vorbis encoder], [libvorbisenc not found])
+
+if test x$enable_vorbis_encoder = xyes; then
+	AC_DEFINE(ENABLE_VORBIS_ENCODER, 1,
+		[Define to enable the vorbis encoder plugin])
+fi
+AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_vorbis_encoder = xyes)
+
+dnl ------------------------------- LAME Encoder ------------------------------
+if test x$enable_lame_encoder != xno; then
+	AC_CHECK_HEADERS(lame/lame.h,,
+		[AC_CHECK_HEADERS(lame.h,, using_lame=no)])
+	AC_CHECK_LIB(mp3lame, lame_init,, using_lame=no)
+	if test x$using_lame != xno; then
+		AC_DEFINE(HAVE_LAME, 1, [Define to 1 if you have lame 3.98 or greater.])
+		LAME_LIBS="-lmp3lame -lm"
+		enable_lame_encoder=yes
+	fi
+
+	if test "$enable_lame_encoder" = "yes" -a "$using_lame" = "no"; then
+		AC_MSG_ERROR([LAME libraries and development support files not found.])
+	fi
+fi
+
+AC_SUBST(LAME_LIBS)
+
+if test x$enable_lame_encoder = xyes; then
+	AC_DEFINE(ENABLE_LAME_ENCODER, 1,
+		[Define to enable the lame encoder plugin])
+fi
+AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_lame_encoder = xyes)
+
+dnl ----------------------------- TwoLAME Encoder -----------------------------
+MPD_AUTO_PKG(twolame_encoder, TWOLAME, [twolame],
+	[TwoLAME encoder], [libtwolame not found])
+
+if test x$enable_twolame_encoder = xyes; then
+	AC_DEFINE(ENABLE_TWOLAME_ENCODER, 1,
+		[Define to enable the TwoLAME encoder plugin])
+fi
+AM_CONDITIONAL(ENABLE_TWOLAME_ENCODER, test x$enable_twolame_encoder = xyes)
+
+dnl ------------------------------- WAVE Encoder ------------------------------
+AM_CONDITIONAL(ENABLE_WAVE_ENCODER, test x$enable_wave_encoder = xyes)
+if test x$enable_wave_encoder = xyes; then
+	AC_DEFINE(ENABLE_WAVE_ENCODER, 1,
+		[Define to enable the PCM wave encoder plugin])
+fi
+
+dnl --------------------------- encoder plugins test --------------------------
+if test x$enable_vorbis_encoder != xno ||
+	test x$enable_lame_encoder != xno ||
+	test x$enable_twolame_encoder != xno ||
+	test x$enable_flac_encoder != xno ||
+	test x$enable_wave_encoder != xno; then
+	# at least one encoder plugin is enabled
+	enable_encoder=yes
+else
+	# no encoder plugin is enabled: disable the whole encoder API
+	enable_encoder=no
+
+	if test x$need_encoder = xyes; then
+		AC_MSG_ERROR([No encoder plugin found])
+	fi
+fi
+
+if test x$enable_encoder = xyes; then
+	AC_DEFINE(ENABLE_ENCODER, 1,
+		[Define to enable the encoder plugins])
+fi
+AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_encoder = xyes)
 
 dnl ---------------------------------------------------------------------------
 dnl Audio Output Plugins
@@ -1285,113 +1391,6 @@ if
 
 		AC_MSG_ERROR([No Audio Output types configured!])
 fi
-
-dnl ---------------------------------------------------------------------------
-dnl Encoders for Streaming Audio Output Plugins
-dnl ---------------------------------------------------------------------------
-
-dnl ------------------------------- Encoder API -------------------------------
-if test x$enable_shout = xyes || \
-	test x$enable_recorder_output = xyes || \
-	test x$enable_httpd_output = xyes; then
-	# at least one output using encoders is explicitly enabled
-	need_encoder=yes
-elif test x$enable_shout = xauto || \
-	test x$enable_recorder_output = xauto || \
-	test x$enable_httpd_output = xauto; then
-	need_encoder=auto
-else
-	# all outputs using encoders are disabled
-	need_encoder=no
-
-	# don't bother to check for encoder plugins
-	enable_vorbis_encoder=no
-	enable_lame_encoder=no
-	enable_twolame_encoder=no
-	enable_wave_encoder=no
-	enable_flac_encoder=no
-fi
-
-dnl ------------------------------- FLAC Encoder ------------------------------
-if test x$enable_flac_encoder = xyes; then
-	AC_DEFINE(ENABLE_FLAC_ENCODER, 1,
-		[Define to enable the FLAC encoder plugin])
-fi
-AM_CONDITIONAL(ENABLE_FLAC_ENCODER, test x$enable_flac_encoder = xyes)
-
-dnl ---------------------------- Ogg Vorbis Encoder ---------------------------
-MPD_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc],
-	[Ogg Vorbis encoder], [libvorbisenc not found])
-
-if test x$enable_vorbis_encoder = xyes; then
-	AC_DEFINE(ENABLE_VORBIS_ENCODER, 1,
-		[Define to enable the vorbis encoder plugin])
-fi
-AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_vorbis_encoder = xyes)
-
-dnl ------------------------------- LAME Encoder ------------------------------
-if test x$enable_lame_encoder != xno; then
-	AC_CHECK_HEADERS(lame/lame.h,,
-		[AC_CHECK_HEADERS(lame.h,, using_lame=no)])
-	AC_CHECK_LIB(mp3lame, lame_init,, using_lame=no)
-	if test x$using_lame != xno; then
-		AC_DEFINE(HAVE_LAME, 1, [Define to 1 if you have lame 3.98 or greater.])
-		LAME_LIBS="-lmp3lame -lm"
-		enable_lame_encoder=yes
-	fi
-
-	if test "$enable_lame_encoder" = "yes" -a "$using_lame" = "no"; then
-		AC_MSG_ERROR([LAME libraries and development support files not found.])
-	fi
-fi
-
-AC_SUBST(LAME_LIBS)
-
-if test x$enable_lame_encoder = xyes; then
-	AC_DEFINE(ENABLE_LAME_ENCODER, 1,
-		[Define to enable the lame encoder plugin])
-fi
-AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_lame_encoder = xyes)
-
-dnl ----------------------------- TwoLAME Encoder -----------------------------
-MPD_AUTO_PKG(twolame_encoder, TWOLAME, [twolame],
-	[TwoLAME encoder], [libtwolame not found])
-
-if test x$enable_twolame_encoder = xyes; then
-	AC_DEFINE(ENABLE_TWOLAME_ENCODER, 1,
-		[Define to enable the TwoLAME encoder plugin])
-fi
-AM_CONDITIONAL(ENABLE_TWOLAME_ENCODER, test x$enable_twolame_encoder = xyes)
-
-dnl ------------------------------- WAVE Encoder ------------------------------
-AM_CONDITIONAL(ENABLE_WAVE_ENCODER, test x$enable_wave_encoder = xyes)
-if test x$enable_wave_encoder = xyes; then
-	AC_DEFINE(ENABLE_WAVE_ENCODER, 1,
-		[Define to enable the PCM wave encoder plugin])
-fi
-
-dnl --------------------------- encoder plugins test --------------------------
-if test x$enable_vorbis_encoder != xno ||
-	test x$enable_lame_encoder != xno ||
-	test x$enable_twolame_encoder != xno ||
-	test x$enable_flac_encoder != xno ||
-	test x$enable_wave_encoder != xno; then
-	# at least one encoder plugin is enabled
-	enable_encoder=yes
-else
-	# no encoder plugin is enabled: disable the whole encoder API
-	enable_encoder=no
-
-	if test x$need_encoder = xyes; then
-		AC_MSG_ERROR([No encoder plugin found])
-	fi
-fi
-
-if test x$enable_encoder = xyes; then
-	AC_DEFINE(ENABLE_ENCODER, 1,
-		[Define to enable the encoder plugins])
-fi
-AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_encoder = xyes)
 
 dnl ---------------------------------------------------------------------------
 dnl Documentation
