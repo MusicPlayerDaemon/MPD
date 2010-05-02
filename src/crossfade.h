@@ -45,18 +45,4 @@ unsigned cross_fade_calc(float duration, float total_time,
 			 const struct audio_format *old_format,
 			 unsigned max_chunks);
 
-/**
- * Applies cross fading to two chunks, i.e. mixes these chunks.
- * Internally, this calls pcm_mix().
- *
- * @param a the chunk in the current song (and the destination chunk)
- * @param b the according chunk in the new song
- * @param format the audio format of both chunks (must be the same)
- * @param current_chunk the relative index of the current chunk
- * @param num_chunks the number of chunks used for cross fading
- */
-void cross_fade_apply(struct music_chunk *a, const struct music_chunk *b,
-		      const struct audio_format *format,
-		      float mix_ratio);
-
 #endif

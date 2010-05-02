@@ -301,4 +301,6 @@ void audio_output_finish(struct audio_output *ao)
 	g_mutex_free(ao->mutex);
 
 	filter_free(ao->filter);
+
+	pcm_buffer_deinit(&ao->cross_fade_buffer);
 }

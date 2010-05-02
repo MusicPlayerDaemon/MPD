@@ -24,6 +24,7 @@
 #include "chunk.h"
 #include "pipe.h"
 #include "player_control.h"
+#include "pcm_mix.h"
 #include "filter_plugin.h"
 #include "filter/convert_filter_plugin.h"
 #include "filter/replay_gain_filter_plugin.h"
@@ -297,6 +298,35 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 					    ? &chunk->replay_gain_info
 					    : NULL);
 		ao->replay_gain_serial = chunk->replay_gain_serial;
+	}
+
+	/* cross-fade */
+
+	if (chunk->other != NULL) {
+		size_t other_length;
+		const char *other_data = ao_chunk_data(ao, chunk->other,
+						       &other_length);
+		if (other_length == 0) {
+			*length_r = 0;
+			return data;
+		}
+
+		/* if the "other" chunk is longer, then that trailer
+		   is used as-is, without mixing; it is part of the
+		   "next" song being faded in, and if there's a rest,
+		   it means cross-fading ends here */
+
+		if (length > other_length)
+			length = other_length;
+
+		char *dest = pcm_buffer_get(&ao->cross_fade_buffer,
+					    other_length);
+		memcpy(dest, other_data, other_length);
+		pcm_mix(dest, data, length, &ao->in_audio_format,
+			1.0 - chunk->mix_ratio);
+
+		data = dest;
+		length = other_length;
 	}
 
 	/* apply filter chain */

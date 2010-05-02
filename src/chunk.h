@@ -50,6 +50,12 @@ struct music_chunk {
 	 */
 	struct music_chunk *other;
 
+	/**
+	 * The current mix ratio for cross-fading: 1.0 means play 100%
+	 * of this chunk, 0.0 means play 100% of the "other" chunk.
+	 */
+	float mix_ratio;
+
 	/** number of bytes stored in this chunk */
 	uint16_t length;
 

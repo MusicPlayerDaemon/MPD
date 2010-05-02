@@ -651,10 +651,9 @@ play_next_chunk(struct player *player)
 		}
 
 		if (other_chunk != NULL) {
-			float mix_ratio;
-
 			chunk = music_pipe_shift(player->pipe);
 			assert(chunk != NULL);
+			assert(chunk->other == NULL);
 
 			/* don't send the tags of the new song (which
 			   is being faded in) yet; postpone it until
@@ -665,16 +664,13 @@ play_next_chunk(struct player *player)
 			other_chunk->tag = NULL;
 
 			if (isnan(pc.mixramp_delay_seconds)) {
-				mix_ratio = ((float)cross_fade_position)
+				chunk->mix_ratio = ((float)cross_fade_position)
 					     / player->cross_fade_chunks;
 			} else {
-				mix_ratio = nan("");
+				chunk->mix_ratio = nan("");
 			}
 
-			cross_fade_apply(chunk, other_chunk,
-					 &dc->out_audio_format,
-					 mix_ratio);
-			music_buffer_return(player_buffer, other_chunk);
+			chunk->other = other_chunk;
 		} else {
 			/* there are not enough decoded chunks yet */
 
