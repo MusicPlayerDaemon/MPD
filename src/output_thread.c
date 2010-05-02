@@ -88,6 +88,20 @@ ao_disable(struct audio_output *ao)
 	}
 }
 
+static const struct audio_format *
+ao_filter_open(struct audio_output *ao,
+	       struct audio_format *audio_format,
+	       GError **error_r)
+{
+	return filter_open(ao->filter, audio_format, error_r);
+}
+
+static void
+ao_filter_close(struct audio_output *ao)
+{
+	filter_close(ao->filter);
+}
+
 static void
 ao_open(struct audio_output *ao)
 {
@@ -109,8 +123,7 @@ ao_open(struct audio_output *ao)
 
 	/* open the filter */
 
-	filter_audio_format = filter_open(ao->filter, &ao->in_audio_format,
-					  &error);
+	filter_audio_format = ao_filter_open(ao, &ao->in_audio_format, &error);
 	if (filter_audio_format == NULL) {
 		g_warning("Failed to open filter for \"%s\" [%s]: %s",
 			  ao->name, ao->plugin->name, error->message);
@@ -137,7 +150,7 @@ ao_open(struct audio_output *ao)
 			  ao->name, ao->plugin->name, error->message);
 		g_error_free(error);
 
-		filter_close(ao->filter);
+		ao_filter_close(ao);
 		ao->fail_timer = g_timer_new();
 		return;
 	}
@@ -176,7 +189,7 @@ ao_close(struct audio_output *ao, bool drain)
 		ao_plugin_cancel(ao->plugin, ao->data);
 
 	ao_plugin_close(ao->plugin, ao->data);
-	filter_close(ao->filter);
+	ao_filter_close(ao);
 
 	g_mutex_lock(ao->mutex);
 
@@ -189,9 +202,8 @@ ao_reopen_filter(struct audio_output *ao)
 	const struct audio_format *filter_audio_format;
 	GError *error = NULL;
 
-	filter_close(ao->filter);
-	filter_audio_format = filter_open(ao->filter, &ao->in_audio_format,
-					  &error);
+	ao_filter_close(ao);
+	filter_audio_format = ao_filter_open(ao, &ao->in_audio_format, &error);
 	if (filter_audio_format == NULL) {
 		g_warning("Failed to open filter for \"%s\" [%s]: %s",
 			  ao->name, ao->plugin->name, error->message);
