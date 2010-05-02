@@ -118,6 +118,9 @@ music_buffer_return(struct music_buffer *buffer, struct music_chunk *chunk)
 	assert(buffer != NULL);
 	assert(chunk != NULL);
 
+	if (chunk->other != NULL)
+		music_buffer_return(buffer, chunk->other);
+
 	g_mutex_lock(buffer->mutex);
 
 	music_chunk_free(chunk);

@@ -44,6 +44,12 @@ struct music_chunk {
 	/** the next chunk in a linked list */
 	struct music_chunk *next;
 
+	/**
+	 * An optional chunk which should be mixed into this chunk.
+	 * This is used for cross-fading.
+	 */
+	struct music_chunk *other;
+
 	/** number of bytes stored in this chunk */
 	uint16_t length;
 

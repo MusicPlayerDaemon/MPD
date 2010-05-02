@@ -27,6 +27,7 @@
 void
 music_chunk_init(struct music_chunk *chunk)
 {
+	chunk->other = NULL;
 	chunk->length = 0;
 	chunk->tag = NULL;
 	chunk->replay_gain_serial = 0;
