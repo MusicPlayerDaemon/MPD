@@ -243,23 +243,37 @@ ao_reopen(struct audio_output *ao)
 		ao_open(ao);
 }
 
-static bool
-ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
+static const char *
+ao_chunk_data(struct audio_output *ao, const struct music_chunk *chunk,
+	      size_t *length_r)
 {
-	const char *data = chunk->data;
-	size_t size = chunk->length;
-	GError *error = NULL;
-
-	assert(ao != NULL);
-	assert(ao->filter != NULL);
+	assert(chunk != NULL);
 	assert(!music_chunk_is_empty(chunk));
 	assert(music_chunk_check_format(chunk, &ao->in_audio_format));
-	assert(size % audio_format_frame_size(&ao->in_audio_format) == 0);
 
-	if (chunk->tag != NULL) {
-		g_mutex_unlock(ao->mutex);
-		ao_plugin_send_tag(ao->plugin, ao->data, chunk->tag);
-		g_mutex_lock(ao->mutex);
+	const char *data = chunk->data;
+	size_t length = chunk->length;
+
+	(void)ao;
+
+	assert(length % audio_format_frame_size(&ao->in_audio_format) == 0);
+
+	*length_r = length;
+	return data;
+}
+
+static const char *
+ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
+		size_t *length_r)
+{
+	GError *error = NULL;
+
+	size_t length;
+	const char *data = ao_chunk_data(ao, chunk, &length);
+	if (length == 0) {
+		/* empty chunk, nothing to do */
+		*length_r = 0;
+		return data;
 	}
 
 	/* update replay gain */
@@ -273,15 +287,37 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 		ao->replay_gain_serial = chunk->replay_gain_serial;
 	}
 
-	if (size == 0)
-		return true;
+	/* apply filter chain */
 
-	data = filter_filter(ao->filter, data, size, &size, &error);
+	data = filter_filter(ao->filter, data, length, &length, &error);
 	if (data == NULL) {
 		g_warning("\"%s\" [%s] failed to filter: %s",
 			  ao->name, ao->plugin->name, error->message);
 		g_error_free(error);
+		return NULL;
+	}
 
+	*length_r = length;
+	return data;
+}
+
+static bool
+ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
+{
+	GError *error = NULL;
+
+	assert(ao != NULL);
+	assert(ao->filter != NULL);
+
+	if (chunk->tag != NULL) {
+		g_mutex_unlock(ao->mutex);
+		ao_plugin_send_tag(ao->plugin, ao->data, chunk->tag);
+		g_mutex_lock(ao->mutex);
+	}
+
+	size_t size;
+	const char *data = ao_filter_chunk(ao, chunk, &size);
+	if (data == NULL) {
 		ao_close(ao, false);
 
 		/* don't automatically reopen this device for 10
