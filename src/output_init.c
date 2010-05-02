@@ -209,10 +209,17 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 						    param, NULL);
 		assert(ao->replay_gain_filter != NULL);
 
-		filter_chain_append(ao->filter, ao->replay_gain_filter);
 		ao->replay_gain_serial = 0;
-	} else
+
+		ao->other_replay_gain_filter = filter_new(&replay_gain_filter_plugin,
+							  param, NULL);
+		assert(ao->other_replay_gain_filter != NULL);
+
+		ao->other_replay_gain_serial = 0;
+	} else {
 		ao->replay_gain_filter = NULL;
+		ao->other_replay_gain_filter = NULL;
+	}
 
 	/* create the normalization filter (if configured) */
 

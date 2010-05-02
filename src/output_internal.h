@@ -159,6 +159,19 @@ struct audio_output {
 	unsigned replay_gain_serial;
 
 	/**
+	 * The replay_gain_filter_plugin instance of this audio
+	 * output, to be applied to the second chunk during
+	 * cross-fading.
+	 */
+	struct filter *other_replay_gain_filter;
+
+	/**
+	 * The serial number of the last replay gain info by the
+	 * "other" chunk during cross-fading.
+	 */
+	unsigned other_replay_gain_serial;
+
+	/**
 	 * The convert_filter_plugin instance of this audio output.
 	 * It is the last item in the filter chain, and is responsible
 	 * for converting the input data into the appropriate format

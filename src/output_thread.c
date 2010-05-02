@@ -94,12 +94,33 @@ ao_filter_open(struct audio_output *ao,
 	       struct audio_format *audio_format,
 	       GError **error_r)
 {
-	return filter_open(ao->filter, audio_format, error_r);
+	/* the replay_gain filter cannot fail here */
+	if (ao->replay_gain_filter != NULL)
+		filter_open(ao->replay_gain_filter, audio_format, error_r);
+	if (ao->other_replay_gain_filter != NULL)
+		filter_open(ao->other_replay_gain_filter, audio_format,
+			    error_r);
+
+	const struct audio_format *af
+		= filter_open(ao->filter, audio_format, error_r);
+	if (af == NULL) {
+		if (ao->replay_gain_filter != NULL)
+			filter_close(ao->replay_gain_filter);
+		if (ao->other_replay_gain_filter != NULL)
+			filter_close(ao->other_replay_gain_filter);
+	}
+
+	return af;
 }
 
 static void
 ao_filter_close(struct audio_output *ao)
 {
+	if (ao->replay_gain_filter != NULL)
+		filter_close(ao->replay_gain_filter);
+	if (ao->other_replay_gain_filter != NULL)
+		filter_close(ao->other_replay_gain_filter);
+
 	filter_close(ao->filter);
 }
 
@@ -258,6 +279,8 @@ ao_reopen(struct audio_output *ao)
 
 static const char *
 ao_chunk_data(struct audio_output *ao, const struct music_chunk *chunk,
+	      struct filter *replay_gain_filter,
+	      unsigned *replay_gain_serial_p,
 	      size_t *length_r)
 {
 	assert(chunk != NULL);
@@ -271,6 +294,26 @@ ao_chunk_data(struct audio_output *ao, const struct music_chunk *chunk,
 
 	assert(length % audio_format_frame_size(&ao->in_audio_format) == 0);
 
+	if (length > 0 && replay_gain_filter != NULL) {
+		if (chunk->replay_gain_serial != *replay_gain_serial_p) {
+			replay_gain_filter_set_info(replay_gain_filter,
+						    chunk->replay_gain_serial != 0
+						    ? &chunk->replay_gain_info
+						    : NULL);
+			*replay_gain_serial_p = chunk->replay_gain_serial;
+		}
+
+		GError *error = NULL;
+		data = filter_filter(replay_gain_filter, data, length,
+				     &length, &error);
+		if (data == NULL) {
+			g_warning("\"%s\" [%s] failed to filter: %s",
+				  ao->name, ao->plugin->name, error->message);
+			g_error_free(error);
+			return NULL;
+		}
+	}
+
 	*length_r = length;
 	return data;
 }
@@ -282,30 +325,29 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 	GError *error = NULL;
 
 	size_t length;
-	const char *data = ao_chunk_data(ao, chunk, &length);
+	const char *data = ao_chunk_data(ao, chunk, ao->replay_gain_filter,
+					 &ao->replay_gain_serial, &length);
+	if (data == NULL)
+		return NULL;
+
 	if (length == 0) {
 		/* empty chunk, nothing to do */
 		*length_r = 0;
 		return data;
 	}
 
-	/* update replay gain */
-
-	if (ao->replay_gain_filter != NULL &&
-	    chunk->replay_gain_serial != ao->replay_gain_serial) {
-		replay_gain_filter_set_info(ao->replay_gain_filter,
-					    chunk->replay_gain_serial != 0
-					    ? &chunk->replay_gain_info
-					    : NULL);
-		ao->replay_gain_serial = chunk->replay_gain_serial;
-	}
-
 	/* cross-fade */
 
 	if (chunk->other != NULL) {
 		size_t other_length;
-		const char *other_data = ao_chunk_data(ao, chunk->other,
-						       &other_length);
+		const char *other_data =
+			ao_chunk_data(ao, chunk->other,
+				      ao->other_replay_gain_filter,
+				      &ao->other_replay_gain_serial,
+				      &other_length);
+		if (other_data == NULL)
+			return NULL;
+
 		if (other_length == 0) {
 			*length_r = 0;
 			return data;

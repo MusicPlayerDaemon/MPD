@@ -300,6 +300,12 @@ void audio_output_finish(struct audio_output *ao)
 	g_cond_free(ao->cond);
 	g_mutex_free(ao->mutex);
 
+	if (ao->replay_gain_filter != NULL)
+		filter_free(ao->replay_gain_filter);
+
+	if (ao->other_replay_gain_filter != NULL)
+		filter_free(ao->other_replay_gain_filter);
+
 	filter_free(ao->filter);
 
 	pcm_buffer_deinit(&ao->cross_fade_buffer);
