@@ -31,8 +31,8 @@
 #define G_LOG_DOMAIN "pcm"
 
 static void
-pcm_add_8(int8_t *buffer1, const int8_t *buffer2,
-	  unsigned num_samples, int volume1, int volume2)
+pcm_add_vol_8(int8_t *buffer1, const int8_t *buffer2,
+	      unsigned num_samples, int volume1, int volume2)
 {
 	while (num_samples > 0) {
 		int32_t sample1 = *buffer1;
@@ -48,8 +48,8 @@ pcm_add_8(int8_t *buffer1, const int8_t *buffer2,
 }
 
 static void
-pcm_add_16(int16_t *buffer1, const int16_t *buffer2,
-	   unsigned num_samples, int volume1, int volume2)
+pcm_add_vol_16(int16_t *buffer1, const int16_t *buffer2,
+	       unsigned num_samples, int volume1, int volume2)
 {
 	while (num_samples > 0) {
 		int32_t sample1 = *buffer1;
@@ -65,8 +65,8 @@ pcm_add_16(int16_t *buffer1, const int16_t *buffer2,
 }
 
 static void
-pcm_add_24(int32_t *buffer1, const int32_t *buffer2,
-	   unsigned num_samples, unsigned volume1, unsigned volume2)
+pcm_add_vol_24(int32_t *buffer1, const int32_t *buffer2,
+	       unsigned num_samples, unsigned volume1, unsigned volume2)
 {
 	while (num_samples > 0) {
 		int64_t sample1 = *buffer1;
@@ -82,8 +82,8 @@ pcm_add_24(int32_t *buffer1, const int32_t *buffer2,
 }
 
 static void
-pcm_add_32(int32_t *buffer1, const int32_t *buffer2,
-	   unsigned num_samples, unsigned volume1, unsigned volume2)
+pcm_add_vol_32(int32_t *buffer1, const int32_t *buffer2,
+	       unsigned num_samples, unsigned volume1, unsigned volume2)
 {
 	while (num_samples > 0) {
 		int64_t sample1 = *buffer1;
@@ -99,31 +99,112 @@ pcm_add_32(int32_t *buffer1, const int32_t *buffer2,
 }
 
 static void
+pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
+	    int vol1, int vol2,
+	    const struct audio_format *format)
+{
+	switch (format->format) {
+	case SAMPLE_FORMAT_S8:
+		pcm_add_vol_8((int8_t *)buffer1, (const int8_t *)buffer2,
+			      size, vol1, vol2);
+		break;
+
+	case SAMPLE_FORMAT_S16:
+		pcm_add_vol_16((int16_t *)buffer1, (const int16_t *)buffer2,
+			       size / 2, vol1, vol2);
+		break;
+
+	case SAMPLE_FORMAT_S24_P32:
+		pcm_add_vol_24((int32_t *)buffer1, (const int32_t *)buffer2,
+			       size / 4, vol1, vol2);
+		break;
+
+	case SAMPLE_FORMAT_S32:
+		pcm_add_vol_32((int32_t *)buffer1, (const int32_t *)buffer2,
+			       size / 4, vol1, vol2);
+		break;
+
+	default:
+		g_error("format %s not supported by pcm_add_vol",
+			sample_format_to_string(format->format));
+	}
+}
+
+static void
+pcm_add_8(int8_t *buffer1, const int8_t *buffer2, unsigned num_samples)
+{
+	while (num_samples > 0) {
+		int32_t sample1 = *buffer1;
+		int32_t sample2 = *buffer2++;
+
+		sample1 += sample2;
+
+		*buffer1++ = pcm_range(sample1, 8);
+		--num_samples;
+	}
+}
+
+static void
+pcm_add_16(int16_t *buffer1, const int16_t *buffer2, unsigned num_samples)
+{
+	while (num_samples > 0) {
+		int32_t sample1 = *buffer1;
+		int32_t sample2 = *buffer2++;
+
+		sample1 += sample2;
+
+		*buffer1++ = pcm_range(sample1, 16);
+		--num_samples;
+	}
+}
+
+static void
+pcm_add_24(int32_t *buffer1, const int32_t *buffer2, unsigned num_samples)
+{
+	while (num_samples > 0) {
+		int64_t sample1 = *buffer1;
+		int64_t sample2 = *buffer2++;
+
+		sample1 += sample2;
+
+		*buffer1++ = pcm_range(sample1, 24);
+		--num_samples;
+	}
+}
+
+static void
+pcm_add_32(int32_t *buffer1, const int32_t *buffer2, unsigned num_samples)
+{
+	while (num_samples > 0) {
+		int64_t sample1 = *buffer1;
+		int64_t sample2 = *buffer2++;
+
+		sample1 += sample2;
+
+		*buffer1++ = pcm_range_64(sample1, 32);
+		--num_samples;
+	}
+}
+
+static void
 pcm_add(void *buffer1, const void *buffer2, size_t size,
-	int vol1, int vol2,
 	const struct audio_format *format)
 {
 	switch (format->format) {
 	case SAMPLE_FORMAT_S8:
-		pcm_add_8((int8_t *)buffer1, (const int8_t *)buffer2,
-			  size, vol1, vol2);
+		pcm_add_8((int8_t *)buffer1, (const int8_t *)buffer2, size);
 		break;
 
 	case SAMPLE_FORMAT_S16:
-		pcm_add_16((int16_t *)buffer1, (const int16_t *)buffer2,
-			   size / 2, vol1, vol2);
+		pcm_add_16((int16_t *)buffer1, (const int16_t *)buffer2, size / 2);
 		break;
 
 	case SAMPLE_FORMAT_S24_P32:
-		pcm_add_24((int32_t*)buffer1,
-			   (const int32_t*)buffer2,
-			   size / 4, vol1, vol2);
+		pcm_add_24((int32_t *)buffer1, (const int32_t *)buffer2, size / 4);
 		break;
 
 	case SAMPLE_FORMAT_S32:
-		pcm_add_32((int32_t*)buffer1,
-			   (const int32_t*)buffer2,
-			   size / 4, vol1, vol2);
+		pcm_add_32((int32_t *)buffer1, (const int32_t *)buffer2, size / 4);
 		break;
 
 	default:
@@ -142,7 +223,7 @@ pcm_mix(void *buffer1, const void *buffer2, size_t size,
 	/* portion1 is between 0.0 and 1.0 for crossfading, MixRamp uses NaN
 	 * to signal mixing rather than fading */
 	if (isnan(portion1)) {
-		pcm_add(buffer1, buffer2, size, PCM_VOLUME_1, PCM_VOLUME_1, format);
+		pcm_add(buffer1, buffer2, size, format);
 		return;
 	}
 
@@ -152,5 +233,5 @@ pcm_mix(void *buffer1, const void *buffer2, size_t size,
 	vol1 = s * PCM_VOLUME_1 + 0.5;
 	vol1 = vol1 > PCM_VOLUME_1 ? PCM_VOLUME_1 : (vol1 < 0 ? 0 : vol1);
 
-	pcm_add(buffer1, buffer2, size, vol1, PCM_VOLUME_1 - vol1, format);
+	pcm_add_vol(buffer1, buffer2, size, vol1, PCM_VOLUME_1 - vol1, format);
 }

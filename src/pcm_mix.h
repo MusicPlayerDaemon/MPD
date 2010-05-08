@@ -35,7 +35,8 @@ struct audio_format;
  * @param size the size of both buffers in bytes
  * @param format the audio format of both buffers
  * @param portion1 a number between 0.0 and 1.0 specifying the portion
- * of the first buffer in the mix; portion2 = (1.0 - portion1)
+ * of the first buffer in the mix; portion2 = (1.0 - portion1). The value
+ * NaN is used by the MixRamp code to specify that simple addition is required.
  */
 void
 pcm_mix(void *buffer1, const void *buffer2, size_t size,
