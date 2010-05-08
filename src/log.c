@@ -272,8 +272,10 @@ void setup_log_output(bool use_stdout)
 {
 	fflush(NULL);
 	if (!use_stdout) {
+#ifndef WIN32
 		if (out_filename == NULL)
 			out_fd = open("/dev/null", O_WRONLY);
+#endif
 
 		if (out_fd >= 0) {
 			redirect_logs(out_fd);
