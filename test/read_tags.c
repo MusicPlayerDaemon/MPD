@@ -115,14 +115,16 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder,
 	return DECODE_COMMAND_NONE;
 }
 
-void
+float
 decoder_replay_gain(G_GNUC_UNUSED struct decoder *decoder,
 		    G_GNUC_UNUSED const struct replay_gain_info *replay_gain_info)
 {
+	return 0.0;
 }
 
 void
 decoder_mixramp(G_GNUC_UNUSED struct decoder *decoder,
+		G_GNUC_UNUSED float replay_gain_db,
 		char *mixramp_start, char *mixramp_end)
 {
 	g_free(mixramp_start);

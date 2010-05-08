@@ -895,6 +895,8 @@ static void do_play(struct decoder_control *dc)
 				cross_fade_calc(pc.cross_fade_seconds, dc->total_time,
 						pc.mixramp_db,
 						pc.mixramp_delay_seconds,
+						dc->replay_gain_db,
+						dc->replay_gain_prev_db,
 						dc->mixramp_start,
 						dc->mixramp_prev_end,
 						&dc->out_audio_format,

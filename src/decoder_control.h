@@ -90,6 +90,8 @@ struct decoder_control {
 	 */
 	struct music_pipe *pipe;
 
+	float replay_gain_db;
+	float replay_gain_prev_db;
 	char *mixramp_start;
 	char *mixramp_end;
 	char *mixramp_prev_end;

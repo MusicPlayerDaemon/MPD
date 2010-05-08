@@ -91,6 +91,7 @@ static float mixramp_interpolate(char *ramp_list, float required_db)
 
 unsigned cross_fade_calc(float duration, float total_time,
 			 float mixramp_db, float mixramp_delay,
+			 float replay_gain_db, float replay_gain_prev_db,
 			 char *mixramp_start, char *mixramp_prev_end,
 			 const struct audio_format *af,
 			 const struct audio_format *old_format,
@@ -113,10 +114,9 @@ unsigned cross_fade_calc(float duration, float total_time,
 	if (isnan(mixramp_delay) || !(mixramp_start) || !(mixramp_prev_end)) {
 		chunks = (chunks_f * duration + 0.5);
 	} else {
-		/* Calculate mixramp overlap.
-		 * FIXME factor in ReplayGain for both songs. */
-		mixramp_overlap = mixramp_interpolate(mixramp_start, mixramp_db)
-		  + mixramp_interpolate(mixramp_prev_end, mixramp_db);
+		/* Calculate mixramp overlap. */
+		mixramp_overlap = mixramp_interpolate(mixramp_start, mixramp_db - replay_gain_db)
+		  + mixramp_interpolate(mixramp_prev_end, mixramp_db - replay_gain_prev_db);
 		if (!isnan(mixramp_overlap) && (mixramp_delay <= mixramp_overlap)) {
 			chunks = (chunks_f * (mixramp_overlap - mixramp_delay));
 			g_debug("will overlap %d chunks, %fs", chunks,

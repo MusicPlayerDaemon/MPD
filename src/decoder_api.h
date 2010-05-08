@@ -152,8 +152,9 @@ decoder_tag(struct decoder *decoder, struct input_stream *is,
  * @param decoder the decoder object
  * @param rgi the replay_gain_info object; may be NULL to invalidate
  * the previous replay gain values
+ * @return the replay gain adjustment used
  */
-void
+float
 decoder_replay_gain(struct decoder *decoder,
 		    const struct replay_gain_info *replay_gain_info);
 
@@ -161,11 +162,12 @@ decoder_replay_gain(struct decoder *decoder,
  * Store MixRamp tags.
  *
  * @param decoder the decoder object
+ * @param replay_gain_db the ReplayGain adjustment used for this song
  * @param mixramp_start the mixramp_start tag; may be NULL to invalidate
  * @param mixramp_end the mixramp_end tag; may be NULL to invalidate
  */
 void
-decoder_mixramp(struct decoder *decoder,
+decoder_mixramp(struct decoder *decoder, float replay_gain_db,
 		char *mixramp_start, char *mixramp_end);
 
 #endif

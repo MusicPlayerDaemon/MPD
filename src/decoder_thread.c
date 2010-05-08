@@ -438,6 +438,8 @@ decoder_task(gpointer arg)
 			dc_mixramp_start(dc, NULL);
 			dc_mixramp_prev_end(dc, dc->mixramp_end);
 			dc->mixramp_end = NULL; /* Don't free, it's copied above. */
+			dc->replay_gain_prev_db = dc->replay_gain_db;
+			dc->replay_gain_db = 0;
 
                         /* fall through */
 

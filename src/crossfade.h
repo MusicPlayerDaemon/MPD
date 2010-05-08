@@ -30,6 +30,8 @@ struct music_chunk;
  * @param total_time total_time the duration of the new song
  * @param mixramp_db the current mixramp_db setting
  * @param mixramp_delay the current mixramp_delay setting
+ * @param replay_gain_db the ReplayGain adjustment used for this song
+ * @param replay_gain_prev_db the ReplayGain adjustment used on the last song
  * @param mixramp_start the next songs mixramp_start tag
  * @param mixramp_prev_end the last songs mixramp_end setting
  * @param af the audio format of the new song
@@ -40,6 +42,7 @@ struct music_chunk;
  */
 unsigned cross_fade_calc(float duration, float total_time,
 			 float mixramp_db, float mixramp_delay,
+			 float replay_gain_db, float replay_gain_prev_db,
 			 char *mixramp_start, char *mixramp_prev_end,
 			 const struct audio_format *af,
 			 const struct audio_format *old_format,

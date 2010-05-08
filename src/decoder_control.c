@@ -38,6 +38,8 @@ dc_init(struct decoder_control *dc)
 	dc->state = DECODE_STATE_STOP;
 	dc->command = DECODE_COMMAND_NONE;
 
+	dc->replay_gain_db = 0;
+	dc->replay_gain_prev_db = 0;
 	dc->mixramp_start = NULL;
 	dc->mixramp_end = NULL;
 	dc->mixramp_prev_end = NULL;

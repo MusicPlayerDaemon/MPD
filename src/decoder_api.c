@@ -27,6 +27,7 @@
 #include "buffer.h"
 #include "pipe.h"
 #include "chunk.h"
+#include "replay_gain_config.h"
 
 #include <glib.h>
 
@@ -403,16 +404,24 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
 	return cmd;
 }
 
-void
+float
 decoder_replay_gain(struct decoder *decoder,
 		    const struct replay_gain_info *replay_gain_info)
 {
+	float return_db = 0;
 	assert(decoder != NULL);
 
 	if (replay_gain_info != NULL) {
 		static unsigned serial;
 		if (++serial == 0)
 			serial = 1;
+
+		if (REPLAY_GAIN_OFF != replay_gain_mode) {
+			return_db = 20.0 * log10f(
+				replay_gain_tuple_scale(
+					&replay_gain_info->tuples[replay_gain_mode],
+					replay_gain_preamp));
+		}
 
 		decoder->replay_gain_info = *replay_gain_info;
 		decoder->replay_gain_serial = serial;
@@ -426,16 +435,19 @@ decoder_replay_gain(struct decoder *decoder,
 		}
 	} else
 		decoder->replay_gain_serial = 0;
+
+	return return_db;
 }
 
 void
-decoder_mixramp(struct decoder *decoder,
+decoder_mixramp(struct decoder *decoder, float replay_gain_db,
 		char *mixramp_start, char *mixramp_end)
 {
 	assert(decoder != NULL);
 	struct decoder_control *dc = decoder->dc;
 	assert(dc != NULL);
 
+	dc->replay_gain_db = replay_gain_db;
 	dc_mixramp_start(dc, mixramp_start);
 	dc_mixramp_end(dc, mixramp_end);
 }
