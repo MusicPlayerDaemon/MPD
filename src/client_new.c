@@ -24,6 +24,12 @@
 #include "permission.h"
 
 #include <assert.h>
+#include <sys/types.h>
+#ifdef WIN32
+#include <winsock2.h>
+#else
+#include <sys/socket.h>
+#endif
 #include <unistd.h>
 
 #ifdef HAVE_LIBWRAP
@@ -111,7 +117,7 @@ void client_new(int fd, const struct sockaddr *sa, size_t sa_length, int uid)
 
 	client->send_buf_used = 0;
 
-	(void)write(fd, GREETING, sizeof(GREETING) - 1);
+	(void)send(fd, GREETING, sizeof(GREETING) - 1, 0);
 
 	client_list_add(client);
 
