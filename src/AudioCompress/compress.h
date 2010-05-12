@@ -8,7 +8,7 @@
 #ifndef COMPRESS_H
 #define COMPRESS_H
 
-#include <sys/types.h>
+#include <stdint.h>
 
 //! Configuration values for the compressor object
 struct CompressorConfig {
