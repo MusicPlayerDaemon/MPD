@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <assert.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "oss"
@@ -43,24 +44,12 @@
 struct oss_data {
 	int fd;
 	const char *device;
+
+	/**
+	 * The current input audio format.  This is needed to reopen
+	 * the device after cancel().
+	 */
 	struct audio_format audio_format;
-	int bitFormat;
-	int *supported[3];
-	unsigned num_supported[3];
-	int *unsupported[3];
-	unsigned num_unsupported[3];
-};
-
-enum oss_support {
-	OSS_SUPPORTED = 1,
-	OSS_UNSUPPORTED = 0,
-	OSS_UNKNOWN = -1,
-};
-
-enum oss_param {
-	OSS_RATE = 0,
-	OSS_CHANNELS = 1,
-	OSS_BITS = 2,
 };
 
 /**
@@ -72,188 +61,6 @@ oss_output_quark(void)
 	return g_quark_from_static_string("oss_output");
 }
 
-static enum oss_param
-oss_param_from_ioctl(unsigned param)
-{
-	enum oss_param idx = OSS_RATE;
-
-	switch (param) {
-	case SNDCTL_DSP_SPEED:
-		idx = OSS_RATE;
-		break;
-	case SNDCTL_DSP_CHANNELS:
-		idx = OSS_CHANNELS;
-		break;
-	case SNDCTL_DSP_SAMPLESIZE:
-		idx = OSS_BITS;
-		break;
-	}
-
-	return idx;
-}
-
-static bool
-oss_find_supported_param(struct oss_data *od, unsigned param, int val)
-{
-	enum oss_param idx = oss_param_from_ioctl(param);
-
-	for (unsigned i = 0; i < od->num_supported[idx]; i++)
-		if (od->supported[idx][i] == val)
-			return true;
-
-	return false;
-}
-
-static bool
-oss_can_convert(int idx, int val)
-{
-	switch (idx) {
-	case OSS_BITS:
-		if (val != 16)
-			return false;
-		break;
-	case OSS_CHANNELS:
-		if (val != 2)
-			return false;
-		break;
-	}
-
-	return true;
-}
-
-static int
-oss_get_supported_param(struct oss_data *od, unsigned param, int val)
-{
-	enum oss_param idx = oss_param_from_ioctl(param);
-	int ret = -1;
-	int least = val;
-	int diff;
-
-	for (unsigned i = 0; i < od->num_supported[idx]; i++) {
-		diff = od->supported[idx][i] - val;
-		if (diff < 0)
-			diff = -diff;
-		if (diff < least) {
-			if (!oss_can_convert(idx, od->supported[idx][i]))
-				continue;
-
-			least = diff;
-			ret = od->supported[idx][i];
-		}
-	}
-
-	return ret;
-}
-
-static bool
-oss_find_unsupported_param(struct oss_data *od, unsigned param, int val)
-{
-	enum oss_param idx = oss_param_from_ioctl(param);
-
-	for (unsigned i = 0; i < od->num_unsupported[idx]; i++) {
-		if (od->unsupported[idx][i] == val)
-			return true;
-	}
-
-	return false;
-}
-
-static void
-oss_add_supported_param(struct oss_data *od, unsigned param, int val)
-{
-	enum oss_param idx = oss_param_from_ioctl(param);
-
-	od->num_supported[idx]++;
-	od->supported[idx] = g_realloc(od->supported[idx],
-				       od->num_supported[idx] * sizeof(int));
-	od->supported[idx][od->num_supported[idx] - 1] = val;
-}
-
-static void
-oss_add_unsupported_param(struct oss_data *od, unsigned param, int val)
-{
-	enum oss_param idx = oss_param_from_ioctl(param);
-
-	od->num_unsupported[idx]++;
-	od->unsupported[idx] = g_realloc(od->unsupported[idx],
-					 od->num_unsupported[idx] *
-					 sizeof(int));
-	od->unsupported[idx][od->num_unsupported[idx] - 1] = val;
-}
-
-static void
-oss_remove_supported_param(struct oss_data *od, unsigned param, int val)
-{
-	unsigned j = 0;
-	enum oss_param idx = oss_param_from_ioctl(param);
-
-	for (unsigned i = 0; i < od->num_supported[idx] - 1; i++) {
-		if (od->supported[idx][i] == val)
-			j = 1;
-		od->supported[idx][i] = od->supported[idx][i + j];
-	}
-
-	od->num_supported[idx]--;
-	od->supported[idx] = g_realloc(od->supported[idx],
-				       od->num_supported[idx] * sizeof(int));
-}
-
-static void
-oss_remove_unsupported_param(struct oss_data *od, unsigned param, int val)
-{
-	unsigned j = 0;
-	enum oss_param idx = oss_param_from_ioctl(param);
-
-	for (unsigned i = 0; i < od->num_unsupported[idx] - 1; i++) {
-		if (od->unsupported[idx][i] == val)
-			j = 1;
-		od->unsupported[idx][i] = od->unsupported[idx][i + j];
-	}
-
-	od->num_unsupported[idx]--;
-	od->unsupported[idx] = g_realloc(od->unsupported[idx],
-					 od->num_unsupported[idx] *
-					 sizeof(int));
-}
-
-static enum oss_support
-oss_param_is_supported(struct oss_data *od, unsigned param, int val)
-{
-	if (oss_find_supported_param(od, param, val))
-		return OSS_SUPPORTED;
-	if (oss_find_unsupported_param(od, param, val))
-		return OSS_UNSUPPORTED;
-	return OSS_UNKNOWN;
-}
-
-static void
-oss_set_supported(struct oss_data *od, unsigned param, int val)
-{
-	enum oss_support supported = oss_param_is_supported(od, param, val);
-
-	if (supported == OSS_SUPPORTED)
-		return;
-
-	if (supported == OSS_UNSUPPORTED)
-		oss_remove_unsupported_param(od, param, val);
-
-	oss_add_supported_param(od, param, val);
-}
-
-static void
-oss_set_unsupported(struct oss_data *od, unsigned param, int val)
-{
-	enum oss_support supported = oss_param_is_supported(od, param, val);
-
-	if (supported == OSS_UNSUPPORTED)
-		return;
-
-	if (supported == OSS_SUPPORTED)
-		oss_remove_supported_param(od, param, val);
-
-	oss_add_unsupported_param(od, param, val);
-}
-
 static struct oss_data *
 oss_data_new(void)
 {
@@ -262,38 +69,12 @@ oss_data_new(void)
 	ret->device = NULL;
 	ret->fd = -1;
 
-	ret->supported[OSS_RATE] = NULL;
-	ret->supported[OSS_CHANNELS] = NULL;
-	ret->supported[OSS_BITS] = NULL;
-	ret->unsupported[OSS_RATE] = NULL;
-	ret->unsupported[OSS_CHANNELS] = NULL;
-	ret->unsupported[OSS_BITS] = NULL;
-
-	ret->num_supported[OSS_RATE] = 0;
-	ret->num_supported[OSS_CHANNELS] = 0;
-	ret->num_supported[OSS_BITS] = 0;
-	ret->num_unsupported[OSS_RATE] = 0;
-	ret->num_unsupported[OSS_CHANNELS] = 0;
-	ret->num_unsupported[OSS_BITS] = 0;
-
-	oss_set_supported(ret, SNDCTL_DSP_SPEED, 48000);
-	oss_set_supported(ret, SNDCTL_DSP_SPEED, 44100);
-	oss_set_supported(ret, SNDCTL_DSP_CHANNELS, 2);
-	oss_set_supported(ret, SNDCTL_DSP_SAMPLESIZE, 16);
-
 	return ret;
 }
 
 static void
 oss_data_free(struct oss_data *od)
 {
-	g_free(od->supported[OSS_RATE]);
-	g_free(od->supported[OSS_CHANNELS]);
-	g_free(od->supported[OSS_BITS]);
-	g_free(od->unsupported[OSS_RATE]);
-	g_free(od->unsupported[OSS_CHANNELS]);
-	g_free(od->unsupported[OSS_BITS]);
-
 	g_free(od);
 }
 
@@ -417,37 +198,6 @@ oss_output_finish(void *data)
 	oss_data_free(od);
 }
 
-static int
-oss_set_param(struct oss_data *od, unsigned param, int *value)
-{
-	int val = *value;
-	int copy;
-	enum oss_support supported = oss_param_is_supported(od, param, val);
-
-	do {
-		if (supported == OSS_UNSUPPORTED) {
-			val = oss_get_supported_param(od, param, val);
-			if (copy < 0)
-				return -1;
-		}
-		copy = val;
-		if (ioctl(od->fd, param, &copy)) {
-			oss_set_unsupported(od, param, val);
-			supported = OSS_UNSUPPORTED;
-		} else {
-			if (supported == OSS_UNKNOWN) {
-				oss_set_supported(od, param, val);
-				supported = OSS_SUPPORTED;
-			}
-			val = copy;
-		}
-	} while (supported == OSS_UNSUPPORTED);
-
-	*value = val;
-
-	return 0;
-}
-
 static void
 oss_close(struct oss_data *od)
 {
@@ -457,75 +207,343 @@ oss_close(struct oss_data *od)
 }
 
 /**
+ * A tri-state type for oss_try_ioctl().
+ */
+enum oss_setup_result {
+	SUCCESS,
+	ERROR,
+	UNSUPPORTED,
+};
+
+/**
+ * Invoke an ioctl on the OSS file descriptor.  On success, SUCCESS is
+ * returned.  If the parameter is not supported, UNSUPPORTED is
+ * returned.  Any other failure returns ERROR and allocates a GError.
+ */
+static enum oss_setup_result
+oss_try_ioctl_r(int fd, unsigned long request, int *value_r,
+		const char *msg, GError **error_r)
+{
+	assert(fd >= 0);
+	assert(value_r != NULL);
+	assert(msg != NULL);
+	assert(error_r == NULL || *error_r == NULL);
+
+	int ret = ioctl(fd, request, value_r);
+	if (ret >= 0)
+		return SUCCESS;
+
+	if (errno == EINVAL)
+		return UNSUPPORTED;
+
+	g_set_error(error_r, oss_output_quark(), errno,
+		    "%s: %s", msg, g_strerror(errno));
+	return ERROR;
+}
+
+/**
+ * Invoke an ioctl on the OSS file descriptor.  On success, SUCCESS is
+ * returned.  If the parameter is not supported, UNSUPPORTED is
+ * returned.  Any other failure returns ERROR and allocates a GError.
+ */
+static enum oss_setup_result
+oss_try_ioctl(int fd, unsigned long request, int value,
+	      const char *msg, GError **error_r)
+{
+	return oss_try_ioctl_r(fd, request, &value, msg, error_r);
+}
+
+/**
+ * Set up the channel number, and attempts to find alternatives if the
+ * specified number is not supported.
+ */
+static bool
+oss_setup_channels(int fd, struct audio_format *audio_format, GError **error_r)
+{
+	const char *const msg = "Failed to set channel count";
+	int channels = audio_format->channels;
+	enum oss_setup_result result =
+		oss_try_ioctl_r(fd, SNDCTL_DSP_CHANNELS, &channels, msg, error_r);
+	switch (result) {
+	case SUCCESS:
+		if (!audio_valid_channel_count(channels))
+		    break;
+
+		audio_format->channels = channels;
+		return true;
+
+	case ERROR:
+		return false;
+
+	case UNSUPPORTED:
+		break;
+	}
+
+	for (unsigned i = 1; i < 2; ++i) {
+		if (i == audio_format->channels)
+			/* don't try that again */
+			continue;
+
+		channels = i;
+		result = oss_try_ioctl_r(fd, SNDCTL_DSP_CHANNELS, &channels,
+					 msg, error_r);
+		switch (result) {
+		case SUCCESS:
+			if (!audio_valid_channel_count(channels))
+			    break;
+
+			audio_format->channels = channels;
+			return true;
+
+		case ERROR:
+			return false;
+
+		case UNSUPPORTED:
+			break;
+		}
+	}
+
+	g_set_error(error_r, oss_output_quark(), EINVAL, "%s", msg);
+	return false;
+}
+
+/**
+ * Set up the sample rate, and attempts to find alternatives if the
+ * specified sample rate is not supported.
+ */
+static bool
+oss_setup_sample_rate(int fd, struct audio_format *audio_format,
+		      GError **error_r)
+{
+	const char *const msg = "Failed to set sample rate";
+	int sample_rate = audio_format->sample_rate;
+	enum oss_setup_result result =
+		oss_try_ioctl_r(fd, SNDCTL_DSP_SPEED, &sample_rate,
+				msg, error_r);
+	switch (result) {
+	case SUCCESS:
+		if (!audio_valid_sample_rate(sample_rate))
+			break;
+
+		audio_format->sample_rate = sample_rate;
+		return true;
+
+	case ERROR:
+		return false;
+
+	case UNSUPPORTED:
+		break;
+	}
+
+	static const int sample_rates[] = { 48000, 44100, 0 };
+	for (unsigned i = 0; sample_rates[i] != 0; ++i) {
+		sample_rate = sample_rates[i];
+		if (sample_rate == (int)audio_format->sample_rate)
+			continue;
+
+		result = oss_try_ioctl_r(fd, SNDCTL_DSP_SPEED, &sample_rate,
+					 msg, error_r);
+		switch (result) {
+		case SUCCESS:
+			if (!audio_valid_sample_rate(sample_rate))
+				break;
+		
+			audio_format->sample_rate = sample_rate;
+			return true;
+
+		case ERROR:
+			return false;
+
+		case UNSUPPORTED:
+			break;
+		}
+	}
+
+	g_set_error(error_r, oss_output_quark(), EINVAL, "%s", msg);
+	return false;
+}
+
+/**
+ * Convert a MPD sample format to its OSS counterpart.  Returns
+ * AFMT_QUERY if there is no direct counterpart.
+ */
+static int
+sample_format_to_oss(enum sample_format format)
+{
+	switch (format) {
+	case SAMPLE_FORMAT_UNDEFINED:
+		return AFMT_QUERY;
+
+	case SAMPLE_FORMAT_S8:
+		return AFMT_S8;
+
+	case SAMPLE_FORMAT_S16:
+		return AFMT_S16_NE;
+
+	case SAMPLE_FORMAT_S24:
+	case SAMPLE_FORMAT_S24_P32:
+	case SAMPLE_FORMAT_S32:
+		return AFMT_QUERY;
+	}
+
+	return AFMT_QUERY;
+}
+
+/**
+ * Convert an OSS sample format to its MPD counterpart.  Returns
+ * SAMPLE_FORMAT_UNDEFINED if there is no direct counterpart.
+ */
+static enum sample_format
+sample_format_from_oss(int format)
+{
+	switch (format) {
+	case AFMT_S8:
+		return SAMPLE_FORMAT_S8;
+
+	case AFMT_S16_NE:
+		return SAMPLE_FORMAT_S16;
+
+	default:
+		return SAMPLE_FORMAT_UNDEFINED;
+	}
+}
+
+/**
+ * Set up the sample format, and attempts to find alternatives if the
+ * specified format is not supported.
+ */
+static bool
+oss_setup_sample_format(int fd, struct audio_format *audio_format,
+			GError **error_r)
+{
+	const char *const msg = "Failed to set sample format";
+	int oss_format = sample_format_to_oss(audio_format->format);
+	enum oss_setup_result result = oss_format != AFMT_QUERY
+		? oss_try_ioctl_r(fd, SNDCTL_DSP_SAMPLESIZE,
+				  &oss_format, msg, error_r)
+		: UNSUPPORTED;
+	enum sample_format mpd_format;
+	switch (result) {
+	case SUCCESS:
+		mpd_format = sample_format_from_oss(oss_format);
+		if (mpd_format == SAMPLE_FORMAT_UNDEFINED)
+			break;
+
+		audio_format->format = mpd_format;
+		return true;
+
+	case ERROR:
+		return false;
+
+	case UNSUPPORTED:
+		break;
+	}
+
+	/* the requested sample format is not available - probe for
+	   other formats supported by MPD */
+
+	static const enum sample_format sample_formats[] = {
+		SAMPLE_FORMAT_S16,
+		SAMPLE_FORMAT_S8,
+		SAMPLE_FORMAT_UNDEFINED /* sentinel */
+	};
+
+	for (unsigned i = 0; sample_formats[i] != SAMPLE_FORMAT_UNDEFINED; ++i) {
+		mpd_format = sample_formats[i];
+		if (mpd_format == audio_format->format)
+			/* don't try that again */
+			continue;
+
+		oss_format = sample_format_to_oss(mpd_format);
+		if (oss_format == AFMT_QUERY)
+			/* not supported by this OSS version */
+			continue;
+
+		result = oss_try_ioctl_r(fd, SNDCTL_DSP_SAMPLESIZE,
+					 &oss_format, msg, error_r);
+		switch (result) {
+		case SUCCESS:
+			mpd_format = sample_format_from_oss(oss_format);
+			if (mpd_format == SAMPLE_FORMAT_UNDEFINED)
+				break;
+
+			audio_format->format = mpd_format;
+			return true;
+
+		case ERROR:
+			return false;
+
+		case UNSUPPORTED:
+			break;
+		}
+	}
+
+	g_set_error(error_r, oss_output_quark(), EINVAL, "%s", msg);
+	return false;
+}
+
+/**
  * Sets up the OSS device which was opened before.
  */
 static bool
-oss_setup(struct oss_data *od, GError **error)
+oss_setup(struct oss_data *od, struct audio_format *audio_format,
+	  GError **error_r)
 {
-	int tmp;
-
-	tmp = od->audio_format.channels;
-	if (oss_set_param(od, SNDCTL_DSP_CHANNELS, &tmp)) {
-		g_set_error(error, oss_output_quark(), errno,
-			    "OSS device \"%s\" does not support %u channels: %s",
-			    od->device, od->audio_format.channels,
-			    strerror(errno));
-		return false;
-	}
-	od->audio_format.channels = tmp;
-
-	tmp = od->audio_format.sample_rate;
-	if (oss_set_param(od, SNDCTL_DSP_SPEED, &tmp)) {
-		g_set_error(error, oss_output_quark(), errno,
-			    "OSS device \"%s\" does not support %u Hz audio: %s",
-			    od->device, od->audio_format.sample_rate,
-			    strerror(errno));
-		return false;
-	}
-	od->audio_format.sample_rate = tmp;
-
-	switch (od->audio_format.format) {
-	case SAMPLE_FORMAT_S8:
-		tmp = AFMT_S8;
-		break;
-
-	case SAMPLE_FORMAT_S16:
-		tmp = AFMT_S16_NE;
-		break;
-
-	default:
-		/* not supported by OSS - fall back to 16 bit */
-		od->audio_format.format = SAMPLE_FORMAT_S16;
-		tmp = AFMT_S16_NE;
-		break;
-	}
-
-	if (oss_set_param(od, SNDCTL_DSP_SAMPLESIZE, &tmp)) {
-		g_set_error(error, oss_output_quark(), errno,
-			    "OSS device \"%s\" does not support %u bit audio: %s",
-			    od->device, tmp, strerror(errno));
-		return false;
-	}
-
-	return true;
+	return oss_setup_channels(od->fd, audio_format, error_r) &&
+		oss_setup_sample_rate(od->fd, audio_format, error_r) &&
+		oss_setup_sample_format(od->fd, audio_format, error_r);
 }
 
+/**
+ * Reopen the device with the saved audio_format, without any probing.
+ */
 static bool
-oss_open(struct oss_data *od, GError **error)
+oss_reopen(struct oss_data *od, GError **error_r)
 {
-	bool success;
+	assert(od->fd < 0);
 
 	od->fd = open_cloexec(od->device, O_WRONLY, 0);
 	if (od->fd < 0) {
-		g_set_error(error, oss_output_quark(), errno,
+		g_set_error(error_r, oss_output_quark(), errno,
 			    "Error opening OSS device \"%s\": %s",
 			    od->device, strerror(errno));
 		return false;
 	}
 
-	success = oss_setup(od, error);
-	if (!success) {
+	enum oss_setup_result result;
+
+	const char *const msg1 = "Failed to set channel count";
+	result = oss_try_ioctl(od->fd, SNDCTL_DSP_CHANNELS,
+			       od->audio_format.channels, msg1, error_r);
+	if (result != SUCCESS) {
 		oss_close(od);
+		if (result == UNSUPPORTED)
+			g_set_error(error_r, oss_output_quark(), EINVAL,
+				    "%s", msg1);
+		return false;
+	}
+
+	const char *const msg2 = "Failed to set sample rate";
+	result = oss_try_ioctl(od->fd, SNDCTL_DSP_SPEED,
+			       od->audio_format.sample_rate, msg2, error_r);
+	if (result != SUCCESS) {
+		oss_close(od);
+		if (result == UNSUPPORTED)
+			g_set_error(error_r, oss_output_quark(), EINVAL,
+				    "%s", msg2);
+		return false;
+	}
+
+	const char *const msg3 = "Failed to set sample format";
+	assert(sample_format_to_oss(od->audio_format.format) != AFMT_QUERY);
+	result = oss_try_ioctl(od->fd, SNDCTL_DSP_SAMPLESIZE,
+			       sample_format_to_oss(od->audio_format.format),
+			       msg3, error_r);
+	if (result != SUCCESS) {
+		oss_close(od);
+		if (result == UNSUPPORTED)
+			g_set_error(error_r, oss_output_quark(), EINVAL,
+				    "%s", msg3);
 		return false;
 	}
 
@@ -535,18 +553,23 @@ oss_open(struct oss_data *od, GError **error)
 static bool
 oss_output_open(void *data, struct audio_format *audio_format, GError **error)
 {
-	bool ret;
 	struct oss_data *od = data;
 
-	od->audio_format = *audio_format;
-
-	ret = oss_open(od, error);
-	if (!ret)
+	od->fd = open_cloexec(od->device, O_WRONLY, 0);
+	if (od->fd < 0) {
+		g_set_error(error, oss_output_quark(), errno,
+			    "Error opening OSS device \"%s\": %s",
+			    od->device, strerror(errno));
 		return false;
+	}
 
-	*audio_format = od->audio_format;
+	if (!oss_setup(od, audio_format, error)) {
+		oss_close(od);
+		return false;
+	}
 
-	return ret;
+	od->audio_format = *audio_format;
+	return true;
 }
 
 static void
@@ -575,7 +598,7 @@ oss_output_play(void *data, const void *chunk, size_t size, GError **error)
 	ssize_t ret;
 
 	/* reopen the device since it was closed by dropBufferedAudio */
-	if (od->fd < 0 && !oss_open(od, error))
+	if (od->fd < 0 && !oss_reopen(od, error))
 		return 0;
 
 	while (true) {
