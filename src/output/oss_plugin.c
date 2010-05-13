@@ -40,12 +40,6 @@
 # include <sys/soundcard.h>
 #endif /* !(defined(__OpenBSD__) || defined(__NetBSD__) */
 
-#if G_BYTE_ORDER == G_BIG_ENDIAN
-# define	AFMT_S16_MPD	 AFMT_S16_BE
-#else
-# define	AFMT_S16_MPD	 AFMT_S16_LE
-#endif
-
 struct oss_data {
 	int fd;
 	const char *device;
@@ -496,13 +490,13 @@ oss_setup(struct oss_data *od, GError **error)
 		break;
 
 	case SAMPLE_FORMAT_S16:
-		tmp = AFMT_S16_MPD;
+		tmp = AFMT_S16_NE;
 		break;
 
 	default:
 		/* not supported by OSS - fall back to 16 bit */
 		od->audio_format.format = SAMPLE_FORMAT_S16;
-		tmp = AFMT_S16_MPD;
+		tmp = AFMT_S16_NE;
 		break;
 	}
 
