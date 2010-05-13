@@ -381,9 +381,25 @@ sample_format_to_oss(enum sample_format format)
 		return AFMT_S16_NE;
 
 	case SAMPLE_FORMAT_S24:
-	case SAMPLE_FORMAT_S24_P32:
-	case SAMPLE_FORMAT_S32:
+#ifdef AFMT_S24_PACKED
+		return AFMT_S24_PACKED;
+#else
 		return AFMT_QUERY;
+#endif
+
+	case SAMPLE_FORMAT_S24_P32:
+#ifdef AFMT_S24_NE
+		return AFMT_S24_NE;
+#else
+		return AFMT_QUERY;
+#endif
+
+	case SAMPLE_FORMAT_S32:
+#ifdef AFMT_S32_NE
+		return AFMT_S32_NE;
+#else
+		return AFMT_QUERY;
+#endif
 	}
 
 	return AFMT_QUERY;
@@ -402,6 +418,21 @@ sample_format_from_oss(int format)
 
 	case AFMT_S16_NE:
 		return SAMPLE_FORMAT_S16;
+
+#ifdef AFMT_S24_PACKED
+	case AFMT_S24_PACKED:
+		return SAMPLE_FORMAT_S24;
+#endif
+
+#ifdef AFMT_S24_NE
+	case AFMT_S24_NE:
+		return SAMPLE_FORMAT_S24_P32;
+#endif
+
+#ifdef AFMT_S32_NE
+	case AFMT_S32_NE:
+		return SAMPLE_FORMAT_S32;
+#endif
 
 	default:
 		return SAMPLE_FORMAT_UNDEFINED;
@@ -443,6 +474,9 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
 	   other formats supported by MPD */
 
 	static const enum sample_format sample_formats[] = {
+		SAMPLE_FORMAT_S24_P32,
+		SAMPLE_FORMAT_S32,
+		SAMPLE_FORMAT_S24,
 		SAMPLE_FORMAT_S16,
 		SAMPLE_FORMAT_S8,
 		SAMPLE_FORMAT_UNDEFINED /* sentinel */
