@@ -48,6 +48,7 @@ daemonize_finish(void)
 void
 daemonize_kill(void);
 #else
+#include <glib.h>
 static inline void
 daemonize_kill(void)
 { g_error("--kill is not available on WIN32"); }
