@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "replay_gain_config.h"
+#include "playlist.h"
 #include "conf.h"
 #include "idle.h"
 
@@ -128,4 +129,16 @@ void replay_gain_global_init(void)
 
 		replay_gain_missing_preamp = pow(10, f / 20.0);
 	}
+}
+
+enum replay_gain_mode replay_gain_get_real_mode(void)
+{
+	enum replay_gain_mode rgm;
+
+	rgm = replay_gain_mode;
+
+	if (rgm == REPLAY_GAIN_AUTO)
+	    rgm = g_playlist.queue.random ? REPLAY_GAIN_TRACK : REPLAY_GAIN_ALBUM;
+
+	return rgm;
 }

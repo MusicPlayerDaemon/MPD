@@ -45,4 +45,10 @@ replay_gain_get_mode_string(void);
 bool
 replay_gain_set_mode_string(const char *p);
 
+/**
+  * Returns the "real" mode according to the "auto" setting"
+  */
+enum replay_gain_mode
+replay_gain_get_real_mode(void);
+
 #endif
