@@ -79,7 +79,13 @@ song_print_info(struct client *client, struct song *song)
 		if (tm2 != NULL) {
 			char timestamp[32];
 
-			strftime(timestamp, sizeof(timestamp), "%FT%TZ", tm2);
+			strftime(timestamp, sizeof(timestamp),
+#ifdef G_OS_WIN32
+				 "%Y-%m-%dT%H:%M:%SZ",
+#else
+				 "%FT%TZ",
+#endif
+				 tm2);
 			client_printf(client, "Last-Modified: %s\n",
 				      timestamp);
 		}

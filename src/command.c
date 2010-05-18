@@ -387,10 +387,12 @@ print_spl_list(struct client *client, GPtrArray *list)
 		client_printf(client, "playlist: %s\n", playlist->name);
 
 		t = playlist->mtime;
-		strftime(timestamp, sizeof(timestamp), "%FT%TZ",
-#ifdef WIN32
+		strftime(timestamp, sizeof(timestamp),
+#ifdef G_OS_WIN32
+			 "%Y-%m-%dT%H:%M:%SZ",
 			 gmtime(&t)
 #else
+			 "%FT%TZ",
 			 gmtime_r(&t, &tm)
 #endif
 			 );
