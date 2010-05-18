@@ -1,6 +1,7 @@
 ver 0.15.10 (2010/??/??)
 * input:
   - mms: fix memory leak in error handler
+  - mms: initialize the "eof" attribute
 * decoders:
   - mad: properly calculate ID3 size without libid3tag
 

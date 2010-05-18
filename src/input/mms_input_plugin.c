@@ -54,6 +54,8 @@ input_mms_open(struct input_stream *is, const char *url)
 		return false;
 	}
 
+	m->eof = false;
+
 	/* XX is this correct?  at least this selects the ffmpeg
 	   decoder, which seems to work fine*/
 	is->mime = g_strdup("audio/x-ms-wma");
