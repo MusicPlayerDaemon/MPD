@@ -16,6 +16,7 @@ ver 0.16 (20??/??/??)
   - zip: renamed plugin to "zzip"
 * input:
   - lastfm: obsolete plugin removed
+  - ffmpeg: new input plugin using libavformat's "avio" library
 * tags:
   - added tags "ArtistSort", "AlbumArtistSort"
   - id3: revised "performer" tag support

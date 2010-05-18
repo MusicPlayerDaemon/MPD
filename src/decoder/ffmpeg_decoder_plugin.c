@@ -575,6 +575,12 @@ static const char *const ffmpeg_mime_types[] = {
 	"video/x-vid",
 	"video/x-wmv",
 	"video/x-xvid",
+
+	/* special value for the "ffmpeg" input plugin: all streams by
+	   the "ffmpeg" input plugin shall be decoded by this
+	   plugin */
+	"audio/x-mpd-ffmpeg",
+
 	NULL
 };
 

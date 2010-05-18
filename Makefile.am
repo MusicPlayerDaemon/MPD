@@ -101,6 +101,7 @@ mpd_headers = \
 	src/input_registry.h \
 	src/input_stream.h \
 	src/input/file_input_plugin.h \
+	src/input/ffmpeg_input_plugin.h \
 	src/input/curl_input_plugin.h \
 	src/input/rewind_input_plugin.h \
 	src/input/mms_input_plugin.h \
@@ -590,10 +591,12 @@ endif
 
 INPUT_CFLAGS = \
 	$(CURL_CFLAGS) \
+	$(FFMPEG_CFLAGS) \
 	$(MMS_CFLAGS)
 
 INPUT_LIBS = \
 	$(CURL_LIBS) \
+	$(FFMPEG_LIBS) \
 	$(MMS_LIBS)
 
 INPUT_SRC = \
@@ -606,6 +609,10 @@ INPUT_SRC = \
 if ENABLE_CURL
 INPUT_SRC += src/input/curl_input_plugin.c \
 	src/icy_metadata.c
+endif
+
+if HAVE_FFMPEG
+INPUT_SRC += src/input/ffmpeg_input_plugin.c
 endif
 
 if ENABLE_MMS

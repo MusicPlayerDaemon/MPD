@@ -41,6 +41,14 @@ static const char *remoteUrlPrefixes[] = {
 	"mmst://",
 	"mmsu://",
 #endif
+#ifdef HAVE_FFMPEG
+	"gopher://",
+	"rtp://",
+	"rtsp://",
+	"rtmp://",
+	"rtmpt://",
+	"rtmps://",
+#endif
 	NULL
 };
 

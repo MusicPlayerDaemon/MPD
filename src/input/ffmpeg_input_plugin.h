@@ -17,43 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "input_registry.h"
-#include "input/file_input_plugin.h"
+#ifndef MPD_FFMPEG_INPUT_PLUGIN_H
+#define MPD_FFMPEG_INPUT_PLUGIN_H
 
-#ifdef ENABLE_ARCHIVE
-#include "input/archive_input_plugin.h"
-#endif
+/**
+ * An input plugin based on libavformat's "avio" library.
+ */
+extern const struct input_plugin input_plugin_ffmpeg;
 
-#ifdef ENABLE_CURL
-#include "input/curl_input_plugin.h"
 #endif
-
-#ifdef HAVE_FFMPEG
-#include "input/ffmpeg_input_plugin.h"
-#endif
-
-#ifdef ENABLE_MMS
-#include "input/mms_input_plugin.h"
-#endif
-
-#include <glib.h>
-
-const struct input_plugin *const input_plugins[] = {
-	&input_plugin_file,
-#ifdef ENABLE_ARCHIVE
-	&input_plugin_archive,
-#endif
-#ifdef ENABLE_CURL
-	&input_plugin_curl,
-#endif
-#ifdef HAVE_FFMPEG
-	&input_plugin_ffmpeg,
-#endif
-#ifdef ENABLE_MMS
-	&input_plugin_mms,
-#endif
-	NULL
-};
-
-bool input_plugins_enabled[G_N_ELEMENTS(input_plugins) - 1];
