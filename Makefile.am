@@ -797,10 +797,14 @@ noinst_PROGRAMS = \
 	test/read_tags \
 	test/run_filter \
 	test/run_output \
-	test/read_mixer \
 	test/run_convert \
 	test/run_normalize \
 	test/software_volume
+
+if HAVE_ALSA
+# this debug program is still ALSA specific
+noinst_PROGRAMS += test/read_mixer
+endif
 
 test_read_conf_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(GLIB_CFLAGS)
