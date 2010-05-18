@@ -33,7 +33,11 @@
 #define G_LOG_DOMAIN "crossfade"
 
 #ifdef G_OS_WIN32
-  #define strtok_r(s,d,p) strtok(s,d)
+static char *
+strtok_r(char *str, const char *delim, G_GNUC_UNUSED char **saveptr)
+{
+	return strtok(str, delim);
+}
 #endif
 
 static float mixramp_interpolate(char *ramp_list, float required_db)
