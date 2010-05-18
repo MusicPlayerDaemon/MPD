@@ -115,13 +115,6 @@ input_mms_eof(struct input_stream *is)
 	return m->eof;
 }
 
-static int
-input_mms_buffer(G_GNUC_UNUSED struct input_stream *is,
-		 G_GNUC_UNUSED GError **error_r)
-{
-	return 0;
-}
-
 static bool
 input_mms_seek(G_GNUC_UNUSED struct input_stream *is,
 	       G_GNUC_UNUSED goffset offset, G_GNUC_UNUSED int whence,
@@ -134,7 +127,6 @@ const struct input_plugin input_plugin_mms = {
 	.name = "mms",
 	.open = input_mms_open,
 	.close = input_mms_close,
-	.buffer = input_mms_buffer,
 	.read = input_mms_read,
 	.eof = input_mms_eof,
 	.seek = input_mms_seek,
