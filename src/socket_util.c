@@ -111,8 +111,14 @@ socket_bind_listen(int domain, int type, int protocol,
 		return -1;
 	}
 
+#ifdef WIN32
+	const char *optval = (const char *)&reuse;
+#else
+	const void *optval = &reuse;
+#endif
+
 	ret = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR,
-			 &reuse, sizeof(reuse));
+			 optval, sizeof(reuse));
 	if (ret < 0) {
 		g_set_error(error, listen_quark(), errno,
 			    "setsockopt() failed: %s", g_strerror(errno));
