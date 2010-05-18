@@ -1372,6 +1372,22 @@ esac
 
 AM_CONDITIONAL(ENABLE_SOLARIS_OUTPUT, test x$enable_solaris_output = xyes)
 
+dnl --------------------------------- Solaris ---------------------------------
+
+case "$host_os" in
+	mingw32* | windows*)
+		AC_DEFINE(ENABLE_WIN32_OUTPUT, 1, [Define to enable WIN32 wave support])
+		enable_win32_output=yes
+		MPD_LIBS="$MPD_LIBS -lwinmm"
+		;;
+
+	*)
+		enable_win32_output=no
+		;;
+esac
+
+AM_CONDITIONAL(ENABLE_WIN32_OUTPUT, test x$enable_win32_output = xyes)
+
 dnl --------------------- Post Audio Output Plugins Tests ---------------------
 if
 	test x$enable_alsa = xno &&
@@ -1388,6 +1404,7 @@ if
 	test x$enable_recorder_output = xno &&
 	test x$enable_shout = xno &&
 	test x$enable_solaris_output = xno &&
+	test x$enable_win32_output = xno &&
 
 		AC_MSG_ERROR([No Audio Output types configured!])
 fi
@@ -1523,6 +1540,7 @@ results(mvp, [Media MVP])
 results(shout, [SHOUTcast])
 echo -ne '\n\t'
 results(solaris, [Solaris])
+results(win32_output, [WIN32 wave])
 
 if
 	test x$enable_shout = xyes ||

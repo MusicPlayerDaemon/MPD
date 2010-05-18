@@ -720,6 +720,10 @@ if ENABLE_SOLARIS_OUTPUT
 OUTPUT_SRC += src/output/solaris_output_plugin.c
 endif
 
+if ENABLE_WIN32_OUTPUT
+OUTPUT_SRC += src/output/win32_output_plugin.c
+endif
+
 
 #
 # Playlist plugins
