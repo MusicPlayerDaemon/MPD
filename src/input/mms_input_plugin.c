@@ -49,6 +49,7 @@ input_mms_open(struct input_stream *is, const char *url)
 	m = g_new(struct input_mms, 1);
 	m->mms = mmsx_connect(NULL, NULL, url, 128 * 1024);
 	if (m->mms == NULL) {
+		g_free(m);
 		g_warning("mmsx_connect() failed");
 		return false;
 	}
