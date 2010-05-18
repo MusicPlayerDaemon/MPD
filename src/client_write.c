@@ -243,6 +243,7 @@ void client_puts(struct client *client, const char *s)
 
 void client_vprintf(struct client *client, const char *fmt, va_list args)
 {
+#ifndef G_OS_WIN32
 	va_list tmp;
 	int length;
 	char *buffer;
@@ -259,6 +260,18 @@ void client_vprintf(struct client *client, const char *fmt, va_list args)
 	vsnprintf(buffer, length + 1, fmt, args);
 	client_write(client, buffer, length);
 	g_free(buffer);
+#else
+	/* On mingw32, snprintf() expects a 64 bit integer instead of
+	   a "long int" for "%li".  This is not consistent with our
+	   expectation, so we're using plain sprintf() here, hoping
+	   the static buffer is large enough.  Sorry for this hack,
+	   but WIN32 development is so painful, I'm not in the mood to
+	   do it properly now. */
+
+	static char buffer[4096];
+	vsprintf(buffer, fmt, args);
+	client_write(client, buffer, strlen(buffer));
+#endif
 }
 
 G_GNUC_PRINTF(2, 3) void client_printf(struct client *client, const char *fmt, ...)
