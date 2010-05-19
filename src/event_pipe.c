@@ -89,7 +89,12 @@ void event_pipe_init(void)
 	if (ret < 0)
 		g_error("Couldn't open pipe: %s", strerror(errno));
 
+#ifndef G_OS_WIN32
 	channel = g_io_channel_unix_new(event_pipe[0]);
+#else
+	channel = g_io_channel_win32_new_fd(event_pipe[0]);
+#endif
+
 	event_pipe_source_id = g_io_add_watch(channel, G_IO_IN,
 					      main_notify_event, NULL);
 	g_io_channel_unref(channel);
