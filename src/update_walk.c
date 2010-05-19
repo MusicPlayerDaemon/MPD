@@ -292,6 +292,7 @@ stat_directory_child(const struct directory *parent, const char *name,
 	return ret;
 }
 
+#ifndef G_OS_WIN32
 static int
 statDirectory(struct directory *dir)
 {
@@ -304,10 +305,12 @@ statDirectory(struct directory *dir)
 
 	return 0;
 }
+#endif
 
 static int
 inodeFoundInParent(struct directory *parent, ino_t inode, dev_t device)
 {
+#ifndef G_OS_WIN32
 	while (parent) {
 		if (!parent->stat && statDirectory(parent) < 0)
 			return -1;
@@ -317,6 +320,11 @@ inodeFoundInParent(struct directory *parent, ino_t inode, dev_t device)
 		}
 		parent = parent->parent;
 	}
+#else
+	(void)parent;
+	(void)inode;
+	(void)device;
+#endif
 
 	return 0;
 }
