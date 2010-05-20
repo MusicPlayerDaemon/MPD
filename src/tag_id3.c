@@ -495,7 +495,7 @@ struct tag *tag_id3_load(const char *file)
 	struct id3_tag *tag;
 	FILE *stream;
 
-	stream = fopen(file, "r");
+	stream = fopen(file, "rb");
 	if (!stream) {
 		g_debug("tag_id3_load: Failed to open file: '%s', %s",
 			file, strerror(errno));

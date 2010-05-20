@@ -78,7 +78,7 @@ tag_ape_load(const char *file)
 		unsigned char reserved[8];
 	} footer;
 
-	fp = fopen(file, "r");
+	fp = fopen(file, "rb");
 	if (!fp)
 		return NULL;
 
