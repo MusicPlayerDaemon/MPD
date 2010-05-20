@@ -29,6 +29,7 @@
 #include "pcm_convert.h"
 #include "conf.h"
 #include "fifo_buffer.h"
+#include "stdbin.h"
 
 #include <glib.h>
 

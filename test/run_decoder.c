@@ -25,6 +25,7 @@
 #include "audio_format.h"
 #include "pcm_volume.h"
 #include "idle.h"
+#include "stdbin.h"
 
 #include <glib.h>
 

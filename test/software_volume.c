@@ -27,6 +27,7 @@
 #include "pcm_volume.h"
 #include "audio_parser.h"
 #include "audio_format.h"
+#include "stdbin.h"
 
 #include <glib.h>
 

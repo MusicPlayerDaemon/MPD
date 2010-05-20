@@ -28,6 +28,7 @@
 #include "event_pipe.h"
 #include "idle.h"
 #include "playlist.h"
+#include "stdbin.h"
 
 #include <glib.h>
 

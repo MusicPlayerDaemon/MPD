@@ -23,6 +23,7 @@
 #include "tag_pool.h"
 #include "tag_save.h"
 #include "conf.h"
+#include "stdbin.h"
 
 #ifdef ENABLE_ARCHIVE
 #include "archive_list.h"

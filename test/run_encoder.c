@@ -23,6 +23,7 @@
 #include "audio_format.h"
 #include "audio_parser.h"
 #include "conf.h"
+#include "stdbin.h"
 
 #include <glib.h>
 

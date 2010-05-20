@@ -26,6 +26,7 @@
 #include "idle.h"
 #include "mixer_control.h"
 #include "playlist.h"
+#include "stdbin.h"
 
 #include <glib.h>
 
