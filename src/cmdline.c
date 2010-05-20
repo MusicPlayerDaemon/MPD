@@ -40,8 +40,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef G_OS_WIN32
+#define CONFIG_FILE_LOCATION		"\\mpd\\mpd.conf"
+#else /* G_OS_WIN32 */
 #define USER_CONFIG_FILE_LOCATION1	".mpdconf"
 #define USER_CONFIG_FILE_LOCATION2	".mpd/mpd.conf"
+#endif
 
 static GQuark
 cmdline_quark(void)
@@ -171,8 +175,37 @@ parse_cmdline(int argc, char **argv, struct options *options,
 	} else if (argc <= 1) {
 		/* default configuration file path */
 		char *path1;
-		char *path2;
 
+#ifdef G_OS_WIN32
+		path1 = g_build_filename(g_get_user_config_dir(),
+					CONFIG_FILE_LOCATION, NULL);
+		if (g_file_test(path1, G_FILE_TEST_IS_REGULAR))
+			ret = config_read_file(path1, error_r);
+		else {
+			int i = 0;
+			char *system_path = NULL;
+			const char * const *system_config_dirs;
+
+			system_config_dirs = g_get_system_config_dirs();
+
+			while(system_config_dirs[i] != NULL) {
+				system_path = g_build_filename(system_config_dirs[i],
+						CONFIG_FILE_LOCATION,
+						NULL);
+				if(g_file_test(system_path,
+						G_FILE_TEST_IS_REGULAR)) {
+					ret = config_read_file(system_path,error_r);
+					g_free(system_path);
+					g_free(&system_config_dirs);
+					break;
+				}
+				++i;;
+			}
+			g_free(system_path);
+			g_free(&system_config_dirs);
+		}
+#else /* G_OS_WIN32 */
+		char *path2;
 		path1 = g_build_filename(g_get_home_dir(),
 					USER_CONFIG_FILE_LOCATION1, NULL);
 		path2 = g_build_filename(g_get_home_dir(),
@@ -185,8 +218,12 @@ parse_cmdline(int argc, char **argv, struct options *options,
 				     G_FILE_TEST_IS_REGULAR))
 			ret = config_read_file(SYSTEM_CONFIG_FILE_LOCATION,
 					       error_r);
+#endif
+
 		g_free(path1);
+#ifndef G_OS_WIN32
 		g_free(path2);
+#endif
 
 		return ret;
 	} else if (argc == 2) {
