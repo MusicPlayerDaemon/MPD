@@ -21,9 +21,9 @@
 #include "input/file_input_plugin.h"
 #include "input_plugin.h"
 #include "fd_util.h"
+#include "open.h"
 
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -54,7 +54,7 @@ input_file_open(const char *filename, GError **error_r)
 	if (!g_path_is_absolute(filename))
 		return false;
 
-	fd = open_cloexec(filename, O_RDONLY, 0);
+	fd = open_cloexec(filename, O_RDONLY|O_BINARY, 0);
 	if (fd < 0) {
 		if (errno != ENOENT && errno != ENOTDIR)
 			g_set_error(error_r, file_quark(), errno,

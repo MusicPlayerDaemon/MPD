@@ -22,11 +22,11 @@
 #include "encoder_plugin.h"
 #include "encoder_list.h"
 #include "fd_util.h"
+#include "open.h"
 
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
 
@@ -158,7 +158,8 @@ recorder_output_open(void *data, struct audio_format *audio_format,
 
 	/* create the output file */
 
-	recorder->fd = open_cloexec(recorder->path, O_CREAT|O_WRONLY|O_TRUNC,
+	recorder->fd = open_cloexec(recorder->path,
+				    O_CREAT|O_WRONLY|O_TRUNC|O_BINARY,
 				    0666);
 	if (recorder->fd < 0) {
 		g_set_error(error_r, recorder_output_quark(), 0,
