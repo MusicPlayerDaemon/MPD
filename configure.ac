@@ -1518,6 +1518,7 @@ results(wildmidi, [WildMidi])
 echo -en '\nOther features:\n\t'
 results(lsr, [libsamplerate])
 results(inotify, [inotify])
+results(sqlite, [SQLite])
 
 echo -en '\nMetadata support:\n\t'
 results(cue,[cue])
