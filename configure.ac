@@ -981,7 +981,7 @@ if test x$enable_tremor != xno && test x$enable_vorbis = xyes; then
 			AC_DEFINE(ENABLE_VORBIS_DECODER, 1, [Define for Ogg Vorbis support]),
 			enable_vorbis=no)
 	else
-		AC_MSG_WARN("Ogg not detected, could not enable Vorbis.")
+		AC_MSG_WARN(["Ogg not detected, could not enable Vorbis."])
 		enable_vorbis=no
 	fi
 fi
