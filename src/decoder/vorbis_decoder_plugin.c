@@ -128,6 +128,28 @@ vorbis_strerror(int code)
 	}
 }
 
+static bool
+vorbis_is_open(struct vorbis_input_stream *vis, OggVorbis_File *vf,
+	       struct decoder *decoder, struct input_stream *input_stream)
+{
+	vis->decoder = decoder;
+	vis->input_stream = input_stream;
+	vis->seekable = input_stream->seekable &&
+		(input_stream->uri == NULL ||
+		 !uri_has_scheme(input_stream->uri));
+
+	int ret = ov_open_callbacks(vis, vf, NULL, 0, vorbis_is_callbacks);
+	if (ret < 0) {
+		if (decoder == NULL ||
+		    decoder_get_command(decoder) == DECODE_COMMAND_NONE)
+			g_warning("Failed to open Ogg Vorbis stream: %s",
+				  vorbis_strerror(ret));
+		return false;
+	}
+
+	return true;
+}
+
 static const char *
 vorbis_comment_value(const char *comment, const char *needle)
 {
@@ -244,13 +266,6 @@ vorbis_send_comments(struct decoder *decoder, struct input_stream *is,
 	tag_free(tag);
 }
 
-static bool
-oggvorbis_seekable(const struct input_stream *is)
-{
-	return is->seekable &&
-		(is->uri == NULL || !uri_has_scheme(is->uri));
-}
-
 /* public */
 static void
 vorbis_stream_decode(struct decoder *decoder,
@@ -277,19 +292,8 @@ vorbis_stream_decode(struct decoder *decoder,
 	   moved it */
 	input_stream_seek(input_stream, 0, SEEK_SET, NULL);
 
-	vis.decoder = decoder;
-	vis.input_stream = input_stream;
-	vis.seekable = oggvorbis_seekable(input_stream);
-
-	if ((ret = ov_open_callbacks(&vis, &vf, NULL, 0,
-				     vorbis_is_callbacks)) < 0) {
-		if (decoder_get_command(decoder) != DECODE_COMMAND_NONE)
-			return;
-
-		g_warning("Error decoding Ogg Vorbis stream: %s",
-			  vorbis_strerror(ret));
+	if (!vorbis_is_open(&vis, &vf, decoder, input_stream))
 		return;
-	}
 
 	vi = ov_info(&vf, -1);
 	if (vi == NULL) {
