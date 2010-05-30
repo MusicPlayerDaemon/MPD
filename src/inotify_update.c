@@ -179,8 +179,7 @@ recursive_watch_subdirectories(struct watch_directory *directory,
 			continue;
 
 		child_path_fs = g_strconcat(path_fs, "/", ent->d_name, NULL);
-		/* XXX what about symlinks? */
-		ret = lstat(child_path_fs, &st);
+		ret = stat(child_path_fs, &st);
 		if (ret < 0) {
 			g_warning("Failed to stat %s: %s",
 				  child_path_fs, g_strerror(errno));
