@@ -97,7 +97,13 @@ static void
 remove_watch_directory(struct watch_directory *directory)
 {
 	assert(directory != NULL);
-	assert(directory->parent != NULL);
+
+	if (directory->parent == NULL) {
+		g_warning("music directory was removed - "
+			  "cannot continue to watch it");
+		return;
+	}
+
 	assert(directory->parent->children != NULL);
 
 	tree_remove_watch_directory(directory);
