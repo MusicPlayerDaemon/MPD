@@ -55,47 +55,46 @@
 #define OGG_DECODE_USE_BIGENDIAN	0
 #endif
 
-struct vorbis_decoder_data {
+struct vorbis_input_stream {
 	struct decoder *decoder;
 
 	struct input_stream *input_stream;
 	bool seekable;
 };
 
-static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *vdata)
+static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *data)
 {
-	struct vorbis_decoder_data *data = (struct vorbis_decoder_data *)vdata;
+	struct vorbis_input_stream *vis = data;
 	size_t ret;
 
-	ret = decoder_read(data->decoder, data->input_stream, ptr, size * nmemb);
+	ret = decoder_read(vis->decoder, vis->input_stream, ptr, size * nmemb);
 
 	errno = 0;
 
 	return ret / size;
 }
 
-static int ogg_seek_cb(void *vdata, ogg_int64_t offset, int whence)
+static int ogg_seek_cb(void *data, ogg_int64_t offset, int whence)
 {
-	struct vorbis_decoder_data *data = (struct vorbis_decoder_data *)vdata;
+	struct vorbis_input_stream *vis = data;
 
-	return data->seekable &&
-		decoder_get_command(data->decoder) != DECODE_COMMAND_STOP &&
-		input_stream_seek(data->input_stream, offset, whence, NULL)
+	return vis->seekable &&
+		decoder_get_command(vis->decoder) != DECODE_COMMAND_STOP &&
+		input_stream_seek(vis->input_stream, offset, whence, NULL)
 		? 0 : -1;
 }
 
 /* TODO: check Ogg libraries API and see if we can just not have this func */
-static int ogg_close_cb(G_GNUC_UNUSED void *vdata)
+static int ogg_close_cb(G_GNUC_UNUSED void *data)
 {
 	return 0;
 }
 
-static long ogg_tell_cb(void *vdata)
+static long ogg_tell_cb(void *data)
 {
-	const struct vorbis_decoder_data *data =
-		(const struct vorbis_decoder_data *)vdata;
+	const struct vorbis_input_stream *vis = data;
 
-	return (long)data->input_stream->offset;
+	return (long)vis->input_stream->offset;
 }
 
 static const char *
@@ -253,7 +252,7 @@ vorbis_stream_decode(struct decoder *decoder,
 	GError *error = NULL;
 	OggVorbis_File vf;
 	ov_callbacks callbacks;
-	struct vorbis_decoder_data data;
+	struct vorbis_input_stream vis;
 	struct audio_format audio_format;
 	float total_time;
 	int current_section;
@@ -272,15 +271,15 @@ vorbis_stream_decode(struct decoder *decoder,
 	   moved it */
 	input_stream_seek(input_stream, 0, SEEK_SET, NULL);
 
-	data.decoder = decoder;
-	data.input_stream = input_stream;
-	data.seekable = oggvorbis_seekable(input_stream);
+	vis.decoder = decoder;
+	vis.input_stream = input_stream;
+	vis.seekable = oggvorbis_seekable(input_stream);
 
 	callbacks.read_func = ogg_read_cb;
 	callbacks.seek_func = ogg_seek_cb;
 	callbacks.close_func = ogg_close_cb;
 	callbacks.tell_func = ogg_tell_cb;
-	if ((ret = ov_open_callbacks(&data, &vf, NULL, 0, callbacks)) < 0) {
+	if ((ret = ov_open_callbacks(&vis, &vf, NULL, 0, callbacks)) < 0) {
 		if (decoder_get_command(decoder) != DECODE_COMMAND_NONE)
 			return;
 
@@ -307,7 +306,7 @@ vorbis_stream_decode(struct decoder *decoder,
 	if (total_time < 0)
 		total_time = 0;
 
-	decoder_initialized(decoder, &audio_format, data.seekable, total_time);
+	decoder_initialized(decoder, &audio_format, vis.seekable, total_time);
 
 	do {
 		if (cmd == DECODE_COMMAND_SEEK) {
