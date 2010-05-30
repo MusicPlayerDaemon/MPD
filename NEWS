@@ -38,6 +38,7 @@ ver 0.16 (20??/??/??)
   - wavpack: activate 32 bit support
   - wavpack: allow more than 2 channels
   - mp4ff: rename plugin "mp4" to "mp4ff"
+  - mp4ff: support tags "albumartist", "band"
 * encoders:
   - twolame: new encoder plugin based on libtwolame
   - flac: new encoder plugin based on libFLAC
