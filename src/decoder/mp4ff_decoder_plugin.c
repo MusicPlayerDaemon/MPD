@@ -20,6 +20,7 @@
 #include "config.h"
 #include "decoder_api.h"
 #include "audio_check.h"
+#include "tag_table.h"
 
 #include <glib.h>
 
@@ -336,6 +337,17 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	mp4ff_close(mp4fh);
 }
 
+static const char *const mp4ff_tag_names[TAG_NUM_OF_ITEM_TYPES] = {
+	[TAG_TITLE] = "title",
+	[TAG_ARTIST] = "artist",
+	[TAG_ALBUM] = "album",
+	[TAG_TRACK] = "track",
+	[TAG_DISC] = "disc",
+	[TAG_GENRE] = "genre",
+	[TAG_DATE] = "date",
+	[TAG_COMPOSER] = "writer",
+};
+
 static struct tag *
 mp4_stream_tag(struct input_stream *is)
 {
@@ -381,24 +393,9 @@ mp4_stream_tag(struct input_stream *is)
 
 		mp4ff_meta_get_by_index(mp4fh, i, &item, &value);
 
-		if (0 == g_ascii_strcasecmp("artist", item)) {
-			tag_add_item(ret, TAG_ARTIST, value);
-		} else if (0 == g_ascii_strcasecmp("title", item)) {
-			tag_add_item(ret, TAG_TITLE, value);
-		} else if (0 == g_ascii_strcasecmp("album", item)) {
-			tag_add_item(ret, TAG_ALBUM, value);
-		} else if (0 == g_ascii_strcasecmp("track", item)) {
-			tag_add_item(ret, TAG_TRACK, value);
-		} else if (0 == g_ascii_strcasecmp("disc", item)) {
-			/* Is that the correct id? */
-			tag_add_item(ret, TAG_DISC, value);
-		} else if (0 == g_ascii_strcasecmp("genre", item)) {
-			tag_add_item(ret, TAG_GENRE, value);
-		} else if (0 == g_ascii_strcasecmp("date", item)) {
-			tag_add_item(ret, TAG_DATE, value);
-		} else if (0 == g_ascii_strcasecmp("writer", item)) {
-			tag_add_item(ret, TAG_COMPOSER, value);
-		}
+		enum tag_type type = tag_table_lookup(mp4ff_tag_names, item);
+		if (type != TAG_NUM_OF_ITEM_TYPES)
+			tag_add_item(ret, type, value);
 
 		free(item);
 		free(value);
