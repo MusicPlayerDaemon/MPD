@@ -413,7 +413,7 @@ static const char *const mp4_suffixes[] = { "m4a", "mp4", NULL };
 static const char *const mp4_mime_types[] = { "audio/mp4", "audio/m4a", NULL };
 
 const struct decoder_plugin mp4ff_decoder_plugin = {
-	.name = "mp4",
+	.name = "mp4ff",
 	.stream_decode = mp4_decode,
 	.stream_tag = mp4_stream_tag,
 	.suffixes = mp4_suffixes,
