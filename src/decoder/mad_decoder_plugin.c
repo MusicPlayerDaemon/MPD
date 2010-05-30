@@ -468,7 +468,27 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 	/* This code is enabled when libid3tag is disabled.  Instead
 	   of parsing the ID3 frame, it just skips it. */
 
-	mad_stream_skip(&data->stream, tagsize);
+	size_t count = data->stream.bufend - data->stream.this_frame;
+
+	if (tagsize <= count) {
+		mad_stream_skip(&data->stream, tagsize);
+	} else {
+		mad_stream_skip(&data->stream, count);
+
+		while (count < tagsize) {
+			size_t len = tagsize - count;
+			char ignored[1024];
+			if (len > sizeof(ignored))
+				len = sizeof(ignored);
+
+			len = decoder_read(data->decoder, data->input_stream,
+					   ignored, len);
+			if (len == 0)
+				break;
+			else
+				count += len;
+		}
+	}
 #endif
 }
 
@@ -476,16 +496,16 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 /**
  * This function emulates libid3tag when it is disabled.  Instead of
  * doing a real analyzation of the frame, it just checks whether the
- * frame begins with the string "ID3".  If so, it returns the full
- * length.
+ * frame begins with the string "ID3".  If so, it returns the length
+ * of the ID3 frame.
  */
 static signed long
 id3_tag_query(const void *p0, size_t length)
 {
 	const char *p = p0;
 
-	return length > 3 && memcmp(p, "ID3", 3) == 0
-		? length
+	return length >= 10 && memcmp(p, "ID3", 3) == 0
+		? (p[8] << 7) + p[9] + 10
 		: 0;
 }
 #endif /* !HAVE_ID3TAG */

@@ -60,9 +60,12 @@ input_mms_open(const char *url, GError **error_r)
 
 	m->mms = mmsx_connect(NULL, NULL, url, 128 * 1024);
 	if (m->mms == NULL) {
+		g_free(m);
 		g_set_error(error_r, mms_quark(), 0, "mmsx_connect() failed");
 		return NULL;
 	}
+
+	m->eof = false;
 
 	/* XX is this correct?  at least this selects the ffmpeg
 	   decoder, which seems to work fine*/
