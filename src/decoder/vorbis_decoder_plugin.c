@@ -373,22 +373,21 @@ vorbis_stream_decode(struct decoder *decoder,
 static struct tag *
 vorbis_stream_tag(struct input_stream *is)
 {
-	struct tag *ret;
 	struct vorbis_input_stream vis;
 	OggVorbis_File vf;
 
 	if (!vorbis_is_open(&vis, &vf, NULL, is))
 		return NULL;
 
-	ret = vorbis_comments_to_tag(ov_comment(&vf, -1)->user_comments);
+	struct tag *tag = vorbis_comments_to_tag(ov_comment(&vf, -1)->user_comments);
 
-	if (!ret)
-		ret = tag_new();
-	ret->time = (int)(ov_time_total(&vf, -1) + 0.5);
+	if (tag == NULL)
+		tag = tag_new();
+	tag->time = (int)(ov_time_total(&vf, -1) + 0.5);
 
 	ov_clear(&vf);
 
-	return ret;
+	return tag;
 }
 
 static const char *const vorbis_suffixes[] = {
