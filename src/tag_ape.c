@@ -20,13 +20,14 @@
 #include "config.h"
 #include "tag_ape.h"
 #include "tag.h"
+#include "tag_table.h"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <stdio.h>
 
-static const char *const ape_tag_names[] = {
+static const char *const ape_tag_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_TITLE] = "title",
 	[TAG_ARTIST] = "artist",
 	[TAG_ARTIST_SORT] = "artistsort",
@@ -51,14 +52,13 @@ tag_ape_import_item(struct tag *tag, unsigned long flags,
 	if ((flags & (0x3 << 1)) != 0)
 		return tag;
 
-	for (unsigned i = 0; i < G_N_ELEMENTS(ape_tag_names); i++) {
-		if (ape_tag_names[i] != NULL &&
-		    g_ascii_strcasecmp(key, ape_tag_names[i]) == 0) {
-			if (tag == NULL)
-				tag = tag_new();
-			tag_add_item_n(tag, i, value, value_length);
-		}
-	}
+	enum tag_type type = tag_table_lookup(ape_tag_names, key);
+	if (type == TAG_NUM_OF_ITEM_TYPES)
+		return tag;
+
+	if (tag == NULL)
+		tag = tag_new();
+	tag_add_item_n(tag, type, value, value_length);
 
 	return tag;
 }
