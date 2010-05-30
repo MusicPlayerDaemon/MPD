@@ -20,6 +20,7 @@ ver 0.16 (20??/??/??)
 * tags:
   - added tags "ArtistSort", "AlbumArtistSort"
   - id3: revised "performer" tag support
+  - ape: support album artist, MusicBrainz tags
 * decoders:
   - don't try a plugin twice (MIME type & suffix)
   - don't fall back to "mad" unless no plugin matches

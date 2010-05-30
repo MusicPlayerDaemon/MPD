@@ -29,11 +29,18 @@
 static const char *const ape_tag_names[] = {
 	[TAG_TITLE] = "title",
 	[TAG_ARTIST] = "artist",
+	[TAG_ARTIST_SORT] = "artistsort",
 	[TAG_ALBUM] = "album",
+	[TAG_ALBUM_ARTIST] = "album artist",
+	[TAG_ALBUM_ARTIST_SORT] = "albumartistsort",
 	[TAG_COMMENT] = "comment",
 	[TAG_GENRE] = "genre",
 	[TAG_TRACK] = "track",
-	[TAG_DATE] = "year"
+	[TAG_DATE] = "year",
+	[TAG_MUSICBRAINZ_ARTISTID] = "musicbrainz_artistid",
+	[TAG_MUSICBRAINZ_ALBUMID] = "musicbrainz_albumid",
+	[TAG_MUSICBRAINZ_ALBUMARTISTID] = "musicbrainz_albumartistid",
+	[TAG_MUSICBRAINZ_TRACKID] = "musicbrainz_trackid",
 };
 
 static struct tag *
