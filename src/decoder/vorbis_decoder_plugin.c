@@ -371,21 +371,14 @@ vorbis_stream_decode(struct decoder *decoder,
 }
 
 static struct tag *
-vorbis_tag_dup(const char *file)
+vorbis_stream_tag(struct input_stream *is)
 {
 	struct tag *ret;
-	FILE *fp;
+	struct vorbis_input_stream vis;
 	OggVorbis_File vf;
 
-	fp = fopen(file, "rb");
-	if (!fp) {
+	if (!vorbis_is_open(&vis, &vf, NULL, is))
 		return NULL;
-	}
-
-	if (ov_open(fp, &vf, NULL, 0) < 0) {
-		fclose(fp);
-		return NULL;
-	}
 
 	ret = vorbis_comments_to_tag(ov_comment(&vf, -1)->user_comments);
 
@@ -417,7 +410,7 @@ static const char *const vorbis_mime_types[] = {
 const struct decoder_plugin vorbis_decoder_plugin = {
 	.name = "vorbis",
 	.stream_decode = vorbis_stream_decode,
-	.tag_dup = vorbis_tag_dup,
+	.stream_tag = vorbis_stream_tag,
 	.suffixes = vorbis_suffixes,
 	.mime_types = vorbis_mime_types
 };
