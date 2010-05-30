@@ -1045,6 +1045,15 @@ if ENABLE_ISO9660_TEST
 TESTS += test/test_archive_iso9660.sh
 endif
 
+if ENABLE_INOTIFY
+noinst_PROGRAMS += test/run_inotify
+test_run_inotify_SOURCES = test/run_inotify.c \
+	src/fd_util.c \
+	src/fifo_buffer.c \
+	src/inotify_source.c
+test_run_inotify_LDADD = $(GLIB_LIBS)
+endif
+
 endif
 
 
