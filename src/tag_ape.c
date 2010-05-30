@@ -29,6 +29,7 @@ static const char *const ape_tag_names[] = {
 	[TAG_ITEM_TITLE] = "title",
 	[TAG_ITEM_ARTIST] = "artist",
 	[TAG_ITEM_ALBUM] = "album",
+	[TAG_ITEM_ALBUM_ARTIST] = "album artist",
 	[TAG_ITEM_COMMENT] = "comment",
 	[TAG_ITEM_GENRE] = "genre",
 	[TAG_ITEM_TRACK] = "track",
