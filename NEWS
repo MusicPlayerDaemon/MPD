@@ -1,4 +1,4 @@
-ver 0.15.10 (2010/??/??)
+ver 0.15.10 (2010/05/30)
 * input:
   - mms: fix memory leak in error handler
   - mms: initialize the "eof" attribute
