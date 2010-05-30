@@ -72,6 +72,7 @@ static struct config_entry config_entries[] = {
 	{ .name = CONF_REPLAYGAIN, false, false },
 	{ .name = CONF_REPLAYGAIN_PREAMP, false, false },
 	{ .name = CONF_REPLAYGAIN_MISSING_PREAMP, false, false },
+	{ .name = CONF_REPLAYGAIN_LIMIT, false, false },
 	{ .name = CONF_VOLUME_NORMALIZATION, false, false },
 	{ .name = CONF_SAMPLERATE_CONVERTER, false, false },
 	{ .name = CONF_AUDIO_BUFFER_SIZE, false, false },

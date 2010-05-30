@@ -420,7 +420,8 @@ decoder_replay_gain(struct decoder *decoder,
 			return_db = 20.0 * log10f(
 				replay_gain_tuple_scale(
 					&replay_gain_info->tuples[replay_gain_get_real_mode()],
-					replay_gain_preamp));
+					replay_gain_preamp, replay_gain_missing_preamp,
+					replay_gain_limit));
 		}
 
 		decoder->replay_gain_info = *replay_gain_info;

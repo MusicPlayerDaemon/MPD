@@ -37,8 +37,11 @@ static const char *const replay_gain_mode_names[] = {
 
 enum replay_gain_mode replay_gain_mode = REPLAY_GAIN_OFF;
 
+const bool DEFAULT_REPLAYGAIN_LIMIT = true;
+
 float replay_gain_preamp = 1.0;
 float replay_gain_missing_preamp = 1.0;
+bool replay_gain_limit;
 
 const char *
 replay_gain_get_mode_string(void)
@@ -129,6 +132,8 @@ void replay_gain_global_init(void)
 
 		replay_gain_missing_preamp = pow(10, f / 20.0);
 	}
+
+	replay_gain_limit = config_get_bool(CONF_REPLAYGAIN_LIMIT, DEFAULT_REPLAYGAIN_LIMIT);
 }
 
 enum replay_gain_mode replay_gain_get_real_mode(void)

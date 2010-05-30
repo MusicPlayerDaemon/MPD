@@ -78,11 +78,8 @@ static void
 replay_gain_filter_update(struct replay_gain_filter *filter)
 {
 	if (filter->mode != REPLAY_GAIN_OFF) {
-		const struct replay_gain_tuple *tuple =
-			&filter->info.tuples[filter->mode];
-		float scale = replay_gain_tuple_defined(tuple)
-			? replay_gain_tuple_scale(tuple, replay_gain_preamp)
-			: replay_gain_missing_preamp;
+		float scale = replay_gain_tuple_scale(&filter->info.tuples[filter->mode],
+		    replay_gain_preamp, replay_gain_missing_preamp, replay_gain_limit);
 		g_debug("scale=%f\n", (double)scale);
 
 		filter->volume = pcm_float_to_volume(scale);

@@ -28,6 +28,7 @@
 extern enum replay_gain_mode replay_gain_mode;
 extern float replay_gain_preamp;
 extern float replay_gain_missing_preamp;
+extern bool replay_gain_limit;
 
 void replay_gain_global_init(void);
 

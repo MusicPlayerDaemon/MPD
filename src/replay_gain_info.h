@@ -62,7 +62,7 @@ replay_gain_tuple_defined(const struct replay_gain_tuple *tuple)
 }
 
 float
-replay_gain_tuple_scale(const struct replay_gain_tuple *tuple, float preamp);
+replay_gain_tuple_scale(const struct replay_gain_tuple *tuple, float preamp, float missing_preamp, bool peak_limit);
 
 /**
  * Attempt to auto-complete missing data.  In particular, if album
