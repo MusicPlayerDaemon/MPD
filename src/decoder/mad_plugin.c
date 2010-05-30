@@ -434,10 +434,10 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 
 		while (count < tagsize) {
 			size_t len = tagsize - count;
-			if (len > sizeof(buffer))
-				len = sizeof(buffer);
-
 			char ignored[1024];
+			if (len > sizeof(ignored))
+				len = sizeof(ignored);
+
 			len = decoder_read(data->decoder, data->input_stream,
 					   ignored, len);
 			if (len == 0)
