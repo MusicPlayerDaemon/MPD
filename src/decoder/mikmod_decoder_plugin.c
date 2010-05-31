@@ -179,13 +179,8 @@ mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 static struct tag *
 mikmod_decoder_tag_dup(const char *path_fs)
 {
-	char *path2;
-	struct tag *ret = NULL;
-	MODULE *handle;
-	char *title;
-
-	path2 = g_strdup(path_fs);
-	handle = Player_Load(path2, 128, 0);
+	char *path2 = g_strdup(path_fs);
+	MODULE *handle = Player_Load(path2, 128, 0);
 	g_free(path2);
 
 	if (handle == NULL) {
@@ -193,19 +188,20 @@ mikmod_decoder_tag_dup(const char *path_fs)
 		return NULL;
 
 	}
+
 	Player_Free(handle);
 
-	ret = tag_new();
+	struct tag *tag = tag_new();
 
-	ret->time = 0;
+	tag->time = 0;
 
 	path2 = g_strdup(path_fs);
-	title = g_strdup(Player_LoadTitle(path2));
+	char *title = g_strdup(Player_LoadTitle(path2));
 	g_free(path2);
 	if (title)
-		tag_add_item(ret, TAG_TITLE, title);
+		tag_add_item(tag, TAG_TITLE, title);
 
-	return ret;
+	return tag;
 }
 
 static const char *const mikmod_decoder_suffixes[] = {
