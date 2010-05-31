@@ -10,10 +10,14 @@
 
 #define GME_BUF_SIZE	4096
 
+enum {
+	GME_SAMPLE_RATE = 44100,
+	GME_CHANNELS = 2,
+};
+
 static void
 gme_file_decode(struct decoder *decoder, const char *path_fs)
 {
-	int sample_rate = 44100;
 	int track = 0; /* index of track to play */
 	float song_len;
 	Music_Emu *emu;
@@ -23,7 +27,8 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 	short buf[GME_BUF_SIZE];
 	const char* gme_err;
 
-	if((gme_err = gme_open_file(path_fs, &emu, sample_rate)) != NULL){
+	gme_err = gme_open_file(path_fs, &emu, GME_SAMPLE_RATE);
+	if (gme_err != NULL) {
 		g_warning("%s", gme_err);
 		return;
 	}
@@ -40,8 +45,9 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 	/* initialize the MPD decoder */
 
 	GError *error = NULL;
-	if(!audio_format_init_checked(&audio_format, sample_rate, SAMPLE_FORMAT_S16,
-					  2, &error)){
+	if (!audio_format_init_checked(&audio_format, GME_SAMPLE_RATE,
+				       SAMPLE_FORMAT_S16, GME_CHANNELS,
+				       &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
 		gme_free_info(ti);
@@ -80,12 +86,12 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 static struct tag *
 gme_tag_dup(const char *path_fs)
 {
-	int sample_rate = 44100;
 	Music_Emu *emu;
 	gme_info_t *ti;
 	const char* gme_err;
 
-	if((gme_err = gme_open_file(path_fs, &emu, sample_rate)) != NULL){
+	gme_err = gme_open_file(path_fs, &emu, GME_SAMPLE_RATE);
+	if (gme_err != NULL) {
 		g_warning("%s", gme_err);
 		return NULL;
 	}
