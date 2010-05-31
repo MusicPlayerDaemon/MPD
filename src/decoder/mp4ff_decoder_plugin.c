@@ -36,7 +36,7 @@
 
 /* all code here is either based on or copied from FAAD2's frontend code */
 
-struct mp4_context {
+struct mp4ff_input_stream {
 	struct decoder *decoder;
 	struct input_stream *input_stream;
 };
@@ -90,17 +90,17 @@ mp4_get_aac_track(mp4ff_t * infile, faacDecHandle decoder,
 static uint32_t
 mp4_read(void *user_data, void *buffer, uint32_t length)
 {
-	struct mp4_context *ctx = user_data;
+	struct mp4ff_input_stream *mis = user_data;
 
-	return decoder_read(ctx->decoder, ctx->input_stream, buffer, length);
+	return decoder_read(mis->decoder, mis->input_stream, buffer, length);
 }
 
 static uint32_t
 mp4_seek(void *user_data, uint64_t position)
 {
-	struct mp4_context *ctx = user_data;
+	struct mp4ff_input_stream *mis = user_data;
 
-	return input_stream_seek(ctx->input_stream, position, SEEK_SET, NULL)
+	return input_stream_seek(mis->input_stream, position, SEEK_SET, NULL)
 		? 0 : -1;
 }
 
@@ -150,14 +150,14 @@ mp4_faad_new(mp4ff_t *mp4fh, int *track_r, struct audio_format *audio_format)
 static void
 mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 {
-	struct mp4_context ctx = {
+	struct mp4ff_input_stream mis = {
 		.decoder = mpd_decoder,
 		.input_stream = input_stream,
 	};
 	mp4ff_callback_t callback = {
 		.read = mp4_read,
 		.seek = mp4_seek,
-		.user_data = &ctx,
+		.user_data = &mis,
 	};
 	mp4ff_t *mp4fh;
 	int32_t track;
@@ -356,14 +356,14 @@ static struct tag *
 mp4_stream_tag(struct input_stream *is)
 {
 	struct tag *ret = NULL;
-	struct mp4_context ctx = {
+	struct mp4ff_input_stream mis = {
 		.decoder = NULL,
 		.input_stream = is,
 	};
 	mp4ff_callback_t callback = {
 		.read = mp4_read,
 		.seek = mp4_seek,
-		.user_data = &ctx,
+		.user_data = &mis,
 	};
 	mp4ff_t *mp4fh;
 	int32_t track;
