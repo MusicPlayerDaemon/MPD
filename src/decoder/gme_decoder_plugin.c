@@ -56,11 +56,11 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 
 	/* play */
 	do {
-		if((gme_err = gme_play(emu, GME_BUF_SIZE>>1, buf)) != NULL){
+		if((gme_err = gme_play(emu, GME_BUF_SIZE, buf)) != NULL){
 			g_warning("%s", gme_err);
 			return;
 		}
-		cmd = decoder_data(decoder, NULL, buf, GME_BUF_SIZE, 0);
+		cmd = decoder_data(decoder, NULL, buf, sizeof(buf), 0);
 
 		if(cmd == DECODE_COMMAND_SEEK) {
 			float where = decoder_seek_where(decoder);
