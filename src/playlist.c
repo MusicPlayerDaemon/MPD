@@ -107,6 +107,12 @@ playlist_sync_with_queue(struct playlist *playlist)
 		playlist->current = playlist->queued;
 		playlist->queued = -1;
 
+		/* Set pause and remove the single mode. */
+		if(playlist->queue.single && !playlist->queue.repeat) {
+			playlist->queue.single = false;
+			pc_set_pause(true);
+		}
+
 		if(playlist->queue.consume)
 			playlist_delete(playlist, queue_order_to_position(&playlist->queue, current));
 
@@ -393,15 +399,10 @@ playlist_get_next_song(const struct playlist *playlist)
 {
 	if (playlist->current >= 0)
 	{
-		if (playlist->queue.single == 1)
-		{
-			if (playlist->queue.repeat == 1)
-				return queue_order_to_position(&playlist->queue,
-			                              playlist->current);
-			else
-				return -1;
-		}
-		if (playlist->current + 1 < (int)queue_length(&playlist->queue))
+		if (playlist->queue.single == 1 && playlist->queue.repeat == 1)
+			return queue_order_to_position(&playlist->queue,
+			                               playlist->current);
+		else if (playlist->current + 1 < (int)queue_length(&playlist->queue))
 			return queue_order_to_position(&playlist->queue,
 					       playlist->current + 1);
 		else if (playlist->queue.repeat == 1)

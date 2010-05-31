@@ -147,8 +147,6 @@ playlist_next(struct playlist *playlist)
 
 	next_order = queue_next_order(&playlist->queue, playlist->current);
 	if (next_order < 0) {
-		/* cancel single */
-		playlist->queue.single = false;
 		/* no song after this one: stop playback */
 		playlist_stop(playlist);
 
