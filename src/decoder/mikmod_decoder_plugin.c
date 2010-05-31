@@ -195,11 +195,13 @@ mikmod_decoder_tag_dup(const char *path_fs)
 
 	tag->time = 0;
 
-	char *title = g_strdup(Player_LoadTitle(path2));
+	char *title = Player_LoadTitle(path2);
 	g_free(path2);
 
-	if (title)
+	if (title != NULL) {
 		tag_add_item(tag, TAG_TITLE, title);
+		free(title);
+	}
 
 	return tag;
 }
