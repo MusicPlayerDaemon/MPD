@@ -367,7 +367,6 @@ mp4ff_tag_name_parse(const char *name)
 static struct tag *
 mp4_stream_tag(struct input_stream *is)
 {
-	struct tag *ret = NULL;
 	struct mp4ff_input_stream mis;
 	int32_t track;
 	int32_t file_time;
@@ -384,15 +383,15 @@ mp4_stream_tag(struct input_stream *is)
 		return NULL;
 	}
 
-	ret = tag_new();
 	file_time = mp4ff_get_track_duration_use_offsets(mp4fh, track);
 	scale = mp4ff_time_scale(mp4fh, track);
 	if (scale < 0) {
 		mp4ff_close(mp4fh);
-		tag_free(ret);
 		return NULL;
 	}
-	ret->time = ((float)file_time) / scale + 0.5;
+
+	struct tag *tag = tag_new();
+	tag->time = ((float)file_time) / scale + 0.5;
 
 	for (i = 0; i < mp4ff_meta_get_num_items(mp4fh); i++) {
 		char *item;
@@ -402,7 +401,7 @@ mp4_stream_tag(struct input_stream *is)
 
 		enum tag_type type = mp4ff_tag_name_parse(item);
 		if (type != TAG_NUM_OF_ITEM_TYPES)
-			tag_add_item(ret, type, value);
+			tag_add_item(tag, type, value);
 
 		free(item);
 		free(value);
@@ -410,7 +409,7 @@ mp4_stream_tag(struct input_stream *is)
 
 	mp4ff_close(mp4fh);
 
-	return ret;
+	return tag;
 }
 
 static const char *const mp4_suffixes[] = { "m4a", "mp4", NULL };
