@@ -29,7 +29,7 @@
 #include <tremor/ivorbisfile.h>
 /* Macros to make Tremor's API look like libogg. Tremor always
    returns host-byte-order 16-bit signed data, and uses integer
-   milliseconds where libogg uses double seconds. 
+   milliseconds where libogg uses double seconds.
 */
 #define ov_read(VF, BUFFER, LENGTH, BIGENDIANP, WORD, SGNED, BITSTREAM) \
         ov_read(VF, BUFFER, LENGTH, BITSTREAM)
@@ -79,7 +79,7 @@ static int ogg_seek_cb(void *data, ogg_int64_t offset, int whence)
 	struct vorbis_input_stream *vis = data;
 
 	return vis->seekable &&
-		decoder_get_command(vis->decoder) != DECODE_COMMAND_STOP &&
+		(!vis->decoder || decoder_get_command(vis->decoder) != DECODE_COMMAND_STOP) &&
 		input_stream_seek(vis->input_stream, offset, whence, NULL)
 		? 0 : -1;
 }
