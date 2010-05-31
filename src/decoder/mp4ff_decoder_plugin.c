@@ -37,6 +37,8 @@
 /* all code here is either based on or copied from FAAD2's frontend code */
 
 struct mp4ff_input_stream {
+	mp4ff_callback_t callback;
+
 	struct decoder *decoder;
 	struct input_stream *input_stream;
 };
@@ -104,6 +106,11 @@ mp4_seek(void *user_data, uint64_t position)
 		? 0 : -1;
 }
 
+static const mp4ff_callback_t mpd_mp4ff_callback = {
+	.read = mp4_read,
+	.seek = mp4_seek,
+};
+
 static faacDecHandle
 mp4_faad_new(mp4ff_t *mp4fh, int *track_r, struct audio_format *audio_format)
 {
@@ -151,13 +158,9 @@ static void
 mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 {
 	struct mp4ff_input_stream mis = {
+		.callback = mpd_mp4ff_callback,
 		.decoder = mpd_decoder,
 		.input_stream = input_stream,
-	};
-	mp4ff_callback_t callback = {
-		.read = mp4_read,
-		.seek = mp4_seek,
-		.user_data = &mis,
 	};
 	mp4ff_t *mp4fh;
 	int32_t track;
@@ -184,7 +187,9 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 	double seek_where = 0;
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
-	mp4fh = mp4ff_open_read(&callback);
+	mis.callback.user_data = &mis;
+
+	mp4fh = mp4ff_open_read(&mis.callback);
 	if (!mp4fh) {
 		g_warning("Input does not appear to be a mp4 stream.\n");
 		return;
@@ -357,13 +362,9 @@ mp4_stream_tag(struct input_stream *is)
 {
 	struct tag *ret = NULL;
 	struct mp4ff_input_stream mis = {
+		.callback = mpd_mp4ff_callback,
 		.decoder = NULL,
 		.input_stream = is,
-	};
-	mp4ff_callback_t callback = {
-		.read = mp4_read,
-		.seek = mp4_seek,
-		.user_data = &mis,
 	};
 	mp4ff_t *mp4fh;
 	int32_t track;
@@ -371,7 +372,9 @@ mp4_stream_tag(struct input_stream *is)
 	int32_t scale;
 	int i;
 
-	mp4fh = mp4ff_open_read(&callback);
+	mis.callback.user_data = &mis;
+
+	mp4fh = mp4ff_open_read(&mis.callback);
 	if (mp4fh == NULL)
 		return NULL;
 
