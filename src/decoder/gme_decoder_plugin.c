@@ -80,7 +80,6 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 static struct tag *
 gme_tag_dup(const char *path_fs)
 {
-	struct tag *tag = tag_new();
 	int sample_rate = 44100;
 	Music_Emu *emu;
 	gme_info_t *ti;
@@ -96,6 +95,7 @@ gme_tag_dup(const char *path_fs)
 		return NULL;
 	}
 
+	struct tag *tag = tag_new();
 	if(ti != NULL){
 		if(ti->length > 0)
 			tag->time = ti->length / 1000;
