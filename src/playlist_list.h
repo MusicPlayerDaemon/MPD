@@ -20,6 +20,8 @@
 #ifndef MPD_PLAYLIST_LIST_H
 #define MPD_PLAYLIST_LIST_H
 
+#include <stdbool.h>
+
 struct playlist_provider;
 struct input_stream;
 
@@ -50,6 +52,13 @@ playlist_list_open_uri(const char *uri);
  */
 struct playlist_provider *
 playlist_list_open_stream(struct input_stream *is, const char *uri);
+
+/**
+ * Determines if there is a playlist plugin which can handle the
+ * specified file name suffix.
+ */
+bool
+playlist_suffix_supported(const char *suffix);
 
 /**
  * Opens a playlist from a local file.

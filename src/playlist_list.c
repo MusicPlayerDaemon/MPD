@@ -267,7 +267,7 @@ playlist_list_open_stream(struct input_stream *is, const char *uri)
 	return NULL;
 }
 
-static bool
+bool
 playlist_suffix_supported(const char *suffix)
 {
 	assert(suffix != NULL);
