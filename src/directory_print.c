@@ -23,7 +23,7 @@
 #include "client.h"
 #include "song_print.h"
 
-static int
+static void
 dirvec_print(struct client *client, const struct dirvec *dv)
 {
 	size_t i;
@@ -31,15 +31,11 @@ dirvec_print(struct client *client, const struct dirvec *dv)
 	for (i = 0; i < dv->nr; ++i)
 		client_printf(client, DIRECTORY_DIR "%s\n",
 			      directory_get_path(dv->base[i]));
-
-	return 0;
 }
 
-int
+void
 directory_print(struct client *client, const struct directory *directory)
 {
 	dirvec_print(client, &directory->children);
 	songvec_print(client, &directory->songs);
-
-	return 0;
 }

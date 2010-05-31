@@ -23,7 +23,7 @@
 struct client;
 struct directory;
 
-int
+void
 directory_print(struct client *client, const struct directory *directory);
 
 #endif
