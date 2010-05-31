@@ -110,21 +110,17 @@ wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 static struct tag *
 wildmidi_tag_dup(const char *path_fs)
 {
-	midi *wm;
-	const struct _WM_Info *info;
-	struct tag *tag;
-
-	wm = WildMidi_Open(path_fs);
+	midi *wm = WildMidi_Open(path_fs);
 	if (wm == NULL)
 		return NULL;
 
-	info = WildMidi_GetInfo(wm);
+	const struct _WM_Info *info = WildMidi_GetInfo(wm);
 	if (info == NULL) {
 		WildMidi_Close(wm);
 		return NULL;
 	}
 
-	tag = tag_new();
+	struct tag *tag = tag_new();
 	tag->time = info->approx_total_samples / WILDMIDI_SAMPLE_RATE;
 
 	WildMidi_Close(wm);
