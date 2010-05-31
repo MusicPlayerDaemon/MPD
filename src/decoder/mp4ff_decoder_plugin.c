@@ -338,14 +338,6 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 }
 
 static const char *const mp4ff_tag_names[TAG_NUM_OF_ITEM_TYPES] = {
-	[TAG_TITLE] = "title",
-	[TAG_ARTIST] = "artist",
-	[TAG_ALBUM] = "album",
-	[TAG_ALBUM_ARTIST] = "albumartist",
-	[TAG_TRACK] = "track",
-	[TAG_DISC] = "disc",
-	[TAG_GENRE] = "genre",
-	[TAG_DATE] = "date",
 	[TAG_COMPOSER] = "writer",
 	[TAG_PERFORMER] = "band",
 };
@@ -353,7 +345,11 @@ static const char *const mp4ff_tag_names[TAG_NUM_OF_ITEM_TYPES] = {
 static enum tag_type
 mp4ff_tag_name_parse(const char *name)
 {
-	return tag_table_lookup(mp4ff_tag_names, name);
+	enum tag_type type = tag_table_lookup(mp4ff_tag_names, name);
+	if (type == TAG_NUM_OF_ITEM_TYPES)
+		type = tag_name_parse_i(name);
+
+	return type;
 }
 
 static struct tag *
