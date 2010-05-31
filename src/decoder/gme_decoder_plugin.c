@@ -8,11 +8,11 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "gme"
 
-#define GME_BUF_SIZE	4096
-
 enum {
 	GME_SAMPLE_RATE = 44100,
 	GME_CHANNELS = 2,
+	GME_BUFFER_FRAMES = 2048,
+	GME_BUFFER_SAMPLES = GME_BUFFER_FRAMES * GME_CHANNELS,
 };
 
 static void
@@ -24,7 +24,7 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 	gme_info_t *ti;
 	struct audio_format audio_format;
 	enum decoder_command cmd;
-	short buf[GME_BUF_SIZE];
+	short buf[GME_BUFFER_SAMPLES];
 	const char* gme_err;
 
 	gme_err = gme_open_file(path_fs, &emu, GME_SAMPLE_RATE);
@@ -62,7 +62,8 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 
 	/* play */
 	do {
-		if((gme_err = gme_play(emu, GME_BUF_SIZE, buf)) != NULL){
+		gme_err = gme_play(emu, GME_BUFFER_SAMPLES, buf);
+		if (gme_err != NULL) {
 			g_warning("%s", gme_err);
 			return;
 		}
