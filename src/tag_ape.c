@@ -44,6 +44,12 @@ static const char *const ape_tag_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_MUSICBRAINZ_TRACKID] = "musicbrainz_trackid",
 };
 
+static enum tag_type
+tag_ape_name_parse(const char *name)
+{
+	return tag_table_lookup(ape_tag_names, name);
+}
+
 static struct tag *
 tag_ape_import_item(struct tag *tag, unsigned long flags,
 		    const char *key, const char *value, size_t value_length)
@@ -52,7 +58,7 @@ tag_ape_import_item(struct tag *tag, unsigned long flags,
 	if ((flags & (0x3 << 1)) != 0)
 		return tag;
 
-	enum tag_type type = tag_table_lookup(ape_tag_names, key);
+	enum tag_type type = tag_ape_name_parse(key);
 	if (type == TAG_NUM_OF_ITEM_TYPES)
 		return tag;
 
