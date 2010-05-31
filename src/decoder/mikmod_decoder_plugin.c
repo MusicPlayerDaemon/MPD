@@ -181,9 +181,9 @@ mikmod_decoder_tag_dup(const char *path_fs)
 {
 	char *path2 = g_strdup(path_fs);
 	MODULE *handle = Player_Load(path2, 128, 0);
-	g_free(path2);
 
 	if (handle == NULL) {
+		g_free(path2);
 		g_debug("Failed to open file: %s", path_fs);
 		return NULL;
 
@@ -195,9 +195,9 @@ mikmod_decoder_tag_dup(const char *path_fs)
 
 	tag->time = 0;
 
-	path2 = g_strdup(path_fs);
 	char *title = g_strdup(Player_LoadTitle(path2));
 	g_free(path2);
+
 	if (title)
 		tag_add_item(tag, TAG_TITLE, title);
 
