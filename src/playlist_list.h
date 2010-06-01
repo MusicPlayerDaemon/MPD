@@ -55,9 +55,11 @@ playlist_list_open_stream(struct input_stream *is, const char *uri);
  * Opens a playlist from a local file.
  *
  * @param path_fs the path of the playlist file
+ * @param is_r on success, an input_stream object is returned here,
+ * which must be closed after the playlist_provider object is freed
  * @return a playlist, or NULL on error
  */
 struct playlist_provider *
-playlist_list_open_path(const char *path_fs);
+playlist_list_open_path(const char *path_fs, struct input_stream **is_r);
 
 #endif

@@ -20,11 +20,17 @@
 #ifndef MPD_PLAYLIST_MAPPER_H
 #define MPD_PLAYLIST_MAPPER_H
 
+struct input_stream;
+
 /**
  * Opens a playlist from an URI relative to the playlist or music
  * directory.
+ *
+ * @param is_r on success, an input_stream object may be returned
+ * here, which must be closed after the playlist_provider object is
+ * freed
  */
 struct playlist_provider *
-playlist_mapper_open(const char *uri);
+playlist_mapper_open(const char *uri, struct input_stream **is_r);
 
 #endif

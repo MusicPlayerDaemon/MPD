@@ -29,6 +29,7 @@
 #include "song.h"
 #include "database.h"
 #include "client.h"
+#include "input_stream.h"
 
 void
 playlist_print_uris(struct client *client, const struct playlist *playlist)
@@ -168,11 +169,16 @@ playlist_provider_print(struct client *client, const char *uri,
 bool
 playlist_file_print(struct client *client, const char *uri, bool detail)
 {
-	struct playlist_provider *playlist = playlist_mapper_open(uri);
+	struct input_stream *is;
+	struct playlist_provider *playlist = playlist_mapper_open(uri, &is);
 	if (playlist == NULL)
 		return false;
 
 	playlist_provider_print(client, uri, playlist, detail);
 	playlist_plugin_close(playlist);
+
+	if (is != NULL)
+		input_stream_close(is);
+
 	return true;
 }

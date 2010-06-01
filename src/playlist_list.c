@@ -284,7 +284,7 @@ playlist_suffix_supported(const char *suffix)
 }
 
 struct playlist_provider *
-playlist_list_open_path(const char *path_fs)
+playlist_list_open_path(const char *path_fs, struct input_stream **is_r)
 {
 	GError *error = NULL;
 	const char *suffix;
@@ -318,7 +318,9 @@ playlist_list_open_path(const char *path_fs)
 	}
 
 	playlist = playlist_list_open_stream_suffix(is, suffix);
-	if (playlist == NULL)
+	if (playlist != NULL)
+		*is_r = is;
+	else
 		input_stream_close(is);
 
 	return playlist;

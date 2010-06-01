@@ -101,11 +101,16 @@ playlist_open_into_queue(const char *uri, struct playlist *dest)
 	if (uri_has_scheme(uri))
 		return playlist_open_remote_into_queue(uri, dest);
 
-	struct playlist_provider *playlist = playlist_mapper_open(uri);
+	struct input_stream *is;
+	struct playlist_provider *playlist = playlist_mapper_open(uri, &is);
 	if (playlist != NULL) {
 		enum playlist_result result =
 			playlist_load_into_queue(uri, playlist, dest);
 		playlist_plugin_close(playlist);
+
+		if (is != NULL)
+			input_stream_close(is);
+
 		return result;
 	}
 
