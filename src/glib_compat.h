@@ -59,4 +59,19 @@ g_uri_escape_string(const char *unescaped,
 
 #endif /* !2.16 */
 
+#if !GLIB_CHECK_VERSION(2,16,0)
+
+#include <string.h>
+
+static inline char *
+g_uri_parse_scheme(const char *uri)
+{
+	const char *end = strstr(uri, "://");
+	if (end == NULL)
+		return NULL;
+	return g_strndup(uri, end - uri);
+}
+
+#endif
+
 #endif
