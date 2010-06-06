@@ -41,6 +41,10 @@
 #include <unistd.h>
 #include <errno.h>
 
+#ifdef HAVE_LIBWRAP
+#include <tcpd.h>
+#endif
+
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "httpd_output"
 
@@ -208,6 +212,30 @@ httpd_listen_in_event(G_GNUC_UNUSED GIOChannel *source,
 
 	fd = accept_cloexec_nonblock(httpd->fd, (struct sockaddr*)&sa,
 				     &sa_length);
+#ifdef HAVE_LIBWRAP
+	struct sockaddr *sa_p = (struct sockaddr *)&sa;
+	if (sa_p->sa_family != AF_UNIX) {
+          char *hostaddr = sockaddr_to_string(sa_p, sa_length, NULL);
+		const char *progname = g_get_prgname();
+
+		struct request_info req;
+		request_init(&req, RQ_FILE, fd, RQ_DAEMON, progname, 0);
+
+		fromhost(&req);
+
+		if (!hosts_access(&req)) {
+			/* tcp wrappers says no */
+			g_warning("libwrap refused connection (libwrap=%s) from %s",
+			      progname, hostaddr);
+			g_free(hostaddr);
+			close(fd);
+			g_mutex_unlock(httpd->mutex);
+			return true;
+		}
+
+		g_free(hostaddr);
+	}
+#endif	/* HAVE_WRAP */
 	if (fd >= 0) {
 		/* can we allow additional client */
 		if (httpd->open &&
