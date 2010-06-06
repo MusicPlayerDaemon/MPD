@@ -310,7 +310,7 @@ route_filter_filter(struct filter *_filter,
 		// Need to perform one copy per output channel
 		for (unsigned int c=0; c<filter->min_output_channels; ++c) {
 			if (filter->sources[c] == -1 ||
-			    filter->sources[c] >= filter->input_format.channels) {
+			    (unsigned)filter->sources[c] >= filter->input_format.channels) {
 				// No source for this destination output,
 				// give it zeroes as input
 				memset(chan_destination,
