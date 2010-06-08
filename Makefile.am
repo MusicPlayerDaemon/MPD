@@ -132,6 +132,7 @@ mpd_headers = \
 	src/chunk.h \
 	src/path.h \
 	src/mapper.h \
+	src/open.h \
 	src/output/httpd_client.h \
 	src/output/httpd_internal.h \
 	src/output/pulse_output_plugin.h \
