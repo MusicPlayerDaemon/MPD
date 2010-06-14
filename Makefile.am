@@ -177,6 +177,7 @@ mpd_headers = \
 	src/queue.h \
 	src/queue_print.h \
 	src/queue_save.h \
+	src/refcount.h \
 	src/replay_gain_config.h \
 	src/replay_gain_info.h \
 	src/sig_handlers.h \
