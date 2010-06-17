@@ -55,7 +55,7 @@ struct client {
 	size_t deferred_bytes;	/* mem deferred_send consumes */
 	unsigned int num;	/* client number */
 
-	char send_buf[4096];
+	char send_buf[16384];
 	size_t send_buf_used;	/* bytes used this instance */
 
 	/** is this client waiting for an "idle" response? */
