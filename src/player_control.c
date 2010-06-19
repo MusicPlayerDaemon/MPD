@@ -34,6 +34,9 @@
 
 struct player_control pc;
 
+static void
+pc_enqueue_song_locked(struct song *song);
+
 void pc_init(unsigned buffer_chunks, unsigned int buffered_before_play)
 {
 	pc.buffer_chunks = buffer_chunks;
@@ -103,14 +106,18 @@ pc_play(struct song *song)
 {
 	assert(song != NULL);
 
+	player_lock();
+
 	if (pc.state != PLAYER_STATE_STOP)
-		player_command(PLAYER_COMMAND_STOP);
+		player_command_locked(PLAYER_COMMAND_STOP);
 
 	assert(pc.next_song == NULL);
 
-	pc_enqueue_song(song);
+	pc_enqueue_song_locked(song);
 
 	assert(pc.next_song == NULL);
+
+	player_unlock();
 
 	idle_add(IDLE_PLAYER);
 }
@@ -151,8 +158,21 @@ pc_kill(void)
 void
 pc_pause(void)
 {
+	player_lock();
+
 	if (pc.state != PLAYER_STATE_STOP) {
-		player_command(PLAYER_COMMAND_PAUSE);
+		player_command_locked(PLAYER_COMMAND_PAUSE);
+		idle_add(IDLE_PLAYER);
+	}
+
+	player_unlock();
+}
+
+static void
+pc_pause_locked(void)
+{
+	if (pc.state != PLAYER_STATE_STOP) {
+		player_command_locked(PLAYER_COMMAND_PAUSE);
 		idle_add(IDLE_PLAYER);
 	}
 }
@@ -160,20 +180,24 @@ pc_pause(void)
 void
 pc_set_pause(bool pause_flag)
 {
+	player_lock();
+
 	switch (pc.state) {
 	case PLAYER_STATE_STOP:
 		break;
 
 	case PLAYER_STATE_PLAY:
 		if (pause_flag)
-			pc_pause();
+			pc_pause_locked();
 		break;
 
 	case PLAYER_STATE_PAUSE:
 		if (!pause_flag)
-			pc_pause();
+			pc_pause_locked();
 		break;
 	}
+
+	player_unlock();
 }
 
 void
@@ -203,8 +227,10 @@ pc_get_state(void)
 void
 pc_clear_error(void)
 {
+	player_lock();
 	pc.error = PLAYER_ERROR_NOERROR;
 	pc.errored_song = NULL;
+	player_unlock();
 }
 
 enum player_error
@@ -258,16 +284,23 @@ pc_get_error_message(void)
 	return NULL;
 }
 
+static void
+pc_enqueue_song_locked(struct song *song)
+{
+	assert(song != NULL);
+	assert(pc.next_song == NULL);
+
+	pc.next_song = song;
+	player_command_locked(PLAYER_COMMAND_QUEUE);
+}
+
 void
 pc_enqueue_song(struct song *song)
 {
 	assert(song != NULL);
 
 	player_lock();
-	assert(pc.next_song == NULL);
-
-	pc.next_song = song;
-	player_command_locked(PLAYER_COMMAND_QUEUE);
+	pc_enqueue_song_locked(song);
 	player_unlock();
 }
 
