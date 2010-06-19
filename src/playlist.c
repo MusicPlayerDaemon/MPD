@@ -219,7 +219,12 @@ playlist_sync(struct playlist *playlist)
 		   playing anymore; ignore the event */
 		return;
 
-	if (pc_get_state() == PLAYER_STATE_STOP)
+	player_lock();
+	enum player_state pc_state = pc_get_state();
+	const struct song *pc_next_song = pc.next_song;
+	player_unlock();
+
+	if (pc_state == PLAYER_STATE_STOP)
 		/* the player thread has stopped: check if playback
 		   should be restarted with the next song.  That can
 		   happen if the playlist isn't filling the queue fast
@@ -228,7 +233,7 @@ playlist_sync(struct playlist *playlist)
 	else {
 		/* check if the player thread has already started
 		   playing the queued song */
-		if (pc.next_song == NULL && playlist->queued != -1)
+		if (pc_next_song == NULL && playlist->queued != -1)
 			playlist_song_started(playlist);
 
 		/* make sure the queued song is always set (if
