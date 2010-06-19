@@ -93,33 +93,33 @@ playlist_queue_song_order(struct playlist *playlist, unsigned order)
 }
 
 /**
- * Check if the player thread has already started playing the "queued"
- * song.
+ * Called if the player thread has started playing the "queued" song.
  */
 static void
-playlist_sync_with_queue(struct playlist *playlist)
+playlist_song_started(struct playlist *playlist)
 {
-	if (pc.next_song == NULL && playlist->queued != -1) {
-		/* queued song has started: copy queued to current,
-		   and notify the clients */
+	assert(pc.next_song == NULL);
+	assert(playlist->queued >= -1);
 
-		int current = playlist->current;
-		playlist->current = playlist->queued;
-		playlist->queued = -1;
+	/* queued song has started: copy queued to current,
+	   and notify the clients */
 
-		/* Set pause and remove the single mode. */
-		if(playlist->queue.single && !playlist->queue.repeat) {
-			playlist->queue.single = false;
-			idle_add(IDLE_OPTIONS);
+	int current = playlist->current;
+	playlist->current = playlist->queued;
+	playlist->queued = -1;
 
-			pc_set_pause(true);
-		}
+	/* Set pause and remove the single mode. */
+	if(playlist->queue.single && !playlist->queue.repeat) {
+		playlist->queue.single = false;
+		idle_add(IDLE_OPTIONS);
 
-		if(playlist->queue.consume)
-			playlist_delete(playlist, queue_order_to_position(&playlist->queue, current));
-
-		idle_add(IDLE_PLAYER);
+		pc_set_pause(true);
 	}
+
+	if(playlist->queue.consume)
+		playlist_delete(playlist, queue_order_to_position(&playlist->queue, current));
+
+	idle_add(IDLE_PLAYER);
 }
 
 const struct song *
@@ -228,7 +228,8 @@ playlist_sync(struct playlist *playlist)
 	else {
 		/* check if the player thread has already started
 		   playing the queued song */
-		playlist_sync_with_queue(playlist);
+		if (pc.next_song == NULL && playlist->queued != -1)
+			playlist_song_started(playlist);
 
 		/* make sure the queued song is always set (if
 		   possible) */
