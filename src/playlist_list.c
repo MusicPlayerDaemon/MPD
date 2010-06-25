@@ -190,12 +190,12 @@ playlist_list_open_uri(const char *uri)
 }
 
 static struct playlist_provider *
-playlist_list_open_stream_mime(struct input_stream *is)
+playlist_list_open_stream_mime2(struct input_stream *is, const char *mime)
 {
 	struct playlist_provider *playlist;
 
 	assert(is != NULL);
-	assert(is->mime != NULL);
+	assert(mime != NULL);
 
 	for (unsigned i = 0; playlist_plugins[i] != NULL; ++i) {
 		const struct playlist_plugin *plugin = playlist_plugins[i];
@@ -203,7 +203,7 @@ playlist_list_open_stream_mime(struct input_stream *is)
 		if (playlist_plugins_enabled[i] &&
 		    plugin->open_stream != NULL &&
 		    plugin->mime_types != NULL &&
-		    string_array_contains(plugin->mime_types, is->mime)) {
+		    string_array_contains(plugin->mime_types, mime)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
 			input_stream_seek(is, 0, SEEK_SET, NULL);
@@ -215,6 +215,26 @@ playlist_list_open_stream_mime(struct input_stream *is)
 	}
 
 	return NULL;
+}
+
+static struct playlist_provider *
+playlist_list_open_stream_mime(struct input_stream *is)
+{
+	assert(is->mime != NULL);
+
+	const char *semicolon = strchr(is->mime, ';');
+	if (semicolon == NULL)
+		return playlist_list_open_stream_mime2(is, is->mime);
+
+	if (semicolon == is->mime)
+		return NULL;
+
+	/* probe only the portion before the semicolon*/
+	char *mime = g_strndup(is->mime, semicolon - is->mime);
+	struct playlist_provider *playlist =
+		playlist_list_open_stream_mime2(is, mime);
+	g_free(mime);
+	return playlist;
 }
 
 static struct playlist_provider *
