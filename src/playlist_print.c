@@ -21,7 +21,7 @@
 #include "playlist_print.h"
 #include "playlist_list.h"
 #include "playlist_plugin.h"
-#include "playlist_mapper.h"
+#include "playlist_any.h"
 #include "playlist_song.h"
 #include "queue_print.h"
 #include "stored_playlist.h"
@@ -170,7 +170,7 @@ bool
 playlist_file_print(struct client *client, const char *uri, bool detail)
 {
 	struct input_stream *is;
-	struct playlist_provider *playlist = playlist_mapper_open(uri, &is);
+	struct playlist_provider *playlist = playlist_open_any(uri, &is);
 	if (playlist == NULL)
 		return false;
 
