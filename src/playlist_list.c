@@ -192,21 +192,10 @@ playlist_list_open_uri(const char *uri)
 static struct playlist_provider *
 playlist_list_open_stream_mime(struct input_stream *is)
 {
-	GError* error = NULL;
 	struct playlist_provider *playlist;
 
 	assert(is != NULL);
 	assert(is->mime != NULL);
-
-	while (!is->ready) {
-		int ret = input_stream_buffer(is, &error);
-		if (ret < 0) {
-			input_stream_close(is);
-			g_warning("%s", error->message);
-			g_error_free(error);
-			return NULL;
-		}
-	}
 
 	for (unsigned i = 0; playlist_plugins[i] != NULL; ++i) {
 		const struct playlist_plugin *plugin = playlist_plugins[i];
@@ -231,21 +220,10 @@ playlist_list_open_stream_mime(struct input_stream *is)
 static struct playlist_provider *
 playlist_list_open_stream_suffix(struct input_stream *is, const char *suffix)
 {
-	GError* error = NULL;
 	struct playlist_provider *playlist;
 
 	assert(is != NULL);
 	assert(suffix != NULL);
-
-	while (!is->ready) {
-		int ret = input_stream_buffer(is, &error);
-		if (ret < 0) {
-			input_stream_close(is);
-			g_warning("%s", error->message);
-			g_error_free(error);
-			return NULL;
-		}
-	}
 
 	for (unsigned i = 0; playlist_plugins[i] != NULL; ++i) {
 		const struct playlist_plugin *plugin = playlist_plugins[i];
@@ -272,6 +250,17 @@ playlist_list_open_stream(struct input_stream *is, const char *uri)
 {
 	const char *suffix;
 	struct playlist_provider *playlist;
+
+	GError *error = NULL;
+	while (!is->ready) {
+		int ret = input_stream_buffer(is, &error);
+		if (ret < 0) {
+			input_stream_close(is);
+			g_warning("%s", error->message);
+			g_error_free(error);
+			return NULL;
+		}
+	}
 
 	if (is->mime != NULL) {
 		playlist = playlist_list_open_stream_mime(is);
