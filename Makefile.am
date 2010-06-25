@@ -161,6 +161,7 @@ mpd_headers = \
 	src/playlist_plugin.h \
 	src/playlist_list.h \
 	src/playlist_mapper.h \
+	src/playlist_any.h \
 	src/playlist_song.h \
 	src/playlist_queue.h \
 	src/playlist/extm3u_playlist_plugin.h \
@@ -303,6 +304,7 @@ src_mpd_SOURCES = \
 	src/playlist_print.c \
 	src/playlist_save.c \
 	src/playlist_mapper.c \
+	src/playlist_any.c \
 	src/playlist_song.c \
 	src/playlist_state.c \
 	src/playlist_queue.c \
