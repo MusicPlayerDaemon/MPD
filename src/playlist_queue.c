@@ -19,14 +19,10 @@
 
 #include "config.h"
 #include "playlist_queue.h"
-#include "playlist_list.h"
 #include "playlist_plugin.h"
-#include "playlist_mapper.h"
+#include "playlist_any.h"
 #include "playlist_song.h"
-#include "stored_playlist.h"
-#include "mapper.h"
 #include "song.h"
-#include "uri.h"
 #include "input_stream.h"
 
 enum playlist_result
@@ -56,53 +52,11 @@ playlist_load_into_queue(const char *uri, struct playlist_provider *source,
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-static enum playlist_result
-playlist_open_remote_into_queue(const char *uri, struct playlist *dest)
-{
-	GError *error = NULL;
-	struct playlist_provider *playlist;
-	struct input_stream *is = NULL;
-	enum playlist_result result;
-
-	assert(uri_has_scheme(uri));
-
-	playlist = playlist_list_open_uri(uri);
-	if (playlist == NULL) {
-		is = input_stream_open(uri, &error);
-		if (is == NULL) {
-			if (error != NULL) {
-				g_warning("Failed to open %s: %s",
-					  uri, error->message);
-				g_error_free(error);
-			}
-
-			return PLAYLIST_RESULT_NO_SUCH_LIST;
-		}
-
-		playlist = playlist_list_open_stream(is, uri);
-		if (playlist == NULL) {
-			input_stream_close(is);
-			return PLAYLIST_RESULT_NO_SUCH_LIST;
-		}
-	}
-
-	result = playlist_load_into_queue(uri, playlist, dest);
-	playlist_plugin_close(playlist);
-
-	if (is != NULL)
-		input_stream_close(is);
-
-	return result;
-}
-
 enum playlist_result
 playlist_open_into_queue(const char *uri, struct playlist *dest)
 {
-	if (uri_has_scheme(uri))
-		return playlist_open_remote_into_queue(uri, dest);
-
 	struct input_stream *is;
-	struct playlist_provider *playlist = playlist_mapper_open(uri, &is);
+	struct playlist_provider *playlist = playlist_open_any(uri, &is);
 	if (playlist == NULL)
 		return PLAYLIST_RESULT_NO_SUCH_LIST;
 
