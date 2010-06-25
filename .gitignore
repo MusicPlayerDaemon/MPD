@@ -24,6 +24,7 @@ config.sub
 config_detected.h
 config_detected.mk
 configure
+configure.lineno
 depcomp
 depmode
 install-sh
@@ -56,3 +57,4 @@ test/read_mixer
 test/dump_playlist
 test/run_normalize
 test/tmp
+test/run_inotify
