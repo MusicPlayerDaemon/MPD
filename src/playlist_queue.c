@@ -103,16 +103,15 @@ playlist_open_into_queue(const char *uri, struct playlist *dest)
 
 	struct input_stream *is;
 	struct playlist_provider *playlist = playlist_mapper_open(uri, &is);
-	if (playlist != NULL) {
-		enum playlist_result result =
-			playlist_load_into_queue(uri, playlist, dest);
-		playlist_plugin_close(playlist);
+	if (playlist == NULL)
+		return PLAYLIST_RESULT_NO_SUCH_LIST;
 
-		if (is != NULL)
-			input_stream_close(is);
+	enum playlist_result result =
+		playlist_load_into_queue(uri, playlist, dest);
+	playlist_plugin_close(playlist);
 
-		return result;
-	}
+	if (is != NULL)
+		input_stream_close(is);
 
-	return PLAYLIST_RESULT_NO_SUCH_LIST;
+	return result;
 }
