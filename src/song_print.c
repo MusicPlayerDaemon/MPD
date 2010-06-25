@@ -51,18 +51,16 @@ song_print_info(struct client *client, struct song *song)
 {
 	song_print_uri(client, song);
 
-	if (song->start_ms > 0 || song->end_ms > 0) {
-		if (song->end_ms > 0)
-			client_printf(client, "Range: %u.%03u-%u.%03u\n",
-				      song->start_ms / 1000,
-				      song->start_ms % 1000,
-				      song->end_ms / 1000,
-				      song->end_ms % 1000);
-		else
-			client_printf(client, "Range: %u.%03u-\n",
-				      song->start_ms / 1000,
-				      song->start_ms % 1000);
-	}
+	if (song->end_ms > 0)
+		client_printf(client, "Range: %u.%03u-%u.%03u\n",
+			      song->start_ms / 1000,
+			      song->start_ms % 1000,
+			      song->end_ms / 1000,
+			      song->end_ms % 1000);
+	else if (song->start_ms > 0)
+		client_printf(client, "Range: %u.%03u-\n",
+			      song->start_ms / 1000,
+			      song->start_ms % 1000);
 
 	if (song->mtime > 0) {
 #ifndef G_OS_WIN32
