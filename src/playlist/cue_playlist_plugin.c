@@ -105,9 +105,6 @@ cue_playlist_read(struct playlist_provider *_playlist)
 	song->start_ms = ((track_get_start(track)
 			   + track_get_index(track, 1)
 			   - track_get_zero_pre(track)) * 1000) / 75;
-	song->end_ms = ((track_get_start(track) + track_get_length(track)
-			 - track_get_index(track, 1)
-			 + track_get_zero_pre(track)) * 1000) / 75;
 
 	/* append pregap of the next track to the end of this one */
 	track = cd_get_track(playlist->cd, playlist->next);
@@ -115,6 +112,8 @@ cue_playlist_read(struct playlist_provider *_playlist)
 		song->end_ms = ((track_get_start(track)
 				 + track_get_index(track, 1)
 				 - track_get_zero_pre(track)) * 1000) / 75;
+	else
+		song->end_ms = 0;
 
 	return song;
 }
