@@ -914,16 +914,8 @@ fi
 
 AM_CONDITIONAL(HAVE_AUDIOFILE, test x$enable_audiofile = xyes)
 
-MPD_AUTO_PKG(ffmpeg, FFMPEG, [libavformat libavcodec libavutil],
+MPD_AUTO_PKG(ffmpeg, FFMPEG, [libavformat >= 52 libavcodec >= 51 libavutil >= 49],
 	[ffmpeg decoder library], [libavformat+libavcodec+libavutil not found])
-
-if test x$enable_ffmpeg = xyes; then
-	old_LIBS=$LIBS
-	LIBS="$LIBS $FFMPEG_LIBS"
-	AC_CHECK_LIB(avcodec, avcodec_decode_audio2,,
-		enable_ffmpeg=no)
-	LIBS=$old_LIBS
-fi
 
 if test x$enable_ffmpeg = xyes; then
 	# prior to ffmpeg svn12865, you had to specify include files
