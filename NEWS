@@ -1,6 +1,8 @@
 ver 0.15.11 (2010/??/??)
 * tags:
   - ape: support album artist
+* decoders:
+  - mp4ff: support tags "albumartist", "band"
 
 
 ver 0.15.10 (2010/05/30)
