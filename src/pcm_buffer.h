@@ -28,7 +28,7 @@
  * would put too much stress on the allocator.
  */
 struct pcm_buffer {
-	char *buffer;
+	void *buffer;
 
 	size_t size;
 };
