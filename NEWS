@@ -3,6 +3,7 @@ ver 0.15.11 (2010/??/??)
   - ape: support album artist
 * decoders:
   - mp4ff: support tags "albumartist", "band"
+  - mikmod: fix memory leak
 
 
 ver 0.15.10 (2010/05/30)

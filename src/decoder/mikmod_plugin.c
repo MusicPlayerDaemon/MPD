@@ -219,10 +219,12 @@ static struct tag *modTagDup(const char *file)
 	ret->time = 0;
 
 	path2 = g_strdup(file);
-	title = g_strdup(Player_LoadTitle(path2));
+	title = Player_LoadTitle(path2);
 	g_free(path2);
-	if (title)
+	if (title) {
 		tag_add_item(ret, TAG_ITEM_TITLE, title);
+		free(title);
+	}
 
 	return ret;
 }
