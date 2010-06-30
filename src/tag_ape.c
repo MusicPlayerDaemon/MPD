@@ -27,20 +27,18 @@
 #include <stdio.h>
 
 static const char *const ape_tag_names[TAG_NUM_OF_ITEM_TYPES] = {
-	[TAG_ITEM_TITLE] = "title",
-	[TAG_ITEM_ARTIST] = "artist",
-	[TAG_ITEM_ALBUM] = "album",
 	[TAG_ITEM_ALBUM_ARTIST] = "album artist",
-	[TAG_ITEM_COMMENT] = "comment",
-	[TAG_ITEM_GENRE] = "genre",
-	[TAG_ITEM_TRACK] = "track",
 	[TAG_ITEM_DATE] = "year"
 };
 
 static enum tag_type
 tag_ape_name_parse(const char *name)
 {
-	return tag_table_lookup(ape_tag_names, name);
+	enum tag_type type = tag_table_lookup(ape_tag_names, name);
+	if (type == TAG_NUM_OF_ITEM_TYPES)
+		type = tag_name_parse_i(name);
+
+	return type;
 }
 
 static struct tag *
