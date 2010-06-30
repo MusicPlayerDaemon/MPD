@@ -2,7 +2,7 @@ ver 0.15.11 (2010/??/??)
 * tags:
   - ape: support album artist
 * decoders:
-  - mp4ff: support tags "albumartist", "band"
+  - mp4ff: support tags "album artist", "albumartist", "band"
   - mikmod: fix memory leak
 * playlist: emit IDLE_OPTIONS when resetting single mode
 * listen: make get_remote_uid() work on BSD

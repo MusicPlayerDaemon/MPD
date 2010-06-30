@@ -341,6 +341,7 @@ mp4_decode(struct decoder *mpd_decoder, struct input_stream *input_stream)
 }
 
 static const char *const mp4ff_tag_names[TAG_NUM_OF_ITEM_TYPES] = {
+	[TAG_ITEM_ALBUM_ARTIST] = "album artist",
 	[TAG_ITEM_COMPOSER] = "writer",
 	[TAG_ITEM_PERFORMER] = "band",
 };
