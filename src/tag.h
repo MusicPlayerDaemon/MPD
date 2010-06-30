@@ -94,6 +94,22 @@ struct tag {
 };
 
 /**
+ * Parse the string, and convert it into a #tag_type.  Returns
+ * #TAG_NUM_OF_ITEM_TYPES if the string could not be recognized.
+ */
+enum tag_type
+tag_name_parse(const char *name);
+
+/**
+ * Parse the string, and convert it into a #tag_type.  Returns
+ * #TAG_NUM_OF_ITEM_TYPES if the string could not be recognized.
+ *
+ * Case does not matter.
+ */
+enum tag_type
+tag_name_parse_i(const char *name);
+
+/**
  * Creates an empty #tag.
  */
 struct tag *tag_new(void);

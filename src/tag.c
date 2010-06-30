@@ -64,6 +64,36 @@ const char *tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
 
 bool ignore_tag_items[TAG_NUM_OF_ITEM_TYPES];
 
+enum tag_type
+tag_name_parse(const char *name)
+{
+	assert(name != NULL);
+
+	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
+		assert(tag_item_names[i] != NULL);
+
+		if (strcmp(name, tag_item_names[i]) == 0)
+			return (enum tag_type)i;
+	}
+
+	return TAG_NUM_OF_ITEM_TYPES;
+}
+
+enum tag_type
+tag_name_parse_i(const char *name)
+{
+	assert(name != NULL);
+
+	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
+		assert(tag_item_names[i] != NULL);
+
+		if (g_ascii_strcasecmp(name, tag_item_names[i]) == 0)
+			return (enum tag_type)i;
+	}
+
+	return TAG_NUM_OF_ITEM_TYPES;
+}
+
 static size_t items_size(const struct tag *tag)
 {
 	return tag->num_items * sizeof(struct tag_item *);
@@ -76,7 +106,7 @@ void tag_lib_init(void)
 	char *temp;
 	char *s;
 	char *c;
-	int i;
+	enum tag_type type;
 
 	/* parse the "metadata_to_use" config parameter below */
 
@@ -98,16 +128,18 @@ void tag_lib_init(void)
 			if (*s == '\0')
 				quit = 1;
 			*s = '\0';
-			for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
-				if (g_ascii_strcasecmp(c, tag_item_names[i]) == 0) {
-					ignore_tag_items[i] = false;
-					break;
-				}
-			}
-			if (strlen(c) && i == TAG_NUM_OF_ITEM_TYPES) {
+
+			c = g_strstrip(c);
+			if (*c == 0)
+				continue;
+
+			type = tag_name_parse_i(c);
+			if (type == TAG_NUM_OF_ITEM_TYPES)
 				g_error("error parsing metadata item \"%s\"",
 					c);
-			}
+
+			ignore_tag_items[type] = false;
+
 			s++;
 			c = s;
 		}
