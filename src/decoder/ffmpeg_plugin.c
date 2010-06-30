@@ -376,8 +376,10 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	ctx.input = input;
 	ctx.decoder = decoder;
 
-	ffmpeg_helper(decoder_get_uri(decoder), input,
+	char *uri = decoder_get_uri(decoder);
+	ffmpeg_helper(uri, input,
 		      ffmpeg_decode_internal, &ctx);
+	g_free(uri);
 }
 
 #if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
