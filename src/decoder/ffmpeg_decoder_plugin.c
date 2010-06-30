@@ -277,9 +277,49 @@ ffmpeg_sample_format(G_GNUC_UNUSED const AVCodecContext *codec_context)
 #endif
 }
 
+static AVInputFormat *
+ffmpeg_probe(struct decoder *decoder, struct input_stream *is)
+{
+	enum {
+		BUFFER_SIZE = 16384,
+		PADDING = 16,
+	};
+
+	unsigned char *buffer = g_malloc(BUFFER_SIZE);
+	size_t nbytes = decoder_read(decoder, is, buffer, BUFFER_SIZE);
+	if (nbytes <= PADDING || !input_stream_seek(is, 0, SEEK_SET, NULL)) {
+		g_free(buffer);
+		return NULL;
+	}
+
+	/* some ffmpeg parsers (e.g. ac3_parser.c) read a few bytes
+	   beyond the declared buffer limit, which makes valgrind
+	   angry; this workaround removes some padding from the buffer
+	   size */
+	nbytes -= PADDING;
+
+	AVProbeData avpd = {
+		.buf = buffer,
+		.buf_size = nbytes,
+		.filename = is->uri,
+	};
+
+	AVInputFormat *format = av_probe_input_format(&avpd, true);
+	g_free(buffer);
+
+	return format;
+}
+
 static void
 ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 {
+	AVInputFormat *input_format = ffmpeg_probe(decoder, input);
+	if (input_format == NULL)
+		return;
+
+	g_debug("detected input format '%s' (%s)",
+		input_format->name, input_format->long_name);
+
 	struct ffmpeg_stream stream = {
 		.url = "mpd://X", /* only the mpd:// prefix matters */
 		.decoder = decoder,
@@ -294,7 +334,8 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		append_uri_suffix(&stream, input->uri);
 
 	//ffmpeg works with ours "fileops" helper
-	if (av_open_input_file(&format_context, stream.url, NULL, 0, NULL) != 0) {
+	if (av_open_input_file(&format_context, stream.url, input_format,
+			       0, NULL) != 0) {
 		g_warning("Open failed\n");
 		return;
 	}
@@ -425,6 +466,10 @@ ffmpeg_copy_metadata(struct tag *tag, AVMetadata *m,
 static struct tag *
 ffmpeg_stream_tag(struct input_stream *is)
 {
+	AVInputFormat *input_format = ffmpeg_probe(NULL, is);
+	if (input_format == NULL)
+		return NULL;
+
 	struct ffmpeg_stream stream = {
 		.url = "mpd://X", /* only the mpd:// prefix matters */
 		.decoder = NULL,
@@ -435,7 +480,7 @@ ffmpeg_stream_tag(struct input_stream *is)
 		append_uri_suffix(&stream, is->uri);
 
 	AVFormatContext *f;
-	if (av_open_input_file(&f, stream.url, NULL, 0, NULL) != 0)
+	if (av_open_input_file(&f, stream.url, input_format, 0, NULL) != 0)
 		return NULL;
 
 	if (av_find_stream_info(f) < 0) {
