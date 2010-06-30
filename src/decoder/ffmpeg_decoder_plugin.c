@@ -81,48 +81,27 @@ mpd_ffmpeg_log_callback(G_GNUC_UNUSED void *ptr, int level,
 
 #endif /* !OLD_FFMPEG_INCLUDES */
 
-struct ffmpeg_stream {
-	/** hack - see url_to_struct() */
-	char url[64];
-
+struct mpd_ffmpeg_stream {
 	struct decoder *decoder;
 	struct input_stream *input;
+
+	ByteIOContext *io;
+	unsigned char buffer[8192];
 };
 
-/**
- * Convert a faked mpd:// URL to a ffmpeg_stream structure.  This is a
- * hack because ffmpeg does not provide a nice API for passing a
- * user-defined pointer to mpdurl_open().
- */
-static struct ffmpeg_stream *url_to_struct(const char *url)
+static int
+mpd_ffmpeg_stream_read(void *opaque, uint8_t *buf, int size)
 {
-	union {
-		const char *in;
-		struct ffmpeg_stream *out;
-	} u = { .in = url };
-	return u.out;
-}
-
-static int mpd_ffmpeg_open(URLContext *h, const char *filename,
-			   G_GNUC_UNUSED int flags)
-{
-	struct ffmpeg_stream *stream = url_to_struct(filename);
-	h->priv_data = stream;
-	h->is_streamed = stream->input->seekable ? 0 : 1;
-	return 0;
-}
-
-static int mpd_ffmpeg_read(URLContext *h, unsigned char *buf, int size)
-{
-	struct ffmpeg_stream *stream = (struct ffmpeg_stream *) h->priv_data;
+	struct mpd_ffmpeg_stream *stream = opaque;
 
 	return decoder_read(stream->decoder, stream->input,
 			    (void *)buf, size);
 }
 
-static int64_t mpd_ffmpeg_seek(URLContext *h, int64_t pos, int whence)
+static int64_t
+mpd_ffmpeg_stream_seek(void *opaque, int64_t pos, int whence)
 {
-	struct ffmpeg_stream *stream = (struct ffmpeg_stream *) h->priv_data;
+	struct mpd_ffmpeg_stream *stream = opaque;
 	bool ret;
 
 	if (whence == AVSEEK_SIZE)
@@ -135,19 +114,31 @@ static int64_t mpd_ffmpeg_seek(URLContext *h, int64_t pos, int whence)
 	return stream->input->offset;
 }
 
-static int mpd_ffmpeg_close(URLContext *h)
+static struct mpd_ffmpeg_stream *
+mpd_ffmpeg_stream_open(struct decoder *decoder, struct input_stream *input)
 {
-	h->priv_data = NULL;
-	return 0;
+	struct mpd_ffmpeg_stream *stream = g_new(struct mpd_ffmpeg_stream, 1);
+	stream->decoder = decoder;
+	stream->input = input;
+	stream->io = av_alloc_put_byte(stream->buffer, sizeof(stream->buffer),
+				       false, stream,
+				       mpd_ffmpeg_stream_read, NULL,
+				       input->seekable
+				       ? mpd_ffmpeg_stream_seek : NULL);
+	if (stream->io == NULL) {
+		g_free(stream);
+		return NULL;
+	}
+
+	return stream;
 }
 
-static URLProtocol mpd_ffmpeg_fileops = {
-	.name = "mpd",
-	.url_open = mpd_ffmpeg_open,
-	.url_read = mpd_ffmpeg_read,
-	.url_seek = mpd_ffmpeg_seek,
-	.url_close = mpd_ffmpeg_close,
-};
+static void
+mpd_ffmpeg_stream_close(struct mpd_ffmpeg_stream *stream)
+{
+	av_free(stream->io);
+	g_free(stream);
+}
 
 static bool
 ffmpeg_init(G_GNUC_UNUSED const struct config_param *param)
@@ -157,7 +148,6 @@ ffmpeg_init(G_GNUC_UNUSED const struct config_param *param)
 #endif
 
 	av_register_all();
-	register_protocol(&mpd_ffmpeg_fileops);
 	return true;
 }
 
@@ -170,26 +160,6 @@ ffmpeg_find_audio_stream(const AVFormatContext *format_context)
 			return i;
 
 	return -1;
-}
-
-/**
- * Append the suffix of the original URI to the virtual stream URI.
- * Without this, libavformat cannot detect some of the codecs
- * (e.g. "shorten").
- */
-static void
-append_uri_suffix(struct ffmpeg_stream *stream, const char *uri)
-{
-	assert(stream != NULL);
-	assert(uri != NULL);
-
-	char *base = g_path_get_basename(uri);
-
-	const char *suffix = strrchr(base, '.');
-	if (suffix != NULL && suffix[1] != 0)
-		g_strlcat(stream->url, suffix, sizeof(stream->url));
-
-	g_free(base);
 }
 
 /**
@@ -320,36 +290,38 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	g_debug("detected input format '%s' (%s)",
 		input_format->name, input_format->long_name);
 
-	struct ffmpeg_stream stream = {
-		.url = "mpd://X", /* only the mpd:// prefix matters */
-		.decoder = decoder,
-		.input = input,
-	};
+	struct mpd_ffmpeg_stream *stream =
+		mpd_ffmpeg_stream_open(decoder, input);
+	if (stream == NULL) {
+		g_warning("Failed to open stream");
+		return;
+	}
+
 	AVFormatContext *format_context;
 	AVCodecContext *codec_context;
 	AVCodec *codec;
 	int audio_stream;
 
-	if (input->uri != NULL)
-		append_uri_suffix(&stream, input->uri);
-
 	//ffmpeg works with ours "fileops" helper
-	if (av_open_input_file(&format_context, stream.url, input_format,
-			       0, NULL) != 0) {
+	if (av_open_input_stream(&format_context, stream->io, input->uri,
+				 input_format, NULL) != 0) {
 		g_warning("Open failed\n");
+		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
 
 	if (av_find_stream_info(format_context)<0) {
 		g_warning("Couldn't find stream info\n");
-		av_close_input_file(format_context);
+		av_close_input_stream(format_context);
+		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
 
 	audio_stream = ffmpeg_find_audio_stream(format_context);
 	if (audio_stream == -1) {
 		g_warning("No audio stream inside\n");
-		av_close_input_file(format_context);
+		av_close_input_stream(format_context);
+		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
 
@@ -361,13 +333,15 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 
 	if (!codec) {
 		g_warning("Unsupported audio codec\n");
-		av_close_input_file(format_context);
+		av_close_input_stream(format_context);
+		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
 
 	if (avcodec_open(codec_context, codec)<0) {
 		g_warning("Could not open codec\n");
-		av_close_input_file(format_context);
+		av_close_input_stream(format_context);
+		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
 
@@ -380,7 +354,8 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		g_warning("%s", error->message);
 		g_error_free(error);
 		avcodec_close(codec_context);
-		av_close_input_file(format_context);
+		av_close_input_stream(format_context);
+		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
 
@@ -419,7 +394,8 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	} while (cmd != DECODE_COMMAND_STOP);
 
 	avcodec_close(codec_context);
-	av_close_input_file(format_context);
+	av_close_input_stream(format_context);
+	mpd_ffmpeg_stream_close(stream);
 }
 
 #if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
@@ -470,21 +446,20 @@ ffmpeg_stream_tag(struct input_stream *is)
 	if (input_format == NULL)
 		return NULL;
 
-	struct ffmpeg_stream stream = {
-		.url = "mpd://X", /* only the mpd:// prefix matters */
-		.decoder = NULL,
-		.input = is,
-	};
-
-	if (is->uri != NULL)
-		append_uri_suffix(&stream, is->uri);
-
-	AVFormatContext *f;
-	if (av_open_input_file(&f, stream.url, input_format, 0, NULL) != 0)
+	struct mpd_ffmpeg_stream *stream = mpd_ffmpeg_stream_open(NULL, is);
+	if (stream == NULL)
 		return NULL;
 
+	AVFormatContext *f;
+	if (av_open_input_stream(&f, stream->io, is->uri,
+				 input_format, NULL) != 0) {
+		mpd_ffmpeg_stream_close(stream);
+		return NULL;
+	}
+
 	if (av_find_stream_info(f) < 0) {
-		av_close_input_file(f);
+		av_close_input_stream(f);
+		mpd_ffmpeg_stream_close(stream);
 		return NULL;
 	}
 
@@ -529,7 +504,8 @@ ffmpeg_stream_tag(struct input_stream *is)
 
 #endif
 
-	av_close_input_file(f);
+	av_close_input_stream(f);
+	mpd_ffmpeg_stream_close(stream);
 
 	return tag;
 }
