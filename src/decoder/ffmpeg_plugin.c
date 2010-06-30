@@ -160,11 +160,53 @@ append_uri_suffix(struct ffmpeg_stream *stream, const char *uri)
 	g_free(base);
 }
 
+static AVInputFormat *
+ffmpeg_probe(struct decoder *decoder, struct input_stream *is,
+	     const char *uri)
+{
+	enum {
+		BUFFER_SIZE = 16384,
+		PADDING = 16,
+	};
+
+	unsigned char *buffer = g_malloc(BUFFER_SIZE);
+	size_t nbytes = decoder_read(decoder, is, buffer, BUFFER_SIZE);
+	if (nbytes <= PADDING || !input_stream_seek(is, 0, SEEK_SET)) {
+		g_free(buffer);
+		return NULL;
+	}
+
+	/* some ffmpeg parsers (e.g. ac3_parser.c) read a few bytes
+	   beyond the declared buffer limit, which makes valgrind
+	   angry; this workaround removes some padding from the buffer
+	   size */
+	nbytes -= PADDING;
+
+	AVProbeData avpd = {
+		.buf = buffer,
+		.buf_size = nbytes,
+		.filename = uri,
+	};
+
+	AVInputFormat *format = av_probe_input_format(&avpd, true);
+	g_free(buffer);
+
+	return format;
+}
+
 static bool
-ffmpeg_helper(const char *uri, struct input_stream *input,
+ffmpeg_helper(const char *uri,
+	      struct decoder *decoder, struct input_stream *input,
 	      bool (*callback)(struct ffmpeg_context *ctx),
 	      struct ffmpeg_context *ctx)
 {
+	AVInputFormat *input_format = ffmpeg_probe(decoder, input, uri);
+	if (input_format == NULL)
+		return false;
+
+	g_debug("detected input format '%s' (%s)",
+		input_format->name, input_format->long_name);
+
 	AVFormatContext *format_context;
 	AVCodecContext *codec_context;
 	AVCodec *codec;
@@ -185,7 +227,8 @@ ffmpeg_helper(const char *uri, struct input_stream *input,
 	}
 
 	//ffmpeg works with ours "fileops" helper
-	if (av_open_input_file(&format_context, stream.url, NULL, 0, NULL) != 0) {
+	if (av_open_input_file(&format_context, stream.url, input_format,
+			       0, NULL) != 0) {
 		g_warning("Open failed\n");
 		return false;
 	}
@@ -377,7 +420,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	ctx.decoder = decoder;
 
 	char *uri = decoder_get_uri(decoder);
-	ffmpeg_helper(uri, input,
+	ffmpeg_helper(uri, decoder, input,
 		      ffmpeg_decode_internal, &ctx);
 	g_free(uri);
 }
@@ -465,7 +508,7 @@ static struct tag *ffmpeg_tag(const char *file)
 	ctx.decoder = NULL;
 	ctx.tag = tag_new();
 
-	ret = ffmpeg_helper(file, &input, ffmpeg_tag_internal, &ctx);
+	ret = ffmpeg_helper(file, NULL, &input, ffmpeg_tag_internal, &ctx);
 	if (!ret) {
 		tag_free(ctx.tag);
 		ctx.tag = NULL;
