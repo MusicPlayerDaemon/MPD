@@ -407,7 +407,13 @@ static int get_remote_uid(int fd)
 
 	return cred.uid;
 #else
-	(void)fd;
+#ifdef HAVE_GETPEEREID
+	uid_t euid;
+	gid_t egid;
+
+	if (getpeereid(fd, &euid, &egid) == 0)
+		return euid;
+#endif
 	return -1;
 #endif
 }
