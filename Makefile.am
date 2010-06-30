@@ -142,6 +142,7 @@ mpd_headers = \
 	src/tag.h \
 	src/tag_internal.h \
 	src/tag_pool.h \
+	src/tag_table.h \
 	src/tag_ape.h \
 	src/tag_id3.h \
 	src/tag_print.h \
