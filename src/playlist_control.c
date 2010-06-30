@@ -24,6 +24,7 @@
 
 #include "playlist_internal.h"
 #include "player_control.h"
+#include "idle.h"
 
 #include <glib.h>
 
@@ -156,6 +157,8 @@ nextSongInPlaylist(struct playlist *playlist)
 	if (next_order < 0) {
 		/* cancel single */
 		playlist->queue.single = false;
+		idle_add(IDLE_OPTIONS);
+
 		/* no song after this one: stop playback */
 		stopPlaylist(playlist);
 
