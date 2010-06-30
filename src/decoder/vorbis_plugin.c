@@ -97,6 +97,13 @@ static long ogg_tell_cb(void *vdata)
 	return (long)data->input_stream->offset;
 }
 
+static const ov_callbacks vorbis_is_callbacks = {
+	.read_func = ogg_read_cb,
+	.seek_func = ogg_seek_cb,
+	.close_func = ogg_close_cb,
+	.tell_func = ogg_tell_cb,
+};
+
 static const char *
 vorbis_comment_value(const char *comment, const char *needle)
 {
@@ -241,7 +248,6 @@ vorbis_stream_decode(struct decoder *decoder,
 		     struct input_stream *input_stream)
 {
 	OggVorbis_File vf;
-	ov_callbacks callbacks;
 	OggCallbackData data;
 	struct audio_format audio_format;
 	int current_section;
@@ -266,13 +272,9 @@ vorbis_stream_decode(struct decoder *decoder,
 	data.input_stream = input_stream;
 	data.seekable = input_stream->seekable && oggvorbis_seekable(decoder);
 
-	callbacks.read_func = ogg_read_cb;
-	callbacks.seek_func = ogg_seek_cb;
-	callbacks.close_func = ogg_close_cb;
-	callbacks.tell_func = ogg_tell_cb;
-	if ((ret = ov_open_callbacks(&data, &vf, NULL, 0, callbacks)) < 0) {
+	if ((ret = ov_open_callbacks(&data, &vf, NULL, 0,
+				     vorbis_is_callbacks)) < 0) {
 		const char *error;
-
 		if (decoder_get_command(decoder) != DECODE_COMMAND_NONE)
 			return;
 
