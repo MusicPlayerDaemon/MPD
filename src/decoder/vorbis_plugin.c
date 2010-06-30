@@ -233,6 +233,9 @@ oggvorbis_seekable(struct decoder *decoder)
 	bool seekable;
 
 	uri = decoder_get_uri(decoder);
+	if (uri == NULL)
+		return false;
+
 	/* disable seeking on remote streams, because libvorbis seeks
 	   around like crazy, and due to being very expensive, this
 	   delays song playback my 10 or 20 seconds */

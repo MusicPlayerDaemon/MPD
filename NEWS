@@ -4,6 +4,7 @@ ver 0.15.11 (2010/??/??)
 * decoders:
   - mp4ff: support tags "album artist", "albumartist", "band"
   - mikmod: fix memory leak
+  - vorbis: handle uri==NULL
   - ffmpeg: free AVFormatContext on error
   - ffmpeg: read more metadata
 * playlist: emit IDLE_OPTIONS when resetting single mode
