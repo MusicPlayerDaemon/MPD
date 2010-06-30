@@ -353,6 +353,12 @@ static const char *const mp4ff_tag_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_ITEM_PERFORMER] = "band",
 };
 
+static enum tag_type
+mp4ff_tag_name_parse(const char *name)
+{
+	return tag_table_lookup(mp4ff_tag_names, name);
+}
+
 static struct tag *
 mp4_tag_dup(const char *file)
 {
@@ -408,7 +414,7 @@ mp4_tag_dup(const char *file)
 
 		mp4ff_meta_get_by_index(mp4fh, i, &item, &value);
 
-		enum tag_type type = tag_table_lookup(mp4ff_tag_names, item);
+		enum tag_type type = mp4ff_tag_name_parse(item);
 		if (type != TAG_NUM_OF_ITEM_TYPES)
 			tag_add_item(ret, type, value);
 
