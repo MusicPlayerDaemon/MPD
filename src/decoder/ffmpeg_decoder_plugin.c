@@ -382,16 +382,43 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 }
 
 #if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
+typedef struct ffmpeg_tag_map {
+	enum tag_type type;
+	const char *name;
+} ffmpeg_tag_map;
+
+static const ffmpeg_tag_map ffmpeg_tag_maps[] = {
+	{ TAG_TITLE,             "title" },
+#if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(50<<8))
+	{ TAG_ARTIST,            "artist" },
+	{ TAG_DATE,              "date" },
+#else
+	{ TAG_ARTIST,            "author" },
+	{ TAG_DATE,              "year" },
+#endif
+	{ TAG_ALBUM,             "album" },
+	{ TAG_COMMENT,           "comment" },
+	{ TAG_GENRE,             "genre" },
+	{ TAG_TRACK,             "track" },
+	{ TAG_ARTIST_SORT,       "author-sort" },
+	{ TAG_ALBUM_ARTIST,      "album_artist" },
+	{ TAG_ALBUM_ARTIST_SORT, "album_artist-sort" },
+	{ TAG_COMPOSER,          "composer" },
+	{ TAG_PERFORMER,         "performer" },
+	{ TAG_DISC,              "disc" },
+};
+
 static bool
 ffmpeg_copy_metadata(struct tag *tag, AVMetadata *m,
-		     enum tag_type type, const char *name)
+		     const ffmpeg_tag_map tag_map)
 {
 	AVMetadataTag *mt = NULL;
 
-	while ((mt = av_metadata_get(m, name, mt, 0)) != NULL)
-		tag_add_item(tag, type, mt->value);
+	while ((mt = av_metadata_get(m, tag_map.name, mt, 0)) != NULL)
+		tag_add_item(tag, tag_map.type, mt->value);
 	return mt != NULL;
 }
+
 #endif
 
 //no tag reading in ffmpeg, check if playable
@@ -425,24 +452,8 @@ ffmpeg_stream_tag(struct input_stream *is)
 #if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
 	av_metadata_conv(f, NULL, f->iformat->metadata_conv);
 
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_TITLE, "title");
-#if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(50<<8))
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_ARTIST, "artist");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_DATE,   "date");
-#else
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_ARTIST, "author");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_DATE,   "year");
-#endif
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_ALBUM, "album");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_COMMENT, "comment");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_GENRE, "genre");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_TRACK, "track");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_ARTIST_SORT, "author-sort");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_ALBUM_ARTIST, "album_artist");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_ALBUM_ARTIST_SORT, "album_artist-sort");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_COMPOSER, "composer");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_PERFORMER, "performer");
-	ffmpeg_copy_metadata(tag, f->metadata, TAG_DISC, "disc");
+	for (unsigned i = 0; i < sizeof(ffmpeg_tag_maps)/sizeof(ffmpeg_tag_map); i++)
+		ffmpeg_copy_metadata(tag, f->metadata, ffmpeg_tag_maps[i]);
 #else
 	if (f->author[0])
 		tag_add_item(tag, TAG_ARTIST, f->author);
