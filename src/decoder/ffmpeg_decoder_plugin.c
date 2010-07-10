@@ -452,8 +452,12 @@ ffmpeg_stream_tag(struct input_stream *is)
 #if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
 	av_metadata_conv(f, NULL, f->iformat->metadata_conv);
 
-	for (unsigned i = 0; i < sizeof(ffmpeg_tag_maps)/sizeof(ffmpeg_tag_map); i++)
+	for (unsigned i = 0; i < sizeof(ffmpeg_tag_maps)/sizeof(ffmpeg_tag_map); i++) {
+		int idx = ffmpeg_find_audio_stream(f);
 		ffmpeg_copy_metadata(tag, f->metadata, ffmpeg_tag_maps[i]);
+		if (idx >= 0)
+			ffmpeg_copy_metadata(tag, f->streams[idx]->metadata, ffmpeg_tag_maps[i]);
+	}
 #else
 	if (f->author[0])
 		tag_add_item(tag, TAG_ARTIST, f->author);
