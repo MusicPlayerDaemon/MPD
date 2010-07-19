@@ -25,6 +25,7 @@
 #include "config.h"
 #include "playlist_internal.h"
 #include "player_control.h"
+#include "idle.h"
 
 #include <glib.h>
 

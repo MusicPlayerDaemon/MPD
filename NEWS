@@ -20,7 +20,7 @@ ver 0.16 (20??/??/??)
 * tags:
   - added tags "ArtistSort", "AlbumArtistSort"
   - id3: revised "performer" tag support
-  - ape: support album artist, MusicBrainz tags
+  - ape: MusicBrainz tags
 * decoders:
   - don't try a plugin twice (MIME type & suffix)
   - don't fall back to "mad" unless no plugin matches
@@ -38,8 +38,6 @@ ver 0.16 (20??/??/??)
   - wavpack: activate 32 bit support
   - wavpack: allow more than 2 channels
   - mp4ff: rename plugin "mp4" to "mp4ff"
-  - mp4ff: support tags "album artist", "albumartist", "band"
-  - mikmod: fix memory leak
 * encoders:
   - twolame: new encoder plugin based on libtwolame
   - flac: new encoder plugin based on libFLAC
@@ -103,6 +101,21 @@ ver 0.16 (20??/??/??)
 * added test suite ("make check")
 * require GLib 2.12
 * added libwrap support
+
+
+ver 0.15.11 (2010/06/14)
+* tags:
+  - ape: support album artist
+* decoders:
+  - mp4ff: support tags "album artist", "albumartist", "band"
+  - mikmod: fix memory leak
+  - vorbis: handle uri==NULL
+  - ffmpeg: fix memory leak
+  - ffmpeg: free AVFormatContext on error
+  - ffmpeg: read more metadata
+  - ffmpeg: fix libavformat 0.6 by using av_open_input_stream()
+* playlist: emit IDLE_OPTIONS when resetting single mode
+* listen: make get_remote_uid() work on BSD
 
 
 ver 0.15.10 (2010/05/30)
