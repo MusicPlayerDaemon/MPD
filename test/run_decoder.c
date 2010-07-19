@@ -139,8 +139,19 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder,
 
 float
 decoder_replay_gain(G_GNUC_UNUSED struct decoder *decoder,
-		    G_GNUC_UNUSED const struct replay_gain_info *replay_gain_info)
+		    const struct replay_gain_info *replay_gain_info)
 {
+	const struct replay_gain_tuple *tuple =
+		&replay_gain_info->tuples[REPLAY_GAIN_ALBUM];
+	if (replay_gain_tuple_defined(tuple))
+		g_printerr("replay_gain[album]: gain=%f peak=%f\n",
+			   tuple->gain, tuple->peak);
+
+	tuple = &replay_gain_info->tuples[REPLAY_GAIN_TRACK];
+	if (replay_gain_tuple_defined(tuple))
+		g_printerr("replay_gain[track]: gain=%f peak=%f\n",
+			   tuple->gain, tuple->peak);
+
 	return 0.0;
 }
 
