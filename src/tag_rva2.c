@@ -24,6 +24,18 @@
 #include <glib.h>
 #include <id3tag.h>
 
+enum rva2_channel {
+	CHANNEL_OTHER = 0x00,
+	CHANNEL_MASTER_VOLUME = 0x01,
+	CHANNEL_FRONT_RIGHT = 0x02,
+	CHANNEL_FRONT_LEFT = 0x03,
+	CHANNEL_BACK_RIGHT = 0x04,
+	CHANNEL_BACK_LEFT = 0x05,
+	CHANNEL_FRONT_CENTRE = 0x06,
+	CHANNEL_BACK_CENTRE = 0x07,
+	CHANNEL_SUBWOOFER = 0x08
+};
+
 bool
 tag_rva2_parse(struct id3_tag *tag, struct replay_gain_info *replay_gain_info)
 {
@@ -32,18 +44,6 @@ tag_rva2_parse(struct id3_tag *tag, struct replay_gain_info *replay_gain_info)
 	id3_latin1_t const *id;
 	id3_byte_t const *data;
 	id3_length_t length;
-
-	enum {
-		CHANNEL_OTHER         = 0x00,
-		CHANNEL_MASTER_VOLUME = 0x01,
-		CHANNEL_FRONT_RIGHT   = 0x02,
-		CHANNEL_FRONT_LEFT    = 0x03,
-		CHANNEL_BACK_RIGHT    = 0x04,
-		CHANNEL_BACK_LEFT     = 0x05,
-		CHANNEL_FRONT_CENTRE  = 0x06,
-		CHANNEL_BACK_CENTRE   = 0x07,
-		CHANNEL_SUBWOOFER     = 0x08
-	};
 
 	/* relative volume adjustment information */
 
