@@ -245,7 +245,6 @@ input_curl_select(struct input_curl *c, GError **error_r)
 	fd_set rfds, wfds, efds;
 	int max_fd, ret;
 	CURLMcode mcode;
-	/* XXX hard coded timeout value.. */
 	struct timeval timeout = {
 		.tv_sec = 1,
 		.tv_usec = 0,
@@ -265,7 +264,23 @@ input_curl_select(struct input_curl *c, GError **error_r)
 		return -1;
 	}
 
-	assert(max_fd >= 0);
+#if LIBCURL_VERSION_NUM >= 0x070f00
+	long timeout2;
+	mcode = curl_multi_timeout(c->multi, &timeout2);
+	if (mcode != CURLM_OK) {
+		g_warning("curl_multi_timeout() failed: %s\n",
+			  curl_multi_strerror(mcode));
+		return -1;
+	}
+
+	if (timeout2 >= 0) {
+		if (timeout2 > 10000)
+			timeout2 = 10000;
+
+		timeout.tv_sec = timeout2 / 1000;
+		timeout.tv_usec = (timeout2 % 1000) * 1000;
+	}
+#endif
 
 	ret = select(max_fd + 1, &rfds, &wfds, &efds, &timeout);
 	if (ret < 0)

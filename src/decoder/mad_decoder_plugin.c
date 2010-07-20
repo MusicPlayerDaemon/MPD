@@ -212,14 +212,14 @@ mp3_fill_buffer(struct mp3_data *data)
 
 #ifdef HAVE_ID3TAG
 /* Parse mp3 RVA2 frame. Shamelessly stolen from madplay. */
-static int parse_rva2(struct id3_tag * tag, struct replay_gain_info * replay_gain_info)
+static bool
+parse_rva2(struct id3_tag *tag, struct replay_gain_info *replay_gain_info)
 {
 	struct id3_frame const * frame;
 
 	id3_latin1_t const *id;
 	id3_byte_t const *data;
 	id3_length_t length;
-	int found;
 
 	enum {
 		CHANNEL_OTHER         = 0x00,
@@ -233,18 +233,18 @@ static int parse_rva2(struct id3_tag * tag, struct replay_gain_info * replay_gai
 		CHANNEL_SUBWOOFER     = 0x08
 	};
 
-	found = 0;
-
 	/* relative volume adjustment information */
 
 	frame = id3_tag_findframe(tag, "RVA2", 0);
-	if (!frame) return 0;
+	if (frame == NULL)
+		return false;
 
 	id   = id3_field_getlatin1(id3_frame_field(frame, 0));
 	data = id3_field_getbinarydata(id3_frame_field(frame, 1),
 					&length);
 
-	if (!id || !data) return 0;
+	if (id == NULL || data == NULL)
+		return false;
 
 	/*
 	 * "The 'identification' string is used to identify the
@@ -280,22 +280,21 @@ static int parse_rva2(struct id3_tag * tag, struct replay_gain_info * replay_gai
 
 			voladj_float  = (double) voladj_fixed / 512;
 
-			replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak = voladj_float;
-			replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak = voladj_float;
+			replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = voladj_float;
+			replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain = voladj_float;
 
 			g_debug("parseRVA2: Relative Volume "
 				"%+.1f dB adjustment (%s)\n",
 				voladj_float, id);
 
-			found = 1;
-			break;
+			return true;
 		}
 
 		data   += 4 + peak_bytes;
 		length -= 4 + peak_bytes;
 	}
 
-	return found;
+	return false;
 }
 #endif
 

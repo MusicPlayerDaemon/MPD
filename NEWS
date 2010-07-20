@@ -103,6 +103,15 @@ ver 0.16 (20??/??/??)
 * added libwrap support
 
 
+ver 0.15.12 (2010/07/20)
+* input:
+  - curl: remove assertion after curl_multi_fdset()
+* tags:
+  - rva2: set "gain", not "peak"
+* decoders:
+  - wildmidi: support version 0.2.3
+
+
 ver 0.15.11 (2010/06/14)
 * tags:
   - ape: support album artist
