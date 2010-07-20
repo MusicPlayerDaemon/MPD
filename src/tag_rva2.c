@@ -21,6 +21,7 @@
 #include "tag_rva2.h"
 #include "replay_gain_info.h"
 
+#include <stdint.h>
 #include <glib.h>
 #include <id3tag.h>
 
@@ -35,6 +36,40 @@ enum rva2_channel {
 	CHANNEL_BACK_CENTRE = 0x07,
 	CHANNEL_SUBWOOFER = 0x08
 };
+
+struct rva2_data {
+	uint8_t type;
+	uint8_t volume_adjustment[2];
+	uint8_t peak_bits;
+};
+
+static inline id3_length_t
+rva2_peak_bytes(const struct rva2_data *data)
+{
+	return (data->peak_bits + 7) / 8;
+}
+
+static inline int
+rva2_fixed_volume_adjustment(const struct rva2_data *data)
+{
+	signed int voladj_fixed;
+	voladj_fixed = (data->volume_adjustment[0] << 8) |
+		data->volume_adjustment[1];
+	voladj_fixed |= -(voladj_fixed & 0x8000);
+	return voladj_fixed;
+}
+
+static inline float
+rva2_float_volume_adjustment(const struct rva2_data *data)
+{
+	/*
+	 * "The volume adjustment is encoded as a fixed point decibel
+	 * value, 16 bit signed integer representing (adjustment*512),
+	 * giving +/- 64 dB with a precision of 0.001953125 dB."
+	 */
+
+	return (float)rva2_fixed_volume_adjustment(data) / (float)512;
+}
 
 bool
 tag_rva2_parse(struct id3_tag *tag, struct replay_gain_info *replay_gain_info)
@@ -70,27 +105,13 @@ tag_rva2_parse(struct id3_tag *tag, struct replay_gain_info *replay_gain_info)
 	 */
 
 	while (length >= 4) {
-		unsigned int peak_bytes;
-
-		peak_bytes = (data[3] + 7) / 8;
+		const struct rva2_data *d = (const struct rva2_data *)data;
+		unsigned int peak_bytes = rva2_peak_bytes(d);
 		if (4 + peak_bytes > length)
 			break;
 
-		if (data[0] == CHANNEL_MASTER_VOLUME) {
-			signed int voladj_fixed;
-			double voladj_float;
-
-			/*
-			 * "The volume adjustment is encoded as a fixed
-			 * point decibel value, 16 bit signed integer
-			 * representing (adjustment*512), giving +/- 64
-			 * dB with a precision of 0.001953125 dB."
-			 */
-
-			voladj_fixed  = (data[1] << 8) | (data[2] << 0);
-			voladj_fixed |= -(voladj_fixed & 0x8000);
-
-			voladj_float  = (double) voladj_fixed / 512;
+		if (d->type == CHANNEL_MASTER_VOLUME) {
+			double voladj_float = rva2_float_volume_adjustment(d);
 
 			replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = voladj_float;
 			replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain = voladj_float;
