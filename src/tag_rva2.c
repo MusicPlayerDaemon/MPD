@@ -71,6 +71,21 @@ rva2_float_volume_adjustment(const struct rva2_data *data)
 	return (float)rva2_fixed_volume_adjustment(data) / (float)512;
 }
 
+static inline bool
+rva2_apply_data(struct replay_gain_info *replay_gain_info,
+		const struct rva2_data *data)
+{
+	if (data->type != CHANNEL_MASTER_VOLUME)
+		return false;
+
+	float volume_adjustment = rva2_float_volume_adjustment(data);
+
+	replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = volume_adjustment;
+	replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain = volume_adjustment;
+
+	return true;
+}
+
 bool
 tag_rva2_parse(struct id3_tag *tag, struct replay_gain_info *replay_gain_info)
 {
@@ -110,18 +125,8 @@ tag_rva2_parse(struct id3_tag *tag, struct replay_gain_info *replay_gain_info)
 		if (4 + peak_bytes > length)
 			break;
 
-		if (d->type == CHANNEL_MASTER_VOLUME) {
-			double voladj_float = rva2_float_volume_adjustment(d);
-
-			replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = voladj_float;
-			replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain = voladj_float;
-
-			g_debug("parseRVA2: Relative Volume "
-				"%+.1f dB adjustment (%s)\n",
-				voladj_float, id);
-
+		if (rva2_apply_data(replay_gain_info, d))
 			return true;
-		}
 
 		data   += 4 + peak_bytes;
 		length -= 4 + peak_bytes;
