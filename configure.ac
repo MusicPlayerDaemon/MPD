@@ -950,6 +950,10 @@ if test x$enable_wildmidi = xyes; then
 	AC_CHECK_LIB(WildMidi, WildMidi_Init,,
 		AC_MSG_ERROR([libwildmidi not found]))
 
+	AC_CHECK_LIB(WildMidi, WildMidi_SampledSeek,
+		[AC_DEFINE(HAVE_WILDMIDI_SAMPLED_SEEK, 1,
+			[Defined if WildMidi_SampledSeek() is available (libwildmidi <= 0.2.2)])])
+
 	CFLAGS=$oldcflags
 	LIBS=$oldlibs
 	CPPFLAGS=$oldcppflags
