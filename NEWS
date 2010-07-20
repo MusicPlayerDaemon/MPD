@@ -1,4 +1,6 @@
 ver 0.15.12 (2010/??/??)
+* input:
+  - curl: remove assertion after curl_multi_fdset()
 * tags:
   - rva2: set "gain", not "peak"
 * decoders:

@@ -259,8 +259,6 @@ input_curl_select(struct input_curl *c)
 		return -1;
 	}
 
-	assert(max_fd >= 0);
-
 #if LIBCURL_VERSION_NUM >= 0x070f00
 	long timeout2;
 	mcode = curl_multi_timeout(c->multi, &timeout2);
