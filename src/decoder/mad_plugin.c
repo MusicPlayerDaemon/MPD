@@ -277,8 +277,8 @@ parse_rva2(struct id3_tag *tag, struct replay_gain_info *replay_gain_info)
 
 			voladj_float  = (double) voladj_fixed / 512;
 
-			replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak = voladj_float;
-			replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak = voladj_float;
+			replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = voladj_float;
+			replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain = voladj_float;
 
 			g_debug("parseRVA2: Relative Volume "
 				"%+.1f dB adjustment (%s)\n",
