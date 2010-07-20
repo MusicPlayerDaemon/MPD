@@ -25,19 +25,16 @@ replay_gain_tuple_scale(const struct replay_gain_tuple *tuple, float preamp, flo
 {
 	float scale;
 
-	if (replay_gain_tuple_defined(tuple))
-	{
-	    scale = pow(10.0, tuple->gain / 20.0);
-	    scale *= preamp;
-	    if (scale > 15.0)
-		    scale = 15.0;
+	if (replay_gain_tuple_defined(tuple)) {
+		scale = pow(10.0, tuple->gain / 20.0);
+		scale *= preamp;
+		if (scale > 15.0)
+			scale = 15.0;
 
-	    if (peak_limit)
-		if (scale * tuple->peak > 1.0)
+		if (peak_limit && scale * tuple->peak > 1.0)
 			scale = 1.0 / tuple->peak;
-	} else {
+	} else
 		scale = missing_preamp;
-	}
 
 	return scale;
 }
