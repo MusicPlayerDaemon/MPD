@@ -1,4 +1,4 @@
-ver 0.15.12 (2010/??/??)
+ver 0.15.12 (2010/07/20)
 * input:
   - curl: remove assertion after curl_multi_fdset()
 * tags:
