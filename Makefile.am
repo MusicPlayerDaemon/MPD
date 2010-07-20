@@ -198,6 +198,7 @@ mpd_headers = \
 	src/tag_table.h \
 	src/tag_ape.h \
 	src/tag_id3.h \
+	src/tag_rva2.h \
 	src/tag_print.h \
 	src/tag_save.h \
 	src/tokenizer.h \
@@ -405,6 +406,7 @@ TAG_SRC = \
 
 if HAVE_ID3TAG
 TAG_SRC += src/tag_id3.c \
+	src/tag_rva2.c \
 	src/riff.c src/aiff.c
 endif
 
