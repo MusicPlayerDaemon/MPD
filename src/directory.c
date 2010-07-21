@@ -42,6 +42,8 @@ directory_new(const char *path, struct directory *parent)
 	directory->parent = parent;
 	memcpy(directory->path, path, pathlen + 1);
 
+	playlist_vector_init(&directory->playlists);
+
 	return directory;
 }
 

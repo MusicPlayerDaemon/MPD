@@ -28,6 +28,7 @@
 #include "path.h"
 #include "decoder_list.h"
 #include "decoder_plugin.h"
+#include "playlist_list.h"
 #include "conf.h"
 
 #ifdef ENABLE_ARCHIVE
@@ -159,6 +160,8 @@ delete_name_in(struct directory *parent, const char *name)
 		delete_song(parent, song);
 		modified = true;
 	}
+
+	playlist_vector_remove(&parent->playlists, name);
 }
 
 /* passed to songvec_for_each */
@@ -244,6 +247,21 @@ directory_exists(const struct directory *directory)
 	return exists;
 }
 
+static bool
+directory_child_is_regular(const struct directory *directory,
+			   const char *name_utf8)
+{
+	char *path_fs = map_directory_child_fs(directory, name_utf8);
+	if (path_fs == NULL)
+		return false;
+
+	struct stat st;
+	bool is_regular = stat(path_fs, &st) == 0 && S_ISREG(st.st_mode);
+	g_free(path_fs);
+
+	return is_regular;
+}
+
 static void
 removeDeletedFromDirectory(struct directory *directory)
 {
@@ -260,6 +278,16 @@ removeDeletedFromDirectory(struct directory *directory)
 	}
 
 	songvec_for_each(&directory->songs, delete_song_if_removed, directory);
+
+	for (const struct playlist_metadata *pm = directory->playlists.head;
+	     pm != NULL;) {
+		const struct playlist_metadata *next = pm->next;
+
+		if (!directory_child_is_regular(directory, pm->name))
+			playlist_vector_remove(&directory->playlists, pm->name);
+
+		pm = next;
+	}
 }
 
 static int
@@ -574,6 +602,9 @@ update_regular_file(struct directory *directory,
 	} else if ((archive = archive_plugin_from_suffix(suffix))) {
 		update_archive_file(directory, name, st, archive);
 #endif
+
+	} else if (playlist_suffix_supported(suffix)) {
+		playlist_vector_add(&directory->playlists, name, st->st_mtime);
 	}
 }
 

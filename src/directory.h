@@ -23,6 +23,7 @@
 #include "check.h"
 #include "dirvec.h"
 #include "songvec.h"
+#include "playlist_vector.h"
 
 #include <stdbool.h>
 #include <sys/types.h>
@@ -35,6 +36,9 @@
 struct directory {
 	struct dirvec children;
 	struct songvec songs;
+
+	struct playlist_vector playlists;
+
 	struct directory *parent;
 	time_t mtime;
 	ino_t inode;

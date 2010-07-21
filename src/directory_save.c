@@ -23,6 +23,7 @@
 #include "song.h"
 #include "text_file.h"
 #include "song_save.h"
+#include "playlist_database.h"
 
 #include <assert.h>
 #include <string.h>
@@ -68,6 +69,8 @@ directory_save(FILE *fp, struct directory *directory)
 	}
 
 	songvec_save(fp, &directory->songs);
+
+	playlist_vector_save(fp, &directory->playlists);
 
 	if (!directory_is_root(directory))
 		fprintf(fp, DIRECTORY_END "%s\n",
@@ -168,6 +171,12 @@ directory_load(FILE *fp, struct directory *directory,
 				return false;
 
 			songvec_add(&directory->songs, song);
+		} else if (g_str_has_prefix(line, PLAYLIST_META_BEGIN)) {
+			const char *name = line + sizeof(PLAYLIST_META_BEGIN) - 1;
+
+			if (!playlist_metadata_load(fp, &directory->playlists,
+						    name, buffer, error))
+				return false;
 		} else {
 			g_set_error(error, directory_quark(), 0,
 				    "Malformed line: %s", line);

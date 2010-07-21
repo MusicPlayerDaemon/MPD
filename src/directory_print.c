@@ -23,7 +23,6 @@
 #include "client.h"
 #include "song_print.h"
 #include "mapper.h"
-#include "playlist_list.h"
 #include "decoder_list.h"
 #include "path.h"
 #include "uri.h"
@@ -61,36 +60,9 @@ static void
 directory_print_playlists(struct client *client,
 			  const struct directory *directory)
 {
-	char *path_fs = map_directory_fs(directory);
-	if (path_fs == NULL)
-		return;
-
-	DIR *dir = opendir(path_fs);
-	g_free(path_fs);
-	if (dir == NULL)
-		return;
-
-	struct dirent *ent;
-	while ((ent = readdir(dir))) {
-		char *name_utf8 = fs_charset_to_utf8(ent->d_name);
-		if (name_utf8 == NULL)
-			continue;
-
-		const char *suffix = uri_get_suffix(name_utf8);
-		if (suffix != NULL &&
-		    /* ignore files which are handled by a decoder for
-		       now, too expensive to probe them all, and most
-		       of them probably don't contain a playlist
-		       (e.g. FLAC files without embedded cue sheet) */
-		    decoder_plugin_from_suffix(suffix, NULL) == NULL &&
-		    playlist_suffix_supported(suffix))
-			print_playlist_in_directory(client, directory,
-						    name_utf8);
-
-		g_free(name_utf8);
-	}
-
-	closedir(dir);
+	for (const struct playlist_metadata *pm = directory->playlists.head;
+	     pm != NULL; pm = pm->next)
+		print_playlist_in_directory(client, directory, pm->name);
 }
 
 void
