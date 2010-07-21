@@ -29,7 +29,8 @@
 struct songvec;
 struct directory;
 
-void songvec_save(FILE *fp, struct songvec *sv);
+void
+songvec_save(FILE *fp, const struct songvec *sv);
 
 /**
  * Loads a song from the input file.  Reading stops after the

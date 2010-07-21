@@ -57,7 +57,7 @@ song_save(struct song *song, void *data)
 	return 0;
 }
 
-void songvec_save(FILE *fp, struct songvec *sv)
+void songvec_save(FILE *fp, const struct songvec *sv)
 {
 	songvec_for_each(sv, song_save, fp);
 }
