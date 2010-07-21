@@ -239,7 +239,6 @@ db_save(void)
 		return false;
 	}
 
-	/* block signals when writing the db so we don't get a corrupted db */
 	fprintf(fp, "%s\n", DIRECTORY_INFO_BEGIN);
 	fprintf(fp, DB_FORMAT_PREFIX "%u\n", DB_FORMAT);
 	fprintf(fp, "%s%s\n", DIRECTORY_MPD_VERSION, VERSION);
