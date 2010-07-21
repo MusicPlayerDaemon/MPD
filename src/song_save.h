@@ -22,7 +22,6 @@
 
 #include <glib.h>
 
-#include <stdbool.h>
 #include <stdio.h>
 
 #define SONG_BEGIN "song_begin: "
