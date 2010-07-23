@@ -110,6 +110,8 @@ gme_tag_dup(const char *path_fs)
 			tag_add_item(tag, TAG_TITLE, ti->song);
 		if(ti->author != NULL)
 			tag_add_item(tag, TAG_ARTIST, ti->author);
+		if(ti->game != NULL)
+			tag_add_item(tag, TAG_ALBUM, ti->game);
 		if(ti->comment != NULL)
 			tag_add_item(tag, TAG_COMMENT, ti->comment);
 		if(ti->copyright != NULL)
