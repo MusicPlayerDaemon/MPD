@@ -61,11 +61,8 @@ queue_print_uris(struct client *client, const struct queue *queue,
 	assert(end <= queue_length(queue));
 
 	for (unsigned i = start; i < end; ++i) {
-		const struct song *song = queue_get(queue, i);
-		char *uri = song_get_uri(song);
-
-		client_printf(client, "%i:%s\n", i, uri);
-		g_free(uri);
+		client_printf(client, "%i:", i);
+		song_print_uri(client, queue_get(queue, i));
 	}
 }
 
