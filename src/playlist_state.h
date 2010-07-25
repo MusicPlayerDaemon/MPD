@@ -25,6 +25,7 @@
 #ifndef PLAYLIST_STATE_H
 #define PLAYLIST_STATE_H
 
+#include <glib.h>
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -34,7 +35,8 @@ void
 playlist_state_save(FILE *fp, const struct playlist *playlist);
 
 bool
-playlist_state_restore(const char *line, FILE *fp, struct playlist *playlist);
+playlist_state_restore(const char *line, FILE *fp, GString *buffer,
+		       struct playlist *playlist);
 
 /**
  * Generates a hash number for the current state of the playlist and

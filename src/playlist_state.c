@@ -28,6 +28,7 @@
 #include "player_control.h"
 #include "queue_save.h"
 #include "path.h"
+#include "text_file.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -98,21 +99,21 @@ playlist_state_save(FILE *fp, const struct playlist *playlist)
 }
 
 static void
-playlist_state_load(FILE *fp, struct playlist *playlist, char *buffer)
+playlist_state_load(FILE *fp, GString *buffer, struct playlist *playlist)
 {
 	int song;
 
-	if (!fgets(buffer, PLAYLIST_BUFFER_SIZE, fp)) {
+	const char *line = read_text_line(fp, buffer);
+	if (line == NULL) {
 		g_warning("No playlist in state file");
 		return;
 	}
 
-	while (!g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_PLAYLIST_END)) {
-		g_strchomp(buffer);
+	while (!g_str_has_prefix(line, PLAYLIST_STATE_FILE_PLAYLIST_END)) {
+		song = queue_load_song(&playlist->queue, line);
 
-		song = queue_load_song(&playlist->queue, buffer);
-
-		if (!fgets(buffer, PLAYLIST_BUFFER_SIZE, fp)) {
+		line = read_text_line(fp, buffer);
+		if (line == NULL) {
 			g_warning("'" PLAYLIST_STATE_FILE_PLAYLIST_END
 				  "' not found in state file");
 			break;
@@ -123,12 +124,12 @@ playlist_state_load(FILE *fp, struct playlist *playlist, char *buffer)
 }
 
 bool
-playlist_state_restore(const char *line, FILE *fp, struct playlist *playlist)
+playlist_state_restore(const char *line, FILE *fp, GString *buffer,
+		       struct playlist *playlist)
 {
 	int current = -1;
 	int seek_time = 0;
 	int state = PLAYER_STATE_STOP;
-	char buffer[PLAYLIST_BUFFER_SIZE];
 	bool random_mode = false;
 
 	if (!g_str_has_prefix(line, PLAYLIST_STATE_FILE_STATE))
@@ -141,50 +142,48 @@ playlist_state_restore(const char *line, FILE *fp, struct playlist *playlist)
 	else if (strcmp(line, PLAYLIST_STATE_FILE_STATE_PAUSE) == 0)
 		state = PLAYER_STATE_PAUSE;
 
-	while (fgets(buffer, sizeof(buffer), fp)) {
-		g_strchomp(buffer);
-
-		if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_TIME)) {
+	while ((line = read_text_line(fp, buffer)) != NULL) {
+		if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_TIME)) {
 			seek_time =
-			    atoi(&(buffer[strlen(PLAYLIST_STATE_FILE_TIME)]));
-		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_REPEAT)) {
+			    atoi(&(line[strlen(PLAYLIST_STATE_FILE_TIME)]));
+		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_REPEAT)) {
 			if (strcmp
-			    (&(buffer[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
+			    (&(line[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
 			     "1") == 0) {
 				playlist_set_repeat(playlist, true);
 			} else
 				playlist_set_repeat(playlist, false);
-		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_SINGLE)) {
+		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_SINGLE)) {
 			if (strcmp
-			    (&(buffer[strlen(PLAYLIST_STATE_FILE_SINGLE)]),
+			    (&(line[strlen(PLAYLIST_STATE_FILE_SINGLE)]),
 			     "1") == 0) {
 				playlist_set_single(playlist, true);
 			} else
 				playlist_set_single(playlist, false);
-		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CONSUME)) {
+		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_CONSUME)) {
 			if (strcmp
-			    (&(buffer[strlen(PLAYLIST_STATE_FILE_CONSUME)]),
+			    (&(line[strlen(PLAYLIST_STATE_FILE_CONSUME)]),
 			     "1") == 0) {
 				playlist_set_consume(playlist, true);
 			} else
 				playlist_set_consume(playlist, false);
-		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CROSSFADE)) {
-			pc_set_cross_fade(atoi(buffer + strlen(PLAYLIST_STATE_FILE_CROSSFADE)));
-		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_MIXRAMPDB)) {
-			pc_set_mixramp_db(atof(buffer + strlen(PLAYLIST_STATE_FILE_MIXRAMPDB)));
-		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_MIXRAMPDELAY)) {
-			pc_set_mixramp_delay(atof(buffer + strlen(PLAYLIST_STATE_FILE_MIXRAMPDELAY)));
-		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_RANDOM)) {
+		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_CROSSFADE)) {
+			pc_set_cross_fade(atoi(line + strlen(PLAYLIST_STATE_FILE_CROSSFADE)));
+		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_MIXRAMPDB)) {
+			pc_set_mixramp_db(atof(line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDB)));
+		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_MIXRAMPDELAY)) {
+			pc_set_mixramp_delay(atof(line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDELAY)));
+		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_RANDOM)) {
 			random_mode =
-				strcmp(buffer + strlen(PLAYLIST_STATE_FILE_RANDOM),
+				strcmp(line + strlen(PLAYLIST_STATE_FILE_RANDOM),
 				       "1") == 0;
-		} else if (g_str_has_prefix(buffer, PLAYLIST_STATE_FILE_CURRENT)) {
-			current = atoi(&(buffer
+		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_CURRENT)) {
+			current = atoi(&(line
 					 [strlen
 					  (PLAYLIST_STATE_FILE_CURRENT)]));
-		} else if (g_str_has_prefix(buffer,
+		} else if (g_str_has_prefix(line,
 					    PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)) {
-			playlist_state_load(fp, playlist, buffer);
+			playlist_state_load(fp, buffer, playlist);
 		}
 	}
 

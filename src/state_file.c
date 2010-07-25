@@ -23,6 +23,7 @@
 #include "playlist.h"
 #include "playlist_state.h"
 #include "volume.h"
+#include "text_file.h"
 #include "glib_compat.h"
 
 #include <glib.h>
@@ -76,7 +77,6 @@ static void
 state_file_read(void)
 {
 	FILE *fp;
-	char line[1024];
 	bool success;
 
 	assert(state_file_path != NULL);
@@ -90,12 +90,12 @@ state_file_read(void)
 		return;
 	}
 
-	while (fgets(line, sizeof(line), fp) != NULL) {
-		g_strchomp(line);
-
+	GString *buffer = g_string_sized_new(1024);
+	const char *line;
+	while ((line = read_text_line(fp, buffer)) != NULL) {
 		success = read_sw_volume_state(line) ||
 			audio_output_state_read(line) ||
-			playlist_state_restore(line, fp, &g_playlist);
+			playlist_state_restore(line, fp, buffer, &g_playlist);
 		if (!success)
 			g_warning("Unrecognized line in state file: %s", line);
 	}
@@ -105,6 +105,9 @@ state_file_read(void)
 	prev_volume_version = sw_volume_state_get_hash();
 	prev_output_version = audio_output_state_get_version();
 	prev_playlist_version = playlist_state_get_hash(&g_playlist);
+
+
+	g_string_free(buffer, true);
 }
 
 /**
