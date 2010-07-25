@@ -81,7 +81,7 @@ song_load(FILE *fp, struct directory *parent, const char *uri,
 
 			g_set_error(error_r, song_save_quark(), 0,
 				    "unknown line in db: %s", line);
-			return false;
+			return NULL;
 		}
 
 		*colon++ = 0;
@@ -110,7 +110,7 @@ song_load(FILE *fp, struct directory *parent, const char *uri,
 
 			g_set_error(error_r, song_save_quark(), 0,
 				    "unknown line in db: %s", line);
-			return false;
+			return NULL;
 		}
 	}
 
