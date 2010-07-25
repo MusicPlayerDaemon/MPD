@@ -26,16 +26,20 @@
 
 #include <stdlib.h>
 
+static void
+queue_save_song(FILE *fp, int idx, const struct song *song)
+{
+	char *uri = song_get_uri(song);
+
+	fprintf(fp, "%i:%s\n", idx, uri);
+	g_free(uri);
+}
+
 void
 queue_save(FILE *fp, const struct queue *queue)
 {
-	for (unsigned i = 0; i < queue_length(queue); i++) {
-		const struct song *song = queue_get(queue, i);
-		char *uri = song_get_uri(song);
-
-		fprintf(fp, "%i:%s\n", i, uri);
-		g_free(uri);
-	}
+	for (unsigned i = 0; i < queue_length(queue); i++)
+		queue_save_song(fp, i, queue_get(queue, i));
 }
 
 static struct song *
