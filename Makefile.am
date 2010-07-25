@@ -1102,7 +1102,8 @@ endif
 
 doc/api/html/index.html: doc/doxygen.conf
 	@mkdir -p $(@D)
-	$(DOXYGEN) $<
+	[ "$(srcdir)" = "." ] || sed '/INPUT *=/ s/\([^ ]\+\/\)/$(subst /,\/,$(srcdir))\/\1/g' $(srcdir)/doc/doxygen.conf >doc/doxygen.conf
+	$(DOXYGEN) doc/doxygen.conf
 
 all-local: $(DOCBOOK_HTML) doc/api/html/index.html
 
