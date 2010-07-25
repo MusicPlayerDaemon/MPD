@@ -48,6 +48,11 @@ song_save(struct song *song, void *data)
 
 	fprintf(fp, SONG_BEGIN "%s\n", song->uri);
 
+	if (song->end_ms > 0)
+		fprintf(fp, "Range: %u-%u\n", song->start_ms, song->end_ms);
+	else if (song->start_ms > 0)
+		fprintf(fp, "Range: %u-\n", song->start_ms);
+
 	if (song->tag != NULL)
 		tag_save(fp, song->tag);
 
@@ -103,6 +108,12 @@ song_load(FILE *fp, struct directory *parent, const char *uri,
 			song->tag->time = atoi(value);
 		} else if (strcmp(line, SONG_MTIME) == 0) {
 			song->mtime = atoi(value);
+		} else if (strcmp(line, "Range") == 0) {
+			char *endptr;
+
+			song->start_ms = strtoul(value, &endptr, 10);
+			if (*endptr == '-')
+				song->end_ms = strtoul(endptr + 1, NULL, 10);
 		} else {
 			if (song->tag != NULL)
 				tag_end_add(song->tag);
