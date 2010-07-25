@@ -74,7 +74,6 @@
    fun:g_malloc
    fun:g_main_context_iterate
    fun:g_main_loop_run
-   fun:main
 }
 
 {
@@ -179,12 +178,21 @@
 {
    g_get_language_names
    Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_hash_table_resize
+   fun:g_hash_table_insert_internal
+   fun:g_get_language_names
+}
+
+{
+   g_get_language_names
+   Memcheck:Leak
    fun:malloc
    fun:g_malloc
    fun:g_slice_alloc
    fun:g_hash_table_new_full
    fun:g_get_language_names
-   fun:main
 }
 
 {
