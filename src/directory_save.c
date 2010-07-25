@@ -172,11 +172,18 @@ directory_load(FILE *fp, struct directory *directory,
 
 			songvec_add(&directory->songs, song);
 		} else if (g_str_has_prefix(line, PLAYLIST_META_BEGIN)) {
-			const char *name = line + sizeof(PLAYLIST_META_BEGIN) - 1;
+			/* duplicate the name, because
+			   playlist_metadata_load() will overwrite the
+			   buffer */
+			char *name = g_strdup(line + sizeof(PLAYLIST_META_BEGIN) - 1);
 
 			if (!playlist_metadata_load(fp, &directory->playlists,
-						    name, buffer, error))
+						    name, buffer, error)) {
+				g_free(name);
 				return false;
+			}
+
+			g_free(name);
 		} else {
 			g_set_error(error, directory_quark(), 0,
 				    "Malformed line: %s", line);
