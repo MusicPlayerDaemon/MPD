@@ -63,6 +63,8 @@ apply_song_metadata(struct song *dest, const struct song *src)
 			return dest;
 
 		tmp = song_file_new(path_fs, NULL);
+		g_free(path_fs);
+
 		merge_song_metadata(tmp, dest, src);
 	} else {
 		tmp = song_file_new(dest->uri, NULL);
