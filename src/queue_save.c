@@ -53,7 +53,7 @@ get_song(const char *uri)
 	return NULL;
 }
 
-int
+void
 queue_load_song(struct queue *queue, const char *line)
 {
 	long ret;
@@ -61,20 +61,19 @@ queue_load_song(struct queue *queue, const char *line)
 	struct song *song;
 
 	if (queue_is_full(queue))
-		return -1;
+		return;
 
 	ret = strtol(line, &endptr, 10);
 	if (ret < 0 || *endptr != ':' || endptr[1] == 0) {
 		g_warning("Malformed playlist line in state file");
-		return -1;
+		return;
 	}
 
 	line = endptr + 1;
 
 	song = get_song(line);
 	if (song == NULL)
-		return -1;
+		return;
 
 	queue_append(queue, song);
-	return ret;
 }

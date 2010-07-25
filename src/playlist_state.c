@@ -101,8 +101,6 @@ playlist_state_save(FILE *fp, const struct playlist *playlist)
 static void
 playlist_state_load(FILE *fp, GString *buffer, struct playlist *playlist)
 {
-	int song;
-
 	const char *line = read_text_line(fp, buffer);
 	if (line == NULL) {
 		g_warning("No playlist in state file");
@@ -110,7 +108,7 @@ playlist_state_load(FILE *fp, GString *buffer, struct playlist *playlist)
 	}
 
 	while (!g_str_has_prefix(line, PLAYLIST_STATE_FILE_PLAYLIST_END)) {
-		song = queue_load_song(&playlist->queue, line);
+		queue_load_song(&playlist->queue, line);
 
 		line = read_text_line(fp, buffer);
 		if (line == NULL) {

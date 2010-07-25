@@ -33,10 +33,9 @@ void
 queue_save(FILE *fp, const struct queue *queue);
 
 /**
- * Loads one song from the state file line and returns its number.
- * Returns -1 on failure.
+ * Loads one song from the state file and appends it to the queue.
  */
-int
+void
 queue_load_song(struct queue *queue, const char *line);
 
 #endif
