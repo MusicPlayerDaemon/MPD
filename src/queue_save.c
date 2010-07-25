@@ -45,16 +45,9 @@ queue_save(FILE *fp, const struct queue *queue)
 static struct song *
 get_song(const char *uri)
 {
-	struct song *song;
-
-	song = db_get_song(uri);
-	if (song != NULL)
-		return song;
-
-	if (uri_has_scheme(uri))
-		return song_remote_new(uri);
-
-	return NULL;
+	return uri_has_scheme(uri)
+		? song_remote_new(uri)
+		: db_get_song(uri);
 }
 
 void
