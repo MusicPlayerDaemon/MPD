@@ -25,6 +25,7 @@
 #include "tag_print.h"
 #include "client.h"
 #include "uri.h"
+#include "mapper.h"
 
 void
 song_print_uri(struct client *client, struct song *song)
@@ -40,7 +41,8 @@ song_print_uri(struct client *client, struct song *song)
 		if (uri == NULL)
 			uri = song->uri;
 
-		client_printf(client, "%s%s\n", SONG_FILE, uri);
+		client_printf(client, "%s%s\n", SONG_FILE,
+			      map_to_relative_path(uri));
 
 		g_free(allocated);
 	}

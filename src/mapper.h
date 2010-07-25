@@ -42,6 +42,14 @@ bool
 mapper_has_music_directory(void);
 
 /**
+ * If the specified absolute path points inside the music directory,
+ * this function converts it to a relative path.  If not, it returns
+ * the unmodified string pointer.
+ */
+const char *
+map_to_relative_path(const char *path_utf8);
+
+/**
  * Determines the absolute file system path of a relative URI.  This
  * is basically done by converting the URI to the file system charset
  * and prepending the music directory.

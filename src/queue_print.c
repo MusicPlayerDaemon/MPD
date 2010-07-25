@@ -24,6 +24,7 @@
 #include "song_print.h"
 #include "locate.h"
 #include "client.h"
+#include "mapper.h"
 
 /**
  * Send detailed information about a range of songs in the queue to a

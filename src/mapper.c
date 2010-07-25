@@ -93,6 +93,16 @@ mapper_has_music_directory(void)
 	return music_dir != NULL;
 }
 
+const char *
+map_to_relative_path(const char *path_utf8)
+{
+	return music_dir != NULL &&
+		memcmp(path_utf8, music_dir, music_dir_length) == 0 &&
+		G_IS_DIR_SEPARATOR(path_utf8[music_dir_length])
+		? path_utf8 + music_dir_length + 1
+		: path_utf8;
+}
+
 char *
 map_uri_fs(const char *uri)
 {
