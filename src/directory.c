@@ -50,6 +50,8 @@ directory_new(const char *path, struct directory *parent)
 void
 directory_free(struct directory *directory)
 {
+	playlist_vector_deinit(&directory->playlists);
+
 	for (unsigned i = 0; i < directory->songs.nr; ++i)
 		song_free(directory->songs.base[i]);
 
