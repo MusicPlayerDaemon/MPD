@@ -1113,9 +1113,11 @@ clean-local:
 
 install-data-local: doc/api/html/index.html
 	$(mkinstalldirs) $(DESTDIR)$(docdir)/api/html
-	$(INSTALL_DATA) -c -m 644 doc/api/html/*.html doc/api/html/*.css \
-		doc/api/html/*.png doc/api/html/*.gif \
+	$(INSTALL_DATA) -c -m 644 doc/api/html/*.* \
 		$(DESTDIR)$(docdir)/api/html
+
+uninstall-local:
+	rm -f $(DESTDIR)$(docdir)/api/html/*.*
 
 upload: $(DOCBOOK_HTML) doc/api/html/index.html
 	rsync -vpruz --delete doc/ cirrus@www.musicpd.org:/var/www/musicpd.org/www/doc/ \
