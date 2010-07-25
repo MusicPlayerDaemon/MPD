@@ -255,11 +255,11 @@ db_save(void)
 	if (ferror(fp)) {
 		g_warning("Failed to write to database file: %s",
 			  strerror(errno));
-		while (fclose(fp) && errno == EINTR);
+		fclose(fp);
 		return false;
 	}
 
-	while (fclose(fp) && errno == EINTR);
+	fclose(fp);
 
 	if (stat(database_path, &st) == 0)
 		database_mtime = st.st_mtime;
@@ -282,7 +282,7 @@ db_load(GError **error)
 	assert(database_path != NULL);
 	assert(music_root != NULL);
 
-	while (!(fp = fopen(database_path, "r")) && errno == EINTR) ;
+	fp = fopen(database_path, "r");
 	if (fp == NULL) {
 		g_set_error(error, db_quark(), errno,
 			    "Failed to open database file \"%s\": %s",
@@ -383,7 +383,7 @@ db_load(GError **error)
 
 	success = directory_load(fp, music_root, buffer, error);
 	g_string_free(buffer, true);
-	while (fclose(fp) && errno == EINTR) ;
+	fclose(fp);
 
 	if (!success)
 		return false;

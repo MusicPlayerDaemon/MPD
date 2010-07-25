@@ -66,7 +66,7 @@ void initSigHandlers(void)
 	sa.sa_flags = 0;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = SIG_IGN;
-	while (sigaction(SIGPIPE, &sa, NULL) < 0 && errno == EINTR) ;
+	x_sigaction(SIGPIPE, &sa);
 
 	sa.sa_handler = exit_signal_handler;
 	x_sigaction(SIGINT, &sa);

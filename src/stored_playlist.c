@@ -160,7 +160,7 @@ spl_save(GPtrArray *list, const char *utf8path)
 	if (path_fs == NULL)
 		return PLAYLIST_RESULT_BAD_NAME;
 
-	while (!(file = fopen(path_fs, "w")) && errno == EINTR);
+	file = fopen(path_fs, "w");
 	g_free(path_fs);
 	if (file == NULL)
 		return PLAYLIST_RESULT_ERRNO;
@@ -170,7 +170,7 @@ spl_save(GPtrArray *list, const char *utf8path)
 		playlist_print_uri(file, uri);
 	}
 
-	while (fclose(file) != 0 && errno == EINTR);
+	fclose(file);
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
@@ -189,7 +189,7 @@ spl_load(const char *utf8path)
 	if (path_fs == NULL)
 		return NULL;
 
-	while (!(file = fopen(path_fs, "r")) && errno == EINTR);
+	file = fopen(path_fs, "r");
 	g_free(path_fs);
 	if (file == NULL)
 		return NULL;
@@ -227,7 +227,7 @@ spl_load(const char *utf8path)
 			break;
 	}
 
-	while (fclose(file) && errno == EINTR);
+	fclose(file);
 	return list;
 }
 
@@ -313,12 +313,12 @@ spl_clear(const char *utf8path)
 	if (path_fs == NULL)
 		return PLAYLIST_RESULT_BAD_NAME;
 
-	while (!(file = fopen(path_fs, "w")) && errno == EINTR);
+	file = fopen(path_fs, "w");
 	g_free(path_fs);
 	if (file == NULL)
 		return PLAYLIST_RESULT_ERRNO;
 
-	while (fclose(file) != 0 && errno == EINTR);
+	fclose(file);
 
 	idle_add(IDLE_STORED_PLAYLIST);
 	return PLAYLIST_RESULT_SUCCESS;
@@ -393,26 +393,26 @@ spl_append_song(const char *utf8path, struct song *song)
 	if (path_fs == NULL)
 		return PLAYLIST_RESULT_BAD_NAME;
 
-	while (!(file = fopen(path_fs, "a")) && errno == EINTR);
+	file = fopen(path_fs, "a");
 	g_free(path_fs);
 	if (file == NULL)
 		return PLAYLIST_RESULT_ERRNO;
 
 	if (fstat(fileno(file), &st) < 0) {
 		int save_errno = errno;
-		while (fclose(file) != 0 && errno == EINTR);
+		fclose(file);
 		errno = save_errno;
 		return PLAYLIST_RESULT_ERRNO;
 	}
 
 	if (st.st_size / (MPD_PATH_MAX + 1) >= (off_t)playlist_max_length) {
-		while (fclose(file) != 0 && errno == EINTR);
+		fclose(file);
 		return PLAYLIST_RESULT_TOO_LARGE;
 	}
 
 	playlist_print_song(file, song);
 
-	while (fclose(file) != 0 && errno == EINTR);
+	fclose(file);
 
 	idle_add(IDLE_STORED_PLAYLIST);
 	return PLAYLIST_RESULT_SUCCESS;

@@ -65,7 +65,7 @@ state_file_write(void)
 	audio_output_state_save(fp);
 	playlist_state_save(fp, &g_playlist);
 
-	while(fclose(fp) && errno == EINTR) /* nothing */;
+	fclose(fp);
 
 	prev_volume_version = sw_volume_state_get_hash();
 	prev_output_version = audio_output_state_get_version();
@@ -100,7 +100,7 @@ state_file_read(void)
 			g_warning("Unrecognized line in state file: %s", line);
 	}
 
-	while(fclose(fp) && errno == EINTR) /* nothing */;
+	fclose(fp);
 
 	prev_volume_version = sw_volume_state_get_hash();
 	prev_output_version = audio_output_state_get_version();

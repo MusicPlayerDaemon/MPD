@@ -202,7 +202,7 @@ static void
 oss_close(struct oss_data *od)
 {
 	if (od->fd >= 0)
-		while (close(od->fd) && errno == EINTR) ;
+		close(od->fd);
 	od->fd = -1;
 }
 
