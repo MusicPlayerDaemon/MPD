@@ -41,11 +41,9 @@ song_save_quark(void)
 	return g_quark_from_static_string("song_save");
 }
 
-static int
-song_save(struct song *song, void *data)
+void
+song_save(FILE *fp, const struct song *song)
 {
-	FILE *fp = data;
-
 	fprintf(fp, SONG_BEGIN "%s\n", song->uri);
 
 	if (song->end_ms > 0)
@@ -58,20 +56,28 @@ song_save(struct song *song, void *data)
 
 	fprintf(fp, SONG_MTIME ": %li\n", (long)song->mtime);
 	fprintf(fp, SONG_END "\n");
+}
 
+static int
+song_save_callback(struct song *song, void *data)
+{
+	FILE *fp = data;
+	song_save(fp, song);
 	return 0;
 }
 
 void songvec_save(FILE *fp, const struct songvec *sv)
 {
-	songvec_for_each(sv, song_save, fp);
+	songvec_for_each(sv, song_save_callback, fp);
 }
 
 struct song *
 song_load(FILE *fp, struct directory *parent, const char *uri,
 	  GString *buffer, GError **error_r)
 {
-	struct song *song = song_file_new(uri, parent);
+	struct song *song = parent != NULL
+		? song_file_new(uri, parent)
+		: song_remote_new(uri);
 	char *line, *colon;
 	enum tag_type type;
 	const char *value;

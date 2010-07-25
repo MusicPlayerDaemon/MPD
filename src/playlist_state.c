@@ -108,7 +108,7 @@ playlist_state_load(FILE *fp, GString *buffer, struct playlist *playlist)
 	}
 
 	while (!g_str_has_prefix(line, PLAYLIST_STATE_FILE_PLAYLIST_END)) {
-		queue_load_song(&playlist->queue, line);
+		queue_load_song(fp, buffer, line, &playlist->queue);
 
 		line = read_text_line(fp, buffer);
 		if (line == NULL) {

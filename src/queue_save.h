@@ -25,6 +25,7 @@
 #ifndef QUEUE_SAVE_H
 #define QUEUE_SAVE_H
 
+#include <glib.h>
 #include <stdio.h>
 
 struct queue;
@@ -36,6 +37,7 @@ queue_save(FILE *fp, const struct queue *queue);
  * Loads one song from the state file and appends it to the queue.
  */
 void
-queue_load_song(struct queue *queue, const char *line);
+queue_load_song(FILE *fp, GString *buffer, const char *line,
+		struct queue *queue);
 
 #endif

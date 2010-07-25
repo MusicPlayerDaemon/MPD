@@ -23,16 +23,32 @@
 #include "song.h"
 #include "uri.h"
 #include "database.h"
+#include "song_save.h"
 
 #include <stdlib.h>
 
 static void
-queue_save_song(FILE *fp, int idx, const struct song *song)
+queue_save_database_song(FILE *fp, int idx, const struct song *song)
 {
 	char *uri = song_get_uri(song);
 
 	fprintf(fp, "%i:%s\n", idx, uri);
 	g_free(uri);
+}
+
+static void
+queue_save_full_song(FILE *fp, const struct song *song)
+{
+	song_save(fp, song);
+}
+
+static void
+queue_save_song(FILE *fp, int idx, const struct song *song)
+{
+	if (song_in_database(song))
+		queue_save_database_song(fp, idx, song);
+	else
+		queue_save_full_song(fp, song);
 }
 
 void
@@ -51,26 +67,40 @@ get_song(const char *uri)
 }
 
 void
-queue_load_song(struct queue *queue, const char *line)
+queue_load_song(FILE *fp, GString *buffer, const char *line,
+		struct queue *queue)
 {
-	long ret;
-	char *endptr;
 	struct song *song;
 
 	if (queue_is_full(queue))
 		return;
 
-	ret = strtol(line, &endptr, 10);
-	if (ret < 0 || *endptr != ':' || endptr[1] == 0) {
-		g_warning("Malformed playlist line in state file");
-		return;
+	if (g_str_has_prefix(line, SONG_BEGIN)) {
+		const char *uri = line + sizeof(SONG_BEGIN) - 1;
+		if (!uri_has_scheme(uri) && !g_path_is_absolute(uri))
+			return;
+
+		GError *error = NULL;
+		song = song_load(fp, NULL, uri, buffer, &error);
+		if (song == NULL) {
+			g_warning("%s", error->message);
+			g_error_free(error);
+			return;
+		}
+	} else {
+		char *endptr;
+		long ret = strtol(line, &endptr, 10);
+		if (ret < 0 || *endptr != ':' || endptr[1] == 0) {
+			g_warning("Malformed playlist line in state file");
+			return;
+		}
+
+		line = endptr + 1;
+
+		song = get_song(line);
+		if (song == NULL)
+			return;
 	}
-
-	line = endptr + 1;
-
-	song = get_song(line);
-	if (song == NULL)
-		return;
 
 	queue_append(queue, song);
 }

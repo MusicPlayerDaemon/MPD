@@ -26,8 +26,12 @@
 
 #define SONG_BEGIN "song_begin: "
 
+struct song;
 struct songvec;
 struct directory;
+
+void
+song_save(FILE *fp, const struct song *song);
 
 void
 songvec_save(FILE *fp, const struct songvec *sv);
