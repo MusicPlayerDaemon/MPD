@@ -58,47 +58,43 @@ playlist_state_save(FILE *fp, const struct playlist *playlist)
 
 	pc_get_status(&player_status);
 
-	fprintf(fp, "%s", PLAYLIST_STATE_FILE_STATE);
+	fputs(PLAYLIST_STATE_FILE_STATE "\n", fp);
 
 	if (playlist->playing) {
 		switch (player_status.state) {
 		case PLAYER_STATE_PAUSE:
-			fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_PAUSE);
+			fputs(PLAYLIST_STATE_FILE_STATE_PAUSE "\n", fp);
 			break;
 		default:
-			fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_PLAY);
+			fputs(PLAYLIST_STATE_FILE_STATE_PLAY "\n", fp);
 		}
-		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CURRENT,
+		fprintf(fp, PLAYLIST_STATE_FILE_CURRENT "%i\n",
 			queue_order_to_position(&playlist->queue,
 						playlist->current));
-		fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_TIME,
+		fprintf(fp, PLAYLIST_STATE_FILE_TIME "%i\n",
 			(int)player_status.elapsed_time);
 	} else {
-		fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_STATE_STOP);
+		fputs(PLAYLIST_STATE_FILE_STATE_STOP "\n", fp);
 
 		if (playlist->current >= 0)
-			fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CURRENT,
+			fprintf(fp, PLAYLIST_STATE_FILE_CURRENT "%i\n",
 				queue_order_to_position(&playlist->queue,
 							playlist->current));
 	}
 
-	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_RANDOM,
-		playlist->queue.random);
-	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_REPEAT,
-		playlist->queue.repeat);
-	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_SINGLE,
-		playlist->queue.single);
-	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CONSUME,
+	fprintf(fp, PLAYLIST_STATE_FILE_RANDOM "%i\n", playlist->queue.random);
+	fprintf(fp, PLAYLIST_STATE_FILE_REPEAT "%i\n", playlist->queue.repeat);
+	fprintf(fp, PLAYLIST_STATE_FILE_SINGLE "%i\n", playlist->queue.single);
+	fprintf(fp, PLAYLIST_STATE_FILE_CONSUME "%i\n",
 		playlist->queue.consume);
-	fprintf(fp, "%s%i\n", PLAYLIST_STATE_FILE_CROSSFADE,
+	fprintf(fp, PLAYLIST_STATE_FILE_CROSSFADE "%i\n",
 		(int)(pc_get_cross_fade()));
-	fprintf(fp, "%s%f\n", PLAYLIST_STATE_FILE_MIXRAMPDB,
-		pc_get_mixramp_db());
-	fprintf(fp, "%s%f\n", PLAYLIST_STATE_FILE_MIXRAMPDELAY,
+	fprintf(fp, PLAYLIST_STATE_FILE_MIXRAMPDB "%f\n", pc_get_mixramp_db());
+	fprintf(fp, PLAYLIST_STATE_FILE_MIXRAMPDELAY "%f\n",
 		pc_get_mixramp_delay());
-	fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_BEGIN);
+	fputs(PLAYLIST_STATE_FILE_PLAYLIST_BEGIN "\n", fp);
 	queue_save(fp, &playlist->queue);
-	fprintf(fp, "%s\n", PLAYLIST_STATE_FILE_PLAYLIST_END);
+	fputs(PLAYLIST_STATE_FILE_PLAYLIST_END "\n", fp);
 }
 
 static void
@@ -117,8 +113,8 @@ playlist_state_load(FILE *fp, struct playlist *playlist, char *buffer)
 		song = queue_load_song(&playlist->queue, buffer);
 
 		if (!fgets(buffer, PLAYLIST_BUFFER_SIZE, fp)) {
-			g_warning("'%s' not found in state file",
-				  PLAYLIST_STATE_FILE_PLAYLIST_END);
+			g_warning("'" PLAYLIST_STATE_FILE_PLAYLIST_END
+				  "' not found in state file");
 			break;
 		}
 	}
