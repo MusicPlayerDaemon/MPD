@@ -104,6 +104,16 @@ fd_set_nonblock(int fd)
 }
 
 int
+dup_cloexec(int oldfd)
+{
+	int newfd = dup(oldfd);
+	if (newfd >= 0)
+		fd_set_nonblock(newfd);
+
+	return newfd;
+}
+
+int
 open_cloexec(const char *path_fs, int flags, int mode)
 {
 	int fd;

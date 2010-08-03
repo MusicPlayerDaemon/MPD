@@ -50,6 +50,13 @@
 struct sockaddr;
 
 /**
+ * Wrapper for dup(), which sets the CLOEXEC flag on the new
+ * descriptor.
+ */
+int
+dup_cloexec(int oldfd);
+
+/**
  * Wrapper for open(), which sets the CLOEXEC flag (atomically if
  * supported by the OS).
  */
