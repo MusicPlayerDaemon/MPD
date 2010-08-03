@@ -39,6 +39,14 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#ifndef WIN32
+#if !defined(_GNU_SOURCE) && (defined(HAVE_PIPE2) || defined(HAVE_ACCEPT4))
+#define _GNU_SOURCE
+#endif
+
+#include <sys/types.h>
+#endif
+
 struct sockaddr;
 
 /**
@@ -90,6 +98,20 @@ socket_cloexec_nonblock(int domain, int type, int protocol);
 int
 accept_cloexec_nonblock(int fd, struct sockaddr *address,
 			size_t *address_length_r);
+
+
+#ifndef WIN32
+
+struct msghdr;
+
+/**
+ * Wrapper for recvmsg(), which sets the CLOEXEC flag (atomically if
+ * supported by the OS).
+ */
+ssize_t
+recvmsg_cloexec(int sockfd, struct msghdr *msg, int flags);
+
+#endif
 
 /**
  * Wrapper for inotify_init(), which sets the CLOEXEC flag (atomically

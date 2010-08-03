@@ -246,6 +246,33 @@ accept_cloexec_nonblock(int fd, struct sockaddr *address,
 	return ret;
 }
 
+#ifndef WIN32
+
+ssize_t
+recvmsg_cloexec(int sockfd, struct msghdr *msg, int flags)
+{
+#ifdef MSG_CMSG_CLOEXEC
+	flags |= MSG_CMSG_CLOEXEC;
+#endif
+
+	ssize_t result = recvmsg(sockfd, msg, flags);
+	if (result >= 0) {
+		struct cmsghdr *cmsg = CMSG_FIRSTHDR(msg);
+		while (cmsg != NULL) {
+			if (cmsg->cmsg_type == SCM_RIGHTS) {
+				int fd = *(const int *)CMSG_DATA(cmsg);
+				fd_set_cloexec(fd, true);
+			}
+
+			cmsg = CMSG_NXTHDR(msg, cmsg);
+		}
+	}
+
+	return result;
+}
+
+#endif
+
 #ifdef HAVE_INOTIFY_INIT
 
 int
