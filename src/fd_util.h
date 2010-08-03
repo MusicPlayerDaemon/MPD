@@ -65,6 +65,17 @@ pipe_cloexec(int fd[2]);
 int
 pipe_cloexec_nonblock(int fd[2]);
 
+#ifndef WIN32
+
+/**
+ * Wrapper for socketpair(), which sets the CLOEXEC flag (atomically
+ * if supported by the OS).
+ */
+int
+socketpair_cloexec(int domain, int type, int protocol, int sv[2]);
+
+#endif
+
 /**
  * Wrapper for socket(), which sets the CLOEXEC and the NONBLOCK flag
  * (atomically if supported by the OS).

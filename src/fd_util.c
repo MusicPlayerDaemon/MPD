@@ -174,6 +174,30 @@ pipe_cloexec_nonblock(int fd[2])
 #endif
 }
 
+#ifndef WIN32
+
+int
+socketpair_cloexec(int domain, int type, int protocol, int sv[2])
+{
+	int ret;
+
+#ifdef SOCK_CLOEXEC
+	ret = socketpair(domain, type | SOCK_CLOEXEC, protocol, sv);
+	if (ret >= 0 || errno != EINVAL)
+		return ret;
+#endif
+
+	ret = socketpair(domain, type, protocol, sv);
+	if (ret >= 0) {
+		fd_set_cloexec(sv[0], true);
+		fd_set_cloexec(sv[1], true);
+	}
+
+	return ret;
+}
+
+#endif
+
 int
 socket_cloexec_nonblock(int domain, int type, int protocol)
 {
