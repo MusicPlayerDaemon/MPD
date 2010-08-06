@@ -52,6 +52,14 @@ struct httpd_output {
 	struct encoder *encoder;
 
 	/**
+	 * Number of bytes which were fed into the encoder, without
+	 * ever receiving new output.  This is used to estimate
+	 * whether MPD should manually flush the encoder, to avoid
+	 * buffer underruns in the client.
+	 */
+	size_t unflushed_input;
+
+	/**
 	 * The MIME type produced by the #encoder.
 	 */
 	const char *content_type;

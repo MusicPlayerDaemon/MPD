@@ -262,11 +262,21 @@ httpd_output_read_page(struct httpd_output *httpd)
 {
 	size_t size = 0, nbytes;
 
+	if (httpd->unflushed_input >= 65536) {
+		/* we have fed a lot of input into the encoder, but it
+		   didn't give anything back yet - flush now to avoid
+		   buffer underruns */
+		encoder_flush(httpd->encoder, NULL);
+		httpd->unflushed_input = 0;
+	}
+
 	do {
 		nbytes = encoder_read(httpd->encoder, httpd->buffer + size,
 				      sizeof(httpd->buffer) - size);
 		if (nbytes == 0)
 			break;
+
+		httpd->unflushed_input = 0;
 
 		size += nbytes;
 	} while (size < sizeof(httpd->buffer));
@@ -292,6 +302,9 @@ httpd_output_encoder_open(struct httpd_output *httpd,
 	   bytes of encoder output after opening it, because it has to
 	   be sent to every new client */
 	httpd->header = httpd_output_read_page(httpd);
+
+	httpd->unflushed_input = 0;
+
 	return true;
 }
 
@@ -450,6 +463,8 @@ httpd_output_encode_and_play(struct httpd_output *httpd,
 	success = encoder_write(httpd->encoder, chunk, size, error);
 	if (!success)
 		return false;
+
+	httpd->unflushed_input += size;
 
 	httpd_output_encoder_to_clients(httpd);
 
