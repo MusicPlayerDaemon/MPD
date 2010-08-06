@@ -499,6 +499,24 @@ httpd_output_play(void *data, const void *chunk, size_t size, GError **error)
 	return size;
 }
 
+static bool
+httpd_output_pause(void *data)
+{
+	struct httpd_output *httpd = data;
+
+	g_mutex_lock(httpd->mutex);
+	bool has_clients = httpd->clients != NULL;
+	g_mutex_unlock(httpd->mutex);
+
+	if (has_clients) {
+		static const char silence[1020];
+		return httpd_output_play(data, silence, sizeof(silence), NULL);
+	} else {
+		g_usleep(100000);
+		return true;
+	}
+}
+
 static void
 httpd_send_metadata(gpointer data, gpointer user_data)
 {
@@ -587,5 +605,6 @@ const struct audio_output_plugin httpd_output_plugin = {
 	.close = httpd_output_close,
 	.send_tag = httpd_output_tag,
 	.play = httpd_output_play,
+	.pause = httpd_output_pause,
 	.cancel = httpd_output_cancel,
 };
