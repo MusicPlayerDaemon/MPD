@@ -241,6 +241,12 @@
                 </para>
               </listitem>
               <listitem>
+                <para>
+                  <varname>random</varname>:
+                  <returnvalue>0 or 1</returnvalue>
+                </para>
+              </listitem>
+              <listitem>
                <para>
                 <varname>single</varname>:
                 <footnote id="since_0_15"><simpara>Introduced with MPD 0.15</simpara></footnote>
