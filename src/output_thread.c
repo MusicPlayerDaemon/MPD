@@ -268,6 +268,16 @@ static gpointer audio_output_task(gpointer arg)
 			ao->chunk = NULL;
 			if (ao->open)
 				ao_plugin_cancel(ao->plugin, ao->data);
+
+			/* we must clear the notification now, because
+			   the notify_wait() call below must wait
+			   until audio_output_all_cancel() has cleared
+			   the pipe; if another notification happens
+			   to be still pending, we get a race
+			   condition with a crash or an assertion
+			   failure */
+			notify_clear(&ao->notify);
+
 			ao_command_finished(ao);
 
 			/* the player thread will now clear our music
