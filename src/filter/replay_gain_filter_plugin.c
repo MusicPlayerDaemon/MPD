@@ -55,8 +55,16 @@ struct replay_gain_filter {
 	struct replay_gain_info info;
 
 	/**
-	 * The current volume, between 0 and #PCM_VOLUME_1 (both
-	 * including).
+	 * The current volume, between 0 and a value that may or may not exceed
+	 * #PCM_VOLUME_1.
+	 *
+	 * If the default value of true is used for replaygain_limit, the
+	 * application of the volume to the signal will never cause clipping.
+	 *
+	 * On the other hand, if the user has set replaygain_limit to false,
+	 * the chance of clipping is explicitly preferred if that's required to
+	 * maintain a consistent audio level. Whether clipping will actually
+	 * occur depends on what value the user is using for replaygain_preamp.
 	 */
 	unsigned volume;
 
@@ -171,7 +179,7 @@ replay_gain_filter_filter(struct filter *_filter,
 
 	*dest_size_r = src_size;
 
-	if (filter->volume >= PCM_VOLUME_1)
+	if (filter->volume == PCM_VOLUME_1)
 		/* optimized special case: 100% volume = no-op */
 		return src;
 
