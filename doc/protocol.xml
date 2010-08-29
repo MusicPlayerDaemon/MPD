@@ -1214,16 +1214,18 @@ OK
               <command>find</command>
               <arg choice="req"><replaceable>TYPE</replaceable></arg>
               <arg choice="req"><replaceable>WHAT</replaceable></arg>
+              <arg choice="opt"><replaceable>...</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
               Finds songs in the db that are exactly
-              <varname>WHAT</varname>.  <varname>TYPE</varname> should
-              be <parameter>album</parameter>,
-              <parameter>artist</parameter>, or
-              <parameter>title</parameter>.  <varname>WHAT</varname>
-              is what to find.
+              <varname>WHAT</varname>.  <varname>TYPE</varname> can
+              be any tag supported by MPD, or one of the two special
+              parameters — <parameter>file</parameter> to search by
+              full path (relative to database root), and
+              <parameter>any</parameter> to match against all
+              available tags.  <varname>WHAT</varname> is what to find.
             </para>
           </listitem>
         </varlistentry>
@@ -1233,14 +1235,14 @@ OK
               <command>findadd</command>
               <arg choice="req"><replaceable>TYPE</replaceable></arg>
               <arg choice="req"><replaceable>WHAT</replaceable></arg>
+              <arg choice="opt"><replaceable>...</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
               Finds songs in the db that are exactly
               <varname>WHAT</varname> and adds them to current playlist.
-              <varname>TYPE</varname> can be any tag supported by MPD.
-              <varname>WHAT</varname> is what to find.
+              Parameters have the same meaning as for <command>find</command>.
             </para>
           </listitem>
         </varlistentry>
@@ -1255,7 +1257,8 @@ OK
           <listitem>
             <para>
               Lists all tags of the specified type.
-              <varname>TYPE</varname> should be album or artist.
+              <varname>TYPE</varname> can be any tag supported by MPD or
+              <parameter>file</parameter>.
             </para>
             <para>
               <varname>ARTIST</varname> is an optional parameter when
@@ -1318,17 +1321,15 @@ OK
               <command>search</command>
               <arg choice="req"><replaceable>TYPE</replaceable></arg>
               <arg choice="req"><replaceable>WHAT</replaceable></arg>
+              <arg choice="opt"><replaceable>...</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
               Searches for any song that contains
-              <varname>WHAT</varname>.  <varname>TYPE</varname> can be
-              <parameter>title</parameter>,
-              <parameter>artist</parameter>,
-              <parameter>album</parameter> or
-              <parameter>filename</parameter>.  Search is not case
-              sensitive.
+              <varname>WHAT</varname>. Parameters have the same meaning
+              as for <command>find</command>, except that search is not
+              case sensitive.
             </para>
           </listitem>
         </varlistentry>
