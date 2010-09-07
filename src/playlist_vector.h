@@ -58,7 +58,10 @@ void
 playlist_vector_add(struct playlist_vector *pv,
 		    const char *name, time_t mtime);
 
-void
+/**
+ * @return true if the vector or one of its items was modified
+ */
+bool
 playlist_vector_update_or_add(struct playlist_vector *pv,
 			      const char *name, time_t mtime);
 

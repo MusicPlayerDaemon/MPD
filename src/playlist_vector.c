@@ -93,16 +93,21 @@ playlist_vector_add(struct playlist_vector *pv,
 	pv->head = pm;
 }
 
-void
+bool
 playlist_vector_update_or_add(struct playlist_vector *pv,
 			      const char *name, time_t mtime)
 {
 	struct playlist_metadata **pmp = playlist_vector_find_p(pv, name);
 	if (pmp != NULL) {
 		struct playlist_metadata *pm = *pmp;
+		if (mtime == pm->mtime)
+			return false;
+
 		pm->mtime = mtime;
 	} else
 		playlist_vector_add(pv, name, mtime);
+
+	return true;
 }
 
 bool
