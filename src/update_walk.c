@@ -604,7 +604,9 @@ update_regular_file(struct directory *directory,
 #endif
 
 	} else if (playlist_suffix_supported(suffix)) {
-		playlist_vector_add(&directory->playlists, name, st->st_mtime);
+		if (playlist_vector_update_or_add(&directory->playlists, name,
+						  st->st_mtime))
+			modified = true;
 	}
 }
 
