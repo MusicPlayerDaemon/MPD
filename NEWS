@@ -1,5 +1,7 @@
 ver 0.15.13 (2010/??/??)
 * output_thread: fix race condition after CANCEL command
+* output:
+  - httpd: fix random data in stream title
 
 
 ver 0.15.12 (2010/07/20)

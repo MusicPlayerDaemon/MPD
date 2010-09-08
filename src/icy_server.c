@@ -95,6 +95,7 @@ icy_server_metadata_page(const struct tag *tag, ...)
 	gchar stream_title[(1 + 255 - 28) * 16]; // Length + Metadata -
 						 // "StreamTitle='';StreamUrl='';"
 						 // = 4081 - 28
+	stream_title[0] =  '\0';
 
 	last_item = -1;
 
