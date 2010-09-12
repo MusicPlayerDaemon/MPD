@@ -951,7 +951,7 @@ AC_SUBST(TREMOR_LIBS)
 dnl --------------------------------- OggFLAC ---------------------------------
 dnl OggFLAC must go after Ogg Tremor
 
-if test x$use_tremor = xyes && test $xenable_oggflac = xyes; then
+if test x$use_tremor = xyes && test x$enable_oggflac = xyes; then
 	AC_MSG_WARN([disabling OggFLAC support because it is incompatible with tremor])
 		enable_oggflac=no
 fi
