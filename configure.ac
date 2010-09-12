@@ -916,13 +916,13 @@ AM_CONDITIONAL(HAVE_MPCDEC, test x$enable_mpc = xyes)
 
 dnl -------------------------------- Ogg Tremor -------------------------------
 if test x$with_tremor = xyes || test x$with_tremor = xno; then
-	use_tremor="$with_tremor"
+	enable_tremor="$with_tremor"
 else
 	tremor_prefix="$with_tremor"
-	use_tremor=yes
+	enable_tremor=yes
 fi
 
-if test x$use_tremor = xyes; then
+if test x$enable_tremor = xyes; then
 	if test "x$tremor_libraries" != "x" ; then
 		TREMOR_LIBS="-L$tremor_libraries"
 	elif test "x$tremor_prefix" != "x" ; then
@@ -953,7 +953,7 @@ AC_SUBST(TREMOR_LIBS)
 dnl --------------------------------- OggFLAC ---------------------------------
 dnl OggFLAC must go after Ogg Tremor
 
-if test x$use_tremor = xyes && test x$enable_oggflac = xyes; then
+if test x$enable_tremor = xyes && test x$enable_oggflac = xyes; then
 	AC_MSG_WARN([disabling OggFLAC support because it is incompatible with tremor])
 		enable_oggflac=no
 fi
@@ -971,7 +971,7 @@ AM_CONDITIONAL(HAVE_OGGFLAC, test x$enable_oggflac = xyes)
 
 dnl -------------------------------- Ogg Vorbis -------------------------------
 if test x$enable_vorbis = xyes; then
-	if test x$use_tremor = xyes; then
+	if test x$enable_tremor = xyes; then
 		AC_MSG_WARN(["OggTremor detected, could not enable Vorbis."])
 		enable_vorbis=no
 	elif test x$enable_ogg = xyes; then
@@ -1511,7 +1511,7 @@ results(mp4, [MP4])
 results(mpc, [Musepack])
 results(oggflac, [OggFLAC], flac)
 echo -ne '\n\t'
-results(with_tremor, [OggTremor])
+results(tremor, [OggTremor])
 results(vorbis, [OggVorbis])
 results(audiofile, [WAVE])
 results(wavpack, [WavPack])
