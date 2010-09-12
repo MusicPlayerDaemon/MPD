@@ -1070,6 +1070,7 @@ if
 	test x$enable_mpg123 = xno &&
 	test x$enable_oggflac = xno &&
 	test x$enable_sidplay = xno &&
+	test x$enable_tremor = xno &&
 	test x$enable_vorbis = xno &&
 	test x$enable_wavpack = xno &&
 	test x$enable_wildmidi = xno &&
