@@ -116,7 +116,10 @@ void event_pipe_deinit(void)
 	g_source_remove(event_pipe_source_id);
 	g_io_channel_unref(event_channel);
 
+#ifndef WIN32
+	/* By some strange reason this call hangs on Win32 */
 	close(event_pipe[0]);
+#endif
 	close(event_pipe[1]);
 }
 

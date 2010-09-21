@@ -44,6 +44,9 @@ enum pipe_event {
 	/** a hardware mixer plugin has detected a change */
 	PIPE_EVENT_MIXER,
 
+	/** shutdown requested */
+	PIPE_EVENT_SHUTDOWN,
+
 	PIPE_EVENT_MAX
 };
 

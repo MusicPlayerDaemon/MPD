@@ -269,7 +269,25 @@ idle_event_emitted(void)
 		client_manager_idle_add(flags);
 }
 
+/**
+ * event_pipe callback function for PIPE_EVENT_SHUTDOWN
+ */
+static void
+shutdown_event_emitted(void)
+{
+	g_main_loop_quit(main_loop);
+}
+
 int main(int argc, char *argv[])
+{
+#ifdef WIN32
+	return win32_main(argc, argv);
+#else
+	return mpd_main(argc, argv);
+#endif
+}
+
+int mpd_main(int argc, char *argv[])
 {
 	struct options options;
 	clock_t start;
@@ -324,6 +342,7 @@ int main(int argc, char *argv[])
 
 	event_pipe_init();
 	event_pipe_register(PIPE_EVENT_IDLE, idle_event_emitted);
+	event_pipe_register(PIPE_EVENT_SHUTDOWN, shutdown_event_emitted);
 
 	path_global_init();
 	glue_mapper_init();
@@ -392,9 +411,16 @@ int main(int argc, char *argv[])
 	   playlist_state_restore() */
 	pc_update_audio();
 
-	/* run the main loop */
+#ifdef WIN32
+	win32_app_started();
+#endif
 
+	/* run the main loop */
 	g_main_loop_run(main_loop);
+
+#ifdef WIN32
+	win32_app_stopping();
+#endif
 
 	/* cleanup */
 

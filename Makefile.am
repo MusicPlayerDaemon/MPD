@@ -278,6 +278,7 @@ src_mpd_SOURCES = \
 	src/log.c \
 	src/ls.c \
 	src/main.c \
+	src/main_win32.c \
 	src/event_pipe.c \
 	src/daemon.c \
 	src/AudioCompress/compress.c \
