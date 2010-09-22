@@ -59,7 +59,7 @@ playlist_state_save(FILE *fp, const struct playlist *playlist)
 
 	pc_get_status(&player_status);
 
-	fputs(PLAYLIST_STATE_FILE_STATE "\n", fp);
+	fputs(PLAYLIST_STATE_FILE_STATE, fp);
 
 	if (playlist->playing) {
 		switch (player_status.state) {
