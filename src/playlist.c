@@ -238,7 +238,7 @@ playlist_sync(struct playlist *playlist)
 
 		/* make sure the queued song is always set (if
 		   possible) */
-		if (pc.next_song == NULL && playlist->queued != -1)
+		if (pc.next_song == NULL && playlist->queued < 0)
 			playlist_update_queued_song(playlist, NULL);
 	}
 }
