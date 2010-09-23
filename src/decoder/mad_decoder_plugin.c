@@ -285,10 +285,10 @@ parse_id3_mixramp(char **mixramp_start, char **mixramp_end,
 					     (&frame->fields[2]));
 
 		if (g_ascii_strcasecmp(key, "mixramp_start") == 0) {
-			*mixramp_start = strdup(value);
+			*mixramp_start = g_strdup(value);
 			found = true;
 		} else if (g_ascii_strcasecmp(key, "mixramp_end") == 0) {
-			*mixramp_end = strdup(value);
+			*mixramp_end = g_strdup(value);
 			found = true;
 		}
 

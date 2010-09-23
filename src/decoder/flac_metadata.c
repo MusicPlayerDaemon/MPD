@@ -87,7 +87,7 @@ flac_find_string_comment(const FLAC__StreamMetadata *block,
 	int offset;
 	size_t pos;
 	int len;
-	unsigned char tmp, *p;
+	const unsigned char *p;
 
 	*str = NULL;
 	offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block, 0,
@@ -101,10 +101,7 @@ flac_find_string_comment(const FLAC__StreamMetadata *block,
 		return false;
 
 	p = &block->data.vorbis_comment.comments[offset].entry[pos];
-	tmp = p[len];
-	p[len] = '\0';
-	*str = strdup((char *)p);
-	p[len] = tmp;
+	*str = g_strndup((const char *)p, len);
 
 	return true;
 }
