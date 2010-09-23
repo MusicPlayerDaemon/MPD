@@ -63,7 +63,7 @@ void init_zeroconf_osx(const char *serviceName)
 	DNSServiceErrorType error = DNSServiceRegister(&dnsReference,
 						       0, 0, serviceName,
 						       SERVICE_TYPE, NULL, NULL,
-						       htons(listen_port), 0,
+						       g_htons(listen_port), 0,
 						       NULL,
 						       dnsRegisterCallback,
 						       NULL);
