@@ -213,9 +213,8 @@ httpd_listen_in_event(G_GNUC_UNUSED GIOChannel *source,
 	fd = accept_cloexec_nonblock(httpd->fd, (struct sockaddr*)&sa,
 				     &sa_length);
 #ifdef HAVE_LIBWRAP
-	struct sockaddr *sa_p = (struct sockaddr *)&sa;
-	if (sa_p->sa_family != AF_UNIX) {
-          char *hostaddr = sockaddr_to_string(sa_p, sa_length, NULL);
+	if (sa.ss_family != AF_UNIX) {
+		char *hostaddr = sockaddr_to_string((const struct sockaddr *)&sa, sa_length, NULL);
 		const char *progname = g_get_prgname();
 
 		struct request_info req;
