@@ -270,8 +270,8 @@ recvmsg_cloexec(int sockfd, struct msghdr *msg, int flags)
 		struct cmsghdr *cmsg = CMSG_FIRSTHDR(msg);
 		while (cmsg != NULL) {
 			if (cmsg->cmsg_type == SCM_RIGHTS) {
-				int fd = *(const int *)CMSG_DATA(cmsg);
-				fd_set_cloexec(fd, true);
+				const int *fd_p = (const int *)CMSG_DATA(cmsg);
+				fd_set_cloexec(*fd_p, true);
 			}
 
 			cmsg = CMSG_NXTHDR(msg, cmsg);
