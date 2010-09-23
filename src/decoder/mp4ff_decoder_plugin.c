@@ -362,6 +362,10 @@ mp4ff_tag_name_parse(const char *name)
 	if (type == TAG_NUM_OF_ITEM_TYPES)
 		type = tag_name_parse_i(name);
 
+	if (g_ascii_strcasecmp(name, "albumartist") == 0 ||
+	    g_ascii_strcasecmp(name, "album_artist") == 0)
+		return TAG_ALBUM_ARTIST;
+
 	return type;
 }
 
