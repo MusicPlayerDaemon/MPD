@@ -46,7 +46,9 @@ bool
 playlist_metadata_load(FILE *fp, struct playlist_vector *pv, const char *name,
 		       GString *buffer, GError **error_r)
 {
-	struct playlist_metadata pm;
+	struct playlist_metadata pm = {
+		.mtime = 0,
+	};
 	char *line, *colon;
 	const char *value;
 
