@@ -54,6 +54,7 @@
 #include "dirvec.h"
 #include "songvec.h"
 #include "tag_pool.h"
+#include "mpd_error.h"
 
 #ifdef ENABLE_INOTIFY
 #include "inotify_update.h"
@@ -141,7 +142,7 @@ glue_db_init_and_load(void)
 	}
 
 	if (path == NULL)
-		g_error(CONF_DB_FILE " setting missing");
+		MPD_ERROR(CONF_DB_FILE " setting missing");
 
 	db_init(path);
 
@@ -175,7 +176,7 @@ glue_sticker_init(void)
 	success = sticker_global_init(config_get_path(CONF_STICKER_FILE),
 				      &error);
 	if (!success)
-		g_error("%s", error->message);
+		MPD_ERROR("%s", error->message);
 #endif
 }
 
@@ -197,14 +198,14 @@ static void winsock_init(void)
 	retval = WSAStartup(MAKEWORD(2, 2), &sockinfo);
 	if(retval != 0)
 	{
-		g_error("Attempt to open Winsock2 failed; error code %d\n",
+		MPD_ERROR("Attempt to open Winsock2 failed; error code %d\n",
 			retval);
 	}
 
 	if (LOBYTE(sockinfo.wVersion) != 2)
 	{
-		g_error("We use Winsock2 but your version is either too new or "
-			"old; please install Winsock 2.x\n");
+		MPD_ERROR("We use Winsock2 but your version is either too new "
+			  "or old; please install Winsock 2.x\n");
 	}
 #endif
 }
@@ -226,8 +227,8 @@ initialize_decoder_and_player(void)
 	if (param != NULL) {
 		buffer_size = strtol(param->value, &test, 10);
 		if (*test != '\0' || buffer_size <= 0)
-			g_error("buffer size \"%s\" is not a positive integer, "
-				"line %i\n", param->value, param->line);
+			MPD_ERROR("buffer size \"%s\" is not a positive integer, "
+				  "line %i\n", param->value, param->line);
 	} else
 		buffer_size = DEFAULT_BUFFER_SIZE;
 
@@ -236,15 +237,15 @@ initialize_decoder_and_player(void)
 	buffered_chunks = buffer_size / CHUNK_SIZE;
 
 	if (buffered_chunks >= 1 << 15)
-		g_error("buffer size \"%li\" is too big\n", (long)buffer_size);
+		MPD_ERROR("buffer size \"%li\" is too big\n", (long)buffer_size);
 
 	param = config_get_param(CONF_BUFFER_BEFORE_PLAY);
 	if (param != NULL) {
 		perc = strtod(param->value, &test);
 		if (*test != '%' || perc < 0 || perc > 100) {
-			g_error("buffered before play \"%s\" is not a positive "
-				"percentage and less than 100 percent, line %i",
-				param->value, param->line);
+			MPD_ERROR("buffered before play \"%s\" is not a positive "
+				  "percentage and less than 100 percent, line %i",
+				  param->value, param->line);
 		}
 	} else
 		perc = DEFAULT_BUFFER_BEFORE_PLAY;
@@ -390,7 +391,7 @@ int mpd_main(int argc, char *argv[])
 		   database */
 		unsigned job = update_enqueue(NULL, true);
 		if (job == 0)
-			g_error("directory update failed");
+			MPD_ERROR("directory update failed");
 	}
 
 	glue_state_file_init();

@@ -25,6 +25,7 @@
 #include "log.h"
 #include "main.h"
 #include "event_pipe.h"
+#include "mpd_error.h"
 
 #include <glib.h>
 
@@ -46,7 +47,7 @@ static void
 x_sigaction(int signum, const struct sigaction *act)
 {
 	if (sigaction(signum, act, NULL) < 0)
-		g_error("sigaction() failed: %s", strerror(errno));
+		MPD_ERROR("sigaction() failed: %s", strerror(errno));
 }
 
 static void

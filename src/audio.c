@@ -25,6 +25,7 @@
 #include "output_plugin.h"
 #include "output_all.h"
 #include "conf.h"
+#include "mpd_error.h"
 
 #include <glib.h>
 
@@ -52,6 +53,7 @@ void initAudioConfig(void)
 	ret = audio_format_parse(&configured_audio_format, param->value,
 				 true, &error);
 	if (!ret)
-		g_error("error parsing \"%s\" at line %i: %s",
-			CONF_AUDIO_OUTPUT_FORMAT, param->line, error->message);
+		MPD_ERROR("error parsing \"%s\" at line %i: %s",
+			  CONF_AUDIO_OUTPUT_FORMAT, param->line,
+			  error->message);
 }

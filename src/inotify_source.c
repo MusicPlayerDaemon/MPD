@@ -21,6 +21,7 @@
 #include "inotify_source.h"
 #include "fifo_buffer.h"
 #include "fd_util.h"
+#include "mpd_error.h"
 
 #include <sys/inotify.h>
 #include <unistd.h>
@@ -68,13 +69,14 @@ mpd_inotify_in_event(G_GNUC_UNUSED GIOChannel *_source,
 
 	dest = fifo_buffer_write(source->buffer, &length);
 	if (dest == NULL)
-		g_error("buffer full");
+		MPD_ERROR("buffer full");
 
 	nbytes = read(source->fd, dest, length);
 	if (nbytes < 0)
-		g_error("failed to read from inotify: %s", g_strerror(errno));
+		MPD_ERROR("failed to read from inotify: %s",
+			  g_strerror(errno));
 	if (nbytes == 0)
-		g_error("end of file from inotify");
+		MPD_ERROR("end of file from inotify");
 
 	fifo_buffer_append(source->buffer, nbytes);
 

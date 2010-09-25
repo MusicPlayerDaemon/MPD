@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "decoder_api.h"
+#include "mpd_error.h"
 
 #include <glib.h>
 #include <mikmod.h>
@@ -110,8 +111,8 @@ mikmod_decoder_init(const struct config_param *param)
 	mikmod_sample_rate = config_get_block_unsigned(param, "sample_rate",
 						       44100);
 	if (!audio_valid_sample_rate(mikmod_sample_rate))
-		g_error("Invalid sample rate in line %d: %u",
-			param->line, mikmod_sample_rate);
+		MPD_ERROR("Invalid sample rate in line %d: %u",
+			  param->line, mikmod_sample_rate);
 
 	md_device = 0;
 	md_reverb = 0;

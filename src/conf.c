@@ -23,6 +23,7 @@
 #include "tokenizer.h"
 #include "path.h"
 #include "glib_compat.h"
+#include "mpd_error.h"
 
 #include <glib.h>
 
@@ -498,8 +499,8 @@ config_get_path(const char *name)
 
 	path = parsePath(param->value);
 	if (path == NULL)
-		g_error("error parsing \"%s\" at line %i\n",
-			name, param->line);
+		MPD_ERROR("error parsing \"%s\" at line %i\n",
+			  name, param->line);
 
 	g_free(param->value);
 	return param->value = path;
@@ -517,7 +518,8 @@ config_get_unsigned(const char *name, unsigned default_value)
 
 	value = strtol(param->value, &endptr, 0);
 	if (*endptr != 0 || value < 0)
-		g_error("Not a valid non-negative number in line %i", param->line);
+		MPD_ERROR("Not a valid non-negative number in line %i",
+			  param->line);
 
 	return (unsigned)value;
 }
@@ -534,10 +536,10 @@ config_get_positive(const char *name, unsigned default_value)
 
 	value = strtol(param->value, &endptr, 0);
 	if (*endptr != 0)
-		g_error("Not a valid number in line %i", param->line);
+		MPD_ERROR("Not a valid number in line %i", param->line);
 
 	if (value <= 0)
-		g_error("Not a positive number in line %i", param->line);
+		MPD_ERROR("Not a positive number in line %i", param->line);
 
 	return (unsigned)value;
 }
@@ -569,9 +571,9 @@ bool config_get_bool(const char *name, bool default_value)
 
 	success = get_bool(param->value, &value);
 	if (!success)
-		g_error("%s is not a boolean value (yes, true, 1) or "
-			"(no, false, 0) on line %i\n",
-			name, param->line);
+		MPD_ERROR("%s is not a boolean value (yes, true, 1) or "
+			  "(no, false, 0) on line %i\n",
+			  name, param->line);
 
 	return value;
 }
@@ -601,10 +603,10 @@ config_get_block_unsigned(const struct config_param *param, const char *name,
 
 	value = strtol(bp->value, &endptr, 0);
 	if (*endptr != 0)
-		g_error("Not a valid number in line %i", bp->line);
+		MPD_ERROR("Not a valid number in line %i", bp->line);
 
 	if (value < 0)
-		g_error("Not a positive number in line %i", bp->line);
+		MPD_ERROR("Not a positive number in line %i", bp->line);
 
 	return (unsigned)value;
 }
@@ -621,9 +623,9 @@ config_get_block_bool(const struct config_param *param, const char *name,
 
 	success = get_bool(bp->value, &value);
 	if (!success)
-		g_error("%s is not a boolean value (yes, true, 1) or "
-			"(no, false, 0) on line %i\n",
-			name, bp->line);
+		MPD_ERROR("%s is not a boolean value (yes, true, 1) or "
+			  "(no, false, 0) on line %i\n",
+			  name, bp->line);
 
 	return value;
 }

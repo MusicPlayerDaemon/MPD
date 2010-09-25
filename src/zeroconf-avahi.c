@@ -20,6 +20,7 @@
 #include "config.h"
 #include "zeroconf-internal.h"
 #include "listen.h"
+#include "mpd_error.h"
 
 #include <glib.h>
 
@@ -218,7 +219,7 @@ void init_avahi(const char *serviceName)
 	g_debug("Initializing interface");
 
 	if (!avahi_is_valid_service_name(serviceName))
-		g_error("Invalid zeroconf_name \"%s\"", serviceName);
+		MPD_ERROR("Invalid zeroconf_name \"%s\"", serviceName);
 
 	avahiName = avahi_strdup(serviceName);
 

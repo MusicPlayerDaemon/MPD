@@ -23,6 +23,7 @@
 #include "tag_pool.h"
 #include "conf.h"
 #include "song.h"
+#include "mpd_error.h"
 
 #include <glib.h>
 #include <assert.h>
@@ -138,8 +139,8 @@ void tag_lib_init(void)
 
 			type = tag_name_parse_i(c);
 			if (type == TAG_NUM_OF_ITEM_TYPES)
-				g_error("error parsing metadata item \"%s\"",
-					c);
+				MPD_ERROR("error parsing metadata item \"%s\"",
+					  c);
 
 			ignore_tag_items[type] = false;
 

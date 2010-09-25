@@ -22,6 +22,7 @@
 #include "pcm_volume.h"
 #include "pcm_utils.h"
 #include "audio_format.h"
+#include "mpd_error.h"
 
 #include <glib.h>
 
@@ -125,8 +126,8 @@ pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
 		break;
 
 	default:
-		g_error("format %s not supported by pcm_add_vol",
-			sample_format_to_string(format->format));
+		MPD_ERROR("format %s not supported by pcm_add_vol",
+			  sample_format_to_string(format->format));
 	}
 }
 
@@ -208,8 +209,8 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 		break;
 
 	default:
-		g_error("format %s not supported by pcm_add",
-			sample_format_to_string(format->format));
+		MPD_ERROR("format %s not supported by pcm_add",
+			  sample_format_to_string(format->format));
 	}
 }
 

@@ -28,6 +28,7 @@
 #include "idle.h"
 #include "stats.h"
 #include "main.h"
+#include "mpd_error.h"
 
 #include <glib.h>
 
@@ -93,7 +94,7 @@ spawn_update_task(const char *path)
 
 	update_thr = g_thread_create(update_task, g_strdup(path), TRUE, &e);
 	if (update_thr == NULL)
-		g_error("Failed to spawn update task: %s", e->message);
+		MPD_ERROR("Failed to spawn update task: %s", e->message);
 
 	if (++update_task_id > update_task_id_max)
 		update_task_id = 1;

@@ -21,6 +21,7 @@
 #include "output_api.h"
 #include "encoder_plugin.h"
 #include "encoder_list.h"
+#include "mpd_error.h"
 
 #include <shout/shout.h>
 #include <glib.h>
@@ -101,8 +102,8 @@ static void free_shout_data(struct shout_data *sd)
 #define check_block_param(name) {		  \
 		block_param = config_get_block_param(param, name);	\
 		if (!block_param) {					\
-			g_error("no \"%s\" defined for shout device defined at line " \
-				"%i\n", name, param->line);		\
+			MPD_ERROR("no \"%s\" defined for shout device defined at line " \
+				  "%i\n", name, param->line);		\
 		}							\
 	}
 

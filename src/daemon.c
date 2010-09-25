@@ -65,23 +65,23 @@ daemonize_kill(void)
 	int pid, ret;
 
 	if (pidfile == NULL)
-		g_error("no pid_file specified in the config file");
+		MPD_ERROR("no pid_file specified in the config file");
 
 	fp = fopen(pidfile, "r");
 	if (fp == NULL)
-		g_error("unable to open pid file \"%s\": %s",
-			pidfile, g_strerror(errno));
+		MPD_ERROR("unable to open pid file \"%s\": %s",
+			  pidfile, g_strerror(errno));
 
 	if (fscanf(fp, "%i", &pid) != 1) {
-		g_error("unable to read the pid from file \"%s\"",
-			pidfile);
+		MPD_ERROR("unable to read the pid from file \"%s\"",
+			  pidfile);
 	}
 	fclose(fp);
 
 	ret = kill(pid, SIGTERM);
 	if (ret < 0)
-		g_error("unable to kill proccess %i: %s",
-			pid, g_strerror(errno));
+		MPD_ERROR("unable to kill proccess %i: %s",
+			  pid, g_strerror(errno));
 
 	exit(EXIT_SUCCESS);
 }
@@ -102,8 +102,8 @@ daemonize_set_user(void)
 	/* set gid */
 	if (user_gid != (gid_t)-1 && user_gid != getgid()) {
 		if (setgid(user_gid) == -1) {
-			g_error("cannot setgid to %d: %s",
-				(int)user_gid, g_strerror(errno));
+			MPD_ERROR("cannot setgid to %d: %s",
+				  (int)user_gid, g_strerror(errno));
 		}
 	}
 
@@ -121,8 +121,8 @@ daemonize_set_user(void)
 	/* set uid */
 	if (user_uid != (uid_t)-1 && user_uid != getuid() &&
 	    setuid(user_uid) == -1) {
-		g_error("cannot change to uid of user \"%s\": %s",
-			user_name, g_strerror(errno));
+		MPD_ERROR("cannot change to uid of user \"%s\": %s",
+			  user_name, g_strerror(errno));
 	}
 }
 
@@ -136,7 +136,7 @@ daemonize_detach(void)
 #ifdef HAVE_DAEMON
 
 	if (daemon(0, 1))
-		g_error("daemon() failed: %s", g_strerror(errno));
+		MPD_ERROR("daemon() failed: %s", g_strerror(errno));
 
 #elif defined(HAVE_FORK)
 
@@ -144,7 +144,7 @@ daemonize_detach(void)
 
 	switch (fork()) {
 	case -1:
-		g_error("fork() failed: %s", g_strerror(errno));
+		MPD_ERROR("fork() failed: %s", g_strerror(errno));
 	case 0:
 		break;
 	default:
@@ -155,14 +155,14 @@ daemonize_detach(void)
 	/* release the current working directory */
 
 	if (chdir("/") < 0)
-		g_error("problems changing to root directory");
+		MPD_ERROR("problems changing to root directory");
 
 	/* detach from the current session */
 
 	setsid();
 
 #else
-	g_error("no support for daemonizing");
+	MPD_ERROR("no support for daemonizing");
 #endif
 
 	g_debug("daemonized!");
@@ -179,8 +179,8 @@ daemonize(bool detach)
 		g_debug("opening pid file");
 		fp = fopen(pidfile, "w+");
 		if (!fp) {
-			g_error("could not create pid file \"%s\": %s",
-				pidfile, g_strerror(errno));
+			MPD_ERROR("could not create pid file \"%s\": %s",
+				  pidfile, g_strerror(errno));
 		}
 	}
 
@@ -200,7 +200,7 @@ daemonize_init(const char *user, const char *group, const char *_pidfile)
 	if (user) {
 		struct passwd *pwd = getpwnam(user);
 		if (!pwd)
-			g_error("no such user \"%s\"", user);
+			MPD_ERROR("no such user \"%s\"", user);
 
 		user_uid = pwd->pw_uid;
 		user_gid = pwd->pw_gid;
@@ -214,7 +214,7 @@ daemonize_init(const char *user, const char *group, const char *_pidfile)
 	if (group) {
 		struct group *grp = grp = getgrnam(group);
 		if (!grp)
-			g_error("no such group \"%s\"", group);
+			MPD_ERROR("no such group \"%s\"", group);
 		user_gid = grp->gr_gid;
 		had_group = true;
 	}

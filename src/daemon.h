@@ -20,6 +20,8 @@
 #ifndef DAEMON_H
 #define DAEMON_H
 
+#include "mpd_error.h"
+
 #include <stdbool.h>
 
 #ifndef WIN32
@@ -51,7 +53,7 @@ daemonize_kill(void);
 #include <glib.h>
 static inline void
 daemonize_kill(void)
-{ g_error("--kill is not available on WIN32"); }
+{ MPD_ERROR("--kill is not available on WIN32"); }
 #endif
 
 /**

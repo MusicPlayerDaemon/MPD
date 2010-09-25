@@ -33,6 +33,7 @@
 #include "utils.h"
 #include "conf.h"
 #include "glib_compat.h"
+#include "mpd_error.h"
 
 #include <assert.h>
 #include <string.h>
@@ -76,7 +77,7 @@ playlist_plugin_config(const char *plugin_name)
 		const char *name =
 			config_get_block_string(param, "name", NULL);
 		if (name == NULL)
-			g_error("playlist configuration without 'plugin' name in line %d",
+			MPD_ERROR("playlist configuration without 'plugin' name in line %d",
 				param->line);
 
 		if (strcmp(name, plugin_name) == 0)

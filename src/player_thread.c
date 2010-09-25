@@ -34,6 +34,7 @@
 #include "idle.h"
 #include "main.h"
 #include "buffer.h"
+#include "mpd_error.h"
 
 #include <glib.h>
 
@@ -1073,5 +1074,5 @@ void player_create(void)
 
 	pc.thread = g_thread_create(player_task, NULL, true, &e);
 	if (pc.thread == NULL)
-		g_error("Failed to spawn player task: %s", e->message);
+		MPD_ERROR("Failed to spawn player task: %s", e->message);
 }

@@ -26,6 +26,7 @@
 #include "pipe.h"
 #include "buffer.h"
 #include "player_control.h"
+#include "mpd_error.h"
 
 #ifndef NDEBUG
 #include "chunk.h"
@@ -122,17 +123,17 @@ audio_output_all_init(void)
 
 		if (!audio_output_init(output, param, &error)) {
 			if (param != NULL)
-				g_error("line %i: %s",
-					param->line, error->message);
+				MPD_ERROR("line %i: %s",
+					  param->line, error->message)
 			else
-				g_error("%s", error->message);
+				MPD_ERROR("%s", error->message);
 		}
 
 		/* require output names to be unique: */
 		for (j = 0; j < i; j++) {
 			if (!strcmp(output->name, audio_outputs[j].name)) {
-				g_error("output devices with identical "
-					"names: %s\n", output->name);
+				MPD_ERROR("output devices with identical "
+					  "names: %s\n", output->name);
 			}
 		}
 	}

@@ -28,6 +28,7 @@
 #include "filter_plugin.h"
 #include "filter/convert_filter_plugin.h"
 #include "filter/replay_gain_filter_plugin.h"
+#include "mpd_error.h"
 
 #include <glib.h>
 
@@ -629,5 +630,5 @@ void audio_output_thread_start(struct audio_output *ao)
 	assert(ao->command == AO_COMMAND_NONE);
 
 	if (!(ao->thread = g_thread_create(audio_output_task, ao, true, &e)))
-		g_error("Failed to spawn output task: %s\n", e->message);
+		MPD_ERROR("Failed to spawn output task: %s\n", e->message);
 }

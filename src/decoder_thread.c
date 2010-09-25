@@ -32,6 +32,7 @@
 #include "mapper.h"
 #include "path.h"
 #include "uri.h"
+#include "mpd_error.h"
 
 #include <glib.h>
 
@@ -479,5 +480,5 @@ decoder_thread_start(struct decoder_control *dc)
 
 	dc->thread = g_thread_create(decoder_task, dc, true, &e);
 	if (dc->thread == NULL)
-		g_error("Failed to spawn decoder task: %s", e->message);
+		MPD_ERROR("Failed to spawn decoder task: %s", e->message);
 }

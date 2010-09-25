@@ -22,6 +22,7 @@
 #include "playlist.h"
 #include "conf.h"
 #include "idle.h"
+#include "mpd_error.h"
 
 #include <glib.h>
 
@@ -91,8 +92,8 @@ void replay_gain_global_init(void)
 	const struct config_param *param = config_get_param(CONF_REPLAYGAIN);
 
 	if (param != NULL && !replay_gain_set_mode_string(param->value)) {
-		g_error("replaygain value \"%s\" at line %i is invalid\n",
-			param->value, param->line);
+		MPD_ERROR("replaygain value \"%s\" at line %i is invalid\n",
+			  param->value, param->line);
 	}
 
 	param = config_get_param(CONF_REPLAYGAIN_PREAMP);
@@ -102,13 +103,13 @@ void replay_gain_global_init(void)
 		float f = strtod(param->value, &test);
 
 		if (*test != '\0') {
-			g_error("Replaygain preamp \"%s\" is not a number at "
-				"line %i\n", param->value, param->line);
+			MPD_ERROR("Replaygain preamp \"%s\" is not a number at "
+				  "line %i\n", param->value, param->line);
 		}
 
 		if (f < -15 || f > 15) {
-			g_error("Replaygain preamp \"%s\" is not between -15 and"
-				"15 at line %i\n", param->value, param->line);
+			MPD_ERROR("Replaygain preamp \"%s\" is not between -15 and"
+				  "15 at line %i\n", param->value, param->line);
 		}
 
 		replay_gain_preamp = pow(10, f / 20.0);
@@ -121,13 +122,13 @@ void replay_gain_global_init(void)
 		float f = strtod(param->value, &test);
 
 		if (*test != '\0') {
-			g_error("Replaygain missing preamp \"%s\" is not a number at "
-				"line %i\n", param->value, param->line);
+			MPD_ERROR("Replaygain missing preamp \"%s\" is not a number at "
+				  "line %i\n", param->value, param->line);
 		}
 
 		if (f < -15 || f > 15) {
-			g_error("Replaygain missing preamp \"%s\" is not between -15 and"
-				"15 at line %i\n", param->value, param->line);
+			MPD_ERROR("Replaygain missing preamp \"%s\" is not between -15 and"
+				  "15 at line %i\n", param->value, param->line);
 		}
 
 		replay_gain_missing_preamp = pow(10, f / 20.0);

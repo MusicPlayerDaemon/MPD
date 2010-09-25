@@ -26,6 +26,7 @@
 #include "decoder_plugin.h"
 #include "output_list.h"
 #include "ls.h"
+#include "mpd_error.h"
 
 #ifdef ENABLE_ENCODER
 #include "encoder_list.h"
@@ -155,10 +156,8 @@ parse_cmdline(int argc, char **argv, struct options *options,
 	ret = g_option_context_parse(context, &argc, &argv, &error);
 	g_option_context_free(context);
 
-	if (!ret) {
-		g_error("option parsing failed: %s\n", error->message);
-		exit(1);
-	}
+	if (!ret)
+		MPD_ERROR("option parsing failed: %s\n", error->message);
 
 	if (option_version)
 		version();

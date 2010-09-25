@@ -22,6 +22,7 @@
 #include "encoder_plugin.h"
 #include "tag.h"
 #include "audio_format.h"
+#include "mpd_error.h"
 
 #include <vorbis/vorbisenc.h>
 
@@ -374,7 +375,7 @@ vorbis_encoder_read(struct encoder *_encoder, void *_dest, size_t length)
 
 	if (nbytes > length)
 		/* XXX better error handling */
-		g_error("buffer too small");
+		MPD_ERROR("buffer too small");
 
 	memcpy(dest, page.header, page.header_len);
 	memcpy(dest + page.header_len, page.body, page.body_len);

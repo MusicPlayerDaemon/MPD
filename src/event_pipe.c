@@ -20,6 +20,7 @@
 #include "config.h"
 #include "event_pipe.h"
 #include "fd_util.h"
+#include "mpd_error.h"
 
 #include <stdbool.h>
 #include <assert.h>
@@ -68,7 +69,7 @@ main_notify_event(G_GNUC_UNUSED GIOChannel *source,
 						   buffer, sizeof(buffer),
 						   &bytes_read, &error);
 	if (status == G_IO_STATUS_ERROR)
-		g_error("error reading from pipe: %s", error->message);
+		MPD_ERROR("error reading from pipe: %s", error->message);
 
 	bool events[PIPE_EVENT_MAX];
 	g_mutex_lock(event_pipe_mutex);
@@ -91,7 +92,7 @@ void event_pipe_init(void)
 
 	ret = pipe_cloexec_nonblock(event_pipe);
 	if (ret < 0)
-		g_error("Couldn't open pipe: %s", strerror(errno));
+		MPD_ERROR("Couldn't open pipe: %s", strerror(errno));
 
 #ifndef G_OS_WIN32
 	channel = g_io_channel_unix_new(event_pipe[0]);
@@ -150,7 +151,7 @@ void event_pipe_emit(enum pipe_event event)
 
 	w = write(event_pipe[1], "", 1);
 	if (w < 0 && errno != EAGAIN && errno != EINTR)
-		g_error("error writing to pipe: %s", strerror(errno));
+		MPD_ERROR("error writing to pipe: %s", strerror(errno));
 }
 
 void event_pipe_emit_fast(enum pipe_event event)

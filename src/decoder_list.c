@@ -22,6 +22,7 @@
 #include "decoder_plugin.h"
 #include "utils.h"
 #include "conf.h"
+#include "mpd_error.h"
 
 #include <glib.h>
 
@@ -198,8 +199,8 @@ decoder_plugin_config(const char *plugin_name)
 		const char *name =
 			config_get_block_string(param, "plugin", NULL);
 		if (name == NULL)
-			g_error("decoder configuration without 'plugin' name in line %d",
-				param->line);
+			MPD_ERROR("decoder configuration without 'plugin' name in line %d",
+				  param->line);
 
 		if (strcmp(name, plugin_name) == 0)
 			return param;

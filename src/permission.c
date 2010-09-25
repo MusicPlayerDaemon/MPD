@@ -20,6 +20,7 @@
 #include "config.h"
 #include "permission.h"
 #include "conf.h"
+#include "mpd_error.h"
 
 #include <glib.h>
 
@@ -59,7 +60,7 @@ static unsigned parsePermissions(const char *string)
 		} else if (strcmp(temp, PERMISSION_ADMIN_STRING) == 0) {
 			permission |= PERMISSION_ADMIN;
 		} else {
-			g_error("unknown permission \"%s\"", temp);
+			MPD_ERROR("unknown permission \"%s\"", temp);
 		}
 	}
 
@@ -90,7 +91,7 @@ void initPermissions(void)
 				strchr(param->value, PERMISSION_PASSWORD_CHAR);
 
 			if (separator == NULL)
-				g_error("\"%c\" not found in password string "
+				MPD_ERROR("\"%c\" not found in password string "
 					"\"%s\", line %i",
 					PERMISSION_PASSWORD_CHAR,
 					param->value, param->line);
