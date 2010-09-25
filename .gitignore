@@ -33,6 +33,7 @@ ltmain.sh
 missing
 mkinstalldirs
 mpd
+mpd.exe
 stamp-h1
 tags
 *~
