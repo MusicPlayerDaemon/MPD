@@ -914,8 +914,17 @@ cd mpd-version</programlisting>
                   <parameter>P</parameter>
                 </entry>
                 <entry>
-                  Binds the HTTP server to the specified port (on all
-                  interfaces).
+                  Binds the HTTP server to the specified port.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>bind_to_address</varname>
+                  <parameter>ADDR</parameter>
+                </entry>
+                <entry>
+                  Binds the HTTP server to the specified address (IPv4 or
+                  IPv6). Multiple addresses in parallel are not supported.
                 </entry>
               </row>
               <row>

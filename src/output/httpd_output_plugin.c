@@ -71,8 +71,8 @@ httpd_output_bind(struct httpd_output *httpd, GError **error_r)
 
 	/* create and set up listener socket */
 
-	httpd->fd = socket_bind_listen(PF_INET, SOCK_STREAM, 0,
-				       (struct sockaddr *)&httpd->address,
+	httpd->fd = socket_bind_listen(httpd->address.ss_family, SOCK_STREAM,
+				       0, (struct sockaddr *)&httpd->address,
 				       httpd->address_size,
 				       16, error_r);
 	if (httpd->fd < 0)
@@ -103,16 +103,52 @@ httpd_output_unbind(struct httpd_output *httpd)
 	g_mutex_unlock(httpd->mutex);
 }
 
+static void
+httpd_output_parse_bind_to_address(struct httpd_output *httpd,
+				   const char *bind_to_address,
+				   guint port, GError **error)
+{
+	struct addrinfo hints, *ai;
+	char service[20];
+	int ret;
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_flags = AI_PASSIVE;
+#ifdef AI_ADDRCONFIG
+	hints.ai_flags |= AI_ADDRCONFIG;
+#endif
+	hints.ai_family = PF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+
+	g_snprintf(service, sizeof(service), "%u", port);
+	ret = getaddrinfo(bind_to_address, service, &hints, &ai);
+	if (ret != 0) {
+		g_set_error(error, httpd_output_quark(), ret,
+			    "Failed to look up host \"%s\": %s",
+			    bind_to_address, gai_strerror(ret));
+		return;
+	}
+
+	assert(ai);
+
+	/* Choose the first address, even if multiple are available. We do
+	 * not support multiple addresses yet. */
+	memcpy(&httpd->address, ai->ai_addr, ai->ai_addrlen);
+	httpd->address_size = ai->ai_addrlen;
+
+	freeaddrinfo(ai);
+}
+
 static void *
 httpd_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		  const struct config_param *param,
 		  GError **error)
 {
 	struct httpd_output *httpd = g_new(struct httpd_output, 1);
-	const char *encoder_name;
+	const char *encoder_name, *bind_to_address;
 	const struct encoder_plugin *encoder_plugin;
 	guint port;
-	struct sockaddr_in *sin;
 
 	/* read configuration */
 	httpd->name =
@@ -134,14 +170,18 @@ httpd_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 
 	httpd->clients_max = config_get_block_unsigned(param,"max_clients", 0);
 
-	/* initialize listen address */
-
-	sin = (struct sockaddr_in *)&httpd->address;
-	memset(sin, 0, sizeof(sin));
-	sin->sin_port = htons(port);
-	sin->sin_family = AF_INET;
-	sin->sin_addr.s_addr = INADDR_ANY;
-	httpd->address_size = sizeof(*sin);
+	/* set up bind_to_address */
+	bind_to_address =
+		config_get_block_string(param, "bind_to_address",
+#ifdef HAVE_IPV6
+					"::"
+#else
+					"0.0.0.0"
+#endif
+				       );
+	httpd_output_parse_bind_to_address(httpd, bind_to_address, port, error);
+	if (*error)
+		return NULL;
 
 	/* initialize metadata */
 	httpd->metadata = NULL;

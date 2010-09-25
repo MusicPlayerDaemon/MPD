@@ -60,6 +60,7 @@ ver 0.16 (20??/??/??)
   - httpd: bind port when output is enabled
   - httpd: added name/genre/website configuration
   - httpd: implement "pause"
+  - httpd: bind_to_address support (including IPv6)
   - oss: 24 bit support via OSS4
   - win32: new output plugin for Windows Wave
   - wildcards allowed in audio_format configuration
