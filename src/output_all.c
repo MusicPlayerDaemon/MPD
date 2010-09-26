@@ -124,7 +124,7 @@ audio_output_all_init(void)
 		if (!audio_output_init(output, param, &error)) {
 			if (param != NULL)
 				MPD_ERROR("line %i: %s",
-					  param->line, error->message)
+					  param->line, error->message);
 			else
 				MPD_ERROR("%s", error->message);
 		}

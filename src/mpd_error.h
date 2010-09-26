@@ -28,9 +28,9 @@
  * proper error handling. */
 
 #define MPD_ERROR(...) \
-	{ \
+	do { \
 		g_critical(__VA_ARGS__); \
 		exit(EXIT_FAILURE); \
-	}
+	} while(0)
 
 #endif
