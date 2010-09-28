@@ -108,11 +108,8 @@ playlist_song_started(struct playlist *playlist)
 	playlist->current = playlist->queued;
 	playlist->queued = -1;
 
-	/* Set pause and remove the single mode. */
+	/* Pause if we are in single mode. */
 	if(playlist->queue.single && !playlist->queue.repeat) {
-		playlist->queue.single = false;
-		idle_add(IDLE_OPTIONS);
-
 		pc_set_pause(true);
 	}
 

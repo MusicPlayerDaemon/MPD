@@ -103,6 +103,7 @@ ver 0.16 (20??/??/??)
 * added test suite ("make check")
 * require GLib 2.12
 * added libwrap support
+* make single mode 'sticky'
 
 
 ver 0.15.12 (2010/07/20)
