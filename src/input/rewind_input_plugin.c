@@ -20,6 +20,9 @@
 #include "config.h"
 #include "input/rewind_input_plugin.h"
 #include "input/curl_input_plugin.h"
+#ifdef ENABLE_MMS
+#include "input/mms_input_plugin.h"
+#endif
 #include "input_plugin.h"
 #include "tag.h"
 
@@ -220,7 +223,11 @@ input_rewind_open(struct input_stream *is)
 	assert(is != NULL);
 	assert(is->offset == 0);
 
-	if (is->plugin != &input_plugin_curl)
+	if (is->plugin != &input_plugin_curl
+#ifdef ENABLE_MMS
+	    && is->plugin != &input_plugin_mms
+#endif
+	   )
 		/* due to limitations in the input_plugin API, we only
 		   (explicitly) support the CURL input plugin */
 		return;
@@ -230,7 +237,8 @@ input_rewind_open(struct input_stream *is)
 
 	/* move the CURL input stream to c->input */
 	c->input = *is;
-	input_curl_reinit(&c->input);
+	if (is->plugin == &input_plugin_curl)
+		input_curl_reinit(&c->input);
 
 	/* convert the existing input_stream pointer to a "rewind"
 	   input stream */
