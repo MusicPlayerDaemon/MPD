@@ -437,7 +437,7 @@ if test x$enable_tcp = xyes; then
 fi
 
 case "$host_os" in
-mingw* | windows*)
+mingw* | windows* | cygwin*)
 	enable_un=no
 	;;
 esac
