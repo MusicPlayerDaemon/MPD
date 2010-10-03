@@ -220,7 +220,8 @@ mpd_headers = \
 	src/archive/iso9660_archive_plugin.h \
 	src/archive/zzip_archive_plugin.h \
 	src/input/archive_input_plugin.h \
-	src/cue/cue_tag.h
+	src/cue/cue_tag.h\
+	src/mpd_error.h
 
 src_mpd_SOURCES = \
 	$(mpd_headers) \
