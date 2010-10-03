@@ -640,6 +640,7 @@ endif
 OUTPUT_CFLAGS = \
 	$(AO_CFLAGS) \
 	$(ALSA_CFLAGS) \
+	$(FFADO_CFLAGS) \
 	$(JACK_CFLAGS) \
 	$(OPENAL_CFLAGS) \
 	$(PULSE_CFLAGS) \
@@ -649,6 +650,7 @@ OUTPUT_LIBS = \
 	$(LIBWRAP_LDFLAGS) \
 	$(AO_LIBS) \
 	$(ALSA_LIBS) \
+	$(FFADO_LIBS) \
 	$(JACK_LIBS) \
 	$(OPENAL_LIBS) \
 	$(PULSE_LIBS) \
@@ -679,6 +681,10 @@ MIXER_SRC = \
 if HAVE_ALSA
 OUTPUT_SRC += src/output/alsa_plugin.c
 MIXER_SRC += src/mixer/alsa_mixer_plugin.c
+endif
+
+if ENABLE_FFADO_OUTPUT
+OUTPUT_SRC += src/output/ffado_output_plugin.c
 endif
 
 if HAVE_AO
