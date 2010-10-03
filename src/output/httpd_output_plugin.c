@@ -70,7 +70,7 @@ httpd_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	}
 
 	if (strcmp(encoder_name, "vorbis") == 0)
-		httpd->content_type = "application/x-ogg";
+		httpd->content_type = "audio/ogg";
 	else if (strcmp(encoder_name, "lame") == 0)
 		httpd->content_type = "audio/mpeg";
 	else
