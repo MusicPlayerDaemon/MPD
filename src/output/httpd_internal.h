@@ -29,12 +29,6 @@
 
 #include <glib.h>
 
-#ifdef WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#else
-#include <sys/socket.h>
-#endif
 #include <stdbool.h>
 
 struct httpd_client;
@@ -65,16 +59,6 @@ struct httpd_output {
 	const char *content_type;
 
 	/**
-	 * The configured address of the listener socket.
-	 */
-	struct sockaddr_storage address;
-
-	/**
-	 * The size of #address.
-	 */
-	socklen_t address_size;
-
-	/**
 	 * This mutex protects the listener socket and the client
 	 * list.
 	 */
@@ -89,12 +73,7 @@ struct httpd_output {
 	/**
 	 * The listener socket.
 	 */
-	int fd;
-
-	/**
-	 * A GLib main loop source id for the listener socket.
-	 */
-	guint source_id;
+	struct server_socket *server_socket;
 
 	/**
 	 * The header page, which is sent to every client on connect.

@@ -27,17 +27,11 @@
 #include "page.h"
 #include "icy_server.h"
 #include "fd_util.h"
+#include "server_socket.h"
 
 #include <assert.h>
 
 #include <sys/types.h>
-#ifdef WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#else
-#include <netinet/in.h>
-#include <netdb.h>
-#endif
 #include <unistd.h>
 #include <errno.h>
 
@@ -57,37 +51,20 @@ httpd_output_quark(void)
 	return g_quark_from_static_string("httpd_output");
 }
 
-static gboolean
-httpd_listen_in_event(G_GNUC_UNUSED GIOChannel *source,
-		      G_GNUC_UNUSED GIOCondition condition,
-		      gpointer data);
+static void
+httpd_listen_in_event(int fd, const struct sockaddr *address,
+		      size_t address_length, int uid, void *ctx);
 
 static bool
 httpd_output_bind(struct httpd_output *httpd, GError **error_r)
 {
-	GIOChannel *channel;
-
 	httpd->open = false;
 
-	/* create and set up listener socket */
-
-	httpd->fd = socket_bind_listen(httpd->address.ss_family, SOCK_STREAM,
-				       0, (struct sockaddr *)&httpd->address,
-				       httpd->address_size,
-				       16, error_r);
-	if (httpd->fd < 0)
-		return false;
-
 	g_mutex_lock(httpd->mutex);
-
-	channel = g_io_channel_unix_new(httpd->fd);
-	httpd->source_id = g_io_add_watch(channel, G_IO_IN,
-					  httpd_listen_in_event, httpd);
-	g_io_channel_unref(channel);
-
+	bool success = server_socket_open(httpd->server_socket, error_r);
 	g_mutex_unlock(httpd->mutex);
 
-	return true;
+	return success;
 }
 
 static void
@@ -96,48 +73,8 @@ httpd_output_unbind(struct httpd_output *httpd)
 	assert(!httpd->open);
 
 	g_mutex_lock(httpd->mutex);
-
-	g_source_remove(httpd->source_id);
-	close(httpd->fd);
-
+	server_socket_close(httpd->server_socket);
 	g_mutex_unlock(httpd->mutex);
-}
-
-static void
-httpd_output_parse_bind_to_address(struct httpd_output *httpd,
-				   const char *bind_to_address,
-				   guint port, GError **error)
-{
-	struct addrinfo hints, *ai;
-	char service[20];
-	int ret;
-
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_flags = AI_PASSIVE;
-#ifdef AI_ADDRCONFIG
-	hints.ai_flags |= AI_ADDRCONFIG;
-#endif
-	hints.ai_family = PF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-
-	g_snprintf(service, sizeof(service), "%u", port);
-	ret = getaddrinfo(bind_to_address, service, &hints, &ai);
-	if (ret != 0) {
-		g_set_error(error, httpd_output_quark(), ret,
-			    "Failed to look up host \"%s\": %s",
-			    bind_to_address, gai_strerror(ret));
-		return;
-	}
-
-	assert(ai);
-
-	/* Choose the first address, even if multiple are available. We do
-	 * not support multiple addresses yet. */
-	memcpy(&httpd->address, ai->ai_addr, ai->ai_addrlen);
-	httpd->address_size = ai->ai_addrlen;
-
-	freeaddrinfo(ai);
 }
 
 static void *
@@ -171,16 +108,17 @@ httpd_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	httpd->clients_max = config_get_block_unsigned(param,"max_clients", 0);
 
 	/* set up bind_to_address */
+
+	httpd->server_socket = server_socket_new(httpd_listen_in_event, httpd);
+
 	bind_to_address =
-		config_get_block_string(param, "bind_to_address",
-#ifdef HAVE_IPV6
-					"::"
-#else
-					"0.0.0.0"
-#endif
-				       );
-	httpd_output_parse_bind_to_address(httpd, bind_to_address, port, error);
-	if (*error)
+		config_get_block_string(param, "bind_to_address", NULL);
+	bool success = bind_to_address != NULL &&
+		strcmp(bind_to_address, "any") != 0
+		? server_socket_add_host(httpd->server_socket, bind_to_address,
+					 port, error)
+		: server_socket_add_port(httpd->server_socket, port, error);
+	if (!success)
 		return NULL;
 
 	/* initialize metadata */
@@ -212,6 +150,7 @@ httpd_output_finish(void *data)
 		page_unref(httpd->metadata);
 
 	encoder_finish(httpd->encoder);
+	server_socket_free(httpd->server_socket);
 	g_mutex_free(httpd->mutex);
 	g_free(httpd);
 }
@@ -235,26 +174,18 @@ httpd_client_add(struct httpd_output *httpd, int fd)
 		httpd_client_send_metadata(client, httpd->metadata);
 }
 
-static gboolean
-httpd_listen_in_event(G_GNUC_UNUSED GIOChannel *source,
-		      G_GNUC_UNUSED GIOCondition condition,
-		      gpointer data)
+static void
+httpd_listen_in_event(int fd, const struct sockaddr *address,
+		      size_t address_length, G_GNUC_UNUSED int uid, void *ctx)
 {
-	struct httpd_output *httpd = data;
-	int fd;
-	struct sockaddr_storage sa;
-	size_t sa_length = sizeof(sa);
-
-	g_mutex_lock(httpd->mutex);
+	struct httpd_output *httpd = ctx;
 
 	/* the listener socket has become readable - a client has
 	   connected */
 
-	fd = accept_cloexec_nonblock(httpd->fd, (struct sockaddr*)&sa,
-				     &sa_length);
 #ifdef HAVE_LIBWRAP
-	if (sa.ss_family != AF_UNIX) {
-		char *hostaddr = sockaddr_to_string((const struct sockaddr *)&sa, sa_length, NULL);
+	if (address->sa_family != AF_UNIX) {
+		char *hostaddr = sockaddr_to_string(address, address_length, NULL);
 		const char *progname = g_get_prgname();
 
 		struct request_info req;
@@ -269,12 +200,18 @@ httpd_listen_in_event(G_GNUC_UNUSED GIOChannel *source,
 			g_free(hostaddr);
 			close(fd);
 			g_mutex_unlock(httpd->mutex);
-			return true;
+			return;
 		}
 
 		g_free(hostaddr);
 	}
+#else
+	(void)address;
+	(void)address_length;
 #endif	/* HAVE_WRAP */
+
+	g_mutex_lock(httpd->mutex);
+
 	if (fd >= 0) {
 		/* can we allow additional client */
 		if (httpd->open &&
@@ -288,8 +225,6 @@ httpd_listen_in_event(G_GNUC_UNUSED GIOChannel *source,
 	}
 
 	g_mutex_unlock(httpd->mutex);
-
-	return true;
 }
 
 /**

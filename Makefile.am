@@ -998,6 +998,7 @@ if HAVE_LIBSAMPLERATE
 test_run_convert_SOURCES += src/pcm_resample_libsamplerate.c
 endif
 
+test_run_output_CFLAGS = $(AM_CFLAGS) $(MPD_CFLAGS)
 test_run_output_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ENCODER_CFLAGS) \
 	$(OUTPUT_CFLAGS)
@@ -1033,6 +1034,7 @@ test_run_output_SOURCES = test/run_output.c \
 	src/replay_gain_info.c \
 	src/replay_gain_config.c \
 	src/fd_util.c \
+	src/server_socket.c \
 	$(OUTPUT_SRC)
 
 test_read_mixer_CPPFLAGS = $(AM_CPPFLAGS) \
