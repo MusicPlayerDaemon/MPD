@@ -376,8 +376,6 @@ httpd_output_open(void *data, struct audio_format *audio_format,
 
 	success = httpd_output_encoder_open(httpd, audio_format, error);
 	if (!success) {
-		g_source_remove(httpd->source_id);
-		close(httpd->fd);
 		g_mutex_unlock(httpd->mutex);
 		return false;
 	}
