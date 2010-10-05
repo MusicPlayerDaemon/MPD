@@ -145,6 +145,7 @@ audio_output_all_finish(void)
 	unsigned int i;
 
 	for (i = 0; i < num_audio_outputs; i++) {
+		audio_output_disable(&audio_outputs[i]);
 		audio_output_finish(&audio_outputs[i]);
 	}
 
