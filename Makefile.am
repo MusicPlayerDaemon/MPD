@@ -111,6 +111,7 @@ mpd_headers = \
 	src/icy_metadata.h \
 	src/client.h \
 	src/client_internal.h \
+	src/server_socket.h \
 	src/listen.h \
 	src/log.h \
 	src/ls.h \
@@ -275,6 +276,7 @@ src_mpd_SOURCES = \
 	src/client_process.c \
 	src/client_read.c \
 	src/client_write.c \
+	src/server_socket.c \
 	src/listen.c \
 	src/log.c \
 	src/ls.c \
