@@ -137,6 +137,7 @@ mpd_headers = \
 	src/output/httpd_client.h \
 	src/output/httpd_internal.h \
 	src/output/pulse_output_plugin.h \
+	src/output/winmm_output_plugin.h \
 	src/page.h \
 	src/pcm_buffer.h \
 	src/pcm_utils.h \
@@ -738,6 +739,7 @@ endif
 
 if ENABLE_WINMM_OUTPUT
 OUTPUT_SRC += src/output/winmm_output_plugin.c
+MIXER_SRC += src/mixer/winmm_mixer_plugin.c
 endif
 
 

@@ -17,18 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/** \file
- *
- * This header provides "extern" declarations for all mixer plugins.
- */
+#ifndef MPD_WINMM_OUTPUT_PLUGIN_H
+#define MPD_WINMM_OUTPUT_PLUGIN_H
 
-#ifndef MPD_MIXER_LIST_H
-#define MPD_MIXER_LIST_H
+#include <windows.h>
 
-extern const struct mixer_plugin software_mixer_plugin;
-extern const struct mixer_plugin alsa_mixer_plugin;
-extern const struct mixer_plugin oss_mixer_plugin;
-extern const struct mixer_plugin pulse_mixer_plugin;
-extern const struct mixer_plugin winmm_mixer_plugin;
+struct winmm_output;
+
+HWAVEOUT winmm_output_get_handle(struct winmm_output*);
 
 #endif

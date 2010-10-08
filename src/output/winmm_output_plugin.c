@@ -20,6 +20,8 @@
 #include "config.h"
 #include "output_api.h"
 #include "pcm_buffer.h"
+#include "mixer_list.h"
+#include "winmm_output_plugin.h"
 
 #include <windows.h>
 
@@ -52,6 +54,12 @@ static inline GQuark
 winmm_output_quark(void)
 {
 	return g_quark_from_static_string("winmm_output");
+}
+
+HWAVEOUT
+winmm_output_get_handle(struct winmm_output* output)
+{
+	return output->handle;
 }
 
 static bool
@@ -293,4 +301,5 @@ const struct audio_output_plugin winmm_output_plugin = {
 	.play = winmm_output_play,
 	.drain = winmm_output_drain,
 	.cancel = winmm_output_cancel,
+	.mixer_plugin = &winmm_mixer_plugin,
 };
