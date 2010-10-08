@@ -36,7 +36,7 @@ extern const struct audio_output_plugin mvp_output_plugin;
 extern const struct audio_output_plugin jack_output_plugin;
 extern const struct audio_output_plugin httpd_output_plugin;
 extern const struct audio_output_plugin recorder_output_plugin;
-extern const struct audio_output_plugin win32_output_plugin;
+extern const struct audio_output_plugin winmm_output_plugin;
 
 const struct audio_output_plugin *audio_output_plugins[] = {
 #ifdef HAVE_SHOUT
@@ -82,8 +82,8 @@ const struct audio_output_plugin *audio_output_plugins[] = {
 #ifdef ENABLE_RECORDER_OUTPUT
 	&recorder_output_plugin,
 #endif
-#ifdef ENABLE_WIN32_OUTPUT
-	&win32_output_plugin,
+#ifdef ENABLE_WINMM_OUTPUT
+	&winmm_output_plugin,
 #endif
 	NULL
 };
