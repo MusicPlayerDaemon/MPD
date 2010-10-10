@@ -1,4 +1,4 @@
-ver 0.15.13 (2010/??/??)
+ver 0.15.13 (2010/10/10)
 * output_thread: fix race condition after CANCEL command
 * output:
   - httpd: fix random data in stream title
