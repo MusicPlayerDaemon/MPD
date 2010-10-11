@@ -173,6 +173,7 @@ mpd_headers = \
 	src/playlist/pls_playlist_plugin.h \
 	src/playlist/xspf_playlist_plugin.h \
 	src/playlist/asx_playlist_plugin.h \
+	src/playlist/rss_playlist_plugin.h \
 	src/playlist/lastfm_playlist_plugin.h \
 	src/playlist/cue_playlist_plugin.h \
 	src/playlist/flac_playlist_plugin.h \
@@ -753,6 +754,7 @@ PLAYLIST_SRC = \
 	src/playlist/pls_playlist_plugin.c \
 	src/playlist/xspf_playlist_plugin.c \
 	src/playlist/asx_playlist_plugin.c \
+	src/playlist/rss_playlist_plugin.c \
 	src/playlist_list.c
 
 if ENABLE_LASTFM

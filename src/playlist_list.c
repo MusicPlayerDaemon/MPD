@@ -26,6 +26,7 @@
 #include "playlist/lastfm_playlist_plugin.h"
 #include "playlist/pls_playlist_plugin.h"
 #include "playlist/asx_playlist_plugin.h"
+#include "playlist/rss_playlist_plugin.h"
 #include "playlist/cue_playlist_plugin.h"
 #include "playlist/flac_playlist_plugin.h"
 #include "input_stream.h"
@@ -45,6 +46,7 @@ static const struct playlist_plugin *const playlist_plugins[] = {
 	&xspf_playlist_plugin,
 	&pls_playlist_plugin,
 	&asx_playlist_plugin,
+	&rss_playlist_plugin,
 #ifdef ENABLE_LASTFM
 	&lastfm_playlist_plugin,
 #endif
