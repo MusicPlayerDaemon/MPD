@@ -264,7 +264,7 @@ input_curl_select(struct input_curl *c, GError **error_r)
 		return -1;
 	}
 
-#if LIBCURL_VERSION_NUM >= 0x070f00
+#if LIBCURL_VERSION_NUM >= 0x070f04
 	long timeout2;
 	mcode = curl_multi_timeout(c->multi, &timeout2);
 	if (mcode != CURLM_OK) {

@@ -45,4 +45,9 @@ void notify_wait(struct notify *notify);
  */
 void notify_signal(struct notify *notify);
 
+/**
+ * Clears a pending notification.
+ */
+void notify_clear(struct notify *notify);
+
 #endif

@@ -106,6 +106,16 @@ ver 0.16 (20??/??/??)
 * make single mode 'sticky'
 
 
+ver 0.15.13 (2010/10/10)
+* output_thread: fix race condition after CANCEL command
+* output:
+  - httpd: fix random data in stream title
+  - httpd: MIME type audio/ogg for Ogg Vorbis
+* input:
+  - rewind: update MIME not only once
+  - rewind: enable for MMS
+
+
 ver 0.15.12 (2010/07/20)
 * input:
   - curl: remove assertion after curl_multi_fdset()

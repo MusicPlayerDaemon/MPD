@@ -85,10 +85,11 @@ copy_attributes(struct input_rewind *r)
 	dest->size = src->size;
 	dest->offset = src->offset;
 
-	if (dest->mime == NULL && src->mime != NULL)
-		/* this is set only once, and the duplicated pointer
-		   is freed by input_stream_close() */
+	if (src->mime != NULL) {
+		if (dest->mime != NULL)
+			g_free(dest->mime);
 		dest->mime = g_strdup(src->mime);
+	}
 }
 
 static void

@@ -386,7 +386,7 @@ vorbis_encoder_read(struct encoder *_encoder, void *_dest, size_t length)
 static const char *
 vorbis_encoder_get_mime_type(G_GNUC_UNUSED struct encoder *_encoder)
 {
-	return  "application/x-ogg";
+	return  "audio/ogg";
 }
 
 const struct encoder_plugin vorbis_encoder_plugin = {

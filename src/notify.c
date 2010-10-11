@@ -49,3 +49,10 @@ void notify_signal(struct notify *notify)
 	g_cond_signal(notify->cond);
 	g_mutex_unlock(notify->mutex);
 }
+
+void notify_clear(struct notify *notify)
+{
+	g_mutex_lock(notify->mutex);
+	notify->pending = false;
+	g_mutex_unlock(notify->mutex);
+}
