@@ -407,6 +407,10 @@ sidplay_container_scan(const char *path_fs, const unsigned int tnum)
 
 static const char *const sidplay_suffixes[] = {
 	"sid",
+	"mus",
+	"str",
+	"prg",
+	"P00",
 	NULL
 };
 

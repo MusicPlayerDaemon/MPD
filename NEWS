@@ -36,6 +36,7 @@ ver 0.16 (20??/??/??)
   - sidplay: implemented songlength database
   - sidplay: support seeking
   - sidplay: play monaural SID tunes in mono
+  - sidplay: play mus, str, prg, x00 files
   - wavpack: activate 32 bit support
   - wavpack: allow more than 2 channels
   - mp4ff: rename plugin "mp4" to "mp4ff"
