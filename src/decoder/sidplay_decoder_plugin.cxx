@@ -201,6 +201,7 @@ static void
 sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 {
 	int ret;
+	int channels;
 
 	/* load the tune */
 
@@ -256,7 +257,7 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 	config.clockSpeed = SID2_CLOCK_CORRECT;
 	config.frequency = 48000;
 	config.optimisation = SID2_DEFAULT_OPTIMISATION;
-	config.playback = sid2_stereo;
+
 	config.precision = 16;
 	config.sidDefault = SID2_MOS6581;
 	config.sidEmulation = &builder;
@@ -267,6 +268,13 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 #else
 	config.sampleFormat = SID2_BIG_SIGNED;
 #endif
+	if (tune.isStereo()) {
+		config.playback = sid2_stereo;
+		channels = 2;
+	} else {
+		config.playback = sid2_mono;
+		channels = 1;
+	}
 
 	iret = player.config(config);
 	if (iret != 0) {
@@ -277,7 +285,7 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 	/* initialize the MPD decoder */
 
 	struct audio_format audio_format;
-	audio_format_init(&audio_format, 48000, SAMPLE_FORMAT_S16, 2);
+	audio_format_init(&audio_format, 48000, SAMPLE_FORMAT_S16, channels);
 	assert(audio_format_valid(&audio_format));
 
 	decoder_initialized(decoder, &audio_format, true, (float)song_len);
