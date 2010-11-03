@@ -65,8 +65,7 @@ winmm_output_get_handle(struct winmm_output* output)
 static bool
 winmm_output_test_default_device(void)
 {
-	/* we assume that Wave is always available */
-	return true;
+	return waveOutGetNumDevs() > 0;
 }
 
 static void *
