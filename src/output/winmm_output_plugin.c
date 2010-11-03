@@ -23,6 +23,8 @@
 #include "mixer_list.h"
 #include "winmm_output_plugin.h"
 
+#include <stdlib.h>
+#include <string.h>
 #include <windows.h>
 
 #undef G_LOG_DOMAIN
@@ -35,6 +37,7 @@ struct winmm_buffer {
 };
 
 struct winmm_output {
+	UINT device_id;
 	HWAVEOUT handle;
 
 	/**
@@ -68,13 +71,43 @@ winmm_output_test_default_device(void)
 	return waveOutGetNumDevs() > 0;
 }
 
+static UINT
+get_device_id(const char *device_name)
+{
+	/* if device is not specified use wave mapper */
+	if (device_name == NULL)
+		return WAVE_MAPPER;
+
+	/* check for device id */
+	char *endptr;
+	UINT id = strtoul(device_name, &endptr, 0);
+	if (*endptr == 0)
+		return id;
+
+	/* check for device name */
+	for (UINT i = 0; i < waveOutGetNumDevs(); i++) {
+		WAVEOUTCAPS caps;
+		MMRESULT result = waveOutGetDevCaps(i, &caps, sizeof(caps));
+		if (result != MMSYSERR_NOERROR)
+			continue;
+		/* szPname is only 32 chars long, so it is often truncated.
+		   Use partial match to work around this. */
+		if (strstr(device_name, caps.szPname) == device_name)
+			return i;
+	}
+
+	/* fallback to wave mapper */
+	return WAVE_MAPPER;
+}
+
 static void *
 winmm_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		  G_GNUC_UNUSED const struct config_param *param,
 		  G_GNUC_UNUSED GError **error)
 {
 	struct winmm_output *wo = g_new(struct winmm_output, 1);
-
+	const char *device = config_get_block_string(param, "device", NULL);
+	wo->device_id = get_device_id(device);
 	return wo;
 }
 
@@ -126,7 +159,7 @@ winmm_output_open(void *data, struct audio_format *audio_format,
 	format.wBitsPerSample = audio_format_sample_size(audio_format) * 8;
 	format.cbSize = 0;
 
-	MMRESULT result = waveOutOpen(&wo->handle, WAVE_MAPPER, &format,
+	MMRESULT result = waveOutOpen(&wo->handle, wo->device_id, &format,
 				      (DWORD_PTR)wo->event, 0, CALLBACK_EVENT);
 	if (result != MMSYSERR_NOERROR) {
 		CloseHandle(wo->event);
