@@ -72,6 +72,12 @@ static void ao_command_async(struct audio_output *ao,
 	notify_signal(&ao->notify);
 }
 
+static void
+audio_output_close_locked(struct audio_output *ao);
+
+/**
+ * Object must be locked (and unlocked) by the caller.
+ */
 static bool
 audio_output_open(struct audio_output *ao,
 		  const struct audio_format *audio_format,
@@ -98,7 +104,7 @@ audio_output_open(struct audio_output *ao,
 
 			/* we're not using audio_output_cancel() here,
 			   because that function is asynchronous */
-			ao_command(ao, AO_COMMAND_CANCEL);
+			ao_command_locked(ao, AO_COMMAND_CANCEL);
 		}
 
 		return true;
@@ -109,7 +115,7 @@ audio_output_open(struct audio_output *ao,
 
 	if (!ao->config_audio_format) {
 		if (ao->open)
-			audio_output_close(ao);
+			audio_output_close_locked(ao);
 
 		/* no audio format is configured: copy in->out, let
 		   the output's open() method determine the effective
@@ -124,7 +130,7 @@ audio_output_open(struct audio_output *ao,
 
 	open = ao->open;
 	if (!open) {
-		ao_command(ao, AO_COMMAND_OPEN);
+		ao_command_locked(ao, AO_COMMAND_OPEN);
 		open = ao->open;
 	}
 
@@ -141,12 +147,19 @@ audio_output_update(struct audio_output *ao,
 {
 	assert(mp != NULL);
 
+	g_mutex_lock(ao->mutex);
+
 	if (ao->enabled) {
 		if (ao->fail_timer == NULL ||
-		    g_timer_elapsed(ao->fail_timer, NULL) > REOPEN_AFTER)
-			return audio_output_open(ao, audio_format, mp);
+		    g_timer_elapsed(ao->fail_timer, NULL) > REOPEN_AFTER) {
+			bool ret = audio_output_open(ao, audio_format, mp);
+			g_mutex_unlock(ao->mutex);
+			return ret;
+		}
 	} else if (audio_output_is_open(ao))
-		audio_output_close(ao);
+		audio_output_close_locked(ao);
+
+	g_mutex_unlock(ao->mutex);
 
 	return false;
 }
