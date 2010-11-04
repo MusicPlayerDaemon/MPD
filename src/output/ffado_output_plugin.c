@@ -325,7 +325,10 @@ ffado_play(void *data, const void *chunk, size_t size, GError **error_r)
 	/* if buffer full, transfer to device */
 
 	if (fd->buffer_position >= fd->period_size &&
-	    ffado_streaming_transfer_playback_buffers(fd->dev) != 0) {
+	    /* libffado documentation says this function returns -1 on
+	       error, but that is a lie - it returns a boolean value,
+	       and "false" means error */
+	    !ffado_streaming_transfer_playback_buffers(fd->dev)) {
 		g_set_error(error_r, ffado_output_quark(), 0,
 			    "ffado_streaming_transfer_playback_buffers() failed");
 		return 0;
