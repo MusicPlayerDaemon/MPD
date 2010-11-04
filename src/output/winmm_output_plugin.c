@@ -81,7 +81,7 @@ get_device_id(const char *device_name)
 	/* check for device id */
 	char *endptr;
 	UINT id = strtoul(device_name, &endptr, 0);
-	if (*endptr == 0)
+	if (endptr > device_name && *endptr == 0)
 		return id;
 
 	/* check for device name */
