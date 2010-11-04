@@ -1,5 +1,5 @@
 ver 0.15.14 (2010/??/??)
-
+* output_thread: fix assertion failure due to race condition in OPEN
 
 ver 0.15.13 (2010/10/10)
 * output_thread: fix race condition after CANCEL command

@@ -197,9 +197,17 @@ static gpointer audio_output_task(gpointer arg)
 
 		case AO_COMMAND_OPEN:
 			assert(!ao->open);
-			assert(ao->fail_timer == NULL);
 			assert(ao->pipe != NULL);
 			assert(ao->chunk == NULL);
+
+			if (ao->fail_timer != NULL) {
+				/* this can only happen when this
+				   output thread fails while
+				   audio_output_open() is run in the
+				   player thread */
+				g_timer_destroy(ao->fail_timer);
+				ao->fail_timer = NULL;
+			}
 
 			error = NULL;
 			ret = ao_plugin_open(ao->plugin, ao->data,
