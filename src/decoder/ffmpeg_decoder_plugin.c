@@ -231,16 +231,18 @@ static enum sample_format
 ffmpeg_sample_format(G_GNUC_UNUSED const AVCodecContext *codec_context)
 {
 #if LIBAVCODEC_VERSION_INT >= ((51<<16)+(41<<8)+0)
-	int bits = (uint8_t) av_get_bits_per_sample_format(codec_context->sample_fmt);
-
-	/* XXX implement & test other sample formats */
-
-	switch (bits) {
-	case 16:
+	switch (codec_context->sample_fmt) {
+	case SAMPLE_FMT_S16:
 		return SAMPLE_FORMAT_S16;
-	}
 
-	return SAMPLE_FORMAT_UNDEFINED;
+	case SAMPLE_FMT_S32:
+		return SAMPLE_FORMAT_S32;
+
+	default:
+		g_warning("Unsupported libavcodec SampleFormat value: %d",
+			  codec_context->sample_fmt);
+		return SAMPLE_FORMAT_UNDEFINED;
+	}
 #else
 	/* XXX fixme 16-bit for older ffmpeg (13 Aug 2007) */
 	return SAMPLE_FORMAT_S16;
