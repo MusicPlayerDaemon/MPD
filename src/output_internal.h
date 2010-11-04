@@ -131,7 +131,8 @@ struct audio_output {
 	const struct music_pipe *pipe;
 
 	/**
-	 * This mutex protects #open, #chunk and #chunk_finished.
+	 * This mutex protects #open, #fail_timer, #chunk and
+	 * #chunk_finished.
 	 */
 	GMutex *mutex;
 
