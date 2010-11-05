@@ -334,6 +334,14 @@ static bool player_seek_decoder(struct player *player)
 			return false;
 		}
 	} else {
+		if (!player_dc_at_current_song(player)) {
+			/* the decoder is already decoding the "next" song,
+			   but it is the same song file; exchange the pipe */
+			music_pipe_clear(player->pipe, player_buffer);
+			music_pipe_free(player->pipe);
+			player->pipe = dc.pipe;
+		}
+
 		pc.next_song = NULL;
 		player->queued = false;
 	}

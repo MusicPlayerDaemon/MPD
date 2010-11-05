@@ -1,4 +1,5 @@
 ver 0.15.14 (2010/??/??)
+* player_thread: fix assertion failure due to wrong music pipe on seek
 * output_thread: fix assertion failure due to race condition in OPEN
 * input:
   - rewind: fix double free bug
