@@ -278,6 +278,30 @@ ao_reopen(struct audio_output *ao)
 		ao_open(ao);
 }
 
+/**
+ * Wait until the output's delay reaches zero.
+ *
+ * @return true if playback should be continued, false if a command
+ * was issued
+ */
+static bool
+ao_wait(struct audio_output *ao)
+{
+	while (true) {
+		unsigned delay = ao_plugin_delay(ao->plugin, ao->data);
+		if (delay == 0)
+			return true;
+
+		GTimeVal tv;
+		g_get_current_time(&tv);
+		g_time_val_add(&tv, delay * 1000);
+		g_cond_timed_wait(ao->cond, ao->mutex, &tv);
+
+		if (ao->command != AO_COMMAND_NONE)
+			return false;
+	}
+}
+
 static const char *
 ao_chunk_data(struct audio_output *ao, const struct music_chunk *chunk,
 	      struct filter *replay_gain_filter,
@@ -414,6 +438,9 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 	while (size > 0 && ao->command == AO_COMMAND_NONE) {
 		size_t nbytes;
 
+		if (!ao_wait(ao))
+			break;
+
 		g_mutex_unlock(ao->mutex);
 		nbytes = ao_plugin_play(ao->plugin, ao->data, data, size,
 					&error);
@@ -511,6 +538,9 @@ static void ao_pause(struct audio_output *ao)
 	ao_command_finished(ao);
 
 	do {
+		if (!ao_wait(ao))
+			break;
+
 		g_mutex_unlock(ao->mutex);
 		ret = ao_plugin_pause(ao->plugin, ao->data);
 		g_mutex_lock(ao->mutex);

@@ -74,12 +74,12 @@ void timer_add(Timer *timer, int size)
 unsigned
 timer_delay(const Timer *timer)
 {
-	int64_t delay = timer->time - now();
+	int64_t delay = (timer->time - now()) / 1000;
 	if (delay < 0)
 		return 0;
 
-	if (delay > 1000 * 1000 * 1000)
-		return 1000 * 1000;
+	if (delay > G_MAXINT)
+		delay = G_MAXINT;
 
 	return delay / 1000;
 }

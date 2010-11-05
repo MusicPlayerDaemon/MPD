@@ -101,6 +101,16 @@ struct audio_output_plugin {
 	void (*close)(void *data);
 
 	/**
+	 * Returns a positive number if the output thread shall delay
+	 * the next call to play() or pause().  This should be
+	 * implemented instead of doing a sleep inside the plugin,
+	 * because this allows MPD to listen to commands meanwhile.
+	 *
+	 * @return the number of milliseconds to wait
+	 */
+	unsigned (*delay)(void *data);
+
+	/**
 	 * Display metadata for the next chunk.  Optional method,
 	 * because not all devices can display metadata.
 	 */
@@ -200,6 +210,14 @@ static inline void
 ao_plugin_close(const struct audio_output_plugin *plugin, void *data)
 {
 	plugin->close(data);
+}
+
+static inline unsigned
+ao_plugin_delay(const struct audio_output_plugin *plugin, void *data)
+{
+	return plugin->delay != NULL
+		? plugin->delay(data)
+		: 0;
 }
 
 static inline void
