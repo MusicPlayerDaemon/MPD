@@ -375,6 +375,16 @@ httpd_output_send_header(struct httpd_output *httpd,
 		httpd_client_send(client, httpd->header);
 }
 
+static unsigned
+httpd_output_delay(void *data)
+{
+	struct httpd_output *httpd = data;
+
+	return httpd->timer->started
+		? timer_delay(httpd->timer)
+		: 0;
+}
+
 static void
 httpd_client_check_queue(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
@@ -464,8 +474,6 @@ httpd_output_play(void *data, const void *chunk, size_t size, GError **error)
 
 	if (!httpd->timer->started)
 		timer_start(httpd->timer);
-	else
-		timer_sync(httpd->timer);
 	timer_add(httpd->timer, size);
 
 	return size;
@@ -575,6 +583,7 @@ const struct audio_output_plugin httpd_output_plugin = {
 	.disable = httpd_output_disable,
 	.open = httpd_output_open,
 	.close = httpd_output_close,
+	.delay = httpd_output_delay,
 	.send_tag = httpd_output_tag,
 	.play = httpd_output_play,
 	.pause = httpd_output_pause,
