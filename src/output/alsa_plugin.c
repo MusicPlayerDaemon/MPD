@@ -408,6 +408,26 @@ configure_hw:
 	}
 	audio_format->sample_rate = sample_rate;
 
+	snd_pcm_uframes_t buffer_size_min, buffer_size_max;
+	snd_pcm_hw_params_get_buffer_size_min(hwparams, &buffer_size_min);
+	snd_pcm_hw_params_get_buffer_size_max(hwparams, &buffer_size_max);
+	unsigned buffer_time_min, buffer_time_max;
+	snd_pcm_hw_params_get_buffer_time_min(hwparams, &buffer_time_min, 0);
+	snd_pcm_hw_params_get_buffer_time_max(hwparams, &buffer_time_max, 0);
+	g_debug("buffer: size=%u..%u time=%u..%u",
+		(unsigned)buffer_size_min, (unsigned)buffer_size_max,
+		buffer_time_min, buffer_time_max);
+
+	snd_pcm_uframes_t period_size_min, period_size_max;
+	snd_pcm_hw_params_get_period_size_min(hwparams, &period_size_min, 0);
+	snd_pcm_hw_params_get_period_size_max(hwparams, &period_size_max, 0);
+	unsigned period_time_min, period_time_max;
+	snd_pcm_hw_params_get_period_time_min(hwparams, &period_time_min, 0);
+	snd_pcm_hw_params_get_period_time_max(hwparams, &period_time_max, 0);
+	g_debug("period: size=%u..%u time=%u..%u",
+		(unsigned)period_size_min, (unsigned)period_size_max,
+		period_time_min, period_time_max);
+
 	if (ad->buffer_time > 0) {
 		buffer_time = ad->buffer_time;
 		cmd = "snd_pcm_hw_params_set_buffer_time_near";
