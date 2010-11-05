@@ -40,6 +40,12 @@ void timer_reset(Timer *timer);
 
 void timer_add(Timer *timer, int size);
 
+/**
+ * Returns the number of milliseconds to sleep to get back to sync.
+ */
+unsigned
+timer_delay(const Timer *timer);
+
 void timer_sync(Timer *timer);
 
 #endif

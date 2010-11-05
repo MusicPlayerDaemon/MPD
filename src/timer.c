@@ -71,6 +71,19 @@ void timer_add(Timer *timer, int size)
 	timer->time += ((uint64_t)size * 1000000) / timer->rate;
 }
 
+unsigned
+timer_delay(const Timer *timer)
+{
+	int64_t delay = timer->time - now();
+	if (delay < 0)
+		return 0;
+
+	if (delay > 1000 * 1000 * 1000)
+		return 1000 * 1000;
+
+	return delay / 1000;
+}
+
 void timer_sync(Timer *timer)
 {
 	int64_t sleep_duration;
