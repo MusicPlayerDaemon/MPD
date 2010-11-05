@@ -93,8 +93,7 @@ copy_attributes(struct input_stream *dest)
 	dest->offset = src->offset;
 
 	if (src->mime != NULL) {
-		if (dest->mime != NULL)
-			g_free(dest->mime);
+		g_free(dest->mime);
 		dest->mime = g_strdup(src->mime);
 	}
 }
