@@ -736,7 +736,7 @@ static void do_play(void)
 
 		if (player.paused)
 			notify_wait(&pc.notify);
-		else if (music_pipe_size(player.pipe) > 0) {
+		else if (!music_pipe_empty(player.pipe)) {
 			/* at least one music chunk is ready - send it
 			   to the audio output */
 
@@ -757,7 +757,7 @@ static void do_play(void)
 			/* check the size of the pipe again, because
 			   the decoder thread may have added something
 			   since we last checked */
-			if (music_pipe_size(player.pipe) == 0)
+			if (music_pipe_empty(player.pipe))
 				break;
 		} else {
 			/* the decoder is too busy and hasn't provided
