@@ -18,6 +18,7 @@
  */
 
 #include "decoder_control.h"
+#include "pipe.h"
 
 #include <assert.h>
 
@@ -58,22 +59,28 @@ static void dc_command_async(enum decoder_command cmd)
 }
 
 void
-dc_start(struct notify *notify, struct song *song)
+dc_start(struct notify *notify, struct song *song, struct music_pipe *pipe)
 {
-	assert(dc.pipe != NULL);
+	assert(dc.pipe == NULL);
 	assert(song != NULL);
+	assert(pipe != NULL);
+	assert(music_pipe_empty(pipe));
 
 	dc.next_song = song;
+	dc.pipe = pipe;
 	dc_command(notify, DECODE_COMMAND_START);
 }
 
 void
-dc_start_async(struct song *song)
+dc_start_async(struct song *song, struct music_pipe *pipe)
 {
-	assert(dc.pipe != NULL);
+	assert(dc.pipe == NULL);
 	assert(song != NULL);
+	assert(pipe != NULL);
+	assert(music_pipe_empty(pipe));
 
 	dc.next_song = song;
+	dc.pipe = pipe;
 	dc_command_async(DECODE_COMMAND_START);
 }
 

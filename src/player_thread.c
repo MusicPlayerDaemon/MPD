@@ -324,10 +324,9 @@ static bool player_seek_decoder(struct player *player)
 		/* clear music chunks which might still reside in the
 		   pipe */
 		music_pipe_clear(player->pipe, player_buffer);
-		dc.pipe = player->pipe;
 
 		/* re-start the decoder */
-		dc_start_async(pc.next_song);
+		dc_start_async(pc.next_song, player->pipe);
 		ret = player_wait_for_decoder(player);
 		if (!ret) {
 			/* decoder failure */
@@ -665,8 +664,7 @@ static void do_play(void)
 	player.pipe = music_pipe_new();
 
 	dc.buffer = player_buffer;
-	dc.pipe = player.pipe;
-	dc_start(&pc.notify, pc.next_song);
+	dc_start(&pc.notify, pc.next_song, player.pipe);
 	if (!player_wait_for_decoder(&player)) {
 		player_dc_stop(&player);
 		player_command_finished();
@@ -735,9 +733,10 @@ static void do_play(void)
 			assert(pc.next_song != NULL);
 			assert(!player_dc_at_next_song(&player));
 
+			dc.pipe = NULL;
+
 			player.queued = false;
-			dc.pipe = music_pipe_new();
-			dc_start_async(pc.next_song);
+			dc_start_async(pc.next_song, music_pipe_new());
 		}
 
 		if (player_dc_at_next_song(&player) &&

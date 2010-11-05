@@ -118,10 +118,10 @@ void
 dc_command_wait(struct notify *notify);
 
 void
-dc_start(struct notify *notify, struct song *song);
+dc_start(struct notify *notify, struct song *song, struct music_pipe *pipe);
 
 void
-dc_start_async(struct song *song);
+dc_start_async(struct song *song, struct music_pipe *pipe);
 
 void
 dc_stop(struct notify *notify);
