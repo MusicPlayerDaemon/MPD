@@ -1,5 +1,7 @@
 ver 0.15.14 (2010/??/??)
 * output_thread: fix assertion failure due to race condition in OPEN
+* input:
+  - rewind: fix double free bug
 * decoders:
   - mp4ff, ffmpeg: add extension ".m4b" (audio book)
 

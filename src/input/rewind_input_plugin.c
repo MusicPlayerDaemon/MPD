@@ -244,4 +244,5 @@ input_rewind_open(struct input_stream *is)
 	   input stream */
 	is->plugin = &rewind_input_plugin;
 	is->data = c;
+	is->mime = g_strdup(c->input.mime);
 }
