@@ -119,6 +119,33 @@ static void player_command_finished(void)
 }
 
 /**
+ * Is the decoder still busy on the same song as the player?
+ *
+ * Note: this function does not check if the decoder is already
+ * finished.
+ */
+static bool
+player_dc_at_current_song(const struct player *player)
+{
+	assert(player != NULL);
+	assert(player->pipe != NULL);
+
+	return dc.pipe == player->pipe;
+}
+
+/**
+ * Has the decoder already begun decoding the next song?
+ *
+ * Note: this function does not check if the decoder is already
+ * finished.
+ */
+static bool
+player_dc_at_next_song(const struct player *player)
+{
+	return dc.pipe != NULL && !player_dc_at_current_song(player);
+}
+
+/**
  * Stop the decoder and clears (and frees) its music pipe.
  */
 static void
@@ -364,7 +391,7 @@ static void player_process_command(struct player *player)
 	case PLAYER_COMMAND_QUEUE:
 		assert(pc.next_song != NULL);
 		assert(!player->queued);
-		assert(dc.pipe == NULL || dc.pipe == player->pipe);
+		assert(!player_dc_at_next_song(player));
 
 		player->queued = true;
 		player_command_finished();
@@ -409,7 +436,7 @@ static void player_process_command(struct player *player)
 			return;
 		}
 
-		if (dc.pipe != NULL && dc.pipe != player->pipe)
+		if (player_dc_at_next_song(player))
 			/* the decoder is already decoding the song -
 			   stop it and reset the position */
 			player_dc_stop(player);
@@ -505,7 +532,7 @@ play_next_chunk(struct player *player)
 		return true;
 
 	if (player->xfade == XFADE_ENABLED &&
-	    dc.pipe != NULL && dc.pipe != player->pipe &&
+	    player_dc_at_next_song(player) &&
 	    (cross_fade_position = music_pipe_size(player->pipe))
 	    <= player->cross_fade_chunks) {
 		/* perform cross fade */
@@ -706,14 +733,14 @@ static void do_play(void)
 			/* the decoder has finished the current song;
 			   make it decode the next song */
 			assert(pc.next_song != NULL);
-			assert(dc.pipe == NULL || dc.pipe == player.pipe);
+			assert(!player_dc_at_next_song(&player));
 
 			player.queued = false;
 			dc.pipe = music_pipe_new();
 			dc_start_async(pc.next_song);
 		}
 
-		if (dc.pipe != NULL && dc.pipe != player.pipe &&
+		if (player_dc_at_next_song(&player) &&
 		    player.xfade == XFADE_UNKNOWN &&
 		    !decoder_is_starting()) {
 			/* enable cross fading in this song?  if yes,
@@ -748,7 +775,7 @@ static void do_play(void)
 
 			/* XXX synchronize in a better way */
 			g_usleep(10000);
-		} else if (dc.pipe != NULL && dc.pipe != player.pipe) {
+		} else if (player_dc_at_next_song(&player)) {
 			/* at the beginning of a new song */
 
 			if (!player_song_border(&player))
