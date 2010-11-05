@@ -65,6 +65,7 @@ ver 0.16 (20??/??/??)
   - httpd: bind_to_address support (including IPv6)
   - oss: 24 bit support via OSS4
   - win32: new output plugin for Windows Wave
+  - shout: more responsive to control commands
   - wildcards allowed in audio_format configuration
   - consistently lock audio output objects
 * player:

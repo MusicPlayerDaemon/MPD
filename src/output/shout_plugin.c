@@ -342,7 +342,6 @@ write_page(struct shout_data *sd, GError **error)
 	if (sd->buf.len == 0)
 		return true;
 
-	shout_sync(sd->shout_conn);
 	err = shout_send(sd->shout_conn, sd->buf.data, sd->buf.len);
 	if (!handle_shout_error(sd, err, error))
 		return false;
@@ -441,6 +440,18 @@ my_shout_open_device(void *data, struct audio_format *audio_format,
 	return true;
 }
 
+static unsigned
+my_shout_delay(void *data)
+{
+	struct shout_data *sd = (struct shout_data *)data;
+
+	int delay = shout_delay(sd->shout_conn);
+	if (delay < 0)
+		delay = 0;
+
+	return delay;
+}
+
 static size_t
 my_shout_play(void *data, const void *chunk, size_t size, GError **error)
 {
@@ -455,14 +466,7 @@ my_shout_play(void *data, const void *chunk, size_t size, GError **error)
 static bool
 my_shout_pause(void *data)
 {
-	struct shout_data *sd = (struct shout_data *)data;
 	static const char silence[1020];
-
-	if (shout_delay(sd->shout_conn) > 500) {
-		/* cap the latency for unpause */
-		g_usleep(500000);
-		return true;
-	}
 
 	return my_shout_play(data, silence, sizeof(silence), NULL);
 }
@@ -540,6 +544,7 @@ const struct audio_output_plugin shoutPlugin = {
 	.init = my_shout_init_driver,
 	.finish = my_shout_finish_driver,
 	.open = my_shout_open_device,
+	.delay = my_shout_delay,
 	.play = my_shout_play,
 	.pause = my_shout_pause,
 	.cancel = my_shout_drop_buffered_audio,
