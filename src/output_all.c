@@ -323,7 +323,7 @@ audio_output_all_open(const struct audio_format *audio_format,
 	else
 		/* if the pipe hasn't been cleared, the the audio
 		   format must not have changed */
-		assert(music_pipe_size(g_mp) == 0 ||
+		assert(music_pipe_empty(g_mp) ||
 		       audio_format_equals(audio_format,
 					   &input_audio_format));
 
@@ -436,7 +436,7 @@ audio_output_all_check(void)
 	assert(g_mp != NULL);
 
 	while ((chunk = music_pipe_peek(g_mp)) != NULL) {
-		assert(music_pipe_size(g_mp) > 0);
+		assert(!music_pipe_empty(g_mp));
 
 		if (!chunk_is_consumed(chunk))
 			/* at least one output is not finished playing

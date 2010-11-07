@@ -20,6 +20,7 @@
 #include "config.h"
 #include "decoder_control.h"
 #include "player_control.h"
+#include "pipe.h"
 
 #include <assert.h>
 
@@ -106,6 +107,7 @@ dc_start(struct decoder_control *dc, struct song *song,
 	assert(song != NULL);
 	assert(buffer != NULL);
 	assert(pipe != NULL);
+	assert(music_pipe_empty(pipe));
 
 	dc->song = song;
 	dc->buffer = buffer;

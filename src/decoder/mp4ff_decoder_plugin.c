@@ -417,7 +417,13 @@ mp4_stream_tag(struct input_stream *is)
 	return tag;
 }
 
-static const char *const mp4_suffixes[] = { "m4a", "mp4", NULL };
+static const char *const mp4_suffixes[] = {
+	"m4a",
+	"m4b",
+	"mp4",
+	NULL
+};
+
 static const char *const mp4_mime_types[] = { "audio/mp4", "audio/m4a", NULL };
 
 const struct decoder_plugin mp4ff_decoder_plugin = {

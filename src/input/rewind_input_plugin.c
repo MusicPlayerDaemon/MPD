@@ -80,14 +80,16 @@ copy_attributes(struct input_rewind *r)
 	struct input_stream *dest = &r->base;
 	const struct input_stream *src = r->input;
 
+	assert(dest != src);
+	assert(dest->mime != src->mime);
+
 	dest->ready = src->ready;
 	dest->seekable = src->seekable;
 	dest->size = src->size;
 	dest->offset = src->offset;
 
 	if (src->mime != NULL) {
-		if (dest->mime != NULL)
-			g_free(dest->mime);
+		g_free(dest->mime);
 		dest->mime = g_strdup(src->mime);
 	}
 }

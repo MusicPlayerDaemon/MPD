@@ -134,9 +134,17 @@ ao_open(struct audio_output *ao)
 	struct audio_format_string af_string;
 
 	assert(!ao->open);
-	assert(ao->fail_timer == NULL);
 	assert(ao->pipe != NULL);
 	assert(ao->chunk == NULL);
+
+	if (ao->fail_timer != NULL) {
+		/* this can only happen when this
+		   output thread fails while
+		   audio_output_open() is run in the
+		   player thread */
+		g_timer_destroy(ao->fail_timer);
+		ao->fail_timer = NULL;
+	}
 
 	/* enable the device (just in case the last enable has failed) */
 
@@ -455,7 +463,12 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 
 			/* don't automatically reopen this device for
 			   10 seconds */
+			g_mutex_lock(ao->mutex);
+
+			assert(ao->fail_timer == NULL);
 			ao->fail_timer = g_timer_new();
+
+			g_mutex_unlock(ao->mutex);
 			return false;
 		}
 

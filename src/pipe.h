@@ -99,4 +99,10 @@ music_pipe_push(struct music_pipe *mp, struct music_chunk *chunk);
 unsigned
 music_pipe_size(const struct music_pipe *mp);
 
+static inline bool
+music_pipe_empty(const struct music_pipe *mp)
+{
+	return music_pipe_size(mp) == 0;
+}
+
 #endif

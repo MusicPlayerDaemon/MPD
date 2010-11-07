@@ -149,6 +149,32 @@ player_dc_start(struct player *player, struct music_pipe *pipe)
 }
 
 /**
+ * Is the decoder still busy on the same song as the player?
+ *
+ * Note: this function does not check if the decoder is already
+ * finished.
+ */
+static bool
+player_dc_at_current_song(const struct player *player)
+{
+	assert(player != NULL);
+	assert(player->pipe != NULL);
+
+	return player->dc->pipe == player->pipe;
+}
+
+/**
+ * Returns true if the decoder is decoding the next song (or has begun
+ * decoding it, or has finished doing it), and the player hasn't
+ * switched to that song yet.
+ */
+static bool
+player_dc_at_next_song(const struct player *player)
+{
+	return player->dc->pipe != NULL && !player_dc_at_current_song(player);
+}
+
+/**
  * Stop the decoder and clears (and frees) its music pipe.
  *
  * Player lock is not held.
@@ -170,17 +196,6 @@ player_dc_stop(struct player *player)
 
 		dc->pipe = NULL;
 	}
-}
-
-/**
- * Returns true if the decoder is decoding the next song (or has begun
- * decoding it, or has finished doing it), and the player hasn't
- * switched to that song yet.
- */
-static bool
-decoding_next_song(const struct player *player)
-{
-	return player->dc->pipe != NULL && player->dc->pipe != player->pipe;
 }
 
 /**
@@ -405,6 +420,14 @@ static bool player_seek_decoder(struct player *player)
 			return false;
 		}
 	} else {
+		if (!player_dc_at_current_song(player)) {
+			/* the decoder is already decoding the "next" song,
+			   but it is the same song file; exchange the pipe */
+			music_pipe_clear(player->pipe, player_buffer);
+			music_pipe_free(player->pipe);
+			player->pipe = dc->pipe;
+		}
+
 		pc.next_song = NULL;
 		player->queued = false;
 	}
@@ -473,7 +496,7 @@ static void player_process_command(struct player *player)
 	case PLAYER_COMMAND_QUEUE:
 		assert(pc.next_song != NULL);
 		assert(!player->queued);
-		assert(dc->pipe == NULL || dc->pipe == player->pipe);
+		assert(!player_dc_at_next_song(player));
 
 		player->queued = true;
 		player_command_finished_locked();
@@ -527,7 +550,7 @@ static void player_process_command(struct player *player)
 			return;
 		}
 
-		if (decoding_next_song(player)) {
+		if (player_dc_at_next_song(player)) {
 			/* the decoder is already decoding the song -
 			   stop it and reset the position */
 			player_unlock();
@@ -635,7 +658,7 @@ play_next_chunk(struct player *player)
 		return true;
 
 	if (player->xfade == XFADE_ENABLED &&
-	    decoding_next_song(player) &&
+	    player_dc_at_next_song(player) &&
 	    (cross_fade_position = music_pipe_size(player->pipe))
 	    <= player->cross_fade_chunks) {
 		/* perform cross fade */
@@ -881,12 +904,13 @@ static void do_play(struct decoder_control *dc)
 		    dc->pipe == player.pipe) {
 			/* the decoder has finished the current song;
 			   make it decode the next song */
+
 			assert(dc->pipe == NULL || dc->pipe == player.pipe);
 
 			player_dc_start(&player, music_pipe_new());
 		}
 
-		if (decoding_next_song(&player) &&
+		if (player_dc_at_next_song(&player) &&
 		    player.xfade == XFADE_UNKNOWN &&
 		    !decoder_lock_is_starting(dc)) {
 			/* enable cross fading in this song?  if yes,
@@ -919,7 +943,7 @@ static void do_play(struct decoder_control *dc)
 			if (pc.command == PLAYER_COMMAND_NONE)
 				player_wait();
 			continue;
-		} else if (music_pipe_size(player.pipe) > 0) {
+		} else if (!music_pipe_empty(player.pipe)) {
 			/* at least one music chunk is ready - send it
 			   to the audio output */
 
@@ -931,7 +955,7 @@ static void do_play(struct decoder_control *dc)
 
 			/* XXX synchronize in a better way */
 			g_usleep(10000);
-		} else if (decoding_next_song(&player)) {
+		} else if (player_dc_at_next_song(&player)) {
 			/* at the beginning of a new song */
 
 			if (!player_song_border(&player))
@@ -940,7 +964,7 @@ static void do_play(struct decoder_control *dc)
 			/* check the size of the pipe again, because
 			   the decoder thread may have added something
 			   since we last checked */
-			if (music_pipe_size(player.pipe) == 0) {
+			if (music_pipe_empty(player.pipe)) {
 				/* wait for the hardware to finish
 				   playback */
 				audio_output_all_drain();

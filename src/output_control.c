@@ -102,6 +102,12 @@ audio_output_disable(struct audio_output *ao)
 	g_mutex_unlock(ao->mutex);
 }
 
+static void
+audio_output_close_locked(struct audio_output *ao);
+
+/**
+ * Object must be locked (and unlocked) by the caller.
+ */
 static bool
 audio_output_open(struct audio_output *ao,
 		  const struct audio_format *audio_format,
@@ -173,6 +179,8 @@ audio_output_open(struct audio_output *ao,
 static void
 audio_output_close_locked(struct audio_output *ao)
 {
+	assert(ao != NULL);
+
 	if (ao->mixer != NULL)
 		mixer_auto_close(ao->mixer);
 
@@ -251,25 +259,6 @@ void audio_output_cancel(struct audio_output *ao)
 	g_mutex_unlock(ao->mutex);
 }
 
-void audio_output_close(struct audio_output *ao)
-{
-	if (ao->mixer != NULL)
-		mixer_auto_close(ao->mixer);
-
-	g_mutex_lock(ao->mutex);
-
-	assert(!ao->open || ao->fail_timer == NULL);
-
-	if (ao->open)
-		ao_command(ao, AO_COMMAND_CLOSE);
-	else if (ao->fail_timer != NULL) {
-		g_timer_destroy(ao->fail_timer);
-		ao->fail_timer = NULL;
-	}
-
-	g_mutex_unlock(ao->mutex);
-}
-
 void
 audio_output_release(struct audio_output *ao)
 {
@@ -277,6 +266,16 @@ audio_output_release(struct audio_output *ao)
 		audio_output_pause(ao);
 	else
 		audio_output_close(ao);
+}
+
+void audio_output_close(struct audio_output *ao)
+{
+	assert(ao != NULL);
+	assert(!ao->open || ao->fail_timer == NULL);
+
+	g_mutex_lock(ao->mutex);
+	audio_output_close_locked(ao);
+	g_mutex_unlock(ao->mutex);
 }
 
 void audio_output_finish(struct audio_output *ao)
