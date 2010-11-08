@@ -1,6 +1,8 @@
 ver 0.15.15 (2010/??/??)
 * input:
   - rewind: fix assertion failure
+* output:
+  - shout: artist comes first in stream title
 
 
 ver 0.15.14 (2010/11/06)
