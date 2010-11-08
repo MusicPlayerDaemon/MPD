@@ -546,6 +546,31 @@ update_container_file(	struct directory* directory,
 		return true;
 }
 
+/**
+ * Checks if the given permissions on the mapped file are given.
+ */
+static bool
+directory_child_access(const struct directory *directory,
+		       const char *name, int mode)
+{
+#ifdef WIN32
+	/* access() is useless on WIN32 */
+	(void)directory;
+	(void)name;
+	return true;
+#else
+	char *path = map_directory_child_fs(directory, name);
+	if (path == NULL)
+		/* something went wrong, but that isn't a permission
+		   problem */
+		return true;
+
+	bool success = access(path, mode) == 0 || errno != EACCES;
+	g_free(path);
+	return success;
+#endif
+}
+
 static void
 update_regular_file(struct directory *directory,
 		    const char *name, const struct stat *st)
@@ -561,6 +586,14 @@ update_regular_file(struct directory *directory,
 	if ((plugin = decoder_plugin_from_suffix(suffix, false)) != NULL)
 	{
 		struct song* song = songvec_find(&directory->songs, name);
+
+		if (!directory_child_access(directory, name, R_OK)) {
+			g_warning("no read permissions on %s/%s",
+				  directory_get_path(directory), name);
+			if (song != NULL)
+				delete_song(directory, song);
+			return;
+		}
 
 		if (!(song != NULL && st->st_mtime == song->mtime &&
 		      !walk_discard) &&
