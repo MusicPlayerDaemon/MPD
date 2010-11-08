@@ -84,7 +84,7 @@ copy_attributes(struct input_stream *dest)
 	const struct input_stream *src = &r->input;
 
 	assert(dest != src);
-	assert(dest->mime != src->mime);
+	assert(src->mime == NULL || dest->mime != src->mime);
 
 	dest->ready = src->ready;
 	dest->seekable = src->seekable;
