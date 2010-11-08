@@ -72,6 +72,14 @@ apply_song_metadata(struct song *dest, const struct song *src)
 		song_free(dest);
 	}
 
+	if (dest->tag != NULL && dest->tag->time > 0 &&
+	    src->start_ms > 0 && src->end_ms == 0 &&
+	    src->start_ms / 1000 < (unsigned)dest->tag->time)
+		/* the range is open-ended, and the playlist plugin
+		   did not know the total length of the song file
+		   (e.g. last track on a CUE file); fix it up here */
+		tmp->tag->time = dest->tag->time - src->start_ms / 1000;
+
 	return tmp;
 }
 
