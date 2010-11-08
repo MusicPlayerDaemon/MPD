@@ -109,6 +109,13 @@ ver 0.16 (20??/??/??)
 * make single mode 'sticky'
 
 
+ver 0.15.15 (2010/11/08)
+* input:
+  - rewind: fix assertion failure
+* output:
+  - shout: artist comes first in stream title
+
+
 ver 0.15.14 (2010/11/06)
 * player_thread: fix assertion failure due to wrong music pipe on seek
 * output_thread: fix assertion failure due to race condition in OPEN

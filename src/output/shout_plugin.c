@@ -494,7 +494,7 @@ shout_tag_to_metadata(const struct tag *tag, char *dest, size_t size)
 		}
 	}
 
-	snprintf(dest, size, "%s - %s", title, artist);
+	snprintf(dest, size, "%s - %s", artist, title);
 }
 
 static void my_shout_set_tag(void *data,
