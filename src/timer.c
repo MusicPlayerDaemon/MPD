@@ -74,7 +74,7 @@ void timer_add(Timer *timer, int size)
 unsigned
 timer_delay(const Timer *timer)
 {
-	int64_t delay = (timer->time - now()) / 1000;
+	int64_t delay = (int64_t)(timer->time - now()) / 1000;
 	if (delay < 0)
 		return 0;
 
