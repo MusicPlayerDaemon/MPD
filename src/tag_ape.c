@@ -21,11 +21,7 @@
 #include "tag_ape.h"
 #include "tag.h"
 #include "tag_table.h"
-
-#include <glib.h>
-
-#include <assert.h>
-#include <stdio.h>
+#include "ape.h"
 
 static const char *const ape_tag_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_ALBUM_ARTIST] = "album artist",
@@ -61,96 +57,26 @@ tag_ape_import_item(struct tag *tag, unsigned long flags,
 	return tag;
 }
 
+struct tag_ape_ctx {
+	struct tag *tag;
+};
+
+static bool
+tag_ape_callback(unsigned long flags, const char *key,
+		 const char *value, size_t value_length, void *_ctx)
+{
+	struct tag_ape_ctx *ctx = _ctx;
+
+	ctx->tag = tag_ape_import_item(ctx->tag, flags, key,
+				       value, value_length);
+	return true;
+}
+
 struct tag *
 tag_ape_load(const char *file)
 {
-	struct tag *ret = NULL;
-	FILE *fp;
-	int tagCount;
-	char *buffer = NULL;
-	char *p;
-	size_t tagLen;
-	size_t size;
-	unsigned long flags;
-	char *key;
+	struct tag_ape_ctx ctx = { .tag = NULL };
 
-	struct {
-		unsigned char id[8];
-		uint32_t version;
-		uint32_t length;
-		uint32_t tagCount;
-		unsigned char flags[4];
-		unsigned char reserved[8];
-	} footer;
-
-	fp = fopen(file, "rb");
-	if (!fp)
-		return NULL;
-
-	/* determine if file has an apeV2 tag */
-	if (fseek(fp, 0, SEEK_END))
-		goto fail;
-	size = (size_t)ftell(fp);
-	if (fseek(fp, size - sizeof(footer), SEEK_SET))
-		goto fail;
-	if (fread(&footer, 1, sizeof(footer), fp) != sizeof(footer))
-		goto fail;
-	if (memcmp(footer.id, "APETAGEX", sizeof(footer.id)) != 0)
-		goto fail;
-	if (GUINT32_FROM_LE(footer.version) != 2000)
-		goto fail;
-
-	/* find beginning of ape tag */
-	tagLen = GUINT32_FROM_LE(footer.length);
-	if (tagLen <= sizeof(footer) + 10)
-		goto fail;
-	if (tagLen > 1024 * 1024)
-		/* refuse to load more than one megabyte of tag data */
-		goto fail;
-	if (fseek(fp, size - tagLen, SEEK_SET))
-		goto fail;
-
-	/* read tag into buffer */
-	tagLen -= sizeof(footer);
-	assert(tagLen > 10);
-
-	buffer = g_malloc(tagLen);
-	if (fread(buffer, 1, tagLen, fp) != tagLen)
-		goto fail;
-
-	/* read tags */
-	tagCount = GUINT32_FROM_LE(footer.tagCount);
-	p = buffer;
-	while (tagCount-- && tagLen > 10) {
-		size = GUINT32_FROM_LE(*(const uint32_t *)p);
-		p += 4;
-		tagLen -= 4;
-		flags = GUINT32_FROM_LE(*(const uint32_t *)p);
-		p += 4;
-		tagLen -= 4;
-
-		/* get the key */
-		key = p;
-		while (tagLen > size && *p != '\0') {
-			p++;
-			tagLen--;
-		}
-		p++;
-		tagLen--;
-
-		/* get the value */
-		if (tagLen < size)
-			goto fail;
-
-		ret = tag_ape_import_item(ret, flags, key, p, size);
-
-		p += size;
-		tagLen -= size;
-	}
-
-fail:
-	if (fp)
-		fclose(fp);
-	g_free(buffer);
-	return ret;
+	tag_ape_scan(file, tag_ape_callback, &ctx);
+	return ctx.tag;
 }

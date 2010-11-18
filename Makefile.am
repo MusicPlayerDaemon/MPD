@@ -34,6 +34,7 @@ mpd_headers = \
 	src/check.h \
 	src/notify.h \
 	src/ack.h \
+	src/ape.h \
 	src/audio.h \
 	src/audio_format.h \
 	src/audio_check.h \
@@ -412,6 +413,7 @@ TAG_LIBS = \
 	$(ID3TAG_LIBS)
 
 TAG_SRC = \
+	src/ape.c \
 	src/tag_ape.c
 
 if HAVE_ID3TAG
