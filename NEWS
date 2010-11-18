@@ -88,6 +88,7 @@ ver 0.16 (20??/??/??)
   - fall back to track gain if album gain is unavailable
   - optionally use hardware mixer to apply replay gain
   - added mode "auto"
+  - parse replay gain from APE tags
 * log unused/unknown block parameters
 * removed the deprecated "error_file" option
 * save state when stopped

@@ -187,6 +187,7 @@ mpd_headers = \
 	src/refcount.h \
 	src/replay_gain_config.h \
 	src/replay_gain_info.h \
+	src/replay_gain_ape.h \
 	src/sig_handlers.h \
 	src/song.h \
 	src/song_print.h \
@@ -414,6 +415,7 @@ TAG_LIBS = \
 
 TAG_SRC = \
 	src/ape.c \
+	src/replay_gain_ape.c \
 	src/tag_ape.c
 
 if HAVE_ID3TAG
