@@ -24,6 +24,7 @@
 #include "decoder_list.h"
 #include "decoder_plugin.h"
 #include "decoder_api.h"
+#include "replay_gain_ape.h"
 #include "input_stream.h"
 #include "player_control.h"
 #include "pipe.h"
@@ -298,6 +299,18 @@ decoder_run_stream(struct decoder *decoder, const char *uri)
 }
 
 /**
+ * Attempt to load replay gain data, and pass it to
+ * decoder_replay_gain().
+ */
+static void
+decoder_load_replay_gain(struct decoder *decoder, const char *path_fs)
+{
+	struct replay_gain_info info;
+	if (replay_gain_ape_read(path_fs, &info))
+		decoder_replay_gain(decoder, &info);
+}
+
+/**
  * Try decoding a file.
  */
 static bool
@@ -311,6 +324,8 @@ decoder_run_file(struct decoder *decoder, const char *path_fs)
 		return false;
 
 	decoder_unlock(dc);
+
+	decoder_load_replay_gain(decoder, path_fs);
 
 	while ((plugin = decoder_plugin_from_suffix(suffix, plugin)) != NULL) {
 		if (plugin->file_decode != NULL) {
