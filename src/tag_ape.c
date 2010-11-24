@@ -52,7 +52,21 @@ tag_ape_import_item(struct tag *tag, unsigned long flags,
 
 	if (tag == NULL)
 		tag = tag_new();
-	tag_add_item_n(tag, type, value, value_length);
+
+	const char *end = value + value_length;
+	while (true) {
+		/* multiple values are separated by null bytes */
+		const char *n = memchr(value, 0, end - value);
+		if (n != NULL) {
+			if (n > value)
+				tag_add_item_n(tag, type, value, n - value);
+			value = n + 1;
+		} else {
+			if (end > value)
+				tag_add_item_n(tag, type, value, end - value);
+			break;
+		}
+	}
 
 	return tag;
 }
