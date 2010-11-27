@@ -1715,14 +1715,10 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 		}
 
 		sticker = sticker_song_get(song);
-		if (NULL == sticker) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "no stickers found");
-			return COMMAND_RETURN_ERROR;
+		if (sticker) {
+			sticker_print(client, sticker);
+			sticker_free(sticker);
 		}
-
-		sticker_print(client, sticker);
-		sticker_free(sticker);
 
 		return COMMAND_RETURN_OK;
 	/* set song song_id id key */
