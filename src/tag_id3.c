@@ -126,17 +126,16 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
  * - string list
  */
 static void
-tag_id3_import_text(struct tag *dest, struct id3_tag *tag, const char *id,
-		    enum tag_type type)
+tag_id3_import_text_frame(struct tag *dest, struct id3_tag *tag,
+			  const struct id3_frame *frame,
+			  enum tag_type type)
 {
-	struct id3_frame const *frame;
 	id3_ucs4_t const *ucs4;
 	id3_utf8_t *utf8;
 	union id3_field const *field;
 	unsigned int nstrings, i;
 
-	frame = id3_tag_findframe(tag, id, 0);
-	if (frame == NULL || frame->nfields != 2)
+	if (frame->nfields != 2)
 		return;
 
 	/* check the encoding field */
@@ -171,6 +170,20 @@ tag_id3_import_text(struct tag *dest, struct id3_tag *tag, const char *id,
 }
 
 /**
+ * Import all text frames with the specified id (ID3v2.4.0 section
+ * 4.2).  This is a wrapper for tag_id3_import_text_frame().
+ */
+static void
+tag_id3_import_text(struct tag *dest, struct id3_tag *tag, const char *id,
+		    enum tag_type type)
+{
+	const struct id3_frame *frame;
+	for (unsigned i = 0;
+	     (frame = id3_tag_findframe(tag, id, i)) != NULL; ++i)
+		tag_id3_import_text_frame(dest, tag, frame, type);
+}
+
+/**
  * Import a "Comment frame" (ID3v2.4.0 section 4.10).  It
  * contains 4 fields:
  *
@@ -180,16 +193,15 @@ tag_id3_import_text(struct tag *dest, struct id3_tag *tag, const char *id,
  * - full string (we use this one)
  */
 static void
-tag_id3_import_comment(struct tag *dest, struct id3_tag *tag, const char *id,
-		       enum tag_type type)
+tag_id3_import_comment_frame(struct tag *dest, struct id3_tag *tag,
+			     const struct id3_frame *frame,
+			     enum tag_type type)
 {
-	struct id3_frame const *frame;
 	id3_ucs4_t const *ucs4;
 	id3_utf8_t *utf8;
 	union id3_field const *field;
 
-	frame = id3_tag_findframe(tag, id, 0);
-	if (frame == NULL || frame->nfields != 4)
+	if (frame->nfields != 4)
 		return;
 
 	/* for now I only read the 4th field, with the fullstring */
@@ -207,6 +219,20 @@ tag_id3_import_comment(struct tag *dest, struct id3_tag *tag, const char *id,
 
 	tag_add_item(dest, type, (char *)utf8);
 	g_free(utf8);
+}
+
+/**
+ * Import all comment frames (ID3v2.4.0 section 4.10).  This is a
+ * wrapper for tag_id3_import_comment_frame().
+ */
+static void
+tag_id3_import_comment(struct tag *dest, struct id3_tag *tag, const char *id,
+		       enum tag_type type)
+{
+	const struct id3_frame *frame;
+	for (unsigned i = 0;
+	     (frame = id3_tag_findframe(tag, id, i)) != NULL; ++i)
+		tag_id3_import_comment_frame(dest, tag, frame, type);
 }
 
 /**
