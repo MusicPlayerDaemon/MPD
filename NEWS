@@ -1,4 +1,4 @@
-ver 0.16 (20??/??/??)
+ver 0.16 (2010/12/11)
 * protocol:
   - send song modification time to client
   - added "update" idle event
