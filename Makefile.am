@@ -106,6 +106,7 @@ mpd_headers = \
 	src/input/curl_input_plugin.h \
 	src/input/rewind_input_plugin.h \
 	src/input/mms_input_plugin.h \
+	src/input/cdio_paranoia_input_plugin.h \
 	src/text_file.h \
 	src/text_input_stream.h \
 	src/icy_server.h \
@@ -612,11 +613,13 @@ endif
 
 INPUT_CFLAGS = \
 	$(CURL_CFLAGS) \
+	$(CDIO_PARANOIA_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
 	$(MMS_CFLAGS)
 
 INPUT_LIBS = \
 	$(CURL_LIBS) \
+	$(CDIO_PARANOIA_LIBS) \
 	$(FFMPEG_LIBS) \
 	$(MMS_LIBS)
 
@@ -630,6 +633,10 @@ INPUT_SRC = \
 if ENABLE_CURL
 INPUT_SRC += src/input/curl_input_plugin.c \
 	src/icy_metadata.c
+endif
+
+if ENABLE_CDIO_PARANOIA
+INPUT_SRC += src/input/cdio_paranoia_input_plugin.c
 endif
 
 if HAVE_FFMPEG

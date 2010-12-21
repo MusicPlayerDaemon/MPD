@@ -621,6 +621,17 @@ cd mpd-version</programlisting>
           Plays streams with the MMS protocol.
         </para>
       </section>
+
+      <section>
+        <title><varname>cdio_paranoia</varname></title>
+
+        <para>
+          Plays audio CDs.  The URI has the form:
+          "<filename>cdda://[DEVICE][/TRACK]</filename>".  The
+          simplest form <filename>cdda://</filename> plays the whole
+          disc in the default drive.
+        </para>
+      </section>
     </section>
 
     <section>

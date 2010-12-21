@@ -135,6 +135,11 @@ AC_ARG_ENABLE(bzip2,
 		[enable bzip2 archive support (default: disabled)]),,
 	enable_bzip2=no)
 
+AC_ARG_ENABLE(cdio-paranoia,
+	AS_HELP_STRING([--enable-cdio-paranoia],
+		[enable support for audio CD support]),,
+	enable_cdio_paranoia=auto)
+
 AC_ARG_ENABLE(cue,
 	AS_HELP_STRING([--enable-cue],
 		[enable support for libcue support]),,
@@ -632,6 +637,16 @@ if test x$enable_lastfm = xyes; then
 	AC_DEFINE(ENABLE_LASTFM, 1, [Define when last.fm radio is enabled])
 fi
 AM_CONDITIONAL(ENABLE_LASTFM, test x$enable_lastfm = xyes)
+
+dnl ---------------------------------- libcue ---------------------------------
+MPD_AUTO_PKG(cdio_paranoia, CDIO_PARANOIA, [libcdio_paranoia],
+	[libcdio_paranoia audio CD library], [libcdio_paranoia not found])
+if test x$enable_cdio_paranoia = xyes; then
+	AC_DEFINE([ENABLE_CDIO_PARANOIA], 1,
+		[Define to enable libcdio_paranoia support])
+fi
+
+AM_CONDITIONAL(ENABLE_CDIO_PARANOIA, test x$enable_cdio_paranoia = xyes)
 
 dnl ---------------------------------- libogg ---------------------------------
 if test x$with_tremor == xno || test -z $with_tremor; then
@@ -1579,6 +1594,7 @@ echo -en '\nStreaming support:\n\t'
 results(curl,[CURL])
 results(lastfm,[Last.FM])
 results(mms,[MMS])
+results(cdio_paranoia, [CDIO_PARANOIA])
 
 echo -ne '\n\n##########################################\n\n'
 

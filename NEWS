@@ -1,4 +1,6 @@
 ver 0.17 (2010/??/??)
+* input:
+  - cdio_paranoia: new input plugin to play audio CDs
 * output:
   - osx: allow user to specify other audio devices
 
