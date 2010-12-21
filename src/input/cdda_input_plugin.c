@@ -22,6 +22,7 @@
   */
 
 #include "config.h"
+#include "input/cdda_input_plugin.h"
 #include "input_plugin.h"
 #include "refcount.h"
 #include "pcm_buffer.h"
@@ -56,8 +57,6 @@ struct input_cdda {
 
 	struct pcm_buffer conv_buffer;
 };
-
-static const struct input_plugin cdda_inputplugin;
 
 static inline GQuark
 cdda_quark(void)
@@ -166,9 +165,6 @@ input_cdda_open(const char *uri, GError **error_r)
 
 	g_debug("Disc last LSN: %d\n", cdio_get_disc_last_lsn(i->cdio));
 
-	tracks      = cdio_get_num_tracks(i->cdio);
-	first_track = cdio_get_first_track_num(i->cdio);
-
 	{
 		int ti, j, tracks, first_track;
 
@@ -206,8 +202,6 @@ input_cdda_open(const char *uri, GError **error_r)
 
 	/* seek to beginning of the track */
 	cdio_paranoia_seek(i->para, i->lsn_from, SEEK_SET);
-
-	i->eof = false;
 
 	i->base.ready = true;
 	i->base.seekable = true;
@@ -304,12 +298,12 @@ input_cdda_read(struct input_stream *is, void *ptr, size_t length,
 		if (cis->lsn_relofs != cis->buffer_lsn) {
 			rbuf = cdio_paranoia_read(cis->para, NULL);
 
-			s_err = cdda_errors(cis->archive->drv);
+			s_err = cdda_errors(cis->drv);
 			if (s_err) {
 				g_warning("paranoia_read: %s\n", s_err );
 				free(s_err);
 			}
-			s_mess = cdda_messages(cis->archive->drv);
+			s_mess = cdda_messages(cis->drv);
 			if (s_mess) {
 				g_debug("paranoia_read: %s\n", s_mess );
 				free(s_mess);
@@ -320,7 +314,7 @@ input_cdda_read(struct input_stream *is, void *ptr, size_t length,
 				return 0;
 			}
 			//do the swapping if nessesary
-			if (cis->archive->endian != 0) {
+			if (cis->endian != 0) {
 				g_debug("swap\n");
 				uint16_t *conv_buffer = pcm_buffer_get(&cis->conv_buffer, CDIO_CD_FRAMESIZE_RAW );
 				/* do endian conversion ! */
@@ -367,12 +361,10 @@ input_cdda_eof(struct input_stream *is)
 	return (cis->lsn_from + cis->lsn_relofs > cis->lsn_to);
 }
 
-
-static const struct input_plugin input_plugin_cdda = {
+const struct input_plugin input_plugin_cdda = {
 	.open = input_cdda_open,
 	.close = input_cdda_close,
 	.seek = input_cdda_seek,
 	.read = input_cdda_read,
 	.eof = input_cdda_eof
 };
-
