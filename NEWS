@@ -1,4 +1,6 @@
 ver 0.17 (2010/??/??)
+* output:
+  - osx: allow user to specify other audio devices
 
 
 ver 0.16 (2010/12/11)

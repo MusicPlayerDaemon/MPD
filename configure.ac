@@ -1319,7 +1319,7 @@ enable_osx=no
 case "$host_os" in
 	darwin*)
 		AC_DEFINE(HAVE_OSX, 1, [Define for compiling OS X support])
-		MPD_LIBS="$MPD_LIBS -framework AudioUnit -framework CoreServices"
+		MPD_LIBS="$MPD_LIBS -framework AudioUnit -framework CoreAudio -framework CoreServices"
 		enable_osx=yes ;;
 esac
 

@@ -28,6 +28,11 @@
 #define G_LOG_DOMAIN "osx"
 
 struct osx_output {
+	/* configuration settings */
+	OSType component_subtype;
+	/* only applicable with kAudioUnitSubType_HALOutput */
+	const char *device_name;
+
 	AudioUnit au;
 	GMutex *mutex;
 	GCond *condition;
@@ -54,6 +59,26 @@ osx_output_test_default_device(void)
 	return true;
 }
 
+static void
+osx_output_configure(struct osx_output *oo, const struct config_param *param)
+{
+	const char *device = config_get_block_string(param, "device", NULL);
+
+	if (device == NULL || 0 == strcmp(device, "default")) {
+		oo->component_subtype = kAudioUnitSubType_DefaultOutput;
+		oo->device_name = NULL;
+	}
+	else if (0 == strcmp(device, "system")) {
+		oo->component_subtype = kAudioUnitSubType_SystemOutput;
+		oo->device_name = NULL;
+	}
+	else {
+		oo->component_subtype = kAudioUnitSubType_HALOutput;
+		/* XXX am I supposed to g_strdup() this? */
+		oo->device_name = device;
+	}
+}
+
 static void *
 osx_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		G_GNUC_UNUSED const struct config_param *param,
@@ -61,6 +86,7 @@ osx_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 {
 	struct osx_output *oo = g_new(struct osx_output, 1);
 
+	osx_output_configure(oo, param);
 	oo->mutex = g_mutex_new();
 	oo->condition = g_cond_new();
 
@@ -156,6 +182,95 @@ osx_render(void *vdata,
 }
 
 static bool
+osx_output_set_device(struct osx_output *oo, GError **error)
+{
+	bool ret = true;
+	OSStatus status;
+	UInt32 size, numdevices;
+	AudioDeviceID *deviceids = NULL;
+	char name[256];
+	unsigned int i;
+
+	if (oo->component_subtype != kAudioUnitSubType_HALOutput)
+		goto done;
+
+	/* how many audio devices are there? */
+	status = AudioHardwareGetPropertyInfo(kAudioHardwarePropertyDevices,
+					      &size,
+					      NULL);
+	if (status != noErr) {
+		g_set_error(error, osx_output_quark(), 0,
+			    "Unable to determine number of OS X audio devices: %s",
+			    GetMacOSStatusCommentString(status));
+		ret = false;
+		goto done;
+	}
+
+	/* what are the available audio device IDs? */
+	numdevices = size / sizeof(AudioDeviceID);
+	deviceids = g_malloc(size);
+	status = AudioHardwareGetProperty(kAudioHardwarePropertyDevices,
+					  &size,
+					  deviceids);
+	if (status != noErr) {
+		g_set_error(error, osx_output_quark(), 0,
+			    "Unable to determine OS X audio device IDs: %s",
+			    GetMacOSStatusCommentString(status));
+		ret = false;
+		goto done;
+	}
+
+	/* which audio device matches oo->device_name? */
+	for (i = 0; i < numdevices; i++) {
+		size = sizeof(name);
+		status = AudioDeviceGetProperty(deviceids[i], 0, false,
+						kAudioDevicePropertyDeviceName,
+						&size, name);
+		if (status != noErr) {
+			g_set_error(error, osx_output_quark(), 0,
+				    "Unable to determine OS X device name "
+				    "(device %u): %s",
+				    (unsigned int) deviceids[i],
+				    GetMacOSStatusCommentString(status));
+			ret = false;
+			goto done;
+		}
+		if (strcmp(oo->device_name, name) == 0) {
+			g_debug("found matching device: ID=%u, name=%s",
+				(unsigned int) deviceids[i], name);
+			break;
+		}
+	}
+	if (i == numdevices) {
+		g_warning("Found no audio device with name '%s' "
+			  "(will use default audio device)",
+			  oo->device_name);
+		goto done;
+	}
+
+	status = AudioUnitSetProperty(oo->au,
+				      kAudioOutputUnitProperty_CurrentDevice,
+				      kAudioUnitScope_Global,
+				      0,
+				      &(deviceids[i]),
+				      sizeof(AudioDeviceID));
+	if (status != noErr) {
+		g_set_error(error, osx_output_quark(), 0,
+			    "Unable to set OS X audio output device: %s",
+			    GetMacOSStatusCommentString(status));
+		ret = false;
+		goto done;
+	}
+	g_debug("set OS X audio output device ID=%u, name=%s",
+		(unsigned int) deviceids[i], name);
+
+done:
+	if (deviceids != NULL)
+		g_free(deviceids);
+	return ret;
+}
+
+static bool
 osx_output_open(void *data, struct audio_format *audio_format, GError **error)
 {
 	struct osx_output *od = data;
@@ -167,7 +282,7 @@ osx_output_open(void *data, struct audio_format *audio_format, GError **error)
 	ComponentResult result;
 
 	desc.componentType = kAudioUnitType_Output;
-	desc.componentSubType = kAudioUnitSubType_DefaultOutput;
+	desc.componentSubType = od->component_subtype;
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 	desc.componentFlags = 0;
 	desc.componentFlagsMask = 0;
@@ -195,6 +310,9 @@ osx_output_open(void *data, struct audio_format *audio_format, GError **error)
 			    GetMacOSStatusCommentString(status));
 		return false;
 	}
+
+	if (!osx_output_set_device(od, error))
+		return false;
 
 	callback.inputProc = osx_render;
 	callback.inputProcRefCon = od;
