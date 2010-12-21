@@ -303,7 +303,7 @@ ao_wait(struct audio_output *ao)
 		GTimeVal tv;
 		g_get_current_time(&tv);
 		g_time_val_add(&tv, delay * 1000);
-		g_cond_timed_wait(ao->cond, ao->mutex, &tv);
+		(void)g_cond_timed_wait(ao->cond, ao->mutex, &tv);
 
 		if (ao->command != AO_COMMAND_NONE)
 			return false;

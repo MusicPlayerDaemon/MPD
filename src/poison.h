@@ -47,7 +47,7 @@ poison_noaccess(void *p, size_t length)
 	memset(p, 0x01, length);
 
 #ifdef HAVE_VALGRIND_MEMCHECK_H
-	VALGRIND_MAKE_MEM_NOACCESS(p, length);
+	(void)VALGRIND_MAKE_MEM_NOACCESS(p, length);
 #endif
 #endif
 }
@@ -68,7 +68,7 @@ poison_undefined(void *p, size_t length)
 	memset(p, 0x02, length);
 
 #ifdef HAVE_VALGRIND_MEMCHECK_H
-	VALGRIND_MAKE_MEM_UNDEFINED(p, length);
+	(void)VALGRIND_MAKE_MEM_UNDEFINED(p, length);
 #endif
 #endif
 }
