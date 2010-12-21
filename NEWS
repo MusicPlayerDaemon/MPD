@@ -1,5 +1,7 @@
 ver 0.16.1 (2010/??/??)
 * audio_check: fix parameter in prototype
+* decoder:
+  - mad: work around build failure on Solaris
 * output:
   - solaris: add missing parameter to open_cloexec() cal
 
