@@ -93,7 +93,7 @@ solaris_output_open(void *data, struct audio_format *audio_format,
 
 	/* open the device in non-blocking mode */
 
-	so->fd = open_cloexec(so->device, O_WRONLY|O_NONBLOCK);
+	so->fd = open_cloexec(so->device, O_WRONLY|O_NONBLOCK, 0);
 	if (so->fd < 0) {
 		g_set_error(error, solaris_output_quark(), errno,
 			    "Failed to open %s: %s",
