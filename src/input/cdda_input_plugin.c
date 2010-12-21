@@ -82,6 +82,58 @@ input_cdda_close(struct input_stream *is)
 	g_free(i);
 }
 
+struct cdda_uri {
+	char device[64];
+	int track;
+};
+
+static bool
+parse_cdda_uri(struct cdda_uri *dest, const char *src, GError **error_r)
+{
+	if (!g_str_has_prefix(src, "cdda://"))
+		return false;
+
+	src += 7;
+
+	if (*src == 0) {
+		/* play the whole CD in the default drive */
+		dest->device[0] = 0;
+		dest->track = -1;
+		return true;
+	}
+
+	const char *slash = strrchr(src, '/');
+	if (slash == NULL) {
+		/* play the whole CD in the specified drive */
+		g_strlcpy(dest->device, src, sizeof(dest->device));
+		dest->track = -1;
+		return true;
+	}
+
+	size_t device_length = slash - src;
+	if (device_length >= sizeof(dest->device))
+		device_length = sizeof(dest->device) - 1;
+
+	memcpy(dest->device, src, device_length);
+	dest->device[device_length] = 0;
+
+	const char *track = slash + 1;
+
+	char *endptr;
+	dest->track = strtoul(track, &endptr, 10);
+	if (*endptr != 0) {
+		g_set_error(error_r, cdda_quark(), 0,
+			    "Malformed track number");
+		return false;
+	}
+
+	if (endptr == track)
+		/* play the whole CD */
+		dest->track = -1;
+
+	return true;
+}
+
 static char *
 cdda_detect_device(void)
 {
@@ -100,7 +152,8 @@ input_cdda_open(const char *uri, GError **error_r)
 {
 	struct input_cdda *i;
 
-	if (!g_str_has_prefix(uri, "cdda://"))
+	struct cdda_uri parsed_uri;
+	if (!parse_cdda_uri(&parsed_uri, uri, error_r))
 		return NULL;
 
 	i = g_new(struct input_cdda, 1);
@@ -110,17 +163,13 @@ input_cdda_open(const char *uri, GError **error_r)
 	i->drv = NULL;
 	i->cdio = NULL;
 	i->para = NULL;
+	i->trackno = parsed_uri.track;
 	pcm_buffer_init(&i->conv_buffer);
 
-	if (parse_cdda_uri(uri, &drive, &trackno) == -1) {
-		g_set_error(error_r, cdda_quark(), 0,
-			    "Unable parse URI\n");
-		input_cdda_close(&i->base);
-		return NULL;
-	}
-
 	/* get list of CD's supporting CD-DA */
-	char *device = cdda_detect_device();
+	char *device = parsed_uri.device[0] != 0
+		? g_strdup(parsed_uri.device)
+		: cdda_detect_device();
 	if (device == NULL) {
 		g_set_error(error_r, cdda_quark(), 0,
 			    "Unable find or access a CD-ROM drive with an audio CD in it.");
@@ -164,7 +213,7 @@ input_cdda_open(const char *uri, GError **error_r)
 	default:
 		g_set_error(error_r, cdda_quark(), 0,
 			    "Drive returns unknown data type %d", i->endian);
-		input_cdda_close(i)
+		input_cdda_close(&i->base);
 		return NULL;
 	}
 
