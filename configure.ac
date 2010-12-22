@@ -157,7 +157,7 @@ AC_ARG_ENABLE(documentation,
 
 AC_ARG_ENABLE(ffado,
 	AS_HELP_STRING([--enable-ffado], [enable libffado (FireWire) support]),,
-	[enable_ffado=auto])
+	[enable_ffado=no])
 
 AC_ARG_ENABLE(ffmpeg,
 	AS_HELP_STRING([--enable-ffmpeg],

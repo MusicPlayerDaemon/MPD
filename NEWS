@@ -1,6 +1,8 @@
 ver 0.16.1 (2010/??/??)
 * audio_check: fix parameter in prototype
 * add void casts to suppress "result unused" warnings (clang)
+* input:
+  - ffado: disable by default
 * decoder:
   - mad: work around build failure on Solaris
 * output:
