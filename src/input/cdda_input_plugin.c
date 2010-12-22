@@ -82,11 +82,23 @@ input_cdda_close(struct input_stream *is)
 	g_free(i);
 }
 
+static char *
+cdda_detect_device(void)
+{
+	char **devices = cdio_get_devices_with_cap(NULL, CDIO_FS_AUDIO, false);
+	if (devices == NULL)
+		return NULL;
+
+	char *device = g_strdup(devices[0]);
+	cdio_free_device_list(devices);
+
+	return device;
+}
+
 static struct input_stream *
 input_cdda_open(const char *uri, GError **error_r)
 {
 	struct input_cdda *i;
-	char **cd_drives;  /* List of all drives with a loaded CDDA in it. */
 
 	if (!g_str_has_prefix(uri, "cdda://"))
 		return NULL;
@@ -108,8 +120,8 @@ input_cdda_open(const char *uri, GError **error_r)
 	}
 
 	/* get list of CD's supporting CD-DA */
-	cd_drives = cdio_get_devices_with_cap(NULL, CDIO_FS_AUDIO, false);
-	if (!cd_drives) {
+	char *device = cdda_detect_device();
+	if (device == NULL) {
 		g_set_error(error_r, cdda_quark(), 0,
 			    "Unable find or access a CD-ROM drive with an audio CD in it.");
 		input_cdda_close(i);
@@ -117,11 +129,10 @@ input_cdda_open(const char *uri, GError **error_r)
 	}
 
 	/* Found such a CD-ROM with a CD-DA loaded. Use the first drive in the list. */
-	i->cdio = cdio_open(*cd_drives, DRIVER_UNKNOWN);
-	i->drv = cdio_cddap_identify_cdio(i->cdio, 1, NULL);
+	i->cdio = cdio_open(device, DRIVER_UNKNOWN);
+	g_free(device);
 
-	/* Don't need a list of CD's with CD-DA's any more. */
-	cdio_free_device_list(cd_drives);
+	i->drv = cdio_cddap_identify_cdio(i->cdio, 1, NULL);
 
 	if ( !i->drv ) {
 		g_set_error(error_r, cdda_quark(), 0,
