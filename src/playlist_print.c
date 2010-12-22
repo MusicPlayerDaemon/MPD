@@ -153,7 +153,7 @@ playlist_provider_print(struct client *client, const char *uri,
 	char *base_uri = uri != NULL ? g_path_get_dirname(uri) : NULL;
 
 	while ((song = playlist_plugin_read(playlist)) != NULL) {
-		song = playlist_check_translate_song(song, base_uri);
+		song = playlist_check_translate_song(song, base_uri, false);
 		if (song == NULL)
 			continue;
 

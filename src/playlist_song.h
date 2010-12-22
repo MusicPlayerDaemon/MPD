@@ -20,12 +20,18 @@
 #ifndef MPD_PLAYLIST_SONG_H
 #define MPD_PLAYLIST_SONG_H
 
+#include <stdbool.h>
+
 /**
  * Verifies the song, returns NULL if it is unsafe.  Translate the
  * song to a new song object within the database, if it is a local
  * file.  The old song object is freed.
+ *
+ * @param secure if true, then local files are only allowed if they
+ * are relative to base_uri
  */
 struct song *
-playlist_check_translate_song(struct song *song, const char *base_uri);
+playlist_check_translate_song(struct song *song, const char *base_uri,
+			      bool secure);
 
 #endif

@@ -26,6 +26,8 @@
 
 #include "playlist.h"
 
+#include <stdbool.h>
+
 struct playlist_provider;
 struct playlist;
 
@@ -38,14 +40,14 @@ struct playlist;
  */
 enum playlist_result
 playlist_load_into_queue(const char *uri, struct playlist_provider *source,
-			 struct playlist *dest);
+			 struct playlist *dest, bool secure);
 
 /**
  * Opens a playlist with a playlist plugin and append to the specified
  * play queue.
  */
 enum playlist_result
-playlist_open_into_queue(const char *uri, struct playlist *dest);
+playlist_open_into_queue(const char *uri, struct playlist *dest, bool secure);
 
 #endif
 
