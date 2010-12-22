@@ -309,6 +309,17 @@ input_cdda_seek(struct input_stream *is,
 	return true;
 }
 
+static inline size_t
+pcm16_to_wave(uint16_t *dst16, const uint16_t *src16, size_t length)
+{
+	size_t cnt = length >> 1;
+	while (cnt > 0) {
+		*dst16++ = GUINT16_TO_LE(*src16++);
+		cnt--;
+	}
+	return length;
+}
+
 static size_t
 input_cdda_read(struct input_stream *is, void *ptr, size_t length,
 		GError **error_r)
