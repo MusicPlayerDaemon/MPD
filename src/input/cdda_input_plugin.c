@@ -247,30 +247,6 @@ input_cdda_open(const char *uri, GError **error_r)
 	return &i->base;
 }
 
-
-/* single archive handling */
-static int
-input_cdda_archive_extract_trackno(const char *path)
-{
-	long value;
-	char *endptr, *str;
-
-	//remove .wav
-	str = strrchr(path, '.');
-	if (str)
-		*str = 0;
-
-	//remove leading 0's
-	while (*path == '0')
-		path++;
-
-	value = strtol(path, &endptr, 0);
-	if (*endptr != 0 || value < 0) {
-		return -1;
-	}
-	return value;
-}
-
 static bool
 input_cdda_seek(struct input_stream *is,
 		goffset offset, int whence, GError **error_r)
