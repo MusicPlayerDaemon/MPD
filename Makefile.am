@@ -97,6 +97,7 @@ mpd_headers = \
 	src/decoder/flac_pcm.h \
 	src/decoder/_flac_common.h \
 	src/decoder/_ogg_common.h \
+	src/decoder/pcm_decoder_plugin.h \
 	src/input_init.h \
 	src/input_plugin.h \
 	src/input_registry.h \
@@ -462,6 +463,7 @@ DECODER_LIBS = \
 	$(CUE_LIBS)
 
 DECODER_SRC = \
+	src/decoder/pcm_decoder_plugin.c \
 	src/decoder_buffer.c \
 	src/decoder_plugin.c \
 	src/decoder_list.c

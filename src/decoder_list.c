@@ -23,6 +23,7 @@
 #include "utils.h"
 #include "conf.h"
 #include "mpd_error.h"
+#include "decoder/pcm_decoder_plugin.h"
 
 #include <glib.h>
 
@@ -102,6 +103,7 @@ const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef HAVE_GME
 	&gme_decoder_plugin,
 #endif
+	&pcm_decoder_plugin,
 	NULL
 };
 
