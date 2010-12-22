@@ -111,7 +111,7 @@ input_cdda_open(const char *uri, GError **error_r)
 	cd_drives = cdio_get_devices_with_cap(NULL, CDIO_FS_AUDIO, false);
 	if (!cd_drives) {
 		g_set_error(error_r, cdda_quark(), 0,
-			    "Unable find or access a CD-ROM drive with an audio CD in it.\n");
+			    "Unable find or access a CD-ROM drive with an audio CD in it.");
 		input_cdda_close(i);
 		return NULL;
 	}
@@ -124,7 +124,8 @@ input_cdda_open(const char *uri, GError **error_r)
 	cdio_free_device_list(cd_drives);
 
 	if ( !i->drv ) {
-		g_set_error(error_r, cdda_quark(), 0, "Unable to identify audio CD disc.\n");
+		g_set_error(error_r, cdda_quark(), 0,
+			    "Unable to identify audio CD disc.");
 		input_cdda_close(i);
 		return NULL;
 	}
@@ -132,7 +133,7 @@ input_cdda_open(const char *uri, GError **error_r)
 	cdda_verbose_set(i->drv, CDDA_MESSAGE_FORGETIT, CDDA_MESSAGE_FORGETIT);
 
 	if ( 0 != cdio_cddap_open(i->drv) ) {
-		g_set_error(error_r, cdda_quark(), 0, "Unable to open disc.\n");
+		g_set_error(error_r, cdda_quark(), 0, "Unable to open disc.");
 		input_cdda_close(i);
 		return NULL;
 	}
@@ -140,17 +141,18 @@ input_cdda_open(const char *uri, GError **error_r)
 	i->endian = data_bigendianp(i->drv);
 	switch (i->endian) {
 	case -1:
-		g_debug("cdda: drive returns unknown audio data, assuming Little Endian\n");
+		g_debug("cdda: drive returns unknown audio data, assuming Little Endian");
 		i->endian = 0;
 		break;
 	case 0:
 		g_debug("cdda: drive returns audio data Little Endian.");
 		break;
 	case 1:
-		g_debug("cdda: drive returns audio data Big Endian.\n");
+		g_debug("cdda: drive returns audio data Big Endian.");
 		break;
 	default:
-		g_set_error(error_r, cdda_quark(), 0, "Drive returns unknown data type %d.\n", i->endian);
+		g_set_error(error_r, cdda_quark(), 0,
+			    "Drive returns unknown data type %d", i->endian);
 		input_cdda_close(i)
 		return NULL;
 	}
@@ -272,7 +274,7 @@ input_cdda_read(struct input_stream *is, void *ptr, size_t length,
 
 			s_err = cdda_errors(cis->drv);
 			if (s_err) {
-				g_warning("paranoia_read: %s\n", s_err );
+				g_warning("paranoia_read: %s", s_err );
 				free(s_err);
 			}
 			s_mess = cdda_messages(cis->drv);
@@ -281,7 +283,7 @@ input_cdda_read(struct input_stream *is, void *ptr, size_t length,
 			}
 			if (!rbuf) {
 				g_set_error(error_r, cdda_quark(), 0,
-					"paranoia read error. Stopping.\n");
+					"paranoia read error. Stopping.");
 				return 0;
 			}
 			//do the swapping if nessesary
