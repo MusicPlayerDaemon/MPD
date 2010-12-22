@@ -204,18 +204,12 @@ spl_load(const char *utf8path)
 
 		if (!uri_has_scheme(s)) {
 			char *path_utf8;
-			struct song *song;
 
 			path_utf8 = map_fs_to_utf8(s);
 			if (path_utf8 == NULL)
 				continue;
 
-			song = db_get_song(path_utf8);
-			g_free(path_utf8);
-			if (song == NULL)
-				continue;
-
-			s = song_get_uri(song);
+			s = path_utf8;
 		} else
 			s = g_strdup(s);
 
