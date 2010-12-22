@@ -22,7 +22,7 @@
   */
 
 #include "config.h"
-#include "input/cdda_input_plugin.h"
+#include "input/cdio_paranoia_input_plugin.h"
 #include "input_plugin.h"
 #include "refcount.h"
 #include "pcm_buffer.h"
@@ -38,7 +38,7 @@
 #include <cdio/paranoia.h>
 #include <cdio/cd_types.h>
 
-struct input_cdda {
+struct input_cdio_paranoia {
 	struct input_stream base;
 
 	cdrom_drive_t *drv;
@@ -59,15 +59,15 @@ struct input_cdda {
 };
 
 static inline GQuark
-cdda_quark(void)
+cdio_quark(void)
 {
-	return g_quark_from_static_string("cdda");
+	return g_quark_from_static_string("cdio");
 }
 
 static void
-input_cdda_close(struct input_stream *is)
+input_cdio_close(struct input_stream *is)
 {
-	struct input_cdda *i = (struct input_cdda *)is;
+	struct input_cdio_paranoia *i = (struct input_cdio_paranoia *)is;
 
 	pcm_buffer_deinit(&i->conv_buffer);
 
@@ -82,13 +82,13 @@ input_cdda_close(struct input_stream *is)
 	g_free(i);
 }
 
-struct cdda_uri {
+struct cdio_uri {
 	char device[64];
 	int track;
 };
 
 static bool
-parse_cdda_uri(struct cdda_uri *dest, const char *src, GError **error_r)
+parse_cdio_uri(struct cdio_uri *dest, const char *src, GError **error_r)
 {
 	if (!g_str_has_prefix(src, "cdda://"))
 		return false;
@@ -122,7 +122,7 @@ parse_cdda_uri(struct cdda_uri *dest, const char *src, GError **error_r)
 	char *endptr;
 	dest->track = strtoul(track, &endptr, 10);
 	if (*endptr != 0) {
-		g_set_error(error_r, cdda_quark(), 0,
+		g_set_error(error_r, cdio_quark(), 0,
 			    "Malformed track number");
 		return false;
 	}
@@ -135,7 +135,7 @@ parse_cdda_uri(struct cdda_uri *dest, const char *src, GError **error_r)
 }
 
 static char *
-cdda_detect_device(void)
+cdio_detect_device(void)
 {
 	char **devices = cdio_get_devices_with_cap(NULL, CDIO_FS_AUDIO, false);
 	if (devices == NULL)
@@ -148,16 +148,16 @@ cdda_detect_device(void)
 }
 
 static struct input_stream *
-input_cdda_open(const char *uri, GError **error_r)
+input_cdio_open(const char *uri, GError **error_r)
 {
-	struct input_cdda *i;
+	struct input_cdio_paranoia *i;
 
-	struct cdda_uri parsed_uri;
-	if (!parse_cdda_uri(&parsed_uri, uri, error_r))
+	struct cdio_uri parsed_uri;
+	if (!parse_cdio_uri(&parsed_uri, uri, error_r))
 		return NULL;
 
-	i = g_new(struct input_cdda, 1);
-	input_stream_init(&i->base, &input_plugin_cdda, uri);
+	i = g_new(struct input_cdio_paranoia, 1);
+	input_stream_init(&i->base, &input_plugin_cdio_paranoia, uri);
 
 	/* initialize everything (should be already) */
 	i->drv = NULL;
@@ -169,11 +169,11 @@ input_cdda_open(const char *uri, GError **error_r)
 	/* get list of CD's supporting CD-DA */
 	char *device = parsed_uri.device[0] != 0
 		? g_strdup(parsed_uri.device)
-		: cdda_detect_device();
+		: cdio_detect_device();
 	if (device == NULL) {
-		g_set_error(error_r, cdda_quark(), 0,
+		g_set_error(error_r, cdio_quark(), 0,
 			    "Unable find or access a CD-ROM drive with an audio CD in it.");
-		input_cdda_close(&i->base);
+		input_cdio_close(&i->base);
 		return NULL;
 	}
 
@@ -184,17 +184,17 @@ input_cdda_open(const char *uri, GError **error_r)
 	i->drv = cdio_cddap_identify_cdio(i->cdio, 1, NULL);
 
 	if ( !i->drv ) {
-		g_set_error(error_r, cdda_quark(), 0,
+		g_set_error(error_r, cdio_quark(), 0,
 			    "Unable to identify audio CD disc.");
-		input_cdda_close(&i->base);
+		input_cdio_close(&i->base);
 		return NULL;
 	}
 
 	cdda_verbose_set(i->drv, CDDA_MESSAGE_FORGETIT, CDDA_MESSAGE_FORGETIT);
 
 	if ( 0 != cdio_cddap_open(i->drv) ) {
-		g_set_error(error_r, cdda_quark(), 0, "Unable to open disc.");
-		input_cdda_close(&i->base);
+		g_set_error(error_r, cdio_quark(), 0, "Unable to open disc.");
+		input_cdio_close(&i->base);
 		return NULL;
 	}
 
@@ -211,9 +211,9 @@ input_cdda_open(const char *uri, GError **error_r)
 		g_debug("cdda: drive returns audio data Big Endian.");
 		break;
 	default:
-		g_set_error(error_r, cdda_quark(), 0,
+		g_set_error(error_r, cdio_quark(), 0,
 			    "Drive returns unknown data type %d", i->endian);
-		input_cdda_close(&i->base);
+		input_cdio_close(&i->base);
 		return NULL;
 	}
 
@@ -246,10 +246,10 @@ input_cdda_open(const char *uri, GError **error_r)
 }
 
 static bool
-input_cdda_seek(struct input_stream *is,
+input_cdio_seek(struct input_stream *is,
 		goffset offset, int whence, GError **error_r)
 {
-	struct input_cdda *cis = (struct input_cdda *)is;
+	struct input_cdio_paranoia *cis = (struct input_cdio_paranoia *)is;
 
 	/* calculate absolute offset */
 	switch (whence) {
@@ -264,7 +264,7 @@ input_cdda_seek(struct input_stream *is,
 	}
 
 	if (offset < 0 || offset > cis->base.size) {
-		g_set_error(error_r, cdda_quark(), 0,
+		g_set_error(error_r, cdio_quark(), 0,
 			    "Invalid offset to seek %ld (%ld)",
 			    (long int)offset, (long int)cis->base.size);
 		return false;
@@ -295,10 +295,10 @@ pcm16_to_wave(uint16_t *dst16, const uint16_t *src16, size_t length)
 }
 
 static size_t
-input_cdda_read(struct input_stream *is, void *ptr, size_t length,
+input_cdio_read(struct input_stream *is, void *ptr, size_t length,
 		GError **error_r)
 {
-	struct input_cdda *cis = (struct input_cdda *)is;
+	struct input_cdio_paranoia *cis = (struct input_cdio_paranoia *)is;
 	size_t nbytes = 0;
 	int diff;
 	size_t len, maxwrite;
@@ -327,7 +327,7 @@ input_cdda_read(struct input_stream *is, void *ptr, size_t length,
 				free(s_mess);
 			}
 			if (!rbuf) {
-				g_set_error(error_r, cdda_quark(), 0,
+				g_set_error(error_r, cdio_quark(), 0,
 					"paranoia read error. Stopping.");
 				return 0;
 			}
@@ -371,17 +371,17 @@ input_cdda_read(struct input_stream *is, void *ptr, size_t length,
 }
 
 static bool
-input_cdda_eof(struct input_stream *is)
+input_cdio_eof(struct input_stream *is)
 {
-	struct input_cdda *cis = (struct input_cdda *)is;
+	struct input_cdio_paranoia *cis = (struct input_cdio_paranoia *)is;
 
 	return (cis->lsn_from + cis->lsn_relofs > cis->lsn_to);
 }
 
-const struct input_plugin input_plugin_cdda = {
-	.open = input_cdda_open,
-	.close = input_cdda_close,
-	.seek = input_cdda_seek,
-	.read = input_cdda_read,
-	.eof = input_cdda_eof
+const struct input_plugin input_plugin_cdio_paranoia = {
+	.open = input_cdio_open,
+	.close = input_cdio_close,
+	.seek = input_cdio_seek,
+	.read = input_cdio_read,
+	.eof = input_cdio_eof
 };

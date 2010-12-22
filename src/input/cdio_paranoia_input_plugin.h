@@ -17,12 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CDDA_INPUT_PLUGIN_H
-#define MPD_CDDA_INPUT_PLUGIN_H
+#ifndef MPD_CDIO_PARANOIA_INPUT_PLUGIN_H
+#define MPD_CDIO_PARANOIA_INPUT_PLUGIN_H
 
 /**
  * An input plugin based on libcdio_paranoia library.
  */
-extern const struct input_plugin input_plugin_cdda;
+extern const struct input_plugin input_plugin_cdio_paranoia;
 
 #endif
