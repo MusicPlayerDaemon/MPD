@@ -86,7 +86,6 @@ static struct input_stream *
 input_cdda_open(const char *uri, GError **error_r)
 {
 	struct input_cdda *i;
-	int idx;
 	char **cd_drives;  /* List of all drives with a loaded CDDA in it. */
 
 	if (!g_str_has_prefix(uri, "cdda://"))
@@ -117,12 +116,6 @@ input_cdda_open(const char *uri, GError **error_r)
 		return NULL;
 	}
 
-	/* list all available drives */
-	idx = 0;
-	while (cd_drives[idx] != NULL) {
-		g_debug("CD drive: %s\n", cd_drives[idx++]);
-	}
-
 	/* Found such a CD-ROM with a CD-DA loaded. Use the first drive in the list. */
 	i->cdio = cdio_open(*cd_drives, DRIVER_UNKNOWN);
 	i->drv = cdio_cddap_identify_cdio(i->cdio, 1, NULL);
@@ -136,8 +129,7 @@ input_cdda_open(const char *uri, GError **error_r)
 		return NULL;
 	}
 
-	/* We'll set for verbose paranoia messages. */
-	cdda_verbose_set(i->drv, CDDA_MESSAGE_PRINTIT, CDDA_MESSAGE_PRINTIT);
+	cdda_verbose_set(i->drv, CDDA_MESSAGE_FORGETIT, CDDA_MESSAGE_FORGETIT);
 
 	if ( 0 != cdio_cddap_open(i->drv) ) {
 		g_set_error(error_r, cdda_quark(), 0, "Unable to open disc.\n");
@@ -161,26 +153,6 @@ input_cdda_open(const char *uri, GError **error_r)
 		g_set_error(error_r, cdda_quark(), 0, "Drive returns unknown data type %d.\n", i->endian);
 		input_cdda_close(i)
 		return NULL;
-	}
-
-	g_debug("Disc last LSN: %d\n", cdio_get_disc_last_lsn(i->cdio));
-
-	{
-		int ti, j, tracks, first_track;
-
-		g_debug("CD-ROM Track List (%i - %i)\n", first_track, first_track+tracks-1);
-		g_debug("  #:  LSN\n");
-
-		/* generate track listing */
-		for (j = 0, ti = first_track; j < tracks; ti++, j++) {
-			lsn_t lsn = cdio_get_track_lsn(i->cdio, ti);
-			if (CDIO_INVALID_LSN != lsn) {
-				g_debug("%3d: %06lu\n", (int) ti, (long unsigned int) lsn);
-			}
-		}
-		g_debug("%3X: %06lu  leadout\n", CDIO_CDROM_LEADOUT_TRACK,
-			(long unsigned int) cdio_get_track_lsn(i->cdio,
-							       CDIO_CDROM_LEADOUT_TRACK));
 	}
 
 	if (i->trackno == -1) {
@@ -305,7 +277,6 @@ input_cdda_read(struct input_stream *is, void *ptr, size_t length,
 			}
 			s_mess = cdda_messages(cis->drv);
 			if (s_mess) {
-				g_debug("paranoia_read: %s\n", s_mess );
 				free(s_mess);
 			}
 			if (!rbuf) {
@@ -315,7 +286,6 @@ input_cdda_read(struct input_stream *is, void *ptr, size_t length,
 			}
 			//do the swapping if nessesary
 			if (cis->endian != 0) {
-				g_debug("swap\n");
 				uint16_t *conv_buffer = pcm_buffer_get(&cis->conv_buffer, CDIO_CD_FRAMESIZE_RAW );
 				/* do endian conversion ! */
 				pcm16_to_wave( conv_buffer, (uint16_t*) rbuf, CDIO_CD_FRAMESIZE_RAW);
