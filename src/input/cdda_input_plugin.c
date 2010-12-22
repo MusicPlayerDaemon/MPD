@@ -115,7 +115,7 @@ input_cdda_open(const char *uri, GError **error_r)
 	if (parse_cdda_uri(uri, &drive, &trackno) == -1) {
 		g_set_error(error_r, cdda_quark(), 0,
 			    "Unable parse URI\n");
-		input_cdda_close(i);
+		input_cdda_close(&i->base);
 		return NULL;
 	}
 
@@ -124,7 +124,7 @@ input_cdda_open(const char *uri, GError **error_r)
 	if (device == NULL) {
 		g_set_error(error_r, cdda_quark(), 0,
 			    "Unable find or access a CD-ROM drive with an audio CD in it.");
-		input_cdda_close(i);
+		input_cdda_close(&i->base);
 		return NULL;
 	}
 
@@ -137,7 +137,7 @@ input_cdda_open(const char *uri, GError **error_r)
 	if ( !i->drv ) {
 		g_set_error(error_r, cdda_quark(), 0,
 			    "Unable to identify audio CD disc.");
-		input_cdda_close(i);
+		input_cdda_close(&i->base);
 		return NULL;
 	}
 
@@ -145,7 +145,7 @@ input_cdda_open(const char *uri, GError **error_r)
 
 	if ( 0 != cdio_cddap_open(i->drv) ) {
 		g_set_error(error_r, cdda_quark(), 0, "Unable to open disc.");
-		input_cdda_close(i);
+		input_cdda_close(&i->base);
 		return NULL;
 	}
 
@@ -171,7 +171,7 @@ input_cdda_open(const char *uri, GError **error_r)
 	if (i->trackno == -1) {
 		g_set_error(error_r, cdda_quark(), 0,
 			    "Invalid track # in %s", uri);
-		input_cdda_close(i);
+		input_cdda_close(&i->base);
 		return NULL;
 	}
 
