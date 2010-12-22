@@ -217,17 +217,15 @@ input_cdda_open(const char *uri, GError **error_r)
 		return NULL;
 	}
 
-	if (i->trackno == -1) {
-		g_set_error(error_r, cdda_quark(), 0,
-			    "Invalid track # in %s", uri);
-		input_cdda_close(&i->base);
-		return NULL;
-	}
-
-
 	i->lsn_relofs = 0;
-	i->lsn_from = cdio_get_track_lsn( i->cdio, i->trackno );
-	i->lsn_to = cdio_get_track_last_lsn( i->cdio, i->trackno );
+
+	if (i->trackno >= 0) {
+		i->lsn_from = cdio_get_track_lsn(i->cdio, i->trackno);
+		i->lsn_to = cdio_get_track_last_lsn(i->cdio, i->trackno);
+	} else {
+		i->lsn_from = 0;
+		i->lsn_to = cdio_get_disc_last_lsn(i->cdio);
+	}
 
 	i->para = cdio_paranoia_init(i->drv);
 
