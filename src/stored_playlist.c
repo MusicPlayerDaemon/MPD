@@ -199,7 +199,7 @@ spl_load(const char *utf8path)
 	GString *buffer = g_string_sized_new(1024);
 	char *s;
 	while ((s = read_text_line(file, buffer)) != NULL) {
-		if (*s == PLAYLIST_COMMENT)
+		if (*s == 0 || *s == PLAYLIST_COMMENT)
 			continue;
 
 		if (!uri_has_scheme(s)) {
