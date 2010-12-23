@@ -21,6 +21,7 @@
 #include "playlist_database.h"
 #include "playlist_vector.h"
 #include "text_file.h"
+#include "string_util.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -62,7 +63,7 @@ playlist_metadata_load(FILE *fp, struct playlist_vector *pv, const char *name,
 		}
 
 		*colon++ = 0;
-		value = g_strchug(colon);
+		value = strchug_fast_c(colon);
 
 		if (strcmp(line, "mtime") == 0)
 			pm.mtime = strtol(value, NULL, 10);

@@ -24,6 +24,15 @@
 
 #include <assert.h>
 
+const char *
+strchug_fast_c(const char *p)
+{
+	while (*p != 0 && g_ascii_isspace(*p))
+		++p;
+
+	return p;
+}
+
 bool
 string_array_contains(const char *const* haystack, const char *needle)
 {

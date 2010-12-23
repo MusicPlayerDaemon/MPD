@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "tokenizer.h"
+#include "string_util.h"
 
 #include <stdbool.h>
 #include <assert.h>
@@ -72,7 +73,7 @@ tokenizer_next_word(char **input_p, GError **error_r)
 			/* a whitespace: the word ends here */
 			*input = 0;
 			/* skip all following spaces, too */
-			input = g_strchug(input + 1);
+			input = strchug_fast(input + 1);
 			break;
 		}
 
@@ -126,7 +127,7 @@ tokenizer_next_unquoted(char **input_p, GError **error_r)
 			/* a whitespace: the word ends here */
 			*input = 0;
 			/* skip all following spaces, too */
-			input = g_strchug(input + 1);
+			input = strchug_fast(input + 1);
 			break;
 		}
 
@@ -205,7 +206,7 @@ tokenizer_next_string(char **input_p, GError **error_r)
 	/* finish the string and return it */
 
 	*dest = 0;
-	*input_p = g_strchug(input);
+	*input_p = strchug_fast(input);
 	return word;
 }
 

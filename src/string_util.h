@@ -20,7 +20,48 @@
 #ifndef MPD_STRING_UTIL_H
 #define MPD_STRING_UTIL_H
 
+#include <glib.h>
+
 #include <stdbool.h>
+
+/**
+ * Remove the "const" attribute from a string pointer.  This is a
+ * dirty hack, don't use it unless you know what you're doing!
+ */
+G_GNUC_CONST
+static inline char *
+deconst_string(const char *p)
+{
+	union {
+		const char *in;
+		char *out;
+	} u = {
+		.in = p,
+	};
+
+	return u.out;
+}
+
+/**
+ * Returns a pointer to the first non-whitespace character in the
+ * string, or to the end of the string.
+ *
+ * This is a faster version of g_strchug(), because it does not move
+ * data.
+ */
+G_GNUC_PURE
+const char *
+strchug_fast_c(const char *p);
+
+/**
+ * Same as strchug_fast_c(), but works with a writable pointer.
+ */
+G_GNUC_PURE
+static inline char *
+strchug_fast(char *p)
+{
+	return deconst_string(strchug_fast_c(p));
+}
 
 /**
  * Checks whether a string array contains the specified string.

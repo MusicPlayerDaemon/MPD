@@ -24,6 +24,7 @@
 #include "directory.h"
 #include "tag.h"
 #include "text_file.h"
+#include "string_util.h"
 
 #include <glib.h>
 
@@ -96,7 +97,7 @@ song_load(FILE *fp, struct directory *parent, const char *uri,
 		}
 
 		*colon++ = 0;
-		value = g_strchug(colon);
+		value = strchug_fast_c(colon);
 
 		if ((type = tag_name_parse(line)) != TAG_NUM_OF_ITEM_TYPES) {
 			if (!song->tag) {
