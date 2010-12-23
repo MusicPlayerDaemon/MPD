@@ -1609,5 +1609,6 @@ dnl ---------------------------------------------------------------------------
 dnl Generate files
 dnl ---------------------------------------------------------------------------
 AC_OUTPUT(Makefile)
+AC_OUTPUT(doc/doxygen.conf)
 
 echo 'MPD is ready for compilation, type "make" to begin.'
