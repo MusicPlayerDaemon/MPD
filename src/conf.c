@@ -20,6 +20,7 @@
 #include "config.h"
 #include "conf.h"
 #include "utils.h"
+#include "string_util.h"
 #include "tokenizer.h"
 #include "path.h"
 #include "glib_compat.h"

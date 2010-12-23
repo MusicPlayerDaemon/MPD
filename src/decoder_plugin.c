@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "decoder_plugin.h"
-#include "utils.h"
+#include "string_util.h"
 
 #include <assert.h>
 

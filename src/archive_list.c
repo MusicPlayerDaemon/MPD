@@ -20,7 +20,7 @@
 #include "config.h"
 #include "archive_list.h"
 #include "archive_plugin.h"
-#include "utils.h"
+#include "string_util.h"
 #include "archive/bz2_archive_plugin.h"
 #include "archive/iso9660_archive_plugin.h"
 #include "archive/zzip_archive_plugin.h"

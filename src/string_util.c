@@ -17,20 +17,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_UTILS_H
-#define MPD_UTILS_H
+#include "config.h"
+#include "string_util.h"
 
-#include <stdbool.h>
+#include <glib.h>
 
-#ifndef assert_static
-/* Compile time assertion developed by Ralf Holly */
-/* http://pera-software.com/articles/compile-time-assertions.pdf */
-#define assert_static(e) \
-	do { \
-		enum { assert_static__ = 1/(e) }; \
-	} while (0)
-#endif /* !assert_static */
+#include <assert.h>
 
-char *parsePath(char *path);
+bool
+string_array_contains(const char *const* haystack, const char *needle)
+{
+	assert(haystack != NULL);
+	assert(needle != NULL);
 
-#endif
+	for (; *haystack != NULL; ++haystack)
+		if (g_ascii_strcasecmp(*haystack, needle) == 0)
+			return true;
+
+	return false;
+}

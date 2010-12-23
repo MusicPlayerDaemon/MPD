@@ -31,7 +31,7 @@
 #include "playlist/flac_playlist_plugin.h"
 #include "input_stream.h"
 #include "uri.h"
-#include "utils.h"
+#include "string_util.h"
 #include "conf.h"
 #include "glib_compat.h"
 #include "mpd_error.h"

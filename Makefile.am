@@ -214,6 +214,7 @@ mpd_headers = \
 	src/strset.h \
 	src/uri.h \
 	src/utils.h \
+	src/string_util.h \
 	src/volume.h \
 	src/zeroconf.h src/zeroconf-internal.h \
 	src/locate.h \
@@ -347,6 +348,7 @@ src_mpd_SOURCES = \
 	src/strset.c \
 	src/uri.c \
 	src/utils.c \
+	src/string_util.c \
 	src/volume.c \
 	src/locate.c \
 	src/stored_playlist.c \
@@ -854,7 +856,7 @@ test_read_conf_CPPFLAGS = $(AM_CPPFLAGS) \
 test_read_conf_LDADD = $(MPD_LIBS) \
 	$(GLIB_LIBS)
 test_read_conf_SOURCES = test/read_conf.c \
-	src/conf.c src/tokenizer.c src/utils.c
+	src/conf.c src/tokenizer.c src/utils.c src/string_util.c
 
 test_run_input_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ARCHIVE_CFLAGS) \
@@ -864,7 +866,7 @@ test_run_input_LDADD = $(MPD_LIBS) \
 	$(INPUT_LIBS) \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.c \
-	src/conf.c src/tokenizer.c src/utils.c \
+	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/tag.c src/tag_pool.c src/tag_save.c \
 	src/fd_util.c \
 	$(ARCHIVE_SRC) \
@@ -882,7 +884,7 @@ test_dump_playlist_LDADD = $(MPD_LIBS) \
 	$(INPUT_LIBS) \
 	$(GLIB_LIBS)
 test_dump_playlist_SOURCES = test/dump_playlist.c \
-	src/conf.c src/tokenizer.c src/utils.c \
+	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/uri.c \
 	src/song.c src/tag.c src/tag_pool.c src/tag_save.c \
 	src/text_input_stream.c src/fifo_buffer.c \
@@ -911,7 +913,7 @@ test_run_decoder_LDADD = $(MPD_LIBS) \
 	$(INPUT_LIBS) $(DECODER_LIBS) \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.c \
-	src/conf.c src/tokenizer.c src/utils.c src/log.c \
+	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
 	src/tag.c src/tag_pool.c \
 	src/replay_gain_info.c \
 	src/uri.c \
@@ -934,7 +936,7 @@ test_read_tags_LDADD = $(MPD_LIBS) \
 	$(INPUT_LIBS) $(DECODER_LIBS) \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.c \
-	src/conf.c src/tokenizer.c src/utils.c src/log.c \
+	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
 	src/tag.c src/tag_pool.c \
 	src/replay_gain_info.c \
 	src/uri.c \
@@ -953,7 +955,7 @@ test_run_filter_LDADD = $(MPD_LIBS) \
 test_run_filter_SOURCES = test/run_filter.c \
 	src/filter_plugin.c \
 	src/filter_registry.c \
-	src/conf.c src/tokenizer.c src/utils.c \
+	src/conf.c src/tokenizer.c src/utils.c src/string_util.c \
 	src/pcm_volume.c src/pcm_convert.c src/pcm_byteswap.c \
 	src/pcm_format.c src/pcm_channels.c src/pcm_dither.c \
 	src/pcm_pack.c \
@@ -974,7 +976,7 @@ if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
 test_run_encoder_SOURCES = test/run_encoder.c \
 	src/conf.c src/tokenizer.c \
-	src/utils.c \
+	src/utils.c src/string_util.c \
 	src/tag.c src/tag_pool.c \
 	src/audio_check.c \
 	src/audio_format.c \
@@ -1030,7 +1032,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	$(OUTPUT_LIBS) \
 	$(GLIB_LIBS)
 test_run_output_SOURCES = test/run_output.c \
-	src/conf.c src/tokenizer.c src/utils.c src/log.c \
+	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \
@@ -1066,7 +1068,7 @@ test_read_mixer_LDADD = $(MPD_LIBS) \
 	$(OUTPUT_LIBS) \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.c \
-	src/conf.c src/tokenizer.c src/utils.c src/log.c \
+	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
 	src/mixer_control.c src/mixer_api.c \
 	src/filter_plugin.c \
 	src/filter/volume_filter_plugin.c \

@@ -101,16 +101,3 @@ char *parsePath(char *path)
 	}
 #endif
 }
-
-bool
-string_array_contains(const char *const* haystack, const char *needle)
-{
-	assert(haystack != NULL);
-	assert(needle != NULL);
-
-	for (; *haystack != NULL; ++haystack)
-		if (g_ascii_strcasecmp(*haystack, needle) == 0)
-			return true;
-
-	return false;
-}
