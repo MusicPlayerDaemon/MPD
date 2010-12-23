@@ -20,6 +20,7 @@
 #include "config.h"
 #include "stored_playlist.h"
 #include "playlist_save.h"
+#include "text_file.h"
 #include "song.h"
 #include "mapper.h"
 #include "path.h"
@@ -179,7 +180,6 @@ spl_load(const char *utf8path)
 {
 	FILE *file;
 	GPtrArray *list;
-	char buffer[MPD_PATH_MAX];
 	char *path_fs;
 
 	if (!spl_valid_name(utf8path) || map_spl_path() == NULL)
@@ -196,13 +196,11 @@ spl_load(const char *utf8path)
 
 	list = g_ptr_array_new();
 
-	while (fgets(buffer, sizeof(buffer), file)) {
-		char *s = buffer;
-
+	GString *buffer = g_string_sized_new(1024);
+	char *s;
+	while ((s = read_text_line(file, buffer)) != NULL) {
 		if (*s == PLAYLIST_COMMENT)
 			continue;
-
-		g_strchomp(buffer);
 
 		if (!uri_has_scheme(s)) {
 			char *path_utf8;
