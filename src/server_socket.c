@@ -18,6 +18,11 @@
  */
 
 #include "config.h"
+
+#ifdef HAVE_STRUCT_UCRED
+#define _GNU_SOURCE 1
+#endif
+
 #include "server_socket.h"
 #include "socket_util.h"
 #include "fd_util.h"
