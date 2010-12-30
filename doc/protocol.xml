@@ -198,6 +198,12 @@
                   <option>crossfade</option>, replay gain
                 </para>
               </listitem>
+              <listitem>
+                <para>
+                    <returnvalue>sticker</returnvalue>: the sticker database
+                    has been modified.
+                </para>
+              </listitem>
             </itemizedlist>
             <para>
               While a client is waiting for <command>idle</command>
