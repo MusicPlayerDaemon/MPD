@@ -7,6 +7,7 @@ ver 0.16.1 (2010/??/??)
   - mad: work around build failure on Solaris
 * output:
   - solaris: add missing parameter to open_cloexec() cal
+  - osx: fix up audio format first, then apply it to device
 
 
 ver 0.16 (2010/12/11)
