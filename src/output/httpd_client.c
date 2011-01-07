@@ -27,6 +27,9 @@
 #include <assert.h>
 #include <string.h>
 
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "httpd_output"
+
 struct httpd_client {
 	/**
 	 * The httpd output object this client is connected to.
