@@ -332,15 +332,6 @@ osx_output_open(void *data, struct audio_format *audio_format, GError **error)
 	stream_description.mSampleRate = audio_format->sample_rate;
 	stream_description.mFormatID = kAudioFormatLinearPCM;
 	stream_description.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
-#if G_BYTE_ORDER == G_BIG_ENDIAN
-	stream_description.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
-#endif
-
-	stream_description.mBytesPerPacket =
-		audio_format_frame_size(audio_format);
-	stream_description.mFramesPerPacket = 1;
-	stream_description.mBytesPerFrame = stream_description.mBytesPerPacket;
-	stream_description.mChannelsPerFrame = audio_format->channels;
 
 	switch (audio_format->format) {
 	case SAMPLE_FORMAT_S8:
@@ -356,6 +347,16 @@ osx_output_open(void *data, struct audio_format *audio_format, GError **error)
 		stream_description.mBitsPerChannel = 16;
 		break;
 	}
+
+#if G_BYTE_ORDER == G_BIG_ENDIAN
+	stream_description.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
+#endif
+
+	stream_description.mBytesPerPacket =
+		audio_format_frame_size(audio_format);
+	stream_description.mFramesPerPacket = 1;
+	stream_description.mBytesPerFrame = stream_description.mBytesPerPacket;
+	stream_description.mChannelsPerFrame = audio_format->channels;
 
 	result = AudioUnitSetProperty(od->au, kAudioUnitProperty_StreamFormat,
 				      kAudioUnitScope_Input, 0,

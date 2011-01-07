@@ -547,14 +547,14 @@ enum {
 	XING_SCALE  = 0x00000008L
 };
 
-struct version {
+struct lame_version {
 	unsigned major;
 	unsigned minor;
 };
 
 struct lame {
 	char encoder[10];       /* 9 byte encoder name/version ("LAME3.97b") */
-	struct version version; /* struct containing just the version */
+	struct lame_version version; /* struct containing just the version */
 	float peak;             /* replaygain peak */
 	float track_gain;       /* replaygain track gain */
 	float album_gain;       /* replaygain album gain */

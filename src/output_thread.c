@@ -303,7 +303,7 @@ ao_wait(struct audio_output *ao)
 		GTimeVal tv;
 		g_get_current_time(&tv);
 		g_time_val_add(&tv, delay * 1000);
-		g_cond_timed_wait(ao->cond, ao->mutex, &tv);
+		(void)g_cond_timed_wait(ao->cond, ao->mutex, &tv);
 
 		if (ao->command != AO_COMMAND_NONE)
 			return false;
@@ -463,12 +463,9 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 
 			/* don't automatically reopen this device for
 			   10 seconds */
-			g_mutex_lock(ao->mutex);
-
 			assert(ao->fail_timer == NULL);
 			ao->fail_timer = g_timer_new();
 
-			g_mutex_unlock(ao->mutex);
 			return false;
 		}
 

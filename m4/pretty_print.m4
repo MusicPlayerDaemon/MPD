@@ -1,19 +1,19 @@
 AC_DEFUN([results], [
 	dnl This is a hack to allow "with" names, otherwise "enable".
-	num=`expr match $1 'with'`
+	num=`expr $1 : 'with'`
 	if test "$num" != "0"; then
 		var="`echo '$'$1`"
 	else
 		var="`echo '$'enable_$1`"
 	fi
 
-	echo -n '('
+	printf '('
 	if eval "test x$var = xyes"; then
-		echo -n '+'
+		printf '+'
 	elif test -n "$3" && eval "test x$var = x$3"; then
-		echo -n '+' 
+		printf '+'
 	else
-		echo -n '-'
+		printf '-'
 	fi
-	echo -n "$2) "
+	printf '%s) ' "$2"
 ])

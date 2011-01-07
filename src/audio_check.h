@@ -38,7 +38,7 @@ bool
 audio_check_sample_rate(unsigned long sample_rate, GError **error_r);
 
 bool
-audio_check_sample_format(unsigned sample_format, GError **error_r);
+audio_check_sample_format(enum sample_format, GError **error_r);
 
 bool
 audio_check_channel_count(unsigned sample_format, GError **error_r);

@@ -30,8 +30,8 @@
 
 #define DIRECTORY_DIR		"directory: "
 
-#define DEVICE_INARCHIVE	(dev_t)(-1)
-#define DEVICE_CONTAINER	(dev_t)(-2)
+#define DEVICE_INARCHIVE (dev_t)(-1)
+#define DEVICE_CONTAINER (dev_t)(-2)
 
 struct directory {
 	struct dirvec children;

@@ -58,7 +58,7 @@ if test x$enable_aac = xyes; then
 	fi
 	if test x$enable_aac = xyes; then
   		AC_MSG_CHECKING(that FAAD2 uses buffer and bufferlen)
-		AC_COMPILE_IFELSE([
+		AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #include <faad.h>
 
 int main() {
@@ -82,9 +82,9 @@ int main() {
 
 	return 0;
 }
-],[AC_MSG_RESULT(yes);AC_DEFINE(HAVE_FAAD_BUFLEN_FUNCS,1,[Define if FAAD2 uses buflen in function calls])],[AC_MSG_RESULT(no);
+])],[AC_MSG_RESULT(yes);AC_DEFINE(HAVE_FAAD_BUFLEN_FUNCS,1,[Define if FAAD2 uses buflen in function calls])],[AC_MSG_RESULT(no);
 		AC_MSG_CHECKING(that FAAD2 can even be used)
-		AC_COMPILE_IFELSE([
+		AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #include <faad.h>
 
 int main() {
@@ -113,7 +113,7 @@ int main() {
 
 	return 0;
 }
-],AC_MSG_RESULT(yes),[AC_MSG_RESULT(no);enable_aac=no])
+])],AC_MSG_RESULT(yes),[AC_MSG_RESULT(no);enable_aac=no])
 		])
 	fi
 	if test x$enable_aac = xyes; then
@@ -136,7 +136,7 @@ if test x$enable_aac = xyes; then
 	CPPFLAGS=$CFLAGS
 
 	AC_MSG_CHECKING(for broken libfaad headers)
-	AC_COMPILE_IFELSE([
+	AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #include <faad.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -148,7 +148,7 @@ int main() {
 	faacDecInit2(NULL, NULL, 0, &sample_rate, &channels);
 	return 0;
 }
-	],
+	])],
 		[AC_MSG_RESULT(correct)],
 		[AC_MSG_RESULT(broken);
 		AC_DEFINE(HAVE_FAAD_LONG, 1, [Define if faad.h uses the broken "unsigned long" pointers])])

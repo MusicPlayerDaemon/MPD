@@ -162,7 +162,7 @@ AC_ARG_ENABLE(documentation,
 
 AC_ARG_ENABLE(ffado,
 	AS_HELP_STRING([--enable-ffado], [enable libffado (FireWire) support]),,
-	[enable_ffado=auto])
+	[enable_ffado=no])
 
 AC_ARG_ENABLE(ffmpeg,
 	AS_HELP_STRING([--enable-ffmpeg],
@@ -1510,23 +1510,23 @@ dnl ---------------------------------------------------------------------------
 echo ''
 echo '########### MPD CONFIGURATION ############'
 
-echo -ne '\nArchive support:\n\t'
+printf '\nArchive support:\n\t'
 results(bzip2,[bzip2])
 results(iso9660,[ISO9660])
 results(zzip,[ZIP])
 
 if test x$with_zeroconf != xno; then
-	echo -ne '\nAutodiscovery support:\n\t'
+	printf '\nAutodiscovery support:\n\t'
 	results(avahi, [Avahi])
 	results(bonjour, [Bonjour])
 fi
 
-echo -ne '\nClient support:\n\t'
+printf '\nClient support:\n\t'
 results(ipv6, "IPv6")
 results(tcp, "TCP")
 results(un,[UNIX Domain Sockets])
 
-echo -ne '\nFile format support:\n\t'
+printf '\nFile format support:\n\t'
 results(aac, [AAC])
 results(sidplay, [C64 SID])
 results(ffmpeg, [FFMPEG])
@@ -1534,7 +1534,7 @@ results(flac, [FLAC])
 results(fluidsynth, [FluidSynth])
 results(gme, [GME])
 results(sndfile, [libsndfile])
-echo -ne '\n\t'
+printf '\n\t'
 results(mikmod, [MikMod])
 results(modplug, [MODPLUG])
 results(mad, [MAD])
@@ -1542,23 +1542,23 @@ results(mpg123, [MPG123])
 results(mp4, [MP4])
 results(mpc, [Musepack])
 results(oggflac, [OggFLAC], flac)
-echo -ne '\n\t'
+printf '\n\t'
 results(tremor, [OggTremor])
 results(vorbis, [OggVorbis])
 results(audiofile, [WAVE])
 results(wavpack, [WavPack])
 results(wildmidi, [WildMidi])
 
-echo -en '\nOther features:\n\t'
+printf '\nOther features:\n\t'
 results(lsr, [libsamplerate])
 results(inotify, [inotify])
 results(sqlite, [SQLite])
 
-echo -en '\nMetadata support:\n\t'
+printf '\nMetadata support:\n\t'
 results(cue,[cue])
 results(id3,[ID3])
 
-echo -en '\nPlayback support:\n\t'
+printf '\nPlayback support:\n\t'
 results(alsa,ALSA)
 results(ffado,FFADO)
 results(fifo,FIFO)
@@ -1567,14 +1567,14 @@ results(httpd_output,[HTTP Daemon])
 results(jack,[JACK])
 results(ao,[libao])
 results(oss,[OSS])
-echo -ne '\n\t'
+printf '\n\t'
 results(openal,[OpenAL])
 results(osx, [OS X])
 results(pipe_output, [Pipeline])
 results(pulse, [PulseAudio])
 results(mvp, [Media MVP])
 results(shout, [SHOUTcast])
-echo -ne '\n\t'
+printf '\n\t'
 results(solaris, [Solaris])
 results(winmm_output, [WinMM])
 
@@ -1582,7 +1582,7 @@ if
 	test x$enable_shout = xyes ||
 	test x$enable_recorder = xyes ||
 	test x$enable_httpd_output = xyes; then
-		echo -en '\nStreaming encoder support:\n\t'
+		printf '\nStreaming encoder support:\n\t'
 		results(flac_encoder, [FLAC])
 		results(lame_encoder, [LAME])
 		results(vorbis_encoder, [Ogg Vorbis])
@@ -1590,20 +1590,20 @@ if
 		results(wave_encoder, [WAVE])
 fi
 
-echo -en '\nStreaming support:\n\t'
+printf '\nStreaming support:\n\t'
 results(curl,[CURL])
 results(lastfm,[Last.FM])
 results(mms,[MMS])
 results(cdio_paranoia, [CDIO_PARANOIA])
 
-echo -ne '\n\n##########################################\n\n'
+printf '\n\n##########################################\n\n'
 
 if test x$enable_sndfile = xyes && test x$enable_modplug = xyes; then
 	AC_MSG_WARN([compilation may fail, because libmodplug conflicts with libsndfile])
 	AC_MSG_WARN([libmodplug ships modplug/sndfile.h, which hides libsndfile's sndfile.h])
 fi
 
-echo -ne 'Generating files needed for compilation\n'
+echo 'Generating files needed for compilation'
 
 dnl ---------------------------------------------------------------------------
 dnl Generate files
