@@ -356,16 +356,9 @@ player_check_decoder_startup(struct player *player)
 static bool
 player_send_silence(struct player *player)
 {
-	struct music_chunk *chunk;
-	size_t frame_size =
-		audio_format_frame_size(&player->play_audio_format);
-	/* this formula ensures that we don't send
-	   partial frames */
-	unsigned num_frames = sizeof(chunk->data) / frame_size;
-
 	assert(audio_format_defined(&player->play_audio_format));
 
-	chunk = music_buffer_allocate(player_buffer);
+	struct music_chunk *chunk = music_buffer_allocate(player_buffer);
 	if (chunk == NULL) {
 		g_warning("Failed to allocate silence buffer");
 		return false;
@@ -374,6 +367,12 @@ player_send_silence(struct player *player)
 #ifndef NDEBUG
 	chunk->audio_format = player->play_audio_format;
 #endif
+
+	size_t frame_size =
+		audio_format_frame_size(&player->play_audio_format);
+	/* this formula ensures that we don't send
+	   partial frames */
+	unsigned num_frames = sizeof(chunk->data) / frame_size;
 
 	chunk->times = -1.0; /* undefined time stamp */
 	chunk->length = num_frames * frame_size;
@@ -396,8 +395,6 @@ static bool player_seek_decoder(struct player *player)
 {
 	struct song *song = pc.next_song;
 	struct decoder_control *dc = player->dc;
-	double where;
-	bool ret;
 
 	assert(pc.next_song != NULL);
 
@@ -413,8 +410,7 @@ static bool player_seek_decoder(struct player *player)
 
 		/* re-start the decoder */
 		player_dc_start(player, player->pipe);
-		ret = player_wait_for_decoder(player);
-		if (!ret) {
+		if (!player_wait_for_decoder(player)) {
 			/* decoder failure */
 			player_command_finished();
 			return false;
@@ -435,8 +431,7 @@ static bool player_seek_decoder(struct player *player)
 	/* wait for the decoder to complete initialization */
 
 	while (player->decoder_starting) {
-		ret = player_check_decoder_startup(player);
-		if (!ret) {
+		if (!player_check_decoder_startup(player)) {
 			/* decoder failure */
 			player_command_finished();
 			return false;
@@ -445,14 +440,13 @@ static bool player_seek_decoder(struct player *player)
 
 	/* send the SEEK command */
 
-	where = pc.seek_where;
+	double where = pc.seek_where;
 	if (where > pc.total_time)
 		where = pc.total_time - 0.1;
 	if (where < 0.0)
 		where = 0.0;
 
-	ret = dc_seek(dc, where + song->start_ms / 1000.0);
-	if (!ret) {
+	if (!dc_seek(dc, where + song->start_ms / 1000.0)) {
 		/* decoder failure */
 		player_command_finished();
 		return false;
@@ -583,14 +577,12 @@ static void player_process_command(struct player *player)
 static void
 update_song_tag(struct song *song, const struct tag *new_tag)
 {
-	struct tag *old_tag;
-
 	if (song_is_file(song))
 		/* don't update tags of local files, only remote
 		   streams may change tags dynamically */
 		return;
 
-	old_tag = song->tag;
+	struct tag *old_tag = song->tag;
 	song->tag = tag_dup(new_tag);
 
 	if (old_tag != NULL)
@@ -648,15 +640,14 @@ static bool
 play_next_chunk(struct player *player)
 {
 	struct decoder_control *dc = player->dc;
-	struct music_chunk *chunk = NULL;
-	unsigned cross_fade_position;
-	bool success;
 
 	if (!audio_output_all_wait(64))
 		/* the output pipe is still large enough, don't send
 		   another chunk */
 		return true;
 
+	unsigned cross_fade_position;
+	struct music_chunk *chunk = NULL;
 	if (player->xfade == XFADE_ENABLED &&
 	    player_dc_at_next_song(player) &&
 	    (cross_fade_position = music_pipe_size(player->pipe))
@@ -732,9 +723,7 @@ play_next_chunk(struct player *player)
 
 	/* play the current chunk */
 
-	success = play_chunk(player->song, chunk, &player->play_audio_format);
-
-	if (!success) {
+	if (!play_chunk(player->song, chunk, &player->play_audio_format)) {
 		music_buffer_return(player_buffer, chunk);
 
 		player_lock();
@@ -776,11 +765,9 @@ play_next_chunk(struct player *player)
 static bool
 player_song_border(struct player *player)
 {
-	char *uri;
-
 	player->xfade = XFADE_UNKNOWN;
 
-	uri = song_get_uri(player->song);
+	char *uri = song_get_uri(player->song);
 	g_message("played \"%s\"", uri);
 	g_free(uri);
 
@@ -875,15 +862,12 @@ static void do_play(struct decoder_control *dc)
 
 		if (player.decoder_starting) {
 			/* wait until the decoder is initialized completely */
-			bool success;
-			const struct song *song;
 
-			success = player_check_decoder_startup(&player);
-			if (!success)
+			if (!player_check_decoder_startup(&player))
 				break;
 
 			/* seek to the beginning of the range */
-			song = decoder_current_song(dc);
+			const struct song *song = decoder_current_song(dc);
 			if (song != NULL && song->start_ms > 0 &&
 			    !dc_seek(dc, song->start_ms / 1000.0))
 				player_dc_stop(&player);
@@ -1092,10 +1076,9 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 
 void player_create(void)
 {
-	GError *e = NULL;
-
 	assert(pc.thread == NULL);
 
+	GError *e = NULL;
 	pc.thread = g_thread_create(player_task, NULL, true, &e);
 	if (pc.thread == NULL)
 		MPD_ERROR("Failed to spawn player task: %s", e->message);
