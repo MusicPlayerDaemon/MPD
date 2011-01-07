@@ -127,6 +127,11 @@ ver 0.16 (2010/12/11)
 * make single mode 'sticky'
 
 
+ver 0.15.16 (2010/??/??)
+* encoders:
+  - lame: explicitly configure the output sample rate
+
+
 ver 0.15.15 (2010/11/08)
 * input:
   - rewind: fix assertion failure
