@@ -169,6 +169,13 @@ lame_encoder_setup(struct lame_encoder *encoder, GError **error)
 		return false;
 	}
 
+	if (0 != lame_set_out_samplerate(encoder->gfp,
+					 encoder->audio_format.sample_rate)) {
+		g_set_error(error, lame_encoder_quark(), 0,
+			    "error setting lame out sample rate");
+		return false;
+	}
+
 	if (0 > lame_init_params(encoder->gfp)) {
 		g_set_error(error, lame_encoder_quark(), 0,
 			    "error initializing lame params");
