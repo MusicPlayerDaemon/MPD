@@ -463,12 +463,9 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 
 			/* don't automatically reopen this device for
 			   10 seconds */
-			g_mutex_lock(ao->mutex);
-
 			assert(ao->fail_timer == NULL);
 			ao->fail_timer = g_timer_new();
 
-			g_mutex_unlock(ao->mutex);
 			return false;
 		}
 

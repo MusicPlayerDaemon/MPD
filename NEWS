@@ -9,6 +9,7 @@ ver 0.16.1 (2010/??/??)
   - solaris: add missing parameter to open_cloexec() cal
   - osx: fix up audio format first, then apply it to device
 * player_thread: fix assertion failure due to early seek
+* output_thread: fix double lock
 
 
 ver 0.16 (2010/12/11)
