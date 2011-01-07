@@ -7,13 +7,13 @@ AC_DEFUN([results], [
 		var="`echo '$'enable_$1`"
 	fi
 
-	echo -n '('
+	printf '('
 	if eval "test x$var = xyes"; then
-		echo -n '+'
+		printf '+'
 	elif test -n "$3" && eval "test x$var = x$3"; then
-		echo -n '+' 
+		printf '+'
 	else
-		echo -n '-'
+		printf '-'
 	fi
-	echo -n "$2) "
+	printf '%s) ' "$2"
 ])
