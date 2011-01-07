@@ -869,6 +869,10 @@ static void do_play(struct decoder_control *dc)
 			/* seek to the beginning of the range */
 			const struct song *song = decoder_current_song(dc);
 			if (song != NULL && song->start_ms > 0 &&
+			    /* we must not send a seek command until
+			       the decoder is initialized
+			       completely */
+			    !player.decoder_starting &&
 			    !dc_seek(dc, song->start_ms / 1000.0))
 				player_dc_stop(&player);
 
