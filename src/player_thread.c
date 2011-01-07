@@ -685,6 +685,19 @@ play_next_chunk(struct player *player)
 				chunk->mix_ratio = nan("");
 			}
 
+			if (music_chunk_is_empty(other_chunk)) {
+				/* the "other" chunk was a music_chunk
+				   which had only a tag, but no music
+				   data - we cannot cross-fade that;
+				   but since this happens only at the
+				   beginning of the new song, we can
+				   easily recover by throwing it away
+				   now */
+				music_buffer_return(player_buffer,
+						    other_chunk);
+				other_chunk = NULL;
+			}
+
 			chunk->other = other_chunk;
 		} else {
 			/* there are not enough decoded chunks yet */
