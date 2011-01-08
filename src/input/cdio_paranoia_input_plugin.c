@@ -379,6 +379,7 @@ input_cdio_eof(struct input_stream *is)
 }
 
 const struct input_plugin input_plugin_cdio_paranoia = {
+	.name = "cdio_paranoia",
 	.open = input_cdio_open,
 	.close = input_cdio_close,
 	.seek = input_cdio_seek,
