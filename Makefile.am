@@ -7,6 +7,8 @@ AM_CPPFLAGS += -DSYSTEM_CONFIG_FILE_LOCATION='"$(sysconfdir)/mpd.conf"'
 
 bin_PROGRAMS = src/mpd
 
+noinst_LIBRARIES =
+
 src_mpd_CFLAGS = $(AM_CFLAGS) $(MPD_CFLAGS)
 src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBWRAP_CFLAGS) \
@@ -432,7 +434,6 @@ DECODER_CFLAGS = \
 	$(SNDFILE_CFLAGS) \
 	$(AUDIOFILE_CFLAGS) \
 	$(LIBMIKMOD_CFLAGS) \
-	$(MODPLUG_CFLAGS) \
 	$(GME_CFLAGS) \
 	$(SIDPLAY_CFLAGS) \
 	$(FLUIDSYNTH_CFLAGS) \
@@ -448,7 +449,6 @@ DECODER_LIBS = \
 	$(FLAC_LIBS) \
 	$(SNDFILE_LIBS) \
 	$(AUDIOFILE_LIBS) $(LIBMIKMOD_LIBS) \
-	$(MODPLUG_LIBS) \
 	$(GME_LIBS) \
 	$(SIDPLAY_LIBS) \
 	$(FLUIDSYNTH_LIBS) \
@@ -521,7 +521,11 @@ DECODER_SRC += src/decoder/mikmod_decoder_plugin.c
 endif
 
 if HAVE_MODPLUG
-DECODER_SRC += src/decoder/modplug_decoder_plugin.c
+libmodplug_decoder_plugin_a_SOURCES = src/decoder/modplug_decoder_plugin.c
+libmodplug_decoder_plugin_a_CFLAGS = $(src_mpd_CFLAGS) $(MODPLUG_CFLAGS)
+libmodplug_decoder_plugin_a_CPPFLAGS = $(src_mpd_CPPFLAGS)
+noinst_LIBRARIES += libmodplug_decoder_plugin.a
+DECODER_LIBS += libmodplug_decoder_plugin.a $(MODPLUG_LIBS)
 endif
 
 if ENABLE_SIDPLAY

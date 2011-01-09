@@ -5,6 +5,7 @@ ver 0.16.1 (2010/??/??)
   - ffado: disable by default
 * decoder:
   - mad: work around build failure on Solaris
+  - resolve modplug vs. libsndfile cflags/headers conflict
 * output:
   - solaris: add missing parameter to open_cloexec() cal
   - osx: fix up audio format first, then apply it to device
