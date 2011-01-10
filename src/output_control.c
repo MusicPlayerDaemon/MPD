@@ -47,20 +47,19 @@ static void ao_command_wait(struct audio_output *ao)
 	}
 }
 
-static void ao_command(struct audio_output *ao, enum audio_output_command cmd)
-{
-	assert(ao->command == AO_COMMAND_NONE);
-	ao->command = cmd;
-	g_cond_signal(ao->cond);
-	ao_command_wait(ao);
-}
-
 static void ao_command_async(struct audio_output *ao,
 			     enum audio_output_command cmd)
 {
 	assert(ao->command == AO_COMMAND_NONE);
 	ao->command = cmd;
 	g_cond_signal(ao->cond);
+}
+
+static void
+ao_command(struct audio_output *ao, enum audio_output_command cmd)
+{
+	ao_command_async(ao, cmd);
+	ao_command_wait(ao);
 }
 
 void
