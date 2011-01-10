@@ -27,6 +27,7 @@
 #include "buffer.h"
 #include "player_control.h"
 #include "mpd_error.h"
+#include "notify.h"
 
 #ifndef NDEBUG
 #include "chunk.h"

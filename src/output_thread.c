@@ -29,6 +29,7 @@
 #include "filter/convert_filter_plugin.h"
 #include "filter/replay_gain_filter_plugin.h"
 #include "mpd_error.h"
+#include "notify.h"
 
 #include <glib.h>
 

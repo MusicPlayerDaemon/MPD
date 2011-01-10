@@ -20,8 +20,9 @@
 #ifndef MPD_PLAYER_H
 #define MPD_PLAYER_H
 
-#include "notify.h"
 #include "audio_format.h"
+
+#include <glib.h>
 
 #include <stdint.h>
 
