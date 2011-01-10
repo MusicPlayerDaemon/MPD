@@ -21,7 +21,6 @@
 #include "decoder_api.h"
 #include "decoder_internal.h"
 #include "decoder_control.h"
-#include "player_control.h"
 #include "audio.h"
 #include "song.h"
 #include "buffer.h"
@@ -63,9 +62,8 @@ decoder_initialized(struct decoder *decoder,
 
 	decoder_lock(dc);
 	dc->state = DECODE_STATE_DECODE;
+	g_cond_signal(dc->client_cond);
 	decoder_unlock(dc);
-
-	player_lock_signal(dc->player_control);
 
 	g_debug("audio_format=%s, seekable=%s",
 		audio_format_to_string(&dc->in_audio_format, &af_string),
@@ -115,9 +113,8 @@ decoder_command_finished(struct decoder *decoder)
 	}
 
 	dc->command = DECODE_COMMAND_NONE;
+	g_cond_signal(dc->client_cond);
 	decoder_unlock(dc);
-
-	player_lock_signal(dc->player_control);
 }
 
 double decoder_seek_where(G_GNUC_UNUSED struct decoder * decoder)
@@ -214,7 +211,7 @@ do_send_tag(struct decoder *decoder, struct input_stream *is,
 		/* there is a partial chunk - flush it, we want the
 		   tag in a new chunk */
 		decoder_flush_chunk(decoder);
-		player_lock_signal(decoder->dc->player_control);
+		g_cond_signal(decoder->dc->client_cond);
 	}
 
 	assert(decoder->chunk == NULL);
@@ -329,7 +326,7 @@ decoder_data(struct decoder *decoder,
 		if (dest == NULL) {
 			/* the chunk is full, flush it */
 			decoder_flush_chunk(decoder);
-			player_lock_signal(dc->player_control);
+			g_cond_signal(dc->client_cond);
 			continue;
 		}
 
@@ -348,7 +345,7 @@ decoder_data(struct decoder *decoder,
 		if (full) {
 			/* the chunk is full, flush it */
 			decoder_flush_chunk(decoder);
-			player_lock_signal(dc->player_control);
+			g_cond_signal(dc->client_cond);
 		}
 
 		data += nbytes;
@@ -432,7 +429,7 @@ decoder_replay_gain(struct decoder *decoder,
 			   replay gain values affect the following
 			   samples */
 			decoder_flush_chunk(decoder);
-			player_lock_signal(decoder->dc->player_control);
+			g_cond_signal(decoder->dc->client_cond);
 		}
 	} else
 		decoder->replay_gain_serial = 0;

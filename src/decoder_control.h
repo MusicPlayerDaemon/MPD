@@ -27,8 +27,6 @@
 
 #include <assert.h>
 
-struct player_control;
-
 enum decoder_state {
 	DECODE_STATE_STOP = 0,
 	DECODE_STATE_START,
@@ -44,12 +42,6 @@ enum decoder_state {
 };
 
 struct decoder_control {
-	/**
-	 * The player thread which calls us.  This pointer is used to
-	 * signal command completion.
-	 */
-	struct player_control *player_control;
-
 	/** the handle of the decoder thread, or NULL if the decoder
 	    thread isn't running */
 	GThread *thread;
@@ -65,6 +57,12 @@ struct decoder_control {
 	 * when it has finished a command.
 	 */
 	GCond *cond;
+
+	/**
+	 * The trigger of this object's client.  It is signalled
+	 * whenever an event occurs.
+	 */
+	GCond *client_cond;
 
 	enum decoder_state state;
 	enum decoder_command command;
@@ -107,7 +105,7 @@ struct decoder_control {
 
 G_GNUC_MALLOC
 struct decoder_control *
-dc_new(struct player_control *pc);
+dc_new(GCond *client_cond);
 
 void
 dc_free(struct decoder_control *dc);

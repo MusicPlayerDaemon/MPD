@@ -69,7 +69,7 @@ player_wait_decoder(struct player_control *pc, struct decoder_control *dc)
 {
 	assert(pc != NULL);
 	assert(dc != NULL);
-	assert(dc->player_control == pc);
+	assert(dc->client_cond == pc->cond);
 
 	/* during this function, the decoder lock is held, because
 	   we're waiting for the decoder thread */

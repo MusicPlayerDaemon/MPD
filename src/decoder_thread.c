@@ -26,7 +26,6 @@
 #include "decoder_api.h"
 #include "replay_gain_ape.h"
 #include "input_stream.h"
-#include "player_control.h"
 #include "pipe.h"
 #include "song.h"
 #include "tag.h"
@@ -67,7 +66,7 @@ decoder_command_finished_locked(struct decoder_control *dc)
 
 	dc->command = DECODE_COMMAND_NONE;
 
-	player_signal(dc->player_control);
+	g_cond_signal(dc->client_cond);
 }
 
 /**

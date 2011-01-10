@@ -20,7 +20,6 @@
 #include "config.h"
 #include "decoder_internal.h"
 #include "decoder_control.h"
-#include "player_control.h"
 #include "pipe.h"
 #include "input_stream.h"
 #include "buffer.h"
@@ -65,7 +64,7 @@ need_chunks(struct decoder_control *dc, struct input_stream *is, bool do_wait)
 
 	if ((is == NULL || !decoder_input_buffer(dc, is)) && do_wait) {
 		decoder_wait(dc);
-		player_signal(dc->player_control);
+		g_cond_signal(dc->client_cond);
 
 		return dc->command;
 	}

@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "decoder_control.h"
-#include "player_control.h"
 #include "pipe.h"
 
 #include <assert.h>
@@ -28,15 +27,15 @@
 #define G_LOG_DOMAIN "decoder_control"
 
 struct decoder_control *
-dc_new(struct player_control *pc)
+dc_new(GCond *client_cond)
 {
 	struct decoder_control *dc = g_new(struct decoder_control, 1);
 
-	dc->player_control = pc;
 	dc->thread = NULL;
 
 	dc->mutex = g_mutex_new();
 	dc->cond = g_cond_new();
+	dc->client_cond = client_cond;
 
 	dc->state = DECODE_STATE_STOP;
 	dc->command = DECODE_COMMAND_NONE;
@@ -65,7 +64,7 @@ static void
 dc_command_wait_locked(struct decoder_control *dc)
 {
 	while (dc->command != DECODE_COMMAND_NONE)
-		player_wait_decoder(dc->player_control, dc);
+		g_cond_wait(dc->client_cond, dc->mutex);
 }
 
 static void

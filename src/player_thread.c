@@ -1024,7 +1024,7 @@ player_task(gpointer arg)
 {
 	struct player_control *pc = arg;
 
-	struct decoder_control *dc = dc_new(pc);
+	struct decoder_control *dc = dc_new(pc->cond);
 	decoder_thread_start(dc);
 
 	player_buffer = music_buffer_new(pc->buffer_chunks);
