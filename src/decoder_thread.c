@@ -55,6 +55,22 @@ decoder_lock_get_command(struct decoder_control *dc)
 }
 
 /**
+ * Marks the current decoder command as "finished" and notifies the
+ * player thread.
+ *
+ * @param dc the #decoder_control object; must be locked
+ */
+static void
+decoder_command_finished_locked(struct decoder_control *dc)
+{
+	assert(dc->command != DECODE_COMMAND_NONE);
+
+	dc->command = DECODE_COMMAND_NONE;
+
+	player_signal(dc->player_control);
+}
+
+/**
  * Opens the input stream with input_stream_open(), and waits until
  * the stream gets ready.  If a decoder STOP command is received
  * during that, it cancels the operation (but does not close the
@@ -381,9 +397,8 @@ decoder_run_song(struct decoder_control *dc,
 	decoder.chunk = NULL;
 
 	dc->state = DECODE_STATE_START;
-	dc->command = DECODE_COMMAND_NONE;
 
-	player_signal(dc->player_control);
+	decoder_command_finished_locked(dc);
 
 	pcm_convert_init(&decoder.conv_state);
 
@@ -462,15 +477,11 @@ decoder_task(gpointer arg)
 		case DECODE_COMMAND_SEEK:
 			decoder_run(dc);
 
-			dc->command = DECODE_COMMAND_NONE;
-
-			player_signal(dc->player_control);
+			decoder_command_finished_locked(dc);
 			break;
 
 		case DECODE_COMMAND_STOP:
-			dc->command = DECODE_COMMAND_NONE;
-
-			player_signal(dc->player_control);
+			decoder_command_finished_locked(dc);
 			break;
 
 		case DECODE_COMMAND_NONE:
