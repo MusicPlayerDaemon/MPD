@@ -68,14 +68,6 @@ dc_command_wait_locked(struct decoder_control *dc)
 		player_wait_decoder(dc->player_control, dc);
 }
 
-void
-dc_command_wait(struct decoder_control *dc)
-{
-	decoder_lock(dc);
-	dc_command_wait_locked(dc);
-	decoder_unlock(dc);
-}
-
 static void
 dc_command_locked(struct decoder_control *dc, enum decoder_command cmd)
 {

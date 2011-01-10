@@ -226,9 +226,6 @@ decoder_current_song(const struct decoder_control *dc)
 	return NULL;
 }
 
-void
-dc_command_wait(struct decoder_control *dc);
-
 /**
  * Start the decoder.
  *
