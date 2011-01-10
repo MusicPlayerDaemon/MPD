@@ -1,4 +1,4 @@
-ver 0.16.1 (2010/??/??)
+ver 0.16.1 (2010/01/09)
 * audio_check: fix parameter in prototype
 * add void casts to suppress "result unused" warnings (clang)
 * input:
