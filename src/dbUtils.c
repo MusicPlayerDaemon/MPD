@@ -205,7 +205,7 @@ findAddInDirectory(struct song *song, void *_data)
 	struct search_data *data = _data;
 
 	if (locate_song_match(song, data->criteria))
-		return directoryAddSongToPlaylist(song, data);
+		return playlist_append_song(&g_playlist, song, NULL);
 
 	return 0;
 }
