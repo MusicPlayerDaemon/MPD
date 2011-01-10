@@ -105,11 +105,12 @@ struct decoder_control {
 	char *mixramp_prev_end;
 };
 
-void
-dc_init(struct decoder_control *dc, struct player_control *pc);
+G_GNUC_MALLOC
+struct decoder_control *
+dc_new(struct player_control *pc);
 
 void
-dc_deinit(struct decoder_control *dc);
+dc_free(struct decoder_control *dc);
 
 /**
  * Locks the #decoder_control object.

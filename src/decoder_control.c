@@ -27,9 +27,11 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "decoder_control"
 
-void
-dc_init(struct decoder_control *dc, struct player_control *pc)
+struct decoder_control *
+dc_new(struct player_control *pc)
 {
+	struct decoder_control *dc = g_new(struct decoder_control, 1);
+
 	dc->player_control = pc;
 	dc->thread = NULL;
 
@@ -44,19 +46,19 @@ dc_init(struct decoder_control *dc, struct player_control *pc)
 	dc->mixramp_start = NULL;
 	dc->mixramp_end = NULL;
 	dc->mixramp_prev_end = NULL;
+
+	return dc;
 }
 
 void
-dc_deinit(struct decoder_control *dc)
+dc_free(struct decoder_control *dc)
 {
 	g_cond_free(dc->cond);
 	g_mutex_free(dc->mutex);
 	g_free(dc->mixramp_start);
 	g_free(dc->mixramp_end);
 	g_free(dc->mixramp_prev_end);
-	dc->mixramp_start = NULL;
-	dc->mixramp_end = NULL;
-	dc->mixramp_prev_end = NULL;
+	g_free(dc);
 }
 
 static void

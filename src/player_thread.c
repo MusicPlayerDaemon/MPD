@@ -1023,10 +1023,9 @@ static gpointer
 player_task(gpointer arg)
 {
 	struct player_control *pc = arg;
-	struct decoder_control dc;
 
-	dc_init(&dc, pc);
-	decoder_thread_start(&dc);
+	struct decoder_control *dc = dc_new(pc);
+	decoder_thread_start(dc);
 
 	player_buffer = music_buffer_new(pc->buffer_chunks);
 
@@ -1037,7 +1036,7 @@ player_task(gpointer arg)
 		case PLAYER_COMMAND_QUEUE:
 			assert(pc->next_song != NULL);
 
-			do_play(pc, &dc);
+			do_play(pc, dc);
 			break;
 
 		case PLAYER_COMMAND_STOP:
@@ -1081,8 +1080,8 @@ player_task(gpointer arg)
 		case PLAYER_COMMAND_EXIT:
 			player_unlock(pc);
 
-			dc_quit(&dc);
-			dc_deinit(&dc);
+			dc_quit(dc);
+			dc_free(dc);
 			audio_output_all_close();
 			music_buffer_free(player_buffer);
 
