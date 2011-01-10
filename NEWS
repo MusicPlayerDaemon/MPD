@@ -5,13 +5,14 @@ ver 0.17 (2010/??/??)
   - osx: allow user to specify other audio devices
 
 
-ver 0.16.1 (2010/??/??)
+ver 0.16.1 (2010/01/09)
 * audio_check: fix parameter in prototype
 * add void casts to suppress "result unused" warnings (clang)
 * input:
   - ffado: disable by default
 * decoder:
   - mad: work around build failure on Solaris
+  - resolve modplug vs. libsndfile cflags/headers conflict
 * output:
   - solaris: add missing parameter to open_cloexec() cal
   - osx: fix up audio format first, then apply it to device

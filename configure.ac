@@ -13,6 +13,7 @@ dnl Programs
 dnl ---------------------------------------------------------------------------
 AC_PROG_CC_C99
 AC_PROG_CXX
+AC_PROG_RANLIB
 
 HAVE_CXX=yes
 if test x$CXX = xg++; then
@@ -864,15 +865,6 @@ if test x$enable_modplug = xyes; then
 fi
 AM_CONDITIONAL(HAVE_MODPLUG, test x$enable_modplug = xyes)
 
-dnl --------------------------- sndfile/modplug test --------------------------
-if test x$enable_sndfile = xauto && test x$enable_modplug = xyes; then
-	dnl If modplug is enabled, enable sndfile only if explicitly
-	dnl requested - modplug's modplug/sndfile.h is known to
-	dnl conflict with libsndfile's sndfile.h.
-	AC_MSG_NOTICE([disabling libsndfile auto-detection, because the modplug decoder is enabled])
-	enable_sndfile=no
-fi
-
 dnl -------------------------------- libsndfile -------------------------------
 dnl See above test, which may disable this.
 MPD_AUTO_PKG(sndfile, SNDFILE, [sndfile],
@@ -1597,11 +1589,6 @@ results(mms,[MMS])
 results(cdio_paranoia, [CDIO_PARANOIA])
 
 printf '\n\n##########################################\n\n'
-
-if test x$enable_sndfile = xyes && test x$enable_modplug = xyes; then
-	AC_MSG_WARN([compilation may fail, because libmodplug conflicts with libsndfile])
-	AC_MSG_WARN([libmodplug ships modplug/sndfile.h, which hides libsndfile's sndfile.h])
-fi
 
 echo 'Generating files needed for compilation'
 
