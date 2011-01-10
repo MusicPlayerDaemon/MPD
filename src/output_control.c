@@ -38,6 +38,11 @@ enum {
 
 struct notify audio_output_client_notify;
 
+/**
+ * Waits for command completion.
+ *
+ * @param ao the #audio_output instance; must be locked
+ */
 static void ao_command_wait(struct audio_output *ao)
 {
 	while (ao->command != AO_COMMAND_NONE) {
@@ -47,6 +52,12 @@ static void ao_command_wait(struct audio_output *ao)
 	}
 }
 
+/**
+ * Sends a command to the #audio_output object, but does not wait for
+ * completion.
+ *
+ * @param ao the #audio_output instance; must be locked
+ */
 static void ao_command_async(struct audio_output *ao,
 			     enum audio_output_command cmd)
 {
@@ -55,6 +66,12 @@ static void ao_command_async(struct audio_output *ao,
 	g_cond_signal(ao->cond);
 }
 
+/**
+ * Sends a command to the #audio_output object and waits for
+ * completion.
+ *
+ * @param ao the #audio_output instance; must be locked
+ */
 static void
 ao_command(struct audio_output *ao, enum audio_output_command cmd)
 {
