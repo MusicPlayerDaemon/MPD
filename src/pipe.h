@@ -20,9 +20,9 @@
 #ifndef MPD_PIPE_H
 #define MPD_PIPE_H
 
-#ifndef NDEBUG
 #include <stdbool.h>
 
+#ifndef NDEBUG
 struct audio_format;
 #endif
 
