@@ -443,6 +443,7 @@ decoder_run(struct decoder_control *dc)
 
 	if (uri == NULL) {
 		dc->state = DECODE_STATE_ERROR;
+		decoder_command_finished_locked(dc);
 		return;
 	}
 
@@ -475,8 +476,6 @@ decoder_task(gpointer arg)
 
 		case DECODE_COMMAND_SEEK:
 			decoder_run(dc);
-
-			decoder_command_finished_locked(dc);
 			break;
 
 		case DECODE_COMMAND_STOP:
