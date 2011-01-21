@@ -24,6 +24,7 @@
 #include <glib.h>
 
 #include <mpg123.h>
+#include <stdio.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "mpg123"
@@ -125,7 +126,7 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 
 	/* tell MPD core we're ready */
 
-	decoder_initialized(decoder, &audio_format, false,
+	decoder_initialized(decoder, &audio_format, true,
 			    (float)num_samples /
 			    (float)audio_format.sample_rate);
 
@@ -172,7 +173,18 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 
 		cmd = decoder_data(decoder, NULL, buffer, nbytes, info.bitrate);
 
-		/* seeking not yet implemented */
+		if (cmd == DECODE_COMMAND_SEEK) {
+			off_t c = decoder_seek_where(decoder)*audio_format.sample_rate;
+			c = mpg123_seek(handle, c, SEEK_SET);
+			if (c < 0)
+				decoder_seek_error(decoder);
+			else {
+				decoder_command_finished(decoder);
+				decoder_timestamp(decoder, c/(double)audio_format.sample_rate);
+			}
+
+			cmd = DECODE_COMMAND_NONE;
+		}
 	} while (cmd == DECODE_COMMAND_NONE);
 
 	/* cleanup */

@@ -1,6 +1,8 @@
 ver 0.17 (2010/??/??)
 * input:
   - cdio_paranoia: new input plugin to play audio CDs
+* decoder:
+  - mpg123: implement seeking
 * output:
   - osx: allow user to specify other audio devices
 
