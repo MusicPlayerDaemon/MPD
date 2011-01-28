@@ -5,6 +5,7 @@ ver 0.17 (2010/??/??)
   - mpg123: implement seeking
 * output:
   - osx: allow user to specify other audio devices
+  - raop: new output plugin
 
 
 ver 0.16.1 (2010/01/09)

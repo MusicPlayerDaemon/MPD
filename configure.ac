@@ -200,6 +200,11 @@ AC_ARG_ENABLE(httpd-output,
 		[enables the HTTP server output]),,
 	[enable_httpd_output=auto])
 
+AC_ARG_ENABLE(raop-output,
+	AS_HELP_STRING([--enable-httpd-output],
+		[enables the RAOP output]),,
+	[enable_raop_output=no])
+
 AC_ARG_ENABLE(id3,
 	AS_HELP_STRING([--disable-id3],
 		[disable id3 support (default: enable)]),,
@@ -1397,6 +1402,15 @@ esac
 
 AM_CONDITIONAL(ENABLE_SOLARIS_OUTPUT, test x$enable_solaris_output = xyes)
 
+dnl --------------------------------- RAOP ------------------------------------
+
+if test x$enable_raop_output = xyes; then
+        AC_DEFINE(ENABLE_RAOP_OUTPUT, 1, [Define for compiling RAOP support])
+        MPD_LIBS="$MPD_LIBS -lssl -lcrypto"
+fi
+
+AM_CONDITIONAL(ENABLE_RAOP_OUTPUT, test x$enable_raop_output = xyes)
+
 dnl --------------------------------- WinMM ---------------------------------
 
 case "$host_os" in
@@ -1425,6 +1439,7 @@ if
 	test x$enable_openal = xno &&
 	test x$enable_oss = xno &&
 	test x$enable_osx = xno &&
+	test x$enable_raop_output = xno &&
 	test x$enable_pipe_output = xno &&
 	test x$enable_pulse = xno &&
 	test x$enable_recorder_output = xno &&
@@ -1556,6 +1571,7 @@ results(ffado,FFADO)
 results(fifo,FIFO)
 results(recorder_output,[File Recorder])
 results(httpd_output,[HTTP Daemon])
+results(raop_output, [RAOP])
 results(jack,[JACK])
 results(ao,[libao])
 results(oss,[OSS])

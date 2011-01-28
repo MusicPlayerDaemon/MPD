@@ -30,6 +30,7 @@ extern const struct audio_output_plugin ao_output_plugin;
 extern const struct audio_output_plugin oss_output_plugin;
 extern const struct audio_output_plugin openal_output_plugin;
 extern const struct audio_output_plugin osxPlugin;
+extern const struct audio_output_plugin raopPlugin;
 extern const struct audio_output_plugin solaris_output_plugin;
 extern const struct audio_output_plugin pulse_output_plugin;
 extern const struct audio_output_plugin mvp_output_plugin;
@@ -64,6 +65,9 @@ const struct audio_output_plugin *audio_output_plugins[] = {
 #endif
 #ifdef HAVE_OSX
 	&osxPlugin,
+#endif
+#ifdef ENABLE_RAOP_OUTPUT
+	&raopPlugin,
 #endif
 #ifdef ENABLE_SOLARIS_OUTPUT
 	&solaris_output_plugin,

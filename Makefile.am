@@ -739,6 +739,11 @@ if HAVE_OSX
 OUTPUT_SRC += src/output/osx_plugin.c
 endif
 
+if ENABLE_RAOP_OUTPUT
+OUTPUT_SRC += src/output/raop_output_plugin.c
+MIXER_SRC += src/mixer/raop_mixer_plugin.c
+endif
+
 if HAVE_PULSE
 OUTPUT_SRC += src/output/pulse_output_plugin.c
 MIXER_SRC += src/mixer/pulse_mixer_plugin.c
