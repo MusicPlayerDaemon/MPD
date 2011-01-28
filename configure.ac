@@ -934,13 +934,19 @@ if test x$enable_tremor = xyes; then
 	ac_save_LIBS="$LIBS"
 	CFLAGS="$CFLAGS $TREMOR_CFLAGS"
 	LIBS="$LIBS $TREMOR_LIBS"
-	AC_CHECK_LIB(vorbisidec,ov_read,enable_vorbis=yes,enable_vorbis=no;
+	AC_CHECK_LIB(vorbisidec,ov_read,,enable_tremor=no;
 		AC_MSG_WARN([vorbisidec lib needed for ogg support with tremor -- disabling ogg support]))
 	CFLAGS="$ac_save_CFLAGS"
 	LIBS="$ac_save_LIBS"
+fi
 
+if test x$enable_tremor = xyes; then
 	AC_DEFINE(HAVE_TREMOR,1,
 		[Define to use tremor (libvorbisidec) for ogg support])
+	AC_DEFINE(ENABLE_VORBIS_DECODER, 1, [Define for Ogg Vorbis support]),
+else
+	TREMOR_CFLAGS=
+	TREMOR_LIBS=
 fi
 
 AC_SUBST(TREMOR_CFLAGS)
@@ -980,7 +986,7 @@ if test x$enable_vorbis = xyes; then
 	fi
 fi
 
-AM_CONDITIONAL(ENABLE_VORBIS_DECODER, test x$enable_vorbis = xyes)
+AM_CONDITIONAL(ENABLE_VORBIS_DECODER, test x$enable_vorbis = xyes || test x$enable_tremor = xyes)
 
 dnl --------------------------------- sidplay ---------------------------------
 found_sidplay=$HAVE_CXX
