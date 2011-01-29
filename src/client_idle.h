@@ -24,6 +24,9 @@
 
 struct client;
 
+void
+client_idle_add(struct client *client, unsigned flags);
+
 /**
  * Adds the specified idle flags to all clients and immediately sends
  * notifications to all waiting clients.

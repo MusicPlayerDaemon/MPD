@@ -51,12 +51,9 @@ client_idle_notify(struct client *client)
 	g_timer_start(client->last_activity);
 }
 
-static void
-client_idle_callback(gpointer data, gpointer user_data)
+void
+client_idle_add(struct client *client, unsigned flags)
 {
-	struct client *client = data;
-	unsigned flags = GPOINTER_TO_UINT(user_data);
-
 	if (client_is_expired(client))
 		return;
 
@@ -66,6 +63,15 @@ client_idle_callback(gpointer data, gpointer user_data)
 		client_idle_notify(client);
 		client_write_output(client);
 	}
+}
+
+static void
+client_idle_callback(gpointer data, gpointer user_data)
+{
+	struct client *client = data;
+	unsigned flags = GPOINTER_TO_UINT(user_data);
+
+	client_idle_add(client, flags);
 }
 
 void client_manager_idle_add(unsigned flags)
