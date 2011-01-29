@@ -55,6 +55,24 @@ pulse_output_set_volume(G_GNUC_UNUSED struct pulse_output *po,
 
 #endif
 
+#ifdef ENABLE_RAOP_OUTPUT
+#include "output/raop_output_plugin.h"
+
+bool
+raop_set_volume(G_GNUC_UNUSED struct raop_data *rd,
+		G_GNUC_UNUSED unsigned volume)
+{
+	return false;
+}
+
+int
+raop_get_volume(G_GNUC_UNUSED struct raop_data *rd)
+{
+	return -1;
+}
+
+#endif
+
 void
 event_pipe_emit(G_GNUC_UNUSED enum pipe_event event)
 {
