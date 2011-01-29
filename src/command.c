@@ -44,6 +44,7 @@
 #include "dbUtils.h"
 #include "tag.h"
 #include "client.h"
+#include "client_idle.h"
 #include "client_internal.h"
 #include "tag_print.h"
 #include "path.h"

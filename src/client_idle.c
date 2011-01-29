@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "client_idle.h"
 #include "client_internal.h"
 #include "idle.h"
 

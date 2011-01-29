@@ -21,6 +21,7 @@
 #include "main.h"
 #include "daemon.h"
 #include "client.h"
+#include "client_idle.h"
 #include "idle.h"
 #include "command.h"
 #include "playlist.h"
