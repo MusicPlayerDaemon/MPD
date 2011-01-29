@@ -201,7 +201,7 @@ AC_ARG_ENABLE(httpd-output,
 	[enable_httpd_output=auto])
 
 AC_ARG_ENABLE(raop-output,
-	AS_HELP_STRING([--enable-httpd-output],
+	AS_HELP_STRING([--enable-raop-output],
 		[enables the RAOP output]),,
 	[enable_raop_output=no])
 
