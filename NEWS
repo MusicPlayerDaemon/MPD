@@ -1,6 +1,7 @@
 ver 0.17 (2010/??/??)
 * input:
   - cdio_paranoia: new input plugin to play audio CDs
+  - curl: enable CURLOPT_NETRC
 * decoder:
   - mpg123: implement seeking
 * output:

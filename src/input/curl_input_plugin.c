@@ -647,6 +647,7 @@ input_curl_easy_init(struct input_curl *c, GError **error_r)
 	curl_easy_setopt(c->easy, CURLOPT_WRITEDATA, c);
 	curl_easy_setopt(c->easy, CURLOPT_HTTP200ALIASES, http_200_aliases);
 	curl_easy_setopt(c->easy, CURLOPT_FOLLOWLOCATION, 1);
+	curl_easy_setopt(c->easy, CURLOPT_NETRC, 1);
 	curl_easy_setopt(c->easy, CURLOPT_MAXREDIRS, 5);
 	curl_easy_setopt(c->easy, CURLOPT_FAILONERROR, true);
 	curl_easy_setopt(c->easy, CURLOPT_ERRORBUFFER, c->error);
