@@ -46,6 +46,7 @@
 #include "client.h"
 #include "client_idle.h"
 #include "client_internal.h"
+#include "client_subscribe.h"
 #include "tag_print.h"
 #include "path.h"
 #include "replay_gain_config.h"
@@ -1837,6 +1838,172 @@ handle_sticker(struct client *client, int argc, char *argv[])
 }
 #endif
 
+static enum command_return
+handle_subscribe(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+{
+	assert(argc == 2);
+
+	switch (client_subscribe(client, argv[1])) {
+	case CLIENT_SUBSCRIBE_OK:
+		return COMMAND_RETURN_OK;
+
+	case CLIENT_SUBSCRIBE_INVALID:
+		command_error(client, ACK_ERROR_ARG,
+			      "invalid channel name");
+		return COMMAND_RETURN_ERROR;
+
+	case CLIENT_SUBSCRIBE_ALREADY:
+		command_error(client, ACK_ERROR_EXIST,
+			      "already subscribed to this channel");
+		return COMMAND_RETURN_ERROR;
+
+	case CLIENT_SUBSCRIBE_FULL:
+		command_error(client, ACK_ERROR_EXIST,
+			      "subscription list is full");
+		return COMMAND_RETURN_ERROR;
+	}
+
+	/* unreachable */
+	return COMMAND_RETURN_OK;
+}
+
+static enum command_return
+handle_unsubscribe(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+{
+	assert(argc == 2);
+
+	if (client_unsubscribe(client, argv[1]))
+		return COMMAND_RETURN_OK;
+	else {
+		command_error(client, ACK_ERROR_NO_EXIST,
+			      "not subscribed to this channel");
+		return COMMAND_RETURN_ERROR;
+	}
+}
+
+struct channels_context {
+	GStringChunk *chunk;
+
+	GHashTable *channels;
+};
+
+static void
+collect_channels(gpointer data, gpointer user_data)
+{
+	struct channels_context *context = user_data;
+	const struct client *client = data;
+
+	for (GSList *i = client->subscriptions; i != NULL;
+	     i = g_slist_next(i)) {
+		const char *channel = i->data;
+
+		if (g_hash_table_lookup(context->channels, channel) == NULL) {
+			char *channel2 = g_string_chunk_insert(context->chunk,
+							       channel);
+			g_hash_table_insert(context->channels, channel2,
+					    context);
+		}
+	}
+}
+
+static void
+print_channel(gpointer key, G_GNUC_UNUSED gpointer value, gpointer user_data)
+{
+	struct client *client = user_data;
+	const char *channel = key;
+
+	client_printf(client, "channel: %s\n", channel);
+}
+
+static enum command_return
+handle_channels(struct client *client,
+		G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
+{
+	assert(argc == 1);
+
+	struct channels_context context = {
+		.chunk = g_string_chunk_new(1024),
+		.channels = g_hash_table_new(g_str_hash, g_str_equal),
+	};
+
+	client_list_foreach(collect_channels, &context);
+
+	g_hash_table_foreach(context.channels, print_channel, client);
+
+	g_hash_table_destroy(context.channels);
+	g_string_chunk_free(context.chunk);
+
+	return COMMAND_RETURN_OK;
+}
+
+static enum command_return
+handle_read_messages(struct client *client,
+		     G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
+{
+	assert(argc == 1);
+
+	GSList *messages = client_read_messages(client);
+
+	for (GSList *i = messages; i != NULL; i = g_slist_next(i)) {
+		struct client_message *msg = i->data;
+
+		client_printf(client, "channel: %s\nmessage: %s\n",
+			      msg->channel, msg->message);
+		client_message_free(msg);
+	}
+
+	g_slist_free(messages);
+
+	return COMMAND_RETURN_OK;
+}
+
+struct send_message_context {
+	struct client_message msg;
+
+	bool sent;
+};
+
+static void
+send_message(gpointer data, gpointer user_data)
+{
+	struct send_message_context *context = user_data;
+	struct client *client = data;
+
+	if (client_push_message(client, &context->msg))
+		context->sent = true;
+}
+
+static enum command_return
+handle_send_message(struct client *client,
+		    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
+{
+	assert(argc == 3);
+
+	if (!client_message_valid_channel_name(argv[1])) {
+		command_error(client, ACK_ERROR_ARG,
+			      "invalid channel name");
+		return COMMAND_RETURN_ERROR;
+	}
+
+	struct send_message_context context = {
+		.sent = false,
+	};
+
+	client_message_init(&context.msg, argv[1], argv[2]);
+
+	client_list_foreach(send_message, &context);
+
+	client_message_deinit(&context.msg);
+
+	if (context.sent)
+		return COMMAND_RETURN_OK;
+	else {
+		command_error(client, ACK_ERROR_NO_EXIST,
+			      "nobody is subscribed to this channel");
+		return COMMAND_RETURN_ERROR;
+	}
+}
+
 /**
  * The command registry.
  *
@@ -1845,6 +2012,7 @@ handle_sticker(struct client *client, int argc, char *argv[])
 static const struct command commands[] = {
 	{ "add", PERMISSION_ADD, 1, 1, handle_add },
 	{ "addid", PERMISSION_ADD, 1, 2, handle_addid },
+	{ "channels", PERMISSION_READ, 0, 0, handle_channels },
 	{ "clear", PERMISSION_CONTROL, 0, 0, handle_clear },
 	{ "clearerror", PERMISSION_CONTROL, 0, 0, handle_clearerror },
 	{ "close", PERMISSION_NONE, -1, -1, handle_close },
@@ -1895,6 +2063,7 @@ static const struct command commands[] = {
 	{ "plchangesposid", PERMISSION_READ, 1, 1, handle_plchangesposid },
 	{ "previous", PERMISSION_CONTROL, 0, 0, handle_previous },
 	{ "random", PERMISSION_CONTROL, 1, 1, handle_random },
+	{ "readmessages", PERMISSION_READ, 0, 0, handle_read_messages },
 	{ "rename", PERMISSION_CONTROL, 2, 2, handle_rename },
 	{ "repeat", PERMISSION_CONTROL, 1, 1, handle_repeat },
 	{ "replay_gain_mode", PERMISSION_CONTROL, 1, 1,
@@ -1907,6 +2076,7 @@ static const struct command commands[] = {
 	{ "search", PERMISSION_READ, 2, -1, handle_search },
 	{ "seek", PERMISSION_CONTROL, 2, 2, handle_seek },
 	{ "seekid", PERMISSION_CONTROL, 2, 2, handle_seekid },
+	{ "sendmessage", PERMISSION_CONTROL, 2, 2, handle_send_message },
 	{ "setvol", PERMISSION_CONTROL, 1, 1, handle_setvol },
 	{ "shuffle", PERMISSION_CONTROL, 0, 1, handle_shuffle },
 	{ "single", PERMISSION_CONTROL, 1, 1, handle_single },
@@ -1916,9 +2086,11 @@ static const struct command commands[] = {
 	{ "sticker", PERMISSION_ADMIN, 3, -1, handle_sticker },
 #endif
 	{ "stop", PERMISSION_CONTROL, 0, 0, handle_stop },
+	{ "subscribe", PERMISSION_READ, 1, 1, handle_subscribe },
 	{ "swap", PERMISSION_CONTROL, 2, 2, handle_swap },
 	{ "swapid", PERMISSION_CONTROL, 2, 2, handle_swapid },
 	{ "tagtypes", PERMISSION_READ, 0, 0, handle_tagtypes },
+	{ "unsubscribe", PERMISSION_READ, 1, 1, handle_unsubscribe },
 	{ "update", PERMISSION_ADMIN, 0, 1, handle_update },
 	{ "urlhandlers", PERMISSION_READ, 0, 0, handle_urlhandlers },
 };

@@ -1,4 +1,6 @@
 ver 0.17 (2011/??/??)
+* protocol:
+  - support client-to-client communication
 * input:
   - cdio_paranoia: new input plugin to play audio CDs
   - curl: enable CURLOPT_NETRC

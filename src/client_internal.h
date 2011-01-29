@@ -21,10 +21,16 @@
 #define MPD_CLIENT_INTERNAL_H
 
 #include "client.h"
+#include "client_message.h"
 #include "command.h"
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "client"
+
+enum {
+	CLIENT_MAX_SUBSCRIPTIONS = 16,
+	CLIENT_MAX_MESSAGES = 64,
+};
 
 struct deferred_buffer {
 	size_t size;
@@ -69,6 +75,28 @@ struct client {
 
 	/** idle flags that the client wants to receive */
 	unsigned idle_subscriptions;
+
+	/**
+	 * A list of channel names this client is subscribed to.
+	 */
+	GSList *subscriptions;
+
+	/**
+	 * The number of subscriptions in #subscriptions.  Used to
+	 * limit the number of subscriptions.
+	 */
+	unsigned num_subscriptions;
+
+	/**
+	 * A list of messages this client has received in reverse
+	 * order (latest first).
+	 */
+	GSList *messages;
+
+	/**
+	 * The number of messages in #messages.
+	 */
+	unsigned num_messages;
 };
 
 extern unsigned int client_max_connections;

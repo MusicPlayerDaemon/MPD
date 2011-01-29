@@ -121,6 +121,10 @@ client_new(struct player_control *player_control,
 
 	client->send_buf_used = 0;
 
+	client->subscriptions = NULL;
+	client->messages = NULL;
+	client->num_messages = 0;
+
 	(void)send(fd, GREETING, sizeof(GREETING) - 1, 0);
 
 	client_list_add(client);

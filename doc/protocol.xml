@@ -204,6 +204,19 @@
                     has been modified.
                 </para>
               </listitem>
+              <listitem>
+                <para>
+                  <returnvalue>subscription</returnvalue>: a client
+                  has subscribed or unsubscribed to a channel
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <returnvalue>message</returnvalue>: a message was
+                  received on a channel this client is subscribed to;
+                  this event is only emitted when the queue is empty
+                </para>
+              </listitem>
             </itemizedlist>
             <para>
               While a client is waiting for <command>idle</command>
@@ -1672,6 +1685,106 @@ suffix: mp2
 mime_type: audio/mpeg
 plugin: mpcdec
 suffix: mpc</programlisting>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>Client to client</title>
+
+      <para>
+        Clients can communicate with each others over "channels".  A
+        channel is created by a client subscribing to it.  More than
+        one client can be subscribed to a channel at a time; all of
+        them will receive the messages which get sent to it.
+      </para>
+
+      <para>
+        Each time a client subscribes or unsubscribes, the global idle
+        event <varname>subscription</varname> is generated.  In
+        conjunction with the <command>channels</command> command, this
+        may be used to auto-detect clients providing additional
+        services.
+      </para>
+
+      <para>
+        A new messages is indicated by the <varname>message</varname>
+        idle event.
+      </para>
+
+      <variablelist>
+        <varlistentry id="command_subscribe">
+          <term>
+            <cmdsynopsis>
+              <command>subscribe</command>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Subscribe to a channel.  The channel is created if it
+              does not exist already.  The name may consist of
+              alphanumeric ASCII characters plus underscore, dash, dot
+              and colon.
+            </para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_unsubscribe">
+          <term>
+            <cmdsynopsis>
+              <command>unsubscribe</command>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Unsubscribe from a channel.
+            </para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_channels">
+          <term>
+            <cmdsynopsis>
+              <command>channels</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Obtain a list of all channels.  The response is a list
+              of "channel:" lines.
+            </para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_readmessages">
+          <term>
+            <cmdsynopsis>
+              <command>readmessages</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Reads messages for this client.  The response is a list
+              of "channel:" and "message:" lines.
+            </para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_sendmessage">
+          <term>
+            <cmdsynopsis>
+              <command>sendmessage</command>
+              <arg choice="req"><replaceable>CHANNEL</replaceable></arg>
+              <arg choice="req"><replaceable>TEXT</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Send a message to the specified channel.
+            </para>
           </listitem>
         </varlistentry>
       </variablelist>

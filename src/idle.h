@@ -53,6 +53,12 @@ enum {
 
 	/** a database update has started or finished. */
 	IDLE_UPDATE = 0x100,
+
+	/** a client has subscribed or unsubscribed to/from a channel */
+	IDLE_SUBSCRIPTION = 0x200,
+
+	/** a message on the subscribed channel was receivedd */
+	IDLE_MESSAGE = 0x400,
 };
 
 /**

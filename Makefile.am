@@ -285,6 +285,10 @@ src_mpd_SOURCES = \
 	src/client_process.c \
 	src/client_read.c \
 	src/client_write.c \
+	src/client_message.h \
+	src/client_message.c \
+	src/client_subscribe.h \
+	src/client_subscribe.c \
 	src/server_socket.c \
 	src/listen.c \
 	src/log.c \
