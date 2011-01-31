@@ -254,6 +254,9 @@ stat_directory(const struct directory *directory, struct stat *st)
 	if (path_fs == NULL)
 		return -1;
 	ret = stat(path_fs, st);
+	if (ret < 0)
+		g_warning("Failed to stat %s: %s", path_fs, g_strerror(errno));
+
 	g_free(path_fs);
 	return ret;
 }
@@ -270,6 +273,9 @@ stat_directory_child(const struct directory *parent, const char *name,
 		return -1;
 
 	ret = stat(path_fs, st);
+	if (ret < 0)
+		g_warning("Failed to stat %s: %s", path_fs, g_strerror(errno));
+
 	g_free(path_fs);
 	return ret;
 }
