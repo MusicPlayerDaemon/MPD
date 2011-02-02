@@ -1,6 +1,7 @@
 ver 0.16.2 (2011/??/??)
 * decoder:
   - tremor: fix configure test
+  - gme: detect end of song
 
 
 ver 0.16.1 (2011/01/09)
