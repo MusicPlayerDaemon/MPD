@@ -277,6 +277,13 @@ my_shout_init_driver(const struct audio_format *audio_format,
 		return NULL;
 	}
 
+	value = config_get_block_string(param, "url", NULL);
+	if (value != NULL && shout_set_url(sd->shout_conn, value)) {
+		g_set_error(error, shout_output_quark(), 0,
+			    "%s", shout_get_error(sd->shout_conn));
+		return NULL;
+	}
+
 	{
 		char temp[11];
 		memset(temp, 0, sizeof(temp));

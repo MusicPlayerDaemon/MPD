@@ -1559,6 +1559,15 @@ cd mpd-version</programlisting>
               </row>
               <row>
                 <entry>
+                  <varname>url</varname>
+                  <parameter>URL</parameter>
+                </entry>
+                <entry>
+                  Sets a URL associated with the stream (optional).
+                </entry>
+              </row>
+              <row>
+                <entry>
                   <varname>public</varname>
                   <parameter>yes|no</parameter>
                 </entry>

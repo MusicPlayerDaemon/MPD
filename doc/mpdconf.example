@@ -235,6 +235,7 @@ input {
 ##	protocol	"icecast2"		# optional
 ##	user		"source"		# optional
 ##	description	"My Stream Description"	# optional
+##	url		"http://example.com"	# optional
 ##	genre		"jazz"			# optional
 ##	public		"no"			# optional
 ##	timeout		"2"			# optional
