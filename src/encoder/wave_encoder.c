@@ -58,7 +58,7 @@ wave_encoder_quark(void)
 }
 
 static void
-fill_wave_header(struct wave_header *header, int channels, int bits, 
+fill_wave_header(struct wave_header *header, int channels, int bits,
 		int freq, int block_size)
 {
 	int data_size = 0x0FFFFFFF;
@@ -142,7 +142,7 @@ wave_encoder_open(struct encoder *_encoder,
 	buffer = pcm_buffer_get(&encoder->buffer, sizeof(struct wave_header) );
 
 	/* create PCM wave header in initial buffer */
-	fill_wave_header((struct wave_header *) buffer, 
+	fill_wave_header((struct wave_header *) buffer,
 			audio_format->channels,
 			 encoder->bits,
 			audio_format->sample_rate,

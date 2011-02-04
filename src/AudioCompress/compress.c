@@ -16,16 +16,16 @@
 struct Compressor {
         //! The compressor's preferences
         struct CompressorConfig prefs;
-        
+
         //! History of the peak values
         int *peaks;
-                
+
         //! History of the gain values
         int *gain;
-        
+
         //! History of clip amounts
         int *clipped;
-        
+
         unsigned int pos;
         unsigned int bufsz;
 };
@@ -41,9 +41,9 @@ struct Compressor *Compressor_new(unsigned int history)
         obj->peaks = obj->gain = obj->clipped = NULL;
 	obj->bufsz = 0;
         obj->pos = 0;
-        
+
         Compressor_setHistory(obj, history);
-        
+
         return obj;
 }
 
@@ -70,7 +70,7 @@ void Compressor_setHistory(struct Compressor *obj, unsigned int history)
 {
 	if (!history)
                 history = BUCKETS;
-        
+
         obj->peaks = resizeArray(obj->peaks, history, obj->bufsz);
         obj->gain = resizeArray(obj->gain, history, obj->bufsz);
         obj->clipped = resizeArray(obj->clipped, history, obj->bufsz);
@@ -82,7 +82,7 @@ struct CompressorConfig *Compressor_getConfig(struct Compressor *obj)
         return &obj->prefs;
 }
 
-void Compressor_Process_int16(struct Compressor *obj, int16_t *audio, 
+void Compressor_Process_int16(struct Compressor *obj, int16_t *audio,
                               unsigned int count)
 {
         struct CompressorConfig *prefs = Compressor_getConfig(obj);
@@ -97,7 +97,7 @@ void Compressor_Process_int16(struct Compressor *obj, int16_t *audio,
         int *clipped = obj->clipped + slot;
         unsigned int ramp = count;
         int delta;
-        
+
 	ap = audio;
 	for (i = 0; i < count; i++)
 	{
@@ -124,15 +124,15 @@ void Compressor_Process_int16(struct Compressor *obj, int16_t *audio,
 
 	//! Determine target gain
 	newGain = (1 << 10)*prefs->target/peakVal;
-        
+
         //! Adjust the gain with inertia from the previous gain value
-        newGain = (curGain*((1 << prefs->smooth) - 1) + newGain) 
+        newGain = (curGain*((1 << prefs->smooth) - 1) + newGain)
                 >> prefs->smooth;
-        
+
         //! Make sure it's no more than the maximum gain value
         if (newGain > (prefs->maxgain << 10))
                 newGain = prefs->maxgain << 10;
-        
+
         //! Make sure it's no less than 1:1
 	if (newGain < (1 << 10))
 		newGain = 1 << 10;
@@ -144,7 +144,7 @@ void Compressor_Process_int16(struct Compressor *obj, int16_t *audio,
                 //! Truncate the ramp time
                 ramp = peakPos;
         }
-        
+
         //! Record the new gain
         obj->gain[slot] = newGain;
 

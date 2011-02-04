@@ -244,7 +244,7 @@ static const char *const audiofile_suffixes[] = {
 static const char *const audiofile_mime_types[] = {
 	"audio/x-wav",
 	"audio/x-aiff",
-	NULL 
+	NULL
 };
 
 const struct decoder_plugin audiofile_decoder_plugin = {

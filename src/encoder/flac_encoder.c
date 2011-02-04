@@ -55,7 +55,7 @@ static bool
 flac_encoder_configure(struct flac_encoder *encoder,
 		const struct config_param *param, G_GNUC_UNUSED GError **error)
 {
-	encoder->compression = config_get_block_unsigned(param, 
+	encoder->compression = config_get_block_unsigned(param,
 						"compression", 5);
 
 	return true;
@@ -218,7 +218,7 @@ flac_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 
 		if (init_status != FLAC__STREAM_ENCODER_OK) {
 			g_set_error(error, flac_encoder_quark(), 0,
-			    "failed to initialize encoder: %s\n", 
+			    "failed to initialize encoder: %s\n",
 			    FLAC__StreamEncoderStateString[init_status]);
 			flac_encoder_close(_encoder);
 			return false;
@@ -234,7 +234,7 @@ flac_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 
 		if(init_status != FLAC__STREAM_ENCODER_INIT_STATUS_OK) {
 			g_set_error(error, flac_encoder_quark(), 0,
-			    "failed to initialize encoder: %s\n", 
+			    "failed to initialize encoder: %s\n",
 			    FLAC__StreamEncoderInitStatusString[init_status]);
 			flac_encoder_close(_encoder);
 			return false;

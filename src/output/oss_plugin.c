@@ -347,7 +347,7 @@ oss_setup_sample_rate(int fd, struct audio_format *audio_format,
 		case SUCCESS:
 			if (!audio_valid_sample_rate(sample_rate))
 				break;
-		
+
 			audio_format->sample_rate = sample_rate;
 			return true;
 

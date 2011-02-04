@@ -58,11 +58,11 @@ winmm_mixer_init(void *ao, G_GNUC_UNUSED const struct config_param *param,
 		 G_GNUC_UNUSED GError **error_r)
 {
 	assert(ao != NULL);
-	
+
 	struct winmm_mixer *wm = g_new(struct winmm_mixer, 1);
 	mixer_init(&wm->base, &winmm_mixer_plugin);
 	wm->output = (struct winmm_output *) ao;
-	
+
 	return &wm->base;
 }
 
@@ -79,13 +79,13 @@ winmm_mixer_get_volume(struct mixer *mixer, GError **error_r)
 	DWORD volume;
 	HWAVEOUT handle = winmm_output_get_handle(wm->output);
 	MMRESULT result = waveOutGetVolume(handle, &volume);
-	
+
 	if (result != MMSYSERR_NOERROR) {
 		g_set_error(error_r, 0, winmm_mixer_quark(),
 			    "Failed to get winmm volume");
 		return -1;
 	}
-	
+
 	return winmm_volume_decode(volume);
 }
 
@@ -102,7 +102,7 @@ winmm_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
 			    "Failed to set winmm volume");
 		return false;
 	}
-	
+
 	return true;
 }
 
