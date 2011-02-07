@@ -142,6 +142,7 @@ mpd_headers = \
 	src/output/httpd_client.h \
 	src/output/httpd_internal.h \
 	src/output/pulse_output_plugin.h \
+	src/output/roar_output_plugin.h \
 	src/output/winmm_output_plugin.h \
 	src/page.h \
 	src/pcm_buffer.h \
@@ -673,6 +674,7 @@ OUTPUT_LIBS = \
 	$(LIBWRAP_LDFLAGS) \
 	$(AO_LIBS) \
 	$(ALSA_LIBS) \
+	$(ROAR_LIBS) \
 	$(FFADO_LIBS) \
 	$(JACK_LIBS) \
 	$(OPENAL_LIBS) \
@@ -704,6 +706,11 @@ MIXER_SRC = \
 if HAVE_ALSA
 OUTPUT_SRC += src/output/alsa_plugin.c
 MIXER_SRC += src/mixer/alsa_mixer_plugin.c
+endif
+
+if HAVE_ROAR
+OUTPUT_SRC += src/output/roar_plugin.c
+MIXER_SRC += src/mixer/roar_mixer_plugin.c
 endif
 
 if ENABLE_FFADO_OUTPUT

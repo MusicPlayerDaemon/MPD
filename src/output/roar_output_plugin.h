@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
- * http://www.musicpd.org
+ * Copyright (C) 2003-2010 The Music Player Daemon Project
+ * Copyright (C) 2010-2011 Philipp 'ph3-der-loewe' Schafft
+ * Copyright (C) 2010-2011 Hans-Kristian 'maister' Arntzen
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,20 +18,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/** \file
- *
- * This header provides "extern" declarations for all mixer plugins.
- */
 
-#ifndef MPD_MIXER_LIST_H
-#define MPD_MIXER_LIST_H
+#ifndef __ROAR_OUTPUT_H
+#define __ROAR_OUTPUT_H
 
-extern const struct mixer_plugin software_mixer_plugin;
-extern const struct mixer_plugin alsa_mixer_plugin;
-extern const struct mixer_plugin oss_mixer_plugin;
-extern const struct mixer_plugin roar_mixer_plugin;
-extern const struct mixer_plugin pulse_mixer_plugin;
-extern const struct mixer_plugin raop_mixer_plugin;
-extern const struct mixer_plugin winmm_mixer_plugin;
+#include <roaraudio.h>
+#include <glib.h>
+
+typedef struct roar
+{
+	roar_vs_t * vss;
+	int err;
+	char *host;
+	char *name;
+	int role;
+	struct roar_connection con;
+	struct roar_audio_info info;
+	GMutex *lock;
+	volatile bool alive;
+} roar_t;
 
 #endif

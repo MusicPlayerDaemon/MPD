@@ -121,6 +121,11 @@ AC_ARG_ENABLE(alsa,
 	AS_HELP_STRING([--enable-alsa], [enable ALSA support]),,
 	[enable_alsa=auto])
 
+AC_ARG_ENABLE(roar,
+	AS_HELP_STRING([--enable-roar],
+		[enable support for RoarAudio]),,
+	[enable_roar=auto])
+
 AC_ARG_ENABLE(ao,
 	AS_HELP_STRING([--enable-ao],
 		[enable support for libao]),,
@@ -1221,6 +1226,16 @@ fi
 
 AM_CONDITIONAL(HAVE_ALSA, test x$enable_alsa = xyes)
 
+dnl ----------------------------------- ROAR ----------------------------------
+MPD_AUTO_PKG(roar, ROAR, [libroar >= 0.4.0],
+	[ROAR output plugin], [libroar not found])
+
+if test x$enable_roar = xyes; then
+	AC_DEFINE(HAVE_ROAR, 1, [Define to enable ROAR support])
+fi
+
+AM_CONDITIONAL(HAVE_ROAR, test x$enable_roar = xyes)
+
 dnl ----------------------------------- FFADO ---------------------------------
 
 MPD_AUTO_PKG(ffado, FFADO, [libffado],
@@ -1430,6 +1445,7 @@ AM_CONDITIONAL(ENABLE_WINMM_OUTPUT, test x$enable_winmm_output = xyes)
 dnl --------------------- Post Audio Output Plugins Tests ---------------------
 if
 	test x$enable_alsa = xno &&
+	test x$enable_roar = xno &&
 	test x$enable_ao = xno &&
 	test x$enable_ffado = xno &&
 	test x$enable_fifo = xno &&
@@ -1566,6 +1582,7 @@ results(id3,[ID3])
 
 printf '\nPlayback support:\n\t'
 results(alsa,ALSA)
+results(roar,ROAR)
 results(ffado,FFADO)
 results(fifo,FIFO)
 results(recorder_output,[File Recorder])

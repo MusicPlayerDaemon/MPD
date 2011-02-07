@@ -26,6 +26,7 @@ extern const struct audio_output_plugin null_output_plugin;
 extern const struct audio_output_plugin fifo_output_plugin;
 extern const struct audio_output_plugin pipe_output_plugin;
 extern const struct audio_output_plugin alsaPlugin;
+extern const struct audio_output_plugin roar_output_plugin;
 extern const struct audio_output_plugin ao_output_plugin;
 extern const struct audio_output_plugin oss_output_plugin;
 extern const struct audio_output_plugin openal_output_plugin;
@@ -53,6 +54,9 @@ const struct audio_output_plugin *audio_output_plugins[] = {
 #endif
 #ifdef HAVE_ALSA
 	&alsaPlugin,
+#endif
+#ifdef HAVE_ROAR
+	&roar_output_plugin,
 #endif
 #ifdef HAVE_AO
 	&ao_output_plugin,
