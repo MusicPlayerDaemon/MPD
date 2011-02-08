@@ -34,6 +34,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/socket.h> /* needed for AF_UNIX */
 
 #ifdef HAVE_LIBWRAP
 #include <tcpd.h>
