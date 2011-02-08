@@ -635,7 +635,7 @@ fi
 AM_CONDITIONAL(ENABLE_LASTFM, test x$enable_lastfm = xyes)
 
 dnl ---------------------------------- libogg ---------------------------------
-if test x$with_tremor == xno || test -z $with_tremor; then
+if test x$with_tremor = xno || test -z $with_tremor; then
 	PKG_CHECK_MODULES(OGG, [ogg], enable_ogg=yes, enable_ogg=no)
 fi
 

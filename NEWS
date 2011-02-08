@@ -1,4 +1,6 @@
 ver 0.16.2 (2011/??/??)
+* configure.ac:
+  - fix bashism in tremor test
 * decoder:
   - tremor: fix configure test
   - gme: detect end of song
