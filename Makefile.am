@@ -975,6 +975,8 @@ test_run_encoder_SOURCES = test/run_encoder.c \
 	src/audio_format.c \
 	src/audio_parser.c \
 	$(ENCODER_SRC)
+test_run_encoder_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(ENCODER_CFLAGS)
 test_run_encoder_LDADD = $(MPD_LIBS) \
 	$(ENCODER_LIBS) \
 	$(GLIB_LIBS)
