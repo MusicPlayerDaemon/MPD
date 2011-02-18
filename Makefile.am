@@ -859,6 +859,7 @@ test_run_input_LDADD = $(MPD_LIBS) \
 	$(INPUT_LIBS) \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.c \
+	test/stdbin.h \
 	src/conf.c src/tokenizer.c src/utils.c \
 	src/tag.c src/tag_pool.c src/tag_save.c \
 	src/fd_util.c \
@@ -906,6 +907,7 @@ test_run_decoder_LDADD = $(MPD_LIBS) \
 	$(INPUT_LIBS) $(DECODER_LIBS) \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.c \
+	test/stdbin.h \
 	src/conf.c src/tokenizer.c src/utils.c src/log.c \
 	src/tag.c src/tag_pool.c \
 	src/replay_gain_info.c \
@@ -946,6 +948,7 @@ test_run_filter_LDADD = $(MPD_LIBS) \
 	$(SAMPLERATE_LIBS) \
 	$(GLIB_LIBS)
 test_run_filter_SOURCES = test/run_filter.c \
+	test/stdbin.h \
 	src/filter_plugin.c \
 	src/filter_registry.c \
 	src/conf.c src/tokenizer.c src/utils.c \
@@ -968,6 +971,7 @@ endif
 if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
 test_run_encoder_SOURCES = test/run_encoder.c \
+	test/stdbin.h \
 	src/conf.c src/tokenizer.c \
 	src/utils.c \
 	src/tag.c src/tag_pool.c \
@@ -983,6 +987,7 @@ test_run_encoder_LDADD = $(MPD_LIBS) \
 endif
 
 test_software_volume_SOURCES = test/software_volume.c \
+	test/stdbin.h \
 	src/audio_check.c \
 	src/audio_parser.c \
 	src/pcm_volume.c
@@ -990,6 +995,7 @@ test_software_volume_LDADD = \
 	$(GLIB_LIBS)
 
 test_run_normalize_SOURCES = test/run_normalize.c \
+	test/stdbin.h \
 	src/audio_check.c \
 	src/audio_parser.c \
 	src/AudioCompress/compress.c
@@ -1027,6 +1033,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	$(OUTPUT_LIBS) \
 	$(GLIB_LIBS)
 test_run_output_SOURCES = test/run_output.c \
+	test/stdbin.h \
 	src/conf.c src/tokenizer.c src/utils.c src/log.c \
 	src/audio_check.c \
 	src/audio_format.c \
