@@ -5,7 +5,7 @@ AM_INIT_AUTOMAKE([foreign 1.10 dist-bzip2 subdir-objects])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
-AC_DEFINE(PROTOCOL_VERSION, "0.16.0", [The MPD protocol version])
+AC_DEFINE(PROTOCOL_VERSION, "0.17.0", [The MPD protocol version])
 
 
 dnl ---------------------------------------------------------------------------
