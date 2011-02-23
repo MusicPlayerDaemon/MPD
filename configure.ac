@@ -1496,7 +1496,6 @@ if test x$GCC = xyes
 then
 	MPD_CHECK_FLAG([-Wall])
 	MPD_CHECK_FLAG([-Wextra])
-	MPD_CHECK_FLAG([-Wno-deprecated-declarations])
 	MPD_CHECK_FLAG([-Wmissing-prototypes])
 	MPD_CHECK_FLAG([-Wshadow])
 	MPD_CHECK_FLAG([-Wpointer-arith])
