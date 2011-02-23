@@ -103,6 +103,11 @@
 #
 #gapless_mp3_playback			"yes"
 #
+# Setting "restore_paused" to "yes" puts MPD into pause mode instead
+# of starting playback after startup.
+#
+#restore_paused "no"
+#
 # This setting enables MPD to create playlists in a format usable by other
 # music players.
 #

@@ -10,6 +10,7 @@ ver 0.17 (2011/??/??)
   - osx: allow user to specify other audio devices
   - raop: new output plugin
   - shout: add possibility to set url
+* state_file: add option "restore_paused"
 
 
 ver 0.16.1 (2011/01/09)

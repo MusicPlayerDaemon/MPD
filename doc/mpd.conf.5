@@ -69,6 +69,9 @@ mpd will be saved to this file when mpd is terminated by a TERM signal or by
 the "kill" command.  When mpd is restarted, it will read the state file and
 restore the state of mpd (including the playlist).
 .TP
+.B restore_paused <yes or no>
+Put MPD into pause mode instead of starting playback after startup.
+.TP
 .B user <username>
 This specifies the user that MPD will run as, if set.  MPD should
 never run as root, and you may use this option to make MPD change its

@@ -29,6 +29,7 @@
 #include "queue_save.h"
 #include "path.h"
 #include "text_file.h"
+#include "conf.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -195,6 +196,13 @@ playlist_state_restore(const char *line, FILE *fp, GString *buffer,
 	if (!queue_is_empty(&playlist->queue)) {
 		if (!queue_valid_position(&playlist->queue, current))
 			current = 0;
+
+		if (state == PLAYER_STATE_PLAY &&
+		    config_get_bool("restore_paused", false))
+			/* the user doesn't want MPD to auto-start
+			   playback after startup; fall back to
+			   "pause" */
+			state = PLAYER_STATE_PAUSE;
 
 		/* enable all devices for the first time; this must be
 		   called here, after the audio output states were

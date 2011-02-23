@@ -59,6 +59,7 @@ static struct config_entry config_entries[] = {
 	{ .name = CONF_LOG_FILE, false, false },
 	{ .name = CONF_PID_FILE, false, false },
 	{ .name = CONF_STATE_FILE, false, false },
+	{ .name = "restore_paused", false, false },
 	{ .name = CONF_USER, false, false },
 	{ .name = CONF_GROUP, false, false },
 	{ .name = CONF_BIND_TO_ADDRESS, true, false },
