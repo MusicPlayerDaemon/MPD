@@ -129,7 +129,7 @@ playlist_state_restore(const char *line, FILE *fp, GString *buffer,
 {
 	int current = -1;
 	int seek_time = 0;
-	int state = PLAYER_STATE_STOP;
+	enum player_state state = PLAYER_STATE_STOP;
 	bool random_mode = false;
 
 	if (!g_str_has_prefix(line, PLAYLIST_STATE_FILE_STATE))
