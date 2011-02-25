@@ -36,7 +36,7 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "jack"
 
-static const size_t sample_size = sizeof(jack_default_audio_sample_t);
+static const size_t jack_sample_size = sizeof(jack_default_audio_sample_t);
 
 static const char *const port_names[2] = {
 	"left", "right",
@@ -118,14 +118,15 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 
 	for (unsigned i = 0; i < G_N_ELEMENTS(jd->ringbuffer); ++i) {
 		available = jack_ringbuffer_read_space(jd->ringbuffer[i]);
-		assert(available % sample_size == 0);
-		available /= sample_size;
+		assert(available % jack_sample_size == 0);
+		available /= jack_sample_size;
 		if (available > nframes)
 			available = nframes;
 
 		out = jack_port_get_buffer(jd->ports[i], nframes);
 		jack_ringbuffer_read(jd->ringbuffer[i],
-				     (char *)out, available * sample_size);
+				     (char *)out,
+				     available * jack_sample_size);
 
 		while (available < nframes)
 			/* ringbuffer underrun, fill with silence */
@@ -430,7 +431,7 @@ mpd_jack_play(void *data, const void *chunk, size_t size, GError **error)
 		g_usleep(1000);
 	}
 
-	space /= sample_size;
+	space /= jack_sample_size;
 	if (space < size)
 		size = space;
 
