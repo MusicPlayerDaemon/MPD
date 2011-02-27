@@ -41,6 +41,15 @@
 # include <sys/soundcard.h>
 #endif /* !(defined(__OpenBSD__) || defined(__NetBSD__) */
 
+/* We got bug reports from FreeBSD users who said that the two 24 bit
+   formats generate white noise on FreeBSD, but 32 bit works.  This is
+   a workaround until we know what exactly is expected by the kernel
+   audio drivers. */
+#ifndef __linux__
+#undef AFMT_S24_PACKED
+#undef AFMT_S24_NE
+#endif
+
 struct oss_data {
 	int fd;
 	const char *device;
