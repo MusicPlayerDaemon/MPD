@@ -461,6 +461,12 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
 			break;
 
 		audio_format->format = mpd_format;
+
+#ifdef AFMT_S24_PACKED
+		if (oss_format == AFMT_S24_PACKED)
+			audio_format->reverse_endian =
+				G_BYTE_ORDER != G_LITTLE_ENDIAN;
+#endif
 		return true;
 
 	case ERROR:
@@ -502,6 +508,12 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
 				break;
 
 			audio_format->format = mpd_format;
+
+#ifdef AFMT_S24_PACKED
+			if (oss_format == AFMT_S24_PACKED)
+				audio_format->reverse_endian =
+					G_BYTE_ORDER != G_LITTLE_ENDIAN;
+#endif
 			return true;
 
 		case ERROR:

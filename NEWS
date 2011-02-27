@@ -4,6 +4,7 @@ ver 0.16.2 (2011/??/??)
   - gme: detect end of song
 * output:
   - httpd: fix uninitialized variable
+  - oss: AFMT_S24_PACKED is little-endian
 
 
 ver 0.16.1 (2011/01/09)
