@@ -2070,7 +2070,7 @@ static const struct command commands[] = {
 	  handle_replay_gain_mode },
 	{ "replay_gain_status", PERMISSION_READ, 0, 0,
 	  handle_replay_gain_status },
-	{ "rescan", PERMISSION_ADMIN, 0, 1, handle_rescan },
+	{ "rescan", PERMISSION_CONTROL, 0, 1, handle_rescan },
 	{ "rm", PERMISSION_CONTROL, 1, 1, handle_rm },
 	{ "save", PERMISSION_CONTROL, 1, 1, handle_save },
 	{ "search", PERMISSION_READ, 2, -1, handle_search },
@@ -2091,7 +2091,7 @@ static const struct command commands[] = {
 	{ "swapid", PERMISSION_CONTROL, 2, 2, handle_swapid },
 	{ "tagtypes", PERMISSION_READ, 0, 0, handle_tagtypes },
 	{ "unsubscribe", PERMISSION_READ, 1, 1, handle_unsubscribe },
-	{ "update", PERMISSION_ADMIN, 0, 1, handle_update },
+	{ "update", PERMISSION_CONTROL, 0, 1, handle_update },
 	{ "urlhandlers", PERMISSION_READ, 0, 0, handle_urlhandlers },
 };
 
