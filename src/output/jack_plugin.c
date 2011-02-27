@@ -423,7 +423,7 @@ mpd_jack_play(void *data, const void *chunk, size_t size, GError **error)
 			/* send data symmetrically */
 			space = space1;
 
-		if (space >= frame_size)
+		if (space >= jack_sample_size)
 			break;
 
 		/* XXX do something more intelligent to

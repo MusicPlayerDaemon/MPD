@@ -1,6 +1,7 @@
 ver 0.15.16 (2010/??/??)
 * output:
   - ao: initialize the ao_sample_format struct
+  - jack: fix crash with mono playback
 * encoders:
   - lame: explicitly configure the output sample rate
 * update: log all file permission problems
