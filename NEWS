@@ -1,4 +1,4 @@
-ver 0.15.16 (2010/??/??)
+ver 0.15.16 (2011/03/13)
 * output:
   - ao: initialize the ao_sample_format struct
   - jack: fix crash with mono playback
