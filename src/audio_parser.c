@@ -192,6 +192,7 @@ audio_format_parse(struct audio_format *dest, const char *src,
 	}
 
 	audio_format_init(dest, rate, sample_format, channels);
+	assert(audio_format_valid(dest));
 
 	return true;
 }

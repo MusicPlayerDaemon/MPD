@@ -95,6 +95,8 @@ ao_filter_open(struct audio_output *ao,
 	       struct audio_format *audio_format,
 	       GError **error_r)
 {
+	assert(audio_format_valid(audio_format));
+
 	/* the replay_gain filter cannot fail here */
 	if (ao->replay_gain_filter != NULL)
 		filter_open(ao->replay_gain_filter, audio_format, error_r);
@@ -136,6 +138,7 @@ ao_open(struct audio_output *ao)
 	assert(!ao->open);
 	assert(ao->pipe != NULL);
 	assert(ao->chunk == NULL);
+	assert(audio_format_valid(&ao->in_audio_format));
 
 	if (ao->fail_timer != NULL) {
 		/* this can only happen when this
@@ -163,6 +166,8 @@ ao_open(struct audio_output *ao)
 		ao->fail_timer = g_timer_new();
 		return;
 	}
+
+	assert(audio_format_valid(filter_audio_format));
 
 	ao->out_audio_format = *filter_audio_format;
 	audio_format_mask_apply(&ao->out_audio_format,
