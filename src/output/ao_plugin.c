@@ -26,6 +26,9 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "ao"
 
+/* An ao_sample_format, with all fields set to zero: */
+static const ao_sample_format OUR_AO_FORMAT_INITIALIZER;
+
 static unsigned ao_output_ref;
 
 struct ao_data {
@@ -167,7 +170,7 @@ static bool
 ao_output_open(void *data, struct audio_format *audio_format,
 	       GError **error)
 {
-	ao_sample_format format;
+	ao_sample_format format = OUR_AO_FORMAT_INITIALIZER;
 	struct ao_data *ad = (struct ao_data *)data;
 
 	switch (audio_format->format) {

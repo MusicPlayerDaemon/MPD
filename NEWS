@@ -141,9 +141,13 @@ ver 0.16 (2010/12/11)
 * make single mode 'sticky'
 
 
-ver 0.15.16 (2010/??/??)
+ver 0.15.16 (2011/03/13)
+* output:
+  - ao: initialize the ao_sample_format struct
+  - jack: fix crash with mono playback
 * encoders:
   - lame: explicitly configure the output sample rate
+* update: log all file permission problems
 
 
 ver 0.15.15 (2010/11/08)
