@@ -276,6 +276,8 @@ vorbis_encoder_flush(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
 	vorbis_analysis_init(&encoder->vd, &encoder->vi);
 	vorbis_block_init(&encoder->vd, &encoder->vb);
 
+	ogg_stream_reset(&encoder->os);
+
 	encoder->flush = true;
 	return true;
 }

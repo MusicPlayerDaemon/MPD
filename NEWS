@@ -4,6 +4,8 @@ ver 0.16.2 (2011/??/??)
 * decoder:
   - tremor: fix configure test
   - gme: detect end of song
+* encoder:
+  - vorbis: reset the Ogg stream after flush
 * output:
   - httpd: fix uninitialized variable
   - httpd: include sys/socket.h
