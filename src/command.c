@@ -749,7 +749,7 @@ handle_load(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 
 	result = playlist_open_into_queue(argv[1], &g_playlist);
 	if (result != PLAYLIST_RESULT_NO_SUCH_LIST)
-		return result;
+		return print_playlist_result(client, result);
 
 	result = playlist_load_spl(&g_playlist, argv[1]);
 	return print_playlist_result(client, result);
