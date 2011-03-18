@@ -563,6 +563,7 @@ directory_child_access(const struct directory *directory,
 	/* access() is useless on WIN32 */
 	(void)directory;
 	(void)name;
+	(void)mode;
 	return true;
 #else
 	char *path = map_directory_child_fs(directory, name);
