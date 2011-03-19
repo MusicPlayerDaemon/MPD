@@ -111,7 +111,7 @@ struct httpd_output {
 	char buffer[32768];
 
 	/**
-	 * The maximum and current number of clients connected 
+	 * The maximum and current number of clients connected
 	 * at the same time.
 	 */
 	guint clients_max, clients_cnt;

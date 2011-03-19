@@ -153,6 +153,9 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 	if((gme_err = gme_start_track(emu, song_num)) != NULL)
 		g_warning("%s", gme_err);
 
+	if(ti->length > 0)
+		gme_set_fade(emu, ti->length);
+
 	/* play */
 	do {
 		gme_err = gme_play(emu, GME_BUFFER_SAMPLES, buf);

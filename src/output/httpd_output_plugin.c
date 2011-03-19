@@ -36,6 +36,7 @@
 #include <errno.h>
 
 #ifdef HAVE_LIBWRAP
+#include <sys/socket.h> /* needed for AF_UNIX */
 #include <tcpd.h>
 #endif
 
@@ -123,6 +124,7 @@ httpd_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 
 	/* initialize metadata */
 	httpd->metadata = NULL;
+	httpd->unflushed_input = 0;
 
 	/* initialize encoder */
 

@@ -22,6 +22,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <assert.h>
 
 enum sample_format {
 	SAMPLE_FORMAT_UNDEFINED = 0,
@@ -219,6 +220,9 @@ static inline void
 audio_format_mask_apply(struct audio_format *af,
 			const struct audio_format *mask)
 {
+	assert(audio_format_valid(af));
+	assert(audio_format_mask_valid(mask));
+
 	if (mask->sample_rate != 0)
 		af->sample_rate = mask->sample_rate;
 
@@ -227,6 +231,8 @@ audio_format_mask_apply(struct audio_format *af,
 
 	if (mask->channels != 0)
 		af->channels = mask->channels;
+
+	assert(audio_format_valid(af));
 }
 
 /**

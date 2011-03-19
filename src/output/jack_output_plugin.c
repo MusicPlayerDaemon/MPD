@@ -40,7 +40,7 @@ enum {
 	MAX_PORTS = 16,
 };
 
-static const size_t sample_size = sizeof(jack_default_audio_sample_t);
+static const size_t jack_sample_size = sizeof(jack_default_audio_sample_t);
 
 struct jack_data {
 	/**
@@ -103,9 +103,9 @@ mpd_jack_available(const struct jack_data *jd)
 			min = current;
 	}
 
-	assert(min % sample_size == 0);
+	assert(min % jack_sample_size == 0);
 
-	return min / sample_size;
+	return min / jack_sample_size;
 }
 
 static int
@@ -123,7 +123,7 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 		const jack_nframes_t available = mpd_jack_available(jd);
 		for (unsigned i = 0; i < jd->audio_format.channels; ++i)
 			jack_ringbuffer_read_advance(jd->ringbuffer[i],
-						     available * sample_size);
+						     available * jack_sample_size);
 
 		/* generate silence while MPD is paused */
 
@@ -144,7 +144,7 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 	for (unsigned i = 0; i < jd->audio_format.channels; ++i) {
 		out = jack_port_get_buffer(jd->ports[i], nframes);
 		jack_ringbuffer_read(jd->ringbuffer[i],
-				     (char *)out, available * sample_size);
+				     (char *)out, available * jack_sample_size);
 
 		for (jack_nframes_t f = available; f < nframes; ++f)
 			/* ringbuffer underrun, fill with silence */
@@ -675,7 +675,7 @@ mpd_jack_play(void *data, const void *chunk, size_t size, GError **error_r)
 				space = space1;
 		}
 
-		if (space >= frame_size)
+		if (space >= jack_sample_size)
 			break;
 
 		/* XXX do something more intelligent to
@@ -683,7 +683,7 @@ mpd_jack_play(void *data, const void *chunk, size_t size, GError **error_r)
 		g_usleep(1000);
 	}
 
-	space /= sample_size;
+	space /= jack_sample_size;
 	if (space < size)
 		size = space;
 

@@ -49,7 +49,7 @@ const int16_t *pcm_byteswap_16(struct pcm_buffer *buffer,
 
 static inline uint32_t swab32(uint32_t x)
 {
-	return (x << 24) | 
+	return (x << 24) |
 		((x & 0xff00) << 8) |
 		((x & 0xff0000) >> 8) |
 		(x >> 24);

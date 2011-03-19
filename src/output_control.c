@@ -139,6 +139,7 @@ audio_output_open(struct audio_output *ao,
 {
 	bool open;
 
+	assert(audio_format_valid(audio_format));
 	assert(mp != NULL);
 
 	if (ao->fail_timer != NULL) {

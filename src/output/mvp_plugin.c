@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/* 
+/*
  * Media MVP audio output based on code from MVPMC project:
  * http://mvpmc.sourceforge.net/
  */
