@@ -24,12 +24,7 @@
 #include "roar_output_plugin.h"
 
 #include <glib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netdb.h>
 #include <stdint.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>

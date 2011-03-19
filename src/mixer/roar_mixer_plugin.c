@@ -27,10 +27,6 @@
 #include <glib.h>
 
 #include <assert.h>
-#include <sys/stat.h>
-#include <sys/ioctl.h>
-#include <fcntl.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
 
