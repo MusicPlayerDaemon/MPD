@@ -1,4 +1,4 @@
-ver 0.16.2 (2011/??/??)
+ver 0.16.2 (2011/03/18)
 * configure.ac:
   - fix bashism in tremor test
 * decoder:
