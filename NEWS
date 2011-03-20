@@ -1,6 +1,8 @@
 ver 0.15.17 (2011/??/??)
 * encoder:
   - vorbis: reset the Ogg stream after flush
+* decoders:
+  - vorbis: fix tremor support
 
 
 ver 0.15.16 (2011/03/13)
