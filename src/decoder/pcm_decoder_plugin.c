@@ -51,6 +51,10 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 
 		size_t nbytes = decoder_read(decoder, is,
 					     buffer, sizeof(buffer));
+
+		if (nbytes == 0 && input_stream_eof(is))
+			break;
+
 		cmd = nbytes > 0
 			? decoder_data(decoder, is,
 				       buffer, nbytes, 0)
