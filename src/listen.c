@@ -413,6 +413,8 @@ static int get_remote_uid(int fd)
 
 	if (getpeereid(fd, &euid, &egid) == 0)
 		return euid;
+#else
+	(void)fd;
 #endif
 	return -1;
 #endif
