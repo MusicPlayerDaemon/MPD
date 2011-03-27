@@ -24,6 +24,7 @@
 #include "playlist/m3u_playlist_plugin.h"
 #include "playlist/xspf_playlist_plugin.h"
 #include "playlist/lastfm_playlist_plugin.h"
+#include "playlist/despotify_playlist_plugin.h"
 #include "playlist/pls_playlist_plugin.h"
 #include "playlist/asx_playlist_plugin.h"
 #include "playlist/rss_playlist_plugin.h"
@@ -47,6 +48,9 @@ static const struct playlist_plugin *const playlist_plugins[] = {
 	&pls_playlist_plugin,
 	&asx_playlist_plugin,
 	&rss_playlist_plugin,
+#ifdef ENABLE_DESPOTIFY
+	&despotify_playlist_plugin,
+#endif
 #ifdef ENABLE_LASTFM
 	&lastfm_playlist_plugin,
 #endif
