@@ -72,6 +72,9 @@
 #define CONF_PLAYLIST_PLUGIN            "playlist_plugin"
 #define CONF_AUTO_UPDATE                "auto_update"
 #define CONF_AUTO_UPDATE_DEPTH          "auto_update_depth"
+#define CONF_DESPOTIFY_USER             "despotify_user"
+#define CONF_DESPOTIFY_PASSWORD         "despotify_password"
+#define CONF_DESPOTIFY_HIGH_BITRATE     "despotify_high_bitrate"
 
 #define DEFAULT_PLAYLIST_MAX_LENGTH (1024*16)
 #define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS false

@@ -99,6 +99,9 @@ static struct config_entry config_entries[] = {
 	{ .name = CONF_PLAYLIST_PLUGIN, true, true },
 	{ .name = CONF_AUTO_UPDATE, false, false },
 	{ .name = CONF_AUTO_UPDATE_DEPTH, false, false },
+	{ .name = CONF_DESPOTIFY_USER, false, false },
+	{ .name = CONF_DESPOTIFY_PASSWORD, false, false},
+	{ .name = CONF_DESPOTIFY_HIGH_BITRATE, false, false },
 	{ .name = "filter", true, true },
 };
 
