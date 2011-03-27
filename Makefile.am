@@ -109,7 +109,9 @@ mpd_headers = \
 	src/input/curl_input_plugin.h \
 	src/input/rewind_input_plugin.h \
 	src/input/mms_input_plugin.h \
+	src/input/despotify_input_plugin.h \
 	src/input/cdio_paranoia_input_plugin.h \
+	src/despotify_utils.h \
 	src/text_file.h \
 	src/text_input_stream.h \
 	src/icy_server.h \
@@ -181,6 +183,7 @@ mpd_headers = \
 	src/playlist/asx_playlist_plugin.h \
 	src/playlist/rss_playlist_plugin.h \
 	src/playlist/lastfm_playlist_plugin.h \
+	src/playlist/despotify_playlist_plugin.h \
 	src/playlist/cue_playlist_plugin.h \
 	src/playlist/flac_playlist_plugin.h \
 	src/poison.h \
@@ -360,6 +363,11 @@ src_mpd_SOURCES = \
 	src/locate.c \
 	src/stored_playlist.c \
 	src/timer.c
+
+if ENABLE_DESPOTIFY
+src_mpd_SOURCES += \
+	src/despotify_utils.c
+endif
 
 if ENABLE_INOTIFY
 src_mpd_SOURCES += \
@@ -660,6 +668,10 @@ if ENABLE_MMS
 INPUT_SRC += src/input/mms_input_plugin.c
 endif
 
+if ENABLE_DESPOTIFY
+INPUT_SRC += src/input/despotify_input_plugin.c
+endif
+
 
 OUTPUT_CFLAGS = \
 	$(AO_CFLAGS) \
@@ -800,6 +812,10 @@ PLAYLIST_SRC = \
 
 if ENABLE_LASTFM
 PLAYLIST_SRC += src/playlist/lastfm_playlist_plugin.c
+endif
+
+if ENABLE_DESPOTIFY
+PLAYLIST_SRC += src/playlist/despotify_playlist_plugin.c
 endif
 
 if HAVE_CUE
@@ -993,6 +1009,17 @@ test_run_filter_SOURCES = test/run_filter.c \
 
 if HAVE_LIBSAMPLERATE
 test_run_filter_SOURCES += src/pcm_resample_libsamplerate.c
+endif
+
+if ENABLE_DESPOTIFY
+test_read_tags_SOURCES += \
+	src/despotify_utils.c
+test_run_input_SOURCES += \
+	src/despotify_utils.c
+test_dump_playlist_SOURCES += \
+	src/despotify_utils.c
+test_run_decoder_SOURCES += \
+	src/despotify_utils.c
 endif
 
 if ENABLE_ENCODER

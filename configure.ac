@@ -242,6 +242,11 @@ AC_ARG_ENABLE(lastfm,
 		[enable support for last.fm radio (default: disable)]),,
 	[enable_lastfm=no])
 
+AC_ARG_ENABLE(despotify,
+	AS_HELP_STRING([--enable-despotify],
+		[enable support for despotify (default: disable)]),,
+	[enable_despotify=no])
+
 AC_ARG_ENABLE(lame-encoder,
 	AS_HELP_STRING([--enable-lame-encoder],
 		[enable the LAME mp3 encoder]),,
@@ -648,6 +653,15 @@ if test x$enable_lastfm = xyes; then
 	AC_DEFINE(ENABLE_LASTFM, 1, [Define when last.fm radio is enabled])
 fi
 AM_CONDITIONAL(ENABLE_LASTFM, test x$enable_lastfm = xyes)
+
+dnl --------------------------------- Despotify ---------------------------------
+MPD_AUTO_PKG(despotify, DESPOTIFY, [despotify],
+	[libcurl HTTP streaming], [libcurl not found])
+if test x$enable_despotify = xyes; then
+	AC_DEFINE(ENABLE_DESPOTIFY, 1, [Define when despotify is enabled])
+	MPD_LIBS="$MPD_LIBS $DESPOTIFY_LIBS"
+fi
+AM_CONDITIONAL(ENABLE_DESPOTIFY, test x$enable_despotify = xyes)
 
 dnl ---------------------------------- libcue ---------------------------------
 MPD_AUTO_PKG(cdio_paranoia, CDIO_PARANOIA, [libcdio_paranoia],
@@ -1625,6 +1639,7 @@ results(curl,[CURL])
 results(lastfm,[Last.FM])
 results(mms,[MMS])
 results(cdio_paranoia, [CDIO_PARANOIA])
+results(despotify,[Despotify])
 
 printf '\n\n##########################################\n\n'
 
