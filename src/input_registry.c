@@ -41,6 +41,10 @@
 #include "input/cdio_paranoia_input_plugin.h"
 #endif
 
+#ifdef ENABLE_DESPOTIFY
+#include "input/despotify_input_plugin.h"
+#endif
+
 #include <glib.h>
 
 const struct input_plugin *const input_plugins[] = {
@@ -59,6 +63,9 @@ const struct input_plugin *const input_plugins[] = {
 #endif
 #ifdef ENABLE_CDIO_PARANOIA
 	&input_plugin_cdio_paranoia,
+#endif
+#ifdef ENABLE_DESPOTIFY
+	&input_plugin_despotify,
 #endif
 	NULL
 };
