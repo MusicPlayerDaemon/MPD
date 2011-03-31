@@ -32,21 +32,13 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#ifdef OLD_FFMPEG_INCLUDES
-#include <avcodec.h>
-#include <avformat.h>
-#include <avio.h>
-#else
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavformat/avio.h>
 #include <libavutil/log.h>
-#endif
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "ffmpeg"
-
-#ifndef OLD_FFMPEG_INCLUDES
 
 static GLogLevelFlags
 level_ffmpeg_to_glib(int level)
@@ -78,8 +70,6 @@ mpd_ffmpeg_log_callback(G_GNUC_UNUSED void *ptr, int level,
 		g_free(domain);
 	}
 }
-
-#endif /* !OLD_FFMPEG_INCLUDES */
 
 struct mpd_ffmpeg_stream {
 	struct decoder *decoder;
@@ -143,9 +133,7 @@ mpd_ffmpeg_stream_close(struct mpd_ffmpeg_stream *stream)
 static bool
 ffmpeg_init(G_GNUC_UNUSED const struct config_param *param)
 {
-#ifndef OLD_FFMPEG_INCLUDES
 	av_log_set_callback(mpd_ffmpeg_log_callback);
-#endif
 
 	av_register_all();
 	return true;
@@ -230,7 +218,6 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 static enum sample_format
 ffmpeg_sample_format(G_GNUC_UNUSED const AVCodecContext *codec_context)
 {
-#if LIBAVCODEC_VERSION_INT >= ((51<<16)+(41<<8)+0)
 	switch (codec_context->sample_fmt) {
 	case SAMPLE_FMT_S16:
 		return SAMPLE_FORMAT_S16;
@@ -243,10 +230,6 @@ ffmpeg_sample_format(G_GNUC_UNUSED const AVCodecContext *codec_context)
 			  codec_context->sample_fmt);
 		return SAMPLE_FORMAT_UNDEFINED;
 	}
-#else
-	/* XXX fixme 16-bit for older ffmpeg (13 Aug 2007) */
-	return SAMPLE_FORMAT_S16;
-#endif
 }
 
 static AVInputFormat *
@@ -400,7 +383,6 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	mpd_ffmpeg_stream_close(stream);
 }
 
-#if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
 typedef struct ffmpeg_tag_map {
 	enum tag_type type;
 	const char *name;
@@ -438,8 +420,6 @@ ffmpeg_copy_metadata(struct tag *tag, AVMetadata *m,
 	return mt != NULL;
 }
 
-#endif
-
 //no tag reading in ffmpeg, check if playable
 static struct tag *
 ffmpeg_stream_tag(struct input_stream *is)
@@ -471,7 +451,6 @@ ffmpeg_stream_tag(struct input_stream *is)
 		? f->duration / AV_TIME_BASE
 		: 0;
 
-#if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(31<<8)+0)
 	av_metadata_conv(f, NULL, f->iformat->metadata_conv);
 
 	for (unsigned i = 0; i < sizeof(ffmpeg_tag_maps)/sizeof(ffmpeg_tag_map); i++) {
@@ -480,31 +459,6 @@ ffmpeg_stream_tag(struct input_stream *is)
 		if (idx >= 0)
 			ffmpeg_copy_metadata(tag, f->streams[idx]->metadata, ffmpeg_tag_maps[i]);
 	}
-#else
-	if (f->author[0])
-		tag_add_item(tag, TAG_ARTIST, f->author);
-	if (f->title[0])
-		tag_add_item(tag, TAG_TITLE, f->title);
-	if (f->album[0])
-		tag_add_item(tag, TAG_ALBUM, f->album);
-
-	if (f->track > 0) {
-		char buffer[16];
-		snprintf(buffer, sizeof(buffer), "%d", f->track);
-		tag_add_item(tag, TAG_TRACK, buffer);
-	}
-
-	if (f->comment[0])
-		tag_add_item(tag, TAG_COMMENT, f->comment);
-	if (f->genre[0])
-		tag_add_item(tag, TAG_GENRE, f->genre);
-	if (f->year > 0) {
-		char buffer[16];
-		snprintf(buffer, sizeof(buffer), "%d", f->year);
-		tag_add_item(tag, TAG_DATE, buffer);
-	}
-
-#endif
 
 	av_close_input_stream(f);
 	mpd_ffmpeg_stream_close(stream);

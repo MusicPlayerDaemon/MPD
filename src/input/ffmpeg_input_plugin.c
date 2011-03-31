@@ -21,13 +21,8 @@
 #include "input/ffmpeg_input_plugin.h"
 #include "input_plugin.h"
 
-#ifdef OLD_FFMPEG_INCLUDES
-#include <avio.h>
-#include <avformat.h>
-#else
 #include <libavformat/avio.h>
 #include <libavformat/avformat.h>
-#endif
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "input_ffmpeg"
@@ -52,14 +47,12 @@ input_ffmpeg_init(G_GNUC_UNUSED const struct config_param *param,
 {
 	av_register_all();
 
-#if LIBAVFORMAT_VERSION_MAJOR >= 52
 	/* disable this plugin if there's no registered protocol */
 	if (av_protocol_next(NULL) == NULL) {
 		g_set_error(error_r, ffmpeg_quark(), 0,
 			    "No protocol");
 		return false;
 	}
-#endif
 
 	return true;
 }

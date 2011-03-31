@@ -771,19 +771,8 @@ AM_CONDITIONAL(HAVE_FAAD, test x$enable_aac = xyes)
 AM_CONDITIONAL(HAVE_MP4, test x$enable_mp4 = xyes)
 
 dnl ---------------------------------- ffmpeg ---------------------------------
-MPD_AUTO_PKG(ffmpeg, FFMPEG, [libavformat >= 52 libavcodec >= 51 libavutil >= 49],
+MPD_AUTO_PKG(ffmpeg, FFMPEG, [libavformat >= 52.31 libavcodec >= 52.20 libavutil >= 49.15],
 	[ffmpeg decoder library], [libavformat+libavcodec+libavutil not found])
-
-if test x$enable_ffmpeg = xyes; then
-	# prior to ffmpeg svn12865, you had to specify include files
-	# without path prefix
-	old_CPPCFLAGS=$CPPFLAGS
-	CPPFLAGS="$CPPFLAGS $FFMPEG_CFLAGS"
-	AC_CHECK_HEADER(libavcodec/avcodec.h,,
-		AC_DEFINE(OLD_FFMPEG_INCLUDES, 1,
-			[Define if avcodec.h instead of libavcodec/avcodec.h should be included]))
-	CPPCFLAGS=$old_CPPFLAGS
-fi
 
 if test x$enable_ffmpeg = xyes; then
 	AC_DEFINE(HAVE_FFMPEG, 1, [Define for FFMPEG support])
