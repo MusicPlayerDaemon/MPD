@@ -112,7 +112,7 @@ struct player {
 	 * output thread.  This attribute is only used if
 	 * audio_output_all_get_elapsed_time() didn't return a usable
 	 * value; the output thread can estimate the elapsed time more
-	 * precisly.
+	 * precisely.
 	 */
 	float elapsed_time;
 };

@@ -79,7 +79,7 @@ struct filter_plugin {
  *
  * @param plugin the filter plugin
  * @param param optional configuration section
- * @param error location to store the error occuring, or NULL to
+ * @param error location to store the error occurring, or NULL to
  * ignore errors.
  * @return a new filter object, or NULL on error
  */
@@ -92,7 +92,7 @@ filter_new(const struct filter_plugin *plugin,
  * the specified configuration section.
  *
  * @param param the configuration section
- * @param error location to store the error occuring, or NULL to
+ * @param error location to store the error occurring, or NULL to
  * ignore errors.
  * @return a new filter object, or NULL on error
  */
@@ -114,7 +114,7 @@ filter_free(struct filter *filter);
  * @param filter the filter object
  * @param audio_format the audio format of incoming data; the plugin
  * may modify the object to enforce another input format
- * @param error location to store the error occuring, or NULL to
+ * @param error location to store the error occurring, or NULL to
  * ignore errors.
  * @return the format of outgoing data
  */
@@ -137,7 +137,7 @@ filter_close(struct filter *filter);
  * @param src the input buffer
  * @param src_size the size of #src_buffer in bytes
  * @param dest_size_r the size of the returned buffer
- * @param error location to store the error occuring, or NULL to
+ * @param error location to store the error occurring, or NULL to
  * ignore errors.
  * @return the destination buffer on success (will be invalidated by
  * filter_close() or filter_filter()), NULL on error

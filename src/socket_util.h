@@ -37,7 +37,7 @@ struct sockaddr;
  *
  * @param sa the sockaddr struct
  * @param length the length of #sa in bytes
- * @param error location to store the error occuring, or NULL to
+ * @param error location to store the error occurring, or NULL to
  * ignore errors
  */
 char *
@@ -53,7 +53,7 @@ sockaddr_to_string(const struct sockaddr *sa, size_t length, GError **error);
  * @param address the address to listen on
  * @param address_length the size of #address
  * @param backlog the backlog parameter for the listen() system call
- * @param error location to store the error occuring, or NULL to
+ * @param error location to store the error occurring, or NULL to
  * ignore errors
  * @return the socket file descriptor or -1 on error
  */

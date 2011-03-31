@@ -68,7 +68,7 @@ struct archive_plugin {
 	 * Opens an input_stream of a file within the archive.
 	 *
 	 * @param path the path within the archive
-	 * @param error_r location to store the error occuring, or
+	 * @param error_r location to store the error occurring, or
 	 * NULL to ignore errors
 	 */
 	struct input_stream *(*open_stream)(struct archive_file *af,

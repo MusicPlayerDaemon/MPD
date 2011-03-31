@@ -139,7 +139,7 @@ lastfm_get(const char *url)
  * Ini-style value fetcher.
  * @param response data through which to search.
  * @param name name of value to search for.
- * @return value for param name in param reponse or NULL on error. Free with g_free.
+ * @return value for param name in param response or NULL on error. Free with g_free.
  */
 static char *
 lastfm_find(const char *response, const char *name)

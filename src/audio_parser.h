@@ -38,7 +38,7 @@ struct audio_format;
  * @param dest the destination #audio_format struct
  * @param src the input string
  * @param mask if true, then "*" is allowed for any number of items
- * @param error_r location to store the error occuring, or NULL to
+ * @param error_r location to store the error occurring, or NULL to
  * ignore errors
  * @return true on success
  */

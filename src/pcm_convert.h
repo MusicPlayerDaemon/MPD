@@ -75,7 +75,7 @@ void pcm_convert_deinit(struct pcm_convert_state *state);
  * @param src_size the size of #src in bytes
  * @param dest_format the requested destination audio format
  * @param dest_size_r returns the number of bytes of the destination buffer
- * @param error_r location to store the error occuring, or NULL to
+ * @param error_r location to store the error occurring, or NULL to
  * ignore errors
  * @return the destination buffer, or NULL on error
  */

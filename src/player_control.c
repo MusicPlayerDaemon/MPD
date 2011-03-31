@@ -281,7 +281,7 @@ pc_get_error_message(struct player_control *pc)
 		return g_strdup("problems opening audio device");
 
 	case PLAYER_ERROR_SYSTEM:
-		return g_strdup("system error occured");
+		return g_strdup("system error occurred");
 
 	case PLAYER_ERROR_UNKTYPE:
 		uri = pc_errored_song_uri(pc);

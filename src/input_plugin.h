@@ -35,7 +35,7 @@ struct input_plugin {
 	/**
 	 * Global initialization.  This method is called when MPD starts.
 	 *
-	 * @param error_r location to store the error occuring, or
+	 * @param error_r location to store the error occurring, or
 	 * NULL to ignore errors
 	 * @return true on success, false if the plugin should be
 	 * disabled

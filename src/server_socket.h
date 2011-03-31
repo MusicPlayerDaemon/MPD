@@ -47,7 +47,7 @@ server_socket_close(struct server_socket *ss);
  * Add a listener on a port on all interfaces.
  *
  * @param port the TCP port
- * @param error_r location to store the error occuring, or NULL to
+ * @param error_r location to store the error occurring, or NULL to
  * ignore errors
  * @return true on success
  */
@@ -61,7 +61,7 @@ server_socket_add_port(struct server_socket *ss, unsigned port,
  *
  * @param hostname the host name to be resolved
  * @param port the TCP port
- * @param error_r location to store the error occuring, or NULL to
+ * @param error_r location to store the error occurring, or NULL to
  * ignore errors
  * @return true on success
  */
@@ -73,7 +73,7 @@ server_socket_add_host(struct server_socket *ss, const char *hostname,
  * Add a listener on a Unix domain socket.
  *
  * @param path the absolute socket path
- * @param error_r location to store the error occuring, or NULL to
+ * @param error_r location to store the error occurring, or NULL to
  * ignore errors
  * @return true on success
  */

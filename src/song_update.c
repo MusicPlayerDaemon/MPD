@@ -190,7 +190,7 @@ song_file_update_inarchive(struct song *song)
 		tag_free(song->tag);
 
 	//accept every file that has music suffix
-	//because we dont support tag reading throught
+	//because we don't support tag reading through
 	//input streams
 	song->tag = tag_new();
 

@@ -51,7 +51,7 @@ spl_valid_name(const char *name_utf8);
 
 /**
  * Returns a list of stored_playlist_info struct pointers.  Returns
- * NULL if an error occured.
+ * NULL if an error occurred.
  */
 GPtrArray *
 spl_list(void);

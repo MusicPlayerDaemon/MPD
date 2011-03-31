@@ -205,7 +205,7 @@ flac_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 	pcm_buffer_init(&encoder->buffer);
 	pcm_buffer_init(&encoder->expand_buffer);
 
-	/* this immediatelly outputs data throught callback */
+	/* this immediately outputs data through callback */
 
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
 	{

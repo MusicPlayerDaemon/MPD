@@ -41,7 +41,7 @@ struct mixer_plugin {
 	 * @param ao the pointer returned by audio_output_plugin.init
 	 * @param param the configuration section, or NULL if there is
 	 * no configuration
-	 * @param error_r location to store the error occuring, or
+	 * @param error_r location to store the error occurring, or
 	 * NULL to ignore errors
 	 * @return a mixer object, or NULL on error
 	 */
@@ -56,7 +56,7 @@ struct mixer_plugin {
 	/**
 	 * Open mixer device
 	 *
-	 * @param error_r location to store the error occuring, or
+	 * @param error_r location to store the error occurring, or
 	 * NULL to ignore errors
 	 * @return true on success, false on error
 	 */
@@ -70,7 +70,7 @@ struct mixer_plugin {
 	/**
 	 * Reads the current volume.
 	 *
-	 * @param error_r location to store the error occuring, or
+	 * @param error_r location to store the error occurring, or
 	 * NULL to ignore errors
 	 * @return the current volume (0..100 including) or -1 if
 	 * unavailable or on error (error_r set, mixer will be closed)
@@ -80,7 +80,7 @@ struct mixer_plugin {
 	/**
 	 * Sets the volume.
 	 *
-	 * @param error_r location to store the error occuring, or
+	 * @param error_r location to store the error occurring, or
 	 * NULL to ignore errors
 	 * @param volume the new volume (0..100 including)
 	 * @return true on success, false on error

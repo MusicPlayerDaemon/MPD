@@ -28,7 +28,7 @@
 /**
  * Initializes this library and all input_stream implementations.
  *
- * @param error_r location to store the error occuring, or NULL to
+ * @param error_r location to store the error occurring, or NULL to
  * ignore errors
  */
 bool

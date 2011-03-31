@@ -40,7 +40,7 @@ songvec_save(FILE *fp, const struct songvec *sv);
  * Loads a song from the input file.  Reading stops after the
  * "song_end" line.
  *
- * @param error_r location to store the error occuring, or NULL to
+ * @param error_r location to store the error occurring, or NULL to
  * ignore errors
  * @return true on success, false on error
  */

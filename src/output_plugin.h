@@ -52,7 +52,7 @@ struct audio_output_plugin {
 	 * none is configured
 	 * @param param the configuration section, or NULL if there is
 	 * no configuration
-	 * @param error location to store the error occuring, or NULL
+	 * @param error location to store the error occurring, or NULL
 	 * to ignore errors
 	 * @return NULL on error, or an opaque pointer to the plugin's
 	 * data
@@ -72,7 +72,7 @@ struct audio_output_plugin {
 	 * fail: if an error occurs during that, it should be reported
 	 * by the open() method.
 	 *
-	 * @param error_r location to store the error occuring, or
+	 * @param error_r location to store the error occurring, or
 	 * NULL to ignore errors
 	 * @return true on success, false on error
 	 */
@@ -89,7 +89,7 @@ struct audio_output_plugin {
 	 *
 	 * @param audio_format the audio format in which data is going
 	 * to be delivered; may be modified by the plugin
-	 * @param error location to store the error occuring, or NULL
+	 * @param error location to store the error occurring, or NULL
 	 * to ignore errors
 	 */
 	bool (*open)(void *data, struct audio_format *audio_format,
@@ -119,7 +119,7 @@ struct audio_output_plugin {
 	/**
 	 * Play a chunk of audio data.
 	 *
-	 * @param error location to store the error occuring, or NULL
+	 * @param error location to store the error occurring, or NULL
 	 * to ignore errors
 	 * @return the number of bytes played, or 0 on error
 	 */
