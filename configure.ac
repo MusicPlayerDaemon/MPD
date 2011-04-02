@@ -656,7 +656,7 @@ AM_CONDITIONAL(ENABLE_LASTFM, test x$enable_lastfm = xyes)
 
 dnl --------------------------------- Despotify ---------------------------------
 MPD_AUTO_PKG(despotify, DESPOTIFY, [despotify],
-	[libcurl HTTP streaming], [libcurl not found])
+	[Despotify support], [despotify not found])
 if test x$enable_despotify = xyes; then
 	AC_DEFINE(ENABLE_DESPOTIFY, 1, [Define when despotify is enabled])
 	MPD_LIBS="$MPD_LIBS $DESPOTIFY_LIBS"
