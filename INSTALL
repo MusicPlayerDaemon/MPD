@@ -119,6 +119,9 @@ WAVE, AIFF, and many others.
 libwavpack - http://www.wavpack.com/
 For WavPack playback.
 
+despotify - https://github.com/SimonKagstrom/despotify
+For Spotify playback.
+
 
 Optional Miscellaneous Dependencies
 -----------------------------------
