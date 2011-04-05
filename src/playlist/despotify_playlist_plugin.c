@@ -100,7 +100,7 @@ parse_playlist(struct despotify_playlist *ctx,
 static bool
 despotify_playlist_init(G_GNUC_UNUSED const struct config_param *param)
 {
-	return mpd_despotify_get_session() != NULL;
+	return true;
 }
 
 static void
