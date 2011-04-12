@@ -106,13 +106,11 @@ static int64_t
 mpd_ffmpeg_stream_seek(void *opaque, int64_t pos, int whence)
 {
 	struct mpd_ffmpeg_stream *stream = opaque;
-	bool ret;
 
 	if (whence == AVSEEK_SIZE)
 		return stream->input->size;
 
-	ret = input_stream_seek(stream->input, pos, whence, NULL);
-	if (!ret)
+	if (!input_stream_seek(stream->input, pos, whence, NULL))
 		return -1;
 
 	return stream->input->offset;
@@ -191,30 +189,24 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		   AVCodecContext *codec_context,
 		   const AVRational *time_base)
 {
-	enum decoder_command cmd = DECODE_COMMAND_NONE;
-	uint8_t audio_buf[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2 + 16];
-	int16_t *aligned_buffer;
-	size_t buffer_size;
-	int len, audio_size;
-	uint8_t *packet_data;
-	int packet_size;
-
 	if (packet->pts != (int64_t)AV_NOPTS_VALUE)
 		decoder_timestamp(decoder,
 				  av_rescale_q(packet->pts, *time_base,
 					       (AVRational){1, 1}));
 
-	packet_data = packet->data;
-	packet_size = packet->size;
+	const uint8_t *packet_data = packet->data;
+	int packet_size = packet->size;
 
-	buffer_size = sizeof(audio_buf);
-	aligned_buffer = align16(audio_buf, &buffer_size);
+	uint8_t audio_buf[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2 + 16];
+	size_t buffer_size = sizeof(audio_buf);
+	int16_t *aligned_buffer = align16(audio_buf, &buffer_size);
 
+	enum decoder_command cmd = DECODE_COMMAND_NONE;
 	while ((packet_size > 0) && (cmd == DECODE_COMMAND_NONE)) {
-		audio_size = buffer_size;
-		len = avcodec_decode_audio2(codec_context,
-					    aligned_buffer, &audio_size,
-					    packet_data, packet_size);
+		int audio_size = buffer_size;
+		int len = avcodec_decode_audio2(codec_context,
+						aligned_buffer, &audio_size,
+						packet_data, packet_size);
 
 		if (len < 0) {
 			/* if error, we skip the frame */
@@ -307,12 +299,8 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		return;
 	}
 
-	AVFormatContext *format_context;
-	AVCodecContext *codec_context;
-	AVCodec *codec;
-	int audio_stream;
-
 	//ffmpeg works with ours "fileops" helper
+	AVFormatContext *format_context;
 	if (av_open_input_stream(&format_context, stream->io, input->uri,
 				 input_format, NULL) != 0) {
 		g_warning("Open failed\n");
@@ -327,7 +315,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		return;
 	}
 
-	audio_stream = ffmpeg_find_audio_stream(format_context);
+	int audio_stream = ffmpeg_find_audio_stream(format_context);
 	if (audio_stream == -1) {
 		g_warning("No audio stream inside\n");
 		av_close_input_stream(format_context);
@@ -335,11 +323,12 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		return;
 	}
 
-	codec_context = format_context->streams[audio_stream]->codec;
+	AVCodecContext *codec_context =
+		format_context->streams[audio_stream]->codec;
 	if (codec_context->codec_name[0] != 0)
 		g_debug("codec '%s'", codec_context->codec_name);
 
-	codec = avcodec_find_decoder(codec_context->codec_id);
+	AVCodec *codec = avcodec_find_decoder(codec_context->codec_id);
 
 	if (!codec) {
 		g_warning("Unsupported audio codec\n");
