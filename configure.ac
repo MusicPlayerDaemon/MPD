@@ -1081,7 +1081,7 @@ if
 fi
 
 AM_CONDITIONAL(HAVE_OGG_COMMON,
-	  test x$enable_vorbis = xyes || test x$enable_oggflac = xyes || test x$enable_flac = xyes)
+	test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_oggflac = xyes || test x$enable_flac = xyes)
 
 AM_CONDITIONAL(HAVE_FLAC_COMMON,
 	  test x$enable_flac = xyes || test x$enable_oggflac = xyes)
