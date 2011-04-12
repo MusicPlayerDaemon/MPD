@@ -1,7 +1,7 @@
 ver 0.16.3 (2011/??/??)
 * fix assertion failure in audio format mask parser
 * decoder:
-  - ffmpeg: support lavc 53
+  - ffmpeg: support libavcodec 0.7
 
 
 ver 0.16.2 (2011/03/18)
