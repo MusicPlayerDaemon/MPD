@@ -174,19 +174,35 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 				  av_rescale_q(packet->pts, *time_base,
 					       (AVRational){1, 1}));
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52,25,0)
+	AVPacket packet2 = *packet;
+#else
 	const uint8_t *packet_data = packet->data;
 	int packet_size = packet->size;
+#endif
 
 	uint8_t audio_buf[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2 + 16];
 	size_t buffer_size = sizeof(audio_buf);
 	int16_t *aligned_buffer = align16(audio_buf, &buffer_size);
 
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
-	while ((packet_size > 0) && (cmd == DECODE_COMMAND_NONE)) {
+	while (
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52,25,0)
+	       packet2.size > 0 &&
+#else
+	       packet_size > 0 &&
+#endif
+	       cmd == DECODE_COMMAND_NONE) {
 		int audio_size = buffer_size;
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52,25,0)
+		int len = avcodec_decode_audio3(codec_context,
+						aligned_buffer, &audio_size,
+						&packet2);
+#else
 		int len = avcodec_decode_audio2(codec_context,
 						aligned_buffer, &audio_size,
 						packet_data, packet_size);
+#endif
 
 		if (len < 0) {
 			/* if error, we skip the frame */
@@ -194,8 +210,13 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 			break;
 		}
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52,25,0)
+		packet2.data += len;
+		packet2.size -= len;
+#else
 		packet_data += len;
 		packet_size -= len;
+#endif
 
 		if (audio_size <= 0)
 			continue;
