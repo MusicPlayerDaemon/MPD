@@ -81,7 +81,7 @@ flac_tell_cb(G_GNUC_UNUSED const FLAC__StreamDecoder *fd,
 	struct flac_data *data = (struct flac_data *) fdata;
 
 	if (!data->input_stream->seekable)
-		return FLAC__STREAM_DECODER_SEEK_STATUS_UNSUPPORTED;
+		return FLAC__STREAM_DECODER_TELL_STATUS_UNSUPPORTED;
 
 	*offset = (long)(data->input_stream->offset);
 

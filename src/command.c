@@ -467,7 +467,7 @@ handle_currentsong(struct client *client,
 		   G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	playlist_print_current(client, &g_playlist);
-	return PLAYLIST_RESULT_SUCCESS;
+	return COMMAND_RETURN_OK;
 }
 
 static enum command_return
