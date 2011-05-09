@@ -62,7 +62,8 @@ directory_free(struct directory *directory);
 static inline bool
 directory_is_empty(const struct directory *directory)
 {
-	return directory->children.nr == 0 && directory->songs.nr == 0;
+	return directory->children.nr == 0 && directory->songs.nr == 0 &&
+		playlist_vector_is_empty(&directory->playlists);
 }
 
 static inline const char *

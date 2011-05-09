@@ -2,6 +2,7 @@ ver 0.16.3 (2011/??/??)
 * fix assertion failure in audio format mask parser
 * fix NULL pointer dereference in playlist parser
 * fix playlist files in base music directory
+* database: allow directories with just playlists
 * decoder:
   - ffmpeg: support libavcodec 0.7
 
