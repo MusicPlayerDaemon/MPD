@@ -178,6 +178,15 @@ cue_tag(struct Cd *cd, unsigned tnum)
 	if (tag == NULL)
 		return NULL;
 
+	/* Create a tag number */
+
+	tag_clear_items_by_type(tag, TAG_TRACK);
+
+	char convert_uinttostring[8];
+	snprintf(convert_uinttostring, sizeof(convert_uinttostring),
+		 "%02d/%02d", tnum, cd_get_ntrack(cd));
+	tag_add_item(tag, TAG_TRACK, convert_uinttostring);
+
 	tag->time = track_get_length(track)
 	    - track_get_index(track, 1)
 	    + track_get_zero_pre(track);

@@ -16,6 +16,7 @@ ver 0.17 (2011/??/??)
   - shout: add possibility to set url
   - roar: new output plugin for RoarAudio
 * state_file: add option "restore_paused"
+* cue: show CUE track numbers
 
 
 ver 0.16.3 (2011/??/??)
