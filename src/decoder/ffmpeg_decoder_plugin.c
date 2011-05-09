@@ -473,7 +473,9 @@ ffmpeg_stream_tag(struct input_stream *is)
 		? f->duration / AV_TIME_BASE
 		: 0;
 
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(52,101,0)
 	av_metadata_conv(f, NULL, f->iformat->metadata_conv);
+#endif
 
 	for (unsigned i = 0; i < sizeof(ffmpeg_tag_maps)/sizeof(ffmpeg_tag_map); i++) {
 		int idx = ffmpeg_find_audio_stream(f);
