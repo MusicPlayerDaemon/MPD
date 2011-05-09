@@ -1,4 +1,6 @@
 ver 0.16.7 (2011/??/??)
+* input:
+  - ffmpeg: support libavformat 0.7
 * output:
   - httpd: fix excessive buffering
   - openal: force 16 bit playback, as 8 bit doesn't work
