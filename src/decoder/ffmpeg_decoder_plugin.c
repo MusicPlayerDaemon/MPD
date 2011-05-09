@@ -81,6 +81,10 @@ mpd_ffmpeg_log_callback(G_GNUC_UNUSED void *ptr, int level,
 
 #endif /* !OLD_FFMPEG_INCLUDES */
 
+#ifndef AV_VERSION_INT
+#define AV_VERSION_INT(a, b, c) (a<<16 | b<<8 | c)
+#endif
+
 struct mpd_ffmpeg_stream {
 	struct decoder *decoder;
 	struct input_stream *input;
@@ -230,7 +234,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 static enum sample_format
 ffmpeg_sample_format(G_GNUC_UNUSED const AVCodecContext *codec_context)
 {
-#if LIBAVCODEC_VERSION_INT >= ((51<<16)+(41<<8)+0)
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(51, 41, 0)
 	switch (codec_context->sample_fmt) {
 	case SAMPLE_FMT_S16:
 		return SAMPLE_FORMAT_S16;
