@@ -129,7 +129,7 @@ playlist_check_translate_song(struct song *song, const char *base_uri)
 	else
 		uri = g_strdup(uri);
 
-	if (uri_has_scheme(base_uri)) {
+	if (uri_has_scheme(uri)) {
 		dest = song_remote_new(uri);
 		g_free(uri);
 	} else {
