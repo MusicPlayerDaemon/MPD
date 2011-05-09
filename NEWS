@@ -9,6 +9,7 @@ ver 0.17 (2011/??/??)
 * decoder:
   - mpg123: implement seeking
   - ffmpeg: drop support for pre-0.5 ffmpeg
+  - ffmpeg: support libavformat 0.7
 * output:
   - osx: allow user to specify other audio devices
   - raop: new output plugin

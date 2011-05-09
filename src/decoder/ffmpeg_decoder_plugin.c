@@ -75,7 +75,11 @@ struct mpd_ffmpeg_stream {
 	struct decoder *decoder;
 	struct input_stream *input;
 
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(52,101,0)
+	AVIOContext *io;
+#else
 	ByteIOContext *io;
+#endif
 	unsigned char buffer[8192];
 };
 
@@ -108,11 +112,19 @@ mpd_ffmpeg_stream_open(struct decoder *decoder, struct input_stream *input)
 	struct mpd_ffmpeg_stream *stream = g_new(struct mpd_ffmpeg_stream, 1);
 	stream->decoder = decoder;
 	stream->input = input;
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(52,101,0)
+	stream->io = avio_alloc_context(stream->buffer, sizeof(stream->buffer),
+					false, stream,
+					mpd_ffmpeg_stream_read, NULL,
+					input->seekable
+					? mpd_ffmpeg_stream_seek : NULL);
+#else
 	stream->io = av_alloc_put_byte(stream->buffer, sizeof(stream->buffer),
 				       false, stream,
 				       mpd_ffmpeg_stream_read, NULL,
 				       input->seekable
 				       ? mpd_ffmpeg_stream_seek : NULL);
+#endif
 	if (stream->io == NULL) {
 		g_free(stream);
 		return NULL;
