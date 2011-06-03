@@ -283,6 +283,7 @@ src_mpd_SOURCES = \
 	src/client_event.c \
 	src/client_expire.c \
 	src/client_global.c \
+	src/client_idle.h \
 	src/client_idle.c \
 	src/client_list.c \
 	src/client_new.c \
