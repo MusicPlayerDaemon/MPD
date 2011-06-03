@@ -71,6 +71,11 @@ mpd_ffmpeg_log_callback(G_GNUC_UNUSED void *ptr, int level,
 	}
 }
 
+
+#ifndef AV_VERSION_INT
+#define AV_VERSION_INT(a, b, c) (a<<16 | b<<8 | c)
+#endif
+
 struct mpd_ffmpeg_stream {
 	struct decoder *decoder;
 	struct input_stream *input;
@@ -154,7 +159,11 @@ ffmpeg_find_audio_stream(const AVFormatContext *format_context)
 {
 	for (unsigned i = 0; i < format_context->nb_streams; ++i)
 		if (format_context->streams[i]->codec->codec_type ==
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 64, 0)
+		    AVMEDIA_TYPE_AUDIO)
+#else
 		    CODEC_TYPE_AUDIO)
+#endif
 			return i;
 
 	return -1;

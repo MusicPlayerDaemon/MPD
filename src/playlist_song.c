@@ -106,6 +106,13 @@ playlist_check_translate_song(struct song *song, const char *base_uri,
 		}
 	}
 
+	if (base_uri != NULL && strcmp(base_uri, ".") == 0)
+		/* g_path_get_dirname() returns "." when there is no
+		   directory name in the given path; clear that now,
+		   because it would break the database lookup
+		   functions */
+		base_uri = NULL;
+
 	if (g_path_is_absolute(uri)) {
 		/* XXX fs_charset vs utf8? */
 		char *prefix = base_uri != NULL
@@ -131,7 +138,7 @@ playlist_check_translate_song(struct song *song, const char *base_uri,
 	else
 		uri = g_strdup(uri);
 
-	if (uri_has_scheme(base_uri)) {
+	if (uri_has_scheme(uri)) {
 		dest = song_remote_new(uri);
 		g_free(uri);
 	} else {

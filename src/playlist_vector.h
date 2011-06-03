@@ -51,6 +51,12 @@ playlist_vector_init(struct playlist_vector *pv)
 void
 playlist_vector_deinit(struct playlist_vector *pv);
 
+static inline bool
+playlist_vector_is_empty(const struct playlist_vector *pv)
+{
+	return pv->head == NULL;
+}
+
 struct playlist_metadata *
 playlist_vector_find(struct playlist_vector *pv, const char *name);
 
