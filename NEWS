@@ -1,3 +1,6 @@
+ver 0.16.4 (2010/??/??)
+
+
 ver 0.16.3 (2011/06/04)
 * fix assertion failure in audio format mask parser
 * fix NULL pointer dereference in playlist parser
