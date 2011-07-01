@@ -206,6 +206,29 @@ socketpair_cloexec(int domain, int type, int protocol, int sv[2])
 	return ret;
 }
 
+int
+socketpair_cloexec_nonblock(int domain, int type, int protocol, int sv[2])
+{
+	int ret;
+
+#if defined(SOCK_CLOEXEC) && defined(SOCK_NONBLOCK)
+	ret = socketpair(domain, type | SOCK_CLOEXEC | SOCK_NONBLOCK, protocol,
+			 sv);
+	if (ret >= 0 || errno != EINVAL)
+		return ret;
+#endif
+
+	ret = socketpair(domain, type, protocol, sv);
+	if (ret >= 0) {
+		fd_set_cloexec(sv[0], true);
+		fd_set_nonblock(sv[0]);
+		fd_set_cloexec(sv[1], true);
+		fd_set_nonblock(sv[1]);
+	}
+
+	return ret;
+}
+
 #endif
 
 int
