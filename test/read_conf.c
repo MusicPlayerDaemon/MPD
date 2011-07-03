@@ -70,5 +70,5 @@ int main(int argc, char **argv)
 	}
 
 	config_global_finish();
-	return 0;
+	return ret;
 }
