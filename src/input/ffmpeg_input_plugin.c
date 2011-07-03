@@ -88,7 +88,9 @@ input_ffmpeg_open(const char *uri, GError **error_r)
 	i = g_new(struct input_ffmpeg, 1);
 	input_stream_init(&i->base, &input_plugin_ffmpeg, uri);
 
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,0,0)
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,1,0)
+	int ret = avio_open(&i->h, uri, AVIO_FLAG_READ);
+#elif LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,0,0)
 	int ret = avio_open(&i->h, uri, AVIO_RDONLY);
 #else
 	int ret = url_open(&i->h, uri, URL_RDONLY);
