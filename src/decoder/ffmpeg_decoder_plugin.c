@@ -321,7 +321,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	}
 
 	//ffmpeg works with ours "fileops" helper
-	AVFormatContext *format_context;
+	AVFormatContext *format_context = NULL;
 	if (av_open_input_stream(&format_context, stream->io, input->uri,
 				 input_format, NULL) != 0) {
 		g_warning("Open failed\n");
@@ -470,7 +470,7 @@ ffmpeg_stream_tag(struct input_stream *is)
 	if (stream == NULL)
 		return NULL;
 
-	AVFormatContext *f;
+	AVFormatContext *f = NULL;
 	if (av_open_input_stream(&f, stream->io, is->uri,
 				 input_format, NULL) != 0) {
 		mpd_ffmpeg_stream_close(stream);
