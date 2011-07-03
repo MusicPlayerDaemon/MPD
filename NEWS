@@ -1,6 +1,7 @@
 ver 0.16.4 (2010/??/??)
 * decoder:
   - ffmpeg: workaround for semantic API change in recent ffmpeg versions
+  - flac: validate the sample rate when scanning the tag
 
 
 ver 0.16.3 (2011/06/04)
