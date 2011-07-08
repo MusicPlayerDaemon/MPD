@@ -180,7 +180,7 @@ db_check(void)
 		}
 
 		/* Check if we can write to the directory */
-		if (access(dirPath, R_OK | W_OK)) {
+		if (access(dirPath, X_OK | W_OK)) {
 			g_warning("Can't create db file in \"%s\": %s",
 				  dirPath, strerror(errno));
 			g_free(dirPath);
