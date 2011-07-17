@@ -3,7 +3,7 @@ PWD=`pwd`
 
 ## If we're not in the scripts directory
 ## assume the base directory.
-if test "`basename $PWD`" == "scripts"; then
+if test "`basename $PWD`" = "scripts"; then
 	cd ../
 else
 	MYOLDPWD=`pwd`
@@ -18,7 +18,7 @@ fi
 make
 make dist
 
-if test "`basename $PWD`" == "scripts"; then
+if test "`basename $PWD`" = "scripts"; then
 	cd contrib/
 else
 	cd $MYOLDPWD
