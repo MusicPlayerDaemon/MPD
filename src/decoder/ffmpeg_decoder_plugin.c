@@ -89,7 +89,11 @@ struct mpd_ffmpeg_stream {
 	struct decoder *decoder;
 	struct input_stream *input;
 
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(52,101,0)
+	AVIOContext *io;
+#else
 	ByteIOContext *io;
+#endif
 	unsigned char buffer[8192];
 };
 
@@ -133,6 +137,33 @@ mpd_ffmpeg_stream_open(struct decoder *decoder, struct input_stream *input)
 	}
 
 	return stream;
+}
+
+/**
+ * API compatibility wrapper for av_open_input_stream() and
+ * avformat_open_input().
+ */
+static int
+mpd_ffmpeg_open_input(AVFormatContext **ic_ptr,
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(52,101,0)
+		      AVIOContext *pb,
+#else
+		      ByteIOContext *pb,
+#endif
+		      const char *filename,
+		      AVInputFormat *fmt)
+{
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53,1,3)
+	AVFormatContext *context = avformat_alloc_context();
+	if (context == NULL)
+		return AVERROR(ENOMEM);
+
+	context->pb = pb;
+	*ic_ptr = context;
+	return avformat_open_input(ic_ptr, filename, fmt, NULL);
+#else
+	return av_open_input_stream(ic_ptr, pb, filename, fmt, NULL);
+#endif
 }
 
 static void
@@ -322,8 +353,8 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 
 	//ffmpeg works with ours "fileops" helper
 	AVFormatContext *format_context = NULL;
-	if (av_open_input_stream(&format_context, stream->io, input->uri,
-				 input_format, NULL) != 0) {
+	if (mpd_ffmpeg_open_input(&format_context, stream->io, input->uri,
+				  input_format) != 0) {
 		g_warning("Open failed\n");
 		mpd_ffmpeg_stream_close(stream);
 		return;
@@ -484,8 +515,8 @@ ffmpeg_stream_tag(struct input_stream *is)
 		return NULL;
 
 	AVFormatContext *f = NULL;
-	if (av_open_input_stream(&f, stream->io, is->uri,
-				 input_format, NULL) != 0) {
+	if (mpd_ffmpeg_open_input(&f, stream->io, is->uri,
+				  input_format) != 0) {
 		mpd_ffmpeg_stream_close(stream);
 		return NULL;
 	}
