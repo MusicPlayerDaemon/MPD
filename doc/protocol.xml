@@ -204,6 +204,47 @@
   </chapter>
 
   <chapter>
+    <title>Recipes</title>
+
+    <section>
+      <title>Queuing</title>
+
+      <para>
+        Often, users run MPD with "<link
+        linkend="command_random">random</link>" enabled, but want to
+        be able to insert songs "before" the rest of the playlist.
+        That is commonly called "queuing".
+      </para>
+
+      <para>
+        MPD implements this by allowing the client to specify a
+        "priority" for each song in the playlist (commands <link
+        linkend="command_prio"><command>prio</command></link> and
+        <link
+        linkend="command_prioid"><command>prioid</command></link>).  A
+        higher priority means that the song is going to be played
+        before the other songs.
+      </para>
+
+      <para>
+        In "random" mode, MPD maintains an internal randomized
+        sequence of songs.  In this sequence, songs with a higher
+        priority come first, and all songs with the same priority are
+        shuffled (by default, all songs are shuffled, because all have
+        the same priority "0").  When you increase the priority of a
+        song, it is moved to the front of the sequence according to
+        its new priority, but always after the current one.  A song
+        that has been played already (it's "before" the current song
+        in that sequence) will only be scheduled for repeated playback
+        if its priority has become bigger than the priority of the
+        current song.  Decreasing the priority of a song will moved it
+        farther to the end of the sequence.  Changing the priority of
+        the current song has no effect on the sequence.
+      </para>
+    </section>
+  </chapter>
+
+  <chapter>
     <title>Command reference</title>
 
     <note>
@@ -1092,6 +1133,46 @@ OK
             </para>
           </listitem>
         </varlistentry>
+
+        <varlistentry id="command_prio">
+          <term>
+            <cmdsynopsis>
+              <command>prio</command>
+              <arg choice="req"><replaceable>PRIORITY</replaceable></arg>
+              <arg choice="req" rep="repeat"><replaceable>START:END</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Set the priority of the specified songs.  A higher
+              priority means that it will be played first when
+              "random" mode is enabled.
+            </para>
+
+            <para>
+              A priority is an integer between 0 and 255.  The default
+              priority of new songs is 0.
+            </para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_prioid">
+          <term>
+            <cmdsynopsis>
+              <command>prioid</command>
+              <arg choice="req"><replaceable>PRIORITY</replaceable></arg>
+              <arg choice="req" rep="repeat"><replaceable>ID</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Same as <link
+              linkend="command_prio"><command>prio</command></link>,
+              but address the songs with their id.
+            </para>
+          </listitem>
+        </varlistentry>
+
         <varlistentry id="command_shuffle">
           <term>
             <cmdsynopsis>

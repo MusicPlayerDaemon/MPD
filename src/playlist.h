@@ -195,6 +195,15 @@ enum playlist_result
 playlist_swap_songs_id(struct playlist *playlist, struct player_control *pc,
 		       unsigned id1, unsigned id2);
 
+enum playlist_result
+playlist_set_priority(struct playlist *playlist, struct player_control *pc,
+		      unsigned start_position, unsigned end_position,
+		      uint8_t priority);
+
+enum playlist_result
+playlist_set_priority_id(struct playlist *playlist, struct player_control *pc,
+			 unsigned song_id, uint8_t priority);
+
 bool
 playlist_get_repeat(const struct playlist *playlist);
 

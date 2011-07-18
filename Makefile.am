@@ -869,9 +869,13 @@ sparse-check:
 
 if ENABLE_TEST
 
-TESTS =
+C_TESTS = \
+	test/test_queue_priority
+
+TESTS = $(C_TESTS)
 
 noinst_PROGRAMS = \
+	$(C_TESTS) \
 	test/read_conf \
 	test/run_input \
 	test/dump_playlist \
@@ -1152,6 +1156,12 @@ test_run_inotify_SOURCES = test/run_inotify.c \
 	src/inotify_source.c
 test_run_inotify_LDADD = $(GLIB_LIBS)
 endif
+
+test_test_queue_priority_SOURCES = \
+	src/queue.c \
+	test/test_queue_priority.c
+test_test_queue_priority_LDADD = \
+	$(GLIB_LIBS)
 
 endif
 

@@ -1171,6 +1171,68 @@ handle_previous(G_GNUC_UNUSED struct client *client,
 }
 
 static enum command_return
+handle_prio(struct client *client, int argc, char *argv[])
+{
+	unsigned priority;
+
+	if (!check_unsigned(client, &priority, argv[1]))
+		return COMMAND_RETURN_ERROR;
+
+	if (priority > 0xff) {
+		command_error(client, ACK_ERROR_ARG,
+			      "Priority out of range: %s", argv[1]);
+		return COMMAND_RETURN_ERROR;
+	}
+
+	for (int i = 2; i < argc; ++i) {
+		unsigned start_position, end_position;
+		if (!check_range(client, &start_position, &end_position,
+				 argv[i], need_range))
+			return COMMAND_RETURN_ERROR;
+
+		enum playlist_result result =
+			playlist_set_priority(&g_playlist,
+					      client->player_control,
+					      start_position, end_position,
+					      priority);
+		if (result != PLAYLIST_RESULT_SUCCESS)
+			return print_playlist_result(client, result);
+	}
+
+	return COMMAND_RETURN_OK;
+}
+
+static enum command_return
+handle_prioid(struct client *client, int argc, char *argv[])
+{
+	unsigned priority;
+
+	if (!check_unsigned(client, &priority, argv[1]))
+		return COMMAND_RETURN_ERROR;
+
+	if (priority > 0xff) {
+		command_error(client, ACK_ERROR_ARG,
+			      "Priority out of range: %s", argv[1]);
+		return COMMAND_RETURN_ERROR;
+	}
+
+	for (int i = 2; i < argc; ++i) {
+		unsigned song_id;
+		if (!check_unsigned(client, &song_id, argv[i]))
+			return COMMAND_RETURN_ERROR;
+
+		enum playlist_result result =
+			playlist_set_priority_id(&g_playlist,
+						 client->player_control,
+						 song_id, priority);
+		if (result != PLAYLIST_RESULT_SUCCESS)
+			return print_playlist_result(client, result);
+	}
+
+	return COMMAND_RETURN_OK;
+}
+
+static enum command_return
 handle_listall(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	char *directory = NULL;
@@ -2062,6 +2124,8 @@ static const struct command commands[] = {
 	{ "plchanges", PERMISSION_READ, 1, 1, handle_plchanges },
 	{ "plchangesposid", PERMISSION_READ, 1, 1, handle_plchangesposid },
 	{ "previous", PERMISSION_CONTROL, 0, 0, handle_previous },
+	{ "prio", PERMISSION_CONTROL, 2, -1, handle_prio },
+	{ "prioid", PERMISSION_CONTROL, 2, -1, handle_prioid },
 	{ "random", PERMISSION_CONTROL, 1, 1, handle_random },
 	{ "readmessages", PERMISSION_READ, 0, 0, handle_read_messages },
 	{ "rename", PERMISSION_CONTROL, 2, 2, handle_rename },

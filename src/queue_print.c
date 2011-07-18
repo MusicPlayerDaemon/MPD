@@ -41,6 +41,10 @@ queue_print_song_info(struct client *client, const struct queue *queue,
 	song_print_info(client, queue_get(queue, position));
 	client_printf(client, "Pos: %u\nId: %u\n",
 		      position, queue_position_to_id(queue, position));
+
+	uint8_t priority = queue_get_priority_at_position(queue, position);
+	if (priority != 0)
+		client_printf(client, "Prio: %u\n", priority);
 }
 
 void

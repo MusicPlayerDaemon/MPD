@@ -46,6 +46,13 @@ struct queue_item {
 
 	/** when was this item last changed? */
 	uint32_t version;
+
+	/**
+	 * The priority of this item, between 0 and 255.  High
+	 * priority value means that this song gets played first in
+	 * "random" mode.
+	 */
+	uint8_t priority;
 };
 
 /**
@@ -179,6 +186,15 @@ queue_position_to_order(const struct queue *queue, unsigned position)
 		if (queue->order[i] == position)
 			return i;
 	}
+}
+
+G_GNUC_PURE
+static inline uint8_t
+queue_get_priority_at_position(const struct queue *queue, unsigned position)
+{
+	assert(position < queue->length);
+
+	return queue->items[position].priority;
 }
 
 /**
@@ -320,6 +336,14 @@ queue_restore_order(struct queue *queue)
 }
 
 /**
+ * Shuffle the order of items in the specified range, taking their
+ * priorities into account.
+ */
+void
+queue_shuffle_order_range_with_priority(struct queue *queue,
+					unsigned start, unsigned end);
+
+/**
  * Shuffles the virtual order of songs, but does not move them
  * physically.  This is used in random mode.
  */
@@ -340,5 +364,14 @@ queue_shuffle_order_last(struct queue *queue, unsigned start, unsigned end);
  */
 void
 queue_shuffle_range(struct queue *queue, unsigned start, unsigned end);
+
+bool
+queue_set_priority(struct queue *queue, unsigned position,
+		   uint8_t priority, int after_order);
+
+bool
+queue_set_priority_range(struct queue *queue,
+			 unsigned start_position, unsigned end_position,
+			 uint8_t priority, int after_order);
 
 #endif

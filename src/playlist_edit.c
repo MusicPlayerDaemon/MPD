@@ -212,6 +212,61 @@ playlist_swap_songs_id(struct playlist *playlist, struct player_control *pc,
 	return playlist_swap_songs(playlist, pc, song1, song2);
 }
 
+enum playlist_result
+playlist_set_priority(struct playlist *playlist, struct player_control *pc,
+		      unsigned start, unsigned end,
+		      uint8_t priority)
+{
+	if (start >= queue_length(&playlist->queue))
+		return PLAYLIST_RESULT_BAD_RANGE;
+
+	if (end > queue_length(&playlist->queue))
+		end = queue_length(&playlist->queue);
+
+	if (start >= end)
+		return PLAYLIST_RESULT_SUCCESS;
+
+	/* remember "current" and "queued" */
+
+	int current_position = playlist->current >= 0
+		? (int)queue_order_to_position(&playlist->queue,
+					       playlist->current)
+		: -1;
+
+	const struct song *queued = playlist_get_queued_song(playlist);
+
+	/* apply the priority changes */
+
+	queue_set_priority_range(&playlist->queue, start, end, priority,
+				 playlist->current);
+
+	playlist_increment_version(playlist);
+
+	/* restore "current" and choose a new "queued" */
+
+	if (current_position >= 0)
+		playlist->current = queue_position_to_order(&playlist->queue,
+							    current_position);
+
+	playlist_update_queued_song(playlist, pc, queued);
+
+	return PLAYLIST_RESULT_SUCCESS;
+}
+
+enum playlist_result
+playlist_set_priority_id(struct playlist *playlist, struct player_control *pc,
+			 unsigned song_id, uint8_t priority)
+{
+	int song_position = queue_id_to_position(&playlist->queue, song_id);
+	if (song_position < 0)
+		return PLAYLIST_RESULT_NO_SUCH_SONG;
+
+	return playlist_set_priority(playlist, pc,
+				     song_position, song_position + 1,
+				     priority);
+
+}
+
 static void
 playlist_delete_internal(struct playlist *playlist, struct player_control *pc,
 			 unsigned song, const struct song **queued_p)
