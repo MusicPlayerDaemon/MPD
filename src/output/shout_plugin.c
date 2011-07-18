@@ -152,7 +152,7 @@ my_shout_init_driver(const struct audio_format *audio_format,
 	if (port == 0) {
 		g_set_error(error, shout_output_quark(), 0,
 			    "shout port must be configured");
-		return NULL;
+		goto failure;
 	}
 
 	check_block_param("password");
@@ -174,21 +174,21 @@ my_shout_init_driver(const struct audio_format *audio_format,
 				    "shout quality \"%s\" is not a number in the "
 				    "range -1 to 10, line %i",
 				    value, param->line);
-			return NULL;
+			goto failure;
 		}
 
 		if (config_get_block_string(param, "bitrate", NULL) != NULL) {
 			g_set_error(error, shout_output_quark(), 0,
 				    "quality and bitrate are "
 				    "both defined");
-			return NULL;
+			goto failure;
 		}
 	} else {
 		value = config_get_block_string(param, "bitrate", NULL);
 		if (value == NULL) {
 			g_set_error(error, shout_output_quark(), 0,
 				    "neither bitrate nor quality defined");
-			return NULL;
+			goto failure;
 		}
 
 		sd->bitrate = strtol(value, &test, 10);
@@ -196,7 +196,7 @@ my_shout_init_driver(const struct audio_format *audio_format,
 		if (*test != '\0' || sd->bitrate <= 0) {
 			g_set_error(error, shout_output_quark(), 0,
 				    "bitrate must be a positive integer");
-			return NULL;
+			goto failure;
 		}
 	}
 
@@ -206,12 +206,12 @@ my_shout_init_driver(const struct audio_format *audio_format,
 		g_set_error(error, shout_output_quark(), 0,
 			    "couldn't find shout encoder plugin \"%s\"",
 			    encoding);
-		return NULL;
+		goto failure;
 	}
 
 	sd->encoder = encoder_init(encoder_plugin, param, error);
 	if (sd->encoder == NULL)
-		return NULL;
+		goto failure;
 
 	if (strcmp(encoding, "mp3") == 0 || strcmp(encoding, "lame") == 0)
 		shout_format = SHOUT_FORMAT_MP3;
@@ -225,7 +225,7 @@ my_shout_init_driver(const struct audio_format *audio_format,
 			g_set_error(error, shout_output_quark(), 0,
 				    "you cannot stream \"%s\" to shoutcast, use mp3",
 				    encoding);
-			return NULL;
+			goto failure;
 		} else if (0 == strcmp(value, "shoutcast"))
 			protocol = SHOUT_PROTOCOL_ICY;
 		else if (0 == strcmp(value, "icecast1"))
@@ -237,7 +237,7 @@ my_shout_init_driver(const struct audio_format *audio_format,
 				    "shout protocol \"%s\" is not \"shoutcast\" or "
 				    "\"icecast1\"or \"icecast2\"",
 				    value);
-			return NULL;
+			goto failure;
 		}
 	} else {
 		protocol = SHOUT_PROTOCOL_HTTP;
@@ -256,7 +256,7 @@ my_shout_init_driver(const struct audio_format *audio_format,
 	    shout_set_agent(sd->shout_conn, "MPD") != SHOUTERR_SUCCESS) {
 		g_set_error(error, shout_output_quark(), 0,
 			    "%s", shout_get_error(sd->shout_conn));
-		return NULL;
+		goto failure;
 	}
 
 	/* optional paramters */
@@ -267,14 +267,14 @@ my_shout_init_driver(const struct audio_format *audio_format,
 	if (value != NULL && shout_set_genre(sd->shout_conn, value)) {
 		g_set_error(error, shout_output_quark(), 0,
 			    "%s", shout_get_error(sd->shout_conn));
-		return NULL;
+		goto failure;
 	}
 
 	value = config_get_block_string(param, "description", NULL);
 	if (value != NULL && shout_set_description(sd->shout_conn, value)) {
 		g_set_error(error, shout_output_quark(), 0,
 			    "%s", shout_get_error(sd->shout_conn));
-		return NULL;
+		goto failure;
 	}
 
 	value = config_get_block_string(param, "url", NULL);
@@ -307,6 +307,10 @@ my_shout_init_driver(const struct audio_format *audio_format,
 	}
 
 	return sd;
+
+failure:
+	free_shout_data(sd);
+	return NULL;
 }
 
 static bool

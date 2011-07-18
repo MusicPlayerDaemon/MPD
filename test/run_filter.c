@@ -106,7 +106,6 @@ int main(int argc, char **argv)
 	struct filter *filter;
 	const struct audio_format *out_audio_format;
 	char buffer[4096];
-	size_t frame_size;
 
 	if (argc < 3 || argc > 4) {
 		g_printerr("Usage: run_filter CONFIG NAME [FORMAT] <IN\n");
@@ -161,8 +160,6 @@ int main(int argc, char **argv)
 
 	g_printerr("audio_format=%s\n",
 		   audio_format_to_string(out_audio_format, &af_string));
-
-	frame_size = audio_format_frame_size(&audio_format);
 
 	/* play */
 

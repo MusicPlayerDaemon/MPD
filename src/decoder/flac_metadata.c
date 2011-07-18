@@ -224,7 +224,8 @@ flac_tag_apply_metadata(struct tag *tag, const char *track,
 		break;
 
 	case FLAC__METADATA_TYPE_STREAMINFO:
-		tag->time = flac_duration(&block->data.stream_info);
+		if (block->data.stream_info.sample_rate > 0)
+			tag->time = flac_duration(&block->data.stream_info);
 		break;
 
 	default:

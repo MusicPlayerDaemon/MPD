@@ -103,6 +103,7 @@ httpd_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	if (encoder_plugin == NULL) {
 		g_set_error(error, httpd_output_quark(), 0,
 			    "No such encoder: %s", encoder_name);
+		g_free(httpd);
 		return NULL;
 	}
 

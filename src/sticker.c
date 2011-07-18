@@ -579,8 +579,10 @@ sticker_load(const char *type, const char *uri)
 	bool success;
 
 	success = sticker_list_values(sticker->table, type, uri);
-	if (!success)
+	if (!success) {
+		sticker_free(sticker);
 		return NULL;
+	}
 
 	if (g_hash_table_size(sticker->table) == 0) {
 		/* don't return empty sticker objects */

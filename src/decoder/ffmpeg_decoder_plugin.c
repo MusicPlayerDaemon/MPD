@@ -138,6 +138,33 @@ mpd_ffmpeg_stream_open(struct decoder *decoder, struct input_stream *input)
 	return stream;
 }
 
+/**
+ * API compatibility wrapper for av_open_input_stream() and
+ * avformat_open_input().
+ */
+static int
+mpd_ffmpeg_open_input(AVFormatContext **ic_ptr,
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(52,101,0)
+		      AVIOContext *pb,
+#else
+		      ByteIOContext *pb,
+#endif
+		      const char *filename,
+		      AVInputFormat *fmt)
+{
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53,1,3)
+	AVFormatContext *context = avformat_alloc_context();
+	if (context == NULL)
+		return AVERROR(ENOMEM);
+
+	context->pb = pb;
+	*ic_ptr = context;
+	return avformat_open_input(ic_ptr, filename, fmt, NULL);
+#else
+	return av_open_input_stream(ic_ptr, pb, filename, fmt, NULL);
+#endif
+}
+
 static void
 mpd_ffmpeg_stream_close(struct mpd_ffmpeg_stream *stream)
 {
@@ -317,9 +344,9 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	}
 
 	//ffmpeg works with ours "fileops" helper
-	AVFormatContext *format_context;
-	if (av_open_input_stream(&format_context, stream->io, input->uri,
-				 input_format, NULL) != 0) {
+	AVFormatContext *format_context = NULL;
+	if (mpd_ffmpeg_open_input(&format_context, stream->io, input->uri,
+				  input_format) != 0) {
 		g_warning("Open failed\n");
 		mpd_ffmpeg_stream_close(stream);
 		return;
@@ -441,13 +468,26 @@ static const ffmpeg_tag_map ffmpeg_tag_maps[] = {
 };
 
 static bool
-ffmpeg_copy_metadata(struct tag *tag, AVMetadata *m,
+ffmpeg_copy_metadata(struct tag *tag,
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,1,0)
+		     AVDictionary *m,
+#else
+		     AVMetadata *m,
+#endif
 		     const ffmpeg_tag_map tag_map)
 {
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,1,0)
+	AVDictionaryEntry *mt = NULL;
+
+	while ((mt = av_dict_get(m, tag_map.name, mt, 0)) != NULL)
+		tag_add_item(tag, tag_map.type, mt->value);
+#else
 	AVMetadataTag *mt = NULL;
 
 	while ((mt = av_metadata_get(m, tag_map.name, mt, 0)) != NULL)
 		tag_add_item(tag, tag_map.type, mt->value);
+#endif
+
 	return mt != NULL;
 }
 
@@ -463,9 +503,9 @@ ffmpeg_stream_tag(struct input_stream *is)
 	if (stream == NULL)
 		return NULL;
 
-	AVFormatContext *f;
-	if (av_open_input_stream(&f, stream->io, is->uri,
-				 input_format, NULL) != 0) {
+	AVFormatContext *f = NULL;
+	if (mpd_ffmpeg_open_input(&f, stream->io, is->uri,
+				  input_format) != 0) {
 		mpd_ffmpeg_stream_close(stream);
 		return NULL;
 	}

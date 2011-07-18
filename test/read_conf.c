@@ -37,30 +37,28 @@ my_log_func(G_GNUC_UNUSED const gchar *log_domain,
 
 int main(int argc, char **argv)
 {
-	const char *path, *name, *value;
-	GError *error = NULL;
-	bool success;
-	int ret;
-
 	if (argc != 3) {
 		g_printerr("Usage: read_conf FILE SETTING\n");
 		return 1;
 	}
 
-	path = argv[1];
-	name = argv[2];
+	const char *path = argv[1];
+	const char *name = argv[2];
 
 	g_log_set_default_handler(my_log_func, NULL);
 
 	config_global_init();
-	success = config_read_file(path, &error);
+
+	GError *error = NULL;
+	bool success = config_read_file(path, &error);
 	if (!success) {
 		g_printerr("%s:", error->message);
 		g_error_free(error);
 		return 1;
 	}
 
-	value = config_get_string(name, NULL);
+	const char *value = config_get_string(name, NULL);
+	int ret;
 	if (value != NULL) {
 		g_print("%s\n", value);
 		ret = 0;
@@ -70,5 +68,5 @@ int main(int argc, char **argv)
 	}
 
 	config_global_finish();
-	return 0;
+	return ret;
 }

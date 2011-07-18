@@ -372,6 +372,7 @@ config_read_file(const char *file, GError **error_r)
 			assert(*line != 0);
 			g_propagate_prefixed_error(error_r, error,
 						   "line %i: ", count);
+			fclose(fp);
 			return false;
 		}
 
@@ -383,6 +384,7 @@ config_read_file(const char *file, GError **error_r)
 			g_set_error(error_r, config_quark(), 0,
 				    "unrecognized parameter in config file at "
 				    "line %i: %s\n", count, name);
+			fclose(fp);
 			return false;
 		}
 
@@ -392,6 +394,7 @@ config_read_file(const char *file, GError **error_r)
 				    "config parameter \"%s\" is first defined "
 				    "on line %i and redefined on line %i\n",
 				    name, param->line, count);
+			fclose(fp);
 			return false;
 		}
 
@@ -403,6 +406,7 @@ config_read_file(const char *file, GError **error_r)
 			if (*line != '{') {
 				g_set_error(error_r, config_quark(), 0,
 					    "line %i: '{' expected", count);
+				fclose(fp);
 				return false;
 			}
 
@@ -411,12 +415,15 @@ config_read_file(const char *file, GError **error_r)
 				g_set_error(error_r, config_quark(), 0,
 					    "line %i: Unknown tokens after '{'",
 					    count);
+				fclose(fp);
 				return false;
 			}
 
 			param = config_read_block(fp, &count, string, error_r);
-			if (param == NULL)
+			if (param == NULL) {
+				fclose(fp);
 				return false;
+			}
 		} else {
 			/* a string value */
 
@@ -433,6 +440,7 @@ config_read_file(const char *file, GError **error_r)
 					g_error_free(error);
 				}
 
+				fclose(fp);
 				return false;
 			}
 
@@ -440,6 +448,7 @@ config_read_file(const char *file, GError **error_r)
 				g_set_error(error_r, config_quark(), 0,
 					    "line %i: Unknown tokens after value",
 					    count);
+				fclose(fp);
 				return false;
 			}
 

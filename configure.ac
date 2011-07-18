@@ -557,15 +557,16 @@ no|avahi|bonjour)
 	;;
 esac
 
+enable_avahi=no
+enable_bounjour=no
 if test x$with_zeroconf != xno; then
 	if test x$with_zeroconf = xavahi || test x$with_zeroconf = xauto; then
 		PKG_CHECK_MODULES([AVAHI], [avahi-client avahi-glib],
-			 [found_avahi=1;AC_DEFINE([HAVE_AVAHI], 1, [Define to enable Avahi Zeroconf support])]
-			 MPD_LIBS="$MPD_LIBS $AVAHI_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AVAHI_CFLAGS",
-			 [found_avahi=0])
+			 [enable_avahi=yes;AC_DEFINE([HAVE_AVAHI], 1, [Define to enable Avahi Zeroconf support])]
+			 MPD_LIBS="$MPD_LIBS $AVAHI_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AVAHI_CFLAGS")
 	fi
 
-	if test x$found_avahi = x1; then
+	if test x$enable_avahi = xyes; then
 		with_zeroconf=avahi
 	elif test x$with_zeroconf = xavahi; then
 		AC_MSG_ERROR([Avahi support requested but not found])
@@ -573,13 +574,12 @@ if test x$with_zeroconf != xno; then
 
 	if test x$with_zeroconf = xbonjour || test x$with_zeroconf = xauto; then
 		AC_CHECK_HEADER(dns_sd.h,
-			[found_bonjour=1;AC_DEFINE([HAVE_BONJOUR], 1, [Define to enable Bonjour Zeroconf support])],
-			[found_bonjour=0])
+			[enable_bonjour=yes;AC_DEFINE([HAVE_BONJOUR], 1, [Define to enable Bonjour Zeroconf support])])
 		AC_CHECK_LIB(dns_sd, DNSServiceRegister,
 			MPD_LIBS="$MPD_LIBS -ldns_sd")
 	fi
 
-	if test x$found_bonjour = x1; then
+	if test x$enable_bonjour = xyes; then
 		with_zeroconf=bonjour
 	elif test x$with_zeroconf = xbonjour; then
 		AC_MSG_ERROR([Bonjour support requested but not found])

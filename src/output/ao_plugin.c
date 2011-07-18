@@ -106,12 +106,14 @@ ao_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		g_set_error(error, ao_output_quark(), 0,
 			    "\"%s\" is not a valid ao driver",
 			    value);
+		g_free(ad);
 		return NULL;
 	}
 
 	if ((ai = ao_driver_info(ad->driver)) == NULL) {
 		g_set_error(error, ao_output_quark(), 0,
 			    "problems getting driver info");
+		g_free(ad);
 		return NULL;
 	}
 
@@ -129,6 +131,7 @@ ao_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 				g_set_error(error, ao_output_quark(), 0,
 					    "problems parsing options \"%s\"",
 					    options[i]);
+				g_free(ad);
 				return NULL;
 			}
 

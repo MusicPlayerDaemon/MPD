@@ -456,7 +456,7 @@ cd mpd-version</programlisting>
       </para>
 
       <para>
-        To configure a filter, add a
+        To configure a playlist plugin, add a
         <varname>playlist_plugin</varname> block to
         <filename>mpd.conf</filename>:
       </para>

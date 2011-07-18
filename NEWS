@@ -19,7 +19,14 @@ ver 0.17 (2011/??/??)
 * cue: show CUE track numbers
 
 
-ver 0.16.3 (2011/??/??)
+ver 0.16.4 (2011/??/??)
+* fix memory leaks
+* decoder:
+  - ffmpeg: workaround for semantic API change in recent ffmpeg versions
+  - flac: validate the sample rate when scanning the tag
+
+
+ver 0.16.3 (2011/06/04)
 * fix assertion failure in audio format mask parser
 * fix NULL pointer dereference in playlist parser
 * fix playlist files in base music directory
