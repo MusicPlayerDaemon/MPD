@@ -1,4 +1,5 @@
-ver 0.16.4 (2010/??/??)
+ver 0.16.4 (2011/??/??)
+* fix memory leaks
 * decoder:
   - ffmpeg: workaround for semantic API change in recent ffmpeg versions
   - flac: validate the sample rate when scanning the tag
