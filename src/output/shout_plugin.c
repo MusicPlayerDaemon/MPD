@@ -281,7 +281,7 @@ my_shout_init_driver(const struct audio_format *audio_format,
 	if (value != NULL && shout_set_url(sd->shout_conn, value)) {
 		g_set_error(error, shout_output_quark(), 0,
 			    "%s", shout_get_error(sd->shout_conn));
-		return NULL;
+		goto failure;
 	}
 
 	{
