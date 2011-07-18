@@ -446,13 +446,26 @@ static const ffmpeg_tag_map ffmpeg_tag_maps[] = {
 };
 
 static bool
-ffmpeg_copy_metadata(struct tag *tag, AVMetadata *m,
+ffmpeg_copy_metadata(struct tag *tag,
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,1,0)
+		     AVDictionary *m,
+#else
+		     AVMetadata *m,
+#endif
 		     const ffmpeg_tag_map tag_map)
 {
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,1,0)
+	AVDictionaryEntry *mt = NULL;
+
+	while ((mt = av_dict_get(m, tag_map.name, mt, 0)) != NULL)
+		tag_add_item(tag, tag_map.type, mt->value);
+#else
 	AVMetadataTag *mt = NULL;
 
 	while ((mt = av_metadata_get(m, tag_map.name, mt, 0)) != NULL)
 		tag_add_item(tag, tag_map.type, mt->value);
+#endif
+
 	return mt != NULL;
 }
 
