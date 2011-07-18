@@ -60,8 +60,10 @@ ape_scan_internal(FILE *fp, tag_ape_callback_t callback, void *ctx)
 	assert(remaining > 10);
 
 	char *buffer = g_malloc(remaining);
-	if (fread(buffer, 1, remaining, fp) != remaining)
+	if (fread(buffer, 1, remaining, fp) != remaining) {
+		g_free(buffer);
 		return false;
+	}
 
 	/* read tags */
 	unsigned n = GUINT32_FROM_LE(footer.count);
