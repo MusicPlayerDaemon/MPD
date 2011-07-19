@@ -197,7 +197,7 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
 
 	decoder_initialized(decoder, &audio_format, can_seek, total_time);
 
-	do {
+	while (true) {
 		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
 			if (can_seek) {
 				unsigned where = decoder_seek_where(decoder) *
@@ -220,22 +220,19 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
 		samples_got = WavpackUnpackSamples(
 			wpc, (int32_t *)chunk, samples_requested
 		);
-		if (samples_got > 0) {
-			int bitrate = (int)(WavpackGetInstantBitrate(wpc) /
-			              1000 + 0.5);
 
-			format_samples(
-				bytes_per_sample, chunk,
-				samples_got * audio_format.channels
-			);
+		if (samples_got == 0)
+			break;
 
-			decoder_data(
-				decoder, NULL, chunk,
-				samples_got * output_sample_size,
-				bitrate
-			);
-		}
-	} while (samples_got > 0);
+		int bitrate = (int)(WavpackGetInstantBitrate(wpc) / 1000 +
+				    0.5);
+		format_samples(bytes_per_sample, chunk,
+			       samples_got * audio_format.channels);
+
+		decoder_data(decoder, NULL, chunk,
+			     samples_got * output_sample_size,
+			     bitrate);
+	}
 }
 
 /**
