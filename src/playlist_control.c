@@ -230,10 +230,12 @@ playlist_seek_song(struct playlist *playlist, struct player_control *pc,
 	playlist->error_count = 0;
 
 	if (!playlist->playing || (unsigned)playlist->current != i) {
-		/* seeking is not within the current song - first
-		   start playing the new song */
+		/* seeking is not within the current song - prepare
+		   song change */
 
-		playlist_play_order(playlist, pc, i);
+		playlist->playing = true;
+		playlist->current = i;
+
 		queued = NULL;
 	}
 

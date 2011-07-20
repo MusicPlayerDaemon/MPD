@@ -266,6 +266,15 @@ vorbis_encoder_flush(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 
+	encoder->flush = true;
+	return true;
+}
+
+static bool
+vorbis_encoder_pre_tag(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
+{
+	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
+
 	vorbis_analysis_wrote(&encoder->vd, 0);
 	vorbis_encoder_blockout(encoder);
 
@@ -366,6 +375,7 @@ vorbis_encoder_read(struct encoder *_encoder, void *_dest, size_t length)
 	if (ret == 0 && encoder->flush) {
 		encoder->flush = false;
 		ret = ogg_stream_flush(&encoder->os, &page);
+
 	}
 
 	if (ret == 0)
@@ -398,6 +408,7 @@ const struct encoder_plugin vorbis_encoder_plugin = {
 	.open = vorbis_encoder_open,
 	.close = vorbis_encoder_close,
 	.flush = vorbis_encoder_flush,
+	.pre_tag = vorbis_encoder_pre_tag,
 	.tag = vorbis_encoder_tag,
 	.write = vorbis_encoder_write,
 	.read = vorbis_encoder_read,

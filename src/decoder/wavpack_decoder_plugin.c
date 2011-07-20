@@ -34,9 +34,6 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "wavpack"
 
-/* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
-#define CHUNK_SIZE		1020
-
 #define ERRORLEN 80
 
 static struct {
@@ -162,8 +159,6 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
 	enum sample_format sample_format;
 	struct audio_format audio_format;
 	format_samples_t format_samples;
-	char chunk[CHUNK_SIZE];
-	int samples_requested, samples_got;
 	float total_time;
 	int bytes_per_sample, output_sample_size;
 
@@ -193,12 +188,15 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
 	output_sample_size = audio_format_frame_size(&audio_format);
 
 	/* wavpack gives us all kind of samples in a 32-bit space */
-	samples_requested = sizeof(chunk) / (4 * audio_format.channels);
+	int32_t chunk[1024];
+	const uint32_t samples_requested = G_N_ELEMENTS(chunk) /
+		audio_format.channels;
 
 	decoder_initialized(decoder, &audio_format, can_seek, total_time);
 
-	do {
-		if (decoder_get_command(decoder) == DECODE_COMMAND_SEEK) {
+	enum decoder_command cmd = decoder_get_command(decoder);
+	while (cmd != DECODE_COMMAND_STOP) {
+		if (cmd == DECODE_COMMAND_SEEK) {
 			if (can_seek) {
 				unsigned where = decoder_seek_where(decoder) *
 					audio_format.sample_rate;
@@ -213,29 +211,20 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
 			}
 		}
 
-		if (decoder_get_command(decoder) == DECODE_COMMAND_STOP) {
+		uint32_t samples_got = WavpackUnpackSamples(wpc, chunk,
+							    samples_requested);
+		if (samples_got == 0)
 			break;
-		}
 
-		samples_got = WavpackUnpackSamples(
-			wpc, (int32_t *)chunk, samples_requested
-		);
-		if (samples_got > 0) {
-			int bitrate = (int)(WavpackGetInstantBitrate(wpc) /
-			              1000 + 0.5);
+		int bitrate = (int)(WavpackGetInstantBitrate(wpc) / 1000 +
+				    0.5);
+		format_samples(bytes_per_sample, chunk,
+			       samples_got * audio_format.channels);
 
-			format_samples(
-				bytes_per_sample, chunk,
-				samples_got * audio_format.channels
-			);
-
-			decoder_data(
-				decoder, NULL, chunk,
-				samples_got * output_sample_size,
-				bitrate
-			);
-		}
-	} while (samples_got > 0);
+		cmd = decoder_data(decoder, NULL, chunk,
+				   samples_got * output_sample_size,
+				   bitrate);
+	}
 }
 
 /**

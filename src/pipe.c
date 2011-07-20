@@ -187,5 +187,8 @@ music_pipe_push(struct music_pipe *mp, struct music_chunk *chunk)
 unsigned
 music_pipe_size(const struct music_pipe *mp)
 {
-	return mp->size;
+	g_mutex_lock(mp->mutex);
+	unsigned size = mp->size;
+	g_mutex_unlock(mp->mutex);
+	return size;
 }

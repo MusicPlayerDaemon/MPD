@@ -493,7 +493,8 @@ httpd_output_pause(void *data)
 
 	if (has_clients) {
 		static const char silence[1020];
-		return httpd_output_play(data, silence, sizeof(silence), NULL);
+		return httpd_output_play(data, silence, sizeof(silence),
+					 NULL) > 0;
 	} else {
 		g_usleep(100000);
 		return true;
@@ -522,7 +523,7 @@ httpd_output_tag(void *data, const struct tag *tag)
 
 		/* flush the current stream, and end it */
 
-		encoder_flush(httpd->encoder, NULL);
+		encoder_pre_tag(httpd->encoder, NULL);
 		httpd_output_encoder_to_clients(httpd);
 
 		/* send the tag to the encoder - which starts a new

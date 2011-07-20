@@ -50,6 +50,8 @@ struct encoder_plugin {
 
 	bool (*flush)(struct encoder *encoder, GError **error);
 
+	bool (*pre_tag)(struct encoder *encoder, GError **error);
+
 	bool (*tag)(struct encoder *encoder, const struct tag *tag,
 		    GError **error);
 
@@ -148,7 +150,29 @@ encoder_flush(struct encoder *encoder, GError **error)
 }
 
 /**
+ * Prepare for sending a tag to the encoder.  This is used by some
+ * encoders to flush the previous sub-stream, in preparation to begin
+ * a new one.
+ *
+ * @param encoder the encoder
+ * @param tag the tag object
+ * @param error location to store the error occuring, or NULL to ignore errors.
+ * @return true on success
+ */
+static inline bool
+encoder_pre_tag(struct encoder *encoder, GError **error)
+{
+	/* this method is optional */
+	return encoder->plugin->pre_tag != NULL
+		? encoder->plugin->pre_tag(encoder, error)
+		: true;
+}
+
+/**
  * Sends a tag to the encoder.
+ *
+ * Instructions: call encoder_pre_tag(); then obtain flushed data with
+ * encoder_read(); finally call encoder_tag().
  *
  * @param encoder the encoder
  * @param tag the tag object

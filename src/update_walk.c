@@ -714,8 +714,14 @@ skip_symlink(const struct directory *directory, const char *utf8_name)
 		return false;
 	}
 
-	if (buffer[0] == '/')
-		return !follow_outside_symlinks;
+	if (g_path_is_absolute(buffer)) {
+		/* if the symlink points to an absolute path, see if
+		   that path is inside the music directory */
+		const char *relative = map_to_relative_path(buffer);
+		return relative > buffer
+			? !follow_inside_symlinks
+			: !follow_outside_symlinks;
+	}
 
 	p = buffer;
 	while (*p == '.') {

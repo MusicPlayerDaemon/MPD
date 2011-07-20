@@ -508,6 +508,14 @@ configure_hw:
 	g_debug("buffer_size=%u period_size=%u",
 		(unsigned)alsa_buffer_size, (unsigned)alsa_period_size);
 
+	if (alsa_period_size == 0)
+		/* this works around a SIGFPE bug that occurred when
+		   an ALSA driver indicated period_size==0; this
+		   caused a division by zero in alsa_play().  By using
+		   the fallback "1", we make sure that this won't
+		   happen again. */
+		alsa_period_size = 1;
+
 	ad->period_frames = alsa_period_size;
 	ad->period_position = 0;
 
