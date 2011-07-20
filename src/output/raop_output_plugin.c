@@ -22,17 +22,19 @@
 #include "raop_output_plugin.h"
 
 #include <glib.h>
-#include <sys/socket.h>
-#include <sys/select.h>
 #include <unistd.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <sys/poll.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
 #include <openssl/rsa.h>
 #include <openssl/engine.h>
+
+#ifndef WIN32
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <sys/select.h>
+#include <sys/poll.h>
+#include <netdb.h>
+#endif
 
 #include <fcntl.h>
 #undef G_LOG_DOMAIN

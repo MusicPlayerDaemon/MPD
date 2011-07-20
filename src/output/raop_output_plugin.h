@@ -22,9 +22,16 @@
 
 #include <glib.h>
 #include <stdbool.h>
-#include <netinet/in.h>
 #include <sys/time.h>
 #include <openssl/aes.h>
+
+#ifdef WIN32
+#define WINVER 0x0501
+#include <ws2tcpip.h>
+#include <winsock.h>
+#else
+#include <netinet/in.h>
+#endif
 
 struct key_data {
 	unsigned char *key;
