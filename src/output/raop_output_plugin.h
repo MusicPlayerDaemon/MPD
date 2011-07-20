@@ -20,7 +20,7 @@
 #ifndef MPD_OUTPUT_RAOP_PLUGIN_H
 #define MPD_OUTPUT_RAOP_PLUGIN_H
 
-#include <pthread.h>
+#include <glib.h>
 #include <stdbool.h>
 #include <netinet/in.h>
 #include <sys/time.h>
@@ -101,7 +101,7 @@ struct raop_data {
 
 	unsigned volume;
 
-	pthread_mutex_t control_mutex;
+	GMutex *control_mutex;
 
 	bool started;
 	bool paused;
@@ -142,8 +142,8 @@ struct raop_session_data {
 	int wblk_wsize;
 	int wblk_remsize;
 
-	pthread_mutex_t data_mutex;
-	pthread_mutex_t list_mutex;
+	GMutex *data_mutex;
+	GMutex *list_mutex;
 };
 
 //static struct raop_session_data *raop_session;

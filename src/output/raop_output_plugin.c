@@ -20,7 +20,6 @@
 #include "output_api.h"
 #include "mixer_list.h"
 #include "raop_output_plugin.h"
-#include "../utils.h"
 
 #include <glib.h>
 #include <sys/socket.h>
@@ -56,7 +55,7 @@ new_raop_data(void)
 	struct raop_data *ret = g_new(struct raop_data, 1);
 	int i;
 
-	pthread_mutex_init(&ret->control_mutex, NULL);
+	ret->control_mutex = g_mutex_new();
 
 	ret->next = NULL;
 	ret->is_master = 0;
@@ -92,8 +91,8 @@ new_raop_data(void)
 		bzero(raop_session->buffer, RAOP_BUFFER_SIZE);
 		raop_session->bufferSize = 0;
 
-		pthread_mutex_init(&raop_session->data_mutex, NULL);
-		pthread_mutex_init(&raop_session->list_mutex, NULL);
+		raop_session->data_mutex = g_mutex_new();
+		raop_session->list_mutex = g_mutex_new();
 	}
 
 	return ret;
@@ -1152,7 +1151,7 @@ raop_output_finish(void *data)
 {
 	struct raop_data *rd = data;
 	raopcl_close(rd);
-	pthread_mutex_destroy(&rd->control_mutex);
+	g_mutex_free(rd->control_mutex);
 }
 
 #define RAOP_VOLUME_MIN -30
@@ -1177,10 +1176,10 @@ raop_set_volume(struct raop_data *rd, unsigned volume)
 		raop_volume = RAOP_VOLUME_MIN +
 			(RAOP_VOLUME_MAX - RAOP_VOLUME_MIN) * volume / 100;
 	}
-	pthread_mutex_lock(&rd->control_mutex);
+	g_mutex_lock(rd->control_mutex);
 	rval = raop_set_volume_local(rd, raop_volume);
 	if (rval) rd->volume = volume;
-	pthread_mutex_unlock(&rd->control_mutex);
+	g_mutex_unlock(rd->control_mutex);
 
 	return rval;
 }
@@ -1204,7 +1203,7 @@ raop_output_cancel(void *data)
 
 	buf = malloc(128);
 
-	pthread_mutex_lock(&rd->control_mutex);
+	g_mutex_lock(rd->control_mutex);
 	kd.key = (unsigned char *)strdup("RTP-Info");
 	sprintf((char *) buf, "seq=%d; rtptime=%d", raop_session->play_state.seq_num + flush_diff, raop_session->play_state.rtptime + NUMSAMPLES * flush_diff);
 	kd.data = (unsigned char *)buf;
@@ -1212,7 +1211,7 @@ raop_output_cancel(void *data)
 	exec_request(rd->rtspcl, "FLUSH", NULL, NULL, 1, &kd, &(rd->rtspcl->kd));
 	free(kd.key);
 	free(kd.data);
-	pthread_mutex_unlock(&rd->control_mutex);
+	g_mutex_unlock(rd->control_mutex);
 }
 
 static bool
@@ -1234,7 +1233,7 @@ raop_output_close(void *data)
 	struct raop_data *iter = raop_session->raop_list;
 	struct raop_data *prev = NULL;
 
-	pthread_mutex_lock(&raop_session->list_mutex);
+	g_mutex_lock(raop_session->list_mutex);
 	while (iter) {
 		if (iter == rd) {
 			if (prev != NULL) {
@@ -1259,11 +1258,11 @@ raop_output_close(void *data)
 		prev = iter;
 		iter = iter->next;
 	}
-	pthread_mutex_unlock(&raop_session->list_mutex);
+	g_mutex_unlock(raop_session->list_mutex);
 
-	pthread_mutex_lock(&rd->control_mutex);
+	g_mutex_lock(rd->control_mutex);
 	exec_request(rd->rtspcl, "TEARDOWN", NULL, NULL, 0, NULL, &(rd->rtspcl->kd));
-	pthread_mutex_unlock(&rd->control_mutex);
+	g_mutex_unlock(rd->control_mutex);
 
 	rd->started = 0;
 }
@@ -1275,7 +1274,7 @@ raop_output_open(void *data, struct audio_format *audio_format, GError **error_r
 	//setup, etc.
 	struct raop_data *rd = data;
 
-	pthread_mutex_lock(&raop_session->list_mutex);
+	g_mutex_lock(raop_session->list_mutex);
 	if (raop_session->raop_list == NULL) {
 		// first raop, need to initialize session data
 		unsigned short myport = 0;
@@ -1287,11 +1286,11 @@ raop_output_open(void *data, struct audio_format *audio_format, GError **error_r
 		if ((raop_session->ctrl.fd = open_udp_socket(NULL, &raop_session->ctrl.port)) == -1) {
 			close(raop_session->ntp.fd);
 			raop_session->ctrl.fd = -1;
-			pthread_mutex_unlock(&raop_session->list_mutex);
+			g_mutex_unlock(raop_session->list_mutex);
 			return false;
 		}
 	}
-	pthread_mutex_unlock(&raop_session->list_mutex);
+	g_mutex_unlock(raop_session->list_mutex);
 
 	audio_format->format = SAMPLE_FORMAT_S16;
 	g_debug("raop_openDevice %s %d\n", rd->addr, rd->rtsp_port);
@@ -1306,12 +1305,12 @@ raop_output_open(void *data, struct audio_format *audio_format, GError **error_r
 		return false;
 	}
 
-	pthread_mutex_lock(&raop_session->list_mutex);
+	g_mutex_lock(raop_session->list_mutex);
 	if (!rd->is_master) {
 		rd->next = raop_session->raop_list;
 		raop_session->raop_list = rd;
 	}
-	pthread_mutex_unlock(&raop_session->list_mutex);
+	g_mutex_unlock(raop_session->list_mutex);
 	return true;
 }
 
@@ -1331,7 +1330,7 @@ raop_output_play(void *data, const void *chunk, size_t size,
 		return size;
 	}
 
-	pthread_mutex_lock(&raop_session->data_mutex);
+	g_mutex_lock(raop_session->data_mutex);
 
 	check_timing(&tout);
 
@@ -1357,21 +1356,21 @@ raop_output_play(void *data, const void *chunk, size_t size,
 		if (!raop_session->play_state.playing ||
 		    raop_session->play_state.seq_num % (44100 / NUMSAMPLES + 1) == 0) {
 			struct raop_data *iter;
-			pthread_mutex_lock(&raop_session->list_mutex);
+			g_mutex_lock(raop_session->list_mutex);
 			if (!raop_session->play_state.playing) {
 				gettimeofday(&raop_session->play_state.start_time,NULL);
 			}
 			iter = raop_session->raop_list;
 			while (iter) {
 				if (!send_control_command(&raop_session->ctrl, iter, &raop_session->play_state)) {
-					pthread_mutex_unlock(&raop_session->list_mutex);
+					g_mutex_unlock(raop_session->list_mutex);
 					g_set_error(error_r, raop_output_quark(), -1,
 						    "Unable to send control command");
 					goto erexit;
 				}
 				iter = iter->next;
 			}
-			pthread_mutex_unlock(&raop_session->list_mutex);
+			g_mutex_unlock(raop_session->list_mutex);
 		}
 
 		fill_int(header + 8, raop_session->play_state.sync_src);
@@ -1411,7 +1410,7 @@ raop_output_play(void *data, const void *chunk, size_t size,
 	}
 	rval = orig_size;
  erexit:
-	pthread_mutex_unlock(&raop_session->data_mutex);
+	g_mutex_unlock(raop_session->data_mutex);
 	return rval;
 }
 
