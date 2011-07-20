@@ -493,7 +493,8 @@ httpd_output_pause(void *data)
 
 	if (has_clients) {
 		static const char silence[1020];
-		return httpd_output_play(data, silence, sizeof(silence), NULL);
+		return httpd_output_play(data, silence, sizeof(silence),
+					 NULL) > 0;
 	} else {
 		g_usleep(100000);
 		return true;
