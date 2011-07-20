@@ -90,7 +90,7 @@ new_raop_data(void)
 		AES_set_encrypt_key(raop_session->encrypt.key, 128, &raop_session->encrypt.ctx);
 
 		raop_session->data_fd = -1;
-		bzero(raop_session->buffer, RAOP_BUFFER_SIZE);
+		memset(raop_session->buffer, 0, RAOP_BUFFER_SIZE);
 		raop_session->bufferSize = 0;
 
 		raop_session->data_mutex = g_mutex_new();
