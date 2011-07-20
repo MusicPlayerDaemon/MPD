@@ -511,7 +511,7 @@ static void my_shout_set_tag(void *data,
 	if (sd->encoder->plugin->tag != NULL) {
 		/* encoder plugin supports stream tags */
 
-		ret = encoder_flush(sd->encoder, &error);
+		ret = encoder_pre_tag(sd->encoder, &error);
 		if (!ret) {
 			g_warning("%s", error->message);
 			g_error_free(error);
