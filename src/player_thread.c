@@ -618,7 +618,9 @@ play_chunk(struct song *song, struct music_chunk *chunk,
 		return true;
 	}
 
+	player_lock();
 	pc.bit_rate = chunk->bit_rate;
+	player_unlock();
 
 	/* send the chunk to the audio outputs */
 
