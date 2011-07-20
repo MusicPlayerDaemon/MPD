@@ -1287,6 +1287,7 @@ raop_output_open(void *data, struct audio_format *audio_format, GError **error_r
 		if ((raop_session->ctrl.fd = open_udp_socket(NULL, &raop_session->ctrl.port)) == -1) {
 			close(raop_session->ntp.fd);
 			raop_session->ctrl.fd = -1;
+			pthread_mutex_unlock(&raop_session->list_mutex);
 			return false;
 		}
 	}
@@ -1363,6 +1364,7 @@ raop_output_play(void *data, const void *chunk, size_t size,
 			iter = raop_session->raop_list;
 			while (iter) {
 				if (!send_control_command(&raop_session->ctrl, iter, &raop_session->play_state)) {
+					pthread_mutex_unlock(&raop_session->list_mutex);
 					g_set_error(error_r, raop_output_quark(), -1,
 						    "Unable to send control command");
 					goto erexit;
