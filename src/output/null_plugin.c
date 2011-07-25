@@ -28,7 +28,7 @@
 struct null_data {
 	bool sync;
 
-	Timer *timer;
+	struct timer *timer;
 };
 
 static void *
@@ -82,7 +82,7 @@ null_play(void *data, G_GNUC_UNUSED const void *chunk, size_t size,
 	  G_GNUC_UNUSED GError **error)
 {
 	struct null_data *nd = data;
-	Timer *timer = nd->timer;
+	struct timer *timer = nd->timer;
 
 	if (!nd->sync)
 		return size;

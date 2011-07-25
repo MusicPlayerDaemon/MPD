@@ -37,9 +37,9 @@ static uint64_t now(void)
 	return ((uint64_t)tv.tv_sec * 1000000) + tv.tv_usec;
 }
 
-Timer *timer_new(const struct audio_format *af)
+struct timer *timer_new(const struct audio_format *af)
 {
-	Timer *timer = g_new(Timer, 1);
+	struct timer *timer = g_new(struct timer, 1);
 	timer->time = 0;
 	timer->started = 0;
 	timer->rate = af->sample_rate * audio_format_frame_size(af);
@@ -47,24 +47,24 @@ Timer *timer_new(const struct audio_format *af)
 	return timer;
 }
 
-void timer_free(Timer *timer)
+void timer_free(struct timer *timer)
 {
 	g_free(timer);
 }
 
-void timer_start(Timer *timer)
+void timer_start(struct timer *timer)
 {
 	timer->time = now();
 	timer->started = 1;
 }
 
-void timer_reset(Timer *timer)
+void timer_reset(struct timer *timer)
 {
 	timer->time = 0;
 	timer->started = 0;
 }
 
-void timer_add(Timer *timer, int size)
+void timer_add(struct timer *timer, int size)
 {
 	assert(timer->started);
 
@@ -72,7 +72,7 @@ void timer_add(Timer *timer, int size)
 }
 
 unsigned
-timer_delay(const Timer *timer)
+timer_delay(const struct timer *timer)
 {
 	int64_t delay = (int64_t)(timer->time - now()) / 1000;
 	if (delay < 0)
@@ -84,7 +84,7 @@ timer_delay(const Timer *timer)
 	return delay / 1000;
 }
 
-void timer_sync(Timer *timer)
+void timer_sync(struct timer *timer)
 {
 	int64_t sleep_duration;
 

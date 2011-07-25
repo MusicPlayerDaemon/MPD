@@ -65,10 +65,10 @@ struct httpd_output {
 	GMutex *mutex;
 
 	/**
-	 * A #Timer object to synchronize this output with the
+	 * A #timer object to synchronize this output with the
 	 * wallclock.
 	 */
-	Timer *timer;
+	struct timer *timer;
 
 	/**
 	 * The listener socket.

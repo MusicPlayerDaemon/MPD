@@ -102,7 +102,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	fluid_player_t *player;
 	char *path_dup;
 	int ret;
-	Timer *timer;
+	struct timer *timer;
 	enum decoder_command cmd;
 
 	soundfont_path =

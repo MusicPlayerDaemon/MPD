@@ -41,7 +41,7 @@ struct openal_data {
 	const char *device_name;
 	ALCdevice *device;
 	ALCcontext *context;
-	Timer *timer;
+	struct timer *timer;
 	ALuint buffers[NUM_BUFFERS];
 	int filled;
 	ALuint source;

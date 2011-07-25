@@ -42,7 +42,7 @@ struct fifo_data {
 	int input;
 	int output;
 	bool created;
-	Timer *timer;
+	struct timer *timer;
 };
 
 /**
