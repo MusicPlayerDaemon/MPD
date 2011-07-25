@@ -182,21 +182,22 @@ kd_lookup(struct key_data *kd, const char *key)
  * return the number of deleted characters
  */
 static int
-remove_char_from_string(char *str, char rc)
+remove_char_from_string(char *str, char c)
 {
-	int i = 0, j = 0, len;
-	int num = 0;
-	len = strlen(str);
-	while (i < len) {
-		if (str[i] == rc) {
-			for (j = i; j < len; j++) str[j] = str[j + 1];
-			len--;
-			num++;
-		} else {
-			i++;
-		}
-	}
-	return num;
+	char *src, *dst;
+
+	/* skip all characters that don't need to be copied */
+	src = strchr(str, c);
+	if (!src)
+		return 0;
+
+	for (dst = src; *src; src++)
+		if (*src != c)
+			*(dst++) = *src;
+
+	*dst = '\0';
+
+	return src - dst;
 }
 
 #define SLEEP_MSEC(val) usleep(val*1000)
