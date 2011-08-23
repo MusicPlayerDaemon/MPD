@@ -447,7 +447,7 @@ get_time_for_rtp(struct play_state *state, struct timeval *tout)
 /*
  * Send a control command
  */
-bool
+static bool
 send_control_command(struct control_data *ctrl, struct raop_data *rd, struct play_state *state)
 {
 	unsigned char buf[20];

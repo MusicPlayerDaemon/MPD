@@ -121,9 +121,6 @@ struct control_data {
 	int fd;
 };
 
-bool
-send_control_command(struct control_data *ctrl, struct raop_data *rd, struct play_state *state);
-
 /*********************************************************************/
 
 #define NUMSAMPLES 352
