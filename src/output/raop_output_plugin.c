@@ -1081,12 +1081,11 @@ send_audio_data(int fd)
 {
 	int i = 0;
 	struct timeval current_time, tout, rtp_time;
-	int diff, olddiff;
 	struct raop_data *rd = raop_session->raop_list;
 
 	get_time_for_rtp(&raop_session->play_state, &rtp_time);
 	gettimeofday(&current_time, NULL);
-	olddiff = diff = difference(&current_time, &rtp_time);
+	int diff = difference(&current_time, &rtp_time);
 
 	while (diff < -10000) {
 		tout.tv_sec = 0;
@@ -1322,7 +1321,6 @@ raop_output_play(void *data, const void *chunk, size_t size,
 	struct raop_data *rd = data;
 	struct timeval tout = {.tv_sec = 0, .tv_usec = 0};
 	size_t rval = 0, orig_size = size;
-	bool first = false;
 
 	rd->paused = false;
 	if (!rd->is_master) {
@@ -1338,7 +1336,7 @@ raop_output_play(void *data, const void *chunk, size_t size,
 		// looped over, need new reference point to calculate correct times
 		raop_session->play_state.playing = false;
 	}
-	first = !raop_session->play_state.playing;
+
 	while (raop_session->bufferSize + size >= RAOP_BUFFER_SIZE) {
 		// ntp header
 		unsigned char header[] = {
