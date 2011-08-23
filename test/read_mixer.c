@@ -60,7 +60,8 @@ pulse_output_set_volume(G_GNUC_UNUSED struct pulse_output *po,
 
 bool
 raop_set_volume(G_GNUC_UNUSED struct raop_data *rd,
-		G_GNUC_UNUSED unsigned volume)
+		G_GNUC_UNUSED unsigned volume,
+		G_GNUC_UNUSED GError **error_r)
 {
 	return false;
 }

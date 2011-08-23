@@ -155,7 +155,7 @@ struct raop_session_data {
 /*********************************************************************/
 
 bool
-raop_set_volume(struct raop_data *rd, unsigned volume);
+raop_set_volume(struct raop_data *rd, unsigned volume, GError **error_r);
 
 int
 raop_get_volume(struct raop_data *rd);

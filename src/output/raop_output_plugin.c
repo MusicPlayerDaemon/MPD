@@ -52,7 +52,7 @@ raop_output_quark(void)
 }
 
 static struct raop_data *
-new_raop_data(void)
+new_raop_data(GError **error_r)
 {
 	struct raop_data *ret = g_new(struct raop_data, 1);
 	int i;
@@ -79,7 +79,8 @@ new_raop_data(void)
 		raop_session->play_state.last_send.tv_usec = 0;
 
 		if (!RAND_bytes(raop_session->encrypt.iv, sizeof(raop_session->encrypt.iv)) || !RAND_bytes(raop_session->encrypt.key, sizeof(raop_session->encrypt.key))) {
-			g_warning("%s:RAND_bytes error code=%ld\n",__func__,ERR_get_error());
+			g_set_error(error_r, raop_output_quark(), 0,
+				    "RAND_bytes error code=%ld", ERR_get_error());
 			return NULL;
 		}
 		memcpy(raop_session->encrypt.nv, raop_session->encrypt.iv, sizeof(raop_session->encrypt.nv));
@@ -206,7 +207,8 @@ remove_char_from_string(char *str, char c)
  * if hostname=NULL, use INADDR_ANY.
  * if *port=0, use dynamically assigned port
  */
-static int bind_host(int sd, char *hostname, unsigned long ulAddr, unsigned short *port)
+static int bind_host(int sd, char *hostname, unsigned long ulAddr,
+		     unsigned short *port, GError **error_r)
 {
 	struct sockaddr_in my_addr;
 	socklen_t nlen = sizeof(struct sockaddr);
@@ -222,7 +224,9 @@ static int bind_host(int sd, char *hostname, unsigned long ulAddr, unsigned shor
 				my_addr.sin_addr.s_addr=-1;
 			} else {
 				if ((my_addr.sin_addr.s_addr = inet_addr(hostname)) == 0xFFFFFFFF) {
-					g_warning("gethostbyname: '%s' \n", hostname);
+					g_set_error(error_r, raop_output_quark(), 0,
+						    "failed to resolve host '%s'",
+						    hostname);
 					return -1;
 				}
 			}
@@ -245,7 +249,9 @@ static int bind_host(int sd, char *hostname, unsigned long ulAddr, unsigned shor
 	my_addr.sin_port = htons(*port);
 
 	if (bind(sd, (struct sockaddr *) &my_addr, sizeof(my_addr)) < 0) {
-		g_warning("bind error: %s\n", strerror(errno));
+		g_set_error(error_r, raop_output_quark(), errno,
+			    "failed to bind socket: %s",
+			    g_strerror(errno));
 		return -1;
 	}
 
@@ -260,17 +266,21 @@ static int bind_host(int sd, char *hostname, unsigned long ulAddr, unsigned shor
 /*
  * open tcp port
  */
-static int open_tcp_socket(char *hostname, unsigned short *port)
+static int
+open_tcp_socket(char *hostname, unsigned short *port,
+		GError **error_r)
 {
 	int sd;
 
 	/* socket creation */
 	sd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sd < 0) {
-		g_warning("cannot create tcp socket\n");
+		g_set_error(error_r, raop_output_quark(), errno,
+			    "failed to create TCP socket: %s",
+			    g_strerror(errno));
 		return -1;
 	}
-	if (bind_host(sd, hostname,0, port)) {
+	if (bind_host(sd, hostname, 0, port, error_r)) {
 		close(sd);
 		return -1;
 	}
@@ -281,7 +291,9 @@ static int open_tcp_socket(char *hostname, unsigned short *port)
 /*
  * open udp  port
  */
-static int open_udp_socket(char *hostname, unsigned short *port)
+static int
+open_udp_socket(char *hostname, unsigned short *port,
+		GError **error_r)
 {
 	int sd;
 	int size = 30000;
@@ -289,14 +301,18 @@ static int open_udp_socket(char *hostname, unsigned short *port)
 	/* socket creation */
 	sd = socket(PF_INET, SOCK_DGRAM, 0);
 	if (sd < 0) {
-		g_warning("cannot create udp socket\n");
+		g_set_error(error_r, raop_output_quark(), errno,
+			    "failed to create UDP socket: %s",
+			    g_strerror(errno));
 		return -1;
 	}
 	if (setsockopt(sd, SOL_SOCKET, SO_SNDBUF, (void *) &size, sizeof(size)) < 0) {
-		g_warning("Could not set udp send buffer to %d\n", size);
+		g_set_error(error_r, raop_output_quark(), errno,
+			    "failed to set UDP buffer size: %s",
+			    g_strerror(errno));
 		return -1;
 	}
-	if (bind_host(sd, hostname,0, port)) {
+	if (bind_host(sd, hostname, 0, port, error_r)) {
 		close(sd);
 		return -1;
 	}
@@ -310,14 +326,17 @@ static int open_udp_socket(char *hostname, unsigned short *port)
  * nsport is network byte order
  */
 static bool
-get_tcp_connect(int sd, struct sockaddr_in dest_addr)
+get_tcp_connect(int sd, struct sockaddr_in dest_addr, GError **error_r)
 {
 	if (connect(sd, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr))){
 		SLEEP_MSEC(100L);
 		// try one more time
 		if (connect(sd, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr))) {
-			g_warning("error:get_tcp_nconnect addr=%s, port=%d\n",
-				  inet_ntoa(dest_addr.sin_addr), ntohs(dest_addr.sin_port));
+			g_set_error(error_r, raop_output_quark(), errno,
+				    "failed to connect to %s:%d: %s",
+				    inet_ntoa(dest_addr.sin_addr),
+				    ntohs(dest_addr.sin_port),
+				    g_strerror(errno));
 			return false;
 		}
 	}
@@ -325,7 +344,9 @@ get_tcp_connect(int sd, struct sockaddr_in dest_addr)
 }
 
 static bool
-get_sockaddr_by_host(const char *host, short destport, struct sockaddr_in *addr)
+get_sockaddr_by_host(const char *host, short destport,
+		     struct sockaddr_in *addr,
+		     GError **error_r)
 {
 	struct hostent *h;
 
@@ -336,7 +357,8 @@ get_sockaddr_by_host(const char *host, short destport, struct sockaddr_in *addr)
 	} else {
 		addr->sin_family = AF_INET;
 		if ((addr->sin_addr.s_addr=inet_addr(host))==0xFFFFFFFF) {
-			g_warning("gethostbyname: '%s' \n", host);
+			g_set_error(error_r, raop_output_quark(), 0,
+				    "failed to resolve host '%s'", host);
 			return false;
 		}
 	}
@@ -345,13 +367,13 @@ get_sockaddr_by_host(const char *host, short destport, struct sockaddr_in *addr)
 }
 
 static bool
-get_tcp_connect_by_host(int sd, const char *host, short destport)
+get_tcp_connect_by_host(int sd, const char *host, short destport,
+			GError **error_r)
 {
 	struct sockaddr_in addr;
 
-	get_sockaddr_by_host(host, destport, &addr);
-
-	return get_tcp_connect(sd, addr);
+	return get_sockaddr_by_host(host, destport, &addr, error_r) &&
+		get_tcp_connect(sd, addr, error_r);
 }
 
 /*
@@ -515,7 +537,8 @@ static bool
 exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 	     const char *content_type, const char *content,
 	     int get_response,
-	     const struct key_data *hds, struct key_data **kd)
+	     const struct key_data *hds, struct key_data **kd,
+	     GError **error_r)
 {
 	char line[1024];
 	char req[1024];
@@ -531,7 +554,11 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 	int fdmax = 0;
 	struct timeval tout = {.tv_sec=10, .tv_usec=0};
 
-	if (!rtspcld) return false;
+	if (!rtspcld) {
+		g_set_error_literal(error_r, raop_output_quark(), 0,
+				    "not connected");
+		return false;
+	}
 
 	sprintf(req, "%s %s RTSP/1.0\r\nCSeq: %d\r\n", cmd, rtspcld->url, ++rtspcld->cseq );
 
@@ -568,6 +595,13 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 		strncat(req, content, sizeof(req));
 
 	rval = write(rtspcld->fd, req, strlen(req));
+	if (rval < 0) {
+		g_set_error(error_r, raop_output_quark(), errno,
+			    "write error: %s",
+			    g_strerror(errno));
+		return false;
+	}
+
 	g_debug("sent %s", req);
 
 	if (!get_response) return true;
@@ -587,15 +621,23 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 	}
 
 	if (read_line(rtspcld->fd, line, sizeof(line), timeout, 0) <= 0) {
-		g_warning("%s: request failed\n",__func__);
+		g_set_error_literal(error_r, raop_output_quark(), 0,
+				    "request failed");
 		return false;
 	}
 	g_debug("received %s", line);
 
 	token = strtok(line, delimiters);
 	token = strtok(NULL, delimiters);
-	if (token == NULL || strcmp(token,"200")) {
-		g_warning("%s: request failed, error %s\n", __func__, token);
+	if (token == NULL) {
+		g_set_error_literal(error_r, raop_output_quark(), 0,
+				    "request failed");
+		return false;
+	}
+
+	if (strcmp(token, "200") != 0) {
+		g_set_error(error_r, raop_output_quark(), 0,
+			    "request failed: %s", token);
 		return false;
 	}
 
@@ -613,9 +655,11 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 		}
 		dp = strstr(line, ":");
 		if (!dp) {
-			g_warning("%s: Request failed, bad header\n", __func__);
 			free_kd(*kd);
 			*kd = NULL;
+
+			g_set_error_literal(error_r, raop_output_quark(), 0,
+					    "request failed, bad header");
 			return false;
 		}
 		*dp = 0;
@@ -636,10 +680,11 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 }
 
 static bool
-rtspcl_set_parameter(struct rtspcl_data *rtspcld, const char *parameter)
+rtspcl_set_parameter(struct rtspcl_data *rtspcld, const char *parameter,
+		     GError **error_r)
 {
 	return exec_request(rtspcld, "SET_PARAMETER", "text/parameters",
-			    parameter, 1, NULL, &rtspcld->kd);
+			    parameter, 1, NULL, &rtspcld->kd, error_r);
 }
 
 static struct rtspcl_data *
@@ -692,16 +737,16 @@ rtspcl_add_exthds(struct rtspcl_data *rtspcld, const char *key, char *data)
 
 static bool
 rtspcl_connect(struct rtspcl_data *rtspcld, const char *host, short destport,
-	       const char *sid)
+	       const char *sid, GError **error_r)
 {
 	unsigned short myport = 0;
 	struct sockaddr_in name;
 	socklen_t namelen = sizeof(name);
 
-	if ((rtspcld->fd = open_tcp_socket(NULL, &myport)) == -1)
+	if ((rtspcld->fd = open_tcp_socket(NULL, &myport, error_r)) == -1)
 		return false;
 
-	if (!get_tcp_connect_by_host(rtspcld->fd, host, destport))
+	if (!get_tcp_connect_by_host(rtspcld->fd, host, destport, error_r))
 		return false;
 
 	getsockname(rtspcld->fd, (struct sockaddr*)&name, &namelen);
@@ -713,13 +758,16 @@ rtspcl_connect(struct rtspcl_data *rtspcld, const char *host, short destport,
 }
 
 static bool
-rtspcl_announce_sdp(struct rtspcl_data *rtspcld, const char *sdp)
+rtspcl_announce_sdp(struct rtspcl_data *rtspcld, const char *sdp,
+		    GError **error_r)
 {
-	return exec_request(rtspcld, "ANNOUNCE", "application/sdp", sdp, 1, NULL, &rtspcld->kd);
+	return exec_request(rtspcld, "ANNOUNCE", "application/sdp", sdp, 1,
+			    NULL, &rtspcld->kd, error_r);
 }
 
 static bool
-rtspcl_setup(struct rtspcl_data *rtspcld, struct key_data **kd)
+rtspcl_setup(struct rtspcl_data *rtspcld, struct key_data **kd,
+	     GError **error_r)
 {
 	struct key_data *rkd = NULL, hds;
 	const char delimiters[] = ";";
@@ -737,14 +785,18 @@ rtspcl_setup(struct rtspcl_data *rtspcld, struct key_data **kd)
 	hds.key = transport_key;
 	hds.data = transport_value;
 	hds.next = NULL;
-	if (!exec_request(rtspcld, "SETUP", NULL, NULL, 1, &hds, &rkd)) return false;
+	if (!exec_request(rtspcld, "SETUP", NULL, NULL, 1,
+			  &hds, &rkd, error_r))
+		return false;
 
 	if (!(rtspcld->session = g_strdup(kd_lookup(rkd, "Session")))) {
-		g_warning("%s: no session in response\n",__func__);
+		g_set_error_literal(error_r, raop_output_quark(), 0,
+				    "no session in response");
 		goto erexit;
 	}
 	if (!(rtspcld->transport = kd_lookup(rkd, "Transport"))) {
-		g_warning("%s: no transport in response\n",__func__);
+		g_set_error_literal(error_r, raop_output_quark(), 0,
+				    "no transport in response");
 		goto erexit;
 	}
 	buf = g_strdup(rtspcld->transport);
@@ -764,11 +816,13 @@ rtspcl_setup(struct rtspcl_data *rtspcld, struct key_data **kd)
 		token = strtok(NULL, delimiters);
 	}
 	if (rtspcld->server_port == 0) {
-		g_warning("%s: no server_port in response\n",__func__);
+		g_set_error_literal(error_r, raop_output_quark(), 0,
+				    "no server_port in response");
 		goto erexit;
 	}
 	if (rtspcld->control_port == 0) {
-		g_warning("%s: no control_port in response\n",__func__);
+		g_set_error_literal(error_r, raop_output_quark(), 0,
+				    "no control_port in response");
 		goto erexit;
 	}
 	rval = true;
@@ -783,10 +837,11 @@ rtspcl_setup(struct rtspcl_data *rtspcld, struct key_data **kd)
 }
 
 static bool
-rtspcl_record(struct rtspcl_data *rtspcld)
+rtspcl_record(struct rtspcl_data *rtspcld, GError **error_r)
 {
 	if (!rtspcld->session) {
-		g_warning("%s: no session in progress\n", __func__);
+		g_set_error_literal(error_r, raop_output_quark(), 0,
+				    "no session in progress");
 		return false;
 	}
 
@@ -807,7 +862,7 @@ rtspcl_record(struct rtspcl_data *rtspcld)
 	range.next = &rtp;
 
 	return exec_request(rtspcld, "RECORD", NULL, NULL, 1, &range,
-			    &rtspcld->kd);
+			    &rtspcld->kd, error_r);
 }
 
 static void
@@ -958,7 +1013,7 @@ raopcl_stream_connect(G_GNUC_UNUSED struct raop_data *rd)
 
 
 static bool
-raopcl_connect(struct raop_data *rd)
+raopcl_connect(struct raop_data *rd, GError **error_r)
 {
 	unsigned char buf[4 + 8 + 16];
 	char sid[16];
@@ -989,7 +1044,8 @@ raopcl_connect(struct raop_data *rd)
 	rtspcl_add_exthds(rd->rtspcl, "Client-Instance", sci);
 	rtspcl_add_exthds(rd->rtspcl, "DACP-ID", sci);
 	rtspcl_add_exthds(rd->rtspcl, "Active-Remote", act_r);
-	if (!rtspcl_connect(rd->rtspcl, rd->addr, rd->rtsp_port, sid)) goto erexit;
+	if (!rtspcl_connect(rd->rtspcl, rd->addr, rd->rtsp_port, sid, error_r))
+		goto erexit;
 
 	i = rsa_encrypt(raop_session->encrypt.key, 16, rsakey);
 	key = g_base64_encode(rsakey, i);
@@ -1010,11 +1066,14 @@ raopcl_connect(struct raop_data *rd)
 		sid, rtspcl_local_ip(rd->rtspcl), rd->addr, NUMSAMPLES, key, iv);
 	remove_char_from_string(sac, '=');
 	// rtspcl_add_exthds(rd->rtspcl, "Apple-Challenge", sac);
-	if (!rtspcl_announce_sdp(rd->rtspcl, sdp)) goto erexit;
+	if (!rtspcl_announce_sdp(rd->rtspcl, sdp, error_r))
+		goto erexit;
 	//	if (!rtspcl_mark_del_exthds(rd->rtspcl, "Apple-Challenge")) goto erexit;
-	if (!rtspcl_setup(rd->rtspcl, &setup_kd)) goto erexit;
+	if (!rtspcl_setup(rd->rtspcl, &setup_kd, error_r))
+		goto erexit;
 	if (!(aj = kd_lookup(setup_kd,"Audio-Jack-Status"))) {
-		g_warning("%s: Audio-Jack-Status is missing\n",__func__);
+		g_set_error_literal(error_r, raop_output_quark(), 0,
+				    "Audio-Jack-Status is missing");
 		goto erexit;
 	}
 
@@ -1033,10 +1092,16 @@ raopcl_connect(struct raop_data *rd)
 		token = strtok(NULL, delimiters);
 	}
 
-	if (!get_sockaddr_by_host(rd->addr, rd->rtspcl->control_port, &rd->ctrl_addr)) goto erexit;
-	if (!get_sockaddr_by_host(rd->addr, rd->rtspcl->server_port, &rd->data_addr)) goto erexit;
+	if (!get_sockaddr_by_host(rd->addr, rd->rtspcl->control_port,
+				  &rd->ctrl_addr, error_r))
+		goto erexit;
 
-	if (!rtspcl_record(rd->rtspcl)) goto erexit;
+	if (!get_sockaddr_by_host(rd->addr, rd->rtspcl->server_port,
+				  &rd->data_addr, error_r))
+		goto erexit;
+
+	if (!rtspcl_record(rd->rtspcl, error_r))
+		goto erexit;
 
 	raopcl_stream_connect(rd);
 
@@ -1076,7 +1141,7 @@ difference (struct timeval *t1, struct timeval *t2)
  * requests.
  */
 static bool
-send_audio_data(int fd)
+send_audio_data(int fd, GError **error_r)
 {
 	int i = 0;
 	struct timeval current_time, tout, rtp_time;
@@ -1105,11 +1170,14 @@ send_audio_data(int fd)
 			   raop_session->wblk_remsize, 0, (struct sockaddr *) &rd->data_addr,
 			   sizeof(rd->data_addr));
 		if (i < 0) {
-			g_warning("%s: write error: %s\n", __func__, strerror(errno));
+			g_set_error(error_r, raop_output_quark(), errno,
+				    "write error: %s",
+				    g_strerror(errno));
 			return false;
 		}
 		if (i == 0) {
-			g_warning("%s: write, disconnected on the other end\n", __func__);
+			g_set_error_literal(error_r, raop_output_quark(), 0,
+					    "disconnected on the other end");
 			return false;
 		}
 		rd = rd->next;
@@ -1124,11 +1192,14 @@ send_audio_data(int fd)
 static void *
 raop_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		 G_GNUC_UNUSED const struct config_param *param,
-		 G_GNUC_UNUSED GError **error)
+		 GError **error_r)
 {
 	struct raop_data *rd;
 
-	rd = new_raop_data();
+	rd = new_raop_data(error_r);
+	if (rd == NULL)
+		return NULL;
+
 	rd->addr = config_get_block_string(param, "host", NULL);
 	rd->rtsp_port = config_get_block_unsigned(param, "port", 5000);
 	rd->volume = config_get_block_unsigned(param, "volume", 75);
@@ -1136,11 +1207,11 @@ raop_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 }
 
 static bool
-raop_set_volume_local(struct raop_data *rd, int volume)
+raop_set_volume_local(struct raop_data *rd, int volume, GError **error_r)
 {
 	char vol_str[128];
 	sprintf(vol_str, "volume: %d.000000\r\n", volume);
-	return rtspcl_set_parameter(rd->rtspcl, vol_str);
+	return rtspcl_set_parameter(rd->rtspcl, vol_str, error_r);
 }
 
 
@@ -1162,7 +1233,7 @@ raop_get_volume(struct raop_data *rd)
 }
 
 bool
-raop_set_volume(struct raop_data *rd, unsigned volume)
+raop_set_volume(struct raop_data *rd, unsigned volume, GError **error_r)
 {
 	int raop_volume;
 	bool rval;
@@ -1175,7 +1246,7 @@ raop_set_volume(struct raop_data *rd, unsigned volume)
 			(RAOP_VOLUME_MAX - RAOP_VOLUME_MIN) * volume / 100;
 	}
 	g_mutex_lock(rd->control_mutex);
-	rval = raop_set_volume_local(rd, raop_volume);
+	rval = raop_set_volume_local(rd, raop_volume, error_r);
 	if (rval) rd->volume = volume;
 	g_mutex_unlock(rd->control_mutex);
 
@@ -1205,7 +1276,8 @@ raop_output_cancel(void *data)
 	sprintf(buf, "seq=%d; rtptime=%d", raop_session->play_state.seq_num + flush_diff, raop_session->play_state.rtptime + NUMSAMPLES * flush_diff);
 	kd.data = buf;
 	kd.next = NULL;
-	exec_request(rd->rtspcl, "FLUSH", NULL, NULL, 1, &kd, &(rd->rtspcl->kd));
+	exec_request(rd->rtspcl, "FLUSH", NULL, NULL, 1,
+		     &kd, &(rd->rtspcl->kd), NULL);
 	g_mutex_unlock(rd->control_mutex);
 }
 
@@ -1256,7 +1328,8 @@ raop_output_close(void *data)
 	g_mutex_unlock(raop_session->list_mutex);
 
 	g_mutex_lock(rd->control_mutex);
-	exec_request(rd->rtspcl, "TEARDOWN", NULL, NULL, 0, NULL, &(rd->rtspcl->kd));
+	exec_request(rd->rtspcl, "TEARDOWN", NULL, NULL, 0,
+		     NULL, &rd->rtspcl->kd, NULL);
 	g_mutex_unlock(rd->control_mutex);
 
 	rd->started = 0;
@@ -1276,11 +1349,21 @@ raop_output_open(void *data, struct audio_format *audio_format, GError **error_r
 		raop_session->raop_list = rd;
 		rd->is_master = true;
 
-		if ((raop_session->data_fd = open_udp_socket(NULL, &myport)) == -1)
+		raop_session->data_fd = open_udp_socket(NULL, &myport,
+							error_r);
+		if (raop_session->data_fd < 0)
 			return false;
 
-		if ((raop_session->ntp.fd = open_udp_socket(NULL, &raop_session->ntp.port)) == -1) return false;
-		if ((raop_session->ctrl.fd = open_udp_socket(NULL, &raop_session->ctrl.port)) == -1) {
+		raop_session->ntp.fd =
+			open_udp_socket(NULL, &raop_session->ntp.port,
+					error_r);
+		if (raop_session->ntp.fd < 0)
+			return false;
+
+		raop_session->ctrl.fd =
+			open_udp_socket(NULL, &raop_session->ctrl.port,
+					error_r);
+		if (raop_session->ctrl.fd < 0) {
 			close(raop_session->ntp.fd);
 			raop_session->ctrl.fd = -1;
 			g_mutex_unlock(raop_session->list_mutex);
@@ -1291,16 +1374,11 @@ raop_output_open(void *data, struct audio_format *audio_format, GError **error_r
 
 	audio_format->format = SAMPLE_FORMAT_S16;
 	g_debug("raop_openDevice %s %d\n", rd->addr, rd->rtsp_port);
-	if (!raopcl_connect(rd)) {
-		g_set_error(error_r, raop_output_quark(), -1,
-			    "Unable to connect to device");
+	if (!raopcl_connect(rd, error_r))
 		return false;
-	}
-	if (!raop_set_volume(rd, rd->volume)) {
-		g_set_error(error_r, raop_output_quark(), -1,
-			    "Unable to set volume after connecting to device");
+
+	if (!raop_set_volume(rd, rd->volume, error_r))
 		return false;
-	}
 
 	g_mutex_lock(raop_session->list_mutex);
 	if (!rd->is_master) {
@@ -1391,11 +1469,8 @@ raop_output_play(void *data, const void *chunk, size_t size,
 		raop_session->wblk_remsize = count + RAOP_HEADER_SIZE;
 		raop_session->wblk_wsize = 0;
 
-		if (!send_audio_data(raop_session->data_fd)) {
-			g_set_error(error_r, raop_output_quark(), -1,
-				    "Unable to write to device");
+		if (!send_audio_data(raop_session->data_fd, error_r))
 			goto erexit;
-		}
 
 		raop_session->bufferSize = 0;
 	}

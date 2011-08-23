@@ -63,11 +63,11 @@ raop_mixer_get_volume(struct mixer *mixer, G_GNUC_UNUSED GError **error_r)
 }
 
 static bool
-raop_mixer_set_volume(struct mixer *mixer, unsigned volume, G_GNUC_UNUSED GError **error_r)
+raop_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
 {
 	struct raop_mixer_plugin *rm = (struct raop_mixer_plugin *)mixer;
 	g_debug("raop_mixer_set_volume\n");
-	return raop_set_volume(rm->rd, volume);
+	return raop_set_volume(rm->rd, volume, error_r);
 }
 
 const struct mixer_plugin raop_mixer_plugin = {
