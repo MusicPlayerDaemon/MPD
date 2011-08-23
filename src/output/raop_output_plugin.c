@@ -1187,13 +1187,20 @@ raop_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		 G_GNUC_UNUSED const struct config_param *param,
 		 GError **error_r)
 {
+	const char *host = config_get_block_string(param, "host", NULL);
+	if (host == NULL) {
+		g_set_error_literal(error_r, raop_output_quark(), 0,
+				    "missing option 'host'");
+		return NULL;
+	}
+
 	struct raop_data *rd;
 
 	rd = new_raop_data(error_r);
 	if (rd == NULL)
 		return NULL;
 
-	rd->addr = config_get_block_string(param, "host", NULL);
+	rd->addr = host;
 	rd->rtsp_port = config_get_block_unsigned(param, "port", 5000);
 	rd->volume = config_get_block_unsigned(param, "volume", 75);
 	return rd;
