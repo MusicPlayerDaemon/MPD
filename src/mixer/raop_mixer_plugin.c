@@ -66,7 +66,6 @@ static bool
 raop_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
 {
 	struct raop_mixer_plugin *rm = (struct raop_mixer_plugin *)mixer;
-	g_debug("raop_mixer_set_volume\n");
 	return raop_set_volume(rm->rd, volume, error_r);
 }
 

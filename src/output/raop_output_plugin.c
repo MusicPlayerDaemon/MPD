@@ -168,9 +168,7 @@ static char *
 kd_lookup(struct key_data *kd, const char *key)
 {
 	while (kd) {
-		g_debug("checking key %s %s\n", kd->key, key);
 		if (!strcmp(kd->key, key)) {
-			g_debug("found %s\n", kd->data);
 			return kd->data;
 		}
 		kd = kd->next;
@@ -602,8 +600,6 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 		return false;
 	}
 
-	g_debug("sent %s", req);
-
 	if (!get_response) return true;
 
 	while (true) {
@@ -625,7 +621,6 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 				    "request failed");
 		return false;
 	}
-	g_debug("received %s", line);
 
 	token = strtok(line, delimiters);
 	token = strtok(NULL, delimiters);
@@ -644,7 +639,6 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 	i = 0;
 	while (read_line(rtspcld->fd, line, sizeof(line), timeout, 0) > 0) {
 		struct key_data *new_kd = NULL;
-		g_debug("%s -\n",line);
 		timeout = 1000; // once it started, it shouldn't take a long time
 		if (i && line[0] == ' ') {
 			for (j = 0; j < strlen(line); j++) if (line[j] != ' ') break;
@@ -1185,7 +1179,6 @@ send_audio_data(int fd, GError **error_r)
 	raop_session->wblk_wsize += i;
 	raop_session->wblk_remsize -= i;
 
-	//g_debug("%d bytes are sent, remaining size=%d\n",i,rd->wblk_remsize);
 	return true;
 }
 
@@ -1373,7 +1366,6 @@ raop_output_open(void *data, struct audio_format *audio_format, GError **error_r
 	g_mutex_unlock(raop_session->list_mutex);
 
 	audio_format->format = SAMPLE_FORMAT_S16;
-	g_debug("raop_openDevice %s %d\n", rd->addr, rd->rtsp_port);
 	if (!raopcl_connect(rd, error_r))
 		return false;
 
