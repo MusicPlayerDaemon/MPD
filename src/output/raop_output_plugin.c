@@ -448,7 +448,9 @@ get_time_for_rtp(struct play_state *state, struct timeval *tout)
  * Send a control command
  */
 static bool
-send_control_command(struct control_data *ctrl, struct raop_data *rd, struct play_state *state)
+send_control_command(struct control_data *ctrl, struct raop_data *rd,
+		     struct play_state *state,
+		     GError **error_r)
 {
 	unsigned char buf[20];
 	int diff;
@@ -473,6 +475,12 @@ send_control_command(struct control_data *ctrl, struct raop_data *rd, struct pla
 	fill_int(buf + 16, state->rtptime);
 
 	num_bytes = sendto(ctrl->fd, buf, sizeof(buf), 0, (struct sockaddr *) &rd->ctrl_addr, sizeof(rd->ctrl_addr));
+	if (num_bytes < 0) {
+		g_set_error(error_r, raop_output_quark(), errno,
+			    "Unable to send control command: %s",
+			    g_strerror(errno));
+		return false;
+	}
 
 	return true;
 }
@@ -1360,12 +1368,11 @@ raop_output_play(void *data, const void *chunk, size_t size,
 			}
 			iter = raop_session->raop_list;
 			while (iter) {
-				if (!send_control_command(&raop_session->ctrl, iter, &raop_session->play_state)) {
-					g_mutex_unlock(raop_session->list_mutex);
-					g_set_error(error_r, raop_output_quark(), -1,
-						    "Unable to send control command");
+				if (!send_control_command(&raop_session->ctrl, iter,
+							  &raop_session->play_state,
+							  error_r))
 					goto erexit;
-				}
+
 				iter = iter->next;
 			}
 			g_mutex_unlock(raop_session->list_mutex);
