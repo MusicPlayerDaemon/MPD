@@ -153,7 +153,6 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	mpc_uint32_t ret;
 	int32_t chunk[G_N_ELEMENTS(sample_buffer)];
 	long bit_rate = 0;
-	mpc_uint32_t vbr_update_acc;
 	mpc_uint32_t vbr_update_bits;
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
@@ -243,10 +242,11 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 				decoder_seek_error(mpd_decoder);
 		}
 
-		vbr_update_acc = 0;
 		vbr_update_bits = 0;
 
 #ifdef MPC_IS_OLD_API
+		mpc_uint32_t vbr_update_acc = 0;
+
 		ret = mpc_decoder_decode(&decoder, sample_buffer,
 					 &vbr_update_acc, &vbr_update_bits);
 		if (ret == 0 || ret == (mpc_uint32_t)-1)
