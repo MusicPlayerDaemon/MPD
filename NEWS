@@ -14,6 +14,7 @@ ver 0.16.4 (2011/??/??)
   - alsa: fix SIGFPE when alsa announces a period size of 0
   - httpd: don't warn on client disconnect
   - pulse: fix deadlock when resuming the stream
+  - pulse: fix deadlock when the stream was suspended
 
 
 ver 0.16.3 (2011/06/04)

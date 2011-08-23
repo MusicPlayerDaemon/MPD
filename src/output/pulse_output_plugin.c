@@ -412,6 +412,23 @@ pulse_output_wait_connection(struct pulse_output *po, GError **error_r)
 	}
 }
 
+#if PA_CHECK_VERSION(0,9,8)
+
+static void
+pulse_output_stream_suspended_cb(G_GNUC_UNUSED pa_stream *stream, void *userdata)
+{
+	struct pulse_output *po = userdata;
+
+	assert(stream == po->stream || po->stream == NULL);
+	assert(po->mainloop != NULL);
+
+	/* wake up the main loop to break out of the loop in
+	   pulse_output_play() */
+	pa_threaded_mainloop_signal(po->mainloop, 0);
+}
+
+#endif
+
 static void
 pulse_output_stream_state_cb(pa_stream *stream, void *userdata)
 {
@@ -507,6 +524,11 @@ pulse_output_open(void *data, struct audio_format *audio_format,
 		pa_threaded_mainloop_unlock(po->mainloop);
 		return false;
 	}
+
+#if PA_CHECK_VERSION(0,9,8)
+	pa_stream_set_suspended_callback(po->stream,
+					 pulse_output_stream_suspended_cb, po);
+#endif
 
 	pa_stream_set_state_callback(po->stream,
 				     pulse_output_stream_state_cb, po);
@@ -719,6 +741,15 @@ pulse_output_play(void *data, const void *chunk, size_t size, GError **error_r)
 	/* wait until the server allows us to write */
 
 	while (po->writable == 0) {
+#if PA_CHECK_VERSION(0,9,8)
+		if (pa_stream_is_suspended(po->stream)) {
+			pa_threaded_mainloop_unlock(po->mainloop);
+			g_set_error(error_r, pulse_output_quark(), 0,
+				    "suspended");
+			return 0;
+		}
+#endif
+
 		pa_threaded_mainloop_wait(po->mainloop);
 
 		if (pa_stream_get_state(po->stream) != PA_STREAM_READY) {
