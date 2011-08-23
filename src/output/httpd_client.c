@@ -370,7 +370,14 @@ httpd_client_read(struct httpd_client *client)
 	if (client->state == RESPONSE) {
 		/* the client has already sent the request, and he
 		   must not send more */
-		g_warning("unexpected input from client");
+		char buffer[1];
+
+		status = g_io_channel_read_chars(client->channel, buffer,
+						 sizeof(buffer), &bytes_read,
+						 NULL);
+		if (status == G_IO_STATUS_NORMAL)
+			g_warning("unexpected input from client");
+
 		return false;
 	}
 
