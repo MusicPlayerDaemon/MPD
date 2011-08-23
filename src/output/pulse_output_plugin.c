@@ -697,7 +697,7 @@ pulse_output_play(void *data, const void *chunk, size_t size, GError **error_r)
 			pa_threaded_mainloop_unlock(po->mainloop);
 			g_set_error(error_r, pulse_output_quark(), 0,
 				    "disconnected");
-			return false;
+			return 0;
 		}
 	}
 
