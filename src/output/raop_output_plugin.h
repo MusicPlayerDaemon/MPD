@@ -34,8 +34,8 @@
 #endif
 
 struct key_data {
-	unsigned char *key;
-	unsigned char *data;
+	char *key;
+	char *data;
 	struct key_data *next;
 };
 

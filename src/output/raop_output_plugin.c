@@ -168,9 +168,9 @@ kd_lookup(struct key_data *kd, const char *key)
 {
 	while (kd) {
 		g_debug("checking key %s %s\n", kd->key, key);
-		if (!strcmp((char*)kd->key, key)) {
+		if (!strcmp(kd->key, key)) {
 			g_debug("found %s\n", kd->data);
-			return (char*) kd->data;
+			return kd->data;
 		}
 		kd = kd->next;
 	}
@@ -599,7 +599,7 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd, const char *content_t
 			for (j = 0; j < strlen(line); j++) if (line[j] != ' ') break;
 			dsize += strlen(line + j);
 			if ((new_kd->data = realloc(new_kd->data, dsize))) return false;
-			strcat((char*)new_kd->data, line + j);
+			strcat(new_kd->data, line + j);
 			continue;
 		}
 		dp = strstr(line, ":");
@@ -612,10 +612,10 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd, const char *content_t
 		*dp = 0;
 		new_kd = malloc(sizeof(struct key_data));
 		new_kd->key = malloc(strlen(line) + 1);
-		strcpy((char *) new_kd->key, line);
+		strcpy(new_kd->key, line);
 		dsize = strlen(dp + 1) + 1;
 		new_kd->data = malloc(dsize);
-		strcpy((char*)new_kd->data, dp + 1);
+		strcpy(new_kd->data, dp + 1);
 		new_kd->next = NULL;
 		if (cur_kd == NULL) {
 			cur_kd = *kd = new_kd;
@@ -675,8 +675,8 @@ rtspcl_add_exthds(struct rtspcl_data *rtspcld, const char *key, char *data)
 	new_kd = (struct key_data *) malloc(sizeof(struct key_data));
 	new_kd->key = malloc(strlen(key) + 1);
 	new_kd->data = malloc(strlen(data) + 1);
-	strcpy((char*)new_kd->key, key);
-	strcpy((char*)new_kd->data, data);
+	strcpy(new_kd->key, key);
+	strcpy(new_kd->data, data);
 	new_kd->next = NULL;
 	if (!rtspcld->exthds) {
 		rtspcld->exthds = new_kd;
@@ -725,8 +725,8 @@ rtspcl_setup(struct rtspcl_data *rtspcld, struct key_data **kd)
 	buf = (char *) malloc(256);
 	sprintf(buf, "RTP/AVP/UDP;unicast;interleaved=0-1;mode=record;control_port=%d;timing_port=%d", raop_session->ctrl.port, raop_session->ntp.port);
 
-	hds.key = (unsigned char*) strdup("Transport");
-	hds.data = (unsigned char*) buf;
+	hds.key = strdup("Transport");
+	hds.data = buf;
 	hds.next = NULL;
 	buf = NULL;
 	if (!exec_request(rtspcld, "SETUP", NULL, NULL, 1, &hds, &rkd)) return false;
@@ -783,20 +783,20 @@ rtspcl_record(struct rtspcl_data *rtspcld)
 {
 	struct key_data *kdRange, *kdRtp;
 	int rval;
-	unsigned char *buf = (unsigned char *) malloc(128);
+	char *buf = (char *) malloc(128);
 
 	if (!rtspcld->session) {
 		g_warning("%s: no session in progress\n", __func__);
 		free(buf);
 		return false;
 	}
-	sprintf((char *) buf, "seq=%d,rtptime=%u", raop_session->play_state.seq_num, raop_session->play_state.rtptime);
+	sprintf(buf, "seq=%d,rtptime=%u", raop_session->play_state.seq_num, raop_session->play_state.rtptime);
 	kdRange = malloc(sizeof(struct key_data));
 	kdRtp = malloc(sizeof(struct key_data));
-	kdRange->key = (unsigned char*) strdup("Range");
-	kdRange->data = (unsigned char*) strdup("npt=0-");
+	kdRange->key = strdup("Range");
+	kdRange->data = strdup("npt=0-");
 	kdRange->next = kdRtp;
-	kdRtp->key = (unsigned char*) strdup("RTP-Info");
+	kdRtp->key = strdup("RTP-Info");
 	kdRtp->data = buf;
 	kdRtp->next = NULL;
 	rval = exec_request(rtspcld, "RECORD", NULL, NULL, 1, kdRange, &rtspcld->kd);
@@ -1187,7 +1187,7 @@ raop_output_cancel(void *data)
 	//flush
 	struct key_data kd;
 	struct raop_data *rd = (struct raop_data *) data;
-	unsigned char *buf;
+	char *buf;
 	int flush_diff = 1;
 
 	rd->started = 0;
@@ -1201,9 +1201,9 @@ raop_output_cancel(void *data)
 	buf = malloc(128);
 
 	g_mutex_lock(rd->control_mutex);
-	kd.key = (unsigned char *)strdup("RTP-Info");
-	sprintf((char *) buf, "seq=%d; rtptime=%d", raop_session->play_state.seq_num + flush_diff, raop_session->play_state.rtptime + NUMSAMPLES * flush_diff);
-	kd.data = (unsigned char *)buf;
+	kd.key = strdup("RTP-Info");
+	sprintf(buf, "seq=%d; rtptime=%d", raop_session->play_state.seq_num + flush_diff, raop_session->play_state.rtptime + NUMSAMPLES * flush_diff);
+	kd.data = buf;
 	kd.next = NULL;
 	exec_request(rd->rtspcl, "FLUSH", NULL, NULL, 1, &kd, &(rd->rtspcl->kd));
 	free(kd.key);
