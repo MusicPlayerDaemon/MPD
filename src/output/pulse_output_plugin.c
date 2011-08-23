@@ -207,6 +207,9 @@ pulse_output_subscribe_cb(pa_context *context,
 static bool
 pulse_output_connect(struct pulse_output *po, GError **error_r)
 {
+	assert(po != NULL);
+	assert(po->context != NULL);
+
 	int error;
 
 	error = pa_context_connect(po->context, po->server,
@@ -229,6 +232,9 @@ pulse_output_connect(struct pulse_output *po, GError **error_r)
 static bool
 pulse_output_setup_context(struct pulse_output *po, GError **error_r)
 {
+	assert(po != NULL);
+	assert(po->mainloop != NULL);
+
 	po->context = pa_context_new(pa_threaded_mainloop_get_api(po->mainloop),
 				     MPD_PULSE_NAME);
 	if (po->context == NULL) {
@@ -257,6 +263,9 @@ pulse_output_setup_context(struct pulse_output *po, GError **error_r)
 static void
 pulse_output_delete_context(struct pulse_output *po)
 {
+	assert(po != NULL);
+	assert(po->context != NULL);
+
 	pa_context_disconnect(po->context);
 	pa_context_unref(po->context);
 	po->context = NULL;
@@ -347,6 +356,8 @@ pulse_output_disable(void *data)
 {
 	struct pulse_output *po = data;
 
+	assert(po->mainloop != NULL);
+
 	pa_threaded_mainloop_stop(po->mainloop);
 	if (po->context != NULL)
 		pulse_output_delete_context(po);
@@ -363,6 +374,8 @@ pulse_output_disable(void *data)
 static bool
 pulse_output_wait_connection(struct pulse_output *po, GError **error_r)
 {
+	assert(po->mainloop != NULL);
+
 	pa_context_state_t state;
 
 	pa_threaded_mainloop_lock(po->mainloop);
@@ -404,6 +417,10 @@ pulse_output_stream_state_cb(pa_stream *stream, void *userdata)
 {
 	struct pulse_output *po = userdata;
 
+	assert(stream == po->stream || po->stream == NULL);
+	assert(po->mainloop != NULL);
+	assert(po->context != NULL);
+
 	switch (pa_stream_get_state(stream)) {
 	case PA_STREAM_READY:
 		if (po->mixer != NULL)
@@ -432,6 +449,8 @@ pulse_output_stream_write_cb(G_GNUC_UNUSED pa_stream *stream, size_t nbytes,
 {
 	struct pulse_output *po = userdata;
 
+	assert(po->mainloop != NULL);
+
 	po->writable = nbytes;
 	pa_threaded_mainloop_signal(po->mainloop, 0);
 }
@@ -443,6 +462,8 @@ pulse_output_open(void *data, struct audio_format *audio_format,
 	struct pulse_output *po = data;
 	pa_sample_spec ss;
 	int error;
+
+	assert(po->mainloop != NULL);
 
 	if (po->context != NULL) {
 		switch (pa_context_get_state(po->context)) {
@@ -522,6 +543,8 @@ pulse_output_close(void *data)
 	struct pulse_output *po = data;
 	pa_operation *o;
 
+	assert(po->mainloop != NULL);
+
 	pa_threaded_mainloop_lock(po->mainloop);
 
 	if (pa_stream_get_state(po->stream) == PA_STREAM_READY) {
@@ -555,6 +578,8 @@ static pa_stream_state_t
 pulse_output_check_stream(struct pulse_output *po)
 {
 	pa_stream_state_t state = pa_stream_get_state(po->stream);
+
+	assert(po->mainloop != NULL);
 
 	switch (state) {
 	case PA_STREAM_READY:
@@ -637,6 +662,8 @@ pulse_output_stream_pause(struct pulse_output *po, bool pause,
 {
 	pa_operation *o;
 
+	assert(po->mainloop != NULL);
+	assert(po->context != NULL);
 	assert(po->stream != NULL);
 
 	o = pa_stream_cork(po->stream, pause,
@@ -667,6 +694,7 @@ pulse_output_play(void *data, const void *chunk, size_t size, GError **error_r)
 	struct pulse_output *po = data;
 	int error;
 
+	assert(po->mainloop != NULL);
 	assert(po->stream != NULL);
 
 	pa_threaded_mainloop_lock(po->mainloop);
@@ -727,6 +755,7 @@ pulse_output_cancel(void *data)
 	struct pulse_output *po = data;
 	pa_operation *o;
 
+	assert(po->mainloop != NULL);
 	assert(po->stream != NULL);
 
 	pa_threaded_mainloop_lock(po->mainloop);
@@ -758,6 +787,7 @@ pulse_output_pause(void *data)
 	struct pulse_output *po = data;
 	GError *error = NULL;
 
+	assert(po->mainloop != NULL);
 	assert(po->stream != NULL);
 
 	pa_threaded_mainloop_lock(po->mainloop);
