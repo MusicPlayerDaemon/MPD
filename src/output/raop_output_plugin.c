@@ -505,8 +505,10 @@ check_timing(struct timeval *tout)
  * if this gets a success, *kd is allocated or reallocated (if *kd is not NULL)
  */
 static bool
-exec_request(struct rtspcl_data *rtspcld, const char *cmd, const char *content_type,
-	     char *content, int get_response, struct key_data *hds, struct key_data **kd)
+exec_request(struct rtspcl_data *rtspcld, const char *cmd,
+	     const char *content_type, const char *content,
+	     int get_response,
+	     const struct key_data *hds, struct key_data **kd)
 {
 	char line[1024];
 	char req[1024];
@@ -514,7 +516,7 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd, const char *content_t
 	const char delimiters[] = " ";
 	char *token, *dp;
 	int i,dsize = 0,rval;
-	struct key_data *hd_iter, *cur_kd = *kd;
+	struct key_data *cur_kd = *kd;
 	unsigned int j;
 	int timeout = 5000; // msec unit
 
@@ -531,7 +533,7 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd, const char *content_t
 		strncat(req,reql,sizeof(req));
 	}
 
-	hd_iter = hds;
+	const struct key_data *hd_iter = hds;
 	while (hd_iter) {
 		sprintf(reql, "%s: %s\r\n", hd_iter->key, hd_iter->data);
 		strncat(req, reql, sizeof(req));
@@ -629,7 +631,7 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd, const char *content_t
 }
 
 static bool
-rtspcl_set_parameter(struct rtspcl_data *rtspcld, char *parameter)
+rtspcl_set_parameter(struct rtspcl_data *rtspcld, const char *parameter)
 {
 	return exec_request(rtspcld, "SET_PARAMETER", "text/parameters",
 			    parameter, 1, NULL, &rtspcld->kd);
@@ -691,7 +693,8 @@ rtspcl_add_exthds(struct rtspcl_data *rtspcld, const char *key, char *data)
 }
 
 static bool
-rtspcl_connect(struct rtspcl_data *rtspcld, const char *host, short destport, char *sid)
+rtspcl_connect(struct rtspcl_data *rtspcld, const char *host, short destport,
+	       const char *sid)
 {
 	unsigned short myport = 0;
 	struct sockaddr_in name;
@@ -708,7 +711,7 @@ rtspcl_connect(struct rtspcl_data *rtspcld, const char *host, short destport, ch
 }
 
 static bool
-rtspcl_announce_sdp(struct rtspcl_data *rtspcld, char *sdp)
+rtspcl_announce_sdp(struct rtspcl_data *rtspcld, const char *sdp)
 {
 	return exec_request(rtspcld, "ANNOUNCE", "application/sdp", sdp, 1, NULL, &rtspcld->kd);
 }
