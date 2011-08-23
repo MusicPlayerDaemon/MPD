@@ -143,6 +143,8 @@ httpd_client_unref_page(gpointer data, G_GNUC_UNUSED gpointer user_data)
 void
 httpd_client_free(struct httpd_client *client)
 {
+	assert(client != NULL);
+
 	if (client->state == RESPONSE) {
 		if (client->write_source_id != 0)
 			g_source_remove(client->write_source_id);
@@ -169,6 +171,8 @@ httpd_client_free(struct httpd_client *client)
 static void
 httpd_client_close(struct httpd_client *client)
 {
+	assert(client != NULL);
+
 	httpd_output_remove_client(client->httpd, client);
 	httpd_client_free(client);
 }
@@ -179,6 +183,9 @@ httpd_client_close(struct httpd_client *client)
 static void
 httpd_client_begin_response(struct httpd_client *client)
 {
+	assert(client != NULL);
+	assert(client->state != RESPONSE);
+
 	client->state = RESPONSE;
 	client->write_source_id = 0;
 	client->pages = g_queue_new();
@@ -239,6 +246,9 @@ httpd_client_handle_line(struct httpd_client *client, const char *line)
 static char *
 httpd_client_read_line(struct httpd_client *client)
 {
+	assert(client != NULL);
+	assert(client->state != RESPONSE);
+
 	const char *p, *newline;
 	size_t length;
 	char *line;
@@ -271,6 +281,7 @@ httpd_client_send_response(struct httpd_client *client)
 	GIOStatus status;
 	gsize bytes_written;
 
+	assert(client != NULL);
 	assert(client->state == RESPONSE);
 
 	if (!client->metadata_requested) {
@@ -334,14 +345,19 @@ httpd_client_send_response(struct httpd_client *client)
 static bool
 httpd_client_received(struct httpd_client *client)
 {
+	assert(client != NULL);
+	assert(client->state != RESPONSE);
+
 	char *line;
 	bool success;
 
 	while ((line = httpd_client_read_line(client)) != NULL) {
 		success = httpd_client_handle_line(client, line);
 		g_free(line);
-		if (!success)
+		if (!success) {
+			assert(client->state != RESPONSE);
 			return false;
+		}
 
 		if (client->state == RESPONSE) {
 			if (!fifo_buffer_is_empty(client->input)) {
@@ -370,7 +386,14 @@ httpd_client_read(struct httpd_client *client)
 	if (client->state == RESPONSE) {
 		/* the client has already sent the request, and he
 		   must not send more */
-		g_warning("unexpected input from client");
+		char buffer[1];
+
+		status = g_io_channel_read_chars(client->channel, buffer,
+						 sizeof(buffer), &bytes_read,
+						 NULL);
+		if (status == G_IO_STATUS_NORMAL)
+			g_warning("unexpected input from client");
+
 		return false;
 	}
 

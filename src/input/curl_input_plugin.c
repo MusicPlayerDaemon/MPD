@@ -43,6 +43,13 @@
 #define G_LOG_DOMAIN "input_curl"
 
 /**
+ * Do not buffer more than this number of bytes.  It should be a
+ * reasonable limit that doesn't make low-end machines suffer too
+ * much, but doesn't cause stuttering on high-latency lines.
+ */
+static const size_t CURL_MAX_BUFFERED = 512 * 1024;
+
+/**
  * Buffers created by input_curl_writefunction().
  */
 struct buffer {
@@ -142,6 +149,25 @@ input_curl_finish(void)
 	curl_slist_free_all(http_200_aliases);
 
 	curl_global_cleanup();
+}
+
+/**
+ * Determine the total sizes of all buffers, including portions that
+ * have already been consumed.
+ */
+G_GNUC_PURE
+static size_t
+curl_total_buffer_size(const struct input_curl *c)
+{
+	size_t total = 0;
+
+	for (GList *i = g_queue_peek_head_link(c->buffers);
+	     i != NULL; i = g_list_next(i)) {
+		struct buffer *buffer = i->data;
+		total += buffer->size;
+	}
+
+	return total;
 }
 
 static void
@@ -473,6 +499,10 @@ static int
 input_curl_buffer(struct input_stream *is, GError **error_r)
 {
 	struct input_curl *c = (struct input_curl *)is;
+
+	if (curl_total_buffer_size(c) >= CURL_MAX_BUFFERED)
+		return 0;
+
 	CURLMcode mcode;
 	int running_handles;
 	bool ret;
