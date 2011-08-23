@@ -65,7 +65,7 @@ new_raop_data(void)
 	ret->paused = 0;
 
 	if (raop_session == NULL) {
-		raop_session = (struct raop_session_data *) malloc(sizeof(struct raop_session_data));
+		raop_session = g_new(struct raop_session_data, 1);
 		raop_session->raop_list = NULL;
 		raop_session->ntp.port = 6002;
 		raop_session->ntp.fd = -1;
@@ -152,10 +152,10 @@ free_kd(struct key_data *kd)
 {
 	struct key_data *iter = kd;
 	while (iter) {
-		free(iter->key);
-		if(iter->data) free(iter->data);
+		g_free(iter->key);
+		g_free(iter->data);
 		iter = iter->next;
-		free(kd);
+		g_free(kd);
 		kd = iter;
 	}
 }
@@ -607,7 +607,7 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 		if (i && line[0] == ' ') {
 			for (j = 0; j < strlen(line); j++) if (line[j] != ' ') break;
 			dsize += strlen(line + j);
-			if ((new_kd->data = realloc(new_kd->data, dsize))) return false;
+			new_kd->data = g_realloc(new_kd->data, dsize);
 			strcat(new_kd->data, line + j);
 			continue;
 		}
@@ -619,12 +619,10 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 			return false;
 		}
 		*dp = 0;
-		new_kd = malloc(sizeof(struct key_data));
-		new_kd->key = malloc(strlen(line) + 1);
-		strcpy(new_kd->key, line);
+		new_kd = g_new(struct key_data, 1);
+		new_kd->key = g_strdup(line);
 		dsize = strlen(dp + 1) + 1;
-		new_kd->data = malloc(dsize);
-		strcpy(new_kd->data, dp + 1);
+		new_kd->data = g_strdup(dp);
 		new_kd->next = NULL;
 		if (cur_kd == NULL) {
 			cur_kd = *kd = new_kd;
@@ -648,8 +646,7 @@ static struct rtspcl_data *
 rtspcl_open(void)
 {
 	struct rtspcl_data *rtspcld;
-	rtspcld = malloc(sizeof(struct rtspcl_data));
-	memset(rtspcld, 0, sizeof(struct rtspcl_data));
+	rtspcld = g_new0(struct rtspcl_data, 1);
 	rtspcld->useragent = "RTSPClient";
 	return rtspcld;
 }
@@ -678,11 +675,9 @@ static void
 rtspcl_add_exthds(struct rtspcl_data *rtspcld, const char *key, char *data)
 {
 	struct key_data *new_kd;
-	new_kd = (struct key_data *) malloc(sizeof(struct key_data));
-	new_kd->key = malloc(strlen(key) + 1);
-	new_kd->data = malloc(strlen(data) + 1);
-	strcpy(new_kd->key, key);
-	strcpy(new_kd->data, data);
+	new_kd = g_new(struct key_data, 1);
+	new_kd->key = g_strdup(key);
+	new_kd->data = g_strdup(data);
 	new_kd->next = NULL;
 	if (!rtspcld->exthds) {
 		rtspcld->exthds = new_kd;
@@ -744,7 +739,7 @@ rtspcl_setup(struct rtspcl_data *rtspcld, struct key_data **kd)
 	hds.next = NULL;
 	if (!exec_request(rtspcld, "SETUP", NULL, NULL, 1, &hds, &rkd)) return false;
 
-	if (!(rtspcld->session = strdup(kd_lookup(rkd, "Session")))) {
+	if (!(rtspcld->session = g_strdup(kd_lookup(rkd, "Session")))) {
 		g_warning("%s: no session in response\n",__func__);
 		goto erexit;
 	}
@@ -752,10 +747,7 @@ rtspcl_setup(struct rtspcl_data *rtspcld, struct key_data **kd)
 		g_warning("%s: no transport in response\n",__func__);
 		goto erexit;
 	}
-	if (!(buf = malloc(strlen(rtspcld->transport) + 1))) {
-		goto erexit;
-	}
-	strcpy(buf, rtspcld->transport);
+	buf = g_strdup(rtspcld->transport);
 	token = strtok(buf, delimiters);
 	rtspcld->server_port = 0;
 	rtspcld->control_port = 0;
@@ -781,7 +773,7 @@ rtspcl_setup(struct rtspcl_data *rtspcld, struct key_data **kd)
 	}
 	rval = true;
  erexit:
-	if (buf) free(buf);
+	g_free(buf);
 	if (!rval) {
 		free_kd(rkd);
 		rkd = NULL;
@@ -823,8 +815,8 @@ rtspcl_close(struct rtspcl_data *rtspcld)
 {
 	rtspcl_disconnect(rtspcld);
 	rtspcl_remove_all_exthds(rtspcld);
-	free(rtspcld->session);
-	free(rtspcld);
+	g_free(rtspcld->session);
+	g_free(rtspcld);
 }
 
 static char* rtspcl_local_ip(struct rtspcl_data *rtspcld)
@@ -992,7 +984,7 @@ raopcl_connect(struct raop_data *rd)
 	sprintf(sid, "%u", sessionNum);
 	sprintf(sci, "%08x%08x", *((int *)(buf + 4)), *((int *)(buf + 8)));
 	sac = g_base64_encode(buf + 12, 16);
-	if (!(rd->rtspcl = rtspcl_open())) goto erexit;
+	rd->rtspcl = rtspcl_open();
 	rtspcl_set_useragent(rd->rtspcl, "iTunes/8.1.1 (Macintosh; U; PPC Mac OS X 10.4)");
 	rtspcl_add_exthds(rd->rtspcl, "Client-Instance", sci);
 	rtspcl_add_exthds(rd->rtspcl, "DACP-ID", sci);
@@ -1051,9 +1043,9 @@ raopcl_connect(struct raop_data *rd)
 	rval = true;
 
  erexit:
-	if (sac) g_free(sac);
-	if (key) g_free(key);
-	if (iv) g_free(iv);
+	g_free(sac);
+	g_free(key);
+	g_free(iv);
 	free_kd(setup_kd);
 	return rval;
 }
@@ -1064,7 +1056,7 @@ raopcl_close(struct raop_data *rd)
 	if (rd->rtspcl)
 		rtspcl_close(rd->rtspcl);
 	rd->rtspcl = NULL;
-	free(rd);
+	g_free(rd);
 }
 
 static int
