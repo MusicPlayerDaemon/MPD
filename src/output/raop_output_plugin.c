@@ -708,8 +708,12 @@ rtspcl_connect(struct rtspcl_data *rtspcld, const char *host, short destport,
 	struct sockaddr_in name;
 	socklen_t namelen = sizeof(name);
 
-	if ((rtspcld->fd = open_tcp_socket(NULL, &myport)) == -1) return -1;
-	if (!get_tcp_connect_by_host(rtspcld->fd, host, destport)) return -1;
+	if ((rtspcld->fd = open_tcp_socket(NULL, &myport)) == -1)
+		return false;
+
+	if (!get_tcp_connect_by_host(rtspcld->fd, host, destport))
+		return false;
+
 	getsockname(rtspcld->fd, (struct sockaddr*)&name, &namelen);
 	memcpy(&rtspcld->local_addr, &name.sin_addr,sizeof(struct in_addr));
 	sprintf(rtspcld->url, "rtsp://%s/%s", inet_ntoa(name.sin_addr), sid);
@@ -1288,7 +1292,9 @@ raop_output_open(void *data, struct audio_format *audio_format, GError **error_r
 		raop_session->raop_list = rd;
 		rd->is_master = true;
 
-		if ((raop_session->data_fd = open_udp_socket(NULL, &myport)) == -1) return -1;
+		if ((raop_session->data_fd = open_udp_socket(NULL, &myport)) == -1)
+			return false;
+
 		if ((raop_session->ntp.fd = open_udp_socket(NULL, &raop_session->ntp.port)) == -1) return false;
 		if ((raop_session->ctrl.fd = open_udp_socket(NULL, &raop_session->ctrl.port)) == -1) {
 			close(raop_session->ntp.fd);
