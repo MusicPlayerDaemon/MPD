@@ -1120,12 +1120,6 @@ send_audio_data(int fd)
 	return true;
 }
 
-static bool
-raop_output_test_default_device(void)
-{
-	return false;
-}
-
 static void *
 raop_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		 G_GNUC_UNUSED const struct config_param *param,
@@ -1419,7 +1413,6 @@ raop_output_play(void *data, const void *chunk, size_t size,
 
 const struct audio_output_plugin raopPlugin = {
 	.name = "raop",
-	.test_default_device = raop_output_test_default_device,
 	.init = raop_output_init,
 	.finish = raop_output_finish,
 	.open = raop_output_open,
