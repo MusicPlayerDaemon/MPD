@@ -683,8 +683,10 @@ pulse_output_play(void *data, const void *chunk, size_t size, GError **error_r)
 	/* unpause if previously paused */
 
 	if (pulse_output_stream_is_paused(po) &&
-	    !pulse_output_stream_pause(po, false, error_r))
+	    !pulse_output_stream_pause(po, false, error_r)) {
+		pa_threaded_mainloop_unlock(po->mainloop);
 		return 0;
+	}
 
 	/* wait until the server allows us to write */
 
