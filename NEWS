@@ -2,6 +2,8 @@ ver 0.16.4 (2011/??/??)
 * fix memory leaks
 * don't resume playback when seeking to another song while paused
 * apply follow_inside_symlinks to absolute symlinks
+* input:
+  - curl: limit the receive buffer size
 * decoder:
   - ffmpeg: workaround for semantic API change in recent ffmpeg versions
   - flac: validate the sample rate when scanning the tag
