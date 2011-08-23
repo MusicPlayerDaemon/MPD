@@ -429,7 +429,7 @@ send_timing_response(int fd)
 	return num_bytes == sizeof(buf);
 }
 
-static bool
+static void
 get_time_for_rtp(struct play_state *state, struct timeval *tout)
 {
 	unsigned long rtp_diff = state->rtptime - state->start_rtptime;
@@ -441,7 +441,6 @@ get_time_for_rtp(struct play_state *state, struct timeval *tout)
 		tout->tv_sec++;
 		tout->tv_usec = tout->tv_usec % 1000000;
 	}
-	return true;
 }
 
 /*
@@ -655,30 +654,27 @@ rtspcl_open(void)
 	return rtspcld;
 }
 
-static bool
+static void
 rtspcl_remove_all_exthds(struct rtspcl_data *rtspcld)
 {
 	free_kd(rtspcld->exthds);
 	rtspcld->exthds = NULL;
-	return true;
 }
 
-static bool
+static void
 rtspcl_disconnect(struct rtspcl_data *rtspcld)
 {
 	if (rtspcld->fd > 0) close(rtspcld->fd);
 	rtspcld->fd = 0;
-	return true;
 }
 
-static bool
+static void
 rtspcl_set_useragent(struct rtspcl_data *rtspcld, const char *name)
 {
 	rtspcld->useragent = name;
-	return true;
 }
 
-static bool
+static void
 rtspcl_add_exthds(struct rtspcl_data *rtspcld, const char *key, char *data)
 {
 	struct key_data *new_kd;
@@ -697,7 +693,6 @@ rtspcl_add_exthds(struct rtspcl_data *rtspcld, const char *key, char *data)
 		}
 		iter->next = new_kd;
 	}
-	return true;
 }
 
 static bool
@@ -823,14 +818,13 @@ rtspcl_record(struct rtspcl_data *rtspcld)
 			    &rtspcld->kd);
 }
 
-static bool
+static void
 rtspcl_close(struct rtspcl_data *rtspcld)
 {
 	rtspcl_disconnect(rtspcld);
 	rtspcl_remove_all_exthds(rtspcld);
 	free(rtspcld->session);
 	free(rtspcld);
-	return true;
 }
 
 static char* rtspcl_local_ip(struct rtspcl_data *rtspcld)
@@ -965,10 +959,9 @@ wrap_pcm(unsigned char *buffer, int bsize, int *size, unsigned char *inData, int
 	return true;
 }
 
-static bool
+static void
 raopcl_stream_connect(G_GNUC_UNUSED struct raop_data *rd)
 {
-	return true;
 }
 
 
@@ -1000,10 +993,10 @@ raopcl_connect(struct raop_data *rd)
 	sprintf(sci, "%08x%08x", *((int *)(buf + 4)), *((int *)(buf + 8)));
 	sac = g_base64_encode(buf + 12, 16);
 	if (!(rd->rtspcl = rtspcl_open())) goto erexit;
-	if (!rtspcl_set_useragent(rd->rtspcl, "iTunes/8.1.1 (Macintosh; U; PPC Mac OS X 10.4)")) goto erexit;
-	if (!rtspcl_add_exthds(rd->rtspcl, "Client-Instance", sci)) goto erexit;
-	if (!rtspcl_add_exthds(rd->rtspcl, "DACP-ID", sci)) goto erexit;
-	if (!rtspcl_add_exthds(rd->rtspcl, "Active-Remote", act_r)) goto erexit;
+	rtspcl_set_useragent(rd->rtspcl, "iTunes/8.1.1 (Macintosh; U; PPC Mac OS X 10.4)");
+	rtspcl_add_exthds(rd->rtspcl, "Client-Instance", sci);
+	rtspcl_add_exthds(rd->rtspcl, "DACP-ID", sci);
+	rtspcl_add_exthds(rd->rtspcl, "Active-Remote", act_r);
 	if (!rtspcl_connect(rd->rtspcl, rd->addr, rd->rtsp_port, sid)) goto erexit;
 
 	i = rsa_encrypt(raop_session->encrypt.key, 16, rsakey);
@@ -1024,7 +1017,7 @@ raopcl_connect(struct raop_data *rd)
 		"a=aesiv:%s\r\n",
 		sid, rtspcl_local_ip(rd->rtspcl), rd->addr, NUMSAMPLES, key, iv);
 	remove_char_from_string(sac, '=');
-	//	if (!rtspcl_add_exthds(rd->rtspcl, "Apple-Challenge", sac)) goto erexit;
+	// rtspcl_add_exthds(rd->rtspcl, "Apple-Challenge", sac);
 	if (!rtspcl_announce_sdp(rd->rtspcl, sdp)) goto erexit;
 	//	if (!rtspcl_mark_del_exthds(rd->rtspcl, "Apple-Challenge")) goto erexit;
 	if (!rtspcl_setup(rd->rtspcl, &setup_kd)) goto erexit;
@@ -1053,7 +1046,7 @@ raopcl_connect(struct raop_data *rd)
 
 	if (!rtspcl_record(rd->rtspcl)) goto erexit;
 
-	if (!raopcl_stream_connect(rd)) goto erexit;
+	raopcl_stream_connect(rd);
 
 	rval = true;
 
@@ -1065,14 +1058,13 @@ raopcl_connect(struct raop_data *rd)
 	return rval;
 }
 
-static bool
+static void
 raopcl_close(struct raop_data *rd)
 {
 	if (rd->rtspcl)
 		rtspcl_close(rd->rtspcl);
 	rd->rtspcl = NULL;
 	free(rd);
-	return true;
 }
 
 static int
