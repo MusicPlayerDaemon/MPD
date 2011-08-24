@@ -375,13 +375,24 @@ get_tcp_connect_by_host(int sd, const char *host, short destport,
 }
 
 /*
+ * Calculate the current NTP time, store it in the buffer.
+ */
+static void
+fill_int(unsigned char *buffer, unsigned int rtp_time)
+{
+	int iter;
+	for (iter = 0; iter < 4; iter++) {
+		buffer[iter] = (rtp_time >> ((3 - iter) * 8)) & 0xff;
+	}
+}
+
+/*
  * Store time in the NTP format in the buffer
  */
 static void
 fill_time_buffer_with_time(unsigned char *buffer, struct timeval *tout)
 {
 	unsigned long secs_to_baseline = 964697997;
-	int iter;
 	double fraction;
 	unsigned long long_fraction;
 	unsigned long secs;
@@ -389,12 +400,8 @@ fill_time_buffer_with_time(unsigned char *buffer, struct timeval *tout)
 	fraction = ((double) tout->tv_usec) / 1000000.0;
 	long_fraction = (unsigned long) (fraction * 256.0 * 256.0 * 256.0 * 256.0);
 	secs = secs_to_baseline + tout->tv_sec;
-	for (iter = 0; iter < 4; iter++) {
-		buffer[iter] = (secs >> ((3 - iter) * 8)) & 0xff;
-	}
-	for (iter = 0; iter < 4; iter++) {
-		buffer[4 + iter] = (long_fraction >> ((3 - iter) * 8)) & 0xff;
-	}
+	fill_int(buffer, secs);
+	fill_int(buffer + 4, long_fraction);
 }
 
 /*
@@ -407,18 +414,6 @@ fill_time_buffer(unsigned char *buffer)
 
 	gettimeofday(&current_time,NULL);
 	fill_time_buffer_with_time(buffer, &current_time);
-}
-
-/*
- * Calculate the current NTP time, store it in the buffer.
- */
-static void
-fill_int(unsigned char *buffer, unsigned int rtp_time)
-{
-	int iter;
-	for (iter = 0; iter < 4; iter++) {
-		buffer[iter] = (rtp_time >> ((3 - iter) * 8)) & 0xff;
-	}
 }
 
 /*
