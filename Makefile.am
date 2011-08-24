@@ -298,6 +298,7 @@ src_mpd_SOURCES = \
 	src/listen.c \
 	src/log.c \
 	src/ls.c \
+	src/io_thread.c src/io_thread.h \
 	src/main.c \
 	src/main_win32.c \
 	src/event_pipe.c \

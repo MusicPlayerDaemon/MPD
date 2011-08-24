@@ -20,6 +20,7 @@
 #include "config.h"
 #include "main.h"
 #include "daemon.h"
+#include "io_thread.h"
 #include "client.h"
 #include "client_idle.h"
 #include "idle.h"
@@ -312,6 +313,7 @@ int mpd_main(int argc, char *argv[])
 	/* enable GLib's thread safety code */
 	g_thread_init(NULL);
 
+	io_thread_init();
 	winsock_init();
 	idle_init();
 	dirvec_init();
@@ -385,6 +387,12 @@ int mpd_main(int argc, char *argv[])
 	setup_log_output(options.log_stderr);
 
 	initSigHandlers();
+
+	if (!io_thread_start(&error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return EXIT_FAILURE;
+	}
 
 	initZeroconf();
 
@@ -474,6 +482,7 @@ int mpd_main(int argc, char *argv[])
 	dirvec_deinit();
 	idle_deinit();
 	stats_global_finish();
+	io_thread_deinit();
 	daemonize_finish();
 #ifdef WIN32
 	WSACleanup();
