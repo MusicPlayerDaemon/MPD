@@ -57,7 +57,7 @@
           Some example code:
         </para>
 
-        <programlisting lang="C">static inline bool
+        <programlisting lang="C">static inline int
 foo(const char *abc, int xyz)
 {
         if (abc == NULL) {
