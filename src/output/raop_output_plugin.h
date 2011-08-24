@@ -20,6 +20,8 @@
 #ifndef MPD_OUTPUT_RAOP_PLUGIN_H
 #define MPD_OUTPUT_RAOP_PLUGIN_H
 
+#include "ntp_server.h"
+
 #include <glib.h>
 #include <stdbool.h>
 #include <sys/time.h>
@@ -89,13 +91,6 @@ struct encrypt_data {
 
 /*********************************************************************/
 
-struct ntp_data {
-	unsigned short port;
-	int fd;
-};
-
-/*********************************************************************/
-
 struct raop_data {
 	struct rtspcl_data *rtspcl;
 	const char *addr; // target host address
@@ -132,7 +127,7 @@ struct control_data {
 // session
 struct raop_session_data {
 	struct raop_data *raop_list;
-	struct ntp_data ntp;
+	struct ntp_server ntp;
 	struct control_data ctrl;
 	struct encrypt_data encrypt;
 	struct play_state play_state;

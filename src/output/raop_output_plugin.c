@@ -67,8 +67,7 @@ new_raop_data(GError **error_r)
 	if (raop_session == NULL) {
 		raop_session = g_new(struct raop_session_data, 1);
 		raop_session->raop_list = NULL;
-		raop_session->ntp.port = 6002;
-		raop_session->ntp.fd = -1;
+		ntp_server_init(&raop_session->ntp);
 		raop_session->ctrl.port = 6001;
 		raop_session->ctrl.fd = -1;
 		raop_session->play_state.playing = false;
@@ -402,46 +401,6 @@ fill_time_buffer_with_time(unsigned char *buffer, struct timeval *tout)
 	fill_int(buffer + 4, long_fraction);
 }
 
-/*
- * Calculate the current NTP time, store it in the buffer.
- */
-static void
-fill_time_buffer(unsigned char *buffer)
-{
-	struct timeval current_time;
-
-	gettimeofday(&current_time,NULL);
-	fill_time_buffer_with_time(buffer, &current_time);
-}
-
-/*
- * Recv the NTP datagram from the AirTunes, send back an NTP response.
- */
-static bool
-send_timing_response(int fd)
-{
-	unsigned char buf[32];
-	struct sockaddr addr;
-	int iter;
-	unsigned int addr_len = sizeof(addr);
-	int num_bytes = recvfrom(fd, buf, sizeof(buf), 0, &addr, &addr_len);
-	if (num_bytes == 0) {
-		return false;
-	}
-	fill_time_buffer(buf + 16);
-	// set to response
-	buf[1] = 0xd3;
-	// copy request
-	for (iter = 0; iter < 8; iter++) {
-		buf[8 + iter] = buf[24 + iter];
-	}
-	fill_time_buffer(buf + 24);
-
-	num_bytes = sendto(fd, buf, num_bytes, 0, &addr, addr_len);
-
-	return num_bytes == sizeof(buf);
-}
-
 static void
 get_time_for_rtp(struct play_state *state, struct timeval *tout)
 {
@@ -494,29 +453,6 @@ send_control_command(struct control_data *ctrl, struct raop_data *rd,
 		return false;
 	}
 
-	return true;
-}
-
-/*
- * check to see if there are any timing requests, and respond if there are any
- */
-static bool
-check_timing(struct timeval *tout)
-{
-	fd_set rdfds;
-	int fdmax = 0;
-
-	FD_ZERO(&rdfds);
-
-	FD_SET(raop_session->ntp.fd, &rdfds);
-	fdmax = raop_session->ntp.fd;
-	select(fdmax + 1, &rdfds,NULL, NULL, tout);
-	if (FD_ISSET(raop_session->ntp.fd, &rdfds)) {
-		if (!send_timing_response(raop_session->ntp.fd)) {
-			g_debug("unable to send timing response\n");
-			return false;
-		}
-	}
 	return true;
 }
 
@@ -605,7 +541,7 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 			break;
 		}
 		if (FD_ISSET(raop_session->ntp.fd, &rdfds)) {
-			send_timing_response(raop_session->ntp.fd);
+			ntp_server_handle(&raop_session->ntp);
 		}
 	}
 
@@ -1141,7 +1077,7 @@ send_audio_data(int fd, GError **error_r)
 	while (diff < -10000) {
 		tout.tv_sec = 0;
 		tout.tv_usec = -diff;
-		check_timing(&tout);
+		ntp_server_check(&raop_session->ntp, &tout);
 		gettimeofday(&current_time, NULL);
 		diff = difference(&current_time, &rtp_time);
 	}
@@ -1280,7 +1216,7 @@ raop_output_pause(void *data)
 	struct timeval tout = {.tv_sec = 0, .tv_usec = 0};
 	struct raop_data *rd = (struct raop_data *) data;
 
-	check_timing(&tout);
+	ntp_server_check(&raop_session->ntp, &tout);
 	rd->paused = true;
 	return true;
 }
@@ -1304,7 +1240,7 @@ raop_output_close(void *data)
 					// TODO clean up everything else
 					raop_session->play_state.playing = false;
 					close(raop_session->data_fd);
-					close(raop_session->ntp.fd);
+					ntp_server_close(&raop_session->ntp);
 					close(raop_session->ctrl.fd);
 				}
 			}
@@ -1398,7 +1334,7 @@ raop_output_play(void *data, const void *chunk, size_t size,
 
 	g_mutex_lock(raop_session->data_mutex);
 
-	check_timing(&tout);
+	ntp_server_check(&raop_session->ntp, &tout);
 
 	if (raop_session->play_state.rtptime <= NUMSAMPLES) {
 		// looped over, need new reference point to calculate correct times
