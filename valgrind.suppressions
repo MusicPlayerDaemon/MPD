@@ -106,6 +106,14 @@
 }
 
 {
+   g_static_private_set
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:g_intern_static_string
+}
+
+{
    g_get_language_names
    Memcheck:Leak
    fun:*alloc
