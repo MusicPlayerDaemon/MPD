@@ -29,6 +29,10 @@
 #include "input/curl_input_plugin.h"
 #endif
 
+#ifdef ENABLE_SOUP
+#include "input/soup_input_plugin.h"
+#endif
+
 #ifdef HAVE_FFMPEG
 #include "input/ffmpeg_input_plugin.h"
 #endif
@@ -54,6 +58,9 @@ const struct input_plugin *const input_plugins[] = {
 #endif
 #ifdef ENABLE_CURL
 	&input_plugin_curl,
+#endif
+#ifdef ENABLE_SOUP
+	&input_plugin_soup,
 #endif
 #ifdef HAVE_FFMPEG
 	&input_plugin_ffmpeg,

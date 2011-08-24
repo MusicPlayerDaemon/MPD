@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "io_thread.h"
 #include "input_init.h"
 #include "input_stream.h"
 #include "tag_pool.h"
@@ -30,6 +31,7 @@
 #include <glib.h>
 
 #include <unistd.h>
+#include <stdlib.h>
 
 static void
 my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
@@ -71,6 +73,13 @@ int main(int argc, char **argv)
 		g_printerr("%s:", error->message);
 		g_error_free(error);
 		return 1;
+	}
+
+	io_thread_init();
+	if (!io_thread_start(&error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return EXIT_FAILURE;
 	}
 
 	if (!input_stream_global_init(&error)) {
@@ -150,6 +159,7 @@ int main(int argc, char **argv)
 		input_stream_close(is);
 	playlist_list_global_finish();
 	input_stream_global_finish();
+	io_thread_deinit();
 	config_global_finish();
 	tag_pool_deinit();
 

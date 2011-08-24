@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "io_thread.h"
 #include "decoder_list.h"
 #include "decoder_api.h"
 #include "input_init.h"
@@ -31,6 +32,7 @@
 
 #include <assert.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 static void
 my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
@@ -180,6 +182,13 @@ int main(int argc, char **argv)
 
 	g_log_set_default_handler(my_log_func, NULL);
 
+	io_thread_init();
+	if (!io_thread_start(&error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return EXIT_FAILURE;
+	}
+
 	if (!input_stream_global_init(&error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
@@ -222,6 +231,7 @@ int main(int argc, char **argv)
 
 	decoder_plugin_deinit_all();
 	input_stream_global_finish();
+	io_thread_deinit();
 
 	if (!decoder.initialized) {
 		g_printerr("Decoding failed\n");

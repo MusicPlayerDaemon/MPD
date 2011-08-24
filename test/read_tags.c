@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "io_thread.h"
 #include "decoder_list.h"
 #include "decoder_api.h"
 #include "input_init.h"
@@ -32,6 +33,7 @@
 
 #include <assert.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -164,6 +166,13 @@ int main(int argc, char **argv)
 	decoder_name = argv[1];
 	path = argv[2];
 
+	io_thread_init();
+	if (!io_thread_start(&error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return EXIT_FAILURE;
+	}
+
 	if (!input_stream_global_init(&error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
@@ -195,6 +204,8 @@ int main(int argc, char **argv)
 
 	decoder_plugin_deinit_all();
 	input_stream_global_finish();
+	io_thread_deinit();
+
 	if (tag == NULL) {
 		g_printerr("Failed to read tags\n");
 		return 1;

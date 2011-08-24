@@ -636,12 +636,14 @@ endif
 
 INPUT_CFLAGS = \
 	$(CURL_CFLAGS) \
+	$(SOUP_CFLAGS) \
 	$(CDIO_PARANOIA_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
 	$(MMS_CFLAGS)
 
 INPUT_LIBS = \
 	$(CURL_LIBS) \
+	$(SOUP_LIBS) \
 	$(CDIO_PARANOIA_LIBS) \
 	$(FFMPEG_LIBS) \
 	$(MMS_LIBS)
@@ -656,6 +658,12 @@ INPUT_SRC = \
 if ENABLE_CURL
 INPUT_SRC += src/input/curl_input_plugin.c \
 	src/icy_metadata.c
+endif
+
+if ENABLE_SOUP
+INPUT_SRC += \
+	src/input/soup_input_plugin.c \
+	src/input/soup_input_plugin.h
 endif
 
 if ENABLE_CDIO_PARANOIA
@@ -909,6 +917,7 @@ test_run_input_LDADD = $(MPD_LIBS) \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.c \
 	test/stdbin.h \
+	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/tag.c src/tag_pool.c src/tag_save.c \
 	src/fd_util.c \
@@ -927,6 +936,7 @@ test_dump_playlist_LDADD = $(MPD_LIBS) \
 	$(INPUT_LIBS) \
 	$(GLIB_LIBS)
 test_dump_playlist_SOURCES = test/dump_playlist.c \
+	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/uri.c \
 	src/song.c src/tag.c src/tag_pool.c src/tag_save.c \
@@ -957,6 +967,7 @@ test_run_decoder_LDADD = $(MPD_LIBS) \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.c \
 	test/stdbin.h \
+	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
 	src/tag.c src/tag_pool.c \
 	src/replay_gain_info.c \
@@ -980,6 +991,7 @@ test_read_tags_LDADD = $(MPD_LIBS) \
 	$(INPUT_LIBS) $(DECODER_LIBS) \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.c \
+	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
 	src/tag.c src/tag_pool.c \
 	src/replay_gain_info.c \

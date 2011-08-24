@@ -703,6 +703,34 @@ cd mpd-version</programlisting>
         </informaltable>
       </section>
 
+      <section>
+        <title><varname>soup</varname></title>
+
+        <para>
+          Opens remote files or streams over HTTP.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>proxy</varname>
+                </entry>
+                <entry>
+                  Sets the address of the HTTP proxy server.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
     </section>
 
     <section>

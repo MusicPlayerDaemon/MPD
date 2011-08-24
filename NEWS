@@ -5,6 +5,7 @@ ver 0.17 (2011/??/??)
 * input:
   - cdio_paranoia: new input plugin to play audio CDs
   - curl: enable CURLOPT_NETRC
+  - soup: new input plugin based on libsoup
   - ffmpeg: support libavformat 0.7
 * decoder:
   - mpg123: implement seeking

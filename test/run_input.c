@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "io_thread.h"
 #include "input_init.h"
 #include "input_stream.h"
 #include "tag_pool.h"
@@ -32,6 +33,7 @@
 #include <glib.h>
 
 #include <unistd.h>
+#include <stdlib.h>
 
 static void
 my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
@@ -122,6 +124,13 @@ int main(int argc, char **argv)
 	tag_pool_init();
 	config_global_init();
 
+	io_thread_init();
+	if (!io_thread_start(&error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return EXIT_FAILURE;
+	}
+
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_init_all();
 #endif
@@ -154,6 +163,8 @@ int main(int argc, char **argv)
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_deinit_all();
 #endif
+
+	io_thread_deinit();
 
 	config_global_finish();
 	tag_pool_deinit();
