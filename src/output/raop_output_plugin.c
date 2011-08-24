@@ -17,9 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "raop_output_plugin.h"
 #include "output_api.h"
 #include "mixer_list.h"
 #include "raop_output_plugin.h"
+#include "rtsp_client.h"
 #include "glib_compat.h"
 
 #include <glib.h>
@@ -32,12 +34,9 @@
 #ifndef WIN32
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include <sys/select.h>
-#include <sys/poll.h>
 #include <netdb.h>
 #endif
 
-#include <fcntl.h>
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "raop"
 
@@ -101,81 +100,6 @@ new_raop_data(GError **error_r)
 	return ret;
 }
 
-
-/*
- * read one line from the file descriptor
- * timeout: msec unit, -1 for infinite
- * if CR comes then following LF is expected
- * returned string in line is always null terminated, maxlen-1 is maximum string length
- */
-static int
-read_line(int fd, char *line, int maxlen, int timeout, int no_poll)
-{
-	int i, rval;
-	int count = 0;
-	struct pollfd pfds;
-	char ch;
-	*line = 0;
-	pfds.events = POLLIN;
-	pfds.fd = fd;
-	for (i = 0;i < maxlen; i++) {
-		if (no_poll || poll(&pfds, 1, timeout))
-			rval=read(fd,&ch,1);
-		else return 0;
-
-		if (rval == -1) {
-			if (errno == EAGAIN) return 0;
-			g_warning("%s:read error: %s\n", __func__, strerror(errno));
-			return -1;
-		}
-		if (rval == 0) {
-			g_debug("%s:disconnected on the other end\n", __func__);
-			return -1;
-		}
-		if(ch == '\n') {
-			*line = 0;
-			return count;
-		}
-		if (ch == '\r') continue;
-		*line++ = ch;
-		count++;
-		if (count >= maxlen - 1) break;
-	}
-	*line = 0;
-	return count;
-}
-
-/*
- * Free all memory associated with key_data
- */
-static void
-free_kd(struct key_data *kd)
-{
-	struct key_data *iter = kd;
-	while (iter) {
-		g_free(iter->key);
-		g_free(iter->data);
-		iter = iter->next;
-		g_free(kd);
-		kd = iter;
-	}
-}
-
-/*
- * key_data type data look up
- */
-static char *
-kd_lookup(struct key_data *kd, const char *key)
-{
-	while (kd) {
-		if (!strcmp(kd->key, key)) {
-			return kd->data;
-		}
-		kd = kd->next;
-	}
-	return NULL;
-}
-
 /*
  * remove one character from a string
  * return the number of deleted characters
@@ -198,8 +122,6 @@ remove_char_from_string(char *str, char c)
 
 	return src - dst;
 }
-
-#define SLEEP_MSEC(val) usleep(val*1000)
 
 /* bind an opened socket to specified hostname and port.
  * if hostname=NULL, use INADDR_ANY.
@@ -262,31 +184,6 @@ static int bind_host(int sd, char *hostname, unsigned long ulAddr,
 }
 
 /*
- * open tcp port
- */
-static int
-open_tcp_socket(char *hostname, unsigned short *port,
-		GError **error_r)
-{
-	int sd;
-
-	/* socket creation */
-	sd = socket(AF_INET, SOCK_STREAM, 0);
-	if (sd < 0) {
-		g_set_error(error_r, raop_output_quark(), errno,
-			    "failed to create TCP socket: %s",
-			    g_strerror(errno));
-		return -1;
-	}
-	if (bind_host(sd, hostname, 0, port, error_r)) {
-		close(sd);
-		return -1;
-	}
-
-	return sd;
-}
-
-/*
  * open udp  port
  */
 static int
@@ -318,29 +215,6 @@ open_udp_socket(char *hostname, unsigned short *port,
 	return sd;
 }
 
-/*
- * create tcp connection
- * as long as the socket is not non-blocking, this can block the process
- * nsport is network byte order
- */
-static bool
-get_tcp_connect(int sd, struct sockaddr_in dest_addr, GError **error_r)
-{
-	if (connect(sd, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr))){
-		SLEEP_MSEC(100L);
-		// try one more time
-		if (connect(sd, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr))) {
-			g_set_error(error_r, raop_output_quark(), errno,
-				    "failed to connect to %s:%d: %s",
-				    inet_ntoa(dest_addr.sin_addr),
-				    ntohs(dest_addr.sin_port),
-				    g_strerror(errno));
-			return false;
-		}
-	}
-	return true;
-}
-
 static bool
 get_sockaddr_by_host(const char *host, short destport,
 		     struct sockaddr_in *addr,
@@ -355,23 +229,13 @@ get_sockaddr_by_host(const char *host, short destport,
 	} else {
 		addr->sin_family = AF_INET;
 		if ((addr->sin_addr.s_addr=inet_addr(host))==0xFFFFFFFF) {
-			g_set_error(error_r, raop_output_quark(), 0,
+			g_set_error(error_r, rtsp_client_quark(), 0,
 				    "failed to resolve host '%s'", host);
 			return false;
 		}
 	}
 	addr->sin_port = htons(destport);
 	return true;
-}
-
-static bool
-get_tcp_connect_by_host(int sd, const char *host, short destport,
-			GError **error_r)
-{
-	struct sockaddr_in addr;
-
-	return get_sockaddr_by_host(host, destport, &addr, error_r) &&
-		get_tcp_connect(sd, addr, error_r);
 }
 
 /*
@@ -455,348 +319,6 @@ send_control_command(struct control_data *ctrl, struct raop_data *rd,
 	}
 
 	return true;
-}
-
-/*
- * send RTSP request, and get response if it's needed
- * if this gets a success, *kd is allocated or reallocated (if *kd is not NULL)
- */
-static bool
-exec_request(struct rtspcl_data *rtspcld, const char *cmd,
-	     const char *content_type, const char *content,
-	     int get_response,
-	     const struct key_data *hds, struct key_data **kd,
-	     GError **error_r)
-{
-	char line[1024];
-	char req[1024];
-	char reql[128];
-	const char delimiters[] = " ";
-	char *token, *dp;
-	int i,dsize = 0,rval;
-	struct key_data *cur_kd = *kd;
-	unsigned int j;
-	int timeout = 5000; // msec unit
-
-	fd_set rdfds;
-	int fdmax = 0;
-	struct timeval tout = {.tv_sec=10, .tv_usec=0};
-
-	if (!rtspcld) {
-		g_set_error_literal(error_r, raop_output_quark(), 0,
-				    "not connected");
-		return false;
-	}
-
-	sprintf(req, "%s %s RTSP/1.0\r\nCSeq: %d\r\n", cmd, rtspcld->url, ++rtspcld->cseq );
-
-	if ( rtspcld->session != NULL ) {
-		sprintf(reql,"Session: %s\r\n", rtspcld->session );
-		strncat(req,reql,sizeof(req));
-	}
-
-	const struct key_data *hd_iter = hds;
-	while (hd_iter) {
-		sprintf(reql, "%s: %s\r\n", hd_iter->key, hd_iter->data);
-		strncat(req, reql, sizeof(req));
-		hd_iter = hd_iter->next;
-	}
-
-	if (content_type && content) {
-		sprintf(reql, "Content-Type: %s\r\nContent-Length: %d\r\n",
-			content_type, (int) strlen(content));
-		strncat(req,reql,sizeof(req));
-	}
-
-	sprintf(reql, "User-Agent: %s\r\n", rtspcld->useragent);
-	strncat(req, reql, sizeof(req));
-
-	hd_iter = rtspcld->exthds;
-	while (hd_iter) {
-		sprintf(reql, "%s: %s\r\n", hd_iter->key, hd_iter->data);
-		strncat(req, reql, sizeof(req));
-		hd_iter = hd_iter->next;
-	}
-	strncat(req, "\r\n", sizeof(req));
-
-	if (content_type && content)
-		strncat(req, content, sizeof(req));
-
-	rval = write(rtspcld->fd, req, strlen(req));
-	if (rval < 0) {
-		g_set_error(error_r, raop_output_quark(), errno,
-			    "write error: %s",
-			    g_strerror(errno));
-		return false;
-	}
-
-	if (!get_response) return true;
-
-	while (true) {
-		FD_ZERO(&rdfds);
-		FD_SET(rtspcld->fd, &rdfds);
-		fdmax = rtspcld->fd;
-		select(fdmax + 1, &rdfds, NULL, NULL, &tout);
-		if (FD_ISSET(rtspcld->fd, &rdfds)) {
-			break;
-		}
-	}
-
-	if (read_line(rtspcld->fd, line, sizeof(line), timeout, 0) <= 0) {
-		g_set_error_literal(error_r, raop_output_quark(), 0,
-				    "request failed");
-		return false;
-	}
-
-	token = strtok(line, delimiters);
-	token = strtok(NULL, delimiters);
-	if (token == NULL) {
-		g_set_error_literal(error_r, raop_output_quark(), 0,
-				    "request failed");
-		return false;
-	}
-
-	if (strcmp(token, "200") != 0) {
-		g_set_error(error_r, raop_output_quark(), 0,
-			    "request failed: %s", token);
-		return false;
-	}
-
-	i = 0;
-	while (read_line(rtspcld->fd, line, sizeof(line), timeout, 0) > 0) {
-		struct key_data *new_kd = NULL;
-		timeout = 1000; // once it started, it shouldn't take a long time
-		if (i && line[0] == ' ') {
-			for (j = 0; j < strlen(line); j++) if (line[j] != ' ') break;
-			dsize += strlen(line + j);
-			new_kd->data = g_realloc(new_kd->data, dsize);
-			strcat(new_kd->data, line + j);
-			continue;
-		}
-		dp = strstr(line, ":");
-		if (!dp) {
-			free_kd(*kd);
-			*kd = NULL;
-
-			g_set_error_literal(error_r, raop_output_quark(), 0,
-					    "request failed, bad header");
-			return false;
-		}
-		*dp = 0;
-		new_kd = g_new(struct key_data, 1);
-		new_kd->key = g_strdup(line);
-		dsize = strlen(dp + 1) + 1;
-		new_kd->data = g_strdup(dp);
-		new_kd->next = NULL;
-		if (cur_kd == NULL) {
-			cur_kd = *kd = new_kd;
-		} else {
-			cur_kd->next = new_kd;
-			cur_kd = new_kd;
-		}
-		i++;
-	}
-	return true;
-}
-
-static bool
-rtspcl_set_parameter(struct rtspcl_data *rtspcld, const char *parameter,
-		     GError **error_r)
-{
-	return exec_request(rtspcld, "SET_PARAMETER", "text/parameters",
-			    parameter, 1, NULL, &rtspcld->kd, error_r);
-}
-
-static struct rtspcl_data *
-rtspcl_open(void)
-{
-	struct rtspcl_data *rtspcld;
-	rtspcld = g_new0(struct rtspcl_data, 1);
-	rtspcld->useragent = "RTSPClient";
-	return rtspcld;
-}
-
-static void
-rtspcl_remove_all_exthds(struct rtspcl_data *rtspcld)
-{
-	free_kd(rtspcld->exthds);
-	rtspcld->exthds = NULL;
-}
-
-static void
-rtspcl_disconnect(struct rtspcl_data *rtspcld)
-{
-	if (rtspcld->fd > 0) close(rtspcld->fd);
-	rtspcld->fd = 0;
-}
-
-static void
-rtspcl_set_useragent(struct rtspcl_data *rtspcld, const char *name)
-{
-	rtspcld->useragent = name;
-}
-
-static void
-rtspcl_add_exthds(struct rtspcl_data *rtspcld, const char *key, char *data)
-{
-	struct key_data *new_kd;
-	new_kd = g_new(struct key_data, 1);
-	new_kd->key = g_strdup(key);
-	new_kd->data = g_strdup(data);
-	new_kd->next = NULL;
-	if (!rtspcld->exthds) {
-		rtspcld->exthds = new_kd;
-	} else {
-		struct key_data *iter = rtspcld->exthds;
-		while (iter->next) {
-			iter = iter->next;
-		}
-		iter->next = new_kd;
-	}
-}
-
-static bool
-rtspcl_connect(struct rtspcl_data *rtspcld, const char *host, short destport,
-	       const char *sid, GError **error_r)
-{
-	unsigned short myport = 0;
-	struct sockaddr_in name;
-	socklen_t namelen = sizeof(name);
-
-	if ((rtspcld->fd = open_tcp_socket(NULL, &myport, error_r)) == -1)
-		return false;
-
-	if (!get_tcp_connect_by_host(rtspcld->fd, host, destport, error_r))
-		return false;
-
-	getsockname(rtspcld->fd, (struct sockaddr*)&name, &namelen);
-	memcpy(&rtspcld->local_addr, &name.sin_addr,sizeof(struct in_addr));
-	sprintf(rtspcld->url, "rtsp://%s/%s", inet_ntoa(name.sin_addr), sid);
-	getpeername(rtspcld->fd, (struct sockaddr*)&name, &namelen);
-	memcpy(&rtspcld->host_addr, &name.sin_addr, sizeof(struct in_addr));
-	return true;
-}
-
-static bool
-rtspcl_announce_sdp(struct rtspcl_data *rtspcld, const char *sdp,
-		    GError **error_r)
-{
-	return exec_request(rtspcld, "ANNOUNCE", "application/sdp", sdp, 1,
-			    NULL, &rtspcld->kd, error_r);
-}
-
-static bool
-rtspcl_setup(struct rtspcl_data *rtspcld, struct key_data **kd,
-	     GError **error_r)
-{
-	struct key_data *rkd = NULL, hds;
-	const char delimiters[] = ";";
-	char *buf = NULL;
-	char *token, *pc;
-	int rval = false;
-
-	static char transport_key[] = "Transport";
-
-	char transport_value[256];
-	snprintf(transport_value, sizeof(transport_value),
-		 "RTP/AVP/UDP;unicast;interleaved=0-1;mode=record;control_port=%d;timing_port=%d",
-		 raop_session->ctrl.port, raop_session->ntp.port);
-
-	hds.key = transport_key;
-	hds.data = transport_value;
-	hds.next = NULL;
-	if (!exec_request(rtspcld, "SETUP", NULL, NULL, 1,
-			  &hds, &rkd, error_r))
-		return false;
-
-	if (!(rtspcld->session = g_strdup(kd_lookup(rkd, "Session")))) {
-		g_set_error_literal(error_r, raop_output_quark(), 0,
-				    "no session in response");
-		goto erexit;
-	}
-	if (!(rtspcld->transport = kd_lookup(rkd, "Transport"))) {
-		g_set_error_literal(error_r, raop_output_quark(), 0,
-				    "no transport in response");
-		goto erexit;
-	}
-	buf = g_strdup(rtspcld->transport);
-	token = strtok(buf, delimiters);
-	rtspcld->server_port = 0;
-	rtspcld->control_port = 0;
-	while (token) {
-		if ((pc = strstr(token, "="))) {
-			*pc = 0;
-			if (!strcmp(token,"server_port")) {
-				rtspcld->server_port=atoi(pc + 1);
-			}
-			if (!strcmp(token,"control_port")) {
-				rtspcld->control_port=atoi(pc + 1);
-			}
-		}
-		token = strtok(NULL, delimiters);
-	}
-	if (rtspcld->server_port == 0) {
-		g_set_error_literal(error_r, raop_output_quark(), 0,
-				    "no server_port in response");
-		goto erexit;
-	}
-	if (rtspcld->control_port == 0) {
-		g_set_error_literal(error_r, raop_output_quark(), 0,
-				    "no control_port in response");
-		goto erexit;
-	}
-	rval = true;
- erexit:
-	g_free(buf);
-	if (!rval) {
-		free_kd(rkd);
-		rkd = NULL;
-	}
-	*kd = rkd;
-	return rval;
-}
-
-static bool
-rtspcl_record(struct rtspcl_data *rtspcld, GError **error_r)
-{
-	if (!rtspcld->session) {
-		g_set_error_literal(error_r, raop_output_quark(), 0,
-				    "no session in progress");
-		return false;
-	}
-
-	char buf[128];
-	sprintf(buf, "seq=%d,rtptime=%u", raop_session->play_state.seq_num, raop_session->play_state.rtptime);
-
-	struct key_data rtp;
-	static char rtp_key[] = "RTP-Info";
-	rtp.key = rtp_key;
-	rtp.data = buf;
-	rtp.next = NULL;
-
-	struct key_data range;
-	static char range_key[] = "Range";
-	range.key = range_key;
-	static char range_value[] = "npt=0-";
-	range.data = range_value;
-	range.next = &rtp;
-
-	return exec_request(rtspcld, "RECORD", NULL, NULL, 1, &range,
-			    &rtspcld->kd, error_r);
-}
-
-static void
-rtspcl_close(struct rtspcl_data *rtspcld)
-{
-	rtspcl_disconnect(rtspcld);
-	rtspcl_remove_all_exthds(rtspcld);
-	g_free(rtspcld->session);
-	g_free(rtspcld);
-}
-
-static char* rtspcl_local_ip(struct rtspcl_data *rtspcld)
-{
-	return inet_ntoa(rtspcld->local_addr);
 }
 
 static int rsa_encrypt(const unsigned char *text, int len, unsigned char *res)
@@ -989,7 +511,9 @@ raopcl_connect(struct raop_data *rd, GError **error_r)
 	if (!rtspcl_announce_sdp(rd->rtspcl, sdp, error_r))
 		goto erexit;
 	//	if (!rtspcl_mark_del_exthds(rd->rtspcl, "Apple-Challenge")) goto erexit;
-	if (!rtspcl_setup(rd->rtspcl, &setup_kd, error_r))
+	if (!rtspcl_setup(rd->rtspcl, &setup_kd,
+			  raop_session->ctrl.port, raop_session->ntp.port,
+			  error_r))
 		goto erexit;
 	if (!(aj = kd_lookup(setup_kd,"Audio-Jack-Status"))) {
 		g_set_error_literal(error_r, raop_output_quark(), 0,
@@ -1020,7 +544,10 @@ raopcl_connect(struct raop_data *rd, GError **error_r)
 				  &rd->data_addr, error_r))
 		goto erexit;
 
-	if (!rtspcl_record(rd->rtspcl, error_r))
+	if (!rtspcl_record(rd->rtspcl,
+			   raop_session->play_state.seq_num,
+			   raop_session->play_state.rtptime,
+			   error_r))
 		goto erexit;
 
 	raopcl_stream_connect(rd);

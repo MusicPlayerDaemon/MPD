@@ -21,25 +21,12 @@
 #define MPD_OUTPUT_RAOP_PLUGIN_H
 
 #include "ntp_server.h"
+#include "rtsp_client.h"
 
 #include <glib.h>
 #include <stdbool.h>
 #include <sys/time.h>
 #include <openssl/aes.h>
-
-#ifdef WIN32
-#define WINVER 0x0501
-#include <ws2tcpip.h>
-#include <winsock.h>
-#else
-#include <netinet/in.h>
-#endif
-
-struct key_data {
-	char *key;
-	char *data;
-	struct key_data *next;
-};
 
 struct play_state {
 	bool playing;
@@ -52,22 +39,6 @@ struct play_state {
 };
 
 /*********************************************************************/
-
-struct rtspcl_data {
-	int fd;
-	char url[128];
-	int cseq;
-	struct key_data *kd;
-	struct key_data *exthds;
-	char *session;
-	char *transport;
-	unsigned short server_port;
-	unsigned short control_port;
-	struct in_addr host_addr;
-	struct in_addr local_addr;
-	const char *useragent;
-
-};
 
 enum pause_state {
 	NO_PAUSE = 0,

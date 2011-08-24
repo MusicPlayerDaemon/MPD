@@ -776,6 +776,7 @@ endif
 if ENABLE_RAOP_OUTPUT
 OUTPUT_SRC += \
 	src/ntp_server.c src/ntp_server.h \
+	src/rtsp_client.c src/rtsp_client.h \
 	src/output/raop_output_plugin.c
 MIXER_SRC += src/mixer/raop_mixer_plugin.c
 OUTPUT_LIBS += $(OPENSSL_LIBS)
