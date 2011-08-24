@@ -378,12 +378,10 @@ get_tcp_connect_by_host(int sd, const char *host, short destport,
  * Calculate the current NTP time, store it in the buffer.
  */
 static void
-fill_int(unsigned char *buffer, unsigned int rtp_time)
+fill_int(unsigned char *buffer, uint32_t value)
 {
-	int iter;
-	for (iter = 0; iter < 4; iter++) {
-		buffer[iter] = (rtp_time >> ((3 - iter) * 8)) & 0xff;
-	}
+	uint32_t be = GINT32_TO_BE(value);
+	memcpy(buffer, &be, sizeof(be));
 }
 
 /*
