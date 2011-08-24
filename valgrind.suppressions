@@ -186,6 +186,14 @@
 }
 
 {
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:g_data_initialize
+}
+
+{
    openssl
    Memcheck:Leak
    fun:malloc
