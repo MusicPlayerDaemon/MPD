@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "input/rewind_input_plugin.h"
-#include "input/curl_input_plugin.h"
 #include "input_plugin.h"
 #include "tag.h"
 

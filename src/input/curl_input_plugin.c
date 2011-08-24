@@ -711,18 +711,6 @@ input_curl_easy_init(struct input_curl *c, GError **error_r)
 	return true;
 }
 
-void
-input_curl_reinit(struct input_stream *is)
-{
-	struct input_curl *c = (struct input_curl *)is;
-
-	assert(c->base.plugin == &input_plugin_curl);
-	assert(c->easy != NULL);
-
-	curl_easy_setopt(c->easy, CURLOPT_WRITEHEADER, is);
-	curl_easy_setopt(c->easy, CURLOPT_WRITEDATA, is);
-}
-
 static bool
 input_curl_send_request(struct input_curl *c, GError **error_r)
 {

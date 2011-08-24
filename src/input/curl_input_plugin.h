@@ -24,12 +24,4 @@ struct input_stream;
 
 extern const struct input_plugin input_plugin_curl;
 
-/**
- * This is a workaround for an input_stream API deficiency; after
- * exchanging the input_stream pointer in input_rewind_open(), this
- * function is called to reinitialize CURL's data pointers.
- */
-void
-input_curl_reinit(struct input_stream *is);
-
 #endif
