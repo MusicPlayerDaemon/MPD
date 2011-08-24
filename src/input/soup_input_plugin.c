@@ -251,6 +251,16 @@ input_soup_close(struct input_stream *is)
 	}
 
 	g_mutex_unlock(s->mutex);
+	g_mutex_free(s->mutex);
+	g_cond_free(s->cond);
+
+	SoupBuffer *buffer;
+	while ((buffer = g_queue_pop_head(s->buffers)) != NULL)
+		soup_buffer_free(buffer);
+	g_queue_free(s->buffers);
+
+	input_stream_deinit(&s->base);
+	g_free(s);
 }
 
 static int
