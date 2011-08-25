@@ -118,8 +118,9 @@ input_curl_init(const struct config_param *param,
 {
 	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
 	if (code != CURLE_OK) {
-		g_warning("curl_global_init() failed: %s\n",
-			  curl_easy_strerror(code));
+		g_set_error(error_r, curl_quark(), code,
+			    "curl_global_init() failed: %s\n",
+			    curl_easy_strerror(code));
 		return false;
 	}
 
