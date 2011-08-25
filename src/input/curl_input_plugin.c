@@ -319,9 +319,8 @@ input_curl_select(struct input_curl *c, GError **error_r)
 }
 
 static bool
-fill_buffer(struct input_stream *is, GError **error_r)
+fill_buffer(struct input_curl *c, GError **error_r)
 {
-	struct input_curl *c = (struct input_curl *)is;
 	CURLMcode mcode = CURLM_CALL_MULTI_PERFORM;
 
 	while (!c->eof && g_queue_is_empty(c->buffers)) {
@@ -343,7 +342,7 @@ fill_buffer(struct input_stream *is, GError **error_r)
 				    "curl_multi_perform() failed: %s",
 				    curl_multi_strerror(mcode));
 			c->eof = true;
-			is->ready = true;
+			c->base.ready = true;
 			return false;
 		}
 
@@ -457,7 +456,7 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size,
 	do {
 		/* fill the buffer */
 
-		success = fill_buffer(is, error_r);
+		success = fill_buffer(c, error_r);
 		if (!success)
 			return 0;
 
