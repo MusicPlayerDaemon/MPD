@@ -32,6 +32,12 @@
 
 #define g_queue_clear(q) do { g_queue_free(q); q = g_queue_new(); } while (0)
 
+static inline GSource *
+g_timeout_source_new_seconds(guint interval)
+{
+	return g_timeout_source_new(interval * 1000);
+}
+
 static inline guint
 g_timeout_add_seconds(guint interval, GSourceFunc function, gpointer data)
 {
