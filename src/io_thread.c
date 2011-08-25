@@ -21,40 +21,42 @@
 
 #include <assert.h>
 
-static GMainContext *io_context;
-static GMainLoop *io_loop;
-static GThread *io_thread;
+static struct {
+	GMainContext *context;
+	GMainLoop *loop;
+	GThread *thread;
+} io;
 
 static gpointer
 io_thread_func(G_GNUC_UNUSED gpointer arg)
 {
-	assert(io_context != NULL);
-	assert(io_loop != NULL);
+	assert(io.context != NULL);
+	assert(io.loop != NULL);
 
-	g_main_loop_run(io_loop);
+	g_main_loop_run(io.loop);
 	return NULL;
 }
 
 void
 io_thread_init(void)
 {
-	assert(io_context == NULL);
-	assert(io_loop == NULL);
-	assert(io_thread == NULL);
+	assert(io.context == NULL);
+	assert(io.loop == NULL);
+	assert(io.thread == NULL);
 
-	io_context = g_main_context_new();
-	io_loop = g_main_loop_new(io_context, false);
+	io.context = g_main_context_new();
+	io.loop = g_main_loop_new(io.context, false);
 }
 
 bool
 io_thread_start(GError **error_r)
 {
-	assert(io_context != NULL);
-	assert(io_loop != NULL);
-	assert(io_thread == NULL);
+	assert(io.context != NULL);
+	assert(io.loop != NULL);
+	assert(io.thread == NULL);
 
-	io_thread = g_thread_create(io_thread_func, NULL, true, error_r);
-	if (io_thread == NULL)
+	io.thread = g_thread_create(io_thread_func, NULL, true, error_r);
+	if (io.thread == NULL)
 		return false;
 
 	return true;
@@ -63,23 +65,23 @@ io_thread_start(GError **error_r)
 void
 io_thread_deinit(void)
 {
-	if (io_thread != NULL) {
-		assert(io_loop != NULL);
+	if (io.thread != NULL) {
+		assert(io.loop != NULL);
 
-		g_main_loop_quit(io_loop);
-		g_thread_join(io_thread);
+		g_main_loop_quit(io.loop);
+		g_thread_join(io.thread);
 	}
 
-	if (io_loop != NULL)
-		g_main_loop_unref(io_loop);
+	if (io.loop != NULL)
+		g_main_loop_unref(io.loop);
 
-	if (io_context != NULL)
-		g_main_context_unref(io_context);
+	if (io.context != NULL)
+		g_main_context_unref(io.context);
 }
 
 GMainContext *
 io_thread_context(void)
 {
-	return io_context;
+	return io.context;
 }
 
