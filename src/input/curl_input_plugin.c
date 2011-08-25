@@ -181,6 +181,13 @@ buffer_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 	g_free(data);
 }
 
+static void
+input_curl_flush_buffers(struct input_curl *c)
+{
+	g_queue_foreach(c->buffers, buffer_free_callback, NULL);
+	g_queue_clear(c->buffers);
+}
+
 /**
  * Frees the current "libcurl easy" handle, and everything associated
  * with it.
@@ -199,9 +206,6 @@ input_curl_easy_free(struct input_curl *c)
 
 	g_free(c->range);
 	c->range = NULL;
-
-	g_queue_foreach(c->buffers, buffer_free_callback, NULL);
-	g_queue_clear(c->buffers);
 }
 
 /**
@@ -215,6 +219,7 @@ input_curl_free(struct input_curl *c)
 	g_free(c->meta_name);
 
 	input_curl_easy_free(c);
+	input_curl_flush_buffers(c);
 
 	if (c->multi != NULL)
 		curl_multi_cleanup(c->multi);
@@ -797,6 +802,7 @@ input_curl_seek(struct input_stream *is, goffset offset, int whence,
 	/* close the old connection and open a new one */
 
 	input_curl_easy_free(c);
+	input_curl_flush_buffers(c);
 
 	is->offset = offset;
 	if (is->offset == is->size) {
