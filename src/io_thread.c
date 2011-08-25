@@ -18,10 +18,14 @@
  */
 
 #include "io_thread.h"
+#include "glib_compat.h"
 
 #include <assert.h>
 
 static struct {
+	GMutex *mutex;
+	GCond *cond;
+
 	GMainContext *context;
 	GMainLoop *loop;
 	GThread *thread;
@@ -44,6 +48,8 @@ io_thread_init(void)
 	assert(io.loop == NULL);
 	assert(io.thread == NULL);
 
+	io.mutex = g_mutex_new();
+	io.cond = g_cond_new();
 	io.context = g_main_context_new();
 	io.loop = g_main_loop_new(io.context, false);
 }
@@ -77,6 +83,9 @@ io_thread_deinit(void)
 
 	if (io.context != NULL)
 		g_main_context_unref(io.context);
+
+	g_cond_free(io.cond);
+	g_mutex_free(io.mutex);
 }
 
 GMainContext *
@@ -85,3 +94,65 @@ io_thread_context(void)
 	return io.context;
 }
 
+guint
+io_thread_idle_add(GSourceFunc function, gpointer data)
+{
+	GSource *source = g_idle_source_new();
+	g_source_set_callback(source, function, data, NULL);
+	guint id = g_source_attach(source, io.context);
+	g_source_unref(source);
+	return id;
+}
+
+guint
+io_thread_timeout_add_seconds(guint interval,
+			      GSourceFunc function, gpointer data)
+{
+	GSource *source = g_timeout_source_new_seconds(interval);
+	g_source_set_callback(source, function, data, NULL);
+	guint id = g_source_attach(source, io.context);
+	g_source_unref(source);
+	return id;
+}
+
+struct call_data {
+	GThreadFunc function;
+	gpointer data;
+	bool done;
+	gpointer result;
+};
+
+static gboolean
+io_thread_call_func(gpointer _data)
+{
+	struct call_data *data = _data;
+
+	gpointer result = data->function(data->data);
+
+	g_mutex_lock(io.mutex);
+	data->done = true;
+	data->result = result;
+	g_cond_broadcast(io.cond);
+	g_mutex_unlock(io.mutex);
+
+	return false;
+}
+
+gpointer
+io_thread_call(GThreadFunc function, gpointer _data)
+{
+	struct call_data data = {
+		.function = function,
+		.data = _data,
+		.done = false,
+	};
+
+	io_thread_idle_add(io_thread_call_func, &data);
+
+	g_mutex_lock(io.mutex);
+	while (!data.done)
+		g_cond_wait(io.cond, io.mutex);
+	g_mutex_unlock(io.mutex);
+
+	return data.result;
+}

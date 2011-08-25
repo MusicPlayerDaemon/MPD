@@ -36,4 +36,17 @@ G_GNUC_PURE
 GMainContext *
 io_thread_context(void);
 
+guint
+io_thread_idle_add(GSourceFunc function, gpointer data);
+
+guint
+io_thread_timeout_add_seconds(guint interval,
+			      GSourceFunc function, gpointer data);
+
+/**
+ * Call a function synchronously in the I/O thread.
+ */
+gpointer
+io_thread_call(GThreadFunc function, gpointer data);
+
 #endif
