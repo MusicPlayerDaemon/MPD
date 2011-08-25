@@ -82,9 +82,6 @@ struct input_curl {
 	/** has something been added to the buffers list? */
 	bool buffered;
 
-	/** did libcurl tell us the we're at the end of the response body? */
-	bool eof;
-
 	/** error message provided by libcurl */
 	char error[CURL_ERROR_SIZE];
 
@@ -207,7 +204,6 @@ input_curl_easy_free(struct input_curl *c)
 	g_free(c->range);
 	c->range = NULL;
 
-	c->eof = true;
 	c->base.ready = true;
 }
 
@@ -285,7 +281,7 @@ input_curl_select(struct input_curl *c, GError **error_r)
 		.tv_usec = 0,
 	};
 
-	assert(!c->eof);
+	assert(c->easy != NULL);
 
 	FD_ZERO(&rfds);
 	FD_ZERO(&wfds);
@@ -331,7 +327,7 @@ fill_buffer(struct input_curl *c, GError **error_r)
 {
 	CURLMcode mcode = CURLM_CALL_MULTI_PERFORM;
 
-	while (!c->eof && g_queue_is_empty(c->buffers)) {
+	while (c->easy != NULL && g_queue_is_empty(c->buffers)) {
 		int running_handles;
 		bool bret;
 
@@ -499,7 +495,7 @@ input_curl_eof(G_GNUC_UNUSED struct input_stream *is)
 {
 	struct input_curl *c = (struct input_curl *)is;
 
-	return c->eof && g_queue_is_empty(c->buffers);
+	return c->easy == NULL && g_queue_is_empty(c->buffers);
 }
 
 static int
@@ -516,7 +512,7 @@ input_curl_buffer(struct input_stream *is, GError **error_r)
 
 	c->buffered = false;
 
-	if (!is->ready && !c->eof)
+	if (!is->ready && c->easy != NULL)
 		/* not ready yet means the caller is waiting in a busy
 		   loop; relax that by calling select() on the
 		   socket */
@@ -655,8 +651,6 @@ input_curl_easy_init(struct input_curl *c, GError **error_r)
 {
 	CURLcode code;
 	CURLMcode mcode;
-
-	c->eof = false;
 
 	c->easy = curl_easy_init();
 	if (c->easy == NULL) {
@@ -810,7 +804,6 @@ input_curl_seek(struct input_stream *is, goffset offset, int whence,
 		/* seek to EOF: simulate empty result; avoid
 		   triggering a "416 Requested Range Not Satisfiable"
 		   response */
-		c->eof = true;
 		return true;
 	}
 
