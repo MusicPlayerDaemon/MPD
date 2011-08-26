@@ -4,6 +4,7 @@ ver 0.16.4 (2011/??/??)
 * apply follow_inside_symlinks to absolute symlinks
 * input:
   - curl: limit the receive buffer size
+  - curl: implement a hard-coded timeout of 10 seconds
 * decoder:
   - ffmpeg: workaround for semantic API change in recent ffmpeg versions
   - flac: validate the sample rate when scanning the tag
