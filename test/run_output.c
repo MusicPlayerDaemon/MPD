@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "io_thread.h"
 #include "output_plugin.h"
 #include "output_internal.h"
 #include "output_control.h"
@@ -36,6 +37,7 @@
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 struct playlist g_playlist;
 
@@ -146,6 +148,13 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	io_thread_init();
+	if (!io_thread_start(&error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return EXIT_FAILURE;
+	}
+
 	/* initialize the audio output */
 
 	if (!load_audio_output(&ao, argv[2]))
@@ -215,6 +224,8 @@ int main(int argc, char **argv)
 	ao_plugin_close(ao.plugin, ao.data);
 	ao_plugin_finish(ao.plugin, ao.data);
 	g_mutex_free(ao.mutex);
+
+	io_thread_deinit();
 
 	config_global_finish();
 

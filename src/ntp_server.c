@@ -18,8 +18,10 @@
  */
 
 #include "ntp_server.h"
+#include "io_thread.h"
 
 #include <glib.h>
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -31,7 +33,6 @@
 #include <ws2tcpip.h>
 #include <winsock.h>
 #else
-#include <sys/select.h>
 #include <sys/socket.h>
 #endif
 
@@ -75,7 +76,7 @@ fill_time_buffer(unsigned char *buffer)
 	fill_time_buffer_with_time(buffer, &current_time);
 }
 
-bool
+static bool
 ntp_server_handle(struct ntp_server *ntp)
 {
 	unsigned char buf[32];
@@ -102,25 +103,14 @@ ntp_server_handle(struct ntp_server *ntp)
 	return num_bytes == sizeof(buf);
 }
 
-bool
-ntp_server_check(struct ntp_server *ntp, struct timeval *tout)
+static gboolean
+ntp_in_event(G_GNUC_UNUSED GIOChannel *source,
+	     G_GNUC_UNUSED GIOCondition condition,
+	     gpointer data)
 {
-	fd_set rdfds;
-	int fdmax = 0;
+	struct ntp_server *ntp = data;
 
-	FD_ZERO(&rdfds);
-
-	FD_SET(ntp->fd, &rdfds);
-	fdmax = ntp->fd;
-	if (select(fdmax + 1, &rdfds,NULL, NULL, tout) <= 0)
-		return false;
-
-	if (FD_ISSET(ntp->fd, &rdfds)) {
-		if (!ntp_server_handle(ntp)) {
-			g_debug("unable to send timing response\n");
-			return false;
-		}
-	}
+	ntp_server_handle(ntp);
 	return true;
 }
 
@@ -132,8 +122,40 @@ ntp_server_init(struct ntp_server *ntp)
 }
 
 void
+ntp_server_open(struct ntp_server *ntp, int fd)
+{
+	assert(ntp->fd < 0);
+	assert(fd >= 0);
+
+	ntp->fd = fd;
+
+#ifndef G_OS_WIN32
+	ntp->channel = g_io_channel_unix_new(fd);
+#else
+	ntp->channel = g_io_channel_win32_new_socket(fd);
+#endif
+	/* NULL encoding means the stream is binary safe */
+	g_io_channel_set_encoding(ntp->channel, NULL, NULL);
+	/* no buffering */
+	g_io_channel_set_buffered(ntp->channel, false);
+
+	ntp->source = g_io_create_watch(ntp->channel, G_IO_IN);
+	g_source_set_callback(ntp->source, (GSourceFunc)ntp_in_event, ntp,
+			      NULL);
+	g_source_attach(ntp->source, io_thread_context());
+}
+
+void
 ntp_server_close(struct ntp_server *ntp)
 {
+	if (ntp->source != NULL) {
+		g_source_destroy(ntp->source);
+		g_source_unref(ntp->source);
+	}
+
+	if (ntp->channel != NULL)
+		g_io_channel_unref(ntp->channel);
+
 	if (ntp->fd >= 0)
 		close(ntp->fd);
 }

@@ -20,6 +20,8 @@
 #ifndef MPD_NTP_SERVER_H
 #define MPD_NTP_SERVER_H
 
+#include <glib.h>
+
 #include <stdbool.h>
 
 struct timeval;
@@ -27,24 +29,18 @@ struct timeval;
 struct ntp_server {
 	unsigned short port;
 	int fd;
+
+	GIOChannel *channel;
+	GSource *source;
 };
 
 void
 ntp_server_init(struct ntp_server *ntp);
 
 void
+ntp_server_open(struct ntp_server *ntp, int fd);
+
+void
 ntp_server_close(struct ntp_server *ntp);
-
-/*
- * Recv the NTP datagram from the AirTunes, send back an NTP response.
- */
-bool
-ntp_server_handle(struct ntp_server *ntp);
-
-/*
- * check to see if there are any timing requests, and respond if there are any
- */
-bool
-ntp_server_check(struct ntp_server *ntp, struct timeval *tout);
 
 #endif

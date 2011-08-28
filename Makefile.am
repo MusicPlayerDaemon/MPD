@@ -1014,6 +1014,7 @@ test_run_ntp_server_LDADD = $(MPD_LIBS) \
 	$(GLIB_LIBS)
 test_run_ntp_server_SOURCES = test/run_ntp_server.c \
 	test/signals.c test/signals.h \
+	src/io_thread.c src/io_thread.h \
 	src/ntp_server.c src/ntp_server.h
 
 test_run_filter_CPPFLAGS = $(AM_CPPFLAGS)
@@ -1119,6 +1120,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 test_run_output_SOURCES = test/run_output.c \
 	test/stdbin.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
+	src/io_thread.c src/io_thread.h \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \

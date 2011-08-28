@@ -535,14 +535,10 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 	while (true) {
 		FD_ZERO(&rdfds);
 		FD_SET(rtspcld->fd, &rdfds);
-		FD_SET(raop_session->ntp.fd, &rdfds);
-		fdmax = raop_session->ntp.fd > rtspcld->fd ? raop_session->ntp.fd : rtspcld->fd;;
+		fdmax = rtspcld->fd;
 		select(fdmax + 1, &rdfds, NULL, NULL, &tout);
 		if (FD_ISSET(rtspcld->fd, &rdfds)) {
 			break;
-		}
-		if (FD_ISSET(raop_session->ntp.fd, &rdfds)) {
-			ntp_server_handle(&raop_session->ntp);
 		}
 	}
 
@@ -1068,20 +1064,14 @@ static bool
 send_audio_data(int fd, GError **error_r)
 {
 	int i = 0;
-	struct timeval current_time, tout, rtp_time;
+	struct timeval current_time, rtp_time;
 	struct raop_data *rd = raop_session->raop_list;
 
 	get_time_for_rtp(&raop_session->play_state, &rtp_time);
 	gettimeofday(&current_time, NULL);
 	int diff = difference(&current_time, &rtp_time);
+	g_usleep(-diff);
 
-	while (diff < -10000) {
-		tout.tv_sec = 0;
-		tout.tv_usec = -diff;
-		ntp_server_check(&raop_session->ntp, &tout);
-		gettimeofday(&current_time, NULL);
-		diff = difference(&current_time, &rtp_time);
-	}
 	gettimeofday(&raop_session->play_state.last_send, NULL);
 	while (rd) {
 		if (rd->started) {
@@ -1214,10 +1204,8 @@ raop_output_cancel(void *data)
 static bool
 raop_output_pause(void *data)
 {
-	struct timeval tout = {.tv_sec = 0, .tv_usec = 0};
 	struct raop_data *rd = (struct raop_data *) data;
 
-	ntp_server_check(&raop_session->ntp, &tout);
 	rd->paused = true;
 	return true;
 }
@@ -1284,17 +1272,18 @@ raop_output_open(void *data, struct audio_format *audio_format, GError **error_r
 		if (raop_session->data_fd < 0)
 			return false;
 
-		raop_session->ntp.fd =
-			open_udp_socket(NULL, &raop_session->ntp.port,
-					error_r);
-		if (raop_session->ntp.fd < 0)
+		int fd = open_udp_socket(NULL, &raop_session->ntp.port,
+					 error_r);
+		if (fd < 0)
 			return false;
+
+		ntp_server_open(&raop_session->ntp, fd);
 
 		raop_session->ctrl.fd =
 			open_udp_socket(NULL, &raop_session->ctrl.port,
 					error_r);
 		if (raop_session->ctrl.fd < 0) {
-			close(raop_session->ntp.fd);
+			ntp_server_close(&raop_session->ntp);
 			raop_session->ctrl.fd = -1;
 			g_mutex_unlock(raop_session->list_mutex);
 			return false;
@@ -1324,7 +1313,6 @@ raop_output_play(void *data, const void *chunk, size_t size,
 {
 	//raopcl_send_sample
 	struct raop_data *rd = data;
-	struct timeval tout = {.tv_sec = 0, .tv_usec = 0};
 	size_t rval = 0, orig_size = size;
 
 	rd->paused = false;
@@ -1334,8 +1322,6 @@ raop_output_play(void *data, const void *chunk, size_t size,
 	}
 
 	g_mutex_lock(raop_session->data_mutex);
-
-	ntp_server_check(&raop_session->ntp, &tout);
 
 	if (raop_session->play_state.rtptime <= NUMSAMPLES) {
 		// looped over, need new reference point to calculate correct times

@@ -20,6 +20,7 @@
 #include "config.h"
 #include "ntp_server.h"
 #include "signals.h"
+#include "io_thread.h"
 
 #include <glib.h>
 
@@ -39,12 +40,10 @@
 #include <arpa/inet.h>
 #endif
 
-static bool quit = false;
-
 void
 on_quit(void)
 {
-	quit = true;
+	io_thread_quit();
 }
 
 static int bind_host(int sd, char *hostname, unsigned long ulAddr,
@@ -122,27 +121,25 @@ open_udp_socket(char *hostname, unsigned short *port)
 int
 main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 {
+	g_thread_init(NULL);
 	signals_init();
+	io_thread_init();
 
 	struct ntp_server ntp;
 	ntp_server_init(&ntp);
 
-	ntp.fd = open_udp_socket(NULL, &ntp.port);
-	if (ntp.fd < 0) {
+	int fd = open_udp_socket(NULL, &ntp.port);
+	if (fd < 0) {
 		g_printerr("Failed to create UDP socket\n");
 		ntp_server_close(&ntp);
 		return EXIT_FAILURE;
 	}
 
-	while (!quit) {
-		struct timeval tv = {
-			.tv_sec = 1,
-			.tv_usec = 0,
-		};
+	ntp_server_open(&ntp, fd);
 
-		ntp_server_check(&ntp, &tv);
-	}
+	io_thread_run();
 
 	ntp_server_close(&ntp);
+	io_thread_deinit();
 	return EXIT_SUCCESS;
 }
