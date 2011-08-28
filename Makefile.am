@@ -299,6 +299,7 @@ src_mpd_SOURCES = \
 	src/client_message.c \
 	src/client_subscribe.h \
 	src/client_subscribe.c \
+	src/tcp_connect.c src/tcp_connect.h \
 	src/tcp_socket.c src/tcp_socket.h \
 	src/udp_server.c src/udp_server.h \
 	src/server_socket.c \
@@ -904,6 +905,7 @@ noinst_PROGRAMS = \
 	$(C_TESTS) \
 	test/read_conf \
 	test/run_resolver \
+	test/run_tcp_connect \
 	test/run_input \
 	test/dump_playlist \
 	test/run_decoder \
@@ -931,6 +933,15 @@ test_run_resolver_LDADD = $(MPD_LIBS) \
 	$(GLIB_LIBS)
 test_run_resolver_SOURCES = test/run_resolver.c \
 	src/resolver.c
+
+test_run_tcp_connect_CPPFLAGS = $(AM_CPPFLAGS)
+test_run_tcp_connect_LDADD = $(MPD_LIBS) \
+	$(GLIB_LIBS)
+test_run_tcp_connect_SOURCES = test/run_tcp_connect.c \
+	src/io_thread.c src/io_thread.h \
+	src/fd_util.c \
+	src/resolver.c \
+	src/tcp_connect.c
 
 test_run_input_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ARCHIVE_CFLAGS) \
