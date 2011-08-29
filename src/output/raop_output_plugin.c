@@ -20,6 +20,7 @@
 #include "output_api.h"
 #include "mixer_list.h"
 #include "raop_output_plugin.h"
+#include "glib_compat.h"
 
 #include <glib.h>
 #include <unistd.h>
