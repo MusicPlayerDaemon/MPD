@@ -1013,6 +1013,7 @@ test_run_ntp_server_CPPFLAGS = $(AM_CPPFLAGS)
 test_run_ntp_server_LDADD = $(MPD_LIBS) \
 	$(GLIB_LIBS)
 test_run_ntp_server_SOURCES = test/run_ntp_server.c \
+	test/signals.c test/signals.h \
 	src/ntp_server.c src/ntp_server.h
 
 test_run_filter_CPPFLAGS = $(AM_CPPFLAGS)

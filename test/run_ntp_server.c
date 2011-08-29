@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ntp_server.h"
+#include "signals.h"
 
 #include <glib.h>
 
@@ -37,6 +38,14 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #endif
+
+static bool quit = false;
+
+void
+on_quit(void)
+{
+	quit = true;
+}
 
 static int bind_host(int sd, char *hostname, unsigned long ulAddr,
 		     unsigned short *port)
@@ -113,6 +122,8 @@ open_udp_socket(char *hostname, unsigned short *port)
 int
 main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 {
+	signals_init();
+
 	struct ntp_server ntp;
 	ntp_server_init(&ntp);
 
@@ -123,7 +134,7 @@ main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 		return EXIT_FAILURE;
 	}
 
-	while (true) {
+	while (!quit) {
 		struct timeval tv = {
 			.tv_sec = 1,
 			.tv_usec = 0,
