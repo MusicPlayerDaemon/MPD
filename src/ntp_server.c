@@ -81,8 +81,9 @@ ntp_server_handle(struct ntp_server *ntp)
 	unsigned char buf[32];
 	struct sockaddr addr;
 	int iter;
-	unsigned int addr_len = sizeof(addr);
-	int num_bytes = recvfrom(ntp->fd, buf, sizeof(buf), 0, &addr, &addr_len);
+	socklen_t addr_len = sizeof(addr);
+	ssize_t num_bytes = recvfrom(ntp->fd, (void *)buf, sizeof(buf), 0,
+				     &addr, &addr_len);
 	if (num_bytes == 0) {
 		return false;
 	}
@@ -95,7 +96,8 @@ ntp_server_handle(struct ntp_server *ntp)
 	}
 	fill_time_buffer(buf + 24);
 
-	num_bytes = sendto(ntp->fd, buf, num_bytes, 0, &addr, addr_len);
+	num_bytes = sendto(ntp->fd, (void *)buf, num_bytes, 0,
+			   &addr, addr_len);
 
 	return num_bytes == sizeof(buf);
 }
