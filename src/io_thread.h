@@ -37,6 +37,14 @@ io_thread_start(GError **error_r);
 void
 io_thread_run(void);
 
+/**
+ * Ask the I/O thread to quit, but does not wait for it.  Usually, you
+ * don't need to call this function, because io_thread_deinit()
+ * includes this.
+ */
+void
+io_thread_quit(void);
+
 void
 io_thread_deinit(void);
 

@@ -75,12 +75,19 @@ io_thread_start(GError **error_r)
 }
 
 void
+io_thread_quit(void)
+{
+	assert(io.loop != NULL);
+
+	g_main_loop_quit(io.loop);
+}
+
+void
 io_thread_deinit(void)
 {
 	if (io.thread != NULL) {
-		assert(io.loop != NULL);
+		io_thread_quit();
 
-		g_main_loop_quit(io.loop);
 		g_thread_join(io.thread);
 	}
 
