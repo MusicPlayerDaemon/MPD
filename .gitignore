@@ -60,3 +60,4 @@ test/run_normalize
 test/tmp
 test/run_inotify
 test/test_queue_priority
+test/run_ntp_server

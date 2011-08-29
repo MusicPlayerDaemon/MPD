@@ -892,6 +892,7 @@ noinst_PROGRAMS = \
 	test/dump_playlist \
 	test/run_decoder \
 	test/read_tags \
+	test/run_ntp_server \
 	test/run_filter \
 	test/run_output \
 	test/run_convert \
@@ -1005,6 +1006,12 @@ test_read_tags_SOURCES = test/read_tags.c \
 	$(INPUT_SRC) \
 	$(TAG_SRC) \
 	$(DECODER_SRC)
+
+test_run_ntp_server_CPPFLAGS = $(AM_CPPFLAGS)
+test_run_ntp_server_LDADD = $(MPD_LIBS) \
+	$(GLIB_LIBS)
+test_run_ntp_server_SOURCES = test/run_ntp_server.c \
+	src/ntp_server.c src/ntp_server.h
 
 test_run_filter_CPPFLAGS = $(AM_CPPFLAGS)
 test_run_filter_LDADD = $(MPD_LIBS) \
