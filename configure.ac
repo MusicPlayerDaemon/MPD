@@ -213,7 +213,7 @@ AC_ARG_ENABLE(httpd-output,
 AC_ARG_ENABLE(raop-output,
 	AS_HELP_STRING([--enable-raop-output],
 		[enables the RAOP output]),,
-	[enable_raop_output=no])
+	[enable_raop_output=auto])
 
 AC_ARG_ENABLE(id3,
 	AS_HELP_STRING([--disable-id3],
@@ -1441,9 +1441,11 @@ AM_CONDITIONAL(ENABLE_SOLARIS_OUTPUT, test x$enable_solaris_output = xyes)
 
 dnl --------------------------------- RAOP ------------------------------------
 
+MPD_AUTO_PKG(raop_output, OPENSSL, [openssl],
+	[RAOP output], [OpenSSL not found])
+
 if test x$enable_raop_output = xyes; then
-        AC_DEFINE(ENABLE_RAOP_OUTPUT, 1, [Define for compiling RAOP support])
-        MPD_LIBS="$MPD_LIBS -lssl -lcrypto"
+	AC_DEFINE(ENABLE_RAOP_OUTPUT, 1, [Define for compiling RAOP support])
 fi
 
 AM_CONDITIONAL(ENABLE_RAOP_OUTPUT, test x$enable_raop_output = xyes)

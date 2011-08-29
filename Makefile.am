@@ -689,6 +689,7 @@ OUTPUT_CFLAGS = \
 	$(FFADO_CFLAGS) \
 	$(JACK_CFLAGS) \
 	$(OPENAL_CFLAGS) \
+	$(OPENSSL_CFLAGS) \
 	$(PULSE_CFLAGS) \
 	$(SHOUT_CFLAGS)
 
@@ -777,6 +778,7 @@ OUTPUT_SRC += \
 	src/ntp_server.c src/ntp_server.h \
 	src/output/raop_output_plugin.c
 MIXER_SRC += src/mixer/raop_mixer_plugin.c
+OUTPUT_LIBS += $(OPENSSL_LIBS)
 endif
 
 if HAVE_PULSE
