@@ -29,6 +29,14 @@ io_thread_init(void);
 bool
 io_thread_start(GError **error_r);
 
+/**
+ * Run the I/O event loop synchronously in the current thread.  This
+ * can be called instead of io_thread_start().  For testing purposes
+ * only.
+ */
+void
+io_thread_run(void);
+
 void
 io_thread_deinit(void);
 

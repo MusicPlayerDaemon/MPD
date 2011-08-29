@@ -31,13 +31,19 @@ static struct {
 	GThread *thread;
 } io;
 
-static gpointer
-io_thread_func(G_GNUC_UNUSED gpointer arg)
+void
+io_thread_run(void)
 {
 	assert(io.context != NULL);
 	assert(io.loop != NULL);
 
 	g_main_loop_run(io.loop);
+}
+
+static gpointer
+io_thread_func(G_GNUC_UNUSED gpointer arg)
+{
+	io_thread_run();
 	return NULL;
 }
 
