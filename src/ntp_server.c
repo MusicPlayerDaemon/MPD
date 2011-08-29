@@ -112,7 +112,9 @@ ntp_server_check(struct ntp_server *ntp, struct timeval *tout)
 
 	FD_SET(ntp->fd, &rdfds);
 	fdmax = ntp->fd;
-	select(fdmax + 1, &rdfds,NULL, NULL, tout);
+	if (select(fdmax + 1, &rdfds,NULL, NULL, tout) <= 0)
+		return false;
+
 	if (FD_ISSET(ntp->fd, &rdfds)) {
 		if (!ntp_server_handle(ntp)) {
 			g_debug("unable to send timing response\n");
