@@ -350,7 +350,6 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 	char *token, *dp;
 	int dsize = 0,rval;
 	struct key_data *cur_kd = *kd;
-	unsigned int j;
 	int timeout = 5000; // msec unit
 
 	fd_set rdfds;
@@ -441,10 +440,13 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 	while (read_line(rtspcld->fd, line, sizeof(line), timeout, 0) > 0) {
 		timeout = 1000; // once it started, it shouldn't take a long time
 		if (new_kd != NULL && line[0] == ' ') {
-			for (j = 0; j < strlen(line); j++) if (line[j] != ' ') break;
-			dsize += strlen(line + j);
+			const char *j = line;
+			while (*j == ' ')
+				++j;
+
+			dsize += strlen(j);
 			new_kd->data = g_realloc(new_kd->data, dsize);
-			strcat(new_kd->data, line + j);
+			strcat(new_kd->data, j);
 			continue;
 		}
 		dp = strstr(line, ":");
