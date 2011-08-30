@@ -245,4 +245,7 @@ audio_output_command_is_finished(const struct audio_output *ao)
 	return ao->command == AO_COMMAND_NONE;
 }
 
+void
+audio_output_destruct(struct audio_output *ao);
+
 #endif

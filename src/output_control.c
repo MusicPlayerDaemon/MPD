@@ -312,23 +312,8 @@ void audio_output_finish(struct audio_output *ao)
 	if (ao->thread != NULL) {
 		ao_lock_command(ao, AO_COMMAND_KILL);
 		g_thread_join(ao->thread);
+		ao->thread = NULL;
 	}
 
-	if (ao->mixer != NULL)
-		mixer_free(ao->mixer);
-
-	ao_plugin_finish(ao->plugin, ao->data);
-
-	g_cond_free(ao->cond);
-	g_mutex_free(ao->mutex);
-
-	if (ao->replay_gain_filter != NULL)
-		filter_free(ao->replay_gain_filter);
-
-	if (ao->other_replay_gain_filter != NULL)
-		filter_free(ao->other_replay_gain_filter);
-
-	filter_free(ao->filter);
-
-	pcm_buffer_deinit(&ao->cross_fade_buffer);
+	audio_output_destruct(ao);
 }

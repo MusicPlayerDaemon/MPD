@@ -233,8 +233,7 @@ int main(int argc, char **argv)
 
 	/* cleanup and exit */
 
-	ao_plugin_finish(ao.plugin, ao.data);
-	g_mutex_free(ao.mutex);
+	audio_output_destruct(&ao);
 
 	io_thread_deinit();
 

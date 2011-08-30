@@ -713,6 +713,7 @@ OUTPUT_API_SRC = \
 	src/output_state.c \
 	src/output_print.c \
 	src/output_command.c \
+	src/output_finish.c \
 	src/output_init.c
 
 OUTPUT_SRC = \
@@ -1133,7 +1134,7 @@ test_run_output_SOURCES = test/run_output.c \
 	src/fifo_buffer.c \
 	src/page.c \
 	src/socket_util.c \
-	src/output_init.c src/output_list.c \
+	src/output_init.c src/output_finish.c src/output_list.c \
 	$(ENCODER_SRC) \
 	src/mixer_api.c \
 	src/mixer_control.c \
