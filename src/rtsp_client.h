@@ -42,7 +42,13 @@ struct key_data {
 };
 
 struct rtspcl_data {
-	int fd;
+	GMutex *mutex;
+	GCond *cond;
+
+	GQueue *received_lines;
+
+	struct tcp_socket *tcp_socket;
+
 	char url[128];
 	int cseq;
 	struct key_data *exthds;

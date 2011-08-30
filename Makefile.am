@@ -294,6 +294,7 @@ src_mpd_SOURCES = \
 	src/client_message.c \
 	src/client_subscribe.h \
 	src/client_subscribe.c \
+	src/tcp_socket.c src/tcp_socket.h \
 	src/udp_server.c src/udp_server.h \
 	src/server_socket.c \
 	src/listen.c \
@@ -1126,6 +1127,7 @@ test_run_output_SOURCES = test/run_output.c \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
 	src/io_thread.c src/io_thread.h \
 	src/udp_server.c src/udp_server.h \
+	src/tcp_socket.c src/tcp_socket.h \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \
