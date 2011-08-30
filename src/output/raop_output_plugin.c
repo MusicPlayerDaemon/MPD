@@ -668,6 +668,7 @@ raop_output_finish(void *data)
 	struct raop_data *rd = data;
 	raopcl_close(rd);
 	g_mutex_free(rd->control_mutex);
+	g_free(rd);
 }
 
 #define RAOP_VOLUME_MIN -30
