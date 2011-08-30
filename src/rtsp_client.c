@@ -458,10 +458,11 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 					    "request failed, bad header");
 			return false;
 		}
-		*dp = 0;
+
+		*dp++ = 0;
 		new_kd = g_new(struct key_data, 1);
 		new_kd->key = g_strdup(line);
-		dsize = strlen(dp + 1) + 1;
+		dsize = strlen(dp) + 1;
 		new_kd->data = g_strdup(dp);
 		new_kd->next = NULL;
 		if (cur_kd == NULL) {
