@@ -826,11 +826,15 @@ raop_output_open(void *data, struct audio_format *audio_format, GError **error_r
 	g_mutex_unlock(raop_session->list_mutex);
 
 	audio_format->format = SAMPLE_FORMAT_S16;
-	if (!raopcl_connect(rd, error_r))
+	if (!raopcl_connect(rd, error_r)) {
+		raop_output_remove(rd);
 		return false;
+	}
 
-	if (!raop_set_volume(rd, rd->volume, error_r))
+	if (!raop_set_volume(rd, rd->volume, error_r)) {
+		raop_output_remove(rd);
 		return false;
+	}
 
 	g_mutex_lock(raop_session->list_mutex);
 	if (!rd->is_master) {
