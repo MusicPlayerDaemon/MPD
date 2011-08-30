@@ -4,6 +4,14 @@
 # bogus messages.
 
 {
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:g_random_int
+}
+
+{
    g_main_context_dispatch
    Memcheck:Leak
    fun:malloc
@@ -218,6 +226,15 @@
    fun:CRYPTO_malloc
    ...
    fun:ERR_get_state
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:*alloc
+   fun:CRYPTO_malloc
+   ...
+   fun:RSA_new_method
 }
 
 {
