@@ -118,16 +118,70 @@ load_audio_output(struct audio_output *ao, const char *name)
 	return success;
 }
 
+static bool
+run_output(struct audio_output *ao, struct audio_format *audio_format)
+{
+	/* open the audio output */
+
+	GError *error = NULL;
+	if (!ao_plugin_open(ao->plugin, ao->data, audio_format, &error)) {
+		g_printerr("Failed to open audio output: %s\n",
+			   error->message);
+		g_error_free(error);
+		return false;
+	}
+
+	struct audio_format_string af_string;
+	g_printerr("audio_format=%s\n",
+		   audio_format_to_string(audio_format, &af_string));
+
+	size_t frame_size = audio_format_frame_size(audio_format);
+
+	/* play */
+
+	size_t length = 0;
+	char buffer[4096];
+	while (true) {
+		if (length < sizeof(buffer)) {
+			ssize_t nbytes = read(0, buffer + length,
+					      sizeof(buffer) - length);
+			if (nbytes <= 0)
+				break;
+
+			length += (size_t)nbytes;
+		}
+
+		size_t play_length = (length / frame_size) * frame_size;
+		if (play_length > 0) {
+			size_t consumed = ao_plugin_play(ao->plugin, ao->data,
+							 buffer, play_length,
+							 &error);
+			if (consumed == 0) {
+				ao_plugin_close(ao->plugin, ao->data);
+				g_printerr("Failed to play: %s\n",
+					   error->message);
+				g_error_free(error);
+				return false;
+			}
+
+			assert(consumed <= length);
+			assert(consumed % frame_size == 0);
+
+			length -= consumed;
+			memmove(buffer, buffer + consumed, length);
+		}
+	}
+
+	ao_plugin_close(ao->plugin, ao->data);
+	return true;
+}
+
 int main(int argc, char **argv)
 {
 	struct audio_output ao;
 	struct audio_format audio_format;
-	struct audio_format_string af_string;
 	bool success;
 	GError *error = NULL;
-	char buffer[4096];
-	ssize_t nbytes;
-	size_t frame_size, length = 0, play_length, consumed;
 
 	if (argc < 3 || argc > 4) {
 		g_printerr("Usage: run_output CONFIG NAME [FORMAT] <IN\n");
@@ -173,55 +227,12 @@ int main(int argc, char **argv)
 		}
 	}
 
-	/* open the audio output */
+	/* do it */
 
-	success = ao_plugin_open(ao.plugin, ao.data, &audio_format, &error);
-	if (!success) {
-		g_printerr("Failed to open audio output: %s\n",
-			   error->message);
-		g_error_free(error);
-		return 1;
-	}
-
-	g_printerr("audio_format=%s\n",
-		   audio_format_to_string(&audio_format, &af_string));
-
-	frame_size = audio_format_frame_size(&audio_format);
-
-	/* play */
-
-	while (true) {
-		if (length < sizeof(buffer)) {
-			nbytes = read(0, buffer + length, sizeof(buffer) - length);
-			if (nbytes <= 0)
-				break;
-
-			length += (size_t)nbytes;
-		}
-
-		play_length = (length / frame_size) * frame_size;
-		if (play_length > 0) {
-			consumed = ao_plugin_play(ao.plugin, ao.data,
-						  buffer, play_length,
-						  &error);
-			if (consumed == 0) {
-				g_printerr("Failed to play: %s\n",
-					   error->message);
-				g_error_free(error);
-				return 1;
-			}
-
-			assert(consumed <= length);
-			assert(consumed % frame_size == 0);
-
-			length -= consumed;
-			memmove(buffer, buffer + consumed, length);
-		}
-	}
+	success = run_output(&ao, &audio_format);
 
 	/* cleanup and exit */
 
-	ao_plugin_close(ao.plugin, ao.data);
 	ao_plugin_finish(ao.plugin, ao.data);
 	g_mutex_free(ao.mutex);
 
@@ -229,5 +240,5 @@ int main(int argc, char **argv)
 
 	config_global_finish();
 
-	return 0;
+	return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
