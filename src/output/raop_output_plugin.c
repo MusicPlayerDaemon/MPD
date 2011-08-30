@@ -562,15 +562,6 @@ raopcl_connect(struct raop_data *rd, GError **error_r)
 	return rval;
 }
 
-static void
-raopcl_close(struct raop_data *rd)
-{
-	if (rd->rtspcl)
-		rtspcl_close(rd->rtspcl);
-	rd->rtspcl = NULL;
-	g_free(rd);
-}
-
 static int
 difference (struct timeval *t1, struct timeval *t2)
 {
@@ -666,7 +657,10 @@ static void
 raop_output_finish(void *data)
 {
 	struct raop_data *rd = data;
-	raopcl_close(rd);
+
+	if (rd->rtspcl)
+		rtspcl_close(rd->rtspcl);
+
 	g_mutex_free(rd->control_mutex);
 	g_free(rd);
 }
