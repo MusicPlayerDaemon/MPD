@@ -28,17 +28,15 @@ struct timeval;
 
 struct ntp_server {
 	unsigned short port;
-	int fd;
 
-	GIOChannel *channel;
-	GSource *source;
+	struct udp_server *udp;
 };
 
 void
 ntp_server_init(struct ntp_server *ntp);
 
-void
-ntp_server_open(struct ntp_server *ntp, int fd);
+bool
+ntp_server_open(struct ntp_server *ntp, GError **error_r);
 
 void
 ntp_server_close(struct ntp_server *ntp);

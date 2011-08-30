@@ -799,12 +799,8 @@ raop_output_open(void *data, struct audio_format *audio_format, GError **error_r
 		if (raop_session->data_fd < 0)
 			return false;
 
-		int fd = open_udp_socket(NULL, &raop_session->ntp.port,
-					 error_r);
-		if (fd < 0)
+		if (!ntp_server_open(&raop_session->ntp, error_r))
 			return false;
-
-		ntp_server_open(&raop_session->ntp, fd);
 
 		raop_session->ctrl.fd =
 			open_udp_socket(NULL, &raop_session->ctrl.port,

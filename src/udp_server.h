@@ -17,56 +17,36 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "ntp_server.h"
-#include "signals.h"
-#include "io_thread.h"
+#ifndef MPD_UDP_SERVER_H
+#define MPD_UDP_SERVER_H
 
 #include <glib.h>
 
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
+#include <stddef.h>
 
-#ifdef WIN32
-#define WINVER 0x0501
-#include <ws2tcpip.h>
-#include <winsock.h>
-#else
-#include <sys/socket.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#endif
+struct sockaddr;
+
+struct udp_server_handler {
+	/**
+	 * A datagram was received.
+	 */
+	void (*datagram)(int fd, const void *data, size_t length,
+			 const struct sockaddr *source_address,
+			 size_t source_address_length, void *ctx);
+};
+
+static inline GQuark
+udp_server_quark(void)
+{
+	return g_quark_from_static_string("udp_server");
+}
+
+struct udp_server *
+udp_server_new(unsigned port,
+	       const struct udp_server_handler *handler, void *ctx,
+	       GError **error_r);
 
 void
-on_quit(void)
-{
-	io_thread_quit();
-}
+udp_server_free(struct udp_server *udp);
 
-int
-main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
-{
-	g_thread_init(NULL);
-	signals_init();
-	io_thread_init();
-
-	struct ntp_server ntp;
-	ntp_server_init(&ntp);
-
-	GError *error = NULL;
-	if (!ntp_server_open(&ntp, &error)) {
-		io_thread_deinit();
-		g_printerr("%s\n", error->message);
-		g_error_free(error);
-		return EXIT_FAILURE;
-	}
-
-	io_thread_run();
-
-	ntp_server_close(&ntp);
-	io_thread_deinit();
-	return EXIT_SUCCESS;
-}
+#endif

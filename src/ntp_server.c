@@ -18,7 +18,7 @@
  */
 
 #include "ntp_server.h"
-#include "io_thread.h"
+#include "udp_server.h"
 
 #include <glib.h>
 #include <assert.h>
@@ -76,18 +76,18 @@ fill_time_buffer(unsigned char *buffer)
 	fill_time_buffer_with_time(buffer, &current_time);
 }
 
-static bool
-ntp_server_handle(struct ntp_server *ntp)
+static void
+ntp_server_datagram(int fd, const void *data, size_t num_bytes,
+		    const struct sockaddr *source_address,
+		    size_t source_address_length, G_GNUC_UNUSED void *ctx)
 {
 	unsigned char buf[32];
-	struct sockaddr addr;
 	int iter;
-	socklen_t addr_len = sizeof(addr);
-	ssize_t num_bytes = recvfrom(ntp->fd, (void *)buf, sizeof(buf), 0,
-				     &addr, &addr_len);
-	if (num_bytes == 0) {
-		return false;
-	}
+
+	if (num_bytes > sizeof(buf))
+		num_bytes = sizeof(buf);
+	memcpy(buf, data, num_bytes);
+
 	fill_time_buffer(buf + 16);
 	// set to response
 	buf[1] = 0xd3;
@@ -97,65 +97,36 @@ ntp_server_handle(struct ntp_server *ntp)
 	}
 	fill_time_buffer(buf + 24);
 
-	num_bytes = sendto(ntp->fd, (void *)buf, num_bytes, 0,
-			   &addr, addr_len);
-
-	return num_bytes == sizeof(buf);
+	sendto(fd, (void *)buf, num_bytes, 0,
+	       source_address, source_address_length);
 }
 
-static gboolean
-ntp_in_event(G_GNUC_UNUSED GIOChannel *source,
-	     G_GNUC_UNUSED GIOCondition condition,
-	     gpointer data)
-{
-	struct ntp_server *ntp = data;
-
-	ntp_server_handle(ntp);
-	return true;
-}
+static const struct udp_server_handler ntp_server_handler = {
+	.datagram = ntp_server_datagram,
+};
 
 void
 ntp_server_init(struct ntp_server *ntp)
 {
 	ntp->port = 6002;
-	ntp->fd = -1;
+	ntp->udp = NULL;
 }
 
-void
-ntp_server_open(struct ntp_server *ntp, int fd)
+bool
+ntp_server_open(struct ntp_server *ntp, GError **error_r)
 {
-	assert(ntp->fd < 0);
-	assert(fd >= 0);
+	assert(ntp->udp == NULL);
 
-	ntp->fd = fd;
-
-#ifndef G_OS_WIN32
-	ntp->channel = g_io_channel_unix_new(fd);
-#else
-	ntp->channel = g_io_channel_win32_new_socket(fd);
-#endif
-	/* NULL encoding means the stream is binary safe */
-	g_io_channel_set_encoding(ntp->channel, NULL, NULL);
-	/* no buffering */
-	g_io_channel_set_buffered(ntp->channel, false);
-
-	ntp->source = g_io_create_watch(ntp->channel, G_IO_IN);
-	g_source_set_callback(ntp->source, (GSourceFunc)ntp_in_event, ntp,
-			      NULL);
-	g_source_attach(ntp->source, io_thread_context());
+	ntp->udp = udp_server_new(ntp->port, &ntp_server_handler, ntp,
+				  error_r);
+	return ntp->udp != NULL;
 }
 
 void
 ntp_server_close(struct ntp_server *ntp)
 {
-	if (ntp->source != NULL) {
-		g_source_destroy(ntp->source);
-		g_source_unref(ntp->source);
+	if (ntp->udp != NULL) {
+		udp_server_free(ntp->udp);
+		ntp->udp = NULL;
 	}
-
-	if (ntp->channel != NULL)
-		g_io_channel_unref(ntp->channel);
-
-	if (ntp->fd >= 0)
-		close(ntp->fd);
 }
