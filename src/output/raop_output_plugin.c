@@ -51,11 +51,73 @@ raop_output_quark(void)
 	return g_quark_from_static_string("raop_output");
 }
 
+static void
+raop_session_free(struct raop_session_data *session)
+{
+	assert(session != NULL);
+	assert(session->raop_list == NULL);
+
+	ntp_server_close(&session->ntp);
+
+	if (session->data_mutex != NULL)
+		g_mutex_free(session->data_mutex);
+
+	if (session->list_mutex != NULL)
+		g_mutex_free(session->list_mutex);
+
+	if (raop_session->data_fd >= 0)
+		close(raop_session->data_fd);
+
+	if (raop_session->ctrl.fd >= 0)
+		close(raop_session->ctrl.fd);
+
+	g_free(session);
+}
+
+static struct raop_session_data *
+raop_session_new(GError **error_r)
+{
+	struct raop_session_data *session = g_new(struct raop_session_data, 1);
+	session->raop_list = NULL;
+
+	session->data_mutex = g_mutex_new();
+	session->list_mutex = g_mutex_new();
+
+	ntp_server_init(&session->ntp);
+	session->ctrl.port = 6001;
+	session->ctrl.fd = -1;
+	session->play_state.playing = false;
+	session->play_state.seq_num = (short) g_random_int();
+	session->play_state.rtptime = g_random_int();
+	session->play_state.sync_src = g_random_int();
+	session->play_state.last_send.tv_sec = 0;
+	session->play_state.last_send.tv_usec = 0;
+	session->data_fd = -1;
+
+	if (!RAND_bytes(session->encrypt.iv, sizeof(session->encrypt.iv)) ||
+	    !RAND_bytes(session->encrypt.key, sizeof(session->encrypt.key))) {
+		raop_session_free(session);
+		g_set_error(error_r, raop_output_quark(), 0,
+			    "RAND_bytes error code=%ld", ERR_get_error());
+		return NULL;
+	}
+	memcpy(session->encrypt.nv, session->encrypt.iv, sizeof(session->encrypt.nv));
+	for (unsigned i = 0; i < 16; i++) {
+		printf("0x%x ", session->encrypt.key[i]);
+	}
+	printf("\n");
+	AES_set_encrypt_key(session->encrypt.key, 128, &session->encrypt.ctx);
+
+	memset(session->buffer, 0, RAOP_BUFFER_SIZE);
+	session->bufferSize = 0;
+
+	return session;
+}
+
 static struct raop_data *
 new_raop_data(GError **error_r)
 {
 	struct raop_data *ret = g_new(struct raop_data, 1);
-	int i;
 
 	ret->control_mutex = g_mutex_new();
 
@@ -64,37 +126,11 @@ new_raop_data(GError **error_r)
 	ret->started = 0;
 	ret->paused = 0;
 
-	if (raop_session == NULL) {
-		raop_session = g_new(struct raop_session_data, 1);
-		raop_session->raop_list = NULL;
-		ntp_server_init(&raop_session->ntp);
-		raop_session->ctrl.port = 6001;
-		raop_session->ctrl.fd = -1;
-		raop_session->play_state.playing = false;
-		raop_session->play_state.seq_num = (short) g_random_int();
-		raop_session->play_state.rtptime = g_random_int();
-		raop_session->play_state.sync_src = g_random_int();
-		raop_session->play_state.last_send.tv_sec = 0;
-		raop_session->play_state.last_send.tv_usec = 0;
-
-		if (!RAND_bytes(raop_session->encrypt.iv, sizeof(raop_session->encrypt.iv)) || !RAND_bytes(raop_session->encrypt.key, sizeof(raop_session->encrypt.key))) {
-			g_set_error(error_r, raop_output_quark(), 0,
-				    "RAND_bytes error code=%ld", ERR_get_error());
-			return NULL;
-		}
-		memcpy(raop_session->encrypt.nv, raop_session->encrypt.iv, sizeof(raop_session->encrypt.nv));
-		for (i = 0; i < 16; i++) {
-			printf("0x%x ", raop_session->encrypt.key[i]);
-		}
-		printf("\n");
-		AES_set_encrypt_key(raop_session->encrypt.key, 128, &raop_session->encrypt.ctx);
-
-		raop_session->data_fd = -1;
-		memset(raop_session->buffer, 0, RAOP_BUFFER_SIZE);
-		raop_session->bufferSize = 0;
-
-		raop_session->data_mutex = g_mutex_new();
-		raop_session->list_mutex = g_mutex_new();
+	if (raop_session == NULL &&
+	    (raop_session = raop_session_new(error_r)) == NULL) {
+		g_mutex_free(ret->control_mutex);
+		g_free(ret);
+		return NULL;
 	}
 
 	return ret;
@@ -749,15 +785,8 @@ raop_output_remove(struct raop_data *rd)
 				prev->next = rd->next;
 			} else {
 				raop_session->raop_list = rd->next;
-				if (raop_session->raop_list == NULL) {
-					// TODO clean up everything else
-					raop_session->play_state.playing = false;
-					close(raop_session->data_fd);
-					ntp_server_close(&raop_session->ntp);
-					close(raop_session->ctrl.fd);
-				}
 			}
-			if (rd->is_master && raop_session->raop_list) {
+			if (rd->is_master && raop_session->raop_list != NULL) {
 				raop_session->raop_list->is_master = true;
 			}
 			rd->next = NULL;
@@ -768,6 +797,11 @@ raop_output_remove(struct raop_data *rd)
 		iter = iter->next;
 	}
 	g_mutex_unlock(raop_session->list_mutex);
+
+	if (raop_session->raop_list == NULL) {
+		raop_session_free(raop_session);
+		raop_session = NULL;
+	}
 }
 
 static void
