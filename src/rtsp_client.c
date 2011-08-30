@@ -348,7 +348,7 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 	char reql[128];
 	const char delimiters[] = " ";
 	char *token, *dp;
-	int i,dsize = 0,rval;
+	int dsize = 0,rval;
 	struct key_data *cur_kd = *kd;
 	unsigned int j;
 	int timeout = 5000; // msec unit
@@ -438,10 +438,9 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 	}
 
 	struct key_data *new_kd = NULL;
-	i = 0;
 	while (read_line(rtspcld->fd, line, sizeof(line), timeout, 0) > 0) {
 		timeout = 1000; // once it started, it shouldn't take a long time
-		if (i && line[0] == ' ') {
+		if (new_kd != NULL && line[0] == ' ') {
 			for (j = 0; j < strlen(line); j++) if (line[j] != ' ') break;
 			dsize += strlen(line + j);
 			new_kd->data = g_realloc(new_kd->data, dsize);
@@ -469,7 +468,6 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 			cur_kd->next = new_kd;
 			cur_kd = new_kd;
 		}
-		i++;
 	}
 	return true;
 }
