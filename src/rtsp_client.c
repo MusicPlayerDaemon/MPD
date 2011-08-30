@@ -437,9 +437,9 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 		return false;
 	}
 
+	struct key_data *new_kd = NULL;
 	i = 0;
 	while (read_line(rtspcld->fd, line, sizeof(line), timeout, 0) > 0) {
-		struct key_data *new_kd = NULL;
 		timeout = 1000; // once it started, it shouldn't take a long time
 		if (i && line[0] == ' ') {
 			for (j = 0; j < strlen(line); j++) if (line[j] != ' ') break;
