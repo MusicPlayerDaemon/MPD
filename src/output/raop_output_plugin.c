@@ -737,11 +737,13 @@ raop_output_pause(void *data)
 	return true;
 }
 
+/**
+ * Remove the output from the session's list.  Caller must not lock
+ * the list_mutex.
+ */
 static void
-raop_output_close(void *data)
+raop_output_remove(struct raop_data *rd)
 {
-	//teardown
-	struct raop_data *rd = data;
 	struct raop_data *iter = raop_session->raop_list;
 	struct raop_data *prev = NULL;
 
@@ -771,6 +773,15 @@ raop_output_close(void *data)
 		iter = iter->next;
 	}
 	g_mutex_unlock(raop_session->list_mutex);
+}
+
+static void
+raop_output_close(void *data)
+{
+	//teardown
+	struct raop_data *rd = data;
+
+	raop_output_remove(rd);
 
 	g_mutex_lock(rd->control_mutex);
 	exec_request(rd->rtspcl, "TEARDOWN", NULL, NULL, 0,
