@@ -681,11 +681,15 @@ rtspcl_setup(struct rtspcl_data *rtspcld, struct key_data **kd,
 	rval = true;
  erexit:
 	g_free(buf);
-	if (!rval) {
+
+	if (!rval || kd == NULL) {
 		free_kd(rkd);
 		rkd = NULL;
 	}
-	*kd = rkd;
+
+	if (kd != NULL)
+		*kd = rkd;
+
 	return rval;
 }
 

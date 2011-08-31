@@ -496,9 +496,6 @@ raopcl_connect(struct raop_data *rd, GError **error_r)
 	char *sac=NULL, *key = NULL, *iv = NULL;
 	char sdp[1024];
 	int rval = false;
-	struct key_data *setup_kd = NULL;
-	char *aj, *token, *pc;
-	const char delimiters[] = ";";
 	unsigned char rsakey[512];
 	struct timeval current_time;
 	unsigned int sessionNum;
@@ -543,30 +540,10 @@ raopcl_connect(struct raop_data *rd, GError **error_r)
 	if (!rtspcl_announce_sdp(rd->rtspcl, sdp, error_r))
 		goto erexit;
 	//	if (!rtspcl_mark_del_exthds(rd->rtspcl, "Apple-Challenge")) goto erexit;
-	if (!rtspcl_setup(rd->rtspcl, &setup_kd,
+	if (!rtspcl_setup(rd->rtspcl, NULL,
 			  raop_session->ctrl.port, raop_session->ntp.port,
 			  error_r))
 		goto erexit;
-	if (!(aj = kd_lookup(setup_kd,"Audio-Jack-Status"))) {
-		g_set_error_literal(error_r, raop_output_quark(), 0,
-				    "Audio-Jack-Status is missing");
-		goto erexit;
-	}
-
-	token = strtok(aj, delimiters);
-	while (token) {
-		if ((pc = strstr(token,"="))) {
-			*pc = 0;
-			if (!strcmp(token,"type") && !strcmp(pc+1,"digital")) {
-				//				rd->ajtype = JACK_TYPE_DIGITAL;
-			}
-		} else {
-			if (!strcmp(token,"connected")) {
-				//				rd->ajstatus = JACK_STATUS_CONNECTED;
-			}
-		}
-		token = strtok(NULL, delimiters);
-	}
 
 	if (!get_sockaddr_by_host(rd->addr, rd->rtspcl->control_port,
 				  &rd->ctrl_addr, error_r))
@@ -588,7 +565,6 @@ raopcl_connect(struct raop_data *rd, GError **error_r)
 	g_free(sac);
 	g_free(key);
 	g_free(iv);
-	free_kd(setup_kd);
 	return rval;
 }
 
