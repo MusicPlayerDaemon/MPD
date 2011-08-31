@@ -265,6 +265,7 @@ void
 rtspcl_close(struct rtspcl_data *rtspcld)
 {
 	rtspcl_disconnect(rtspcld);
+	free_kd(rtspcld->kd);
 	rtspcl_remove_all_exthds(rtspcld);
 	g_free(rtspcld->session);
 	g_free(rtspcld);
