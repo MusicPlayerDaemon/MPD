@@ -233,6 +233,13 @@ pulse_output_delete_stream(struct pulse_output *po)
 	assert(po != NULL);
 	assert(po->stream != NULL);
 
+#if PA_CHECK_VERSION(0,9,8)
+	pa_stream_set_suspended_callback(po->stream, NULL, NULL);
+#endif
+
+	pa_stream_set_state_callback(po->stream, NULL, NULL);
+	pa_stream_set_write_callback(po->stream, NULL, NULL);
+
 	pa_stream_disconnect(po->stream);
 	pa_stream_unref(po->stream);
 	po->stream = NULL;
@@ -246,6 +253,9 @@ pulse_output_delete_context(struct pulse_output *po)
 {
 	assert(po != NULL);
 	assert(po->context != NULL);
+
+	pa_context_set_state_callback(po->context, NULL, NULL);
+	pa_context_set_subscribe_callback(po->context, NULL, NULL);
 
 	pa_context_disconnect(po->context);
 	pa_context_unref(po->context);
