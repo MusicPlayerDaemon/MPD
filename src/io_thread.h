@@ -52,6 +52,13 @@ G_GNUC_PURE
 GMainContext *
 io_thread_context(void);
 
+/**
+ * Is the current thread the I/O thread?
+ */
+G_GNUC_PURE
+bool
+io_thread_inside(void);
+
 guint
 io_thread_idle_add(GSourceFunc function, gpointer data);
 

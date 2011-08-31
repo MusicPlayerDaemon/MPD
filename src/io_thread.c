@@ -107,6 +107,12 @@ io_thread_context(void)
 	return io.context;
 }
 
+bool
+io_thread_inside(void)
+{
+	return io.thread != NULL && g_thread_self() == io.thread;
+}
+
 guint
 io_thread_idle_add(GSourceFunc function, gpointer data)
 {
@@ -154,6 +160,13 @@ io_thread_call_func(gpointer _data)
 gpointer
 io_thread_call(GThreadFunc function, gpointer _data)
 {
+	assert(io.thread != NULL);
+
+	if (io_thread_inside())
+		/* we're already in the I/O thread - no
+		   synchronization needed */
+		return function(_data);
+
 	struct call_data data = {
 		.function = function,
 		.data = _data,
