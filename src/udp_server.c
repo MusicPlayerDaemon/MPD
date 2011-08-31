@@ -57,7 +57,11 @@ udp_in_event(G_GNUC_UNUSED GIOChannel *source,
 	socklen_t address_length = sizeof(address_storage);
 
 	ssize_t nbytes = recvfrom(udp->fd, udp->buffer, sizeof(udp->buffer),
+#ifdef WIN32
+				  0,
+#else
 				  MSG_DONTWAIT,
+#endif
 				  address, &address_length);
 	if (nbytes <= 0)
 		return true;
