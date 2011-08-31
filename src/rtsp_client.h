@@ -45,7 +45,6 @@ struct rtspcl_data {
 	int fd;
 	char url[128];
 	int cseq;
-	struct key_data *kd;
 	struct key_data *exthds;
 	char *session;
 	char *transport;

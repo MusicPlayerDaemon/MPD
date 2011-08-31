@@ -265,7 +265,6 @@ void
 rtspcl_close(struct rtspcl_data *rtspcld)
 {
 	rtspcl_disconnect(rtspcld);
-	free_kd(rtspcld->kd);
 	rtspcl_remove_all_exthds(rtspcld);
 	g_free(rtspcld->session);
 	g_free(rtspcld);
@@ -350,7 +349,6 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 	const char delimiters[] = " ";
 	char *token, *dp;
 	int dsize = 0,rval;
-	struct key_data *cur_kd = *kd;
 	int timeout = 5000; // msec unit
 
 	fd_set rdfds;
@@ -437,6 +435,15 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 		return false;
 	}
 
+	/* if the caller isn't interested in response headers, put
+	   them on the trash, which is freed before returning from
+	   this function */
+	struct key_data *trash = NULL;
+	if (kd == NULL)
+		kd = &trash;
+
+	struct key_data *cur_kd = *kd;
+
 	struct key_data *new_kd = NULL;
 	while (read_line(rtspcld->fd, line, sizeof(line), timeout, 0) > 0) {
 		timeout = 1000; // once it started, it shouldn't take a long time
@@ -473,6 +480,9 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 			cur_kd = new_kd;
 		}
 	}
+
+	free_kd(trash);
+
 	return true;
 }
 
@@ -481,7 +491,7 @@ rtspcl_set_parameter(struct rtspcl_data *rtspcld, const char *parameter,
 		     GError **error_r)
 {
 	return exec_request(rtspcld, "SET_PARAMETER", "text/parameters",
-			    parameter, 1, NULL, &rtspcld->kd, error_r);
+			    parameter, 1, NULL, NULL, error_r);
 }
 
 void
@@ -495,7 +505,7 @@ rtspcl_announce_sdp(struct rtspcl_data *rtspcld, const char *sdp,
 		    GError **error_r)
 {
 	return exec_request(rtspcld, "ANNOUNCE", "application/sdp", sdp, 1,
-			    NULL, &rtspcld->kd, error_r);
+			    NULL, NULL, error_r);
 }
 
 bool
@@ -598,7 +608,7 @@ rtspcl_record(struct rtspcl_data *rtspcld,
 	range.next = &rtp;
 
 	return exec_request(rtspcld, "RECORD", NULL, NULL, 1, &range,
-			    &rtspcld->kd, error_r);
+			    NULL, error_r);
 }
 
 char *

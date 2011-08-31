@@ -756,7 +756,7 @@ raop_output_cancel(void *data)
 	kd.data = buf;
 	kd.next = NULL;
 	exec_request(rd->rtspcl, "FLUSH", NULL, NULL, 1,
-		     &kd, &(rd->rtspcl->kd), NULL);
+		     &kd, NULL, NULL);
 	g_mutex_unlock(rd->control_mutex);
 }
 
@@ -815,7 +815,7 @@ raop_output_close(void *data)
 
 	g_mutex_lock(rd->control_mutex);
 	exec_request(rd->rtspcl, "TEARDOWN", NULL, NULL, 0,
-		     NULL, &rd->rtspcl->kd, NULL);
+		     NULL, NULL, NULL);
 	g_mutex_unlock(rd->control_mutex);
 
 	rd->started = 0;
