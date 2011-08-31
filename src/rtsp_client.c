@@ -190,8 +190,6 @@ get_sockaddr_by_host(const char *host, short destport,
 	return true;
 }
 
-#define SLEEP_MSEC(val) usleep(val*1000)
-
 /*
  * create tcp connection
  * as long as the socket is not non-blocking, this can block the process
@@ -201,7 +199,7 @@ static bool
 get_tcp_connect(int sd, struct sockaddr_in dest_addr, GError **error_r)
 {
 	if (connect(sd, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr))){
-		SLEEP_MSEC(100L);
+		g_usleep(100000);
 		// try one more time
 		if (connect(sd, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr))) {
 			g_set_error(error_r, rtsp_client_quark(), errno,
