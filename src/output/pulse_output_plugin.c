@@ -225,6 +225,20 @@ pulse_output_connect(struct pulse_output *po, GError **error_r)
 }
 
 /**
+ * Frees and clears the stream.
+ */
+static void
+pulse_output_delete_stream(struct pulse_output *po)
+{
+	assert(po != NULL);
+	assert(po->stream != NULL);
+
+	pa_stream_disconnect(po->stream);
+	pa_stream_unref(po->stream);
+	po->stream = NULL;
+}
+
+/**
  * Frees and clears the context.
  */
 static void
@@ -539,8 +553,7 @@ pulse_output_open(void *data, struct audio_format *audio_format,
 	error = pa_stream_connect_playback(po->stream, po->sink,
 					   NULL, 0, NULL, NULL);
 	if (error < 0) {
-		pa_stream_unref(po->stream);
-		po->stream = NULL;
+		pulse_output_delete_stream(po);
 
 		g_set_error(error_r, pulse_output_quark(), 0,
 			    "pa_stream_connect_playback() has failed: %s",
@@ -578,9 +591,7 @@ pulse_output_close(void *data)
 			pulse_wait_for_operation(po->mainloop, o);
 	}
 
-	pa_stream_disconnect(po->stream);
-	pa_stream_unref(po->stream);
-	po->stream = NULL;
+	pulse_output_delete_stream(po);
 
 	if (po->context != NULL &&
 	    pa_context_get_state(po->context) != PA_CONTEXT_READY)
