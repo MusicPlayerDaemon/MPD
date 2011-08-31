@@ -486,12 +486,6 @@ wrap_pcm(unsigned char *buffer, int bsize, int *size, unsigned char *inData, int
 	return true;
 }
 
-static void
-raopcl_stream_connect(G_GNUC_UNUSED struct raop_data *rd)
-{
-}
-
-
 static bool
 raopcl_connect(struct raop_data *rd, GError **error_r)
 {
@@ -587,8 +581,6 @@ raopcl_connect(struct raop_data *rd, GError **error_r)
 			   raop_session->play_state.rtptime,
 			   error_r))
 		goto erexit;
-
-	raopcl_stream_connect(rd);
 
 	rval = true;
 
