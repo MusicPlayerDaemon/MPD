@@ -623,8 +623,9 @@ send_audio_data(int fd, GError **error_r)
 
 	get_time_for_rtp(&raop_session->play_state, &rtp_time);
 	gettimeofday(&current_time, NULL);
-	int diff = difference(&current_time, &rtp_time);
-	g_usleep(-diff);
+	int diff = difference(&rtp_time, &current_time);
+	if (diff > 0)
+		g_usleep(diff);
 
 	gettimeofday(&raop_session->play_state.last_send, NULL);
 	while (rd) {
