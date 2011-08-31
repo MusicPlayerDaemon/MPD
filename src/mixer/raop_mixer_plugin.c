@@ -18,18 +18,8 @@
  */
 
 #include "../output/raop_output_plugin.h"
-#include "../output_plugin.h"
-#include "../mixer_api.h"
-
-#include <glib.h>
-
-#include <assert.h>
-#include <sys/stat.h>
-#include <sys/ioctl.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include "output_plugin.h"
+#include "mixer_api.h"
 
 struct raop_mixer_plugin {
 	struct mixer base;
