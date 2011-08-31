@@ -225,6 +225,20 @@ pulse_output_connect(struct pulse_output *po, GError **error_r)
 }
 
 /**
+ * Frees and clears the context.
+ */
+static void
+pulse_output_delete_context(struct pulse_output *po)
+{
+	assert(po != NULL);
+	assert(po->context != NULL);
+
+	pa_context_disconnect(po->context);
+	pa_context_unref(po->context);
+	po->context = NULL;
+}
+
+/**
  * Create, set up and connect a context.
  *
  * @return true on success, false on error
@@ -249,26 +263,11 @@ pulse_output_setup_context(struct pulse_output *po, GError **error_r)
 					  pulse_output_subscribe_cb, po);
 
 	if (!pulse_output_connect(po, error_r)) {
-		pa_context_unref(po->context);
-		po->context = NULL;
+		pulse_output_delete_context(po);
 		return false;
 	}
 
 	return true;
-}
-
-/**
- * Frees and clears the context.
- */
-static void
-pulse_output_delete_context(struct pulse_output *po)
-{
-	assert(po != NULL);
-	assert(po->context != NULL);
-
-	pa_context_disconnect(po->context);
-	pa_context_unref(po->context);
-	po->context = NULL;
 }
 
 static void *
