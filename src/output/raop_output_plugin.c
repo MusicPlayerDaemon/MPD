@@ -346,7 +346,9 @@ send_control_command(struct control_data *ctrl, struct raop_data *rd,
 	fill_time_buffer_with_time(buf + 8, &ctrl_time);
 	fill_int(buf + 16, state->rtptime);
 
-	num_bytes = sendto(ctrl->fd, buf, sizeof(buf), 0, (struct sockaddr *) &rd->ctrl_addr, sizeof(rd->ctrl_addr));
+	num_bytes = sendto(ctrl->fd, (const void *)buf, sizeof(buf), 0,
+			   (struct sockaddr *)&rd->ctrl_addr,
+			   sizeof(rd->ctrl_addr));
 	if (num_bytes < 0) {
 		g_set_error(error_r, raop_output_quark(), errno,
 			    "Unable to send control command: %s",
@@ -635,7 +637,7 @@ send_audio_data(int fd, GError **error_r)
 			rd->started = true;
 			raop_session->data[1] = 0xe0;
 		}
-		i = sendto(fd, raop_session->data + raop_session->wblk_wsize,
+		i = sendto(fd, (const void *)(raop_session->data + raop_session->wblk_wsize),
 			   raop_session->wblk_remsize, 0, (struct sockaddr *) &rd->data_addr,
 			   sizeof(rd->data_addr));
 		if (i < 0) {
