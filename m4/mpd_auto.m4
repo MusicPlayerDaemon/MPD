@@ -63,3 +63,18 @@ AC_DEFUN([MPD_AUTO_PKG], [
 
 	MPD_AUTO_RESULT([$1], [$4], [$5])
 ])
+
+dnl Check with pkg-config first, fall back to AC_CHECK_LIB.
+dnl
+dnl Parameters: varname1, varname2, pkgname, libname, symname, libs, cflags, description, errmsg
+AC_DEFUN([MPD_AUTO_PKG_LIB], [
+	if eval "test x`echo '$'enable_$1` != xno"; then
+		PKG_CHECK_MODULES([$2], [$3],
+			[eval "found_$1=yes"],
+			AC_CHECK_LIB($4, $5,
+				[eval "found_$1=yes $2_LIBS='$6' $2_CFLAGS='$7'"],
+				[eval "found_$1=no"]))
+	fi
+
+	MPD_AUTO_RESULT([$1], [$8], [$9])
+])

@@ -196,9 +196,9 @@ AC_ARG_ENABLE(httpd-output,
 	[enable_httpd_output=auto])
 
 AC_ARG_ENABLE(id3,
-	AS_HELP_STRING([--disable-id3],
-		[disable id3 support (default: enable)]),,
-	enable_id3=yes)
+	AS_HELP_STRING([--enable-id3],
+		[disable id3 support]),,
+	enable_id3=auto)
 
 AC_ARG_ENABLE(inotify,
 	AS_HELP_STRING([--disable-inotify],
@@ -510,13 +510,8 @@ fi
 AM_CONDITIONAL(HAVE_CUE, test x$enable_cue = xyes)
 
 dnl -------------------------------- libid3tag --------------------------------
-if test x$enable_id3 = xyes; then
-	PKG_CHECK_MODULES([ID3TAG], [id3tag],,
-		AC_CHECK_LIB(id3tag, id3_file_open,
-			[ID3TAG_LIBS="-lid3tag -lz" ID3TAG_CFLAGS=""],
-			enable_id3=no))
-fi
-
+MPD_AUTO_PKG_LIB(id3, ID3TAG, id3tag, id3tag, id3_file_open, [-lid3tag -lz], [],
+	[id3tag], [libid3tag not found])
 if test x$enable_id3 = xyes; then
 	AC_DEFINE(HAVE_ID3TAG, 1, [Define to use id3tag])
 fi
