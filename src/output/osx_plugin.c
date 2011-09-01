@@ -143,8 +143,8 @@ osx_render(void *vdata,
 	if (od->pos >= od->buffer_size)
 		od->pos = 0;
 
-	g_mutex_unlock(od->mutex);
 	g_cond_signal(od->condition);
+	g_mutex_unlock(od->mutex);
 
 	buffer->mDataByteSize = buffer_size;
 
