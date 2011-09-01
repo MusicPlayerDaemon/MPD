@@ -799,7 +799,8 @@ if test x$enable_gme = xyes; then
 fi
 
 dnl ---------------------------------- libmad ---------------------------------
-MPD_AUTO_PKG(mad, MAD, [mad],
+MPD_AUTO_PKG_LIB(mad, MAD, [mad],
+	mad, mad_stream_init, [-lmad], [],
 	[libmad MP3 decoder plugin], [libmad not found])
 if test x$enable_mad = xyes; then
 	AC_DEFINE(HAVE_MAD, 1, [Define to use libmad])
