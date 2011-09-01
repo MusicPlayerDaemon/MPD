@@ -1,4 +1,5 @@
 ver 0.16.4 (2011/??/??)
+* don't abort configure when avahi is not found
 * fix memory leaks
 * don't resume playback when seeking to another song while paused
 * apply follow_inside_symlinks to absolute symlinks

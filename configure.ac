@@ -530,27 +530,31 @@ dnl ---------------------------------------------------------------------------
 dnl --------------------------------- zeroconf --------------------------------
 
 case $with_zeroconf in
-no|avahi|bonjour)
+no|bonjour)
+	enable_avahi=no
 	;;
+
+avahi)
+	enable_avahi=yes
+	;;
+
 *)
 	with_zeroconf=auto
+	enable_avahi=auto
 	;;
 esac
 
-enable_avahi=no
+MPD_AUTO_PKG(avahi, AVAHI, [avahi-client avahi-glib],
+	[avahi client library], [avahi client+glib not found])
+if test x$enable_avahi = xyes; then
+	AC_DEFINE([HAVE_AVAHI], 1, [Define to enable Avahi Zeroconf support])
+	with_zeroconf=avahi
+fi
+
+AM_CONDITIONAL(HAVE_AVAHI, test x$enable_avahi = xyes)
+
 enable_bounjour=no
 if test x$with_zeroconf != xno; then
-	if test x$with_zeroconf = xavahi || test x$with_zeroconf = xauto; then
-		PKG_CHECK_MODULES([AVAHI], [avahi-client avahi-glib],
-			 [enable_avahi=yes;AC_DEFINE([HAVE_AVAHI], 1, [Define to enable Avahi Zeroconf support])])
-	fi
-
-	if test x$enable_avahi = xyes; then
-		with_zeroconf=avahi
-	elif test x$with_zeroconf = xavahi; then
-		AC_MSG_ERROR([Avahi support requested but not found])
-	fi
-
 	if test x$with_zeroconf = xbonjour || test x$with_zeroconf = xauto; then
 		AC_CHECK_HEADER(dns_sd.h,
 			[enable_bonjour=yes;AC_DEFINE([HAVE_BONJOUR], 1, [Define to enable Bonjour Zeroconf support])])
@@ -573,7 +577,6 @@ if test x$with_zeroconf != xno; then
 fi
 
 AM_CONDITIONAL(HAVE_ZEROCONF, test x$with_zeroconf != xno)
-AM_CONDITIONAL(HAVE_AVAHI, test x$with_zeroconf = xavahi)
 AM_CONDITIONAL(HAVE_BONJOUR, test x$with_zeroconf = xbonjour)
 
 dnl ---------------------------------------------------------------------------
