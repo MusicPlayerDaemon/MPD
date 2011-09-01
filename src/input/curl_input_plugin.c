@@ -1124,6 +1124,9 @@ input_curl_easy_init(struct input_curl *c, GError **error_r)
 	curl_easy_setopt(c->easy, CURLOPT_MAXREDIRS, 5);
 	curl_easy_setopt(c->easy, CURLOPT_FAILONERROR, true);
 	curl_easy_setopt(c->easy, CURLOPT_ERRORBUFFER, c->error);
+	curl_easy_setopt(c->easy, CURLOPT_NOPROGRESS, 1l);
+	curl_easy_setopt(c->easy, CURLOPT_NOSIGNAL, 1l);
+	curl_easy_setopt(c->easy, CURLOPT_CONNECTTIMEOUT, 10l);
 
 	if (proxy != NULL)
 		curl_easy_setopt(c->easy, CURLOPT_PROXY, proxy);

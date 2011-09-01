@@ -193,6 +193,7 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	ao->really_enabled = false;
 	ao->open = false;
 	ao->pause = false;
+	ao->allow_play = true;
 	ao->fail_timer = NULL;
 
 	pcm_buffer_init(&ao->cross_fade_buffer);

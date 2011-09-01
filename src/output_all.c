@@ -207,26 +207,13 @@ static void audio_output_wait_all(void)
 }
 
 /**
- * Signals the audio output if it is open.  This function locks the
- * mutex.
- */
-static void
-audio_output_lock_signal(struct audio_output *ao)
-{
-	g_mutex_lock(ao->mutex);
-	if (audio_output_is_open(ao))
-		g_cond_signal(ao->cond);
-	g_mutex_unlock(ao->mutex);
-}
-
-/**
  * Signals all audio outputs which are open.
  */
 static void
-audio_output_signal_all(void)
+audio_output_allow_play_all(void)
 {
 	for (unsigned i = 0; i < num_audio_outputs; ++i)
-		audio_output_lock_signal(&audio_outputs[i]);
+		audio_output_allow_play(&audio_outputs[i]);
 }
 
 static void
@@ -531,7 +518,7 @@ audio_output_all_cancel(void)
 	/* the audio outputs are now waiting for a signal, to
 	   synchronize the cleared music pipe */
 
-	audio_output_signal_all();
+	audio_output_allow_play_all();
 
 	/* invalidate elapsed_time */
 

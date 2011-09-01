@@ -139,6 +139,8 @@ audio_output_open(struct audio_output *ao,
 {
 	bool open;
 
+	assert(ao != NULL);
+	assert(ao->allow_play);
 	assert(audio_format_valid(audio_format));
 	assert(mp != NULL);
 
@@ -164,10 +166,6 @@ audio_output_open(struct audio_output *ao,
 			/* we're not using audio_output_cancel() here,
 			   because that function is asynchronous */
 			ao_command(ao, AO_COMMAND_CANCEL);
-
-			/* the audio output is now waiting for a
-			   signal; wake it up immediately */
-			g_cond_signal(ao->cond);
 		}
 
 		return true;
@@ -205,6 +203,7 @@ static void
 audio_output_close_locked(struct audio_output *ao)
 {
 	assert(ao != NULL);
+	assert(ao->allow_play);
 
 	if (ao->mixer != NULL)
 		mixer_auto_close(ao->mixer);
@@ -247,6 +246,8 @@ audio_output_play(struct audio_output *ao)
 {
 	g_mutex_lock(ao->mutex);
 
+	assert(ao->allow_play);
+
 	if (audio_output_is_open(ao))
 		g_cond_signal(ao->cond);
 
@@ -262,6 +263,7 @@ void audio_output_pause(struct audio_output *ao)
 		mixer_auto_close(ao->mixer);
 
 	g_mutex_lock(ao->mutex);
+	assert(ao->allow_play);
 	if (audio_output_is_open(ao))
 		ao_command_async(ao, AO_COMMAND_PAUSE);
 	g_mutex_unlock(ao->mutex);
@@ -271,6 +273,7 @@ void
 audio_output_drain_async(struct audio_output *ao)
 {
 	g_mutex_lock(ao->mutex);
+	assert(ao->allow_play);
 	if (audio_output_is_open(ao))
 		ao_command_async(ao, AO_COMMAND_DRAIN);
 	g_mutex_unlock(ao->mutex);
@@ -279,8 +282,24 @@ audio_output_drain_async(struct audio_output *ao)
 void audio_output_cancel(struct audio_output *ao)
 {
 	g_mutex_lock(ao->mutex);
-	if (audio_output_is_open(ao))
+
+	if (audio_output_is_open(ao)) {
+		ao->allow_play = false;
 		ao_command_async(ao, AO_COMMAND_CANCEL);
+	}
+
+	g_mutex_unlock(ao->mutex);
+}
+
+void
+audio_output_allow_play(struct audio_output *ao)
+{
+	g_mutex_lock(ao->mutex);
+
+	ao->allow_play = true;
+	if (audio_output_is_open(ao))
+		g_cond_signal(ao->cond);
+
 	g_mutex_unlock(ao->mutex);
 }
 
@@ -310,6 +329,7 @@ void audio_output_finish(struct audio_output *ao)
 	assert(ao->fail_timer == NULL);
 
 	if (ao->thread != NULL) {
+		assert(ao->allow_play);
 		ao_lock_command(ao, AO_COMMAND_KILL);
 		g_thread_join(ao->thread);
 		ao->thread = NULL;

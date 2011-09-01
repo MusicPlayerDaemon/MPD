@@ -225,6 +225,44 @@ pulse_output_connect(struct pulse_output *po, GError **error_r)
 }
 
 /**
+ * Frees and clears the stream.
+ */
+static void
+pulse_output_delete_stream(struct pulse_output *po)
+{
+	assert(po != NULL);
+	assert(po->stream != NULL);
+
+#if PA_CHECK_VERSION(0,9,8)
+	pa_stream_set_suspended_callback(po->stream, NULL, NULL);
+#endif
+
+	pa_stream_set_state_callback(po->stream, NULL, NULL);
+	pa_stream_set_write_callback(po->stream, NULL, NULL);
+
+	pa_stream_disconnect(po->stream);
+	pa_stream_unref(po->stream);
+	po->stream = NULL;
+}
+
+/**
+ * Frees and clears the context.
+ */
+static void
+pulse_output_delete_context(struct pulse_output *po)
+{
+	assert(po != NULL);
+	assert(po->context != NULL);
+
+	pa_context_set_state_callback(po->context, NULL, NULL);
+	pa_context_set_subscribe_callback(po->context, NULL, NULL);
+
+	pa_context_disconnect(po->context);
+	pa_context_unref(po->context);
+	po->context = NULL;
+}
+
+/**
  * Create, set up and connect a context.
  *
  * @return true on success, false on error
@@ -249,26 +287,11 @@ pulse_output_setup_context(struct pulse_output *po, GError **error_r)
 					  pulse_output_subscribe_cb, po);
 
 	if (!pulse_output_connect(po, error_r)) {
-		pa_context_unref(po->context);
-		po->context = NULL;
+		pulse_output_delete_context(po);
 		return false;
 	}
 
 	return true;
-}
-
-/**
- * Frees and clears the context.
- */
-static void
-pulse_output_delete_context(struct pulse_output *po)
-{
-	assert(po != NULL);
-	assert(po->context != NULL);
-
-	pa_context_disconnect(po->context);
-	pa_context_unref(po->context);
-	po->context = NULL;
 }
 
 static void *
@@ -540,8 +563,7 @@ pulse_output_open(void *data, struct audio_format *audio_format,
 	error = pa_stream_connect_playback(po->stream, po->sink,
 					   NULL, 0, NULL, NULL);
 	if (error < 0) {
-		pa_stream_unref(po->stream);
-		po->stream = NULL;
+		pulse_output_delete_stream(po);
 
 		g_set_error(error_r, pulse_output_quark(), 0,
 			    "pa_stream_connect_playback() has failed: %s",
@@ -579,9 +601,7 @@ pulse_output_close(void *data)
 			pulse_wait_for_operation(po->mainloop, o);
 	}
 
-	pa_stream_disconnect(po->stream);
-	pa_stream_unref(po->stream);
-	po->stream = NULL;
+	pulse_output_delete_stream(po);
 
 	if (po->context != NULL &&
 	    pa_context_get_state(po->context) != PA_CONTEXT_READY)
