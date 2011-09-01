@@ -171,9 +171,9 @@ AC_ARG_ENABLE(fifo,
 	enable_fifo=yes)
 
 AC_ARG_ENABLE(flac,
-	AS_HELP_STRING([--disable-flac],
-		[disable flac support (default: enable)]),,
-	enable_flac=yes)
+	AS_HELP_STRING([--enable-flac],
+		[enable FLAC decoder]),,
+	enable_flac=auto)
 
 AC_ARG_ENABLE(fluidsynth,
 	AS_HELP_STRING([--enable-fluidsynth],
@@ -750,10 +750,12 @@ fi
 AM_CONDITIONAL(HAVE_FFMPEG, test x$enable_ffmpeg = xyes)
 
 dnl ----------------------------------- FLAC ----------------------------------
+
+MPD_AUTO_PKG(flac, FLAC, [flac >= 1.1],
+	[FLAC decoder], [libFLAC not found])
+
 if test x$enable_flac = xyes; then
-	PKG_CHECK_MODULES(FLAC, [flac >= 1.1],
-		AC_DEFINE(HAVE_FLAC, 1, [Define for FLAC support]),
-		enable_flac=no)
+	AC_DEFINE(HAVE_FLAC, 1, [Define for FLAC support])
 
 	oldcflags="$CFLAGS"
 	oldlibs="$LIBS"
