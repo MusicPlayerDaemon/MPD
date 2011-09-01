@@ -110,6 +110,15 @@ struct audio_output {
 	bool pause;
 
 	/**
+	 * When this flag is set, the output thread will not do any
+	 * playback.  It will wait until the flag is cleared.
+	 *
+	 * This is used to synchronize the "clear" operation on the
+	 * shared music pipe during the CANCEL command.
+	 */
+	bool allow_play;
+
+	/**
 	 * If not NULL, the device has failed, and this timer is used
 	 * to estimate how long it should stay disabled (unless
 	 * explicitly reopened with "play").

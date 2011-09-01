@@ -70,6 +70,11 @@ void audio_output_pause(struct audio_output *ao);
 void
 audio_output_drain_async(struct audio_output *ao);
 
+/**
+ * Clear the "allow_play" flag and send the "CANCEL" command
+ * asynchronously.  To finish the operation, the caller has to set the
+ * "allow_play" flag and signal the thread.
+ */
 void audio_output_cancel(struct audio_output *ao);
 
 void audio_output_close(struct audio_output *ao);

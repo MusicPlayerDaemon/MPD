@@ -2,6 +2,7 @@ ver 0.16.4 (2011/??/??)
 * fix memory leaks
 * don't resume playback when seeking to another song while paused
 * apply follow_inside_symlinks to absolute symlinks
+* fix playback discontinuation after seeking
 * input:
   - curl: limit the receive buffer size
   - curl: implement a hard-coded timeout of 10 seconds

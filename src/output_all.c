@@ -206,15 +206,18 @@ static void audio_output_wait_all(void)
 }
 
 /**
- * Signals the audio output if it is open.  This function locks the
- * mutex.
+ * Signal the audio output if it is open, and set the "allow_play"
+ * flag.  This function locks the mutex.
  */
 static void
 audio_output_lock_signal(struct audio_output *ao)
 {
 	g_mutex_lock(ao->mutex);
+
+	ao->allow_play = true;
 	if (audio_output_is_open(ao))
 		g_cond_signal(ao->cond);
+
 	g_mutex_unlock(ao->mutex);
 }
 
