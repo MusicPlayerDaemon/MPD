@@ -268,6 +268,18 @@ void audio_output_cancel(struct audio_output *ao)
 }
 
 void
+audio_output_allow_play(struct audio_output *ao)
+{
+	g_mutex_lock(ao->mutex);
+
+	ao->allow_play = true;
+	if (audio_output_is_open(ao))
+		g_cond_signal(ao->cond);
+
+	g_mutex_unlock(ao->mutex);
+}
+
+void
 audio_output_release(struct audio_output *ao)
 {
 	if (ao->always_on)
