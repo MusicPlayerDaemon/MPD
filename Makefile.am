@@ -532,10 +532,6 @@ if HAVE_FLAC
 DECODER_SRC += src/decoder/flac_decoder_plugin.c
 endif
 
-if HAVE_OGGFLAC
-DECODER_SRC += src/decoder/oggflac_decoder_plugin.c
-endif
-
 if HAVE_AUDIOFILE
 DECODER_SRC += src/decoder/audiofile_decoder_plugin.c
 endif

@@ -58,7 +58,7 @@ const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef ENABLE_VORBIS_DECODER
 	&vorbis_decoder_plugin,
 #endif
-#if defined(HAVE_FLAC) || defined(HAVE_OGGFLAC)
+#if defined(HAVE_FLAC)
 	&oggflac_decoder_plugin,
 #endif
 #ifdef HAVE_FLAC

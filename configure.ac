@@ -301,11 +301,6 @@ AC_ARG_ENABLE(mvp,
 		[enable support for Hauppauge Media MVP (default: disable)]),,
 	enable_mvp=no)
 
-AC_ARG_ENABLE(oggflac,
-	AS_HELP_STRING([--disable-oggflac],
-		[disable OggFLAC support (default: enable)]),,
-	enable_oggflac=yes)
-
 AC_ARG_ENABLE(openal,
 	AS_HELP_STRING([--enable-openal],
 		[enable OpenAL support (default: disable)]),,
@@ -792,25 +787,6 @@ MPD_AUTO_PKG(flac, FLAC, [flac >= 1.1],
 
 if test x$enable_flac = xyes; then
 	AC_DEFINE(HAVE_FLAC, 1, [Define for FLAC support])
-
-	oldcflags="$CFLAGS"
-	oldlibs="$LIBS"
-	CFLAGS="$CFLAGS $FLAC_CFLAGS"
-	LIBS="$LIBS $FLAC_LIBS"
-	if test x$enable_flac = xyes && test x$enable_oggflac = xyes; then
-		AC_CHECK_DECL(FLAC_API_SUPPORTS_OGG_FLAC,
-			[enable_oggflac=flac], [],
-			[#include <FLAC/export.h>])
-	fi
-	CFLAGS="$oldcflags"
-	LIBS="$oldlibs"
-
-	if test x$enable_oggflac = xflac; then
-		PKG_CHECK_MODULES(OGG, [ogg],
-			[FLAC_LIBS="${FLAC_LIBS} ${OGG_LIBS}" FLAC_CFLAGS="${FLAC_CFLAGS} ${OGG_CFLAGS}"],
-			[enable_oggflac=yes;
-			AC_MSG_WARN("FLAC has the ogg API built in, but couldn't find ogg. Disabling oggflac.")])
-	fi
 fi
 
 AM_CONDITIONAL(HAVE_FLAC, test x$enable_flac = xyes)
@@ -986,25 +962,6 @@ fi
 AC_SUBST(TREMOR_CFLAGS)
 AC_SUBST(TREMOR_LIBS)
 
-dnl --------------------------------- OggFLAC ---------------------------------
-dnl OggFLAC must go after Ogg Tremor
-
-if test x$enable_tremor = xyes && test x$enable_oggflac = xyes; then
-	AC_MSG_WARN([disabling OggFLAC support because it is incompatible with tremor])
-		enable_oggflac=no
-fi
-
-if test x$enable_oggflac = xyes; then
-	AC_CHECK_HEADER([OggFLAC/stream_decoder.h],, enable_oggflac=no)
-fi
-
-if test x$enable_oggflac = xyes; then
-	AC_DEFINE(HAVE_OGGFLAC,1,[Define for OggFLAC support])
-	MPD_LIBS="$MPD_LIBS -lOggFLAC -lFLAC -lm"
-fi
-
-AM_CONDITIONAL(HAVE_OGGFLAC, test x$enable_oggflac = xyes)
-
 dnl -------------------------------- Ogg Vorbis -------------------------------
 
 if test x$enable_tremor = xyes; then
@@ -1104,7 +1061,6 @@ if
 	test x$enable_mp4 = xno &&
 	test x$enable_mpc = xno &&
 	test x$enable_mpg123 = xno &&
-	test x$enable_oggflac = xno &&
 	test x$enable_sidplay = xno &&
 	test x$enable_tremor = xno &&
 	test x$enable_vorbis = xno &&
@@ -1115,10 +1071,10 @@ if
 fi
 
 AM_CONDITIONAL(HAVE_OGG_COMMON,
-	test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_oggflac = xyes || test x$enable_flac = xyes)
+	test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_flac = xyes)
 
 AM_CONDITIONAL(HAVE_FLAC_COMMON,
-	  test x$enable_flac = xyes || test x$enable_oggflac = xyes)
+	  test x$enable_flac = xyes)
 
 dnl ---------------------------------------------------------------------------
 dnl Encoders for Streaming Audio Output Plugins
@@ -1580,7 +1536,6 @@ results(mad, [MAD])
 results(mpg123, [MPG123])
 results(mp4, [MP4])
 results(mpc, [Musepack])
-results(oggflac, [OggFLAC], flac)
 printf '\n\t'
 results(tremor, [OggTremor])
 results(vorbis, [OggVorbis])
