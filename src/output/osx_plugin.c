@@ -95,12 +95,6 @@ static void osx_output_close(void *data)
 {
 	struct osx_output *od = data;
 
-	g_mutex_lock(od->mutex);
-	while (od->len) {
-		g_cond_wait(od->condition, od->mutex);
-	}
-	g_mutex_unlock(od->mutex);
-
 	AudioOutputUnitStop(od->au);
 	AudioUnitUninitialize(od->au);
 	CloseComponent(od->au);

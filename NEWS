@@ -17,6 +17,7 @@ ver 0.16.4 (2011/??/??)
 * output:
   - alsa: fix SIGFPE when alsa announces a period size of 0
   - httpd: don't warn on client disconnect
+  - osx: don't drain the buffer when closing
   - pulse: fix deadlock when resuming the stream
   - pulse: fix deadlock when the stream was suspended
 
