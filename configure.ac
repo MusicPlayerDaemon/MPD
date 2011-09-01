@@ -542,8 +542,7 @@ enable_bounjour=no
 if test x$with_zeroconf != xno; then
 	if test x$with_zeroconf = xavahi || test x$with_zeroconf = xauto; then
 		PKG_CHECK_MODULES([AVAHI], [avahi-client avahi-glib],
-			 [enable_avahi=yes;AC_DEFINE([HAVE_AVAHI], 1, [Define to enable Avahi Zeroconf support])]
-			 MPD_LIBS="$MPD_LIBS $AVAHI_LIBS" MPD_CFLAGS="$MPD_CFLAGS $AVAHI_CFLAGS")
+			 [enable_avahi=yes;AC_DEFINE([HAVE_AVAHI], 1, [Define to enable Avahi Zeroconf support])])
 	fi
 
 	if test x$enable_avahi = xyes; then
