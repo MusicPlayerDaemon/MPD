@@ -21,7 +21,7 @@ ver 0.17 (2011/??/??)
 * cue: show CUE track numbers
 
 
-ver 0.16.4 (2011/??/??)
+ver 0.16.4 (2011/09/01)
 * don't abort configure when avahi is not found
 * auto-detect libmad without pkg-config
 * fix memory leaks
