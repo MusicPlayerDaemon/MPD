@@ -956,7 +956,7 @@ handle_findadd(struct client *client, int argc, char *argv[])
 	    return COMMAND_RETURN_ERROR;
     }
 
-    ret = findAddIn(client, NULL, list);
+    ret = findAddIn(client->player_control, NULL, list);
     if (ret == -1)
 	    command_error(client, ACK_ERROR_NO_EXIST,
 			  "directory or file not found");

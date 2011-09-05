@@ -42,7 +42,7 @@ findSongsIn(struct client *client, const char *name,
 	    const struct locate_item_list *criteria);
 
 int
-findAddIn(struct client *client, const char *name,
+findAddIn(struct player_control *pc, const char *name,
 	  const struct locate_item_list *criteria);
 
 int

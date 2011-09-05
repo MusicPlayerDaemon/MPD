@@ -203,25 +203,30 @@ int addAllInToStoredPlaylist(const char *name, const char *utf8file)
 	return db_walk(name, directoryAddSongToStoredPlaylist, NULL, &data);
 }
 
+struct find_add_data {
+	struct player_control *pc;
+	const struct locate_item_list *criteria;
+};
+
 static int
 findAddInDirectory(struct song *song, void *_data)
 {
-	struct search_data *data = _data;
+	struct find_add_data *data = _data;
 
 	if (locate_song_match(song, data->criteria))
 		return playlist_append_song(&g_playlist,
-					    data->client->player_control,
+					    data->pc,
 					    song, NULL);
 
 	return 0;
 }
 
-int findAddIn(struct client *client, const char *name,
-	      const struct locate_item_list *criteria)
+int
+findAddIn(struct player_control *pc, const char *name,
+	  const struct locate_item_list *criteria)
 {
-	struct search_data data;
-
-	data.client   = client;
+	struct find_add_data data;
+	data.pc = pc;
 	data.criteria = criteria;
 
 	return db_walk(name, findAddInDirectory, NULL, &data);
