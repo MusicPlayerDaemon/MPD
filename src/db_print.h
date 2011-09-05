@@ -17,21 +17,30 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DB_UTILS_H
-#define MPD_DB_UTILS_H
+#ifndef MPD_DB_PRINT_H
+#define MPD_DB_PRINT_H
 
+struct client;
 struct locate_item_list;
-struct player_control;
+
+int printAllIn(struct client *client, const char *name);
+
+int printInfoForAllIn(struct client *client, const char *name);
 
 int
-addAllIn(struct player_control *pc, const char *name);
-
-int addAllInToStoredPlaylist(const char *name, const char *utf8file);
+searchForSongsIn(struct client *client, const char *name,
+		 const struct locate_item_list *criteria);
 
 int
-findAddIn(struct player_control *pc, const char *name,
-	  const struct locate_item_list *criteria);
+findSongsIn(struct client *client, const char *name,
+	    const struct locate_item_list *criteria);
 
-unsigned long sumSongTimesIn(const char *name);
+int
+searchStatsForSongsIn(struct client *client, const char *name,
+		      const struct locate_item_list *criteria);
+
+int
+listAllUniqueTags(struct client *client, int type,
+		  const struct locate_item_list *criteria);
 
 #endif

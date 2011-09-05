@@ -42,6 +42,7 @@
 #include "output_print.h"
 #include "locate.h"
 #include "dbUtils.h"
+#include "db_print.h"
 #include "tag.h"
 #include "client.h"
 #include "client_idle.h"
