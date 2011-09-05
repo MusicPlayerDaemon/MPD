@@ -144,6 +144,12 @@ AC_CHECK_HEADERS(valgrind/memcheck.h)
 dnl ---------------------------------------------------------------------------
 dnl Allow tools to be specifically built
 dnl ---------------------------------------------------------------------------
+
+AC_ARG_ENABLE(mpdclient,
+	AS_HELP_STRING([--enable-libmpdclient],
+		[enable support for the MPD client]),,
+	enable_libmpdclient=auto)
+
 AC_ARG_ENABLE(alsa,
 	AS_HELP_STRING([--enable-alsa], [enable ALSA support]),,
 	[enable_alsa=auto])
@@ -533,6 +539,15 @@ fi
 dnl ---------------------------------------------------------------------------
 dnl Miscellaneous Libraries
 dnl ---------------------------------------------------------------------------
+
+dnl -------------------------------- libmpdclient --------------------------------
+MPD_AUTO_PKG(libmpdclient, LIBMPDCLIENT, [libmpdclient >= 2.2],
+	[MPD client library], [libmpdclient not found])
+if test x$enable_libmpdclient = xyes; then
+	AC_DEFINE(HAVE_LIBMPDCLIENT, 1, [Define to use libmpdclient])
+fi
+
+AM_CONDITIONAL(HAVE_LIBMPDCLIENT, test x$enable_libmpdclient = xyes)
 
 dnl --------------------------------- inotify ---------------------------------
 AC_CHECK_FUNCS(inotify_init inotify_init1)

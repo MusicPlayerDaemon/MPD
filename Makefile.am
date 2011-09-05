@@ -20,6 +20,7 @@ noinst_LIBRARIES = \
 	liboutput_plugins.a
 
 src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(LIBMPDCLIENT_CFLAGS) \
 	$(AVAHI_CFLAGS) \
 	$(LIBWRAP_CFLAGS) \
 	$(SQLITE_CFLAGS)
@@ -437,7 +438,13 @@ libdb_plugins_a_SOURCES = \
 	src/DatabaseRegistry.cxx src/DatabaseRegistry.hxx \
 	src/db/SimpleDatabasePlugin.cxx src/db/SimpleDatabasePlugin.hxx
 
+if HAVE_LIBMPDCLIENT
+libdb_plugins_a_SOURCES += \
+	src/db/ProxyDatabasePlugin.cxx src/db/ProxyDatabasePlugin.hxx
+endif
+
 DB_LIBS = \
+	$(LIBMPDCLIENT_LIBS) \
 	libdb_plugins.a
 
 # archive plugins
@@ -1043,7 +1050,7 @@ test_run_resolver_SOURCES = test/run_resolver.c \
 	src/resolver.c
 
 test_DumpDatabase_LDADD = \
-	libdb_plugins.a \
+	$(DB_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
