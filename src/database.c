@@ -20,8 +20,11 @@
 #include "config.h"
 #include "database.h"
 #include "db_save.h"
+#include "db_plugin.h"
+#include "db/simple_db_plugin.h"
 #include "directory.h"
 #include "stats.h"
+#include "conf.h"
 
 #include <glib.h>
 
@@ -35,11 +38,8 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "database"
 
-static char *database_path;
-
-static struct directory *music_root;
-
-static time_t database_mtime;
+static struct db *db;
+static bool db_is_open;
 
 /**
  * The quark used for GError.domain.
@@ -50,49 +50,50 @@ db_quark(void)
 	return g_quark_from_static_string("database");
 }
 
-void
-db_init(const char *path)
+bool
+db_init(const struct config_param *path, GError **error_r)
 {
-	database_path = g_strdup(path);
+	assert(db == NULL);
+	assert(!db_is_open);
 
-	if (path != NULL)
-		music_root = directory_new("", NULL);
+	if (path == NULL)
+		return true;
+
+	struct config_param *param = config_new_param("database", path->line);
+	config_add_block_param(param, "path", path->value, path->line);
+
+	db = db_plugin_new(&simple_db_plugin, param, error_r);
+
+	config_param_free(param);
+
+	return db != NULL;
 }
 
 void
 db_finish(void)
 {
-	assert((database_path == NULL) == (music_root == NULL));
+	if (db_is_open)
+		db_plugin_close(db);
 
-	if (music_root != NULL)
-		directory_free(music_root);
-
-	g_free(database_path);
-}
-
-void
-db_clear(void)
-{
-	assert(music_root != NULL);
-
-	directory_free(music_root);
-	music_root = directory_new("", NULL);
+	if (db != NULL)
+		db_plugin_free(db);
 }
 
 struct directory *
 db_get_root(void)
 {
-	assert(music_root != NULL);
+	assert(db != NULL);
 
-	return music_root;
+	return simple_db_get_root(db);
 }
 
 struct directory *
 db_get_directory(const char *name)
 {
-	if (music_root == NULL)
+	if (db == NULL)
 		return NULL;
 
+	struct directory *music_root = db_get_root();
 	if (name == NULL)
 		return music_root;
 
@@ -106,9 +107,10 @@ db_get_song(const char *file)
 
 	g_debug("get song: %s", file);
 
-	if (music_root == NULL)
+	if (db == NULL)
 		return NULL;
 
+	struct directory *music_root = db_get_root();
 	return directory_lookup_song(music_root, file);
 }
 
@@ -119,7 +121,7 @@ db_walk(const char *name,
 {
 	struct directory *directory;
 
-	if (music_root == NULL)
+	if (db == NULL)
 		return -1;
 
 	if ((directory = db_get_directory(name)) == NULL) {
@@ -134,150 +136,26 @@ db_walk(const char *name,
 }
 
 bool
-db_check(GError **error_r)
-{
-	struct stat st;
-
-	assert(database_path != NULL);
-
-	/* Check if the file exists */
-	if (access(database_path, F_OK)) {
-		/* If the file doesn't exist, we can't check if we can write
-		 * it, so we are going to try to get the directory path, and
-		 * see if we can write a file in that */
-		char *dirPath = g_path_get_dirname(database_path);
-
-		/* Check that the parent part of the path is a directory */
-		if (stat(dirPath, &st) < 0) {
-			g_free(dirPath);
-			g_set_error(error_r, db_quark(), errno,
-				    "Couldn't stat parent directory of db file "
-				    "\"%s\": %s",
-				    database_path, g_strerror(errno));
-			return false;
-		}
-
-		if (!S_ISDIR(st.st_mode)) {
-			g_free(dirPath);
-			g_set_error(error_r, db_quark(), 0,
-				    "Couldn't create db file \"%s\" because the "
-				    "parent path is not a directory",
-				    database_path);
-			return false;
-		}
-
-		/* Check if we can write to the directory */
-		if (access(dirPath, X_OK | W_OK)) {
-			g_set_error(error_r, db_quark(), errno,
-				    "Can't create db file in \"%s\": %s",
-				    dirPath, g_strerror(errno));
-			g_free(dirPath);
-			return false;
-		}
-
-		g_free(dirPath);
-
-		return true;
-	}
-
-	/* Path exists, now check if it's a regular file */
-	if (stat(database_path, &st) < 0) {
-		g_set_error(error_r, db_quark(), errno,
-			    "Couldn't stat db file \"%s\": %s",
-			    database_path, g_strerror(errno));
-		return false;
-	}
-
-	if (!S_ISREG(st.st_mode)) {
-		g_set_error(error_r, db_quark(), 0,
-			    "db file \"%s\" is not a regular file",
-			    database_path);
-		return false;
-	}
-
-	/* And check that we can write to it */
-	if (access(database_path, R_OK | W_OK)) {
-		g_set_error(error_r, db_quark(), errno,
-			    "Can't open db file \"%s\" for reading/writing: %s",
-			    database_path, g_strerror(errno));
-		return false;
-	}
-
-	return true;
-}
-
-bool
 db_save(GError **error_r)
 {
-	FILE *fp;
-	struct stat st;
+	assert(db != NULL);
+	assert(db_is_open);
 
-	assert(database_path != NULL);
-	assert(music_root != NULL);
-
-	g_debug("removing empty directories from DB");
-	directory_prune_empty(music_root);
-
-	g_debug("sorting DB");
-
-	directory_sort(music_root);
-
-	g_debug("writing DB");
-
-	fp = fopen(database_path, "w");
-	if (!fp) {
-		g_set_error(error_r, db_quark(), errno,
-			    "unable to write to db file \"%s\": %s",
-			    database_path, g_strerror(errno));
-		return false;
-	}
-
-	db_save_internal(fp, music_root);
-
-	if (ferror(fp)) {
-		g_set_error(error_r, db_quark(), errno,
-			    "Failed to write to database file: %s",
-			    g_strerror(errno));
-		fclose(fp);
-		return false;
-	}
-
-	fclose(fp);
-
-	if (stat(database_path, &st) == 0)
-		database_mtime = st.st_mtime;
-
-	return true;
+	return simple_db_save(db, error_r);
 }
 
 bool
 db_load(GError **error)
 {
-	FILE *fp = NULL;
-	struct stat st;
+	assert(db != NULL);
+	assert(!db_is_open);
 
-	assert(database_path != NULL);
-	assert(music_root != NULL);
-
-	fp = fopen(database_path, "r");
-	if (fp == NULL) {
-		g_set_error(error, db_quark(), errno,
-			    "Failed to open database file \"%s\": %s",
-			    database_path, strerror(errno));
+	if (!db_plugin_open(db, error))
 		return false;
-	}
 
-	if (!db_load_internal(fp, music_root, error)) {
-		fclose(fp);
-		return false;
-	}
-
-	fclose(fp);
+	db_is_open = true;
 
 	stats_update();
-
-	if (stat(database_path, &st) == 0)
-		database_mtime = st.st_mtime;
 
 	return true;
 }
@@ -285,5 +163,8 @@ db_load(GError **error)
 time_t
 db_get_mtime(void)
 {
-	return database_mtime;
+	assert(db != NULL);
+	assert(db_is_open);
+
+	return simple_db_get_mtime(db);
 }

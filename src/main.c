@@ -156,44 +156,31 @@ glue_mapper_init(GError **error_r)
 static bool
 glue_db_init_and_load(void)
 {
-	GError *error = NULL;
-	char *path = config_dup_path(CONF_DB_FILE, &error);
-	if (path == NULL && error != NULL)
-		MPD_ERROR("%s", error->message);
+	const struct config_param *path = config_get_param(CONF_DB_FILE);
 
+	GError *error = NULL;
 	bool ret;
 
 	if (!mapper_has_music_directory()) {
-		g_free(path);
 		if (path != NULL)
 			g_message("Found " CONF_DB_FILE " setting without "
 				  CONF_MUSIC_DIR " - disabling database");
-		db_init(NULL);
+		db_init(NULL, NULL);
 		return true;
 	}
 
 	if (path == NULL)
 		MPD_ERROR(CONF_DB_FILE " setting missing");
 
-	db_init(path);
-	g_free(path);
+	if (!db_init(path, &error))
+		MPD_ERROR("%s", error->message);
 
 	ret = db_load(&error);
-	if (!ret) {
-		g_warning("Failed to load database: %s", error->message);
-		g_error_free(error);
-		error = NULL;
+	if (!ret)
+		MPD_ERROR("%s", error->message);
 
-		if (!db_check(&error))
-			MPD_ERROR("%s", error->message);
-
-		db_clear();
-
-		/* run database update after daemonization */
-		return false;
-	}
-
-	return true;
+	/* run database update after daemonization? */
+	return db_exists();
 }
 
 /**

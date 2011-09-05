@@ -272,6 +272,8 @@ src_mpd_SOURCES = \
 	src/database.c \
 	src/db_save.c src/db_save.h \
 	src/db_print.c src/db_print.h \
+	src/db_plugin.h \
+	src/db/simple_db_plugin.c src/db/simple_db_plugin.h \
 	src/dirvec.c \
 	src/exclude.c \
 	src/fd_util.c \

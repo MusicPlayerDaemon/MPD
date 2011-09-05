@@ -25,6 +25,7 @@
 #include <sys/time.h>
 #include <stdbool.h>
 
+struct config_param;
 struct directory;
 
 /**
@@ -32,17 +33,11 @@ struct directory;
  *
  * @param path the absolute path of the database file
  */
-void
-db_init(const char *path);
+bool
+db_init(const struct config_param *path, GError **error_r);
 
 void
 db_finish(void);
-
-/**
- * Clear the database.
- */
-void
-db_clear(void);
 
 /**
  * Returns the root directory object.  Returns NULL if there is no
