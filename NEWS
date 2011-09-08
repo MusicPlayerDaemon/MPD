@@ -1,4 +1,5 @@
 ver 0.16.5 (2010/??/??)
+* pcm_format: fix 32-to-24 bit conversion (the "silence" bug)
 
 
 ver 0.16.4 (2011/09/01)

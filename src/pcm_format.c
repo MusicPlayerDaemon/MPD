@@ -143,7 +143,7 @@ pcm_convert_16_to_24(int32_t *out, const int16_t *in,
 }
 
 static void
-pcm_convert_32_to_24(int32_t *out, const int16_t *in,
+pcm_convert_32_to_24(int32_t *out, const int32_t *in,
 		     unsigned num_samples)
 {
 	while (num_samples > 0) {
@@ -197,7 +197,7 @@ pcm_convert_to_24(struct pcm_buffer *buffer,
 		*dest_size_r = num_samples * sizeof(*dest);
 		dest = pcm_buffer_get(buffer, *dest_size_r);
 
-		pcm_convert_32_to_24(dest, (const int16_t *)src,
+		pcm_convert_32_to_24(dest, (const int32_t *)src,
 				     num_samples);
 		return dest;
 	}
