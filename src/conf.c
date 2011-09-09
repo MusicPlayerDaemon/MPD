@@ -223,20 +223,13 @@ void config_global_check(void)
 	}
 }
 
-bool
+void
 config_add_block_param(struct config_param * param, const char *name,
-		       const char *value, int line, GError **error_r)
+		       const char *value, int line)
 {
 	struct block_param *bp;
 
-	bp = config_get_block_param(param, name);
-	if (bp != NULL) {
-		g_set_error(error_r, config_quark(), 0,
-			    "\"%s\" first defined on line %i, and "
-			    "redefined on line %i\n", name,
-			    bp->line, line);
-		return false;
-	}
+	assert(config_get_block_param(param, name) == NULL);
 
 	param->num_block_params++;
 
@@ -250,8 +243,6 @@ config_add_block_param(struct config_param * param, const char *name,
 	bp->value = g_strdup(value);
 	bp->line = line;
 	bp->used = false;
-
-	return true;
 }
 
 static bool
@@ -283,8 +274,16 @@ config_read_name_value(struct config_param *param, char *input, unsigned line,
 		return false;
 	}
 
-	return config_add_block_param(param, name, value, line,
-				      error_r);
+	const struct block_param *bp = config_get_block_param(param, name);
+	if (bp != NULL) {
+		g_set_error(error_r, config_quark(), 0,
+			    "\"%s\" is duplicate, first defined on line %i",
+			    name, bp->line);
+		return false;
+	}
+
+	config_add_block_param(param, name, value, line);
+	return true;
 }
 
 static struct config_param *

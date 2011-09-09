@@ -210,8 +210,8 @@ G_GNUC_MALLOC
 struct config_param *
 config_new_param(const char *value, int line);
 
-bool
+void
 config_add_block_param(struct config_param * param, const char *name,
-		       const char *value, int line, GError **error_r);
+		       const char *value, int line);
 
 #endif
