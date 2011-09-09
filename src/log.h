@@ -23,6 +23,13 @@
 #include <glib.h>
 #include <stdbool.h>
 
+G_GNUC_CONST
+static inline GQuark
+log_quark(void)
+{
+	return g_quark_from_static_string("log");
+}
+
 /**
  * Configure a logging destination for daemon startup, before the
  * configuration file is read.  This allows the daemon to use the
@@ -34,7 +41,8 @@
 void
 log_early_init(bool verbose);
 
-void log_init(bool verbose, bool use_stdout);
+bool
+log_init(bool verbose, bool use_stdout, GError **error_r);
 
 void setup_log_output(bool use_stdout);
 

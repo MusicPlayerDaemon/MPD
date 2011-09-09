@@ -133,16 +133,20 @@ open_log_file(void)
 	return open_cloexec(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
 }
 
-static void
-log_init_file(const char *path, unsigned line)
+static bool
+log_init_file(const char *path, unsigned line, GError **error_r)
 {
 	out_filename = path;
 	out_fd = open_log_file();
-	if (out_fd < 0)
-		MPD_ERROR("problem opening log file \"%s\" (config line %u) "
-			  "for writing\n", path, line);
+	if (out_fd < 0) {
+		g_set_error(error_r, log_quark(), errno,
+			    "problem opening log file \"%s\" (config line %u) "
+			    "for writing", path, line);
+		return false;
+	}
 
 	g_log_set_default_handler(file_log_func, NULL);
+	return true;
 }
 
 #ifdef HAVE_SYSLOG
@@ -232,7 +236,8 @@ log_early_init(bool verbose)
 	log_init_stdout();
 }
 
-void log_init(bool verbose, bool use_stdout)
+bool
+log_init(bool verbose, bool use_stdout, GError **error_r)
 {
 	const struct config_param *param;
 
@@ -245,6 +250,7 @@ void log_init(bool verbose, bool use_stdout)
 
 	if (use_stdout) {
 		log_init_stdout();
+		return true;
 	} else {
 		param = config_get_param(CONF_LOG_FILE);
 		if (param == NULL) {
@@ -252,19 +258,23 @@ void log_init(bool verbose, bool use_stdout)
 			/* no configuration: default to syslog (if
 			   available) */
 			log_init_syslog();
+			return true;
 #else
-			MPD_ERROR("config parameter \"%s\" not found\n",
-				  CONF_LOG_FILE);
+			g_set_error(error_r, log_quark(), 0,
+				    "config parameter \"%s\" not found",
+				    CONF_LOG_FILE);
+			return false;
 #endif
 #ifdef HAVE_SYSLOG
 		} else if (strcmp(param->value, "syslog") == 0) {
 			log_init_syslog();
+			return true;
 #endif
 		} else {
 			const char *path = config_get_path(CONF_LOG_FILE);
 			assert(path != NULL);
 
-			log_init_file(path, param->line);
+			return log_init_file(path, param->line, error_r);
 		}
 	}
 }
