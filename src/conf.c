@@ -254,16 +254,47 @@ config_add_block_param(struct config_param * param, const char *name,
 	return true;
 }
 
+static bool
+config_read_name_value(struct config_param *param, char *input, unsigned line,
+		       GError **error_r)
+{
+	const char *name = tokenizer_next_word(&input, error_r);
+	if (name == NULL) {
+		assert(*input != 0);
+		return false;
+	}
+
+	const char *value = tokenizer_next_string(&input, error_r);
+	if (value == NULL) {
+		if (*input == 0) {
+			assert(error_r == NULL || *error_r == NULL);
+			g_set_error(error_r, config_quark(), 0,
+				    "Value missing");
+		} else {
+			assert(error_r == NULL || *error_r != NULL);
+		}
+
+		return false;
+	}
+
+	if (*input != 0 && *input != CONF_COMMENT) {
+		g_set_error(error_r, config_quark(), 0,
+			    "Unknown tokens after value");
+		return false;
+	}
+
+	return config_add_block_param(param, name, value, line,
+				      error_r);
+}
+
 static struct config_param *
 config_read_block(FILE *fp, int *count, char *string, GError **error_r)
 {
 	struct config_param *ret = config_new_param(NULL, *count);
 	GError *error = NULL;
-	bool success;
 
 	while (true) {
 		char *line;
-		const char *name, *value;
 
 		line = fgets(string, MAX_STRING_SIZE, fp);
 		if (line == NULL) {
@@ -296,41 +327,12 @@ config_read_block(FILE *fp, int *count, char *string, GError **error_r)
 
 		/* parse name and value */
 
-		name = tokenizer_next_word(&line, &error);
-		if (name == NULL) {
+		if (!config_read_name_value(ret, line, *count, &error)) {
 			assert(*line != 0);
 			config_param_free(ret);
 			g_propagate_prefixed_error(error_r, error,
 						   "line %i: ", *count);
 			return NULL;
-		}
-
-		value = tokenizer_next_string(&line, &error);
-		if (value == NULL) {
-			config_param_free(ret);
-			if (*line == 0)
-				g_set_error(error_r, config_quark(), 0,
-					    "line %i: Value missing", *count);
-			else
-				g_propagate_prefixed_error(error_r, error,
-							   "line %i: ",
-							   *count);
-			return NULL;
-		}
-
-		if (*line != 0 && *line != CONF_COMMENT) {
-			config_param_free(ret);
-			g_set_error(error_r, config_quark(), 0,
-				    "line %i: Unknown tokens after value",
-				    *count);
-			return NULL;
-		}
-
-		success = config_add_block_param(ret, name, value, *count,
-						 error_r);
-		if (!success) {
-			config_param_free(ret);
-			return false;
 		}
 	}
 }
