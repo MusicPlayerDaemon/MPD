@@ -463,7 +463,7 @@ config_read_file(const char *file, GError **error_r)
 	return true;
 }
 
-struct config_param *
+const struct config_param *
 config_get_next_param(const char *name, const struct config_param * last)
 {
 	struct config_entry *entry;

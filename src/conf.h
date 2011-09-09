@@ -133,11 +133,11 @@ config_read_file(const char *file, GError **error_r);
 /* don't free the returned value
    set _last_ to NULL to get first entry */
 G_GNUC_PURE
-struct config_param *
+const struct config_param *
 config_get_next_param(const char *name, const struct config_param *last);
 
 G_GNUC_PURE
-static inline struct config_param *
+static inline const struct config_param *
 config_get_param(const char *name)
 {
 	return config_get_next_param(name, NULL);
