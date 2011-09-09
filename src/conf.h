@@ -111,6 +111,7 @@ struct config_param {
  * A GQuark for GError instances, resulting from malformed
  * configuration.
  */
+G_GNUC_CONST
 static inline GQuark
 config_quark(void)
 {
@@ -187,6 +188,7 @@ const char *
 config_get_block_string(const struct config_param *param, const char *name,
 			const char *default_value);
 
+G_GNUC_MALLOC
 static inline char *
 config_dup_block_string(const struct config_param *param, const char *name,
 			const char *default_value)
@@ -204,6 +206,7 @@ bool
 config_get_block_bool(const struct config_param *param, const char *name,
 		      bool default_value);
 
+G_GNUC_MALLOC
 struct config_param *
 config_new_param(const char *value, int line);
 
