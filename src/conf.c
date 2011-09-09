@@ -513,11 +513,11 @@ config_dup_path(const char *name, GError **error_r)
 	if (param == NULL)
 		return NULL;
 
-	char *path = parsePath(param->value);
+	char *path = parsePath(param->value, error_r);
 	if (G_UNLIKELY(path == NULL))
-		g_set_error(error_r, config_quark(), 0,
-			    "Invalid path in \"%s\" at line %i",
-			    name, param->line);
+		g_prefix_error(error_r,
+			       "Invalid path in \"%s\" at line %i: ",
+			       name, param->line);
 
 	return path;
 }

@@ -20,6 +20,7 @@
 #ifndef MPD_UTILS_H
 #define MPD_UTILS_H
 
+#include <glib.h>
 #include <stdbool.h>
 
 #ifndef assert_static
@@ -32,6 +33,6 @@
 #endif /* !assert_static */
 
 char *
-parsePath(const char *path);
+parsePath(const char *path, GError **error_r);
 
 #endif

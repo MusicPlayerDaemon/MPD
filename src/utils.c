@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "utils.h"
+#include "glib_compat.h"
 #include "conf.h"
 
 #include <glib.h>
@@ -41,12 +42,23 @@
 #include <windows.h>
 #endif
 
-char *
-parsePath(const char *path)
+G_GNUC_CONST
+static inline GQuark
+parse_path_quark(void)
 {
+	return g_quark_from_static_string("path");
+}
+
+char *
+parsePath(const char *path, G_GNUC_UNUSED GError **error_r)
+{
+	assert(path != NULL);
+	assert(error_r == NULL || *error_r == NULL);
+
 #ifndef WIN32
 	if (!g_path_is_absolute(path) && path[0] != '~') {
-		g_warning("\"%s\" is not an absolute path", path);
+		g_set_error(error_r, parse_path_quark(), 0,
+			    "not an absolute path: %s", path);
 		return NULL;
 	} else if (path[0] == '~') {
 		const char *home;
@@ -56,7 +68,8 @@ parsePath(const char *path)
 			if (user != NULL) {
 				struct passwd *passwd = getpwnam(user);
 				if (!passwd) {
-					g_warning("no such user %s", user);
+					g_set_error(error_r, parse_path_quark(), 0,
+						    "no such user: %s", user);
 					return NULL;
 				}
 
@@ -64,8 +77,9 @@ parsePath(const char *path)
 			} else {
 				home = g_get_home_dir();
 				if (home == NULL) {
-					g_warning("problems getting home "
-						  "for current user");
+					g_set_error_literal(error_r, parse_path_quark(), 0,
+							    "problems getting home "
+							    "for current user");
 					return NULL;
 				}
 			}
@@ -81,7 +95,8 @@ parsePath(const char *path)
 
 			struct passwd *passwd = getpwnam(user);
 			if (!passwd) {
-				g_warning("user \"%s\" not found", user);
+				g_set_error(error_r, parse_path_quark(), 0,
+					    "no such user: %s", user);
 				g_free(user);
 				return NULL;
 			}

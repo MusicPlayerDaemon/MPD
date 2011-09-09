@@ -190,11 +190,11 @@ fifo_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		return NULL;
 	}
 
-	path = parsePath(value);
+	path = parsePath(value, error);
 	g_free(value);
 	if (!path) {
-		g_set_error(error, fifo_output_quark(), errno,
-			    "Could not parse \"path\" parameter");
+		g_prefix_error(error, "Invalid path in line %i: ",
+			       param->line);
 		return NULL;
 	}
 
