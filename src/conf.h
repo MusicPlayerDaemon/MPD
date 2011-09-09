@@ -218,6 +218,9 @@ struct config_param *
 config_new_param(const char *value, int line);
 
 void
+config_param_free(struct config_param *param);
+
+void
 config_add_block_param(struct config_param * param, const char *name,
 		       const char *value, int line);
 

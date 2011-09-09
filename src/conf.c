@@ -143,7 +143,7 @@ config_new_param(const char *value, int line)
 	return ret;
 }
 
-static void
+void
 config_param_free(struct config_param *param)
 {
 	g_free(param->value);
