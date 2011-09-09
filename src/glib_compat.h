@@ -49,6 +49,12 @@ g_timeout_add_seconds(guint interval, GSourceFunc function, gpointer data)
 #if !GLIB_CHECK_VERSION(2,16,0)
 
 static inline void
+g_prefix_error(G_GNUC_UNUSED GError **error_r,
+	       G_GNUC_UNUSED const gchar *format, ...)
+{
+}
+
+static inline void
 g_propagate_prefixed_error(GError **dest_r, GError *src,
 			   G_GNUC_UNUSED const gchar *format, ...)
 {
