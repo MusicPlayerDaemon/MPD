@@ -177,7 +177,7 @@ unsigned
 config_get_positive(const char *name, unsigned default_value);
 
 G_GNUC_PURE
-struct block_param *
+const struct block_param *
 config_get_block_param(const struct config_param *param, const char *name);
 
 G_GNUC_PURE

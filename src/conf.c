@@ -559,7 +559,7 @@ config_get_positive(const char *name, unsigned default_value)
 	return (unsigned)value;
 }
 
-struct block_param *
+const struct block_param *
 config_get_block_param(const struct config_param * param, const char *name)
 {
 	if (param == NULL)
@@ -597,7 +597,7 @@ const char *
 config_get_block_string(const struct config_param *param, const char *name,
 			const char *default_value)
 {
-	struct block_param *bp = config_get_block_param(param, name);
+	const struct block_param *bp = config_get_block_param(param, name);
 
 	if (bp == NULL)
 		return default_value;
@@ -609,7 +609,7 @@ unsigned
 config_get_block_unsigned(const struct config_param *param, const char *name,
 			  unsigned default_value)
 {
-	struct block_param *bp = config_get_block_param(param, name);
+	const struct block_param *bp = config_get_block_param(param, name);
 	long value;
 	char *endptr;
 
@@ -630,7 +630,7 @@ bool
 config_get_block_bool(const struct config_param *param, const char *name,
 		      bool default_value)
 {
-	struct block_param *bp = config_get_block_param(param, name);
+	const struct block_param *bp = config_get_block_param(param, name);
 	bool success, value;
 
 	if (bp == NULL)

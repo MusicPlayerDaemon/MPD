@@ -125,7 +125,7 @@ my_shout_init_driver(const struct audio_format *audio_format,
 	const char *user;
 	char *name;
 	const char *value;
-	struct block_param *block_param;
+	const struct block_param *block_param;
 	int public;
 
 	if (audio_format == NULL ||
