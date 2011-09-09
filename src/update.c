@@ -68,8 +68,14 @@ static void * update_task(void *_path)
 
 	modified = update_walk(path, discard);
 
-	if (modified || !db_exists())
-		db_save();
+	if (modified || !db_exists()) {
+		GError *error = NULL;
+		if (!db_save(&error)) {
+			g_warning("Failed to save database: %s",
+				  error->message);
+			g_error_free(error);
+		}
+	}
 
 	if (path != NULL && *path != 0)
 		g_debug("finished: %s", path);

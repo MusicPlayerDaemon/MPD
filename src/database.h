@@ -62,10 +62,10 @@ int db_walk(const char *name,
 	    int (*forEachDir)(struct directory *, void *), void *data);
 
 bool
-db_check(void);
+db_check(GError **error_r);
 
 bool
-db_save(void);
+db_save(GError **error_r);
 
 bool
 db_load(GError **error);

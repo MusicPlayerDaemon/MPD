@@ -182,9 +182,10 @@ glue_db_init_and_load(void)
 	if (!ret) {
 		g_warning("Failed to load database: %s", error->message);
 		g_error_free(error);
+		error = NULL;
 
-		if (!db_check())
-			exit(EXIT_FAILURE);
+		if (!db_check(&error))
+			MPD_ERROR("%s", error->message);
 
 		db_clear();
 

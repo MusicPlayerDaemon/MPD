@@ -151,7 +151,7 @@ db_walk(const char *name,
 }
 
 bool
-db_check(void)
+db_check(GError **error_r)
 {
 	struct stat st;
 
@@ -167,22 +167,27 @@ db_check(void)
 		/* Check that the parent part of the path is a directory */
 		if (stat(dirPath, &st) < 0) {
 			g_free(dirPath);
-			g_warning("Couldn't stat parent directory of db file "
-				  "\"%s\": %s", database_path, strerror(errno));
+			g_set_error(error_r, db_quark(), errno,
+				    "Couldn't stat parent directory of db file "
+				    "\"%s\": %s",
+				    database_path, g_strerror(errno));
 			return false;
 		}
 
 		if (!S_ISDIR(st.st_mode)) {
 			g_free(dirPath);
-			g_warning("Couldn't create db file \"%s\" because the "
-				  "parent path is not a directory", database_path);
+			g_set_error(error_r, db_quark(), 0,
+				    "Couldn't create db file \"%s\" because the "
+				    "parent path is not a directory",
+				    database_path);
 			return false;
 		}
 
 		/* Check if we can write to the directory */
 		if (access(dirPath, X_OK | W_OK)) {
-			g_warning("Can't create db file in \"%s\": %s",
-				  dirPath, strerror(errno));
+			g_set_error(error_r, db_quark(), errno,
+				    "Can't create db file in \"%s\": %s",
+				    dirPath, g_strerror(errno));
 			g_free(dirPath);
 			return false;
 		}
@@ -194,20 +199,24 @@ db_check(void)
 
 	/* Path exists, now check if it's a regular file */
 	if (stat(database_path, &st) < 0) {
-		g_warning("Couldn't stat db file \"%s\": %s",
-			  database_path, strerror(errno));
+		g_set_error(error_r, db_quark(), errno,
+			    "Couldn't stat db file \"%s\": %s",
+			    database_path, g_strerror(errno));
 		return false;
 	}
 
 	if (!S_ISREG(st.st_mode)) {
-		g_warning("db file \"%s\" is not a regular file", database_path);
+		g_set_error(error_r, db_quark(), 0,
+			    "db file \"%s\" is not a regular file",
+			    database_path);
 		return false;
 	}
 
 	/* And check that we can write to it */
 	if (access(database_path, R_OK | W_OK)) {
-		g_warning("Can't open db file \"%s\" for reading/writing: %s",
-			  database_path, strerror(errno));
+		g_set_error(error_r, db_quark(), errno,
+			    "Can't open db file \"%s\" for reading/writing: %s",
+			    database_path, g_strerror(errno));
 		return false;
 	}
 
@@ -215,7 +224,7 @@ db_check(void)
 }
 
 bool
-db_save(void)
+db_save(GError **error_r)
 {
 	FILE *fp;
 	struct stat st;
@@ -234,8 +243,9 @@ db_save(void)
 
 	fp = fopen(database_path, "w");
 	if (!fp) {
-		g_warning("unable to write to db file \"%s\": %s",
-			  database_path, strerror(errno));
+		g_set_error(error_r, db_quark(), errno,
+			    "unable to write to db file \"%s\": %s",
+			    database_path, g_strerror(errno));
 		return false;
 	}
 
@@ -253,8 +263,9 @@ db_save(void)
 	directory_save(fp, music_root);
 
 	if (ferror(fp)) {
-		g_warning("Failed to write to database file: %s",
-			  strerror(errno));
+		g_set_error(error_r, db_quark(), errno,
+			    "Failed to write to database file: %s",
+			    g_strerror(errno));
 		fclose(fp);
 		return false;
 	}
