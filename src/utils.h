@@ -31,6 +31,7 @@
 	} while (0)
 #endif /* !assert_static */
 
-char *parsePath(char *path);
+char *
+parsePath(const char *path);
 
 #endif

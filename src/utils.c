@@ -41,7 +41,8 @@
 #include <windows.h>
 #endif
 
-char *parsePath(char *path)
+char *
+parsePath(const char *path)
 {
 #ifndef WIN32
 	if (!g_path_is_absolute(path) && path[0] != '~') {
@@ -71,27 +72,24 @@ char *parsePath(char *path)
 
 			++path;
 		} else {
-			bool foundSlash = false;
-			struct passwd *passwd;
-			char *c;
+			++path;
 
-			for (c = path + 1; *c != '\0' && *c != '/'; c++);
-			if (*c == '/') {
-				foundSlash = true;
-				*c = '\0';
-			}
+			const char *slash = strchr(path, '/');
+			char *user = slash != NULL
+				? g_strndup(path, slash - path)
+				: g_strdup(path);
 
-			passwd = getpwnam(path + 1);
+			struct passwd *passwd = getpwnam(user);
 			if (!passwd) {
-				g_warning("user \"%s\" not found", path + 1);
+				g_warning("user \"%s\" not found", user);
+				g_free(user);
 				return NULL;
 			}
 
-			if (foundSlash)
-				*c = '/';
+			g_free(user);
 
 			home = passwd->pw_dir;
-			path = c;
+			path = slash;
 		}
 
 		return g_strconcat(home, path, NULL);
