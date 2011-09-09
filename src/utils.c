@@ -48,7 +48,6 @@ char *parsePath(char *path)
 		g_warning("\"%s\" is not an absolute path", path);
 		return NULL;
 	} else if (path[0] == '~') {
-		size_t pos = 1;
 		const char *home;
 
 		if (path[1] == '/' || path[1] == '\0') {
@@ -69,6 +68,8 @@ char *parsePath(char *path)
 					return NULL;
 				}
 			}
+
+			++path;
 		} else {
 			bool foundSlash = false;
 			struct passwd *passwd;
@@ -79,7 +80,6 @@ char *parsePath(char *path)
 				foundSlash = true;
 				*c = '\0';
 			}
-			pos = c - path;
 
 			passwd = getpwnam(path + 1);
 			if (!passwd) {
@@ -91,9 +91,10 @@ char *parsePath(char *path)
 				*c = '/';
 
 			home = passwd->pw_dir;
+			path = c;
 		}
 
-		return g_strconcat(home, path + pos, NULL);
+		return g_strconcat(home, path, NULL);
 	} else {
 #endif
 		return g_strdup(path);
