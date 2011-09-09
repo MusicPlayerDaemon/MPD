@@ -39,6 +39,7 @@ tags
 *~
 .#*
 .stgit*
+doc/doxygen.conf
 doc/protocol.html
 doc/protocol
 doc/user
