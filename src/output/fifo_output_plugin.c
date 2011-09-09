@@ -178,30 +178,25 @@ fifo_open(struct fifo_data *fd, GError **error)
 static void *
 fifo_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		 const struct config_param *param,
-		 GError **error)
+		 GError **error_r)
 {
 	struct fifo_data *fd;
-	char *value, *path;
 
-	value = config_dup_block_string(param, "path", NULL);
-	if (value == NULL) {
-		g_set_error(error, fifo_output_quark(), errno,
-			    "No \"path\" parameter specified");
-		return NULL;
-	}
-
-	path = parsePath(value, error);
-	g_free(value);
+	GError *error = NULL;
+	char *path = config_dup_block_path(param, "path", &error);
 	if (!path) {
-		g_prefix_error(error, "Invalid path in line %i: ",
-			       param->line);
+		if (error != NULL)
+			g_propagate_error(error_r, error);
+		else
+			g_set_error(error_r, fifo_output_quark(), 0,
+				    "No \"path\" parameter specified");
 		return NULL;
 	}
 
 	fd = fifo_data_new();
 	fd->path = path;
 
-	if (!fifo_open(fd, error)) {
+	if (!fifo_open(fd, error_r)) {
 		fifo_data_free(fd);
 		return NULL;
 	}

@@ -606,6 +606,26 @@ config_get_block_string(const struct config_param *param, const char *name,
 	return bp->value;
 }
 
+char *
+config_dup_block_path(const struct config_param *param, const char *name,
+		      GError **error_r)
+{
+	assert(error_r != NULL);
+	assert(*error_r == NULL);
+
+	const struct block_param *bp = config_get_block_param(param, name);
+	if (bp == NULL)
+		return NULL;
+
+	char *path = parsePath(bp->value, error_r);
+	if (G_UNLIKELY(path == NULL))
+		g_prefix_error(error_r,
+			       "Invalid path in \"%s\" at line %i: ",
+			       name, bp->line);
+
+	return path;
+}
+
 unsigned
 config_get_block_unsigned(const struct config_param *param, const char *name,
 			  unsigned default_value)

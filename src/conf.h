@@ -194,6 +194,15 @@ config_dup_block_string(const struct config_param *param, const char *name,
 	return g_strdup(config_get_block_string(param, name, default_value));
 }
 
+/**
+ * Same as config_dup_path(), but looks up the setting in the
+ * specified block.
+ */
+G_GNUC_MALLOC
+char *
+config_dup_block_path(const struct config_param *param, const char *name,
+		      GError **error_r);
+
 G_GNUC_PURE
 unsigned
 config_get_block_unsigned(const struct config_param *param, const char *name,
