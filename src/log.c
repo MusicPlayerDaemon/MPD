@@ -140,8 +140,8 @@ log_init_file(const char *path, unsigned line, GError **error_r)
 	out_fd = open_log_file();
 	if (out_fd < 0) {
 		g_set_error(error_r, log_quark(), errno,
-			    "problem opening log file \"%s\" (config line %u) "
-			    "for writing", path, line);
+			    "failed to open log file \"%s\" (config line %u): %s",
+			    path, line, g_strerror(errno));
 		return false;
 	}
 
