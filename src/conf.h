@@ -156,17 +156,15 @@ config_get_string(const char *name, const char *default_value);
 
 /**
  * Returns an optional configuration variable which contains an
- * absolute path.  If there is a tilde prefix, it is expanded.  Aborts
- * MPD if the path is not a valid absolute path.
+ * absolute path.  If there is a tilde prefix, it is expanded.
+ * Returns NULL if the value is not present.  If the path could not be
+ * parsed, returns NULL and sets the error.
+ *
+ * The return value must be freed with g_free().
  */
-/* We lie here really.  This function is not pure as it has side
-   effects -- it parse the value and creates new string freeing
-   previous one.  However, because this works the very same way each
-   time (ie. from the outside it appears as if function had no side
-   effects) we should be in the clear declaring it pure. */
-G_GNUC_PURE
-const char *
-config_get_path(const char *name);
+G_GNUC_MALLOC
+char *
+config_dup_path(const char *name, GError **error_r);
 
 G_GNUC_PURE
 unsigned

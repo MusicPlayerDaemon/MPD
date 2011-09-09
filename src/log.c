@@ -271,10 +271,18 @@ log_init(bool verbose, bool use_stdout, GError **error_r)
 			return true;
 #endif
 		} else {
-			const char *path = config_get_path(CONF_LOG_FILE);
-			assert(path != NULL);
+			GError *error = NULL;
+			char *path = config_dup_path(CONF_LOG_FILE, &error);
+			if (path == NULL) {
+				assert(error != NULL);
+				g_propagate_error(error_r, error);
+				return false;
+			}
 
-			return log_init_file(path, param->line, error_r);
+			bool success = log_init_file(path, param->line,
+						     error_r);
+			g_free(path);
+			return success;
 		}
 	}
 }

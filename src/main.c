@@ -98,31 +98,54 @@ GCond *main_cond;
 
 struct player_control *global_player_control;
 
-static void
-glue_daemonize_init(const struct options *options)
+static bool
+glue_daemonize_init(const struct options *options, GError **error_r)
 {
+	GError *error = NULL;
+
+	char *pid_file = config_dup_path(CONF_PID_FILE, &error);
+	if (pid_file == NULL && error != NULL) {
+		g_propagate_error(error_r, error);
+		return false;
+	}
+
 	daemonize_init(config_get_string(CONF_USER, NULL),
 		       config_get_string(CONF_GROUP, NULL),
-		       config_get_path(CONF_PID_FILE));
+		       pid_file);
+	g_free(pid_file);
 
 	if (options->kill)
 		daemonize_kill();
+
+	return true;
 }
 
-static void
-glue_mapper_init(void)
+static bool
+glue_mapper_init(GError **error_r)
 {
-	const char *music_dir, *playlist_dir;
+	GError *error = NULL;
+	char *music_dir = config_dup_path(CONF_MUSIC_DIR, &error);
+	if (music_dir == NULL && error != NULL) {
+		g_propagate_error(error_r, error);
+		return false;
+	}
 
-	music_dir = config_get_path(CONF_MUSIC_DIR);
+	char *playlist_dir = config_dup_path(CONF_PLAYLIST_DIR, &error);
+	if (playlist_dir == NULL && error != NULL) {
+		g_propagate_error(error_r, error);
+		return false;
+	}
+
 #if GLIB_CHECK_VERSION(2,14,0)
 	if (music_dir == NULL)
-		music_dir = g_get_user_special_dir(G_USER_DIRECTORY_MUSIC);
+		music_dir = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_MUSIC));
 #endif
 
-	playlist_dir = config_get_path(CONF_PLAYLIST_DIR);
-
 	mapper_init(music_dir, playlist_dir);
+
+	g_free(music_dir);
+	g_free(playlist_dir);
+	return true;
 }
 
 /**
@@ -133,11 +156,15 @@ glue_mapper_init(void)
 static bool
 glue_db_init_and_load(void)
 {
-	const char *path = config_get_path(CONF_DB_FILE);
-	bool ret;
 	GError *error = NULL;
+	char *path = config_dup_path(CONF_DB_FILE, &error);
+	if (path == NULL && error != NULL)
+		MPD_ERROR("%s", error->message);
+
+	bool ret;
 
 	if (!mapper_has_music_directory()) {
+		g_free(path);
 		if (path != NULL)
 			g_message("Found " CONF_DB_FILE " setting without "
 				  CONF_MUSIC_DIR " - disabling database");
@@ -149,6 +176,7 @@ glue_db_init_and_load(void)
 		MPD_ERROR(CONF_DB_FILE " setting missing");
 
 	db_init(path);
+	g_free(path);
 
 	ret = db_load(&error);
 	if (!ret) {
@@ -174,21 +202,34 @@ static void
 glue_sticker_init(void)
 {
 #ifdef ENABLE_SQLITE
-	bool success;
 	GError *error = NULL;
-
-	success = sticker_global_init(config_get_path(CONF_STICKER_FILE),
-				      &error);
-	if (!success)
+	char *sticker_file = config_dup_path(CONF_STICKER_FILE, &error);
+	if (sticker_file == NULL && error != NULL)
 		MPD_ERROR("%s", error->message);
+
+	if (!sticker_global_init(config_get_string(CONF_STICKER_FILE, NULL),
+				 &error))
+		MPD_ERROR("%s", error->message);
+
+	g_free(sticker_file);
 #endif
 }
 
-static void
-glue_state_file_init(void)
+static bool
+glue_state_file_init(GError **error_r)
 {
-	state_file_init(config_get_path(CONF_STATE_FILE),
-			global_player_control);
+	GError *error = NULL;
+
+	char *path = config_dup_path(CONF_STATE_FILE, &error);
+	if (path == NULL && error != NULL) {
+		g_propagate_error(error_r, error);
+		return false;
+	}
+
+	state_file_init(path, global_player_control);
+	g_free(path);
+
+	return true;
 }
 
 /**
@@ -328,7 +369,11 @@ int mpd_main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	glue_daemonize_init(&options);
+	if (!glue_daemonize_init(&options, &error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return EXIT_FAILURE;
+	}
 
 	stats_global_init();
 	tag_lib_init();
@@ -357,7 +402,13 @@ int mpd_main(int argc, char *argv[])
 	event_pipe_register(PIPE_EVENT_SHUTDOWN, shutdown_event_emitted);
 
 	path_global_init();
-	glue_mapper_init();
+
+	if (!glue_mapper_init(&error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return EXIT_FAILURE;
+	}
+
 	initPermissions();
 	playlist_global_init();
 	spl_global_init();
@@ -411,7 +462,11 @@ int mpd_main(int argc, char *argv[])
 			MPD_ERROR("directory update failed");
 	}
 
-	glue_state_file_init();
+	if (!glue_state_file_init(&error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return EXIT_FAILURE;
+	}
 
 	success = config_get_bool(CONF_AUTO_UPDATE, false);
 #ifdef ENABLE_INOTIFY

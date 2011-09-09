@@ -503,22 +503,23 @@ config_get_string(const char *name, const char *default_value)
 	return param->value;
 }
 
-const char *
-config_get_path(const char *name)
+char *
+config_dup_path(const char *name, GError **error_r)
 {
-	struct config_param *param = config_get_param(name);
-	char *path;
+	assert(error_r != NULL);
+	assert(*error_r == NULL);
 
+	const struct config_param *param = config_get_param(name);
 	if (param == NULL)
 		return NULL;
 
-	path = parsePath(param->value);
-	if (path == NULL)
-		MPD_ERROR("error parsing \"%s\" at line %i\n",
-			  name, param->line);
+	char *path = parsePath(param->value);
+	if (G_UNLIKELY(path == NULL))
+		g_set_error(error_r, config_quark(), 0,
+			    "Invalid path in \"%s\" at line %i",
+			    name, param->line);
 
-	g_free(param->value);
-	return param->value = path;
+	return path;
 }
 
 unsigned
