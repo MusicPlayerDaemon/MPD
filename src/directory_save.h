@@ -28,7 +28,7 @@
 struct directory;
 
 void
-directory_save(FILE *fp, struct directory *directory);
+directory_save(FILE *fp, const struct directory *directory);
 
 bool
 directory_load(FILE *fp, struct directory *directory,
