@@ -270,6 +270,7 @@ src_mpd_SOURCES = \
 	src/directory_save.c \
 	src/directory_print.c \
 	src/database.c \
+	src/db_save.c src/db_save.h \
 	src/db_print.c src/db_print.h \
 	src/dirvec.c \
 	src/exclude.c \
