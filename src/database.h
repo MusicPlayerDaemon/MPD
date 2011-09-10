@@ -29,6 +29,7 @@
 
 struct config_param;
 struct directory;
+struct db_selection;
 struct db_visitor;
 
 /**
@@ -56,6 +57,12 @@ db_get_directory(const char *name);
 gcc_nonnull(1)
 struct song *
 db_get_song(const char *file);
+
+gcc_nonnull(1,2)
+bool
+db_visit(const struct db_selection *selection,
+	 const struct db_visitor *visitor, void *ctx,
+	 GError **error_r);
 
 gcc_nonnull(1,2)
 bool

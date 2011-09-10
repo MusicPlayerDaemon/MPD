@@ -31,6 +31,8 @@
 #include <stdbool.h>
 
 struct config_param;
+struct db_selection;
+struct db_visitor;
 
 struct db {
 	const struct db_plugin *plugin;
@@ -67,6 +69,13 @@ struct db_plugin {
 	 */
 	struct song *(*get_song)(struct db *db, const char *uri,
 				 GError **error_r);
+
+	/**
+	 * Visit the selected entities.
+	 */
+	bool (*visit)(struct db *db, const struct db_selection *selection,
+		      const struct db_visitor *visitor, void *ctx,
+		      GError **error_r);
 };
 
 G_GNUC_MALLOC
@@ -78,6 +87,7 @@ db_plugin_new(const struct db_plugin *plugin, const struct config_param *param,
 	assert(plugin->init != NULL);
 	assert(plugin->finish != NULL);
 	assert(plugin->get_song != NULL);
+	assert(plugin->visit != NULL);
 	assert(error_r == NULL || *error_r == NULL);
 
 	struct db *db = plugin->init(param, error_r);
@@ -127,6 +137,20 @@ db_plugin_get_song(struct db *db, const char *uri, GError **error_r)
 	assert(uri != NULL);
 
 	return db->plugin->get_song(db, uri, error_r);
+}
+
+static inline bool
+db_plugin_visit(struct db *db, const struct db_selection *selection,
+		const struct db_visitor *visitor, void *ctx,
+		GError **error_r)
+{
+	assert(db != NULL);
+	assert(db->plugin != NULL);
+	assert(selection != NULL);
+	assert(visitor != NULL);
+	assert(error_r == NULL || *error_r == NULL);
+
+	return db->plugin->visit(db, selection, visitor, ctx, error_r);
 }
 
 #endif

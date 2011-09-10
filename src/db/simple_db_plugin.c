@@ -21,6 +21,8 @@
 #include "simple_db_plugin.h"
 #include "db_internal.h"
 #include "db_error.h"
+#include "db_selection.h"
+#include "db_visitor.h"
 #include "db_save.h"
 #include "conf.h"
 #include "glib_compat.h"
@@ -46,6 +48,17 @@ static inline GQuark
 simple_db_quark(void)
 {
 	return g_quark_from_static_string("simple_db");
+}
+
+G_GNUC_PURE
+static const struct directory *
+simple_db_lookup_directory(const struct simple_db *db, const char *uri)
+{
+	assert(db != NULL);
+	assert(db->root != NULL);
+	assert(uri != NULL);
+
+	return directory_lookup_directory(db->root, uri);
 }
 
 static struct db *
@@ -230,6 +243,33 @@ simple_db_get_song(struct db *_db, const char *uri, GError **error_r)
 	return song;
 }
 
+static bool
+simple_db_visit(struct db *_db, const struct db_selection *selection,
+		const struct db_visitor *visitor, void *ctx,
+		GError **error_r)
+{
+	const struct simple_db *db = (const struct simple_db *)_db;
+	const struct directory *directory =
+		simple_db_lookup_directory(db, selection->uri);
+	if (directory == NULL) {
+		struct song *song;
+		if (visitor->song != NULL &&
+		    (song = simple_db_get_song(_db, selection->uri, NULL)) != NULL)
+			return visitor->song(song, ctx, error_r);
+
+		g_set_error(error_r, db_quark(), DB_NOT_FOUND,
+			    "No such directory");
+		return false;
+	}
+
+	if (selection->recursive && visitor->directory != NULL &&
+	    !visitor->directory(directory, ctx, error_r))
+		return false;
+
+	return directory_walk(directory, selection->recursive,
+			      visitor, ctx, error_r);
+}
+
 const struct db_plugin simple_db_plugin = {
 	.name = "simple",
 	.init = simple_db_init,
@@ -237,6 +277,7 @@ const struct db_plugin simple_db_plugin = {
 	.open = simple_db_open,
 	.close = simple_db_close,
 	.get_song = simple_db_get_song,
+	.visit = simple_db_visit,
 };
 
 struct directory *

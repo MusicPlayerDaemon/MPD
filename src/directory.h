@@ -131,7 +131,7 @@ void
 directory_sort(struct directory *directory);
 
 bool
-directory_walk(struct directory *directory,
+directory_walk(const struct directory *directory, bool recursive,
 	       const struct db_visitor *visitor, void *ctx,
 	       GError **error_r);
 

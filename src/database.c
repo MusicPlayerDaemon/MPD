@@ -21,6 +21,7 @@
 #include "database.h"
 #include "db_error.h"
 #include "db_save.h"
+#include "db_selection.h"
 #include "db_visitor.h"
 #include "db_plugin.h"
 #include "db/simple_db_plugin.h"
@@ -108,9 +109,9 @@ db_get_song(const char *file)
 }
 
 bool
-db_walk(const char *uri,
-	const struct db_visitor *visitor, void *ctx,
-	GError **error_r)
+db_visit(const struct db_selection *selection,
+	 const struct db_visitor *visitor, void *ctx,
+	 GError **error_r)
 {
 	if (db == NULL) {
 		g_set_error_literal(error_r, db_quark(), DB_DISABLED,
@@ -118,23 +119,18 @@ db_walk(const char *uri,
 		return false;
 	}
 
-	struct directory *directory = db_get_directory(uri);
-	if (directory == NULL) {
-		struct song *song;
-		if (visitor->song != NULL &&
-		    (song = db_get_song(uri)) != NULL)
-			return visitor->song(song, ctx, error_r);
+	return db_plugin_visit(db, selection, visitor, ctx, error_r);
+}
 
-		g_set_error(error_r, db_quark(), DB_NOT_FOUND,
-			    "No such directory: %s", uri);
-		return false;
-	}
+bool
+db_walk(const char *uri,
+	const struct db_visitor *visitor, void *ctx,
+	GError **error_r)
+{
+	struct db_selection selection;
+	db_selection_init(&selection, uri, true);
 
-	if (visitor->directory != NULL &&
-	    !visitor->directory(directory, ctx, error_r))
-		return false;
-
-	return directory_walk(directory, visitor, ctx, error_r);
+	return db_visit(&selection, visitor, ctx, error_r);
 }
 
 bool

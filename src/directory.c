@@ -169,7 +169,7 @@ directory_sort(struct directory *directory)
 }
 
 bool
-directory_walk(struct directory *directory,
+directory_walk(const struct directory *directory, bool recursive,
 	       const struct db_visitor *visitor, void *ctx,
 	       GError **error_r)
 {
@@ -178,7 +178,7 @@ directory_walk(struct directory *directory,
 	assert(error_r == NULL || *error_r == NULL);
 
 	if (visitor->song != NULL) {
-		struct songvec *sv = &directory->songs;
+		const struct songvec *sv = &directory->songs;
 		for (size_t i = 0; i < sv->nr; ++i)
 			if (!visitor->song(sv->base[i], ctx, error_r))
 				return false;
@@ -192,7 +192,8 @@ directory_walk(struct directory *directory,
 		    !visitor->directory(child, ctx, error_r))
 			return false;
 
-		if (!directory_walk(child, visitor, ctx, error_r))
+		if (recursive &&
+		    !directory_walk(child, recursive, visitor, ctx, error_r))
 			return false;
 	}
 
