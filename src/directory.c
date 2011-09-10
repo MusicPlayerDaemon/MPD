@@ -21,6 +21,7 @@
 #include "directory.h"
 #include "song.h"
 #include "path.h"
+#include "db_visitor.h"
 
 #include <glib.h>
 
@@ -167,28 +168,33 @@ directory_sort(struct directory *directory)
 		directory_sort(dv->base[i]);
 }
 
-int
+bool
 directory_walk(struct directory *directory,
-	       int (*forEachSong)(struct song *, void *),
-	       int (*forEachDir)(struct directory *, void *),
-	       void *data)
+	       const struct db_visitor *visitor, void *ctx,
+	       GError **error_r)
 {
-	struct dirvec *dv = &directory->children;
-	int err = 0;
-	size_t j;
+	assert(directory != NULL);
+	assert(visitor != NULL);
+	assert(error_r == NULL || *error_r == NULL);
 
-	if (forEachDir && (err = forEachDir(directory, data)) < 0)
-		return err;
+	if (visitor->directory != NULL &&
+	    !visitor->directory(directory, ctx, error_r))
+		return false;
 
-	if (forEachSong) {
-		err = songvec_for_each(&directory->songs, forEachSong, data);
-		if (err < 0)
-			return err;
+	if (visitor->song != NULL) {
+		struct songvec *sv = &directory->songs;
+		for (size_t i = 0; i < sv->nr; ++i)
+			if (!visitor->song(sv->base[i], ctx, error_r))
+				return false;
 	}
 
-	for (j = 0; err >= 0 && j < dv->nr; ++j)
-		err = directory_walk(dv->base[j], forEachSong,
-						forEachDir, data);
+	if (visitor->directory != NULL) {
+		const struct dirvec *dv = &directory->children;
+		for (size_t i = 0; i < dv->nr; ++i)
+			if (!directory_walk(dv->base[i], visitor, ctx,
+					    error_r))
+				return false;
+	}
 
-	return err;
+	return true;
 }

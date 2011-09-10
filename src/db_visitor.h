@@ -17,26 +17,27 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DB_UTILS_H
-#define MPD_DB_UTILS_H
+#ifndef MPD_DB_VISITOR_H
+#define MPD_DB_VISITOR_H
 
-#include <glib.h>
-#include <stdbool.h>
+struct directory;
+struct song;
 
-struct locate_item_list;
-struct player_control;
+struct db_visitor {
+	/**
+	 * Visit a directory.  Optional method.
+	 *
+	 * @return true to continue the operation, false on error (set error_r)
+	 */
+	bool (*directory)(const struct directory *directory, void *ctx,
+			  GError **error_r);
 
-bool
-addAllIn(struct player_control *pc, const char *uri, GError **error_r);
-
-bool
-addAllInToStoredPlaylist(const char *uri_utf8, const char *path_utf8,
-			 GError **error_r);
-
-bool
-findAddIn(struct player_control *pc, const char *name,
-	  const struct locate_item_list *criteria, GError **error_r);
-
-unsigned long sumSongTimesIn(const char *name);
+	/**
+	 * Visit a song.  Optional method.
+	 *
+	 * @return true to continue the operation, false on error (set error_r)
+	 */
+	bool (*song)(struct song *song, void *ctx, GError **error_r);
+};
 
 #endif

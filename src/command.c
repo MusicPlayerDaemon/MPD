@@ -43,6 +43,7 @@
 #include "output_print.h"
 #include "locate.h"
 #include "dbUtils.h"
+#include "db_error.h"
 #include "db_print.h"
 #include "tag.h"
 #include "client.h"
@@ -392,6 +393,13 @@ print_error(struct client *client, GError *error)
 		enum playlist_result result = error->code;
 		g_error_free(error);
 		return print_playlist_result(client, result);
+	} else if (error->domain == db_quark()) {
+		switch ((enum db_error)error->code) {
+		case DB_NOT_FOUND:
+			g_error_free(error);
+			command_error(client, ACK_ERROR_NO_EXIST, "Not found");
+			return COMMAND_RETURN_ERROR;
+		}
 	} else if (error->domain == g_file_error_quark()) {
 		command_error(client, ACK_ERROR_SYSTEM, "%s",
 			      g_strerror(error->code));
@@ -657,14 +665,10 @@ handle_add(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 		return print_playlist_result(client, result);
 	}
 
-	result = addAllIn(client->player_control, uri);
-	if (result == (enum playlist_result)-1) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "directory or file not found");
-		return COMMAND_RETURN_ERROR;
-	}
-
-	return print_playlist_result(client, result);
+	GError *error = NULL;
+	return addAllIn(client->player_control, uri, &error)
+		? COMMAND_RETURN_OK
+		: print_error(client, error);
 }
 
 static enum command_return
@@ -941,7 +945,6 @@ handle_playlistid(struct client *client, int argc, char *argv[])
 static enum command_return
 handle_find(struct client *client, int argc, char *argv[])
 {
-	int ret;
 	struct locate_item_list *list =
 		locate_item_list_parse(argv + 1, argc - 1);
 
@@ -953,10 +956,10 @@ handle_find(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	ret = findSongsIn(client, NULL, list);
-	if (ret == -1)
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "directory or file not found");
+	GError *error = NULL;
+	enum command_return ret = findSongsIn(client, NULL, list, &error)
+		? COMMAND_RETURN_OK
+		: print_error(client, error);
 
 	locate_item_list_free(list);
 
@@ -966,7 +969,6 @@ handle_find(struct client *client, int argc, char *argv[])
 static enum command_return
 handle_findadd(struct client *client, int argc, char *argv[])
 {
-    int ret;
     struct locate_item_list *list =
 	    locate_item_list_parse(argv + 1, argc - 1);
     if (list == NULL || list->length == 0) {
@@ -977,10 +979,11 @@ handle_findadd(struct client *client, int argc, char *argv[])
 	    return COMMAND_RETURN_ERROR;
     }
 
-    ret = findAddIn(client->player_control, NULL, list);
-    if (ret == -1)
-	    command_error(client, ACK_ERROR_NO_EXIST,
-			  "directory or file not found");
+    GError *error = NULL;
+    enum command_return ret =
+	    findAddIn(client->player_control, NULL, list, &error)
+	    ? COMMAND_RETURN_OK
+	    : print_error(client, error);
 
     locate_item_list_free(list);
 
@@ -990,7 +993,6 @@ handle_findadd(struct client *client, int argc, char *argv[])
 static enum command_return
 handle_search(struct client *client, int argc, char *argv[])
 {
-	int ret;
 	struct locate_item_list *list =
 		locate_item_list_parse(argv + 1, argc - 1);
 
@@ -1002,10 +1004,10 @@ handle_search(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	ret = searchForSongsIn(client, NULL, list);
-	if (ret == -1)
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "directory or file not found");
+	GError *error = NULL;
+	enum command_return ret = searchForSongsIn(client, NULL, list, &error)
+		? COMMAND_RETURN_OK
+		: print_error(client, error);
 
 	locate_item_list_free(list);
 
@@ -1015,7 +1017,6 @@ handle_search(struct client *client, int argc, char *argv[])
 static enum command_return
 handle_count(struct client *client, int argc, char *argv[])
 {
-	int ret;
 	struct locate_item_list *list =
 		locate_item_list_parse(argv + 1, argc - 1);
 
@@ -1027,10 +1028,11 @@ handle_count(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	ret = searchStatsForSongsIn(client, NULL, list);
-	if (ret == -1)
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "directory or file not found");
+	GError *error = NULL;
+	enum command_return ret =
+		searchStatsForSongsIn(client, NULL, list, &error)
+		? COMMAND_RETURN_OK
+		: print_error(client, error);
 
 	locate_item_list_free(list);
 
@@ -1259,17 +1261,14 @@ static enum command_return
 handle_listall(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	char *directory = NULL;
-	int ret;
 
 	if (argc == 2)
 		directory = argv[1];
 
-	ret = printAllIn(client, directory);
-	if (ret == -1)
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "directory or file not found");
-
-	return ret;
+	GError *error = NULL;
+	return printAllIn(client, directory, &error)
+		? COMMAND_RETURN_OK
+		: print_error(client, error);
 }
 
 static enum command_return
@@ -1388,7 +1387,6 @@ handle_list(struct client *client, int argc, char *argv[])
 {
 	struct locate_item_list *conditionals;
 	int tagType = locate_parse_type(argv[1]);
-	int ret;
 
 	if (tagType < 0) {
 		command_error(client, ACK_ERROR_ARG, "\"%s\" is not known", argv[1]);
@@ -1425,13 +1423,13 @@ handle_list(struct client *client, int argc, char *argv[])
 		}
 	}
 
-	ret = listAllUniqueTags(client, tagType, conditionals);
+	GError *error = NULL;
+	enum command_return ret =
+		listAllUniqueTags(client, tagType, conditionals, &error)
+		? COMMAND_RETURN_OK
+		: print_error(client, error);
 
 	locate_item_list_free(conditionals);
-
-	if (ret == -1)
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "directory or file not found");
 
 	return ret;
 }
@@ -1534,17 +1532,14 @@ static enum command_return
 handle_listallinfo(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	char *directory = NULL;
-	int ret;
 
 	if (argc == 2)
 		directory = argv[1];
 
-	ret = printInfoForAllIn(client, directory);
-	if (ret == -1)
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "directory or file not found");
-
-	return ret;
+	GError *error = NULL;
+	return printInfoForAllIn(client, directory, &error)
+		? COMMAND_RETURN_OK
+		: print_error(client, error);
 }
 
 static enum command_return

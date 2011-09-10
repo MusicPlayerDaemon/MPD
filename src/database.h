@@ -27,6 +27,7 @@
 
 struct config_param;
 struct directory;
+struct db_visitor;
 
 /**
  * Initialize the database library.
@@ -52,9 +53,10 @@ db_get_directory(const char *name);
 struct song *
 db_get_song(const char *file);
 
-int db_walk(const char *name,
-	    int (*forEachSong)(struct song *, void *),
-	    int (*forEachDir)(struct directory *, void *), void *data);
+bool
+db_walk(const char *uri,
+	const struct db_visitor *visitor, void *ctx,
+	GError **error_r);
 
 bool
 db_check(GError **error_r);

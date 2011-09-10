@@ -20,6 +20,7 @@
 #include "config.h"
 #include "stats.h"
 #include "database.h"
+#include "db_visitor.h"
 #include "tag.h"
 #include "song.h"
 #include "client.h"
@@ -68,8 +69,9 @@ visit_tag(struct visit_data *data, const struct tag *tag)
 	}
 }
 
-static int
-stats_collect_song(struct song *song, void *_data)
+static bool
+collect_stats_song(struct song *song, void *_data,
+		   G_GNUC_UNUSED GError **error_r)
 {
 	struct visit_data *data = _data;
 
@@ -78,8 +80,12 @@ stats_collect_song(struct song *song, void *_data)
 	if (song->tag != NULL)
 		visit_tag(data, song->tag);
 
-	return 0;
+	return true;
 }
+
+static const struct db_visitor collect_stats_visitor = {
+	.song = collect_stats_song,
+};
 
 void stats_update(void)
 {
@@ -92,7 +98,7 @@ void stats_update(void)
 	data.artists = strset_new();
 	data.albums = strset_new();
 
-	db_walk(NULL, stats_collect_song, NULL, &data);
+	db_walk(NULL, &collect_stats_visitor, &data, NULL);
 
 	stats.artist_count = strset_size(data.artists);
 	stats.album_count = strset_size(data.albums);

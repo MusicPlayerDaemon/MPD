@@ -19,7 +19,9 @@
 
 #include "config.h"
 #include "database.h"
+#include "db_error.h"
 #include "db_save.h"
+#include "db_visitor.h"
 #include "db_plugin.h"
 #include "db/simple_db_plugin.h"
 #include "directory.h"
@@ -40,15 +42,6 @@
 
 static struct db *db;
 static bool db_is_open;
-
-/**
- * The quark used for GError.domain.
- */
-static inline GQuark
-db_quark(void)
-{
-	return g_quark_from_static_string("database");
-}
 
 bool
 db_init(const struct config_param *path, GError **error_r)
@@ -114,25 +107,28 @@ db_get_song(const char *file)
 	return directory_lookup_song(music_root, file);
 }
 
-int
-db_walk(const char *name,
-	int (*forEachSong)(struct song *, void *),
-	int (*forEachDir)(struct directory *, void *), void *data)
+bool
+db_walk(const char *uri,
+	const struct db_visitor *visitor, void *ctx,
+	GError **error_r)
 {
 	struct directory *directory;
 
 	if (db == NULL)
 		return -1;
 
-	if ((directory = db_get_directory(name)) == NULL) {
+	if ((directory = db_get_directory(uri)) == NULL) {
 		struct song *song;
-		if ((song = db_get_song(name)) && forEachSong) {
-			return forEachSong(song, data);
-		}
-		return -1;
+		if (visitor->song != NULL &&
+		    (song = db_get_song(uri)) != NULL)
+			return visitor->song(song, ctx, error_r);
+
+		g_set_error(error_r, db_quark(), DB_NOT_FOUND,
+			    "No such directory: %s", uri);
+		return false;
 	}
 
-	return directory_walk(directory, forEachSong, forEachDir, data);
+	return directory_walk(directory, visitor, ctx, error_r);
 }
 
 bool

@@ -17,41 +17,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DB_PRINT_H
-#define MPD_DB_PRINT_H
+#ifndef MPD_DB_ERROR_H
+#define MPD_DB_ERROR_H
 
 #include <glib.h>
-#include <stdbool.h>
 
-struct client;
-struct locate_item_list;
-struct db_visitor;
+enum db_error {
+	DB_NOT_FOUND,
+};
 
-bool
-printAllIn(struct client *client, const char *uri_utf8, GError **error_r);
-
-bool
-printInfoForAllIn(struct client *client, const char *uri_utf8,
-		  GError **error_r);
-
-bool
-searchForSongsIn(struct client *client, const char *name,
-		 const struct locate_item_list *criteria,
-		 GError **error_r);
-
-bool
-findSongsIn(struct client *client, const char *name,
-	    const struct locate_item_list *criteria,
-	    GError **error_r);
-
-bool
-searchStatsForSongsIn(struct client *client, const char *name,
-		      const struct locate_item_list *criteria,
-		      GError **error_r);
-
-bool
-listAllUniqueTags(struct client *client, int type,
-		  const struct locate_item_list *criteria,
-		  GError **error_r);
+/**
+ * Quark for GError.domain; the code is an enum #db_error.
+ */
+G_GNUC_CONST
+static inline GQuark
+db_quark(void)
+{
+	return g_quark_from_static_string("db");
+}
 
 #endif

@@ -21,52 +21,66 @@
 #include "dbUtils.h"
 #include "locate.h"
 #include "database.h"
+#include "db_visitor.h"
 #include "playlist.h"
 #include "stored_playlist.h"
 
 #include <glib.h>
 
-static int
-directoryAddSongToPlaylist(struct song *song, void *data)
+static bool
+add_to_queue_song(struct song *song, void *ctx, GError **error_r)
 {
-	struct player_control *pc = data;
+	struct player_control *pc = ctx;
 
-	return playlist_append_song(&g_playlist, pc, song, NULL);
+	enum playlist_result result =
+		playlist_append_song(&g_playlist, pc, song, NULL);
+	if (result != PLAYLIST_RESULT_SUCCESS) {
+		g_set_error(error_r, playlist_quark(), result,
+			    "Playlist error");
+		return false;
+	}
+
+	return true;
+}
+
+static const struct db_visitor add_to_queue_visitor = {
+	.song = add_to_queue_song,
+};
+
+bool
+addAllIn(struct player_control *pc, const char *uri, GError **error_r)
+{
+	return db_walk(uri, &add_to_queue_visitor, pc, error_r);
 }
 
 struct add_data {
 	const char *path;
-	GError **error_r;
 };
 
-static int
-directoryAddSongToStoredPlaylist(struct song *song, void *_data)
+static bool
+add_to_spl_song(struct song *song, void *ctx, GError **error_r)
 {
-	struct add_data *data = _data;
+	struct add_data *data = ctx;
 
-	if (!spl_append_song(data->path, song, data->error_r)) {
-		return -1;
-	}
+	if (!spl_append_song(data->path, song, error_r))
+		return false;
 
-	return 0;
+	return true;
 }
 
-int
-addAllIn(struct player_control *pc, const char *name)
-{
-	return db_walk(name, directoryAddSongToPlaylist, NULL, pc);
-}
+static const struct db_visitor add_to_spl_visitor = {
+	.song = add_to_spl_song,
+};
 
 bool
-addAllInToStoredPlaylist(const char *name, const char *utf8file,
+addAllInToStoredPlaylist(const char *uri_utf8, const char *path_utf8,
 			 GError **error_r)
 {
 	struct add_data data = {
-		.path = utf8file,
-		.error_r = error_r,
+		.path = path_utf8,
 	};
 
-	return db_walk(name, directoryAddSongToStoredPlaylist, NULL, &data) == 0;
+	return db_walk(uri_utf8, &add_to_spl_visitor, &data, error_r);
 }
 
 struct find_add_data {
@@ -74,26 +88,37 @@ struct find_add_data {
 	const struct locate_item_list *criteria;
 };
 
-static int
-findAddInDirectory(struct song *song, void *_data)
+static bool
+find_add_song(struct song *song, void *ctx, GError **error_r)
 {
-	struct find_add_data *data = _data;
+	struct find_add_data *data = ctx;
 
-	if (locate_song_match(song, data->criteria))
-		return playlist_append_song(&g_playlist,
-					    data->pc,
-					    song, NULL);
+	if (!locate_song_match(song, data->criteria))
+		return true;
 
-	return 0;
+	enum playlist_result result =
+		playlist_append_song(&g_playlist, data->pc,
+				     song, NULL);
+	if (result != PLAYLIST_RESULT_SUCCESS) {
+		g_set_error(error_r, playlist_quark(), result,
+			    "Playlist error");
+		return false;
+	}
+
+	return true;
 }
 
-int
+static const struct db_visitor find_add_visitor = {
+	.song = find_add_song,
+};
+
+bool
 findAddIn(struct player_control *pc, const char *name,
-	  const struct locate_item_list *criteria)
+	  const struct locate_item_list *criteria, GError **error_r)
 {
 	struct find_add_data data;
 	data.pc = pc;
 	data.criteria = criteria;
 
-	return db_walk(name, findAddInDirectory, NULL, &data);
+	return db_walk(name, &find_add_visitor, &data, error_r);
 }

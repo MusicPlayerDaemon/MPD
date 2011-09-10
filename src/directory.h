@@ -25,6 +25,7 @@
 #include "songvec.h"
 #include "playlist_vector.h"
 
+#include <glib.h>
 #include <stdbool.h>
 #include <sys/types.h>
 
@@ -32,6 +33,8 @@
 
 #define DEVICE_INARCHIVE (dev_t)(-1)
 #define DEVICE_CONTAINER (dev_t)(-2)
+
+struct db_visitor;
 
 struct directory {
 	struct dirvec children;
@@ -127,10 +130,9 @@ directory_lookup_song(struct directory *directory, const char *uri);
 void
 directory_sort(struct directory *directory);
 
-int
+bool
 directory_walk(struct directory *directory,
-	       int (*forEachSong)(struct song *, void *),
-	       int (*forEachDir)(struct directory *, void *),
-	       void *data);
+	       const struct db_visitor *visitor, void *ctx,
+	       GError **error_r);
 
 #endif

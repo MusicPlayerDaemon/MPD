@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "db_print.h"
+#include "db_visitor.h"
 #include "locate.h"
 #include "directory.h"
 #include "database.h"
@@ -41,46 +42,72 @@ typedef struct _SearchStats {
 	unsigned long playTime;
 } SearchStats;
 
-static int
-printDirectoryInDirectory(struct directory *directory, void *data)
+static bool
+print_visitor_directory(const struct directory *directory, void *data,
+			G_GNUC_UNUSED GError **error_r)
 {
 	struct client *client = data;
 
 	if (!directory_is_root(directory))
 		client_printf(client, "directory: %s\n", directory_get_path(directory));
 
-	return 0;
+	return true;
 }
 
-static int
-printSongInDirectory(struct song *song, G_GNUC_UNUSED void *data)
+static bool
+print_visitor_song(struct song *song, void *data,
+		   G_GNUC_UNUSED GError **error_r)
 {
 	struct client *client = data;
 	song_print_uri(client, song);
-	return 0;
+	return true;
 }
+
+static bool
+print_visitor_song_info(struct song *song, void *data,
+			G_GNUC_UNUSED GError **error_r)
+{
+	struct client *client = data;
+	song_print_info(client, song);
+	return true;
+}
+
+static const struct db_visitor print_visitor = {
+	.directory = print_visitor_directory,
+	.song = print_visitor_song,
+};
+
+static const struct db_visitor print_info_visitor = {
+	.directory = print_visitor_directory,
+	.song = print_visitor_song_info,
+};
 
 struct search_data {
 	struct client *client;
 	const struct locate_item_list *criteria;
 };
 
-static int
-searchInDirectory(struct song *song, void *_data)
+static bool
+search_visitor_song(struct song *song, void *_data,
+		    G_GNUC_UNUSED GError **error_r)
 {
 	struct search_data *data = _data;
 
 	if (locate_song_search(song, data->criteria))
 		song_print_info(data->client, song);
 
-	return 0;
+	return true;
 }
 
-int
+static const struct db_visitor search_visitor = {
+	.song = search_visitor_song,
+};
+
+bool
 searchForSongsIn(struct client *client, const char *name,
-		 const struct locate_item_list *criteria)
+		 const struct locate_item_list *criteria,
+		 GError **error_r)
 {
-	int ret;
 	struct locate_item_list *new_list
 		= locate_item_list_casefold(criteria);
 	struct search_data data;
@@ -88,34 +115,40 @@ searchForSongsIn(struct client *client, const char *name,
 	data.client = client;
 	data.criteria = new_list;
 
-	ret = db_walk(name, searchInDirectory, NULL, &data);
+	bool success = db_walk(name, &search_visitor, &data, error_r);
 
 	locate_item_list_free(new_list);
 
-	return ret;
+	return success;
 }
 
-static int
-findInDirectory(struct song *song, void *_data)
+static bool
+find_visitor_song(struct song *song, void *_data,
+		  G_GNUC_UNUSED GError **error_r)
 {
 	struct search_data *data = _data;
 
 	if (locate_song_match(song, data->criteria))
 		song_print_info(data->client, song);
 
-	return 0;
+	return true;
 }
 
-int
+static const struct db_visitor find_visitor = {
+	.song = find_visitor_song,
+};
+
+bool
 findSongsIn(struct client *client, const char *name,
-	    const struct locate_item_list *criteria)
+	    const struct locate_item_list *criteria,
+	    GError **error_r)
 {
 	struct search_data data;
 
 	data.client = client;
 	data.criteria = criteria;
 
-	return db_walk(name, findInDirectory, NULL, &data);
+	return db_walk(name, &find_visitor, &data, error_r);
 }
 
 static void printSearchStats(struct client *client, SearchStats *stats)
@@ -124,8 +157,9 @@ static void printSearchStats(struct client *client, SearchStats *stats)
 	client_printf(client, "playtime: %li\n", stats->playTime);
 }
 
-static int
-searchStatsInDirectory(struct song *song, void *data)
+static bool
+stats_visitor_song(struct song *song, void *data,
+		   G_GNUC_UNUSED GError **error_r)
 {
 	SearchStats *stats = data;
 
@@ -134,45 +168,42 @@ searchStatsInDirectory(struct song *song, void *data)
 		stats->playTime += song_get_duration(song);
 	}
 
-	return 0;
+	return true;
 }
 
-int
+static const struct db_visitor stats_visitor = {
+	.song = stats_visitor_song,
+};
+
+bool
 searchStatsForSongsIn(struct client *client, const char *name,
-		      const struct locate_item_list *criteria)
+		      const struct locate_item_list *criteria,
+		      GError **error_r)
 {
 	SearchStats stats;
-	int ret;
 
 	stats.criteria = criteria;
 	stats.numberOfSongs = 0;
 	stats.playTime = 0;
 
-	ret = db_walk(name, searchStatsInDirectory, NULL, &stats);
-	if (ret == 0)
-		printSearchStats(client, &stats);
+	if (!db_walk(name, &stats_visitor, &stats, error_r))
+		return false;
 
-	return ret;
+	printSearchStats(client, &stats);
+	return true;
 }
 
-int printAllIn(struct client *client, const char *name)
+bool
+printAllIn(struct client *client, const char *uri_utf8, GError **error_r)
 {
-	return db_walk(name, printSongInDirectory,
-		       printDirectoryInDirectory, client);
+	return db_walk(uri_utf8, &print_visitor, client, error_r);
 }
 
-static int
-directoryPrintSongInfo(struct song *song, void *data)
+bool
+printInfoForAllIn(struct client *client, const char *uri_utf8,
+		  GError **error_r)
 {
-	struct client *client = data;
-	song_print_info(client, song);
-	return 0;
-}
-
-int printInfoForAllIn(struct client *client, const char *name)
-{
-	return db_walk(name, directoryPrintSongInfo,
-			     printDirectoryInDirectory, client);
+	return db_walk(uri_utf8, &print_info_visitor, client, error_r);
 }
 
 static ListCommandItem *
@@ -223,8 +254,9 @@ struct list_tags_data {
 	struct strset *set;
 };
 
-static int
-listUniqueTagsInDirectory(struct song *song, void *_data)
+static bool
+unique_tags_visitor_song(struct song *song, void *_data,
+			 G_GNUC_UNUSED GError **error_r)
 {
 	struct list_tags_data *data = _data;
 	ListCommandItem *item = data->item;
@@ -232,13 +264,18 @@ listUniqueTagsInDirectory(struct song *song, void *_data)
 	if (locate_song_match(song, item->criteria))
 		visitTag(data->client, data->set, song, item->tagType);
 
-	return 0;
+	return true;
 }
 
-int listAllUniqueTags(struct client *client, int type,
-		      const struct locate_item_list *criteria)
+static const struct db_visitor unique_tags_visitor = {
+	.song = unique_tags_visitor_song,
+};
+
+bool
+listAllUniqueTags(struct client *client, int type,
+		  const struct locate_item_list *criteria,
+		  GError **error_r)
 {
-	int ret;
 	ListCommandItem *item = newListCommandItem(type, criteria);
 	struct list_tags_data data = {
 		.client = client,
@@ -249,7 +286,10 @@ int listAllUniqueTags(struct client *client, int type,
 		data.set = strset_new();
 	}
 
-	ret = db_walk(NULL, listUniqueTagsInDirectory, NULL, &data);
+	if (!db_walk(NULL, &unique_tags_visitor, &data, error_r)) {
+		freeListCommandItem(item);
+		return false;
+	}
 
 	if (type >= 0 && type <= TAG_NUM_OF_ITEM_TYPES) {
 		const char *value;
@@ -266,5 +306,5 @@ int listAllUniqueTags(struct client *client, int type,
 
 	freeListCommandItem(item);
 
-	return ret;
+	return true;
 }
