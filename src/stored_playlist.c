@@ -37,6 +37,8 @@
 #include <string.h>
 #include <errno.h>
 
+static const char PLAYLIST_COMMENT = '#';
+
 static unsigned playlist_max_length;
 bool playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 

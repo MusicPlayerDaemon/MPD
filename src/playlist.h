@@ -24,8 +24,6 @@
 
 #include <stdbool.h>
 
-#define PLAYLIST_COMMENT	'#'
-
 struct player_control;
 
 enum playlist_result {
