@@ -24,6 +24,7 @@
 #include "playlist_print.h"
 #include "playlist_save.h"
 #include "playlist_queue.h"
+#include "playlist_error.h"
 #include "queue_print.h"
 #include "ls.h"
 #include "uri.h"
@@ -373,6 +374,33 @@ print_playlist_result(struct client *client,
 	}
 
 	assert(0);
+	return COMMAND_RETURN_ERROR;
+}
+
+/**
+ * Send the GError to the client and free the GError.
+ */
+static enum command_return
+print_error(struct client *client, GError *error)
+{
+	assert(client != NULL);
+	assert(error != NULL);
+
+	g_warning("%s", error->message);
+
+	if (error->domain == playlist_quark()) {
+		enum playlist_result result = error->code;
+		g_error_free(error);
+		return print_playlist_result(client, result);
+	} else if (error->domain == g_file_error_quark()) {
+		command_error(client, ACK_ERROR_SYSTEM, "%s",
+			      g_strerror(error->code));
+		g_error_free(error);
+		return COMMAND_RETURN_ERROR;
+	}
+
+	g_error_free(error);
+	command_error(client, ACK_ERROR_UNKNOWN, "error");
 	return COMMAND_RETURN_ERROR;
 }
 
@@ -766,9 +794,11 @@ handle_load(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (result != PLAYLIST_RESULT_NO_SUCH_LIST)
 		return print_playlist_result(client, result);
 
-	result = playlist_load_spl(&g_playlist, client->player_control,
-				   argv[1]);
-	return print_playlist_result(client, result);
+	GError *error = NULL;
+	return playlist_load_spl(&g_playlist, client->player_control,
+				 argv[1], &error)
+		? COMMAND_RETURN_OK
+		: print_error(client, error);
 }
 
 static enum command_return
@@ -777,15 +807,10 @@ handle_listplaylist(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (playlist_file_print(client, argv[1], false))
 		return COMMAND_RETURN_OK;
 
-	bool ret;
-
-	ret = spl_print(client, argv[1], false);
-	if (!ret) {
-		command_error(client, ACK_ERROR_NO_EXIST, "No such playlist");
-		return COMMAND_RETURN_ERROR;
-	}
-
-	return COMMAND_RETURN_OK;
+	GError *error = NULL;
+	return spl_print(client, argv[1], false, &error)
+		? COMMAND_RETURN_OK
+		: print_error(client, error);
 }
 
 static enum command_return
@@ -795,15 +820,10 @@ handle_listplaylistinfo(struct client *client,
 	if (playlist_file_print(client, argv[1], true))
 		return COMMAND_RETURN_OK;
 
-	bool ret;
-
-	ret = spl_print(client, argv[1], true);
-	if (!ret) {
-		command_error(client, ACK_ERROR_NO_EXIST, "No such playlist");
-		return COMMAND_RETURN_ERROR;
-	}
-
-	return COMMAND_RETURN_OK;
+	GError *error = NULL;
+	return spl_print(client, argv[1], true, &error)
+		? COMMAND_RETURN_OK
+		: print_error(client, error);
 }
 
 static enum command_return
@@ -828,7 +848,7 @@ handle_lsinfo(struct client *client, int argc, char *argv[])
 	directory_print(client, directory);
 
 	if (isRootDirectory(uri)) {
-		GPtrArray *list = spl_list();
+		GPtrArray *list = spl_list(NULL);
 		if (list != NULL) {
 			print_spl_list(client, list);
 			spl_list_free(list);
@@ -841,19 +861,19 @@ handle_lsinfo(struct client *client, int argc, char *argv[])
 static enum command_return
 handle_rm(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	enum playlist_result result;
-
-	result = spl_delete(argv[1]);
-	return print_playlist_result(client, result);
+	GError *error = NULL;
+	return spl_delete(argv[1], &error)
+		? COMMAND_RETURN_OK
+		: print_error(client, error);
 }
 
 static enum command_return
 handle_rename(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	enum playlist_result result;
-
-	result = spl_rename(argv[1], argv[2]);
-	return print_playlist_result(client, result);
+	GError *error = NULL;
+	return spl_rename(argv[1], argv[2], &error)
+		? COMMAND_RETURN_OK
+		: print_error(client, error);
 }
 
 static enum command_return
@@ -1064,13 +1084,14 @@ handle_playlistdelete(struct client *client,
 		      G_GNUC_UNUSED int argc, char *argv[]) {
 	char *playlist = argv[1];
 	int from;
-	enum playlist_result result;
 
 	if (!check_int(client, &from, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
-	result = spl_remove_index(playlist, from);
-	return print_playlist_result(client, result);
+	GError *error = NULL;
+	return spl_remove_index(playlist, from, &error)
+		? COMMAND_RETURN_OK
+		: print_error(client, error);
 }
 
 static enum command_return
@@ -1078,15 +1099,16 @@ handle_playlistmove(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	char *playlist = argv[1];
 	int from, to;
-	enum playlist_result result;
 
 	if (!check_int(client, &from, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
 	if (!check_int(client, &to, argv[3], check_integer, argv[3]))
 		return COMMAND_RETURN_ERROR;
 
-	result = spl_move_index(playlist, from, to);
-	return print_playlist_result(client, result);
+	GError *error = NULL;
+	return spl_move_index(playlist, from, to, &error)
+		? COMMAND_RETURN_OK
+		: print_error(client, error);
 }
 
 static enum command_return
@@ -1642,10 +1664,10 @@ handle_not_commands(struct client *client,
 static enum command_return
 handle_playlistclear(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	enum playlist_result result;
-
-	result = spl_clear(argv[1]);
-	return print_playlist_result(client, result);
+	GError *error = NULL;
+	return spl_clear(argv[1], &error)
+		? COMMAND_RETURN_OK
+		: print_error(client, error);
 }
 
 static enum command_return
@@ -1653,8 +1675,9 @@ handle_playlistadd(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	char *playlist = argv[1];
 	char *uri = argv[2];
-	enum playlist_result result;
 
+	bool success;
+	GError *error = NULL;
 	if (uri_has_scheme(uri)) {
 		if (!uri_supported_scheme(uri)) {
 			command_error(client, ACK_ERROR_NO_EXIST,
@@ -1662,29 +1685,27 @@ handle_playlistadd(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		result = spl_append_uri(uri, playlist);
+		success = spl_append_uri(argv[1], playlist, &error);
 	} else
-		result = addAllInToStoredPlaylist(uri, playlist);
+		success = addAllInToStoredPlaylist(uri, playlist, &error);
 
-	if (result == (enum playlist_result)-1) {
+	if (!success && error == NULL) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
 		return COMMAND_RETURN_ERROR;
 	}
 
-	return print_playlist_result(client, result);
+	return success ? COMMAND_RETURN_OK : print_error(client, error);
 }
 
 static enum command_return
 handle_listplaylists(struct client *client,
 		     G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	GPtrArray *list = spl_list();
-	if (list == NULL) {
-		command_error(client, ACK_ERROR_SYSTEM,
-			      "failed to get list of stored playlists");
-		return COMMAND_RETURN_ERROR;
-	}
+	GError *error = NULL;
+	GPtrArray *list = spl_list(&error);
+	if (list == NULL)
+		return print_error(client, error);
 
 	print_spl_list(client, list);
 	spl_list_free(list);

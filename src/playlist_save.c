@@ -110,15 +110,15 @@ spl_save_playlist(const char *name_utf8, const struct playlist *playlist)
 	return spl_save_queue(name_utf8, &playlist->queue);
 }
 
-enum playlist_result
+bool
 playlist_load_spl(struct playlist *playlist, struct player_control *pc,
-		  const char *name_utf8)
+		  const char *name_utf8, GError **error_r)
 {
 	GPtrArray *list;
 
-	list = spl_load(name_utf8);
+	list = spl_load(name_utf8, error_r);
 	if (list == NULL)
-		return PLAYLIST_RESULT_NO_SUCH_LIST;
+		return false;
 
 	for (unsigned i = 0; i < list->len; ++i) {
 		const char *temp = g_ptr_array_index(list, i);
@@ -139,5 +139,5 @@ playlist_load_spl(struct playlist *playlist, struct player_control *pc,
 	}
 
 	spl_free(list);
-	return PLAYLIST_RESULT_SUCCESS;
+	return true;
 }

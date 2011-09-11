@@ -117,11 +117,12 @@ playlist_print_changes_position(struct client *client,
 }
 
 bool
-spl_print(struct client *client, const char *name_utf8, bool detail)
+spl_print(struct client *client, const char *name_utf8, bool detail,
+	  GError **error_r)
 {
 	GPtrArray *list;
 
-	list = spl_load(name_utf8);
+	list = spl_load(name_utf8, error_r);
 	if (list == NULL)
 		return false;
 

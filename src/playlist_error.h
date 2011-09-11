@@ -20,6 +20,8 @@
 #ifndef MPD_PLAYLIST_ERROR_H
 #define MPD_PLAYLIST_ERROR_H
 
+#include <glib.h>
+
 enum playlist_result {
 	PLAYLIST_RESULT_SUCCESS,
 	PLAYLIST_RESULT_ERRNO,
@@ -33,5 +35,15 @@ enum playlist_result {
 	PLAYLIST_RESULT_TOO_LARGE,
 	PLAYLIST_RESULT_DISABLED,
 };
+
+/**
+ * Quark for GError.domain; the code is an enum #playlist_result.
+ */
+G_GNUC_CONST
+static inline GQuark
+playlist_quark(void)
+{
+	return g_quark_from_static_string("playlist");
+}
 
 #endif

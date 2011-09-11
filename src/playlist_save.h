@@ -22,6 +22,7 @@
 
 #include "playlist_error.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 
 struct song;
@@ -51,8 +52,8 @@ spl_save_playlist(const char *name_utf8, const struct playlist *playlist);
  * Loads a stored playlist file, and append all songs to the global
  * playlist.
  */
-enum playlist_result
+bool
 playlist_load_spl(struct playlist *playlist, struct player_control *pc,
-		  const char *name_utf8);
+		  const char *name_utf8, GError **error_r);
 
 #endif

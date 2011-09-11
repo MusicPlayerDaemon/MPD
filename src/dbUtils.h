@@ -20,13 +20,18 @@
 #ifndef MPD_DB_UTILS_H
 #define MPD_DB_UTILS_H
 
+#include <glib.h>
+#include <stdbool.h>
+
 struct locate_item_list;
 struct player_control;
 
 int
 addAllIn(struct player_control *pc, const char *name);
 
-int addAllInToStoredPlaylist(const char *name, const char *utf8file);
+bool
+addAllInToStoredPlaylist(const char *uri_utf8, const char *path_utf8,
+			 GError **error_r);
 
 int
 findAddIn(struct player_control *pc, const char *name,

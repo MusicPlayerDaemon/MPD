@@ -20,8 +20,6 @@
 #ifndef MPD_STORED_PLAYLIST_H
 #define MPD_STORED_PLAYLIST_H
 
-#include "playlist_error.h"
-
 #include <glib.h>
 #include <stdbool.h>
 #include <time.h>
@@ -54,36 +52,37 @@ spl_valid_name(const char *name_utf8);
  * NULL if an error occurred.
  */
 GPtrArray *
-spl_list(void);
+spl_list(GError **error_r);
 
 void
 spl_list_free(GPtrArray *list);
 
 GPtrArray *
-spl_load(const char *utf8path);
+spl_load(const char *utf8path, GError **error_r);
 
 void
 spl_free(GPtrArray *list);
 
-enum playlist_result
-spl_move_index(const char *utf8path, unsigned src, unsigned dest);
+bool
+spl_move_index(const char *utf8path, unsigned src, unsigned dest,
+	       GError **error_r);
 
-enum playlist_result
-spl_clear(const char *utf8path);
+bool
+spl_clear(const char *utf8path, GError **error_r);
 
-enum playlist_result
-spl_delete(const char *name_utf8);
+bool
+spl_delete(const char *name_utf8, GError **error_r);
 
-enum playlist_result
-spl_remove_index(const char *utf8path, unsigned pos);
+bool
+spl_remove_index(const char *utf8path, unsigned pos, GError **error_r);
 
-enum playlist_result
-spl_append_song(const char *utf8path, struct song *song);
+bool
+spl_append_song(const char *utf8path, struct song *song, GError **error_r);
 
-enum playlist_result
-spl_append_uri(const char *file, const char *utf8file);
+bool
+spl_append_uri(const char *file, const char *utf8file, GError **error_r);
 
-enum playlist_result
-spl_rename(const char *utf8from, const char *utf8to);
+bool
+spl_rename(const char *utf8from, const char *utf8to, GError **error_r);
 
 #endif

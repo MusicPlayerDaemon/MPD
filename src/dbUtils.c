@@ -36,6 +36,7 @@ directoryAddSongToPlaylist(struct song *song, void *data)
 
 struct add_data {
 	const char *path;
+	GError **error_r;
 };
 
 static int
@@ -43,8 +44,10 @@ directoryAddSongToStoredPlaylist(struct song *song, void *_data)
 {
 	struct add_data *data = _data;
 
-	if (spl_append_song(data->path, song) != 0)
+	if (!spl_append_song(data->path, song, data->error_r)) {
 		return -1;
+	}
+
 	return 0;
 }
 
@@ -54,13 +57,16 @@ addAllIn(struct player_control *pc, const char *name)
 	return db_walk(name, directoryAddSongToPlaylist, NULL, pc);
 }
 
-int addAllInToStoredPlaylist(const char *name, const char *utf8file)
+bool
+addAllInToStoredPlaylist(const char *name, const char *utf8file,
+			 GError **error_r)
 {
 	struct add_data data = {
 		.path = utf8file,
+		.error_r = error_r,
 	};
 
-	return db_walk(name, directoryAddSongToStoredPlaylist, NULL, &data);
+	return db_walk(name, directoryAddSongToStoredPlaylist, NULL, &data) == 0;
 }
 
 struct find_add_data {
