@@ -166,6 +166,7 @@ mpd_headers = \
 	src/player_thread.h \
 	src/player_control.h \
 	src/playlist.h \
+	src/playlist_error.h \
 	src/playlist_internal.h \
 	src/playlist_print.h \
 	src/playlist_save.h \

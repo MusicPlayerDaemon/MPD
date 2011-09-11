@@ -20,11 +20,14 @@
 #ifndef MPD_PLAYLIST_SAVE_H
 #define MPD_PLAYLIST_SAVE_H
 
-#include "playlist.h"
+#include "playlist_error.h"
 
 #include <stdio.h>
 
 struct song;
+struct queue;
+struct playlist;
+struct player_control;
 
 void
 playlist_print_song(FILE *fp, const struct song *song);

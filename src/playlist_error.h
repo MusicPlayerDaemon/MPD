@@ -17,41 +17,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*! \file
- * \brief Glue between playlist plugin and the play queue
- */
+#ifndef MPD_PLAYLIST_ERROR_H
+#define MPD_PLAYLIST_ERROR_H
 
-#ifndef MPD_PLAYLIST_QUEUE_H
-#define MPD_PLAYLIST_QUEUE_H
-
-#include "playlist_error.h"
-
-#include <stdbool.h>
-
-struct playlist_provider;
-struct playlist;
-struct player_control;
-
-/**
- * Loads the contents of a playlist and append it to the specified
- * play queue.
- *
- * @param uri the URI of the playlist, used to resolve relative song
- * URIs
- */
-enum playlist_result
-playlist_load_into_queue(const char *uri, struct playlist_provider *source,
-			 struct playlist *dest, struct player_control *pc,
-			 bool secure);
-
-/**
- * Opens a playlist with a playlist plugin and append to the specified
- * play queue.
- */
-enum playlist_result
-playlist_open_into_queue(const char *uri,
-			 struct playlist *dest, struct player_control *pc,
-			 bool secure);
+enum playlist_result {
+	PLAYLIST_RESULT_SUCCESS,
+	PLAYLIST_RESULT_ERRNO,
+	PLAYLIST_RESULT_DENIED,
+	PLAYLIST_RESULT_NO_SUCH_SONG,
+	PLAYLIST_RESULT_NO_SUCH_LIST,
+	PLAYLIST_RESULT_LIST_EXISTS,
+	PLAYLIST_RESULT_BAD_NAME,
+	PLAYLIST_RESULT_BAD_RANGE,
+	PLAYLIST_RESULT_NOT_PLAYING,
+	PLAYLIST_RESULT_TOO_LARGE,
+	PLAYLIST_RESULT_DISABLED,
+};
 
 #endif
-

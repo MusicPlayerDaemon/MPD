@@ -20,7 +20,7 @@
 #ifndef MPD_STORED_PLAYLIST_H
 #define MPD_STORED_PLAYLIST_H
 
-#include "playlist.h"
+#include "playlist_error.h"
 
 #include <glib.h>
 #include <stdbool.h>

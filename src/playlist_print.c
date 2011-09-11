@@ -23,6 +23,7 @@
 #include "playlist_plugin.h"
 #include "playlist_any.h"
 #include "playlist_song.h"
+#include "playlist.h"
 #include "queue_print.h"
 #include "stored_playlist.h"
 #include "song_print.h"

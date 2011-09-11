@@ -22,6 +22,7 @@
 #include "playlist_plugin.h"
 #include "playlist_any.h"
 #include "playlist_song.h"
+#include "playlist.h"
 #include "song.h"
 #include "input_stream.h"
 
