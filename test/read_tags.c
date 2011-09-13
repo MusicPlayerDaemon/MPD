@@ -165,6 +165,7 @@ int main(int argc, char **argv)
 	decoder_name = argv[1];
 	path = argv[2];
 
+	g_thread_init(NULL);
 	tag_pool_init();
 
 	if (!input_stream_global_init(&error)) {
