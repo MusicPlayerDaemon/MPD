@@ -188,12 +188,12 @@ directory_walk(struct directory *directory,
 				return false;
 	}
 
-	if (visitor->directory != NULL) {
-		const struct dirvec *dv = &directory->children;
-		for (size_t i = 0; i < dv->nr; ++i)
-			if (!directory_walk(dv->base[i], visitor, ctx,
-					    error_r))
-				return false;
+	const struct dirvec *dv = &directory->children;
+	for (size_t i = 0; i < dv->nr; ++i) {
+		struct directory *child = dv->base[i];
+
+		if (!directory_walk(child, visitor, ctx, error_r))
+			return false;
 	}
 
 	return true;
