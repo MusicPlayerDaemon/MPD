@@ -104,8 +104,7 @@ db_get_song(const char *file)
 	if (db == NULL)
 		return NULL;
 
-	struct directory *music_root = db_get_root();
-	return directory_lookup_song(music_root, file);
+	return db_plugin_get_song(db, file, NULL);
 }
 
 bool

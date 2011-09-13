@@ -58,6 +58,15 @@ struct db_plugin {
          * Close the database, free allocated memory.
 	 */
 	void (*close)(struct db *db);
+
+	/**
+         * Look up a song (including tag data) in the database.
+	 *
+	 * @param the URI of the song within the music directory
+	 * (UTF-8)
+	 */
+	struct song *(*get_song)(struct db *db, const char *uri,
+				 GError **error_r);
 };
 
 G_GNUC_MALLOC
@@ -68,6 +77,7 @@ db_plugin_new(const struct db_plugin *plugin, const struct config_param *param,
 	assert(plugin != NULL);
 	assert(plugin->init != NULL);
 	assert(plugin->finish != NULL);
+	assert(plugin->get_song != NULL);
 	assert(error_r == NULL || *error_r == NULL);
 
 	struct db *db = plugin->init(param, error_r);
@@ -106,6 +116,17 @@ db_plugin_close(struct db *db)
 
 	if (db->plugin->close != NULL)
 		db->plugin->close(db);
+}
+
+static inline struct song *
+db_plugin_get_song(struct db *db, const char *uri, GError **error_r)
+{
+	assert(db != NULL);
+	assert(db->plugin != NULL);
+	assert(db->plugin->get_song != NULL);
+	assert(uri != NULL);
+
+	return db->plugin->get_song(db, uri, error_r);
 }
 
 #endif

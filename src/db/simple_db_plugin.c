@@ -20,6 +20,7 @@
 #include "config.h"
 #include "simple_db_plugin.h"
 #include "db_internal.h"
+#include "db_error.h"
 #include "db_save.h"
 #include "conf.h"
 #include "glib_compat.h"
@@ -214,12 +215,28 @@ simple_db_close(struct db *_db)
 	directory_free(db->root);
 }
 
+static struct song *
+simple_db_get_song(struct db *_db, const char *uri, GError **error_r)
+{
+	struct simple_db *db = (struct simple_db *)_db;
+
+	assert(db->root != NULL);
+
+	struct song *song = directory_lookup_song(db->root, uri);
+	if (song == NULL)
+		g_set_error(error_r, db_quark(), DB_NOT_FOUND,
+			    "No such song: %s", uri);
+
+	return song;
+}
+
 const struct db_plugin simple_db_plugin = {
 	.name = "simple",
 	.init = simple_db_init,
 	.finish = simple_db_finish,
 	.open = simple_db_open,
 	.close = simple_db_close,
+	.get_song = simple_db_get_song,
 };
 
 struct directory *
