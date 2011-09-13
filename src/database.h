@@ -20,6 +20,8 @@
 #ifndef MPD_DATABASE_H
 #define MPD_DATABASE_H
 
+#include "gcc.h"
+
 #include <glib.h>
 
 #include <sys/time.h>
@@ -47,12 +49,15 @@ db_finish(void);
 struct directory *
 db_get_root(void);
 
+gcc_nonnull(1)
 struct directory *
 db_get_directory(const char *name);
 
+gcc_nonnull(1)
 struct song *
 db_get_song(const char *file);
 
+gcc_nonnull(1,2)
 bool
 db_walk(const char *uri,
 	const struct db_visitor *visitor, void *ctx,

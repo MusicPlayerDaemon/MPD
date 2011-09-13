@@ -286,7 +286,7 @@ listAllUniqueTags(struct client *client, int type,
 		data.set = strset_new();
 	}
 
-	if (!db_walk(NULL, &unique_tags_visitor, &data, error_r)) {
+	if (!db_walk("", &unique_tags_visitor, &data, error_r)) {
 		freeListCommandItem(item);
 		return false;
 	}

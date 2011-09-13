@@ -963,7 +963,7 @@ handle_find(struct client *client, int argc, char *argv[])
 	}
 
 	GError *error = NULL;
-	enum command_return ret = findSongsIn(client, NULL, list, &error)
+	enum command_return ret = findSongsIn(client, "", list, &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
 
@@ -987,7 +987,7 @@ handle_findadd(struct client *client, int argc, char *argv[])
 
     GError *error = NULL;
     enum command_return ret =
-	    findAddIn(client->player_control, NULL, list, &error)
+	    findAddIn(client->player_control, "", list, &error)
 	    ? COMMAND_RETURN_OK
 	    : print_error(client, error);
 
@@ -1011,7 +1011,7 @@ handle_search(struct client *client, int argc, char *argv[])
 	}
 
 	GError *error = NULL;
-	enum command_return ret = searchForSongsIn(client, NULL, list, &error)
+	enum command_return ret = searchForSongsIn(client, "", list, &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
 
@@ -1036,7 +1036,7 @@ handle_count(struct client *client, int argc, char *argv[])
 
 	GError *error = NULL;
 	enum command_return ret =
-		searchStatsForSongsIn(client, NULL, list, &error)
+		searchStatsForSongsIn(client, "", list, &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
 
@@ -1266,7 +1266,7 @@ handle_prioid(struct client *client, int argc, char *argv[])
 static enum command_return
 handle_listall(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	char *directory = NULL;
+	const char *directory = "";
 
 	if (argc == 2)
 		directory = argv[1];
@@ -1537,7 +1537,7 @@ handle_seekid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_listallinfo(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	char *directory = NULL;
+	const char *directory = "";
 
 	if (argc == 2)
 		directory = argv[1];

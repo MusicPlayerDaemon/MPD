@@ -98,7 +98,7 @@ void stats_update(void)
 	data.artists = strset_new();
 	data.albums = strset_new();
 
-	db_walk(NULL, &collect_stats_visitor, &data, NULL);
+	db_walk("", &collect_stats_visitor, &data, NULL);
 
 	stats.artist_count = strset_size(data.artists);
 	stats.album_count = strset_size(data.albums);

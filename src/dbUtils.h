@@ -20,23 +20,26 @@
 #ifndef MPD_DB_UTILS_H
 #define MPD_DB_UTILS_H
 
+#include "gcc.h"
+
 #include <glib.h>
 #include <stdbool.h>
 
 struct locate_item_list;
 struct player_control;
 
+gcc_nonnull(1,2)
 bool
 addAllIn(struct player_control *pc, const char *uri, GError **error_r);
 
+gcc_nonnull(1,2)
 bool
 addAllInToStoredPlaylist(const char *uri_utf8, const char *path_utf8,
 			 GError **error_r);
 
+gcc_nonnull(1,2,3)
 bool
 findAddIn(struct player_control *pc, const char *name,
 	  const struct locate_item_list *criteria, GError **error_r);
-
-unsigned long sumSongTimesIn(const char *name);
 
 #endif

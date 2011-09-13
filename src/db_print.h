@@ -20,6 +20,8 @@
 #ifndef MPD_DB_PRINT_H
 #define MPD_DB_PRINT_H
 
+#include "gcc.h"
+
 #include <glib.h>
 #include <stdbool.h>
 
@@ -27,28 +29,34 @@ struct client;
 struct locate_item_list;
 struct db_visitor;
 
+gcc_nonnull(1,2)
 bool
 printAllIn(struct client *client, const char *uri_utf8, GError **error_r);
 
+gcc_nonnull(1,2)
 bool
 printInfoForAllIn(struct client *client, const char *uri_utf8,
 		  GError **error_r);
 
+gcc_nonnull(1,2,3)
 bool
 searchForSongsIn(struct client *client, const char *name,
 		 const struct locate_item_list *criteria,
 		 GError **error_r);
 
+gcc_nonnull(1,2,3)
 bool
 findSongsIn(struct client *client, const char *name,
 	    const struct locate_item_list *criteria,
 	    GError **error_r);
 
+gcc_nonnull(1,2,3)
 bool
 searchStatsForSongsIn(struct client *client, const char *name,
 		      const struct locate_item_list *criteria,
 		      GError **error_r);
 
+gcc_nonnull(1,3)
 bool
 listAllUniqueTags(struct client *client, int type,
 		  const struct locate_item_list *criteria,
