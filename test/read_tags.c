@@ -166,6 +166,7 @@ int main(int argc, char **argv)
 	decoder_name = argv[1];
 	path = argv[2];
 
+	g_thread_init(NULL);
 	io_thread_init();
 	if (!io_thread_start(&error)) {
 		g_warning("%s", error->message);
