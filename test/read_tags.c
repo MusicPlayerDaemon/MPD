@@ -25,6 +25,7 @@
 #include "input_stream.h"
 #include "audio_format.h"
 #include "pcm_volume.h"
+#include "tag_pool.h"
 #include "tag_ape.h"
 #include "tag_id3.h"
 #include "idle.h"
@@ -174,6 +175,8 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
+	tag_pool_init();
+
 	if (!input_stream_global_init(&error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
@@ -226,6 +229,8 @@ int main(int argc, char **argv)
 			tag_free(tag);
 		}
 	}
+
+	tag_pool_deinit();
 
 	return 0;
 }
