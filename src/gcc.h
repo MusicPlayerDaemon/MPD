@@ -38,6 +38,8 @@
 #  define gcc_used		__attribute__ ((used))
 /* #  define inline	inline __attribute__ ((always_inline)) */
 #  define gcc_noinline		__attribute__ ((noinline))
+#  define gcc_nonnull(...) __attribute__((nonnull(__VA_ARGS__)))
+#  define gcc_nonnull_all __attribute__((nonnull))
 #else
 #  define gcc_must_check
 #  define gcc_packed
@@ -49,6 +51,8 @@
 #  define gcc_used
 /* #  define inline */
 #  define gcc_noinline
+#  define gcc_nonnull(...)
+#  define gcc_nonnull_all
 #endif
 
 #endif /* MPD_GCC_H */
