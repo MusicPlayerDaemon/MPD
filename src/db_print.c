@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "db_print.h"
+#include "db_selection.h"
 #include "db_visitor.h"
 #include "locate.h"
 #include "directory.h"
@@ -118,6 +119,14 @@ static const struct db_visitor print_info_visitor = {
 	.song = print_visitor_song_info,
 	.playlist = print_visitor_playlist_info,
 };
+
+bool
+db_selection_print(struct client *client, const struct db_selection *selection,
+		   bool full, GError **error_r)
+{
+	return db_visit(selection, full ? &print_info_visitor : &print_visitor,
+			client, error_r);
+}
 
 struct search_data {
 	struct client *client;
@@ -233,14 +242,18 @@ searchStatsForSongsIn(struct client *client, const char *name,
 bool
 printAllIn(struct client *client, const char *uri_utf8, GError **error_r)
 {
-	return db_walk(uri_utf8, &print_visitor, client, error_r);
+	struct db_selection selection;
+	db_selection_init(&selection, uri_utf8, true);
+	return db_selection_print(client, &selection, false, error_r);
 }
 
 bool
 printInfoForAllIn(struct client *client, const char *uri_utf8,
 		  GError **error_r)
 {
-	return db_walk(uri_utf8, &print_info_visitor, client, error_r);
+	struct db_selection selection;
+	db_selection_init(&selection, uri_utf8, true);
+	return db_selection_print(client, &selection, true, error_r);
 }
 
 static ListCommandItem *

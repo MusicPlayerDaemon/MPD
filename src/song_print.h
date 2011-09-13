@@ -28,9 +28,6 @@ void
 song_print_info(struct client *client, struct song *song);
 
 void
-songvec_print(struct client *client, const struct songvec *sv);
-
-void
 song_print_uri(struct client *client, struct song *song);
 
 #endif

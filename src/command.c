@@ -30,7 +30,6 @@
 #include "uri.h"
 #include "decoder_print.h"
 #include "directory.h"
-#include "directory_print.h"
 #include "database.h"
 #include "update.h"
 #include "volume.h"
@@ -45,6 +44,7 @@
 #include "dbUtils.h"
 #include "db_error.h"
 #include "db_print.h"
+#include "db_selection.h"
 #include "tag.h"
 #include "client.h"
 #include "client_idle.h"
@@ -840,7 +840,6 @@ static enum command_return
 handle_lsinfo(struct client *client, int argc, char *argv[])
 {
 	const char *uri;
-	const struct directory *directory;
 
 	if (argc == 2)
 		uri = argv[1];
@@ -848,14 +847,12 @@ handle_lsinfo(struct client *client, int argc, char *argv[])
 		/* default is root directory */
 		uri = "";
 
-	directory = db_get_directory(uri);
-	if (directory == NULL) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "directory not found");
-		return COMMAND_RETURN_ERROR;
-	}
+	struct db_selection selection;
+	db_selection_init(&selection, uri, false);
 
-	directory_print(client, directory);
+	GError *error = NULL;
+	if (!db_selection_print(client, &selection, true, &error))
+		return print_error(client, error);
 
 	if (isRootDirectory(uri)) {
 		GPtrArray *list = spl_list(NULL);
