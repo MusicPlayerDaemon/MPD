@@ -128,6 +128,10 @@ db_walk(const char *uri,
 		return false;
 	}
 
+	if (visitor->directory != NULL &&
+	    !visitor->directory(directory, ctx, error_r))
+		return false;
+
 	return directory_walk(directory, visitor, ctx, error_r);
 }
 

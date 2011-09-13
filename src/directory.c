@@ -177,10 +177,6 @@ directory_walk(struct directory *directory,
 	assert(visitor != NULL);
 	assert(error_r == NULL || *error_r == NULL);
 
-	if (visitor->directory != NULL &&
-	    !visitor->directory(directory, ctx, error_r))
-		return false;
-
 	if (visitor->song != NULL) {
 		struct songvec *sv = &directory->songs;
 		for (size_t i = 0; i < sv->nr; ++i)
@@ -191,6 +187,10 @@ directory_walk(struct directory *directory,
 	const struct dirvec *dv = &directory->children;
 	for (size_t i = 0; i < dv->nr; ++i) {
 		struct directory *child = dv->base[i];
+
+		if (visitor->directory != NULL &&
+		    !visitor->directory(child, ctx, error_r))
+			return false;
 
 		if (!directory_walk(child, visitor, ctx, error_r))
 			return false;
