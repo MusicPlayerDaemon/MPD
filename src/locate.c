@@ -64,19 +64,6 @@ locate_item_init(struct locate_item *item,
 	return true;
 }
 
-struct locate_item *
-locate_item_new(const char *type_string, const char *needle)
-{
-	struct locate_item *ret = g_new(struct locate_item, 1);
-
-	if (!locate_item_init(ret, type_string, needle)) {
-		g_free(ret);
-		ret = NULL;
-	}
-
-	return ret;
-}
-
 void
 locate_item_list_free(struct locate_item_list *list)
 {

@@ -49,10 +49,6 @@ struct locate_item_list {
 int
 locate_parse_type(const char *str);
 
-/* returns NULL if not a known type */
-struct locate_item *
-locate_item_new(const char *type_string, const char *needle);
-
 /**
  * Allocates a new struct locate_item_list, and initializes all
  * members with zero bytes.
