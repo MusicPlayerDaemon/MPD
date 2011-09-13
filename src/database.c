@@ -27,6 +27,7 @@
 #include "directory.h"
 #include "stats.h"
 #include "conf.h"
+#include "glib_compat.h"
 
 #include <glib.h>
 
@@ -112,12 +113,14 @@ db_walk(const char *uri,
 	const struct db_visitor *visitor, void *ctx,
 	GError **error_r)
 {
-	struct directory *directory;
+	if (db == NULL) {
+		g_set_error_literal(error_r, db_quark(), DB_DISABLED,
+				    "No database");
+		return false;
+	}
 
-	if (db == NULL)
-		return -1;
-
-	if ((directory = db_get_directory(uri)) == NULL) {
+	struct directory *directory = db_get_directory(uri);
+	if (directory == NULL) {
 		struct song *song;
 		if (visitor->song != NULL &&
 		    (song = db_get_song(uri)) != NULL)

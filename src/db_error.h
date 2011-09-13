@@ -23,6 +23,12 @@
 #include <glib.h>
 
 enum db_error {
+	/**
+	 * The database is disabled, i.e. none is configured in this
+	 * MPD instance.
+	 */
+	DB_DISABLED,
+
 	DB_NOT_FOUND,
 };
 

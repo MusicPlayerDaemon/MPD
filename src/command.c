@@ -395,6 +395,12 @@ print_error(struct client *client, GError *error)
 		return print_playlist_result(client, result);
 	} else if (error->domain == db_quark()) {
 		switch ((enum db_error)error->code) {
+		case DB_DISABLED:
+			command_error(client, ACK_ERROR_NO_EXIST, "%s",
+				      error->message);
+			g_error_free(error);
+			return COMMAND_RETURN_ERROR;
+
 		case DB_NOT_FOUND:
 			g_error_free(error);
 			command_error(client, ACK_ERROR_NO_EXIST, "Not found");
