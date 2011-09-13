@@ -73,7 +73,7 @@ struct tag_item {
 	 * the value of this tag; this is a variable length string
 	 */
 	char value[sizeof(long)];
-} mpd_packed;
+} gcc_packed;
 
 /**
  * The meta information about a song file.  It is a MPD specific
