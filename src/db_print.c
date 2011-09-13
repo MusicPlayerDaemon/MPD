@@ -72,14 +72,51 @@ print_visitor_song_info(struct song *song, void *data,
 	return true;
 }
 
+static bool
+print_visitor_playlist(const struct playlist_metadata *playlist, void *ctx,
+		       G_GNUC_UNUSED GError **error_r)
+{
+	struct client *client = ctx;
+	client_printf(client, "playlist: %s\n", playlist->name);
+	return true;
+}
+
+static bool
+print_visitor_playlist_info(const struct playlist_metadata *playlist,
+			    void *ctx, G_GNUC_UNUSED GError **error_r)
+{
+	struct client *client = ctx;
+	client_printf(client, "playlist: %s\n", playlist->name);
+
+#ifndef G_OS_WIN32
+	struct tm tm;
+#endif
+	char timestamp[32];
+	time_t t = playlist->mtime;
+	strftime(timestamp, sizeof(timestamp),
+#ifdef G_OS_WIN32
+		 "%Y-%m-%dT%H:%M:%SZ",
+		 gmtime(&t)
+#else
+		 "%FT%TZ",
+		 gmtime_r(&t, &tm)
+#endif
+		 );
+	client_printf(client, "Last-Modified: %s\n", timestamp);
+
+	return true;
+}
+
 static const struct db_visitor print_visitor = {
 	.directory = print_visitor_directory,
 	.song = print_visitor_song,
+	.playlist = print_visitor_playlist,
 };
 
 static const struct db_visitor print_info_visitor = {
 	.directory = print_visitor_directory,
 	.song = print_visitor_song_info,
+	.playlist = print_visitor_playlist_info,
 };
 
 struct search_data {

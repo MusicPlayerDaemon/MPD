@@ -184,6 +184,14 @@ directory_walk(const struct directory *directory, bool recursive,
 				return false;
 	}
 
+	if (visitor->playlist != NULL) {
+		const struct playlist_vector *pv = &directory->playlists;
+		for (const struct playlist_metadata *i = pv->head;
+		     i != NULL; i = i->next)
+			if (!visitor->playlist(i, ctx, error_r))
+				return false;
+	}
+
 	const struct dirvec *dv = &directory->children;
 	for (size_t i = 0; i < dv->nr; ++i) {
 		struct directory *child = dv->base[i];

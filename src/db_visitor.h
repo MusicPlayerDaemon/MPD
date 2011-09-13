@@ -22,6 +22,7 @@
 
 struct directory;
 struct song;
+struct playlist_metadata;
 
 struct db_visitor {
 	/**
@@ -38,6 +39,14 @@ struct db_visitor {
 	 * @return true to continue the operation, false on error (set error_r)
 	 */
 	bool (*song)(struct song *song, void *ctx, GError **error_r);
+
+	/**
+	 * Visit a playlist.  Optional method.
+	 *
+	 * @return true to continue the operation, false on error (set error_r)
+	 */
+	bool (*playlist)(const struct playlist_metadata *playlist, void *ctx,
+			 GError **error_r);
 };
 
 #endif
