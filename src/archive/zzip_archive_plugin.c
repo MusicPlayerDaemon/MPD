@@ -135,14 +135,17 @@ struct zzip_input_stream {
 
 static struct input_stream *
 zzip_archive_open_stream(struct archive_file *file,
-			 const char *pathname, GError **error_r)
+			 const char *pathname,
+			 GMutex *mutex, GCond *cond,
+			 GError **error_r)
 {
 	struct zzip_archive *context = (struct zzip_archive *) file;
 	struct zzip_input_stream *zis;
 	ZZIP_STAT z_stat;
 
 	zis = g_new(struct zzip_input_stream, 1);
-	input_stream_init(&zis->base, &zzip_input_plugin, pathname);
+	input_stream_init(&zis->base, &zzip_input_plugin, pathname,
+			  mutex, cond);
 
 	zis->archive = context;
 	zis->file = zzip_file_open(context->dir, pathname, 0);

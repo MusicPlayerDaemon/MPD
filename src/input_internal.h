@@ -22,14 +22,22 @@
 
 #include "check.h"
 
+#include <glib.h>
+
 struct input_stream;
 struct input_plugin;
 
 void
 input_stream_init(struct input_stream *is, const struct input_plugin *plugin,
-		  const char *uri);
+		  const char *uri, GMutex *mutex, GCond *cond);
 
 void
 input_stream_deinit(struct input_stream *is);
+
+void
+input_stream_signal_client(struct input_stream *is);
+
+void
+input_stream_set_ready(struct input_stream *is);
 
 #endif

@@ -46,7 +46,9 @@ file_quark(void)
 }
 
 static struct input_stream *
-input_file_open(const char *filename, GError **error_r)
+input_file_open(const char *filename,
+		GMutex *mutex, GCond *cond,
+		GError **error_r)
 {
 	int fd, ret;
 	struct stat st;
@@ -85,7 +87,8 @@ input_file_open(const char *filename, GError **error_r)
 #endif
 
 	fis = g_new(struct file_input_stream, 1);
-	input_stream_init(&fis->base, &input_plugin_file, filename);
+	input_stream_init(&fis->base, &input_plugin_file, filename,
+			  mutex, cond);
 
 	fis->base.size = st.st_size;
 	fis->base.seekable = true;

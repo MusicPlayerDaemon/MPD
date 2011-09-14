@@ -149,7 +149,9 @@ cdio_detect_device(void)
 }
 
 static struct input_stream *
-input_cdio_open(const char *uri, GError **error_r)
+input_cdio_open(const char *uri,
+		GMutex *mutex, GCond *cond,
+		GError **error_r)
 {
 	struct input_cdio_paranoia *i;
 
@@ -158,7 +160,8 @@ input_cdio_open(const char *uri, GError **error_r)
 		return NULL;
 
 	i = g_new(struct input_cdio_paranoia, 1);
-	input_stream_init(&i->base, &input_plugin_cdio_paranoia, uri);
+	input_stream_init(&i->base, &input_plugin_cdio_paranoia, uri,
+			  mutex, cond);
 
 	/* initialize everything (should be already) */
 	i->drv = NULL;

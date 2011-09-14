@@ -53,20 +53,17 @@ dump_input_stream(struct input_stream *is)
 	size_t num_read;
 	ssize_t num_written;
 
+	g_mutex_lock(is->mutex);
+
 	/* wait until the stream becomes ready */
 
-	while (!is->ready) {
-		int ret = input_stream_buffer(is, &error);
-		if (ret < 0) {
-			/* error */
-			g_warning("%s", error->message);
-			g_error_free(error);
-			return 2;
-		}
+	input_stream_wait_ready(is);
 
-		if (ret == 0)
-			/* nothing was buffered - wait */
-			g_usleep(10000);
+	if (!input_stream_check(is, &error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		g_mutex_unlock(is->mutex);
+		return EXIT_FAILURE;
 	}
 
 	/* print meta data */
@@ -103,8 +100,11 @@ dump_input_stream(struct input_stream *is)
 	if (!input_stream_check(is, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
+		g_mutex_unlock(is->mutex);
 		return EXIT_FAILURE;
 	}
+
+	g_mutex_unlock(is->mutex);
 
 	return 0;
 }
@@ -149,7 +149,10 @@ int main(int argc, char **argv)
 
 	/* open the stream and dump it */
 
-	is = input_stream_open(argv[1], &error);
+	GMutex *mutex = g_mutex_new();
+	GCond *cond = g_cond_new();
+
+	is = input_stream_open(argv[1], mutex, cond, &error);
 	if (is != NULL) {
 		ret = dump_input_stream(is);
 		input_stream_close(is);
@@ -161,6 +164,9 @@ int main(int argc, char **argv)
 			g_printerr("input_stream_open() failed\n");
 		ret = 2;
 	}
+
+	g_cond_free(cond);
+	g_mutex_free(mutex);
 
 	/* deinitialize everything */
 

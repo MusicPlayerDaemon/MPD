@@ -33,10 +33,13 @@ input_quark(void)
 }
 
 struct input_stream *
-input_stream_open(const char *url, GError **error_r)
+input_stream_open(const char *url,
+		  GMutex *mutex, GCond *cond,
+		  GError **error_r)
 {
 	GError *error = NULL;
 
+	assert(mutex != NULL);
 	assert(error_r == NULL || *error_r == NULL);
 
 	for (unsigned i = 0; input_plugins[i] != NULL; ++i) {
@@ -46,7 +49,7 @@ input_stream_open(const char *url, GError **error_r)
 		if (!input_plugins_enabled[i])
 			continue;
 
-		is = plugin->open(url, &error);
+		is = plugin->open(url, mutex, cond, &error);
 		if (is != NULL) {
 			assert(is->plugin != NULL);
 			assert(is->plugin->close != NULL);
@@ -87,24 +90,106 @@ input_stream_update(struct input_stream *is)
 		is->plugin->update(is);
 }
 
+void
+input_stream_wait_ready(struct input_stream *is)
+{
+	assert(is != NULL);
+	assert(is->mutex != NULL);
+	assert(is->cond != NULL);
+
+	while (true) {
+		input_stream_update(is);
+		if (is->ready)
+			break;
+
+		g_cond_wait(is->cond, is->mutex);
+	}
+}
+
+void
+input_stream_lock_wait_ready(struct input_stream *is)
+{
+	assert(is != NULL);
+	assert(is->mutex != NULL);
+	assert(is->cond != NULL);
+
+	g_mutex_lock(is->mutex);
+	input_stream_wait_ready(is);
+	g_mutex_unlock(is->mutex);
+}
+
 bool
 input_stream_seek(struct input_stream *is, goffset offset, int whence,
 		  GError **error_r)
 {
+	assert(is != NULL);
+	assert(is->plugin != NULL);
+
 	if (is->plugin->seek == NULL)
 		return false;
 
 	return is->plugin->seek(is, offset, whence, error_r);
 }
 
+bool
+input_stream_lock_seek(struct input_stream *is, goffset offset, int whence,
+		       GError **error_r)
+{
+	assert(is != NULL);
+	assert(is->plugin != NULL);
+
+	if (is->plugin->seek == NULL)
+		return false;
+
+	if (is->mutex == NULL)
+		/* no locking */
+		return input_stream_seek(is, offset, whence, error_r);
+
+	g_mutex_lock(is->mutex);
+	bool success = input_stream_seek(is, offset, whence, error_r);
+	g_mutex_unlock(is->mutex);
+	return success;
+}
+
 struct tag *
 input_stream_tag(struct input_stream *is)
 {
 	assert(is != NULL);
+	assert(is->plugin != NULL);
 
 	return is->plugin->tag != NULL
 		? is->plugin->tag(is)
 		: NULL;
+}
+
+struct tag *
+input_stream_lock_tag(struct input_stream *is)
+{
+	assert(is != NULL);
+	assert(is->plugin != NULL);
+
+	if (is->plugin->tag == NULL)
+		return false;
+
+	if (is->mutex == NULL)
+		/* no locking */
+		return input_stream_tag(is);
+
+	g_mutex_lock(is->mutex);
+	struct tag *tag = input_stream_tag(is);
+	g_mutex_unlock(is->mutex);
+	return tag;
+}
+
+bool
+input_stream_available(struct input_stream *is)
+{
+	assert(is != NULL);
+	assert(is->plugin != NULL);
+
+	return is->plugin->available != NULL
+		? is->plugin->available(is)
+		: true;
 }
 
 size_t
@@ -117,6 +202,23 @@ input_stream_read(struct input_stream *is, void *ptr, size_t size,
 	return is->plugin->read(is, ptr, size, error_r);
 }
 
+size_t
+input_stream_lock_read(struct input_stream *is, void *ptr, size_t size,
+		       GError **error_r)
+{
+	assert(ptr != NULL);
+	assert(size > 0);
+
+	if (is->mutex == NULL)
+		/* no locking */
+		return input_stream_read(is, ptr, size, error_r);
+
+	g_mutex_lock(is->mutex);
+	size_t nbytes = input_stream_read(is, ptr, size, error_r);
+	g_mutex_unlock(is->mutex);
+	return nbytes;
+}
+
 void input_stream_close(struct input_stream *is)
 {
 	is->plugin->close(is);
@@ -127,11 +229,19 @@ bool input_stream_eof(struct input_stream *is)
 	return is->plugin->eof(is);
 }
 
-int
-input_stream_buffer(struct input_stream *is, GError **error_r)
+bool
+input_stream_lock_eof(struct input_stream *is)
 {
-	if (is->plugin->buffer == NULL)
-		return 0;
+	assert(is != NULL);
+	assert(is->plugin != NULL);
 
-	return is->plugin->buffer(is, error_r);
+	if (is->mutex == NULL)
+		/* no locking */
+		return input_stream_eof(is);
+
+	g_mutex_lock(is->mutex);
+	bool eof = input_stream_eof(is);
+	g_mutex_unlock(is->mutex);
+	return eof;
 }
+

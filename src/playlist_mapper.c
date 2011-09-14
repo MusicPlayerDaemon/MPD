@@ -27,15 +27,16 @@
 #include <assert.h>
 
 static struct playlist_provider *
-playlist_open_path(const char *path_fs, struct input_stream **is_r)
+playlist_open_path(const char *path_fs, GMutex *mutex, GCond *cond,
+		   struct input_stream **is_r)
 {
 	struct playlist_provider *playlist;
 
-	playlist = playlist_list_open_uri(path_fs);
+	playlist = playlist_list_open_uri(path_fs, mutex, cond);
 	if (playlist != NULL)
 		*is_r = NULL;
 	else
-		playlist = playlist_list_open_path(path_fs, is_r);
+		playlist = playlist_list_open_path(path_fs, mutex, cond, is_r);
 
 	return playlist;
 }
@@ -44,7 +45,8 @@ playlist_open_path(const char *path_fs, struct input_stream **is_r)
  * Load a playlist from the configured playlist directory.
  */
 static struct playlist_provider *
-playlist_open_in_playlist_dir(const char *uri, struct input_stream **is_r)
+playlist_open_in_playlist_dir(const char *uri, GMutex *mutex, GCond *cond,
+			      struct input_stream **is_r)
 {
 	char *path_fs;
 
@@ -56,7 +58,8 @@ playlist_open_in_playlist_dir(const char *uri, struct input_stream **is_r)
 
 	path_fs = g_build_filename(playlist_directory_fs, uri, NULL);
 
-	struct playlist_provider *playlist = playlist_open_path(path_fs, is_r);
+	struct playlist_provider *playlist =
+		playlist_open_path(path_fs, mutex, cond, is_r);
 	g_free(path_fs);
 
 	return playlist;
@@ -66,7 +69,8 @@ playlist_open_in_playlist_dir(const char *uri, struct input_stream **is_r)
  * Load a playlist from the configured music directory.
  */
 static struct playlist_provider *
-playlist_open_in_music_dir(const char *uri, struct input_stream **is_r)
+playlist_open_in_music_dir(const char *uri, GMutex *mutex, GCond *cond,
+			   struct input_stream **is_r)
 {
 	char *path_fs;
 
@@ -76,25 +80,28 @@ playlist_open_in_music_dir(const char *uri, struct input_stream **is_r)
 	if (path_fs == NULL)
 		return NULL;
 
-	struct playlist_provider *playlist = playlist_open_path(path_fs, is_r);
+	struct playlist_provider *playlist =
+		playlist_open_path(path_fs, mutex, cond, is_r);
 	g_free(path_fs);
 
 	return playlist;
 }
 
 struct playlist_provider *
-playlist_mapper_open(const char *uri, struct input_stream **is_r)
+playlist_mapper_open(const char *uri, GMutex *mutex, GCond *cond,
+		     struct input_stream **is_r)
 {
 	struct playlist_provider *playlist;
 
 	if (spl_valid_name(uri)) {
-		playlist = playlist_open_in_playlist_dir(uri, is_r);
+		playlist = playlist_open_in_playlist_dir(uri, mutex, cond,
+							 is_r);
 		if (playlist != NULL)
 			return playlist;
 	}
 
 	if (uri_safe_local(uri)) {
-		playlist = playlist_open_in_music_dir(uri, is_r);
+		playlist = playlist_open_in_music_dir(uri, mutex, cond, is_r);
 		if (playlist != NULL)
 			return playlist;
 	}

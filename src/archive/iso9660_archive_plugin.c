@@ -173,15 +173,17 @@ struct iso9660_input_stream {
 };
 
 static struct input_stream *
-iso9660_archive_open_stream(struct archive_file *file,
-		const char *pathname, GError **error_r)
+iso9660_archive_open_stream(struct archive_file *file, const char *pathname,
+			    GMutex *mutex, GCond *cond,
+			    GError **error_r)
 {
 	struct iso9660_archive_file *context =
 		(struct iso9660_archive_file *)file;
 	struct iso9660_input_stream *iis;
 
 	iis = g_new(struct iso9660_input_stream, 1);
-	input_stream_init(&iis->base, &iso9660_input_plugin, pathname);
+	input_stream_init(&iis->base, &iso9660_input_plugin, pathname,
+			  mutex, cond);
 
 	iis->archive = context;
 	iis->statbuf = iso9660_ifs_stat_translate(context->iso, pathname);

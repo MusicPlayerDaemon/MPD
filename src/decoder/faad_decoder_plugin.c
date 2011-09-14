@@ -205,7 +205,7 @@ faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
 		/* obtain the duration from the ADTS header */
 		float song_length = adts_song_duration(buffer);
 
-		input_stream_seek(is, tagsize, SEEK_SET, NULL);
+		input_stream_lock_seek(is, tagsize, SEEK_SET, NULL);
 
 		data = decoder_buffer_read(buffer, &length);
 		if (data != NULL)
@@ -406,7 +406,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	faacDecSetConfiguration(decoder, config);
 
 	while (!decoder_buffer_is_full(buffer) &&
-	       !input_stream_eof(is) &&
+	       !input_stream_lock_eof(is) &&
 	       decoder_get_command(mpd_decoder) == DECODE_COMMAND_NONE) {
 		adts_find_frame(buffer);
 		decoder_buffer_fill(buffer);

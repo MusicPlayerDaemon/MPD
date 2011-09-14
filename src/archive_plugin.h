@@ -73,6 +73,7 @@ struct archive_plugin {
 	 */
 	struct input_stream *(*open_stream)(struct archive_file *af,
 					    const char *path,
+					    GMutex *mutex, GCond *cond,
 					    GError **error_r);
 
 	/**
@@ -101,7 +102,8 @@ char *
 archive_file_scan_next(struct archive_file *file);
 
 struct input_stream *
-archive_file_open_stream(struct archive_file *file,
-			 const char *path, GError **error_r);
+archive_file_open_stream(struct archive_file *file, const char *path,
+			 GMutex *mutex, GCond *cond,
+			 GError **error_r);
 
 #endif

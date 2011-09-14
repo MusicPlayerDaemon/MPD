@@ -48,7 +48,9 @@ struct input_plugin {
 	 */
 	void (*finish)(void);
 
-	struct input_stream *(*open)(const char *uri, GError **error_r);
+	struct input_stream *(*open)(const char *uri,
+				     GMutex *mutex, GCond *cond,
+				     GError **error_r);
 	void (*close)(struct input_stream *is);
 
 	/**
@@ -66,7 +68,17 @@ struct input_plugin {
 	void (*update)(struct input_stream *is);
 
 	struct tag *(*tag)(struct input_stream *is);
-	int (*buffer)(struct input_stream *is, GError **error_r);
+
+	/**
+	 * Returns true if the next read operation will not block:
+	 * either data is available, or end-of-stream has been
+	 * reached, or an error has occurred.
+	 *
+	 * If this method is unimplemented, then it is assumed that
+	 * reading will never block.
+	 */
+	bool (*available)(struct input_stream *is);
+
 	size_t (*read)(struct input_stream *is, void *ptr, size_t size,
 		       GError **error_r);
 	bool (*eof)(struct input_stream *is);

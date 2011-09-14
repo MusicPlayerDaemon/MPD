@@ -253,7 +253,8 @@ xspf_open_stream(struct input_stream *is)
 					     &parser, xspf_parser_destroy);
 
 	while (true) {
-		nbytes = input_stream_read(is, buffer, sizeof(buffer), &error);
+		nbytes = input_stream_lock_read(is, buffer, sizeof(buffer),
+						&error);
 		if (nbytes == 0) {
 			if (error != NULL) {
 				g_markup_parse_context_free(context);

@@ -132,16 +132,12 @@ input_rewind_tag(struct input_stream *is)
 	return input_stream_tag(r->input);
 }
 
-static int
-input_rewind_buffer(struct input_stream *is, GError **error_r)
+static bool
+input_rewind_available(struct input_stream *is)
 {
 	struct input_rewind *r = (struct input_rewind *)is;
 
-	int ret = input_stream_buffer(r->input, error_r);
-	if (ret < 0 || !reading_from_buffer(r))
-		copy_attributes(r);
-
-	return ret;
+	return input_stream_available(r->input);
 }
 
 static size_t
@@ -232,7 +228,7 @@ static const struct input_plugin rewind_input_plugin = {
 	.check = input_rewind_check,
 	.update = input_rewind_update,
 	.tag = input_rewind_tag,
-	.buffer = input_rewind_buffer,
+	.available = input_rewind_available,
 	.read = input_rewind_read,
 	.eof = input_rewind_eof,
 	.seek = input_rewind_seek,
@@ -251,7 +247,8 @@ input_rewind_open(struct input_stream *is)
 		return is;
 
 	c = g_new(struct input_rewind, 1);
-	input_stream_init(&c->base, &rewind_input_plugin, is->uri);
+	input_stream_init(&c->base, &rewind_input_plugin, is->uri,
+			  is->mutex, is->cond);
 	c->tail = 0;
 	c->input = is;
 

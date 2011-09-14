@@ -61,7 +61,7 @@ mpc_seek_cb(cb_first_arg, mpc_int32_t offset)
 {
 	struct mpc_decoder_data *data = (struct mpc_decoder_data *) cb_data;
 
-	return input_stream_seek(data->is, offset, SEEK_SET, NULL);
+	return input_stream_lock_seek(data->is, offset, SEEK_SET, NULL);
 }
 
 static mpc_int32_t

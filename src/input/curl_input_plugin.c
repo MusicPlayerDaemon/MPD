@@ -81,9 +81,6 @@ struct input_curl {
 	/** the curl handles */
 	CURL *easy;
 
-	GMutex *mutex;
-	GCond *cond;
-
 	/** the GMainLoop source used to poll all CURL file
 	    descriptors */
 	GSource *source;
@@ -433,11 +430,11 @@ input_curl_abort_all_requests(GError *error)
 
 		input_curl_easy_free(c);
 
-		g_mutex_lock(c->mutex);
+		g_mutex_lock(c->base.mutex);
 		c->postponed_error = g_error_copy(error);
 		c->base.ready = true;
-		g_cond_broadcast(c->cond);
-		g_mutex_unlock(c->mutex);
+		g_cond_broadcast(c->base.cond);
+		g_mutex_unlock(c->base.mutex);
 	}
 
 	g_error_free(error);
@@ -457,7 +454,7 @@ input_curl_request_done(struct input_curl *c, CURLcode result, long status)
 	assert(c->easy == NULL);
 	assert(c->postponed_error == NULL);
 
-	g_mutex_lock(c->mutex);
+	g_mutex_lock(c->base.mutex);
 
 	if (result != CURLE_OK) {
 		c->postponed_error = g_error_new(curl_quark(), result,
@@ -470,8 +467,8 @@ input_curl_request_done(struct input_curl *c, CURLcode result, long status)
 	}
 
 	c->base.ready = true;
-	g_cond_broadcast(c->cond);
-	g_mutex_unlock(c->mutex);
+	g_cond_broadcast(c->base.cond);
+	g_mutex_unlock(c->base.mutex);
 }
 
 static void
@@ -763,9 +760,6 @@ input_curl_free(struct input_curl *c)
 
 	g_queue_free(c->buffers);
 
-	g_mutex_free(c->mutex);
-	g_cond_free(c->cond);
-
 	if (c->postponed_error != NULL)
 		g_error_free(c->postponed_error);
 
@@ -779,15 +773,12 @@ input_curl_check(struct input_stream *is, GError **error_r)
 {
 	struct input_curl *c = (struct input_curl *)is;
 
-	g_mutex_lock(c->mutex);
-
 	bool success = c->postponed_error == NULL;
 	if (!success) {
 		g_propagate_error(error_r, c->postponed_error);
 		c->postponed_error = NULL;
 	}
 
-	g_mutex_unlock(c->mutex);
 	return success;
 }
 
@@ -805,7 +796,7 @@ static bool
 fill_buffer(struct input_curl *c, GError **error_r)
 {
 	while (c->easy != NULL && g_queue_is_empty(c->buffers))
-		g_cond_wait(c->cond, c->mutex);
+		g_cond_wait(c->base.cond, c->base.mutex);
 
 	if (c->postponed_error != NULL) {
 		g_propagate_error(error_r, c->postponed_error);
@@ -906,6 +897,15 @@ copy_icy_tag(struct input_curl *c)
 	c->tag = tag;
 }
 
+static bool
+input_curl_available(struct input_stream *is)
+{
+	struct input_curl *c = (struct input_curl *)is;
+
+	return c->postponed_error != NULL || c->easy == NULL ||
+		!g_queue_is_empty(c->buffers);
+}
+
 static size_t
 input_curl_read(struct input_stream *is, void *ptr, size_t size,
 		GError **error_r)
@@ -915,16 +915,12 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size,
 	size_t nbytes = 0;
 	char *dest = ptr;
 
-	g_mutex_lock(c->mutex);
-
 	do {
 		/* fill the buffer */
 
 		success = fill_buffer(c, error_r);
-		if (!success) {
-			g_mutex_unlock(c->mutex);
+		if (!success)
 			return 0;
-		}
 
 		/* send buffer contents */
 
@@ -944,13 +940,11 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size,
 
 #if LIBCURL_VERSION_NUM >= 0x071200
 	if (c->paused && curl_total_buffer_size(c) < CURL_RESUME_AT) {
-		g_mutex_unlock(c->mutex);
+		g_mutex_unlock(c->base.mutex);
 		io_thread_call(input_curl_resume, c);
-		g_mutex_lock(c->mutex);
+		g_mutex_lock(c->base.mutex);
 	}
 #endif
-
-	g_mutex_unlock(c->mutex);
 
 	return nbytes;
 }
@@ -968,33 +962,7 @@ input_curl_eof(G_GNUC_UNUSED struct input_stream *is)
 {
 	struct input_curl *c = (struct input_curl *)is;
 
-	g_mutex_lock(c->mutex);
-	bool eof = c->easy == NULL && g_queue_is_empty(c->buffers);
-	g_mutex_unlock(c->mutex);
-
-	return eof;
-}
-
-static int
-input_curl_buffer(struct input_stream *is, GError **error_r)
-{
-	struct input_curl *c = (struct input_curl *)is;
-
-	g_mutex_lock(c->mutex);
-
-	int result;
-	if (c->postponed_error != NULL) {
-		g_propagate_error(error_r, c->postponed_error);
-		c->postponed_error = NULL;
-		result = -1;
-	} else if (g_queue_is_empty(c->buffers))
-		result = 0;
-	else
-		result = 1;
-
-	g_mutex_unlock(c->mutex);
-
-	return result;
+	return c->easy == NULL && g_queue_is_empty(c->buffers);
 }
 
 /** called by curl when new data is available */
@@ -1092,12 +1060,12 @@ input_curl_writefunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	if (size == 0)
 		return 0;
 
-	g_mutex_lock(c->mutex);
+	g_mutex_lock(c->base.mutex);
 
 #if LIBCURL_VERSION_NUM >= 0x071200
 	if (curl_total_buffer_size(c) + size >= CURL_MAX_BUFFERED) {
 		c->paused = true;
-		g_mutex_unlock(c->mutex);
+		g_mutex_unlock(c->base.mutex);
 		return CURL_WRITEFUNC_PAUSE;
 	}
 #endif
@@ -1108,11 +1076,10 @@ input_curl_writefunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	memcpy(buffer->data, ptr, size);
 
 	g_queue_push_tail(c->buffers, buffer);
-
 	c->base.ready = true;
 
-	g_cond_broadcast(c->cond);
-	g_mutex_unlock(c->mutex);
+	g_cond_broadcast(c->base.cond);
+	g_mutex_unlock(c->base.mutex);
 
 	return size;
 }
@@ -1219,8 +1186,6 @@ input_curl_seek(struct input_stream *is, goffset offset, int whence,
 
 	/* check if we can fast-forward the buffer */
 
-	g_mutex_lock(c->mutex);
-
 	while (offset > is->offset && !g_queue_is_empty(c->buffers)) {
 		struct buffer *buffer;
 		size_t length;
@@ -1238,12 +1203,12 @@ input_curl_seek(struct input_stream *is, goffset offset, int whence,
 		is->offset += length;
 	}
 
-	g_mutex_unlock(c->mutex);
-
 	if (offset == is->offset)
 		return true;
 
 	/* close the old connection and open a new one */
+
+	g_mutex_unlock(c->base.mutex);
 
 	input_curl_easy_free_indirect(c);
 	input_curl_flush_buffers(c);
@@ -1272,36 +1237,35 @@ input_curl_seek(struct input_stream *is, goffset offset, int whence,
 	if (!input_curl_easy_add_indirect(c, error_r))
 		return false;
 
-	g_mutex_lock(c->mutex);
+	g_mutex_lock(c->base.mutex);
 
 	while (!c->base.ready)
-		g_cond_wait(c->cond, c->mutex);
+		g_cond_wait(c->base.cond, c->base.mutex);
 
 	if (c->postponed_error != NULL) {
 		g_propagate_error(error_r, c->postponed_error);
 		c->postponed_error = NULL;
-		g_mutex_unlock(c->mutex);
 		return false;
 	}
-
-	g_mutex_unlock(c->mutex);
 
 	return true;
 }
 
 static struct input_stream *
-input_curl_open(const char *url, GError **error_r)
+input_curl_open(const char *url, GMutex *mutex, GCond *cond,
+		GError **error_r)
 {
+	assert(mutex != NULL);
+	assert(cond != NULL);
+
 	struct input_curl *c;
 
 	if (strncmp(url, "http://", 7) != 0)
 		return NULL;
 
 	c = g_new0(struct input_curl, 1);
-	input_stream_init(&c->base, &input_plugin_curl, url);
-
-	c->mutex = g_mutex_new();
-	c->cond = g_cond_new();
+	input_stream_init(&c->base, &input_plugin_curl, url,
+			  mutex, cond);
 
 	c->url = g_strdup(url);
 	c->buffers = g_queue_new();
@@ -1337,7 +1301,7 @@ const struct input_plugin input_plugin_curl = {
 	.close = input_curl_close,
 	.check = input_curl_check,
 	.tag = input_curl_tag,
-	.buffer = input_curl_buffer,
+	.available = input_curl_available,
 	.read = input_curl_read,
 	.eof = input_curl_eof,
 	.seek = input_curl_seek,

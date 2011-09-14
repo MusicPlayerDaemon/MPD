@@ -50,7 +50,7 @@ flac_read_cb(G_GNUC_UNUSED const FLAC__StreamDecoder *fd,
 
 	if (r == 0) {
 		if (decoder_get_command(data->decoder) != DECODE_COMMAND_NONE ||
-		    input_stream_eof(data->input_stream))
+		    input_stream_lock_eof(data->input_stream))
 			return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
 		else
 			return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
@@ -68,7 +68,8 @@ flac_seek_cb(G_GNUC_UNUSED const FLAC__StreamDecoder *fd,
 	if (!data->input_stream->seekable)
 		return FLAC__STREAM_DECODER_SEEK_STATUS_UNSUPPORTED;
 
-	if (!input_stream_seek(data->input_stream, offset, SEEK_SET, NULL))
+	if (!input_stream_lock_seek(data->input_stream, offset, SEEK_SET,
+				    NULL))
 		return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
 
 	return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
@@ -109,7 +110,7 @@ flac_eof_cb(G_GNUC_UNUSED const FLAC__StreamDecoder *fd, void *fdata)
 
 	return (decoder_get_command(data->decoder) != DECODE_COMMAND_NONE &&
 		decoder_get_command(data->decoder) != DECODE_COMMAND_SEEK) ||
-		input_stream_eof(data->input_stream);
+		input_stream_lock_eof(data->input_stream);
 }
 
 static void
@@ -449,7 +450,7 @@ oggflac_decode(struct decoder *decoder, struct input_stream *input_stream)
 
 	/* rewind the stream, because ogg_stream_type_detect() has
 	   moved it */
-	input_stream_seek(input_stream, 0, SEEK_SET, NULL);
+	input_stream_lock_seek(input_stream, 0, SEEK_SET, NULL);
 
 	flac_decode_internal(decoder, input_stream, true);
 }

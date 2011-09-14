@@ -97,7 +97,9 @@ static void callback(G_GNUC_UNUSED struct despotify_session* ds,
 
 
 static struct input_stream *
-input_despotify_open(const char *url, G_GNUC_UNUSED GError **error_r)
+input_despotify_open(const char *url,
+		     GMutex *mutex, GCond *cond,
+		     G_GNUC_UNUSED GError **error_r)
 {
 	struct input_despotify *ctx;
 	struct despotify_session *session;
@@ -131,7 +133,8 @@ input_despotify_open(const char *url, G_GNUC_UNUSED GError **error_r)
 		return NULL;
 	}
 
-	input_stream_init(&ctx->base, &input_plugin_despotify, url);
+	input_stream_init(&ctx->base, &input_plugin_despotify, url,
+			  mutex, cond);
 	ctx->session = session;
 	ctx->track = track;
 	ctx->tag = mpd_despotify_tag_from_track(track);

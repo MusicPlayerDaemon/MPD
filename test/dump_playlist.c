@@ -92,11 +92,14 @@ int main(int argc, char **argv)
 
 	/* open the playlist */
 
-	playlist = playlist_list_open_uri(uri);
+	GMutex *mutex = g_mutex_new();
+	GCond *cond = g_cond_new();
+
+	playlist = playlist_list_open_uri(uri, mutex, cond);
 	if (playlist == NULL) {
 		/* open the stream and wait until it becomes ready */
 
-		is = input_stream_open(uri, &error);
+		is = input_stream_open(uri, mutex, cond, &error);
 		if (is == NULL) {
 			if (error != NULL) {
 				g_warning("%s", error->message);
@@ -106,19 +109,7 @@ int main(int argc, char **argv)
 			return 2;
 		}
 
-		while (!is->ready) {
-			int ret = input_stream_buffer(is, &error);
-			if (ret < 0) {
-				/* error */
-				g_warning("%s", error->message);
-				g_error_free(error);
-				return 2;
-			}
-
-			if (ret == 0)
-				/* nothing was buffered - wait */
-				g_usleep(10000);
-		}
+		input_stream_lock_wait_ready(is);
 
 		/* open the playlist */
 
@@ -157,6 +148,10 @@ int main(int argc, char **argv)
 	playlist_plugin_close(playlist);
 	if (is != NULL)
 		input_stream_close(is);
+
+	g_cond_free(cond);
+	g_mutex_free(mutex);
+
 	playlist_list_global_finish();
 	input_stream_global_finish();
 	io_thread_deinit();

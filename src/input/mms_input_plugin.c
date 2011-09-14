@@ -46,7 +46,9 @@ mms_quark(void)
 }
 
 static struct input_stream *
-input_mms_open(const char *url, GError **error_r)
+input_mms_open(const char *url,
+	       GMutex *mutex, GCond *cond,
+	       GError **error_r)
 {
 	struct input_mms *m;
 
@@ -57,7 +59,8 @@ input_mms_open(const char *url, GError **error_r)
 		return NULL;
 
 	m = g_new(struct input_mms, 1);
-	input_stream_init(&m->base, &input_plugin_mms, url);
+	input_stream_init(&m->base, &input_plugin_mms, url,
+			  mutex, cond);
 
 	m->mms = mmsx_connect(NULL, NULL, url, 128 * 1024);
 	if (m->mms == NULL) {

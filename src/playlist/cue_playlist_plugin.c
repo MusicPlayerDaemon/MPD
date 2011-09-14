@@ -41,7 +41,8 @@ struct cue_playlist {
 };
 
 static struct playlist_provider *
-cue_playlist_open_uri(const char *uri)
+cue_playlist_open_uri(const char *uri,
+		      G_GNUC_UNUSED GMutex *mutex, G_GNUC_UNUSED GCond *cond)
 {
 	struct cue_playlist *playlist;
 	FILE *file;

@@ -74,7 +74,9 @@ input_ffmpeg_init(G_GNUC_UNUSED const struct config_param *param,
 }
 
 static struct input_stream *
-input_ffmpeg_open(const char *uri, GError **error_r)
+input_ffmpeg_open(const char *uri,
+		  GMutex *mutex, GCond *cond,
+		  GError **error_r)
 {
 	struct input_ffmpeg *i;
 
@@ -87,7 +89,8 @@ input_ffmpeg_open(const char *uri, GError **error_r)
 		return NULL;
 
 	i = g_new(struct input_ffmpeg, 1);
-	input_stream_init(&i->base, &input_plugin_ffmpeg, uri);
+	input_stream_init(&i->base, &input_plugin_ffmpeg, uri,
+			  mutex, cond);
 
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,1,0)
 	int ret = avio_open(&i->h, uri, AVIO_FLAG_READ);

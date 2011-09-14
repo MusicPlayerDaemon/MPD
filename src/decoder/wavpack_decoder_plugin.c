@@ -390,13 +390,15 @@ wavpack_input_get_pos(void *id)
 static int
 wavpack_input_set_pos_abs(void *id, uint32_t pos)
 {
-	return input_stream_seek(wpin(id)->is, pos, SEEK_SET, NULL) ? 0 : -1;
+	return input_stream_lock_seek(wpin(id)->is, pos, SEEK_SET, NULL)
+		? 0 : -1;
 }
 
 static int
 wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 {
-	return input_stream_seek(wpin(id)->is, delta, mode, NULL) ? 0 : -1;
+	return input_stream_lock_seek(wpin(id)->is, delta, mode, NULL)
+		? 0 : -1;
 }
 
 static int
@@ -447,6 +449,7 @@ wavpack_input_init(struct wavpack_input *isp, struct decoder *decoder,
 
 static struct input_stream *
 wavpack_open_wvc(struct decoder *decoder, const char *uri,
+		 GMutex *mutex, GCond *cond,
 		 struct wavpack_input *wpi)
 {
 	struct input_stream *is_wvc;
@@ -462,7 +465,7 @@ wavpack_open_wvc(struct decoder *decoder, const char *uri,
 		return false;
 
 	wvc_url = g_strconcat(uri, "c", NULL);
-	is_wvc = input_stream_open(wvc_url, NULL);
+	is_wvc = input_stream_open(wvc_url, mutex, cond, NULL);
 	g_free(wvc_url);
 
 	if (is_wvc == NULL)
@@ -499,7 +502,8 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 	struct wavpack_input isp, isp_wvc;
 	bool can_seek = is->seekable;
 
-	is_wvc = wavpack_open_wvc(decoder, is->uri, &isp_wvc);
+	is_wvc = wavpack_open_wvc(decoder, is->uri, is->mutex, is->cond,
+				  &isp_wvc);
 	if (is_wvc != NULL) {
 		open_flags |= OPEN_WVC;
 		can_seek &= is_wvc->seekable;

@@ -102,7 +102,8 @@ mp4_seek(void *user_data, uint64_t position)
 {
 	struct mp4ff_input_stream *mis = user_data;
 
-	return input_stream_seek(mis->input_stream, position, SEEK_SET, NULL)
+	return input_stream_lock_seek(mis->input_stream, position, SEEK_SET,
+				      NULL)
 		? 0 : -1;
 }
 

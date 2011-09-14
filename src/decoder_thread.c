@@ -41,18 +41,6 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "decoder_thread"
 
-static enum decoder_command
-decoder_lock_get_command(struct decoder_control *dc)
-{
-	enum decoder_command command;
-
-	decoder_lock(dc);
-	command = dc->command;
-	decoder_unlock(dc);
-
-	return command;
-}
-
 /**
  * Marks the current decoder command as "finished" and notifies the
  * player thread.
@@ -86,7 +74,7 @@ decoder_input_stream_open(struct decoder_control *dc, const char *uri)
 	GError *error = NULL;
 	struct input_stream *is;
 
-	is = input_stream_open(uri, &error);
+	is = input_stream_open(uri, dc->mutex, dc->cond, &error);
 	if (is == NULL) {
 		if (error != NULL) {
 			g_warning("%s", error->message);
@@ -99,18 +87,26 @@ decoder_input_stream_open(struct decoder_control *dc, const char *uri)
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
 
-	while (!is->ready &&
-	       decoder_lock_get_command(dc) != DECODE_COMMAND_STOP) {
-		int ret;
+	decoder_lock(dc);
 
-		ret = input_stream_buffer(is, &error);
-		if (ret < 0) {
-			input_stream_close(is);
-			g_warning("%s", error->message);
-			g_error_free(error);
-			return NULL;
-		}
+	input_stream_update(is);
+	while (!is->ready &&
+	       dc->command != DECODE_COMMAND_STOP) {
+		decoder_wait(dc);
+
+		input_stream_update(is);
 	}
+
+	if (!input_stream_check(is, &error)) {
+		decoder_unlock(dc);
+
+		g_warning("%s", error->message);
+		g_error_free(error);
+
+		return NULL;
+	}
+
+	decoder_unlock(dc);
 
 	return is;
 }
@@ -132,10 +128,10 @@ decoder_stream_decode(const struct decoder_plugin *plugin,
 	if (decoder->dc->command == DECODE_COMMAND_STOP)
 		return true;
 
-	decoder_unlock(decoder->dc);
-
 	/* rewind the stream, so each plugin gets a fresh start */
 	input_stream_seek(input_stream, 0, SEEK_SET, NULL);
+
+	decoder_unlock(decoder->dc);
 
 	decoder_plugin_stream_decode(plugin, decoder, input_stream);
 

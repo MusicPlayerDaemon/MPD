@@ -45,7 +45,8 @@ struct flac_playlist {
 };
 
 static struct playlist_provider *
-flac_playlist_open_uri(const char *uri)
+flac_playlist_open_uri(const char *uri,
+		       G_GNUC_UNUSED GMutex *mutex, G_GNUC_UNUSED GCond *cond)
 {
 	if (!g_path_is_absolute(uri))
 		/* only local files supported */

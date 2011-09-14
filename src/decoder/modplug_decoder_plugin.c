@@ -62,7 +62,7 @@ static GByteArray *mod_loadfile(struct decoder *decoder, struct input_stream *is
 	while (true) {
 		ret = decoder_read(decoder, is, data, MODPLUG_READ_BLOCK);
 		if (ret == 0) {
-			if (input_stream_eof(is))
+			if (input_stream_lock_eof(is))
 				/* end of file */
 				break;
 

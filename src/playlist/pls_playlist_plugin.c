@@ -115,7 +115,8 @@ pls_open_stream(struct input_stream *is)
 	GString *kf_data = g_string_new("");
 
 	do {
-		nbytes = input_stream_read(is, buffer, sizeof(buffer), &error);
+		nbytes = input_stream_lock_read(is, buffer, sizeof(buffer),
+						&error);
 		if (nbytes == 0) {
 			if (error != NULL) {
 				g_string_free(kf_data, TRUE);

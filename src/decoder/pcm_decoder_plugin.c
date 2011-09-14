@@ -52,7 +52,7 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 		size_t nbytes = decoder_read(decoder, is,
 					     buffer, sizeof(buffer));
 
-		if (nbytes == 0 && input_stream_eof(is))
+		if (nbytes == 0 && input_stream_lock_eof(is))
 			break;
 
 		cmd = nbytes > 0
@@ -62,7 +62,8 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 		if (cmd == DECODE_COMMAND_SEEK) {
 			goffset offset = (goffset)(time_to_size *
 						   decoder_seek_where(decoder));
-			if (input_stream_seek(is, offset, SEEK_SET, &error)) {
+			if (input_stream_lock_seek(is, offset, SEEK_SET,
+						   &error)) {
 				decoder_command_finished(decoder);
 			} else {
 				g_warning("seeking failed: %s", error->message);

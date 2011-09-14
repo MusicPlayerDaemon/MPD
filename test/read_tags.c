@@ -91,7 +91,7 @@ decoder_read(G_GNUC_UNUSED struct decoder *decoder,
 	     struct input_stream *is,
 	     void *buffer, size_t length)
 {
-	return input_stream_read(is, buffer, length, NULL);
+	return input_stream_lock_read(is, buffer, length, NULL);
 }
 
 void
@@ -193,7 +193,11 @@ int main(int argc, char **argv)
 
 	tag = decoder_plugin_tag_dup(plugin, path);
 	if (tag == NULL && plugin->stream_tag != NULL) {
-		struct input_stream *is = input_stream_open(path, &error);
+		GMutex *mutex = g_mutex_new();
+		GCond *cond = g_cond_new();
+
+		struct input_stream *is =
+			input_stream_open(path, mutex, cond, &error);
 
 		if (is == NULL) {
 			g_printerr("Failed to open %s: %s\n",
@@ -204,6 +208,9 @@ int main(int argc, char **argv)
 
 		tag = decoder_plugin_stream_tag(plugin, is);
 		input_stream_close(is);
+
+		g_cond_free(cond);
+		g_mutex_free(mutex);
 	}
 
 	decoder_plugin_deinit_all();

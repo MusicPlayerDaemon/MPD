@@ -68,8 +68,8 @@ text_input_stream_read(struct text_input_stream *tis)
 	do {
 		dest = fifo_buffer_write(tis->buffer, &length);
 		if (dest != NULL) {
-			nbytes = input_stream_read(tis->is, dest, length,
-						   &error);
+			nbytes = input_stream_lock_read(tis->is, dest, length,
+							&error);
 			if (nbytes > 0)
 				fifo_buffer_append(tis->buffer, nbytes);
 			else if (error != NULL) {

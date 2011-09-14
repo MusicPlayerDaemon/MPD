@@ -110,7 +110,8 @@ despotify_playlist_finish(void)
 
 
 static struct playlist_provider *
-despotify_playlist_open_uri(const char *url)
+despotify_playlist_open_uri(const char *url, G_GNUC_UNUSED GMutex *mutex,
+			    G_GNUC_UNUSED GCond *cond)
 {
 	struct despotify_playlist *ctx;
 	struct despotify_session *session;

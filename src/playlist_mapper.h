@@ -20,6 +20,8 @@
 #ifndef MPD_PLAYLIST_MAPPER_H
 #define MPD_PLAYLIST_MAPPER_H
 
+#include <glib.h>
+
 struct input_stream;
 
 /**
@@ -31,6 +33,7 @@ struct input_stream;
  * freed
  */
 struct playlist_provider *
-playlist_mapper_open(const char *uri, struct input_stream **is_r);
+playlist_mapper_open(const char *uri, GMutex *mutex, GCond *cond,
+		     struct input_stream **is_r);
 
 #endif
