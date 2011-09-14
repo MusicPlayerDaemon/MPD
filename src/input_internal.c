@@ -21,10 +21,16 @@
 #include "input_internal.h"
 #include "input_stream.h"
 
+#include <assert.h>
+
 void
 input_stream_init(struct input_stream *is, const struct input_plugin *plugin,
 		  const char *uri)
 {
+	assert(is != NULL);
+	assert(plugin != NULL);
+	assert(uri != NULL);
+
 	is->plugin = plugin;
 	is->uri = g_strdup(uri);
 	is->ready = false;
@@ -37,6 +43,9 @@ input_stream_init(struct input_stream *is, const struct input_plugin *plugin,
 void
 input_stream_deinit(struct input_stream *is)
 {
+	assert(is != NULL);
+	assert(is->plugin != NULL);
+
 	g_free(is->uri);
 	g_free(is->mime);
 }
