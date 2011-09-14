@@ -105,6 +105,15 @@ input_rewind_close(struct input_stream *is)
 	g_free(r);
 }
 
+static void
+input_rewind_update(struct input_stream *is)
+{
+	struct input_rewind *r = (struct input_rewind *)is;
+
+	if (!reading_from_buffer(r))
+		copy_attributes(r);
+}
+
 static struct tag *
 input_rewind_tag(struct input_stream *is)
 {
@@ -210,6 +219,7 @@ input_rewind_seek(struct input_stream *is, goffset offset, int whence,
 
 static const struct input_plugin rewind_input_plugin = {
 	.close = input_rewind_close,
+	.update = input_rewind_update,
 	.tag = input_rewind_tag,
 	.buffer = input_rewind_buffer,
 	.read = input_rewind_read,

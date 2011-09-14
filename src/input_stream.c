@@ -67,6 +67,16 @@ input_stream_open(const char *url, GError **error_r)
 	return false;
 }
 
+void
+input_stream_update(struct input_stream *is)
+{
+	assert(is != NULL);
+	assert(is->plugin != NULL);
+
+	if (is->plugin->update != NULL)
+		is->plugin->update(is);
+}
+
 bool
 input_stream_seek(struct input_stream *is, goffset offset, int whence,
 		  GError **error_r)

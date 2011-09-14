@@ -51,6 +51,12 @@ struct input_plugin {
 	struct input_stream *(*open)(const char *uri, GError **error_r);
 	void (*close)(struct input_stream *is);
 
+	/**
+	 * Update the public attributes.  Call before access.  Can be
+	 * NULL if the plugin always keeps its attributes up to date.
+	 */
+	void (*update)(struct input_stream *is);
+
 	struct tag *(*tag)(struct input_stream *is);
 	int (*buffer)(struct input_stream *is, GError **error_r);
 	size_t (*read)(struct input_stream *is, void *ptr, size_t size,

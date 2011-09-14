@@ -87,6 +87,13 @@ void
 input_stream_close(struct input_stream *is);
 
 /**
+ * Update the public attributes.  Call before accessing attributes
+ * such as "ready" or "offset".
+ */
+void
+input_stream_update(struct input_stream *is);
+
+/**
  * Seeks to the specified position in the stream.  This will most
  * likely fail if the "seekable" flag is false.
  *
