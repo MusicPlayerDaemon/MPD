@@ -202,8 +202,7 @@ decoder_timestamp(struct decoder *decoder, double t)
  * (decoder.chunk) if there is one.
  */
 static enum decoder_command
-do_send_tag(struct decoder *decoder, struct input_stream *is,
-	    const struct tag *tag)
+do_send_tag(struct decoder *decoder, const struct tag *tag)
 {
 	struct music_chunk *chunk;
 
@@ -216,7 +215,7 @@ do_send_tag(struct decoder *decoder, struct input_stream *is,
 
 	assert(decoder->chunk == NULL);
 
-	chunk = decoder_get_chunk(decoder, is);
+	chunk = decoder_get_chunk(decoder);
 	if (chunk == NULL) {
 		assert(decoder->dc->command != DECODE_COMMAND_NONE);
 		return decoder->dc->command;
@@ -283,11 +282,11 @@ decoder_data(struct decoder *decoder,
 
 			tag = tag_merge(decoder->decoder_tag,
 					decoder->stream_tag);
-			cmd = do_send_tag(decoder, is, tag);
+			cmd = do_send_tag(decoder, tag);
 			tag_free(tag);
 		} else
 			/* send only the stream tag */
-			cmd = do_send_tag(decoder, is, decoder->stream_tag);
+			cmd = do_send_tag(decoder, decoder->stream_tag);
 
 		if (cmd != DECODE_COMMAND_NONE)
 			return cmd;
@@ -313,7 +312,7 @@ decoder_data(struct decoder *decoder,
 		size_t nbytes;
 		bool full;
 
-		chunk = decoder_get_chunk(decoder, is);
+		chunk = decoder_get_chunk(decoder);
 		if (chunk == NULL) {
 			assert(dc->command != DECODE_COMMAND_NONE);
 			return dc->command;
@@ -392,11 +391,11 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
 		struct tag *merged;
 
 		merged = tag_merge(decoder->stream_tag, decoder->decoder_tag);
-		cmd = do_send_tag(decoder, is, merged);
+		cmd = do_send_tag(decoder, merged);
 		tag_free(merged);
 	} else
 		/* send only the decoder tag */
-		cmd = do_send_tag(decoder, is, tag);
+		cmd = do_send_tag(decoder, tag);
 
 	return cmd;
 }

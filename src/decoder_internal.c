@@ -28,41 +28,17 @@
 #include <assert.h>
 
 /**
- * This is a wrapper for input_stream_buffer().  It assumes that the
- * decoder is currently locked, and temporarily unlocks it while
- * calling input_stream_buffer().  We shouldn't hold the lock during a
- * potentially blocking operation.
- */
-static bool
-decoder_input_buffer(struct decoder_control *dc, struct input_stream *is)
-{
-	GError *error = NULL;
-	int ret;
-
-	decoder_unlock(dc);
-	ret = input_stream_buffer(is, &error);
-	if (ret < 0) {
-		g_warning("%s", error->message);
-		g_error_free(error);
-	}
-
-	decoder_lock(dc);
-
-	return ret > 0;
-}
-
-/**
  * All chunks are full of decoded data; wait for the player to free
  * one.
  */
 static enum decoder_command
-need_chunks(struct decoder_control *dc, struct input_stream *is, bool do_wait)
+need_chunks(struct decoder_control *dc, bool do_wait)
 {
 	if (dc->command == DECODE_COMMAND_STOP ||
 	    dc->command == DECODE_COMMAND_SEEK)
 		return dc->command;
 
-	if ((is == NULL || !decoder_input_buffer(dc, is)) && do_wait) {
+	if (do_wait) {
 		decoder_wait(dc);
 		g_cond_signal(dc->client_cond);
 
@@ -73,7 +49,7 @@ need_chunks(struct decoder_control *dc, struct input_stream *is, bool do_wait)
 }
 
 struct music_chunk *
-decoder_get_chunk(struct decoder *decoder, struct input_stream *is)
+decoder_get_chunk(struct decoder *decoder)
 {
 	struct decoder_control *dc = decoder->dc;
 	enum decoder_command cmd;
@@ -96,7 +72,7 @@ decoder_get_chunk(struct decoder *decoder, struct input_stream *is)
 		}
 
 		decoder_lock(dc);
-		cmd = need_chunks(dc, is, true);
+		cmd = need_chunks(dc, true);
 		decoder_unlock(dc);
 	} while (cmd == DECODE_COMMAND_NONE);
 

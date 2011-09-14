@@ -70,7 +70,7 @@ struct decoder {
  * @return the chunk, or NULL if we have received a decoder command
  */
 struct music_chunk *
-decoder_get_chunk(struct decoder *decoder, struct input_stream *is);
+decoder_get_chunk(struct decoder *decoder);
 
 /**
  * Flushes the current chunk.
