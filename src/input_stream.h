@@ -71,26 +71,6 @@ struct input_stream {
 	char *mime;
 };
 
-static inline void
-input_stream_init(struct input_stream *is, const struct input_plugin *plugin,
-		  const char *uri)
-{
-	is->plugin = plugin;
-	is->uri = g_strdup(uri);
-	is->ready = false;
-	is->seekable = false;
-	is->size = -1;
-	is->offset = 0;
-	is->mime = NULL;
-}
-
-static inline void
-input_stream_deinit(struct input_stream *is)
-{
-	g_free(is->uri);
-	g_free(is->mime);
-}
-
 /**
  * Opens a new input stream.  You may not access it until the "ready"
  * flag is set.

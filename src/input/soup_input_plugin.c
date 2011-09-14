@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "input/soup_input_plugin.h"
+#include "input_internal.h"
 #include "input_plugin.h"
 #include "io_thread.h"
 #include "conf.h"

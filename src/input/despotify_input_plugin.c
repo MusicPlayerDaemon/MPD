@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "input/despotify_input_plugin.h"
+#include "input_internal.h"
 #include "input_plugin.h"
 #include "tag.h"
 #include "despotify_utils.h"

@@ -19,6 +19,7 @@
 
 #include "config.h" /* must be first for large file support */
 #include "input/file_input_plugin.h"
+#include "input_internal.h"
 #include "input_plugin.h"
 #include "fd_util.h"
 #include "open.h"

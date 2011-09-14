@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include "input/cdio_paranoia_input_plugin.h"
+#include "input_internal.h"
 #include "input_plugin.h"
 #include "refcount.h"
 #include "pcm_buffer.h"

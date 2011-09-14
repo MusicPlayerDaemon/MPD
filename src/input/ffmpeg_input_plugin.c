@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "input/ffmpeg_input_plugin.h"
+#include "input_internal.h"
 #include "input_plugin.h"
 
 #include <libavformat/avio.h>

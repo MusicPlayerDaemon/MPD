@@ -658,6 +658,7 @@ INPUT_SRC = \
 	src/input_init.c \
 	src/input_registry.c \
 	src/input_stream.c \
+	src/input_internal.c src/input_internal.h \
 	src/input/rewind_input_plugin.c \
 	src/input/file_input_plugin.c
 

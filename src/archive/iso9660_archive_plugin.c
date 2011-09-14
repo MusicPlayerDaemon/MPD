@@ -24,6 +24,7 @@
 #include "config.h"
 #include "archive/iso9660_archive_plugin.h"
 #include "archive_api.h"
+#include "input_internal.h"
 #include "input_plugin.h"
 #include "refcount.h"
 
