@@ -383,8 +383,6 @@ input_curl_easy_free(struct input_curl *c)
 
 	g_free(c->range);
 	c->range = NULL;
-
-	c->base.ready = true;
 }
 
 static gpointer
@@ -432,6 +430,7 @@ input_curl_abort_all_requests(GError *error)
 
 		input_curl_easy_free(c);
 		c->postponed_error = g_error_copy(error);
+		c->base.ready = true;
 	}
 
 	g_error_free(error);
@@ -450,7 +449,6 @@ input_curl_request_done(struct input_curl *c, CURLcode result, long status)
 	assert(io_thread_inside());
 	assert(c != NULL);
 	assert(c->easy == NULL);
-	assert(c->base.ready);
 	assert(c->postponed_error == NULL);
 
 	if (result != CURLE_OK) {
@@ -463,6 +461,7 @@ input_curl_request_done(struct input_curl *c, CURLcode result, long status)
 						 status);
 	}
 
+	c->base.ready = true;
 	g_cond_broadcast(curl.cond);
 }
 
