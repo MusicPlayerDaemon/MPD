@@ -375,8 +375,9 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		return;
 	}
 
-	AVCodecContext *codec_context =
-		format_context->streams[audio_stream]->codec;
+	AVStream *av_stream = format_context->streams[audio_stream];
+
+	AVCodecContext *codec_context = av_stream->codec;
 	if (codec_context->codec_name[0] != 0)
 		g_debug("codec '%s'", codec_context->codec_name);
 
@@ -427,7 +428,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		if (packet.stream_index == audio_stream)
 			cmd = ffmpeg_send_packet(decoder, input,
 						 &packet, codec_context,
-						 &format_context->streams[audio_stream]->time_base);
+						 &av_stream->time_base);
 		else
 			cmd = decoder_get_command(decoder);
 
