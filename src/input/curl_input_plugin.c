@@ -413,25 +413,6 @@ input_curl_easy_free_indirect(struct input_curl *c)
 }
 
 /**
- * Aborts and frees a running HTTP request.
- *
- * The caller must lock the mutex.  Runs in the I/O thread.
- */
-static void
-input_curl_request_abort(struct input_curl *c, GError *error)
-{
-	assert(c != NULL);
-	assert(c->postponed_error == NULL);
-	assert(error != NULL);
-
-	input_curl_easy_free(c);
-
-	c->postponed_error = error;
-
-	g_cond_broadcast(curl.cond);
-}
-
-/**
  * Abort and free all HTTP requests.
  *
  * The caller must lock the mutex.  Runs in the I/O thread.
@@ -439,12 +420,19 @@ input_curl_request_abort(struct input_curl *c, GError *error)
 static void
 input_curl_abort_all_requests(GError *error)
 {
+	assert(error != NULL);
+
 	while (curl.requests != NULL) {
-		struct input_curl *is = curl.requests->data;
-		input_curl_request_abort(is, g_error_copy(error));
+		struct input_curl *c = curl.requests->data;
+		assert(c->postponed_error == NULL);
+
+		input_curl_easy_free(c);
+		c->postponed_error = g_error_copy(error);
 	}
 
 	g_error_free(error);
+
+	g_cond_broadcast(curl.cond);
 }
 
 /**
@@ -455,22 +443,22 @@ input_curl_abort_all_requests(GError *error)
 static void
 input_curl_request_done(struct input_curl *c, CURLcode result, long status)
 {
+	assert(c != NULL);
 	assert(c->easy == NULL);
 	assert(c->base.ready);
+	assert(c->postponed_error == NULL);
 
 	if (result != CURLE_OK) {
-		GError *error = g_error_new(curl_quark(), result,
-					    "curl failed: %s",
-					    c->error);
-		input_curl_request_abort(c, error);
+		c->postponed_error = g_error_new(curl_quark(), result,
+						 "curl failed: %s",
+						 c->error);
 	} else if (status < 200 || status >= 300) {
-		GError *error = g_error_new(curl_quark(), 0,
-					    "got HTTP status %ld",
-					    status);
-		input_curl_request_abort(c, error);
-	} else {
-		g_cond_broadcast(curl.cond);
+		c->postponed_error = g_error_new(curl_quark(), 0,
+						 "got HTTP status %ld",
+						 status);
 	}
+
+	g_cond_broadcast(curl.cond);
 }
 
 static void
