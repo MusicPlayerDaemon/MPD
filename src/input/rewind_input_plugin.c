@@ -83,12 +83,14 @@ copy_attributes(struct input_rewind *r)
 	assert(dest != src);
 	assert(src->mime == NULL || dest->mime != src->mime);
 
+	bool dest_ready = dest->ready;
+
 	dest->ready = src->ready;
 	dest->seekable = src->seekable;
 	dest->size = src->size;
 	dest->offset = src->offset;
 
-	if (src->mime != NULL) {
+	if (!dest_ready && src->ready) {
 		g_free(dest->mime);
 		dest->mime = g_strdup(src->mime);
 	}
