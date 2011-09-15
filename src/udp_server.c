@@ -19,6 +19,7 @@
 
 #include "udp_server.h"
 #include "io_thread.h"
+#include "gcc.h"
 
 #include <glib.h>
 #include <unistd.h>
@@ -32,6 +33,12 @@
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
+#endif
+
+#if GCC_CHECK_VERSION(4, 2)
+/* allow C99 initialisers on struct sockaddr_in, even if the
+   (non-portable) attribute "sin_zero" is missing */
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
 
 struct udp_server {
