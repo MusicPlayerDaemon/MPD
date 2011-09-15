@@ -308,6 +308,7 @@ input_soup_read(struct input_stream *is, void *ptr, size_t size,
 		assert(!s->alive);
 		g_mutex_unlock(s->mutex);
 
+		g_set_error_literal(error_r, soup_quark(), 0, "HTTP failure");
 		return 0;
 	}
 
