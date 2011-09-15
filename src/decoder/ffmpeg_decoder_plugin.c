@@ -224,6 +224,14 @@ time_from_ffmpeg(int64_t t, const AVRational time_base)
 		/ (double)1024;
 }
 
+G_GNUC_CONST
+static int64_t
+time_to_ffmpeg(double t, const AVRational time_base)
+{
+	return av_rescale_q((int64_t)(t * 1024), (AVRational){1, 1024},
+			    time_base);
+}
+
 static enum decoder_command
 ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		   const AVPacket *packet,
@@ -445,9 +453,10 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 
 		if (cmd == DECODE_COMMAND_SEEK) {
 			int64_t where =
-				decoder_seek_where(decoder) * AV_TIME_BASE;
+				time_to_ffmpeg(decoder_seek_where(decoder),
+					       av_stream->time_base);
 
-			if (av_seek_frame(format_context, -1, where,
+			if (av_seek_frame(format_context, audio_stream, where,
 					  AV_TIME_BASE) < 0)
 				decoder_seek_error(decoder);
 			else
