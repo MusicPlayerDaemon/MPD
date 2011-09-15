@@ -214,6 +214,15 @@ align16(void *p, size_t *length_p)
 	return (char *)p + add;
 }
 
+G_GNUC_CONST
+static double
+time_from_ffmpeg(int64_t t, const AVRational time_base)
+{
+	assert(t != (int64_t)AV_NOPTS_VALUE);
+
+	return av_rescale_q(t, time_base, (AVRational){1, 1});
+}
+
 static enum decoder_command
 ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		   const AVPacket *packet,
@@ -222,8 +231,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 {
 	if (packet->pts != (int64_t)AV_NOPTS_VALUE)
 		decoder_timestamp(decoder,
-				  av_rescale_q(packet->pts, *time_base,
-					       (AVRational){1, 1}));
+				  time_from_ffmpeg(packet->pts, *time_base));
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52,25,0)
 	AVPacket packet2 = *packet;
