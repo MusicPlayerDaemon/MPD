@@ -761,7 +761,7 @@ input_curl_flush_buffers(struct input_curl *c)
 }
 
 /**
- * Frees this stream (but not the input_stream struct itself).
+ * Frees this stream, including the input_stream struct.
  */
 static void
 input_curl_free(struct input_curl *c)
