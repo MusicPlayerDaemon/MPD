@@ -4,6 +4,7 @@ ver 0.16.5 (2010/??/??)
   - rewind: reduce heap usage
 * decoder:
   - ffmpeg: higher precision timestamps
+  - ffmpeg: don't require key frame for seeking
 
 
 ver 0.16.4 (2011/09/01)

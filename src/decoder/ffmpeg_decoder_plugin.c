@@ -447,7 +447,8 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 			int64_t where =
 				decoder_seek_where(decoder) * AV_TIME_BASE;
 
-			if (av_seek_frame(format_context, -1, where, 0) < 0)
+			if (av_seek_frame(format_context, -1, where,
+					  AV_TIME_BASE) < 0)
 				decoder_seek_error(decoder);
 			else
 				decoder_command_finished(decoder);
