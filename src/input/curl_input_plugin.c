@@ -245,6 +245,8 @@ input_curl_fd_events(int fd, fd_set *rfds, fd_set *wfds, fd_set *efds)
 static void
 curl_update_fds(void)
 {
+	assert(io_thread_inside());
+
 	fd_set rfds, wfds, efds;
 
 	FD_ZERO(&rfds);
@@ -305,6 +307,7 @@ curl_update_fds(void)
 static gboolean
 input_curl_dirty_callback(G_GNUC_UNUSED gpointer data)
 {
+	assert(io_thread_inside());
 	g_static_mutex_lock(&curl.mutex);
 
 	assert(curl.dirty_source_id != 0 || curl.requests == NULL);
@@ -420,6 +423,7 @@ input_curl_easy_free_indirect(struct input_curl *c)
 static void
 input_curl_abort_all_requests(GError *error)
 {
+	assert(io_thread_inside());
 	assert(error != NULL);
 
 	while (curl.requests != NULL) {
@@ -443,6 +447,7 @@ input_curl_abort_all_requests(GError *error)
 static void
 input_curl_request_done(struct input_curl *c, CURLcode result, long status)
 {
+	assert(io_thread_inside());
 	assert(c != NULL);
 	assert(c->easy == NULL);
 	assert(c->base.ready);
@@ -482,6 +487,8 @@ input_curl_handle_done(CURL *easy_handle, CURLcode result)
 static void
 input_curl_info_read(void)
 {
+	assert(io_thread_inside());
+
 	CURLMsg *msg;
 	int msgs_in_queue;
 
@@ -500,6 +507,8 @@ input_curl_info_read(void)
 static bool
 input_curl_perform(void)
 {
+	assert(io_thread_inside());
+
 	CURLMcode mcode;
 
 	do {
