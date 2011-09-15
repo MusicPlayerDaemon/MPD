@@ -53,7 +53,7 @@ input_file_open(const char *filename, GError **error_r)
 	struct file_input_stream *fis;
 
 	if (!g_path_is_absolute(filename))
-		return false;
+		return NULL;
 
 	fd = open_cloexec(filename, O_RDONLY|O_BINARY, 0);
 	if (fd < 0) {
@@ -61,7 +61,7 @@ input_file_open(const char *filename, GError **error_r)
 			g_set_error(error_r, file_quark(), errno,
 				    "Failed to open \"%s\": %s",
 				    filename, g_strerror(errno));
-		return false;
+		return NULL;
 	}
 
 	ret = fstat(fd, &st);
@@ -70,14 +70,14 @@ input_file_open(const char *filename, GError **error_r)
 			    "Failed to stat \"%s\": %s",
 			    filename, g_strerror(errno));
 		close(fd);
-		return false;
+		return NULL;
 	}
 
 	if (!S_ISREG(st.st_mode)) {
 		g_set_error(error_r, file_quark(), 0,
 			    "Not a regular file: %s", filename);
 		close(fd);
-		return false;
+		return NULL;
 	}
 
 #ifdef POSIX_FADV_SEQUENTIAL

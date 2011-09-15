@@ -64,7 +64,7 @@ input_stream_open(const char *url, GError **error_r)
 	}
 
 	g_set_error(error_r, input_quark(), 0, "Unrecognized URI");
-	return false;
+	return NULL;
 }
 
 void
