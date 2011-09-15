@@ -246,12 +246,14 @@ input_soup_close(struct input_stream *is)
 	if (s->alive) {
 		assert(s->msg != NULL);
 
+		s->alive = false;
+		g_mutex_unlock(s->mutex);
+
 		soup_session_cancel_message(soup_session, s->msg,
 					    SOUP_STATUS_CANCELLED);
-		s->alive = false;
-	}
+	} else
+		g_mutex_unlock(s->mutex);
 
-	g_mutex_unlock(s->mutex);
 	g_mutex_free(s->mutex);
 	g_cond_free(s->cond);
 
