@@ -211,6 +211,24 @@ align16(void *p, size_t *length_p)
 	return (char *)p + add;
 }
 
+G_GNUC_CONST
+static double
+time_from_ffmpeg(int64_t t, const AVRational time_base)
+{
+	assert(t != (int64_t)AV_NOPTS_VALUE);
+
+	return (double)av_rescale_q(t, time_base, (AVRational){1, 1024})
+		/ (double)1024;
+}
+
+G_GNUC_CONST
+static int64_t
+time_to_ffmpeg(double t, const AVRational time_base)
+{
+	return av_rescale_q((int64_t)(t * 1024), (AVRational){1, 1024},
+			    time_base);
+}
+
 static enum decoder_command
 ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		   const AVPacket *packet,
@@ -219,8 +237,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 {
 	if (packet->pts != (int64_t)AV_NOPTS_VALUE)
 		decoder_timestamp(decoder,
-				  av_rescale_q(packet->pts, *time_base,
-					       (AVRational){1, 1}));
+				  time_from_ffmpeg(packet->pts, *time_base));
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52,25,0)
 	AVPacket packet2 = *packet;
@@ -367,8 +384,9 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		return;
 	}
 
-	AVCodecContext *codec_context =
-		format_context->streams[audio_stream]->codec;
+	AVStream *av_stream = format_context->streams[audio_stream];
+
+	AVCodecContext *codec_context = av_stream->codec;
 	if (codec_context->codec_name[0] != 0)
 		g_debug("codec '%s'", codec_context->codec_name);
 
@@ -419,7 +437,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		if (packet.stream_index == audio_stream)
 			cmd = ffmpeg_send_packet(decoder, input,
 						 &packet, codec_context,
-						 &format_context->streams[audio_stream]->time_base);
+						 &av_stream->time_base);
 		else
 			cmd = decoder_get_command(decoder);
 
@@ -427,12 +445,16 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 
 		if (cmd == DECODE_COMMAND_SEEK) {
 			int64_t where =
-				decoder_seek_where(decoder) * AV_TIME_BASE;
+				time_to_ffmpeg(decoder_seek_where(decoder),
+					       av_stream->time_base);
 
-			if (av_seek_frame(format_context, -1, where, 0) < 0)
+			if (av_seek_frame(format_context, audio_stream, where,
+					  AV_TIME_BASE) < 0)
 				decoder_seek_error(decoder);
-			else
+			else {
+				avcodec_flush_buffers(codec_context);
 				decoder_command_finished(decoder);
+			}
 		}
 	} while (cmd != DECODE_COMMAND_STOP);
 

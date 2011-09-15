@@ -21,6 +21,15 @@ ver 0.17 (2011/??/??)
 * cue: show CUE track numbers
 
 
+ver 0.16.5 (2010/??/??)
+* pcm_format: fix 32-to-24 bit conversion (the "silence" bug)
+* input:
+  - rewind: reduce heap usage
+* decoder:
+  - ffmpeg: higher precision timestamps
+  - ffmpeg: don't require key frame for seeking
+
+
 ver 0.16.4 (2011/09/01)
 * don't abort configure when avahi is not found
 * auto-detect libmad without pkg-config
