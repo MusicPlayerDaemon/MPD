@@ -459,8 +459,10 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 			if (av_seek_frame(format_context, audio_stream, where,
 					  AV_TIME_BASE) < 0)
 				decoder_seek_error(decoder);
-			else
+			else {
+				avcodec_flush_buffers(codec_context);
 				decoder_command_finished(decoder);
+			}
 		}
 	} while (cmd != DECODE_COMMAND_STOP);
 
