@@ -21,6 +21,7 @@
 #define MPD_INPUT_STREAM_H
 
 #include "check.h"
+#include "gcc.h"
 
 #include <glib.h>
 
@@ -77,12 +78,15 @@ struct input_stream {
  *
  * @return an #input_stream object on success, NULL on error
  */
+gcc_nonnull(1)
+G_GNUC_MALLOC
 struct input_stream *
 input_stream_open(const char *uri, GError **error_r);
 
 /**
  * Close the input stream and free resources.
  */
+gcc_nonnull(1)
 void
 input_stream_close(struct input_stream *is);
 
@@ -90,6 +94,7 @@ input_stream_close(struct input_stream *is);
  * Update the public attributes.  Call before accessing attributes
  * such as "ready" or "offset".
  */
+gcc_nonnull(1)
 void
 input_stream_update(struct input_stream *is);
 
@@ -101,6 +106,7 @@ input_stream_update(struct input_stream *is);
  * @param offset the relative offset
  * @param whence the base of the seek, one of SEEK_SET, SEEK_CUR, SEEK_END
  */
+gcc_nonnull(1)
 bool
 input_stream_seek(struct input_stream *is, goffset offset, int whence,
 		  GError **error_r);
@@ -108,6 +114,8 @@ input_stream_seek(struct input_stream *is, goffset offset, int whence,
 /**
  * Returns true if the stream has reached end-of-file.
  */
+gcc_nonnull(1)
+G_GNUC_PURE
 bool input_stream_eof(struct input_stream *is);
 
 /**
@@ -116,6 +124,8 @@ bool input_stream_eof(struct input_stream *is);
  * @return a tag object which must be freed with tag_free(), or NULL
  * if the tag has not changed since the last call
  */
+gcc_nonnull(1)
+G_GNUC_MALLOC
 struct tag *
 input_stream_tag(struct input_stream *is);
 
@@ -127,6 +137,7 @@ input_stream_tag(struct input_stream *is);
  * The semantics of this function are not well-defined, and it will
  * eventually be removed.
  */
+gcc_nonnull(1)
 int input_stream_buffer(struct input_stream *is, GError **error_r);
 
 /**
@@ -138,6 +149,7 @@ int input_stream_buffer(struct input_stream *is, GError **error_r);
  * @param size the maximum number of bytes to read
  * @return the number of bytes read
  */
+gcc_nonnull(1, 2)
 size_t
 input_stream_read(struct input_stream *is, void *ptr, size_t size,
 		  GError **error_r);
