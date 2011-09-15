@@ -220,7 +220,8 @@ time_from_ffmpeg(int64_t t, const AVRational time_base)
 {
 	assert(t != (int64_t)AV_NOPTS_VALUE);
 
-	return av_rescale_q(t, time_base, (AVRational){1, 1});
+	return (double)av_rescale_q(t, time_base, (AVRational){1, 1024})
+		/ (double)1024;
 }
 
 static enum decoder_command
