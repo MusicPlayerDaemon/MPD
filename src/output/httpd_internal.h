@@ -25,6 +25,7 @@
 #ifndef MPD_OUTPUT_HTTPD_INTERNAL_H
 #define MPD_OUTPUT_HTTPD_INTERNAL_H
 
+#include "output_internal.h"
 #include "timer.h"
 
 #include <glib.h>
@@ -34,6 +35,8 @@
 struct httpd_client;
 
 struct httpd_output {
+	struct audio_output base;
+
 	/**
 	 * True if the audio output is open and accepts client
 	 * connections.

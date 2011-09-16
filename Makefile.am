@@ -45,7 +45,6 @@ mpd_headers = \
 	src/audio_parser.h \
 	src/output_internal.h \
 	src/output_api.h \
-	src/output_plugin.h \
 	src/output_list.h \
 	src/output_all.h \
 	src/output_thread.h \
@@ -716,6 +715,7 @@ OUTPUT_API_SRC = \
 	src/output_state.c \
 	src/output_print.c \
 	src/output_command.c \
+	src/output_plugin.c src/output_plugin.h \
 	src/output_finish.c \
 	src/output_init.c
 
@@ -1144,6 +1144,7 @@ test_run_output_SOURCES = test/run_output.c \
 	src/page.c \
 	src/socket_util.c \
 	src/output_init.c src/output_finish.c src/output_list.c \
+	src/output_plugin.c \
 	$(ENCODER_SRC) \
 	src/mixer_api.c \
 	src/mixer_control.c \

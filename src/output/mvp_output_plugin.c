@@ -70,6 +70,8 @@ typedef struct {
 #define MVP_GET_AUD_REGS		_IOW('a',28,aud_ctl_regs_t*)
 
 struct mvp_data {
+	struct audio_output base;
+
 	struct audio_format audio_format;
 	int fd;
 };
@@ -131,21 +133,26 @@ mvp_output_test_default_device(void)
 	return false;
 }
 
-static void *
-mvp_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-		G_GNUC_UNUSED const struct config_param *param,
-		G_GNUC_UNUSED GError **error)
+static struct audio_output *
+mvp_output_init(G_GNUC_UNUSED const struct config_param *param, GError **error)
 {
 	struct mvp_data *md = g_new(struct mvp_data, 1);
+
+	if (!ao_base_init(&md->base, &mvp_output_plugin, param, error)) {
+		g_free(md);
+		return NULL;
+	}
+
 	md->fd = -1;
 
-	return md;
+	return &md->base;
 }
 
 static void
-mvp_output_finish(void *data)
+mvp_output_finish(struct audio_output *ao)
 {
-	struct mvp_data *md = data;
+	struct mvp_data *md = (struct mvp_data *)ao;
+	ao_base_finish(&md->base);
 	g_free(md);
 }
 
@@ -226,9 +233,10 @@ mvp_set_pcm_params(struct mvp_data *md, struct audio_format *audio_format,
 }
 
 static bool
-mvp_output_open(void *data, struct audio_format *audio_format, GError **error)
+mvp_output_open(struct audio_output *ao, struct audio_format *audio_format,
+		GError **error)
 {
-	struct mvp_data *md = data;
+	struct mvp_data *md = (struct mvp_data *)ao;
 	long long int stc = 0;
 	int mix[5] = { 0, 2, 7, 1, 0 };
 	bool success;
@@ -274,17 +282,17 @@ mvp_output_open(void *data, struct audio_format *audio_format, GError **error)
 	return true;
 }
 
-static void mvp_output_close(void *data)
+static void mvp_output_close(struct audio_output *ao)
 {
-	struct mvp_data *md = data;
+	struct mvp_data *md = (struct mvp_data *)ao;
 	if (md->fd >= 0)
 		close(md->fd);
 	md->fd = -1;
 }
 
-static void mvp_output_cancel(void *data)
+static void mvp_output_cancel(struct audio_output *ao)
 {
-	struct mvp_data *md = data;
+	struct mvp_data *md = (struct mvp_data *)ao;
 	if (md->fd >= 0) {
 		ioctl(md->fd, MVP_SET_AUD_RESET, 0x11);
 		close(md->fd);
@@ -293,16 +301,17 @@ static void mvp_output_cancel(void *data)
 }
 
 static size_t
-mvp_output_play(void *data, const void *chunk, size_t size, GError **error)
+mvp_output_play(struct audio_output *ao, const void *chunk, size_t size,
+		GError **error)
 {
-	struct mvp_data *md = data;
+	struct mvp_data *md = (struct mvp_data *)ao;
 	ssize_t ret;
 
 	/* reopen the device since it was closed by dropBufferedAudio */
 	if (md->fd < 0) {
 		bool success;
 
-		success = mvp_output_open(md, &md->audio_format, error);
+		success = mvp_output_open(ao, &md->audio_format, error);
 		if (!success)
 			return 0;
 	}

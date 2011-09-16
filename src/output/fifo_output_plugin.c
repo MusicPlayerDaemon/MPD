@@ -39,6 +39,8 @@
 #define FIFO_BUFFER_SIZE 65536 /* pipe capacity on Linux >= 2.6.11 */
 
 struct fifo_data {
+	struct audio_output base;
+
 	char *path;
 	int input;
 	int output;
@@ -176,9 +178,8 @@ fifo_open(struct fifo_data *fd, GError **error)
 	return true;
 }
 
-static void *
-fifo_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-		 const struct config_param *param,
+static struct audio_output *
+fifo_output_init(const struct config_param *param,
 		 GError **error_r)
 {
 	struct fifo_data *fd;
@@ -197,28 +198,35 @@ fifo_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	fd = fifo_data_new();
 	fd->path = path;
 
-	if (!fifo_open(fd, error_r)) {
+	if (!ao_base_init(&fd->base, &fifo_output_plugin, param, error_r)) {
 		fifo_data_free(fd);
 		return NULL;
 	}
 
-	return fd;
+	if (!fifo_open(fd, error_r)) {
+		ao_base_finish(&fd->base);
+		fifo_data_free(fd);
+		return NULL;
+	}
+
+	return &fd->base;
 }
 
 static void
-fifo_output_finish(void *data)
+fifo_output_finish(struct audio_output *ao)
 {
-	struct fifo_data *fd = (struct fifo_data *)data;
+	struct fifo_data *fd = (struct fifo_data *)ao;
 
 	fifo_close(fd);
+	ao_base_finish(&fd->base);
 	fifo_data_free(fd);
 }
 
 static bool
-fifo_output_open(void *data, struct audio_format *audio_format,
+fifo_output_open(struct audio_output *ao, struct audio_format *audio_format,
 		 G_GNUC_UNUSED GError **error)
 {
-	struct fifo_data *fd = (struct fifo_data *)data;
+	struct fifo_data *fd = (struct fifo_data *)ao;
 
 	fd->timer = timer_new(audio_format);
 
@@ -226,17 +234,17 @@ fifo_output_open(void *data, struct audio_format *audio_format,
 }
 
 static void
-fifo_output_close(void *data)
+fifo_output_close(struct audio_output *ao)
 {
-	struct fifo_data *fd = (struct fifo_data *)data;
+	struct fifo_data *fd = (struct fifo_data *)ao;
 
 	timer_free(fd->timer);
 }
 
 static void
-fifo_output_cancel(void *data)
+fifo_output_cancel(struct audio_output *ao)
 {
-	struct fifo_data *fd = (struct fifo_data *)data;
+	struct fifo_data *fd = (struct fifo_data *)ao;
 	char buf[FIFO_BUFFER_SIZE];
 	int bytes = 1;
 
@@ -252,10 +260,10 @@ fifo_output_cancel(void *data)
 }
 
 static size_t
-fifo_output_play(void *data, const void *chunk, size_t size,
+fifo_output_play(struct audio_output *ao, const void *chunk, size_t size,
 		 GError **error)
 {
-	struct fifo_data *fd = (struct fifo_data *)data;
+	struct fifo_data *fd = (struct fifo_data *)ao;
 	ssize_t bytes;
 
 	if (!fd->timer->started)
@@ -274,7 +282,7 @@ fifo_output_play(void *data, const void *chunk, size_t size,
 			switch (errno) {
 			case EAGAIN:
 				/* The pipe is full, so empty it */
-				fifo_output_cancel(fd);
+				fifo_output_cancel(&fd->base);
 				continue;
 			case EINTR:
 				continue;

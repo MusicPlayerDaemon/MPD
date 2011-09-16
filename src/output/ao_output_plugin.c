@@ -33,6 +33,8 @@ static const ao_sample_format OUR_AO_FORMAT_INITIALIZER;
 static unsigned ao_output_ref;
 
 struct ao_data {
+	struct audio_output base;
+
 	size_t write_size;
 	int driver;
 	ao_option *options;
@@ -79,12 +81,17 @@ ao_output_error(GError **error_r)
 		    "%s", error);
 }
 
-static void *
-ao_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-	       const struct config_param *param,
+static struct audio_output *
+ao_output_init(const struct config_param *param,
 	       GError **error)
 {
 	struct ao_data *ad = g_new(struct ao_data, 1);
+
+	if (!ao_base_init(&ad->base, &ao_output_plugin, param, error)) {
+		g_free(ad);
+		return NULL;
+	}
+
 	ao_info *ai;
 	const char *value;
 
@@ -107,6 +114,7 @@ ao_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		g_set_error(error, ao_output_quark(), 0,
 			    "\"%s\" is not a valid ao driver",
 			    value);
+		ao_base_finish(&ad->base);
 		g_free(ad);
 		return NULL;
 	}
@@ -114,6 +122,7 @@ ao_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	if ((ai = ao_driver_info(ad->driver)) == NULL) {
 		g_set_error(error, ao_output_quark(), 0,
 			    "problems getting driver info");
+		ao_base_finish(&ad->base);
 		g_free(ad);
 		return NULL;
 	}
@@ -132,6 +141,7 @@ ao_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 				g_set_error(error, ao_output_quark(), 0,
 					    "problems parsing options \"%s\"",
 					    options[i]);
+				ao_base_finish(&ad->base);
 				g_free(ad);
 				return NULL;
 			}
@@ -145,15 +155,16 @@ ao_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		g_strfreev(options);
 	}
 
-	return ad;
+	return &ad->base;
 }
 
 static void
-ao_output_finish(void *data)
+ao_output_finish(struct audio_output *ao)
 {
-	struct ao_data *ad = (struct ao_data *)data;
+	struct ao_data *ad = (struct ao_data *)ao;
 
 	ao_free_options(ad->options);
+	ao_base_finish(&ad->base);
 	g_free(ad);
 
 	ao_output_ref--;
@@ -163,19 +174,19 @@ ao_output_finish(void *data)
 }
 
 static void
-ao_output_close(void *data)
+ao_output_close(struct audio_output *ao)
 {
-	struct ao_data *ad = (struct ao_data *)data;
+	struct ao_data *ad = (struct ao_data *)ao;
 
 	ao_close(ad->device);
 }
 
 static bool
-ao_output_open(void *data, struct audio_format *audio_format,
+ao_output_open(struct audio_output *ao, struct audio_format *audio_format,
 	       GError **error)
 {
 	ao_sample_format format = OUR_AO_FORMAT_INITIALIZER;
-	struct ao_data *ad = (struct ao_data *)data;
+	struct ao_data *ad = (struct ao_data *)ao;
 
 	switch (audio_format->format) {
 	case SAMPLE_FORMAT_S8:
@@ -227,10 +238,10 @@ static int ao_play_deconst(ao_device *device, const void *output_samples,
 }
 
 static size_t
-ao_output_play(void *data, const void *chunk, size_t size,
+ao_output_play(struct audio_output *ao, const void *chunk, size_t size,
 	       GError **error)
 {
-	struct ao_data *ad = (struct ao_data *)data;
+	struct ao_data *ad = (struct ao_data *)ao;
 
 	if (size > ad->write_size)
 		size = ad->write_size;

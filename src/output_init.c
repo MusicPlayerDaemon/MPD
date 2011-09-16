@@ -94,7 +94,8 @@ audio_output_mixer_type(const struct config_param *param)
 }
 
 static struct mixer *
-audio_output_load_mixer(void *ao, const struct config_param *param,
+audio_output_load_mixer(struct audio_output *ao,
+			const struct config_param *param,
 			const struct mixer_plugin *plugin,
 			struct filter *filter_chain,
 			GError **error_r)
@@ -126,32 +127,21 @@ audio_output_load_mixer(void *ao, const struct config_param *param,
 }
 
 bool
-audio_output_init(struct audio_output *ao, const struct config_param *param,
-		  struct player_control *pc,
-		  GError **error_r)
+ao_base_init(struct audio_output *ao,
+	     const struct audio_output_plugin *plugin,
+	     const struct config_param *param, GError **error_r)
 {
 	assert(ao != NULL);
-	assert(pc != NULL);
+	assert(plugin != NULL);
+	assert(plugin->finish != NULL);
+	assert(plugin->open != NULL);
+	assert(plugin->close != NULL);
+	assert(plugin->play != NULL);
 
-	const struct audio_output_plugin *plugin = NULL;
 	GError *error = NULL;
 
 	if (param) {
 		const char *p;
-
-		p = config_get_block_string(param, AUDIO_OUTPUT_TYPE, NULL);
-		if (p == NULL) {
-			g_set_error(error_r, audio_output_quark(), 0,
-				    "Missing \"type\" configuration");
-			return false;
-		}
-
-		plugin = audio_output_plugin_get(p);
-		if (plugin == NULL) {
-			g_set_error(error_r, audio_output_quark(), 0,
-				    "No such audio output plugin: %s", p);
-			return false;
-		}
 
 		ao->name = config_get_block_string(param, AUDIO_OUTPUT_NAME,
 						   NULL);
@@ -172,16 +162,6 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 		} else
 			audio_format_clear(&ao->config_audio_format);
 	} else {
-		g_warning("No \"%s\" defined in config file\n",
-			  CONF_AUDIO_OUTPUT);
-
-		plugin = audio_output_detect(error_r);
-		if (plugin == NULL)
-			return false;
-
-		g_message("Successfully detected a %s audio device",
-			  plugin->name);
-
 		ao->name = "default detected output";
 
 		audio_format_clear(&ao->config_audio_format);
@@ -202,29 +182,6 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 
 	ao->filter = filter_chain_new();
 	assert(ao->filter != NULL);
-
-	/* create the replay_gain filter */
-
-	const char *replay_gain_handler =
-		config_get_block_string(param, "replay_gain_handler",
-					"software");
-
-	if (strcmp(replay_gain_handler, "none") != 0) {
-		ao->replay_gain_filter = filter_new(&replay_gain_filter_plugin,
-						    param, NULL);
-		assert(ao->replay_gain_filter != NULL);
-
-		ao->replay_gain_serial = 0;
-
-		ao->other_replay_gain_filter = filter_new(&replay_gain_filter_plugin,
-							  param, NULL);
-		assert(ao->other_replay_gain_filter != NULL);
-
-		ao->other_replay_gain_serial = 0;
-	} else {
-		ao->replay_gain_filter = NULL;
-		ao->other_replay_gain_filter = NULL;
-	}
 
 	/* create the normalization filter (if configured) */
 
@@ -254,16 +211,54 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 	ao->command = AO_COMMAND_NONE;
 	ao->mutex = g_mutex_new();
 	ao->cond = g_cond_new();
-	ao->player_control = pc;
 
-	ao->data = ao_plugin_init(plugin,
-				  &ao->config_audio_format,
-				  param, error_r);
-	if (ao->data == NULL)
-		return false;
+	ao->mixer = NULL;
 
-	ao->mixer = audio_output_load_mixer(ao->data, param,
-					    plugin->mixer_plugin,
+	/* the "convert" filter must be the last one in the chain */
+
+	ao->convert_filter = filter_new(&convert_filter_plugin, NULL, NULL);
+	assert(ao->convert_filter != NULL);
+
+	filter_chain_append(ao->filter, ao->convert_filter);
+
+	/* done */
+
+	return true;
+}
+
+static bool
+audio_output_setup(struct audio_output *ao, const struct config_param *param,
+		   GError **error_r)
+{
+
+	/* create the replay_gain filter */
+
+	const char *replay_gain_handler =
+		config_get_block_string(param, "replay_gain_handler",
+					"software");
+
+	if (strcmp(replay_gain_handler, "none") != 0) {
+		ao->replay_gain_filter = filter_new(&replay_gain_filter_plugin,
+						    param, NULL);
+		assert(ao->replay_gain_filter != NULL);
+
+		ao->replay_gain_serial = 0;
+
+		ao->other_replay_gain_filter = filter_new(&replay_gain_filter_plugin,
+							  param, NULL);
+		assert(ao->other_replay_gain_filter != NULL);
+
+		ao->other_replay_gain_serial = 0;
+	} else {
+		ao->replay_gain_filter = NULL;
+		ao->other_replay_gain_filter = NULL;
+	}
+
+	/* set up the mixer */
+
+	GError *error = NULL;
+	ao->mixer = audio_output_load_mixer(ao, param,
+					    ao->plugin->mixer_plugin,
 					    ao->filter, &error);
 	if (ao->mixer == NULL && error != NULL) {
 		g_warning("Failed to initialize hardware mixer for '%s': %s",
@@ -286,14 +281,53 @@ audio_output_init(struct audio_output *ao, const struct config_param *param,
 		return false;
 	}
 
-	/* the "convert" filter must be the last one in the chain */
-
-	ao->convert_filter = filter_new(&convert_filter_plugin, NULL, NULL);
-	assert(ao->convert_filter != NULL);
-
-	filter_chain_append(ao->filter, ao->convert_filter);
-
-	/* done */
-
 	return true;
+}
+
+struct audio_output *
+audio_output_new(const struct config_param *param,
+		 struct player_control *pc,
+		 GError **error_r)
+{
+	const struct audio_output_plugin *plugin;
+
+	if (param) {
+		const char *p;
+
+		p = config_get_block_string(param, AUDIO_OUTPUT_TYPE, NULL);
+		if (p == NULL) {
+			g_set_error(error_r, audio_output_quark(), 0,
+				    "Missing \"type\" configuration");
+			return false;
+		}
+
+		plugin = audio_output_plugin_get(p);
+		if (plugin == NULL) {
+			g_set_error(error_r, audio_output_quark(), 0,
+				    "No such audio output plugin: %s", p);
+			return false;
+		}
+	} else {
+		g_warning("No \"%s\" defined in config file\n",
+			  CONF_AUDIO_OUTPUT);
+
+		plugin = audio_output_detect(error_r);
+		if (plugin == NULL)
+			return false;
+
+		g_message("Successfully detected a %s audio device",
+			  plugin->name);
+	}
+
+	struct audio_output *ao = ao_plugin_init(plugin, param, error_r);
+	if (ao == NULL)
+		return NULL;
+
+	if (!audio_output_setup(ao, param, error_r)) {
+		ao_plugin_finish(ao);
+		return NULL;
+	}
+
+	ao->player_control = pc;
+	return ao;
 }

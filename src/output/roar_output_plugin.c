@@ -38,6 +38,8 @@
 
 typedef struct roar
 {
+	struct audio_output base;
+
 	roar_vs_t * vss;
 	int err;
 	char *host;
@@ -114,34 +116,39 @@ roar_configure(struct roar * self, const struct config_param *param)
 		: ROAR_ROLE_MUSIC;
 }
 
-static void *
-roar_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-		const struct config_param *param,
-		G_GNUC_UNUSED GError **error)
+static struct audio_output *
+roar_init(const struct config_param *param, GError **error_r)
 {
 	struct roar *self = g_new0(struct roar, 1);
+
+	if (!ao_base_init(&self->base, &roar_output_plugin, param, error_r)) {
+		g_free(self);
+		return NULL;
+	}
+
 	self->lock = g_mutex_new();
 	self->err = ROAR_ERROR_NONE;
 	roar_configure(self, param);
-	return self;
+	return &self->base;
 }
 
 static void
-roar_finish(void *data)
+roar_finish(struct audio_output *ao)
 {
-	roar_t * self = data;
+	struct roar *self = (struct roar *)ao;
 
 	g_free(self->host);
 	g_free(self->name);
 	g_mutex_free(self->lock);
 
+	ao_base_finish(&self->base);
 	g_free(self);
 }
 
 static bool
-roar_open(void *data, struct audio_format *audio_format, GError **error)
+roar_open(struct audio_output *ao, struct audio_format *audio_format, GError **error)
 {
-	roar_t * self = data;
+	struct roar *self = (struct roar *)ao;
 	g_mutex_lock(self->lock);
 
 	if (roar_simple_connect(&(self->con), self->host, self->name) < 0)
@@ -205,9 +212,9 @@ roar_open(void *data, struct audio_format *audio_format, GError **error)
 }
 
 static void
-roar_close(void *data)
+roar_close(struct audio_output *ao)
 {
-	roar_t * self = data;
+	struct roar *self = (struct roar *)ao;
 	g_mutex_lock(self->lock);
 	self->alive = false;
 
@@ -246,9 +253,9 @@ roar_cancel_locked(struct roar *self)
 }
 
 static void
-roar_cancel(void *data)
+roar_cancel(struct audio_output *ao)
 {
-	roar_t * self = data;
+	struct roar *self = (struct roar *)ao;
 
 	g_mutex_lock(self->lock);
 	roar_cancel_locked(self);
@@ -256,9 +263,9 @@ roar_cancel(void *data)
 }
 
 static size_t
-roar_play(void *data, const void *chunk, size_t size, GError **error)
+roar_play(struct audio_output *ao, const void *chunk, size_t size, GError **error)
 {
-	struct roar * self = data;
+	struct roar *self = (struct roar *)ao;
 	ssize_t rc;
 
 	if (self->vss == NULL)
@@ -323,9 +330,9 @@ roar_tag_convert(enum tag_type type, bool *is_uuid)
 }
 
 static void
-roar_send_tag(void *data, const struct tag *meta)
+roar_send_tag(struct audio_output *ao, const struct tag *meta)
 {
-	struct roar * self = data;
+	struct roar *self = (struct roar *)ao;
 
 	if (self->vss == NULL)
 		return;

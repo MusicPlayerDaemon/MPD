@@ -79,6 +79,8 @@ struct encrypt_data {
 /*********************************************************************/
 
 struct raop_data {
+	struct audio_output base;
+
 	struct rtspcl_data *rtspcl;
 	const char *addr; // target host address
 	short rtsp_port;
@@ -209,9 +211,13 @@ raop_session_new(GError **error_r)
 }
 
 static struct raop_data *
-new_raop_data(GError **error_r)
+new_raop_data(const struct config_param *param, GError **error_r)
 {
 	struct raop_data *ret = g_new(struct raop_data, 1);
+	if (!ao_base_init(&ret->base, &raop_output_plugin, param, error_r)) {
+		g_free(ret);
+		return NULL;
+	}
 
 	ret->control_mutex = g_mutex_new();
 
@@ -223,6 +229,7 @@ new_raop_data(GError **error_r)
 	if (raop_session == NULL &&
 	    (raop_session = raop_session_new(error_r)) == NULL) {
 		g_mutex_free(ret->control_mutex);
+		ao_base_finish(&ret->base);
 		g_free(ret);
 		return NULL;
 	}
@@ -721,10 +728,8 @@ send_audio_data(int fd, GError **error_r)
 	return true;
 }
 
-static void *
-raop_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-		 G_GNUC_UNUSED const struct config_param *param,
-		 GError **error_r)
+static struct audio_output *
+raop_output_init(const struct config_param *param, GError **error_r)
 {
 	const char *host = config_get_block_string(param, "host", NULL);
 	if (host == NULL) {
@@ -735,14 +740,14 @@ raop_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 
 	struct raop_data *rd;
 
-	rd = new_raop_data(error_r);
+	rd = new_raop_data(param, error_r);
 	if (rd == NULL)
 		return NULL;
 
 	rd->addr = host;
 	rd->rtsp_port = config_get_block_unsigned(param, "port", 5000);
 	rd->volume = config_get_block_unsigned(param, "volume", 75);
-	return rd;
+	return &rd->base;
 }
 
 static bool
@@ -755,14 +760,15 @@ raop_set_volume_local(struct raop_data *rd, int volume, GError **error_r)
 
 
 static void
-raop_output_finish(void *data)
+raop_output_finish(struct audio_output *ao)
 {
-	struct raop_data *rd = data;
+	struct raop_data *rd = (struct raop_data *)ao;
 
 	if (rd->rtspcl)
 		rtspcl_close(rd->rtspcl);
 
 	g_mutex_free(rd->control_mutex);
+	ao_base_finish(&rd->base);
 	g_free(rd);
 }
 
@@ -797,11 +803,11 @@ raop_set_volume(struct raop_data *rd, unsigned volume, GError **error_r)
 }
 
 static void
-raop_output_cancel(void *data)
+raop_output_cancel(struct audio_output *ao)
 {
 	//flush
 	struct key_data kd;
-	struct raop_data *rd = (struct raop_data *) data;
+	struct raop_data *rd = (struct raop_data *)ao;
 	int flush_diff = 1;
 
 	rd->started = 0;
@@ -825,9 +831,9 @@ raop_output_cancel(void *data)
 }
 
 static bool
-raop_output_pause(void *data)
+raop_output_pause(struct audio_output *ao)
 {
-	struct raop_data *rd = (struct raop_data *) data;
+	struct raop_data *rd = (struct raop_data *)ao;
 
 	rd->paused = true;
 	return true;
@@ -870,10 +876,10 @@ raop_output_remove(struct raop_data *rd)
 }
 
 static void
-raop_output_close(void *data)
+raop_output_close(struct audio_output *ao)
 {
 	//teardown
-	struct raop_data *rd = data;
+	struct raop_data *rd = (struct raop_data *)ao;
 
 	raop_output_remove(rd);
 
@@ -887,10 +893,10 @@ raop_output_close(void *data)
 
 
 static bool
-raop_output_open(void *data, struct audio_format *audio_format, GError **error_r)
+raop_output_open(struct audio_output *ao, struct audio_format *audio_format, GError **error_r)
 {
 	//setup, etc.
-	struct raop_data *rd = data;
+	struct raop_data *rd = (struct raop_data *)ao;
 
 	g_mutex_lock(raop_session->list_mutex);
 	if (raop_session->raop_list == NULL) {
@@ -940,11 +946,11 @@ raop_output_open(void *data, struct audio_format *audio_format, GError **error_r
 }
 
 static size_t
-raop_output_play(void *data, const void *chunk, size_t size,
+raop_output_play(struct audio_output *ao, const void *chunk, size_t size,
 		 GError **error_r)
 {
 	//raopcl_send_sample
-	struct raop_data *rd = data;
+	struct raop_data *rd = (struct raop_data *)ao;
 	size_t rval = 0, orig_size = size;
 
 	rd->paused = false;

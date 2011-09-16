@@ -52,6 +52,8 @@
 #endif
 
 struct oss_data {
+	struct audio_output base;
+
 	int fd;
 	const char *device;
 
@@ -143,7 +145,7 @@ oss_output_test_default_device(void)
 	return false;
 }
 
-static void *
+static struct audio_output *
 oss_open_default(GError **error)
 {
 	int i;
@@ -154,8 +156,14 @@ oss_open_default(GError **error)
 		ret[i] = oss_stat_device(default_devices[i], &err[i]);
 		if (ret[i] == OSS_STAT_NO_ERROR) {
 			struct oss_data *od = oss_data_new();
+			if (!ao_base_init(&od->base, &oss_output_plugin, NULL,
+					  error)) {
+				g_free(od);
+				return NULL;
+			}
+
 			od->device = default_devices[i];
-			return od;
+			return &od->base;
 		}
 	}
 
@@ -185,26 +193,31 @@ oss_open_default(GError **error)
 	return NULL;
 }
 
-static void *
-oss_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-		const struct config_param *param,
-		GError **error)
+static struct audio_output *
+oss_output_init(const struct config_param *param, GError **error)
 {
 	const char *device = config_get_block_string(param, "device", NULL);
 	if (device != NULL) {
 		struct oss_data *od = oss_data_new();
+		if (!ao_base_init(&od->base, &oss_output_plugin, param,
+				  error)) {
+			g_free(od);
+			return NULL;
+		}
+
 		od->device = device;
-		return od;
+		return &od->base;
 	}
 
 	return oss_open_default(error);
 }
 
 static void
-oss_output_finish(void *data)
+oss_output_finish(struct audio_output *ao)
 {
-	struct oss_data *od = data;
+	struct oss_data *od = (struct oss_data *)ao;
 
+	ao_base_finish(&od->base);
 	oss_data_free(od);
 }
 
@@ -607,9 +620,10 @@ oss_reopen(struct oss_data *od, GError **error_r)
 }
 
 static bool
-oss_output_open(void *data, struct audio_format *audio_format, GError **error)
+oss_output_open(struct audio_output *ao, struct audio_format *audio_format,
+		GError **error)
 {
-	struct oss_data *od = data;
+	struct oss_data *od = (struct oss_data *)ao;
 
 	od->fd = open_cloexec(od->device, O_WRONLY, 0);
 	if (od->fd < 0) {
@@ -629,17 +643,17 @@ oss_output_open(void *data, struct audio_format *audio_format, GError **error)
 }
 
 static void
-oss_output_close(void *data)
+oss_output_close(struct audio_output *ao)
 {
-	struct oss_data *od = data;
+	struct oss_data *od = (struct oss_data *)ao;
 
 	oss_close(od);
 }
 
 static void
-oss_output_cancel(void *data)
+oss_output_cancel(struct audio_output *ao)
 {
-	struct oss_data *od = data;
+	struct oss_data *od = (struct oss_data *)ao;
 
 	if (od->fd >= 0) {
 		ioctl(od->fd, SNDCTL_DSP_RESET, 0);
@@ -648,9 +662,10 @@ oss_output_cancel(void *data)
 }
 
 static size_t
-oss_output_play(void *data, const void *chunk, size_t size, GError **error)
+oss_output_play(struct audio_output *ao, const void *chunk, size_t size,
+		GError **error)
 {
-	struct oss_data *od = data;
+	struct oss_data *od = (struct oss_data *)ao;
 	ssize_t ret;
 
 	/* reopen the device since it was closed by dropBufferedAudio */

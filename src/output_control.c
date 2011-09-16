@@ -335,5 +335,5 @@ void audio_output_finish(struct audio_output *ao)
 		ao->thread = NULL;
 	}
 
-	audio_output_destruct(ao);
+	audio_output_free(ao);
 }

@@ -27,39 +27,45 @@
 #include <assert.h>
 
 struct null_data {
+	struct audio_output base;
+
 	bool sync;
 
 	struct timer *timer;
 };
 
-static void *
-null_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-	  G_GNUC_UNUSED const struct config_param *param,
-	  G_GNUC_UNUSED GError **error)
+static struct audio_output *
+null_init(const struct config_param *param, GError **error_r)
 {
 	struct null_data *nd = g_new(struct null_data, 1);
+
+	if (!ao_base_init(&nd->base, &null_output_plugin, param, error_r)) {
+		g_free(nd);
+		return NULL;
+	}
 
 	nd->sync = config_get_block_bool(param, "sync", true);
 	nd->timer = NULL;
 
-	return nd;
+	return &nd->base;
 }
 
 static void
-null_finish(void *data)
+null_finish(struct audio_output *ao)
 {
-	struct null_data *nd = data;
+	struct null_data *nd = (struct null_data *)ao;
 
 	assert(nd->timer == NULL);
 
+	ao_base_finish(&nd->base);
 	g_free(nd);
 }
 
 static bool
-null_open(void *data, struct audio_format *audio_format,
+null_open(struct audio_output *ao, struct audio_format *audio_format,
 	  G_GNUC_UNUSED GError **error)
 {
-	struct null_data *nd = data;
+	struct null_data *nd = (struct null_data *)ao;
 
 	if (nd->sync)
 		nd->timer = timer_new(audio_format);
@@ -68,9 +74,9 @@ null_open(void *data, struct audio_format *audio_format,
 }
 
 static void
-null_close(void *data)
+null_close(struct audio_output *ao)
 {
-	struct null_data *nd = data;
+	struct null_data *nd = (struct null_data *)ao;
 
 	if (nd->timer != NULL) {
 		timer_free(nd->timer);
@@ -79,10 +85,10 @@ null_close(void *data)
 }
 
 static size_t
-null_play(void *data, G_GNUC_UNUSED const void *chunk, size_t size,
+null_play(struct audio_output *ao, G_GNUC_UNUSED const void *chunk, size_t size,
 	  G_GNUC_UNUSED GError **error)
 {
-	struct null_data *nd = data;
+	struct null_data *nd = (struct null_data *)ao;
 	struct timer *timer = nd->timer;
 
 	if (!nd->sync)
@@ -99,9 +105,9 @@ null_play(void *data, G_GNUC_UNUSED const void *chunk, size_t size,
 }
 
 static void
-null_cancel(void *data)
+null_cancel(struct audio_output *ao)
 {
-	struct null_data *nd = data;
+	struct null_data *nd = (struct null_data *)ao;
 
 	if (!nd->sync)
 		return;

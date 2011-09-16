@@ -26,7 +26,7 @@
 #include <assert.h>
 
 void
-audio_output_destruct(struct audio_output *ao)
+ao_base_finish(struct audio_output *ao)
 {
 	assert(!ao->open);
 	assert(ao->fail_timer == NULL);
@@ -34,8 +34,6 @@ audio_output_destruct(struct audio_output *ao)
 
 	if (ao->mixer != NULL)
 		mixer_free(ao->mixer);
-
-	ao_plugin_finish(ao->plugin, ao->data);
 
 	g_cond_free(ao->cond);
 	g_mutex_free(ao->mutex);
@@ -49,4 +47,14 @@ audio_output_destruct(struct audio_output *ao)
 	filter_free(ao->filter);
 
 	pcm_buffer_deinit(&ao->cross_fade_buffer);
+}
+
+void
+audio_output_free(struct audio_output *ao)
+{
+	assert(!ao->open);
+	assert(ao->fail_timer == NULL);
+	assert(ao->thread == NULL);
+
+	ao_plugin_finish(ao);
 }

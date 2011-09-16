@@ -39,6 +39,8 @@
 #define NUM_BUFFERS 16
 
 struct openal_data {
+	struct audio_output base;
+
 	const char *device_name;
 	ALCdevice *device;
 	ALCcontext *context;
@@ -126,10 +128,8 @@ openal_unqueue_buffers(struct openal_data *od)
 	}
 }
 
-static void *
-openal_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-	    const struct config_param *param,
-	    G_GNUC_UNUSED GError **error)
+static struct audio_output *
+openal_init(const struct config_param *param, GError **error_r)
 {
 	const char *device_name = config_get_block_string(param, "device", NULL);
 	struct openal_data *od;
@@ -139,24 +139,30 @@ openal_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	}
 
 	od = g_new(struct openal_data, 1);
+	if (!ao_base_init(&od->base, &openal_output_plugin, param, error_r)) {
+		g_free(od);
+		return NULL;
+	}
+
 	od->device_name = device_name;
 
-	return od;
+	return &od->base;
 }
 
 static void
-openal_finish(void *data)
+openal_finish(struct audio_output *ao)
 {
-	struct openal_data *od = data;
+	struct openal_data *od = (struct openal_data *)ao;
 
+	ao_base_finish(&od->base);
 	g_free(od);
 }
 
 static bool
-openal_open(void *data, struct audio_format *audio_format,
+openal_open(struct audio_output *ao, struct audio_format *audio_format,
 	    GError **error)
 {
-	struct openal_data *od = data;
+	struct openal_data *od = (struct openal_data *)ao;
 
 	od->format = openal_audio_format(audio_format);
 
@@ -198,9 +204,9 @@ openal_open(void *data, struct audio_format *audio_format,
 }
 
 static void
-openal_close(void *data)
+openal_close(struct audio_output *ao)
 {
-	struct openal_data *od = data;
+	struct openal_data *od = (struct openal_data *)ao;
 
 	timer_free(od->timer);
 	alcMakeContextCurrent(od->context);
@@ -211,10 +217,10 @@ openal_close(void *data)
 }
 
 static size_t
-openal_play(void *data, const void *chunk, size_t size,
+openal_play(struct audio_output *ao, const void *chunk, size_t size,
 	    G_GNUC_UNUSED GError **error)
 {
-	struct openal_data *od = data;
+	struct openal_data *od = (struct openal_data *)ao;
 	ALuint buffer;
 	ALint num, state;
 
@@ -257,9 +263,9 @@ openal_play(void *data, const void *chunk, size_t size,
 }
 
 static void
-openal_cancel(void *data)
+openal_cancel(struct audio_output *ao)
 {
-	struct openal_data *od = data;
+	struct openal_data *od = (struct openal_data *)ao;
 
 	od->filled = 0;
 	alcMakeContextCurrent(od->context);

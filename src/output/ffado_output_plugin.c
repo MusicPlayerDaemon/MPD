@@ -54,6 +54,8 @@ struct mpd_ffado_stream {
 };
 
 struct mpd_ffado_device {
+	struct audio_output base;
+
 	char *device_name;
 	int verbose;
 	unsigned period_size, nb_buffers;
@@ -83,21 +85,26 @@ ffado_output_quark(void)
 	return g_quark_from_static_string("ffado_output");
 }
 
-static void *
-ffado_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-	   const struct config_param *param,
+static struct audio_output *
+ffado_init(const struct config_param *param,
 	   GError **error_r)
 {
 	g_debug("using libffado version %s, API=%d",
 		ffado_get_version(), ffado_get_api_version());
 
 	struct mpd_ffado_device *fd = g_new(struct mpd_ffado_device, 1);
+	if (!ao_base_init(&fd->base, &ffado_output_plugin, param, error_r)) {
+		g_free(fd);
+		return NULL;
+	}
+
 	fd->device_name = config_dup_block_string(param, "device", NULL);
 	fd->verbose = config_get_block_unsigned(param, "verbose", 0);
 
 	fd->period_size = config_get_block_unsigned(param, "period_size",
 						    1024);
 	if (fd->period_size == 0 || fd->period_size > 1024 * 1024) {
+		ao_base_finish(&fd->base);
 		g_set_error(error_r, ffado_output_quark(), 0,
 			    "invalid period_size setting");
 		return false;
@@ -105,20 +112,22 @@ ffado_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 
 	fd->nb_buffers = config_get_block_unsigned(param, "nb_buffers", 3);
 	if (fd->nb_buffers == 0 || fd->nb_buffers > 1024) {
+		ao_base_finish(&fd->base);
 		g_set_error(error_r, ffado_output_quark(), 0,
 			    "invalid nb_buffers setting");
 		return false;
 	}
 
-	return fd;
+	return &fd->base;
 }
 
 static void
-ffado_finish(void *data)
+ffado_finish(struct audio_output *ao)
 {
-	struct mpd_ffado_device *fd = data;
+	struct mpd_ffado_device *fd = (struct mpd_ffado_device *)ao;
 
 	g_free(fd->device_name);
+	ao_base_finish(&fd->base);
 	g_free(fd);
 }
 
@@ -228,9 +237,10 @@ ffado_configure(struct mpd_ffado_device *fd, struct audio_format *audio_format,
 }
 
 static bool
-ffado_open(void *data, struct audio_format *audio_format, GError **error_r)
+ffado_open(struct audio_output *ao, struct audio_format *audio_format,
+	   GError **error_r)
 {
-	struct mpd_ffado_device *fd = data;
+	struct mpd_ffado_device *fd = (struct mpd_ffado_device *)ao;
 
 	/* will be converted to floating point, choose best input
 	   format */
@@ -274,9 +284,9 @@ ffado_open(void *data, struct audio_format *audio_format, GError **error_r)
 }
 
 static void
-ffado_close(void *data)
+ffado_close(struct audio_output *ao)
 {
-	struct mpd_ffado_device *fd = data;
+	struct mpd_ffado_device *fd = (struct mpd_ffado_device *)ao;
 
 	ffado_streaming_stop(fd->dev);
 	ffado_streaming_finish(fd->dev);
@@ -288,9 +298,10 @@ ffado_close(void *data)
 }
 
 static size_t
-ffado_play(void *data, const void *chunk, size_t size, GError **error_r)
+ffado_play(struct audio_output *ao, const void *chunk, size_t size,
+	   GError **error_r)
 {
-	struct mpd_ffado_device *fd = data;
+	struct mpd_ffado_device *fd = (struct mpd_ffado_device *)ao;
 
 	/* wait for prefious buffer to finish (if it was full) */
 

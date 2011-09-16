@@ -25,6 +25,8 @@
 #include <errno.h>
 
 struct pipe_output {
+	struct audio_output base;
+
 	char *cmd;
 	FILE *fh;
 };
@@ -38,12 +40,16 @@ pipe_output_quark(void)
 	return g_quark_from_static_string("pipe_output");
 }
 
-static void *
-pipe_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-		 const struct config_param *param,
+static struct audio_output *
+pipe_output_init(const struct config_param *param,
 		 GError **error)
 {
 	struct pipe_output *pd = g_new(struct pipe_output, 1);
+
+	if (!ao_base_init(&pd->base, &pipe_output_plugin, param, error)) {
+		g_free(pd);
+		return NULL;
+	}
 
 	pd->cmd = config_dup_block_string(param, "command", NULL);
 	if (pd->cmd == NULL) {
@@ -52,23 +58,25 @@ pipe_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		return NULL;
 	}
 
-	return pd;
+	return &pd->base;
 }
 
 static void
-pipe_output_finish(void *data)
+pipe_output_finish(struct audio_output *ao)
 {
-	struct pipe_output *pd = data;
+	struct pipe_output *pd = (struct pipe_output *)ao;
 
 	g_free(pd->cmd);
+	ao_base_finish(&pd->base);
 	g_free(pd);
 }
 
 static bool
-pipe_output_open(void *data, G_GNUC_UNUSED struct audio_format *audio_format,
+pipe_output_open(struct audio_output *ao,
+		 G_GNUC_UNUSED struct audio_format *audio_format,
 		 G_GNUC_UNUSED GError **error)
 {
-	struct pipe_output *pd = data;
+	struct pipe_output *pd = (struct pipe_output *)ao;
 
 	pd->fh = popen(pd->cmd, "w");
 	if (pd->fh == NULL) {
@@ -82,17 +90,17 @@ pipe_output_open(void *data, G_GNUC_UNUSED struct audio_format *audio_format,
 }
 
 static void
-pipe_output_close(void *data)
+pipe_output_close(struct audio_output *ao)
 {
-	struct pipe_output *pd = data;
+	struct pipe_output *pd = (struct pipe_output *)ao;
 
 	pclose(pd->fh);
 }
 
 static size_t
-pipe_output_play(void *data, const void *chunk, size_t size, GError **error)
+pipe_output_play(struct audio_output *ao, const void *chunk, size_t size, GError **error)
 {
-	struct pipe_output *pd = data;
+	struct pipe_output *pd = (struct pipe_output *)ao;
 	size_t ret;
 
 	ret = fwrite(chunk, 1, size, pd->fh);

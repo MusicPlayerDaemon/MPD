@@ -27,6 +27,8 @@
 
 #include <time.h>
 
+struct config_param;
+
 enum audio_output_command {
 	AO_COMMAND_NONE = 0,
 	AO_COMMAND_ENABLE,
@@ -62,12 +64,6 @@ struct audio_output {
 	 * The plugin which implements this output device.
 	 */
 	const struct audio_output_plugin *plugin;
-
-	/**
-	 * The plugin's internal data.  It is passed to every plugin
-	 * method.
-	 */
-	void *data;
 
 	/**
 	 * The #mixer object associated with this audio output device.
@@ -254,7 +250,20 @@ audio_output_command_is_finished(const struct audio_output *ao)
 	return ao->command == AO_COMMAND_NONE;
 }
 
+struct audio_output *
+audio_output_new(const struct config_param *param,
+		 struct player_control *pc,
+		 GError **error_r);
+
+bool
+ao_base_init(struct audio_output *ao,
+	     const struct audio_output_plugin *plugin,
+	     const struct config_param *param, GError **error_r);
+
 void
-audio_output_destruct(struct audio_output *ao);
+ao_base_finish(struct audio_output *ao);
+
+void
+audio_output_free(struct audio_output *ao);
 
 #endif

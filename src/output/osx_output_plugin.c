@@ -29,6 +29,8 @@
 #define G_LOG_DOMAIN "osx"
 
 struct osx_output {
+	struct audio_output base;
+
 	/* configuration settings */
 	OSType component_subtype;
 	/* only applicable with kAudioUnitSubType_HALOutput */
@@ -80,12 +82,14 @@ osx_output_configure(struct osx_output *oo, const struct config_param *param)
 	}
 }
 
-static void *
-osx_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-		G_GNUC_UNUSED const struct config_param *param,
-		G_GNUC_UNUSED GError **error)
+static struct audio_output *
+osx_output_init(const struct config_param *param, GError **error_r)
 {
 	struct osx_output *oo = g_new(struct osx_output, 1);
+	if (!ao_base_init(&oo->base, &osx_output_plugin, param, error_r)) {
+		g_free(oo);
+		return NULL;
+	}
 
 	osx_output_configure(oo, param);
 	oo->mutex = g_mutex_new();
@@ -96,12 +100,13 @@ osx_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	oo->buffer = NULL;
 	oo->buffer_size = 0;
 
-	return oo;
+	return &oo->base;
 }
 
-static void osx_output_finish(void *data)
+static void
+osx_output_finish(struct audio_output *ao)
 {
-	struct osx_output *od = data;
+	struct osx_output *od = (struct osx_output *)ao;
 
 	g_free(od->buffer);
 	g_mutex_free(od->mutex);
@@ -109,18 +114,20 @@ static void osx_output_finish(void *data)
 	g_free(od);
 }
 
-static void osx_output_cancel(void *data)
+static void
+osx_output_cancel(struct audio_output *ao)
 {
-	struct osx_output *od = data;
+	struct osx_output *od = (struct osx_output *)ao;
 
 	g_mutex_lock(od->mutex);
 	od->len = 0;
 	g_mutex_unlock(od->mutex);
 }
 
-static void osx_output_close(void *data)
+static void
+osx_output_close(struct audio_output *ao)
 {
-	struct osx_output *od = data;
+	struct osx_output *od = (struct osx_output *)ao;
 
 	AudioOutputUnitStop(od->au);
 	AudioUnitUninitialize(od->au);
@@ -266,9 +273,9 @@ done:
 }
 
 static bool
-osx_output_open(void *data, struct audio_format *audio_format, GError **error)
+osx_output_open(struct audio_output *ao, struct audio_format *audio_format, GError **error)
 {
-	struct osx_output *od = data;
+	struct osx_output *od = (struct osx_output *)ao;
 	ComponentDescription desc;
 	Component comp;
 	AURenderCallbackStruct callback;
@@ -385,10 +392,10 @@ osx_output_open(void *data, struct audio_format *audio_format, GError **error)
 }
 
 static size_t
-osx_output_play(void *data, const void *chunk, size_t size,
+osx_output_play(struct audio_output *ao, const void *chunk, size_t size,
 		G_GNUC_UNUSED GError **error)
 {
-	struct osx_output *od = data;
+	struct osx_output *od = (struct osx_output *)ao;
 	size_t start, nbytes;
 
 	g_mutex_lock(od->mutex);

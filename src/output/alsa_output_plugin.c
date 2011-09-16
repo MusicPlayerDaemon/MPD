@@ -43,6 +43,8 @@ typedef snd_pcm_sframes_t alsa_writei_t(snd_pcm_t * pcm, const void *buffer,
 					snd_pcm_uframes_t size);
 
 struct alsa_data {
+	struct audio_output base;
+
 	/** the configured name of the ALSA device; NULL for the
 	    default device */
 	char *device;
@@ -143,23 +145,27 @@ alsa_configure(struct alsa_data *ad, const struct config_param *param)
 #endif
 }
 
-static void *
-alsa_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-	  const struct config_param *param,
-	  G_GNUC_UNUSED GError **error)
+static struct audio_output *
+alsa_init(const struct config_param *param, GError **error_r)
 {
 	struct alsa_data *ad = alsa_data_new();
 
+	if (!ao_base_init(&ad->base, &alsa_output_plugin, param, error_r)) {
+		g_free(ad);
+		return NULL;
+	}
+
 	alsa_configure(ad, param);
 
-	return ad;
+	return &ad->base;
 }
 
 static void
-alsa_finish(void *data)
+alsa_finish(struct audio_output *ao)
 {
-	struct alsa_data *ad = data;
+	struct alsa_data *ad = (struct alsa_data *)ao;
 
+	ao_base_finish(&ad->base);
 	alsa_data_free(ad);
 
 	/* free libasound's config cache */
@@ -530,9 +536,9 @@ error:
 }
 
 static bool
-alsa_open(void *data, struct audio_format *audio_format, GError **error)
+alsa_open(struct audio_output *ao, struct audio_format *audio_format, GError **error)
 {
-	struct alsa_data *ad = data;
+	struct alsa_data *ad = (struct alsa_data *)ao;
 	int err;
 	bool success;
 
@@ -594,9 +600,9 @@ alsa_recover(struct alsa_data *ad, int err)
 }
 
 static void
-alsa_drain(void *data)
+alsa_drain(struct audio_output *ao)
 {
-	struct alsa_data *ad = data;
+	struct alsa_data *ad = (struct alsa_data *)ao;
 
 	if (snd_pcm_state(ad->pcm) != SND_PCM_STATE_RUNNING)
 		return;
@@ -628,9 +634,9 @@ alsa_drain(void *data)
 }
 
 static void
-alsa_cancel(void *data)
+alsa_cancel(struct audio_output *ao)
 {
-	struct alsa_data *ad = data;
+	struct alsa_data *ad = (struct alsa_data *)ao;
 
 	ad->period_position = 0;
 
@@ -638,17 +644,18 @@ alsa_cancel(void *data)
 }
 
 static void
-alsa_close(void *data)
+alsa_close(struct audio_output *ao)
 {
-	struct alsa_data *ad = data;
+	struct alsa_data *ad = (struct alsa_data *)ao;
 
 	snd_pcm_close(ad->pcm);
 }
 
 static size_t
-alsa_play(void *data, const void *chunk, size_t size, GError **error)
+alsa_play(struct audio_output *ao, const void *chunk, size_t size,
+	  GError **error)
 {
-	struct alsa_data *ad = data;
+	struct alsa_data *ad = (struct alsa_data *)ao;
 
 	size /= ad->frame_size;
 

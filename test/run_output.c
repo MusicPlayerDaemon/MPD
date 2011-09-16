@@ -94,11 +94,10 @@ find_named_config_block(const char *block, const char *name)
 	return NULL;
 }
 
-static bool
-load_audio_output(struct audio_output *ao, const char *name)
+static struct audio_output *
+load_audio_output(const char *name)
 {
 	const struct config_param *param;
-	bool success;
 	GError *error = NULL;
 
 	param = find_named_config_block(CONF_AUDIO_OUTPUT, name);
@@ -109,13 +108,14 @@ load_audio_output(struct audio_output *ao, const char *name)
 
 	static struct player_control dummy_player_control;
 
-	success = audio_output_init(ao, param, &dummy_player_control, &error);
-	if (!success) {
+	struct audio_output *ao =
+		audio_output_new(param, &dummy_player_control, &error);
+	if (ao == NULL) {
 		g_printerr("%s\n", error->message);
 		g_error_free(error);
 	}
 
-	return success;
+	return ao;
 }
 
 static bool
@@ -124,7 +124,7 @@ run_output(struct audio_output *ao, struct audio_format *audio_format)
 	/* open the audio output */
 
 	GError *error = NULL;
-	if (!ao_plugin_open(ao->plugin, ao->data, audio_format, &error)) {
+	if (!ao_plugin_open(ao, audio_format, &error)) {
 		g_printerr("Failed to open audio output: %s\n",
 			   error->message);
 		g_error_free(error);
@@ -153,11 +153,11 @@ run_output(struct audio_output *ao, struct audio_format *audio_format)
 
 		size_t play_length = (length / frame_size) * frame_size;
 		if (play_length > 0) {
-			size_t consumed = ao_plugin_play(ao->plugin, ao->data,
+			size_t consumed = ao_plugin_play(ao,
 							 buffer, play_length,
 							 &error);
 			if (consumed == 0) {
-				ao_plugin_close(ao->plugin, ao->data);
+				ao_plugin_close(ao);
 				g_printerr("Failed to play: %s\n",
 					   error->message);
 				g_error_free(error);
@@ -172,13 +172,12 @@ run_output(struct audio_output *ao, struct audio_format *audio_format)
 		}
 	}
 
-	ao_plugin_close(ao->plugin, ao->data);
+	ao_plugin_close(ao);
 	return true;
 }
 
 int main(int argc, char **argv)
 {
-	struct audio_output ao;
 	struct audio_format audio_format;
 	bool success;
 	GError *error = NULL;
@@ -211,7 +210,8 @@ int main(int argc, char **argv)
 
 	/* initialize the audio output */
 
-	if (!load_audio_output(&ao, argv[2]))
+	struct audio_output *ao = load_audio_output(argv[2]);
+	if (ao == NULL)
 		return 1;
 
 	/* parse the audio format */
@@ -229,11 +229,11 @@ int main(int argc, char **argv)
 
 	/* do it */
 
-	success = run_output(&ao, &audio_format);
+	success = run_output(ao, &audio_format);
 
 	/* cleanup and exit */
 
-	audio_output_destruct(&ao);
+	audio_output_free(ao);
 
 	io_thread_deinit();
 

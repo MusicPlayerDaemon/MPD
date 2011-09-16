@@ -44,6 +44,8 @@ enum {
 static const size_t jack_sample_size = sizeof(jack_default_audio_sample_t);
 
 struct jack_data {
+	struct audio_output base;
+
 	/**
 	 * libjack options passed to jack_client_open().
 	 */
@@ -292,14 +294,18 @@ parse_port_list(int line, const char *source, char **dest, GError **error_r)
 	return n;
 }
 
-static void *
-mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-	      const struct config_param *param, GError **error_r)
+static struct audio_output *
+mpd_jack_init(const struct config_param *param, GError **error_r)
 {
-	struct jack_data *jd;
+	struct jack_data *jd = g_new(struct jack_data, 1);
+
+	if (!ao_base_init(&jd->base, &jack_output_plugin, param, error_r)) {
+		g_free(jd);
+		return NULL;
+	}
+
 	const char *value;
 
-	jd = g_new(struct jack_data, 1);
 	jd->options = JackNullOption;
 
 	jd->name = config_get_block_string(param, "client_name", NULL);
@@ -362,13 +368,13 @@ mpd_jack_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	jack_set_info_function(mpd_jack_info);
 #endif
 
-	return jd;
+	return &jd->base;
 }
 
 static void
-mpd_jack_finish(void *data)
+mpd_jack_finish(struct audio_output *ao)
 {
-	struct jack_data *jd = data;
+	struct jack_data *jd = (struct jack_data *)ao;
 
 	for (unsigned i = 0; i < jd->num_source_ports; ++i)
 		g_free(jd->source_ports[i]);
@@ -376,13 +382,14 @@ mpd_jack_finish(void *data)
 	for (unsigned i = 0; i < jd->num_destination_ports; ++i)
 		g_free(jd->destination_ports[i]);
 
+	ao_base_finish(&jd->base);
 	g_free(jd);
 }
 
 static bool
-mpd_jack_enable(void *data, GError **error_r)
+mpd_jack_enable(struct audio_output *ao, GError **error_r)
 {
-	struct jack_data *jd = (struct jack_data *)data;
+	struct jack_data *jd = (struct jack_data *)ao;
 
 	for (unsigned i = 0; i < jd->num_source_ports; ++i)
 		jd->ringbuffer[i] = NULL;
@@ -391,9 +398,9 @@ mpd_jack_enable(void *data, GError **error_r)
 }
 
 static void
-mpd_jack_disable(void *data)
+mpd_jack_disable(struct audio_output *ao)
 {
-	struct jack_data *jd = (struct jack_data *)data;
+	struct jack_data *jd = (struct jack_data *)ao;
 
 	if (jd->client != NULL)
 		mpd_jack_disconnect(jd);
@@ -556,9 +563,10 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 }
 
 static bool
-mpd_jack_open(void *data, struct audio_format *audio_format, GError **error_r)
+mpd_jack_open(struct audio_output *ao, struct audio_format *audio_format,
+	      GError **error_r)
 {
-	struct jack_data *jd = data;
+	struct jack_data *jd = (struct jack_data *)ao;
 
 	assert(jd != NULL);
 
@@ -577,9 +585,9 @@ mpd_jack_open(void *data, struct audio_format *audio_format, GError **error_r)
 }
 
 static void
-mpd_jack_close(G_GNUC_UNUSED void *data)
+mpd_jack_close(G_GNUC_UNUSED struct audio_output *ao)
 {
-	struct jack_data *jd = data;
+	struct jack_data *jd = (struct jack_data *)ao;
 
 	mpd_jack_stop(jd);
 }
@@ -649,9 +657,10 @@ mpd_jack_write_samples(struct jack_data *jd, const void *src,
 }
 
 static size_t
-mpd_jack_play(void *data, const void *chunk, size_t size, GError **error_r)
+mpd_jack_play(struct audio_output *ao, const void *chunk, size_t size,
+	      GError **error_r)
 {
-	struct jack_data *jd = data;
+	struct jack_data *jd = (struct jack_data *)ao;
 	const size_t frame_size = audio_format_frame_size(&jd->audio_format);
 	size_t space = 0, space1;
 
@@ -693,9 +702,9 @@ mpd_jack_play(void *data, const void *chunk, size_t size, GError **error_r)
 }
 
 static bool
-mpd_jack_pause(void *data)
+mpd_jack_pause(struct audio_output *ao)
 {
-	struct jack_data *jd = data;
+	struct jack_data *jd = (struct jack_data *)ao;
 
 	if (jd->shutdown)
 		return false;

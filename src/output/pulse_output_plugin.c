@@ -46,6 +46,8 @@
 #endif
 
 struct pulse_output {
+	struct audio_output base;
+
 	const char *name;
 	const char *server;
 	const char *sink;
@@ -342,16 +344,19 @@ pulse_output_setup_context(struct pulse_output *po, GError **error_r)
 	return true;
 }
 
-static void *
-pulse_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-		  const struct config_param *param,
-		  G_GNUC_UNUSED GError **error_r)
+static struct audio_output *
+pulse_output_init(const struct config_param *param, GError **error_r)
 {
 	struct pulse_output *po;
 
 	g_setenv("PULSE_PROP_media.role", "music", true);
 
 	po = g_new(struct pulse_output, 1);
+	if (!ao_base_init(&po->base, &pulse_output_plugin, param, error_r)) {
+		g_free(po);
+		return NULL;
+	}
+
 	po->name = config_get_block_string(param, "name", "mpd_pulse");
 	po->server = config_get_block_string(param, "server", NULL);
 	po->sink = config_get_block_string(param, "sink", NULL);
@@ -361,21 +366,22 @@ pulse_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 	po->context = NULL;
 	po->stream = NULL;
 
-	return po;
+	return &po->base;
 }
 
 static void
-pulse_output_finish(void *data)
+pulse_output_finish(struct audio_output *ao)
 {
-	struct pulse_output *po = data;
+	struct pulse_output *po = (struct pulse_output *)ao;
 
+	ao_base_finish(&po->base);
 	g_free(po);
 }
 
 static bool
-pulse_output_enable(void *data, GError **error_r)
+pulse_output_enable(struct audio_output *ao, GError **error_r)
 {
-	struct pulse_output *po = data;
+	struct pulse_output *po = (struct pulse_output *)ao;
 
 	assert(po->mainloop == NULL);
 	assert(po->context == NULL);
@@ -419,9 +425,9 @@ pulse_output_enable(void *data, GError **error_r)
 }
 
 static void
-pulse_output_disable(void *data)
+pulse_output_disable(struct audio_output *ao)
 {
-	struct pulse_output *po = data;
+	struct pulse_output *po = (struct pulse_output *)ao;
 
 	assert(po->mainloop != NULL);
 
@@ -573,10 +579,10 @@ pulse_output_setup_stream(struct pulse_output *po, const pa_sample_spec *ss,
 }
 
 static bool
-pulse_output_open(void *data, struct audio_format *audio_format,
+pulse_output_open(struct audio_output *ao, struct audio_format *audio_format,
 		  GError **error_r)
 {
-	struct pulse_output *po = data;
+	struct pulse_output *po = (struct pulse_output *)ao;
 	pa_sample_spec ss;
 	int error;
 
@@ -647,9 +653,9 @@ pulse_output_open(void *data, struct audio_format *audio_format,
 }
 
 static void
-pulse_output_close(void *data)
+pulse_output_close(struct audio_output *ao)
 {
-	struct pulse_output *po = data;
+	struct pulse_output *po = (struct pulse_output *)ao;
 	pa_operation *o;
 
 	assert(po->mainloop != NULL);
@@ -796,9 +802,10 @@ pulse_output_stream_pause(struct pulse_output *po, bool pause,
 }
 
 static size_t
-pulse_output_play(void *data, const void *chunk, size_t size, GError **error_r)
+pulse_output_play(struct audio_output *ao, const void *chunk, size_t size,
+		  GError **error_r)
 {
-	struct pulse_output *po = data;
+	struct pulse_output *po = (struct pulse_output *)ao;
 	int error;
 
 	assert(po->mainloop != NULL);
@@ -866,9 +873,9 @@ pulse_output_play(void *data, const void *chunk, size_t size, GError **error_r)
 }
 
 static void
-pulse_output_cancel(void *data)
+pulse_output_cancel(struct audio_output *ao)
 {
-	struct pulse_output *po = data;
+	struct pulse_output *po = (struct pulse_output *)ao;
 	pa_operation *o;
 
 	assert(po->mainloop != NULL);
@@ -898,9 +905,9 @@ pulse_output_cancel(void *data)
 }
 
 static bool
-pulse_output_pause(void *data)
+pulse_output_pause(struct audio_output *ao)
 {
-	struct pulse_output *po = data;
+	struct pulse_output *po = (struct pulse_output *)ao;
 	GError *error = NULL;
 
 	assert(po->mainloop != NULL);
@@ -945,12 +952,12 @@ pulse_output_test_default_device(void)
 	struct pulse_output *po;
 	bool success;
 
-	po = pulse_output_init(NULL, NULL, NULL);
+	po = (struct pulse_output *)pulse_output_init(NULL, NULL);
 	if (po == NULL)
 		return false;
 
 	success = pulse_output_wait_connection(po, NULL);
-	pulse_output_finish(po);
+	pulse_output_finish(&po->base);
 
 	return success;
 }

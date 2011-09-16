@@ -38,6 +38,8 @@ struct winmm_buffer {
 };
 
 struct winmm_output {
+	struct audio_output base;
+
 	UINT device_id;
 	HWAVEOUT handle;
 
@@ -101,30 +103,34 @@ get_device_id(const char *device_name)
 	return WAVE_MAPPER;
 }
 
-static void *
-winmm_output_init(G_GNUC_UNUSED const struct audio_format *audio_format,
-		  G_GNUC_UNUSED const struct config_param *param,
-		  G_GNUC_UNUSED GError **error)
+static struct audio_output *
+winmm_output_init(const struct config_param *param, GError **error_r)
 {
 	struct winmm_output *wo = g_new(struct winmm_output, 1);
+	if (!ao_base_init(&wo->base, &winmm_output_plugin, param, error_r)) {
+		g_free(wo);
+		return NULL;
+	}
+
 	const char *device = config_get_block_string(param, "device", NULL);
 	wo->device_id = get_device_id(device);
-	return wo;
+	return &wo->base;
 }
 
 static void
-winmm_output_finish(void *data)
+winmm_output_finish(struct audio_output *ao)
 {
-	struct winmm_output *wo = data;
+	struct winmm_output *wo = (struct winmm_output *)ao;
 
+	ao_base_finish(&wo->base);
 	g_free(wo);
 }
 
 static bool
-winmm_output_open(void *data, struct audio_format *audio_format,
+winmm_output_open(struct audio_output *ao, struct audio_format *audio_format,
 		  GError **error_r)
 {
-	struct winmm_output *wo = data;
+	struct winmm_output *wo = (struct winmm_output *)ao;
 
 	wo->event = CreateEvent(NULL, false, false, NULL);
 	if (wo->event == NULL) {
@@ -180,9 +186,9 @@ winmm_output_open(void *data, struct audio_format *audio_format,
 }
 
 static void
-winmm_output_close(void *data)
+winmm_output_close(struct audio_output *ao)
 {
-	struct winmm_output *wo = data;
+	struct winmm_output *wo = (struct winmm_output *)ao;
 
 	for (unsigned i = 0; i < G_N_ELEMENTS(wo->buffers); ++i)
 		pcm_buffer_deinit(&wo->buffers[i].buffer);
@@ -253,9 +259,9 @@ winmm_drain_buffer(struct winmm_output *wo, struct winmm_buffer *buffer,
 }
 
 static size_t
-winmm_output_play(void *data, const void *chunk, size_t size, GError **error_r)
+winmm_output_play(struct audio_output *ao, const void *chunk, size_t size, GError **error_r)
 {
-	struct winmm_output *wo = data;
+	struct winmm_output *wo = (struct winmm_output *)ao;
 
 	/* get the next buffer from the ring and prepare it */
 	struct winmm_buffer *buffer = &wo->buffers[wo->next_buffer];
@@ -308,18 +314,18 @@ winmm_stop(struct winmm_output *wo)
 }
 
 static void
-winmm_output_drain(void *data)
+winmm_output_drain(struct audio_output *ao)
 {
-	struct winmm_output *wo = data;
+	struct winmm_output *wo = (struct winmm_output *)ao;
 
 	if (!winmm_drain_all_buffers(wo, NULL))
 		winmm_stop(wo);
 }
 
 static void
-winmm_output_cancel(void *data)
+winmm_output_cancel(struct audio_output *ao)
 {
-	struct winmm_output *wo = data;
+	struct winmm_output *wo = (struct winmm_output *)ao;
 
 	winmm_stop(wo);
 }

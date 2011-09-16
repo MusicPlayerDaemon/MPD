@@ -37,11 +37,6 @@ audio_output_quark(void)
 	return g_quark_from_static_string("audio_output");
 }
 
-bool
-audio_output_init(struct audio_output *ao, const struct config_param *param,
-		  struct player_control *pc,
-		  GError **error_r);
-
 /**
  * Enables the device.
  */
