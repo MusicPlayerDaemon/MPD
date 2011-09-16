@@ -40,6 +40,11 @@
  */
 static const size_t SOUP_MAX_BUFFERED = 512 * 1024;
 
+/**
+ * Resume the stream at this number of bytes after it has been paused.
+ */
+static const size_t SOUP_RESUME_AT = 384 * 1024;
+
 static SoupURI *soup_proxy;
 static SoupSession *soup_session;
 
@@ -422,7 +427,7 @@ input_soup_read(struct input_stream *is, void *ptr, size_t size,
 		}
 	}
 
-	if (s->pause && s->total_buffered < SOUP_MAX_BUFFERED) {
+	if (s->pause && s->total_buffered < SOUP_RESUME_AT) {
 		s->pause = false;
 		soup_session_unpause_message(soup_session, s->msg);
 	}
