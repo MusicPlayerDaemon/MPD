@@ -112,9 +112,44 @@ input_soup_finish(void)
 		soup_uri_free(soup_proxy);
 }
 
+/**
+ * Copy the error from the SoupMessage object to
+ * input_soup::postponed_error.
+ *
+ * @return true if there was no error
+ */
+static bool
+input_soup_copy_error(struct input_soup *s, const SoupMessage *msg)
+{
+	if (SOUP_STATUS_IS_SUCCESSFUL(msg->status_code))
+		return true;
+
+	if (msg->status_code == SOUP_STATUS_CANCELLED)
+		/* failure, but don't generate a GError, because this
+		   status was caused by _close() */
+		return false;
+
+	if (s->postponed_error != NULL)
+		/* there's already a GError, don't overwrite it */
+		return false;
+
+	if (SOUP_STATUS_IS_TRANSPORT_ERROR(msg->status_code))
+		s->postponed_error =
+			g_error_new(soup_quark(), msg->status_code,
+				    "HTTP client error: %s",
+				    msg->reason_phrase);
+	else
+		s->postponed_error =
+			g_error_new(soup_quark(), msg->status_code,
+				    "got HTTP status: %d %s",
+				    msg->status_code, msg->reason_phrase);
+
+	return false;
+}
+
 static void
 input_soup_session_callback(G_GNUC_UNUSED SoupSession *session,
-			    G_GNUC_UNUSED SoupMessage *msg, gpointer user_data)
+			    SoupMessage *msg, gpointer user_data)
 {
 	struct input_soup *s = user_data;
 
@@ -122,6 +157,9 @@ input_soup_session_callback(G_GNUC_UNUSED SoupSession *session,
 	assert(!s->completed);
 
 	g_mutex_lock(s->base.mutex);
+
+	if (!s->base.ready)
+		input_soup_copy_error(s, msg);
 
 	s->base.ready = true;
 	s->alive = false;
@@ -136,15 +174,9 @@ input_soup_got_headers(SoupMessage *msg, gpointer user_data)
 {
 	struct input_soup *s = user_data;
 
-	if (!SOUP_STATUS_IS_SUCCESSFUL(msg->status_code)) {
-		g_mutex_lock(s->base.mutex);
+	g_mutex_lock(s->base.mutex);
 
-		if (s->postponed_error == NULL)
-			s->postponed_error =
-				g_error_new(soup_quark(), msg->status_code,
-					    "got HTTP status %d",
-					    msg->status_code);
-
+	if (!input_soup_copy_error(s, msg)) {
 		g_mutex_unlock(s->base.mutex);
 
 		soup_session_cancel_message(soup_session, msg,
@@ -152,12 +184,11 @@ input_soup_got_headers(SoupMessage *msg, gpointer user_data)
 		return;
 	}
 
-	soup_message_body_set_accumulate(msg->response_body, false);
-
-	g_mutex_lock(s->base.mutex);
 	s->base.ready = true;
 	g_cond_broadcast(s->base.cond);
 	g_mutex_unlock(s->base.mutex);
+
+	soup_message_body_set_accumulate(msg->response_body, false);
 }
 
 static void
