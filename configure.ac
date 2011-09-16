@@ -1451,10 +1451,9 @@ dnl CFLAGS
 dnl ---------------------------------------------------------------------------
 
 dnl ---------------------------------- debug ----------------------------------
-#if test "x$enable_debug" = xno; then
-	# don't set NDEBUG for now, until MPD is stable
-	#AM_CFLAGS="$AM_CFLAGS -DNDEBUG"
-#fi
+if test "x$enable_debug" = xno; then
+	AM_CPPFLAGS="$AM_CPPFLAGS -DNDEBUG"
+fi
 
 dnl ----------------------------------- GCC -----------------------------------
 if test x$GCC = xyes

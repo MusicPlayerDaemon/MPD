@@ -1,4 +1,5 @@
 ver 0.16.5 (2010/??/??)
+* configure.ac: disable assertions in the non-debugging build
 * pcm_format: fix 32-to-24 bit conversion (the "silence" bug)
 * input:
   - rewind: reduce heap usage
