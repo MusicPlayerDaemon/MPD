@@ -183,25 +183,19 @@ size_t decoder_read(struct decoder *decoder,
 	if (length == 0)
 		return 0;
 
-	while (true) {
-		if (decoder_check_cancel_read(decoder))
-			return 0;
+	if (decoder_check_cancel_read(decoder))
+		return 0;
 
-		nbytes = input_stream_read(is, buffer, length, &error);
+	nbytes = input_stream_read(is, buffer, length, &error);
+	assert(nbytes == 0 || error == NULL);
+	assert(nbytes > 0 || error != NULL || input_stream_eof(is));
 
-		if (G_UNLIKELY(nbytes == 0 && error != NULL)) {
-			g_warning("%s", error->message);
-			g_error_free(error);
-			return 0;
-		}
-
-		if (nbytes > 0 || input_stream_eof(is))
-			return nbytes;
-
-		/* sleep for a fraction of a second! */
-		/* XXX don't sleep, wait for an event instead */
-		g_usleep(10000);
+	if (G_UNLIKELY(nbytes == 0 && error != NULL)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
 	}
+
+	return nbytes;
 }
 
 void
