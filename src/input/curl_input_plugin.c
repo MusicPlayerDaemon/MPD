@@ -177,7 +177,7 @@ buffer_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 
 	assert(buffer->consumed <= buffer->size);
 
-	g_free(data);
+	g_free(buffer);
 }
 
 /**
