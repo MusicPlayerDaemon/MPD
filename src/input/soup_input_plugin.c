@@ -58,6 +58,8 @@ struct input_soup {
 	size_t total_buffered;
 
 	bool alive, pause, eof;
+
+	GError *postponed_error;
 };
 
 static inline GQuark
@@ -128,6 +130,16 @@ input_soup_got_headers(SoupMessage *msg, gpointer user_data)
 	struct input_soup *s = user_data;
 
 	if (!SOUP_STATUS_IS_SUCCESSFUL(msg->status_code)) {
+		g_mutex_lock(s->mutex);
+
+		if (s->postponed_error == NULL)
+			s->postponed_error =
+				g_error_new(soup_quark(), msg->status_code,
+					    "got HTTP status %d",
+					    msg->status_code);
+
+		g_mutex_unlock(s->mutex);
+
 		soup_session_cancel_message(soup_session, msg,
 					    SOUP_STATUS_CANCELLED);
 		return;
@@ -230,6 +242,7 @@ input_soup_open(const char *uri, G_GNUC_UNUSED GError **error_r)
 	s->alive = true;
 	s->pause = false;
 	s->eof = false;
+	s->postponed_error = NULL;
 
 	soup_session_queue_message(soup_session, s->msg,
 				   input_soup_session_callback, s);
@@ -286,10 +299,19 @@ input_soup_buffer(struct input_stream *is, GError **error_r)
 
 
 	bool success = input_soup_wait_data(s);
+
+	if (!success) {
+		if (s->postponed_error != NULL) {
+			g_propagate_error(error_r, s->postponed_error);
+			s->postponed_error = NULL;
+		} else
+			g_set_error_literal(error_r, soup_quark(), 0,
+					    "HTTP failure");
+	}
+
 	g_mutex_unlock(s->mutex);
 
 	if (!success) {
-		g_set_error_literal(error_r, soup_quark(), 0, "HTTP failure");
 		return -1;
 	}
 
@@ -306,9 +328,15 @@ input_soup_read(struct input_stream *is, void *ptr, size_t size,
 
 	if (!input_soup_wait_data(s)) {
 		assert(!s->alive);
-		g_mutex_unlock(s->mutex);
 
-		g_set_error_literal(error_r, soup_quark(), 0, "HTTP failure");
+		if (s->postponed_error != NULL) {
+			g_propagate_error(error_r, s->postponed_error);
+			s->postponed_error = NULL;
+		} else
+			g_set_error_literal(error_r, soup_quark(), 0,
+					    "HTTP failure");
+
+		g_mutex_unlock(s->mutex);
 		return 0;
 	}
 
