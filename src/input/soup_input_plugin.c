@@ -59,6 +59,12 @@ struct input_soup {
 
 	bool alive, pause, eof;
 
+	/**
+	 * Set when the session callback has been invoked, when it is
+	 * safe to free this object.
+	 */
+	bool completed;
+
 	GError *postponed_error;
 };
 
@@ -116,10 +122,14 @@ input_soup_session_callback(G_GNUC_UNUSED SoupSession *session,
 	struct input_soup *s = user_data;
 
 	assert(msg == s->msg);
+	assert(!s->completed);
 
 	g_mutex_lock(s->mutex);
+
 	s->base.ready = true;
 	s->alive = false;
+	s->completed = true;
+
 	g_cond_broadcast(s->cond);
 	g_mutex_unlock(s->mutex);
 }
@@ -242,6 +252,7 @@ input_soup_open(const char *uri, G_GNUC_UNUSED GError **error_r)
 	s->alive = true;
 	s->pause = false;
 	s->eof = false;
+	s->completed = false;
 	s->postponed_error = NULL;
 
 	soup_session_queue_message(soup_session, s->msg,
@@ -257,16 +268,21 @@ input_soup_close(struct input_stream *is)
 
 	g_mutex_lock(s->mutex);
 
-	if (s->alive) {
-		assert(s->msg != NULL);
+	if (!s->completed) {
+		/* the messages's session callback hasn't been invoked
+		   yet; cancel it and wait for completion */
 
-		s->alive = false;
 		g_mutex_unlock(s->mutex);
 
 		soup_session_cancel_message(soup_session, s->msg,
 					    SOUP_STATUS_CANCELLED);
-	} else
-		g_mutex_unlock(s->mutex);
+
+		g_mutex_lock(s->mutex);
+		while (!s->completed)
+			g_cond_wait(s->cond, s->mutex);
+	}
+
+	g_mutex_unlock(s->mutex);
 
 	g_mutex_free(s->mutex);
 	g_cond_free(s->cond);
