@@ -147,11 +147,6 @@ static struct {
 
 	GSList *fds;
 
-	/**
-	 * When this is non-zero, then an update of #fds is scheduled.
-	 */
-	guint dirty_source_id;
-
 #if LIBCURL_VERSION_NUM >= 0x070f04
 	/**
 	 * Did CURL give us a timeout?  If yes, then we need to call
@@ -305,38 +300,6 @@ curl_update_fds(void)
 }
 
 /**
- * Callback for curl_schedule_update() that runs in the I/O thread.
- */
-static gboolean
-input_curl_dirty_callback(G_GNUC_UNUSED gpointer data)
-{
-	assert(io_thread_inside());
-	assert(curl.dirty_source_id != 0 || curl.requests == NULL);
-	curl.dirty_source_id = 0;
-
-	curl_update_fds();
-
-	return false;
-}
-
-/**
- * Schedule a refresh of curl.fds.  Does nothing if that is already
- * scheduled.
- *
- * No lock needed.
- */
-static void
-input_curl_schedule_update(void)
-{
-	if (curl.dirty_source_id != 0)
-		/* already scheduled */
-		return;
-
-	curl.dirty_source_id =
-		io_thread_idle_add(input_curl_dirty_callback, NULL);
-}
-
-/**
  * Runs in the I/O thread.  No lock needed.
  */
 static bool
@@ -357,7 +320,7 @@ input_curl_easy_add(struct input_curl *c, GError **error_r)
 		return false;
 	}
 
-	input_curl_schedule_update();
+	curl_update_fds();
 
 	return true;
 }
@@ -720,16 +683,6 @@ static gpointer
 curl_destroy_sources(G_GNUC_UNUSED gpointer data)
 {
 	g_source_destroy(curl.source);
-
-	if (curl.dirty_source_id != 0) {
-		GSource *source =
-			g_main_context_find_source_by_id(io_thread_context(),
-							 curl.dirty_source_id);
-		assert(source != NULL);
-		curl.dirty_source_id = 0;
-
-		g_source_destroy(source);
-	}
 
 	return NULL;
 }
