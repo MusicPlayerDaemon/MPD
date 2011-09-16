@@ -37,7 +37,9 @@ PKG_PROG_PKG_CONFIG
 dnl ---------------------------------------------------------------------------
 dnl Declare Variables
 dnl ---------------------------------------------------------------------------
+AC_SUBST(AM_CPPFLAGS,"")
 AC_SUBST(AM_CFLAGS,"")
+AC_SUBST(AM_CXXFLAGS,"")
 
 AC_SUBST(MPD_LIBS)
 AC_SUBST(MPD_CFLAGS)
