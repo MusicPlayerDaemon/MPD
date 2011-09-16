@@ -162,7 +162,7 @@ input_soup_got_chunk(SoupMessage *msg, SoupBuffer *chunk, gpointer user_data)
 }
 
 static void
-input_soup_got_body(SoupMessage *msg, gpointer user_data)
+input_soup_got_body(G_GNUC_UNUSED SoupMessage *msg, gpointer user_data)
 {
 	struct input_soup *s = user_data;
 
