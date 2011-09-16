@@ -1480,6 +1480,7 @@ fi
 dnl ---------------------------- warnings as errors ---------------------------
 if test "x$enable_werror" = xyes; then
 	AM_CFLAGS="$AM_CFLAGS -Werror -pedantic-errors"
+	AM_CXXFLAGS="$AM_CXXFLAGS -Werror"
 fi
 
 dnl ---------------------------------------------------------------------------
