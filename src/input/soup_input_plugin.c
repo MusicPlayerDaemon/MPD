@@ -116,6 +116,7 @@ input_soup_session_callback(G_GNUC_UNUSED SoupSession *session,
 	assert(msg == s->msg);
 
 	g_mutex_lock(s->mutex);
+	s->base.ready = true;
 	s->alive = false;
 	g_cond_broadcast(s->cond);
 	g_mutex_unlock(s->mutex);
@@ -170,6 +171,7 @@ input_soup_got_body(G_GNUC_UNUSED SoupMessage *msg, gpointer user_data)
 
 	g_mutex_lock(s->mutex);
 
+	s->base.ready = true;
 	s->eof = true;
 	s->alive = false;
 
