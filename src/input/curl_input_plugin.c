@@ -52,6 +52,11 @@
 static const size_t CURL_MAX_BUFFERED = 512 * 1024;
 
 /**
+ * Resume the stream at this number of bytes after it has been paused.
+ */
+static const size_t CURL_RESUME_AT = 384 * 1024;
+
+/**
  * Buffers created by input_curl_writefunction().
  */
 struct buffer {
@@ -918,7 +923,7 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size,
 	is->offset += (goffset)nbytes;
 
 #if LIBCURL_VERSION_NUM >= 0x071200
-	if (c->paused && curl_total_buffer_size(c) < CURL_MAX_BUFFERED) {
+	if (c->paused && curl_total_buffer_size(c) < CURL_RESUME_AT) {
 		g_mutex_unlock(c->mutex);
 		io_thread_call(input_curl_resume, c);
 		g_mutex_lock(c->mutex);
