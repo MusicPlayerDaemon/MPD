@@ -220,6 +220,17 @@ input_soup_wait_data(struct input_soup *s)
 	}
 }
 
+static gpointer
+input_soup_queue(gpointer data)
+{
+	struct input_soup *s = data;
+
+	soup_session_queue_message(soup_session, s->msg,
+				   input_soup_session_callback, s);
+
+	return NULL;
+}
+
 static struct input_stream *
 input_soup_open(const char *uri, G_GNUC_UNUSED GError **error_r)
 {
@@ -255,10 +266,21 @@ input_soup_open(const char *uri, G_GNUC_UNUSED GError **error_r)
 	s->completed = false;
 	s->postponed_error = NULL;
 
-	soup_session_queue_message(soup_session, s->msg,
-				   input_soup_session_callback, s);
+	io_thread_call(input_soup_queue, s);
 
 	return &s->base;
+}
+
+static gpointer
+input_soup_cancel(gpointer data)
+{
+	struct input_soup *s = data;
+
+	if (!s->completed)
+		soup_session_cancel_message(soup_session, s->msg,
+					    SOUP_STATUS_CANCELLED);
+
+	return NULL;
 }
 
 static void
@@ -274,8 +296,7 @@ input_soup_close(struct input_stream *is)
 
 		g_mutex_unlock(s->mutex);
 
-		soup_session_cancel_message(soup_session, s->msg,
-					    SOUP_STATUS_CANCELLED);
+		io_thread_call(input_soup_cancel, s);
 
 		g_mutex_lock(s->mutex);
 		while (!s->completed)
