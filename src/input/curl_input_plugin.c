@@ -198,8 +198,8 @@ input_curl_resume(gpointer data)
 	struct input_curl *c = data;
 
 	if (c->paused) {
-		curl_easy_pause(c->easy, CURLPAUSE_CONT);
 		c->paused = false;
+		curl_easy_pause(c->easy, CURLPAUSE_CONT);
 	}
 
 	return NULL;
