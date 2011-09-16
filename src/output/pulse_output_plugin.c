@@ -72,7 +72,8 @@ pulse_output_set_mixer(struct pulse_output *po, struct pulse_mixer *pm)
 }
 
 void
-pulse_output_clear_mixer(struct pulse_output *po, struct pulse_mixer *pm)
+pulse_output_clear_mixer(struct pulse_output *po,
+			 G_GNUC_UNUSED struct pulse_mixer *pm)
 {
 	assert(po != NULL);
 	assert(pm != NULL);

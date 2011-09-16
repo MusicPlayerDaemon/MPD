@@ -37,7 +37,9 @@ PKG_PROG_PKG_CONFIG
 dnl ---------------------------------------------------------------------------
 dnl Declare Variables
 dnl ---------------------------------------------------------------------------
+AC_SUBST(AM_CPPFLAGS,"")
 AC_SUBST(AM_CFLAGS,"")
+AC_SUBST(AM_CXXFLAGS,"")
 
 AC_SUBST(MPD_LIBS)
 AC_SUBST(MPD_CFLAGS)
@@ -1469,10 +1471,9 @@ dnl CFLAGS
 dnl ---------------------------------------------------------------------------
 
 dnl ---------------------------------- debug ----------------------------------
-#if test "x$enable_debug" = xno; then
-	# don't set NDEBUG for now, until MPD is stable
-	#AM_CFLAGS="$AM_CFLAGS -DNDEBUG"
-#fi
+if test "x$enable_debug" = xno; then
+	AM_CPPFLAGS="$AM_CPPFLAGS -DNDEBUG"
+fi
 
 dnl ----------------------------------- GCC -----------------------------------
 if test x$GCC = xyes
@@ -1497,6 +1498,7 @@ fi
 dnl ---------------------------- warnings as errors ---------------------------
 if test "x$enable_werror" = xyes; then
 	AM_CFLAGS="$AM_CFLAGS -Werror -pedantic-errors"
+	AM_CXXFLAGS="$AM_CXXFLAGS -Werror"
 fi
 
 dnl ---------------------------------------------------------------------------
