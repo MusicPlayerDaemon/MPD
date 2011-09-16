@@ -27,6 +27,7 @@ check_descending_priority(G_GNUC_UNUSED const struct queue *queue,
 		unsigned position = queue_order_to_position(queue, order);
 		uint8_t priority = queue->items[position].priority;
 		assert(priority <= last_priority);
+		(void)last_priority;
 		last_priority = priority;
 	}
 }
