@@ -313,6 +313,9 @@ input_soup_close(struct input_stream *is)
 		soup_buffer_free(buffer);
 	g_queue_free(s->buffers);
 
+	if (s->postponed_error != NULL)
+		g_error_free(s->postponed_error);
+
 	input_stream_deinit(&s->base);
 	g_free(s);
 }

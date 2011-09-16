@@ -766,6 +766,9 @@ input_curl_free(struct input_curl *c)
 	g_mutex_free(c->mutex);
 	g_cond_free(c->cond);
 
+	if (c->postponed_error != NULL)
+		g_error_free(c->postponed_error);
+
 	g_free(c->url);
 	input_stream_deinit(&c->base);
 	g_free(c);
@@ -1288,6 +1291,8 @@ input_curl_open(const char *url, GError **error_r)
 
 	icy_clear(&c->icy_metadata);
 	c->tag = NULL;
+
+	c->postponed_error = NULL;
 
 #if LIBCURL_VERSION_NUM >= 0x071200
 	c->paused = false;
