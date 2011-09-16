@@ -142,18 +142,41 @@ void decoder_seek_error(struct decoder * decoder)
 	decoder_command_finished(decoder);
 }
 
+/**
+ * Should be read operation be cancelled?  That is the case when the
+ * player thread has sent a command such as "STOP".
+ */
+G_GNUC_PURE
+static inline bool
+decoder_check_cancel_read(const struct decoder *decoder)
+{
+	if (decoder == NULL)
+		return false;
+
+	const struct decoder_control *dc = decoder->dc;
+	if (dc->command == DECODE_COMMAND_NONE)
+		return false;
+
+	/* ignore the SEEK command during initialization, the plugin
+	   should handle that after it has initialized successfully */
+	if (dc->command == DECODE_COMMAND_SEEK &&
+	    (dc->state == DECODE_STATE_START || decoder->seeking))
+		return false;
+
+	return true;
+}
+
 size_t decoder_read(struct decoder *decoder,
 		    struct input_stream *is,
 		    void *buffer, size_t length)
 {
-	const struct decoder_control *dc =
-		decoder != NULL ? decoder->dc : NULL;
+	/* XXX don't allow decoder==NULL */
 	GError *error = NULL;
 	size_t nbytes;
 
 	assert(decoder == NULL ||
-	       dc->state == DECODE_STATE_START ||
-	       dc->state == DECODE_STATE_DECODE);
+	       decoder->dc->state == DECODE_STATE_START ||
+	       decoder->dc->state == DECODE_STATE_DECODE);
 	assert(is != NULL);
 	assert(buffer != NULL);
 
@@ -161,14 +184,7 @@ size_t decoder_read(struct decoder *decoder,
 		return 0;
 
 	while (true) {
-		/* XXX don't allow decoder==NULL */
-		if (decoder != NULL &&
-		    /* ignore the SEEK command during initialization,
-		       the plugin should handle that after it has
-		       initialized successfully */
-		    (dc->command != DECODE_COMMAND_SEEK ||
-		     (dc->state != DECODE_STATE_START && !decoder->seeking)) &&
-		    dc->command != DECODE_COMMAND_NONE)
+		if (decoder_check_cancel_read(decoder))
 			return 0;
 
 		nbytes = input_stream_read(is, buffer, length, &error);
