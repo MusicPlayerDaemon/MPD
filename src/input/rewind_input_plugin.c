@@ -107,6 +107,14 @@ input_rewind_close(struct input_stream *is)
 	g_free(r);
 }
 
+static bool
+input_rewind_check(struct input_stream *is, GError **error_r)
+{
+	struct input_rewind *r = (struct input_rewind *)is;
+
+	return input_stream_check(r->input, error_r);
+}
+
 static void
 input_rewind_update(struct input_stream *is)
 {
@@ -221,6 +229,7 @@ input_rewind_seek(struct input_stream *is, goffset offset, int whence,
 
 static const struct input_plugin rewind_input_plugin = {
 	.close = input_rewind_close,
+	.check = input_rewind_check,
 	.update = input_rewind_update,
 	.tag = input_rewind_tag,
 	.buffer = input_rewind_buffer,

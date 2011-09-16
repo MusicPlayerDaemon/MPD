@@ -67,6 +67,16 @@ input_stream_open(const char *url, GError **error_r)
 	return NULL;
 }
 
+bool
+input_stream_check(struct input_stream *is, GError **error_r)
+{
+	assert(is != NULL);
+	assert(is->plugin != NULL);
+
+	return is->plugin->check == NULL ||
+		is->plugin->check(is, error_r);
+}
+
 void
 input_stream_update(struct input_stream *is)
 {

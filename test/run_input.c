@@ -100,6 +100,12 @@ dump_input_stream(struct input_stream *is)
 			break;
 	}
 
+	if (!input_stream_check(is, &error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return EXIT_FAILURE;
+	}
+
 	return 0;
 }
 

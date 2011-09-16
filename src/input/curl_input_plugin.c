@@ -774,6 +774,23 @@ input_curl_free(struct input_curl *c)
 	g_free(c);
 }
 
+static bool
+input_curl_check(struct input_stream *is, GError **error_r)
+{
+	struct input_curl *c = (struct input_curl *)is;
+
+	g_mutex_lock(c->mutex);
+
+	bool success = c->postponed_error == NULL;
+	if (!success) {
+		g_propagate_error(error_r, c->postponed_error);
+		c->postponed_error = NULL;
+	}
+
+	g_mutex_unlock(c->mutex);
+	return success;
+}
+
 static struct tag *
 input_curl_tag(struct input_stream *is)
 {
@@ -1318,6 +1335,7 @@ const struct input_plugin input_plugin_curl = {
 
 	.open = input_curl_open,
 	.close = input_curl_close,
+	.check = input_curl_check,
 	.tag = input_curl_tag,
 	.buffer = input_curl_buffer,
 	.read = input_curl_read,

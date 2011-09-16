@@ -91,6 +91,15 @@ void
 input_stream_close(struct input_stream *is);
 
 /**
+ * Check for errors that may have occurred in the I/O thread.
+ *
+ * @return false on error
+ */
+gcc_nonnull(1)
+bool
+input_stream_check(struct input_stream *is, GError **error_r);
+
+/**
  * Update the public attributes.  Call before accessing attributes
  * such as "ready" or "offset".
  */

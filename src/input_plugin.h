@@ -52,6 +52,14 @@ struct input_plugin {
 	void (*close)(struct input_stream *is);
 
 	/**
+	 * Check for errors that may have occurred in the I/O thread.
+	 * May be unimplemented for synchronous plugins.
+	 *
+	 * @return false on error
+	 */
+	bool (*check)(struct input_stream *is, GError **error_r);
+
+	/**
 	 * Update the public attributes.  Call before access.  Can be
 	 * NULL if the plugin always keeps its attributes up to date.
 	 */

@@ -320,6 +320,23 @@ input_soup_close(struct input_stream *is)
 	g_free(s);
 }
 
+static bool
+input_soup_check(struct input_stream *is, GError **error_r)
+{
+	struct input_soup *s = (struct input_soup *)is;
+
+	g_mutex_lock(s->mutex);
+
+	bool success = s->postponed_error == NULL;
+	if (!success) {
+		g_propagate_error(error_r, s->postponed_error);
+		s->postponed_error = NULL;
+	}
+
+	g_mutex_unlock(s->mutex);
+	return success;
+}
+
 static int
 input_soup_buffer(struct input_stream *is, GError **error_r)
 {
@@ -444,6 +461,7 @@ const struct input_plugin input_plugin_soup = {
 
 	.open = input_soup_open,
 	.close = input_soup_close,
+	.check = input_soup_check,
 	.buffer = input_soup_buffer,
 	.read = input_soup_read,
 	.eof = input_soup_eof,
