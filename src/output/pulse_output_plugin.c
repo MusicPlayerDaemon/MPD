@@ -496,6 +496,41 @@ pulse_output_stream_write_cb(G_GNUC_UNUSED pa_stream *stream, size_t nbytes,
 	pa_threaded_mainloop_signal(po->mainloop, 0);
 }
 
+/**
+ * Create, set up and connect a context.
+ *
+ * Caller must lock the main loop.
+ *
+ * @return true on success, false on error
+ */
+static bool
+pulse_output_setup_stream(struct pulse_output *po, const pa_sample_spec *ss,
+			  GError **error_r)
+{
+	assert(po != NULL);
+	assert(po->context != NULL);
+
+	po->stream = pa_stream_new(po->context, po->name, ss, NULL);
+	if (po->stream == NULL) {
+		g_set_error(error_r, pulse_output_quark(), 0,
+			    "pa_stream_new() has failed: %s",
+			    pa_strerror(pa_context_errno(po->context)));
+		return false;
+	}
+
+#if PA_CHECK_VERSION(0,9,8)
+	pa_stream_set_suspended_callback(po->stream,
+					 pulse_output_stream_suspended_cb, po);
+#endif
+
+	pa_stream_set_state_callback(po->stream,
+				     pulse_output_stream_state_cb, po);
+	pa_stream_set_write_callback(po->stream,
+				     pulse_output_stream_write_cb, po);
+
+	return true;
+}
+
 static bool
 pulse_output_open(void *data, struct audio_format *audio_format,
 		  GError **error_r)
@@ -540,24 +575,10 @@ pulse_output_open(void *data, struct audio_format *audio_format,
 
 	/* create a stream .. */
 
-	po->stream = pa_stream_new(po->context, po->name, &ss, NULL);
-	if (po->stream == NULL) {
-		g_set_error(error_r, pulse_output_quark(), 0,
-			    "pa_stream_new() has failed: %s",
-			    pa_strerror(pa_context_errno(po->context)));
+	if (!pulse_output_setup_stream(po, &ss, error_r)) {
 		pa_threaded_mainloop_unlock(po->mainloop);
 		return false;
 	}
-
-#if PA_CHECK_VERSION(0,9,8)
-	pa_stream_set_suspended_callback(po->stream,
-					 pulse_output_stream_suspended_cb, po);
-#endif
-
-	pa_stream_set_state_callback(po->stream,
-				     pulse_output_stream_state_cb, po);
-	pa_stream_set_write_callback(po->stream,
-				     pulse_output_stream_write_cb, po);
 
 	/* .. and connect it (asynchronously) */
 
