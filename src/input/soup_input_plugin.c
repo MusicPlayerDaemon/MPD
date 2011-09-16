@@ -57,7 +57,7 @@ struct input_soup {
 
 	size_t total_buffered;
 
-	bool alive, ready, pause, eof;
+	bool alive, pause, eof;
 };
 
 static inline GQuark
@@ -135,7 +135,7 @@ input_soup_got_headers(SoupMessage *msg, gpointer user_data)
 	soup_message_body_set_accumulate(msg->response_body, false);
 
 	g_mutex_lock(s->mutex);
-	s->ready = true;
+	s->base.ready = true;
 	g_cond_broadcast(s->cond);
 	g_mutex_unlock(s->mutex);
 }
@@ -226,7 +226,6 @@ input_soup_open(const char *uri, G_GNUC_UNUSED GError **error_r)
 			 G_CALLBACK(input_soup_got_body), s);
 
 	s->alive = true;
-	s->ready = false;
 	s->pause = false;
 	s->eof = false;
 
@@ -285,7 +284,6 @@ input_soup_buffer(struct input_stream *is, GError **error_r)
 
 
 	bool success = input_soup_wait_data(s);
-	s->base.ready = s->ready;
 	g_mutex_unlock(s->mutex);
 
 	if (!success) {
@@ -311,8 +309,6 @@ input_soup_read(struct input_stream *is, void *ptr, size_t size,
 		g_set_error_literal(error_r, soup_quark(), 0, "HTTP failure");
 		return 0;
 	}
-
-	s->base.ready = s->ready;
 
 	char *p0 = ptr, *p = p0, *p_end = p0 + size;
 
