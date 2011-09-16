@@ -965,8 +965,11 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size,
 	is->offset += (goffset)nbytes;
 
 #if LIBCURL_VERSION_NUM >= 0x071200
-	if (c->paused && curl_total_buffer_size(c) < CURL_MAX_BUFFERED)
+	if (c->paused && curl_total_buffer_size(c) < CURL_MAX_BUFFERED) {
+		g_mutex_unlock(c->mutex);
 		io_thread_call(input_curl_resume, c);
+		g_mutex_lock(c->mutex);
+	}
 #endif
 
 	g_mutex_unlock(c->mutex);
