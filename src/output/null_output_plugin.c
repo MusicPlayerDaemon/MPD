@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "null_output_plugin.h"
 #include "output_api.h"
 #include "timer.h"
 

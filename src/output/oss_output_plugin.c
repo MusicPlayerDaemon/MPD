@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "oss_output_plugin.h"
 #include "output_api.h"
 #include "mixer_list.h"
 #include "fd_util.h"

@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "httpd_output_plugin.h"
 #include "httpd_internal.h"
 #include "httpd_client.h"
 #include "output_api.h"

@@ -19,6 +19,7 @@
  */
 
 #include "config.h"
+#include "roar_output_plugin.h"
 #include "output_api.h"
 #include "mixer_list.h"
 #include "roar_output_plugin.h"

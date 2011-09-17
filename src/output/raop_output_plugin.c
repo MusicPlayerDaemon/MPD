@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "raop_output_plugin.h"
 #include "output_api.h"
 #include "mixer_list.h"

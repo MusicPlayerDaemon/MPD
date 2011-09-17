@@ -30,6 +30,7 @@
  */
 
 #include "config.h"
+#include "ffado_output_plugin.h"
 #include "output_api.h"
 #include "timer.h"
 

@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "shout_output_plugin.h"
 #include "output_api.h"
 #include "encoder_plugin.h"
 #include "encoder_list.h"

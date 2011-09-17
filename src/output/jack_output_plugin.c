@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "jack_output_plugin.h"
 #include "output_api.h"
 
 #include <assert.h>

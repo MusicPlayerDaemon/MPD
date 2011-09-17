@@ -1,7 +1,6 @@
 /*
- * Copyright (C) 2003-2010 The Music Player Daemon Project
- * Copyright (C) 2010-2011 Philipp 'ph3-der-loewe' Schafft
- * Copyright (C) 2010-2011 Hans-Kristian 'maister' Arntzen
+ * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +17,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-
-#ifndef __ROAR_OUTPUT_H
-#define __ROAR_OUTPUT_H
+#ifndef MPD_ROAR_OUTPUT_PLUGIN_H
+#define MPD_ROAR_OUTPUT_PLUGIN_H
 
 #include <stdbool.h>
 
 struct roar;
+
+extern const struct audio_output_plugin roar_output_plugin;
 
 int
 roar_output_get_volume(struct roar *roar);

@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "alsa_output_plugin.h"
 #include "output_api.h"
 #include "mixer_list.h"
 

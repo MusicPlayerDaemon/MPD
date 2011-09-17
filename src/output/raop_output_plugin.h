@@ -17,14 +17,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_OUTPUT_RAOP_PLUGIN_H
-#define MPD_OUTPUT_RAOP_PLUGIN_H
+#ifndef MPD_RAOP_OUTPUT_PLUGIN_H
+#define MPD_RAOP_OUTPUT_PLUGIN_H
 
 #include <glib.h>
 
 #include <stdbool.h>
 
 struct raop_data;
+
+extern const struct audio_output_plugin raopPlugin;
 
 bool
 raop_set_volume(struct raop_data *rd, unsigned volume, GError **error_r);

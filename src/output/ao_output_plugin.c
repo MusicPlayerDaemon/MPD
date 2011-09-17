@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "ao_output_plugin.h"
 #include "output_api.h"
 
 #include <ao/ao.h>

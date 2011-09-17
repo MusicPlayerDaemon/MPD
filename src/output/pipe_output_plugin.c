@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "pipe_output_plugin.h"
 #include "output_api.h"
 
 #include <stdio.h>

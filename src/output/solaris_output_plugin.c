@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "solaris_output_plugin.h"
 #include "output_api.h"
 #include "fd_util.h"
 

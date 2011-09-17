@@ -144,9 +144,6 @@ mpd_headers = \
 	src/open.h \
 	src/output/httpd_client.h \
 	src/output/httpd_internal.h \
-	src/output/pulse_output_plugin.h \
-	src/output/roar_output_plugin.h \
-	src/output/winmm_output_plugin.h \
 	src/page.h \
 	src/pcm_buffer.h \
 	src/pcm_utils.h \
@@ -735,12 +732,14 @@ MIXER_SRC = \
 	src/mixer/software_mixer_plugin.c
 
 if HAVE_ALSA
-OUTPUT_SRC += src/output/alsa_output_plugin.c
+OUTPUT_SRC += \
+	src/output/alsa_output_plugin.c src/output/alsa_output_plugin.h
 MIXER_SRC += src/mixer/alsa_mixer_plugin.c
 endif
 
 if HAVE_ROAR
-OUTPUT_SRC += src/output/roar_output_plugin.c
+OUTPUT_SRC += \
+	src/output/roar_output_plugin.c src/output/roar_output_plugin.h
 MIXER_SRC += src/mixer/roar_mixer_plugin.c
 endif
 
@@ -791,7 +790,8 @@ OUTPUT_LIBS += $(OPENSSL_LIBS)
 endif
 
 if HAVE_PULSE
-OUTPUT_SRC += src/output/pulse_output_plugin.c
+OUTPUT_SRC += \
+	src/output/pulse_output_plugin.c src/output/pulse_output_plugin.h
 MIXER_SRC += src/mixer/pulse_mixer_plugin.c
 endif
 
@@ -815,7 +815,8 @@ OUTPUT_SRC += src/output/solaris_output_plugin.c
 endif
 
 if ENABLE_WINMM_OUTPUT
-OUTPUT_SRC += src/output/winmm_output_plugin.c
+OUTPUT_SRC += \
+	src/output/winmm_output_plugin.c src/output/winmm_output_plugin.h
 MIXER_SRC += src/mixer/winmm_mixer_plugin.c
 endif
 

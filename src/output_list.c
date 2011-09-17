@@ -20,26 +20,25 @@
 #include "config.h"
 #include "output_list.h"
 #include "output_api.h"
-
-extern const struct audio_output_plugin shoutPlugin;
-extern const struct audio_output_plugin null_output_plugin;
-extern const struct audio_output_plugin fifo_output_plugin;
-extern const struct audio_output_plugin pipe_output_plugin;
-extern const struct audio_output_plugin alsaPlugin;
-extern const struct audio_output_plugin roar_output_plugin;
-extern const struct audio_output_plugin ao_output_plugin;
-extern const struct audio_output_plugin oss_output_plugin;
-extern const struct audio_output_plugin openal_output_plugin;
-extern const struct audio_output_plugin osxPlugin;
-extern const struct audio_output_plugin raopPlugin;
-extern const struct audio_output_plugin solaris_output_plugin;
-extern const struct audio_output_plugin pulse_output_plugin;
-extern const struct audio_output_plugin mvp_output_plugin;
-extern const struct audio_output_plugin jack_output_plugin;
-extern const struct audio_output_plugin httpd_output_plugin;
-extern const struct audio_output_plugin recorder_output_plugin;
-extern const struct audio_output_plugin winmm_output_plugin;
-extern const struct audio_output_plugin ffado_output_plugin;
+#include "output/alsa_output_plugin.h"
+#include "output/ao_output_plugin.h"
+#include "output/ffado_output_plugin.h"
+#include "output/fifo_output_plugin.h"
+#include "output/httpd_output_plugin.h"
+#include "output/jack_output_plugin.h"
+#include "output/mvp_output_plugin.h"
+#include "output/null_output_plugin.h"
+#include "output/openal_output_plugin.h"
+#include "output/oss_output_plugin.h"
+#include "output/osx_output_plugin.h"
+#include "output/pipe_output_plugin.h"
+#include "output/pulse_output_plugin.h"
+#include "output/raop_output_plugin.h"
+#include "output/recorder_output_plugin.h"
+#include "output/roar_output_plugin.h"
+#include "output/shout_output_plugin.h"
+#include "output/solaris_output_plugin.h"
+#include "output/winmm_output_plugin.h"
 
 const struct audio_output_plugin *audio_output_plugins[] = {
 #ifdef HAVE_SHOUT

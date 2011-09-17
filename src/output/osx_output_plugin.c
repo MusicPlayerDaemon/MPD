@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "osx_output_plugin.h"
 #include "output_api.h"
 
 #include <glib.h>

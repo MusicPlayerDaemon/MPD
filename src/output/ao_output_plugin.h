@@ -17,33 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PULSE_OUTPUT_PLUGIN_H
-#define MPD_PULSE_OUTPUT_PLUGIN_H
+#ifndef MPD_AO_OUTPUT_PLUGIN_H
+#define MPD_AO_OUTPUT_PLUGIN_H
 
-#include <stdbool.h>
-
-#include <glib.h>
-
-struct pulse_output;
-struct pulse_mixer;
-struct pa_cvolume;
-
-extern const struct audio_output_plugin pulse_output_plugin;
-
-void
-pulse_output_lock(struct pulse_output *po);
-
-void
-pulse_output_unlock(struct pulse_output *po);
-
-void
-pulse_output_set_mixer(struct pulse_output *po, struct pulse_mixer *pm);
-
-void
-pulse_output_clear_mixer(struct pulse_output *po, struct pulse_mixer *pm);
-
-bool
-pulse_output_set_volume(struct pulse_output *po,
-			const struct pa_cvolume *volume, GError **error_r);
+extern const struct audio_output_plugin ao_output_plugin;
 
 #endif

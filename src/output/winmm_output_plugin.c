@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "winmm_output_plugin.h"
 #include "output_api.h"
 #include "pcm_buffer.h"
 #include "mixer_list.h"

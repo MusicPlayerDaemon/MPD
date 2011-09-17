@@ -23,6 +23,7 @@
  */
 
 #include "config.h"
+#include "mvp_output_plugin.h"
 #include "output_api.h"
 #include "fd_util.h"
 
