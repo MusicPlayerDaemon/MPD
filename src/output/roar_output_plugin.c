@@ -95,14 +95,11 @@ roar_configure(struct roar * self, const struct config_param *param)
 {
 	self->host = config_dup_block_string(param, "server", NULL);
 	self->name = config_dup_block_string(param, "name", "MPD");
-	char *role = config_dup_block_string(param, "role", "music");
-	if (role != NULL)
-	{
-		self->role = roar_str2role(role);
-		g_free(role);
-	}
-	else
-		self->role = ROAR_ROLE_MUSIC;
+
+	const char *role = config_get_block_string(param, "role", "music");
+	self->role = role != NULL
+		? roar_str2role(role)
+		: ROAR_ROLE_MUSIC;
 }
 
 static void *
