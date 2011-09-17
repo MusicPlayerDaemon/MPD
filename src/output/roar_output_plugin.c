@@ -107,16 +107,8 @@ roar_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 		const struct config_param *param,
 		G_GNUC_UNUSED GError **error)
 {
-	GMutex *lock = g_mutex_new();
-
-	roar_t * self = roar_mm_calloc(1, sizeof(*self));
-	if (self == NULL)
-	{
-		g_set_error(error, roar_output_quark(), 0, "Failed to allocate memory");
-		return NULL;
-	}
-
-	self->lock = lock;
+	struct roar *self = g_new0(struct roar, 1);
+	self->lock = g_mutex_new();
 	self->err = ROAR_ERROR_NONE;
 	roar_configure(self, param);
 	return self;
@@ -131,7 +123,7 @@ roar_finish(void *data)
 	g_free(self->name);
 	g_mutex_free(self->lock);
 
-	roar_mm_free(data);
+	g_free(self);
 }
 
 static bool
