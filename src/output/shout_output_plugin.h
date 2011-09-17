@@ -20,6 +20,6 @@
 #ifndef MPD_SHOUT_OUTPUT_PLUGIN_H
 #define MPD_SHOUT_OUTPUT_PLUGIN_H
 
-extern const struct audio_output_plugin shoutPlugin;
+extern const struct audio_output_plugin shout_output_plugin;
 
 #endif

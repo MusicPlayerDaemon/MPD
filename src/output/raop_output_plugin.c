@@ -1031,7 +1031,7 @@ raop_output_play(void *data, const void *chunk, size_t size,
 	return rval;
 }
 
-const struct audio_output_plugin raopPlugin = {
+const struct audio_output_plugin raop_output_plugin = {
 	.name = "raop",
 	.init = raop_output_init,
 	.finish = raop_output_finish,

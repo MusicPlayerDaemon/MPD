@@ -551,7 +551,7 @@ static void my_shout_set_tag(void *data,
 	write_page(sd, NULL);
 }
 
-const struct audio_output_plugin shoutPlugin = {
+const struct audio_output_plugin shout_output_plugin = {
 	.name = "shout",
 	.init = my_shout_init_driver,
 	.finish = my_shout_finish_driver,

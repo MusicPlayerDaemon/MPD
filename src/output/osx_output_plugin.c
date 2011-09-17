@@ -418,7 +418,7 @@ osx_output_play(void *data, const void *chunk, size_t size,
 	return nbytes;
 }
 
-const struct audio_output_plugin osxPlugin = {
+const struct audio_output_plugin osx_output_plugin = {
 	.name = "osx",
 	.test_default_device = osx_output_test_default_device,
 	.init = osx_output_init,

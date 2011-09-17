@@ -26,7 +26,7 @@
 
 struct raop_data;
 
-extern const struct audio_output_plugin raopPlugin;
+extern const struct audio_output_plugin raop_output_plugin;
 
 bool
 raop_set_volume(struct raop_data *rd, unsigned volume, GError **error_r);

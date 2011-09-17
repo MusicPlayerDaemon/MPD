@@ -669,7 +669,7 @@ alsa_play(void *data, const void *chunk, size_t size, GError **error)
 	}
 }
 
-const struct audio_output_plugin alsaPlugin = {
+const struct audio_output_plugin alsa_output_plugin = {
 	.name = "alsa",
 	.test_default_device = alsa_test_default_device,
 	.init = alsa_init,

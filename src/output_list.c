@@ -42,7 +42,7 @@
 
 const struct audio_output_plugin *audio_output_plugins[] = {
 #ifdef HAVE_SHOUT
-	&shoutPlugin,
+	&shout_output_plugin,
 #endif
 	&null_output_plugin,
 #ifdef HAVE_FIFO
@@ -52,7 +52,7 @@ const struct audio_output_plugin *audio_output_plugins[] = {
 	&pipe_output_plugin,
 #endif
 #ifdef HAVE_ALSA
-	&alsaPlugin,
+	&alsa_output_plugin,
 #endif
 #ifdef HAVE_ROAR
 	&roar_output_plugin,
@@ -67,10 +67,10 @@ const struct audio_output_plugin *audio_output_plugins[] = {
 	&openal_output_plugin,
 #endif
 #ifdef HAVE_OSX
-	&osxPlugin,
+	&osx_output_plugin,
 #endif
 #ifdef ENABLE_RAOP_OUTPUT
-	&raopPlugin,
+	&raop_output_plugin,
 #endif
 #ifdef ENABLE_SOLARIS_OUTPUT
 	&solaris_output_plugin,
