@@ -34,6 +34,16 @@
 #include "output/pulse_output_plugin.h"
 
 void
+pulse_output_lock(G_GNUC_UNUSED struct pulse_output *po)
+{
+}
+
+void
+pulse_output_unlock(G_GNUC_UNUSED struct pulse_output *po)
+{
+}
+
+void
 pulse_output_set_mixer(G_GNUC_UNUSED struct pulse_output *po,
 		       G_GNUC_UNUSED struct pulse_mixer *pm)
 {

@@ -191,13 +191,13 @@ pulse_mixer_get_volume(struct mixer *mixer, G_GNUC_UNUSED GError **error_r)
 	struct pulse_mixer *pm = (struct pulse_mixer *) mixer;
 	int ret;
 
-	pa_threaded_mainloop_lock(pm->output->mainloop);
+	pulse_output_lock(pm->output);
 
 	ret = pm->online
 		? (int)((100*(pa_cvolume_avg(&pm->volume)+1))/PA_VOLUME_NORM)
 		: -1;
 
-	pa_threaded_mainloop_unlock(pm->output->mainloop);
+	pulse_output_unlock(pm->output);
 
 	return ret;
 }
@@ -209,9 +209,10 @@ pulse_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
 	struct pa_cvolume cvolume;
 	bool success;
 
-	pa_threaded_mainloop_lock(pm->output->mainloop);
+	pulse_output_lock(pm->output);
+
 	if (!pm->online) {
-		pa_threaded_mainloop_unlock(pm->output->mainloop);
+		pulse_output_unlock(pm->output);
 		g_set_error(error_r, pulse_mixer_quark(), 0, "disconnected");
 		return false;
 	}
@@ -221,7 +222,8 @@ pulse_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
 	success = pulse_output_set_volume(pm->output, &cvolume, error_r);
 	if (success)
 		pm->volume = cvolume;
-	pa_threaded_mainloop_unlock(pm->output->mainloop);
+
+	pulse_output_unlock(pm->output);
 
 	return success;
 }

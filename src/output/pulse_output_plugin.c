@@ -31,10 +31,41 @@
 #include <pulse/introspect.h>
 #include <pulse/subscribe.h>
 #include <pulse/error.h>
+#include <pulse/version.h>
 
 #include <assert.h>
+#include <stddef.h>
 
 #define MPD_PULSE_NAME "Music Player Daemon"
+
+#if !defined(PA_CHECK_VERSION)
+/**
+ * This macro was implemented in libpulse 0.9.16.
+ */
+#define PA_CHECK_VERSION(a,b,c) false
+#endif
+
+struct pulse_output {
+	const char *name;
+	const char *server;
+	const char *sink;
+
+	struct pulse_mixer *mixer;
+
+	struct pa_threaded_mainloop *mainloop;
+	struct pa_context *context;
+	struct pa_stream *stream;
+
+	size_t writable;
+
+#if !PA_CHECK_VERSION(0,9,11)
+	/**
+	 * We need this variable because pa_stream_is_corked() wasn't
+	 * added before 0.9.11.
+	 */
+	bool pause;
+#endif
+};
 
 /**
  * The quark used for GError.domain.
@@ -43,6 +74,18 @@ static inline GQuark
 pulse_output_quark(void)
 {
 	return g_quark_from_static_string("pulse_output");
+}
+
+void
+pulse_output_lock(struct pulse_output *po)
+{
+	pa_threaded_mainloop_lock(po->mainloop);
+}
+
+void
+pulse_output_unlock(struct pulse_output *po)
+{
+	pa_threaded_mainloop_unlock(po->mainloop);
 }
 
 void

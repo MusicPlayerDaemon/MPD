@@ -21,43 +21,18 @@
 #define MPD_PULSE_OUTPUT_PLUGIN_H
 
 #include <stdbool.h>
-#include <stddef.h>
 
 #include <glib.h>
 
-#include <pulse/version.h>
-
-#if !defined(PA_CHECK_VERSION)
-/**
- * This macro was implemented in libpulse 0.9.16.
- */
-#define PA_CHECK_VERSION(a,b,c) false
-#endif
-
-struct pa_operation;
+struct pulse_output;
+struct pulse_mixer;
 struct pa_cvolume;
 
-struct pulse_output {
-	const char *name;
-	const char *server;
-	const char *sink;
+void
+pulse_output_lock(struct pulse_output *po);
 
-	struct pulse_mixer *mixer;
-
-	struct pa_threaded_mainloop *mainloop;
-	struct pa_context *context;
-	struct pa_stream *stream;
-
-	size_t writable;
-
-#if !PA_CHECK_VERSION(0,9,11)
-	/**
-	 * We need this variable because pa_stream_is_corked() wasn't
-	 * added before 0.9.11.
-	 */
-	bool pause;
-#endif
-};
+void
+pulse_output_unlock(struct pulse_output *po);
 
 void
 pulse_output_set_mixer(struct pulse_output *po, struct pulse_mixer *pm);
