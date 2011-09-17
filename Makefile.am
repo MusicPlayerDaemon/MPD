@@ -723,7 +723,7 @@ OUTPUT_API_SRC = \
 	src/output_init.c
 
 OUTPUT_SRC = \
-	src/output/null_plugin.c
+	src/output/null_output_plugin.c
 
 MIXER_API_SRC = \
 	src/mixer_control.c \
@@ -735,12 +735,12 @@ MIXER_SRC = \
 	src/mixer/software_mixer_plugin.c
 
 if HAVE_ALSA
-OUTPUT_SRC += src/output/alsa_plugin.c
+OUTPUT_SRC += src/output/alsa_output_plugin.c
 MIXER_SRC += src/mixer/alsa_mixer_plugin.c
 endif
 
 if HAVE_ROAR
-OUTPUT_SRC += src/output/roar_plugin.c
+OUTPUT_SRC += src/output/roar_output_plugin.c
 MIXER_SRC += src/mixer/roar_mixer_plugin.c
 endif
 
@@ -749,7 +749,7 @@ OUTPUT_SRC += src/output/ffado_output_plugin.c
 endif
 
 if HAVE_AO
-OUTPUT_SRC += src/output/ao_plugin.c
+OUTPUT_SRC += src/output/ao_output_plugin.c
 endif
 
 if HAVE_FIFO
@@ -765,20 +765,20 @@ OUTPUT_SRC += src/output/jack_output_plugin.c
 endif
 
 if HAVE_MVP
-OUTPUT_SRC += src/output/mvp_plugin.c
+OUTPUT_SRC += src/output/mvp_output_plugin.c
 endif
 
 if HAVE_OSS
-OUTPUT_SRC += src/output/oss_plugin.c
+OUTPUT_SRC += src/output/oss_output_plugin.c
 MIXER_SRC += src/mixer/oss_mixer_plugin.c
 endif
 
 if HAVE_OPENAL
-OUTPUT_SRC += src/output/openal_plugin.c
+OUTPUT_SRC += src/output/openal_output_plugin.c
 endif
 
 if HAVE_OSX
-OUTPUT_SRC += src/output/osx_plugin.c
+OUTPUT_SRC += src/output/osx_output_plugin.c
 endif
 
 if ENABLE_RAOP_OUTPUT
@@ -796,7 +796,7 @@ MIXER_SRC += src/mixer/pulse_mixer_plugin.c
 endif
 
 if HAVE_SHOUT
-OUTPUT_SRC += src/output/shout_plugin.c
+OUTPUT_SRC += src/output/shout_output_plugin.c
 endif
 
 if ENABLE_RECORDER_OUTPUT
