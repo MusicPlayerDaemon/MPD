@@ -30,14 +30,63 @@
 #include <string.h>
 #include <stdint.h>
 
+#include <roaraudio.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "roaraudio"
+
+typedef struct roar
+{
+	roar_vs_t * vss;
+	int err;
+	char *host;
+	char *name;
+	int role;
+	struct roar_connection con;
+	struct roar_audio_info info;
+	GMutex *lock;
+	volatile bool alive;
+} roar_t;
 
 static inline GQuark
 roar_output_quark(void)
 {
 	return g_quark_from_static_string("roar_output");
+}
+
+int
+roar_output_get_volume(struct roar *roar)
+{
+	g_mutex_lock(roar->lock);
+	if (roar->vss && roar->alive) {
+		float l, r;
+		int error;
+		roar_vs_volume_get(roar->vss, &l, &r, &error);
+		g_mutex_unlock(roar->lock);
+		return (l + r) * 50;
+	} else {
+		g_mutex_unlock(roar->lock);
+		return 0;
+	}
+}
+
+bool
+roar_output_set_volume(struct roar *roar, unsigned volume)
+{
+	g_mutex_lock(roar->lock);
+	if (roar->vss && roar->alive) {
+		assert(volume <= 100);
+
+		int error;
+		float level = volume / 100.0;
+
+		roar_vs_volume_mono(roar->vss, level, &error);
+		g_mutex_unlock(roar->lock);
+		return true;
+	} else {
+		g_mutex_unlock(roar->lock);
+		return false;
+	}
 }
 
 static void

@@ -34,7 +34,7 @@ typedef struct roar_mpd_mixer
 {
 	/** the base mixer class */
 	struct mixer base;
-	roar_t *self;
+	struct roar *self;
 } roar_mixer_t;
 
 /**
@@ -82,20 +82,7 @@ static int
 roar_mixer_get_volume(struct mixer *mixer, G_GNUC_UNUSED GError **error_r)
 {
 	roar_mixer_t *self = (roar_mixer_t *)mixer;
-	g_mutex_lock(self->self->lock);
-	if (self->self->vss && self->self->alive)
-	{
-		float l, r;
-		int error;
-		roar_vs_volume_get(self->self->vss, &l, &r, &error);
-		g_mutex_unlock(self->self->lock);
-		return (l + r) * 50;
-	}
-	else
-	{
-		g_mutex_unlock(self->self->lock);
-		return 0;
-	}
+	return roar_output_get_volume(self->self);
 }
 
 static bool
@@ -103,23 +90,7 @@ roar_mixer_set_volume(struct mixer *mixer, unsigned volume,
 		G_GNUC_UNUSED GError **error_r)
 {
 	roar_mixer_t *self = (roar_mixer_t *)mixer;
-	g_mutex_lock(self->self->lock);
-	if (self->self->vss && self->self->alive)
-	{
-		assert(volume <= 100);
-
-		int error;
-		float level = volume / 100.0;
-
-		roar_vs_volume_mono(self->self->vss, level, &error);
-		g_mutex_unlock(self->self->lock);
-		return true;
-	}
-	else
-	{
-		g_mutex_unlock(self->self->lock);
-		return false;
-	}
+	return roar_output_set_volume(self->self, volume);
 }
 
 const struct mixer_plugin roar_mixer_plugin = {

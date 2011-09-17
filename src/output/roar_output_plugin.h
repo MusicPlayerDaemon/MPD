@@ -22,20 +22,14 @@
 #ifndef __ROAR_OUTPUT_H
 #define __ROAR_OUTPUT_H
 
-#include <roaraudio.h>
-#include <glib.h>
+#include <stdbool.h>
 
-typedef struct roar
-{
-	roar_vs_t * vss;
-	int err;
-	char *host;
-	char *name;
-	int role;
-	struct roar_connection con;
-	struct roar_audio_info info;
-	GMutex *lock;
-	volatile bool alive;
-} roar_t;
+struct roar;
+
+int
+roar_output_get_volume(struct roar *roar);
+
+bool
+roar_output_set_volume(struct roar *roar, unsigned volume);
 
 #endif

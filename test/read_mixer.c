@@ -55,6 +55,24 @@ pulse_output_set_volume(G_GNUC_UNUSED struct pulse_output *po,
 
 #endif
 
+#ifdef HAVE_ROAR
+#include "output/roar_output_plugin.h"
+
+int
+roar_output_get_volume(G_GNUC_UNUSED struct roar *roar)
+{
+	return -1;
+}
+
+bool
+roar_output_set_volume(G_GNUC_UNUSED struct roar *roar,
+		       G_GNUC_UNUSED unsigned volume)
+{
+	return true;
+}
+
+#endif
+
 #ifdef ENABLE_RAOP_OUTPUT
 #include "output/raop_output_plugin.h"
 
