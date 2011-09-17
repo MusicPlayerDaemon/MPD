@@ -25,6 +25,7 @@
 #include <af_vfs.h>
 #include <assert.h>
 #include <glib.h>
+#include <stdio.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "audiofile"
