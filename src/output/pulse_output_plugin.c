@@ -291,6 +291,8 @@ pulse_output_delete_stream(struct pulse_output *po)
 
 /**
  * Frees and clears the context.
+ *
+ * Caller must lock the main loop.
  */
 static void
 pulse_output_delete_context(struct pulse_output *po)
@@ -308,6 +310,8 @@ pulse_output_delete_context(struct pulse_output *po)
 
 /**
  * Create, set up and connect a context.
+ *
+ * Caller must lock the main loop.
  *
  * @return true on success, false on error
  */
@@ -399,11 +403,7 @@ pulse_output_enable(void *data, GError **error_r)
 		return false;
 	}
 
-	pa_threaded_mainloop_unlock(po->mainloop);
-
 	/* create the libpulse context and connect it */
-
-	pa_threaded_mainloop_lock(po->mainloop);
 
 	if (!pulse_output_setup_context(po, error_r)) {
 		pa_threaded_mainloop_unlock(po->mainloop);
@@ -436,6 +436,8 @@ pulse_output_disable(void *data)
  * Check if the context is (already) connected, and waits if not.  If
  * the context has been disconnected, retry to connect.
  *
+ * Caller must lock the main loop.
+ *
  * @return true on success, false on error
  */
 static bool
@@ -445,8 +447,6 @@ pulse_output_wait_connection(struct pulse_output *po, GError **error_r)
 
 	pa_context_state_t state;
 
-	pa_threaded_mainloop_lock(po->mainloop);
-
 	if (po->context == NULL && !pulse_output_setup_context(po, error_r))
 		return false;
 
@@ -455,7 +455,6 @@ pulse_output_wait_connection(struct pulse_output *po, GError **error_r)
 		switch (state) {
 		case PA_CONTEXT_READY:
 			/* nothing to do */
-			pa_threaded_mainloop_unlock(po->mainloop);
 			return true;
 
 		case PA_CONTEXT_UNCONNECTED:
@@ -466,7 +465,6 @@ pulse_output_wait_connection(struct pulse_output *po, GError **error_r)
 				    "failed to connect: %s",
 				    pa_strerror(pa_context_errno(po->context)));
 			pulse_output_delete_context(po);
-			pa_threaded_mainloop_unlock(po->mainloop);
 			return false;
 
 		case PA_CONTEXT_CONNECTING:
@@ -584,6 +582,8 @@ pulse_output_open(void *data, struct audio_format *audio_format,
 
 	assert(po->mainloop != NULL);
 
+	pa_threaded_mainloop_lock(po->mainloop);
+
 	if (po->context != NULL) {
 		switch (pa_context_get_state(po->context)) {
 		case PA_CONTEXT_UNCONNECTED:
@@ -603,8 +603,10 @@ pulse_output_open(void *data, struct audio_format *audio_format,
 		}
 	}
 
-	if (!pulse_output_wait_connection(po, error_r))
+	if (!pulse_output_wait_connection(po, error_r)) {
+		pa_threaded_mainloop_unlock(po->mainloop);
 		return false;
+	}
 
 	/* MPD doesn't support the other pulseaudio sample formats, so
 	   we just force MPD to send us everything as 16 bit */
@@ -613,8 +615,6 @@ pulse_output_open(void *data, struct audio_format *audio_format,
 	ss.format = PA_SAMPLE_S16NE;
 	ss.rate = audio_format->sample_rate;
 	ss.channels = audio_format->channels;
-
-	pa_threaded_mainloop_lock(po->mainloop);
 
 	/* create a stream .. */
 
