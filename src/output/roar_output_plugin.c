@@ -126,20 +126,6 @@ roar_init(G_GNUC_UNUSED const struct audio_format *audio_format,
 }
 
 static void
-roar_close(void *data)
-{
-	roar_t * self = data;
-	g_mutex_lock(self->lock);
-	self->alive = false;
-
-	if (self->vss != NULL)
-		roar_vs_close(self->vss, ROAR_VS_TRUE, &(self->err));
-	self->vss = NULL;
-	roar_disconnect(&(self->con));
-	g_mutex_unlock(self->lock);
-}
-
-static void
 roar_finish(void *data)
 {
 	roar_t * self = data;
@@ -215,6 +201,20 @@ roar_open(void *data, struct audio_format *audio_format, GError **error)
 
 	g_mutex_unlock(self->lock);
 	return true;
+}
+
+static void
+roar_close(void *data)
+{
+	roar_t * self = data;
+	g_mutex_lock(self->lock);
+	self->alive = false;
+
+	if (self->vss != NULL)
+		roar_vs_close(self->vss, ROAR_VS_TRUE, &(self->err));
+	self->vss = NULL;
+	roar_disconnect(&(self->con));
+	g_mutex_unlock(self->lock);
 }
 
 static void
