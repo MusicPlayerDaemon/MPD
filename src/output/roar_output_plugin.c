@@ -55,39 +55,49 @@ roar_output_quark(void)
 	return g_quark_from_static_string("roar_output");
 }
 
+static int
+roar_output_get_volume_locked(struct roar *roar)
+{
+	if (roar->vss == NULL || !roar->alive)
+		return 0;
+
+	float l, r;
+	int error;
+	roar_vs_volume_get(roar->vss, &l, &r, &error);
+	return (l + r) * 50;
+}
+
 int
 roar_output_get_volume(struct roar *roar)
 {
 	g_mutex_lock(roar->lock);
-	if (roar->vss && roar->alive) {
-		float l, r;
-		int error;
-		roar_vs_volume_get(roar->vss, &l, &r, &error);
-		g_mutex_unlock(roar->lock);
-		return (l + r) * 50;
-	} else {
-		g_mutex_unlock(roar->lock);
-		return 0;
-	}
+	int volume = roar_output_get_volume_locked(roar);
+	g_mutex_unlock(roar->lock);
+	return volume;
+}
+
+static bool
+roar_output_set_volume_locked(struct roar *roar, unsigned volume)
+{
+	assert(volume <= 100);
+
+	if (roar->vss == NULL || !roar->alive)
+		return false;
+
+	int error;
+	float level = volume / 100.0;
+
+	roar_vs_volume_mono(roar->vss, level, &error);
+	return true;
 }
 
 bool
 roar_output_set_volume(struct roar *roar, unsigned volume)
 {
 	g_mutex_lock(roar->lock);
-	if (roar->vss && roar->alive) {
-		assert(volume <= 100);
-
-		int error;
-		float level = volume / 100.0;
-
-		roar_vs_volume_mono(roar->vss, level, &error);
-		g_mutex_unlock(roar->lock);
-		return true;
-	} else {
-		g_mutex_unlock(roar->lock);
-		return false;
-	}
+	bool success = roar_output_set_volume_locked(roar, volume);
+	g_mutex_unlock(roar->lock);
+	return success;
 }
 
 static void
@@ -207,27 +217,33 @@ roar_close(void *data)
 }
 
 static void
+roar_cancel_locked(struct roar *self)
+{
+	if (self->vss == NULL)
+		return;
+
+	roar_vs_t *vss = self->vss;
+	self->vss = NULL;
+	roar_vs_close(vss, ROAR_VS_TRUE, &(self->err));
+	self->alive = false;
+
+	vss = roar_vs_new_from_con(&(self->con), &(self->err));
+	if (vss == NULL)
+		return;
+
+	roar_vs_stream(vss, &(self->info), ROAR_DIR_PLAY, &(self->err));
+	roar_vs_role(vss, self->role, &(self->err));
+	self->vss = vss;
+	self->alive = true;
+}
+
+static void
 roar_cancel(void *data)
 {
 	roar_t * self = data;
 
 	g_mutex_lock(self->lock);
-	if (self->vss != NULL)
-	{
-		roar_vs_t *vss = self->vss;
-		self->vss = NULL;
-		roar_vs_close(vss, ROAR_VS_TRUE, &(self->err));
-		self->alive = false;
-
-		vss = roar_vs_new_from_con(&(self->con), &(self->err));
-		if (vss)
-		{
-			roar_vs_stream(vss, &(self->info), ROAR_DIR_PLAY, &(self->err));
-			roar_vs_role(vss, self->role, &(self->err));
-			self->vss = vss;
-			self->alive = true;
-		}
-	}
+	roar_cancel_locked(self);
 	g_mutex_unlock(self->lock);
 }
 
