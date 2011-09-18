@@ -63,7 +63,9 @@ roar_output_get_volume_locked(struct roar *roar)
 
 	float l, r;
 	int error;
-	roar_vs_volume_get(roar->vss, &l, &r, &error);
+	if (roar_vs_volume_get(roar->vss, &l, &r, &error) < 0)
+		return -1;
+
 	return (l + r) * 50;
 }
 
@@ -231,7 +233,13 @@ roar_cancel_locked(struct roar *self)
 	if (vss == NULL)
 		return;
 
-	roar_vs_stream(vss, &(self->info), ROAR_DIR_PLAY, &(self->err));
+	if (roar_vs_stream(vss, &(self->info), ROAR_DIR_PLAY,
+			   &(self->err)) < 0) {
+		roar_vs_close(vss, ROAR_VS_TRUE, &(self->err));
+		g_warning("Failed to start stream");
+		return;
+	}
+
 	roar_vs_role(vss, self->role, &(self->err));
 	self->vss = vss;
 	self->alive = true;
