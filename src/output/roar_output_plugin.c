@@ -59,7 +59,7 @@ static int
 roar_output_get_volume_locked(struct roar *roar)
 {
 	if (roar->vss == NULL || !roar->alive)
-		return 0;
+		return -1;
 
 	float l, r;
 	int error;
