@@ -243,6 +243,7 @@ src_mpd_SOURCES = \
 	$(OUTPUT_API_SRC) $(OUTPUT_SRC) \
 	$(MIXER_API_SRC) $(MIXER_SRC) \
 	$(FILTER_SRC) \
+	src/glib_socket.h \
 	src/notify.c \
 	src/audio.c \
 	src/audio_check.c \

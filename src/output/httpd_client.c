@@ -24,6 +24,7 @@
 #include "page.h"
 #include "icy_server.h"
 #include "glib_compat.h"
+#include "glib_socket.h"
 
 #include <stdbool.h>
 #include <assert.h>
@@ -459,11 +460,7 @@ httpd_client_new(struct httpd_output *httpd, int fd, bool metadata_supported)
 
 	client->httpd = httpd;
 
-#ifndef G_OS_WIN32
-	client->channel = g_io_channel_unix_new(fd);
-#else
-	client->channel = g_io_channel_win32_new_socket(fd);
-#endif
+	client->channel = g_io_channel_new_socket(fd);
 
 	/* GLib is responsible for closing the file descriptor */
 	g_io_channel_set_close_on_unref(client->channel, true);
