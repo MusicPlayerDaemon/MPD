@@ -1553,7 +1553,7 @@ results(pulse, [PulseAudio])
 results(mvp, [Media MVP])
 results(shout, [SHOUTcast])
 printf '\n\t'
-results(solaris, [Solaris])
+results(solaris_output, [Solaris])
 results(winmm_output, [WinMM])
 
 if
