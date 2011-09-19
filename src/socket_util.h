@@ -63,4 +63,7 @@ socket_bind_listen(int domain, int type, int protocol,
 		   int backlog,
 		   GError **error);
 
+int
+socket_keepalive(int fd);
+
 #endif

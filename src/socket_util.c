@@ -148,3 +148,18 @@ socket_bind_listen(int domain, int type, int protocol,
 
 	return fd;
 }
+
+int
+socket_keepalive(int fd)
+{
+	const int reuse = 1;
+
+#ifdef WIN32
+	const char *optval = (const char *)&reuse;
+#else
+	const void *optval = &reuse;
+#endif
+
+	return setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE,
+			optval, sizeof(reuse));
+}

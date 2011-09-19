@@ -160,12 +160,16 @@ server_socket_in_event(G_GNUC_UNUSED GIOChannel *source,
 	size_t address_length = sizeof(address);
 	int fd = accept_cloexec_nonblock(s->fd, (struct sockaddr*)&address,
 					 &address_length);
-	if (fd >= 0)
+	if (fd >= 0) {
+		if (socket_keepalive(fd))
+			g_warning("Could not set TCP keepalive option: %s",
+				  g_strerror(errno));
 		s->parent->callback(fd, (const struct sockaddr*)&address,
 				    address_length, get_remote_uid(fd),
 				    s->parent->callback_ctx);
-	else
+	} else {
 		g_warning("accept() failed: %s", g_strerror(errno));
+	}
 
 	return true;
 }
