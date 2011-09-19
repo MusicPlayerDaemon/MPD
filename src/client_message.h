@@ -59,7 +59,7 @@ void
 client_message_copy(struct client_message *dest,
 		    const struct client_message *src);
 
-G_GNUC_MALLOC G_GNUC_PURE
+G_GNUC_MALLOC
 struct client_message *
 client_message_dup(const struct client_message *src);
 
