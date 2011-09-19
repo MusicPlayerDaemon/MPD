@@ -21,8 +21,10 @@
  * Based on the RTSP client by Shiro Ninomiya <shiron@snino.com>
  */
 
+#include "config.h"
 #include "rtsp_client.h"
 #include "tcp_socket.h"
+#include "fd_util.h"
 #include "glib_compat.h"
 
 #include <assert.h>
@@ -164,7 +166,7 @@ open_tcp_socket(char *hostname, unsigned short *port,
 		return -1;
 	}
 	if (bind_host(sd, hostname, 0, port, error_r)) {
-		close(sd);
+		close_socket(sd);
 		return -1;
 	}
 

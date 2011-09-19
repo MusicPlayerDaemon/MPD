@@ -21,7 +21,7 @@
 #include "raop_output_plugin.h"
 #include "output_api.h"
 #include "mixer_list.h"
-#include "raop_output_plugin.h"
+#include "fd_util.h"
 #include "ntp_server.h"
 #include "rtsp_client.h"
 #include "glib_compat.h"
@@ -162,10 +162,10 @@ raop_session_free(struct raop_session_data *session)
 		g_mutex_free(session->list_mutex);
 
 	if (raop_session->data_fd >= 0)
-		close(raop_session->data_fd);
+		close_socket(raop_session->data_fd);
 
 	if (raop_session->ctrl.fd >= 0)
-		close(raop_session->ctrl.fd);
+		close_socket(raop_session->ctrl.fd);
 
 	g_free(session);
 }
@@ -345,7 +345,7 @@ open_udp_socket(char *hostname, unsigned short *port,
 		return -1;
 	}
 	if (bind_host(sd, hostname, 0, port, error_r)) {
-		close(sd);
+		close_socket(sd);
 		return -1;
 	}
 
