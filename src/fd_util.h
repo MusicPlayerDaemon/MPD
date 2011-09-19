@@ -122,11 +122,15 @@ recvmsg_cloexec(int sockfd, struct msghdr *msg, int flags);
 
 #endif
 
+#ifdef HAVE_INOTIFY_INIT
+
 /**
  * Wrapper for inotify_init(), which sets the CLOEXEC flag (atomically
  * if supported by the OS).
  */
 int
 inotify_init_cloexec(void);
+
+#endif
 
 #endif
