@@ -324,6 +324,11 @@ AC_ARG_ENABLE(sndfile,
 		[enable sndfile support]),,
 	enable_sndfile=auto)
 
+AC_ARG_ENABLE(solaris_output,
+	AS_HELP_STRING([--enable-solaris-output],
+		[enables the Solaris /dev/audio output]),,
+	[enable_solaris_output=auto])
+
 AC_ARG_ENABLE(sqlite,
 	AS_HELP_STRING([--enable-sqlite],
 		[enable support for the SQLite database]),,
@@ -1370,16 +1375,22 @@ fi
 AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
 
 dnl --------------------------------- Solaris ---------------------------------
-case "$host_os" in
+
+if test x$enable_solaris_output = xauto; then
+	case "$host_os" in
 	solaris*)
-		AC_DEFINE(ENABLE_SOLARIS_OUTPUT, 1, [Define to enable Solaris /dev/audio support])
 		enable_solaris_output=yes
 		;;
 
 	*)
 		enable_solaris_output=no
 		;;
-esac
+	esac
+fi
+
+if test x$enable_solaris_output = xyes; then
+	AC_DEFINE(ENABLE_SOLARIS_OUTPUT, 1, [Define to enable Solaris /dev/audio support])
+fi
 
 AM_CONDITIONAL(ENABLE_SOLARIS_OUTPUT, test x$enable_solaris_output = xyes)
 
