@@ -328,7 +328,7 @@ open_udp_socket(char *hostname, unsigned short *port,
 		GError **error_r)
 {
 	int sd;
-	int size = 30000;
+	const int size = 30000;
 
 	/* socket creation */
 	sd = socket(PF_INET, SOCK_DGRAM, 0);
@@ -338,7 +338,7 @@ open_udp_socket(char *hostname, unsigned short *port,
 			    g_strerror(errno));
 		return -1;
 	}
-	if (setsockopt(sd, SOL_SOCKET, SO_SNDBUF, (void *) &size, sizeof(size)) < 0) {
+	if (setsockopt(sd, SOL_SOCKET, SO_SNDBUF, (const char *) &size, sizeof(size)) < 0) {
 		g_set_error(error_r, raop_output_quark(), errno,
 			    "failed to set UDP buffer size: %s",
 			    g_strerror(errno));

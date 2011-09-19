@@ -50,9 +50,6 @@ socket_bind_listen(int domain, int type, int protocol,
 {
 	int fd, ret;
 	const int reuse = 1;
-#ifdef HAVE_STRUCT_UCRED
-	int passcred = 1;
-#endif
 
 	fd = socket_cloexec_nonblock(domain, type, protocol);
 	if (fd < 0) {
@@ -61,14 +58,8 @@ socket_bind_listen(int domain, int type, int protocol,
 		return -1;
 	}
 
-#ifdef WIN32
-	const char *optval = (const char *)&reuse;
-#else
-	const void *optval = &reuse;
-#endif
-
 	ret = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR,
-			 optval, sizeof(reuse));
+			 (const char *) &reuse, sizeof(reuse));
 	if (ret < 0) {
 		g_set_error(error, listen_quark(), errno,
 			    "setsockopt() failed: %s", g_strerror(errno));
@@ -93,7 +84,8 @@ socket_bind_listen(int domain, int type, int protocol,
 	}
 
 #ifdef HAVE_STRUCT_UCRED
-	setsockopt(fd, SOL_SOCKET, SO_PASSCRED, &passcred, sizeof(passcred));
+	setsockopt(fd, SOL_SOCKET, SO_PASSCRED,
+		   (const char *) &reuse, sizeof(reuse));
 #endif
 
 	return fd;
@@ -104,12 +96,6 @@ socket_keepalive(int fd)
 {
 	const int reuse = 1;
 
-#ifdef WIN32
-	const char *optval = (const char *)&reuse;
-#else
-	const void *optval = &reuse;
-#endif
-
 	return setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE,
-			optval, sizeof(reuse));
+			  (const char *)&reuse, sizeof(reuse));
 }
