@@ -201,7 +201,7 @@ httpd_listen_in_event(int fd, const struct sockaddr *address,
 			g_warning("libwrap refused connection (libwrap=%s) from %s",
 			      progname, hostaddr);
 			g_free(hostaddr);
-			close(fd);
+			close_socket(fd);
 			g_mutex_unlock(httpd->mutex);
 			return;
 		}
@@ -222,7 +222,7 @@ httpd_listen_in_event(int fd, const struct sockaddr *address,
 		     httpd->clients_cnt < httpd->clients_max))
 			httpd_client_add(httpd, fd);
 		else
-			close(fd);
+			close_socket(fd);
 	} else if (fd < 0 && errno != EINTR) {
 		g_warning("accept() failed: %s", g_strerror(errno));
 	}

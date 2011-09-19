@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "client_internal.h"
+#include "fd_util.h"
 #include "fifo_buffer.h"
 #include "socket_util.h"
 #include "permission.h"
@@ -67,7 +68,7 @@ void client_new(int fd, const struct sockaddr *sa, size_t sa_length, int uid)
 			      progname, hostaddr);
 
 			g_free(hostaddr);
-			close(fd);
+			close_socket(fd);
 			return;
 		}
 
@@ -77,7 +78,7 @@ void client_new(int fd, const struct sockaddr *sa, size_t sa_length, int uid)
 
 	if (client_list_is_full()) {
 		g_warning("Max Connections Reached!");
-		close(fd);
+		close_socket(fd);
 		return;
 	}
 

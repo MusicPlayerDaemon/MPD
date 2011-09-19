@@ -253,7 +253,7 @@ server_socket_close(struct server_socket *ss)
 			continue;
 
 		g_source_remove(s->source_id);
-		close(s->fd);
+		close_socket(s->fd);
 		s->fd = -1;
 	}
 }

@@ -133,4 +133,10 @@ inotify_init_cloexec(void);
 
 #endif
 
+/**
+ * Portable wrapper for close(); use closesocket() on WIN32/WinSock.
+ */
+int
+close_socket(int fd);
+
 #endif

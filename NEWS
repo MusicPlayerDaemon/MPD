@@ -9,6 +9,7 @@ ver 0.16.5 (2010/??/??)
 * decoder:
   - ffmpeg: higher precision timestamps
   - ffmpeg: don't require key frame for seeking
+* WIN32: close sockets properly
 
 
 ver 0.16.4 (2011/09/01)
