@@ -880,9 +880,9 @@ SPARSE_CPPFLAGS = $(DEFAULT_INCLUDES) \
 	-I$(shell $(CC) -print-file-name=include-fixed)
 SPARSE_CPPFLAGS += -D__SCHAR_MAX__=127 -D__SHRT_MAX__=32767 \
 	-D__INT_MAX__=2147483647 -D__LONG_MAX__=2147483647
-SPARSE_SOURCES = $(addprefix $(top_srcdir)/,$(filter %.c,$(src_mpd_SOURCES)))
+SPARSE_SRC = $(addprefix $(top_srcdir)/,$(filter %.c,$(src_mpd_SOURCES)))
 sparse-check:
-	$(SPARSE) -I. $(src_mpd_CFLAGS) $(src_mpd_CPPFLAGS) $(SPARSE_FLAGS) $(SPARSE_CPPFLAGS) $(SPARSE_SOURCES)
+	$(SPARSE) -I. $(src_mpd_CFLAGS) $(src_mpd_CPPFLAGS) $(SPARSE_FLAGS) $(SPARSE_CPPFLAGS) $(SPARSE_SRC)
 
 .PHONY: sparse-check
 
