@@ -25,7 +25,7 @@
 #include <stdbool.h>
 
 /**
- * Checks whether the specified URI has a schema in the form
+ * Checks whether the specified URI has a scheme in the form
  * "scheme://".
  */
 G_GNUC_PURE
