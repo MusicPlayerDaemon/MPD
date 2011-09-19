@@ -20,6 +20,7 @@
 #include "tcp_socket.h"
 #include "fifo_buffer.h"
 #include "io_thread.h"
+#include "glib_socket.h"
 
 #include <assert.h>
 #include <string.h>
@@ -317,11 +318,7 @@ tcp_socket_new(int fd,
 
 	g_mutex_lock(s->mutex);
 
-#ifndef G_OS_WIN32
-	s->channel = g_io_channel_unix_new(fd);
-#else
-	s->channel = g_io_channel_win32_new_socket(fd);
-#endif
+	s->channel = g_io_channel_new_socket(fd);
 	/* GLib is responsible for closing the file descriptor */
 	g_io_channel_set_close_on_unref(s->channel, true);
 	/* NULL encoding means the stream is binary safe */

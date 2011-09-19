@@ -19,6 +19,7 @@
 
 #include "udp_server.h"
 #include "io_thread.h"
+#include "glib_socket.h"
 #include "gcc.h"
 
 #include <glib.h>
@@ -112,11 +113,7 @@ udp_server_new(unsigned port,
 	udp->handler_ctx = ctx;
 
 	udp->fd = fd;
-#ifndef G_OS_WIN32
-	udp->channel = g_io_channel_unix_new(fd);
-#else
-	udp->channel = g_io_channel_win32_new_socket(fd);
-#endif
+	udp->channel = g_io_channel_new_socket(fd);
 	/* NULL encoding means the stream is binary safe */
 	g_io_channel_set_encoding(udp->channel, NULL, NULL);
 	/* no buffering */
