@@ -42,6 +42,7 @@ resolver_quark(void)
  * @param error location to store the error occurring, or NULL to
  * ignore errors
  */
+G_GNUC_MALLOC
 char *
 sockaddr_to_string(const struct sockaddr *sa, size_t length, GError **error);
 
