@@ -199,7 +199,7 @@ AC_ARG_ENABLE(httpd-output,
 
 AC_ARG_ENABLE(id3,
 	AS_HELP_STRING([--enable-id3],
-		[disable id3 support]),,
+		[enable id3 support]),,
 	enable_id3=auto)
 
 AC_ARG_ENABLE(inotify,
