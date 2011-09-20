@@ -21,7 +21,7 @@
 #include "client_internal.h"
 #include "fd_util.h"
 #include "fifo_buffer.h"
-#include "socket_util.h"
+#include "resolver.h"
 #include "permission.h"
 #include "glib_socket.h"
 

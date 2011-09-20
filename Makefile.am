@@ -354,6 +354,7 @@ src_mpd_SOURCES = \
 	src/song_print.c \
 	src/song_save.c \
 	src/songvec.c \
+	src/resolver.c src/resolver.h \
 	src/socket_util.c \
 	src/state_file.c \
 	src/stats.c \
@@ -1144,6 +1145,7 @@ test_run_output_SOURCES = test/run_output.c \
 	src/fifo_buffer.c \
 	src/page.c \
 	src/socket_util.c \
+	src/resolver.c \
 	src/output_init.c src/output_finish.c src/output_list.c \
 	src/output_plugin.c \
 	$(ENCODER_SRC) \

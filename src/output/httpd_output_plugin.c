@@ -24,7 +24,7 @@
 #include "output_api.h"
 #include "encoder_plugin.h"
 #include "encoder_list.h"
-#include "socket_util.h"
+#include "resolver.h"
 #include "page.h"
 #include "icy_server.h"
 #include "fd_util.h"

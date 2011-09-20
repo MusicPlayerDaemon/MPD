@@ -25,6 +25,7 @@
 
 #include "server_socket.h"
 #include "socket_util.h"
+#include "resolver.h"
 #include "fd_util.h"
 #include "glib_compat.h"
 #include "glib_socket.h"

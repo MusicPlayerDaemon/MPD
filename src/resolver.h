@@ -17,40 +17,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * This library provides easy helper functions for working with
- * sockets.
- *
- */
-
-#ifndef SOCKET_UTIL_H
-#define SOCKET_UTIL_H
+#ifndef MPD_RESOLVER_H
+#define MPD_RESOLVER_H
 
 #include <glib.h>
 
 struct sockaddr;
 
 /**
- * Creates a socket listening on the specified address.  This is a
- * shortcut for socket(), bind() and listen().
+ * Converts the specified socket address into a string in the form
+ * "IP:PORT".  The return value must be freed with g_free() when you
+ * don't need it anymore.
  *
- * @param domain the socket domain, e.g. PF_INET6
- * @param type the socket type, e.g. SOCK_STREAM
- * @param protocol the protocol, usually 0 to let the kernel choose
- * @param address the address to listen on
- * @param address_length the size of #address
- * @param backlog the backlog parameter for the listen() system call
+ * @param sa the sockaddr struct
+ * @param length the length of #sa in bytes
  * @param error location to store the error occurring, or NULL to
  * ignore errors
- * @return the socket file descriptor or -1 on error
  */
-int
-socket_bind_listen(int domain, int type, int protocol,
-		   const struct sockaddr *address, size_t address_length,
-		   int backlog,
-		   GError **error);
-
-int
-socket_keepalive(int fd);
+char *
+sockaddr_to_string(const struct sockaddr *sa, size_t length, GError **error);
 
 #endif
