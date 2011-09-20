@@ -62,7 +62,8 @@ io_thread_inside(void);
 guint
 io_thread_idle_add(GSourceFunc function, gpointer data);
 
-guint
+G_GNUC_MALLOC
+GSource *
 io_thread_timeout_add_seconds(guint interval,
 			      GSourceFunc function, gpointer data);
 

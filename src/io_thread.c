@@ -123,15 +123,14 @@ io_thread_idle_add(GSourceFunc function, gpointer data)
 	return id;
 }
 
-guint
+GSource *
 io_thread_timeout_add_seconds(guint interval,
 			      GSourceFunc function, gpointer data)
 {
 	GSource *source = g_timeout_source_new_seconds(interval);
 	g_source_set_callback(source, function, data, NULL);
-	guint id = g_source_attach(source, io.context);
-	g_source_unref(source);
-	return id;
+	g_source_attach(source, io.context);
+	return source;
 }
 
 struct call_data {
