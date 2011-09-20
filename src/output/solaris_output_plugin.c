@@ -24,13 +24,31 @@
 
 #include <glib.h>
 
-#include <sys/audio.h>
 #include <sys/stropts.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+
+#ifdef __sun
+#include <sys/audio.h>
+#else
+
+/* some fake declarations that allow build this plugin on systems
+   other than Solaris, just to see if it compiles */
+
+#define AUDIO_GETINFO 0
+#define AUDIO_SETINFO 0
+#define AUDIO_ENCODING_LINEAR 0
+
+struct audio_info {
+	struct {
+		unsigned sample_rate, channels, precision, encoding;
+	} play;
+};
+
+#endif
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "solaris_output"

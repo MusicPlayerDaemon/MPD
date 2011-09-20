@@ -327,3 +327,13 @@ inotify_init_cloexec(void)
 }
 
 #endif
+
+int
+close_socket(int fd)
+{
+#ifdef WIN32
+	return closesocket(fd);
+#else
+	return close(fd);
+#endif
+}

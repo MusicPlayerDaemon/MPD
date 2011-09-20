@@ -27,6 +27,7 @@
 #include "socket_util.h"
 #include "fd_util.h"
 #include "glib_compat.h"
+#include "glib_socket.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -227,7 +228,7 @@ server_socket_open(struct server_socket *ss, GError **error_r)
 
 		/* register in the GLib main loop */
 
-		GIOChannel *channel = g_io_channel_unix_new(s->fd);
+		GIOChannel *channel = g_io_channel_new_socket(s->fd);
 		s->source_id = g_io_add_watch(channel, G_IO_IN,
 					      server_socket_in_event, s);
 		g_io_channel_unref(channel);
@@ -261,7 +262,7 @@ server_socket_close(struct server_socket *ss)
 			continue;
 
 		g_source_remove(s->source_id);
-		close(s->fd);
+		close_socket(s->fd);
 		s->fd = -1;
 	}
 }

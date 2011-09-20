@@ -122,7 +122,7 @@ socket_bind_listen(int domain, int type, int protocol,
 	if (ret < 0) {
 		g_set_error(error, listen_quark(), errno,
 			    "setsockopt() failed: %s", g_strerror(errno));
-		close(fd);
+		close_socket(fd);
 		return -1;
 	}
 
@@ -130,7 +130,7 @@ socket_bind_listen(int domain, int type, int protocol,
 	if (ret < 0) {
 		g_set_error(error, listen_quark(), errno,
 			    "%s", g_strerror(errno));
-		close(fd);
+		close_socket(fd);
 		return -1;
 	}
 
@@ -138,7 +138,7 @@ socket_bind_listen(int domain, int type, int protocol,
 	if (ret < 0) {
 		g_set_error(error, listen_quark(), errno,
 			    "listen() failed: %s", g_strerror(errno));
-		close(fd);
+		close_socket(fd);
 		return -1;
 	}
 

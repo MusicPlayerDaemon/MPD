@@ -23,13 +23,17 @@ ver 0.17 (2011/??/??)
 
 
 ver 0.16.5 (2010/??/??)
-* configure.ac: disable assertions in the non-debugging build
+* configure.ac
+  - disable assertions in the non-debugging build
+  - show solaris plugin result correctly
+  - add option --enable-solaris-output
 * pcm_format: fix 32-to-24 bit conversion (the "silence" bug)
 * input:
   - rewind: reduce heap usage
 * decoder:
   - ffmpeg: higher precision timestamps
   - ffmpeg: don't require key frame for seeking
+* WIN32: close sockets properly
 
 
 ver 0.16.4 (2011/09/01)

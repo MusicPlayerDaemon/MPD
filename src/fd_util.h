@@ -36,6 +36,8 @@
 #ifndef FD_UTIL_H
 #define FD_UTIL_H
 
+#include "check.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -127,11 +129,21 @@ recvmsg_cloexec(int sockfd, struct msghdr *msg, int flags);
 
 #endif
 
+#ifdef HAVE_INOTIFY_INIT
+
 /**
  * Wrapper for inotify_init(), which sets the CLOEXEC flag (atomically
  * if supported by the OS).
  */
 int
 inotify_init_cloexec(void);
+
+#endif
+
+/**
+ * Portable wrapper for close(); use closesocket() on WIN32/WinSock.
+ */
+int
+close_socket(int fd);
 
 #endif
