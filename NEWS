@@ -20,6 +20,7 @@ ver 0.17 (2011/??/??)
   - roar: new output plugin for RoarAudio
 * state_file: add option "restore_paused"
 * cue: show CUE track numbers
+* allow port specification in "bind_to_address" settings
 
 
 ver 0.16.5 (2010/??/??)

@@ -380,24 +380,11 @@ server_socket_add_host(struct server_socket *ss, const char *hostname,
 		       unsigned port, GError **error_r)
 {
 #ifdef HAVE_TCP
-	struct addrinfo hints;
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_flags = AI_PASSIVE;
-	hints.ai_family = PF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-
-	char service[20];
-	g_snprintf(service, sizeof(service), "%u", port);
-
-	struct addrinfo *ai;
-	int ret = getaddrinfo(hostname, service, &hints, &ai);
-	if (ret != 0) {
-		g_set_error(error_r, server_socket_quark(), ret,
-			    "Failed to look up host \"%s\": %s",
-			    hostname, gai_strerror(ret));
+	struct addrinfo *ai = resolve_host_port(hostname, port,
+						AI_PASSIVE, SOCK_STREAM,
+						error_r);
+	if (ai == NULL)
 		return false;
-	}
 
 	for (const struct addrinfo *i = ai; i != NULL; i = i->ai_next)
 		server_socket_add_address(ss, i->ai_addr, i->ai_addrlen);
