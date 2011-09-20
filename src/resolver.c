@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "resolver.h"
+#include "glib_compat.h"
 
 #ifndef G_OS_WIN32
 #include <sys/socket.h>
@@ -29,9 +30,7 @@
 #include <winsock.h>
 #endif /* G_OS_WIN32 */
 
-#ifdef HAVE_IPV6
 #include <string.h>
-#endif
 
 char *
 sockaddr_to_string(const struct sockaddr *sa, size_t length, GError **error)
@@ -80,4 +79,64 @@ sockaddr_to_string(const struct sockaddr *sa, size_t length, GError **error)
 #endif
 
 	return g_strconcat(host, ":", serv, NULL);
+}
+
+struct addrinfo *
+resolve_host_port(const char *host_port, unsigned default_port,
+		  int flags, int socktype,
+		  GError **error_r)
+{
+	char *p = g_strdup(host_port);
+	const char *host = p, *port = NULL;
+
+	if (host_port[0] == '[') {
+		/* IPv6 needs enclosing square braces, to
+		   differentiate between IP colons and the port
+		   separator */
+
+		char *q = strchr(p + 1, ']');
+		if (q != NULL && q[1] == ':' && q[2] != 0) {
+			*q = 0;
+			++host;
+			port = q + 2;
+		}
+	}
+
+	if (port == NULL) {
+		/* port is after the colon, but only if it's the only
+		   colon (don't split IPv6 addresses) */
+
+		char *q = strchr(p, ':');
+		if (q != NULL && q[1] != 0 && strchr(q + 1, ':') == NULL) {
+			*q = 0;
+			port = q + 1;
+		}
+	}
+
+	char buffer[32];
+	if (port == NULL && default_port != 0) {
+		g_snprintf(buffer, sizeof(buffer), "%u", default_port);
+		port = buffer;
+	}
+
+	if ((flags & AI_PASSIVE) != 0 && strcmp(host, "*") == 0)
+		host = NULL;
+
+	const struct addrinfo hints = {
+		.ai_flags = flags,
+		.ai_family = AF_UNSPEC,
+		.ai_socktype = socktype,
+	};
+
+	struct addrinfo *ai;
+	int ret = getaddrinfo(host, port, &hints, &ai);
+	g_free(p);
+	if (ret != 0) {
+		g_set_error(error_r, resolver_quark(), ret,
+			    "Failed to look up '%s': %s",
+			    host_port, gai_strerror(ret));
+		return NULL;
+	}
+
+	return ai;
 }

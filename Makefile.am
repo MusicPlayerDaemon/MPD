@@ -903,6 +903,7 @@ TESTS = $(C_TESTS)
 noinst_PROGRAMS = \
 	$(C_TESTS) \
 	test/read_conf \
+	test/run_resolver \
 	test/run_input \
 	test/dump_playlist \
 	test/run_decoder \
@@ -925,6 +926,11 @@ test_read_conf_LDADD = $(MPD_LIBS) \
 	$(GLIB_LIBS)
 test_read_conf_SOURCES = test/read_conf.c \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c
+
+test_run_resolver_LDADD = $(MPD_LIBS) \
+	$(GLIB_LIBS)
+test_run_resolver_SOURCES = test/run_resolver.c \
+	src/resolver.c
 
 test_run_input_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ARCHIVE_CFLAGS) \

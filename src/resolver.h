@@ -23,6 +23,14 @@
 #include <glib.h>
 
 struct sockaddr;
+struct addrinfo;
+
+G_GNUC_CONST
+static inline GQuark
+resolver_quark(void)
+{
+	return g_quark_from_static_string("resolver");
+}
 
 /**
  * Converts the specified socket address into a string in the form
@@ -36,5 +44,20 @@ struct sockaddr;
  */
 char *
 sockaddr_to_string(const struct sockaddr *sa, size_t length, GError **error);
+
+/**
+ * Resolve a specification in the form "host", "host:port",
+ * "[host]:port".  This is a convenience wrapper for getaddrinfo().
+ *
+ * @param default_port a default port number that will be used if none
+ * is given in the string (if applicable); pass 0 to go without a
+ * default
+ * @return an #addrinfo linked list that must be freed with
+ * freeaddrinfo(), or NULL on error
+ */
+struct addrinfo *
+resolve_host_port(const char *host_port, unsigned default_port,
+		  int flags, int socktype,
+		  GError **error_r);
 
 #endif
