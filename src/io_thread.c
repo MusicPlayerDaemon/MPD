@@ -124,6 +124,15 @@ io_thread_idle_add(GSourceFunc function, gpointer data)
 }
 
 GSource *
+io_thread_timeout_add(guint interval_ms, GSourceFunc function, gpointer data)
+{
+	GSource *source = g_timeout_source_new(interval_ms);
+	g_source_set_callback(source, function, data, NULL);
+	g_source_attach(source, io.context);
+	return source;
+}
+
+GSource *
 io_thread_timeout_add_seconds(guint interval,
 			      GSourceFunc function, gpointer data)
 {
