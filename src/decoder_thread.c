@@ -369,6 +369,8 @@ decoder_run_song(struct decoder_control *dc,
 {
 	struct decoder decoder = {
 		.dc = dc,
+		.initial_seek_pending = song->start_ms > 0,
+		.initial_seek_running = false,
 	};
 	int ret;
 

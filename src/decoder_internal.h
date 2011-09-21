@@ -37,6 +37,20 @@ struct decoder {
 	double timestamp;
 
 	/**
+	 * Is the initial seek (to the start position of the sub-song)
+	 * pending, or has it been performed already?
+	 */
+	bool initial_seek_pending;
+
+	/**
+	 * Is the initial seek currently running?  During this time,
+	 * the decoder command is SEEK.  This flag is set by
+	 * decoder_get_virtual_command(), when the virtual SEEK
+	 * command is generated for the first time.
+	 */
+	bool initial_seek_running;
+
+	/**
 	 * This flag is set by decoder_seek_where(), and checked by
 	 * decoder_command_finished().  It is used to clean up after
 	 * seeking.
