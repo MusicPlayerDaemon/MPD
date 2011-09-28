@@ -93,6 +93,11 @@ struct httpd_client {
 	 */
 	size_t current_position;
 
+        /**
+         * If DLNA streaming was an option.
+         */
+        bool dlna_streaming_requested;
+
 	/* ICY */
 
 	/**
@@ -234,6 +239,15 @@ httpd_client_handle_line(struct httpd_client *client, const char *line)
 			return true;
 		}
 
+		if (g_ascii_strncasecmp(line, "transferMode.dlna.org: Streaming", 32) == 0) {
+			/* Send as dlna */
+			client->dlna_streaming_requested = true;
+			/* metadata is not supported by dlna streaming, so disable it */
+			client->metadata_supported = false;
+			client->metadata_requested = false;
+			return true;
+		}
+
 		/* expect more request headers */
 		return true;
 	}
@@ -285,16 +299,21 @@ httpd_client_send_response(struct httpd_client *client)
 	assert(client != NULL);
 	assert(client->state == RESPONSE);
 
-	if (!client->metadata_requested) {
+	if (client->dlna_streaming_requested) {
 		g_snprintf(buffer, sizeof(buffer),
-			   "HTTP/1.1 200 OK\r\n"
+			   "HTTP/1.1 206 OK\r\n"
 			   "Content-Type: %s\r\n"
+			   "Content-Length: 10000\r\n"
+			   "Content-RangeX: 0-1000000/1000000\r\n"
+			   "transferMode.dlna.org: Streaming\r\n"
+			   "Accept-Ranges: bytes\r\n"
 			   "Connection: close\r\n"
-			   "Pragma: no-cache\r\n"
-			   "Cache-Control: no-cache, no-store\r\n"
+			   "realTimeInfo.dlna.org: DLNA.ORG_TLAG=*\r\n"
+			   "contentFeatures.dlna.org: DLNA.ORG_OP=01;DLNA.ORG_CI=0\r\n"
 			   "\r\n",
 			   client->httpd->content_type);
-	} else {
+
+	} else if (client->metadata_requested) {
 		gchar *metadata_header;
 
 		metadata_header = icy_server_metadata_header(
@@ -307,6 +326,16 @@ httpd_client_send_response(struct httpd_client *client)
 		g_strlcpy(buffer, metadata_header, sizeof(buffer));
 
 		g_free(metadata_header);
+
+       } else { /* revert to a normal HTTP request */
+		g_snprintf(buffer, sizeof(buffer),
+			   "HTTP/1.1 200 OK\r\n"
+			   "Content-Type: %s\r\n"
+			   "Connection: close\r\n"
+			   "Pragma: no-cache\r\n"
+			   "Cache-Control: no-cache, no-store\r\n"
+			   "\r\n",
+			   client->httpd->content_type);
 	}
 
 	status = g_io_channel_write_chars(client->channel,
@@ -476,6 +505,7 @@ httpd_client_new(struct httpd_output *httpd, int fd, bool metadata_supported)
 	client->input = fifo_buffer_new(4096);
 	client->state = REQUEST;
 
+	client->dlna_streaming_requested = false;
 	client->metadata_supported = metadata_supported;
 	client->metadata_requested = false;
 	client->metadata_sent = true;
