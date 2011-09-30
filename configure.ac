@@ -33,6 +33,13 @@ fi
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 PKG_PROG_PKG_CONFIG
+AC_ARG_WITH([systemdsystemunitdir],
+	    AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
+	    [], [with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)])
+if test "x$with_systemdsystemunitdir" != xno; then
+	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
+fi
+AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir" -a "x$with_systemdsystemunitdir" != xno ])
 
 dnl ---------------------------------------------------------------------------
 dnl Declare Variables
@@ -1592,5 +1599,6 @@ dnl ---------------------------------------------------------------------------
 dnl Generate files
 dnl ---------------------------------------------------------------------------
 AC_OUTPUT(Makefile)
+AC_OUTPUT(mpd.service)
 
 echo 'MPD is ready for compilation, type "make" to begin.'

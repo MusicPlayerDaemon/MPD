@@ -803,6 +803,15 @@ FILTER_SRC = \
 
 
 #
+# systemd unit
+#
+
+if HAVE_SYSTEMD
+systemdsystemunit_DATA = \
+	mpd.service
+endif
+
+#
 # Sparse code analysis
 #
 # sparse is a semantic parser

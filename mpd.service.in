@@ -1,0 +1,9 @@
+[Unit]
+Description=Music Player Daemon
+After=sound.target
+
+[Service]
+ExecStart=@prefix@/bin/mpd --no-daemon
+
+[Install]
+WantedBy=multi-user.target
