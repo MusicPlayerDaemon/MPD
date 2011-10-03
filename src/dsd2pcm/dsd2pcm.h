@@ -20,7 +20,7 @@ typedef struct dsd2pcm_ctx_s dsd2pcm_ctx;
  * POSIX thread-safety definition because it modifies global state
  * (lookup tables are computed during the first call)
  */
-extern dsd2pcm_ctx* dsd2pcm_init();
+extern dsd2pcm_ctx* dsd2pcm_init(void);
 
 /**
  * deinitializes a "dsd2pcm engine"

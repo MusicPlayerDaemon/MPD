@@ -87,7 +87,7 @@ static float ctables[CTABLES][256];
 static unsigned char bitreverse[256];
 static int precalculated = 0;
 
-static void precalc()
+static void precalc(void)
 {
 	int t, e, m, k;
 	double acc;
@@ -117,7 +117,7 @@ struct dsd2pcm_ctx_s
 	unsigned fifopos;
 };
 
-extern dsd2pcm_ctx* dsd2pcm_init()
+extern dsd2pcm_ctx* dsd2pcm_init(void)
 {
 	dsd2pcm_ctx* ptr;
 	if (!precalculated) precalc();
