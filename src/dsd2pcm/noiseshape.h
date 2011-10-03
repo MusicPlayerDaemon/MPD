@@ -1,7 +1,7 @@
 #ifndef NOISE_SHAPE_H_INCLUDED
 #define NOISE_SHAPE_H_INCLUDED
 
-#ifdef __cpluspluc
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -49,7 +49,7 @@ extern float noise_shape_get(
 extern void noise_shape_update(
 	noise_shape_ctx *ctx, float qerror);
 
-#ifdef __cpluspluc
+#ifdef __cplusplus
 } /* extern "C" */
 #endif
 
