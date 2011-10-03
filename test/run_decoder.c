@@ -180,6 +180,7 @@ int main(int argc, char **argv)
 	decoder_name = argv[1];
 	decoder.uri = argv[2];
 
+	g_thread_init(NULL);
 	g_log_set_default_handler(my_log_func, NULL);
 
 	io_thread_init();
