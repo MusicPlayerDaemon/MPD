@@ -29,6 +29,7 @@ if test x$CXX = xg++; then
 		HAVE_CXX=no
 	fi
 fi
+AM_CONDITIONAL(HAVE_CXX, test x$HAVE_CXX = xyes)
 
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
