@@ -24,6 +24,7 @@
 #include "conf.h"
 #include "mpd_error.h"
 #include "decoder/pcm_decoder_plugin.h"
+#include "decoder/dsdiff_decoder_plugin.h"
 
 #include <glib.h>
 
@@ -70,6 +71,7 @@ const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef HAVE_AUDIOFILE
 	&audiofile_decoder_plugin,
 #endif
+	&dsdiff_decoder_plugin,
 #ifdef HAVE_FAAD
 	&faad_decoder_plugin,
 #endif
