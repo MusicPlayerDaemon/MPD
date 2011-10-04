@@ -44,6 +44,8 @@ enum sample_format {
 	SAMPLE_FORMAT_S32,
 };
 
+static const unsigned MAX_CHANNELS = 8;
+
 /**
  * This structure describes the format of a raw PCM stream.
  */
@@ -180,7 +182,7 @@ audio_valid_sample_format(enum sample_format format)
 static inline bool
 audio_valid_channel_count(unsigned channels)
 {
-	return channels >= 1 && channels <= 8;
+	return channels >= 1 && channels <= MAX_CHANNELS;
 }
 
 /**
