@@ -180,10 +180,12 @@ void decoder_seek_error(struct decoder * decoder)
 
 	assert(dc->pipe != NULL);
 
-	if (decoder->initial_seek_running)
+	if (decoder->initial_seek_running) {
 		/* d'oh, we can't seek to the sub-song start position,
 		   what now? - no idea, ignoring the problem for now. */
+		decoder->initial_seek_running = false;
 		return;
+	}
 
 	assert(dc->command == DECODE_COMMAND_SEEK);
 
