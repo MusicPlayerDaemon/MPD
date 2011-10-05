@@ -309,9 +309,6 @@ pc_seek(struct song *song, float seek_time)
 {
 	assert(song != NULL);
 
-	if (pc.state == PLAYER_STATE_STOP)
-		return false;
-
 	player_lock();
 	pc.next_song = song;
 	pc.seek_where = seek_time;
