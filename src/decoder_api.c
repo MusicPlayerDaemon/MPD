@@ -132,7 +132,7 @@ decoder_command_finished(struct decoder *decoder)
 		assert(music_pipe_empty(dc->pipe));
 
 		decoder->initial_seek_running = false;
-		decoder->timestamp = dc->song->start_ms / 1000.;
+		decoder->timestamp = dc->start_ms / 1000.;
 		decoder_unlock(dc);
 		return;
 	}
@@ -165,7 +165,7 @@ double decoder_seek_where(G_GNUC_UNUSED struct decoder * decoder)
 	assert(dc->pipe != NULL);
 
 	if (decoder->initial_seek_running)
-		return dc->song->start_ms / 1000.;
+		return dc->start_ms / 1000.;
 
 	assert(dc->command == DECODE_COMMAND_SEEK);
 
@@ -407,8 +407,8 @@ decoder_data(struct decoder *decoder,
 		decoder->timestamp += (double)nbytes /
 			audio_format_time_to_size(&dc->out_audio_format);
 
-		if (dc->song->end_ms > 0 &&
-		    decoder->timestamp >= dc->song->end_ms / 1000.0)
+		if (dc->end_ms > 0 &&
+		    decoder->timestamp >= dc->end_ms / 1000.0)
 			/* the end of this range has been reached:
 			   stop decoding */
 			return DECODE_COMMAND_STOP;

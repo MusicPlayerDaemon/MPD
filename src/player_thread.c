@@ -145,7 +145,9 @@ player_dc_start(struct player *player, struct music_pipe *pipe)
 	assert(player->queued || pc.command == PLAYER_COMMAND_SEEK);
 	assert(pc.next_song != NULL);
 
-	dc_start(dc, pc.next_song, player_buffer, pipe);
+	dc_start(dc, pc.next_song,
+		 pc.next_song->start_ms, pc.next_song->end_ms,
+		 player_buffer, pipe);
 }
 
 /**
