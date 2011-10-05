@@ -79,6 +79,40 @@ decoder_initialized(struct decoder *decoder,
 }
 
 /**
+ * Checks if we need an "initial seek".  If so, then the initial seek
+ * is prepared, and the function returns true.
+ */
+G_GNUC_PURE
+static bool
+decoder_prepare_initial_seek(struct decoder *decoder)
+{
+	const struct decoder_control *dc = decoder->dc;
+	assert(dc->pipe != NULL);
+
+	if (decoder->initial_seek_running)
+		/* initial seek has already begun - override any other
+		   command */
+		return true;
+
+	if (decoder->initial_seek_pending) {
+		if (dc->command == DECODE_COMMAND_NONE) {
+			/* begin initial seek */
+
+			decoder->initial_seek_pending = false;
+			decoder->initial_seek_running = true;
+			return true;
+		}
+
+		/* skip initial seek when there's another command
+		   (e.g. STOP) */
+
+		decoder->initial_seek_pending = false;
+	}
+
+	return false;
+}
+
+/**
  * Returns the current decoder command.  May return a "virtual"
  * synthesized command, e.g. to seek to the beginning of the CUE
  * track.
@@ -90,18 +124,8 @@ decoder_get_virtual_command(struct decoder *decoder)
 	const struct decoder_control *dc = decoder->dc;
 	assert(dc->pipe != NULL);
 
-	if (decoder->initial_seek_running)
+	if (decoder_prepare_initial_seek(decoder))
 		return DECODE_COMMAND_SEEK;
-
-	if (decoder->initial_seek_pending) {
-		if (dc->command == DECODE_COMMAND_NONE) {
-			decoder->initial_seek_pending = false;
-			decoder->initial_seek_running = true;
-			return DECODE_COMMAND_SEEK;
-		}
-
-		decoder->initial_seek_pending = false;
-	}
 
 	return dc->command;
 }
