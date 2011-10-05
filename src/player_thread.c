@@ -145,8 +145,12 @@ player_dc_start(struct player *player, struct music_pipe *pipe)
 	assert(player->queued || pc.command == PLAYER_COMMAND_SEEK);
 	assert(pc.next_song != NULL);
 
+	unsigned start_ms = pc.next_song->start_ms;
+	if (pc.command == PLAYER_COMMAND_SEEK)
+		start_ms += (unsigned)(pc.seek_where * 1000);
+
 	dc_start(dc, pc.next_song,
-		 pc.next_song->start_ms, pc.next_song->end_ms,
+		 start_ms, pc.next_song->end_ms,
 		 player_buffer, pipe);
 }
 
@@ -835,6 +839,10 @@ static void do_play(struct decoder_control *dc)
 	}
 
 	player_lock();
+
+	if (pc.command == PLAYER_COMMAND_SEEK)
+		player.elapsed_time = pc.seek_where;
+
 	pc.state = PLAYER_STATE_PLAY;
 	player_command_finished_locked();
 
@@ -1013,6 +1021,7 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 
 	while (1) {
 		switch (pc.command) {
+		case PLAYER_COMMAND_SEEK:
 		case PLAYER_COMMAND_QUEUE:
 			assert(pc.next_song != NULL);
 
@@ -1026,7 +1035,6 @@ static gpointer player_task(G_GNUC_UNUSED gpointer arg)
 
 			/* fall through */
 
-		case PLAYER_COMMAND_SEEK:
 		case PLAYER_COMMAND_PAUSE:
 			pc.next_song = NULL;
 			player_command_finished_locked();
