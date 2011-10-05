@@ -464,7 +464,7 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
 
 	/* check if we're seeking */
 
-	if (decoder->initial_seek_pending)
+	if (decoder_prepare_initial_seek(decoder))
 		/* during initial seek, no music chunk must be created
 		   until seeking is finished; skip the rest of the
 		   function here */
