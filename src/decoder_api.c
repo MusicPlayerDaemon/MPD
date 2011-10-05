@@ -438,6 +438,14 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
 
 	update_stream_tag(decoder, is);
 
+	/* check if we're seeking */
+
+	if (decoder->initial_seek_pending)
+		/* during initial seek, no music chunk must be created
+		   until seeking is finished; skip the rest of the
+		   function here */
+		return DECODE_COMMAND_SEEK;
+
 	/* send tag to music pipe */
 
 	if (decoder->stream_tag != NULL) {
@@ -450,9 +458,6 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
 	} else
 		/* send only the decoder tag */
 		cmd = do_send_tag(decoder, is, tag);
-
-	if (cmd == DECODE_COMMAND_NONE)
-		cmd = decoder_get_virtual_command(decoder);
 
 	return cmd;
 }
