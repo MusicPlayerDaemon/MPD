@@ -277,6 +277,41 @@ real_song_duration(const struct song *song, double decoder_duration)
 }
 
 /**
+ * Wrapper for audio_output_all_open().  Upon failure, it pauses the
+ * player.
+ *
+ * @return true on success
+ */
+static bool
+player_open_output(struct player *player)
+{
+	assert(audio_format_defined(&player->play_audio_format));
+	assert(pc.state == PLAYER_STATE_PLAY ||
+	       pc.state == PLAYER_STATE_PAUSE);
+
+	if (audio_output_all_open(&player->play_audio_format, player_buffer)) {
+		player->paused = false;
+
+		player_lock();
+		pc.state = PLAYER_STATE_PLAY;
+		player_unlock();
+
+		return true;
+	} else {
+		/* pause: the user may resume playback as soon as an
+		   audio output becomes available */
+		player->paused = true;
+
+		player_lock();
+		pc.error = PLAYER_ERROR_AUDIO;
+		pc.state = PLAYER_STATE_PAUSE;
+		player_unlock();
+
+		return false;
+	}
+}
+
+/**
  * The decoder has acknowledged the "START" command (see
  * player_wait_for_decoder()).  This function checks if the decoder
  * initialization has completed yet.
@@ -321,23 +356,12 @@ player_check_decoder_startup(struct player *player)
 		player->play_audio_format = dc->out_audio_format;
 		player->decoder_starting = false;
 
-		if (!player->paused &&
-		    !audio_output_all_open(&dc->out_audio_format,
-					   player_buffer)) {
+		if (!player->paused && !player_open_output(player)) {
 			char *uri = song_get_uri(dc->song);
 			g_warning("problems opening audio device "
 				  "while playing \"%s\"", uri);
 			g_free(uri);
 
-			player_lock();
-			pc.error = PLAYER_ERROR_AUDIO;
-
-			/* pause: the user may resume playback as soon
-			   as an audio output becomes available */
-			pc.state = PLAYER_STATE_PAUSE;
-			player_unlock();
-
-			player->paused = true;
 			return true;
 		}
 
@@ -517,17 +541,8 @@ static void player_process_command(struct player *player)
 			player_lock();
 
 			pc.state = PLAYER_STATE_PLAY;
-		} else if (audio_output_all_open(&player->play_audio_format, player_buffer)) {
-			/* unpaused, continue playing */
-			player_lock();
-
-			pc.state = PLAYER_STATE_PLAY;
 		} else {
-			/* the audio device has failed - rollback to
-			   pause mode */
-			pc.error = PLAYER_ERROR_AUDIO;
-
-			player->paused = true;
+			player_open_output(player);
 
 			player_lock();
 		}
