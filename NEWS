@@ -20,6 +20,8 @@ ver 0.17 (2011/??/??)
   - raop: new output plugin
   - shout: add possibility to set url
   - roar: new output plugin for RoarAudio
+* playlist:
+  - allow references to songs outside the music directory
 * state_file: add option "restore_paused"
 * cue: show CUE track numbers
 * allow port specification in "bind_to_address" settings

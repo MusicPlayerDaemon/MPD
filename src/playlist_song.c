@@ -140,6 +140,12 @@ playlist_check_translate_song(struct song *song, const char *base_uri,
 	if (uri_has_scheme(uri)) {
 		dest = song_remote_new(uri);
 		g_free(uri);
+	} else if (g_path_is_absolute(uri) && secure) {
+		dest = song_file_load(uri, NULL);
+		if (dest == NULL) {
+			song_free(song);
+			return NULL;
+		}
 	} else {
 		dest = db_get_song(uri);
 		g_free(uri);
