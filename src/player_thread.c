@@ -76,6 +76,14 @@ struct player {
 	bool queued;
 
 	/**
+	 * Was any audio output opened successfully?  It might have
+	 * failed meanwhile, but was not explicitly closed by the
+	 * player thread.  When this flag is unset, some output
+	 * methods must not be called.
+	 */
+	bool output_open;
+
+	/**
 	 * the song currently being played
 	 */
 	struct song *song;
@@ -150,7 +158,13 @@ player_dc_start(struct player *player, struct music_pipe *pipe)
 	assert(player->queued || pc->command == PLAYER_COMMAND_SEEK);
 	assert(pc->next_song != NULL);
 
-	dc_start(dc, pc->next_song, player_buffer, pipe);
+	unsigned start_ms = pc->next_song->start_ms;
+	if (pc->command == PLAYER_COMMAND_SEEK)
+		start_ms += (unsigned)(pc->seek_where * 1000);
+
+	dc_start(dc, pc->next_song,
+		 start_ms, pc->next_song->end_ms,
+		 player_buffer, pipe);
 }
 
 /**
@@ -277,6 +291,46 @@ real_song_duration(const struct song *song, double decoder_duration)
 }
 
 /**
+ * Wrapper for audio_output_all_open().  Upon failure, it pauses the
+ * player.
+ *
+ * @return true on success
+ */
+static bool
+player_open_output(struct player *player)
+{
+	struct player_control *pc = player->pc;
+
+	assert(audio_format_defined(&player->play_audio_format));
+	assert(pc->state == PLAYER_STATE_PLAY ||
+	       pc->state == PLAYER_STATE_PAUSE);
+
+	if (audio_output_all_open(&player->play_audio_format, player_buffer)) {
+		player->output_open = true;
+		player->paused = false;
+
+		player_lock(pc);
+		pc->state = PLAYER_STATE_PLAY;
+		player_unlock(pc);
+
+		return true;
+	} else {
+		player->output_open = false;
+
+		/* pause: the user may resume playback as soon as an
+		   audio output becomes available */
+		player->paused = true;
+
+		player_lock(pc);
+		pc->error = PLAYER_ERROR_AUDIO;
+		pc->state = PLAYER_STATE_PAUSE;
+		player_unlock(pc);
+
+		return false;
+	}
+}
+
+/**
  * The decoder has acknowledged the "START" command (see
  * player_wait_for_decoder()).  This function checks if the decoder
  * initialization has completed yet.
@@ -308,7 +362,7 @@ player_check_decoder_startup(struct player *player)
 
 		decoder_unlock(dc);
 
-		if (audio_format_defined(&player->play_audio_format) &&
+		if (player->output_open &&
 		    !audio_output_all_wait(pc, 1))
 			/* the output devices havn't finished playing
 			   all chunks yet - wait for that */
@@ -322,23 +376,12 @@ player_check_decoder_startup(struct player *player)
 		player->play_audio_format = dc->out_audio_format;
 		player->decoder_starting = false;
 
-		if (!player->paused &&
-		    !audio_output_all_open(&dc->out_audio_format,
-					   player_buffer)) {
+		if (!player->paused && !player_open_output(player)) {
 			char *uri = song_get_uri(dc->song);
 			g_warning("problems opening audio device "
 				  "while playing \"%s\"", uri);
 			g_free(uri);
 
-			player_lock(pc);
-			pc->error = PLAYER_ERROR_AUDIO;
-
-			/* pause: the user may resume playback as soon
-			   as an audio output becomes available */
-			pc->state = PLAYER_STATE_PAUSE;
-			player_unlock(pc);
-
-			player->paused = true;
 			return true;
 		}
 
@@ -363,6 +406,7 @@ player_check_decoder_startup(struct player *player)
 static bool
 player_send_silence(struct player *player)
 {
+	assert(player->output_open);
 	assert(audio_format_defined(&player->play_audio_format));
 
 	struct music_chunk *chunk = music_buffer_allocate(player_buffer);
@@ -520,17 +564,8 @@ static void player_process_command(struct player *player)
 			player_lock(pc);
 
 			pc->state = PLAYER_STATE_PLAY;
-		} else if (audio_output_all_open(&player->play_audio_format, player_buffer)) {
-			/* unpaused, continue playing */
-			player_lock(pc);
-
-			pc->state = PLAYER_STATE_PLAY;
 		} else {
-			/* the audio device has failed - rollback to
-			   pause mode */
-			pc->error = PLAYER_ERROR_AUDIO;
-
-			player->paused = true;
+			player_open_output(player);
 
 			player_lock(pc);
 		}
@@ -567,8 +602,7 @@ static void player_process_command(struct player *player)
 		break;
 
 	case PLAYER_COMMAND_REFRESH:
-		if (audio_format_defined(&player->play_audio_format) &&
-		    !player->paused) {
+		if (player->output_open && !player->paused) {
 			player_unlock(pc);
 			audio_output_all_check();
 			player_lock(pc);
@@ -823,6 +857,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 		.decoder_starting = false,
 		.paused = false,
 		.queued = true,
+		.output_open = false,
 		.song = NULL,
 		.xfade = XFADE_UNKNOWN,
 		.cross_fading = false,
@@ -847,6 +882,10 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 
 	player_lock(pc);
 	pc->state = PLAYER_STATE_PLAY;
+
+	if (pc->command == PLAYER_COMMAND_SEEK)
+		player.elapsed_time = pc->seek_where;
+
 	player_command_finished_locked(pc);
 
 	while (true) {
@@ -871,7 +910,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 				/* not enough decoded buffer space yet */
 
 				if (!player.paused &&
-				    audio_format_defined(&player.play_audio_format) &&
+				    player.output_open &&
 				    audio_output_all_check() < 4 &&
 				    !player_send_silence(&player))
 					break;
@@ -976,7 +1015,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 				audio_output_all_drain();
 				break;
 			}
-		} else {
+		} else if (player.output_open) {
 			/* the decoder is too busy and hasn't provided
 			   new PCM data in time: send silence (if the
 			   output pipe is empty) */
@@ -1025,6 +1064,7 @@ player_task(gpointer arg)
 
 	while (1) {
 		switch (pc->command) {
+		case PLAYER_COMMAND_SEEK:
 		case PLAYER_COMMAND_QUEUE:
 			assert(pc->next_song != NULL);
 
@@ -1038,7 +1078,6 @@ player_task(gpointer arg)
 
 			/* fall through */
 
-		case PLAYER_COMMAND_SEEK:
 		case PLAYER_COMMAND_PAUSE:
 			pc->next_song = NULL;
 			player_command_finished_locked(pc);

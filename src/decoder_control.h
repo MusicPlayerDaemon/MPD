@@ -85,6 +85,23 @@ struct decoder_control {
 	 */
 	const struct song *song;
 
+	/**
+	 * The initial seek position (in milliseconds), e.g. to the
+	 * start of a sub-track described by a CUE file.
+	 *
+	 * This attribute is set by dc_start().
+	 */
+	unsigned start_ms;
+
+	/**
+	 * The decoder will stop when it reaches this position (in
+	 * milliseconds).  0 means don't stop before the end of the
+	 * file.
+	 *
+	 * This attribute is set by dc_start().
+	 */
+	unsigned end_ms;
+
 	float total_time;
 
 	/** the #music_chunk allocator */
@@ -229,11 +246,14 @@ decoder_current_song(const struct decoder_control *dc)
  *
  * @param the decoder
  * @param song the song to be decoded
+ * @param start_ms see #decoder_control
+ * @param end_ms see #decoder_control
  * @param pipe the pipe which receives the decoded chunks (owned by
  * the caller)
  */
 void
 dc_start(struct decoder_control *dc, struct song *song,
+	 unsigned start_ms, unsigned end_ms,
 	 struct music_buffer *buffer, struct music_pipe *pipe);
 
 void

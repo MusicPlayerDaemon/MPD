@@ -115,9 +115,7 @@ playlist_check_translate_song(struct song *song, const char *base_uri,
 
 	if (g_path_is_absolute(uri)) {
 		/* XXX fs_charset vs utf8? */
-		char *prefix = base_uri != NULL
-			? map_uri_fs(base_uri)
-			: map_directory_fs(db_get_root());
+		char *prefix = map_directory_fs(db_get_root());
 
 		if (prefix != NULL && g_str_has_prefix(uri, prefix) &&
 		    uri[strlen(prefix)] == '/')
@@ -130,6 +128,7 @@ playlist_check_translate_song(struct song *song, const char *base_uri,
 			return NULL;
 		}
 
+		base_uri = NULL;
 		g_free(prefix);
 	}
 
