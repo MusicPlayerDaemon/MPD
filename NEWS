@@ -14,6 +14,7 @@ ver 0.16.5 (2010/??/??)
   - make seeking to CUE track more reliable
   - the "seek" command works when MPD is stopped
   - restore song position from state file (bug fix)
+  - fix crash that sometimes occurred when audio device fails on startup
 * WIN32: close sockets properly
 * install systemd service file if systemd is available
 

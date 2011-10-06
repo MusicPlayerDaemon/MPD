@@ -74,6 +74,14 @@ struct player {
 	bool queued;
 
 	/**
+	 * Was any audio output opened successfully?  It might have
+	 * failed meanwhile, but was not explicitly closed by the
+	 * player thread.  When this flag is unset, some output
+	 * methods must not be called.
+	 */
+	bool output_open;
+
+	/**
 	 * the song currently being played
 	 */
 	struct song *song;
@@ -290,6 +298,7 @@ player_open_output(struct player *player)
 	       pc.state == PLAYER_STATE_PAUSE);
 
 	if (audio_output_all_open(&player->play_audio_format, player_buffer)) {
+		player->output_open = true;
 		player->paused = false;
 
 		player_lock();
@@ -298,6 +307,8 @@ player_open_output(struct player *player)
 
 		return true;
 	} else {
+		player->output_open = false;
+
 		/* pause: the user may resume playback as soon as an
 		   audio output becomes available */
 		player->paused = true;
@@ -342,7 +353,7 @@ player_check_decoder_startup(struct player *player)
 
 		decoder_unlock(dc);
 
-		if (audio_format_defined(&player->play_audio_format) &&
+		if (player->output_open &&
 		    !audio_output_all_wait(1))
 			/* the output devices havn't finished playing
 			   all chunks yet - wait for that */
@@ -386,6 +397,7 @@ player_check_decoder_startup(struct player *player)
 static bool
 player_send_silence(struct player *player)
 {
+	assert(player->output_open);
 	assert(audio_format_defined(&player->play_audio_format));
 
 	struct music_chunk *chunk = music_buffer_allocate(player_buffer);
@@ -579,8 +591,7 @@ static void player_process_command(struct player *player)
 		break;
 
 	case PLAYER_COMMAND_REFRESH:
-		if (audio_format_defined(&player->play_audio_format) &&
-		    !player->paused) {
+		if (player->output_open && !player->paused) {
 			player_unlock();
 			audio_output_all_check();
 			player_lock();
@@ -831,6 +842,7 @@ static void do_play(struct decoder_control *dc)
 		.decoder_starting = false,
 		.paused = false,
 		.queued = true,
+		.output_open = false,
 		.song = NULL,
 		.xfade = XFADE_UNKNOWN,
 		.cross_fading = false,
@@ -883,7 +895,7 @@ static void do_play(struct decoder_control *dc)
 				/* not enough decoded buffer space yet */
 
 				if (!player.paused &&
-				    audio_format_defined(&player.play_audio_format) &&
+				    player.output_open &&
 				    audio_output_all_check() < 4 &&
 				    !player_send_silence(&player))
 					break;
@@ -988,7 +1000,7 @@ static void do_play(struct decoder_control *dc)
 				audio_output_all_drain();
 				break;
 			}
-		} else {
+		} else if (player.output_open) {
 			/* the decoder is too busy and hasn't provided
 			   new PCM data in time: send silence (if the
 			   output pipe is empty) */
