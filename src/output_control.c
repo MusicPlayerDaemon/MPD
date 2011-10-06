@@ -102,9 +102,6 @@ audio_output_disable(struct audio_output *ao)
 	g_mutex_unlock(ao->mutex);
 }
 
-static void
-audio_output_close_locked(struct audio_output *ao);
-
 /**
  * Object must be locked (and unlocked) by the caller.
  */
