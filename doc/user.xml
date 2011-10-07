@@ -742,6 +742,29 @@ cd mpd-version</programlisting>
         <para>
           Decodes DFF files containing DSDIFF data (e.g. SACD rips).
         </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>lsbitfirst</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  Decode the least significant bit first.  Default is
+                  "no".
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
 
       <section>

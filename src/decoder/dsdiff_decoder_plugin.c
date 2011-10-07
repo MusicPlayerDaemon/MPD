@@ -54,6 +54,15 @@ struct dsdiff_metadata {
 	unsigned sample_rate, channels;
 };
 
+static bool lsbitfirst;
+
+static bool
+dsdiff_init(const struct config_param *param)
+{
+	lsbitfirst = config_get_block_bool(param, "lsbitfirst", false);
+	return true;
+}
+
 static bool
 dsdiff_id_equals(const struct dsdiff_id *id, const char *s)
 {
@@ -356,7 +365,7 @@ dsdiff_decode_chunk(struct decoder *decoder, struct input_stream *is,
 		for (unsigned c = 0; c < channels; ++c)
 			dsd2pcm_translate(dsd2pcm[c], now_frames,
 					  buffer + c, channels,
-					  true, f_buffer + c, channels);
+					  lsbitfirst, f_buffer + c, channels);
 
 		/* convert to integer and submit to the decoder API */
 
@@ -485,6 +494,7 @@ static const char *const dsdiff_mime_types[] = {
 
 const struct decoder_plugin dsdiff_decoder_plugin = {
 	.name = "dsdiff",
+	.init = dsdiff_init,
 	.stream_decode = dsdiff_stream_decode,
 	.stream_tag = dsdiff_stream_tag,
 	.suffixes = dsdiff_suffixes,
