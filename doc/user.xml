@@ -737,6 +737,14 @@ cd mpd-version</programlisting>
       <title>Decoder plugins</title>
 
       <section>
+        <title><varname>dsdiff</varname></title>
+
+        <para>
+          Decodes DFF files containing DSDIFF data (e.g. SACD rips).
+        </para>
+      </section>
+
+      <section>
         <title><varname>mikmod</varname></title>
 
         <para>

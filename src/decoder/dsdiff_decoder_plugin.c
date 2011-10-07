@@ -17,6 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+/* \file
+ *
+ * This plugin decodes DSDIFF data (SACD) embedded in DFF files.  It
+ * was modeled after the specification found here:
+ * http://www.sonicstudio.com/pdf/dsd/DSDIFF_1.5_Spec.pdf
+ */
+
 #include "config.h"
 #include "dsdiff_decoder_plugin.h"
 #include "decoder_api.h"
