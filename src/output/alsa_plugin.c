@@ -186,6 +186,9 @@ static snd_pcm_format_t
 get_bitformat(enum sample_format sample_format)
 {
 	switch (sample_format) {
+	case SAMPLE_FORMAT_UNDEFINED:
+		return SND_PCM_FORMAT_UNKNOWN;
+
 	case SAMPLE_FORMAT_S8:
 		return SND_PCM_FORMAT_S8;
 
@@ -202,10 +205,10 @@ get_bitformat(enum sample_format sample_format)
 
 	case SAMPLE_FORMAT_S32:
 		return SND_PCM_FORMAT_S32;
-
-	default:
-		return SND_PCM_FORMAT_UNKNOWN;
 	}
+
+	assert(false);
+	return SND_PCM_FORMAT_UNKNOWN;
 }
 
 static snd_pcm_format_t
