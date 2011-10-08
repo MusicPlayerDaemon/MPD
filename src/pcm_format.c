@@ -418,3 +418,138 @@ pcm_convert_to_32(struct pcm_buffer *buffer,
 
 	return NULL;
 }
+
+static void
+pcm_convert_8_to_float(float *out, const int8_t *in, const int8_t *in_end)
+{
+	enum { in_bits = sizeof(*in) * 8 };
+	static const float factor = 2.0f / (1 << in_bits);
+	while (in < in_end)
+		*out++ = (float)*in++ * factor;
+}
+
+static void
+pcm_convert_16_to_float(float *out, const int16_t *in, const int16_t *in_end)
+{
+	enum { in_bits = sizeof(*in) * 8 };
+	static const float factor = 2.0f / (1 << in_bits);
+	while (in < in_end)
+		*out++ = (float)*in++ * factor;
+}
+
+static void
+pcm_convert_24_to_float(float *out, const int32_t *in, const int32_t *in_end)
+{
+	enum { in_bits = 24 };
+	static const float factor = 2.0f / (1 << in_bits);
+	while (in < in_end)
+		*out++ = (float)*in++ * factor;
+}
+
+static void
+pcm_convert_32_to_float(float *out, const int32_t *in, const int32_t *in_end)
+{
+	enum { in_bits = sizeof(*in) * 8 };
+	static const float factor = 0.5f / (1 << (in_bits - 2));
+	while (in < in_end)
+		*out++ = (float)*in++ * factor;
+}
+
+static float *
+pcm_allocate_8_to_float(struct pcm_buffer *buffer,
+			const int8_t *src, size_t src_size,
+			size_t *dest_size_r)
+{
+	float *dest;
+	*dest_size_r = src_size / sizeof(*src) * sizeof(*dest);
+	dest = pcm_buffer_get(buffer, *dest_size_r);
+	pcm_convert_8_to_float(dest, src, pcm_end_pointer(src, src_size));
+	return dest;
+}
+
+static float *
+pcm_allocate_16_to_float(struct pcm_buffer *buffer,
+			 const int16_t *src, size_t src_size,
+			 size_t *dest_size_r)
+{
+	float *dest;
+	*dest_size_r = src_size * 2;
+	assert(*dest_size_r == src_size / sizeof(*src) * sizeof(*dest));
+	dest = pcm_buffer_get(buffer, *dest_size_r);
+	pcm_convert_16_to_float(dest, src, pcm_end_pointer(src, src_size));
+	return dest;
+}
+
+static float *
+pcm_allocate_24_to_float(struct pcm_buffer *buffer,
+		      const uint8_t *src,
+		      size_t src_size, size_t *dest_size_r)
+{
+	/* convert to S24_P32 first */
+	int32_t *tmp = pcm_allocate_24_to_24p32(buffer, src, src_size,
+						dest_size_r);
+
+	/* convert to float in-place */
+	float *dest = (float *)tmp;
+	pcm_convert_24_to_float(dest, tmp, pcm_end_pointer(tmp, *dest_size_r));
+	return dest;
+}
+
+static float *
+pcm_allocate_24p32_to_float(struct pcm_buffer *buffer,
+			 const int32_t *src, size_t src_size,
+			 size_t *dest_size_r)
+{
+	*dest_size_r = src_size;
+	float *dest = pcm_buffer_get(buffer, *dest_size_r);
+	pcm_convert_24_to_float(dest, src, pcm_end_pointer(src, src_size));
+	return dest;
+}
+
+static float *
+pcm_allocate_32_to_float(struct pcm_buffer *buffer,
+			 const int32_t *src, size_t src_size,
+			 size_t *dest_size_r)
+{
+	*dest_size_r = src_size;
+	float *dest = pcm_buffer_get(buffer, *dest_size_r);
+	pcm_convert_32_to_float(dest, src, pcm_end_pointer(src, src_size));
+	return dest;
+}
+
+const float *
+pcm_convert_to_float(struct pcm_buffer *buffer,
+		     enum sample_format src_format, const void *src,
+		     size_t src_size, size_t *dest_size_r)
+{
+	switch (src_format) {
+	case SAMPLE_FORMAT_UNDEFINED:
+		break;
+
+	case SAMPLE_FORMAT_S8:
+		return pcm_allocate_8_to_float(buffer,
+					       src, src_size, dest_size_r);
+
+	case SAMPLE_FORMAT_S16:
+		return pcm_allocate_16_to_float(buffer,
+						src, src_size, dest_size_r);
+
+	case SAMPLE_FORMAT_S24:
+		return pcm_allocate_24_to_float(buffer,
+						src, src_size, dest_size_r);
+
+	case SAMPLE_FORMAT_S24_P32:
+		return pcm_allocate_24p32_to_float(buffer,
+						   src, src_size, dest_size_r);
+
+	case SAMPLE_FORMAT_S32:
+		return pcm_allocate_32_to_float(buffer,
+						src, src_size, dest_size_r);
+
+	case SAMPLE_FORMAT_FLOAT:
+		*dest_size_r = src_size;
+		return src;
+	}
+
+	return NULL;
+}

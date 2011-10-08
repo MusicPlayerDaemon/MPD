@@ -24,6 +24,7 @@
 #include "pcm_byteswap.h"
 #include "pcm_pack.h"
 #include "audio_format.h"
+#include "glib_compat.h"
 
 #include <assert.h>
 #include <string.h>
@@ -56,7 +57,6 @@ void pcm_convert_deinit(struct pcm_convert_state *state)
 	pcm_buffer_deinit(&state->byteswap_buffer);
 }
 
-G_GNUC_UNUSED
 static const void *
 pcm_convert_channels(struct pcm_buffer *buffer, enum sample_format format,
 		     uint8_t dest_channels,
@@ -312,6 +312,67 @@ pcm_convert_32(struct pcm_convert_state *state,
 	return buf;
 }
 
+static const float *
+pcm_convert_float(struct pcm_convert_state *state,
+		  const struct audio_format *src_format,
+		  const void *src_buffer, size_t src_size,
+		  const struct audio_format *dest_format, size_t *dest_size_r,
+		  GError **error_r)
+{
+	const float *buffer = src_buffer;
+	size_t size = src_size;
+
+	assert(dest_format->format == SAMPLE_FORMAT_FLOAT);
+
+	if (src_format->reverse_endian || dest_format->reverse_endian) {
+		g_set_error_literal(error_r, pcm_convert_quark(), 0,
+				    "Reverse endian not supported");
+		return NULL;
+	}
+
+	/* convert channels first, hoping the source format is
+	   supported (float is not) */
+
+	if (dest_format->channels != src_format->channels) {
+		buffer = pcm_convert_channels(&state->channels_buffer,
+					      src_format->format,
+					      dest_format->channels,
+					      src_format->channels,
+					      buffer, size, &size, error_r);
+		if (buffer == NULL)
+			return NULL;
+	}
+
+	/* convert to float now */
+
+	buffer = pcm_convert_to_float(&state->format_buffer,
+				      src_format->format,
+				      buffer, size, &size);
+	if (buffer == NULL) {
+		g_set_error(error_r, pcm_convert_quark(), 0,
+			    "Conversion from %s to float is not implemented",
+			    sample_format_to_string(src_format->format));
+		return NULL;
+	}
+
+	/* resample with float, because this is the best format for
+	   libsamplerate */
+
+	if (src_format->sample_rate != dest_format->sample_rate) {
+		buffer = pcm_resample_float(&state->resample,
+					    dest_format->channels,
+					    src_format->sample_rate,
+					    buffer, size,
+					    dest_format->sample_rate, &size,
+					    error_r);
+		if (buffer == NULL)
+			return NULL;
+	}
+
+	*dest_size_r = size;
+	return buffer;
+}
+
 const void *
 pcm_convert(struct pcm_convert_state *state,
 	    const struct audio_format *src_format,
@@ -358,6 +419,12 @@ pcm_convert(struct pcm_convert_state *state,
 				      src_format, src, src_size,
 				      dest_format, dest_size_r,
 				      error_r);
+
+	case SAMPLE_FORMAT_FLOAT:
+		return pcm_convert_float(state,
+					 src_format, src, src_size,
+					 dest_format, dest_size_r,
+					 error_r);
 
 	default:
 		g_set_error(error_r, pcm_convert_quark(), 0,
