@@ -84,6 +84,16 @@ pcm_resample_lsr_global_init(const char *converter, GError **error_r)
 }
 
 void
+pcm_resample_lsr_init(struct pcm_resample_state *state)
+{
+	memset(state, 0, sizeof(*state));
+
+	pcm_buffer_init(&state->in);
+	pcm_buffer_init(&state->out);
+	pcm_buffer_init(&state->buffer);
+}
+
+void
 pcm_resample_lsr_deinit(struct pcm_resample_state *state)
 {
 	if (state->state != NULL)

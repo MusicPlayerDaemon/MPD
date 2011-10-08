@@ -23,6 +23,12 @@
 #include <assert.h>
 
 void
+pcm_resample_fallback_init(struct pcm_resample_state *state)
+{
+	pcm_buffer_init(&state->buffer);
+}
+
+void
 pcm_resample_fallback_deinit(struct pcm_resample_state *state)
 {
 	pcm_buffer_deinit(&state->buffer);

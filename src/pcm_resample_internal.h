@@ -36,6 +36,9 @@ bool
 pcm_resample_lsr_global_init(const char *converter, GError **error_r);
 
 void
+pcm_resample_lsr_init(struct pcm_resample_state *state);
+
+void
 pcm_resample_lsr_deinit(struct pcm_resample_state *state);
 
 const int16_t *
@@ -56,6 +59,9 @@ pcm_resample_lsr_32(struct pcm_resample_state *state,
 		    GError **error_r);
 
 #endif
+
+void
+pcm_resample_fallback_init(struct pcm_resample_state *state);
 
 void
 pcm_resample_fallback_deinit(struct pcm_resample_state *state);

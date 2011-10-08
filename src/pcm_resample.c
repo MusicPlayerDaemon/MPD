@@ -58,16 +58,12 @@ pcm_resample_global_init(GError **error_r)
 
 void pcm_resample_init(struct pcm_resample_state *state)
 {
-	memset(state, 0, sizeof(*state));
-
 #ifdef HAVE_LIBSAMPLERATE
-	if (pcm_resample_lsr_enabled()) {
-		pcm_buffer_init(&state->in);
-		pcm_buffer_init(&state->out);
-	}
+	if (pcm_resample_lsr_enabled())
+		pcm_resample_lsr_init(state);
+	else
 #endif
-
-	pcm_buffer_init(&state->buffer);
+		pcm_resample_fallback_init(state);
 }
 
 void pcm_resample_deinit(struct pcm_resample_state *state)
