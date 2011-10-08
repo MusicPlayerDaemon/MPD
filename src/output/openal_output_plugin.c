@@ -67,26 +67,26 @@ openal_audio_format(struct audio_format *audio_format)
 			return AL_FORMAT_STEREO16;
 		if (audio_format->channels == 1)
 			return AL_FORMAT_MONO16;
-		break;
+
+		/* fall back to mono */
+		audio_format->channels = 1;
+		return openal_audio_format(audio_format);
 
 	case SAMPLE_FORMAT_S8:
 		if (audio_format->channels == 2)
 			return AL_FORMAT_STEREO8;
 		if (audio_format->channels == 1)
 			return AL_FORMAT_MONO8;
-		break;
+
+		/* fall back to mono */
+		audio_format->channels = 1;
+		return openal_audio_format(audio_format);
 
 	default:
 		/* fall back to 16 bit */
 		audio_format->format = SAMPLE_FORMAT_S16;
-		if (audio_format->channels == 2)
-			return AL_FORMAT_STEREO16;
-		if (audio_format->channels == 1)
-			return AL_FORMAT_MONO16;
-		break;
+		return openal_audio_format(audio_format);
 	}
-
-	return 0;
 }
 
 static bool

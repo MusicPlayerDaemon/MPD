@@ -36,7 +36,15 @@ AC_PROG_MAKE_SET
 PKG_PROG_PKG_CONFIG
 AC_ARG_WITH([systemdsystemunitdir],
 	    AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
-	    [], [with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)])
+	    [], [with_systemdsystemunitdir=no])
+if test "x$with_systemdsystemunitdir" = xyes; then
+	AC_MSG_CHECKING(for systemd)
+	with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)
+	if test -z "$with_systemdsystemunitdir"; then
+		AC_MSG_ERROR([Failed to detect systemd])
+	fi
+	AC_MSG_RESULT([$with_systemdsystemunitdir])
+fi
 if test "x$with_systemdsystemunitdir" != xno; then
 	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
 fi

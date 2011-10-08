@@ -39,6 +39,8 @@ ver 0.16.5 (2010/??/??)
   - ffmpeg: higher precision timestamps
   - ffmpeg: don't require key frame for seeking
   - fix CUE track seeking
+* output:
+  - openal: auto-fallback to mono if channel count is unsupported
 * player:
   - make seeking to CUE track more reliable
   - the "seek" command works when MPD is stopped
