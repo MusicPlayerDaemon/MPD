@@ -237,12 +237,10 @@ audio_format_mask_apply(struct audio_format *af,
 	assert(audio_format_valid(af));
 }
 
-/**
- * Returns the size of each (mono) sample in bytes.
- */
-static inline unsigned audio_format_sample_size(const struct audio_format *af)
+static inline unsigned
+sample_format_size(enum sample_format format)
 {
-	switch (af->format) {
+	switch (format) {
 	case SAMPLE_FORMAT_S8:
 		return 1;
 
@@ -257,10 +255,19 @@ static inline unsigned audio_format_sample_size(const struct audio_format *af)
 		return 4;
 
 	case SAMPLE_FORMAT_UNDEFINED:
-		break;
+		return 0;
 	}
 
+	assert(false);
 	return 0;
+}
+
+/**
+ * Returns the size of each (mono) sample in bytes.
+ */
+static inline unsigned audio_format_sample_size(const struct audio_format *af)
+{
+	return sample_format_size((enum sample_format)af->format);
 }
 
 /**
