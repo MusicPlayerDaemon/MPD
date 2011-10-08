@@ -395,6 +395,7 @@ sample_format_to_oss(enum sample_format format)
 {
 	switch (format) {
 	case SAMPLE_FORMAT_UNDEFINED:
+	case SAMPLE_FORMAT_FLOAT:
 		return AFMT_QUERY;
 
 	case SAMPLE_FORMAT_S8:

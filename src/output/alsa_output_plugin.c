@@ -212,6 +212,9 @@ get_bitformat(enum sample_format sample_format)
 
 	case SAMPLE_FORMAT_S32:
 		return SND_PCM_FORMAT_S32;
+
+	case SAMPLE_FORMAT_FLOAT:
+		return SND_PCM_FORMAT_FLOAT;
 	}
 
 	assert(false);

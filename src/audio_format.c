@@ -68,6 +68,9 @@ sample_format_to_string(enum sample_format format)
 
 	case SAMPLE_FORMAT_S32:
 		return "32";
+
+	case SAMPLE_FORMAT_FLOAT:
+		return "f";
 	}
 
 	/* unreachable */

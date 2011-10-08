@@ -167,6 +167,10 @@ pcm_volume(void *buffer, size_t length,
 	case SAMPLE_FORMAT_S32:
 		pcm_volume_change_32(buffer, end, volume);
 		return true;
+
+	case SAMPLE_FORMAT_FLOAT:
+		/* XXX */
+		return false;
 	}
 
 	/* unreachable */

@@ -69,6 +69,7 @@ pcm_byteswap(struct pcm_buffer *buffer, enum sample_format format,
 	switch (format) {
 	case SAMPLE_FORMAT_UNDEFINED:
 	case SAMPLE_FORMAT_S24:
+	case SAMPLE_FORMAT_FLOAT:
 		/* not implemented */
 		return NULL;
 

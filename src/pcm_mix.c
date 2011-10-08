@@ -128,6 +128,10 @@ pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
 		pcm_add_vol_32((int32_t *)buffer1, (const int32_t *)buffer2,
 			       size / 4, vol1, vol2);
 		return true;
+
+	case SAMPLE_FORMAT_FLOAT:
+		/* XXX */
+		return false;
 	}
 
 	/* unreachable */
@@ -216,6 +220,10 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 	case SAMPLE_FORMAT_S32:
 		pcm_add_32((int32_t *)buffer1, (const int32_t *)buffer2, size / 4);
 		return true;
+
+	case SAMPLE_FORMAT_FLOAT:
+		/* XXX */
+		return false;
 	}
 
 	/* unreachable */

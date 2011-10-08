@@ -63,4 +63,32 @@ pcm_range_64(int64_t sample, unsigned bits)
 	return sample;
 }
 
+G_GNUC_CONST
+static inline int16_t
+pcm_clamp_16(int x)
+{
+	static const int32_t MIN_VALUE = G_MININT16;
+	static const int32_t MAX_VALUE = G_MAXINT16;
+
+	if (G_UNLIKELY(x < MIN_VALUE))
+		return MIN_VALUE;
+	if (G_UNLIKELY(x > MAX_VALUE))
+		return MAX_VALUE;
+	return x;
+}
+
+G_GNUC_CONST
+static inline int32_t
+pcm_clamp_24(int x)
+{
+	static const int32_t MIN_VALUE = -(1 << 23);
+	static const int32_t MAX_VALUE = (1 << 23) - 1;
+
+	if (G_UNLIKELY(x < MIN_VALUE))
+		return MIN_VALUE;
+	if (G_UNLIKELY(x > MAX_VALUE))
+		return MAX_VALUE;
+	return x;
+}
+
 #endif

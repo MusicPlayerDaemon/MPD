@@ -102,6 +102,7 @@ flac_convert(void *dest,
 		break;
 
 	case SAMPLE_FORMAT_S24:
+	case SAMPLE_FORMAT_FLOAT:
 	case SAMPLE_FORMAT_UNDEFINED:
 		/* unreachable */
 		assert(false);

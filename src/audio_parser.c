@@ -81,6 +81,12 @@ parse_sample_format(const char *src, bool mask,
 		return true;
 	}
 
+	if (*src == 'f') {
+		*sample_format_r = SAMPLE_FORMAT_FLOAT;
+		*endptr_r = src + 1;
+		return true;
+	}
+
 	value = strtoul(src, &endptr, 10);
 	if (endptr == src) {
 		g_set_error(error_r, audio_parser_quark(), 0,

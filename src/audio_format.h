@@ -43,6 +43,12 @@ enum sample_format {
 	SAMPLE_FORMAT_S24_P32,
 
 	SAMPLE_FORMAT_S32,
+
+	/**
+	 * 32 bit floating point samples in the host's format.  The
+	 * range is -1.0f to +1.0f.
+	 */
+	SAMPLE_FORMAT_FLOAT,
 };
 
 static const unsigned MAX_CHANNELS = 8;
@@ -168,6 +174,7 @@ audio_valid_sample_format(enum sample_format format)
 	case SAMPLE_FORMAT_S24:
 	case SAMPLE_FORMAT_S24_P32:
 	case SAMPLE_FORMAT_S32:
+	case SAMPLE_FORMAT_FLOAT:
 		return true;
 
 	case SAMPLE_FORMAT_UNDEFINED:
@@ -241,6 +248,7 @@ sample_format_size(enum sample_format format)
 
 	case SAMPLE_FORMAT_S24_P32:
 	case SAMPLE_FORMAT_S32:
+	case SAMPLE_FORMAT_FLOAT:
 		return 4;
 
 	case SAMPLE_FORMAT_UNDEFINED:

@@ -25,6 +25,7 @@ ver 0.17 (2011/??/??)
 * state_file: add option "restore_paused"
 * cue: show CUE track numbers
 * allow port specification in "bind_to_address" settings
+* support floating point samples
 
 
 ver 0.16.5 (2010/10/09)
