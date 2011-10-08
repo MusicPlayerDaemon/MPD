@@ -54,6 +54,9 @@ struct pcm_resample_state {
 	struct pcm_buffer buffer;
 };
 
+bool
+pcm_resample_global_init(GError **error_r);
+
 /**
  * Initializes a pcm_resample_state object.
  */

@@ -32,6 +32,9 @@
 
 #ifdef HAVE_LIBSAMPLERATE
 
+bool
+pcm_resample_lsr_global_init(const char *converter, GError **error_r);
+
 void
 pcm_resample_lsr_deinit(struct pcm_resample_state *state);
 

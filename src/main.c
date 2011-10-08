@@ -44,6 +44,7 @@
 #include "volume.h"
 #include "log.h"
 #include "permission.h"
+#include "pcm_resample.h"
 #include "replay_gain_config.h"
 #include "decoder_list.h"
 #include "input_init.h"
@@ -403,6 +404,13 @@ int mpd_main(int argc, char *argv[])
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_init_all();
 #endif
+
+	if (!pcm_resample_global_init(&error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+		return EXIT_FAILURE;
+	}
+
 	decoder_plugin_init_all();
 	update_global_init();
 

@@ -27,13 +27,34 @@
 #include <string.h>
 
 #ifdef HAVE_LIBSAMPLERATE
+static bool lsr_enabled;
+#endif
+
+#ifdef HAVE_LIBSAMPLERATE
 static bool
 pcm_resample_lsr_enabled(void)
 {
-	return strcmp(config_get_string(CONF_SAMPLERATE_CONVERTER, ""),
-		      "internal") != 0;
+	return lsr_enabled;
 }
 #endif
+
+bool
+pcm_resample_global_init(GError **error_r)
+{
+#ifdef HAVE_LIBSAMPLERATE
+	const char *converter =
+		config_get_string(CONF_SAMPLERATE_CONVERTER, "");
+
+	lsr_enabled = strcmp(converter, "internal") != 0;
+	if (lsr_enabled)
+		return pcm_resample_lsr_global_init(converter, error_r);
+	else
+		return true;
+#else
+	(void)error_r;
+	return true;
+#endif
+}
 
 void pcm_resample_init(struct pcm_resample_state *state)
 {

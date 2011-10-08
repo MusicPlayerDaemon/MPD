@@ -30,10 +30,57 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "pcm"
 
+static int lsr_converter = SRC_SINC_FASTEST;
+
 static inline GQuark
 libsamplerate_quark(void)
 {
 	return g_quark_from_static_string("libsamplerate");
+}
+
+static bool
+lsr_parse_converter(const char *s)
+{
+	assert(s != NULL);
+
+	if (*s == 0)
+		return true;
+
+	char *endptr;
+	long l = strtol(s, &endptr, 10);
+	if (*endptr == 0 && src_get_name(l) != NULL) {
+		lsr_converter = l;
+		return true;
+	}
+
+	size_t length = strlen(s);
+	for (int i = 0;; ++i) {
+		const char *name = src_get_name(i);
+		if (name == NULL)
+			break;
+
+		if (g_ascii_strncasecmp(s, name, length) == 0) {
+			lsr_converter = i;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool
+pcm_resample_lsr_global_init(const char *converter, GError **error_r)
+{
+	if (!lsr_parse_converter(converter)) {
+		g_set_error(error_r, libsamplerate_quark(), 0,
+			    "unknown samplerate converter '%s'", converter);
+		return false;
+	}
+
+	g_debug("libsamplerate converter '%s'",
+		src_get_name(lsr_converter));
+
+	return true;
 }
 
 void
@@ -47,53 +94,13 @@ pcm_resample_lsr_deinit(struct pcm_resample_state *state)
 	pcm_buffer_deinit(&state->buffer);
 }
 
-static int pcm_resample_get_converter(void)
-{
-	const char *conf = config_get_string(CONF_SAMPLERATE_CONVERTER, NULL);
-	long convalgo;
-	char *test;
-	const char *test2;
-	size_t len;
-
-	if (!conf) {
-		convalgo = SRC_SINC_FASTEST;
-		goto out;
-	}
-
-	convalgo = strtol(conf, &test, 10);
-	if (*test == '\0' && src_get_name(convalgo))
-		goto out;
-
-	len = strlen(conf);
-	for (convalgo = 0 ; ; convalgo++) {
-		test2 = src_get_name(convalgo);
-		if (!test2) {
-			convalgo = SRC_SINC_FASTEST;
-			break;
-		}
-		if (g_ascii_strncasecmp(test2, conf, len) == 0)
-			goto out;
-	}
-
-	g_warning("unknown samplerate converter \"%s\"", conf);
-out:
-	g_debug("selecting samplerate converter \"%s\"",
-		src_get_name(convalgo));
-
-	return convalgo;
-}
-
 static bool
 pcm_resample_set(struct pcm_resample_state *state,
 		 uint8_t channels, unsigned src_rate, unsigned dest_rate,
 		 GError **error_r)
 {
-	static int convalgo = -1;
 	int error;
 	SRC_DATA *data = &state->data;
-
-	if (convalgo < 0)
-		convalgo = pcm_resample_get_converter();
 
 	/* (re)set the state/ratio if the in or out format changed */
 	if (channels == state->prev.channels &&
@@ -109,7 +116,7 @@ pcm_resample_set(struct pcm_resample_state *state,
 	if (state->state)
 		state->state = src_delete(state->state);
 
-	state->state = src_new(convalgo, channels, &error);
+	state->state = src_new(lsr_converter, channels, &error);
 	if (!state->state) {
 		g_set_error(error_r, libsamplerate_quark(), state->error,
 			    "libsamplerate initialization has failed: %s",
