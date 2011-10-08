@@ -157,6 +157,45 @@ lsr_process(struct pcm_resample_state *state, GError **error_r)
 	return true;
 }
 
+static float *
+deconst_float_buffer(const float *in)
+{
+	union {
+		const float *in;
+		float *out;
+	} u = { .in = in };
+	return u.out;
+}
+
+const float *
+pcm_resample_lsr_float(struct pcm_resample_state *state,
+		       unsigned channels,
+		       unsigned src_rate,
+		       const float *src_buffer, size_t src_size,
+		       unsigned dest_rate, size_t *dest_size_r,
+		       GError **error_r)
+{
+	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
+
+	if (!pcm_resample_set(state, channels, src_rate, dest_rate, error_r))
+		return NULL;
+
+	SRC_DATA *data = &state->data;
+	data->input_frames = src_size / sizeof(*src_buffer) / channels;
+	data->data_in = deconst_float_buffer(src_buffer);
+
+	data->output_frames = (src_size * dest_rate + src_rate - 1) / src_rate;
+	size_t data_out_size = data->output_frames * sizeof(float) * channels;
+	data->data_out = pcm_buffer_get(&state->out, data_out_size);
+
+	if (!lsr_process(state, error_r))
+		return NULL;
+
+	*dest_size_r = data->output_frames_gen *
+		sizeof(*data->data_out) * channels;
+	return data->data_out;
+}
+
 const int16_t *
 pcm_resample_lsr_16(struct pcm_resample_state *state,
 		    unsigned channels,

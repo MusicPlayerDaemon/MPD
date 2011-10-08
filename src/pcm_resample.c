@@ -76,6 +76,34 @@ void pcm_resample_deinit(struct pcm_resample_state *state)
 		pcm_resample_fallback_deinit(state);
 }
 
+const float *
+pcm_resample_float(struct pcm_resample_state *state,
+		   unsigned channels,
+		   unsigned src_rate,
+		   const float *src_buffer, size_t src_size,
+		   unsigned dest_rate, size_t *dest_size_r,
+		   GError **error_r)
+{
+#ifdef HAVE_LIBSAMPLERATE
+	if (pcm_resample_lsr_enabled())
+		return pcm_resample_lsr_float(state, channels,
+					      src_rate, src_buffer, src_size,
+					      dest_rate, dest_size_r,
+					      error_r);
+#else
+	(void)error_r;
+#endif
+
+	/* sizeof(float)==sizeof(int32_t); the fallback resampler does
+	   not do any math on the sample values, so this hack is
+	   possible: */
+	return (const float *)
+		pcm_resample_fallback_32(state, channels,
+					 src_rate, (const int32_t *)src_buffer,
+					 src_size,
+					 dest_rate, dest_size_r);
+}
+
 const int16_t *
 pcm_resample_16(struct pcm_resample_state *state,
 		unsigned channels,

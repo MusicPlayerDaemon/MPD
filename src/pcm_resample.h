@@ -69,6 +69,26 @@ void pcm_resample_init(struct pcm_resample_state *state);
 void pcm_resample_deinit(struct pcm_resample_state *state);
 
 /**
+ * Resamples 32 bit float data.
+ *
+ * @param state an initialized pcm_resample_state object
+ * @param channels the number of channels
+ * @param src_rate the source sample rate
+ * @param src the source PCM buffer
+ * @param src_size the size of #src in bytes
+ * @param dest_rate the requested destination sample rate
+ * @param dest_size_r returns the number of bytes of the destination buffer
+ * @return the destination buffer
+ */
+const float *
+pcm_resample_float(struct pcm_resample_state *state,
+		   unsigned channels,
+		   unsigned src_rate,
+		   const float *src_buffer, size_t src_size,
+		   unsigned dest_rate, size_t *dest_size_r,
+		   GError **error_r);
+
+/**
  * Resamples 16 bit PCM data.
  *
  * @param state an initialized pcm_resample_state object
