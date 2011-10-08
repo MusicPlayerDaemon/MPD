@@ -142,6 +142,21 @@ pcm_resample_set(struct pcm_resample_state *state,
 	return true;
 }
 
+static bool
+lsr_process(struct pcm_resample_state *state, GError **error_r)
+{
+	if (state->error == 0)
+		state->error = src_process(state->state, &state->data);
+	if (state->error) {
+		g_set_error(error_r, libsamplerate_quark(), state->error,
+			    "libsamplerate has failed: %s",
+			    src_strerror(state->error));
+		return false;
+	}
+
+	return true;
+}
+
 const int16_t *
 pcm_resample_lsr_16(struct pcm_resample_state *state,
 		    uint8_t channels,
@@ -154,7 +169,6 @@ pcm_resample_lsr_16(struct pcm_resample_state *state,
 	SRC_DATA *data = &state->data;
 	size_t data_in_size;
 	size_t data_out_size;
-	int error;
 	int16_t *dest_buffer;
 
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
@@ -163,14 +177,6 @@ pcm_resample_lsr_16(struct pcm_resample_state *state,
 				   error_r);
 	if (!success)
 		return NULL;
-
-	/* there was an error previously, and nothing has changed */
-	if (state->error) {
-		g_set_error(error_r, libsamplerate_quark(), state->error,
-			    "libsamplerate has failed: %s",
-			    src_strerror(state->error));
-		return NULL;
-	}
 
 	data->input_frames = src_size / sizeof(*src_buffer) / channels;
 	data_in_size = data->input_frames * sizeof(float) * channels;
@@ -183,14 +189,8 @@ pcm_resample_lsr_16(struct pcm_resample_state *state,
 	src_short_to_float_array(src_buffer, data->data_in,
 				 data->input_frames * channels);
 
-	error = src_process(state->state, data);
-	if (error) {
-		g_set_error(error_r, libsamplerate_quark(), error,
-			    "libsamplerate has failed: %s",
-			    src_strerror(error));
-		state->error = error;
+	if (!lsr_process(state, error_r))
 		return NULL;
-	}
 
 	*dest_size_r = data->output_frames_gen *
 		sizeof(*dest_buffer) * channels;
@@ -233,7 +233,6 @@ pcm_resample_lsr_32(struct pcm_resample_state *state,
 	SRC_DATA *data = &state->data;
 	size_t data_in_size;
 	size_t data_out_size;
-	int error;
 	int32_t *dest_buffer;
 
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
@@ -242,14 +241,6 @@ pcm_resample_lsr_32(struct pcm_resample_state *state,
 				   error_r);
 	if (!success)
 		return NULL;
-
-	/* there was an error previously, and nothing has changed */
-	if (state->error) {
-		g_set_error(error_r, libsamplerate_quark(), state->error,
-			    "libsamplerate has failed: %s",
-			    src_strerror(state->error));
-		return NULL;
-	}
 
 	data->input_frames = src_size / sizeof(*src_buffer) / channels;
 	data_in_size = data->input_frames * sizeof(float) * channels;
@@ -262,14 +253,8 @@ pcm_resample_lsr_32(struct pcm_resample_state *state,
 	src_int_to_float_array(src_buffer, data->data_in,
 			       data->input_frames * channels);
 
-	error = src_process(state->state, data);
-	if (error) {
-		g_set_error(error_r, libsamplerate_quark(), error,
-			    "libsamplerate has failed: %s",
-			    src_strerror(error));
-		state->error = error;
+	if (!lsr_process(state, error_r))
 		return NULL;
-	}
 
 	*dest_size_r = data->output_frames_gen *
 		sizeof(*dest_buffer) * channels;
