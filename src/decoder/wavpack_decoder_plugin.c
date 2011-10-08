@@ -111,12 +111,11 @@ static void
 format_samples_float(G_GNUC_UNUSED int bytes_per_sample, void *buffer,
 		     uint32_t count)
 {
-	int32_t *dst = buffer;
-	float *src = buffer;
-	assert_static(sizeof(*dst) <= sizeof(*src));
+	float *p = buffer;
 
 	while (count--) {
-		*dst++ = (int32_t)(*src++ + 0.5f);
+		*p /= (1 << 23);
+		++p;
 	}
 }
 
@@ -127,7 +126,7 @@ static enum sample_format
 wavpack_bits_to_sample_format(bool is_float, int bytes_per_sample)
 {
 	if (is_float)
-		return SAMPLE_FORMAT_S24_P32;
+		return SAMPLE_FORMAT_FLOAT;
 
 	switch (bytes_per_sample) {
 	case 1:
