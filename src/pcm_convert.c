@@ -56,6 +56,56 @@ void pcm_convert_deinit(struct pcm_convert_state *state)
 	pcm_buffer_deinit(&state->byteswap_buffer);
 }
 
+G_GNUC_UNUSED
+static const void *
+pcm_convert_channels(struct pcm_buffer *buffer, enum sample_format format,
+		     uint8_t dest_channels,
+		     uint8_t src_channels, const void *src,
+		     size_t src_size, size_t *dest_size_r,
+		     GError **error_r)
+{
+	const void *dest = NULL;
+
+	switch (format) {
+	case SAMPLE_FORMAT_UNDEFINED:
+	case SAMPLE_FORMAT_S8:
+	case SAMPLE_FORMAT_S24:
+	case SAMPLE_FORMAT_FLOAT:
+		g_set_error(error_r, pcm_convert_quark(), 0,
+			    "Channel conversion not implemented for format '%s'",
+			    sample_format_to_string(format));
+		return NULL;
+
+	case SAMPLE_FORMAT_S16:
+		dest = pcm_convert_channels_16(buffer, dest_channels,
+					       src_channels, src,
+					       src_size, dest_size_r);
+		break;
+
+	case SAMPLE_FORMAT_S24_P32:
+		dest = pcm_convert_channels_24(buffer, dest_channels,
+					       src_channels, src,
+					       src_size, dest_size_r);
+		break;
+
+	case SAMPLE_FORMAT_S32:
+		dest = pcm_convert_channels_32(buffer, dest_channels,
+					       src_channels, src,
+					       src_size, dest_size_r);
+		break;
+	}
+
+	if (dest == NULL) {
+		g_set_error(error_r, pcm_convert_quark(), 0,
+			    "Conversion from %u to %u channels "
+			    "is not implemented",
+			    src_channels, dest_channels);
+		return NULL;
+	}
+
+	return dest;
+}
+
 static const int16_t *
 pcm_convert_16(struct pcm_convert_state *state,
 	       const struct audio_format *src_format,
