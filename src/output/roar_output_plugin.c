@@ -145,6 +145,43 @@ roar_finish(struct audio_output *ao)
 	g_free(self);
 }
 
+static void
+roar_use_audio_format(struct roar_audio_info *info,
+		      struct audio_format *audio_format)
+{
+	info->rate = audio_format->sample_rate;
+	info->channels = audio_format->channels;
+	info->codec = ROAR_CODEC_PCM_S;
+
+	switch (audio_format->format) {
+	case SAMPLE_FORMAT_UNDEFINED:
+		info->bits = 16;
+		audio_format->format = SAMPLE_FORMAT_S16;
+		break;
+
+	case SAMPLE_FORMAT_S8:
+		info->bits = 8;
+		break;
+
+	case SAMPLE_FORMAT_S16:
+		info->bits = 16;
+		break;
+
+	case SAMPLE_FORMAT_S24:
+		info->bits = 24;
+		break;
+
+	case SAMPLE_FORMAT_S24_P32:
+		info->bits = 32;
+		audio_format->format = SAMPLE_FORMAT_S32;
+		break;
+
+	case SAMPLE_FORMAT_S32:
+		info->bits = 32;
+		break;
+	}
+}
+
 static bool
 roar_open(struct audio_output *ao, struct audio_format *audio_format, GError **error)
 {
@@ -169,33 +206,7 @@ roar_open(struct audio_output *ao, struct audio_format *audio_format, GError **e
 		return false;
 	}
 
-	self->info.rate = audio_format->sample_rate;
-	self->info.channels = audio_format->channels;
-	self->info.codec = ROAR_CODEC_PCM_S;
-
-	switch (audio_format->format)
-	{
-		case SAMPLE_FORMAT_S8:
-			self->info.bits = 8;
-			break;
-		case SAMPLE_FORMAT_S16:
-			self->info.bits = 16;
-			break;
-		case SAMPLE_FORMAT_S24:
-			self->info.bits = 24;
-			break;
-		case SAMPLE_FORMAT_S24_P32:
-			self->info.bits = 32;
-			audio_format->format = SAMPLE_FORMAT_S32;
-			break;
-		case SAMPLE_FORMAT_S32:
-			self->info.bits = 32;
-			break;
-		default:
-			self->info.bits = 16;
-			audio_format->format = SAMPLE_FORMAT_S16;
-	}
-	audio_format->reverse_endian = 0;
+	roar_use_audio_format(&self->info, audio_format);
 
 	if (roar_vs_stream(self->vss, &(self->info), ROAR_DIR_PLAY,
 				&(self->err)) < 0)
