@@ -188,7 +188,7 @@ directory_walk(const struct directory *directory, bool recursive,
 		const struct playlist_vector *pv = &directory->playlists;
 		for (const struct playlist_metadata *i = pv->head;
 		     i != NULL; i = i->next)
-			if (!visitor->playlist(i, ctx, error_r))
+			if (!visitor->playlist(i, directory, ctx, error_r))
 				return false;
 	}
 

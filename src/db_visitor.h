@@ -43,9 +43,11 @@ struct db_visitor {
 	/**
 	 * Visit a playlist.  Optional method.
 	 *
+	 * @param directory the directory the playlist resides in
 	 * @return true to continue the operation, false on error (set error_r)
 	 */
-	bool (*playlist)(const struct playlist_metadata *playlist, void *ctx,
+	bool (*playlist)(const struct playlist_metadata *playlist,
+			 const struct directory *directory, void *ctx,
 			 GError **error_r);
 };
 

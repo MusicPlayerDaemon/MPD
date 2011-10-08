@@ -73,21 +73,35 @@ print_visitor_song_info(struct song *song, void *data,
 	return true;
 }
 
+static void
+print_playlist_in_directory(struct client *client,
+			    const struct directory *directory,
+			    const char *name_utf8)
+{
+	if (directory_is_root(directory))
+		client_printf(client, "playlist: %s\n", name_utf8);
+	else
+		client_printf(client, "playlist: %s/%s\n",
+			      directory_get_path(directory), name_utf8);
+}
+
 static bool
-print_visitor_playlist(const struct playlist_metadata *playlist, void *ctx,
+print_visitor_playlist(const struct playlist_metadata *playlist,
+		       const struct directory *directory, void *ctx,
 		       G_GNUC_UNUSED GError **error_r)
 {
 	struct client *client = ctx;
-	client_printf(client, "playlist: %s\n", playlist->name);
+	print_playlist_in_directory(client, directory, playlist->name);
 	return true;
 }
 
 static bool
 print_visitor_playlist_info(const struct playlist_metadata *playlist,
+			    const struct directory *directory,
 			    void *ctx, G_GNUC_UNUSED GError **error_r)
 {
 	struct client *client = ctx;
-	client_printf(client, "playlist: %s\n", playlist->name);
+	print_playlist_in_directory(client, directory, playlist->name);
 
 #ifndef G_OS_WIN32
 	struct tm tm;
