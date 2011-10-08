@@ -176,7 +176,7 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
 		return;
 	}
 
-	if ((WavpackGetMode(wpc) & MODE_FLOAT) == MODE_FLOAT) {
+	if (is_float) {
 		format_samples = format_samples_float;
 	} else {
 		format_samples = format_samples_int;
