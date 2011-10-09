@@ -8,6 +8,7 @@ AM_CPPFLAGS += -DSYSTEM_CONFIG_FILE_LOCATION='"$(sysconfdir)/mpd.conf"'
 bin_PROGRAMS = src/mpd
 
 noinst_LIBRARIES = \
+	libpcm.a \
 	libtag.a \
 	libinput.a \
 	libplaylist_plugins.a \
@@ -19,8 +20,7 @@ noinst_LIBRARIES = \
 src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(AVAHI_CFLAGS) \
 	$(LIBWRAP_CFLAGS) \
-	$(SQLITE_CFLAGS) \
-	$(FILTER_CFLAGS)
+	$(SQLITE_CFLAGS)
 src_mpd_LDADD = \
 	$(PLAYLIST_LIBS) \
 	$(AVAHI_LIBS) \
@@ -146,19 +146,6 @@ mpd_headers = \
 	src/output/httpd_client.h \
 	src/output/httpd_internal.h \
 	src/page.h \
-	src/pcm_buffer.h \
-	src/pcm_utils.h \
-	src/pcm_convert.h \
-	src/pcm_volume.h \
-	src/pcm_mix.h \
-	src/pcm_byteswap.h \
-	src/pcm_channels.h \
-	src/pcm_format.h \
-	src/pcm_resample.h \
-	src/pcm_resample_internal.h \
-	src/pcm_dither.h \
-	src/pcm_pack.h \
-	src/pcm_prng.h \
 	src/permission.h \
 	src/player_thread.h \
 	src/player_control.h \
@@ -314,16 +301,6 @@ src_mpd_SOURCES = \
 	src/path.c \
 	src/mapper.c \
 	src/page.c \
-	src/pcm_convert.c \
-	src/pcm_volume.c \
-	src/pcm_mix.c \
-	src/pcm_byteswap.c \
-	src/pcm_channels.c \
-	src/pcm_pack.c \
-	src/pcm_format.c \
-	src/pcm_resample.c \
-	src/pcm_resample_fallback.c \
-	src/pcm_dither.c \
 	src/permission.c \
 	src/player_thread.c \
 	src/player_control.c \
@@ -390,14 +367,32 @@ src_mpd_SOURCES += \
 	src/song_sticker.c
 endif
 
-FILTER_CFLAGS = \
+# PCM library
+
+libpcm_a_SOURCES = \
+	src/pcm_buffer.h \
+	src/pcm_convert.c src/pcm_convert.h \
+	src/pcm_volume.c src/pcm_volume.h \
+	src/pcm_mix.c src/pcm_mix.h \
+	src/pcm_byteswap.c src/pcm_byteswap.h \
+	src/pcm_channels.c src/pcm_channels.h \
+	src/pcm_pack.c src/pcm_pack.h \
+	src/pcm_format.c src/pcm_format.h \
+	src/pcm_resample.c src/pcm_resample.h \
+	src/pcm_resample_fallback.c \
+	src/pcm_resample_internal.h \
+	src/pcm_dither.c src/pcm_dither.h \
+	src/pcm_prng.h \
+	src/pcm_utils.h
+libpcm_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(SAMPLERATE_CFLAGS)
-FILTER_LIBS = \
-	libfilter_plugins.a \
+
+PCM_LIBS = \
+	libpcm.a \
 	$(SAMPLERATE_LIBS)
 
 if HAVE_LIBSAMPLERATE
-src_mpd_SOURCES += src/pcm_resample_libsamplerate.c
+libpcm_a_SOURCES += src/pcm_resample_libsamplerate.c
 endif
 
 # archive plugins
@@ -904,6 +899,10 @@ libfilter_plugins_a_SOURCES = \
 	src/filter/replay_gain_filter_plugin.c \
 	src/filter/volume_filter_plugin.c
 
+FILTER_LIBS = \
+	libfilter_plugins.a \
+	$(PCM_LIBS)
+
 
 #
 # systemd unit
@@ -1080,20 +1079,12 @@ test_run_filter_SOURCES = test/run_filter.c \
 	src/filter_plugin.c \
 	src/filter_registry.c \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c \
-	src/pcm_volume.c src/pcm_convert.c src/pcm_byteswap.c \
-	src/pcm_format.c src/pcm_channels.c src/pcm_dither.c \
-	src/pcm_pack.c \
-	src/pcm_resample.c src/pcm_resample_fallback.c \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \
 	src/replay_gain_config.c \
 	src/replay_gain_info.c \
 	src/AudioCompress/compress.c
-
-if HAVE_LIBSAMPLERATE
-test_run_filter_SOURCES += src/pcm_resample_libsamplerate.c
-endif
 
 if ENABLE_DESPOTIFY
 test_read_tags_SOURCES += \
@@ -1125,9 +1116,9 @@ endif
 test_software_volume_SOURCES = test/software_volume.c \
 	test/stdbin.h \
 	src/audio_check.c \
-	src/audio_parser.c \
-	src/pcm_volume.c
+	src/audio_parser.c
 test_software_volume_LDADD = \
+	$(PCM_LIBS) \
 	$(GLIB_LIBS)
 
 test_run_normalize_SOURCES = test/run_normalize.c \
@@ -1142,25 +1133,12 @@ test_run_convert_SOURCES = test/run_convert.c \
 	src/fifo_buffer.c \
 	src/audio_format.c \
 	src/audio_check.c \
-	src/audio_parser.c \
-	src/pcm_channels.c \
-	src/pcm_format.c \
-	src/pcm_pack.c \
-	src/pcm_dither.c \
-	src/pcm_byteswap.c \
-	src/pcm_resample.c \
-	src/pcm_resample_fallback.c \
-	src/pcm_convert.c
-test_run_convert_CPPFLAGS = $(AM_CPPFLAGS) $(SAMPLERATE_CFLAGS)
+	src/audio_parser.c
 test_run_convert_LDADD = \
-	$(SAMPLERATE_LIBS) \
+	$(PCM_LIBS) \
 	$(GLIB_LIBS)
 
-if HAVE_LIBSAMPLERATE
-test_run_convert_SOURCES += src/pcm_resample_libsamplerate.c
-endif
-
-test_run_output_LDADD = \
+test_run_output_LDADD = $(MPD_LIBS) \
 	$(OUTPUT_LIBS) \
 	$(ENCODER_LIBS) \
 	libmixer_plugins.a \
@@ -1188,7 +1166,6 @@ test_run_output_SOURCES = test/run_output.c \
 	src/mixer_type.c \
 	src/filter_plugin.c \
 	src/filter_config.c \
-	src/pcm_volume.c \
 	src/AudioCompress/compress.c \
 	src/replay_gain_info.c \
 	src/replay_gain_config.c \
