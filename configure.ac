@@ -214,11 +214,6 @@ AC_ARG_ENABLE(gme,
 		[enable Blargg's game music emulator plugin]),,
 	enable_gme=auto)
 
-AC_ARG_ENABLE(gprof,
-	AS_HELP_STRING([--enable-gprof],
-		[enable profiling via gprof (default: disabled)]),,
-	enable_gprof=no)
-
 AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],
 		[enables the HTTP server output]),,
@@ -1510,12 +1505,6 @@ then
 	MPD_CHECK_FLAG([-Wcast-qual])
 	MPD_CHECK_FLAG([-Wwrite-strings])
 	MPD_CHECK_FLAG([-pedantic])
-fi
-
-dnl ------------------------------ gprof profiler -----------------------------
-if test "x$enable_gprof" = xyes; then
-	MPD_CFLAGS="$MPD_CFLAGS -pg"
-	MPD_LIBS="$MPD_LIBS -pg"
 fi
 
 dnl ---------------------------- warnings as errors ---------------------------
