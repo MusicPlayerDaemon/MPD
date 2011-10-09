@@ -16,7 +16,7 @@ if test -n "$AM_FORCE_VERSION"
 then
 	AM_VERSIONS="$AM_FORCE_VERSION"
 else
-	AM_VERSIONS='1.11 1.10'
+	AM_VERSIONS='1.11'
 fi
 if test -n "$AC_FORCE_VERSION"
 then
