@@ -7,30 +7,33 @@ AM_CPPFLAGS += -DSYSTEM_CONFIG_FILE_LOCATION='"$(sysconfdir)/mpd.conf"'
 
 bin_PROGRAMS = src/mpd
 
-noinst_LIBRARIES =
+noinst_LIBRARIES = \
+	libtag.a \
+	libinput.a \
+	libplaylist_plugins.a \
+	libdecoder_plugins.a \
+	libfilter_plugins.a \
+	libmixer_plugins.a \
+	liboutput_plugins.a
 
 src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(AVAHI_CFLAGS) \
 	$(LIBWRAP_CFLAGS) \
 	$(SQLITE_CFLAGS) \
-	$(ARCHIVE_CFLAGS) \
-	$(INPUT_CFLAGS) \
-	$(TAG_CFLAGS) \
-	$(DECODER_CFLAGS) \
-	$(ENCODER_CFLAGS) \
-	$(FILTER_CFLAGS) \
-	$(OUTPUT_CFLAGS)
+	$(FILTER_CFLAGS)
 src_mpd_LDADD = \
+	$(PLAYLIST_LIBS) \
 	$(AVAHI_LIBS) \
 	$(LIBWRAP_LDFLAGS) \
 	$(SQLITE_LIBS) \
-	$(ARCHIVE_LIBS) \
-	$(INPUT_LIBS) \
-	$(TAG_LIBS) \
 	$(DECODER_LIBS) \
-	$(ENCODER_LIBS) \
+	$(INPUT_LIBS) \
+	$(ARCHIVE_LIBS) \
+	$(TAG_LIBS) \
 	$(OUTPUT_LIBS) \
 	$(FILTER_LIBS) \
+	$(ENCODER_LIBS) \
+	libmixer_plugins.a \
 	$(GLIB_LIBS)
 
 mpd_headers = \
@@ -236,15 +239,9 @@ mpd_headers = \
 
 src_mpd_SOURCES = \
 	$(mpd_headers) \
-	$(ARCHIVE_SRC) \
-	$(INPUT_SRC) \
-	$(PLAYLIST_SRC) \
-	$(TAG_SRC) \
 	$(DECODER_SRC) \
-	$(ENCODER_SRC) \
-	$(OUTPUT_API_SRC) $(OUTPUT_SRC) \
-	$(MIXER_API_SRC) $(MIXER_SRC) \
-	$(FILTER_SRC) \
+	$(OUTPUT_API_SRC) \
+	$(MIXER_API_SRC) \
 	src/glib_socket.h \
 	src/notify.c \
 	src/audio.c \
@@ -396,6 +393,7 @@ endif
 FILTER_CFLAGS = \
 	$(SAMPLERATE_CFLAGS)
 FILTER_LIBS = \
+	libfilter_plugins.a \
 	$(SAMPLERATE_LIBS)
 
 if HAVE_LIBSAMPLERATE
@@ -404,60 +402,74 @@ endif
 
 # archive plugins
 
-ARCHIVE_CFLAGS = \
+if ENABLE_ARCHIVE
+
+noinst_LIBRARIES += libarchive.a
+
+libarchive_a_SOURCES = \
+	src/archive_api.c \
+	src/archive_list.c \
+	src/archive_plugin.c \
+	src/input/archive_input_plugin.c
+libarchive_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(BZ2_CFLAGS) \
 	$(ISO9660_CFLAGS) \
 	$(ZZIP_CFLAGS)
 
 ARCHIVE_LIBS = \
+	libarchive.a \
 	$(BZ2_LIBS) \
 	$(ISO9660_LIBS) \
 	$(ZZIP_LIBS)
 
-ARCHIVE_SRC =
-
 if HAVE_BZ2
-ARCHIVE_SRC += src/archive/bz2_archive_plugin.c
+libarchive_a_SOURCES += src/archive/bz2_archive_plugin.c
 endif
 
 if HAVE_ZZIP
-ARCHIVE_SRC += src/archive/zzip_archive_plugin.c
+libarchive_a_SOURCES += src/archive/zzip_archive_plugin.c
 endif
 
 if HAVE_ISO9660
-ARCHIVE_SRC += src/archive/iso9660_archive_plugin.c
+libarchive_a_SOURCES += src/archive/iso9660_archive_plugin.c
 endif
 
-if ENABLE_ARCHIVE
-ARCHIVE_SRC += \
-	src/archive_api.c \
-	src/archive_list.c \
-	src/archive_plugin.c \
-	src/input/archive_input_plugin.c
+else
+ARCHIVE_LIBS =
 endif
 
 
 # tag plugins
 
-TAG_CFLAGS = \
+libtag_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ID3TAG_CFLAGS)
 TAG_LIBS = \
+	libtag.a \
 	$(ID3TAG_LIBS)
 
-TAG_SRC = \
+libtag_a_SOURCES =\
 	src/ape.c \
 	src/replay_gain_ape.c \
 	src/tag_ape.c
 
 if HAVE_ID3TAG
-TAG_SRC += src/tag_id3.c \
+libtag_a_SOURCES += \
+	src/tag_id3.c \
 	src/tag_rva2.c \
 	src/riff.c src/aiff.c
 endif
 
 # decoder plugins
 
-DECODER_CFLAGS = \
+libdecoder_plugins_a_SOURCES = \
+	src/decoder/pcm_decoder_plugin.c \
+	src/decoder/dsdiff_decoder_plugin.c \
+	src/decoder/dsdiff_decoder_plugin.h \
+	src/dsd2pcm/dsd2pcm.c src/dsd2pcm/dsd2pcm.h \
+	src/decoder_buffer.c \
+	src/decoder_plugin.c \
+	src/decoder_list.c
+libdecoder_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(VORBIS_CFLAGS) $(TREMOR_CFLAGS) \
 	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
 	$(SNDFILE_CFLAGS) \
@@ -476,6 +488,7 @@ DECODER_CFLAGS = \
 	$(CUE_CFLAGS)
 
 DECODER_LIBS = \
+	libdecoder_plugins.a \
 	$(VORBIS_LIBS) $(TREMOR_LIBS) \
 	$(FLAC_LIBS) \
 	$(SNDFILE_LIBS) \
@@ -493,64 +506,57 @@ DECODER_LIBS = \
 	$(FAAD_LIBS) \
 	$(CUE_LIBS)
 
-DECODER_SRC = \
-	src/decoder/pcm_decoder_plugin.c \
-	src/decoder/dsdiff_decoder_plugin.c \
-	src/decoder/dsdiff_decoder_plugin.h \
-	src/dsd2pcm/dsd2pcm.c src/dsd2pcm/dsd2pcm.h \
-	src/decoder_buffer.c \
-	src/decoder_plugin.c \
-	src/decoder_list.c
+DECODER_SRC =
 
 if HAVE_MAD
-DECODER_SRC += src/decoder/mad_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += src/decoder/mad_decoder_plugin.c
 endif
 
 if HAVE_MPG123
-DECODER_SRC += src/decoder/mpg123_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += src/decoder/mpg123_decoder_plugin.c
 endif
 
 if HAVE_MPCDEC
-DECODER_SRC += src/decoder/mpcdec_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += src/decoder/mpcdec_decoder_plugin.c
 endif
 
 if HAVE_WAVPACK
-DECODER_SRC += src/decoder/wavpack_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += src/decoder/wavpack_decoder_plugin.c
 endif
 
 if HAVE_FAAD
-DECODER_SRC += src/decoder/faad_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += src/decoder/faad_decoder_plugin.c
 endif
 
 if HAVE_MP4
-DECODER_SRC += src/decoder/mp4ff_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += src/decoder/mp4ff_decoder_plugin.c
 endif
 
 if HAVE_OGG_COMMON
-DECODER_SRC += src/decoder/_ogg_common.c
+libdecoder_plugins_a_SOURCES += src/decoder/_ogg_common.c
 endif
 
 if HAVE_FLAC_COMMON
-DECODER_SRC += \
+libdecoder_plugins_a_SOURCES += \
 	src/decoder/flac_metadata.c \
 	src/decoder/flac_pcm.c \
 	src/decoder/_flac_common.c
 endif
 
 if ENABLE_VORBIS_DECODER
-DECODER_SRC += src/decoder/vorbis_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += src/decoder/vorbis_decoder_plugin.c
 endif
 
 if HAVE_FLAC
-DECODER_SRC += src/decoder/flac_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += src/decoder/flac_decoder_plugin.c
 endif
 
 if HAVE_AUDIOFILE
-DECODER_SRC += src/decoder/audiofile_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += src/decoder/audiofile_decoder_plugin.c
 endif
 
 if ENABLE_MIKMOD_DECODER
-DECODER_SRC += src/decoder/mikmod_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += src/decoder/mikmod_decoder_plugin.c
 endif
 
 if HAVE_MODPLUG
@@ -562,68 +568,76 @@ DECODER_LIBS += libmodplug_decoder_plugin.a $(MODPLUG_LIBS)
 endif
 
 if ENABLE_SIDPLAY
-DECODER_SRC += src/decoder/sidplay_decoder_plugin.cxx
+libdecoder_plugins_a_SOURCES += src/decoder/sidplay_decoder_plugin.cxx
+DECODER_SRC += src/dummy.cxx
 endif
 
 if ENABLE_FLUIDSYNTH
-DECODER_SRC += src/decoder/fluidsynth_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += src/decoder/fluidsynth_decoder_plugin.c
 endif
 
 if ENABLE_WILDMIDI
-DECODER_SRC += src/decoder/wildmidi_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += src/decoder/wildmidi_decoder_plugin.c
 endif
 
 if HAVE_FFMPEG
-DECODER_SRC += src/decoder/ffmpeg_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += src/decoder/ffmpeg_decoder_plugin.c
 endif
 
 if ENABLE_SNDFILE
-DECODER_SRC += src/decoder/sndfile_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += src/decoder/sndfile_decoder_plugin.c
 endif
 
 if HAVE_GME
-DECODER_SRC += src/decoder/gme_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += src/decoder/gme_decoder_plugin.c
 endif
 
 # encoder plugins
 
-ENCODER_CFLAGS = \
+if ENABLE_ENCODER
+
+noinst_LIBRARIES += libencoder_plugins.a
+
+libencoder_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LAME_CFLAGS) \
 	$(TWOLAME_CFLAGS) \
 	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
 	$(VORBISENC_CFLAGS)
 
 ENCODER_LIBS = \
+	libencoder_plugins.a \
 	$(LAME_LIBS) \
 	$(TWOLAME_LIBS) \
 	$(FLAC_LIBS) \
 	$(VORBISENC_LIBS)
 
-ENCODER_SRC =
+libencoder_plugins_a_SOURCES =
 
-if ENABLE_ENCODER
-ENCODER_SRC += src/encoder_list.c
-ENCODER_SRC += src/encoder/null_encoder.c
+libencoder_plugins_a_SOURCES += src/encoder_list.c
+libencoder_plugins_a_SOURCES += src/encoder/null_encoder.c
 
 if ENABLE_WAVE_ENCODER
-ENCODER_SRC += src/encoder/wave_encoder.c
+libencoder_plugins_a_SOURCES += src/encoder/wave_encoder.c
 endif
 
 if ENABLE_VORBIS_ENCODER
-ENCODER_SRC += src/encoder/vorbis_encoder.c
+libencoder_plugins_a_SOURCES += src/encoder/vorbis_encoder.c
 endif
 
 if ENABLE_LAME_ENCODER
-ENCODER_SRC += src/encoder/lame_encoder.c
+libencoder_plugins_a_SOURCES += src/encoder/lame_encoder.c
 endif
 
 if ENABLE_TWOLAME_ENCODER
-ENCODER_SRC += src/encoder/twolame_encoder.c
+libencoder_plugins_a_SOURCES += src/encoder/twolame_encoder.c
 endif
 
 if ENABLE_FLAC_ENCODER
-ENCODER_SRC += src/encoder/flac_encoder.c
+libencoder_plugins_a_SOURCES += src/encoder/flac_encoder.c
 endif
+
+else
+ENCODER_LIBS =
 endif
 
 
@@ -640,14 +654,22 @@ endif
 endif
 
 if HAVE_CUE
-DECODER_SRC += src/cue/cue_tag.c
+libdecoder_plugins_a_SOURCES += src/cue/cue_tag.c
 endif
 
 #
 # input plugins
 #
 
-INPUT_CFLAGS = \
+libinput_a_SOURCES = \
+	src/input_init.c \
+	src/input_registry.c \
+	src/input_stream.c \
+	src/input_internal.c src/input_internal.h \
+	src/input/rewind_input_plugin.c \
+	src/input/file_input_plugin.c
+
+libinput_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(CURL_CFLAGS) \
 	$(SOUP_CFLAGS) \
 	$(CDIO_PARANOIA_CFLAGS) \
@@ -656,6 +678,7 @@ INPUT_CFLAGS = \
 	$(MMS_CFLAGS)
 
 INPUT_LIBS = \
+	libinput.a \
 	$(CURL_LIBS) \
 	$(SOUP_LIBS) \
 	$(CDIO_PARANOIA_LIBS) \
@@ -663,43 +686,35 @@ INPUT_LIBS = \
 	$(DESPOTIFY_LIBS) \
 	$(MMS_LIBS)
 
-INPUT_SRC = \
-	src/input_init.c \
-	src/input_registry.c \
-	src/input_stream.c \
-	src/input_internal.c src/input_internal.h \
-	src/input/rewind_input_plugin.c \
-	src/input/file_input_plugin.c
-
 if ENABLE_CURL
-INPUT_SRC += src/input/curl_input_plugin.c \
+libinput_a_SOURCES += src/input/curl_input_plugin.c \
 	src/icy_metadata.c
 endif
 
 if ENABLE_SOUP
-INPUT_SRC += \
+libinput_a_SOURCES += \
 	src/input/soup_input_plugin.c \
 	src/input/soup_input_plugin.h
 endif
 
 if ENABLE_CDIO_PARANOIA
-INPUT_SRC += src/input/cdio_paranoia_input_plugin.c
+libinput_a_SOURCES += src/input/cdio_paranoia_input_plugin.c
 endif
 
 if HAVE_FFMPEG
-INPUT_SRC += src/input/ffmpeg_input_plugin.c
+libinput_a_SOURCES += src/input/ffmpeg_input_plugin.c
 endif
 
 if ENABLE_MMS
-INPUT_SRC += src/input/mms_input_plugin.c
+libinput_a_SOURCES += src/input/mms_input_plugin.c
 endif
 
 if ENABLE_DESPOTIFY
-INPUT_SRC += src/input/despotify_input_plugin.c
+libinput_a_SOURCES += src/input/despotify_input_plugin.c
 endif
 
 
-OUTPUT_CFLAGS = \
+liboutput_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(AO_CFLAGS) \
 	$(ALSA_CFLAGS) \
 	$(FFADO_CFLAGS) \
@@ -710,6 +725,7 @@ OUTPUT_CFLAGS = \
 	$(SHOUT_CFLAGS)
 
 OUTPUT_LIBS = \
+	liboutput_plugins.a \
 	$(LIBWRAP_LDFLAGS) \
 	$(AO_LIBS) \
 	$(ALSA_LIBS) \
@@ -732,7 +748,7 @@ OUTPUT_API_SRC = \
 	src/output_finish.c \
 	src/output_init.c
 
-OUTPUT_SRC = \
+liboutput_plugins_a_SOURCES = \
 	src/output/null_output_plugin.c
 
 MIXER_API_SRC = \
@@ -741,96 +757,99 @@ MIXER_API_SRC = \
 	src/mixer_all.c \
 	src/mixer_api.c
 
-MIXER_SRC = \
+libmixer_plugins_a_SOURCES = \
 	src/mixer/software_mixer_plugin.c
+libmixer_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(ALSA_CFLAGS) \
+	$(PULSE_CFLAGS)
 
 if HAVE_ALSA
-OUTPUT_SRC += \
+liboutput_plugins_a_SOURCES += \
 	src/output/alsa_output_plugin.c src/output/alsa_output_plugin.h
-MIXER_SRC += src/mixer/alsa_mixer_plugin.c
+libmixer_plugins_a_SOURCES += src/mixer/alsa_mixer_plugin.c
 endif
 
 if HAVE_ROAR
-OUTPUT_SRC += \
+liboutput_plugins_a_SOURCES += \
 	src/output/roar_output_plugin.c src/output/roar_output_plugin.h
-MIXER_SRC += src/mixer/roar_mixer_plugin.c
+libmixer_plugins_a_SOURCES += src/mixer/roar_mixer_plugin.c
 endif
 
 if ENABLE_FFADO_OUTPUT
-OUTPUT_SRC += src/output/ffado_output_plugin.c
+liboutput_plugins_a_SOURCES += src/output/ffado_output_plugin.c
 endif
 
 if HAVE_AO
-OUTPUT_SRC += src/output/ao_output_plugin.c
+liboutput_plugins_a_SOURCES += src/output/ao_output_plugin.c
 endif
 
 if HAVE_FIFO
-OUTPUT_SRC += src/output/fifo_output_plugin.c
+liboutput_plugins_a_SOURCES += src/output/fifo_output_plugin.c
 endif
 
 if ENABLE_PIPE_OUTPUT
-OUTPUT_SRC += src/output/pipe_output_plugin.c
+liboutput_plugins_a_SOURCES += src/output/pipe_output_plugin.c
 endif
 
 if HAVE_JACK
-OUTPUT_SRC += src/output/jack_output_plugin.c
+liboutput_plugins_a_SOURCES += src/output/jack_output_plugin.c
 endif
 
 if HAVE_MVP
-OUTPUT_SRC += src/output/mvp_output_plugin.c
+liboutput_plugins_a_SOURCES += src/output/mvp_output_plugin.c
 endif
 
 if HAVE_OSS
-OUTPUT_SRC += src/output/oss_output_plugin.c
-MIXER_SRC += src/mixer/oss_mixer_plugin.c
+liboutput_plugins_a_SOURCES += src/output/oss_output_plugin.c
+libmixer_plugins_a_SOURCES += src/mixer/oss_mixer_plugin.c
 endif
 
 if HAVE_OPENAL
-OUTPUT_SRC += src/output/openal_output_plugin.c
+liboutput_plugins_a_SOURCES += src/output/openal_output_plugin.c
 endif
 
 if HAVE_OSX
-OUTPUT_SRC += src/output/osx_output_plugin.c
+liboutput_plugins_a_SOURCES += src/output/osx_output_plugin.c
 endif
 
 if ENABLE_RAOP_OUTPUT
-OUTPUT_SRC += \
+liboutput_plugins_a_SOURCES += \
 	src/ntp_server.c src/ntp_server.h \
 	src/rtsp_client.c src/rtsp_client.h \
 	src/output/raop_output_plugin.c
-MIXER_SRC += src/mixer/raop_mixer_plugin.c
+libmixer_plugins_a_SOURCES += src/mixer/raop_mixer_plugin.c
 OUTPUT_LIBS += $(OPENSSL_LIBS)
 endif
 
 if HAVE_PULSE
-OUTPUT_SRC += \
+liboutput_plugins_a_SOURCES += \
 	src/output/pulse_output_plugin.c src/output/pulse_output_plugin.h
-MIXER_SRC += src/mixer/pulse_mixer_plugin.c
+libmixer_plugins_a_SOURCES += src/mixer/pulse_mixer_plugin.c
 endif
 
 if HAVE_SHOUT
-OUTPUT_SRC += src/output/shout_output_plugin.c
+liboutput_plugins_a_SOURCES += src/output/shout_output_plugin.c
 endif
 
 if ENABLE_RECORDER_OUTPUT
-OUTPUT_SRC += src/output/recorder_output_plugin.c
+liboutput_plugins_a_SOURCES += src/output/recorder_output_plugin.c
 endif
 
 if ENABLE_HTTPD_OUTPUT
-OUTPUT_SRC += \
+liboutput_plugins_a_SOURCES += \
 	src/icy_server.c \
 	src/output/httpd_client.c \
 	src/output/httpd_output_plugin.c
 endif
 
 if ENABLE_SOLARIS_OUTPUT
-OUTPUT_SRC += src/output/solaris_output_plugin.c
+liboutput_plugins_a_SOURCES += src/output/solaris_output_plugin.c
 endif
 
 if ENABLE_WINMM_OUTPUT
-OUTPUT_SRC += \
+liboutput_plugins_a_SOURCES += \
 	src/output/winmm_output_plugin.c src/output/winmm_output_plugin.h
-MIXER_SRC += src/mixer/winmm_mixer_plugin.c
+libmixer_plugins_a_SOURCES += src/mixer/winmm_mixer_plugin.c
 endif
 
 
@@ -838,7 +857,7 @@ endif
 # Playlist plugins
 #
 
-PLAYLIST_SRC = \
+libplaylist_plugins_a_SOURCES = \
 	src/playlist/extm3u_playlist_plugin.c \
 	src/playlist/m3u_playlist_plugin.c \
 	src/playlist/pls_playlist_plugin.c \
@@ -846,21 +865,28 @@ PLAYLIST_SRC = \
 	src/playlist/asx_playlist_plugin.c \
 	src/playlist/rss_playlist_plugin.c \
 	src/playlist_list.c
+libplaylist_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
+	$(CUE_CFLAGS)
+
+PLAYLIST_LIBS = \
+	libplaylist_plugins.a \
+	$(FLAC_LIBS)
 
 if ENABLE_LASTFM
-PLAYLIST_SRC += src/playlist/lastfm_playlist_plugin.c
+libplaylist_plugins_a_SOURCES += src/playlist/lastfm_playlist_plugin.c
 endif
 
 if ENABLE_DESPOTIFY
-PLAYLIST_SRC += src/playlist/despotify_playlist_plugin.c
+libplaylist_plugins_a_SOURCES += src/playlist/despotify_playlist_plugin.c
 endif
 
 if HAVE_CUE
-PLAYLIST_SRC += src/playlist/cue_playlist_plugin.c
+libplaylist_plugins_a_SOURCES += src/playlist/cue_playlist_plugin.c
 endif
 
 if HAVE_FLAC
-PLAYLIST_SRC += src/playlist/flac_playlist_plugin.c
+libplaylist_plugins_a_SOURCES += src/playlist/flac_playlist_plugin.c
 endif
 
 
@@ -868,7 +894,7 @@ endif
 # Filter plugins
 #
 
-FILTER_SRC = \
+libfilter_plugins_a_SOURCES = \
 	src/filter/null_filter_plugin.c \
 	src/filter/chain_filter_plugin.c \
 	src/filter/autoconvert_filter_plugin.c \
@@ -962,32 +988,25 @@ test_run_tcp_connect_SOURCES = test/run_tcp_connect.c \
 	src/resolver.c \
 	src/tcp_connect.c
 
-test_run_input_CPPFLAGS = $(AM_CPPFLAGS) \
-	$(ARCHIVE_CFLAGS) \
-	$(INPUT_CFLAGS)
 test_run_input_LDADD = \
-	$(ARCHIVE_LIBS) \
 	$(INPUT_LIBS) \
+	$(ARCHIVE_LIBS) \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.c \
 	test/stdbin.h \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/tag.c src/tag_pool.c src/tag_save.c \
-	src/fd_util.c \
-	$(ARCHIVE_SRC) \
-	$(INPUT_SRC)
+	src/fd_util.c
 
 test_dump_playlist_CPPFLAGS = $(AM_CPPFLAGS) \
-	$(CUE_CFLAGS) \
-	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
-	$(ARCHIVE_CFLAGS) \
-	$(INPUT_CFLAGS)
+	$(CUE_CFLAGS)
 test_dump_playlist_LDADD = \
+	$(PLAYLIST_LIBS) \
 	$(CUE_LIBS) \
 	$(FLAC_LIBS) \
-	$(ARCHIVE_LIBS) \
 	$(INPUT_LIBS) \
+	$(ARCHIVE_LIBS) \
 	$(GLIB_LIBS)
 test_dump_playlist_SOURCES = test/dump_playlist.c \
 	src/io_thread.c src/io_thread.h \
@@ -995,10 +1014,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.c \
 	src/uri.c \
 	src/song.c src/tag.c src/tag_pool.c src/tag_save.c \
 	src/text_input_stream.c src/fifo_buffer.c \
-	src/fd_util.c \
-	$(ARCHIVE_SRC) \
-	$(INPUT_SRC) \
-	$(PLAYLIST_SRC)
+	src/fd_util.c
 
 if HAVE_CUE
 test_dump_playlist_SOURCES += src/cue/cue_tag.c
@@ -1010,14 +1026,11 @@ test_dump_playlist_SOURCES += \
 	src/decoder/flac_metadata.c
 endif
 
-test_run_decoder_CPPFLAGS = $(AM_CPPFLAGS) \
-	$(TAG_CFLAGS) \
-	$(ARCHIVE_CFLAGS) \
-	$(INPUT_CFLAGS) $(DECODER_CFLAGS)
 test_run_decoder_LDADD = \
-	$(TAG_LIBS) \
+	$(DECODER_LIBS) \
+	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
-	$(INPUT_LIBS) $(DECODER_LIBS) \
+	$(TAG_LIBS) \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.c \
 	test/stdbin.h \
@@ -1030,19 +1043,13 @@ test_run_decoder_SOURCES = test/run_decoder.c \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/timer.c \
-	$(ARCHIVE_SRC) \
-	$(INPUT_SRC) \
-	$(TAG_SRC) \
 	$(DECODER_SRC)
 
-test_read_tags_CPPFLAGS = $(AM_CPPFLAGS) \
-	$(TAG_CFLAGS) \
-	$(ARCHIVE_CFLAGS) \
-	$(INPUT_CFLAGS) $(DECODER_CFLAGS)
 test_read_tags_LDADD = \
-	$(TAG_LIBS) \
+	$(DECODER_LIBS) \
+	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
-	$(INPUT_LIBS) $(DECODER_LIBS) \
+	$(TAG_LIBS) \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.c \
 	src/io_thread.c src/io_thread.h \
@@ -1053,9 +1060,6 @@ test_read_tags_SOURCES = test/read_tags.c \
 	src/fd_util.c \
 	src/audio_check.c \
 	src/timer.c \
-	$(ARCHIVE_SRC) \
-	$(INPUT_SRC) \
-	$(TAG_SRC) \
 	$(DECODER_SRC)
 
 test_run_ntp_server_CPPFLAGS = $(AM_CPPFLAGS)
@@ -1069,7 +1073,7 @@ test_run_ntp_server_SOURCES = test/run_ntp_server.c \
 
 test_run_filter_CPPFLAGS = $(AM_CPPFLAGS)
 test_run_filter_LDADD = \
-	$(SAMPLERATE_LIBS) \
+	$(FILTER_LIBS) \
 	$(GLIB_LIBS)
 test_run_filter_SOURCES = test/run_filter.c \
 	test/stdbin.h \
@@ -1085,8 +1089,7 @@ test_run_filter_SOURCES = test/run_filter.c \
 	src/audio_parser.c \
 	src/replay_gain_config.c \
 	src/replay_gain_info.c \
-	src/AudioCompress/compress.c \
-	$(FILTER_SRC)
+	src/AudioCompress/compress.c
 
 if HAVE_LIBSAMPLERATE
 test_run_filter_SOURCES += src/pcm_resample_libsamplerate.c
@@ -1112,12 +1115,10 @@ test_run_encoder_SOURCES = test/run_encoder.c \
 	src/tag.c src/tag_pool.c \
 	src/audio_check.c \
 	src/audio_format.c \
-	src/audio_parser.c \
-	$(ENCODER_SRC)
-test_run_encoder_CPPFLAGS = $(AM_CPPFLAGS) \
-	$(ENCODER_CFLAGS)
+	src/audio_parser.c
 test_run_encoder_LDADD = \
 	$(ENCODER_LIBS) \
+	$(TAG_LIBS) \
 	$(GLIB_LIBS)
 endif
 
@@ -1159,12 +1160,11 @@ if HAVE_LIBSAMPLERATE
 test_run_convert_SOURCES += src/pcm_resample_libsamplerate.c
 endif
 
-test_run_output_CPPFLAGS = $(AM_CPPFLAGS) \
-	$(ENCODER_CFLAGS) \
-	$(OUTPUT_CFLAGS)
 test_run_output_LDADD = \
-	$(ENCODER_LIBS) \
 	$(OUTPUT_LIBS) \
+	$(ENCODER_LIBS) \
+	libmixer_plugins.a \
+	$(FILTER_LIBS) \
 	$(GLIB_LIBS)
 test_run_output_SOURCES = test/run_output.c \
 	test/stdbin.h \
@@ -1183,29 +1183,20 @@ test_run_output_SOURCES = test/run_output.c \
 	src/resolver.c \
 	src/output_init.c src/output_finish.c src/output_list.c \
 	src/output_plugin.c \
-	$(ENCODER_SRC) \
 	src/mixer_api.c \
 	src/mixer_control.c \
 	src/mixer_type.c \
-	$(MIXER_SRC) \
-	src/filter_plugin.c src/filter/chain_filter_plugin.c \
+	src/filter_plugin.c \
 	src/filter_config.c \
-	src/filter/autoconvert_filter_plugin.c \
-	src/filter/convert_filter_plugin.c \
-	src/filter/replay_gain_filter_plugin.c \
-	src/filter/normalize_filter_plugin.c \
-	src/filter/volume_filter_plugin.c \
 	src/pcm_volume.c \
 	src/AudioCompress/compress.c \
 	src/replay_gain_info.c \
 	src/replay_gain_config.c \
 	src/fd_util.c \
-	src/server_socket.c \
-	$(OUTPUT_SRC)
+	src/server_socket.c
 
-test_read_mixer_CPPFLAGS = $(AM_CPPFLAGS) \
-	$(OUTPUT_CFLAGS)
 test_read_mixer_LDADD = \
+	libmixer_plugins.a \
 	$(OUTPUT_LIBS) \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.c \
@@ -1213,8 +1204,7 @@ test_read_mixer_SOURCES = test/read_mixer.c \
 	src/mixer_control.c src/mixer_api.c \
 	src/filter_plugin.c \
 	src/filter/volume_filter_plugin.c \
-	src/fd_util.c \
-	$(MIXER_SRC)
+	src/fd_util.c
 
 if ENABLE_BZIP2_TEST
 TESTS += test/test_archive_bzip2.sh
