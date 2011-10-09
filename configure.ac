@@ -678,7 +678,6 @@ MPD_AUTO_PKG(despotify, DESPOTIFY, [despotify],
 	[Despotify support], [despotify not found])
 if test x$enable_despotify = xyes; then
 	AC_DEFINE(ENABLE_DESPOTIFY, 1, [Define when despotify is enabled])
-	MPD_LIBS="$MPD_LIBS $DESPOTIFY_LIBS"
 fi
 AM_CONDITIONAL(ENABLE_DESPOTIFY, test x$enable_despotify = xyes)
 
