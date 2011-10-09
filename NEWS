@@ -1,3 +1,6 @@
+ver 0.16.6 (2010/??/??)
+
+
 ver 0.16.5 (2010/10/09)
 * configure.ac
   - disable assertions in the non-debugging build
