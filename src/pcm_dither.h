@@ -36,12 +36,10 @@ pcm_dither_24_init(struct pcm_dither *dither)
 
 void
 pcm_dither_24_to_16(struct pcm_dither *dither,
-		    int16_t *dest, const int32_t *src,
-		    unsigned num_samples);
+		    int16_t *dest, const int32_t *src, const int32_t *src_end);
 
 void
 pcm_dither_32_to_16(struct pcm_dither *dither,
-		    int16_t *dest, const int32_t *src,
-		    unsigned num_samples);
+		    int16_t *dest, const int32_t *src, const int32_t *src_end);
 
 #endif

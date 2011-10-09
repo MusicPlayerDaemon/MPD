@@ -35,18 +35,16 @@ pcm_convert_8_to_16(int16_t *out, const int8_t *in,
 
 static void
 pcm_convert_24_to_16(struct pcm_dither *dither,
-		     int16_t *out, const int32_t *in,
-		     unsigned num_samples)
+		     int16_t *out, const int32_t *in, const int32_t *in_end)
 {
-	pcm_dither_24_to_16(dither, out, in, num_samples);
+	pcm_dither_24_to_16(dither, out, in, in_end);
 }
 
 static void
 pcm_convert_32_to_16(struct pcm_dither *dither,
-		     int16_t *out, const int32_t *in,
-		     unsigned num_samples)
+		     int16_t *out, const int32_t *in, const int32_t *in_end)
 {
-	pcm_dither_32_to_16(dither, out, in, num_samples);
+	pcm_dither_32_to_16(dither, out, in, in_end);
 }
 
 static int32_t *
@@ -63,6 +61,7 @@ pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 		  enum sample_format src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r)
 {
+	const void *src_end = (const char *)src + src_size;
 	unsigned num_samples;
 	int16_t *dest;
 	int32_t *dest32;
@@ -95,7 +94,7 @@ pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 		/* convert to 16 bit in-place */
 		*dest_size_r = num_samples * sizeof(*dest);
 		pcm_convert_24_to_16(dither, dest, dest32,
-				     num_samples);
+				     dest32 + num_samples);
 		return dest;
 
 	case SAMPLE_FORMAT_S24_P32:
@@ -105,7 +104,7 @@ pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 
 		pcm_convert_24_to_16(dither, dest,
 				     (const int32_t *)src,
-				     num_samples);
+				     (const int32_t *)src_end);
 		return dest;
 
 	case SAMPLE_FORMAT_S32:
@@ -115,7 +114,7 @@ pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 
 		pcm_convert_32_to_16(dither, dest,
 				     (const int32_t *)src,
-				     num_samples);
+				     (const int32_t *)src_end);
 		return dest;
 	}
 

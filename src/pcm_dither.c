@@ -72,10 +72,9 @@ pcm_dither_sample_24_to_16(int32_t sample, struct pcm_dither *dither)
 
 void
 pcm_dither_24_to_16(struct pcm_dither *dither,
-		    int16_t *dest, const int32_t *src,
-		    unsigned num_samples)
+		    int16_t *dest, const int32_t *src, const int32_t *src_end)
 {
-	while (num_samples-- > 0)
+	while (src < src_end)
 		*dest++ = pcm_dither_sample_24_to_16(*src++, dither);
 }
 
@@ -87,9 +86,8 @@ pcm_dither_sample_32_to_16(int32_t sample, struct pcm_dither *dither)
 
 void
 pcm_dither_32_to_16(struct pcm_dither *dither,
-		    int16_t *dest, const int32_t *src,
-		    unsigned num_samples)
+		    int16_t *dest, const int32_t *src, const int32_t *src_end)
 {
-	while (num_samples-- > 0)
+	while (src < src_end)
 		*dest++ = pcm_dither_sample_32_to_16(*src++, dither);
 }

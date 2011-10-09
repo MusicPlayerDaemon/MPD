@@ -48,7 +48,7 @@ test_pcm_dither_24(void)
 
 	int16_t dest[N];
 
-	pcm_dither_24_to_16(&dither, dest, src, N);
+	pcm_dither_24_to_16(&dither, dest, src, src + N);
 
 	for (unsigned i = 0; i < N; ++i) {
 		g_assert_cmpint(dest[i], >=, (src[i] >> 8) - 8);
@@ -70,7 +70,7 @@ test_pcm_dither_32(void)
 
 	int16_t dest[N];
 
-	pcm_dither_32_to_16(&dither, dest, src, N);
+	pcm_dither_32_to_16(&dither, dest, src, src + N);
 
 	for (unsigned i = 0; i < N; ++i) {
 		g_assert_cmpint(dest[i], >=, (src[i] >> 16) - 8);
