@@ -44,7 +44,7 @@ test_pcm_pack_24(void)
 
 	uint8_t dest[N * 3];
 
-	pcm_pack_24(dest, src, N, false);
+	pcm_pack_24(dest, src, src + N, false);
 
 	for (unsigned i = 0; i < N; ++i) {
 		int32_t d;
@@ -71,7 +71,7 @@ test_pcm_unpack_24(void)
 
 	int32_t dest[N];
 
-	pcm_unpack_24(dest, src, N, false);
+	pcm_unpack_24(dest, src, src + G_N_ELEMENTS(src), false);
 
 	for (unsigned i = 0; i < N; ++i) {
 		int32_t s;

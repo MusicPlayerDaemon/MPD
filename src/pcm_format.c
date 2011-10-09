@@ -54,7 +54,7 @@ pcm_convert_24_to_24p32(struct pcm_buffer *buffer, const uint8_t *src,
 			unsigned num_samples)
 {
 	int32_t *dest = pcm_buffer_get(buffer, num_samples * 4);
-	pcm_unpack_24(dest, src, num_samples, false);
+	pcm_unpack_24(dest, src, src + num_samples * 3, false);
 	return dest;
 }
 

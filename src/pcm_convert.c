@@ -200,7 +200,8 @@ pcm_convert_24_packed(struct pcm_convert_state *state,
 	size_t dest_size = num_samples * 3;
 
 	uint8_t *dest = pcm_buffer_get(&state->pack_buffer, dest_size);
-	pcm_pack_24(dest, buffer, num_samples, dest_format->reverse_endian);
+	pcm_pack_24(dest, buffer, buffer + num_samples,
+		    dest_format->reverse_endian);
 
 	*dest_size_r = dest_size;
 	return dest;

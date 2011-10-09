@@ -35,19 +35,19 @@ pack_sample(uint8_t *dest, const int32_t *src0, bool reverse_endian)
 }
 
 void
-pcm_pack_24(uint8_t *dest, const int32_t *src, unsigned num_samples,
+pcm_pack_24(uint8_t *dest, const int32_t *src, const int32_t *src_end,
 	    bool reverse_endian)
 {
 	/* duplicate loop to help the compiler's optimizer (constant
 	   parameter to the pack_sample() inline function) */
 
 	if (G_LIKELY(!reverse_endian)) {
-		while (num_samples-- > 0) {
+		while (src < src_end) {
 			pack_sample(dest, src++, false);
 			dest += 3;
 		}
 	} else {
-		while (num_samples-- > 0) {
+		while (src < src_end) {
 			pack_sample(dest, src++, true);
 			dest += 3;
 		}
@@ -73,19 +73,19 @@ unpack_sample(int32_t *dest0, const uint8_t *src, bool reverse_endian)
 }
 
 void
-pcm_unpack_24(int32_t *dest, const uint8_t *src, unsigned num_samples,
+pcm_unpack_24(int32_t *dest, const uint8_t *src, const uint8_t *src_end,
 	      bool reverse_endian)
 {
 	/* duplicate loop to help the compiler's optimizer (constant
 	   parameter to the unpack_sample() inline function) */
 
 	if (G_LIKELY(!reverse_endian)) {
-		while (num_samples-- > 0) {
+		while (src < src_end) {
 			unpack_sample(dest++, src, false);
 			src += 3;
 		}
 	} else {
-		while (num_samples-- > 0) {
+		while (src < src_end) {
 			unpack_sample(dest++, src, true);
 			src += 3;
 		}
