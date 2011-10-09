@@ -912,10 +912,12 @@ if test x$enable_mpc = xyes; then
 			old_mpcdec=yes,
 			enable_mpc=no)])
 	if test x$enable_mpc = xyes; then
-		AC_CHECK_LIB(mpcdec,main,
-			[MPD_LIBS="$MPD_LIBS $MPCDEC_LIBS";
-			MPD_CFLAGS="$MPD_CFLAGS $MPCDEC_CFLAGS";],
+		AC_CHECK_LIB(mpcdec,main,,
+			[],
 			enable_mpc=no)
+	else
+		MPCDEC_LIBS=""
+		MPCDEC_CFLAGS=""
 	fi
 	if test x$enable_mpc = xyes; then
 		AC_DEFINE(HAVE_MPCDEC,1,
@@ -932,6 +934,8 @@ if test x$enable_mpc = xyes; then
 	CPPFLAGS=$oldcppflags
 fi
 
+AC_SUBST(MPCDEC_LIBS)
+AC_SUBST(MPCDEC_CFLAGS)
 AM_CONDITIONAL(HAVE_MPCDEC, test x$enable_mpc = xyes)
 
 dnl -------------------------------- Ogg Tremor -------------------------------
