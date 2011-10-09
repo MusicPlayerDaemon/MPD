@@ -966,8 +966,6 @@ if HAVE_ALSA
 noinst_PROGRAMS += test/read_mixer
 endif
 
-test_read_conf_CPPFLAGS = $(AM_CPPFLAGS) \
-	$(GLIB_CFLAGS)
 test_read_conf_LDADD = \
 	$(GLIB_LIBS)
 test_read_conf_SOURCES = test/read_conf.c \
@@ -978,7 +976,6 @@ test_run_resolver_LDADD = \
 test_run_resolver_SOURCES = test/run_resolver.c \
 	src/resolver.c
 
-test_run_tcp_connect_CPPFLAGS = $(AM_CPPFLAGS)
 test_run_tcp_connect_LDADD = \
 	$(GLIB_LIBS)
 test_run_tcp_connect_SOURCES = test/run_tcp_connect.c \
@@ -1061,7 +1058,6 @@ test_read_tags_SOURCES = test/read_tags.c \
 	src/timer.c \
 	$(DECODER_SRC)
 
-test_run_ntp_server_CPPFLAGS = $(AM_CPPFLAGS)
 test_run_ntp_server_LDADD = \
 	$(GLIB_LIBS)
 test_run_ntp_server_SOURCES = test/run_ntp_server.c \
@@ -1070,7 +1066,6 @@ test_run_ntp_server_SOURCES = test/run_ntp_server.c \
 	src/udp_server.c src/udp_server.h \
 	src/ntp_server.c src/ntp_server.h
 
-test_run_filter_CPPFLAGS = $(AM_CPPFLAGS)
 test_run_filter_LDADD = \
 	$(FILTER_LIBS) \
 	$(GLIB_LIBS)
