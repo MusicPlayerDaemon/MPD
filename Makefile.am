@@ -937,6 +937,7 @@ sparse-check:
 if ENABLE_TEST
 
 C_TESTS = \
+	test/test_pcm \
 	test/test_queue_priority
 
 TESTS = $(C_TESTS)
@@ -1192,6 +1193,17 @@ test_run_inotify_SOURCES = test/run_inotify.c \
 	src/inotify_source.c
 test_run_inotify_LDADD = $(GLIB_LIBS)
 endif
+
+test_test_pcm_SOURCES = \
+	test/test_pcm_dither.c \
+	test/test_pcm_pack.c \
+	test/test_pcm_channels.c \
+	test/test_pcm_byteswap.c \
+	test/test_pcm_all.h \
+	test/test_pcm_main.c
+test_test_pcm_LDADD = \
+	$(PCM_LIBS) \
+	$(GLIB_LIBS)
 
 test_test_queue_priority_SOURCES = \
 	src/queue.c \
