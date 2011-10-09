@@ -222,7 +222,7 @@ pcm_convert_32(struct pcm_convert_state *state,
 				src_buffer, src_size, &len);
 	if (buf == NULL) {
 		g_set_error(error_r, pcm_convert_quark(), 0,
-			    "Conversion from %s to 24 bit is not implemented",
+			    "Conversion from %s to 32 bit is not implemented",
 			    sample_format_to_string(src_format->format));
 		return NULL;
 	}

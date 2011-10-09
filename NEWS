@@ -27,7 +27,7 @@ ver 0.17 (2011/??/??)
 * allow port specification in "bind_to_address" settings
 
 
-ver 0.16.5 (2010/??/??)
+ver 0.16.5 (2010/10/09)
 * configure.ac
   - disable assertions in the non-debugging build
   - show solaris plugin result correctly
