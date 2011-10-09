@@ -23,6 +23,7 @@
 
 #include <glib.h>
 #include <unistd.h>
+#include <stdio.h> /* for SEEK_SET */
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "pcm"
