@@ -117,12 +117,13 @@ AC_CHECK_FUNCS(daemon fork)
 AC_SEARCH_LIBS([syslog], [bsd socket inet],
 	[AC_DEFINE(HAVE_SYSLOG, 1, [Define if syslog() is available])])
 
-AC_CHECK_LIB(socket,socket,MPD_LIBS="$MPD_LIBS -lsocket",)
-AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
+AC_SEARCH_LIBS([socket], [socket])
+AC_SEARCH_LIBS([gethostbyname], [nsl])
 
 AC_CHECK_FUNCS(pipe2 accept4)
 
-AC_CHECK_LIB(m,exp,MPD_LIBS="$MPD_LIBS -lm",)
+AC_SEARCH_LIBS([exp], [m],,
+	[AC_MSG_ERROR([exp() not found])])
 
 AC_CHECK_HEADERS(locale.h)
 AC_CHECK_HEADERS(valgrind/memcheck.h)
