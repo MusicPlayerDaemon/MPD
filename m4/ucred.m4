@@ -20,7 +20,7 @@ AC_DEFUN([STRUCT_UCRED],[
 				mpd_cv_have_struct_ucred=no)
 			if test x$mpd_cv_have_struct_ucred = xyes; then
 				# :(
-				MPD_CFLAGS="$MPD_CFLAGS -D_GNU_SOURCE"
+				CFLAGS="$CFLAGS -D_GNU_SOURCE"
 			fi
 		fi
 		])

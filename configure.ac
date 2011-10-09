@@ -57,11 +57,6 @@ AC_SUBST(AM_CPPFLAGS,"")
 AC_SUBST(AM_CFLAGS,"")
 AC_SUBST(AM_CXXFLAGS,"")
 
-AC_SUBST(MPD_LIBS)
-AC_SUBST(MPD_CFLAGS)
-MPD_LIBS=""
-MPD_CFLAGS=""
-
 dnl ---------------------------------------------------------------------------
 dnl OS Specific Defaults
 dnl ---------------------------------------------------------------------------
@@ -69,7 +64,7 @@ AC_CANONICAL_HOST
 
 case "$host_os" in
 mingw32* | windows*)
-	MPD_LIBS="$MPD_LIBS -lws2_32"
+	LIBS="$LIBS -lws2_32"
 	;;
 esac
 
@@ -587,8 +582,7 @@ if test x$with_zeroconf != xno; then
 	if test x$with_zeroconf = xbonjour || test x$with_zeroconf = xauto; then
 		AC_CHECK_HEADER(dns_sd.h,
 			[enable_bonjour=yes;AC_DEFINE([HAVE_BONJOUR], 1, [Define to enable Bonjour Zeroconf support])])
-		AC_CHECK_LIB(dns_sd, DNSServiceRegister,
-			MPD_LIBS="$MPD_LIBS -ldns_sd")
+		AC_CHECK_LIB([dns_sd], [DNSServiceRegister])
 	fi
 
 	if test x$enable_bonjour = xyes; then
@@ -903,8 +897,8 @@ if test x$enable_mpc = xyes; then
 	oldcflags=$CFLAGS
 	oldlibs=$LIBS
 	oldcppflags=$CPPFLAGS
-	CFLAGS="$CFLAGS $MPD_CFLAGS $MPCDEC_CFLAGS -I."
-	LIBS="$LIBS $MPD_LIBS $MPCDEC_LIBS"
+	CFLAGS="$CFLAGS $MPCDEC_CFLAGS -I."
+	LIBS="$LIBS $MPCDEC_LIBS"
 	CPPFLAGS=$CFLAGS
 	AC_CHECK_HEADER(mpc/mpcdec.h,
 		old_mpcdec=no,
@@ -1335,7 +1329,7 @@ enable_osx=no
 case "$host_os" in
 	darwin*)
 		AC_DEFINE(HAVE_OSX, 1, [Define for compiling OS X support])
-		MPD_LIBS="$MPD_LIBS -framework AudioUnit -framework CoreAudio -framework CoreServices"
+		LIBS="$LIBS -framework AudioUnit -framework CoreAudio -framework CoreServices"
 		enable_osx=yes ;;
 esac
 
@@ -1429,7 +1423,7 @@ case "$host_os" in
 	mingw32* | windows*)
 		AC_DEFINE(ENABLE_WINMM_OUTPUT, 1, [Define to enable WinMM support])
 		enable_winmm_output=yes
-		MPD_LIBS="$MPD_LIBS -lwinmm"
+		LIBS="$LIBS -lwinmm"
 		;;
 
 	*)

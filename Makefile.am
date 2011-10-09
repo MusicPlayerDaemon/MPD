@@ -9,7 +9,6 @@ bin_PROGRAMS = src/mpd
 
 noinst_LIBRARIES =
 
-src_mpd_CFLAGS = $(AM_CFLAGS) $(MPD_CFLAGS)
 src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(AVAHI_CFLAGS) \
 	$(LIBWRAP_CFLAGS) \
@@ -21,7 +20,7 @@ src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ENCODER_CFLAGS) \
 	$(FILTER_CFLAGS) \
 	$(OUTPUT_CFLAGS)
-src_mpd_LDADD = $(MPD_LIBS) \
+src_mpd_LDADD = \
 	$(AVAHI_LIBS) \
 	$(LIBWRAP_LDFLAGS) \
 	$(SQLITE_LIBS) \
@@ -944,18 +943,18 @@ endif
 
 test_read_conf_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(GLIB_CFLAGS)
-test_read_conf_LDADD = $(MPD_LIBS) \
+test_read_conf_LDADD = \
 	$(GLIB_LIBS)
 test_read_conf_SOURCES = test/read_conf.c \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c
 
-test_run_resolver_LDADD = $(MPD_LIBS) \
+test_run_resolver_LDADD = \
 	$(GLIB_LIBS)
 test_run_resolver_SOURCES = test/run_resolver.c \
 	src/resolver.c
 
 test_run_tcp_connect_CPPFLAGS = $(AM_CPPFLAGS)
-test_run_tcp_connect_LDADD = $(MPD_LIBS) \
+test_run_tcp_connect_LDADD = \
 	$(GLIB_LIBS)
 test_run_tcp_connect_SOURCES = test/run_tcp_connect.c \
 	src/io_thread.c src/io_thread.h \
@@ -966,7 +965,7 @@ test_run_tcp_connect_SOURCES = test/run_tcp_connect.c \
 test_run_input_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ARCHIVE_CFLAGS) \
 	$(INPUT_CFLAGS)
-test_run_input_LDADD = $(MPD_LIBS) \
+test_run_input_LDADD = \
 	$(ARCHIVE_LIBS) \
 	$(INPUT_LIBS) \
 	$(GLIB_LIBS)
@@ -984,7 +983,7 @@ test_dump_playlist_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
 	$(ARCHIVE_CFLAGS) \
 	$(INPUT_CFLAGS)
-test_dump_playlist_LDADD = $(MPD_LIBS) \
+test_dump_playlist_LDADD = \
 	$(CUE_LIBS) \
 	$(FLAC_LIBS) \
 	$(ARCHIVE_LIBS) \
@@ -1015,7 +1014,7 @@ test_run_decoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(TAG_CFLAGS) \
 	$(ARCHIVE_CFLAGS) \
 	$(INPUT_CFLAGS) $(DECODER_CFLAGS)
-test_run_decoder_LDADD = $(MPD_LIBS) \
+test_run_decoder_LDADD = \
 	$(TAG_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(INPUT_LIBS) $(DECODER_LIBS) \
@@ -1040,7 +1039,7 @@ test_read_tags_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(TAG_CFLAGS) \
 	$(ARCHIVE_CFLAGS) \
 	$(INPUT_CFLAGS) $(DECODER_CFLAGS)
-test_read_tags_LDADD = $(MPD_LIBS) \
+test_read_tags_LDADD = \
 	$(TAG_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(INPUT_LIBS) $(DECODER_LIBS) \
@@ -1060,7 +1059,7 @@ test_read_tags_SOURCES = test/read_tags.c \
 	$(DECODER_SRC)
 
 test_run_ntp_server_CPPFLAGS = $(AM_CPPFLAGS)
-test_run_ntp_server_LDADD = $(MPD_LIBS) \
+test_run_ntp_server_LDADD = \
 	$(GLIB_LIBS)
 test_run_ntp_server_SOURCES = test/run_ntp_server.c \
 	test/signals.c test/signals.h \
@@ -1069,7 +1068,7 @@ test_run_ntp_server_SOURCES = test/run_ntp_server.c \
 	src/ntp_server.c src/ntp_server.h
 
 test_run_filter_CPPFLAGS = $(AM_CPPFLAGS)
-test_run_filter_LDADD = $(MPD_LIBS) \
+test_run_filter_LDADD = \
 	$(SAMPLERATE_LIBS) \
 	$(GLIB_LIBS)
 test_run_filter_SOURCES = test/run_filter.c \
@@ -1117,7 +1116,7 @@ test_run_encoder_SOURCES = test/run_encoder.c \
 	$(ENCODER_SRC)
 test_run_encoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ENCODER_CFLAGS)
-test_run_encoder_LDADD = $(MPD_LIBS) \
+test_run_encoder_LDADD = \
 	$(ENCODER_LIBS) \
 	$(GLIB_LIBS)
 endif
@@ -1160,11 +1159,10 @@ if HAVE_LIBSAMPLERATE
 test_run_convert_SOURCES += src/pcm_resample_libsamplerate.c
 endif
 
-test_run_output_CFLAGS = $(AM_CFLAGS) $(MPD_CFLAGS)
 test_run_output_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ENCODER_CFLAGS) \
 	$(OUTPUT_CFLAGS)
-test_run_output_LDADD = $(MPD_LIBS) \
+test_run_output_LDADD = \
 	$(ENCODER_LIBS) \
 	$(OUTPUT_LIBS) \
 	$(GLIB_LIBS)
@@ -1207,7 +1205,7 @@ test_run_output_SOURCES = test/run_output.c \
 
 test_read_mixer_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(OUTPUT_CFLAGS)
-test_read_mixer_LDADD = $(MPD_LIBS) \
+test_read_mixer_LDADD = \
 	$(OUTPUT_LIBS) \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.c \
