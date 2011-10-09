@@ -648,10 +648,6 @@ src_mpd_SOURCES += src/zeroconf-bonjour.c
 endif
 endif
 
-if HAVE_CUE
-libdecoder_plugins_a_SOURCES += src/cue/cue_tag.c
-endif
-
 #
 # input plugins
 #
@@ -878,6 +874,7 @@ endif
 
 if HAVE_CUE
 libplaylist_plugins_a_SOURCES += src/playlist/cue_playlist_plugin.c
+libplaylist_plugins_a_SOURCES += src/cue/cue_tag.c
 endif
 
 if HAVE_FLAC
@@ -995,8 +992,6 @@ test_run_input_SOURCES = test/run_input.c \
 	src/tag.c src/tag_pool.c src/tag_save.c \
 	src/fd_util.c
 
-test_dump_playlist_CPPFLAGS = $(AM_CPPFLAGS) \
-	$(CUE_CFLAGS)
 test_dump_playlist_LDADD = \
 	$(PLAYLIST_LIBS) \
 	$(CUE_LIBS) \
@@ -1011,10 +1006,6 @@ test_dump_playlist_SOURCES = test/dump_playlist.c \
 	src/song.c src/tag.c src/tag_pool.c src/tag_save.c \
 	src/text_input_stream.c src/fifo_buffer.c \
 	src/fd_util.c
-
-if HAVE_CUE
-test_dump_playlist_SOURCES += src/cue/cue_tag.c
-endif
 
 if HAVE_FLAC
 test_dump_playlist_SOURCES += \
