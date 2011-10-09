@@ -722,9 +722,10 @@ AM_CONDITIONAL(ENABLE_ISO9660_TEST, test x$MKISOFS != xno)
 dnl ---------------------------------- libbz2 ---------------------------------
 if test x$enable_bzip2 = xyes; then
 	AC_CHECK_LIB(bz2, BZ2_bzDecompressInit,
-		[MPD_LIBS="$MPD_LIBS -lbz2"],
+		[BZ2_LIBS="-lbz2"],
 		[AC_MSG_ERROR([libbz2 not found])])
 fi
+AC_SUBST(BZ2_LIBS)
 
 AM_CONDITIONAL(HAVE_BZ2, test x$enable_bzip2 = xyes)
 if test x$enable_bzip2 = xyes; then
