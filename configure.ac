@@ -112,15 +112,10 @@ fi
 dnl ---------------------------------------------------------------------------
 dnl Header/Library Checks
 dnl ---------------------------------------------------------------------------
-AC_CHECK_FUNCS(daemon fork syslog)
-if test $ac_cv_func_syslog = no; then
-	# syslog is not in the default libraries.  See if it's in some other.
-	for lib in bsd socket inet; do
-		AC_CHECK_LIB($lib, syslog,
-			[AC_DEFINE(HAVE_SYSLOG)
-			LIBS="$LIBS -l$lib"; break])
-	done
-fi
+AC_CHECK_FUNCS(daemon fork)
+
+AC_SEARCH_LIBS([syslog], [bsd socket inet],
+	[AC_DEFINE(HAVE_SYSLOG, 1, [Define if syslog() is available])])
 
 AC_CHECK_LIB(socket,socket,MPD_LIBS="$MPD_LIBS -lsocket",)
 AC_CHECK_LIB(nsl,gethostbyname,MPD_LIBS="$MPD_LIBS -lnsl",)
