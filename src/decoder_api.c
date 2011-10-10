@@ -56,6 +56,9 @@ decoder_initialized(struct decoder *decoder,
 
 	dc->in_audio_format = *audio_format;
 	getOutputAudioFormat(audio_format, &dc->out_audio_format);
+	/* force host byte order, even if the decoder supplies reverse
+	   endian */
+	dc->out_audio_format.reverse_endian = false;
 
 	dc->seekable = seekable;
 	dc->total_time = total_time;
