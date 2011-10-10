@@ -28,11 +28,6 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "pcm"
 
-static inline uint16_t swab16(uint16_t x)
-{
-	return (x << 8) | (x >> 8);
-}
-
 const int16_t *pcm_byteswap_16(struct pcm_buffer *buffer,
 			       const int16_t *src, size_t len)
 {
@@ -42,17 +37,9 @@ const int16_t *pcm_byteswap_16(struct pcm_buffer *buffer,
 	assert(buf != NULL);
 
 	for (i = 0; i < len / 2; i++)
-		buf[i] = swab16(src[i]);
+		buf[i] = GUINT16_SWAP_LE_BE(src[i]);
 
 	return buf;
-}
-
-static inline uint32_t swab32(uint32_t x)
-{
-	return (x << 24) |
-		((x & 0xff00) << 8) |
-		((x & 0xff0000) >> 8) |
-		(x >> 24);
 }
 
 const int32_t *pcm_byteswap_32(struct pcm_buffer *buffer,
@@ -64,7 +51,7 @@ const int32_t *pcm_byteswap_32(struct pcm_buffer *buffer,
 	assert(buf != NULL);
 
 	for (i = 0; i < len / 4; i++)
-		buf[i] = swab32(src[i]);
+		buf[i] = GUINT32_SWAP_LE_BE(src[i]);
 
 	return buf;
 }
