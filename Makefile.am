@@ -369,7 +369,7 @@ endif
 # PCM library
 
 libpcm_a_SOURCES = \
-	src/pcm_buffer.h \
+	src/pcm_buffer.c src/pcm_buffer.h \
 	src/pcm_convert.c src/pcm_convert.h \
 	src/pcm_volume.c src/pcm_volume.h \
 	src/pcm_mix.c src/pcm_mix.h \
@@ -1014,6 +1014,7 @@ endif
 
 test_run_decoder_LDADD = \
 	$(DECODER_LIBS) \
+	libpcm.a \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(TAG_LIBS) \
@@ -1033,6 +1034,7 @@ test_run_decoder_SOURCES = test/run_decoder.c \
 
 test_read_tags_LDADD = \
 	$(DECODER_LIBS) \
+	libpcm.a \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(TAG_LIBS) \
@@ -1094,6 +1096,7 @@ test_run_encoder_SOURCES = test/run_encoder.c \
 	src/audio_parser.c
 test_run_encoder_LDADD = \
 	$(ENCODER_LIBS) \
+	libpcm.a \
 	$(TAG_LIBS) \
 	$(GLIB_LIBS)
 endif
@@ -1158,6 +1161,7 @@ test_run_output_SOURCES = test/run_output.c \
 	src/server_socket.c
 
 test_read_mixer_LDADD = \
+	libpcm.a \
 	libmixer_plugins.a \
 	$(OUTPUT_LIBS) \
 	$(GLIB_LIBS)

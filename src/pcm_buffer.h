@@ -58,19 +58,8 @@ pcm_buffer_deinit(struct pcm_buffer *buffer)
  * Get the buffer, and guarantee a minimum size.  This buffer becomes
  * invalid with the next pcm_buffer_get() call.
  */
-static inline void *
-pcm_buffer_get(struct pcm_buffer *buffer, size_t size)
-{
-	if (buffer->size < size) {
-		/* free the old buffer */
-		g_free(buffer->buffer);
-
-		/* allocate a new buffer; align at 8 kB boundaries */
-		buffer->size = ((size - 1) | 0x1fff) + 1;
-		buffer->buffer = g_malloc(buffer->size);
-	}
-
-	return buffer->buffer;
-}
+G_GNUC_MALLOC
+void *
+pcm_buffer_get(struct pcm_buffer *buffer, size_t size);
 
 #endif
