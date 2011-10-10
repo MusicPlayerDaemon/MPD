@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "audio.h"
+#include "audio_config.h"
 #include "audio_format.h"
 #include "audio_parser.h"
 #include "output_internal.h"

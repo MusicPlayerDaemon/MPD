@@ -21,7 +21,7 @@
 #include "decoder_api.h"
 #include "decoder_internal.h"
 #include "decoder_control.h"
-#include "audio.h"
+#include "audio_config.h"
 #include "song.h"
 #include "buffer.h"
 #include "pipe.h"

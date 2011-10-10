@@ -39,7 +39,7 @@
 #include "player_control.h"
 #include "stats.h"
 #include "sig_handlers.h"
-#include "audio.h"
+#include "audio_config.h"
 #include "output_all.h"
 #include "volume.h"
 #include "log.h"

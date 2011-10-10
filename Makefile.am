@@ -41,7 +41,6 @@ mpd_headers = \
 	src/notify.h \
 	src/ack.h \
 	src/ape.h \
-	src/audio.h \
 	src/audio_format.h \
 	src/audio_check.h \
 	src/audio_parser.h \
@@ -231,7 +230,7 @@ src_mpd_SOURCES = \
 	$(MIXER_API_SRC) \
 	src/glib_socket.h \
 	src/notify.c \
-	src/audio.c \
+	src/audio_config.c src/audio_config.h \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \
