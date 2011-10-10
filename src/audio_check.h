@@ -28,6 +28,7 @@
 /**
  * The GLib quark used for errors reported by this library.
  */
+G_GNUC_CONST
 static inline GQuark
 audio_format_quark(void)
 {
