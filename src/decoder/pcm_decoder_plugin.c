@@ -31,21 +31,35 @@
 static void
 pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 {
-	static const struct audio_format audio_format = {
+	static const struct audio_format host_audio_format = {
 		.sample_rate = 44100,
 		.format = SAMPLE_FORMAT_S16,
 		.channels = 2,
 	};
+
+	static const struct audio_format reverse_audio_format = {
+		.sample_rate = 44100,
+		.format = SAMPLE_FORMAT_S16,
+		.channels = 2,
+		.reverse_endian = true,
+	};
+
+	const struct audio_format *audio_format =
+		(is->mime == NULL ||
+		 strcmp(is->mime, "audio/x-mpd-cdda-pcm-reverse") != 0)
+		? &host_audio_format
+		: &reverse_audio_format;
+
 	GError *error = NULL;
 	enum decoder_command cmd;
 
-	double time_to_size = audio_format_time_to_size(&audio_format);
+	double time_to_size = audio_format_time_to_size(audio_format);
 
 	float total_time = -1;
 	if (is->size >= 0)
 		total_time = is->size / time_to_size;
 
-	decoder_initialized(decoder, &audio_format, is->seekable, total_time);
+	decoder_initialized(decoder, audio_format, is->seekable, total_time);
 
 	do {
 		char buffer[4096];
@@ -80,6 +94,10 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 static const char *const pcm_mime_types[] = {
 	/* for streams obtained by the cdio_paranoia input plugin */
 	"audio/x-mpd-cdda-pcm",
+
+	/* same as above, but with reverse byte order */
+	"audio/x-mpd-cdda-pcm-reverse",
+
 	NULL
 };
 
