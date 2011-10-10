@@ -75,7 +75,7 @@ struct audio_format {
 	 * nonzero, then samples are stored in the reverse host byte
 	 * order.
 	 */
-	uint8_t reverse_endian;
+	bool reverse_endian;
 };
 
 /**
@@ -94,7 +94,7 @@ static inline void audio_format_clear(struct audio_format *af)
 	af->sample_rate = 0;
 	af->format = SAMPLE_FORMAT_UNDEFINED;
 	af->channels = 0;
-	af->reverse_endian = 0;
+	af->reverse_endian = false;
 }
 
 /**
@@ -108,7 +108,7 @@ static inline void audio_format_init(struct audio_format *af,
 	af->sample_rate = sample_rate;
 	af->format = (uint8_t)format;
 	af->channels = channels;
-	af->reverse_endian = 0;
+	af->reverse_endian = false;
 }
 
 /**
