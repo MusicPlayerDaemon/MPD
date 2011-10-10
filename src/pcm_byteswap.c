@@ -68,3 +68,29 @@ const int32_t *pcm_byteswap_32(struct pcm_buffer *buffer,
 
 	return buf;
 }
+
+const void *
+pcm_byteswap(struct pcm_buffer *buffer, enum sample_format format,
+	     const void *src, size_t size)
+{
+	switch (format) {
+	case SAMPLE_FORMAT_UNDEFINED:
+	case SAMPLE_FORMAT_S24:
+		/* not implemented */
+		return NULL;
+
+	case SAMPLE_FORMAT_S8:
+		return src;
+
+	case SAMPLE_FORMAT_S16:
+		return pcm_byteswap_16(buffer, src, size);
+
+	case SAMPLE_FORMAT_S24_P32:
+	case SAMPLE_FORMAT_S32:
+		return pcm_byteswap_32(buffer, src, size);
+	}
+
+	/* unreachable */
+	assert(false);
+	return NULL;
+}

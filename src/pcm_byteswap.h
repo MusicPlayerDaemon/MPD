@@ -20,6 +20,8 @@
 #ifndef MPD_PCM_BYTESWAP_H
 #define MPD_PCM_BYTESWAP_H
 
+#include "audio_format.h"
+
 #include <stdint.h>
 #include <stddef.h>
 
@@ -46,5 +48,20 @@ const int16_t *pcm_byteswap_16(struct pcm_buffer *buffer,
  */
 const int32_t *pcm_byteswap_32(struct pcm_buffer *buffer,
 			       const int32_t *src, size_t len);
+
+/**
+ * Changes the endianness of PCM data.
+ *
+ * @param buffer the destination pcm_buffer object
+ * @param format the sample format (both input and output)
+ * @param src the source PCM buffer
+ * @param src_size the number of bytes in #src
+ * @return the destination buffer, or NULL if the sample format is not
+ * supported
+ */
+G_GNUC_MALLOC
+const void *
+pcm_byteswap(struct pcm_buffer *buffer, enum sample_format format,
+	     const void *src, size_t size);
 
 #endif
