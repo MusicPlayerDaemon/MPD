@@ -26,7 +26,6 @@
 #include "input_internal.h"
 #include "input_plugin.h"
 #include "refcount.h"
-#include "pcm_buffer.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -46,8 +45,6 @@ struct input_cdio_paranoia {
 	CdIo_t *cdio;
 	cdrom_paranoia_t *para;
 
-	int endian;
-
 	lsn_t lsn_from, lsn_to;
 	int lsn_relofs;
 
@@ -55,8 +52,6 @@ struct input_cdio_paranoia {
 
 	char buffer[CDIO_CD_FRAMESIZE_RAW];
 	int buffer_lsn;
-
-	struct pcm_buffer conv_buffer;
 };
 
 static inline GQuark
@@ -69,8 +64,6 @@ static void
 input_cdio_close(struct input_stream *is)
 {
 	struct input_cdio_paranoia *i = (struct input_cdio_paranoia *)is;
-
-	pcm_buffer_deinit(&i->conv_buffer);
 
 	if (i->para)
 		cdio_paranoia_free(i->para);
@@ -168,7 +161,6 @@ input_cdio_open(const char *uri,
 	i->cdio = NULL;
 	i->para = NULL;
 	i->trackno = parsed_uri.track;
-	pcm_buffer_init(&i->conv_buffer);
 
 	/* get list of CD's supporting CD-DA */
 	char *device = parsed_uri.device[0] != 0
@@ -202,21 +194,24 @@ input_cdio_open(const char *uri,
 		return NULL;
 	}
 
-	i->endian = data_bigendianp(i->drv);
-	switch (i->endian) {
+	bool reverse_endian;
+	switch (data_bigendianp(i->drv)) {
 	case -1:
-		g_debug("cdda: drive returns unknown audio data, assuming Little Endian");
-		i->endian = 0;
+		g_debug("cdda: drive returns unknown audio data");
+		reverse_endian = false;
 		break;
 	case 0:
 		g_debug("cdda: drive returns audio data Little Endian.");
+		reverse_endian = G_BYTE_ORDER == G_BIG_ENDIAN;
 		break;
 	case 1:
 		g_debug("cdda: drive returns audio data Big Endian.");
+		reverse_endian = G_BYTE_ORDER == G_LITTLE_ENDIAN;
 		break;
 	default:
 		g_set_error(error_r, cdio_quark(), 0,
-			    "Drive returns unknown data type %d", i->endian);
+			    "Drive returns unknown data type %d",
+			    data_bigendianp(i->drv));
 		input_cdio_close(&i->base);
 		return NULL;
 	}
@@ -244,7 +239,9 @@ input_cdio_open(const char *uri,
 	i->base.size = (i->lsn_to - i->lsn_from + 1) * CDIO_CD_FRAMESIZE_RAW;
 
 	/* hack to make MPD select the "pcm" decoder plugin */
-	i->base.mime = g_strdup("audio/x-mpd-cdda-pcm");
+	i->base.mime = g_strdup(reverse_endian
+				? "audio/x-mpd-cdda-pcm-reverse"
+				: "audio/x-mpd-cdda-pcm");
 
 	return &i->base;
 }
@@ -287,17 +284,6 @@ input_cdio_seek(struct input_stream *is,
 	return true;
 }
 
-static inline size_t
-pcm16_to_wave(uint16_t *dst16, const uint16_t *src16, size_t length)
-{
-	size_t cnt = length >> 1;
-	while (cnt > 0) {
-		*dst16++ = GUINT16_TO_LE(*src16++);
-		cnt--;
-	}
-	return length;
-}
-
 static size_t
 input_cdio_read(struct input_stream *is, void *ptr, size_t length,
 		GError **error_r)
@@ -334,13 +320,6 @@ input_cdio_read(struct input_stream *is, void *ptr, size_t length,
 				g_set_error(error_r, cdio_quark(), 0,
 					"paranoia read error. Stopping.");
 				return 0;
-			}
-			//do the swapping if nessesary
-			if (cis->endian != 0) {
-				uint16_t *conv_buffer = pcm_buffer_get(&cis->conv_buffer, CDIO_CD_FRAMESIZE_RAW );
-				/* do endian conversion ! */
-				pcm16_to_wave( conv_buffer, (uint16_t*) rbuf, CDIO_CD_FRAMESIZE_RAW);
-				rbuf = (int16_t *)conv_buffer;
 			}
 			//store current buffer
 			memcpy(cis->buffer, rbuf, CDIO_CD_FRAMESIZE_RAW);
