@@ -102,9 +102,9 @@ pcm_add_vol_32(int32_t *buffer1, const int32_t *buffer2,
 static void
 pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
 	    int vol1, int vol2,
-	    const struct audio_format *format)
+	    enum sample_format format)
 {
-	switch (format->format) {
+	switch (format) {
 	case SAMPLE_FORMAT_S8:
 		pcm_add_vol_8((int8_t *)buffer1, (const int8_t *)buffer2,
 			      size, vol1, vol2);
@@ -127,7 +127,7 @@ pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
 
 	default:
 		MPD_ERROR("format %s not supported by pcm_add_vol",
-			  sample_format_to_string(format->format));
+			  sample_format_to_string(format));
 	}
 }
 
@@ -189,9 +189,9 @@ pcm_add_32(int32_t *buffer1, const int32_t *buffer2, unsigned num_samples)
 
 static void
 pcm_add(void *buffer1, const void *buffer2, size_t size,
-	const struct audio_format *format)
+	enum sample_format format)
 {
-	switch (format->format) {
+	switch (format) {
 	case SAMPLE_FORMAT_S8:
 		pcm_add_8((int8_t *)buffer1, (const int8_t *)buffer2, size);
 		break;
@@ -210,13 +210,13 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 
 	default:
 		MPD_ERROR("format %s not supported by pcm_add",
-			  sample_format_to_string(format->format));
+			  sample_format_to_string(format));
 	}
 }
 
 void
 pcm_mix(void *buffer1, const void *buffer2, size_t size,
-	const struct audio_format *format, float portion1)
+	enum sample_format format, float portion1)
 {
 	int vol1;
 	float s;

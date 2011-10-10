@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 		audio_format_init(&audio_format, 48000, SAMPLE_FORMAT_S16, 2);
 
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
-		if (!pcm_volume(buffer, nbytes, &audio_format,
+		if (!pcm_volume(buffer, nbytes, audio_format.format,
 				PCM_VOLUME_1 / 2)) {
 			g_printerr("pcm_volume() has failed\n");
 			return 2;

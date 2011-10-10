@@ -57,7 +57,7 @@ idle_add(G_GNUC_UNUSED unsigned flags)
  */
 bool
 pcm_volume(G_GNUC_UNUSED void *buffer, G_GNUC_UNUSED int length,
-	   G_GNUC_UNUSED const struct audio_format *format,
+	   G_GNUC_UNUSED enum sample_format format,
 	   G_GNUC_UNUSED int volume)
 {
 	return true;

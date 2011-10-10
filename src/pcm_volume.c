@@ -139,7 +139,7 @@ pcm_volume_change_32(int32_t *buffer, unsigned num_samples, int volume)
 
 bool
 pcm_volume(void *buffer, int length,
-	   const struct audio_format *format,
+	   enum sample_format format,
 	   int volume)
 {
 	if (volume == PCM_VOLUME_1)
@@ -150,7 +150,7 @@ pcm_volume(void *buffer, int length,
 		return true;
 	}
 
-	switch (format->format) {
+	switch (format) {
 	case SAMPLE_FORMAT_S8:
 		pcm_volume_change_8((int8_t *)buffer, length, volume);
 		return true;

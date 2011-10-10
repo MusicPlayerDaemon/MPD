@@ -116,7 +116,7 @@ volume_filter_filter(struct filter *_filter, const void *src, size_t src_size,
 
 	memcpy(dest, src, src_size);
 
-	success = pcm_volume(dest, src_size, &filter->audio_format,
+	success = pcm_volume(dest, src_size, filter->audio_format.format,
 			     filter->volume);
 	if (!success) {
 		g_set_error(error_r, volume_quark(), 0,

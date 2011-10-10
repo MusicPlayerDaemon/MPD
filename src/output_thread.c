@@ -401,7 +401,7 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 		char *dest = pcm_buffer_get(&ao->cross_fade_buffer,
 					    other_length);
 		memcpy(dest, other_data, other_length);
-		pcm_mix(dest, data, length, &ao->in_audio_format,
+		pcm_mix(dest, data, length, ao->in_audio_format.format,
 			1.0 - chunk->mix_ratio);
 
 		data = dest;
