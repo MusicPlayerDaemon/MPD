@@ -31,13 +31,16 @@
 const int16_t *pcm_byteswap_16(struct pcm_buffer *buffer,
 			       const int16_t *src, size_t len)
 {
-	unsigned i;
 	int16_t *buf = pcm_buffer_get(buffer, len);
 
 	assert(buf != NULL);
 
-	for (i = 0; i < len / 2; i++)
-		buf[i] = GUINT16_SWAP_LE_BE(src[i]);
+	const int16_t *src_end = src + len / sizeof(*src);
+	int16_t *dest = buf;
+	while (src < src_end) {
+		const int16_t x = *src++;
+		*dest++ = GUINT16_SWAP_LE_BE(x);
+	}
 
 	return buf;
 }
@@ -45,13 +48,16 @@ const int16_t *pcm_byteswap_16(struct pcm_buffer *buffer,
 const int32_t *pcm_byteswap_32(struct pcm_buffer *buffer,
 			       const int32_t *src, size_t len)
 {
-	unsigned i;
 	int32_t *buf = pcm_buffer_get(buffer, len);
 
 	assert(buf != NULL);
 
-	for (i = 0; i < len / 4; i++)
-		buf[i] = GUINT32_SWAP_LE_BE(src[i]);
+	const int32_t *src_end = src + len / sizeof(*src);
+	int32_t *dest = buf;
+	while (src < src_end) {
+		const int32_t x = *src++;
+		*dest++ = GUINT32_SWAP_LE_BE(x);
+	}
 
 	return buf;
 }
