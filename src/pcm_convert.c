@@ -269,6 +269,20 @@ pcm_convert(struct pcm_convert_state *state,
 	    size_t *dest_size_r,
 	    GError **error_r)
 {
+	if (src_format->reverse_endian) {
+		/* convert to host byte order, because all of our
+		   conversion libraries assume host byte order */
+
+		src = pcm_byteswap(&state->byteswap_buffer, src_format->format,
+				   src, src_size);
+		if (src == NULL) {
+			g_set_error(error_r, pcm_convert_quark(), 0,
+				    "PCM byte order change of format '%s' is not implemented",
+				    sample_format_to_string(src_format->format));
+			return NULL;
+		}
+	}
+
 	switch (dest_format->format) {
 	case SAMPLE_FORMAT_S16:
 		return pcm_convert_16(state,
