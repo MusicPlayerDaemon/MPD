@@ -27,7 +27,6 @@
 
 #include <glib.h>
 
-#define WINVER 0x0501
 #include <windows.h>
 
 static int service_argc;

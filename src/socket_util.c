@@ -28,7 +28,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #else /* G_OS_WIN32 */
-#define WINVER 0x0501
 #include <ws2tcpip.h>
 #include <winsock.h>
 #endif /* G_OS_WIN32 */

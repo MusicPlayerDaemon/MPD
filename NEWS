@@ -1,5 +1,6 @@
 ver 0.16.6 (2010/??/??)
 * event_pipe: fix WIN32 regression
+* define WINVER in ./configure
 
 
 ver 0.16.5 (2010/10/09)

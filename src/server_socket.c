@@ -34,7 +34,6 @@
 #include <assert.h>
 
 #ifdef WIN32
-#define WINVER 0x0501
 #include <ws2tcpip.h>
 #include <winsock.h>
 #else

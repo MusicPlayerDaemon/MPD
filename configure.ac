@@ -68,6 +68,7 @@ AC_CANONICAL_HOST
 
 case "$host_os" in
 mingw32* | windows*)
+	AM_CPPFLAGS="$AM_CPPFLAGS -DWINVER=0x0501"
 	MPD_LIBS="$MPD_LIBS -lws2_32"
 	;;
 esac
