@@ -1195,6 +1195,7 @@ test_run_inotify_LDADD = $(GLIB_LIBS)
 endif
 
 test_test_pcm_SOURCES = \
+	test/test_glib_compat.h \
 	test/test_pcm_dither.c \
 	test/test_pcm_pack.c \
 	test/test_pcm_channels.c \

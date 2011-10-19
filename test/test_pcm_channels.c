@@ -18,6 +18,7 @@
  */
 
 #include "test_pcm_all.h"
+#include "test_glib_compat.h"
 #include "pcm_channels.h"
 #include "pcm_buffer.h"
 

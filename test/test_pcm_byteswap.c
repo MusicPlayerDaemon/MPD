@@ -20,6 +20,7 @@
 #include "test_pcm_all.h"
 #include "pcm_byteswap.h"
 #include "pcm_buffer.h"
+#include "test_glib_compat.h"
 
 #include <glib.h>
 

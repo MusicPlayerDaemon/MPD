@@ -17,23 +17,41 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "test_pcm_all.h"
-#include "test_glib_compat.h"
+/*
+ * Compatibility header for GLib before 2.16.
+ */
+
+#ifndef MPD_TEST_GLIB_COMPAT_H
+#define MPD_TEST_GLIB_COMPAT_H
 
 #include <glib.h>
 
-int
-main(int argc, char **argv)
-{
-	g_test_init (&argc, &argv, NULL);
-	g_test_add_func("/pcm/dither/24", test_pcm_dither_24);
-	g_test_add_func("/pcm/dither/32", test_pcm_dither_32);
-	g_test_add_func("/pcm/pack/pack24", test_pcm_pack_24);
-	g_test_add_func("/pcm/pack/unpack24", test_pcm_unpack_24);
-	g_test_add_func("/pcm/channels/16", test_pcm_channels_16);
-	g_test_add_func("/pcm/channels/32", test_pcm_channels_32);
-	g_test_add_func("/pcm/byteswap/16", test_pcm_byteswap_16);
-	g_test_add_func("/pcm/byteswap/32", test_pcm_byteswap_32);
+#if !GLIB_CHECK_VERSION(2,16,0)
 
-	g_test_run();
+#define g_assert_cmpint(n1, cmp, n2) g_assert((n1) cmp (n2))
+
+static void (*test_functions[256])(void);
+static unsigned num_test_functions;
+
+static inline void
+g_test_init(G_GNUC_UNUSED int *argc, G_GNUC_UNUSED char ***argv, ...)
+{
 }
+
+static inline void
+g_test_add_func(G_GNUC_UNUSED const char *testpath, void (test_funcvoid)(void))
+{
+	test_functions[num_test_functions++] = test_funcvoid;
+}
+
+static inline int
+g_test_run(void)
+{
+	for (unsigned i = 0; i < num_test_functions; ++i)
+		test_functions[i]();
+	return 0;
+}
+
+#endif /* !2.16 */
+
+#endif
