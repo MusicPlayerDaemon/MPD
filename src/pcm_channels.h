@@ -38,8 +38,8 @@ struct pcm_buffer;
  */
 const int16_t *
 pcm_convert_channels_16(struct pcm_buffer *buffer,
-			uint8_t dest_channels,
-			uint8_t src_channels, const int16_t *src,
+			unsigned dest_channels,
+			unsigned src_channels, const int16_t *src,
 			size_t src_size, size_t *dest_size_r);
 
 /**
@@ -56,8 +56,8 @@ pcm_convert_channels_16(struct pcm_buffer *buffer,
  */
 const int32_t *
 pcm_convert_channels_24(struct pcm_buffer *buffer,
-			uint8_t dest_channels,
-			uint8_t src_channels, const int32_t *src,
+			unsigned dest_channels,
+			unsigned src_channels, const int32_t *src,
 			size_t src_size, size_t *dest_size_r);
 
 /**
@@ -73,8 +73,8 @@ pcm_convert_channels_24(struct pcm_buffer *buffer,
  */
 const int32_t *
 pcm_convert_channels_32(struct pcm_buffer *buffer,
-			uint8_t dest_channels,
-			uint8_t src_channels, const int32_t *src,
+			unsigned dest_channels,
+			unsigned src_channels, const int32_t *src,
 			size_t src_size, size_t *dest_size_r);
 
 #endif

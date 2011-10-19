@@ -43,7 +43,7 @@ pcm_resample_lsr_deinit(struct pcm_resample_state *state);
 
 const int16_t *
 pcm_resample_lsr_16(struct pcm_resample_state *state,
-		    uint8_t channels,
+		    unsigned channels,
 		    unsigned src_rate,
 		    const int16_t *src_buffer, size_t src_size,
 		    unsigned dest_rate, size_t *dest_size_r,
@@ -51,7 +51,7 @@ pcm_resample_lsr_16(struct pcm_resample_state *state,
 
 const int32_t *
 pcm_resample_lsr_32(struct pcm_resample_state *state,
-		    uint8_t channels,
+		    unsigned channels,
 		    unsigned src_rate,
 		    const int32_t *src_buffer,
 		    G_GNUC_UNUSED size_t src_size,
@@ -68,7 +68,7 @@ pcm_resample_fallback_deinit(struct pcm_resample_state *state);
 
 const int16_t *
 pcm_resample_fallback_16(struct pcm_resample_state *state,
-			 uint8_t channels,
+			 unsigned channels,
 			 unsigned src_rate,
 			 const int16_t *src_buffer, size_t src_size,
 			 unsigned dest_rate,
@@ -76,7 +76,7 @@ pcm_resample_fallback_16(struct pcm_resample_state *state,
 
 const int32_t *
 pcm_resample_fallback_32(struct pcm_resample_state *state,
-			 uint8_t channels,
+			 unsigned channels,
 			 unsigned src_rate,
 			 const int32_t *src_buffer,
 			 G_GNUC_UNUSED size_t src_size,

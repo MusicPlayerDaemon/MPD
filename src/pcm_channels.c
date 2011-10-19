@@ -71,8 +71,8 @@ pcm_convert_channels_16_n_to_2(int16_t *dest,
 
 const int16_t *
 pcm_convert_channels_16(struct pcm_buffer *buffer,
-			uint8_t dest_channels,
-			uint8_t src_channels, const int16_t *src,
+			unsigned dest_channels,
+			unsigned src_channels, const int16_t *src,
 			size_t src_size, size_t *dest_size_r)
 {
 	assert(src_size % (sizeof(*src) * src_channels) == 0);
@@ -144,8 +144,8 @@ pcm_convert_channels_24_n_to_2(int32_t *dest,
 
 const int32_t *
 pcm_convert_channels_24(struct pcm_buffer *buffer,
-			uint8_t dest_channels,
-			uint8_t src_channels, const int32_t *src,
+			unsigned dest_channels,
+			unsigned src_channels, const int32_t *src,
 			size_t src_size, size_t *dest_size_r)
 {
 	assert(src_size % (sizeof(*src) * src_channels) == 0);
@@ -212,8 +212,8 @@ pcm_convert_channels_32_n_to_2(int32_t *dest,
 
 const int32_t *
 pcm_convert_channels_32(struct pcm_buffer *buffer,
-			uint8_t dest_channels,
-			uint8_t src_channels, const int32_t *src,
+			unsigned dest_channels,
+			unsigned src_channels, const int32_t *src,
 			size_t src_size, size_t *dest_size_r)
 {
 	assert(src_size % (sizeof(*src) * src_channels) == 0);
