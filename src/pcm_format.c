@@ -22,6 +22,7 @@
 #include "pcm_dither.h"
 #include "pcm_buffer.h"
 #include "pcm_pack.h"
+#include "pcm_utils.h"
 
 static void
 pcm_convert_8_to_16(int16_t *out, const int8_t *in,
@@ -61,7 +62,7 @@ pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 		  enum sample_format src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r)
 {
-	const void *src_end = (const char *)src + src_size;
+	const void *src_end = pcm_end_pointer(src, src_size);
 	unsigned num_samples;
 	int16_t *dest;
 	int32_t *dest32;
