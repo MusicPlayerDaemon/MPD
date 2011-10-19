@@ -737,7 +737,11 @@
               Sets the replay gain mode.  One of
               <parameter>off</parameter>,
               <parameter>track</parameter>,
-              <parameter>album</parameter>.
+              <parameter>album</parameter>,
+              <parameter>auto</parameter><footnote
+                        id="replay_gain_auto_since_0_16">
+                <simpara>added in MPD 0.16</simpara>
+              </footnote>.
             </para>
             <para>
               Changing the mode during playback may take several
