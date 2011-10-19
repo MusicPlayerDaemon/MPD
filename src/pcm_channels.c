@@ -25,8 +25,9 @@
 #include <assert.h>
 
 static void
-pcm_convert_channels_16_1_to_2(int16_t *dest, const int16_t *src,
-			       const int16_t *src_end)
+pcm_convert_channels_16_1_to_2(int16_t *restrict dest,
+			       const int16_t *restrict src,
+			       const int16_t *restrict src_end)
 {
 	while (src < src_end) {
 		int16_t value = *src++;
@@ -37,8 +38,9 @@ pcm_convert_channels_16_1_to_2(int16_t *dest, const int16_t *src,
 }
 
 static void
-pcm_convert_channels_16_2_to_1(int16_t *dest, const int16_t *src,
-			       const int16_t *src_end)
+pcm_convert_channels_16_2_to_1(int16_t *restrict dest,
+			       const int16_t *restrict src,
+			       const int16_t *restrict src_end)
 {
 	while (src < src_end) {
 		int32_t a = *src++, b = *src++;
@@ -48,9 +50,10 @@ pcm_convert_channels_16_2_to_1(int16_t *dest, const int16_t *src,
 }
 
 static void
-pcm_convert_channels_16_n_to_2(int16_t *dest,
-			       unsigned src_channels, const int16_t *src,
-			       const int16_t *src_end)
+pcm_convert_channels_16_n_to_2(int16_t *restrict dest,
+			       unsigned src_channels,
+			       const int16_t *restrict src,
+			       const int16_t *restrict src_end)
 {
 	unsigned c;
 
@@ -98,8 +101,9 @@ pcm_convert_channels_16(struct pcm_buffer *buffer,
 }
 
 static void
-pcm_convert_channels_24_1_to_2(int32_t *dest, const int32_t *src,
-			       const int32_t *src_end)
+pcm_convert_channels_24_1_to_2(int32_t *restrict dest,
+			       const int32_t *restrict src,
+			       const int32_t *restrict src_end)
 {
 	while (src < src_end) {
 		int32_t value = *src++;
@@ -110,8 +114,9 @@ pcm_convert_channels_24_1_to_2(int32_t *dest, const int32_t *src,
 }
 
 static void
-pcm_convert_channels_24_2_to_1(int32_t *dest, const int32_t *src,
-			       const int32_t *src_end)
+pcm_convert_channels_24_2_to_1(int32_t *restrict dest,
+			       const int32_t *restrict src,
+			       const int32_t *restrict src_end)
 {
 	while (src < src_end) {
 		int32_t a = *src++, b = *src++;
@@ -121,9 +126,10 @@ pcm_convert_channels_24_2_to_1(int32_t *dest, const int32_t *src,
 }
 
 static void
-pcm_convert_channels_24_n_to_2(int32_t *dest,
-			       unsigned src_channels, const int32_t *src,
-			       const int32_t *src_end)
+pcm_convert_channels_24_n_to_2(int32_t *restrict dest,
+			       unsigned src_channels,
+			       const int32_t *restrict src,
+			       const int32_t *restrict src_end)
 {
 	unsigned c;
 
@@ -178,8 +184,9 @@ pcm_convert_channels_32_1_to_2(int32_t *dest, const int32_t *src,
 }
 
 static void
-pcm_convert_channels_32_2_to_1(int32_t *dest, const int32_t *src,
-			       const int32_t *src_end)
+pcm_convert_channels_32_2_to_1(int32_t *restrict dest,
+			       const int32_t *restrict src,
+			       const int32_t *restrict src_end)
 {
 	while (src < src_end) {
 		int64_t a = *src++, b = *src++;

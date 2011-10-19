@@ -137,7 +137,9 @@ pcm_convert_16_to_24(int32_t *out, const int16_t *in, const int16_t *in_end)
 }
 
 static void
-pcm_convert_32_to_24(int32_t *out, const int32_t *in, const int32_t *in_end)
+pcm_convert_32_to_24(int32_t *restrict out,
+		     const int32_t *restrict in,
+		     const int32_t *restrict in_end)
 {
 	while (in < in_end)
 		*out++ = *in++ >> 8;
@@ -208,7 +210,9 @@ pcm_convert_16_to_32(int32_t *out, const int16_t *in, const int16_t *in_end)
 }
 
 static void
-pcm_convert_24_to_32(int32_t *out, const int32_t *in, const int32_t *in_end)
+pcm_convert_24_to_32(int32_t *restrict out,
+		     const int32_t *restrict in,
+		     const int32_t *restrict in_end)
 {
 	while (in < in_end)
 		*out++ = *in++ << 8;
