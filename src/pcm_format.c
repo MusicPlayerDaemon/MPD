@@ -62,6 +62,8 @@ pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 		  enum sample_format src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r)
 {
+	assert(src_size % sample_format_size(src_format) == 0);
+
 	const void *src_end = pcm_end_pointer(src, src_size);
 	unsigned num_samples;
 	int16_t *dest;
@@ -157,6 +159,8 @@ pcm_convert_to_24(struct pcm_buffer *buffer,
 		  enum sample_format src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r)
 {
+	assert(src_size % sample_format_size(src_format) == 0);
+
 	unsigned num_samples;
 	int32_t *dest;
 
@@ -240,6 +244,8 @@ pcm_convert_to_32(struct pcm_buffer *buffer,
 		  enum sample_format src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r)
 {
+	assert(src_size % sample_format_size(src_format) == 0);
+
 	unsigned num_samples;
 	int32_t *dest;
 

@@ -75,6 +75,8 @@ pcm_convert_channels_16(struct pcm_buffer *buffer,
 			uint8_t src_channels, const int16_t *src,
 			size_t src_size, size_t *dest_size_r)
 {
+	assert(src_size % (sizeof(*src) * src_channels) == 0);
+
 	unsigned num_frames = src_size / src_channels / sizeof(*src);
 	unsigned dest_size = num_frames * dest_channels * sizeof(*src);
 	int16_t *dest = pcm_buffer_get(buffer, dest_size);
@@ -146,6 +148,8 @@ pcm_convert_channels_24(struct pcm_buffer *buffer,
 			uint8_t src_channels, const int32_t *src,
 			size_t src_size, size_t *dest_size_r)
 {
+	assert(src_size % (sizeof(*src) * src_channels) == 0);
+
 	unsigned num_frames = src_size / src_channels / sizeof(*src);
 	unsigned dest_size = num_frames * dest_channels * sizeof(*src);
 	int32_t *dest = pcm_buffer_get(buffer, dest_size);
@@ -212,6 +216,8 @@ pcm_convert_channels_32(struct pcm_buffer *buffer,
 			uint8_t src_channels, const int32_t *src,
 			size_t src_size, size_t *dest_size_r)
 {
+	assert(src_size % (sizeof(*src) * src_channels) == 0);
+
 	unsigned num_frames = src_size / src_channels / sizeof(*src);
 	unsigned dest_size = num_frames * dest_channels * sizeof(*src);
 	int32_t *dest = pcm_buffer_get(buffer, dest_size);
