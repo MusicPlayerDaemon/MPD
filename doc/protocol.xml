@@ -1781,6 +1781,7 @@ OK
           <term>
             <cmdsynopsis>
               <command>disableoutput</command>
+              <arg choice="req"><replaceable>ID</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
@@ -1793,6 +1794,7 @@ OK
           <term>
             <cmdsynopsis>
               <command>enableoutput</command>
+              <arg choice="req"><replaceable>ID</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
