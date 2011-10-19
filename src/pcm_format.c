@@ -46,12 +46,69 @@ pcm_convert_32_to_16(struct pcm_dither *dither,
 	pcm_dither_32_to_16(dither, out, in, in_end);
 }
 
-static int32_t *
-pcm_convert_24_to_24p32(struct pcm_buffer *buffer, const uint8_t *src,
-			unsigned num_samples)
+static int16_t *
+pcm_allocate_8_to_16(struct pcm_buffer *buffer,
+		     const int8_t *src, size_t src_size, size_t *dest_size_r)
 {
-	int32_t *dest = pcm_buffer_get(buffer, num_samples * 4);
-	pcm_unpack_24(dest, src, src + num_samples * 3, false);
+	int16_t *dest;
+	*dest_size_r = src_size / sizeof(*src) * sizeof(*dest);
+	dest = pcm_buffer_get(buffer, *dest_size_r);
+	pcm_convert_8_to_16(dest, src, pcm_end_pointer(src, src_size));
+	return dest;
+}
+
+static int32_t *
+pcm_allocate_24_to_24p32(struct pcm_buffer *buffer, const uint8_t *src,
+			 size_t src_size, size_t *dest_size_r)
+{
+	int32_t *dest;
+	*dest_size_r = src_size / 3 * sizeof(*dest);
+	dest = pcm_buffer_get(buffer, *dest_size_r);
+	pcm_unpack_24(dest, src, pcm_end_pointer(src, src_size), false);
+	return dest;
+}
+
+static int16_t *
+pcm_allocate_24_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
+		      const uint8_t *src, size_t src_size, size_t *dest_size_r)
+{
+	/* convert to S24_P32 first */
+	size_t tmp_size;
+	int32_t *tmp = pcm_allocate_24_to_24p32(buffer, src, src_size,
+						&tmp_size);
+
+	/* convert to 16 bit in-place */
+	int16_t *dest = (int16_t *)tmp;
+	*dest_size_r = tmp_size / sizeof(*tmp) * sizeof(*dest);
+	pcm_convert_24_to_16(dither, dest, tmp, pcm_end_pointer(tmp, tmp_size));
+	return dest;
+}
+
+static int16_t *
+pcm_allocate_24p32_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
+			 const int32_t *src, size_t src_size,
+			 size_t *dest_size_r)
+{
+	int16_t *dest;
+	*dest_size_r = src_size / 2;
+	assert(*dest_size_r == src_size / sizeof(*src) * sizeof(*dest));
+	dest = pcm_buffer_get(buffer, *dest_size_r);
+	pcm_convert_24_to_16(dither, dest, src,
+			     pcm_end_pointer(src, src_size));
+	return dest;
+}
+
+static int16_t *
+pcm_allocate_32_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
+		      const int32_t *src, size_t src_size,
+		      size_t *dest_size_r)
+{
+	int16_t *dest;
+	*dest_size_r = src_size / 2;
+	assert(*dest_size_r == src_size / sizeof(*src) * sizeof(*dest));
+	dest = pcm_buffer_get(buffer, *dest_size_r);
+	pcm_convert_32_to_16(dither, dest, src,
+			     pcm_end_pointer(src, src_size));
 	return dest;
 }
 
@@ -62,61 +119,29 @@ pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 {
 	assert(src_size % sample_format_size(src_format) == 0);
 
-	const void *src_end = pcm_end_pointer(src, src_size);
-	unsigned num_samples;
-	int16_t *dest;
-	int32_t *dest32;
-
 	switch (src_format) {
 	case SAMPLE_FORMAT_UNDEFINED:
 		break;
 
 	case SAMPLE_FORMAT_S8:
-		num_samples = src_size;
-		*dest_size_r = src_size * sizeof(*dest);
-		dest = pcm_buffer_get(buffer, *dest_size_r);
-
-		pcm_convert_8_to_16(dest,
-				    (const int8_t *)src,
-				    src_end);
-		return dest;
+		return pcm_allocate_8_to_16(buffer,
+					    src, src_size, dest_size_r);
 
 	case SAMPLE_FORMAT_S16:
 		*dest_size_r = src_size;
 		return src;
 
 	case SAMPLE_FORMAT_S24:
-		/* convert to S24_P32 first */
-		num_samples = src_size / 3;
-
-		dest32 = pcm_convert_24_to_24p32(buffer, src, num_samples);
-		dest = (int16_t *)dest32;
-
-		/* convert to 16 bit in-place */
-		*dest_size_r = num_samples * sizeof(*dest);
-		pcm_convert_24_to_16(dither, dest, dest32,
-				     dest32 + num_samples);
-		return dest;
+		return pcm_allocate_24_to_16(buffer, dither,
+					     src, src_size, dest_size_r);
 
 	case SAMPLE_FORMAT_S24_P32:
-		num_samples = src_size / 4;
-		*dest_size_r = num_samples * sizeof(*dest);
-		dest = pcm_buffer_get(buffer, *dest_size_r);
-
-		pcm_convert_24_to_16(dither, dest,
-				     (const int32_t *)src,
-				     (const int32_t *)src_end);
-		return dest;
+		return pcm_allocate_24p32_to_16(buffer, dither, src, src_size,
+						dest_size_r);
 
 	case SAMPLE_FORMAT_S32:
-		num_samples = src_size / 4;
-		*dest_size_r = num_samples * sizeof(*dest);
-		dest = pcm_buffer_get(buffer, *dest_size_r);
-
-		pcm_convert_32_to_16(dither, dest,
-				     (const int32_t *)src,
-				     (const int32_t *)src_end);
-		return dest;
+		return pcm_allocate_32_to_16(buffer, dither, src, src_size,
+					     dest_size_r);
 	}
 
 	return NULL;
@@ -145,6 +170,39 @@ pcm_convert_32_to_24(int32_t *restrict out,
 		*out++ = *in++ >> 8;
 }
 
+static int32_t *
+pcm_allocate_8_to_24(struct pcm_buffer *buffer,
+		     const int8_t *src, size_t src_size, size_t *dest_size_r)
+{
+	int32_t *dest;
+	*dest_size_r = src_size / sizeof(*src) * sizeof(*dest);
+	dest = pcm_buffer_get(buffer, *dest_size_r);
+	pcm_convert_8_to_24(dest, src, pcm_end_pointer(src, src_size));
+	return dest;
+}
+
+static int32_t *
+pcm_allocate_16_to_24(struct pcm_buffer *buffer,
+		      const int16_t *src, size_t src_size, size_t *dest_size_r)
+{
+	int32_t *dest;
+	*dest_size_r = src_size * 2;
+	assert(*dest_size_r == src_size / sizeof(*src) * sizeof(*dest));
+	dest = pcm_buffer_get(buffer, *dest_size_r);
+	pcm_convert_16_to_24(dest, src, pcm_end_pointer(src, src_size));
+	return dest;
+}
+
+static int32_t *
+pcm_allocate_32_to_24(struct pcm_buffer *buffer,
+		      const int32_t *src, size_t src_size, size_t *dest_size_r)
+{
+	*dest_size_r = src_size;
+	int32_t *dest = pcm_buffer_get(buffer, *dest_size_r);
+	pcm_convert_32_to_24(dest, src, pcm_end_pointer(src, src_size));
+	return dest;
+}
+
 const int32_t *
 pcm_convert_to_24(struct pcm_buffer *buffer,
 		  enum sample_format src_format, const void *src,
@@ -152,44 +210,29 @@ pcm_convert_to_24(struct pcm_buffer *buffer,
 {
 	assert(src_size % sample_format_size(src_format) == 0);
 
-	const void *src_end = pcm_end_pointer(src, src_size);
-	unsigned num_samples;
-	int32_t *dest;
-
 	switch (src_format) {
 	case SAMPLE_FORMAT_UNDEFINED:
 		break;
 
 	case SAMPLE_FORMAT_S8:
-		*dest_size_r = src_size * sizeof(*dest);
-		dest = pcm_buffer_get(buffer, *dest_size_r);
-
-		pcm_convert_8_to_24(dest, src, src_end);
-		return dest;
+		return pcm_allocate_8_to_24(buffer,
+					    src, src_size, dest_size_r);
 
 	case SAMPLE_FORMAT_S16:
-		*dest_size_r = src_size / 2 * sizeof(*dest);
-		dest = pcm_buffer_get(buffer, *dest_size_r);
-
-		pcm_convert_16_to_24(dest, src, src_end);
-		return dest;
+		return pcm_allocate_16_to_24(buffer,
+					    src, src_size, dest_size_r);
 
 	case SAMPLE_FORMAT_S24:
-		num_samples = src_size / 3;
-		*dest_size_r = num_samples * sizeof(*dest);
-
-		return pcm_convert_24_to_24p32(buffer, src, num_samples);
+		return pcm_allocate_24_to_24p32(buffer, src, src_size,
+						dest_size_r);
 
 	case SAMPLE_FORMAT_S24_P32:
 		*dest_size_r = src_size;
 		return src;
 
 	case SAMPLE_FORMAT_S32:
-		*dest_size_r = src_size / 4 * sizeof(*dest);
-		dest = pcm_buffer_get(buffer, *dest_size_r);
-
-		pcm_convert_32_to_24(dest, src, src_end);
-		return dest;
+		return pcm_allocate_32_to_24(buffer, src, src_size,
+					     dest_size_r);
 	}
 
 	return NULL;
@@ -218,6 +261,54 @@ pcm_convert_24_to_32(int32_t *restrict out,
 		*out++ = *in++ << 8;
 }
 
+static int32_t *
+pcm_allocate_8_to_32(struct pcm_buffer *buffer,
+		     const int8_t *src, size_t src_size, size_t *dest_size_r)
+{
+	int32_t *dest;
+	*dest_size_r = src_size / sizeof(*src) * sizeof(*dest);
+	dest = pcm_buffer_get(buffer, *dest_size_r);
+	pcm_convert_8_to_32(dest, src, pcm_end_pointer(src, src_size));
+	return dest;
+}
+
+static int32_t *
+pcm_allocate_16_to_32(struct pcm_buffer *buffer,
+		      const int16_t *src, size_t src_size, size_t *dest_size_r)
+{
+	int32_t *dest;
+	*dest_size_r = src_size * 2;
+	assert(*dest_size_r == src_size / sizeof(*src) * sizeof(*dest));
+	dest = pcm_buffer_get(buffer, *dest_size_r);
+	pcm_convert_16_to_32(dest, src, pcm_end_pointer(src, src_size));
+	return dest;
+}
+
+static int32_t *
+pcm_allocate_24_to_32(struct pcm_buffer *buffer,
+		      const uint8_t *src,
+		      size_t src_size, size_t *dest_size_r)
+{
+	/* convert to S24_P32 first */
+	int32_t *dest = pcm_allocate_24_to_24p32(buffer, src, src_size,
+						 dest_size_r);
+
+	/* convert to 32 bit in-place */
+	pcm_convert_24_to_32(dest, dest, pcm_end_pointer(dest, *dest_size_r));
+	return dest;
+}
+
+static int32_t *
+pcm_allocate_24p32_to_32(struct pcm_buffer *buffer,
+			 const int32_t *src, size_t src_size,
+			 size_t *dest_size_r)
+{
+	*dest_size_r = src_size;
+	int32_t *dest = pcm_buffer_get(buffer, *dest_size_r);
+	pcm_convert_24_to_32(dest, src, pcm_end_pointer(src, src_size));
+	return dest;
+}
+
 const int32_t *
 pcm_convert_to_32(struct pcm_buffer *buffer,
 		  enum sample_format src_format, const void *src,
@@ -225,45 +316,25 @@ pcm_convert_to_32(struct pcm_buffer *buffer,
 {
 	assert(src_size % sample_format_size(src_format) == 0);
 
-	const void *src_end = pcm_end_pointer(src, src_size);
-	unsigned num_samples;
-	int32_t *dest;
-
 	switch (src_format) {
 	case SAMPLE_FORMAT_UNDEFINED:
 		break;
 
 	case SAMPLE_FORMAT_S8:
-		*dest_size_r = src_size * sizeof(*dest);
-		dest = pcm_buffer_get(buffer, *dest_size_r);
-
-		pcm_convert_8_to_32(dest, src, src_end);
-		return dest;
+		return pcm_allocate_8_to_32(buffer, src, src_size,
+					    dest_size_r);
 
 	case SAMPLE_FORMAT_S16:
-		*dest_size_r = src_size / 2 * sizeof(*dest);
-		dest = pcm_buffer_get(buffer, *dest_size_r);
-
-		pcm_convert_16_to_32(dest, src, src_end);
-		return dest;
+		return pcm_allocate_16_to_32(buffer, src, src_size,
+					     dest_size_r);
 
 	case SAMPLE_FORMAT_S24:
-		/* convert to S24_P32 first */
-		num_samples = src_size / 3;
-
-		dest = pcm_convert_24_to_24p32(buffer, src, num_samples);
-
-		/* convert to 32 bit in-place */
-		*dest_size_r = num_samples * sizeof(*dest);
-		pcm_convert_24_to_32(dest, dest, dest + num_samples);
-		return dest;
+		return pcm_allocate_24_to_32(buffer, src, src_size,
+					     dest_size_r);
 
 	case SAMPLE_FORMAT_S24_P32:
-		*dest_size_r = src_size / 4 * sizeof(*dest);
-		dest = pcm_buffer_get(buffer, *dest_size_r);
-
-		pcm_convert_24_to_32(dest, src, src_end);
-		return dest;
+		return pcm_allocate_24p32_to_32(buffer, src, src_size,
+						dest_size_r);
 
 	case SAMPLE_FORMAT_S32:
 		*dest_size_r = src_size;
