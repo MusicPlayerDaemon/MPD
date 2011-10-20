@@ -132,6 +132,16 @@ pcm_volume_change_32(int32_t *buffer, const int32_t *end, int volume)
 	}
 }
 
+static void
+pcm_volume_change_float(float *buffer, const float *end, float volume)
+{
+	while (buffer < end) {
+		float sample = *buffer;
+		sample *= volume;
+		*buffer++ = sample;
+	}
+}
+
 bool
 pcm_volume(void *buffer, size_t length,
 	   enum sample_format format,
@@ -169,8 +179,9 @@ pcm_volume(void *buffer, size_t length,
 		return true;
 
 	case SAMPLE_FORMAT_FLOAT:
-		/* XXX */
-		return false;
+		pcm_volume_change_float(buffer, end,
+					pcm_volume_to_float(volume));
+		return true;
 	}
 
 	/* unreachable */

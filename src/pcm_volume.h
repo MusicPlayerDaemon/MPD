@@ -43,6 +43,12 @@ pcm_float_to_volume(float volume)
 	return volume * PCM_VOLUME_1 + 0.5;
 }
 
+static inline float
+pcm_volume_to_float(int volume)
+{
+	return (float)volume / (float)PCM_VOLUME_1;
+}
+
 /**
  * Returns the next volume dithering number, between -511 and +511.
  * This number is taken from a global PRNG, see pcm_prng().
