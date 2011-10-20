@@ -401,8 +401,12 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 		char *dest = pcm_buffer_get(&ao->cross_fade_buffer,
 					    other_length);
 		memcpy(dest, other_data, other_length);
-		pcm_mix(dest, data, length, ao->in_audio_format.format,
-			1.0 - chunk->mix_ratio);
+		if (!pcm_mix(dest, data, length, ao->in_audio_format.format,
+			     1.0 - chunk->mix_ratio)) {
+			g_warning("Cannot cross-fade format %s",
+				  sample_format_to_string(ao->in_audio_format.format));
+			return NULL;
+		}
 
 		data = dest;
 		length = other_length;

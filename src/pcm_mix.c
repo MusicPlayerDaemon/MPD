@@ -22,7 +22,6 @@
 #include "pcm_volume.h"
 #include "pcm_utils.h"
 #include "audio_format.h"
-#include "mpd_error.h"
 
 #include <glib.h>
 
@@ -99,36 +98,41 @@ pcm_add_vol_32(int32_t *buffer1, const int32_t *buffer2,
 	}
 }
 
-static void
+static bool
 pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
 	    int vol1, int vol2,
 	    enum sample_format format)
 {
 	switch (format) {
+	case SAMPLE_FORMAT_UNDEFINED:
+	case SAMPLE_FORMAT_S24:
+		/* not implemented */
+		return false;
+
 	case SAMPLE_FORMAT_S8:
 		pcm_add_vol_8((int8_t *)buffer1, (const int8_t *)buffer2,
 			      size, vol1, vol2);
-		break;
+		return true;
 
 	case SAMPLE_FORMAT_S16:
 		pcm_add_vol_16((int16_t *)buffer1, (const int16_t *)buffer2,
 			       size / 2, vol1, vol2);
-		break;
+		return true;
 
 	case SAMPLE_FORMAT_S24_P32:
 		pcm_add_vol_24((int32_t *)buffer1, (const int32_t *)buffer2,
 			       size / 4, vol1, vol2);
-		break;
+		return true;
 
 	case SAMPLE_FORMAT_S32:
 		pcm_add_vol_32((int32_t *)buffer1, (const int32_t *)buffer2,
 			       size / 4, vol1, vol2);
-		break;
-
-	default:
-		MPD_ERROR("format %s not supported by pcm_add_vol",
-			  sample_format_to_string(format));
+		return true;
 	}
+
+	/* unreachable */
+	assert(false);
+	return false;
 }
 
 static void
@@ -187,34 +191,39 @@ pcm_add_32(int32_t *buffer1, const int32_t *buffer2, unsigned num_samples)
 	}
 }
 
-static void
+static bool
 pcm_add(void *buffer1, const void *buffer2, size_t size,
 	enum sample_format format)
 {
 	switch (format) {
+	case SAMPLE_FORMAT_UNDEFINED:
+	case SAMPLE_FORMAT_S24:
+		/* not implemented */
+		return false;
+
 	case SAMPLE_FORMAT_S8:
 		pcm_add_8((int8_t *)buffer1, (const int8_t *)buffer2, size);
-		break;
+		return true;
 
 	case SAMPLE_FORMAT_S16:
 		pcm_add_16((int16_t *)buffer1, (const int16_t *)buffer2, size / 2);
-		break;
+		return true;
 
 	case SAMPLE_FORMAT_S24_P32:
 		pcm_add_24((int32_t *)buffer1, (const int32_t *)buffer2, size / 4);
-		break;
+		return true;
 
 	case SAMPLE_FORMAT_S32:
 		pcm_add_32((int32_t *)buffer1, (const int32_t *)buffer2, size / 4);
-		break;
-
-	default:
-		MPD_ERROR("format %s not supported by pcm_add",
-			  sample_format_to_string(format));
+		return true;
 	}
+
+	/* unreachable */
+	assert(false);
+	return false;
 }
 
-void
+bool
 pcm_mix(void *buffer1, const void *buffer2, size_t size,
 	enum sample_format format, float portion1)
 {
@@ -223,10 +232,8 @@ pcm_mix(void *buffer1, const void *buffer2, size_t size,
 
 	/* portion1 is between 0.0 and 1.0 for crossfading, MixRamp uses NaN
 	 * to signal mixing rather than fading */
-	if (isnan(portion1)) {
-		pcm_add(buffer1, buffer2, size, format);
-		return;
-	}
+	if (isnan(portion1))
+		return pcm_add(buffer1, buffer2, size, format);
 
 	s = sin(M_PI_2 * portion1);
 	s *= s;
@@ -234,5 +241,5 @@ pcm_mix(void *buffer1, const void *buffer2, size_t size,
 	vol1 = s * PCM_VOLUME_1 + 0.5;
 	vol1 = vol1 > PCM_VOLUME_1 ? PCM_VOLUME_1 : (vol1 < 0 ? 0 : vol1);
 
-	pcm_add_vol(buffer1, buffer2, size, vol1, PCM_VOLUME_1 - vol1, format);
+	return pcm_add_vol(buffer1, buffer2, size, vol1, PCM_VOLUME_1 - vol1, format);
 }

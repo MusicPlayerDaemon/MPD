@@ -22,6 +22,7 @@
 
 #include "audio_format.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 
 /*
@@ -37,8 +38,11 @@
  * @param portion1 a number between 0.0 and 1.0 specifying the portion
  * of the first buffer in the mix; portion2 = (1.0 - portion1). The value
  * NaN is used by the MixRamp code to specify that simple addition is required.
+ *
+ * @return true on success, false if the format is not supported
  */
-void
+G_GNUC_WARN_UNUSED_RESULT
+bool
 pcm_mix(void *buffer1, const void *buffer2, size_t size,
 	enum sample_format format, float portion1);
 
