@@ -98,6 +98,20 @@ pcm_add_vol_32(int32_t *buffer1, const int32_t *buffer2,
 	}
 }
 
+static void
+pcm_add_vol_float(float *buffer1, const float *buffer2,
+		  unsigned num_samples, float volume1, float volume2)
+{
+	while (num_samples > 0) {
+		float sample1 = *buffer1;
+		float sample2 = *buffer2++;
+
+		sample1 = (sample1 * volume1 + sample2 * volume2);
+		*buffer1++ = sample1;
+		--num_samples;
+	}
+}
+
 static bool
 pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
 	    int vol1, int vol2,
@@ -130,8 +144,10 @@ pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
 		return true;
 
 	case SAMPLE_FORMAT_FLOAT:
-		/* XXX */
-		return false;
+		pcm_add_vol_float(buffer1, buffer2, size / 4,
+				  pcm_volume_to_float(vol1),
+				  pcm_volume_to_float(vol2));
+		return true;
 	}
 
 	/* unreachable */
@@ -195,6 +211,17 @@ pcm_add_32(int32_t *buffer1, const int32_t *buffer2, unsigned num_samples)
 	}
 }
 
+static void
+pcm_add_float(float *buffer1, const float *buffer2, unsigned num_samples)
+{
+	while (num_samples > 0) {
+		float sample1 = *buffer1;
+		float sample2 = *buffer2++;
+		*buffer1++ = sample1 + sample2;
+		--num_samples;
+	}
+}
+
 static bool
 pcm_add(void *buffer1, const void *buffer2, size_t size,
 	enum sample_format format)
@@ -222,8 +249,8 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 		return true;
 
 	case SAMPLE_FORMAT_FLOAT:
-		/* XXX */
-		return false;
+		pcm_add_float(buffer1, buffer2, size / 4);
+		return true;
 	}
 
 	/* unreachable */
