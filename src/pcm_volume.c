@@ -138,7 +138,7 @@ pcm_volume_change_32(int32_t *buffer, unsigned num_samples, int volume)
 }
 
 bool
-pcm_volume(void *buffer, int length,
+pcm_volume(void *buffer, size_t length,
 	   enum sample_format format,
 	   int volume)
 {

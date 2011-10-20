@@ -68,7 +68,7 @@ pcm_volume_dither(void)
  * @return true on success, false if the audio format is not supported
  */
 bool
-pcm_volume(void *buffer, int length,
+pcm_volume(void *buffer, size_t length,
 	   enum sample_format format,
 	   int volume);
 

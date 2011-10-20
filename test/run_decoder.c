@@ -56,7 +56,7 @@ idle_add(G_GNUC_UNUSED unsigned flags)
  * No-op dummy.
  */
 bool
-pcm_volume(G_GNUC_UNUSED void *buffer, G_GNUC_UNUSED int length,
+pcm_volume(G_GNUC_UNUSED void *buffer, G_GNUC_UNUSED size_t length,
 	   G_GNUC_UNUSED enum sample_format format,
 	   G_GNUC_UNUSED int volume)
 {
