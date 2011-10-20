@@ -300,31 +300,6 @@ dsdiff_read_metadata(struct decoder *decoder, struct input_stream *is,
 	}
 }
 
-G_GNUC_CONST
-static inline int32_t
-clip(int32_t min, int32_t value, int32_t max)
-{
-	if (G_UNLIKELY(value < min))
-		value = min;
-	else if (G_UNLIKELY(value > max))
-		value = max;
-	return value;
-}
-
-/**
- * Convert an array of float samples [-1 .. +1] to padded 24 bit
- * samples.
- */
-static void
-float_to_uint24(int32_t *dest, const float *src, size_t length)
-{
-	const float *src_end = src + length;
-	while (src < src_end) {
-		float f_sample = *src++ * 8388608;
-		*dest++ = clip(-8388608, (int32_t)f_sample, 8388607);
-	}
-}
-
 /**
  * Decode one "DSD" chunk.
  */
@@ -340,7 +315,6 @@ dsdiff_decode_chunk(struct decoder *decoder, struct input_stream *is,
 	const unsigned buffer_samples = buffer_frames * frame_size;
 	const size_t buffer_size = buffer_samples * sample_size;
 	float f_buffer[G_N_ELEMENTS(buffer)];
-	int32_t i_buffer[G_N_ELEMENTS(buffer)];
 
 	while (chunk_size > 0) {
 		/* see how much aligned data from the remaining chunk
@@ -370,10 +344,9 @@ dsdiff_decode_chunk(struct decoder *decoder, struct input_stream *is,
 
 		/* convert to integer and submit to the decoder API */
 
-		float_to_uint24(i_buffer, f_buffer, now_samples);
 		enum decoder_command cmd =
-			decoder_data(decoder, is, i_buffer,
-				     now_samples * sizeof(i_buffer[0]),
+			decoder_data(decoder, is, f_buffer,
+				     now_samples * sizeof(f_buffer[0]),
 				     0);
 		switch (cmd) {
 		case DECODE_COMMAND_NONE:
@@ -408,7 +381,7 @@ dsdiff_stream_decode(struct decoder *decoder, struct input_stream *is)
 	GError *error = NULL;
 	struct audio_format audio_format;
 	if (!audio_format_init_checked(&audio_format, metadata.sample_rate / 8,
-				       SAMPLE_FORMAT_S24_P32,
+				       SAMPLE_FORMAT_FLOAT,
 				       metadata.channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
