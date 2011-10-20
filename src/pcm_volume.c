@@ -151,6 +151,11 @@ pcm_volume(void *buffer, size_t length,
 	}
 
 	switch (format) {
+	case SAMPLE_FORMAT_UNDEFINED:
+	case SAMPLE_FORMAT_S24:
+		/* not implemented */
+		return false;
+
 	case SAMPLE_FORMAT_S8:
 		pcm_volume_change_8((int8_t *)buffer, length, volume);
 		return true;
@@ -169,8 +174,9 @@ pcm_volume(void *buffer, size_t length,
 		pcm_volume_change_32((int32_t*)buffer, length / 4,
 				     volume);
 		return true;
-
-	default:
-		return false;
 	}
+
+	/* unreachable */
+	assert(false);
+	return false;
 }
