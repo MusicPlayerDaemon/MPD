@@ -31,9 +31,9 @@
 #define G_LOG_DOMAIN "pcm_volume"
 
 static void
-pcm_volume_change_8(int8_t *buffer, unsigned num_samples, int volume)
+pcm_volume_change_8(int8_t *buffer, const int8_t *end, int volume)
 {
-	while (num_samples > 0) {
+	while (buffer < end) {
 		int32_t sample = *buffer;
 
 		sample = (sample * volume + pcm_volume_dither() +
@@ -41,14 +41,13 @@ pcm_volume_change_8(int8_t *buffer, unsigned num_samples, int volume)
 			/ PCM_VOLUME_1;
 
 		*buffer++ = pcm_range(sample, 8);
-		--num_samples;
 	}
 }
 
 static void
-pcm_volume_change_16(int16_t *buffer, unsigned num_samples, int volume)
+pcm_volume_change_16(int16_t *buffer, const int16_t *end, int volume)
 {
-	while (num_samples > 0) {
+	while (buffer < end) {
 		int32_t sample = *buffer;
 
 		sample = (sample * volume + pcm_volume_dither() +
@@ -56,7 +55,6 @@ pcm_volume_change_16(int16_t *buffer, unsigned num_samples, int volume)
 			/ PCM_VOLUME_1;
 
 		*buffer++ = pcm_range(sample, 16);
-		--num_samples;
 	}
 }
 
@@ -92,9 +90,9 @@ pcm_volume_sample_24(int32_t sample, int32_t volume, G_GNUC_UNUSED int32_t dithe
 #endif
 
 static void
-pcm_volume_change_24(int32_t *buffer, unsigned num_samples, int volume)
+pcm_volume_change_24(int32_t *buffer, const int32_t *end, int volume)
 {
-	while (num_samples > 0) {
+	while (buffer < end) {
 #ifdef __i386__
 		/* assembly version for i386 */
 		int32_t sample = *buffer;
@@ -110,14 +108,13 @@ pcm_volume_change_24(int32_t *buffer, unsigned num_samples, int volume)
 			/ PCM_VOLUME_1;
 #endif
 		*buffer++ = pcm_range(sample, 24);
-		--num_samples;
 	}
 }
 
 static void
-pcm_volume_change_32(int32_t *buffer, unsigned num_samples, int volume)
+pcm_volume_change_32(int32_t *buffer, const int32_t *end, int volume)
 {
-	while (num_samples > 0) {
+	while (buffer < end) {
 #ifdef __i386__
 		/* assembly version for i386 */
 		int32_t sample = *buffer;
@@ -132,8 +129,6 @@ pcm_volume_change_32(int32_t *buffer, unsigned num_samples, int volume)
 			/ PCM_VOLUME_1;
 		*buffer++ = pcm_range_64(sample, 32);
 #endif
-
-		--num_samples;
 	}
 }
 
@@ -150,6 +145,7 @@ pcm_volume(void *buffer, size_t length,
 		return true;
 	}
 
+	const void *end = pcm_end_pointer(buffer, length);
 	switch (format) {
 	case SAMPLE_FORMAT_UNDEFINED:
 	case SAMPLE_FORMAT_S24:
@@ -157,22 +153,19 @@ pcm_volume(void *buffer, size_t length,
 		return false;
 
 	case SAMPLE_FORMAT_S8:
-		pcm_volume_change_8((int8_t *)buffer, length, volume);
+		pcm_volume_change_8(buffer, end, volume);
 		return true;
 
 	case SAMPLE_FORMAT_S16:
-		pcm_volume_change_16((int16_t *)buffer, length / 2,
-				     volume);
+		pcm_volume_change_16(buffer, end, volume);
 		return true;
 
 	case SAMPLE_FORMAT_S24_P32:
-		pcm_volume_change_24((int32_t*)buffer, length / 4,
-				     volume);
+		pcm_volume_change_24(buffer, end, volume);
 		return true;
 
 	case SAMPLE_FORMAT_S32:
-		pcm_volume_change_32((int32_t*)buffer, length / 4,
-				     volume);
+		pcm_volume_change_32(buffer, end, volume);
 		return true;
 	}
 
