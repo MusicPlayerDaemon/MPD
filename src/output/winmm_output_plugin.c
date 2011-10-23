@@ -74,33 +74,45 @@ winmm_output_test_default_device(void)
 	return waveOutGetNumDevs() > 0;
 }
 
-static UINT
-get_device_id(const char *device_name)
+static bool
+get_device_id(const char *device_name, UINT *device_id, GError **error_r)
 {
 	/* if device is not specified use wave mapper */
-	if (device_name == NULL)
-		return WAVE_MAPPER;
+	if (device_name == NULL) {
+		*device_id = WAVE_MAPPER;
+		return true;
+	}
+
+	UINT numdevs = waveOutGetNumDevs();
 
 	/* check for device id */
 	char *endptr;
 	UINT id = strtoul(device_name, &endptr, 0);
-	if (endptr > device_name && *endptr == 0)
-		return id;
+	if (endptr > device_name && *endptr == 0) {
+		if (id >= numdevs)
+			goto fail;
+		*device_id = id;
+		return true;
+	}
 
 	/* check for device name */
-	for (UINT i = 0; i < waveOutGetNumDevs(); i++) {
+	for (UINT i = 0; i < numdevs; i++) {
 		WAVEOUTCAPS caps;
 		MMRESULT result = waveOutGetDevCaps(i, &caps, sizeof(caps));
 		if (result != MMSYSERR_NOERROR)
 			continue;
 		/* szPname is only 32 chars long, so it is often truncated.
 		   Use partial match to work around this. */
-		if (strstr(device_name, caps.szPname) == device_name)
-			return i;
+		if (strstr(device_name, caps.szPname) == device_name) {
+			*device_id = i;
+			return true;
+		}
 	}
 
-	/* fallback to wave mapper */
-	return WAVE_MAPPER;
+fail:
+	g_set_error(error_r, winmm_output_quark(), 0,
+		    "device \"%s\" is not found", device_name);
+	return false;
 }
 
 static struct audio_output *
@@ -113,7 +125,12 @@ winmm_output_init(const struct config_param *param, GError **error_r)
 	}
 
 	const char *device = config_get_block_string(param, "device", NULL);
-	wo->device_id = get_device_id(device);
+	if (!get_device_id(device, &wo->device_id, error_r)) {
+		ao_base_finish(&wo->base);
+		g_free(wo);
+		return NULL;
+	}
+
 	return &wo->base;
 }
 
