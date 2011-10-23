@@ -213,6 +213,8 @@ ao_base_init(struct audio_output *ao,
 	ao->cond = g_cond_new();
 
 	ao->mixer = NULL;
+	ao->replay_gain_filter = NULL;
+	ao->other_replay_gain_filter = NULL;
 
 	/* the "convert" filter must be the last one in the chain */
 
