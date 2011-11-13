@@ -33,7 +33,7 @@ src_mpd_LDADD = \
 	$(OUTPUT_LIBS) \
 	$(FILTER_LIBS) \
 	$(ENCODER_LIBS) \
-	libmixer_plugins.a \
+	$(MIXER_LIBS) \
 	$(GLIB_LIBS)
 
 mpd_headers = \
@@ -740,6 +740,10 @@ OUTPUT_API_SRC = \
 
 liboutput_plugins_a_SOURCES = \
 	src/output/null_output_plugin.c
+
+MIXER_LIBS = \
+	libmixer_plugins.a \
+	$(PULSE_LIBS)
 
 MIXER_API_SRC = \
 	src/mixer_control.c \
