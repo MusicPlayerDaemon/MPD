@@ -63,6 +63,19 @@ void
 fifo_buffer_free(struct fifo_buffer *buffer);
 
 /**
+ * Return the capacity of the buffer, i.e. the size that was passed to
+ * fifo_buffer_new().
+ */
+size_t
+fifo_buffer_capacity(const struct fifo_buffer *buffer);
+
+/**
+ * Return the number of bytes currently stored in the buffer.
+ */
+size_t
+fifo_buffer_available(const struct fifo_buffer *buffer);
+
+/**
  * Clears all data currently in this #fifo_buffer object.  This does
  * not overwrite the actuall buffer; it just resets the internal
  * pointers.

@@ -66,6 +66,22 @@ fifo_buffer_free(struct fifo_buffer *buffer)
 	g_free(buffer);
 }
 
+size_t
+fifo_buffer_capacity(const struct fifo_buffer *buffer)
+{
+	assert(buffer != NULL);
+
+	return buffer->size;
+}
+
+size_t
+fifo_buffer_available(const struct fifo_buffer *buffer)
+{
+	assert(buffer != NULL);
+
+	return buffer->end - buffer->start;
+}
+
 void
 fifo_buffer_clear(struct fifo_buffer *buffer)
 {
