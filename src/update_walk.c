@@ -86,7 +86,7 @@ directory_set_stat(struct directory *dir, const struct stat *st)
 {
 	dir->inode = st->st_ino;
 	dir->device = st->st_dev;
-	dir->stat = 1;
+	dir->stat = true;
 }
 
 static void

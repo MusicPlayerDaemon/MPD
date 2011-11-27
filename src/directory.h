@@ -43,7 +43,7 @@ struct directory {
 	time_t mtime;
 	ino_t inode;
 	dev_t device;
-	unsigned stat; /* not needed if ino_t == dev_t == 0 is impossible */
+	bool stat; /* not needed if ino_t == dev_t == 0 is impossible */
 	char path[sizeof(long)];
 };
 
