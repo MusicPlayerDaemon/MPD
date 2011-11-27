@@ -22,6 +22,8 @@
 
 #include <glib.h>
 
+#include <assert.h>
+
 /**
  * Manager for a temporary buffer which grows as needed.  We could
  * allocate a new buffer every time pcm_convert() is called, but that
@@ -39,6 +41,8 @@ struct pcm_buffer {
 static inline void
 pcm_buffer_init(struct pcm_buffer *buffer)
 {
+	assert(buffer != NULL);
+
 	buffer->buffer = NULL;
 	buffer->size = 0;
 }
@@ -49,6 +53,8 @@ pcm_buffer_init(struct pcm_buffer *buffer)
 static inline void
 pcm_buffer_deinit(struct pcm_buffer *buffer)
 {
+	assert(buffer != NULL);
+
 	g_free(buffer->buffer);
 
 	buffer->buffer = NULL;

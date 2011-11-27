@@ -32,6 +32,8 @@ align_8k(size_t size)
 void *
 pcm_buffer_get(struct pcm_buffer *buffer, size_t size)
 {
+	assert(buffer != NULL);
+
 	if (buffer->size < size) {
 		/* free the old buffer */
 		g_free(buffer->buffer);
@@ -39,6 +41,8 @@ pcm_buffer_get(struct pcm_buffer *buffer, size_t size)
 		buffer->size = align_8k(size);
 		buffer->buffer = g_malloc(buffer->size);
 	}
+
+	assert(buffer->size >= size);
 
 	return buffer->buffer;
 }
