@@ -144,7 +144,6 @@ mpd_headers = \
 	src/output/pulse_output_plugin.h \
 	src/output/winmm_output_plugin.h \
 	src/page.h \
-	src/pcm_buffer.h \
 	src/pcm_utils.h \
 	src/pcm_convert.h \
 	src/pcm_volume.h \
@@ -300,6 +299,7 @@ src_mpd_SOURCES = \
 	src/path.c \
 	src/mapper.c \
 	src/page.c \
+	src/pcm_buffer.c src/pcm_buffer.h \
 	src/pcm_convert.c \
 	src/pcm_volume.c \
 	src/pcm_mix.c \
@@ -928,6 +928,7 @@ test_run_decoder_SOURCES = test/run_decoder.c \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/timer.c \
+	src/pcm_buffer.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
 	$(TAG_SRC) \
@@ -950,6 +951,7 @@ test_read_tags_SOURCES = test/read_tags.c \
 	src/fd_util.c \
 	src/audio_check.c \
 	src/timer.c \
+	src/pcm_buffer.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
 	$(TAG_SRC) \
@@ -968,6 +970,7 @@ test_run_filter_SOURCES = test/run_filter.c \
 	src/pcm_format.c src/pcm_channels.c src/pcm_dither.c \
 	src/pcm_pack.c \
 	src/pcm_resample.c src/pcm_resample_fallback.c \
+	src/pcm_buffer.c \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \
@@ -990,6 +993,7 @@ test_run_encoder_SOURCES = test/run_encoder.c \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \
+	src/pcm_buffer.c \
 	$(ENCODER_SRC)
 test_run_encoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ENCODER_CFLAGS)
@@ -1019,6 +1023,7 @@ test_run_convert_SOURCES = test/run_convert.c \
 	src/audio_format.c \
 	src/audio_check.c \
 	src/audio_parser.c \
+	src/pcm_buffer.c \
 	src/pcm_channels.c \
 	src/pcm_format.c \
 	src/pcm_pack.c \
@@ -1069,6 +1074,7 @@ test_run_output_SOURCES = test/run_output.c \
 	src/filter/normalize_filter_plugin.c \
 	src/filter/volume_filter_plugin.c \
 	src/pcm_volume.c \
+	src/pcm_buffer.c \
 	src/AudioCompress/compress.c \
 	src/replay_gain_info.c \
 	src/replay_gain_config.c \
@@ -1087,6 +1093,7 @@ test_read_mixer_SOURCES = test/read_mixer.c \
 	src/filter_plugin.c \
 	src/filter/volume_filter_plugin.c \
 	src/fd_util.c \
+	src/pcm_buffer.c \
 	$(MIXER_SRC)
 
 if ENABLE_BZIP2_TEST
