@@ -1,6 +1,7 @@
 ver 0.16.6 (2010/??/??)
 * decoder:
   - fix assertion failure when resuming streams
+  - ffmpeg: work around bogus channel count
 * encoder:
   - flac, null, wave: fix buffer corruption bug
   - wave: support packed 24 bit samples
