@@ -19,6 +19,16 @@
 
 #include "pcm_buffer.h"
 
+/**
+ * Align the specified size to the next 8k boundary.
+ */
+G_GNUC_CONST
+static size_t
+align_8k(size_t size)
+{
+	return ((size - 1) | 0x1fff) + 1;
+}
+
 void *
 pcm_buffer_get(struct pcm_buffer *buffer, size_t size)
 {
@@ -26,8 +36,7 @@ pcm_buffer_get(struct pcm_buffer *buffer, size_t size)
 		/* free the old buffer */
 		g_free(buffer->buffer);
 
-		/* allocate a new buffer; align at 8 kB boundaries */
-		buffer->size = ((size - 1) | 0x1fff) + 1;
+		buffer->size = align_8k(size);
 		buffer->buffer = g_malloc(buffer->size);
 	}
 
