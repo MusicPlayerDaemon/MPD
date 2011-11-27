@@ -95,6 +95,12 @@ decoder_prepare_initial_seek(struct decoder *decoder)
 		return true;
 
 	if (decoder->initial_seek_pending) {
+		if (!dc->seekable) {
+			/* seeking is not possible */
+			decoder->initial_seek_pending = false;
+			return false;
+		}
+
 		if (dc->command == DECODE_COMMAND_NONE) {
 			/* begin initial seek */
 
