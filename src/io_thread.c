@@ -34,6 +34,7 @@ static struct {
 void
 io_thread_run(void)
 {
+	assert(io_thread_inside());
 	assert(io.context != NULL);
 	assert(io.loop != NULL);
 
@@ -43,6 +44,11 @@ io_thread_run(void)
 static gpointer
 io_thread_func(G_GNUC_UNUSED gpointer arg)
 {
+	/* lock+unlock to synchronize with io_thread_start(), to be
+	   sure that io.thread is set */
+	g_mutex_lock(io.mutex);
+	g_mutex_unlock(io.mutex);
+
 	io_thread_run();
 	return NULL;
 }
@@ -67,7 +73,9 @@ io_thread_start(GError **error_r)
 	assert(io.loop != NULL);
 	assert(io.thread == NULL);
 
+	g_mutex_lock(io.mutex);
 	io.thread = g_thread_create(io_thread_func, NULL, true, error_r);
+	g_mutex_unlock(io.mutex);
 	if (io.thread == NULL)
 		return false;
 
