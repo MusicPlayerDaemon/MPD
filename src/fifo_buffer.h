@@ -57,10 +57,35 @@ struct fifo_buffer *
 fifo_buffer_new(size_t size);
 
 /**
+ * Change the capacity of the #fifo_buffer, while preserving existing
+ * data.
+ *
+ * @param buffer the old buffer, may be NULL
+ * @param new_size the requested new size of the #fifo_buffer; must
+ * not be smaller than the data which is stored in the old buffer
+ * @return the new buffer, may be NULL if the requested new size is 0
+ */
+struct fifo_buffer *
+fifo_buffer_realloc(struct fifo_buffer *buffer, size_t new_size);
+
+/**
  * Frees the resources consumed by this #fifo_buffer object.
  */
 void
 fifo_buffer_free(struct fifo_buffer *buffer);
+
+/**
+ * Return the capacity of the buffer, i.e. the size that was passed to
+ * fifo_buffer_new().
+ */
+size_t
+fifo_buffer_capacity(const struct fifo_buffer *buffer);
+
+/**
+ * Return the number of bytes currently stored in the buffer.
+ */
+size_t
+fifo_buffer_available(const struct fifo_buffer *buffer);
 
 /**
  * Clears all data currently in this #fifo_buffer object.  This does

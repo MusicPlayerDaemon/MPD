@@ -21,7 +21,6 @@
 #include "event_pipe.h"
 #include "fd_util.h"
 #include "mpd_error.h"
-#include "glib_socket.h"
 
 #include <stdbool.h>
 #include <assert.h>
@@ -95,7 +94,11 @@ void event_pipe_init(void)
 	if (ret < 0)
 		MPD_ERROR("Couldn't open pipe: %s", strerror(errno));
 
-	channel = g_io_channel_new_socket(event_pipe[0]);
+#ifndef G_OS_WIN32
+	channel = g_io_channel_unix_new(event_pipe[0]);
+#else
+	channel = g_io_channel_win32_new_fd(event_pipe[0]);
+#endif
 	g_io_channel_set_encoding(channel, NULL, NULL);
 	g_io_channel_set_buffered(channel, false);
 

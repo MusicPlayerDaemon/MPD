@@ -28,6 +28,21 @@ ver 0.17 (2011/??/??)
 * support floating point samples
 
 
+ver 0.16.6 (2010/??/??)
+* decoder:
+  - fix assertion failure when resuming streams
+  - ffmpeg: work around bogus channel count
+* encoder:
+  - flac, null, wave: fix buffer corruption bug
+  - wave: support packed 24 bit samples
+* mapper: fix the bogus "not a directory" error message
+* mapper: check "x" and "r" permissions on music directory
+* log: print reason for failure
+* event_pipe: fix WIN32 regression
+* define WINVER in ./configure
+* WIN32: autodetect filesystem encoding
+
+
 ver 0.16.5 (2010/10/09)
 * configure.ac
   - disable assertions in the non-debugging build

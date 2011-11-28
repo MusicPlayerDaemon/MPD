@@ -58,12 +58,61 @@ fifo_buffer_new(size_t size)
 	return buffer;
 }
 
+static void
+fifo_buffer_move(struct fifo_buffer *buffer);
+
+struct fifo_buffer *
+fifo_buffer_realloc(struct fifo_buffer *buffer, size_t new_size)
+{
+	if (buffer == NULL)
+		return new_size > 0
+			? fifo_buffer_new(new_size)
+			: NULL;
+
+	/* existing data must fit in new size */
+	assert(new_size >= buffer->end - buffer->start);
+
+	if (new_size == 0) {
+		fifo_buffer_free(buffer);
+		return NULL;
+	}
+
+	/* compress the buffer when we're shrinking and the tail of
+	   the buffer would exceed the new size */
+	if (buffer->end > new_size)
+		fifo_buffer_move(buffer);
+
+	/* existing data must fit in new size: second check */
+	assert(buffer->end <= new_size);
+
+	buffer = g_realloc(buffer, sizeof(*buffer) - sizeof(buffer->buffer) +
+			   new_size);
+	buffer->size = new_size;
+	return buffer;
+}
+
 void
 fifo_buffer_free(struct fifo_buffer *buffer)
 {
 	assert(buffer != NULL);
 
 	g_free(buffer);
+}
+
+size_t
+fifo_buffer_capacity(const struct fifo_buffer *buffer)
+{
+	assert(buffer != NULL);
+
+	return buffer->size;
+}
+
+size_t
+fifo_buffer_available(const struct fifo_buffer *buffer)
+{
+	assert(buffer != NULL);
+
+	return buffer->end - buffer->start;
 }
 
 void

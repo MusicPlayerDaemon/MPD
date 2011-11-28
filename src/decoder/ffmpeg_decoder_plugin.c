@@ -400,13 +400,6 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		return;
 	}
 
-	if (avcodec_open(codec_context, codec)<0) {
-		g_warning("Could not open codec\n");
-		av_close_input_stream(format_context);
-		mpd_ffmpeg_stream_close(stream);
-		return;
-	}
-
 	GError *error = NULL;
 	struct audio_format audio_format;
 	if (!audio_format_init_checked(&audio_format,
@@ -415,7 +408,18 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 				       codec_context->channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
-		avcodec_close(codec_context);
+		av_close_input_stream(format_context);
+		mpd_ffmpeg_stream_close(stream);
+		return;
+	}
+
+	/* the audio format must be read from AVCodecContext by now,
+	   because avcodec_open() has been demonstrated to fill bogus
+	   values into AVCodecContext.channels - a change that will be
+	   reverted later by avcodec_decode_audio3() */
+
+	if (avcodec_open(codec_context, codec)<0) {
+		g_warning("Could not open codec\n");
 		av_close_input_stream(format_context);
 		mpd_ffmpeg_stream_close(stream);
 		return;

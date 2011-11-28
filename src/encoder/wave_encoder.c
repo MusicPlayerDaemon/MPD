@@ -20,7 +20,8 @@
 #include "config.h"
 #include "encoder_api.h"
 #include "encoder_plugin.h"
-#include "pcm_buffer.h"
+#include "fifo_buffer.h"
+#include "growing_fifo.h"
 
 #include <assert.h>
 #include <string.h>
@@ -29,8 +30,7 @@ struct wave_encoder {
 	struct encoder encoder;
 	unsigned bits;
 
-	struct pcm_buffer buffer;
-	size_t buffer_length;
+	struct fifo_buffer *buffer;
 };
 
 struct wave_header {
@@ -92,7 +92,6 @@ wave_encoder_init(G_GNUC_UNUSED const struct config_param *param,
 
 	encoder = g_new(struct wave_encoder, 1);
 	encoder_struct_init(&encoder->encoder, &wave_encoder_plugin);
-	pcm_buffer_init(&encoder->buffer);
 
 	return &encoder->encoder;
 }
@@ -102,7 +101,6 @@ wave_encoder_finish(struct encoder *_encoder)
 {
 	struct wave_encoder *encoder = (struct wave_encoder *)_encoder;
 
-	pcm_buffer_deinit(&encoder->buffer);
 	g_free(encoder);
 }
 
@@ -112,7 +110,6 @@ wave_encoder_open(struct encoder *_encoder,
 		  G_GNUC_UNUSED GError **error)
 {
 	struct wave_encoder *encoder = (struct wave_encoder *)_encoder;
-	void *buffer;
 
 	assert(audio_format_valid(audio_format));
 
@@ -123,6 +120,11 @@ wave_encoder_open(struct encoder *_encoder,
 
 	case SAMPLE_FORMAT_S16:
 		encoder->bits = 16;
+		break;
+
+	case SAMPLE_FORMAT_S24:
+		audio_format->format = SAMPLE_FORMAT_S24_P32;
+		encoder->bits = 24;
 		break;
 
 	case SAMPLE_FORMAT_S24_P32:
@@ -139,17 +141,27 @@ wave_encoder_open(struct encoder *_encoder,
 		break;
 	}
 
-	buffer = pcm_buffer_get(&encoder->buffer, sizeof(struct wave_header) );
+	encoder->buffer = growing_fifo_new();
+	struct wave_header *header =
+		growing_fifo_write(&encoder->buffer, sizeof(*header));
 
 	/* create PCM wave header in initial buffer */
-	fill_wave_header((struct wave_header *) buffer,
+	fill_wave_header(header,
 			audio_format->channels,
 			 encoder->bits,
 			audio_format->sample_rate,
 			 (encoder->bits / 8) * audio_format->channels );
+	fifo_buffer_append(encoder->buffer, sizeof(*header));
 
-	encoder->buffer_length = sizeof(struct wave_header);
 	return true;
+}
+
+static void
+wave_encoder_close(struct encoder *_encoder)
+{
+	struct wave_encoder *encoder = (struct wave_encoder *)_encoder;
+
+	fifo_buffer_free(encoder->buffer);
 }
 
 static inline size_t
@@ -198,9 +210,8 @@ wave_encoder_write(struct encoder *_encoder,
 		   G_GNUC_UNUSED GError **error)
 {
 	struct wave_encoder *encoder = (struct wave_encoder *)_encoder;
-	void *dst;
 
-	dst = pcm_buffer_get(&encoder->buffer, encoder->buffer_length + length);
+	void *dst = growing_fifo_write(&encoder->buffer, length);
 
 #if (G_BYTE_ORDER == G_LITTLE_ENDIAN)
 	switch (encoder->bits) {
@@ -232,7 +243,7 @@ wave_encoder_write(struct encoder *_encoder,
 #error G_BYTE_ORDER set to G_PDP_ENDIAN is not supported by wave_encoder
 #endif
 
-	encoder->buffer_length += length;
+	fifo_buffer_append(encoder->buffer, length);
 	return true;
 }
 
@@ -240,16 +251,17 @@ static size_t
 wave_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 {
 	struct wave_encoder *encoder = (struct wave_encoder *)_encoder;
-	uint8_t *buffer = pcm_buffer_get(&encoder->buffer, encoder->buffer_length );
 
-	if (length > encoder->buffer_length)
-		length = encoder->buffer_length;
+	size_t max_length;
+	const void *src = fifo_buffer_read(encoder->buffer, &max_length);
+	if (src == NULL)
+		return 0;
 
-	memcpy(dest, buffer, length);
+	if (length > max_length)
+		length = max_length;
 
-	encoder->buffer_length -= length;
-	memmove(buffer, buffer + length, encoder->buffer_length);
-
+	memcpy(dest, src, length);
+	fifo_buffer_consume(encoder->buffer, length);
 	return length;
 }
 
@@ -264,6 +276,7 @@ const struct encoder_plugin wave_encoder_plugin = {
 	.init = wave_encoder_init,
 	.finish = wave_encoder_finish,
 	.open = wave_encoder_open,
+	.close = wave_encoder_close,
 	.write = wave_encoder_write,
 	.read = wave_encoder_read,
 	.get_mime_type = wave_encoder_get_mime_type,

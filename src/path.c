@@ -27,6 +27,11 @@
 #include <assert.h>
 #include <string.h>
 
+#ifdef G_OS_WIN32
+#include <windows.h> // for GetACP()
+#include <stdio.h> // for sprintf()
+#endif
+
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "path"
 
@@ -85,11 +90,22 @@ void path_global_init(void)
 
 	charset = config_get_string(CONF_FS_CHARSET, NULL);
 	if (charset == NULL) {
+#ifndef G_OS_WIN32
 		const gchar **encodings;
 		g_get_filename_charsets(&encodings);
 
 		if (encodings[0] != NULL && *encodings[0] != '\0')
 			charset = encodings[0];
+#else /* G_OS_WIN32 */
+		/* Glib claims that file system encoding is always utf-8
+		 * on native Win32 (i.e. not Cygwin).
+		 * However this is true only if <gstdio.h> helpers are used.
+		 * MPD uses regular <stdio.h> functions.
+		 * Those functions use encoding determined by GetACP(). */
+		char win_charset[13];
+		sprintf(win_charset, "cp%u", GetACP());
+		charset = win_charset;
+#endif
 	}
 
 	if (charset) {
