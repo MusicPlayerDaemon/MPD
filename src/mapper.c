@@ -31,6 +31,9 @@
 
 #include <assert.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <errno.h>
 
 static char *music_dir;
 static size_t music_dir_length;
@@ -54,8 +57,17 @@ strdup_chop_slash(const char *path_fs)
 static void
 check_directory(const char *path)
 {
-	if (!g_file_test(path, G_FILE_TEST_IS_DIR))
+	struct stat st;
+	if (stat(path, &st) < 0) {
+		g_warning("Failed to stat directory \"%s\": %s",
+			  path, g_strerror(errno));
+		return;
+	}
+
+	if (!S_ISDIR(st.st_mode)) {
 		g_warning("Not a directory: %s", path);
+		return;
+	}
 }
 
 static void
