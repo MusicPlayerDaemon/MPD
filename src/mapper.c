@@ -52,24 +52,27 @@ strdup_chop_slash(const char *path_fs)
 }
 
 static void
+check_directory(const char *path)
+{
+	if (!g_file_test(path, G_FILE_TEST_IS_DIR))
+		g_warning("Not a directory: %s", path);
+}
+
+static void
 mapper_set_music_dir(const char *path)
 {
+	check_directory(path);
+
 	music_dir = strdup_chop_slash(path);
 	music_dir_length = strlen(music_dir);
-
-	if (!g_file_test(music_dir, G_FILE_TEST_IS_DIR))
-		g_warning("music directory is not a directory: \"%s\"",
-			  music_dir);
 }
 
 static void
 mapper_set_playlist_dir(const char *path)
 {
-	playlist_dir = g_strdup(path);
+	check_directory(path);
 
-	if (!g_file_test(playlist_dir, G_FILE_TEST_IS_DIR))
-		g_warning("playlist directory is not a directory: \"%s\"",
-			  playlist_dir);
+	playlist_dir = g_strdup(path);
 }
 
 void mapper_init(const char *_music_dir, const char *_playlist_dir)
