@@ -68,6 +68,14 @@ check_directory(const char *path)
 		g_warning("Not a directory: %s", path);
 		return;
 	}
+
+#ifndef WIN32
+	char *x = g_build_filename(path, ".", NULL);
+	if (stat(x, &st) < 0 && errno == EACCES)
+		g_warning("No permission to traverse (\"execute\") directory: %s",
+			  path);
+	g_free(x);
+#endif
 }
 
 static void
