@@ -2,7 +2,7 @@ ver 0.16.6 (2010/??/??)
 * decoder:
   - fix assertion failure when resuming streams
 * encoder:
-  - flac, wave: fix buffer corruption bug
+  - flac, null, wave: fix buffer corruption bug
 * event_pipe: fix WIN32 regression
 * define WINVER in ./configure
 * WIN32: autodetect filesystem encoding
