@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "pcm_buffer.h"
+#include "poison.h"
 
 /**
  * Align the specified size to the next 8k boundary.
@@ -41,6 +42,9 @@ pcm_buffer_get(struct pcm_buffer *buffer, size_t size)
 
 		buffer->size = align_8k(size);
 		buffer->buffer = g_malloc(buffer->size);
+	} else {
+		/* discard old buffer contents */
+		poison_undefined(buffer->buffer, buffer->size);
 	}
 
 	assert(buffer->size >= size);
