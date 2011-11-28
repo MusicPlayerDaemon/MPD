@@ -994,6 +994,7 @@ test_run_encoder_SOURCES = test/run_encoder.c \
 	src/audio_format.c \
 	src/audio_parser.c \
 	src/pcm_buffer.c \
+	src/fifo_buffer.c src/growing_fifo.c \
 	$(ENCODER_SRC)
 test_run_encoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ENCODER_CFLAGS)
@@ -1057,7 +1058,7 @@ test_run_output_SOURCES = test/run_output.c \
 	src/audio_parser.c \
 	src/timer.c \
 	src/tag.c src/tag_pool.c \
-	src/fifo_buffer.c \
+	src/fifo_buffer.c src/growing_fifo.c \
 	src/page.c \
 	src/socket_util.c \
 	src/output_init.c src/output_list.c \
