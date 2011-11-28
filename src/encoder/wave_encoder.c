@@ -122,6 +122,11 @@ wave_encoder_open(struct encoder *_encoder,
 		encoder->bits = 16;
 		break;
 
+	case SAMPLE_FORMAT_S24:
+		audio_format->format = SAMPLE_FORMAT_S24_P32;
+		encoder->bits = 24;
+		break;
+
 	case SAMPLE_FORMAT_S24_P32:
 		encoder->bits = 24;
 		break;
