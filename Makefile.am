@@ -85,7 +85,6 @@ mpd_headers = \
 	src/encoder_api.h \
 	src/exclude.h \
 	src/fd_util.h \
-	src/fifo_buffer.h \
 	src/glib_compat.h \
 	src/update.h \
 	src/update_internal.h \
@@ -266,7 +265,8 @@ src_mpd_SOURCES = \
 	src/dirvec.c \
 	src/exclude.c \
 	src/fd_util.c \
-	src/fifo_buffer.c \
+	src/fifo_buffer.c src/fifo_buffer.h \
+	src/growing_fifo.c src/growing_fifo.h \
 	src/filter_config.c \
 	src/filter_plugin.c \
 	src/filter_registry.c \
