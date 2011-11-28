@@ -5,7 +5,7 @@ ver 0.16.6 (2010/??/??)
   - flac, null, wave: fix buffer corruption bug
   - wave: support packed 24 bit samples
 * mapper: fix the bogus "not a directory" error message
-* mapper: check "x" permission on music directory
+* mapper: check "x" and "r" permissions on music directory
 * log: print reason for failure
 * event_pipe: fix WIN32 regression
 * define WINVER in ./configure

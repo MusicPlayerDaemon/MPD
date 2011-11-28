@@ -34,6 +34,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
+#include <dirent.h>
 
 static char *music_dir;
 static size_t music_dir_length;
@@ -76,6 +77,12 @@ check_directory(const char *path)
 			  path);
 	g_free(x);
 #endif
+
+	DIR *dir = opendir(path);
+	if (dir == NULL && errno == EACCES)
+		g_warning("No permission to read directory: %s", path);
+	else
+		closedir(dir);
 }
 
 static void
