@@ -139,8 +139,8 @@ log_init_file(const char *path, unsigned line)
 	out_filename = path;
 	out_fd = open_log_file();
 	if (out_fd < 0)
-		MPD_ERROR("problem opening log file \"%s\" (config line %u) "
-			  "for writing\n", path, line);
+		MPD_ERROR("failed to open log file \"%s\" (config line %u): %s",
+			  path, line, g_strerror(errno));
 
 	g_log_set_default_handler(file_log_func, NULL);
 }

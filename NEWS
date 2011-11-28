@@ -4,6 +4,7 @@ ver 0.16.6 (2010/??/??)
 * encoder:
   - flac, null, wave: fix buffer corruption bug
   - wave: support packed 24 bit samples
+* log: print reason for failure
 * event_pipe: fix WIN32 regression
 * define WINVER in ./configure
 * WIN32: autodetect filesystem encoding
