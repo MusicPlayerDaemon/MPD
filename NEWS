@@ -1,3 +1,6 @@
+ver 0.16.7 (2011/??/??)
+
+
 ver 0.16.6 (2011/12/01)
 * decoder:
   - fix assertion failure when resuming streams
