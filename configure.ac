@@ -1568,23 +1568,23 @@ results(id3,[ID3])
 
 printf '\nPlayback support:\n\t'
 results(alsa,ALSA)
-results(roar,ROAR)
 results(ffado,FFADO)
 results(fifo,FIFO)
 results(recorder_output,[File Recorder])
 results(httpd_output,[HTTP Daemon])
-results(raop_output, [RAOP])
 results(jack,[JACK])
-results(ao,[libao])
-results(oss,[OSS])
 printf '\n\t'
+results(ao,[libao])
+results(mvp, [Media MVP])
+results(oss,[OSS])
 results(openal,[OpenAL])
 results(osx, [OS X])
 results(pipe_output, [Pipeline])
-results(pulse, [PulseAudio])
-results(mvp, [Media MVP])
-results(shout, [SHOUTcast])
 printf '\n\t'
+results(pulse, [PulseAudio])
+results(raop_output, [RAOP])
+results(roar,[ROAR])
+results(shout, [SHOUTcast])
 results(solaris_output, [Solaris])
 results(winmm_output, [WinMM])
 
@@ -1601,12 +1601,12 @@ if
 fi
 
 printf '\nStreaming support:\n\t'
+results(cdio_paranoia, [CDIO_PARANOIA])
 results(curl,[CURL])
-results(soup, [SOUP])
+results(despotify,[Despotify])
 results(lastfm,[Last.FM])
 results(mms,[MMS])
-results(cdio_paranoia, [CDIO_PARANOIA])
-results(despotify,[Despotify])
+results(soup, [SOUP])
 
 printf '\n\n##########################################\n\n'
 
