@@ -34,6 +34,7 @@ missing
 mkinstalldirs
 mpd
 mpd.exe
+mpd.service
 stamp-h1
 tags
 *~
