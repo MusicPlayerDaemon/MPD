@@ -3,7 +3,7 @@ AC_INIT(mpd, 0.17~git, musicpd-dev-team@lists.sourceforge.net)
 AC_CONFIG_SRCDIR([src/main.c])
 AM_INIT_AUTOMAKE([foreign 1.11 dist-bzip2 subdir-objects])
 AM_SILENT_RULES
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
 AC_DEFINE(PROTOCOL_VERSION, "0.17.0", [The MPD protocol version])
@@ -1615,8 +1615,9 @@ echo 'Generating files needed for compilation'
 dnl ---------------------------------------------------------------------------
 dnl Generate files
 dnl ---------------------------------------------------------------------------
-AC_OUTPUT(Makefile)
-AC_OUTPUT(doc/doxygen.conf)
-AC_OUTPUT(mpd.service)
+AC_CONFIG_FILES(Makefile)
+AC_CONFIG_FILES(doc/doxygen.conf)
+AC_CONFIG_FILES(mpd.service)
+AC_OUTPUT
 
 echo 'MPD is ready for compilation, type "make" to begin.'
