@@ -446,7 +446,11 @@ if test x$enable_ipv6 = xyes; then
 	AC_EGREP_CPP([AP_maGiC_VALUE],
 	[
 #include <sys/types.h>
+#ifdef WIN32
+#include <winsock2.h>
+#else
 #include <sys/socket.h>
+#endif
 #include <netdb.h>
 #ifdef PF_INET6
 #ifdef AF_INET6
