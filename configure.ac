@@ -882,52 +882,28 @@ AM_CONDITIONAL(ENABLE_SNDFILE, test x$enable_sndfile = xyes)
 
 dnl --------------------------------- musepack --------------------------------
 if test x$enable_mpc = xyes; then
-	if test "x$mpcdec_libraries" != "x" ; then
-		MPCDEC_LIBS="-L$mpcdec_libraries"
-	elif test "x$mpcdec_prefix" != "x" ; then
-		MPCDEC_LIBS="-L$mpcdec_prefix/lib"
-	fi
-
-	MPCDEC_LIBS="$MPCDEC_LIBS -lmpcdec"
-
-	if test "x$mpcdec_includes" != "x" ; then
-		MPCDEC_CFLAGS="-I$mpcdec_includes"
-	elif test "x$mpcdec_prefix" != "x" ; then
-		MPCDEC_CFLAGS="-I$mpcdec_prefix/include"
-	fi
-
 	oldcflags=$CFLAGS
 	oldlibs=$LIBS
 	oldcppflags=$CPPFLAGS
-	CFLAGS="$CFLAGS $MPCDEC_CFLAGS -I."
-	LIBS="$LIBS $MPCDEC_LIBS"
-	CPPFLAGS=$CFLAGS
-	AC_CHECK_HEADER(mpc/mpcdec.h,
-		old_mpcdec=no,
-		[AC_CHECK_HEADER(mpcdec/mpcdec.h,
-			old_mpcdec=yes,
-			enable_mpc=no)])
-	if test x$enable_mpc = xyes; then
-		AC_CHECK_LIB(mpcdec,main,,
-			[],
+	AC_CHECK_LIB(mpcdec,main,
+			MPCDEC_LIBS="$MPCDEC_LIBS -lmpcdec",
 			enable_mpc=no)
-	else
-		MPCDEC_LIBS=""
-		MPCDEC_CFLAGS=""
-	fi
-	if test x$enable_mpc = xyes; then
-		AC_DEFINE(HAVE_MPCDEC,1,
-			[Define to use libmpcdec for MPC decoding])
-		if test x$old_mpcdec = xyes; then
-			AC_DEFINE(MPC_IS_OLD_API, 1,
-				[Define if an old pre-SV8 libmpcdec is used])
-		fi
-	else
-		AC_MSG_WARN([mpcdec lib needed for MPC support -- disabling MPC support])
-	fi
 	CFLAGS=$oldcflags
 	LIBS=$oldlibs
 	CPPFLAGS=$oldcppflags
+
+	if test x$enable_mpc = xyes; then
+		AC_CHECK_HEADER([mpc/mpcdec.h],
+			[AC_DEFINE(HAVE_MPCDEC,1,
+				[Define to use libmpcdec for MPC decoding])],
+			[AC_CHECK_HEADER(mpcdec/mpcdec.h,
+				[AC_DEFINE(MPC_IS_OLD_API, 1,
+				[Define if an old pre-SV8 libmpcdec is used])]
+				)]
+		)	
+	else
+		AC_MSG_WARN([mpcdec lib needed for MPC support -- disabling MPC support])
+	fi
 fi
 
 AC_SUBST(MPCDEC_LIBS)
