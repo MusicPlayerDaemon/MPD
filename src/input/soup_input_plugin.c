@@ -280,7 +280,20 @@ input_soup_open(const char *uri,
 	s->current_consumed = 0;
 	s->total_buffered = 0;
 
+#if GCC_CHECK_VERSION(4,5)
+#pragma GCC diagnostic push
+	/* the libsoup macro SOUP_METHOD_GET discards the "const"
+	   attribute of the g_intern_static_string() return value;
+	   don't make the gcc warning fatal: */
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#endif
+
 	s->msg = soup_message_new(SOUP_METHOD_GET, uri);
+
+#if GCC_CHECK_VERSION(4,5)
+#pragma GCC diagnostic pop
+#endif
+
 	soup_message_set_flags(s->msg, SOUP_MESSAGE_NO_REDIRECT);
 
 	soup_message_headers_append(s->msg->request_headers, "User-Agent",
