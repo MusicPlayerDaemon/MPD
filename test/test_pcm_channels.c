@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "test_pcm_all.h"
 #include "test_glib_compat.h"
 #include "pcm_channels.h"
