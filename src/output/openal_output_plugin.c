@@ -46,7 +46,7 @@ struct openal_data {
 	ALCcontext *context;
 	struct timer *timer;
 	ALuint buffers[NUM_BUFFERS];
-	int filled;
+	unsigned filled;
 	ALuint source;
 	ALenum format;
 	ALuint frequency;
