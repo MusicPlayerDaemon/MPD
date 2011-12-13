@@ -79,6 +79,16 @@ null_close(struct audio_output *ao)
 		timer_free(nd->timer);
 }
 
+static unsigned
+null_delay(struct audio_output *ao)
+{
+	struct null_data *nd = (struct null_data *)ao;
+
+	return nd->sync && nd->timer->started
+		? timer_delay(nd->timer)
+		: 0;
+}
+
 static size_t
 null_play(struct audio_output *ao, G_GNUC_UNUSED const void *chunk, size_t size,
 	  G_GNUC_UNUSED GError **error)
@@ -91,9 +101,6 @@ null_play(struct audio_output *ao, G_GNUC_UNUSED const void *chunk, size_t size,
 
 	if (!timer->started)
 		timer_start(timer);
-	else
-		timer_sync(timer);
-
 	timer_add(timer, size);
 
 	return size;
@@ -116,6 +123,7 @@ const struct audio_output_plugin null_output_plugin = {
 	.finish = null_finish,
 	.open = null_open,
 	.close = null_close,
+	.delay = null_delay,
 	.play = null_play,
 	.cancel = null_cancel,
 };
