@@ -45,7 +45,6 @@ null_init(const struct config_param *param, GError **error_r)
 	}
 
 	nd->sync = config_get_block_bool(param, "sync", true);
-	nd->timer = NULL;
 
 	return &nd->base;
 }
@@ -54,8 +53,6 @@ static void
 null_finish(struct audio_output *ao)
 {
 	struct null_data *nd = (struct null_data *)ao;
-
-	assert(nd->timer == NULL);
 
 	ao_base_finish(&nd->base);
 	g_free(nd);
@@ -78,10 +75,8 @@ null_close(struct audio_output *ao)
 {
 	struct null_data *nd = (struct null_data *)ao;
 
-	if (nd->timer != NULL) {
+	if (nd->sync)
 		timer_free(nd->timer);
-		nd->timer = NULL;
-	}
 }
 
 static size_t
