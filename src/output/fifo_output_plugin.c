@@ -259,6 +259,16 @@ fifo_output_cancel(struct audio_output *ao)
 	}
 }
 
+static unsigned
+fifo_output_delay(struct audio_output *ao)
+{
+	struct fifo_data *fd = (struct fifo_data *)ao;
+
+	return fd->timer->started
+		? timer_delay(fd->timer)
+		: 0;
+}
+
 static size_t
 fifo_output_play(struct audio_output *ao, const void *chunk, size_t size,
 		 GError **error)
@@ -268,9 +278,6 @@ fifo_output_play(struct audio_output *ao, const void *chunk, size_t size,
 
 	if (!fd->timer->started)
 		timer_start(fd->timer);
-	else
-		timer_sync(fd->timer);
-
 	timer_add(fd->timer, size);
 
 	while (true) {
@@ -302,6 +309,7 @@ const struct audio_output_plugin fifo_output_plugin = {
 	.finish = fifo_output_finish,
 	.open = fifo_output_open,
 	.close = fifo_output_close,
+	.delay = fifo_output_delay,
 	.play = fifo_output_play,
 	.cancel = fifo_output_cancel,
 };
