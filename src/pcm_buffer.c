@@ -1,9 +1,5 @@
 /*
-<<<<<<< HEAD
  * Copyright (C) 2003-2011 The Music Player Daemon Project
-=======
- * Copyright (C) 2003-2010 The Music Player Daemon Project
->>>>>>> v0.16.x
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
