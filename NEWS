@@ -1,4 +1,6 @@
 ver 0.16.7 (2011/??/??)
+* output:
+  - httpd: fix excessive buffering
 
 
 ver 0.16.6 (2011/12/01)
