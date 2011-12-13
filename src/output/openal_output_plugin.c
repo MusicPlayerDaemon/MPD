@@ -83,6 +83,29 @@ openal_audio_format(struct audio_format *audio_format)
 	}
 }
 
+G_GNUC_PURE
+static inline ALint
+openal_get_source_i(const struct openal_data *od, ALenum param)
+{
+	ALint value;
+	alGetSourcei(od->source, param, &value);
+	return value;
+}
+
+G_GNUC_PURE
+static inline bool
+openal_has_processed(const struct openal_data *od)
+{
+	return openal_get_source_i(od, AL_BUFFERS_PROCESSED) > 0;
+}
+
+G_GNUC_PURE
+static inline ALint
+openal_is_playing(const struct openal_data *od)
+{
+	return openal_get_source_i(od, AL_SOURCE_STATE) == AL_PLAYING;
+}
+
 static bool
 openal_setup_context(struct openal_data *od,
 		     GError **error)
@@ -195,13 +218,10 @@ openal_play(struct audio_output *ao, const void *chunk, size_t size,
 {
 	struct openal_data *od = (struct openal_data *)ao;
 	ALuint buffer;
-	ALint num, state;
 
 	if (alcGetCurrentContext() != od->context) {
 		alcMakeContextCurrent(od->context);
 	}
-
-	alGetSourcei(od->source, AL_BUFFERS_PROCESSED, &num);
 
 	if (od->filled < NUM_BUFFERS) {
 		/* fill all buffers */
@@ -209,7 +229,7 @@ openal_play(struct audio_output *ao, const void *chunk, size_t size,
 		od->filled++;
 	} else {
 		/* wait for processed buffer */
-		while (num < 1) {
+		while (!openal_has_processed(od)) {
 			if (!od->timer->started) {
 				timer_start(od->timer);
 			} else {
@@ -217,8 +237,6 @@ openal_play(struct audio_output *ao, const void *chunk, size_t size,
 			}
 
 			timer_add(od->timer, size);
-
-			alGetSourcei(od->source, AL_BUFFERS_PROCESSED, &num);
 		}
 
 		alSourceUnqueueBuffers(od->source, 1, &buffer);
@@ -226,11 +244,9 @@ openal_play(struct audio_output *ao, const void *chunk, size_t size,
 
 	alBufferData(buffer, od->format, chunk, size, od->frequency);
 	alSourceQueueBuffers(od->source, 1, &buffer);
-	alGetSourcei(od->source, AL_SOURCE_STATE, &state);
 
-	if (state != AL_PLAYING) {
+	if (!openal_is_playing(od))
 		alSourcePlay(od->source);
-	}
 
 	return size;
 }
