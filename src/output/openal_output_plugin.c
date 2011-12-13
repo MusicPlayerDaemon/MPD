@@ -20,7 +20,6 @@
 #include "config.h"
 #include "openal_output_plugin.h"
 #include "output_api.h"
-#include "timer.h"
 
 #include <glib.h>
 
@@ -44,7 +43,6 @@ struct openal_data {
 	const char *device_name;
 	ALCdevice *device;
 	ALCcontext *context;
-	struct timer *timer;
 	ALuint buffers[NUM_BUFFERS];
 	unsigned filled;
 	ALuint source;
@@ -193,7 +191,6 @@ openal_open(struct audio_output *ao, struct audio_format *audio_format,
 	}
 
 	od->filled = 0;
-	od->timer = timer_new(audio_format);
 	od->frequency = audio_format->sample_rate;
 
 	return true;
@@ -204,12 +201,24 @@ openal_close(struct audio_output *ao)
 {
 	struct openal_data *od = (struct openal_data *)ao;
 
-	timer_free(od->timer);
 	alcMakeContextCurrent(od->context);
 	alDeleteSources(1, &od->source);
 	alDeleteBuffers(NUM_BUFFERS, od->buffers);
 	alcDestroyContext(od->context);
 	alcCloseDevice(od->device);
+}
+
+static unsigned
+openal_delay(struct audio_output *ao)
+{
+	struct openal_data *od = (struct openal_data *)ao;
+
+	return od->filled < NUM_BUFFERS || openal_has_processed(od)
+		? 0
+		/* we don't know exactly how long we must wait for the
+		   next buffer to finish, so this is a random
+		   guess: */
+		: 50;
 }
 
 static size_t
@@ -229,15 +238,8 @@ openal_play(struct audio_output *ao, const void *chunk, size_t size,
 		od->filled++;
 	} else {
 		/* wait for processed buffer */
-		while (!openal_has_processed(od)) {
-			if (!od->timer->started) {
-				timer_start(od->timer);
-			} else {
-				timer_sync(od->timer);
-			}
-
-			timer_add(od->timer, size);
-		}
+		while (!openal_has_processed(od))
+			g_usleep(10);
 
 		alSourceUnqueueBuffers(od->source, 1, &buffer);
 	}
@@ -271,6 +273,7 @@ const struct audio_output_plugin openal_output_plugin = {
 	.finish = openal_finish,
 	.open = openal_open,
 	.close = openal_close,
+	.delay = openal_delay,
 	.play = openal_play,
 	.cancel = openal_cancel,
 };
