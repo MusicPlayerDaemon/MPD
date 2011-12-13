@@ -1,6 +1,7 @@
 ver 0.16.7 (2011/??/??)
 * output:
   - httpd: fix excessive buffering
+  - openal: force 16 bit playback, as 8 bit doesn't work
 
 
 ver 0.16.6 (2011/12/01)
