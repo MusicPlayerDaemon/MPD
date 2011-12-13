@@ -29,7 +29,13 @@ ver 0.17 (2011/??/??)
 * support floating point samples
 
 
-ver 0.16.6 (2010/??/??)
+ver 0.16.7 (2011/??/??)
+* output:
+  - httpd: fix excessive buffering
+  - openal: force 16 bit playback, as 8 bit doesn't work
+
+
+ver 0.16.6 (2011/12/01)
 * decoder:
   - fix assertion failure when resuming streams
   - ffmpeg: work around bogus channel count
@@ -44,7 +50,7 @@ ver 0.16.6 (2010/??/??)
 * WIN32: autodetect filesystem encoding
 
 
-ver 0.16.5 (2010/10/09)
+ver 0.16.5 (2011/10/09)
 * configure.ac
   - disable assertions in the non-debugging build
   - show solaris plugin result correctly

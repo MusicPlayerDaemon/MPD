@@ -81,7 +81,7 @@ timer_delay(const struct timer *timer)
 	if (delay > G_MAXINT)
 		delay = G_MAXINT;
 
-	return delay / 1000;
+	return delay;
 }
 
 void timer_sync(struct timer *timer)

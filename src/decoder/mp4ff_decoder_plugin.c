@@ -94,6 +94,12 @@ mp4_read(void *user_data, void *buffer, uint32_t length)
 {
 	struct mp4ff_input_stream *mis = user_data;
 
+	if (length == 0)
+		/* libmp4ff is known to attempt to read 0 bytes - make
+		   this a special case, because the input_stream API
+		   would not allow this */
+		return 0;
+
 	return decoder_read(mis->decoder, mis->input_stream, buffer, length);
 }
 

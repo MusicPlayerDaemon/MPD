@@ -616,6 +616,8 @@ update_regular_file(struct directory *directory,
 		}
 
 		if (song == NULL) {
+			g_debug("reading %s/%s",
+				directory_get_path(directory), name);
 			song = song_file_load(name, directory);
 			if (song == NULL) {
 				g_debug("ignoring unrecognized file %s/%s",

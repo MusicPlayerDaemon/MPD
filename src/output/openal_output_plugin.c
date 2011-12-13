@@ -61,22 +61,16 @@ openal_output_quark(void)
 static ALenum
 openal_audio_format(struct audio_format *audio_format)
 {
+	/* note: cannot map SAMPLE_FORMAT_S8 to AL_FORMAT_STEREO8 or
+	   AL_FORMAT_MONO8 since OpenAL expects unsigned 8 bit
+	   samples, while MPD uses signed samples */
+
 	switch (audio_format->format) {
 	case SAMPLE_FORMAT_S16:
 		if (audio_format->channels == 2)
 			return AL_FORMAT_STEREO16;
 		if (audio_format->channels == 1)
 			return AL_FORMAT_MONO16;
-
-		/* fall back to mono */
-		audio_format->channels = 1;
-		return openal_audio_format(audio_format);
-
-	case SAMPLE_FORMAT_S8:
-		if (audio_format->channels == 2)
-			return AL_FORMAT_STEREO8;
-		if (audio_format->channels == 1)
-			return AL_FORMAT_MONO8;
 
 		/* fall back to mono */
 		audio_format->channels = 1;

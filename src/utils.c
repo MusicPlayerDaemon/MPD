@@ -34,7 +34,11 @@
 #include <pwd.h>
 #endif
 
-#ifdef HAVE_IPV6
+#if HAVE_IPV6 && WIN32
+#include <winsock2.h>
+#endif 
+
+#if HAVE_IPV6 && ! WIN32
 #include <sys/socket.h>
 #endif
 
