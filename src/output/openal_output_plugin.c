@@ -109,19 +109,6 @@ openal_setup_context(struct openal_data *od,
 	return true;
 }
 
-static void
-openal_unqueue_buffers(struct openal_data *od)
-{
-	ALint num;
-	ALuint buffer;
-
-	alGetSourcei(od->source, AL_BUFFERS_QUEUED, &num);
-
-	while (num--) {
-		alSourceUnqueueBuffers(od->source, 1, &buffer);
-	}
-}
-
 static struct audio_output *
 openal_init(const struct config_param *param, GError **error_r)
 {
@@ -256,7 +243,10 @@ openal_cancel(struct audio_output *ao)
 	od->filled = 0;
 	alcMakeContextCurrent(od->context);
 	alSourceStop(od->source);
-	openal_unqueue_buffers(od);
+
+	/* force-unqueue all buffers */
+	alSourcei(od->source, AL_BUFFER, 0);
+	od->filled = 0;
 }
 
 const struct audio_output_plugin openal_output_plugin = {

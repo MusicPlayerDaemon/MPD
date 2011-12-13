@@ -16,6 +16,7 @@ ver 0.17 (2011/??/??)
   - dsdiff: new decoder plugin
 * output:
   - httpd: support for streaming to a DLNA client
+  - openal: improve buffer cancellation
   - osx: allow user to specify other audio devices
   - raop: new output plugin
   - shout: add possibility to set url
