@@ -160,14 +160,6 @@ openal_open(struct audio_output *ao, struct audio_format *audio_format,
 
 	od->format = openal_audio_format(audio_format);
 
-	if (!od->format) {
-		struct audio_format_string s;
-		g_set_error(error, openal_output_quark(), 0,
-			    "Unsupported audio format: %s",
-			    audio_format_to_string(audio_format, &s));
-		return false;
-	}
-
 	if (!openal_setup_context(od, error)) {
 		return false;
 	}
