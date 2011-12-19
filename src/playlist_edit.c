@@ -356,7 +356,7 @@ playlist_move_range(struct playlist *playlist,
 					      playlist->current)
 		: -1;
 	if (to < 0 && playlist->current >= 0) {
-		if (start <= (unsigned)currentSong && (unsigned)currentSong <= end)
+		if (start <= (unsigned)currentSong && (unsigned)currentSong < end)
 			/* no-op, can't be moved to offset of itself */
 			return PLAYLIST_RESULT_SUCCESS;
 		to = (currentSong + abs(to)) % queue_length(&playlist->queue);
