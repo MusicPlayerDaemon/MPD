@@ -152,7 +152,6 @@ osx_render(void *vdata,
 	g_mutex_lock(od->mutex);
 
 	bytes_to_copy = MIN(od->len, buffer_size);
-	buffer_size = bytes_to_copy;
 	od->len -= bytes_to_copy;
 
 	trailer_length = od->buffer_size - od->pos;
@@ -174,11 +173,9 @@ osx_render(void *vdata,
 	g_cond_signal(od->condition);
 	g_mutex_unlock(od->mutex);
 
-	buffer->mDataByteSize = buffer_size;
-
-	if (!buffer_size) {
-		g_usleep(1000);
-	}
+	if (bytes_to_copy < buffer_size)
+		memset((unsigned char*)buffer->mData + bytes_to_copy, 0,
+		       buffer_size - bytes_to_copy);
 
 	return 0;
 }
