@@ -124,7 +124,15 @@ run_output(struct audio_output *ao, struct audio_format *audio_format)
 	/* open the audio output */
 
 	GError *error = NULL;
+	if (!ao_plugin_enable(ao, &error)) {
+		g_printerr("Failed to enable audio output: %s\n",
+			   error->message);
+		g_error_free(error);
+		return false;
+	}
+
 	if (!ao_plugin_open(ao, audio_format, &error)) {
+		ao_plugin_disable(ao);
 		g_printerr("Failed to open audio output: %s\n",
 			   error->message);
 		g_error_free(error);
@@ -158,6 +166,7 @@ run_output(struct audio_output *ao, struct audio_format *audio_format)
 							 &error);
 			if (consumed == 0) {
 				ao_plugin_close(ao);
+				ao_plugin_disable(ao);
 				g_printerr("Failed to play: %s\n",
 					   error->message);
 				g_error_free(error);
@@ -173,6 +182,7 @@ run_output(struct audio_output *ao, struct audio_format *audio_format)
 	}
 
 	ao_plugin_close(ao);
+	ao_plugin_disable(ao);
 	return true;
 }
 
