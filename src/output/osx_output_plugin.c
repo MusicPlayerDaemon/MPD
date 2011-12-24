@@ -345,9 +345,13 @@ osx_output_open(struct audio_output *ao, struct audio_format *audio_format, GErr
 		stream_description.mBitsPerChannel = 16;
 		break;
 
+	case SAMPLE_FORMAT_S32:
+		stream_description.mBitsPerChannel = 32;
+		break;
+
 	default:
-		audio_format->format = SAMPLE_FORMAT_S16;
-		stream_description.mBitsPerChannel = 16;
+		audio_format->format = SAMPLE_FORMAT_S32;
+		stream_description.mBitsPerChannel = 32;
 		break;
 	}
 

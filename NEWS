@@ -19,6 +19,7 @@ ver 0.17 (2011/??/??)
   - httpd: support for streaming to a DLNA client
   - openal: improve buffer cancellation
   - osx: allow user to specify other audio devices
+  - osx: implement 32 bit playback
   - raop: new output plugin
   - shout: add possibility to set url
   - roar: new output plugin for RoarAudio
