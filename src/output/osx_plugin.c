@@ -142,10 +142,6 @@ osx_render(void *vdata,
 
 	buffer->mDataByteSize = buffer_size;
 
-	if (!buffer_size) {
-		g_usleep(1000);
-	}
-
 	return 0;
 }
 
