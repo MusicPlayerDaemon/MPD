@@ -114,72 +114,6 @@ osx_output_finish(struct audio_output *ao)
 	g_free(od);
 }
 
-static void
-osx_output_cancel(struct audio_output *ao)
-{
-	struct osx_output *od = (struct osx_output *)ao;
-
-	g_mutex_lock(od->mutex);
-	od->len = 0;
-	g_mutex_unlock(od->mutex);
-}
-
-static void
-osx_output_close(struct audio_output *ao)
-{
-	struct osx_output *od = (struct osx_output *)ao;
-
-	AudioOutputUnitStop(od->au);
-	AudioUnitUninitialize(od->au);
-	CloseComponent(od->au);
-}
-
-static OSStatus
-osx_render(void *vdata,
-	   G_GNUC_UNUSED AudioUnitRenderActionFlags *io_action_flags,
-	   G_GNUC_UNUSED const AudioTimeStamp *in_timestamp,
-	   G_GNUC_UNUSED UInt32 in_bus_number,
-	   G_GNUC_UNUSED UInt32 in_number_frames,
-	   AudioBufferList *buffer_list)
-{
-	struct osx_output *od = (struct osx_output *) vdata;
-	AudioBuffer *buffer = &buffer_list->mBuffers[0];
-	size_t buffer_size = buffer->mDataByteSize;
-	size_t bytes_to_copy;
-	size_t trailer_length;
-	size_t dest_pos = 0;
-
-	g_mutex_lock(od->mutex);
-
-	bytes_to_copy = MIN(od->len, buffer_size);
-	od->len -= bytes_to_copy;
-
-	trailer_length = od->buffer_size - od->pos;
-	if (bytes_to_copy > trailer_length) {
-		memcpy((unsigned char*)buffer->mData + dest_pos,
-		       od->buffer + od->pos, trailer_length);
-		od->pos = 0;
-		dest_pos += trailer_length;
-		bytes_to_copy -= trailer_length;
-	}
-
-	memcpy((unsigned char*)buffer->mData + dest_pos,
-	       od->buffer + od->pos, bytes_to_copy);
-	od->pos += bytes_to_copy;
-
-	if (od->pos >= od->buffer_size)
-		od->pos = 0;
-
-	g_cond_signal(od->condition);
-	g_mutex_unlock(od->mutex);
-
-	if (bytes_to_copy < buffer_size)
-		memset((unsigned char*)buffer->mData + bytes_to_copy, 0,
-		       buffer_size - bytes_to_copy);
-
-	return 0;
-}
-
 static bool
 osx_output_set_device(struct osx_output *oo, GError **error)
 {
@@ -269,65 +203,135 @@ done:
 	return ret;
 }
 
-static bool
-osx_output_open(struct audio_output *ao, struct audio_format *audio_format, GError **error)
+static OSStatus
+osx_render(void *vdata,
+	   G_GNUC_UNUSED AudioUnitRenderActionFlags *io_action_flags,
+	   G_GNUC_UNUSED const AudioTimeStamp *in_timestamp,
+	   G_GNUC_UNUSED UInt32 in_bus_number,
+	   G_GNUC_UNUSED UInt32 in_number_frames,
+	   AudioBufferList *buffer_list)
 {
-	struct osx_output *od = (struct osx_output *)ao;
-	ComponentDescription desc;
-	Component comp;
-	AURenderCallbackStruct callback;
-	AudioStreamBasicDescription stream_description;
-	OSStatus status;
-	ComponentResult result;
+	struct osx_output *od = (struct osx_output *) vdata;
+	AudioBuffer *buffer = &buffer_list->mBuffers[0];
+	size_t buffer_size = buffer->mDataByteSize;
+	size_t bytes_to_copy;
+	size_t trailer_length;
+	size_t dest_pos = 0;
 
+	g_mutex_lock(od->mutex);
+
+	bytes_to_copy = MIN(od->len, buffer_size);
+	od->len -= bytes_to_copy;
+
+	trailer_length = od->buffer_size - od->pos;
+	if (bytes_to_copy > trailer_length) {
+		memcpy((unsigned char*)buffer->mData + dest_pos,
+		       od->buffer + od->pos, trailer_length);
+		od->pos = 0;
+		dest_pos += trailer_length;
+		bytes_to_copy -= trailer_length;
+	}
+
+	memcpy((unsigned char*)buffer->mData + dest_pos,
+	       od->buffer + od->pos, bytes_to_copy);
+	od->pos += bytes_to_copy;
+
+	if (od->pos >= od->buffer_size)
+		od->pos = 0;
+
+	g_cond_signal(od->condition);
+	g_mutex_unlock(od->mutex);
+
+	if (bytes_to_copy < buffer_size)
+		memset((unsigned char*)buffer->mData + bytes_to_copy, 0,
+		       buffer_size - bytes_to_copy);
+
+	return 0;
+}
+
+static bool
+osx_output_enable(struct audio_output *ao, GError **error_r)
+{
+	struct osx_output *oo = (struct osx_output *)ao;
+
+	ComponentDescription desc;
 	desc.componentType = kAudioUnitType_Output;
-	desc.componentSubType = od->component_subtype;
+	desc.componentSubType = oo->component_subtype;
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 	desc.componentFlags = 0;
 	desc.componentFlagsMask = 0;
 
-	comp = FindNextComponent(NULL, &desc);
+	Component comp = FindNextComponent(NULL, &desc);
 	if (comp == 0) {
-		g_set_error(error, osx_output_quark(), 0,
+		g_set_error(error_r, osx_output_quark(), 0,
 			    "Error finding OS X component");
 		return false;
 	}
 
-	status = OpenAComponent(comp, &od->au);
+	OSStatus status = OpenAComponent(comp, &oo->au);
 	if (status != noErr) {
-		g_set_error(error, osx_output_quark(), status,
+		g_set_error(error_r, osx_output_quark(), status,
 			    "Unable to open OS X component: %s",
 			    GetMacOSStatusCommentString(status));
 		return false;
 	}
 
-	status = AudioUnitInitialize(od->au);
-	if (status != noErr) {
-		CloseComponent(od->au);
-		g_set_error(error, osx_output_quark(), status,
-			    "Unable to initialize OS X audio unit: %s",
-			    GetMacOSStatusCommentString(status));
+	if (!osx_output_set_device(oo, error_r)) {
+		CloseComponent(oo->au);
 		return false;
 	}
 
-	if (!osx_output_set_device(od, error))
-		return false;
-
+	AURenderCallbackStruct callback;
 	callback.inputProc = osx_render;
-	callback.inputProcRefCon = od;
+	callback.inputProcRefCon = oo;
 
-	result = AudioUnitSetProperty(od->au,
-				      kAudioUnitProperty_SetRenderCallback,
-				      kAudioUnitScope_Input, 0,
-				      &callback, sizeof(callback));
+	ComponentResult result =
+		AudioUnitSetProperty(oo->au,
+				     kAudioUnitProperty_SetRenderCallback,
+				     kAudioUnitScope_Input, 0,
+				     &callback, sizeof(callback));
 	if (result != noErr) {
-		AudioUnitUninitialize(od->au);
-		CloseComponent(od->au);
-		g_set_error(error, osx_output_quark(), result,
+		g_set_error(error_r, osx_output_quark(), result,
 			    "unable to set callback for OS X audio unit");
 		return false;
 	}
 
+	return true;
+}
+
+static void
+osx_output_disable(struct audio_output *ao)
+{
+	struct osx_output *oo = (struct osx_output *)ao;
+
+	CloseComponent(oo->au);
+}
+
+static void
+osx_output_cancel(struct audio_output *ao)
+{
+	struct osx_output *od = (struct osx_output *)ao;
+
+	g_mutex_lock(od->mutex);
+	od->len = 0;
+	g_mutex_unlock(od->mutex);
+}
+
+static void
+osx_output_close(struct audio_output *ao)
+{
+	struct osx_output *od = (struct osx_output *)ao;
+
+	AudioOutputUnitStop(od->au);
+	AudioUnitUninitialize(od->au);
+}
+
+static bool
+osx_output_open(struct audio_output *ao, struct audio_format *audio_format, GError **error)
+{
+	struct osx_output *od = (struct osx_output *)ao;
+
+	AudioStreamBasicDescription stream_description;
 	stream_description.mSampleRate = audio_format->sample_rate;
 	stream_description.mFormatID = kAudioFormatLinearPCM;
 	stream_description.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
@@ -357,15 +361,22 @@ osx_output_open(struct audio_output *ao, struct audio_format *audio_format, GErr
 	stream_description.mBytesPerFrame = stream_description.mBytesPerPacket;
 	stream_description.mChannelsPerFrame = audio_format->channels;
 
-	result = AudioUnitSetProperty(od->au, kAudioUnitProperty_StreamFormat,
-				      kAudioUnitScope_Input, 0,
-				      &stream_description,
-				      sizeof(stream_description));
+	ComponentResult result =
+		AudioUnitSetProperty(od->au, kAudioUnitProperty_StreamFormat,
+				     kAudioUnitScope_Input, 0,
+				     &stream_description,
+				     sizeof(stream_description));
 	if (result != noErr) {
-		AudioUnitUninitialize(od->au);
-		CloseComponent(od->au);
 		g_set_error(error, osx_output_quark(), result,
 			    "Unable to set format on OS X device");
+		return false;
+	}
+
+	OSStatus status = AudioUnitInitialize(od->au);
+	if (status != noErr) {
+		g_set_error(error, osx_output_quark(), status,
+			    "Unable to initialize OS X audio unit: %s",
+			    GetMacOSStatusCommentString(status));
 		return false;
 	}
 
@@ -379,6 +390,7 @@ osx_output_open(struct audio_output *ao, struct audio_format *audio_format, GErr
 
 	status = AudioOutputUnitStart(od->au);
 	if (status != 0) {
+		AudioUnitUninitialize(od->au);
 		g_set_error(error, osx_output_quark(), status,
 			    "unable to start audio output: %s",
 			    GetMacOSStatusCommentString(status));
@@ -427,6 +439,8 @@ const struct audio_output_plugin osx_output_plugin = {
 	.test_default_device = osx_output_test_default_device,
 	.init = osx_output_init,
 	.finish = osx_output_finish,
+	.enable = osx_output_enable,
+	.disable = osx_output_disable,
 	.open = osx_output_open,
 	.close = osx_output_close,
 	.play = osx_output_play,
