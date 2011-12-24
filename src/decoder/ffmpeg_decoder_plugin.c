@@ -432,6 +432,11 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	decoder_initialized(decoder, &audio_format,
 			    input->seekable, total_time);
 
+	AVDictionaryEntry *entry =
+		av_dict_get(format_context->metadata, "replaygain_track_gain", NULL, 0);
+	if (entry != NULL)
+		g_printerr("replaygain_track_gain=%s\n", entry->value);
+
 	enum decoder_command cmd;
 	do {
 		AVPacket packet;

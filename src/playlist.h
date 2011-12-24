@@ -239,6 +239,18 @@ enum playlist_result
 playlist_seek_song_id(struct playlist *playlist, struct player_control *pc,
 		       unsigned id, float seek_time);
 
+/**
+ * Seek within the current song.  Fails if MPD is not currently
+ * playing.
+ *
+ * @param time the time in seconds
+ * @param relative if true, then the specified time is relative to the
+ * current position
+ */
+enum playlist_result
+playlist_seek_current(struct playlist *playlist, struct player_control *pc,
+		      float seek_time, bool relative);
+
 void
 playlist_increment_version_all(struct playlist *playlist);
 

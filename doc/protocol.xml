@@ -878,6 +878,23 @@
             </para>
           </listitem>
         </varlistentry>
+
+        <varlistentry id="command_seekcur">
+          <term>
+            <cmdsynopsis>
+              <command>seekcur</command>
+              <arg choice="req"><replaceable>TIME</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Seeks to the position <varname>TIME</varname> within the
+              current song.  If prefixed by '+' or '-', then the time
+              is relative to the current playing position.
+            </para>
+          </listitem>
+        </varlistentry>
+
         <varlistentry id="command_stop">
           <term>
             <cmdsynopsis>

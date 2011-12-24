@@ -262,3 +262,27 @@ playlist_seek_song_id(struct playlist *playlist, struct player_control *pc,
 
 	return playlist_seek_song(playlist, pc, song, seek_time);
 }
+
+enum playlist_result
+playlist_seek_current(struct playlist *playlist, struct player_control *pc,
+		      float seek_time, bool relative)
+{
+	if (!playlist->playing)
+		return PLAYLIST_RESULT_NOT_PLAYING;
+
+	if (relative) {
+		struct player_status status;
+		pc_get_status(pc, &status);
+
+		if (status.state != PLAYER_STATE_PLAY &&
+		    status.state != PLAYER_STATE_PAUSE)
+			return PLAYLIST_RESULT_NOT_PLAYING;
+
+		seek_time += (int)status.elapsed_time;
+	}
+
+	if (seek_time < 0)
+		seek_time = 0;
+
+	return playlist_seek_song(playlist, pc, playlist->current, seek_time);
+}

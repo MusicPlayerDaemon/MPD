@@ -1532,6 +1532,21 @@ handle_seekid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 static enum command_return
+handle_seekcur(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+{
+	const char *p = argv[1];
+	bool relative = *p == '+' || *p == '-';
+	int seek_time;
+	if (!check_int(client, &seek_time, p, check_integer, p))
+		return COMMAND_RETURN_ERROR;
+
+	enum playlist_result result =
+		playlist_seek_current(&g_playlist, client->player_control,
+				      seek_time, relative);
+	return print_playlist_result(client, result);
+}
+
+static enum command_return
 handle_listallinfo(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	const char *directory = "";
@@ -2159,6 +2174,7 @@ static const struct command commands[] = {
 	{ "save", PERMISSION_CONTROL, 1, 1, handle_save },
 	{ "search", PERMISSION_READ, 2, -1, handle_search },
 	{ "seek", PERMISSION_CONTROL, 2, 2, handle_seek },
+	{ "seekcur", PERMISSION_CONTROL, 1, 1, handle_seekcur },
 	{ "seekid", PERMISSION_CONTROL, 2, 2, handle_seekid },
 	{ "sendmessage", PERMISSION_CONTROL, 2, 2, handle_send_message },
 	{ "setvol", PERMISSION_CONTROL, 1, 1, handle_setvol },

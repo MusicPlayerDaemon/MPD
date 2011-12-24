@@ -2,6 +2,7 @@ ver 0.17 (2011/??/??)
 * protocol:
   - support client-to-client communication
   - "update" and "rescan" need only "CONTROL" permission
+  - new command "seekcur" for simpler seeking within current song
 * input:
   - cdio_paranoia: new input plugin to play audio CDs
   - curl: enable CURLOPT_NETRC
