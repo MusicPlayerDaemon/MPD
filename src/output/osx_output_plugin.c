@@ -291,6 +291,7 @@ osx_output_enable(struct audio_output *ao, GError **error_r)
 				     kAudioUnitScope_Input, 0,
 				     &callback, sizeof(callback));
 	if (result != noErr) {
+		CloseComponent(oo->au);
 		g_set_error(error_r, osx_output_quark(), result,
 			    "unable to set callback for OS X audio unit");
 		return false;
