@@ -443,9 +443,19 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		return;
 	}
 
-	if (av_find_stream_info(format_context)<0) {
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,2,0)
+	const int find_result =
+		avformat_find_stream_info(format_context, NULL);
+#else
+	const int find_result = av_find_stream_info(format_context);
+#endif
+	if (find_result < 0) {
 		g_warning("Couldn't find stream info\n");
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
+		avformat_close_input(&format_context);
+#else
 		av_close_input_stream(format_context);
+#endif
 		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
@@ -453,7 +463,11 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	int audio_stream = ffmpeg_find_audio_stream(format_context);
 	if (audio_stream == -1) {
 		g_warning("No audio stream inside\n");
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
+		avformat_close_input(&format_context);
+#else
 		av_close_input_stream(format_context);
+#endif
 		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
@@ -468,7 +482,11 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 
 	if (!codec) {
 		g_warning("Unsupported audio codec\n");
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
+		avformat_close_input(&format_context);
+#else
 		av_close_input_stream(format_context);
+#endif
 		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
@@ -481,7 +499,11 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 				       codec_context->channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
+		avformat_close_input(&format_context);
+#else
 		av_close_input_stream(format_context);
+#endif
 		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
@@ -498,7 +520,11 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 #endif
 	if (open_result < 0) {
 		g_warning("Could not open codec\n");
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
+		avformat_close_input(&format_context);
+#else
 		av_close_input_stream(format_context);
+#endif
 		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
@@ -542,7 +568,11 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	} while (cmd != DECODE_COMMAND_STOP);
 
 	avcodec_close(codec_context);
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
+	avformat_close_input(&format_context);
+#else
 	av_close_input_stream(format_context);
+#endif
 	mpd_ffmpeg_stream_close(stream);
 }
 
@@ -618,8 +648,18 @@ ffmpeg_stream_tag(struct input_stream *is)
 		return NULL;
 	}
 
-	if (av_find_stream_info(f) < 0) {
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,2,0)
+	const int find_result =
+		avformat_find_stream_info(f, NULL);
+#else
+	const int find_result = av_find_stream_info(f);
+#endif
+	if (find_result < 0) {
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
+		avformat_close_input(&f);
+#else
 		av_close_input_stream(f);
+#endif
 		mpd_ffmpeg_stream_close(stream);
 		return NULL;
 	}
@@ -667,7 +707,11 @@ ffmpeg_stream_tag(struct input_stream *is)
 
 #endif
 
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
+	avformat_close_input(&f);
+#else
 	av_close_input_stream(f);
+#endif
 	mpd_ffmpeg_stream_close(stream);
 
 	return tag;
