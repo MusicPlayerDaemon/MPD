@@ -22,6 +22,8 @@ ver 0.17 (2011/??/??)
   - shout: add possibility to set url
   - roar: new output plugin for RoarAudio
   - winmm: fail if wrong device specified instead of using default device
+* mixer:
+  - alsa: listen for external volume changes
 * playlist:
   - allow references to songs outside the music directory
 * state_file: add option "restore_paused"
