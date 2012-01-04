@@ -433,7 +433,12 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	   values into AVCodecContext.channels - a change that will be
 	   reverted later by avcodec_decode_audio3() */
 
-	if (avcodec_open(codec_context, codec)<0) {
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53,6,0)
+	const int open_result = avcodec_open2(codec_context, codec, NULL);
+#else
+	const int open_result = avcodec_open(codec_context, codec);
+#endif
+	if (open_result < 0) {
 		g_warning("Could not open codec\n");
 		av_close_input_stream(format_context);
 		mpd_ffmpeg_stream_close(stream);
