@@ -91,12 +91,28 @@ alsa_mixer_close(struct mixer *data)
 	snd_mixer_close(am->handle);
 }
 
+G_GNUC_PURE
+static snd_mixer_elem_t *
+alsa_mixer_lookup_elem(snd_mixer_t *handle, const char *name, unsigned idx)
+{
+	for (snd_mixer_elem_t *elem = snd_mixer_first_elem(handle);
+	     elem != NULL; elem = snd_mixer_elem_next(elem)) {
+		if (snd_mixer_elem_get_type(elem) == SND_MIXER_ELEM_SIMPLE &&
+		    g_ascii_strcasecmp(snd_mixer_selem_get_name(elem),
+				       name) == 0 &&
+		    snd_mixer_selem_get_index(elem) == idx)
+			return elem;
+	}
+
+	return NULL;
+
+}
+
 static bool
 alsa_mixer_open(struct mixer *data, GError **error_r)
 {
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
 	int err;
-	snd_mixer_elem_t *elem;
 
 	am->volume_set = -1;
 
@@ -132,31 +148,18 @@ alsa_mixer_open(struct mixer *data, GError **error_r)
 		return false;
 	}
 
-	elem = snd_mixer_first_elem(am->handle);
-
-	while (elem) {
-		if (snd_mixer_elem_get_type(elem) == SND_MIXER_ELEM_SIMPLE) {
-			if ((g_ascii_strcasecmp(am->control,
-						snd_mixer_selem_get_name(elem)) == 0) &&
-			    (am->index == snd_mixer_selem_get_index(elem))) {
-				break;
-			}
-		}
-		elem = snd_mixer_elem_next(elem);
+	am->elem = alsa_mixer_lookup_elem(am->handle, am->control, am->index);
+	if (am->elem == NULL) {
+		alsa_mixer_close(data);
+		g_set_error(error_r, alsa_mixer_quark(), 0,
+			    "no such mixer control: %s", am->control);
+		return false;
 	}
 
-	if (elem) {
-		am->elem = elem;
-		snd_mixer_selem_get_playback_volume_range(am->elem,
-							  &am->volume_min,
-							  &am->volume_max);
-		return true;
-	}
-
-	alsa_mixer_close(data);
-	g_set_error(error_r, alsa_mixer_quark(), 0,
-		    "no such mixer control: %s", am->control);
-	return false;
+	snd_mixer_selem_get_playback_volume_range(am->elem,
+						  &am->volume_min,
+						  &am->volume_max);
+	return true;
 }
 
 static int
