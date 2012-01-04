@@ -28,6 +28,10 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "input_ffmpeg"
 
+#ifndef AV_VERSION_INT
+#define AV_VERSION_INT(a, b, c) (a<<16 | b<<8 | c)
+#endif
+
 struct input_ffmpeg {
 	struct input_stream base;
 

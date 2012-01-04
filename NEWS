@@ -8,11 +8,9 @@ ver 0.17 (2011/??/??)
   - curl: enable CURLOPT_NETRC
   - curl: non-blocking I/O
   - soup: new input plugin based on libsoup
-  - ffmpeg: support libavformat 0.7
 * decoder:
   - mpg123: implement seeking
   - ffmpeg: drop support for pre-0.5 ffmpeg
-  - ffmpeg: support libavformat 0.7
   - oggflac: delete this obsolete plugin
   - dsdiff: new decoder plugin
 * output:
@@ -33,6 +31,10 @@ ver 0.17 (2011/??/??)
 
 
 ver 0.16.7 (2011/??/??)
+* input:
+  - ffmpeg: support libavformat 0.7
+* decoder:
+  - ffmpeg: support libavformat 0.8, libavcodec 0.8
 * output:
   - httpd: fix excessive buffering
   - openal: force 16 bit playback, as 8 bit doesn't work
