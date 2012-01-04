@@ -41,6 +41,7 @@
 #include <libavformat/avformat.h>
 #include <libavformat/avio.h>
 #include <libavutil/log.h>
+#include <libavutil/mathematics.h>
 #endif
 
 #undef G_LOG_DOMAIN
