@@ -68,7 +68,7 @@ simple_db_init(const struct config_param *param, GError **error_r)
 	db_base_init(&db->base, &simple_db_plugin);
 
 	GError *error = NULL;
-	db->path = config_dup_block_path(param, "path", error_r);
+	db->path = config_dup_block_path(param, "path", &error);
 	if (db->path == NULL) {
 		g_free(db);
 		if (error != NULL)
