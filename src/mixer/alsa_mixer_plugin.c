@@ -81,16 +81,6 @@ alsa_mixer_finish(struct mixer *data)
 	snd_config_update_free_global();
 }
 
-static void
-alsa_mixer_close(struct mixer *data)
-{
-	struct alsa_mixer *am = (struct alsa_mixer *)data;
-
-	assert(am->handle != NULL);
-
-	snd_mixer_close(am->handle);
-}
-
 G_GNUC_PURE
 static snd_mixer_elem_t *
 alsa_mixer_lookup_elem(snd_mixer_t *handle, const char *name, unsigned idx)
@@ -109,6 +99,46 @@ alsa_mixer_lookup_elem(snd_mixer_t *handle, const char *name, unsigned idx)
 }
 
 static bool
+alsa_mixer_setup(struct alsa_mixer *am, GError **error_r)
+{
+	int err;
+
+	if ((err = snd_mixer_attach(am->handle, am->device)) < 0) {
+		g_set_error(error_r, alsa_mixer_quark(), err,
+			    "failed to attach to %s: %s",
+			    am->device, snd_strerror(err));
+		return false;
+	}
+
+	if ((err = snd_mixer_selem_register(am->handle, NULL,
+		    NULL)) < 0) {
+		g_set_error(error_r, alsa_mixer_quark(), err,
+			    "snd_mixer_selem_register() failed: %s",
+			    snd_strerror(err));
+		return false;
+	}
+
+	if ((err = snd_mixer_load(am->handle)) < 0) {
+		g_set_error(error_r, alsa_mixer_quark(), err,
+			    "snd_mixer_load() failed: %s\n",
+			    snd_strerror(err));
+		return false;
+	}
+
+	am->elem = alsa_mixer_lookup_elem(am->handle, am->control, am->index);
+	if (am->elem == NULL) {
+		g_set_error(error_r, alsa_mixer_quark(), 0,
+			    "no such mixer control: %s", am->control);
+		return false;
+	}
+
+	snd_mixer_selem_get_playback_volume_range(am->elem,
+						  &am->volume_min,
+						  &am->volume_max);
+	return true;
+}
+
+static bool
 alsa_mixer_open(struct mixer *data, GError **error_r)
 {
 	struct alsa_mixer *am = (struct alsa_mixer *)data;
@@ -123,43 +153,22 @@ alsa_mixer_open(struct mixer *data, GError **error_r)
 		return false;
 	}
 
-	if ((err = snd_mixer_attach(am->handle, am->device)) < 0) {
-		alsa_mixer_close(data);
-		g_set_error(error_r, alsa_mixer_quark(), err,
-			    "failed to attach to %s: %s",
-			    am->device, snd_strerror(err));
+	if (!alsa_mixer_setup(am, error_r)) {
+		snd_mixer_close(am->handle);
 		return false;
 	}
 
-	if ((err = snd_mixer_selem_register(am->handle, NULL,
-		    NULL)) < 0) {
-		alsa_mixer_close(data);
-		g_set_error(error_r, alsa_mixer_quark(), err,
-			    "snd_mixer_selem_register() failed: %s",
-			    snd_strerror(err));
-		return false;
-	}
-
-	if ((err = snd_mixer_load(am->handle)) < 0) {
-		alsa_mixer_close(data);
-		g_set_error(error_r, alsa_mixer_quark(), err,
-			    "snd_mixer_load() failed: %s\n",
-			    snd_strerror(err));
-		return false;
-	}
-
-	am->elem = alsa_mixer_lookup_elem(am->handle, am->control, am->index);
-	if (am->elem == NULL) {
-		alsa_mixer_close(data);
-		g_set_error(error_r, alsa_mixer_quark(), 0,
-			    "no such mixer control: %s", am->control);
-		return false;
-	}
-
-	snd_mixer_selem_get_playback_volume_range(am->elem,
-						  &am->volume_min,
-						  &am->volume_max);
 	return true;
+}
+
+static void
+alsa_mixer_close(struct mixer *data)
+{
+	struct alsa_mixer *am = (struct alsa_mixer *)data;
+
+	assert(am->handle != NULL);
+
+	snd_mixer_close(am->handle);
 }
 
 static int
