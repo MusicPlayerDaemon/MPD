@@ -40,8 +40,12 @@
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavformat/avio.h>
+#include <libavutil/avutil.h>
 #include <libavutil/log.h>
 #include <libavutil/mathematics.h>
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,5,0)
+#include <libavutil/dict.h>
+#endif
 #endif
 
 #undef G_LOG_DOMAIN
@@ -612,7 +616,7 @@ ffmpeg_copy_metadata(struct tag *tag,
 #endif
 		     const ffmpeg_tag_map tag_map)
 {
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,1,0)
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,5,0)
 	AVDictionaryEntry *mt = NULL;
 
 	while ((mt = av_dict_get(m, tag_map.name, mt, 0)) != NULL)
