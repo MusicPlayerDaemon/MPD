@@ -443,7 +443,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		return;
 	}
 
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,2,0)
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,6,0)
 	const int find_result =
 		avformat_find_stream_info(format_context, NULL);
 #else
@@ -648,7 +648,7 @@ ffmpeg_stream_tag(struct input_stream *is)
 		return NULL;
 	}
 
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,2,0)
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,6,0)
 	const int find_result =
 		avformat_find_stream_info(f, NULL);
 #else
