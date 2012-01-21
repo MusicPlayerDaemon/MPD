@@ -227,6 +227,8 @@ src_mpd_SOURCES = \
 	$(DECODER_SRC) \
 	$(OUTPUT_API_SRC) \
 	$(MIXER_API_SRC) \
+	src/util/list.h \
+	src/util/list_sort.c src/util/list_sort.h \
 	src/glib_socket.h \
 	src/notify.c \
 	src/audio_config.c src/audio_config.h \
