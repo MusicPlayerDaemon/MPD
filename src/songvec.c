@@ -21,14 +21,13 @@
 #include "songvec.h"
 #include "song.h"
 #include "tag.h"
+#include "db_lock.h"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
-
-static GMutex *nr_lock = NULL;
 
 static const char *
 tag_get_value_checked(const struct tag *tag, enum tag_type type)
@@ -119,24 +118,11 @@ static size_t sv_size(const struct songvec *sv)
 	return sv->nr * sizeof(struct song *);
 }
 
-void songvec_init(void)
-{
-	g_assert(nr_lock == NULL);
-	nr_lock = g_mutex_new();
-}
-
-void songvec_deinit(void)
-{
-	g_assert(nr_lock != NULL);
-	g_mutex_free(nr_lock);
-	nr_lock = NULL;
-}
-
 void songvec_sort(struct songvec *sv)
 {
-	g_mutex_lock(nr_lock);
+	db_lock();
 	qsort(sv->base, sv->nr, sizeof(struct song *), songvec_cmp);
-	g_mutex_unlock(nr_lock);
+	db_unlock();
 }
 
 struct song *
@@ -145,14 +131,14 @@ songvec_find(const struct songvec *sv, const char *uri)
 	int i;
 	struct song *ret = NULL;
 
-	g_mutex_lock(nr_lock);
+	db_lock();
 	for (i = sv->nr; --i >= 0; ) {
 		if (strcmp(sv->base[i]->uri, uri))
 			continue;
 		ret = sv->base[i];
 		break;
 	}
-	g_mutex_unlock(nr_lock);
+	db_unlock();
 	return ret;
 }
 
@@ -161,7 +147,7 @@ songvec_delete(struct songvec *sv, const struct song *del)
 {
 	size_t i;
 
-	g_mutex_lock(nr_lock);
+	db_lock();
 	for (i = 0; i < sv->nr; ++i) {
 		if (sv->base[i] != del)
 			continue;
@@ -174,10 +160,10 @@ songvec_delete(struct songvec *sv, const struct song *del)
 				(sv->nr - i) * sizeof(struct song *));
 			sv->base = g_realloc(sv->base, sv_size(sv));
 		}
-		g_mutex_unlock(nr_lock);
+		db_unlock();
 		return i;
 	}
-	g_mutex_unlock(nr_lock);
+	db_unlock();
 
 	return -1; /* not found */
 }
@@ -185,18 +171,18 @@ songvec_delete(struct songvec *sv, const struct song *del)
 void
 songvec_add(struct songvec *sv, struct song *add)
 {
-	g_mutex_lock(nr_lock);
+	db_lock();
 	++sv->nr;
 	sv->base = g_realloc(sv->base, sv_size(sv));
 	sv->base[sv->nr - 1] = add;
-	g_mutex_unlock(nr_lock);
+	db_unlock();
 }
 
 void songvec_destroy(struct songvec *sv)
 {
-	g_mutex_lock(nr_lock);
+	db_lock();
 	sv->nr = 0;
-	g_mutex_unlock(nr_lock);
+	db_unlock();
 
 	g_free(sv->base);
 	sv->base = NULL;
@@ -209,7 +195,7 @@ songvec_for_each(const struct songvec *sv,
 	size_t i;
 	size_t prev_nr;
 
-	g_mutex_lock(nr_lock);
+	db_lock();
 	for (i = 0; i < sv->nr; ) {
 		struct song *song = sv->base[i];
 
@@ -217,14 +203,14 @@ songvec_for_each(const struct songvec *sv,
 		assert(*song->uri);
 
 		prev_nr = sv->nr;
-		g_mutex_unlock(nr_lock); /* fn() may block */
+		db_unlock(); /* fn() may block */
 		if (fn(song, arg) < 0)
 			return -1;
-		g_mutex_lock(nr_lock); /* sv->nr may change in fn() */
+		db_lock(); /* sv->nr may change in fn() */
 		if (prev_nr == sv->nr)
 			++i;
 	}
-	g_mutex_unlock(nr_lock);
+	db_unlock();
 
 	return 0;
 }

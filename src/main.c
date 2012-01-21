@@ -54,8 +54,6 @@
 #include "dbUtils.h"
 #include "zeroconf.h"
 #include "event_pipe.h"
-#include "dirvec.h"
-#include "songvec.h"
 #include "tag_pool.h"
 #include "mpd_error.h"
 
@@ -346,8 +344,6 @@ int mpd_main(int argc, char *argv[])
 	io_thread_init();
 	winsock_init();
 	idle_init();
-	dirvec_init();
-	songvec_init();
 	tag_pool_init();
 	config_global_init();
 
@@ -534,8 +530,6 @@ int mpd_main(int argc, char *argv[])
 #endif
 	config_global_finish();
 	tag_pool_deinit();
-	songvec_deinit();
-	dirvec_deinit();
 	idle_deinit();
 	stats_global_finish();
 	io_thread_deinit();

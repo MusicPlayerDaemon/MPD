@@ -248,6 +248,7 @@ src_mpd_SOURCES = \
 	src/directory_save.c \
 	src/database.c \
 	src/db_error.h \
+	src/db_lock.c src/db_lock.h \
 	src/db_save.c src/db_save.h \
 	src/db_print.c src/db_print.h \
 	src/db_plugin.h \

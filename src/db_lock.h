@@ -17,33 +17,39 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DIRVEC_H
-#define MPD_DIRVEC_H
+/** \file
+ *
+ * Support for locking data structures from the database, for safe
+ * multi-threading.
+ */
 
-#include <stddef.h>
+#ifndef MPD_DB_LOCK_H
+#define MPD_DB_LOCK_H
 
-struct dirvec {
-	struct directory **base;
-	size_t nr;
-};
+#include "check.h"
 
-void dirvec_sort(struct dirvec *dv);
+#include <glib.h>
+#include <assert.h>
 
-struct directory *dirvec_find(const struct dirvec *dv, const char *path);
+extern GStaticMutex db_mutex;
 
-int dirvec_delete(struct dirvec *dv, struct directory *del);
-
-void dirvec_add(struct dirvec *dv, struct directory *add);
-
+/**
+ * Obtain the global database lock.  This is needed before
+ * dereferencing a #song or #directory.  It is not recursive.
+ */
 static inline void
-dirvec_clear(struct dirvec *dv)
+db_lock(void)
 {
-	dv->nr = 0;
+	g_static_mutex_lock(&db_mutex);
 }
 
-void dirvec_destroy(struct dirvec *dv);
+/**
+ * Release the global database lock.
+ */
+static inline void
+db_unlock(void)
+{
+	g_static_mutex_unlock(&db_mutex);
+}
 
-int dirvec_for_each(const struct dirvec *dv,
-                    int (*fn)(struct directory *, void *), void *arg);
-
-#endif /* DIRVEC_H */
+#endif
