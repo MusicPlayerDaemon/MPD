@@ -40,6 +40,7 @@ tags
 *~
 .#*
 .stgit*
+src/dsd2pcm/dsd2pcm
 doc/doxygen.conf
 doc/protocol.html
 doc/protocol
@@ -63,3 +64,6 @@ test/tmp
 test/run_inotify
 test/test_queue_priority
 test/run_ntp_server
+test/run_resolver
+test/run_tcp_connect
+test/test_pcm
