@@ -113,27 +113,3 @@ void dirvec_destroy(struct dirvec *dv)
 		dv->base = NULL;
 	}
 }
-
-int dirvec_for_each(const struct dirvec *dv,
-                    int (*fn)(struct directory *, void *), void *arg)
-{
-	size_t i;
-	size_t prev_nr;
-
-	db_lock();
-	for (i = 0; i < dv->nr; ) {
-		struct directory *dir = dv->base[i];
-
-		assert(dir);
-		prev_nr = dv->nr;
-		db_unlock();
-		if (fn(dir, arg) < 0)
-			return -1;
-		db_lock(); /* dv->nr may change in fn() */
-		if (prev_nr == dv->nr)
-			++i;
-	}
-	db_unlock();
-
-	return 0;
-}
