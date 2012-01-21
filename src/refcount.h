@@ -37,6 +37,7 @@
 #define MPD_REFCOUNT_H
 
 #include <glib.h>
+#include <stdbool.h>
 
 struct refcount {
 	gint n;
