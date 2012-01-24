@@ -50,22 +50,15 @@ void dirvec_sort(struct dirvec *dv)
 
 struct directory *dirvec_find(const struct dirvec *dv, const char *path)
 {
-	char *base;
 	int i;
-	struct directory *ret = NULL;
-
-	base = g_path_get_basename(path);
 
 	db_lock();
 	for (i = dv->nr; --i >= 0; )
-		if (!strcmp(directory_get_name(dv->base[i]), base)) {
-			ret = dv->base[i];
-			break;
-		}
+		if (!strcmp(directory_get_name(dv->base[i]), path))
+			return dv->base[i];
 	db_unlock();
 
-	g_free(base);
-	return ret;
+	return NULL;
 }
 
 int dirvec_delete(struct dirvec *dv, struct directory *del)
