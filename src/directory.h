@@ -22,7 +22,6 @@
 
 #include "check.h"
 #include "util/list.h"
-#include "songvec.h"
 #include "playlist_vector.h"
 
 #include <glib.h>
@@ -40,6 +39,13 @@
 #define directory_for_each_child_safe(pos, n, directory) \
 	list_for_each_entry_safe(pos, n, &directory->children, siblings)
 
+#define directory_for_each_song(pos, directory) \
+	list_for_each_entry(pos, &directory->songs, siblings)
+
+#define directory_for_each_song_safe(pos, n, directory) \
+	list_for_each_entry_safe(pos, n, &directory->songs, siblings)
+
+struct song;
 struct db_visitor;
 
 struct directory {
@@ -61,7 +67,13 @@ struct directory {
 	 */
 	struct list_head children;
 
-	struct songvec songs;
+	/**
+	 * A doubly linked list of songs within this directory.
+	 *
+	 * This attribute is protected with the global #db_mutex.
+	 * Read access in the update thread does not need protection.
+	 */
+	struct list_head songs;
 
 	struct playlist_vector playlists;
 
@@ -114,7 +126,7 @@ static inline bool
 directory_is_empty(const struct directory *directory)
 {
 	return list_empty(&directory->children) &&
-		directory->songs.nr == 0 &&
+		list_empty(&directory->songs) &&
 		playlist_vector_is_empty(&directory->playlists);
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,35 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_SONGVEC_H
-#define MPD_SONGVEC_H
+#ifndef MPD_SONG_SORT_H
+#define MPD_SONG_SORT_H
 
-#include <stddef.h>
-
-struct songvec {
-	struct song **base;
-	size_t nr;
-};
-
-void songvec_init(void);
-
-void songvec_deinit(void);
-
-void songvec_sort(struct songvec *sv);
-
-struct song *
-songvec_find(const struct songvec *sv, const char *uri);
+struct list_head;
 
 void
-songvec_delete(struct songvec *sv, const struct song *del);
+song_list_sort(struct list_head *songs);
 
-void
-songvec_add(struct songvec *sv, struct song *add);
-
-void songvec_destroy(struct songvec *sv);
-
-int
-songvec_for_each(const struct songvec *sv,
-		 int (*fn)(struct song *, void *), void *arg);
-
-#endif /* SONGVEC_H */
+#endif

@@ -185,7 +185,7 @@ mpd_headers = \
 	src/song_print.h \
 	src/song_save.h \
 	src/song_sticker.h \
-	src/songvec.h \
+	src/song_sort.c src/song_sort.h \
 	src/socket_util.h \
 	src/state_file.h \
 	src/stats.h \
@@ -327,7 +327,6 @@ src_mpd_SOURCES = \
 	src/song_update.c \
 	src/song_print.c \
 	src/song_save.c \
-	src/songvec.c \
 	src/resolver.c src/resolver.h \
 	src/socket_util.c \
 	src/state_file.c \

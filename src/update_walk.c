@@ -92,6 +92,8 @@ directory_set_stat(struct directory *dir, const struct stat *st)
 static void
 delete_song(struct directory *dir, struct song *del)
 {
+	assert(del->parent == dir);
+
 	/* first, prevent traversers in main task from getting this */
 	directory_remove_song(dir, del);
 
@@ -100,15 +102,6 @@ delete_song(struct directory *dir, struct song *del)
 
 	/* finally, all possible references gone, free it */
 	song_free(del);
-}
-
-static int
-delete_each_song(struct song *song, G_GNUC_UNUSED void *data)
-{
-	struct directory *directory = data;
-	assert(song->parent == directory);
-	delete_song(directory, song);
-	return 0;
 }
 
 static void
@@ -125,7 +118,11 @@ clear_directory(struct directory *directory)
 	directory_for_each_child_safe(child, n, directory)
 		delete_directory(child);
 
-	songvec_for_each(&directory->songs, delete_each_song, directory);
+	struct song *song, *ns;
+	directory_for_each_song_safe(song, ns, directory) {
+		assert(song->parent == directory);
+		delete_song(directory, song);
+	}
 }
 
 /**
@@ -159,25 +156,6 @@ delete_name_in(struct directory *parent, const char *name)
 	playlist_vector_remove(&parent->playlists, name);
 }
 
-/* passed to songvec_for_each */
-static int
-delete_song_if_excluded(struct song *song, void *_data)
-{
-	GSList *exclude_list = _data;
-	char *name_fs;
-
-	assert(song->parent != NULL);
-
-	name_fs = utf8_to_fs_charset(song->uri);
-	if (exclude_list_check(exclude_list, name_fs)) {
-		delete_song(song->parent, song);
-		modified = true;
-	}
-
-	g_free(name_fs);
-	return 0;
-}
-
 static void
 remove_excluded_from_directory(struct directory *directory,
 			       GSList *exclude_list)
@@ -194,26 +172,18 @@ remove_excluded_from_directory(struct directory *directory,
 		g_free(name_fs);
 	}
 
-	songvec_for_each(&directory->songs,
-			 delete_song_if_excluded, exclude_list);
-}
+	struct song *song, *ns;
+	directory_for_each_song_safe(song, ns, directory) {
+		assert(song->parent == directory);
 
-/* passed to songvec_for_each */
-static int
-delete_song_if_removed(struct song *song, void *_data)
-{
-	struct directory *dir = _data;
-	char *path;
-	struct stat st;
+		char *name_fs = utf8_to_fs_charset(song->uri);
+		if (exclude_list_check(exclude_list, name_fs)) {
+			delete_song(directory, song);
+			modified = true;
+		}
 
-	if ((path = map_song_fs(song)) == NULL ||
-	    stat(path, &st) < 0 || !S_ISREG(st.st_mode)) {
-		delete_song(dir, song);
-		modified = true;
+		g_free(name_fs);
 	}
-
-	g_free(path);
-	return 0;
 }
 
 static bool
@@ -266,7 +236,18 @@ removeDeletedFromDirectory(struct directory *directory)
 		modified = true;
 	}
 
-	songvec_for_each(&directory->songs, delete_song_if_removed, directory);
+	struct song *song, *ns;
+	directory_for_each_song_safe(song, ns, directory) {
+		char *path;
+		struct stat st;
+		if ((path = map_song_fs(song)) == NULL ||
+		    stat(path, &st) < 0 || !S_ISREG(st.st_mode)) {
+			delete_song(directory, song);
+			modified = true;
+		}
+
+		g_free(path);
+	}
 
 	for (const struct playlist_metadata *pm = directory->playlists.head;
 	     pm != NULL;) {

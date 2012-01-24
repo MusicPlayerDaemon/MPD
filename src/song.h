@@ -20,6 +20,8 @@
 #ifndef MPD_SONG_H
 #define MPD_SONG_H
 
+#include "util/list.h"
+
 #include <stddef.h>
 #include <stdbool.h>
 #include <sys/time.h>
@@ -28,6 +30,16 @@
 #define SONG_TIME	"Time: "
 
 struct song {
+	/**
+	 * Pointers to the siblings of this directory within the
+	 * parent directory.  It is unused (undefined) if this song is
+	 * not in the database.
+	 *
+	 * This attribute is protected with the global #db_mutex.
+	 * Read access in the update thread does not need protection.
+	 */
+	struct list_head siblings;
+
 	struct tag *tag;
 	struct directory *parent;
 	time_t mtime;

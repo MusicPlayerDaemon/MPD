@@ -20,7 +20,6 @@
 #include "config.h"
 #include "song_print.h"
 #include "song.h"
-#include "songvec.h"
 #include "directory.h"
 #include "tag_print.h"
 #include "client.h"

@@ -20,6 +20,7 @@
 #include "config.h"
 #include "directory.h"
 #include "song.h"
+#include "song_sort.h"
 #include "path.h"
 #include "util/list_sort.h"
 #include "db_visitor.h"
@@ -43,6 +44,7 @@ directory_new(const char *path, struct directory *parent)
 	directory = g_malloc0(sizeof(*directory) -
 			      sizeof(directory->path) + pathlen + 1);
 	INIT_LIST_HEAD(&directory->children);
+	INIT_LIST_HEAD(&directory->songs);
 	directory->parent = parent;
 	memcpy(directory->path, path, pathlen + 1);
 
@@ -56,14 +58,14 @@ directory_free(struct directory *directory)
 {
 	playlist_vector_deinit(&directory->playlists);
 
-	for (unsigned i = 0; i < directory->songs.nr; ++i)
-		song_free(directory->songs.base[i]);
+	struct song *song, *ns;
+	directory_for_each_song_safe(song, ns, directory)
+		song_free(song);
 
 	struct directory *child, *n;
 	directory_for_each_child_safe(child, n, directory)
 		directory_free(child);
 
-	songvec_destroy(&directory->songs);
 	g_free(directory);
 	/* this resets last dir returned */
 	/*directory_get_path(NULL); */
@@ -184,7 +186,7 @@ directory_add_song(struct directory *directory, struct song *song)
 	assert(song != NULL);
 	assert(song->parent == directory);
 
-	songvec_add(&directory->songs, song);
+	list_add(&song->siblings, &directory->songs);
 }
 
 void
@@ -194,7 +196,7 @@ directory_remove_song(struct directory *directory, struct song *song)
 	assert(song != NULL);
 	assert(song->parent == directory);
 
-	songvec_delete(&directory->songs, song);
+	list_del(&song->siblings);
 }
 
 struct song *
@@ -203,9 +205,19 @@ directory_get_song(const struct directory *directory, const char *name_utf8)
 	assert(directory != NULL);
 	assert(name_utf8 != NULL);
 
-	struct song *song = songvec_find(&directory->songs, name_utf8);
-	assert(song == NULL || song->parent == directory);
-	return song;
+	db_lock();
+	struct song *song;
+	directory_for_each_song(song, directory) {
+		assert(song->parent == directory);
+
+		if (strcmp(song->uri, name_utf8) == 0) {
+			db_unlock();
+			return song;
+		}
+	}
+
+	db_unlock();
+	return NULL;
 }
 
 struct song *
@@ -251,9 +263,8 @@ directory_sort(struct directory *directory)
 {
 	db_lock();
 	list_sort(NULL, &directory->children, directory_cmp);
+	song_list_sort(&directory->songs);
 	db_unlock();
-
-	songvec_sort(&directory->songs);
 
 	struct directory *child;
 	directory_for_each_child(child, directory)
@@ -270,9 +281,9 @@ directory_walk(const struct directory *directory, bool recursive,
 	assert(error_r == NULL || *error_r == NULL);
 
 	if (visitor->song != NULL) {
-		const struct songvec *sv = &directory->songs;
-		for (size_t i = 0; i < sv->nr; ++i)
-			if (!visitor->song(sv->base[i], ctx, error_r))
+		struct song *song;
+		directory_for_each_song(song, directory)
+			if (!visitor->song(song, ctx, error_r))
 				return false;
 	}
 

@@ -65,7 +65,9 @@ directory_save(FILE *fp, const struct directory *directory)
 			return;
 	}
 
-	songvec_save(fp, &directory->songs);
+	struct song *song;
+	directory_for_each_song(song, directory)
+		song_save(fp, song);
 
 	playlist_vector_save(fp, &directory->playlists);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,15 +18,15 @@
  */
 
 #include "config.h"
-#include "songvec.h"
+#include "song_sort.h"
 #include "song.h"
+#include "util/list.h"
+#include "util/list_sort.h"
 #include "tag.h"
-#include "db_lock.h"
 
 #include <glib.h>
 
 #include <assert.h>
-#include <string.h>
 #include <stdlib.h>
 
 static const char *
@@ -88,10 +88,11 @@ compare_tag_item(const struct tag *a, const struct tag *b, enum tag_type type)
 }
 
 /* Only used for sorting/searchin a songvec, not general purpose compares */
-static int songvec_cmp(const void *s1, const void *s2)
+static int
+song_cmp(G_GNUC_UNUSED void *priv, struct list_head *_a, struct list_head *_b)
 {
-	const struct song *a = ((const struct song * const *)s1)[0];
-	const struct song *b = ((const struct song * const *)s2)[0];
+	const struct song *a = (const struct song *)_a;
+	const struct song *b = (const struct song *)_b;
 	int ret;
 
 	/* first sort by album */
@@ -113,114 +114,8 @@ static int songvec_cmp(const void *s1, const void *s2)
 	return g_utf8_collate(a->uri, b->uri);
 }
 
-static size_t sv_size(const struct songvec *sv)
-{
-	return sv->nr * sizeof(struct song *);
-}
-
-void songvec_sort(struct songvec *sv)
-{
-	db_lock();
-	qsort(sv->base, sv->nr, sizeof(struct song *), songvec_cmp);
-	db_unlock();
-}
-
-struct song *
-songvec_find(const struct songvec *sv, const char *uri)
-{
-	int i;
-	struct song *ret = NULL;
-
-	db_lock();
-	for (i = sv->nr; --i >= 0; ) {
-		if (strcmp(sv->base[i]->uri, uri))
-			continue;
-		ret = sv->base[i];
-		break;
-	}
-	db_unlock();
-	return ret;
-}
-
-/**
- * Determine the index of the specified #song inside the #songvec, and
- * returns the index.  The caller must hold the db_mutex.
- */
-G_GNUC_PURE
-static size_t
-songvec_find_pointer(const struct songvec *sv, const struct song *song)
-{
-	for (size_t i = 0;; ++i) {
-		assert(i < sv->nr); /* the song must exist */
-
-		if (sv->base[i] == song)
-			return i;
-	}
-}
-
 void
-songvec_delete(struct songvec *sv, const struct song *del)
+song_list_sort(struct list_head *songs)
 {
-	db_lock();
-
-	const size_t i = songvec_find_pointer(sv, del);
-
-	/* we _don't_ call song_free() here */
-	if (!--sv->nr) {
-		g_free(sv->base);
-		sv->base = NULL;
-	} else {
-		memmove(&sv->base[i], &sv->base[i + 1],
-			(sv->nr - i) * sizeof(struct song *));
-		sv->base = g_realloc(sv->base, sv_size(sv));
-	}
-
-	db_unlock();
-}
-
-void
-songvec_add(struct songvec *sv, struct song *add)
-{
-	db_lock();
-	++sv->nr;
-	sv->base = g_realloc(sv->base, sv_size(sv));
-	sv->base[sv->nr - 1] = add;
-	db_unlock();
-}
-
-void songvec_destroy(struct songvec *sv)
-{
-	db_lock();
-	sv->nr = 0;
-	db_unlock();
-
-	g_free(sv->base);
-	sv->base = NULL;
-}
-
-int
-songvec_for_each(const struct songvec *sv,
-		 int (*fn)(struct song *, void *), void *arg)
-{
-	size_t i;
-	size_t prev_nr;
-
-	db_lock();
-	for (i = 0; i < sv->nr; ) {
-		struct song *song = sv->base[i];
-
-		assert(song);
-		assert(*song->uri);
-
-		prev_nr = sv->nr;
-		db_unlock(); /* fn() may block */
-		if (fn(song, arg) < 0)
-			return -1;
-		db_lock(); /* sv->nr may change in fn() */
-		if (prev_nr == sv->nr)
-			++i;
-	}
-	db_unlock();
-
-	return 0;
+	list_sort(NULL, songs, song_cmp);
 }
