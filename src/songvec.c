@@ -142,30 +142,40 @@ songvec_find(const struct songvec *sv, const char *uri)
 	return ret;
 }
 
+/**
+ * Determine the index of the specified #song inside the #songvec, and
+ * returns the index.  The caller must hold the db_mutex.
+ */
+G_GNUC_PURE
+static size_t
+songvec_find_pointer(const struct songvec *sv, const struct song *song)
+{
+	for (size_t i = 0;; ++i) {
+		assert(i < sv->nr); /* the song must exist */
+
+		if (sv->base[i] == song)
+			return i;
+	}
+}
+
 void
 songvec_delete(struct songvec *sv, const struct song *del)
 {
-	size_t i;
-
 	db_lock();
-	for (i = 0; i < sv->nr; ++i) {
-		if (sv->base[i] != del)
-			continue;
-		/* we _don't_ call song_free() here */
-		if (!--sv->nr) {
-			g_free(sv->base);
-			sv->base = NULL;
-		} else {
-			memmove(&sv->base[i], &sv->base[i + 1],
-				(sv->nr - i) * sizeof(struct song *));
-			sv->base = g_realloc(sv->base, sv_size(sv));
-		}
-		db_unlock();
-		return;
-	}
-	db_unlock();
 
-	assert(false);
+	const size_t i = songvec_find_pointer(sv, del);
+
+	/* we _don't_ call song_free() here */
+	if (!--sv->nr) {
+		g_free(sv->base);
+		sv->base = NULL;
+	} else {
+		memmove(&sv->base[i], &sv->base[i + 1],
+			(sv->nr - i) * sizeof(struct song *));
+		sv->base = g_realloc(sv->base, sv_size(sv));
+	}
+
+	db_unlock();
 }
 
 void
