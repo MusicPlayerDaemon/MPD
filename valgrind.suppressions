@@ -25,53 +25,8 @@
 {
    g_main_context_default
    Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   fun:g_slice_alloc
-   fun:g_slist_append
-   fun:g_main_context_new
-   fun:g_main_context_default
-}
-
-{
-   g_main_context_default
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   fun:g_slice_alloc
-   fun:g_ptr_array_sized_new
-   fun:g_main_context_new
-   fun:g_main_context_default
-}
-
-{
-   g_main_context_default
-   Memcheck:Leak
-   fun:calloc
-   fun:g_malloc0
-   fun:g_main_context_new
-   fun:g_main_context_default
-}
-
-{
-   g_main_context_default
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   fun:g_slice_alloc
-   fun:g_main_context_add_poll_unlocked
-   fun:g_main_context_new
-   fun:g_main_context_default
-}
-
-{
-   g_main_context_default
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   fun:g_slice_alloc
-   fun:g_slist_prepend
-   fun:g_main_context_new
+   fun:?alloc
+   ...
    fun:g_main_context_default
 }
 
@@ -238,17 +193,27 @@
 }
 
 {
-   <insert a suppression name here>
+   <insert_a_suppression_name_here>
    Memcheck:Leak
-   fun:*alloc
-   fun:_dl_open
+   fun:?alloc
+   ...
+   fun:do_dlopen
 }
 
 {
-   dlopen
+   <insert_a_suppression_name_here>
    Memcheck:Leak
-   fun:calloc
-   fun:_dlerror_run
+   fun:?alloc
+   ...
+   fun:dlopen*
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:dlclose
 }
 
 # is that a leak in libdbus?
@@ -256,42 +221,9 @@
 {
    <insert a suppression name here>
    Memcheck:Leak
-   fun:malloc
-   obj:/usr/lib/libdbus-1.so.3.4.0
-   obj:/usr/lib/libdbus-1.so.3.4.0
-   fun:avahi_client_new
-}
-
-{
-   <insert a suppression name here>
-   Memcheck:Leak
-   fun:malloc
-   obj:/usr/lib/libdbus-1.so.3.4.0
-   fun:dbus_message_unref
-   obj:/usr/lib/libdbus-1.so.3.4.0
-   fun:dbus_connection_send_with_reply_and_block
-   fun:dbus_bus_register
-   obj:/usr/lib/libdbus-1.so.3.4.0
-   fun:avahi_client_new
-}
-
-{
-   <insert a suppression name here>
-   Memcheck:Leak
-   fun:malloc
-   obj:/usr/lib/libdbus-1.so.3.4.0
-   fun:dbus_message_new_method_call
-   fun:dbus_bus_register
-   obj:/usr/lib/libdbus-1.so.3.4.0
-   fun:avahi_client_new
-}
-
-{
-   <insert a suppression name here>
-   Memcheck:Leak
-   fun:malloc
-   obj:/usr/lib/libdbus-1.so.3.4.0
-   obj:/usr/lib/libdbus-1.so.3.4.0
+   fun:?alloc
+   ...
+   obj:*/libdbus-*.so.*
    fun:avahi_client_new
 }
 
@@ -503,4 +435,19 @@
    fun:malloc
    fun:nss_parse_service_list
    fun:__nss_database_lookup
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:?alloc
+   ...
+   fun:xmlInitParser
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:?alloc
+   fun:snd1_dlobj_cache_get
 }
