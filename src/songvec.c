@@ -142,7 +142,7 @@ songvec_find(const struct songvec *sv, const char *uri)
 	return ret;
 }
 
-int
+void
 songvec_delete(struct songvec *sv, const struct song *del)
 {
 	size_t i;
@@ -161,11 +161,11 @@ songvec_delete(struct songvec *sv, const struct song *del)
 			sv->base = g_realloc(sv->base, sv_size(sv));
 		}
 		db_unlock();
-		return i;
+		return;
 	}
 	db_unlock();
 
-	return -1; /* not found */
+	assert(false);
 }
 
 void
