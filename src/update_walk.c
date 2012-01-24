@@ -121,12 +121,9 @@ delete_directory(struct directory *directory);
 static void
 clear_directory(struct directory *directory)
 {
-	int i;
-
-	for (i = directory->children.nr; --i >= 0;)
-		delete_directory(directory->children.base[i]);
-
-	assert(directory->children.nr == 0);
+	struct directory *child, *n;
+	directory_for_each_child_safe(child, n, directory)
+		delete_directory(child);
 
 	songvec_for_each(&directory->songs, delete_each_song, directory);
 }
@@ -185,11 +182,8 @@ static void
 remove_excluded_from_directory(struct directory *directory,
 			       GSList *exclude_list)
 {
-	int i;
-	struct dirvec *dv = &directory->children;
-
-	for (i = dv->nr; --i >= 0; ) {
-		struct directory *child = dv->base[i];
+	struct directory *child, *n;
+	directory_for_each_child_safe(child, n, directory) {
 		char *name_fs = utf8_to_fs_charset(directory_get_name(child));
 
 		if (exclude_list_check(exclude_list, name_fs)) {
@@ -263,14 +257,12 @@ directory_child_is_regular(const struct directory *directory,
 static void
 removeDeletedFromDirectory(struct directory *directory)
 {
-	int i;
-	struct dirvec *dv = &directory->children;
-
-	for (i = dv->nr; --i >= 0; ) {
-		if (directory_exists(dv->base[i]))
+	struct directory *child, *n;
+	directory_for_each_child_safe(child, n, directory) {
+		if (directory_exists(child))
 			continue;
 
-		delete_directory(dv->base[i]);
+		delete_directory(child);
 		modified = true;
 	}
 

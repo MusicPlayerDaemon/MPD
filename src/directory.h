@@ -21,7 +21,7 @@
 #define MPD_DIRECTORY_H
 
 #include "check.h"
-#include "dirvec.h"
+#include "util/list.h"
 #include "songvec.h"
 #include "playlist_vector.h"
 
@@ -34,10 +34,33 @@
 #define DEVICE_INARCHIVE (dev_t)(-1)
 #define DEVICE_CONTAINER (dev_t)(-2)
 
+#define directory_for_each_child(pos, directory) \
+	list_for_each_entry(pos, &directory->children, siblings)
+
+#define directory_for_each_child_safe(pos, n, directory) \
+	list_for_each_entry_safe(pos, n, &directory->children, siblings)
+
 struct db_visitor;
 
 struct directory {
-	struct dirvec children;
+	/**
+	 * Pointers to the siblings of this directory within the
+	 * parent directory.  It is unused (undefined) in the root
+	 * directory.
+	 *
+	 * This attribute is protected with the global #db_mutex.
+	 * Read access in the update thread does not need protection.
+	 */
+	struct list_head siblings;
+
+	/**
+	 * A doubly linked list of child directories.
+	 *
+	 * This attribute is protected with the global #db_mutex.
+	 * Read access in the update thread does not need protection.
+	 */
+	struct list_head children;
+
 	struct songvec songs;
 
 	struct playlist_vector playlists;
@@ -90,7 +113,8 @@ directory_delete(struct directory *directory);
 static inline bool
 directory_is_empty(const struct directory *directory)
 {
-	return directory->children.nr == 0 && directory->songs.nr == 0 &&
+	return list_empty(&directory->children) &&
+		directory->songs.nr == 0 &&
 		playlist_vector_is_empty(&directory->playlists);
 }
 
@@ -116,11 +140,9 @@ G_GNUC_PURE
 const char *
 directory_get_name(const struct directory *directory);
 
-static inline struct directory *
-directory_get_child(const struct directory *directory, const char *name)
-{
-	return dirvec_find(&directory->children, name);
-}
+G_GNUC_PURE
+struct directory *
+directory_get_child(const struct directory *directory, const char *name);
 
 /**
  * Create a new #directory object as a child of the given one.
@@ -171,6 +193,9 @@ directory_lookup_song(struct directory *directory, const char *uri);
 void
 directory_sort(struct directory *directory);
 
+/**
+ * Caller must lock #db_mutex.
+ */
 bool
 directory_walk(const struct directory *directory, bool recursive,
 	       const struct db_visitor *visitor, void *ctx,

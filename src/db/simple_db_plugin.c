@@ -24,6 +24,7 @@
 #include "db_selection.h"
 #include "db_visitor.h"
 #include "db_save.h"
+#include "db_lock.h"
 #include "conf.h"
 #include "glib_compat.h"
 #include "directory.h"
@@ -266,8 +267,11 @@ simple_db_visit(struct db *_db, const struct db_selection *selection,
 	    !visitor->directory(directory, ctx, error_r))
 		return false;
 
-	return directory_walk(directory, selection->recursive,
-			      visitor, ctx, error_r);
+	db_lock();
+	bool ret = directory_walk(directory, selection->recursive,
+				  visitor, ctx, error_r);
+	db_unlock();
+	return ret;
 }
 
 const struct db_plugin simple_db_plugin = {

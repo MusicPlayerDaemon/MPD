@@ -44,8 +44,6 @@ directory_quark(void)
 void
 directory_save(FILE *fp, const struct directory *directory)
 {
-	size_t i;
-
 	if (!directory_is_root(directory)) {
 		fprintf(fp, DIRECTORY_MTIME "%lu\n",
 			(unsigned long)directory->mtime);
@@ -54,9 +52,8 @@ directory_save(FILE *fp, const struct directory *directory)
 			directory_get_path(directory));
 	}
 
-	const struct dirvec *children = &directory->children;
-	for (i = 0; i < children->nr; ++i) {
-		const struct directory *cur = children->base[i];
+	struct directory *cur;
+	directory_for_each_child(cur, directory) {
 		char *base = g_path_get_basename(cur->path);
 
 		fprintf(fp, DIRECTORY_DIR "%s\n", base);

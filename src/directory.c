@@ -21,7 +21,9 @@
 #include "directory.h"
 #include "song.h"
 #include "path.h"
+#include "util/list_sort.h"
 #include "db_visitor.h"
+#include "db_lock.h"
 
 #include <glib.h>
 
@@ -40,6 +42,7 @@ directory_new(const char *path, struct directory *parent)
 
 	directory = g_malloc0(sizeof(*directory) -
 			      sizeof(directory->path) + pathlen + 1);
+	INIT_LIST_HEAD(&directory->children);
 	directory->parent = parent;
 	memcpy(directory->path, path, pathlen + 1);
 
@@ -56,10 +59,10 @@ directory_free(struct directory *directory)
 	for (unsigned i = 0; i < directory->songs.nr; ++i)
 		song_free(directory->songs.base[i]);
 
-	for (unsigned i = 0; i < directory->children.nr; ++i)
-		directory_free(directory->children.base[i]);
+	struct directory *child, *n;
+	directory_for_each_child_safe(child, n, directory)
+		directory_free(child);
 
-	dirvec_destroy(&directory->children);
 	songvec_destroy(&directory->songs);
 	g_free(directory);
 	/* this resets last dir returned */
@@ -72,7 +75,10 @@ directory_delete(struct directory *directory)
 	assert(directory != NULL);
 	assert(directory->parent != NULL);
 
-	dirvec_delete(&directory->parent->children, directory);
+	db_lock();
+	list_del(&directory->siblings);
+	db_unlock();
+
 	directory_free(directory);
 }
 
@@ -103,26 +109,39 @@ directory_new_child(struct directory *parent, const char *name_utf8)
 	struct directory *directory = directory_new(path_utf8, parent);
 	g_free(allocated);
 
-	dirvec_add(&parent->children, directory);
+	db_lock();
+	list_add(&directory->siblings, &parent->children);
+	db_unlock();
 	return directory;
+}
+
+struct directory *
+directory_get_child(const struct directory *directory, const char *name)
+{
+	db_lock();
+
+	struct directory *child;
+	directory_for_each_child(child, directory) {
+		if (strcmp(directory_get_name(child), name) == 0) {
+			db_unlock();
+			return child;
+		}
+	}
+
+	db_unlock();
+	return NULL;
 }
 
 void
 directory_prune_empty(struct directory *directory)
 {
-	int i;
-	struct dirvec *dv = &directory->children;
-
-	for (i = dv->nr; --i >= 0; ) {
-		struct directory *child = dv->base[i];
-
+	struct directory *child, *n;
+	directory_for_each_child_safe(child, n, directory) {
 		directory_prune_empty(child);
 
 		if (directory_is_empty(child))
 			directory_delete(child);
 	}
-	if (!dv->nr)
-		dirvec_destroy(dv);
 }
 
 struct directory *
@@ -188,17 +207,27 @@ directory_lookup_song(struct directory *directory, const char *uri)
 
 }
 
+static int
+directory_cmp(G_GNUC_UNUSED void *priv,
+	      struct list_head *_a, struct list_head *_b)
+{
+	const struct directory *a = (const struct directory *)_a;
+	const struct directory *b = (const struct directory *)_b;
+	return g_utf8_collate(a->path, b->path);
+}
+
 void
 directory_sort(struct directory *directory)
 {
-	int i;
-	struct dirvec *dv = &directory->children;
+	db_lock();
+	list_sort(NULL, &directory->children, directory_cmp);
+	db_unlock();
 
-	dirvec_sort(dv);
 	songvec_sort(&directory->songs);
 
-	for (i = dv->nr; --i >= 0; )
-		directory_sort(dv->base[i]);
+	struct directory *child;
+	directory_for_each_child(child, directory)
+		directory_sort(child);
 }
 
 bool
@@ -225,10 +254,8 @@ directory_walk(const struct directory *directory, bool recursive,
 				return false;
 	}
 
-	const struct dirvec *dv = &directory->children;
-	for (size_t i = 0; i < dv->nr; ++i) {
-		struct directory *child = dv->base[i];
-
+	struct directory *child;
+	directory_for_each_child(child, directory) {
 		if (visitor->directory != NULL &&
 		    !visitor->directory(child, ctx, error_r))
 			return false;

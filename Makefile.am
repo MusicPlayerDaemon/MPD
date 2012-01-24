@@ -90,7 +90,6 @@ mpd_headers = \
 	src/inotify_source.h \
 	src/inotify_queue.h \
 	src/inotify_update.h \
-	src/dirvec.h \
 	src/gcc.h \
 	src/decoder_list.h \
 	src/decoder_print.h \
@@ -257,7 +256,6 @@ src_mpd_SOURCES = \
 	src/db_visitor.h \
 	src/db_selection.h \
 	src/db/simple_db_plugin.c src/db/simple_db_plugin.h \
-	src/dirvec.c \
 	src/exclude.c \
 	src/fd_util.c \
 	src/fifo_buffer.c src/fifo_buffer.h \
