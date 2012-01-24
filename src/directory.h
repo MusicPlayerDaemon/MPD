@@ -181,6 +181,28 @@ struct directory *
 directory_lookup_directory(struct directory *directory, const char *uri);
 
 /**
+ * Add a song object to this directory.  Its "parent" attribute must
+ * be set already.
+ */
+void
+directory_add_song(struct directory *directory, struct song *song);
+
+/**
+ * Remove a song object from this directory (which effectively
+ * invalidates the song object, because the "parent" attribute becomes
+ * stale), but does not free it.
+ */
+void
+directory_remove_song(struct directory *directory, struct song *song);
+
+/**
+ * Look up a song in this directory by its name.
+ */
+G_GNUC_PURE
+struct song *
+directory_get_song(const struct directory *directory, const char *name_utf8);
+
+/**
  * Looks up a song by its relative URI.
  *
  * @param directory the parent (or grandparent, ...) directory

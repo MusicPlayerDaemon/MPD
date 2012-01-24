@@ -93,7 +93,7 @@ static void
 delete_song(struct directory *dir, struct song *del)
 {
 	/* first, prevent traversers in main task from getting this */
-	songvec_delete(&dir->songs, del);
+	directory_remove_song(dir, del);
 
 	/* now take it out of the playlist (in the main_task) */
 	update_remove_song(del);
@@ -144,13 +144,13 @@ static void
 delete_name_in(struct directory *parent, const char *name)
 {
 	struct directory *directory = directory_get_child(parent, name);
-	struct song *song = songvec_find(&parent->songs, name);
 
 	if (directory != NULL) {
 		delete_directory(directory);
 		modified = true;
 	}
 
+	struct song *song = directory_get_song(parent, name);
 	if (song != NULL) {
 		delete_song(parent, song);
 		modified = true;
@@ -357,7 +357,6 @@ static void
 update_archive_tree(struct directory *directory, char *name)
 {
 	struct directory *subdir;
-	struct song *song;
 	char *tmp;
 
 	tmp = strchr(name, '/');
@@ -377,11 +376,11 @@ update_archive_tree(struct directory *directory, char *name)
 			return;
 		}
 		//add file
-		song = songvec_find(&directory->songs, name);
+		struct song *song = directory_get_song(directory, name);
 		if (song == NULL) {
 			song = song_file_load(name, directory);
 			if (song != NULL) {
-				songvec_add(&directory->songs, song);
+				directory_add_song(directory, song);
 				modified = true;
 				g_message("added %s/%s",
 					  directory_get_path(directory), name);
@@ -499,7 +498,7 @@ update_container_file(	struct directory* directory,
 		song->tag = plugin->tag_dup(child_path_fs);
 		g_free(child_path_fs);
 
-		songvec_add(&contdir->songs, song);
+		directory_add_song(contdir, song);
 
 		modified = true;
 
@@ -559,7 +558,7 @@ update_regular_file(struct directory *directory,
 
 	if ((plugin = decoder_plugin_from_suffix(suffix, false)) != NULL)
 	{
-		struct song* song = songvec_find(&directory->songs, name);
+		struct song *song = directory_get_song(directory, name);
 
 		if (!directory_child_access(directory, name, R_OK)) {
 			g_warning("no read permissions on %s/%s",
@@ -592,7 +591,7 @@ update_regular_file(struct directory *directory,
 				return;
 			}
 
-			songvec_add(&directory->songs, song);
+			directory_add_song(directory, song);
 			modified = true;
 			g_message("added %s/%s",
 				  directory_get_path(directory), name);
@@ -800,7 +799,6 @@ directory_make_child_checked(struct directory *parent, const char *name_utf8)
 {
 	struct directory *directory;
 	struct stat st;
-	struct song *conflicting;
 
 	directory = directory_get_child(parent, name_utf8);
 	if (directory != NULL)
@@ -812,7 +810,7 @@ directory_make_child_checked(struct directory *parent, const char *name_utf8)
 
 	/* if we're adding directory paths, make sure to delete filenames
 	   with potentially the same name */
-	conflicting = songvec_find(&parent->songs, name_utf8);
+	struct song *conflicting = directory_get_song(parent, name_utf8);
 	if (conflicting)
 		delete_song(parent, conflicting);
 

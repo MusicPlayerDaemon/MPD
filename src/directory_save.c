@@ -146,7 +146,7 @@ directory_load(FILE *fp, struct directory *directory,
 			const char *name = line + sizeof(SONG_BEGIN) - 1;
 			struct song *song;
 
-			if (songvec_find(&directory->songs, name) != NULL) {
+			if (directory_get_song(directory, name) != NULL) {
 				g_set_error(error, directory_quark(), 0,
 					    "Duplicate song '%s'", name);
 				return NULL;
@@ -157,7 +157,7 @@ directory_load(FILE *fp, struct directory *directory,
 			if (song == NULL)
 				return false;
 
-			songvec_add(&directory->songs, song);
+			directory_add_song(directory, song);
 		} else if (g_str_has_prefix(line, PLAYLIST_META_BEGIN)) {
 			/* duplicate the name, because
 			   playlist_metadata_load() will overwrite the

@@ -177,11 +177,41 @@ directory_lookup_directory(struct directory *directory, const char *uri)
 	return found;
 }
 
+void
+directory_add_song(struct directory *directory, struct song *song)
+{
+	assert(directory != NULL);
+	assert(song != NULL);
+	assert(song->parent == directory);
+
+	songvec_add(&directory->songs, song);
+}
+
+void
+directory_remove_song(struct directory *directory, struct song *song)
+{
+	assert(directory != NULL);
+	assert(song != NULL);
+	assert(song->parent == directory);
+
+	songvec_delete(&directory->songs, song);
+}
+
+struct song *
+directory_get_song(const struct directory *directory, const char *name_utf8)
+{
+	assert(directory != NULL);
+	assert(name_utf8 != NULL);
+
+	struct song *song = songvec_find(&directory->songs, name_utf8);
+	assert(song == NULL || song->parent == directory);
+	return song;
+}
+
 struct song *
 directory_lookup_song(struct directory *directory, const char *uri)
 {
 	char *duplicated, *base;
-	struct song *song;
 
 	assert(directory != NULL);
 	assert(uri != NULL);
@@ -199,7 +229,7 @@ directory_lookup_song(struct directory *directory, const char *uri)
 	} else
 		base = duplicated;
 
-	song = songvec_find(&directory->songs, base);
+	struct song *song = directory_get_song(directory, base);
 	assert(song == NULL || song->parent == directory);
 
 	g_free(duplicated);
