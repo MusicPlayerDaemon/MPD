@@ -190,7 +190,8 @@ directory_add_song(struct directory *directory, struct song *song)
 }
 
 void
-directory_remove_song(struct directory *directory, struct song *song)
+directory_remove_song(G_GNUC_UNUSED struct directory *directory,
+		      struct song *song)
 {
 	assert(directory != NULL);
 	assert(song != NULL);
