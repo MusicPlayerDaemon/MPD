@@ -56,11 +56,36 @@ isRootDirectory(const char *name)
 	return name[0] == 0 || (name[0] == '/' && name[1] == 0);
 }
 
+/**
+ * Generic constructor for #directory object.
+ */
+G_GNUC_MALLOC
 struct directory *
 directory_new(const char *dirname, struct directory *parent);
 
+/**
+ * Create a new root #directory object.
+ */
+G_GNUC_MALLOC
+static inline struct directory *
+directory_new_root(void)
+{
+	return directory_new("", NULL);
+}
+
+/**
+ * Free this #directory object (and the whole object tree within it),
+ * assuming it was already removed from the parent.
+ */
 void
 directory_free(struct directory *directory);
+
+/**
+ * Remove this #directory object from its parent and free it.  This
+ * must not be called with the root directory.
+ */
+void
+directory_delete(struct directory *directory);
 
 static inline bool
 directory_is_empty(const struct directory *directory)
@@ -87,6 +112,7 @@ directory_is_root(const struct directory *directory)
 /**
  * Returns the base name of the directory.
  */
+G_GNUC_PURE
 const char *
 directory_get_name(const struct directory *directory);
 
@@ -96,12 +122,27 @@ directory_get_child(const struct directory *directory, const char *name)
 	return dirvec_find(&directory->children, name);
 }
 
+/**
+ * Create a new #directory object as a child of the given one.
+ *
+ * @param parent the parent directory the new one will be added to
+ * @param name_utf8 the UTF-8 encoded name of the new sub directory
+ */
+G_GNUC_MALLOC
+struct directory *
+directory_new_child(struct directory *parent, const char *name_utf8);
+
+/**
+ * Look up a sub directory, and create the object if it does not
+ * exist.
+ */
 static inline struct directory *
-directory_new_child(struct directory *directory, const char *name)
+directory_make_child(struct directory *directory, const char *name_utf8)
 {
-	struct directory *subdir = directory_new(name, directory);
-	dirvec_add(&directory->children, subdir);
-	return subdir;
+	struct directory *child = directory_get_child(directory, name_utf8);
+	if (child == NULL)
+		child = directory_new_child(directory, name_utf8);
+	return child;
 }
 
 void

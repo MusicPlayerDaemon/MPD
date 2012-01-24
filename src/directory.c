@@ -66,10 +66,45 @@ directory_free(struct directory *directory)
 	/*directory_get_path(NULL); */
 }
 
+void
+directory_delete(struct directory *directory)
+{
+	assert(directory != NULL);
+	assert(directory->parent != NULL);
+
+	dirvec_delete(&directory->parent->children, directory);
+	directory_free(directory);
+}
+
 const char *
 directory_get_name(const struct directory *directory)
 {
 	return g_basename(directory->path);
+}
+
+struct directory *
+directory_new_child(struct directory *parent, const char *name_utf8)
+{
+	assert(parent != NULL);
+	assert(name_utf8 != NULL);
+	assert(*name_utf8 != 0);
+
+	char *allocated;
+	const char *path_utf8;
+	if (directory_is_root(parent)) {
+		allocated = NULL;
+		path_utf8 = name_utf8;
+	} else {
+		allocated = g_strconcat(directory_get_path(parent),
+					"/", name_utf8, NULL);
+		path_utf8 = allocated;
+	}
+
+	struct directory *directory = directory_new(path_utf8, parent);
+	g_free(allocated);
+
+	dirvec_add(&parent->children, directory);
+	return directory;
 }
 
 void
@@ -83,10 +118,8 @@ directory_prune_empty(struct directory *directory)
 
 		directory_prune_empty(child);
 
-		if (directory_is_empty(child)) {
-			dirvec_delete(dv, child);
-			directory_free(child);
-		}
+		if (directory_is_empty(child))
+			directory_delete(child);
 	}
 	if (!dv->nr)
 		dirvec_destroy(dv);

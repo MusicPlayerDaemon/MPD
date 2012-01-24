@@ -81,7 +81,6 @@ static struct directory *
 directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 		      GString *buffer, GError **error_r)
 {
-	struct directory *directory;
 	const char *line;
 	bool success;
 
@@ -91,20 +90,13 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 		return NULL;
 	}
 
-	if (directory_is_root(parent)) {
-		directory = directory_new(name, parent);
-	} else {
-		char *path = g_strconcat(directory_get_path(parent), "/",
-					 name, NULL);
-		directory = directory_new(path, parent);
-		g_free(path);
-	}
+	struct directory *directory = directory_new_child(parent, name);
 
 	line = read_text_line(fp, buffer);
 	if (line == NULL) {
 		g_set_error(error_r, directory_quark(), 0,
 			    "Unexpected end of file");
-		directory_free(directory);
+		directory_delete(directory);
 		return NULL;
 	}
 
@@ -117,7 +109,7 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 		if (line == NULL) {
 			g_set_error(error_r, directory_quark(), 0,
 				    "Unexpected end of file");
-			directory_free(directory);
+			directory_delete(directory);
 			return NULL;
 		}
 	}
@@ -125,13 +117,13 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 	if (!g_str_has_prefix(line, DIRECTORY_BEGIN)) {
 		g_set_error(error_r, directory_quark(), 0,
 			    "Malformed line: %s", line);
-		directory_free(directory);
+		directory_delete(directory);
 		return NULL;
 	}
 
 	success = directory_load(fp, directory, buffer, error_r);
 	if (!success) {
-		directory_free(directory);
+		directory_delete(directory);
 		return NULL;
 	}
 
@@ -153,8 +145,6 @@ directory_load(FILE *fp, struct directory *directory,
 						      buffer, error);
 			if (subdir == NULL)
 				return false;
-
-			dirvec_add(&directory->children, subdir);
 		} else if (g_str_has_prefix(line, SONG_BEGIN)) {
 			const char *name = line + sizeof(SONG_BEGIN) - 1;
 			struct song *song;

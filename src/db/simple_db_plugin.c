@@ -199,7 +199,7 @@ simple_db_open(struct db *_db, G_GNUC_UNUSED GError **error_r)
 {
 	struct simple_db *db = (struct simple_db *)_db;
 
-	db->root = directory_new("", NULL);
+	db->root = directory_new_root();
 	db->mtime = 0;
 
 	GError *error = NULL;
@@ -212,7 +212,7 @@ simple_db_open(struct db *_db, G_GNUC_UNUSED GError **error_r)
 		if (!simple_db_check(db, error_r))
 			return false;
 
-		db->root = directory_new("", NULL);
+		db->root = directory_new_root();
 	}
 
 	return true;

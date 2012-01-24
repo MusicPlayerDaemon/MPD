@@ -140,9 +140,7 @@ delete_directory(struct directory *directory)
 	assert(directory->parent != NULL);
 
 	clear_directory(directory);
-
-	dirvec_delete(&directory->parent->children, directory);
-	directory_free(directory);
+	directory_delete(directory);
 }
 
 static void
@@ -272,7 +270,6 @@ removeDeletedFromDirectory(struct directory *directory)
 		if (directory_exists(dv->base[i]))
 			continue;
 
-		g_debug("removing directory: %s", dv->base[i]->path);
 		delete_directory(dv->base[i]);
 		modified = true;
 	}
@@ -363,28 +360,6 @@ inodeFoundInParent(struct directory *parent, ino_t inode, dev_t device)
 	return 0;
 }
 
-static struct directory *
-make_subdir(struct directory *parent, const char *name)
-{
-	struct directory *directory;
-
-	directory = directory_get_child(parent, name);
-	if (directory == NULL) {
-		char *path;
-
-		if (directory_is_root(parent))
-			path = NULL;
-		else
-			name = path = g_strconcat(directory_get_path(parent),
-						  "/", name, NULL);
-
-		directory = directory_new_child(parent, name);
-		g_free(path);
-	}
-
-	return directory;
-}
-
 #ifdef ENABLE_ARCHIVE
 static void
 update_archive_tree(struct directory *directory, char *name)
@@ -397,9 +372,9 @@ update_archive_tree(struct directory *directory, char *name)
 	if (tmp) {
 		*tmp = 0;
 		//add dir is not there already
-		if ((subdir = dirvec_find(&directory->children, name)) == NULL) {
+		if ((subdir = directory_get_child(directory, name)) == NULL) {
 		        //create new directory
-		        subdir = make_subdir(directory, name);
+			subdir = directory_new_child(directory, name);
 			subdir->device = DEVICE_INARCHIVE;
 		}
 		//create directories first
@@ -442,7 +417,7 @@ update_archive_file(struct directory *parent, const char *name,
 	struct directory *directory;
 	char *filepath;
 
-	directory = dirvec_find(&parent->children, name);
+	directory = directory_get_child(parent, name);
 	if (directory != NULL && directory->mtime == st->st_mtime &&
 	    !walk_discard)
 		/* MPD has already scanned the archive, and it hasn't
@@ -465,7 +440,7 @@ update_archive_file(struct directory *parent, const char *name,
 
 	if (directory == NULL) {
 		g_debug("creating archive directory: %s", name);
-		directory = make_subdir(parent, name);
+		directory = directory_new_child(parent, name);
 		/* mark this directory as archive (we use device for
 		   this) */
 		directory->device = DEVICE_INARCHIVE;
@@ -494,7 +469,7 @@ update_container_file(	struct directory* directory,
 	char* vtrack = NULL;
 	unsigned int tnum = 0;
 	char* pathname = map_directory_child_fs(directory, name);
-	struct directory* contdir = dirvec_find(&directory->children, name);
+	struct directory *contdir = directory_get_child(directory, name);
 
 	// directory exists already
 	if (contdir != NULL)
@@ -515,7 +490,7 @@ update_container_file(	struct directory* directory,
 		}
 	}
 
-	contdir = make_subdir(directory, name);
+	contdir = directory_make_child(directory, name);
 	contdir->mtime = st->st_mtime;
 	contdir->device = DEVICE_CONTAINER;
 
@@ -670,7 +645,7 @@ updateInDirectory(struct directory *directory,
 		if (inodeFoundInParent(directory, st->st_ino, st->st_dev))
 			return;
 
-		subdir = make_subdir(directory, name);
+		subdir = directory_make_child(directory, name);
 		assert(directory == subdir->parent);
 
 		ret = updateDirectory(subdir, st);
@@ -829,34 +804,27 @@ updateDirectory(struct directory *directory, const struct stat *st)
 }
 
 static struct directory *
-directory_make_child_checked(struct directory *parent, const char *path)
+directory_make_child_checked(struct directory *parent, const char *name_utf8)
 {
 	struct directory *directory;
-	char *base;
 	struct stat st;
 	struct song *conflicting;
 
-	directory = directory_get_child(parent, path);
+	directory = directory_get_child(parent, name_utf8);
 	if (directory != NULL)
 		return directory;
 
-	base = g_path_get_basename(path);
-
-	if (stat_directory_child(parent, base, &st) < 0 ||
-	    inodeFoundInParent(parent, st.st_ino, st.st_dev)) {
-		g_free(base);
+	if (stat_directory_child(parent, name_utf8, &st) < 0 ||
+	    inodeFoundInParent(parent, st.st_ino, st.st_dev))
 		return NULL;
-	}
 
 	/* if we're adding directory paths, make sure to delete filenames
 	   with potentially the same name */
-	conflicting = songvec_find(&parent->songs, base);
+	conflicting = songvec_find(&parent->songs, name_utf8);
 	if (conflicting)
 		delete_song(parent, conflicting);
 
-	g_free(base);
-
-	directory = directory_new_child(parent, path);
+	directory = directory_new_child(parent, name_utf8);
 	directory_set_stat(directory, &st);
 	return directory;
 }
@@ -866,17 +834,20 @@ addParentPathToDB(const char *utf8path)
 {
 	struct directory *directory = db_get_root();
 	char *duplicated = g_strdup(utf8path);
-	char *slash = duplicated;
+	char *name_utf8 = duplicated, *slash;
 
-	while ((slash = strchr(slash, '/')) != NULL) {
+	while ((slash = strchr(name_utf8, '/')) != NULL) {
 		*slash = 0;
 
+		if (*name_utf8 == 0)
+			continue;
+
 		directory = directory_make_child_checked(directory,
-							 duplicated);
-		if (directory == NULL || slash == NULL)
+							 name_utf8);
+		if (directory == NULL)
 			break;
 
-		*slash++ = '/';
+		name_utf8 = slash + 1;
 	}
 
 	g_free(duplicated);
