@@ -54,8 +54,11 @@ struct directory *dirvec_find(const struct dirvec *dv, const char *path)
 
 	db_lock();
 	for (i = dv->nr; --i >= 0; )
-		if (!strcmp(directory_get_name(dv->base[i]), path))
+		if (!strcmp(directory_get_name(dv->base[i]), path)) {
+			db_unlock();
 			return dv->base[i];
+		}
+
 	db_unlock();
 
 	return NULL;
