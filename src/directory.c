@@ -149,34 +149,32 @@ directory_prune_empty(struct directory *directory)
 struct directory *
 directory_lookup_directory(struct directory *directory, const char *uri)
 {
-	struct directory *cur = directory;
-	struct directory *found = NULL;
-	char *duplicated;
-	char *locate;
-
 	assert(uri != NULL);
 
 	if (isRootDirectory(uri))
 		return directory;
 
-	duplicated = g_strdup(uri);
-	locate = strchr(duplicated, '/');
+	char *duplicated = g_strdup(uri), *name = duplicated;
 	while (1) {
-		if (locate)
-			*locate = '\0';
-		if (!(found = directory_get_child(cur, duplicated)))
+		char *slash = strchr(name, '/');
+		if (slash == name) {
+			directory = NULL;
 			break;
-		assert(cur == found->parent);
-		cur = found;
-		if (!locate)
+		}
+
+		if (slash != NULL)
+			*slash = '\0';
+
+		directory = directory_get_child(directory, name);
+		if (directory == NULL || slash == NULL)
 			break;
-		*locate = '/';
-		locate = strchr(locate + 1, '/');
+
+		name = slash + 1;
 	}
 
 	g_free(duplicated);
 
-	return found;
+	return directory;
 }
 
 void
