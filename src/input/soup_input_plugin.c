@@ -280,7 +280,7 @@ input_soup_open(const char *uri,
 	s->current_consumed = 0;
 	s->total_buffered = 0;
 
-#if GCC_CHECK_VERSION(4,5)
+#if GCC_CHECK_VERSION(4,6)
 #pragma GCC diagnostic push
 	/* the libsoup macro SOUP_METHOD_GET discards the "const"
 	   attribute of the g_intern_static_string() return value;
@@ -290,7 +290,7 @@ input_soup_open(const char *uri,
 
 	s->msg = soup_message_new(SOUP_METHOD_GET, uri);
 
-#if GCC_CHECK_VERSION(4,5)
+#if GCC_CHECK_VERSION(4,6)
 #pragma GCC diagnostic pop
 #endif
 
