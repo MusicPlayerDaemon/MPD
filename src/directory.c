@@ -74,13 +74,11 @@ directory_free(struct directory *directory)
 void
 directory_delete(struct directory *directory)
 {
+	assert(holding_db_lock());
 	assert(directory != NULL);
 	assert(directory->parent != NULL);
 
-	db_lock();
 	list_del(&directory->siblings);
-	db_unlock();
-
 	directory_free(directory);
 }
 
@@ -93,6 +91,7 @@ directory_get_name(const struct directory *directory)
 struct directory *
 directory_new_child(struct directory *parent, const char *name_utf8)
 {
+	assert(holding_db_lock());
 	assert(parent != NULL);
 	assert(name_utf8 != NULL);
 	assert(*name_utf8 != 0);
@@ -111,32 +110,28 @@ directory_new_child(struct directory *parent, const char *name_utf8)
 	struct directory *directory = directory_new(path_utf8, parent);
 	g_free(allocated);
 
-	db_lock();
-	list_add_tail(&directory->siblings, &parent->children);
-	db_unlock();
+	list_add(&directory->siblings, &parent->children);
 	return directory;
 }
 
 struct directory *
 directory_get_child(const struct directory *directory, const char *name)
 {
-	db_lock();
+	assert(holding_db_lock());
 
 	struct directory *child;
-	directory_for_each_child(child, directory) {
-		if (strcmp(directory_get_name(child), name) == 0) {
-			db_unlock();
+	directory_for_each_child(child, directory)
+		if (strcmp(directory_get_name(child), name) == 0)
 			return child;
-		}
-	}
 
-	db_unlock();
 	return NULL;
 }
 
 void
 directory_prune_empty(struct directory *directory)
 {
+	assert(holding_db_lock());
+
 	struct directory *child, *n;
 	directory_for_each_child_safe(child, n, directory) {
 		directory_prune_empty(child);
@@ -149,12 +144,14 @@ directory_prune_empty(struct directory *directory)
 struct directory *
 directory_lookup_directory(struct directory *directory, const char *uri)
 {
+	assert(holding_db_lock());
 	assert(uri != NULL);
 
 	if (isRootDirectory(uri))
 		return directory;
 
 	char *duplicated = g_strdup(uri), *name = duplicated;
+
 	while (1) {
 		char *slash = strchr(name, '/');
 		if (slash == name) {
@@ -201,21 +198,18 @@ directory_remove_song(G_GNUC_UNUSED struct directory *directory,
 struct song *
 directory_get_song(const struct directory *directory, const char *name_utf8)
 {
+	assert(holding_db_lock());
 	assert(directory != NULL);
 	assert(name_utf8 != NULL);
 
-	db_lock();
 	struct song *song;
 	directory_for_each_song(song, directory) {
 		assert(song->parent == directory);
 
-		if (strcmp(song->uri, name_utf8) == 0) {
-			db_unlock();
+		if (strcmp(song->uri, name_utf8) == 0)
 			return song;
-		}
 	}
 
-	db_unlock();
 	return NULL;
 }
 
@@ -224,6 +218,7 @@ directory_lookup_song(struct directory *directory, const char *uri)
 {
 	char *duplicated, *base;
 
+	assert(holding_db_lock());
 	assert(directory != NULL);
 	assert(uri != NULL);
 
@@ -260,10 +255,10 @@ directory_cmp(G_GNUC_UNUSED void *priv,
 void
 directory_sort(struct directory *directory)
 {
-	db_lock();
+	assert(holding_db_lock());
+
 	list_sort(NULL, &directory->children, directory_cmp);
 	song_list_sort(&directory->songs);
-	db_unlock();
 
 	struct directory *child;
 	directory_for_each_child(child, directory)

@@ -92,7 +92,9 @@ db_get_directory(const char *name)
 	if (name == NULL)
 		return music_root;
 
-	return directory_lookup_directory(music_root, name);
+	struct directory *directory =
+		directory_lookup_directory(music_root, name);
+	return directory;
 }
 
 struct song *

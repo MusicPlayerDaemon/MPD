@@ -68,6 +68,8 @@ sticker_song_get(const struct song *song);
  * Finds stickers with the specified name below the specified
  * directory.
  *
+ * Caller must lock the #db_mutex.
+ *
  * @param directory the base directory to search in
  * @param name the name of the sticker
  * @return true on success (even if no sticker was found), false on

@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "db_save.h"
+#include "db_lock.h"
 #include "directory.h"
 #include "directory_save.h"
 #include "song.h"
@@ -169,7 +170,9 @@ db_load_internal(FILE *fp, struct directory *music_root, GError **error)
 
 	g_debug("reading DB");
 
+	db_lock();
 	success = directory_load(fp, music_root, buffer, error);
+	db_unlock();
 	g_string_free(buffer, true);
 
 	return success;

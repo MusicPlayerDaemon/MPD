@@ -118,6 +118,8 @@ directory_free(struct directory *directory);
 /**
  * Remove this #directory object from its parent and free it.  This
  * must not be called with the root directory.
+ *
+ * Caller must lock the #db_mutex.
  */
 void
 directory_delete(struct directory *directory);
@@ -152,12 +154,17 @@ G_GNUC_PURE
 const char *
 directory_get_name(const struct directory *directory);
 
+/**
+ * Caller must lock the #db_mutex.
+ */
 G_GNUC_PURE
 struct directory *
 directory_get_child(const struct directory *directory, const char *name);
 
 /**
  * Create a new #directory object as a child of the given one.
+ *
+ * Caller must lock the #db_mutex.
  *
  * @param parent the parent directory the new one will be added to
  * @param name_utf8 the UTF-8 encoded name of the new sub directory
@@ -169,6 +176,8 @@ directory_new_child(struct directory *parent, const char *name_utf8);
 /**
  * Look up a sub directory, and create the object if it does not
  * exist.
+ *
+ * Caller must lock the #db_mutex.
  */
 static inline struct directory *
 directory_make_child(struct directory *directory, const char *name_utf8)
@@ -179,6 +188,9 @@ directory_make_child(struct directory *directory, const char *name_utf8)
 	return child;
 }
 
+/**
+ * Caller must lock the #db_mutex.
+ */
 void
 directory_prune_empty(struct directory *directory);
 
@@ -209,6 +221,8 @@ directory_remove_song(struct directory *directory, struct song *song);
 
 /**
  * Look up a song in this directory by its name.
+ *
+ * Caller must lock the #db_mutex.
  */
 G_GNUC_PURE
 struct song *
@@ -217,6 +231,8 @@ directory_get_song(const struct directory *directory, const char *name_utf8);
 /**
  * Looks up a song by its relative URI.
  *
+ * Caller must lock the #db_mutex.
+ *
  * @param directory the parent (or grandparent, ...) directory
  * @param uri the relative URI
  * @return the song, or NULL if none was found
@@ -224,6 +240,11 @@ directory_get_song(const struct directory *directory, const char *name_utf8);
 struct song *
 directory_lookup_song(struct directory *directory, const char *uri);
 
+/**
+ * Sort all directory entries recursively.
+ *
+ * Caller must lock the #db_mutex.
+ */
 void
 directory_sort(struct directory *directory);
 

@@ -59,7 +59,11 @@ simple_db_lookup_directory(const struct simple_db *db, const char *uri)
 	assert(db->root != NULL);
 	assert(uri != NULL);
 
-	return directory_lookup_directory(db->root, uri);
+	db_lock();
+	struct directory *directory =
+		directory_lookup_directory(db->root, uri);
+	db_unlock();
+	return directory;
 }
 
 static struct db *
@@ -236,7 +240,9 @@ simple_db_get_song(struct db *_db, const char *uri, GError **error_r)
 
 	assert(db->root != NULL);
 
+	db_lock();
 	struct song *song = directory_lookup_song(db->root, uri);
+	db_unlock();
 	if (song == NULL)
 		g_set_error(error_r, db_quark(), DB_NOT_FOUND,
 			    "No such song: %s", uri);
@@ -301,12 +307,15 @@ simple_db_save(struct db *_db, GError **error_r)
 	struct simple_db *db = (struct simple_db *)_db;
 	struct directory *music_root = db->root;
 
+	db_lock();
+
 	g_debug("removing empty directories from DB");
 	directory_prune_empty(music_root);
 
 	g_debug("sorting DB");
-
 	directory_sort(music_root);
+
+	db_unlock();
 
 	g_debug("writing DB");
 

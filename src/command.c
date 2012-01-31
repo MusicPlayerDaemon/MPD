@@ -45,6 +45,7 @@
 #include "db_error.h"
 #include "db_print.h"
 #include "db_selection.h"
+#include "db_lock.h"
 #include "tag.h"
 #include "client.h"
 #include "client_idle.h"
@@ -1892,8 +1893,10 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 			.name = argv[4],
 		};
 
+		db_lock();
 		directory = db_get_directory(argv[3]);
 		if (directory == NULL) {
+			db_unlock();
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "no such directory");
 			return COMMAND_RETURN_ERROR;
@@ -1901,6 +1904,7 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 
 		success = sticker_song_find(directory, data.name,
 					    sticker_song_find_print_cb, &data);
+		db_unlock();
 		if (!success) {
 			command_error(client, ACK_ERROR_SYSTEM,
 				      "failed to set search sticker database");

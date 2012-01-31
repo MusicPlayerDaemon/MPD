@@ -20,6 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "update_internal.h"
 #include "database.h"
+#include "db_lock.h"
 #include "exclude.h"
 #include "directory.h"
 #include "song.h"
@@ -89,6 +90,9 @@ directory_set_stat(struct directory *dir, const struct stat *st)
 	dir->have_stat = true;
 }
 
+/**
+ * Caller must lock the #db_mutex.
+ */
 static void
 delete_song(struct directory *dir, struct song *del)
 {
@@ -97,11 +101,15 @@ delete_song(struct directory *dir, struct song *del)
 	/* first, prevent traversers in main task from getting this */
 	directory_remove_song(dir, del);
 
+	db_unlock(); /* temporary unlock, because update_remove_song() blocks */
+
 	/* now take it out of the playlist (in the main_task) */
 	update_remove_song(del);
 
 	/* finally, all possible references gone, free it */
 	song_free(del);
+
+	db_lock();
 }
 
 static void
@@ -110,6 +118,8 @@ delete_directory(struct directory *directory);
 /**
  * Recursively remove all sub directories and songs from a directory,
  * leaving an empty directory.
+ *
+ * Caller must lock the #db_mutex.
  */
 static void
 clear_directory(struct directory *directory)
@@ -127,6 +137,8 @@ clear_directory(struct directory *directory)
 
 /**
  * Recursively free a directory and all its contents.
+ *
+ * Caller must lock the #db_mutex.
  */
 static void
 delete_directory(struct directory *directory)
@@ -134,12 +146,14 @@ delete_directory(struct directory *directory)
 	assert(directory->parent != NULL);
 
 	clear_directory(directory);
+
 	directory_delete(directory);
 }
 
 static void
 delete_name_in(struct directory *parent, const char *name)
 {
+	db_lock();
 	struct directory *directory = directory_get_child(parent, name);
 
 	if (directory != NULL) {
@@ -153,6 +167,8 @@ delete_name_in(struct directory *parent, const char *name)
 		modified = true;
 	}
 
+	db_unlock();
+
 	playlist_vector_remove(&parent->playlists, name);
 }
 
@@ -160,6 +176,8 @@ static void
 remove_excluded_from_directory(struct directory *directory,
 			       GSList *exclude_list)
 {
+	db_lock();
+
 	struct directory *child, *n;
 	directory_for_each_child_safe(child, n, directory) {
 		char *name_fs = utf8_to_fs_charset(directory_get_name(child));
@@ -184,6 +202,8 @@ remove_excluded_from_directory(struct directory *directory,
 
 		g_free(name_fs);
 	}
+
+	db_unlock();
 }
 
 static bool
@@ -232,7 +252,10 @@ removeDeletedFromDirectory(struct directory *directory)
 		if (directory_exists(child))
 			continue;
 
+		db_lock();
 		delete_directory(child);
+		db_unlock();
+
 		modified = true;
 	}
 
@@ -242,7 +265,10 @@ removeDeletedFromDirectory(struct directory *directory)
 		struct stat st;
 		if ((path = map_song_fs(song)) == NULL ||
 		    stat(path, &st) < 0 || !S_ISREG(st.st_mode)) {
+			db_lock();
 			delete_song(directory, song);
+			db_unlock();
+
 			modified = true;
 		}
 
@@ -344,8 +370,10 @@ update_archive_tree(struct directory *directory, char *name)
 	if (tmp) {
 		*tmp = 0;
 		//add dir is not there already
+		db_lock();
 		subdir = directory_make_child(directory, name);
 		subdir->device = DEVICE_INARCHIVE;
+		db_unlock();
 		//create directories first
 		update_archive_tree(subdir, tmp+1);
 	} else {
@@ -354,7 +382,9 @@ update_archive_tree(struct directory *directory, char *name)
 			return;
 		}
 		//add file
+		db_lock();
 		struct song *song = directory_get_song(directory, name);
+		db_unlock();
 		if (song == NULL) {
 			song = song_file_load(name, directory);
 			if (song != NULL) {
@@ -386,7 +416,9 @@ update_archive_file(struct directory *parent, const char *name,
 	struct directory *directory;
 	char *filepath;
 
+	db_lock();
 	directory = directory_get_child(parent, name);
+	db_unlock();
 	if (directory != NULL && directory->mtime == st->st_mtime &&
 	    !walk_discard)
 		/* MPD has already scanned the archive, and it hasn't
@@ -409,10 +441,12 @@ update_archive_file(struct directory *parent, const char *name,
 
 	if (directory == NULL) {
 		g_debug("creating archive directory: %s", name);
+		db_lock();
 		directory = directory_new_child(parent, name);
 		/* mark this directory as archive (we use device for
 		   this) */
 		directory->device = DEVICE_INARCHIVE;
+		db_unlock();
 	}
 
 	directory->mtime = st->st_mtime;
@@ -438,6 +472,8 @@ update_container_file(	struct directory* directory,
 	char* vtrack = NULL;
 	unsigned int tnum = 0;
 	char* pathname = map_directory_child_fs(directory, name);
+
+	db_lock();
 	struct directory *contdir = directory_get_child(directory, name);
 
 	// directory exists already
@@ -454,6 +490,7 @@ update_container_file(	struct directory* directory,
 			modified = true;
 		}
 		else {
+			db_unlock();
 			g_free(pathname);
 			return true;
 		}
@@ -462,6 +499,7 @@ update_container_file(	struct directory* directory,
 	contdir = directory_make_child(directory, name);
 	contdir->mtime = st->st_mtime;
 	contdir->device = DEVICE_CONTAINER;
+	db_unlock();
 
 	while ((vtrack = plugin->container_scan(pathname, ++tnum)) != NULL)
 	{
@@ -489,7 +527,9 @@ update_container_file(	struct directory* directory,
 
 	if (tnum == 1)
 	{
+		db_lock();
 		delete_directory(contdir);
+		db_unlock();
 		return false;
 	}
 	else
@@ -536,13 +576,19 @@ update_regular_file(struct directory *directory,
 
 	if ((plugin = decoder_plugin_from_suffix(suffix, false)) != NULL)
 	{
+		db_lock();
 		struct song *song = directory_get_song(directory, name);
+		db_unlock();
 
 		if (!directory_child_access(directory, name, R_OK)) {
 			g_warning("no read permissions on %s/%s",
 				  directory_get_path(directory), name);
-			if (song != NULL)
+			if (song != NULL) {
+				db_lock();
 				delete_song(directory, song);
+				db_unlock();
+			}
+
 			return;
 		}
 
@@ -552,8 +598,11 @@ update_regular_file(struct directory *directory,
 		{
 			if (update_container_file(directory, name, st, plugin))
 			{
-				if (song != NULL)
+				if (song != NULL) {
+					db_lock();
 					delete_song(directory, song);
+					db_unlock();
+				}
 
 				return;
 			}
@@ -579,7 +628,9 @@ update_regular_file(struct directory *directory,
 			if (!song_file_update(song)) {
 				g_debug("deleting unrecognized file %s/%s",
 					directory_get_path(directory), name);
+				db_lock();
 				delete_song(directory, song);
+				db_unlock();
 			}
 
 			modified = true;
@@ -614,12 +665,18 @@ updateInDirectory(struct directory *directory,
 		if (inodeFoundInParent(directory, st->st_ino, st->st_dev))
 			return;
 
+		db_lock();
 		subdir = directory_make_child(directory, name);
+		db_unlock();
+
 		assert(directory == subdir->parent);
 
 		ret = updateDirectory(subdir, st);
-		if (!ret)
+		if (!ret) {
+			db_lock();
 			delete_directory(subdir);
+			db_unlock();
+		}
 	} else {
 		g_debug("update: %s is not a directory, archive or music", name);
 	}
@@ -778,7 +835,9 @@ directory_make_child_checked(struct directory *parent, const char *name_utf8)
 	struct directory *directory;
 	struct stat st;
 
+	db_lock();
 	directory = directory_get_child(parent, name_utf8);
+	db_unlock();
 	if (directory != NULL)
 		return directory;
 
@@ -788,11 +847,14 @@ directory_make_child_checked(struct directory *parent, const char *name_utf8)
 
 	/* if we're adding directory paths, make sure to delete filenames
 	   with potentially the same name */
+	db_lock();
 	struct song *conflicting = directory_get_song(parent, name_utf8);
 	if (conflicting)
 		delete_song(parent, conflicting);
 
 	directory = directory_new_child(parent, name_utf8);
+	db_unlock();
+
 	directory_set_stat(directory, &st);
 	return directory;
 }

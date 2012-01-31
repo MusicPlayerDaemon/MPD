@@ -50,6 +50,9 @@ db_finish(void);
 struct directory *
 db_get_root(void);
 
+/**
+ * Caller must lock the #db_mutex.
+ */
 gcc_nonnull(1)
 struct directory *
 db_get_directory(const char *name);
