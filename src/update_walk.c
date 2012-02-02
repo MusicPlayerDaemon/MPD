@@ -344,11 +344,8 @@ update_archive_tree(struct directory *directory, char *name)
 	if (tmp) {
 		*tmp = 0;
 		//add dir is not there already
-		if ((subdir = directory_get_child(directory, name)) == NULL) {
-		        //create new directory
-			subdir = directory_new_child(directory, name);
-			subdir->device = DEVICE_INARCHIVE;
-		}
+		subdir = directory_make_child(directory, name);
+		subdir->device = DEVICE_INARCHIVE;
 		//create directories first
 		update_archive_tree(subdir, tmp+1);
 	} else {
