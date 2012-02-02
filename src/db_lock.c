@@ -21,3 +21,7 @@
 #include "db_lock.h"
 
 GStaticMutex db_mutex = G_STATIC_MUTEX_INIT;
+
+#ifndef NDEBUG
+GThread *db_mutex_holder;
+#endif

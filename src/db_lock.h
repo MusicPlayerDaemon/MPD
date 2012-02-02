@@ -30,8 +30,25 @@
 
 #include <glib.h>
 #include <assert.h>
+#include <stdbool.h>
 
 extern GStaticMutex db_mutex;
+
+#ifndef NDEBUG
+
+extern GThread *db_mutex_holder;
+
+/**
+ * Does the current thread hold the database lock?
+ */
+G_GNUC_PURE
+static inline bool
+holding_db_lock(void)
+{
+	return db_mutex_holder == g_thread_self();
+}
+
+#endif
 
 /**
  * Obtain the global database lock.  This is needed before
@@ -40,7 +57,14 @@ extern GStaticMutex db_mutex;
 static inline void
 db_lock(void)
 {
+	assert(!holding_db_lock());
+
 	g_static_mutex_lock(&db_mutex);
+
+	assert(db_mutex_holder == NULL);
+#ifndef NDEBUG
+	db_mutex_holder = g_thread_self();
+#endif
 }
 
 /**
@@ -49,6 +73,11 @@ db_lock(void)
 static inline void
 db_unlock(void)
 {
+	assert(holding_db_lock());
+#ifndef NDEBUG
+	db_mutex_holder = NULL;
+#endif
+
 	g_static_mutex_unlock(&db_mutex);
 }
 
