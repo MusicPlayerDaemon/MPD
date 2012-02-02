@@ -112,7 +112,7 @@ directory_new_child(struct directory *parent, const char *name_utf8)
 	g_free(allocated);
 
 	db_lock();
-	list_add(&directory->siblings, &parent->children);
+	list_add_tail(&directory->siblings, &parent->children);
 	db_unlock();
 	return directory;
 }
@@ -184,7 +184,7 @@ directory_add_song(struct directory *directory, struct song *song)
 	assert(song != NULL);
 	assert(song->parent == directory);
 
-	list_add(&song->siblings, &directory->songs);
+	list_add_tail(&song->siblings, &directory->songs);
 }
 
 void
