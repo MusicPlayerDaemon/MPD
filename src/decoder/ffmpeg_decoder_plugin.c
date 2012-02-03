@@ -614,20 +614,21 @@ static const ffmpeg_tag_map ffmpeg_tag_maps[] = {
 #endif
 
 static void
-ffmpeg_copy_metadata(struct tag *tag, AVDictionary *m,
-		     const ffmpeg_tag_map tag_map)
+ffmpeg_copy_metadata(struct tag *tag, enum tag_type type,
+		     AVDictionary *m, const char *name)
 {
 	AVDictionaryEntry *mt = NULL;
 
-	while ((mt = av_dict_get(m, tag_map.name, mt, 0)) != NULL)
-		tag_add_item(tag, tag_map.type, mt->value);
+	while ((mt = av_dict_get(m, name, mt, 0)) != NULL)
+		tag_add_item(tag, type, mt->value);
 }
 
 static void
 ffmpeg_copy_dictionary(struct tag *tag, AVDictionary *dict)
 {
 	for (unsigned i = 0; i < G_N_ELEMENTS(ffmpeg_tag_maps); i++)
-		ffmpeg_copy_metadata(tag, dict, ffmpeg_tag_maps[i]);
+		ffmpeg_copy_metadata(tag, ffmpeg_tag_maps[i].type,
+				     dict, ffmpeg_tag_maps[i].name);
 }
 
 #endif
