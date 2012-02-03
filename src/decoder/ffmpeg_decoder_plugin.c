@@ -587,24 +587,13 @@ typedef struct ffmpeg_tag_map {
 } ffmpeg_tag_map;
 
 static const ffmpeg_tag_map ffmpeg_tag_maps[] = {
-	{ TAG_TITLE,             "title" },
-#if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(50<<8))
-	{ TAG_ARTIST,            "artist" },
-	{ TAG_DATE,              "date" },
-#else
+#if LIBAVFORMAT_VERSION_INT < ((52<<16)+(50<<8))
 	{ TAG_ARTIST,            "author" },
 	{ TAG_DATE,              "year" },
 #endif
-	{ TAG_ALBUM,             "album" },
-	{ TAG_COMMENT,           "comment" },
-	{ TAG_GENRE,             "genre" },
-	{ TAG_TRACK,             "track" },
 	{ TAG_ARTIST_SORT,       "author-sort" },
 	{ TAG_ALBUM_ARTIST,      "album_artist" },
 	{ TAG_ALBUM_ARTIST_SORT, "album_artist-sort" },
-	{ TAG_COMPOSER,          "composer" },
-	{ TAG_PERFORMER,         "performer" },
-	{ TAG_DISC,              "disc" },
 };
 
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(53,1,0)
@@ -626,6 +615,10 @@ ffmpeg_copy_metadata(struct tag *tag, enum tag_type type,
 static void
 ffmpeg_copy_dictionary(struct tag *tag, AVDictionary *dict)
 {
+	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
+		ffmpeg_copy_metadata(tag, i,
+				     dict, tag_item_names[i]);
+
 	for (unsigned i = 0; i < G_N_ELEMENTS(ffmpeg_tag_maps); i++)
 		ffmpeg_copy_metadata(tag, ffmpeg_tag_maps[i].type,
 				     dict, ffmpeg_tag_maps[i].name);
