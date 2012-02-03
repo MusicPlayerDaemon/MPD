@@ -623,6 +623,13 @@ ffmpeg_copy_metadata(struct tag *tag, AVDictionary *m,
 		tag_add_item(tag, tag_map.type, mt->value);
 }
 
+static void
+ffmpeg_copy_dictionary(struct tag *tag, AVDictionary *dict)
+{
+	for (unsigned i = 0; i < G_N_ELEMENTS(ffmpeg_tag_maps); i++)
+		ffmpeg_copy_metadata(tag, dict, ffmpeg_tag_maps[i]);
+}
+
 #endif
 
 //no tag reading in ffmpeg, check if playable
@@ -671,12 +678,10 @@ ffmpeg_stream_tag(struct input_stream *is)
 	av_metadata_conv(f, NULL, f->iformat->metadata_conv);
 #endif
 
-	for (unsigned i = 0; i < sizeof(ffmpeg_tag_maps)/sizeof(ffmpeg_tag_map); i++) {
-		int idx = ffmpeg_find_audio_stream(f);
-		ffmpeg_copy_metadata(tag, f->metadata, ffmpeg_tag_maps[i]);
-		if (idx >= 0)
-			ffmpeg_copy_metadata(tag, f->streams[idx]->metadata, ffmpeg_tag_maps[i]);
-	}
+	ffmpeg_copy_dictionary(tag, f->metadata);
+	int idx = ffmpeg_find_audio_stream(f);
+	if (idx >= 0)
+		ffmpeg_copy_dictionary(tag, f->streams[idx]->metadata);
 #else
 	if (f->author[0])
 		tag_add_item(tag, TAG_ARTIST, f->author);
