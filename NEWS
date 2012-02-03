@@ -2,7 +2,7 @@ ver 0.16.7 (2011/??/??)
 * input:
   - ffmpeg: support libavformat 0.7
 * decoder:
-  - ffmpeg: support libavformat 0.8, libavcodec 0.8
+  - ffmpeg: support libavformat 0.8, libavcodec 0.9
   - ffmpeg: support all MPD tags
 * output:
   - httpd: fix excessive buffering

@@ -371,10 +371,18 @@ ffmpeg_sample_format(G_GNUC_UNUSED const AVCodecContext *codec_context)
 {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(51, 41, 0)
 	switch (codec_context->sample_fmt) {
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 94, 1)
+	case AV_SAMPLE_FMT_S16:
+#else
 	case SAMPLE_FMT_S16:
+#endif
 		return SAMPLE_FORMAT_S16;
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 94, 1)
+	case AV_SAMPLE_FMT_S32:
+#else
 	case SAMPLE_FMT_S32:
+#endif
 		return SAMPLE_FORMAT_S32;
 
 	default:
