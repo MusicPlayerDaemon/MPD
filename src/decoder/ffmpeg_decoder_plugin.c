@@ -607,7 +607,7 @@ static const ffmpeg_tag_map ffmpeg_tag_maps[] = {
 	{ TAG_DISC,              "disc" },
 };
 
-static bool
+static void
 ffmpeg_copy_metadata(struct tag *tag,
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,1,0)
 		     AVDictionary *m,
@@ -627,8 +627,6 @@ ffmpeg_copy_metadata(struct tag *tag,
 	while ((mt = av_metadata_get(m, tag_map.name, mt, 0)) != NULL)
 		tag_add_item(tag, tag_map.type, mt->value);
 #endif
-
-	return mt != NULL;
 }
 
 #endif
