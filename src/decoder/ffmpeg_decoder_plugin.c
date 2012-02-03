@@ -594,6 +594,9 @@ static const ffmpeg_tag_map ffmpeg_tag_maps[] = {
 	{ TAG_ARTIST_SORT,       "author-sort" },
 	{ TAG_ALBUM_ARTIST,      "album_artist" },
 	{ TAG_ALBUM_ARTIST_SORT, "album_artist-sort" },
+
+	/* sentinel */
+	{ TAG_NUM_OF_ITEM_TYPES, NULL }
 };
 
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(53,1,0)
@@ -619,9 +622,9 @@ ffmpeg_copy_dictionary(struct tag *tag, AVDictionary *dict)
 		ffmpeg_copy_metadata(tag, i,
 				     dict, tag_item_names[i]);
 
-	for (unsigned i = 0; i < G_N_ELEMENTS(ffmpeg_tag_maps); i++)
-		ffmpeg_copy_metadata(tag, ffmpeg_tag_maps[i].type,
-				     dict, ffmpeg_tag_maps[i].name);
+	for (const struct ffmpeg_tag_map *i = ffmpeg_tag_maps;
+	     i->name != NULL; ++i)
+		ffmpeg_copy_metadata(tag, i->type, dict, i->name);
 }
 
 #endif
