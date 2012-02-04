@@ -359,10 +359,18 @@ static enum sample_format
 ffmpeg_sample_format(G_GNUC_UNUSED const AVCodecContext *codec_context)
 {
 	switch (codec_context->sample_fmt) {
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 94, 1)
+	case AV_SAMPLE_FMT_S16:
+#else
 	case SAMPLE_FMT_S16:
+#endif
 		return SAMPLE_FORMAT_S16;
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 94, 1)
+	case AV_SAMPLE_FMT_S32:
+#else
 	case SAMPLE_FMT_S32:
+#endif
 		return SAMPLE_FORMAT_S32;
 
 	default:
@@ -571,48 +579,44 @@ typedef struct ffmpeg_tag_map {
 } ffmpeg_tag_map;
 
 static const ffmpeg_tag_map ffmpeg_tag_maps[] = {
-	{ TAG_TITLE,             "title" },
-#if LIBAVFORMAT_VERSION_INT >= ((52<<16)+(50<<8))
-	{ TAG_ARTIST,            "artist" },
-	{ TAG_DATE,              "date" },
-#else
+#if LIBAVFORMAT_VERSION_INT < ((52<<16)+(50<<8))
 	{ TAG_ARTIST,            "author" },
 	{ TAG_DATE,              "year" },
 #endif
-	{ TAG_ALBUM,             "album" },
-	{ TAG_COMMENT,           "comment" },
-	{ TAG_GENRE,             "genre" },
-	{ TAG_TRACK,             "track" },
 	{ TAG_ARTIST_SORT,       "author-sort" },
 	{ TAG_ALBUM_ARTIST,      "album_artist" },
 	{ TAG_ALBUM_ARTIST_SORT, "album_artist-sort" },
-	{ TAG_COMPOSER,          "composer" },
-	{ TAG_PERFORMER,         "performer" },
-	{ TAG_DISC,              "disc" },
+
+	/* sentinel */
+	{ TAG_NUM_OF_ITEM_TYPES, NULL }
 };
 
-static bool
-ffmpeg_copy_metadata(struct tag *tag,
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,1,0)
-		     AVDictionary *m,
-#else
-		     AVMetadata *m,
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(53,1,0)
+#define AVDictionary AVMetadata
+#define AVDictionaryEntry AVMetadataTag
+#define av_dict_get av_metadata_get
 #endif
-		     const ffmpeg_tag_map tag_map)
+
+static void
+ffmpeg_copy_metadata(struct tag *tag, enum tag_type type,
+		     AVDictionary *m, const char *name)
 {
-#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,5,0)
 	AVDictionaryEntry *mt = NULL;
 
-	while ((mt = av_dict_get(m, tag_map.name, mt, 0)) != NULL)
-		tag_add_item(tag, tag_map.type, mt->value);
-#else
-	AVMetadataTag *mt = NULL;
+	while ((mt = av_dict_get(m, name, mt, 0)) != NULL)
+		tag_add_item(tag, type, mt->value);
+}
 
-	while ((mt = av_metadata_get(m, tag_map.name, mt, 0)) != NULL)
-		tag_add_item(tag, tag_map.type, mt->value);
-#endif
+static void
+ffmpeg_copy_dictionary(struct tag *tag, AVDictionary *dict)
+{
+	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
+		ffmpeg_copy_metadata(tag, i,
+				     dict, tag_item_names[i]);
 
-	return mt != NULL;
+	for (const struct ffmpeg_tag_map *i = ffmpeg_tag_maps;
+	     i->name != NULL; ++i)
+		ffmpeg_copy_metadata(tag, i->type, dict, i->name);
 }
 
 //no tag reading in ffmpeg, check if playable
@@ -660,12 +664,10 @@ ffmpeg_stream_tag(struct input_stream *is)
 	av_metadata_conv(f, NULL, f->iformat->metadata_conv);
 #endif
 
-	for (unsigned i = 0; i < sizeof(ffmpeg_tag_maps)/sizeof(ffmpeg_tag_map); i++) {
-		int idx = ffmpeg_find_audio_stream(f);
-		ffmpeg_copy_metadata(tag, f->metadata, ffmpeg_tag_maps[i]);
-		if (idx >= 0)
-			ffmpeg_copy_metadata(tag, f->streams[idx]->metadata, ffmpeg_tag_maps[i]);
-	}
+	ffmpeg_copy_dictionary(tag, f->metadata);
+	int idx = ffmpeg_find_audio_stream(f);
+	if (idx >= 0)
+		ffmpeg_copy_dictionary(tag, f->streams[idx]->metadata);
 
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
 	avformat_close_input(&f);
