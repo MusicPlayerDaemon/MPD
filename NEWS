@@ -1,4 +1,4 @@
-ver 0.16.7 (2011/??/??)
+ver 0.16.7 (2012/02/04)
 * input:
   - ffmpeg: support libavformat 0.7
 * decoder:
