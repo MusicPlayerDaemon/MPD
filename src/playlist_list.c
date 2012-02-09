@@ -54,9 +54,7 @@ static const struct playlist_plugin *const playlist_plugins[] = {
 #ifdef ENABLE_LASTFM
 	&lastfm_playlist_plugin,
 #endif
-#ifdef HAVE_CUE
 	&cue_playlist_plugin,
-#endif
 #ifdef HAVE_FLAC
 	&flac_playlist_plugin,
 #endif

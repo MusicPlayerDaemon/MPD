@@ -157,11 +157,6 @@ AC_ARG_ENABLE(cdio-paranoia,
 		[enable support for audio CD support]),,
 	enable_cdio_paranoia=auto)
 
-AC_ARG_ENABLE(cue,
-	AS_HELP_STRING([--enable-cue],
-		[enable support for libcue support]),,
-	enable_cue=auto)
-
 AC_ARG_ENABLE(curl,
 	AS_HELP_STRING([--enable-curl],
 		[enable support for libcurl HTTP streaming (default: auto)]),,
@@ -539,16 +534,6 @@ dnl ---------------------------------------------------------------------------
 dnl Metadata Plugins
 dnl ---------------------------------------------------------------------------
 
-dnl ---------------------------------- libcue ---------------------------------
-MPD_AUTO_PKG(cue, CUE, [libcue],
-	[libcue parsing library], [libcue not found])
-if test x$enable_cue = xyes; then
-	AC_DEFINE([HAVE_CUE], 1,
-		[Define to enable libcue support])
-fi
-
-AM_CONDITIONAL(HAVE_CUE, test x$enable_cue = xyes)
-
 dnl -------------------------------- libid3tag --------------------------------
 MPD_AUTO_PKG_LIB(id3, ID3TAG, id3tag, id3tag, id3_file_open, [-lid3tag -lz], [],
 	[id3tag], [libid3tag not found])
@@ -686,7 +671,7 @@ if test x$enable_despotify = xyes; then
 fi
 AM_CONDITIONAL(ENABLE_DESPOTIFY, test x$enable_despotify = xyes)
 
-dnl ---------------------------------- libcue ---------------------------------
+dnl ---------------------------------- cdio ---------------------------------
 MPD_AUTO_PKG(cdio_paranoia, CDIO_PARANOIA, [libcdio_paranoia],
 	[libcdio_paranoia audio CD library], [libcdio_paranoia not found])
 if test x$enable_cdio_paranoia = xyes; then
@@ -1547,7 +1532,6 @@ results(inotify, [inotify])
 results(sqlite, [SQLite])
 
 printf '\nMetadata support:\n\t'
-results(cue,[cue])
 results(id3,[ID3])
 
 printf '\nPlayback support:\n\t'

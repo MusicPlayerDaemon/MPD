@@ -22,10 +22,11 @@
 #include "playlist_plugin.h"
 #include "tag.h"
 #include "song.h"
-#include "cue/cue_tag.h"
+#include "cue/cue_parser.h"
+#include "input_stream.h"
+#include "text_input_stream.h"
 
 #include <glib.h>
-#include <libcue/libcue.h>
 #include <assert.h>
 #include <string.h>
 
@@ -35,32 +36,21 @@
 struct cue_playlist {
 	struct playlist_provider base;
 
-	struct Cd *cd;
-
-	unsigned next;
+	struct input_stream *is;
+	struct text_input_stream *tis;
+	struct cue_parser *parser;
 };
 
 static struct playlist_provider *
-cue_playlist_open_uri(const char *uri,
-		      G_GNUC_UNUSED GMutex *mutex, G_GNUC_UNUSED GCond *cond)
+cue_playlist_open_stream(struct input_stream *is)
 {
-	struct cue_playlist *playlist;
-	FILE *file;
-	struct Cd *cd;
-
-	file = fopen(uri, "rt");
-	if (file == NULL)
-		return NULL;
-
-	cd = cue_parse_file(file);
-	fclose(file);
-	if (cd == NULL)
-		return NULL;
-
-	playlist = g_new(struct cue_playlist, 1);
+	struct cue_playlist *playlist = g_new(struct cue_playlist, 1);
 	playlist_provider_init(&playlist->base, &cue_playlist_plugin);
-	playlist->cd = cd;
-	playlist->next = 1;
+
+	playlist->is = is;
+	playlist->tis = text_input_stream_new(is);
+	playlist->parser = cue_parser_new();
+
 
 	return &playlist->base;
 }
@@ -70,7 +60,8 @@ cue_playlist_close(struct playlist_provider *_playlist)
 {
 	struct cue_playlist *playlist = (struct cue_playlist *)_playlist;
 
-	cd_delete(playlist->cd);
+	cue_parser_free(playlist->parser);
+	text_input_stream_free(playlist->tis);
 	g_free(playlist);
 }
 
@@ -78,45 +69,21 @@ static struct song *
 cue_playlist_read(struct playlist_provider *_playlist)
 {
 	struct cue_playlist *playlist = (struct cue_playlist *)_playlist;
-	struct Track *track;
-	struct tag *tag;
-	const char *filename;
-	struct song *song;
 
-	track = cd_get_track(playlist->cd, playlist->next);
-	if (track == NULL)
-		return NULL;
+	struct song *song = cue_parser_get(playlist->parser);
+	if (song != NULL)
+		return song;
 
-	tag = cue_tag(playlist->cd, playlist->next);
-	if (tag == NULL)
-		return NULL;
-
-	++playlist->next;
-
-	filename = track_get_filename(track);
-	if (*filename == 0 || filename[0] == '.' ||
-	    strchr(filename, '/') != NULL) {
-		/* unsafe characters found, bail out */
-		tag_free(tag);
-		return NULL;
+	const char *line;
+	while ((line = text_input_stream_read(playlist->tis)) != NULL) {
+		cue_parser_feed(playlist->parser, line);
+		song = cue_parser_get(playlist->parser);
+		if (song != NULL)
+			return song;
 	}
 
-	song = song_remote_new(filename);
-	song->tag = tag;
-	song->start_ms = ((track_get_start(track)
-			   + track_get_index(track, 1)
-			   - track_get_zero_pre(track)) * 1000) / 75;
-
-	/* append pregap of the next track to the end of this one */
-	track = cd_get_track(playlist->cd, playlist->next);
-	if (track != NULL)
-		song->end_ms = ((track_get_start(track)
-				 + track_get_index(track, 1)
-				 - track_get_zero_pre(track)) * 1000) / 75;
-	else
-		song->end_ms = 0;
-
-	return song;
+	cue_parser_finish(playlist->parser);
+	return cue_parser_get(playlist->parser);
 }
 
 static const char *const cue_playlist_suffixes[] = {
@@ -132,7 +99,7 @@ static const char *const cue_playlist_mime_types[] = {
 const struct playlist_plugin cue_playlist_plugin = {
 	.name = "cue",
 
-	.open_uri = cue_playlist_open_uri,
+	.open_stream = cue_playlist_open_stream,
 	.close = cue_playlist_close,
 	.read = cue_playlist_read,
 

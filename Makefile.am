@@ -218,7 +218,6 @@ mpd_headers = \
 	src/archive/iso9660_archive_plugin.h \
 	src/archive/zzip_archive_plugin.h \
 	src/input/archive_input_plugin.h \
-	src/cue/cue_tag.h\
 	src/mpd_error.h
 
 src_mpd_SOURCES = \
@@ -239,6 +238,7 @@ src_mpd_SOURCES = \
 	src/cmdline.c \
 	src/conf.c \
 	src/crossfade.c \
+	src/cue/cue_parser.c src/cue/cue_parser.h \
 	src/dbUtils.c \
 	src/decoder_thread.c \
 	src/decoder_control.c \
@@ -478,8 +478,7 @@ libdecoder_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(MPG123_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
 	$(MPCDEC_CFLAGS) \
-	$(FAAD_CFLAGS) \
-	$(CUE_CFLAGS)
+	$(FAAD_CFLAGS)
 
 DECODER_LIBS = \
 	libdecoder_plugins.a \
@@ -497,8 +496,7 @@ DECODER_LIBS = \
 	$(MP4FF_LIBS) \
 	$(FFMPEG_LIBS) \
 	$(MPCDEC_LIBS) \
-	$(FAAD_LIBS) \
-	$(CUE_LIBS)
+	$(FAAD_LIBS)
 
 DECODER_SRC =
 
@@ -858,10 +856,10 @@ libplaylist_plugins_a_SOURCES = \
 	src/playlist/xspf_playlist_plugin.c \
 	src/playlist/asx_playlist_plugin.c \
 	src/playlist/rss_playlist_plugin.c \
+	src/playlist/cue_playlist_plugin.c \
 	src/playlist_list.c
 libplaylist_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
-	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
-	$(CUE_CFLAGS)
+	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS))
 
 PLAYLIST_LIBS = \
 	libplaylist_plugins.a \
@@ -873,11 +871,6 @@ endif
 
 if ENABLE_DESPOTIFY
 libplaylist_plugins_a_SOURCES += src/playlist/despotify_playlist_plugin.c
-endif
-
-if HAVE_CUE
-libplaylist_plugins_a_SOURCES += src/playlist/cue_playlist_plugin.c
-libplaylist_plugins_a_SOURCES += src/cue/cue_tag.c
 endif
 
 if HAVE_FLAC
@@ -998,7 +991,6 @@ test_run_input_SOURCES = test/run_input.c \
 
 test_dump_playlist_LDADD = \
 	$(PLAYLIST_LIBS) \
-	$(CUE_LIBS) \
 	$(FLAC_LIBS) \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
@@ -1009,6 +1001,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.c \
 	src/uri.c \
 	src/song.c src/tag.c src/tag_pool.c src/tag_save.c \
 	src/text_input_stream.c src/fifo_buffer.c \
+	src/cue/cue_parser.c src/cue/cue_parser.h \
 	src/fd_util.c
 
 if HAVE_FLAC

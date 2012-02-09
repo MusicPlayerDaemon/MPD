@@ -27,6 +27,7 @@ ver 0.17 (2011/??/??)
   - alsa: listen for external volume changes
 * playlist:
   - allow references to songs outside the music directory
+  - new CUE parser, without libcue
 * state_file: add option "restore_paused"
 * cue: show CUE track numbers
 * allow port specification in "bind_to_address" settings
