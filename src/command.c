@@ -796,12 +796,21 @@ handle_save(struct client *client,
 }
 
 static enum command_return
-handle_load(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_load(struct client *client, int argc, char *argv[])
 {
+	unsigned start_index, end_index;
+
+	if (argc < 3) {
+		start_index = 0;
+		end_index = G_MAXUINT;
+	} else if (!check_range(client, &start_index, &end_index,
+				argv[2], need_range))
+		return COMMAND_RETURN_ERROR;
+
 	enum playlist_result result;
 
 	result = playlist_open_into_queue(argv[1],
-					  0, G_MAXUINT,
+					  start_index, end_index,
 					  &g_playlist,
 					  client->player_control, true);
 	if (result != PLAYLIST_RESULT_NO_SUCH_LIST)
@@ -809,7 +818,7 @@ handle_load(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 
 	GError *error = NULL;
 	return playlist_load_spl(&g_playlist, client->player_control,
-				 argv[1], 0, G_MAXUINT,
+				 argv[1], start_index, end_index,
 				 &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
@@ -2140,7 +2149,7 @@ static const struct command commands[] = {
 	{ "listplaylist", PERMISSION_READ, 1, 1, handle_listplaylist },
 	{ "listplaylistinfo", PERMISSION_READ, 1, 1, handle_listplaylistinfo },
 	{ "listplaylists", PERMISSION_READ, 0, 0, handle_listplaylists },
-	{ "load", PERMISSION_ADD, 1, 1, handle_load },
+	{ "load", PERMISSION_ADD, 1, 2, handle_load },
 	{ "lsinfo", PERMISSION_READ, 0, 1, handle_lsinfo },
 	{ "mixrampdb", PERMISSION_CONTROL, 1, 1, handle_mixrampdb },
 	{ "mixrampdelay", PERMISSION_CONTROL, 1, 1, handle_mixrampdelay },

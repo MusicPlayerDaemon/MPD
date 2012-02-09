@@ -1312,12 +1312,14 @@ OK
             <cmdsynopsis>
               <command>load</command>
               <arg choice="req"><replaceable>NAME</replaceable></arg>
+              <arg choice="opt"><replaceable>START:END</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
               Loads the playlist into the current queue.  Playlist
-              plugins are supported.
+              plugins are supported.  A range may be specified to load
+              only a part of the playlist.
             </para>
           </listitem>
         </varlistentry>
