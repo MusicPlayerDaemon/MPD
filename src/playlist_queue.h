@@ -38,9 +38,12 @@ struct player_control;
  *
  * @param uri the URI of the playlist, used to resolve relative song
  * URIs
+ * @param start_index the index of the first song
+ * @param end_index the index of the last song (excluding)
  */
 enum playlist_result
 playlist_load_into_queue(const char *uri, struct playlist_provider *source,
+			 unsigned start_index, unsigned end_index,
 			 struct playlist *dest, struct player_control *pc,
 			 bool secure);
 
@@ -50,6 +53,7 @@ playlist_load_into_queue(const char *uri, struct playlist_provider *source,
  */
 enum playlist_result
 playlist_open_into_queue(const char *uri,
+			 unsigned start_index, unsigned end_index,
 			 struct playlist *dest, struct player_control *pc,
 			 bool secure);
 

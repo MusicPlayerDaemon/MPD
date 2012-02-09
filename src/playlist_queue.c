@@ -28,6 +28,7 @@
 
 enum playlist_result
 playlist_load_into_queue(const char *uri, struct playlist_provider *source,
+			 unsigned start_index, unsigned end_index,
 			 struct playlist *dest, struct player_control *pc,
 			 bool secure)
 {
@@ -35,7 +36,16 @@ playlist_load_into_queue(const char *uri, struct playlist_provider *source,
 	struct song *song;
 	char *base_uri = uri != NULL ? g_path_get_dirname(uri) : NULL;
 
-	while ((song = playlist_plugin_read(source)) != NULL) {
+	for (unsigned i = 0;
+	     i < end_index && (song = playlist_plugin_read(source)) != NULL;
+	     ++i) {
+		if (i < start_index) {
+			/* skip songs before the start index */
+			if (!song_in_database(song))
+				song_free(song);
+			continue;
+		}
+
 		song = playlist_check_translate_song(song, base_uri, secure);
 		if (song == NULL)
 			continue;
@@ -56,6 +66,7 @@ playlist_load_into_queue(const char *uri, struct playlist_provider *source,
 
 enum playlist_result
 playlist_open_into_queue(const char *uri,
+			 unsigned start_index, unsigned end_index,
 			 struct playlist *dest, struct player_control *pc,
 			 bool secure)
 {
@@ -72,7 +83,8 @@ playlist_open_into_queue(const char *uri,
 	}
 
 	enum playlist_result result =
-		playlist_load_into_queue(uri, playlist, dest, pc, secure);
+		playlist_load_into_queue(uri, playlist, start_index, end_index,
+					 dest, pc, secure);
 	playlist_plugin_close(playlist);
 
 	if (is != NULL)

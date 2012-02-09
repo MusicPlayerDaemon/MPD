@@ -800,7 +800,9 @@ handle_load(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	enum playlist_result result;
 
-	result = playlist_open_into_queue(argv[1], &g_playlist,
+	result = playlist_open_into_queue(argv[1],
+					  0, G_MAXUINT,
+					  &g_playlist,
 					  client->player_control, true);
 	if (result != PLAYLIST_RESULT_NO_SUCH_LIST)
 		return print_playlist_result(client, result);
