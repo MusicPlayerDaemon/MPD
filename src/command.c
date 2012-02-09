@@ -809,7 +809,8 @@ handle_load(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 
 	GError *error = NULL;
 	return playlist_load_spl(&g_playlist, client->player_control,
-				 argv[1], &error)
+				 argv[1], 0, G_MAXUINT,
+				 &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
 }

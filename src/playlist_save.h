@@ -54,6 +54,8 @@ spl_save_playlist(const char *name_utf8, const struct playlist *playlist);
  */
 bool
 playlist_load_spl(struct playlist *playlist, struct player_control *pc,
-		  const char *name_utf8, GError **error_r);
+		  const char *name_utf8,
+		  unsigned start_index, unsigned end_index,
+		  GError **error_r);
 
 #endif

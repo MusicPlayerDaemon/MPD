@@ -112,7 +112,9 @@ spl_save_playlist(const char *name_utf8, const struct playlist *playlist)
 
 bool
 playlist_load_spl(struct playlist *playlist, struct player_control *pc,
-		  const char *name_utf8, GError **error_r)
+		  const char *name_utf8,
+		  unsigned start_index, unsigned end_index,
+		  GError **error_r)
 {
 	GPtrArray *list;
 
@@ -120,7 +122,10 @@ playlist_load_spl(struct playlist *playlist, struct player_control *pc,
 	if (list == NULL)
 		return false;
 
-	for (unsigned i = 0; i < list->len; ++i) {
+	if (list->len < end_index)
+		end_index = list->len;
+
+	for (unsigned i = start_index; i < end_index; ++i) {
 		const char *temp = g_ptr_array_index(list, i);
 		if ((playlist_append_uri(playlist, pc, temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
 			/* for windows compatibility, convert slashes */
