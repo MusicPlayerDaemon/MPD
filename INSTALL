@@ -136,9 +136,6 @@ For playing MMS streams.
 SQLite - http://www.sqlite.org/
 For the sticker database.
 
-libcue - http://libcue.sourceforge.net/
-For CUE sheet support.
-
 libcdio - http://www.gnu.org/software/libcdio/
 For playing audio CDs.
 
