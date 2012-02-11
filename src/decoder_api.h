@@ -83,7 +83,7 @@ double
 decoder_seek_where(struct decoder *decoder);
 
 /**
- * Call this right before decoder_command_finished() when seeking has
+ * Call this instead of decoder_command_finished() when seeking has
  * failed.
  *
  * @param decoder the decoder object
