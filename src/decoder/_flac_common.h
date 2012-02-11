@@ -94,8 +94,7 @@ flac_data_deinit(struct flac_data *data);
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 			     struct flac_data *data);
 
-void flac_error_common_cb(const char *plugin,
-			  FLAC__StreamDecoderErrorStatus status,
+void flac_error_common_cb(FLAC__StreamDecoderErrorStatus status,
 			  struct flac_data *data);
 
 FLAC__StreamDecoderWriteStatus

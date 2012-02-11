@@ -117,46 +117,33 @@ static void
 flac_error_cb(G_GNUC_UNUSED const FLAC__StreamDecoder *fd,
 	      FLAC__StreamDecoderErrorStatus status, void *fdata)
 {
-	flac_error_common_cb("flac", status, (struct flac_data *) fdata);
+	flac_error_common_cb(status, (struct flac_data *) fdata);
 }
 
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
 static void flacPrintErroredState(FLAC__SeekableStreamDecoderState state)
 {
-	const char *str = ""; /* "" to silence compiler warning */
 	switch (state) {
 	case FLAC__SEEKABLE_STREAM_DECODER_OK:
 	case FLAC__SEEKABLE_STREAM_DECODER_SEEKING:
 	case FLAC__SEEKABLE_STREAM_DECODER_END_OF_STREAM:
 		return;
+
 	case FLAC__SEEKABLE_STREAM_DECODER_MEMORY_ALLOCATION_ERROR:
-		str = "allocation error";
-		break;
 	case FLAC__SEEKABLE_STREAM_DECODER_READ_ERROR:
-		str = "read error";
-		break;
 	case FLAC__SEEKABLE_STREAM_DECODER_SEEK_ERROR:
-		str = "seek error";
-		break;
 	case FLAC__SEEKABLE_STREAM_DECODER_STREAM_DECODER_ERROR:
-		str = "seekable stream error";
-		break;
 	case FLAC__SEEKABLE_STREAM_DECODER_ALREADY_INITIALIZED:
-		str = "decoder already initialized";
-		break;
 	case FLAC__SEEKABLE_STREAM_DECODER_INVALID_CALLBACK:
-		str = "invalid callback";
-		break;
 	case FLAC__SEEKABLE_STREAM_DECODER_UNINITIALIZED:
-		str = "decoder uninitialized";
+		break;
 	}
 
-	g_warning("%s\n", str);
+	g_warning("%s\n", FLAC__SeekableStreamDecoderStateString[state]);
 }
 #else /* FLAC_API_VERSION_CURRENT >= 7 */
 static void flacPrintErroredState(FLAC__StreamDecoderState state)
 {
-	const char *str = ""; /* "" to silence compiler warning */
 	switch (state) {
 	case FLAC__STREAM_DECODER_SEARCH_FOR_METADATA:
 	case FLAC__STREAM_DECODER_READ_METADATA:
@@ -164,23 +151,16 @@ static void flacPrintErroredState(FLAC__StreamDecoderState state)
 	case FLAC__STREAM_DECODER_READ_FRAME:
 	case FLAC__STREAM_DECODER_END_OF_STREAM:
 		return;
+
 	case FLAC__STREAM_DECODER_OGG_ERROR:
-		str = "error in the Ogg layer";
-		break;
 	case FLAC__STREAM_DECODER_SEEK_ERROR:
-		str = "seek error";
-		break;
 	case FLAC__STREAM_DECODER_ABORTED:
-		str = "decoder aborted by read";
-		break;
 	case FLAC__STREAM_DECODER_MEMORY_ALLOCATION_ERROR:
-		str = "allocation error";
-		break;
 	case FLAC__STREAM_DECODER_UNINITIALIZED:
-		str = "decoder uninitialized";
+		break;
 	}
 
-	g_warning("%s\n", str);
+	g_warning("%s\n", FLAC__StreamDecoderStateString[state]);
 }
 #endif /* FLAC_API_VERSION_CURRENT >= 7 */
 

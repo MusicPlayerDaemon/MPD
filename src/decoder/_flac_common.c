@@ -139,26 +139,13 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 	}
 }
 
-void flac_error_common_cb(const char *plugin,
-			  const FLAC__StreamDecoderErrorStatus status,
+void flac_error_common_cb(const FLAC__StreamDecoderErrorStatus status,
 			  struct flac_data *data)
 {
 	if (decoder_get_command(data->decoder) == DECODE_COMMAND_STOP)
 		return;
 
-	switch (status) {
-	case FLAC__STREAM_DECODER_ERROR_STATUS_LOST_SYNC:
-		g_warning("%s lost sync\n", plugin);
-		break;
-	case FLAC__STREAM_DECODER_ERROR_STATUS_BAD_HEADER:
-		g_warning("bad %s header\n", plugin);
-		break;
-	case FLAC__STREAM_DECODER_ERROR_STATUS_FRAME_CRC_MISMATCH:
-		g_warning("%s crc mismatch\n", plugin);
-		break;
-	default:
-		g_warning("unknown %s error\n", plugin);
-	}
+	g_warning("%s", FLAC__StreamDecoderErrorStatusString[status]);
 }
 
 /**
