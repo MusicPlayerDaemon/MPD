@@ -27,6 +27,7 @@
 #include "tag_ape.h"
 #include "tag_id3.h"
 #include "tag.h"
+#include "tag_handler.h"
 #include "input_stream.h"
 
 #include <glib.h>
@@ -136,12 +137,16 @@ song_file_update(struct song *song)
 
 	do {
 		/* load file tag */
-		song->tag = decoder_plugin_tag_dup(plugin, path_fs);
-		if (song->tag != NULL)
+		song->tag = tag_new();
+		if (decoder_plugin_scan_file(plugin, path_fs,
+					     &add_tag_handler, song->tag))
 			break;
 
+		tag_free(song->tag);
+		song->tag = NULL;
+
 		/* fall back to stream tag */
-		if (plugin->stream_tag != NULL) {
+		if (plugin->scan_stream != NULL) {
 			/* open the input_stream (if not already
 			   open) */
 			if (is == NULL) {
@@ -153,10 +158,14 @@ song_file_update(struct song *song)
 
 			/* now try the stream_tag() method */
 			if (is != NULL) {
-				song->tag = decoder_plugin_stream_tag(plugin,
-								      is);
-				if (song->tag != NULL)
+				song->tag = tag_new();
+				if (decoder_plugin_scan_stream(plugin, is,
+							       &add_tag_handler,
+							       song->tag))
 					break;
+
+				tag_free(song->tag);
+				song->tag = NULL;
 
 				input_stream_lock_seek(is, 0, SEEK_SET, NULL);
 			}

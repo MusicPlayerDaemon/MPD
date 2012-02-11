@@ -22,6 +22,7 @@
 #include "_ogg_common.h"
 #include "audio_check.h"
 #include "uri.h"
+#include "tag_handler.h"
 
 #ifndef HAVE_TREMOR
 #define OV_EXCLUDE_STATIC_CALLBACKS
@@ -268,24 +269,24 @@ vorbis_stream_decode(struct decoder *decoder,
 	ov_clear(&vf);
 }
 
-static struct tag *
-vorbis_stream_tag(struct input_stream *is)
+static bool
+vorbis_scan_stream(struct input_stream *is,
+		   const struct tag_handler *handler, void *handler_ctx)
 {
 	struct vorbis_input_stream vis;
 	OggVorbis_File vf;
 
 	if (!vorbis_is_open(&vis, &vf, NULL, is))
-		return NULL;
+		return false;
 
-	struct tag *tag = vorbis_comments_to_tag(ov_comment(&vf, -1)->user_comments);
+	tag_handler_invoke_duration(handler, handler_ctx,
+				    (int)(ov_time_total(&vf, -1) + 0.5));
 
-	if (tag == NULL)
-		tag = tag_new();
-	tag->time = (int)(ov_time_total(&vf, -1) + 0.5);
+	vorbis_comments_scan(ov_comment(&vf, -1)->user_comments,
+			     handler, handler_ctx);
 
 	ov_clear(&vf);
-
-	return tag;
+	return true;
 }
 
 static const char *const vorbis_suffixes[] = {
@@ -307,7 +308,7 @@ static const char *const vorbis_mime_types[] = {
 const struct decoder_plugin vorbis_decoder_plugin = {
 	.name = "vorbis",
 	.stream_decode = vorbis_stream_decode,
-	.stream_tag = vorbis_stream_tag,
+	.scan_stream = vorbis_scan_stream,
 	.suffixes = vorbis_suffixes,
 	.mime_types = vorbis_mime_types
 };

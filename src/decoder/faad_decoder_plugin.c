@@ -21,6 +21,7 @@
 #include "decoder_api.h"
 #include "decoder_buffer.h"
 #include "audio_check.h"
+#include "tag_handler.h"
 
 #define AAC_MAX_CHANNELS	6
 
@@ -487,18 +488,17 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	faacDecClose(decoder);
 }
 
-static struct tag *
-faad_stream_tag(struct input_stream *is)
+static bool
+faad_scan_stream(struct input_stream *is,
+		 const struct tag_handler *handler, void *handler_ctx)
 {
 	int file_time = faad_get_file_time(is);
-	struct tag *tag;
 
 	if (file_time < 0)
-		return NULL;
+		return false;
 
-	tag = tag_new();
-	tag->time = file_time;
-	return tag;
+	tag_handler_invoke_duration(handler, handler_ctx, file_time);
+	return true;
 }
 
 static const char *const faad_suffixes[] = { "aac", NULL };
@@ -509,7 +509,7 @@ static const char *const faad_mime_types[] = {
 const struct decoder_plugin faad_decoder_plugin = {
 	.name = "faad",
 	.stream_decode = faad_stream_decode,
-	.stream_tag = faad_stream_tag,
+	.scan_stream = faad_scan_stream,
 	.suffixes = faad_suffixes,
 	.mime_types = faad_mime_types,
 };

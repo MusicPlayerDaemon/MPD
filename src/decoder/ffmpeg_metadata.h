@@ -32,9 +32,10 @@
 #define av_dict_get av_metadata_get
 #endif
 
-struct tag;
+struct tag_handler;
 
 void
-ffmpeg_copy_dictionary(struct tag *tag, AVDictionary *dict);
+ffmpeg_scan_dictionary(AVDictionary *dict,
+		       const struct tag_handler *handler, void *handler_ctx);
 
 #endif

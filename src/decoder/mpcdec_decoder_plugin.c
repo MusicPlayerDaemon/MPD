@@ -20,6 +20,7 @@
 #include "config.h"
 #include "decoder_api.h"
 #include "audio_check.h"
+#include "tag_handler.h"
 
 #ifdef MPC_IS_OLD_API
 #include <mpcdec/mpcdec.h>
@@ -323,18 +324,17 @@ mpcdec_get_file_duration(struct input_stream *is)
 	return total_time;
 }
 
-static struct tag *
-mpcdec_stream_tag(struct input_stream *is)
+static bool
+mpcdec_scan_stream(struct input_stream *is,
+		   const struct tag_handler *handler, void *handler_ctx)
 {
 	float total_time = mpcdec_get_file_duration(is);
-	struct tag *tag;
 
 	if (total_time < 0)
-		return NULL;
+		return false;
 
-	tag = tag_new();
-	tag->time = total_time;
-	return tag;
+	tag_handler_invoke_duration(handler, handler_ctx, total_time);
+	return true;
 }
 
 static const char *const mpcdec_suffixes[] = { "mpc", NULL };
@@ -342,6 +342,6 @@ static const char *const mpcdec_suffixes[] = { "mpc", NULL };
 const struct decoder_plugin mpcdec_decoder_plugin = {
 	.name = "mpcdec",
 	.stream_decode = mpcdec_decode,
-	.stream_tag = mpcdec_stream_tag,
+	.scan_stream = mpcdec_scan_stream,
 	.suffixes = mpcdec_suffixes,
 };

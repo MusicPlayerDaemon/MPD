@@ -26,6 +26,7 @@
 struct config_param;
 struct input_stream;
 struct tag;
+struct tag_handler;
 
 /**
  * Opaque handle which the decoder plugin passes to the functions in
@@ -70,18 +71,22 @@ struct decoder_plugin {
 	void (*file_decode)(struct decoder *decoder, const char *path_fs);
 
 	/**
-	 * Read the tags of a local file.
+	 * Scan metadata of a file.
 	 *
-	 * @return NULL if the operation has failed
+	 * @return false if the operation has failed
 	 */
-	struct tag *(*tag_dup)(const char *path_fs);
+	bool (*scan_file)(const char *path_fs,
+			  const struct tag_handler *handler,
+			  void *handler_ctx);
 
 	/**
-	 * Read the tags of a stream.
+	 * Scan metadata of a file.
 	 *
-	 * @return NULL if the operation has failed
+	 * @return false if the operation has failed
 	 */
-	struct tag *(*stream_tag)(struct input_stream *is);
+	bool (*scan_stream)(struct input_stream *is,
+			    const struct tag_handler *handler,
+			    void *handler_ctx);
 
 	/**
 	 * @brief Return a "virtual" filename for subtracks in
@@ -150,25 +155,28 @@ decoder_plugin_file_decode(const struct decoder_plugin *plugin,
 /**
  * Read the tag of a file.
  */
-static inline struct tag *
-decoder_plugin_tag_dup(const struct decoder_plugin *plugin,
-		       const char *path_fs)
+static inline bool
+decoder_plugin_scan_file(const struct decoder_plugin *plugin,
+			 const char *path_fs,
+			 const struct tag_handler *handler, void *handler_ctx)
 {
-	return plugin->tag_dup != NULL
-		? plugin->tag_dup(path_fs)
-		: NULL;
+	return plugin->scan_file != NULL
+		? plugin->scan_file(path_fs, handler, handler_ctx)
+		: false;
 }
 
 /**
  * Read the tag of a stream.
  */
-static inline struct tag *
-decoder_plugin_stream_tag(const struct decoder_plugin *plugin,
-			  struct input_stream *is)
+static inline bool
+decoder_plugin_scan_stream(const struct decoder_plugin *plugin,
+			   struct input_stream *is,
+			   const struct tag_handler *handler,
+			   void *handler_ctx)
 {
-	return plugin->stream_tag != NULL
-		? plugin->stream_tag(is)
-		: NULL;
+	return plugin->scan_stream != NULL
+		? plugin->scan_stream(is, handler, handler_ctx)
+		: false;
 }
 
 /**

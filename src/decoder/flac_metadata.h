@@ -24,6 +24,7 @@
 #include <stdbool.h>
 #include <FLAC/metadata.h>
 
+struct tag_handler;
 struct tag;
 struct replay_gain_info;
 
@@ -49,8 +50,13 @@ flac_vorbis_comments_to_tag(struct tag *tag, const char *char_tnum,
 			    const FLAC__StreamMetadata_VorbisComment *comment);
 
 void
-flac_tag_apply_metadata(struct tag *tag, const char *track,
-			const FLAC__StreamMetadata *block);
+flac_scan_metadata(const char *track,
+		   const FLAC__StreamMetadata *block,
+		   const struct tag_handler *handler, void *handler_ctx);
+
+bool
+flac_scan_file2(const char *file, const char *char_tnum,
+		const struct tag_handler *handler, void *handler_ctx);
 
 struct tag *
 flac_tag_load(const char *file, const char *char_tnum);

@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "tag_id3.h"
+#include "tag_handler.h"
 #include "tag_table.h"
 #include "tag.h"
 #include "riff.h"
@@ -127,9 +128,9 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
  * - string list
  */
 static void
-tag_id3_import_text_frame(struct tag *dest, struct id3_tag *tag,
-			  const struct id3_frame *frame,
-			  enum tag_type type)
+tag_id3_import_text_frame(struct id3_tag *tag, const struct id3_frame *frame,
+			  enum tag_type type,
+			  const struct tag_handler *handler, void *handler_ctx)
 {
 	id3_ucs4_t const *ucs4;
 	id3_utf8_t *utf8;
@@ -165,7 +166,8 @@ tag_id3_import_text_frame(struct tag *dest, struct id3_tag *tag,
 		if (utf8 == NULL)
 			continue;
 
-		tag_add_item(dest, type, (char *)utf8);
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       type, (const char *)utf8);
 		g_free(utf8);
 	}
 }
@@ -175,13 +177,14 @@ tag_id3_import_text_frame(struct tag *dest, struct id3_tag *tag,
  * 4.2).  This is a wrapper for tag_id3_import_text_frame().
  */
 static void
-tag_id3_import_text(struct tag *dest, struct id3_tag *tag, const char *id,
-		    enum tag_type type)
+tag_id3_import_text(struct id3_tag *tag, const char *id, enum tag_type type,
+		    const struct tag_handler *handler, void *handler_ctx)
 {
 	const struct id3_frame *frame;
 	for (unsigned i = 0;
 	     (frame = id3_tag_findframe(tag, id, i)) != NULL; ++i)
-		tag_id3_import_text_frame(dest, tag, frame, type);
+		tag_id3_import_text_frame(tag, frame, type,
+					  handler, handler_ctx);
 }
 
 /**
@@ -194,9 +197,10 @@ tag_id3_import_text(struct tag *dest, struct id3_tag *tag, const char *id,
  * - full string (we use this one)
  */
 static void
-tag_id3_import_comment_frame(struct tag *dest, struct id3_tag *tag,
-			     const struct id3_frame *frame,
-			     enum tag_type type)
+tag_id3_import_comment_frame(struct id3_tag *tag,
+			     const struct id3_frame *frame, enum tag_type type,
+			     const struct tag_handler *handler,
+			     void *handler_ctx)
 {
 	id3_ucs4_t const *ucs4;
 	id3_utf8_t *utf8;
@@ -218,7 +222,7 @@ tag_id3_import_comment_frame(struct tag *dest, struct id3_tag *tag,
 	if (utf8 == NULL)
 		return;
 
-	tag_add_item(dest, type, (char *)utf8);
+	tag_handler_invoke_tag(handler, handler_ctx, type, (const char *)utf8);
 	g_free(utf8);
 }
 
@@ -227,13 +231,14 @@ tag_id3_import_comment_frame(struct tag *dest, struct id3_tag *tag,
  * wrapper for tag_id3_import_comment_frame().
  */
 static void
-tag_id3_import_comment(struct tag *dest, struct id3_tag *tag, const char *id,
-		       enum tag_type type)
+tag_id3_import_comment(struct id3_tag *tag, const char *id, enum tag_type type,
+		       const struct tag_handler *handler, void *handler_ctx)
 {
 	const struct id3_frame *frame;
 	for (unsigned i = 0;
 	     (frame = id3_tag_findframe(tag, id, i)) != NULL; ++i)
-		tag_id3_import_comment_frame(dest, tag, frame, type);
+		tag_id3_import_comment_frame(tag, frame, type,
+					     handler, handler_ctx);
 }
 
 /**
@@ -260,7 +265,9 @@ tag_id3_parse_txxx_name(const char *name)
  * Import all known MusicBrainz tags from TXXX frames.
  */
 static void
-tag_id3_import_musicbrainz(struct tag *mpd_tag, struct id3_tag *id3_tag)
+tag_id3_import_musicbrainz(struct id3_tag *id3_tag,
+			   const struct tag_handler *handler,
+			   void *handler_ctx)
 {
 	for (unsigned i = 0;; ++i) {
 		const struct id3_frame *frame;
@@ -285,7 +292,8 @@ tag_id3_import_musicbrainz(struct tag *mpd_tag, struct id3_tag *id3_tag)
 		if (value == NULL)
 			continue;
 
-		tag_add_item(mpd_tag, type, (const char*)value);
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       type, (const char*)value);
 		free(value);
 	}
 }
@@ -294,7 +302,8 @@ tag_id3_import_musicbrainz(struct tag *mpd_tag, struct id3_tag *id3_tag)
  * Imports the MusicBrainz TrackId from the UFID tag.
  */
 static void
-tag_id3_import_ufid(struct tag *mpd_tag, struct id3_tag *id3_tag)
+tag_id3_import_ufid(struct id3_tag *id3_tag,
+		    const struct tag_handler *handler, void *handler_ctx)
 {
 	for (unsigned i = 0;; ++i) {
 		const struct id3_frame *frame;
@@ -324,35 +333,54 @@ tag_id3_import_ufid(struct tag *mpd_tag, struct id3_tag *id3_tag)
 		if (value == NULL || length == 0)
 			continue;
 
-		tag_add_item_n(mpd_tag, TAG_MUSICBRAINZ_TRACKID,
-			       (const char*)value, length);
+		char *p = g_strndup((const char *)value, length);
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_MUSICBRAINZ_TRACKID, p);
+		g_free(p);
 	}
+}
+
+static void
+scan_id3_tag(struct id3_tag *tag,
+	     const struct tag_handler *handler, void *handler_ctx)
+{
+	tag_id3_import_text(tag, ID3_FRAME_ARTIST, TAG_ARTIST,
+			    handler, handler_ctx);
+	tag_id3_import_text(tag, ID3_FRAME_ALBUM_ARTIST,
+			    TAG_ALBUM_ARTIST, handler, handler_ctx);
+	tag_id3_import_text(tag, ID3_FRAME_ARTIST_SORT,
+			    TAG_ARTIST_SORT, handler, handler_ctx);
+	tag_id3_import_text(tag, ID3_FRAME_ALBUM_ARTIST_SORT,
+			    TAG_ALBUM_ARTIST_SORT, handler, handler_ctx);
+	tag_id3_import_text(tag, ID3_FRAME_TITLE, TAG_TITLE,
+			    handler, handler_ctx);
+	tag_id3_import_text(tag, ID3_FRAME_ALBUM, TAG_ALBUM,
+			    handler, handler_ctx);
+	tag_id3_import_text(tag, ID3_FRAME_TRACK, TAG_TRACK,
+			    handler, handler_ctx);
+	tag_id3_import_text(tag, ID3_FRAME_YEAR, TAG_DATE,
+			    handler, handler_ctx);
+	tag_id3_import_text(tag, ID3_FRAME_GENRE, TAG_GENRE,
+			    handler, handler_ctx);
+	tag_id3_import_text(tag, ID3_FRAME_COMPOSER, TAG_COMPOSER,
+			    handler, handler_ctx);
+	tag_id3_import_text(tag, "TPE3", TAG_PERFORMER,
+			    handler, handler_ctx);
+	tag_id3_import_text(tag, "TPE4", TAG_PERFORMER, handler, handler_ctx);
+	tag_id3_import_comment(tag, ID3_FRAME_COMMENT, TAG_COMMENT,
+			       handler, handler_ctx);
+	tag_id3_import_text(tag, ID3_FRAME_DISC, TAG_DISC,
+			    handler, handler_ctx);
+
+	tag_id3_import_musicbrainz(tag, handler, handler_ctx);
+	tag_id3_import_ufid(tag, handler, handler_ctx);
 }
 
 struct tag *tag_id3_import(struct id3_tag * tag)
 {
 	struct tag *ret = tag_new();
 
-	tag_id3_import_text(ret, tag, ID3_FRAME_ARTIST, TAG_ARTIST);
-	tag_id3_import_text(ret, tag, ID3_FRAME_ALBUM_ARTIST,
-			    TAG_ALBUM_ARTIST);
-	tag_id3_import_text(ret, tag, ID3_FRAME_ARTIST_SORT,
-			    TAG_ARTIST_SORT);
-	tag_id3_import_text(ret, tag, ID3_FRAME_ALBUM_ARTIST_SORT,
-			    TAG_ALBUM_ARTIST_SORT);
-	tag_id3_import_text(ret, tag, ID3_FRAME_TITLE, TAG_TITLE);
-	tag_id3_import_text(ret, tag, ID3_FRAME_ALBUM, TAG_ALBUM);
-	tag_id3_import_text(ret, tag, ID3_FRAME_TRACK, TAG_TRACK);
-	tag_id3_import_text(ret, tag, ID3_FRAME_YEAR, TAG_DATE);
-	tag_id3_import_text(ret, tag, ID3_FRAME_GENRE, TAG_GENRE);
-	tag_id3_import_text(ret, tag, ID3_FRAME_COMPOSER, TAG_COMPOSER);
-	tag_id3_import_text(ret, tag, "TPE3", TAG_PERFORMER);
-	tag_id3_import_text(ret, tag, "TPE4", TAG_PERFORMER);
-	tag_id3_import_comment(ret, tag, ID3_FRAME_COMMENT, TAG_COMMENT);
-	tag_id3_import_text(ret, tag, ID3_FRAME_DISC, TAG_DISC);
-
-	tag_id3_import_musicbrainz(ret, tag);
-	tag_id3_import_ufid(ret, tag);
+	scan_id3_tag(tag, &add_tag_handler, ret);
 
 	if (tag_is_empty(ret)) {
 		tag_free(ret);
@@ -508,6 +536,36 @@ tag_id3_riff_aiff_load(FILE *file)
 	tag = id3_tag_parse(buffer, size);
 	g_free(buffer);
 	return tag;
+}
+
+bool
+tag_id3_scan(const char *path_fs,
+	     const struct tag_handler *handler, void *handler_ctx)
+{
+	struct id3_tag *tag;
+	FILE *stream;
+
+	stream = fopen(path_fs, "rb");
+	if (!stream) {
+		g_debug("tag_id3_load: Failed to open file: '%s', %s",
+			path_fs, strerror(errno));
+		return false;
+	}
+
+	tag = tag_id3_find_from_beginning(stream);
+	if (tag == NULL)
+		tag = tag_id3_riff_aiff_load(stream);
+	if (!tag)
+		tag = tag_id3_find_from_end(stream);
+
+	fclose(stream);
+
+	if (!tag)
+		return false;
+
+	scan_id3_tag(tag, handler, handler_ctx);
+	id3_tag_delete(tag);
+	return true;
 }
 
 struct tag *tag_id3_load(const char *file)

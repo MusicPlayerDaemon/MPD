@@ -21,6 +21,7 @@
 #include "vorbis_comments.h"
 #include "tag.h"
 #include "tag_table.h"
+#include "tag_handler.h"
 #include "replay_gain_info.h"
 
 #include <glib.h>
@@ -79,14 +80,15 @@ vorbis_comments_to_replay_gain(struct replay_gain_info *rgi, char **comments)
  * the comment value into the tag.
  */
 static bool
-vorbis_copy_comment(struct tag *tag, const char *comment,
-		    const char *name, enum tag_type tag_type)
+vorbis_copy_comment(const char *comment,
+		    const char *name, enum tag_type tag_type,
+		    const struct tag_handler *handler, void *handler_ctx)
 {
 	const char *value;
 
 	value = vorbis_comment_value(comment, name);
 	if (value != NULL) {
-		tag_add_item(tag, tag_type, value);
+		tag_handler_invoke_tag(handler, handler_ctx, tag_type, value);
 		return true;
 	}
 
@@ -101,27 +103,36 @@ static const struct tag_table vorbis_tags[] = {
 };
 
 static void
-vorbis_parse_comment(struct tag *tag, const char *comment)
+vorbis_scan_comment(const char *comment,
+		    const struct tag_handler *handler, void *handler_ctx)
 {
-	assert(tag != NULL);
-
 	for (const struct tag_table *i = vorbis_tags; i->name != NULL; ++i)
-		if (vorbis_copy_comment(tag, comment, i->name, i->type))
+		if (vorbis_copy_comment(comment, i->name, i->type,
+					handler, handler_ctx))
 			return;
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
-		if (vorbis_copy_comment(tag, comment,
-					tag_item_names[i], i))
+		if (vorbis_copy_comment(comment,
+					tag_item_names[i], i,
+					handler, handler_ctx))
 			return;
+}
+
+void
+vorbis_comments_scan(char **comments,
+		     const struct tag_handler *handler, void *handler_ctx)
+{
+	while (*comments)
+		vorbis_scan_comment(*comments++,
+				    handler, handler_ctx);
+
 }
 
 struct tag *
 vorbis_comments_to_tag(char **comments)
 {
 	struct tag *tag = tag_new();
-
-	while (*comments)
-		vorbis_parse_comment(tag, *comments++);
+	vorbis_comments_scan(comments, &add_tag_handler, tag);
 
 	if (tag_is_empty(tag)) {
 		tag_free(tag);

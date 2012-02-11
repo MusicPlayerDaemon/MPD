@@ -21,6 +21,7 @@
 #include "flac_metadata.h"
 #include "replay_gain_info.h"
 #include "tag.h"
+#include "tag_handler.h"
 #include "tag_table.h"
 
 #include <glib.h>
@@ -164,17 +165,19 @@ flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
  * the comment value into the tag.
  */
 static bool
-flac_copy_comment(struct tag *tag,
-		  const FLAC__StreamMetadata_VorbisComment_Entry *entry,
+flac_copy_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 		  const char *name, enum tag_type tag_type,
-		  const char *char_tnum)
+		  const char *char_tnum,
+		  const struct tag_handler *handler, void *handler_ctx)
 {
 	const char *value;
 	size_t value_length;
 
 	value = flac_comment_value(entry, name, char_tnum, &value_length);
 	if (value != NULL) {
-		tag_add_item_n(tag, tag_type, value, value_length);
+		char *p = g_strndup(value, value_length);
+		tag_handler_invoke_tag(handler, handler_ctx, tag_type, p);
+		g_free(p);
 		return true;
 	}
 
@@ -189,42 +192,47 @@ static const struct tag_table flac_tags[] = {
 };
 
 static void
-flac_parse_comment(struct tag *tag, const char *char_tnum,
-		   const FLAC__StreamMetadata_VorbisComment_Entry *entry)
+flac_scan_comment(const char *char_tnum,
+		  const FLAC__StreamMetadata_VorbisComment_Entry *entry,
+		  const struct tag_handler *handler, void *handler_ctx)
 {
-	assert(tag != NULL);
-
 	for (const struct tag_table *i = flac_tags; i->name != NULL; ++i)
-		if (flac_copy_comment(tag, entry, i->name, i->type, char_tnum))
+		if (flac_copy_comment(entry, i->name, i->type, char_tnum,
+				      handler, handler_ctx))
 			return;
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
-		if (flac_copy_comment(tag, entry,
-				      tag_item_names[i], i, char_tnum))
+		if (flac_copy_comment(entry,
+				      tag_item_names[i], i, char_tnum,
+				      handler, handler_ctx))
 			return;
 }
 
-void
-flac_vorbis_comments_to_tag(struct tag *tag, const char *char_tnum,
-			    const FLAC__StreamMetadata_VorbisComment *comment)
+static void
+flac_scan_comments(const char *char_tnum,
+		   const FLAC__StreamMetadata_VorbisComment *comment,
+		   const struct tag_handler *handler, void *handler_ctx)
 {
 	for (unsigned i = 0; i < comment->num_comments; ++i)
-		flac_parse_comment(tag, char_tnum, &comment->comments[i]);
+		flac_scan_comment(char_tnum, &comment->comments[i],
+				  handler, handler_ctx);
 }
 
 void
-flac_tag_apply_metadata(struct tag *tag, const char *track,
-			const FLAC__StreamMetadata *block)
+flac_scan_metadata(const char *track,
+		   const FLAC__StreamMetadata *block,
+		   const struct tag_handler *handler, void *handler_ctx)
 {
 	switch (block->type) {
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
-		flac_vorbis_comments_to_tag(tag, track,
-					    &block->data.vorbis_comment);
+		flac_scan_comments(track, &block->data.vorbis_comment,
+				   handler, handler_ctx);
 		break;
 
 	case FLAC__METADATA_TYPE_STREAMINFO:
 		if (block->data.stream_info.sample_rate > 0)
-			tag->time = flac_duration(&block->data.stream_info);
+			tag_handler_invoke_duration(handler, handler_ctx,
+						    flac_duration(&block->data.stream_info));
 		break;
 
 	default:
@@ -232,10 +240,18 @@ flac_tag_apply_metadata(struct tag *tag, const char *track,
 	}
 }
 
-struct tag *
-flac_tag_load(const char *file, const char *char_tnum)
+void
+flac_vorbis_comments_to_tag(struct tag *tag, const char *char_tnum,
+			    const FLAC__StreamMetadata_VorbisComment *comment)
 {
-	struct tag *tag;
+	flac_scan_comments(char_tnum, comment,
+			   &add_tag_handler, tag);
+}
+
+bool
+flac_scan_file2(const char *file, const char *char_tnum,
+		const struct tag_handler *handler, void *handler_ctx)
+{
 	FLAC__Metadata_SimpleIterator *it;
 	FLAC__StreamMetadata *block = NULL;
 
@@ -262,22 +278,30 @@ flac_tag_load(const char *file, const char *char_tnum)
 		g_debug("Reading '%s' metadata gave the following error: %s\n",
 			file, err);
 		FLAC__metadata_simple_iterator_delete(it);
-		return NULL;
+		return false;
 	}
 
-	tag = tag_new();
 	do {
 		block = FLAC__metadata_simple_iterator_get_block(it);
 		if (!block)
 			break;
 
-		flac_tag_apply_metadata(tag, char_tnum, block);
+		flac_scan_metadata(char_tnum, block, handler, handler_ctx);
 		FLAC__metadata_object_delete(block);
 	} while (FLAC__metadata_simple_iterator_next(it));
 
 	FLAC__metadata_simple_iterator_delete(it);
 
-	if (!tag_is_defined(tag)) {
+	return true;
+}
+
+struct tag *
+flac_tag_load(const char *file, const char *char_tnum)
+{
+	struct tag *tag = tag_new();
+
+	if (!flac_scan_file2(file, char_tnum, &add_tag_handler, tag) ||
+	    tag_is_empty(tag)) {
 		tag_free(tag);
 		tag = NULL;
 	}

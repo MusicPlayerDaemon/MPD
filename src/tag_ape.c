@@ -21,6 +21,7 @@
 #include "tag_ape.h"
 #include "tag.h"
 #include "tag_table.h"
+#include "tag_handler.h"
 #include "ape.h"
 
 static const struct tag_table ape_tags[] = {
@@ -39,20 +40,18 @@ tag_ape_name_parse(const char *name)
 	return type;
 }
 
-static struct tag *
-tag_ape_import_item(struct tag *tag, unsigned long flags,
-		    const char *key, const char *value, size_t value_length)
+static void
+tag_ape_import_item(unsigned long flags,
+		    const char *key, const char *value, size_t value_length,
+		    const struct tag_handler *handler, void *handler_ctx)
 {
 	/* we only care about utf-8 text tags */
 	if ((flags & (0x3 << 1)) != 0)
-		return tag;
+		return;
 
 	enum tag_type type = tag_ape_name_parse(key);
 	if (type == TAG_NUM_OF_ITEM_TYPES)
-		return tag;
-
-	if (tag == NULL)
-		tag = tag_new();
+		return;
 
 	const char *end = value + value_length;
 	while (true) {
@@ -60,20 +59,22 @@ tag_ape_import_item(struct tag *tag, unsigned long flags,
 		const char *n = memchr(value, 0, end - value);
 		if (n != NULL) {
 			if (n > value)
-				tag_add_item_n(tag, type, value, n - value);
+				tag_handler_invoke_tag(handler, handler_ctx,
+						       type, value);
 			value = n + 1;
 		} else {
-			if (end > value)
-				tag_add_item_n(tag, type, value, end - value);
+			char *p = g_strndup(value, end - value);
+			tag_handler_invoke_tag(handler, handler_ctx,
+					       type, p);
+			g_free(p);
 			break;
 		}
 	}
-
-	return tag;
 }
 
 struct tag_ape_ctx {
-	struct tag *tag;
+	const struct tag_handler *handler;
+	void *handler_ctx;
 };
 
 static bool
@@ -82,16 +83,31 @@ tag_ape_callback(unsigned long flags, const char *key,
 {
 	struct tag_ape_ctx *ctx = _ctx;
 
-	ctx->tag = tag_ape_import_item(ctx->tag, flags, key,
-				       value, value_length);
+	tag_ape_import_item(flags, key, value, value_length,
+			    ctx->handler, ctx->handler_ctx);
 	return true;
 }
 
-struct tag *
-tag_ape_load(const char *file)
+bool
+tag_ape_scan2(const char *path_fs,
+	      const struct tag_handler *handler, void *handler_ctx)
 {
-	struct tag_ape_ctx ctx = { .tag = NULL };
+	struct tag_ape_ctx ctx = {
+		.handler = handler,
+		.handler_ctx = handler_ctx,
+	};
 
-	tag_ape_scan(file, tag_ape_callback, &ctx);
-	return ctx.tag;
+	return tag_ape_scan(path_fs, tag_ape_callback, &ctx);
+}
+
+struct tag *
+tag_ape_load(const char *path_fs)
+{
+	struct tag *tag = tag_new();
+	if (!tag_ape_scan2(path_fs, &add_tag_handler, tag)) {
+		tag_free(tag);
+		tag = NULL;
+	}
+
+	return tag;
 }

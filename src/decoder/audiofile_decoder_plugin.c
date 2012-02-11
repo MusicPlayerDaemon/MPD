@@ -20,6 +20,7 @@
 #include "config.h"
 #include "decoder_api.h"
 #include "audio_check.h"
+#include "tag_handler.h"
 
 #include <audiofile.h>
 #include <af_vfs.h>
@@ -222,20 +223,20 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	afCloseFile(af_fp);
 }
 
-static struct tag *audiofile_tag_dup(const char *file)
+static bool
+audiofile_scan_file(const char *file,
+		    const struct tag_handler *handler, void *handler_ctx)
 {
-	struct tag *ret = NULL;
 	int total_time = audiofile_get_duration(file);
 
-	if (total_time >= 0) {
-		ret = tag_new();
-		ret->time = total_time;
-	} else {
+	if (total_time < 0) {
 		g_debug("Failed to get total song time from: %s\n",
 			file);
+		return false;
 	}
 
-	return ret;
+	tag_handler_invoke_duration(handler, handler_ctx, total_time);
+	return true;
 }
 
 static const char *const audiofile_suffixes[] = {
@@ -251,7 +252,7 @@ static const char *const audiofile_mime_types[] = {
 const struct decoder_plugin audiofile_decoder_plugin = {
 	.name = "audiofile",
 	.stream_decode = audiofile_stream_decode,
-	.tag_dup = audiofile_tag_dup,
+	.scan_file = audiofile_scan_file,
 	.suffixes = audiofile_suffixes,
 	.mime_types = audiofile_mime_types,
 };

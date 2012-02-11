@@ -25,9 +25,9 @@
 #include "input_stream.h"
 #include "audio_format.h"
 #include "pcm_volume.h"
-#include "tag_pool.h"
 #include "tag_ape.h"
 #include "tag_id3.h"
+#include "tag_handler.h"
 #include "idle.h"
 
 #include <glib.h>
@@ -134,25 +134,31 @@ decoder_mixramp(G_GNUC_UNUSED struct decoder *decoder,
 	g_free(mixramp_end);
 }
 
-static void
-print_tag(const struct tag *tag)
-{
-	if (tag->time >= 0)
-		g_print("time=%d\n", tag->time);
+static bool empty = true;
 
-	for (unsigned i = 0; i < tag->num_items; ++i)
-		g_print("%s=%s\n",
-			tag_item_names[tag->items[i]->type],
-			tag->items[i]->value);
+static void
+print_duration(unsigned seconds, G_GNUC_UNUSED void *ctx)
+{
+	g_print("duration=%d\n", seconds);
 }
+
+static void
+print_tag(enum tag_type type, const char *value, G_GNUC_UNUSED void *ctx)
+{
+	g_print("%s=%s\n", tag_item_names[type], value);
+	empty = false;
+}
+
+static const struct tag_handler print_handler = {
+	.duration = print_duration,
+	.tag = print_tag,
+};
 
 int main(int argc, char **argv)
 {
 	GError *error = NULL;
 	const char *decoder_name, *path;
 	const struct decoder_plugin *plugin;
-	struct tag *tag;
-	bool empty;
 
 #ifdef HAVE_LOCALE_H
 	/* initialize locale */
@@ -175,8 +181,6 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	tag_pool_init();
-
 	if (!input_stream_global_init(&error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
@@ -191,8 +195,9 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	tag = decoder_plugin_tag_dup(plugin, path);
-	if (tag == NULL && plugin->stream_tag != NULL) {
+	bool success = decoder_plugin_scan_file(plugin, path,
+						&print_handler, NULL);
+	if (!success && plugin->scan_stream != NULL) {
 		GMutex *mutex = g_mutex_new();
 		GCond *cond = g_cond_new();
 
@@ -206,7 +211,8 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		tag = decoder_plugin_stream_tag(plugin, is);
+		success = decoder_plugin_scan_stream(plugin, is,
+						     &print_handler, NULL);
 		input_stream_close(is);
 
 		g_cond_free(cond);
@@ -217,27 +223,16 @@ int main(int argc, char **argv)
 	input_stream_global_finish();
 	io_thread_deinit();
 
-	if (tag == NULL) {
+	if (!success) {
 		g_printerr("Failed to read tags\n");
 		return 1;
 	}
 
-	print_tag(tag);
-
-	empty = tag_is_empty(tag);
-	tag_free(tag);
-
 	if (empty) {
-		tag = tag_ape_load(path);
-		if (tag == NULL)
-			tag = tag_id3_load(path);
-		if (tag != NULL) {
-			print_tag(tag);
-			tag_free(tag);
-		}
+		tag_ape_scan2(path, &print_handler, NULL);
+		if (empty)
+			tag_id3_scan(path, &print_handler, NULL);
 	}
-
-	tag_pool_deinit();
 
 	return 0;
 }

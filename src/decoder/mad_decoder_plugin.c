@@ -22,6 +22,7 @@
 #include "conf.h"
 #include "tag_id3.h"
 #include "tag_rva2.h"
+#include "tag_handler.h"
 #include "audio_check.h"
 
 #include <assert.h>
@@ -1176,19 +1177,18 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 	mp3_data_finish(&data);
 }
 
-static struct tag *
-mad_decoder_stream_tag(struct input_stream *is)
+static bool
+mad_decoder_scan_stream(struct input_stream *is,
+			const struct tag_handler *handler, void *handler_ctx)
 {
-	struct tag *tag;
 	int total_time;
 
 	total_time = mad_decoder_total_file_time(is);
 	if (total_time < 0)
-		return NULL;
+		return false;
 
-	tag = tag_new();
-	tag->time = total_time;
-	return tag;
+	tag_handler_invoke_duration(handler, handler_ctx, total_time);
+	return true;
 }
 
 static const char *const mp3_suffixes[] = { "mp3", "mp2", NULL };
@@ -1198,7 +1198,7 @@ const struct decoder_plugin mad_decoder_plugin = {
 	.name = "mad",
 	.init = mp3_plugin_init,
 	.stream_decode = mp3_decode,
-	.stream_tag = mad_decoder_stream_tag,
+	.scan_stream = mad_decoder_scan_stream,
 	.suffixes = mp3_suffixes,
 	.mime_types = mp3_mime_types
 };

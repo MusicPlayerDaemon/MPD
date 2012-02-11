@@ -335,6 +335,7 @@ src_mpd_SOURCES = \
 	src/tag_pool.c \
 	src/tag_print.c \
 	src/tag_save.c \
+	src/tag_handler.c src/tag_handler.h \
 	src/tokenizer.c \
 	src/text_file.c \
 	src/text_input_stream.c \
@@ -1006,6 +1007,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.c \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/uri.c \
 	src/song.c src/tag.c src/tag_pool.c src/tag_save.c \
+	src/tag_handler.c \
 	src/text_input_stream.c src/fifo_buffer.c \
 	src/cue/cue_parser.c src/cue/cue_parser.h \
 	src/fd_util.c
@@ -1027,7 +1029,7 @@ test_run_decoder_SOURCES = test/run_decoder.c \
 	test/stdbin.h \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
-	src/tag.c src/tag_pool.c \
+	src/tag.c src/tag_pool.c src/tag_handler.c \
 	src/replay_gain_info.c \
 	src/uri.c \
 	src/fd_util.c \
@@ -1049,7 +1051,7 @@ test_read_tags_LDADD = \
 test_read_tags_SOURCES = test/read_tags.c \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
-	src/tag.c src/tag_pool.c \
+	src/tag.c src/tag_pool.c src/tag_handler.c \
 	src/replay_gain_info.c \
 	src/uri.c \
 	src/fd_util.c \

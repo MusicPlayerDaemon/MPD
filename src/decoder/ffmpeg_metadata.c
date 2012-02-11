@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "ffmpeg_metadata.h"
-#include "tag.h"
 #include "tag_table.h"
+#include "tag_handler.h"
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "ffmpeg"
@@ -39,23 +39,27 @@ static const struct tag_table ffmpeg_tags[] = {
 };
 
 static void
-ffmpeg_copy_metadata(struct tag *tag, enum tag_type type,
-		     AVDictionary *m, const char *name)
+ffmpeg_copy_metadata(enum tag_type type,
+		     AVDictionary *m, const char *name,
+		     const struct tag_handler *handler, void *handler_ctx)
 {
 	AVDictionaryEntry *mt = NULL;
 
 	while ((mt = av_dict_get(m, name, mt, 0)) != NULL)
-		tag_add_item(tag, type, mt->value);
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       type, mt->value);
 }
 
 void
-ffmpeg_copy_dictionary(struct tag *tag, AVDictionary *dict)
+ffmpeg_scan_dictionary(AVDictionary *dict,
+		       const struct tag_handler *handler, void *handler_ctx)
 {
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
-		ffmpeg_copy_metadata(tag, i,
-				     dict, tag_item_names[i]);
+		ffmpeg_copy_metadata(i, dict, tag_item_names[i],
+				     handler, handler_ctx);
 
 	for (const struct tag_table *i = ffmpeg_tags;
 	     i->name != NULL; ++i)
-		ffmpeg_copy_metadata(tag, i->type, dict, i->name);
+		ffmpeg_copy_metadata(i->type, dict, i->name,
+				     handler, handler_ctx);
 }

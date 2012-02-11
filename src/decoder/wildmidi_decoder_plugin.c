@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "decoder_api.h"
+#include "tag_handler.h"
 
 #include <glib.h>
 
@@ -111,25 +112,26 @@ wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 	WildMidi_Close(wm);
 }
 
-static struct tag *
-wildmidi_tag_dup(const char *path_fs)
+static bool
+wildmidi_scan_file(const char *path_fs,
+		   const struct tag_handler *handler, void *handler_ctx)
 {
 	midi *wm = WildMidi_Open(path_fs);
 	if (wm == NULL)
-		return NULL;
+		return false;
 
 	const struct _WM_Info *info = WildMidi_GetInfo(wm);
 	if (info == NULL) {
 		WildMidi_Close(wm);
-		return NULL;
+		return false;
 	}
 
-	struct tag *tag = tag_new();
-	tag->time = info->approx_total_samples / WILDMIDI_SAMPLE_RATE;
+	int duration = info->approx_total_samples / WILDMIDI_SAMPLE_RATE;
+	tag_handler_invoke_duration(handler, handler_ctx, duration);
 
 	WildMidi_Close(wm);
 
-	return tag;
+	return true;
 }
 
 static const char *const wildmidi_suffixes[] = {
@@ -142,6 +144,6 @@ const struct decoder_plugin wildmidi_decoder_plugin = {
 	.init = wildmidi_init,
 	.finish = wildmidi_finish,
 	.file_decode = wildmidi_file_decode,
-	.tag_dup = wildmidi_tag_dup,
+	.scan_file = wildmidi_scan_file,
 	.suffixes = wildmidi_suffixes,
 };

@@ -22,9 +22,17 @@
 
 #include "check.h"
 
+#include <stdbool.h>
+
+struct tag_handler;
 struct tag;
 
 #ifdef HAVE_ID3TAG
+
+bool
+tag_id3_scan(const char *path_fs,
+	     const struct tag_handler *handler, void *handler_ctx);
+
 struct id3_tag;
 struct tag *tag_id3_import(struct id3_tag *);
 
@@ -33,6 +41,14 @@ struct tag *tag_id3_load(const char *file);
 #else
 
 #include <glib.h>
+
+static inline bool
+tag_id3_scan(G_GNUC_UNUSED const char *path_fs,
+	     G_GNUC_UNUSED const struct tag_handler *handler,
+	     G_GNUC_UNUSED void *handler_ctx)
+{
+	return false;
+}
 
 static inline struct tag *
 tag_id3_load(G_GNUC_UNUSED const char *file)

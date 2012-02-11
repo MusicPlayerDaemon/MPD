@@ -21,6 +21,7 @@
 #include "decoder_api.h"
 #include "audio_check.h"
 #include "ffmpeg_metadata.h"
+#include "tag_handler.h"
 
 #include <glib.h>
 
@@ -570,22 +571,23 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 }
 
 //no tag reading in ffmpeg, check if playable
-static struct tag *
-ffmpeg_stream_tag(struct input_stream *is)
+static bool
+ffmpeg_scan_stream(struct input_stream *is,
+		   const struct tag_handler *handler, void *handler_ctx)
 {
 	AVInputFormat *input_format = ffmpeg_probe(NULL, is);
 	if (input_format == NULL)
-		return NULL;
+		return false;
 
 	struct mpd_ffmpeg_stream *stream = mpd_ffmpeg_stream_open(NULL, is);
 	if (stream == NULL)
-		return NULL;
+		return false;
 
 	AVFormatContext *f = NULL;
 	if (mpd_ffmpeg_open_input(&f, stream->io, is->uri,
 				  input_format) != 0) {
 		mpd_ffmpeg_stream_close(stream);
-		return NULL;
+		return false;
 	}
 
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,6,0)
@@ -601,23 +603,22 @@ ffmpeg_stream_tag(struct input_stream *is)
 		av_close_input_stream(f);
 #endif
 		mpd_ffmpeg_stream_close(stream);
-		return NULL;
+		return false;
 	}
 
-	struct tag *tag = tag_new();
-
-	tag->time = f->duration != (int64_t)AV_NOPTS_VALUE
-		? f->duration / AV_TIME_BASE
-		: 0;
+	if (f->duration != (int64_t)AV_NOPTS_VALUE)
+		tag_handler_invoke_duration(handler, handler_ctx,
+					    f->duration / AV_TIME_BASE);
 
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(52,101,0)
 	av_metadata_conv(f, NULL, f->iformat->metadata_conv);
 #endif
 
-	ffmpeg_copy_dictionary(tag, f->metadata);
+	ffmpeg_scan_dictionary(f->metadata, handler, handler_ctx);
 	int idx = ffmpeg_find_audio_stream(f);
 	if (idx >= 0)
-		ffmpeg_copy_dictionary(tag, f->streams[idx]->metadata);
+		ffmpeg_scan_dictionary(f->streams[idx]->metadata,
+				       handler, handler_ctx);
 
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
 	avformat_close_input(&f);
@@ -626,7 +627,7 @@ ffmpeg_stream_tag(struct input_stream *is)
 #endif
 	mpd_ffmpeg_stream_close(stream);
 
-	return tag;
+	return true;
 }
 
 /**
@@ -745,7 +746,7 @@ const struct decoder_plugin ffmpeg_decoder_plugin = {
 	.name = "ffmpeg",
 	.init = ffmpeg_init,
 	.stream_decode = ffmpeg_decode,
-	.stream_tag = ffmpeg_stream_tag,
+	.scan_stream = ffmpeg_scan_stream,
 	.suffixes = ffmpeg_suffixes,
 	.mime_types = ffmpeg_mime_types
 };

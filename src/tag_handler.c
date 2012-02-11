@@ -17,29 +17,27 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAG_APE_H
-#define MPD_TAG_APE_H
+#include "config.h"
+#include "tag_handler.h"
 
-#include <stdbool.h>
+static void
+add_tag_duration(unsigned seconds, void *ctx)
+{
+	struct tag *tag = ctx;
 
-struct tag_handler;
+	tag->time = seconds;
+}
 
-/**
- * Scan the APE tags of a file.
- *
- * @param path_fs the path of the file in filesystem encoding
- */
-bool
-tag_ape_scan2(const char *path_fs,
-	      const struct tag_handler *handler, void *handler_ctx);
+static void
+add_tag_tag(enum tag_type type, const char *value, void *ctx)
+{
+	struct tag *tag = ctx;
 
-/**
- * Loads the APE tag from a file.
- *
- * @param path_fs the path of the file in filesystem encoding
- * @return a tag object, or NULL if the file has no APE tag
- */
-struct tag *
-tag_ape_load(const char *path_fs);
+	tag_add_item(tag, type, value);
+}
 
-#endif
+const struct tag_handler add_tag_handler = {
+	.duration = add_tag_duration,
+	.tag = add_tag_tag,
+};
+

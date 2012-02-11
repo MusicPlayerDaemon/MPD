@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "decoder_api.h"
+#include "tag_handler.h"
 
 #include <glib.h>
 #include <modplug.h>
@@ -149,34 +150,33 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 	ModPlug_Unload(f);
 }
 
-static struct tag *
-modplug_stream_tag(struct input_stream *is)
+static bool
+modplug_scan_stream(struct input_stream *is,
+		    const struct tag_handler *handler, void *handler_ctx)
 {
 	ModPlugFile *f;
-	struct tag *ret = NULL;
 	GByteArray *bdatas;
-	char *title;
 
 	bdatas = mod_loadfile(NULL, is);
 	if (!bdatas)
-		return NULL;
+		return false;
 
 	f = ModPlug_Load(bdatas->data, bdatas->len);
 	g_byte_array_free(bdatas, TRUE);
 	if (f == NULL)
-		return NULL;
+		return false;
 
-	ret = tag_new();
-	ret->time = ModPlug_GetLength(f) / 1000;
+	tag_handler_invoke_duration(handler, handler_ctx,
+				    ModPlug_GetLength(f) / 1000);
 
-	title = g_strdup(ModPlug_GetName(f));
-	if (title)
-		tag_add_item(ret, TAG_TITLE, title);
-	g_free(title);
+	const char *title = ModPlug_GetName(f);
+	if (title != NULL)
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_TITLE, title);
 
 	ModPlug_Unload(f);
 
-	return ret;
+	return true;
 }
 
 static const char *const mod_suffixes[] = {
@@ -189,6 +189,6 @@ static const char *const mod_suffixes[] = {
 const struct decoder_plugin modplug_decoder_plugin = {
 	.name = "modplug",
 	.stream_decode = mod_decode,
-	.stream_tag = modplug_stream_tag,
+	.scan_stream = modplug_scan_stream,
 	.suffixes = mod_suffixes,
 };

@@ -22,6 +22,7 @@
 #include "audio_check.h"
 #include "path.h"
 #include "utils.h"
+#include "tag_handler.h"
 
 #include <wavpack/wavpack.h>
 #include <glib.h>
@@ -275,11 +276,11 @@ wavpack_replaygain(struct replay_gain_info *replay_gain_info,
 /*
  * Reads metainfo from the specified file.
  */
-static struct tag *
-wavpack_tagdup(const char *fname)
+static bool
+wavpack_scan_file(const char *fname,
+		  const struct tag_handler *handler, void *handler_ctx)
 {
 	WavpackContext *wpc;
-	struct tag *tag;
 	char error[ERRORLEN];
 	char *s;
 	int size, allocated_size;
@@ -290,12 +291,12 @@ wavpack_tagdup(const char *fname)
 			"failed to open WavPack file \"%s\": %s\n",
 			fname, error
 		);
-		return NULL;
+		return false;
 	}
 
-	tag = tag_new();
-	tag->time = WavpackGetNumSamples(wpc);
-	tag->time /= WavpackGetSampleRate(wpc);
+	tag_handler_invoke_duration(handler, handler_ctx,
+				    WavpackGetNumSamples(wpc) /
+				    WavpackGetSampleRate(wpc));
 
 	allocated_size = 0;
 	s = NULL;
@@ -315,7 +316,8 @@ wavpack_tagdup(const char *fname)
 			}
 
 			WavpackGetTagItem(wpc, tagtypes[i].name, s, size);
-			tag_add_item(tag, tagtypes[i].type, s);
+			tag_handler_invoke_tag(handler, handler_ctx,
+					       tagtypes[i].type, s);
 		}
 	}
 
@@ -323,7 +325,7 @@ wavpack_tagdup(const char *fname)
 
 	WavpackCloseFile(wpc);
 
-	return tag;
+	return true;
 }
 
 /*
@@ -576,7 +578,7 @@ const struct decoder_plugin wavpack_decoder_plugin = {
 	.name = "wavpack",
 	.stream_decode = wavpack_streamdecode,
 	.file_decode = wavpack_filedecode,
-	.tag_dup = wavpack_tagdup,
+	.scan_file = wavpack_scan_file,
 	.suffixes = wavpack_suffixes,
 	.mime_types = wavpack_mime_types
 };

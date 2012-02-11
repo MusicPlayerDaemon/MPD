@@ -191,10 +191,11 @@ flac_write_cb(const FLAC__StreamDecoder *dec, const FLAC__Frame *frame,
 	return flac_common_write(data, frame, buf, nbytes);
 }
 
-static struct tag *
-flac_tag_dup(const char *file)
+static bool
+flac_scan_file(const char *file,
+	       const struct tag_handler *handler, void *handler_ctx)
 {
-	return flac_tag_load(file, NULL);
+	return flac_scan_file2(file, NULL, handler, handler_ctx);
 }
 
 /**
@@ -400,38 +401,33 @@ oggflac_init(G_GNUC_UNUSED const struct config_param *param)
 
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
 
-static struct tag *
-oggflac_tag_dup(const char *file)
+static bool
+oggflac_scan_file(const char *file,
+		  const struct tag_handler *handler, void *handler_ctx)
 {
-	struct tag *ret = NULL;
 	FLAC__Metadata_Iterator *it;
 	FLAC__StreamMetadata *block;
 	FLAC__Metadata_Chain *chain = FLAC__metadata_chain_new();
 
 	if (!(FLAC__metadata_chain_read_ogg(chain, file))) {
 		FLAC__metadata_chain_delete(chain);
-		return NULL;
+		return false;
 	}
 
 	it = FLAC__metadata_iterator_new();
 	FLAC__metadata_iterator_init(it, chain);
 
-	ret = tag_new();
 	do {
 		if (!(block = FLAC__metadata_iterator_get_block(it)))
 			break;
 
-		flac_tag_apply_metadata(ret, NULL, block);
+		flac_scan_metadata(NULL, block,
+				   handler, handler_ctx);
 	} while (FLAC__metadata_iterator_next(it));
 	FLAC__metadata_iterator_delete(it);
 
-	if (!tag_is_defined(ret)) {
-		tag_free(ret);
-		ret = NULL;
-	}
-
 	FLAC__metadata_chain_delete(chain);
-	return ret;
+	return true;
 }
 
 static void
@@ -464,7 +460,7 @@ const struct decoder_plugin oggflac_decoder_plugin = {
 	.init = oggflac_init,
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
 	.stream_decode = oggflac_decode,
-	.tag_dup = oggflac_tag_dup,
+	.scan_file = oggflac_scan_file,
 	.suffixes = oggflac_suffixes,
 	.mime_types = oggflac_mime_types
 #endif
@@ -484,7 +480,7 @@ static const char *const flac_mime_types[] = {
 const struct decoder_plugin flac_decoder_plugin = {
 	.name = "flac",
 	.stream_decode = flac_decode,
-	.tag_dup = flac_tag_dup,
+	.scan_file = flac_scan_file,
 	.suffixes = flac_suffixes,
 	.mime_types = flac_mime_types,
 };

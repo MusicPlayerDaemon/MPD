@@ -20,6 +20,7 @@
 #include "config.h"
 #include "decoder_api.h"
 #include "audio_check.h"
+#include "tag_handler.h"
 
 #include <sndfile.h>
 
@@ -172,44 +173,47 @@ sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	sf_close(sf);
 }
 
-static struct tag *
-sndfile_tag_dup(const char *path_fs)
+static bool
+sndfile_scan_file(const char *path_fs,
+		  const struct tag_handler *handler, void *handler_ctx)
 {
 	SNDFILE *sf;
 	SF_INFO info;
-	struct tag *tag;
 	const char *p;
 
 	info.format = 0;
 
 	sf = sf_open(path_fs, SFM_READ, &info);
 	if (sf == NULL)
-		return NULL;
+		return false;
 
 	if (!audio_valid_sample_rate(info.samplerate)) {
 		sf_close(sf);
 		g_warning("Invalid sample rate in %s\n", path_fs);
-		return NULL;
+		return false;
 	}
 
-	tag = tag_new();
-	tag->time = info.frames / info.samplerate;
+	tag_handler_invoke_duration(handler, handler_ctx,
+				    info.frames / info.samplerate);
 
 	p = sf_get_string(sf, SF_STR_TITLE);
 	if (p != NULL)
-		tag_add_item(tag, TAG_TITLE, p);
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_TITLE, p);
 
 	p = sf_get_string(sf, SF_STR_ARTIST);
 	if (p != NULL)
-		tag_add_item(tag, TAG_ARTIST, p);
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_ARTIST, p);
 
 	p = sf_get_string(sf, SF_STR_DATE);
 	if (p != NULL)
-		tag_add_item(tag, TAG_DATE, p);
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_DATE, p);
 
 	sf_close(sf);
 
-	return tag;
+	return true;
 }
 
 static const char *const sndfile_suffixes[] = {
@@ -245,7 +249,7 @@ static const char *const sndfile_mime_types[] = {
 const struct decoder_plugin sndfile_decoder_plugin = {
 	.name = "sndfile",
 	.stream_decode = sndfile_stream_decode,
-	.tag_dup = sndfile_tag_dup,
+	.scan_file = sndfile_scan_file,
 	.suffixes = sndfile_suffixes,
 	.mime_types = sndfile_mime_types,
 };

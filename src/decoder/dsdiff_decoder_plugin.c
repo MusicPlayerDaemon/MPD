@@ -433,8 +433,10 @@ dsdiff_stream_decode(struct decoder *decoder, struct input_stream *is)
 		dsd2pcm_destroy(dsd2pcm[i]);
 }
 
-static struct tag *
-dsdiff_stream_tag(struct input_stream *is)
+static bool
+dsdiff_scan_stream(struct input_stream *is,
+		   G_GNUC_UNUSED const struct tag_handler *handler,
+		   G_GNUC_UNUSED void *handler_ctx)
 {
 	struct dsdiff_metadata metadata = {
 		.sample_rate = 0,
@@ -443,17 +445,17 @@ dsdiff_stream_tag(struct input_stream *is)
 
 	struct dsdiff_chunk_header chunk_header;
 	if (!dsdiff_read_metadata(NULL, is, &metadata, &chunk_header))
-		return NULL;
+		return false;
 
 	struct audio_format audio_format;
 	if (!audio_format_init_checked(&audio_format, metadata.sample_rate / 8,
 				       SAMPLE_FORMAT_S24_P32,
 				       metadata.channels, NULL))
 		/* refuse to parse files which we cannot play anyway */
-		return NULL;
+		return false;
 
 	/* no total time estimate, no tags implemented yet */
-	return tag_new();
+	return true;
 }
 
 static const char *const dsdiff_suffixes[] = {
@@ -470,7 +472,7 @@ const struct decoder_plugin dsdiff_decoder_plugin = {
 	.name = "dsdiff",
 	.init = dsdiff_init,
 	.stream_decode = dsdiff_stream_decode,
-	.stream_tag = dsdiff_stream_tag,
+	.scan_stream = dsdiff_scan_stream,
 	.suffixes = dsdiff_suffixes,
 	.mime_types = dsdiff_mime_types,
 };

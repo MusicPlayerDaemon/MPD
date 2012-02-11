@@ -2,6 +2,7 @@
 #include "../decoder_api.h"
 #include "audio_check.h"
 #include "uri.h"
+#include "tag_handler.h"
 
 #include <glib.h>
 #include <assert.h>
@@ -180,8 +181,9 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 	gme_delete(emu);
 }
 
-static struct tag *
-gme_tag_dup(const char *path_fs)
+static bool
+gme_scan_file(const char *path_fs,
+	      const struct tag_handler *handler, void *handler_ctx)
 {
 	Music_Emu *emu;
 	gme_info_t *ti;
@@ -194,42 +196,49 @@ gme_tag_dup(const char *path_fs)
 	g_free(path_container);
 	if (gme_err != NULL) {
 		g_warning("%s", gme_err);
-		return NULL;
+		return false;
 	}
 	if((gme_err = gme_track_info(emu, &ti, song_num)) != NULL){
 		g_warning("%s", gme_err);
 		gme_delete(emu);
-		return NULL;
+		return false;
 	}
 
 	assert(ti != NULL);
 
-	struct tag *tag = tag_new();
-
 	if(ti->length > 0)
-		tag->time = ti->length / 1000;
+		tag_handler_invoke_duration(handler, handler_ctx,
+					    ti->length / 100);
+
 	if(ti->song != NULL){
 		if(gme_track_count(emu) > 1){
 			/* start numbering subtunes from 1 */
 			char *tag_title=g_strdup_printf("%s (%d/%d)",
 							ti->song, song_num+1, gme_track_count(emu));
-			tag_add_item(tag, TAG_TITLE, tag_title);
+			tag_handler_invoke_tag(handler, handler_ctx,
+					       TAG_TITLE, tag_title);
 			g_free(tag_title);
 		}else
-			tag_add_item(tag, TAG_TITLE, ti->song);
+			tag_handler_invoke_tag(handler, handler_ctx,
+					       TAG_TITLE, ti->song);
 	}
 	if(ti->author != NULL)
-		tag_add_item(tag, TAG_ARTIST, ti->author);
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_ARTIST, ti->author);
 	if(ti->game != NULL)
-		tag_add_item(tag, TAG_ALBUM, ti->game);
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_ALBUM, ti->game);
 	if(ti->comment != NULL)
-		tag_add_item(tag, TAG_COMMENT, ti->comment);
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_COMMENT, ti->comment);
 	if(ti->copyright != NULL)
-		tag_add_item(tag, TAG_DATE, ti->copyright);
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_DATE, ti->copyright);
 
 	gme_free_info(ti);
 	gme_delete(emu);
-	return tag;
+
+	return true;
 }
 
 static const char *const gme_suffixes[] = {
@@ -242,7 +251,7 @@ extern const struct decoder_plugin gme_decoder_plugin;
 const struct decoder_plugin gme_decoder_plugin = {
 	.name = "gme",
 	.file_decode = gme_file_decode,
-	.tag_dup = gme_tag_dup,
+	.scan_file = gme_scan_file,
 	.suffixes = gme_suffixes,
 	.container_scan = gme_container_scan,
 };

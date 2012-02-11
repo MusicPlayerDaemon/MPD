@@ -21,6 +21,7 @@
 
 extern "C" {
 #include "../decoder_api.h"
+#include "tag_handler.h"
 }
 
 #include <errno.h>
@@ -336,8 +337,9 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 	} while (cmd != DECODE_COMMAND_STOP);
 }
 
-static struct tag *
-sidplay_tag_dup(const char *path_fs)
+static bool
+sidplay_scan_file(const char *path_fs,
+		  const struct tag_handler *handler, void *handler_ctx)
 {
 	int song_num=get_song_num(path_fs);
 	char *path_container=get_container_name(path_fs);
@@ -345,10 +347,9 @@ sidplay_tag_dup(const char *path_fs)
 	SidTune tune(path_container, NULL, true);
 	g_free(path_container);
 	if (!tune)
-		return NULL;
+		return false;
 
 	const SidTuneInfo &info = tune.getInfo();
-	struct tag *tag = tag_new();
 
 	/* title */
 	const char *title;
@@ -360,25 +361,28 @@ sidplay_tag_dup(const char *path_fs)
 	if(info.songs>1) {
 		char *tag_title=g_strdup_printf("%s (%d/%d)",
 			title, song_num, info.songs);
-		tag_add_item(tag, TAG_TITLE, tag_title);
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_TITLE, tag_title);
 		g_free(tag_title);
 	} else
-		tag_add_item(tag, TAG_TITLE, title);
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_TITLE, title);
 
 	/* artist */
 	if (info.numberOfInfoStrings > 1 && info.infoString[1] != NULL)
-		tag_add_item(tag, TAG_ARTIST, info.infoString[1]);
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST,
+				       info.infoString[1]);
 
 	/* track */
 	char *track=g_strdup_printf("%d", song_num);
-	tag_add_item(tag, TAG_TRACK, track);
+	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, track);
 	g_free(track);
 
 	/* time */
 	int song_len=get_song_length(path_fs);
-	if(song_len!=-1) tag->time=song_len;
+	if (song_len >= 0)
+		tag_handler_invoke_duration(handler, handler_ctx, song_len);
 
-	return tag;
+	return true;
 }
 
 static char *
@@ -421,7 +425,7 @@ const struct decoder_plugin sidplay_decoder_plugin = {
 	sidplay_finish,
 	NULL, /* stream_decode() */
 	sidplay_file_decode,
-	sidplay_tag_dup,
+	sidplay_scan_file,
 	NULL, /* stream_tag() */
 	sidplay_container_scan,
 	sidplay_suffixes,

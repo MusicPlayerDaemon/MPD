@@ -20,6 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "decoder_api.h"
 #include "audio_check.h"
+#include "tag_handler.h"
 
 #include <glib.h>
 
@@ -192,41 +193,40 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 	mpg123_delete(handle);
 }
 
-static struct tag *
-mpd_mpg123_tag_dup(const char *path_fs)
+static bool
+mpd_mpg123_scan_file(const char *path_fs,
+		     const struct tag_handler *handler, void *handler_ctx)
 {
 	struct audio_format audio_format;
 	mpg123_handle *handle;
 	int error;
 	off_t num_samples;
-	struct tag *tag;
 
 	handle = mpg123_new(NULL, &error);
 	if (handle == NULL) {
 		g_warning("mpg123_new() failed: %s",
 			  mpg123_plain_strerror(error));
-		return NULL;
+		return false;
 	}
 
 	if (!mpd_mpg123_open(handle, path_fs, &audio_format)) {
 		mpg123_delete(handle);
-		return NULL;
+		return false;
 	}
 
 	num_samples = mpg123_length(handle);
 	if (num_samples <= 0) {
 		mpg123_delete(handle);
-		return NULL;
+		return false;
 	}
-
-	tag = tag_new();
-
-	tag->time = num_samples / audio_format.sample_rate;
 
 	/* ID3 tag support not yet implemented */
 
 	mpg123_delete(handle);
-	return tag;
+
+	tag_handler_invoke_duration(handler, handler_ctx,
+				    num_samples / audio_format.sample_rate);
+	return true;
 }
 
 static const char *const mpg123_suffixes[] = {
@@ -240,6 +240,6 @@ const struct decoder_plugin mpg123_decoder_plugin = {
 	.finish = mpd_mpg123_finish,
 	.file_decode = mpd_mpg123_file_decode,
 	/* streaming not yet implemented */
-	.tag_dup = mpd_mpg123_tag_dup,
+	.scan_file = mpd_mpg123_scan_file,
 	.suffixes = mpg123_suffixes,
 };

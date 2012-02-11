@@ -31,6 +31,8 @@
 #include "decoder_plugin.h"
 #include "playlist_list.h"
 #include "conf.h"
+#include "tag.h"
+#include "tag_handler.h"
 
 #ifdef ENABLE_ARCHIVE
 #include "archive_list.h"
@@ -511,7 +513,9 @@ update_container_file(	struct directory* directory,
 
 		child_path_fs = map_directory_child_fs(contdir, vtrack);
 
-		song->tag = plugin->tag_dup(child_path_fs);
+		song->tag = tag_new();
+		decoder_plugin_scan_file(plugin, child_path_fs,
+					 &add_tag_handler, song->tag);
 		g_free(child_path_fs);
 
 		directory_add_song(contdir, song);
