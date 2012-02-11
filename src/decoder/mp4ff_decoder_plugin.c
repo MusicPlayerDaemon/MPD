@@ -21,6 +21,7 @@
 #include "decoder_api.h"
 #include "audio_check.h"
 #include "tag_table.h"
+#include "tag_handler.h"
 
 #include <glib.h>
 
@@ -377,8 +378,9 @@ mp4ff_tag_name_parse(const char *name)
 	return type;
 }
 
-static struct tag *
-mp4_stream_tag(struct input_stream *is)
+static bool
+mp4ff_scan_stream(struct input_stream *is,
+		  const struct tag_handler *handler, void *handler_ctx)
 {
 	struct mp4ff_input_stream mis;
 	int32_t track;
@@ -388,23 +390,23 @@ mp4_stream_tag(struct input_stream *is)
 
 	mp4ff_t *mp4fh = mp4ff_input_stream_open(&mis, NULL, is);
 	if (mp4fh == NULL)
-		return NULL;
+		return false;
 
 	track = mp4_get_aac_track(mp4fh, NULL, NULL, NULL);
 	if (track < 0) {
 		mp4ff_close(mp4fh);
-		return NULL;
+		return false;
 	}
 
 	file_time = mp4ff_get_track_duration_use_offsets(mp4fh, track);
 	scale = mp4ff_time_scale(mp4fh, track);
 	if (scale < 0) {
 		mp4ff_close(mp4fh);
-		return NULL;
+		return false;
 	}
 
-	struct tag *tag = tag_new();
-	tag->time = ((float)file_time) / scale + 0.5;
+	tag_handler_invoke_duration(handler, handler_ctx,
+				    ((float)file_time) / scale + 0.5);
 
 	for (i = 0; i < mp4ff_meta_get_num_items(mp4fh); i++) {
 		char *item;
@@ -414,7 +416,8 @@ mp4_stream_tag(struct input_stream *is)
 
 		enum tag_type type = mp4ff_tag_name_parse(item);
 		if (type != TAG_NUM_OF_ITEM_TYPES)
-			tag_add_item(tag, type, value);
+			tag_handler_invoke_tag(handler, handler_ctx,
+					       type, value);
 
 		free(item);
 		free(value);
@@ -422,7 +425,7 @@ mp4_stream_tag(struct input_stream *is)
 
 	mp4ff_close(mp4fh);
 
-	return tag;
+	return true;
 }
 
 static const char *const mp4_suffixes[] = {
@@ -437,7 +440,7 @@ static const char *const mp4_mime_types[] = { "audio/mp4", "audio/m4a", NULL };
 const struct decoder_plugin mp4ff_decoder_plugin = {
 	.name = "mp4ff",
 	.stream_decode = mp4_decode,
-	.stream_tag = mp4_stream_tag,
+	.scan_stream = mp4ff_scan_stream,
 	.suffixes = mp4_suffixes,
 	.mime_types = mp4_mime_types,
 };

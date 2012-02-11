@@ -20,6 +20,7 @@
 #include "config.h"
 #include "decoder_api.h"
 #include "mpd_error.h"
+#include "tag_handler.h"
 
 #include <glib.h>
 #include <mikmod.h>
@@ -177,8 +178,9 @@ mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 	Player_Free(handle);
 }
 
-static struct tag *
-mikmod_decoder_tag_dup(const char *path_fs)
+static bool
+mikmod_decoder_scan_file(const char *path_fs,
+			 const struct tag_handler *handler, void *handler_ctx)
 {
 	char *path2 = g_strdup(path_fs);
 	MODULE *handle = Player_Load(path2, 128, 0);
@@ -186,25 +188,22 @@ mikmod_decoder_tag_dup(const char *path_fs)
 	if (handle == NULL) {
 		g_free(path2);
 		g_debug("Failed to open file: %s", path_fs);
-		return NULL;
+		return false;
 
 	}
 
 	Player_Free(handle);
 
-	struct tag *tag = tag_new();
-
-	tag->time = 0;
-
 	char *title = Player_LoadTitle(path2);
 	g_free(path2);
 
 	if (title != NULL) {
-		tag_add_item(tag, TAG_TITLE, title);
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_TITLE, title);
 		free(title);
 	}
 
-	return tag;
+	return true;
 }
 
 static const char *const mikmod_decoder_suffixes[] = {
@@ -231,6 +230,6 @@ const struct decoder_plugin mikmod_decoder_plugin = {
 	.init = mikmod_decoder_init,
 	.finish = mikmod_decoder_finish,
 	.file_decode = mikmod_decoder_file_decode,
-	.tag_dup = mikmod_decoder_tag_dup,
+	.scan_file = mikmod_decoder_scan_file,
 	.suffixes = mikmod_decoder_suffixes,
 };

@@ -219,15 +219,15 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	delete_fluid_settings(settings);
 }
 
-static struct tag *
-fluidsynth_tag_dup(const char *file)
+static bool
+fluidsynth_scan_file(const char *file,
+		     G_GNUC_UNUSED const struct tag_handler *handler,
+		     G_GNUC_UNUSED void *handler_ctx)
 {
-	struct tag *tag = tag_new();
-
 	/* to be implemented */
 	(void)file;
 
-	return tag;
+	return true;
 }
 
 static const char *const fluidsynth_suffixes[] = {
@@ -239,6 +239,6 @@ const struct decoder_plugin fluidsynth_decoder_plugin = {
 	.name = "fluidsynth",
 	.init = fluidsynth_init,
 	.file_decode = fluidsynth_file_decode,
-	.tag_dup = fluidsynth_tag_dup,
+	.scan_file = fluidsynth_scan_file,
 	.suffixes = fluidsynth_suffixes,
 };
