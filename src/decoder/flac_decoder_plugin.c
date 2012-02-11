@@ -286,15 +286,13 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 			/* end of this sub track */
 			break;
 
-		if (!FLAC__stream_decoder_process_single(flac_dec)) {
-			cmd = decoder_get_command(decoder);
-			if (cmd != DECODE_COMMAND_SEEK)
-				break;
+		if (!FLAC__stream_decoder_process_single(flac_dec) &&
+		    decoder_get_command(decoder) == DECODE_COMMAND_NONE) {
+			/* a failure that was not triggered by a
+			   decoder command */
+			flacPrintErroredState(FLAC__stream_decoder_get_state(flac_dec));
+			break;
 		}
-	}
-
-	if (cmd != DECODE_COMMAND_STOP) {
-		flacPrintErroredState(FLAC__stream_decoder_get_state(flac_dec));
 	}
 }
 
