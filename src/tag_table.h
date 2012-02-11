@@ -24,18 +24,24 @@
 
 #include <glib.h>
 
+struct tag_table {
+	const char *name;
+
+	enum tag_type type;
+};
+
 /**
  * Looks up a string in a tag translation table (case insensitive).
  * Returns TAG_NUM_OF_ITEM_TYPES if the specified name was not found
  * in the table.
  */
+G_GNUC_PURE
 static inline enum tag_type
-tag_table_lookup(const char *const* table, const char *name)
+tag_table_lookup_i(const struct tag_table *table, const char *name)
 {
-	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++)
-		if (table[i] != NULL &&
-		    g_ascii_strcasecmp(name, table[i]) == 0)
-			return (enum tag_type)i;
+	for (; table->name != NULL; ++table)
+		if (g_ascii_strcasecmp(name, table->name) == 0)
+			return table->type;
 
 	return TAG_NUM_OF_ITEM_TYPES;
 }

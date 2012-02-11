@@ -23,15 +23,16 @@
 #include "tag_table.h"
 #include "ape.h"
 
-static const char *const ape_tag_names[TAG_NUM_OF_ITEM_TYPES] = {
-	[TAG_ALBUM_ARTIST] = "album artist",
-	[TAG_DATE] = "year",
+static const struct tag_table ape_tags[] = {
+	{ "album artist", TAG_ALBUM_ARTIST },
+	{ "year", TAG_DATE },
+	{ NULL, TAG_NUM_OF_ITEM_TYPES }
 };
 
 static enum tag_type
 tag_ape_name_parse(const char *name)
 {
-	enum tag_type type = tag_table_lookup(ape_tag_names, name);
+	enum tag_type type = tag_table_lookup_i(ape_tags, name);
 	if (type == TAG_NUM_OF_ITEM_TYPES)
 		type = tag_name_parse_i(name);
 
