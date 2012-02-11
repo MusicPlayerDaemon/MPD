@@ -22,6 +22,7 @@
 #include "audio_check.h"
 #include "path.h"
 #include "utils.h"
+#include "tag_table.h"
 #include "tag_handler.h"
 
 #include <wavpack/wavpack.h>
@@ -37,10 +38,7 @@
 
 #define ERRORLEN 80
 
-static struct {
-	const char *name;
-	enum tag_type type;
-} tagtypes[] = {
+static const struct tag_table wavpack_tags[] = {
 	{ "artist", TAG_ARTIST },
 	{ "album", TAG_ALBUM },
 	{ "title", TAG_TITLE },
@@ -52,6 +50,7 @@ static struct {
 	{ "performer", TAG_PERFORMER },
 	{ "comment", TAG_COMMENT },
 	{ "disc", TAG_DISC },
+	{ NULL, TAG_NUM_OF_ITEM_TYPES }
 };
 
 /** A pointer type for format converter function. */
@@ -301,8 +300,8 @@ wavpack_scan_file(const char *fname,
 	allocated_size = 0;
 	s = NULL;
 
-	for (unsigned i = 0; i < G_N_ELEMENTS(tagtypes); ++i) {
-		size = WavpackGetTagItem(wpc, tagtypes[i].name, NULL, 0);
+	for (const struct tag_table *i = wavpack_tags; i->name != NULL; ++i) {
+		size = WavpackGetTagItem(wpc, i->name, NULL, 0);
 		if (size > 0) {
 			++size; /* EOS */
 
@@ -315,9 +314,9 @@ wavpack_scan_file(const char *fname,
 				s = t;
 			}
 
-			WavpackGetTagItem(wpc, tagtypes[i].name, s, size);
+			WavpackGetTagItem(wpc, i->name, s, size);
 			tag_handler_invoke_tag(handler, handler_ctx,
-					       tagtypes[i].type, s);
+					       i->type, s);
 		}
 	}
 
