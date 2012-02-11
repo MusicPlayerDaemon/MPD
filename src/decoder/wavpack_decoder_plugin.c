@@ -272,6 +272,20 @@ wavpack_replaygain(struct replay_gain_info *replay_gain_info,
 	return found;
 }
 
+static void
+wavpack_scan_tag_item(WavpackContext *wpc, const char *name,
+		      enum tag_type type,
+		      const struct tag_handler *handler, void *handler_ctx)
+{
+	char buffer[1024];
+	int len = WavpackGetTagItem(wpc, name, buffer, sizeof(buffer));
+	if (len <= 0 || (unsigned)len >= sizeof(buffer))
+		return;
+
+	tag_handler_invoke_tag(handler, handler_ctx, type, buffer);
+
+}
+
 /*
  * Reads metainfo from the specified file.
  */
@@ -281,8 +295,6 @@ wavpack_scan_file(const char *fname,
 {
 	WavpackContext *wpc;
 	char error[ERRORLEN];
-	char *s;
-	int size, allocated_size;
 
 	wpc = WavpackOpenFileInput(fname, error, OPEN_TAGS, 0);
 	if (wpc == NULL) {
@@ -297,30 +309,9 @@ wavpack_scan_file(const char *fname,
 				    WavpackGetNumSamples(wpc) /
 				    WavpackGetSampleRate(wpc));
 
-	allocated_size = 0;
-	s = NULL;
-
-	for (const struct tag_table *i = wavpack_tags; i->name != NULL; ++i) {
-		size = WavpackGetTagItem(wpc, i->name, NULL, 0);
-		if (size > 0) {
-			++size; /* EOS */
-
-			if (s == NULL) {
-				s = g_malloc(size);
-				allocated_size = size;
-			} else if (size > allocated_size) {
-				char *t = (char *)g_realloc(s, size);
-				allocated_size = size;
-				s = t;
-			}
-
-			WavpackGetTagItem(wpc, i->name, s, size);
-			tag_handler_invoke_tag(handler, handler_ctx,
-					       i->type, s);
-		}
-	}
-
-	g_free(s);
+	for (const struct tag_table *i = wavpack_tags; i->name != NULL; ++i)
+		wavpack_scan_tag_item(wpc, i->name, i->type,
+				      handler, handler_ctx);
 
 	WavpackCloseFile(wpc);
 
