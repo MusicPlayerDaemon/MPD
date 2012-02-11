@@ -414,6 +414,8 @@ mp4ff_scan_stream(struct input_stream *is,
 
 		mp4ff_meta_get_by_index(mp4fh, i, &item, &value);
 
+		tag_handler_invoke_pair(handler, handler_ctx, item, value);
+
 		enum tag_type type = mp4ff_tag_name_parse(item);
 		if (type != TAG_NUM_OF_ITEM_TYPES)
 			tag_handler_invoke_tag(handler, handler_ctx,

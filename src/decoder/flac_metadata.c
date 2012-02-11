@@ -196,6 +196,19 @@ flac_scan_comment(const char *char_tnum,
 		  const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
+	if (handler->pair != NULL) {
+		char *name = g_strdup((const char*)entry->entry);
+		char *value = strchr(name, '=');
+
+		if (value != NULL && value > name) {
+			*value++ = 0;
+			tag_handler_invoke_pair(handler, handler_ctx,
+						name, value);
+		}
+
+		g_free(name);
+	}
+
 	for (const struct tag_table *i = flac_tags; i->name != NULL; ++i)
 		if (flac_copy_comment(entry, i->name, i->type, char_tnum,
 				      handler, handler_ctx))

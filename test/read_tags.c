@@ -145,13 +145,20 @@ print_duration(unsigned seconds, G_GNUC_UNUSED void *ctx)
 static void
 print_tag(enum tag_type type, const char *value, G_GNUC_UNUSED void *ctx)
 {
-	g_print("%s=%s\n", tag_item_names[type], value);
+	g_print("[%s]=%s\n", tag_item_names[type], value);
 	empty = false;
+}
+
+static void
+print_pair(const char *name, const char *value, G_GNUC_UNUSED void *ctx)
+{
+	g_print("\"%s\"=%s\n", name, value);
 }
 
 static const struct tag_handler print_handler = {
 	.duration = print_duration,
 	.tag = print_tag,
+	.pair = print_pair,
 };
 
 int main(int argc, char **argv)

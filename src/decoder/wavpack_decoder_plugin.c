@@ -286,6 +286,19 @@ wavpack_scan_tag_item(WavpackContext *wpc, const char *name,
 
 }
 
+static void
+wavpack_scan_pair(WavpackContext *wpc, const char *name,
+		  const struct tag_handler *handler, void *handler_ctx)
+{
+	char buffer[1024];
+	int len = WavpackGetTagItem(wpc, name, buffer, sizeof(buffer));
+	if (len <= 0 || (unsigned)len >= sizeof(buffer))
+		return;
+
+	tag_handler_invoke_pair(handler, handler_ctx, name, buffer);
+
+}
+
 /*
  * Reads metainfo from the specified file.
  */
@@ -312,6 +325,20 @@ wavpack_scan_file(const char *fname,
 	for (const struct tag_table *i = wavpack_tags; i->name != NULL; ++i)
 		wavpack_scan_tag_item(wpc, i->name, i->type,
 				      handler, handler_ctx);
+
+	if (handler->pair != NULL) {
+		char name[64];
+
+		for (int i = 0, n = WavpackGetNumTagItems(wpc);
+		     i < n; ++i) {
+			int len = WavpackGetTagItemIndexed(wpc, i, name,
+							   sizeof(name));
+			if (len <= 0 || (unsigned)len >= sizeof(name))
+				continue;
+
+			wavpack_scan_pair(wpc, name, handler, handler_ctx);
+		}
+	}
 
 	WavpackCloseFile(wpc);
 

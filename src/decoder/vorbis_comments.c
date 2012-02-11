@@ -106,6 +106,19 @@ static void
 vorbis_scan_comment(const char *comment,
 		    const struct tag_handler *handler, void *handler_ctx)
 {
+	if (handler->pair != NULL) {
+		char *name = g_strdup((const char*)comment);
+		char *value = strchr(name, '=');
+
+		if (value != NULL && value > name) {
+			*value++ = 0;
+			tag_handler_invoke_pair(handler, handler_ctx,
+						name, value);
+		}
+
+		g_free(name);
+	}
+
 	for (const struct tag_table *i = vorbis_tags; i->name != NULL; ++i)
 		if (vorbis_copy_comment(comment, i->name, i->type,
 					handler, handler_ctx))

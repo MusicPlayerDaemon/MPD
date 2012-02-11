@@ -49,6 +49,8 @@ tag_ape_import_item(unsigned long flags,
 	if ((flags & (0x3 << 1)) != 0)
 		return;
 
+	tag_handler_invoke_pair(handler, handler_ctx, key, value);
+
 	enum tag_type type = tag_ape_name_parse(key);
 	if (type == TAG_NUM_OF_ITEM_TYPES)
 		return;

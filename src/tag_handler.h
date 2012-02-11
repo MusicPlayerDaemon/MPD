@@ -43,6 +43,12 @@ struct tag_handler {
 	 * invalid after returning
 	 */
 	void (*tag)(enum tag_type type, const char *value, void *ctx);
+
+	/**
+	 * A name-value pair has been read.  It is the codec specific
+	 * representation of tags.
+	 */
+	void (*pair)(const char *key, const char *value, void *ctx);
 };
 
 static inline void
@@ -65,6 +71,18 @@ tag_handler_invoke_tag(const struct tag_handler *handler, void *ctx,
 
 	if (handler->tag != NULL)
 		handler->tag(type, value, ctx);
+}
+
+static inline void
+tag_handler_invoke_pair(const struct tag_handler *handler, void *ctx,
+			const char *name, const char *value)
+{
+	assert(handler != NULL);
+	assert(name != NULL);
+	assert(value != NULL);
+
+	if (handler->pair != NULL)
+		handler->pair(name, value, ctx);
 }
 
 /**

@@ -282,18 +282,21 @@ tag_id3_import_musicbrainz(struct id3_tag *id3_tag,
 		if (name == NULL)
 			continue;
 
-		type = tag_id3_parse_txxx_name((const char*)name);
-		free(name);
-
-		if (type == TAG_NUM_OF_ITEM_TYPES)
-			continue;
-
 		value = tag_id3_getstring(frame, 2);
 		if (value == NULL)
 			continue;
 
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       type, (const char*)value);
+		tag_handler_invoke_pair(handler, handler_ctx,
+					(const char *)name,
+					(const char *)value);
+
+		type = tag_id3_parse_txxx_name((const char*)name);
+		free(name);
+
+		if (type != TAG_NUM_OF_ITEM_TYPES)
+			tag_handler_invoke_tag(handler, handler_ctx,
+					       type, (const char*)value);
+
 		free(value);
 	}
 }
