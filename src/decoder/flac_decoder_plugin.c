@@ -295,7 +295,6 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 
 	if (cmd != DECODE_COMMAND_STOP) {
 		flacPrintErroredState(FLAC__stream_decoder_get_state(flac_dec));
-		FLAC__stream_decoder_finish(flac_dec);
 	}
 }
 
@@ -369,6 +368,7 @@ flac_decode_internal(struct decoder * decoder,
 
 	if (!flac_decoder_initialize(&data, flac_dec, 0)) {
 		flac_data_deinit(&data);
+		FLAC__stream_decoder_finish(flac_dec);
 		FLAC__stream_decoder_delete(flac_dec);
 		return;
 	}
@@ -376,6 +376,8 @@ flac_decode_internal(struct decoder * decoder,
 	flac_decoder_loop(&data, flac_dec, 0, 0);
 
 	flac_data_deinit(&data);
+
+	FLAC__stream_decoder_finish(flac_dec);
 	FLAC__stream_decoder_delete(flac_dec);
 }
 
