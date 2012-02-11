@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "tag_id3.h"
+#include "tag_table.h"
 #include "tag.h"
 #include "riff.h"
 #include "aiff.h"
@@ -242,23 +243,17 @@ tag_id3_import_comment(struct tag *dest, struct id3_tag *tag, const char *id,
 static enum tag_type
 tag_id3_parse_txxx_name(const char *name)
 {
-	static const struct {
-		enum tag_type type;
-		const char *name;
-	} musicbrainz_txxx[] = {
-		{ TAG_ALBUM_ARTIST_SORT, "ALBUMARTISTSORT" },
-		{ TAG_MUSICBRAINZ_ARTISTID, "MusicBrainz Artist Id" },
-		{ TAG_MUSICBRAINZ_ALBUMID, "MusicBrainz Album Id" },
-		{ TAG_MUSICBRAINZ_ALBUMARTISTID,
-		  "MusicBrainz Album Artist Id" },
-		{ TAG_MUSICBRAINZ_TRACKID, "MusicBrainz Track Id" },
+	static const struct tag_table txxx_tags[] = {
+		{ "ALBUMARTISTSORT", TAG_ALBUM_ARTIST_SORT },
+		{ "MusicBrainz Artist Id", TAG_MUSICBRAINZ_ARTISTID },
+		{ "MusicBrainz Album Id", TAG_MUSICBRAINZ_ALBUMID },
+		{ "MusicBrainz Album Artist Id",
+		  TAG_MUSICBRAINZ_ALBUMARTISTID },
+		{ "MusicBrainz Track Id", TAG_MUSICBRAINZ_TRACKID },
+		{ NULL, TAG_NUM_OF_ITEM_TYPES }
 	};
 
-	for (unsigned i = 0; i < G_N_ELEMENTS(musicbrainz_txxx); ++i)
-		if (strcmp(name, musicbrainz_txxx[i].name) == 0)
-			return musicbrainz_txxx[i].type;
-
-	return TAG_NUM_OF_ITEM_TYPES;
+	return tag_table_lookup(txxx_tags, name);
 }
 
 /**

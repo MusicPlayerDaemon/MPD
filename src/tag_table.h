@@ -31,6 +31,22 @@ struct tag_table {
 };
 
 /**
+ * Looks up a string in a tag translation table (case sensitive).
+ * Returns TAG_NUM_OF_ITEM_TYPES if the specified name was not found
+ * in the table.
+ */
+G_GNUC_PURE
+static inline enum tag_type
+tag_table_lookup(const struct tag_table *table, const char *name)
+{
+	for (; table->name != NULL; ++table)
+		if (strcmp(name, table->name) == 0)
+			return table->type;
+
+	return TAG_NUM_OF_ITEM_TYPES;
+}
+
+/**
  * Looks up a string in a tag translation table (case insensitive).
  * Returns TAG_NUM_OF_ITEM_TYPES if the specified name was not found
  * in the table.
