@@ -202,29 +202,30 @@ gme_tag_dup(const char *path_fs)
 		return NULL;
 	}
 
+	assert(ti != NULL);
+
 	struct tag *tag = tag_new();
-	if(ti != NULL){
-		if(ti->length > 0)
-			tag->time = ti->length / 1000;
-		if(ti->song != NULL){
-			if(gme_track_count(emu) > 1){
-				/* start numbering subtunes from 1 */
-				char *tag_title=g_strdup_printf("%s (%d/%d)",
-					ti->song, song_num+1, gme_track_count(emu));
-				tag_add_item(tag, TAG_TITLE, tag_title);
-				g_free(tag_title);
-			}else
-				tag_add_item(tag, TAG_TITLE, ti->song);
-		}
-		if(ti->author != NULL)
-			tag_add_item(tag, TAG_ARTIST, ti->author);
-		if(ti->game != NULL)
-			tag_add_item(tag, TAG_ALBUM, ti->game);
-		if(ti->comment != NULL)
-			tag_add_item(tag, TAG_COMMENT, ti->comment);
-		if(ti->copyright != NULL)
-			tag_add_item(tag, TAG_DATE, ti->copyright);
+
+	if(ti->length > 0)
+		tag->time = ti->length / 1000;
+	if(ti->song != NULL){
+		if(gme_track_count(emu) > 1){
+			/* start numbering subtunes from 1 */
+			char *tag_title=g_strdup_printf("%s (%d/%d)",
+							ti->song, song_num+1, gme_track_count(emu));
+			tag_add_item(tag, TAG_TITLE, tag_title);
+			g_free(tag_title);
+		}else
+			tag_add_item(tag, TAG_TITLE, ti->song);
 	}
+	if(ti->author != NULL)
+		tag_add_item(tag, TAG_ARTIST, ti->author);
+	if(ti->game != NULL)
+		tag_add_item(tag, TAG_ALBUM, ti->game);
+	if(ti->comment != NULL)
+		tag_add_item(tag, TAG_COMMENT, ti->comment);
+	if(ti->copyright != NULL)
+		tag_add_item(tag, TAG_DATE, ti->copyright);
 
 	gme_free_info(ti);
 	gme_delete(emu);
