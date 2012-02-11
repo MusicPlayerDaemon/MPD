@@ -76,11 +76,6 @@ mpd_ffmpeg_log_callback(G_GNUC_UNUSED void *ptr, int level,
 	}
 }
 
-
-#ifndef AV_VERSION_INT
-#define AV_VERSION_INT(a, b, c) (a<<16 | b<<8 | c)
-#endif
-
 struct mpd_ffmpeg_stream {
 	struct decoder *decoder;
 	struct input_stream *input;
