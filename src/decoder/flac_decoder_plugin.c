@@ -319,6 +319,48 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 	}
 }
 
+static FLAC__StreamDecoderInitStatus
+stream_init_oggflac(FLAC__StreamDecoder *flac_dec, struct flac_data *data)
+{
+#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
+	return FLAC__stream_decoder_init_ogg_stream(flac_dec,
+						    flac_read_cb,
+						    flac_seek_cb,
+						    flac_tell_cb,
+						    flac_length_cb,
+						    flac_eof_cb,
+						    flac_write_cb,
+						    flacMetadata,
+						    flac_error_cb,
+						    data);
+#else
+	(void)flac_dec;
+	(void)data;
+
+	return FLAC__STREAM_DECODER_INIT_STATUS_ERROR;
+#endif
+}
+
+static FLAC__StreamDecoderInitStatus
+stream_init_flac(FLAC__StreamDecoder *flac_dec, struct flac_data *data)
+{
+	return FLAC__stream_decoder_init_stream(flac_dec,
+						flac_read_cb, flac_seek_cb,
+						flac_tell_cb, flac_length_cb,
+						flac_eof_cb, flac_write_cb,
+						flacMetadata,
+						flac_error_cb,
+						data);
+}
+
+static FLAC__StreamDecoderInitStatus
+stream_init(FLAC__StreamDecoder *flac_dec, struct flac_data *data, bool is_ogg)
+{
+	return is_ogg
+		? stream_init_oggflac(flac_dec, data)
+		: stream_init_flac(flac_dec, data);
+}
+
 static void
 flac_decode_internal(struct decoder * decoder,
 		     struct input_stream *input_stream,
@@ -326,7 +368,6 @@ flac_decode_internal(struct decoder * decoder,
 {
 	FLAC__StreamDecoder *flac_dec;
 	struct flac_data data;
-	const char *err = NULL;
 
 	flac_dec = flac_decoder_new();
 	if (flac_dec == NULL)
@@ -335,42 +376,15 @@ flac_decode_internal(struct decoder * decoder,
 	flac_data_init(&data, decoder, input_stream);
 	data.tag = tag_new();
 
-	if (is_ogg) {
+	FLAC__StreamDecoderInitStatus status =
+		stream_init(flac_dec, &data, is_ogg);
+	if (status != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
+		flac_data_deinit(&data);
+		FLAC__stream_decoder_delete(flac_dec);
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
-		FLAC__StreamDecoderInitStatus status =
-			FLAC__stream_decoder_init_ogg_stream(flac_dec,
-							     flac_read_cb,
-							     flac_seek_cb,
-							     flac_tell_cb,
-							     flac_length_cb,
-							     flac_eof_cb,
-							     flac_write_cb,
-							     flacMetadata,
-							     flac_error_cb,
-							     (void *)&data);
-		if (status != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
-			err = "doing Ogg init()";
-			goto fail;
-		}
-#else
-		goto fail;
+		g_warning("%s", FLAC__StreamDecoderInitStatusString[status]);
 #endif
-	} else {
-		FLAC__StreamDecoderInitStatus status =
-			FLAC__stream_decoder_init_stream(flac_dec,
-							 flac_read_cb,
-							 flac_seek_cb,
-							 flac_tell_cb,
-							 flac_length_cb,
-							 flac_eof_cb,
-							 flac_write_cb,
-							 flacMetadata,
-							 flac_error_cb,
-							 (void *)&data);
-		if (status != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
-			err = "doing init()";
-			goto fail;
-		}
+		return;
 	}
 
 	if (!flac_decoder_initialize(&data, flac_dec, 0)) {
@@ -381,12 +395,8 @@ flac_decode_internal(struct decoder * decoder,
 
 	flac_decoder_loop(&data, flac_dec, 0, 0);
 
-fail:
 	flac_data_deinit(&data);
 	FLAC__stream_decoder_delete(flac_dec);
-
-	if (err)
-		g_warning("%s\n", err);
 }
 
 static void
@@ -418,8 +428,11 @@ oggflac_tag_dup(const char *file)
 	FLAC__StreamMetadata *block;
 	FLAC__Metadata_Chain *chain = FLAC__metadata_chain_new();
 
-	if (!(FLAC__metadata_chain_read_ogg(chain, file)))
-		goto out;
+	if (!(FLAC__metadata_chain_read_ogg(chain, file))) {
+		FLAC__metadata_chain_delete(chain);
+		return NULL;
+	}
+
 	it = FLAC__metadata_iterator_new();
 	FLAC__metadata_iterator_init(it, chain);
 
@@ -437,7 +450,6 @@ oggflac_tag_dup(const char *file)
 		ret = NULL;
 	}
 
-out:
 	FLAC__metadata_chain_delete(chain);
 	return ret;
 }
