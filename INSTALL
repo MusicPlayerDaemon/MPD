@@ -96,7 +96,7 @@ For Musepack support.
 MikMod - http://mikmod.raphnet.net/
 For MOD support.  You will need libmikmod.
 
-libavcodec, libavformat (ffmpeg) - http://ffmpeg.mplayerhq.hu/
+libavcodec, libavformat (ffmpeg or libav) - http://ffmpeg.mplayerhq.hu/ http://libav.org/
 Multi-codec library.
 
 libsidplay2 - http://sidplay2.sourceforge.net/
