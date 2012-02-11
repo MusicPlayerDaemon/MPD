@@ -21,6 +21,7 @@
 #include "flac_metadata.h"
 #include "replay_gain_info.h"
 #include "tag.h"
+#include "tag_table.h"
 
 #include <glib.h>
 
@@ -180,10 +181,12 @@ flac_copy_comment(struct tag *tag,
 	return false;
 }
 
-/* tracknumber is used in VCs, MPD uses "track" ..., all the other
- * tag names match */
-static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
-static const char *VORBIS_COMMENT_DISC_KEY = "discnumber";
+static const struct tag_table flac_tags[] = {
+	{ "tracknumber", TAG_TRACK },
+	{ "discnumber", TAG_DISC },
+	{ "album artist", TAG_ALBUM_ARTIST },
+	{ NULL, TAG_NUM_OF_ITEM_TYPES }
+};
 
 static void
 flac_parse_comment(struct tag *tag, const char *char_tnum,
@@ -191,13 +194,9 @@ flac_parse_comment(struct tag *tag, const char *char_tnum,
 {
 	assert(tag != NULL);
 
-	if (flac_copy_comment(tag, entry, VORBIS_COMMENT_TRACK_KEY,
-			      TAG_TRACK, char_tnum) ||
-	    flac_copy_comment(tag, entry, VORBIS_COMMENT_DISC_KEY,
-			      TAG_DISC, char_tnum) ||
-	    flac_copy_comment(tag, entry, "album artist",
-			      TAG_ALBUM_ARTIST, char_tnum))
-		return;
+	for (const struct tag_table *i = flac_tags; i->name != NULL; ++i)
+		if (flac_copy_comment(tag, entry, i->name, i->type, char_tnum))
+			return;
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (flac_copy_comment(tag, entry,

@@ -20,6 +20,7 @@
 #include "config.h"
 #include "vorbis_comments.h"
 #include "tag.h"
+#include "tag_table.h"
 #include "replay_gain_info.h"
 
 #include <glib.h>
@@ -73,9 +74,6 @@ vorbis_comments_to_replay_gain(struct replay_gain_info *rgi, char **comments)
 	return found;
 }
 
-static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
-static const char *VORBIS_COMMENT_DISC_KEY = "discnumber";
-
 /**
  * Check if the comment's name equals the passed name, and if so, copy
  * the comment value into the tag.
@@ -95,18 +93,21 @@ vorbis_copy_comment(struct tag *tag, const char *comment,
 	return false;
 }
 
+static const struct tag_table vorbis_tags[] = {
+	{ "tracknumber", TAG_TRACK },
+	{ "discnumber", TAG_DISC },
+	{ "album artist", TAG_ALBUM_ARTIST },
+	{ NULL, TAG_NUM_OF_ITEM_TYPES }
+};
+
 static void
 vorbis_parse_comment(struct tag *tag, const char *comment)
 {
 	assert(tag != NULL);
 
-	if (vorbis_copy_comment(tag, comment, VORBIS_COMMENT_TRACK_KEY,
-				TAG_TRACK) ||
-	    vorbis_copy_comment(tag, comment, VORBIS_COMMENT_DISC_KEY,
-				TAG_DISC) ||
-	    vorbis_copy_comment(tag, comment, "album artist",
-				TAG_ALBUM_ARTIST))
-		return;
+	for (const struct tag_table *i = vorbis_tags; i->name != NULL; ++i)
+		if (vorbis_copy_comment(tag, comment, i->name, i->type))
+			return;
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (vorbis_copy_comment(tag, comment,
