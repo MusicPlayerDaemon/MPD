@@ -20,26 +20,22 @@
 #include "config.h"
 #include "ffmpeg_metadata.h"
 #include "tag.h"
+#include "tag_table.h"
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "ffmpeg"
 
-typedef struct ffmpeg_tag_map {
-	enum tag_type type;
-	const char *name;
-} ffmpeg_tag_map;
-
-static const ffmpeg_tag_map ffmpeg_tag_maps[] = {
+static const struct tag_table ffmpeg_tags[] = {
 #if LIBAVFORMAT_VERSION_INT < ((52<<16)+(50<<8))
-	{ TAG_ARTIST,            "author" },
-	{ TAG_DATE,              "year" },
+	{ "author", TAG_ARTIST },
+	{ "year", TAG_DATE },
 #endif
-	{ TAG_ARTIST_SORT,       "author-sort" },
-	{ TAG_ALBUM_ARTIST,      "album_artist" },
-	{ TAG_ALBUM_ARTIST_SORT, "album_artist-sort" },
+	{ "author-sort", TAG_ARTIST_SORT },
+	{ "album_artist", TAG_ALBUM_ARTIST },
+	{ "album_artist-sort", TAG_ALBUM_ARTIST_SORT },
 
 	/* sentinel */
-	{ TAG_NUM_OF_ITEM_TYPES, NULL }
+	{ NULL, TAG_NUM_OF_ITEM_TYPES }
 };
 
 static void
@@ -59,7 +55,7 @@ ffmpeg_copy_dictionary(struct tag *tag, AVDictionary *dict)
 		ffmpeg_copy_metadata(tag, i,
 				     dict, tag_item_names[i]);
 
-	for (const struct ffmpeg_tag_map *i = ffmpeg_tag_maps;
+	for (const struct tag_table *i = ffmpeg_tags;
 	     i->name != NULL; ++i)
 		ffmpeg_copy_metadata(tag, i->type, dict, i->name);
 }
