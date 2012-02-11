@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "vorbis_comments.h"
 #include "_ogg_common.h"
 #include "audio_check.h"
 #include "uri.h"
@@ -42,7 +43,6 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 #undef G_LOG_DOMAIN
@@ -148,108 +148,6 @@ vorbis_is_open(struct vorbis_input_stream *vis, OggVorbis_File *vf,
 	}
 
 	return true;
-}
-
-static const char *
-vorbis_comment_value(const char *comment, const char *needle)
-{
-	size_t len = strlen(needle);
-
-	if (g_ascii_strncasecmp(comment, needle, len) == 0 &&
-	    comment[len] == '=')
-		return comment + len + 1;
-
-	return NULL;
-}
-
-static bool
-vorbis_comments_to_replay_gain(struct replay_gain_info *rgi, char **comments)
-{
-	const char *temp;
-	bool found = false;
-
-	replay_gain_info_init(rgi);
-
-	while (*comments) {
-		if ((temp =
-		     vorbis_comment_value(*comments, "replaygain_track_gain"))) {
-			rgi->tuples[REPLAY_GAIN_TRACK].gain = atof(temp);
-			found = true;
-		} else if ((temp = vorbis_comment_value(*comments,
-							"replaygain_album_gain"))) {
-			rgi->tuples[REPLAY_GAIN_ALBUM].gain = atof(temp);
-			found = true;
-		} else if ((temp = vorbis_comment_value(*comments,
-							"replaygain_track_peak"))) {
-			rgi->tuples[REPLAY_GAIN_TRACK].peak = atof(temp);
-			found = true;
-		} else if ((temp = vorbis_comment_value(*comments,
-							"replaygain_album_peak"))) {
-			rgi->tuples[REPLAY_GAIN_ALBUM].peak = atof(temp);
-			found = true;
-		}
-
-		comments++;
-	}
-
-	return found;
-}
-
-static const char *VORBIS_COMMENT_TRACK_KEY = "tracknumber";
-static const char *VORBIS_COMMENT_DISC_KEY = "discnumber";
-
-/**
- * Check if the comment's name equals the passed name, and if so, copy
- * the comment value into the tag.
- */
-static bool
-vorbis_copy_comment(struct tag *tag, const char *comment,
-		    const char *name, enum tag_type tag_type)
-{
-	const char *value;
-
-	value = vorbis_comment_value(comment, name);
-	if (value != NULL) {
-		tag_add_item(tag, tag_type, value);
-		return true;
-	}
-
-	return false;
-}
-
-static void
-vorbis_parse_comment(struct tag *tag, const char *comment)
-{
-	assert(tag != NULL);
-
-	if (vorbis_copy_comment(tag, comment, VORBIS_COMMENT_TRACK_KEY,
-				TAG_TRACK) ||
-	    vorbis_copy_comment(tag, comment, VORBIS_COMMENT_DISC_KEY,
-				TAG_DISC) ||
-	    vorbis_copy_comment(tag, comment, "album artist",
-				TAG_ALBUM_ARTIST))
-		return;
-
-	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
-		if (vorbis_copy_comment(tag, comment,
-					tag_item_names[i], i))
-			return;
-}
-
-static struct tag *
-vorbis_comments_to_tag(char **comments)
-{
-	struct tag *tag = tag_new();
-
-	while (*comments)
-		vorbis_parse_comment(tag, *comments++);
-
-	if (tag_is_empty(tag)) {
-		tag_free(tag);
-		tag = NULL;
-	}
-
-	return tag;
 }
 
 static void
