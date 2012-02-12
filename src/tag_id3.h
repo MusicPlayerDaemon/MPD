@@ -36,8 +36,6 @@ tag_id3_scan(const char *path_fs,
 struct id3_tag;
 struct tag *tag_id3_import(struct id3_tag *);
 
-struct tag *tag_id3_load(const char *file);
-
 #else
 
 #include <glib.h>
@@ -48,12 +46,6 @@ tag_id3_scan(G_GNUC_UNUSED const char *path_fs,
 	     G_GNUC_UNUSED void *handler_ctx)
 {
 	return false;
-}
-
-static inline struct tag *
-tag_id3_load(G_GNUC_UNUSED const char *file)
-{
-	return NULL;
 }
 
 #endif

@@ -101,15 +101,3 @@ tag_ape_scan2(const char *path_fs,
 
 	return tag_ape_scan(path_fs, tag_ape_callback, &ctx);
 }
-
-struct tag *
-tag_ape_load(const char *path_fs)
-{
-	struct tag *tag = tag_new();
-	if (!tag_ape_scan2(path_fs, &add_tag_handler, tag)) {
-		tag_free(tag);
-		tag = NULL;
-	}
-
-	return tag;
-}

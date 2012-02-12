@@ -33,13 +33,4 @@ bool
 tag_ape_scan2(const char *path_fs,
 	      const struct tag_handler *handler, void *handler_ctx);
 
-/**
- * Loads the APE tag from a file.
- *
- * @param path_fs the path of the file in filesystem encoding
- * @return a tag object, or NULL if the file has no APE tag
- */
-struct tag *
-tag_ape_load(const char *path_fs);
-
 #endif

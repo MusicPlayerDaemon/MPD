@@ -66,33 +66,12 @@ song_file_load(const char *path, struct directory *parent)
 /**
  * Attempts to load APE or ID3 tags from the specified file.
  */
-static struct tag *
-tag_load_fallback(const char *path)
+static bool
+tag_scan_fallback(const char *path,
+		  const struct tag_handler *handler, void *handler_ctx)
 {
-	struct tag *tag = tag_ape_load(path);
-	if (tag == NULL)
-		tag = tag_id3_load(path);
-	return tag;
-}
-
-/**
- * The decoder plugin failed to load any tags: fall back to the APE or
- * ID3 tag loader.
- */
-static struct tag *
-tag_fallback(const char *path, struct tag *tag)
-{
-	struct tag *fallback = tag_load_fallback(path);
-
-	if (fallback != NULL) {
-		/* tag was successfully loaded: copy the song
-		   duration, and destroy the old (empty) tag */
-		fallback->time = tag->time;
-		tag_free(tag);
-		return fallback;
-	} else
-		/* no APE/ID3 tag found: return the empty tag */
-		return tag;
+	return tag_ape_scan2(path, handler, handler_ctx) ||
+		tag_id3_scan(path, handler, handler_ctx);
 }
 
 bool
@@ -183,7 +162,7 @@ song_file_update(struct song *song)
 	}
 
 	if (song->tag != NULL && tag_is_empty(song->tag))
-		song->tag = tag_fallback(path_fs, song->tag);
+		tag_scan_fallback(path_fs, &add_tag_handler, song->tag);
 
 	g_free(path_fs);
 	return song->tag != NULL;

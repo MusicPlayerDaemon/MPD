@@ -570,31 +570,3 @@ tag_id3_scan(const char *path_fs,
 	id3_tag_delete(tag);
 	return true;
 }
-
-struct tag *tag_id3_load(const char *file)
-{
-	struct tag *ret;
-	struct id3_tag *tag;
-	FILE *stream;
-
-	stream = fopen(file, "rb");
-	if (!stream) {
-		g_debug("tag_id3_load: Failed to open file: '%s', %s",
-			file, strerror(errno));
-		return NULL;
-	}
-
-	tag = tag_id3_find_from_beginning(stream);
-	if (tag == NULL)
-		tag = tag_id3_riff_aiff_load(stream);
-	if (!tag)
-		tag = tag_id3_find_from_end(stream);
-
-	fclose(stream);
-
-	if (!tag)
-		return NULL;
-	ret = tag_id3_import(tag);
-	id3_tag_delete(tag);
-	return ret;
-}
