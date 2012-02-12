@@ -91,4 +91,11 @@ tag_handler_invoke_pair(const struct tag_handler *handler, void *ctx,
  */
 extern const struct tag_handler add_tag_handler;
 
+/**
+ * This #tag_handler implementation adds tag values to a #tag object
+ * (casted from the context pointer), and supports the has_playlist
+ * attribute.
+ */
+extern const struct tag_handler full_tag_handler;
+
 #endif

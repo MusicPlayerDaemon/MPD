@@ -20,6 +20,8 @@
 #include "config.h"
 #include "tag_handler.h"
 
+#include <glib.h>
+
 static void
 add_tag_duration(unsigned seconds, void *ctx)
 {
@@ -39,5 +41,20 @@ add_tag_tag(enum tag_type type, const char *value, void *ctx)
 const struct tag_handler add_tag_handler = {
 	.duration = add_tag_duration,
 	.tag = add_tag_tag,
+};
+
+static void
+full_tag_pair(const char *name, G_GNUC_UNUSED const char *value, void *ctx)
+{
+	struct tag *tag = ctx;
+
+	if (g_ascii_strcasecmp(name, "cuesheet") == 0)
+		tag->has_playlist = true;
+}
+
+const struct tag_handler full_tag_handler = {
+	.duration = add_tag_duration,
+	.tag = add_tag_tag,
+	.pair = full_tag_pair,
 };
 
