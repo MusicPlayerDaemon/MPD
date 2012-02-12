@@ -567,6 +567,69 @@ directory_child_access(const struct directory *directory,
 }
 
 static void
+update_song_file(struct directory *directory,
+		 const char *name, const struct stat *st,
+		 const struct decoder_plugin *plugin)
+{
+	db_lock();
+	struct song *song = directory_get_song(directory, name);
+	db_unlock();
+
+	if (!directory_child_access(directory, name, R_OK)) {
+		g_warning("no read permissions on %s/%s",
+			  directory_get_path(directory), name);
+		if (song != NULL) {
+			db_lock();
+			delete_song(directory, song);
+			db_unlock();
+		}
+
+		return;
+	}
+
+	if (!(song != NULL && st->st_mtime == song->mtime &&
+	      !walk_discard) &&
+	    plugin->container_scan != NULL &&
+	    update_container_file(directory, name, st, plugin)) {
+		if (song != NULL) {
+			db_lock();
+			delete_song(directory, song);
+			db_unlock();
+		}
+
+		return;
+	}
+
+	if (song == NULL) {
+		g_debug("reading %s/%s",
+			directory_get_path(directory), name);
+		song = song_file_load(name, directory);
+		if (song == NULL) {
+			g_debug("ignoring unrecognized file %s/%s",
+				directory_get_path(directory), name);
+			return;
+		}
+
+		directory_add_song(directory, song);
+		modified = true;
+		g_message("added %s/%s",
+			  directory_get_path(directory), name);
+	} else if (st->st_mtime != song->mtime || walk_discard) {
+		g_message("updating %s/%s",
+			  directory_get_path(directory), name);
+		if (!song_file_update(song)) {
+			g_debug("deleting unrecognized file %s/%s",
+				directory_get_path(directory), name);
+			db_lock();
+			delete_song(directory, song);
+			db_unlock();
+		}
+
+		modified = true;
+	}
+}
+
+static void
 update_regular_file(struct directory *directory,
 		    const char *name, const struct stat *st)
 {
@@ -580,65 +643,7 @@ update_regular_file(struct directory *directory,
 
 	if ((plugin = decoder_plugin_from_suffix(suffix, false)) != NULL)
 	{
-		db_lock();
-		struct song *song = directory_get_song(directory, name);
-		db_unlock();
-
-		if (!directory_child_access(directory, name, R_OK)) {
-			g_warning("no read permissions on %s/%s",
-				  directory_get_path(directory), name);
-			if (song != NULL) {
-				db_lock();
-				delete_song(directory, song);
-				db_unlock();
-			}
-
-			return;
-		}
-
-		if (!(song != NULL && st->st_mtime == song->mtime &&
-		      !walk_discard) &&
-			plugin->container_scan != NULL)
-		{
-			if (update_container_file(directory, name, st, plugin))
-			{
-				if (song != NULL) {
-					db_lock();
-					delete_song(directory, song);
-					db_unlock();
-				}
-
-				return;
-			}
-		}
-
-		if (song == NULL) {
-			g_debug("reading %s/%s",
-				directory_get_path(directory), name);
-			song = song_file_load(name, directory);
-			if (song == NULL) {
-				g_debug("ignoring unrecognized file %s/%s",
-					directory_get_path(directory), name);
-				return;
-			}
-
-			directory_add_song(directory, song);
-			modified = true;
-			g_message("added %s/%s",
-				  directory_get_path(directory), name);
-		} else if (st->st_mtime != song->mtime || walk_discard) {
-			g_message("updating %s/%s",
-				  directory_get_path(directory), name);
-			if (!song_file_update(song)) {
-				g_debug("deleting unrecognized file %s/%s",
-					directory_get_path(directory), name);
-				db_lock();
-				delete_song(directory, song);
-				db_unlock();
-			}
-
-			modified = true;
-		}
+		update_song_file(directory, name, st, plugin);
 #ifdef ENABLE_ARCHIVE
 	} else if ((archive = archive_plugin_from_suffix(suffix))) {
 		update_archive_file(directory, name, st, archive);
