@@ -290,13 +290,12 @@ static void
 wavpack_scan_pair(WavpackContext *wpc, const char *name,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
-	char buffer[1024];
+	char buffer[8192];
 	int len = WavpackGetTagItem(wpc, name, buffer, sizeof(buffer));
 	if (len <= 0 || (unsigned)len >= sizeof(buffer))
 		return;
 
 	tag_handler_invoke_pair(handler, handler_ctx, name, buffer);
-
 }
 
 /*
