@@ -20,6 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "update_internal.h"
 #include "update_io.h"
+#include "update_db.h"
 #include "database.h"
 #include "db_lock.h"
 #include "exclude.h"
@@ -91,88 +92,6 @@ directory_set_stat(struct directory *dir, const struct stat *st)
 	dir->inode = st->st_ino;
 	dir->device = st->st_dev;
 	dir->have_stat = true;
-}
-
-/**
- * Caller must lock the #db_mutex.
- */
-static void
-delete_song(struct directory *dir, struct song *del)
-{
-	assert(del->parent == dir);
-
-	/* first, prevent traversers in main task from getting this */
-	directory_remove_song(dir, del);
-
-	db_unlock(); /* temporary unlock, because update_remove_song() blocks */
-
-	/* now take it out of the playlist (in the main_task) */
-	update_remove_song(del);
-
-	/* finally, all possible references gone, free it */
-	song_free(del);
-
-	db_lock();
-}
-
-static void
-delete_directory(struct directory *directory);
-
-/**
- * Recursively remove all sub directories and songs from a directory,
- * leaving an empty directory.
- *
- * Caller must lock the #db_mutex.
- */
-static void
-clear_directory(struct directory *directory)
-{
-	struct directory *child, *n;
-	directory_for_each_child_safe(child, n, directory)
-		delete_directory(child);
-
-	struct song *song, *ns;
-	directory_for_each_song_safe(song, ns, directory) {
-		assert(song->parent == directory);
-		delete_song(directory, song);
-	}
-}
-
-/**
- * Recursively free a directory and all its contents.
- *
- * Caller must lock the #db_mutex.
- */
-static void
-delete_directory(struct directory *directory)
-{
-	assert(directory->parent != NULL);
-
-	clear_directory(directory);
-
-	directory_delete(directory);
-}
-
-static void
-delete_name_in(struct directory *parent, const char *name)
-{
-	db_lock();
-	struct directory *directory = directory_get_child(parent, name);
-
-	if (directory != NULL) {
-		delete_directory(directory);
-		modified = true;
-	}
-
-	struct song *song = directory_get_song(parent, name);
-	if (song != NULL) {
-		delete_song(parent, song);
-		modified = true;
-	}
-
-	db_unlock();
-
-	playlist_vector_remove(&parent->playlists, name);
 }
 
 static void
@@ -717,7 +636,7 @@ updateDirectory(struct directory *directory, const struct stat *st)
 			continue;
 
 		if (skip_symlink(directory, utf8)) {
-			delete_name_in(directory, utf8);
+			modified |= delete_name_in(directory, utf8);
 			g_free(utf8);
 			continue;
 		}
@@ -725,7 +644,7 @@ updateDirectory(struct directory *directory, const struct stat *st)
 		if (stat_directory_child(directory, utf8, &st2) == 0)
 			updateInDirectory(directory, utf8, &st2);
 		else
-			delete_name_in(directory, utf8);
+			modified |= delete_name_in(directory, utf8);
 
 		g_free(utf8);
 	}
@@ -810,7 +729,7 @@ updatePath(const char *path)
 	if (stat_directory_child(parent, name, &st) == 0)
 		updateInDirectory(parent, name, &st);
 	else
-		delete_name_in(parent, name);
+		modified |= delete_name_in(parent, name);
 
 	g_free(name);
 }
