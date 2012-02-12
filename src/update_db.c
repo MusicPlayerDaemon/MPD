@@ -19,7 +19,7 @@
 
 #include "config.h" /* must be first for large file support */
 #include "update_db.h"
-#include "update_internal.h"
+#include "update_remove.h"
 #include "directory.h"
 #include "song.h"
 #include "db_lock.h"

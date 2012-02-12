@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "update_internal.h"
+#include "update_remove.h"
 #include "update.h"
 #include "database.h"
 #include "mapper.h"

@@ -18,7 +18,7 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "update_internal.h"
+#include "update_remove.h"
 #include "event_pipe.h"
 #include "song.h"
 #include "playlist.h"
