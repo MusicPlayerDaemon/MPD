@@ -169,7 +169,6 @@ mpd_headers = \
 	src/playlist/lastfm_playlist_plugin.h \
 	src/playlist/despotify_playlist_plugin.h \
 	src/playlist/cue_playlist_plugin.h \
-	src/playlist/flac_playlist_plugin.h \
 	src/poison.h \
 	src/riff.h \
 	src/aiff.h \
@@ -883,10 +882,6 @@ endif
 
 if ENABLE_DESPOTIFY
 libplaylist_plugins_a_SOURCES += src/playlist/despotify_playlist_plugin.c
-endif
-
-if HAVE_FLAC
-libplaylist_plugins_a_SOURCES += src/playlist/flac_playlist_plugin.c
 endif
 
 

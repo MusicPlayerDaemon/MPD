@@ -30,7 +30,6 @@
 #include "playlist/rss_playlist_plugin.h"
 #include "playlist/cue_playlist_plugin.h"
 #include "playlist/embcue_playlist_plugin.h"
-#include "playlist/flac_playlist_plugin.h"
 #include "input_stream.h"
 #include "uri.h"
 #include "string_util.h"
@@ -57,9 +56,6 @@ static const struct playlist_plugin *const playlist_plugins[] = {
 #endif
 	&cue_playlist_plugin,
 	&embcue_playlist_plugin,
-#ifdef HAVE_FLAC
-	&flac_playlist_plugin,
-#endif
 	NULL
 };
 
