@@ -20,15 +20,23 @@
 #ifndef MPD_PLAYLIST_VECTOR_H
 #define MPD_PLAYLIST_VECTOR_H
 
+#include "util/list.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <sys/time.h>
+
+#define playlist_vector_for_each(pos, head) \
+	list_for_each_entry(pos, head, siblings)
+
+#define playlist_vector_for_each_safe(pos, n, head) \
+	list_for_each_entry_safe(pos, n, head, siblings)
 
 /**
  * A directory entry pointing to a playlist file.
  */
 struct playlist_metadata {
-	struct playlist_metadata *next;
+	struct list_head siblings;
 
 	/**
 	 * The UTF-8 encoded name of the playlist file.
@@ -38,40 +46,24 @@ struct playlist_metadata {
 	time_t mtime;
 };
 
-struct playlist_vector {
-	struct playlist_metadata *head;
-};
-
-static inline void
-playlist_vector_init(struct playlist_vector *pv)
-{
-	pv->head = NULL;
-}
-
 void
-playlist_vector_deinit(struct playlist_vector *pv);
-
-static inline bool
-playlist_vector_is_empty(const struct playlist_vector *pv)
-{
-	return pv->head == NULL;
-}
+playlist_vector_deinit(struct list_head *pv);
 
 struct playlist_metadata *
-playlist_vector_find(struct playlist_vector *pv, const char *name);
+playlist_vector_find(struct list_head *pv, const char *name);
 
 void
-playlist_vector_add(struct playlist_vector *pv,
+playlist_vector_add(struct list_head *pv,
 		    const char *name, time_t mtime);
 
 /**
  * @return true if the vector or one of its items was modified
  */
 bool
-playlist_vector_update_or_add(struct playlist_vector *pv,
+playlist_vector_update_or_add(struct list_head *pv,
 			      const char *name, time_t mtime);
 
 bool
-playlist_vector_remove(struct playlist_vector *pv, const char *name);
+playlist_vector_remove(struct list_head *pv, const char *name);
 
 #endif /* SONGVEC_H */

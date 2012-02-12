@@ -33,10 +33,10 @@ playlist_database_quark(void)
 }
 
 void
-playlist_vector_save(FILE *fp, const struct playlist_vector *pv)
+playlist_vector_save(FILE *fp, const struct list_head *pv)
 {
-	for (const struct playlist_metadata *pm = pv->head;
-	     pm != NULL; pm = pm->next)
+	struct playlist_metadata *pm;
+	playlist_vector_for_each(pm, pv)
 		fprintf(fp, PLAYLIST_META_BEGIN "%s\n"
 			"mtime: %li\n"
 			"playlist_end\n",
@@ -44,7 +44,7 @@ playlist_vector_save(FILE *fp, const struct playlist_vector *pv)
 }
 
 bool
-playlist_metadata_load(FILE *fp, struct playlist_vector *pv, const char *name,
+playlist_metadata_load(FILE *fp, struct list_head *pv, const char *name,
 		       GString *buffer, GError **error_r)
 {
 	struct playlist_metadata pm = {

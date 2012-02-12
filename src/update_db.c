@@ -22,6 +22,7 @@
 #include "update_remove.h"
 #include "directory.h"
 #include "song.h"
+#include "playlist_vector.h"
 #include "db_lock.h"
 
 #include <glib.h>

@@ -26,6 +26,7 @@
 #include "exclude.h"
 #include "directory.h"
 #include "song.h"
+#include "playlist_vector.h"
 #include "uri.h"
 #include "mapper.h"
 #include "path.h"
@@ -159,14 +160,10 @@ removeDeletedFromDirectory(struct directory *directory)
 		g_free(path);
 	}
 
-	for (const struct playlist_metadata *pm = directory->playlists.head;
-	     pm != NULL;) {
-		const struct playlist_metadata *next = pm->next;
-
+	struct playlist_metadata *pm, *np;
+	directory_for_each_playlist_safe(pm, np, directory) {
 		if (!directory_child_is_regular(directory, pm->name))
 			playlist_vector_remove(&directory->playlists, pm->name);
-
-		pm = next;
 	}
 }
 

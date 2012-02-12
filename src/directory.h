@@ -22,7 +22,6 @@
 
 #include "check.h"
 #include "util/list.h"
-#include "playlist_vector.h"
 
 #include <glib.h>
 #include <stdbool.h>
@@ -44,6 +43,12 @@
 
 #define directory_for_each_song_safe(pos, n, directory) \
 	list_for_each_entry_safe(pos, n, &directory->songs, siblings)
+
+#define directory_for_each_playlist(pos, directory) \
+	list_for_each_entry(pos, &directory->playlists, siblings)
+
+#define directory_for_each_playlist_safe(pos, n, directory) \
+	list_for_each_entry_safe(pos, n, &directory->playlists, siblings)
 
 struct song;
 struct db_visitor;
@@ -75,7 +80,7 @@ struct directory {
 	 */
 	struct list_head songs;
 
-	struct playlist_vector playlists;
+	struct list_head playlists;
 
 	struct directory *parent;
 	time_t mtime;
@@ -129,7 +134,7 @@ directory_is_empty(const struct directory *directory)
 {
 	return list_empty(&directory->children) &&
 		list_empty(&directory->songs) &&
-		playlist_vector_is_empty(&directory->playlists);
+		list_empty(&directory->playlists);
 }
 
 static inline const char *

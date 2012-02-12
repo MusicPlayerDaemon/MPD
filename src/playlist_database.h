@@ -28,13 +28,13 @@
 
 #define PLAYLIST_META_BEGIN "playlist_begin: "
 
-struct playlist_vector;
+struct list_head;
 
 void
-playlist_vector_save(FILE *fp, const struct playlist_vector *pv);
+playlist_vector_save(FILE *fp, const struct list_head *pv);
 
 bool
-playlist_metadata_load(FILE *fp, struct playlist_vector *pv, const char *name,
+playlist_metadata_load(FILE *fp, struct list_head *pv, const char *name,
 		       GString *buffer, GError **error_r);
 
 #endif

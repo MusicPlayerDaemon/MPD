@@ -27,6 +27,7 @@
 #include "client.h"
 #include "song.h"
 #include "song_print.h"
+#include "playlist_vector.h"
 #include "tag.h"
 #include "strset.h"
 

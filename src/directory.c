@@ -21,6 +21,7 @@
 #include "directory.h"
 #include "song.h"
 #include "song_sort.h"
+#include "playlist_vector.h"
 #include "path.h"
 #include "util/list_sort.h"
 #include "db_visitor.h"
@@ -45,10 +46,10 @@ directory_new(const char *path, struct directory *parent)
 			      sizeof(directory->path) + pathlen + 1);
 	INIT_LIST_HEAD(&directory->children);
 	INIT_LIST_HEAD(&directory->songs);
+	INIT_LIST_HEAD(&directory->playlists);
+
 	directory->parent = parent;
 	memcpy(directory->path, path, pathlen + 1);
-
-	playlist_vector_init(&directory->playlists);
 
 	return directory;
 }
@@ -282,9 +283,8 @@ directory_walk(const struct directory *directory, bool recursive,
 	}
 
 	if (visitor->playlist != NULL) {
-		const struct playlist_vector *pv = &directory->playlists;
-		for (const struct playlist_metadata *i = pv->head;
-		     i != NULL; i = i->next)
+		struct playlist_metadata *i;
+		directory_for_each_playlist(i, directory)
 			if (!visitor->playlist(i, directory, ctx, error_r))
 				return false;
 	}

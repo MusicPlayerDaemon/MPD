@@ -46,60 +46,43 @@ playlist_metadata_free(struct playlist_metadata *pm)
 }
 
 void
-playlist_vector_deinit(struct playlist_vector *pv)
+playlist_vector_deinit(struct list_head *pv)
 {
 	assert(pv != NULL);
 
-	while (pv->head != NULL) {
-		struct playlist_metadata *pm = pv->head;
-		pv->head = pm->next;
+	struct playlist_metadata *pm, *n;
+	playlist_vector_for_each_safe(pm, n, pv)
 		playlist_metadata_free(pm);
-	}
 }
 
-static struct playlist_metadata **
-playlist_vector_find_p(struct playlist_vector *pv, const char *name)
+struct playlist_metadata *
+playlist_vector_find(struct list_head *pv, const char *name)
 {
 	assert(pv != NULL);
 	assert(name != NULL);
 
-	struct playlist_metadata **pmp = &pv->head;
-
-	for (;;) {
-		struct playlist_metadata *pm = *pmp;
-		if (pm == NULL)
-			return NULL;
-
+	struct playlist_metadata *pm;
+	playlist_vector_for_each(pm, pv)
 		if (strcmp(pm->name, name) == 0)
-			return pmp;
+			return pm;
 
-		pmp = &pm->next;
-	}
-}
-
-struct playlist_metadata *
-playlist_vector_find(struct playlist_vector *pv, const char *name)
-{
-	struct playlist_metadata **pmp = playlist_vector_find_p(pv, name);
-	return pmp != NULL ? *pmp : NULL;
+	return NULL;
 }
 
 void
-playlist_vector_add(struct playlist_vector *pv,
+playlist_vector_add(struct list_head *pv,
 		    const char *name, time_t mtime)
 {
 	struct playlist_metadata *pm = playlist_metadata_new(name, mtime);
-	pm->next = pv->head;
-	pv->head = pm;
+	list_add(&pm->siblings, pv);
 }
 
 bool
-playlist_vector_update_or_add(struct playlist_vector *pv,
+playlist_vector_update_or_add(struct list_head *pv,
 			      const char *name, time_t mtime)
 {
-	struct playlist_metadata **pmp = playlist_vector_find_p(pv, name);
-	if (pmp != NULL) {
-		struct playlist_metadata *pm = *pmp;
+	struct playlist_metadata *pm = playlist_vector_find(pv, name);
+	if (pm != NULL) {
 		if (mtime == pm->mtime)
 			return false;
 
@@ -111,15 +94,13 @@ playlist_vector_update_or_add(struct playlist_vector *pv,
 }
 
 bool
-playlist_vector_remove(struct playlist_vector *pv, const char *name)
+playlist_vector_remove(struct list_head *pv, const char *name)
 {
-	struct playlist_metadata **pmp = playlist_vector_find_p(pv, name);
-	if (pmp == NULL)
+	struct playlist_metadata *pm = playlist_vector_find(pv, name);
+	if (pm == NULL)
 		return false;
 
-	struct playlist_metadata *pm = *pmp;
-	*pmp = pm->next;
-
+	list_del(&pm->siblings);
 	playlist_metadata_free(pm);
 	return true;
 }
