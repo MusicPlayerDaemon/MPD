@@ -158,6 +158,7 @@ struct tag *tag_new(void)
 	struct tag *ret = g_new(struct tag, 1);
 	ret->items = NULL;
 	ret->time = -1;
+	ret->has_playlist = false;
 	ret->num_items = 0;
 	return ret;
 }
@@ -226,6 +227,7 @@ struct tag *tag_dup(const struct tag *tag)
 
 	ret = tag_new();
 	ret->time = tag->time;
+	ret->has_playlist = tag->has_playlist;
 	ret->num_items = tag->num_items;
 	ret->items = ret->num_items > 0 ? g_malloc(items_size(tag)) : NULL;
 

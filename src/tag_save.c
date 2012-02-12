@@ -28,6 +28,9 @@ void tag_save(FILE *file, const struct tag *tag)
 	if (tag->time >= 0)
 		fprintf(file, SONG_TIME "%i\n", tag->time);
 
+	if (tag->has_playlist)
+		fprintf(file, "Playlist: yes\n");
+
 	for (unsigned i = 0; i < tag->num_items; i++)
 		fprintf(file, "%s: %s\n",
 			tag_item_names[tag->items[i]->type],

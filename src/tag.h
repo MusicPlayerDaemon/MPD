@@ -88,6 +88,12 @@ struct tag {
 	 */
 	int time;
 
+	/**
+	 * Does this file have an embedded playlist (e.g. embedded CUE
+	 * sheet)?
+	 */
+	bool has_playlist;
+
 	/** an array of tag items */
 	struct tag_item **items;
 

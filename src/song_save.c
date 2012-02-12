@@ -100,6 +100,13 @@ song_load(FILE *fp, struct directory *parent, const char *uri,
 			}
 
 			song->tag->time = atoi(value);
+		} else if (strcmp(line, "Playlist") == 0) {
+			if (!song->tag) {
+				song->tag = tag_new();
+				tag_begin_add(song->tag);
+			}
+
+			song->tag->has_playlist = strcmp(value, "yes") == 0;
 		} else if (strcmp(line, SONG_MTIME) == 0) {
 			song->mtime = atoi(value);
 		} else if (strcmp(line, "Range") == 0) {
