@@ -4,6 +4,7 @@ ver 0.17 (2011/??/??)
   - "update" and "rescan" need only "CONTROL" permission
   - new command "seekcur" for simpler seeking within current song
   - add range parameter to command "load"
+  - print extra "playlist" object for embedded CUE sheets
 * input:
   - cdio_paranoia: new input plugin to play audio CDs
   - curl: enable CURLOPT_NETRC

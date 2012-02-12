@@ -56,24 +56,6 @@ print_visitor_directory(const struct directory *directory, void *data,
 	return true;
 }
 
-static bool
-print_visitor_song(struct song *song, void *data,
-		   G_GNUC_UNUSED GError **error_r)
-{
-	struct client *client = data;
-	song_print_uri(client, song);
-	return true;
-}
-
-static bool
-print_visitor_song_info(struct song *song, void *data,
-			G_GNUC_UNUSED GError **error_r)
-{
-	struct client *client = data;
-	song_print_info(client, song);
-	return true;
-}
-
 static void
 print_playlist_in_directory(struct client *client,
 			    const struct directory *directory,
@@ -84,6 +66,42 @@ print_playlist_in_directory(struct client *client,
 	else
 		client_printf(client, "playlist: %s/%s\n",
 			      directory_get_path(directory), name_utf8);
+}
+
+static bool
+print_visitor_song(struct song *song, void *data,
+		   G_GNUC_UNUSED GError **error_r)
+{
+	assert(song != NULL);
+	assert(song->parent != NULL);
+
+	struct client *client = data;
+	song_print_uri(client, song);
+
+	if (song->tag != NULL && song->tag->has_playlist)
+		/* this song file has an embedded CUE sheet */
+		print_playlist_in_directory(client, song->parent,
+					    song->uri);
+
+	return true;
+}
+
+static bool
+print_visitor_song_info(struct song *song, void *data,
+			G_GNUC_UNUSED GError **error_r)
+{
+	assert(song != NULL);
+	assert(song->parent != NULL);
+
+	struct client *client = data;
+	song_print_info(client, song);
+
+	if (song->tag != NULL && song->tag->has_playlist)
+		/* this song file has an embedded CUE sheet */
+		print_playlist_in_directory(client, song->parent,
+					    song->uri);
+
+	return true;
 }
 
 static bool
