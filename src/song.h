@@ -74,6 +74,15 @@ song_file_new(const char *path, struct directory *parent);
 struct song *
 song_file_load(const char *path, struct directory *parent);
 
+/**
+ * Replaces the URI of a song object.  The given song object is
+ * destroyed, and a newly allocated one is returned.  It does not
+ * update the reference within the parent directory; the caller is
+ * responsible for doing that.
+ */
+struct song *
+song_replace_uri(struct song *song, const char *uri);
+
 void
 song_free(struct song *song);
 

@@ -61,6 +61,18 @@ song_file_new(const char *path, struct directory *parent)
 	return song_alloc(path, parent);
 }
 
+struct song *
+song_replace_uri(struct song *old_song, const char *uri)
+{
+	struct song *new_song = song_alloc(uri, old_song->parent);
+	new_song->tag = old_song->tag;
+	new_song->mtime = old_song->mtime;
+	new_song->start_ms = old_song->start_ms;
+	new_song->end_ms = old_song->end_ms;
+	g_free(old_song);
+	return new_song;
+}
+
 void
 song_free(struct song *song)
 {
