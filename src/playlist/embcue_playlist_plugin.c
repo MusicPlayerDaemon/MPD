@@ -45,6 +45,13 @@ struct embcue_playlist {
 	struct playlist_provider base;
 
 	/**
+	 * This is an override for the CUE's "FILE".  An embedded CUE
+	 * sheet must always point to the song file it is contained
+	 * in.
+	 */
+	char *filename;
+
+	/**
 	 * The value of the file's "CUESHEET" tag.
 	 */
 	char *cuesheet;
@@ -97,6 +104,8 @@ embcue_playlist_open_uri(const char *uri,
 		return NULL;
 	}
 
+	playlist->filename = g_path_get_basename(uri);
+
 	playlist->next = playlist->cuesheet;
 	playlist->parser = cue_parser_new();
 
@@ -110,6 +119,7 @@ embcue_playlist_close(struct playlist_provider *_playlist)
 
 	cue_parser_free(playlist->parser);
 	g_free(playlist->cuesheet);
+	g_free(playlist->filename);
 	g_free(playlist);
 }
 
@@ -137,11 +147,14 @@ embcue_playlist_read(struct playlist_provider *_playlist)
 		cue_parser_feed(playlist->parser, line);
 		song = cue_parser_get(playlist->parser);
 		if (song != NULL)
-			return song;
+			return song_replace_uri(song, playlist->filename);
 	}
 
 	cue_parser_finish(playlist->parser);
-	return cue_parser_get(playlist->parser);
+	song = cue_parser_get(playlist->parser);
+	if (song != NULL)
+		song = song_replace_uri(song, playlist->filename);
+	return song;
 }
 
 static const char *const embcue_playlist_suffixes[] = {
