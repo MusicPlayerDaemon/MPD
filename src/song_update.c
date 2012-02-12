@@ -118,7 +118,7 @@ song_file_update(struct song *song)
 		/* load file tag */
 		song->tag = tag_new();
 		if (decoder_plugin_scan_file(plugin, path_fs,
-					     &add_tag_handler, song->tag))
+					     &full_tag_handler, song->tag))
 			break;
 
 		tag_free(song->tag);
@@ -139,7 +139,7 @@ song_file_update(struct song *song)
 			if (is != NULL) {
 				song->tag = tag_new();
 				if (decoder_plugin_scan_stream(plugin, is,
-							       &add_tag_handler,
+							       &full_tag_handler,
 							       song->tag))
 					break;
 
@@ -162,7 +162,7 @@ song_file_update(struct song *song)
 	}
 
 	if (song->tag != NULL && tag_is_empty(song->tag))
-		tag_scan_fallback(path_fs, &add_tag_handler, song->tag);
+		tag_scan_fallback(path_fs, &full_tag_handler, song->tag);
 
 	g_free(path_fs);
 	return song->tag != NULL;
