@@ -19,6 +19,7 @@
 
 #include "config.h" /* must be first for large file support */
 #include "update_internal.h"
+#include "update_io.h"
 #include "database.h"
 #include "db_lock.h"
 #include "exclude.h"
@@ -208,44 +209,6 @@ remove_excluded_from_directory(struct directory *directory,
 	db_unlock();
 }
 
-static bool
-directory_exists(const struct directory *directory)
-{
-	char *path_fs;
-	GFileTest test;
-	bool exists;
-
-	path_fs = map_directory_fs(directory);
-	if (path_fs == NULL)
-		/* invalid path: cannot exist */
-		return false;
-
-	test = directory->device == DEVICE_INARCHIVE ||
-		directory->device == DEVICE_CONTAINER
-		? G_FILE_TEST_IS_REGULAR
-		: G_FILE_TEST_IS_DIR;
-
-	exists = g_file_test(path_fs, test);
-	g_free(path_fs);
-
-	return exists;
-}
-
-static bool
-directory_child_is_regular(const struct directory *directory,
-			   const char *name_utf8)
-{
-	char *path_fs = map_directory_child_fs(directory, name_utf8);
-	if (path_fs == NULL)
-		return false;
-
-	struct stat st;
-	bool is_regular = stat(path_fs, &st) == 0 && S_ISREG(st.st_mode);
-	g_free(path_fs);
-
-	return is_regular;
-}
-
 static void
 removeDeletedFromDirectory(struct directory *directory)
 {
@@ -286,42 +249,6 @@ removeDeletedFromDirectory(struct directory *directory)
 
 		pm = next;
 	}
-}
-
-static int
-stat_directory(const struct directory *directory, struct stat *st)
-{
-	char *path_fs;
-	int ret;
-
-	path_fs = map_directory_fs(directory);
-	if (path_fs == NULL)
-		return -1;
-	ret = stat(path_fs, st);
-	if (ret < 0)
-		g_warning("Failed to stat %s: %s", path_fs, g_strerror(errno));
-
-	g_free(path_fs);
-	return ret;
-}
-
-static int
-stat_directory_child(const struct directory *parent, const char *name,
-		     struct stat *st)
-{
-	char *path_fs;
-	int ret;
-
-	path_fs = map_directory_child_fs(parent, name);
-	if (path_fs == NULL)
-		return -1;
-
-	ret = stat(path_fs, st);
-	if (ret < 0)
-		g_warning("Failed to stat %s: %s", path_fs, g_strerror(errno));
-
-	g_free(path_fs);
-	return ret;
 }
 
 #ifndef G_OS_WIN32
@@ -538,32 +465,6 @@ update_container_file(	struct directory* directory,
 	}
 	else
 		return true;
-}
-
-/**
- * Checks if the given permissions on the mapped file are given.
- */
-static bool
-directory_child_access(const struct directory *directory,
-		       const char *name, int mode)
-{
-#ifdef WIN32
-	/* access() is useless on WIN32 */
-	(void)directory;
-	(void)name;
-	(void)mode;
-	return true;
-#else
-	char *path = map_directory_child_fs(directory, name);
-	if (path == NULL)
-		/* something went wrong, but that isn't a permission
-		   problem */
-		return true;
-
-	bool success = access(path, mode) == 0 || errno != EACCES;
-	g_free(path);
-	return success;
-#endif
 }
 
 static void

@@ -265,6 +265,7 @@ src_mpd_SOURCES = \
 	src/filter_registry.c \
 	src/update.c \
 	src/update_queue.c \
+	src/update_io.c src/update_io.h \
 	src/update_walk.c \
 	src/update_remove.c \
 	src/client.c \
