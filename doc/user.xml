@@ -1790,6 +1790,14 @@ cd mpd-version</programlisting>
       </section>
 
       <section>
+        <title><varname>embcue</varname></title>
+
+        <para>
+          Reads CUE sheets from the "CUESHEET" tag of song files.
+        </para>
+      </section>
+
+      <section>
         <title><varname>m3u</varname></title>
 
         <para>

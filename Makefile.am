@@ -336,6 +336,7 @@ src_mpd_SOURCES = \
 	src/tag_print.c \
 	src/tag_save.c \
 	src/tag_handler.c src/tag_handler.h \
+	src/tag_file.c src/tag_file.h \
 	src/tokenizer.c \
 	src/text_file.c \
 	src/text_input_stream.c \
@@ -864,6 +865,8 @@ libplaylist_plugins_a_SOURCES = \
 	src/playlist/asx_playlist_plugin.c \
 	src/playlist/rss_playlist_plugin.c \
 	src/playlist/cue_playlist_plugin.c \
+	src/playlist/embcue_playlist_plugin.c \
+	src/playlist/embcue_playlist_plugin.h \
 	src/playlist_list.c
 libplaylist_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS))
@@ -1001,15 +1004,20 @@ test_dump_playlist_LDADD = \
 	$(FLAC_LIBS) \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
+	$(DECODER_LIBS) \
+	$(TAG_LIBS) \
 	$(GLIB_LIBS)
 test_dump_playlist_SOURCES = test/dump_playlist.c \
+	$(DECODER_SRC) \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/uri.c \
 	src/song.c src/tag.c src/tag_pool.c src/tag_save.c \
-	src/tag_handler.c \
+	src/tag_handler.c src/tag_file.c \
+	src/audio_check.c src/pcm_buffer.c \
 	src/text_input_stream.c src/fifo_buffer.c \
 	src/cue/cue_parser.c src/cue/cue_parser.h \
+	src/timer.c \
 	src/fd_util.c
 
 if HAVE_FLAC

@@ -25,6 +25,8 @@
 #include "tag_save.h"
 #include "conf.h"
 #include "song.h"
+#include "decoder_api.h"
+#include "decoder_list.h"
 #include "playlist_list.h"
 #include "playlist_plugin.h"
 
@@ -41,6 +43,95 @@ my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
 		g_printerr("%s: %s\n", log_domain, message);
 	else
 		g_printerr("%s\n", message);
+}
+
+void
+decoder_initialized(G_GNUC_UNUSED struct decoder *decoder,
+		    G_GNUC_UNUSED const struct audio_format *audio_format,
+		    G_GNUC_UNUSED bool seekable,
+		    G_GNUC_UNUSED float total_time)
+{
+}
+
+enum decoder_command
+decoder_get_command(G_GNUC_UNUSED struct decoder *decoder)
+{
+	return DECODE_COMMAND_NONE;
+}
+
+void
+decoder_command_finished(G_GNUC_UNUSED struct decoder *decoder)
+{
+}
+
+double
+decoder_seek_where(G_GNUC_UNUSED struct decoder *decoder)
+{
+	return 1.0;
+}
+
+void
+decoder_seek_error(G_GNUC_UNUSED struct decoder *decoder)
+{
+}
+
+size_t
+decoder_read(G_GNUC_UNUSED struct decoder *decoder,
+	     struct input_stream *is,
+	     void *buffer, size_t length)
+{
+	return input_stream_lock_read(is, buffer, length, NULL);
+}
+
+void
+decoder_timestamp(G_GNUC_UNUSED struct decoder *decoder,
+		  G_GNUC_UNUSED double t)
+{
+}
+
+enum decoder_command
+decoder_data(G_GNUC_UNUSED struct decoder *decoder,
+	     G_GNUC_UNUSED struct input_stream *is,
+	     const void *data, size_t datalen,
+	     G_GNUC_UNUSED uint16_t kbit_rate)
+{
+	write(1, data, datalen);
+	return DECODE_COMMAND_NONE;
+}
+
+enum decoder_command
+decoder_tag(G_GNUC_UNUSED struct decoder *decoder,
+	    G_GNUC_UNUSED struct input_stream *is,
+	    G_GNUC_UNUSED const struct tag *tag)
+{
+	return DECODE_COMMAND_NONE;
+}
+
+float
+decoder_replay_gain(G_GNUC_UNUSED struct decoder *decoder,
+		    const struct replay_gain_info *replay_gain_info)
+{
+	const struct replay_gain_tuple *tuple =
+		&replay_gain_info->tuples[REPLAY_GAIN_ALBUM];
+	if (replay_gain_tuple_defined(tuple))
+		g_printerr("replay_gain[album]: gain=%f peak=%f\n",
+			   tuple->gain, tuple->peak);
+
+	tuple = &replay_gain_info->tuples[REPLAY_GAIN_TRACK];
+	if (replay_gain_tuple_defined(tuple))
+		g_printerr("replay_gain[track]: gain=%f peak=%f\n",
+			   tuple->gain, tuple->peak);
+
+	return 0.0;
+}
+
+void
+decoder_mixramp(G_GNUC_UNUSED struct decoder *decoder,
+		G_GNUC_UNUSED float replay_gain_db,
+		char *mixramp_start, char *mixramp_end)
+{
+	g_free(mixramp_start);
+	g_free(mixramp_end);
 }
 
 int main(int argc, char **argv)
@@ -89,6 +180,7 @@ int main(int argc, char **argv)
 	}
 
 	playlist_list_global_init();
+	decoder_plugin_init_all();
 
 	/* open the playlist */
 
@@ -152,6 +244,7 @@ int main(int argc, char **argv)
 	g_cond_free(cond);
 	g_mutex_free(mutex);
 
+	decoder_plugin_deinit_all();
 	playlist_list_global_finish();
 	input_stream_global_finish();
 	io_thread_deinit();
