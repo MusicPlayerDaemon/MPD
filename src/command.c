@@ -451,7 +451,7 @@ static enum command_return
 handle_urlhandlers(struct client *client,
 		   G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	if (client_get_uid(client) > 0)
+	if (client_is_local(client))
 		client_puts(client, "handler: file://\n");
 	print_supported_uri_schemes(client);
 	return COMMAND_RETURN_OK;

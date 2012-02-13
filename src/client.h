@@ -45,6 +45,17 @@ bool client_is_expired(const struct client *client);
 G_GNUC_PURE
 int client_get_uid(const struct client *client);
 
+/**
+ * Is this client running on the same machine, connected with a local
+ * (UNIX domain) socket?
+ */
+G_GNUC_PURE
+static inline bool
+client_is_local(const struct client *client)
+{
+	return client_get_uid(client) > 0;
+}
+
 G_GNUC_PURE
 unsigned client_get_permission(const struct client *client);
 
