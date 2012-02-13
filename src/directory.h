@@ -27,8 +27,6 @@
 #include <stdbool.h>
 #include <sys/types.h>
 
-#define DIRECTORY_DIR		"directory: "
-
 #define DEVICE_INARCHIVE (dev_t)(-1)
 #define DEVICE_CONTAINER (dev_t)(-2)
 
