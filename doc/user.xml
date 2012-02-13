@@ -99,6 +99,47 @@ cd mpd-version</programlisting>
 
       <programlisting>make install</programlisting>
     </section>
+
+    <section>
+      <title><filename>systemd</filename> socket activation</title>
+
+      <para>
+        Using <filename>systemd</filename>, you can launch
+        <filename>mpd</filename> on demand when the first client
+        attempts to connect.  Create two files in
+        <filename>/etc/systemd/system/</filename>; first
+        <filename>mpd.socket</filename>:
+      </para>
+
+      <programlisting>[Socket]
+ListenStream=/run/mpd.socket
+ListenStream=6600
+[Install]
+WantedBy=sockets.target</programlisting>
+
+      <para>
+        Now create <filename>mpd.service</filename>:
+      </para>
+
+      <programlisting>[Unit]
+Description=Music Player Daemon
+After=sound.target
+[Service]
+ExecStart=/usr/bin/mpd --stdout --no-daemon</programlisting>
+
+      <para>
+        Start the socket:
+      </para>
+
+      <programlisting>systemctl enable mpd.socket
+systemctl start mpd.socket</programlisting>
+
+      <para>
+        In this configuration, <filename>mpd</filename> will ignore
+        the <varname>bind_to_address</varname> and
+        <varname>port</varname> settings.
+      </para>
+    </section>
   </chapter>
 
   <chapter>

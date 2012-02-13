@@ -34,6 +34,7 @@ ver 0.17 (2011/??/??)
 * cue: show CUE track numbers
 * allow port specification in "bind_to_address" settings
 * support floating point samples
+* systemd socket activation
 
 
 ver 0.16.8 (2012/??/??)

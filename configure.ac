@@ -353,6 +353,11 @@ AC_ARG_ENABLE(sqlite,
 		[enable support for the SQLite database]),,
 	[enable_sqlite=auto])
 
+AC_ARG_ENABLE(systemd-daemon,
+	AS_HELP_STRING([--enable-systemd-daemon],
+		[use the systemd daemon library (default=auto)]),,
+	[enable_systemd_daemon=auto])
+
 AC_ARG_ENABLE(tcp,
 	AS_HELP_STRING([--disable-tcp],
 		[disable support for clients connecting via TCP (default: enable)]),,
@@ -493,6 +498,13 @@ if
 	test x$enable_tcp = xno &&
 	test x$enable_un = xno; then
 	AC_MSG_ERROR([No client interfaces configured!])
+fi
+
+MPD_AUTO_PKG(systemd_daemon, SYSTEMD_DAEMON, libsystemd-daemon,
+	[systemd activation], [libsystemd-daemon not found])
+AM_CONDITIONAL(ENABLE_SYSTEMD_DAEMON, test x$enable_systemd_daemon = xyes)
+if test x$enable_systemd_daemon = xyes; then
+	AC_DEFINE([ENABLE_SYSTEMD_DAEMON], 1, [Define to use the systemd daemon library])
 fi
 
 dnl ---------------------------------------------------------------------------

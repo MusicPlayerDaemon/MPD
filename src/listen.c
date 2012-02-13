@@ -28,6 +28,10 @@
 #include <string.h>
 #include <assert.h>
 
+#ifdef ENABLE_SYSTEMD_DAEMON
+#include <systemd/sd-daemon.h>
+#endif
+
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "listen"
 
@@ -61,6 +65,30 @@ listen_add_config_param(unsigned int port,
 	}
 }
 
+static bool
+listen_systemd_activation(GError **error_r)
+{
+#ifdef ENABLE_SYSTEMD_DAEMON
+	int n = sd_listen_fds(true);
+	if (n <= 0) {
+		if (n < 0)
+			g_warning("sd_listen_fds() failed: %s",
+				  g_strerror(-n));
+		return false;
+	}
+
+	for (int i = SD_LISTEN_FDS_START, end = SD_LISTEN_FDS_START + n;
+	     i != end; ++i)
+		if (!server_socket_add_fd(listen_socket, i, error_r))
+			return false;
+
+	return true;
+#else
+	(void)error_r;
+	return false;
+#endif
+}
+
 bool
 listen_global_init(GError **error_r)
 {
@@ -71,6 +99,14 @@ listen_global_init(GError **error_r)
 	GError *error = NULL;
 
 	listen_socket = server_socket_new(listen_callback, NULL);
+
+	if (listen_systemd_activation(&error))
+		return true;
+
+	if (error != NULL) {
+		g_propagate_error(error_r, error);
+		return false;
+	}
 
 	if (param != NULL) {
 		/* "bind_to_address" is configured, create listeners

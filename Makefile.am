@@ -34,6 +34,7 @@ src_mpd_LDADD = \
 	$(FILTER_LIBS) \
 	$(ENCODER_LIBS) \
 	$(MIXER_LIBS) \
+	$(SYSTEMD_DAEMON_LIBS) \
 	$(GLIB_LIBS)
 
 mpd_headers = \

@@ -139,6 +139,9 @@ For the sticker database.
 libcdio - http://www.gnu.org/software/libcdio/
 For playing audio CDs.
 
+libsystemd-daemon - http://freedesktop.org/wiki/Software/systemd/
+For systemd activation.
+
 
 pkg-config
 ----------
