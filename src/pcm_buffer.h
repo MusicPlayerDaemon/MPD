@@ -65,6 +65,10 @@ pcm_buffer_deinit(struct pcm_buffer *buffer)
 /**
  * Get the buffer, and guarantee a minimum size.  This buffer becomes
  * invalid with the next pcm_buffer_get() call.
+ *
+ * This function will never return NULL, even if size is zero, because
+ * the PCM library uses the NULL return value to signal "error".  An
+ * empty destination buffer is not always an error.
  */
 G_GNUC_MALLOC
 void *

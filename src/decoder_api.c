@@ -90,6 +90,12 @@ decoder_prepare_initial_seek(struct decoder *decoder)
 	const struct decoder_control *dc = decoder->dc;
 	assert(dc->pipe != NULL);
 
+	if (dc->state != DECODE_STATE_DECODE)
+		/* wait until the decoder has finished initialisation
+		   (reading file headers etc.) before emitting the
+		   virtual "SEEK" command */
+		return false;
+
 	if (decoder->initial_seek_running)
 		/* initial seek has already begun - override any other
 		   command */

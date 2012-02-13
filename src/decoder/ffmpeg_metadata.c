@@ -28,8 +28,8 @@
 static const struct tag_table ffmpeg_tags[] = {
 #if LIBAVFORMAT_VERSION_INT < ((52<<16)+(50<<8))
 	{ "author", TAG_ARTIST },
-	{ "year", TAG_DATE },
 #endif
+	{ "year", TAG_DATE },
 	{ "author-sort", TAG_ARTIST_SORT },
 	{ "album_artist", TAG_ALBUM_ARTIST },
 	{ "album_artist-sort", TAG_ALBUM_ARTIST_SORT },

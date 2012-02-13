@@ -35,6 +35,13 @@ ver 0.17 (2011/??/??)
 * support floating point samples
 
 
+ver 0.16.8 (2012/??/??)
+* fix for libsamplerate assertion failure
+* decoder:
+  - vorbis (and others): fix seeking at startup
+  - ffmpeg: read the "year" tag
+
+
 ver 0.16.7 (2012/02/04)
 * input:
   - ffmpeg: support libavformat 0.7
