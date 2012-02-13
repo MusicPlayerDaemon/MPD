@@ -1845,6 +1845,47 @@ OK
       <title>Reflection</title>
 
       <variablelist>
+        <varlistentry id="command_config">
+          <term>
+            <cmdsynopsis>
+              <command>config</command>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Dumps configuration values that may be interesting for
+              the client.  This command is only permitted to "local"
+              clients (connected via UNIX domain socket).
+            </para>
+            <para>
+              The following response attributes are available:
+            </para>
+            <informaltable>
+              <tgroup cols="2">
+                <thead>
+                  <row>
+                    <entry>
+                      Name
+                    </entry>
+                    <entry>
+                      Description
+                    </entry>
+                  </row>
+                </thead>
+                <tbody>
+                  <row>
+                    <entry>
+                      <varname>music_directory</varname>
+                    </entry>
+                    <entry>
+                      The absolute path of the music directory.
+                    </entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </informaltable>
+          </listitem>
+        </varlistentry>
         <varlistentry id="command_commands">
           <term>
             <cmdsynopsis>

@@ -55,6 +55,7 @@
 #include "path.h"
 #include "replay_gain_config.h"
 #include "idle.h"
+#include "mapper.h"
 
 #ifdef ENABLE_SQLITE
 #include "sticker.h"
@@ -1697,6 +1698,23 @@ handle_not_commands(struct client *client,
 		    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[]);
 
 static enum command_return
+handle_config(struct client *client,
+	      G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
+{
+	if (!client_is_local(client)) {
+		command_error(client, ACK_ERROR_PERMISSION,
+			      "Command only permitted to local clients");
+		return COMMAND_RETURN_ERROR;
+	}
+
+	const char *path = mapper_get_music_directory();
+	if (path != NULL)
+		client_printf(client, "music_directory: %s\n", path);
+
+	return COMMAND_RETURN_OK;
+}
+
+static enum command_return
 handle_playlistclear(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	GError *error = NULL;
@@ -2139,6 +2157,7 @@ static const struct command commands[] = {
 	{ "clearerror", PERMISSION_CONTROL, 0, 0, handle_clearerror },
 	{ "close", PERMISSION_NONE, -1, -1, handle_close },
 	{ "commands", PERMISSION_NONE, 0, 0, handle_commands },
+	{ "config", PERMISSION_ADMIN, 0, 0, handle_config },
 	{ "consume", PERMISSION_CONTROL, 1, 1, handle_consume },
 	{ "count", PERMISSION_READ, 2, -1, handle_count },
 	{ "crossfade", PERMISSION_CONTROL, 1, 1, handle_crossfade },
