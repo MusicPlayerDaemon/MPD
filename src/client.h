@@ -35,14 +35,17 @@ void client_manager_deinit(void);
 void client_new(struct player_control *player_control,
 		int fd, const struct sockaddr *sa, size_t sa_length, int uid);
 
+G_GNUC_PURE
 bool client_is_expired(const struct client *client);
 
 /**
  * returns the uid of the client process, or a negative value if the
  * uid is unknown
  */
+G_GNUC_PURE
 int client_get_uid(const struct client *client);
 
+G_GNUC_PURE
 unsigned client_get_permission(const struct client *client);
 
 void client_set_permission(struct client *client, unsigned permission);
