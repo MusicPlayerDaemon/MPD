@@ -74,7 +74,7 @@ playlist_vector_add(struct list_head *pv,
 		    const char *name, time_t mtime)
 {
 	struct playlist_metadata *pm = playlist_metadata_new(name, mtime);
-	list_add(&pm->siblings, pv);
+	list_add_tail(&pm->siblings, pv);
 }
 
 bool
