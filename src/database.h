@@ -74,9 +74,6 @@ db_walk(const char *uri,
 	GError **error_r);
 
 bool
-db_check(GError **error_r);
-
-bool
 db_save(GError **error_r);
 
 bool
