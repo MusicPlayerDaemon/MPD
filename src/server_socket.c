@@ -175,6 +175,21 @@ server_socket_in_event(G_GNUC_UNUSED GIOChannel *source,
 	return true;
 }
 
+static void
+set_fd(struct one_socket *s, int fd)
+{
+	assert(s != NULL);
+	assert(s->fd < 0);
+	assert(fd >= 0);
+
+	s->fd = fd;
+
+	GIOChannel *channel = g_io_channel_new_socket(s->fd);
+	s->source_id = g_io_add_watch(channel, G_IO_IN,
+				      server_socket_in_event, s);
+	g_io_channel_unref(channel);
+}
+
 bool
 server_socket_open(struct server_socket *ss, GError **error_r)
 {
@@ -193,10 +208,11 @@ server_socket_open(struct server_socket *ss, GError **error_r)
 		}
 
 		GError *error = NULL;
-		s->fd = socket_bind_listen(s->address.sa_family, SOCK_STREAM, 0,
-					   &s->address, s->address_length, 5,
-					   &error);
-		if (s->fd < 0) {
+		int fd = socket_bind_listen(s->address.sa_family,
+					    SOCK_STREAM, 0,
+					    &s->address, s->address_length, 5,
+					    &error);
+		if (fd < 0) {
 			if (good != NULL && good->serial == s->serial) {
 				char *address_string = one_socket_to_string(s);
 				char *good_string = one_socket_to_string(good);
@@ -228,10 +244,7 @@ server_socket_open(struct server_socket *ss, GError **error_r)
 
 		/* register in the GLib main loop */
 
-		GIOChannel *channel = g_io_channel_new_socket(s->fd);
-		s->source_id = g_io_add_watch(channel, G_IO_IN,
-					      server_socket_in_event, s);
-		g_io_channel_unref(channel);
+		set_fd(s, fd);
 
 		/* mark this socket as "good", and clear previous
 		   errors */
