@@ -111,7 +111,7 @@ directory_new_child(struct directory *parent, const char *name_utf8)
 	struct directory *directory = directory_new(path_utf8, parent);
 	g_free(allocated);
 
-	list_add(&directory->siblings, &parent->children);
+	list_add_tail(&directory->siblings, &parent->children);
 	return directory;
 }
 
