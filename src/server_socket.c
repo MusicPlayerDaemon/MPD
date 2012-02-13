@@ -299,6 +299,36 @@ one_socket_new(unsigned serial, const struct sockaddr *address,
 	return s;
 }
 
+bool
+server_socket_add_fd(struct server_socket *ss, int fd, GError **error_r)
+{
+	assert(ss != NULL);
+	assert(ss->sockets_tail_r != NULL);
+	assert(*ss->sockets_tail_r == NULL);
+	assert(fd >= 0);
+
+	struct sockaddr_storage address;
+	socklen_t address_length;
+	if (getsockname(fd, (struct sockaddr *)&address,
+			&address_length) < 0) {
+		g_set_error(error_r, server_socket_quark(), errno,
+			    "Failed to get socket address: %s",
+			    g_strerror(errno));
+		return false;
+	}
+
+	struct one_socket *s = one_socket_new(ss->next_serial,
+					      (struct sockaddr *)&address,
+					      address_length);
+	s->parent = ss;
+	*ss->sockets_tail_r = s;
+	ss->sockets_tail_r = &s->next;
+
+	set_fd(s, fd);
+
+	return true;
+}
+
 static struct one_socket *
 server_socket_add_address(struct server_socket *ss,
 			  const struct sockaddr *address,

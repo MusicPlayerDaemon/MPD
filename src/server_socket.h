@@ -44,6 +44,14 @@ void
 server_socket_close(struct server_socket *ss);
 
 /**
+ * Add a socket descriptor that is accepting connections.  After this
+ * has been called, don't call server_socket_open(), because the
+ * socket is already open.
+ */
+bool
+server_socket_add_fd(struct server_socket *ss, int fd, GError **error_r);
+
+/**
  * Add a listener on a port on all interfaces.
  *
  * @param port the TCP port
