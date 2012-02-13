@@ -21,6 +21,7 @@
 #include "zeroconf.h"
 #include "zeroconf-internal.h"
 #include "conf.h"
+#include "listen.h"
 
 #include <glib.h>
 
@@ -41,6 +42,12 @@ void initZeroconf(void)
 					  DEFAULT_ZEROCONF_ENABLED);
 	if (!zeroconfEnabled)
 		return;
+
+	if (listen_port <= 0) {
+		g_warning("No global port, disabling zeroconf");
+		zeroconfEnabled = false;
+		return;
+	}
 
 	serviceName = config_get_string(CONF_ZEROCONF_NAME, SERVICE_NAME);
 
