@@ -817,11 +817,20 @@ handle_load(struct client *client, int argc, char *argv[])
 		return print_playlist_result(client, result);
 
 	GError *error = NULL;
-	return playlist_load_spl(&g_playlist, client->player_control,
-				 argv[1], start_index, end_index,
-				 &error)
-		? COMMAND_RETURN_OK
-		: print_error(client, error);
+	if (playlist_load_spl(&g_playlist, client->player_control,
+			      argv[1], start_index, end_index,
+			      &error))
+		return COMMAND_RETURN_OK;
+
+	if (error->domain == playlist_quark() &&
+	    error->code == PLAYLIST_RESULT_BAD_NAME)
+		/* the message for BAD_NAME is confusing when the
+		   client wants to load a playlist file from the music
+		   directory; patch the GError object to show "no such
+		   playlist" instead */
+		error->code = PLAYLIST_RESULT_NO_SUCH_LIST;
+
+	return print_error(client, error);
 }
 
 static enum command_return
