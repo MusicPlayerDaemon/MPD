@@ -266,18 +266,19 @@ mpd_inotify_callback(int wd, unsigned mask,
 	    (mask & IN_ISDIR) != 0) {
 		/* a sub directory was changed: register those in
 		   inotify */
-		char *root = map_directory_fs(db_get_root());
-		char *path_fs;
+		const char *root = mapper_get_music_directory();
+		const char *path_fs;
+		char *allocated = NULL;
 
-		if (uri_fs != NULL) {
-			path_fs = g_strconcat(root, "/", uri_fs, NULL);
-			g_free(root);
-		} else
+		if (uri_fs != NULL)
+			path_fs = allocated =
+				g_strconcat(root, "/", uri_fs, NULL);
+		else
 			path_fs = root;
 
 		recursive_watch_subdirectories(directory, path_fs,
 					       watch_directory_depth(directory));
-		g_free(path_fs);
+		g_free(allocated);
 	}
 
 	if ((mask & (IN_CLOSE_WRITE|IN_MOVE|IN_DELETE)) != 0 ||
@@ -303,21 +304,13 @@ mpd_inotify_callback(int wd, unsigned mask,
 void
 mpd_inotify_init(unsigned max_depth)
 {
-	struct directory *root;
-	char *path;
 	GError *error = NULL;
 
 	g_debug("initializing inotify");
 
-	root = db_get_root();
-	if (root == NULL) {
-		g_debug("no music directory configured");
-		return;
-	}
-
-	path = map_directory_fs(root);
+	const char *path = mapper_get_music_directory();
 	if (path == NULL) {
-		g_warning("mapper has failed");
+		g_debug("no music directory configured");
 		return;
 	}
 
@@ -326,13 +319,12 @@ mpd_inotify_init(unsigned max_depth)
 	if (inotify_source == NULL) {
 		g_warning("%s", error->message);
 		g_error_free(error);
-		g_free(path);
 		return;
 	}
 
 	inotify_max_depth = max_depth;
 
-	inotify_root.name = path;
+	inotify_root.name = g_strdup(path);
 	inotify_root.descriptor = mpd_inotify_source_add(inotify_source, path,
 							 IN_MASK, &error);
 	if (inotify_root.descriptor < 0) {
@@ -340,7 +332,6 @@ mpd_inotify_init(unsigned max_depth)
 		g_error_free(error);
 		mpd_inotify_source_free(inotify_source);
 		inotify_source = NULL;
-		g_free(path);
 		return;
 	}
 

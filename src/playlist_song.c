@@ -115,7 +115,7 @@ playlist_check_translate_song(struct song *song, const char *base_uri,
 
 	if (g_path_is_absolute(uri)) {
 		/* XXX fs_charset vs utf8? */
-		char *prefix = map_directory_fs(db_get_root());
+		const char *prefix = mapper_get_music_directory();
 
 		if (prefix != NULL && g_str_has_prefix(uri, prefix) &&
 		    uri[strlen(prefix)] == '/')
@@ -123,13 +123,11 @@ playlist_check_translate_song(struct song *song, const char *base_uri,
 		else if (!secure) {
 			/* local files must be relative to the music
 			   directory when "secure" is enabled */
-			g_free(prefix);
 			song_free(song);
 			return NULL;
 		}
 
 		base_uri = NULL;
-		g_free(prefix);
 	}
 
 	if (base_uri != NULL)

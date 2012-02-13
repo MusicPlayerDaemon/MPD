@@ -36,12 +36,19 @@ void mapper_init(const char *_music_dir, const char *_playlist_dir);
 
 void mapper_finish(void);
 
+G_GNUC_CONST
+const char *
+mapper_get_music_directory(void);
+
 /**
  * Returns true if a music directory was configured.
  */
 G_GNUC_CONST
-bool
-mapper_has_music_directory(void);
+static inline bool
+mapper_has_music_directory(void)
+{
+	return mapper_get_music_directory() != NULL;
+}
 
 /**
  * If the specified absolute path points inside the music directory,

@@ -117,10 +117,10 @@ void mapper_finish(void)
 	g_free(playlist_dir);
 }
 
-bool
-mapper_has_music_directory(void)
+const char *
+mapper_get_music_directory(void)
 {
-	return music_dir != NULL;
+	return music_dir;
 }
 
 const char *
