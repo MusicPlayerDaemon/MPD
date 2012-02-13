@@ -1,5 +1,7 @@
 ver 0.16.8 (2012/??/??)
 * fix for libsamplerate assertion failure
+* decoder:
+  - vorbis (and others): fix seeking at startup
 
 
 ver 0.16.7 (2012/02/04)
