@@ -200,11 +200,7 @@ winmm_set_buffer(struct winmm_output *wo, struct winmm_buffer *buffer,
 		 GError **error_r)
 {
 	void *dest = pcm_buffer_get(&buffer->buffer, size);
-	if (dest == NULL) {
-		g_set_error(error_r, winmm_output_quark(), 0,
-			    "Out of memory");
-		return false;
-	}
+	assert(dest != NULL);
 
 	memcpy(dest, data, size);
 
