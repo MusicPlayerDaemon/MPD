@@ -162,8 +162,11 @@ removeDeletedFromDirectory(struct directory *directory)
 
 	struct playlist_metadata *pm, *np;
 	directory_for_each_playlist_safe(pm, np, directory) {
-		if (!directory_child_is_regular(directory, pm->name))
+		if (!directory_child_is_regular(directory, pm->name)) {
+			db_lock();
 			playlist_vector_remove(&directory->playlists, pm->name);
+			db_unlock();
+		}
 	}
 }
 
@@ -467,9 +470,11 @@ update_regular_file(struct directory *directory,
 #endif
 
 	} else if (playlist_suffix_supported(suffix)) {
+		db_lock();
 		if (playlist_vector_update_or_add(&directory->playlists, name,
 						  st->st_mtime))
 			modified = true;
+		db_unlock();
 	}
 }
 

@@ -49,20 +49,31 @@ struct playlist_metadata {
 void
 playlist_vector_deinit(struct list_head *pv);
 
+/**
+ * Caller must lock the #db_mutex.
+ */
 struct playlist_metadata *
 playlist_vector_find(struct list_head *pv, const char *name);
 
+/**
+ * Caller must lock the #db_mutex.
+ */
 void
 playlist_vector_add(struct list_head *pv,
 		    const char *name, time_t mtime);
 
 /**
+ * Caller must lock the #db_mutex.
+ *
  * @return true if the vector or one of its items was modified
  */
 bool
 playlist_vector_update_or_add(struct list_head *pv,
 			      const char *name, time_t mtime);
 
+/**
+ * Caller must lock the #db_mutex.
+ */
 bool
 playlist_vector_remove(struct list_head *pv, const char *name);
 

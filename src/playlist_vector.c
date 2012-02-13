@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "playlist_vector.h"
+#include "db_lock.h"
 
 #include <assert.h>
 #include <string.h>
@@ -58,6 +59,7 @@ playlist_vector_deinit(struct list_head *pv)
 struct playlist_metadata *
 playlist_vector_find(struct list_head *pv, const char *name)
 {
+	assert(holding_db_lock());
 	assert(pv != NULL);
 	assert(name != NULL);
 
@@ -73,6 +75,8 @@ void
 playlist_vector_add(struct list_head *pv,
 		    const char *name, time_t mtime)
 {
+	assert(holding_db_lock());
+
 	struct playlist_metadata *pm = playlist_metadata_new(name, mtime);
 	list_add_tail(&pm->siblings, pv);
 }
@@ -81,6 +85,8 @@ bool
 playlist_vector_update_or_add(struct list_head *pv,
 			      const char *name, time_t mtime)
 {
+	assert(holding_db_lock());
+
 	struct playlist_metadata *pm = playlist_vector_find(pv, name);
 	if (pm != NULL) {
 		if (mtime == pm->mtime)
@@ -96,6 +102,8 @@ playlist_vector_update_or_add(struct list_head *pv,
 bool
 playlist_vector_remove(struct list_head *pv, const char *name)
 {
+	assert(holding_db_lock());
+
 	struct playlist_metadata *pm = playlist_vector_find(pv, name);
 	if (pm == NULL)
 		return false;

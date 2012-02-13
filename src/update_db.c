@@ -96,9 +96,9 @@ delete_name_in(struct directory *parent, const char *name)
 		modified = true;
 	}
 
-	db_unlock();
-
 	playlist_vector_remove(&parent->playlists, name);
+
+	db_unlock();
 
 	return modified;
 }
