@@ -597,8 +597,8 @@ typedef struct ffmpeg_tag_map {
 static const ffmpeg_tag_map ffmpeg_tag_maps[] = {
 #if LIBAVFORMAT_VERSION_INT < ((52<<16)+(50<<8))
 	{ TAG_ARTIST,            "author" },
-	{ TAG_DATE,              "year" },
 #endif
+	{ TAG_DATE,              "year" },
 	{ TAG_ARTIST_SORT,       "author-sort" },
 	{ TAG_ALBUM_ARTIST,      "album_artist" },
 	{ TAG_ALBUM_ARTIST_SORT, "album_artist-sort" },
