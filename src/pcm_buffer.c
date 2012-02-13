@@ -34,6 +34,11 @@ pcm_buffer_get(struct pcm_buffer *buffer, size_t size)
 {
 	assert(buffer != NULL);
 
+	if (size == 0)
+		/* never return NULL, because NULL would be assumed to
+		   be an error condition */
+		size = 1;
+
 	if (buffer->size < size) {
 		/* free the old buffer */
 		g_free(buffer->buffer);
