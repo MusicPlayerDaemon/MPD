@@ -2365,10 +2365,9 @@ static const struct command *
 command_checked_lookup(struct client *client, unsigned permission,
 		       int argc, char *argv[])
 {
-	static char unknown[] = "";
 	const struct command *cmd;
 
-	current_command = unknown;
+	current_command = "";
 
 	if (argc == 0)
 		return NULL;
