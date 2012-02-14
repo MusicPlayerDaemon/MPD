@@ -682,8 +682,8 @@ handle_addid(struct client *client, int argc, char *argv[])
 		return print_playlist_result(client, result);
 
 	if (argc == 3) {
-		int to;
-		if (!check_int(client, &to, argv[2], check_integer, argv[2]))
+		unsigned to;
+		if (!check_unsigned(client, &to, argv[2]))
 			return COMMAND_RETURN_ERROR;
 		result = playlist_move_id(&g_playlist, client->player_control,
 					  added_id, to);
@@ -717,10 +717,10 @@ handle_delete(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_deleteid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	int id;
+	unsigned id;
 	enum playlist_result result;
 
-	if (!check_int(client, &id, argv[1], need_positive))
+	if (!check_unsigned(client, &id, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
 	result = playlist_delete_id(&g_playlist, client->player_control, id);
@@ -921,12 +921,11 @@ handle_playlistinfo(struct client *client, int argc, char *argv[])
 static enum command_return
 handle_playlistid(struct client *client, int argc, char *argv[])
 {
-	int id = -1;
+	if (argc >= 2) {
+		unsigned id;
+		if (!check_unsigned(client, &id, argv[1]))
+			return COMMAND_RETURN_ERROR;
 
-	if (argc == 2 && !check_int(client, &id, argv[1], need_positive))
-		return COMMAND_RETURN_ERROR;
-
-	if (id >= 0) {
 		bool ret = playlist_print_id(client, &g_playlist, id);
 		if (!ret)
 			return print_playlist_result(client,
@@ -1081,9 +1080,9 @@ static enum command_return
 handle_playlistdelete(struct client *client,
 		      G_GNUC_UNUSED int argc, char *argv[]) {
 	char *playlist = argv[1];
-	int from;
+	unsigned from;
 
-	if (!check_int(client, &from, argv[2], check_integer, argv[2]))
+	if (!check_unsigned(client, &from, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
 	GError *error = NULL;
@@ -1096,11 +1095,11 @@ static enum command_return
 handle_playlistmove(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	char *playlist = argv[1];
-	int from, to;
+	unsigned from, to;
 
-	if (!check_int(client, &from, argv[2], check_integer, argv[2]))
+	if (!check_unsigned(client, &from, argv[2]))
 		return COMMAND_RETURN_ERROR;
-	if (!check_int(client, &to, argv[3], check_integer, argv[3]))
+	if (!check_unsigned(client, &to, argv[3]))
 		return COMMAND_RETURN_ERROR;
 
 	GError *error = NULL;
@@ -1270,13 +1269,13 @@ handle_listall(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_setvol(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	int level;
+	unsigned level;
 	bool success;
 
-	if (!check_int(client, &level, argv[1], need_integer))
+	if (!check_unsigned(client, &level, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	if (level < 0 || level > 100) {
+	if (level > 100) {
 		command_error(client, ACK_ERROR_ARG, "Invalid volume value");
 		return COMMAND_RETURN_ERROR;
 	}
@@ -1294,16 +1293,9 @@ handle_setvol(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_repeat(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	int status;
-
-	if (!check_int(client, &status, argv[1], need_integer))
+	bool status;
+	if (!check_bool(client, &status, argv[1]))
 		return COMMAND_RETURN_ERROR;
-
-	if (status != 0 && status != 1) {
-		command_error(client, ACK_ERROR_ARG,
-			      "\"%i\" is not 0 or 1", status);
-		return COMMAND_RETURN_ERROR;
-	}
 
 	playlist_set_repeat(&g_playlist, client->player_control, status);
 	return COMMAND_RETURN_OK;
@@ -1312,16 +1304,9 @@ handle_repeat(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_single(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	int status;
-
-	if (!check_int(client, &status, argv[1], need_integer))
+	bool status;
+	if (!check_bool(client, &status, argv[1]))
 		return COMMAND_RETURN_ERROR;
-
-	if (status != 0 && status != 1) {
-		command_error(client, ACK_ERROR_ARG,
-			      "\"%i\" is not 0 or 1", status);
-		return COMMAND_RETURN_ERROR;
-	}
 
 	playlist_set_single(&g_playlist, client->player_control, status);
 	return COMMAND_RETURN_OK;
@@ -1330,16 +1315,9 @@ handle_single(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_consume(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	int status;
-
-	if (!check_int(client, &status, argv[1], need_integer))
+	bool status;
+	if (!check_bool(client, &status, argv[1]))
 		return COMMAND_RETURN_ERROR;
-
-	if (status != 0 && status != 1) {
-		command_error(client, ACK_ERROR_ARG,
-			      "\"%i\" is not 0 or 1", status);
-		return COMMAND_RETURN_ERROR;
-	}
 
 	playlist_set_consume(&g_playlist, status);
 	return COMMAND_RETURN_OK;
@@ -1348,16 +1326,9 @@ handle_consume(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_random(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	int status;
-
-	if (!check_int(client, &status, argv[1], need_integer))
+	bool status;
+	if (!check_bool(client, &status, argv[1]))
 		return COMMAND_RETURN_ERROR;
-
-	if (status != 0 && status != 1) {
-		command_error(client, ACK_ERROR_ARG,
-			      "\"%i\" is not 0 or 1", status);
-		return COMMAND_RETURN_ERROR;
-	}
 
 	playlist_set_random(&g_playlist, client->player_control, status);
 	return COMMAND_RETURN_OK;
@@ -1450,10 +1421,11 @@ handle_move(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_moveid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	int id, to;
+	unsigned id;
+	int to;
 	enum playlist_result result;
 
-	if (!check_int(client, &id, argv[1], check_integer, argv[1]))
+	if (!check_unsigned(client, &id, argv[1]))
 		return COMMAND_RETURN_ERROR;
 	if (!check_int(client, &to, argv[2], check_integer, argv[2]))
 		return COMMAND_RETURN_ERROR;
@@ -1465,12 +1437,12 @@ handle_moveid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_swap(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	int song1, song2;
+	unsigned song1, song2;
 	enum playlist_result result;
 
-	if (!check_int(client, &song1, argv[1], check_integer, argv[1]))
+	if (!check_unsigned(client, &song1, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	if (!check_int(client, &song2, argv[2], check_integer, argv[2]))
+	if (!check_unsigned(client, &song2, argv[2]))
 		return COMMAND_RETURN_ERROR;
 	result = playlist_swap_songs(&g_playlist, client->player_control,
 				     song1, song2);
@@ -1480,12 +1452,12 @@ handle_swap(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_swapid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	int id1, id2;
+	unsigned id1, id2;
 	enum playlist_result result;
 
-	if (!check_int(client, &id1, argv[1], check_integer, argv[1]))
+	if (!check_unsigned(client, &id1, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	if (!check_int(client, &id2, argv[2], check_integer, argv[2]))
+	if (!check_unsigned(client, &id2, argv[2]))
 		return COMMAND_RETURN_ERROR;
 	result = playlist_swap_songs_id(&g_playlist, client->player_control,
 					id1, id2);
@@ -1495,12 +1467,12 @@ handle_swapid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_seek(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	int song, seek_time;
+	unsigned song, seek_time;
 	enum playlist_result result;
 
-	if (!check_int(client, &song, argv[1], check_integer, argv[1]))
+	if (!check_unsigned(client, &song, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	if (!check_int(client, &seek_time, argv[2], check_integer, argv[2]))
+	if (!check_unsigned(client, &seek_time, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
 	result = playlist_seek_song(&g_playlist, client->player_control,
@@ -1511,12 +1483,12 @@ handle_seek(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 static enum command_return
 handle_seekid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
-	int id, seek_time;
+	unsigned id, seek_time;
 	enum playlist_result result;
 
-	if (!check_int(client, &id, argv[1], check_integer, argv[1]))
+	if (!check_unsigned(client, &id, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	if (!check_int(client, &seek_time, argv[2], check_integer, argv[2]))
+	if (!check_unsigned(client, &seek_time, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
 	result = playlist_seek_song_id(&g_playlist, client->player_control,
