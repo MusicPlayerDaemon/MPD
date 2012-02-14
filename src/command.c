@@ -107,44 +107,30 @@ struct command {
 	enum command_return (*handler)(struct client *client, int argc, char **argv);
 };
 
-/* this should really be "need a non-negative integer": */
-static const char need_positive[] = "need a positive integer"; /* no-op */
-static const char need_range[] = "need a range";
-
-/* FIXME: redundant error messages */
-static const char check_integer[] = "\"%s\" is not a integer";
-static const char need_integer[] = "need an integer";
-
-static bool G_GNUC_PRINTF(4, 5)
-check_uint32(struct client *client, uint32_t *dst,
-	     const char *s, const char *fmt, ...)
+static bool
+check_uint32(struct client *client, uint32_t *dst, const char *s)
 {
 	char *test;
 
 	*dst = strtoul(s, &test, 10);
 	if (test == s || *test != '\0') {
-		va_list args;
-		va_start(args, fmt);
-		command_error_v(client, ACK_ERROR_ARG, fmt, args);
-		va_end(args);
+		command_error(client, ACK_ERROR_ARG,
+			      "Integer expected: %s", s);
 		return false;
 	}
 	return true;
 }
 
-static bool G_GNUC_PRINTF(4, 5)
-check_int(struct client *client, int *value_r,
-	  const char *s, const char *fmt, ...)
+static bool
+check_int(struct client *client, int *value_r, const char *s)
 {
 	char *test;
 	long value;
 
 	value = strtol(s, &test, 10);
 	if (test == s || *test != '\0') {
-		va_list args;
-		va_start(args, fmt);
-		command_error_v(client, ACK_ERROR_ARG, fmt, args);
-		va_end(args);
+		command_error(client, ACK_ERROR_ARG,
+			      "Integer expected: %s", s);
 		return false;
 	}
 
@@ -160,19 +146,17 @@ check_int(struct client *client, int *value_r,
 	return true;
 }
 
-static bool G_GNUC_PRINTF(5, 6)
+static bool
 check_range(struct client *client, unsigned *value_r1, unsigned *value_r2,
-	    const char *s, const char *fmt, ...)
+	    const char *s)
 {
 	char *test, *test2;
 	long value;
 
 	value = strtol(s, &test, 10);
 	if (test == s || (*test != '\0' && *test != ':')) {
-		va_list args;
-		va_start(args, fmt);
-		command_error_v(client, ACK_ERROR_ARG, fmt, args);
-		va_end(args);
+		command_error(client, ACK_ERROR_ARG,
+			      "Integer or range expected: %s", s);
 		return false;
 	}
 
@@ -203,10 +187,8 @@ check_range(struct client *client, unsigned *value_r1, unsigned *value_r2,
 	if (*test == ':') {
 		value = strtol(++test, &test2, 10);
 		if (test2 == test || *test2 != '\0') {
-			va_list args;
-			va_start(args, fmt);
-			command_error_v(client, ACK_ERROR_ARG, fmt, args);
-			va_end(args);
+			command_error(client, ACK_ERROR_ARG,
+				      "Integer or range expected: %s", s);
 			return false;
 		}
 
@@ -450,7 +432,7 @@ handle_play(struct client *client, int argc, char *argv[])
 	int song = -1;
 	enum playlist_result result;
 
-	if (argc == 2 && !check_int(client, &song, argv[1], need_positive))
+	if (argc == 2 && !check_int(client, &song, argv[1]))
 		return COMMAND_RETURN_ERROR;
 	result = playlist_play(&g_playlist, client->player_control, song);
 	return print_playlist_result(client, result);
@@ -462,7 +444,7 @@ handle_playid(struct client *client, int argc, char *argv[])
 	int id = -1;
 	enum playlist_result result;
 
-	if (argc == 2 && !check_int(client, &id, argv[1], need_positive))
+	if (argc == 2 && !check_int(client, &id, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
 	result = playlist_play_id(&g_playlist, client->player_control, id);
@@ -706,7 +688,7 @@ handle_delete(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	unsigned start, end;
 	enum playlist_result result;
 
-	if (!check_range(client, &start, &end, argv[1], need_range))
+	if (!check_range(client, &start, &end, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
 	result = playlist_delete_range(&g_playlist, client->player_control,
@@ -740,8 +722,7 @@ handle_shuffle(G_GNUC_UNUSED struct client *client,
 	       G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	unsigned start = 0, end = queue_length(&g_playlist.queue);
-	if (argc == 2 && !check_range(client, &start, &end,
-	                              argv[1], need_range))
+	if (argc == 2 && !check_range(client, &start, &end, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
 	playlist_shuffle(&g_playlist, client->player_control, start, end);
@@ -774,8 +755,7 @@ handle_load(struct client *client, int argc, char *argv[])
 	if (argc < 3) {
 		start_index = 0;
 		end_index = G_MAXUINT;
-	} else if (!check_range(client, &start_index, &end_index,
-				argv[2], need_range))
+	} else if (!check_range(client, &start_index, &end_index, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
 	enum playlist_result result;
@@ -881,7 +861,7 @@ handle_plchanges(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	uint32_t version;
 
-	if (!check_uint32(client, &version, argv[1], need_positive))
+	if (!check_uint32(client, &version, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
 	playlist_print_changes_info(client, &g_playlist, version);
@@ -893,7 +873,7 @@ handle_plchangesposid(struct client *client, G_GNUC_UNUSED int argc, char *argv[
 {
 	uint32_t version;
 
-	if (!check_uint32(client, &version, argv[1], need_positive))
+	if (!check_uint32(client, &version, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
 	playlist_print_changes_position(client, &g_playlist, version);
@@ -906,8 +886,7 @@ handle_playlistinfo(struct client *client, int argc, char *argv[])
 	unsigned start = 0, end = G_MAXUINT;
 	bool ret;
 
-	if (argc == 2 && !check_range(client, &start, &end,
-				      argv[1], need_range))
+	if (argc == 2 && !check_range(client, &start, &end, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
 	ret = playlist_print_info(client, &g_playlist, start, end);
@@ -1207,7 +1186,7 @@ handle_prio(struct client *client, int argc, char *argv[])
 	for (int i = 2; i < argc; ++i) {
 		unsigned start_position, end_position;
 		if (!check_range(client, &start_position, &end_position,
-				 argv[i], need_range))
+				 argv[i]))
 			return COMMAND_RETURN_ERROR;
 
 		enum playlist_result result =
@@ -1408,10 +1387,9 @@ handle_move(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	int to;
 	enum playlist_result result;
 
-	if (!check_range(client, &start, &end,
-				      argv[1], need_range))
+	if (!check_range(client, &start, &end, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	if (!check_int(client, &to, argv[2], check_integer, argv[2]))
+	if (!check_int(client, &to, argv[2]))
 		return COMMAND_RETURN_ERROR;
 	result = playlist_move_range(&g_playlist, client->player_control,
 				     start, end, to);
@@ -1427,7 +1405,7 @@ handle_moveid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 
 	if (!check_unsigned(client, &id, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	if (!check_int(client, &to, argv[2], check_integer, argv[2]))
+	if (!check_int(client, &to, argv[2]))
 		return COMMAND_RETURN_ERROR;
 	result = playlist_move_id(&g_playlist, client->player_control,
 				  id, to);
@@ -1502,7 +1480,7 @@ handle_seekcur(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	const char *p = argv[1];
 	bool relative = *p == '+' || *p == '-';
 	int seek_time;
-	if (!check_int(client, &seek_time, p, check_integer, p))
+	if (!check_int(client, &seek_time, p))
 		return COMMAND_RETURN_ERROR;
 
 	enum playlist_result result =
