@@ -122,7 +122,7 @@ check_uint32(struct client *client, uint32_t *dst,
 	char *test;
 
 	*dst = strtoul(s, &test, 10);
-	if (*test != '\0') {
+	if (test == s || *test != '\0') {
 		va_list args;
 		va_start(args, fmt);
 		command_error_v(client, ACK_ERROR_ARG, fmt, args);
@@ -140,7 +140,7 @@ check_int(struct client *client, int *value_r,
 	long value;
 
 	value = strtol(s, &test, 10);
-	if (*test != '\0') {
+	if (test == s || *test != '\0') {
 		va_list args;
 		va_start(args, fmt);
 		command_error_v(client, ACK_ERROR_ARG, fmt, args);
@@ -168,7 +168,7 @@ check_range(struct client *client, unsigned *value_r1, unsigned *value_r2,
 	long value;
 
 	value = strtol(s, &test, 10);
-	if (*test != '\0' && *test != ':') {
+	if (test == s || (*test != '\0' && *test != ':')) {
 		va_list args;
 		va_start(args, fmt);
 		command_error_v(client, ACK_ERROR_ARG, fmt, args);
@@ -202,7 +202,7 @@ check_range(struct client *client, unsigned *value_r1, unsigned *value_r2,
 
 	if (*test == ':') {
 		value = strtol(++test, &test2, 10);
-		if (*test2 != '\0') {
+		if (test2 == test || *test2 != '\0') {
 			va_list args;
 			va_start(args, fmt);
 			command_error_v(client, ACK_ERROR_ARG, fmt, args);
@@ -241,7 +241,7 @@ check_unsigned(struct client *client, unsigned *value_r, const char *s)
 	char *endptr;
 
 	value = strtoul(s, &endptr, 10);
-	if (*endptr != 0) {
+	if (endptr == s || *endptr != 0) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Integer expected: %s", s);
 		return false;
@@ -264,7 +264,7 @@ check_bool(struct client *client, bool *value_r, const char *s)
 	char *endptr;
 
 	value = strtol(s, &endptr, 10);
-	if (*endptr != 0 || (value != 0 && value != 1)) {
+	if (endptr == s || *endptr != 0 || (value != 0 && value != 1)) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Boolean (0/1) expected: %s", s);
 		return false;
@@ -281,7 +281,7 @@ check_float(struct client *client, float *value_r, const char *s)
 	char *endptr;
 
 	value = strtof(s, &endptr);
-	if (*endptr != 0 && endptr == s) {
+	if (endptr == s || *endptr != 0) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Float expected: %s", s);
 		return false;
