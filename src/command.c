@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "command.h"
+#include "protocol/result.h"
 #include "player_control.h"
 #include "playlist.h"
 #include "playlist_print.h"
@@ -113,37 +114,6 @@ static const char need_range[] = "need a range";
 /* FIXME: redundant error messages */
 static const char check_integer[] = "\"%s\" is not a integer";
 static const char need_integer[] = "need an integer";
-
-static const char *current_command;
-static int command_list_num;
-
-void command_success(struct client *client)
-{
-	client_puts(client, "OK\n");
-}
-
-static void command_error_v(struct client *client, enum ack error,
-			    const char *fmt, va_list args)
-{
-	assert(client != NULL);
-	assert(current_command != NULL);
-
-	client_printf(client, "ACK [%i@%i] {%s} ",
-		      (int)error, command_list_num, current_command);
-	client_vprintf(client, fmt, args);
-	client_puts(client, "\n");
-
-	current_command = NULL;
-}
-
-G_GNUC_PRINTF(3, 4) static void command_error(struct client *client, enum ack error,
-				       const char *fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	command_error_v(client, error, fmt, args);
-	va_end(args);
-}
 
 static bool G_GNUC_PRINTF(4, 5)
 check_uint32(struct client *client, uint32_t *dst,

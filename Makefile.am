@@ -233,6 +233,7 @@ src_mpd_SOURCES = \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \
+	src/protocol/result.c src/protocol/result.h \
 	src/command.c \
 	src/idle.c \
 	src/cmdline.c \
