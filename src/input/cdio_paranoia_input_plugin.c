@@ -18,8 +18,8 @@
  */
 
 /**
-  * CD-Audio handling (requires libcdio_paranoia)
-  */
+ * CD-Audio handling (requires libcdio_paranoia)
+ */
 
 #include "config.h"
 #include "input/cdio_paranoia_input_plugin.h"
