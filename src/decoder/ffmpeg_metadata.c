@@ -26,7 +26,7 @@
 #define G_LOG_DOMAIN "ffmpeg"
 
 static const struct tag_table ffmpeg_tags[] = {
-#if LIBAVFORMAT_VERSION_INT < ((52<<16)+(50<<8))
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(52,50,0)
 	{ "author", TAG_ARTIST },
 #endif
 	{ "year", TAG_DATE },
