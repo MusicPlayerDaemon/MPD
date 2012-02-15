@@ -65,14 +65,14 @@ audiofile_file_read(AFvirtualfile *vfile, void *data, size_t length)
 	return nbytes;
 }
 
-static long
+static AFfileoffset
 audiofile_file_length(AFvirtualfile *vfile)
 {
 	struct input_stream *is = (struct input_stream *) vfile->closure;
 	return is->size;
 }
 
-static long
+static AFfileoffset
 audiofile_file_tell(AFvirtualfile *vfile)
 {
 	struct input_stream *is = (struct input_stream *) vfile->closure;
@@ -87,8 +87,8 @@ audiofile_file_destroy(AFvirtualfile *vfile)
 	vfile->closure = NULL;
 }
 
-static long
-audiofile_file_seek(AFvirtualfile *vfile, long offset, int is_relative)
+static AFfileoffset
+audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset offset, int is_relative)
 {
 	struct input_stream *is = (struct input_stream *) vfile->closure;
 	int whence = (is_relative ? SEEK_CUR : SEEK_SET);
