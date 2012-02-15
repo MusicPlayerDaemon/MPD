@@ -258,10 +258,11 @@ initialize_decoder_and_player(void)
 
 	param = config_get_param(CONF_AUDIO_BUFFER_SIZE);
 	if (param != NULL) {
-		buffer_size = strtol(param->value, &test, 10);
-		if (*test != '\0' || buffer_size <= 0)
+		long tmp = strtol(param->value, &test, 10);
+		if (*test != '\0' || tmp <= 0 || tmp == LONG_MAX)
 			MPD_ERROR("buffer size \"%s\" is not a positive integer, "
 				  "line %i\n", param->value, param->line);
+		buffer_size = tmp;
 	} else
 		buffer_size = DEFAULT_BUFFER_SIZE;
 
