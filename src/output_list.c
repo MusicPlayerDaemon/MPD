@@ -106,8 +106,8 @@ audio_output_plugin_get(const char *name)
 	const struct audio_output_plugin *plugin;
 
 	audio_output_plugins_for_each(plugin, i)
-		if (strcmp(audio_output_plugins[i]->name, name) == 0)
-			return audio_output_plugins[i];
+		if (strcmp(plugin->name, name) == 0)
+			return plugin;
 
 	return NULL;
 }
