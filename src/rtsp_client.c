@@ -486,35 +486,35 @@ exec_request(struct rtspcl_data *rtspcld, const char *cmd,
 
 	if ( rtspcld->session != NULL ) {
 		sprintf(reql,"Session: %s\r\n", rtspcld->session );
-		strncat(req,reql,sizeof(req));
+		g_strlcat(req, reql, sizeof(req));
 	}
 
 	const struct key_data *hd_iter = hds;
 	while (hd_iter) {
 		sprintf(reql, "%s: %s\r\n", hd_iter->key, hd_iter->data);
-		strncat(req, reql, sizeof(req));
+		g_strlcat(req, reql, sizeof(req));
 		hd_iter = hd_iter->next;
 	}
 
 	if (content_type && content) {
 		sprintf(reql, "Content-Type: %s\r\nContent-Length: %d\r\n",
 			content_type, (int) strlen(content));
-		strncat(req,reql,sizeof(req));
+		g_strlcat(req, reql, sizeof(req));
 	}
 
 	sprintf(reql, "User-Agent: %s\r\n", rtspcld->useragent);
-	strncat(req, reql, sizeof(req));
+	g_strlcat(req, reql, sizeof(req));
 
 	hd_iter = rtspcld->exthds;
 	while (hd_iter) {
 		sprintf(reql, "%s: %s\r\n", hd_iter->key, hd_iter->data);
-		strncat(req, reql, sizeof(req));
+		g_strlcat(req, reql, sizeof(req));
 		hd_iter = hd_iter->next;
 	}
-	strncat(req, "\r\n", sizeof(req));
+	g_strlcat(req, "\r\n", sizeof(req));
 
 	if (content_type && content)
-		strncat(req, content, sizeof(req));
+		g_strlcat(req, content, sizeof(req));
 
 	if (!tcp_socket_send(rtspcld->tcp_socket, req, strlen(req))) {
 		g_set_error(error_r, rtsp_client_quark(), errno,
