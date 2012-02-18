@@ -1,0 +1,34 @@
+#include <windows.h>
+
+#define VERSION_NUMBER @VERSION_MAJOR@,@VERSION_MINOR@,@VERSION_REVISION@,@VERSION_EXTRA@
+#define VERSION_NUMBER_STR "@VERSION_MAJOR@,@VERSION_MINOR@,@VERSION_REVISION@,@VERSION_EXTRA@"
+
+MPD_ICON ICON "@top_srcdir@/src/win/mpd.ico"
+
+1 VERSIONINFO
+FILETYPE VFT_APP
+FILEOS VOS__WINDOWS32
+PRODUCTVERSION VERSION_NUMBER
+
+FILEVERSION VERSION_NUMBER
+BEGIN
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "040904B0"
+		BEGIN
+			VALUE "CompanyName", "Music Player Daemon Project"
+			VALUE "ProductName", "Music Player Daemon"
+			VALUE "ProductVersion", VERSION_NUMBER_STR
+			VALUE "InternalName", "mpd"
+			VALUE "OriginalFilename", "mpd.exe"
+			VALUE "FileVersion", "@VERSION@"
+			VALUE "FileDescription", "Music Player Daemon @VERSION@"
+			VALUE "LegalCopyright", "Copyright \251 The Music Player Daemon Project"
+		END
+	END
+
+	BLOCK "VarFileInfo"
+	BEGIN
+		VALUE "Translation", 0x409, 1200
+	END
+END

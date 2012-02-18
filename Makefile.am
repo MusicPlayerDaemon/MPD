@@ -353,6 +353,20 @@ src_mpd_SOURCES = \
 	src/stored_playlist.c \
 	src/timer.c
 
+#
+# Windows resource file
+#
+
+src/win/mpd_win32_rc.$(OBJEXT): src/win/mpd_win32_rc.rc
+	$(WINDRES) -i $< -o $@
+
+if HAVE_WINDOWS
+noinst_DATA = src/win/mpd_win32_rc.rc
+
+src_mpd_DEPENDENCIES = src/win/mpd_win32_rc.$(OBJEXT)
+src_mpd_LDFLAGS = -Wl,src/win/mpd_win32_rc.$(OBJEXT)
+endif
+
 if ENABLE_DESPOTIFY
 src_mpd_SOURCES += \
 	src/despotify_utils.c
@@ -1309,4 +1323,5 @@ endif
 
 EXTRA_DIST = $(doc_DATA) autogen.sh \
 	$(wildcard scripts/*.sh) \
-	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf
+	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf \
+	src/win/mpd_win32_rc.rc.in

@@ -1,5 +1,12 @@
 AC_PREREQ(2.60)
+
 AC_INIT(mpd, 0.17~git, musicpd-dev-team@lists.sourceforge.net)
+
+VERSION_MAJOR=0
+VERSION_MINOR=17
+VERSION_REVISION=0
+VERSION_EXTRA=0
+
 AC_CONFIG_SRCDIR([src/main.c])
 AM_INIT_AUTOMAKE([foreign 1.11 dist-bzip2 subdir-objects])
 AM_SILENT_RULES
@@ -58,6 +65,12 @@ AC_SUBST(AM_CPPFLAGS,"")
 AC_SUBST(AM_CFLAGS,"")
 AC_SUBST(AM_CXXFLAGS,"")
 
+## Used for the windows resource file
+AC_SUBST(VERSION_MAJOR)
+AC_SUBST(VERSION_MINOR)
+AC_SUBST(VERSION_REVISION)
+AC_SUBST(VERSION_EXTRA)
+
 dnl ---------------------------------------------------------------------------
 dnl OS Specific Defaults
 dnl ---------------------------------------------------------------------------
@@ -65,10 +78,16 @@ AC_CANONICAL_HOST
 
 case "$host_os" in
 mingw32* | windows*)
+	AC_CONFIG_FILES([
+		src/win/mpd_win32_rc.rc
+	])
+	AC_CHECK_TOOL(WINDRES, windres)
 	AM_CPPFLAGS="$AM_CPPFLAGS -DWINVER=0x0501"
 	LIBS="$LIBS -lws2_32"
+	HAVE_WINDOWS=1
 	;;
 esac
+AM_CONDITIONAL([HAVE_WINDOWS], [test $HAVE_WINDOWS -eq 1])
 
 if test -z "$prefix" || test "x$prefix" = xNONE; then
 	local_lib=
