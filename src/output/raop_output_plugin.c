@@ -770,6 +770,11 @@ raop_output_finish(struct audio_output *ao)
 	g_mutex_free(rd->control_mutex);
 	ao_base_finish(&rd->base);
 	g_free(rd);
+
+	if (raop_session->raop_list == NULL) {
+		raop_session_free(raop_session);
+		raop_session = NULL;
+	}
 }
 
 #define RAOP_VOLUME_MIN -30
@@ -870,8 +875,9 @@ raop_output_remove(struct raop_data *rd)
 	g_mutex_unlock(raop_session->list_mutex);
 
 	if (raop_session->raop_list == NULL) {
-		raop_session_free(raop_session);
-		raop_session = NULL;
+		ntp_server_close(&raop_session->ntp);
+		close(raop_session->ctrl.fd);
+		raop_session->ctrl.fd = -1;
 	}
 }
 
