@@ -25,6 +25,7 @@
 #include "playlist/xspf_playlist_plugin.h"
 #include "playlist/lastfm_playlist_plugin.h"
 #include "playlist/despotify_playlist_plugin.h"
+#include "playlist/soundcloud_playlist_plugin.h"
 #include "playlist/pls_playlist_plugin.h"
 #include "playlist/asx_playlist_plugin.h"
 #include "playlist/rss_playlist_plugin.h"
@@ -53,6 +54,9 @@ static const struct playlist_plugin *const playlist_plugins[] = {
 #endif
 #ifdef ENABLE_LASTFM
 	&lastfm_playlist_plugin,
+#endif
+#ifdef ENABLE_SOUNDCLOUD
+	&soundcloud_playlist_plugin,
 #endif
 	&cue_playlist_plugin,
 	&embcue_playlist_plugin,

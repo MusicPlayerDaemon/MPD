@@ -272,6 +272,11 @@ AC_ARG_ENABLE(despotify,
 		[enable support for despotify (default: disable)]),,
 	[enable_despotify=no])
 
+AC_ARG_ENABLE(soundcloud,
+	AS_HELP_STRING([--enable-soundcloud],
+		[enable support for soundcloud (default: disable)]),,
+	[enable_soundcloud=no])
+
 AC_ARG_ENABLE(lame-encoder,
 	AS_HELP_STRING([--enable-lame-encoder],
 		[enable the LAME mp3 encoder]),,
@@ -701,6 +706,12 @@ if test x$enable_despotify = xyes; then
 	AC_DEFINE(ENABLE_DESPOTIFY, 1, [Define when despotify is enabled])
 fi
 AM_CONDITIONAL(ENABLE_DESPOTIFY, test x$enable_despotify = xyes)
+
+dnl --------------------------------- Soundcloud ------------------------------
+if test x$enable_soundcloud = xyes; then
+	AC_DEFINE(ENABLE_SOUNDCLOUD, 1, [Define when soundcloud is enabled])
+fi
+AM_CONDITIONAL(ENABLE_SOUNDCLOUD, test x$enable_soundcloud = xyes)
 
 dnl ---------------------------------- cdio ---------------------------------
 MPD_AUTO_PKG(cdio_paranoia, CDIO_PARANOIA, [libcdio_paranoia],
@@ -1604,6 +1615,8 @@ results(cdio_paranoia, [CDIO_PARANOIA])
 results(curl,[CURL])
 results(despotify,[Despotify])
 results(lastfm,[Last.FM])
+results(soundcloud,[Soundcloud])
+printf '\n\t'
 results(mms,[MMS])
 results(soup, [SOUP])
 

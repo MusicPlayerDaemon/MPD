@@ -30,6 +30,7 @@ ver 0.17 (2011/??/??)
 * playlist:
   - allow references to songs outside the music directory
   - new CUE parser, without libcue
+  - soundcloud: new plugin for accessing soundcloud.com
 * state_file: add option "restore_paused"
 * cue: show CUE track numbers
 * allow port specification in "bind_to_address" settings

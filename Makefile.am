@@ -902,6 +902,12 @@ if ENABLE_DESPOTIFY
 libplaylist_plugins_a_SOURCES += src/playlist/despotify_playlist_plugin.c
 endif
 
+if ENABLE_SOUNDCLOUD
+libplaylist_plugins_a_SOURCES += \
+	src/playlist/soundcloud_playlist_plugin.h \
+	src/playlist/soundcloud_playlist_plugin.c
+PLAYLIST_LIBS += -lyajl
+endif
 
 #
 # Filter plugins
