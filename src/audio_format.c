@@ -71,6 +71,12 @@ sample_format_to_string(enum sample_format format)
 
 	case SAMPLE_FORMAT_FLOAT:
 		return "f";
+
+	case SAMPLE_FORMAT_DSD:
+		return "dsd";
+
+	case SAMPLE_FORMAT_DSD_LSBFIRST:
+		return "dsdl";
 	}
 
 	/* unreachable */

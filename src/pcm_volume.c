@@ -159,6 +159,8 @@ pcm_volume(void *buffer, size_t length,
 	switch (format) {
 	case SAMPLE_FORMAT_UNDEFINED:
 	case SAMPLE_FORMAT_S24:
+	case SAMPLE_FORMAT_DSD:
+	case SAMPLE_FORMAT_DSD_LSBFIRST:
 		/* not implemented */
 		return false;
 
