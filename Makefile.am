@@ -391,6 +391,8 @@ endif
 libpcm_a_SOURCES = \
 	src/pcm_buffer.c src/pcm_buffer.h \
 	src/pcm_convert.c src/pcm_convert.h \
+	src/dsd2pcm/dsd2pcm.c src/dsd2pcm/dsd2pcm.h \
+	src/pcm_dsd.c src/pcm_dsd.h \
 	src/pcm_volume.c src/pcm_volume.h \
 	src/pcm_mix.c src/pcm_mix.h \
 	src/pcm_byteswap.c src/pcm_byteswap.h \
@@ -1150,6 +1152,7 @@ test_run_normalize_LDADD = \
 	$(GLIB_LIBS)
 
 test_run_convert_SOURCES = test/run_convert.c \
+	src/dsd2pcm/dsd2pcm.c \
 	src/fifo_buffer.c \
 	src/audio_format.c \
 	src/audio_check.c \

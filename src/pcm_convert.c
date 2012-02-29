@@ -38,6 +38,7 @@ void pcm_convert_init(struct pcm_convert_state *state)
 {
 	memset(state, 0, sizeof(*state));
 
+	pcm_dsd_init(&state->dsd);
 	pcm_resample_init(&state->resample);
 	pcm_dither_24_init(&state->dither);
 
@@ -49,6 +50,7 @@ void pcm_convert_init(struct pcm_convert_state *state)
 
 void pcm_convert_deinit(struct pcm_convert_state *state)
 {
+	pcm_dsd_deinit(&state->dsd);
 	pcm_resample_deinit(&state->resample);
 
 	pcm_buffer_deinit(&state->format_buffer);
@@ -60,6 +62,7 @@ void pcm_convert_deinit(struct pcm_convert_state *state)
 void
 pcm_convert_reset(struct pcm_convert_state *state)
 {
+	pcm_dsd_reset(&state->dsd);
 	pcm_resample_reset(&state->resample);
 }
 
@@ -401,6 +404,30 @@ pcm_convert(struct pcm_convert_state *state,
 				    sample_format_to_string(src_format->format));
 			return NULL;
 		}
+	}
+
+	struct audio_format float_format;
+	if (src_format->format == SAMPLE_FORMAT_DSD ||
+	    src_format->format == SAMPLE_FORMAT_DSD_LSBFIRST) {
+		size_t f_size;
+		const bool lsbfirst =
+			src_format->format == SAMPLE_FORMAT_DSD_LSBFIRST;
+		const float *f = pcm_dsd_to_float(&state->dsd,
+						  src_format->channels,
+						  lsbfirst, src, src_size,
+						  &f_size);
+		if (f == NULL) {
+			g_set_error_literal(error_r, pcm_convert_quark(), 0,
+					    "DSD to PCM conversion failed");
+			return NULL;
+		}
+
+		float_format = *src_format;
+		float_format.format = SAMPLE_FORMAT_FLOAT;
+
+		src_format = &float_format;
+		src = f;
+		src_size = f_size;
 	}
 
 	switch (dest_format->format) {

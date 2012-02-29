@@ -20,6 +20,7 @@
 #ifndef PCM_CONVERT_H
 #define PCM_CONVERT_H
 
+#include "pcm_dsd.h"
 #include "pcm_resample.h"
 #include "pcm_dither.h"
 #include "pcm_buffer.h"
@@ -32,6 +33,8 @@ struct audio_format;
  * conversions.
  */
 struct pcm_convert_state {
+	struct pcm_dsd dsd;
+
 	struct pcm_resample_state resample;
 
 	struct pcm_dither dither;
