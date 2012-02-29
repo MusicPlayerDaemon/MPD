@@ -104,6 +104,13 @@ pcm_resample_lsr_deinit(struct pcm_resample_state *state)
 	pcm_buffer_deinit(&state->buffer);
 }
 
+void
+pcm_resample_lsr_reset(struct pcm_resample_state *state)
+{
+	if (state->state != NULL)
+		src_reset(state->state);
+}
+
 static bool
 pcm_resample_set(struct pcm_resample_state *state,
 		 unsigned channels, unsigned src_rate, unsigned dest_rate,

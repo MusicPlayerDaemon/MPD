@@ -69,6 +69,12 @@ void pcm_resample_init(struct pcm_resample_state *state);
 void pcm_resample_deinit(struct pcm_resample_state *state);
 
 /**
+ * @see pcm_convert_reset()
+ */
+void
+pcm_resample_reset(struct pcm_resample_state *state);
+
+/**
  * Resamples 32 bit float data.
  *
  * @param state an initialized pcm_resample_state object

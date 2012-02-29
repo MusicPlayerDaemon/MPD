@@ -41,6 +41,9 @@ pcm_resample_lsr_init(struct pcm_resample_state *state);
 void
 pcm_resample_lsr_deinit(struct pcm_resample_state *state);
 
+void
+pcm_resample_lsr_reset(struct pcm_resample_state *state);
+
 const float *
 pcm_resample_lsr_float(struct pcm_resample_state *state,
 		       unsigned channels,

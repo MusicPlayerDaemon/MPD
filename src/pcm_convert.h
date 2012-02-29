@@ -67,6 +67,13 @@ void pcm_convert_init(struct pcm_convert_state *state);
 void pcm_convert_deinit(struct pcm_convert_state *state);
 
 /**
+ * Reset the pcm_convert_state object.  Use this at the boundary
+ * between two distinct songs and each time the format changes.
+ */
+void
+pcm_convert_reset(struct pcm_convert_state *state);
+
+/**
  * Converts PCM data between two audio formats.
  *
  * @param state an initialized pcm_convert_state object

@@ -57,6 +57,12 @@ void pcm_convert_deinit(struct pcm_convert_state *state)
 	pcm_buffer_deinit(&state->byteswap_buffer);
 }
 
+void
+pcm_convert_reset(struct pcm_convert_state *state)
+{
+	pcm_resample_reset(&state->resample);
+}
+
 static const void *
 pcm_convert_channels(struct pcm_buffer *buffer, enum sample_format format,
 		     uint8_t dest_channels,

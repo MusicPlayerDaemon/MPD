@@ -76,6 +76,16 @@ void pcm_resample_deinit(struct pcm_resample_state *state)
 		pcm_resample_fallback_deinit(state);
 }
 
+void
+pcm_resample_reset(struct pcm_resample_state *state)
+{
+#ifdef HAVE_LIBSAMPLERATE
+	pcm_resample_lsr_reset(state);
+#else
+	(void)state;
+#endif
+}
+
 const float *
 pcm_resample_float(struct pcm_resample_state *state,
 		   unsigned channels,
