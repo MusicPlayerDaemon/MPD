@@ -43,15 +43,13 @@ static struct {
 static bool
 soundcloud_init(const struct config_param *param)
 {
-	const char *apikey = config_get_block_string(param, "apikey", NULL);
-
-	if (apikey == NULL) {
+	soundcloud_config.apikey =
+		config_dup_block_string(param, "apikey", NULL);
+	if (soundcloud_config.apikey == NULL) {
 		g_debug("disabling the soundcloud playlist plugin "
 			"because API key is not set");
 		return false;
 	}
-
-	soundcloud_config.apikey = g_strdup(apikey);
 
 	return true;
 }
