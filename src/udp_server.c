@@ -97,6 +97,9 @@ udp_server_new(unsigned port,
 			.s_addr = htonl(INADDR_ANY),
 		},
 		.sin_port = htons(port),
+#if defined(__linux__) && !GCC_CHECK_VERSION(4, 2)
+		.sin_zero = { 0 },
+#endif
 	};
 
 	if (bind(fd, (const struct sockaddr *)&address, sizeof(address)) < 0) {
