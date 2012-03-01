@@ -28,7 +28,6 @@
 #include "dsdiff_decoder_plugin.h"
 #include "decoder_api.h"
 #include "audio_check.h"
-#include "dsd2pcm/dsd2pcm.h"
 
 #include <unistd.h>
 #include <stdio.h> /* for SEEK_SET, SEEK_CUR */
@@ -55,12 +54,14 @@ struct dsdiff_metadata {
 	unsigned sample_rate, channels;
 };
 
-static bool lsbitfirst;
+static enum sample_format dsd_sample_format;
 
 static bool
 dsdiff_init(const struct config_param *param)
 {
-	lsbitfirst = config_get_block_bool(param, "lsbitfirst", false);
+	dsd_sample_format = config_get_block_bool(param, "lsbitfirst", false)
+		? SAMPLE_FORMAT_DSD_LSBFIRST
+		: SAMPLE_FORMAT_DSD;
 	return true;
 }
 
@@ -306,7 +307,7 @@ dsdiff_read_metadata(struct decoder *decoder, struct input_stream *is,
 static bool
 dsdiff_decode_chunk(struct decoder *decoder, struct input_stream *is,
 		    unsigned channels,
-		    dsd2pcm_ctx **dsd2pcm, uint64_t chunk_size)
+		    uint64_t chunk_size)
 {
 	uint8_t buffer[8192];
 	const size_t sample_size = sizeof(buffer[0]);
@@ -314,18 +315,15 @@ dsdiff_decode_chunk(struct decoder *decoder, struct input_stream *is,
 	const unsigned buffer_frames = sizeof(buffer) / frame_size;
 	const unsigned buffer_samples = buffer_frames * frame_size;
 	const size_t buffer_size = buffer_samples * sample_size;
-	float f_buffer[G_N_ELEMENTS(buffer)];
 
 	while (chunk_size > 0) {
 		/* see how much aligned data from the remaining chunk
 		   fits into the local buffer */
 		unsigned now_frames = buffer_frames;
 		size_t now_size = buffer_size;
-		unsigned now_samples = buffer_samples;
 		if (chunk_size < (uint64_t)now_size) {
 			now_frames = (unsigned)chunk_size / frame_size;
 			now_size = now_frames * frame_size;
-			now_samples = now_frames * channels;
 		}
 
 		size_t nbytes = decoder_read(decoder, is, buffer, now_size);
@@ -334,20 +332,8 @@ dsdiff_decode_chunk(struct decoder *decoder, struct input_stream *is,
 
 		chunk_size -= nbytes;
 
-		/* invoke the dsp2pcm library, once for each
-		   channel */
-
-		for (unsigned c = 0; c < channels; ++c)
-			dsd2pcm_translate(dsd2pcm[c], now_frames,
-					  buffer + c, channels,
-					  lsbitfirst, f_buffer + c, channels);
-
-		/* convert to integer and submit to the decoder API */
-
 		enum decoder_command cmd =
-			decoder_data(decoder, is, f_buffer,
-				     now_samples * sizeof(f_buffer[0]),
-				     0);
+			decoder_data(decoder, is, buffer, nbytes, 0);
 		switch (cmd) {
 		case DECODE_COMMAND_NONE:
 			break;
@@ -381,23 +367,11 @@ dsdiff_stream_decode(struct decoder *decoder, struct input_stream *is)
 	GError *error = NULL;
 	struct audio_format audio_format;
 	if (!audio_format_init_checked(&audio_format, metadata.sample_rate / 8,
-				       SAMPLE_FORMAT_FLOAT,
+				       dsd_sample_format,
 				       metadata.channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
 		return;
-	}
-
-	/* initialize the dsd2pcm library */
-
-	dsd2pcm_ctx *dsd2pcm[MAX_CHANNELS];
-	for (unsigned i = 0; i < metadata.channels; ++i) {
-		dsd2pcm[i] = dsd2pcm_init();
-		if (dsd2pcm[i] == NULL) {
-			for (unsigned j = 0; j < i; ++j)
-				dsd2pcm_destroy(dsd2pcm[j]);
-			return;
-		}
 	}
 
 	/* success: file was recognized */
@@ -413,7 +387,7 @@ dsdiff_stream_decode(struct decoder *decoder, struct input_stream *is)
 		if (dsdiff_id_equals(&chunk_header.id, "DSD ")) {
 			if (!dsdiff_decode_chunk(decoder, is,
 						 metadata.channels,
-						 dsd2pcm, chunk_size))
+						 chunk_size))
 				break;
 		} else {
 			/* ignore other chunks */
@@ -428,9 +402,6 @@ dsdiff_stream_decode(struct decoder *decoder, struct input_stream *is)
 		if (!dsdiff_read_chunk_header(decoder, is, &chunk_header))
 			break;
 	}
-
-	for (unsigned i = 0; i < metadata.channels; ++i)
-		dsd2pcm_destroy(dsd2pcm[i]);
 }
 
 static bool
@@ -449,7 +420,7 @@ dsdiff_scan_stream(struct input_stream *is,
 
 	struct audio_format audio_format;
 	if (!audio_format_init_checked(&audio_format, metadata.sample_rate / 8,
-				       SAMPLE_FORMAT_S24_P32,
+				       dsd_sample_format,
 				       metadata.channels, NULL))
 		/* refuse to parse files which we cannot play anyway */
 		return false;
