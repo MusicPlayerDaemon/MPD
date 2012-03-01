@@ -274,8 +274,8 @@ AC_ARG_ENABLE(despotify,
 
 AC_ARG_ENABLE(soundcloud,
 	AS_HELP_STRING([--enable-soundcloud],
-		[enable support for soundcloud (default: disable)]),,
-	[enable_soundcloud=no])
+		[enable support for soundcloud.com]),,
+	[enable_soundcloud=auto])
 
 AC_ARG_ENABLE(lame-encoder,
 	AS_HELP_STRING([--enable-lame-encoder],
@@ -708,10 +708,17 @@ fi
 AM_CONDITIONAL(ENABLE_DESPOTIFY, test x$enable_despotify = xyes)
 
 dnl --------------------------------- Soundcloud ------------------------------
+if test x$enable_soundcloud != xno; then
+	AC_CHECK_LIB([yajl], [yajl_alloc],
+		[found_soundcloud=yes YAJL_LIBS=-lyajl],
+		[found_soundcloud=no])
+fi
+MPD_AUTO_RESULT([soundcloud], [soundcloud.com support], [libyajl not found])
 if test x$enable_soundcloud = xyes; then
 	AC_DEFINE(ENABLE_SOUNDCLOUD, 1, [Define when soundcloud is enabled])
 fi
 AM_CONDITIONAL(ENABLE_SOUNDCLOUD, test x$enable_soundcloud = xyes)
+AC_SUBST(YAJL_LIBS)
 
 dnl ---------------------------------- cdio ---------------------------------
 MPD_AUTO_PKG(cdio_paranoia, CDIO_PARANOIA, [libcdio_paranoia],

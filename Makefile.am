@@ -906,7 +906,7 @@ if ENABLE_SOUNDCLOUD
 libplaylist_plugins_a_SOURCES += \
 	src/playlist/soundcloud_playlist_plugin.h \
 	src/playlist/soundcloud_playlist_plugin.c
-PLAYLIST_LIBS += -lyajl
+PLAYLIST_LIBS += $(YAJL_LIBS)
 endif
 
 #
