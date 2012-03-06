@@ -59,12 +59,13 @@
 #include "replay_gain_config.h"
 #include "idle.h"
 #include "mapper.h"
+#include "song.h"
+#include "song_print.h"
 
 #ifdef ENABLE_SQLITE
 #include "sticker.h"
 #include "sticker_print.h"
 #include "song_sticker.h"
-#include "song_print.h"
 #endif
 
 #include <assert.h>
@@ -663,6 +664,26 @@ handle_lsinfo(struct client *client, int argc, char *argv[])
 	else
 		/* default is root directory */
 		uri = "";
+
+	if (strncmp(uri, "file:///", 8) == 0) {
+		/* print information about an arbitrary local file */
+		const char *path = uri + 7;
+
+		GError *error = NULL;
+		if (!client_allow_file(client, path, &error))
+			return print_error(client, error);
+
+		struct song *song = song_file_load(path, NULL);
+		if (song == NULL) {
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "No such file");
+			return COMMAND_RETURN_ERROR;
+		}
+
+		song_print_info(client, song);
+		song_free(song);
+		return COMMAND_RETURN_OK;
+	}
 
 	struct db_selection selection;
 	db_selection_init(&selection, uri, false);

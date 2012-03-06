@@ -1556,6 +1556,11 @@ OK
               the list of stored playlists.  This behavior is
               deprecated; use "listplaylists" instead.
             </para>
+            <para>
+              Clients that are connected via UNIX domain socket may
+              use this command to read the tags of an arbitrary local
+              file (URI beginning with "file:///").
+            </para>
           </listitem>
         </varlistentry>
         <varlistentry id="command_search">
