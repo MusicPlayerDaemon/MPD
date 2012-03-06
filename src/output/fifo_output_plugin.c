@@ -83,7 +83,7 @@ static void fifo_delete(struct fifo_data *fd)
 
 	if (unlink(fd->path) < 0) {
 		g_warning("Could not remove FIFO \"%s\": %s",
-			  fd->path, strerror(errno));
+			  fd->path, g_strerror(errno));
 		return;
 	}
 
@@ -115,7 +115,7 @@ fifo_make(struct fifo_data *fd, GError **error)
 	if (mkfifo(fd->path, 0666) < 0) {
 		g_set_error(error, fifo_output_quark(), errno,
 			    "Couldn't create FIFO \"%s\": %s",
-			    fd->path, strerror(errno));
+			    fd->path, g_strerror(errno));
 		return false;
 	}
 
@@ -137,7 +137,7 @@ fifo_check(struct fifo_data *fd, GError **error)
 
 		g_set_error(error, fifo_output_quark(), errno,
 			    "Failed to stat FIFO \"%s\": %s",
-			    fd->path, strerror(errno));
+			    fd->path, g_strerror(errno));
 		return false;
 	}
 
@@ -161,7 +161,7 @@ fifo_open(struct fifo_data *fd, GError **error)
 	if (fd->input < 0) {
 		g_set_error(error, fifo_output_quark(), errno,
 			    "Could not open FIFO \"%s\" for reading: %s",
-			    fd->path, strerror(errno));
+			    fd->path, g_strerror(errno));
 		fifo_close(fd);
 		return false;
 	}
@@ -170,7 +170,7 @@ fifo_open(struct fifo_data *fd, GError **error)
 	if (fd->output < 0) {
 		g_set_error(error, fifo_output_quark(), errno,
 			    "Could not open FIFO \"%s\" for writing: %s",
-			    fd->path, strerror(errno));
+			    fd->path, g_strerror(errno));
 		fifo_close(fd);
 		return false;
 	}
@@ -255,7 +255,7 @@ fifo_output_cancel(struct audio_output *ao)
 
 	if (bytes < 0 && errno != EAGAIN) {
 		g_warning("Flush of FIFO \"%s\" failed: %s",
-			  fd->path, strerror(errno));
+			  fd->path, g_strerror(errno));
 	}
 }
 

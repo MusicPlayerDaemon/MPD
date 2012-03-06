@@ -39,7 +39,7 @@ static void
 x_sigaction(int signum, const struct sigaction *act)
 {
 	if (sigaction(signum, act, NULL) < 0)
-		MPD_ERROR("sigaction() failed: %s", strerror(errno));
+		MPD_ERROR("sigaction() failed: %s", g_strerror(errno));
 }
 
 #endif

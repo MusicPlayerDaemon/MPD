@@ -350,7 +350,7 @@ config_read_file(const char *file, GError **error_r)
 	if (!(fp = fopen(file, "r"))) {
 		g_set_error(error_r, config_quark(), errno,
 			    "Failed to open %s: %s",
-			    file, strerror(errno));
+			    file, g_strerror(errno));
 		return false;
 	}
 

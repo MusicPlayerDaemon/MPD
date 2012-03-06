@@ -139,7 +139,7 @@ oss_output_test_default_device(void)
 			return true;
 		}
 		g_warning("Error opening OSS device \"%s\": %s\n",
-			  default_devices[i], strerror(errno));
+			  default_devices[i], g_strerror(errno));
 	}
 
 	return false;
@@ -184,7 +184,7 @@ oss_open_default(GError **error)
 			break;
 		case OSS_STAT_OTHER:
 			g_warning("Error accessing %s: %s\n",
-				  dev, strerror(err[i]));
+				  dev, g_strerror(err[i]));
 		}
 	}
 
@@ -578,7 +578,7 @@ oss_reopen(struct oss_data *od, GError **error_r)
 	if (od->fd < 0) {
 		g_set_error(error_r, oss_output_quark(), errno,
 			    "Error opening OSS device \"%s\": %s",
-			    od->device, strerror(errno));
+			    od->device, g_strerror(errno));
 		return false;
 	}
 
@@ -632,7 +632,7 @@ oss_output_open(struct audio_output *ao, struct audio_format *audio_format,
 	if (od->fd < 0) {
 		g_set_error(error, oss_output_quark(), errno,
 			    "Error opening OSS device \"%s\": %s",
-			    od->device, strerror(errno));
+			    od->device, g_strerror(errno));
 		return false;
 	}
 
@@ -683,7 +683,7 @@ oss_output_play(struct audio_output *ao, const void *chunk, size_t size,
 		if (ret < 0 && errno != EINTR) {
 			g_set_error(error, oss_output_quark(), errno,
 				    "Write error on %s: %s",
-				    od->device, strerror(errno));
+				    od->device, g_strerror(errno));
 			return 0;
 		}
 	}

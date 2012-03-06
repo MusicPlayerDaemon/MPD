@@ -74,7 +74,7 @@ ao_output_error(GError **error_r)
 		break;
 
 	default:
-		error = strerror(errno);
+		error = g_strerror(errno);
 	}
 
 	g_set_error(error_r, ao_output_quark(), errno,

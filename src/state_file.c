@@ -58,7 +58,7 @@ state_file_write(struct player_control *pc)
 	fp = fopen(state_file_path, "w");
 	if (G_UNLIKELY(!fp)) {
 		g_warning("failed to create %s: %s",
-			  state_file_path, strerror(errno));
+			  state_file_path, g_strerror(errno));
 		return;
 	}
 
@@ -86,7 +86,7 @@ state_file_read(struct player_control *pc)
 	fp = fopen(state_file_path, "r");
 	if (G_UNLIKELY(!fp)) {
 		g_warning("failed to open %s: %s",
-			  state_file_path, strerror(errno));
+			  state_file_path, g_strerror(errno));
 		return;
 	}
 

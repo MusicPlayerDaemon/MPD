@@ -183,7 +183,7 @@ int main(int argc, char **argv)
 
 		nbytes = write(1, dest, length);
 		if (nbytes < 0) {
-			g_printerr("Failed to write: %s\n", strerror(errno));
+			g_printerr("Failed to write: %s\n", g_strerror(errno));
 			filter_close(filter);
 			filter_free(filter);
 			return 1;

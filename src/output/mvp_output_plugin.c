@@ -128,7 +128,7 @@ mvp_output_test_default_device(void)
 	}
 
 	g_warning("Error opening PCM device \"/dev/adec_pcm\": %s\n",
-		  strerror(errno));
+		  g_strerror(errno));
 
 	return false;
 }
@@ -245,32 +245,32 @@ mvp_output_open(struct audio_output *ao, struct audio_format *audio_format,
 	if (md->fd < 0) {
 		g_set_error(error, mvp_output_quark(), errno,
 			    "Error opening /dev/adec_pcm: %s",
-			    strerror(errno));
+			    g_strerror(errno));
 		return false;
 	}
 	if (ioctl(md->fd, MVP_SET_AUD_SRC, 1) < 0) {
 		g_set_error(error, mvp_output_quark(), errno,
 			    "Error setting audio source: %s",
-			    strerror(errno));
+			    g_strerror(errno));
 		return false;
 	}
 	if (ioctl(md->fd, MVP_SET_AUD_STREAMTYPE, 0) < 0) {
 		g_set_error(error, mvp_output_quark(), errno,
 			    "Error setting audio streamtype: %s",
-			    strerror(errno));
+			    g_strerror(errno));
 		return false;
 	}
 	if (ioctl(md->fd, MVP_SET_AUD_FORMAT, &mix) < 0) {
 		g_set_error(error, mvp_output_quark(), errno,
 			    "Error setting audio format: %s",
-			    strerror(errno));
+			    g_strerror(errno));
 		return false;
 	}
 	ioctl(md->fd, MVP_SET_AUD_STC, &stc);
 	if (ioctl(md->fd, MVP_SET_AUD_BYPASS, 1) < 0) {
 		g_set_error(error, mvp_output_quark(), errno,
 			    "Error setting audio streamtype: %s",
-			    strerror(errno));
+			    g_strerror(errno));
 		return false;
 	}
 
@@ -326,7 +326,7 @@ mvp_output_play(struct audio_output *ao, const void *chunk, size_t size,
 				continue;
 
 			g_set_error(error, mvp_output_quark(), errno,
-				    "Failed to write: %s", strerror(errno));
+				    "Failed to write: %s", g_strerror(errno));
 			return 0;
 		}
 	}

@@ -551,7 +551,7 @@ tag_id3_scan(const char *path_fs,
 	stream = fopen(path_fs, "rb");
 	if (!stream) {
 		g_debug("tag_id3_load: Failed to open file: '%s', %s",
-			path_fs, strerror(errno));
+			path_fs, g_strerror(errno));
 		return false;
 	}
 

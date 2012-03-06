@@ -57,7 +57,7 @@ aiff_seek_id3(FILE *file)
 	ret = fstat(fileno(file), &st);
 	if (ret < 0) {
 		g_warning("Failed to stat file descriptor: %s",
-			  strerror(errno));
+			  g_strerror(errno));
 		return 0;
 	}
 
