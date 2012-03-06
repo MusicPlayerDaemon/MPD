@@ -53,6 +53,7 @@
 #include "client_idle.h"
 #include "client_internal.h"
 #include "client_subscribe.h"
+#include "client_file.h"
 #include "tag_print.h"
 #include "path.h"
 #include "replay_gain_config.h"
@@ -441,14 +442,16 @@ handle_add(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	enum playlist_result result;
 
 	if (strncmp(uri, "file:///", 8) == 0) {
-#ifdef WIN32
-		result = PLAYLIST_RESULT_DENIED;
-#else
+		const char *path = uri + 7;
+
+		GError *error = NULL;
+		if (!client_allow_file(client, path, &error))
+			return print_error(client, error);
+
 		result = playlist_append_file(&g_playlist,
 					      client->player_control,
-					      uri + 7, client_get_uid(client),
+					      path,
 					      NULL);
-#endif
 		return print_playlist_result(client, result);
 	}
 
@@ -479,15 +482,16 @@ handle_addid(struct client *client, int argc, char *argv[])
 	enum playlist_result result;
 
 	if (strncmp(uri, "file:///", 8) == 0) {
-#ifdef WIN32
-		result = PLAYLIST_RESULT_DENIED;
-#else
+		const char *path = uri + 7;
+
+		GError *error = NULL;
+		if (!client_allow_file(client, path, &error))
+			return print_error(client, error);
+
 		result = playlist_append_file(&g_playlist,
 					      client->player_control,
-					      uri + 7,
-					      client_get_uid(client),
+					      path,
 					      &added_id);
-#endif
 	} else {
 		if (uri_has_scheme(uri) && !uri_supported_scheme(uri)) {
 			command_error(client, ACK_ERROR_NO_EXIST,

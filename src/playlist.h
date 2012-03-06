@@ -100,15 +100,14 @@ playlist_get_queue(const struct playlist *playlist)
 void
 playlist_clear(struct playlist *playlist, struct player_control *pc);
 
-#ifndef WIN32
 /**
- * Appends a local file (outside the music database) to the playlist,
- * but only if the file's owner is equal to the specified uid.
+ * Appends a local file (outside the music database) to the playlist.
+ *
+ * Note: the caller is responsible for checking permissions.
  */
 enum playlist_result
 playlist_append_file(struct playlist *playlist, struct player_control *pc,
-		     const char *path, int uid, unsigned *added_id);
-#endif
+		     const char *path_fs, unsigned *added_id);
 
 enum playlist_result
 playlist_append_uri(struct playlist *playlist, struct player_control *pc,

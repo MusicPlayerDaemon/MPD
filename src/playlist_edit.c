@@ -31,9 +31,6 @@
 #include "song.h"
 #include "idle.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <stdlib.h>
 
 static void playlist_increment_version(struct playlist *playlist)
@@ -63,34 +60,16 @@ playlist_clear(struct playlist *playlist, struct player_control *pc)
 	playlist_increment_version(playlist);
 }
 
-#ifndef WIN32
 enum playlist_result
 playlist_append_file(struct playlist *playlist, struct player_control *pc,
-		     const char *path, int uid, unsigned *added_id)
+		     const char *path_fs, unsigned *added_id)
 {
-	int ret;
-	struct stat st;
-	struct song *song;
-
-	if (uid <= 0)
-		/* unauthenticated client */
-		return PLAYLIST_RESULT_DENIED;
-
-	ret = stat(path, &st);
-	if (ret < 0)
-		return PLAYLIST_RESULT_ERRNO;
-
-	if (st.st_uid != (uid_t)uid && (st.st_mode & 0444) != 0444)
-		/* client is not owner */
-		return PLAYLIST_RESULT_DENIED;
-
-	song = song_file_load(path, NULL);
+	struct song *song = song_file_load(path_fs, NULL);
 	if (song == NULL)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
 	return playlist_append_song(playlist, pc, song, added_id);
 }
-#endif
 
 enum playlist_result
 playlist_append_song(struct playlist *playlist, struct player_control *pc,

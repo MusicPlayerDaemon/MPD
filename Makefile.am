@@ -286,6 +286,7 @@ src_mpd_SOURCES = \
 	src/client_message.c \
 	src/client_subscribe.h \
 	src/client_subscribe.c \
+	src/client_file.c src/client_file.h \
 	src/tcp_connect.c src/tcp_connect.h \
 	src/tcp_socket.c src/tcp_socket.h \
 	src/udp_server.c src/udp_server.h \
