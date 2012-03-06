@@ -121,7 +121,7 @@ print_playlist_result(struct client *client,
 		return COMMAND_RETURN_ERROR;
 
 	case PLAYLIST_RESULT_DENIED:
-		command_error(client, ACK_ERROR_NO_EXIST, "Access denied");
+		command_error(client, ACK_ERROR_PERMISSION, "Access denied");
 		return COMMAND_RETURN_ERROR;
 
 	case PLAYLIST_RESULT_NO_SUCH_SONG:
