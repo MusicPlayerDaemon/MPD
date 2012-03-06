@@ -39,6 +39,11 @@ client_allow_file(const struct client *client, const char *path_fs,
 	return false;
 #else
 	const int uid = client_get_uid(client);
+	if (uid >= 0 && (uid_t)uid == geteuid())
+		/* always allow access if user runs his own MPD
+		   instance */
+		return true;
+
 	if (uid <= 0) {
 		/* unauthenticated client */
 		g_set_error(error_r, ack_quark(), ACK_ERROR_PERMISSION,
