@@ -183,6 +183,10 @@ print_error(struct client *client, GError *error)
 		enum playlist_result result = error->code;
 		g_error_free(error);
 		return print_playlist_result(client, result);
+	} else if (error->domain == ack_quark()) {
+		command_error(client, error->code, "%s", error->message);
+		g_error_free(error);
+		return COMMAND_RETURN_ERROR;
 	} else if (error->domain == db_quark()) {
 		switch ((enum db_error)error->code) {
 		case DB_DISABLED:

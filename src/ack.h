@@ -20,6 +20,8 @@
 #ifndef MPD_ACK_H
 #define MPD_ACK_H
 
+#include <glib.h>
+
 enum ack {
 	ACK_ERROR_NOT_LIST = 1,
 	ACK_ERROR_ARG = 2,
@@ -35,5 +37,15 @@ enum ack {
 	ACK_ERROR_PLAYER_SYNC = 55,
 	ACK_ERROR_EXIST = 56,
 };
+
+/**
+ * Quark for GError.domain; the code is an enum #ack.
+ */
+G_GNUC_CONST
+static inline GQuark
+ack_quark(void)
+{
+	return g_quark_from_static_string("ack");
+}
 
 #endif
