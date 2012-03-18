@@ -82,6 +82,7 @@ pcm_convert_channels(struct pcm_buffer *buffer, enum sample_format format,
 	case SAMPLE_FORMAT_FLOAT:
 	case SAMPLE_FORMAT_DSD:
 	case SAMPLE_FORMAT_DSD_LSBFIRST:
+	case SAMPLE_FORMAT_DSD_OVER_USB:
 		g_set_error(error_r, pcm_convert_quark(), 0,
 			    "Channel conversion not implemented for format '%s'",
 			    sample_format_to_string(format));

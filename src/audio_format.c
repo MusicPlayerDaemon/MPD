@@ -77,6 +77,9 @@ sample_format_to_string(enum sample_format format)
 
 	case SAMPLE_FORMAT_DSD_LSBFIRST:
 		return "dsdl";
+
+	case SAMPLE_FORMAT_DSD_OVER_USB:
+		return "dsdusb";
 	}
 
 	/* unreachable */

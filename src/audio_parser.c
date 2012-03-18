@@ -87,6 +87,12 @@ parse_sample_format(const char *src, bool mask,
 		return true;
 	}
 
+	if (memcmp(src, "dsdusb", 6) == 0) {
+		*sample_format_r = SAMPLE_FORMAT_DSD_OVER_USB;
+		*endptr_r = src + 6;
+		return true;
+	}
+
 	if (memcmp(src, "dsd", 3) == 0) {
 		if (src[3] == 'l') {
 			*sample_format_r = SAMPLE_FORMAT_DSD_LSBFIRST;

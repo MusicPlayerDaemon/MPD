@@ -196,6 +196,7 @@ get_bitformat(enum sample_format sample_format)
 	case SAMPLE_FORMAT_UNDEFINED:
 	case SAMPLE_FORMAT_DSD:
 	case SAMPLE_FORMAT_DSD_LSBFIRST:
+	case SAMPLE_FORMAT_DSD_OVER_USB:
 		return SND_PCM_FORMAT_UNKNOWN;
 
 	case SAMPLE_FORMAT_S8:
