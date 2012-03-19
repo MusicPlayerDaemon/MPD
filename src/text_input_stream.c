@@ -24,6 +24,7 @@
 
 #include <glib.h>
 
+#include <assert.h>
 #include <string.h>
 
 struct text_input_stream {
@@ -67,7 +68,12 @@ text_input_stream_read(struct text_input_stream *tis)
 
 	do {
 		dest = fifo_buffer_write(tis->buffer, &length);
-		if (dest != NULL) {
+		if (dest != NULL && length >= 2) {
+			/* reserve one byte for the null terminator if
+			   the last line is not terminated by a
+			   newline character */
+			--length;
+
 			nbytes = input_stream_lock_read(tis->is, dest, length,
 							&error);
 			if (nbytes > 0)
@@ -77,13 +83,22 @@ text_input_stream_read(struct text_input_stream *tis)
 				g_error_free(error);
 				return NULL;
 			}
-		}
+		} else
+			nbytes = 0;
 
 		src = fifo_buffer_read(tis->buffer, &length);
 		if (src == NULL)
 			return NULL;
 
 		p = memchr(src, '\n', length);
+		if (p == NULL && nbytes == 0) {
+			/* end of file (or line too long): terminate
+			   the current line */
+			dest = fifo_buffer_write(tis->buffer, &nbytes);
+			assert(dest != NULL);
+			*(char *)dest = '\n';
+			fifo_buffer_append(tis->buffer, 1);
+		}
 	} while (p == NULL);
 
 	length = p - src + 1;
