@@ -27,6 +27,11 @@
 
 #include <glib.h>
 
+#ifdef __clang__
+/* allow typeof() */
+#pragma GCC diagnostic ignored "-Wlanguage-extension-token"
+#endif
+
 /**
  * container_of - cast a member of a structure out to the containing structure
  * @ptr:	the pointer to the member.
