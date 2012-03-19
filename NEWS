@@ -3,6 +3,7 @@ ver 0.16.8 (2012/??/??)
 * decoder:
   - vorbis (and others): fix seeking at startup
   - ffmpeg: read the "year" tag
+* fix endless loop in text file reader
 
 
 ver 0.16.7 (2012/02/04)
