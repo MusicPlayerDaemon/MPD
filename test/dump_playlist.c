@@ -95,7 +95,7 @@ decoder_data(G_GNUC_UNUSED struct decoder *decoder,
 	     const void *data, size_t datalen,
 	     G_GNUC_UNUSED uint16_t kbit_rate)
 {
-	write(1, data, datalen);
+	G_GNUC_UNUSED ssize_t nbytes = write(1, data, datalen);
 	return DECODE_COMMAND_NONE;
 }
 

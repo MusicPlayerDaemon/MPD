@@ -65,6 +65,6 @@ int main(int argc, char **argv)
 			return 2;
 		}
 
-		write(1, buffer, nbytes);
+		G_GNUC_UNUSED ssize_t ignored = write(1, buffer, nbytes);
 	}
 }

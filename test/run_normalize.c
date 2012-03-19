@@ -65,7 +65,8 @@ int main(int argc, char **argv)
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
 		Compressor_Process_int16(compressor,
 					 (int16_t *)buffer, nbytes / 2);
-		write(1, buffer, nbytes);
+
+		G_GNUC_UNUSED ssize_t ignored = write(1, buffer, nbytes);
 	}
 
 	Compressor_delete(compressor);
