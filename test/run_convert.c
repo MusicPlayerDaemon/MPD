@@ -115,7 +115,7 @@ int main(int argc, char **argv)
 			return 2;
 		}
 
-		write(1, output, length);
+		G_GNUC_UNUSED ssize_t ignored = write(1, output, length);
 	}
 
 	pcm_convert_deinit(&state);
