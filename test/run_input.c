@@ -53,7 +53,7 @@ dump_input_stream(struct input_stream *is)
 	size_t num_read;
 	ssize_t num_written;
 
-	g_mutex_lock(is->mutex);
+	input_stream_lock(is);
 
 	/* wait until the stream becomes ready */
 
@@ -62,7 +62,7 @@ dump_input_stream(struct input_stream *is)
 	if (!input_stream_check(is, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
-		g_mutex_unlock(is->mutex);
+		input_stream_unlock(is);
 		return EXIT_FAILURE;
 	}
 
@@ -100,11 +100,11 @@ dump_input_stream(struct input_stream *is)
 	if (!input_stream_check(is, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
-		g_mutex_unlock(is->mutex);
+		input_stream_unlock(is);
 		return EXIT_FAILURE;
 	}
 
-	g_mutex_unlock(is->mutex);
+	input_stream_unlock(is);
 
 	return 0;
 }
