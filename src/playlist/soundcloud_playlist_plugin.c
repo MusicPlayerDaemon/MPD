@@ -110,7 +110,12 @@ struct parse_data {
 	GSList* songs;
 };
 
-static int handle_integer(void *ctx, long intval)
+static int handle_integer(void *ctx,
+			  long
+#ifndef HAVE_YAJL1
+			  long
+#endif
+			  intval)
 {
 	struct parse_data *data = (struct parse_data *) ctx;
 
@@ -269,13 +274,20 @@ soundcloud_parse_json(const char *url, yajl_handle hand, GMutex* mutex, GCond* c
 			}
 		}
 
-		if (done)
+		if (done) {
+#ifdef HAVE_YAJL1
 			stat = yajl_parse_complete(hand);
-		else
+#else
+			stat = yajl_complete_parse(hand);
+#endif
+		} else
 			stat = yajl_parse(hand, ubuffer, nbytes);
 
-		if (stat != yajl_status_ok &&
-			stat != yajl_status_insufficient_data)
+		if (stat != yajl_status_ok
+#ifdef HAVE_YAJL1
+		    && stat != yajl_status_insufficient_data
+#endif
+		    )
 		{
 			unsigned char *str = yajl_get_error(hand, 1, ubuffer, nbytes);
 			g_warning("%s", str);
@@ -356,7 +368,11 @@ soundcloud_open_uri(const char *uri, GMutex *mutex, GCond *cond)
 	data.songs = NULL;
 	data.title = NULL;
 	data.stream_url = NULL;
+#ifdef HAVE_YAJL1
 	hand = yajl_alloc(&parse_callbacks, NULL, NULL, (void *) &data);
+#else
+	hand = yajl_alloc(&parse_callbacks, NULL, (void *) &data);
+#endif
 
 	int ret = soundcloud_parse_json(u, hand, mutex, cond);
 

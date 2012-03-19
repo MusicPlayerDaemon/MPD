@@ -889,6 +889,7 @@ libplaylist_plugins_a_SOURCES = \
 	src/playlist/embcue_playlist_plugin.h \
 	src/playlist_list.c
 libplaylist_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(YAJL_CFLAGS) \
 	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS))
 
 PLAYLIST_LIBS = \

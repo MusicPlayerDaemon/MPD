@@ -709,9 +709,11 @@ AM_CONDITIONAL(ENABLE_DESPOTIFY, test x$enable_despotify = xyes)
 
 dnl --------------------------------- Soundcloud ------------------------------
 if test x$enable_soundcloud != xno; then
-	AC_CHECK_LIB([yajl], [yajl_alloc],
-		[found_soundcloud=yes YAJL_LIBS=-lyajl],
-		[found_soundcloud=no])
+	PKG_CHECK_MODULES([YAJL], [yajl >= 2.0],
+		[found_soundcloud=yes],
+		AC_CHECK_LIB([yajl], [yajl_alloc],
+			[found_soundcloud=yes YAJL_CFLAGS=-DHAVE_YAJL1 YAJL_LIBS=-lyajl],
+			[found_soundcloud=no]))
 fi
 MPD_AUTO_RESULT([soundcloud], [soundcloud.com support], [libyajl not found])
 if test x$enable_soundcloud = xyes; then
