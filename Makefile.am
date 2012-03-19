@@ -977,6 +977,7 @@ noinst_PROGRAMS = \
 	test/run_resolver \
 	test/run_tcp_connect \
 	test/run_input \
+	test/dump_text_file \
 	test/dump_playlist \
 	test/run_decoder \
 	test/read_tags \
@@ -1019,6 +1020,18 @@ test_run_input_SOURCES = test/run_input.c \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/tag.c src/tag_pool.c src/tag_save.c \
+	src/fd_util.c
+
+test_dump_text_file_LDADD = \
+	$(INPUT_LIBS) \
+	$(ARCHIVE_LIBS) \
+	$(GLIB_LIBS)
+test_dump_text_file_SOURCES = test/dump_text_file.c \
+	test/stdbin.h \
+	src/io_thread.c src/io_thread.h \
+	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
+	src/tag.c src/tag_pool.c \
+	src/text_input_stream.c src/fifo_buffer.c \
 	src/fd_util.c
 
 test_dump_playlist_LDADD = \
@@ -1116,6 +1129,8 @@ if ENABLE_DESPOTIFY
 test_read_tags_SOURCES += \
 	src/despotify_utils.c
 test_run_input_SOURCES += \
+	src/despotify_utils.c
+test_dump_text_file_SOURCES += \
 	src/despotify_utils.c
 test_dump_playlist_SOURCES += \
 	src/despotify_utils.c
