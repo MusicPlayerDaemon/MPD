@@ -22,6 +22,7 @@
 #include "pcm_channels.h"
 #include "pcm_format.h"
 #include "pcm_pack.h"
+#include "pcm_dsd_usb.h"
 #include "audio_format.h"
 #include "glib_compat.h"
 
@@ -325,6 +326,40 @@ pcm_convert(struct pcm_convert_state *state,
 	    size_t *dest_size_r,
 	    GError **error_r)
 {
+	struct audio_format usb_format;
+
+	if (src_format->format == SAMPLE_FORMAT_DSD &&
+	    dest_format->format == SAMPLE_FORMAT_DSD_OVER_USB) {
+		size_t u_size;
+		const uint32_t *u = pcm_dsd_to_usb(&state->dsd.buffer,
+						   src_format->channels,
+						   src, src_size,
+						   &u_size);
+		if (u == NULL) {
+			g_set_error_literal(error_r, pcm_convert_quark(), 0,
+					    "DSD to USB conversion failed");
+			return NULL;
+		}
+
+		usb_format = *src_format;
+		usb_format.format = SAMPLE_FORMAT_DSD_OVER_USB;
+
+		/* each DSD-over-USB sample contains 2 DSD bytes (16
+		   DSD bits), which means the sample rate must be
+		   halved; this is not the real 1 bit sample rate, but
+		   MPD's point of view */
+		usb_format.sample_rate = usb_format.sample_rate / 2;
+
+		if (audio_format_equals(&usb_format, dest_format)) {
+			*dest_size_r = u_size;
+			return u;
+		}
+
+		src_format = &usb_format;
+		src = u;
+		src_size = u_size;
+	}
+
 	struct audio_format float_format;
 	if (src_format->format == SAMPLE_FORMAT_DSD) {
 		size_t f_size;

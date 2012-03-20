@@ -403,6 +403,7 @@ libpcm_a_SOURCES = \
 	src/pcm_convert.c src/pcm_convert.h \
 	src/dsd2pcm/dsd2pcm.c src/dsd2pcm/dsd2pcm.h \
 	src/pcm_dsd.c src/pcm_dsd.h \
+	src/pcm_dsd_usb.c src/pcm_dsd_usb.h \
 	src/pcm_volume.c src/pcm_volume.h \
 	src/pcm_mix.c src/pcm_mix.h \
 	src/pcm_channels.c src/pcm_channels.h \
