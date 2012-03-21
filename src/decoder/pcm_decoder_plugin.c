@@ -20,6 +20,7 @@
 #include "config.h"
 #include "decoder/pcm_decoder_plugin.h"
 #include "decoder_api.h"
+#include "util/byte_reverse.h"
 
 #include <glib.h>
 #include <unistd.h>
@@ -31,35 +32,25 @@
 static void
 pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 {
-	static const struct audio_format host_audio_format = {
+	static const struct audio_format audio_format = {
 		.sample_rate = 44100,
 		.format = SAMPLE_FORMAT_S16,
 		.channels = 2,
 	};
 
-	static const struct audio_format reverse_audio_format = {
-		.sample_rate = 44100,
-		.format = SAMPLE_FORMAT_S16,
-		.channels = 2,
-		.reverse_endian = true,
-	};
-
-	const struct audio_format *audio_format =
-		(is->mime == NULL ||
-		 strcmp(is->mime, "audio/x-mpd-cdda-pcm-reverse") != 0)
-		? &host_audio_format
-		: &reverse_audio_format;
+	const bool reverse_endian = is->mime != NULL &&
+		strcmp(is->mime, "audio/x-mpd-cdda-pcm-reverse") == 0;
 
 	GError *error = NULL;
 	enum decoder_command cmd;
 
-	double time_to_size = audio_format_time_to_size(audio_format);
+	double time_to_size = audio_format_time_to_size(&audio_format);
 
 	float total_time = -1;
 	if (is->size >= 0)
 		total_time = is->size / time_to_size;
 
-	decoder_initialized(decoder, audio_format, is->seekable, total_time);
+	decoder_initialized(decoder, &audio_format, is->seekable, total_time);
 
 	do {
 		char buffer[4096];
@@ -69,6 +60,12 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 
 		if (nbytes == 0 && input_stream_lock_eof(is))
 			break;
+
+		if (reverse_endian)
+			/* make sure we deliver samples in host byte order */
+			reverse_bytes_16((uint16_t *)buffer,
+					 (uint16_t *)buffer,
+					 (uint16_t *)(buffer + nbytes));
 
 		cmd = nbytes > 0
 			? decoder_data(decoder, is,
