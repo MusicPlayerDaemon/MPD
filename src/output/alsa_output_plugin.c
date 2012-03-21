@@ -112,13 +112,6 @@ alsa_data_new(void)
 }
 
 static void
-alsa_data_free(struct alsa_data *ad)
-{
-	g_free(ad->device);
-	g_free(ad);
-}
-
-static void
 alsa_configure(struct alsa_data *ad, const struct config_param *param)
 {
 	ad->device = config_dup_block_string(param, "device", NULL);
@@ -166,7 +159,9 @@ alsa_finish(struct audio_output *ao)
 	struct alsa_data *ad = (struct alsa_data *)ao;
 
 	ao_base_finish(&ad->base);
-	alsa_data_free(ad);
+
+	g_free(ad->device);
+	g_free(ad);
 
 	/* free libasound's config cache */
 	snd_config_update_free_global();
