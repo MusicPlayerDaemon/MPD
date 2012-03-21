@@ -22,6 +22,7 @@
 #include "output_api.h"
 #include "mixer_list.h"
 #include "fd_util.h"
+#include "glib_compat.h"
 
 #include <glib.h>
 
@@ -495,6 +496,46 @@ sample_format_from_oss(int format)
 }
 
 /**
+ * Probe one sample format.
+ *
+ * @return the selected sample format or SAMPLE_FORMAT_UNDEFINED on
+ * error
+ */
+static enum oss_setup_result
+oss_probe_sample_format(int fd, enum sample_format sample_format,
+			enum sample_format *sample_format_r,
+#ifdef AFMT_S24_PACKED
+			struct pcm_export_state *export,
+#endif
+			GError **error_r)
+{
+	int oss_format = sample_format_to_oss(sample_format);
+	if (oss_format == AFMT_QUERY)
+		return UNSUPPORTED;
+
+	enum oss_setup_result result =
+		oss_try_ioctl_r(fd, SNDCTL_DSP_SAMPLESIZE,
+				&oss_format,
+				"Failed to set sample format", error_r);
+	if (result != SUCCESS)
+		return result;
+
+	sample_format = sample_format_from_oss(oss_format);
+	if (sample_format == SAMPLE_FORMAT_UNDEFINED)
+		return UNSUPPORTED;
+
+	*sample_format_r = sample_format;
+
+#ifdef AFMT_S24_PACKED
+	pcm_export_open(export, sample_format,
+			oss_format == AFMT_S24_PACKED &&
+			G_BYTE_ORDER != G_LITTLE_ENDIAN);
+#endif
+
+	return SUCCESS;
+}
+
+/**
  * Set up the sample format, and attempts to find alternatives if the
  * specified format is not supported.
  */
@@ -505,26 +546,17 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
 #endif
 			GError **error_r)
 {
-	const char *const msg = "Failed to set sample format";
-	int oss_format = sample_format_to_oss(audio_format->format);
-	enum oss_setup_result result = oss_format != AFMT_QUERY
-		? oss_try_ioctl_r(fd, SNDCTL_DSP_SAMPLESIZE,
-				  &oss_format, msg, error_r)
-		: UNSUPPORTED;
 	enum sample_format mpd_format;
+	enum oss_setup_result result =
+		oss_probe_sample_format(fd, audio_format->format,
+					&mpd_format,
+#ifdef AFMT_S24_PACKED
+					export,
+#endif
+					error_r);
 	switch (result) {
 	case SUCCESS:
-		mpd_format = sample_format_from_oss(oss_format);
-		if (mpd_format == SAMPLE_FORMAT_UNDEFINED)
-			break;
-
 		audio_format->format = mpd_format;
-
-#ifdef AFMT_S24_PACKED
-		pcm_export_open(export, mpd_format,
-				oss_format == AFMT_S24_PACKED &&
-				G_BYTE_ORDER != G_LITTLE_ENDIAN);
-#endif
 		return true;
 
 	case ERROR:
@@ -533,6 +565,9 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
 	case UNSUPPORTED:
 		break;
 	}
+
+	if (result != UNSUPPORTED)
+		return result == SUCCESS;
 
 	/* the requested sample format is not available - probe for
 	   other formats supported by MPD */
@@ -552,26 +587,15 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
 			/* don't try that again */
 			continue;
 
-		oss_format = sample_format_to_oss(mpd_format);
-		if (oss_format == AFMT_QUERY)
-			/* not supported by this OSS version */
-			continue;
-
-		result = oss_try_ioctl_r(fd, SNDCTL_DSP_SAMPLESIZE,
-					 &oss_format, msg, error_r);
+		result = oss_probe_sample_format(fd, mpd_format,
+						 &mpd_format,
+#ifdef AFMT_S24_PACKED
+						 export,
+#endif
+						 error_r);
 		switch (result) {
 		case SUCCESS:
-			mpd_format = sample_format_from_oss(oss_format);
-			if (mpd_format == SAMPLE_FORMAT_UNDEFINED)
-				break;
-
 			audio_format->format = mpd_format;
-
-#ifdef AFMT_S24_PACKED
-			pcm_export_open(export, mpd_format,
-					oss_format == AFMT_S24_PACKED &&
-					G_BYTE_ORDER != G_LITTLE_ENDIAN);
-#endif
 			return true;
 
 		case ERROR:
@@ -582,7 +606,8 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
 		}
 	}
 
-	g_set_error(error_r, oss_output_quark(), EINVAL, "%s", msg);
+	g_set_error_literal(error_r, oss_output_quark(), EINVAL,
+			    "Failed to set sample format");
 	return false;
 }
 
