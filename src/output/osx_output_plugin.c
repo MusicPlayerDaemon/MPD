@@ -22,6 +22,7 @@
 #include "output_api.h"
 
 #include <glib.h>
+#include <CoreAudio/AudioHardware.h>
 #include <AudioUnit/AudioUnit.h>
 #include <CoreServices/CoreServices.h>
 
