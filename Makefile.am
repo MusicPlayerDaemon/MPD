@@ -8,6 +8,7 @@ AM_CPPFLAGS += -DSYSTEM_CONFIG_FILE_LOCATION='"$(sysconfdir)/mpd.conf"'
 bin_PROGRAMS = src/mpd
 
 noinst_LIBRARIES = \
+	libutil.a \
 	libpcm.a \
 	libtag.a \
 	libinput.a \
@@ -34,6 +35,7 @@ src_mpd_LDADD = \
 	$(FILTER_LIBS) \
 	$(ENCODER_LIBS) \
 	$(MIXER_LIBS) \
+	libutil.a \
 	$(SYSTEMD_DAEMON_LIBS) \
 	$(GLIB_LIBS)
 
@@ -225,9 +227,6 @@ src_mpd_SOURCES = \
 	$(DECODER_SRC) \
 	$(OUTPUT_API_SRC) \
 	$(MIXER_API_SRC) \
-	src/util/list.h \
-	src/util/list_sort.c src/util/list_sort.h \
-	src/util/bit_reverse.c src/util/bit_reverse.h \
 	src/glib_socket.h \
 	src/notify.c \
 	src/audio_config.c src/audio_config.h \
@@ -387,6 +386,13 @@ src_mpd_SOURCES += \
 	src/sticker_print.c \
 	src/song_sticker.c
 endif
+
+# Generic utility library
+
+libutil_a_SOURCES = \
+	src/util/list.h \
+	src/util/list_sort.c src/util/list_sort.h \
+	src/util/bit_reverse.c src/util/bit_reverse.h
 
 # PCM library
 
@@ -1043,10 +1049,10 @@ test_dump_playlist_LDADD = \
 	$(ARCHIVE_LIBS) \
 	$(DECODER_LIBS) \
 	$(TAG_LIBS) \
+	libutil.a \
 	$(GLIB_LIBS)
 test_dump_playlist_SOURCES = test/dump_playlist.c \
 	$(DECODER_SRC) \
-	src/util/bit_reverse.c \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/uri.c \
@@ -1070,10 +1076,10 @@ test_run_decoder_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(TAG_LIBS) \
+	libutil.a \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.c \
 	test/stdbin.h \
-	src/util/bit_reverse.c \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
 	src/tag.c src/tag_pool.c src/tag_handler.c \
@@ -1094,9 +1100,9 @@ test_read_tags_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(TAG_LIBS) \
+	libutil.a \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.c \
-	src/util/bit_reverse.c \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
 	src/tag.c src/tag_pool.c src/tag_handler.c \
@@ -1178,7 +1184,6 @@ test_run_normalize_LDADD = \
 	$(GLIB_LIBS)
 
 test_run_convert_SOURCES = test/run_convert.c \
-	src/util/bit_reverse.c \
 	src/dsd2pcm/dsd2pcm.c \
 	src/fifo_buffer.c \
 	src/audio_format.c \
@@ -1186,6 +1191,7 @@ test_run_convert_SOURCES = test/run_convert.c \
 	src/audio_parser.c
 test_run_convert_LDADD = \
 	$(PCM_LIBS) \
+	libutil.a \
 	$(GLIB_LIBS)
 
 test_run_output_LDADD = $(MPD_LIBS) \
@@ -1277,10 +1283,10 @@ if HAVE_CXX
 noinst_PROGRAMS += src/dsd2pcm/dsd2pcm
 
 src_dsd2pcm_dsd2pcm_SOURCES = \
-	src/util/bit_reverse.c \
 	src/dsd2pcm/dsd2pcm.c src/dsd2pcm/dsd2pcm.h \
 	src/dsd2pcm/noiseshape.c src/dsd2pcm/noiseshape.h \
 	src/dsd2pcm/main.cpp
+src_dsd2pcm_dsd2pcm_LDADD = libutil.a
 endif
 
 endif
