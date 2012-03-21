@@ -1201,6 +1201,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	$(ENCODER_LIBS) \
 	libmixer_plugins.a \
 	$(FILTER_LIBS) \
+	libutil.a \
 	$(GLIB_LIBS)
 test_run_output_SOURCES = test/run_output.c \
 	test/stdbin.h \

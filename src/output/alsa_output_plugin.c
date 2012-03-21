@@ -21,6 +21,8 @@
 #include "alsa_output_plugin.h"
 #include "output_api.h"
 #include "mixer_list.h"
+#include "pcm_buffer.h"
+#include "pcm_byteswap.h"
 
 #include <glib.h>
 #include <alsa/asoundlib.h>
@@ -45,12 +47,34 @@ typedef snd_pcm_sframes_t alsa_writei_t(snd_pcm_t * pcm, const void *buffer,
 struct alsa_data {
 	struct audio_output base;
 
+	/**
+	 * The buffer used to reverse the byte order.
+	 *
+	 * @see #reverse_endian
+	 */
+	struct pcm_buffer reverse_buffer;
+
 	/** the configured name of the ALSA device; NULL for the
 	    default device */
 	char *device;
 
 	/** use memory mapped I/O? */
 	bool use_mmap;
+
+	/**
+	 * Does ALSA expect samples in reverse byte order? (i.e. not
+	 * host byte order)
+	 *
+	 * This attribute is only valid while the device is open.
+	 */
+	bool reverse_endian;
+
+	/**
+	 * Which sample format is being sent to the play() method?
+	 *
+	 * This attribute is only valid while the device is open.
+	 */
+	enum sample_format sample_format;
 
 	/** libasound's buffer_time setting (in microseconds) */
 	unsigned int buffer_time;
@@ -165,6 +189,23 @@ alsa_finish(struct audio_output *ao)
 
 	/* free libasound's config cache */
 	snd_config_update_free_global();
+}
+
+static bool
+alsa_output_enable(struct audio_output *ao, G_GNUC_UNUSED GError **error_r)
+{
+	struct alsa_data *ad = (struct alsa_data *)ao;
+
+	pcm_buffer_init(&ad->reverse_buffer);
+	return true;
+}
+
+static void
+alsa_output_disable(struct audio_output *ao)
+{
+	struct alsa_data *ad = (struct alsa_data *)ao;
+
+	pcm_buffer_deinit(&ad->reverse_buffer);
 }
 
 static bool
@@ -288,13 +329,18 @@ alsa_output_try_reverse(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 static int
 alsa_output_try_format_both(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 			    struct audio_format *audio_format,
+			    bool *reverse_endian_r,
 			    enum sample_format sample_format)
 {
+	*reverse_endian_r = false;
+
 	int err = alsa_output_try_format(pcm, hwparams, audio_format,
 					 sample_format);
-	if (err == -EINVAL)
+	if (err == -EINVAL) {
+		*reverse_endian_r = true;
 		err = alsa_output_try_reverse(pcm, hwparams, audio_format,
 					      sample_format);
+	}
 
 	return err;
 }
@@ -304,11 +350,13 @@ alsa_output_try_format_both(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
  */
 static int
 alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-			 struct audio_format *audio_format)
+			 struct audio_format *audio_format,
+			 bool *reverse_endian_r)
 {
 	/* try the input format first */
 
 	int err = alsa_output_try_format_both(pcm, hwparams, audio_format,
+					      reverse_endian_r,
 					      audio_format->format);
 	if (err != -EINVAL)
 		return err;
@@ -329,6 +377,7 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 			continue;
 
 		err = alsa_output_try_format_both(pcm, hwparams, audio_format,
+						  reverse_endian_r,
 						  probe_formats[i]);
 		if (err != -EINVAL)
 			return err;
@@ -387,7 +436,8 @@ configure_hw:
 		ad->writei = snd_pcm_writei;
 	}
 
-	err = alsa_output_setup_format(ad->pcm, hwparams, audio_format);
+	err = alsa_output_setup_format(ad->pcm, hwparams, audio_format,
+				       &ad->reverse_endian);
 	if (err < 0) {
 		g_set_error(error, alsa_output_quark(), err,
 			    "ALSA device \"%s\" does not support format %s: %s",
@@ -396,6 +446,8 @@ configure_hw:
 			    snd_strerror(-err));
 		return false;
 	}
+
+	ad->sample_format = audio_format->format;
 
 	err = snd_pcm_hw_params_set_channels_near(ad->pcm, hwparams,
 						  &channels);
@@ -660,6 +712,10 @@ alsa_play(struct audio_output *ao, const void *chunk, size_t size,
 {
 	struct alsa_data *ad = (struct alsa_data *)ao;
 
+	if (ad->reverse_endian)
+		chunk = pcm_byteswap(&ad->reverse_buffer, ad->sample_format,
+				     chunk, size);
+
 	size /= ad->frame_size;
 
 	while (true) {
@@ -684,6 +740,8 @@ const struct audio_output_plugin alsa_output_plugin = {
 	.test_default_device = alsa_test_default_device,
 	.init = alsa_init,
 	.finish = alsa_finish,
+	.enable = alsa_output_enable,
+	.disable = alsa_output_disable,
 	.open = alsa_open,
 	.play = alsa_play,
 	.drain = alsa_drain,
