@@ -141,7 +141,6 @@ convert_filter_set(struct filter *_filter,
 	assert(audio_format_valid(&filter->out_audio_format));
 	assert(out_audio_format != NULL);
 	assert(audio_format_valid(out_audio_format));
-	assert(!filter->in_audio_format.reverse_endian);
 
 	filter->out_audio_format = *out_audio_format;
 }

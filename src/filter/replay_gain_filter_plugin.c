@@ -140,8 +140,6 @@ replay_gain_filter_open(struct filter *_filter,
 	struct replay_gain_filter *filter =
 		(struct replay_gain_filter *)_filter;
 
-	audio_format->reverse_endian = false;
-
 	filter->audio_format = *audio_format;
 	pcm_buffer_init(&filter->buffer);
 

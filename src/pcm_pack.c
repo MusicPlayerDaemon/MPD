@@ -22,11 +22,11 @@
 #include <glib.h>
 
 static void
-pack_sample(uint8_t *dest, const int32_t *src0, bool reverse_endian)
+pack_sample(uint8_t *dest, const int32_t *src0)
 {
 	const uint8_t *src = (const uint8_t *)src0;
 
-	if ((G_BYTE_ORDER == G_BIG_ENDIAN) != reverse_endian)
+	if (G_BYTE_ORDER == G_BIG_ENDIAN)
 		++src;
 
 	*dest++ = *src++;
@@ -35,31 +35,23 @@ pack_sample(uint8_t *dest, const int32_t *src0, bool reverse_endian)
 }
 
 void
-pcm_pack_24(uint8_t *dest, const int32_t *src, const int32_t *src_end,
-	    bool reverse_endian)
+pcm_pack_24(uint8_t *dest, const int32_t *src, const int32_t *src_end)
 {
 	/* duplicate loop to help the compiler's optimizer (constant
 	   parameter to the pack_sample() inline function) */
 
-	if (G_LIKELY(!reverse_endian)) {
-		while (src < src_end) {
-			pack_sample(dest, src++, false);
-			dest += 3;
-		}
-	} else {
-		while (src < src_end) {
-			pack_sample(dest, src++, true);
-			dest += 3;
-		}
+	while (src < src_end) {
+		pack_sample(dest, src++);
+		dest += 3;
 	}
 }
 
 static void
-unpack_sample(int32_t *dest0, const uint8_t *src, bool reverse_endian)
+unpack_sample(int32_t *dest0, const uint8_t *src)
 {
 	uint8_t *dest = (uint8_t *)dest0;
 
-	if ((G_BYTE_ORDER == G_BIG_ENDIAN) != reverse_endian)
+	if (G_BYTE_ORDER == G_BIG_ENDIAN)
 		/* extend the sign bit to the most fourth byte */
 		*dest++ = *src & 0x80 ? 0xff : 0x00;
 
@@ -67,27 +59,19 @@ unpack_sample(int32_t *dest0, const uint8_t *src, bool reverse_endian)
 	*dest++ = *src++;
 	*dest++ = *src;
 
-	if ((G_BYTE_ORDER == G_LITTLE_ENDIAN) != reverse_endian)
+	if (G_BYTE_ORDER != G_LITTLE_ENDIAN)
 		/* extend the sign bit to the most fourth byte */
 		*dest++ = *src & 0x80 ? 0xff : 0x00;
 }
 
 void
-pcm_unpack_24(int32_t *dest, const uint8_t *src, const uint8_t *src_end,
-	      bool reverse_endian)
+pcm_unpack_24(int32_t *dest, const uint8_t *src, const uint8_t *src_end)
 {
 	/* duplicate loop to help the compiler's optimizer (constant
 	   parameter to the unpack_sample() inline function) */
 
-	if (G_LIKELY(!reverse_endian)) {
-		while (src < src_end) {
-			unpack_sample(dest++, src, false);
-			src += 3;
-		}
-	} else {
-		while (src < src_end) {
-			unpack_sample(dest++, src, true);
-			src += 3;
-		}
+	while (src < src_end) {
+		unpack_sample(dest++, src);
+		src += 3;
 	}
 }

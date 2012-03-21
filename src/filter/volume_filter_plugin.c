@@ -74,8 +74,6 @@ volume_filter_open(struct filter *_filter, struct audio_format *audio_format,
 {
 	struct volume_filter *filter = (struct volume_filter *)_filter;
 
-	audio_format->reverse_endian = false;
-
 	filter->audio_format = *audio_format;
 	pcm_buffer_init(&filter->buffer);
 

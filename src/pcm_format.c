@@ -76,7 +76,7 @@ pcm_allocate_24_to_24p32(struct pcm_buffer *buffer, const uint8_t *src,
 	int32_t *dest;
 	*dest_size_r = src_size / 3 * sizeof(*dest);
 	dest = pcm_buffer_get(buffer, *dest_size_r);
-	pcm_unpack_24(dest, src, pcm_end_pointer(src, src_size), false);
+	pcm_unpack_24(dest, src, pcm_end_pointer(src, src_size));
 	return dest;
 }
 

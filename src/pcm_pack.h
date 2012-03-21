@@ -37,11 +37,9 @@
  * @param dest the destination buffer (array of triples)
  * @param src the source buffer
  * @param num_samples the number of samples to convert
- * @param reverse_endian is src and dest in non-host byte order?
  */
 void
-pcm_pack_24(uint8_t *dest, const int32_t *src, const int32_t *src_end,
-	    bool reverse_endian);
+pcm_pack_24(uint8_t *dest, const int32_t *src, const int32_t *src_end);
 
 /**
  * Converts packed 24 bit samples (3 bytes per sample) to padded 24
@@ -50,10 +48,8 @@ pcm_pack_24(uint8_t *dest, const int32_t *src, const int32_t *src_end,
  * @param dest the destination buffer
  * @param src the source buffer (array of triples)
  * @param num_samples the number of samples to convert
- * @param reverse_endian is src and dest in non-host byte order?
  */
 void
-pcm_unpack_24(int32_t *dest, const uint8_t *src, const uint8_t *src_end,
-	      bool reverse_endian);
+pcm_unpack_24(int32_t *dest, const uint8_t *src, const uint8_t *src_end);
 
 #endif

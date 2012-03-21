@@ -314,10 +314,8 @@ alsa_output_try_reverse(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 		return -EINVAL;
 
 	int err = snd_pcm_hw_params_set_format(pcm, hwparams, alsa_format);
-	if (err == 0) {
+	if (err == 0)
 		audio_format->format = sample_format;
-		audio_format->reverse_endian = true;
-	}
 
 	return err;
 }

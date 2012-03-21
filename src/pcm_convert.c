@@ -21,7 +21,6 @@
 #include "pcm_convert.h"
 #include "pcm_channels.h"
 #include "pcm_format.h"
-#include "pcm_byteswap.h"
 #include "pcm_pack.h"
 #include "audio_format.h"
 #include "glib_compat.h"
@@ -45,7 +44,6 @@ void pcm_convert_init(struct pcm_convert_state *state)
 	pcm_buffer_init(&state->format_buffer);
 	pcm_buffer_init(&state->pack_buffer);
 	pcm_buffer_init(&state->channels_buffer);
-	pcm_buffer_init(&state->byteswap_buffer);
 }
 
 void pcm_convert_deinit(struct pcm_convert_state *state)
@@ -56,7 +54,6 @@ void pcm_convert_deinit(struct pcm_convert_state *state)
 	pcm_buffer_deinit(&state->format_buffer);
 	pcm_buffer_deinit(&state->pack_buffer);
 	pcm_buffer_deinit(&state->channels_buffer);
-	pcm_buffer_deinit(&state->byteswap_buffer);
 }
 
 void
@@ -164,11 +161,6 @@ pcm_convert_16(struct pcm_convert_state *state,
 			return NULL;
 	}
 
-	if (dest_format->reverse_endian) {
-		buf = pcm_byteswap_16(&state->byteswap_buffer, buf, len);
-		assert(buf != NULL);
-	}
-
 	*dest_size_r = len;
 	return buf;
 }
@@ -219,11 +211,6 @@ pcm_convert_24(struct pcm_convert_state *state,
 			return NULL;
 	}
 
-	if (dest_format->reverse_endian) {
-		buf = pcm_byteswap_32(&state->byteswap_buffer, buf, len);
-		assert(buf != NULL);
-	}
-
 	*dest_size_r = len;
 	return buf;
 }
@@ -261,8 +248,7 @@ pcm_convert_24_packed(struct pcm_convert_state *state,
 	size_t dest_size = num_samples * 3;
 
 	uint8_t *dest = pcm_buffer_get(&state->pack_buffer, dest_size);
-	pcm_pack_24(dest, buffer, buffer + num_samples,
-		    dest_format->reverse_endian);
+	pcm_pack_24(dest, buffer, buffer + num_samples);
 
 	*dest_size_r = dest_size;
 	return dest;
@@ -314,11 +300,6 @@ pcm_convert_32(struct pcm_convert_state *state,
 			return buf;
 	}
 
-	if (dest_format->reverse_endian) {
-		buf = pcm_byteswap_32(&state->byteswap_buffer, buf, len);
-		assert(buf != NULL);
-	}
-
 	*dest_size_r = len;
 	return buf;
 }
@@ -334,12 +315,6 @@ pcm_convert_float(struct pcm_convert_state *state,
 	size_t size = src_size;
 
 	assert(dest_format->format == SAMPLE_FORMAT_FLOAT);
-
-	if (src_format->reverse_endian || dest_format->reverse_endian) {
-		g_set_error_literal(error_r, pcm_convert_quark(), 0,
-				    "Reverse endian not supported");
-		return NULL;
-	}
 
 	/* convert channels first, hoping the source format is
 	   supported (float is not) */
@@ -392,20 +367,6 @@ pcm_convert(struct pcm_convert_state *state,
 	    size_t *dest_size_r,
 	    GError **error_r)
 {
-	if (src_format->reverse_endian) {
-		/* convert to host byte order, because all of our
-		   conversion libraries assume host byte order */
-
-		src = pcm_byteswap(&state->byteswap_buffer, src_format->format,
-				   src, src_size);
-		if (src == NULL) {
-			g_set_error(error_r, pcm_convert_quark(), 0,
-				    "PCM byte order change of format '%s' is not implemented",
-				    sample_format_to_string(src_format->format));
-			return NULL;
-		}
-	}
-
 	struct audio_format float_format;
 	if (src_format->format == SAMPLE_FORMAT_DSD) {
 		size_t f_size;

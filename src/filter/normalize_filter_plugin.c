@@ -67,7 +67,6 @@ normalize_filter_open(struct filter *_filter,
 	struct normalize_filter *filter = (struct normalize_filter *)_filter;
 
 	audio_format->format = SAMPLE_FORMAT_S16;
-	audio_format->reverse_endian = false;
 
 	filter->compressor = Compressor_new(0);
 

@@ -22,12 +22,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-#if G_BYTE_ORDER == G_BIG_ENDIAN
-#define REVERSE_ENDIAN_SUFFIX "_le"
-#else
-#define REVERSE_ENDIAN_SUFFIX "_be"
-#endif
-
 void
 audio_format_mask_apply(struct audio_format *af,
 			const struct audio_format *mask)
@@ -100,9 +94,8 @@ audio_format_to_string(const struct audio_format *af,
 	assert(af != NULL);
 	assert(s != NULL);
 
-	snprintf(s->buffer, sizeof(s->buffer), "%u:%s%s:%u",
+	snprintf(s->buffer, sizeof(s->buffer), "%u:%s:%u",
 		 af->sample_rate, sample_format_to_string(af->format),
-		 af->reverse_endian ? REVERSE_ENDIAN_SUFFIX : "",
 		 af->channels);
 
 	return s->buffer;
