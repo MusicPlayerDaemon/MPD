@@ -28,6 +28,7 @@
 #include "dsdiff_decoder_plugin.h"
 #include "decoder_api.h"
 #include "audio_check.h"
+#include "util/bit_reverse.h"
 
 #include <unistd.h>
 #include <stdio.h> /* for SEEK_SET, SEEK_CUR */
@@ -54,14 +55,12 @@ struct dsdiff_metadata {
 	unsigned sample_rate, channels;
 };
 
-static enum sample_format dsd_sample_format;
+static bool lsbitfirst;
 
 static bool
 dsdiff_init(const struct config_param *param)
 {
-	dsd_sample_format = config_get_block_bool(param, "lsbitfirst", false)
-		? SAMPLE_FORMAT_DSD_LSBFIRST
-		: SAMPLE_FORMAT_DSD;
+	lsbitfirst = config_get_block_bool(param, "lsbitfirst", false);
 	return true;
 }
 
@@ -301,6 +300,13 @@ dsdiff_read_metadata(struct decoder *decoder, struct input_stream *is,
 	}
 }
 
+static void
+bit_reverse_buffer(uint8_t *p, uint8_t *end)
+{
+	for (; p < end; ++p)
+		*p = bit_reverse(*p);
+}
+
 /**
  * Decode one "DSD" chunk.
  */
@@ -331,6 +337,9 @@ dsdiff_decode_chunk(struct decoder *decoder, struct input_stream *is,
 			return false;
 
 		chunk_size -= nbytes;
+
+		if (lsbitfirst)
+			bit_reverse_buffer(buffer, buffer + nbytes);
 
 		enum decoder_command cmd =
 			decoder_data(decoder, is, buffer, nbytes, 0);
@@ -367,7 +376,7 @@ dsdiff_stream_decode(struct decoder *decoder, struct input_stream *is)
 	GError *error = NULL;
 	struct audio_format audio_format;
 	if (!audio_format_init_checked(&audio_format, metadata.sample_rate / 8,
-				       dsd_sample_format,
+				       SAMPLE_FORMAT_DSD,
 				       metadata.channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
@@ -420,7 +429,7 @@ dsdiff_scan_stream(struct input_stream *is,
 
 	struct audio_format audio_format;
 	if (!audio_format_init_checked(&audio_format, metadata.sample_rate / 8,
-				       dsd_sample_format,
+				       SAMPLE_FORMAT_DSD,
 				       metadata.channels, NULL))
 		/* refuse to parse files which we cannot play anyway */
 		return false;

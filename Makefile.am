@@ -1046,6 +1046,7 @@ test_dump_playlist_LDADD = \
 	$(GLIB_LIBS)
 test_dump_playlist_SOURCES = test/dump_playlist.c \
 	$(DECODER_SRC) \
+	src/util/bit_reverse.c \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/uri.c \
@@ -1072,6 +1073,7 @@ test_run_decoder_LDADD = \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.c \
 	test/stdbin.h \
+	src/util/bit_reverse.c \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
 	src/tag.c src/tag_pool.c src/tag_handler.c \
@@ -1094,6 +1096,7 @@ test_read_tags_LDADD = \
 	$(TAG_LIBS) \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.c \
+	src/util/bit_reverse.c \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
 	src/tag.c src/tag_pool.c src/tag_handler.c \
