@@ -260,11 +260,13 @@ byteswap_bitformat(snd_pcm_format_t fmt)
 }
 
 /**
- * Attempts to configure the specified sample format.
+ * Attempts to configure the specified sample format, and tries the
+ * reversed host byte order if was not supported.
  */
 static int
 alsa_output_try_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 		       struct audio_format *audio_format,
+		       bool *reverse_endian_r,
 		       enum sample_format sample_format)
 {
 	snd_pcm_format_t alsa_format = get_bitformat(sample_format);
@@ -272,51 +274,22 @@ alsa_output_try_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 		return -EINVAL;
 
 	int err = snd_pcm_hw_params_set_format(pcm, hwparams, alsa_format);
-	if (err == 0)
+	if (err == 0) {
+		*reverse_endian_r = false;
 		audio_format->format = sample_format;
+	}
 
-	return err;
-}
+	if (err != -EINVAL)
+		return err;
 
-/**
- * Attempts to configure the specified sample format with reversed
- * host byte order.
- */
-static int
-alsa_output_try_reverse(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-		       struct audio_format *audio_format,
-		       enum sample_format sample_format)
-{
-	snd_pcm_format_t alsa_format =
-		byteswap_bitformat(get_bitformat(sample_format));
+	alsa_format = byteswap_bitformat(alsa_format);
 	if (alsa_format == SND_PCM_FORMAT_UNKNOWN)
 		return -EINVAL;
 
-	int err = snd_pcm_hw_params_set_format(pcm, hwparams, alsa_format);
-	if (err == 0)
-		audio_format->format = sample_format;
-
-	return err;
-}
-
-/**
- * Attempts to configure the specified sample format, and tries the
- * reversed host byte order if was not supported.
- */
-static int
-alsa_output_try_format_both(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-			    struct audio_format *audio_format,
-			    bool *reverse_endian_r,
-			    enum sample_format sample_format)
-{
-	*reverse_endian_r = false;
-
-	int err = alsa_output_try_format(pcm, hwparams, audio_format,
-					 sample_format);
-	if (err == -EINVAL) {
+	err = snd_pcm_hw_params_set_format(pcm, hwparams, alsa_format);
+	if (err == 0) {
 		*reverse_endian_r = true;
-		err = alsa_output_try_reverse(pcm, hwparams, audio_format,
-					      sample_format);
+		audio_format->format = sample_format;
 	}
 
 	return err;
@@ -332,9 +305,9 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 {
 	/* try the input format first */
 
-	int err = alsa_output_try_format_both(pcm, hwparams, audio_format,
-					      reverse_endian_r,
-					      audio_format->format);
+	int err = alsa_output_try_format(pcm, hwparams, audio_format,
+					 reverse_endian_r,
+					 audio_format->format);
 	if (err != -EINVAL)
 		return err;
 
@@ -353,9 +326,9 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 		if (probe_formats[i] == audio_format->format)
 			continue;
 
-		err = alsa_output_try_format_both(pcm, hwparams, audio_format,
-						  reverse_endian_r,
-						  probe_formats[i]);
+		err = alsa_output_try_format(pcm, hwparams, audio_format,
+					     reverse_endian_r,
+					     probe_formats[i]);
 		if (err != -EINVAL)
 			return err;
 	}
