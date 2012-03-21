@@ -76,12 +76,16 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	if (!audio_format_parse(&out_audio_format, argv[2],
-				false, &error)) {
+	struct audio_format out_audio_format_mask;
+	if (!audio_format_parse(&out_audio_format_mask, argv[2],
+				true, &error)) {
 		g_printerr("Failed to parse audio format: %s\n",
 			   error->message);
 		return 1;
 	}
+
+	out_audio_format = in_audio_format;
+	audio_format_mask_apply(&out_audio_format, &out_audio_format_mask);
 
 	const size_t in_frame_size = audio_format_frame_size(&in_audio_format);
 
