@@ -1,3 +1,5 @@
+#include "util/bit_reverse.h"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -84,7 +86,6 @@ static const double htaps[HTAPS] = {
 };
 
 static float ctables[CTABLES][256];
-static unsigned char bitreverse[256];
 static int precalculated = 0;
 
 static void precalc(void)
@@ -92,11 +93,6 @@ static void precalc(void)
 	int t, e, m, k;
 	double acc;
 	if (precalculated) return;
-	for (t=0, e=0; t<256; ++t) {
-		bitreverse[t] = e;
-		for (m=128; m && !((e^=m)&m); m>>=1)
-			;
-	}
 	for (t=0; t<CTABLES; ++t) {
 		k = HTAPS - t*8;
 		if (k>8) k=8;
@@ -170,10 +166,10 @@ extern void dsd2pcm_translate(
 	lsbf = lsbf ? 1 : 0;
 	while (samples-- > 0) {
 		bite1 = *src & 0xFFu;
-		if (lsbf) bite1 = bitreverse[bite1];
+		if (lsbf) bite1 = bit_reverse(bite1);
 		ptr->fifo[ffp] = bite1; src += src_stride;
 		p = ptr->fifo + ((ffp-CTABLES) & FIFOMASK);
-		*p = bitreverse[*p & 0xFF];
+		*p = bit_reverse(*p);
 		acc = 0;
 		for (i=0; i<CTABLES; ++i) {
 			bite1 = ptr->fifo[(ffp              -i) & FIFOMASK] & 0xFF;

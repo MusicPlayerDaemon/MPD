@@ -227,6 +227,7 @@ src_mpd_SOURCES = \
 	$(MIXER_API_SRC) \
 	src/util/list.h \
 	src/util/list_sort.c src/util/list_sort.h \
+	src/util/bit_reverse.c src/util/bit_reverse.h \
 	src/glib_socket.h \
 	src/notify.c \
 	src/audio_config.c src/audio_config.h \
@@ -1174,6 +1175,7 @@ test_run_normalize_LDADD = \
 	$(GLIB_LIBS)
 
 test_run_convert_SOURCES = test/run_convert.c \
+	src/util/bit_reverse.c \
 	src/dsd2pcm/dsd2pcm.c \
 	src/fifo_buffer.c \
 	src/audio_format.c \
@@ -1272,6 +1274,7 @@ if HAVE_CXX
 noinst_PROGRAMS += src/dsd2pcm/dsd2pcm
 
 src_dsd2pcm_dsd2pcm_SOURCES = \
+	src/util/bit_reverse.c \
 	src/dsd2pcm/dsd2pcm.c src/dsd2pcm/dsd2pcm.h \
 	src/dsd2pcm/noiseshape.c src/dsd2pcm/noiseshape.h \
 	src/dsd2pcm/main.cpp
