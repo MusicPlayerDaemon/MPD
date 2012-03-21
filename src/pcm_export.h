@@ -35,11 +35,23 @@ struct audio_format;
  */
 struct pcm_export_state {
 	/**
+	 * The buffer used to pack samples, removing padding.
+	 *
+	 * @see #reverse_endian
+	 */
+	struct pcm_buffer pack_buffer;
+
+	/**
 	 * The buffer used to reverse the byte order.
 	 *
 	 * @see #reverse_endian
 	 */
 	struct pcm_buffer reverse_buffer;
+
+	/**
+	 * Pack 24 bit samples?
+	 */
+	bool pack24;
 
 	/**
 	 * Export the samples in reverse byte order?  A non-zero value
@@ -72,7 +84,7 @@ pcm_export_deinit(struct pcm_export_state *state);
 void
 pcm_export_open(struct pcm_export_state *state,
 		enum sample_format sample_format,
-		bool reverse_endian);
+		bool pack, bool reverse_endian);
 
 /**
  * Export a PCM buffer.

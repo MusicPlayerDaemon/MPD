@@ -525,7 +525,7 @@ configure_hw:
 	ad->period_position = 0;
 
 	pcm_export_open(&ad->export, audio_format->format,
-			reverse_endian);
+			false, reverse_endian);
 
 	return true;
 

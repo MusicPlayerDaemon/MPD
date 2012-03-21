@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "pcm_export.h"
+#include "pcm_pack.h"
 #include "util/byte_reverse.h"
 
 void
@@ -35,11 +36,15 @@ void pcm_export_deinit(struct pcm_export_state *state)
 void
 pcm_export_open(struct pcm_export_state *state,
 		enum sample_format sample_format,
-		bool reverse_endian)
+		bool pack, bool reverse_endian)
 {
+	state->pack24 = pack && sample_format == SAMPLE_FORMAT_S24_P32;
+
 	state->reverse_endian = 0;
 	if (reverse_endian) {
-		size_t sample_size = sample_format_size(sample_format);
+		size_t sample_size = state->pack24
+			? 3
+			: sample_format_size(sample_format);
 		assert(sample_size <= 0xff);
 
 		if (sample_size > 1)
@@ -51,6 +56,23 @@ const void *
 pcm_export(struct pcm_export_state *state, const void *data, size_t size,
 	   size_t *dest_size_r)
 {
+	if (state->pack24) {
+		assert(size % 4 == 0);
+
+		const size_t num_samples = size / 4;
+		const size_t dest_size = num_samples * 3;
+
+		const uint8_t *src8 = data, *src_end8 = src8 + size;
+		uint8_t *dest = pcm_buffer_get(&state->pack_buffer, dest_size);
+		assert(dest != NULL);
+
+		pcm_pack_24(dest, (const int32_t *)src8,
+			    (const int32_t *)src_end8);
+
+		data = dest;
+		size = dest_size;
+	}
+
 	if (state->reverse_endian > 0) {
 		assert(state->reverse_endian >= 2);
 
