@@ -211,6 +211,7 @@ get_bitformat(enum sample_format sample_format)
 	case SAMPLE_FORMAT_UNDEFINED:
 	case SAMPLE_FORMAT_DSD:
 	case SAMPLE_FORMAT_DSD_OVER_USB:
+	case SAMPLE_FORMAT_S24:
 		return SND_PCM_FORMAT_UNKNOWN;
 
 	case SAMPLE_FORMAT_S8:
@@ -221,11 +222,6 @@ get_bitformat(enum sample_format sample_format)
 
 	case SAMPLE_FORMAT_S24_P32:
 		return SND_PCM_FORMAT_S24;
-
-	case SAMPLE_FORMAT_S24:
-		return G_BYTE_ORDER == G_BIG_ENDIAN
-			? SND_PCM_FORMAT_S24_3BE
-			: SND_PCM_FORMAT_S24_3LE;
 
 	case SAMPLE_FORMAT_S32:
 		return SND_PCM_FORMAT_S32;
@@ -259,6 +255,43 @@ byteswap_bitformat(snd_pcm_format_t fmt)
 	}
 }
 
+static snd_pcm_format_t
+alsa_to_packed_format(snd_pcm_format_t fmt)
+{
+	switch (fmt) {
+	case SND_PCM_FORMAT_S24_LE:
+		return SND_PCM_FORMAT_S24_3LE;
+
+	case SND_PCM_FORMAT_S24_BE:
+		return SND_PCM_FORMAT_S24_3BE;
+
+	default:
+		return SND_PCM_FORMAT_UNKNOWN;
+	}
+}
+
+static int
+alsa_try_format_or_packed(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+			  snd_pcm_format_t fmt, bool *packed_r)
+{
+	int err = snd_pcm_hw_params_set_format(pcm, hwparams, fmt);
+	if (err == 0)
+		*packed_r = false;
+
+	if (err != -EINVAL)
+		return err;
+
+	fmt = alsa_to_packed_format(fmt);
+	if (fmt == SND_PCM_FORMAT_UNKNOWN)
+		return -EINVAL;
+
+	err = snd_pcm_hw_params_set_format(pcm, hwparams, fmt);
+	if (err == 0)
+		*packed_r = true;
+
+	return err;
+}
+
 /**
  * Attempts to configure the specified sample format, and tries the
  * reversed host byte order if was not supported.
@@ -266,13 +299,14 @@ byteswap_bitformat(snd_pcm_format_t fmt)
 static int
 alsa_output_try_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 		       enum sample_format sample_format,
-		       bool *reverse_endian_r)
+		       bool *packed_r, bool *reverse_endian_r)
 {
 	snd_pcm_format_t alsa_format = get_bitformat(sample_format);
 	if (alsa_format == SND_PCM_FORMAT_UNKNOWN)
 		return -EINVAL;
 
-	int err = snd_pcm_hw_params_set_format(pcm, hwparams, alsa_format);
+	int err = alsa_try_format_or_packed(pcm, hwparams, alsa_format,
+					    packed_r);
 	if (err == 0)
 		*reverse_endian_r = false;
 
@@ -283,7 +317,7 @@ alsa_output_try_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 	if (alsa_format == SND_PCM_FORMAT_UNKNOWN)
 		return -EINVAL;
 
-	err = snd_pcm_hw_params_set_format(pcm, hwparams, alsa_format);
+	err = alsa_try_format_or_packed(pcm, hwparams, alsa_format, packed_r);
 	if (err == 0)
 		*reverse_endian_r = true;
 
@@ -296,19 +330,18 @@ alsa_output_try_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 static int
 alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 			 struct audio_format *audio_format,
-			 bool *reverse_endian_r)
+			 bool *packed_r, bool *reverse_endian_r)
 {
 	/* try the input format first */
 
 	int err = alsa_output_try_format(pcm, hwparams, audio_format->format,
-					 reverse_endian_r);
+					 packed_r, reverse_endian_r);
 
 	/* if unsupported by the hardware, try other formats */
 
 	static const enum sample_format probe_formats[] = {
 		SAMPLE_FORMAT_S24_P32,
 		SAMPLE_FORMAT_S32,
-		SAMPLE_FORMAT_S24,
 		SAMPLE_FORMAT_S16,
 		SAMPLE_FORMAT_S8,
 		SAMPLE_FORMAT_UNDEFINED,
@@ -322,7 +355,7 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 			continue;
 
 		err = alsa_output_try_format(pcm, hwparams, mpd_format,
-					     reverse_endian_r);
+					     packed_r, reverse_endian_r);
 		if (err == 0)
 			audio_format->format = mpd_format;
 	}
@@ -380,9 +413,9 @@ configure_hw:
 		ad->writei = snd_pcm_writei;
 	}
 
-	bool reverse_endian;
+	bool packed, reverse_endian;
 	err = alsa_output_setup_format(ad->pcm, hwparams, audio_format,
-				       &reverse_endian);
+				       &packed, &reverse_endian);
 	if (err < 0) {
 		g_set_error(error, alsa_output_quark(), err,
 			    "ALSA device \"%s\" does not support format %s: %s",
@@ -525,7 +558,7 @@ configure_hw:
 	ad->period_position = 0;
 
 	pcm_export_open(&ad->export, audio_format->format,
-			false, reverse_endian);
+			packed, reverse_endian);
 
 	return true;
 
