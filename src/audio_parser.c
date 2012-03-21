@@ -94,14 +94,8 @@ parse_sample_format(const char *src, bool mask,
 	}
 
 	if (memcmp(src, "dsd", 3) == 0) {
-		if (src[3] == 'l') {
-			*sample_format_r = SAMPLE_FORMAT_DSD_LSBFIRST;
-			*endptr_r = src + 4;
-		} else {
-			*sample_format_r = SAMPLE_FORMAT_DSD;
-			*endptr_r = src + 3;
-		}
-
+		*sample_format_r = SAMPLE_FORMAT_DSD;
+		*endptr_r = src + 3;
 		return true;
 	}
 

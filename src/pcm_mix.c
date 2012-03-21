@@ -121,7 +121,6 @@ pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
 	case SAMPLE_FORMAT_UNDEFINED:
 	case SAMPLE_FORMAT_S24:
 	case SAMPLE_FORMAT_DSD:
-	case SAMPLE_FORMAT_DSD_LSBFIRST:
 	case SAMPLE_FORMAT_DSD_OVER_USB:
 		/* not implemented */
 		return false;
@@ -233,7 +232,6 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 	case SAMPLE_FORMAT_UNDEFINED:
 	case SAMPLE_FORMAT_S24:
 	case SAMPLE_FORMAT_DSD:
-	case SAMPLE_FORMAT_DSD_LSBFIRST:
 	case SAMPLE_FORMAT_DSD_OVER_USB:
 		/* not implemented */
 		return false;

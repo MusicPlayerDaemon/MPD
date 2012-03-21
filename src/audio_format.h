@@ -57,12 +57,6 @@ enum sample_format {
 	SAMPLE_FORMAT_DSD,
 
 	/**
-	 * Same as #SAMPLE_FORMAT_DSD, but the least significant bit
-	 * comes first.
-	 */
-	SAMPLE_FORMAT_DSD_LSBFIRST,
-
-	/**
 	 * DSD packed in 24 bit samples (no padding), according to the
 	 * dCS suggested standard:
 	 * http://www.dcsltd.co.uk/page/assets/DSDoverUSB.pdf
@@ -195,7 +189,6 @@ audio_valid_sample_format(enum sample_format format)
 	case SAMPLE_FORMAT_S32:
 	case SAMPLE_FORMAT_FLOAT:
 	case SAMPLE_FORMAT_DSD:
-	case SAMPLE_FORMAT_DSD_LSBFIRST:
 	case SAMPLE_FORMAT_DSD_OVER_USB:
 		return true;
 
@@ -275,7 +268,6 @@ sample_format_size(enum sample_format format)
 		return 4;
 
 	case SAMPLE_FORMAT_DSD:
-	case SAMPLE_FORMAT_DSD_LSBFIRST:
 		/* each frame has 8 samples per channel */
 		return 1;
 

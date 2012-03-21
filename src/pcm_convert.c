@@ -81,7 +81,6 @@ pcm_convert_channels(struct pcm_buffer *buffer, enum sample_format format,
 	case SAMPLE_FORMAT_S24:
 	case SAMPLE_FORMAT_FLOAT:
 	case SAMPLE_FORMAT_DSD:
-	case SAMPLE_FORMAT_DSD_LSBFIRST:
 	case SAMPLE_FORMAT_DSD_OVER_USB:
 		g_set_error(error_r, pcm_convert_quark(), 0,
 			    "Channel conversion not implemented for format '%s'",
@@ -408,14 +407,11 @@ pcm_convert(struct pcm_convert_state *state,
 	}
 
 	struct audio_format float_format;
-	if (src_format->format == SAMPLE_FORMAT_DSD ||
-	    src_format->format == SAMPLE_FORMAT_DSD_LSBFIRST) {
+	if (src_format->format == SAMPLE_FORMAT_DSD) {
 		size_t f_size;
-		const bool lsbfirst =
-			src_format->format == SAMPLE_FORMAT_DSD_LSBFIRST;
 		const float *f = pcm_dsd_to_float(&state->dsd,
 						  src_format->channels,
-						  lsbfirst, src, src_size,
+						  false, src, src_size,
 						  &f_size);
 		if (f == NULL) {
 			g_set_error_literal(error_r, pcm_convert_quark(), 0,

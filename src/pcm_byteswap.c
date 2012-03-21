@@ -76,7 +76,6 @@ pcm_byteswap(struct pcm_buffer *buffer, enum sample_format format,
 
 	case SAMPLE_FORMAT_S8:
 	case SAMPLE_FORMAT_DSD:
-	case SAMPLE_FORMAT_DSD_LSBFIRST:
 		return src;
 
 	case SAMPLE_FORMAT_S16:
