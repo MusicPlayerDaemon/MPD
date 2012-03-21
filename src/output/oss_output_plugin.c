@@ -51,8 +51,22 @@
 #undef AFMT_S24_NE
 #endif
 
+#ifdef AFMT_S24_PACKED
+#include "pcm_buffer.h"
+#include "pcm_byteswap.h"
+#endif
+
 struct oss_data {
 	struct audio_output base;
+
+#ifdef AFMT_S24_PACKED
+	/**
+	 * The buffer used to reverse the byte order.
+	 *
+	 * @see #reverse_endian
+	 */
+	struct pcm_buffer reverse_buffer;
+#endif
 
 	int fd;
 	const char *device;
@@ -62,6 +76,16 @@ struct oss_data {
 	 * the device after cancel().
 	 */
 	struct audio_format audio_format;
+
+#ifdef AFMT_S24_PACKED
+	/**
+	 * Does OSS expect samples in reverse byte order? (i.e. not
+	 * host byte order)
+	 *
+	 * This attribute is only valid while the device is open.
+	 */
+	bool reverse_endian;
+#endif
 };
 
 /**
@@ -220,6 +244,27 @@ oss_output_finish(struct audio_output *ao)
 	ao_base_finish(&od->base);
 	oss_data_free(od);
 }
+
+#ifdef AFMT_S24_PACKED
+
+static bool
+oss_output_enable(struct audio_output *ao, G_GNUC_UNUSED GError **error_r)
+{
+	struct oss_data *od = (struct oss_data *)ao;
+
+	pcm_buffer_init(&od->reverse_buffer);
+	return true;
+}
+
+static void
+oss_output_disable(struct audio_output *ao)
+{
+	struct oss_data *od = (struct oss_data *)ao;
+
+	pcm_buffer_deinit(&od->reverse_buffer);
+}
+
+#endif
 
 static void
 oss_close(struct oss_data *od)
@@ -471,6 +516,9 @@ sample_format_from_oss(int format)
  */
 static bool
 oss_setup_sample_format(int fd, struct audio_format *audio_format,
+#ifdef AFMT_S24_PACKED
+			bool *reverse_endian_r,
+#endif
 			GError **error_r)
 {
 	const char *const msg = "Failed to set sample format";
@@ -489,9 +537,8 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
 		audio_format->format = mpd_format;
 
 #ifdef AFMT_S24_PACKED
-		if (oss_format == AFMT_S24_PACKED)
-			audio_format->reverse_endian =
-				G_BYTE_ORDER != G_LITTLE_ENDIAN;
+		*reverse_endian_r = oss_format == AFMT_S24_PACKED &&
+			G_BYTE_ORDER != G_LITTLE_ENDIAN;
 #endif
 		return true;
 
@@ -536,9 +583,8 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
 			audio_format->format = mpd_format;
 
 #ifdef AFMT_S24_PACKED
-			if (oss_format == AFMT_S24_PACKED)
-				audio_format->reverse_endian =
-					G_BYTE_ORDER != G_LITTLE_ENDIAN;
+			*reverse_endian_r = oss_format == AFMT_S24_PACKED &&
+				G_BYTE_ORDER != G_LITTLE_ENDIAN;
 #endif
 			return true;
 
@@ -563,7 +609,11 @@ oss_setup(struct oss_data *od, struct audio_format *audio_format,
 {
 	return oss_setup_channels(od->fd, audio_format, error_r) &&
 		oss_setup_sample_rate(od->fd, audio_format, error_r) &&
-		oss_setup_sample_format(od->fd, audio_format, error_r);
+		oss_setup_sample_format(od->fd, audio_format,
+#ifdef AFMT_S24_PACKED
+					&od->reverse_endian,
+#endif
+					error_r);
 }
 
 /**
@@ -675,6 +725,13 @@ oss_output_play(struct audio_output *ao, const void *chunk, size_t size,
 	if (od->fd < 0 && !oss_reopen(od, error))
 		return 0;
 
+#ifdef AFMT_S24_PACKED
+	if (od->reverse_endian)
+		chunk = pcm_byteswap(&od->reverse_buffer,
+				     od->audio_format.format,
+				     chunk, size);
+#endif
+
 	while (true) {
 		ret = write(od->fd, chunk, size);
 		if (ret > 0)
@@ -694,6 +751,10 @@ const struct audio_output_plugin oss_output_plugin = {
 	.test_default_device = oss_output_test_default_device,
 	.init = oss_output_init,
 	.finish = oss_output_finish,
+#ifdef AFMT_S24_PACKED
+	.enable = oss_output_enable,
+	.disable = oss_output_disable,
+#endif
 	.open = oss_output_open,
 	.close = oss_output_close,
 	.play = oss_output_play,
