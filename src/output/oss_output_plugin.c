@@ -434,6 +434,7 @@ sample_format_to_oss(enum sample_format format)
 	case SAMPLE_FORMAT_FLOAT:
 	case SAMPLE_FORMAT_DSD:
 	case SAMPLE_FORMAT_DSD_OVER_USB:
+	case SAMPLE_FORMAT_S24:
 		return AFMT_QUERY;
 
 	case SAMPLE_FORMAT_S8:
@@ -441,13 +442,6 @@ sample_format_to_oss(enum sample_format format)
 
 	case SAMPLE_FORMAT_S16:
 		return AFMT_S16_NE;
-
-	case SAMPLE_FORMAT_S24:
-#ifdef AFMT_S24_PACKED
-		return AFMT_S24_PACKED;
-#else
-		return AFMT_QUERY;
-#endif
 
 	case SAMPLE_FORMAT_S24_P32:
 #ifdef AFMT_S24_NE
@@ -483,7 +477,7 @@ sample_format_from_oss(int format)
 
 #ifdef AFMT_S24_PACKED
 	case AFMT_S24_PACKED:
-		return SAMPLE_FORMAT_S24;
+		return SAMPLE_FORMAT_S24_P32;
 #endif
 
 #ifdef AFMT_S24_NE
@@ -524,6 +518,18 @@ oss_probe_sample_format(int fd, enum sample_format sample_format,
 		oss_try_ioctl_r(fd, SNDCTL_DSP_SAMPLESIZE,
 				&oss_format,
 				"Failed to set sample format", error_r);
+
+#ifdef AFMT_S24_PACKED
+	if (result == UNSUPPORTED && sample_format == SAMPLE_FORMAT_S24_P32) {
+		/* if the driver doesn't support padded 24 bit, try
+		   packed 24 bit */
+		oss_format = AFMT_S24_PACKED;
+		result = oss_try_ioctl_r(fd, SNDCTL_DSP_SAMPLESIZE,
+					 &oss_format,
+					 "Failed to set sample format", error_r);
+	}
+#endif
+
 	if (result != SUCCESS)
 		return result;
 
@@ -536,7 +542,7 @@ oss_probe_sample_format(int fd, enum sample_format sample_format,
 
 #ifdef AFMT_S24_PACKED
 	pcm_export_open(export, sample_format,
-			false,
+			oss_format == AFMT_S24_PACKED,
 			oss_format == AFMT_S24_PACKED &&
 			G_BYTE_ORDER != G_LITTLE_ENDIAN);
 #endif
@@ -585,7 +591,6 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
 	static const enum sample_format sample_formats[] = {
 		SAMPLE_FORMAT_S24_P32,
 		SAMPLE_FORMAT_S32,
-		SAMPLE_FORMAT_S24,
 		SAMPLE_FORMAT_S16,
 		SAMPLE_FORMAT_S8,
 		SAMPLE_FORMAT_UNDEFINED /* sentinel */
