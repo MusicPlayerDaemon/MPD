@@ -71,6 +71,12 @@ struct oss_data {
 	 * the device after cancel().
 	 */
 	struct audio_format audio_format;
+
+	/**
+	 * The current OSS audio format.  This is needed to reopen the
+	 * device after cancel().
+	 */
+	int oss_format;
 };
 
 /**
@@ -504,6 +510,7 @@ sample_format_from_oss(int format)
 static enum oss_setup_result
 oss_probe_sample_format(int fd, enum sample_format sample_format,
 			enum sample_format *sample_format_r,
+			int *oss_format_r,
 #ifdef AFMT_S24_PACKED
 			struct pcm_export_state *export,
 #endif
@@ -525,6 +532,7 @@ oss_probe_sample_format(int fd, enum sample_format sample_format,
 		return UNSUPPORTED;
 
 	*sample_format_r = sample_format;
+	*oss_format_r = oss_format;
 
 #ifdef AFMT_S24_PACKED
 	pcm_export_open(export, sample_format,
@@ -541,6 +549,7 @@ oss_probe_sample_format(int fd, enum sample_format sample_format,
  */
 static bool
 oss_setup_sample_format(int fd, struct audio_format *audio_format,
+			int *oss_format_r,
 #ifdef AFMT_S24_PACKED
 			struct pcm_export_state *export,
 #endif
@@ -549,7 +558,7 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
 	enum sample_format mpd_format;
 	enum oss_setup_result result =
 		oss_probe_sample_format(fd, audio_format->format,
-					&mpd_format,
+					&mpd_format, oss_format_r,
 #ifdef AFMT_S24_PACKED
 					export,
 #endif
@@ -588,7 +597,7 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
 			continue;
 
 		result = oss_probe_sample_format(fd, mpd_format,
-						 &mpd_format,
+						 &mpd_format, oss_format_r,
 #ifdef AFMT_S24_PACKED
 						 export,
 #endif
@@ -620,7 +629,7 @@ oss_setup(struct oss_data *od, struct audio_format *audio_format,
 {
 	return oss_setup_channels(od->fd, audio_format, error_r) &&
 		oss_setup_sample_rate(od->fd, audio_format, error_r) &&
-		oss_setup_sample_format(od->fd, audio_format,
+		oss_setup_sample_format(od->fd, audio_format, &od->oss_format,
 #ifdef AFMT_S24_PACKED
 					&od->export,
 #endif
@@ -668,9 +677,8 @@ oss_reopen(struct oss_data *od, GError **error_r)
 	}
 
 	const char *const msg3 = "Failed to set sample format";
-	assert(sample_format_to_oss(od->audio_format.format) != AFMT_QUERY);
 	result = oss_try_ioctl(od->fd, SNDCTL_DSP_SAMPLESIZE,
-			       sample_format_to_oss(od->audio_format.format),
+			       od->oss_format,
 			       msg3, error_r);
 	if (result != SUCCESS) {
 		oss_close(od);
