@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "pcm_export.h"
-#include "pcm_byteswap.h"
+#include "util/byte_reverse.h"
 
 void
 pcm_export_init(struct pcm_export_state *state)
@@ -37,17 +37,31 @@ pcm_export_open(struct pcm_export_state *state,
 		enum sample_format sample_format,
 		bool reverse_endian)
 {
-	state->sample_format = sample_format;
-	state->reverse_endian = reverse_endian;
+	state->reverse_endian = 0;
+	if (reverse_endian) {
+		size_t sample_size = sample_format_size(sample_format);
+		assert(sample_size <= 0xff);
+
+		if (sample_size > 1)
+			state->reverse_endian = sample_size;
+	}
 }
 
 const void *
 pcm_export(struct pcm_export_state *state, const void *data, size_t size,
 	   size_t *dest_size_r)
 {
-	if (state->reverse_endian)
-		data = pcm_byteswap(&state->reverse_buffer,
-				    state->sample_format, data, size);
+	if (state->reverse_endian > 0) {
+		assert(state->reverse_endian >= 2);
+
+		void *dest = pcm_buffer_get(&state->reverse_buffer, size);
+		assert(dest != NULL);
+
+		const uint8_t *src = data, *src_end = src + size;
+		reverse_bytes(dest, src, src_end, state->reverse_endian);
+
+		data = dest;
+	}
 
 	*dest_size_r = size;
 	return data;

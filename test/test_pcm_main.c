@@ -32,8 +32,6 @@ main(int argc, char **argv)
 	g_test_add_func("/pcm/pack/unpack24", test_pcm_unpack_24);
 	g_test_add_func("/pcm/channels/16", test_pcm_channels_16);
 	g_test_add_func("/pcm/channels/32", test_pcm_channels_32);
-	g_test_add_func("/pcm/byteswap/16", test_pcm_byteswap_16);
-	g_test_add_func("/pcm/byteswap/32", test_pcm_byteswap_32);
 
 	g_test_run();
 }

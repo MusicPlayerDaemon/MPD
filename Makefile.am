@@ -405,7 +405,6 @@ libpcm_a_SOURCES = \
 	src/pcm_dsd.c src/pcm_dsd.h \
 	src/pcm_volume.c src/pcm_volume.h \
 	src/pcm_mix.c src/pcm_mix.h \
-	src/pcm_byteswap.c src/pcm_byteswap.h \
 	src/pcm_channels.c src/pcm_channels.h \
 	src/pcm_pack.c src/pcm_pack.h \
 	src/pcm_format.c src/pcm_format.h \
@@ -1277,7 +1276,6 @@ test_test_pcm_SOURCES = \
 	test/test_pcm_dither.c \
 	test/test_pcm_pack.c \
 	test/test_pcm_channels.c \
-	test/test_pcm_byteswap.c \
 	test/test_pcm_all.h \
 	test/test_pcm_main.c
 test_test_pcm_LDADD = \

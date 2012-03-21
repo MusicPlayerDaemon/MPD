@@ -41,12 +41,12 @@ struct pcm_export_state {
 	 */
 	struct pcm_buffer reverse_buffer;
 
-	enum sample_format sample_format;
-
 	/**
-	 * Export the samples in reverse byte order?
+	 * Export the samples in reverse byte order?  A non-zero value
+	 * means the option is enabled and represents the size of each
+	 * sample (2 or bigger).
 	 */
-	bool reverse_endian;
+	uint8_t reverse_endian;
 };
 
 /**

@@ -38,10 +38,4 @@ test_pcm_channels_16(void);
 void
 test_pcm_channels_32(void);
 
-void
-test_pcm_byteswap_16(void);
-
-void
-test_pcm_byteswap_32(void);
-
 #endif
