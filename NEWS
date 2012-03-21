@@ -17,6 +17,7 @@ ver 0.17 (2011/??/??)
   - oggflac: delete this obsolete plugin
   - dsdiff: new decoder plugin
 * output:
+  - alsa: support DSD-over-USB (dCS suggested standard)
   - httpd: support for streaming to a DLNA client
   - openal: improve buffer cancellation
   - osx: allow user to specify other audio devices

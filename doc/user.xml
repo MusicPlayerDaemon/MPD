@@ -1119,6 +1119,23 @@ systemctl start mpd.socket</programlisting>
                   bit, floating point, ...).
                 </entry>
               </row>
+              <row>
+                <entry>
+                  <varname>dsd_usb</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  If set to <parameter>yes</parameter>, then DSD over
+                  USB according to the <ulink
+                  url="http://www.dcsltd.co.uk/page/assets/DSDoverUSB.pdf">dCS
+                  suggested standard</ulink> is enabled.  This wrapsa
+                  DSD samples in fake 24 bit PCM, and is understood by
+                  some DSD capable products, but may be harmful to
+                  other hardware.  Therefore, the default is
+                  <parameter>no</parameter> and you can enable the
+                  option at your own risk.
+                </entry>
+              </row>
             </tbody>
           </tgroup>
         </informaltable>

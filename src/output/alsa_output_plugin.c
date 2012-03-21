@@ -55,6 +55,14 @@ struct alsa_data {
 	/** use memory mapped I/O? */
 	bool use_mmap;
 
+	/**
+	 * Enable DSD over USB according to the dCS suggested
+	 * standard?
+	 *
+	 * @see http://www.dcsltd.co.uk/page/assets/DSDoverUSB.pdf
+	 */
+	bool dsd_usb;
+
 	/** libasound's buffer_time setting (in microseconds) */
 	unsigned int buffer_time;
 
@@ -127,6 +135,8 @@ alsa_configure(struct alsa_data *ad, const struct config_param *param)
 	ad->device = config_dup_block_string(param, "device", NULL);
 
 	ad->use_mmap = config_get_block_bool(param, "use_mmap", false);
+
+	ad->dsd_usb = config_get_block_bool(param, "dsd_usb", false);
 
 	ad->buffer_time = config_get_block_unsigned(param, "buffer_time",
 			MPD_ALSA_BUFFER_TIME_US);
@@ -576,6 +586,49 @@ error:
 }
 
 static bool
+alsa_setup_dsd(struct alsa_data *ad, struct audio_format *audio_format,
+	       GError **error_r)
+{
+	assert(ad->dsd_usb);
+	assert(audio_format->format == SAMPLE_FORMAT_DSD);
+
+	/* pass 24 bit to alsa_setup() */
+
+	audio_format->format = SAMPLE_FORMAT_S24_P32;
+	audio_format->sample_rate /= 2;
+
+	const struct audio_format check = *audio_format;
+
+	if (!alsa_setup(ad, audio_format, error_r))
+		return false;
+
+	if (!audio_format_equals(audio_format, &check)) {
+		/* no bit-perfect playback, which is required
+		   for DSD over USB */
+		g_set_error(error_r, alsa_output_quark(), 0,
+			    "Failed to configure DSD-over-USB on ALSA device \"%s\"",
+			    alsa_device(ad));
+		return false;
+	}
+
+	/* the ALSA device has accepted 24 bit playback,
+	   return DSD_OVER_USB to the caller */
+
+	audio_format->format = SAMPLE_FORMAT_DSD_OVER_USB;
+	return true;
+}
+
+static bool
+alsa_setup_or_dsd(struct alsa_data *ad, struct audio_format *audio_format,
+		  GError **error_r)
+{
+	if (ad->dsd_usb && audio_format->format == SAMPLE_FORMAT_DSD)
+		return alsa_setup_dsd(ad, audio_format, error_r);
+
+	return alsa_setup(ad, audio_format, error_r);
+}
+
+static bool
 alsa_open(struct audio_output *ao, struct audio_format *audio_format, GError **error)
 {
 	struct alsa_data *ad = (struct alsa_data *)ao;
@@ -591,7 +644,7 @@ alsa_open(struct audio_output *ao, struct audio_format *audio_format, GError **e
 		return false;
 	}
 
-	success = alsa_setup(ad, audio_format, error);
+	success = alsa_setup_or_dsd(ad, audio_format, error);
 	if (!success) {
 		snd_pcm_close(ad->pcm);
 		return false;
