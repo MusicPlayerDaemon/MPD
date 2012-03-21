@@ -975,6 +975,7 @@ sparse-check:
 if ENABLE_TEST
 
 C_TESTS = \
+	test/test_byte_reverse \
 	test/test_pcm \
 	test/test_queue_priority
 
@@ -1261,6 +1262,13 @@ test_run_inotify_SOURCES = test/run_inotify.c \
 	src/inotify_source.c
 test_run_inotify_LDADD = $(GLIB_LIBS)
 endif
+
+test_test_byte_reverse_SOURCES = \
+	test/test_glib_compat.h \
+	test/test_byte_reverse.c
+test_test_byte_reverse_LDADD = \
+	libutil.a \
+	$(GLIB_LIBS)
 
 test_test_pcm_SOURCES = \
 	test/test_glib_compat.h \

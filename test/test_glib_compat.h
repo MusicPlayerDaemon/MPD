@@ -28,7 +28,10 @@
 
 #if !GLIB_CHECK_VERSION(2,16,0)
 
+#include <string.h>
+
 #define g_assert_cmpint(n1, cmp, n2) g_assert((n1) cmp (n2))
+#define g_assert_cmpstr(a, cmp, b) g_assert(strcmp(a, b) cmp 0)
 
 static void (*test_functions[256])(void);
 static unsigned num_test_functions;
