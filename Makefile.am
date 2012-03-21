@@ -399,6 +399,7 @@ libutil_a_SOURCES = \
 
 libpcm_a_SOURCES = \
 	src/pcm_buffer.c src/pcm_buffer.h \
+	src/pcm_export.c src/pcm_export.h \
 	src/pcm_convert.c src/pcm_convert.h \
 	src/dsd2pcm/dsd2pcm.c src/dsd2pcm/dsd2pcm.h \
 	src/pcm_dsd.c src/pcm_dsd.h \
