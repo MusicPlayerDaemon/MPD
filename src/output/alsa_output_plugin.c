@@ -302,8 +302,6 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 
 	int err = alsa_output_try_format(pcm, hwparams, audio_format->format,
 					 reverse_endian_r);
-	if (err != -EINVAL)
-		return err;
 
 	/* if unsupported by the hardware, try other formats */
 
@@ -316,7 +314,9 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 		SAMPLE_FORMAT_UNDEFINED,
 	};
 
-	for (unsigned i = 0; probe_formats[i] != SAMPLE_FORMAT_UNDEFINED; ++i) {
+	for (unsigned i = 0;
+	     err == -EINVAL && probe_formats[i] != SAMPLE_FORMAT_UNDEFINED;
+	     ++i) {
 		const enum sample_format mpd_format = probe_formats[i];
 		if (mpd_format == audio_format->format)
 			continue;
@@ -325,12 +325,9 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 					     reverse_endian_r);
 		if (err == 0)
 			audio_format->format = mpd_format;
-
-		if (err != -EINVAL)
-			return err;
 	}
 
-	return -EINVAL;
+	return err;
 }
 
 /**
