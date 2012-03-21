@@ -119,7 +119,6 @@ pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
 {
 	switch (format) {
 	case SAMPLE_FORMAT_UNDEFINED:
-	case SAMPLE_FORMAT_S24:
 	case SAMPLE_FORMAT_DSD:
 	case SAMPLE_FORMAT_DSD_OVER_USB:
 		/* not implemented */
@@ -230,7 +229,6 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 {
 	switch (format) {
 	case SAMPLE_FORMAT_UNDEFINED:
-	case SAMPLE_FORMAT_S24:
 	case SAMPLE_FORMAT_DSD:
 	case SAMPLE_FORMAT_DSD_OVER_USB:
 		/* not implemented */

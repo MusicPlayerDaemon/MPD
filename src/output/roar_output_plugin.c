@@ -167,10 +167,6 @@ roar_use_audio_format(struct roar_audio_info *info,
 		info->bits = 16;
 		break;
 
-	case SAMPLE_FORMAT_S24:
-		info->bits = 24;
-		break;
-
 	case SAMPLE_FORMAT_S24_P32:
 		info->bits = 32;
 		audio_format->format = SAMPLE_FORMAT_S32;

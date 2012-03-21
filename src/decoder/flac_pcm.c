@@ -101,7 +101,6 @@ flac_convert(void *dest,
 			       position, end);
 		break;
 
-	case SAMPLE_FORMAT_S24:
 	case SAMPLE_FORMAT_FLOAT:
 	case SAMPLE_FORMAT_DSD:
 	case SAMPLE_FORMAT_DSD_OVER_USB:

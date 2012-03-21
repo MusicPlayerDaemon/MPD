@@ -69,33 +69,6 @@ pcm_allocate_8_to_16(struct pcm_buffer *buffer,
 	return dest;
 }
 
-static int32_t *
-pcm_allocate_24_to_24p32(struct pcm_buffer *buffer, const uint8_t *src,
-			 size_t src_size, size_t *dest_size_r)
-{
-	int32_t *dest;
-	*dest_size_r = src_size / 3 * sizeof(*dest);
-	dest = pcm_buffer_get(buffer, *dest_size_r);
-	pcm_unpack_24(dest, src, pcm_end_pointer(src, src_size));
-	return dest;
-}
-
-static int16_t *
-pcm_allocate_24_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
-		      const uint8_t *src, size_t src_size, size_t *dest_size_r)
-{
-	/* convert to S24_P32 first */
-	size_t tmp_size;
-	int32_t *tmp = pcm_allocate_24_to_24p32(buffer, src, src_size,
-						&tmp_size);
-
-	/* convert to 16 bit in-place */
-	int16_t *dest = (int16_t *)tmp;
-	*dest_size_r = tmp_size / sizeof(*tmp) * sizeof(*dest);
-	pcm_convert_24_to_16(dither, dest, tmp, pcm_end_pointer(tmp, tmp_size));
-	return dest;
-}
-
 static int16_t *
 pcm_allocate_24p32_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 			 const int32_t *src, size_t src_size,
@@ -158,10 +131,6 @@ pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 	case SAMPLE_FORMAT_S16:
 		*dest_size_r = src_size;
 		return src;
-
-	case SAMPLE_FORMAT_S24:
-		return pcm_allocate_24_to_16(buffer, dither,
-					     src, src_size, dest_size_r);
 
 	case SAMPLE_FORMAT_S24_P32:
 		return pcm_allocate_24p32_to_16(buffer, dither, src, src_size,
@@ -279,10 +248,6 @@ pcm_convert_to_24(struct pcm_buffer *buffer,
 		return pcm_allocate_16_to_24(buffer,
 					    src, src_size, dest_size_r);
 
-	case SAMPLE_FORMAT_S24:
-		return pcm_allocate_24_to_24p32(buffer, src, src_size,
-						dest_size_r);
-
 	case SAMPLE_FORMAT_S24_P32:
 		*dest_size_r = src_size;
 		return src;
@@ -346,20 +311,6 @@ pcm_allocate_16_to_32(struct pcm_buffer *buffer,
 }
 
 static int32_t *
-pcm_allocate_24_to_32(struct pcm_buffer *buffer,
-		      const uint8_t *src,
-		      size_t src_size, size_t *dest_size_r)
-{
-	/* convert to S24_P32 first */
-	int32_t *dest = pcm_allocate_24_to_24p32(buffer, src, src_size,
-						 dest_size_r);
-
-	/* convert to 32 bit in-place */
-	pcm_convert_24_to_32(dest, dest, pcm_end_pointer(dest, *dest_size_r));
-	return dest;
-}
-
-static int32_t *
 pcm_allocate_24p32_to_32(struct pcm_buffer *buffer,
 			 const int32_t *src, size_t src_size,
 			 size_t *dest_size_r)
@@ -403,10 +354,6 @@ pcm_convert_to_32(struct pcm_buffer *buffer,
 
 	case SAMPLE_FORMAT_S16:
 		return pcm_allocate_16_to_32(buffer, src, src_size,
-					     dest_size_r);
-
-	case SAMPLE_FORMAT_S24:
-		return pcm_allocate_24_to_32(buffer, src, src_size,
 					     dest_size_r);
 
 	case SAMPLE_FORMAT_S24_P32:
@@ -487,21 +434,6 @@ pcm_allocate_16_to_float(struct pcm_buffer *buffer,
 }
 
 static float *
-pcm_allocate_24_to_float(struct pcm_buffer *buffer,
-		      const uint8_t *src,
-		      size_t src_size, size_t *dest_size_r)
-{
-	/* convert to S24_P32 first */
-	int32_t *tmp = pcm_allocate_24_to_24p32(buffer, src, src_size,
-						dest_size_r);
-
-	/* convert to float in-place */
-	float *dest = (float *)tmp;
-	pcm_convert_24_to_float(dest, tmp, pcm_end_pointer(tmp, *dest_size_r));
-	return dest;
-}
-
-static float *
 pcm_allocate_24p32_to_float(struct pcm_buffer *buffer,
 			 const int32_t *src, size_t src_size,
 			 size_t *dest_size_r)
@@ -540,10 +472,6 @@ pcm_convert_to_float(struct pcm_buffer *buffer,
 
 	case SAMPLE_FORMAT_S16:
 		return pcm_allocate_16_to_float(buffer,
-						src, src_size, dest_size_r);
-
-	case SAMPLE_FORMAT_S24:
-		return pcm_allocate_24_to_float(buffer,
 						src, src_size, dest_size_r);
 
 	case SAMPLE_FORMAT_S24_P32:

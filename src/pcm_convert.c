@@ -42,7 +42,6 @@ void pcm_convert_init(struct pcm_convert_state *state)
 	pcm_dither_24_init(&state->dither);
 
 	pcm_buffer_init(&state->format_buffer);
-	pcm_buffer_init(&state->pack_buffer);
 	pcm_buffer_init(&state->channels_buffer);
 }
 
@@ -52,7 +51,6 @@ void pcm_convert_deinit(struct pcm_convert_state *state)
 	pcm_resample_deinit(&state->resample);
 
 	pcm_buffer_deinit(&state->format_buffer);
-	pcm_buffer_deinit(&state->pack_buffer);
 	pcm_buffer_deinit(&state->channels_buffer);
 }
 
@@ -75,7 +73,6 @@ pcm_convert_channels(struct pcm_buffer *buffer, enum sample_format format,
 	switch (format) {
 	case SAMPLE_FORMAT_UNDEFINED:
 	case SAMPLE_FORMAT_S8:
-	case SAMPLE_FORMAT_S24:
 	case SAMPLE_FORMAT_FLOAT:
 	case SAMPLE_FORMAT_DSD:
 	case SAMPLE_FORMAT_DSD_OVER_USB:
@@ -213,45 +210,6 @@ pcm_convert_24(struct pcm_convert_state *state,
 
 	*dest_size_r = len;
 	return buf;
-}
-
-/**
- * Convert to 24 bit packed samples (aka S24_3LE / S24_3BE).
- */
-static const void *
-pcm_convert_24_packed(struct pcm_convert_state *state,
-		      const struct audio_format *src_format,
-		      const void *src_buffer, size_t src_size,
-		      const struct audio_format *dest_format,
-		      size_t *dest_size_r,
-		      GError **error_r)
-{
-	assert(dest_format->format == SAMPLE_FORMAT_S24);
-
-	/* use the normal 24 bit conversion first */
-
-	struct audio_format audio_format;
-	audio_format_init(&audio_format, dest_format->sample_rate,
-			  SAMPLE_FORMAT_S24_P32, dest_format->channels);
-
-	const int32_t *buffer;
-	size_t buffer_size;
-
-	buffer = pcm_convert_24(state, src_format, src_buffer, src_size,
-				&audio_format, &buffer_size, error_r);
-	if (buffer == NULL)
-		return NULL;
-
-	/* now convert to packed 24 bit */
-
-	unsigned num_samples = buffer_size / 4;
-	size_t dest_size = num_samples * 3;
-
-	uint8_t *dest = pcm_buffer_get(&state->pack_buffer, dest_size);
-	pcm_pack_24(dest, buffer, buffer + num_samples);
-
-	*dest_size_r = dest_size;
-	return dest;
 }
 
 static const int32_t *
@@ -394,12 +352,6 @@ pcm_convert(struct pcm_convert_state *state,
 				      src_format, src, src_size,
 				      dest_format, dest_size_r,
 				      error_r);
-
-	case SAMPLE_FORMAT_S24:
-		return pcm_convert_24_packed(state,
-					     src_format, src, src_size,
-					     dest_format, dest_size_r,
-					     error_r);
 
 	case SAMPLE_FORMAT_S24_P32:
 		return pcm_convert_24(state,

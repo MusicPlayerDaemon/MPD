@@ -161,7 +161,6 @@ winmm_output_open(struct audio_output *ao, struct audio_format *audio_format,
 	case SAMPLE_FORMAT_S16:
 		break;
 
-	case SAMPLE_FORMAT_S24:
 	case SAMPLE_FORMAT_S24_P32:
 	case SAMPLE_FORMAT_S32:
 	case SAMPLE_FORMAT_UNDEFINED:
