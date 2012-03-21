@@ -59,7 +59,7 @@ unpack_sample(int32_t *dest0, const uint8_t *src)
 	*dest++ = *src++;
 	*dest++ = *src;
 
-	if (G_BYTE_ORDER != G_LITTLE_ENDIAN)
+	if (G_BYTE_ORDER == G_LITTLE_ENDIAN)
 		/* extend the sign bit to the most fourth byte */
 		*dest++ = *src & 0x80 ? 0xff : 0x00;
 }
