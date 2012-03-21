@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,13 +20,9 @@
 #include "config.h"
 #include "pcm_byteswap.h"
 #include "pcm_buffer.h"
-
-#include <glib.h>
+#include "util/byte_reverse.h"
 
 #include <assert.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "pcm"
 
 const int16_t *pcm_byteswap_16(struct pcm_buffer *buffer,
 			       const int16_t *src, size_t len)
@@ -35,13 +31,10 @@ const int16_t *pcm_byteswap_16(struct pcm_buffer *buffer,
 
 	assert(buf != NULL);
 
-	const int16_t *src_end = src + len / sizeof(*src);
-	int16_t *dest = buf;
-	while (src < src_end) {
-		const int16_t x = *src++;
-		*dest++ = GUINT16_SWAP_LE_BE(x);
-	}
+	const uint8_t *src8 = (const uint8_t *)src;
+	const void *src_end = src8 + len;
 
+	reverse_bytes_16((uint16_t *)buf, (const uint16_t *)src, src_end);
 	return buf;
 }
 
@@ -52,41 +45,31 @@ const int32_t *pcm_byteswap_32(struct pcm_buffer *buffer,
 
 	assert(buf != NULL);
 
-	const int32_t *src_end = src + len / sizeof(*src);
-	int32_t *dest = buf;
-	while (src < src_end) {
-		const int32_t x = *src++;
-		*dest++ = GUINT32_SWAP_LE_BE(x);
-	}
+	const uint8_t *src8 = (const uint8_t *)src;
+	const void *src_end = src8 + len;
 
+	reverse_bytes_32((uint32_t *)buf, (const uint32_t *)src, src_end);
 	return buf;
 }
 
 const void *
 pcm_byteswap(struct pcm_buffer *buffer, enum sample_format format,
-	     const void *src, size_t size)
+	     const void *_src, size_t size)
 {
-	switch (format) {
-	case SAMPLE_FORMAT_UNDEFINED:
-	case SAMPLE_FORMAT_S24:
-	case SAMPLE_FORMAT_FLOAT:
-	case SAMPLE_FORMAT_DSD_OVER_USB:
-		/* not implemented */
-		return NULL;
+	const uint8_t *const src = _src;
 
-	case SAMPLE_FORMAT_S8:
-	case SAMPLE_FORMAT_DSD:
+	if (size <= 1)
 		return src;
 
-	case SAMPLE_FORMAT_S16:
-		return pcm_byteswap_16(buffer, src, size);
+	size_t sample_size = sample_format_size(format);
+	if (sample_size <= 1)
+		return src;
 
-	case SAMPLE_FORMAT_S24_P32:
-	case SAMPLE_FORMAT_S32:
-		return pcm_byteswap_32(buffer, src, size);
-	}
+	assert(size % sample_size == 0);
 
-	/* unreachable */
-	assert(false);
-	return NULL;
+	uint8_t *dest = pcm_buffer_get(buffer, size);
+	assert(dest != NULL);
+
+	reverse_bytes(dest, src, src + size, sample_size);
+	return dest;
 }

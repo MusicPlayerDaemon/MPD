@@ -392,6 +392,7 @@ endif
 libutil_a_SOURCES = \
 	src/util/list.h \
 	src/util/list_sort.c src/util/list_sort.h \
+	src/util/byte_reverse.c src/util/byte_reverse.h \
 	src/util/bit_reverse.c src/util/bit_reverse.h
 
 # PCM library
@@ -1271,6 +1272,7 @@ test_test_pcm_SOURCES = \
 	test/test_pcm_main.c
 test_test_pcm_LDADD = \
 	$(PCM_LIBS) \
+	libutil.a \
 	$(GLIB_LIBS)
 
 test_test_queue_priority_SOURCES = \
