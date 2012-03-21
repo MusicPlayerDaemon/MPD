@@ -265,19 +265,16 @@ byteswap_bitformat(snd_pcm_format_t fmt)
  */
 static int
 alsa_output_try_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-		       struct audio_format *audio_format,
-		       bool *reverse_endian_r,
-		       enum sample_format sample_format)
+		       enum sample_format sample_format,
+		       bool *reverse_endian_r)
 {
 	snd_pcm_format_t alsa_format = get_bitformat(sample_format);
 	if (alsa_format == SND_PCM_FORMAT_UNKNOWN)
 		return -EINVAL;
 
 	int err = snd_pcm_hw_params_set_format(pcm, hwparams, alsa_format);
-	if (err == 0) {
+	if (err == 0)
 		*reverse_endian_r = false;
-		audio_format->format = sample_format;
-	}
 
 	if (err != -EINVAL)
 		return err;
@@ -287,10 +284,8 @@ alsa_output_try_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 		return -EINVAL;
 
 	err = snd_pcm_hw_params_set_format(pcm, hwparams, alsa_format);
-	if (err == 0) {
+	if (err == 0)
 		*reverse_endian_r = true;
-		audio_format->format = sample_format;
-	}
 
 	return err;
 }
@@ -305,9 +300,8 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 {
 	/* try the input format first */
 
-	int err = alsa_output_try_format(pcm, hwparams, audio_format,
-					 reverse_endian_r,
-					 audio_format->format);
+	int err = alsa_output_try_format(pcm, hwparams, audio_format->format,
+					 reverse_endian_r);
 	if (err != -EINVAL)
 		return err;
 
@@ -323,12 +317,15 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 	};
 
 	for (unsigned i = 0; probe_formats[i] != SAMPLE_FORMAT_UNDEFINED; ++i) {
-		if (probe_formats[i] == audio_format->format)
+		const enum sample_format mpd_format = probe_formats[i];
+		if (mpd_format == audio_format->format)
 			continue;
 
-		err = alsa_output_try_format(pcm, hwparams, audio_format,
-					     reverse_endian_r,
-					     probe_formats[i]);
+		err = alsa_output_try_format(pcm, hwparams, mpd_format,
+					     reverse_endian_r);
+		if (err == 0)
+			audio_format->format = mpd_format;
+
 		if (err != -EINVAL)
 			return err;
 	}
