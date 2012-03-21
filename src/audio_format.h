@@ -57,8 +57,8 @@ enum sample_format {
 	SAMPLE_FORMAT_DSD,
 
 	/**
-	 * DSD packed in 24 bit samples (no padding), according to the
-	 * dCS suggested standard:
+	 * DSD packed in 24 bit samples (padded to 32 bit), according
+	 * to the dCS suggested standard:
 	 * http://www.dcsltd.co.uk/page/assets/DSDoverUSB.pdf
 	 */
 	SAMPLE_FORMAT_DSD_OVER_USB,
@@ -249,12 +249,12 @@ sample_format_size(enum sample_format format)
 		return 2;
 
 	case SAMPLE_FORMAT_S24:
-	case SAMPLE_FORMAT_DSD_OVER_USB:
 		return 3;
 
 	case SAMPLE_FORMAT_S24_P32:
 	case SAMPLE_FORMAT_S32:
 	case SAMPLE_FORMAT_FLOAT:
+	case SAMPLE_FORMAT_DSD_OVER_USB:
 		return 4;
 
 	case SAMPLE_FORMAT_DSD:
