@@ -74,8 +74,15 @@ struct alsa_data {
 	 */
 	alsa_writei_t *writei;
 
-	/** the size of one audio frame */
-	size_t frame_size;
+	/**
+	 * The size of one audio frame passed to method play().
+	 */
+	size_t in_frame_size;
+
+	/**
+	 * The size of one audio frame passed to libasound.
+	 */
+	size_t out_frame_size;
 
 	/**
 	 * The size of one period, in number of frames.
@@ -590,7 +597,8 @@ alsa_open(struct audio_output *ao, struct audio_format *audio_format, GError **e
 		return false;
 	}
 
-	ad->frame_size = audio_format_frame_size(audio_format);
+	ad->in_frame_size = audio_format_frame_size(audio_format);
+	ad->out_frame_size = ad->export.pack24 ? 3 : ad->in_frame_size;
 
 	return true;
 }
@@ -645,7 +653,7 @@ alsa_drain(struct audio_output *ao)
 		   period */
 		snd_pcm_uframes_t nframes =
 			ad->period_frames - ad->period_position;
-		size_t nbytes = nframes * ad->frame_size;
+		size_t nbytes = nframes * ad->out_frame_size;
 		void *buffer = g_malloc(nbytes);
 		snd_pcm_hw_params_t *params;
 		snd_pcm_format_t format;
@@ -690,16 +698,20 @@ alsa_play(struct audio_output *ao, const void *chunk, size_t size,
 {
 	struct alsa_data *ad = (struct alsa_data *)ao;
 
+	assert(size % ad->in_frame_size == 0);
+
 	chunk = pcm_export(&ad->export, chunk, size, &size);
 
-	size /= ad->frame_size;
+	assert(size % ad->out_frame_size == 0);
+
+	size /= ad->out_frame_size;
 
 	while (true) {
 		snd_pcm_sframes_t ret = ad->writei(ad->pcm, chunk, size);
 		if (ret > 0) {
 			ad->period_position = (ad->period_position + ret)
 				% ad->period_frames;
-			return ret * ad->frame_size;
+			return ret * ad->in_frame_size;
 		}
 
 		if (ret < 0 && ret != -EAGAIN && ret != -EINTR &&
