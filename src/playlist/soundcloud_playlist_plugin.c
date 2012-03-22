@@ -130,7 +130,13 @@ static int handle_integer(void *ctx,
 	return 1;
 }
 
-static int handle_string(void *ctx, const unsigned char* stringval, unsigned int stringlen)
+static int handle_string(void *ctx, const unsigned char* stringval,
+#ifdef HAVE_YAJL1
+			 unsigned int
+#else
+			 size_t
+#endif
+			 stringlen)
 {
 	struct parse_data *data = (struct parse_data *) ctx;
 	const char *s = (const char *) stringval;
@@ -154,7 +160,13 @@ static int handle_string(void *ctx, const unsigned char* stringval, unsigned int
 	return 1;
 }
 
-static int handle_mapkey(void *ctx, const unsigned char* stringval, unsigned int stringlen)
+static int handle_mapkey(void *ctx, const unsigned char* stringval,
+#ifdef HAVE_YAJL1
+			 unsigned int
+#else
+			 size_t
+#endif
+			 stringlen)
 {
 	struct parse_data *data = (struct parse_data *) ctx;
 
