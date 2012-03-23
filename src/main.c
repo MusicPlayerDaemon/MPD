@@ -194,8 +194,7 @@ glue_sticker_init(void)
 	if (sticker_file == NULL && error != NULL)
 		MPD_ERROR("%s", error->message);
 
-	if (!sticker_global_init(config_get_string(CONF_STICKER_FILE, NULL),
-				 &error))
+	if (!sticker_global_init(sticker_file, &error))
 		MPD_ERROR("%s", error->message);
 
 	g_free(sticker_file);
