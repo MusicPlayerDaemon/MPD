@@ -441,6 +441,11 @@ configure_hw:
 		return false;
 	}
 
+	snd_pcm_format_t format;
+	if (snd_pcm_hw_params_get_format(hwparams, &format) == 0)
+		g_debug("format=%s (%s)", snd_pcm_format_name(format),
+			snd_pcm_format_description(format));
+
 	err = snd_pcm_hw_params_set_channels_near(ad->pcm, hwparams,
 						  &channels);
 	if (err < 0) {
@@ -643,6 +648,9 @@ alsa_open(struct audio_output *ao, struct audio_format *audio_format, GError **e
 			    alsa_device(ad), snd_strerror(err));
 		return false;
 	}
+
+	g_debug("opened %s type=%s", snd_pcm_name(ad->pcm),
+		snd_pcm_type_name(snd_pcm_type(ad->pcm)));
 
 	success = alsa_setup_or_dsd(ad, audio_format, error);
 	if (!success) {
