@@ -385,7 +385,7 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
  */
 static bool
 alsa_setup(struct alsa_data *ad, struct audio_format *audio_format,
-	   GError **error)
+	   bool *packed_r, bool *reverse_endian_r, GError **error)
 {
 	snd_pcm_hw_params_t *hwparams;
 	snd_pcm_sw_params_t *swparams;
@@ -429,9 +429,8 @@ configure_hw:
 		ad->writei = snd_pcm_writei;
 	}
 
-	bool packed, reverse_endian;
 	err = alsa_output_setup_format(ad->pcm, hwparams, audio_format,
-				       &packed, &reverse_endian);
+				       packed_r, reverse_endian_r);
 	if (err < 0) {
 		g_set_error(error, alsa_output_quark(), err,
 			    "ALSA device \"%s\" does not support format %s: %s",
@@ -578,9 +577,6 @@ configure_hw:
 	ad->period_frames = alsa_period_size;
 	ad->period_position = 0;
 
-	pcm_export_open(&ad->export, audio_format->format,
-			packed, reverse_endian);
-
 	return true;
 
 error:
@@ -592,7 +588,7 @@ error:
 
 static bool
 alsa_setup_dsd(struct alsa_data *ad, struct audio_format *audio_format,
-	       GError **error_r)
+	       bool *packed_r, bool *reverse_endian_r, GError **error_r)
 {
 	assert(ad->dsd_usb);
 	assert(audio_format->format == SAMPLE_FORMAT_DSD);
@@ -604,7 +600,7 @@ alsa_setup_dsd(struct alsa_data *ad, struct audio_format *audio_format,
 
 	const struct audio_format check = *audio_format;
 
-	if (!alsa_setup(ad, audio_format, error_r))
+	if (!alsa_setup(ad, audio_format, packed_r, reverse_endian_r, error_r))
 		return false;
 
 	if (!audio_format_equals(audio_format, &check)) {
@@ -627,10 +623,19 @@ static bool
 alsa_setup_or_dsd(struct alsa_data *ad, struct audio_format *audio_format,
 		  GError **error_r)
 {
-	if (ad->dsd_usb && audio_format->format == SAMPLE_FORMAT_DSD)
-		return alsa_setup_dsd(ad, audio_format, error_r);
+	bool packed, reverse_endian;
 
-	return alsa_setup(ad, audio_format, error_r);
+	const bool success = ad->dsd_usb && audio_format->format == SAMPLE_FORMAT_DSD
+		? alsa_setup_dsd(ad, audio_format, &packed, &reverse_endian,
+				 error_r)
+		: alsa_setup(ad, audio_format, &packed, &reverse_endian,
+			     error_r);
+	if (!success)
+		return false;
+
+	pcm_export_open(&ad->export, audio_format->format,
+			packed, reverse_endian);
+	return true;
 }
 
 static bool
