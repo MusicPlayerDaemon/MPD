@@ -69,6 +69,12 @@ struct pcm_export_state {
 	bool dsd_usb;
 
 	/**
+	 * Convert (padded) 24 bit samples to 32 bit by shifting 8
+	 * bits to the left?
+	 */
+	bool shift8;
+
+	/**
 	 * Pack 24 bit samples?
 	 */
 	bool pack24;
@@ -106,7 +112,7 @@ pcm_export_deinit(struct pcm_export_state *state);
 void
 pcm_export_open(struct pcm_export_state *state,
 		enum sample_format sample_format, unsigned channels,
-		bool dsd_usb, bool pack, bool reverse_endian);
+		bool dsd_usb, bool shift8, bool pack, bool reverse_endian);
 
 /**
  * Export a PCM buffer.

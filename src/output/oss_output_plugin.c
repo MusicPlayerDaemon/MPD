@@ -540,7 +540,7 @@ oss_probe_sample_format(int fd, enum sample_format sample_format,
 	*oss_format_r = oss_format;
 
 #ifdef AFMT_S24_PACKED
-	pcm_export_open(export, sample_format, 0, false,
+	pcm_export_open(export, sample_format, 0, false, false,
 			oss_format == AFMT_S24_PACKED,
 			oss_format == AFMT_S24_PACKED &&
 			G_BYTE_ORDER != G_LITTLE_ENDIAN);

@@ -634,7 +634,7 @@ alsa_setup_or_dsd(struct alsa_data *ad, struct audio_format *audio_format,
 
 	pcm_export_open(&ad->export,
 			audio_format->format, audio_format->channels,
-			dsd_usb, packed, reverse_endian);
+			dsd_usb, false, packed, reverse_endian);
 	return true;
 }
 

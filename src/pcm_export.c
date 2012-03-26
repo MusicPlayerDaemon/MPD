@@ -41,7 +41,7 @@ void pcm_export_deinit(struct pcm_export_state *state)
 void
 pcm_export_open(struct pcm_export_state *state,
 		enum sample_format sample_format, unsigned channels,
-		bool dsd_usb, bool pack, bool reverse_endian)
+		bool dsd_usb, bool shift8, bool pack, bool reverse_endian)
 {
 	assert(audio_valid_sample_format(sample_format));
 	assert(!dsd_usb || audio_valid_channel_count(channels));
@@ -53,7 +53,10 @@ pcm_export_open(struct pcm_export_state *state,
 		   samples are stuffed inside fake 24 bit samples */
 		sample_format = SAMPLE_FORMAT_S24_P32;
 
+	state->shift8 = shift8 && sample_format == SAMPLE_FORMAT_S24_P32;
 	state->pack24 = pack && (sample_format == SAMPLE_FORMAT_S24_P32 || sample_format == SAMPLE_FORMAT_DSD_OVER_USB);
+
+	assert(!state->shift8 || !state->pack24);
 
 	state->reverse_endian = 0;
 	if (reverse_endian) {
@@ -90,7 +93,20 @@ pcm_export(struct pcm_export_state *state, const void *data, size_t size,
 
 		data = dest;
 		size = dest_size;
+	} else if (state->shift8) {
+		assert(size % 4 == 0);
+
+		const uint8_t *src8 = data, *src_end8 = src8 + size;
+		const uint32_t *src = (const uint32_t *)src8;
+		const uint32_t *const src_end = (const uint32_t *)src_end8;
+
+		uint32_t *dest = pcm_buffer_get(&state->pack_buffer, size);
+		data = dest;
+
+		while (src < src_end)
+			*dest++ = *src++ << 8;
 	}
+
 
 	if (state->reverse_endian > 0) {
 		assert(state->reverse_endian >= 2);
