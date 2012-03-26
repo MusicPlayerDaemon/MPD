@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "pcm_export.h"
+#include "pcm_dsd_usb.h"
 #include "pcm_pack.h"
 #include "util/byte_reverse.h"
 
@@ -27,19 +28,31 @@ pcm_export_init(struct pcm_export_state *state)
 {
 	pcm_buffer_init(&state->reverse_buffer);
 	pcm_buffer_init(&state->pack_buffer);
+	pcm_buffer_init(&state->dsd_buffer);
 }
 
 void pcm_export_deinit(struct pcm_export_state *state)
 {
 	pcm_buffer_deinit(&state->reverse_buffer);
 	pcm_buffer_deinit(&state->pack_buffer);
+	pcm_buffer_deinit(&state->dsd_buffer);
 }
 
 void
 pcm_export_open(struct pcm_export_state *state,
-		enum sample_format sample_format,
-		bool pack, bool reverse_endian)
+		enum sample_format sample_format, unsigned channels,
+		bool dsd_usb, bool pack, bool reverse_endian)
 {
+	assert(audio_valid_sample_format(sample_format));
+	assert(!dsd_usb || audio_valid_channel_count(channels));
+
+	state->channels = channels;
+	state->dsd_usb = dsd_usb && sample_format == SAMPLE_FORMAT_DSD;
+	if (state->dsd_usb)
+		/* after the conversion to DSD-over-USB, the DSD
+		   samples are stuffed inside fake 24 bit samples */
+		sample_format = SAMPLE_FORMAT_S24_P32;
+
 	state->pack24 = pack && (sample_format == SAMPLE_FORMAT_S24_P32 || sample_format == SAMPLE_FORMAT_DSD_OVER_USB);
 
 	state->reverse_endian = 0;
@@ -58,6 +71,10 @@ const void *
 pcm_export(struct pcm_export_state *state, const void *data, size_t size,
 	   size_t *dest_size_r)
 {
+	if (state->dsd_usb)
+		data = pcm_dsd_to_usb(&state->dsd_buffer, state->channels,
+				      data, size, &size);
+
 	if (state->pack24) {
 		assert(size % 4 == 0);
 
@@ -89,4 +106,14 @@ pcm_export(struct pcm_export_state *state, const void *data, size_t size,
 
 	*dest_size_r = size;
 	return data;
+}
+
+size_t
+pcm_export_source_size(const struct pcm_export_state *state, size_t size)
+{
+	if (state->dsd_usb)
+		/* DSD over USB doubles the transport size */
+		size /= 2;
+
+	return size;
 }

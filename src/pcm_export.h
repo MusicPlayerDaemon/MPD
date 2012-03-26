@@ -35,6 +35,14 @@ struct audio_format;
  */
 struct pcm_export_state {
 	/**
+	 * The buffer is used to convert DSD samples to the
+	 * DSD-over-USB format.
+	 *
+	 * @see #dsd_usb
+	 */
+	struct pcm_buffer dsd_buffer;
+
+	/**
 	 * The buffer is used to pack samples, removing padding.
 	 *
 	 * @see #pack24
@@ -47,6 +55,18 @@ struct pcm_export_state {
 	 * @see #reverse_endian
 	 */
 	struct pcm_buffer reverse_buffer;
+
+	/**
+	 * The number of channels.
+	 */
+	uint8_t channels;
+
+	/**
+	 * Convert DSD to DSD-over-USB?  Input format must be
+	 * SAMPLE_FORMAT_DSD and output format must be
+	 * SAMPLE_FORMAT_S24_P32.
+	 */
+	bool dsd_usb;
 
 	/**
 	 * Pack 24 bit samples?
@@ -80,11 +100,13 @@ pcm_export_deinit(struct pcm_export_state *state);
  * times to reuse the object, until pcm_export_deinit() is called.
  *
  * This function cannot fail.
+ *
+ * @param channels the number of channels; ignored unless dsd_usb is set
  */
 void
 pcm_export_open(struct pcm_export_state *state,
-		enum sample_format sample_format,
-		bool pack, bool reverse_endian);
+		enum sample_format sample_format, unsigned channels,
+		bool dsd_usb, bool pack, bool reverse_endian);
 
 /**
  * Export a PCM buffer.
@@ -98,5 +120,14 @@ pcm_export_open(struct pcm_export_state *state,
 const void *
 pcm_export(struct pcm_export_state *state, const void *src, size_t src_size,
 	   size_t *dest_size_r);
+
+/**
+ * Converts the number of consumed bytes from the pcm_export()
+ * destination buffer to the according number of bytes from the
+ * pcm_export() source buffer.
+ */
+G_GNUC_PURE
+size_t
+pcm_export_source_size(const struct pcm_export_state *state, size_t dest_size);
 
 #endif

@@ -633,8 +633,9 @@ alsa_setup_or_dsd(struct alsa_data *ad, struct audio_format *audio_format,
 	if (!success)
 		return false;
 
-	pcm_export_open(&ad->export, audio_format->format,
-			packed, reverse_endian);
+	pcm_export_open(&ad->export,
+			audio_format->format, audio_format->channels,
+			false, packed, reverse_endian);
 	return true;
 }
 
@@ -777,7 +778,8 @@ alsa_play(struct audio_output *ao, const void *chunk, size_t size,
 		if (ret > 0) {
 			ad->period_position = (ad->period_position + ret)
 				% ad->period_frames;
-			return ret * ad->in_frame_size;
+			return pcm_export_source_size(&ad->export,
+						      ret * ad->in_frame_size);
 		}
 
 		if (ret < 0 && ret != -EAGAIN && ret != -EINTR &&

@@ -540,7 +540,7 @@ oss_probe_sample_format(int fd, enum sample_format sample_format,
 	*oss_format_r = oss_format;
 
 #ifdef AFMT_S24_PACKED
-	pcm_export_open(export, sample_format,
+	pcm_export_open(export, sample_format, 0, false,
 			oss_format == AFMT_S24_PACKED,
 			oss_format == AFMT_S24_PACKED &&
 			G_BYTE_ORDER != G_LITTLE_ENDIAN);
@@ -755,8 +755,12 @@ oss_output_play(struct audio_output *ao, const void *chunk, size_t size,
 
 	while (true) {
 		ret = write(od->fd, chunk, size);
-		if (ret > 0)
-			return (size_t)ret;
+		if (ret > 0) {
+#ifdef AFMT_S24_PACKED
+			ret = pcm_export_source_size(&od->export, ret);
+#endif
+			return ret;
+		}
 
 		if (ret < 0 && errno != EINTR) {
 			g_set_error(error, oss_output_quark(), errno,
