@@ -595,15 +595,16 @@ alsa_setup_dsd(struct alsa_data *ad, struct audio_format *audio_format,
 
 	/* pass 24 bit to alsa_setup() */
 
-	audio_format->format = SAMPLE_FORMAT_S24_P32;
-	audio_format->sample_rate /= 2;
+	struct audio_format usb_format = *audio_format;
+	usb_format.format = SAMPLE_FORMAT_S24_P32;
+	usb_format.sample_rate /= 2;
 
-	const struct audio_format check = *audio_format;
+	const struct audio_format check = usb_format;
 
-	if (!alsa_setup(ad, audio_format, packed_r, reverse_endian_r, error_r))
+	if (!alsa_setup(ad, &usb_format, packed_r, reverse_endian_r, error_r))
 		return false;
 
-	if (!audio_format_equals(audio_format, &check)) {
+	if (!audio_format_equals(&usb_format, &check)) {
 		/* no bit-perfect playback, which is required
 		   for DSD over USB */
 		g_set_error(error_r, alsa_output_quark(), 0,
@@ -612,10 +613,6 @@ alsa_setup_dsd(struct alsa_data *ad, struct audio_format *audio_format,
 		return false;
 	}
 
-	/* the ALSA device has accepted 24 bit playback,
-	   return DSD_OVER_USB to the caller */
-
-	audio_format->format = SAMPLE_FORMAT_DSD_OVER_USB;
 	return true;
 }
 
@@ -625,7 +622,9 @@ alsa_setup_or_dsd(struct alsa_data *ad, struct audio_format *audio_format,
 {
 	bool packed, reverse_endian;
 
-	const bool success = ad->dsd_usb && audio_format->format == SAMPLE_FORMAT_DSD
+	const bool dsd_usb = ad->dsd_usb &&
+		audio_format->format == SAMPLE_FORMAT_DSD;
+	const bool success = dsd_usb
 		? alsa_setup_dsd(ad, audio_format, &packed, &reverse_endian,
 				 error_r)
 		: alsa_setup(ad, audio_format, &packed, &reverse_endian,
@@ -635,7 +634,7 @@ alsa_setup_or_dsd(struct alsa_data *ad, struct audio_format *audio_format,
 
 	pcm_export_open(&ad->export,
 			audio_format->format, audio_format->channels,
-			false, packed, reverse_endian);
+			dsd_usb, packed, reverse_endian);
 	return true;
 }
 
