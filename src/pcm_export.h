@@ -35,14 +35,14 @@ struct audio_format;
  */
 struct pcm_export_state {
 	/**
-	 * The buffer used to pack samples, removing padding.
+	 * The buffer is used to pack samples, removing padding.
 	 *
-	 * @see #reverse_endian
+	 * @see #pack24
 	 */
 	struct pcm_buffer pack_buffer;
 
 	/**
-	 * The buffer used to reverse the byte order.
+	 * The buffer is used to reverse the byte order.
 	 *
 	 * @see #reverse_endian
 	 */
