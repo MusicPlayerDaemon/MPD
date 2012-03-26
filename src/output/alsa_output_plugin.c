@@ -588,7 +588,8 @@ error:
 
 static bool
 alsa_setup_dsd(struct alsa_data *ad, struct audio_format *audio_format,
-	       bool *packed_r, bool *reverse_endian_r, GError **error_r)
+	       bool *shift8_r, bool *packed_r, bool *reverse_endian_r,
+	       GError **error_r)
 {
 	assert(ad->dsd_usb);
 	assert(audio_format->format == SAMPLE_FORMAT_DSD);
@@ -603,6 +604,15 @@ alsa_setup_dsd(struct alsa_data *ad, struct audio_format *audio_format,
 
 	if (!alsa_setup(ad, &usb_format, packed_r, reverse_endian_r, error_r))
 		return false;
+
+	/* if the device allows only 32 bit, shift all DSD-over-USB
+	   samples left by 8 bit and leave the lower 8 bit cleared;
+	   the DSD-over-USB documentation does not specify whether
+	   this is legal, but there is anecdotical evidence that this
+	   is possible (and the only option for some devices) */
+	*shift8_r = usb_format.format == SAMPLE_FORMAT_S32;
+	if (usb_format.format == SAMPLE_FORMAT_S32)
+		usb_format.format = SAMPLE_FORMAT_S24_P32;
 
 	if (!audio_format_equals(&usb_format, &check)) {
 		/* no bit-perfect playback, which is required
@@ -620,12 +630,13 @@ static bool
 alsa_setup_or_dsd(struct alsa_data *ad, struct audio_format *audio_format,
 		  GError **error_r)
 {
-	bool packed, reverse_endian;
+	bool shift8 = false, packed, reverse_endian;
 
 	const bool dsd_usb = ad->dsd_usb &&
 		audio_format->format == SAMPLE_FORMAT_DSD;
 	const bool success = dsd_usb
-		? alsa_setup_dsd(ad, audio_format, &packed, &reverse_endian,
+		? alsa_setup_dsd(ad, audio_format,
+				 &shift8, &packed, &reverse_endian,
 				 error_r)
 		: alsa_setup(ad, audio_format, &packed, &reverse_endian,
 			     error_r);
@@ -634,7 +645,7 @@ alsa_setup_or_dsd(struct alsa_data *ad, struct audio_format *audio_format,
 
 	pcm_export_open(&ad->export,
 			audio_format->format, audio_format->channels,
-			dsd_usb, false, packed, reverse_endian);
+			dsd_usb, shift8, packed, reverse_endian);
 	return true;
 }
 
