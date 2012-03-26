@@ -26,11 +26,13 @@ void
 pcm_export_init(struct pcm_export_state *state)
 {
 	pcm_buffer_init(&state->reverse_buffer);
+	pcm_buffer_init(&state->pack_buffer);
 }
 
 void pcm_export_deinit(struct pcm_export_state *state)
 {
 	pcm_buffer_deinit(&state->reverse_buffer);
+	pcm_buffer_deinit(&state->pack_buffer);
 }
 
 void
