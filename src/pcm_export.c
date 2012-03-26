@@ -54,7 +54,7 @@ pcm_export_open(struct pcm_export_state *state,
 		sample_format = SAMPLE_FORMAT_S24_P32;
 
 	state->shift8 = shift8 && sample_format == SAMPLE_FORMAT_S24_P32;
-	state->pack24 = pack && (sample_format == SAMPLE_FORMAT_S24_P32 || sample_format == SAMPLE_FORMAT_DSD_OVER_USB);
+	state->pack24 = pack && sample_format == SAMPLE_FORMAT_S24_P32;
 
 	assert(!state->shift8 || !state->pack24);
 

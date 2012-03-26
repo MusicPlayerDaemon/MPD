@@ -121,7 +121,6 @@ pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 	switch (src_format) {
 	case SAMPLE_FORMAT_UNDEFINED:
 	case SAMPLE_FORMAT_DSD:
-	case SAMPLE_FORMAT_DSD_OVER_USB:
 		break;
 
 	case SAMPLE_FORMAT_S8:
@@ -237,7 +236,6 @@ pcm_convert_to_24(struct pcm_buffer *buffer,
 	switch (src_format) {
 	case SAMPLE_FORMAT_UNDEFINED:
 	case SAMPLE_FORMAT_DSD:
-	case SAMPLE_FORMAT_DSD_OVER_USB:
 		break;
 
 	case SAMPLE_FORMAT_S8:
@@ -345,7 +343,6 @@ pcm_convert_to_32(struct pcm_buffer *buffer,
 	switch (src_format) {
 	case SAMPLE_FORMAT_UNDEFINED:
 	case SAMPLE_FORMAT_DSD:
-	case SAMPLE_FORMAT_DSD_OVER_USB:
 		break;
 
 	case SAMPLE_FORMAT_S8:
@@ -463,7 +460,6 @@ pcm_convert_to_float(struct pcm_buffer *buffer,
 	switch (src_format) {
 	case SAMPLE_FORMAT_UNDEFINED:
 	case SAMPLE_FORMAT_DSD:
-	case SAMPLE_FORMAT_DSD_OVER_USB:
 		break;
 
 	case SAMPLE_FORMAT_S8:

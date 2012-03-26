@@ -29,15 +29,6 @@ audio_format_mask_apply(struct audio_format *af,
 	assert(audio_format_valid(af));
 	assert(audio_format_mask_valid(mask));
 
-	if (af->format == SAMPLE_FORMAT_DSD &&
-	    mask->format == SAMPLE_FORMAT_DSD_OVER_USB &&
-	    mask->sample_rate == 0)
-		/* each DSD-over-USB sample contains 2 DSD bytes (16
-		   DSD bits), which means the sample rate must be
-		   halved; this is not the real 1 bit sample rate, but
-		   MPD's point of view */
-		af->sample_rate /= 2;
-
 	if (mask->sample_rate != 0)
 		af->sample_rate = mask->sample_rate;
 
@@ -74,9 +65,6 @@ sample_format_to_string(enum sample_format format)
 
 	case SAMPLE_FORMAT_DSD:
 		return "dsd";
-
-	case SAMPLE_FORMAT_DSD_OVER_USB:
-		return "dsdusb";
 	}
 
 	/* unreachable */

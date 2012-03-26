@@ -50,13 +50,6 @@ enum sample_format {
 	 * byte (8 samples) per channel.
 	 */
 	SAMPLE_FORMAT_DSD,
-
-	/**
-	 * DSD packed in 24 bit samples (padded to 32 bit), according
-	 * to the dCS suggested standard:
-	 * http://www.dcsltd.co.uk/page/assets/DSDoverUSB.pdf
-	 */
-	SAMPLE_FORMAT_DSD_OVER_USB,
 };
 
 static const unsigned MAX_CHANNELS = 8;
@@ -174,7 +167,6 @@ audio_valid_sample_format(enum sample_format format)
 	case SAMPLE_FORMAT_S32:
 	case SAMPLE_FORMAT_FLOAT:
 	case SAMPLE_FORMAT_DSD:
-	case SAMPLE_FORMAT_DSD_OVER_USB:
 		return true;
 
 	case SAMPLE_FORMAT_UNDEFINED:
@@ -245,7 +237,6 @@ sample_format_size(enum sample_format format)
 	case SAMPLE_FORMAT_S24_P32:
 	case SAMPLE_FORMAT_S32:
 	case SAMPLE_FORMAT_FLOAT:
-	case SAMPLE_FORMAT_DSD_OVER_USB:
 		return 4;
 
 	case SAMPLE_FORMAT_DSD:
