@@ -40,7 +40,7 @@ pcm_export_open(struct pcm_export_state *state,
 		enum sample_format sample_format,
 		bool pack, bool reverse_endian)
 {
-	state->pack24 = pack && sample_format == SAMPLE_FORMAT_S24_P32;
+	state->pack24 = pack && (sample_format == SAMPLE_FORMAT_S24_P32 || sample_format == SAMPLE_FORMAT_DSD_OVER_USB);
 
 	state->reverse_endian = 0;
 	if (reverse_endian) {
