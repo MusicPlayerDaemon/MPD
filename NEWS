@@ -3,6 +3,8 @@ ver 0.16.8 (2012/??/??)
 * decoder:
   - vorbis (and others): fix seeking at startup
   - ffmpeg: read the "year" tag
+* output:
+  - osx: fix stuttering due to buffering bug
 * fix endless loop in text file reader
 
 
