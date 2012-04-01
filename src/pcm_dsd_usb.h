@@ -30,8 +30,9 @@ struct pcm_buffer;
 
 /**
  * Pack DSD 1 bit samples into (padded) 24 bit PCM samples for
- * playback over USB, according to the dCS suggested standard:
- * http://www.dcsltd.co.uk/page/assets/DSDoverUSB.pdf
+ * playback over USB, according to the proposed standard by 
+ * dCS and others:
+ * http://www.sonore.us/DoP_openStandard_1v1.pdf
  */
 const uint32_t *
 pcm_dsd_to_usb(struct pcm_buffer *buffer, unsigned channels,

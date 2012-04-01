@@ -24,10 +24,18 @@
 
 G_GNUC_CONST
 static inline uint32_t
-pcm_two_dsd_to_usb(uint8_t a, uint8_t b)
+pcm_two_dsd_to_usb_marker1(uint8_t a, uint8_t b)
 {
-	return 0xffaa0000 | (a << 8) | b;
+	return 0xff050000 | (a << 8) | b;
 }
+
+G_GNUC_CONST
+static inline uint32_t
+pcm_two_dsd_to_usb_marker2(uint8_t a, uint8_t b)
+{
+	return 0xfffa0000 | (a << 8) | b;
+}
+
 
 const uint32_t *
 pcm_dsd_to_usb(struct pcm_buffer *buffer, unsigned channels,
@@ -53,12 +61,27 @@ pcm_dsd_to_usb(struct pcm_buffer *buffer, unsigned channels,
 	uint32_t *const dest0 = pcm_buffer_get(buffer, dest_size),
 		*dest = dest0;
 
-	for (unsigned i = num_frames; i > 0; --i) {
+	for (unsigned i = num_frames / 2; i > 0; --i) {
 		for (unsigned c = channels; c > 0; --c) {
 			/* each 24 bit sample has 16 DSD sample bits
-			   plus the magic 0xaa marker */
+			   plus the magic 0x05 marker */
 
-			*dest++ = pcm_two_dsd_to_usb(src[0], src[channels]);
+			*dest++ = pcm_two_dsd_to_usb_marker1(src[0], src[channels]);
+
+			/* seek the source pointer to the next
+			   channel */
+			++src;
+		}
+
+		/* skip the second byte of each channel, because we
+		   have already copied it */
+		src += channels;
+
+		for (unsigned c = channels; c > 0; --c) {
+			/* each 24 bit sample has 16 DSD sample bits
+			   plus the magic 0xfa marker */
+
+			*dest++ = pcm_two_dsd_to_usb_marker2(src[0], src[channels]);
 
 			/* seek the source pointer to the next
 			   channel */

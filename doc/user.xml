@@ -1127,8 +1127,8 @@ systemctl start mpd.socket</programlisting>
                 <entry>
                   If set to <parameter>yes</parameter>, then DSD over
                   USB according to the <ulink
-                  url="http://www.dcsltd.co.uk/page/assets/DSDoverUSB.pdf">dCS
-                  suggested standard</ulink> is enabled.  This wrapsa
+                  url="http://www.sonore.us/DoP_openStandard_1v1.pdf">pro
+                  posed standard by dCS and others</ulink> is enabled.  This wraps
                   DSD samples in fake 24 bit PCM, and is understood by
                   some DSD capable products, but may be harmful to
                   other hardware.  Therefore, the default is
