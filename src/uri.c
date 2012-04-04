@@ -34,13 +34,13 @@ bool uri_has_scheme(const char *uri)
 const char *
 uri_get_suffix(const char *uri)
 {
-	const char *suffix = strrchr(g_basename(uri), '.');
+	const char *suffix = strrchr(uri, '.');
 	if (suffix == NULL)
 		return NULL;
 
 	++suffix;
 
-	if (strchr(suffix, '/') != NULL)
+	if (strpbrk(suffix, "/\\") != NULL)
 		return NULL;
 
 	return suffix;
