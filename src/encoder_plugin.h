@@ -22,6 +22,7 @@
 
 #include <glib.h>
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -32,6 +33,10 @@ struct tag;
 
 struct encoder {
 	const struct encoder_plugin *plugin;
+
+#ifndef NDEBUG
+	bool open, pre_tag, tag;
+#endif
 };
 
 struct encoder_plugin {
@@ -73,6 +78,10 @@ encoder_struct_init(struct encoder *encoder,
 		    const struct encoder_plugin *plugin)
 {
 	encoder->plugin = plugin;
+
+#ifndef NDEBUG
+	encoder->open = false;
+#endif
 }
 
 /**
@@ -98,6 +107,8 @@ encoder_init(const struct encoder_plugin *plugin,
 static inline void
 encoder_finish(struct encoder *encoder)
 {
+	assert(!encoder->open);
+
 	encoder->plugin->finish(encoder);
 }
 
@@ -116,7 +127,14 @@ static inline bool
 encoder_open(struct encoder *encoder, struct audio_format *audio_format,
 	     GError **error)
 {
-	return encoder->plugin->open(encoder, audio_format, error);
+	assert(!encoder->open);
+
+	bool success = encoder->plugin->open(encoder, audio_format, error);
+#ifndef NDEBUG
+	encoder->open = success;
+	encoder->pre_tag = encoder->tag = false;
+#endif
+	return success;
 }
 
 /**
@@ -128,8 +146,14 @@ encoder_open(struct encoder *encoder, struct audio_format *audio_format,
 static inline void
 encoder_close(struct encoder *encoder)
 {
+	assert(encoder->open);
+
 	if (encoder->plugin->close != NULL)
 		encoder->plugin->close(encoder);
+
+#ifndef NDEBUG
+	encoder->open = false;
+#endif
 }
 
 /**
@@ -143,6 +167,10 @@ encoder_close(struct encoder *encoder)
 static inline bool
 encoder_flush(struct encoder *encoder, GError **error)
 {
+	assert(encoder->open);
+	assert(!encoder->pre_tag);
+	assert(!encoder->tag);
+
 	/* this method is optional */
 	return encoder->plugin->flush != NULL
 		? encoder->plugin->flush(encoder, error)
@@ -162,10 +190,19 @@ encoder_flush(struct encoder *encoder, GError **error)
 static inline bool
 encoder_pre_tag(struct encoder *encoder, GError **error)
 {
+	assert(encoder->open);
+	assert(!encoder->pre_tag);
+	assert(!encoder->tag);
+
 	/* this method is optional */
-	return encoder->plugin->pre_tag != NULL
+	bool success = encoder->plugin->pre_tag != NULL
 		? encoder->plugin->pre_tag(encoder, error)
 		: true;
+
+#ifndef NDEBUG
+	encoder->pre_tag = success;
+#endif
+	return success;
 }
 
 /**
@@ -182,6 +219,14 @@ encoder_pre_tag(struct encoder *encoder, GError **error)
 static inline bool
 encoder_tag(struct encoder *encoder, const struct tag *tag, GError **error)
 {
+	assert(encoder->open);
+	assert(!encoder->pre_tag);
+	assert(encoder->tag);
+
+#ifndef NDEBUG
+	encoder->tag = false;
+#endif
+
 	/* this method is optional */
 	return encoder->plugin->tag != NULL
 		? encoder->plugin->tag(encoder, tag, error)
@@ -201,6 +246,10 @@ static inline bool
 encoder_write(struct encoder *encoder, const void *data, size_t length,
 	      GError **error)
 {
+	assert(encoder->open);
+	assert(!encoder->pre_tag);
+	assert(!encoder->tag);
+
 	return encoder->plugin->write(encoder, data, length, error);
 }
 
@@ -215,6 +264,16 @@ encoder_write(struct encoder *encoder, const void *data, size_t length,
 static inline size_t
 encoder_read(struct encoder *encoder, void *dest, size_t length)
 {
+	assert(encoder->open);
+	assert(!encoder->pre_tag || !encoder->tag);
+
+#ifndef NDEBUG
+	if (encoder->pre_tag) {
+		encoder->pre_tag = false;
+		encoder->tag = true;
+	}
+#endif
+
 	return encoder->plugin->read(encoder, dest, length);
 }
 
