@@ -848,6 +848,9 @@ directory_make_child_checked(struct directory *parent, const char *path)
 		return NULL;
 	}
 
+	if (skip_symlink(parent, path))
+		return NULL;
+
 	/* if we're adding directory paths, make sure to delete filenames
 	   with potentially the same name */
 	conflicting = songvec_find(&parent->songs, base);
@@ -896,7 +899,8 @@ updatePath(const char *path)
 
 	name = g_path_get_basename(path);
 
-	if (stat_directory_child(parent, name, &st) == 0)
+	if (!skip_symlink(parent, name) &&
+	    stat_directory_child(parent, name, &st) == 0)
 		updateInDirectory(parent, name, &st);
 	else
 		delete_name_in(parent, name);

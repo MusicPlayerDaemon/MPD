@@ -6,6 +6,7 @@ ver 0.16.8 (2012/??/??)
 * output:
   - osx: fix stuttering due to buffering bug
 * fix endless loop in text file reader
+* update: skip symlinks in path that is to be updated
 
 
 ver 0.16.7 (2012/02/04)
