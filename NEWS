@@ -4,6 +4,7 @@ ver 0.16.8 (2012/??/??)
   - vorbis (and others): fix seeking at startup
   - ffmpeg: read the "year" tag
 * output:
+  - jack: check for connection failure before starting playback
   - jack: workaround for libjack1 crash bug
   - osx: fix stuttering due to buffering bug
 * fix endless loop in text file reader

@@ -576,6 +576,9 @@ mpd_jack_open(void *data, struct audio_format *audio_format, GError **error_r)
 
 	jd->pause = false;
 
+	if (jd->client != NULL && jd->shutdown)
+		mpd_jack_disconnect(jd);
+
 	if (jd->client == NULL && !mpd_jack_connect(jd, error_r))
 		return false;
 
