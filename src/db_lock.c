@@ -19,6 +19,12 @@
 
 #include "config.h"
 #include "db_lock.h"
+#include "gcc.h"
+
+#if GCC_CHECK_VERSION(4, 2)
+/* workaround for a warning caused by G_STATIC_MUTEX_INIT */
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
 
 GStaticMutex db_mutex = G_STATIC_MUTEX_INIT;
 
