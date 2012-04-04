@@ -161,7 +161,7 @@ static struct {
 	 * The absolute time stamp when the timeout expires.  This is
 	 * used in the GSource method check().
 	 */
-	GTimeVal absolute_timeout;
+	gint64 absolute_timeout;
 #endif
 } curl;
 
@@ -551,12 +551,9 @@ input_curl_source_prepare(G_GNUC_UNUSED GSource *source, gint *timeout_r)
 	long timeout2;
 	CURLMcode mcode = curl_multi_timeout(curl.multi, &timeout2);
 	if (mcode == CURLM_OK) {
-		if (timeout2 >= 0) {
-			g_source_get_current_time(source,
-						  &curl.absolute_timeout);
-			g_time_val_add(&curl.absolute_timeout,
-				       timeout2 * 1000);
-		}
+		if (timeout2 >= 0)
+			curl.absolute_timeout = g_source_get_time(source)
+				+ timeout2 * 1000;
 
 		if (timeout2 >= 0 && timeout2 < 10)
 			/* CURL 7.21.1 likes to report "timeout=0",
@@ -590,11 +587,7 @@ input_curl_source_check(G_GNUC_UNUSED GSource *source)
 		   curl_multi_perform(), even if there was no file
 		   descriptor event */
 
-		GTimeVal now;
-		g_source_get_current_time(source, &now);
-		if (now.tv_sec > curl.absolute_timeout.tv_sec ||
-		    (now.tv_sec == curl.absolute_timeout.tv_sec &&
-		     now.tv_usec >= curl.absolute_timeout.tv_usec))
+		if (g_source_get_time(source) >= curl.absolute_timeout)
 			return true;
 	}
 #endif
