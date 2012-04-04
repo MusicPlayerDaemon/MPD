@@ -1003,6 +1003,26 @@ test_run_encoder_LDADD = $(MPD_LIBS) \
 	$(GLIB_LIBS)
 endif
 
+if ENABLE_VORBIS_ENCODER
+noinst_PROGRAMS += test/test_vorbis_encoder
+test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.c \
+	test/stdbin.h \
+	src/conf.c src/tokenizer.c \
+	src/utils.c \
+	src/tag.c src/tag_pool.c \
+	src/audio_check.c \
+	src/audio_format.c \
+	src/audio_parser.c \
+	src/pcm_buffer.c \
+	src/fifo_buffer.c src/growing_fifo.c \
+	$(ENCODER_SRC)
+test_test_vorbis_encoder_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(ENCODER_CFLAGS)
+test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
+	$(ENCODER_LIBS) \
+	$(GLIB_LIBS)
+endif
+
 test_software_volume_SOURCES = test/software_volume.c \
 	test/stdbin.h \
 	src/audio_check.c \
