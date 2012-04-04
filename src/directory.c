@@ -68,7 +68,15 @@ directory_free(struct directory *directory)
 const char *
 directory_get_name(const struct directory *directory)
 {
-	return g_basename(directory->path);
+	assert(!directory_is_root(directory));
+	assert(directory->path != NULL);
+
+	const char *slash = strrchr(directory->path, '/');
+	assert((slash == NULL) == directory_is_root(directory->parent));
+
+	return slash != NULL
+		? slash + 1
+		: directory->path;
 }
 
 void
