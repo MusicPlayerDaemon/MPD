@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #include "config.h"
 #include "osx_output_plugin.h"
 #include "output_api.h"
+#include "fifo_buffer.h"
 
 #include <glib.h>
 #include <CoreAudio/AudioHardware.h>
@@ -40,10 +41,8 @@ struct osx_output {
 	AudioUnit au;
 	GMutex *mutex;
 	GCond *condition;
-	char *buffer;
-	size_t buffer_size;
-	size_t pos;
-	size_t len;
+
+	struct fifo_buffer *buffer;
 };
 
 /**
@@ -96,11 +95,6 @@ osx_output_init(const struct config_param *param, GError **error_r)
 	oo->mutex = g_mutex_new();
 	oo->condition = g_cond_new();
 
-	oo->pos = 0;
-	oo->len = 0;
-	oo->buffer = NULL;
-	oo->buffer_size = 0;
-
 	return &oo->base;
 }
 
@@ -109,7 +103,6 @@ osx_output_finish(struct audio_output *ao)
 {
 	struct osx_output *od = (struct osx_output *)ao;
 
-	g_free(od->buffer);
 	g_mutex_free(od->mutex);
 	g_cond_free(od->condition);
 	g_free(od);
@@ -215,37 +208,29 @@ osx_render(void *vdata,
 	struct osx_output *od = (struct osx_output *) vdata;
 	AudioBuffer *buffer = &buffer_list->mBuffers[0];
 	size_t buffer_size = buffer->mDataByteSize;
-	size_t bytes_to_copy;
-	size_t trailer_length;
-	size_t dest_pos = 0;
+
+	assert(od->buffer != NULL);
 
 	g_mutex_lock(od->mutex);
 
-	bytes_to_copy = MIN(od->len, buffer_size);
-	od->len -= bytes_to_copy;
+	size_t nbytes;
+	const void *src = fifo_buffer_read(od->buffer, &nbytes);
 
-	trailer_length = od->buffer_size - od->pos;
-	if (bytes_to_copy > trailer_length) {
-		memcpy((unsigned char*)buffer->mData + dest_pos,
-		       od->buffer + od->pos, trailer_length);
-		od->pos = 0;
-		dest_pos += trailer_length;
-		bytes_to_copy -= trailer_length;
-	}
+	if (src != NULL) {
+		if (nbytes > buffer_size)
+			nbytes = buffer_size;
 
-	memcpy((unsigned char*)buffer->mData + dest_pos,
-	       od->buffer + od->pos, bytes_to_copy);
-	od->pos += bytes_to_copy;
-
-	if (od->pos >= od->buffer_size)
-		od->pos = 0;
+		memcpy(buffer->mData, src, nbytes);
+		fifo_buffer_consume(od->buffer, nbytes);
+	} else
+		nbytes = 0;
 
 	g_cond_signal(od->condition);
 	g_mutex_unlock(od->mutex);
 
-	if (bytes_to_copy < buffer_size)
-		memset((unsigned char*)buffer->mData + bytes_to_copy, 0,
-		       buffer_size - bytes_to_copy);
+	if (nbytes < buffer_size)
+		memset((unsigned char*)buffer->mData + nbytes, 0,
+		       buffer_size - nbytes);
 
 	return 0;
 }
@@ -315,7 +300,7 @@ osx_output_cancel(struct audio_output *ao)
 	struct osx_output *od = (struct osx_output *)ao;
 
 	g_mutex_lock(od->mutex);
-	od->len = 0;
+	fifo_buffer_clear(od->buffer);
 	g_mutex_unlock(od->mutex);
 }
 
@@ -326,6 +311,8 @@ osx_output_close(struct audio_output *ao)
 
 	AudioOutputUnitStop(od->au);
 	AudioUnitUninitialize(od->au);
+
+	fifo_buffer_free(od->buffer);
 }
 
 static bool
@@ -387,12 +374,8 @@ osx_output_open(struct audio_output *ao, struct audio_format *audio_format, GErr
 	}
 
 	/* create a buffer of 1s */
-	od->buffer_size = (audio_format->sample_rate) *
-		audio_format_frame_size(audio_format);
-	od->buffer = g_realloc(od->buffer, od->buffer_size);
-
-	od->pos = 0;
-	od->len = 0;
+	od->buffer = fifo_buffer_new(audio_format->sample_rate *
+				     audio_format_frame_size(audio_format));
 
 	status = AudioOutputUnitStart(od->au);
 	if (status != 0) {
@@ -411,33 +394,30 @@ osx_output_play(struct audio_output *ao, const void *chunk, size_t size,
 		G_GNUC_UNUSED GError **error)
 {
 	struct osx_output *od = (struct osx_output *)ao;
-	size_t start, nbytes;
 
 	g_mutex_lock(od->mutex);
 
-	while (od->len >= od->buffer_size)
+	void *dest;
+	size_t max_length;
+
+	while (true) {
+		dest = fifo_buffer_write(od->buffer, &max_length);
+		if (dest != NULL)
+			break;
+
 		/* wait for some free space in the buffer */
 		g_cond_wait(od->condition, od->mutex);
+	}
 
-	start = od->pos + od->len;
-	if (start >= od->buffer_size)
-		start -= od->buffer_size;
+	if (size > max_length)
+		size = max_length;
 
-	nbytes = start < od->pos
-		? od->pos - start
-		: od->buffer_size - start;
-
-	assert(nbytes > 0);
-
-	if (nbytes > size)
-		nbytes = size;
-
-	memcpy(od->buffer + start, chunk, nbytes);
-	od->len += nbytes;
+	memcpy(dest, chunk, size);
+	fifo_buffer_append(od->buffer, size);
 
 	g_mutex_unlock(od->mutex);
 
-	return nbytes;
+	return size;
 }
 
 const struct audio_output_plugin osx_output_plugin = {

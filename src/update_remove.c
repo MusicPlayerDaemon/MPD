@@ -50,7 +50,7 @@ song_remove_event(void)
 	assert(removed_song != NULL);
 
 	uri = song_get_uri(removed_song);
-	g_debug("removing: %s", uri);
+	g_message("removing %s", uri);
 	g_free(uri);
 
 #ifdef ENABLE_SQLITE

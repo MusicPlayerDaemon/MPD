@@ -300,6 +300,7 @@ const struct encoder_plugin twolame_encoder_plugin = {
 	.finish = twolame_encoder_finish,
 	.open = twolame_encoder_open,
 	.close = twolame_encoder_close,
+	.end = twolame_encoder_flush,
 	.flush = twolame_encoder_flush,
 	.write = twolame_encoder_write,
 	.read = twolame_encoder_read,

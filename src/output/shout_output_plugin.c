@@ -376,7 +376,7 @@ static void close_shout_conn(struct shout_data * sd)
 	sd->buf.len = 0;
 
 	if (sd->encoder != NULL) {
-		if (encoder_flush(sd->encoder, NULL))
+		if (encoder_end(sd->encoder, NULL))
 			write_page(sd, NULL);
 
 		encoder_close(sd->encoder);

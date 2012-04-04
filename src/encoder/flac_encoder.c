@@ -354,6 +354,7 @@ const struct encoder_plugin flac_encoder_plugin = {
 	.finish = flac_encoder_finish,
 	.open = flac_encoder_open,
 	.close = flac_encoder_close,
+	.end = flac_encoder_flush,
 	.flush = flac_encoder_flush,
 	.write = flac_encoder_write,
 	.read = flac_encoder_read,

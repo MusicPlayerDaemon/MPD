@@ -146,6 +146,13 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 
 	for (unsigned i = 0; i < jd->audio_format.channels; ++i) {
 		out = jack_port_get_buffer(jd->ports[i], nframes);
+		if (out == NULL)
+			/* workaround for libjack1 bug: if the server
+			   connection fails, the process callback is
+			   invoked anyway, but unable to get a
+			   buffer */
+			continue;
+
 		jack_ringbuffer_read(jd->ringbuffer[i],
 				     (char *)out, available * jack_sample_size);
 
@@ -159,6 +166,12 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 	for (unsigned i = jd->audio_format.channels;
 	     i < jd->num_source_ports; ++i) {
 		out = jack_port_get_buffer(jd->ports[i], nframes);
+		if (out == NULL)
+			/* workaround for libjack1 bug: if the server
+			   connection fails, the process callback is
+			   invoked anyway, but unable to get a
+			   buffer */
+			continue;
 
 		for (jack_nframes_t f = 0; f < nframes; ++f)
 			out[f] = 0.0;
@@ -571,6 +584,9 @@ mpd_jack_open(struct audio_output *ao, struct audio_format *audio_format,
 	assert(jd != NULL);
 
 	jd->pause = false;
+
+	if (jd->client != NULL && jd->shutdown)
+		mpd_jack_disconnect(jd);
 
 	if (jd->client == NULL && !mpd_jack_connect(jd, error_r))
 		return false;

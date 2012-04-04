@@ -285,8 +285,6 @@ vorbis_encoder_pre_tag(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
 	vorbis_analysis_init(&encoder->vd, &encoder->vi);
 	vorbis_block_init(&encoder->vd, &encoder->vb);
 
-	ogg_stream_reset(&encoder->os);
-
 	encoder->flush = true;
 	return true;
 }
@@ -407,6 +405,7 @@ const struct encoder_plugin vorbis_encoder_plugin = {
 	.finish = vorbis_encoder_finish,
 	.open = vorbis_encoder_open,
 	.close = vorbis_encoder_close,
+	.end = vorbis_encoder_pre_tag,
 	.flush = vorbis_encoder_flush,
 	.pre_tag = vorbis_encoder_pre_tag,
 	.tag = vorbis_encoder_tag,

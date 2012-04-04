@@ -676,6 +676,9 @@ directory_make_child_checked(struct directory *parent, const char *name_utf8)
 	    inodeFoundInParent(parent, st.st_ino, st.st_dev))
 		return NULL;
 
+	if (skip_symlink(parent, name_utf8))
+		return NULL;
+
 	/* if we're adding directory paths, make sure to delete filenames
 	   with potentially the same name */
 	db_lock();
@@ -728,7 +731,8 @@ updatePath(const char *path)
 
 	name = g_path_get_basename(path);
 
-	if (stat_directory_child(parent, name, &st) == 0)
+	if (!skip_symlink(parent, name) &&
+	    stat_directory_child(parent, name, &st) == 0)
 		updateInDirectory(parent, name, &st);
 	else
 		modified |= delete_name_in(parent, name);
