@@ -121,7 +121,7 @@ int main(int argc, char **argv)
 		encoder_to_stdout(encoder);
 	}
 
-	ret = encoder_flush(encoder, &error);
+	ret = encoder_end(encoder, &error);
 	if (!ret) {
 		g_printerr("encoder_flush() failed: %s\n",
 			   error->message);

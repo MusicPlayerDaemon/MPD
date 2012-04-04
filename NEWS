@@ -5,6 +5,7 @@ ver 0.16.8 (2012/??/??)
   - ffmpeg: read the "year" tag
 * encoder:
   - vorbis: generate end-of-stream packet before tag
+  - vorbis: generate end-of-stream packet when playback ends
 * output:
   - jack: check for connection failure before starting playback
   - jack: workaround for libjack1 crash bug

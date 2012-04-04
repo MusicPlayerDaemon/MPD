@@ -35,7 +35,7 @@ struct encoder {
 	const struct encoder_plugin *plugin;
 
 #ifndef NDEBUG
-	bool open, pre_tag, tag;
+	bool open, pre_tag, tag, end;
 #endif
 };
 
@@ -52,6 +52,8 @@ struct encoder_plugin {
 		     GError **error);
 
 	void (*close)(struct encoder *encoder);
+
+	bool (*end)(struct encoder *encoder, GError **error);
 
 	bool (*flush)(struct encoder *encoder, GError **error);
 
@@ -132,7 +134,7 @@ encoder_open(struct encoder *encoder, struct audio_format *audio_format,
 	bool success = encoder->plugin->open(encoder, audio_format, error);
 #ifndef NDEBUG
 	encoder->open = success;
-	encoder->pre_tag = encoder->tag = false;
+	encoder->pre_tag = encoder->tag = encoder->end = false;
 #endif
 	return success;
 }
@@ -157,6 +159,35 @@ encoder_close(struct encoder *encoder)
 }
 
 /**
+ * Ends the stream: flushes the encoder object, generate an
+ * end-of-stream marker (if applicable), make everything which might
+ * currently be buffered available by encoder_read().
+ *
+ * After this function has been called, the encoder may not be usable
+ * for more data, and only encoder_read() and encoder_close() can be
+ * called.
+ *
+ * @param encoder the encoder
+ * @param error location to store the error occuring, or NULL to ignore errors.
+ * @return true on success
+ */
+static inline bool
+encoder_end(struct encoder *encoder, GError **error)
+{
+	assert(encoder->open);
+	assert(!encoder->end);
+
+#ifndef NDEBUG
+	encoder->end = true;
+#endif
+
+	/* this method is optional */
+	return encoder->plugin->end != NULL
+		? encoder->plugin->end(encoder, error)
+		: true;
+}
+
+/**
  * Flushes an encoder object, make everything which might currently be
  * buffered available by encoder_read().
  *
@@ -170,6 +201,7 @@ encoder_flush(struct encoder *encoder, GError **error)
 	assert(encoder->open);
 	assert(!encoder->pre_tag);
 	assert(!encoder->tag);
+	assert(!encoder->end);
 
 	/* this method is optional */
 	return encoder->plugin->flush != NULL
@@ -193,6 +225,7 @@ encoder_pre_tag(struct encoder *encoder, GError **error)
 	assert(encoder->open);
 	assert(!encoder->pre_tag);
 	assert(!encoder->tag);
+	assert(!encoder->end);
 
 	/* this method is optional */
 	bool success = encoder->plugin->pre_tag != NULL
@@ -222,6 +255,7 @@ encoder_tag(struct encoder *encoder, const struct tag *tag, GError **error)
 	assert(encoder->open);
 	assert(!encoder->pre_tag);
 	assert(encoder->tag);
+	assert(!encoder->end);
 
 #ifndef NDEBUG
 	encoder->tag = false;
@@ -249,6 +283,7 @@ encoder_write(struct encoder *encoder, const void *data, size_t length,
 	assert(encoder->open);
 	assert(!encoder->pre_tag);
 	assert(!encoder->tag);
+	assert(!encoder->end);
 
 	return encoder->plugin->write(encoder, data, length, error);
 }

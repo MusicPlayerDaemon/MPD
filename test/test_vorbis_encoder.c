@@ -99,7 +99,7 @@ main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 
 	/* finish */
 
-	success = encoder_flush(encoder, NULL);
+	success = encoder_end(encoder, NULL);
 	assert(success);
 
 	encoder_to_stdout(encoder);

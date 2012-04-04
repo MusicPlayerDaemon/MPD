@@ -405,6 +405,7 @@ const struct encoder_plugin vorbis_encoder_plugin = {
 	.finish = vorbis_encoder_finish,
 	.open = vorbis_encoder_open,
 	.close = vorbis_encoder_close,
+	.end = vorbis_encoder_pre_tag,
 	.flush = vorbis_encoder_flush,
 	.pre_tag = vorbis_encoder_pre_tag,
 	.tag = vorbis_encoder_tag,

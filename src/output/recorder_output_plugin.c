@@ -191,7 +191,7 @@ recorder_output_close(void *data)
 
 	/* flush the encoder and write the rest to the file */
 
-	if (encoder_flush(recorder->encoder, NULL))
+	if (encoder_end(recorder->encoder, NULL))
 		recorder_output_encoder_to_file(recorder, NULL);
 
 	/* now really close everything */
