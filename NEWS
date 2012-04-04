@@ -3,6 +3,8 @@ ver 0.16.8 (2012/??/??)
 * decoder:
   - vorbis (and others): fix seeking at startup
   - ffmpeg: read the "year" tag
+* encoder:
+  - vorbis: generate end-of-stream packet before tag
 * output:
   - jack: check for connection failure before starting playback
   - jack: workaround for libjack1 crash bug
