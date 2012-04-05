@@ -1,3 +1,6 @@
+ver 0.16.9 (2012/??/??)
+
+
 ver 0.16.8 (2012/04/04)
 * fix for libsamplerate assertion failure
 * decoder:
