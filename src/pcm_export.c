@@ -148,6 +148,10 @@ pcm_export(struct pcm_export_state *state, const void *data, size_t size,
 size_t
 pcm_export_source_size(const struct pcm_export_state *state, size_t size)
 {
+	if (state->pack24)
+		/* 32 bit to 24 bit conversion (4 to 3 bytes) */
+		size = (size / 3) * 4;
+
 	if (state->dsd_usb)
 		/* DSD over USB doubles the transport size */
 		size /= 2;
