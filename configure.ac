@@ -87,7 +87,7 @@ mingw32* | windows*)
 	HAVE_WINDOWS=1
 	;;
 esac
-AM_CONDITIONAL([HAVE_WINDOWS], [test $HAVE_WINDOWS -eq 1])
+AM_CONDITIONAL([HAVE_WINDOWS], [test x$HAVE_WINDOWS = x1])
 
 if test -z "$prefix" || test "x$prefix" = xNONE; then
 	local_lib=
