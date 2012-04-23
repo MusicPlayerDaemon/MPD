@@ -541,30 +541,42 @@ tag_id3_riff_aiff_load(FILE *file)
 	return tag;
 }
 
+struct id3_tag *
+tag_id3_load(const char *path_fs, GError **error_r)
+{
+	FILE *file = fopen(path_fs, "rb");
+	if (file == NULL) {
+		g_set_error(error_r, g_file_error_quark(), errno,
+			    "Failed to open file %s: %s",
+			    path_fs, g_strerror(errno));
+		return NULL;
+	}
+
+	struct id3_tag *tag = tag_id3_find_from_beginning(file);
+	if (tag == NULL) {
+		tag = tag_id3_riff_aiff_load(file);
+		if (tag == NULL)
+			tag = tag_id3_find_from_end(file);
+	}
+
+	fclose(file);
+	return tag;
+}
+
 bool
 tag_id3_scan(const char *path_fs,
 	     const struct tag_handler *handler, void *handler_ctx)
 {
-	struct id3_tag *tag;
-	FILE *stream;
+	GError *error = NULL;
+	struct id3_tag *tag = tag_id3_load(path_fs, &error);
+	if (tag == NULL) {
+		if (error != NULL) {
+			g_warning("%s", error->message);
+			g_error_free(error);
+		}
 
-	stream = fopen(path_fs, "rb");
-	if (!stream) {
-		g_debug("tag_id3_load: Failed to open file: '%s', %s",
-			path_fs, g_strerror(errno));
 		return false;
 	}
-
-	tag = tag_id3_find_from_beginning(stream);
-	if (tag == NULL)
-		tag = tag_id3_riff_aiff_load(stream);
-	if (!tag)
-		tag = tag_id3_find_from_end(stream);
-
-	fclose(stream);
-
-	if (!tag)
-		return false;
 
 	scan_id3_tag(tag, handler, handler_ctx);
 	id3_tag_delete(tag);
