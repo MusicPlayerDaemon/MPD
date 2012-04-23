@@ -787,8 +787,10 @@ alsa_play(struct audio_output *ao, const void *chunk, size_t size,
 		if (ret > 0) {
 			ad->period_position = (ad->period_position + ret)
 				% ad->period_frames;
+
+			size_t bytes_written = ret * ad->out_frame_size;
 			return pcm_export_source_size(&ad->export,
-						      ret * ad->in_frame_size);
+						      bytes_written);
 		}
 
 		if (ret < 0 && ret != -EAGAIN && ret != -EINTR &&
