@@ -22,6 +22,7 @@
 #include "replay_gain_info.h"
 
 #include <stdint.h>
+#include <string.h>
 #include <glib.h>
 #include <id3tag.h>
 
@@ -73,15 +74,21 @@ rva2_float_volume_adjustment(const struct rva2_data *data)
 
 static inline bool
 rva2_apply_data(struct replay_gain_info *replay_gain_info,
-		const struct rva2_data *data)
+		const struct rva2_data *data, const id3_latin1_t *id)
 {
 	if (data->type != CHANNEL_MASTER_VOLUME)
 		return false;
 
 	float volume_adjustment = rva2_float_volume_adjustment(data);
 
-	replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = volume_adjustment;
-	replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain = volume_adjustment;
+	if (strcmp((const char *)id, "album") == 0)  {
+		replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain = volume_adjustment;
+	} else if (strcmp((const char *)id, "track") == 0) {
+		replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = volume_adjustment;
+	} else {
+		replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain = volume_adjustment;
+		replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = volume_adjustment;
+	}
 
 	return true;
 }
@@ -115,7 +122,7 @@ rva2_apply_frame(struct replay_gain_info *replay_gain_info,
 		if (4 + peak_bytes > length)
 			break;
 
-		if (rva2_apply_data(replay_gain_info, d))
+		if (rva2_apply_data(replay_gain_info, d, id))
 			return true;
 
 		data   += 4 + peak_bytes;

@@ -11,6 +11,8 @@ ver 0.17 (2011/??/??)
   - curl: enable CURLOPT_NETRC
   - curl: non-blocking I/O
   - soup: new input plugin based on libsoup
+* tags:
+  - RVA2: support separate album/track replay gain
 * decoder:
   - mpg123: implement seeking
   - ffmpeg: drop support for pre-0.5 ffmpeg
