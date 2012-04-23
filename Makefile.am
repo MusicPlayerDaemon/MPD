@@ -999,6 +999,10 @@ noinst_PROGRAMS = \
 	test/run_normalize \
 	test/software_volume
 
+if HAVE_ID3TAG
+noinst_PROGRAMS += test/dump_rva2
+endif
+
 if HAVE_ALSA
 # this debug program is still ALSA specific
 noinst_PROGRAMS += test/read_mixer
@@ -1115,6 +1119,17 @@ test_read_tags_SOURCES = test/read_tags.c \
 	src/audio_check.c \
 	src/timer.c \
 	$(DECODER_SRC)
+
+if HAVE_ID3TAG
+test_dump_rva2_LDADD = \
+	$(ID3TAG_LIBS) \
+	$(GLIB_LIBS)
+test_dump_rva2_SOURCES = test/dump_rva2.c \
+	src/riff.c src/aiff.c \
+	src/tag_handler.c \
+	src/tag_id3.c \
+	src/tag_rva2.c
+endif
 
 test_run_ntp_server_LDADD = \
 	$(GLIB_LIBS)
