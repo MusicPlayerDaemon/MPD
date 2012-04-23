@@ -135,6 +135,16 @@ rva2_apply_frame(struct replay_gain_info *replay_gain_info,
 bool
 tag_rva2_parse(struct id3_tag *tag, struct replay_gain_info *replay_gain_info)
 {
-	struct id3_frame const *frame = id3_tag_findframe(tag, "RVA2", 0);
-	return frame != NULL && rva2_apply_frame(replay_gain_info, frame);
+	bool found = false;
+
+	/* Loop through all RVA2 frames as some programs (e.g. mp3gain) store
+	   track and album gain in separate tags */
+	const struct id3_frame *frame;
+	for (unsigned i = 0;
+	     (frame = id3_tag_findframe(tag, "RVA2", i)) != NULL;
+	     ++i)
+		if (rva2_apply_frame(replay_gain_info, frame))
+			found = true;
+
+	return found;
 }
