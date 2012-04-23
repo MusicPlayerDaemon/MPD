@@ -115,6 +115,14 @@ pcm_export_open(struct pcm_export_state *state,
 		bool dsd_usb, bool shift8, bool pack, bool reverse_endian);
 
 /**
+ * Calculate the size of one output frame.
+ */
+G_GNUC_PURE
+size_t
+pcm_export_frame_size(const struct pcm_export_state *state,
+		      const struct audio_format *audio_format);
+
+/**
  * Export a PCM buffer.
  *
  * @param state an initialized and open pcm_export_state object

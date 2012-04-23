@@ -70,6 +70,27 @@ pcm_export_open(struct pcm_export_state *state,
 	}
 }
 
+size_t
+pcm_export_frame_size(const struct pcm_export_state *state,
+		      const struct audio_format *audio_format)
+{
+	assert(state != NULL);
+	assert(audio_format != NULL);
+
+	if (state->pack24)
+		/* packed 24 bit samples (3 bytes per sample) */
+		return audio_format->channels * 3;
+
+	if (state->dsd_usb)
+		/* the DSD-over-USB draft says that DSD 1-bit samples
+		   are enclosed within 24 bit samples, and MPD's
+		   representation of 24 bit is padded to 32 bit (4
+		   bytes per sample) */
+		return audio_format->channels * 4;
+
+	return audio_format_frame_size(audio_format);
+}
+
 const void *
 pcm_export(struct pcm_export_state *state, const void *data, size_t size,
 	   size_t *dest_size_r)
