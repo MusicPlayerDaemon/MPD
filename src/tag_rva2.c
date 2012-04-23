@@ -86,24 +86,14 @@ rva2_apply_data(struct replay_gain_info *replay_gain_info,
 	return true;
 }
 
-bool
-tag_rva2_parse(struct id3_tag *tag, struct replay_gain_info *replay_gain_info)
+static bool
+rva2_apply_frame(struct replay_gain_info *replay_gain_info,
+		 const struct id3_frame *frame)
 {
-	struct id3_frame const * frame;
-
-	id3_latin1_t const *id;
-	id3_byte_t const *data;
+	const id3_latin1_t *id = id3_field_getlatin1(id3_frame_field(frame, 0));
 	id3_length_t length;
-
-	/* relative volume adjustment information */
-
-	frame = id3_tag_findframe(tag, "RVA2", 0);
-	if (frame == NULL)
-		return false;
-
-	id   = id3_field_getlatin1(id3_frame_field(frame, 0));
-	data = id3_field_getbinarydata(id3_frame_field(frame, 1),
-					&length);
+	const id3_byte_t *data =
+		id3_field_getbinarydata(id3_frame_field(frame, 1), &length);
 
 	if (id == NULL || data == NULL)
 		return false;
@@ -133,4 +123,11 @@ tag_rva2_parse(struct id3_tag *tag, struct replay_gain_info *replay_gain_info)
 	}
 
 	return false;
+}
+
+bool
+tag_rva2_parse(struct id3_tag *tag, struct replay_gain_info *replay_gain_info)
+{
+	struct id3_frame const *frame = id3_tag_findframe(tag, "RVA2", 0);
+	return frame != NULL && rva2_apply_frame(replay_gain_info, frame);
 }
