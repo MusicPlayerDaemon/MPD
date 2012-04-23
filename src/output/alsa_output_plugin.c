@@ -674,7 +674,9 @@ alsa_open(struct audio_output *ao, struct audio_format *audio_format, GError **e
 	}
 
 	ad->in_frame_size = audio_format_frame_size(audio_format);
-	ad->out_frame_size = ad->export.pack24 ? 3 : ad->in_frame_size;
+	ad->out_frame_size = ad->export.pack24
+		? (size_t)(audio_format->channels * 3)
+		: ad->in_frame_size;
 
 	return true;
 }
