@@ -344,7 +344,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 
 		if (len < 0) {
 			/* if error, we skip the frame */
-			g_message("decoding failed\n");
+			g_message("decoding failed, frame skipped\n");
 			break;
 		}
 
