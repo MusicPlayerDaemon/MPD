@@ -1,4 +1,6 @@
 ver 0.16.9 (2012/??/??)
+* decoder:
+  - ffmpeg: support WebM
 
 
 ver 0.16.8 (2012/04/04)
