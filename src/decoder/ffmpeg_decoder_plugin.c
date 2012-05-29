@@ -330,7 +330,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 
 		if (len < 0) {
 			/* if error, we skip the frame */
-			g_message("decoding failed\n");
+			g_message("decoding failed, frame skipped\n");
 			break;
 		}
 
@@ -652,7 +652,8 @@ static const char *const ffmpeg_suffixes[] = {
 	"ram", "rl2", "rm", "rmvb", "roq", "rpl", "rvc", "shn", "smk", "snd",
 	"sol", "son", "spx", "str", "swf", "tgi", "tgq", "tgv", "thp", "ts",
 	"tsp", "tta", "xa", "xvid", "uv", "uv2", "vb", "vid", "vob", "voc",
-	"vp6", "vmd", "wav", "wma", "wmv", "wsaud", "wsvga", "wv", "wve",
+	"vp6", "vmd", "wav", "webm", "wma", "wmv", "wsaud", "wsvga", "wv",
+	"wve",
 	NULL
 };
 
@@ -716,6 +717,7 @@ static const char *const ffmpeg_mime_types[] = {
 	"video/msvideo",
 	"video/ogg",
 	"video/theora",
+	"video/webm",
 	"video/x-dv",
 	"video/x-flv",
 	"video/x-matroska",

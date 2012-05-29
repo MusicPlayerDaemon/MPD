@@ -126,6 +126,8 @@ decoder_stream_decode(const struct decoder_plugin *plugin,
 	assert(input_stream->ready);
 	assert(decoder->dc->state == DECODE_STATE_START);
 
+	g_debug("probing plugin %s", plugin->name);
+
 	if (decoder->dc->command == DECODE_COMMAND_STOP)
 		return true;
 
@@ -156,6 +158,8 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 	assert(path != NULL);
 	assert(g_path_is_absolute(path));
 	assert(decoder->dc->state == DECODE_STATE_START);
+
+	g_debug("probing plugin %s", plugin->name);
 
 	if (decoder->dc->command == DECODE_COMMAND_STOP)
 		return true;

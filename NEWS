@@ -40,6 +40,11 @@ ver 0.17 (2011/??/??)
 * systemd socket activation
 
 
+ver 0.16.9 (2012/??/??)
+* decoder:
+  - ffmpeg: support WebM
+
+
 ver 0.16.8 (2012/04/04)
 * fix for libsamplerate assertion failure
 * decoder:
