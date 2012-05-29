@@ -24,7 +24,6 @@ ver 0.17 (2011/??/??)
   - openal: improve buffer cancellation
   - osx: allow user to specify other audio devices
   - osx: implement 32 bit playback
-  - raop: new output plugin
   - shout: add possibility to set url
   - roar: new output plugin for RoarAudio
   - winmm: fail if wrong device specified instead of using default device

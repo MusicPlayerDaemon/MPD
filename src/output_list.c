@@ -33,7 +33,6 @@
 #include "output/osx_output_plugin.h"
 #include "output/pipe_output_plugin.h"
 #include "output/pulse_output_plugin.h"
-#include "output/raop_output_plugin.h"
 #include "output/recorder_output_plugin.h"
 #include "output/roar_output_plugin.h"
 #include "output/shout_output_plugin.h"
@@ -68,9 +67,6 @@ const struct audio_output_plugin *audio_output_plugins[] = {
 #endif
 #ifdef HAVE_OSX
 	&osx_output_plugin,
-#endif
-#ifdef ENABLE_RAOP_OUTPUT
-	&raop_output_plugin,
 #endif
 #ifdef ENABLE_SOLARIS_OUTPUT
 	&solaris_output_plugin,

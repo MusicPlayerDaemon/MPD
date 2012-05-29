@@ -841,15 +841,6 @@ if HAVE_OSX
 liboutput_plugins_a_SOURCES += src/output/osx_output_plugin.c
 endif
 
-if ENABLE_RAOP_OUTPUT
-liboutput_plugins_a_SOURCES += \
-	src/ntp_server.c src/ntp_server.h \
-	src/rtsp_client.c src/rtsp_client.h \
-	src/output/raop_output_plugin.c
-libmixer_plugins_a_SOURCES += src/mixer/raop_mixer_plugin.c
-OUTPUT_LIBS += $(OPENSSL_LIBS)
-endif
-
 if HAVE_PULSE
 liboutput_plugins_a_SOURCES += \
 	src/output/pulse_output_plugin.c src/output/pulse_output_plugin.h
@@ -992,7 +983,6 @@ noinst_PROGRAMS = \
 	test/dump_playlist \
 	test/run_decoder \
 	test/read_tags \
-	test/run_ntp_server \
 	test/run_filter \
 	test/run_output \
 	test/run_convert \
@@ -1130,14 +1120,6 @@ test_dump_rva2_SOURCES = test/dump_rva2.c \
 	src/tag_id3.c \
 	src/tag_rva2.c
 endif
-
-test_run_ntp_server_LDADD = \
-	$(GLIB_LIBS)
-test_run_ntp_server_SOURCES = test/run_ntp_server.c \
-	test/signals.c test/signals.h \
-	src/io_thread.c src/io_thread.h \
-	src/udp_server.c src/udp_server.h \
-	src/ntp_server.c src/ntp_server.h
 
 test_run_filter_LDADD = \
 	$(FILTER_LIBS) \

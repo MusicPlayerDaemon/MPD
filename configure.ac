@@ -230,11 +230,6 @@ AC_ARG_ENABLE(httpd-output,
 		[enables the HTTP server output]),,
 	[enable_httpd_output=auto])
 
-AC_ARG_ENABLE(raop-output,
-	AS_HELP_STRING([--enable-raop-output],
-		[enables the RAOP output]),,
-	[enable_raop_output=auto])
-
 AC_ARG_ENABLE(id3,
 	AS_HELP_STRING([--enable-id3],
 		[enable id3 support]),,
@@ -1428,17 +1423,6 @@ fi
 
 AM_CONDITIONAL(ENABLE_SOLARIS_OUTPUT, test x$enable_solaris_output = xyes)
 
-dnl --------------------------------- RAOP ------------------------------------
-
-MPD_AUTO_PKG(raop_output, OPENSSL, [openssl],
-	[RAOP output], [OpenSSL not found])
-
-if test x$enable_raop_output = xyes; then
-	AC_DEFINE(ENABLE_RAOP_OUTPUT, 1, [Define for compiling RAOP support])
-fi
-
-AM_CONDITIONAL(ENABLE_RAOP_OUTPUT, test x$enable_raop_output = xyes)
-
 dnl --------------------------------- WinMM ---------------------------------
 
 case "$host_os" in
@@ -1468,7 +1452,6 @@ if
 	test x$enable_openal = xno &&
 	test x$enable_oss = xno &&
 	test x$enable_osx = xno &&
-	test x$enable_raop_output = xno &&
 	test x$enable_pipe_output = xno &&
 	test x$enable_pulse = xno &&
 	test x$enable_recorder_output = xno &&
@@ -1601,7 +1584,6 @@ results(osx, [OS X])
 results(pipe_output, [Pipeline])
 printf '\n\t'
 results(pulse, [PulseAudio])
-results(raop_output, [RAOP])
 results(roar,[ROAR])
 results(shout, [SHOUTcast])
 results(solaris_output, [Solaris])
