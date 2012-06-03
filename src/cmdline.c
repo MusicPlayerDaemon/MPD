@@ -27,6 +27,7 @@
 #include "output_list.h"
 #include "ls.h"
 #include "mpd_error.h"
+#include "glib_compat.h"
 
 #ifdef ENABLE_ENCODER
 #include "encoder_list.h"

@@ -1,6 +1,7 @@
 ver 0.16.9 (2012/??/??)
 * decoder:
   - ffmpeg: support WebM
+* WIN32: fix renaming of stored playlists with non-ASCII names
 
 
 ver 0.16.8 (2012/04/04)

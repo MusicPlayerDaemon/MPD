@@ -29,6 +29,7 @@
 #include "decoder_list.h"
 #include "decoder_plugin.h"
 #include "playlist_list.h"
+#include "glib_compat.h"
 #include "conf.h"
 
 #ifdef ENABLE_ARCHIVE

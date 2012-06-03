@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "decoder_api.h"
+#include "glib_compat.h"
 
 #include <glib.h>
 
