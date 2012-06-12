@@ -39,7 +39,7 @@ extern const struct audio_output_plugin recorder_output_plugin;
 extern const struct audio_output_plugin winmm_output_plugin;
 extern const struct audio_output_plugin ffado_output_plugin;
 
-const struct audio_output_plugin *audio_output_plugins[] = {
+const struct audio_output_plugin *const audio_output_plugins[] = {
 #ifdef HAVE_SHOUT
 	&shoutPlugin,
 #endif

@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 
-extern const struct audio_output_plugin *audio_output_plugins[];
+extern const struct audio_output_plugin *const audio_output_plugins[];
 
 const struct audio_output_plugin *
 audio_output_plugin_get(const char *name);
