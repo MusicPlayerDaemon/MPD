@@ -20,13 +20,18 @@
 #ifndef MPD_GCC_H
 #define MPD_GCC_H
 
+#define GCC_CHECK_VERSION(major, minor) \
+	(defined(__GNUC__) && \
+	 (__GNUC__ > (major) || \
+	  (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor))))
+
 /* this allows us to take advantage of special gcc features while still
  * allowing other compilers to compile:
  *
  * example taken from: http://rlove.org/log/2005102601
  */
 
-#if defined(__GNUC__) && (__GNUC__ >= 3)
+#if GCC_CHECK_VERSION(3,0)
 #  define mpd_must_check	__attribute__ ((warn_unused_result))
 #  define mpd_packed		__attribute__ ((packed))
 /* these are very useful for type checking */
