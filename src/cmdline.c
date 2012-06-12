@@ -83,29 +83,29 @@ static void version(void)
 	     "This is free software; see the source for copying conditions.  There is NO\n"
 	     "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 	     "\n"
-	     "Supported decoders:\n");
+	     "* Decoders plugins:\n");
 
 	print_all_decoders(stdout);
 
 	puts("\n"
-	     "Supported outputs:\n");
+	     "Output plugins:\n");
 	audio_output_plugin_print_all_types(stdout);
 
 #ifdef ENABLE_ENCODER
 	puts("\n"
-	     "Supported encoders:\n");
+	     "Encoder plugins:\n");
 	encoder_plugin_print_all_types(stdout);
 #endif
 
 
 #ifdef ENABLE_ARCHIVE
 	puts("\n"
-	     "Supported archives:\n");
+	     "Archive plugins:\n");
 	archive_plugin_print_all_suffixes(stdout);
 #endif
 
 	puts("\n"
-	      "Supported protocols:\n");
+	     "Protocols:\n");
 	print_supported_uri_schemes_to_fp(stdout);
 
 	exit(EXIT_SUCCESS);
