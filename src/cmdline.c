@@ -102,7 +102,6 @@ static void version(void)
 #ifdef ENABLE_ARCHIVE
 	puts("\n"
 	     "Supported archives:\n");
-	archive_plugin_init_all();
 	archive_plugin_print_all_suffixes(stdout);
 #endif
 

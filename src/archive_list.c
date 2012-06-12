@@ -80,8 +80,6 @@ void archive_plugin_print_all_suffixes(FILE * fp)
 
 	for (unsigned i = 0; archive_plugins[i] != NULL; ++i) {
 		const struct archive_plugin *plugin = archive_plugins[i];
-		if (!archive_plugins_enabled[i])
-			continue;
 
 		suffixes = plugin->suffixes;
 		while (suffixes && *suffixes) {
