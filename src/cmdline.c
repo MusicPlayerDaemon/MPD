@@ -25,6 +25,8 @@
 #include "decoder_list.h"
 #include "decoder_plugin.h"
 #include "output_list.h"
+#include "input_registry.h"
+#include "input_plugin.h"
 #include "playlist_list.h"
 #include "playlist_plugin.h"
 #include "ls.h"
@@ -107,6 +109,11 @@ static void version(void)
 #endif
 
 	puts("\n"
+	     "Input plugins:");
+	input_plugins_for_each(plugin)
+		printf(" %s", plugin->name);
+
+	puts("\n\n"
 	     "Playlist plugins:");
 	playlist_plugins_for_each(plugin)
 		printf(" %s", plugin->name);
