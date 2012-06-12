@@ -28,7 +28,7 @@
 #include <string.h>
 #include <glib.h>
 
-static const struct archive_plugin *const archive_plugins[] = {
+const struct archive_plugin *const archive_plugins[] = {
 #ifdef HAVE_BZ2
 	&bz2_archive_plugin,
 #endif
@@ -44,44 +44,38 @@ static const struct archive_plugin *const archive_plugins[] = {
 /** which plugins have been initialized successfully? */
 static bool archive_plugins_enabled[G_N_ELEMENTS(archive_plugins) - 1];
 
+#define archive_plugins_for_each_enabled(plugin) \
+	archive_plugins_for_each(plugin) \
+		if (archive_plugins_enabled[archive_plugin_iterator - archive_plugins])
+
 const struct archive_plugin *
 archive_plugin_from_suffix(const char *suffix)
 {
 	if (suffix == NULL)
 		return NULL;
 
-	for (unsigned i = 0; archive_plugins[i] != NULL; ++i) {
-		const struct archive_plugin *plugin = archive_plugins[i];
-		if (archive_plugins_enabled[i] &&
-		    plugin->suffixes != NULL &&
-		    string_array_contains(plugin->suffixes, suffix)) {
-			++i;
+	archive_plugins_for_each_enabled(plugin)
+		if (plugin->suffixes != NULL &&
+		    string_array_contains(plugin->suffixes, suffix))
 			return plugin;
-		}
-	}
+
 	return NULL;
 }
 
 const struct archive_plugin *
 archive_plugin_from_name(const char *name)
 {
-	for (unsigned i = 0; archive_plugins[i] != NULL; ++i) {
-		const struct archive_plugin *plugin = archive_plugins[i];
-		if (archive_plugins_enabled[i] &&
-		    strcmp(plugin->name, name) == 0)
+	archive_plugins_for_each_enabled(plugin)
+		if (strcmp(plugin->name, name) == 0)
 			return plugin;
-	}
+
 	return NULL;
 }
 
 void archive_plugin_print_all_suffixes(FILE * fp)
 {
-	const char *const*suffixes;
-
-	for (unsigned i = 0; archive_plugins[i] != NULL; ++i) {
-		const struct archive_plugin *plugin = archive_plugins[i];
-
-		suffixes = plugin->suffixes;
+	archive_plugins_for_each(plugin) {
+		const char *const*suffixes = plugin->suffixes;
 		while (suffixes && *suffixes) {
 			fprintf(fp, "%s ", *suffixes);
 			suffixes++;
@@ -102,10 +96,8 @@ void archive_plugin_init_all(void)
 
 void archive_plugin_deinit_all(void)
 {
-	for (unsigned i = 0; archive_plugins[i] != NULL; ++i) {
-		const struct archive_plugin *plugin = archive_plugins[i];
-		if (archive_plugins_enabled[i] && plugin->finish != NULL)
-			archive_plugins[i]->finish();
-	}
+	archive_plugins_for_each_enabled(plugin)
+		if (plugin->finish != NULL)
+			plugin->finish();
 }
 
