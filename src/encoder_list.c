@@ -30,7 +30,7 @@ extern const struct encoder_plugin twolame_encoder_plugin;
 extern const struct encoder_plugin wave_encoder_plugin;
 extern const struct encoder_plugin flac_encoder_plugin;
 
-static const struct encoder_plugin *const encoder_plugins[] = {
+const struct encoder_plugin *const encoder_plugins[] = {
 	&null_encoder_plugin,
 #ifdef ENABLE_VORBIS_ENCODER
 	&vorbis_encoder_plugin,
@@ -53,9 +53,9 @@ static const struct encoder_plugin *const encoder_plugins[] = {
 const struct encoder_plugin *
 encoder_plugin_get(const char *name)
 {
-	for (unsigned i = 0; encoder_plugins[i] != NULL; ++i)
-		if (strcmp(encoder_plugins[i]->name, name) == 0)
-			return encoder_plugins[i];
+	encoder_plugins_for_each(plugin)
+		if (strcmp(plugin->name, name) == 0)
+			return plugin;
 
 	return NULL;
 }
@@ -63,8 +63,8 @@ encoder_plugin_get(const char *name)
 void
 encoder_plugin_print_all_types(FILE * fp)
 {
-	for (unsigned i = 0; encoder_plugins[i] != NULL; ++i)
-		fprintf(fp, "%s ", encoder_plugins[i]->name);
+	encoder_plugins_for_each(plugin)
+		fprintf(fp, "%s ", plugin->name);
 
 	fprintf(fp, "\n");
 	fflush(fp);
