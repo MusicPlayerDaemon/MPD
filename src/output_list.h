@@ -29,7 +29,9 @@ audio_output_plugin_get(const char *name);
 
 void audio_output_plugin_print_all_types(FILE * fp);
 
-#define audio_output_plugins_for_each(plugin, i) \
-	for (i = 0; (plugin = audio_output_plugins[i]) != NULL; ++i)
+#define audio_output_plugins_for_each(plugin) \
+	for (const struct audio_output_plugin *plugin, \
+		*const*output_plugin_iterator = &audio_output_plugins[0]; \
+		(plugin = *output_plugin_iterator) != NULL; ++output_plugin_iterator)
 
 #endif
