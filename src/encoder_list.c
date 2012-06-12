@@ -30,7 +30,7 @@ extern const struct encoder_plugin twolame_encoder_plugin;
 extern const struct encoder_plugin wave_encoder_plugin;
 extern const struct encoder_plugin flac_encoder_plugin;
 
-static const struct encoder_plugin *encoder_plugins[] = {
+static const struct encoder_plugin *const encoder_plugins[] = {
 	&null_encoder_plugin,
 #ifdef ENABLE_VORBIS_ENCODER
 	&vorbis_encoder_plugin,
