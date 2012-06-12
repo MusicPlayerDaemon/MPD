@@ -20,14 +20,10 @@
 #ifndef MPD_OUTPUT_LIST_H
 #define MPD_OUTPUT_LIST_H
 
-#include <stdio.h>
-
 extern const struct audio_output_plugin *const audio_output_plugins[];
 
 const struct audio_output_plugin *
 audio_output_plugin_get(const char *name);
-
-void audio_output_plugin_print_all_types(FILE * fp);
 
 #define audio_output_plugins_for_each(plugin) \
 	for (const struct audio_output_plugin *plugin, \

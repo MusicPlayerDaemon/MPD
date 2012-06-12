@@ -20,8 +20,6 @@
 #ifndef MPD_ARCHIVE_LIST_H
 #define MPD_ARCHIVE_LIST_H
 
-#include <stdio.h>
-
 struct archive_plugin;
 
 extern const struct archive_plugin *const archive_plugins[];
@@ -39,8 +37,6 @@ archive_plugin_from_suffix(const char *suffix);
 
 const struct archive_plugin *
 archive_plugin_from_name(const char *name);
-
-void archive_plugin_print_all_suffixes(FILE * fp);
 
 /* this is where we "load" all the "plugins" ;-) */
 void archive_plugin_init_all(void);

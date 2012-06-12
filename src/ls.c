@@ -57,10 +57,10 @@ void print_supported_uri_schemes_to_fp(FILE *fp)
 	const char **prefixes = remoteUrlPrefixes;
 
 #ifdef HAVE_UN
-	fprintf(fp, "file:// ");
+	fprintf(fp, " file://");
 #endif
 	while (*prefixes) {
-		fprintf(fp, "%s ", *prefixes);
+		fprintf(fp, " %s", *prefixes);
 		prefixes++;
 	}
 	fprintf(fp,"\n");

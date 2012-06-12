@@ -72,19 +72,6 @@ archive_plugin_from_name(const char *name)
 	return NULL;
 }
 
-void archive_plugin_print_all_suffixes(FILE * fp)
-{
-	archive_plugins_for_each(plugin) {
-		const char *const*suffixes = plugin->suffixes;
-		while (suffixes && *suffixes) {
-			fprintf(fp, "%s ", *suffixes);
-			suffixes++;
-		}
-	}
-	fprintf(fp, "\n");
-	fflush(fp);
-}
-
 void archive_plugin_init_all(void)
 {
 	for (unsigned i = 0; archive_plugins[i] != NULL; ++i) {

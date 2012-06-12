@@ -101,12 +101,3 @@ audio_output_plugin_get(const char *name)
 
 	return NULL;
 }
-
-void audio_output_plugin_print_all_types(FILE * fp)
-{
-	audio_output_plugins_for_each(plugin)
-		fprintf(fp, "%s ", plugin->name);
-
-	fprintf(fp, "\n");
-	fflush(fp);
-}

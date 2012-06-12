@@ -25,6 +25,7 @@
 #include "decoder_list.h"
 #include "decoder_plugin.h"
 #include "output_list.h"
+#include "output_plugin.h"
 #include "input_registry.h"
 #include "input_plugin.h"
 #include "playlist_list.h"
@@ -35,10 +36,12 @@
 
 #ifdef ENABLE_ENCODER
 #include "encoder_list.h"
+#include "encoder_plugin.h"
 #endif
 
 #ifdef ENABLE_ARCHIVE
 #include "archive_list.h"
+#include "archive_plugin.h"
 #endif
 
 #include <glib.h>
@@ -59,24 +62,6 @@ cmdline_quark(void)
 	return g_quark_from_static_string("cmdline");
 }
 
-static void
-print_all_decoders(FILE *fp)
-{
-	decoder_plugins_for_each(plugin) {
-		const char *const*suffixes;
-
-		fprintf(fp, "[%s]", plugin->name);
-
-		for (suffixes = plugin->suffixes;
-		     suffixes != NULL && *suffixes != NULL;
-		     ++suffixes) {
-			fprintf(fp, " %s", *suffixes);
-		}
-
-		fprintf(fp, "\n");
-	}
-}
-
 G_GNUC_NORETURN
 static void version(void)
 {
@@ -87,25 +72,46 @@ static void version(void)
 	     "This is free software; see the source for copying conditions.  There is NO\n"
 	     "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 	     "\n"
-	     "* Decoders plugins:\n");
+	     "Decoders plugins:");
 
-	print_all_decoders(stdout);
+	decoder_plugins_for_each(plugin) {
+		printf(" [%s]", plugin->name);
+
+		const char *const*suffixes = plugin->suffixes;
+		if (suffixes != NULL)
+			for (; *suffixes != NULL; ++suffixes)
+				printf(" %s", *suffixes);
+
+		puts("");
+	}
 
 	puts("\n"
-	     "Output plugins:\n");
-	audio_output_plugin_print_all_types(stdout);
+	     "Output plugins:");
+	audio_output_plugins_for_each(plugin)
+		printf(" %s", plugin->name);
+	puts("");
 
 #ifdef ENABLE_ENCODER
 	puts("\n"
-	     "Encoder plugins:\n");
-	encoder_plugin_print_all_types(stdout);
+	     "Encoder plugins:");
+	encoder_plugins_for_each(plugin)
+		printf(" %s", plugin->name);
+	puts("");
 #endif
-
 
 #ifdef ENABLE_ARCHIVE
 	puts("\n"
-	     "Archive plugins:\n");
-	archive_plugin_print_all_suffixes(stdout);
+	     "Archive plugins:");
+	archive_plugins_for_each(plugin) {
+		printf(" [%s]", plugin->name);
+
+		const char *const*suffixes = plugin->suffixes;
+		if (suffixes != NULL)
+			for (; *suffixes != NULL; ++suffixes)
+				printf(" %s", *suffixes);
+
+		puts("");
+	}
 #endif
 
 	puts("\n"
@@ -119,7 +125,7 @@ static void version(void)
 		printf(" %s", plugin->name);
 
 	puts("\n\n"
-	     "Protocols:\n");
+	     "Protocols:");
 	print_supported_uri_schemes_to_fp(stdout);
 
 	exit(EXIT_SUCCESS);
