@@ -39,12 +39,8 @@ input_stream_open(const char *url, GError **error_r)
 
 	assert(error_r == NULL || *error_r == NULL);
 
-	for (unsigned i = 0; input_plugins[i] != NULL; ++i) {
-		const struct input_plugin *plugin = input_plugins[i];
+	input_plugins_for_each_enabled(plugin) {
 		struct input_stream *is;
-
-		if (!input_plugins_enabled[i])
-			continue;
 
 		is = plugin->open(url, &error);
 		if (is != NULL) {

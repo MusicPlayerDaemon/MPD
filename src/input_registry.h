@@ -32,4 +32,14 @@ extern const struct input_plugin *const input_plugins[];
 
 extern bool input_plugins_enabled[];
 
+#define input_plugins_for_each(plugin) \
+	for (const struct input_plugin *plugin, \
+		*const*input_plugin_iterator = &input_plugins[0]; \
+		(plugin = *input_plugin_iterator) != NULL; \
+		++input_plugin_iterator)
+
+#define input_plugins_for_each_enabled(plugin) \
+	input_plugins_for_each(plugin) \
+		if (input_plugins_enabled[input_plugin_iterator - input_plugins])
+
 #endif
