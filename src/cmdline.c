@@ -25,6 +25,8 @@
 #include "decoder_list.h"
 #include "decoder_plugin.h"
 #include "output_list.h"
+#include "playlist_list.h"
+#include "playlist_plugin.h"
 #include "ls.h"
 #include "mpd_error.h"
 #include "glib_compat.h"
@@ -105,6 +107,11 @@ static void version(void)
 #endif
 
 	puts("\n"
+	     "Playlist plugins:");
+	playlist_plugins_for_each(plugin)
+		printf(" %s", plugin->name);
+
+	puts("\n\n"
 	     "Protocols:\n");
 	print_supported_uri_schemes_to_fp(stdout);
 
