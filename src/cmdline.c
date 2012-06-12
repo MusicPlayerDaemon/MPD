@@ -58,8 +58,7 @@ cmdline_quark(void)
 static void
 print_all_decoders(FILE *fp)
 {
-	for (unsigned i = 0; decoder_plugins[i] != NULL; ++i) {
-		const struct decoder_plugin *plugin = decoder_plugins[i];
+	decoder_plugins_for_each(plugin) {
 		const char *const*suffixes;
 
 		fprintf(fp, "[%s]", plugin->name);
