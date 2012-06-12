@@ -33,23 +33,36 @@
 {
    g_main_loop_run
    Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   fun:g_main_context_iterate
+   fun:*alloc
+   ...
+   fun:g_main_context_iterate*
    fun:g_main_loop_run
 }
 
 {
-   g_main_loop_run
+   g_log
    Memcheck:Leak
-   fun:malloc
-   fun:realloc
-   fun:g_realloc
-   fun:g_ptr_array_maybe_expand
-   fun:g_ptr_array_add
-   fun:g_main_context_check
-   fun:g_main_context_iterate
-   fun:g_main_loop_run
+   fun:*alloc
+   ...
+   fun:g_mutex_lock
+   fun:g_log_set_default_handler
+}
+
+{
+   g_mutex
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:thread_memory_from_self*
+   fun:g_slice_*
+}
+
+{
+   g_private
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:g_private_?et
 }
 
 {
@@ -114,6 +127,25 @@
    fun:*alloc
    ...
    fun:g_thread_init_glib
+}
+
+{
+   g_thread_self
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:g_slice_*
+   fun:g_thread_self
+}
+
+{
+   g_thread_create
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:g_mutex_lock
+   ...
+   fun:g_thread_create
 }
 
 {

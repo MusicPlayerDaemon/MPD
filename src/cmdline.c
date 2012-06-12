@@ -25,15 +25,23 @@
 #include "decoder_list.h"
 #include "decoder_plugin.h"
 #include "output_list.h"
+#include "output_plugin.h"
+#include "input_registry.h"
+#include "input_plugin.h"
+#include "playlist_list.h"
+#include "playlist_plugin.h"
 #include "ls.h"
 #include "mpd_error.h"
+#include "glib_compat.h"
 
 #ifdef ENABLE_ENCODER
 #include "encoder_list.h"
+#include "encoder_plugin.h"
 #endif
 
 #ifdef ENABLE_ARCHIVE
 #include "archive_list.h"
+#include "archive_plugin.h"
 #endif
 
 #include <glib.h>
@@ -54,59 +62,70 @@ cmdline_quark(void)
 	return g_quark_from_static_string("cmdline");
 }
 
-static void
-print_all_decoders(FILE *fp)
-{
-	for (unsigned i = 0; decoder_plugins[i] != NULL; ++i) {
-		const struct decoder_plugin *plugin = decoder_plugins[i];
-		const char *const*suffixes;
-
-		fprintf(fp, "[%s]", plugin->name);
-
-		for (suffixes = plugin->suffixes;
-		     suffixes != NULL && *suffixes != NULL;
-		     ++suffixes) {
-			fprintf(fp, " %s", *suffixes);
-		}
-
-		fprintf(fp, "\n");
-	}
-}
-
 G_GNUC_NORETURN
 static void version(void)
 {
 	puts(PACKAGE " (MPD: Music Player Daemon) " VERSION " \n"
 	     "\n"
 	     "Copyright (C) 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
-	     "Copyright (C) 2008-2011 Max Kellermann <max@duempel.org>\n"
+	     "Copyright (C) 2008-2012 Max Kellermann <max@duempel.org>\n"
 	     "This is free software; see the source for copying conditions.  There is NO\n"
 	     "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 	     "\n"
-	     "Supported decoders:\n");
+	     "Decoders plugins:");
 
-	print_all_decoders(stdout);
+	decoder_plugins_for_each(plugin) {
+		printf(" [%s]", plugin->name);
+
+		const char *const*suffixes = plugin->suffixes;
+		if (suffixes != NULL)
+			for (; *suffixes != NULL; ++suffixes)
+				printf(" %s", *suffixes);
+
+		puts("");
+	}
 
 	puts("\n"
-	     "Supported outputs:\n");
-	audio_output_plugin_print_all_types(stdout);
+	     "Output plugins:");
+	audio_output_plugins_for_each(plugin)
+		printf(" %s", plugin->name);
+	puts("");
 
 #ifdef ENABLE_ENCODER
 	puts("\n"
-	     "Supported encoders:\n");
-	encoder_plugin_print_all_types(stdout);
+	     "Encoder plugins:");
+	encoder_plugins_for_each(plugin)
+		printf(" %s", plugin->name);
+	puts("");
 #endif
-
 
 #ifdef ENABLE_ARCHIVE
 	puts("\n"
-	     "Supported archives:\n");
-	archive_plugin_init_all();
-	archive_plugin_print_all_suffixes(stdout);
+	     "Archive plugins:");
+	archive_plugins_for_each(plugin) {
+		printf(" [%s]", plugin->name);
+
+		const char *const*suffixes = plugin->suffixes;
+		if (suffixes != NULL)
+			for (; *suffixes != NULL; ++suffixes)
+				printf(" %s", *suffixes);
+
+		puts("");
+	}
 #endif
 
 	puts("\n"
-	      "Supported protocols:\n");
+	     "Input plugins:");
+	input_plugins_for_each(plugin)
+		printf(" %s", plugin->name);
+
+	puts("\n\n"
+	     "Playlist plugins:");
+	playlist_plugins_for_each(plugin)
+		printf(" %s", plugin->name);
+
+	puts("\n\n"
+	     "Protocols:");
 	print_supported_uri_schemes_to_fp(stdout);
 
 	exit(EXIT_SUCCESS);

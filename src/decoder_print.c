@@ -48,7 +48,6 @@ decoder_plugin_print(struct client *client,
 void
 decoder_list_print(struct client *client)
 {
-	for (unsigned i = 0; decoder_plugins[i] != NULL; ++i)
-		if (decoder_plugins_enabled[i])
-			decoder_plugin_print(client, decoder_plugins[i]);
+	decoder_plugins_for_each_enabled(plugin)
+		decoder_plugin_print(client, plugin);
 }

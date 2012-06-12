@@ -26,6 +26,7 @@
 #include "audio_parser.h"
 #include "audio_format.h"
 #include "audio_check.h"
+#include "gcc.h"
 
 #include <assert.h>
 #include <string.h>
@@ -172,6 +173,11 @@ audio_format_parse(struct audio_format *dest, const char *src,
 
 	/* parse sample rate */
 
+#if GCC_CHECK_VERSION(4,7)
+	/* workaround -Wmaybe-uninitialized false positive */
+	rate = 0;
+#endif
+
 	if (!parse_sample_rate(src, mask, &rate, &src, error_r))
 		return false;
 
@@ -182,6 +188,11 @@ audio_format_parse(struct audio_format *dest, const char *src,
 	}
 
 	/* parse sample format */
+
+#if GCC_CHECK_VERSION(4,7)
+	/* workaround -Wmaybe-uninitialized false positive */
+	sample_format = SAMPLE_FORMAT_UNDEFINED;
+#endif
 
 	if (!parse_sample_format(src, mask, &sample_format, &src, error_r))
 		return false;

@@ -20,6 +20,7 @@
 #include "config.h"
 #include "decoder_api.h"
 #include "tag_handler.h"
+#include "glib_compat.h"
 
 #include <glib.h>
 

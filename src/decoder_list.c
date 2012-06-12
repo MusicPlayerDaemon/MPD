@@ -178,12 +178,9 @@ decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
 const struct decoder_plugin *
 decoder_plugin_from_name(const char *name)
 {
-	for (unsigned i = 0; decoder_plugins[i] != NULL; ++i) {
-		const struct decoder_plugin *plugin = decoder_plugins[i];
-		if (decoder_plugins_enabled[i] &&
-		    strcmp(plugin->name, name) == 0)
+	decoder_plugins_for_each_enabled(plugin)
+		if (strcmp(plugin->name, name) == 0)
 			return plugin;
-	}
 
 	return NULL;
 }
@@ -231,10 +228,6 @@ void decoder_plugin_init_all(void)
 
 void decoder_plugin_deinit_all(void)
 {
-	for (unsigned i = 0; decoder_plugins[i] != NULL; ++i) {
-		const struct decoder_plugin *plugin = decoder_plugins[i];
-
-		if (decoder_plugins_enabled[i])
-			decoder_plugin_finish(plugin);
-	}
+	decoder_plugins_for_each_enabled(plugin)
+		decoder_plugin_finish(plugin);
 }

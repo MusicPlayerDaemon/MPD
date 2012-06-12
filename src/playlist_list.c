@@ -42,7 +42,7 @@
 #include <string.h>
 #include <stdio.h>
 
-static const struct playlist_plugin *const playlist_plugins[] = {
+const struct playlist_plugin *const playlist_plugins[] = {
 	&extm3u_playlist_plugin,
 	&m3u_playlist_plugin,
 	&xspf_playlist_plugin,
@@ -65,6 +65,10 @@ static const struct playlist_plugin *const playlist_plugins[] = {
 
 /** which plugins have been initialized successfully? */
 static bool playlist_plugins_enabled[G_N_ELEMENTS(playlist_plugins)];
+
+#define playlist_plugins_for_each_enabled(plugin) \
+	playlist_plugins_for_each(plugin) \
+		if (playlist_plugins_enabled[playlist_plugin_iterator - playlist_plugins])
 
 /**
  * Find the "playlist" configuration block for the specified plugin.
@@ -113,9 +117,8 @@ playlist_list_global_init(void)
 void
 playlist_list_global_finish(void)
 {
-	for (unsigned i = 0; playlist_plugins[i] != NULL; ++i)
-		if (playlist_plugins_enabled[i])
-			playlist_plugin_finish(playlist_plugins[i]);
+	playlist_plugins_for_each_enabled(plugin)
+		playlist_plugin_finish(plugin);
 }
 
 static struct playlist_provider *
@@ -209,11 +212,8 @@ playlist_list_open_stream_mime2(struct input_stream *is, const char *mime)
 	assert(is != NULL);
 	assert(mime != NULL);
 
-	for (unsigned i = 0; playlist_plugins[i] != NULL; ++i) {
-		const struct playlist_plugin *plugin = playlist_plugins[i];
-
-		if (playlist_plugins_enabled[i] &&
-		    plugin->open_stream != NULL &&
+	playlist_plugins_for_each_enabled(plugin) {
+		if (plugin->open_stream != NULL &&
 		    plugin->mime_types != NULL &&
 		    string_array_contains(plugin->mime_types, mime)) {
 			/* rewind the stream, so each plugin gets a
@@ -257,11 +257,8 @@ playlist_list_open_stream_suffix(struct input_stream *is, const char *suffix)
 	assert(is != NULL);
 	assert(suffix != NULL);
 
-	for (unsigned i = 0; playlist_plugins[i] != NULL; ++i) {
-		const struct playlist_plugin *plugin = playlist_plugins[i];
-
-		if (playlist_plugins_enabled[i] &&
-		    plugin->open_stream != NULL &&
+	playlist_plugins_for_each_enabled(plugin) {
+		if (plugin->open_stream != NULL &&
 		    plugin->suffixes != NULL &&
 		    string_array_contains(plugin->suffixes, suffix)) {
 			/* rewind the stream, so each plugin gets a
@@ -306,10 +303,8 @@ playlist_suffix_supported(const char *suffix)
 {
 	assert(suffix != NULL);
 
-	for (unsigned i = 0; playlist_plugins[i] != NULL; ++i) {
-		const struct playlist_plugin *plugin = playlist_plugins[i];
-
-		if (playlist_plugins_enabled[i] && plugin->suffixes != NULL &&
+	playlist_plugins_for_each_enabled(plugin) {
+		if (plugin->suffixes != NULL &&
 		    string_array_contains(plugin->suffixes, suffix))
 			return true;
 	}

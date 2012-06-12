@@ -99,8 +99,7 @@ input_stream_global_init(GError **error_r)
 
 void input_stream_global_finish(void)
 {
-	for (unsigned i = 0; input_plugins[i] != NULL; ++i)
-		if (input_plugins_enabled[i] &&
-		    input_plugins[i]->finish != NULL)
-			input_plugins[i]->finish();
+	input_plugins_for_each_enabled(plugin)
+		if (plugin->finish != NULL)
+			plugin->finish();
 }

@@ -28,6 +28,7 @@
 #include "uri.h"
 #include "database.h"
 #include "idle.h"
+#include "glib_compat.h"
 
 #include <glib.h>
 

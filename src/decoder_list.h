@@ -27,6 +27,16 @@ struct decoder_plugin;
 extern const struct decoder_plugin *const decoder_plugins[];
 extern bool decoder_plugins_enabled[];
 
+#define decoder_plugins_for_each(plugin) \
+	for (const struct decoder_plugin *plugin, \
+		*const*decoder_plugin_iterator = &decoder_plugins[0]; \
+		(plugin = *decoder_plugin_iterator) != NULL; \
+		++decoder_plugin_iterator)
+
+#define decoder_plugins_for_each_enabled(plugin) \
+	decoder_plugins_for_each(plugin) \
+		if (decoder_plugins_enabled[decoder_plugin_iterator - decoder_plugins])
+
 /* interface for using plugins */
 
 /**

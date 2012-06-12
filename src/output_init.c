@@ -49,12 +49,9 @@
 static const struct audio_output_plugin *
 audio_output_detect(GError **error)
 {
-	const struct audio_output_plugin *plugin;
-	unsigned i;
-
 	g_warning("Attempt to detect audio output device");
 
-	audio_output_plugins_for_each(plugin, i) {
+	audio_output_plugins_for_each(plugin) {
 		if (plugin->test_default_device == NULL)
 			continue;
 

@@ -30,6 +30,7 @@
 #include "filter/replay_gain_filter_plugin.h"
 #include "mpd_error.h"
 #include "notify.h"
+#include "gcc.h"
 
 #include <glib.h>
 
@@ -441,6 +442,10 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 	}
 
 	size_t size;
+#if GCC_CHECK_VERSION(4,7)
+	/* workaround -Wmaybe-uninitialized false positive */
+	size = 0;
+#endif
 	const char *data = ao_filter_chunk(ao, chunk, &size);
 	if (data == NULL) {
 		ao_close(ao, false);

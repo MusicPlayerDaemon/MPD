@@ -20,9 +20,15 @@
 #ifndef MPD_ENCODER_LIST_H
 #define MPD_ENCODER_LIST_H
 
-#include <stdio.h>
-
 struct encoder_plugin;
+
+extern const struct encoder_plugin *const encoder_plugins[];
+
+#define encoder_plugins_for_each(plugin) \
+	for (const struct encoder_plugin *plugin, \
+		*const*encoder_plugin_iterator = &encoder_plugins[0]; \
+		(plugin = *encoder_plugin_iterator) != NULL; \
+		++encoder_plugin_iterator)
 
 /**
  * Looks up an encoder plugin by its name.
@@ -33,8 +39,5 @@ struct encoder_plugin;
  */
 const struct encoder_plugin *
 encoder_plugin_get(const char *name);
-
-void
-encoder_plugin_print_all_types(FILE * fp);
 
 #endif
