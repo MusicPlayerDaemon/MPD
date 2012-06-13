@@ -18,7 +18,9 @@
  */
 
 #include "config.h"
-#include "update_internal.h"
+#include "update.h"
+#include "update_queue.h"
+#include "update_walk.h"
 #include "update_remove.h"
 #include "update.h"
 #include "database.h"
@@ -34,6 +36,9 @@
 #include <glib.h>
 
 #include <assert.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "update"
 
 static enum update_progress {
 	UPDATE_PROGRESS_IDLE = 0,

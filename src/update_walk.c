@@ -18,7 +18,7 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "update_internal.h"
+#include "update_walk.h"
 #include "update_io.h"
 #include "update_db.h"
 #include "database.h"
@@ -53,6 +53,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "update"
 
 static bool walk_discard;
 static bool modified;

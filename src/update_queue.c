@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "update_internal.h"
+#include "update_queue.h"
 
 #include <glib.h>
 

@@ -89,7 +89,6 @@ mpd_headers = \
 	src/fd_util.h \
 	src/glib_compat.h \
 	src/update.h \
-	src/update_internal.h \
 	src/inotify_source.h \
 	src/inotify_queue.h \
 	src/inotify_update.h \
@@ -266,10 +265,10 @@ src_mpd_SOURCES = \
 	src/filter_plugin.c \
 	src/filter_registry.c \
 	src/update.c \
-	src/update_queue.c \
+	src/update_queue.c src/update_queue.h \
 	src/update_io.c src/update_io.h \
 	src/update_db.c src/update_db.h \
-	src/update_walk.c \
+	src/update_walk.c src/update_walk.h \
 	src/update_remove.c \
 	src/client.c \
 	src/client_event.c \
