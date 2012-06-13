@@ -22,6 +22,7 @@
 #include "update_internal.h"
 #include "update_io.h"
 #include "update_db.h"
+#include "update_container.h"
 #include "update_archive.h"
 #include "database.h"
 #include "db_lock.h"
@@ -37,8 +38,6 @@
 #include "playlist_list.h"
 #include "glib_compat.h"
 #include "conf.h"
-#include "tag.h"
-#include "tag_handler.h"
 
 #include <glib.h>
 
@@ -208,94 +207,6 @@ find_inode_ancestor(struct directory *parent, ino_t inode, dev_t device)
 	return 0;
 }
 
-/**
- * Create the specified directory object if it does not exist already
- * or if the #stat object indicates that it has been modified since
- * the last update.  Returns NULL when it exists already and is
- * unmodified.
- *
- * The caller must lock the database.
- */
-static struct directory *
-make_directory_if_modified(struct directory *parent, const char *name,
-			   const struct stat *st)
-{
-	struct directory *directory = directory_get_child(parent, name);
-
-	// directory exists already
-	if (directory != NULL) {
-		if (directory->mtime == st->st_mtime && !walk_discard) {
-			/* not modified */
-			db_unlock();
-			return NULL;
-		}
-
-		delete_directory(directory);
-		modified = true;
-	}
-
-	directory = directory_make_child(parent, name);
-	directory->mtime = st->st_mtime;
-	return directory;
-}
-
-static bool
-update_container_file(struct directory *directory,
-		      const char *name,
-		      const struct stat *st,
-		      const struct decoder_plugin *plugin)
-{
-	db_lock();
-	struct directory *contdir =
-		make_directory_if_modified(directory, name, st);
-	if (contdir == NULL) {
-		/* not modified */
-		db_unlock();
-		return true;
-	}
-
-	contdir->device = DEVICE_CONTAINER;
-	db_unlock();
-
-	char *const pathname = map_directory_child_fs(directory, name);
-
-	char *vtrack;
-	unsigned int tnum = 0;
-	while ((vtrack = plugin->container_scan(pathname, ++tnum)) != NULL) {
-		struct song *song = song_file_new(vtrack, contdir);
-
-		// shouldn't be necessary but it's there..
-		song->mtime = st->st_mtime;
-
-		char *child_path_fs = map_directory_child_fs(contdir, vtrack);
-
-		song->tag = tag_new();
-		decoder_plugin_scan_file(plugin, child_path_fs,
-					 &add_tag_handler, song->tag);
-		g_free(child_path_fs);
-
-		db_lock();
-		directory_add_song(contdir, song);
-		db_unlock();
-
-		modified = true;
-
-		g_message("added %s/%s",
-			  directory_get_path(directory), vtrack);
-		g_free(vtrack);
-	}
-
-	g_free(pathname);
-
-	if (tnum == 1) {
-		db_lock();
-		delete_directory(contdir);
-		db_unlock();
-		return false;
-	} else
-		return true;
-}
-
 static void
 update_song_file(struct directory *directory,
 		 const char *name, const struct stat *st,
@@ -319,7 +230,6 @@ update_song_file(struct directory *directory,
 
 	if (!(song != NULL && st->st_mtime == song->mtime &&
 	      !walk_discard) &&
-	    plugin->container_scan != NULL &&
 	    update_container_file(directory, name, st, plugin)) {
 		if (song != NULL) {
 			db_lock();

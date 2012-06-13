@@ -269,6 +269,7 @@ src_mpd_SOURCES = \
 	src/update_io.c src/update_io.h \
 	src/update_db.c src/update_db.h \
 	src/update_walk.c src/update_walk.h \
+	src/update_container.c src/update_container.h \
 	src/update_internal.h \
 	src/update_remove.c \
 	src/client.c \
