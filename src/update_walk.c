@@ -308,38 +308,56 @@ update_archive_file(struct directory *parent, const char *name,
 }
 #endif
 
+/**
+ * Create the specified directory object if it does not exist already
+ * or if the #stat object indicates that it has been modified since
+ * the last update.  Returns NULL when it exists already and is
+ * unmodified.
+ *
+ * The caller must lock the database.
+ */
+static struct directory *
+make_directory_if_modified(struct directory *parent, const char *name,
+			   const struct stat *st)
+{
+	struct directory *directory = directory_get_child(parent, name);
+
+	// directory exists already
+	if (directory != NULL) {
+		if (directory->mtime == st->st_mtime && !walk_discard) {
+			/* not modified */
+			db_unlock();
+			return NULL;
+		}
+
+		delete_directory(directory);
+		modified = true;
+	}
+
+	directory = directory_make_child(parent, name);
+	directory->mtime = st->st_mtime;
+	return directory;
+}
+
 static bool
 update_container_file(struct directory *directory,
 		      const char *name,
 		      const struct stat *st,
 		      const struct decoder_plugin *plugin)
 {
-	char *pathname = map_directory_child_fs(directory, name);
-
 	db_lock();
-	struct directory *contdir = directory_get_child(directory, name);
-
-	// directory exists already
-	if (contdir != NULL) {
-		// modification time not eq. file mod. time
-		if (contdir->mtime != st->st_mtime || walk_discard) {
-			g_message("removing container file: %s", pathname);
-
-			delete_directory(contdir);
-			contdir = NULL;
-
-			modified = true;
-		} else {
-			db_unlock();
-			g_free(pathname);
-			return true;
-		}
+	struct directory *contdir =
+		make_directory_if_modified(directory, name, st);
+	if (contdir == NULL) {
+		/* not modified */
+		db_unlock();
+		return true;
 	}
 
-	contdir = directory_make_child(directory, name);
-	contdir->mtime = st->st_mtime;
 	contdir->device = DEVICE_CONTAINER;
 	db_unlock();
+
+	char *const pathname = map_directory_child_fs(directory, name);
 
 	char *vtrack;
 	unsigned int tnum = 0;
