@@ -131,7 +131,7 @@ remove_excluded_from_directory(struct directory *directory,
 }
 
 static void
-removeDeletedFromDirectory(struct directory *directory)
+purge_deleted_from_directory(struct directory *directory)
 {
 	struct directory *child, *n;
 	directory_for_each_child_safe(child, n, directory) {
@@ -173,30 +173,30 @@ removeDeletedFromDirectory(struct directory *directory)
 
 #ifndef G_OS_WIN32
 static int
-statDirectory(struct directory *dir)
+update_directory_stat(struct directory *directory)
 {
 	struct stat st;
-
-	if (stat_directory(dir, &st) < 0)
+	if (stat_directory(directory, &st) < 0)
 		return -1;
 
-	directory_set_stat(dir, &st);
-
+	directory_set_stat(directory, &st);
 	return 0;
 }
 #endif
 
 static int
-inodeFoundInParent(struct directory *parent, ino_t inode, dev_t device)
+find_inode_ancestor(struct directory *parent, ino_t inode, dev_t device)
 {
 #ifndef G_OS_WIN32
 	while (parent) {
-		if (!parent->have_stat && statDirectory(parent) < 0)
+		if (!parent->have_stat && update_directory_stat(parent) < 0)
 			return -1;
+
 		if (parent->inode == inode && parent->device == device) {
 			g_debug("recursive directory found");
 			return 1;
 		}
+
 		parent = parent->parent;
 	}
 #else
@@ -212,15 +212,13 @@ inodeFoundInParent(struct directory *parent, ino_t inode, dev_t device)
 static void
 update_archive_tree(struct directory *directory, char *name)
 {
-	struct directory *subdir;
-	char *tmp;
-
-	tmp = strchr(name, '/');
+	char *tmp = strchr(name, '/');
 	if (tmp) {
 		*tmp = 0;
 		//add dir is not there already
 		db_lock();
-		subdir = directory_make_child(directory, name);
+		struct directory *subdir =
+			directory_make_child(directory, name);
 		subdir->device = DEVICE_INARCHIVE;
 		db_unlock();
 		//create directories first
@@ -230,6 +228,7 @@ update_archive_tree(struct directory *directory, char *name)
 			g_warning("archive returned directory only");
 			return;
 		}
+
 		//add file
 		db_lock();
 		struct song *song = directory_get_song(directory, name);
@@ -259,25 +258,21 @@ update_archive_file(struct directory *parent, const char *name,
 		    const struct stat *st,
 		    const struct archive_plugin *plugin)
 {
-	GError *error = NULL;
-	char *path_fs;
-	struct archive_file *file;
-	struct directory *directory;
-	char *filepath;
-
 	db_lock();
-	directory = directory_get_child(parent, name);
+	struct directory *directory = directory_get_child(parent, name);
 	db_unlock();
+
 	if (directory != NULL && directory->mtime == st->st_mtime &&
 	    !walk_discard)
 		/* MPD has already scanned the archive, and it hasn't
 		   changed since - don't consider updating it */
 		return;
 
-	path_fs = map_directory_child_fs(parent, name);
+	char *path_fs = map_directory_child_fs(parent, name);
 
 	/* open archive */
-	file = archive_file_open(plugin, path_fs, &error);
+	GError *error = NULL;
+	struct archive_file *file = archive_file_open(plugin, path_fs, &error);
 	if (file == NULL) {
 		g_free(path_fs);
 		g_warning("%s", error->message);
@@ -302,6 +297,7 @@ update_archive_file(struct directory *parent, const char *name,
 
 	archive_file_scan_reset(file);
 
+	char *filepath;
 	while ((filepath = archive_file_scan_next(file)) != NULL) {
 		/* split name into directory and file */
 		g_debug("adding archive file: %s", filepath);
@@ -313,32 +309,27 @@ update_archive_file(struct directory *parent, const char *name,
 #endif
 
 static bool
-update_container_file(	struct directory* directory,
-			const char* name,
-			const struct stat* st,
-			const struct decoder_plugin* plugin)
+update_container_file(struct directory *directory,
+		      const char *name,
+		      const struct stat *st,
+		      const struct decoder_plugin *plugin)
 {
-	char* vtrack = NULL;
-	unsigned int tnum = 0;
-	char* pathname = map_directory_child_fs(directory, name);
+	char *pathname = map_directory_child_fs(directory, name);
 
 	db_lock();
 	struct directory *contdir = directory_get_child(directory, name);
 
 	// directory exists already
-	if (contdir != NULL)
-	{
+	if (contdir != NULL) {
 		// modification time not eq. file mod. time
-		if (contdir->mtime != st->st_mtime || walk_discard)
-		{
+		if (contdir->mtime != st->st_mtime || walk_discard) {
 			g_message("removing container file: %s", pathname);
 
 			delete_directory(contdir);
 			contdir = NULL;
 
 			modified = true;
-		}
-		else {
+		} else {
 			db_unlock();
 			g_free(pathname);
 			return true;
@@ -350,15 +341,15 @@ update_container_file(	struct directory* directory,
 	contdir->device = DEVICE_CONTAINER;
 	db_unlock();
 
-	while ((vtrack = plugin->container_scan(pathname, ++tnum)) != NULL)
-	{
-		struct song* song = song_file_new(vtrack, contdir);
-		char *child_path_fs;
+	char *vtrack;
+	unsigned int tnum = 0;
+	while ((vtrack = plugin->container_scan(pathname, ++tnum)) != NULL) {
+		struct song *song = song_file_new(vtrack, contdir);
 
 		// shouldn't be necessary but it's there..
 		song->mtime = st->st_mtime;
 
-		child_path_fs = map_directory_child_fs(contdir, vtrack);
+		char *child_path_fs = map_directory_child_fs(contdir, vtrack);
 
 		song->tag = tag_new();
 		decoder_plugin_scan_file(plugin, child_path_fs,
@@ -376,14 +367,12 @@ update_container_file(	struct directory* directory,
 
 	g_free(pathname);
 
-	if (tnum == 1)
-	{
+	if (tnum == 1) {
 		db_lock();
 		delete_directory(contdir);
 		db_unlock();
 		return false;
-	}
-	else
+	} else
 		return true;
 }
 
@@ -455,7 +444,7 @@ update_regular_file(struct directory *directory,
 		    const char *name, const struct stat *st)
 {
 	const char *suffix = uri_get_suffix(name);
-	const struct decoder_plugin* plugin;
+	const struct decoder_plugin *plugin;
 #ifdef ENABLE_ARCHIVE
 	const struct archive_plugin *archive;
 #endif
@@ -480,31 +469,28 @@ update_regular_file(struct directory *directory,
 }
 
 static bool
-updateDirectory(struct directory *directory, const struct stat *st);
+update_directory(struct directory *directory, const struct stat *st);
 
 static void
-updateInDirectory(struct directory *directory,
-		  const char *name, const struct stat *st)
+update_directory_child(struct directory *directory,
+		       const char *name, const struct stat *st)
 {
 	assert(strchr(name, '/') == NULL);
 
 	if (S_ISREG(st->st_mode)) {
 		update_regular_file(directory, name, st);
 	} else if (S_ISDIR(st->st_mode)) {
-		struct directory *subdir;
-		bool ret;
-
-		if (inodeFoundInParent(directory, st->st_ino, st->st_dev))
+		if (find_inode_ancestor(directory, st->st_ino, st->st_dev))
 			return;
 
 		db_lock();
-		subdir = directory_make_child(directory, name);
+		struct directory *subdir =
+			directory_make_child(directory, name);
 		db_unlock();
 
 		assert(directory == subdir->parent);
 
-		ret = updateDirectory(subdir, st);
-		if (!ret) {
+		if (!update_directory(subdir, st)) {
 			db_lock();
 			delete_directory(subdir);
 			db_unlock();
@@ -526,16 +512,12 @@ static bool
 skip_symlink(const struct directory *directory, const char *utf8_name)
 {
 #ifndef WIN32
-	char buffer[MPD_PATH_MAX];
-	char *path_fs;
-	const char *p;
-	ssize_t ret;
-
-	path_fs = map_directory_child_fs(directory, utf8_name);
+	char *path_fs = map_directory_child_fs(directory, utf8_name);
 	if (path_fs == NULL)
 		return true;
 
-	ret = readlink(path_fs, buffer, sizeof(buffer));
+	char buffer[MPD_PATH_MAX];
+	ssize_t ret = readlink(path_fs, buffer, sizeof(buffer));
 	g_free(path_fs);
 	if (ret < 0)
 		/* don't skip if this is not a symlink */
@@ -558,7 +540,7 @@ skip_symlink(const struct directory *directory, const char *utf8_name)
 			: !follow_outside_symlinks;
 	}
 
-	p = buffer;
+	const char *p = buffer;
 	while (*p == '.') {
 		if (p[1] == '.' && G_IS_DIR_SEPARATOR(p[2])) {
 			/* "../" moves to parent directory */
@@ -592,22 +574,17 @@ skip_symlink(const struct directory *directory, const char *utf8_name)
 }
 
 static bool
-updateDirectory(struct directory *directory, const struct stat *st)
+update_directory(struct directory *directory, const struct stat *st)
 {
-	DIR *dir;
-	struct dirent *ent;
-	char *path_fs, *exclude_path_fs;
-	GSList *exclude_list;
-
 	assert(S_ISDIR(st->st_mode));
 
 	directory_set_stat(directory, st);
 
-	path_fs = map_directory_fs(directory);
+	char *path_fs = map_directory_fs(directory);
 	if (path_fs == NULL)
 		return false;
 
-	dir = opendir(path_fs);
+	DIR *dir = opendir(path_fs);
 	if (!dir) {
 		g_warning("Failed to open directory %s: %s",
 			  path_fs, g_strerror(errno));
@@ -615,8 +592,8 @@ updateDirectory(struct directory *directory, const struct stat *st)
 		return false;
 	}
 
-	exclude_path_fs  = g_build_filename(path_fs, ".mpdignore", NULL);
-	exclude_list = exclude_list_load(exclude_path_fs);
+	char *exclude_path_fs  = g_build_filename(path_fs, ".mpdignore", NULL);
+	GSList *exclude_list = exclude_list_load(exclude_path_fs);
 	g_free(exclude_path_fs);
 
 	g_free(path_fs);
@@ -624,8 +601,9 @@ updateDirectory(struct directory *directory, const struct stat *st)
 	if (exclude_list != NULL)
 		remove_excluded_from_directory(directory, exclude_list);
 
-	removeDeletedFromDirectory(directory);
+	purge_deleted_from_directory(directory);
 
+	struct dirent *ent;
 	while ((ent = readdir(dir))) {
 		char *utf8;
 		struct stat st2;
@@ -645,7 +623,7 @@ updateDirectory(struct directory *directory, const struct stat *st)
 		}
 
 		if (stat_directory_child(directory, utf8, &st2) == 0)
-			updateInDirectory(directory, utf8, &st2);
+			update_directory_child(directory, utf8, &st2);
 		else
 			modified |= delete_name_in(directory, utf8);
 
@@ -664,17 +642,16 @@ updateDirectory(struct directory *directory, const struct stat *st)
 static struct directory *
 directory_make_child_checked(struct directory *parent, const char *name_utf8)
 {
-	struct directory *directory;
-	struct stat st;
-
 	db_lock();
-	directory = directory_get_child(parent, name_utf8);
+	struct directory *directory = directory_get_child(parent, name_utf8);
 	db_unlock();
+
 	if (directory != NULL)
 		return directory;
 
+	struct stat st;
 	if (stat_directory_child(parent, name_utf8, &st) < 0 ||
-	    inodeFoundInParent(parent, st.st_ino, st.st_dev))
+	    find_inode_ancestor(parent, st.st_ino, st.st_dev))
 		return NULL;
 
 	if (skip_symlink(parent, name_utf8))
@@ -695,10 +672,10 @@ directory_make_child_checked(struct directory *parent, const char *name_utf8)
 }
 
 static struct directory *
-addParentPathToDB(const char *utf8path)
+directory_make_uri_parent_checked(const char *uri)
 {
 	struct directory *directory = db_get_root();
-	char *duplicated = g_strdup(utf8path);
+	char *duplicated = g_strdup(uri);
 	char *name_utf8 = duplicated, *slash;
 
 	while ((slash = strchr(name_utf8, '/')) != NULL) {
@@ -707,8 +684,7 @@ addParentPathToDB(const char *utf8path)
 		if (*name_utf8 == 0)
 			continue;
 
-		directory = directory_make_child_checked(directory,
-							 name_utf8);
+		directory = directory_make_child_checked(directory, name_utf8);
 		if (directory == NULL)
 			break;
 
@@ -720,21 +696,18 @@ addParentPathToDB(const char *utf8path)
 }
 
 static void
-updatePath(const char *path)
+update_uri(const char *uri)
 {
-	struct directory *parent;
-	char *name;
-	struct stat st;
-
-	parent = addParentPathToDB(path);
+	struct directory *parent = directory_make_uri_parent_checked(uri);
 	if (parent == NULL)
 		return;
 
-	name = g_path_get_basename(path);
+	char *name = g_path_get_basename(uri);
 
+	struct stat st;
 	if (!skip_symlink(parent, name) &&
 	    stat_directory_child(parent, name, &st) == 0)
-		updateInDirectory(parent, name, &st);
+		update_directory_child(parent, name, &st);
 	else
 		modified |= delete_name_in(parent, name);
 
@@ -748,13 +721,13 @@ update_walk(const char *path, bool discard)
 	modified = false;
 
 	if (path != NULL && !isRootDirectory(path)) {
-		updatePath(path);
+		update_uri(path);
 	} else {
 		struct directory *directory = db_get_root();
 		struct stat st;
 
 		if (stat_directory(directory, &st) == 0)
-			updateDirectory(directory, &st);
+			update_directory(directory, &st);
 	}
 
 	return modified;
