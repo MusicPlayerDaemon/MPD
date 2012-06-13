@@ -19,10 +19,9 @@
 
 #include "config.h" /* must be first for large file support */
 #include "update_walk.h"
-#include "update_internal.h"
 #include "update_io.h"
 #include "update_db.h"
-#include "update_container.h"
+#include "update_song.h"
 #include "update_archive.h"
 #include "database.h"
 #include "db_lock.h"
@@ -33,8 +32,6 @@
 #include "uri.h"
 #include "mapper.h"
 #include "path.h"
-#include "decoder_list.h"
-#include "decoder_plugin.h"
 #include "playlist_list.h"
 #include "glib_compat.h"
 #include "conf.h"
@@ -207,85 +204,6 @@ find_inode_ancestor(struct directory *parent, ino_t inode, dev_t device)
 	return 0;
 }
 
-static void
-update_song_file(struct directory *directory,
-		 const char *name, const struct stat *st,
-		 const struct decoder_plugin *plugin)
-{
-	db_lock();
-	struct song *song = directory_get_song(directory, name);
-	db_unlock();
-
-	if (!directory_child_access(directory, name, R_OK)) {
-		g_warning("no read permissions on %s/%s",
-			  directory_get_path(directory), name);
-		if (song != NULL) {
-			db_lock();
-			delete_song(directory, song);
-			db_unlock();
-		}
-
-		return;
-	}
-
-	if (!(song != NULL && st->st_mtime == song->mtime &&
-	      !walk_discard) &&
-	    update_container_file(directory, name, st, plugin)) {
-		if (song != NULL) {
-			db_lock();
-			delete_song(directory, song);
-			db_unlock();
-		}
-
-		return;
-	}
-
-	if (song == NULL) {
-		g_debug("reading %s/%s",
-			directory_get_path(directory), name);
-		song = song_file_load(name, directory);
-		if (song == NULL) {
-			g_debug("ignoring unrecognized file %s/%s",
-				directory_get_path(directory), name);
-			return;
-		}
-
-		db_lock();
-		directory_add_song(directory, song);
-		db_unlock();
-
-		modified = true;
-		g_message("added %s/%s",
-			  directory_get_path(directory), name);
-	} else if (st->st_mtime != song->mtime || walk_discard) {
-		g_message("updating %s/%s",
-			  directory_get_path(directory), name);
-		if (!song_file_update(song)) {
-			g_debug("deleting unrecognized file %s/%s",
-				directory_get_path(directory), name);
-			db_lock();
-			delete_song(directory, song);
-			db_unlock();
-		}
-
-		modified = true;
-	}
-}
-
-static bool
-update_song_file2(struct directory *directory,
-		  const char *name, const char *suffix,
-		  const struct stat *st)
-{
-	const struct decoder_plugin *plugin =
-		decoder_plugin_from_suffix(suffix, false);
-	if (plugin == NULL)
-		return false;
-
-	update_song_file(directory, name, st, plugin);
-	return true;
-}
-
 static bool
 update_playlist_file2(struct directory *directory,
 		      const char *name, const char *suffix,
@@ -310,7 +228,7 @@ update_regular_file(struct directory *directory,
 	if (suffix == NULL)
 		return false;
 
-	return update_song_file2(directory, name, suffix, st) ||
+	return update_song_file(directory, name, suffix, st) ||
 		update_archive_file(directory, name, suffix, st) ||
 		update_playlist_file2(directory, name, suffix, st);
 }
