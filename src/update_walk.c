@@ -465,33 +465,70 @@ update_song_file(struct directory *directory,
 	}
 }
 
-static void
+static bool
+update_song_file2(struct directory *directory,
+		  const char *name, const char *suffix,
+		  const struct stat *st)
+{
+	const struct decoder_plugin *plugin =
+		decoder_plugin_from_suffix(suffix, false);
+	if (plugin == NULL)
+		return false;
+
+	update_song_file(directory, name, st, plugin);
+	return true;
+}
+
+static bool
+update_archive_file2(struct directory *directory,
+		     const char *name, const char *suffix,
+		     const struct stat *st)
+{
+#ifdef ENABLE_ARCHIVE
+	const struct archive_plugin *plugin =
+		archive_plugin_from_suffix(suffix);
+	if (plugin == NULL)
+		return false;
+
+	update_archive_file(directory, name, st, plugin);
+	return true;
+#else
+	(void)directory;
+	(void)name;
+	(void)suffix;
+	(void)st;
+
+	return false;
+#endif
+}
+
+static bool
+update_playlist_file2(struct directory *directory,
+		      const char *name, const char *suffix,
+		      const struct stat *st)
+{
+	if (!playlist_suffix_supported(suffix))
+		return false;
+
+	db_lock();
+	if (playlist_vector_update_or_add(&directory->playlists, name,
+					  st->st_mtime))
+		modified = true;
+	db_unlock();
+	return true;
+}
+
+static bool
 update_regular_file(struct directory *directory,
 		    const char *name, const struct stat *st)
 {
 	const char *suffix = uri_get_suffix(name);
-	const struct decoder_plugin *plugin;
-#ifdef ENABLE_ARCHIVE
-	const struct archive_plugin *archive;
-#endif
 	if (suffix == NULL)
-		return;
+		return false;
 
-	if ((plugin = decoder_plugin_from_suffix(suffix, false)) != NULL)
-	{
-		update_song_file(directory, name, st, plugin);
-#ifdef ENABLE_ARCHIVE
-	} else if ((archive = archive_plugin_from_suffix(suffix))) {
-		update_archive_file(directory, name, st, archive);
-#endif
-
-	} else if (playlist_suffix_supported(suffix)) {
-		db_lock();
-		if (playlist_vector_update_or_add(&directory->playlists, name,
-						  st->st_mtime))
-			modified = true;
-		db_unlock();
-	}
+	return update_song_file2(directory, name, suffix, st) ||
+		update_archive_file2(directory, name, suffix, st) ||
+		update_playlist_file2(directory, name, suffix, st);
 }
 
 static bool
