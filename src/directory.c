@@ -186,6 +186,7 @@ directory_lookup_directory(struct directory *directory, const char *uri)
 void
 directory_add_song(struct directory *directory, struct song *song)
 {
+	assert(holding_db_lock());
 	assert(directory != NULL);
 	assert(song != NULL);
 	assert(song->parent == directory);
@@ -197,6 +198,7 @@ void
 directory_remove_song(G_GNUC_UNUSED struct directory *directory,
 		      struct song *song)
 {
+	assert(holding_db_lock());
 	assert(directory != NULL);
 	assert(song != NULL);
 	assert(song->parent == directory);

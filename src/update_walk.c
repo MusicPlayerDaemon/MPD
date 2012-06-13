@@ -236,7 +236,10 @@ update_archive_tree(struct directory *directory, char *name)
 		if (song == NULL) {
 			song = song_file_load(name, directory);
 			if (song != NULL) {
+				db_lock();
 				directory_add_song(directory, song);
+				db_unlock();
+
 				modified = true;
 				g_message("added %s/%s",
 					  directory_get_path(directory), name);
@@ -374,7 +377,9 @@ update_container_file(struct directory *directory,
 					 &add_tag_handler, song->tag);
 		g_free(child_path_fs);
 
+		db_lock();
 		directory_add_song(contdir, song);
+		db_unlock();
 
 		modified = true;
 
@@ -438,7 +443,10 @@ update_song_file(struct directory *directory,
 			return;
 		}
 
+		db_lock();
 		directory_add_song(directory, song);
+		db_unlock();
+
 		modified = true;
 		g_message("added %s/%s",
 			  directory_get_path(directory), name);
