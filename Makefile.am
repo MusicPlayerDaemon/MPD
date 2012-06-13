@@ -269,6 +269,7 @@ src_mpd_SOURCES = \
 	src/update_io.c src/update_io.h \
 	src/update_db.c src/update_db.h \
 	src/update_walk.c src/update_walk.h \
+	src/update_internal.h \
 	src/update_remove.c \
 	src/client.c \
 	src/client_event.c \
@@ -430,6 +431,9 @@ endif
 if ENABLE_ARCHIVE
 
 noinst_LIBRARIES += libarchive.a
+
+src_mpd_SOURCES +=  \
+	src/update_archive.c src/update_archive.h
 
 libarchive_a_SOURCES = \
 	src/archive_api.c \

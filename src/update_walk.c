@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,8 +19,10 @@
 
 #include "config.h" /* must be first for large file support */
 #include "update_walk.h"
+#include "update_internal.h"
 #include "update_io.h"
 #include "update_db.h"
+#include "update_archive.h"
 #include "database.h"
 #include "db_lock.h"
 #include "exclude.h"
@@ -38,11 +40,6 @@
 #include "tag.h"
 #include "tag_handler.h"
 
-#ifdef ENABLE_ARCHIVE
-#include "archive_list.h"
-#include "archive_plugin.h"
-#endif
-
 #include <glib.h>
 
 #include <assert.h>
@@ -57,8 +54,8 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "update"
 
-static bool walk_discard;
-static bool modified;
+bool walk_discard;
+bool modified;
 
 #ifndef WIN32
 
@@ -210,109 +207,6 @@ find_inode_ancestor(struct directory *parent, ino_t inode, dev_t device)
 
 	return 0;
 }
-
-#ifdef ENABLE_ARCHIVE
-static void
-update_archive_tree(struct directory *directory, char *name)
-{
-	char *tmp = strchr(name, '/');
-	if (tmp) {
-		*tmp = 0;
-		//add dir is not there already
-		db_lock();
-		struct directory *subdir =
-			directory_make_child(directory, name);
-		subdir->device = DEVICE_INARCHIVE;
-		db_unlock();
-		//create directories first
-		update_archive_tree(subdir, tmp+1);
-	} else {
-		if (strlen(name) == 0) {
-			g_warning("archive returned directory only");
-			return;
-		}
-
-		//add file
-		db_lock();
-		struct song *song = directory_get_song(directory, name);
-		db_unlock();
-		if (song == NULL) {
-			song = song_file_load(name, directory);
-			if (song != NULL) {
-				db_lock();
-				directory_add_song(directory, song);
-				db_unlock();
-
-				modified = true;
-				g_message("added %s/%s",
-					  directory_get_path(directory), name);
-			}
-		}
-	}
-}
-
-/**
- * Updates the file listing from an archive file.
- *
- * @param parent the parent directory the archive file resides in
- * @param name the UTF-8 encoded base name of the archive file
- * @param st stat() information on the archive file
- * @param plugin the archive plugin which fits this archive type
- */
-static void
-update_archive_file(struct directory *parent, const char *name,
-		    const struct stat *st,
-		    const struct archive_plugin *plugin)
-{
-	db_lock();
-	struct directory *directory = directory_get_child(parent, name);
-	db_unlock();
-
-	if (directory != NULL && directory->mtime == st->st_mtime &&
-	    !walk_discard)
-		/* MPD has already scanned the archive, and it hasn't
-		   changed since - don't consider updating it */
-		return;
-
-	char *path_fs = map_directory_child_fs(parent, name);
-
-	/* open archive */
-	GError *error = NULL;
-	struct archive_file *file = archive_file_open(plugin, path_fs, &error);
-	if (file == NULL) {
-		g_free(path_fs);
-		g_warning("%s", error->message);
-		g_error_free(error);
-		return;
-	}
-
-	g_debug("archive %s opened", path_fs);
-	g_free(path_fs);
-
-	if (directory == NULL) {
-		g_debug("creating archive directory: %s", name);
-		db_lock();
-		directory = directory_new_child(parent, name);
-		/* mark this directory as archive (we use device for
-		   this) */
-		directory->device = DEVICE_INARCHIVE;
-		db_unlock();
-	}
-
-	directory->mtime = st->st_mtime;
-
-	archive_file_scan_reset(file);
-
-	char *filepath;
-	while ((filepath = archive_file_scan_next(file)) != NULL) {
-		/* split name into directory and file */
-		g_debug("adding archive file: %s", filepath);
-		update_archive_tree(directory, filepath);
-	}
-
-	archive_file_close(file);
-}
-#endif
 
 /**
  * Create the specified directory object if it does not exist already
@@ -483,29 +377,6 @@ update_song_file2(struct directory *directory,
 }
 
 static bool
-update_archive_file2(struct directory *directory,
-		     const char *name, const char *suffix,
-		     const struct stat *st)
-{
-#ifdef ENABLE_ARCHIVE
-	const struct archive_plugin *plugin =
-		archive_plugin_from_suffix(suffix);
-	if (plugin == NULL)
-		return false;
-
-	update_archive_file(directory, name, st, plugin);
-	return true;
-#else
-	(void)directory;
-	(void)name;
-	(void)suffix;
-	(void)st;
-
-	return false;
-#endif
-}
-
-static bool
 update_playlist_file2(struct directory *directory,
 		      const char *name, const char *suffix,
 		      const struct stat *st)
@@ -530,7 +401,7 @@ update_regular_file(struct directory *directory,
 		return false;
 
 	return update_song_file2(directory, name, suffix, st) ||
-		update_archive_file2(directory, name, suffix, st) ||
+		update_archive_file(directory, name, suffix, st) ||
 		update_playlist_file2(directory, name, suffix, st);
 }
 
