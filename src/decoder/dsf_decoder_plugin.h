@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DECODER_DSDIFF_H
-#define MPD_DECODER_DSDIFF_H
+#ifndef MPD_DECODER_DSF_H
+#define MPD_DECODER_DSF_H
 
-extern const struct decoder_plugin dsdiff_decoder_plugin;
+extern const struct decoder_plugin dsf_decoder_plugin;
 
 #endif

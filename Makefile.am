@@ -496,6 +496,10 @@ libdecoder_plugins_a_SOURCES = \
 	src/decoder/pcm_decoder_plugin.c \
 	src/decoder/dsdiff_decoder_plugin.c \
 	src/decoder/dsdiff_decoder_plugin.h \
+	src/decoder/dsf_decoder_plugin.c \
+	src/decoder/dsf_decoder_plugin.h \
+	src/decoder/dsdlib.c \
+	src/decoder/dsdlib.h \
 	src/decoder_buffer.c \
 	src/decoder_plugin.c \
 	src/decoder_list.c

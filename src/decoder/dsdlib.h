@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,9 +17,26 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DECODER_DSDIFF_H
-#define MPD_DECODER_DSDIFF_H
+#ifndef MPD_DECODER_DSDLIB_H
+#define MPD_DECODER_DSDLIB_H
 
-extern const struct decoder_plugin dsdiff_decoder_plugin;
+struct dsdlib_id {
+	char value[4];
+};
+
+bool
+dsdlib_id_equals(const struct dsdlib_id *id, const char *s);
+
+bool
+dsdlib_read(struct decoder *decoder, struct input_stream *is,
+	    void *data, size_t length);
+
+bool
+dsdlib_skip_to(struct decoder *decoder, struct input_stream *is,
+	       goffset offset);
+
+bool
+dsdlib_skip(struct decoder *decoder, struct input_stream *is,
+	    goffset delta);
 
 #endif

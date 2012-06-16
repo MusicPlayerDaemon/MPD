@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 #include "mpd_error.h"
 #include "decoder/pcm_decoder_plugin.h"
 #include "decoder/dsdiff_decoder_plugin.h"
+#include "decoder/dsf_decoder_plugin.h"
 
 #include <glib.h>
 
@@ -72,6 +73,7 @@ const struct decoder_plugin *const decoder_plugins[] = {
 	&audiofile_decoder_plugin,
 #endif
 	&dsdiff_decoder_plugin,
+	&dsf_decoder_plugin,
 #ifdef HAVE_FAAD
 	&faad_decoder_plugin,
 #endif

@@ -782,7 +782,7 @@ systemctl start mpd.socket</programlisting>
         <title><varname>dsdiff</varname></title>
 
         <para>
-          Decodes DFF and DSF files containing DSDIFF data (e.g. SACD rips).
+          Decodes DFF files containing DSDIFF data (e.g. SACD rips).
         </para>
 
         <informaltable>
@@ -807,6 +807,15 @@ systemctl start mpd.socket</programlisting>
             </tbody>
           </tgroup>
         </informaltable>
+      </section>
+
+      <section>
+        <title><varname>dsf</varname></title>
+
+        <para>
+          Decodes DSF files containing DSDIFF data (e.g. SACD rips).
+        </para>
+
       </section>
 
       <section>
