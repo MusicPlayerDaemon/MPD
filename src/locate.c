@@ -34,8 +34,6 @@
 int
 locate_parse_type(const char *str)
 {
-	int i;
-
 	if (0 == g_ascii_strcasecmp(str, LOCATE_TAG_FILE_KEY) ||
 	    0 == g_ascii_strcasecmp(str, LOCATE_TAG_FILE_KEY_OLD))
 		return LOCATE_TAG_FILE_TYPE;
@@ -43,7 +41,7 @@ locate_parse_type(const char *str)
 	if (0 == g_ascii_strcasecmp(str, LOCATE_TAG_ANY_KEY))
 		return LOCATE_TAG_ANY_TYPE;
 
-	i = tag_name_parse_i(str);
+	enum tag_type i = tag_name_parse_i(str);
 	if (i != TAG_NUM_OF_ITEM_TYPES)
 		return i;
 
@@ -76,10 +74,9 @@ locate_item_list_free(struct locate_item_list *list)
 struct locate_item_list *
 locate_item_list_new(unsigned length)
 {
-	struct locate_item_list *list;
-
-	list = g_malloc0(sizeof(*list) - sizeof(list->items[0]) +
-			 length * sizeof(list->items[0]));
+	struct locate_item_list *list =
+		g_malloc0(sizeof(*list) - sizeof(list->items[0]) +
+			  length * sizeof(list->items[0]));
 	list->length = length;
 
 	return list;
@@ -88,12 +85,10 @@ locate_item_list_new(unsigned length)
 struct locate_item_list *
 locate_item_list_parse(char *argv[], int argc)
 {
-	struct locate_item_list *list;
-
 	if (argc % 2 != 0)
 		return NULL;
 
-	list = locate_item_list_new(argc / 2);
+	struct locate_item_list *list = locate_item_list_new(argc / 2);
 
 	for (unsigned i = 0; i < list->length; ++i) {
 		if (!locate_item_init(&list->items[i], argv[i * 2],
@@ -130,15 +125,11 @@ locate_item_free(struct locate_item *item)
 static bool
 locate_tag_search(const struct song *song, enum tag_type type, const char *str)
 {
-	char *duplicate;
 	bool ret = false;
-	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
 
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
-		char *uri, *p;
-
-		uri = song_get_uri(song);
-		p = g_utf8_casefold(uri, -1);
+		char *uri = song_get_uri(song);
+		char *p = g_utf8_casefold(uri, -1);
 		g_free(uri);
 
 		if (strstr(p, str))
@@ -151,6 +142,7 @@ locate_tag_search(const struct song *song, enum tag_type type, const char *str)
 	if (!song->tag)
 		return false;
 
+	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
 	memset(visited_types, 0, sizeof(visited_types));
 
 	for (unsigned i = 0; i < song->tag->num_items && !ret; i++) {
@@ -160,7 +152,7 @@ locate_tag_search(const struct song *song, enum tag_type type, const char *str)
 			continue;
 		}
 
-		duplicate = g_utf8_casefold(song->tag->items[i]->value, -1);
+		char *duplicate = g_utf8_casefold(song->tag->items[i]->value, -1);
 		if (*str && strstr(duplicate, str))
 			ret = true;
 		g_free(duplicate);
@@ -193,8 +185,6 @@ locate_song_search(const struct song *song,
 static bool
 locate_tag_match(const struct song *song, enum tag_type type, const char *str)
 {
-	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
-
 	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
 		char *uri = song_get_uri(song);
 		bool matches = strcmp(str, uri) == 0;
@@ -210,6 +200,7 @@ locate_tag_match(const struct song *song, enum tag_type type, const char *str)
 	if (!song->tag)
 		return false;
 
+	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
 	memset(visited_types, 0, sizeof(visited_types));
 
 	for (unsigned i = 0; i < song->tag->num_items; i++) {
