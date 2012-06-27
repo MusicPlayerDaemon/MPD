@@ -1,4 +1,4 @@
-ver 0.17 (2011/??/??)
+ver 0.17 (2012/06/27)
 * protocol:
   - support client-to-client communication
   - "update" and "rescan" need only "CONTROL" permission
@@ -17,6 +17,7 @@ ver 0.17 (2011/??/??)
 * decoder:
   - mpg123: implement seeking
   - ffmpeg: drop support for pre-0.5 ffmpeg
+  - ffmpeg: support WebM
   - oggflac: delete this obsolete plugin
   - dsdiff: new decoder plugin
 * output:
@@ -39,11 +40,6 @@ ver 0.17 (2011/??/??)
 * allow port specification in "bind_to_address" settings
 * support floating point samples
 * systemd socket activation
-
-
-ver 0.16.9 (2012/??/??)
-* decoder:
-  - ffmpeg: support WebM
 * improve --version output
 * WIN32: fix renaming of stored playlists with non-ASCII names
 
