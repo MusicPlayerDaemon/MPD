@@ -879,6 +879,33 @@ handle_searchadd(struct client *client, int argc, char *argv[])
 }
 
 static enum command_return
+handle_searchaddpl(struct client *client, int argc, char *argv[])
+{
+	const char *playlist = argv[1];
+
+	struct locate_item_list *list =
+		locate_item_list_parse(argv + 2, argc - 2);
+
+	if (list == NULL || list->length == 0) {
+		if (list != NULL)
+			locate_item_list_free(list);
+
+		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
+		return COMMAND_RETURN_ERROR;
+	}
+
+	GError *error = NULL;
+	enum command_return ret =
+		search_add_to_playlist("", playlist, list, &error)
+		? COMMAND_RETURN_OK
+		: print_error(client, error);
+
+	locate_item_list_free(list);
+
+	return ret;
+}
+
+static enum command_return
 handle_count(struct client *client, int argc, char *argv[])
 {
 	struct locate_item_list *list =
@@ -2028,6 +2055,7 @@ static const struct command commands[] = {
 	{ "save", PERMISSION_CONTROL, 1, 1, handle_save },
 	{ "search", PERMISSION_READ, 2, -1, handle_search },
 	{ "searchadd", PERMISSION_READ, 2, -1, handle_searchadd },
+	{ "searchaddpl", PERMISSION_READ, 3, -1, handle_searchaddpl },
 	{ "seek", PERMISSION_CONTROL, 2, 2, handle_seek },
 	{ "seekcur", PERMISSION_CONTROL, 1, 1, handle_seekcur },
 	{ "seekid", PERMISSION_CONTROL, 2, 2, handle_seekid },

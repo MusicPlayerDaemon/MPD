@@ -164,3 +164,46 @@ search_add_songs(struct player_control *pc, const char *uri,
 
 	return success;
 }
+
+struct search_add_playlist_data {
+	const char *playlist;
+	const struct locate_item_list *criteria;
+};
+
+static bool
+searchaddpl_visitor_song(struct song *song, void *_data,
+			 G_GNUC_UNUSED GError **error_r)
+{
+	struct search_add_playlist_data *data = _data;
+
+	if (!locate_song_search(song, data->criteria))
+		return true;
+
+	if (!spl_append_song(data->playlist, song, error_r))
+		return false;
+
+	return true;
+}
+
+static const struct db_visitor searchaddpl_visitor = {
+	.song = searchaddpl_visitor_song,
+};
+
+bool
+search_add_to_playlist(const char *uri, const char *path_utf8,
+		       const struct locate_item_list *criteria,
+		       GError **error_r)
+{
+	struct locate_item_list *new_list
+		= locate_item_list_casefold(criteria);
+	struct search_add_playlist_data data = {
+		.playlist = path_utf8,
+		.criteria = new_list,
+	};
+
+	bool success = db_walk(uri, &searchaddpl_visitor, &data, error_r);
+
+	locate_item_list_free(new_list);
+
+	return success;
+}
