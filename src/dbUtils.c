@@ -122,3 +122,45 @@ findAddIn(struct player_control *pc, const char *name,
 
 	return db_walk(name, &find_add_visitor, &data, error_r);
 }
+
+static bool
+searchadd_visitor_song(struct song *song, void *_data, GError **error_r)
+{
+	struct find_add_data *data = _data;
+
+	if (!locate_song_search(song, data->criteria))
+		return true;
+
+	enum playlist_result result =
+		playlist_append_song(&g_playlist, data->pc, song, NULL);
+	if (result != PLAYLIST_RESULT_SUCCESS) {
+		g_set_error(error_r, playlist_quark(), result,
+			    "Playlist error");
+		return false;
+	}
+
+	return true;
+}
+
+static const struct db_visitor searchadd_visitor = {
+	.song = searchadd_visitor_song,
+};
+
+bool
+search_add_songs(struct player_control *pc, const char *uri,
+		 const struct locate_item_list *criteria,
+		 GError **error_r)
+{
+	struct locate_item_list *new_list =
+		locate_item_list_casefold(criteria);
+	struct find_add_data data = {
+		.pc = pc,
+		.criteria = new_list,
+	};
+
+	bool success = db_walk(uri, &searchadd_visitor, &data, error_r);
+
+	locate_item_list_free(new_list);
+
+	return success;
+}

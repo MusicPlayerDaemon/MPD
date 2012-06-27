@@ -42,4 +42,9 @@ bool
 findAddIn(struct player_control *pc, const char *name,
 	  const struct locate_item_list *criteria, GError **error_r);
 
+gcc_nonnull(1,2,3)
+bool
+search_add_songs(struct player_control *pc, const char *uri,
+		 const struct locate_item_list *criteria, GError **error_r);
+
 #endif
