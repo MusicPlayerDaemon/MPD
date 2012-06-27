@@ -1581,6 +1581,51 @@ OK
             </para>
           </listitem>
         </varlistentry>
+        <varlistentry id="command_searchadd">
+          <term>
+            <cmdsynopsis>
+              <command>searchadd</command>
+              <arg choice="req"><replaceable>TYPE</replaceable></arg>
+              <arg choice="req"><replaceable>WHAT</replaceable></arg>
+              <arg choice="opt"><replaceable>...</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Searches for any song that contains <varname>WHAT</varname>
+              in tag <varname>TYPE</varname> and adds them to current playlist.
+            </para>
+            <para>
+              Parameters have the same meaning as for <command>find</command>,
+              except that search is not case sensitive.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_searchaddpl">
+          <term>
+            <cmdsynopsis>
+              <command>searchaddpl</command>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+              <arg choice="req"><replaceable>TYPE</replaceable></arg>
+              <arg choice="req"><replaceable>WHAT</replaceable></arg>
+              <arg choice="opt"><replaceable>...</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Searches for any song that contains <varname>WHAT</varname>
+              in tag <varname>TYPE</varname> and adds them to the playlist
+              named <varname>NAME</varname>.
+            </para>
+            <para>
+              If a playlist by that name doesn't exist it is created.
+            </para>
+            <para>
+              Parameters have the same meaning as for <command>find</command>,
+              except that search is not case sensitive.
+            </para>
+          </listitem>
+        </varlistentry>
         <varlistentry id="command_update">
           <term>
             <cmdsynopsis>

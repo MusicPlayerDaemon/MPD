@@ -6,6 +6,7 @@ ver 0.17 (2011/??/??)
   - new command "config" dumps location of music directory
   - add range parameter to command "load"
   - print extra "playlist" object for embedded CUE sheets
+  - new commands "searchadd", "searchaddpl"
 * input:
   - cdio_paranoia: new input plugin to play audio CDs
   - curl: enable CURLOPT_NETRC

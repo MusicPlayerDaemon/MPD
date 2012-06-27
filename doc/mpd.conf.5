@@ -487,6 +487,21 @@ This specifies a URL associated with the stream.
 .TP
 .B genre <genre>
 This specifies the genre(s) of the stream.
+.SH OPTIONAL TCP KEEPALIVE PARAMETERS
+.TP
+.B tcp_keep_alive <yes or no>
+Enable tcp keepalive on new client connections. (default is "no")
+.TP
+.B tcp_keep_alive_idle <seconds>
+Time in seconds since the last communication on the connection and before
+the keepalive probing is started. (default is 7200 seconds)
+.TP
+.B tcp_keep_alive_interval <seconds>
+Interval in seconds between keepalive probes, once a probe started. (default is 75 seconds)
+.TP
+.B tcp_keep_alive_count <number of times>
+Number of failed probes before the connection is pronounced dead and
+the connection is closed. (default is 9 times)
 .SH FILES
 .TP
 .BI ~/.mpdconf

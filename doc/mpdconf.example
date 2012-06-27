@@ -372,6 +372,35 @@ input {
 #
 ###############################################################################
 
+# Client TCP keep alive #######################################################
+#
+# For clients connected by TCP on supported platforms.
+# Allows detection of dangling connections due to clients disappearing from
+# the network without closing their connections.
+#
+# This is not usually necessary but can be useful in cases such as wifi connectected
+# clients that go in and out of network range or turn off wifi without closing their
+# connections. Combined with low max_connections this can soon cause clients to not
+# be able to connect.
+#
+#
+# Enable tcp keepalive on new client connections (default is "no")
+#
+#tcp_keep_alive "no"
+#
+# Time in seconds since the last communication on the connection and before
+# the keepalive probing is started. (default is 7200 seconds)
+#tcp_keep_alive_idle "7200"
+#
+# Interval in seconds between keepalive probes, once a probe started.
+# (default is 75 seconds)
+#tcp_keep_alive_interval "75"
+#
+# Number of failed probes before the connection is pronounced dead and
+# the connection is closed. (default is 9 times)
+#tcp_keep_alive_count "9"
+#
+###############################################################################
 
 # Character Encoding ##########################################################
 #
