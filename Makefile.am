@@ -249,6 +249,7 @@ src_mpd_SOURCES = \
 	src/directory.c \
 	src/directory_save.c \
 	src/database.c \
+	src/db_internal.h \
 	src/db_error.h \
 	src/db_lock.c src/db_lock.h \
 	src/db_save.c src/db_save.h \
@@ -272,7 +273,7 @@ src_mpd_SOURCES = \
 	src/update_song.c src/update_song.h \
 	src/update_container.c src/update_container.h \
 	src/update_internal.h \
-	src/update_remove.c \
+	src/update_remove.c src/update_remove.h \
 	src/client.c \
 	src/client_event.c \
 	src/client_expire.c \
@@ -783,6 +784,7 @@ OUTPUT_API_SRC = \
 	src/output_init.c
 
 liboutput_plugins_a_SOURCES = \
+	src/output/null_output_plugin.h \
 	src/output/null_output_plugin.c
 
 MIXER_LIBS = \
@@ -814,40 +816,49 @@ libmixer_plugins_a_SOURCES += src/mixer/roar_mixer_plugin.c
 endif
 
 if ENABLE_FFADO_OUTPUT
-liboutput_plugins_a_SOURCES += src/output/ffado_output_plugin.c
+liboutput_plugins_a_SOURCES += \
+	src/output/ffado_output_plugin.c src/output/ffado_output_plugin.h
 endif
 
 if HAVE_AO
-liboutput_plugins_a_SOURCES += src/output/ao_output_plugin.c
+liboutput_plugins_a_SOURCES += \
+	src/output/ao_output_plugin.c src/output/ao_output_plugin.h
 endif
 
 if HAVE_FIFO
-liboutput_plugins_a_SOURCES += src/output/fifo_output_plugin.c
+liboutput_plugins_a_SOURCES += \
+	src/output/fifo_output_plugin.c src/output/fifo_output_plugin.h
 endif
 
 if ENABLE_PIPE_OUTPUT
-liboutput_plugins_a_SOURCES += src/output/pipe_output_plugin.c
+liboutput_plugins_a_SOURCES += \
+	src/output/pipe_output_plugin.c src/output/pipe_output_plugin.h
 endif
 
 if HAVE_JACK
-liboutput_plugins_a_SOURCES += src/output/jack_output_plugin.c
+liboutput_plugins_a_SOURCES += \
+	src/output/jack_output_plugin.c src/output/jack_output_plugin.h
 endif
 
 if HAVE_MVP
-liboutput_plugins_a_SOURCES += src/output/mvp_output_plugin.c
+liboutput_plugins_a_SOURCES += \
+	src/output/mvp_output_plugin.c src/output/mvp_output_plugin.h
 endif
 
 if HAVE_OSS
-liboutput_plugins_a_SOURCES += src/output/oss_output_plugin.c
+liboutput_plugins_a_SOURCES += \
+	src/output/oss_output_plugin.c src/output/oss_output_plugin.h
 libmixer_plugins_a_SOURCES += src/mixer/oss_mixer_plugin.c
 endif
 
 if HAVE_OPENAL
-liboutput_plugins_a_SOURCES += src/output/openal_output_plugin.c
+liboutput_plugins_a_SOURCES += \
+	src/output/openal_output_plugin.c src/output/openal_output_plugin.h
 endif
 
 if HAVE_OSX
-liboutput_plugins_a_SOURCES += src/output/osx_output_plugin.c
+liboutput_plugins_a_SOURCES += \
+	src/output/osx_output_plugin.c src/output/osx_output_plugin.h
 endif
 
 if HAVE_PULSE
@@ -857,22 +868,25 @@ libmixer_plugins_a_SOURCES += src/mixer/pulse_mixer_plugin.c
 endif
 
 if HAVE_SHOUT
-liboutput_plugins_a_SOURCES += src/output/shout_output_plugin.c
+liboutput_plugins_a_SOURCES += \
+	src/output/shout_output_plugin.c src/output/shout_output_plugin.h
 endif
 
 if ENABLE_RECORDER_OUTPUT
-liboutput_plugins_a_SOURCES += src/output/recorder_output_plugin.c
+liboutput_plugins_a_SOURCES += \
+	src/output/recorder_output_plugin.c src/output/recorder_output_plugin.h
 endif
 
 if ENABLE_HTTPD_OUTPUT
 liboutput_plugins_a_SOURCES += \
 	src/icy_server.c \
 	src/output/httpd_client.c \
-	src/output/httpd_output_plugin.c
+	src/output/httpd_output_plugin.c src/output/httpd_output_plugin.h
 endif
 
 if ENABLE_SOLARIS_OUTPUT
-liboutput_plugins_a_SOURCES += src/output/solaris_output_plugin.c
+liboutput_plugins_a_SOURCES += \
+	src/output/solaris_output_plugin.c src/output/solaris_output_plugin.h
 endif
 
 if ENABLE_WINMM_OUTPUT
