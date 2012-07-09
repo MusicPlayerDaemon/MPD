@@ -23,7 +23,6 @@
 #include "string_util.h"
 #include "tokenizer.h"
 #include "path.h"
-#include "glib_compat.h"
 #include "mpd_error.h"
 
 #include <glib.h>

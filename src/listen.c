@@ -22,7 +22,6 @@
 #include "server_socket.h"
 #include "client.h"
 #include "conf.h"
-#include "glib_compat.h"
 #include "main.h"
 
 #include <string.h>

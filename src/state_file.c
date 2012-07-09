@@ -24,7 +24,6 @@
 #include "playlist_state.h"
 #include "volume.h"
 #include "text_file.h"
-#include "glib_compat.h"
 
 #include <glib.h>
 #include <assert.h>

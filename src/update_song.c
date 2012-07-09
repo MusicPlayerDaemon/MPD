@@ -26,7 +26,6 @@
 #include "db_lock.h"
 #include "directory.h"
 #include "song.h"
-#include "glib_compat.h"
 #include "decoder_list.h"
 #include "decoder_plugin.h"
 

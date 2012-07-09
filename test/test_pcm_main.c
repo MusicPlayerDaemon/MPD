@@ -18,7 +18,6 @@
  */
 
 #include "test_pcm_all.h"
-#include "test_glib_compat.h"
 
 #include <glib.h>
 

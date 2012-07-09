@@ -35,7 +35,6 @@
 #include "uri.h"
 #include "string_util.h"
 #include "conf.h"
-#include "glib_compat.h"
 #include "mpd_error.h"
 
 #include <assert.h>

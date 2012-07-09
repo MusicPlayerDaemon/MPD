@@ -23,7 +23,6 @@
 #include "fifo_buffer.h"
 #include "page.h"
 #include "icy_server.h"
-#include "glib_compat.h"
 #include "glib_socket.h"
 
 #include <stdbool.h>

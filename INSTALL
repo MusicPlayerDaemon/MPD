@@ -13,7 +13,7 @@ Dependencies
 gcc - http://gcc.gnu.org/
 Any other C99 compliant compiler should also work.
 
-GLib 2.12 - http://www.gtk.org/
+GLib 2.16 - http://www.gtk.org/
 General-purpose utility library.
 
 

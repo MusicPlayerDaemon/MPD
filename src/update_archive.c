@@ -24,7 +24,6 @@
 #include "directory.h"
 #include "song.h"
 #include "mapper.h"
-#include "glib_compat.h"
 #include "archive_list.h"
 #include "archive_plugin.h"
 

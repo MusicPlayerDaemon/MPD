@@ -25,7 +25,6 @@
 #include "directory.h"
 #include "song.h"
 #include "mapper.h"
-#include "glib_compat.h"
 #include "decoder_plugin.h"
 #include "tag.h"
 #include "tag_handler.h"

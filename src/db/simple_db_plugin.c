@@ -26,7 +26,6 @@
 #include "db_save.h"
 #include "db_lock.h"
 #include "conf.h"
-#include "glib_compat.h"
 #include "directory.h"
 
 #include <sys/types.h>

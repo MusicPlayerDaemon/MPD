@@ -21,7 +21,6 @@
 #include "tcp_connect.h"
 #include "fd_util.h"
 #include "io_thread.h"
-#include "glib_compat.h"
 #include "glib_socket.h"
 
 #include <assert.h>

@@ -19,7 +19,6 @@
 
 #include "test_pcm_all.h"
 #include "pcm_pack.h"
-#include "test_glib_compat.h"
 
 #include <glib.h>
 

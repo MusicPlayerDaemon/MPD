@@ -1307,14 +1307,12 @@ test_run_inotify_LDADD = $(GLIB_LIBS)
 endif
 
 test_test_byte_reverse_SOURCES = \
-	test/test_glib_compat.h \
 	test/test_byte_reverse.c
 test_test_byte_reverse_LDADD = \
 	libutil.a \
 	$(GLIB_LIBS)
 
 test_test_pcm_SOURCES = \
-	test/test_glib_compat.h \
 	test/test_pcm_dither.c \
 	test/test_pcm_pack.c \
 	test/test_pcm_channels.c \

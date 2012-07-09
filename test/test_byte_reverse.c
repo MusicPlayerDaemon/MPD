@@ -18,7 +18,6 @@
  */
 
 #include "util/byte_reverse.h"
-#include "test_glib_compat.h"
 
 #include <glib.h>
 

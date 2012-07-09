@@ -25,7 +25,6 @@
 #include "uri.h"
 #include "song.h"
 #include "input_stream.h"
-#include "glib_compat.h"
 
 #include <glib.h>
 

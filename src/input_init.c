@@ -22,7 +22,6 @@
 #include "input_plugin.h"
 #include "input_registry.h"
 #include "conf.h"
-#include "glib_compat.h"
 
 #include <assert.h>
 #include <string.h>

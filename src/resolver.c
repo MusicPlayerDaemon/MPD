@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "resolver.h"
-#include "glib_compat.h"
 
 #ifndef G_OS_WIN32
 #include <sys/socket.h>

@@ -16,6 +16,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+
 #include "config.h"
 #include "playlist/despotify_playlist_plugin.h"
 #include "playlist_plugin.h"
@@ -25,7 +26,6 @@
 #include "tag.h"
 #include "song.h"
 #include "input_stream.h"
-#include "glib_compat.h"
 #include "despotify_utils.h"
 
 #include <glib.h>

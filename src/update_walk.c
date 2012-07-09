@@ -33,7 +33,6 @@
 #include "mapper.h"
 #include "path.h"
 #include "playlist_list.h"
-#include "glib_compat.h"
 #include "conf.h"
 
 #include <glib.h>

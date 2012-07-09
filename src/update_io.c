@@ -21,6 +21,7 @@
 #include "update_io.h"
 #include "mapper.h"
 #include "directory.h"
+#include "glib_compat.h"
 
 #include <glib.h>
 

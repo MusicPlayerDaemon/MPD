@@ -18,7 +18,6 @@
  */
 
 #include "io_thread.h"
-#include "glib_compat.h"
 
 #include <assert.h>
 

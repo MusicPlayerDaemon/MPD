@@ -28,64 +28,6 @@
 
 #include <glib.h>
 
-#if !GLIB_CHECK_VERSION(2,14,0)
-
-#define g_queue_clear(q) do { g_queue_free(q); q = g_queue_new(); } while (0)
-
-static inline GSource *
-g_timeout_source_new_seconds(guint interval)
-{
-	return g_timeout_source_new(interval * 1000);
-}
-
-static inline guint
-g_timeout_add_seconds(guint interval, GSourceFunc function, gpointer data)
-{
-	return g_timeout_add(interval * 1000, function, data);
-}
-
-#endif /* !2.14 */
-
-#if !GLIB_CHECK_VERSION(2,16,0)
-
-static inline void
-g_prefix_error(G_GNUC_UNUSED GError **error_r,
-	       G_GNUC_UNUSED const gchar *format, ...)
-{
-}
-
-static inline void
-g_propagate_prefixed_error(GError **dest_r, GError *src,
-			   G_GNUC_UNUSED const gchar *format, ...)
-{
-	g_propagate_error(dest_r, src);
-}
-
-static inline char *
-g_uri_escape_string(const char *unescaped,
-		    G_GNUC_UNUSED const char *reserved_chars_allowed,
-		    G_GNUC_UNUSED gboolean allow_utf8)
-{
-	return g_strdup(unescaped);
-}
-
-#endif /* !2.16 */
-
-#if !GLIB_CHECK_VERSION(2,16,0)
-
-#include <string.h>
-
-static inline char *
-g_uri_parse_scheme(const char *uri)
-{
-	const char *end = strstr(uri, "://");
-	if (end == NULL)
-		return NULL;
-	return g_strndup(uri, end - uri);
-}
-
-#endif
-
 #if !GLIB_CHECK_VERSION(2,18,0)
 
 static inline void
