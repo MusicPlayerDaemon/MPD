@@ -213,13 +213,6 @@ ao_base_init(struct audio_output *ao,
 	ao->replay_gain_filter = NULL;
 	ao->other_replay_gain_filter = NULL;
 
-	/* the "convert" filter must be the last one in the chain */
-
-	ao->convert_filter = filter_new(&convert_filter_plugin, NULL, NULL);
-	assert(ao->convert_filter != NULL);
-
-	filter_chain_append(ao->filter, ao->convert_filter);
-
 	/* done */
 
 	return true;
@@ -279,6 +272,13 @@ audio_output_setup(struct audio_output *ao, const struct config_param *param,
 			    "Invalid \"replay_gain_handler\" value");
 		return false;
 	}
+
+	/* the "convert" filter must be the last one in the chain */
+
+	ao->convert_filter = filter_new(&convert_filter_plugin, NULL, NULL);
+	assert(ao->convert_filter != NULL);
+
+	filter_chain_append(ao->filter, ao->convert_filter);
 
 	return true;
 }
