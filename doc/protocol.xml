@@ -544,7 +544,7 @@
               </listitem>
               <listitem>
                 <para>
-                  <varname>updatings_db</varname>:
+                  <varname>updating_db</varname>:
                   <returnvalue>job id</returnvalue>
                 </para>
               </listitem>
