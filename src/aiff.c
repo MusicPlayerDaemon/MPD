@@ -73,7 +73,8 @@ aiff_seek_id3(FILE *file)
 	if (size != 1 ||
 	    memcmp(header.id, "FORM", 4) != 0 ||
 	    GUINT32_FROM_BE(header.size) > (uint32_t)st.st_size ||
-	    memcmp(header.format, "AIFF", 4) != 0)
+	    (memcmp(header.format, "AIFF", 4) != 0 &&
+	     memcmp(header.format, "AIFC", 4) != 0))
 		/* not a AIFF file */
 		return 0;
 

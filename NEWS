@@ -1,6 +1,8 @@
 ver 0.17.1 (2012/??/??)
 * protocol:
   - require appropriate permissions for searchadd{,pl}
+* tags:
+  - aiff: support the AIFC format
 * output:
   - fix noisy playback with conversion and software volume
 
