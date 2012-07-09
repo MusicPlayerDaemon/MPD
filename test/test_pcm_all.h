@@ -38,4 +38,19 @@ test_pcm_channels_16(void);
 void
 test_pcm_channels_32(void);
 
+void
+test_pcm_volume_8(void);
+
+void
+test_pcm_volume_16(void);
+
+void
+test_pcm_volume_24(void);
+
+void
+test_pcm_volume_32(void);
+
+void
+test_pcm_volume_float(void);
+
 #endif

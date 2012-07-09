@@ -32,5 +32,11 @@ main(int argc, char **argv)
 	g_test_add_func("/pcm/channels/16", test_pcm_channels_16);
 	g_test_add_func("/pcm/channels/32", test_pcm_channels_32);
 
+	g_test_add_func("/pcm/volume/8", test_pcm_volume_8);
+	g_test_add_func("/pcm/volume/16", test_pcm_volume_16);
+	g_test_add_func("/pcm/volume/24", test_pcm_volume_24);
+	g_test_add_func("/pcm/volume/32", test_pcm_volume_32);
+	g_test_add_func("/pcm/volume/float", test_pcm_volume_float);
+
 	g_test_run();
 }

@@ -1316,6 +1316,7 @@ test_test_pcm_SOURCES = \
 	test/test_pcm_dither.c \
 	test/test_pcm_pack.c \
 	test/test_pcm_channels.c \
+	test/test_pcm_volume.c \
 	test/test_pcm_all.h \
 	test/test_pcm_main.c
 test_test_pcm_LDADD = \
