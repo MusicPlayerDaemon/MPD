@@ -33,6 +33,7 @@
 #include "audio_check.h"
 #include "util/bit_reverse.h"
 #include "dsdlib.h"
+#include "tag_handler.h"
 
 #include <unistd.h>
 #include <stdio.h> /* for SEEK_SET, SEEK_CUR */
@@ -275,9 +276,13 @@ dsf_stream_decode(struct decoder *decoder, struct input_stream *is)
 		g_error_free(error);
 		return;
 	}
+	/* Calculate song time from DSD chunk size and sample frequency */
+	uint64_t chunk_size = metadata.chunk_size;
+	float songtime = ((chunk_size / metadata.channels) * 8) /
+			 (float) metadata.sample_rate;
 
 	/* success: file was recognized */
-	decoder_initialized(decoder, &audio_format, false, -1);
+	decoder_initialized(decoder, &audio_format, false, songtime);
 
 	if (!dsf_decode_chunk(decoder, is, metadata.channels,
 			      metadata.chunk_size,
@@ -305,6 +310,11 @@ dsf_scan_stream(struct input_stream *is,
 				       metadata.channels, NULL))
 		/* refuse to parse files which we cannot play anyway */
 		return false;
+
+	/* calculate song time and add as tag */
+	unsigned songtime = ((metadata.chunk_size / metadata.channels) * 8) /
+			    metadata.sample_rate;
+	tag_handler_invoke_duration(handler, handler_ctx, songtime);
 
 	return true;
 }
