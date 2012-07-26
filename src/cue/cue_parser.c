@@ -235,7 +235,9 @@ cue_parser_feed2(struct cue_parser *parser, char *p)
 		if (type == NULL)
 			return;
 
-		if (strcmp(type, "WAVE") != 0) {
+		if (strcmp(type, "WAVE") != 0 &&
+		    strcmp(type, "MP3") != 0 &&
+		    strcmp(type, "AIFF") != 0) {
 			parser->state = IGNORE_FILE;
 			return;
 		}
