@@ -40,43 +40,55 @@ tag_ape_name_parse(const char *name)
 	return type;
 }
 
-static void
+/**
+ * @return true if the item was recognized
+ */
+static bool
 tag_ape_import_item(unsigned long flags,
 		    const char *key, const char *value, size_t value_length,
 		    const struct tag_handler *handler, void *handler_ctx)
 {
 	/* we only care about utf-8 text tags */
 	if ((flags & (0x3 << 1)) != 0)
-		return;
+		return false;
 
 	tag_handler_invoke_pair(handler, handler_ctx, key, value);
 
 	enum tag_type type = tag_ape_name_parse(key);
 	if (type == TAG_NUM_OF_ITEM_TYPES)
-		return;
+		return false;
 
+	bool recognized = false;
 	const char *end = value + value_length;
 	while (true) {
 		/* multiple values are separated by null bytes */
 		const char *n = memchr(value, 0, end - value);
 		if (n != NULL) {
-			if (n > value)
+			if (n > value) {
 				tag_handler_invoke_tag(handler, handler_ctx,
 						       type, value);
+				recognized = true;
+			}
+
 			value = n + 1;
 		} else {
 			char *p = g_strndup(value, end - value);
 			tag_handler_invoke_tag(handler, handler_ctx,
 					       type, p);
 			g_free(p);
+			recognized = true;
 			break;
 		}
 	}
+
+	return recognized;
 }
 
 struct tag_ape_ctx {
 	const struct tag_handler *handler;
 	void *handler_ctx;
+
+	bool recognized;
 };
 
 static bool
@@ -85,8 +97,8 @@ tag_ape_callback(unsigned long flags, const char *key,
 {
 	struct tag_ape_ctx *ctx = _ctx;
 
-	tag_ape_import_item(flags, key, value, value_length,
-			    ctx->handler, ctx->handler_ctx);
+	ctx->recognized |= tag_ape_import_item(flags, key, value, value_length,
+					       ctx->handler, ctx->handler_ctx);
 	return true;
 }
 
@@ -97,7 +109,9 @@ tag_ape_scan2(const char *path_fs,
 	struct tag_ape_ctx ctx = {
 		.handler = handler,
 		.handler_ctx = handler_ctx,
+		.recognized = false,
 	};
 
-	return tag_ape_scan(path_fs, tag_ape_callback, &ctx);
+	return tag_ape_scan(path_fs, tag_ape_callback, &ctx) &&
+		ctx.recognized;
 }

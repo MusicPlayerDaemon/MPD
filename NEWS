@@ -3,6 +3,7 @@ ver 0.17.1 (2012/??/??)
   - require appropriate permissions for searchadd{,pl}
 * tags:
   - aiff: support the AIFC format
+  - ape: check for ID3 if no usable APE tag was found
 * playlist:
   - cue: support file types "MP3", "AIFF"
 * output:
