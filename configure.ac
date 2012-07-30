@@ -21,23 +21,8 @@ dnl Programs
 dnl ---------------------------------------------------------------------------
 AC_PROG_CC_C99
 AC_PROG_CXX
+AC_CXX_COMPILE_STDCXX_0X
 AC_PROG_RANLIB
-
-HAVE_CXX=yes
-if test x$CXX = xg++; then
-	# CXX=g++ probably means that autoconf hasn't found any C++
-	# compiler; to be sure, we check again
-	AC_PATH_PROG(CXX, $CXX, no)
-	if test x$CXX = xno; then
-		# no, we don't have C++ - the following hack is
-		# required because automake insists on using $(CXX)
-		# for linking the MPD binary
-		AC_MSG_NOTICE([Disabling C++ support])
-		CXX="$CC"
-		HAVE_CXX=no
-	fi
-fi
-AM_CONDITIONAL(HAVE_CXX, test x$HAVE_CXX = xyes)
 
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
@@ -899,9 +884,6 @@ fi
 AM_CONDITIONAL(ENABLE_MIKMOD_DECODER, test x$enable_mikmod = xyes)
 
 dnl -------------------------------- libmodplug -------------------------------
-found_modplug=$HAVE_CXX
-MPD_AUTO_PRE(modplug, [modplug decoder plugin], [No C++ compiler found])
-
 MPD_AUTO_PKG(modplug, MODPLUG, [libmodplug],
 	[modplug decoder plugin], [libmodplug not found])
 
@@ -1010,9 +992,6 @@ fi
 AM_CONDITIONAL(ENABLE_VORBIS_DECODER, test x$enable_vorbis = xyes || test x$enable_tremor = xyes)
 
 dnl --------------------------------- sidplay ---------------------------------
-found_sidplay=$HAVE_CXX
-MPD_AUTO_PRE(sidplay, [sidplay decoder plugin], [No C++ compiler found])
-
 if test x$enable_sidplay != xno; then
 	# we're not using pkg-config here
 	# because libsidplay2's .pc file requires libtool

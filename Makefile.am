@@ -1316,7 +1316,6 @@ test_test_queue_priority_SOURCES = \
 test_test_queue_priority_LDADD = \
 	$(GLIB_LIBS)
 
-if HAVE_CXX
 noinst_PROGRAMS += src/dsd2pcm/dsd2pcm
 
 src_dsd2pcm_dsd2pcm_SOURCES = \
@@ -1324,7 +1323,6 @@ src_dsd2pcm_dsd2pcm_SOURCES = \
 	src/dsd2pcm/noiseshape.c src/dsd2pcm/noiseshape.h \
 	src/dsd2pcm/main.cpp
 src_dsd2pcm_dsd2pcm_LDADD = libutil.a
-endif
 
 endif
 
