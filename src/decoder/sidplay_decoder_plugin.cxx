@@ -104,7 +104,7 @@ sidplay_init(const struct config_param *param)
 	return true;
 }
 
-void
+static void
 sidplay_finish()
 {
 	g_pattern_spec_free(path_with_subtune);
@@ -136,7 +136,7 @@ get_container_name(const char *path_fs)
  * returns tune number from file.sid/tune_xxx.sid style path or 1 if
  * no subtune is appended
  */
-static int
+static unsigned
 get_song_num(const char *path_fs)
 {
 	if(g_pattern_match(path_with_subtune,
@@ -172,7 +172,7 @@ get_song_length(const char *path_fs)
 	char md5sum[SIDTUNE_MD5_LENGTH+1];
 	tune.createMD5(md5sum);
 
-	int song_num=get_song_num(path_fs);
+	const unsigned song_num = get_song_num(path_fs);
 
 	gsize num_items;
 	gchar **values=g_key_file_get_string_list(songlength_database,
@@ -330,7 +330,7 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 			decoder_command_finished(decoder);
 		}
 
-		if (song_len > 0 && player.time() >= song_len)
+		if (song_len > 0 && player.time() >= (unsigned)song_len)
 			break;
 
 	} while (cmd != DECODE_COMMAND_STOP);
