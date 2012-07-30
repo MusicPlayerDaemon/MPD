@@ -18,17 +18,22 @@
  */
 
 #include "config.h"
+
+extern "C" {
 #include "database.h"
 #include "db_error.h"
 #include "db_save.h"
 #include "db_selection.h"
 #include "db_visitor.h"
-#include "db_plugin.h"
-#include "db/simple_db_plugin.h"
-#include "directory.h"
 #include "stats.h"
 #include "conf.h"
 #include "glib_compat.h"
+}
+
+#include "directory.h"
+
+#include "DatabasePlugin.hxx"
+#include "db/SimpleDatabasePlugin.hxx"
 
 #include <glib.h>
 
@@ -42,7 +47,7 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "database"
 
-static struct db *db;
+static Database *db;
 static bool db_is_open;
 
 bool
@@ -57,7 +62,7 @@ db_init(const struct config_param *path, GError **error_r)
 	struct config_param *param = config_new_param("database", path->line);
 	config_add_block_param(param, "path", path->value, path->line);
 
-	db = db_plugin_new(&simple_db_plugin, param, error_r);
+	db = simple_db_plugin.create(param, error_r);
 
 	config_param_free(param);
 
@@ -68,10 +73,10 @@ void
 db_finish(void)
 {
 	if (db_is_open)
-		db_plugin_close(db);
+		db->Close();
 
 	if (db != NULL)
-		db_plugin_free(db);
+		delete db;
 }
 
 struct directory *
@@ -79,7 +84,7 @@ db_get_root(void)
 {
 	assert(db != NULL);
 
-	return simple_db_get_root(db);
+	return ((SimpleDatabase *)db)->GetRoot();
 }
 
 struct directory *
@@ -107,7 +112,7 @@ db_get_song(const char *file)
 	if (db == NULL)
 		return NULL;
 
-	return db_plugin_get_song(db, file, NULL);
+	return db->GetSong(file, NULL);
 }
 
 bool
@@ -121,7 +126,31 @@ db_visit(const struct db_selection *selection,
 		return false;
 	}
 
-	return db_plugin_visit(db, selection, visitor, ctx, error_r);
+	VisitDirectory visit_directory;
+	if (visitor->directory != NULL)
+		visit_directory = [&](const struct directory *directory,
+				     GError **error_r2) {
+			return visitor->directory(directory, ctx, error_r2);
+		};
+
+	VisitSong visit_song;
+	if (visitor->song != NULL)
+		visit_song = [&](struct song *song, GError **error_r2) {
+			return visitor->song(song, ctx, error_r2);
+		};
+
+	VisitPlaylist visit_playlist;
+	if (visitor->playlist != NULL)
+		visit_playlist = [&](const struct playlist_metadata *playlist,
+				     const struct directory *directory,
+				     GError **error_r2) {
+			return visitor->playlist(playlist, directory, ctx,
+						 error_r2);
+		};
+
+	return db->Visit(selection,
+			 visit_directory, visit_song, visit_playlist,
+			 error_r);
 }
 
 bool
@@ -141,7 +170,7 @@ db_save(GError **error_r)
 	assert(db != NULL);
 	assert(db_is_open);
 
-	return simple_db_save(db, error_r);
+	return ((SimpleDatabase *)db)->Save(error_r);
 }
 
 bool
@@ -150,7 +179,7 @@ db_load(GError **error)
 	assert(db != NULL);
 	assert(!db_is_open);
 
-	if (!db_plugin_open(db, error))
+	if (!db->Open(error))
 		return false;
 
 	db_is_open = true;
@@ -166,5 +195,5 @@ db_get_mtime(void)
 	assert(db != NULL);
 	assert(db_is_open);
 
-	return simple_db_get_mtime(db);
+	return ((SimpleDatabase *)db)->GetLastModified();
 }

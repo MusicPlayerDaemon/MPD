@@ -23,6 +23,10 @@
 #include "check.h"
 #include "util/list.h"
 
+#ifdef __cplusplus
+#include "DatabaseVisitor.hxx"
+#endif
+
 #include <glib.h>
 #include <stdbool.h>
 #include <sys/types.h>
@@ -86,7 +90,19 @@ struct directory {
 	dev_t device;
 	bool have_stat; /* not needed if ino_t == dev_t == 0 is impossible */
 	char path[sizeof(long)];
+
+#ifdef __cplusplus
+	/**
+	 * Caller must lock #db_mutex.
+	 */
+	bool Walk(bool recursive,
+		  VisitDirectory visit_directory, VisitSong visit_song,
+		  VisitPlaylist visit_playlist,
+		  GError **error_r) const;
+#endif
 };
+
+G_BEGIN_DECLS
 
 static inline bool
 isRootDirectory(const char *name)
@@ -251,12 +267,6 @@ directory_lookup_song(struct directory *directory, const char *uri);
 void
 directory_sort(struct directory *directory);
 
-/**
- * Caller must lock #db_mutex.
- */
-bool
-directory_walk(const struct directory *directory, bool recursive,
-	       const struct db_visitor *visitor, void *ctx,
-	       GError **error_r);
+G_END_DECLS
 
 #endif

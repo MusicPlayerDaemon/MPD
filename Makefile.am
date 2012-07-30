@@ -246,18 +246,18 @@ src_mpd_SOURCES = \
 	src/decoder_api.c \
 	src/decoder_internal.c \
 	src/decoder_print.c \
-	src/directory.c \
+	src/Directory.cxx \
 	src/directory_save.c \
-	src/database.c \
-	src/db_internal.h \
+	src/DatabaseGlue.cxx \
 	src/db_error.h \
 	src/db_lock.c src/db_lock.h \
 	src/db_save.c src/db_save.h \
 	src/db_print.c src/db_print.h \
-	src/db_plugin.h \
 	src/db_visitor.h \
+	src/DatabasePlugin.hxx \
+	src/DatabaseVisitor.hxx \
 	src/db_selection.h \
-	src/db/simple_db_plugin.c src/db/simple_db_plugin.h \
+	src/db/SimpleDatabasePlugin.cxx src/db/SimpleDatabasePlugin.hxx \
 	src/exclude.c \
 	src/fd_util.c \
 	src/fifo_buffer.c src/fifo_buffer.h \

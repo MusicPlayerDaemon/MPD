@@ -17,26 +17,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_SIMPLE_DB_PLUGIN_H
-#define MPD_SIMPLE_DB_PLUGIN_H
+#ifndef MPD_DATABASE_VISITOR_HXX
+#define MPD_DATABASE_VISITOR_HXX
+
+#include <functional>
 
 #include <glib.h>
-#include <stdbool.h>
-#include <time.h>
 
-extern const struct db_plugin simple_db_plugin;
+struct directory;
+struct song;
+struct playlist_metadata;
 
-struct db;
-
-G_GNUC_PURE
-struct directory *
-simple_db_get_root(struct db *db);
-
-bool
-simple_db_save(struct db *db, GError **error_r);
-
-G_GNUC_PURE
-time_t
-simple_db_get_mtime(const struct db *db);
+typedef std::function<bool(const struct directory *, GError **)> VisitDirectory;
+typedef std::function<bool(struct song *, GError **)> VisitSong;
+typedef std::function<bool(const struct playlist_metadata *, const struct directory *, GError **)> VisitPlaylist;
 
 #endif

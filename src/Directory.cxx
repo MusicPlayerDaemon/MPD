@@ -19,6 +19,8 @@
 
 #include "config.h"
 #include "directory.h"
+
+extern "C" {
 #include "song.h"
 #include "song_sort.h"
 #include "playlist_vector.h"
@@ -26,6 +28,7 @@
 #include "util/list_sort.h"
 #include "db_visitor.h"
 #include "db_lock.h"
+}
 
 #include <glib.h>
 
@@ -36,14 +39,15 @@
 struct directory *
 directory_new(const char *path, struct directory *parent)
 {
-	struct directory *directory;
 	size_t pathlen = strlen(path);
 
 	assert(path != NULL);
 	assert((*path == 0) == (parent == NULL));
 
-	directory = g_malloc0(sizeof(*directory) -
-			      sizeof(directory->path) + pathlen + 1);
+	struct directory *directory =
+		(struct directory *)g_malloc0(sizeof(*directory)
+					      - sizeof(directory->path)
+					      + pathlen + 1);
 	INIT_LIST_HEAD(&directory->children);
 	INIT_LIST_HEAD(&directory->songs);
 	INIT_LIST_HEAD(&directory->playlists);
@@ -277,36 +281,36 @@ directory_sort(struct directory *directory)
 }
 
 bool
-directory_walk(const struct directory *directory, bool recursive,
-	       const struct db_visitor *visitor, void *ctx,
-	       GError **error_r)
+directory::Walk(bool recursive,
+		VisitDirectory visit_directory, VisitSong visit_song,
+		VisitPlaylist visit_playlist,
+		GError **error_r) const
 {
-	assert(directory != NULL);
-	assert(visitor != NULL);
 	assert(error_r == NULL || *error_r == NULL);
 
-	if (visitor->song != NULL) {
+	if (visit_song) {
 		struct song *song;
-		directory_for_each_song(song, directory)
-			if (!visitor->song(song, ctx, error_r))
+		directory_for_each_song(song, this)
+			if (!visit_song(song, error_r))
 				return false;
 	}
 
-	if (visitor->playlist != NULL) {
+	if (visit_playlist) {
 		struct playlist_metadata *i;
-		directory_for_each_playlist(i, directory)
-			if (!visitor->playlist(i, directory, ctx, error_r))
+		directory_for_each_playlist(i, this)
+			if (!visit_playlist(i, this, error_r))
 				return false;
 	}
 
 	struct directory *child;
-	directory_for_each_child(child, directory) {
-		if (visitor->directory != NULL &&
-		    !visitor->directory(child, ctx, error_r))
+	directory_for_each_child(child, this) {
+		if (visit_directory &&
+		    !visit_directory(child, error_r))
 			return false;
 
 		if (recursive &&
-		    !directory_walk(child, recursive, visitor, ctx, error_r))
+		    !child->Walk(recursive, visit_directory, visit_song,
+				 visit_playlist, error_r))
 			return false;
 	}
 
