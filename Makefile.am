@@ -290,9 +290,6 @@ src_mpd_SOURCES = \
 	src/client_subscribe.h \
 	src/client_subscribe.c \
 	src/client_file.c src/client_file.h \
-	src/tcp_connect.c src/tcp_connect.h \
-	src/tcp_socket.c src/tcp_socket.h \
-	src/udp_server.c src/udp_server.h \
 	src/server_socket.c \
 	src/listen.c \
 	src/log.c \
@@ -1000,7 +997,6 @@ noinst_PROGRAMS = \
 	$(C_TESTS) \
 	test/read_conf \
 	test/run_resolver \
-	test/run_tcp_connect \
 	test/run_input \
 	test/dump_text_file \
 	test/dump_playlist \
@@ -1030,14 +1026,6 @@ test_run_resolver_LDADD = \
 	$(GLIB_LIBS)
 test_run_resolver_SOURCES = test/run_resolver.c \
 	src/resolver.c
-
-test_run_tcp_connect_LDADD = \
-	$(GLIB_LIBS)
-test_run_tcp_connect_SOURCES = test/run_tcp_connect.c \
-	src/io_thread.c src/io_thread.h \
-	src/fd_util.c \
-	src/resolver.c \
-	src/tcp_connect.c
 
 test_run_input_LDADD = \
 	$(INPUT_LIBS) \
@@ -1249,8 +1237,6 @@ test_run_output_SOURCES = test/run_output.c \
 	test/stdbin.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
 	src/io_thread.c src/io_thread.h \
-	src/udp_server.c src/udp_server.h \
-	src/tcp_socket.c src/tcp_socket.h \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \
