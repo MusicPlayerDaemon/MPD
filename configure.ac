@@ -1499,15 +1499,15 @@ fi
 dnl ----------------------------------- GCC -----------------------------------
 if test x$GCC = xyes
 then
-	MPD_CHECK_FLAG([-Wall])
-	MPD_CHECK_FLAG([-Wextra])
-	MPD_CHECK_FLAG([-Wmissing-prototypes])
-	MPD_CHECK_FLAG([-Wshadow])
-	MPD_CHECK_FLAG([-Wpointer-arith])
-	MPD_CHECK_FLAG([-Wstrict-prototypes])
-	MPD_CHECK_FLAG([-Wcast-qual])
-	MPD_CHECK_FLAG([-Wwrite-strings])
-	MPD_CHECK_FLAG([-pedantic])
+	AX_APPEND_COMPILE_FLAGS([-Wall])
+	AX_APPEND_COMPILE_FLAGS([-Wextra])
+	AX_APPEND_COMPILE_FLAGS([-Wmissing-prototypes])
+	AX_APPEND_COMPILE_FLAGS([-Wshadow])
+	AX_APPEND_COMPILE_FLAGS([-Wpointer-arith])
+	AX_APPEND_COMPILE_FLAGS([-Wstrict-prototypes])
+	AX_APPEND_COMPILE_FLAGS([-Wcast-qual])
+	AX_APPEND_COMPILE_FLAGS([-Wwrite-strings])
+	AX_APPEND_COMPILE_FLAGS([-pedantic])
 fi
 
 dnl ---------------------------- warnings as errors ---------------------------
