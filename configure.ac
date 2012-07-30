@@ -119,7 +119,7 @@ if test -z "$prefix" || test "x$prefix" = xNONE; then
 	done
 	for d in $local_include; do
 		if test -d "$d"; then
-			CFLAGS="$CFLAGS -I$d"
+			CPPFLAGS="$CPPFLAGS -I$d"
 			break
 		fi
 	done
