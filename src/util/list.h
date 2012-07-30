@@ -47,8 +47,8 @@
  * under normal circumstances, used to verify that nobody uses
  * non-initialized list entries.
  */
-#define LIST_POISON1  ((void *) 0x00100100)
-#define LIST_POISON2  ((void *) 0x00200200)
+#define LIST_POISON1  ((struct list_head *)(void *) 0x00100100)
+#define LIST_POISON2  ((struct list_head *)(void *) 0x00200200)
 
 /*
  * Simple doubly linked list implementation.
@@ -82,46 +82,47 @@ static inline void INIT_LIST_HEAD(struct list_head *list)
  * the prev/next entries already!
  */
 #ifndef CONFIG_DEBUG_LIST
-static inline void __list_add(struct list_head *new,
+static inline void __list_add(struct list_head *new_item,
 			      struct list_head *prev,
 			      struct list_head *next)
 {
-	next->prev = new;
-	new->next = next;
-	new->prev = prev;
-	prev->next = new;
+	next->prev = new_item;
+	new_item->next = next;
+	new_item->prev = prev;
+	prev->next = new_item;
 }
 #else
-extern void __list_add(struct list_head *new,
-			      struct list_head *prev,
-			      struct list_head *next);
+extern void __list_add(struct list_head *new_item,
+		       struct list_head *prev,
+		       struct list_head *next);
 #endif
 
 /**
  * list_add - add a new entry
- * @new: new entry to be added
+ * @new_item: new entry to be added
  * @head: list head to add it after
  *
  * Insert a new entry after the specified head.
  * This is good for implementing stacks.
  */
-static inline void list_add(struct list_head *new, struct list_head *head)
+static inline void list_add(struct list_head *new_item, struct list_head *head)
 {
-	__list_add(new, head, head->next);
+	__list_add(new_item, head, head->next);
 }
 
 
 /**
  * list_add_tail - add a new entry
- * @new: new entry to be added
+ * @new_item: new entry to be added
  * @head: list head to add it before
  *
  * Insert a new entry before the specified head.
  * This is useful for implementing queues.
  */
-static inline void list_add_tail(struct list_head *new, struct list_head *head)
+static inline void
+list_add_tail(struct list_head *new_item, struct list_head *head)
 {
-	__list_add(new, head->prev, head);
+	__list_add(new_item, head->prev, head);
 }
 
 /*
@@ -163,23 +164,23 @@ extern void list_del(struct list_head *entry);
 /**
  * list_replace - replace old entry by new one
  * @old : the element to be replaced
- * @new : the new element to insert
+ * @new_item : the new element to insert
  *
  * If @old was empty, it will be overwritten.
  */
 static inline void list_replace(struct list_head *old,
-				struct list_head *new)
+				struct list_head *new_item)
 {
-	new->next = old->next;
-	new->next->prev = new;
-	new->prev = old->prev;
-	new->prev->next = new;
+	new_item->next = old->next;
+	new_item->next->prev = new_item;
+	new_item->prev = old->prev;
+	new_item->prev->next = new_item;
 }
 
 static inline void list_replace_init(struct list_head *old,
-					struct list_head *new)
+				     struct list_head *new_item)
 {
-	list_replace(old, new);
+	list_replace(old, new_item);
 	INIT_LIST_HEAD(old);
 }
 
