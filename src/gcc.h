@@ -60,4 +60,13 @@
 #  define gcc_nonnull_all
 #endif
 
+#ifdef __cplusplus
+
+/* support for C++11 "override" was added in gcc 4.7 */
+#if !defined(__clang__) && defined(__GNUC__) && !GCC_CHECK_VERSION(4,7)
+#define override
+#endif
+
+#endif
+
 #endif /* MPD_GCC_H */
