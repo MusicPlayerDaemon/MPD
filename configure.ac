@@ -1485,6 +1485,16 @@ dnl ---------------------------------------------------------------------------
 dnl ---------------------------------- debug ----------------------------------
 if test "x$enable_debug" = xno; then
 	AM_CPPFLAGS="$AM_CPPFLAGS -DNDEBUG"
+
+	AX_APPEND_COMPILE_FLAGS([-ffunction-sections])
+	AX_APPEND_COMPILE_FLAGS([-fdata-sections])
+
+	AC_LANG_PUSH([C++])
+	AX_APPEND_COMPILE_FLAGS([-ffunction-sections])
+	AX_APPEND_COMPILE_FLAGS([-fdata-sections])
+	AC_LANG_POP
+
+	AX_APPEND_LINK_FLAGS([-Wl,--gc-sections])
 fi
 
 dnl ----------------------------------- GCC -----------------------------------
