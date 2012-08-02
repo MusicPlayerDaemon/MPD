@@ -12,6 +12,7 @@ noinst_LIBRARIES = \
 	libpcm.a \
 	libtag.a \
 	libinput.a \
+	libdb_plugins.a \
 	libplaylist_plugins.a \
 	libdecoder_plugins.a \
 	libfilter_plugins.a \
@@ -23,6 +24,7 @@ src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBWRAP_CFLAGS) \
 	$(SQLITE_CFLAGS)
 src_mpd_LDADD = \
+	$(DB_LIBS) \
 	$(PLAYLIST_LIBS) \
 	$(AVAHI_LIBS) \
 	$(LIBWRAP_LDFLAGS) \
@@ -260,7 +262,6 @@ src_mpd_SOURCES = \
 	src/DatabasePlugin.hxx \
 	src/DatabaseVisitor.hxx \
 	src/db_selection.h \
-	src/db/SimpleDatabasePlugin.cxx src/db/SimpleDatabasePlugin.hxx \
 	src/exclude.c \
 	src/fd_util.c \
 	src/fifo_buffer.c src/fifo_buffer.h \
@@ -428,6 +429,14 @@ PCM_LIBS = \
 if HAVE_LIBSAMPLERATE
 libpcm_a_SOURCES += src/pcm_resample_libsamplerate.c
 endif
+
+# database plugins
+
+libdb_plugins_a_SOURCES = \
+	src/db/SimpleDatabasePlugin.cxx src/db/SimpleDatabasePlugin.hxx
+
+DB_LIBS = \
+	libdb_plugins.a
 
 # archive plugins
 
