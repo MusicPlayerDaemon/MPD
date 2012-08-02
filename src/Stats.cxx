@@ -18,15 +18,24 @@
  */
 
 #include "config.h"
+
+extern "C" {
 #include "stats.h"
 #include "database.h"
-#include "db_visitor.h"
+#include "db_selection.h"
 #include "tag.h"
 #include "song.h"
 #include "client.h"
 #include "player_control.h"
 #include "strset.h"
 #include "client_internal.h"
+}
+
+#include "DatabaseGlue.hxx"
+#include "DatabasePlugin.hxx"
+
+#include <functional>
+#include <set>
 
 struct stats stats;
 
@@ -40,13 +49,17 @@ void stats_global_finish(void)
 	g_timer_destroy(stats.timer);
 }
 
-struct visit_data {
-	struct strset *artists;
-	struct strset *albums;
+struct StringLess {
+	gcc_pure
+	bool operator()(const char *a, const char *b) const {
+		return strcmp(a, b) < 0;
+	}
 };
 
+typedef std::set<const char *, StringLess> StringSet;
+
 static void
-visit_tag(struct visit_data *data, const struct tag *tag)
+visit_tag(StringSet &artists, StringSet &albums, const struct tag *tag)
 {
 	if (tag->time > 0)
 		stats.song_duration += tag->time;
@@ -56,11 +69,11 @@ visit_tag(struct visit_data *data, const struct tag *tag)
 
 		switch (item->type) {
 		case TAG_ARTIST:
-			strset_add(data->artists, item->value);
+			artists.insert(item->value);
 			break;
 
 		case TAG_ALBUM:
-			strset_add(data->albums, item->value);
+			albums.insert(item->value);
 			break;
 
 		default:
@@ -70,41 +83,33 @@ visit_tag(struct visit_data *data, const struct tag *tag)
 }
 
 static bool
-collect_stats_song(struct song *song, void *_data,
-		   G_GNUC_UNUSED GError **error_r)
+collect_stats_song(StringSet &artists, StringSet &albums, struct song *song)
 {
-	struct visit_data *data = _data;
-
 	++stats.song_count;
 
 	if (song->tag != NULL)
-		visit_tag(data, song->tag);
+		visit_tag(artists, albums, song->tag);
 
 	return true;
 }
 
-static const struct db_visitor collect_stats_visitor = {
-	.song = collect_stats_song,
-};
-
 void stats_update(void)
 {
-	struct visit_data data;
-
 	stats.song_count = 0;
 	stats.song_duration = 0;
 	stats.artist_count = 0;
 
-	data.artists = strset_new();
-	data.albums = strset_new();
+	struct db_selection selection;
+	db_selection_init(&selection, "", true);
 
-	db_walk("", &collect_stats_visitor, &data, NULL);
+	StringSet artists, albums;
+	using namespace std::placeholders;
+	const auto f = std::bind(collect_stats_song,
+				 std::ref(artists), std::ref(albums), _1);
+	GetDatabase()->Visit(&selection, f, NULL);
 
-	stats.artist_count = strset_size(data.artists);
-	stats.album_count = strset_size(data.albums);
-
-	strset_free(data.artists);
-	strset_free(data.albums);
+	stats.artist_count = artists.size();
+	stats.album_count = albums.size();
 }
 
 int stats_print(struct client *client)

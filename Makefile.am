@@ -338,7 +338,7 @@ src_mpd_SOURCES = \
 	src/resolver.c src/resolver.h \
 	src/socket_util.c \
 	src/state_file.c \
-	src/stats.c \
+	src/Stats.cxx \
 	src/tag.c \
 	src/tag_pool.c \
 	src/tag_print.c \
