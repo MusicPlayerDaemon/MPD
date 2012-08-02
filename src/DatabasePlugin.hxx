@@ -69,6 +69,19 @@ public:
 			   VisitSong visit_song,
 			   VisitPlaylist visit_playlist,
 			   GError **error_r) const = 0;
+
+	bool Visit(const struct db_selection *selection,
+		   VisitDirectory visit_directory,
+		   VisitSong visit_song,
+		   GError **error_r) const {
+		return Visit(selection, visit_directory, visit_song,
+			     VisitPlaylist(), error_r);
+	}
+
+	bool Visit(const struct db_selection *selection, VisitSong visit_song,
+		   GError **error_r) const {
+		return Visit(selection, VisitDirectory(), visit_song, error_r);
+	}
 };
 
 struct DatabasePlugin {
