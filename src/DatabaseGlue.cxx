@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "DatabaseGlue.hxx"
 
 extern "C" {
 #include "database.h"
@@ -77,6 +78,14 @@ db_finish(void)
 
 	if (db != NULL)
 		delete db;
+}
+
+const Database *
+GetDatabase()
+{
+	assert(db == NULL || db_is_open);
+
+	return db;
 }
 
 struct directory *
