@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,38 +18,30 @@
  */
 
 #include "config.h"
+
+extern "C" {
 #include "db_print.h"
 #include "db_selection.h"
-#include "db_visitor.h"
 #include "locate.h"
-#include "directory.h"
 #include "database.h"
 #include "client.h"
 #include "song.h"
 #include "song_print.h"
 #include "playlist_vector.h"
 #include "tag.h"
-#include "strset.h"
+}
 
-#include <glib.h>
+#include "directory.h"
 
-typedef struct _ListCommandItem {
-	int8_t tagType;
-	const struct locate_item_list *criteria;
-} ListCommandItem;
+#include "DatabaseGlue.hxx"
+#include "DatabasePlugin.hxx"
 
-typedef struct _SearchStats {
-	const struct locate_item_list *criteria;
-	int numberOfSongs;
-	unsigned long playTime;
-} SearchStats;
+#include <functional>
+#include <set>
 
 static bool
-print_visitor_directory(const struct directory *directory, void *data,
-			G_GNUC_UNUSED GError **error_r)
+PrintDirectory(struct client *client, const struct directory *directory)
 {
-	struct client *client = data;
-
 	if (!directory_is_root(directory))
 		client_printf(client, "directory: %s\n", directory_get_path(directory));
 
@@ -69,13 +61,11 @@ print_playlist_in_directory(struct client *client,
 }
 
 static bool
-print_visitor_song(struct song *song, void *data,
-		   G_GNUC_UNUSED GError **error_r)
+PrintSongBrief(struct client *client, struct song *song)
 {
 	assert(song != NULL);
 	assert(song->parent != NULL);
 
-	struct client *client = data;
 	song_print_uri(client, song);
 
 	if (song->tag != NULL && song->tag->has_playlist)
@@ -87,13 +77,11 @@ print_visitor_song(struct song *song, void *data,
 }
 
 static bool
-print_visitor_song_info(struct song *song, void *data,
-			G_GNUC_UNUSED GError **error_r)
+PrintSongFull(struct client *client, struct song *song)
 {
 	assert(song != NULL);
 	assert(song->parent != NULL);
 
-	struct client *client = data;
 	song_print_info(client, song);
 
 	if (song->tag != NULL && song->tag->has_playlist)
@@ -105,21 +93,19 @@ print_visitor_song_info(struct song *song, void *data,
 }
 
 static bool
-print_visitor_playlist(const struct playlist_metadata *playlist,
-		       const struct directory *directory, void *ctx,
-		       G_GNUC_UNUSED GError **error_r)
+PrintPlaylistBrief(struct client *client,
+		   const struct playlist_metadata *playlist,
+		   const struct directory *directory)
 {
-	struct client *client = ctx;
 	print_playlist_in_directory(client, directory, playlist->name);
 	return true;
 }
 
 static bool
-print_visitor_playlist_info(const struct playlist_metadata *playlist,
-			    const struct directory *directory,
-			    void *ctx, G_GNUC_UNUSED GError **error_r)
+PrintPlaylistFull(struct client *client,
+		  const struct playlist_metadata *playlist,
+		  const struct directory *directory)
 {
-	struct client *client = ctx;
 	print_playlist_in_directory(client, directory, playlist->name);
 
 #ifndef G_OS_WIN32
@@ -141,60 +127,44 @@ print_visitor_playlist_info(const struct playlist_metadata *playlist,
 	return true;
 }
 
-static const struct db_visitor print_visitor = {
-	.directory = print_visitor_directory,
-	.song = print_visitor_song,
-	.playlist = print_visitor_playlist,
-};
-
-static const struct db_visitor print_info_visitor = {
-	.directory = print_visitor_directory,
-	.song = print_visitor_song_info,
-	.playlist = print_visitor_playlist_info,
-};
-
 bool
 db_selection_print(struct client *client, const struct db_selection *selection,
 		   bool full, GError **error_r)
 {
-	return db_visit(selection, full ? &print_info_visitor : &print_visitor,
-			client, error_r);
+	using namespace std::placeholders;
+	const auto d = std::bind(PrintDirectory, client, _1);
+	const auto s = std::bind(full ? PrintSongFull : PrintSongBrief,
+				 client, _1);
+	const auto p = std::bind(full ? PrintPlaylistFull : PrintPlaylistBrief,
+				 client, _1, _2);
+
+	return GetDatabase()->Visit(selection, d, s, p, error_r);
 }
 
-struct search_data {
-	struct client *client;
-	const struct locate_item_list *criteria;
-};
-
 static bool
-search_visitor_song(struct song *song, void *_data,
-		    G_GNUC_UNUSED GError **error_r)
+SearchPrintSong(struct client *client, const struct locate_item_list *criteria,
+		struct song *song)
 {
-	struct search_data *data = _data;
-
-	if (locate_song_search(song, data->criteria))
-		song_print_info(data->client, song);
+	if (locate_song_search(song, criteria))
+		song_print_info(client, song);
 
 	return true;
 }
 
-static const struct db_visitor search_visitor = {
-	.song = search_visitor_song,
-};
-
 bool
-searchForSongsIn(struct client *client, const char *name,
+searchForSongsIn(struct client *client, const char *uri,
 		 const struct locate_item_list *criteria,
 		 GError **error_r)
 {
+	struct db_selection selection;
+	db_selection_init(&selection, uri, true);
+
 	struct locate_item_list *new_list
 		= locate_item_list_casefold(criteria);
-	struct search_data data;
 
-	data.client = client;
-	data.criteria = new_list;
-
-	bool success = db_walk(name, &search_visitor, &data, error_r);
+	using namespace std::placeholders;
+	const auto f = std::bind(SearchPrintSong, client, new_list, _1);
+	bool success = GetDatabase()->Visit(&selection, f, error_r);
 
 	locate_item_list_free(new_list);
 
@@ -202,33 +172,32 @@ searchForSongsIn(struct client *client, const char *name,
 }
 
 static bool
-find_visitor_song(struct song *song, void *_data,
-		  G_GNUC_UNUSED GError **error_r)
+MatchPrintSong(struct client *client, const struct locate_item_list *criteria,
+	       struct song *song)
 {
-	struct search_data *data = _data;
-
-	if (locate_song_match(song, data->criteria))
-		song_print_info(data->client, song);
+	if (locate_song_match(song, criteria))
+		song_print_info(client, song);
 
 	return true;
 }
 
-static const struct db_visitor find_visitor = {
-	.song = find_visitor_song,
-};
-
 bool
-findSongsIn(struct client *client, const char *name,
+findSongsIn(struct client *client, const char *uri,
 	    const struct locate_item_list *criteria,
 	    GError **error_r)
 {
-	struct search_data data;
+	struct db_selection selection;
+	db_selection_init(&selection, uri, true);
 
-	data.client = client;
-	data.criteria = criteria;
-
-	return db_walk(name, &find_visitor, &data, error_r);
+	using namespace std::placeholders;
+	const auto f = std::bind(MatchPrintSong, client, criteria, _1);
+	return GetDatabase()->Visit(&selection, f, error_r);
 }
+
+struct SearchStats {
+	int numberOfSongs;
+	unsigned long playTime;
+};
 
 static void printSearchStats(struct client *client, SearchStats *stats)
 {
@@ -237,35 +206,33 @@ static void printSearchStats(struct client *client, SearchStats *stats)
 }
 
 static bool
-stats_visitor_song(struct song *song, void *data,
-		   G_GNUC_UNUSED GError **error_r)
+stats_visitor_song(SearchStats &stats, const struct locate_item_list *criteria,
+		   struct song *song)
 {
-	SearchStats *stats = data;
-
-	if (locate_song_match(song, stats->criteria)) {
-		stats->numberOfSongs++;
-		stats->playTime += song_get_duration(song);
+	if (locate_song_match(song, criteria)) {
+		stats.numberOfSongs++;
+		stats.playTime += song_get_duration(song);
 	}
 
 	return true;
 }
-
-static const struct db_visitor stats_visitor = {
-	.song = stats_visitor_song,
-};
 
 bool
 searchStatsForSongsIn(struct client *client, const char *name,
 		      const struct locate_item_list *criteria,
 		      GError **error_r)
 {
-	SearchStats stats;
+	struct db_selection selection;
+	db_selection_init(&selection, name, true);
 
-	stats.criteria = criteria;
+	SearchStats stats;
 	stats.numberOfSongs = 0;
 	stats.playTime = 0;
 
-	if (!db_walk(name, &stats_visitor, &stats, error_r))
+	using namespace std::placeholders;
+	const auto f = std::bind(stats_visitor_song, std::ref(stats), criteria,
+				 _1);
+	if (!GetDatabase()->Visit(&selection, f, error_r))
 		return false;
 
 	printSearchStats(client, &stats);
@@ -289,24 +256,17 @@ printInfoForAllIn(struct client *client, const char *uri_utf8,
 	return db_selection_print(client, &selection, true, error_r);
 }
 
-static ListCommandItem *
-newListCommandItem(int tagType, const struct locate_item_list *criteria)
-{
-	ListCommandItem *item = g_new(ListCommandItem, 1);
+struct StringLess {
+	gcc_pure
+	bool operator()(const char *a, const char *b) const {
+		return strcmp(a, b) < 0;
+	}
+};
 
-	item->tagType = tagType;
-	item->criteria = criteria;
-
-	return item;
-}
-
-static void freeListCommandItem(ListCommandItem * item)
-{
-	g_free(item);
-}
+typedef std::set<const char *, StringLess> StringSet;
 
 static void
-visitTag(struct client *client, struct strset *set,
+visitTag(struct client *client, StringSet &set,
 	 struct song *song, enum tag_type tagType)
 {
 	struct tag *tag = song->tag;
@@ -322,72 +282,49 @@ visitTag(struct client *client, struct strset *set,
 
 	for (unsigned i = 0; i < tag->num_items; i++) {
 		if (tag->items[i]->type == tagType) {
-			strset_add(set, tag->items[i]->value);
+			set.insert(tag->items[i]->value);
 			found = true;
 		}
 	}
 
 	if (!found)
-		strset_add(set, "");
+		set.insert("");
 }
 
-struct list_tags_data {
-	struct client *client;
-	ListCommandItem *item;
-	struct strset *set;
-};
-
 static bool
-unique_tags_visitor_song(struct song *song, void *_data,
-			 G_GNUC_UNUSED GError **error_r)
+unique_tags_visitor_song(struct client *client,
+			 enum tag_type tag_type,
+			 const struct locate_item_list *criteria,
+			 StringSet &set, struct song *song)
 {
-	struct list_tags_data *data = _data;
-	ListCommandItem *item = data->item;
-
-	if (locate_song_match(song, item->criteria))
-		visitTag(data->client, data->set, song, item->tagType);
+	if (locate_song_match(song, criteria))
+		visitTag(client, set, song, tag_type);
 
 	return true;
 }
-
-static const struct db_visitor unique_tags_visitor = {
-	.song = unique_tags_visitor_song,
-};
 
 bool
 listAllUniqueTags(struct client *client, int type,
 		  const struct locate_item_list *criteria,
 		  GError **error_r)
 {
-	ListCommandItem *item = newListCommandItem(type, criteria);
-	struct list_tags_data data = {
-		.client = client,
-		.item = item,
-	};
+	struct db_selection selection;
+	db_selection_init(&selection, "", true);
 
-	if (type >= 0 && type <= TAG_NUM_OF_ITEM_TYPES) {
-		data.set = strset_new();
-	}
+	StringSet set;
 
-	if (!db_walk("", &unique_tags_visitor, &data, error_r)) {
-		freeListCommandItem(item);
+	using namespace std::placeholders;
+	const auto f = std::bind(unique_tags_visitor_song, client,
+				 (enum tag_type)type, criteria, std::ref(set),
+				 _1);
+	if (!GetDatabase()->Visit(&selection, f, error_r))
 		return false;
-	}
 
-	if (type >= 0 && type <= TAG_NUM_OF_ITEM_TYPES) {
-		const char *value;
-
-		strset_rewind(data.set);
-
-		while ((value = strset_next(data.set)) != NULL)
+	if (type >= 0 && type <= TAG_NUM_OF_ITEM_TYPES)
+		for (auto value : set)
 			client_printf(client, "%s: %s\n",
 				      tag_item_names[type],
 				      value);
-
-		strset_free(data.set);
-	}
-
-	freeListCommandItem(item);
 
 	return true;
 }
