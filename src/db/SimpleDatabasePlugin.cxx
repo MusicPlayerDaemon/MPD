@@ -208,7 +208,7 @@ SimpleDatabase::Close()
 }
 
 struct song *
-SimpleDatabase::GetSong(const char *uri, GError **error_r)
+SimpleDatabase::GetSong(const char *uri, GError **error_r) const
 {
 	assert(root != NULL);
 
@@ -241,7 +241,7 @@ SimpleDatabase::Visit(const struct db_selection *selection,
 		      VisitDirectory visit_directory,
 		      VisitSong visit_song,
 		      VisitPlaylist visit_playlist,
-		      GError **error_r)
+		      GError **error_r) const
 {
 	const struct directory *directory = LookupDirectory(selection->uri);
 	if (directory == NULL) {

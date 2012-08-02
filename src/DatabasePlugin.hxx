@@ -59,7 +59,7 @@ public:
 	 * directory (UTF-8)
 	 */
 	virtual struct song *GetSong(const char *uri_utf8,
-				     GError **error_r) = 0;
+				     GError **error_r) const = 0;
 
 	/**
 	 * Visit the selected entities.
@@ -68,7 +68,7 @@ public:
 			   VisitDirectory visit_directory,
 			   VisitSong visit_song,
 			   VisitPlaylist visit_playlist,
-			   GError **error_r) = 0;
+			   GError **error_r) const = 0;
 };
 
 struct DatabasePlugin {

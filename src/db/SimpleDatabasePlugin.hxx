@@ -59,12 +59,12 @@ public:
 	virtual bool Open(GError **error_r) override;
 	virtual void Close() override;
 	virtual struct song *GetSong(const char *uri_utf8,
-				     GError **error_r) override;
+				     GError **error_r) const override;
 	virtual bool Visit(const struct db_selection *selection,
 			   VisitDirectory visit_directory,
 			   VisitSong visit_song,
 			   VisitPlaylist visit_playlist,
-			   GError **error_r) override;
+			   GError **error_r) const override;
 
 protected:
 	bool Configure(const struct config_param *param, GError **error_r);
