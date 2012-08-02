@@ -20,8 +20,6 @@
 #ifndef EVENT_PIPE_H
 #define EVENT_PIPE_H
 
-#include <glib.h>
-
 enum pipe_event {
 	/** database update was finished */
 	PIPE_EVENT_UPDATE,

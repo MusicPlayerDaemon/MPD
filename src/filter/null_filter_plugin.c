@@ -29,6 +29,7 @@
 #include "filter_internal.h"
 #include "filter_registry.h"
 
+#include <glib.h>
 #include <assert.h>
 
 struct null_filter {

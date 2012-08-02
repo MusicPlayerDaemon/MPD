@@ -24,6 +24,8 @@
 #ifndef MPD_MAPPER_H
 #define MPD_MAPPER_H
 
+#include "gerror.h"
+
 #include <glib.h>
 #include <stdbool.h>
 

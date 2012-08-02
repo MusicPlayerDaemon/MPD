@@ -20,7 +20,7 @@
 #ifndef MPD_TOKENIZER_H
 #define MPD_TOKENIZER_H
 
-#include <glib.h>
+#include "gerror.h"
 
 /**
  * Reads the next word from the input string.  This function modifies

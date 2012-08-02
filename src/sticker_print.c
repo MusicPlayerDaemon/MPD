@@ -30,7 +30,7 @@ sticker_print_value(struct client *client,
 }
 
 static void
-print_sticker_cb(const char *name, const char *value, gpointer data)
+print_sticker_cb(const char *name, const char *value, void *data)
 {
 	struct client *client = data;
 

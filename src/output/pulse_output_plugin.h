@@ -20,9 +20,9 @@
 #ifndef MPD_PULSE_OUTPUT_PLUGIN_H
 #define MPD_PULSE_OUTPUT_PLUGIN_H
 
-#include <stdbool.h>
+#include "gerror.h"
 
-#include <glib.h>
+#include <stdbool.h>
 
 struct pulse_output;
 struct pulse_mixer;

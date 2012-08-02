@@ -20,6 +20,8 @@
 #ifndef MPD_OUTPUT_PLUGIN_H
 #define MPD_OUTPUT_PLUGIN_H
 
+#include "gerror.h"
+
 #include <glib.h>
 
 #include <stdbool.h>

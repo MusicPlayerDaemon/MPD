@@ -21,8 +21,8 @@
 #define MPD_DB_PRINT_H
 
 #include "gcc.h"
+#include "gerror.h"
 
-#include <glib.h>
 #include <stdbool.h>
 
 struct client;

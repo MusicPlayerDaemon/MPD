@@ -20,7 +20,8 @@
 #ifndef MPD_UTILS_H
 #define MPD_UTILS_H
 
-#include <glib.h>
+#include "gerror.h"
+
 #include <stdbool.h>
 
 #ifndef assert_static

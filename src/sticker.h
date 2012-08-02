@@ -42,7 +42,7 @@
 #ifndef STICKER_H
 #define STICKER_H
 
-#include <glib.h>
+#include "gerror.h"
 
 #include <stdbool.h>
 
@@ -127,8 +127,8 @@ sticker_get_value(const struct sticker *sticker, const char *name);
 void
 sticker_foreach(const struct sticker *sticker,
 		void (*func)(const char *name, const char *value,
-			     gpointer user_data),
-		gpointer user_data);
+			     void *user_data),
+		void *user_data);
 
 /**
  * Loads the sticker for the specified resource.
@@ -153,7 +153,7 @@ sticker_load(const char *type, const char *uri);
 bool
 sticker_find(const char *type, const char *base_uri, const char *name,
 	     void (*func)(const char *uri, const char *value,
-			  gpointer user_data),
-	     gpointer user_data);
+			  void *user_data),
+	     void *user_data);
 
 #endif

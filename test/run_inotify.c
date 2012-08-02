@@ -20,6 +20,8 @@
 #include "config.h"
 #include "inotify_source.h"
 
+#include <glib.h>
+
 #include <stdbool.h>
 #include <sys/inotify.h>
 #include <signal.h>

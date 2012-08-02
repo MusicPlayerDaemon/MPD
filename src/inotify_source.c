@@ -23,6 +23,8 @@
 #include "fd_util.h"
 #include "mpd_error.h"
 
+#include <glib.h>
+
 #include <sys/inotify.h>
 #include <unistd.h>
 #include <errno.h>

@@ -20,7 +20,7 @@
 #ifndef MPD_ENCODER_PLUGIN_H
 #define MPD_ENCODER_PLUGIN_H
 
-#include <glib.h>
+#include "gerror.h"
 
 #include <assert.h>
 #include <stdbool.h>

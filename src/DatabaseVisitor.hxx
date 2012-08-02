@@ -20,9 +20,9 @@
 #ifndef MPD_DATABASE_VISITOR_HXX
 #define MPD_DATABASE_VISITOR_HXX
 
-#include <functional>
+#include "gerror.h"
 
-#include <glib.h>
+#include <functional>
 
 struct directory;
 struct song;

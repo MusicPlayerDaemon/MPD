@@ -25,7 +25,7 @@
 #ifndef AUDIO_PARSER_H
 #define AUDIO_PARSER_H
 
-#include <glib.h>
+#include "gerror.h"
 
 #include <stdbool.h>
 

@@ -21,6 +21,8 @@
 #include "socket_util.h"
 #include "fd_util.h"
 
+#include <glib.h>
+
 #include <errno.h>
 #include <unistd.h>
 

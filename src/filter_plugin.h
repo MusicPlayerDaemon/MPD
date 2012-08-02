@@ -26,7 +26,7 @@
 #ifndef MPD_FILTER_PLUGIN_H
 #define MPD_FILTER_PLUGIN_H
 
-#include <glib.h>
+#include "gerror.h"
 
 #include <stdbool.h>
 #include <stddef.h>

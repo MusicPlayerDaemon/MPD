@@ -20,7 +20,7 @@
 #ifndef MPD_INOTIFY_SOURCE_H
 #define MPD_INOTIFY_SOURCE_H
 
-#include <glib.h>
+#include "gerror.h"
 
 typedef void (*mpd_inotify_callback_t)(int wd, unsigned mask,
 				       const char *name, void *ctx);

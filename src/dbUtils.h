@@ -21,8 +21,8 @@
 #define MPD_DB_UTILS_H
 
 #include "gcc.h"
+#include "gerror.h"
 
-#include <glib.h>
 #include <stdbool.h>
 
 struct locate_item_list;

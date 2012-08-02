@@ -20,7 +20,8 @@
 #ifndef MPD_DB_SAVE_H
 #define MPD_DB_SAVE_H
 
-#include <glib.h>
+#include "gerror.h"
+
 #include <stdbool.h>
 #include <stdio.h>
 

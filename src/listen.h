@@ -20,7 +20,7 @@
 #ifndef MPD_LISTEN_H
 #define MPD_LISTEN_H
 
-#include <glib.h>
+#include "gerror.h"
 
 #include <stdbool.h>
 

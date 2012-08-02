@@ -26,7 +26,9 @@
 #ifndef SOCKET_UTIL_H
 #define SOCKET_UTIL_H
 
-#include <glib.h>
+#include "gerror.h"
+
+#include <stddef.h>
 
 struct sockaddr;
 

@@ -87,6 +87,7 @@ mpd_headers = \
 	src/encoder_api.h \
 	src/exclude.h \
 	src/fd_util.h \
+	src/gerror.h \
 	src/glib_compat.h \
 	src/update.h \
 	src/inotify_source.h \

@@ -21,6 +21,8 @@
 #include "tokenizer.h"
 #include "string_util.h"
 
+#include <glib.h>
+
 #include <stdbool.h>
 #include <assert.h>
 #include <string.h>

@@ -21,6 +21,7 @@
 #define MPD_TAG_ID3_H
 
 #include "check.h"
+#include "gerror.h"
 
 #include <glib.h>
 

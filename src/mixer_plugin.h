@@ -27,7 +27,7 @@
 #ifndef MPD_MIXER_PLUGIN_H
 #define MPD_MIXER_PLUGIN_H
 
-#include <glib.h>
+#include "gerror.h"
 
 #include <stdbool.h>
 

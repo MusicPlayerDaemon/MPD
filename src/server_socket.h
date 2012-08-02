@@ -20,9 +20,10 @@
 #ifndef MPD_SERVER_SOCKET_H
 #define MPD_SERVER_SOCKET_H
 
-#include <stdbool.h>
+#include "gerror.h"
 
-#include <glib.h>
+#include <stdbool.h>
+#include <stddef.h>
 
 struct sockaddr;
 
