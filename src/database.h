@@ -64,18 +64,6 @@ gcc_pure
 struct song *
 db_get_song(const char *file);
 
-gcc_nonnull(1,2)
-bool
-db_visit(const struct db_selection *selection,
-	 const struct db_visitor *visitor, void *ctx,
-	 GError **error_r);
-
-gcc_nonnull(1,2)
-bool
-db_walk(const char *uri,
-	const struct db_visitor *visitor, void *ctx,
-	GError **error_r);
-
 bool
 db_save(GError **error_r);
 

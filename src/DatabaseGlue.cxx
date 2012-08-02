@@ -125,55 +125,6 @@ db_get_song(const char *file)
 }
 
 bool
-db_visit(const struct db_selection *selection,
-	 const struct db_visitor *visitor, void *ctx,
-	 GError **error_r)
-{
-	if (db == NULL) {
-		g_set_error_literal(error_r, db_quark(), DB_DISABLED,
-				    "No database");
-		return false;
-	}
-
-	VisitDirectory visit_directory;
-	if (visitor->directory != NULL)
-		visit_directory = [&](const struct directory *directory,
-				     GError **error_r2) {
-			return visitor->directory(directory, ctx, error_r2);
-		};
-
-	VisitSong visit_song;
-	if (visitor->song != NULL)
-		visit_song = [&](struct song *song, GError **error_r2) {
-			return visitor->song(song, ctx, error_r2);
-		};
-
-	VisitPlaylist visit_playlist;
-	if (visitor->playlist != NULL)
-		visit_playlist = [&](const struct playlist_metadata *playlist,
-				     const struct directory *directory,
-				     GError **error_r2) {
-			return visitor->playlist(playlist, directory, ctx,
-						 error_r2);
-		};
-
-	return db->Visit(selection,
-			 visit_directory, visit_song, visit_playlist,
-			 error_r);
-}
-
-bool
-db_walk(const char *uri,
-	const struct db_visitor *visitor, void *ctx,
-	GError **error_r)
-{
-	struct db_selection selection;
-	db_selection_init(&selection, uri, true);
-
-	return db_visit(&selection, visitor, ctx, error_r);
-}
-
-bool
 db_save(GError **error_r)
 {
 	assert(db != NULL);
