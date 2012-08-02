@@ -22,7 +22,6 @@
 
 #include "ack.h"
 
-#include <glib.h>
 #include <stdbool.h>
 
 enum command_return {

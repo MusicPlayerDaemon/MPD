@@ -20,12 +20,14 @@
 #ifndef MPD_RESOLVER_H
 #define MPD_RESOLVER_H
 
+#include "gcc.h"
+
 #include <glib.h>
 
 struct sockaddr;
 struct addrinfo;
 
-G_GNUC_CONST
+gcc_const
 static inline GQuark
 resolver_quark(void)
 {
@@ -42,7 +44,7 @@ resolver_quark(void)
  * @param error location to store the error occurring, or NULL to
  * ignore errors
  */
-G_GNUC_MALLOC
+gcc_malloc
 char *
 sockaddr_to_string(const struct sockaddr *sa, size_t length, GError **error);
 

@@ -32,6 +32,9 @@
  */
 
 #if GCC_CHECK_VERSION(3,0)
+#  define gcc_const __attribute__((const))
+#  define gcc_pure __attribute__((pure))
+#  define gcc_malloc __attribute__((malloc))
 #  define gcc_must_check	__attribute__ ((warn_unused_result))
 #  define gcc_packed		__attribute__ ((packed))
 /* these are very useful for type checking */
@@ -41,11 +44,21 @@
 #  define gcc_fprintf__		__attribute__ ((format(printf,4,5)))
 #  define gcc_scanf		__attribute__ ((format(scanf,1,2)))
 #  define gcc_used		__attribute__ ((used))
+#  define gcc_unused __attribute__((unused))
+#  define gcc_warn_unused_result __attribute__((warn_unused_result))
 /* #  define inline	inline __attribute__ ((always_inline)) */
 #  define gcc_noinline		__attribute__ ((noinline))
 #  define gcc_nonnull(...) __attribute__((nonnull(__VA_ARGS__)))
 #  define gcc_nonnull_all __attribute__((nonnull))
+
+#  define gcc_likely(x) __builtin_expect (!!(x), 1)
+#  define gcc_unlikely(x) __builtin_expect (!!(x), 0)
+
 #else
+#  define gcc_unused
+#  define gcc_const
+#  define gcc_pure
+#  define gcc_malloc
 #  define gcc_must_check
 #  define gcc_packed
 #  define gcc_printf
@@ -54,10 +67,16 @@
 #  define gcc_fprintf__
 #  define gcc_scanf
 #  define gcc_used
+#  define gcc_unused
+#  define gcc_warn_unused_result
 /* #  define inline */
 #  define gcc_noinline
 #  define gcc_nonnull(...)
 #  define gcc_nonnull_all
+
+#  define gcc_likely(x) (x)
+#  define gcc_unlikely(x) (x)
+
 #endif
 
 #ifdef __cplusplus

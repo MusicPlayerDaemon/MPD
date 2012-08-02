@@ -27,8 +27,6 @@
 #include "decoder_api.h"
 #include "pcm_buffer.h"
 
-#include <glib.h>
-
 #include <FLAC/stream_decoder.h>
 #include <FLAC/metadata.h>
 

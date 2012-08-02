@@ -24,10 +24,11 @@
 #ifndef MPD_MAPPER_H
 #define MPD_MAPPER_H
 
+#include "gcc.h"
 #include "gerror.h"
 
-#include <glib.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #define PLAYLIST_FILE_SUFFIX ".m3u"
 
@@ -38,14 +39,14 @@ void mapper_init(const char *_music_dir, const char *_playlist_dir);
 
 void mapper_finish(void);
 
-G_GNUC_CONST
+gcc_const
 const char *
 mapper_get_music_directory(void);
 
 /**
  * Returns true if a music directory was configured.
  */
-G_GNUC_CONST
+gcc_const
 static inline bool
 mapper_has_music_directory(void)
 {
@@ -57,7 +58,7 @@ mapper_has_music_directory(void)
  * this function converts it to a relative path.  If not, it returns
  * the unmodified string pointer.
  */
-G_GNUC_PURE
+gcc_pure
 const char *
 map_to_relative_path(const char *path_utf8);
 
@@ -66,7 +67,7 @@ map_to_relative_path(const char *path_utf8);
  * is basically done by converting the URI to the file system charset
  * and prepending the music directory.
  */
-G_GNUC_MALLOC
+gcc_malloc
 char *
 map_uri_fs(const char *uri);
 
@@ -76,7 +77,7 @@ map_uri_fs(const char *uri);
  * @param directory the directory object
  * @return the path in file system encoding, or NULL if mapping failed
  */
-G_GNUC_MALLOC
+gcc_malloc
 char *
 map_directory_fs(const struct directory *directory);
 
@@ -88,7 +89,7 @@ map_directory_fs(const struct directory *directory);
  * @param name the child's name in UTF-8
  * @return the path in file system encoding, or NULL if mapping failed
  */
-G_GNUC_MALLOC
+gcc_malloc
 char *
 map_directory_child_fs(const struct directory *directory, const char *name);
 
@@ -99,7 +100,7 @@ map_directory_child_fs(const struct directory *directory, const char *name);
  * @param song the song object
  * @return the path in file system encoding, or NULL if mapping failed
  */
-G_GNUC_MALLOC
+gcc_malloc
 char *
 map_song_fs(const struct song *song);
 
@@ -110,14 +111,14 @@ map_song_fs(const struct song *song);
  * @param path_fs a path in file system encoding
  * @return the relative path in UTF-8, or NULL if mapping failed
  */
-G_GNUC_MALLOC
+gcc_malloc
 char *
 map_fs_to_utf8(const char *path_fs);
 
 /**
  * Returns the playlist directory.
  */
-G_GNUC_CONST
+gcc_const
 const char *
 map_spl_path(void);
 
@@ -128,7 +129,7 @@ map_spl_path(void);
  *
  * @return the path in file system encoding, or NULL if mapping failed
  */
-G_GNUC_PURE
+gcc_pure
 char *
 map_spl_utf8_to_fs(const char *name);
 

@@ -27,10 +27,7 @@
 #define MPD_DATABASE_PLUGIN_HXX
 
 #include "DatabaseVisitor.hxx"
-
-#include <glib.h>
-#include <assert.h>
-#include <stdbool.h>
+#include "gcc.h"
 
 struct config_param;
 struct db_selection;
@@ -46,7 +43,7 @@ public:
 	/**
          * Open the database.  Read it into memory if applicable.
 	 */
-	virtual bool Open(G_GNUC_UNUSED GError **error_r) {
+	virtual bool Open(gcc_unused GError **error_r) {
 		return true;
 	}
 

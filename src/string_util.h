@@ -20,7 +20,7 @@
 #ifndef MPD_STRING_UTIL_H
 #define MPD_STRING_UTIL_H
 
-#include <glib.h>
+#include "gcc.h"
 
 #include <stdbool.h>
 
@@ -28,7 +28,7 @@
  * Remove the "const" attribute from a string pointer.  This is a
  * dirty hack, don't use it unless you know what you're doing!
  */
-G_GNUC_CONST
+gcc_const
 static inline char *
 deconst_string(const char *p)
 {
@@ -49,14 +49,14 @@ deconst_string(const char *p)
  * This is a faster version of g_strchug(), because it does not move
  * data.
  */
-G_GNUC_PURE
+gcc_pure
 const char *
 strchug_fast_c(const char *p);
 
 /**
  * Same as strchug_fast_c(), but works with a writable pointer.
  */
-G_GNUC_PURE
+gcc_pure
 static inline char *
 strchug_fast(char *p)
 {

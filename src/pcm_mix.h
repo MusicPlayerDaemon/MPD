@@ -21,6 +21,7 @@
 #define PCM_MIX_H
 
 #include "audio_format.h"
+#include "gcc.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -41,7 +42,7 @@
  *
  * @return true on success, false if the format is not supported
  */
-G_GNUC_WARN_UNUSED_RESULT
+gcc_warn_unused_result
 bool
 pcm_mix(void *buffer1, const void *buffer2, size_t size,
 	enum sample_format format, float portion1);

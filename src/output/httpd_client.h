@@ -20,9 +20,8 @@
 #ifndef MPD_OUTPUT_HTTPD_CLIENT_H
 #define MPD_OUTPUT_HTTPD_CLIENT_H
 
-#include <glib.h>
-
 #include <stdbool.h>
+#include <stddef.h>
 
 struct httpd_client;
 struct httpd_output;

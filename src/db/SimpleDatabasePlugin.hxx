@@ -26,7 +26,6 @@
 #include <cassert>
 #include <string>
 
-#include <glib.h>
 #include <stdbool.h>
 #include <time.h>
 
@@ -40,7 +39,7 @@ class SimpleDatabase : public Database {
 	time_t mtime;
 
 public:
-	G_GNUC_PURE
+	gcc_pure
 	struct directory *GetRoot() {
 		assert(root != NULL);
 
@@ -49,7 +48,7 @@ public:
 
 	bool Save(GError **error_r);
 
-	G_GNUC_PURE
+	gcc_pure
 	time_t GetLastModified() const {
 		return mtime;
 	}
@@ -70,12 +69,12 @@ public:
 protected:
 	bool Configure(const struct config_param *param, GError **error_r);
 
-	G_GNUC_PURE
+	gcc_pure
 	bool Check(GError **error_r) const;
 
 	bool Load(GError **error_r);
 
-	G_GNUC_PURE
+	gcc_pure
 	const struct directory *LookupDirectory(const char *uri) const;
 };
 

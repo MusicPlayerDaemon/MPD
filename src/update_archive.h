@@ -21,6 +21,7 @@
 #define MPD_UPDATE_ARCHIVE_H
 
 #include "check.h"
+#include "gcc.h"
 
 #include <stdbool.h>
 #include <sys/stat.h>
@@ -40,10 +41,10 @@ update_archive_file(struct directory *directory,
 #include <glib.h>
 
 static inline bool
-update_archive_file(G_GNUC_UNUSED struct directory *directory,
-		    G_GNUC_UNUSED const char *name,
-		    G_GNUC_UNUSED const char *suffix,
-		    G_GNUC_UNUSED const struct stat *st)
+update_archive_file(gcc_unused struct directory *directory,
+		    gcc_unused const char *name,
+		    gcc_unused const char *suffix,
+		    gcc_unused const struct stat *st)
 {
 	return false;
 }

@@ -47,7 +47,7 @@ db_finish(void);
  * Returns the root directory object.  Returns NULL if there is no
  * configured music directory.
  */
-G_GNUC_PURE
+gcc_pure
 struct directory *
 db_get_root(void);
 
@@ -55,12 +55,12 @@ db_get_root(void);
  * Caller must lock the #db_mutex.
  */
 gcc_nonnull(1)
-G_GNUC_PURE
+gcc_pure
 struct directory *
 db_get_directory(const char *name);
 
 gcc_nonnull(1)
-G_GNUC_PURE
+gcc_pure
 struct song *
 db_get_song(const char *file);
 
@@ -82,14 +82,14 @@ db_save(GError **error_r);
 bool
 db_load(GError **error);
 
-G_GNUC_PURE
+gcc_pure
 time_t
 db_get_mtime(void);
 
 /**
  * Returns true if there is a valid database file on the disk.
  */
-G_GNUC_PURE
+gcc_pure
 static inline bool
 db_exists(void)
 {

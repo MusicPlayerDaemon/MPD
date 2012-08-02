@@ -20,7 +20,8 @@
 #ifndef MPD_AUDIO_FORMAT_H
 #define MPD_AUDIO_FORMAT_H
 
-#include <glib.h>
+#include "gcc.h"
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>
@@ -189,7 +190,7 @@ audio_valid_channel_count(unsigned channels)
  * Returns false if the format is not valid for playback with MPD.
  * This function performs some basic validity checks.
  */
-G_GNUC_PURE
+gcc_pure
 static inline bool audio_format_valid(const struct audio_format *af)
 {
 	return audio_valid_sample_rate(af->sample_rate) &&
@@ -201,7 +202,7 @@ static inline bool audio_format_valid(const struct audio_format *af)
  * Returns false if the format mask is not valid for playback with
  * MPD.  This function performs some basic validity checks.
  */
-G_GNUC_PURE
+gcc_pure
 static inline bool audio_format_mask_valid(const struct audio_format *af)
 {
 	return (af->sample_rate == 0 ||
@@ -223,7 +224,7 @@ void
 audio_format_mask_apply(struct audio_format *af,
 			const struct audio_format *mask);
 
-G_GNUC_CONST
+gcc_const
 static inline unsigned
 sample_format_size(enum sample_format format)
 {
@@ -254,7 +255,7 @@ sample_format_size(enum sample_format format)
 /**
  * Returns the size of each (mono) sample in bytes.
  */
-G_GNUC_PURE
+gcc_pure
 static inline unsigned audio_format_sample_size(const struct audio_format *af)
 {
 	return sample_format_size((enum sample_format)af->format);
@@ -263,7 +264,7 @@ static inline unsigned audio_format_sample_size(const struct audio_format *af)
 /**
  * Returns the size of each full frame in bytes.
  */
-G_GNUC_PURE
+gcc_pure
 static inline unsigned
 audio_format_frame_size(const struct audio_format *af)
 {
@@ -274,7 +275,7 @@ audio_format_frame_size(const struct audio_format *af)
  * Returns the floating point factor which converts a time span to a
  * storage size in bytes.
  */
-G_GNUC_PURE
+gcc_pure
 static inline double audio_format_time_to_size(const struct audio_format *af)
 {
 	return af->sample_rate * audio_format_frame_size(af);
@@ -287,7 +288,7 @@ static inline double audio_format_time_to_size(const struct audio_format *af)
  * @param format a #sample_format enum value
  * @return the string
  */
-G_GNUC_PURE G_GNUC_MALLOC
+gcc_pure gcc_malloc
 const char *
 sample_format_to_string(enum sample_format format);
 
@@ -299,7 +300,7 @@ sample_format_to_string(enum sample_format format);
  * @param s a buffer to print into
  * @return the string, or NULL if the #audio_format object is invalid
  */
-G_GNUC_PURE G_GNUC_MALLOC
+gcc_pure gcc_malloc
 const char *
 audio_format_to_string(const struct audio_format *af,
 		       struct audio_format_string *s);

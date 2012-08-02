@@ -20,7 +20,8 @@
 #ifndef MPD_PIPE_H
 #define MPD_PIPE_H
 
-#include <glib.h>
+#include "gcc.h"
+
 #include <stdbool.h>
 
 #ifndef NDEBUG
@@ -39,7 +40,7 @@ struct music_pipe;
 /**
  * Creates a new #music_pipe object.  It is empty.
  */
-G_GNUC_MALLOC
+gcc_malloc
 struct music_pipe *
 music_pipe_new(void);
 
@@ -72,7 +73,7 @@ music_pipe_contains(const struct music_pipe *mp,
  * Returns the first #music_chunk from the pipe.  Returns NULL if the
  * pipe is empty.
  */
-G_GNUC_PURE
+gcc_pure
 const struct music_chunk *
 music_pipe_peek(const struct music_pipe *mp);
 
@@ -99,11 +100,11 @@ music_pipe_push(struct music_pipe *mp, struct music_chunk *chunk);
 /**
  * Returns the number of chunks currently in this pipe.
  */
-G_GNUC_PURE
+gcc_pure
 unsigned
 music_pipe_size(const struct music_pipe *mp);
 
-G_GNUC_PURE
+gcc_pure
 static inline bool
 music_pipe_empty(const struct music_pipe *mp)
 {

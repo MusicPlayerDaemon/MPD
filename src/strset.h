@@ -29,11 +29,13 @@
 #ifndef MPD_STRSET_H
 #define MPD_STRSET_H
 
-#include <glib.h>
+#include "gcc.h"
 
 struct strset;
 
-G_GNUC_MALLOC struct strset *strset_new(void);
+gcc_malloc
+struct strset *
+strset_new(void);
 
 void strset_free(struct strset *set);
 

@@ -22,6 +22,8 @@
 #include "uri.h"
 #include "client.h"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <string.h>
 

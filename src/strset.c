@@ -20,6 +20,8 @@
 #include "config.h"
 #include "strset.h"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
