@@ -241,7 +241,6 @@ src_mpd_SOURCES = \
 	src/conf.c \
 	src/crossfade.c \
 	src/cue/cue_parser.c src/cue/cue_parser.h \
-	src/dbUtils.c \
 	src/decoder_thread.c \
 	src/decoder_control.c \
 	src/decoder_api.c \
@@ -250,6 +249,8 @@ src_mpd_SOURCES = \
 	src/Directory.cxx \
 	src/directory_save.c \
 	src/DatabaseGlue.cxx \
+	src/DatabaseQueue.cxx \
+	src/DatabasePlaylist.cxx \
 	src/db_error.h \
 	src/db_lock.c src/db_lock.h \
 	src/db_save.c src/db_save.h \
