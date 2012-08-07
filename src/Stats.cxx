@@ -83,12 +83,12 @@ visit_tag(StringSet &artists, StringSet &albums, const struct tag *tag)
 }
 
 static bool
-collect_stats_song(StringSet &artists, StringSet &albums, struct song *song)
+collect_stats_song(StringSet &artists, StringSet &albums, song &song)
 {
 	++stats.song_count;
 
-	if (song->tag != NULL)
-		visit_tag(artists, albums, song->tag);
+	if (song.tag != NULL)
+		visit_tag(artists, albums, song.tag);
 
 	return true;
 }
@@ -106,7 +106,7 @@ void stats_update(void)
 	using namespace std::placeholders;
 	const auto f = std::bind(collect_stats_song,
 				 std::ref(artists), std::ref(albums), _1);
-	GetDatabase()->Visit(&selection, f, NULL);
+	GetDatabase()->Visit(selection, f, NULL);
 
 	stats.artist_count = artists.size();
 	stats.album_count = albums.size();

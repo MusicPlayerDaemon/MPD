@@ -60,7 +60,7 @@ public:
 	virtual void Close() override;
 	virtual struct song *GetSong(const char *uri_utf8,
 				     GError **error_r) const override;
-	virtual bool Visit(const struct db_selection *selection,
+	virtual bool Visit(const db_selection &selection,
 			   VisitDirectory visit_directory,
 			   VisitSong visit_song,
 			   VisitPlaylist visit_playlist,

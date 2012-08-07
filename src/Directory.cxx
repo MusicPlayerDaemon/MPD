@@ -291,21 +291,21 @@ directory::Walk(bool recursive,
 	if (visit_song) {
 		struct song *song;
 		directory_for_each_song(song, this)
-			if (!visit_song(song, error_r))
+			if (!visit_song(*song, error_r))
 				return false;
 	}
 
 	if (visit_playlist) {
 		struct playlist_metadata *i;
 		directory_for_each_playlist(i, this)
-			if (!visit_playlist(i, this, error_r))
+			if (!visit_playlist(*i, *this, error_r))
 				return false;
 	}
 
 	struct directory *child;
 	directory_for_each_child(child, this) {
 		if (visit_directory &&
-		    !visit_directory(child, error_r))
+		    !visit_directory(*child, error_r))
 			return false;
 
 		if (recursive &&

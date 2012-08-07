@@ -237,30 +237,30 @@ SimpleDatabase::LookupDirectory(const char *uri) const
 }
 
 bool
-SimpleDatabase::Visit(const struct db_selection *selection,
+SimpleDatabase::Visit(const db_selection &selection,
 		      VisitDirectory visit_directory,
 		      VisitSong visit_song,
 		      VisitPlaylist visit_playlist,
 		      GError **error_r) const
 {
-	const struct directory *directory = LookupDirectory(selection->uri);
+	const struct directory *directory = LookupDirectory(selection.uri);
 	if (directory == NULL) {
 		struct song *song;
 		if (visit_song &&
-		    (song = GetSong(selection->uri, NULL)) != NULL)
-			return visit_song(song, error_r);
+		    (song = GetSong(selection.uri, NULL)) != NULL)
+			return visit_song(*song, error_r);
 
 		g_set_error(error_r, db_quark(), DB_NOT_FOUND,
 			    "No such directory");
 		return false;
 	}
 
-	if (selection->recursive && visit_directory &&
-	    !visit_directory(directory, error_r))
+	if (selection.recursive && visit_directory &&
+	    !visit_directory(*directory, error_r))
 		return false;
 
 	db_lock();
-	bool ret = directory->Walk(selection->recursive,
+	bool ret = directory->Walk(selection.recursive,
 				   visit_directory, visit_song, visit_playlist,
 				   error_r);
 	db_unlock();

@@ -48,24 +48,24 @@ my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
 }
 
 static bool
-DumpDirectory(const struct directory *directory, GError **)
+DumpDirectory(const directory &directory, GError **)
 {
-	cout << "D " << directory->path << endl;
+	cout << "D " << directory.path << endl;
 	return true;
 }
 
 static bool
-DumpSong(struct song *song, GError **)
+DumpSong(song &song, GError **)
 {
-	cout << "S " << song->parent->path << "/" << song->uri << endl;
+	cout << "S " << song.parent->path << "/" << song.uri << endl;
 	return true;
 }
 
 static bool
-DumpPlaylist(const struct playlist_metadata *playlist,
-	     const struct directory *directory, GError **)
+DumpPlaylist(const playlist_metadata &playlist,
+	     const directory &directory, GError **)
 {
-	cout << "P " << directory->path << "/" << playlist->name << endl;
+	cout << "P " << directory.path << "/" << playlist.name << endl;
 	return true;
 }
 
@@ -133,7 +133,7 @@ main(int argc, char **argv)
 	db_selection selection;
 	db_selection_init(&selection, "", true);
 
-	if (!db->Visit(&selection, DumpDirectory, DumpSong, DumpPlaylist,
+	if (!db->Visit(selection, DumpDirectory, DumpSong, DumpPlaylist,
 		       &error)) {
 		db->Close();
 		delete db;

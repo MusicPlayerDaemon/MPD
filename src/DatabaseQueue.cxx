@@ -32,11 +32,10 @@ extern "C" {
 #include <functional>
 
 static bool
-AddToQueue(struct player_control *pc, struct song *song,
-	   GError **error_r)
+AddToQueue(struct player_control *pc, song &song, GError **error_r)
 {
 	enum playlist_result result =
-		playlist_append_song(&g_playlist, pc, song, NULL);
+		playlist_append_song(&g_playlist, pc, &song, NULL);
 	if (result != PLAYLIST_RESULT_SUCCESS) {
 		g_set_error(error_r, playlist_quark(), result,
 			    "Playlist error");
@@ -54,15 +53,15 @@ addAllIn(struct player_control *pc, const char *uri, GError **error_r)
 
 	using namespace std::placeholders;
 	const auto f = std::bind(AddToQueue, pc, _1, _2);
-	return GetDatabase()->Visit(&selection, f, error_r);
+	return GetDatabase()->Visit(selection, f, error_r);
 }
 
 static bool
 MatchAddSong(struct player_control *pc,
 	     const struct locate_item_list *criteria,
-	     struct song *song, GError **error_r)
+	     song &song, GError **error_r)
 {
-	return !locate_song_match(song, criteria) ||
+	return !locate_song_match(&song, criteria) ||
 		AddToQueue(pc, song, error_r);
 }
 
@@ -75,15 +74,15 @@ findAddIn(struct player_control *pc, const char *uri,
 
 	using namespace std::placeholders;
 	const auto f = std::bind(MatchAddSong, pc, criteria, _1, _2);
-	return GetDatabase()->Visit(&selection, f, error_r);
+	return GetDatabase()->Visit(selection, f, error_r);
 }
 
 static bool
 SearchAddSong(struct player_control *pc,
 	      const struct locate_item_list *criteria,
-	      struct song *song, GError **error_r)
+	      song &song, GError **error_r)
 {
-	return !locate_song_search(song, criteria) ||
+	return !locate_song_search(&song, criteria) ||
 		AddToQueue(pc, song, error_r);
 }
 
@@ -100,7 +99,7 @@ search_add_songs(struct player_control *pc, const char *uri,
 
 	using namespace std::placeholders;
 	const auto f = std::bind(SearchAddSong, pc, new_list, _1, _2);
-	bool success = GetDatabase()->Visit(&selection, f, error_r);
+	bool success = GetDatabase()->Visit(selection, f, error_r);
 
 	locate_item_list_free(new_list);
 

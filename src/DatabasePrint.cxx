@@ -40,79 +40,76 @@ extern "C" {
 #include <set>
 
 static bool
-PrintDirectory(struct client *client, const struct directory *directory)
+PrintDirectory(struct client *client, const directory &directory)
 {
-	if (!directory_is_root(directory))
-		client_printf(client, "directory: %s\n", directory_get_path(directory));
+	if (!directory_is_root(&directory))
+		client_printf(client, "directory: %s\n",
+			      directory_get_path(&directory));
 
 	return true;
 }
 
 static void
 print_playlist_in_directory(struct client *client,
-			    const struct directory *directory,
+			    const directory &directory,
 			    const char *name_utf8)
 {
-	if (directory_is_root(directory))
+	if (directory_is_root(&directory))
 		client_printf(client, "playlist: %s\n", name_utf8);
 	else
 		client_printf(client, "playlist: %s/%s\n",
-			      directory_get_path(directory), name_utf8);
+			      directory_get_path(&directory), name_utf8);
 }
 
 static bool
-PrintSongBrief(struct client *client, struct song *song)
+PrintSongBrief(struct client *client, song &song)
 {
-	assert(song != NULL);
-	assert(song->parent != NULL);
+	assert(song.parent != NULL);
 
-	song_print_uri(client, song);
+	song_print_uri(client, &song);
 
-	if (song->tag != NULL && song->tag->has_playlist)
+	if (song.tag != NULL && song.tag->has_playlist)
 		/* this song file has an embedded CUE sheet */
-		print_playlist_in_directory(client, song->parent,
-					    song->uri);
+		print_playlist_in_directory(client, *song.parent, song.uri);
 
 	return true;
 }
 
 static bool
-PrintSongFull(struct client *client, struct song *song)
+PrintSongFull(struct client *client, song &song)
 {
-	assert(song != NULL);
-	assert(song->parent != NULL);
+	assert(song.parent != NULL);
 
-	song_print_info(client, song);
+	song_print_info(client, &song);
 
-	if (song->tag != NULL && song->tag->has_playlist)
+	if (song.tag != NULL && song.tag->has_playlist)
 		/* this song file has an embedded CUE sheet */
-		print_playlist_in_directory(client, song->parent,
-					    song->uri);
+		print_playlist_in_directory(client, *song.parent, song.uri);
 
 	return true;
 }
 
 static bool
 PrintPlaylistBrief(struct client *client,
-		   const struct playlist_metadata *playlist,
-		   const struct directory *directory)
+		   const playlist_metadata &playlist,
+		   const directory &directory)
 {
-	print_playlist_in_directory(client, directory, playlist->name);
+	print_playlist_in_directory(client, directory, playlist.name);
 	return true;
 }
 
 static bool
 PrintPlaylistFull(struct client *client,
-		  const struct playlist_metadata *playlist,
-		  const struct directory *directory)
+		  const playlist_metadata &playlist,
+		  const directory &directory)
 {
-	print_playlist_in_directory(client, directory, playlist->name);
+	print_playlist_in_directory(client, directory, playlist.name);
 
 #ifndef G_OS_WIN32
 	struct tm tm;
 #endif
 	char timestamp[32];
-	time_t t = playlist->mtime;
+	time_t t = playlist.mtime;
 	strftime(timestamp, sizeof(timestamp),
 #ifdef G_OS_WIN32
 		 "%Y-%m-%dT%H:%M:%SZ",
@@ -138,15 +135,15 @@ db_selection_print(struct client *client, const struct db_selection *selection,
 	const auto p = std::bind(full ? PrintPlaylistFull : PrintPlaylistBrief,
 				 client, _1, _2);
 
-	return GetDatabase()->Visit(selection, d, s, p, error_r);
+	return GetDatabase()->Visit(*selection, d, s, p, error_r);
 }
 
 static bool
 SearchPrintSong(struct client *client, const struct locate_item_list *criteria,
-		struct song *song)
+		song &song)
 {
-	if (locate_song_search(song, criteria))
-		song_print_info(client, song);
+	if (locate_song_search(&song, criteria))
+		song_print_info(client, &song);
 
 	return true;
 }
@@ -164,7 +161,7 @@ searchForSongsIn(struct client *client, const char *uri,
 
 	using namespace std::placeholders;
 	const auto f = std::bind(SearchPrintSong, client, new_list, _1);
-	bool success = GetDatabase()->Visit(&selection, f, error_r);
+	bool success = GetDatabase()->Visit(selection, f, error_r);
 
 	locate_item_list_free(new_list);
 
@@ -173,10 +170,10 @@ searchForSongsIn(struct client *client, const char *uri,
 
 static bool
 MatchPrintSong(struct client *client, const struct locate_item_list *criteria,
-	       struct song *song)
+	       song &song)
 {
-	if (locate_song_match(song, criteria))
-		song_print_info(client, song);
+	if (locate_song_match(&song, criteria))
+		song_print_info(client, &song);
 
 	return true;
 }
@@ -191,7 +188,7 @@ findSongsIn(struct client *client, const char *uri,
 
 	using namespace std::placeholders;
 	const auto f = std::bind(MatchPrintSong, client, criteria, _1);
-	return GetDatabase()->Visit(&selection, f, error_r);
+	return GetDatabase()->Visit(selection, f, error_r);
 }
 
 struct SearchStats {
@@ -207,11 +204,11 @@ static void printSearchStats(struct client *client, SearchStats *stats)
 
 static bool
 stats_visitor_song(SearchStats &stats, const struct locate_item_list *criteria,
-		   struct song *song)
+		   song &song)
 {
-	if (locate_song_match(song, criteria)) {
+	if (locate_song_match(&song, criteria)) {
 		stats.numberOfSongs++;
-		stats.playTime += song_get_duration(song);
+		stats.playTime += song_get_duration(&song);
 	}
 
 	return true;
@@ -232,7 +229,7 @@ searchStatsForSongsIn(struct client *client, const char *name,
 	using namespace std::placeholders;
 	const auto f = std::bind(stats_visitor_song, std::ref(stats), criteria,
 				 _1);
-	if (!GetDatabase()->Visit(&selection, f, error_r))
+	if (!GetDatabase()->Visit(selection, f, error_r))
 		return false;
 
 	printSearchStats(client, &stats);
@@ -267,13 +264,13 @@ typedef std::set<const char *, StringLess> StringSet;
 
 static void
 visitTag(struct client *client, StringSet &set,
-	 struct song *song, enum tag_type tagType)
+	 song &song, enum tag_type tagType)
 {
-	struct tag *tag = song->tag;
+	struct tag *tag = song.tag;
 	bool found = false;
 
 	if (tagType == LOCATE_TAG_FILE_TYPE) {
-		song_print_uri(client, song);
+		song_print_uri(client, &song);
 		return;
 	}
 
@@ -295,9 +292,9 @@ static bool
 unique_tags_visitor_song(struct client *client,
 			 enum tag_type tag_type,
 			 const struct locate_item_list *criteria,
-			 StringSet &set, struct song *song)
+			 StringSet &set, song &song)
 {
-	if (locate_song_match(song, criteria))
+	if (locate_song_match(&song, criteria))
 		visitTag(client, set, song, tag_type);
 
 	return true;
@@ -317,7 +314,7 @@ listAllUniqueTags(struct client *client, int type,
 	const auto f = std::bind(unique_tags_visitor_song, client,
 				 (enum tag_type)type, criteria, std::ref(set),
 				 _1);
-	if (!GetDatabase()->Visit(&selection, f, error_r))
+	if (!GetDatabase()->Visit(selection, f, error_r))
 		return false;
 
 	if (type >= 0 && type <= TAG_NUM_OF_ITEM_TYPES)

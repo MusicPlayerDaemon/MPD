@@ -28,8 +28,9 @@ struct directory;
 struct song;
 struct playlist_metadata;
 
-typedef std::function<bool(const struct directory *, GError **)> VisitDirectory;
-typedef std::function<bool(struct song *, GError **)> VisitSong;
-typedef std::function<bool(const struct playlist_metadata *, const struct directory *, GError **)> VisitPlaylist;
+typedef std::function<bool(const directory &, GError **)> VisitDirectory;
+typedef std::function<bool(struct song &, GError **)> VisitSong;
+typedef std::function<bool(const playlist_metadata &, const directory &,
+			   GError **)> VisitPlaylist;
 
 #endif

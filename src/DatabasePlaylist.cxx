@@ -31,6 +31,13 @@ extern "C" {
 
 #include <functional>
 
+static bool
+AddSong(const char *playlist_path_utf8,
+	song &song, GError **error_r)
+{
+	return spl_append_song(playlist_path_utf8, &song, error_r);
+}
+
 bool
 addAllInToStoredPlaylist(const char *uri_utf8, const char *playlist_path_utf8,
 			 GError **error_r)
@@ -39,17 +46,17 @@ addAllInToStoredPlaylist(const char *uri_utf8, const char *playlist_path_utf8,
 	db_selection_init(&selection, uri_utf8, true);
 
 	using namespace std::placeholders;
-	const auto f = std::bind(spl_append_song, playlist_path_utf8, _1, _2);
-	return GetDatabase()->Visit(&selection, f, error_r);
+	const auto f = std::bind(AddSong, playlist_path_utf8, _1, _2);
+	return GetDatabase()->Visit(selection, f, error_r);
 }
 
 static bool
 SearchAddSong(const char *playlist_path_utf8,
 	      const struct locate_item_list *criteria,
-	      struct song *song, GError **error_r)
+	      song &song, GError **error_r)
 {
-	return !locate_song_search(song, criteria) ||
-		spl_append_song(playlist_path_utf8, song, error_r);
+	return !locate_song_search(&song, criteria) ||
+		spl_append_song(playlist_path_utf8, &song, error_r);
 }
 
 bool
@@ -66,7 +73,7 @@ search_add_to_playlist(const char *uri, const char *playlist_path_utf8,
 	using namespace std::placeholders;
 	const auto f = std::bind(SearchAddSong, playlist_path_utf8,
 				 new_list, _1, _2);
-	bool success = GetDatabase()->Visit(&selection, f, error_r);
+	bool success = GetDatabase()->Visit(selection, f, error_r);
 
 	locate_item_list_free(new_list);
 
