@@ -115,13 +115,6 @@ locate_item_list_casefold(const struct locate_item_list *list)
 	return new_list;
 }
 
-void
-locate_item_free(struct locate_item *item)
-{
-	g_free(item->needle);
-	g_free(item);
-}
-
 static bool
 locate_tag_search(const struct song *song, enum tag_type type, const char *str)
 {

@@ -75,10 +75,6 @@ gcc_nonnull(1)
 void
 locate_item_list_free(struct locate_item_list *list);
 
-gcc_nonnull(1)
-void
-locate_item_free(struct locate_item *item);
-
 gcc_nonnull(1,2)
 bool
 locate_song_search(const struct song *song,
