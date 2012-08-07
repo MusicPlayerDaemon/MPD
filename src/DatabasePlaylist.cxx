@@ -23,7 +23,6 @@
 
 extern "C" {
 #include "dbUtils.h"
-#include "locate.h"
 #include "stored_playlist.h"
 }
 
@@ -40,34 +39,21 @@ AddSong(const char *playlist_path_utf8,
 }
 
 bool
-addAllInToStoredPlaylist(const char *uri_utf8, const char *playlist_path_utf8,
-			 GError **error_r)
+search_add_to_playlist(const char *uri, const char *playlist_path_utf8,
+		       const struct locate_item_list *criteria,
+		       GError **error_r)
 {
-	const DatabaseSelection selection(uri_utf8, true);
+	const DatabaseSelection selection(uri, true, criteria);
 
 	using namespace std::placeholders;
 	const auto f = std::bind(AddSong, playlist_path_utf8, _1, _2);
 	return GetDatabase()->Visit(selection, f, error_r);
 }
 
-static bool
-SearchAddSong(const char *playlist_path_utf8,
-	      const struct locate_item_list *criteria,
-	      song &song, GError **error_r)
-{
-	return !locate_list_song_match(&song, criteria) ||
-		spl_append_song(playlist_path_utf8, &song, error_r);
-}
-
 bool
-search_add_to_playlist(const char *uri, const char *playlist_path_utf8,
-		       const struct locate_item_list *criteria,
-		       GError **error_r)
+addAllInToStoredPlaylist(const char *uri_utf8, const char *playlist_path_utf8,
+			 GError **error_r)
 {
-	const DatabaseSelection selection(uri, true);
-
-	using namespace std::placeholders;
-	const auto f = std::bind(SearchAddSong, playlist_path_utf8,
-				 criteria, _1, _2);
-	return GetDatabase()->Visit(selection, f, error_r);
+	return search_add_to_playlist(uri_utf8, playlist_path_utf8, nullptr,
+				      error_r);
 }

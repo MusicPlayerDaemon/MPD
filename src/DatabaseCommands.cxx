@@ -67,8 +67,11 @@ handle_match(struct client *client, int argc, char *argv[], bool fold_case)
 		return COMMAND_RETURN_ERROR;
 	}
 
+	const DatabaseSelection selection("", true, list);
+
 	GError *error = NULL;
-	enum command_return ret = findSongsIn(client, "", list, &error)
+	enum command_return ret =
+		db_selection_print(client, selection, true, &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
 

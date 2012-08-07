@@ -54,6 +54,7 @@
 
 struct song;
 struct db_visitor;
+struct locate_item_list;
 
 struct directory {
 	/**
@@ -95,7 +96,7 @@ struct directory {
 	/**
 	 * Caller must lock #db_mutex.
 	 */
-	bool Walk(bool recursive,
+	bool Walk(bool recursive, const locate_item_list *match,
 		  VisitDirectory visit_directory, VisitSong visit_song,
 		  VisitPlaylist visit_playlist,
 		  GError **error_r) const;

@@ -28,6 +28,7 @@ extern "C" {
 #include "util/list_sort.h"
 #include "db_visitor.h"
 #include "db_lock.h"
+#include "locate.h"
 }
 
 #include <glib.h>
@@ -281,7 +282,7 @@ directory_sort(struct directory *directory)
 }
 
 bool
-directory::Walk(bool recursive,
+directory::Walk(bool recursive, const locate_item_list *match,
 		VisitDirectory visit_directory, VisitSong visit_song,
 		VisitPlaylist visit_playlist,
 		GError **error_r) const
@@ -291,7 +292,9 @@ directory::Walk(bool recursive,
 	if (visit_song) {
 		struct song *song;
 		directory_for_each_song(song, this)
-			if (!visit_song(*song, error_r))
+			if ((match == NULL ||
+			     locate_list_song_match(song, match)) &&
+			    !visit_song(*song, error_r))
 				return false;
 	}
 
@@ -309,8 +312,9 @@ directory::Walk(bool recursive,
 			return false;
 
 		if (recursive &&
-		    !child->Walk(recursive, visit_directory, visit_song,
-				 visit_playlist, error_r))
+		    !child->Walk(recursive, match,
+				 visit_directory, visit_song, visit_playlist,
+				 error_r))
 			return false;
 	}
 

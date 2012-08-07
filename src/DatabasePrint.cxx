@@ -129,35 +129,17 @@ db_selection_print(struct client *client, const DatabaseSelection &selection,
 		   bool full, GError **error_r)
 {
 	using namespace std::placeholders;
-	const auto d = std::bind(PrintDirectory, client, _1);
+	const auto d = selection.match == nullptr
+		? std::bind(PrintDirectory, client, _1)
+		: VisitDirectory();
 	const auto s = std::bind(full ? PrintSongFull : PrintSongBrief,
 				 client, _1);
-	const auto p = std::bind(full ? PrintPlaylistFull : PrintPlaylistBrief,
-				 client, _1, _2);
+	const auto p = selection.match == nullptr
+		? std::bind(full ? PrintPlaylistFull : PrintPlaylistBrief,
+			    client, _1, _2)
+		: VisitPlaylist();
 
 	return GetDatabase()->Visit(selection, d, s, p, error_r);
-}
-
-static bool
-MatchPrintSong(struct client *client, const struct locate_item_list *criteria,
-	       song &song)
-{
-	if (locate_list_song_match(&song, criteria))
-		song_print_info(client, &song);
-
-	return true;
-}
-
-bool
-findSongsIn(struct client *client, const char *uri,
-	    const struct locate_item_list *criteria,
-	    GError **error_r)
-{
-	const DatabaseSelection selection(uri, true);
-
-	using namespace std::placeholders;
-	const auto f = std::bind(MatchPrintSong, client, criteria, _1);
-	return GetDatabase()->Visit(selection, f, error_r);
 }
 
 struct SearchStats {
@@ -172,13 +154,10 @@ static void printSearchStats(struct client *client, SearchStats *stats)
 }
 
 static bool
-stats_visitor_song(SearchStats &stats, const struct locate_item_list *criteria,
-		   song &song)
+stats_visitor_song(SearchStats &stats, song &song)
 {
-	if (locate_list_song_match(&song, criteria)) {
-		stats.numberOfSongs++;
-		stats.playTime += song_get_duration(&song);
-	}
+	stats.numberOfSongs++;
+	stats.playTime += song_get_duration(&song);
 
 	return true;
 }
@@ -188,14 +167,14 @@ searchStatsForSongsIn(struct client *client, const char *name,
 		      const struct locate_item_list *criteria,
 		      GError **error_r)
 {
-	const DatabaseSelection selection(name, true);
+	const DatabaseSelection selection(name, true, criteria);
 
 	SearchStats stats;
 	stats.numberOfSongs = 0;
 	stats.playTime = 0;
 
 	using namespace std::placeholders;
-	const auto f = std::bind(stats_visitor_song, std::ref(stats), criteria,
+	const auto f = std::bind(stats_visitor_song, std::ref(stats),
 				 _1);
 	if (!GetDatabase()->Visit(selection, f, error_r))
 		return false;
@@ -257,11 +236,9 @@ visitTag(struct client *client, StringSet &set,
 static bool
 unique_tags_visitor_song(struct client *client,
 			 enum tag_type tag_type,
-			 const struct locate_item_list *criteria,
 			 StringSet &set, song &song)
 {
-	if (locate_list_song_match(&song, criteria))
-		visitTag(client, set, song, tag_type);
+	visitTag(client, set, song, tag_type);
 
 	return true;
 }
@@ -271,13 +248,13 @@ listAllUniqueTags(struct client *client, int type,
 		  const struct locate_item_list *criteria,
 		  GError **error_r)
 {
-	const DatabaseSelection selection("", true);
+	const DatabaseSelection selection("", true, criteria);
 
 	StringSet set;
 
 	using namespace std::placeholders;
 	const auto f = std::bind(unique_tags_visitor_song, client,
-				 (enum tag_type)type, criteria, std::ref(set),
+				 (enum tag_type)type, std::ref(set),
 				 _1);
 	if (!GetDatabase()->Visit(selection, f, error_r))
 		return false;

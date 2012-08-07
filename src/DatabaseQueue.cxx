@@ -23,7 +23,6 @@
 
 extern "C" {
 #include "dbUtils.h"
-#include "locate.h"
 #include "playlist.h"
 }
 
@@ -47,31 +46,18 @@ AddToQueue(struct player_control *pc, song &song, GError **error_r)
 }
 
 bool
-addAllIn(struct player_control *pc, const char *uri, GError **error_r)
+findAddIn(struct player_control *pc, const char *uri,
+	  const struct locate_item_list *criteria, GError **error_r)
 {
-	const DatabaseSelection selection(uri, true);
+	const DatabaseSelection selection(uri, true, criteria);
 
 	using namespace std::placeholders;
 	const auto f = std::bind(AddToQueue, pc, _1, _2);
 	return GetDatabase()->Visit(selection, f, error_r);
 }
 
-static bool
-MatchAddSong(struct player_control *pc,
-	     const struct locate_item_list *criteria,
-	     song &song, GError **error_r)
-{
-	return !locate_list_song_match(&song, criteria) ||
-		AddToQueue(pc, song, error_r);
-}
-
 bool
-findAddIn(struct player_control *pc, const char *uri,
-	  const struct locate_item_list *criteria, GError **error_r)
+addAllIn(struct player_control *pc, const char *uri, GError **error_r)
 {
-	const DatabaseSelection selection(uri, true);
-
-	using namespace std::placeholders;
-	const auto f = std::bind(MatchAddSong, pc, criteria, _1, _2);
-	return GetDatabase()->Visit(selection, f, error_r);
+	return findAddIn(pc, uri, nullptr, error_r);
 }

@@ -1054,6 +1054,7 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/song.c src/song_sort.c src/song_save.c \
 	src/tag.c src/tag_pool.c src/tag_save.c \
 	src/path.c \
+	src/locate.c \
 	src/text_file.c \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c
 

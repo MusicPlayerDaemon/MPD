@@ -27,6 +27,7 @@ extern "C" {
 #include "db_save.h"
 #include "db_lock.h"
 #include "conf.h"
+#include "locate.h"
 }
 
 #include "directory.h"
@@ -247,7 +248,9 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 	if (directory == NULL) {
 		struct song *song;
 		if (visit_song &&
-		    (song = GetSong(selection.uri, NULL)) != NULL)
+		    (song = GetSong(selection.uri, NULL)) != NULL &&
+		    (selection.match == NULL ||
+		     locate_list_song_match(song, selection.match)))
 			return visit_song(*song, error_r);
 
 		g_set_error(error_r, db_quark(), DB_NOT_FOUND,
@@ -260,7 +263,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 		return false;
 
 	db_lock();
-	bool ret = directory->Walk(selection.recursive,
+	bool ret = directory->Walk(selection.recursive, selection.match,
 				   visit_directory, visit_song, visit_playlist,
 				   error_r);
 	db_unlock();

@@ -25,6 +25,8 @@
 #include <assert.h>
 #include <stddef.h>
 
+struct locate_item_list;
+
 struct DatabaseSelection {
 	/**
 	 * The base URI of the search (UTF-8).  Must not begin or end
@@ -38,8 +40,11 @@ struct DatabaseSelection {
 	 */
 	bool recursive;
 
-	DatabaseSelection(const char *_uri, bool _recursive)
-		:uri(_uri), recursive(_recursive) {
+	const locate_item_list *match;
+
+	DatabaseSelection(const char *_uri, bool _recursive,
+			  const locate_item_list *_match=nullptr)
+		:uri(_uri), recursive(_recursive), match(_match) {
 		assert(uri != NULL);
 	}
 };

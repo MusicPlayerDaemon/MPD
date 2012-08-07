@@ -26,7 +26,7 @@
 struct locate_item_list;
 struct player_control;
 
-gcc_nonnull(1,2,3)
+gcc_nonnull(1,2)
 bool
 findAddIn(struct player_control *pc, const char *name,
 	  const struct locate_item_list *criteria, GError **error_r);
