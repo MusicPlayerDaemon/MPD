@@ -227,9 +227,9 @@ handle_list(struct client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		conditionals = locate_item_list_new(1);
-		conditionals->items[0].tag = TAG_ARTIST;
-		conditionals->items[0].needle = g_strdup(argv[2]);
+		conditionals =
+			locate_item_list_new_single((unsigned)TAG_ARTIST,
+						    argv[2]);
 	} else {
 		conditionals =
 			locate_item_list_parse(argv + 2, argc - 2, false);

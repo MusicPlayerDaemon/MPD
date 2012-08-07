@@ -28,36 +28,16 @@
 #define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
 #define LOCATE_TAG_ANY_TYPE     TAG_NUM_OF_ITEM_TYPES+20
 
+struct locate_item_list;
 struct song;
-
-/* struct used for search, find, list queries */
-struct locate_item {
-	int8_t tag;
-	/* what we are looking for */
-	char *needle;
-};
-
-/**
- * An array of struct locate_item objects.
- */
-struct locate_item_list {
-	/** number of items */
-	unsigned length;
-
-	/** this is a variable length array */
-	struct locate_item items[1];
-};
 
 gcc_pure
 int
 locate_parse_type(const char *str);
 
-/**
- * Allocates a new struct locate_item_list, and initializes all
- * members with zero bytes.
- */
+gcc_malloc
 struct locate_item_list *
-locate_item_list_new(unsigned length);
+locate_item_list_new_single(unsigned tag, const char *needle);
 
 /* return number of items or -1 on error */
 gcc_nonnull(1)

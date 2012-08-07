@@ -31,6 +31,24 @@
 #define LOCATE_TAG_FILE_KEY_OLD "filename"
 #define LOCATE_TAG_ANY_KEY      "any"
 
+/* struct used for search, find, list queries */
+struct locate_item {
+	int8_t tag;
+	/* what we are looking for */
+	char *needle;
+};
+
+/**
+ * An array of struct locate_item objects.
+ */
+struct locate_item_list {
+	/** number of items */
+	unsigned length;
+
+	/** this is a variable length array */
+	struct locate_item items[1];
+};
+
 int
 locate_parse_type(const char *str)
 {
@@ -74,14 +92,23 @@ locate_item_list_free(struct locate_item_list *list)
 	g_free(list);
 }
 
-struct locate_item_list *
+static struct locate_item_list *
 locate_item_list_new(unsigned length)
 {
 	struct locate_item_list *list =
-		g_malloc0(sizeof(*list) - sizeof(list->items[0]) +
-			  length * sizeof(list->items[0]));
+		g_malloc(sizeof(*list) - sizeof(list->items[0]) +
+			 length * sizeof(list->items[0]));
 	list->length = length;
 
+	return list;
+}
+
+struct locate_item_list *
+locate_item_list_new_single(unsigned tag, const char *needle)
+{
+	struct locate_item_list *list = locate_item_list_new(1);
+	list->items[0].tag = tag;
+	list->items[0].needle = g_strdup(needle);
 	return list;
 }
 
