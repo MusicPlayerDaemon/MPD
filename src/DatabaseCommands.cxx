@@ -56,11 +56,11 @@ handle_lsinfo2(struct client *client, int argc, char *argv[])
 	return COMMAND_RETURN_OK;
 }
 
-enum command_return
-handle_find(struct client *client, int argc, char *argv[])
+static enum command_return
+handle_match(struct client *client, int argc, char *argv[], bool fold_case)
 {
 	struct locate_item_list *list =
-		locate_item_list_parse(argv + 1, argc - 1, false);
+		locate_item_list_parse(argv + 1, argc - 1, fold_case);
 
 	if (list == NULL) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
@@ -78,53 +78,22 @@ handle_find(struct client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_findadd(struct client *client, int argc, char *argv[])
+handle_find(struct client *client, int argc, char *argv[])
 {
-    struct locate_item_list *list =
-	    locate_item_list_parse(argv + 1, argc - 1, false);
-    if (list == NULL) {
-	    command_error(client, ACK_ERROR_ARG, "incorrect arguments");
-	    return COMMAND_RETURN_ERROR;
-    }
-
-    GError *error = NULL;
-    enum command_return ret =
-	    findAddIn(client->player_control, "", list, &error)
-	    ? COMMAND_RETURN_OK
-	    : print_error(client, error);
-
-    locate_item_list_free(list);
-
-    return ret;
+	return handle_match(client, argc, argv, false);
 }
 
 enum command_return
 handle_search(struct client *client, int argc, char *argv[])
 {
-	struct locate_item_list *list =
-		locate_item_list_parse(argv + 1, argc - 1, true);
-
-	if (list == NULL) {
-		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
-		return COMMAND_RETURN_ERROR;
-	}
-
-	GError *error = NULL;
-	enum command_return ret = findSongsIn(client, "", list, &error)
-		? COMMAND_RETURN_OK
-		: print_error(client, error);
-
-	locate_item_list_free(list);
-
-	return ret;
+	return handle_match(client, argc, argv, true);
 }
 
-enum command_return
-handle_searchadd(struct client *client, int argc, char *argv[])
+static enum command_return
+handle_match_add(struct client *client, int argc, char *argv[], bool fold_case)
 {
 	struct locate_item_list *list =
-		locate_item_list_parse(argv + 1, argc - 1, true);
-
+		locate_item_list_parse(argv + 1, argc - 1, fold_case);
 	if (list == NULL) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return COMMAND_RETURN_ERROR;
@@ -139,6 +108,18 @@ handle_searchadd(struct client *client, int argc, char *argv[])
 	locate_item_list_free(list);
 
 	return ret;
+}
+
+enum command_return
+handle_findadd(struct client *client, int argc, char *argv[])
+{
+	return handle_match_add(client, argc, argv, false);
+}
+
+enum command_return
+handle_searchadd(struct client *client, int argc, char *argv[])
+{
+	return handle_match_add(client, argc, argv, true);
 }
 
 enum command_return

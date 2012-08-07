@@ -674,10 +674,11 @@ handle_playlistid(struct client *client, int argc, char *argv[])
 }
 
 static enum command_return
-handle_playlistfind(struct client *client, int argc, char *argv[])
+handle_playlist_match(struct client *client, int argc, char *argv[],
+		      bool fold_case)
 {
 	struct locate_item_list *list =
-		locate_item_list_parse(argv + 1, argc - 1, false);
+		locate_item_list_parse(argv + 1, argc - 1, fold_case);
 
 	if (list == NULL) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
@@ -692,21 +693,15 @@ handle_playlistfind(struct client *client, int argc, char *argv[])
 }
 
 static enum command_return
+handle_playlistfind(struct client *client, int argc, char *argv[])
+{
+	return handle_playlist_match(client, argc, argv, false);
+}
+
+static enum command_return
 handle_playlistsearch(struct client *client, int argc, char *argv[])
 {
-	struct locate_item_list *list =
-		locate_item_list_parse(argv + 1, argc - 1, true);
-
-	if (list == NULL) {
-		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
-		return COMMAND_RETURN_ERROR;
-	}
-
-	playlist_print_find(client, &g_playlist, list);
-
-	locate_item_list_free(list);
-
-	return COMMAND_RETURN_OK;
+	return handle_playlist_match(client, argc, argv, true);
 }
 
 static enum command_return
