@@ -62,7 +62,7 @@ locate_item_list_new(unsigned length);
 /* return number of items or -1 on error */
 gcc_nonnull(1)
 struct locate_item_list *
-locate_item_list_parse(char *argv[], int argc, bool fold_case);
+locate_item_list_parse(char *argv[], unsigned argc, bool fold_case);
 
 gcc_nonnull(1)
 void

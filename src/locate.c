@@ -86,7 +86,7 @@ locate_item_list_new(unsigned length)
 }
 
 struct locate_item_list *
-locate_item_list_parse(char *argv[], int argc, bool fold_case)
+locate_item_list_parse(char *argv[], unsigned argc, bool fold_case)
 {
 	if (argc % 2 != 0)
 		return NULL;
