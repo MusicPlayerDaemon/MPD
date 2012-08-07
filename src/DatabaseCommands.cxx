@@ -214,7 +214,7 @@ handle_list(struct client *client, int argc, char *argv[])
 		conditionals =
 			locate_item_list_new_single((unsigned)TAG_ARTIST,
 						    argv[2]);
-	} else {
+	} else if (argc > 2) {
 		conditionals =
 			locate_item_list_parse(argv + 2, argc - 2, false);
 		if (conditionals == NULL) {
@@ -222,7 +222,8 @@ handle_list(struct client *client, int argc, char *argv[])
 				      "not able to parse args");
 			return COMMAND_RETURN_ERROR;
 		}
-	}
+	} else
+		conditionals = nullptr;
 
 	GError *error = NULL;
 	enum command_return ret =
@@ -230,7 +231,8 @@ handle_list(struct client *client, int argc, char *argv[])
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
 
-	locate_item_list_free(conditionals);
+	if (conditionals != nullptr)
+		locate_item_list_free(conditionals);
 
 	return ret;
 }
