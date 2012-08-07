@@ -433,6 +433,7 @@ endif
 # database plugins
 
 libdb_plugins_a_SOURCES = \
+	src/DatabaseRegistry.cxx src/DatabaseRegistry.hxx \
 	src/db/SimpleDatabasePlugin.cxx src/db/SimpleDatabasePlugin.hxx
 
 DB_LIBS = \
