@@ -104,6 +104,7 @@ locate_item_list_parse(char *argv[], int argc, bool fold_case)
 	return list;
 }
 
+gcc_pure
 static bool
 locate_tag_search(const struct song *song, enum tag_type type, const char *str)
 {
@@ -164,6 +165,7 @@ locate_song_search(const struct song *song,
 	return true;
 }
 
+gcc_pure
 static bool
 locate_tag_match(const struct song *song, enum tag_type type, const char *str)
 {

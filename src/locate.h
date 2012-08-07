@@ -48,6 +48,7 @@ struct locate_item_list {
 	struct locate_item items[1];
 };
 
+gcc_pure
 int
 locate_parse_type(const char *str);
 
@@ -67,11 +68,13 @@ gcc_nonnull(1)
 void
 locate_item_list_free(struct locate_item_list *list);
 
+gcc_pure
 gcc_nonnull(1,2)
 bool
 locate_song_search(const struct song *song,
 		   const struct locate_item_list *criteria);
 
+gcc_pure
 gcc_nonnull(1,2)
 bool
 locate_song_match(const struct song *song,
