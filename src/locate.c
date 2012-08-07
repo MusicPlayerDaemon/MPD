@@ -33,7 +33,7 @@
 
 /* struct used for search, find, list queries */
 struct locate_item {
-	int8_t tag;
+	uint8_t tag;
 	/* what we are looking for */
 	char *needle;
 };
@@ -49,7 +49,7 @@ struct locate_item_list {
 	struct locate_item items[1];
 };
 
-int
+unsigned
 locate_parse_type(const char *str)
 {
 	if (0 == g_ascii_strcasecmp(str, LOCATE_TAG_FILE_KEY) ||
@@ -59,11 +59,7 @@ locate_parse_type(const char *str)
 	if (0 == g_ascii_strcasecmp(str, LOCATE_TAG_ANY_KEY))
 		return LOCATE_TAG_ANY_TYPE;
 
-	enum tag_type i = tag_name_parse_i(str);
-	if (i != TAG_NUM_OF_ITEM_TYPES)
-		return i;
-
-	return -1;
+	return tag_name_parse_i(str);
 }
 
 static bool
@@ -73,7 +69,7 @@ locate_item_init(struct locate_item *item,
 {
 	item->tag = locate_parse_type(type_string);
 
-	if (item->tag < 0)
+	if (item->tag == TAG_NUM_OF_ITEM_TYPES)
 		return false;
 
 	item->needle = fold_case

@@ -31,8 +31,11 @@
 struct locate_item_list;
 struct song;
 
+/**
+ * @return #TAG_NUM_OF_ITEM_TYPES on error
+ */
 gcc_pure
-int
+unsigned
 locate_parse_type(const char *str);
 
 gcc_malloc
