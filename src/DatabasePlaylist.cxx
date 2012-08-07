@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "DatabasePlaylist.hxx"
 
 extern "C" {
 #include "dbUtils.h"

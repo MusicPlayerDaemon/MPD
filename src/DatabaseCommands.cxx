@@ -19,6 +19,8 @@
 
 #include "config.h"
 #include "DatabaseCommands.hxx"
+#include "DatabaseQueue.hxx"
+#include "DatabasePlaylist.hxx"
 #include "CommandError.h"
 #include "client_internal.h"
 #include "tag.h"
@@ -27,7 +29,6 @@
 extern "C" {
 #include "db_print.h"
 #include "db_selection.h"
-#include "dbUtils.h"
 #include "locate.h"
 #include "protocol/result.h"
 }

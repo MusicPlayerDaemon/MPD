@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "DatabaseQueue.hxx"
 
 extern "C" {
 #include "dbUtils.h"

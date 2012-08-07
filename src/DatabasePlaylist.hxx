@@ -17,24 +17,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DB_UTILS_H
-#define MPD_DB_UTILS_H
+#ifndef MPD_DATABASE_PLAYLIST_HXX
+#define MPD_DATABASE_PLAYLIST_HXX
 
 #include "gcc.h"
 #include "gerror.h"
 
-#include <stdbool.h>
-
 struct locate_item_list;
-struct player_control;
 
-gcc_nonnull(1,2)
+gcc_nonnull(1,2,3)
 bool
-addAllIn(struct player_control *pc, const char *uri, GError **error_r);
-
-gcc_nonnull(1,2)
-bool
-addAllInToStoredPlaylist(const char *uri_utf8, const char *path_utf8,
-			 GError **error_r);
+search_add_to_playlist(const char *uri, const char *path_utf8,
+		       const struct locate_item_list *criteria,
+		       GError **error_r);
 
 #endif

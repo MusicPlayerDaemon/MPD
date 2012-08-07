@@ -254,8 +254,8 @@ src_mpd_SOURCES = \
 	src/directory_save.c \
 	src/DatabaseGlue.cxx \
 	src/DatabasePrint.cxx \
-	src/DatabaseQueue.cxx \
-	src/DatabasePlaylist.cxx \
+	src/DatabaseQueue.cxx src/DatabaseQueue.hxx \
+	src/DatabasePlaylist.cxx src/DatabasePlaylist.hxx \
 	src/db_error.h \
 	src/db_lock.c src/db_lock.h \
 	src/db_save.c src/db_save.h \

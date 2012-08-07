@@ -51,7 +51,6 @@
 #include "playlist_list.h"
 #include "state_file.h"
 #include "tag.h"
-#include "dbUtils.h"
 #include "zeroconf.h"
 #include "event_pipe.h"
 #include "tag_pool.h"
