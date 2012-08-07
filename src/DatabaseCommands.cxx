@@ -245,8 +245,6 @@ handle_list(struct client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		locate_item_list_parse(argv + 1, argc - 1, false);
-
 		conditionals = locate_item_list_new(1);
 		conditionals->items[0].tag = TAG_ARTIST;
 		conditionals->items[0].needle = g_strdup(argv[2]);
