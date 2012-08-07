@@ -19,11 +19,11 @@
 
 #include "config.h"
 #include "DatabasePlaylist.hxx"
+#include "DatabaseSelection.hxx"
 
 extern "C" {
 #include "dbUtils.h"
 #include "locate.h"
-#include "db_selection.h"
 #include "stored_playlist.h"
 }
 
@@ -43,8 +43,7 @@ bool
 addAllInToStoredPlaylist(const char *uri_utf8, const char *playlist_path_utf8,
 			 GError **error_r)
 {
-	struct db_selection selection;
-	db_selection_init(&selection, uri_utf8, true);
+	const DatabaseSelection selection(uri_utf8, true);
 
 	using namespace std::placeholders;
 	const auto f = std::bind(AddSong, playlist_path_utf8, _1, _2);
@@ -65,8 +64,7 @@ search_add_to_playlist(const char *uri, const char *playlist_path_utf8,
 		       const struct locate_item_list *criteria,
 		       GError **error_r)
 {
-	struct db_selection selection;
-	db_selection_init(&selection, uri, true);
+	const DatabaseSelection selection(uri, true);
 
 	struct locate_item_list *new_list
 		= locate_item_list_casefold(criteria);

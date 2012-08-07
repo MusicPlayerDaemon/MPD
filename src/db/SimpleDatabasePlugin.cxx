@@ -19,10 +19,10 @@
 
 #include "config.h"
 #include "SimpleDatabasePlugin.hxx"
+#include "DatabaseSelection.hxx"
 
 extern "C" {
 #include "db_error.h"
-#include "db_selection.h"
 #include "db_visitor.h"
 #include "db_save.h"
 #include "db_lock.h"
@@ -237,7 +237,7 @@ SimpleDatabase::LookupDirectory(const char *uri) const
 }
 
 bool
-SimpleDatabase::Visit(const db_selection &selection,
+SimpleDatabase::Visit(const DatabaseSelection &selection,
 		      VisitDirectory visit_directory,
 		      VisitSong visit_song,
 		      VisitPlaylist visit_playlist,

@@ -30,7 +30,7 @@
 #include "gcc.h"
 
 struct config_param;
-struct db_selection;
+struct DatabaseSelection;
 struct db_visitor;
 
 class Database {
@@ -64,13 +64,13 @@ public:
 	/**
 	 * Visit the selected entities.
 	 */
-	virtual bool Visit(const db_selection &selection,
+	virtual bool Visit(const DatabaseSelection &selection,
 			   VisitDirectory visit_directory,
 			   VisitSong visit_song,
 			   VisitPlaylist visit_playlist,
 			   GError **error_r) const = 0;
 
-	bool Visit(const db_selection &selection,
+	bool Visit(const DatabaseSelection &selection,
 		   VisitDirectory visit_directory,
 		   VisitSong visit_song,
 		   GError **error_r) const {
@@ -78,7 +78,7 @@ public:
 			     VisitPlaylist(), error_r);
 	}
 
-	bool Visit(const db_selection &selection, VisitSong visit_song,
+	bool Visit(const DatabaseSelection &selection, VisitSong visit_song,
 		   GError **error_r) const {
 		return Visit(selection, VisitDirectory(), visit_song, error_r);
 	}

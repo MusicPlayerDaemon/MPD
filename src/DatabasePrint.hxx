@@ -27,12 +27,12 @@
 
 struct client;
 struct locate_item_list;
-struct db_selection;
+struct DatabaseSelection;
 struct db_visitor;
 
 gcc_nonnull(1)
 bool
-db_selection_print(struct client *client, const db_selection &selection,
+db_selection_print(struct client *client, const DatabaseSelection &selection,
 		   bool full, GError **error_r);
 
 gcc_nonnull(1,2)

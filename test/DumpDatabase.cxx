@@ -20,7 +20,7 @@
 #include "config.h"
 #include "DatabaseRegistry.hxx"
 #include "DatabasePlugin.hxx"
-#include "db_selection.h"
+#include "DatabaseSelection.hxx"
 #include "directory.h"
 #include "song.h"
 #include "playlist_vector.h"
@@ -130,8 +130,7 @@ main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	db_selection selection;
-	db_selection_init(&selection, "", true);
+	const DatabaseSelection selection("", true);
 
 	if (!db->Visit(selection, DumpDirectory, DumpSong, DumpPlaylist,
 		       &error)) {

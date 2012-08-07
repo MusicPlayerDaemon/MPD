@@ -22,13 +22,13 @@
 #include "DatabaseQueue.hxx"
 #include "DatabasePlaylist.hxx"
 #include "DatabasePrint.hxx"
+#include "DatabaseSelection.hxx"
 #include "CommandError.h"
 #include "client_internal.h"
 #include "tag.h"
 #include "uri.h"
 
 extern "C" {
-#include "db_selection.h"
 #include "locate.h"
 #include "protocol/result.h"
 }
@@ -47,8 +47,7 @@ handle_lsinfo2(struct client *client, int argc, char *argv[])
 		/* default is root directory */
 		uri = "";
 
-	struct db_selection selection;
-	db_selection_init(&selection, uri, false);
+	const DatabaseSelection selection(uri, false);
 
 	GError *error = NULL;
 	if (!db_selection_print(client, selection, true, &error))

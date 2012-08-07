@@ -22,7 +22,6 @@
 extern "C" {
 #include "stats.h"
 #include "database.h"
-#include "db_selection.h"
 #include "tag.h"
 #include "song.h"
 #include "client.h"
@@ -31,6 +30,7 @@ extern "C" {
 #include "client_internal.h"
 }
 
+#include "DatabaseSelection.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 
@@ -99,8 +99,7 @@ void stats_update(void)
 	stats.song_duration = 0;
 	stats.artist_count = 0;
 
-	struct db_selection selection;
-	db_selection_init(&selection, "", true);
+	const DatabaseSelection selection("", true);
 
 	StringSet artists, albums;
 	using namespace std::placeholders;

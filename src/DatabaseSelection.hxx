@@ -17,18 +17,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DB_SELECTION_H
-#define MPD_DB_SELECTION_H
+#ifndef MPD_DATABASE_SELECTION_HXX
+#define MPD_DATABASE_SELECTION_HXX
 
 #include "gcc.h"
 
 #include <assert.h>
 #include <stddef.h>
 
-struct directory;
-struct song;
-
-struct db_selection {
+struct DatabaseSelection {
 	/**
 	 * The base URI of the search (UTF-8).  Must not begin or end
 	 * with a slash.  NULL or an empty string searches the whole
@@ -40,18 +37,11 @@ struct db_selection {
 	 * Recursively search all sub directories?
 	 */
 	bool recursive;
+
+	DatabaseSelection(const char *_uri, bool _recursive)
+		:uri(_uri), recursive(_recursive) {
+		assert(uri != NULL);
+	}
 };
-
-gcc_nonnull(1,2)
-static inline void
-db_selection_init(struct db_selection *selection,
-		  const char *uri, bool recursive)
-{
-	assert(selection != NULL);
-	assert(uri != NULL);
-
-	selection->uri = uri;
-	selection->recursive = recursive;
-}
 
 #endif

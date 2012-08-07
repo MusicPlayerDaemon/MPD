@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "DatabasePrint.hxx"
+#include "DatabaseSelection.hxx"
 
 extern "C" {
-#include "db_selection.h"
 #include "locate.h"
 #include "database.h"
 #include "client.h"
@@ -125,7 +125,7 @@ PrintPlaylistFull(struct client *client,
 }
 
 bool
-db_selection_print(struct client *client, const db_selection &selection,
+db_selection_print(struct client *client, const DatabaseSelection &selection,
 		   bool full, GError **error_r)
 {
 	using namespace std::placeholders;
@@ -153,8 +153,7 @@ searchForSongsIn(struct client *client, const char *uri,
 		 const struct locate_item_list *criteria,
 		 GError **error_r)
 {
-	struct db_selection selection;
-	db_selection_init(&selection, uri, true);
+	const DatabaseSelection selection(uri, true);
 
 	struct locate_item_list *new_list
 		= locate_item_list_casefold(criteria);
@@ -183,8 +182,7 @@ findSongsIn(struct client *client, const char *uri,
 	    const struct locate_item_list *criteria,
 	    GError **error_r)
 {
-	struct db_selection selection;
-	db_selection_init(&selection, uri, true);
+	const DatabaseSelection selection(uri, true);
 
 	using namespace std::placeholders;
 	const auto f = std::bind(MatchPrintSong, client, criteria, _1);
@@ -219,8 +217,7 @@ searchStatsForSongsIn(struct client *client, const char *name,
 		      const struct locate_item_list *criteria,
 		      GError **error_r)
 {
-	struct db_selection selection;
-	db_selection_init(&selection, name, true);
+	const DatabaseSelection selection(name, true);
 
 	SearchStats stats;
 	stats.numberOfSongs = 0;
@@ -239,8 +236,7 @@ searchStatsForSongsIn(struct client *client, const char *name,
 bool
 printAllIn(struct client *client, const char *uri_utf8, GError **error_r)
 {
-	struct db_selection selection;
-	db_selection_init(&selection, uri_utf8, true);
+	const DatabaseSelection selection(uri_utf8, true);
 	return db_selection_print(client, selection, false, error_r);
 }
 
@@ -248,8 +244,7 @@ bool
 printInfoForAllIn(struct client *client, const char *uri_utf8,
 		  GError **error_r)
 {
-	struct db_selection selection;
-	db_selection_init(&selection, uri_utf8, true);
+	const DatabaseSelection selection(uri_utf8, true);
 	return db_selection_print(client, selection, true, error_r);
 }
 
@@ -305,8 +300,7 @@ listAllUniqueTags(struct client *client, int type,
 		  const struct locate_item_list *criteria,
 		  GError **error_r)
 {
-	struct db_selection selection;
-	db_selection_init(&selection, "", true);
+	const DatabaseSelection selection("", true);
 
 	StringSet set;
 

@@ -262,7 +262,7 @@ src_mpd_SOURCES = \
 	src/db_visitor.h \
 	src/DatabasePlugin.hxx \
 	src/DatabaseVisitor.hxx \
-	src/db_selection.h \
+	src/DatabaseSelection.hxx \
 	src/exclude.c \
 	src/fd_util.c \
 	src/fifo_buffer.c src/fifo_buffer.h \

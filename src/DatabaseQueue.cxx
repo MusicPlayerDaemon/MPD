@@ -19,11 +19,11 @@
 
 #include "config.h"
 #include "DatabaseQueue.hxx"
+#include "DatabaseSelection.hxx"
 
 extern "C" {
 #include "dbUtils.h"
 #include "locate.h"
-#include "db_selection.h"
 #include "playlist.h"
 }
 
@@ -49,8 +49,7 @@ AddToQueue(struct player_control *pc, song &song, GError **error_r)
 bool
 addAllIn(struct player_control *pc, const char *uri, GError **error_r)
 {
-	struct db_selection selection;
-	db_selection_init(&selection, uri, true);
+	const DatabaseSelection selection(uri, true);
 
 	using namespace std::placeholders;
 	const auto f = std::bind(AddToQueue, pc, _1, _2);
@@ -70,8 +69,7 @@ bool
 findAddIn(struct player_control *pc, const char *uri,
 	  const struct locate_item_list *criteria, GError **error_r)
 {
-	struct db_selection selection;
-	db_selection_init(&selection, uri, true);
+	const DatabaseSelection selection(uri, true);
 
 	using namespace std::placeholders;
 	const auto f = std::bind(MatchAddSong, pc, criteria, _1, _2);
@@ -92,8 +90,7 @@ search_add_songs(struct player_control *pc, const char *uri,
 		 const struct locate_item_list *criteria,
 		 GError **error_r)
 {
-	struct db_selection selection;
-	db_selection_init(&selection, uri, true);
+	const DatabaseSelection selection(uri, true);
 
 	struct locate_item_list *new_list =
 		locate_item_list_casefold(criteria);
