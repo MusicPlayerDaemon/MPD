@@ -62,10 +62,7 @@ handle_find(struct client *client, int argc, char *argv[])
 	struct locate_item_list *list =
 		locate_item_list_parse(argv + 1, argc - 1, false);
 
-	if (list == NULL || list->length == 0) {
-		if (list != NULL)
-			locate_item_list_free(list);
-
+	if (list == NULL) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return COMMAND_RETURN_ERROR;
 	}
@@ -85,10 +82,7 @@ handle_findadd(struct client *client, int argc, char *argv[])
 {
     struct locate_item_list *list =
 	    locate_item_list_parse(argv + 1, argc - 1, false);
-    if (list == NULL || list->length == 0) {
-	    if (list != NULL)
-		    locate_item_list_free(list);
-
+    if (list == NULL) {
 	    command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 	    return COMMAND_RETURN_ERROR;
     }
@@ -110,10 +104,7 @@ handle_search(struct client *client, int argc, char *argv[])
 	struct locate_item_list *list =
 		locate_item_list_parse(argv + 1, argc - 1, true);
 
-	if (list == NULL || list->length == 0) {
-		if (list != NULL)
-			locate_item_list_free(list);
-
+	if (list == NULL) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return COMMAND_RETURN_ERROR;
 	}
@@ -134,10 +125,7 @@ handle_searchadd(struct client *client, int argc, char *argv[])
 	struct locate_item_list *list =
 		locate_item_list_parse(argv + 1, argc - 1, true);
 
-	if (list == NULL || list->length == 0) {
-		if (list != NULL)
-			locate_item_list_free(list);
-
+	if (list == NULL) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return COMMAND_RETURN_ERROR;
 	}
@@ -161,10 +149,7 @@ handle_searchaddpl(struct client *client, int argc, char *argv[])
 	struct locate_item_list *list =
 		locate_item_list_parse(argv + 2, argc - 2, true);
 
-	if (list == NULL || list->length == 0) {
-		if (list != NULL)
-			locate_item_list_free(list);
-
+	if (list == NULL) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return COMMAND_RETURN_ERROR;
 	}
@@ -186,10 +171,7 @@ handle_count(struct client *client, int argc, char *argv[])
 	struct locate_item_list *list =
 		locate_item_list_parse(argv + 1, argc - 1, false);
 
-	if (list == NULL || list->length == 0) {
-		if (list != NULL)
-			locate_item_list_free(list);
-
+	if (list == NULL) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return COMMAND_RETURN_ERROR;
 	}
