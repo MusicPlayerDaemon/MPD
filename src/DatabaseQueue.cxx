@@ -92,14 +92,7 @@ search_add_songs(struct player_control *pc, const char *uri,
 {
 	const DatabaseSelection selection(uri, true);
 
-	struct locate_item_list *new_list =
-		locate_item_list_casefold(criteria);
-
 	using namespace std::placeholders;
-	const auto f = std::bind(SearchAddSong, pc, new_list, _1, _2);
-	bool success = GetDatabase()->Visit(selection, f, error_r);
-
-	locate_item_list_free(new_list);
-
-	return success;
+	const auto f = std::bind(SearchAddSong, pc, criteria, _1, _2);
+	return GetDatabase()->Visit(selection, f, error_r);
 }

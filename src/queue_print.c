@@ -95,18 +95,12 @@ void
 queue_search(struct client *client, const struct queue *queue,
 	     const struct locate_item_list *criteria)
 {
-	unsigned i;
-	struct locate_item_list *new_list =
-		locate_item_list_casefold(criteria);
-
-	for (i = 0; i < queue_length(queue); i++) {
+	for (unsigned i = 0; i < queue_length(queue); i++) {
 		const struct song *song = queue_get(queue, i);
 
-		if (locate_song_search(song, new_list))
+		if (locate_song_search(song, criteria))
 			queue_print_song_info(client, queue, i);
 	}
-
-	locate_item_list_free(new_list);
 }
 
 void

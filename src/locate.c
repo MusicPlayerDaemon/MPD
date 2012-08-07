@@ -50,14 +50,17 @@ locate_parse_type(const char *str)
 
 static bool
 locate_item_init(struct locate_item *item,
-		 const char *type_string, const char *needle)
+		 const char *type_string, const char *needle,
+		 bool fold_case)
 {
 	item->tag = locate_parse_type(type_string);
 
 	if (item->tag < 0)
 		return false;
 
-	item->needle = g_strdup(needle);
+	item->needle = fold_case
+		? g_utf8_casefold(needle, -1)
+		: g_strdup(needle);
 
 	return true;
 }
@@ -83,7 +86,7 @@ locate_item_list_new(unsigned length)
 }
 
 struct locate_item_list *
-locate_item_list_parse(char *argv[], int argc)
+locate_item_list_parse(char *argv[], int argc, bool fold_case)
 {
 	if (argc % 2 != 0)
 		return NULL;
@@ -92,27 +95,13 @@ locate_item_list_parse(char *argv[], int argc)
 
 	for (unsigned i = 0; i < list->length; ++i) {
 		if (!locate_item_init(&list->items[i], argv[i * 2],
-				      argv[i * 2 + 1])) {
+				      argv[i * 2 + 1], fold_case)) {
 			locate_item_list_free(list);
 			return NULL;
 		}
 	}
 
 	return list;
-}
-
-struct locate_item_list *
-locate_item_list_casefold(const struct locate_item_list *list)
-{
-	struct locate_item_list *new_list = locate_item_list_new(list->length);
-
-	for (unsigned i = 0; i < list->length; i++){
-		new_list->items[i].needle =
-			g_utf8_casefold(list->items[i].needle, -1);
-		new_list->items[i].tag = list->items[i].tag;
-	}
-
-	return new_list;
 }
 
 static bool

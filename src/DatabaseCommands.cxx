@@ -60,7 +60,7 @@ enum command_return
 handle_find(struct client *client, int argc, char *argv[])
 {
 	struct locate_item_list *list =
-		locate_item_list_parse(argv + 1, argc - 1);
+		locate_item_list_parse(argv + 1, argc - 1, false);
 
 	if (list == NULL || list->length == 0) {
 		if (list != NULL)
@@ -84,7 +84,7 @@ enum command_return
 handle_findadd(struct client *client, int argc, char *argv[])
 {
     struct locate_item_list *list =
-	    locate_item_list_parse(argv + 1, argc - 1);
+	    locate_item_list_parse(argv + 1, argc - 1, false);
     if (list == NULL || list->length == 0) {
 	    if (list != NULL)
 		    locate_item_list_free(list);
@@ -108,7 +108,7 @@ enum command_return
 handle_search(struct client *client, int argc, char *argv[])
 {
 	struct locate_item_list *list =
-		locate_item_list_parse(argv + 1, argc - 1);
+		locate_item_list_parse(argv + 1, argc - 1, true);
 
 	if (list == NULL || list->length == 0) {
 		if (list != NULL)
@@ -132,7 +132,7 @@ enum command_return
 handle_searchadd(struct client *client, int argc, char *argv[])
 {
 	struct locate_item_list *list =
-		locate_item_list_parse(argv + 1, argc - 1);
+		locate_item_list_parse(argv + 1, argc - 1, true);
 
 	if (list == NULL || list->length == 0) {
 		if (list != NULL)
@@ -159,7 +159,7 @@ handle_searchaddpl(struct client *client, int argc, char *argv[])
 	const char *playlist = argv[1];
 
 	struct locate_item_list *list =
-		locate_item_list_parse(argv + 2, argc - 2);
+		locate_item_list_parse(argv + 2, argc - 2, true);
 
 	if (list == NULL || list->length == 0) {
 		if (list != NULL)
@@ -184,7 +184,7 @@ enum command_return
 handle_count(struct client *client, int argc, char *argv[])
 {
 	struct locate_item_list *list =
-		locate_item_list_parse(argv + 1, argc - 1);
+		locate_item_list_parse(argv + 1, argc - 1, false);
 
 	if (list == NULL || list->length == 0) {
 		if (list != NULL)
@@ -245,14 +245,14 @@ handle_list(struct client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		locate_item_list_parse(argv + 1, argc - 1);
+		locate_item_list_parse(argv + 1, argc - 1, false);
 
 		conditionals = locate_item_list_new(1);
 		conditionals->items[0].tag = TAG_ARTIST;
 		conditionals->items[0].needle = g_strdup(argv[2]);
 	} else {
 		conditionals =
-			locate_item_list_parse(argv + 2, argc - 2);
+			locate_item_list_parse(argv + 2, argc - 2, false);
 		if (conditionals == NULL) {
 			command_error(client, ACK_ERROR_ARG,
 				      "not able to parse args");

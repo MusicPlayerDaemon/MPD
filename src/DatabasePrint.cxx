@@ -155,16 +155,9 @@ searchForSongsIn(struct client *client, const char *uri,
 {
 	const DatabaseSelection selection(uri, true);
 
-	struct locate_item_list *new_list
-		= locate_item_list_casefold(criteria);
-
 	using namespace std::placeholders;
-	const auto f = std::bind(SearchPrintSong, client, new_list, _1);
-	bool success = GetDatabase()->Visit(selection, f, error_r);
-
-	locate_item_list_free(new_list);
-
-	return success;
+	const auto f = std::bind(SearchPrintSong, client, criteria, _1);
+	return GetDatabase()->Visit(selection, f, error_r);
 }
 
 static bool

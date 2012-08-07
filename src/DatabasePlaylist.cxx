@@ -66,15 +66,8 @@ search_add_to_playlist(const char *uri, const char *playlist_path_utf8,
 {
 	const DatabaseSelection selection(uri, true);
 
-	struct locate_item_list *new_list
-		= locate_item_list_casefold(criteria);
-
 	using namespace std::placeholders;
 	const auto f = std::bind(SearchAddSong, playlist_path_utf8,
-				 new_list, _1, _2);
-	bool success = GetDatabase()->Visit(selection, f, error_r);
-
-	locate_item_list_free(new_list);
-
-	return success;
+				 criteria, _1, _2);
+	return GetDatabase()->Visit(selection, f, error_r);
 }

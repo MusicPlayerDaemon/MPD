@@ -677,7 +677,7 @@ static enum command_return
 handle_playlistfind(struct client *client, int argc, char *argv[])
 {
 	struct locate_item_list *list =
-		locate_item_list_parse(argv + 1, argc - 1);
+		locate_item_list_parse(argv + 1, argc - 1, false);
 
 	if (list == NULL || list->length == 0) {
 		if (list != NULL)
@@ -698,7 +698,7 @@ static enum command_return
 handle_playlistsearch(struct client *client, int argc, char *argv[])
 {
 	struct locate_item_list *list =
-		locate_item_list_parse(argv + 1, argc - 1);
+		locate_item_list_parse(argv + 1, argc - 1, true);
 
 	if (list == NULL || list->length == 0) {
 		if (list != NULL)
