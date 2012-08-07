@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "command.h"
+#include "CommandError.h"
 #include "protocol/argparser.h"
 #include "protocol/result.h"
 #include "player_control.h"
@@ -109,110 +110,6 @@ struct command {
 	int max;
 	enum command_return (*handler)(struct client *client, int argc, char **argv);
 };
-
-static enum command_return
-print_playlist_result(struct client *client,
-		      enum playlist_result result)
-{
-	switch (result) {
-	case PLAYLIST_RESULT_SUCCESS:
-		return COMMAND_RETURN_OK;
-
-	case PLAYLIST_RESULT_ERRNO:
-		command_error(client, ACK_ERROR_SYSTEM, "%s",
-			      g_strerror(errno));
-		return COMMAND_RETURN_ERROR;
-
-	case PLAYLIST_RESULT_DENIED:
-		command_error(client, ACK_ERROR_PERMISSION, "Access denied");
-		return COMMAND_RETURN_ERROR;
-
-	case PLAYLIST_RESULT_NO_SUCH_SONG:
-		command_error(client, ACK_ERROR_NO_EXIST, "No such song");
-		return COMMAND_RETURN_ERROR;
-
-	case PLAYLIST_RESULT_NO_SUCH_LIST:
-		command_error(client, ACK_ERROR_NO_EXIST, "No such playlist");
-		return COMMAND_RETURN_ERROR;
-
-	case PLAYLIST_RESULT_LIST_EXISTS:
-		command_error(client, ACK_ERROR_EXIST,
-			      "Playlist already exists");
-		return COMMAND_RETURN_ERROR;
-
-	case PLAYLIST_RESULT_BAD_NAME:
-		command_error(client, ACK_ERROR_ARG,
-			      "playlist name is invalid: "
-			      "playlist names may not contain slashes,"
-			      " newlines or carriage returns");
-		return COMMAND_RETURN_ERROR;
-
-	case PLAYLIST_RESULT_BAD_RANGE:
-		command_error(client, ACK_ERROR_ARG, "Bad song index");
-		return COMMAND_RETURN_ERROR;
-
-	case PLAYLIST_RESULT_NOT_PLAYING:
-		command_error(client, ACK_ERROR_PLAYER_SYNC, "Not playing");
-		return COMMAND_RETURN_ERROR;
-
-	case PLAYLIST_RESULT_TOO_LARGE:
-		command_error(client, ACK_ERROR_PLAYLIST_MAX,
-			      "playlist is at the max size");
-		return COMMAND_RETURN_ERROR;
-
-	case PLAYLIST_RESULT_DISABLED:
-		command_error(client, ACK_ERROR_UNKNOWN,
-			      "stored playlist support is disabled");
-		return COMMAND_RETURN_ERROR;
-	}
-
-	assert(0);
-	return COMMAND_RETURN_ERROR;
-}
-
-/**
- * Send the GError to the client and free the GError.
- */
-static enum command_return
-print_error(struct client *client, GError *error)
-{
-	assert(client != NULL);
-	assert(error != NULL);
-
-	g_warning("%s", error->message);
-
-	if (error->domain == playlist_quark()) {
-		enum playlist_result result = error->code;
-		g_error_free(error);
-		return print_playlist_result(client, result);
-	} else if (error->domain == ack_quark()) {
-		command_error(client, error->code, "%s", error->message);
-		g_error_free(error);
-		return COMMAND_RETURN_ERROR;
-	} else if (error->domain == db_quark()) {
-		switch ((enum db_error)error->code) {
-		case DB_DISABLED:
-			command_error(client, ACK_ERROR_NO_EXIST, "%s",
-				      error->message);
-			g_error_free(error);
-			return COMMAND_RETURN_ERROR;
-
-		case DB_NOT_FOUND:
-			g_error_free(error);
-			command_error(client, ACK_ERROR_NO_EXIST, "Not found");
-			return COMMAND_RETURN_ERROR;
-		}
-	} else if (error->domain == g_file_error_quark()) {
-		command_error(client, ACK_ERROR_SYSTEM, "%s",
-			      g_strerror(error->code));
-		g_error_free(error);
-		return COMMAND_RETURN_ERROR;
-	}
-
-	g_error_free(error);
-	command_error(client, ACK_ERROR_UNKNOWN, "error");
-	return COMMAND_RETURN_ERROR;
-}
 
 static void
 print_spl_list(struct client *client, GPtrArray *list)

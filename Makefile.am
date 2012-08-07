@@ -237,6 +237,7 @@ src_mpd_SOURCES = \
 	src/audio_parser.c \
 	src/protocol/argparser.c src/protocol/argparser.h \
 	src/protocol/result.c src/protocol/result.h \
+	src/CommandError.cxx src/CommandError.h \
 	src/command.c \
 	src/idle.c \
 	src/cmdline.c \

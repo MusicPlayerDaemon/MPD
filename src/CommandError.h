@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,32 +17,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_COMMAND_H
-#define MPD_COMMAND_H
+#ifndef MPD_COMMAND_ERROR_H
+#define MPD_COMMAND_ERROR_H
 
-#include "ack.h"
+#include "command.h"
+#include "playlist_error.h"
 
-#include <stdbool.h>
-
-enum command_return {
-	COMMAND_RETURN_ERROR = -1,
-	COMMAND_RETURN_OK = 0,
-	COMMAND_RETURN_KILL = 10,
-	COMMAND_RETURN_CLOSE = 20,
-};
-
-struct client;
+#include <glib.h>
 
 G_BEGIN_DECLS
 
-void command_init(void);
-
-void command_finish(void);
-
 enum command_return
-command_process(struct client *client, unsigned num, char *line);
+print_playlist_result(struct client *client, enum playlist_result result);
 
-void command_success(struct client *client);
+/**
+ * Send the GError to the client and free the GError.
+ */
+enum command_return
+print_error(struct client *client, GError *error);
 
 G_END_DECLS
 
