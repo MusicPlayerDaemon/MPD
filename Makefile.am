@@ -1010,6 +1010,7 @@ noinst_PROGRAMS = \
 	$(C_TESTS) \
 	test/read_conf \
 	test/run_resolver \
+	test/DumpDatabase \
 	test/run_input \
 	test/dump_text_file \
 	test/dump_playlist \
@@ -1039,6 +1040,21 @@ test_run_resolver_LDADD = \
 	$(GLIB_LIBS)
 test_run_resolver_SOURCES = test/run_resolver.c \
 	src/resolver.c
+
+test_DumpDatabase_LDADD = \
+	libdb_plugins.a \
+	libutil.a \
+	$(GLIB_LIBS)
+test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
+	src/DatabaseRegistry.cxx \
+	src/Directory.cxx src/directory_save.c \
+	src/playlist_vector.c src/playlist_database.c \
+	src/db_lock.c src/db_save.c \
+	src/song.c src/song_sort.c src/song_save.c \
+	src/tag.c src/tag_pool.c src/tag_save.c \
+	src/path.c \
+	src/text_file.c \
+	src/conf.c src/tokenizer.c src/utils.c src/string_util.c
 
 test_run_input_LDADD = \
 	$(INPUT_LIBS) \
