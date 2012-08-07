@@ -48,10 +48,6 @@ queue_print_changes_position(struct client *client, const struct queue *queue,
 			     uint32_t version);
 
 void
-queue_search(struct client *client, const struct queue *queue,
-	     const struct locate_item_list *criteria);
-
-void
 queue_find(struct client *client, const struct queue *queue,
 	   const struct locate_item_list *criteria);
 

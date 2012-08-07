@@ -54,13 +54,7 @@ locate_item_list_free(struct locate_item_list *list);
 gcc_pure
 gcc_nonnull(1,2)
 bool
-locate_song_search(const struct song *song,
-		   const struct locate_item_list *criteria);
-
-gcc_pure
-gcc_nonnull(1,2)
-bool
-locate_song_match(const struct song *song,
-		   const struct locate_item_list *criteria);
+locate_list_song_match(const struct song *song,
+		       const struct locate_item_list *criteria);
 
 #endif

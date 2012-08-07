@@ -110,7 +110,7 @@ handle_search(struct client *client, int argc, char *argv[])
 	}
 
 	GError *error = NULL;
-	enum command_return ret = searchForSongsIn(client, "", list, &error)
+	enum command_return ret = findSongsIn(client, "", list, &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
 
@@ -131,8 +131,8 @@ handle_searchadd(struct client *client, int argc, char *argv[])
 	}
 
 	GError *error = NULL;
-	enum command_return ret = search_add_songs(client->player_control,
-						   "", list, &error)
+	enum command_return ret =
+		findAddIn(client->player_control, "", list, &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
 
@@ -205,9 +205,9 @@ enum command_return
 handle_list(struct client *client, int argc, char *argv[])
 {
 	struct locate_item_list *conditionals;
-	int tagType = locate_parse_type(argv[1]);
+	unsigned tagType = locate_parse_type(argv[1]);
 
-	if (tagType < 0) {
+	if (tagType == TAG_NUM_OF_ITEM_TYPES) {
 		command_error(client, ACK_ERROR_ARG, "\"%s\" is not known", argv[1]);
 		return COMMAND_RETURN_ERROR;
 	}

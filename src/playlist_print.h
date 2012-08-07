@@ -69,13 +69,6 @@ playlist_print_find(struct client *client, const struct playlist *playlist,
 		    const struct locate_item_list *list);
 
 /**
- * Search for songs in the playlist.
- */
-void
-playlist_print_search(struct client *client, const struct playlist *playlist,
-		      const struct locate_item_list *list);
-
-/**
  * Print detailed changes since the specified playlist version.
  */
 void

@@ -55,7 +55,7 @@ SearchAddSong(const char *playlist_path_utf8,
 	      const struct locate_item_list *criteria,
 	      song &song, GError **error_r)
 {
-	return !locate_song_search(&song, criteria) ||
+	return !locate_list_song_match(&song, criteria) ||
 		spl_append_song(playlist_path_utf8, &song, error_r);
 }
 

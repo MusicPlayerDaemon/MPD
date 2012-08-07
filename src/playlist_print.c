@@ -94,13 +94,6 @@ playlist_print_find(struct client *client, const struct playlist *playlist,
 }
 
 void
-playlist_print_search(struct client *client, const struct playlist *playlist,
-		      const struct locate_item_list *list)
-{
-	queue_search(client, &playlist->queue, list);
-}
-
-void
 playlist_print_changes_info(struct client *client,
 			    const struct playlist *playlist,
 			    uint32_t version)

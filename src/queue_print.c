@@ -92,25 +92,13 @@ queue_print_changes_position(struct client *client, const struct queue *queue,
 }
 
 void
-queue_search(struct client *client, const struct queue *queue,
-	     const struct locate_item_list *criteria)
-{
-	for (unsigned i = 0; i < queue_length(queue); i++) {
-		const struct song *song = queue_get(queue, i);
-
-		if (locate_song_search(song, criteria))
-			queue_print_song_info(client, queue, i);
-	}
-}
-
-void
 queue_find(struct client *client, const struct queue *queue,
 	   const struct locate_item_list *criteria)
 {
 	for (unsigned i = 0; i < queue_length(queue); i++) {
 		const struct song *song = queue_get(queue, i);
 
-		if (locate_song_match(song, criteria))
+		if (locate_list_song_match(song, criteria))
 			queue_print_song_info(client, queue, i);
 	}
 }

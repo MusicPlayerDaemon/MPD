@@ -25,6 +25,7 @@
 
 #include <glib.h>
 
+#include <assert.h>
 #include <stdlib.h>
 
 #define LOCATE_TAG_FILE_KEY     "file"
@@ -34,6 +35,9 @@
 /* struct used for search, find, list queries */
 struct locate_item {
 	uint8_t tag;
+
+	bool fold_case;
+
 	/* what we are looking for */
 	char *needle;
 };
@@ -72,6 +76,7 @@ locate_item_init(struct locate_item *item,
 	if (item->tag == TAG_NUM_OF_ITEM_TYPES)
 		return false;
 
+	item->fold_case = fold_case;
 	item->needle = fold_case
 		? g_utf8_casefold(needle, -1)
 		: g_strdup(needle);
@@ -104,6 +109,7 @@ locate_item_list_new_single(unsigned tag, const char *needle)
 {
 	struct locate_item_list *list = locate_item_list_new(1);
 	list->items[0].tag = tag;
+	list->items[0].fold_case = false;
 	list->items[0].needle = g_strdup(needle);
 	return list;
 }
@@ -129,95 +135,38 @@ locate_item_list_parse(char *argv[], unsigned argc, bool fold_case)
 
 gcc_pure
 static bool
-locate_tag_search(const struct song *song, enum tag_type type, const char *str)
+locate_string_match(const struct locate_item *item, const char *value)
 {
-	bool ret = false;
+	assert(item != NULL);
+	assert(value != NULL);
 
-	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
-		char *uri = song_get_uri(song);
-		char *p = g_utf8_casefold(uri, -1);
-		g_free(uri);
-
-		if (strstr(p, str))
-			ret = true;
+	if (item->fold_case) {
+		char *p = g_utf8_casefold(value, -1);
+		const bool result = strstr(p, item->needle) != NULL;
 		g_free(p);
-		if (ret == 1 || type == LOCATE_TAG_FILE_TYPE)
-			return ret;
+		return result;
+	} else {
+		return strcmp(value, item->needle) == 0;
 	}
-
-	if (!song->tag)
-		return false;
-
-	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
-	memset(visited_types, 0, sizeof(visited_types));
-
-	for (unsigned i = 0; i < song->tag->num_items && !ret; i++) {
-		visited_types[song->tag->items[i]->type] = true;
-		if (type != LOCATE_TAG_ANY_TYPE &&
-		    song->tag->items[i]->type != type) {
-			continue;
-		}
-
-		char *duplicate = g_utf8_casefold(song->tag->items[i]->value, -1);
-		if (*str && strstr(duplicate, str))
-			ret = true;
-		g_free(duplicate);
-	}
-
-	/** If the search critieron was not visited during the sweep
-	 * through the song's tag, it means this field is absent from
-	 * the tag or empty. Thus, if the searched string is also
-	 *  empty (first char is a \0), then it's a match as well and
-	 *  we should return true.
-	 */
-	if (!*str && !visited_types[type])
-		return true;
-
-	return ret;
-}
-
-bool
-locate_song_search(const struct song *song,
-		   const struct locate_item_list *criteria)
-{
-	for (unsigned i = 0; i < criteria->length; i++)
-		if (!locate_tag_search(song, criteria->items[i].tag,
-				       criteria->items[i].needle))
-			return false;
-
-	return true;
 }
 
 gcc_pure
 static bool
-locate_tag_match(const struct song *song, enum tag_type type, const char *str)
+locate_tag_match(const struct locate_item *item, const struct tag *tag)
 {
-	if (type == LOCATE_TAG_FILE_TYPE || type == LOCATE_TAG_ANY_TYPE) {
-		char *uri = song_get_uri(song);
-		bool matches = strcmp(str, uri) == 0;
-		g_free(uri);
-
-		if (matches)
-			return true;
-
-		if (type == LOCATE_TAG_FILE_TYPE)
-			return false;
-	}
-
-	if (!song->tag)
-		return false;
+	assert(item != NULL);
+	assert(tag != NULL);
 
 	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
 	memset(visited_types, 0, sizeof(visited_types));
 
-	for (unsigned i = 0; i < song->tag->num_items; i++) {
-		visited_types[song->tag->items[i]->type] = true;
-		if (type != LOCATE_TAG_ANY_TYPE &&
-		    song->tag->items[i]->type != type) {
+	for (unsigned i = 0; i < tag->num_items; i++) {
+		visited_types[tag->items[i]->type] = true;
+		if (item->tag != LOCATE_TAG_ANY_TYPE &&
+		    tag->items[i]->type != item->tag)
 			continue;
-		}
 
-		if (0 == strcmp(str, song->tag->items[i]->value))
+		if (locate_string_match(item, tag->items[i]->value))
 			return true;
 	}
 
@@ -227,19 +176,36 @@ locate_tag_match(const struct song *song, enum tag_type type, const char *str)
 	 *  empty (first char is a \0), then it's a match as well and
 	 *  we should return true.
 	 */
-	if (!*str && !visited_types[type])
+	if (*item->needle == 0 && item->tag != LOCATE_TAG_ANY_TYPE &&
+	    !visited_types[item->tag])
 		return true;
 
 	return false;
 }
 
+gcc_pure
+static bool
+locate_song_match(const struct locate_item *item, const struct song *song)
+{
+	if (item->tag == LOCATE_TAG_FILE_TYPE ||
+	    item->tag == LOCATE_TAG_ANY_TYPE) {
+		char *uri = song_get_uri(song);
+		const bool result = locate_string_match(item, uri);
+		g_free(uri);
+
+		if (result || item->tag == LOCATE_TAG_FILE_TYPE)
+			return result;
+	}
+
+	return song->tag != NULL && locate_tag_match(item, song->tag);
+}
+
 bool
-locate_song_match(const struct song *song,
-		  const struct locate_item_list *criteria)
+locate_list_song_match(const struct song *song,
+		       const struct locate_item_list *criteria)
 {
 	for (unsigned i = 0; i < criteria->length; i++)
-		if (!locate_tag_match(song, criteria->items[i].tag,
-				      criteria->items[i].needle))
+		if (!locate_song_match(&criteria->items[i], song))
 			return false;
 
 	return true;

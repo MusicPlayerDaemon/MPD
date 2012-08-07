@@ -46,12 +46,6 @@ printInfoForAllIn(struct client *client, const char *uri_utf8,
 
 gcc_nonnull(1,2,3)
 bool
-searchForSongsIn(struct client *client, const char *name,
-		 const struct locate_item_list *criteria,
-		 GError **error_r);
-
-gcc_nonnull(1,2,3)
-bool
 findSongsIn(struct client *client, const char *name,
 	    const struct locate_item_list *criteria,
 	    GError **error_r);

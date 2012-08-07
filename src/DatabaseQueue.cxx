@@ -61,7 +61,7 @@ MatchAddSong(struct player_control *pc,
 	     const struct locate_item_list *criteria,
 	     song &song, GError **error_r)
 {
-	return !locate_song_match(&song, criteria) ||
+	return !locate_list_song_match(&song, criteria) ||
 		AddToQueue(pc, song, error_r);
 }
 
@@ -73,26 +73,5 @@ findAddIn(struct player_control *pc, const char *uri,
 
 	using namespace std::placeholders;
 	const auto f = std::bind(MatchAddSong, pc, criteria, _1, _2);
-	return GetDatabase()->Visit(selection, f, error_r);
-}
-
-static bool
-SearchAddSong(struct player_control *pc,
-	      const struct locate_item_list *criteria,
-	      song &song, GError **error_r)
-{
-	return !locate_song_search(&song, criteria) ||
-		AddToQueue(pc, song, error_r);
-}
-
-bool
-search_add_songs(struct player_control *pc, const char *uri,
-		 const struct locate_item_list *criteria,
-		 GError **error_r)
-{
-	const DatabaseSelection selection(uri, true);
-
-	using namespace std::placeholders;
-	const auto f = std::bind(SearchAddSong, pc, criteria, _1, _2);
 	return GetDatabase()->Visit(selection, f, error_r);
 }

@@ -702,7 +702,7 @@ handle_playlistsearch(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	playlist_print_search(client, &g_playlist, list);
+	playlist_print_find(client, &g_playlist, list);
 
 	locate_item_list_free(list);
 
