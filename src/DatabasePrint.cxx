@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
+#include "DatabasePrint.hxx"
 
 extern "C" {
-#include "db_print.h"
 #include "db_selection.h"
 #include "locate.h"
 #include "database.h"
@@ -125,7 +125,7 @@ PrintPlaylistFull(struct client *client,
 }
 
 bool
-db_selection_print(struct client *client, const struct db_selection *selection,
+db_selection_print(struct client *client, const db_selection &selection,
 		   bool full, GError **error_r)
 {
 	using namespace std::placeholders;
@@ -135,7 +135,7 @@ db_selection_print(struct client *client, const struct db_selection *selection,
 	const auto p = std::bind(full ? PrintPlaylistFull : PrintPlaylistBrief,
 				 client, _1, _2);
 
-	return GetDatabase()->Visit(*selection, d, s, p, error_r);
+	return GetDatabase()->Visit(selection, d, s, p, error_r);
 }
 
 static bool
@@ -241,7 +241,7 @@ printAllIn(struct client *client, const char *uri_utf8, GError **error_r)
 {
 	struct db_selection selection;
 	db_selection_init(&selection, uri_utf8, true);
-	return db_selection_print(client, &selection, false, error_r);
+	return db_selection_print(client, selection, false, error_r);
 }
 
 bool
@@ -250,7 +250,7 @@ printInfoForAllIn(struct client *client, const char *uri_utf8,
 {
 	struct db_selection selection;
 	db_selection_init(&selection, uri_utf8, true);
-	return db_selection_print(client, &selection, true, error_r);
+	return db_selection_print(client, selection, true, error_r);
 }
 
 struct StringLess {

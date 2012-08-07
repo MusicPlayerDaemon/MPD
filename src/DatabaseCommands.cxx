@@ -21,13 +21,13 @@
 #include "DatabaseCommands.hxx"
 #include "DatabaseQueue.hxx"
 #include "DatabasePlaylist.hxx"
+#include "DatabasePrint.hxx"
 #include "CommandError.h"
 #include "client_internal.h"
 #include "tag.h"
 #include "uri.h"
 
 extern "C" {
-#include "db_print.h"
 #include "db_selection.h"
 #include "locate.h"
 #include "protocol/result.h"
@@ -51,7 +51,7 @@ handle_lsinfo2(struct client *client, int argc, char *argv[])
 	db_selection_init(&selection, uri, false);
 
 	GError *error = NULL;
-	if (!db_selection_print(client, &selection, true, &error))
+	if (!db_selection_print(client, selection, true, &error))
 		return print_error(client, error);
 
 	return COMMAND_RETURN_OK;
