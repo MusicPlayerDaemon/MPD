@@ -253,12 +253,6 @@ pc_get_error_message(struct player_control *pc)
 	case PLAYER_ERROR_NOERROR:
 		return NULL;
 
-	case PLAYER_ERROR_FILENOTFOUND:
-		uri = pc_errored_song_uri(pc);
-		error = g_strdup_printf("file \"%s\" does not exist or is inaccessible", uri);
-		g_free(uri);
-		return error;
-
 	case PLAYER_ERROR_FILE:
 		uri = pc_errored_song_uri(pc);
 		error = g_strdup_printf("problems decoding \"%s\"", uri);
@@ -267,15 +261,6 @@ pc_get_error_message(struct player_control *pc)
 
 	case PLAYER_ERROR_AUDIO:
 		return g_strdup("problems opening audio device");
-
-	case PLAYER_ERROR_SYSTEM:
-		return g_strdup("system error occurred");
-
-	case PLAYER_ERROR_UNKTYPE:
-		uri = pc_errored_song_uri(pc);
-		error = g_strdup_printf("file type of \"%s\" is unknown", uri);
-		g_free(uri);
-		return error;
 	}
 
 	assert(false);
