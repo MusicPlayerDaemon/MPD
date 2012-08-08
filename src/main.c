@@ -163,7 +163,6 @@ glue_db_init_and_load(void)
 		if (path != NULL)
 			g_message("Found " CONF_DB_FILE " setting without "
 				  CONF_MUSIC_DIR " - disabling database");
-		db_init(NULL, NULL);
 		return true;
 	}
 
