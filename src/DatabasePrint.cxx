@@ -27,6 +27,7 @@ extern "C" {
 #include "client.h"
 #include "song.h"
 #include "song_print.h"
+#include "time_print.h"
 #include "playlist_vector.h"
 #include "tag.h"
 }
@@ -105,21 +106,7 @@ PrintPlaylistFull(struct client *client,
 {
 	print_playlist_in_directory(client, directory, playlist.name);
 
-#ifndef G_OS_WIN32
-	struct tm tm;
-#endif
-	char timestamp[32];
-	time_t t = playlist.mtime;
-	strftime(timestamp, sizeof(timestamp),
-#ifdef G_OS_WIN32
-		 "%Y-%m-%dT%H:%M:%SZ",
-		 gmtime(&t)
-#else
-		 "%FT%TZ",
-		 gmtime_r(&t, &tm)
-#endif
-		 );
-	client_printf(client, "Last-Modified: %s\n", timestamp);
+	time_print(client, "Last-Modified", playlist.mtime);
 
 	return true;
 }

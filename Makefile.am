@@ -186,6 +186,7 @@ mpd_headers = \
 	src/replay_gain_info.h \
 	src/replay_gain_ape.h \
 	src/sig_handlers.h \
+	src/time_print.c src/time_print.h \
 	src/song.h \
 	src/song_print.h \
 	src/song_save.h \

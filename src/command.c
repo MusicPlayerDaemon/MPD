@@ -30,6 +30,7 @@
 #include "playlist_queue.h"
 #include "playlist_error.h"
 #include "queue_print.h"
+#include "time_print.h"
 #include "ls.h"
 #include "uri.h"
 #include "decoder_print.h"
@@ -115,25 +116,10 @@ print_spl_list(struct client *client, GPtrArray *list)
 	for (unsigned i = 0; i < list->len; ++i) {
 		struct stored_playlist_info *playlist =
 			g_ptr_array_index(list, i);
-		time_t t;
-#ifndef WIN32
-		struct tm tm;
-#endif
-		char timestamp[32];
 
 		client_printf(client, "playlist: %s\n", playlist->name);
 
-		t = playlist->mtime;
-		strftime(timestamp, sizeof(timestamp),
-#ifdef G_OS_WIN32
-			 "%Y-%m-%dT%H:%M:%SZ",
-			 gmtime(&t)
-#else
-			 "%FT%TZ",
-			 gmtime_r(&t, &tm)
-#endif
-			 );
-		client_printf(client, "Last-Modified: %s\n", timestamp);
+		time_print(client, "Last-Modified", playlist->mtime);
 	}
 }
 

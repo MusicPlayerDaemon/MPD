@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "song_print.h"
+#include "time_print.h"
 #include "song.h"
 #include "directory.h"
 #include "tag_print.h"
@@ -63,32 +64,8 @@ song_print_info(struct client *client, struct song *song)
 			      song->start_ms / 1000,
 			      song->start_ms % 1000);
 
-	if (song->mtime > 0) {
-#ifndef G_OS_WIN32
-		struct tm tm;
-#endif
-		const struct tm *tm2;
-
-#ifdef G_OS_WIN32
-		tm2 = gmtime(&song->mtime);
-#else
-		tm2 = gmtime_r(&song->mtime, &tm);
-#endif
-
-		if (tm2 != NULL) {
-			char timestamp[32];
-
-			strftime(timestamp, sizeof(timestamp),
-#ifdef G_OS_WIN32
-				 "%Y-%m-%dT%H:%M:%SZ",
-#else
-				 "%FT%TZ",
-#endif
-				 tm2);
-			client_printf(client, "Last-Modified: %s\n",
-				      timestamp);
-		}
-	}
+	if (song->mtime > 0)
+		time_print(client, "Last-Modified", song->mtime);
 
 	if (song->tag)
 		tag_print(client, song->tag);
