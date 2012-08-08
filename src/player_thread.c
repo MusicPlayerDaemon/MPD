@@ -238,7 +238,7 @@ player_wait_for_decoder(struct player *player)
 	if (decoder_lock_has_failed(dc)) {
 		player_lock(pc);
 		pc->errored_song = dc->song;
-		pc->error = PLAYER_ERROR_FILE;
+		pc->error = PLAYER_ERROR_DECODER;
 		pc->next_song = NULL;
 		player_unlock(pc);
 
@@ -322,7 +322,7 @@ player_open_output(struct player *player)
 		player->paused = true;
 
 		player_lock(pc);
-		pc->error = PLAYER_ERROR_AUDIO;
+		pc->error = PLAYER_ERROR_OUTPUT;
 		pc->state = PLAYER_STATE_PAUSE;
 		player_unlock(pc);
 
@@ -353,7 +353,7 @@ player_check_decoder_startup(struct player *player)
 
 		player_lock(pc);
 		pc->errored_song = dc->song;
-		pc->error = PLAYER_ERROR_FILE;
+		pc->error = PLAYER_ERROR_DECODER;
 		player_unlock(pc);
 
 		return false;
@@ -789,7 +789,7 @@ play_next_chunk(struct player *player)
 
 		player_lock(pc);
 
-		pc->error = PLAYER_ERROR_AUDIO;
+		pc->error = PLAYER_ERROR_OUTPUT;
 
 		/* pause: the user may resume playback as soon as an
 		   audio output becomes available */

@@ -259,13 +259,13 @@ playlist_resume_playback(struct playlist *playlist, struct player_control *pc)
 	assert(pc_get_state(pc) == PLAYER_STATE_STOP);
 
 	error = pc_get_error(pc);
-	if (error == PLAYER_ERROR_NOERROR)
+	if (error == PLAYER_ERROR_NONE)
 		playlist->error_count = 0;
 	else
 		++playlist->error_count;
 
-	if ((playlist->stop_on_error && error != PLAYER_ERROR_NOERROR) ||
-	    error == PLAYER_ERROR_AUDIO ||
+	if ((playlist->stop_on_error && error != PLAYER_ERROR_NONE) ||
+	    error == PLAYER_ERROR_OUTPUT ||
 	    playlist->error_count >= queue_length(&playlist->queue))
 		/* too many errors, or critical error: stop
 		   playback */

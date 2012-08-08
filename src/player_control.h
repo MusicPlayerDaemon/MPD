@@ -66,9 +66,17 @@ enum player_command {
 };
 
 enum player_error {
-	PLAYER_ERROR_NOERROR = 0,
-	PLAYER_ERROR_FILE,
-	PLAYER_ERROR_AUDIO,
+	PLAYER_ERROR_NONE = 0,
+
+	/**
+	 * The decoder has failed to decode the song.
+	 */
+	PLAYER_ERROR_DECODER,
+
+	/**
+	 * The audio output has failed.
+	 */
+	PLAYER_ERROR_OUTPUT,
 };
 
 struct player_status {
