@@ -165,6 +165,53 @@ systemctl start mpd.socket</programlisting>
     </section>
 
     <section>
+      <title>Configuring database plugins</title>
+
+      <para>
+        If a music directory is configured, one database plugin is
+        used.  To configure this plugin, add a
+        <varname>database</varname> block to
+        <filename>mpd.conf</filename>:
+      </para>
+
+      <programlisting>database {
+    plugin "simple"
+    path "/var/lib/mpd/db"
+}
+      </programlisting>
+
+      <para>
+        The following table lists the <varname>database</varname>
+        options valid for all plugins:
+      </para>
+
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>
+                Name
+              </entry>
+              <entry>
+                Description
+              </entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <varname>plugin</varname>
+              </entry>
+              <entry>
+                The name of the plugin.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </section>
+
+    <section>
       <title>Configuring input plugins</title>
 
       <para>
@@ -616,6 +663,78 @@ systemctl start mpd.socket</programlisting>
 
   <chapter>
     <title>Plugin reference</title>
+
+    <section>
+      <title>Database plugins</title>
+
+      <section>
+        <title><varname>simple</varname></title>
+
+        <para>
+          The default plugin.  Stores a copy of the database in
+          memory.  A file is used for permanent storage.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>path</varname>
+                </entry>
+                <entry>
+                  The path of the database file.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
+        <title><varname>proxy</varname></title>
+
+        <para>
+          Provides access to the database of another MPD instance
+          using <filename>libmpdclient</filename>.  Experimental!
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>host</varname>
+                </entry>
+                <entry>
+                  The host name of the "master" MPD instance.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>port</varname>
+                </entry>
+                <entry>
+                  The port number of the "master" MPD instance.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+    </section>
 
     <section>
       <title>Input plugins</title>
