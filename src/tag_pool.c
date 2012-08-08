@@ -22,7 +22,17 @@
 
 #include <assert.h>
 
-GMutex *tag_pool_lock = NULL;
+#if GCC_CHECK_VERSION(4, 2)
+/* workaround for a warning caused by G_STATIC_MUTEX_INIT */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
+
+GStaticMutex tag_pool_lock = G_STATIC_MUTEX_INIT;
+
+#if GCC_CHECK_VERSION(4, 2)
+#pragma GCC diagnostic pop
+#endif
 
 #define NUM_SLOTS 4096
 
@@ -79,19 +89,6 @@ static struct slot *slot_alloc(struct slot *next,
 	memcpy(slot->item.value, value, length);
 	slot->item.value[length] = 0;
 	return slot;
-}
-
-void tag_pool_init(void)
-{
-	g_assert(tag_pool_lock == NULL);
-	tag_pool_lock = g_mutex_new();
-}
-
-void tag_pool_deinit(void)
-{
-	g_assert(tag_pool_lock != NULL);
-	g_mutex_free(tag_pool_lock);
-	tag_pool_lock = NULL;
 }
 
 struct tag_item *

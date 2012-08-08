@@ -21,7 +21,6 @@
 #include "io_thread.h"
 #include "input_init.h"
 #include "input_stream.h"
-#include "tag_pool.h"
 #include "tag_save.h"
 #include "conf.h"
 #include "song.h"
@@ -157,7 +156,6 @@ int main(int argc, char **argv)
 
 	/* initialize MPD */
 
-	tag_pool_init();
 	config_global_init();
 	success = config_read_file(argv[1], &error);
 	if (!success) {
@@ -249,7 +247,6 @@ int main(int argc, char **argv)
 	input_stream_global_finish();
 	io_thread_deinit();
 	config_global_finish();
-	tag_pool_deinit();
 
 	return 0;
 }

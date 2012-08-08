@@ -21,8 +21,8 @@
 #include "io_thread.h"
 #include "input_init.h"
 #include "input_stream.h"
-#include "tag_pool.h"
 #include "tag_save.h"
+#include "tag.h"
 #include "conf.h"
 #include "stdbin.h"
 
@@ -127,7 +127,6 @@ int main(int argc, char **argv)
 
 	/* initialize MPD */
 
-	tag_pool_init();
 	config_global_init();
 
 	io_thread_init();
@@ -179,7 +178,6 @@ int main(int argc, char **argv)
 	io_thread_deinit();
 
 	config_global_finish();
-	tag_pool_deinit();
 
 	return ret;
 }

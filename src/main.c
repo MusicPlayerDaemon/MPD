@@ -53,7 +53,6 @@
 #include "tag.h"
 #include "zeroconf.h"
 #include "event_pipe.h"
-#include "tag_pool.h"
 #include "mpd_error.h"
 
 #ifdef ENABLE_INOTIFY
@@ -359,7 +358,6 @@ int mpd_main(int argc, char *argv[])
 	io_thread_init();
 	winsock_init();
 	idle_init();
-	tag_pool_init();
 	config_global_init();
 
 	success = parse_cmdline(argc, argv, &options, &error);
@@ -544,7 +542,6 @@ int mpd_main(int argc, char *argv[])
 	archive_plugin_deinit_all();
 #endif
 	config_global_finish();
-	tag_pool_deinit();
 	idle_deinit();
 	stats_global_finish();
 	io_thread_deinit();

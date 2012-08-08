@@ -168,9 +168,9 @@ static void tag_delete_item(struct tag *tag, unsigned idx)
 	assert(idx < tag->num_items);
 	tag->num_items--;
 
-	g_mutex_lock(tag_pool_lock);
+	g_static_mutex_lock(&tag_pool_lock);
 	tag_pool_put_item(tag->items[idx]);
-	g_mutex_unlock(tag_pool_lock);
+	g_static_mutex_unlock(&tag_pool_lock);
 
 	if (tag->num_items - idx > 0) {
 		memmove(tag->items + idx, tag->items + idx + 1,
@@ -202,10 +202,10 @@ void tag_free(struct tag *tag)
 
 	assert(tag != NULL);
 
-	g_mutex_lock(tag_pool_lock);
+	g_static_mutex_lock(&tag_pool_lock);
 	for (i = tag->num_items; --i >= 0; )
 		tag_pool_put_item(tag->items[i]);
-	g_mutex_unlock(tag_pool_lock);
+	g_static_mutex_unlock(&tag_pool_lock);
 
 	if (tag->items == bulk.items) {
 #ifndef NDEBUG
@@ -231,10 +231,10 @@ struct tag *tag_dup(const struct tag *tag)
 	ret->num_items = tag->num_items;
 	ret->items = ret->num_items > 0 ? g_malloc(items_size(tag)) : NULL;
 
-	g_mutex_lock(tag_pool_lock);
+	g_static_mutex_lock(&tag_pool_lock);
 	for (unsigned i = 0; i < tag->num_items; i++)
 		ret->items[i] = tag_pool_dup_item(tag->items[i]);
-	g_mutex_unlock(tag_pool_lock);
+	g_static_mutex_unlock(&tag_pool_lock);
 
 	return ret;
 }
@@ -255,7 +255,7 @@ tag_merge(const struct tag *base, const struct tag *add)
 	ret->num_items = base->num_items + add->num_items;
 	ret->items = ret->num_items > 0 ? g_malloc(items_size(ret)) : NULL;
 
-	g_mutex_lock(tag_pool_lock);
+	g_static_mutex_lock(&tag_pool_lock);
 
 	/* copy all items from "add" */
 
@@ -270,7 +270,7 @@ tag_merge(const struct tag *base, const struct tag *add)
 		if (!tag_has_type(add, base->items[i]->type))
 			ret->items[n++] = tag_pool_dup_item(base->items[i]);
 
-	g_mutex_unlock(tag_pool_lock);
+	g_static_mutex_unlock(&tag_pool_lock);
 
 	assert(n <= ret->num_items);
 
@@ -502,9 +502,9 @@ tag_add_item_internal(struct tag *tag, enum tag_type type,
 		       items_size(tag) - sizeof(struct tag_item *));
 	}
 
-	g_mutex_lock(tag_pool_lock);
+	g_static_mutex_lock(&tag_pool_lock);
 	tag->items[i] = tag_pool_get_item(type, value, len);
-	g_mutex_unlock(tag_pool_lock);
+	g_static_mutex_unlock(&tag_pool_lock);
 
 	g_free(p);
 }

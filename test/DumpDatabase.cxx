@@ -27,7 +27,7 @@
 
 extern "C" {
 #include "conf.h"
-#include "tag_pool.h"
+#include "tag.h"
 }
 
 #include <iostream>
@@ -95,7 +95,6 @@ main(int argc, char **argv)
 
 	/* initialize MPD */
 
-	tag_pool_init();
 	config_global_init();
 
 	if (!config_read_file(config_path, &error)) {
@@ -147,7 +146,6 @@ main(int argc, char **argv)
 	/* deinitialize everything */
 
 	config_global_finish();
-	tag_pool_deinit();
 
 	return EXIT_SUCCESS;
 }
