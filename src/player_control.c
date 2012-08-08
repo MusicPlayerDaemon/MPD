@@ -47,7 +47,7 @@ pc_new(unsigned buffer_chunks, unsigned int buffered_before_play)
 	pc->cond = g_cond_new();
 
 	pc->command = PLAYER_COMMAND_NONE;
-	pc->error = PLAYER_ERROR_NONE;
+	pc->error_type = PLAYER_ERROR_NONE;
 	pc->state = PLAYER_STATE_STOP;
 	pc->cross_fade_seconds = 0;
 	pc->mixramp_db = 0;
@@ -80,7 +80,7 @@ void
 pc_song_deleted(struct player_control *pc, const struct song *song)
 {
 	if (pc->errored_song == song) {
-		pc->error = PLAYER_ERROR_NONE;
+		pc->error_type = PLAYER_ERROR_NONE;
 		pc->errored_song = NULL;
 	}
 }
@@ -232,7 +232,7 @@ void
 pc_clear_error(struct player_control *pc)
 {
 	player_lock(pc);
-	pc->error = PLAYER_ERROR_NONE;
+	pc->error_type = PLAYER_ERROR_NONE;
 	pc->errored_song = NULL;
 	player_unlock(pc);
 }
@@ -249,7 +249,7 @@ pc_get_error_message(struct player_control *pc)
 	char *error;
 	char *uri;
 
-	switch (pc->error) {
+	switch (pc->error_type) {
 	case PLAYER_ERROR_NONE:
 		return NULL;
 

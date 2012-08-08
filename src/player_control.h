@@ -108,7 +108,9 @@ struct player_control {
 
 	enum player_command command;
 	enum player_state state;
-	enum player_error error;
+
+	enum player_error error_type;
+
 	uint16_t bit_rate;
 	struct audio_format audio_format;
 	float total_time;
@@ -236,9 +238,9 @@ char *
 pc_get_error_message(struct player_control *pc);
 
 static inline enum player_error
-pc_get_error(struct player_control *pc)
+pc_get_error_type(struct player_control *pc)
 {
-	return pc->error;
+	return pc->error_type;
 }
 
 void

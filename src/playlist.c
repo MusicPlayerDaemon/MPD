@@ -258,7 +258,7 @@ playlist_resume_playback(struct playlist *playlist, struct player_control *pc)
 	assert(playlist->playing);
 	assert(pc_get_state(pc) == PLAYER_STATE_STOP);
 
-	error = pc_get_error(pc);
+	error = pc_get_error_type(pc);
 	if (error == PLAYER_ERROR_NONE)
 		playlist->error_count = 0;
 	else
