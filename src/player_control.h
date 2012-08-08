@@ -213,8 +213,11 @@ pc_kill(struct player_control *pc);
 void
 pc_get_status(struct player_control *pc, struct player_status *status);
 
-enum player_state
-pc_get_state(struct player_control *pc);
+static inline enum player_state
+pc_get_state(struct player_control *pc)
+{
+	return pc->state;
+}
 
 void
 pc_clear_error(struct player_control *pc);
@@ -227,8 +230,11 @@ pc_clear_error(struct player_control *pc);
 char *
 pc_get_error_message(struct player_control *pc);
 
-enum player_error
-pc_get_error(struct player_control *pc);
+static inline enum player_error
+pc_get_error(struct player_control *pc)
+{
+	return pc->error;
+}
 
 void
 pc_stop(struct player_control *pc);
@@ -257,16 +263,25 @@ pc_get_cross_fade(const struct player_control *pc);
 void
 pc_set_mixramp_db(struct player_control *pc, float mixramp_db);
 
-float
-pc_get_mixramp_db(const struct player_control *pc);
+static inline float
+pc_get_mixramp_db(const struct player_control *pc)
+{
+	return pc->mixramp_db;
+}
 
 void
 pc_set_mixramp_delay(struct player_control *pc, float mixramp_delay_seconds);
 
-float
-pc_get_mixramp_delay(const struct player_control *pc);
+static inline float
+pc_get_mixramp_delay(const struct player_control *pc)
+{
+	return pc->mixramp_delay_seconds;
+}
 
-double
-pc_get_total_play_time(const struct player_control *pc);
+static inline double
+pc_get_total_play_time(const struct player_control *pc)
+{
+	return pc->total_play_time;
+}
 
 #endif

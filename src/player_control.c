@@ -228,12 +228,6 @@ pc_get_status(struct player_control *pc, struct player_status *status)
 	player_unlock(pc);
 }
 
-enum player_state
-pc_get_state(struct player_control *pc)
-{
-	return pc->state;
-}
-
 void
 pc_clear_error(struct player_control *pc)
 {
@@ -241,12 +235,6 @@ pc_clear_error(struct player_control *pc)
 	pc->error = PLAYER_ERROR_NOERROR;
 	pc->errored_song = NULL;
 	player_unlock(pc);
-}
-
-enum player_error
-pc_get_error(struct player_control *pc)
-{
-	return pc->error;
 }
 
 static char *
@@ -348,12 +336,6 @@ pc_set_cross_fade(struct player_control *pc, float cross_fade_seconds)
 	idle_add(IDLE_OPTIONS);
 }
 
-float
-pc_get_mixramp_db(const struct player_control *pc)
-{
-	return pc->mixramp_db;
-}
-
 void
 pc_set_mixramp_db(struct player_control *pc, float mixramp_db)
 {
@@ -362,22 +344,10 @@ pc_set_mixramp_db(struct player_control *pc, float mixramp_db)
 	idle_add(IDLE_OPTIONS);
 }
 
-float
-pc_get_mixramp_delay(const struct player_control *pc)
-{
-	return pc->mixramp_delay_seconds;
-}
-
 void
 pc_set_mixramp_delay(struct player_control *pc, float mixramp_delay_seconds)
 {
 	pc->mixramp_delay_seconds = mixramp_delay_seconds;
 
 	idle_add(IDLE_OPTIONS);
-}
-
-double
-pc_get_total_play_time(const struct player_control *pc)
-{
-	return pc->total_play_time;
 }
