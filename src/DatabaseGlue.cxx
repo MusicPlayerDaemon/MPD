@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "DatabaseGlue.hxx"
+#include "DatabaseRegistry.hxx"
 
 extern "C" {
 #include "database.h"
@@ -56,7 +57,16 @@ db_init(const struct config_param *param, GError **error_r)
 	assert(db == NULL);
 	assert(!db_is_open);
 
-	db = simple_db_plugin.create(param, error_r);
+	const char *plugin_name =
+		config_get_block_string(param, "plugin", "simple");
+	const DatabasePlugin *plugin = GetDatabasePluginByName(plugin_name);
+	if (plugin == NULL) {
+		g_set_error(error_r, db_quark(), 0,
+			    "No such database plugin: %s", plugin_name);
+		return false;
+	}
+
+	db = plugin->create(param, error_r);
 	return db != NULL;
 }
 
