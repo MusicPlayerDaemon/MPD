@@ -51,21 +51,12 @@ static Database *db;
 static bool db_is_open;
 
 bool
-db_init(const struct config_param *path, GError **error_r)
+db_init(const struct config_param *param, GError **error_r)
 {
 	assert(db == NULL);
 	assert(!db_is_open);
 
-	if (path == NULL)
-		return true;
-
-	struct config_param *param = config_new_param("database", path->line);
-	config_add_block_param(param, "path", path->value, path->line);
-
 	db = simple_db_plugin.create(param, error_r);
-
-	config_param_free(param);
-
 	return db != NULL;
 }
 

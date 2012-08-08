@@ -35,10 +35,10 @@ struct db_visitor;
 /**
  * Initialize the database library.
  *
- * @param path the absolute path of the database file
+ * @param param the database configuration block
  */
 bool
-db_init(const struct config_param *path, GError **error_r);
+db_init(const struct config_param *param, GError **error_r);
 
 void
 db_finish(void);

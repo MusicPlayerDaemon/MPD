@@ -169,8 +169,13 @@ glue_db_init_and_load(void)
 	if (path == NULL)
 		MPD_ERROR(CONF_DB_FILE " setting missing");
 
-	if (!db_init(path, &error))
+	struct config_param *param = config_new_param("database", path->line);
+	config_add_block_param(param, "path", path->value, path->line);
+
+	if (!db_init(param, &error))
 		MPD_ERROR("%s", error->message);
+
+	config_param_free(param);
 
 	ret = db_load(&error);
 	if (!ret)
