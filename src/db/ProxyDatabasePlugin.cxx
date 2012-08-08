@@ -168,8 +168,9 @@ Visit(struct mpd_connection *connection, directory &parent,
 		directory_new(mpd_directory_get_path(directory), &parent);
 
 	bool success = (!visit_directory || visit_directory(*d, error_r)) &&
-		Visit(connection, *d, recursive,
-		      visit_directory, visit_song, visit_playlist, error_r);
+		(!recursive ||
+		 Visit(connection, *d, recursive,
+		       visit_directory, visit_song, visit_playlist, error_r));
 	directory_free(d);
 
 	return success;
