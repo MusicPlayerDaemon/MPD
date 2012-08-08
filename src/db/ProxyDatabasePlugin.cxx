@@ -49,6 +49,7 @@ class ProxyDatabase : public Database {
 	unsigned port;
 
 	struct mpd_connection *connection;
+	struct directory *root;
 
 public:
 	static Database *Create(const struct config_param *param,
@@ -124,6 +125,8 @@ ProxyDatabase::Open(GError **error_r)
 		return false;
 	}
 
+	root = directory_new_root();
+
 	return true;
 }
 
@@ -132,6 +135,7 @@ ProxyDatabase::Close()
 {
 	assert(connection != nullptr);
 
+	directory_free(root);
 	mpd_connection_free(connection);
 }
 
@@ -331,11 +335,14 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 	// TODO: match
 	// TODO: auto-reconnect
 
-	struct directory *parent = directory_new(selection.uri, nullptr);
+	struct directory *parent = *selection.uri == 0
+		? root
+		: directory_new(selection.uri, root);
 	bool success = ::Visit(connection, *parent, selection.recursive,
 			       visit_directory, visit_song, visit_playlist,
 			       error_r);
-	directory_free(parent);
+	if (parent != root)
+		directory_free(parent);
 	return success;
 }
 
