@@ -26,6 +26,8 @@
 #ifndef OUTPUT_ALL_H
 #define OUTPUT_ALL_H
 
+#include "gerror.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -84,7 +86,8 @@ audio_output_all_enable_disable(void);
  */
 bool
 audio_output_all_open(const struct audio_format *audio_format,
-		      struct music_buffer *buffer);
+		      struct music_buffer *buffer,
+		      GError **error_r);
 
 /**
  * Closes all audio outputs.
@@ -108,7 +111,7 @@ audio_output_all_release(void);
  * (all closed then)
  */
 bool
-audio_output_all_play(struct music_chunk *chunk);
+audio_output_all_play(struct music_chunk *chunk, GError **error_r);
 
 /**
  * Checks if the output devices have drained their music pipe, and

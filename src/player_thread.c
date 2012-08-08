@@ -305,7 +305,9 @@ player_open_output(struct player *player)
 	assert(pc->state == PLAYER_STATE_PLAY ||
 	       pc->state == PLAYER_STATE_PAUSE);
 
-	if (audio_output_all_open(&player->play_audio_format, player_buffer)) {
+	GError *error = NULL;
+	if (audio_output_all_open(&player->play_audio_format, player_buffer,
+				  &error)) {
 		player->output_open = true;
 		player->paused = false;
 
@@ -315,6 +317,9 @@ player_open_output(struct player *player)
 
 		return true;
 	} else {
+		g_warning("%s", error->message);
+		g_error_free(error);
+
 		player->output_open = false;
 
 		/* pause: the user may resume playback as soon as an
@@ -429,7 +434,11 @@ player_send_silence(struct player *player)
 	chunk->length = num_frames * frame_size;
 	memset(chunk->data, 0, chunk->length);
 
-	if (!audio_output_all_play(chunk)) {
+	GError *error = NULL;
+	if (!audio_output_all_play(chunk, &error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+
 		music_buffer_return(player_buffer, chunk);
 		return false;
 	}
@@ -650,7 +659,8 @@ update_song_tag(struct song *song, const struct tag *new_tag)
 static bool
 play_chunk(struct player_control *pc,
 	   struct song *song, struct music_chunk *chunk,
-	   const struct audio_format *format)
+	   const struct audio_format *format,
+	   GError **error_r)
 {
 	assert(music_chunk_check_format(chunk, format));
 
@@ -668,7 +678,7 @@ play_chunk(struct player_control *pc,
 
 	/* send the chunk to the audio outputs */
 
-	if (!audio_output_all_play(chunk))
+	if (!audio_output_all_play(chunk, error_r))
 		return false;
 
 	pc->total_play_time += (double)chunk->length /
@@ -783,8 +793,12 @@ play_next_chunk(struct player *player)
 
 	/* play the current chunk */
 
+	GError *error = NULL;
 	if (!play_chunk(player->pc, player->song, chunk,
-			&player->play_audio_format)) {
+			&player->play_audio_format, &error)) {
+		g_warning("%s", error->message);
+		g_error_free(error);
+
 		music_buffer_return(player_buffer, chunk);
 
 		player_lock(pc);

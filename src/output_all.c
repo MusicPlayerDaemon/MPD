@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "output_all.h"
+#include "output_error.h"
 #include "output_internal.h"
 #include "output_control.h"
 #include "chunk.h"
@@ -270,7 +271,7 @@ audio_output_all_update(void)
 }
 
 bool
-audio_output_all_play(struct music_chunk *chunk)
+audio_output_all_play(struct music_chunk *chunk, GError **error_r)
 {
 	bool ret;
 	unsigned int i;
@@ -281,8 +282,12 @@ audio_output_all_play(struct music_chunk *chunk)
 	assert(music_chunk_check_format(chunk, &input_audio_format));
 
 	ret = audio_output_all_update();
-	if (!ret)
+	if (!ret) {
+		/* TODO: obtain real error */
+		g_set_error(error_r, output_quark(), 0,
+			    "Failed to open audio output");
 		return false;
+	}
 
 	music_pipe_push(g_mp, chunk);
 
@@ -294,7 +299,8 @@ audio_output_all_play(struct music_chunk *chunk)
 
 bool
 audio_output_all_open(const struct audio_format *audio_format,
-		      struct music_buffer *buffer)
+		      struct music_buffer *buffer,
+		      GError **error_r)
 {
 	bool ret = false, enabled = false;
 	unsigned int i;
@@ -334,7 +340,12 @@ audio_output_all_open(const struct audio_format *audio_format,
 	}
 
 	if (!enabled)
-		g_warning("All audio outputs are disabled");
+		g_set_error(error_r, output_quark(), 0,
+			    "All audio outputs are disabled");
+	else if (!ret)
+		/* TODO: obtain real error */
+		g_set_error(error_r, output_quark(), 0,
+			    "Failed to open audio output");
 
 	if (!ret)
 		/* close all devices if there was an error */

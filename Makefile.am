@@ -795,6 +795,7 @@ OUTPUT_API_SRC = \
 	src/output_list.c \
 	src/output_all.c \
 	src/output_thread.c \
+	src/output_error.h \
 	src/output_control.c \
 	src/output_state.c \
 	src/output_print.c \
