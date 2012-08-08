@@ -67,6 +67,14 @@ struct decoder_control {
 	enum decoder_state state;
 	enum decoder_command command;
 
+	/**
+	 * The error that occurred in the decoder thread.  This
+	 * attribute is only valid if #state is #DECODE_STATE_ERROR.
+	 * The object must be freed when this object transitions to
+	 * any other state (usually #DECODE_STATE_START).
+	 */
+	GError *error;
+
 	bool quit;
 	bool seek_error;
 	bool seekable;
@@ -186,6 +194,49 @@ decoder_has_failed(const struct decoder_control *dc)
 	assert(dc->command == DECODE_COMMAND_NONE);
 
 	return dc->state == DECODE_STATE_ERROR;
+}
+
+/**
+ * Checks whether an error has occurred, and if so, returns a newly
+ * allocated copy of the #GError object.
+ *
+ * Caller must lock the object.
+ */
+static inline GError *
+dc_get_error(const struct decoder_control *dc)
+{
+	assert(dc != NULL);
+	assert(dc->command == DECODE_COMMAND_NONE);
+
+	return dc->state == DECODE_STATE_ERROR
+		? g_error_copy(dc->error)
+		: NULL;
+}
+
+/**
+ * Like dc_get_error(), but locks and unlocks the object.
+ */
+static inline GError *
+dc_lock_get_error(struct decoder_control *dc)
+{
+	decoder_lock(dc);
+	GError *error = dc_get_error(dc);
+	decoder_unlock(dc);
+	return error;
+}
+
+/**
+ * Clear the error condition and free the #GError object (if any).
+ *
+ * Caller must lock the object.
+ */
+static inline void
+dc_clear_error(struct decoder_control *dc)
+{
+	if (dc->state == DECODE_STATE_ERROR) {
+		g_error_free(dc->error);
+		dc->state = DECODE_STATE_STOP;
+	}
 }
 
 static inline bool

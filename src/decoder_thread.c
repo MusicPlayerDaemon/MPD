@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "decoder_thread.h"
+#include "decoder_error.h"
 #include "decoder_control.h"
 #include "decoder_internal.h"
 #include "decoder_list.h"
@@ -428,12 +429,27 @@ decoder_run_song(struct decoder_control *dc,
 
 	decoder_lock(dc);
 
-	dc->state = ret ? DECODE_STATE_STOP : DECODE_STATE_ERROR;
+	if (ret)
+		dc->state = DECODE_STATE_STOP;
+	else {
+		dc->state = DECODE_STATE_ERROR;
+
+		const char *error_uri = song->uri;
+		char *allocated = uri_remove_auth(error_uri);
+		if (allocated != NULL)
+			error_uri = allocated;
+
+		dc->error = g_error_new(decoder_quark(), 0,
+					"Failed to decode %s", error_uri);
+		g_free(allocated);
+	}
 }
 
 static void
 decoder_run(struct decoder_control *dc)
 {
+	dc_clear_error(dc);
+
 	const struct song *song = dc->song;
 	char *uri;
 

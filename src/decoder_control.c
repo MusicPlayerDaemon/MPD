@@ -52,6 +52,8 @@ dc_new(GCond *client_cond)
 void
 dc_free(struct decoder_control *dc)
 {
+	dc_clear_error(dc);
+
 	g_cond_free(dc->cond);
 	g_mutex_free(dc->mutex);
 	g_free(dc->mixramp_start);
@@ -79,6 +81,7 @@ static void
 dc_command(struct decoder_control *dc, enum decoder_command cmd)
 {
 	decoder_lock(dc);
+	dc_clear_error(dc);
 	dc_command_locked(dc, cmd);
 	decoder_unlock(dc);
 }

@@ -247,6 +247,7 @@ src_mpd_SOURCES = \
 	src/conf.c \
 	src/crossfade.c \
 	src/cue/cue_parser.c src/cue/cue_parser.h \
+	src/decoder_error.h \
 	src/decoder_thread.c \
 	src/decoder_control.c \
 	src/decoder_api.c \
