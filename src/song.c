@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "song.h"
-#include "uri.h"
 #include "directory.h"
 #include "tag.h"
 
