@@ -118,7 +118,7 @@ update_enqueue(const char *path, bool _discard)
 {
 	assert(g_thread_self() == main_task);
 
-	if (!mapper_has_music_directory())
+	if (!db_is_simple() || !mapper_has_music_directory())
 		return 0;
 
 	if (progress != UPDATE_PROGRESS_IDLE) {

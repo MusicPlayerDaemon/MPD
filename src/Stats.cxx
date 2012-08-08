@@ -119,14 +119,18 @@ int stats_print(struct client *client)
 		      "songs: %i\n"
 		      "uptime: %li\n"
 		      "playtime: %li\n"
-		      "db_playtime: %li\n"
-		      "db_update: %li\n",
+		      "db_playtime: %li\n",
 		      stats.artist_count,
 		      stats.album_count,
 		      stats.song_count,
 		      (long)g_timer_elapsed(stats.timer, NULL),
 		      (long)(pc_get_total_play_time(client->player_control) + 0.5),
-		      stats.song_duration,
-		      (long)db_get_mtime());
+		      stats.song_duration);
+
+	if (db_is_simple())
+		client_printf(client,
+			      "db_update: %li\n",
+			      (long)db_get_mtime());
+
 	return 0;
 }

@@ -44,8 +44,18 @@ void
 db_finish(void);
 
 /**
+ * Check whether the default #SimpleDatabasePlugin is used.  This
+ * allows using db_get_root(), db_save(), db_get_mtime() and
+ * db_exists().
+ */
+bool
+db_is_simple(void);
+
+/**
  * Returns the root directory object.  Returns NULL if there is no
  * configured music directory.
+ *
+ * May only be used if db_is_simple() returns true.
  */
 gcc_pure
 struct directory *
@@ -64,18 +74,26 @@ gcc_pure
 struct song *
 db_get_song(const char *file);
 
+/**
+ * May only be used if db_is_simple() returns true.
+ */
 bool
 db_save(GError **error_r);
 
 bool
 db_load(GError **error);
 
+/**
+ * May only be used if db_is_simple() returns true.
+ */
 gcc_pure
 time_t
 db_get_mtime(void);
 
 /**
  * Returns true if there is a valid database file on the disk.
+ *
+ * May only be used if db_is_simple() returns true.
  */
 gcc_pure
 static inline bool

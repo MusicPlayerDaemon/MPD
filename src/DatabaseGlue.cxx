@@ -87,10 +87,19 @@ GetDatabase()
 	return db;
 }
 
+bool
+db_is_simple(void)
+{
+	assert(db == NULL || db_is_open);
+
+	return dynamic_cast<SimpleDatabase *>(db) != nullptr;
+}
+
 struct directory *
 db_get_root(void)
 {
 	assert(db != NULL);
+	assert(db_is_simple());
 
 	return ((SimpleDatabase *)db)->GetRoot();
 }
@@ -128,6 +137,7 @@ db_save(GError **error_r)
 {
 	assert(db != NULL);
 	assert(db_is_open);
+	assert(db_is_simple());
 
 	return ((SimpleDatabase *)db)->Save(error_r);
 }
@@ -153,6 +163,7 @@ db_get_mtime(void)
 {
 	assert(db != NULL);
 	assert(db_is_open);
+	assert(db_is_simple());
 
 	return ((SimpleDatabase *)db)->GetLastModified();
 }
