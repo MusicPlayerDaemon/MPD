@@ -58,6 +58,8 @@ struct song {
 	char uri[sizeof(int)];
 };
 
+G_BEGIN_DECLS
+
 /** allocate a new song with a remote URL */
 struct song *
 song_remote_new(const char *uri);
@@ -116,5 +118,7 @@ song_is_file(const struct song *song)
 {
 	return song_in_database(song) || song->uri[0] == '/';
 }
+
+G_END_DECLS
 
 #endif

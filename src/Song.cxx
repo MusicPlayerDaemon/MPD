@@ -20,7 +20,10 @@
 #include "config.h"
 #include "song.h"
 #include "directory.h"
+
+extern "C" {
 #include "tag.h"
+}
 
 #include <glib.h>
 
@@ -30,14 +33,15 @@ static struct song *
 song_alloc(const char *uri, struct directory *parent)
 {
 	size_t uri_length;
-	struct song *song;
 
 	assert(uri);
 	uri_length = strlen(uri);
 	assert(uri_length);
-	song = g_malloc(sizeof(*song) - sizeof(song->uri) + uri_length + 1);
 
-	song->tag = NULL;
+	struct song *song = (struct song *)
+		g_malloc(sizeof(*song) - sizeof(song->uri) + uri_length + 1);
+
+	song->tag = nullptr;
 	memcpy(song->uri, uri, uri_length + 1);
 	song->parent = parent;
 	song->mtime = 0;
@@ -49,13 +53,13 @@ song_alloc(const char *uri, struct directory *parent)
 struct song *
 song_remote_new(const char *uri)
 {
-	return song_alloc(uri, NULL);
+	return song_alloc(uri, nullptr);
 }
 
 struct song *
 song_file_new(const char *path, struct directory *parent)
 {
-	assert((parent == NULL) == (*path == '/'));
+	assert((parent == nullptr) == (*path == '/'));
 
 	return song_alloc(path, parent);
 }
@@ -83,14 +87,14 @@ song_free(struct song *song)
 char *
 song_get_uri(const struct song *song)
 {
-	assert(song != NULL);
+	assert(song != nullptr);
 	assert(*song->uri);
 
 	if (!song_in_database(song) || directory_is_root(song->parent))
 		return g_strdup(song->uri);
 	else
 		return g_strconcat(directory_get_path(song->parent),
-				   "/", song->uri, NULL);
+				   "/", song->uri, nullptr);
 }
 
 double
@@ -99,7 +103,7 @@ song_get_duration(const struct song *song)
 	if (song->end_ms > 0)
 		return (song->end_ms - song->start_ms) / 1000.0;
 
-	if (song->tag == NULL)
+	if (song->tag == nullptr)
 		return 0;
 
 	return song->tag->time - song->start_ms / 1000.0;

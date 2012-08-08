@@ -335,7 +335,7 @@ src_mpd_SOURCES = \
 	src/replay_gain_config.c \
 	src/replay_gain_info.c \
 	src/sig_handlers.c \
-	src/song.c \
+	src/Song.cxx \
 	src/song_update.c \
 	src/song_print.c \
 	src/song_save.c \
@@ -1059,7 +1059,7 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/Directory.cxx src/directory_save.c \
 	src/playlist_vector.c src/playlist_database.c \
 	src/db_lock.c src/db_save.c \
-	src/song.c src/song_sort.c src/song_save.c \
+	src/Song.cxx src/song_sort.c src/song_save.c \
 	src/tag.c src/tag_pool.c src/tag_save.c \
 	src/path.c \
 	src/locate.c \
@@ -1103,7 +1103,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.c \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/uri.c \
-	src/song.c src/tag.c src/tag_pool.c src/tag_save.c \
+	src/Song.cxx src/tag.c src/tag_pool.c src/tag_save.c \
 	src/tag_handler.c src/tag_file.c \
 	src/audio_check.c src/pcm_buffer.c \
 	src/text_input_stream.c src/fifo_buffer.c \
