@@ -119,7 +119,8 @@ print_spl_list(struct client *client, GPtrArray *list)
 
 		client_printf(client, "playlist: %s\n", playlist->name);
 
-		time_print(client, "Last-Modified", playlist->mtime);
+		if (playlist->mtime > 0)
+			time_print(client, "Last-Modified", playlist->mtime);
 	}
 }
 

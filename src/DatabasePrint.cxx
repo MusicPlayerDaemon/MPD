@@ -106,7 +106,8 @@ PrintPlaylistFull(struct client *client,
 {
 	print_playlist_in_directory(client, directory, playlist.name);
 
-	time_print(client, "Last-Modified", playlist.mtime);
+	if (playlist.mtime > 0)
+		time_print(client, "Last-Modified", playlist.mtime);
 
 	return true;
 }
