@@ -111,12 +111,19 @@ struct player_control {
 
 	enum player_error error_type;
 
+	/**
+	 * The error that occurred in the player thread.  This
+	 * attribute is only valid if #error is not
+	 * #PLAYER_ERROR_NONE.  The object must be freed when this
+	 * object transitions back to #PLAYER_ERROR_NONE.
+	 */
+	GError *error;
+
 	uint16_t bit_rate;
 	struct audio_format audio_format;
 	float total_time;
 	float elapsed_time;
 	struct song *next_song;
-	const struct song *errored_song;
 	double seek_where;
 	float cross_fade_seconds;
 	float mixramp_db;
@@ -191,14 +198,6 @@ player_lock_signal(struct player_control *pc)
 	player_unlock(pc);
 }
 
-/**
- * Call this function when the specified song pointer is about to be
- * invalidated.  This makes sure that player_control.errored_song does
- * not point to an invalid pointer.
- */
-void
-pc_song_deleted(struct player_control *pc, const struct song *song);
-
 void
 pc_play(struct player_control *pc, struct song *song);
 
@@ -225,6 +224,19 @@ pc_get_state(struct player_control *pc)
 {
 	return pc->state;
 }
+
+/**
+ * Set the error.  Discards any previous error condition.
+ *
+ * Caller must lock the object.
+ *
+ * @param type the error type; must not be #PLAYER_ERROR_NONE
+ * @param error detailed error information; must not be NULL; the
+ * #player_control takes over ownership of this #GError instance
+ */
+void
+pc_set_error(struct player_control *pc, enum player_error type,
+	     GError *error);
 
 void
 pc_clear_error(struct player_control *pc);

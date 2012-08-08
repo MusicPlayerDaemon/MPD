@@ -1,4 +1,5 @@
 ver 0.18 (2012/??/??)
+* improved decoder/output error reporting
 
 ver 0.17.1 (2012/??/??)
 * protocol:

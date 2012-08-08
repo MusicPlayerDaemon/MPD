@@ -235,10 +235,10 @@ player_wait_for_decoder(struct player *player)
 
 	player->queued = false;
 
-	if (decoder_lock_has_failed(dc)) {
+	GError *error = dc_lock_get_error(dc);
+	if (error != NULL) {
 		player_lock(pc);
-		pc->errored_song = dc->song;
-		pc->error_type = PLAYER_ERROR_DECODER;
+		pc_set_error(pc, PLAYER_ERROR_DECODER, error);
 		pc->next_song = NULL;
 		player_unlock(pc);
 
@@ -318,7 +318,6 @@ player_open_output(struct player *player)
 		return true;
 	} else {
 		g_warning("%s", error->message);
-		g_error_free(error);
 
 		player->output_open = false;
 
@@ -327,7 +326,7 @@ player_open_output(struct player *player)
 		player->paused = true;
 
 		player_lock(pc);
-		pc->error_type = PLAYER_ERROR_OUTPUT;
+		pc_set_error(pc, PLAYER_ERROR_OUTPUT, error);
 		pc->state = PLAYER_STATE_PAUSE;
 		player_unlock(pc);
 
@@ -352,13 +351,13 @@ player_check_decoder_startup(struct player *player)
 
 	decoder_lock(dc);
 
-	if (decoder_has_failed(dc)) {
+	GError *error = dc_get_error(dc);
+	if (error != NULL) {
 		/* the decoder failed */
 		decoder_unlock(dc);
 
 		player_lock(pc);
-		pc->errored_song = dc->song;
-		pc->error_type = PLAYER_ERROR_DECODER;
+		pc_set_error(pc, PLAYER_ERROR_DECODER, error);
 		player_unlock(pc);
 
 		return false;
@@ -797,13 +796,12 @@ play_next_chunk(struct player *player)
 	if (!play_chunk(player->pc, player->song, chunk,
 			&player->play_audio_format, &error)) {
 		g_warning("%s", error->message);
-		g_error_free(error);
 
 		music_buffer_return(player_buffer, chunk);
 
 		player_lock(pc);
 
-		pc->error_type = PLAYER_ERROR_OUTPUT;
+		pc_set_error(pc, PLAYER_ERROR_OUTPUT, error);
 
 		/* pause: the user may resume playback as soon as an
 		   audio output becomes available */

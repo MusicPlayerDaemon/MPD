@@ -45,14 +45,6 @@ playlist_clear(struct playlist *playlist, struct player_control *pc)
 {
 	playlist_stop(playlist, pc);
 
-	/* make sure there are no references to allocated songs
-	   anymore */
-	for (unsigned i = 0; i < queue_length(&playlist->queue); i++) {
-		const struct song *song = queue_get(&playlist->queue, i);
-		if (!song_in_database(song))
-			pc_song_deleted(pc, song);
-	}
-
 	queue_clear(&playlist->queue);
 
 	playlist->current = -1;
@@ -287,9 +279,6 @@ playlist_delete_internal(struct playlist *playlist, struct player_control *pc,
 
 	/* now do it: remove the song */
 
-	if (!song_in_database(queue_get(&playlist->queue, song)))
-		pc_song_deleted(pc, queue_get(&playlist->queue, song));
-
 	queue_delete(&playlist->queue, song);
 
 	/* update the "current" and "queued" variables */
@@ -363,8 +352,6 @@ playlist_delete_song(struct playlist *playlist, struct player_control *pc,
 	for (int i = queue_length(&playlist->queue) - 1; i >= 0; --i)
 		if (song == queue_get(&playlist->queue, i))
 			playlist_delete(playlist, pc, i);
-
-	pc_song_deleted(pc, song);
 }
 
 enum playlist_result

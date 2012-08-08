@@ -76,15 +76,6 @@ player_wait_decoder(struct player_control *pc, struct decoder_control *dc)
 	g_cond_wait(pc->cond, dc->mutex);
 }
 
-void
-pc_song_deleted(struct player_control *pc, const struct song *song)
-{
-	if (pc->errored_song == song) {
-		pc->error_type = PLAYER_ERROR_NONE;
-		pc->errored_song = NULL;
-	}
-}
-
 static void
 player_command_wait_locked(struct player_control *pc)
 {
@@ -229,42 +220,42 @@ pc_get_status(struct player_control *pc, struct player_status *status)
 }
 
 void
+pc_set_error(struct player_control *pc, enum player_error type,
+	     GError *error)
+{
+	assert(pc != NULL);
+	assert(type != PLAYER_ERROR_NONE);
+	assert(error != NULL);
+
+	if (pc->error_type != PLAYER_ERROR_NONE)
+	    g_error_free(pc->error);
+
+	pc->error_type = type;
+	pc->error = error;
+}
+
+void
 pc_clear_error(struct player_control *pc)
 {
 	player_lock(pc);
-	pc->error_type = PLAYER_ERROR_NONE;
-	pc->errored_song = NULL;
-	player_unlock(pc);
-}
 
-static char *
-pc_errored_song_uri(struct player_control *pc)
-{
-	return song_get_uri(pc->errored_song);
+	if (pc->error_type != PLAYER_ERROR_NONE) {
+	    pc->error_type = PLAYER_ERROR_NONE;
+	    g_error_free(pc->error);
+	}
+
+	player_unlock(pc);
 }
 
 char *
 pc_get_error_message(struct player_control *pc)
 {
-	char *error;
-	char *uri;
-
-	switch (pc->error_type) {
-	case PLAYER_ERROR_NONE:
-		return NULL;
-
-	case PLAYER_ERROR_DECODER:
-		uri = pc_errored_song_uri(pc);
-		error = g_strdup_printf("problems decoding \"%s\"", uri);
-		g_free(uri);
-		return error;
-
-	case PLAYER_ERROR_OUTPUT:
-		return g_strdup("problems opening audio device");
-	}
-
-	assert(false);
-	return NULL;
+	player_lock(pc);
+	char *message = pc->error_type != PLAYER_ERROR_NONE
+		? g_strdup(pc->error->message)
+		: NULL;
+	player_unlock(pc);
+	return message;
 }
 
 static void
