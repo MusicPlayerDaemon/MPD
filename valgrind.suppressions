@@ -40,6 +40,14 @@
 }
 
 {
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:g_once_init_leave
+}
+
+{
    g_log
    Memcheck:Leak
    fun:*alloc
@@ -55,6 +63,14 @@
    ...
    fun:thread_memory_from_self*
    fun:g_slice_*
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:g_static_mutex_get_mutex_impl
 }
 
 {
@@ -482,4 +498,25 @@
    Memcheck:Leak
    fun:?alloc
    fun:snd1_dlobj_cache_get
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:_Znwm
+   ...
+   obj:*/libjack.so*
+   fun:call_init
+   fun:_dl_init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:*alloc
+   fun:_dl_allocate_tls
+   ...
+   obj:*/libffado.so*
+   fun:call_init
+   fun:_dl_init
 }
