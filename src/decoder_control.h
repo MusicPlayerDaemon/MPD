@@ -90,8 +90,11 @@ struct decoder_control {
 	 * The song currently being decoded.  This attribute is set by
 	 * the player thread, when it sends the #DECODE_COMMAND_START
 	 * command.
+	 *
+	 * This is a duplicate, and must be freed when this attribute
+	 * is cleared.
 	 */
-	const struct song *song;
+	struct song *song;
 
 	/**
 	 * The initial seek position (in milliseconds), e.g. to the
@@ -303,7 +306,8 @@ decoder_lock_is_current_song(struct decoder_control *dc,
  * Start the decoder.
  *
  * @param the decoder
- * @param song the song to be decoded
+ * @param song the song to be decoded; the given instance will be
+ * owned and freed by the decoder
  * @param start_ms see #decoder_control
  * @param end_ms see #decoder_control
  * @param pipe the pipe which receives the decoded chunks (owned by

@@ -162,7 +162,7 @@ player_dc_start(struct player *player, struct music_pipe *pipe)
 	if (pc->command == PLAYER_COMMAND_SEEK)
 		start_ms += (unsigned)(pc->seek_where * 1000);
 
-	dc_start(dc, pc->next_song,
+	dc_start(dc, song_dup_detached(pc->next_song),
 		 start_ms, pc->next_song->end_ms,
 		 player_buffer, pipe);
 }

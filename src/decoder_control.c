@@ -41,6 +41,8 @@ dc_new(GCond *client_cond)
 	dc->state = DECODE_STATE_STOP;
 	dc->command = DECODE_COMMAND_NONE;
 
+	dc->song = NULL;
+
 	dc->replay_gain_db = 0;
 	dc->replay_gain_prev_db = 0;
 	dc->mixramp_start = NULL;
@@ -54,6 +56,9 @@ void
 dc_free(struct decoder_control *dc)
 {
 	dc_clear_error(dc);
+
+	if (dc->song != NULL)
+		song_free(dc->song);
 
 	g_cond_free(dc->cond);
 	g_mutex_free(dc->mutex);
@@ -128,6 +133,9 @@ dc_start(struct decoder_control *dc, struct song *song,
 	assert(buffer != NULL);
 	assert(pipe != NULL);
 	assert(music_pipe_empty(pipe));
+
+	if (dc->song != NULL)
+		song_free(dc->song);
 
 	dc->song = song;
 	dc->start_ms = start_ms;
