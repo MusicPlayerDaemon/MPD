@@ -239,11 +239,17 @@ player_wait_for_decoder(struct player *player)
 	if (error != NULL) {
 		player_lock(pc);
 		pc_set_error(pc, PLAYER_ERROR_DECODER, error);
+
+		song_free(pc->next_song);
 		pc->next_song = NULL;
+
 		player_unlock(pc);
 
 		return false;
 	}
+
+	if (player->song != NULL)
+		song_free(player->song);
 
 	player->song = pc->next_song;
 	player->elapsed_time = 0.0;
@@ -486,6 +492,7 @@ static bool player_seek_decoder(struct player *player)
 			player->pipe = dc->pipe;
 		}
 
+		song_free(pc->next_song);
 		pc->next_song = NULL;
 		player->queued = false;
 	}
@@ -606,6 +613,7 @@ static void player_process_command(struct player *player)
 			player_lock(pc);
 		}
 
+		song_free(pc->next_song);
 		pc->next_song = NULL;
 		player->queued = false;
 		player_command_finished_locked(pc);
@@ -886,6 +894,8 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 
 	player_dc_start(&player, player.pipe);
 	if (!player_wait_for_decoder(&player)) {
+		assert(player.song == NULL);
+
 		player_dc_stop(&player);
 		player_command_finished(pc);
 		music_pipe_free(player.pipe);
@@ -1048,10 +1058,14 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 	if (player.cross_fade_tag != NULL)
 		tag_free(player.cross_fade_tag);
 
+	if (player.song != NULL)
+		song_free(player.song);
+
 	player_lock(pc);
 
 	if (player.queued) {
 		assert(pc->next_song != NULL);
+		song_free(pc->next_song);
 		pc->next_song = NULL;
 	}
 
@@ -1093,7 +1107,11 @@ player_task(gpointer arg)
 			/* fall through */
 
 		case PLAYER_COMMAND_PAUSE:
-			pc->next_song = NULL;
+			if (pc->next_song != NULL) {
+				song_free(pc->next_song);
+				pc->next_song = NULL;
+			}
+
 			player_command_finished_locked(pc);
 			break;
 
@@ -1134,7 +1152,11 @@ player_task(gpointer arg)
 			return NULL;
 
 		case PLAYER_COMMAND_CANCEL:
-			pc->next_song = NULL;
+			if (pc->next_song != NULL) {
+				song_free(pc->next_song);
+				pc->next_song = NULL;
+			}
+
 			player_command_finished_locked(pc);
 			break;
 

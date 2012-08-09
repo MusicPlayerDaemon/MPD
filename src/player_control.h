@@ -123,7 +123,15 @@ struct player_control {
 	struct audio_format audio_format;
 	float total_time;
 	float elapsed_time;
+
+	/**
+	 * The next queued song.
+	 *
+	 * This is a duplicate, and must be freed when this attribute
+	 * is cleared.
+	 */
 	struct song *next_song;
+
 	double seek_where;
 	float cross_fade_seconds;
 	float mixramp_db;
@@ -198,6 +206,10 @@ player_lock_signal(struct player_control *pc)
 	player_unlock(pc);
 }
 
+/**
+ * @param song the song to be queued; the given instance will be owned
+ * and freed by the player
+ */
 void
 pc_play(struct player_control *pc, struct song *song);
 
@@ -261,12 +273,18 @@ pc_stop(struct player_control *pc);
 void
 pc_update_audio(struct player_control *pc);
 
+/**
+ * @param song the song to be queued; the given instance will be owned
+ * and freed by the player
+ */
 void
 pc_enqueue_song(struct player_control *pc, struct song *song);
 
 /**
  * Makes the player thread seek the specified song to a position.
  *
+ * @param song the song to be queued; the given instance will be owned
+ * and freed by the player
  * @return true on success, false on failure (e.g. if MPD isn't
  * playing currently)
  */

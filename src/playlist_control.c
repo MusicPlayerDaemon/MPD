@@ -25,6 +25,7 @@
 #include "config.h"
 #include "playlist_internal.h"
 #include "player_control.h"
+#include "song.h"
 #include "idle.h"
 
 #include <glib.h>
@@ -239,7 +240,9 @@ playlist_seek_song(struct playlist *playlist, struct player_control *pc,
 		queued = NULL;
 	}
 
-	success = pc_seek(pc, queue_get_order(&playlist->queue, i), seek_time);
+	struct song *the_song =
+		song_dup_detached(queue_get_order(&playlist->queue, i));
+	success = pc_seek(pc, the_song, seek_time);
 	if (!success) {
 		playlist_update_queued_song(playlist, pc, queued);
 

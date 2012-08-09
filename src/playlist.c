@@ -78,14 +78,15 @@ static void
 playlist_queue_song_order(struct playlist *playlist, struct player_control *pc,
 			  unsigned order)
 {
-	struct song *song;
 	char *uri;
 
 	assert(queue_valid_order(&playlist->queue, order));
 
 	playlist->queued = order;
 
-	song = queue_get_order(&playlist->queue, order);
+	struct song *song =
+		song_dup_detached(queue_get_order(&playlist->queue, order));
+
 	uri = song_get_uri(song);
 	g_debug("queue song %i:\"%s\"", playlist->queued, uri);
 	g_free(uri);
@@ -191,13 +192,13 @@ void
 playlist_play_order(struct playlist *playlist, struct player_control *pc,
 		    int orderNum)
 {
-	struct song *song;
 	char *uri;
 
 	playlist->playing = true;
 	playlist->queued = -1;
 
-	song = queue_get_order(&playlist->queue, orderNum);
+	struct song *song =
+		song_dup_detached(queue_get_order(&playlist->queue, orderNum));
 
 	uri = song_get_uri(song);
 	g_debug("play %i:\"%s\"", orderNum, uri);

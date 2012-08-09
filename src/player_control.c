@@ -59,6 +59,9 @@ pc_new(unsigned buffer_chunks, unsigned int buffered_before_play)
 void
 pc_free(struct player_control *pc)
 {
+	if (pc->next_song != NULL)
+		song_free(pc->next_song);
+
 	g_cond_free(pc->cond);
 	g_mutex_free(pc->mutex);
 	g_free(pc);
@@ -284,6 +287,10 @@ pc_seek(struct player_control *pc, struct song *song, float seek_time)
 	assert(song != NULL);
 
 	player_lock(pc);
+
+	if (pc->next_song != NULL)
+		song_free(pc->next_song);
+
 	pc->next_song = song;
 	pc->seek_where = seek_time;
 	player_command_locked(pc, PLAYER_COMMAND_SEEK);
