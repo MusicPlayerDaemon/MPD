@@ -37,24 +37,34 @@ extern "C" {
 #include <string.h>
 #include <stdlib.h>
 
-struct directory *
-directory_new(const char *path, struct directory *parent)
+static directory *
+directory_allocate(const char *path)
 {
-	size_t pathlen = strlen(path);
-
 	assert(path != NULL);
-	assert((*path == 0) == (parent == NULL));
 
-	struct directory *directory =
+	const size_t path_size = strlen(path) + 1;
+	directory *directory =
 		(struct directory *)g_malloc0(sizeof(*directory)
 					      - sizeof(directory->path)
-					      + pathlen + 1);
+					      + path_size);
 	INIT_LIST_HEAD(&directory->children);
 	INIT_LIST_HEAD(&directory->songs);
 	INIT_LIST_HEAD(&directory->playlists);
 
+	memcpy(directory->path, path, path_size);
+
+	return directory;
+}
+
+struct directory *
+directory_new(const char *path, struct directory *parent)
+{
+	assert(path != NULL);
+	assert((*path == 0) == (parent == NULL));
+
+	directory *directory = directory_allocate(path);
+
 	directory->parent = parent;
-	memcpy(directory->path, path, pathlen + 1);
 
 	return directory;
 }
