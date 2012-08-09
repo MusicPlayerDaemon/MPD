@@ -21,6 +21,7 @@
 #define MPD_SONG_H
 
 #include "util/list.h"
+#include "gcc.h"
 
 #include <stddef.h>
 #include <stdbool.h>
@@ -99,6 +100,13 @@ song_is_file(const struct song *song)
 {
 	return song_in_database(song) || song->uri[0] == '/';
 }
+
+/**
+ * Returns true if both objects refer to the same physical song.
+ */
+gcc_pure
+bool
+song_equals(const struct song *a, const struct song *b);
 
 bool
 song_file_update(struct song *song);

@@ -20,6 +20,7 @@
 #include "config.h"
 #include "decoder_control.h"
 #include "pipe.h"
+#include "song.h"
 
 #include <assert.h>
 
@@ -111,7 +112,7 @@ decoder_is_current_song(const struct decoder_control *dc,
 
 	case DECODE_STATE_START:
 	case DECODE_STATE_DECODE:
-		return dc->song == song;
+		return song_equals(dc->song, song);
 	}
 
 	assert(false);

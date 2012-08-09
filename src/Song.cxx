@@ -84,6 +84,33 @@ song_free(struct song *song)
 	g_free(song);
 }
 
+gcc_pure
+static inline bool
+directory_equals(const struct directory &a, const struct directory &b)
+{
+	return strcmp(a.path, b.path) == 0;
+}
+
+gcc_pure
+static inline bool
+directory_is_same(const struct directory *a, const struct directory *b)
+{
+	return a == b ||
+		(a != nullptr && b != nullptr &&
+		 directory_equals(*a, *b));
+
+}
+
+bool
+song_equals(const struct song *a, const struct song *b)
+{
+	assert(a != nullptr);
+	assert(b != nullptr);
+
+	return directory_is_same(a->parent, b->parent) &&
+		strcmp(a->uri, b->uri) == 0;
+}
+
 char *
 song_get_uri(const struct song *song)
 {
