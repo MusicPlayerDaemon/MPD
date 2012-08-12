@@ -35,7 +35,6 @@ struct client;
  * @param path_fs the absolute path name in filesystem encoding
  * @return true if access is allowed
  */
-G_GNUC_PURE
 bool
 client_allow_file(const struct client *client, const char *path_fs,
 		  GError **error_r);
