@@ -58,12 +58,10 @@ lastfm_init(const struct config_param *param)
 
 	lastfm_config.user = g_uri_escape_string(user, NULL, false);
 
-#if GLIB_CHECK_VERSION(2,16,0)
 	if (strlen(passwd) != 32)
 		lastfm_config.md5 = g_compute_checksum_for_string(G_CHECKSUM_MD5,
 								  passwd, strlen(passwd));
 	else
-#endif
 		lastfm_config.md5 = g_strdup(passwd);
 
 	return true;

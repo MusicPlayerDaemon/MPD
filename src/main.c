@@ -135,10 +135,8 @@ glue_mapper_init(GError **error_r)
 		return false;
 	}
 
-#if GLIB_CHECK_VERSION(2,14,0)
 	if (music_dir == NULL)
 		music_dir = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_MUSIC));
-#endif
 
 	mapper_init(music_dir, playlist_dir);
 

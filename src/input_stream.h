@@ -29,10 +29,6 @@
 #include <stdbool.h>
 #include <sys/types.h>
 
-#if !GLIB_CHECK_VERSION(2,14,0)
-typedef gint64 goffset;
-#endif
-
 struct input_stream {
 	/**
 	 * the plugin which implements this input stream
