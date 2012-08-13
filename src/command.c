@@ -1544,7 +1544,7 @@ handle_config(struct client *client,
 		return COMMAND_RETURN_ERROR;
 	}
 
-	const char *path = mapper_get_music_directory();
+	const char *path = mapper_get_music_directory_utf8();
 	if (path != NULL)
 		client_printf(client, "music_directory: %s\n", path);
 

@@ -1,6 +1,7 @@
 ver 0.17.2 (2012/??/??)
 * protocol:
   - fix crash in local file check
+* mapper: fix non-UTF8 music directory name
 
 
 ver 0.17.1 (2012/07/31)
