@@ -20,7 +20,6 @@
 #ifndef MPD_CLIENT_FILE_H
 #define MPD_CLIENT_FILE_H
 
-#include "gcc.h"
 #include "gerror.h"
 
 #include <stdbool.h>
@@ -37,7 +36,6 @@ struct client;
  * @param path_fs the absolute path name in filesystem encoding
  * @return true if access is allowed
  */
-gcc_pure
 bool
 client_allow_file(const struct client *client, const char *path_fs,
 		  GError **error_r);

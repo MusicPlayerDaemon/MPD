@@ -1,7 +1,12 @@
 ver 0.18 (2012/??/??)
 * improved decoder/output error reporting
 
-ver 0.17.1 (2012/??/??)
+ver 0.17.2 (2012/??/??)
+* protocol:
+  - fix crash in local file check
+
+
+ver 0.17.1 (2012/07/31)
 * protocol:
   - require appropriate permissions for searchadd{,pl}
 * tags:
