@@ -227,6 +227,7 @@ src_mpd_SOURCES = \
 	$(OUTPUT_API_SRC) \
 	$(MIXER_API_SRC) \
 	src/glib_socket.h \
+	src/clock.c src/clock.h \
 	src/notify.c \
 	src/audio_config.c src/audio_config.h \
 	src/audio_check.c \
@@ -1069,7 +1070,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.c \
 	src/audio_check.c src/pcm_buffer.c \
 	src/text_input_stream.c src/fifo_buffer.c \
 	src/cue/cue_parser.c src/cue/cue_parser.h \
-	src/timer.c \
+	src/timer.c src/clock.c \
 	src/fd_util.c
 
 if HAVE_FLAC
@@ -1096,7 +1097,7 @@ test_run_decoder_SOURCES = test/run_decoder.c \
 	src/fd_util.c \
 	src/audio_check.c \
 	src/audio_format.c \
-	src/timer.c \
+	src/timer.c src/clock.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
 	$(TAG_SRC) \
@@ -1118,7 +1119,7 @@ test_read_tags_SOURCES = test/read_tags.c \
 	src/uri.c \
 	src/fd_util.c \
 	src/audio_check.c \
-	src/timer.c \
+	src/timer.c src/clock.c \
 	$(DECODER_SRC)
 
 if HAVE_ID3TAG
@@ -1240,7 +1241,7 @@ test_run_output_SOURCES = test/run_output.c \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \
-	src/timer.c \
+	src/timer.c src/clock.c \
 	src/tag.c src/tag_pool.c \
 	src/fifo_buffer.c src/growing_fifo.c \
 	src/page.c \

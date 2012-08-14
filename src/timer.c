@@ -20,22 +20,13 @@
 #include "config.h"
 #include "timer.h"
 #include "audio_format.h"
+#include "clock.h"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <limits.h>
-#include <sys/time.h>
 #include <stddef.h>
-
-static uint64_t now(void)
-{
-	struct timeval tv;
-
-	gettimeofday(&tv, NULL);
-
-	return ((uint64_t)tv.tv_sec * 1000000) + tv.tv_usec;
-}
 
 struct timer *timer_new(const struct audio_format *af)
 {
@@ -54,7 +45,7 @@ void timer_free(struct timer *timer)
 
 void timer_start(struct timer *timer)
 {
-	timer->time = now();
+	timer->time = monotonic_clock_us();
 	timer->started = 1;
 }
 
@@ -74,7 +65,7 @@ void timer_add(struct timer *timer, int size)
 unsigned
 timer_delay(const struct timer *timer)
 {
-	int64_t delay = (int64_t)(timer->time - now()) / 1000;
+	int64_t delay = (int64_t)(timer->time - monotonic_clock_us()) / 1000;
 	if (delay < 0)
 		return 0;
 
@@ -90,7 +81,7 @@ void timer_sync(struct timer *timer)
 
 	assert(timer->started);
 
-	sleep_duration = timer->time - now();
+	sleep_duration = timer->time - monotonic_clock_us();
 	if (sleep_duration > 0)
 		g_usleep(sleep_duration);
 }
