@@ -53,6 +53,31 @@ httpd_output_quark(void)
 	return g_quark_from_static_string("httpd_output");
 }
 
+/**
+ * Check whether there is at least one client.
+ *
+ * Caller must lock the mutex.
+ */
+G_GNUC_PURE
+static bool
+httpd_output_has_clients(const struct httpd_output *httpd)
+{
+	return httpd->clients != NULL;
+}
+
+/**
+ * Check whether there is at least one client.
+ */
+G_GNUC_PURE
+static bool
+httpd_output_lock_has_clients(const struct httpd_output *httpd)
+{
+	g_mutex_lock(httpd->mutex);
+	bool result = httpd_output_has_clients(httpd);
+	g_mutex_unlock(httpd->mutex);
+	return result;
+}
+
 static void
 httpd_listen_in_event(int fd, const struct sockaddr *address,
 		      size_t address_length, int uid, void *ctx);
@@ -397,6 +422,19 @@ httpd_output_delay(struct audio_output *ao)
 {
 	struct httpd_output *httpd = (struct httpd_output *)ao;
 
+	if (!httpd_output_lock_has_clients(httpd) && httpd->base.pause) {
+		/* if there's no client and this output is paused,
+		   then httpd_output_pause() will not do anything, it
+		   will not fill the buffer and it will not update the
+		   timer; therefore, we reset the timer here */
+		timer_reset(httpd->timer);
+
+		/* some arbitrary delay that is long enough to avoid
+		   consuming too much CPU, and short enough to notice
+		   new clients quickly enough */
+		return 1000;
+	}
+
 	return httpd->timer->started
 		? timer_delay(httpd->timer)
 		: 0;
@@ -475,13 +513,8 @@ httpd_output_play(struct audio_output *ao, const void *chunk, size_t size,
 		  GError **error)
 {
 	struct httpd_output *httpd = (struct httpd_output *)ao;
-	bool has_clients;
 
-	g_mutex_lock(httpd->mutex);
-	has_clients = httpd->clients != NULL;
-	g_mutex_unlock(httpd->mutex);
-
-	if (has_clients) {
+	if (httpd_output_lock_has_clients(httpd)) {
 		bool success;
 
 		success = httpd_output_encode_and_play(httpd, chunk, size,
@@ -502,16 +535,11 @@ httpd_output_pause(struct audio_output *ao)
 {
 	struct httpd_output *httpd = (struct httpd_output *)ao;
 
-	g_mutex_lock(httpd->mutex);
-	bool has_clients = httpd->clients != NULL;
-	g_mutex_unlock(httpd->mutex);
-
-	if (has_clients) {
+	if (httpd_output_lock_has_clients(httpd)) {
 		static const char silence[1020];
 		return httpd_output_play(ao, silence, sizeof(silence),
 					 NULL) > 0;
 	} else {
-		g_usleep(100000);
 		return true;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,38 +17,25 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_LOG_H
-#define MPD_LOG_H
+#ifndef MPD_CLOCK_H
+#define MPD_CLOCK_H
 
-#include <glib.h>
-#include <stdbool.h>
+#include "gcc.h"
 
-G_GNUC_CONST
-static inline GQuark
-log_quark(void)
-{
-	return g_quark_from_static_string("log");
-}
+#include <stdint.h>
 
 /**
- * Configure a logging destination for daemon startup, before the
- * configuration file is read.  This allows the daemon to use the
- * logging library (and the command line verbose level) before it's
- * daemonized.
- *
- * @param verbose true when the program is started with --verbose
+ * Returns the value of a monotonic clock in milliseconds.
  */
-void
-log_early_init(bool verbose);
+gcc_pure
+unsigned
+monotonic_clock_ms(void);
 
-bool
-log_init(bool verbose, bool use_stdout, GError **error_r);
+/**
+ * Returns the value of a monotonic clock in microseconds.
+ */
+gcc_pure
+uint64_t
+monotonic_clock_us(void);
 
-void
-log_deinit(void);
-
-void setup_log_output(bool use_stdout);
-
-int cycle_log_files(void);
-
-#endif /* LOG_H */
+#endif

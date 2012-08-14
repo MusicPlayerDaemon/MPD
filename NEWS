@@ -4,6 +4,9 @@ ver 0.18 (2012/??/??)
 ver 0.17.2 (2012/??/??)
 * protocol:
   - fix crash in local file check
+* output:
+  - httpd: use monotonic clock, avoid hiccups after system clock adjustment
+  - httpd: fix throttling bug after resuming playback
 * mapper: fix non-UTF8 music directory name
 
 

@@ -682,35 +682,6 @@ pulse_output_close(struct audio_output *ao)
 }
 
 /**
- * Check if the stream is (already) connected, and waits for a signal
- * if not.  The mainloop must be locked before calling this function.
- *
- * @return the current stream state
- */
-static pa_stream_state_t
-pulse_output_check_stream(struct pulse_output *po)
-{
-	pa_stream_state_t state = pa_stream_get_state(po->stream);
-
-	assert(po->mainloop != NULL);
-
-	switch (state) {
-	case PA_STREAM_READY:
-	case PA_STREAM_FAILED:
-	case PA_STREAM_TERMINATED:
-	case PA_STREAM_UNCONNECTED:
-		break;
-
-	case PA_STREAM_CREATING:
-		pa_threaded_mainloop_wait(po->mainloop);
-		state = pa_stream_get_state(po->stream);
-		break;
-	}
-
-	return state;
-}
-
-/**
  * Check if the stream is (already) connected, and waits if not.  The
  * mainloop must be locked before calling this function.
  *
@@ -719,35 +690,25 @@ pulse_output_check_stream(struct pulse_output *po)
 static bool
 pulse_output_wait_stream(struct pulse_output *po, GError **error_r)
 {
-	pa_stream_state_t state = pa_stream_get_state(po->stream);
+	while (true) {
+		switch (pa_stream_get_state(po->stream)) {
+		case PA_STREAM_READY:
+			return true;
 
-	switch (state) {
-	case PA_STREAM_READY:
-		return true;
+		case PA_STREAM_FAILED:
+		case PA_STREAM_TERMINATED:
+		case PA_STREAM_UNCONNECTED:
+			g_set_error(error_r, pulse_output_quark(),
+				    pa_context_errno(po->context),
+				    "failed to connect the stream: %s",
+				    pa_strerror(pa_context_errno(po->context)));
+			return false;
 
-	case PA_STREAM_FAILED:
-	case PA_STREAM_TERMINATED:
-	case PA_STREAM_UNCONNECTED:
-		g_set_error(error_r, pulse_output_quark(), 0,
-			    "disconnected");
-		return false;
-
-	case PA_STREAM_CREATING:
-		break;
+		case PA_STREAM_CREATING:
+			pa_threaded_mainloop_wait(po->mainloop);
+			break;
+		}
 	}
-
-	do {
-		state = pulse_output_check_stream(po);
-	} while (state == PA_STREAM_CREATING);
-
-	if (state != PA_STREAM_READY) {
-		g_set_error(error_r, pulse_output_quark(), 0,
-			    "failed to connect the stream: %s",
-			    pa_strerror(pa_context_errno(po->context)));
-		return false;
-	}
-
-	return true;
 }
 
 /**
@@ -799,6 +760,24 @@ pulse_output_stream_pause(struct pulse_output *po, bool pause,
 	po->pause = pause;
 #endif
 	return true;
+}
+
+static unsigned
+pulse_output_delay(struct audio_output *ao)
+{
+	struct pulse_output *po = (struct pulse_output *)ao;
+	unsigned result = 0;
+
+	pa_threaded_mainloop_lock(po->mainloop);
+
+	if (po->base.pause && pulse_output_stream_is_paused(po) &&
+	    pa_stream_get_state(po->stream) == PA_STREAM_READY)
+		/* idle while paused */
+		result = 1000;
+
+	pa_threaded_mainloop_unlock(po->mainloop);
+
+	return result;
 }
 
 static size_t
@@ -928,13 +907,8 @@ pulse_output_pause(struct audio_output *ao)
 
 	/* cork the stream */
 
-	if (pulse_output_stream_is_paused(po)) {
-		/* already paused; due to a MPD API limitation, we
-		   have to sleep a little bit here, to avoid hogging
-		   the CPU */
-
-		g_usleep(50000);
-	} else if (!pulse_output_stream_pause(po, true, &error)) {
+	if (!pulse_output_stream_is_paused(po) &&
+	    !pulse_output_stream_pause(po, true, &error)) {
 		pa_threaded_mainloop_unlock(po->mainloop);
 		g_warning("%s", error->message);
 		g_error_free(error);
@@ -971,6 +945,7 @@ const struct audio_output_plugin pulse_output_plugin = {
 	.enable = pulse_output_enable,
 	.disable = pulse_output_disable,
 	.open = pulse_output_open,
+	.delay = pulse_output_delay,
 	.play = pulse_output_play,
 	.cancel = pulse_output_cancel,
 	.pause = pulse_output_pause,

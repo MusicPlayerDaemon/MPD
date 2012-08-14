@@ -608,6 +608,16 @@ mpd_jack_close(G_GNUC_UNUSED struct audio_output *ao)
 	mpd_jack_stop(jd);
 }
 
+static unsigned
+mpd_jack_delay(struct audio_output *ao)
+{
+	struct jack_data *jd = (struct jack_data *)ao;
+
+	return jd->base.pause && jd->pause && !jd->shutdown
+		? 1000
+		: 0;
+}
+
 static inline jack_default_audio_sample_t
 sample_16_to_jack(int16_t sample)
 {
@@ -727,10 +737,6 @@ mpd_jack_pause(struct audio_output *ao)
 
 	jd->pause = true;
 
-	/* due to a MPD API limitation, we have to sleep a little bit
-	   here, to avoid hogging the CPU */
-	g_usleep(50000);
-
 	return true;
 }
 
@@ -742,6 +748,7 @@ const struct audio_output_plugin jack_output_plugin = {
 	.enable = mpd_jack_enable,
 	.disable = mpd_jack_disable,
 	.open = mpd_jack_open,
+	.delay = mpd_jack_delay,
 	.play = mpd_jack_play,
 	.pause = mpd_jack_pause,
 	.close = mpd_jack_close,
