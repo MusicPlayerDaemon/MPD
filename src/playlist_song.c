@@ -112,7 +112,7 @@ playlist_check_translate_song(struct song *song, const char *base_uri,
 		/* already ok */
 		return song;
 
-	char *uri = song->uri;
+	const char *uri = song->uri;
 
 	if (uri_has_scheme(uri)) {
 		if (uri_supported_scheme(uri))
@@ -149,13 +149,12 @@ playlist_check_translate_song(struct song *song, const char *base_uri,
 		base_uri = NULL;
 	}
 
+	char *allocated = NULL;
 	if (base_uri != NULL)
-		uri = g_build_filename(base_uri, uri, NULL);
-	else
-		uri = g_strdup(uri);
+		uri = allocated = g_build_filename(base_uri, uri, NULL);
 
 	struct song *dest = playlist_check_load_song(song, uri, secure);
 	song_free(song);
-	g_free(uri);
+	g_free(allocated);
 	return dest;
 }
