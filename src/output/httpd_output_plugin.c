@@ -428,6 +428,11 @@ httpd_output_delay(struct audio_output *ao)
 		   will not fill the buffer and it will not update the
 		   timer; therefore, we reset the timer here */
 		timer_reset(httpd->timer);
+
+		/* some arbitrary delay that is long enough to avoid
+		   consuming too much CPU, and short enough to notice
+		   new clients quickly enough */
+		return 1000;
 	}
 
 	return httpd->timer->started
@@ -535,7 +540,6 @@ httpd_output_pause(struct audio_output *ao)
 		return httpd_output_play(ao, silence, sizeof(silence),
 					 NULL) > 0;
 	} else {
-		g_usleep(100000);
 		return true;
 	}
 }
