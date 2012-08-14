@@ -168,7 +168,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 
 	decoder_initialized(decoder, &audio_format, false, -1);
 
-	do {
+	while (fluid_player_get_status(player) == FLUID_PLAYER_PLAYING) {
 		int16_t buffer[2048];
 		const unsigned max_frames = G_N_ELEMENTS(buffer) / 2;
 
@@ -178,15 +178,14 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 		ret = fluid_synth_write_s16(synth, max_frames,
 					    buffer, 0, 2,
 					    buffer, 1, 2);
-		/* XXX how do we see whether the player is done?  We
-		   can't access the private attribute
-		   player->status */
 		if (ret != 0)
 			break;
 
 		cmd = decoder_data(decoder, NULL, buffer, sizeof(buffer),
 				   0);
-	} while (cmd == DECODE_COMMAND_NONE);
+		if (cmd != DECODE_COMMAND_NONE)
+			break;
+	}
 
 	/* clean up */
 

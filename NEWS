@@ -3,6 +3,7 @@ ver 0.17.2 (2012/??/??)
   - fix crash in local file check
 * decoder:
   - fluidsynth: remove throttle (requires libfluidsynth 1.1)
+  - fluidsynth: stop playback at end of file
   - fluidsynth: check MIDI file format while scanning
 * output:
   - httpd: use monotonic clock, avoid hiccups after system clock adjustment
