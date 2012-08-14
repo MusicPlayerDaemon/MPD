@@ -44,10 +44,11 @@ log_early_init(bool verbose);
 bool
 log_init(bool verbose, bool use_stdout, GError **error_r);
 
+void
+log_deinit(void);
+
 void setup_log_output(bool use_stdout);
 
 int cycle_log_files(void);
-
-void close_log_files(void);
 
 #endif /* LOG_H */

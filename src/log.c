@@ -55,7 +55,7 @@ static const char *log_charset;
 
 static bool stdout_mode = true;
 static int out_fd;
-static const char *out_filename;
+static char *out_filename;
 
 static void redirect_logs(int fd)
 {
@@ -134,14 +134,15 @@ open_log_file(void)
 }
 
 static bool
-log_init_file(const char *path, unsigned line, GError **error_r)
+log_init_file(unsigned line, GError **error_r)
 {
-	out_filename = path;
+	assert(out_filename != NULL);
+
 	out_fd = open_log_file();
 	if (out_fd < 0) {
 		g_set_error(error_r, log_quark(), errno,
 			    "failed to open log file \"%s\" (config line %u): %s",
-			    path, line, g_strerror(errno));
+			    out_filename, line, g_strerror(errno));
 		return false;
 	}
 
@@ -271,21 +272,32 @@ log_init(bool verbose, bool use_stdout, GError **error_r)
 			return true;
 #endif
 		} else {
-			GError *error = NULL;
-			char *path = config_dup_path(CONF_LOG_FILE, &error);
-			if (path == NULL) {
-				assert(error != NULL);
-				g_propagate_error(error_r, error);
-				return false;
-			}
-
-			bool success = log_init_file(path, param->line,
-						     error_r);
-			g_free(path);
-			return success;
+			out_filename = config_dup_path(CONF_LOG_FILE, error_r);
+			return out_filename != NULL &&
+				log_init_file(param->line, error_r);
 		}
 	}
 }
+
+static void
+close_log_files(void)
+{
+	if (stdout_mode)
+		return;
+
+#ifdef HAVE_SYSLOG
+	if (out_filename == NULL)
+		closelog();
+#endif
+}
+
+void
+log_deinit(void)
+{
+	close_log_files();
+	g_free(out_filename);
+}
+
 
 void setup_log_output(bool use_stdout)
 {
@@ -327,15 +339,3 @@ int cycle_log_files(void)
 	g_debug("Done cycling log files\n");
 	return 0;
 }
-
-void close_log_files(void)
-{
-	if (stdout_mode)
-		return;
-
-#ifdef HAVE_SYSLOG
-	if (out_filename == NULL)
-		closelog();
-#endif
-}
-

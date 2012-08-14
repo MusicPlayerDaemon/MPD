@@ -536,6 +536,6 @@ int mpd_main(int argc, char *argv[])
 	WSACleanup();
 #endif
 
-	close_log_files();
+	log_deinit();
 	return EXIT_SUCCESS;
 }
