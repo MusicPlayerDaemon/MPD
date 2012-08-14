@@ -208,10 +208,7 @@ fluidsynth_scan_file(const char *file,
 		     G_GNUC_UNUSED const struct tag_handler *handler,
 		     G_GNUC_UNUSED void *handler_ctx)
 {
-	/* to be implemented */
-	(void)file;
-
-	return true;
+	return fluid_is_midifile(file);
 }
 
 static const char *const fluidsynth_suffixes[] = {
