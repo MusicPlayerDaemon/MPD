@@ -845,7 +845,7 @@ enable_flac_encoder=$enable_flac
 
 dnl -------------------------------- FluidSynth -------------------------------
 if test x$enable_fluidsynth = xyes; then
-	PKG_CHECK_MODULES(FLUIDSYNTH, [fluidsynth],
+	PKG_CHECK_MODULES(FLUIDSYNTH, [fluidsynth >= 1.1],
 		AC_DEFINE(ENABLE_FLUIDSYNTH, 1, [Define for fluidsynth support]),
 		enable_fluidsynth=no)
 fi

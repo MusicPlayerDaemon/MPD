@@ -1,6 +1,8 @@
 ver 0.17.2 (2012/??/??)
 * protocol:
   - fix crash in local file check
+* decoder:
+  - fluidsynth: remove throttle (requires libfluidsynth 1.1)
 * output:
   - httpd: use monotonic clock, avoid hiccups after system clock adjustment
   - httpd: fix throttling bug after resuming playback

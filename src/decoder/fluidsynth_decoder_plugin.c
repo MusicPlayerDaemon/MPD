@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,6 @@
 
 #include "config.h"
 #include "decoder_api.h"
-#include "timer.h"
 #include "conf.h"
 
 #include <glib.h>
@@ -102,7 +101,6 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	fluid_player_t *player;
 	char *path_dup;
 	int ret;
-	struct timer *timer;
 	enum decoder_command cmd;
 
 	soundfont_path =
@@ -170,13 +168,6 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 		return;
 	}
 
-	/* set up a timer for synchronization; fluidsynth always
-	   decodes in real time, which forces us to synchronize */
-	/* XXX is there any way to switch off real-time decoding? */
-
-	timer = timer_new(&audio_format);
-	timer_start(timer);
-
 	/* initialization complete - announce the audio format to the
 	   MPD core */
 
@@ -185,11 +176,6 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	do {
 		int16_t buffer[2048];
 		const unsigned max_frames = G_N_ELEMENTS(buffer) / 2;
-
-		/* synchronize with the fluid player */
-
-		timer_add(timer, sizeof(buffer));
-		timer_sync(timer);
 
 		/* read samples from fluidsynth and send them to the
 		   MPD core */
@@ -208,8 +194,6 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	} while (cmd == DECODE_COMMAND_NONE);
 
 	/* clean up */
-
-	timer_free(timer);
 
 	fluid_player_stop(player);
 	fluid_player_join(player);
