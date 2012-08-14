@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "decoder_api.h"
+#include "audio_check.h"
 #include "conf.h"
 
 #include <glib.h>
@@ -28,6 +29,7 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "fluidsynth"
 
+static unsigned sample_rate;
 static const char *soundfont_path;
 
 /**
@@ -69,6 +71,15 @@ fluidsynth_mpd_log_function(int level, char *message, G_GNUC_UNUSED void *data)
 static bool
 fluidsynth_init(const struct config_param *param)
 {
+	GError *error = NULL;
+
+	sample_rate = config_get_block_unsigned(param, "sample_rate", 48000);
+	if (!audio_check_sample_rate(sample_rate, &error)) {
+		g_warning("%s\n", error->message);
+		g_error_free(error);
+		return false;
+	}
+
 	soundfont_path =
 		config_get_block_string(param, "soundfont",
 					"/usr/share/sounds/sf2/FluidR3_GM.sf2");
@@ -82,11 +93,6 @@ fluidsynth_init(const struct config_param *param)
 static void
 fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 {
-	static const struct audio_format audio_format = {
-		.sample_rate = 48000,
-		.format = SAMPLE_FORMAT_S16,
-		.channels = 2,
-	};
 	char setting_sample_rate[] = "synth.sample-rate";
 	/*
 	char setting_verbose[] = "synth.verbose";
@@ -104,7 +110,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	if (settings == NULL)
 		return;
 
-	fluid_settings_setnum(settings, setting_sample_rate, 48000);
+	fluid_settings_setnum(settings, setting_sample_rate, sample_rate);
 
 	/*
 	fluid_settings_setstr(settings, setting_verbose, setting_yes);
@@ -158,6 +164,8 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	/* initialization complete - announce the audio format to the
 	   MPD core */
 
+	struct audio_format audio_format;
+	audio_format_init(&audio_format, sample_rate, SAMPLE_FORMAT_S16, 2);
 	decoder_initialized(decoder, &audio_format, false, -1);
 
 	while (fluid_player_get_status(player) == FLUID_PLAYER_PLAYING) {

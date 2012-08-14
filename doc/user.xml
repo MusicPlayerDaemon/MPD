@@ -836,6 +836,15 @@ systemctl start mpd.socket</programlisting>
             <tbody>
               <row>
                 <entry>
+                  <varname>sample_rate</varname>
+                </entry>
+                <entry>
+                  The sample rate that shall be synthesized by the
+                  plugin.  Defaults to 48000.
+                </entry>
+              </row>
+              <row>
+                <entry>
                   <varname>soundfont</varname>
                 </entry>
                 <entry>
