@@ -422,6 +422,14 @@ httpd_output_delay(struct audio_output *ao)
 {
 	struct httpd_output *httpd = (struct httpd_output *)ao;
 
+	if (!httpd_output_lock_has_clients(httpd) && httpd->base.pause) {
+		/* if there's no client and this output is paused,
+		   then httpd_output_pause() will not do anything, it
+		   will not fill the buffer and it will not update the
+		   timer; therefore, we reset the timer here */
+		timer_reset(httpd->timer);
+	}
+
 	return httpd->timer->started
 		? timer_delay(httpd->timer)
 		: 0;
