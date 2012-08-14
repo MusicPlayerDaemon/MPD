@@ -17,15 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * WARNING!  This plugin suffers from major shortcomings in the
- * libfluidsynth API, which render it practically unusable.  For a
- * discussion, see the post on the fluidsynth mailing list:
- *
- * http://www.mail-archive.com/fluid-dev@nongnu.org/msg01099.html
- *
- */
-
 #include "config.h"
 #include "decoder_api.h"
 #include "conf.h"

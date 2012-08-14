@@ -217,8 +217,8 @@ AC_ARG_ENABLE(flac,
 
 AC_ARG_ENABLE(fluidsynth,
 	AS_HELP_STRING([--enable-fluidsynth],
-		[enable MIDI support via fluidsynth (default: disable)]),,
-	enable_fluidsynth=no)
+		[enable MIDI support via fluidsynth (default: auto)]),,
+	enable_fluidsynth=auto)
 
 AC_ARG_ENABLE(gme,
 	AS_HELP_STRING([--enable-gme],
