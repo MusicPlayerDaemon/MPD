@@ -99,7 +99,6 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	fluid_settings_t *settings;
 	fluid_synth_t *synth;
 	fluid_player_t *player;
-	char *path_dup;
 	int ret;
 	enum decoder_command cmd;
 
@@ -144,11 +143,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 		return;
 	}
 
-	/* temporarily duplicate the path_fs string, because
-	   fluidsynth wants a writable string */
-	path_dup = g_strdup(path_fs);
-	ret = fluid_player_add(player, path_dup);
-	g_free(path_dup);
+	ret = fluid_player_add(player, path_fs);
 	if (ret != 0) {
 		g_warning("fluid_player_add() failed");
 		delete_fluid_player(player);
