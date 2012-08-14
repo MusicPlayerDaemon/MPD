@@ -887,6 +887,37 @@ systemctl start mpd.socket</programlisting>
           </tgroup>
         </informaltable>
       </section>
+
+      <section>
+        <title><varname>wildmidi</varname></title>
+
+        <para>
+          MIDI decoder based on libwildmidi.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>config_file</varname>
+                </entry>
+                <entry>
+                  The absolute path of the timidity config file.  Defaults
+                  to
+                  <filename>/etc/timidity/timidity.cfg</filename>.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
     </section>
 
     <section>
