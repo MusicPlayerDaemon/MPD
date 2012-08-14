@@ -819,6 +819,37 @@ systemctl start mpd.socket</programlisting>
       </section>
 
       <section>
+        <title><varname>fluidsynth</varname></title>
+
+        <para>
+          MIDI decoder based on libfluidsynth.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>soundfont</varname>
+                </entry>
+                <entry>
+                  The absolute path of the soundfont file.  Defaults
+                  to
+                  <filename>/usr/share/sounds/sf2/FluidR3_GM.sf2</filename>.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
         <title><varname>mikmod</varname></title>
 
         <para>

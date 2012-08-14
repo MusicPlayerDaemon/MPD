@@ -28,6 +28,8 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "fluidsynth"
 
+static const char *soundfont_path;
+
 /**
  * Convert a fluidsynth log level to a GLib log level.
  */
@@ -65,8 +67,12 @@ fluidsynth_mpd_log_function(int level, char *message, G_GNUC_UNUSED void *data)
 }
 
 static bool
-fluidsynth_init(G_GNUC_UNUSED const struct config_param *param)
+fluidsynth_init(const struct config_param *param)
 {
+	soundfont_path =
+		config_get_block_string(param, "soundfont",
+					"/usr/share/sounds/sf2/FluidR3_GM.sf2");
+
 	fluid_set_log_function(LAST_LOG_LEVEL,
 			       fluidsynth_mpd_log_function, NULL);
 
@@ -86,16 +92,11 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	char setting_verbose[] = "synth.verbose";
 	char setting_yes[] = "yes";
 	*/
-	const char *soundfont_path;
 	fluid_settings_t *settings;
 	fluid_synth_t *synth;
 	fluid_player_t *player;
 	int ret;
 	enum decoder_command cmd;
-
-	soundfont_path =
-		config_get_string("soundfont",
-				  "/usr/share/sounds/sf2/FluidR3_GM.sf2");
 
 	/* set up fluid settings */
 
