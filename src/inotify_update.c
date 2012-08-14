@@ -266,7 +266,7 @@ mpd_inotify_callback(int wd, unsigned mask,
 	    (mask & IN_ISDIR) != 0) {
 		/* a sub directory was changed: register those in
 		   inotify */
-		const char *root = mapper_get_music_directory();
+		const char *root = mapper_get_music_directory_fs();
 		const char *path_fs;
 		char *allocated = NULL;
 
@@ -308,7 +308,7 @@ mpd_inotify_init(unsigned max_depth)
 
 	g_debug("initializing inotify");
 
-	const char *path = mapper_get_music_directory();
+	const char *path = mapper_get_music_directory_fs();
 	if (path == NULL) {
 		g_debug("no music directory configured");
 		return;

@@ -83,17 +83,36 @@ apply_song_metadata(struct song *dest, const struct song *src)
 	return tmp;
 }
 
+static struct song *
+playlist_check_load_song(struct song *song, const char *uri, bool secure)
+{
+	struct song *dest;
+
+	if (uri_has_scheme(uri)) {
+		dest = song_remote_new(uri);
+	} else if (g_path_is_absolute(uri) && secure) {
+		dest = song_file_load(uri, NULL);
+		if (dest == NULL)
+			return NULL;
+	} else {
+		dest = db_get_song(uri);
+		if (dest == NULL)
+			/* not found in database */
+			return NULL;
+	}
+
+	return apply_song_metadata(dest, song);
+}
+
 struct song *
 playlist_check_translate_song(struct song *song, const char *base_uri,
 			      bool secure)
 {
-	struct song *dest;
-
 	if (song_in_database(song))
 		/* already ok */
 		return song;
 
-	char *uri = song->uri;
+	const char *uri = song->uri;
 
 	if (uri_has_scheme(uri)) {
 		if (uri_supported_scheme(uri))
@@ -115,11 +134,11 @@ playlist_check_translate_song(struct song *song, const char *base_uri,
 
 	if (g_path_is_absolute(uri)) {
 		/* XXX fs_charset vs utf8? */
-		const char *prefix = mapper_get_music_directory();
+		const char *suffix = map_to_relative_path(uri);
+		assert(suffix != NULL);
 
-		if (prefix != NULL && g_str_has_prefix(uri, prefix) &&
-		    uri[strlen(prefix)] == '/')
-			uri += strlen(prefix) + 1;
+		if (suffix != uri)
+			uri = suffix;
 		else if (!secure) {
 			/* local files must be relative to the music
 			   directory when "secure" is enabled */
@@ -130,32 +149,12 @@ playlist_check_translate_song(struct song *song, const char *base_uri,
 		base_uri = NULL;
 	}
 
+	char *allocated = NULL;
 	if (base_uri != NULL)
-		uri = g_build_filename(base_uri, uri, NULL);
-	else
-		uri = g_strdup(uri);
+		uri = allocated = g_build_filename(base_uri, uri, NULL);
 
-	if (uri_has_scheme(uri)) {
-		dest = song_remote_new(uri);
-		g_free(uri);
-	} else if (g_path_is_absolute(uri) && secure) {
-		dest = song_file_load(uri, NULL);
-		if (dest == NULL) {
-			song_free(song);
-			return NULL;
-		}
-	} else {
-		dest = db_get_song(uri);
-		g_free(uri);
-		if (dest == NULL) {
-			/* not found in database */
-			song_free(song);
-			return dest;
-		}
-	}
-
-	dest = apply_song_metadata(dest, song);
+	struct song *dest = playlist_check_load_song(song, uri, secure);
 	song_free(song);
-
+	g_free(allocated);
 	return dest;
 }

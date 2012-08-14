@@ -36,10 +36,24 @@
 #include <errno.h>
 #include <dirent.h>
 
-static char *music_dir;
-static size_t music_dir_length;
+/**
+ * The absolute path of the music directory encoded in UTF-8.
+ */
+static char *music_dir_utf8;
+static size_t music_dir_utf8_length;
 
-static char *playlist_dir;
+/**
+ * The absolute path of the music directory encoded in the filesystem
+ * character set.
+ */
+static char *music_dir_fs;
+static size_t music_dir_fs_length;
+
+/**
+ * The absolute path of the playlist directory encoded in the
+ * filesystem character set.
+ */
+static char *playlist_dir_fs;
 
 /**
  * Duplicate a string, chop all trailing slashes.
@@ -86,20 +100,21 @@ check_directory(const char *path)
 }
 
 static void
-mapper_set_music_dir(const char *path)
+mapper_set_music_dir(const char *path_utf8)
 {
-	check_directory(path);
+	music_dir_utf8 = strdup_chop_slash(path_utf8);
+	music_dir_utf8_length = strlen(music_dir_utf8);
 
-	music_dir = strdup_chop_slash(path);
-	music_dir_length = strlen(music_dir);
+	music_dir_fs = utf8_to_fs_charset(music_dir_utf8);
+	check_directory(music_dir_fs);
+	music_dir_fs_length = strlen(music_dir_fs);
 }
 
 static void
-mapper_set_playlist_dir(const char *path)
+mapper_set_playlist_dir(const char *path_utf8)
 {
-	check_directory(path);
-
-	playlist_dir = g_strdup(path);
+	playlist_dir_fs = utf8_to_fs_charset(path_utf8);
+	check_directory(playlist_dir_fs);
 }
 
 void mapper_init(const char *_music_dir, const char *_playlist_dir)
@@ -113,23 +128,31 @@ void mapper_init(const char *_music_dir, const char *_playlist_dir)
 
 void mapper_finish(void)
 {
-	g_free(music_dir);
-	g_free(playlist_dir);
+	g_free(music_dir_utf8);
+	g_free(music_dir_fs);
+	g_free(playlist_dir_fs);
 }
 
 const char *
-mapper_get_music_directory(void)
+mapper_get_music_directory_utf8(void)
 {
-	return music_dir;
+	return music_dir_utf8;
+}
+
+const char *
+mapper_get_music_directory_fs(void)
+{
+	return music_dir_fs;
 }
 
 const char *
 map_to_relative_path(const char *path_utf8)
 {
-	return music_dir != NULL &&
-		memcmp(path_utf8, music_dir, music_dir_length) == 0 &&
-		G_IS_DIR_SEPARATOR(path_utf8[music_dir_length])
-		? path_utf8 + music_dir_length + 1
+	return music_dir_utf8 != NULL &&
+		memcmp(path_utf8, music_dir_utf8,
+		       music_dir_utf8_length) == 0 &&
+		G_IS_DIR_SEPARATOR(path_utf8[music_dir_utf8_length])
+		? path_utf8 + music_dir_utf8_length + 1
 		: path_utf8;
 }
 
@@ -141,14 +164,14 @@ map_uri_fs(const char *uri)
 	assert(uri != NULL);
 	assert(*uri != '/');
 
-	if (music_dir == NULL)
+	if (music_dir_fs == NULL)
 		return NULL;
 
 	uri_fs = utf8_to_fs_charset(uri);
 	if (uri_fs == NULL)
 		return NULL;
 
-	path_fs = g_build_filename(music_dir, uri_fs, NULL);
+	path_fs = g_build_filename(music_dir_fs, uri_fs, NULL);
 	g_free(uri_fs);
 
 	return path_fs;
@@ -157,10 +180,11 @@ map_uri_fs(const char *uri)
 char *
 map_directory_fs(const struct directory *directory)
 {
-	assert(music_dir != NULL);
+	assert(music_dir_utf8 != NULL);
+	assert(music_dir_fs != NULL);
 
 	if (directory_is_root(directory))
-		return g_strdup(music_dir);
+		return g_strdup(music_dir_fs);
 
 	return map_uri_fs(directory_get_path(directory));
 }
@@ -168,9 +192,10 @@ map_directory_fs(const struct directory *directory)
 char *
 map_directory_child_fs(const struct directory *directory, const char *name)
 {
-	char *name_fs, *parent_fs, *path;
+	assert(music_dir_utf8 != NULL);
+	assert(music_dir_fs != NULL);
 
-	assert(music_dir != NULL);
+	char *name_fs, *parent_fs, *path;
 
 	/* check for invalid or unauthorized base names */
 	if (*name == 0 || strchr(name, '/') != NULL ||
@@ -208,11 +233,11 @@ map_song_fs(const struct song *song)
 char *
 map_fs_to_utf8(const char *path_fs)
 {
-	if (music_dir != NULL &&
-	    strncmp(path_fs, music_dir, music_dir_length) == 0 &&
-	    G_IS_DIR_SEPARATOR(path_fs[music_dir_length]))
+	if (music_dir_fs != NULL &&
+	    strncmp(path_fs, music_dir_fs, music_dir_fs_length) == 0 &&
+	    G_IS_DIR_SEPARATOR(path_fs[music_dir_fs_length]))
 		/* remove musicDir prefix */
-		path_fs += music_dir_length + 1;
+		path_fs += music_dir_fs_length + 1;
 	else if (G_IS_DIR_SEPARATOR(path_fs[0]))
 		/* not within musicDir */
 		return NULL;
@@ -226,7 +251,7 @@ map_fs_to_utf8(const char *path_fs)
 const char *
 map_spl_path(void)
 {
-	return playlist_dir;
+	return playlist_dir_fs;
 }
 
 char *
@@ -234,7 +259,7 @@ map_spl_utf8_to_fs(const char *name)
 {
 	char *filename_utf8, *filename_fs, *path;
 
-	if (playlist_dir == NULL)
+	if (playlist_dir_fs == NULL)
 		return NULL;
 
 	filename_utf8 = g_strconcat(name, PLAYLIST_FILE_SUFFIX, NULL);
@@ -243,7 +268,7 @@ map_spl_utf8_to_fs(const char *name)
 	if (filename_fs == NULL)
 		return NULL;
 
-	path = g_build_filename(playlist_dir, filename_fs, NULL);
+	path = g_build_filename(playlist_dir_fs, filename_fs, NULL);
 	g_free(filename_fs);
 
 	return path;

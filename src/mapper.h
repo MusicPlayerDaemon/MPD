@@ -39,9 +39,20 @@ void mapper_init(const char *_music_dir, const char *_playlist_dir);
 
 void mapper_finish(void);
 
+/**
+ * Return the absolute path of the music directory encoded in UTF-8.
+ */
 gcc_const
 const char *
-mapper_get_music_directory(void);
+mapper_get_music_directory_utf8(void);
+
+/**
+ * Return the absolute path of the music directory encoded in the
+ * filesystem character set.
+ */
+gcc_const
+const char *
+mapper_get_music_directory_fs(void);
 
 /**
  * Returns true if a music directory was configured.
@@ -50,7 +61,7 @@ gcc_const
 static inline bool
 mapper_has_music_directory(void)
 {
-	return mapper_get_music_directory() != NULL;
+	return mapper_get_music_directory_utf8() != NULL;
 }
 
 /**
