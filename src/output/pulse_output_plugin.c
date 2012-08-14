@@ -762,6 +762,24 @@ pulse_output_stream_pause(struct pulse_output *po, bool pause,
 	return true;
 }
 
+static unsigned
+pulse_output_delay(struct audio_output *ao)
+{
+	struct pulse_output *po = (struct pulse_output *)ao;
+	unsigned result = 0;
+
+	pa_threaded_mainloop_lock(po->mainloop);
+
+	if (po->base.pause && pulse_output_stream_is_paused(po) &&
+	    pa_stream_get_state(po->stream) == PA_STREAM_READY)
+		/* idle while paused */
+		result = 1000;
+
+	pa_threaded_mainloop_unlock(po->mainloop);
+
+	return result;
+}
+
 static size_t
 pulse_output_play(struct audio_output *ao, const void *chunk, size_t size,
 		  GError **error_r)
@@ -889,13 +907,8 @@ pulse_output_pause(struct audio_output *ao)
 
 	/* cork the stream */
 
-	if (pulse_output_stream_is_paused(po)) {
-		/* already paused; due to a MPD API limitation, we
-		   have to sleep a little bit here, to avoid hogging
-		   the CPU */
-
-		g_usleep(50000);
-	} else if (!pulse_output_stream_pause(po, true, &error)) {
+	if (!pulse_output_stream_is_paused(po) &&
+	    !pulse_output_stream_pause(po, true, &error)) {
 		pa_threaded_mainloop_unlock(po->mainloop);
 		g_warning("%s", error->message);
 		g_error_free(error);
@@ -932,6 +945,7 @@ const struct audio_output_plugin pulse_output_plugin = {
 	.enable = pulse_output_enable,
 	.disable = pulse_output_disable,
 	.open = pulse_output_open,
+	.delay = pulse_output_delay,
 	.play = pulse_output_play,
 	.cancel = pulse_output_cancel,
 	.pause = pulse_output_pause,
