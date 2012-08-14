@@ -1111,7 +1111,6 @@ test_dump_playlist_SOURCES = test/dump_playlist.c \
 	src/audio_check.c src/pcm_buffer.c \
 	src/text_input_stream.c src/fifo_buffer.c \
 	src/cue/cue_parser.c src/cue/cue_parser.h \
-	src/timer.c src/clock.c \
 	src/fd_util.c
 
 if HAVE_FLAC
@@ -1138,7 +1137,6 @@ test_run_decoder_SOURCES = test/run_decoder.c \
 	src/fd_util.c \
 	src/audio_check.c \
 	src/audio_format.c \
-	src/timer.c src/clock.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
 	$(TAG_SRC) \
@@ -1160,7 +1158,6 @@ test_read_tags_SOURCES = test/read_tags.c \
 	src/uri.c \
 	src/fd_util.c \
 	src/audio_check.c \
-	src/timer.c src/clock.c \
 	$(DECODER_SRC)
 
 if HAVE_ID3TAG

@@ -103,7 +103,7 @@ libsidplay2 - http://sidplay2.sourceforge.net/
 For C64 SID support.
 
 libfluidsynth - http://fluidsynth.resonance.org/
-For MIDI support (DO NOT USE - use libwildmidi instead)
+For MIDI support.
 
 libwildmidi - http://wildmidi.sourceforge.net/
 For MIDI support.

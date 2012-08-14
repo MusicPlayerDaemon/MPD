@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,18 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * WARNING!  This plugin suffers from major shortcomings in the
- * libfluidsynth API, which render it practically unusable.  For a
- * discussion, see the post on the fluidsynth mailing list:
- *
- * http://www.mail-archive.com/fluid-dev@nongnu.org/msg01099.html
- *
- */
-
 #include "config.h"
 #include "decoder_api.h"
-#include "timer.h"
+#include "audio_check.h"
 #include "conf.h"
 
 #include <glib.h>
@@ -37,6 +28,9 @@
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "fluidsynth"
+
+static unsigned sample_rate;
+static const char *soundfont_path;
 
 /**
  * Convert a fluidsynth log level to a GLib log level.
@@ -75,8 +69,21 @@ fluidsynth_mpd_log_function(int level, char *message, G_GNUC_UNUSED void *data)
 }
 
 static bool
-fluidsynth_init(G_GNUC_UNUSED const struct config_param *param)
+fluidsynth_init(const struct config_param *param)
 {
+	GError *error = NULL;
+
+	sample_rate = config_get_block_unsigned(param, "sample_rate", 48000);
+	if (!audio_check_sample_rate(sample_rate, &error)) {
+		g_warning("%s\n", error->message);
+		g_error_free(error);
+		return false;
+	}
+
+	soundfont_path =
+		config_get_block_string(param, "soundfont",
+					"/usr/share/sounds/sf2/FluidR3_GM.sf2");
+
 	fluid_set_log_function(LAST_LOG_LEVEL,
 			       fluidsynth_mpd_log_function, NULL);
 
@@ -86,28 +93,16 @@ fluidsynth_init(G_GNUC_UNUSED const struct config_param *param)
 static void
 fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 {
-	static const struct audio_format audio_format = {
-		.sample_rate = 48000,
-		.format = SAMPLE_FORMAT_S16,
-		.channels = 2,
-	};
 	char setting_sample_rate[] = "synth.sample-rate";
 	/*
 	char setting_verbose[] = "synth.verbose";
 	char setting_yes[] = "yes";
 	*/
-	const char *soundfont_path;
 	fluid_settings_t *settings;
 	fluid_synth_t *synth;
 	fluid_player_t *player;
-	char *path_dup;
 	int ret;
-	struct timer *timer;
 	enum decoder_command cmd;
-
-	soundfont_path =
-		config_get_string("soundfont",
-				  "/usr/share/sounds/sf2/FluidR3_GM.sf2");
 
 	/* set up fluid settings */
 
@@ -115,7 +110,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	if (settings == NULL)
 		return;
 
-	fluid_settings_setnum(settings, setting_sample_rate, 48000);
+	fluid_settings_setnum(settings, setting_sample_rate, sample_rate);
 
 	/*
 	fluid_settings_setstr(settings, setting_verbose, setting_yes);
@@ -146,11 +141,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 		return;
 	}
 
-	/* temporarily duplicate the path_fs string, because
-	   fluidsynth wants a writable string */
-	path_dup = g_strdup(path_fs);
-	ret = fluid_player_add(player, path_dup);
-	g_free(path_dup);
+	ret = fluid_player_add(player, path_fs);
 	if (ret != 0) {
 		g_warning("fluid_player_add() failed");
 		delete_fluid_player(player);
@@ -170,26 +161,16 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 		return;
 	}
 
-	/* set up a timer for synchronization; fluidsynth always
-	   decodes in real time, which forces us to synchronize */
-	/* XXX is there any way to switch off real-time decoding? */
-
-	timer = timer_new(&audio_format);
-	timer_start(timer);
-
 	/* initialization complete - announce the audio format to the
 	   MPD core */
 
+	struct audio_format audio_format;
+	audio_format_init(&audio_format, sample_rate, SAMPLE_FORMAT_S16, 2);
 	decoder_initialized(decoder, &audio_format, false, -1);
 
-	do {
+	while (fluid_player_get_status(player) == FLUID_PLAYER_PLAYING) {
 		int16_t buffer[2048];
 		const unsigned max_frames = G_N_ELEMENTS(buffer) / 2;
-
-		/* synchronize with the fluid player */
-
-		timer_add(timer, sizeof(buffer));
-		timer_sync(timer);
 
 		/* read samples from fluidsynth and send them to the
 		   MPD core */
@@ -197,19 +178,16 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 		ret = fluid_synth_write_s16(synth, max_frames,
 					    buffer, 0, 2,
 					    buffer, 1, 2);
-		/* XXX how do we see whether the player is done?  We
-		   can't access the private attribute
-		   player->status */
 		if (ret != 0)
 			break;
 
 		cmd = decoder_data(decoder, NULL, buffer, sizeof(buffer),
 				   0);
-	} while (cmd == DECODE_COMMAND_NONE);
+		if (cmd != DECODE_COMMAND_NONE)
+			break;
+	}
 
 	/* clean up */
-
-	timer_free(timer);
 
 	fluid_player_stop(player);
 	fluid_player_join(player);
@@ -224,10 +202,7 @@ fluidsynth_scan_file(const char *file,
 		     G_GNUC_UNUSED const struct tag_handler *handler,
 		     G_GNUC_UNUSED void *handler_ctx)
 {
-	/* to be implemented */
-	(void)file;
-
-	return true;
+	return fluid_is_midifile(file);
 }
 
 static const char *const fluidsynth_suffixes[] = {

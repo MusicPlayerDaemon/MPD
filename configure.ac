@@ -220,8 +220,8 @@ AC_ARG_ENABLE(flac,
 
 AC_ARG_ENABLE(fluidsynth,
 	AS_HELP_STRING([--enable-fluidsynth],
-		[enable MIDI support via fluidsynth (default: disable)]),,
-	enable_fluidsynth=no)
+		[enable MIDI support via fluidsynth (default: auto)]),,
+	enable_fluidsynth=auto)
 
 AC_ARG_ENABLE(gme,
 	AS_HELP_STRING([--enable-gme],
@@ -857,7 +857,7 @@ enable_flac_encoder=$enable_flac
 
 dnl -------------------------------- FluidSynth -------------------------------
 if test x$enable_fluidsynth = xyes; then
-	PKG_CHECK_MODULES(FLUIDSYNTH, [fluidsynth],
+	PKG_CHECK_MODULES(FLUIDSYNTH, [fluidsynth >= 1.1],
 		AC_DEFINE(ENABLE_FLUIDSYNTH, 1, [Define for fluidsynth support]),
 		enable_fluidsynth=no)
 fi
