@@ -69,7 +69,6 @@ apply_song_metadata(struct song *dest, const struct song *src)
 	} else {
 		tmp = song_file_new(dest->uri, NULL);
 		merge_song_metadata(tmp, dest, src);
-		song_free(dest);
 	}
 
 	if (dest->tag != NULL && dest->tag->time > 0 &&
@@ -79,6 +78,9 @@ apply_song_metadata(struct song *dest, const struct song *src)
 		   did not know the total length of the song file
 		   (e.g. last track on a CUE file); fix it up here */
 		tmp->tag->time = dest->tag->time - src->start_ms / 1000;
+
+	if (!song_in_database(dest))
+		song_free(dest);
 
 	return tmp;
 }
