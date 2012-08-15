@@ -93,10 +93,10 @@ check_directory(const char *path)
 #endif
 
 	DIR *dir = opendir(path);
-	if (dir == NULL && errno == EACCES)
-		g_warning("No permission to read directory: %s", path);
-	else
+	if (dir != NULL)
 		closedir(dir);
+	else if (errno == EACCES)
+		g_warning("No permission to read directory: %s", path);
 }
 
 static void
