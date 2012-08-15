@@ -88,6 +88,18 @@ song_replace_uri(struct song *song, const char *uri);
 void
 song_free(struct song *song);
 
+static inline bool
+song_in_database(const struct song *song)
+{
+	return song->parent != NULL;
+}
+
+static inline bool
+song_is_file(const struct song *song)
+{
+	return song_in_database(song) || song->uri[0] == '/';
+}
+
 bool
 song_file_update(struct song *song);
 
@@ -106,18 +118,6 @@ song_get_uri(const struct song *song);
 
 double
 song_get_duration(const struct song *song);
-
-static inline bool
-song_in_database(const struct song *song)
-{
-	return song->parent != NULL;
-}
-
-static inline bool
-song_is_file(const struct song *song)
-{
-	return song_in_database(song) || song->uri[0] == '/';
-}
 
 G_END_DECLS
 
