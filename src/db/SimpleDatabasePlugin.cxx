@@ -20,6 +20,7 @@
 #include "config.h"
 #include "SimpleDatabasePlugin.hxx"
 #include "DatabaseSelection.hxx"
+#include "DatabaseHelpers.hxx"
 
 extern "C" {
 #include "db_error.h"
@@ -267,6 +268,16 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 				   error_r);
 	db_unlock();
 	return ret;
+}
+
+bool
+SimpleDatabase::VisitUniqueTags(const DatabaseSelection &selection,
+				enum tag_type tag_type,
+				VisitString visit_string,
+				GError **error_r) const
+{
+	return ::VisitUniqueTags(*this, selection, tag_type, visit_string,
+				 error_r);
 }
 
 bool

@@ -66,6 +66,11 @@ public:
 			   VisitPlaylist visit_playlist,
 			   GError **error_r) const override;
 
+	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
+				     enum tag_type tag_type,
+				     VisitString visit_string,
+				     GError **error_r) const override;
+
 protected:
 	bool Configure(const struct config_param *param, GError **error_r);
 

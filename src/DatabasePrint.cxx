@@ -38,7 +38,6 @@ extern "C" {
 #include "DatabasePlugin.hxx"
 
 #include <functional>
-#include <set>
 
 static bool
 PrintDirectory(struct client *client, const directory &directory)
@@ -186,48 +185,19 @@ printInfoForAllIn(struct client *client, const char *uri_utf8,
 	return db_selection_print(client, selection, true, error_r);
 }
 
-struct StringLess {
-	gcc_pure
-	bool operator()(const char *a, const char *b) const {
-		return strcmp(a, b) < 0;
-	}
-};
-
-typedef std::set<const char *, StringLess> StringSet;
-
-static void
-visitTag(struct client *client, StringSet &set,
-	 song &song, enum tag_type tagType)
+static bool
+PrintSongURIVisitor(struct client *client, song &song)
 {
-	struct tag *tag = song.tag;
-	bool found = false;
+	song_print_uri(client, &song);
 
-	if (tagType == LOCATE_TAG_FILE_TYPE) {
-		song_print_uri(client, &song);
-		return;
-	}
-
-	if (!tag)
-		return;
-
-	for (unsigned i = 0; i < tag->num_items; i++) {
-		if (tag->items[i]->type == tagType) {
-			set.insert(tag->items[i]->value);
-			found = true;
-		}
-	}
-
-	if (!found)
-		set.insert("");
+	return true;
 }
 
 static bool
-unique_tags_visitor_song(struct client *client,
-			 enum tag_type tag_type,
-			 StringSet &set, song &song)
+PrintUniqueTag(struct client *client, enum tag_type tag_type,
+	       const char *value)
 {
-	visitTag(client, set, song, tag_type);
-
+	client_printf(client, "%s: %s\n", tag_item_names[tag_type], value);
 	return true;
 }
 
@@ -238,20 +208,16 @@ listAllUniqueTags(struct client *client, int type,
 {
 	const DatabaseSelection selection("", true, criteria);
 
-	StringSet set;
-
-	using namespace std::placeholders;
-	const auto f = std::bind(unique_tags_visitor_song, client,
-				 (enum tag_type)type, std::ref(set),
-				 _1);
-	if (!GetDatabase()->Visit(selection, f, error_r))
-		return false;
-
-	if (type >= 0 && type <= TAG_NUM_OF_ITEM_TYPES)
-		for (auto value : set)
-			client_printf(client, "%s: %s\n",
-				      tag_item_names[type],
-				      value);
-
-	return true;
+	if (type == LOCATE_TAG_FILE_TYPE) {
+		using namespace std::placeholders;
+		const auto f = std::bind(PrintSongURIVisitor, client, _1);
+		return GetDatabase()->Visit(selection, f, error_r);
+	} else {
+		using namespace std::placeholders;
+		const auto f = std::bind(PrintUniqueTag, client,
+					 (enum tag_type)type, _1);
+		return GetDatabase()->VisitUniqueTags(selection,
+						      (enum tag_type)type,
+						      f, error_r);
+	}
 }

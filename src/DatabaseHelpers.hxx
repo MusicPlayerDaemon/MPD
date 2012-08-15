@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,22 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DATABASE_VISITOR_HXX
-#define MPD_DATABASE_VISITOR_HXX
+#ifndef MPD_MEMORY_DATABASE_PLUGIN_HXX
+#define MPD_MEMORY_DATABASE_PLUGIN_HXX
 
-#include "gerror.h"
+#include "DatabaseVisitor.hxx"
+#include "tag.h"
+#include "gcc.h"
 
-#include <functional>
+class Database;
+struct DatabaseSelection;
 
-struct directory;
-struct song;
-struct playlist_metadata;
-
-typedef std::function<bool(const directory &, GError **)> VisitDirectory;
-typedef std::function<bool(struct song &, GError **)> VisitSong;
-typedef std::function<bool(const playlist_metadata &, const directory &,
-			   GError **)> VisitPlaylist;
-
-typedef std::function<bool(const char *, GError **)> VisitString;
+bool
+VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
+		enum tag_type tag_type,
+		VisitString visit_string,
+		GError **error_r);
 
 #endif

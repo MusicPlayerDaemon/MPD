@@ -29,6 +29,10 @@
 #include "DatabaseVisitor.hxx"
 #include "gcc.h"
 
+extern "C" {
+#include "tag.h"
+}
+
 struct config_param;
 struct DatabaseSelection;
 struct db_visitor;
@@ -82,6 +86,14 @@ public:
 		   GError **error_r) const {
 		return Visit(selection, VisitDirectory(), visit_song, error_r);
 	}
+
+	/**
+	 * Visit all unique tag values.
+	 */
+	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
+				     enum tag_type tag_type,
+				     VisitString visit_string,
+				     GError **error_r) const = 0;
 };
 
 struct DatabasePlugin {

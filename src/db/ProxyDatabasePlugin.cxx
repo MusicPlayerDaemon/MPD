@@ -62,6 +62,11 @@ public:
 			   VisitPlaylist visit_playlist,
 			   GError **error_r) const override;
 
+	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
+				     enum tag_type tag_type,
+				     VisitString visit_string,
+				     GError **error_r) const override;
+
 protected:
 	bool Configure(const struct config_param *param, GError **error_r);
 };
@@ -96,6 +101,17 @@ static constexpr struct {
 	{ TAG_MUSICBRAINZ_TRACKID, MPD_TAG_MUSICBRAINZ_TRACKID },
 	{ TAG_NUM_OF_ITEM_TYPES, MPD_TAG_COUNT }
 };
+
+G_GNUC_CONST
+static enum mpd_tag_type
+Convert(enum tag_type tag_type)
+{
+	for (auto i = tag_table; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
+		if (i->d == tag_type)
+			return i->s;
+
+	return MPD_TAG_COUNT;
+}
 
 static bool
 CheckError(const struct mpd_connection *connection, GError **error_r)
@@ -366,6 +382,42 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 	if (parent != root)
 		directory_free(parent);
 	return success;
+}
+
+bool
+ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
+			       enum tag_type tag_type,
+			       VisitString visit_string,
+			       GError **error_r) const
+{
+	enum mpd_tag_type tag_type2 = Convert(tag_type);
+	if (tag_type2 == MPD_TAG_COUNT) {
+		g_set_error_literal(error_r, libmpdclient_quark(), 0,
+				    "Unsupported tag");
+		return false;
+	}
+
+	if (!mpd_search_db_tags(connection, tag_type2))
+		return CheckError(connection, error_r);
+
+	// TODO: match
+	(void)selection;
+
+	if (!mpd_search_commit(connection))
+		return CheckError(connection, error_r);
+
+	bool result = true;
+
+	struct mpd_pair *pair;
+	while (result &&
+	       (pair = mpd_recv_pair_tag(connection, tag_type2)) != nullptr) {
+		result = visit_string(pair->value, error_r);
+		mpd_return_pair(connection, pair);
+	}
+
+	return mpd_response_finish(connection) &&
+		CheckError(connection, error_r) &&
+		result;
 }
 
 const DatabasePlugin proxy_db_plugin = {
