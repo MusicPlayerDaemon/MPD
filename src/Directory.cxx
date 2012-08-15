@@ -26,7 +26,6 @@ extern "C" {
 #include "playlist_vector.h"
 #include "path.h"
 #include "util/list_sort.h"
-#include "db_visitor.h"
 #include "db_lock.h"
 #include "locate.h"
 }

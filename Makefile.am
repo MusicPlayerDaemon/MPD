@@ -263,7 +263,6 @@ src_mpd_SOURCES = \
 	src/db_error.h \
 	src/db_lock.c src/db_lock.h \
 	src/db_save.c src/db_save.h \
-	src/db_visitor.h \
 	src/DatabasePlugin.hxx \
 	src/DatabaseVisitor.hxx \
 	src/DatabaseSelection.hxx \

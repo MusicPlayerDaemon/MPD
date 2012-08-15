@@ -25,9 +25,6 @@
 
 extern "C" {
 #include "db_error.h"
-#include "db_visitor.h"
-#include "db_save.h"
-#include "db_lock.h"
 #include "conf.h"
 #include "song.h"
 #include "tag.h"

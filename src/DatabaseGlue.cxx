@@ -25,7 +25,6 @@ extern "C" {
 #include "database.h"
 #include "db_error.h"
 #include "db_save.h"
-#include "db_visitor.h"
 #include "stats.h"
 #include "conf.h"
 #include "glib_compat.h"
