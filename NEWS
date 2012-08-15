@@ -14,6 +14,8 @@ ver 0.17.2 (2012/??/??)
   - httpd: fix throttling bug after resuming playback
 * mapper: fix non-UTF8 music directory name
 * mapper: fix potential crash in file permission check
+* playlist: fix use-after-free bug
+* playlist: fix memory leak
 
 
 ver 0.17.1 (2012/07/31)
