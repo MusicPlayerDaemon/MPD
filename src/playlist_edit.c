@@ -128,7 +128,12 @@ playlist_append_uri(struct playlist *playlist, struct player_control *pc,
 	if (song == NULL)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
-	return playlist_append_song(playlist, pc, song, added_id);
+	enum playlist_result result =
+		playlist_append_song(playlist, pc, song, added_id);
+	if (song_in_database(song))
+		db_return_song(song);
+
+	return result;
 }
 
 enum playlist_result

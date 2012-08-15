@@ -85,13 +85,20 @@ public:
 	virtual void Close() {}
 
 	/**
-         * Look up a song (including tag data) in the database.
+         * Look up a song (including tag data) in the database.  When
+         * you don't need this anymore, call ReturnSong().
 	 *
 	 * @param uri_utf8 the URI of the song within the music
 	 * directory (UTF-8)
 	 */
 	virtual struct song *GetSong(const char *uri_utf8,
 				     GError **error_r) const = 0;
+
+	/**
+	 * Mark the song object as "unused".  Call this on objects
+	 * returned by GetSong().
+	 */
+	virtual void ReturnSong(struct song *song) const = 0;
 
 	/**
 	 * Visit the selected entities.

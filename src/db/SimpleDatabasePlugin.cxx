@@ -184,6 +184,10 @@ SimpleDatabase::Open(GError **error_r)
 	root = directory_new_root();
 	mtime = 0;
 
+#ifndef NDEBUG
+	borrowed_song_count = 0;
+#endif
+
 	GError *error = NULL;
 	if (!Load(&error)) {
 		directory_free(root);
@@ -204,6 +208,7 @@ void
 SimpleDatabase::Close()
 {
 	assert(root != NULL);
+	assert(borrowed_song_count == 0);
 
 	directory_free(root);
 }
@@ -219,8 +224,23 @@ SimpleDatabase::GetSong(const char *uri, GError **error_r) const
 	if (song == NULL)
 		g_set_error(error_r, db_quark(), DB_NOT_FOUND,
 			    "No such song: %s", uri);
+#ifndef NDEBUG
+	else
+		++const_cast<unsigned &>(borrowed_song_count);
+#endif
 
 	return song;
+}
+
+void
+SimpleDatabase::ReturnSong(gcc_unused struct song *song) const
+{
+	assert(song != nullptr);
+
+#ifndef NDEBUG
+	assert(borrowed_song_count > 0);
+	--const_cast<unsigned &>(borrowed_song_count);
+#endif
 }
 
 G_GNUC_PURE

@@ -1326,6 +1326,7 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 		}
 
 		value = sticker_song_get_value(song, argv[4]);
+		db_return_song(song);
 		if (value == NULL) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "no such sticker");
@@ -1349,6 +1350,7 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 		}
 
 		sticker = sticker_song_get(song);
+		db_return_song(song);
 		if (sticker) {
 			sticker_print(client, sticker);
 			sticker_free(sticker);
@@ -1368,6 +1370,7 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 		}
 
 		ret = sticker_song_set_value(song, argv[4], argv[5]);
+		db_return_song(song);
 		if (!ret) {
 			command_error(client, ACK_ERROR_SYSTEM,
 				      "failed to set sticker value");
@@ -1391,6 +1394,7 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 		ret = argc == 4
 			? sticker_song_delete(song)
 			: sticker_song_delete_value(song, argv[4]);
+		db_return_song(song);
 		if (!ret) {
 			command_error(client, ACK_ERROR_SYSTEM,
 				      "no such sticker");

@@ -496,7 +496,9 @@ spl_append_uri(const char *url, const char *utf8file, GError **error_r)
 			return false;
 		}
 
-		return spl_append_song(utf8file, song, error_r);
+		bool success = spl_append_song(utf8file, song, error_r);
+		db_return_song(song);
+		return success;
 	}
 }
 

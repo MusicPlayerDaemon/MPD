@@ -56,6 +56,8 @@ public:
 	virtual void Close() override;
 	virtual struct song *GetSong(const char *uri_utf8,
 				     GError **error_r) const override;
+	virtual void ReturnSong(struct song *song) const;
+
 	virtual bool Visit(const DatabaseSelection &selection,
 			   VisitDirectory visit_directory,
 			   VisitSong visit_song,
@@ -189,6 +191,16 @@ ProxyDatabase::GetSong(const char *uri, GError **error_r) const
 	g_set_error(error_r, db_quark(), DB_NOT_FOUND,
 		    "No such song: %s", uri);
 	return nullptr;
+}
+
+void
+ProxyDatabase::ReturnSong(struct song *song) const
+{
+	assert(song != nullptr);
+	assert(song_in_database(song));
+	assert(song_is_detached(song));
+
+	song_free(song);
 }
 
 static bool

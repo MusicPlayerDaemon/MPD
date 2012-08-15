@@ -127,6 +127,7 @@ spl_print(struct client *client, const char *name_utf8, bool detail,
 			struct song *song = db_get_song(temp);
 			if (song) {
 				song_print_info(client, song);
+				db_return_song(song);
 				wrote = true;
 			}
 		}
@@ -157,8 +158,7 @@ playlist_provider_print(struct client *client, const char *uri,
 		else
 			song_print_uri(client, song);
 
-		if (!song_in_database(song) || song_is_detached(song))
-			song_free(song);
+		song_free(song);
 	}
 
 	g_free(base_uri);

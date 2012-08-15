@@ -79,9 +79,7 @@ apply_song_metadata(struct song *dest, const struct song *src)
 		   (e.g. last track on a CUE file); fix it up here */
 		tmp->tag->time = dest->tag->time - src->start_ms / 1000;
 
-	if (!song_in_database(dest))
-		song_free(dest);
-
+	song_free(dest);
 	return tmp;
 }
 
@@ -97,10 +95,13 @@ playlist_check_load_song(const struct song *song, const char *uri, bool secure)
 		if (dest == NULL)
 			return NULL;
 	} else {
-		dest = db_get_song(uri);
-		if (dest == NULL)
+		struct song *tmp = db_get_song(uri);
+		if (tmp == NULL)
 			/* not found in database */
 			return NULL;
+
+		dest = song_dup_detached(tmp);
+		db_return_song(tmp);
 	}
 
 	return apply_song_metadata(dest, song);

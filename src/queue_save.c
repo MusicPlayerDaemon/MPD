@@ -103,4 +103,7 @@ queue_load_song(FILE *fp, GString *buffer, const char *line,
 	}
 
 	queue_append(queue, song);
+
+	if (song_in_database(song))
+		db_return_song(song);
 }

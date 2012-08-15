@@ -38,6 +38,10 @@ class SimpleDatabase : public Database {
 
 	time_t mtime;
 
+#ifndef NDEBUG
+	unsigned borrowed_song_count;
+#endif
+
 public:
 	gcc_pure
 	struct directory *GetRoot() {
@@ -61,6 +65,8 @@ public:
 
 	virtual struct song *GetSong(const char *uri_utf8,
 				     GError **error_r) const override;
+	virtual void ReturnSong(struct song *song) const;
+
 	virtual bool Visit(const DatabaseSelection &selection,
 			   VisitDirectory visit_directory,
 			   VisitSong visit_song,

@@ -41,8 +41,7 @@ playlist_load_into_queue(const char *uri, struct playlist_provider *source,
 	     ++i) {
 		if (i < start_index) {
 			/* skip songs before the start index */
-			if (!song_in_database(song))
-				song_free(song);
+			song_free(song);
 			continue;
 		}
 
@@ -51,9 +50,8 @@ playlist_load_into_queue(const char *uri, struct playlist_provider *source,
 			continue;
 
 		result = playlist_append_song(dest, pc, song, NULL);
+		song_free(song);
 		if (result != PLAYLIST_RESULT_SUCCESS) {
-			if (!song_in_database(song))
-				song_free(song);
 			g_free(base_uri);
 			return result;
 		}

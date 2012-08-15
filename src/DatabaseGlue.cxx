@@ -132,6 +132,15 @@ db_get_song(const char *file)
 	return db->GetSong(file, NULL);
 }
 
+void
+db_return_song(struct song *song)
+{
+	assert(db != nullptr);
+	assert(song != nullptr);
+
+	db->ReturnSong(song);
+}
+
 bool
 db_save(GError **error_r)
 {
