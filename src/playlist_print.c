@@ -163,6 +163,9 @@ playlist_provider_print(struct client *client, const char *uri,
 			song_print_info(client, song);
 		else
 			song_print_uri(client, song);
+
+		if (!song_in_database(song))
+			song_free(song);
 	}
 
 	g_free(base_uri);
