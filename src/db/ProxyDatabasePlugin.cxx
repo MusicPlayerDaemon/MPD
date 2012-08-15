@@ -323,20 +323,23 @@ Visit(struct mpd_connection *connection, struct directory &parent,
 			break;
 
 		case MPD_ENTITY_TYPE_DIRECTORY:
-			Visit(connection, parent, recursive,
-			      mpd_entity_get_directory(entity),
-			      visit_directory, visit_song, visit_playlist,
-			      error_r);
+			if (!Visit(connection, parent, recursive,
+				   mpd_entity_get_directory(entity),
+				   visit_directory, visit_song, visit_playlist,
+				   error_r))
+				return false;
 			break;
 
 		case MPD_ENTITY_TYPE_SONG:
-			Visit(parent, mpd_entity_get_song(entity), visit_song,
-			      error_r);
+			if (!Visit(parent, mpd_entity_get_song(entity),
+				   visit_song, error_r))
+				return false;
 			break;
 
 		case MPD_ENTITY_TYPE_PLAYLIST:
-			Visit(parent, mpd_entity_get_playlist(entity),
-			      visit_playlist, error_r);
+			if (!Visit(parent, mpd_entity_get_playlist(entity),
+				   visit_playlist, error_r))
+				return false;
 			break;
 		}
 	}
