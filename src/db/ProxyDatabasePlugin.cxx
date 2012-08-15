@@ -183,15 +183,38 @@ ProxyDatabase::Close()
 	mpd_connection_free(connection);
 }
 
+static song *
+Convert(const struct mpd_song *song);
+
 struct song *
 ProxyDatabase::GetSong(const char *uri, GError **error_r) const
 {
 	// TODO: implement
 	// TODO: auto-reconnect
 
-	g_set_error(error_r, db_quark(), DB_NOT_FOUND,
-		    "No such song: %s", uri);
-	return nullptr;
+	if (!mpd_send_list_meta(connection, uri)) {
+		CheckError(connection, error_r);
+		return nullptr;
+	}
+
+	struct mpd_song *song = mpd_recv_song(connection);
+	struct song *song2 = song != nullptr
+		? Convert(song)
+		: nullptr;
+	mpd_song_free(song);
+	if (!mpd_response_finish(connection)) {
+		if (song2 != nullptr)
+			song_free(song2);
+
+		CheckError(connection, error_r);
+		return nullptr;
+	}
+
+	if (song2 == nullptr)
+		g_set_error(error_r, db_quark(), DB_NOT_FOUND,
+			    "No such song: %s", uri);
+
+	return song2;
 }
 
 void
