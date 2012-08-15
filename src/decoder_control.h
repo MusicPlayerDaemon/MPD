@@ -207,6 +207,7 @@ dc_get_error(const struct decoder_control *dc)
 {
 	assert(dc != NULL);
 	assert(dc->command == DECODE_COMMAND_NONE);
+	assert(dc->state != DECODE_STATE_ERROR || dc->error != NULL);
 
 	return dc->state == DECODE_STATE_ERROR
 		? g_error_copy(dc->error)
