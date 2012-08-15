@@ -73,6 +73,30 @@ libmpdclient_quark(void)
 	return g_quark_from_static_string("libmpdclient");
 }
 
+static constexpr struct {
+	enum tag_type d;
+	enum mpd_tag_type s;
+} tag_table[] = {
+	{ TAG_ARTIST, MPD_TAG_ARTIST },
+	{ TAG_ALBUM, MPD_TAG_ALBUM },
+	{ TAG_ALBUM_ARTIST, MPD_TAG_ALBUM_ARTIST },
+	{ TAG_TITLE, MPD_TAG_TITLE },
+	{ TAG_TRACK, MPD_TAG_TRACK },
+	{ TAG_NAME, MPD_TAG_NAME },
+	{ TAG_GENRE, MPD_TAG_GENRE },
+	{ TAG_DATE, MPD_TAG_DATE },
+	{ TAG_COMPOSER, MPD_TAG_COMPOSER },
+	{ TAG_PERFORMER, MPD_TAG_PERFORMER },
+	{ TAG_COMMENT, MPD_TAG_COMMENT },
+	{ TAG_DISC, MPD_TAG_DISC },
+	{ TAG_MUSICBRAINZ_ARTISTID, MPD_TAG_MUSICBRAINZ_ARTISTID },
+	{ TAG_MUSICBRAINZ_ALBUMID, MPD_TAG_MUSICBRAINZ_ALBUMID },
+	{ TAG_MUSICBRAINZ_ALBUMARTISTID,
+	  MPD_TAG_MUSICBRAINZ_ALBUMARTISTID },
+	{ TAG_MUSICBRAINZ_TRACKID, MPD_TAG_MUSICBRAINZ_TRACKID },
+	{ TAG_NUM_OF_ITEM_TYPES, MPD_TAG_COUNT }
+};
+
 static bool
 CheckError(const struct mpd_connection *connection, GError **error_r)
 {
@@ -201,32 +225,8 @@ Convert(struct directory &parent, const struct mpd_song *song)
 	struct tag *tag = tag_new();
 	tag->time = mpd_song_get_duration(song);
 
-	static constexpr struct {
-		enum tag_type d;
-		enum mpd_tag_type s;
-	} table[] = {
-		{ TAG_ARTIST, MPD_TAG_ARTIST },
-		{ TAG_ALBUM, MPD_TAG_ALBUM },
-		{ TAG_ALBUM_ARTIST, MPD_TAG_ALBUM_ARTIST },
-		{ TAG_TITLE, MPD_TAG_TITLE },
-		{ TAG_TRACK, MPD_TAG_TRACK },
-		{ TAG_NAME, MPD_TAG_NAME },
-		{ TAG_GENRE, MPD_TAG_GENRE },
-		{ TAG_DATE, MPD_TAG_DATE },
-		{ TAG_COMPOSER, MPD_TAG_COMPOSER },
-		{ TAG_PERFORMER, MPD_TAG_PERFORMER },
-		{ TAG_COMMENT, MPD_TAG_COMMENT },
-		{ TAG_DISC, MPD_TAG_DISC },
-		{ TAG_MUSICBRAINZ_ARTISTID, MPD_TAG_MUSICBRAINZ_ARTISTID },
-		{ TAG_MUSICBRAINZ_ALBUMID, MPD_TAG_MUSICBRAINZ_ALBUMID },
-		{ TAG_MUSICBRAINZ_ALBUMARTISTID,
-		  MPD_TAG_MUSICBRAINZ_ALBUMARTISTID },
-		{ TAG_MUSICBRAINZ_TRACKID, MPD_TAG_MUSICBRAINZ_TRACKID },
-		{ TAG_NUM_OF_ITEM_TYPES, MPD_TAG_COUNT }
-	};
-
 	tag_begin_add(tag);
-	for (auto i = table; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
+	for (auto i = tag_table; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
 		Copy(tag, i->d, song, i->s);
 	tag_end_add(tag);
 
