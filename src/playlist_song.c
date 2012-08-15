@@ -86,7 +86,7 @@ apply_song_metadata(struct song *dest, const struct song *src)
 }
 
 static struct song *
-playlist_check_load_song(struct song *song, const char *uri, bool secure)
+playlist_check_load_song(const struct song *song, const char *uri, bool secure)
 {
 	struct song *dest;
 
