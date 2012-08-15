@@ -120,7 +120,7 @@ Convert(enum tag_type tag_type)
 }
 
 static bool
-CheckError(const struct mpd_connection *connection, GError **error_r)
+CheckError(struct mpd_connection *connection, GError **error_r)
 {
 	const auto error = mpd_connection_get_error(connection);
 	if (error == MPD_ERROR_SUCCESS)
@@ -128,6 +128,7 @@ CheckError(const struct mpd_connection *connection, GError **error_r)
 
 	g_set_error_literal(error_r, libmpdclient_quark(), (int)error,
 			    mpd_connection_get_error_message(connection));
+	mpd_connection_clear_error(connection);
 	return false;
 }
 
