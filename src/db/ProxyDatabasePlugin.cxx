@@ -267,13 +267,39 @@ Visit(struct directory &parent, const struct mpd_playlist *playlist,
 	return success;
 }
 
-static std::list<struct mpd_entity *>
+class ProxyEntity {
+	struct mpd_entity *entity;
+
+public:
+	explicit ProxyEntity(struct mpd_entity *_entity)
+		:entity(_entity) {}
+
+	ProxyEntity(const ProxyEntity &other) = delete;
+
+	ProxyEntity(ProxyEntity &&other)
+		:entity(other.entity) {
+		other.entity = nullptr;
+	}
+
+	~ProxyEntity() {
+		if (entity != nullptr)
+			mpd_entity_free(entity);
+	}
+
+	ProxyEntity &operator=(const ProxyEntity &other) = delete;
+
+	operator const struct mpd_entity *() const {
+		return entity;
+	}
+};
+
+static std::list<ProxyEntity>
 ReceiveEntities(struct mpd_connection *connection)
 {
-	std::list<struct mpd_entity *> entities;
+	std::list<ProxyEntity> entities;
 	struct mpd_entity *entity;
 	while ((entity = mpd_recv_entity(connection)) != NULL)
-		entities.push_back(entity);
+		entities.push_back(ProxyEntity(entity));
 
 	mpd_response_finish(connection);
 	return entities;
@@ -287,14 +313,11 @@ Visit(struct mpd_connection *connection, struct directory &parent,
 	if (!mpd_send_list_meta(connection, directory_get_path(&parent)))
 		return CheckError(connection, error_r);
 
-	std::list<struct mpd_entity *> entities = ReceiveEntities(connection);
-	if (!CheckError(connection, error_r)) {
-		for (auto entity : entities)
-			mpd_entity_free(entity);
+	std::list<ProxyEntity> entities(ReceiveEntities(connection));
+	if (!CheckError(connection, error_r))
 		return false;
-	}
 
-	for (auto entity : entities) {
+	for (const auto &entity : entities) {
 		switch (mpd_entity_get_type(entity)) {
 		case MPD_ENTITY_TYPE_UNKNOWN:
 			break;
@@ -316,8 +339,6 @@ Visit(struct mpd_connection *connection, struct directory &parent,
 			      visit_playlist, error_r);
 			break;
 		}
-
-		mpd_entity_free(entity);
 	}
 
 	return CheckError(connection, error_r);
