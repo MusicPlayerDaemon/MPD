@@ -44,13 +44,13 @@ bool
 printInfoForAllIn(struct client *client, const char *uri_utf8,
 		  GError **error_r);
 
-gcc_nonnull(1,2,3)
+gcc_nonnull(1,2)
 bool
 searchStatsForSongsIn(struct client *client, const char *name,
 		      const struct locate_item_list *criteria,
 		      GError **error_r);
 
-gcc_nonnull(1,3)
+gcc_nonnull(1)
 bool
 listAllUniqueTags(struct client *client, int type,
 		  const struct locate_item_list *criteria,
