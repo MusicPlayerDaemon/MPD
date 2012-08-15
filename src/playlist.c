@@ -239,9 +239,13 @@ playlist_sync(struct playlist *playlist, struct player_control *pc)
 		if (pc_next_song == NULL && playlist->queued != -1)
 			playlist_song_started(playlist, pc);
 
+		player_lock(pc);
+		pc_next_song = pc->next_song;
+		player_unlock(pc);
+
 		/* make sure the queued song is always set (if
 		   possible) */
-		if (pc->next_song == NULL && playlist->queued < 0)
+		if (pc_next_song == NULL && playlist->queued < 0)
 			playlist_update_queued_song(playlist, pc, NULL);
 	}
 }
