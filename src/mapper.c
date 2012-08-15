@@ -219,13 +219,32 @@ map_directory_child_fs(const struct directory *directory, const char *name)
 	return path;
 }
 
+/**
+ * Map a song object that was created by song_dup_detached().  It does
+ * not have a real parent directory, only the dummy object
+ * #detached_root.
+ */
+static char *
+map_detached_song_fs(const char *uri_utf8)
+{
+	char *uri_fs = utf8_to_fs_charset(uri_utf8);
+	if (uri_fs == NULL)
+		return NULL;
+
+	char *path = g_build_filename(music_dir_fs, uri_fs, NULL);
+	g_free(uri_fs);
+	return path;
+}
+
 char *
 map_song_fs(const struct song *song)
 {
 	assert(song_is_file(song));
 
 	if (song_in_database(song))
-		return map_directory_child_fs(song->parent, song->uri);
+		return song_is_detached(song)
+			? map_detached_song_fs(song->uri)
+			: map_directory_child_fs(song->parent, song->uri);
 	else
 		return utf8_to_fs_charset(song->uri);
 }

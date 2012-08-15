@@ -29,6 +29,8 @@ extern "C" {
 
 #include <assert.h>
 
+struct directory detached_root;
+
 static struct song *
 song_alloc(const char *uri, struct directory *parent)
 {
@@ -76,6 +78,27 @@ song_replace_uri(struct song *old_song, const char *uri)
 	return new_song;
 }
 
+struct song *
+song_dup_detached(const struct song *src)
+{
+	assert(src != nullptr);
+
+	struct song *song;
+	if (song_in_database(src)) {
+		char *uri = song_get_uri(src);
+		song = song_alloc(uri, &detached_root);
+		g_free(uri);
+	} else
+		song = song_alloc(src->uri, nullptr);
+
+	song->tag = tag_dup(src->tag);
+	song->mtime = src->mtime;
+	song->start_ms = src->start_ms;
+	song->end_ms = src->end_ms;
+
+	return song;
+}
+
 void
 song_free(struct song *song)
 {
@@ -106,6 +129,19 @@ song_equals(const struct song *a, const struct song *b)
 {
 	assert(a != nullptr);
 	assert(b != nullptr);
+
+	if (a->parent != nullptr && b->parent != nullptr &&
+	    !directory_equals(*a->parent, *b->parent) &&
+	    (a->parent == &detached_root || b->parent == &detached_root)) {
+		/* must compare the full URI if one of the objects is
+		   "detached" */
+		char *au = song_get_uri(a);
+		char *bu = song_get_uri(b);
+		const bool result = strcmp(au, bu) == 0;
+		g_free(bu);
+		g_free(au);
+		return result;
+	}
 
 	return directory_is_same(a->parent, b->parent) &&
 		strcmp(a->uri, b->uri) == 0;

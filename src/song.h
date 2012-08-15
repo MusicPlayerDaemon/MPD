@@ -23,6 +23,7 @@
 #include "util/list.h"
 #include "gcc.h"
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdbool.h>
 #include <sys/time.h>
@@ -59,6 +60,12 @@ struct song {
 	char uri[sizeof(int)];
 };
 
+/**
+ * A dummy #directory instance that is used for "detached" song
+ * copies.
+ */
+extern struct directory detached_root;
+
 G_BEGIN_DECLS
 
 /** allocate a new song with a remote URL */
@@ -86,6 +93,15 @@ song_file_load(const char *path, struct directory *parent);
 struct song *
 song_replace_uri(struct song *song, const char *uri);
 
+/**
+ * Creates a duplicate of the song object.  If the object is in the
+ * database, it creates a "detached" copy of this song, see
+ * song_is_detached().
+ */
+gcc_malloc
+struct song *
+song_dup_detached(const struct song *src);
+
 void
 song_free(struct song *song);
 
@@ -99,6 +115,15 @@ static inline bool
 song_is_file(const struct song *song)
 {
 	return song_in_database(song) || song->uri[0] == '/';
+}
+
+static inline bool
+song_is_detached(const struct song *song)
+{
+	assert(song != NULL);
+	assert(song_in_database(song));
+
+	return song->parent == &detached_root;
 }
 
 /**
