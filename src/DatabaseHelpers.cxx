@@ -76,3 +76,59 @@ VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
 
 	return true;
 }
+
+static void
+StatsVisitTag(DatabaseStats &stats, StringSet &artists, StringSet &albums,
+	      const struct tag &tag)
+{
+	if (tag.time > 0)
+		stats.total_duration += tag.time;
+
+	for (unsigned i = 0; i < tag.num_items; ++i) {
+		const struct tag_item &item = *tag.items[i];
+
+		switch (item.type) {
+		case TAG_ARTIST:
+			artists.insert(item.value);
+			break;
+
+		case TAG_ALBUM:
+			albums.insert(item.value);
+			break;
+
+		default:
+			break;
+		}
+	}
+}
+
+static bool
+StatsVisitSong(DatabaseStats &stats, StringSet &artists, StringSet &albums,
+	       song &song)
+{
+	++stats.song_count;
+
+	if (song.tag != nullptr)
+		StatsVisitTag(stats, artists, albums, *song.tag);
+
+	return true;
+}
+
+bool
+GetStats(const Database &db, const DatabaseSelection &selection,
+	 DatabaseStats &stats, GError **error_r)
+{
+	stats.Clear();
+
+	StringSet artists, albums;
+	using namespace std::placeholders;
+	const auto f = std::bind(StatsVisitSong,
+				 std::ref(stats), std::ref(artists),
+				 std::ref(albums), _1);
+	if (!db.Visit(selection, f, error_r))
+		return false;
+
+	stats.artist_count = artists.size();
+	stats.album_count = albums.size();
+	return true;
+}

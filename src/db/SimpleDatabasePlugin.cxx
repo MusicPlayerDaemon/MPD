@@ -281,6 +281,13 @@ SimpleDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 }
 
 bool
+SimpleDatabase::GetStats(const DatabaseSelection &selection,
+			 DatabaseStats &stats, GError **error_r) const
+{
+	return ::GetStats(*this, selection, stats, error_r);
+}
+
+bool
 SimpleDatabase::Save(GError **error_r)
 {
 	db_lock();

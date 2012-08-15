@@ -26,11 +26,16 @@
 
 class Database;
 struct DatabaseSelection;
+struct DatabaseStats;
 
 bool
 VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
 		enum tag_type tag_type,
 		VisitString visit_string,
 		GError **error_r);
+
+bool
+GetStats(const Database &db, const DatabaseSelection &selection,
+	 DatabaseStats &stats, GError **error_r);
 
 #endif

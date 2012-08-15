@@ -67,6 +67,10 @@ public:
 				     VisitString visit_string,
 				     GError **error_r) const override;
 
+	virtual bool GetStats(const DatabaseSelection &selection,
+			      DatabaseStats &stats,
+			      GError **error_r) const override;
+
 protected:
 	bool Configure(const struct config_param *param, GError **error_r);
 };
@@ -418,6 +422,27 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 	return mpd_response_finish(connection) &&
 		CheckError(connection, error_r) &&
 		result;
+}
+
+bool
+ProxyDatabase::GetStats(const DatabaseSelection &selection,
+			DatabaseStats &stats, GError **error_r) const
+{
+	// TODO: match
+	(void)selection;
+
+	struct mpd_stats *stats2 =
+		mpd_run_stats(connection);
+	if (stats2 == nullptr)
+		return CheckError(connection, error_r);
+
+	stats.song_count = mpd_stats_get_number_of_songs(stats2);
+	stats.total_duration = mpd_stats_get_db_play_time(stats2);
+	stats.artist_count = mpd_stats_get_number_of_artists(stats2);
+	stats.album_count = mpd_stats_get_number_of_albums(stats2);
+	mpd_stats_free(stats2);
+
+	return true;
 }
 
 const DatabasePlugin proxy_db_plugin = {

@@ -37,6 +37,34 @@ struct config_param;
 struct DatabaseSelection;
 struct db_visitor;
 
+struct DatabaseStats {
+	/**
+	 * Number of songs.
+	 */
+	unsigned song_count;
+
+	/**
+	 * Total duration of all songs (in seconds).
+	 */
+	unsigned long total_duration;
+
+	/**
+	 * Number of distinct artist names.
+	 */
+	unsigned artist_count;
+
+	/**
+	 * Number of distinct album names.
+	 */
+	unsigned album_count;
+
+	void Clear() {
+		song_count = 0;
+		total_duration = 0;
+		artist_count = album_count = 0;
+	}
+};
+
 class Database {
 public:
 	/**
@@ -94,6 +122,10 @@ public:
 				     enum tag_type tag_type,
 				     VisitString visit_string,
 				     GError **error_r) const = 0;
+
+	virtual bool GetStats(const DatabaseSelection &selection,
+			      DatabaseStats &stats,
+			      GError **error_r) const = 0;
 };
 
 struct DatabasePlugin {
