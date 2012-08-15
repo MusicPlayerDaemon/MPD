@@ -97,6 +97,27 @@ dc_command_async(struct decoder_control *dc, enum decoder_command cmd)
 	decoder_unlock(dc);
 }
 
+bool
+decoder_is_current_song(const struct decoder_control *dc,
+			const struct song *song)
+{
+	assert(dc != NULL);
+	assert(song != NULL);
+
+	switch (dc->state) {
+	case DECODE_STATE_STOP:
+	case DECODE_STATE_ERROR:
+		return false;
+
+	case DECODE_STATE_START:
+	case DECODE_STATE_DECODE:
+		return dc->song == song;
+	}
+
+	assert(false);
+	return false;
+}
+
 void
 dc_start(struct decoder_control *dc, struct song *song,
 	 unsigned start_ms, unsigned end_ms,

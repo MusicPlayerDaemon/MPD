@@ -458,7 +458,7 @@ static bool player_seek_decoder(struct player *player)
 
 	assert(pc->next_song != NULL);
 
-	if (decoder_current_song(dc) != song) {
+	if (!decoder_lock_is_current_song(dc, song)) {
 		/* the decoder is already decoding the "next" song -
 		   stop it and start the previous song again */
 

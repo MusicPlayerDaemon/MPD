@@ -276,21 +276,27 @@ decoder_lock_has_failed(struct decoder_control *dc)
 	return ret;
 }
 
-static inline const struct song *
-decoder_current_song(const struct decoder_control *dc)
+/**
+ * Check if the specified song is currently being decoded.  If the
+ * decoder is not running currently (or being started), then this
+ * function returns false in any case.
+ *
+ * Caller must lock the object.
+ */
+gcc_pure
+bool
+decoder_is_current_song(const struct decoder_control *dc,
+			const struct song *song);
+
+gcc_pure
+static inline bool
+decoder_lock_is_current_song(struct decoder_control *dc,
+			     const struct song *song)
 {
-	switch (dc->state) {
-	case DECODE_STATE_STOP:
-	case DECODE_STATE_ERROR:
-		return NULL;
-
-	case DECODE_STATE_START:
-	case DECODE_STATE_DECODE:
-		return dc->song;
-	}
-
-	assert(false);
-	return NULL;
+	decoder_lock(dc);
+	const bool result = decoder_is_current_song(dc, song);
+	decoder_unlock(dc);
+	return result;
 }
 
 /**
