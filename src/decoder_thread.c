@@ -462,6 +462,9 @@ decoder_run(struct decoder_control *dc)
 
 	if (uri == NULL) {
 		dc->state = DECODE_STATE_ERROR;
+		dc->error = g_error_new(decoder_quark(), 0,
+					"Failed to map song");
+
 		decoder_command_finished_locked(dc);
 		return;
 	}
