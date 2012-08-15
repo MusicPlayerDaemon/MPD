@@ -94,6 +94,12 @@ struct song *
 song_replace_uri(struct song *song, const char *uri);
 
 /**
+ * Creates a "detached" song object.
+ */
+struct song *
+song_detached_new(const char *uri);
+
+/**
  * Creates a duplicate of the song object.  If the object is in the
  * database, it creates a "detached" copy of this song, see
  * song_is_detached().

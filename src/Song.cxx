@@ -79,6 +79,14 @@ song_replace_uri(struct song *old_song, const char *uri)
 }
 
 struct song *
+song_detached_new(const char *uri)
+{
+	assert(uri != nullptr);
+
+	return song_alloc(uri, &detached_root);
+}
+
+struct song *
 song_dup_detached(const struct song *src)
 {
 	assert(src != nullptr);
@@ -86,7 +94,7 @@ song_dup_detached(const struct song *src)
 	struct song *song;
 	if (song_in_database(src)) {
 		char *uri = song_get_uri(src);
-		song = song_alloc(uri, &detached_root);
+		song = song_detached_new(uri);
 		g_free(uri);
 	} else
 		song = song_alloc(src->uri, nullptr);

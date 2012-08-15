@@ -192,29 +192,33 @@ ProxyDatabase::GetSong(const char *uri, GError **error_r) const
 }
 
 static bool
-Visit(struct mpd_connection *connection, directory &parent,
+Visit(struct mpd_connection *connection, const char *uri,
       bool recursive, VisitDirectory visit_directory, VisitSong visit_song,
       VisitPlaylist visit_playlist, GError **error_r);
 
 static bool
-Visit(struct mpd_connection *connection, directory &parent,
+Visit(struct mpd_connection *connection,
       bool recursive, const struct mpd_directory *directory,
       VisitDirectory visit_directory, VisitSong visit_song,
       VisitPlaylist visit_playlist, GError **error_r)
 {
-	if (!recursive && !visit_directory)
-		return true;
+	const char *path = mpd_directory_get_path(directory);
 
-	struct directory *d =
-		directory_new(mpd_directory_get_path(directory), &parent);
+	if (visit_directory) {
+		struct directory *d =
+			directory_new(path, &detached_root);
+		bool success = visit_directory(*d, error_r);
+		directory_free(d);
+		if (!success)
+			return false;
+	}
 
-	bool success = (!visit_directory || visit_directory(*d, error_r)) &&
-		(!recursive ||
-		 Visit(connection, *d, recursive,
-		       visit_directory, visit_song, visit_playlist, error_r));
-	directory_free(d);
+	if (recursive &&
+	    !Visit(connection, path, recursive,
+		   visit_directory, visit_song, visit_playlist, error_r))
+		return false;
 
-	return success;
+	return true;
 }
 
 static void
@@ -232,11 +236,9 @@ Copy(struct tag *tag, enum tag_type d_tag,
 }
 
 static song *
-Convert(struct directory &parent, const struct mpd_song *song)
+Convert(const struct mpd_song *song)
 {
-	char *name = g_path_get_basename(mpd_song_get_uri(song));
-	struct song *s = song_file_new(name, &parent);
-	g_free(name);
+	struct song *s = song_detached_new(mpd_song_get_uri(song));
 
 	s->mtime = mpd_song_get_last_modified(song);
 	s->start_ms = mpd_song_get_start(song) * 1000;
@@ -256,13 +258,13 @@ Convert(struct directory &parent, const struct mpd_song *song)
 }
 
 static bool
-Visit(struct directory &parent, const struct mpd_song *song,
+Visit(const struct mpd_song *song,
       VisitSong visit_song, GError **error_r)
 {
 	if (!visit_song)
 		return true;
 
-	struct song *s = Convert(parent, song);
+	struct song *s = Convert(song);
 	bool success = visit_song(*s, error_r);
 	song_free(s);
 
@@ -270,19 +272,18 @@ Visit(struct directory &parent, const struct mpd_song *song,
 }
 
 static bool
-Visit(struct directory &parent, const struct mpd_playlist *playlist,
+Visit(const struct mpd_playlist *playlist,
       VisitPlaylist visit_playlist, GError **error_r)
 {
 	if (!visit_playlist)
 		return true;
 
-	char *name = g_path_get_basename(mpd_playlist_get_path(playlist));
 	struct playlist_metadata p;
-	p.name = name;
+	p.name = g_strdup(mpd_playlist_get_path(playlist));
 	p.mtime = mpd_playlist_get_last_modified(playlist);
 
-	bool success = visit_playlist(p, parent, error_r);
-	g_free(name);
+	bool success = visit_playlist(p, detached_root, error_r);
+	g_free(p.name);
 
 	return success;
 }
@@ -326,11 +327,11 @@ ReceiveEntities(struct mpd_connection *connection)
 }
 
 static bool
-Visit(struct mpd_connection *connection, struct directory &parent,
+Visit(struct mpd_connection *connection, const char *uri,
       bool recursive, VisitDirectory visit_directory, VisitSong visit_song,
       VisitPlaylist visit_playlist, GError **error_r)
 {
-	if (!mpd_send_list_meta(connection, directory_get_path(&parent)))
+	if (!mpd_send_list_meta(connection, uri))
 		return CheckError(connection, error_r);
 
 	std::list<ProxyEntity> entities(ReceiveEntities(connection));
@@ -343,7 +344,7 @@ Visit(struct mpd_connection *connection, struct directory &parent,
 			break;
 
 		case MPD_ENTITY_TYPE_DIRECTORY:
-			if (!Visit(connection, parent, recursive,
+			if (!Visit(connection, recursive,
 				   mpd_entity_get_directory(entity),
 				   visit_directory, visit_song, visit_playlist,
 				   error_r))
@@ -351,13 +352,13 @@ Visit(struct mpd_connection *connection, struct directory &parent,
 			break;
 
 		case MPD_ENTITY_TYPE_SONG:
-			if (!Visit(parent, mpd_entity_get_song(entity),
-				   visit_song, error_r))
+			if (!Visit(mpd_entity_get_song(entity), visit_song,
+				   error_r))
 				return false;
 			break;
 
 		case MPD_ENTITY_TYPE_PLAYLIST:
-			if (!Visit(parent, mpd_entity_get_playlist(entity),
+			if (!Visit(mpd_entity_get_playlist(entity),
 				   visit_playlist, error_r))
 				return false;
 			break;
@@ -377,15 +378,9 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 	// TODO: match
 	// TODO: auto-reconnect
 
-	struct directory *parent = *selection.uri == 0
-		? root
-		: directory_new(selection.uri, root);
-	bool success = ::Visit(connection, *parent, selection.recursive,
-			       visit_directory, visit_song, visit_playlist,
-			       error_r);
-	if (parent != root)
-		directory_free(parent);
-	return success;
+	return ::Visit(connection, selection.uri, selection.recursive,
+		       visit_directory, visit_song, visit_playlist,
+		       error_r);
 }
 
 bool
