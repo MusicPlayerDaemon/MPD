@@ -103,7 +103,7 @@ queue_append(struct queue *queue, struct song *song)
 	assert(!queue_is_full(queue));
 
 	queue->items[queue->length] = (struct queue_item){
-		.song = song,
+		.song = song_dup_detached(song),
 		.id = id,
 		.version = queue->version,
 		.priority = 0,
@@ -256,8 +256,8 @@ queue_delete(struct queue *queue, unsigned position)
 	assert(position < queue->length);
 
 	song = queue_get(queue, position);
-	if (!song_in_database(song))
-		song_free(song);
+	assert(!song_in_database(song) || song_is_detached(song));
+	song_free(song);
 
 	id = queue_position_to_id(queue, position);
 	order = queue_position_to_order(queue, position);
@@ -291,8 +291,9 @@ queue_clear(struct queue *queue)
 	for (unsigned i = 0; i < queue->length; i++) {
 		struct queue_item *item = &queue->items[i];
 
-		if (!song_in_database(item->song))
-			song_free(item->song);
+		assert(!song_in_database(item->song) ||
+		       song_is_detached(item->song));
+		song_free(item->song);
 
 		queue->id_to_position[item->id] = -1;
 	}
