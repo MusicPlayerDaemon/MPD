@@ -13,6 +13,7 @@ ver 0.17.2 (2012/??/??)
   - httpd: use monotonic clock, avoid hiccups after system clock adjustment
   - httpd: fix throttling bug after resuming playback
 * mapper: fix non-UTF8 music directory name
+* mapper: fix potential crash in file permission check
 
 
 ver 0.17.1 (2012/07/31)

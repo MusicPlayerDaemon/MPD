@@ -458,6 +458,8 @@ static bool player_seek_decoder(struct player *player)
 
 	assert(pc->next_song != NULL);
 
+	const unsigned start_ms = song->start_ms;
+
 	if (!decoder_lock_is_current_song(dc, song)) {
 		/* the decoder is already decoding the "next" song -
 		   stop it and start the previous song again */
@@ -506,7 +508,7 @@ static bool player_seek_decoder(struct player *player)
 	if (where < 0.0)
 		where = 0.0;
 
-	if (!dc_seek(dc, where + song->start_ms / 1000.0)) {
+	if (!dc_seek(dc, where + start_ms / 1000.0)) {
 		/* decoder failure */
 		player_command_finished(pc);
 		return false;
