@@ -280,9 +280,11 @@ queue_modify_all(struct queue *queue);
  *
  * If a song is not in the database (determined by
  * song_in_database()), it is freed when removed from the queue.
+ *
+ * @param priority the priority of this new queue item
  */
 unsigned
-queue_append(struct queue *queue, struct song *song);
+queue_append(struct queue *queue, struct song *song, uint8_t priority);
 
 /**
  * Swaps two songs, addressed by their position.

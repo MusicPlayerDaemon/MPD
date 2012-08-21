@@ -96,7 +96,7 @@ queue_modify_all(struct queue *queue)
 }
 
 unsigned
-queue_append(struct queue *queue, struct song *song)
+queue_append(struct queue *queue, struct song *song, uint8_t priority)
 {
 	unsigned id = queue_generate_id(queue);
 
@@ -106,7 +106,7 @@ queue_append(struct queue *queue, struct song *song)
 		.song = song,
 		.id = id,
 		.version = queue->version,
-		.priority = 0,
+		.priority = priority,
 	};
 
 	queue->order[queue->length] = queue->length;

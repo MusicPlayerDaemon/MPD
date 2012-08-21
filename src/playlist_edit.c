@@ -83,7 +83,7 @@ playlist_append_song(struct playlist *playlist, struct player_control *pc,
 
 	queued = playlist_get_queued_song(playlist);
 
-	id = queue_append(&playlist->queue, song);
+	id = queue_append(&playlist->queue, song, 0);
 
 	if (playlist->queue.random) {
 		/* shuffle the new song into the list of remaining

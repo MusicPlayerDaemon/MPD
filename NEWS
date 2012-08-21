@@ -13,6 +13,7 @@ ver 0.17.2 (2012/??/??)
 * mapper: fix potential crash in file permission check
 * playlist: fix use-after-free bug
 * playlist: fix memory leak
+* state_file: save song priorities
 
 
 ver 0.17.1 (2012/07/31)

@@ -41,7 +41,7 @@ main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 	queue_init(&queue, 32);
 
 	for (unsigned i = 0; i < G_N_ELEMENTS(songs); ++i)
-		queue_append(&queue, &songs[i]);
+		queue_append(&queue, &songs[i], 0);
 
 	assert(queue_length(&queue) == G_N_ELEMENTS(songs));
 
