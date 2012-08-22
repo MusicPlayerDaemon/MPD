@@ -51,6 +51,10 @@
 
 struct sockaddr;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Wrapper for dup(), which sets the CLOEXEC flag on the new
  * descriptor.
@@ -145,5 +149,9 @@ inotify_init_cloexec(void);
  */
 int
 close_socket(int fd);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif
