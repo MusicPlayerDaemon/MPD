@@ -447,8 +447,8 @@ libdb_plugins_a_SOURCES += \
 endif
 
 DB_LIBS = \
-	$(LIBMPDCLIENT_LIBS) \
-	libdb_plugins.a
+	libdb_plugins.a \
+	$(LIBMPDCLIENT_LIBS)
 
 # archive plugins
 
