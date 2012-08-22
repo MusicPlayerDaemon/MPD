@@ -115,6 +115,10 @@ bool
 db_selection_print(struct client *client, const DatabaseSelection &selection,
 		   bool full, GError **error_r)
 {
+	const Database *db = GetDatabase(error_r);
+	if (db == nullptr)
+		return false;
+
 	using namespace std::placeholders;
 	const auto d = selection.match == nullptr
 		? std::bind(PrintDirectory, client, _1)
@@ -126,7 +130,7 @@ db_selection_print(struct client *client, const DatabaseSelection &selection,
 			    client, _1, _2)
 		: VisitPlaylist();
 
-	return GetDatabase()->Visit(selection, d, s, p, error_r);
+	return db->Visit(selection, d, s, p, error_r);
 }
 
 struct SearchStats {
@@ -154,6 +158,10 @@ searchStatsForSongsIn(struct client *client, const char *name,
 		      const struct locate_item_list *criteria,
 		      GError **error_r)
 {
+	const Database *db = GetDatabase(error_r);
+	if (db == nullptr)
+		return false;
+
 	const DatabaseSelection selection(name, true, criteria);
 
 	SearchStats stats;
@@ -163,7 +171,7 @@ searchStatsForSongsIn(struct client *client, const char *name,
 	using namespace std::placeholders;
 	const auto f = std::bind(stats_visitor_song, std::ref(stats),
 				 _1);
-	if (!GetDatabase()->Visit(selection, f, error_r))
+	if (!db->Visit(selection, f, error_r))
 		return false;
 
 	printSearchStats(client, &stats);
@@ -206,18 +214,21 @@ listAllUniqueTags(struct client *client, int type,
 		  const struct locate_item_list *criteria,
 		  GError **error_r)
 {
+	const Database *db = GetDatabase(error_r);
+	if (db == nullptr)
+		return false;
+
 	const DatabaseSelection selection("", true, criteria);
 
 	if (type == LOCATE_TAG_FILE_TYPE) {
 		using namespace std::placeholders;
 		const auto f = std::bind(PrintSongURIVisitor, client, _1);
-		return GetDatabase()->Visit(selection, f, error_r);
+		return db->Visit(selection, f, error_r);
 	} else {
 		using namespace std::placeholders;
 		const auto f = std::bind(PrintUniqueTag, client,
 					 (enum tag_type)type, _1);
-		return GetDatabase()->VisitUniqueTags(selection,
-						      (enum tag_type)type,
-						      f, error_r);
+		return db->VisitUniqueTags(selection, (enum tag_type)type,
+					   f, error_r);
 	}
 }

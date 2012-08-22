@@ -87,6 +87,18 @@ GetDatabase()
 	return db;
 }
 
+const Database *
+GetDatabase(GError **error_r)
+{
+	assert(db == nullptr || db_is_open);
+
+	if (db == nullptr)
+		g_set_error_literal(error_r, db_quark(), DB_DISABLED,
+				    "No database");
+
+	return db;
+}
+
 bool
 db_is_simple(void)
 {

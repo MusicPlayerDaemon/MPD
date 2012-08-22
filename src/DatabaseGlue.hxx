@@ -21,6 +21,7 @@
 #define MPD_DATABASE_GLUE_HXX
 
 #include "gcc.h"
+#include "gerror.h"
 
 class Database;
 
@@ -31,5 +32,13 @@ class Database;
 gcc_pure
 const Database *
 GetDatabase();
+
+/**
+ * Returns the global #Database instance.  May return NULL if this MPD
+ * configuration has no database (no music_directory was configured).
+ */
+gcc_pure
+const Database *
+GetDatabase(GError **error_r);
 
 #endif

@@ -43,11 +43,15 @@ search_add_to_playlist(const char *uri, const char *playlist_path_utf8,
 		       const struct locate_item_list *criteria,
 		       GError **error_r)
 {
+	const Database *db = GetDatabase(error_r);
+	if (db == nullptr)
+		return false;
+
 	const DatabaseSelection selection(uri, true, criteria);
 
 	using namespace std::placeholders;
 	const auto f = std::bind(AddSong, playlist_path_utf8, _1, _2);
-	return GetDatabase()->Visit(selection, f, error_r);
+	return db->Visit(selection, f, error_r);
 }
 
 bool
