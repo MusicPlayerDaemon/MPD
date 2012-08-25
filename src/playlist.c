@@ -109,11 +109,6 @@ playlist_song_started(struct playlist *playlist, struct player_control *pc)
 	playlist->current = playlist->queued;
 	playlist->queued = -1;
 
-	/* Pause if we are in single mode. */
-	if(playlist->queue.single && !playlist->queue.repeat) {
-		pc_set_pause(pc, true);
-	}
-
 	if(playlist->queue.consume)
 		playlist_delete(playlist, pc,
 				queue_order_to_position(&playlist->queue,
@@ -310,7 +305,11 @@ playlist_set_repeat(struct playlist *playlist, struct player_control *pc,
 	if (status == playlist->queue.repeat)
 		return;
 
-	playlist->queue.repeat = status;
+	struct queue *queue = &playlist->queue;
+
+	queue->repeat = status;
+
+	pc_set_border_pause(pc, queue->single && !queue->repeat);
 
 	/* if the last song is currently being played, the "next song"
 	   might change when repeat mode is toggled */
@@ -338,7 +337,11 @@ playlist_set_single(struct playlist *playlist, struct player_control *pc,
 	if (status == playlist->queue.single)
 		return;
 
-	playlist->queue.single = status;
+	struct queue *queue = &playlist->queue;
+
+	queue->single = status;
+
+	pc_set_border_pause(pc, queue->single && !queue->repeat);
 
 	/* if the last song is currently being played, the "next song"
 	   might change when single mode is toggled */

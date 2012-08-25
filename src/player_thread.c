@@ -842,6 +842,16 @@ player_song_border(struct player *player)
 	if (!player_wait_for_decoder(player))
 		return false;
 
+	struct player_control *const pc = player->pc;
+	player_lock(pc);
+
+	if (pc->border_pause) {
+		player->paused = true;
+		pc->state = PLAYER_STATE_PAUSE;
+	}
+
+	player_unlock(pc);
+
 	return true;
 }
 
@@ -957,7 +967,10 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 			player_dc_start(&player, music_pipe_new());
 		}
 
-		if (player_dc_at_next_song(&player) &&
+		if (/* no cross-fading if MPD is going to pause at the
+		       end of the current song */
+		    !pc->border_pause &&
+		    player_dc_at_next_song(&player) &&
 		    player.xfade == XFADE_UNKNOWN &&
 		    !decoder_lock_is_starting(dc)) {
 			/* enable cross fading in this song?  if yes,

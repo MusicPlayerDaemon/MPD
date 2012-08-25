@@ -115,6 +115,15 @@ struct player_control {
 	float mixramp_db;
 	float mixramp_delay_seconds;
 	double total_play_time;
+
+	/**
+	 * If this flag is set, then the player will be auto-paused at
+	 * the end of the song, before the next song starts to play.
+	 *
+	 * This is a copy of the queue's "single" flag most of the
+	 * time.
+	 */
+	bool border_pause;
 };
 
 struct player_control *
@@ -206,6 +215,12 @@ pc_set_pause(struct player_control *pc, bool pause_flag);
 
 void
 pc_pause(struct player_control *pc);
+
+/**
+ * Set the player's #border_pause flag.
+ */
+void
+pc_set_border_pause(struct player_control *pc, bool border_pause);
 
 void
 pc_kill(struct player_control *pc);

@@ -211,6 +211,14 @@ pc_set_pause(struct player_control *pc, bool pause_flag)
 }
 
 void
+pc_set_border_pause(struct player_control *pc, bool border_pause)
+{
+	player_lock(pc);
+	pc->border_pause = border_pause;
+	player_unlock(pc);
+}
+
+void
 pc_get_status(struct player_control *pc, struct player_status *status)
 {
 	player_lock(pc);
