@@ -1351,7 +1351,6 @@ test_test_pcm_LDADD = \
 
 test_test_queue_priority_SOURCES = \
 	src/queue.c \
-	test/FakeSong.cxx \
 	test/test_queue_priority.c
 test_test_queue_priority_LDADD = \
 	$(GLIB_LIBS)

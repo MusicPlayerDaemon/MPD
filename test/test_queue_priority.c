@@ -1,5 +1,20 @@
+#include "config.h"
 #include "queue.h"
 #include "song.h"
+#include "directory.h"
+
+struct directory detached_root;
+
+struct song *
+song_dup_detached(const struct song *src)
+{
+	union {
+		const struct song *in;
+		struct song *out;
+	} u = { .in = src };
+
+	return u.out;
+}
 
 void
 song_free(G_GNUC_UNUSED struct song *song)
