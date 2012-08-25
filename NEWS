@@ -9,6 +9,8 @@ ver 0.17.2 (2012/??/??)
 * output:
   - httpd: use monotonic clock, avoid hiccups after system clock adjustment
   - httpd: fix throttling bug after resuming playback
+* playlist:
+  - cue: map "PERFORMER" to "artist" or "album artist"
 * mapper: fix non-UTF8 music directory name
 * mapper: fix potential crash in file permission check
 * playlist: fix use-after-free bug
