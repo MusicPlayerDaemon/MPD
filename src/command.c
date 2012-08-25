@@ -788,7 +788,7 @@ handle_next(G_GNUC_UNUSED struct client *client,
 {
 	/* single mode is not considered when this is user who
 	 * wants to change song. */
-	int single = g_playlist.queue.single;
+	const bool single = g_playlist.queue.single;
 	g_playlist.queue.single = false;
 
 	playlist_next(&g_playlist, client->player_control);

@@ -24,8 +24,11 @@
 #include "uri.h"
 #include "database.h"
 #include "song_save.h"
+#include "text_file.h"
 
 #include <stdlib.h>
+
+#define PRIO_LABEL "Prio: "
 
 static void
 queue_save_database_song(FILE *fp, int idx, const struct song *song)
@@ -54,8 +57,13 @@ queue_save_song(FILE *fp, int idx, const struct song *song)
 void
 queue_save(FILE *fp, const struct queue *queue)
 {
-	for (unsigned i = 0; i < queue_length(queue); i++)
+	for (unsigned i = 0; i < queue_length(queue); i++) {
+		uint8_t prio = queue_get_priority_at_position(queue, i);
+		if (prio != 0)
+			fprintf(fp, PRIO_LABEL "%u\n", prio);
+
 		queue_save_song(fp, i, queue_get(queue, i));
+	}
 }
 
 static struct song *
@@ -74,6 +82,15 @@ queue_load_song(FILE *fp, GString *buffer, const char *line,
 
 	if (queue_is_full(queue))
 		return;
+
+	uint8_t priority = 0;
+	if (g_str_has_prefix(line, PRIO_LABEL)) {
+		priority = strtoul(line + sizeof(PRIO_LABEL) - 1, NULL, 10);
+
+		line = read_text_line(fp, buffer);
+		if (line == NULL)
+			return;
+	}
 
 	if (g_str_has_prefix(line, SONG_BEGIN)) {
 		const char *uri = line + sizeof(SONG_BEGIN) - 1;
@@ -102,7 +119,7 @@ queue_load_song(FILE *fp, GString *buffer, const char *line,
 			return;
 	}
 
-	queue_append(queue, song);
+	queue_append(queue, song, priority);
 
 	if (song_in_database(song))
 		db_return_song(song);

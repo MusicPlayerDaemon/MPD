@@ -216,9 +216,19 @@ cue_parser_feed2(struct cue_parser *parser, char *p)
 		if (tag != NULL)
 			cue_parse_rem(p, tag);
 	} else if (strcmp(command, "PERFORMER") == 0) {
+		/* MPD knows a "performer" tag, but it is not a good
+		   match for this CUE tag; from the Hydrogenaudio
+		   Knowledgebase: "At top-level this will specify the
+		   CD artist, while at track-level it specifies the
+		   track artist." */
+
+		enum tag_type type = parser->state == TRACK
+			? TAG_ARTIST
+			: TAG_ALBUM_ARTIST;
+
 		struct tag *tag = cue_current_tag(parser);
 		if (tag != NULL)
-			cue_add_tag(tag, TAG_PERFORMER, p);
+			cue_add_tag(tag, type, p);
 	} else if (strcmp(command, "TITLE") == 0) {
 		if (parser->state == HEADER)
 			cue_add_tag(parser->tag, TAG_ALBUM, p);
