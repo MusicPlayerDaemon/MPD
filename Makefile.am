@@ -242,7 +242,12 @@ src_mpd_SOURCES = \
 	src/protocol/result.c src/protocol/result.h \
 	src/CommandError.cxx src/CommandError.h \
 	src/command.c \
+	src/QueueCommands.cxx src/QueueCommands.hxx \
+	src/PlayerCommands.cxx src/PlayerCommands.hxx \
+	src/PlaylistCommands.cxx src/PlaylistCommands.hxx \
 	src/DatabaseCommands.cxx src/DatabaseCommands.hxx \
+	src/OutputCommands.cxx src/OutputCommands.hxx \
+	src/MessageCommands.cxx src/MessageCommands.hxx \
 	src/idle.c \
 	src/cmdline.c \
 	src/conf.c \
@@ -390,6 +395,7 @@ endif
 
 if ENABLE_SQLITE
 src_mpd_SOURCES += \
+	src/StickerCommands.cxx src/StickerCommands.hxx \
 	src/sticker.c \
 	src/sticker_print.c \
 	src/song_sticker.c
