@@ -242,7 +242,7 @@ src_mpd_SOURCES = \
 	src/protocol/result.c src/protocol/result.h \
 	src/CommandError.cxx src/CommandError.h \
 	src/command.c \
-	src/DatabaseCommands.cxx \
+	src/DatabaseCommands.cxx src/DatabaseCommands.hxx \
 	src/idle.c \
 	src/cmdline.c \
 	src/conf.c \
