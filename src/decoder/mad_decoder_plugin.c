@@ -76,9 +76,9 @@ mad_fixed_to_24_sample(mad_fixed_t sample)
 	sample = sample + (1L << (MAD_F_FRACBITS - bits));
 
 	/* clip */
-	if (sample > MAX)
+	if (gcc_unlikely(sample > MAX))
 		sample = MAX;
-	else if (sample < MIN)
+	else if (gcc_unlikely(sample < MIN))
 		sample = MIN;
 
 	/* quantize */

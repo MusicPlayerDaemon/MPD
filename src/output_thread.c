@@ -435,7 +435,7 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 	assert(ao != NULL);
 	assert(ao->filter != NULL);
 
-	if (chunk->tag != NULL) {
+	if (gcc_unlikely(chunk->tag != NULL)) {
 		g_mutex_unlock(ao->mutex);
 		ao_plugin_send_tag(ao, chunk->tag);
 		g_mutex_lock(ao->mutex);
