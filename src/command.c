@@ -939,7 +939,8 @@ static enum command_return
 handle_stats(struct client *client,
 	     G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	return stats_print(client);
+	stats_print(client);
+	return COMMAND_RETURN_OK;
 }
 
 static enum command_return

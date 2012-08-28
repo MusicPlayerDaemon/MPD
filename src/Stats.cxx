@@ -66,7 +66,8 @@ void stats_update(void)
 	}
 }
 
-int stats_print(struct client *client)
+void
+stats_print(struct client *client)
 {
 	client_printf(client,
 		      "artists: %u\n"
@@ -86,6 +87,4 @@ int stats_print(struct client *client)
 		client_printf(client,
 			      "db_update: %li\n",
 			      (long)db_get_mtime());
-
-	return 0;
 }
