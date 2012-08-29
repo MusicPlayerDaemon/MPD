@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,6 +18,8 @@
  */
 
 #include "config.h"
+
+extern "C" {
 #include "queue_print.h"
 #include "queue.h"
 #include "song.h"
@@ -25,6 +27,7 @@
 #include "locate.h"
 #include "client.h"
 #include "mapper.h"
+}
 
 /**
  * Send detailed information about a range of songs in the queue to a

@@ -335,7 +335,7 @@ src_mpd_SOURCES = \
 	src/playlist_vector.c \
 	src/playlist_database.c \
 	src/queue.c \
-	src/queue_print.c \
+	src/QueuePrint.cxx \
 	src/queue_save.c \
 	src/replay_gain_config.c \
 	src/replay_gain_info.c \
