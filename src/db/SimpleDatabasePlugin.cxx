@@ -269,8 +269,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 		struct song *song;
 		if (visit_song &&
 		    (song = GetSong(selection.uri, NULL)) != NULL &&
-		    (selection.match == NULL ||
-		     locate_list_song_match(song, selection.match)))
+		    selection.Match(*song))
 			return visit_song(*song, error_r);
 
 		g_set_error(error_r, db_quark(), DB_NOT_FOUND,

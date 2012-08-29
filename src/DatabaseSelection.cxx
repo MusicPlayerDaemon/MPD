@@ -17,40 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DATABASE_SELECTION_HXX
-#define MPD_DATABASE_SELECTION_HXX
+#include "DatabaseSelection.hxx"
+#include "SongFilter.hxx"
 
-#include "gcc.h"
-
-#include <assert.h>
-#include <stddef.h>
-
-struct locate_item_list;
-struct song;
-
-struct DatabaseSelection {
-	/**
-	 * The base URI of the search (UTF-8).  Must not begin or end
-	 * with a slash.  NULL or an empty string searches the whole
-	 * database.
-	 */
-	const char *uri;
-
-	/**
-	 * Recursively search all sub directories?
-	 */
-	bool recursive;
-
-	const locate_item_list *match;
-
-	DatabaseSelection(const char *_uri, bool _recursive,
-			  const locate_item_list *_match=nullptr)
-		:uri(_uri), recursive(_recursive), match(_match) {
-		assert(uri != NULL);
-	}
-
-	gcc_pure
-	bool Match(const song &song) const;
-};
-
-#endif
+bool
+DatabaseSelection::Match(const song &song) const
+{
+	return match == nullptr || locate_list_song_match(&song, match);
+}

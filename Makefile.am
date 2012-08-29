@@ -268,7 +268,7 @@ src_mpd_SOURCES = \
 	src/db_save.c src/db_save.h \
 	src/DatabasePlugin.hxx \
 	src/DatabaseVisitor.hxx \
-	src/DatabaseSelection.hxx \
+	src/DatabaseSelection.cxx src/DatabaseSelection.hxx \
 	src/exclude.c \
 	src/fd_util.c \
 	src/fifo_buffer.c src/fifo_buffer.h \
@@ -1063,6 +1063,7 @@ test_DumpDatabase_LDADD = \
 	$(GLIB_LIBS)
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/DatabaseRegistry.cxx \
+	src/DatabaseSelection.cxx \
 	src/Directory.cxx src/directory_save.c \
 	src/playlist_vector.c src/playlist_database.c \
 	src/db_lock.c src/db_save.c \
