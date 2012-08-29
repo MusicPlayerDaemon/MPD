@@ -20,13 +20,13 @@
 #include "config.h"
 #include "PlayerCommands.hxx"
 #include "CommandError.h"
+#include "PlaylistPrint.hxx"
 
 extern "C" {
 #include "protocol/argparser.h"
 #include "protocol/result.h"
 #include "player_control.h"
 #include "playlist.h"
-#include "playlist_print.h"
 #include "update.h"
 #include "volume.h"
 #include "client.h"

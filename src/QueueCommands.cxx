@@ -22,12 +22,12 @@
 #include "CommandError.h"
 #include "DatabaseQueue.hxx"
 #include "SongFilter.hxx"
+#include "PlaylistPrint.hxx"
 
 extern "C" {
 #include "protocol/argparser.h"
 #include "protocol/result.h"
 #include "playlist.h"
-#include "playlist_print.h"
 #include "ls.h"
 #include "uri.h"
 #include "client_internal.h"

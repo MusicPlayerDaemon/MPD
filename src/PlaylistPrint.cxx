@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,9 @@
  */
 
 #include "config.h"
-#include "playlist_print.h"
+#include "PlaylistPrint.hxx"
+
+extern "C" {
 #include "playlist_list.h"
 #include "playlist_plugin.h"
 #include "playlist_any.h"
@@ -31,6 +33,7 @@
 #include "database.h"
 #include "client.h"
 #include "input_stream.h"
+}
 
 void
 playlist_print_uris(struct client *client, const struct playlist *playlist)
@@ -120,7 +123,7 @@ spl_print(struct client *client, const char *name_utf8, bool detail,
 		return false;
 
 	for (unsigned i = 0; i < list->len; ++i) {
-		const char *temp = g_ptr_array_index(list, i);
+		const char *temp = (const char *)g_ptr_array_index(list, i);
 		bool wrote = false;
 
 		if (detail) {

@@ -21,12 +21,12 @@
 #include "PlaylistCommands.hxx"
 #include "DatabasePlaylist.hxx"
 #include "CommandError.h"
+#include "PlaylistPrint.hxx"
 
 extern "C" {
 #include "protocol/argparser.h"
 #include "protocol/result.h"
 #include "playlist.h"
-#include "playlist_print.h"
 #include "playlist_save.h"
 #include "playlist_queue.h"
 #include "time_print.h"

@@ -154,7 +154,6 @@ mpd_headers = \
 	src/playlist.h \
 	src/playlist_error.h \
 	src/playlist_internal.h \
-	src/playlist_print.h \
 	src/playlist_save.h \
 	src/playlist_state.h \
 	src/playlist_plugin.h \
@@ -324,7 +323,7 @@ src_mpd_SOURCES = \
 	src/playlist_global.c \
 	src/playlist_control.c \
 	src/playlist_edit.c \
-	src/playlist_print.c \
+	src/PlaylistPrint.cxx src/PlaylistPrint.hxx \
 	src/playlist_save.c \
 	src/playlist_mapper.c \
 	src/playlist_any.c \
