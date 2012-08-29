@@ -21,6 +21,7 @@
 #include "QueueCommands.hxx"
 #include "CommandError.h"
 #include "DatabaseQueue.hxx"
+#include "SongFilter.hxx"
 
 extern "C" {
 #include "protocol/argparser.h"
@@ -29,7 +30,6 @@ extern "C" {
 #include "playlist_print.h"
 #include "ls.h"
 #include "uri.h"
-#include "locate.h"
 #include "client_internal.h"
 #include "client_file.h"
 }

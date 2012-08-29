@@ -27,9 +27,9 @@
 #include "client_internal.h"
 #include "tag.h"
 #include "uri.h"
+#include "SongFilter.hxx"
 
 extern "C" {
-#include "locate.h"
 #include "protocol/result.h"
 }
 

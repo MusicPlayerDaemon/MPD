@@ -18,13 +18,13 @@
  */
 
 #include "config.h"
+#include "SongFilter.hxx"
 
 extern "C" {
 #include "queue_print.h"
 #include "queue.h"
 #include "song.h"
 #include "song_print.h"
-#include "locate.h"
 #include "client.h"
 #include "mapper.h"
 }

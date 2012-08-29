@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "directory.h"
+#include "SongFilter.hxx"
 
 extern "C" {
 #include "song.h"
@@ -27,7 +28,6 @@ extern "C" {
 #include "path.h"
 #include "util/list_sort.h"
 #include "db_lock.h"
-#include "locate.h"
 }
 
 #include <glib.h>

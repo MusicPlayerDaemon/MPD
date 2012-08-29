@@ -21,13 +21,13 @@
 #include "SimpleDatabasePlugin.hxx"
 #include "DatabaseSelection.hxx"
 #include "DatabaseHelpers.hxx"
+#include "SongFilter.hxx"
 
 extern "C" {
 #include "db_error.h"
 #include "db_save.h"
 #include "db_lock.h"
 #include "conf.h"
-#include "locate.h"
 }
 
 #include "directory.h"

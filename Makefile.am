@@ -212,7 +212,6 @@ mpd_headers = \
 	src/string_util.h \
 	src/volume.h \
 	src/zeroconf.h src/zeroconf-internal.h \
-	src/locate.h \
 	src/stored_playlist.h \
 	src/timer.h \
 	src/archive_api.h \
@@ -362,7 +361,7 @@ src_mpd_SOURCES = \
 	src/utils.c \
 	src/string_util.c \
 	src/volume.c \
-	src/locate.c \
+	src/SongFilter.cxx src/SongFilter.hxx \
 	src/stored_playlist.c \
 	src/timer.c
 
@@ -1070,7 +1069,7 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/Song.cxx src/song_sort.c src/song_save.c \
 	src/tag.c src/tag_pool.c src/tag_save.c \
 	src/path.c \
-	src/locate.c \
+	src/SongFilter.cxx \
 	src/text_file.c \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c
 

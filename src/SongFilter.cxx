@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,10 +18,13 @@
  */
 
 #include "config.h"
-#include "locate.h"
+#include "SongFilter.hxx"
 #include "path.h"
-#include "tag.h"
 #include "song.h"
+
+extern "C" {
+#include "tag.h"
+}
 
 #include <glib.h>
 
@@ -96,7 +99,7 @@ locate_item_list_free(struct locate_item_list *list)
 static struct locate_item_list *
 locate_item_list_new(unsigned length)
 {
-	struct locate_item_list *list =
+	struct locate_item_list *list = (struct locate_item_list *)
 		g_malloc(sizeof(*list) - sizeof(list->items[0]) +
 			 length * sizeof(list->items[0]));
 	list->length = length;

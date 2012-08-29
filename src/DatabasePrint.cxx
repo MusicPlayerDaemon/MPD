@@ -20,9 +20,9 @@
 #include "config.h"
 #include "DatabasePrint.hxx"
 #include "DatabaseSelection.hxx"
+#include "SongFilter.hxx"
 
 extern "C" {
-#include "locate.h"
 #include "database.h"
 #include "client.h"
 #include "song.h"
