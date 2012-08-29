@@ -22,14 +22,81 @@
 
 #include "gcc.h"
 
+#include <list>
+
 #include <stdint.h>
 #include <stdbool.h>
 
 #define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
 #define LOCATE_TAG_ANY_TYPE     TAG_NUM_OF_ITEM_TYPES+20
 
-struct locate_item_list;
+struct tag;
+struct tag_item;
 struct song;
+
+class SongFilter {
+	class Item {
+		uint8_t tag;
+
+		bool fold_case;
+
+		char *value;
+
+	public:
+		gcc_nonnull(3)
+		Item(unsigned tag, const char *value, bool fold_case=false);
+
+		Item(const Item &other) = delete;
+
+		Item(Item &&other)
+			:tag(other.tag), fold_case(other.fold_case),
+			 value(other.value) {
+			other.value = nullptr;
+		}
+
+		~Item();
+
+		Item &operator=(const Item &other) = delete;
+
+		unsigned GetTag() const {
+			return tag;
+		}
+
+		gcc_pure gcc_nonnull(2)
+		bool StringMatch(const char *s) const;
+
+		gcc_pure
+		bool Match(const tag_item &tag_item) const;
+
+		gcc_pure
+		bool Match(const struct tag &tag) const;
+
+		gcc_pure
+		bool Match(const song &song) const;
+	};
+
+	std::list<Item> items;
+
+public:
+	SongFilter() = default;
+
+	gcc_nonnull(3)
+	SongFilter(unsigned tag, const char *value, bool fold_case=false);
+
+	~SongFilter();
+
+	gcc_nonnull(2,3)
+	bool Parse(const char *tag, const char *value, bool fold_case=false);
+
+	gcc_nonnull(3)
+	bool Parse(unsigned argc, char *argv[], bool fold_case=false);
+
+	gcc_pure
+	bool Match(const tag &tag) const;
+
+	gcc_pure
+	bool Match(const song &song) const;
+};
 
 /**
  * @return #TAG_NUM_OF_ITEM_TYPES on error
@@ -37,24 +104,5 @@ struct song;
 gcc_pure
 unsigned
 locate_parse_type(const char *str);
-
-gcc_malloc
-struct locate_item_list *
-locate_item_list_new_single(unsigned tag, const char *needle);
-
-/* return number of items or -1 on error */
-gcc_nonnull(1)
-struct locate_item_list *
-locate_item_list_parse(char *argv[], unsigned argc, bool fold_case);
-
-gcc_nonnull(1)
-void
-locate_item_list_free(struct locate_item_list *list);
-
-gcc_pure
-gcc_nonnull(1,2)
-bool
-locate_list_song_match(const struct song *song,
-		       const struct locate_item_list *criteria);
 
 #endif

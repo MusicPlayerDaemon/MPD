@@ -35,27 +35,6 @@ extern "C" {
 #define LOCATE_TAG_FILE_KEY_OLD "filename"
 #define LOCATE_TAG_ANY_KEY      "any"
 
-/* struct used for search, find, list queries */
-struct locate_item {
-	uint8_t tag;
-
-	bool fold_case;
-
-	/* what we are looking for */
-	char *needle;
-};
-
-/**
- * An array of struct locate_item objects.
- */
-struct locate_item_list {
-	/** number of items */
-	unsigned length;
-
-	/** this is a variable length array */
-	struct locate_item items[1];
-};
-
 unsigned
 locate_parse_type(const char *str)
 {
@@ -69,107 +48,52 @@ locate_parse_type(const char *str)
 	return tag_name_parse_i(str);
 }
 
-static bool
-locate_item_init(struct locate_item *item,
-		 const char *type_string, const char *needle,
-		 bool fold_case)
+SongFilter::Item::Item(unsigned _tag, const char *_value, bool _fold_case)
+	:tag(_tag), fold_case(_fold_case),
+	 value(fold_case
+	       ? g_utf8_casefold(_value, -1)
+	       : g_strdup(_value))
 {
-	item->tag = locate_parse_type(type_string);
-
-	if (item->tag == TAG_NUM_OF_ITEM_TYPES)
-		return false;
-
-	item->fold_case = fold_case;
-	item->needle = fold_case
-		? g_utf8_casefold(needle, -1)
-		: g_strdup(needle);
-
-	return true;
 }
 
-void
-locate_item_list_free(struct locate_item_list *list)
+SongFilter::Item::~Item()
 {
-	for (unsigned i = 0; i < list->length; ++i)
-		g_free(list->items[i].needle);
-
-	g_free(list);
+	g_free(value);
 }
 
-static struct locate_item_list *
-locate_item_list_new(unsigned length)
+bool
+SongFilter::Item::StringMatch(const char *s) const
 {
-	struct locate_item_list *list = (struct locate_item_list *)
-		g_malloc(sizeof(*list) - sizeof(list->items[0]) +
-			 length * sizeof(list->items[0]));
-	list->length = length;
+	assert(value != nullptr);
+	assert(s != nullptr);
 
-	return list;
-}
-
-struct locate_item_list *
-locate_item_list_new_single(unsigned tag, const char *needle)
-{
-	struct locate_item_list *list = locate_item_list_new(1);
-	list->items[0].tag = tag;
-	list->items[0].fold_case = false;
-	list->items[0].needle = g_strdup(needle);
-	return list;
-}
-
-struct locate_item_list *
-locate_item_list_parse(char *argv[], unsigned argc, bool fold_case)
-{
-	if (argc == 0 || argc % 2 != 0)
-		return NULL;
-
-	struct locate_item_list *list = locate_item_list_new(argc / 2);
-
-	for (unsigned i = 0; i < list->length; ++i) {
-		if (!locate_item_init(&list->items[i], argv[i * 2],
-				      argv[i * 2 + 1], fold_case)) {
-			locate_item_list_free(list);
-			return NULL;
-		}
-	}
-
-	return list;
-}
-
-gcc_pure
-static bool
-locate_string_match(const struct locate_item *item, const char *value)
-{
-	assert(item != NULL);
-	assert(value != NULL);
-
-	if (item->fold_case) {
-		char *p = g_utf8_casefold(value, -1);
-		const bool result = strstr(p, item->needle) != NULL;
+	if (fold_case) {
+		char *p = g_utf8_casefold(s, -1);
+		const bool result = strstr(p, value) != NULL;
 		g_free(p);
 		return result;
 	} else {
-		return strcmp(value, item->needle) == 0;
+		return strcmp(s, value) == 0;
 	}
 }
 
-gcc_pure
-static bool
-locate_tag_match(const struct locate_item *item, const struct tag *tag)
+bool
+SongFilter::Item::Match(const tag_item &item) const
 {
-	assert(item != NULL);
-	assert(tag != NULL);
+	return (tag == LOCATE_TAG_ANY_TYPE || (unsigned)item.type == tag) &&
+		StringMatch(item.value);
+}
 
+bool
+SongFilter::Item::Match(const struct tag &_tag) const
+{
 	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
-	memset(visited_types, 0, sizeof(visited_types));
+	std::fill(visited_types, visited_types + TAG_NUM_OF_ITEM_TYPES, false);
 
-	for (unsigned i = 0; i < tag->num_items; i++) {
-		visited_types[tag->items[i]->type] = true;
-		if (item->tag != LOCATE_TAG_ANY_TYPE &&
-		    tag->items[i]->type != item->tag)
-			continue;
+	for (unsigned i = 0; i < _tag.num_items; i++) {
+		visited_types[_tag.items[i]->type] = true;
 
-		if (locate_string_match(item, tag->items[i]->value))
+		if (Match(*_tag.items[i]))
 			return true;
 	}
 
@@ -179,36 +103,67 @@ locate_tag_match(const struct locate_item *item, const struct tag *tag)
 	 *  empty (first char is a \0), then it's a match as well and
 	 *  we should return true.
 	 */
-	if (*item->needle == 0 && item->tag != LOCATE_TAG_ANY_TYPE &&
-	    !visited_types[item->tag])
+	if (*value == 0 && tag < TAG_NUM_OF_ITEM_TYPES &&
+	    !visited_types[tag])
 		return true;
 
 	return false;
 }
 
-gcc_pure
-static bool
-locate_song_match(const struct locate_item *item, const struct song *song)
+bool
+SongFilter::Item::Match(const song &song) const
 {
-	if (item->tag == LOCATE_TAG_FILE_TYPE ||
-	    item->tag == LOCATE_TAG_ANY_TYPE) {
-		char *uri = song_get_uri(song);
-		const bool result = locate_string_match(item, uri);
+	if (tag == LOCATE_TAG_FILE_TYPE || tag == LOCATE_TAG_ANY_TYPE) {
+		char *uri = song_get_uri(&song);
+		const bool result = StringMatch(uri);
 		g_free(uri);
 
-		if (result || item->tag == LOCATE_TAG_FILE_TYPE)
+		if (result || tag == LOCATE_TAG_FILE_TYPE)
 			return result;
 	}
 
-	return song->tag != NULL && locate_tag_match(item, song->tag);
+	return song.tag != NULL && Match(*song.tag);
+}
+
+SongFilter::SongFilter(unsigned tag, const char *value, bool fold_case)
+{
+	items.push_back(Item(tag, value, fold_case));
+}
+
+SongFilter::~SongFilter()
+{
+	/* this destructor exists here just so it won't get inlined */
 }
 
 bool
-locate_list_song_match(const struct song *song,
-		       const struct locate_item_list *criteria)
+SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 {
-	for (unsigned i = 0; i < criteria->length; i++)
-		if (!locate_song_match(&criteria->items[i], song))
+	unsigned tag = locate_parse_type(tag_string);
+	if (tag == TAG_NUM_OF_ITEM_TYPES)
+		return false;
+
+	items.push_back(Item(tag, value, fold_case));
+	return true;
+}
+
+bool
+SongFilter::Parse(unsigned argc, char *argv[], bool fold_case)
+{
+	if (argc == 0 || argc % 2 != 0)
+		return false;
+
+	for (unsigned i = 0; i < argc; i += 2)
+		if (!Parse(argv[i], argv[i + 1], fold_case))
+			return false;
+
+	return true;
+}
+
+bool
+SongFilter::Match(const song &song) const
+{
+	for (const auto &i : items)
+		if (!i.Match(song))
 			return false;
 
 	return true;

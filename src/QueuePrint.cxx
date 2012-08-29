@@ -18,10 +18,10 @@
  */
 
 #include "config.h"
+#include "QueuePrint.hxx"
 #include "SongFilter.hxx"
 
 extern "C" {
-#include "queue_print.h"
 #include "queue.h"
 #include "song.h"
 #include "song_print.h"
@@ -96,12 +96,12 @@ queue_print_changes_position(struct client *client, const struct queue *queue,
 
 void
 queue_find(struct client *client, const struct queue *queue,
-	   const struct locate_item_list *criteria)
+	   const SongFilter &filter)
 {
 	for (unsigned i = 0; i < queue_length(queue); i++) {
 		const struct song *song = queue_get(queue, i);
 
-		if (locate_list_song_match(song, criteria))
+		if (filter.Match(*song))
 			queue_print_song_info(client, queue, i);
 	}
 }

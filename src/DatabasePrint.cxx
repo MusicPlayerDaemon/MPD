@@ -120,12 +120,12 @@ db_selection_print(struct client *client, const DatabaseSelection &selection,
 		return false;
 
 	using namespace std::placeholders;
-	const auto d = selection.match == nullptr
+	const auto d = selection.filter == nullptr
 		? std::bind(PrintDirectory, client, _1)
 		: VisitDirectory();
 	const auto s = std::bind(full ? PrintSongFull : PrintSongBrief,
 				 client, _1);
-	const auto p = selection.match == nullptr
+	const auto p = selection.filter == nullptr
 		? std::bind(full ? PrintPlaylistFull : PrintPlaylistBrief,
 			    client, _1, _2)
 		: VisitPlaylist();
@@ -155,14 +155,14 @@ stats_visitor_song(SearchStats &stats, song &song)
 
 bool
 searchStatsForSongsIn(struct client *client, const char *name,
-		      const struct locate_item_list *criteria,
+		      const SongFilter *filter,
 		      GError **error_r)
 {
 	const Database *db = GetDatabase(error_r);
 	if (db == nullptr)
 		return false;
 
-	const DatabaseSelection selection(name, true, criteria);
+	const DatabaseSelection selection(name, true, filter);
 
 	SearchStats stats;
 	stats.numberOfSongs = 0;
@@ -211,14 +211,14 @@ PrintUniqueTag(struct client *client, enum tag_type tag_type,
 
 bool
 listAllUniqueTags(struct client *client, int type,
-		  const struct locate_item_list *criteria,
+		  const SongFilter *filter,
 		  GError **error_r)
 {
 	const Database *db = GetDatabase(error_r);
 	if (db == nullptr)
 		return false;
 
-	const DatabaseSelection selection("", true, criteria);
+	const DatabaseSelection selection("", true, filter);
 
 	if (type == LOCATE_TAG_FILE_TYPE) {
 		using namespace std::placeholders;

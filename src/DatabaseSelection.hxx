@@ -25,7 +25,7 @@
 #include <assert.h>
 #include <stddef.h>
 
-struct locate_item_list;
+class SongFilter;
 struct song;
 
 struct DatabaseSelection {
@@ -41,11 +41,11 @@ struct DatabaseSelection {
 	 */
 	bool recursive;
 
-	const locate_item_list *match;
+	const SongFilter *filter;
 
 	DatabaseSelection(const char *_uri, bool _recursive,
-			  const locate_item_list *_match=nullptr)
-		:uri(_uri), recursive(_recursive), match(_match) {
+			  const SongFilter *_filter=nullptr)
+		:uri(_uri), recursive(_recursive), filter(_filter) {
 		assert(uri != NULL);
 	}
 

@@ -282,7 +282,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 		return false;
 
 	db_lock();
-	bool ret = directory->Walk(selection.recursive, selection.match,
+	bool ret = directory->Walk(selection.recursive, selection.filter,
 				   visit_directory, visit_song, visit_playlist,
 				   error_r);
 	db_unlock();

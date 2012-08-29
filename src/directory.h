@@ -55,7 +55,10 @@
 
 struct song;
 struct db_visitor;
-struct locate_item_list;
+
+#ifdef __cplusplus
+class SongFilter;
+#endif
 
 struct directory {
 	/**
@@ -97,7 +100,7 @@ struct directory {
 	/**
 	 * Caller must lock #db_mutex.
 	 */
-	bool Walk(bool recursive, const locate_item_list *match,
+	bool Walk(bool recursive, const SongFilter *match,
 		  VisitDirectory visit_directory, VisitSong visit_song,
 		  VisitPlaylist visit_playlist,
 		  GError **error_r) const;

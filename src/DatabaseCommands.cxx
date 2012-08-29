@@ -59,25 +59,18 @@ handle_lsinfo2(struct client *client, int argc, char *argv[])
 static enum command_return
 handle_match(struct client *client, int argc, char *argv[], bool fold_case)
 {
-	struct locate_item_list *list =
-		locate_item_list_parse(argv + 1, argc - 1, fold_case);
-
-	if (list == NULL) {
+	SongFilter filter;
+	if (!filter.Parse(argc - 1, argv + 1, fold_case)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return COMMAND_RETURN_ERROR;
 	}
 
-	const DatabaseSelection selection("", true, list);
+	const DatabaseSelection selection("", true, &filter);
 
 	GError *error = NULL;
-	enum command_return ret =
-		db_selection_print(client, selection, true, &error)
+	return db_selection_print(client, selection, true, &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
-
-	locate_item_list_free(list);
-
-	return ret;
 }
 
 enum command_return
@@ -95,22 +88,16 @@ handle_search(struct client *client, int argc, char *argv[])
 static enum command_return
 handle_match_add(struct client *client, int argc, char *argv[], bool fold_case)
 {
-	struct locate_item_list *list =
-		locate_item_list_parse(argv + 1, argc - 1, fold_case);
-	if (list == NULL) {
+	SongFilter filter;
+	if (!filter.Parse(argc - 1, argv + 1, fold_case)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return COMMAND_RETURN_ERROR;
 	}
 
 	GError *error = NULL;
-	enum command_return ret =
-		findAddIn(client->player_control, "", list, &error)
+	return findAddIn(client->player_control, "", &filter, &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
-
-	locate_item_list_free(list);
-
-	return ret;
 }
 
 enum command_return
@@ -130,45 +117,31 @@ handle_searchaddpl(struct client *client, int argc, char *argv[])
 {
 	const char *playlist = argv[1];
 
-	struct locate_item_list *list =
-		locate_item_list_parse(argv + 2, argc - 2, true);
-
-	if (list == NULL) {
+	SongFilter filter;
+	if (!filter.Parse(argc - 2, argv + 2, true)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return COMMAND_RETURN_ERROR;
 	}
 
 	GError *error = NULL;
-	enum command_return ret =
-		search_add_to_playlist("", playlist, list, &error)
+	return search_add_to_playlist("", playlist, &filter, &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
-
-	locate_item_list_free(list);
-
-	return ret;
 }
 
 enum command_return
 handle_count(struct client *client, int argc, char *argv[])
 {
-	struct locate_item_list *list =
-		locate_item_list_parse(argv + 1, argc - 1, false);
-
-	if (list == NULL) {
+	SongFilter filter;
+	if (!filter.Parse(argc - 1, argv + 1, false)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return COMMAND_RETURN_ERROR;
 	}
 
 	GError *error = NULL;
-	enum command_return ret =
-		searchStatsForSongsIn(client, "", list, &error)
+	return  searchStatsForSongsIn(client, "", &filter, &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
-
-	locate_item_list_free(list);
-
-	return ret;
 }
 
 enum command_return
@@ -188,7 +161,6 @@ handle_listall(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 enum command_return
 handle_list(struct client *client, int argc, char *argv[])
 {
-	struct locate_item_list *conditionals;
 	unsigned tagType = locate_parse_type(argv[1]);
 
 	if (tagType == TAG_NUM_OF_ITEM_TYPES) {
@@ -203,6 +175,7 @@ handle_list(struct client *client, int argc, char *argv[])
 	}
 
 	/* for compatibility with < 0.12.0 */
+	SongFilter *filter;
 	if (argc == 3) {
 		if (tagType != TAG_ALBUM) {
 			command_error(client, ACK_ERROR_ARG,
@@ -211,28 +184,25 @@ handle_list(struct client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		conditionals =
-			locate_item_list_new_single((unsigned)TAG_ARTIST,
-						    argv[2]);
+		filter = new SongFilter((unsigned)TAG_ARTIST, argv[2]);
 	} else if (argc > 2) {
-		conditionals =
-			locate_item_list_parse(argv + 2, argc - 2, false);
-		if (conditionals == NULL) {
+		filter = new SongFilter();
+		if (!filter->Parse(argc - 2, argv + 2, false)) {
+			delete filter;
 			command_error(client, ACK_ERROR_ARG,
 				      "not able to parse args");
 			return COMMAND_RETURN_ERROR;
 		}
 	} else
-		conditionals = nullptr;
+		filter = nullptr;
 
 	GError *error = NULL;
 	enum command_return ret =
-		listAllUniqueTags(client, tagType, conditionals, &error)
+		listAllUniqueTags(client, tagType, filter, &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
 
-	if (conditionals != nullptr)
-		locate_item_list_free(conditionals);
+	delete filter;
 
 	return ret;
 }

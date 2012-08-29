@@ -177,7 +177,6 @@ mpd_headers = \
 	src/riff.h \
 	src/aiff.h \
 	src/queue.h \
-	src/queue_print.h \
 	src/queue_save.h \
 	src/refcount.h \
 	src/replay_gain_config.h \
@@ -333,7 +332,7 @@ src_mpd_SOURCES = \
 	src/playlist_vector.c \
 	src/playlist_database.c \
 	src/queue.c \
-	src/QueuePrint.cxx \
+	src/QueuePrint.cxx src/QueuePrint.hxx \
 	src/queue_save.c \
 	src/replay_gain_config.c \
 	src/replay_gain_info.c \

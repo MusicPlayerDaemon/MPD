@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "PlaylistPrint.hxx"
+#include "QueuePrint.hxx"
 
 extern "C" {
 #include "playlist_list.h"
@@ -26,7 +27,6 @@ extern "C" {
 #include "playlist_any.h"
 #include "playlist_song.h"
 #include "playlist.h"
-#include "queue_print.h"
 #include "stored_playlist.h"
 #include "song_print.h"
 #include "song.h"
@@ -91,9 +91,9 @@ playlist_print_current(struct client *client, const struct playlist *playlist)
 
 void
 playlist_print_find(struct client *client, const struct playlist *playlist,
-		    const struct locate_item_list *list)
+		    const SongFilter &filter)
 {
-	queue_find(client, &playlist->queue, list);
+	queue_find(client, &playlist->queue, filter);
 }
 
 void

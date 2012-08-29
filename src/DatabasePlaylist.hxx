@@ -23,12 +23,12 @@
 #include "gcc.h"
 #include "gerror.h"
 
-struct locate_item_list;
+class SongFilter;
 
 gcc_nonnull(1,2)
 bool
 search_add_to_playlist(const char *uri, const char *path_utf8,
-		       const struct locate_item_list *criteria,
+		       const SongFilter *filter,
 		       GError **error_r);
 
 #endif

@@ -23,5 +23,5 @@
 bool
 DatabaseSelection::Match(const song &song) const
 {
-	return match == nullptr || locate_list_song_match(&song, match);
+	return filter == nullptr || filter->Match(song);
 }

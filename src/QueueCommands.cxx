@@ -246,18 +246,13 @@ static enum command_return
 handle_playlist_match(struct client *client, int argc, char *argv[],
 		      bool fold_case)
 {
-	struct locate_item_list *list =
-		locate_item_list_parse(argv + 1, argc - 1, fold_case);
-
-	if (list == NULL) {
+	SongFilter filter;
+	if (!filter.Parse(argc - 1, argv + 1, fold_case)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return COMMAND_RETURN_ERROR;
 	}
 
-	playlist_print_find(client, &g_playlist, list);
-
-	locate_item_list_free(list);
-
+	playlist_print_find(client, &g_playlist, filter);
 	return COMMAND_RETURN_OK;
 }
 

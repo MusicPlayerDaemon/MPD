@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,14 +22,14 @@
  * client.
  */
 
-#ifndef QUEUE_PRINT_H
-#define QUEUE_PRINT_H
+#ifndef MPD_QUEUE_PRINT_HXX
+#define MPD_QUEUE_PRINT_HXX
 
 #include <stdint.h>
 
 struct client;
 struct queue;
-struct locate_item_list;
+class SongFilter;
 
 void
 queue_print_info(struct client *client, const struct queue *queue,
@@ -49,6 +49,6 @@ queue_print_changes_position(struct client *client, const struct queue *queue,
 
 void
 queue_find(struct client *client, const struct queue *queue,
-	   const struct locate_item_list *criteria);
+	   const SongFilter &filter);
 
 #endif

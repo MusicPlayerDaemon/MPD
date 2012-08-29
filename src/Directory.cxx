@@ -291,7 +291,7 @@ directory_sort(struct directory *directory)
 }
 
 bool
-directory::Walk(bool recursive, const locate_item_list *match,
+directory::Walk(bool recursive, const SongFilter *filter,
 		VisitDirectory visit_directory, VisitSong visit_song,
 		VisitPlaylist visit_playlist,
 		GError **error_r) const
@@ -301,8 +301,7 @@ directory::Walk(bool recursive, const locate_item_list *match,
 	if (visit_song) {
 		struct song *song;
 		directory_for_each_song(song, this)
-			if ((match == NULL ||
-			     locate_list_song_match(song, match)) &&
+			if ((filter == nullptr || filter->Match(*song)) &&
 			    !visit_song(*song, error_r))
 				return false;
 	}
@@ -321,7 +320,7 @@ directory::Walk(bool recursive, const locate_item_list *match,
 			return false;
 
 		if (recursive &&
-		    !child->Walk(recursive, match,
+		    !child->Walk(recursive, filter,
 				 visit_directory, visit_song, visit_playlist,
 				 error_r))
 			return false;

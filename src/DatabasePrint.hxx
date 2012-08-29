@@ -26,7 +26,7 @@
 #include <stdbool.h>
 
 struct client;
-struct locate_item_list;
+class SongFilter;
 struct DatabaseSelection;
 struct db_visitor;
 
@@ -47,13 +47,13 @@ printInfoForAllIn(struct client *client, const char *uri_utf8,
 gcc_nonnull(1,2)
 bool
 searchStatsForSongsIn(struct client *client, const char *name,
-		      const struct locate_item_list *criteria,
+		      const SongFilter *filter,
 		      GError **error_r);
 
 gcc_nonnull(1)
 bool
 listAllUniqueTags(struct client *client, int type,
-		  const struct locate_item_list *criteria,
+		  const SongFilter *filter,
 		  GError **error_r);
 
 #endif

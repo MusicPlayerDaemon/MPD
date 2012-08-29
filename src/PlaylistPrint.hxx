@@ -26,7 +26,7 @@
 
 struct client;
 struct playlist;
-struct locate_item_list;
+class SongFilter;
 
 /**
  * Sends the whole playlist to the client, song URIs only.
@@ -66,7 +66,7 @@ playlist_print_current(struct client *client, const struct playlist *playlist);
  */
 void
 playlist_print_find(struct client *client, const struct playlist *playlist,
-		    const struct locate_item_list *list);
+		    const SongFilter &filter);
 
 /**
  * Print detailed changes since the specified playlist version.
