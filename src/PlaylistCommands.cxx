@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "PlaylistCommands.hxx"
+#include "DatabasePlaylist.hxx"
 #include "CommandError.h"
 
 extern "C" {
@@ -32,7 +33,6 @@ extern "C" {
 #include "ls.h"
 #include "uri.h"
 #include "stored_playlist.h"
-#include "dbUtils.h"
 #include "client_internal.h"
 }
 
@@ -201,7 +201,8 @@ handle_playlistadd(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 
 		success = spl_append_uri(argv[1], playlist, &error);
 	} else
-		success = addAllInToStoredPlaylist(uri, playlist, &error);
+		success = search_add_to_playlist(uri, playlist, nullptr,
+						 &error);
 
 	if (!success && error == NULL) {
 		command_error(client, ACK_ERROR_NO_EXIST,

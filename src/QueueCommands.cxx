@@ -20,6 +20,7 @@
 #include "config.h"
 #include "QueueCommands.hxx"
 #include "CommandError.h"
+#include "DatabaseQueue.hxx"
 
 extern "C" {
 #include "protocol/argparser.h"
@@ -29,7 +30,6 @@ extern "C" {
 #include "ls.h"
 #include "uri.h"
 #include "locate.h"
-#include "dbUtils.h"
 #include "client_internal.h"
 #include "client_file.h"
 }
@@ -70,7 +70,7 @@ handle_add(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 	}
 
 	GError *error = NULL;
-	return addAllIn(client->player_control, uri, &error)
+	return findAddIn(client->player_control, uri, nullptr, &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
 }

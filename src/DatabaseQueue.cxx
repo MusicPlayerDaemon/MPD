@@ -22,7 +22,6 @@
 #include "DatabaseSelection.hxx"
 
 extern "C" {
-#include "dbUtils.h"
 #include "playlist.h"
 }
 
@@ -58,10 +57,4 @@ findAddIn(struct player_control *pc, const char *uri,
 	using namespace std::placeholders;
 	const auto f = std::bind(AddToQueue, pc, _1, _2);
 	return db->Visit(selection, f, error_r);
-}
-
-bool
-addAllIn(struct player_control *pc, const char *uri, GError **error_r)
-{
-	return findAddIn(pc, uri, nullptr, error_r);
 }

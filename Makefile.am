@@ -73,7 +73,6 @@ mpd_headers = \
 	src/cmdline.h \
 	src/conf.h \
 	src/crossfade.h \
-	src/dbUtils.h \
 	src/decoder_thread.h \
 	src/decoder_control.h \
 	src/decoder_plugin.h \

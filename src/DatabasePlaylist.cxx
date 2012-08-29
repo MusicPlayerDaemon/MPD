@@ -22,7 +22,6 @@
 #include "DatabaseSelection.hxx"
 
 extern "C" {
-#include "dbUtils.h"
 #include "stored_playlist.h"
 }
 
@@ -52,12 +51,4 @@ search_add_to_playlist(const char *uri, const char *playlist_path_utf8,
 	using namespace std::placeholders;
 	const auto f = std::bind(AddSong, playlist_path_utf8, _1, _2);
 	return db->Visit(selection, f, error_r);
-}
-
-bool
-addAllInToStoredPlaylist(const char *uri_utf8, const char *playlist_path_utf8,
-			 GError **error_r)
-{
-	return search_add_to_playlist(uri_utf8, playlist_path_utf8, nullptr,
-				      error_r);
 }
