@@ -283,11 +283,19 @@ skip_symlink(const struct directory *directory, const char *utf8_name)
 		return true;
 
 	char buffer[MPD_PATH_MAX];
-	ssize_t ret = readlink(path_fs, buffer, sizeof(buffer));
+	ssize_t length = readlink(path_fs, buffer, sizeof(buffer));
 	g_free(path_fs);
-	if (ret < 0)
+	if (length < 0)
 		/* don't skip if this is not a symlink */
 		return errno != EINVAL;
+
+	if ((size_t)length >= sizeof(buffer))
+		/* skip symlinks when the buffer is too small for the
+		   link target */
+		return true;
+
+	/* null-terminate the buffer, because readlink() will not */
+	buffer[length] = 0;
 
 	if (!follow_inside_symlinks && !follow_outside_symlinks) {
 		/* ignore all symlinks */

@@ -17,6 +17,7 @@ ver 0.17.2 (2012/??/??)
 * playlist: fix memory leak
 * state_file: save song priorities
 * player: disable cross-fading in "single" mode
+* update: fix unsafe readlink() usage
 
 
 ver 0.17.1 (2012/07/31)
