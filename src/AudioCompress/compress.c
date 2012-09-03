@@ -33,6 +33,9 @@ struct Compressor {
 struct Compressor *Compressor_new(unsigned int history)
 {
 	struct Compressor *obj = malloc(sizeof(struct Compressor));
+	if (obj == NULL)
+		/* out of memory, not much we can do */
+		abort();
 
 	obj->prefs.target = TARGET;
 	obj->prefs.maxgain = GAINMAX;
@@ -61,6 +64,10 @@ void Compressor_delete(struct Compressor *obj)
 static int *resizeArray(int *data, int newsz, int oldsz)
 {
         data = realloc(data, newsz*sizeof(int));
+	if (data == NULL)
+		/* out of memory, not much we can do */
+		abort();
+
         if (newsz > oldsz)
                 memset(data + oldsz, 0, sizeof(int)*(newsz - oldsz));
         return data;
