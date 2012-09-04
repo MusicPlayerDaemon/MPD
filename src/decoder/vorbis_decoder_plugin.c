@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "vorbis_comments.h"
-#include "ogg_common.h"
+#include "ogg_codec.h"
 #include "audio_check.h"
 #include "uri.h"
 #include "tag_handler.h"
@@ -184,10 +184,10 @@ vorbis_stream_decode(struct decoder *decoder,
 	const vorbis_info *vi;
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
-	if (ogg_stream_type_detect(decoder, input_stream) != VORBIS)
+	if (ogg_codec_detect(decoder, input_stream) != OGG_CODEC_VORBIS)
 		return;
 
-	/* rewind the stream, because ogg_stream_type_detect() has
+	/* rewind the stream, because ogg_codec_detect() has
 	   moved it */
 	input_stream_lock_seek(input_stream, 0, SEEK_SET, NULL);
 

@@ -588,7 +588,7 @@ endif
 
 if HAVE_OGG_COMMON
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/ogg_common.c src/decoder/ogg_common.h
+	src/decoder/ogg_codec.c src/decoder/ogg_codec.h
 endif
 
 if HAVE_FLAC_COMMON

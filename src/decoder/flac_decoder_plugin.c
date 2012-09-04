@@ -23,7 +23,7 @@
 #include "flac_metadata.h"
 
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
-#include "ogg_common.h"
+#include "ogg_codec.h"
 #endif
 
 #include <glib.h>
@@ -433,10 +433,10 @@ oggflac_scan_file(const char *file,
 static void
 oggflac_decode(struct decoder *decoder, struct input_stream *input_stream)
 {
-	if (ogg_stream_type_detect(decoder, input_stream) != FLAC)
+	if (ogg_codec_detect(decoder, input_stream) != OGG_CODEC_FLAC)
 		return;
 
-	/* rewind the stream, because ogg_stream_type_detect() has
+	/* rewind the stream, because ogg_codec_detect() has
 	   moved it */
 	input_stream_lock_seek(input_stream, 0, SEEK_SET, NULL);
 

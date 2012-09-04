@@ -21,25 +21,17 @@
  * Common functions used for Ogg data streams (Ogg-Vorbis and OggFLAC)
  */
 
-#include "config.h"
-#include "ogg_common.h"
+#ifndef MPD_OGG_CODEC_H
+#define MPD_OGG_CODEC_H
 
-enum ogg_stream_type
-ogg_stream_type_detect(struct decoder *decoder, struct input_stream *is)
-{
-	/* oggflac detection based on code in ogg123 and this post
-	 * http://lists.xiph.org/pipermail/flac/2004-December/000393.html
-	 * ogg123 trunk still doesn't have this patch as of June 2005 */
-	unsigned char buf[41];
-	size_t r = decoder_read(decoder, is, buf, sizeof(buf));
-	if (r < sizeof(buf) || memcmp(buf, "OggS", 4) != 0)
-		return VORBIS;
+#include "decoder_api.h"
 
-	if ((memcmp(buf + 29, "FLAC", 4) == 0 &&
-	     memcmp(buf + 37, "fLaC", 4) == 0) ||
-	    memcmp(buf + 28, "FLAC", 4) == 0 ||
-	    memcmp(buf + 28, "fLaC", 4) == 0)
-		return FLAC;
+enum ogg_codec {
+	OGG_CODEC_VORBIS,
+	OGG_CODEC_FLAC,
+};
 
-	return VORBIS;
-}
+enum ogg_codec
+ogg_codec_detect(struct decoder *decoder, struct input_stream *is);
+
+#endif /* _OGG_COMMON_H */
