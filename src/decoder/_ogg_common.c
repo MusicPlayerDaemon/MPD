@@ -33,12 +33,14 @@ ogg_stream_type ogg_stream_type_detect(struct input_stream *inStream)
 	size_t r;
 
 	r = decoder_read(NULL, inStream, buf, sizeof(buf));
-	if (r >= 32 && memcmp(buf, "OggS", 4) == 0 && (
-				(memcmp(buf+29, "FLAC", 4) == 0
-					&& memcmp(buf+37, "fLaC", 4) == 0)
-				|| (memcmp(buf+28, "FLAC", 4) == 0)
-				|| (memcmp(buf+28, "fLaC", 4) == 0))) {
+	if (r < 32 || memcmp(buf, "OggS", 4) != 0)
+		return VORBIS;
+
+	if ((memcmp(buf + 29, "FLAC", 4) == 0 &&
+	     memcmp(buf + 37, "fLaC", 4) == 0) ||
+	    memcmp(buf + 28, "FLAC", 4) == 0 ||
+	    memcmp(buf + 28, "fLaC", 4) == 0)
 		return FLAC;
-	}
+
 	return VORBIS;
 }
