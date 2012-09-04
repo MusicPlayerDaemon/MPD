@@ -26,6 +26,7 @@
 #include "decoder/pcm_decoder_plugin.h"
 #include "decoder/dsdiff_decoder_plugin.h"
 #include "decoder/dsf_decoder_plugin.h"
+#include "decoder/OpusDecoderPlugin.h"
 
 #include <glib.h>
 
@@ -65,6 +66,9 @@ const struct decoder_plugin *const decoder_plugins[] = {
 #endif
 #ifdef HAVE_FLAC
 	&flac_decoder_plugin,
+#endif
+#ifdef HAVE_OPUS
+	&opus_decoder_plugin,
 #endif
 #ifdef ENABLE_SNDFILE
 	&sndfile_decoder_plugin,

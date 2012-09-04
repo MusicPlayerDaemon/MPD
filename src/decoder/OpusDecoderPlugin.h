@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,23 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * Common functions used for Ogg data streams (Ogg-Vorbis and OggFLAC)
- */
+#ifndef MPD_DECODER_OPUS_H
+#define MPD_DECODER_OPUS_H
 
-#ifndef MPD_OGG_CODEC_H
-#define MPD_OGG_CODEC_H
+extern const struct decoder_plugin opus_decoder_plugin;
 
-#include "decoder_api.h"
-
-enum ogg_codec {
-	OGG_CODEC_UNKNOWN,
-	OGG_CODEC_VORBIS,
-	OGG_CODEC_FLAC,
-	OGG_CODEC_OPUS,
-};
-
-enum ogg_codec
-ogg_codec_detect(struct decoder *decoder, struct input_stream *is);
-
-#endif /* _OGG_COMMON_H */
+#endif

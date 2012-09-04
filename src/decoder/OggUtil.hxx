@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,23 +17,32 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * Common functions used for Ogg data streams (Ogg-Vorbis and OggFLAC)
+#ifndef MPD_OGG_UTIL_HXX
+#define MPD_OGG_UTIL_HXX
+
+#include "check.h"
+
+#include <ogg/ogg.h>
+
+#include <stddef.h>
+
+/**
+ * Feed data from the #input_stream into the #ogg_sync_state.
+ *
+ * @return false on error or end-of-file
  */
+bool
+OggFeed(ogg_sync_state &oy, struct decoder *decoder,
+	struct input_stream *input_stream, size_t size);
 
-#ifndef MPD_OGG_CODEC_H
-#define MPD_OGG_CODEC_H
+/**
+ * Feed into the #ogg_sync_state until a page gets available.  Garbage
+ * data at the beginning is considered a fatal error.
+ *
+ * @return true if a page is available
+ */
+bool
+OggExpectPage(ogg_sync_state &oy, ogg_page &page,
+	      struct decoder *decoder, struct input_stream *input_stream);
 
-#include "decoder_api.h"
-
-enum ogg_codec {
-	OGG_CODEC_UNKNOWN,
-	OGG_CODEC_VORBIS,
-	OGG_CODEC_FLAC,
-	OGG_CODEC_OPUS,
-};
-
-enum ogg_codec
-ogg_codec_detect(struct decoder *decoder, struct input_stream *is);
-
-#endif /* _OGG_COMMON_H */
+#endif

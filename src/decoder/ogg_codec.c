@@ -41,5 +41,8 @@ ogg_codec_detect(struct decoder *decoder, struct input_stream *is)
 	    memcmp(buf + 28, "fLaC", 4) == 0)
 		return OGG_CODEC_FLAC;
 
+	if (memcmp(buf + 28, "Opus", 4) == 0)
+		return OGG_CODEC_OPUS;
+
 	return OGG_CODEC_VORBIS;
 }

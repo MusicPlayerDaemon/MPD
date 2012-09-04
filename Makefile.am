@@ -538,6 +538,7 @@ libdecoder_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(WAVPACK_CFLAGS) \
 	$(MAD_CFLAGS) \
 	$(MPG123_CFLAGS) \
+	$(OPUS_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
 	$(MPCDEC_CFLAGS) \
 	$(FAAD_CFLAGS)
@@ -555,6 +556,7 @@ DECODER_LIBS = \
 	$(WAVPACK_LIBS) \
 	$(MAD_LIBS) \
 	$(MPG123_LIBS) \
+	$(OPUS_LIBS) \
 	$(MP4FF_LIBS) \
 	$(FFMPEG_LIBS) \
 	$(MPCDEC_LIBS) \
@@ -572,6 +574,19 @@ endif
 
 if HAVE_MPCDEC
 libdecoder_plugins_a_SOURCES += src/decoder/mpcdec_decoder_plugin.c
+endif
+
+if HAVE_OPUS
+libdecoder_plugins_a_SOURCES += \
+	src/decoder/OggUtil.cxx \
+	src/decoder/OggUtil.hxx \
+	src/decoder/OpusReader.hxx \
+	src/decoder/OpusHead.hxx \
+	src/decoder/OpusHead.cxx \
+	src/decoder/OpusTags.cxx \
+	src/decoder/OpusTags.hxx \
+	src/decoder/OpusDecoderPlugin.cxx \
+	src/decoder/OpusDecoderPlugin.h
 endif
 
 if HAVE_WAVPACK

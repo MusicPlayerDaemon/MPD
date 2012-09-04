@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,23 +17,28 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * Common functions used for Ogg data streams (Ogg-Vorbis and OggFLAC)
- */
+#include "config.h"
+#include "OpusHead.hxx"
 
-#ifndef MPD_OGG_CODEC_H
-#define MPD_OGG_CODEC_H
+#include <stdint.h>
+#include <string.h>
 
-#include "decoder_api.h"
-
-enum ogg_codec {
-	OGG_CODEC_UNKNOWN,
-	OGG_CODEC_VORBIS,
-	OGG_CODEC_FLAC,
-	OGG_CODEC_OPUS,
+struct OpusHead {
+	char signature[8];
+	uint8_t version, channels;
+	uint16_t pre_skip;
+	uint32_t sample_rate;
+	uint16_t output_gain;
+	uint8_t channel_mapping;
 };
 
-enum ogg_codec
-ogg_codec_detect(struct decoder *decoder, struct input_stream *is);
+bool
+ScanOpusHeader(const void *data, size_t size, unsigned &channels_r)
+{
+	const OpusHead *h = (const OpusHead *)data;
+	if (size < 19 || (h->version & 0xf0) != 0)
+		return false;
 
-#endif /* _OGG_COMMON_H */
+	channels_r = h->channels;
+	return true;
+}

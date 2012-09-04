@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,23 +17,40 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * Common functions used for Ogg data streams (Ogg-Vorbis and OggFLAC)
- */
+#include "config.h"
+#include "OggUtil.hxx"
 
-#ifndef MPD_OGG_CODEC_H
-#define MPD_OGG_CODEC_H
-
+extern "C" {
 #include "decoder_api.h"
+}
 
-enum ogg_codec {
-	OGG_CODEC_UNKNOWN,
-	OGG_CODEC_VORBIS,
-	OGG_CODEC_FLAC,
-	OGG_CODEC_OPUS,
-};
+bool
+OggFeed(ogg_sync_state &oy, struct decoder *decoder,
+	struct input_stream *input_stream, size_t size)
+{
+		char *buffer = ogg_sync_buffer(&oy, size);
+		if (buffer == nullptr)
+			return false;
 
-enum ogg_codec
-ogg_codec_detect(struct decoder *decoder, struct input_stream *is);
+		size_t nbytes = decoder_read(decoder, input_stream,
+					     buffer, size);
+		if (nbytes == 0)
+			return false;
 
-#endif /* _OGG_COMMON_H */
+		ogg_sync_wrote(&oy, nbytes);
+		return true;
+}
+
+bool
+OggExpectPage(ogg_sync_state &oy, ogg_page &page,
+	      struct decoder *decoder, struct input_stream *input_stream)
+{
+	while (true) {
+		int r = ogg_sync_pageout(&oy, &page);
+		if (r != 0)
+			return r > 0;
+
+		if (!OggFeed(oy, decoder, input_stream, 1024))
+			return false;
+	}
+}

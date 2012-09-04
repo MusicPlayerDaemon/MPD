@@ -329,6 +329,11 @@ AC_ARG_ENABLE(openal,
 		[enable OpenAL support (default: disable)]),,
 	enable_openal=no)
 
+AC_ARG_ENABLE(opus,
+	AS_HELP_STRING([--enable-opus],
+		[enable Opus codec support (default: auto)]),,
+	enable_opus=auto)
+
 AC_ARG_ENABLE(oss,
 	AS_HELP_STRING([--disable-oss],
 		[disable OSS support (default: enable)]),,
@@ -919,6 +924,14 @@ if test x$enable_modplug = xyes; then
 fi
 AM_CONDITIONAL(HAVE_MODPLUG, test x$enable_modplug = xyes)
 
+dnl -------------------------------- libopus ----------------------------------
+MPD_AUTO_PKG(opus, OPUS, [opus ogg],
+	[opus decoder plugin], [libopus not found])
+if test x$enable_opus = xyes; then
+	AC_DEFINE(HAVE_OPUS, 1, [Define to use libopus])
+fi
+AM_CONDITIONAL(HAVE_OPUS, test x$enable_opus = xyes)
+
 dnl -------------------------------- libsndfile -------------------------------
 dnl See above test, which may disable this.
 MPD_AUTO_PKG(sndfile, SNDFILE, [sndfile],
@@ -1096,6 +1109,7 @@ if
 	test x$enable_mp4 = xno &&
 	test x$enable_mpc = xno &&
 	test x$enable_mpg123 = xno &&
+	test x$enable_opus = xno &&
 	test x$enable_sidplay = xno &&
 	test x$enable_tremor = xno &&
 	test x$enable_vorbis = xno &&
@@ -1106,7 +1120,7 @@ if
 fi
 
 AM_CONDITIONAL(HAVE_XIPH,
-	test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_flac = xyes)
+	test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_flac = xyes || test x$enable_opus = xyes)
 
 AM_CONDITIONAL(HAVE_FLAC_COMMON,
 	  test x$enable_flac = xyes)
@@ -1581,6 +1595,7 @@ results(mpg123, [MPG123])
 results(mp4, [MP4])
 results(mpc, [Musepack])
 printf '\n\t'
+results(opus, [OPUS])
 results(tremor, [OggTremor])
 results(vorbis, [OggVorbis])
 results(audiofile, [WAVE])
