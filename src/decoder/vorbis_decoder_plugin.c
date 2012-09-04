@@ -184,7 +184,7 @@ vorbis_stream_decode(struct decoder *decoder,
 	const vorbis_info *vi;
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
-	if (ogg_stream_type_detect(input_stream) != VORBIS)
+	if (ogg_stream_type_detect(decoder, input_stream) != VORBIS)
 		return;
 
 	/* rewind the stream, because ogg_stream_type_detect() has

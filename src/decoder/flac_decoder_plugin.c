@@ -433,7 +433,7 @@ oggflac_scan_file(const char *file,
 static void
 oggflac_decode(struct decoder *decoder, struct input_stream *input_stream)
 {
-	if (ogg_stream_type_detect(input_stream) != FLAC)
+	if (ogg_stream_type_detect(decoder, input_stream) != FLAC)
 		return;
 
 	/* rewind the stream, because ogg_stream_type_detect() has

@@ -32,6 +32,6 @@ enum ogg_stream_type {
 };
 
 enum ogg_stream_type
-ogg_stream_type_detect(struct input_stream *is);
+ogg_stream_type_detect(struct decoder *decoder, struct input_stream *is);
 
 #endif /* _OGG_COMMON_H */
