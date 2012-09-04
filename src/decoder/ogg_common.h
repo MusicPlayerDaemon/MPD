@@ -26,8 +26,12 @@
 
 #include "decoder_api.h"
 
-typedef enum _ogg_stream_type { VORBIS, FLAC } ogg_stream_type;
+enum ogg_stream_type {
+	VORBIS,
+	FLAC,
+};
 
-ogg_stream_type ogg_stream_type_detect(struct input_stream *inStream);
+enum ogg_stream_type
+ogg_stream_type_detect(struct input_stream *is);
 
 #endif /* _OGG_COMMON_H */
