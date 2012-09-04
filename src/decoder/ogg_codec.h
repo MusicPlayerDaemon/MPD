@@ -27,6 +27,7 @@
 #include "decoder_api.h"
 
 enum ogg_codec {
+	OGG_CODEC_UNKNOWN,
 	OGG_CODEC_VORBIS,
 	OGG_CODEC_FLAC,
 };
