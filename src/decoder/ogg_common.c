@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "_ogg_common.h"
+#include "ogg_common.h"
 
 ogg_stream_type ogg_stream_type_detect(struct input_stream *inStream)
 {

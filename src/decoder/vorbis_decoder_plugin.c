@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "vorbis_comments.h"
-#include "_ogg_common.h"
+#include "ogg_common.h"
 #include "audio_check.h"
 #include "uri.h"
 #include "tag_handler.h"

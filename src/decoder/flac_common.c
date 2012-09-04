@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "_flac_common.h"
+#include "flac_common.h"
 #include "flac_metadata.h"
 #include "flac_pcm.h"
 #include "audio_check.h"

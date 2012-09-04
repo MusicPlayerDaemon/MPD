@@ -101,8 +101,6 @@ mpd_headers = \
 	src/decoder/flac_compat.h \
 	src/decoder/flac_metadata.h \
 	src/decoder/flac_pcm.h \
-	src/decoder/_flac_common.h \
-	src/decoder/_ogg_common.h \
 	src/decoder/pcm_decoder_plugin.h \
 	src/input_init.h \
 	src/input_plugin.h \
@@ -589,14 +587,15 @@ libdecoder_plugins_a_SOURCES += src/decoder/mp4ff_decoder_plugin.c
 endif
 
 if HAVE_OGG_COMMON
-libdecoder_plugins_a_SOURCES += src/decoder/_ogg_common.c
+libdecoder_plugins_a_SOURCES += \
+	src/decoder/ogg_common.c src/decoder/ogg_common.h
 endif
 
 if HAVE_FLAC_COMMON
 libdecoder_plugins_a_SOURCES += \
 	src/decoder/flac_metadata.c \
 	src/decoder/flac_pcm.c \
-	src/decoder/_flac_common.c
+	src/decoder/flac_common.c src/decoder/flac_common.h
 endif
 
 if ENABLE_VORBIS_DECODER

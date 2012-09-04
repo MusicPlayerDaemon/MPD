@@ -18,12 +18,12 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "_flac_common.h"
+#include "flac_common.h"
 #include "flac_compat.h"
 #include "flac_metadata.h"
 
 #if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
-#include "_ogg_common.h"
+#include "ogg_common.h"
 #endif
 
 #include <glib.h>
