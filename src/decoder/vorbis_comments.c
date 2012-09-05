@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "vorbis_comments.h"
+#include "XiphTags.h"
 #include "tag.h"
 #include "tag_table.h"
 #include "tag_handler.h"
@@ -95,13 +96,6 @@ vorbis_copy_comment(const char *comment,
 	return false;
 }
 
-static const struct tag_table vorbis_tags[] = {
-	{ "tracknumber", TAG_TRACK },
-	{ "discnumber", TAG_DISC },
-	{ "album artist", TAG_ALBUM_ARTIST },
-	{ NULL, TAG_NUM_OF_ITEM_TYPES }
-};
-
 static void
 vorbis_scan_comment(const char *comment,
 		    const struct tag_handler *handler, void *handler_ctx)
@@ -119,7 +113,7 @@ vorbis_scan_comment(const char *comment,
 		g_free(name);
 	}
 
-	for (const struct tag_table *i = vorbis_tags; i->name != NULL; ++i)
+	for (const struct tag_table *i = xiph_tags; i->name != NULL; ++i)
 		if (vorbis_copy_comment(comment, i->name, i->type,
 					handler, handler_ctx))
 			return;

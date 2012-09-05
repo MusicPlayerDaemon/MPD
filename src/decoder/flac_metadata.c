@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "flac_metadata.h"
+#include "XiphTags.h"
 #include "replay_gain_info.h"
 #include "tag.h"
 #include "tag_handler.h"
@@ -184,13 +185,6 @@ flac_copy_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 	return false;
 }
 
-static const struct tag_table flac_tags[] = {
-	{ "tracknumber", TAG_TRACK },
-	{ "discnumber", TAG_DISC },
-	{ "album artist", TAG_ALBUM_ARTIST },
-	{ NULL, TAG_NUM_OF_ITEM_TYPES }
-};
-
 static void
 flac_scan_comment(const char *char_tnum,
 		  const FLAC__StreamMetadata_VorbisComment_Entry *entry,
@@ -209,7 +203,7 @@ flac_scan_comment(const char *char_tnum,
 		g_free(name);
 	}
 
-	for (const struct tag_table *i = flac_tags; i->name != NULL; ++i)
+	for (const struct tag_table *i = xiph_tags; i->name != NULL; ++i)
 		if (flac_copy_comment(entry, i->name, i->type, char_tnum,
 				      handler, handler_ctx))
 			return;
