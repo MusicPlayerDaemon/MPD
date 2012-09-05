@@ -261,13 +261,18 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 		      VisitPlaylist visit_playlist,
 		      GError **error_r) const
 {
-	const struct directory *directory = LookupDirectory(selection.uri);
+	ScopeDatabaseLock protect;
+
+	const struct directory *directory =
+		directory_lookup_directory(root, selection.uri);
 	if (directory == NULL) {
-		struct song *song;
-		if (visit_song &&
-		    (song = GetSong(selection.uri, NULL)) != NULL &&
-		    selection.Match(*song))
-			return visit_song(*song, error_r);
+		if (visit_song) {
+			struct song *song =
+				directory_lookup_song(root, selection.uri);
+			if (song != nullptr)
+				return !selection.Match(*song) ||
+					visit_song(*song, error_r);
+		}
 
 		g_set_error(error_r, db_quark(), DB_NOT_FOUND,
 			    "No such directory");
@@ -278,7 +283,6 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 	    !visit_directory(*directory, error_r))
 		return false;
 
-	ScopeDatabaseLock protect;
 	return directory->Walk(selection.recursive, selection.filter,
 			       visit_directory, visit_song, visit_playlist,
 			       error_r);
