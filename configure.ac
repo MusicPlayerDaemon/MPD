@@ -1105,7 +1105,7 @@ if
 		AC_MSG_ERROR([No input plugins supported!])
 fi
 
-AM_CONDITIONAL(HAVE_OGG_COMMON,
+AM_CONDITIONAL(HAVE_XIPH,
 	test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_flac = xyes)
 
 AM_CONDITIONAL(HAVE_FLAC_COMMON,

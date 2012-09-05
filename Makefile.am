@@ -586,7 +586,7 @@ if HAVE_MP4
 libdecoder_plugins_a_SOURCES += src/decoder/mp4ff_decoder_plugin.c
 endif
 
-if HAVE_OGG_COMMON
+if HAVE_XIPH
 libdecoder_plugins_a_SOURCES += \
 	src/decoder/ogg_codec.c src/decoder/ogg_codec.h
 endif
