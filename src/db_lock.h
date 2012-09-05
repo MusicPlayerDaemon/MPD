@@ -81,4 +81,19 @@ db_unlock(void)
 	g_static_mutex_unlock(&db_mutex);
 }
 
+#ifdef __cplusplus
+
+class ScopeDatabaseLock {
+public:
+	ScopeDatabaseLock() {
+		db_lock();
+	}
+
+	~ScopeDatabaseLock() {
+		db_unlock();
+	}
+};
+
+#endif
+
 #endif

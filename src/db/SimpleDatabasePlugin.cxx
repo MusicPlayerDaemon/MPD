@@ -250,11 +250,8 @@ SimpleDatabase::LookupDirectory(const char *uri) const
 	assert(root != NULL);
 	assert(uri != NULL);
 
-	db_lock();
-	struct directory *directory =
-		directory_lookup_directory(root, uri);
-	db_unlock();
-	return directory;
+	ScopeDatabaseLock protect;
+	return directory_lookup_directory(root, uri);
 }
 
 bool
@@ -281,12 +278,10 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 	    !visit_directory(*directory, error_r))
 		return false;
 
-	db_lock();
-	bool ret = directory->Walk(selection.recursive, selection.filter,
-				   visit_directory, visit_song, visit_playlist,
-				   error_r);
-	db_unlock();
-	return ret;
+	ScopeDatabaseLock protect;
+	return directory->Walk(selection.recursive, selection.filter,
+			       visit_directory, visit_song, visit_playlist,
+			       error_r);
 }
 
 bool
