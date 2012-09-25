@@ -468,7 +468,6 @@ decoder_task(gpointer arg)
 
 		switch (dc->command) {
 		case DECODE_COMMAND_START:
-			g_debug("clearing mixramp tags");
 			dc_mixramp_start(dc, NULL);
 			dc_mixramp_prev_end(dc, dc->mixramp_end);
 			dc->mixramp_end = NULL; /* Don't free, it's copied above. */

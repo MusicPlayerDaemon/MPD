@@ -169,7 +169,6 @@ dc_mixramp_start(struct decoder_control *dc, char *mixramp_start)
 
 	g_free(dc->mixramp_start);
 	dc->mixramp_start = mixramp_start;
-	g_debug("mixramp_start = %s", mixramp_start ? mixramp_start : "NULL");
 }
 
 void
@@ -179,7 +178,6 @@ dc_mixramp_end(struct decoder_control *dc, char *mixramp_end)
 
 	g_free(dc->mixramp_end);
 	dc->mixramp_end = mixramp_end;
-	g_debug("mixramp_end = %s", mixramp_end ? mixramp_end : "NULL");
 }
 
 void
@@ -189,5 +187,4 @@ dc_mixramp_prev_end(struct decoder_control *dc, char *mixramp_prev_end)
 
 	g_free(dc->mixramp_prev_end);
 	dc->mixramp_prev_end = mixramp_prev_end;
-	g_debug("mixramp_prev_end = %s", mixramp_prev_end ? mixramp_prev_end : "NULL");
 }
