@@ -1021,6 +1021,11 @@ if test x$enable_tremor = xyes; then
 		AC_MSG_WARN(["OggTremor detected, could not enable Vorbis."])
 	fi
 	enable_vorbis=no
+
+	if test x$enable_vorbis_encoder = xauto; then
+		AC_MSG_WARN([OggTremor detected, disabling the Vorbis encoder plugin.])
+		enable_vorbis_encoder=no
+	fi
 fi
 
 MPD_AUTO_PKG(vorbis, VORBIS, [vorbis vorbisfile ogg],

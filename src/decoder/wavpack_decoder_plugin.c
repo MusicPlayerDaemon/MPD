@@ -24,6 +24,7 @@
 #include "utils.h"
 #include "tag_table.h"
 #include "tag_handler.h"
+#include "tag_ape.h"
 
 #include <wavpack/wavpack.h>
 #include <glib.h>
@@ -37,21 +38,6 @@
 #define G_LOG_DOMAIN "wavpack"
 
 #define ERRORLEN 80
-
-static const struct tag_table wavpack_tags[] = {
-	{ "artist", TAG_ARTIST },
-	{ "album", TAG_ALBUM },
-	{ "title", TAG_TITLE },
-	{ "track", TAG_TRACK },
-	{ "name", TAG_NAME },
-	{ "genre", TAG_GENRE },
-	{ "date", TAG_DATE },
-	{ "composer", TAG_COMPOSER },
-	{ "performer", TAG_PERFORMER },
-	{ "comment", TAG_COMMENT },
-	{ "disc", TAG_DISC },
-	{ NULL, TAG_NUM_OF_ITEM_TYPES }
-};
 
 /** A pointer type for format converter function. */
 typedef void (*format_samples_t)(
@@ -321,7 +307,17 @@ wavpack_scan_file(const char *fname,
 				    WavpackGetNumSamples(wpc) /
 				    WavpackGetSampleRate(wpc));
 
-	for (const struct tag_table *i = wavpack_tags; i->name != NULL; ++i)
+	/* the WavPack format implies APEv2 tags, which means we can
+	   reuse the mapping from tag_ape.c */
+
+	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
+		const char *name = tag_item_names[i];
+		if (name != NULL)
+			wavpack_scan_tag_item(wpc, name, (enum tag_type)i,
+					      handler, handler_ctx);
+	}
+
+	for (const struct tag_table *i = ape_tags; i->name != NULL; ++i)
 		wavpack_scan_tag_item(wpc, i->name, i->type,
 				      handler, handler_ctx);
 

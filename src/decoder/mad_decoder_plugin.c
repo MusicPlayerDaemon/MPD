@@ -365,11 +365,10 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 			replay_gain_db = decoder_replay_gain(data->decoder, &rgi);
 			data->found_replay_gain = true;
 		}
-		if (parse_id3_mixramp(&mixramp_start, &mixramp_end, id3_tag)) {
-			g_debug("setting mixramp_tags");
+
+		if (parse_id3_mixramp(&mixramp_start, &mixramp_end, id3_tag))
 			decoder_mixramp(data->decoder, replay_gain_db,
 					mixramp_start, mixramp_end);
-		}
 	}
 
 	id3_tag_delete(id3_tag);
