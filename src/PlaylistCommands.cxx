@@ -20,7 +20,7 @@
 #include "config.h"
 #include "PlaylistCommands.hxx"
 #include "DatabasePlaylist.hxx"
-#include "CommandError.h"
+#include "CommandError.hxx"
 #include "PlaylistPrint.hxx"
 
 extern "C" {

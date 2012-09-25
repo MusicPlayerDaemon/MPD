@@ -23,7 +23,7 @@
 #include "DatabasePlaylist.hxx"
 #include "DatabasePrint.hxx"
 #include "DatabaseSelection.hxx"
-#include "CommandError.h"
+#include "CommandError.hxx"
 #include "client_internal.h"
 #include "tag.h"
 #include "uri.h"

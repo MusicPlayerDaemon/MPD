@@ -17,15 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_COMMAND_ERROR_H
-#define MPD_COMMAND_ERROR_H
+#ifndef MPD_COMMAND_ERROR_HXX
+#define MPD_COMMAND_ERROR_HXX
 
 #include "command.h"
 #include "playlist_error.h"
 
 #include <glib.h>
-
-G_BEGIN_DECLS
 
 enum command_return
 print_playlist_result(struct client *client, enum playlist_result result);
@@ -35,7 +33,5 @@ print_playlist_result(struct client *client, enum playlist_result result);
  */
 enum command_return
 print_error(struct client *client, GError *error);
-
-G_END_DECLS
 
 #endif

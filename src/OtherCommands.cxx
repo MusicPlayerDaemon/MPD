@@ -20,7 +20,7 @@
 #include "config.h"
 #include "OtherCommands.hxx"
 #include "DatabaseCommands.hxx"
-#include "CommandError.h"
+#include "CommandError.hxx"
 #include "directory.h"
 #include "song.h"
 

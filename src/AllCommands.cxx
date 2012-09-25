@@ -27,7 +27,6 @@
 #include "StickerCommands.hxx"
 #include "MessageCommands.hxx"
 #include "OtherCommands.hxx"
-#include "CommandError.h"
 #include "permission.h"
 #include "tag.h"
 

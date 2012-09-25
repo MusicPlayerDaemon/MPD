@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "CommandError.h"
+#include "CommandError.hxx"
 #include "db_error.h"
 
 extern "C" {

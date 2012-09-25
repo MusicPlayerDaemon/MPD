@@ -234,7 +234,7 @@ src_mpd_SOURCES = \
 	src/audio_parser.c \
 	src/protocol/argparser.c src/protocol/argparser.h \
 	src/protocol/result.c src/protocol/result.h \
-	src/CommandError.cxx src/CommandError.h \
+	src/CommandError.cxx src/CommandError.hxx \
 	src/AllCommands.cxx \
 	src/QueueCommands.cxx src/QueueCommands.hxx \
 	src/PlayerCommands.cxx src/PlayerCommands.hxx \

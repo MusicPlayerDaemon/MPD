@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "PlayerCommands.hxx"
-#include "CommandError.h"
+#include "CommandError.hxx"
 #include "PlaylistPrint.hxx"
 
 extern "C" {

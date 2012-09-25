@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "QueueCommands.hxx"
-#include "CommandError.h"
+#include "CommandError.hxx"
 #include "DatabaseQueue.hxx"
 #include "SongFilter.hxx"
 #include "PlaylistPrint.hxx"
