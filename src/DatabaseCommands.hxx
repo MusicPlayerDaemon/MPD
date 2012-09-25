@@ -22,8 +22,6 @@
 
 #include "command.h"
 
-G_BEGIN_DECLS
-
 enum command_return
 handle_lsinfo2(struct client *client, int argc, char *argv[]);
 
@@ -53,7 +51,5 @@ handle_list(struct client *client, int argc, char *argv[]);
 
 enum command_return
 handle_listallinfo(struct client *client, int argc, char *argv[]);
-
-G_END_DECLS
 
 #endif

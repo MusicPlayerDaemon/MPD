@@ -22,8 +22,6 @@
 
 #include "command.h"
 
-G_BEGIN_DECLS
-
 enum command_return
 handle_subscribe(struct client *client, int argc, char *argv[]);
 
@@ -38,7 +36,5 @@ handle_read_messages(struct client *client, int argc, char *argv[]);
 
 enum command_return
 handle_send_message(struct client *client, int argc, char *argv[]);
-
-G_END_DECLS
 
 #endif

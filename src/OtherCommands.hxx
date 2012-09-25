@@ -22,8 +22,6 @@
 
 #include "command.h"
 
-G_BEGIN_DECLS
-
 enum command_return
 handle_urlhandlers(struct client *client, int argc, char *argv[]);
 
@@ -65,7 +63,5 @@ handle_config(struct client *client, int argc, char *argv[]);
 
 enum command_return
 handle_idle(struct client *client, int argc, char *argv[]);
-
-G_END_DECLS
 
 #endif

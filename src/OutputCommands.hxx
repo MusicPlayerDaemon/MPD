@@ -22,8 +22,6 @@
 
 #include "command.h"
 
-G_BEGIN_DECLS
-
 enum command_return
 handle_enableoutput(struct client *client, int argc, char *argv[]);
 
@@ -32,7 +30,5 @@ handle_disableoutput(struct client *client, int argc, char *argv[]);
 
 enum command_return
 handle_devices(struct client *client, int argc, char *argv[]);
-
-G_END_DECLS
 
 #endif

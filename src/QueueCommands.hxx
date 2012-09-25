@@ -22,8 +22,6 @@
 
 #include "command.h"
 
-G_BEGIN_DECLS
-
 enum command_return
 handle_add(struct client *client, int argc, char *argv[]);
 
@@ -80,7 +78,5 @@ handle_swap(struct client *client, int argc, char *argv[]);
 
 enum command_return
 handle_swapid(struct client *client, int argc, char *argv[]);
-
-G_END_DECLS
 
 #endif
