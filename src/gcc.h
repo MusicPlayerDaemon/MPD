@@ -81,8 +81,8 @@
 
 #ifdef __cplusplus
 
-#if !defined(__clang__) && defined(__GNUC__) && !GCC_CHECK_VERSION(4,5)
-#error Your gcc version is too old.  MPD requires gcc 4.5 or newer.
+#if !defined(__clang__) && defined(__GNUC__) && !GCC_CHECK_VERSION(4,6)
+#error Your gcc version is too old.  MPD requires gcc 4.6 or newer.
 #endif
 
 /* support for C++11 "override" was added in gcc 4.7 */
