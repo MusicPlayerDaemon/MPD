@@ -24,7 +24,7 @@
 #include "client.h"
 #include "client_idle.h"
 #include "idle.h"
-#include "command.h"
+#include "AllCommands.h"
 #include "playlist.h"
 #include "stored_playlist.h"
 #include "database.h"

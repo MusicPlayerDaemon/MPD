@@ -18,6 +18,11 @@
  */
 
 #include "config.h"
+
+extern "C" {
+#include "AllCommands.h"
+}
+
 #include "command.h"
 #include "QueueCommands.hxx"
 #include "PlayerCommands.hxx"

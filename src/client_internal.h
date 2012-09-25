@@ -24,6 +24,8 @@
 #include "client_message.h"
 #include "command.h"
 
+#include <glib.h>
+
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "client"
 

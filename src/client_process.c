@@ -20,6 +20,7 @@
 #include "config.h"
 #include "client_internal.h"
 #include "protocol/result.h"
+#include "AllCommands.h"
 
 #include <string.h>
 
