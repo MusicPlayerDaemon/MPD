@@ -242,6 +242,7 @@ src_mpd_SOURCES = \
 	src/DatabaseCommands.cxx src/DatabaseCommands.hxx \
 	src/OutputCommands.cxx src/OutputCommands.hxx \
 	src/MessageCommands.cxx src/MessageCommands.hxx \
+	src/OtherCommands.cxx src/OtherCommands.hxx \
 	src/idle.c \
 	src/cmdline.c \
 	src/conf.c \
