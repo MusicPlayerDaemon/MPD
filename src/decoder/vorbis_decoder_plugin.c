@@ -66,9 +66,8 @@ struct vorbis_input_stream {
 static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *data)
 {
 	struct vorbis_input_stream *vis = data;
-	size_t ret;
-
-	ret = decoder_read(vis->decoder, vis->input_stream, ptr, size * nmemb);
+	size_t ret = decoder_read(vis->decoder, vis->input_stream,
+				  ptr, size * nmemb);
 
 	errno = 0;
 
@@ -155,9 +154,7 @@ static void
 vorbis_send_comments(struct decoder *decoder, struct input_stream *is,
 		     char **comments)
 {
-	struct tag *tag;
-
-	tag = vorbis_comments_to_tag(comments);
+	struct tag *tag = vorbis_comments_to_tag(comments);
 	if (!tag)
 		return;
 
@@ -171,18 +168,6 @@ vorbis_stream_decode(struct decoder *decoder,
 		     struct input_stream *input_stream)
 {
 	GError *error = NULL;
-	OggVorbis_File vf;
-	struct vorbis_input_stream vis;
-	struct audio_format audio_format;
-	float total_time;
-	int current_section;
-	int prev_section = -1;
-	long ret;
-	char chunk[OGG_CHUNK_SIZE];
-	long bitRate = 0;
-	long test;
-	const vorbis_info *vi;
-	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
 	if (ogg_codec_detect(decoder, input_stream) != OGG_CODEC_VORBIS)
 		return;
@@ -191,15 +176,18 @@ vorbis_stream_decode(struct decoder *decoder,
 	   moved it */
 	input_stream_lock_seek(input_stream, 0, SEEK_SET, NULL);
 
+	struct vorbis_input_stream vis;
+	OggVorbis_File vf;
 	if (!vorbis_is_open(&vis, &vf, decoder, input_stream))
 		return;
 
-	vi = ov_info(&vf, -1);
+	const vorbis_info *vi = ov_info(&vf, -1);
 	if (vi == NULL) {
 		g_warning("ov_info() has failed");
 		return;
 	}
 
+	struct audio_format audio_format;
 	if (!audio_format_init_checked(&audio_format, vi->rate,
 				       SAMPLE_FORMAT_S16,
 				       vi->channels, &error)) {
@@ -208,11 +196,16 @@ vorbis_stream_decode(struct decoder *decoder,
 		return;
 	}
 
-	total_time = ov_time_total(&vf, -1);
+	float total_time = ov_time_total(&vf, -1);
 	if (total_time < 0)
 		total_time = 0;
 
 	decoder_initialized(decoder, &audio_format, vis.seekable, total_time);
+
+	enum decoder_command cmd = DECODE_COMMAND_NONE;
+	char chunk[OGG_CHUNK_SIZE];
+	int prev_section = -1;
+	long bitRate = 0;
 
 	do {
 		if (cmd == DECODE_COMMAND_SEEK) {
@@ -223,8 +216,10 @@ vorbis_stream_decode(struct decoder *decoder,
 				decoder_seek_error(decoder);
 		}
 
-		ret = ov_read(&vf, chunk, sizeof(chunk),
-			      OGG_DECODE_USE_BIGENDIAN, 2, 1, &current_section);
+		int current_section;
+		long ret = ov_read(&vf, chunk, sizeof(chunk),
+				   OGG_DECODE_USE_BIGENDIAN, 2, 1,
+				   &current_section);
 		if (ret == OV_HOLE) /* bad packet */
 			ret = 0;
 		else if (ret <= 0)
@@ -232,8 +227,6 @@ vorbis_stream_decode(struct decoder *decoder,
 			break;
 
 		if (current_section != prev_section) {
-			char **comments;
-
 			vi = ov_info(&vf, -1);
 			if (vi == NULL) {
 				g_warning("ov_info() has failed");
@@ -248,7 +241,7 @@ vorbis_stream_decode(struct decoder *decoder,
 				break;
 			}
 
-			comments = ov_comment(&vf, -1)->user_comments;
+			char **comments = ov_comment(&vf, -1)->user_comments;
 			vorbis_send_comments(decoder, input_stream, comments);
 
 			struct replay_gain_info rgi;
@@ -258,7 +251,8 @@ vorbis_stream_decode(struct decoder *decoder,
 			prev_section = current_section;
 		}
 
-		if ((test = ov_bitrate_instant(&vf)) > 0)
+		long test = ov_bitrate_instant(&vf);
+		if (test > 0)
 			bitRate = test / 1000;
 
 		cmd = decoder_data(decoder, input_stream,
