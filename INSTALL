@@ -81,7 +81,7 @@ Alternative for MP3 support.
 Ogg Vorbis - http://www.xiph.org/ogg/vorbis/
 For Ogg Vorbis support.  You will need libogg and libvorbis.
 
-libopus - http://libopus.sourceforge.net/
+libopus - http://www.opus-codec.org/
 Opus codec support
 
 FLAC - http://flac.sourceforge.net/
