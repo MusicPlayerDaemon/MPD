@@ -161,6 +161,21 @@ vorbis_send_comments(struct decoder *decoder, struct input_stream *is,
 	tag_free(tag);
 }
 
+#ifndef HAVE_TREMOR
+static void
+vorbis_interleave(float *dest, const float *const*src,
+		  unsigned nframes, unsigned channels)
+{
+	for (const float *const*src_end = src + channels;
+	     src != src_end; ++src, ++dest) {
+		float *d = dest;
+		for (const float *s = *src, *s_end = s + nframes;
+		     s != s_end; ++s, d += channels)
+			*d = *s;
+	}
+}
+#endif
+
 /* public */
 static void
 vorbis_stream_decode(struct decoder *decoder,
@@ -188,7 +203,11 @@ vorbis_stream_decode(struct decoder *decoder,
 
 	struct audio_format audio_format;
 	if (!audio_format_init_checked(&audio_format, vi->rate,
+#ifdef HAVE_TREMOR
 				       SAMPLE_FORMAT_S16,
+#else
+				       SAMPLE_FORMAT_FLOAT,
+#endif
 				       vi->channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
@@ -202,7 +221,16 @@ vorbis_stream_decode(struct decoder *decoder,
 	decoder_initialized(decoder, &audio_format, vis.seekable, total_time);
 
 	enum decoder_command cmd = decoder_get_command(decoder);
+
+#ifdef HAVE_TREMOR
 	char buffer[4096];
+#else
+	float buffer[2048];
+	const int frames_per_buffer =
+		G_N_ELEMENTS(buffer) / audio_format.channels;
+	const unsigned frame_size = sizeof(buffer[0]) * audio_format.channels;
+#endif
+
 	int prev_section = -1;
 	unsigned kbit_rate = 0;
 
@@ -216,9 +244,25 @@ vorbis_stream_decode(struct decoder *decoder,
 		}
 
 		int current_section;
+
+#ifdef HAVE_TREMOR
 		long nbytes = ov_read(&vf, buffer, sizeof(buffer),
 				      VORBIS_BIG_ENDIAN, 2, 1,
 				      &current_section);
+#else
+		float **per_channel;
+		long nframes = ov_read_float(&vf, &per_channel,
+					     frames_per_buffer,
+					     &current_section);
+		long nbytes = nframes;
+		if (nframes > 0) {
+			vorbis_interleave(buffer,
+					  (const float*const*)per_channel,
+					  nframes, audio_format.channels);
+			nbytes *= frame_size;
+		}
+#endif
+
 		if (nbytes == OV_HOLE) /* bad packet */
 			nbytes = 0;
 		else if (nbytes <= 0)

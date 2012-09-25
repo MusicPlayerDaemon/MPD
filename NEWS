@@ -1,6 +1,7 @@
 ver 0.18 (2012/??/??)
 * decoder:
   - opus: new decoder plugin for the Opus codec
+  - vorbis: skip 16 bit quantisation, provide float samples
 * improved decoder/output error reporting
 
 ver 0.17.2 (2012/??/??)
