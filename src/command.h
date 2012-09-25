@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,9 +25,26 @@
 #include <stdbool.h>
 
 enum command_return {
+	/**
+	 * The command has succeeded, but the "OK" response was not
+	 * yet sent to the client.
+	 */
 	COMMAND_RETURN_OK,
+
+	/**
+	 * There was an error.  The "ACK" response was sent to the
+	 * client.
+	 */
 	COMMAND_RETURN_ERROR,
+
+	/**
+	 * The connection to this client shall be closed.
+	 */
 	COMMAND_RETURN_CLOSE,
+
+	/**
+	 * The MPD process shall be shut down.
+	 */
 	COMMAND_RETURN_KILL,
 };
 
