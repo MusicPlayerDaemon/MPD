@@ -165,6 +165,7 @@ ao_base_init(struct audio_output *ao,
 	}
 
 	ao->plugin = plugin;
+	ao->tags = config_get_block_bool(param, "tags", true);
 	ao->always_on = config_get_block_bool(param, "always_on", false);
 	ao->enabled = config_get_block_bool(param, "enabled", true);
 	ao->really_enabled = false;

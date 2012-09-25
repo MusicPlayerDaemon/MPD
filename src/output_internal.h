@@ -73,6 +73,13 @@ struct audio_output {
 	struct mixer *mixer;
 
 	/**
+	 * Will this output receive tags from the decoder?  The
+	 * default is true, but it may be configured to false to
+	 * suppress sending tags to the output.
+	 */
+	bool tags;
+
+	/**
 	 * Shall this output always play something (i.e. silence),
 	 * even when playback is stopped?
 	 */

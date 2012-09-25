@@ -438,6 +438,18 @@ systemctl start mpd.socket</programlisting>
             </row>
             <row>
               <entry>
+                <varname>tags</varname>
+                <parameter>yes|no</parameter>
+              </entry>
+              <entry>
+                If set to "no", then MPD will not send tags to this
+                output.  This is only useful for output plugins that
+                can receive tags, for example the
+                <varname>httpd</varname> output plugin.
+              </entry>
+            </row>
+            <row>
+              <entry>
                 <varname>always_on</varname>
                   <parameter>yes|no</parameter>
               </entry>
