@@ -24,7 +24,7 @@
 #include "tag_handler.h"
 #include "ape.h"
 
-static const struct tag_table ape_tags[] = {
+const struct tag_table ape_tags[] = {
 	{ "album artist", TAG_ALBUM_ARTIST },
 	{ "year", TAG_DATE },
 	{ NULL, TAG_NUM_OF_ITEM_TYPES }

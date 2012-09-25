@@ -6,6 +6,7 @@ ver 0.17.2 (2012/??/??)
   - fluidsynth: stop playback at end of file
   - fluidsynth: check MIDI file format while scanning
   - fluidsynth: add sample rate setting
+  - wavpack: support all APEv2 tags
 * output:
   - httpd: use monotonic clock, avoid hiccups after system clock adjustment
   - httpd: fix throttling bug after resuming playback

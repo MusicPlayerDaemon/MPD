@@ -20,9 +20,13 @@
 #ifndef MPD_TAG_APE_H
 #define MPD_TAG_APE_H
 
+#include "tag_table.h"
+
 #include <stdbool.h>
 
 struct tag_handler;
+
+extern const struct tag_table ape_tags[];
 
 /**
  * Scan the APE tags of a file.
