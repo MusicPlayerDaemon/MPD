@@ -28,16 +28,18 @@
 #include "MessageCommands.hxx"
 #include "OtherCommands.hxx"
 #include "CommandError.h"
-#include "protocol/argparser.h"
-#include "protocol/result.h"
 #include "permission.h"
-#include "tokenizer.h"
 #include "tag.h"
+
+extern "C" {
+#include "protocol/result.h"
+#include "tokenizer.h"
 #include "client.h"
 
 #ifdef ENABLE_SQLITE
 #include "sticker.h"
 #endif
+}
 
 #include <assert.h>
 #include <string.h>
