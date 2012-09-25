@@ -202,7 +202,7 @@ vorbis_stream_decode(struct decoder *decoder,
 
 	decoder_initialized(decoder, &audio_format, vis.seekable, total_time);
 
-	enum decoder_command cmd = DECODE_COMMAND_NONE;
+	enum decoder_command cmd = decoder_get_command(decoder);
 	char chunk[OGG_CHUNK_SIZE];
 	int prev_section = -1;
 	long bitRate = 0;
