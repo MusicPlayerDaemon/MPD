@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "client_internal.h"
+#include "protocol/result.h"
 
 #include <string.h>
 

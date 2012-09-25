@@ -65,8 +65,6 @@ void command_finish(void);
 enum command_return
 command_process(struct client *client, unsigned num, char *line);
 
-void command_success(struct client *client);
-
 G_END_DECLS
 
 #endif
