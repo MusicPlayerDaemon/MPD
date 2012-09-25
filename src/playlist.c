@@ -19,13 +19,9 @@
 
 #include "config.h"
 #include "playlist_internal.h"
-#include "playlist_save.h"
 #include "player_control.h"
-#include "command.h"
-#include "tag.h"
 #include "song.h"
 #include "conf.h"
-#include "stored_playlist.h"
 #include "idle.h"
 
 #include <glib.h>
