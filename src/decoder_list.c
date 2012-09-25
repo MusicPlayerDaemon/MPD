@@ -27,6 +27,7 @@
 #include "decoder/dsdiff_decoder_plugin.h"
 #include "decoder/dsf_decoder_plugin.h"
 #include "decoder/OpusDecoderPlugin.h"
+#include "decoder/AdPlugDecoderPlugin.h"
 
 #include <glib.h>
 
@@ -104,6 +105,9 @@ const struct decoder_plugin *const decoder_plugins[] = {
 #endif
 #ifdef ENABLE_FLUIDSYNTH
 	&fluidsynth_decoder_plugin,
+#endif
+#ifdef HAVE_ADPLUG
+	&adplug_decoder_plugin,
 #endif
 #ifdef HAVE_FFMPEG
 	&ffmpeg_decoder_plugin,

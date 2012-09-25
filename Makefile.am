@@ -542,6 +542,7 @@ libdecoder_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(OPUS_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
 	$(MPCDEC_CFLAGS) \
+	$(ADPLUG_CFLAGS) \
 	$(FAAD_CFLAGS)
 
 DECODER_LIBS = \
@@ -561,6 +562,7 @@ DECODER_LIBS = \
 	$(MP4FF_LIBS) \
 	$(FFMPEG_LIBS) \
 	$(MPCDEC_LIBS) \
+	$(ADPLUG_LIBS) \
 	$(FAAD_LIBS)
 
 DECODER_SRC =
@@ -592,6 +594,12 @@ endif
 
 if HAVE_WAVPACK
 libdecoder_plugins_a_SOURCES += src/decoder/wavpack_decoder_plugin.c
+endif
+
+if HAVE_ADPLUG
+libdecoder_plugins_a_SOURCES += \
+	src/decoder/AdPlugDecoderPlugin.cxx \
+	src/decoder/AdPlugDecoderPlugin.h
 endif
 
 if HAVE_FAAD

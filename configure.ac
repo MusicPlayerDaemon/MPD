@@ -150,6 +150,11 @@ AC_ARG_ENABLE(mpdclient,
 		[enable support for the MPD client]),,
 	enable_libmpdclient=auto)
 
+AC_ARG_ENABLE(adplug,
+	AS_HELP_STRING([--enable-adplug],
+		[enable the AdPlug decoder plugin (default: auto)]),,
+	enable_adplug=auto)
+
 AC_ARG_ENABLE(alsa,
 	AS_HELP_STRING([--enable-alsa], [enable ALSA support]),,
 	[enable_alsa=auto])
@@ -822,6 +827,14 @@ AM_CONDITIONAL(ENABLE_ARCHIVE, test x$enable_archive = xyes)
 dnl ---------------------------------------------------------------------------
 dnl Decoder Plugins
 dnl ---------------------------------------------------------------------------
+
+dnl -------------------------------- libadplug --------------------------------
+MPD_AUTO_PKG(adplug, ADPLUG, [adplug],
+	[AdPlug decoder plugin], [libadplug not found])
+if test x$enable_adplug = xyes; then
+	AC_DEFINE(HAVE_ADPLUG, 1, [Define to use libadplug])
+fi
+AM_CONDITIONAL(HAVE_ADPLUG, test x$enable_adplug = xyes)
 
 dnl -------------------------------- audiofile --------------------------------
 MPD_AUTO_PKG(audiofile, AUDIOFILE, [audiofile >= 0.1.7],
