@@ -48,12 +48,11 @@
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "vorbis"
-#define OGG_CHUNK_SIZE 4096
 
 #if G_BYTE_ORDER == G_BIG_ENDIAN
-#define OGG_DECODE_USE_BIGENDIAN	1
+#define VORBIS_BIG_ENDIAN true
 #else
-#define OGG_DECODE_USE_BIGENDIAN	0
+#define VORBIS_BIG_ENDIAN false
 #endif
 
 struct vorbis_input_stream {
@@ -203,9 +202,9 @@ vorbis_stream_decode(struct decoder *decoder,
 	decoder_initialized(decoder, &audio_format, vis.seekable, total_time);
 
 	enum decoder_command cmd = decoder_get_command(decoder);
-	char chunk[OGG_CHUNK_SIZE];
+	char buffer[4096];
 	int prev_section = -1;
-	long bitRate = 0;
+	unsigned kbit_rate = 0;
 
 	do {
 		if (cmd == DECODE_COMMAND_SEEK) {
@@ -217,12 +216,12 @@ vorbis_stream_decode(struct decoder *decoder,
 		}
 
 		int current_section;
-		long ret = ov_read(&vf, chunk, sizeof(chunk),
-				   OGG_DECODE_USE_BIGENDIAN, 2, 1,
-				   &current_section);
-		if (ret == OV_HOLE) /* bad packet */
-			ret = 0;
-		else if (ret <= 0)
+		long nbytes = ov_read(&vf, buffer, sizeof(buffer),
+				      VORBIS_BIG_ENDIAN, 2, 1,
+				      &current_section);
+		if (nbytes == OV_HOLE) /* bad packet */
+			nbytes = 0;
+		else if (nbytes <= 0)
 			/* break on EOF or other error */
 			break;
 
@@ -253,11 +252,11 @@ vorbis_stream_decode(struct decoder *decoder,
 
 		long test = ov_bitrate_instant(&vf);
 		if (test > 0)
-			bitRate = test / 1000;
+			kbit_rate = test / 1000;
 
 		cmd = decoder_data(decoder, input_stream,
-				   chunk, ret,
-				   bitRate);
+				   buffer, nbytes,
+				   kbit_rate);
 	} while (cmd != DECODE_COMMAND_STOP);
 
 	ov_clear(&vf);
