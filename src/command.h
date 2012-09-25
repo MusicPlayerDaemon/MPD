@@ -32,6 +32,12 @@ enum command_return {
 	COMMAND_RETURN_OK,
 
 	/**
+	 * The connection is now in "idle" mode, and no response shall
+	 * be generated.
+	 */
+	COMMAND_RETURN_IDLE,
+
+	/**
 	 * There was an error.  The "ACK" response was sent to the
 	 * client.
 	 */

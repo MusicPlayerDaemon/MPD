@@ -77,6 +77,7 @@ client_in_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 	ret = client_read(client);
 	switch (ret) {
 	case COMMAND_RETURN_OK:
+	case COMMAND_RETURN_IDLE:
 	case COMMAND_RETURN_ERROR:
 		break;
 

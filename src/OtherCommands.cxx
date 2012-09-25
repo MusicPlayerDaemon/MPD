@@ -310,6 +310,5 @@ handle_idle(struct client *client,
 	/* enable "idle" mode on this client */
 	client_idle_wait(client, flags);
 
-	/* return value is "1" so the caller won't print "OK" */
-	return (enum command_return)1;
+	return COMMAND_RETURN_IDLE;
 }
