@@ -152,11 +152,9 @@ mpd_headers = \
 	src/playlist.h \
 	src/playlist_error.h \
 	src/playlist_internal.h \
-	src/playlist_save.h \
 	src/playlist_state.h \
 	src/playlist_plugin.h \
 	src/playlist_list.h \
-	src/playlist_mapper.h \
 	src/playlist_any.h \
 	src/playlist_song.h \
 	src/playlist_queue.h \
@@ -208,7 +206,6 @@ mpd_headers = \
 	src/string_util.h \
 	src/volume.h \
 	src/zeroconf.h src/zeroconf-internal.h \
-	src/stored_playlist.h \
 	src/timer.h \
 	src/archive_api.h \
 	src/archive_internal.h \
@@ -322,8 +319,8 @@ src_mpd_SOURCES = \
 	src/playlist_control.c \
 	src/playlist_edit.c \
 	src/PlaylistPrint.cxx src/PlaylistPrint.hxx \
-	src/playlist_save.c \
-	src/playlist_mapper.c \
+	src/PlaylistSave.cxx src/PlaylistSave.hxx \
+	src/PlaylistMapper.cxx src/PlaylistMapper.h \
 	src/playlist_any.c \
 	src/playlist_song.c \
 	src/playlist_state.c \
@@ -359,7 +356,7 @@ src_mpd_SOURCES = \
 	src/string_util.c \
 	src/volume.c \
 	src/SongFilter.cxx src/SongFilter.hxx \
-	src/stored_playlist.c \
+	src/PlaylistFile.cxx src/PlaylistFile.h \
 	src/timer.c
 
 #

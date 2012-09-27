@@ -26,7 +26,7 @@
 #include "idle.h"
 #include "AllCommands.h"
 #include "playlist.h"
-#include "stored_playlist.h"
+#include "PlaylistFile.h"
 #include "database.h"
 #include "update.h"
 #include "player_thread.h"

@@ -22,17 +22,17 @@
 #include "DatabasePlaylist.hxx"
 #include "CommandError.hxx"
 #include "PlaylistPrint.hxx"
+#include "PlaylistSave.hxx"
+#include "PlaylistFile.h"
 
 extern "C" {
 #include "protocol/argparser.h"
 #include "protocol/result.h"
 #include "playlist.h"
-#include "playlist_save.h"
 #include "playlist_queue.h"
 #include "time_print.h"
 #include "ls.h"
 #include "uri.h"
-#include "stored_playlist.h"
 #include "client_internal.h"
 }
 

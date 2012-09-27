@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,8 @@
 
 struct input_stream;
 
+G_BEGIN_DECLS
+
 /**
  * Opens a playlist from an URI relative to the playlist or music
  * directory.
@@ -35,5 +37,7 @@ struct input_stream;
 struct playlist_provider *
 playlist_mapper_open(const char *uri, GMutex *mutex, GCond *cond,
 		     struct input_stream **is_r);
+
+G_END_DECLS
 
 #endif

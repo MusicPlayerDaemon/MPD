@@ -35,7 +35,11 @@ extern "C" {
 #include "volume.h"
 #include "stats.h"
 #include "permission.h"
-#include "stored_playlist.h"
+}
+
+#include "PlaylistFile.h"
+
+extern "C" {
 #include "client.h"
 #include "client_idle.h"
 #include "client_file.h"

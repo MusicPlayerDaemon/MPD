@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "PlaylistPrint.hxx"
+#include "PlaylistFile.h"
 #include "QueuePrint.hxx"
 
 extern "C" {
@@ -27,7 +28,6 @@ extern "C" {
 #include "playlist_any.h"
 #include "playlist_song.h"
 #include "playlist.h"
-#include "stored_playlist.h"
 #include "song_print.h"
 #include "song.h"
 #include "database.h"

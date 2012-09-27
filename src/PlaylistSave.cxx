@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,16 +18,18 @@
  */
 
 #include "config.h"
-#include "playlist_save.h"
-#include "playlist.h"
-#include "stored_playlist.h"
-#include "queue.h"
+#include "PlaylistSave.hxx"
+#include "PlaylistFile.h"
 #include "song.h"
+
+extern "C" {
+#include "playlist.h"
 #include "mapper.h"
 #include "path.h"
 #include "uri.h"
-#include "database.h"
 #include "idle.h"
+}
+
 #include "glib_compat.h"
 
 #include <glib.h>
@@ -127,7 +129,7 @@ playlist_load_spl(struct playlist *playlist, struct player_control *pc,
 		end_index = list->len;
 
 	for (unsigned i = start_index; i < end_index; ++i) {
-		const char *temp = g_ptr_array_index(list, i);
+		const char *temp = (const char *)g_ptr_array_index(list, i);
 		if ((playlist_append_uri(playlist, pc, temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
 			/* for windows compatibility, convert slashes */
 			char *temp2 = g_strdup(temp);

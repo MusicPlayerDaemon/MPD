@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,8 @@ struct stored_playlist_info {
 };
 
 extern bool playlist_saveAbsolutePaths;
+
+G_BEGIN_DECLS
 
 /**
  * Perform some global initialization, e.g. load configuration values.
@@ -84,5 +86,7 @@ spl_append_uri(const char *file, const char *utf8file, GError **error_r);
 
 bool
 spl_rename(const char *utf8from, const char *utf8to, GError **error_r);
+
+G_END_DECLS
 
 #endif

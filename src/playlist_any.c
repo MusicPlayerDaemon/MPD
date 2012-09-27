@@ -20,7 +20,7 @@
 #include "config.h"
 #include "playlist_any.h"
 #include "playlist_list.h"
-#include "playlist_mapper.h"
+#include "PlaylistMapper.h"
 #include "uri.h"
 #include "input_stream.h"
 

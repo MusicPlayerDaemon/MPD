@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,16 +18,20 @@
  */
 
 #include "config.h"
-#include "stored_playlist.h"
-#include "playlist_save.h"
-#include "text_file.h"
+#include "PlaylistFile.h"
+#include "PlaylistSave.hxx"
 #include "song.h"
+
+extern "C" {
+#include "text_file.h"
 #include "mapper.h"
 #include "path.h"
 #include "uri.h"
 #include "database.h"
 #include "idle.h"
 #include "conf.h"
+}
+
 #include "glib_compat.h"
 
 #include <assert.h>
@@ -171,7 +175,6 @@ GPtrArray *
 spl_list(GError **error_r)
 {
 	const char *parent_path_fs = spl_map(error_r);
-
 	if (parent_path_fs == NULL)
 		return NULL;
 
@@ -201,6 +204,7 @@ spl_list_free(GPtrArray *list)
 {
 	for (unsigned i = 0; i < list->len; ++i) {
 		struct stored_playlist_info *playlist =
+			(struct stored_playlist_info *)
 			g_ptr_array_index(list, i);
 		g_free(playlist->name);
 		g_free(playlist);
@@ -229,7 +233,7 @@ spl_save(GPtrArray *list, const char *utf8path, GError **error_r)
 	}
 
 	for (unsigned i = 0; i < list->len; ++i) {
-		const char *uri = g_ptr_array_index(list, i);
+		const char *uri = (const char *)g_ptr_array_index(list, i);
 		playlist_print_uri(file, uri);
 	}
 
@@ -287,7 +291,7 @@ void
 spl_free(GPtrArray *list)
 {
 	for (unsigned i = 0; i < list->len; ++i) {
-		char *uri = g_ptr_array_index(list, i);
+		char *uri = (char *)g_ptr_array_index(list, i);
 		g_free(uri);
 	}
 
@@ -299,7 +303,7 @@ spl_remove_index_internal(GPtrArray *list, unsigned idx)
 {
 	assert(idx < list->len);
 
-	char *uri = g_ptr_array_remove_index(list, idx);
+	char *uri = (char *)g_ptr_array_remove_index(list, idx);
 	assert(uri != NULL);
 	return uri;
 }
