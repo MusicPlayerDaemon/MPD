@@ -40,17 +40,13 @@ extern "C" {
 #include <stdlib.h>
 
 static void
-print_spl_list(struct client *client, GPtrArray *list)
+print_spl_list(struct client *client, const PlaylistFileList &list)
 {
-	for (unsigned i = 0; i < list->len; ++i) {
-		struct stored_playlist_info *playlist =
-			(struct stored_playlist_info *)
-			g_ptr_array_index(list, i);
+	for (const auto &i : list) {
+		client_printf(client, "playlist: %s\n", i.name.c_str());
 
-		client_printf(client, "playlist: %s\n", playlist->name);
-
-		if (playlist->mtime > 0)
-			time_print(client, "Last-Modified", playlist->mtime);
+		if (i.mtime > 0)
+			time_print(client, "Last-Modified", i.mtime);
 	}
 }
 
@@ -218,11 +214,10 @@ handle_listplaylists(struct client *client,
 		     G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	GError *error = NULL;
-	GPtrArray *list = spl_list(&error);
-	if (list == NULL)
+	const auto list = ListPlaylistFiles(&error);
+	if (list.empty() && error != NULL)
 		return print_error(client, error);
 
 	print_spl_list(client, list);
-	spl_list_free(list);
 	return COMMAND_RETURN_OK;
 }

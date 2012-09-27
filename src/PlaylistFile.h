@@ -20,17 +20,31 @@
 #ifndef MPD_STORED_PLAYLIST_H
 #define MPD_STORED_PLAYLIST_H
 
+#ifdef __cplusplus
+#include <list>
+#include <vector>
+#include <string>
+#endif
+
 #include <glib.h>
 #include <stdbool.h>
 #include <time.h>
 
 struct song;
 
-struct stored_playlist_info {
-	char *name;
+#ifdef __cplusplus
+
+struct PlaylistFileInfo {
+	std::string name;
 
 	time_t mtime;
 };
+
+typedef std::list<PlaylistFileInfo> PlaylistFileList;
+
+typedef std::vector<std::string> PlaylistFileContents;
+
+#endif
 
 extern bool playlist_saveAbsolutePaths;
 
@@ -41,6 +55,10 @@ G_BEGIN_DECLS
  */
 void
 spl_global_init(void);
+
+G_END_DECLS
+
+#ifdef __cplusplus
 
 /**
  * Determines whether the specified string is a valid name for a
@@ -53,17 +71,11 @@ spl_valid_name(const char *name_utf8);
  * Returns a list of stored_playlist_info struct pointers.  Returns
  * NULL if an error occurred.
  */
-GPtrArray *
-spl_list(GError **error_r);
+PlaylistFileList
+ListPlaylistFiles(GError **error_r);
 
-void
-spl_list_free(GPtrArray *list);
-
-GPtrArray *
-spl_load(const char *utf8path, GError **error_r);
-
-void
-spl_free(GPtrArray *list);
+PlaylistFileContents
+LoadPlaylistFile(const char *utf8path, GError **error_r);
 
 bool
 spl_move_index(const char *utf8path, unsigned src, unsigned dest,
@@ -87,6 +99,6 @@ spl_append_uri(const char *file, const char *utf8file, GError **error_r);
 bool
 spl_rename(const char *utf8from, const char *utf8to, GError **error_r);
 
-G_END_DECLS
+#endif
 
 #endif

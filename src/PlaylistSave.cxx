@@ -119,33 +119,35 @@ playlist_load_spl(struct playlist *playlist, struct player_control *pc,
 		  unsigned start_index, unsigned end_index,
 		  GError **error_r)
 {
-	GPtrArray *list;
-
-	list = spl_load(name_utf8, error_r);
-	if (list == NULL)
+	GError *error = NULL;
+	PlaylistFileContents contents = LoadPlaylistFile(name_utf8, &error);
+	if (contents.empty() && error != nullptr) {
+		g_propagate_error(error_r, error);
 		return false;
+	}
 
-	if (list->len < end_index)
-		end_index = list->len;
+	if (end_index > contents.size())
+		end_index = contents.size();
 
 	for (unsigned i = start_index; i < end_index; ++i) {
-		const char *temp = (const char *)g_ptr_array_index(list, i);
-		if ((playlist_append_uri(playlist, pc, temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
+		const auto &uri_utf8 = contents[i];
+
+		if ((playlist_append_uri(playlist, pc, uri_utf8.c_str(),
+					 nullptr)) != PLAYLIST_RESULT_SUCCESS) {
 			/* for windows compatibility, convert slashes */
-			char *temp2 = g_strdup(temp);
+			char *temp2 = g_strdup(uri_utf8.c_str());
 			char *p = temp2;
 			while (*p) {
 				if (*p == '\\')
 					*p = '/';
 				p++;
 			}
-			if ((playlist_append_uri(playlist, pc, temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
+			if ((playlist_append_uri(playlist, pc, temp2, NULL)) != PLAYLIST_RESULT_SUCCESS) {
 				g_warning("can't add file \"%s\"", temp2);
 			}
 			g_free(temp2);
 		}
 	}
 
-	spl_free(list);
 	return true;
 }

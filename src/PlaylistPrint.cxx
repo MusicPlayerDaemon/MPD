@@ -116,18 +116,18 @@ bool
 spl_print(struct client *client, const char *name_utf8, bool detail,
 	  GError **error_r)
 {
-	GPtrArray *list;
-
-	list = spl_load(name_utf8, error_r);
-	if (list == NULL)
+	GError *error = NULL;
+	PlaylistFileContents contents = LoadPlaylistFile(name_utf8, &error);
+	if (contents.empty() && error != nullptr) {
+		g_propagate_error(error_r, error);
 		return false;
+	}
 
-	for (unsigned i = 0; i < list->len; ++i) {
-		const char *temp = (const char *)g_ptr_array_index(list, i);
+	for (const auto &uri_utf8 : contents) {
 		bool wrote = false;
 
 		if (detail) {
-			struct song *song = db_get_song(temp);
+			struct song *song = db_get_song(uri_utf8.c_str());
 			if (song) {
 				song_print_info(client, song);
 				db_return_song(song);
@@ -136,11 +136,11 @@ spl_print(struct client *client, const char *name_utf8, bool detail,
 		}
 
 		if (!wrote) {
-			client_printf(client, SONG_FILE "%s\n", temp);
+			client_printf(client, SONG_FILE "%s\n",
+				      uri_utf8.c_str());
 		}
 	}
 
-	spl_free(list);
 	return true;
 }
 

@@ -138,83 +138,68 @@ playlist_errno(GError **error_r)
 	}
 }
 
-static struct stored_playlist_info *
-load_playlist_info(const char *parent_path_fs, const char *name_fs)
+static bool
+LoadPlaylistFileInfo(PlaylistFileInfo &info,
+		     const char *parent_path_fs, const char *name_fs)
 {
 	size_t name_length = strlen(name_fs);
 
 	if (name_length < sizeof(PLAYLIST_FILE_SUFFIX) ||
 	    memchr(name_fs, '\n', name_length) != NULL)
-		return NULL;
+		return false;
 
 	if (!g_str_has_suffix(name_fs, PLAYLIST_FILE_SUFFIX))
-		return NULL;
+		return false;
 
 	char *path_fs = g_build_filename(parent_path_fs, name_fs, NULL);
 	struct stat st;
 	int ret = stat(path_fs, &st);
 	g_free(path_fs);
 	if (ret < 0 || !S_ISREG(st.st_mode))
-		return NULL;
+		return false;
 
 	char *name = g_strndup(name_fs,
 			       name_length + 1 - sizeof(PLAYLIST_FILE_SUFFIX));
 	char *name_utf8 = fs_charset_to_utf8(name);
 	g_free(name);
 	if (name_utf8 == NULL)
-		return NULL;
+		return false;
 
-	struct stored_playlist_info *playlist =
-		g_new(struct stored_playlist_info, 1);
-	playlist->name = name_utf8;
-	playlist->mtime = st.st_mtime;
-	return playlist;
+	info.name = name_utf8;
+	info.mtime = st.st_mtime;
+	return true;
 }
 
-GPtrArray *
-spl_list(GError **error_r)
+PlaylistFileList
+ListPlaylistFiles(GError **error_r)
 {
+	PlaylistFileList list;
+
 	const char *parent_path_fs = spl_map(error_r);
 	if (parent_path_fs == NULL)
-		return NULL;
+		return list;
 
 	DIR *dir = opendir(parent_path_fs);
 	if (dir == NULL) {
 		g_set_error_literal(error_r, g_file_error_quark(), errno,
 				    g_strerror(errno));
-		return NULL;
+		return list;
 	}
 
-	GPtrArray *list = g_ptr_array_new();
-
+	PlaylistFileInfo info;
 	struct dirent *ent;
 	while ((ent = readdir(dir)) != NULL) {
-		struct stored_playlist_info *playlist =
-			load_playlist_info(parent_path_fs, ent->d_name);
-		if (playlist != NULL)
-			g_ptr_array_add(list, playlist);
+		if (LoadPlaylistFileInfo(info, parent_path_fs, ent->d_name))
+			list.push_back(std::move(info));
 	}
 
 	closedir(dir);
 	return list;
 }
 
-void
-spl_list_free(GPtrArray *list)
-{
-	for (unsigned i = 0; i < list->len; ++i) {
-		struct stored_playlist_info *playlist =
-			(struct stored_playlist_info *)
-			g_ptr_array_index(list, i);
-		g_free(playlist->name);
-		g_free(playlist);
-	}
-
-	g_ptr_array_free(list, true);
-}
-
 static bool
-spl_save(GPtrArray *list, const char *utf8path, GError **error_r)
+SavePlaylistFile(const PlaylistFileContents &contents, const char *utf8path,
+		 GError **error_r)
 {
 	assert(utf8path != NULL);
 
@@ -232,33 +217,31 @@ spl_save(GPtrArray *list, const char *utf8path, GError **error_r)
 		return false;
 	}
 
-	for (unsigned i = 0; i < list->len; ++i) {
-		const char *uri = (const char *)g_ptr_array_index(list, i);
-		playlist_print_uri(file, uri);
-	}
+	for (const auto &uri_utf8 : contents)
+		playlist_print_uri(file, uri_utf8.c_str());
 
 	fclose(file);
 	return true;
 }
 
-GPtrArray *
-spl_load(const char *utf8path, GError **error_r)
+PlaylistFileContents
+LoadPlaylistFile(const char *utf8path, GError **error_r)
 {
+	PlaylistFileContents contents;
+
 	if (spl_map(error_r) == NULL)
-		return NULL;
+		return contents;
 
 	char *path_fs = spl_map_to_fs(utf8path, error_r);
 	if (path_fs == NULL)
-		return NULL;
+		return contents;
 
 	FILE *file = fopen(path_fs, "r");
 	g_free(path_fs);
 	if (file == NULL) {
 		playlist_errno(error_r);
-		return NULL;
+		return contents;
 	}
-
-	GPtrArray *list = g_ptr_array_new();
 
 	GString *buffer = g_string_sized_new(1024);
 	char *s;
@@ -277,47 +260,13 @@ spl_load(const char *utf8path, GError **error_r)
 		} else
 			s = g_strdup(s);
 
-		g_ptr_array_add(list, s);
-
-		if (list->len >= playlist_max_length)
+		contents.emplace_back(s);
+		if (contents.size() >= playlist_max_length)
 			break;
 	}
 
 	fclose(file);
-	return list;
-}
-
-void
-spl_free(GPtrArray *list)
-{
-	for (unsigned i = 0; i < list->len; ++i) {
-		char *uri = (char *)g_ptr_array_index(list, i);
-		g_free(uri);
-	}
-
-	g_ptr_array_free(list, true);
-}
-
-static char *
-spl_remove_index_internal(GPtrArray *list, unsigned idx)
-{
-	assert(idx < list->len);
-
-	char *uri = (char *)g_ptr_array_remove_index(list, idx);
-	assert(uri != NULL);
-	return uri;
-}
-
-static void
-spl_insert_index_internal(GPtrArray *list, unsigned idx, char *uri)
-{
-	assert(idx <= list->len);
-
-	g_ptr_array_add(list, uri);
-
-	memmove(list->pdata + idx + 1, list->pdata + idx,
-		(list->len - idx - 1) * sizeof(list->pdata[0]));
-	g_ptr_array_index(list, idx) = uri;
+	return contents;
 }
 
 bool
@@ -329,24 +278,28 @@ spl_move_index(const char *utf8path, unsigned src, unsigned dest,
 		   what the hell.. */
 		return true;
 
-	GPtrArray *list = spl_load(utf8path, error_r);
-	if (list == NULL)
+	GError *error = nullptr;
+	auto contents = LoadPlaylistFile(utf8path, &error);
+	if (contents.empty() && error != nullptr) {
+		g_propagate_error(error_r, error);
 		return false;
+	}
 
-	if (src >= list->len || dest >= list->len) {
-		spl_free(list);
+	if (src >= contents.size() || dest >= contents.size()) {
 		g_set_error_literal(error_r, playlist_quark(),
 				    PLAYLIST_RESULT_BAD_RANGE,
 				    "Bad range");
 		return false;
 	}
 
-	char *uri = spl_remove_index_internal(list, src);
-	spl_insert_index_internal(list, dest, uri);
+	const auto src_i = std::next(contents.begin(), src);
+	auto value = std::move(*src_i);
+	contents.erase(src_i);
 
-	bool result = spl_save(list, utf8path, error_r);
+	const auto dest_i = std::next(contents.begin(), dest);
+	contents.insert(dest_i, std::move(value));
 
-	spl_free(list);
+	bool result = SavePlaylistFile(contents, utf8path, error_r);
 
 	idle_add(IDLE_STORED_PLAYLIST);
 	return result;
@@ -398,23 +351,23 @@ spl_delete(const char *name_utf8, GError **error_r)
 bool
 spl_remove_index(const char *utf8path, unsigned pos, GError **error_r)
 {
-	GPtrArray *list = spl_load(utf8path, error_r);
-	if (list == NULL)
+	GError *error = nullptr;
+	auto contents = LoadPlaylistFile(utf8path, &error);
+	if (contents.empty() && error != nullptr) {
+		g_propagate_error(error_r, error);
 		return false;
+	}
 
-	if (pos >= list->len) {
-		spl_free(list);
+	if (pos >= contents.size()) {
 		g_set_error_literal(error_r, playlist_quark(),
 				    PLAYLIST_RESULT_BAD_RANGE,
 				    "Bad range");
 		return false;
 	}
 
-	char *uri = spl_remove_index_internal(list, pos);
-	g_free(uri);
-	bool result = spl_save(list, utf8path, error_r);
+	contents.erase(std::next(contents.begin(), pos));
 
-	spl_free(list);
+	bool result = SavePlaylistFile(contents, utf8path, error_r);
 
 	idle_add(IDLE_STORED_PLAYLIST);
 	return result;

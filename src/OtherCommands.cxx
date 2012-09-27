@@ -57,17 +57,13 @@ extern "C" {
 #include <string.h>
 
 static void
-print_spl_list(struct client *client, GPtrArray *list)
+print_spl_list(struct client *client, const PlaylistFileList &list)
 {
-	for (unsigned i = 0; i < list->len; ++i) {
-		struct stored_playlist_info *playlist =
-			(struct stored_playlist_info *)
-			g_ptr_array_index(list, i);
+	for (const auto &i : list) {
+		client_printf(client, "playlist: %s\n", i.name.c_str());
 
-		client_printf(client, "playlist: %s\n", playlist->name);
-
-		if (playlist->mtime > 0)
-			time_print(client, "Last-Modified", playlist->mtime);
+		if (i.mtime > 0)
+			time_print(client, "Last-Modified", i.mtime);
 	}
 }
 
@@ -147,11 +143,8 @@ handle_lsinfo(struct client *client, int argc, char *argv[])
 		return result;
 
 	if (isRootDirectory(uri)) {
-		GPtrArray *list = spl_list(NULL);
-		if (list != NULL) {
-			print_spl_list(client, list);
-			spl_list_free(list);
-		}
+		const auto &list = ListPlaylistFiles(NULL);
+		print_spl_list(client, list);
 	}
 
 	return COMMAND_RETURN_OK;
