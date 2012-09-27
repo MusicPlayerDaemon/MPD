@@ -23,7 +23,7 @@
 #include "CommandError.hxx"
 #include "PlaylistPrint.hxx"
 #include "PlaylistSave.hxx"
-#include "PlaylistFile.h"
+#include "PlaylistFile.hxx"
 
 extern "C" {
 #include "protocol/argparser.h"

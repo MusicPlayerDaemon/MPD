@@ -20,7 +20,7 @@
 #include "config.h"
 #include "DatabasePlaylist.hxx"
 #include "DatabaseSelection.hxx"
-#include "PlaylistFile.h"
+#include "PlaylistFile.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 

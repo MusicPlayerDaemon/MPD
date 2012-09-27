@@ -22,7 +22,7 @@
 #include "event_pipe.h"
 #include "song.h"
 #include "playlist.h"
-#include "main.h"
+#include "Main.hxx"
 
 #ifdef ENABLE_SQLITE
 #include "sticker.h"

@@ -37,7 +37,7 @@ extern "C" {
 #include "permission.h"
 }
 
-#include "PlaylistFile.h"
+#include "PlaylistFile.hxx"
 
 extern "C" {
 #include "client.h"

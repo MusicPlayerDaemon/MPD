@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,11 @@
  */
 
 #include "config.h"
-#include "main.h"
+#include "Main.hxx"
+#include "PlaylistFile.hxx"
+#include "chunk.h"
+
+extern "C" {
 #include "daemon.h"
 #include "io_thread.h"
 #include "client.h"
@@ -26,7 +30,6 @@
 #include "idle.h"
 #include "AllCommands.h"
 #include "playlist.h"
-#include "PlaylistFile.h"
 #include "database.h"
 #include "update.h"
 #include "player_thread.h"
@@ -35,7 +38,6 @@
 #include "conf.h"
 #include "path.h"
 #include "mapper.h"
-#include "chunk.h"
 #include "player_control.h"
 #include "stats.h"
 #include "sig_handlers.h"
@@ -53,7 +55,11 @@
 #include "tag.h"
 #include "zeroconf.h"
 #include "event_pipe.h"
+}
+
 #include "mpd_error.h"
+
+extern "C" {
 
 #ifdef ENABLE_INOTIFY
 #include "inotify_update.h"
@@ -66,6 +72,8 @@
 #ifdef ENABLE_ARCHIVE
 #include "archive_list.h"
 #endif
+
+}
 
 #include <glib.h>
 

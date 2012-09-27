@@ -26,7 +26,7 @@
 #include "song.h"
 #include "idle.h"
 #include "pcm_volume.h"
-#include "main.h"
+#include "Main.hxx"
 
 #include <assert.h>
 #include <stdio.h>

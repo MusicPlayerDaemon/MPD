@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "PlaylistPrint.hxx"
-#include "PlaylistFile.h"
+#include "PlaylistFile.hxx"
 #include "QueuePrint.hxx"
 
 extern "C" {

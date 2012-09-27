@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "PlaylistFile.h"
+#include "PlaylistFile.hxx"
 #include "PlaylistSave.hxx"
 #include "song.h"
 

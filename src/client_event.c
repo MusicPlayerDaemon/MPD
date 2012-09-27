@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "client_internal.h"
-#include "main.h"
+#include "Main.hxx"
 
 #include <assert.h>
 

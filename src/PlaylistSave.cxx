@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "PlaylistSave.hxx"
-#include "PlaylistFile.h"
+#include "PlaylistFile.hxx"
 #include "song.h"
 
 extern "C" {

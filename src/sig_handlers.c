@@ -23,7 +23,7 @@
 #ifndef WIN32
 
 #include "log.h"
-#include "main.h"
+#include "Main.hxx"
 #include "event_pipe.h"
 #include "mpd_error.h"
 

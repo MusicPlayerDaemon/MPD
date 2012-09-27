@@ -26,7 +26,7 @@
 #include "playlist.h"
 #include "playlist_state.h"
 #include "event_pipe.h"
-#include "main.h"
+#include "Main.hxx"
 
 struct playlist g_playlist;
 

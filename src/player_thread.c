@@ -32,7 +32,7 @@
 #include "pipe.h"
 #include "chunk.h"
 #include "idle.h"
-#include "main.h"
+#include "Main.hxx"
 #include "buffer.h"
 #include "mpd_error.h"
 

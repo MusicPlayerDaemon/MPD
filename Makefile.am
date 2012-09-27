@@ -124,7 +124,6 @@ mpd_headers = \
 	src/listen.h \
 	src/log.h \
 	src/ls.h \
-	src/main.h \
 	src/mixer_all.h \
 	src/mixer_api.h \
 	src/mixer_control.h \
@@ -300,8 +299,8 @@ src_mpd_SOURCES = \
 	src/log.c \
 	src/ls.c \
 	src/io_thread.c src/io_thread.h \
-	src/main.c \
-	src/main_win32.c \
+	src/Main.cxx src/Main.hxx \
+	src/Win32Main.cxx \
 	src/event_pipe.c \
 	src/daemon.c \
 	src/AudioCompress/compress.c \
@@ -356,7 +355,7 @@ src_mpd_SOURCES = \
 	src/string_util.c \
 	src/volume.c \
 	src/SongFilter.cxx src/SongFilter.hxx \
-	src/PlaylistFile.cxx src/PlaylistFile.h \
+	src/PlaylistFile.cxx src/PlaylistFile.hxx \
 	src/timer.c
 
 #

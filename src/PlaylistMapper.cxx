@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "PlaylistMapper.h"
-#include "PlaylistFile.h"
+#include "PlaylistFile.hxx"
 
 extern "C" {
 #include "playlist_list.h"

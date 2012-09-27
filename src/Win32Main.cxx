@@ -18,12 +18,15 @@
  */
 
 #include "config.h"
-#include "main.h"
+#include "Main.hxx"
 
 #ifdef WIN32
 
 #include "mpd_error.h"
+
+extern "C" {
 #include "event_pipe.h"
+}
 
 #include <glib.h>
 

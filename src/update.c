@@ -30,7 +30,7 @@
 #include "update.h"
 #include "idle.h"
 #include "stats.h"
-#include "main.h"
+#include "Main.hxx"
 #include "mpd_error.h"
 
 #include <glib.h>

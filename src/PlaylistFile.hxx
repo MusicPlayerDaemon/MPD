@@ -17,22 +17,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_STORED_PLAYLIST_H
-#define MPD_STORED_PLAYLIST_H
+#ifndef MPD_PLAYLIST_FILE_HXX
+#define MPD_PLAYLIST_FILE_HXX
 
-#ifdef __cplusplus
 #include <list>
 #include <vector>
 #include <string>
-#endif
 
 #include <glib.h>
 #include <stdbool.h>
 #include <time.h>
 
 struct song;
-
-#ifdef __cplusplus
 
 struct PlaylistFileInfo {
 	std::string name;
@@ -44,19 +40,13 @@ typedef std::list<PlaylistFileInfo> PlaylistFileList;
 
 typedef std::vector<std::string> PlaylistFileContents;
 
-#endif
-
 extern bool playlist_saveAbsolutePaths;
-
-G_BEGIN_DECLS
 
 /**
  * Perform some global initialization, e.g. load configuration values.
  */
 void
 spl_global_init(void);
-
-G_END_DECLS
 
 #ifdef __cplusplus
 
