@@ -138,10 +138,6 @@ static struct stored_playlist_info *
 load_playlist_info(const char *parent_path_fs, const char *name_fs)
 {
 	size_t name_length = strlen(name_fs);
-	char *path_fs, *name, *name_utf8;
-	int ret;
-	struct stat st;
-	struct stored_playlist_info *playlist;
 
 	if (name_length < sizeof(PLAYLIST_FILE_SUFFIX) ||
 	    memchr(name_fs, '\n', name_length) != NULL)
@@ -150,20 +146,22 @@ load_playlist_info(const char *parent_path_fs, const char *name_fs)
 	if (!g_str_has_suffix(name_fs, PLAYLIST_FILE_SUFFIX))
 		return NULL;
 
-	path_fs = g_build_filename(parent_path_fs, name_fs, NULL);
-	ret = stat(path_fs, &st);
+	char *path_fs = g_build_filename(parent_path_fs, name_fs, NULL);
+	struct stat st;
+	int ret = stat(path_fs, &st);
 	g_free(path_fs);
 	if (ret < 0 || !S_ISREG(st.st_mode))
 		return NULL;
 
-	name = g_strndup(name_fs,
-			 name_length + 1 - sizeof(PLAYLIST_FILE_SUFFIX));
-	name_utf8 = fs_charset_to_utf8(name);
+	char *name = g_strndup(name_fs,
+			       name_length + 1 - sizeof(PLAYLIST_FILE_SUFFIX));
+	char *name_utf8 = fs_charset_to_utf8(name);
 	g_free(name);
 	if (name_utf8 == NULL)
 		return NULL;
 
-	playlist = g_new(struct stored_playlist_info, 1);
+	struct stored_playlist_info *playlist =
+		g_new(struct stored_playlist_info, 1);
 	playlist->name = name_utf8;
 	playlist->mtime = st.st_mtime;
 	return playlist;
@@ -173,25 +171,23 @@ GPtrArray *
 spl_list(GError **error_r)
 {
 	const char *parent_path_fs = spl_map(error_r);
-	DIR *dir;
-	struct dirent *ent;
-	GPtrArray *list;
-	struct stored_playlist_info *playlist;
 
 	if (parent_path_fs == NULL)
 		return NULL;
 
-	dir = opendir(parent_path_fs);
+	DIR *dir = opendir(parent_path_fs);
 	if (dir == NULL) {
 		g_set_error_literal(error_r, g_file_error_quark(), errno,
 				    g_strerror(errno));
 		return NULL;
 	}
 
-	list = g_ptr_array_new();
+	GPtrArray *list = g_ptr_array_new();
 
+	struct dirent *ent;
 	while ((ent = readdir(dir)) != NULL) {
-		playlist = load_playlist_info(parent_path_fs, ent->d_name);
+		struct stored_playlist_info *playlist =
+			load_playlist_info(parent_path_fs, ent->d_name);
 		if (playlist != NULL)
 			g_ptr_array_add(list, playlist);
 	}
@@ -216,8 +212,6 @@ spl_list_free(GPtrArray *list)
 static bool
 spl_save(GPtrArray *list, const char *utf8path, GError **error_r)
 {
-	FILE *file;
-
 	assert(utf8path != NULL);
 
 	if (spl_map(error_r) == NULL)
@@ -227,7 +221,7 @@ spl_save(GPtrArray *list, const char *utf8path, GError **error_r)
 	if (path_fs == NULL)
 		return false;
 
-	file = fopen(path_fs, "w");
+	FILE *file = fopen(path_fs, "w");
 	g_free(path_fs);
 	if (file == NULL) {
 		playlist_errno(error_r);
@@ -246,25 +240,21 @@ spl_save(GPtrArray *list, const char *utf8path, GError **error_r)
 GPtrArray *
 spl_load(const char *utf8path, GError **error_r)
 {
-	FILE *file;
-	GPtrArray *list;
-	char *path_fs;
-
 	if (spl_map(error_r) == NULL)
 		return NULL;
 
-	path_fs = spl_map_to_fs(utf8path, error_r);
+	char *path_fs = spl_map_to_fs(utf8path, error_r);
 	if (path_fs == NULL)
 		return NULL;
 
-	file = fopen(path_fs, "r");
+	FILE *file = fopen(path_fs, "r");
 	g_free(path_fs);
 	if (file == NULL) {
 		playlist_errno(error_r);
 		return NULL;
 	}
 
-	list = g_ptr_array_new();
+	GPtrArray *list = g_ptr_array_new();
 
 	GString *buffer = g_string_sized_new(1024);
 	char *s;
@@ -307,11 +297,9 @@ spl_free(GPtrArray *list)
 static char *
 spl_remove_index_internal(GPtrArray *list, unsigned idx)
 {
-	char *uri;
-
 	assert(idx < list->len);
 
-	uri = g_ptr_array_remove_index(list, idx);
+	char *uri = g_ptr_array_remove_index(list, idx);
 	assert(uri != NULL);
 	return uri;
 }
@@ -332,8 +320,6 @@ bool
 spl_move_index(const char *utf8path, unsigned src, unsigned dest,
 	       GError **error_r)
 {
-	char *uri;
-
 	if (src == dest)
 		/* this doesn't check whether the playlist exists, but
 		   what the hell.. */
@@ -351,7 +337,7 @@ spl_move_index(const char *utf8path, unsigned src, unsigned dest,
 		return false;
 	}
 
-	uri = spl_remove_index_internal(list, src);
+	char *uri = spl_remove_index_internal(list, src);
 	spl_insert_index_internal(list, dest, uri);
 
 	bool result = spl_save(list, utf8path, error_r);
@@ -390,14 +376,11 @@ spl_clear(const char *utf8path, GError **error_r)
 bool
 spl_delete(const char *name_utf8, GError **error_r)
 {
-	char *path_fs;
-	int ret;
-
-	path_fs = spl_map_to_fs(name_utf8, error_r);
+	char *path_fs = spl_map_to_fs(name_utf8, error_r);
 	if (path_fs == NULL)
 		return false;
 
-	ret = unlink(path_fs);
+	int ret = unlink(path_fs);
 	g_free(path_fs);
 	if (ret < 0) {
 		playlist_errno(error_r);
@@ -411,8 +394,6 @@ spl_delete(const char *name_utf8, GError **error_r)
 bool
 spl_remove_index(const char *utf8path, unsigned pos, GError **error_r)
 {
-	char *uri;
-
 	GPtrArray *list = spl_load(utf8path, error_r);
 	if (list == NULL)
 		return false;
@@ -425,7 +406,7 @@ spl_remove_index(const char *utf8path, unsigned pos, GError **error_r)
 		return false;
 	}
 
-	uri = spl_remove_index_internal(list, pos);
+	char *uri = spl_remove_index_internal(list, pos);
 	g_free(uri);
 	bool result = spl_save(list, utf8path, error_r);
 
@@ -439,7 +420,6 @@ bool
 spl_append_song(const char *utf8path, struct song *song, GError **error_r)
 {
 	FILE *file;
-	struct stat st;
 
 	if (spl_map(error_r) == NULL)
 		return false;
@@ -455,6 +435,7 @@ spl_append_song(const char *utf8path, struct song *song, GError **error_r)
 		return false;
 	}
 
+	struct stat st;
 	if (fstat(fileno(file), &st) < 0) {
 		playlist_errno(error_r);
 		fclose(file);
@@ -480,15 +461,13 @@ spl_append_song(const char *utf8path, struct song *song, GError **error_r)
 bool
 spl_append_uri(const char *url, const char *utf8file, GError **error_r)
 {
-	struct song *song;
-
 	if (uri_has_scheme(url)) {
-		song = song_remote_new(url);
+		struct song *song = song_remote_new(url);
 		bool success = spl_append_song(utf8file, song, error_r);
 		song_free(song);
 		return success;
 	} else {
-		song = db_get_song(url);
+		struct song *song = db_get_song(url);
 		if (song == NULL) {
 			g_set_error_literal(error_r, playlist_quark(),
 					    PLAYLIST_RESULT_NO_SUCH_SONG,
