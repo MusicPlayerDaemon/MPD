@@ -77,13 +77,12 @@ recorder_output_init(const struct config_param *param, GError **error_r)
 		return NULL;
 	}
 
-	const char *encoder_name;
-	const struct encoder_plugin *encoder_plugin;
-
 	/* read configuration */
 
-	encoder_name = config_get_block_string(param, "encoder", "vorbis");
-	encoder_plugin = encoder_plugin_get(encoder_name);
+	const char *encoder_name =
+		config_get_block_string(param, "encoder", "vorbis");
+	const struct encoder_plugin *encoder_plugin =
+		encoder_plugin_get(encoder_name);
 	if (encoder_plugin == NULL) {
 		g_set_error(error_r, recorder_output_quark(), 0,
 			    "No such encoder: %s", encoder_name);
@@ -126,25 +125,24 @@ recorder_output_finish(struct audio_output *ao)
  */
 static bool
 recorder_output_encoder_to_file(struct recorder_output *recorder,
-			      GError **error_r)
+				GError **error_r)
 {
-	size_t size = 0, position, nbytes;
-
 	assert(recorder->fd >= 0);
 
 	/* read from the encoder */
 
-	size = encoder_read(recorder->encoder, recorder->buffer,
-			    sizeof(recorder->buffer));
+	size_t size = encoder_read(recorder->encoder, recorder->buffer,
+				   sizeof(recorder->buffer));
 	if (size == 0)
 		return true;
 
 	/* write everything into the file */
 
-	position = 0;
+	size_t position = 0;
 	while (true) {
-		nbytes = write(recorder->fd, recorder->buffer + position,
-			       size - position);
+		size_t nbytes = write(recorder->fd,
+				      recorder->buffer + position,
+				      size - position);
 		if (nbytes > 0) {
 			position += (size_t)nbytes;
 			if (position >= size)
@@ -169,7 +167,6 @@ recorder_output_open(struct audio_output *ao,
 		     GError **error_r)
 {
 	struct recorder_output *recorder = (struct recorder_output *)ao;
-	bool success;
 
 	/* create the output file */
 
@@ -185,8 +182,7 @@ recorder_output_open(struct audio_output *ao,
 
 	/* open the encoder */
 
-	success = encoder_open(recorder->encoder, audio_format, error_r);
-	if (!success) {
+	if (!encoder_open(recorder->encoder, audio_format, error_r)) {
 		close(recorder->fd);
 		unlink(recorder->path);
 		return false;
