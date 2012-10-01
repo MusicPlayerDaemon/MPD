@@ -684,6 +684,7 @@ libencoder_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LAME_CFLAGS) \
 	$(TWOLAME_CFLAGS) \
 	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
+	$(OPUS_CFLAGS) \
 	$(VORBISENC_CFLAGS)
 
 ENCODER_LIBS = \
@@ -691,6 +692,7 @@ ENCODER_LIBS = \
 	$(LAME_LIBS) \
 	$(TWOLAME_LIBS) \
 	$(FLAC_LIBS) \
+	$(OPUS_LIBS) \
 	$(VORBISENC_LIBS)
 
 libencoder_plugins_a_SOURCES =
@@ -706,6 +708,12 @@ if ENABLE_VORBIS_ENCODER
 libencoder_plugins_a_SOURCES += \
 	src/encoder/VorbisEncoderPlugin.cxx \
 	src/encoder/VorbisEncoderPlugin.hxx
+endif
+
+if HAVE_OPUS
+libencoder_plugins_a_SOURCES += \
+	src/encoder/OpusEncoderPlugin.cxx \
+	src/encoder/OpusEncoderPlugin.hxx
 endif
 
 if ENABLE_LAME_ENCODER

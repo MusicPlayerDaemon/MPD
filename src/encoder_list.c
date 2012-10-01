@@ -21,6 +21,7 @@
 #include "encoder_list.h"
 #include "encoder_plugin.h"
 #include "encoder/VorbisEncoderPlugin.hxx"
+#include "encoder/OpusEncoderPlugin.hxx"
 
 #include <string.h>
 
@@ -34,6 +35,9 @@ const struct encoder_plugin *const encoder_plugins[] = {
 	&null_encoder_plugin,
 #ifdef ENABLE_VORBIS_ENCODER
 	&vorbis_encoder_plugin,
+#endif
+#ifdef HAVE_OPUS
+	&opus_encoder_plugin,
 #endif
 #ifdef ENABLE_LAME_ENCODER
 	&lame_encoder_plugin,

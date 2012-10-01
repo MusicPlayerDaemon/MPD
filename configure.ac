@@ -1229,6 +1229,7 @@ fi
 
 dnl --------------------------- encoder plugins test --------------------------
 if test x$enable_vorbis_encoder != xno ||
+	test x$enable_opus != xno ||
 	test x$enable_lame_encoder != xno ||
 	test x$enable_twolame_encoder != xno ||
 	test x$enable_flac_encoder != xno ||
@@ -1657,6 +1658,7 @@ if
 		results(flac_encoder, [FLAC])
 		results(lame_encoder, [LAME])
 		results(vorbis_encoder, [Ogg Vorbis])
+		results(opus, [Opus])
 		results(twolame_encoder, [TwoLAME])
 		results(wave_encoder, [WAVE])
 fi

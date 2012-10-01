@@ -3,6 +3,8 @@ ver 0.18 (2012/??/??)
   - adplug: new decoder plugin using libadplug
   - opus: new decoder plugin for the Opus codec
   - vorbis: skip 16 bit quantisation, provide float samples
+* encoder:
+  - opus: new encoder plugin for the Opus codec
 * output:
   - new option "tags" may be used to disable sending tags to output
 * improved decoder/output error reporting
