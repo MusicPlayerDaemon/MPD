@@ -36,10 +36,6 @@
 
 #define DEFAULT_CONN_TIMEOUT  2
 
-struct shout_buffer {
-	unsigned char data[32768];
-};
-
 struct shout_data {
 	struct audio_output base;
 
@@ -53,7 +49,7 @@ struct shout_data {
 
 	int timeout;
 
-	struct shout_buffer buf;
+	uint8_t buffer[32768];
 };
 
 static int shout_init_count;
@@ -347,11 +343,11 @@ write_page(struct shout_data *sd, GError **error)
 	assert(sd->encoder != NULL);
 
 	size_t nbytes = encoder_read(sd->encoder,
-				     sd->buf.data, sizeof(sd->buf.data));
+				     sd->buffer, sizeof(sd->buffer));
 	if (nbytes == 0)
 		return true;
 
-	int err = shout_send(sd->shout_conn, sd->buf.data, nbytes);
+	int err = shout_send(sd->shout_conn, sd->buffer, nbytes);
 	if (!handle_shout_error(sd, err, error))
 		return false;
 
