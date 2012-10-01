@@ -67,6 +67,8 @@ main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 	success = encoder_open(encoder, &audio_format, NULL);
 	assert(success);
 
+	encoder_to_stdout(encoder);
+
 	/* write a block of data */
 
 	success = encoder_write(encoder, zero, sizeof(zero), NULL);

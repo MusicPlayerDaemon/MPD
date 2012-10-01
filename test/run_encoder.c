@@ -106,6 +106,8 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	encoder_to_stdout(encoder);
+
 	/* do it */
 
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {

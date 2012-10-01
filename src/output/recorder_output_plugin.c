@@ -192,6 +192,13 @@ recorder_output_open(struct audio_output *ao,
 		return false;
 	}
 
+	if (!recorder_output_encoder_to_file(recorder, error_r)) {
+		encoder_close(recorder->encoder);
+		close(recorder->fd);
+		unlink(recorder->path);
+		return false;
+	}
+
 	return true;
 }
 

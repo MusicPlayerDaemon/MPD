@@ -119,6 +119,10 @@ encoder_finish(struct encoder *encoder)
  * Before you free it, you must call encoder_close().  You may open
  * and close (reuse) one encoder any number of times.
  *
+ * After this function returns successfully and before the first
+ * encoder_write() call, you should invoke encoder_read() to obtain
+ * the file header.
+ *
  * @param encoder the encoder
  * @param audio_format the encoder's input audio format; the plugin
  * may modify the struct to adapt it to its abilities
