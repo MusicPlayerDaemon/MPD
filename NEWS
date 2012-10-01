@@ -1,5 +1,6 @@
 ver 0.17.3 (2012/??/??)
 * output:
+  - recorder: fix I/O error check
   - shout: fix memory leak in error handler
 
 ver 0.17.2 (2012/09/30)

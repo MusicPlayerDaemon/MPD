@@ -140,9 +140,9 @@ recorder_output_encoder_to_file(struct recorder_output *recorder,
 
 	size_t position = 0;
 	while (true) {
-		size_t nbytes = write(recorder->fd,
-				      recorder->buffer + position,
-				      size - position);
+		ssize_t nbytes = write(recorder->fd,
+				       recorder->buffer + position,
+				       size - position);
 		if (nbytes > 0) {
 			position += (size_t)nbytes;
 			if (position >= size)
