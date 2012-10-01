@@ -114,10 +114,6 @@ httpd_output_init(const struct config_param *param,
 		return NULL;
 	}
 
-	const char *encoder_name, *bind_to_address;
-	const struct encoder_plugin *encoder_plugin;
-	guint port;
-
 	/* read configuration */
 	httpd->name =
 		config_get_block_string(param, "name", "Set name in config");
@@ -126,10 +122,12 @@ httpd_output_init(const struct config_param *param,
 	httpd->website =
 		config_get_block_string(param, "website", "Set website in config");
 
-	port = config_get_block_unsigned(param, "port", 8000);
+	guint port = config_get_block_unsigned(param, "port", 8000);
 
-	encoder_name = config_get_block_string(param, "encoder", "vorbis");
-	encoder_plugin = encoder_plugin_get(encoder_name);
+	const char *encoder_name =
+		config_get_block_string(param, "encoder", "vorbis");
+	const struct encoder_plugin *encoder_plugin =
+		encoder_plugin_get(encoder_name);
 	if (encoder_plugin == NULL) {
 		g_set_error(error, httpd_output_quark(), 0,
 			    "No such encoder: %s", encoder_name);
@@ -144,7 +142,7 @@ httpd_output_init(const struct config_param *param,
 
 	httpd->server_socket = server_socket_new(httpd_listen_in_event, httpd);
 
-	bind_to_address =
+	const char *bind_to_address =
 		config_get_block_string(param, "bind_to_address", NULL);
 	bool success = bind_to_address != NULL &&
 		strcmp(bind_to_address, "any") != 0
@@ -275,8 +273,6 @@ httpd_listen_in_event(int fd, const struct sockaddr *address,
 static struct page *
 httpd_output_read_page(struct httpd_output *httpd)
 {
-	size_t size = 0, nbytes;
-
 	if (httpd->unflushed_input >= 65536) {
 		/* we have fed a lot of input into the encoder, but it
 		   didn't give anything back yet - flush now to avoid
@@ -285,9 +281,11 @@ httpd_output_read_page(struct httpd_output *httpd)
 		httpd->unflushed_input = 0;
 	}
 
+	size_t size = 0;
 	do {
-		nbytes = encoder_read(httpd->encoder, httpd->buffer + size,
-				      sizeof(httpd->buffer) - size);
+		size_t nbytes = encoder_read(httpd->encoder,
+					     httpd->buffer + size,
+					     sizeof(httpd->buffer) - size);
 		if (nbytes == 0)
 			break;
 
@@ -307,10 +305,7 @@ httpd_output_encoder_open(struct httpd_output *httpd,
 			  struct audio_format *audio_format,
 			  GError **error)
 {
-	bool success;
-
-	success = encoder_open(httpd->encoder, audio_format, error);
-	if (!success)
+	if (!encoder_open(httpd->encoder, audio_format, error))
 		return false;
 
 	/* we have to remember the encoder header, i.e. the first
@@ -344,14 +339,12 @@ httpd_output_open(struct audio_output *ao, struct audio_format *audio_format,
 		  GError **error)
 {
 	struct httpd_output *httpd = (struct httpd_output *)ao;
-	bool success;
 
 	g_mutex_lock(httpd->mutex);
 
 	/* open the encoder */
 
-	success = httpd_output_encoder_open(httpd, audio_format, error);
-	if (!success) {
+	if (!httpd_output_encoder_open(httpd, audio_format, error)) {
 		g_mutex_unlock(httpd->mutex);
 		return false;
 	}
@@ -495,10 +488,7 @@ static bool
 httpd_output_encode_and_play(struct httpd_output *httpd,
 			     const void *chunk, size_t size, GError **error)
 {
-	bool success;
-
-	success = encoder_write(httpd->encoder, chunk, size, error);
-	if (!success)
+	if (!encoder_write(httpd->encoder, chunk, size, error))
 		return false;
 
 	httpd->unflushed_input += size;
@@ -510,16 +500,12 @@ httpd_output_encode_and_play(struct httpd_output *httpd,
 
 static size_t
 httpd_output_play(struct audio_output *ao, const void *chunk, size_t size,
-		  GError **error)
+		  GError **error_r)
 {
 	struct httpd_output *httpd = (struct httpd_output *)ao;
 
 	if (httpd_output_lock_has_clients(httpd)) {
-		bool success;
-
-		success = httpd_output_encode_and_play(httpd, chunk, size,
-						       error);
-		if (!success)
+		if (!httpd_output_encode_and_play(httpd, chunk, size, error_r))
 			return 0;
 	}
 
@@ -562,7 +548,6 @@ httpd_output_tag(struct audio_output *ao, const struct tag *tag)
 
 	if (httpd->encoder->plugin->tag != NULL) {
 		/* embed encoder tags */
-		struct page *page;
 
 		/* flush the current stream, and end it */
 
@@ -578,7 +563,7 @@ httpd_output_tag(struct audio_output *ao, const struct tag *tag)
 		   used as the new "header" page, which is sent to all
 		   new clients */
 
-		page = httpd_output_read_page(httpd);
+		struct page *page = httpd_output_read_page(httpd);
 		if (page != NULL) {
 			if (httpd->header != NULL)
 				page_unref(httpd->header);

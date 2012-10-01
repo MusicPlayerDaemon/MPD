@@ -65,13 +65,11 @@ static bool
 vorbis_encoder_configure(struct vorbis_encoder *encoder,
 			 const struct config_param *param, GError **error)
 {
-	const char *value;
-	char *endptr;
-
-	value = config_get_block_string(param, "quality", NULL);
+	const char *value = config_get_block_string(param, "quality", NULL);
 	if (value != NULL) {
 		/* a quality was configured (VBR) */
 
+		char *endptr;
 		encoder->quality = g_ascii_strtod(value, &endptr);
 
 		if (*endptr != '\0' || encoder->quality < -1.0 ||
@@ -103,8 +101,9 @@ vorbis_encoder_configure(struct vorbis_encoder *encoder,
 		}
 
 		encoder->quality = -2.0;
-		encoder->bitrate = g_ascii_strtoll(value, &endptr, 10);
 
+		char *endptr;
+		encoder->bitrate = g_ascii_strtoll(value, &endptr, 10);
 		if (*endptr != '\0' || encoder->bitrate <= 0) {
 			g_set_error(error, vorbis_encoder_quark(), 0,
 				    "bitrate at line %i should be a positive integer",
@@ -119,9 +118,7 @@ vorbis_encoder_configure(struct vorbis_encoder *encoder,
 static struct encoder *
 vorbis_encoder_init(const struct config_param *param, GError **error)
 {
-	struct vorbis_encoder *encoder;
-
-	encoder = g_new(struct vorbis_encoder, 1);
+	struct vorbis_encoder *encoder = g_new(struct vorbis_encoder, 1);
 	encoder_struct_init(&encoder->encoder, &vorbis_encoder_plugin);
 
 	/* load configuration from "param" */
@@ -211,14 +208,12 @@ vorbis_encoder_open(struct encoder *_encoder,
 		    GError **error)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
-	bool ret;
 
 	audio_format->format = SAMPLE_FORMAT_S16;
 
 	encoder->audio_format = *audio_format;
 
-	ret = vorbis_encoder_reinit(encoder, error);
-	if (!ret)
+	if (!vorbis_encoder_reinit(encoder, error))
 		return false;
 
 	vorbis_encoder_send_header(encoder);
@@ -251,11 +246,10 @@ static void
 vorbis_encoder_blockout(struct vorbis_encoder *encoder)
 {
 	while (vorbis_analysis_blockout(&encoder->vd, &encoder->vb) == 1) {
-		ogg_packet packet;
-
 		vorbis_analysis(&encoder->vb, NULL);
 		vorbis_bitrate_addblock(&encoder->vb);
 
+		ogg_packet packet;
 		while (vorbis_bitrate_flushpacket(&encoder->vd, &packet))
 			ogg_stream_packetin(&encoder->os, &packet);
 	}
@@ -344,9 +338,9 @@ vorbis_encoder_write(struct encoder *_encoder,
 		     G_GNUC_UNUSED GError **error)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
-	unsigned num_frames;
 
-	num_frames = length / audio_format_frame_size(&encoder->audio_format);
+	unsigned num_frames = length
+		/ audio_format_frame_size(&encoder->audio_format);
 
 	/* this is for only 16-bit audio */
 
@@ -364,12 +358,10 @@ static size_t
 vorbis_encoder_read(struct encoder *_encoder, void *_dest, size_t length)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
-	ogg_page page;
-	int ret;
 	unsigned char *dest = _dest;
-	size_t nbytes;
 
-	ret = ogg_stream_pageout(&encoder->os, &page);
+	ogg_page page;
+	int ret = ogg_stream_pageout(&encoder->os, &page);
 	if (ret == 0 && encoder->flush) {
 		encoder->flush = false;
 		ret = ogg_stream_flush(&encoder->os, &page);
@@ -381,7 +373,7 @@ vorbis_encoder_read(struct encoder *_encoder, void *_dest, size_t length)
 
 	assert(page.header_len > 0 || page.body_len > 0);
 
-	nbytes = (size_t)page.header_len + (size_t)page.body_len;
+	size_t nbytes = (size_t)page.header_len + (size_t)page.body_len;
 
 	if (nbytes > length)
 		/* XXX better error handling */

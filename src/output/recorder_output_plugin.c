@@ -77,13 +77,12 @@ recorder_output_init(const struct config_param *param, GError **error_r)
 		return NULL;
 	}
 
-	const char *encoder_name;
-	const struct encoder_plugin *encoder_plugin;
-
 	/* read configuration */
 
-	encoder_name = config_get_block_string(param, "encoder", "vorbis");
-	encoder_plugin = encoder_plugin_get(encoder_name);
+	const char *encoder_name =
+		config_get_block_string(param, "encoder", "vorbis");
+	const struct encoder_plugin *encoder_plugin =
+		encoder_plugin_get(encoder_name);
 	if (encoder_plugin == NULL) {
 		g_set_error(error_r, recorder_output_quark(), 0,
 			    "No such encoder: %s", encoder_name);
@@ -121,33 +120,22 @@ recorder_output_finish(struct audio_output *ao)
 	g_free(recorder);
 }
 
-/**
- * Writes pending data from the encoder to the output file.
- */
 static bool
-recorder_output_encoder_to_file(struct recorder_output *recorder,
-			      GError **error_r)
+recorder_write_to_file(struct recorder_output *recorder,
+		       const void *_data, size_t length,
+		       GError **error_r)
 {
-	size_t size = 0, position, nbytes;
+	assert(length > 0);
 
-	assert(recorder->fd >= 0);
+	const int fd = recorder->fd;
 
-	/* read from the encoder */
+	const uint8_t *data = (const uint8_t *)_data, *end = data + length;
 
-	size = encoder_read(recorder->encoder, recorder->buffer,
-			    sizeof(recorder->buffer));
-	if (size == 0)
-		return true;
-
-	/* write everything into the file */
-
-	position = 0;
 	while (true) {
-		nbytes = write(recorder->fd, recorder->buffer + position,
-			       size - position);
+		ssize_t nbytes = write(fd, data, end - data);
 		if (nbytes > 0) {
-			position += (size_t)nbytes;
-			if (position >= size)
+			data += nbytes;
+			if (data == end)
 				return true;
 		} else if (nbytes == 0) {
 			/* shouldn't happen for files */
@@ -163,13 +151,37 @@ recorder_output_encoder_to_file(struct recorder_output *recorder,
 	}
 }
 
+/**
+ * Writes pending data from the encoder to the output file.
+ */
+static bool
+recorder_output_encoder_to_file(struct recorder_output *recorder,
+				GError **error_r)
+{
+	assert(recorder->fd >= 0);
+
+	while (true) {
+		/* read from the encoder */
+
+		size_t size = encoder_read(recorder->encoder, recorder->buffer,
+					   sizeof(recorder->buffer));
+		if (size == 0)
+			return true;
+
+		/* write everything into the file */
+
+		if (!recorder_write_to_file(recorder, recorder->buffer, size,
+					    error_r))
+			return false;
+	}
+}
+
 static bool
 recorder_output_open(struct audio_output *ao,
 		     struct audio_format *audio_format,
 		     GError **error_r)
 {
 	struct recorder_output *recorder = (struct recorder_output *)ao;
-	bool success;
 
 	/* create the output file */
 
@@ -185,8 +197,14 @@ recorder_output_open(struct audio_output *ao,
 
 	/* open the encoder */
 
-	success = encoder_open(recorder->encoder, audio_format, error_r);
-	if (!success) {
+	if (!encoder_open(recorder->encoder, audio_format, error_r)) {
+		close(recorder->fd);
+		unlink(recorder->path);
+		return false;
+	}
+
+	if (!recorder_output_encoder_to_file(recorder, error_r)) {
+		encoder_close(recorder->encoder);
 		close(recorder->fd);
 		unlink(recorder->path);
 		return false;

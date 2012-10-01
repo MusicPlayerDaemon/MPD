@@ -99,13 +99,14 @@ int main(int argc, char **argv)
 		}
 	}
 
-	ret = encoder_open(encoder, &audio_format, &error);
-	if (encoder == NULL) {
+	if (!encoder_open(encoder, &audio_format, &error)) {
 		g_printerr("Failed to open encoder: %s\n",
 			   error->message);
 		g_error_free(error);
 		return 1;
 	}
+
+	encoder_to_stdout(encoder);
 
 	/* do it */
 

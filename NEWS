@@ -7,6 +7,12 @@ ver 0.18 (2012/??/??)
   - new option "tags" may be used to disable sending tags to output
 * improved decoder/output error reporting
 
+ver 0.17.3 (2012/??/??)
+* output:
+  - recorder: fix I/O error check
+  - shout: fix memory leak in error handler
+  - recorder, shout: support Ogg packets that span more than one page
+
 ver 0.17.2 (2012/09/30)
 * protocol:
   - fix crash in local file check
