@@ -120,6 +120,37 @@ recorder_output_finish(struct audio_output *ao)
 	g_free(recorder);
 }
 
+static bool
+recorder_write_to_file(struct recorder_output *recorder,
+		       const void *_data, size_t length,
+		       GError **error_r)
+{
+	assert(length > 0);
+
+	const int fd = recorder->fd;
+
+	const uint8_t *data = (const uint8_t *)_data, *end = data + length;
+
+	while (true) {
+		ssize_t nbytes = write(fd, data, end - data);
+		if (nbytes > 0) {
+			data += nbytes;
+			if (data == end)
+				return true;
+		} else if (nbytes == 0) {
+			/* shouldn't happen for files */
+			g_set_error(error_r, recorder_output_quark(), 0,
+				    "write() returned 0");
+			return false;
+		} else if (errno != EINTR) {
+			g_set_error(error_r, recorder_output_quark(), 0,
+				    "Failed to write to '%s': %s",
+				    recorder->path, g_strerror(errno));
+			return false;
+		}
+	}
+}
+
 /**
  * Writes pending data from the encoder to the output file.
  */
@@ -138,27 +169,8 @@ recorder_output_encoder_to_file(struct recorder_output *recorder,
 
 	/* write everything into the file */
 
-	size_t position = 0;
-	while (true) {
-		ssize_t nbytes = write(recorder->fd,
-				       recorder->buffer + position,
-				       size - position);
-		if (nbytes > 0) {
-			position += (size_t)nbytes;
-			if (position >= size)
-				return true;
-		} else if (nbytes == 0) {
-			/* shouldn't happen for files */
-			g_set_error(error_r, recorder_output_quark(), 0,
-				    "write() returned 0");
-			return false;
-		} else if (errno != EINTR) {
-			g_set_error(error_r, recorder_output_quark(), 0,
-				    "Failed to write to '%s': %s",
-				    recorder->path, g_strerror(errno));
-			return false;
-		}
-	}
+	return recorder_write_to_file(recorder, recorder->buffer, size,
+				      error_r);
 }
 
 static bool
