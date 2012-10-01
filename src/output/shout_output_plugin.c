@@ -105,15 +105,10 @@ static void free_shout_data(struct shout_data *sd)
 		}							\
 	}
 
-static struct audio_output *
-my_shout_init_driver(const struct config_param *param,
-		     GError **error)
+static bool
+my_shout_configure(struct shout_data *sd, const struct config_param *param,
+		   GError **error)
 {
-	struct shout_data *sd = new_shout_data();
-	if (!ao_base_init(&sd->base, &shout_output_plugin, param, error)) {
-		free_shout_data(sd);
-		return NULL;
-	}
 
 	const struct audio_format *audio_format =
 		&sd->base.config_audio_format;
@@ -124,11 +119,6 @@ my_shout_init_driver(const struct config_param *param,
 		free_shout_data(sd);
 		return NULL;
 	}
-
-	if (shout_init_count == 0)
-		shout_init();
-
-	shout_init_count++;
 
 	const struct block_param *block_param;
 	check_block_param("host");
@@ -141,7 +131,7 @@ my_shout_init_driver(const struct config_param *param,
 	if (port == 0) {
 		g_set_error(error, shout_output_quark(), 0,
 			    "shout port must be configured");
-		goto failure;
+		return false;
 	}
 
 	check_block_param("password");
@@ -164,21 +154,21 @@ my_shout_init_driver(const struct config_param *param,
 				    "shout quality \"%s\" is not a number in the "
 				    "range -1 to 10, line %i",
 				    value, param->line);
-			goto failure;
+			return false;
 		}
 
 		if (config_get_block_string(param, "bitrate", NULL) != NULL) {
 			g_set_error(error, shout_output_quark(), 0,
 				    "quality and bitrate are "
 				    "both defined");
-			goto failure;
+			return false;
 		}
 	} else {
 		value = config_get_block_string(param, "bitrate", NULL);
 		if (value == NULL) {
 			g_set_error(error, shout_output_quark(), 0,
 				    "neither bitrate nor quality defined");
-			goto failure;
+			return false;
 		}
 
 		char *test;
@@ -187,7 +177,7 @@ my_shout_init_driver(const struct config_param *param,
 		if (*test != '\0' || sd->bitrate <= 0) {
 			g_set_error(error, shout_output_quark(), 0,
 				    "bitrate must be a positive integer");
-			goto failure;
+			return false;
 		}
 	}
 
@@ -199,12 +189,12 @@ my_shout_init_driver(const struct config_param *param,
 		g_set_error(error, shout_output_quark(), 0,
 			    "couldn't find shout encoder plugin \"%s\"",
 			    encoding);
-		goto failure;
+		return false;
 	}
 
 	sd->encoder = encoder_init(encoder_plugin, param, error);
 	if (sd->encoder == NULL)
-		goto failure;
+		return false;
 
 	unsigned shout_format;
 	if (strcmp(encoding, "mp3") == 0 || strcmp(encoding, "lame") == 0)
@@ -220,7 +210,7 @@ my_shout_init_driver(const struct config_param *param,
 			g_set_error(error, shout_output_quark(), 0,
 				    "you cannot stream \"%s\" to shoutcast, use mp3",
 				    encoding);
-			goto failure;
+			return false;
 		} else if (0 == strcmp(value, "shoutcast"))
 			protocol = SHOUT_PROTOCOL_ICY;
 		else if (0 == strcmp(value, "icecast1"))
@@ -232,7 +222,7 @@ my_shout_init_driver(const struct config_param *param,
 				    "shout protocol \"%s\" is not \"shoutcast\" or "
 				    "\"icecast1\"or \"icecast2\"",
 				    value);
-			goto failure;
+			return false;
 		}
 	} else {
 		protocol = SHOUT_PROTOCOL_HTTP;
@@ -251,7 +241,7 @@ my_shout_init_driver(const struct config_param *param,
 	    shout_set_agent(sd->shout_conn, "MPD") != SHOUTERR_SUCCESS) {
 		g_set_error(error, shout_output_quark(), 0,
 			    "%s", shout_get_error(sd->shout_conn));
-		goto failure;
+		return false;
 	}
 
 	/* optional paramters */
@@ -262,21 +252,21 @@ my_shout_init_driver(const struct config_param *param,
 	if (value != NULL && shout_set_genre(sd->shout_conn, value)) {
 		g_set_error(error, shout_output_quark(), 0,
 			    "%s", shout_get_error(sd->shout_conn));
-		goto failure;
+		return false;
 	}
 
 	value = config_get_block_string(param, "description", NULL);
 	if (value != NULL && shout_set_description(sd->shout_conn, value)) {
 		g_set_error(error, shout_output_quark(), 0,
 			    "%s", shout_get_error(sd->shout_conn));
-		goto failure;
+		return false;
 	}
 
 	value = config_get_block_string(param, "url", NULL);
 	if (value != NULL && shout_set_url(sd->shout_conn, value)) {
 		g_set_error(error, shout_output_quark(), 0,
 			    "%s", shout_get_error(sd->shout_conn));
-		goto failure;
+		return false;
 	}
 
 	{
@@ -301,12 +291,31 @@ my_shout_init_driver(const struct config_param *param,
 		}
 	}
 
-	return &sd->base;
+	return true;
+}
 
-failure:
-	ao_base_finish(&sd->base);
-	free_shout_data(sd);
-	return NULL;
+static struct audio_output *
+my_shout_init_driver(const struct config_param *param,
+		     GError **error)
+{
+	struct shout_data *sd = new_shout_data();
+	if (!ao_base_init(&sd->base, &shout_output_plugin, param, error)) {
+		free_shout_data(sd);
+		return NULL;
+	}
+
+	if (!my_shout_configure(sd, param, error)) {
+		ao_base_finish(&sd->base);
+		free_shout_data(sd);
+		return NULL;
+	}
+
+	if (shout_init_count == 0)
+		shout_init();
+
+	shout_init_count++;
+
+	return &sd->base;
 }
 
 static bool
