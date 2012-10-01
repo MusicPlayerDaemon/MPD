@@ -439,8 +439,13 @@ my_shout_open_device(struct audio_output *ao, struct audio_format *audio_format,
 
 	sd->buf.len = 0;
 
-	if (!encoder_open(sd->encoder, audio_format, error) ||
-	    !write_page(sd, error)) {
+	if (!encoder_open(sd->encoder, audio_format, error)) {
+		shout_close(sd->shout_conn);
+		return false;
+	}
+
+	if (!write_page(sd, error)) {
+		encoder_close(sd->encoder);
 		shout_close(sd->shout_conn);
 		return false;
 	}
