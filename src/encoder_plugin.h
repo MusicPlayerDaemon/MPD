@@ -295,6 +295,8 @@ encoder_write(struct encoder *encoder, const void *data, size_t length,
 /**
  * Reads encoded data from the encoder.
  *
+ * Call this repeatedly until no more data is returned.
+ *
  * @param encoder the encoder
  * @param dest the destination buffer to copy to
  * @param length the maximum length of the destination buffer

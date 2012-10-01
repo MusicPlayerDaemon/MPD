@@ -342,14 +342,16 @@ write_page(struct shout_data *sd, GError **error)
 {
 	assert(sd->encoder != NULL);
 
-	size_t nbytes = encoder_read(sd->encoder,
-				     sd->buffer, sizeof(sd->buffer));
-	if (nbytes == 0)
-		return true;
+	while (true) {
+		size_t nbytes = encoder_read(sd->encoder,
+					     sd->buffer, sizeof(sd->buffer));
+		if (nbytes == 0)
+			return true;
 
-	int err = shout_send(sd->shout_conn, sd->buffer, nbytes);
-	if (!handle_shout_error(sd, err, error))
-		return false;
+		int err = shout_send(sd->shout_conn, sd->buffer, nbytes);
+		if (!handle_shout_error(sd, err, error))
+			return false;
+	}
 
 	return true;
 }

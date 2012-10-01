@@ -160,17 +160,20 @@ recorder_output_encoder_to_file(struct recorder_output *recorder,
 {
 	assert(recorder->fd >= 0);
 
-	/* read from the encoder */
+	while (true) {
+		/* read from the encoder */
 
-	size_t size = encoder_read(recorder->encoder, recorder->buffer,
-				   sizeof(recorder->buffer));
-	if (size == 0)
-		return true;
+		size_t size = encoder_read(recorder->encoder, recorder->buffer,
+					   sizeof(recorder->buffer));
+		if (size == 0)
+			return true;
 
-	/* write everything into the file */
+		/* write everything into the file */
 
-	return recorder_write_to_file(recorder, recorder->buffer, size,
-				      error_r);
+		if (!recorder_write_to_file(recorder, recorder->buffer, size,
+					    error_r))
+			return false;
+	}
 }
 
 static bool
