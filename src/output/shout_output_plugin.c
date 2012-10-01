@@ -38,7 +38,6 @@
 
 struct shout_buffer {
 	unsigned char data[32768];
-	size_t len;
 };
 
 struct shout_data {
@@ -347,12 +346,12 @@ write_page(struct shout_data *sd, GError **error)
 {
 	assert(sd->encoder != NULL);
 
-	sd->buf.len = encoder_read(sd->encoder,
-				   sd->buf.data, sizeof(sd->buf.data));
-	if (sd->buf.len == 0)
+	size_t nbytes = encoder_read(sd->encoder,
+				     sd->buf.data, sizeof(sd->buf.data));
+	if (nbytes == 0)
 		return true;
 
-	int err = shout_send(sd->shout_conn, sd->buf.data, sd->buf.len);
+	int err = shout_send(sd->shout_conn, sd->buf.data, nbytes);
 	if (!handle_shout_error(sd, err, error))
 		return false;
 
@@ -361,8 +360,6 @@ write_page(struct shout_data *sd, GError **error)
 
 static void close_shout_conn(struct shout_data * sd)
 {
-	sd->buf.len = 0;
-
 	if (sd->encoder != NULL) {
 		if (encoder_end(sd->encoder, NULL))
 			write_page(sd, NULL);
@@ -436,8 +433,6 @@ my_shout_open_device(struct audio_output *ao, struct audio_format *audio_format,
 
 	if (!shout_connect(sd, error))
 		return false;
-
-	sd->buf.len = 0;
 
 	if (!encoder_open(sd->encoder, audio_format, error)) {
 		shout_close(sd->shout_conn);
