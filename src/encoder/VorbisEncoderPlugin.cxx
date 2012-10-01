@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,12 @@
  */
 
 #include "config.h"
+#include "VorbisEncoderPlugin.hxx"
+
+extern "C" {
 #include "encoder_api.h"
+}
+
 #include "encoder_plugin.h"
 #include "tag.h"
 #include "audio_format.h"
@@ -53,8 +58,6 @@ struct vorbis_encoder {
 	bool flush;
 };
 
-extern const struct encoder_plugin vorbis_encoder_plugin;
-
 static inline GQuark
 vorbis_encoder_quark(void)
 {
@@ -65,8 +68,8 @@ static bool
 vorbis_encoder_configure(struct vorbis_encoder *encoder,
 			 const struct config_param *param, GError **error)
 {
-	const char *value = config_get_block_string(param, "quality", NULL);
-	if (value != NULL) {
+	const char *value = config_get_block_string(param, "quality", nullptr);
+	if (value != nullptr) {
 		/* a quality was configured (VBR) */
 
 		char *endptr;
@@ -81,7 +84,7 @@ vorbis_encoder_configure(struct vorbis_encoder *encoder,
 			return false;
 		}
 
-		if (config_get_block_string(param, "bitrate", NULL) != NULL) {
+		if (config_get_block_string(param, "bitrate", nullptr) != nullptr) {
 			g_set_error(error, vorbis_encoder_quark(), 0,
 				    "quality and bitrate are "
 				    "both defined (line %i)",
@@ -91,8 +94,8 @@ vorbis_encoder_configure(struct vorbis_encoder *encoder,
 	} else {
 		/* a bit rate was configured */
 
-		value = config_get_block_string(param, "bitrate", NULL);
-		if (value == NULL) {
+		value = config_get_block_string(param, "bitrate", nullptr);
+		if (value == nullptr) {
 			g_set_error(error, vorbis_encoder_quark(), 0,
 				    "neither bitrate nor quality defined "
 				    "at line %i",
@@ -125,7 +128,7 @@ vorbis_encoder_init(const struct config_param *param, GError **error)
 	if (!vorbis_encoder_configure(encoder, param, error)) {
 		/* configuration has failed, roll back and return error */
 		g_free(encoder);
-		return NULL;
+		return nullptr;
 	}
 
 	return &encoder->encoder;
@@ -246,7 +249,7 @@ static void
 vorbis_encoder_blockout(struct vorbis_encoder *encoder)
 {
 	while (vorbis_analysis_blockout(&encoder->vd, &encoder->vb) == 1) {
-		vorbis_analysis(&encoder->vb, NULL);
+		vorbis_analysis(&encoder->vb, nullptr);
 		vorbis_bitrate_addblock(&encoder->vb);
 
 		ogg_packet packet;
@@ -358,7 +361,7 @@ static size_t
 vorbis_encoder_read(struct encoder *_encoder, void *_dest, size_t length)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
-	unsigned char *dest = _dest;
+	unsigned char *dest = (unsigned char *)_dest;
 
 	ogg_page page;
 	int ret = ogg_stream_pageout(&encoder->os, &page);
@@ -392,16 +395,16 @@ vorbis_encoder_get_mime_type(G_GNUC_UNUSED struct encoder *_encoder)
 }
 
 const struct encoder_plugin vorbis_encoder_plugin = {
-	.name = "vorbis",
-	.init = vorbis_encoder_init,
-	.finish = vorbis_encoder_finish,
-	.open = vorbis_encoder_open,
-	.close = vorbis_encoder_close,
-	.end = vorbis_encoder_pre_tag,
-	.flush = vorbis_encoder_flush,
-	.pre_tag = vorbis_encoder_pre_tag,
-	.tag = vorbis_encoder_tag,
-	.write = vorbis_encoder_write,
-	.read = vorbis_encoder_read,
-	.get_mime_type = vorbis_encoder_get_mime_type,
+	"vorbis",
+	vorbis_encoder_init,
+	vorbis_encoder_finish,
+	vorbis_encoder_open,
+	vorbis_encoder_close,
+	vorbis_encoder_pre_tag,
+	vorbis_encoder_flush,
+	vorbis_encoder_pre_tag,
+	vorbis_encoder_tag,
+	vorbis_encoder_write,
+	vorbis_encoder_read,
+	vorbis_encoder_get_mime_type,
 };

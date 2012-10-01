@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,11 +20,11 @@
 #include "config.h"
 #include "encoder_list.h"
 #include "encoder_plugin.h"
+#include "encoder/VorbisEncoderPlugin.hxx"
 
 #include <string.h>
 
 extern const struct encoder_plugin null_encoder_plugin;
-extern const struct encoder_plugin vorbis_encoder_plugin;
 extern const struct encoder_plugin lame_encoder_plugin;
 extern const struct encoder_plugin twolame_encoder_plugin;
 extern const struct encoder_plugin wave_encoder_plugin;

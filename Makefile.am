@@ -703,7 +703,9 @@ libencoder_plugins_a_SOURCES += src/encoder/wave_encoder.c
 endif
 
 if ENABLE_VORBIS_ENCODER
-libencoder_plugins_a_SOURCES += src/encoder/vorbis_encoder.c
+libencoder_plugins_a_SOURCES += \
+	src/encoder/VorbisEncoderPlugin.cxx \
+	src/encoder/VorbisEncoderPlugin.hxx
 endif
 
 if ENABLE_LAME_ENCODER
