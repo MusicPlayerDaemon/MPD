@@ -20,9 +20,71 @@
 #ifndef MPD_FLAC_METADATA_H
 #define MPD_FLAC_METADATA_H
 
+#include "gcc.h"
+
+#include <FLAC/metadata.h>
+
 #include <assert.h>
 #include <stdbool.h>
-#include <FLAC/metadata.h>
+
+class FLACMetadataChain {
+	FLAC__Metadata_Chain *chain;
+
+public:
+	FLACMetadataChain():chain(::FLAC__metadata_chain_new()) {}
+
+	~FLACMetadataChain() {
+		::FLAC__metadata_chain_delete(chain);
+	}
+
+	explicit operator FLAC__Metadata_Chain *() {
+		return chain;
+	}
+
+	bool Read(const char *path) {
+		return ::FLAC__metadata_chain_read(chain, path);
+	}
+
+	bool ReadOgg(const char *path) {
+		return ::FLAC__metadata_chain_read_ogg(chain, path);
+	}
+
+	gcc_pure
+	FLAC__Metadata_ChainStatus GetStatus() const {
+		return ::FLAC__metadata_chain_status(chain);
+	}
+
+	gcc_pure
+	const char *GetStatusString() const {
+		return FLAC__Metadata_ChainStatusString[GetStatus()];
+	}
+};
+
+class FLACMetadataIterator {
+	FLAC__Metadata_Iterator *iterator;
+
+public:
+	FLACMetadataIterator():iterator(::FLAC__metadata_iterator_new()) {}
+
+	FLACMetadataIterator(FLACMetadataChain &chain)
+		:iterator(::FLAC__metadata_iterator_new()) {
+		::FLAC__metadata_iterator_init(iterator,
+					       (FLAC__Metadata_Chain *)chain);
+	}
+
+	~FLACMetadataIterator() {
+		::FLAC__metadata_iterator_delete(iterator);
+	}
+
+	bool Next() {
+		return ::FLAC__metadata_iterator_next(iterator);
+	}
+
+	gcc_pure
+	FLAC__StreamMetadata *GetBlock() {
+		return ::FLAC__metadata_iterator_get_block(iterator);
+	}
+};
 
 struct tag_handler;
 struct tag;

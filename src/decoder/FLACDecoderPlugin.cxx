@@ -366,27 +366,22 @@ static bool
 oggflac_scan_file(const char *file,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
-	FLAC__Metadata_Iterator *it;
-	FLAC__StreamMetadata *block;
-	FLAC__Metadata_Chain *chain = FLAC__metadata_chain_new();
-
-	if (!(FLAC__metadata_chain_read_ogg(chain, file))) {
-		FLAC__metadata_chain_delete(chain);
+	FLACMetadataChain chain;
+	if (!chain.ReadOgg(file)) {
+		g_debug("Failed to read OggFLAC tags: %s",
+			chain.GetStatusString());
 		return false;
 	}
 
-	it = FLAC__metadata_iterator_new();
-	FLAC__metadata_iterator_init(it, chain);
-
+	FLACMetadataIterator iterator(chain);
 	do {
-		if (!(block = FLAC__metadata_iterator_get_block(it)))
+		FLAC__StreamMetadata *block = iterator.GetBlock();
+		if (block == nullptr)
 			break;
 
 		flac_scan_metadata(block, handler, handler_ctx);
-	} while (FLAC__metadata_iterator_next(it));
-	FLAC__metadata_iterator_delete(it);
+	} while (iterator.Next());
 
-	FLAC__metadata_chain_delete(chain);
 	return true;
 }
 
