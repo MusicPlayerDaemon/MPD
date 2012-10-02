@@ -1140,9 +1140,6 @@ fi
 AM_CONDITIONAL(HAVE_XIPH,
 	test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_flac = xyes || test x$enable_opus = xyes)
 
-AM_CONDITIONAL(HAVE_FLAC_COMMON,
-	  test x$enable_flac = xyes)
-
 dnl ---------------------------------------------------------------------------
 dnl Encoders for Streaming Audio Output Plugins
 dnl ---------------------------------------------------------------------------

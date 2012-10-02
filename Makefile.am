@@ -611,13 +611,6 @@ libdecoder_plugins_a_SOURCES += \
 	src/decoder/ogg_codec.c src/decoder/ogg_codec.h
 endif
 
-if HAVE_FLAC_COMMON
-libdecoder_plugins_a_SOURCES += \
-	src/decoder/flac_metadata.c \
-	src/decoder/flac_pcm.c \
-	src/decoder/flac_common.c src/decoder/flac_common.h
-endif
-
 if ENABLE_VORBIS_DECODER
 libdecoder_plugins_a_SOURCES += \
 	src/decoder/vorbis_comments.c \
@@ -626,7 +619,11 @@ libdecoder_plugins_a_SOURCES += \
 endif
 
 if HAVE_FLAC
-libdecoder_plugins_a_SOURCES += src/decoder/flac_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += \
+	src/decoder/flac_metadata.c \
+	src/decoder/flac_pcm.c \
+	src/decoder/flac_common.c src/decoder/flac_common.h \
+	src/decoder/flac_decoder_plugin.c
 endif
 
 if HAVE_AUDIOFILE
