@@ -161,7 +161,7 @@ int main(int argc, char **argv)
 	config_global_init();
 	success = config_read_file(argv[1], &error);
 	if (!success) {
-		g_printerr("%s:", error->message);
+		g_printerr("%s\n", error->message);
 		g_error_free(error);
 		return 1;
 	}
