@@ -250,7 +250,15 @@ flac_scan_file2(const char *file,
 		return false;
 	}
 
-	FLACMetadataIterator iterator(chain);
+	chain.Scan(handler, handler_ctx);
+	return true;
+}
+
+void
+FLACMetadataChain::Scan(const struct tag_handler *handler, void *handler_ctx)
+{
+	FLACMetadataIterator iterator(*this);
+
 	do {
 		FLAC__StreamMetadata *block = iterator.GetBlock();
 		if (block == nullptr)
@@ -258,6 +266,4 @@ flac_scan_file2(const char *file,
 
 		flac_scan_metadata(block, handler, handler_ctx);
 	} while (iterator.Next());
-
-	return true;
 }

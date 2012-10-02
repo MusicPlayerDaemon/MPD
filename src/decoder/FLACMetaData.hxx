@@ -58,6 +58,8 @@ public:
 	const char *GetStatusString() const {
 		return FLAC__Metadata_ChainStatusString[GetStatus()];
 	}
+
+	void Scan(const struct tag_handler *handler, void *handler_ctx);
 };
 
 class FLACMetadataIterator {

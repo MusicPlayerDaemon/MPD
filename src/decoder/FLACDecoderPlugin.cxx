@@ -373,15 +373,7 @@ oggflac_scan_file(const char *file,
 		return false;
 	}
 
-	FLACMetadataIterator iterator(chain);
-	do {
-		FLAC__StreamMetadata *block = iterator.GetBlock();
-		if (block == nullptr)
-			break;
-
-		flac_scan_metadata(block, handler, handler_ctx);
-	} while (iterator.Next());
-
+	chain.Scan(handler, handler_ctx);
 	return true;
 }
 
