@@ -62,6 +62,8 @@ struct opus_encoder {
 
 	OggStream stream;
 
+	int lookahead;
+
 	ogg_int64_t packetno;
 
 	ogg_int64_t granulepos;
@@ -192,6 +194,8 @@ opus_encoder_open(struct encoder *_encoder,
 			 OPUS_SET_COMPLEXITY(encoder->complexity));
 	opus_encoder_ctl(encoder->enc, OPUS_SET_SIGNAL(encoder->signal));
 
+	opus_encoder_ctl(encoder->enc, OPUS_GET_LOOKAHEAD(&encoder->lookahead));
+
 	encoder->buffer_frames = audio_format->sample_rate / 50;
 	encoder->buffer_size = encoder->frame_size * encoder->buffer_frames;
 	encoder->buffer_position = 0;
@@ -277,12 +281,50 @@ opus_encoder_flush(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
 }
 
 static bool
+opus_encoder_write_silence(struct opus_encoder *encoder, unsigned fill_frames,
+			   GError **error_r)
+{
+	size_t fill_bytes = fill_frames * encoder->frame_size;
+
+	while (fill_bytes > 0) {
+		size_t nbytes =
+			encoder->buffer_size - encoder->buffer_position;
+		if (nbytes > fill_bytes)
+			nbytes = fill_bytes;
+
+		memset(encoder->buffer + encoder->buffer_position,
+		       0, nbytes);
+		encoder->buffer_position += nbytes;
+		fill_bytes -= nbytes;
+
+		if (encoder->buffer_position == encoder->buffer_size &&
+		    !opus_encoder_do_encode(encoder, false, error_r))
+			return false;
+	}
+
+	return true;
+}
+
+static bool
 opus_encoder_write(struct encoder *_encoder,
 		   const void *_data, size_t length,
 		   GError **error_r)
 {
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
 	const uint8_t *data = (const uint8_t *)_data;
+
+	if (encoder->lookahead > 0) {
+		/* generate some silence at the beginning of the
+		   stream */
+
+		assert(encoder->buffer_position == 0);
+
+		if (!opus_encoder_write_silence(encoder, encoder->lookahead,
+						error_r))
+			return false;
+
+		encoder->lookahead = 0;
+	}
 
 	while (length > 0) {
 		size_t nbytes =
@@ -311,8 +353,7 @@ opus_encoder_generate_head(struct opus_encoder *encoder)
 	memcpy(header, "OpusHead", 8);
 	header[8] = 1;
 	header[9] = encoder->audio_format.channels;
-	header[10] = 0;
-	header[11] = 0;
+	*(uint16_t *)(header + 10) = GUINT16_TO_LE(encoder->lookahead);
 	*(uint32_t *)(header + 12) =
 		GUINT32_TO_LE(encoder->audio_format.sample_rate);
 	header[16] = 0;
