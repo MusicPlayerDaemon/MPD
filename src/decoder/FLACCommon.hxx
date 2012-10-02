@@ -24,6 +24,8 @@
 #ifndef MPD_FLAC_COMMON_HXX
 #define MPD_FLAC_COMMON_HXX
 
+#include "FLACInput.hxx"
+
 extern "C" {
 #include "decoder_api.h"
 #include "pcm_buffer.h"
@@ -35,7 +37,7 @@ extern "C" {
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "flac"
 
-struct flac_data {
+struct flac_data : public FLACInput {
 	struct pcm_buffer buffer;
 
 	/**
@@ -90,9 +92,6 @@ struct flac_data {
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 			     struct flac_data *data);
-
-void flac_error_common_cb(FLAC__StreamDecoderErrorStatus status,
-			  struct flac_data *data);
 
 FLAC__StreamDecoderWriteStatus
 flac_common_write(struct flac_data *data, const FLAC__Frame * frame,

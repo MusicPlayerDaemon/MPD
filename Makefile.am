@@ -618,6 +618,7 @@ endif
 
 if HAVE_FLAC
 libdecoder_plugins_a_SOURCES += \
+	src/decoder/FLACInput.cxx src/decoder/FLACInput.hxx \
 	src/decoder/FLACMetaData.cxx src/decoder/FLACMetaData.hxx \
 	src/decoder/FLAC_PCM.cxx src/decoder/FLAC_PCM.hxx \
 	src/decoder/FLACCommon.cxx src/decoder/FLACCommon.hxx \

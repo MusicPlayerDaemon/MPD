@@ -38,92 +38,6 @@ extern "C" {
 #error libFLAC is too old
 #endif
 
-/* this code was based on flac123, from flac-tools */
-
-static FLAC__StreamDecoderReadStatus
-flac_read_cb(G_GNUC_UNUSED const FLAC__StreamDecoder *fd,
-	     FLAC__byte buf[], size_t *bytes,
-	     void *fdata)
-{
-	struct flac_data *data = (struct flac_data *)fdata;
-	size_t r;
-
-	r = decoder_read(data->decoder, data->input_stream,
-			 (void *)buf, *bytes);
-	*bytes = r;
-
-	if (r == 0) {
-		if (decoder_get_command(data->decoder) != DECODE_COMMAND_NONE ||
-		    input_stream_lock_eof(data->input_stream))
-			return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
-		else
-			return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
-	}
-
-	return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
-}
-
-static FLAC__StreamDecoderSeekStatus
-flac_seek_cb(G_GNUC_UNUSED const FLAC__StreamDecoder *fd,
-	     FLAC__uint64 offset, void *fdata)
-{
-	struct flac_data *data = (struct flac_data *) fdata;
-
-	if (!data->input_stream->seekable)
-		return FLAC__STREAM_DECODER_SEEK_STATUS_UNSUPPORTED;
-
-	if (!input_stream_lock_seek(data->input_stream, offset, SEEK_SET,
-				    nullptr))
-		return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
-
-	return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
-}
-
-static FLAC__StreamDecoderTellStatus
-flac_tell_cb(G_GNUC_UNUSED const FLAC__StreamDecoder *fd,
-	     FLAC__uint64 * offset, void *fdata)
-{
-	struct flac_data *data = (struct flac_data *) fdata;
-
-	if (!data->input_stream->seekable)
-		return FLAC__STREAM_DECODER_TELL_STATUS_UNSUPPORTED;
-
-	*offset = (long)(data->input_stream->offset);
-
-	return FLAC__STREAM_DECODER_TELL_STATUS_OK;
-}
-
-static FLAC__StreamDecoderLengthStatus
-flac_length_cb(G_GNUC_UNUSED const FLAC__StreamDecoder *fd,
-	       FLAC__uint64 * length, void *fdata)
-{
-	struct flac_data *data = (struct flac_data *) fdata;
-
-	if (data->input_stream->size < 0)
-		return FLAC__STREAM_DECODER_LENGTH_STATUS_UNSUPPORTED;
-
-	*length = (size_t) (data->input_stream->size);
-
-	return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
-}
-
-static FLAC__bool
-flac_eof_cb(G_GNUC_UNUSED const FLAC__StreamDecoder *fd, void *fdata)
-{
-	struct flac_data *data = (struct flac_data *) fdata;
-
-	return (decoder_get_command(data->decoder) != DECODE_COMMAND_NONE &&
-		decoder_get_command(data->decoder) != DECODE_COMMAND_SEEK) ||
-		input_stream_lock_eof(data->input_stream);
-}
-
-static void
-flac_error_cb(G_GNUC_UNUSED const FLAC__StreamDecoder *fd,
-	      FLAC__StreamDecoderErrorStatus status, void *fdata)
-{
-	flac_error_common_cb(status, (struct flac_data *) fdata);
-}
-
 static void flacPrintErroredState(FLAC__StreamDecoderState state)
 {
 	switch (state) {
@@ -280,14 +194,14 @@ static FLAC__StreamDecoderInitStatus
 stream_init_oggflac(FLAC__StreamDecoder *flac_dec, struct flac_data *data)
 {
 	return FLAC__stream_decoder_init_ogg_stream(flac_dec,
-						    flac_read_cb,
-						    flac_seek_cb,
-						    flac_tell_cb,
-						    flac_length_cb,
-						    flac_eof_cb,
+						    FLACInput::Read,
+						    FLACInput::Seek,
+						    FLACInput::Tell,
+						    FLACInput::Length,
+						    FLACInput::Eof,
 						    flac_write_cb,
 						    flacMetadata,
-						    flac_error_cb,
+						    FLACInput::Error,
 						    data);
 }
 
@@ -295,11 +209,14 @@ static FLAC__StreamDecoderInitStatus
 stream_init_flac(FLAC__StreamDecoder *flac_dec, struct flac_data *data)
 {
 	return FLAC__stream_decoder_init_stream(flac_dec,
-						flac_read_cb, flac_seek_cb,
-						flac_tell_cb, flac_length_cb,
-						flac_eof_cb, flac_write_cb,
+						FLACInput::Read,
+						FLACInput::Seek,
+						FLACInput::Tell,
+						FLACInput::Length,
+						FLACInput::Eof,
+						flac_write_cb,
 						flacMetadata,
-						flac_error_cb,
+						FLACInput::Error,
 						data);
 }
 

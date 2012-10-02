@@ -36,7 +36,8 @@ extern "C" {
 
 flac_data::flac_data(struct decoder *_decoder,
 		     struct input_stream *_input_stream)
-	:initialized(false), unsupported(false),
+	:FLACInput(_input_stream, _decoder),
+	 initialized(false), unsupported(false),
 	 total_frames(0), first_frame(0), next_frame(0), position(0),
 	 decoder(_decoder), input_stream(_input_stream),
 	 tag(nullptr)
@@ -130,15 +131,6 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 	default:
 		break;
 	}
-}
-
-void flac_error_common_cb(const FLAC__StreamDecoderErrorStatus status,
-			  struct flac_data *data)
-{
-	if (decoder_get_command(data->decoder) == DECODE_COMMAND_STOP)
-		return;
-
-	g_warning("%s", FLAC__StreamDecoderErrorStatusString[status]);
 }
 
 /**
