@@ -862,7 +862,7 @@ AM_CONDITIONAL(HAVE_FFMPEG, test x$enable_ffmpeg = xyes)
 
 dnl ----------------------------------- FLAC ----------------------------------
 
-MPD_AUTO_PKG(flac, FLAC, [flac >= 1.1],
+MPD_AUTO_PKG(flac, FLAC, [flac >= 1.2],
 	[FLAC decoder], [libFLAC not found])
 
 if test x$enable_flac = xyes; then

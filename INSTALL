@@ -85,7 +85,7 @@ libopus - http://www.opus-codec.org/
 Opus codec support
 
 FLAC - http://flac.sourceforge.net/
-For FLAC support.  You will need version 1.1.0 or higher of libflac.
+For FLAC support.  You will need version 1.2 or higher of libFLAC.
 
 Audio File - http://www.68k.org/~michael/audiofile/
 For WAVE, AIFF, and AU support.  You will need libaudiofile.

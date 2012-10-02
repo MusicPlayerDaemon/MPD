@@ -19,12 +19,8 @@
 
 #include "config.h" /* must be first for large file support */
 #include "flac_common.h"
-#include "flac_compat.h"
 #include "flac_metadata.h"
-
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
 #include "ogg_codec.h"
-#endif
 
 #include <glib.h>
 
@@ -34,11 +30,15 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
+#error libFLAC is too old
+#endif
+
 /* this code was based on flac123, from flac-tools */
 
 static FLAC__StreamDecoderReadStatus
 flac_read_cb(G_GNUC_UNUSED const FLAC__StreamDecoder *fd,
-	     FLAC__byte buf[], flac_read_status_size_t *bytes,
+	     FLAC__byte buf[], size_t *bytes,
 	     void *fdata)
 {
 	struct flac_data *data = fdata;
@@ -120,28 +120,6 @@ flac_error_cb(G_GNUC_UNUSED const FLAC__StreamDecoder *fd,
 	flac_error_common_cb(status, (struct flac_data *) fdata);
 }
 
-#if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
-static void flacPrintErroredState(FLAC__SeekableStreamDecoderState state)
-{
-	switch (state) {
-	case FLAC__SEEKABLE_STREAM_DECODER_OK:
-	case FLAC__SEEKABLE_STREAM_DECODER_SEEKING:
-	case FLAC__SEEKABLE_STREAM_DECODER_END_OF_STREAM:
-		return;
-
-	case FLAC__SEEKABLE_STREAM_DECODER_MEMORY_ALLOCATION_ERROR:
-	case FLAC__SEEKABLE_STREAM_DECODER_READ_ERROR:
-	case FLAC__SEEKABLE_STREAM_DECODER_SEEK_ERROR:
-	case FLAC__SEEKABLE_STREAM_DECODER_STREAM_DECODER_ERROR:
-	case FLAC__SEEKABLE_STREAM_DECODER_ALREADY_INITIALIZED:
-	case FLAC__SEEKABLE_STREAM_DECODER_INVALID_CALLBACK:
-	case FLAC__SEEKABLE_STREAM_DECODER_UNINITIALIZED:
-		break;
-	}
-
-	g_warning("%s\n", FLAC__SeekableStreamDecoderStateString[state]);
-}
-#else /* FLAC_API_VERSION_CURRENT >= 7 */
 static void flacPrintErroredState(FLAC__StreamDecoderState state)
 {
 	switch (state) {
@@ -162,7 +140,6 @@ static void flacPrintErroredState(FLAC__StreamDecoderState state)
 
 	g_warning("%s\n", FLAC__StreamDecoderStateString[state]);
 }
-#endif /* FLAC_API_VERSION_CURRENT >= 7 */
 
 static void flacMetadata(G_GNUC_UNUSED const FLAC__StreamDecoder * dec,
 			 const FLAC__StreamMetadata * block, void *vdata)
@@ -210,10 +187,8 @@ flac_decoder_new(void)
 		return NULL;
 	}
 
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
 	if(!FLAC__stream_decoder_set_metadata_respond(sd, FLAC__METADATA_TYPE_VORBIS_COMMENT))
 		g_debug("FLAC__stream_decoder_set_metadata_respond() has failed");
-#endif
 
 	return sd;
 }
@@ -300,7 +275,6 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 static FLAC__StreamDecoderInitStatus
 stream_init_oggflac(FLAC__StreamDecoder *flac_dec, struct flac_data *data)
 {
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
 	return FLAC__stream_decoder_init_ogg_stream(flac_dec,
 						    flac_read_cb,
 						    flac_seek_cb,
@@ -311,12 +285,6 @@ stream_init_oggflac(FLAC__StreamDecoder *flac_dec, struct flac_data *data)
 						    flacMetadata,
 						    flac_error_cb,
 						    data);
-#else
-	(void)flac_dec;
-	(void)data;
-
-	return FLAC__STREAM_DECODER_INIT_STATUS_ERROR;
-#endif
 }
 
 static FLAC__StreamDecoderInitStatus
@@ -359,9 +327,7 @@ flac_decode_internal(struct decoder * decoder,
 	if (status != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
 		flac_data_deinit(&data);
 		FLAC__stream_decoder_delete(flac_dec);
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
 		g_warning("%s", FLAC__StreamDecoderInitStatusString[status]);
-#endif
 		return;
 	}
 
@@ -386,20 +352,11 @@ flac_decode(struct decoder * decoder, struct input_stream *input_stream)
 	flac_decode_internal(decoder, input_stream, false);
 }
 
-#ifndef HAVE_OGGFLAC
-
 static bool
 oggflac_init(G_GNUC_UNUSED const struct config_param *param)
 {
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
 	return !!FLAC_API_SUPPORTS_OGG_FLAC;
-#else
-	/* disable oggflac when libflac is too old */
-	return false;
-#endif
 }
-
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
 
 static bool
 oggflac_scan_file(const char *file,
@@ -453,20 +410,14 @@ static const char *const oggflac_mime_types[] = {
 	NULL
 };
 
-#endif /* FLAC_API_VERSION_CURRENT >= 7 */
-
 const struct decoder_plugin oggflac_decoder_plugin = {
 	.name = "oggflac",
 	.init = oggflac_init,
-#if defined(FLAC_API_VERSION_CURRENT) && FLAC_API_VERSION_CURRENT > 7
 	.stream_decode = oggflac_decode,
 	.scan_file = oggflac_scan_file,
 	.suffixes = oggflac_suffixes,
 	.mime_types = oggflac_mime_types
-#endif
 };
-
-#endif /* HAVE_OGGFLAC */
 
 static const char *const flac_suffixes[] = { "flac", NULL };
 static const char *const flac_mime_types[] = {

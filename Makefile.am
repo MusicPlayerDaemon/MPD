@@ -98,7 +98,6 @@ mpd_headers = \
 	src/gcc.h \
 	src/decoder_list.h \
 	src/decoder_print.h \
-	src/decoder/flac_compat.h \
 	src/decoder/flac_metadata.h \
 	src/decoder/flac_pcm.h \
 	src/decoder/pcm_decoder_plugin.h \

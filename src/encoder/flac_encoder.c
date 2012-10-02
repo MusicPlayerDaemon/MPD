@@ -30,6 +30,10 @@
 
 #include <FLAC/stream_encoder.h>
 
+#if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
+#error libFLAC is too old
+#endif
+
 struct flac_encoder {
 	struct encoder encoder;
 
@@ -98,8 +102,6 @@ static bool
 flac_encoder_setup(struct flac_encoder *encoder, unsigned bits_per_sample,
 		   GError **error)
 {
-#if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
-#else
 	if ( !FLAC__stream_encoder_set_compression_level(encoder->fse,
 					encoder->compression)) {
 		g_set_error(error, flac_encoder_quark(), 0,
@@ -107,7 +109,7 @@ flac_encoder_setup(struct flac_encoder *encoder, unsigned bits_per_sample,
 			    encoder->compression);
 		return false;
 	}
-#endif
+
 	if ( !FLAC__stream_encoder_set_channels(encoder->fse,
 					encoder->audio_format.channels)) {
 		g_set_error(error, flac_encoder_quark(), 0,
@@ -135,11 +137,7 @@ flac_encoder_setup(struct flac_encoder *encoder, unsigned bits_per_sample,
 static FLAC__StreamEncoderWriteStatus
 flac_write_callback(G_GNUC_UNUSED const FLAC__StreamEncoder *fse,
 		    const FLAC__byte data[],
-#if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
-		    unsigned bytes,
-#else
 		    size_t bytes,
-#endif
 		    G_GNUC_UNUSED unsigned samples,
 	G_GNUC_UNUSED unsigned current_frame, void *client_data)
 {
@@ -209,24 +207,6 @@ flac_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 
 	/* this immediately outputs data through callback */
 
-#if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
-	{
-		FLAC__StreamEncoderState init_status;
-
-		FLAC__stream_encoder_set_write_callback(encoder->fse,
-					    flac_write_callback);
-
-		init_status = FLAC__stream_encoder_init(encoder->fse);
-
-		if (init_status != FLAC__STREAM_ENCODER_OK) {
-			g_set_error(error, flac_encoder_quark(), 0,
-			    "failed to initialize encoder: %s\n",
-			    FLAC__StreamEncoderStateString[init_status]);
-			flac_encoder_close(_encoder);
-			return false;
-		}
-	}
-#else
 	{
 		FLAC__StreamEncoderInitStatus init_status;
 
@@ -242,7 +222,6 @@ flac_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 			return false;
 		}
 	}
-#endif
 
 	return true;
 }

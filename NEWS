@@ -1,6 +1,7 @@
 ver 0.18 (2012/??/??)
 * decoder:
   - adplug: new decoder plugin using libadplug
+  - flac: require libFLAC 1.2 or newer
   - opus: new decoder plugin for the Opus codec
   - vorbis: skip 16 bit quantisation, provide float samples
 * encoder:
