@@ -78,18 +78,15 @@ struct flac_data {
 	FLAC__uint64 next_frame;
 
 	FLAC__uint64 position;
+
 	struct decoder *decoder;
 	struct input_stream *input_stream;
+
 	struct tag *tag;
+
+	flac_data(struct decoder *decoder, struct input_stream *input_stream);
+	~flac_data();
 };
-
-/* initializes a given FlacData struct */
-void
-flac_data_init(struct flac_data *data, struct decoder * decoder,
-	       struct input_stream *input_stream);
-
-void
-flac_data_deinit(struct flac_data *data);
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 			     struct flac_data *data);

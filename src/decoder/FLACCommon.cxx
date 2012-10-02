@@ -34,31 +34,22 @@ extern "C" {
 
 #include <assert.h>
 
-void
-flac_data_init(struct flac_data *data, struct decoder * decoder,
-	       struct input_stream *input_stream)
+flac_data::flac_data(struct decoder *_decoder,
+		     struct input_stream *_input_stream)
+	:initialized(false), unsupported(false),
+	 total_frames(0), first_frame(0), next_frame(0), position(0),
+	 decoder(_decoder), input_stream(_input_stream),
+	 tag(nullptr)
 {
-	pcm_buffer_init(&data->buffer);
-
-	data->unsupported = false;
-	data->initialized = false;
-	data->total_frames = 0;
-	data->first_frame = 0;
-	data->next_frame = 0;
-
-	data->position = 0;
-	data->decoder = decoder;
-	data->input_stream = input_stream;
-	data->tag = nullptr;
+	pcm_buffer_init(&buffer);
 }
 
-void
-flac_data_deinit(struct flac_data *data)
+flac_data::~flac_data()
 {
-	pcm_buffer_deinit(&data->buffer);
+	pcm_buffer_deinit(&buffer);
 
-	if (data->tag != nullptr)
-		tag_free(data->tag);
+	if (tag != nullptr)
+		tag_free(tag);
 }
 
 static enum sample_format

@@ -317,34 +317,29 @@ flac_decode_internal(struct decoder * decoder,
 		     bool is_ogg)
 {
 	FLAC__StreamDecoder *flac_dec;
-	struct flac_data data;
 
 	flac_dec = flac_decoder_new();
 	if (flac_dec == nullptr)
 		return;
 
-	flac_data_init(&data, decoder, input_stream);
+	struct flac_data data(decoder, input_stream);
 	data.tag = tag_new();
 
 	FLAC__StreamDecoderInitStatus status =
 		stream_init(flac_dec, &data, is_ogg);
 	if (status != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
-		flac_data_deinit(&data);
 		FLAC__stream_decoder_delete(flac_dec);
 		g_warning("%s", FLAC__StreamDecoderInitStatusString[status]);
 		return;
 	}
 
 	if (!flac_decoder_initialize(&data, flac_dec, 0)) {
-		flac_data_deinit(&data);
 		FLAC__stream_decoder_finish(flac_dec);
 		FLAC__stream_decoder_delete(flac_dec);
 		return;
 	}
 
 	flac_decoder_loop(&data, flac_dec, 0, 0);
-
-	flac_data_deinit(&data);
 
 	FLAC__stream_decoder_finish(flac_dec);
 	FLAC__stream_decoder_delete(flac_dec);
