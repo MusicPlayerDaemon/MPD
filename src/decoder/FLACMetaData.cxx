@@ -133,29 +133,14 @@ flac_parse_mixramp(char **mixramp_start, char **mixramp_end,
  */
 static const char *
 flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
-		   const char *name, const char *char_tnum, size_t *length_r)
+		   const char *name, size_t *length_r)
 {
 	size_t name_length = strlen(name);
-	size_t char_tnum_length = 0;
 	const char *comment = (const char*)entry->entry;
 
 	if (entry->length <= name_length ||
 	    g_ascii_strncasecmp(comment, name, name_length) != 0)
 		return nullptr;
-
-	if (char_tnum != nullptr) {
-		char_tnum_length = strlen(char_tnum);
-		if (entry->length > name_length + char_tnum_length + 2 &&
-		    comment[name_length] == '[' &&
-		    g_ascii_strncasecmp(comment + name_length + 1,
-					char_tnum, char_tnum_length) == 0 &&
-		    comment[name_length + char_tnum_length + 1] == ']')
-			name_length = name_length + char_tnum_length + 2;
-		else if (entry->length > name_length + char_tnum_length &&
-			 g_ascii_strncasecmp(comment + name_length,
-					     char_tnum, char_tnum_length) == 0)
-			name_length = name_length + char_tnum_length;
-	}
 
 	if (comment[name_length] == '=') {
 		*length_r = entry->length - name_length - 1;
@@ -172,13 +157,12 @@ flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 static bool
 flac_copy_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 		  const char *name, enum tag_type tag_type,
-		  const char *char_tnum,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
 	const char *value;
 	size_t value_length;
 
-	value = flac_comment_value(entry, name, char_tnum, &value_length);
+	value = flac_comment_value(entry, name, &value_length);
 	if (value != nullptr) {
 		char *p = g_strndup(value, value_length);
 		tag_handler_invoke_tag(handler, handler_ctx, tag_type, p);
@@ -190,8 +174,7 @@ flac_copy_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 }
 
 static void
-flac_scan_comment(const char *char_tnum,
-		  const FLAC__StreamMetadata_VorbisComment_Entry *entry,
+flac_scan_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
 	if (handler->pair != nullptr) {
@@ -208,36 +191,33 @@ flac_scan_comment(const char *char_tnum,
 	}
 
 	for (const struct tag_table *i = xiph_tags; i->name != nullptr; ++i)
-		if (flac_copy_comment(entry, i->name, i->type, char_tnum,
+		if (flac_copy_comment(entry, i->name, i->type,
 				      handler, handler_ctx))
 			return;
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (flac_copy_comment(entry,
 				      tag_item_names[i], (enum tag_type)i,
-				      char_tnum,
 				      handler, handler_ctx))
 			return;
 }
 
 static void
-flac_scan_comments(const char *char_tnum,
-		   const FLAC__StreamMetadata_VorbisComment *comment,
+flac_scan_comments(const FLAC__StreamMetadata_VorbisComment *comment,
 		   const struct tag_handler *handler, void *handler_ctx)
 {
 	for (unsigned i = 0; i < comment->num_comments; ++i)
-		flac_scan_comment(char_tnum, &comment->comments[i],
+		flac_scan_comment(&comment->comments[i],
 				  handler, handler_ctx);
 }
 
 void
-flac_scan_metadata(const char *track,
-		   const FLAC__StreamMetadata *block,
+flac_scan_metadata(const FLAC__StreamMetadata *block,
 		   const struct tag_handler *handler, void *handler_ctx)
 {
 	switch (block->type) {
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
-		flac_scan_comments(track, &block->data.vorbis_comment,
+		flac_scan_comments(&block->data.vorbis_comment,
 				   handler, handler_ctx);
 		break;
 
@@ -253,15 +233,14 @@ flac_scan_metadata(const char *track,
 }
 
 void
-flac_vorbis_comments_to_tag(struct tag *tag, const char *char_tnum,
+flac_vorbis_comments_to_tag(struct tag *tag,
 			    const FLAC__StreamMetadata_VorbisComment *comment)
 {
-	flac_scan_comments(char_tnum, comment,
-			   &add_tag_handler, tag);
+	flac_scan_comments(comment, &add_tag_handler, tag);
 }
 
 bool
-flac_scan_file2(const char *file, const char *char_tnum,
+flac_scan_file2(const char *file,
 		const struct tag_handler *handler, void *handler_ctx)
 {
 	FLAC__Metadata_SimpleIterator *it;
@@ -298,7 +277,7 @@ flac_scan_file2(const char *file, const char *char_tnum,
 		if (!block)
 			break;
 
-		flac_scan_metadata(char_tnum, block, handler, handler_ctx);
+		flac_scan_metadata(block, handler, handler_ctx);
 		FLAC__metadata_object_delete(block);
 	} while (FLAC__metadata_simple_iterator_next(it));
 

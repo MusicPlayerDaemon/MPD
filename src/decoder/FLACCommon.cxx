@@ -133,7 +133,7 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 					mixramp_start, mixramp_end);
 
 		if (data->tag != nullptr)
-			flac_vorbis_comments_to_tag(data->tag, nullptr,
+			flac_vorbis_comments_to_tag(data->tag,
 						    &block->data.vorbis_comment);
 
 	default:

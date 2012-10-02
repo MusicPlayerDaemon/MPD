@@ -176,7 +176,7 @@ static bool
 flac_scan_file(const char *file,
 	       const struct tag_handler *handler, void *handler_ctx)
 {
-	return flac_scan_file2(file, nullptr, handler, handler_ctx);
+	return flac_scan_file2(file, handler, handler_ctx);
 }
 
 /**
@@ -382,8 +382,7 @@ oggflac_scan_file(const char *file,
 		if (!(block = FLAC__metadata_iterator_get_block(it)))
 			break;
 
-		flac_scan_metadata(nullptr, block,
-				   handler, handler_ctx);
+		flac_scan_metadata(block, handler, handler_ctx);
 	} while (FLAC__metadata_iterator_next(it));
 	FLAC__metadata_iterator_delete(it);
 

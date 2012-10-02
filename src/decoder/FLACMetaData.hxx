@@ -46,16 +46,15 @@ flac_parse_mixramp(char **mixramp_start, char **mixramp_end,
 		   const FLAC__StreamMetadata *block);
 
 void
-flac_vorbis_comments_to_tag(struct tag *tag, const char *char_tnum,
+flac_vorbis_comments_to_tag(struct tag *tag,
 			    const FLAC__StreamMetadata_VorbisComment *comment);
 
 void
-flac_scan_metadata(const char *track,
-		   const FLAC__StreamMetadata *block,
+flac_scan_metadata(const FLAC__StreamMetadata *block,
 		   const struct tag_handler *handler, void *handler_ctx);
 
 bool
-flac_scan_file2(const char *file, const char *char_tnum,
+flac_scan_file2(const char *file,
 		const struct tag_handler *handler, void *handler_ctx);
 
 #endif
