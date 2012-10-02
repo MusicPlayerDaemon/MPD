@@ -98,8 +98,6 @@ mpd_headers = \
 	src/gcc.h \
 	src/decoder_list.h \
 	src/decoder_print.h \
-	src/decoder/flac_metadata.h \
-	src/decoder/flac_pcm.h \
 	src/decoder/pcm_decoder_plugin.h \
 	src/input_init.h \
 	src/input_plugin.h \
@@ -620,10 +618,11 @@ endif
 
 if HAVE_FLAC
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/flac_metadata.c \
-	src/decoder/flac_pcm.c \
-	src/decoder/flac_common.c src/decoder/flac_common.h \
-	src/decoder/flac_decoder_plugin.c
+	src/decoder/FLACMetaData.cxx src/decoder/FLACMetaData.hxx \
+	src/decoder/FLAC_PCM.cxx src/decoder/FLAC_PCM.hxx \
+	src/decoder/FLACCommon.cxx src/decoder/FLACCommon.hxx \
+	src/decoder/FLACDecoderPlugin.cxx \
+	src/decoder/FLACDecoderPlugin.h
 endif
 
 if HAVE_AUDIOFILE
@@ -1145,7 +1144,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.c \
 if HAVE_FLAC
 test_dump_playlist_SOURCES += \
 	src/replay_gain_info.c \
-	src/decoder/flac_metadata.c
+	src/decoder/FLACMetaData.cxx
 endif
 
 test_run_decoder_LDADD = \

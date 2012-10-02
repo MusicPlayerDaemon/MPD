@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,9 +18,13 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "flac_common.h"
-#include "flac_metadata.h"
+#include "FLACDecoderPlugin.h"
+#include "FLACCommon.hxx"
+#include "FLACMetaData.hxx"
+
+extern "C" {
 #include "ogg_codec.h"
+}
 
 #include <glib.h>
 
@@ -41,7 +45,7 @@ flac_read_cb(G_GNUC_UNUSED const FLAC__StreamDecoder *fd,
 	     FLAC__byte buf[], size_t *bytes,
 	     void *fdata)
 {
-	struct flac_data *data = fdata;
+	struct flac_data *data = (struct flac_data *)fdata;
 	size_t r;
 
 	r = decoder_read(data->decoder, data->input_stream,
@@ -69,7 +73,7 @@ flac_seek_cb(G_GNUC_UNUSED const FLAC__StreamDecoder *fd,
 		return FLAC__STREAM_DECODER_SEEK_STATUS_UNSUPPORTED;
 
 	if (!input_stream_lock_seek(data->input_stream, offset, SEEK_SET,
-				    NULL))
+				    nullptr))
 		return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
 
 	return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
@@ -172,7 +176,7 @@ static bool
 flac_scan_file(const char *file,
 	       const struct tag_handler *handler, void *handler_ctx)
 {
-	return flac_scan_file2(file, NULL, handler, handler_ctx);
+	return flac_scan_file2(file, nullptr, handler, handler_ctx);
 }
 
 /**
@@ -182,9 +186,9 @@ static FLAC__StreamDecoder *
 flac_decoder_new(void)
 {
 	FLAC__StreamDecoder *sd = FLAC__stream_decoder_new();
-	if (sd == NULL) {
+	if (sd == nullptr) {
 		g_warning("FLAC__stream_decoder_new() failed");
-		return NULL;
+		return nullptr;
 	}
 
 	if(!FLAC__stream_decoder_set_metadata_respond(sd, FLAC__METADATA_TYPE_VORBIS_COMMENT))
@@ -234,7 +238,7 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 	data->first_frame = t_start;
 
 	while (true) {
-		if (data->tag != NULL && !tag_is_empty(data->tag)) {
+		if (data->tag != nullptr && !tag_is_empty(data->tag)) {
 			cmd = decoder_tag(data->decoder, data->input_stream,
 					  data->tag);
 			tag_free(data->tag);
@@ -316,7 +320,7 @@ flac_decode_internal(struct decoder * decoder,
 	struct flac_data data;
 
 	flac_dec = flac_decoder_new();
-	if (flac_dec == NULL)
+	if (flac_dec == nullptr)
 		return;
 
 	flac_data_init(&data, decoder, input_stream);
@@ -378,7 +382,7 @@ oggflac_scan_file(const char *file,
 		if (!(block = FLAC__metadata_iterator_get_block(it)))
 			break;
 
-		flac_scan_metadata(NULL, block,
+		flac_scan_metadata(nullptr, block,
 				   handler, handler_ctx);
 	} while (FLAC__metadata_iterator_next(it));
 	FLAC__metadata_iterator_delete(it);
@@ -395,43 +399,52 @@ oggflac_decode(struct decoder *decoder, struct input_stream *input_stream)
 
 	/* rewind the stream, because ogg_codec_detect() has
 	   moved it */
-	input_stream_lock_seek(input_stream, 0, SEEK_SET, NULL);
+	input_stream_lock_seek(input_stream, 0, SEEK_SET, nullptr);
 
 	flac_decode_internal(decoder, input_stream, true);
 }
 
-static const char *const oggflac_suffixes[] = { "ogg", "oga", NULL };
+static const char *const oggflac_suffixes[] = { "ogg", "oga", nullptr };
 static const char *const oggflac_mime_types[] = {
 	"application/ogg",
 	"application/x-ogg",
 	"audio/ogg",
 	"audio/x-flac+ogg",
 	"audio/x-ogg",
-	NULL
+	nullptr
 };
 
 const struct decoder_plugin oggflac_decoder_plugin = {
-	.name = "oggflac",
-	.init = oggflac_init,
-	.stream_decode = oggflac_decode,
-	.scan_file = oggflac_scan_file,
-	.suffixes = oggflac_suffixes,
-	.mime_types = oggflac_mime_types
+	"oggflac",
+	oggflac_init,
+	nullptr,
+	oggflac_decode,
+	nullptr,
+	oggflac_scan_file,
+	nullptr,
+	nullptr,
+	oggflac_suffixes,
+	oggflac_mime_types,
 };
 
-static const char *const flac_suffixes[] = { "flac", NULL };
+static const char *const flac_suffixes[] = { "flac", nullptr };
 static const char *const flac_mime_types[] = {
 	"application/flac",
 	"application/x-flac",
 	"audio/flac",
 	"audio/x-flac",
-	NULL
+	nullptr
 };
 
 const struct decoder_plugin flac_decoder_plugin = {
-	.name = "flac",
-	.stream_decode = flac_decode,
-	.scan_file = flac_scan_file,
-	.suffixes = flac_suffixes,
-	.mime_types = flac_mime_types,
+	"flac",
+	nullptr,
+	nullptr,
+	flac_decode,
+	nullptr,
+	flac_scan_file,
+	nullptr,
+	nullptr,
+	flac_suffixes,
+	flac_mime_types,
 };

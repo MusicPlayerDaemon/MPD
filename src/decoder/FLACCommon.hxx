@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,11 +21,13 @@
  * Common data structures and functions used by FLAC and OggFLAC
  */
 
-#ifndef MPD_FLAC_COMMON_H
-#define MPD_FLAC_COMMON_H
+#ifndef MPD_FLAC_COMMON_HXX
+#define MPD_FLAC_COMMON_HXX
 
+extern "C" {
 #include "decoder_api.h"
 #include "pcm_buffer.h"
+}
 
 #include <FLAC/stream_decoder.h>
 #include <FLAC/metadata.h>

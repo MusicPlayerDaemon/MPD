@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,10 +22,13 @@
  */
 
 #include "config.h"
-#include "flac_common.h"
-#include "flac_metadata.h"
-#include "flac_pcm.h"
+#include "FLACCommon.hxx"
+#include "FLACMetaData.hxx"
+#include "FLAC_PCM.hxx"
+
+extern "C" {
 #include "audio_check.h"
+}
 
 #include <glib.h>
 
@@ -46,7 +49,7 @@ flac_data_init(struct flac_data *data, struct decoder * decoder,
 	data->position = 0;
 	data->decoder = decoder;
 	data->input_stream = input_stream;
-	data->tag = NULL;
+	data->tag = nullptr;
 }
 
 void
@@ -54,7 +57,7 @@ flac_data_deinit(struct flac_data *data)
 {
 	pcm_buffer_deinit(&data->buffer);
 
-	if (data->tag != NULL)
+	if (data->tag != nullptr)
 		tag_free(data->tag);
 }
 
@@ -86,7 +89,7 @@ flac_got_stream_info(struct flac_data *data,
 	if (data->initialized || data->unsupported)
 		return;
 
-	GError *error = NULL;
+	GError *error = nullptr;
 	if (!audio_format_init_checked(&data->audio_format,
 				       stream_info->sample_rate,
 				       flac_sample_format(stream_info->bits_per_sample),
@@ -129,8 +132,8 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 			decoder_mixramp(data->decoder, replay_gain_db,
 					mixramp_start, mixramp_end);
 
-		if (data->tag != NULL)
-			flac_vorbis_comments_to_tag(data->tag, NULL,
+		if (data->tag != nullptr)
+			flac_vorbis_comments_to_tag(data->tag, nullptr,
 						    &block->data.vorbis_comment);
 
 	default:
@@ -160,7 +163,7 @@ flac_got_first_frame(struct flac_data *data, const FLAC__FrameHeader *header)
 	if (data->unsupported)
 		return false;
 
-	GError *error = NULL;
+	GError *error = nullptr;
 	if (!audio_format_init_checked(&data->audio_format,
 				       header->sample_rate,
 				       flac_sample_format(header->bits_per_sample),
@@ -199,7 +202,7 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 	buffer = pcm_buffer_get(&data->buffer, buffer_size);
 
 	flac_convert(buffer, frame->header.channels,
-		     data->audio_format.format, buf,
+		     (enum sample_format)data->audio_format.format, buf,
 		     0, frame->header.blocksize);
 
 	if (nbytes > 0)

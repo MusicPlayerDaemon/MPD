@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,10 +18,14 @@
  */
 
 #include "config.h"
-#include "flac_metadata.h"
+#include "FLACMetaData.hxx"
+
+extern "C" {
 #include "XiphTags.h"
 #include "replay_gain_info.h"
 #include "tag.h"
+}
+
 #include "tag_handler.h"
 #include "tag_table.h"
 
@@ -92,7 +96,7 @@ flac_find_string_comment(const FLAC__StreamMetadata *block,
 	int len;
 	const unsigned char *p;
 
-	*str = NULL;
+	*str = nullptr;
 	offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block, 0,
 								     cmnt);
 	if (offset < 0)
@@ -137,9 +141,9 @@ flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 
 	if (entry->length <= name_length ||
 	    g_ascii_strncasecmp(comment, name, name_length) != 0)
-		return NULL;
+		return nullptr;
 
-	if (char_tnum != NULL) {
+	if (char_tnum != nullptr) {
 		char_tnum_length = strlen(char_tnum);
 		if (entry->length > name_length + char_tnum_length + 2 &&
 		    comment[name_length] == '[' &&
@@ -158,7 +162,7 @@ flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 		return comment + name_length + 1;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 /**
@@ -175,7 +179,7 @@ flac_copy_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 	size_t value_length;
 
 	value = flac_comment_value(entry, name, char_tnum, &value_length);
-	if (value != NULL) {
+	if (value != nullptr) {
 		char *p = g_strndup(value, value_length);
 		tag_handler_invoke_tag(handler, handler_ctx, tag_type, p);
 		g_free(p);
@@ -190,11 +194,11 @@ flac_scan_comment(const char *char_tnum,
 		  const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
-	if (handler->pair != NULL) {
+	if (handler->pair != nullptr) {
 		char *name = g_strdup((const char*)entry->entry);
 		char *value = strchr(name, '=');
 
-		if (value != NULL && value > name) {
+		if (value != nullptr && value > name) {
 			*value++ = 0;
 			tag_handler_invoke_pair(handler, handler_ctx,
 						name, value);
@@ -203,14 +207,15 @@ flac_scan_comment(const char *char_tnum,
 		g_free(name);
 	}
 
-	for (const struct tag_table *i = xiph_tags; i->name != NULL; ++i)
+	for (const struct tag_table *i = xiph_tags; i->name != nullptr; ++i)
 		if (flac_copy_comment(entry, i->name, i->type, char_tnum,
 				      handler, handler_ctx))
 			return;
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (flac_copy_comment(entry,
-				      tag_item_names[i], i, char_tnum,
+				      tag_item_names[i], (enum tag_type)i,
+				      char_tnum,
 				      handler, handler_ctx))
 			return;
 }
@@ -260,7 +265,7 @@ flac_scan_file2(const char *file, const char *char_tnum,
 		const struct tag_handler *handler, void *handler_ctx)
 {
 	FLAC__Metadata_SimpleIterator *it;
-	FLAC__StreamMetadata *block = NULL;
+	FLAC__StreamMetadata *block = nullptr;
 
 	it = FLAC__metadata_simple_iterator_new();
 	if (!FLAC__metadata_simple_iterator_init(it, file, 1, 0)) {
@@ -310,7 +315,7 @@ flac_tag_load(const char *file, const char *char_tnum)
 	if (!flac_scan_file2(file, char_tnum, &add_tag_handler, tag) ||
 	    tag_is_empty(tag)) {
 		tag_free(tag);
-		tag = NULL;
+		tag = nullptr;
 	}
 
 	return tag;

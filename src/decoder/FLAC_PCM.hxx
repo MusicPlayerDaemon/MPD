@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2012 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_FLAC_PCM_H
-#define MPD_FLAC_PCM_H
+#ifndef MPD_FLAC_PCM_HXX
+#define MPD_FLAC_PCM_HXX
 
 #include "audio_format.h"
 
