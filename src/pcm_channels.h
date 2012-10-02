@@ -77,4 +77,21 @@ pcm_convert_channels_32(struct pcm_buffer *buffer,
 			unsigned src_channels, const int32_t *src,
 			size_t src_size, size_t *dest_size_r);
 
+/**
+ * Changes the number of channels in 32 bit float PCM data.
+ *
+ * @param buffer the destination pcm_buffer object
+ * @param dest_channels the number of channels requested
+ * @param src_channels the number of channels in the source buffer
+ * @param src the source PCM buffer
+ * @param src_size the number of bytes in #src
+ * @param dest_size_r returns the number of bytes of the destination buffer
+ * @return the destination buffer
+ */
+const float *
+pcm_convert_channels_float(struct pcm_buffer *buffer,
+			   unsigned dest_channels,
+			   unsigned src_channels, const float *src,
+			   size_t src_size, size_t *dest_size_r);
+
 #endif

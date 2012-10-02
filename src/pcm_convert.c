@@ -61,55 +61,6 @@ pcm_convert_reset(struct pcm_convert_state *state)
 	pcm_resample_reset(&state->resample);
 }
 
-static const void *
-pcm_convert_channels(struct pcm_buffer *buffer, enum sample_format format,
-		     uint8_t dest_channels,
-		     uint8_t src_channels, const void *src,
-		     size_t src_size, size_t *dest_size_r,
-		     GError **error_r)
-{
-	const void *dest = NULL;
-
-	switch (format) {
-	case SAMPLE_FORMAT_UNDEFINED:
-	case SAMPLE_FORMAT_S8:
-	case SAMPLE_FORMAT_FLOAT:
-	case SAMPLE_FORMAT_DSD:
-		g_set_error(error_r, pcm_convert_quark(), 0,
-			    "Channel conversion not implemented for format '%s'",
-			    sample_format_to_string(format));
-		return NULL;
-
-	case SAMPLE_FORMAT_S16:
-		dest = pcm_convert_channels_16(buffer, dest_channels,
-					       src_channels, src,
-					       src_size, dest_size_r);
-		break;
-
-	case SAMPLE_FORMAT_S24_P32:
-		dest = pcm_convert_channels_24(buffer, dest_channels,
-					       src_channels, src,
-					       src_size, dest_size_r);
-		break;
-
-	case SAMPLE_FORMAT_S32:
-		dest = pcm_convert_channels_32(buffer, dest_channels,
-					       src_channels, src,
-					       src_size, dest_size_r);
-		break;
-	}
-
-	if (dest == NULL) {
-		g_set_error(error_r, pcm_convert_quark(), 0,
-			    "Conversion from %u to %u channels "
-			    "is not implemented",
-			    src_channels, dest_channels);
-		return NULL;
-	}
-
-	return dest;
-}
-
 static const int16_t *
 pcm_convert_16(struct pcm_convert_state *state,
 	       const struct audio_format *src_format,
@@ -273,19 +224,6 @@ pcm_convert_float(struct pcm_convert_state *state,
 
 	assert(dest_format->format == SAMPLE_FORMAT_FLOAT);
 
-	/* convert channels first, hoping the source format is
-	   supported (float is not) */
-
-	if (dest_format->channels != src_format->channels) {
-		buffer = pcm_convert_channels(&state->channels_buffer,
-					      src_format->format,
-					      dest_format->channels,
-					      src_format->channels,
-					      buffer, size, &size, error_r);
-		if (buffer == NULL)
-			return NULL;
-	}
-
 	/* convert to float now */
 
 	buffer = pcm_convert_to_float(&state->format_buffer,
@@ -296,6 +234,23 @@ pcm_convert_float(struct pcm_convert_state *state,
 			    "Conversion from %s to float is not implemented",
 			    sample_format_to_string(src_format->format));
 		return NULL;
+	}
+
+	/* convert channels */
+
+	if (src_format->channels != dest_format->channels) {
+		buffer = pcm_convert_channels_float(&state->channels_buffer,
+						    dest_format->channels,
+						    src_format->channels,
+						    buffer, size, &size);
+		if (buffer == NULL) {
+			g_set_error(error_r, pcm_convert_quark(), 0,
+				    "Conversion from %u to %u channels "
+				    "is not implemented",
+				    src_format->channels,
+				    dest_format->channels);
+			return NULL;
+		}
 	}
 
 	/* resample with float, because this is the best format for

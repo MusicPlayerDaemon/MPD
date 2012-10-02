@@ -244,3 +244,74 @@ pcm_convert_channels_32(struct pcm_buffer *buffer,
 
 	return dest;
 }
+
+static void
+pcm_convert_channels_float_1_to_2(float *dest, const float *src,
+			       const float *src_end)
+{
+	pcm_convert_channels_24_1_to_2((int32_t *)dest,
+				       (const int32_t *)src,
+				       (const int32_t *)src_end);
+}
+
+static void
+pcm_convert_channels_float_2_to_1(float *restrict dest,
+				  const float *restrict src,
+				  const float *restrict src_end)
+{
+	while (src < src_end) {
+		double a = *src++, b = *src++;
+
+		*dest++ = (a + b) / 2;
+	}
+}
+
+static void
+pcm_convert_channels_float_n_to_2(float *dest,
+				  unsigned src_channels, const float *src,
+				  const float *src_end)
+{
+	unsigned c;
+
+	assert(src_channels > 0);
+
+	while (src < src_end) {
+		double sum = 0;
+		float value;
+
+		for (c = 0; c < src_channels; ++c)
+			sum += *src++;
+		value = sum / (double)src_channels;
+
+		/* XXX this is actually only mono ... */
+		*dest++ = value;
+		*dest++ = value;
+	}
+}
+
+const float *
+pcm_convert_channels_float(struct pcm_buffer *buffer,
+			   unsigned dest_channels,
+			   unsigned src_channels, const float *src,
+			   size_t src_size, size_t *dest_size_r)
+{
+	assert(src_size % (sizeof(*src) * src_channels) == 0);
+
+	size_t dest_size = src_size / src_channels * dest_channels;
+	*dest_size_r = dest_size;
+
+	float *dest = pcm_buffer_get(buffer, dest_size);
+	const float *src_end = pcm_end_pointer(src, src_size);
+
+	if (src_channels == 1 && dest_channels == 2)
+		pcm_convert_channels_float_1_to_2(dest, src, src_end);
+	else if (src_channels == 2 && dest_channels == 1)
+		pcm_convert_channels_float_2_to_1(dest, src, src_end);
+	else if (dest_channels == 2)
+		pcm_convert_channels_float_n_to_2(dest, src_channels, src,
+						  src_end);
+	else
+		return NULL;
+
+	return dest;
+}
