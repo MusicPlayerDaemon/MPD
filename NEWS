@@ -5,6 +5,7 @@ ver 0.18 (2012/??/??)
   - vorbis: skip 16 bit quantisation, provide float samples
 * encoder:
   - opus: new encoder plugin for the Opus codec
+  - vorbis: accept floating point input samples
 * output:
   - new option "tags" may be used to disable sending tags to output
 * improved decoder/output error reporting

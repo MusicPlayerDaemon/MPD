@@ -212,7 +212,7 @@ vorbis_encoder_open(struct encoder *_encoder,
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 
-	audio_format->format = SAMPLE_FORMAT_S16;
+	audio_format->format = SAMPLE_FORMAT_FLOAT;
 
 	encoder->audio_format = *audio_format;
 
@@ -327,12 +327,12 @@ vorbis_encoder_tag(struct encoder *_encoder, const struct tag *tag,
 }
 
 static void
-pcm16_to_vorbis_buffer(float **dest, const int16_t *src,
-		       unsigned num_frames, unsigned num_channels)
+interleaved_to_vorbis_buffer(float **dest, const float *src,
+			     unsigned num_frames, unsigned num_channels)
 {
 	for (unsigned i = 0; i < num_frames; i++)
 		for (unsigned j = 0; j < num_channels; j++)
-			dest[j][i] = *src++ / 32768.0;
+			dest[j][i] = *src++;
 }
 
 static bool
@@ -347,10 +347,11 @@ vorbis_encoder_write(struct encoder *_encoder,
 
 	/* this is for only 16-bit audio */
 
-	pcm16_to_vorbis_buffer(vorbis_analysis_buffer(&encoder->vd,
-						      num_frames),
-			       (const int16_t *)data,
-			       num_frames, encoder->audio_format.channels);
+	interleaved_to_vorbis_buffer(vorbis_analysis_buffer(&encoder->vd,
+							    num_frames),
+				     (const float *)data,
+				     num_frames,
+				     encoder->audio_format.channels);
 
 	vorbis_analysis_wrote(&encoder->vd, num_frames);
 	vorbis_encoder_blockout(encoder);
