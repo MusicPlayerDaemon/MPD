@@ -243,45 +243,21 @@ bool
 flac_scan_file2(const char *file,
 		const struct tag_handler *handler, void *handler_ctx)
 {
-	FLAC__Metadata_SimpleIterator *it;
-	FLAC__StreamMetadata *block = nullptr;
-
-	it = FLAC__metadata_simple_iterator_new();
-	if (!FLAC__metadata_simple_iterator_init(it, file, 1, 0)) {
-		const char *err;
-		FLAC_API FLAC__Metadata_SimpleIteratorStatus s;
-
-		s = FLAC__metadata_simple_iterator_status(it);
-
-		switch (s) { /* slightly more human-friendly messages: */
-		case FLAC__METADATA_SIMPLE_ITERATOR_STATUS_ILLEGAL_INPUT:
-			err = "illegal input";
-			break;
-		case FLAC__METADATA_SIMPLE_ITERATOR_STATUS_ERROR_OPENING_FILE:
-			err = "error opening file";
-			break;
-		case FLAC__METADATA_SIMPLE_ITERATOR_STATUS_NOT_A_FLAC_FILE:
-			err = "not a FLAC file";
-			break;
-		default:
-			err = FLAC__Metadata_SimpleIteratorStatusString[s];
-		}
-		g_debug("Reading '%s' metadata gave the following error: %s\n",
-			file, err);
-		FLAC__metadata_simple_iterator_delete(it);
+	FLACMetadataChain chain;
+	if (!chain.Read(file)) {
+		g_debug("Failed to read FLAC tags: %s",
+			chain.GetStatusString());
 		return false;
 	}
 
+	FLACMetadataIterator iterator(chain);
 	do {
-		block = FLAC__metadata_simple_iterator_get_block(it);
-		if (!block)
+		FLAC__StreamMetadata *block = iterator.GetBlock();
+		if (block == nullptr)
 			break;
 
 		flac_scan_metadata(block, handler, handler_ctx);
-		FLAC__metadata_object_delete(block);
-	} while (FLAC__metadata_simple_iterator_next(it));
-
-	FLAC__metadata_simple_iterator_delete(it);
+	} while (iterator.Next());
 
 	return true;
 }
