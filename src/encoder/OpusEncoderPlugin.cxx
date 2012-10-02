@@ -371,12 +371,12 @@ opus_encoder_read(struct encoder *_encoder, void *_dest, size_t length)
 		opus_encoder_generate_tags(encoder);
 
 	ogg_page page;
-	int result;
-	if (encoder->flush) {
+	int result = ogg_stream_pageout(&encoder->os, &page);
+	if (result == 0 && encoder->flush) {
 		encoder->flush = false;
 		result = ogg_stream_flush(&encoder->os, &page);
-	} else
-		result = ogg_stream_pageout(&encoder->os, &page);
+
+	}
 
 	if (result == 0)
 		return 0;
