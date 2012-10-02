@@ -58,7 +58,4 @@ bool
 flac_scan_file2(const char *file, const char *char_tnum,
 		const struct tag_handler *handler, void *handler_ctx);
 
-struct tag *
-flac_tag_load(const char *file, const char *char_tnum);
-
 #endif

@@ -306,17 +306,3 @@ flac_scan_file2(const char *file, const char *char_tnum,
 
 	return true;
 }
-
-struct tag *
-flac_tag_load(const char *file, const char *char_tnum)
-{
-	struct tag *tag = tag_new();
-
-	if (!flac_scan_file2(file, char_tnum, &add_tag_handler, tag) ||
-	    tag_is_empty(tag)) {
-		tag_free(tag);
-		tag = nullptr;
-	}
-
-	return tag;
-}
