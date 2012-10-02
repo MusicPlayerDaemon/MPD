@@ -63,6 +63,8 @@ struct opus_encoder {
 	OggStream stream;
 
 	ogg_int64_t packetno;
+
+	ogg_int64_t granulepos;
 };
 
 gcc_const
@@ -235,12 +237,14 @@ opus_encoder_do_encode(struct opus_encoder *encoder, bool eos,
 		return false;
 	}
 
+	encoder->granulepos += encoder->buffer_frames;
+
 	ogg_packet packet;
 	packet.packet = encoder->buffer2;
 	packet.bytes = result;
 	packet.b_o_s = false;
 	packet.e_o_s = eos;
-	packet.granulepos = 0; // TODO
+	packet.granulepos = encoder->granulepos;
 	packet.packetno = encoder->packetno++;
 	encoder->stream.PacketIn(packet);
 
