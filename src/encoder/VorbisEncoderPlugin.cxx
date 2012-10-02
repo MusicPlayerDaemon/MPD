@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "VorbisEncoderPlugin.hxx"
+#include "OggStream.hxx"
 
 extern "C" {
 #include "encoder_api.h"
@@ -49,13 +50,11 @@ struct vorbis_encoder {
 
 	struct audio_format audio_format;
 
-	ogg_stream_state os;
-
 	vorbis_dsp_state vd;
 	vorbis_block vb;
 	vorbis_info vi;
 
-	bool flush;
+	OggStream stream;
 };
 
 static inline GQuark
@@ -177,7 +176,7 @@ vorbis_encoder_reinit(struct vorbis_encoder *encoder, GError **error)
 
 	vorbis_analysis_init(&encoder->vd, &encoder->vi);
 	vorbis_block_init(&encoder->vd, &encoder->vb);
-	ogg_stream_init(&encoder->os, g_random_int());
+	encoder->stream.Initialize(g_random_int());
 
 	return true;
 }
@@ -190,9 +189,9 @@ vorbis_encoder_headerout(struct vorbis_encoder *encoder, vorbis_comment *vc)
 	vorbis_analysis_headerout(&encoder->vd, vc,
 				  &packet, &comments, &codebooks);
 
-	ogg_stream_packetin(&encoder->os, &packet);
-	ogg_stream_packetin(&encoder->os, &comments);
-	ogg_stream_packetin(&encoder->os, &codebooks);
+	encoder->stream.PacketIn(packet);
+	encoder->stream.PacketIn(comments);
+	encoder->stream.PacketIn(codebooks);
 }
 
 static void
@@ -221,17 +220,13 @@ vorbis_encoder_open(struct encoder *_encoder,
 
 	vorbis_encoder_send_header(encoder);
 
-	/* set "flush" to true, so the caller gets the full headers on
-	   the first read() */
-	encoder->flush = true;
-
 	return true;
 }
 
 static void
 vorbis_encoder_clear(struct vorbis_encoder *encoder)
 {
-	ogg_stream_clear(&encoder->os);
+	encoder->stream.Deinitialize();
 	vorbis_block_clear(&encoder->vb);
 	vorbis_dsp_clear(&encoder->vd);
 	vorbis_info_clear(&encoder->vi);
@@ -254,7 +249,7 @@ vorbis_encoder_blockout(struct vorbis_encoder *encoder)
 
 		ogg_packet packet;
 		while (vorbis_bitrate_flushpacket(&encoder->vd, &packet))
-			ogg_stream_packetin(&encoder->os, &packet);
+			encoder->stream.PacketIn(packet);
 	}
 }
 
@@ -263,7 +258,7 @@ vorbis_encoder_flush(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 
-	encoder->flush = true;
+	encoder->stream.Flush();
 	return true;
 }
 
@@ -282,7 +277,7 @@ vorbis_encoder_pre_tag(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
 	vorbis_analysis_init(&encoder->vd, &encoder->vi);
 	vorbis_block_init(&encoder->vd, &encoder->vb);
 
-	encoder->flush = true;
+	encoder->stream.Flush();
 	return true;
 }
 
@@ -311,17 +306,12 @@ vorbis_encoder_tag(struct encoder *_encoder, const struct tag *tag,
 
 	/* reset ogg_stream_state and begin a new stream */
 
-	ogg_stream_reset_serialno(&encoder->os, g_random_int());
+	encoder->stream.Reinitialize(g_random_int());
 
 	/* send that vorbis_comment to the ogg_stream_state */
 
 	vorbis_encoder_headerout(encoder, &comment);
 	vorbis_comment_clear(&comment);
-
-	/* the next vorbis_encoder_read() call should flush the
-	   ogg_stream_state */
-
-	encoder->flush = true;
 
 	return true;
 }
@@ -359,34 +349,11 @@ vorbis_encoder_write(struct encoder *_encoder,
 }
 
 static size_t
-vorbis_encoder_read(struct encoder *_encoder, void *_dest, size_t length)
+vorbis_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
-	unsigned char *dest = (unsigned char *)_dest;
 
-	ogg_page page;
-	int ret = ogg_stream_pageout(&encoder->os, &page);
-	if (ret == 0 && encoder->flush) {
-		encoder->flush = false;
-		ret = ogg_stream_flush(&encoder->os, &page);
-
-	}
-
-	if (ret == 0)
-		return 0;
-
-	assert(page.header_len > 0 || page.body_len > 0);
-
-	size_t nbytes = (size_t)page.header_len + (size_t)page.body_len;
-
-	if (nbytes > length)
-		/* XXX better error handling */
-		MPD_ERROR("buffer too small");
-
-	memcpy(dest, page.header, page.header_len);
-	memcpy(dest + page.header_len, page.body, page.body_len);
-
-	return nbytes;
+	return encoder->stream.PageOut(dest, length);
 }
 
 static const char *

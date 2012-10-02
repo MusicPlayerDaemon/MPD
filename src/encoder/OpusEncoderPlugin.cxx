@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "OpusEncoderPlugin.hxx"
+#include "OggStream.hxx"
 
 extern "C" {
 #include "encoder_api.h"
@@ -59,11 +60,9 @@ struct opus_encoder {
 
 	unsigned char buffer2[1275 * 3 + 7];
 
-	ogg_stream_state os;
+	OggStream stream;
 
 	ogg_int64_t packetno;
-
-	bool flush;
 };
 
 gcc_const
@@ -196,12 +195,8 @@ opus_encoder_open(struct encoder *_encoder,
 	encoder->buffer_position = 0;
 	encoder->buffer = (unsigned char *)g_malloc(encoder->buffer_size);
 
-	ogg_stream_init(&encoder->os, g_random_int());
+	encoder->stream.Initialize(g_random_int());
 	encoder->packetno = 0;
-
-	/* set "flush" to true, so the caller gets the full headers on
-	   the first read() */
-	encoder->flush = true;
 
 	return true;
 }
@@ -211,7 +206,7 @@ opus_encoder_close(struct encoder *_encoder)
 {
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
 
-	ogg_stream_clear(&encoder->os);
+	encoder->stream.Deinitialize();
 	g_free(encoder->buffer);
 	opus_encoder_destroy(encoder->enc);
 }
@@ -247,7 +242,7 @@ opus_encoder_do_encode(struct opus_encoder *encoder, bool eos,
 	packet.e_o_s = eos;
 	packet.granulepos = 0; // TODO
 	packet.packetno = encoder->packetno++;
-	ogg_stream_packetin(&encoder->os, &packet);
+	encoder->stream.PacketIn(packet);
 
 	encoder->buffer_position = 0;
 
@@ -259,7 +254,7 @@ opus_encoder_end(struct encoder *_encoder, GError **error_r)
 {
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
 
-	encoder->flush = true;
+	encoder->stream.Flush();
 
 	memset(encoder->buffer + encoder->buffer_position, 0,
 	       encoder->buffer_size - encoder->buffer_position);
@@ -273,7 +268,7 @@ opus_encoder_flush(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
 {
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
 
-	encoder->flush = true;
+	encoder->stream.Flush();
 	return true;
 }
 
@@ -327,9 +322,8 @@ opus_encoder_generate_head(struct opus_encoder *encoder)
 	packet.e_o_s = false;
 	packet.granulepos = 0;
 	packet.packetno = encoder->packetno++;
-	ogg_stream_packetin(&encoder->os, &packet);
-
-	encoder->flush = true;
+	encoder->stream.PacketIn(packet);
+	encoder->stream.Flush();
 }
 
 static void
@@ -352,47 +346,23 @@ opus_encoder_generate_tags(struct opus_encoder *encoder)
 	packet.e_o_s = false;
 	packet.granulepos = 0;
 	packet.packetno = encoder->packetno++;
-	ogg_stream_packetin(&encoder->os, &packet);
+	encoder->stream.PacketIn(packet);
+	encoder->stream.Flush();
 
 	g_free(comments);
-
-	encoder->flush = true;
 }
 
 static size_t
-opus_encoder_read(struct encoder *_encoder, void *_dest, size_t length)
+opus_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 {
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
-	unsigned char *dest = (unsigned char *)_dest;
 
 	if (encoder->packetno == 0)
 		opus_encoder_generate_head(encoder);
 	else if (encoder->packetno == 1)
 		opus_encoder_generate_tags(encoder);
 
-	ogg_page page;
-	int result = ogg_stream_pageout(&encoder->os, &page);
-	if (result == 0 && encoder->flush) {
-		encoder->flush = false;
-		result = ogg_stream_flush(&encoder->os, &page);
-
-	}
-
-	if (result == 0)
-		return 0;
-
-	assert(page.header_len > 0 || page.body_len > 0);
-
-	size_t nbytes = (size_t)page.header_len + (size_t)page.body_len;
-
-	if (nbytes > length)
-		/* XXX better error handling */
-		MPD_ERROR("buffer too small");
-
-	memcpy(dest, page.header, page.header_len);
-	memcpy(dest + page.header_len, page.body, page.body_len);
-
-	return nbytes;
+	return encoder->stream.PageOut(dest, length);
 }
 
 static const char *

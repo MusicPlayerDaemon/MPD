@@ -695,10 +695,10 @@ ENCODER_LIBS = \
 	$(OPUS_LIBS) \
 	$(VORBISENC_LIBS)
 
-libencoder_plugins_a_SOURCES =
-
-libencoder_plugins_a_SOURCES += src/encoder_list.c
-libencoder_plugins_a_SOURCES += src/encoder/null_encoder.c
+libencoder_plugins_a_SOURCES = \
+	src/encoder/OggStream.hxx \
+	src/encoder/null_encoder.c \
+	src/encoder_list.c
 
 if ENABLE_WAVE_ENCODER
 libencoder_plugins_a_SOURCES += src/encoder/wave_encoder.c
