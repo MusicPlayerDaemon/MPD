@@ -1,5 +1,6 @@
 ver 0.17.3 (2012/??/??)
 * output:
+  - osx: fix pops during playback
   - recorder: fix I/O error check
   - shout: fix memory leak in error handler
   - recorder, shout: support Ogg packets that span more than one page

@@ -228,9 +228,13 @@ osx_render(void *vdata,
 	g_cond_signal(od->condition);
 	g_mutex_unlock(od->mutex);
 
-	if (nbytes < buffer_size)
-		memset((unsigned char*)buffer->mData + nbytes, 0,
-		       buffer_size - nbytes);
+	buffer->mDataByteSize = nbytes;
+
+	unsigned i;
+	for (i = 1; i < buffer_list->mNumberBuffers; ++i) {
+		buffer = &buffer_list->mBuffers[i];
+		buffer->mDataByteSize = 0;
+	}
 
 	return 0;
 }
