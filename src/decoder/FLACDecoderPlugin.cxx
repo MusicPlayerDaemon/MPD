@@ -101,6 +101,21 @@ flac_scan_file(const char *file,
 	return true;
 }
 
+static bool
+flac_scan_stream(struct input_stream *is,
+		 const struct tag_handler *handler, void *handler_ctx)
+{
+	FLACMetadataChain chain;
+	if (!chain.Read(is)) {
+		g_debug("Failed to read FLAC tags: %s",
+			chain.GetStatusString());
+		return false;
+	}
+
+	chain.Scan(handler, handler_ctx);
+	return true;
+}
+
 /**
  * Some glue code around FLAC__stream_decoder_new().
  */
@@ -297,6 +312,21 @@ oggflac_scan_file(const char *file,
 	return true;
 }
 
+static bool
+oggflac_scan_stream(struct input_stream *is,
+		    const struct tag_handler *handler, void *handler_ctx)
+{
+	FLACMetadataChain chain;
+	if (!chain.ReadOgg(is)) {
+		g_debug("Failed to read OggFLAC tags: %s",
+			chain.GetStatusString());
+		return false;
+	}
+
+	chain.Scan(handler, handler_ctx);
+	return true;
+}
+
 static void
 oggflac_decode(struct decoder *decoder, struct input_stream *input_stream)
 {
@@ -327,7 +357,7 @@ const struct decoder_plugin oggflac_decoder_plugin = {
 	oggflac_decode,
 	nullptr,
 	oggflac_scan_file,
-	nullptr,
+	oggflac_scan_stream,
 	nullptr,
 	oggflac_suffixes,
 	oggflac_mime_types,
@@ -349,7 +379,7 @@ const struct decoder_plugin flac_decoder_plugin = {
 	flac_decode,
 	nullptr,
 	flac_scan_file,
-	nullptr,
+	flac_scan_stream,
 	nullptr,
 	flac_suffixes,
 	flac_mime_types,

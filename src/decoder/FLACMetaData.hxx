@@ -21,6 +21,7 @@
 #define MPD_FLAC_METADATA_H
 
 #include "gcc.h"
+#include "FLACIOHandle.hxx"
 
 #include <FLAC/metadata.h>
 
@@ -45,8 +46,28 @@ public:
 		return ::FLAC__metadata_chain_read(chain, path);
 	}
 
+	bool Read(FLAC__IOHandle handle, FLAC__IOCallbacks callbacks) {
+		return ::FLAC__metadata_chain_read_with_callbacks(chain,
+								  handle,
+								  callbacks);
+	}
+
+	bool Read(input_stream *is) {
+		return Read(::ToFLACIOHandle(is), ::GetFLACIOCallbacks(is));
+	}
+
 	bool ReadOgg(const char *path) {
 		return ::FLAC__metadata_chain_read_ogg(chain, path);
+	}
+
+	bool ReadOgg(FLAC__IOHandle handle, FLAC__IOCallbacks callbacks) {
+		return ::FLAC__metadata_chain_read_ogg_with_callbacks(chain,
+								      handle,
+								      callbacks);
+	}
+
+	bool ReadOgg(input_stream *is) {
+		return ReadOgg(::ToFLACIOHandle(is), ::GetFLACIOCallbacks(is));
 	}
 
 	gcc_pure
