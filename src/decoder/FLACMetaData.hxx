@@ -117,8 +117,4 @@ void
 flac_scan_metadata(const FLAC__StreamMetadata *block,
 		   const struct tag_handler *handler, void *handler_ctx);
 
-bool
-flac_scan_file2(const char *file,
-		const struct tag_handler *handler, void *handler_ctx);
-
 #endif

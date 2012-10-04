@@ -239,21 +239,6 @@ flac_vorbis_comments_to_tag(struct tag *tag,
 	flac_scan_comments(comment, &add_tag_handler, tag);
 }
 
-bool
-flac_scan_file2(const char *file,
-		const struct tag_handler *handler, void *handler_ctx)
-{
-	FLACMetadataChain chain;
-	if (!chain.Read(file)) {
-		g_debug("Failed to read FLAC tags: %s",
-			chain.GetStatusString());
-		return false;
-	}
-
-	chain.Scan(handler, handler_ctx);
-	return true;
-}
-
 void
 FLACMetadataChain::Scan(const struct tag_handler *handler, void *handler_ctx)
 {

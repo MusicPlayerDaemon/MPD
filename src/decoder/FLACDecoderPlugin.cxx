@@ -90,7 +90,15 @@ static bool
 flac_scan_file(const char *file,
 	       const struct tag_handler *handler, void *handler_ctx)
 {
-	return flac_scan_file2(file, handler, handler_ctx);
+	FLACMetadataChain chain;
+	if (!chain.Read(file)) {
+		g_debug("Failed to read FLAC tags: %s",
+			chain.GetStatusString());
+		return false;
+	}
+
+	chain.Scan(handler, handler_ctx);
+	return true;
 }
 
 /**
