@@ -21,6 +21,7 @@
 #include "PlaylistFile.hxx"
 #include "PlaylistSave.hxx"
 #include "song.h"
+#include "io_error.h"
 
 extern "C" {
 #include "text_file.h"
@@ -132,8 +133,7 @@ playlist_errno(GError **error_r)
 		break;
 
 	default:
-		g_set_error_literal(error_r, g_file_error_quark(), errno,
-				    g_strerror(errno));
+		set_error_errno(error_r);
 		break;
 	}
 }
@@ -181,8 +181,7 @@ ListPlaylistFiles(GError **error_r)
 
 	DIR *dir = opendir(parent_path_fs);
 	if (dir == NULL) {
-		g_set_error_literal(error_r, g_file_error_quark(), errno,
-				    g_strerror(errno));
+		set_error_errno(error_r);
 		return list;
 	}
 

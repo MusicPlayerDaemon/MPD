@@ -25,6 +25,7 @@
 #include "riff.h"
 #include "aiff.h"
 #include "conf.h"
+#include "io_error.h"
 
 #include <glib.h>
 #include <id3tag.h>
@@ -546,7 +547,7 @@ tag_id3_load(const char *path_fs, GError **error_r)
 {
 	FILE *file = fopen(path_fs, "rb");
 	if (file == NULL) {
-		g_set_error(error_r, g_file_error_quark(), errno,
+		g_set_error(error_r, errno_quark(), errno,
 			    "Failed to open file %s: %s",
 			    path_fs, g_strerror(errno));
 		return NULL;

@@ -20,6 +20,7 @@
 #include "client_file.h"
 #include "client.h"
 #include "ack.h"
+#include "io_error.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -53,8 +54,7 @@ client_allow_file(const struct client *client, const char *path_fs,
 
 	struct stat st;
 	if (stat(path_fs, &st) < 0) {
-		g_set_error(error_r, g_file_error_quark(), errno,
-			    "%s", g_strerror(errno));
+		set_error_errno(error_r);
 		return false;
 	}
 

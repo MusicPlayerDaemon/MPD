@@ -20,6 +20,7 @@
 #include "config.h"
 #include "CommandError.hxx"
 #include "db_error.h"
+#include "io_error.h"
 
 extern "C" {
 #include "protocol/result.h"
@@ -119,9 +120,13 @@ print_error(struct client *client, GError *error)
 			command_error(client, ACK_ERROR_NO_EXIST, "Not found");
 			return COMMAND_RETURN_ERROR;
 		}
-	} else if (error->domain == g_file_error_quark()) {
+	} else if (error->domain == errno_quark()) {
 		command_error(client, ACK_ERROR_SYSTEM, "%s",
 			      g_strerror(error->code));
+		g_error_free(error);
+		return COMMAND_RETURN_ERROR;
+	} else if (error->domain == g_file_error_quark()) {
+		command_error(client, ACK_ERROR_SYSTEM, "%s", error->message);
 		g_error_free(error);
 		return COMMAND_RETURN_ERROR;
 	}
