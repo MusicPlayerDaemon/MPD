@@ -218,6 +218,25 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
+		g_mutex_lock(mutex);
+
+		while (!is->ready) {
+			g_cond_wait(cond, mutex);
+			input_stream_update(is);
+		}
+
+		if (!input_stream_check(is, &error)) {
+			g_mutex_unlock(mutex);
+
+			g_printerr("Failed to read %s: %s\n",
+				   path, error->message);
+			g_error_free(error);
+
+			return EXIT_FAILURE;
+		}
+
+		g_mutex_unlock(mutex);
+
 		success = decoder_plugin_scan_stream(plugin, is,
 						     &print_handler, NULL);
 		input_stream_close(is);
