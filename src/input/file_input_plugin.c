@@ -23,6 +23,7 @@
 #include "input_plugin.h"
 #include "fd_util.h"
 #include "open.h"
+#include "io_error.h"
 
 #include <sys/stat.h>
 #include <unistd.h>
@@ -39,12 +40,6 @@ struct file_input_stream {
 	int fd;
 };
 
-static inline GQuark
-file_quark(void)
-{
-	return g_quark_from_static_string("file");
-}
-
 static struct input_stream *
 input_file_open(const char *filename,
 		GMutex *mutex, GCond *cond,
@@ -60,7 +55,7 @@ input_file_open(const char *filename,
 	fd = open_cloexec(filename, O_RDONLY|O_BINARY, 0);
 	if (fd < 0) {
 		if (errno != ENOENT && errno != ENOTDIR)
-			g_set_error(error_r, file_quark(), errno,
+			g_set_error(error_r, errno_quark(), errno,
 				    "Failed to open \"%s\": %s",
 				    filename, g_strerror(errno));
 		return NULL;
@@ -68,7 +63,7 @@ input_file_open(const char *filename,
 
 	ret = fstat(fd, &st);
 	if (ret < 0) {
-		g_set_error(error_r, file_quark(), errno,
+		g_set_error(error_r, errno_quark(), errno,
 			    "Failed to stat \"%s\": %s",
 			    filename, g_strerror(errno));
 		close(fd);
@@ -76,7 +71,7 @@ input_file_open(const char *filename,
 	}
 
 	if (!S_ISREG(st.st_mode)) {
-		g_set_error(error_r, file_quark(), 0,
+		g_set_error(error_r, errno_quark(), 0,
 			    "Not a regular file: %s", filename);
 		close(fd);
 		return NULL;
@@ -107,7 +102,7 @@ input_file_seek(struct input_stream *is, goffset offset, int whence,
 
 	offset = (goffset)lseek(fis->fd, (off_t)offset, whence);
 	if (offset < 0) {
-		g_set_error(error_r, file_quark(), errno,
+		g_set_error(error_r, errno_quark(), errno,
 			    "Failed to seek: %s", g_strerror(errno));
 		return false;
 	}
@@ -125,7 +120,7 @@ input_file_read(struct input_stream *is, void *ptr, size_t size,
 
 	nbytes = read(fis->fd, ptr, size);
 	if (nbytes < 0) {
-		g_set_error(error_r, file_quark(), errno,
+		g_set_error(error_r, errno_quark(), errno,
 			    "Failed to read: %s", g_strerror(errno));
 		return 0;
 	}
