@@ -234,6 +234,17 @@ time_to_ffmpeg(double t, const AVRational time_base)
 }
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53,25,0)
+
+static void
+copy_interleave_frame2(uint8_t *dest, const uint8_t *const*src,
+		       unsigned nchannels, size_t plane_size)
+{
+	for (unsigned channel = 0; channel < nchannels; ++channel) {
+		memcpy(dest, src[channel], plane_size);
+		dest += plane_size;
+	}
+}
+
 /**
  * Copy PCM data from a AVFrame to an interleaved buffer.
  */
@@ -254,11 +265,9 @@ copy_interleave_frame(const AVCodecContext *codec_context,
 
 	if (av_sample_fmt_is_planar(codec_context->sample_fmt) &&
 	    codec_context->channels > 1) {
-		for (int i = 0, channels = codec_context->channels;
-		     i < channels; i++) {
-			memcpy(buffer, frame->extended_data[i], plane_size);
-			buffer += plane_size;
-		}
+		copy_interleave_frame2(buffer,
+				       (const uint8_t *const*)frame->extended_data,
+				       codec_context->channels, plane_size);
 	} else {
 		memcpy(buffer, frame->extended_data[0], data_size);
 	}
