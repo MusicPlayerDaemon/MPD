@@ -376,10 +376,21 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 		return SAMPLE_FORMAT_S32;
 
 	default:
+		break;
+	}
+
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 94, 1)
+	char buffer[64];
+	const char *name = av_get_sample_fmt_string(buffer, sizeof(buffer),
+						    sample_fmt);
+	if (name != NULL)
+		g_warning("Unsupported libavcodec SampleFormat value: %s (%d)",
+			  name, sample_fmt);
+	else
+#endif
 		g_warning("Unsupported libavcodec SampleFormat value: %d",
 			  sample_fmt);
-		return SAMPLE_FORMAT_UNDEFINED;
-	}
+	return SAMPLE_FORMAT_UNDEFINED;
 }
 
 static AVInputFormat *
