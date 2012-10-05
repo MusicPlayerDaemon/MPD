@@ -18,6 +18,9 @@ ver 0.17.3 (2012/??/??)
   - recorder: fix I/O error check
   - shout: fix memory leak in error handler
   - recorder, shout: support Ogg packets that span more than one page
+* decoder:
+  - ffmpeg: ignore negative time stamps
+  - ffmpeg: support planar audio
 
 ver 0.17.2 (2012/09/30)
 * protocol:

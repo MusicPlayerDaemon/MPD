@@ -23,6 +23,7 @@
 #include "mapper.h"
 #include "song.h"
 #include "uri.h"
+#include "path.h"
 #include "ls.h"
 #include "tag.h"
 
@@ -62,8 +63,14 @@ apply_song_metadata(struct song *dest, const struct song *src)
 		if (path_fs == NULL)
 			return dest;
 
-		tmp = song_file_new(path_fs, NULL);
-		g_free(path_fs);
+		char *path_utf8 = fs_charset_to_utf8(path_fs);
+		if (path_utf8 != NULL)
+			g_free(path_fs);
+		else
+			path_utf8 = path_fs;
+
+		tmp = song_file_new(path_utf8, NULL);
+		g_free(path_utf8);
 
 		merge_song_metadata(tmp, dest, src);
 	} else {

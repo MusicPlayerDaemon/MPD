@@ -234,6 +234,21 @@ time_to_ffmpeg(double t, const AVRational time_base)
 }
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53,25,0)
+
+static void
+copy_interleave_frame2(uint8_t *dest, uint8_t **src,
+		       unsigned nframes, unsigned nchannels,
+		       unsigned sample_size)
+{
+	for (unsigned frame = 0; frame < nframes; ++frame) {
+		for (unsigned channel = 0; channel < nchannels; ++channel) {
+			memcpy(dest, src[channel] + frame * sample_size,
+			       sample_size);
+			dest += sample_size;
+		}
+	}
+}
+
 /**
  * Copy PCM data from a AVFrame to an interleaved buffer.
  */
@@ -254,11 +269,10 @@ copy_interleave_frame(const AVCodecContext *codec_context,
 
 	if (av_sample_fmt_is_planar(codec_context->sample_fmt) &&
 	    codec_context->channels > 1) {
-		for (int i = 0, channels = codec_context->channels;
-		     i < channels; i++) {
-			memcpy(buffer, frame->extended_data[i], plane_size);
-			buffer += plane_size;
-		}
+		copy_interleave_frame2(buffer, frame->extended_data,
+				       frame->nb_samples,
+				       codec_context->channels,
+				       av_get_bytes_per_sample(codec_context->sample_fmt));
 	} else {
 		memcpy(buffer, frame->extended_data[0], data_size);
 	}
@@ -273,7 +287,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		   AVCodecContext *codec_context,
 		   const AVRational *time_base)
 {
-	if (packet->pts != (int64_t)AV_NOPTS_VALUE)
+	if (packet->pts >= 0 && packet->pts != (int64_t)AV_NOPTS_VALUE)
 		decoder_timestamp(decoder,
 				  time_from_ffmpeg(packet->pts, *time_base));
 
@@ -352,12 +366,20 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 	return cmd;
 }
 
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 94, 1)
+#define AVSampleFormat SampleFormat
+#endif
+
+G_GNUC_CONST
 static enum sample_format
-ffmpeg_sample_format(G_GNUC_UNUSED const AVCodecContext *codec_context)
+ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 {
-	switch (codec_context->sample_fmt) {
+	switch (sample_fmt) {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 94, 1)
 	case AV_SAMPLE_FMT_S16:
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,17,0)
+	case AV_SAMPLE_FMT_S16P:
+#endif
 #else
 	case SAMPLE_FMT_S16:
 #endif
@@ -365,16 +387,30 @@ ffmpeg_sample_format(G_GNUC_UNUSED const AVCodecContext *codec_context)
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 94, 1)
 	case AV_SAMPLE_FMT_S32:
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,17,0)
+	case AV_SAMPLE_FMT_S32P:
+#endif
 #else
 	case SAMPLE_FMT_S32:
 #endif
 		return SAMPLE_FORMAT_S32;
 
 	default:
-		g_warning("Unsupported libavcodec SampleFormat value: %d",
-			  codec_context->sample_fmt);
-		return SAMPLE_FORMAT_UNDEFINED;
+		break;
 	}
+
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 94, 1)
+	char buffer[64];
+	const char *name = av_get_sample_fmt_string(buffer, sizeof(buffer),
+						    sample_fmt);
+	if (name != NULL)
+		g_warning("Unsupported libavcodec SampleFormat value: %s (%d)",
+			  name, sample_fmt);
+	else
+#endif
+		g_warning("Unsupported libavcodec SampleFormat value: %d",
+			  sample_fmt);
+	return SAMPLE_FORMAT_UNDEFINED;
 }
 
 static AVInputFormat *
@@ -485,11 +521,16 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		return;
 	}
 
+	const enum sample_format sample_format =
+		ffmpeg_sample_format(codec_context->sample_fmt);
+	if (sample_format == SAMPLE_FORMAT_UNDEFINED)
+		return;
+
 	GError *error = NULL;
 	struct audio_format audio_format;
 	if (!audio_format_init_checked(&audio_format,
 				       codec_context->sample_rate,
-				       ffmpeg_sample_format(codec_context),
+				       sample_format,
 				       codec_context->channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
