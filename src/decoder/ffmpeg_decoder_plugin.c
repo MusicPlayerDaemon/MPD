@@ -273,7 +273,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		   AVCodecContext *codec_context,
 		   const AVRational *time_base)
 {
-	if (packet->pts != (int64_t)AV_NOPTS_VALUE)
+	if (packet->pts >= 0 && packet->pts != (int64_t)AV_NOPTS_VALUE)
 		decoder_timestamp(decoder,
 				  time_from_ffmpeg(packet->pts, *time_base));
 
