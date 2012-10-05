@@ -485,11 +485,16 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		return;
 	}
 
+	const enum sample_format sample_format =
+		ffmpeg_sample_format(codec_context);
+	if (sample_format == SAMPLE_FORMAT_UNDEFINED)
+		return;
+
 	GError *error = NULL;
 	struct audio_format audio_format;
 	if (!audio_format_init_checked(&audio_format,
 				       codec_context->sample_rate,
-				       ffmpeg_sample_format(codec_context),
+				       sample_format,
 				       codec_context->channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
