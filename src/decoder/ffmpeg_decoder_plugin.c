@@ -352,10 +352,15 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 	return cmd;
 }
 
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 94, 1)
+#define AVSampleFormat SampleFormat
+#endif
+
+G_GNUC_CONST
 static enum sample_format
-ffmpeg_sample_format(G_GNUC_UNUSED const AVCodecContext *codec_context)
+ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 {
-	switch (codec_context->sample_fmt) {
+	switch (sample_fmt) {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 94, 1)
 	case AV_SAMPLE_FMT_S16:
 #else
@@ -372,7 +377,7 @@ ffmpeg_sample_format(G_GNUC_UNUSED const AVCodecContext *codec_context)
 
 	default:
 		g_warning("Unsupported libavcodec SampleFormat value: %d",
-			  codec_context->sample_fmt);
+			  sample_fmt);
 		return SAMPLE_FORMAT_UNDEFINED;
 	}
 }
@@ -486,7 +491,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	}
 
 	const enum sample_format sample_format =
-		ffmpeg_sample_format(codec_context);
+		ffmpeg_sample_format(codec_context->sample_fmt);
 	if (sample_format == SAMPLE_FORMAT_UNDEFINED)
 		return;
 
