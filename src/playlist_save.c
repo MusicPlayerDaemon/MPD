@@ -137,7 +137,8 @@ playlist_load_spl(struct playlist *playlist, struct player_control *pc,
 					*p = '/';
 				p++;
 			}
-			if ((playlist_append_uri(playlist, pc, temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
+			if ((playlist_append_uri(playlist, pc, temp2,
+						 NULL)) != PLAYLIST_RESULT_SUCCESS) {
 				g_warning("can't add file \"%s\"", temp2);
 			}
 			g_free(temp2);
