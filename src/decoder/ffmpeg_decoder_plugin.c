@@ -377,6 +377,9 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 	switch (sample_fmt) {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 94, 1)
 	case AV_SAMPLE_FMT_S16:
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,17,0)
+	case AV_SAMPLE_FMT_S16P:
+#endif
 #else
 	case SAMPLE_FMT_S16:
 #endif
@@ -384,6 +387,9 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 94, 1)
 	case AV_SAMPLE_FMT_S32:
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,17,0)
+	case AV_SAMPLE_FMT_S32P:
+#endif
 #else
 	case SAMPLE_FMT_S32:
 #endif
