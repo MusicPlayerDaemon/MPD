@@ -213,12 +213,12 @@ parse_cmdline(int argc, char **argv, struct options *options,
 				if(g_file_test(system_path,
 						G_FILE_TEST_IS_REGULAR)) {
 					ret = config_read_file(system_path,error_r);
+					g_free(system_path);
 					break;
-				}
-				++i;;
+				} else
+					g_free(system_path);
+				++i;
 			}
-			g_free(system_path);
-			g_free(&system_config_dirs);
 		}
 #else /* G_OS_WIN32 */
 		char *path2;
