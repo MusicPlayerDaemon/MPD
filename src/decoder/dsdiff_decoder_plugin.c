@@ -52,10 +52,23 @@ struct dsdiff_chunk_header {
 	uint32_t size_high, size_low;
 };
 
+/** struct for DSDIFF native Artist and Title tags */
+struct dsdiff_native_tag {
+	uint32_t size;
+};
+
 struct dsdiff_metadata {
 	unsigned sample_rate, channels;
 	bool bitreverse;
 	uint64_t chunk_size;
+#ifdef HAVE_ID3TAG
+	goffset id3_offset;
+	uint64_t id3_size;
+#endif
+	/** offset for artist tag */
+	goffset diar_offset;
+	/** offset for title tag */
+	goffset diti_offset;
 };
 
 static bool lsbitfirst;
@@ -185,6 +198,127 @@ dsdiff_read_prop(struct decoder *decoder, struct input_stream *is,
 	else
 		/* ignore unknown PROP chunk */
 		return dsdlib_skip_to(decoder, is, end_offset);
+}
+
+static void
+dsdiff_handle_native_tag(struct input_stream *is,
+			 const struct tag_handler *handler,
+			 void *handler_ctx, goffset tagoffset,
+			 enum tag_type type)
+{
+	if (!dsdlib_skip_to(NULL, is, tagoffset))
+		return;
+
+	struct dsdiff_native_tag metatag;
+
+	if (!dsdlib_read(NULL, is, &metatag, sizeof(metatag)))
+		return;
+
+	uint32_t length = GUINT32_FROM_BE(metatag.size);
+
+	/* Check and limit size of the tag to prevent a stack overflow */
+	if (length == 0 || length > 60)
+		return;
+
+	char string[length];
+	char *label;
+	label = string;
+
+	if (!dsdlib_read(NULL, is, label, (size_t)length))
+		return;
+
+	string[length] = '\0';
+	tag_handler_invoke_tag(handler, handler_ctx, type, label);
+	return;
+}
+
+/**
+ * Read and parse additional metadata chunks for tagging purposes. By default
+ * dsdiff files only support equivalents for artist and title but some of the
+ * extract tools add an id3 tag to provide more tags. If such id3 is found
+ * this will be used for tagging otherwise the native tags (if any) will be
+ * used
+ */
+
+static bool
+dsdiff_read_metadata_extra(struct decoder *decoder, struct input_stream *is,
+			   struct dsdiff_metadata *metadata,
+			   struct dsdiff_chunk_header *chunk_header,
+			   const struct tag_handler *handler,
+			   void *handler_ctx)
+{
+
+	/* skip from DSD data to next chunk header */
+	if (!dsdlib_skip(decoder, is, metadata->chunk_size))
+		return false;
+	if (!dsdiff_read_chunk_header(decoder, is, chunk_header))
+		return false;
+
+#ifdef HAVE_ID3TAG
+	metadata->id3_size = 0;
+#endif
+
+	/* Now process all the remaining chunk headers in the stream
+	   and record their position and size */
+
+	while ( is->offset < is->size )
+	{
+		uint64_t chunk_size = dsdiff_chunk_size(chunk_header);
+
+		/* DIIN chunk, is directly followed by other chunks  */
+		if (dsdlib_id_equals(&chunk_header->id, "DIIN"))
+			chunk_size = 0;
+
+		/* DIAR chunk - DSDIFF native tag for Artist */
+		if (dsdlib_id_equals(&chunk_header->id, "DIAR")) {
+			chunk_size = dsdiff_chunk_size(chunk_header);
+			metadata->diar_offset = is->offset;
+		}
+
+		/* DITI chunk - DSDIFF native tag for Title */
+		if (dsdlib_id_equals(&chunk_header->id, "DITI")) {
+			chunk_size = dsdiff_chunk_size(chunk_header);
+			metadata->diti_offset = is->offset;
+		}
+#ifdef HAVE_ID3TAG
+		/* 'ID3 ' chunk, offspec. Used by sacdextract */
+		if (dsdlib_id_equals(&chunk_header->id, "ID3 ")) {
+			chunk_size = dsdiff_chunk_size(chunk_header);
+			metadata->id3_offset = is->offset;
+			metadata->id3_size = chunk_size;
+		}
+#endif
+		if (chunk_size != 0) {
+			if (!dsdlib_skip(decoder, is, chunk_size))
+				break;
+		}
+
+		if ( is->offset < is->size ) {
+			if (!dsdiff_read_chunk_header(decoder, is, chunk_header))
+				return false;
+		}
+		chunk_size = 0;
+	}
+	/* done processing chunk headers, process tags if any */
+
+#ifdef HAVE_ID3TAG
+	if (metadata->id3_offset != 0)
+	{
+		/* a ID3 tag has preference over the other tags, do not process
+		   other tags if we have one */
+		dsdlib_tag_id3(is, handler, handler_ctx, metadata->id3_offset);
+		return true;
+	}
+#endif
+
+	if (metadata->diar_offset != 0)
+		dsdiff_handle_native_tag(is, handler, handler_ctx,
+					 metadata->diar_offset, TAG_ARTIST);
+
+	if (metadata->diti_offset != 0)
+		dsdiff_handle_native_tag(is, handler, handler_ctx,
+					 metadata->diti_offset, TAG_TITLE);
+	return true;
 }
 
 /**
@@ -373,6 +507,10 @@ dsdiff_scan_stream(struct input_stream *is,
 	unsigned songtime = ((metadata.chunk_size / metadata.channels) * 8) /
 			    metadata.sample_rate;
 	tag_handler_invoke_duration(handler, handler_ctx, songtime);
+
+	/* Read additional metadata and created tags if available */
+	dsdiff_read_metadata_extra(NULL, is, &metadata, &chunk_header,
+				   handler, handler_ctx);
 
 	return true;
 }

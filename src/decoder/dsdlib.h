@@ -39,4 +39,9 @@ bool
 dsdlib_skip(struct decoder *decoder, struct input_stream *is,
 	    goffset delta);
 
+void
+dsdlib_tag_id3(struct input_stream *is,
+	       const struct tag_handler *handler,
+	       void *handler_ctx, goffset tagoffset);
+
 #endif

@@ -45,6 +45,10 @@ struct dsf_metadata {
 	unsigned sample_rate, channels;
 	bool bitreverse;
 	uint64_t chunk_size;
+#ifdef HAVE_ID3TAG
+	goffset id3_offset;
+	uint64_t id3_size;
+#endif
 };
 
 struct dsf_header {
@@ -57,6 +61,7 @@ struct dsf_header {
 	/** pointer to id3v2 metadata, should be at the end of the file */
 	uint32_t pmeta_low, pmeta_high;
 };
+
 /** DSF file fmt chunk */
 struct dsf_fmt_chunk {
 
@@ -109,6 +114,12 @@ dsf_read_metadata(struct decoder *decoder, struct input_stream *is,
 	if (sizeof(dsf_header) != chunk_size)
 		return false;
 
+#ifdef HAVE_ID3TAG
+	uint64_t metadata_offset;
+	metadata_offset = (((uint64_t)GUINT32_FROM_LE(dsf_header.pmeta_high)) << 32) |
+			   ((uint64_t)GUINT32_FROM_LE(dsf_header.pmeta_low));
+#endif
+
 	/* read the 'fmt ' chunk of the DSF file */
 	struct dsf_fmt_chunk dsf_fmt_chunk;
 	if (!dsdlib_read(decoder, is, &dsf_fmt_chunk, sizeof(dsf_fmt_chunk)) ||
@@ -153,9 +164,19 @@ dsf_read_metadata(struct decoder *decoder, struct input_stream *is,
 	data_size -= sizeof(data_chunk);
 
 	metadata->chunk_size = data_size;
+	/* data_size cannot be bigger or equal to total file size */
+	if (data_size >= (unsigned) is->size)
+		return false;
+
 	metadata->channels = (unsigned) dsf_fmt_chunk.channelnum;
 	metadata->sample_rate = samplefreq;
-
+#ifdef HAVE_ID3TAG
+	/* metada_offset cannot be bigger then or equal to total file size */
+	if (metadata_offset >= (unsigned) is->size)
+		metadata->id3_offset = 0;
+	else
+		metadata->id3_offset = (goffset) metadata_offset;
+#endif
 	/* check bits per sample format, determine if bitreverse is needed */
 	metadata->bitreverse = dsf_fmt_chunk.bitssample == 1;
 	return true;
@@ -285,7 +306,7 @@ dsf_stream_decode(struct decoder *decoder, struct input_stream *is)
 	decoder_initialized(decoder, &audio_format, false, songtime);
 
 	if (!dsf_decode_chunk(decoder, is, metadata.channels,
-			      metadata.chunk_size,
+			      chunk_size,
 			      metadata.bitreverse))
 		return;
 }
@@ -316,6 +337,10 @@ dsf_scan_stream(struct input_stream *is,
 			    metadata.sample_rate;
 	tag_handler_invoke_duration(handler, handler_ctx, songtime);
 
+#ifdef HAVE_ID3TAG
+	/* Add available tags from the ID3 tag */
+	dsdlib_tag_id3(is, handler, handler_ctx, metadata.id3_offset);
+#endif
 	return true;
 }
 

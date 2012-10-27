@@ -48,6 +48,14 @@ struct tag *tag_id3_import(struct id3_tag *);
 struct id3_tag *
 tag_id3_load(const char *path_fs, GError **error_r);
 
+/**
+ * Import all tags from the provided id3_tag *tag
+ *
+ */
+void
+scan_id3_tag(struct id3_tag *tag,
+	     const struct tag_handler *handler, void *handler_ctx);
+
 #else
 
 static inline bool

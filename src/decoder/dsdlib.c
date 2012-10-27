@@ -27,11 +27,17 @@
 #include "dsf_decoder_plugin.h"
 #include "decoder_api.h"
 #include "util/bit_reverse.h"
+#include "tag_handler.h"
+#include "tag_id3.h"
 #include "dsdlib.h"
 #include "dsdiff_decoder_plugin.h"
 
 #include <unistd.h>
 #include <stdio.h> /* for SEEK_SET, SEEK_CUR */
+
+#ifdef HAVE_ID3TAG
+#include <id3tag.h>
+#endif
 
 bool
 dsdlib_id_equals(const struct dsdlib_id *id, const char *s)
@@ -110,3 +116,53 @@ dsdlib_skip(struct decoder *decoder, struct input_stream *is,
 	return true;
 }
 
+/**
+ * Add tags from ID3 tag. All tags commonly found in the ID3 tags of
+ * DSF and DSDIFF files are imported
+ */
+
+#ifdef HAVE_ID3TAG
+void
+dsdlib_tag_id3(struct input_stream *is,
+	       const struct tag_handler *handler,
+	       void *handler_ctx, goffset tagoffset)
+{
+	assert(tagoffset >= 0);
+
+	if (tagoffset == 0)
+		return;
+
+	if (!dsdlib_skip_to(NULL, is, tagoffset))
+		return;
+
+	struct id3_tag *id3_tag = NULL;
+	id3_length_t count;
+
+	/* Prevent broken files causing problems */
+	if (is->offset >= is->size)
+		return;
+
+	count = is->size - is->offset;
+
+	/* Check and limit id3 tag size to prevent a stack overflow */
+	if (count == 0 || count > 4096)
+		return;
+
+	id3_byte_t dsdid3[count];
+	id3_byte_t *dsdid3data;
+	dsdid3data = dsdid3;
+
+	if (!dsdlib_read(NULL, is, dsdid3data, count))
+		return;
+
+	id3_tag = id3_tag_parse(dsdid3data, count);
+	if (id3_tag == NULL)
+		return;
+
+	scan_id3_tag(id3_tag, handler, handler_ctx);
+
+	id3_tag_delete(id3_tag);
+
+	return;
+}
+#endif

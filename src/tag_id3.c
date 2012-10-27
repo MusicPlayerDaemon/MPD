@@ -344,7 +344,7 @@ tag_id3_import_ufid(struct id3_tag *id3_tag,
 	}
 }
 
-static void
+void
 scan_id3_tag(struct id3_tag *tag,
 	     const struct tag_handler *handler, void *handler_ctx)
 {
