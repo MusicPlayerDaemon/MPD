@@ -49,6 +49,7 @@ extern "C" {
 
 static Database *db;
 static bool db_is_open;
+static bool is_simple;
 
 bool
 db_init(const struct config_param *param, GError **error_r)
@@ -58,6 +59,8 @@ db_init(const struct config_param *param, GError **error_r)
 
 	const char *plugin_name =
 		config_get_block_string(param, "plugin", "simple");
+	is_simple = strcmp(plugin_name, "simple") == 0;
+
 	const DatabasePlugin *plugin = GetDatabasePluginByName(plugin_name);
 	if (plugin == NULL) {
 		g_set_error(error_r, db_quark(), 0,
@@ -104,7 +107,7 @@ db_is_simple(void)
 {
 	assert(db == NULL || db_is_open);
 
-	return dynamic_cast<SimpleDatabase *>(db) != nullptr;
+	return is_simple;
 }
 
 struct directory *
