@@ -22,6 +22,7 @@
 #include "DatabasePlugin.hxx"
 #include "DatabaseSelection.hxx"
 #include "PlaylistVector.hxx"
+#include "Directory.hxx"
 #include "gcc.h"
 
 extern "C" {
@@ -30,8 +31,6 @@ extern "C" {
 #include "song.h"
 #include "tag.h"
 }
-
-#include "directory.h"
 
 #undef MPD_DIRECTORY_H
 #undef MPD_SONG_H

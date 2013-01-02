@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "DirectorySave.hxx"
-#include "directory.h"
+#include "Directory.hxx"
 #include "song.h"
 #include "SongSave.hxx"
 #include "PlaylistDatabase.hxx"

@@ -23,7 +23,7 @@
 
 #include "config.h"
 #include "Mapper.hxx"
-#include "directory.h"
+#include "Directory.hxx"
 #include "song.h"
 
 extern "C" {

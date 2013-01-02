@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "song.h"
-#include "directory.h"
+#include "Directory.hxx"
 
 extern "C" {
 #include "tag.h"

@@ -19,7 +19,7 @@
 
 #include "config.h" /* must be first for large file support */
 #include "UpdateIO.hxx"
-#include "directory.h"
+#include "Directory.hxx"
 #include "Mapper.hxx"
 #include "glib_compat.h"
 

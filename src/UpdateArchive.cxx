@@ -21,7 +21,7 @@
 #include "UpdateArchive.hxx"
 #include "UpdateInternal.hxx"
 #include "DatabaseLock.hxx"
-#include "directory.h"
+#include "Directory.hxx"
 #include "song.h"
 #include "Mapper.hxx"
 

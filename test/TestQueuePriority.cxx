@@ -1,19 +1,16 @@
 #include "config.h"
+extern "C" {
 #include "queue.h"
+}
 #include "song.h"
-#include "directory.h"
+#include "Directory.hxx"
 
 struct directory detached_root;
 
 struct song *
 song_dup_detached(const struct song *src)
 {
-	union {
-		const struct song *in;
-		struct song *out;
-	} u = { .in = src };
-
-	return u.out;
+	return const_cast<song *>(src);
 }
 
 void

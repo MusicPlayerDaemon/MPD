@@ -21,7 +21,7 @@
 #include "UpdateDatabase.hxx"
 #include "UpdateRemove.hxx"
 #include "PlaylistVector.hxx"
-#include "directory.h"
+#include "Directory.hxx"
 #include "song.h"
 #include "DatabaseLock.hxx"
 

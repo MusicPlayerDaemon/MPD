@@ -22,7 +22,7 @@
 #include "DatabaseCommands.hxx"
 #include "CommandError.hxx"
 #include "UpdateGlue.hxx"
-#include "directory.h"
+#include "Directory.hxx"
 #include "song.h"
 #include "SongPrint.hxx"
 #include "TagPrint.hxx"

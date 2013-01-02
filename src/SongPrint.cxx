@@ -20,7 +20,7 @@
 #include "config.h"
 #include "SongPrint.hxx"
 #include "song.h"
-#include "directory.h"
+#include "Directory.hxx"
 #include "TimePrint.hxx"
 #include "TagPrint.hxx"
 #include "Mapper.hxx"

@@ -24,7 +24,7 @@
 #include "UpdateSong.hxx"
 #include "UpdateArchive.hxx"
 #include "DatabaseLock.hxx"
-#include "directory.h"
+#include "Directory.hxx"
 #include "song.h"
 #include "PlaylistVector.hxx"
 #include "Mapper.hxx"

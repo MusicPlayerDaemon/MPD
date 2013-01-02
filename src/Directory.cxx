@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "directory.h"
+#include "Directory.hxx"
 #include "SongFilter.hxx"
 #include "PlaylistVector.hxx"
 #include "DatabaseLock.hxx"

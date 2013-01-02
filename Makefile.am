@@ -79,7 +79,6 @@ mpd_headers = \
 	src/decoder_api.h \
 	src/decoder_plugin.h \
 	src/decoder_internal.h \
-	src/directory.h \
 	src/database.h \
 	src/encoder_plugin.h \
 	src/encoder_list.h \
@@ -223,7 +222,7 @@ src_mpd_SOURCES = \
 	src/decoder_api.c \
 	src/decoder_internal.c \
 	src/decoder_print.c \
-	src/Directory.cxx \
+	src/Directory.cxx src/Directory.hxx \
 	src/DirectorySave.cxx src/DirectorySave.hxx \
 	src/DatabaseGlue.cxx \
 	src/DatabasePrint.cxx src/DatabasePrint.hxx \
@@ -1021,7 +1020,7 @@ if ENABLE_TEST
 C_TESTS = \
 	test/test_byte_reverse \
 	test/test_pcm \
-	test/test_queue_priority
+	test/TestQueuePriority
 
 TESTS = $(C_TESTS)
 
@@ -1357,10 +1356,10 @@ test_test_pcm_LDADD = \
 	libutil.a \
 	$(GLIB_LIBS)
 
-test_test_queue_priority_SOURCES = \
+test_TestQueuePriority_SOURCES = \
 	src/queue.c \
-	test/test_queue_priority.c
-test_test_queue_priority_LDADD = \
+	test/TestQueuePriority.c
+test_TestQueuePriority_LDADD = \
 	$(GLIB_LIBS)
 
 noinst_PROGRAMS += src/dsd2pcm/dsd2pcm

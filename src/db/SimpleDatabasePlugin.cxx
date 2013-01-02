@@ -21,6 +21,7 @@
 #include "SimpleDatabasePlugin.hxx"
 #include "DatabaseSelection.hxx"
 #include "DatabaseHelpers.hxx"
+#include "Directory.hxx"
 #include "SongFilter.hxx"
 #include "DatabaseSave.hxx"
 #include "DatabaseLock.hxx"
@@ -29,8 +30,6 @@
 extern "C" {
 #include "conf.h"
 }
-
-#include "directory.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

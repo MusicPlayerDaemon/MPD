@@ -21,6 +21,7 @@
 #include "DatabaseGlue.hxx"
 #include "DatabaseRegistry.hxx"
 #include "DatabaseSave.hxx"
+#include "Directory.hxx"
 
 extern "C" {
 #include "database.h"
@@ -29,8 +30,6 @@ extern "C" {
 #include "conf.h"
 #include "glib_compat.h"
 }
-
-#include "directory.h"
 
 #include "DatabasePlugin.hxx"
 #include "db/SimpleDatabasePlugin.hxx"

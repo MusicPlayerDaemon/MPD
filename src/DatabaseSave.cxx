@@ -20,7 +20,7 @@
 #include "config.h"
 #include "DatabaseSave.hxx"
 #include "DatabaseLock.hxx"
-#include "directory.h"
+#include "Directory.hxx"
 #include "DirectorySave.hxx"
 #include "song.h"
 

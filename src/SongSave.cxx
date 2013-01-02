@@ -21,7 +21,7 @@
 #include "SongSave.hxx"
 #include "song.h"
 #include "TagSave.hxx"
-#include "directory.h"
+#include "Directory.hxx"
 
 extern "C" {
 #include "tag.h"

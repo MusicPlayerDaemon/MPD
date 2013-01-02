@@ -24,7 +24,7 @@
 #include "UpdateDatabase.hxx"
 #include "UpdateContainer.hxx"
 #include "DatabaseLock.hxx"
-#include "directory.h"
+#include "Directory.hxx"
 #include "song.h"
 #include "decoder_plugin.h"
 

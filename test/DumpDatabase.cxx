@@ -21,7 +21,7 @@
 #include "DatabaseRegistry.hxx"
 #include "DatabasePlugin.hxx"
 #include "DatabaseSelection.hxx"
-#include "directory.h"
+#include "Directory.hxx"
 #include "song.h"
 #include "PlaylistVector.hxx"
 

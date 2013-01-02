@@ -21,7 +21,7 @@
 #include "SongSticker.hxx"
 #include "StickerDatabase.hxx"
 #include "song.h"
-#include "directory.h"
+#include "Directory.hxx"
 
 #include <glib.h>
 

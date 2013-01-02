@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,16 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DIRECTORY_H
-#define MPD_DIRECTORY_H
+#ifndef MPD_DIRECTORY_HXX
+#define MPD_DIRECTORY_HXX
 
 #include "check.h"
 #include "util/list.h"
 #include "gcc.h"
-
-#ifdef __cplusplus
 #include "DatabaseVisitor.hxx"
-#endif
 
 #include <glib.h>
 #include <stdbool.h>
@@ -55,10 +52,7 @@
 
 struct song;
 struct db_visitor;
-
-#ifdef __cplusplus
 class SongFilter;
-#endif
 
 struct directory {
 	/**
@@ -96,7 +90,6 @@ struct directory {
 	bool have_stat; /* not needed if ino_t == dev_t == 0 is impossible */
 	char path[sizeof(long)];
 
-#ifdef __cplusplus
 	/**
 	 * Caller must lock #db_mutex.
 	 */
@@ -104,10 +97,7 @@ struct directory {
 		  VisitDirectory visit_directory, VisitSong visit_song,
 		  VisitPlaylist visit_playlist,
 		  GError **error_r) const;
-#endif
 };
-
-G_BEGIN_DECLS
 
 static inline bool
 isRootDirectory(const char *name)
@@ -271,7 +261,5 @@ directory_lookup_song(struct directory *directory, const char *uri);
  */
 void
 directory_sort(struct directory *directory);
-
-G_END_DECLS
 
 #endif

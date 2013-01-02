@@ -24,7 +24,7 @@ extern "C" {
 #include "uri.h"
 }
 
-#include "directory.h"
+#include "Directory.hxx"
 #include "Mapper.hxx"
 
 extern "C" {

@@ -24,6 +24,7 @@
 #include "PlaylistVector.hxx"
 #include "SongPrint.hxx"
 #include "TimePrint.hxx"
+#include "Directory.hxx"
 
 extern "C" {
 #include "database.h"
@@ -31,8 +32,6 @@ extern "C" {
 #include "song.h"
 #include "tag.h"
 }
-
-#include "directory.h"
 
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
