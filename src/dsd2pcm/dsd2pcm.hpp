@@ -13,11 +13,9 @@ class dxd
 {
 	dsd2pcm_ctx *handle;
 public:
-	dxd() : handle(dsd2pcm_init())
-	{ if (!handle) throw std::runtime_error("wtf?!"); }
+	dxd() : handle(dsd2pcm_init()) {}
 
-	dxd(dxd const& x) : handle(dsd2pcm_clone(x.handle))
-	{ if (!handle) throw std::runtime_error("wtf?!"); }
+	dxd(dxd const& x) : handle(dsd2pcm_clone(x.handle)) {}
 
 	~dxd() { dsd2pcm_destroy(handle); }
 

@@ -1541,6 +1541,7 @@ if test "x$enable_debug" = xno; then
 	AX_APPEND_COMPILE_FLAGS([-fvisibility=hidden])
 	AX_APPEND_COMPILE_FLAGS([-fno-threadsafe-statics])
 	AX_APPEND_COMPILE_FLAGS([-fmerge-all-constants])
+	AX_APPEND_COMPILE_FLAGS([-fno-exceptions])
 	AC_LANG_POP
 
 	AX_APPEND_LINK_FLAGS([-Wl,--gc-sections])

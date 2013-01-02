@@ -14,14 +14,12 @@ class noise_shaper
 public:
 	noise_shaper(int sos_count, const float *bbaa)
 	{
-		if (noise_shape_init(&ctx,sos_count,bbaa))
-			throw std::runtime_error("noise shaper initialization failed");
+		noise_shape_init(&ctx, sos_count, bbaa);
 	}
 
 	noise_shaper(noise_shaper const& x)
 	{
-		if (noise_shape_clone(&x.ctx,&ctx))
-			throw std::runtime_error("noise shaper initialization failed");
+		noise_shape_clone(&x.ctx,&ctx);
 	}
 
 	~noise_shaper()
@@ -31,8 +29,7 @@ public:
 	{
 		if (this != &x) {
 			noise_shape_destroy(&ctx);
-			if (noise_shape_clone(&x.ctx,&ctx))
-				throw std::runtime_error("noise shaper initialization failed");
+			noise_shape_clone(&x.ctx,&ctx);
 		}
 		return *this;
 	}
