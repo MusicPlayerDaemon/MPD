@@ -32,6 +32,9 @@ gcc_const
 static inline char *
 deconst_string(const char *p)
 {
+#ifdef __cplusplus
+	return const_cast<char *>(p);
+#else
 	union {
 		const char *in;
 		char *out;
@@ -40,6 +43,7 @@ deconst_string(const char *p)
 	};
 
 	return u.out;
+#endif
 }
 
 /**
