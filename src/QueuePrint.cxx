@@ -20,11 +20,11 @@
 #include "config.h"
 #include "QueuePrint.hxx"
 #include "SongFilter.hxx"
+#include "SongPrint.hxx"
 
 extern "C" {
 #include "queue.h"
 #include "song.h"
-#include "song_print.h"
 #include "client.h"
 #include "mapper.h"
 }

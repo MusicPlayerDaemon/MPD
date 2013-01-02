@@ -19,12 +19,12 @@
 
 #include "config.h"
 #include "StickerCommands.hxx"
+#include "SongPrint.hxx"
 
 extern "C" {
 #include "protocol/result.h"
 #include "sticker.h"
 #include "sticker_print.h"
-#include "song_print.h"
 #include "song_sticker.h"
 #include "database.h"
 #include "db_lock.h"

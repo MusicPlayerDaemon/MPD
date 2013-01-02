@@ -22,13 +22,13 @@
 #include "DatabaseSelection.hxx"
 #include "SongFilter.hxx"
 #include "PlaylistVector.hxx"
+#include "SongPrint.hxx"
+#include "TimePrint.hxx"
 
 extern "C" {
 #include "database.h"
 #include "client.h"
 #include "song.h"
-#include "song_print.h"
-#include "time_print.h"
 #include "tag.h"
 }
 

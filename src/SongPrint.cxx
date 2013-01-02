@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,14 +18,17 @@
  */
 
 #include "config.h"
-#include "song_print.h"
-#include "time_print.h"
+#include "SongPrint.hxx"
 #include "song.h"
 #include "directory.h"
-#include "tag_print.h"
+#include "TimePrint.hxx"
+#include "TagPrint.hxx"
+
+extern "C" {
 #include "client.h"
 #include "uri.h"
 #include "mapper.h"
+}
 
 void
 song_print_uri(struct client *client, struct song *song)

@@ -25,12 +25,12 @@
 #include "PlaylistSave.hxx"
 #include "PlaylistFile.hxx"
 #include "PlaylistQueue.hxx"
+#include "TimePrint.hxx"
 
 extern "C" {
 #include "protocol/argparser.h"
 #include "protocol/result.h"
 #include "playlist.h"
-#include "time_print.h"
 #include "ls.h"
 #include "uri.h"
 #include "client_internal.h"

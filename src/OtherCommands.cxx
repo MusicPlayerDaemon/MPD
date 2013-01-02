@@ -24,11 +24,13 @@
 #include "UpdateGlue.hxx"
 #include "directory.h"
 #include "song.h"
+#include "SongPrint.hxx"
+#include "TagPrint.hxx"
+#include "TimePrint.hxx"
 
 extern "C" {
 #include "protocol/argparser.h"
 #include "protocol/result.h"
-#include "time_print.h"
 #include "ls.h"
 #include "uri.h"
 #include "decoder_print.h"
@@ -43,10 +45,8 @@ extern "C" {
 #include "client.h"
 #include "client_idle.h"
 #include "client_file.h"
-#include "tag_print.h"
 #include "idle.h"
 #include "mapper.h"
-#include "song_print.h"
 }
 
 #ifdef ENABLE_SQLITE

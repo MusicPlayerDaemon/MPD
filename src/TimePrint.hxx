@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,31 +17,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "time_print.h"
-#include "client.h"
+#ifndef MPD_TIME_PRINT_HXX
+#define MPD_TIME_PRINT_HXX
 
-#include <glib.h>
+#include <time.h>
 
+struct client;
+
+/**
+ * Write a line with a time stamp to the client.
+ */
 void
-time_print(struct client *client, const char *name, time_t t)
-{
-#ifdef G_OS_WIN32
-	const struct tm *tm2 = gmtime(&t);
-#else
-	struct tm tm;
-	const struct tm *tm2 = gmtime_r(&t, &tm);
-#endif
-	if (tm2 == NULL)
-		return;
+time_print(struct client *client, const char *name, time_t t);
 
-	char buffer[32];
-	strftime(buffer, sizeof(buffer),
-#ifdef G_OS_WIN32
-		 "%Y-%m-%dT%H:%M:%SZ",
-#else
-		 "%FT%TZ",
 #endif
-		 tm2);
-	client_printf(client, "%s: %s\n", name, buffer);
-}

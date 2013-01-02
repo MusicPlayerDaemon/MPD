@@ -23,12 +23,12 @@
 #include "PlaylistAny.hxx"
 #include "PlaylistSong.hxx"
 #include "QueuePrint.hxx"
+#include "SongPrint.hxx"
 
 extern "C" {
 #include "playlist_list.h"
 #include "playlist_plugin.h"
 #include "playlist.h"
-#include "song_print.h"
 #include "song.h"
 #include "database.h"
 #include "client.h"

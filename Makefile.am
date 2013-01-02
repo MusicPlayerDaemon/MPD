@@ -162,9 +162,8 @@ mpd_headers = \
 	src/replay_gain_info.h \
 	src/replay_gain_ape.h \
 	src/sig_handlers.h \
-	src/time_print.c src/time_print.h \
+	src/TimePrint.cxx src/TimePrint.hxx \
 	src/song.h \
-	src/song_print.h \
 	src/song_sticker.h \
 	src/song_sort.c src/song_sort.h \
 	src/socket_util.h \
@@ -178,7 +177,6 @@ mpd_headers = \
 	src/tag_ape.h \
 	src/tag_id3.h \
 	src/tag_rva2.h \
-	src/tag_print.h \
 	src/tokenizer.h \
 	src/strset.h \
 	src/uri.h \
@@ -316,7 +314,7 @@ src_mpd_SOURCES = \
 	src/sig_handlers.c \
 	src/Song.cxx \
 	src/song_update.c \
-	src/song_print.c \
+	src/SongPrint.cxx src/SongPrint.hxx \
 	src/SongSave.cxx src/SongSave.hxx \
 	src/resolver.c src/resolver.h \
 	src/socket_util.c \
@@ -324,7 +322,7 @@ src_mpd_SOURCES = \
 	src/Stats.cxx \
 	src/tag.c \
 	src/tag_pool.c \
-	src/tag_print.c \
+	src/TagPrint.cxx src/TagPrint.hxx \
 	src/TagSave.cxx src/TagSave.hxx \
 	src/tag_handler.c src/tag_handler.h \
 	src/tag_file.c src/tag_file.h \

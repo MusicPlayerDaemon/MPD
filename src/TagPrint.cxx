@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,11 +18,14 @@
  */
 
 #include "config.h"
-#include "tag_print.h"
+#include "TagPrint.hxx"
 #include "tag.h"
 #include "tag_internal.h"
-#include "client.h"
 #include "song.h"
+
+extern "C" {
+#include "client.h"
+}
 
 void tag_print_types(struct client *client)
 {
