@@ -37,15 +37,14 @@ playlist_vector_deinit(struct list_head *pv);
 /**
  * Caller must lock the #db_mutex.
  */
-struct playlist_metadata *
+PlaylistInfo *
 playlist_vector_find(struct list_head *pv, const char *name);
 
 /**
  * Caller must lock the #db_mutex.
  */
 void
-playlist_vector_add(struct list_head *pv,
-		    const char *name, time_t mtime);
+playlist_vector_add(struct list_head *pv, PlaylistInfo &&pi);
 
 /**
  * Caller must lock the #db_mutex.
@@ -53,8 +52,7 @@ playlist_vector_add(struct list_head *pv,
  * @return true if the vector or one of its items was modified
  */
 bool
-playlist_vector_update_or_add(struct list_head *pv,
-			      const char *name, time_t mtime);
+playlist_vector_update_or_add(struct list_head *pv, PlaylistInfo &&pi);
 
 /**
  * Caller must lock the #db_mutex.

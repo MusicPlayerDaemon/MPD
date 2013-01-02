@@ -307,7 +307,7 @@ directory::Walk(bool recursive, const SongFilter *filter,
 	}
 
 	if (visit_playlist) {
-		struct playlist_metadata *i;
+		PlaylistInfo *i;
 		directory_for_each_playlist(i, this)
 			if (!visit_playlist(*i, *this, error_r))
 				return false;

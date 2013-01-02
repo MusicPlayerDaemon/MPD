@@ -159,11 +159,12 @@ purge_deleted_from_directory(struct directory *directory)
 		g_free(path);
 	}
 
-	struct playlist_metadata *pm, *np;
+	PlaylistInfo *pm, *np;
 	directory_for_each_playlist_safe(pm, np, directory) {
-		if (!directory_child_is_regular(directory, pm->name)) {
+		if (!directory_child_is_regular(directory, pm->name.c_str())) {
 			db_lock();
-			playlist_vector_remove(&directory->playlists, pm->name);
+			playlist_vector_remove(&directory->playlists,
+					       pm->name.c_str());
 			db_unlock();
 		}
 	}
@@ -214,9 +215,11 @@ update_playlist_file2(struct directory *directory,
 	if (!playlist_suffix_supported(suffix))
 		return false;
 
+	PlaylistInfo pi(name, st->st_mtime);
+
 	db_lock();
-	if (playlist_vector_update_or_add(&directory->playlists, name,
-					  st->st_mtime))
+	if (playlist_vector_update_or_add(&directory->playlists,
+					  std::move(pi)))
 		modified = true;
 	db_unlock();
 	return true;

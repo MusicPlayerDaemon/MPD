@@ -314,14 +314,10 @@ Visit(const struct mpd_playlist *playlist,
 	if (!visit_playlist)
 		return true;
 
-	struct playlist_metadata p;
-	p.name = g_strdup(mpd_playlist_get_path(playlist));
-	p.mtime = mpd_playlist_get_last_modified(playlist);
+	PlaylistInfo p(mpd_playlist_get_path(playlist),
+		       mpd_playlist_get_last_modified(playlist));
 
-	bool success = visit_playlist(p, detached_root, error_r);
-	g_free(p.name);
-
-	return success;
+	return visit_playlist(p, detached_root, error_r);
 }
 
 class ProxyEntity {

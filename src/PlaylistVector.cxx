@@ -30,50 +30,48 @@ playlist_vector_deinit(struct list_head *pv)
 {
 	assert(pv != NULL);
 
-	struct playlist_metadata *pm, *n;
+	PlaylistInfo *pm, *n;
 	playlist_vector_for_each_safe(pm, n, pv)
-		playlist_metadata_free(pm);
+		delete pm;
 }
 
-struct playlist_metadata *
+PlaylistInfo *
 playlist_vector_find(struct list_head *pv, const char *name)
 {
 	assert(holding_db_lock());
 	assert(pv != NULL);
 	assert(name != NULL);
 
-	struct playlist_metadata *pm;
+	PlaylistInfo *pm;
 	playlist_vector_for_each(pm, pv)
-		if (strcmp(pm->name, name) == 0)
+		if (pm->name.compare(name) == 0)
 			return pm;
 
 	return NULL;
 }
 
 void
-playlist_vector_add(struct list_head *pv,
-		    const char *name, time_t mtime)
+playlist_vector_add(struct list_head *pv, PlaylistInfo &&pi)
 {
 	assert(holding_db_lock());
 
-	struct playlist_metadata *pm = playlist_metadata_new(name, mtime);
+	PlaylistInfo *pm = new PlaylistInfo(std::move(pi));
 	list_add_tail(&pm->siblings, pv);
 }
 
 bool
-playlist_vector_update_or_add(struct list_head *pv,
-			      const char *name, time_t mtime)
+playlist_vector_update_or_add(struct list_head *pv, PlaylistInfo &&pi)
 {
 	assert(holding_db_lock());
 
-	struct playlist_metadata *pm = playlist_vector_find(pv, name);
+	PlaylistInfo *pm = playlist_vector_find(pv, pi.name.c_str());
 	if (pm != NULL) {
-		if (mtime == pm->mtime)
+		if (pi.mtime == pm->mtime)
 			return false;
 
-		pm->mtime = mtime;
+		pm->mtime = pi.mtime;
 	} else
-		playlist_vector_add(pv, name, mtime);
+		playlist_vector_add(pv, std::move(pi));
 
 	return true;
 }
@@ -83,11 +81,11 @@ playlist_vector_remove(struct list_head *pv, const char *name)
 {
 	assert(holding_db_lock());
 
-	struct playlist_metadata *pm = playlist_vector_find(pv, name);
+	PlaylistInfo *pm = playlist_vector_find(pv, name);
 	if (pm == NULL)
 		return false;
 
 	list_del(&pm->siblings);
-	playlist_metadata_free(pm);
+	delete pm;
 	return true;
 }

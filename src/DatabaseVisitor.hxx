@@ -26,11 +26,11 @@
 
 struct directory;
 struct song;
-struct playlist_metadata;
+struct PlaylistInfo;
 
 typedef std::function<bool(const directory &, GError **)> VisitDirectory;
 typedef std::function<bool(struct song &, GError **)> VisitSong;
-typedef std::function<bool(const playlist_metadata &, const directory &,
+typedef std::function<bool(const PlaylistInfo &, const directory &,
 			   GError **)> VisitPlaylist;
 
 typedef std::function<bool(const char *, GError **)> VisitString;

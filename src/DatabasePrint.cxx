@@ -91,19 +91,19 @@ PrintSongFull(struct client *client, song &song)
 
 static bool
 PrintPlaylistBrief(struct client *client,
-		   const playlist_metadata &playlist,
+		   const PlaylistInfo &playlist,
 		   const directory &directory)
 {
-	print_playlist_in_directory(client, directory, playlist.name);
+	print_playlist_in_directory(client, directory, playlist.name.c_str());
 	return true;
 }
 
 static bool
 PrintPlaylistFull(struct client *client,
-		  const playlist_metadata &playlist,
+		  const PlaylistInfo &playlist,
 		  const directory &directory)
 {
-	print_playlist_in_directory(client, directory, playlist.name);
+	print_playlist_in_directory(client, directory, playlist.name.c_str());
 
 	if (playlist.mtime > 0)
 		time_print(client, "Last-Modified", playlist.mtime);

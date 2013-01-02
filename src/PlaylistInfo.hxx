@@ -23,26 +23,29 @@
 #include "check.h"
 #include "util/list.h"
 
+#include <string>
+
 #include <sys/time.h>
 
 /**
  * A directory entry pointing to a playlist file.
  */
-struct playlist_metadata {
+struct PlaylistInfo {
 	struct list_head siblings;
 
 	/**
 	 * The UTF-8 encoded name of the playlist file.
 	 */
-	char *name;
+	std::string name;
 
 	time_t mtime;
+
+	template<typename N>
+	PlaylistInfo(N &&_name, time_t _mtime)
+		:name(std::forward<N>(_name)), mtime(_mtime) {}
+
+	PlaylistInfo(const PlaylistInfo &other) = delete;
+	PlaylistInfo(PlaylistInfo &&) = default;
 };
-
-struct playlist_metadata *
-playlist_metadata_new(const char *name, time_t mtime);
-
-void
-playlist_metadata_free(struct playlist_metadata *pm);
 
 #endif

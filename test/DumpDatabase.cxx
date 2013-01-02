@@ -62,10 +62,10 @@ DumpSong(song &song, GError **)
 }
 
 static bool
-DumpPlaylist(const playlist_metadata &playlist,
+DumpPlaylist(const PlaylistInfo &playlist,
 	     const directory &directory, GError **)
 {
-	cout << "P " << directory.path << "/" << playlist.name << endl;
+	cout << "P " << directory.path << "/" << playlist.name.c_str() << endl;
 	return true;
 }
 
