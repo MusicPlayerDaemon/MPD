@@ -224,7 +224,7 @@ src_mpd_SOURCES = \
 	src/decoder_print.c \
 	src/Directory.cxx src/Directory.hxx \
 	src/DirectorySave.cxx src/DirectorySave.hxx \
-	src/DatabaseGlue.cxx \
+	src/DatabaseGlue.cxx src/DatabaseGlue.hxx \
 	src/DatabasePrint.cxx src/DatabasePrint.hxx \
 	src/DatabaseQueue.cxx src/DatabaseQueue.hxx \
 	src/DatabasePlaylist.cxx src/DatabasePlaylist.hxx \

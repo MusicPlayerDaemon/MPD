@@ -23,7 +23,22 @@
 #include "gcc.h"
 #include "gerror.h"
 
+struct config_param;
 class Database;
+
+/**
+ * Initialize the database library.
+ *
+ * @param param the database configuration block
+ */
+bool
+DatabaseGlobalInit(const config_param *param, GError **error_r);
+
+void
+DatabaseGlobalDeinit(void);
+
+bool
+DatabaseGlobalOpen(GError **error);
 
 /**
  * Returns the global #Database instance.  May return NULL if this MPD

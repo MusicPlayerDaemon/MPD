@@ -33,17 +33,6 @@ struct db_selection;
 struct db_visitor;
 
 /**
- * Initialize the database library.
- *
- * @param param the database configuration block
- */
-bool
-db_init(const struct config_param *param, GError **error_r);
-
-void
-db_finish(void);
-
-/**
  * Check whether the default #SimpleDatabasePlugin is used.  This
  * allows using db_get_root(), db_save(), db_get_mtime() and
  * db_exists().
@@ -74,9 +63,6 @@ db_get_directory(const char *name);
  */
 bool
 db_save(GError **error_r);
-
-bool
-db_load(GError **error);
 
 /**
  * May only be used if db_is_simple() returns true.

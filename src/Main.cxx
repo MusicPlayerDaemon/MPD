@@ -25,6 +25,7 @@
 #include "StateFile.hxx"
 #include "PlayerThread.hxx"
 #include "Mapper.hxx"
+#include "DatabaseGlue.hxx"
 
 extern "C" {
 #include "daemon.h"
@@ -186,13 +187,13 @@ glue_db_init_and_load(void)
 		param = allocated;
 	}
 
-	if (!db_init(param, &error))
+	if (!DatabaseGlobalInit(param, &error))
 		MPD_ERROR("%s", error->message);
 
 	if (allocated != NULL)
 		config_param_free(allocated);
 
-	ret = db_load(&error);
+	ret = DatabaseGlobalOpen(&error);
 	if (!ret)
 		MPD_ERROR("%s", error->message);
 
@@ -520,7 +521,7 @@ int mpd_main(int argc, char *argv[])
 	playlist_global_finish();
 
 	start = clock();
-	db_finish();
+	DatabaseGlobalDeinit();
 	g_debug("db_finish took %f seconds",
 		((float)(clock()-start))/CLOCKS_PER_SEC);
 

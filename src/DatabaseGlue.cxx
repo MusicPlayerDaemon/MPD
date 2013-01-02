@@ -51,7 +51,7 @@ static bool db_is_open;
 static bool is_simple;
 
 bool
-db_init(const struct config_param *param, GError **error_r)
+DatabaseGlobalInit(const config_param *param, GError **error_r)
 {
 	assert(db == NULL);
 	assert(!db_is_open);
@@ -72,7 +72,7 @@ db_init(const struct config_param *param, GError **error_r)
 }
 
 void
-db_finish(void)
+DatabaseGlobalDeinit(void)
 {
 	if (db_is_open)
 		db->Close();
@@ -142,7 +142,7 @@ db_save(GError **error_r)
 }
 
 bool
-db_load(GError **error)
+DatabaseGlobalOpen(GError **error)
 {
 	assert(db != NULL);
 	assert(!db_is_open);
