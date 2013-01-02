@@ -72,7 +72,6 @@ mpd_headers = \
 	src/cmdline.h \
 	src/conf.h \
 	src/crossfade.h \
-	src/decoder_thread.h \
 	src/decoder_control.h \
 	src/decoder_plugin.h \
 	src/decoder_command.h \
@@ -137,7 +136,6 @@ mpd_headers = \
 	src/output/httpd_internal.h \
 	src/page.h \
 	src/permission.h \
-	src/player_thread.h \
 	src/player_control.h \
 	src/playlist.h \
 	src/playlist_error.h \
@@ -224,7 +222,7 @@ src_mpd_SOURCES = \
 	src/crossfade.c \
 	src/cue/cue_parser.c src/cue/cue_parser.h \
 	src/decoder_error.h \
-	src/decoder_thread.c \
+	src/DecoderThread.cxx src/DecoderThread.hxx \
 	src/decoder_control.c \
 	src/decoder_api.c \
 	src/decoder_internal.c \
@@ -291,7 +289,7 @@ src_mpd_SOURCES = \
 	src/mapper.c \
 	src/page.c \
 	src/permission.c \
-	src/player_thread.c \
+	src/PlayerThread.cxx src/PlayerThread.hxx \
 	src/player_control.c \
 	src/playlist.c \
 	src/playlist_global.c \

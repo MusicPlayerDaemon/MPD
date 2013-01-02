@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,22 +18,23 @@
  */
 
 #include "config.h"
-#include "decoder_thread.h"
+#include "DecoderThread.hxx"
 #include "decoder_error.h"
+#include "decoder_plugin.h"
+#include "song.h"
+#include "mpd_error.h"
+
+extern "C" {
 #include "decoder_control.h"
 #include "decoder_internal.h"
 #include "decoder_list.h"
-#include "decoder_plugin.h"
 #include "decoder_api.h"
 #include "replay_gain_ape.h"
 #include "input_stream.h"
-#include "pipe.h"
-#include "song.h"
 #include "tag.h"
 #include "mapper.h"
-#include "path.h"
 #include "uri.h"
-#include "mpd_error.h"
+}
 
 #include <glib.h>
 
@@ -183,12 +184,7 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 static inline gpointer
 deconst_plugin(const struct decoder_plugin *plugin)
 {
-	union {
-		const struct decoder_plugin *in;
-		gpointer out;
-	} u = { .in = plugin };
-
-	return u.out;
+	return const_cast<struct decoder_plugin *>(plugin);
 }
 
 /**
@@ -384,11 +380,7 @@ static void
 decoder_run_song(struct decoder_control *dc,
 		 const struct song *song, const char *uri)
 {
-	struct decoder decoder = {
-		.dc = dc,
-		.initial_seek_pending = dc->start_ms > 0,
-		.initial_seek_running = false,
-	};
+	decoder decoder(dc, dc->start_ms > 0);
 	int ret;
 
 	decoder.timestamp = 0.0;
@@ -477,7 +469,7 @@ decoder_run(struct decoder_control *dc)
 static gpointer
 decoder_task(gpointer arg)
 {
-	struct decoder_control *dc = arg;
+	struct decoder_control *dc = (struct decoder_control *)arg;
 
 	decoder_lock(dc);
 

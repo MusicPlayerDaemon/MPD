@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,23 +18,24 @@
  */
 
 #include "config.h"
-#include "player_thread.h"
+#include "PlayerThread.hxx"
+#include "DecoderThread.hxx"
+#include "song.h"
+#include "Main.hxx"
+#include "mpd_error.h"
+
+extern "C" {
 #include "player_control.h"
 #include "decoder_control.h"
-#include "decoder_thread.h"
 #include "output_all.h"
-#include "pcm_volume.h"
-#include "path.h"
 #include "event_pipe.h"
 #include "crossfade.h"
-#include "song.h"
 #include "tag.h"
 #include "pipe.h"
 #include "chunk.h"
 #include "idle.h"
-#include "Main.hxx"
 #include "buffer.h"
-#include "mpd_error.h"
+}
 
 #include <glib.h>
 
@@ -123,6 +124,20 @@ struct player {
 	 * precisely.
 	 */
 	float elapsed_time;
+
+	player(player_control *_pc, decoder_control *_dc)
+		:pc(_pc), dc(_dc),
+		 buffering(false),
+		 decoder_starting(false),
+		 paused(false),
+		 queued(true),
+		 output_open(false),
+		 song(NULL),
+		 xfade(XFADE_UNKNOWN),
+		 cross_fading(false),
+		 cross_fade_chunks(0),
+		 cross_fade_tag(NULL),
+		 elapsed_time(0.0) {}
 };
 
 static struct music_buffer *player_buffer;
@@ -882,21 +897,7 @@ player_song_border(struct player *player)
  */
 static void do_play(struct player_control *pc, struct decoder_control *dc)
 {
-	struct player player = {
-		.pc = pc,
-		.dc = dc,
-		.buffering = true,
-		.decoder_starting = false,
-		.paused = false,
-		.queued = true,
-		.output_open = false,
-		.song = NULL,
-		.xfade = XFADE_UNKNOWN,
-		.cross_fading = false,
-		.cross_fade_chunks = 0,
-		.cross_fade_tag = NULL,
-		.elapsed_time = 0.0,
-	};
+	player player(pc, dc);
 
 	player_unlock(pc);
 
@@ -1094,7 +1095,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 static gpointer
 player_task(gpointer arg)
 {
-	struct player_control *pc = arg;
+	struct player_control *pc = (struct player_control *)arg;
 
 	struct decoder_control *dc = dc_new(pc->cond);
 	decoder_thread_start(dc);

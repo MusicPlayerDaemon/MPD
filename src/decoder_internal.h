@@ -80,6 +80,13 @@ struct decoder {
 	 * has changed since the last check.
 	 */
 	unsigned replay_gain_serial;
+
+#ifdef __cplusplus
+	decoder(decoder_control *_dc, bool _initial_seek_pending)
+		:dc(_dc),
+		 initial_seek_pending(_initial_seek_pending),
+		 initial_seek_running(false) {}
+#endif
 };
 
 /**

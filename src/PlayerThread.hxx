@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -34,8 +34,8 @@
  * #music_chunk instances around in #music_pipe objects.
  */
 
-#ifndef MPD_PLAYER_THREAD_H
-#define MPD_PLAYER_THREAD_H
+#ifndef MPD_PLAYER_THREAD_HXX
+#define MPD_PLAYER_THREAD_HXX
 
 struct player_control;
 

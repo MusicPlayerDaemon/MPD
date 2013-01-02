@@ -23,6 +23,7 @@
 #include "UpdateGlue.hxx"
 #include "chunk.h"
 #include "StateFile.hxx"
+#include "PlayerThread.hxx"
 
 extern "C" {
 #include "daemon.h"
@@ -33,7 +34,6 @@ extern "C" {
 #include "AllCommands.h"
 #include "playlist.h"
 #include "database.h"
-#include "player_thread.h"
 #include "listen.h"
 #include "cmdline.h"
 #include "conf.h"
