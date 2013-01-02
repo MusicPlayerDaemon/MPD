@@ -56,7 +56,6 @@ mpd_headers = \
 	src/output_all.h \
 	src/output_thread.h \
 	src/output_control.h \
-	src/output_state.h \
 	src/output_print.h \
 	src/output_command.h \
 	src/filter_internal.h \
@@ -82,7 +81,6 @@ mpd_headers = \
 	src/decoder_plugin.h \
 	src/decoder_internal.h \
 	src/directory.h \
-	src/directory_save.h \
 	src/database.h \
 	src/encoder_plugin.h \
 	src/encoder_list.h \
@@ -144,11 +142,9 @@ mpd_headers = \
 	src/playlist.h \
 	src/playlist_error.h \
 	src/playlist_internal.h \
-	src/playlist_state.h \
 	src/playlist_plugin.h \
 	src/playlist_list.h \
 	src/playlist_vector.h \
-	src/playlist_database.h \
 	src/playlist/extm3u_playlist_plugin.h \
 	src/playlist/m3u_playlist_plugin.h \
 	src/playlist/pls_playlist_plugin.h \
@@ -162,7 +158,6 @@ mpd_headers = \
 	src/riff.h \
 	src/aiff.h \
 	src/queue.h \
-	src/queue_save.h \
 	src/refcount.h \
 	src/replay_gain_config.h \
 	src/replay_gain_info.h \
@@ -171,11 +166,9 @@ mpd_headers = \
 	src/time_print.c src/time_print.h \
 	src/song.h \
 	src/song_print.h \
-	src/song_save.h \
 	src/song_sticker.h \
 	src/song_sort.c src/song_sort.h \
 	src/socket_util.h \
-	src/state_file.h \
 	src/stats.h \
 	src/sticker.h \
 	src/sticker_print.h \
@@ -187,7 +180,6 @@ mpd_headers = \
 	src/tag_id3.h \
 	src/tag_rva2.h \
 	src/tag_print.h \
-	src/tag_save.h \
 	src/tokenizer.h \
 	src/strset.h \
 	src/uri.h \
@@ -241,14 +233,14 @@ src_mpd_SOURCES = \
 	src/decoder_internal.c \
 	src/decoder_print.c \
 	src/Directory.cxx \
-	src/directory_save.c \
+	src/DirectorySave.cxx src/DirectorySave.hxx \
 	src/DatabaseGlue.cxx \
 	src/DatabasePrint.cxx src/DatabasePrint.hxx \
 	src/DatabaseQueue.cxx src/DatabaseQueue.hxx \
 	src/DatabasePlaylist.cxx src/DatabasePlaylist.hxx \
 	src/db_error.h \
 	src/db_lock.c src/db_lock.h \
-	src/db_save.c src/db_save.h \
+	src/DatabaseSave.cxx src/DatabaseSave.hxx \
 	src/DatabasePlugin.hxx \
 	src/DatabaseVisitor.hxx \
 	src/DatabaseSelection.cxx src/DatabaseSelection.hxx \
@@ -313,28 +305,28 @@ src_mpd_SOURCES = \
 	src/PlaylistMapper.cxx src/PlaylistMapper.hxx \
 	src/PlaylistAny.cxx src/PlaylistAny.hxx \
 	src/PlaylistSong.cxx src/PlaylistSong.hxx \
-	src/playlist_state.c \
+	src/PlaylistState.cxx src/PlaylistState.hxx \
 	src/PlaylistQueue.cxx src/PlaylistQueue.hxx \
 	src/playlist_vector.c \
-	src/playlist_database.c \
+	src/PlaylistDatabase.cxx \
 	src/queue.c \
 	src/QueuePrint.cxx src/QueuePrint.hxx \
-	src/queue_save.c \
+	src/QueueSave.cxx src/QueueSave.hxx \
 	src/replay_gain_config.c \
 	src/replay_gain_info.c \
 	src/sig_handlers.c \
 	src/Song.cxx \
 	src/song_update.c \
 	src/song_print.c \
-	src/song_save.c \
+	src/SongSave.cxx src/SongSave.hxx \
 	src/resolver.c src/resolver.h \
 	src/socket_util.c \
-	src/state_file.c \
+	src/StateFile.cxx src/StateFile.hxx \
 	src/Stats.cxx \
 	src/tag.c \
 	src/tag_pool.c \
 	src/tag_print.c \
-	src/tag_save.c \
+	src/TagSave.cxx src/TagSave.hxx \
 	src/tag_handler.c src/tag_handler.h \
 	src/tag_file.c src/tag_file.h \
 	src/tokenizer.c \
@@ -821,7 +813,7 @@ OUTPUT_API_SRC = \
 	src/output_thread.c \
 	src/output_error.h \
 	src/output_control.c \
-	src/output_state.c \
+	src/OutputState.cxx src/OutputState.hxx \
 	src/output_print.c \
 	src/output_command.c \
 	src/output_plugin.c src/output_plugin.h \
@@ -1046,9 +1038,9 @@ noinst_PROGRAMS = \
 	test/read_conf \
 	test/run_resolver \
 	test/DumpDatabase \
-	test/run_input \
+	test/RunInput \
 	test/dump_text_file \
-	test/dump_playlist \
+	test/DumpPlaylist \
 	test/run_decoder \
 	test/read_tags \
 	test/run_filter \
@@ -1083,25 +1075,25 @@ test_DumpDatabase_LDADD = \
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/DatabaseRegistry.cxx \
 	src/DatabaseSelection.cxx \
-	src/Directory.cxx src/directory_save.c \
-	src/playlist_vector.c src/playlist_database.c \
-	src/db_lock.c src/db_save.c \
-	src/Song.cxx src/song_sort.c src/song_save.c \
-	src/tag.c src/tag_pool.c src/tag_save.c \
+	src/Directory.cxx src/DirectorySave.cxx \
+	src/playlist_vector.c src/PlaylistDatabase.cxx \
+	src/db_lock.c src/DatabaseSave.cxx \
+	src/Song.cxx src/song_sort.c src/SongSave.cxx \
+	src/tag.c src/tag_pool.c src/TagSave.cxx \
 	src/path.c \
 	src/SongFilter.cxx \
 	src/text_file.c \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c
 
-test_run_input_LDADD = \
+test_RunInput_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(GLIB_LIBS)
-test_run_input_SOURCES = test/run_input.c \
+test_RunInput_SOURCES = test/RunInput.c \
 	test/stdbin.h \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
-	src/tag.c src/tag_pool.c src/tag_save.c \
+	src/tag.c src/tag_pool.c src/TagSave.cxx \
 	src/fd_util.c
 
 test_dump_text_file_LDADD = \
@@ -1116,7 +1108,7 @@ test_dump_text_file_SOURCES = test/dump_text_file.c \
 	src/text_input_stream.c src/fifo_buffer.c \
 	src/fd_util.c
 
-test_dump_playlist_LDADD = \
+test_DumpPlaylist_LDADD = \
 	$(PLAYLIST_LIBS) \
 	$(FLAC_LIBS) \
 	$(INPUT_LIBS) \
@@ -1125,12 +1117,12 @@ test_dump_playlist_LDADD = \
 	$(TAG_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
-test_dump_playlist_SOURCES = test/dump_playlist.c \
+test_DumpPlaylist_SOURCES = test/DumpPlaylist.cxx \
 	$(DECODER_SRC) \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/uri.c \
-	src/Song.cxx src/tag.c src/tag_pool.c src/tag_save.c \
+	src/Song.cxx src/tag.c src/tag_pool.c src/TagSave.cxx \
 	src/tag_handler.c src/tag_file.c \
 	src/audio_check.c src/pcm_buffer.c \
 	src/text_input_stream.c src/fifo_buffer.c \
@@ -1138,7 +1130,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.c \
 	src/fd_util.c
 
 if HAVE_FLAC
-test_dump_playlist_SOURCES += \
+test_DumpPlaylist_SOURCES += \
 	src/replay_gain_info.c \
 	src/decoder/FLACMetaData.cxx
 endif
@@ -1213,11 +1205,11 @@ test_run_filter_SOURCES = test/run_filter.c \
 if ENABLE_DESPOTIFY
 test_read_tags_SOURCES += \
 	src/despotify_utils.c
-test_run_input_SOURCES += \
+test_RunInput_SOURCES += \
 	src/despotify_utils.c
 test_dump_text_file_SOURCES += \
 	src/despotify_utils.c
-test_dump_playlist_SOURCES += \
+test_DumpPlaylist_SOURCES += \
 	src/despotify_utils.c
 test_run_decoder_SOURCES += \
 	src/despotify_utils.c

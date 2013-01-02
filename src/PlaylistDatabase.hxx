@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,21 +17,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DIRECTORY_SAVE_H
-#define MPD_DIRECTORY_SAVE_H
+#ifndef MPD_PLAYLIST_DATABASE_HXX
+#define MPD_PLAYLIST_DATABASE_HXX
 
+#include "check.h"
+
+#include <stdio.h>
 #include <glib.h>
 
-#include <stdbool.h>
-#include <stdio.h>
+#define PLAYLIST_META_BEGIN "playlist_begin: "
 
-struct directory;
+struct list_head;
 
 void
-directory_save(FILE *fp, const struct directory *directory);
+playlist_vector_save(FILE *fp, const struct list_head *pv);
 
 bool
-directory_load(FILE *fp, struct directory *directory,
-	       GString *buffer, GError **error);
+playlist_metadata_load(FILE *fp, struct list_head *pv, const char *name,
+		       GString *buffer, GError **error_r);
 
 #endif

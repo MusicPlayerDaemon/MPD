@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,13 +18,16 @@
  */
 
 #include "config.h"
-#include "song_save.h"
+#include "SongSave.hxx"
 #include "song.h"
-#include "tag_save.h"
+#include "TagSave.hxx"
 #include "directory.h"
+
+extern "C" {
 #include "tag.h"
 #include "text_file.h"
 #include "string_util.h"
+}
 
 #include <glib.h>
 

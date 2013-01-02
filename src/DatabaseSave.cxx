@@ -18,15 +18,18 @@
  */
 
 #include "config.h"
-#include "db_save.h"
+#include "DatabaseSave.hxx"
 #include "db_lock.h"
 #include "directory.h"
-#include "directory_save.h"
+#include "DirectorySave.hxx"
 #include "song.h"
+
+extern "C" {
 #include "path.h"
 #include "text_file.h"
 #include "tag.h"
 #include "tag_internal.h"
+}
 
 #include <glib.h>
 

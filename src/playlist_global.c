@@ -24,7 +24,6 @@
 
 #include "config.h"
 #include "playlist.h"
-#include "playlist_state.h"
 #include "event_pipe.h"
 #include "Main.hxx"
 

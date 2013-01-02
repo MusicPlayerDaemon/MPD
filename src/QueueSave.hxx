@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,13 +17,27 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAG_SAVE_H
-#define MPD_TAG_SAVE_H
+/*
+ * This library saves the queue into the state file, and also loads it
+ * back into memory.
+ */
 
+#ifndef MPD_QUEUE_SAVE_HXX
+#define MPD_QUEUE_SAVE_HXX
+
+#include <glib.h>
 #include <stdio.h>
 
-struct tag;
+struct queue;
 
-void tag_save(FILE *file, const struct tag *tag);
+void
+queue_save(FILE *fp, const struct queue *queue);
+
+/**
+ * Loads one song from the state file and appends it to the queue.
+ */
+void
+queue_load_song(FILE *fp, GString *buffer, const char *line,
+		struct queue *queue);
 
 #endif

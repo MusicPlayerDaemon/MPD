@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,10 +22,9 @@
  *
  */
 
-#ifndef OUTPUT_STATE_H
-#define OUTPUT_STATE_H
+#ifndef MPD_OUTPUT_STATE_HXX
+#define MPD_OUTPUT_STATE_HXX
 
-#include <stdbool.h>
 #include <stdio.h>
 
 bool

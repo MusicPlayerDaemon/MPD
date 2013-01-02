@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,12 +18,15 @@
  */
 
 #include "config.h"
-#include "state_file.h"
-#include "output_state.h"
+#include "StateFile.hxx"
+#include "OutputState.hxx"
 #include "playlist.h"
-#include "playlist_state.h"
+#include "PlaylistState.hxx"
+
+extern "C" {
 #include "volume.h"
 #include "text_file.h"
+}
 
 #include <glib.h>
 #include <assert.h>
@@ -117,7 +120,7 @@ state_file_read(struct player_control *pc)
 static gboolean
 timer_save_state_file(gpointer data)
 {
-	struct player_control *pc = data;
+	struct player_control *pc = (struct player_control *)data;
 
 	if (prev_volume_version == sw_volume_state_get_hash() &&
 	    prev_output_version == audio_output_state_get_version() &&

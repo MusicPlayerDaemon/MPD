@@ -23,13 +23,15 @@
  */
 
 #include "config.h"
-#include "playlist_state.h"
+#include "PlaylistState.hxx"
+#include "QueueSave.hxx"
+
+extern "C" {
 #include "playlist.h"
 #include "player_control.h"
-#include "queue_save.h"
-#include "path.h"
 #include "text_file.h"
 #include "conf.h"
+}
 
 #include <string.h>
 #include <stdlib.h>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,20 +17,31 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DB_SAVE_H
-#define MPD_DB_SAVE_H
+#ifndef MPD_SONG_SAVE_HXX
+#define MPD_SONG_SAVE_HXX
 
-#include "gerror.h"
+#include <glib.h>
 
-#include <stdbool.h>
 #include <stdio.h>
 
+#define SONG_BEGIN "song_begin: "
+
+struct song;
 struct directory;
 
 void
-db_save_internal(FILE *file, const struct directory *root);
+song_save(FILE *fp, const struct song *song);
 
-bool
-db_load_internal(FILE *file, struct directory *root, GError **error);
+/**
+ * Loads a song from the input file.  Reading stops after the
+ * "song_end" line.
+ *
+ * @param error_r location to store the error occurring, or NULL to
+ * ignore errors
+ * @return true on success, false on error
+ */
+struct song *
+song_load(FILE *fp, struct directory *parent, const char *uri,
+	  GString *buffer, GError **error_r);
 
 #endif

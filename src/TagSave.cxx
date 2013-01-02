@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,24 +17,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PLAYLIST_DATABASE_H
-#define MPD_PLAYLIST_DATABASE_H
+#include "config.h"
+#include "TagSave.hxx"
+#include "tag.h"
+#include "tag_internal.h"
+#include "song.h"
 
-#include "check.h"
+void tag_save(FILE *file, const struct tag *tag)
+{
+	if (tag->time >= 0)
+		fprintf(file, SONG_TIME "%i\n", tag->time);
 
-#include <stdbool.h>
-#include <stdio.h>
-#include <glib.h>
+	if (tag->has_playlist)
+		fprintf(file, "Playlist: yes\n");
 
-#define PLAYLIST_META_BEGIN "playlist_begin: "
-
-struct list_head;
-
-void
-playlist_vector_save(FILE *fp, const struct list_head *pv);
-
-bool
-playlist_metadata_load(FILE *fp, struct list_head *pv, const char *name,
-		       GString *buffer, GError **error_r);
-
-#endif
+	for (unsigned i = 0; i < tag->num_items; i++)
+		fprintf(file, "%s: %s\n",
+			tag_item_names[tag->items[i]->type],
+			tag->items[i]->value);
+}

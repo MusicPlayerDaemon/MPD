@@ -22,6 +22,7 @@
 #include "PlaylistFile.hxx"
 #include "UpdateGlue.hxx"
 #include "chunk.h"
+#include "StateFile.hxx"
 
 extern "C" {
 #include "daemon.h"
@@ -51,7 +52,6 @@ extern "C" {
 #include "decoder_list.h"
 #include "input_init.h"
 #include "playlist_list.h"
-#include "state_file.h"
 #include "tag.h"
 #include "zeroconf.h"
 #include "event_pipe.h"

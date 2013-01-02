@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,10 +18,13 @@
  */
 
 #include "config.h"
-#include "playlist_database.h"
+#include "PlaylistDatabase.hxx"
+
+extern "C" {
 #include "playlist_vector.h"
 #include "text_file.h"
 #include "string_util.h"
+}
 
 #include <string.h>
 #include <stdlib.h>
@@ -47,9 +50,9 @@ bool
 playlist_metadata_load(FILE *fp, struct list_head *pv, const char *name,
 		       GString *buffer, GError **error_r)
 {
-	struct playlist_metadata pm = {
-		.mtime = 0,
-	};
+	struct playlist_metadata pm;
+	pm.mtime = 0;
+
 	char *line, *colon;
 	const char *value;
 

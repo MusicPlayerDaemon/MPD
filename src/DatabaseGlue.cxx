@@ -20,11 +20,11 @@
 #include "config.h"
 #include "DatabaseGlue.hxx"
 #include "DatabaseRegistry.hxx"
+#include "DatabaseSave.hxx"
 
 extern "C" {
 #include "database.h"
 #include "db_error.h"
-#include "db_save.h"
 #include "stats.h"
 #include "conf.h"
 #include "glib_compat.h"

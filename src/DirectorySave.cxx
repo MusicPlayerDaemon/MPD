@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,12 +18,15 @@
  */
 
 #include "config.h"
-#include "directory_save.h"
+#include "DirectorySave.hxx"
 #include "directory.h"
 #include "song.h"
+#include "SongSave.hxx"
+#include "PlaylistDatabase.hxx"
+
+extern "C" {
 #include "text_file.h"
-#include "song_save.h"
-#include "playlist_database.h"
+}
 
 #include <assert.h>
 #include <string.h>
@@ -152,7 +155,7 @@ directory_load(FILE *fp, struct directory *directory,
 			if (directory_get_song(directory, name) != NULL) {
 				g_set_error(error, directory_quark(), 0,
 					    "Duplicate song '%s'", name);
-				return NULL;
+				return false;
 			}
 
 			song = song_load(fp, directory, name,

@@ -22,7 +22,6 @@
 
 #include "playlist_error.h"
 
-#include <stdbool.h>
 #include <stdio.h>
 
 struct song;

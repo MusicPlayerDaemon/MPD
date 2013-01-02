@@ -18,16 +18,19 @@
  */
 
 #include "config.h"
+#include "TagSave.hxx"
+#include "song.h"
+
+extern "C" {
 #include "io_thread.h"
 #include "input_init.h"
 #include "input_stream.h"
-#include "tag_save.h"
 #include "conf.h"
-#include "song.h"
 #include "decoder_api.h"
 #include "decoder_list.h"
 #include "playlist_list.h"
 #include "playlist_plugin.h"
+}
 
 #include <glib.h>
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,13 +18,16 @@
  */
 
 #include "config.h"
-#include "queue_save.h"
-#include "queue.h"
+#include "QueueSave.hxx"
 #include "song.h"
+#include "SongSave.hxx"
+
+extern "C" {
+#include "queue.h"
 #include "uri.h"
 #include "database.h"
-#include "song_save.h"
 #include "text_file.h"
+}
 
 #include <stdlib.h>
 
