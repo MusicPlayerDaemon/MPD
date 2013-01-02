@@ -91,6 +91,154 @@ struct directory {
 	char path[sizeof(long)];
 
 	/**
+	 * Generic constructor for #directory object.
+	 */
+	gcc_malloc
+	static directory *NewGeneric(const char *path_utf8, directory *parent);
+
+	/**
+	 * Create a new root #directory object.
+	 */
+	gcc_malloc
+	static directory *NewRoot() {
+		return NewGeneric("", nullptr);
+	}
+
+	/**
+	 * Free this #directory object (and the whole object tree within it),
+	 * assuming it was already removed from the parent.
+	 */
+	void Free();
+
+	/**
+	 * Remove this #directory object from its parent and free it.  This
+	 * must not be called with the root directory.
+	 *
+	 * Caller must lock the #db_mutex.
+	 */
+	void Delete();
+
+	/**
+	 * Create a new #directory object as a child of the given one.
+	 *
+	 * Caller must lock the #db_mutex.
+	 *
+	 * @param name_utf8 the UTF-8 encoded name of the new sub directory
+	 */
+	gcc_malloc
+	directory *CreateChild(const char *name_utf8);
+
+	/**
+	 * Caller must lock the #db_mutex.
+	 */
+	gcc_pure
+	const directory *FindChild(const char *name) const;
+
+	gcc_pure
+	directory *FindChild(const char *name) {
+		const directory *cthis = this;
+		return const_cast<directory *>(cthis->FindChild(name));
+	}
+
+	/**
+	 * Look up a sub directory, and create the object if it does not
+	 * exist.
+	 *
+	 * Caller must lock the #db_mutex.
+	 */
+	struct directory *MakeChild(const char *name_utf8) {
+		struct directory *child = FindChild(name_utf8);
+		if (child == nullptr)
+			child = CreateChild(name_utf8);
+		return child;
+	}
+
+	/**
+	 * Looks up a directory by its relative URI.
+	 *
+	 * @param uri the relative URI
+	 * @return the directory, or NULL if none was found
+	 */
+	gcc_pure
+	directory *LookupDirectory(const char *uri);
+
+	gcc_pure
+	bool IsEmpty() const {
+		return list_empty(&children) &&
+			list_empty(&songs) &&
+			list_empty(&playlists);
+	}
+
+	gcc_pure
+	const char *GetPath() const {
+		return path;
+	}
+
+	/**
+	 * Returns the base name of the directory.
+	 */
+	gcc_pure
+	const char *GetName() const;
+
+	/**
+	 * Is this the root directory of the music database?
+	 */
+	gcc_pure
+	bool IsRoot() const {
+		return parent == NULL;
+	}
+
+	/**
+	 * Look up a song in this directory by its name.
+	 *
+	 * Caller must lock the #db_mutex.
+	 */
+	gcc_pure
+	const song *FindSong(const char *name_utf8) const;
+
+	gcc_pure
+	song *FindSong(const char *name_utf8) {
+		const directory *cthis = this;
+		return const_cast<song *>(cthis->FindSong(name_utf8));
+	}
+
+	/**
+	 * Looks up a song by its relative URI.
+	 *
+	 * Caller must lock the #db_mutex.
+	 *
+	 * @param uri the relative URI
+	 * @return the song, or NULL if none was found
+	 */
+	gcc_pure
+	song *LookupSong(const char *uri);
+
+	/**
+	 * Add a song object to this directory.  Its "parent" attribute must
+	 * be set already.
+	 */
+	void AddSong(song *song);
+
+	/**
+	 * Remove a song object from this directory (which effectively
+	 * invalidates the song object, because the "parent" attribute becomes
+	 * stale), but does not free it.
+	 */
+	void RemoveSong(song *song);
+
+	/**
+	 * Caller must lock the #db_mutex.
+	 */
+	void PruneEmpty();
+
+	/**
+	 * Sort all directory entries recursively.
+	 *
+	 * Caller must lock the #db_mutex.
+	 */
+	void Sort();
+
+	/**
 	 * Caller must lock #db_mutex.
 	 */
 	bool Walk(bool recursive, const SongFilter *match,
@@ -104,162 +252,5 @@ isRootDirectory(const char *name)
 {
 	return name[0] == 0 || (name[0] == '/' && name[1] == 0);
 }
-
-/**
- * Generic constructor for #directory object.
- */
-gcc_malloc
-struct directory *
-directory_new(const char *dirname, struct directory *parent);
-
-/**
- * Create a new root #directory object.
- */
-gcc_malloc
-static inline struct directory *
-directory_new_root(void)
-{
-	return directory_new("", NULL);
-}
-
-/**
- * Free this #directory object (and the whole object tree within it),
- * assuming it was already removed from the parent.
- */
-void
-directory_free(struct directory *directory);
-
-/**
- * Remove this #directory object from its parent and free it.  This
- * must not be called with the root directory.
- *
- * Caller must lock the #db_mutex.
- */
-void
-directory_delete(struct directory *directory);
-
-static inline bool
-directory_is_empty(const struct directory *directory)
-{
-	return list_empty(&directory->children) &&
-		list_empty(&directory->songs) &&
-		list_empty(&directory->playlists);
-}
-
-static inline const char *
-directory_get_path(const struct directory *directory)
-{
-	return directory->path;
-}
-
-/**
- * Is this the root directory of the music database?
- */
-static inline bool
-directory_is_root(const struct directory *directory)
-{
-	return directory->parent == NULL;
-}
-
-/**
- * Returns the base name of the directory.
- */
-gcc_pure
-const char *
-directory_get_name(const struct directory *directory);
-
-/**
- * Caller must lock the #db_mutex.
- */
-gcc_pure
-struct directory *
-directory_get_child(const struct directory *directory, const char *name);
-
-/**
- * Create a new #directory object as a child of the given one.
- *
- * Caller must lock the #db_mutex.
- *
- * @param parent the parent directory the new one will be added to
- * @param name_utf8 the UTF-8 encoded name of the new sub directory
- */
-gcc_malloc
-struct directory *
-directory_new_child(struct directory *parent, const char *name_utf8);
-
-/**
- * Look up a sub directory, and create the object if it does not
- * exist.
- *
- * Caller must lock the #db_mutex.
- */
-static inline struct directory *
-directory_make_child(struct directory *directory, const char *name_utf8)
-{
-	struct directory *child = directory_get_child(directory, name_utf8);
-	if (child == NULL)
-		child = directory_new_child(directory, name_utf8);
-	return child;
-}
-
-/**
- * Caller must lock the #db_mutex.
- */
-void
-directory_prune_empty(struct directory *directory);
-
-/**
- * Looks up a directory by its relative URI.
- *
- * @param directory the parent (or grandparent, ...) directory
- * @param uri the relative URI
- * @return the directory, or NULL if none was found
- */
-struct directory *
-directory_lookup_directory(struct directory *directory, const char *uri);
-
-/**
- * Add a song object to this directory.  Its "parent" attribute must
- * be set already.
- */
-void
-directory_add_song(struct directory *directory, struct song *song);
-
-/**
- * Remove a song object from this directory (which effectively
- * invalidates the song object, because the "parent" attribute becomes
- * stale), but does not free it.
- */
-void
-directory_remove_song(struct directory *directory, struct song *song);
-
-/**
- * Look up a song in this directory by its name.
- *
- * Caller must lock the #db_mutex.
- */
-gcc_pure
-struct song *
-directory_get_song(const struct directory *directory, const char *name_utf8);
-
-/**
- * Looks up a song by its relative URI.
- *
- * Caller must lock the #db_mutex.
- *
- * @param directory the parent (or grandparent, ...) directory
- * @param uri the relative URI
- * @return the song, or NULL if none was found
- */
-struct song *
-directory_lookup_song(struct directory *directory, const char *uri);
-
-/**
- * Sort all directory entries recursively.
- *
- * Caller must lock the #db_mutex.
- */
-void
-directory_sort(struct directory *directory);
 
 #endif

@@ -42,12 +42,12 @@ update_song_file2(struct directory *directory,
 		  const struct decoder_plugin *plugin)
 {
 	db_lock();
-	struct song *song = directory_get_song(directory, name);
+	struct song *song = directory->FindSong(name);
 	db_unlock();
 
 	if (!directory_child_access(directory, name, R_OK)) {
 		g_warning("no read permissions on %s/%s",
-			  directory_get_path(directory), name);
+			  directory->GetPath(), name);
 		if (song != NULL) {
 			db_lock();
 			delete_song(directory, song);
@@ -70,28 +70,27 @@ update_song_file2(struct directory *directory,
 	}
 
 	if (song == NULL) {
-		g_debug("reading %s/%s",
-			directory_get_path(directory), name);
+		g_debug("reading %s/%s", directory->GetPath(), name);
 		song = song_file_load(name, directory);
 		if (song == NULL) {
 			g_debug("ignoring unrecognized file %s/%s",
-				directory_get_path(directory), name);
+				directory->GetPath(), name);
 			return;
 		}
 
 		db_lock();
-		directory_add_song(directory, song);
+		directory->AddSong(song);
 		db_unlock();
 
 		modified = true;
 		g_message("added %s/%s",
-			  directory_get_path(directory), name);
+			  directory->GetPath(), name);
 	} else if (st->st_mtime != song->mtime || walk_discard) {
 		g_message("updating %s/%s",
-			  directory_get_path(directory), name);
+			  directory->GetPath(), name);
 		if (!song_file_update(song)) {
 			g_debug("deleting unrecognized file %s/%s",
-				directory_get_path(directory), name);
+				directory->GetPath(), name);
 			db_lock();
 			delete_song(directory, song);
 			db_unlock();

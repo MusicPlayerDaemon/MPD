@@ -123,14 +123,12 @@ sticker_song_find_cb(const char *uri, const char *value, gpointer user_data)
 {
 	struct sticker_song_find_data *data =
 		(struct sticker_song_find_data *)user_data;
-	struct song *song;
 
 	if (memcmp(uri, data->base_uri, data->base_uri_length) != 0)
 		/* should not happen, ignore silently */
 		return;
 
-	song = directory_lookup_song(data->directory,
-				     uri + data->base_uri_length);
+	song *song = data->directory->LookupSong(uri + data->base_uri_length);
 	if (song != NULL)
 		data->func(song, value, data->user_data);
 }
@@ -147,7 +145,7 @@ sticker_song_find(struct directory *directory, const char *name,
 	data.user_data = user_data;
 
 	char *allocated;
-	data.base_uri = directory_get_path(directory);
+	data.base_uri = directory->GetPath();
 	if (*data.base_uri != 0)
 		/* append slash to base_uri */
 		data.base_uri = allocated =

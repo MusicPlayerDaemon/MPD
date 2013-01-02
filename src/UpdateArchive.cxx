@@ -43,7 +43,7 @@ update_archive_tree(struct directory *directory, char *name)
 		//add dir is not there already
 		db_lock();
 		struct directory *subdir =
-			directory_make_child(directory, name);
+			directory->MakeChild(name);
 		subdir->device = DEVICE_INARCHIVE;
 		db_unlock();
 		//create directories first
@@ -56,18 +56,18 @@ update_archive_tree(struct directory *directory, char *name)
 
 		//add file
 		db_lock();
-		struct song *song = directory_get_song(directory, name);
+		struct song *song = directory->FindSong(name);
 		db_unlock();
 		if (song == NULL) {
 			song = song_file_load(name, directory);
 			if (song != NULL) {
 				db_lock();
-				directory_add_song(directory, song);
+				directory->AddSong(song);
 				db_unlock();
 
 				modified = true;
 				g_message("added %s/%s",
-					  directory_get_path(directory), name);
+					  directory->GetPath(), name);
 			}
 		}
 	}
@@ -87,7 +87,7 @@ update_archive_file2(struct directory *parent, const char *name,
 		     const struct archive_plugin *plugin)
 {
 	db_lock();
-	struct directory *directory = directory_get_child(parent, name);
+	directory *directory = parent->FindChild(name);
 	db_unlock();
 
 	if (directory != NULL && directory->mtime == st->st_mtime &&
@@ -114,7 +114,7 @@ update_archive_file2(struct directory *parent, const char *name,
 	if (directory == NULL) {
 		g_debug("creating archive directory: %s", name);
 		db_lock();
-		directory = directory_new_child(parent, name);
+		directory = parent->CreateChild(name);
 		/* mark this directory as archive (we use device for
 		   this) */
 		directory->device = DEVICE_INARCHIVE;

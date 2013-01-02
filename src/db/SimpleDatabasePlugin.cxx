@@ -180,7 +180,7 @@ SimpleDatabase::Load(GError **error_r)
 bool
 SimpleDatabase::Open(GError **error_r)
 {
-	root = directory_new_root();
+	root = directory::NewRoot();
 	mtime = 0;
 
 #ifndef NDEBUG
@@ -189,7 +189,7 @@ SimpleDatabase::Open(GError **error_r)
 
 	GError *error = NULL;
 	if (!Load(&error)) {
-		directory_free(root);
+		root->Free();
 
 		g_warning("Failed to load database: %s", error->message);
 		g_error_free(error);
@@ -197,7 +197,7 @@ SimpleDatabase::Open(GError **error_r)
 		if (!Check(error_r))
 			return false;
 
-		root = directory_new_root();
+		root = directory::NewRoot();
 	}
 
 	return true;
@@ -209,7 +209,7 @@ SimpleDatabase::Close()
 	assert(root != NULL);
 	assert(borrowed_song_count == 0);
 
-	directory_free(root);
+	root->Free();
 }
 
 struct song *
@@ -218,7 +218,7 @@ SimpleDatabase::GetSong(const char *uri, GError **error_r) const
 	assert(root != NULL);
 
 	db_lock();
-	struct song *song = directory_lookup_song(root, uri);
+	song *song = root->LookupSong(uri);
 	db_unlock();
 	if (song == NULL)
 		g_set_error(error_r, db_quark(), DB_NOT_FOUND,
@@ -250,7 +250,7 @@ SimpleDatabase::LookupDirectory(const char *uri) const
 	assert(uri != NULL);
 
 	ScopeDatabaseLock protect;
-	return directory_lookup_directory(root, uri);
+	return root->LookupDirectory(uri);
 }
 
 bool
@@ -262,12 +262,10 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 {
 	ScopeDatabaseLock protect;
 
-	const struct directory *directory =
-		directory_lookup_directory(root, selection.uri);
+	const directory *directory = root->LookupDirectory(selection.uri);
 	if (directory == NULL) {
 		if (visit_song) {
-			struct song *song =
-				directory_lookup_song(root, selection.uri);
+			song *song = root->LookupSong(selection.uri);
 			if (song != nullptr)
 				return !selection.Match(*song) ||
 					visit_song(*song, error_r);
@@ -310,10 +308,10 @@ SimpleDatabase::Save(GError **error_r)
 	db_lock();
 
 	g_debug("removing empty directories from DB");
-	directory_prune_empty(root);
+	root->PruneEmpty();
 
 	g_debug("sorting DB");
-	directory_sort(root);
+	root->Sort();
 
 	db_unlock();
 

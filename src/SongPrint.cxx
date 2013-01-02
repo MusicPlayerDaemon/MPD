@@ -33,9 +33,9 @@ extern "C" {
 void
 song_print_uri(struct client *client, struct song *song)
 {
-	if (song_in_database(song) && !directory_is_root(song->parent)) {
+	if (song_in_database(song) && !song->parent->IsRoot()) {
 		client_printf(client, "%s%s/%s\n", SONG_FILE,
-			      directory_get_path(song->parent), song->uri);
+			      song->parent->GetPath(), song->uri);
 	} else {
 		char *allocated;
 		const char *uri;

@@ -41,9 +41,8 @@ extern "C" {
 static bool
 PrintDirectory(struct client *client, const directory &directory)
 {
-	if (!directory_is_root(&directory))
-		client_printf(client, "directory: %s\n",
-			      directory_get_path(&directory));
+	if (!directory.IsRoot())
+		client_printf(client, "directory: %s\n", directory.GetPath());
 
 	return true;
 }
@@ -53,11 +52,11 @@ print_playlist_in_directory(struct client *client,
 			    const directory &directory,
 			    const char *name_utf8)
 {
-	if (directory_is_root(&directory))
+	if (directory.IsRoot())
 		client_printf(client, "playlist: %s\n", name_utf8);
 	else
 		client_printf(client, "playlist: %s/%s\n",
-			      directory_get_path(&directory), name_utf8);
+			      directory.GetPath(), name_utf8);
 }
 
 static bool

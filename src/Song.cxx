@@ -161,10 +161,10 @@ song_get_uri(const struct song *song)
 	assert(song != nullptr);
 	assert(*song->uri);
 
-	if (!song_in_database(song) || directory_is_root(song->parent))
+	if (!song_in_database(song) || song->parent->IsRoot())
 		return g_strdup(song->uri);
 	else
-		return g_strconcat(directory_get_path(song->parent),
+		return g_strconcat(song->parent->GetPath(),
 				   "/", song->uri, nullptr);
 }
 

@@ -102,7 +102,7 @@ remove_excluded_from_directory(struct directory *directory,
 
 	struct directory *child, *n;
 	directory_for_each_child_safe(child, n, directory) {
-		char *name_fs = utf8_to_fs_charset(directory_get_name(child));
+		char *name_fs = utf8_to_fs_charset(child->GetName());
 
 		if (exclude_list_check(exclude_list, name_fs)) {
 			delete_directory(child);
@@ -254,8 +254,7 @@ update_directory_child(struct directory *directory,
 			return;
 
 		db_lock();
-		struct directory *subdir =
-			directory_make_child(directory, name);
+		struct directory *subdir = directory->MakeChild(name);
 		db_unlock();
 
 		assert(directory == subdir->parent);
@@ -423,7 +422,7 @@ static struct directory *
 directory_make_child_checked(struct directory *parent, const char *name_utf8)
 {
 	db_lock();
-	struct directory *directory = directory_get_child(parent, name_utf8);
+	directory *directory = parent->FindChild(name_utf8);
 	db_unlock();
 
 	if (directory != NULL)
@@ -440,11 +439,11 @@ directory_make_child_checked(struct directory *parent, const char *name_utf8)
 	/* if we're adding directory paths, make sure to delete filenames
 	   with potentially the same name */
 	db_lock();
-	struct song *conflicting = directory_get_song(parent, name_utf8);
+	struct song *conflicting = parent->FindSong(name_utf8);
 	if (conflicting)
 		delete_song(parent, conflicting);
 
-	directory = directory_new_child(parent, name_utf8);
+	directory = parent->CreateChild(name_utf8);
 	db_unlock();
 
 	directory_set_stat(directory, &st);

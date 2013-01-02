@@ -46,7 +46,7 @@ static struct directory *
 make_directory_if_modified(struct directory *parent, const char *name,
 			   const struct stat *st)
 {
-	struct directory *directory = directory_get_child(parent, name);
+	directory *directory = parent->FindChild(name);
 
 	// directory exists already
 	if (directory != NULL) {
@@ -60,7 +60,7 @@ make_directory_if_modified(struct directory *parent, const char *name,
 		modified = true;
 	}
 
-	directory = directory_make_child(parent, name);
+	directory = parent->MakeChild(name);
 	directory->mtime = st->st_mtime;
 	return directory;
 }
@@ -104,13 +104,12 @@ update_container_file(struct directory *directory,
 		g_free(child_path_fs);
 
 		db_lock();
-		directory_add_song(contdir, song);
+		contdir->AddSong(song);
 		db_unlock();
 
 		modified = true;
 
-		g_message("added %s/%s",
-			  directory_get_path(directory), vtrack);
+		g_message("added %s/%s", directory->GetPath(), vtrack);
 		g_free(vtrack);
 	}
 

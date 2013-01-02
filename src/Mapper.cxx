@@ -186,10 +186,10 @@ map_directory_fs(const struct directory *directory)
 	assert(music_dir_utf8 != NULL);
 	assert(music_dir_fs != NULL);
 
-	if (directory_is_root(directory))
+	if (directory->IsRoot())
 		return g_strdup(music_dir_fs);
 
-	return map_uri_fs(directory_get_path(directory));
+	return map_uri_fs(directory->GetPath());
 }
 
 char *

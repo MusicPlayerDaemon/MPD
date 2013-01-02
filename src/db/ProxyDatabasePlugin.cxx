@@ -168,7 +168,7 @@ ProxyDatabase::Open(GError **error_r)
 		return false;
 	}
 
-	root = directory_new_root();
+	root = directory::NewRoot();
 
 	return true;
 }
@@ -178,7 +178,7 @@ ProxyDatabase::Close()
 {
 	assert(connection != nullptr);
 
-	directory_free(root);
+	root->Free();
 	mpd_connection_free(connection);
 }
 
@@ -241,9 +241,9 @@ Visit(struct mpd_connection *connection,
 
 	if (visit_directory) {
 		struct directory *d =
-			directory_new(path, &detached_root);
+			directory::NewGeneric(path, &detached_root);
 		bool success = visit_directory(*d, error_r);
-		directory_free(d);
+		d->Free();
 		if (!success)
 			return false;
 	}

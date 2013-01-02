@@ -34,7 +34,7 @@ delete_song(struct directory *dir, struct song *del)
 	assert(del->parent == dir);
 
 	/* first, prevent traversers in main task from getting this */
-	directory_remove_song(dir, del);
+	dir->RemoveSong(del);
 
 	db_unlock(); /* temporary unlock, because update_remove_song() blocks */
 
@@ -74,7 +74,7 @@ delete_directory(struct directory *directory)
 
 	clear_directory(directory);
 
-	directory_delete(directory);
+	directory->Delete();
 }
 
 bool
@@ -83,14 +83,14 @@ delete_name_in(struct directory *parent, const char *name)
 	bool modified = false;
 
 	db_lock();
-	struct directory *directory = directory_get_child(parent, name);
+	directory *directory = parent->FindChild(name);
 
 	if (directory != NULL) {
 		delete_directory(directory);
 		modified = true;
 	}
 
-	struct song *song = directory_get_song(parent, name);
+	struct song *song = parent->FindSong(name);
 	if (song != NULL) {
 		delete_song(parent, song);
 		modified = true;

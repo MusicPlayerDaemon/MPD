@@ -48,12 +48,11 @@ directory_quark(void)
 void
 directory_save(FILE *fp, const struct directory *directory)
 {
-	if (!directory_is_root(directory)) {
+	if (!directory->IsRoot()) {
 		fprintf(fp, DIRECTORY_MTIME "%lu\n",
 			(unsigned long)directory->mtime);
 
-		fprintf(fp, "%s%s\n", DIRECTORY_BEGIN,
-			directory_get_path(directory));
+		fprintf(fp, "%s%s\n", DIRECTORY_BEGIN, directory->GetPath());
 	}
 
 	struct directory *cur;
@@ -75,9 +74,8 @@ directory_save(FILE *fp, const struct directory *directory)
 
 	playlist_vector_save(fp, &directory->playlists);
 
-	if (!directory_is_root(directory))
-		fprintf(fp, DIRECTORY_END "%s\n",
-			directory_get_path(directory));
+	if (!directory->IsRoot())
+		fprintf(fp, DIRECTORY_END "%s\n", directory->GetPath());
 }
 
 static struct directory *
@@ -87,19 +85,19 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 	const char *line;
 	bool success;
 
-	if (directory_get_child(parent, name) != NULL) {
+	if (parent->FindChild(name) != nullptr) {
 		g_set_error(error_r, directory_quark(), 0,
 			    "Duplicate subdirectory '%s'", name);
 		return NULL;
 	}
 
-	struct directory *directory = directory_new_child(parent, name);
+	struct directory *directory = parent->CreateChild(name);
 
 	line = read_text_line(fp, buffer);
 	if (line == NULL) {
 		g_set_error(error_r, directory_quark(), 0,
 			    "Unexpected end of file");
-		directory_delete(directory);
+		directory->Delete();
 		return NULL;
 	}
 
@@ -112,7 +110,7 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 		if (line == NULL) {
 			g_set_error(error_r, directory_quark(), 0,
 				    "Unexpected end of file");
-			directory_delete(directory);
+			directory->Delete();
 			return NULL;
 		}
 	}
@@ -120,13 +118,13 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 	if (!g_str_has_prefix(line, DIRECTORY_BEGIN)) {
 		g_set_error(error_r, directory_quark(), 0,
 			    "Malformed line: %s", line);
-		directory_delete(directory);
+		directory->Delete();
 		return NULL;
 	}
 
 	success = directory_load(fp, directory, buffer, error_r);
 	if (!success) {
-		directory_delete(directory);
+		directory->Delete();
 		return NULL;
 	}
 
@@ -152,7 +150,7 @@ directory_load(FILE *fp, struct directory *directory,
 			const char *name = line + sizeof(SONG_BEGIN) - 1;
 			struct song *song;
 
-			if (directory_get_song(directory, name) != NULL) {
+			if (directory->FindSong(name) != nullptr) {
 				g_set_error(error, directory_quark(), 0,
 					    "Duplicate song '%s'", name);
 				return false;
@@ -163,7 +161,7 @@ directory_load(FILE *fp, struct directory *directory,
 			if (song == NULL)
 				return false;
 
-			directory_add_song(directory, song);
+			directory->AddSong(song);
 		} else if (g_str_has_prefix(line, PLAYLIST_META_BEGIN)) {
 			/* duplicate the name, because
 			   playlist_metadata_load() will overwrite the
