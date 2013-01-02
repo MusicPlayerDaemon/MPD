@@ -23,8 +23,6 @@
 #include "gcc.h"
 #include "gerror.h"
 
-#include <stdbool.h>
-
 struct client;
 class SongFilter;
 struct DatabaseSelection;

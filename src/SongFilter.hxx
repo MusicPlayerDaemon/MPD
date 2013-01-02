@@ -25,7 +25,6 @@
 #include <list>
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
 #define LOCATE_TAG_ANY_TYPE     TAG_NUM_OF_ITEM_TYPES+20

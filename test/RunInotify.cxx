@@ -22,7 +22,6 @@
 
 #include <glib.h>
 
-#include <stdbool.h>
 #include <sys/inotify.h>
 #include <signal.h>
 

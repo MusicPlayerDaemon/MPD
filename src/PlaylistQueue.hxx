@@ -26,8 +26,6 @@
 
 #include "playlist_error.h"
 
-#include <stdbool.h>
-
 struct playlist_provider;
 struct playlist;
 struct player_control;

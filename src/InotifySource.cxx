@@ -32,7 +32,6 @@ extern "C" {
 #include <sys/inotify.h>
 #include <unistd.h>
 #include <errno.h>
-#include <stdbool.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "inotify"

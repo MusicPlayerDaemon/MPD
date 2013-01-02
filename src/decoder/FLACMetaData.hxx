@@ -26,7 +26,6 @@
 #include <FLAC/metadata.h>
 
 #include <assert.h>
-#include <stdbool.h>
 
 class FLACMetadataChain {
 	FLAC__Metadata_Chain *chain;

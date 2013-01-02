@@ -22,8 +22,6 @@
 
 #include "check.h"
 
-#include <stdbool.h>
-
 extern bool walk_discard;
 extern bool modified;
 

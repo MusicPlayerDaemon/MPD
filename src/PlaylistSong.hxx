@@ -20,8 +20,6 @@
 #ifndef MPD_PLAYLIST_SONG_HXX
 #define MPD_PLAYLIST_SONG_HXX
 
-#include <stdbool.h>
-
 /**
  * Verifies the song, returns NULL if it is unsafe.  Translate the
  * song to a new song object within the database, if it is a local

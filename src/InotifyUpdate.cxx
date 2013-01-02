@@ -31,7 +31,6 @@ extern "C" {
 #include <assert.h>
 #include <sys/inotify.h>
 #include <sys/stat.h>
-#include <stdbool.h>
 #include <string.h>
 #include <dirent.h>
 #include <errno.h>

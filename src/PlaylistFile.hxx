@@ -25,7 +25,6 @@
 #include <string>
 
 #include <glib.h>
-#include <stdbool.h>
 #include <time.h>
 
 struct song;

@@ -32,7 +32,6 @@ extern "C" {
 #include <glib.h>
 
 #include <assert.h>
-#include <stdbool.h>
 #include <stdlib.h>
 
 static bool

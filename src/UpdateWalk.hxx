@@ -22,8 +22,6 @@
 
 #include "check.h"
 
-#include <stdbool.h>
-
 void
 update_walk_global_init(void);
 

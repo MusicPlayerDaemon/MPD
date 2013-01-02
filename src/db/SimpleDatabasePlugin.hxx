@@ -26,7 +26,6 @@
 #include <cassert>
 #include <string>
 
-#include <stdbool.h>
 #include <time.h>
 
 struct directory;

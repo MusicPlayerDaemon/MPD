@@ -23,7 +23,6 @@
 #include "check.h"
 #include "gcc.h"
 
-#include <stdbool.h>
 #include <sys/stat.h>
 
 struct directory;
