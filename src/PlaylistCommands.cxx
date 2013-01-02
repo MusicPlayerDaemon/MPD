@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,12 +24,12 @@
 #include "PlaylistPrint.hxx"
 #include "PlaylistSave.hxx"
 #include "PlaylistFile.hxx"
+#include "PlaylistQueue.hxx"
 
 extern "C" {
 #include "protocol/argparser.h"
 #include "protocol/result.h"
 #include "playlist.h"
-#include "playlist_queue.h"
 #include "time_print.h"
 #include "ls.h"
 #include "uri.h"

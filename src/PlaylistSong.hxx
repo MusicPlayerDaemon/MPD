@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,27 +17,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PLAYLIST_MAPPER_H
-#define MPD_PLAYLIST_MAPPER_H
+#ifndef MPD_PLAYLIST_SONG_HXX
+#define MPD_PLAYLIST_SONG_HXX
 
-#include <glib.h>
-
-struct input_stream;
-
-G_BEGIN_DECLS
+#include <stdbool.h>
 
 /**
- * Opens a playlist from an URI relative to the playlist or music
- * directory.
+ * Verifies the song, returns NULL if it is unsafe.  Translate the
+ * song to a new song object within the database, if it is a local
+ * file.  The old song object is freed.
  *
- * @param is_r on success, an input_stream object may be returned
- * here, which must be closed after the playlist_provider object is
- * freed
+ * @param secure if true, then local files are only allowed if they
+ * are relative to base_uri
  */
-struct playlist_provider *
-playlist_mapper_open(const char *uri, GMutex *mutex, GCond *cond,
-		     struct input_stream **is_r);
-
-G_END_DECLS
+struct song *
+playlist_check_translate_song(struct song *song, const char *base_uri,
+			      bool secure);
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,8 +21,8 @@
  * \brief Glue between playlist plugin and the play queue
  */
 
-#ifndef MPD_PLAYLIST_QUEUE_H
-#define MPD_PLAYLIST_QUEUE_H
+#ifndef MPD_PLAYLIST_QUEUE_HXX
+#define MPD_PLAYLIST_QUEUE_HXX
 
 #include "playlist_error.h"
 

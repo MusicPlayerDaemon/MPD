@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,25 +17,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PLAYLIST_ANY_H
-#define MPD_PLAYLIST_ANY_H
+#ifndef MPD_PLAYLIST_MAPPER_HXX
+#define MPD_PLAYLIST_MAPPER_HXX
 
 #include <glib.h>
 
-struct playlist_provider;
 struct input_stream;
 
 /**
- * Opens a playlist from the specified URI, which can be either an
- * absolute remote URI (with a scheme) or a relative path to the
- * music orplaylist directory.
+ * Opens a playlist from an URI relative to the playlist or music
+ * directory.
  *
  * @param is_r on success, an input_stream object may be returned
  * here, which must be closed after the playlist_provider object is
  * freed
  */
 struct playlist_provider *
-playlist_open_any(const char *uri, GMutex *mutex, GCond *cond,
-		  struct input_stream **is_r);
+playlist_mapper_open(const char *uri, GMutex *mutex, GCond *cond,
+		     struct input_stream **is_r);
 
 #endif
