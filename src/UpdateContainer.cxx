@@ -21,7 +21,7 @@
 #include "UpdateContainer.hxx"
 #include "UpdateInternal.hxx"
 #include "UpdateDatabase.hxx"
-#include "db_lock.h"
+#include "DatabaseLock.hxx"
 #include "directory.h"
 #include "song.h"
 #include "decoder_plugin.h"

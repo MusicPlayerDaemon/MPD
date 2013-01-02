@@ -23,10 +23,10 @@
 #include "DatabaseHelpers.hxx"
 #include "SongFilter.hxx"
 #include "DatabaseSave.hxx"
+#include "DatabaseLock.hxx"
+#include "db_error.h"
 
 extern "C" {
-#include "db_error.h"
-#include "db_lock.h"
 #include "conf.h"
 }
 

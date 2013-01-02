@@ -23,7 +23,7 @@
 #include "UpdateDatabase.hxx"
 #include "UpdateSong.hxx"
 #include "UpdateArchive.hxx"
-#include "db_lock.h"
+#include "DatabaseLock.hxx"
 #include "directory.h"
 #include "song.h"
 #include "PlaylistVector.hxx"

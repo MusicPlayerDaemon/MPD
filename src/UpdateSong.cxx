@@ -23,7 +23,7 @@
 #include "UpdateIO.hxx"
 #include "UpdateDatabase.hxx"
 #include "UpdateContainer.hxx"
-#include "db_lock.h"
+#include "DatabaseLock.hxx"
 #include "directory.h"
 #include "song.h"
 #include "decoder_plugin.h"

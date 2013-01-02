@@ -23,7 +23,7 @@
 #include "PlaylistVector.hxx"
 #include "directory.h"
 #include "song.h"
-#include "db_lock.h"
+#include "DatabaseLock.hxx"
 
 #include <glib.h>
 #include <assert.h>

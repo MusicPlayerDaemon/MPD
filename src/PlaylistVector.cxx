@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "PlaylistVector.hxx"
-#include "db_lock.h"
+#include "DatabaseLock.hxx"
 
 #include <assert.h>
 #include <string.h>

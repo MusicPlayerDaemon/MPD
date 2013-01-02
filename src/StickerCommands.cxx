@@ -20,6 +20,7 @@
 #include "config.h"
 #include "StickerCommands.hxx"
 #include "SongPrint.hxx"
+#include "DatabaseLock.hxx"
 
 extern "C" {
 #include "protocol/result.h"
@@ -27,7 +28,6 @@ extern "C" {
 #include "sticker_print.h"
 #include "song_sticker.h"
 #include "database.h"
-#include "db_lock.h"
 }
 
 #include <string.h>

@@ -20,7 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "UpdateArchive.hxx"
 #include "UpdateInternal.hxx"
-#include "db_lock.h"
+#include "DatabaseLock.hxx"
 #include "directory.h"
 #include "song.h"
 

@@ -21,13 +21,13 @@
 #include "directory.h"
 #include "SongFilter.hxx"
 #include "PlaylistVector.hxx"
+#include "DatabaseLock.hxx"
 
 extern "C" {
 #include "song.h"
 #include "song_sort.h"
 #include "path.h"
 #include "util/list_sort.h"
-#include "db_lock.h"
 }
 
 #include <glib.h>

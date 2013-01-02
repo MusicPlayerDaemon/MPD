@@ -234,7 +234,7 @@ src_mpd_SOURCES = \
 	src/DatabaseQueue.cxx src/DatabaseQueue.hxx \
 	src/DatabasePlaylist.cxx src/DatabasePlaylist.hxx \
 	src/db_error.h \
-	src/db_lock.c src/db_lock.h \
+	src/DatabaseLock.cxx src/DatabaseLock.hxx \
 	src/DatabaseSave.cxx src/DatabaseSave.hxx \
 	src/DatabasePlugin.hxx \
 	src/DatabaseVisitor.hxx \
@@ -1072,7 +1072,7 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/DatabaseSelection.cxx \
 	src/Directory.cxx src/DirectorySave.cxx \
 	src/PlaylistVector.cxx src/PlaylistDatabase.cxx \
-	src/db_lock.c src/DatabaseSave.cxx \
+	src/DatabaseLock.cxx src/DatabaseSave.cxx \
 	src/Song.cxx src/song_sort.c src/SongSave.cxx \
 	src/tag.c src/tag_pool.c src/TagSave.cxx \
 	src/path.c \
