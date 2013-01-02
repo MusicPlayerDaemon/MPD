@@ -63,7 +63,7 @@ song_save(FILE *fp, const struct song *song)
 }
 
 struct song *
-song_load(FILE *fp, struct directory *parent, const char *uri,
+song_load(FILE *fp, Directory *parent, const char *uri,
 	  GString *buffer, GError **error_r)
 {
 	struct song *song = parent != NULL

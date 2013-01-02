@@ -5,7 +5,7 @@ extern "C" {
 #include "song.h"
 #include "Directory.hxx"
 
-struct directory detached_root;
+Directory detached_root;
 
 struct song *
 song_dup_detached(const struct song *src)

@@ -22,14 +22,14 @@
 
 #include "check.h"
 
-struct directory;
+struct Directory;
 struct song;
 
 /**
  * Caller must lock the #db_mutex.
  */
 void
-delete_song(struct directory *parent, struct song *song);
+delete_song(Directory *parent, struct song *song);
 
 /**
  * Recursively free a directory and all its contents.
@@ -37,7 +37,7 @@ delete_song(struct directory *parent, struct song *song);
  * Caller must lock the #db_mutex.
  */
 void
-delete_directory(struct directory *directory);
+delete_directory(Directory *directory);
 
 /**
  * Caller must NOT lock the #db_mutex.
@@ -45,6 +45,6 @@ delete_directory(struct directory *directory);
  * @return true if the database was modified
  */
 bool
-delete_name_in(struct directory *parent, const char *name);
+delete_name_in(Directory *parent, const char *name);
 
 #endif

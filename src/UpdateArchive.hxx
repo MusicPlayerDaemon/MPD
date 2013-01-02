@@ -25,13 +25,13 @@
 
 #include <sys/stat.h>
 
-struct directory;
+struct Directory;
 struct archive_plugin;
 
 #ifdef ENABLE_ARCHIVE
 
 bool
-update_archive_file(struct directory *directory,
+update_archive_file(Directory *directory,
 		    const char *name, const char *suffix,
 		    const struct stat *st);
 
@@ -40,7 +40,7 @@ update_archive_file(struct directory *directory,
 #include <glib.h>
 
 static inline bool
-update_archive_file(gcc_unused struct directory *directory,
+update_archive_file(gcc_unused Directory *directory,
 		    gcc_unused const char *name,
 		    gcc_unused const char *suffix,
 		    gcc_unused const struct stat *st)

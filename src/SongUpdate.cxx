@@ -45,7 +45,7 @@ extern "C" {
 #include <stdio.h>
 
 struct song *
-song_file_load(const char *path, struct directory *parent)
+song_file_load(const char *path, Directory *parent)
 {
 	struct song *song;
 	bool ret;

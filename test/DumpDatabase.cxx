@@ -48,7 +48,7 @@ my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
 }
 
 static bool
-DumpDirectory(const directory &directory, GError **)
+DumpDirectory(const Directory &directory, GError **)
 {
 	cout << "D " << directory.path << endl;
 	return true;
@@ -63,7 +63,7 @@ DumpSong(song &song, GError **)
 
 static bool
 DumpPlaylist(const PlaylistInfo &playlist,
-	     const directory &directory, GError **)
+	     const Directory &directory, GError **)
 {
 	cout << "P " << directory.path << "/" << playlist.name.c_str() << endl;
 	return true;

@@ -35,14 +35,14 @@ extern "C" {
 #include <string.h>
 
 static void
-update_archive_tree(struct directory *directory, char *name)
+update_archive_tree(Directory *directory, char *name)
 {
 	char *tmp = strchr(name, '/');
 	if (tmp) {
 		*tmp = 0;
 		//add dir is not there already
 		db_lock();
-		struct directory *subdir =
+		Directory *subdir =
 			directory->MakeChild(name);
 		subdir->device = DEVICE_INARCHIVE;
 		db_unlock();
@@ -82,12 +82,12 @@ update_archive_tree(struct directory *directory, char *name)
  * @param plugin the archive plugin which fits this archive type
  */
 static void
-update_archive_file2(struct directory *parent, const char *name,
+update_archive_file2(Directory *parent, const char *name,
 		     const struct stat *st,
 		     const struct archive_plugin *plugin)
 {
 	db_lock();
-	directory *directory = parent->FindChild(name);
+	Directory *directory = parent->FindChild(name);
 	db_unlock();
 
 	if (directory != NULL && directory->mtime == st->st_mtime &&
@@ -136,7 +136,7 @@ update_archive_file2(struct directory *parent, const char *name,
 }
 
 bool
-update_archive_file(struct directory *directory,
+update_archive_file(Directory *directory,
 		    const char *name, const char *suffix,
 		    const struct stat *st)
 {

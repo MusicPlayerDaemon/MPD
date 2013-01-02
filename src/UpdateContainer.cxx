@@ -42,11 +42,11 @@ extern "C" {
  *
  * The caller must lock the database.
  */
-static struct directory *
-make_directory_if_modified(struct directory *parent, const char *name,
+static Directory *
+make_directory_if_modified(Directory *parent, const char *name,
 			   const struct stat *st)
 {
-	directory *directory = parent->FindChild(name);
+	Directory *directory = parent->FindChild(name);
 
 	// directory exists already
 	if (directory != NULL) {
@@ -66,7 +66,7 @@ make_directory_if_modified(struct directory *parent, const char *name,
 }
 
 bool
-update_container_file(struct directory *directory,
+update_container_file(Directory *directory,
 		      const char *name,
 		      const struct stat *st,
 		      const struct decoder_plugin *plugin)
@@ -75,8 +75,7 @@ update_container_file(struct directory *directory,
 		return false;
 
 	db_lock();
-	struct directory *contdir =
-		make_directory_if_modified(directory, name, st);
+	Directory *contdir = make_directory_if_modified(directory, name, st);
 	if (contdir == NULL) {
 		/* not modified */
 		db_unlock();

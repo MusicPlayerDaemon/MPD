@@ -29,7 +29,7 @@
 
 #define PLAYLIST_FILE_SUFFIX ".m3u"
 
-struct directory;
+struct Directory;
 struct song;
 
 void mapper_init(const char *_music_dir, const char *_playlist_dir);
@@ -87,7 +87,7 @@ map_uri_fs(const char *uri);
  */
 gcc_malloc
 char *
-map_directory_fs(const struct directory *directory);
+map_directory_fs(const Directory *directory);
 
 /**
  * Determines the file system path of a directory's child (may be a
@@ -99,7 +99,7 @@ map_directory_fs(const struct directory *directory);
  */
 gcc_malloc
 char *
-map_directory_child_fs(const struct directory *directory, const char *name);
+map_directory_child_fs(const Directory *directory, const char *name);
 
 /**
  * Determines the file system path of a song.  This must not be a

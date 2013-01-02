@@ -43,7 +43,7 @@ struct song {
 	struct list_head siblings;
 
 	struct tag *tag;
-	struct directory *parent;
+	struct Directory *parent;
 	time_t mtime;
 
 	/**
@@ -64,7 +64,7 @@ struct song {
  * A dummy #directory instance that is used for "detached" song
  * copies.
  */
-extern struct directory detached_root;
+extern struct Directory detached_root;
 
 G_BEGIN_DECLS
 
@@ -74,7 +74,7 @@ song_remote_new(const char *uri);
 
 /** allocate a new song with a local file name */
 struct song *
-song_file_new(const char *path, struct directory *parent);
+song_file_new(const char *path, struct Directory *parent);
 
 /**
  * allocate a new song structure with a local file name and attempt to
@@ -82,7 +82,7 @@ song_file_new(const char *path, struct directory *parent);
  * data, NULL is returned.
  */
 struct song *
-song_file_load(const char *path, struct directory *parent);
+song_file_load(const char *path, struct Directory *parent);
 
 /**
  * Replaces the URI of a song object.  The given song object is

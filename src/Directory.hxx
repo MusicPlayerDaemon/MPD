@@ -54,7 +54,7 @@ struct song;
 struct db_visitor;
 class SongFilter;
 
-struct directory {
+struct Directory {
 	/**
 	 * Pointers to the siblings of this directory within the
 	 * parent directory.  It is unused (undefined) in the root
@@ -83,7 +83,7 @@ struct directory {
 
 	struct list_head playlists;
 
-	struct directory *parent;
+	Directory *parent;
 	time_t mtime;
 	ino_t inode;
 	dev_t device;
@@ -91,53 +91,53 @@ struct directory {
 	char path[sizeof(long)];
 
 	/**
-	 * Generic constructor for #directory object.
+	 * Generic constructor for #Directory object.
 	 */
 	gcc_malloc
-	static directory *NewGeneric(const char *path_utf8, directory *parent);
+	static Directory *NewGeneric(const char *path_utf8, Directory *parent);
 
 	/**
-	 * Create a new root #directory object.
+	 * Create a new root #Directory object.
 	 */
 	gcc_malloc
-	static directory *NewRoot() {
+	static Directory *NewRoot() {
 		return NewGeneric("", nullptr);
 	}
 
 	/**
-	 * Free this #directory object (and the whole object tree within it),
+	 * Free this #Directory object (and the whole object tree within it),
 	 * assuming it was already removed from the parent.
 	 */
 	void Free();
 
 	/**
-	 * Remove this #directory object from its parent and free it.  This
-	 * must not be called with the root directory.
+	 * Remove this #Directory object from its parent and free it.  This
+	 * must not be called with the root Directory.
 	 *
 	 * Caller must lock the #db_mutex.
 	 */
 	void Delete();
 
 	/**
-	 * Create a new #directory object as a child of the given one.
+	 * Create a new #Directory object as a child of the given one.
 	 *
 	 * Caller must lock the #db_mutex.
 	 *
 	 * @param name_utf8 the UTF-8 encoded name of the new sub directory
 	 */
 	gcc_malloc
-	directory *CreateChild(const char *name_utf8);
+	Directory *CreateChild(const char *name_utf8);
 
 	/**
 	 * Caller must lock the #db_mutex.
 	 */
 	gcc_pure
-	const directory *FindChild(const char *name) const;
+	const Directory *FindChild(const char *name) const;
 
 	gcc_pure
-	directory *FindChild(const char *name) {
-		const directory *cthis = this;
-		return const_cast<directory *>(cthis->FindChild(name));
+	Directory *FindChild(const char *name) {
+		const Directory *cthis = this;
+		return const_cast<Directory *>(cthis->FindChild(name));
 	}
 
 	/**
@@ -146,8 +146,8 @@ struct directory {
 	 *
 	 * Caller must lock the #db_mutex.
 	 */
-	struct directory *MakeChild(const char *name_utf8) {
-		struct directory *child = FindChild(name_utf8);
+	Directory *MakeChild(const char *name_utf8) {
+		Directory *child = FindChild(name_utf8);
 		if (child == nullptr)
 			child = CreateChild(name_utf8);
 		return child;
@@ -157,10 +157,10 @@ struct directory {
 	 * Looks up a directory by its relative URI.
 	 *
 	 * @param uri the relative URI
-	 * @return the directory, or NULL if none was found
+	 * @return the Directory, or NULL if none was found
 	 */
 	gcc_pure
-	directory *LookupDirectory(const char *uri);
+	Directory *LookupDirectory(const char *uri);
 
 	gcc_pure
 	bool IsEmpty() const {
@@ -198,7 +198,7 @@ struct directory {
 
 	gcc_pure
 	song *FindSong(const char *name_utf8) {
-		const directory *cthis = this;
+		const Directory *cthis = this;
 		return const_cast<song *>(cthis->FindSong(name_utf8));
 	}
 

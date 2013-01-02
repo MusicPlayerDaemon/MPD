@@ -127,7 +127,6 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 	/* find song dir key */
 	} else if (argc == 5 && strcmp(argv[1], "find") == 0) {
 		/* "sticker find song a/directory name" */
-		struct directory *directory;
 		bool success;
 		struct sticker_song_find_data data = {
 			client,
@@ -135,7 +134,7 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 		};
 
 		db_lock();
-		directory = db_get_directory(argv[3]);
+		Directory *directory = db_get_directory(argv[3]);
 		if (directory == NULL) {
 			db_unlock();
 			command_error(client, ACK_ERROR_NO_EXIST,

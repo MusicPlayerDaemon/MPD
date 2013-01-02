@@ -27,7 +27,7 @@
 #define SONG_BEGIN "song_begin: "
 
 struct song;
-struct directory;
+struct Directory;
 
 void
 song_save(FILE *fp, const struct song *song);
@@ -41,7 +41,7 @@ song_save(FILE *fp, const struct song *song);
  * @return true on success, false on error
  */
 struct song *
-song_load(FILE *fp, struct directory *parent, const char *uri,
+song_load(FILE *fp, Directory *parent, const char *uri,
 	  GString *buffer, GError **error_r);
 
 #endif

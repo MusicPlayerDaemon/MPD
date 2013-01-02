@@ -109,7 +109,7 @@ db_is_simple(void)
 	return is_simple;
 }
 
-struct directory *
+Directory *
 db_get_root(void)
 {
 	assert(db != NULL);
@@ -118,13 +118,13 @@ db_get_root(void)
 	return ((SimpleDatabase *)db)->GetRoot();
 }
 
-struct directory *
+Directory *
 db_get_directory(const char *name)
 {
 	if (db == NULL)
 		return NULL;
 
-	struct directory *music_root = db_get_root();
+	Directory *music_root = db_get_root();
 	if (name == NULL)
 		return music_root;
 

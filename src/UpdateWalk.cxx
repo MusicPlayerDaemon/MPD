@@ -87,7 +87,7 @@ update_walk_global_finish(void)
 }
 
 static void
-directory_set_stat(struct directory *dir, const struct stat *st)
+directory_set_stat(Directory *dir, const struct stat *st)
 {
 	dir->inode = st->st_ino;
 	dir->device = st->st_dev;
@@ -95,12 +95,11 @@ directory_set_stat(struct directory *dir, const struct stat *st)
 }
 
 static void
-remove_excluded_from_directory(struct directory *directory,
-			       GSList *exclude_list)
+remove_excluded_from_directory(Directory *directory, GSList *exclude_list)
 {
 	db_lock();
 
-	struct directory *child, *n;
+	Directory *child, *n;
 	directory_for_each_child_safe(child, n, directory) {
 		char *name_fs = utf8_to_fs_charset(child->GetName());
 
@@ -129,9 +128,9 @@ remove_excluded_from_directory(struct directory *directory,
 }
 
 static void
-purge_deleted_from_directory(struct directory *directory)
+purge_deleted_from_directory(Directory *directory)
 {
-	struct directory *child, *n;
+	Directory *child, *n;
 	directory_for_each_child_safe(child, n, directory) {
 		if (directory_exists(child))
 			continue;
@@ -172,7 +171,7 @@ purge_deleted_from_directory(struct directory *directory)
 
 #ifndef G_OS_WIN32
 static int
-update_directory_stat(struct directory *directory)
+update_directory_stat(Directory *directory)
 {
 	struct stat st;
 	if (stat_directory(directory, &st) < 0)
@@ -184,7 +183,7 @@ update_directory_stat(struct directory *directory)
 #endif
 
 static int
-find_inode_ancestor(struct directory *parent, ino_t inode, dev_t device)
+find_inode_ancestor(Directory *parent, ino_t inode, dev_t device)
 {
 #ifndef G_OS_WIN32
 	while (parent) {
@@ -208,7 +207,7 @@ find_inode_ancestor(struct directory *parent, ino_t inode, dev_t device)
 }
 
 static bool
-update_playlist_file2(struct directory *directory,
+update_playlist_file2(Directory *directory,
 		      const char *name, const char *suffix,
 		      const struct stat *st)
 {
@@ -226,7 +225,7 @@ update_playlist_file2(struct directory *directory,
 }
 
 static bool
-update_regular_file(struct directory *directory,
+update_regular_file(Directory *directory,
 		    const char *name, const struct stat *st)
 {
 	const char *suffix = uri_get_suffix(name);
@@ -239,10 +238,10 @@ update_regular_file(struct directory *directory,
 }
 
 static bool
-update_directory(struct directory *directory, const struct stat *st);
+update_directory(Directory *directory, const struct stat *st);
 
 static void
-update_directory_child(struct directory *directory,
+update_directory_child(Directory *directory,
 		       const char *name, const struct stat *st)
 {
 	assert(strchr(name, '/') == NULL);
@@ -254,7 +253,7 @@ update_directory_child(struct directory *directory,
 			return;
 
 		db_lock();
-		struct directory *subdir = directory->MakeChild(name);
+		Directory *subdir = directory->MakeChild(name);
 		db_unlock();
 
 		assert(directory == subdir->parent);
@@ -280,7 +279,7 @@ static bool skip_path(const char *path)
 
 G_GNUC_PURE
 static bool
-skip_symlink(const struct directory *directory, const char *utf8_name)
+skip_symlink(const Directory *directory, const char *utf8_name)
 {
 #ifndef WIN32
 	char *path_fs = map_directory_child_fs(directory, utf8_name);
@@ -353,7 +352,7 @@ skip_symlink(const struct directory *directory, const char *utf8_name)
 }
 
 static bool
-update_directory(struct directory *directory, const struct stat *st)
+update_directory(Directory *directory, const struct stat *st)
 {
 	assert(S_ISDIR(st->st_mode));
 
@@ -418,11 +417,11 @@ update_directory(struct directory *directory, const struct stat *st)
 	return true;
 }
 
-static struct directory *
-directory_make_child_checked(struct directory *parent, const char *name_utf8)
+static Directory *
+directory_make_child_checked(Directory *parent, const char *name_utf8)
 {
 	db_lock();
-	directory *directory = parent->FindChild(name_utf8);
+	Directory *directory = parent->FindChild(name_utf8);
 	db_unlock();
 
 	if (directory != NULL)
@@ -450,10 +449,10 @@ directory_make_child_checked(struct directory *parent, const char *name_utf8)
 	return directory;
 }
 
-static struct directory *
+static Directory *
 directory_make_uri_parent_checked(const char *uri)
 {
-	struct directory *directory = db_get_root();
+	Directory *directory = db_get_root();
 	char *duplicated = g_strdup(uri);
 	char *name_utf8 = duplicated, *slash;
 
@@ -477,7 +476,7 @@ directory_make_uri_parent_checked(const char *uri)
 static void
 update_uri(const char *uri)
 {
-	struct directory *parent = directory_make_uri_parent_checked(uri);
+	Directory *parent = directory_make_uri_parent_checked(uri);
 	if (parent == NULL)
 		return;
 
@@ -502,7 +501,7 @@ update_walk(const char *path, bool discard)
 	if (path != NULL && !isRootDirectory(path)) {
 		update_uri(path);
 	} else {
-		struct directory *directory = db_get_root();
+		Directory *directory = db_get_root();
 		struct stat st;
 
 		if (stat_directory(directory, &st) == 0)

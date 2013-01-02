@@ -45,7 +45,7 @@ class ProxyDatabase : public Database {
 	unsigned port;
 
 	struct mpd_connection *connection;
-	struct directory *root;
+	Directory *root;
 
 public:
 	static Database *Create(const struct config_param *param,
@@ -168,7 +168,7 @@ ProxyDatabase::Open(GError **error_r)
 		return false;
 	}
 
-	root = directory::NewRoot();
+	root = Directory::NewRoot();
 
 	return true;
 }
@@ -240,8 +240,7 @@ Visit(struct mpd_connection *connection,
 	const char *path = mpd_directory_get_path(directory);
 
 	if (visit_directory) {
-		struct directory *d =
-			directory::NewGeneric(path, &detached_root);
+		Directory *d = Directory::NewGeneric(path, &detached_root);
 		bool success = visit_directory(*d, error_r);
 		d->Free();
 		if (!success)

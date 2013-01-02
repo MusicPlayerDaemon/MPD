@@ -24,13 +24,13 @@
 
 #include <functional>
 
-struct directory;
+struct Directory;
 struct song;
 struct PlaylistInfo;
 
-typedef std::function<bool(const directory &, GError **)> VisitDirectory;
+typedef std::function<bool(const Directory &, GError **)> VisitDirectory;
 typedef std::function<bool(struct song &, GError **)> VisitSong;
-typedef std::function<bool(const PlaylistInfo &, const directory &,
+typedef std::function<bool(const PlaylistInfo &, const Directory &,
 			   GError **)> VisitPlaylist;
 
 typedef std::function<bool(const char *, GError **)> VisitString;

@@ -46,7 +46,7 @@ directory_quark(void)
 }
 
 void
-directory_save(FILE *fp, const struct directory *directory)
+directory_save(FILE *fp, const Directory *directory)
 {
 	if (!directory->IsRoot()) {
 		fprintf(fp, DIRECTORY_MTIME "%lu\n",
@@ -55,7 +55,7 @@ directory_save(FILE *fp, const struct directory *directory)
 		fprintf(fp, "%s%s\n", DIRECTORY_BEGIN, directory->GetPath());
 	}
 
-	struct directory *cur;
+	Directory *cur;
 	directory_for_each_child(cur, directory) {
 		char *base = g_path_get_basename(cur->path);
 
@@ -78,8 +78,8 @@ directory_save(FILE *fp, const struct directory *directory)
 		fprintf(fp, DIRECTORY_END "%s\n", directory->GetPath());
 }
 
-static struct directory *
-directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
+static Directory *
+directory_load_subdir(FILE *fp, Directory *parent, const char *name,
 		      GString *buffer, GError **error_r)
 {
 	const char *line;
@@ -91,7 +91,7 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 		return NULL;
 	}
 
-	struct directory *directory = parent->CreateChild(name);
+	Directory *directory = parent->CreateChild(name);
 
 	line = read_text_line(fp, buffer);
 	if (line == NULL) {
@@ -132,7 +132,7 @@ directory_load_subdir(FILE *fp, struct directory *parent, const char *name,
 }
 
 bool
-directory_load(FILE *fp, struct directory *directory,
+directory_load(FILE *fp, Directory *directory,
 	       GString *buffer, GError **error)
 {
 	const char *line;
@@ -140,7 +140,7 @@ directory_load(FILE *fp, struct directory *directory,
 	while ((line = read_text_line(fp, buffer)) != NULL &&
 	       !g_str_has_prefix(line, DIRECTORY_END)) {
 		if (g_str_has_prefix(line, DIRECTORY_DIR)) {
-			struct directory *subdir =
+			Directory *subdir =
 				directory_load_subdir(fp, directory,
 						      line + sizeof(DIRECTORY_DIR) - 1,
 						      buffer, error);

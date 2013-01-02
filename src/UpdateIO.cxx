@@ -29,7 +29,7 @@
 #include <unistd.h>
 
 int
-stat_directory(const struct directory *directory, struct stat *st)
+stat_directory(const Directory *directory, struct stat *st)
 {
 	char *path_fs = map_directory_fs(directory);
 	if (path_fs == NULL)
@@ -44,7 +44,7 @@ stat_directory(const struct directory *directory, struct stat *st)
 }
 
 int
-stat_directory_child(const struct directory *parent, const char *name,
+stat_directory_child(const Directory *parent, const char *name,
 		     struct stat *st)
 {
 	char *path_fs = map_directory_child_fs(parent, name);
@@ -60,7 +60,7 @@ stat_directory_child(const struct directory *parent, const char *name,
 }
 
 bool
-directory_exists(const struct directory *directory)
+directory_exists(const Directory *directory)
 {
 	char *path_fs = map_directory_fs(directory);
 	if (path_fs == NULL)
@@ -79,7 +79,7 @@ directory_exists(const struct directory *directory)
 }
 
 bool
-directory_child_is_regular(const struct directory *directory,
+directory_child_is_regular(const Directory *directory,
 			   const char *name_utf8)
 {
 	char *path_fs = map_directory_child_fs(directory, name_utf8);
@@ -94,7 +94,7 @@ directory_child_is_regular(const struct directory *directory,
 }
 
 bool
-directory_child_access(const struct directory *directory,
+directory_child_access(const Directory *directory,
 		       const char *name, int mode)
 {
 #ifdef WIN32

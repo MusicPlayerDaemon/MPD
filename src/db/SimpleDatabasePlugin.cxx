@@ -180,7 +180,7 @@ SimpleDatabase::Load(GError **error_r)
 bool
 SimpleDatabase::Open(GError **error_r)
 {
-	root = directory::NewRoot();
+	root = Directory::NewRoot();
 	mtime = 0;
 
 #ifndef NDEBUG
@@ -197,7 +197,7 @@ SimpleDatabase::Open(GError **error_r)
 		if (!Check(error_r))
 			return false;
 
-		root = directory::NewRoot();
+		root = Directory::NewRoot();
 	}
 
 	return true;
@@ -243,7 +243,7 @@ SimpleDatabase::ReturnSong(gcc_unused struct song *song) const
 }
 
 G_GNUC_PURE
-const struct directory *
+const Directory *
 SimpleDatabase::LookupDirectory(const char *uri) const
 {
 	assert(root != NULL);
@@ -262,7 +262,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 {
 	ScopeDatabaseLock protect;
 
-	const directory *directory = root->LookupDirectory(selection.uri);
+	const Directory *directory = root->LookupDirectory(selection.uri);
 	if (directory == NULL) {
 		if (visit_song) {
 			song *song = root->LookupSong(selection.uri);

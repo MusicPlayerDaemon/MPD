@@ -24,27 +24,27 @@
 
 #include <sys/stat.h>
 
-struct directory;
+struct Directory;
 
 int
-stat_directory(const struct directory *directory, struct stat *st);
+stat_directory(const Directory *directory, struct stat *st);
 
 int
-stat_directory_child(const struct directory *parent, const char *name,
+stat_directory_child(const Directory *parent, const char *name,
 		     struct stat *st);
 
 bool
-directory_exists(const struct directory *directory);
+directory_exists(const Directory *directory);
 
 bool
-directory_child_is_regular(const struct directory *directory,
+directory_child_is_regular(const Directory *directory,
 			   const char *name_utf8);
 
 /**
  * Checks if the given permissions on the mapped file are given.
  */
 bool
-directory_child_access(const struct directory *directory,
+directory_child_access(const Directory *directory,
 		       const char *name, int mode);
 
 #endif

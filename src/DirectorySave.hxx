@@ -24,13 +24,13 @@
 
 #include <stdio.h>
 
-struct directory;
+struct Directory;
 
 void
-directory_save(FILE *fp, const struct directory *directory);
+directory_save(FILE *fp, const Directory *directory);
 
 bool
-directory_load(FILE *fp, struct directory *directory,
+directory_load(FILE *fp, Directory *directory,
 	       GString *buffer, GError **error);
 
 #endif

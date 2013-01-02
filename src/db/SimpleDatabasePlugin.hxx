@@ -28,12 +28,12 @@
 
 #include <time.h>
 
-struct directory;
+struct Directory;
 
 class SimpleDatabase : public Database {
 	std::string path;
 
-	struct directory *root;
+	Directory *root;
 
 	time_t mtime;
 
@@ -43,7 +43,7 @@ class SimpleDatabase : public Database {
 
 public:
 	gcc_pure
-	struct directory *GetRoot() {
+	Directory *GetRoot() {
 		assert(root != NULL);
 
 		return root;
@@ -90,7 +90,7 @@ protected:
 	bool Load(GError **error_r);
 
 	gcc_pure
-	const struct directory *LookupDirectory(const char *uri) const;
+	const Directory *LookupDirectory(const char *uri) const;
 };
 
 extern const DatabasePlugin simple_db_plugin;

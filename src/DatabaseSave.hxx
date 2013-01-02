@@ -24,12 +24,12 @@
 
 #include <stdio.h>
 
-struct directory;
+struct Directory;
 
 void
-db_save_internal(FILE *file, const struct directory *root);
+db_save_internal(FILE *file, const Directory *root);
 
 bool
-db_load_internal(FILE *file, struct directory *root, GError **error);
+db_load_internal(FILE *file, Directory *root, GError **error);
 
 #endif

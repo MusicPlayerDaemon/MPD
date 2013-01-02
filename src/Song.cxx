@@ -29,10 +29,10 @@ extern "C" {
 
 #include <assert.h>
 
-struct directory detached_root;
+Directory detached_root;
 
 static struct song *
-song_alloc(const char *uri, struct directory *parent)
+song_alloc(const char *uri, Directory *parent)
 {
 	size_t uri_length;
 
@@ -59,7 +59,7 @@ song_remote_new(const char *uri)
 }
 
 struct song *
-song_file_new(const char *path, struct directory *parent)
+song_file_new(const char *path, Directory *parent)
 {
 	assert((parent == nullptr) == (*path == '/'));
 
@@ -117,14 +117,14 @@ song_free(struct song *song)
 
 gcc_pure
 static inline bool
-directory_equals(const struct directory &a, const struct directory &b)
+directory_equals(const Directory &a, const Directory &b)
 {
 	return strcmp(a.path, b.path) == 0;
 }
 
 gcc_pure
 static inline bool
-directory_is_same(const struct directory *a, const struct directory *b)
+directory_is_same(const Directory *a, const Directory *b)
 {
 	return a == b ||
 		(a != nullptr && b != nullptr &&

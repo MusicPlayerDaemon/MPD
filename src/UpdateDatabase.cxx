@@ -29,7 +29,7 @@
 #include <assert.h>
 
 void
-delete_song(struct directory *dir, struct song *del)
+delete_song(Directory *dir, struct song *del)
 {
 	assert(del->parent == dir);
 
@@ -54,9 +54,9 @@ delete_song(struct directory *dir, struct song *del)
  * Caller must lock the #db_mutex.
  */
 static void
-clear_directory(struct directory *directory)
+clear_directory(Directory *directory)
 {
-	struct directory *child, *n;
+	Directory *child, *n;
 	directory_for_each_child_safe(child, n, directory)
 		delete_directory(child);
 
@@ -68,7 +68,7 @@ clear_directory(struct directory *directory)
 }
 
 void
-delete_directory(struct directory *directory)
+delete_directory(Directory *directory)
 {
 	assert(directory->parent != NULL);
 
@@ -78,12 +78,12 @@ delete_directory(struct directory *directory)
 }
 
 bool
-delete_name_in(struct directory *parent, const char *name)
+delete_name_in(Directory *parent, const char *name)
 {
 	bool modified = false;
 
 	db_lock();
-	directory *directory = parent->FindChild(name);
+	Directory *directory = parent->FindChild(name);
 
 	if (directory != NULL) {
 		delete_directory(directory);

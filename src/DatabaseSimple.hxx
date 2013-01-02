@@ -28,7 +28,7 @@
 #include <stdbool.h>
 
 struct config_param;
-struct directory;
+struct Directory;
 struct db_selection;
 struct db_visitor;
 
@@ -47,7 +47,7 @@ db_is_simple(void);
  * May only be used if db_is_simple() returns true.
  */
 gcc_pure
-struct directory *
+Directory *
 db_get_root(void);
 
 /**
@@ -55,7 +55,7 @@ db_get_root(void);
  */
 gcc_nonnull(1)
 gcc_pure
-struct directory *
+Directory *
 db_get_directory(const char *name);
 
 /**

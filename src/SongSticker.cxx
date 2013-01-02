@@ -109,7 +109,7 @@ sticker_song_get(const struct song *song)
 }
 
 struct sticker_song_find_data {
-	struct directory *directory;
+	Directory *directory;
 	const char *base_uri;
 	size_t base_uri_length;
 
@@ -134,7 +134,7 @@ sticker_song_find_cb(const char *uri, const char *value, gpointer user_data)
 }
 
 bool
-sticker_song_find(struct directory *directory, const char *name,
+sticker_song_find(Directory *directory, const char *name,
 		  void (*func)(struct song *song, const char *value,
 			       gpointer user_data),
 		  gpointer user_data)

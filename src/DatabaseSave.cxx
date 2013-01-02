@@ -58,7 +58,7 @@ db_quark(void)
 }
 
 void
-db_save_internal(FILE *fp, const struct directory *music_root)
+db_save_internal(FILE *fp, const Directory *music_root)
 {
 	assert(music_root != NULL);
 
@@ -77,7 +77,7 @@ db_save_internal(FILE *fp, const struct directory *music_root)
 }
 
 bool
-db_load_internal(FILE *fp, struct directory *music_root, GError **error)
+db_load_internal(FILE *fp, Directory *music_root, GError **error)
 {
 	GString *buffer = g_string_sized_new(1024);
 	char *line;

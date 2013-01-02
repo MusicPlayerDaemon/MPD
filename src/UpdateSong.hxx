@@ -24,10 +24,10 @@
 
 #include <sys/stat.h>
 
-struct directory;
+struct Directory;
 
 bool
-update_song_file(struct directory *directory,
+update_song_file(Directory *directory,
 		 const char *name, const char *suffix,
 		 const struct stat *st);
 

@@ -38,7 +38,7 @@ extern "C" {
 #include <functional>
 
 static bool
-PrintDirectory(struct client *client, const directory &directory)
+PrintDirectory(struct client *client, const Directory &directory)
 {
 	if (!directory.IsRoot())
 		client_printf(client, "directory: %s\n", directory.GetPath());
@@ -48,7 +48,7 @@ PrintDirectory(struct client *client, const directory &directory)
 
 static void
 print_playlist_in_directory(struct client *client,
-			    const directory &directory,
+			    const Directory &directory,
 			    const char *name_utf8)
 {
 	if (directory.IsRoot())
@@ -89,7 +89,7 @@ PrintSongFull(struct client *client, song &song)
 static bool
 PrintPlaylistBrief(struct client *client,
 		   const PlaylistInfo &playlist,
-		   const directory &directory)
+		   const Directory &directory)
 {
 	print_playlist_in_directory(client, directory, playlist.name.c_str());
 	return true;
@@ -98,7 +98,7 @@ PrintPlaylistBrief(struct client *client,
 static bool
 PrintPlaylistFull(struct client *client,
 		  const PlaylistInfo &playlist,
-		  const directory &directory)
+		  const Directory &directory)
 {
 	print_playlist_in_directory(client, directory, playlist.name.c_str());
 

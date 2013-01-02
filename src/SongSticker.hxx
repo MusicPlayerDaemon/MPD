@@ -23,7 +23,7 @@
 #include <glib.h>
 
 struct song;
-struct directory;
+struct Directory;
 struct sticker;
 
 /**
@@ -75,7 +75,7 @@ sticker_song_get(const struct song *song);
  * failure
  */
 bool
-sticker_song_find(struct directory *directory, const char *name,
+sticker_song_find(Directory *directory, const char *name,
 		  void (*func)(struct song *song, const char *value,
 			       gpointer user_data),
 		  gpointer user_data);

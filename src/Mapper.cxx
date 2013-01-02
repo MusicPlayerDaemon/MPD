@@ -181,7 +181,7 @@ map_uri_fs(const char *uri)
 }
 
 char *
-map_directory_fs(const struct directory *directory)
+map_directory_fs(const Directory *directory)
 {
 	assert(music_dir_utf8 != NULL);
 	assert(music_dir_fs != NULL);
@@ -193,7 +193,7 @@ map_directory_fs(const struct directory *directory)
 }
 
 char *
-map_directory_child_fs(const struct directory *directory, const char *name)
+map_directory_child_fs(const Directory *directory, const char *name)
 {
 	assert(music_dir_utf8 != NULL);
 	assert(music_dir_fs != NULL);

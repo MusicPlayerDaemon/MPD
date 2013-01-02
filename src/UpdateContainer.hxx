@@ -24,11 +24,11 @@
 
 #include <sys/stat.h>
 
-struct directory;
+struct Directory;
 struct decoder_plugin;
 
 bool
-update_container_file(struct directory *directory,
+update_container_file(Directory *directory,
 		      const char *name,
 		      const struct stat *st,
 		      const struct decoder_plugin *plugin);

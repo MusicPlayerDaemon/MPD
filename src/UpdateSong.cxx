@@ -37,7 +37,7 @@ extern "C" {
 #include <unistd.h>
 
 static void
-update_song_file2(struct directory *directory,
+update_song_file2(Directory *directory,
 		  const char *name, const struct stat *st,
 		  const struct decoder_plugin *plugin)
 {
@@ -101,7 +101,7 @@ update_song_file2(struct directory *directory,
 }
 
 bool
-update_song_file(struct directory *directory,
+update_song_file(Directory *directory,
 		 const char *name, const char *suffix,
 		 const struct stat *st)
 {
