@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,27 +24,6 @@
 #include <assert.h>
 #include <string.h>
 #include <glib.h>
-
-static struct playlist_metadata *
-playlist_metadata_new(const char *name, time_t mtime)
-{
-	assert(name != NULL);
-
-	struct playlist_metadata *pm = g_slice_new(struct playlist_metadata);
-	pm->name = g_strdup(name);
-	pm->mtime = mtime;
-	return pm;
-}
-
-static void
-playlist_metadata_free(struct playlist_metadata *pm)
-{
-	assert(pm != NULL);
-	assert(pm->name != NULL);
-
-	g_free(pm->name);
-	g_slice_free(struct playlist_metadata, pm);
-}
 
 void
 playlist_vector_deinit(struct list_head *pv)

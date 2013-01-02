@@ -1,0 +1,48 @@
+/*
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
+ * http://www.musicpd.org
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+#ifndef MPD_PLAYLIST_INFO_HXX
+#define MPD_PLAYLIST_INFO_HXX
+
+#include "check.h"
+#include "util/list.h"
+
+#include <sys/time.h>
+
+/**
+ * A directory entry pointing to a playlist file.
+ */
+struct playlist_metadata {
+	struct list_head siblings;
+
+	/**
+	 * The UTF-8 encoded name of the playlist file.
+	 */
+	char *name;
+
+	time_t mtime;
+};
+
+struct playlist_metadata *
+playlist_metadata_new(const char *name, time_t mtime);
+
+void
+playlist_metadata_free(struct playlist_metadata *pm);
+
+#endif

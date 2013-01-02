@@ -20,9 +20,9 @@
 #ifndef MPD_PLAYLIST_VECTOR_HXX
 #define MPD_PLAYLIST_VECTOR_HXX
 
+#include "PlaylistInfo.hxx"
 #include "util/list.h"
 
-#include <stddef.h>
 #include <sys/time.h>
 
 #define playlist_vector_for_each(pos, head) \
@@ -30,20 +30,6 @@
 
 #define playlist_vector_for_each_safe(pos, n, head) \
 	list_for_each_entry_safe(pos, n, head, siblings)
-
-/**
- * A directory entry pointing to a playlist file.
- */
-struct playlist_metadata {
-	struct list_head siblings;
-
-	/**
-	 * The UTF-8 encoded name of the playlist file.
-	 */
-	char *name;
-
-	time_t mtime;
-};
 
 void
 playlist_vector_deinit(struct list_head *pv);

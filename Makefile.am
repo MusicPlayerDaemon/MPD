@@ -302,7 +302,8 @@ src_mpd_SOURCES = \
 	src/PlaylistSong.cxx src/PlaylistSong.hxx \
 	src/PlaylistState.cxx src/PlaylistState.hxx \
 	src/PlaylistQueue.cxx src/PlaylistQueue.hxx \
-	src/PlaylistVector.cxx \
+	src/PlaylistVector.cxx src/PlaylistVector.hxx \
+	src/PlaylistInfo.cxx src/PlaylistInfo.hxx \
 	src/PlaylistDatabase.cxx \
 	src/queue.c \
 	src/QueuePrint.cxx src/QueuePrint.hxx \
@@ -1071,7 +1072,7 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/DatabaseRegistry.cxx \
 	src/DatabaseSelection.cxx \
 	src/Directory.cxx src/DirectorySave.cxx \
-	src/PlaylistVector.cxx src/PlaylistDatabase.cxx \
+	src/PlaylistVector.cxx src/PlaylistInfo.cxx src/PlaylistDatabase.cxx \
 	src/DatabaseLock.cxx src/DatabaseSave.cxx \
 	src/Song.cxx src/song_sort.c src/SongSave.cxx \
 	src/tag.c src/tag_pool.c src/TagSave.cxx \
