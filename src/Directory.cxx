@@ -55,7 +55,6 @@ Directory::Directory()
 {
 	INIT_LIST_HEAD(&children);
 	INIT_LIST_HEAD(&songs);
-	INIT_LIST_HEAD(&playlists);
 
 	path[0] = 0;
 }
@@ -64,15 +63,12 @@ Directory::Directory(const char *_path)
 {
 	INIT_LIST_HEAD(&children);
 	INIT_LIST_HEAD(&songs);
-	INIT_LIST_HEAD(&playlists);
 
 	strcpy(path, _path);
 }
 
 Directory::~Directory()
 {
-	playlist_vector_deinit(&playlists);
-
 	struct song *song, *ns;
 	directory_for_each_song_safe(song, ns, this)
 		song_free(song);
@@ -318,9 +314,8 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 	}
 
 	if (visit_playlist) {
-		PlaylistInfo *i;
-		directory_for_each_playlist(i, this)
-			if (!visit_playlist(*i, *this, error_r))
+		for (const PlaylistInfo &p : playlists)
+			if (!visit_playlist(p, *this, error_r))
 				return false;
 	}
 

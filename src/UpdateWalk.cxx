@@ -158,14 +158,15 @@ purge_deleted_from_directory(Directory *directory)
 		g_free(path);
 	}
 
-	PlaylistInfo *pm, *np;
-	directory_for_each_playlist_safe(pm, np, directory) {
-		if (!directory_child_is_regular(directory, pm->name.c_str())) {
+	for (auto i = directory->playlists.begin(),
+		     end = directory->playlists.end();
+	     i != end;) {
+		if (!directory_child_is_regular(directory, i->name.c_str())) {
 			db_lock();
-			playlist_vector_remove(&directory->playlists,
-					       pm->name.c_str());
+			i = directory->playlists.erase(i);
 			db_unlock();
-		}
+		} else
+			++i;
 	}
 }
 
@@ -217,8 +218,7 @@ update_playlist_file2(Directory *directory,
 	PlaylistInfo pi(name, st->st_mtime);
 
 	db_lock();
-	if (playlist_vector_update_or_add(&directory->playlists,
-					  std::move(pi)))
+	if (directory->playlists.UpdateOrInsert(std::move(pi)))
 		modified = true;
 	db_unlock();
 	return true;

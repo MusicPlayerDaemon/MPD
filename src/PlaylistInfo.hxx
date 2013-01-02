@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "util/list.h"
+#include "gcc.h"
 
 #include <string>
 
@@ -39,6 +40,18 @@ struct PlaylistInfo {
 	std::string name;
 
 	time_t mtime;
+
+	class CompareName {
+		const char *const name;
+
+	public:
+		constexpr CompareName(const char *_name):name(_name) {}
+
+		gcc_pure
+		bool operator()(const PlaylistInfo &pi) const {
+			return pi.name.compare(name) == 0;
+		}
+	};
 
 	template<typename N>
 	PlaylistInfo(N &&_name, time_t _mtime)

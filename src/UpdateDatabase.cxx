@@ -96,7 +96,7 @@ delete_name_in(Directory *parent, const char *name)
 		modified = true;
 	}
 
-	playlist_vector_remove(&parent->playlists, name);
+	parent->playlists.erase(name);
 
 	db_unlock();
 

@@ -1358,7 +1358,7 @@ test_test_pcm_LDADD = \
 
 test_TestQueuePriority_SOURCES = \
 	src/queue.c \
-	test/TestQueuePriority.c
+	test/TestQueuePriority.cxx
 test_TestQueuePriority_LDADD = \
 	$(GLIB_LIBS)
 

@@ -24,6 +24,7 @@
 #include "util/list.h"
 #include "gcc.h"
 #include "DatabaseVisitor.hxx"
+#include "PlaylistVector.hxx"
 
 #include <glib.h>
 #include <stdbool.h>
@@ -43,12 +44,6 @@
 
 #define directory_for_each_song_safe(pos, n, directory) \
 	list_for_each_entry_safe(pos, n, &directory->songs, siblings)
-
-#define directory_for_each_playlist(pos, directory) \
-	list_for_each_entry(pos, &directory->playlists, siblings)
-
-#define directory_for_each_playlist_safe(pos, n, directory) \
-	list_for_each_entry_safe(pos, n, &directory->playlists, siblings)
 
 struct song;
 struct db_visitor;
@@ -81,7 +76,7 @@ struct Directory {
 	 */
 	struct list_head songs;
 
-	struct list_head playlists;
+	PlaylistVector playlists;
 
 	Directory *parent;
 	time_t mtime;
@@ -179,7 +174,7 @@ public:
 	bool IsEmpty() const {
 		return list_empty(&children) &&
 			list_empty(&songs) &&
-			list_empty(&playlists);
+			playlists.empty();
 	}
 
 	gcc_pure

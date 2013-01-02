@@ -21,71 +21,48 @@
 #include "PlaylistVector.hxx"
 #include "DatabaseLock.hxx"
 
+#include <algorithm>
+
 #include <assert.h>
 #include <string.h>
 #include <glib.h>
 
-void
-playlist_vector_deinit(struct list_head *pv)
-{
-	assert(pv != NULL);
-
-	PlaylistInfo *pm, *n;
-	playlist_vector_for_each_safe(pm, n, pv)
-		delete pm;
-}
-
-PlaylistInfo *
-playlist_vector_find(struct list_head *pv, const char *name)
+PlaylistVector::iterator
+PlaylistVector::find(const char *name)
 {
 	assert(holding_db_lock());
-	assert(pv != NULL);
 	assert(name != NULL);
 
-	PlaylistInfo *pm;
-	playlist_vector_for_each(pm, pv)
-		if (pm->name.compare(name) == 0)
-			return pm;
-
-	return NULL;
-}
-
-void
-playlist_vector_add(struct list_head *pv, PlaylistInfo &&pi)
-{
-	assert(holding_db_lock());
-
-	PlaylistInfo *pm = new PlaylistInfo(std::move(pi));
-	list_add_tail(&pm->siblings, pv);
+	return std::find_if(begin(), end(),
+			    PlaylistInfo::CompareName(name));
 }
 
 bool
-playlist_vector_update_or_add(struct list_head *pv, PlaylistInfo &&pi)
+PlaylistVector::UpdateOrInsert(PlaylistInfo &&pi)
 {
 	assert(holding_db_lock());
 
-	PlaylistInfo *pm = playlist_vector_find(pv, pi.name.c_str());
-	if (pm != NULL) {
-		if (pi.mtime == pm->mtime)
+	auto i = find(pi.name.c_str());
+	if (i != end()) {
+		if (pi.mtime == i->mtime)
 			return false;
 
-		pm->mtime = pi.mtime;
+		i->mtime = pi.mtime;
 	} else
-		playlist_vector_add(pv, std::move(pi));
+		push_back(std::move(pi));
 
 	return true;
 }
 
 bool
-playlist_vector_remove(struct list_head *pv, const char *name)
+PlaylistVector::erase(const char *name)
 {
 	assert(holding_db_lock());
 
-	PlaylistInfo *pm = playlist_vector_find(pv, name);
-	if (pm == NULL)
+	auto i = find(name);
+	if (i == end())
 		return false;
 
-	list_del(&pm->siblings);
-	delete pm;
+	erase(i);
 	return true;
 }

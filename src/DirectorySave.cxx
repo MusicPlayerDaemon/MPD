@@ -72,7 +72,7 @@ directory_save(FILE *fp, const Directory *directory)
 	directory_for_each_song(song, directory)
 		song_save(fp, song);
 
-	playlist_vector_save(fp, &directory->playlists);
+	playlist_vector_save(fp, directory->playlists);
 
 	if (!directory->IsRoot())
 		fprintf(fp, DIRECTORY_END "%s\n", directory->GetPath());
@@ -168,7 +168,7 @@ directory_load(FILE *fp, Directory *directory,
 			   buffer */
 			char *name = g_strdup(line + sizeof(PLAYLIST_META_BEGIN) - 1);
 
-			if (!playlist_metadata_load(fp, &directory->playlists,
+			if (!playlist_metadata_load(fp, directory->playlists,
 						    name, buffer, error)) {
 				g_free(name);
 				return false;

@@ -21,43 +21,35 @@
 #define MPD_PLAYLIST_VECTOR_HXX
 
 #include "PlaylistInfo.hxx"
-#include "util/list.h"
+#include "gcc.h"
 
-#include <sys/time.h>
+#include <list>
 
-#define playlist_vector_for_each(pos, head) \
-	list_for_each_entry(pos, head, siblings)
+class PlaylistVector : protected std::list<PlaylistInfo> {
+protected:
+	/**
+	 * Caller must lock the #db_mutex.
+	 */
+	gcc_pure
+	iterator find(const char *name);
 
-#define playlist_vector_for_each_safe(pos, n, head) \
-	list_for_each_entry_safe(pos, n, head, siblings)
+public:
+	using std::list<PlaylistInfo>::empty;
+	using std::list<PlaylistInfo>::begin;
+	using std::list<PlaylistInfo>::end;
+	using std::list<PlaylistInfo>::erase;
 
-void
-playlist_vector_deinit(struct list_head *pv);
+	/**
+	 * Caller must lock the #db_mutex.
+	 *
+	 * @return true if the vector or one of its items was modified
+	 */
+	bool UpdateOrInsert(PlaylistInfo &&pi);
 
-/**
- * Caller must lock the #db_mutex.
- */
-PlaylistInfo *
-playlist_vector_find(struct list_head *pv, const char *name);
-
-/**
- * Caller must lock the #db_mutex.
- */
-void
-playlist_vector_add(struct list_head *pv, PlaylistInfo &&pi);
-
-/**
- * Caller must lock the #db_mutex.
- *
- * @return true if the vector or one of its items was modified
- */
-bool
-playlist_vector_update_or_add(struct list_head *pv, PlaylistInfo &&pi);
-
-/**
- * Caller must lock the #db_mutex.
- */
-bool
-playlist_vector_remove(struct list_head *pv, const char *name);
+	/**
+	 * Caller must lock the #db_mutex.
+	 */
+	bool erase(const char *name);
+};
 
 #endif /* SONGVEC_H */

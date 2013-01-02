@@ -36,18 +36,17 @@ playlist_database_quark(void)
 }
 
 void
-playlist_vector_save(FILE *fp, const struct list_head *pv)
+playlist_vector_save(FILE *fp, const PlaylistVector &pv)
 {
-	PlaylistInfo *pm;
-	playlist_vector_for_each(pm, pv)
+	for (const PlaylistInfo &pi : pv)
 		fprintf(fp, PLAYLIST_META_BEGIN "%s\n"
 			"mtime: %li\n"
 			"playlist_end\n",
-			pm->name.c_str(), (long)pm->mtime);
+			pi.name.c_str(), (long)pi.mtime);
 }
 
 bool
-playlist_metadata_load(FILE *fp, struct list_head *pv, const char *name,
+playlist_metadata_load(FILE *fp, PlaylistVector &pv, const char *name,
 		       GString *buffer, GError **error_r)
 {
 	PlaylistInfo pm(name, 0);
@@ -76,6 +75,6 @@ playlist_metadata_load(FILE *fp, struct list_head *pv, const char *name,
 		}
 	}
 
-	playlist_vector_update_or_add(pv, std::move(pm));
+	pv.UpdateOrInsert(std::move(pm));
 	return true;
 }
