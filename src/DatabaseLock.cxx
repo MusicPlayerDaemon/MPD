@@ -26,7 +26,7 @@
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
 
-GStaticMutex db_mutex = G_STATIC_MUTEX_INIT;
+Mutex db_mutex;
 
 #ifndef NDEBUG
 GThread *db_mutex_holder;

@@ -27,11 +27,12 @@
 #define MPD_DB_LOCK_HXX
 
 #include "check.h"
+#include "thread/Mutex.hxx"
 
 #include <glib.h>
 #include <assert.h>
 
-extern GStaticMutex db_mutex;
+extern Mutex db_mutex;
 
 #ifndef NDEBUG
 
@@ -58,7 +59,7 @@ db_lock(void)
 {
 	assert(!holding_db_lock());
 
-	g_static_mutex_lock(&db_mutex);
+	db_mutex.lock();
 
 	assert(db_mutex_holder == NULL);
 #ifndef NDEBUG
@@ -77,7 +78,7 @@ db_unlock(void)
 	db_mutex_holder = NULL;
 #endif
 
-	g_static_mutex_unlock(&db_mutex);
+	db_mutex.unlock();
 }
 
 #ifdef __cplusplus
