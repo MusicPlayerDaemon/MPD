@@ -23,7 +23,7 @@
 #include "DatabaseSelection.hxx"
 #include "directory.h"
 #include "song.h"
-#include "playlist_vector.h"
+#include "PlaylistVector.hxx"
 
 extern "C" {
 #include "conf.h"

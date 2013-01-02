@@ -26,11 +26,11 @@
 #include "db_lock.h"
 #include "directory.h"
 #include "song.h"
+#include "PlaylistVector.hxx"
 
 extern "C" {
 #include "exclude.h"
 #include "database.h"
-#include "playlist_vector.h"
 #include "uri.h"
 #include "mapper.h"
 #include "path.h"

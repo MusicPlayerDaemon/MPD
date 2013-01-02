@@ -144,7 +144,6 @@ mpd_headers = \
 	src/playlist_internal.h \
 	src/playlist_plugin.h \
 	src/playlist_list.h \
-	src/playlist_vector.h \
 	src/playlist/extm3u_playlist_plugin.h \
 	src/playlist/m3u_playlist_plugin.h \
 	src/playlist/pls_playlist_plugin.h \
@@ -307,7 +306,7 @@ src_mpd_SOURCES = \
 	src/PlaylistSong.cxx src/PlaylistSong.hxx \
 	src/PlaylistState.cxx src/PlaylistState.hxx \
 	src/PlaylistQueue.cxx src/PlaylistQueue.hxx \
-	src/playlist_vector.c \
+	src/PlaylistVector.cxx \
 	src/PlaylistDatabase.cxx \
 	src/queue.c \
 	src/QueuePrint.cxx src/QueuePrint.hxx \
@@ -1076,7 +1075,7 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/DatabaseRegistry.cxx \
 	src/DatabaseSelection.cxx \
 	src/Directory.cxx src/DirectorySave.cxx \
-	src/playlist_vector.c src/PlaylistDatabase.cxx \
+	src/PlaylistVector.cxx src/PlaylistDatabase.cxx \
 	src/db_lock.c src/DatabaseSave.cxx \
 	src/Song.cxx src/song_sort.c src/SongSave.cxx \
 	src/tag.c src/tag_pool.c src/TagSave.cxx \

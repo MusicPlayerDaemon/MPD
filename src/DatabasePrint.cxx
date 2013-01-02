@@ -21,6 +21,7 @@
 #include "DatabasePrint.hxx"
 #include "DatabaseSelection.hxx"
 #include "SongFilter.hxx"
+#include "PlaylistVector.hxx"
 
 extern "C" {
 #include "database.h"
@@ -28,7 +29,6 @@ extern "C" {
 #include "song.h"
 #include "song_print.h"
 #include "time_print.h"
-#include "playlist_vector.h"
 #include "tag.h"
 }
 

@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "playlist_vector.h"
+#include "PlaylistVector.hxx"
 #include "db_lock.h"
 
 #include <assert.h>

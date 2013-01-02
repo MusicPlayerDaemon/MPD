@@ -20,13 +20,10 @@
 #include "config.h" /* must be first for large file support */
 #include "UpdateDatabase.hxx"
 #include "UpdateRemove.hxx"
+#include "PlaylistVector.hxx"
 #include "directory.h"
 #include "song.h"
 #include "db_lock.h"
-
-extern "C" {
-#include "playlist_vector.h"
-}
 
 #include <glib.h>
 #include <assert.h>

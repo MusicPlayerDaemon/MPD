@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "PlaylistDatabase.hxx"
+#include "PlaylistVector.hxx"
 
 extern "C" {
-#include "playlist_vector.h"
 #include "text_file.h"
 #include "string_util.h"
 }

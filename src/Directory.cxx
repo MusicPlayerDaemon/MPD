@@ -20,11 +20,11 @@
 #include "config.h"
 #include "directory.h"
 #include "SongFilter.hxx"
+#include "PlaylistVector.hxx"
 
 extern "C" {
 #include "song.h"
 #include "song_sort.h"
-#include "playlist_vector.h"
 #include "path.h"
 #include "util/list_sort.h"
 #include "db_lock.h"
