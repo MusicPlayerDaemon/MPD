@@ -309,7 +309,7 @@ src_mpd_SOURCES = \
 	src/replay_gain_info.c \
 	src/sig_handlers.c \
 	src/Song.cxx \
-	src/song_update.c \
+	src/SongUpdate.cxx \
 	src/SongPrint.cxx src/SongPrint.hxx \
 	src/SongSave.cxx src/SongSave.hxx \
 	src/resolver.c src/resolver.h \
