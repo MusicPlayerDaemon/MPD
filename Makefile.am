@@ -289,7 +289,7 @@ src_mpd_SOURCES = \
 	src/playlist.c \
 	src/playlist_global.c \
 	src/playlist_control.c \
-	src/playlist_edit.c \
+	src/PlaylistEdit.cxx \
 	src/PlaylistPrint.cxx src/PlaylistPrint.hxx \
 	src/PlaylistSave.cxx src/PlaylistSave.hxx \
 	src/PlaylistMapper.cxx src/PlaylistMapper.hxx \
