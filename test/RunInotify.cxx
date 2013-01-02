@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "inotify_source.h"
+#include "InotifySource.hxx"
 
 #include <glib.h>
 

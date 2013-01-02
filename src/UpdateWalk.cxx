@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,22 +18,25 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "update_walk.h"
-#include "update_io.h"
-#include "update_db.h"
-#include "update_song.h"
-#include "update_archive.h"
-#include "database.h"
+#include "UpdateWalk.hxx"
+#include "UpdateIO.hxx"
+#include "UpdateDatabase.hxx"
+#include "UpdateSong.hxx"
+#include "UpdateArchive.hxx"
 #include "db_lock.h"
-#include "exclude.h"
 #include "directory.h"
 #include "song.h"
+
+extern "C" {
+#include "exclude.h"
+#include "database.h"
 #include "playlist_vector.h"
 #include "uri.h"
 #include "mapper.h"
 #include "path.h"
 #include "playlist_list.h"
 #include "conf.h"
+}
 
 #include <glib.h>
 

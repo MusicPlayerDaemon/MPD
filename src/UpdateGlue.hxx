@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,23 +17,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_UPDATE_WALK_H
-#define MPD_UPDATE_WALK_H
+#ifndef MPD_UPDATE_GLUE_HXX
+#define MPD_UPDATE_GLUE_HXX
 
-#include "check.h"
+void update_global_init(void);
 
-#include <stdbool.h>
+void update_global_finish(void);
 
-void
-update_walk_global_init(void);
-
-void
-update_walk_global_finish(void);
+unsigned
+isUpdatingDB(void);
 
 /**
- * Returns true if the database was modified.
+ * Add this path to the database update queue.
+ *
+ * @param path a path to update; if NULL or an empty string,
+ * the whole music directory is updated
+ * @return the job id, or 0 on error
  */
-bool
-update_walk(const char *path, bool discard);
+unsigned
+update_enqueue(const char *path, bool discard);
 
 #endif

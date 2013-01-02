@@ -21,13 +21,13 @@
 #include "PlayerCommands.hxx"
 #include "CommandError.hxx"
 #include "PlaylistPrint.hxx"
+#include "UpdateGlue.hxx"
 
 extern "C" {
 #include "protocol/argparser.h"
 #include "protocol/result.h"
 #include "player_control.h"
 #include "playlist.h"
-#include "update.h"
 #include "volume.h"
 #include "client.h"
 #include "client_internal.h"

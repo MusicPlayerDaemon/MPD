@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,36 +17,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_UPDATE_DB_H
-#define MPD_UPDATE_DB_H
+#ifndef MPD_INOTIFY_QUEUE_HXX
+#define MPD_INOTIFY_QUEUE_HXX
 
-#include "check.h"
-
-#include <stdbool.h>
-
-struct directory;
-struct song;
-
-/**
- * Caller must lock the #db_mutex.
- */
 void
-delete_song(struct directory *parent, struct song *song);
+mpd_inotify_queue_init(void);
 
-/**
- * Recursively free a directory and all its contents.
- *
- * Caller must lock the #db_mutex.
- */
 void
-delete_directory(struct directory *directory);
+mpd_inotify_queue_finish(void);
 
-/**
- * Caller must NOT lock the #db_mutex.
- *
- * @return true if the database was modified
- */
-bool
-delete_name_in(struct directory *parent, const char *name);
+void
+mpd_inotify_enqueue(char *uri_utf8);
 
 #endif

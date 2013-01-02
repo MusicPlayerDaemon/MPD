@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,16 +17,31 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_INOTIFY_QUEUE_H
-#define MPD_INOTIFY_QUEUE_H
+#ifndef MPD_INOTIFY_UPDATE_HXX
+#define MPD_INOTIFY_UPDATE_HXX
+
+#include "check.h"
+
+#ifdef HAVE_INOTIFY_INIT
 
 void
-mpd_inotify_queue_init(void);
+mpd_inotify_init(unsigned max_depth);
 
 void
-mpd_inotify_queue_finish(void);
+mpd_inotify_finish(void);
 
-void
-mpd_inotify_enqueue(char *uri_utf8);
+#else /* !HAVE_INOTIFY_INIT */
+
+static inline void
+mpd_inotify_init(G_GNUC_UNUSED unsigned max_depth)
+{
+}
+
+static inline void
+mpd_inotify_finish(void)
+{
+}
+
+#endif /* !HAVE_INOTIFY_INIT */
 
 #endif

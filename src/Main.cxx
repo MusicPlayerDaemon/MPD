@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #include "config.h"
 #include "Main.hxx"
 #include "PlaylistFile.hxx"
+#include "UpdateGlue.hxx"
 #include "chunk.h"
 
 extern "C" {
@@ -31,7 +32,6 @@ extern "C" {
 #include "AllCommands.h"
 #include "playlist.h"
 #include "database.h"
-#include "update.h"
 #include "player_thread.h"
 #include "listen.h"
 #include "cmdline.h"
@@ -59,11 +59,11 @@ extern "C" {
 
 #include "mpd_error.h"
 
-extern "C" {
-
 #ifdef ENABLE_INOTIFY
-#include "inotify_update.h"
+#include "InotifyUpdate.hxx"
 #endif
+
+extern "C" {
 
 #ifdef ENABLE_SQLITE
 #include "sticker.h"

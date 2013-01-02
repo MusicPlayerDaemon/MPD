@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,12 @@
  */
 
 #include "config.h"
-#include "inotify_source.h"
+#include "InotifySource.hxx"
+
+extern "C" {
 #include "fifo_buffer.h"
+}
+
 #include "fd_util.h"
 #include "mpd_error.h"
 
@@ -63,11 +67,10 @@ mpd_inotify_in_event(G_GNUC_UNUSED GIOChannel *_source,
 		     G_GNUC_UNUSED GIOCondition condition,
 		     gpointer data)
 {
-	struct mpd_inotify_source *source = data;
+	struct mpd_inotify_source *source = (struct mpd_inotify_source *)data;
 	void *dest;
 	size_t length;
 	ssize_t nbytes;
-	const struct inotify_event *event;
 
 	dest = fifo_buffer_write(source->buffer, &length);
 	if (dest == NULL)
@@ -85,7 +88,9 @@ mpd_inotify_in_event(G_GNUC_UNUSED GIOChannel *_source,
 	while (true) {
 		const char *name;
 
-		event = fifo_buffer_read(source->buffer, &length);
+		const struct inotify_event *event =
+			(const struct inotify_event *)
+			fifo_buffer_read(source->buffer, &length);
 		if (event == NULL || length < sizeof(*event) ||
 		    length < sizeof(*event) + event->len)
 			break;

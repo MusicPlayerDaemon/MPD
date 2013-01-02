@@ -18,12 +18,15 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "update_db.h"
-#include "update_remove.h"
+#include "UpdateDatabase.hxx"
+#include "UpdateRemove.hxx"
 #include "directory.h"
 #include "song.h"
-#include "playlist_vector.h"
 #include "db_lock.h"
+
+extern "C" {
+#include "playlist_vector.h"
+}
 
 #include <glib.h>
 #include <assert.h>

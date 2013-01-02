@@ -18,18 +18,20 @@
  */
 
 #include "config.h"
-#include "update.h"
-#include "update_queue.h"
-#include "update_walk.h"
-#include "update_remove.h"
-#include "update.h"
+#include "UpdateGlue.hxx"
+#include "UpdateQueue.hxx"
+#include "UpdateWalk.hxx"
+#include "UpdateRemove.hxx"
+
+extern "C" {
 #include "database.h"
 #include "mapper.h"
 #include "playlist.h"
 #include "event_pipe.h"
-#include "update.h"
 #include "idle.h"
 #include "stats.h"
+}
+
 #include "Main.hxx"
 #include "mpd_error.h"
 
@@ -65,7 +67,7 @@ isUpdatingDB(void)
 
 static void * update_task(void *_path)
 {
-	const char *path = _path;
+	const char *path = (const char *)_path;
 
 	if (path != NULL && *path != 0)
 		g_debug("starting: %s", path);

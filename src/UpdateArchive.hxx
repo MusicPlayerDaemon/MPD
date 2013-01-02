@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,25 +17,38 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_UPDATE_REMOVE_H
-#define MPD_UPDATE_REMOVE_H
+#ifndef MPD_UPDATE_ARCHIVE_HXX
+#define MPD_UPDATE_ARCHIVE_HXX
 
 #include "check.h"
+#include "gcc.h"
 
-struct song;
+#include <stdbool.h>
+#include <sys/stat.h>
 
-void
-update_remove_global_init(void);
+struct directory;
+struct archive_plugin;
 
-void
-update_remove_global_finish(void);
+#ifdef ENABLE_ARCHIVE
 
-/**
- * Sends a signal to the main thread which will in turn remove the
- * song: from the sticker database and from the playlist.  This
- * serialized access is implemented to avoid excessive locking.
- */
-void
-update_remove_song(const struct song *song);
+bool
+update_archive_file(struct directory *directory,
+		    const char *name, const char *suffix,
+		    const struct stat *st);
+
+#else
+
+#include <glib.h>
+
+static inline bool
+update_archive_file(gcc_unused struct directory *directory,
+		    gcc_unused const char *name,
+		    gcc_unused const char *suffix,
+		    gcc_unused const struct stat *st)
+{
+	return false;
+}
+
+#endif
 
 #endif

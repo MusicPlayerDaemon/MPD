@@ -18,10 +18,13 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "update_io.h"
-#include "mapper.h"
+#include "UpdateIO.hxx"
 #include "directory.h"
 #include "glib_compat.h"
+
+extern "C" {
+#include "mapper.h"
+}
 
 #include <glib.h>
 

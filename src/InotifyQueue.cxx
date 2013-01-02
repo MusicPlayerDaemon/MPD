@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "inotify_queue.h"
-#include "update.h"
+#include "InotifyQueue.hxx"
+#include "UpdateGlue.hxx"
 
 #include <glib.h>
 
@@ -67,7 +67,7 @@ mpd_inotify_run_update(G_GNUC_UNUSED gpointer data)
 	unsigned id;
 
 	while (inotify_queue != NULL) {
-		char *uri_utf8 = inotify_queue->data;
+		char *uri_utf8 = (char *)inotify_queue->data;
 
 		id = update_enqueue(uri_utf8, false);
 		if (id == 0)
@@ -108,7 +108,7 @@ mpd_inotify_enqueue(char *uri_utf8)
 
 	inotify_queue = NULL;
 	while (old_queue != NULL) {
-		char *current_uri = old_queue->data;
+		char *current_uri = (char *)old_queue->data;
 
 		if (path_in(uri_utf8, current_uri)) {
 			/* already enqueued */

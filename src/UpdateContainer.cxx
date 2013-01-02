@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,16 +18,19 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "update_container.h"
-#include "update_internal.h"
-#include "update_db.h"
+#include "UpdateContainer.hxx"
+#include "UpdateInternal.hxx"
+#include "UpdateDatabase.hxx"
 #include "db_lock.h"
 #include "directory.h"
 #include "song.h"
-#include "mapper.h"
 #include "decoder_plugin.h"
+
+extern "C" {
+#include "mapper.h"
 #include "tag.h"
 #include "tag_handler.h"
+}
 
 #include <glib.h>
 

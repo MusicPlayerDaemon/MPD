@@ -18,16 +18,19 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "update_song.h"
-#include "update_internal.h"
-#include "update_io.h"
-#include "update_db.h"
-#include "update_container.h"
+#include "UpdateSong.hxx"
+#include "UpdateInternal.hxx"
+#include "UpdateIO.hxx"
+#include "UpdateDatabase.hxx"
+#include "UpdateContainer.hxx"
 #include "db_lock.h"
 #include "directory.h"
 #include "song.h"
-#include "decoder_list.h"
 #include "decoder_plugin.h"
+
+extern "C" {
+#include "decoder_list.h"
+}
 
 #include <glib.h>
 
@@ -104,7 +107,7 @@ update_song_file(struct directory *directory,
 		 const struct stat *st)
 {
 	const struct decoder_plugin *plugin =
-		decoder_plugin_from_suffix(suffix, false);
+		decoder_plugin_from_suffix(suffix, nullptr);
 	if (plugin == NULL)
 		return false;
 

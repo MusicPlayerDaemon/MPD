@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,12 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_UPDATE_IO_H
-#define MPD_UPDATE_IO_H
+#ifndef MPD_UPDATE_IO_HXX
+#define MPD_UPDATE_IO_HXX
 
 #include "check.h"
 
-#include <stdbool.h>
 #include <sys/stat.h>
 
 struct directory;

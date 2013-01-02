@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,31 +17,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_INOTIFY_UPDATE_H
-#define MPD_INOTIFY_UPDATE_H
+#ifndef MPD_UPDATE_SONG_HXX
+#define MPD_UPDATE_SONG_HXX
 
 #include "check.h"
 
-#ifdef HAVE_INOTIFY_INIT
+#include <sys/stat.h>
 
-void
-mpd_inotify_init(unsigned max_depth);
+struct directory;
 
-void
-mpd_inotify_finish(void);
-
-#else /* !HAVE_INOTIFY_INIT */
-
-static inline void
-mpd_inotify_init(G_GNUC_UNUSED unsigned max_depth)
-{
-}
-
-static inline void
-mpd_inotify_finish(void)
-{
-}
-
-#endif /* !HAVE_INOTIFY_INIT */
+bool
+update_song_file(struct directory *directory,
+		 const char *name, const char *suffix,
+		 const struct stat *st);
 
 #endif

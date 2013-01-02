@@ -91,10 +91,6 @@ mpd_headers = \
 	src/fd_util.h \
 	src/gerror.h \
 	src/glib_compat.h \
-	src/update.h \
-	src/inotify_source.h \
-	src/inotify_queue.h \
-	src/inotify_update.h \
 	src/gcc.h \
 	src/decoder_list.h \
 	src/decoder_print.h \
@@ -263,15 +259,15 @@ src_mpd_SOURCES = \
 	src/filter_config.c \
 	src/filter_plugin.c \
 	src/filter_registry.c \
-	src/update.c \
-	src/update_queue.c src/update_queue.h \
-	src/update_io.c src/update_io.h \
-	src/update_db.c src/update_db.h \
-	src/update_walk.c src/update_walk.h \
-	src/update_song.c src/update_song.h \
-	src/update_container.c src/update_container.h \
-	src/update_internal.h \
-	src/update_remove.c src/update_remove.h \
+	src/UpdateGlue.cxx src/UpdateGlue.hxx \
+	src/UpdateQueue.cxx src/UpdateQueue.hxx \
+	src/UpdateIO.cxx src/UpdateIO.hxx \
+	src/UpdateDatabase.cxx src/UpdateDatabase.hxx \
+	src/UpdateWalk.cxx src/UpdateWalk.hxx \
+	src/UpdateSong.cxx src/UpdateSong.hxx \
+	src/UpdateContainer.cxx src/UpdateContainer.hxx \
+	src/UpdateInternal.hxx \
+	src/UpdateRemove.cxx src/UpdateRemove.hxx \
 	src/client.c \
 	src/client_event.c \
 	src/client_expire.c \
@@ -374,9 +370,9 @@ endif
 
 if ENABLE_INOTIFY
 src_mpd_SOURCES += \
-	src/inotify_source.c \
-	src/inotify_queue.c \
-	src/inotify_update.c
+	src/InotifySource.cxx src/InotifySource.hxx \
+	src/InotifyQueue.cxx src/InotifyQueue.hxx \
+	src/InotifyUpdate.cxx src/InotifyUpdate.hxx
 endif
 
 if ENABLE_SQLITE
@@ -449,7 +445,7 @@ if ENABLE_ARCHIVE
 noinst_LIBRARIES += libarchive.a
 
 src_mpd_SOURCES +=  \
-	src/update_archive.c src/update_archive.h
+	src/UpdateArchive.cxx src/UpdateArchive.hxx
 
 libarchive_a_SOURCES = \
 	src/archive_api.c \
@@ -1351,12 +1347,12 @@ TESTS += test/test_archive_iso9660.sh
 endif
 
 if ENABLE_INOTIFY
-noinst_PROGRAMS += test/run_inotify
-test_run_inotify_SOURCES = test/run_inotify.c \
+noinst_PROGRAMS += test/RunInotify
+test_RunInotify_SOURCES = test/RunInotify.c \
 	src/fd_util.c \
 	src/fifo_buffer.c \
-	src/inotify_source.c
-test_run_inotify_LDADD = $(GLIB_LIBS)
+	src/InotifySource.cxx
+test_RunInotify_LDADD = $(GLIB_LIBS)
 endif
 
 test_test_byte_reverse_SOURCES = \

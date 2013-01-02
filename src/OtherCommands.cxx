@@ -21,6 +21,7 @@
 #include "OtherCommands.hxx"
 #include "DatabaseCommands.hxx"
 #include "CommandError.hxx"
+#include "UpdateGlue.hxx"
 #include "directory.h"
 #include "song.h"
 
@@ -31,7 +32,6 @@ extern "C" {
 #include "ls.h"
 #include "uri.h"
 #include "decoder_print.h"
-#include "update.h"
 #include "volume.h"
 #include "stats.h"
 #include "permission.h"

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,38 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_UPDATE_ARCHIVE_H
-#define MPD_UPDATE_ARCHIVE_H
+#ifndef MPD_UPDATE_CONTAINER_HXX
+#define MPD_UPDATE_CONTAINER_HXX
 
 #include "check.h"
-#include "gcc.h"
 
-#include <stdbool.h>
 #include <sys/stat.h>
 
 struct directory;
-struct archive_plugin;
-
-#ifdef ENABLE_ARCHIVE
+struct decoder_plugin;
 
 bool
-update_archive_file(struct directory *directory,
-		    const char *name, const char *suffix,
-		    const struct stat *st);
-
-#else
-
-#include <glib.h>
-
-static inline bool
-update_archive_file(gcc_unused struct directory *directory,
-		    gcc_unused const char *name,
-		    gcc_unused const char *suffix,
-		    gcc_unused const struct stat *st)
-{
-	return false;
-}
-
-#endif
+update_container_file(struct directory *directory,
+		      const char *name,
+		      const struct stat *st,
+		      const struct decoder_plugin *plugin);
 
 #endif

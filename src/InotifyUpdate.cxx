@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,12 +18,15 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "inotify_update.h"
-#include "inotify_source.h"
-#include "inotify_queue.h"
+#include "InotifyUpdate.hxx"
+#include "InotifySource.hxx"
+#include "InotifyQueue.hxx"
 #include "database.h"
+
+extern "C" {
 #include "mapper.h"
 #include "path.h"
+}
 
 #include <assert.h>
 #include <sys/inotify.h>
@@ -90,7 +93,8 @@ tree_remove_watch_directory(struct watch_directory *directory)
 static struct watch_directory *
 tree_find_watch_directory(int wd)
 {
-	return g_tree_lookup(inotify_directories, GINT_TO_POINTER(wd));
+	return (struct watch_directory *)
+		g_tree_lookup(inotify_directories, GINT_TO_POINTER(wd));
 }
 
 static void
@@ -109,7 +113,7 @@ remove_watch_directory(struct watch_directory *directory)
 	tree_remove_watch_directory(directory);
 
 	while (directory->children != NULL)
-		remove_watch_directory(directory->children->data);
+		remove_watch_directory((struct watch_directory *)directory->children->data);
 
 	directory->parent->children =
 		g_list_remove(directory->parent->children, directory);
@@ -349,7 +353,7 @@ static gboolean
 free_watch_directory(G_GNUC_UNUSED gpointer key, gpointer value,
 		     G_GNUC_UNUSED gpointer data)
 {
-	struct watch_directory *directory = value;
+	struct watch_directory *directory = (struct watch_directory *)value;
 
 	g_free(directory->name);
 	g_list_free(directory->children);

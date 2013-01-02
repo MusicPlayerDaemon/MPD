@@ -18,15 +18,21 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "update_remove.h"
+#include "UpdateRemove.hxx"
+
+extern "C" {
 #include "event_pipe.h"
-#include "song.h"
 #include "playlist.h"
+}
+
+#include "song.h"
 #include "Main.hxx"
 
 #ifdef ENABLE_SQLITE
+extern "C" {
 #include "sticker.h"
 #include "song_sticker.h"
+}
 #endif
 
 #include <glib.h>
