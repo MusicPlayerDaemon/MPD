@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,11 @@
  */
 
 #include "config.h"
-#include "sticker.h"
+#include "StickerDatabase.hxx"
+
+extern "C" {
 #include "idle.h"
+}
 
 #include <glib.h>
 #include <sqlite3.h>
@@ -47,19 +50,19 @@ enum sticker_sql {
 };
 
 static const char *const sticker_sql[] = {
-	[STICKER_SQL_GET] =
+	//[STICKER_SQL_GET] =
 	"SELECT value FROM sticker WHERE type=? AND uri=? AND name=?",
-	[STICKER_SQL_LIST] =
+	//[STICKER_SQL_LIST] =
 	"SELECT name,value FROM sticker WHERE type=? AND uri=?",
-	[STICKER_SQL_UPDATE] =
+	//[STICKER_SQL_UPDATE] =
 	"UPDATE sticker SET value=? WHERE type=? AND uri=? AND name=?",
-	[STICKER_SQL_INSERT] =
+	//[STICKER_SQL_INSERT] =
 	"INSERT INTO sticker(type,uri,name,value) VALUES(?, ?, ?, ?)",
-	[STICKER_SQL_DELETE] =
+	//[STICKER_SQL_DELETE] =
 	"DELETE FROM sticker WHERE type=? AND uri=?",
-	[STICKER_SQL_DELETE_VALUE] =
+	//[STICKER_SQL_DELETE_VALUE] =
 	"DELETE FROM sticker WHERE type=? AND uri=? AND name=?",
-	[STICKER_SQL_FIND] =
+	//[STICKER_SQL_FIND] =
 	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=?",
 };
 
@@ -541,7 +544,7 @@ sticker_free(struct sticker *sticker)
 const char *
 sticker_get_value(const struct sticker *sticker, const char *name)
 {
-	return g_hash_table_lookup(sticker->table, name);
+	return (const char *)g_hash_table_lookup(sticker->table, name);
 }
 
 struct sticker_foreach_data {
@@ -553,9 +556,10 @@ struct sticker_foreach_data {
 static void
 sticker_foreach_func(gpointer key, gpointer value, gpointer user_data)
 {
-	struct sticker_foreach_data *data = user_data;
+	struct sticker_foreach_data *data =
+		(struct sticker_foreach_data *)user_data;
 
-	data->func(key, value, data->user_data);
+	data->func((const char *)key, (const char *)value, data->user_data);
 }
 
 void
@@ -564,10 +568,9 @@ sticker_foreach(const struct sticker *sticker,
 			     gpointer user_data),
 		gpointer user_data)
 {
-	struct sticker_foreach_data data = {
-		.func = func,
-		.user_data = user_data,
-	};
+	struct sticker_foreach_data data;
+	data.func = func;
+	data.user_data = user_data;
 
 	g_hash_table_foreach(sticker->table, sticker_foreach_func, &data);
 }

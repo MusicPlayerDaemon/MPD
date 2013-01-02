@@ -29,10 +29,8 @@ extern "C" {
 #include "Main.hxx"
 
 #ifdef ENABLE_SQLITE
-extern "C" {
-#include "sticker.h"
-#include "song_sticker.h"
-}
+#include "StickerDatabase.hxx"
+#include "SongSticker.hxx"
 #endif
 
 #include <glib.h>

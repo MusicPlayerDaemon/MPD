@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,23 +17,31 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_STICKER_PRINT_H
-#define MPD_STICKER_PRINT_H
+#include "config.h"
+#include "StickerPrint.hxx"
+#include "StickerDatabase.hxx"
 
-struct sticker;
-struct client;
+extern "C" {
+#include "client.h"
+}
 
-/**
- * Sends one sticker value to the client.
- */
 void
 sticker_print_value(struct client *client,
-		    const char *name, const char *value);
+		    const char *name, const char *value)
+{
+	client_printf(client, "sticker: %s=%s\n", name, value);
+}
 
-/**
- * Sends all sticker values to the client.
- */
+static void
+print_sticker_cb(const char *name, const char *value, void *data)
+{
+	struct client *client = (struct client *)data;
+
+	sticker_print_value(client, name, value);
+}
+
 void
-sticker_print(struct client *client, const struct sticker *sticker);
-
-#endif
+sticker_print(struct client *client, const struct sticker *sticker)
+{
+	sticker_foreach(sticker, print_sticker_cb, client);
+}

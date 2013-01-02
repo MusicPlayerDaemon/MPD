@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,10 +18,10 @@
  */
 
 #include "config.h"
-#include "song_sticker.h"
+#include "SongSticker.hxx"
+#include "StickerDatabase.hxx"
 #include "song.h"
 #include "directory.h"
-#include "sticker.h"
 
 #include <glib.h>
 
@@ -121,7 +121,8 @@ struct sticker_song_find_data {
 static void
 sticker_song_find_cb(const char *uri, const char *value, gpointer user_data)
 {
-	struct sticker_song_find_data *data = user_data;
+	struct sticker_song_find_data *data =
+		(struct sticker_song_find_data *)user_data;
 	struct song *song;
 
 	if (memcmp(uri, data->base_uri, data->base_uri_length) != 0)
@@ -140,14 +141,12 @@ sticker_song_find(struct directory *directory, const char *name,
 			       gpointer user_data),
 		  gpointer user_data)
 {
-	struct sticker_song_find_data data = {
-		.directory = directory,
-		.func = func,
-		.user_data = user_data,
-	};
-	char *allocated;
-	bool success;
+	struct sticker_song_find_data data;
+	data.directory = directory;
+	data.func = func;
+	data.user_data = user_data;
 
+	char *allocated;
 	data.base_uri = directory_get_path(directory);
 	if (*data.base_uri != 0)
 		/* append slash to base_uri */
@@ -159,8 +158,8 @@ sticker_song_find(struct directory *directory, const char *name,
 
 	data.base_uri_length = strlen(data.base_uri);
 
-	success = sticker_find("song", data.base_uri, name,
-			       sticker_song_find_cb, &data);
+	bool success = sticker_find("song", data.base_uri, name,
+				    sticker_song_find_cb, &data);
 	g_free(allocated);
 
 	return success;

@@ -29,7 +29,6 @@ extern "C" {
 #include "PlaylistCommands.hxx"
 #include "DatabaseCommands.hxx"
 #include "OutputCommands.hxx"
-#include "StickerCommands.hxx"
 #include "MessageCommands.hxx"
 #include "OtherCommands.hxx"
 #include "permission.h"
@@ -39,11 +38,12 @@ extern "C" {
 #include "protocol/result.h"
 #include "tokenizer.h"
 #include "client.h"
+}
 
 #ifdef ENABLE_SQLITE
-#include "sticker.h"
+#include "StickerCommands.hxx"
+#include "StickerDatabase.hxx"
 #endif
-}
 
 #include <assert.h>
 #include <string.h>

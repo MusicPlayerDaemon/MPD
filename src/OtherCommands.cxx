@@ -50,7 +50,7 @@ extern "C" {
 }
 
 #ifdef ENABLE_SQLITE
-#include "sticker.h"
+#include "StickerDatabase.hxx"
 #endif
 
 #include <assert.h>

@@ -63,16 +63,14 @@ extern "C" {
 #include "InotifyUpdate.hxx"
 #endif
 
-extern "C" {
-
 #ifdef ENABLE_SQLITE
-#include "sticker.h"
+#include "StickerDatabase.hxx"
 #endif
 
+extern "C" {
 #ifdef ENABLE_ARCHIVE
 #include "archive_list.h"
 #endif
-
 }
 
 #include <glib.h>

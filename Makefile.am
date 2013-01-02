@@ -162,12 +162,9 @@ mpd_headers = \
 	src/sig_handlers.h \
 	src/TimePrint.cxx src/TimePrint.hxx \
 	src/song.h \
-	src/song_sticker.h \
 	src/song_sort.c src/song_sort.h \
 	src/socket_util.h \
 	src/stats.h \
-	src/sticker.h \
-	src/sticker_print.h \
 	src/tag.h \
 	src/tag_internal.h \
 	src/tag_pool.h \
@@ -366,9 +363,9 @@ endif
 if ENABLE_SQLITE
 src_mpd_SOURCES += \
 	src/StickerCommands.cxx src/StickerCommands.hxx \
-	src/sticker.c \
-	src/sticker_print.c \
-	src/song_sticker.c
+	src/StickerDatabase.cxx src/StickerDatabase.hxx \
+	src/StickerPrint.cxx src/StickerPrint.hxx \
+	src/SongSticker.cxx src/SongSticker.hxx
 endif
 
 # Generic utility library
