@@ -23,6 +23,7 @@
 #include "DatabaseLock.hxx"
 #include "DatabasePlugin.hxx"
 #include "DatabaseGlue.hxx"
+#include "DatabaseSimple.hxx"
 #include "SongSticker.hxx"
 #include "StickerPrint.hxx"
 #include "StickerDatabase.hxx"
@@ -30,7 +31,6 @@
 
 extern "C" {
 #include "protocol/result.h"
-#include "database.h"
 }
 
 #include <string.h>

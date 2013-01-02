@@ -24,6 +24,7 @@
 #include "UpdateSong.hxx"
 #include "UpdateArchive.hxx"
 #include "DatabaseLock.hxx"
+#include "DatabaseSimple.hxx"
 #include "Directory.hxx"
 #include "song.h"
 #include "PlaylistVector.hxx"
@@ -31,7 +32,6 @@
 
 extern "C" {
 #include "exclude.h"
-#include "database.h"
 #include "uri.h"
 #include "path.h"
 #include "playlist_list.h"

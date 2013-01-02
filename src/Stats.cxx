@@ -21,7 +21,6 @@
 
 extern "C" {
 #include "stats.h"
-#include "database.h"
 #include "client.h"
 #include "player_control.h"
 #include "client_internal.h"
@@ -30,6 +29,7 @@ extern "C" {
 #include "DatabaseSelection.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
+#include "DatabaseSimple.hxx"
 
 struct stats stats;
 

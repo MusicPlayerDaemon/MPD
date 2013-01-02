@@ -79,7 +79,6 @@ mpd_headers = \
 	src/decoder_api.h \
 	src/decoder_plugin.h \
 	src/decoder_internal.h \
-	src/database.h \
 	src/encoder_plugin.h \
 	src/encoder_list.h \
 	src/encoder_api.h \
@@ -224,6 +223,7 @@ src_mpd_SOURCES = \
 	src/decoder_print.c \
 	src/Directory.cxx src/Directory.hxx \
 	src/DirectorySave.cxx src/DirectorySave.hxx \
+	src/DatabaseSimple.hxx \
 	src/DatabaseGlue.cxx src/DatabaseGlue.hxx \
 	src/DatabasePrint.cxx src/DatabasePrint.hxx \
 	src/DatabaseQueue.cxx src/DatabaseQueue.hxx \

@@ -23,9 +23,9 @@
 #include "UpdateWalk.hxx"
 #include "UpdateRemove.hxx"
 #include "Mapper.hxx"
+#include "DatabaseSimple.hxx"
 
 extern "C" {
-#include "database.h"
 #include "playlist.h"
 #include "event_pipe.h"
 #include "idle.h"

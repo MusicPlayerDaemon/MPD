@@ -19,12 +19,12 @@
 
 #include "config.h"
 #include "DatabaseGlue.hxx"
+#include "DatabaseSimple.hxx"
 #include "DatabaseRegistry.hxx"
 #include "DatabaseSave.hxx"
 #include "Directory.hxx"
 
 extern "C" {
-#include "database.h"
 #include "db_error.h"
 #include "stats.h"
 #include "conf.h"

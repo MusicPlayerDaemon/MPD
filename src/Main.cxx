@@ -26,6 +26,7 @@
 #include "PlayerThread.hxx"
 #include "Mapper.hxx"
 #include "DatabaseGlue.hxx"
+#include "DatabaseSimple.hxx"
 
 extern "C" {
 #include "daemon.h"
@@ -35,7 +36,6 @@ extern "C" {
 #include "idle.h"
 #include "AllCommands.h"
 #include "playlist.h"
-#include "database.h"
 #include "listen.h"
 #include "cmdline.h"
 #include "conf.h"
