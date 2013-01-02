@@ -20,9 +20,10 @@
 #include "config.h"
 #include "PlaylistSong.hxx"
 #include "Mapper.hxx"
+#include "DatabasePlugin.hxx"
+#include "DatabaseGlue.hxx"
 
 extern "C" {
-#include "database.h"
 #include "song.h"
 #include "uri.h"
 #include "path.h"
@@ -105,13 +106,17 @@ playlist_check_load_song(const struct song *song, const char *uri, bool secure)
 		if (dest == NULL)
 			return NULL;
 	} else {
-		struct song *tmp = db_get_song(uri);
+		const Database *db = GetDatabase(nullptr);
+		if (db == nullptr)
+			return nullptr;
+
+		struct song *tmp = db->GetSong(uri, nullptr);
 		if (tmp == NULL)
 			/* not found in database */
 			return NULL;
 
 		dest = song_dup_detached(tmp);
-		db_return_song(tmp);
+		db->ReturnSong(tmp);
 	}
 
 	return apply_song_metadata(dest, song);

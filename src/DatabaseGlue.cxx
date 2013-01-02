@@ -131,28 +131,6 @@ db_get_directory(const char *name)
 	return music_root->LookupDirectory(name);
 }
 
-struct song *
-db_get_song(const char *file)
-{
-	assert(file != NULL);
-
-	g_debug("get song: %s", file);
-
-	if (db == NULL)
-		return NULL;
-
-	return db->GetSong(file, NULL);
-}
-
-void
-db_return_song(struct song *song)
-{
-	assert(db != nullptr);
-	assert(song != nullptr);
-
-	db->ReturnSong(song);
-}
-
 bool
 db_save(GError **error_r)
 {

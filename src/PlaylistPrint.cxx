@@ -24,13 +24,14 @@
 #include "PlaylistSong.hxx"
 #include "QueuePrint.hxx"
 #include "SongPrint.hxx"
+#include "DatabaseGlue.hxx"
+#include "DatabasePlugin.hxx"
 
 extern "C" {
 #include "playlist_list.h"
 #include "playlist_plugin.h"
 #include "playlist.h"
 #include "song.h"
-#include "database.h"
 #include "client.h"
 #include "input_stream.h"
 }
@@ -112,6 +113,22 @@ playlist_print_changes_position(struct client *client,
 	queue_print_changes_position(client, &playlist->queue, version);
 }
 
+static bool
+PrintSongDetails(struct client *client, const char *uri_utf8)
+{
+	const Database *db = GetDatabase(nullptr);
+	if (db == nullptr)
+		return false;
+
+	song *song = db->GetSong(uri_utf8, nullptr);
+	if (song == nullptr)
+		return false;
+
+	song_print_info(client, song);
+	db->ReturnSong(song);
+	return true;
+}
+
 bool
 spl_print(struct client *client, const char *name_utf8, bool detail,
 	  GError **error_r)
@@ -124,21 +141,9 @@ spl_print(struct client *client, const char *name_utf8, bool detail,
 	}
 
 	for (const auto &uri_utf8 : contents) {
-		bool wrote = false;
-
-		if (detail) {
-			struct song *song = db_get_song(uri_utf8.c_str());
-			if (song) {
-				song_print_info(client, song);
-				db_return_song(song);
-				wrote = true;
-			}
-		}
-
-		if (!wrote) {
+		if (!detail || !PrintSongDetails(client, uri_utf8.c_str()))
 			client_printf(client, SONG_FILE "%s\n",
 				      uri_utf8.c_str());
-		}
 	}
 
 	return true;

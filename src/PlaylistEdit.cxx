@@ -27,11 +27,13 @@
 extern "C" {
 #include "playlist_internal.h"
 #include "player_control.h"
-#include "database.h"
 #include "uri.h"
 #include "song.h"
 #include "idle.h"
 }
+
+#include "DatabaseGlue.hxx"
+#include "DatabasePlugin.hxx"
 
 #include <stdlib.h>
 
@@ -103,37 +105,30 @@ playlist_append_song(struct playlist *playlist, struct player_control *pc,
 	return PLAYLIST_RESULT_SUCCESS;
 }
 
-static struct song *
-song_by_uri(const char *uri)
-{
-	struct song *song;
-
-	song = db_get_song(uri);
-	if (song != NULL)
-		return song;
-
-	if (uri_has_scheme(uri))
-		return song_remote_new(uri);
-
-	return NULL;
-}
-
 enum playlist_result
 playlist_append_uri(struct playlist *playlist, struct player_control *pc,
 		    const char *uri, unsigned *added_id)
 {
-	struct song *song;
-
 	g_debug("add to playlist: %s", uri);
 
-	song = song_by_uri(uri);
-	if (song == NULL)
-		return PLAYLIST_RESULT_NO_SUCH_SONG;
+	const Database *db = nullptr;
+	struct song *song;
+	if (uri_has_scheme(uri)) {
+		song = song_remote_new(uri);
+	} else {
+		db = GetDatabase(nullptr);
+		if (db == nullptr)
+			return PLAYLIST_RESULT_NO_SUCH_SONG;
+
+		song = db->GetSong(uri, nullptr);
+		if (song == nullptr)
+			return PLAYLIST_RESULT_NO_SUCH_SONG;
+	}
 
 	enum playlist_result result =
 		playlist_append_song(playlist, pc, song, added_id);
-	if (song_in_database(song))
-		db_return_song(song);
+	if (db != nullptr)
+		db->ReturnSong(song);
 
 	return result;
 }

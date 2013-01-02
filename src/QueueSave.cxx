@@ -21,11 +21,12 @@
 #include "QueueSave.hxx"
 #include "song.h"
 #include "SongSave.hxx"
+#include "DatabasePlugin.hxx"
+#include "DatabaseGlue.hxx"
 
 extern "C" {
 #include "queue.h"
 #include "uri.h"
-#include "database.h"
 #include "text_file.h"
 }
 
@@ -69,20 +70,10 @@ queue_save(FILE *fp, const struct queue *queue)
 	}
 }
 
-static struct song *
-get_song(const char *uri)
-{
-	return uri_has_scheme(uri)
-		? song_remote_new(uri)
-		: db_get_song(uri);
-}
-
 void
 queue_load_song(FILE *fp, GString *buffer, const char *line,
 		struct queue *queue)
 {
-	struct song *song;
-
 	if (queue_is_full(queue))
 		return;
 
@@ -94,6 +85,9 @@ queue_load_song(FILE *fp, GString *buffer, const char *line,
 		if (line == NULL)
 			return;
 	}
+
+	const Database *db = nullptr;
+	struct song *song;
 
 	if (g_str_has_prefix(line, SONG_BEGIN)) {
 		const char *uri = line + sizeof(SONG_BEGIN) - 1;
@@ -115,15 +109,23 @@ queue_load_song(FILE *fp, GString *buffer, const char *line,
 			return;
 		}
 
-		line = endptr + 1;
+		const char *uri = endptr + 1;
 
-		song = get_song(line);
-		if (song == NULL)
-			return;
+		if (uri_has_scheme(uri)) {
+			song = song_remote_new(uri);
+		} else {
+			db = GetDatabase(nullptr);
+			if (db == nullptr)
+				return;
+
+			song = db->GetSong(uri, nullptr);
+			if (song == nullptr)
+				return;
+		}
 	}
 
 	queue_append(queue, song, priority);
 
-	if (song_in_database(song))
-		db_return_song(song);
+	if (db != nullptr)
+		db->ReturnSong(song);
 }

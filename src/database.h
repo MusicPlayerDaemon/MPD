@@ -69,15 +69,6 @@ gcc_pure
 struct directory *
 db_get_directory(const char *name);
 
-gcc_nonnull(1)
-gcc_pure
-struct song *
-db_get_song(const char *file);
-
-gcc_nonnull(1)
-void
-db_return_song(struct song *song);
-
 /**
  * May only be used if db_is_simple() returns true.
  */

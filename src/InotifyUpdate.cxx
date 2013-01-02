@@ -21,13 +21,13 @@
 #include "InotifyUpdate.hxx"
 #include "InotifySource.hxx"
 #include "InotifyQueue.hxx"
-#include "database.h"
 #include "Mapper.hxx"
 
 extern "C" {
 #include "path.h"
 }
 
+#include <glib.h>
 #include <assert.h>
 #include <sys/inotify.h>
 #include <sys/stat.h>

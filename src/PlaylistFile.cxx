@@ -20,6 +20,8 @@
 #include "config.h"
 #include "PlaylistFile.hxx"
 #include "PlaylistSave.hxx"
+#include "DatabasePlugin.hxx"
+#include "DatabaseGlue.hxx"
 #include "song.h"
 #include "io_error.h"
 #include "Mapper.hxx"
@@ -28,7 +30,6 @@ extern "C" {
 #include "text_file.h"
 #include "path.h"
 #include "uri.h"
-#include "database.h"
 #include "idle.h"
 #include "conf.h"
 }
@@ -423,16 +424,16 @@ spl_append_uri(const char *url, const char *utf8file, GError **error_r)
 		song_free(song);
 		return success;
 	} else {
-		struct song *song = db_get_song(url);
-		if (song == NULL) {
-			g_set_error_literal(error_r, playlist_quark(),
-					    PLAYLIST_RESULT_NO_SUCH_SONG,
-					    "No such song");
+		const Database *db = GetDatabase(error_r);
+		if (db == nullptr)
 			return false;
-		}
+
+		song *song = db->GetSong(url, error_r);
+		if (song == nullptr)
+			return false;
 
 		bool success = spl_append_song(utf8file, song, error_r);
-		db_return_song(song);
+		db->ReturnSong(song);
 		return success;
 	}
 }

@@ -27,7 +27,6 @@
 #include "Directory.hxx"
 
 extern "C" {
-#include "database.h"
 #include "client.h"
 #include "song.h"
 #include "tag.h"

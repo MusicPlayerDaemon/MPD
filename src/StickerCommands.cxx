@@ -21,9 +21,12 @@
 #include "StickerCommands.hxx"
 #include "SongPrint.hxx"
 #include "DatabaseLock.hxx"
+#include "DatabasePlugin.hxx"
+#include "DatabaseGlue.hxx"
 #include "SongSticker.hxx"
 #include "StickerPrint.hxx"
 #include "StickerDatabase.hxx"
+#include "CommandError.hxx"
 
 extern "C" {
 #include "protocol/result.h"
@@ -51,20 +54,19 @@ sticker_song_find_print_cb(struct song *song, const char *value,
 static enum command_return
 handle_sticker_song(struct client *client, int argc, char *argv[])
 {
+	GError *error = nullptr;
+	const Database *db = GetDatabase(&error);
+	if (db == nullptr)
+		return print_error(client, error);
+
 	/* get song song_id key */
 	if (argc == 5 && strcmp(argv[1], "get") == 0) {
-		struct song *song;
-		char *value;
+		song *song = db->GetSong(argv[3], &error);
+		if (song == nullptr)
+			return print_error(client, error);
 
-		song = db_get_song(argv[3]);
-		if (song == NULL) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "no such song");
-			return COMMAND_RETURN_ERROR;
-		}
-
-		value = sticker_song_get_value(song, argv[4]);
-		db_return_song(song);
+		char *value = sticker_song_get_value(song, argv[4]);
+		db->ReturnSong(song);
 		if (value == NULL) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "no such sticker");
@@ -77,18 +79,12 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_OK;
 	/* list song song_id */
 	} else if (argc == 4 && strcmp(argv[1], "list") == 0) {
-		struct song *song;
-		struct sticker *sticker;
+		song *song = db->GetSong(argv[3], &error);
+		if (song == nullptr)
+			return print_error(client, error);
 
-		song = db_get_song(argv[3]);
-		if (song == NULL) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "no such song");
-			return COMMAND_RETURN_ERROR;
-		}
-
-		sticker = sticker_song_get(song);
-		db_return_song(song);
+		sticker *sticker = sticker_song_get(song);
+		db->ReturnSong(song);
 		if (sticker) {
 			sticker_print(client, sticker);
 			sticker_free(sticker);
@@ -97,18 +93,12 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 		return COMMAND_RETURN_OK;
 	/* set song song_id id key */
 	} else if (argc == 6 && strcmp(argv[1], "set") == 0) {
-		struct song *song;
-		bool ret;
+		song *song = db->GetSong(argv[3], &error);
+		if (song == nullptr)
+			return print_error(client, error);
 
-		song = db_get_song(argv[3]);
-		if (song == NULL) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "no such song");
-			return COMMAND_RETURN_ERROR;
-		}
-
-		ret = sticker_song_set_value(song, argv[4], argv[5]);
-		db_return_song(song);
+		bool ret = sticker_song_set_value(song, argv[4], argv[5]);
+		db->ReturnSong(song);
 		if (!ret) {
 			command_error(client, ACK_ERROR_SYSTEM,
 				      "failed to set sticker value");
@@ -119,20 +109,14 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 	/* delete song song_id [key] */
 	} else if ((argc == 4 || argc == 5) &&
 		   strcmp(argv[1], "delete") == 0) {
-		struct song *song;
-		bool ret;
+		song *song = db->GetSong(argv[3], &error);
+		if (song == nullptr)
+			return print_error(client, error);
 
-		song = db_get_song(argv[3]);
-		if (song == NULL) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "no such song");
-			return COMMAND_RETURN_ERROR;
-		}
-
-		ret = argc == 4
+		bool ret = argc == 4
 			? sticker_song_delete(song)
 			: sticker_song_delete_value(song, argv[4]);
-		db_return_song(song);
+		db->ReturnSong(song);
 		if (!ret) {
 			command_error(client, ACK_ERROR_SYSTEM,
 				      "no such sticker");
