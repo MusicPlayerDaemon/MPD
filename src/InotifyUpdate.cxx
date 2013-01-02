@@ -22,9 +22,9 @@
 #include "InotifySource.hxx"
 #include "InotifyQueue.hxx"
 #include "database.h"
+#include "Mapper.hxx"
 
 extern "C" {
-#include "mapper.h"
 #include "path.h"
 }
 

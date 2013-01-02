@@ -24,6 +24,7 @@
 #include "chunk.h"
 #include "StateFile.hxx"
 #include "PlayerThread.hxx"
+#include "Mapper.hxx"
 
 extern "C" {
 #include "daemon.h"
@@ -38,7 +39,6 @@ extern "C" {
 #include "cmdline.h"
 #include "conf.h"
 #include "path.h"
-#include "mapper.h"
 #include "player_control.h"
 #include "stats.h"
 #include "sig_handlers.h"

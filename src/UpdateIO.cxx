@@ -20,11 +20,8 @@
 #include "config.h" /* must be first for large file support */
 #include "UpdateIO.hxx"
 #include "directory.h"
+#include "Mapper.hxx"
 #include "glib_compat.h"
-
-extern "C" {
-#include "mapper.h"
-}
 
 #include <glib.h>
 

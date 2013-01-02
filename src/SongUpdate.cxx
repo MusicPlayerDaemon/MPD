@@ -25,9 +25,9 @@ extern "C" {
 }
 
 #include "directory.h"
+#include "Mapper.hxx"
 
 extern "C" {
-#include "mapper.h"
 #include "decoder_list.h"
 #include "decoder_plugin.h"
 #include "tag_ape.h"

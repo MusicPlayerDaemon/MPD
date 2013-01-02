@@ -21,10 +21,10 @@
 #include "PlaylistSave.hxx"
 #include "PlaylistFile.hxx"
 #include "song.h"
+#include "Mapper.hxx"
 
 extern "C" {
 #include "playlist.h"
-#include "mapper.h"
 #include "path.h"
 #include "uri.h"
 #include "idle.h"

@@ -130,7 +130,6 @@ mpd_headers = \
 	src/pipe.h \
 	src/chunk.h \
 	src/path.h \
-	src/mapper.h \
 	src/open.h \
 	src/output/httpd_client.h \
 	src/output/httpd_internal.h \
@@ -283,7 +282,7 @@ src_mpd_SOURCES = \
 	src/pipe.c \
 	src/chunk.c \
 	src/path.c \
-	src/mapper.c \
+	src/Mapper.cxx src/Mapper.hxx \
 	src/page.c \
 	src/permission.c \
 	src/PlayerThread.cxx src/PlayerThread.hxx \

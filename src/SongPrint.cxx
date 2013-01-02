@@ -23,11 +23,11 @@
 #include "directory.h"
 #include "TimePrint.hxx"
 #include "TagPrint.hxx"
+#include "Mapper.hxx"
 
 extern "C" {
 #include "client.h"
 #include "uri.h"
-#include "mapper.h"
 }
 
 void

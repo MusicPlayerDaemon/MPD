@@ -27,6 +27,7 @@
 #include "SongPrint.hxx"
 #include "TagPrint.hxx"
 #include "TimePrint.hxx"
+#include "Mapper.hxx"
 
 extern "C" {
 #include "protocol/argparser.h"
@@ -46,7 +47,6 @@ extern "C" {
 #include "client_idle.h"
 #include "client_file.h"
 #include "idle.h"
-#include "mapper.h"
 }
 
 #ifdef ENABLE_SQLITE

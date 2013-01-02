@@ -27,12 +27,12 @@
 #include "directory.h"
 #include "song.h"
 #include "PlaylistVector.hxx"
+#include "Mapper.hxx"
 
 extern "C" {
 #include "exclude.h"
 #include "database.h"
 #include "uri.h"
-#include "mapper.h"
 #include "path.h"
 #include "playlist_list.h"
 #include "conf.h"

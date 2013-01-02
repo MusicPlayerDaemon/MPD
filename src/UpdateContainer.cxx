@@ -25,9 +25,9 @@
 #include "directory.h"
 #include "song.h"
 #include "decoder_plugin.h"
+#include "Mapper.hxx"
 
 extern "C" {
-#include "mapper.h"
 #include "tag.h"
 #include "tag_handler.h"
 }

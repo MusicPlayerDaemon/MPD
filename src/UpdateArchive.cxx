@@ -23,9 +23,9 @@
 #include "DatabaseLock.hxx"
 #include "directory.h"
 #include "song.h"
+#include "Mapper.hxx"
 
 extern "C" {
-#include "mapper.h"
 #include "archive_list.h"
 #include "archive_plugin.h"
 }

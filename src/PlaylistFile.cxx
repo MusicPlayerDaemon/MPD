@@ -22,10 +22,10 @@
 #include "PlaylistSave.hxx"
 #include "song.h"
 #include "io_error.h"
+#include "Mapper.hxx"
 
 extern "C" {
 #include "text_file.h"
-#include "mapper.h"
 #include "path.h"
 #include "uri.h"
 #include "database.h"

@@ -22,10 +22,10 @@
 #include "UpdateQueue.hxx"
 #include "UpdateWalk.hxx"
 #include "UpdateRemove.hxx"
+#include "Mapper.hxx"
 
 extern "C" {
 #include "database.h"
-#include "mapper.h"
 #include "playlist.h"
 #include "event_pipe.h"
 #include "idle.h"

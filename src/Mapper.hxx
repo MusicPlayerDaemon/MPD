@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,14 +21,11 @@
  * Maps directory and song objects to file system paths.
  */
 
-#ifndef MPD_MAPPER_H
-#define MPD_MAPPER_H
+#ifndef MPD_MAPPER_HXX
+#define MPD_MAPPER_HXX
 
 #include "gcc.h"
 #include "gerror.h"
-
-#include <stdbool.h>
-#include <stddef.h>
 
 #define PLAYLIST_FILE_SUFFIX ".m3u"
 
@@ -61,7 +58,7 @@ gcc_const
 static inline bool
 mapper_has_music_directory(void)
 {
-	return mapper_get_music_directory_utf8() != NULL;
+	return mapper_get_music_directory_utf8() != nullptr;
 }
 
 /**
@@ -86,7 +83,7 @@ map_uri_fs(const char *uri);
  * Determines the file system path of a directory object.
  *
  * @param directory the directory object
- * @return the path in file system encoding, or NULL if mapping failed
+ * @return the path in file system encoding, or nullptr if mapping failed
  */
 gcc_malloc
 char *
@@ -98,7 +95,7 @@ map_directory_fs(const struct directory *directory);
  *
  * @param directory the parent directory object
  * @param name the child's name in UTF-8
- * @return the path in file system encoding, or NULL if mapping failed
+ * @return the path in file system encoding, or nullptr if mapping failed
  */
 gcc_malloc
 char *
@@ -109,7 +106,7 @@ map_directory_child_fs(const struct directory *directory, const char *name);
  * remote song.
  *
  * @param song the song object
- * @return the path in file system encoding, or NULL if mapping failed
+ * @return the path in file system encoding, or nullptr if mapping failed
  */
 gcc_malloc
 char *
@@ -120,7 +117,7 @@ map_song_fs(const struct song *song);
  * absolute) to a relative path in UTF-8 encoding.
  *
  * @param path_fs a path in file system encoding
- * @return the relative path in UTF-8, or NULL if mapping failed
+ * @return the relative path in UTF-8, or nullptr if mapping failed
  */
 gcc_malloc
 char *
@@ -138,7 +135,7 @@ map_spl_path(void);
  * path.  The return value is allocated on the heap and must be freed
  * with g_free().
  *
- * @return the path in file system encoding, or NULL if mapping failed
+ * @return the path in file system encoding, or nullptr if mapping failed
  */
 gcc_pure
 char *

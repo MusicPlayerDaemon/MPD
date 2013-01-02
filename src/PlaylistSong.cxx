@@ -19,10 +19,10 @@
 
 #include "config.h"
 #include "PlaylistSong.hxx"
+#include "Mapper.hxx"
 
 extern "C" {
 #include "database.h"
-#include "mapper.h"
 #include "song.h"
 #include "uri.h"
 #include "path.h"

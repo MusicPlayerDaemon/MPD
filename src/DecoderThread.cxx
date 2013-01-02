@@ -23,6 +23,7 @@
 #include "decoder_plugin.h"
 #include "song.h"
 #include "mpd_error.h"
+#include "Mapper.hxx"
 
 extern "C" {
 #include "decoder_control.h"
@@ -32,7 +33,6 @@ extern "C" {
 #include "replay_gain_ape.h"
 #include "input_stream.h"
 #include "tag.h"
-#include "mapper.h"
 #include "uri.h"
 }
 
