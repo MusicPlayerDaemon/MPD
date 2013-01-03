@@ -538,7 +538,6 @@ int mpd_main(int argc, char *argv[])
 	volume_finish();
 	mapper_finish();
 	path_global_finish();
-	finishPermissions();
 	pc_free(global_player_control);
 	command_finish();
 	update_global_finish();

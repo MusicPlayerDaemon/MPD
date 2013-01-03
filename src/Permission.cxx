@@ -25,6 +25,9 @@ extern "C" {
 #include "conf.h"
 }
 
+#include <map>
+#include <string>
+
 #include <glib.h>
 
 #include <stdbool.h>
@@ -38,7 +41,7 @@ extern "C" {
 #define PERMISSION_CONTROL_STRING	"control"
 #define PERMISSION_ADMIN_STRING		"admin"
 
-static GHashTable *permission_passwords;
+static std::map<std::string, unsigned> permission_passwords;
 
 static unsigned permission_default;
 
@@ -78,9 +81,6 @@ void initPermissions(void)
 	unsigned permission;
 	const struct config_param *param;
 
-	permission_passwords = g_hash_table_new_full(g_str_hash, g_str_equal,
-						     g_free, NULL);
-
 	permission_default = PERMISSION_READ | PERMISSION_ADD |
 	    PERMISSION_CONTROL | PERMISSION_ADMIN;
 
@@ -104,9 +104,8 @@ void initPermissions(void)
 
 			permission = parsePermissions(separator + 1);
 
-			g_hash_table_replace(permission_passwords,
-					     password,
-					     GINT_TO_POINTER(permission));
+			permission_passwords.insert(std::make_pair(password,
+								   permission));
 		} while ((param = config_get_next_param(CONF_PASSWORD, param)));
 	}
 
@@ -118,21 +117,12 @@ void initPermissions(void)
 
 int getPermissionFromPassword(char const* password, unsigned* permission)
 {
-	bool found;
-	gpointer key, value;
-
-	found = g_hash_table_lookup_extended(permission_passwords,
-					     password, &key, &value);
-	if (!found)
+	auto i = permission_passwords.find(password);
+	if (i == permission_passwords.end())
 		return -1;
 
-	*permission = GPOINTER_TO_INT(value);
+	*permission = i->second;
 	return 0;
-}
-
-void finishPermissions(void)
-{
-	g_hash_table_destroy(permission_passwords);
 }
 
 unsigned getDefaultPermissions(void)

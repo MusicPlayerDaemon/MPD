@@ -29,8 +29,6 @@
 
 int getPermissionFromPassword(char const* password, unsigned* permission);
 
-void finishPermissions(void);
-
 unsigned getDefaultPermissions(void);
 
 void initPermissions(void);
