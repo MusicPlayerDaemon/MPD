@@ -24,6 +24,9 @@ extern "C" {
 #include "idle.h"
 }
 
+#include <string>
+#include <map>
+
 #include <glib.h>
 #include <sqlite3.h>
 #include <assert.h>
@@ -36,7 +39,7 @@ extern "C" {
 #endif
 
 struct sticker {
-	GHashTable *table;
+	std::map<std::string, std::string> table;
 };
 
 enum sticker_sql {
@@ -229,13 +232,12 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 }
 
 static bool
-sticker_list_values(GHashTable *hash, const char *type, const char *uri)
+sticker_list_values(std::map<std::string, std::string> &table,
+		    const char *type, const char *uri)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_LIST];
 	int ret;
-	char *name, *value;
 
-	assert(hash != NULL);
 	assert(type != NULL);
 	assert(uri != NULL);
 	assert(sticker_enabled());
@@ -259,10 +261,13 @@ sticker_list_values(GHashTable *hash, const char *type, const char *uri)
 	do {
 		ret = sqlite3_step(stmt);
 		switch (ret) {
+			const char *name, *value;
+
 		case SQLITE_ROW:
-			name = g_strdup((const char*)sqlite3_column_text(stmt, 0));
-			value = g_strdup((const char*)sqlite3_column_text(stmt, 1));
-			g_hash_table_insert(hash, name, value);
+			name = (const char*)sqlite3_column_text(stmt, 0);
+			value = (const char*)sqlite3_column_text(stmt, 1);
+
+			table.insert(std::make_pair(name, value));
 			break;
 		case SQLITE_DONE:
 			break;
@@ -521,45 +526,20 @@ sticker_delete_value(const char *type, const char *uri, const char *name)
 	return ret > 0;
 }
 
-static struct sticker *
-sticker_new(void)
-{
-	struct sticker *sticker = g_new(struct sticker, 1);
-
-	sticker->table = g_hash_table_new_full(g_str_hash, g_str_equal,
-					       g_free, g_free);
-	return sticker;
-}
-
 void
 sticker_free(struct sticker *sticker)
 {
-	assert(sticker != NULL);
-	assert(sticker->table != NULL);
-
-	g_hash_table_destroy(sticker->table);
-	g_free(sticker);
+	delete sticker;
 }
 
 const char *
 sticker_get_value(const struct sticker *sticker, const char *name)
 {
-	return (const char *)g_hash_table_lookup(sticker->table, name);
-}
+	auto i = sticker->table.find(name);
+	if (i == sticker->table.end())
+		return nullptr;
 
-struct sticker_foreach_data {
-	void (*func)(const char *name, const char *value,
-		     gpointer user_data);
-	gpointer user_data;
-};
-
-static void
-sticker_foreach_func(gpointer key, gpointer value, gpointer user_data)
-{
-	struct sticker_foreach_data *data =
-		(struct sticker_foreach_data *)user_data;
-
-	data->func((const char *)key, (const char *)value, data->user_data);
+	return i->second.c_str();
 }
 
 void
@@ -568,32 +548,23 @@ sticker_foreach(const struct sticker *sticker,
 			     gpointer user_data),
 		gpointer user_data)
 {
-	struct sticker_foreach_data data;
-	data.func = func;
-	data.user_data = user_data;
-
-	g_hash_table_foreach(sticker->table, sticker_foreach_func, &data);
+	for (const auto &i : sticker->table)
+		func(i.first.c_str(), i.second.c_str(), user_data);
 }
 
 struct sticker *
 sticker_load(const char *type, const char *uri)
 {
-	struct sticker *sticker = sticker_new();
-	bool success;
+	sticker s;
 
-	success = sticker_list_values(sticker->table, type, uri);
-	if (!success) {
-		sticker_free(sticker);
+	if (!sticker_list_values(s.table, type, uri))
 		return NULL;
-	}
 
-	if (g_hash_table_size(sticker->table) == 0) {
+	if (s.table.empty())
 		/* don't return empty sticker objects */
-		sticker_free(sticker);
 		return NULL;
-	}
 
-	return sticker;
+	return new sticker(std::move(s));
 }
 
 bool
