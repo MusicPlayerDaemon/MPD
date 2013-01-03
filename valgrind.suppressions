@@ -309,6 +309,29 @@
 }
 
 {
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   ...
+   fun:ao_initialize
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:calloc
+   fun:ao_initialize
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr4
+   ...
+   fun:WildMidi_Init
+}
+
+{
    g_quark_from_string
    Memcheck:Leak
    fun:*alloc
