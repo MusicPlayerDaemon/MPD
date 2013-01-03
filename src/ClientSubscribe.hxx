@@ -24,7 +24,7 @@
 
 typedef struct _GSList GSList;
 class Client;
-struct client_message;
+class ClientMessage;
 
 enum client_subscribe_result {
 	/** success */
@@ -50,7 +50,7 @@ void
 client_unsubscribe_all(Client *client);
 
 bool
-client_push_message(Client *client, const struct client_message *msg);
+client_push_message(Client *client, const ClientMessage &msg);
 
 gcc_malloc
 GSList *

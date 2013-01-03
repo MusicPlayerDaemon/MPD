@@ -112,11 +112,12 @@ handle_read_messages(Client *client,
 	GSList *messages = client_read_messages(client);
 
 	for (GSList *i = messages; i != NULL; i = g_slist_next(i)) {
-		struct client_message *msg = (struct client_message *)i->data;
+		ClientMessage *msg = (ClientMessage *)i->data;
 
 		client_printf(client, "channel: %s\nmessage: %s\n",
-			      msg->channel, msg->message);
-		client_message_free(msg);
+			      msg->GetChannel(),
+			      msg->GetMessage());
+		delete msg;
 	}
 
 	g_slist_free(messages);
@@ -125,9 +126,14 @@ handle_read_messages(Client *client,
 }
 
 struct send_message_context {
-	struct client_message msg;
+	ClientMessage msg;
 
 	bool sent;
+
+	template<typename T, typename U>
+	send_message_context(T &&_channel, U &&_message)
+		:msg(std::forward<T>(_channel), std::forward<U>(_message)),
+		 sent(false) {}
 };
 
 static void
@@ -137,7 +143,7 @@ send_message(gpointer data, gpointer user_data)
 		(struct send_message_context *)user_data;
 	Client *client = (Client *)data;
 
-	if (client_push_message(client, &context->msg))
+	if (client_push_message(client, context->msg))
 		context->sent = true;
 }
 
@@ -153,14 +159,9 @@ handle_send_message(Client *client,
 		return COMMAND_RETURN_ERROR;
 	}
 
-	struct send_message_context context;
-	context.sent = false;
-
-	client_message_init(&context.msg, argv[1], argv[2]);
+	struct send_message_context context(argv[1], argv[2]);
 
 	client_list_foreach(send_message, &context);
-
-	client_message_deinit(&context.msg);
 
 	if (context.sent)
 		return COMMAND_RETURN_OK;

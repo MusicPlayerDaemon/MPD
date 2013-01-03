@@ -25,6 +25,7 @@ extern "C" {
 #include "idle.h"
 }
 
+#include <assert.h>
 #include <string.h>
 
 enum client_subscribe_result
@@ -78,21 +79,19 @@ client_unsubscribe_all(Client *client)
 }
 
 bool
-client_push_message(Client *client, const struct client_message *msg)
+client_push_message(Client *client, const ClientMessage &msg)
 {
 	assert(client != NULL);
-	assert(msg != NULL);
-	assert(client_message_defined(msg));
 
 	if (client->num_messages >= CLIENT_MAX_MESSAGES ||
-	    !client->IsSubscribed(msg->channel))
+	    !client->IsSubscribed(msg.GetChannel()))
 		return false;
 
 	if (client->messages == NULL)
 		client_idle_add(client, IDLE_MESSAGE);
 
 	client->messages = g_slist_prepend(client->messages,
-					   client_message_dup(msg));
+					   new ClientMessage(msg));
 	++client->num_messages;
 
 	return true;

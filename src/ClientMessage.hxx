@@ -22,52 +22,31 @@
 
 #include "gcc.h"
 
-#include <assert.h>
-#include <stdbool.h>
-#include <stddef.h>
+#include <string>
 
 /**
  * A client-to-client message.
  */
-struct client_message {
-	char *channel;
+class ClientMessage {
+	std::string channel, message;
 
-	char *message;
+public:
+	template<typename T, typename U>
+	ClientMessage(T &&_channel, U &&_message)
+		:channel(std::forward<T>(_channel)),
+		 message(std::forward<U>(_message)) {}
+
+	const char *GetChannel() const {
+		return channel.c_str();
+	}
+
+	const char *GetMessage() const {
+		return message.c_str();
+	}
 };
 
 gcc_pure
 bool
 client_message_valid_channel_name(const char *name);
-
-gcc_pure
-static inline bool
-client_message_defined(const struct client_message *msg)
-{
-	assert(msg != NULL);
-	assert((msg->channel == NULL) == (msg->message == NULL));
-
-	return msg->channel != NULL;
-}
-
-void
-client_message_init_null(struct client_message *msg);
-
-void
-client_message_init(struct client_message *msg,
-		    const char *channel, const char *message);
-
-void
-client_message_copy(struct client_message *dest,
-		    const struct client_message *src);
-
-gcc_malloc
-struct client_message *
-client_message_dup(const struct client_message *src);
-
-void
-client_message_deinit(struct client_message *msg);
-
-void
-client_message_free(struct client_message *msg);
 
 #endif
