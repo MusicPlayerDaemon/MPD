@@ -85,6 +85,9 @@ cue_parser_free(struct cue_parser *parser)
 	if (parser->current != NULL)
 		song_free(parser->current);
 
+	if (parser->previous != NULL)
+		song_free(parser->previous);
+
 	if (parser->finished != NULL)
 		song_free(parser->finished);
 
