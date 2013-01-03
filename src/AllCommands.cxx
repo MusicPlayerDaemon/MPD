@@ -31,7 +31,7 @@ extern "C" {
 #include "OutputCommands.hxx"
 #include "MessageCommands.hxx"
 #include "OtherCommands.hxx"
-#include "permission.h"
+#include "Permission.hxx"
 #include "tag.h"
 
 extern "C" {

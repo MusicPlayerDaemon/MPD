@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,9 +18,12 @@
  */
 
 #include "config.h"
-#include "permission.h"
-#include "conf.h"
+#include "Permission.hxx"
 #include "mpd_error.h"
+
+extern "C" {
+#include "conf.h"
+}
 
 #include <glib.h>
 

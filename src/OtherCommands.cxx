@@ -37,9 +37,9 @@ extern "C" {
 #include "decoder_print.h"
 #include "volume.h"
 #include "stats.h"
-#include "permission.h"
 }
 
+#include "Permission.hxx"
 #include "PlaylistFile.hxx"
 
 extern "C" {

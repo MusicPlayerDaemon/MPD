@@ -25,8 +25,8 @@ extern "C" {
 extern "C" {
 #include "fifo_buffer.h"
 #include "resolver.h"
-#include "permission.h"
 }
+#include "Permission.hxx"
 #include "glib_socket.h"
 
 #include <assert.h>
