@@ -27,6 +27,6 @@ void
 mpd_inotify_queue_finish(void);
 
 void
-mpd_inotify_enqueue(char *uri_utf8);
+mpd_inotify_enqueue(const char *uri_utf8);
 
 #endif

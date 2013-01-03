@@ -21,6 +21,9 @@
 #include "InotifyQueue.hxx"
 #include "UpdateGlue.hxx"
 
+#include <deque>
+#include <string>
+
 #include <glib.h>
 
 #include <string.h>
@@ -37,7 +40,7 @@ enum {
 	INOTIFY_UPDATE_DELAY_S = 5,
 };
 
-static GSList *inotify_queue;
+static std::deque<std::string> inotify_queue;
 static guint queue_source_id;
 
 void
@@ -45,20 +48,11 @@ mpd_inotify_queue_init(void)
 {
 }
 
-static void
-free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
-{
-	g_free(data);
-}
-
 void
 mpd_inotify_queue_finish(void)
 {
 	if (queue_source_id != 0)
 		g_source_remove(queue_source_id);
-
-	g_slist_foreach(inotify_queue, free_callback, NULL);
-	g_slist_free(inotify_queue);
 }
 
 static gboolean
@@ -66,8 +60,8 @@ mpd_inotify_run_update(G_GNUC_UNUSED gpointer data)
 {
 	unsigned id;
 
-	while (inotify_queue != NULL) {
-		char *uri_utf8 = (char *)inotify_queue->data;
+	while (!inotify_queue.empty()) {
+		const char *uri_utf8 = inotify_queue.front().c_str();
 
 		id = update_enqueue(uri_utf8, false);
 		if (id == 0)
@@ -76,9 +70,7 @@ mpd_inotify_run_update(G_GNUC_UNUSED gpointer data)
 
 		g_debug("updating '%s' job=%u", uri_utf8, id);
 
-		g_free(uri_utf8);
-		inotify_queue = g_slist_delete_link(inotify_queue,
-						    inotify_queue);
+		inotify_queue.pop_front();
 	}
 
 	/* done, remove the timer event by returning false */
@@ -97,39 +89,29 @@ path_in(const char *path, const char *possible_parent)
 }
 
 void
-mpd_inotify_enqueue(char *uri_utf8)
+mpd_inotify_enqueue(const char *uri_utf8)
 {
-	GSList *old_queue = inotify_queue;
-
 	if (queue_source_id != 0)
 		g_source_remove(queue_source_id);
 	queue_source_id = g_timeout_add_seconds(INOTIFY_UPDATE_DELAY_S,
 					mpd_inotify_run_update, NULL);
 
-	inotify_queue = NULL;
-	while (old_queue != NULL) {
-		char *current_uri = (char *)old_queue->data;
+	for (auto i = inotify_queue.begin(), end = inotify_queue.end();
+	     i != end;) {
+		const char *current_uri = i->c_str();
 
-		if (path_in(uri_utf8, current_uri)) {
+		if (path_in(uri_utf8, current_uri))
 			/* already enqueued */
-			g_free(uri_utf8);
-			inotify_queue = g_slist_concat(inotify_queue,
-						       old_queue);
 			return;
-		}
-
-		old_queue = g_slist_delete_link(old_queue, old_queue);
 
 		if (path_in(current_uri, uri_utf8))
 			/* existing path is a sub-path of the new
 			   path; we can dequeue the existing path and
 			   update the new path instead */
-			g_free(current_uri);
+			i = inotify_queue.erase(i);
 		else
-			/* move the existing path to the new queue */
-			inotify_queue = g_slist_prepend(inotify_queue,
-							current_uri);
+			++i;
 	}
 
-	inotify_queue = g_slist_prepend(inotify_queue, uri_utf8);
+	inotify_queue.emplace_back(uri_utf8);
 }

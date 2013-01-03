@@ -295,10 +295,10 @@ mpd_inotify_callback(int wd, unsigned mask,
 			? fs_charset_to_utf8(uri_fs)
 			: g_strdup("");
 
-		if (uri_utf8 != NULL)
-			/* this function will take care of freeing
-			   uri_utf8 */
+		if (uri_utf8 != NULL) {
 			mpd_inotify_enqueue(uri_utf8);
+			g_free(uri_utf8);
+		}
 	}
 
 	g_free(uri_fs);
