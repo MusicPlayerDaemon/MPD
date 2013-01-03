@@ -28,6 +28,7 @@
 #include "DatabaseGlue.hxx"
 #include "DatabaseSimple.hxx"
 #include "Permission.hxx"
+#include "Listen.hxx"
 
 extern "C" {
 #include "daemon.h"
@@ -37,7 +38,6 @@ extern "C" {
 #include "idle.h"
 #include "AllCommands.h"
 #include "playlist.h"
-#include "listen.h"
 #include "cmdline.h"
 #include "conf.h"
 #include "path.h"

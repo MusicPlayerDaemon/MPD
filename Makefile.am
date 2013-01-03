@@ -106,7 +106,6 @@ mpd_headers = \
 	src/client.h \
 	src/client_internal.h \
 	src/server_socket.h \
-	src/listen.h \
 	src/log.h \
 	src/ls.h \
 	src/mixer_all.h \
@@ -262,7 +261,7 @@ src_mpd_SOURCES = \
 	src/client_subscribe.c \
 	src/client_file.c src/client_file.h \
 	src/server_socket.c \
-	src/listen.c \
+	src/Listen.cxx src/Listen.hxx \
 	src/log.c \
 	src/ls.cxx \
 	src/io_error.h \

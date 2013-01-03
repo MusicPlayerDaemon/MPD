@@ -21,7 +21,7 @@
 #include "zeroconf.h"
 #include "zeroconf-internal.h"
 #include "conf.h"
-#include "listen.h"
+#include "Listen.hxx"
 
 #include <glib.h>
 
