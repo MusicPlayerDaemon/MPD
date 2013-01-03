@@ -99,6 +99,10 @@ public:
 	 */
 	std::deque<ClientMessage> messages;
 
+	Client(struct player_control *player_control,
+	       int fd, int uid, int num);
+	~Client();
+
 	gcc_pure
 	bool IsSubscribed(const char *channel_name) const {
 		return subscriptions.find(channel_name) != subscriptions.end();

@@ -45,6 +45,55 @@ extern "C" {
 
 static const char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
 
+Client::Client(struct player_control *_player_control,
+	       int fd, int _uid, int _num)
+	:player_control(_player_control),
+	 input(fifo_buffer_new(4096)),
+	 permission(getDefaultPermissions()),
+	 uid(_uid),
+	 last_activity(g_timer_new()),
+	 cmd_list(nullptr), cmd_list_OK(-1), cmd_list_size(0),
+	 deferred_send(g_queue_new()), deferred_bytes(0),
+	 num(_num),
+	 send_buf_used(0)
+{
+	assert(fd >= 0);
+
+	channel = g_io_channel_new_socket(fd);
+	/* GLib is responsible for closing the file descriptor */
+	g_io_channel_set_close_on_unref(channel, true);
+	/* NULL encoding means the stream is binary safe; the MPD
+	   protocol is UTF-8 only, but we are doing this call anyway
+	   to prevent GLib from messing around with the stream */
+	g_io_channel_set_encoding(channel, NULL, NULL);
+	/* we prefer to do buffering */
+	g_io_channel_set_buffered(channel, false);
+
+	source_id = g_io_add_watch(channel,
+				   GIOCondition(G_IO_IN|G_IO_ERR|G_IO_HUP),
+				   client_in_event, this);
+}
+
+static void
+deferred_buffer_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
+{
+	struct deferred_buffer *buffer = (struct deferred_buffer *)data;
+	g_free(buffer);
+}
+
+Client::~Client()
+{
+	g_timer_destroy(last_activity);
+
+	if (cmd_list != nullptr)
+		free_cmd_list(cmd_list);
+
+	g_queue_foreach(deferred_send, deferred_buffer_free, NULL);
+	g_queue_free(deferred_send);
+
+	fifo_buffer_free(input);
+}
+
 void
 client_new(struct player_control *player_control,
 	   int fd, const struct sockaddr *sa, size_t sa_length, int uid)
@@ -86,39 +135,8 @@ client_new(struct player_control *player_control,
 		return;
 	}
 
-	Client *client = new Client();
-	client->player_control = player_control;
-
-	client->channel = g_io_channel_new_socket(fd);
-	/* GLib is responsible for closing the file descriptor */
-	g_io_channel_set_close_on_unref(client->channel, true);
-	/* NULL encoding means the stream is binary safe; the MPD
-	   protocol is UTF-8 only, but we are doing this call anyway
-	   to prevent GLib from messing around with the stream */
-	g_io_channel_set_encoding(client->channel, NULL, NULL);
-	/* we prefer to do buffering */
-	g_io_channel_set_buffered(client->channel, false);
-
-	client->source_id = g_io_add_watch(client->channel,
-					   GIOCondition(G_IO_IN|G_IO_ERR|G_IO_HUP),
-					   client_in_event, client);
-
-	client->input = fifo_buffer_new(4096);
-
-	client->permission = getDefaultPermissions();
-	client->uid = uid;
-
-	client->last_activity = g_timer_new();
-
-	client->cmd_list = NULL;
-	client->cmd_list_OK = -1;
-	client->cmd_list_size = 0;
-
-	client->deferred_send = g_queue_new();
-	client->deferred_bytes = 0;
-	client->num = next_client_num++;
-
-	client->send_buf_used = 0;
+	Client *client = new Client(player_control, fd, uid,
+				    next_client_num++);
 
 	(void)send(fd, GREETING, sizeof(GREETING) - 1, 0);
 
@@ -130,31 +148,12 @@ client_new(struct player_control *player_control,
 	g_free(remote);
 }
 
-static void
-deferred_buffer_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
-{
-	struct deferred_buffer *buffer = (struct deferred_buffer *)data;
-	g_free(buffer);
-}
-
 void
 client_close(Client *client)
 {
 	client_list_remove(client);
 
 	client_set_expired(client);
-
-	g_timer_destroy(client->last_activity);
-
-	if (client->cmd_list) {
-		free_cmd_list(client->cmd_list);
-		client->cmd_list = NULL;
-	}
-
-	g_queue_foreach(client->deferred_send, deferred_buffer_free, NULL);
-	g_queue_free(client->deferred_send);
-
-	fifo_buffer_free(client->input);
 
 	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
 	      "[%u] closed", client->num);
