@@ -170,7 +170,6 @@ mpd_headers = \
 	src/tag_id3.h \
 	src/tag_rva2.h \
 	src/tokenizer.h \
-	src/strset.h \
 	src/uri.h \
 	src/utils.h \
 	src/string_util.h \
@@ -323,7 +322,6 @@ src_mpd_SOURCES = \
 	src/tokenizer.c \
 	src/text_file.c \
 	src/text_input_stream.c \
-	src/strset.c \
 	src/uri.c \
 	src/utils.c \
 	src/string_util.c \
