@@ -86,7 +86,6 @@ mpd_headers = \
 	src/glib_compat.h \
 	src/gcc.h \
 	src/decoder_list.h \
-	src/decoder_print.h \
 	src/decoder/pcm_decoder_plugin.h \
 	src/input_init.h \
 	src/input_plugin.h \
@@ -214,7 +213,7 @@ src_mpd_SOURCES = \
 	src/decoder_control.c \
 	src/decoder_api.c \
 	src/decoder_internal.c \
-	src/decoder_print.c \
+	src/DecoderPrint.cxx src/DecoderPrint.hxx \
 	src/Directory.cxx src/Directory.hxx \
 	src/DirectorySave.cxx src/DirectorySave.hxx \
 	src/DatabaseSimple.hxx \

@@ -28,13 +28,13 @@
 #include "TagPrint.hxx"
 #include "TimePrint.hxx"
 #include "Mapper.hxx"
+#include "DecoderPrint.hxx"
 
 extern "C" {
 #include "protocol/argparser.h"
 #include "protocol/result.h"
 #include "ls.h"
 #include "uri.h"
-#include "decoder_print.h"
 #include "volume.h"
 #include "stats.h"
 }
