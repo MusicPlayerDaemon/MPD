@@ -21,7 +21,6 @@
 #define MPD_PLAYLIST_INFO_HXX
 
 #include "check.h"
-#include "util/list.h"
 #include "gcc.h"
 
 #include <string>
@@ -32,8 +31,6 @@
  * A directory entry pointing to a playlist file.
  */
 struct PlaylistInfo {
-	struct list_head siblings;
-
 	/**
 	 * The UTF-8 encoded name of the playlist file.
 	 */
