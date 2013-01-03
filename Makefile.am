@@ -68,7 +68,6 @@ mpd_headers = \
 	src/filter/volume_filter_plugin.h \
 	src/command.h \
 	src/idle.h \
-	src/cmdline.h \
 	src/conf.h \
 	src/crossfade.h \
 	src/decoder_control.h \
@@ -202,7 +201,7 @@ src_mpd_SOURCES = \
 	src/MessageCommands.cxx src/MessageCommands.hxx \
 	src/OtherCommands.cxx src/OtherCommands.hxx \
 	src/idle.c \
-	src/cmdline.c \
+	src/CommandLine.cxx src/CommandLine.hxx \
 	src/conf.c \
 	src/crossfade.c \
 	src/cue/cue_parser.c src/cue/cue_parser.h \

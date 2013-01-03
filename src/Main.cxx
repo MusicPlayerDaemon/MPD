@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Main.hxx"
+#include "CommandLine.hxx"
 #include "PlaylistFile.hxx"
 #include "UpdateGlue.hxx"
 #include "chunk.h"
@@ -38,7 +39,6 @@ extern "C" {
 #include "io_thread.h"
 #include "idle.h"
 #include "playlist.h"
-#include "cmdline.h"
 #include "conf.h"
 #include "path.h"
 #include "player_control.h"

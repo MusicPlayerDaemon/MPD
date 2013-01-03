@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,10 +18,15 @@
  */
 
 #include "config.h"
-#include "cmdline.h"
+#include "CommandLine.hxx"
 #include "path.h"
+
+extern "C" {
 #include "log.h"
 #include "conf.h"
+#include "ls.h"
+}
+
 #include "decoder_list.h"
 #include "decoder_plugin.h"
 #include "output_list.h"
@@ -30,7 +35,6 @@
 #include "input_plugin.h"
 #include "playlist_list.h"
 #include "playlist_plugin.h"
-#include "ls.h"
 #include "mpd_error.h"
 #include "glib_compat.h"
 
@@ -159,7 +163,7 @@ parse_cmdline(int argc, char **argv, struct options *options,
 		  "verbose logging", NULL },
 		{ "version", 'V', 0, G_OPTION_ARG_NONE, &option_version,
 		  "print version number", NULL },
-		{ .long_name = NULL }
+		{ nullptr, 0, 0, G_OPTION_ARG_NONE, nullptr, nullptr, nullptr }
 	};
 
 	options->kill = false;
