@@ -27,6 +27,9 @@ extern "C" {
 #include "client_subscribe.h"
 }
 
+#include <set>
+#include <string>
+
 #include <assert.h>
 
 enum command_return
@@ -73,9 +76,7 @@ handle_unsubscribe(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 struct channels_context {
-	GStringChunk *chunk;
-
-	GHashTable *channels;
+	std::set<std::string> channels;
 };
 
 static void
@@ -89,22 +90,8 @@ collect_channels(gpointer data, gpointer user_data)
 	     i = g_slist_next(i)) {
 		const char *channel = (const char *)i->data;
 
-		if (g_hash_table_lookup(context->channels, channel) == NULL) {
-			char *channel2 = g_string_chunk_insert(context->chunk,
-							       channel);
-			g_hash_table_insert(context->channels, channel2,
-					    context);
-		}
+		context->channels.insert(channel);
 	}
-}
-
-static void
-print_channel(gpointer key, G_GNUC_UNUSED gpointer value, gpointer user_data)
-{
-	struct client *client = (struct client *)user_data;
-	const char *channel = (const char *)key;
-
-	client_printf(client, "channel: %s\n", channel);
 }
 
 enum command_return
@@ -113,17 +100,12 @@ handle_channels(struct client *client,
 {
 	assert(argc == 1);
 
-	struct channels_context context = {
-		g_string_chunk_new(1024),
-		g_hash_table_new(g_str_hash, g_str_equal),
-	};
+	struct channels_context context;
 
 	client_list_foreach(collect_channels, &context);
 
-	g_hash_table_foreach(context.channels, print_channel, client);
-
-	g_hash_table_destroy(context.channels);
-	g_string_chunk_free(context.chunk);
+	for (const auto &channel : context.channels)
+		client_printf(client, "channel: %s\n", channel.c_str());
 
 	return COMMAND_RETURN_OK;
 }
