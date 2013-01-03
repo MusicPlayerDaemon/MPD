@@ -55,7 +55,8 @@ Client::Client(struct player_control *_player_control,
 	 cmd_list(nullptr), cmd_list_OK(-1), cmd_list_size(0),
 	 deferred_send(g_queue_new()), deferred_bytes(0),
 	 num(_num),
-	 send_buf_used(0)
+	 send_buf_used(0),
+	 idle_waiting(false), idle_flags(0)
 {
 	assert(fd >= 0);
 
