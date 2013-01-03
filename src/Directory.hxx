@@ -100,7 +100,7 @@ public:
 	/**
 	 * Default constructor, needed for #detached_root.
 	 */
-	Directory() = default;
+	Directory();
 	~Directory();
 
 	/**

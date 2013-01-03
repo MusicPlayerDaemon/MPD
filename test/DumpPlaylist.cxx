@@ -38,6 +38,7 @@ extern "C" {
 #include <unistd.h>
 #include <stdlib.h>
 
+Directory::Directory() {}
 Directory::~Directory() {}
 
 static void

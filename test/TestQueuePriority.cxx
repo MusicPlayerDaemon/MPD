@@ -7,6 +7,7 @@ extern "C" {
 
 Directory detached_root;
 
+Directory::Directory() {}
 Directory::~Directory() {}
 
 struct song *

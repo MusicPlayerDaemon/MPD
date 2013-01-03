@@ -51,6 +51,15 @@ Directory::Allocate(const char *path)
 	return directory;
 }
 
+Directory::Directory()
+{
+	INIT_LIST_HEAD(&children);
+	INIT_LIST_HEAD(&songs);
+	INIT_LIST_HEAD(&playlists);
+
+	path[0] = 0;
+}
+
 Directory::Directory(const char *_path)
 {
 	INIT_LIST_HEAD(&children);
