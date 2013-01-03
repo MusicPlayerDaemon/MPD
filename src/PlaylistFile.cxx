@@ -236,16 +236,14 @@ LoadPlaylistFile(const char *utf8path, GError **error_r)
 	if (path_fs == NULL)
 		return contents;
 
-	FILE *file = fopen(path_fs, "r");
-	g_free(path_fs);
-	if (file == NULL) {
+	TextFile file(path_fs);
+	if (file.HasFailed()) {
 		playlist_errno(error_r);
 		return contents;
 	}
 
-	GString *buffer = g_string_sized_new(1024);
 	char *s;
-	while ((s = read_text_line(file, buffer)) != NULL) {
+	while ((s = file.ReadLine()) != NULL) {
 		if (*s == 0 || *s == PLAYLIST_COMMENT)
 			continue;
 
@@ -265,7 +263,6 @@ LoadPlaylistFile(const char *utf8path, GError **error_r)
 			break;
 	}
 
-	fclose(file);
 	return contents;
 }
 

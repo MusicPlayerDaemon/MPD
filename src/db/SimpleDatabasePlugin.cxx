@@ -26,6 +26,7 @@
 #include "DatabaseSave.hxx"
 #include "DatabaseLock.hxx"
 #include "db_error.h"
+#include "TextFile.hxx"
 
 extern "C" {
 #include "conf.h"
@@ -155,20 +156,16 @@ SimpleDatabase::Load(GError **error_r)
 	assert(!path.empty());
 	assert(root != NULL);
 
-	FILE *fp = fopen(path.c_str(), "r");
-	if (fp == NULL) {
+	TextFile file(path.c_str());
+	if (file.HasFailed()) {
 		g_set_error(error_r, simple_db_quark(), errno,
 			    "Failed to open database file \"%s\": %s",
 			    path.c_str(), g_strerror(errno));
 		return false;
 	}
 
-	if (!db_load_internal(fp, root, error_r)) {
-		fclose(fp);
+	if (!db_load_internal(file, root, error_r))
 		return false;
-	}
-
-	fclose(fp);
 
 	struct stat st;
 	if (stat(path.c_str(), &st) == 0)

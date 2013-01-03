@@ -29,6 +29,7 @@
 #include <stdio.h>
 
 struct queue;
+class TextFile;
 
 void
 queue_save(FILE *fp, const struct queue *queue);
@@ -37,7 +38,6 @@ queue_save(FILE *fp, const struct queue *queue);
  * Loads one song from the state file and appends it to the queue.
  */
 void
-queue_load_song(FILE *fp, GString *buffer, const char *line,
-		struct queue *queue);
+queue_load_song(TextFile &file, const char *line, queue *queue);
 
 #endif

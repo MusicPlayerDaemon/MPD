@@ -77,9 +77,8 @@ db_save_internal(FILE *fp, const Directory *music_root)
 }
 
 bool
-db_load_internal(FILE *fp, Directory *music_root, GError **error)
+db_load_internal(TextFile &file, Directory *music_root, GError **error)
 {
-	GString *buffer = g_string_sized_new(1024);
 	char *line;
 	int format = 0;
 	bool found_charset = false, found_version = false;
@@ -89,16 +88,15 @@ db_load_internal(FILE *fp, Directory *music_root, GError **error)
 	assert(music_root != NULL);
 
 	/* get initial info */
-	line = read_text_line(fp, buffer);
+	line = file.ReadLine();
 	if (line == NULL || strcmp(DIRECTORY_INFO_BEGIN, line) != 0) {
 		g_set_error(error, db_quark(), 0, "Database corrupted");
-		g_string_free(buffer, true);
 		return false;
 	}
 
 	memset(tags, false, sizeof(tags));
 
-	while ((line = read_text_line(fp, buffer)) != NULL &&
+	while ((line = file.ReadLine()) != NULL &&
 	       strcmp(line, DIRECTORY_INFO_END) != 0) {
 		if (g_str_has_prefix(line, DB_FORMAT_PREFIX)) {
 			format = atoi(line + sizeof(DB_FORMAT_PREFIX) - 1);
@@ -106,7 +104,6 @@ db_load_internal(FILE *fp, Directory *music_root, GError **error)
 			if (found_version) {
 				g_set_error(error, db_quark(), 0,
 					    "Duplicate version line");
-				g_string_free(buffer, true);
 				return false;
 			}
 
@@ -117,7 +114,6 @@ db_load_internal(FILE *fp, Directory *music_root, GError **error)
 			if (found_charset) {
 				g_set_error(error, db_quark(), 0,
 					    "Duplicate charset line");
-				g_string_free(buffer, true);
 				return false;
 			}
 
@@ -132,7 +128,6 @@ db_load_internal(FILE *fp, Directory *music_root, GError **error)
 					    "\"%s\" instead of \"%s\"; "
 					    "discarding database file",
 					    new_charset, old_charset);
-				g_string_free(buffer, true);
 				return false;
 			}
 		} else if (g_str_has_prefix(line, DB_TAG_PREFIX)) {
@@ -150,7 +145,6 @@ db_load_internal(FILE *fp, Directory *music_root, GError **error)
 		} else {
 			g_set_error(error, db_quark(), 0,
 				    "Malformed line: %s", line);
-			g_string_free(buffer, true);
 			return false;
 		}
 	}
@@ -174,9 +168,8 @@ db_load_internal(FILE *fp, Directory *music_root, GError **error)
 	g_debug("reading DB");
 
 	db_lock();
-	success = directory_load(fp, music_root, buffer, error);
+	success = directory_load(file, music_root, error);
 	db_unlock();
-	g_string_free(buffer, true);
 
 	return success;
 }

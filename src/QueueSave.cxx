@@ -71,8 +71,7 @@ queue_save(FILE *fp, const struct queue *queue)
 }
 
 void
-queue_load_song(FILE *fp, GString *buffer, const char *line,
-		struct queue *queue)
+queue_load_song(TextFile &file, const char *line, queue *queue)
 {
 	if (queue_is_full(queue))
 		return;
@@ -81,7 +80,7 @@ queue_load_song(FILE *fp, GString *buffer, const char *line,
 	if (g_str_has_prefix(line, PRIO_LABEL)) {
 		priority = strtoul(line + sizeof(PRIO_LABEL) - 1, NULL, 10);
 
-		line = read_text_line(fp, buffer);
+		line = file.ReadLine();
 		if (line == NULL)
 			return;
 	}
@@ -95,7 +94,7 @@ queue_load_song(FILE *fp, GString *buffer, const char *line,
 			return;
 
 		GError *error = NULL;
-		song = song_load(fp, NULL, uri, buffer, &error);
+		song = song_load(file, NULL, uri, &error);
 		if (song == NULL) {
 			g_warning("%s", error->message);
 			g_error_free(error);

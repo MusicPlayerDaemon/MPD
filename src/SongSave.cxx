@@ -63,8 +63,8 @@ song_save(FILE *fp, const struct song *song)
 }
 
 struct song *
-song_load(FILE *fp, Directory *parent, const char *uri,
-	  GString *buffer, GError **error_r)
+song_load(TextFile &file, Directory *parent, const char *uri,
+	  GError **error_r)
 {
 	struct song *song = parent != NULL
 		? song_file_new(uri, parent)
@@ -73,7 +73,7 @@ song_load(FILE *fp, Directory *parent, const char *uri,
 	enum tag_type type;
 	const char *value;
 
-	while ((line = read_text_line(fp, buffer)) != NULL &&
+	while ((line = file.ReadLine()) != NULL &&
 	       strcmp(line, SONG_END) != 0) {
 		colon = strchr(line, ':');
 		if (colon == NULL || colon == line) {

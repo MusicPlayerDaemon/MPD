@@ -30,13 +30,14 @@
 
 struct playlist;
 struct player_control;
+class TextFile;
 
 void
 playlist_state_save(FILE *fp, const struct playlist *playlist,
 		    struct player_control *pc);
 
 bool
-playlist_state_restore(const char *line, FILE *fp, GString *buffer,
+playlist_state_restore(const char *line, TextFile &file,
 		       struct playlist *playlist, struct player_control *pc);
 
 /**

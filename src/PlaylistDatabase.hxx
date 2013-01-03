@@ -28,12 +28,13 @@
 #define PLAYLIST_META_BEGIN "playlist_begin: "
 
 class PlaylistVector;
+class TextFile;
 
 void
 playlist_vector_save(FILE *fp, const PlaylistVector &pv);
 
 bool
-playlist_metadata_load(FILE *fp, PlaylistVector &pv, const char *name,
-		       GString *buffer, GError **error_r);
+playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name,
+		       GError **error_r);
 
 #endif

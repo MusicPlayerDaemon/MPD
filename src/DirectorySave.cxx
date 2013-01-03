@@ -76,10 +76,9 @@ directory_save(FILE *fp, const Directory *directory)
 }
 
 static Directory *
-directory_load_subdir(FILE *fp, Directory *parent, const char *name,
-		      GString *buffer, GError **error_r)
+directory_load_subdir(TextFile &file, Directory *parent, const char *name,
+		      GError **error_r)
 {
-	const char *line;
 	bool success;
 
 	if (parent->FindChild(name) != nullptr) {
@@ -90,7 +89,7 @@ directory_load_subdir(FILE *fp, Directory *parent, const char *name,
 
 	Directory *directory = parent->CreateChild(name);
 
-	line = read_text_line(fp, buffer);
+	const char *line = file.ReadLine();
 	if (line == NULL) {
 		g_set_error(error_r, directory_quark(), 0,
 			    "Unexpected end of file");
@@ -103,7 +102,7 @@ directory_load_subdir(FILE *fp, Directory *parent, const char *name,
 			g_ascii_strtoull(line + sizeof(DIRECTORY_MTIME) - 1,
 					 NULL, 10);
 
-		line = read_text_line(fp, buffer);
+		line = file.ReadLine();
 		if (line == NULL) {
 			g_set_error(error_r, directory_quark(), 0,
 				    "Unexpected end of file");
@@ -119,7 +118,7 @@ directory_load_subdir(FILE *fp, Directory *parent, const char *name,
 		return NULL;
 	}
 
-	success = directory_load(fp, directory, buffer, error_r);
+	success = directory_load(file, directory, error_r);
 	if (!success) {
 		directory->Delete();
 		return NULL;
@@ -129,18 +128,17 @@ directory_load_subdir(FILE *fp, Directory *parent, const char *name,
 }
 
 bool
-directory_load(FILE *fp, Directory *directory,
-	       GString *buffer, GError **error)
+directory_load(TextFile &file, Directory *directory, GError **error)
 {
 	const char *line;
 
-	while ((line = read_text_line(fp, buffer)) != NULL &&
+	while ((line = file.ReadLine()) != NULL &&
 	       !g_str_has_prefix(line, DIRECTORY_END)) {
 		if (g_str_has_prefix(line, DIRECTORY_DIR)) {
 			Directory *subdir =
-				directory_load_subdir(fp, directory,
+				directory_load_subdir(file, directory,
 						      line + sizeof(DIRECTORY_DIR) - 1,
-						      buffer, error);
+						      error);
 			if (subdir == NULL)
 				return false;
 		} else if (g_str_has_prefix(line, SONG_BEGIN)) {
@@ -153,8 +151,7 @@ directory_load(FILE *fp, Directory *directory,
 				return false;
 			}
 
-			song = song_load(fp, directory, name,
-					 buffer, error);
+			song = song_load(file, directory, name, error);
 			if (song == NULL)
 				return false;
 
@@ -165,8 +162,8 @@ directory_load(FILE *fp, Directory *directory,
 			   buffer */
 			char *name = g_strdup(line + sizeof(PLAYLIST_META_BEGIN) - 1);
 
-			if (!playlist_metadata_load(fp, directory->playlists,
-						    name, buffer, error)) {
+			if (!playlist_metadata_load(file, directory->playlists,
+						    name, error)) {
 				g_free(name);
 				return false;
 			}

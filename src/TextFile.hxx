@@ -20,20 +20,47 @@
 #ifndef MPD_TEXT_FILE_HXX
 #define MPD_TEXT_FILE_HXX
 
+#include "gcc.h"
+
 #include <glib.h>
 
 #include <stdio.h>
 
-/**
- * Reads a line from the input file, and strips trailing space.  There
- * is a reasonable maximum line length, only to prevent denial of
- * service.
- *
- * @param file the source file, opened in text mode
- * @param buffer an allocator for the buffer
- * @return a pointer to the line, or NULL on end-of-file or error
- */
-char *
-read_text_line(FILE *file, GString *buffer);
+class TextFile {
+	static constexpr size_t max_length = 512 * 1024;
+	static constexpr size_t step = 1024;
+
+	FILE *const file;
+
+	GString *const buffer;
+
+public:
+	TextFile(const char *path_fs)
+		:file(fopen(path_fs, "r")), buffer(g_string_sized_new(step)) {}
+
+	TextFile(const TextFile &other) = delete;
+
+	~TextFile() {
+		if (file != nullptr)
+			fclose(file);
+
+		g_string_free(buffer, true);
+	}
+
+	bool HasFailed() const {
+		return gcc_unlikely(file == nullptr);
+	}
+
+	/**
+	 * Reads a line from the input file, and strips trailing
+	 * space.  There is a reasonable maximum line length, only to
+	 * prevent denial of service.
+	 *
+	 * @param file the source file, opened in text mode
+	 * @param buffer an allocator for the buffer
+	 * @return a pointer to the line, or NULL on end-of-file or error
+	 */
+	char *ReadLine();
+};
 
 #endif

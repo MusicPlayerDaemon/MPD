@@ -25,12 +25,12 @@
 #include <stdio.h>
 
 struct Directory;
+class TextFile;
 
 void
 directory_save(FILE *fp, const Directory *directory);
 
 bool
-directory_load(FILE *fp, Directory *directory,
-	       GString *buffer, GError **error);
+directory_load(TextFile &file, Directory *directory, GError **error);
 
 #endif

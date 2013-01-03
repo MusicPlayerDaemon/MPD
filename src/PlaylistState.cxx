@@ -104,18 +104,18 @@ playlist_state_save(FILE *fp, const struct playlist *playlist,
 }
 
 static void
-playlist_state_load(FILE *fp, GString *buffer, struct playlist *playlist)
+playlist_state_load(TextFile &file, struct playlist *playlist)
 {
-	const char *line = read_text_line(fp, buffer);
+	const char *line = file.ReadLine();
 	if (line == NULL) {
 		g_warning("No playlist in state file");
 		return;
 	}
 
 	while (!g_str_has_prefix(line, PLAYLIST_STATE_FILE_PLAYLIST_END)) {
-		queue_load_song(fp, buffer, line, &playlist->queue);
+		queue_load_song(file, line, &playlist->queue);
 
-		line = read_text_line(fp, buffer);
+		line = file.ReadLine();
 		if (line == NULL) {
 			g_warning("'" PLAYLIST_STATE_FILE_PLAYLIST_END
 				  "' not found in state file");
@@ -127,7 +127,7 @@ playlist_state_load(FILE *fp, GString *buffer, struct playlist *playlist)
 }
 
 bool
-playlist_state_restore(const char *line, FILE *fp, GString *buffer,
+playlist_state_restore(const char *line, TextFile &file,
 		       struct playlist *playlist, struct player_control *pc)
 {
 	int current = -1;
@@ -145,7 +145,7 @@ playlist_state_restore(const char *line, FILE *fp, GString *buffer,
 	else if (strcmp(line, PLAYLIST_STATE_FILE_STATE_PAUSE) == 0)
 		state = PLAYER_STATE_PAUSE;
 
-	while ((line = read_text_line(fp, buffer)) != NULL) {
+	while ((line = file.ReadLine()) != NULL) {
 		if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_TIME)) {
 			seek_time =
 			    atoi(&(line[strlen(PLAYLIST_STATE_FILE_TIME)]));
@@ -189,7 +189,7 @@ playlist_state_restore(const char *line, FILE *fp, GString *buffer,
 					  (PLAYLIST_STATE_FILE_CURRENT)]));
 		} else if (g_str_has_prefix(line,
 					    PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)) {
-			playlist_state_load(fp, buffer, playlist);
+			playlist_state_load(file, playlist);
 		}
 	}
 

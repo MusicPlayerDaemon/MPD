@@ -78,39 +78,31 @@ state_file_write(struct player_control *pc)
 static void
 state_file_read(struct player_control *pc)
 {
-	FILE *fp;
 	bool success;
 
 	assert(state_file_path != NULL);
 
 	g_debug("Loading state file %s", state_file_path);
 
-	fp = fopen(state_file_path, "r");
-	if (G_UNLIKELY(!fp)) {
+	TextFile file(state_file_path);
+	if (file.HasFailed()) {
 		g_warning("failed to open %s: %s",
 			  state_file_path, g_strerror(errno));
 		return;
 	}
 
-	GString *buffer = g_string_sized_new(1024);
 	const char *line;
-	while ((line = read_text_line(fp, buffer)) != NULL) {
+	while ((line = file.ReadLine()) != NULL) {
 		success = read_sw_volume_state(line) ||
 			audio_output_state_read(line) ||
-			playlist_state_restore(line, fp, buffer,
-					       &g_playlist, pc);
+			playlist_state_restore(line, file, &g_playlist, pc);
 		if (!success)
 			g_warning("Unrecognized line in state file: %s", line);
 	}
 
-	fclose(fp);
-
 	prev_volume_version = sw_volume_state_get_hash();
 	prev_output_version = audio_output_state_get_version();
 	prev_playlist_version = playlist_state_get_hash(&g_playlist, pc);
-
-
-	g_string_free(buffer, true);
 }
 
 /**

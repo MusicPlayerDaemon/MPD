@@ -24,21 +24,14 @@
 #include <string.h>
 
 char *
-read_text_line(FILE *file, GString *buffer)
+TextFile::ReadLine()
 {
-	enum {
-		max_length = 512 * 1024,
-		step = 1024,
-	};
-
 	gsize length = 0, i;
 	char *p;
 
 	assert(file != NULL);
 	assert(buffer != NULL);
-
-	if (buffer->allocated_len < step)
-		g_string_set_size(buffer, step);
+	assert(buffer->allocated_len >= step);
 
 	while (buffer->len < max_length) {
 		p = fgets(buffer->str + length,

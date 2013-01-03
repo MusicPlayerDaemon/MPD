@@ -46,15 +46,15 @@ playlist_vector_save(FILE *fp, const PlaylistVector &pv)
 }
 
 bool
-playlist_metadata_load(FILE *fp, PlaylistVector &pv, const char *name,
-		       GString *buffer, GError **error_r)
+playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name,
+		       GError **error_r)
 {
 	PlaylistInfo pm(name, 0);
 
 	char *line, *colon;
 	const char *value;
 
-	while ((line = read_text_line(fp, buffer)) != NULL &&
+	while ((line = file.ReadLine()) != NULL &&
 	       strcmp(line, "playlist_end") != 0) {
 		colon = strchr(line, ':');
 		if (colon == NULL || colon == line) {

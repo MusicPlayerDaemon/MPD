@@ -25,11 +25,12 @@
 #include <stdio.h>
 
 struct Directory;
+class TextFile;
 
 void
 db_save_internal(FILE *file, const Directory *root);
 
 bool
-db_load_internal(FILE *file, Directory *root, GError **error);
+db_load_internal(TextFile &file, Directory *root, GError **error);
 
 #endif
