@@ -34,13 +34,9 @@
 GSList *
 exclude_list_load(const char *path_fs)
 {
-	FILE *file;
-	char line[1024];
-	GSList *list = NULL;
-
 	assert(path_fs != NULL);
 
-	file = fopen(path_fs, "r");
+	FILE *file = fopen(path_fs, "r");
 	if (file == NULL) {
 		if (errno != ENOENT) {
 			char *path_utf8 = fs_charset_to_utf8(path_fs);
@@ -52,6 +48,8 @@ exclude_list_load(const char *path_fs)
 		return NULL;
 	}
 
+	GSList *list = NULL;
+	char line[1024];
 	while (fgets(line, sizeof(line), file) != NULL) {
 		char *p = strchr(line, '#');
 		if (p != NULL)
