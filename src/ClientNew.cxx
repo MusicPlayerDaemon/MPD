@@ -50,7 +50,6 @@ client_new(struct player_control *player_control,
 	   int fd, const struct sockaddr *sa, size_t sa_length, int uid)
 {
 	static unsigned int next_client_num;
-	Client *client;
 	char *remote;
 
 	assert(player_control != NULL);
@@ -87,7 +86,7 @@ client_new(struct player_control *player_control,
 		return;
 	}
 
-	client = g_new0(Client, 1);
+	Client *client = new Client();
 	client->player_control = player_control;
 
 	client->channel = g_io_channel_new_socket(fd);
@@ -163,5 +162,5 @@ client_close(Client *client)
 
 	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
 	      "[%u] closed", client->num);
-	g_free(client);
+	delete client;
 }
