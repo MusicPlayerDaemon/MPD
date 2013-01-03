@@ -23,8 +23,11 @@
  */
 
 #include "config.h"
-#include "exclude.h"
+#include "ExcludeList.hxx"
+
+extern "C" {
 #include "path.h"
+}
 
 #include <assert.h>
 #include <string.h>
@@ -69,7 +72,7 @@ void
 exclude_list_free(GSList *list)
 {
 	while (list != NULL) {
-		GPatternSpec *pattern = list->data;
+		GPatternSpec *pattern = (GPatternSpec *)list->data;
 		g_pattern_spec_free(pattern);
 		list = g_slist_remove(list, list->data);
 	}
@@ -83,7 +86,7 @@ exclude_list_check(GSList *list, const char *name_fs)
 	/* XXX include full path name in check */
 
 	for (; list != NULL; list = list->next) {
-		GPatternSpec *pattern = list->data;
+		GPatternSpec *pattern = (GPatternSpec *)list->data;
 
 		if (g_pattern_match_string(pattern, name_fs))
 			return true;

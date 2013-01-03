@@ -27,8 +27,6 @@
 
 #include <glib.h>
 
-#include <stdbool.h>
-
 /**
  * Loads and parses a .mpdignore file.
  */

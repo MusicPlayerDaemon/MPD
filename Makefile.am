@@ -82,7 +82,6 @@ mpd_headers = \
 	src/encoder_plugin.h \
 	src/encoder_list.h \
 	src/encoder_api.h \
-	src/exclude.h \
 	src/fd_util.h \
 	src/gerror.h \
 	src/glib_compat.h \
@@ -232,7 +231,7 @@ src_mpd_SOURCES = \
 	src/DatabasePlugin.hxx \
 	src/DatabaseVisitor.hxx \
 	src/DatabaseSelection.cxx src/DatabaseSelection.hxx \
-	src/exclude.c \
+	src/ExcludeList.cxx src/ExcludeList.hxx \
 	src/fd_util.c \
 	src/fifo_buffer.c src/fifo_buffer.h \
 	src/growing_fifo.c src/growing_fifo.h \

@@ -29,9 +29,9 @@
 #include "song.h"
 #include "PlaylistVector.hxx"
 #include "Mapper.hxx"
+#include "ExcludeList.hxx"
 
 extern "C" {
-#include "exclude.h"
 #include "uri.h"
 #include "path.h"
 #include "playlist_list.h"
