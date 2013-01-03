@@ -22,10 +22,10 @@
 #include "song.h"
 #include "TagSave.hxx"
 #include "Directory.hxx"
+#include "TextFile.hxx"
 
 extern "C" {
 #include "tag.h"
-#include "text_file.h"
 #include "string_util.h"
 }
 

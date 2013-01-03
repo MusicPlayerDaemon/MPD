@@ -25,9 +25,9 @@
 #include "song.h"
 #include "io_error.h"
 #include "Mapper.hxx"
+#include "TextFile.hxx"
 
 extern "C" {
-#include "text_file.h"
 #include "path.h"
 #include "uri.h"
 #include "idle.h"

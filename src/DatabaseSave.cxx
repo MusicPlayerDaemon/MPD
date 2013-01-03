@@ -23,10 +23,10 @@
 #include "Directory.hxx"
 #include "DirectorySave.hxx"
 #include "song.h"
+#include "TextFile.hxx"
 
 extern "C" {
 #include "path.h"
-#include "text_file.h"
 #include "tag.h"
 #include "tag_internal.h"
 }

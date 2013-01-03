@@ -23,11 +23,11 @@
 #include "SongSave.hxx"
 #include "DatabasePlugin.hxx"
 #include "DatabaseGlue.hxx"
+#include "TextFile.hxx"
 
 extern "C" {
 #include "queue.h"
 #include "uri.h"
-#include "text_file.h"
 }
 
 #include <stdlib.h>

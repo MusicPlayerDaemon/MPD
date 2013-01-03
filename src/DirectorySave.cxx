@@ -23,10 +23,7 @@
 #include "song.h"
 #include "SongSave.hxx"
 #include "PlaylistDatabase.hxx"
-
-extern "C" {
-#include "text_file.h"
-}
+#include "TextFile.hxx"
 
 #include <assert.h>
 #include <string.h>

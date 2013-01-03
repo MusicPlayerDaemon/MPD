@@ -22,10 +22,10 @@
 #include "OutputState.hxx"
 #include "playlist.h"
 #include "PlaylistState.hxx"
+#include "TextFile.hxx"
 
 extern "C" {
 #include "volume.h"
-#include "text_file.h"
 }
 
 #include <glib.h>

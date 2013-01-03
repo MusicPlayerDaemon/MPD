@@ -20,9 +20,9 @@
 #include "config.h"
 #include "PlaylistDatabase.hxx"
 #include "PlaylistVector.hxx"
+#include "TextFile.hxx"
 
 extern "C" {
-#include "text_file.h"
 #include "string_util.h"
 }
 

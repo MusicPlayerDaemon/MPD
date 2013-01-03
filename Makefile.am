@@ -101,7 +101,6 @@ mpd_headers = \
 	src/input/despotify_input_plugin.h \
 	src/input/cdio_paranoia_input_plugin.h \
 	src/despotify_utils.h \
-	src/text_file.h \
 	src/text_input_stream.h \
 	src/icy_server.h \
 	src/icy_metadata.h \
@@ -318,7 +317,7 @@ src_mpd_SOURCES = \
 	src/tag_handler.c src/tag_handler.h \
 	src/tag_file.c src/tag_file.h \
 	src/tokenizer.c \
-	src/text_file.c \
+	src/TextFile.cxx src/TextFile.hxx \
 	src/text_input_stream.c \
 	src/uri.c \
 	src/utils.c \
@@ -1069,7 +1068,7 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/tag.c src/tag_pool.c src/TagSave.cxx \
 	src/path.c \
 	src/SongFilter.cxx \
-	src/text_file.c \
+	src/TextFile.cxx \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c
 
 test_RunInput_LDADD = \
