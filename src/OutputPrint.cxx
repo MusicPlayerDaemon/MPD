@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,12 +22,27 @@
  *
  */
 
-#ifndef OUTPUT_PRINT_H
-#define OUTPUT_PRINT_H
+#include "config.h"
+#include "OutputPrint.hxx"
+#include "output_internal.h"
 
-struct client;
+extern "C" {
+#include "output_all.h"
+#include "client.h"
+}
 
 void
-printAudioDevices(struct client *client);
+printAudioDevices(struct client *client)
+{
+	const unsigned n = audio_output_count();
 
-#endif
+	for (unsigned i = 0; i < n; ++i) {
+		const struct audio_output *ao = audio_output_get(i);
+
+		client_printf(client,
+			      "outputid: %i\n"
+			      "outputname: %s\n"
+			      "outputenabled: %i\n",
+			      i, ao->name, ao->enabled);
+	}
+}

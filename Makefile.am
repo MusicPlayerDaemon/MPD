@@ -56,7 +56,6 @@ mpd_headers = \
 	src/output_all.h \
 	src/output_thread.h \
 	src/output_control.h \
-	src/output_print.h \
 	src/output_command.h \
 	src/filter_internal.h \
 	src/filter_config.h \
@@ -800,7 +799,7 @@ OUTPUT_API_SRC = \
 	src/output_error.h \
 	src/output_control.c \
 	src/OutputState.cxx src/OutputState.hxx \
-	src/output_print.c \
+	src/OutputPrint.cxx src/OutputPrint.hxx \
 	src/output_command.c \
 	src/output_plugin.c src/output_plugin.h \
 	src/output_finish.c \

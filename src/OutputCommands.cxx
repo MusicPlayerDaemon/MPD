@@ -19,12 +19,12 @@
 
 #include "config.h"
 #include "OutputCommands.hxx"
+#include "OutputPrint.hxx"
 
 extern "C" {
 #include "protocol/argparser.h"
 #include "protocol/result.h"
 #include "output_command.h"
-#include "output_print.h"
 }
 
 #include <string.h>
