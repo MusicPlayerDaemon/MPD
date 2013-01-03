@@ -25,10 +25,10 @@
 #include "config.h"
 #include "OutputPrint.hxx"
 #include "output_internal.h"
+#include "Client.hxx"
 
 extern "C" {
 #include "output_all.h"
-#include "client.h"
 }
 
 void

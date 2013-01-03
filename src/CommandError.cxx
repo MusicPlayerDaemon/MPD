@@ -21,10 +21,7 @@
 #include "CommandError.hxx"
 #include "db_error.h"
 #include "io_error.h"
-
-extern "C" {
-#include "protocol/result.h"
-}
+#include "protocol/Result.hxx"
 
 #include <assert.h>
 #include <errno.h>

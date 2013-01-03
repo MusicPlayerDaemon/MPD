@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,15 +22,14 @@
 #include "CommandError.hxx"
 #include "PlaylistPrint.hxx"
 #include "UpdateGlue.hxx"
+#include "ClientInternal.hxx"
+#include "protocol/Result.hxx"
+#include "protocol/ArgParser.hxx"
 
 extern "C" {
-#include "protocol/argparser.h"
-#include "protocol/result.h"
 #include "player_control.h"
 #include "playlist.h"
 #include "volume.h"
-#include "client.h"
-#include "client_internal.h"
 #include "replay_gain_config.h"
 }
 

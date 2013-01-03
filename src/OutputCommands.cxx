@@ -20,10 +20,10 @@
 #include "config.h"
 #include "OutputCommands.hxx"
 #include "OutputPrint.hxx"
+#include "protocol/Result.hxx"
+#include "protocol/ArgParser.hxx"
 
 extern "C" {
-#include "protocol/argparser.h"
-#include "protocol/result.h"
 #include "output_command.h"
 }
 

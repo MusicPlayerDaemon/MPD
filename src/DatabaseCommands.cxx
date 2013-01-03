@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,14 +24,11 @@
 #include "DatabasePrint.hxx"
 #include "DatabaseSelection.hxx"
 #include "CommandError.hxx"
-#include "client_internal.h"
+#include "ClientInternal.hxx"
 #include "tag.h"
 #include "uri.h"
 #include "SongFilter.hxx"
-
-extern "C" {
-#include "protocol/result.h"
-}
+#include "protocol/Result.hxx"
 
 #include <assert.h>
 #include <string.h>

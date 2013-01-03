@@ -21,10 +21,7 @@
 #include "DecoderPrint.hxx"
 #include "decoder_list.h"
 #include "decoder_plugin.h"
-
-extern "C" {
-#include "client.h"
-}
+#include "Client.hxx"
 
 #include <assert.h>
 

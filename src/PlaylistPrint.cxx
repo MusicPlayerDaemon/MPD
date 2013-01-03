@@ -26,13 +26,13 @@
 #include "SongPrint.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
+#include "Client.hxx"
 
 extern "C" {
 #include "playlist_list.h"
 #include "playlist_plugin.h"
 #include "playlist.h"
 #include "song.h"
-#include "client.h"
 #include "input_stream.h"
 }
 

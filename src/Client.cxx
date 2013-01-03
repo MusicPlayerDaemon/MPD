@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,27 +17,25 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CLIENT_FILE_H
-#define MPD_CLIENT_FILE_H
+#include "config.h"
+#include "ClientInternal.hxx"
 
-#include "gerror.h"
+bool client_is_expired(const struct client *client)
+{
+	return client->channel == NULL;
+}
 
-#include <stdbool.h>
+int client_get_uid(const struct client *client)
+{
+	return client->uid;
+}
 
-struct client;
+unsigned client_get_permission(const struct client *client)
+{
+	return client->permission;
+}
 
-/**
- * Is this client allowed to use the specified local file?
- *
- * Note that this function is vulnerable to timing/symlink attacks.
- * We cannot fix this as long as there are plugins that open a file by
- * its name, and not by file descriptor / callbacks.
- *
- * @param path_fs the absolute path name in filesystem encoding
- * @return true if access is allowed
- */
-bool
-client_allow_file(const struct client *client, const char *path_fs,
-		  GError **error_r);
-
-#endif
+void client_set_permission(struct client *client, unsigned permission)
+{
+	client->permission = permission;
+}

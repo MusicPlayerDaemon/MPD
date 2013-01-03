@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,9 +18,12 @@
  */
 
 #include "config.h"
-#include "client_idle.h"
-#include "client_internal.h"
+#include "ClientIdle.hxx"
+#include "ClientInternal.hxx"
+
+extern "C" {
 #include "idle.h"
+}
 
 #include <assert.h>
 
@@ -68,7 +71,7 @@ client_idle_add(struct client *client, unsigned flags)
 static void
 client_idle_callback(gpointer data, gpointer user_data)
 {
-	struct client *client = data;
+	struct client *client = (struct client *)data;
 	unsigned flags = GPOINTER_TO_UINT(user_data);
 
 	client_idle_add(client, flags);

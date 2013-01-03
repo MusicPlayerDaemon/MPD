@@ -20,10 +20,10 @@
 #include "config.h"
 #include "Listen.hxx"
 #include "Main.hxx"
+#include "Client.hxx"
 
 extern "C" {
 #include "server_socket.h"
-#include "client.h"
 #include "conf.h"
 }
 

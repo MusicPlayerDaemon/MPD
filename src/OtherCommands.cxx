@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,10 +29,10 @@
 #include "TimePrint.hxx"
 #include "Mapper.hxx"
 #include "DecoderPrint.hxx"
+#include "protocol/ArgParser.hxx"
+#include "protocol/Result.hxx"
 
 extern "C" {
-#include "protocol/argparser.h"
-#include "protocol/result.h"
 #include "ls.h"
 #include "uri.h"
 #include "volume.h"
@@ -41,11 +41,11 @@ extern "C" {
 
 #include "Permission.hxx"
 #include "PlaylistFile.hxx"
+#include "ClientIdle.hxx"
+#include "ClientFile.hxx"
+#include "Client.hxx"
 
 extern "C" {
-#include "client.h"
-#include "client_idle.h"
-#include "client_file.h"
 #include "idle.h"
 }
 

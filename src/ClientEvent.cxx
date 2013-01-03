@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "client_internal.h"
+#include "ClientInternal.hxx"
 #include "Main.hxx"
 
 #include <assert.h>
@@ -27,7 +27,7 @@ static gboolean
 client_out_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 		 gpointer data)
 {
-	struct client *client = data;
+	struct client *client = (struct client *)data;
 
 	assert(!client_is_expired(client));
 
@@ -49,7 +49,7 @@ client_out_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 		/* done sending deferred buffers exist: schedule
 		   read */
 		client->source_id = g_io_add_watch(client->channel,
-						   G_IO_IN|G_IO_ERR|G_IO_HUP,
+						   GIOCondition(G_IO_IN|G_IO_ERR|G_IO_HUP),
 						   client_in_event, client);
 		return false;
 	}
@@ -62,7 +62,7 @@ gboolean
 client_in_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 		gpointer data)
 {
-	struct client *client = data;
+	struct client *client = (struct client *)data;
 	enum command_return ret;
 
 	assert(!client_is_expired(client));
@@ -99,7 +99,7 @@ client_in_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 	if (!g_queue_is_empty(client->deferred_send)) {
 		/* deferred buffers exist: schedule write */
 		client->source_id = g_io_add_watch(client->channel,
-						   G_IO_OUT|G_IO_ERR|G_IO_HUP,
+						   GIOCondition(G_IO_OUT|G_IO_ERR|G_IO_HUP),
 						   client_out_event, client);
 		return false;
 	}

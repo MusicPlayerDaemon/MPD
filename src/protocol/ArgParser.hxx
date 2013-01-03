@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,45 +17,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CLIENT_SUBSCRIBE_H
-#define MPD_CLIENT_SUBSCRIBE_H
+#ifndef MPD_PROTOCOL_ARGPARSER_HXX
+#define MPD_PROTOCOL_ARGPARSER_HXX
 
-#include "gcc.h"
+#include "check.h"
 
 #include <stdbool.h>
+#include <stdint.h>
 
-typedef struct _GSList GSList;
 struct client;
-struct client_message;
-
-enum client_subscribe_result {
-	/** success */
-	CLIENT_SUBSCRIBE_OK,
-
-	/** invalid channel name */
-	CLIENT_SUBSCRIBE_INVALID,
-
-	/** already subscribed to this channel */
-	CLIENT_SUBSCRIBE_ALREADY,
-
-	/** too many subscriptions */
-	CLIENT_SUBSCRIBE_FULL,
-};
-
-enum client_subscribe_result
-client_subscribe(struct client *client, const char *channel);
 
 bool
-client_unsubscribe(struct client *client, const char *channel);
-
-void
-client_unsubscribe_all(struct client *client);
+check_uint32(struct client *client, uint32_t *dst, const char *s);
 
 bool
-client_push_message(struct client *client, const struct client_message *msg);
+check_int(struct client *client, int *value_r, const char *s);
 
-gcc_malloc
-GSList *
-client_read_messages(struct client *client);
+bool
+check_range(struct client *client, unsigned *value_r1, unsigned *value_r2,
+	    const char *s);
+
+bool
+check_unsigned(struct client *client, unsigned *value_r, const char *s);
+
+bool
+check_bool(struct client *client, bool *value_r, const char *s);
+
+bool
+check_float(struct client *client, float *value_r, const char *s);
 
 #endif

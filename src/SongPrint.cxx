@@ -24,9 +24,9 @@
 #include "TimePrint.hxx"
 #include "TagPrint.hxx"
 #include "Mapper.hxx"
+#include "Client.hxx"
 
 extern "C" {
-#include "client.h"
 #include "uri.h"
 }
 

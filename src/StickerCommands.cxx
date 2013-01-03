@@ -28,10 +28,7 @@
 #include "StickerPrint.hxx"
 #include "StickerDatabase.hxx"
 #include "CommandError.hxx"
-
-extern "C" {
-#include "protocol/result.h"
-}
+#include "protocol/Result.hxx"
 
 #include <string.h>
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,11 @@
  */
 
 #include "config.h"
-#include "client_internal.h"
+#include "ClientInternal.hxx"
+
+extern "C" {
 #include "fifo_buffer.h"
+}
 
 #include <assert.h>
 #include <string.h>
@@ -27,19 +30,16 @@
 static char *
 client_read_line(struct client *client)
 {
-	const char *p, *newline;
 	size_t length;
-	char *line;
-
-	p = fifo_buffer_read(client->input, &length);
+	const char *p = (const char *)fifo_buffer_read(client->input, &length);
 	if (p == NULL)
 		return NULL;
 
-	newline = memchr(p, '\n', length);
+	const char *newline = (const char *)memchr(p, '\n', length);
 	if (newline == NULL)
 		return NULL;
 
-	line = g_strndup(p, newline - p);
+	char *line = g_strndup(p, newline - p);
 	fifo_buffer_consume(client->input, newline - p + 1);
 
 	return g_strchomp(line);
@@ -71,8 +71,6 @@ client_input_received(struct client *client, size_t bytesRead)
 enum command_return
 client_read(struct client *client)
 {
-	char *p;
-	size_t max_length;
 	GError *error = NULL;
 	GIOStatus status;
 	gsize bytes_read;
@@ -80,7 +78,8 @@ client_read(struct client *client)
 	assert(client != NULL);
 	assert(client->channel != NULL);
 
-	p = fifo_buffer_write(client->input, &max_length);
+	size_t max_length;
+	char *p = (char *)fifo_buffer_write(client->input, &max_length);
 	if (p == NULL) {
 		g_warning("[%u] buffer overflow", client->num);
 		return COMMAND_RETURN_CLOSE;

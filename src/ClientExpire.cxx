@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "client_internal.h"
+#include "ClientInternal.hxx"
 
 static guint expire_source_id;
 
@@ -42,7 +42,7 @@ client_set_expired(struct client *client)
 static void
 client_check_expired_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
-	struct client *client = data;
+	struct client *client = (struct client *)data;
 
 	if (client_is_expired(client)) {
 		g_debug("[%u] expired", client->num);

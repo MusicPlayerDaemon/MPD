@@ -22,10 +22,7 @@
 #include "tag.h"
 #include "tag_internal.h"
 #include "song.h"
-
-extern "C" {
-#include "client.h"
-}
+#include "Client.hxx"
 
 void tag_print_types(struct client *client)
 {

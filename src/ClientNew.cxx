@@ -18,9 +18,7 @@
  */
 
 #include "config.h"
-extern "C" {
-#include "client_internal.h"
-}
+#include "ClientInternal.hxx"
 #include "fd_util.h"
 extern "C" {
 #include "fifo_buffer.h"

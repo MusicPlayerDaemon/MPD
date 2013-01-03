@@ -18,11 +18,7 @@
  */
 
 #include "config.h"
-
-extern "C" {
-#include "AllCommands.h"
-}
-
+#include "AllCommands.hxx"
 #include "command.h"
 #include "QueueCommands.hxx"
 #include "PlayerCommands.hxx"
@@ -33,11 +29,11 @@ extern "C" {
 #include "OtherCommands.hxx"
 #include "Permission.hxx"
 #include "tag.h"
+#include "protocol/Result.hxx"
+#include "Client.hxx"
 
 extern "C" {
-#include "protocol/result.h"
 #include "tokenizer.h"
-#include "client.h"
 }
 
 #ifdef ENABLE_SQLITE

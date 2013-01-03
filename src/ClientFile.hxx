@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,29 +17,27 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CLIENT_IDLE_H
-#define MPD_CLIENT_IDLE_H
+#ifndef MPD_CLIENT_FILE_HXX
+#define MPD_CLIENT_FILE_HXX
+
+#include "gerror.h"
 
 #include <stdbool.h>
 
 struct client;
 
-void
-client_idle_add(struct client *client, unsigned flags);
-
 /**
- * Adds the specified idle flags to all clients and immediately sends
- * notifications to all waiting clients.
- */
-void
-client_manager_idle_add(unsigned flags);
-
-/**
- * Checks whether the client has pending idle flags.  If yes, they are
- * sent immediately and "true" is returned".  If no, it puts the
- * client into waiting mode and returns false.
+ * Is this client allowed to use the specified local file?
+ *
+ * Note that this function is vulnerable to timing/symlink attacks.
+ * We cannot fix this as long as there are plugins that open a file by
+ * its name, and not by file descriptor / callbacks.
+ *
+ * @param path_fs the absolute path name in filesystem encoding
+ * @return true if access is allowed
  */
 bool
-client_idle_wait(struct client *client, unsigned flags);
+client_allow_file(const struct client *client, const char *path_fs,
+		  GError **error_r);
 
 #endif

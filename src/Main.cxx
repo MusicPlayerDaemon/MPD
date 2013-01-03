@@ -29,14 +29,14 @@
 #include "DatabaseSimple.hxx"
 #include "Permission.hxx"
 #include "Listen.hxx"
+#include "ClientIdle.hxx"
+#include "Client.hxx"
+#include "AllCommands.hxx"
 
 extern "C" {
 #include "daemon.h"
 #include "io_thread.h"
-#include "client.h"
-#include "client_idle.h"
 #include "idle.h"
-#include "AllCommands.h"
 #include "playlist.h"
 #include "cmdline.h"
 #include "conf.h"

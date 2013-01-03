@@ -22,8 +22,9 @@
 extern "C" {
 #include "ls.h"
 #include "uri.h"
-#include "client.h"
 }
+
+#include "Client.hxx"
 
 #include <glib.h>
 

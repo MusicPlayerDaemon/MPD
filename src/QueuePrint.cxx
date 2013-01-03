@@ -22,11 +22,11 @@
 #include "SongFilter.hxx"
 #include "SongPrint.hxx"
 #include "Mapper.hxx"
+#include "Client.hxx"
 
 extern "C" {
 #include "queue.h"
 #include "song.h"
-#include "client.h"
 }
 
 /**

@@ -26,14 +26,14 @@
 #include "PlaylistFile.hxx"
 #include "PlaylistQueue.hxx"
 #include "TimePrint.hxx"
+#include "ClientInternal.hxx"
+#include "protocol/ArgParser.hxx"
+#include "protocol/Result.hxx"
 
 extern "C" {
-#include "protocol/argparser.h"
-#include "protocol/result.h"
 #include "playlist.h"
 #include "ls.h"
 #include "uri.h"
-#include "client_internal.h"
 }
 
 #include <assert.h>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,25 +17,27 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "client_internal.h"
+#ifndef MPD_CLIENT_IDLE_HXX
+#define MPD_CLIENT_IDLE_HXX
 
-bool client_is_expired(const struct client *client)
-{
-	return client->channel == NULL;
-}
+struct client;
 
-int client_get_uid(const struct client *client)
-{
-	return client->uid;
-}
+void
+client_idle_add(struct client *client, unsigned flags);
 
-unsigned client_get_permission(const struct client *client)
-{
-	return client->permission;
-}
+/**
+ * Adds the specified idle flags to all clients and immediately sends
+ * notifications to all waiting clients.
+ */
+void
+client_manager_idle_add(unsigned flags);
 
-void client_set_permission(struct client *client, unsigned permission)
-{
-	client->permission = permission;
-}
+/**
+ * Checks whether the client has pending idle flags.  If yes, they are
+ * sent immediately and "true" is returned".  If no, it puts the
+ * client into waiting mode and returns false.
+ */
+bool
+client_idle_wait(struct client *client, unsigned flags);
+
+#endif

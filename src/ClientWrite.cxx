@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "client_internal.h"
+#include "ClientInternal.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -73,6 +73,7 @@ client_write_deferred(struct client *client)
 
 	while (!g_queue_is_empty(client->deferred_send)) {
 		struct deferred_buffer *buf =
+			(struct deferred_buffer *)
 			g_queue_peek_head(client->deferred_send);
 
 		assert(buf->size > 0);
@@ -129,7 +130,7 @@ static void client_defer_output(struct client *client,
 		return;
 	}
 
-	buf = g_malloc(alloc);
+	buf = (struct deferred_buffer *)g_malloc(alloc);
 	buf->size = length;
 	memcpy(buf->data, data, length);
 
@@ -246,7 +247,6 @@ void client_vprintf(struct client *client, const char *fmt, va_list args)
 #ifndef G_OS_WIN32
 	va_list tmp;
 	int length;
-	char *buffer;
 
 	va_copy(tmp, args);
 	length = vsnprintf(NULL, 0, fmt, tmp);
@@ -256,7 +256,7 @@ void client_vprintf(struct client *client, const char *fmt, va_list args)
 		/* wtf.. */
 		return;
 
-	buffer = g_malloc(length + 1);
+	char *buffer = (char *)g_malloc(length + 1);
 	vsnprintf(buffer, length + 1, fmt, args);
 	client_write(client, buffer, length);
 	g_free(buffer);

@@ -20,10 +20,7 @@
 #include "config.h"
 #include "StickerPrint.hxx"
 #include "StickerDatabase.hxx"
-
-extern "C" {
-#include "client.h"
-}
+#include "Client.hxx"
 
 void
 sticker_print_value(struct client *client,

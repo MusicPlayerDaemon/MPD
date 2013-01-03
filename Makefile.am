@@ -102,8 +102,6 @@ mpd_headers = \
 	src/text_input_stream.h \
 	src/icy_server.h \
 	src/icy_metadata.h \
-	src/client.h \
-	src/client_internal.h \
 	src/server_socket.h \
 	src/log.h \
 	src/ls.h \
@@ -192,10 +190,10 @@ src_mpd_SOURCES = \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \
-	src/protocol/argparser.c src/protocol/argparser.h \
-	src/protocol/result.c src/protocol/result.h \
+	src/protocol/ArgParser.cxx src/protocol/ArgParser.hxx \
+	src/protocol/Result.cxx src/protocol/Result.hxx \
 	src/CommandError.cxx src/CommandError.hxx \
-	src/AllCommands.cxx src/AllCommands.h \
+	src/AllCommands.cxx src/AllCommands.hxx \
 	src/QueueCommands.cxx src/QueueCommands.hxx \
 	src/PlayerCommands.cxx src/PlayerCommands.hxx \
 	src/PlaylistCommands.cxx src/PlaylistCommands.hxx \
@@ -243,22 +241,20 @@ src_mpd_SOURCES = \
 	src/UpdateContainer.cxx src/UpdateContainer.hxx \
 	src/UpdateInternal.hxx \
 	src/UpdateRemove.cxx src/UpdateRemove.hxx \
-	src/client.c \
-	src/client_event.c \
-	src/client_expire.c \
-	src/client_global.c \
-	src/client_idle.h \
-	src/client_idle.c \
-	src/client_list.c \
+	src/Client.cxx src/Client.hxx \
+	src/ClientInternal.hxx \
+	src/ClientEvent.cxx \
+	src/ClientExpire.cxx \
+	src/ClientGlobal.cxx \
+	src/ClientIdle.cxx src/ClientIdle.hxx \
+	src/ClientList.cxx \
 	src/ClientNew.cxx \
-	src/client_process.c \
-	src/client_read.c \
-	src/client_write.c \
-	src/client_message.h \
-	src/client_message.c \
-	src/client_subscribe.h \
-	src/client_subscribe.c \
-	src/client_file.c src/client_file.h \
+	src/ClientProcess.cxx \
+	src/ClientRead.cxx \
+	src/ClientWrite.cxx \
+	src/ClientMessage.cxx src/ClientMessage.hxx \
+	src/ClientSubscribe.cxx src/ClientSubscribe.hxx \
+	src/ClientFile.cxx src/ClientFile.hxx \
 	src/server_socket.c \
 	src/Listen.cxx src/Listen.hxx \
 	src/log.c \

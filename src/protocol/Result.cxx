@@ -18,30 +18,40 @@
  */
 
 #include "config.h"
-#include "TimePrint.hxx"
+#include "Result.hxx"
 #include "Client.hxx"
 
-#include <glib.h>
+#include <assert.h>
+
+const char *current_command;
+int command_list_num;
 
 void
-time_print(struct client *client, const char *name, time_t t)
+command_success(struct client *client)
 {
-#ifdef G_OS_WIN32
-	const struct tm *tm2 = gmtime(&t);
-#else
-	struct tm tm;
-	const struct tm *tm2 = gmtime_r(&t, &tm);
-#endif
-	if (tm2 == NULL)
-		return;
+	client_puts(client, "OK\n");
+}
 
-	char buffer[32];
-	strftime(buffer, sizeof(buffer),
-#ifdef G_OS_WIN32
-		 "%Y-%m-%dT%H:%M:%SZ",
-#else
-		 "%FT%TZ",
-#endif
-		 tm2);
-	client_printf(client, "%s: %s\n", name, buffer);
+void
+command_error_v(struct client *client, enum ack error,
+		const char *fmt, va_list args)
+{
+	assert(client != NULL);
+	assert(current_command != NULL);
+
+	client_printf(client, "ACK [%i@%i] {%s} ",
+		      (int)error, command_list_num, current_command);
+	client_vprintf(client, fmt, args);
+	client_puts(client, "\n");
+
+	current_command = NULL;
+}
+
+void
+command_error(struct client *client, enum ack error, const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	command_error_v(client, error, fmt, args);
+	va_end(args);
 }

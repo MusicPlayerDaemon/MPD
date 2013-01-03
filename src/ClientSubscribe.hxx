@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,27 +17,43 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PROTOCOL_RESULT_H
-#define MPD_PROTOCOL_RESULT_H
+#ifndef MPD_CLIENT_SUBSCRIBE_HXX
+#define MPD_CLIENT_SUBSCRIBE_HXX
 
-#include "check.h"
 #include "gcc.h"
-#include "ack.h"
 
+typedef struct _GSList GSList;
 struct client;
+struct client_message;
 
-extern const char *current_command;
-extern int command_list_num;
+enum client_subscribe_result {
+	/** success */
+	CLIENT_SUBSCRIBE_OK,
+
+	/** invalid channel name */
+	CLIENT_SUBSCRIBE_INVALID,
+
+	/** already subscribed to this channel */
+	CLIENT_SUBSCRIBE_ALREADY,
+
+	/** too many subscriptions */
+	CLIENT_SUBSCRIBE_FULL,
+};
+
+enum client_subscribe_result
+client_subscribe(struct client *client, const char *channel);
+
+bool
+client_unsubscribe(struct client *client, const char *channel);
 
 void
-command_success(struct client *client);
+client_unsubscribe_all(struct client *client);
 
-void
-command_error_v(struct client *client, enum ack error,
-		const char *fmt, va_list args);
+bool
+client_push_message(struct client *client, const struct client_message *msg);
 
-gcc_fprintf_
-void
-command_error(struct client *client, enum ack error, const char *fmt, ...);
+gcc_malloc
+GSList *
+client_read_messages(struct client *client);
 
 #endif

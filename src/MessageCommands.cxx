@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,13 +19,10 @@
 
 #include "config.h"
 #include "MessageCommands.hxx"
-
-extern "C" {
-#include "protocol/argparser.h"
-#include "protocol/result.h"
-#include "client_internal.h"
-#include "client_subscribe.h"
-}
+#include "ClientSubscribe.hxx"
+#include "ClientInternal.hxx"
+#include "protocol/Result.hxx"
+#include "protocol/ArgParser.hxx"
 
 #include <set>
 #include <string>
