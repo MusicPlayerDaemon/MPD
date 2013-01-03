@@ -26,6 +26,7 @@
 
 #include <set>
 #include <string>
+#include <deque>
 
 #include <glib.h>
 
@@ -94,15 +95,9 @@ public:
 	unsigned num_subscriptions;
 
 	/**
-	 * A list of messages this client has received in reverse
-	 * order (latest first).
+	 * A list of messages this client has received.
 	 */
-	GSList *messages;
-
-	/**
-	 * The number of messages in #messages.
-	 */
-	unsigned num_messages;
+	std::deque<ClientMessage> messages;
 
 	gcc_pure
 	bool IsSubscribed(const char *channel_name) const {

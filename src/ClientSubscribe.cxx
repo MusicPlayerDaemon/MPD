@@ -83,27 +83,13 @@ client_push_message(Client *client, const ClientMessage &msg)
 {
 	assert(client != NULL);
 
-	if (client->num_messages >= CLIENT_MAX_MESSAGES ||
+	if (client->messages.size() >= CLIENT_MAX_MESSAGES ||
 	    !client->IsSubscribed(msg.GetChannel()))
 		return false;
 
-	if (client->messages == NULL)
+	if (client->messages.empty())
 		client_idle_add(client, IDLE_MESSAGE);
 
-	client->messages = g_slist_prepend(client->messages,
-					   new ClientMessage(msg));
-	++client->num_messages;
-
+	client->messages.push_back(msg);
 	return true;
-}
-
-GSList *
-client_read_messages(Client *client)
-{
-	GSList *messages = g_slist_reverse(client->messages);
-
-	client->messages = NULL;
-	client->num_messages = 0;
-
-	return messages;
 }

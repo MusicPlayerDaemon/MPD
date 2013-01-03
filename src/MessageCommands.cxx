@@ -109,18 +109,13 @@ handle_read_messages(Client *client,
 {
 	assert(argc == 1);
 
-	GSList *messages = client_read_messages(client);
-
-	for (GSList *i = messages; i != NULL; i = g_slist_next(i)) {
-		ClientMessage *msg = (ClientMessage *)i->data;
+	while (!client->messages.empty()) {
+		const ClientMessage &msg = client->messages.front();
 
 		client_printf(client, "channel: %s\nmessage: %s\n",
-			      msg->GetChannel(),
-			      msg->GetMessage());
-		delete msg;
+			      msg.GetChannel(), msg.GetMessage());
+		client->messages.pop_front();
 	}
-
-	g_slist_free(messages);
 
 	return COMMAND_RETURN_OK;
 }

@@ -52,8 +52,4 @@ client_unsubscribe_all(Client *client);
 bool
 client_push_message(Client *client, const ClientMessage &msg);
 
-gcc_malloc
-GSList *
-client_read_messages(Client *client);
-
 #endif
