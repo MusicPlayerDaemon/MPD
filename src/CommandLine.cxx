@@ -20,11 +20,11 @@
 #include "config.h"
 #include "CommandLine.hxx"
 #include "path.h"
+#include "ls.hxx"
 
 extern "C" {
 #include "log.h"
 #include "conf.h"
-#include "ls.h"
 }
 
 #include "decoder_list.h"

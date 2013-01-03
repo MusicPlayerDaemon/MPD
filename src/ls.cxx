@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
+#include "ls.hxx"
 
 extern "C" {
-#include "ls.h"
 #include "uri.h"
 }
 

@@ -31,9 +31,9 @@
 #include "DecoderPrint.hxx"
 #include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
+#include "ls.hxx"
 
 extern "C" {
-#include "ls.h"
 #include "uri.h"
 #include "volume.h"
 #include "stats.h"

@@ -27,10 +27,10 @@
 #include "ClientInternal.hxx"
 #include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
+#include "ls.hxx"
 
 extern "C" {
 #include "playlist.h"
-#include "ls.h"
 #include "uri.h"
 }
 

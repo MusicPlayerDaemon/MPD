@@ -22,12 +22,12 @@
 #include "Mapper.hxx"
 #include "DatabasePlugin.hxx"
 #include "DatabaseGlue.hxx"
+#include "ls.hxx"
 
 extern "C" {
 #include "song.h"
 #include "uri.h"
 #include "path.h"
-#include "ls.h"
 #include "tag.h"
 }
 
