@@ -58,8 +58,27 @@ struct cue_parser {
 
 	char *filename;
 
-	struct song *current, *previous, *finished;
+	/**
+	 * The song currently being edited.
+	 */
+	struct song *current;
 
+	/**
+	 * The previous song.  It is remembered because its end_time
+	 * will be set to the current song's start time.
+	 */
+	struct song *previous;
+
+	/**
+	 * A song that is completely finished and can be returned to
+	 * the caller via cue_parser_get().
+	 */
+	struct song *finished;
+
+	/**
+	 * Set to true after previous.end_time has been updated to the
+	 * start time of the current song.
+	 */
 	bool last_updated;
 };
 
