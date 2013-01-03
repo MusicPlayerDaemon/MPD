@@ -9,6 +9,7 @@ ver 0.17.3 (2012/??/??)
   - ffmpeg: support planar audio
 * playlist:
   - cue: fix memory leak
+  - cue: fix CUE files with only one track
 
 ver 0.17.2 (2012/09/30)
 * protocol:
