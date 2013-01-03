@@ -256,7 +256,7 @@ src_mpd_SOURCES = \
 	src/client_idle.h \
 	src/client_idle.c \
 	src/client_list.c \
-	src/client_new.c \
+	src/ClientNew.cxx \
 	src/client_process.c \
 	src/client_read.c \
 	src/client_write.c \

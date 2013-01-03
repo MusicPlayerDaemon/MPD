@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,11 +18,15 @@
  */
 
 #include "config.h"
+extern "C" {
 #include "client_internal.h"
+}
 #include "fd_util.h"
+extern "C" {
 #include "fifo_buffer.h"
 #include "resolver.h"
 #include "permission.h"
+}
 #include "glib_socket.h"
 
 #include <assert.h>
@@ -99,7 +103,7 @@ client_new(struct player_control *player_control,
 	g_io_channel_set_buffered(client->channel, false);
 
 	client->source_id = g_io_add_watch(client->channel,
-					   G_IO_IN|G_IO_ERR|G_IO_HUP,
+					   GIOCondition(G_IO_IN|G_IO_ERR|G_IO_HUP),
 					   client_in_event, client);
 
 	client->input = fifo_buffer_new(4096);
@@ -136,7 +140,7 @@ client_new(struct player_control *player_control,
 static void
 deferred_buffer_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
-	struct deferred_buffer *buffer = data;
+	struct deferred_buffer *buffer = (struct deferred_buffer *)data;
 	g_free(buffer);
 }
 
