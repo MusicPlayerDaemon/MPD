@@ -67,3 +67,7 @@ test/run_ntp_server
 test/run_resolver
 test/run_tcp_connect
 test/test_pcm
+test/dump_rva2
+test/dump_text_file
+test/test_byte_reverse
+test/test_vorbis_encoder

@@ -58,9 +58,35 @@ struct cue_parser {
 
 	char *filename;
 
-	struct song *current, *previous, *finished;
+	/**
+	 * The song currently being edited.
+	 */
+	struct song *current;
 
+	/**
+	 * The previous song.  It is remembered because its end_time
+	 * will be set to the current song's start time.
+	 */
+	struct song *previous;
+
+	/**
+	 * A song that is completely finished and can be returned to
+	 * the caller via cue_parser_get().
+	 */
+	struct song *finished;
+
+	/**
+	 * Set to true after previous.end_time has been updated to the
+	 * start time of the current song.
+	 */
 	bool last_updated;
+
+	/**
+	 * Tracks whether cue_parser_finish() has been called.  If
+	 * true, then all remaining (partial) results will be
+	 * delivered by cue_parser_get().
+	 */
+	bool end;
 };
 
 struct cue_parser *
@@ -73,6 +99,7 @@ cue_parser_new(void)
 	parser->current = NULL;
 	parser->previous = NULL;
 	parser->finished = NULL;
+	parser->end = false;
 	return parser;
 }
 
@@ -84,6 +111,9 @@ cue_parser_free(struct cue_parser *parser)
 
 	if (parser->current != NULL)
 		song_free(parser->current);
+
+	if (parser->previous != NULL)
+		song_free(parser->previous);
 
 	if (parser->finished != NULL)
 		song_free(parser->finished);
@@ -201,10 +231,32 @@ cue_parse_position(const char *p)
 	return minutes * 60000 + seconds * 1000 + frames * 1000 / 75;
 }
 
+/**
+ * Commit the current song.  It will be moved to "previous", so the
+ * next song may soon edit its end time (using the next song's start
+ * time).
+ */
+static void
+cue_parser_commit(struct cue_parser *parser)
+{
+	/* the caller of this library must call cue_parser_get() often
+	   enough */
+	assert(parser->finished == NULL);
+	assert(!parser->end);
+
+	if (parser->current == NULL)
+		return;
+
+	parser->finished = parser->previous;
+	parser->previous = parser->current;
+	parser->current = NULL;
+}
+
 static void
 cue_parser_feed2(struct cue_parser *parser, char *p)
 {
 	assert(parser != NULL);
+	assert(!parser->end);
 	assert(p != NULL);
 
 	const char *command = cue_next_token(&p);
@@ -235,7 +287,7 @@ cue_parser_feed2(struct cue_parser *parser, char *p)
 		else if (parser->state == TRACK)
 			cue_add_tag(parser->current->tag, TAG_TITLE, p);
 	} else if (strcmp(command, "FILE") == 0) {
-		cue_parser_finish(parser);
+		cue_parser_commit(parser);
 
 		const char *filename = cue_next_value(&p);
 		if (filename == NULL)
@@ -258,7 +310,7 @@ cue_parser_feed2(struct cue_parser *parser, char *p)
 	} else if (parser->state == IGNORE_FILE) {
 		return;
 	} else if (strcmp(command, "TRACK") == 0) {
-		cue_parser_finish(parser);
+		cue_parser_commit(parser);
 
 		const char *nr = cue_next_token(&p);
 		if (nr == NULL)
@@ -310,6 +362,7 @@ void
 cue_parser_feed(struct cue_parser *parser, const char *line)
 {
 	assert(parser != NULL);
+	assert(!parser->end);
 	assert(line != NULL);
 
 	char *allocated = g_strdup(line);
@@ -320,18 +373,27 @@ cue_parser_feed(struct cue_parser *parser, const char *line)
 void
 cue_parser_finish(struct cue_parser *parser)
 {
-	if (parser->finished != NULL)
-		song_free(parser->finished);
+	if (parser->end)
+		/* has already been called, ignore */
+		return;
 
-	parser->finished = parser->previous;
-	parser->previous = parser->current;
-	parser->current = NULL;
+	cue_parser_commit(parser);
+	parser->end = true;
 }
 
 struct song *
 cue_parser_get(struct cue_parser *parser)
 {
 	assert(parser != NULL);
+
+	if (parser->finished == NULL && parser->end) {
+		/* cue_parser_finish() has been called already:
+		   deliver all remaining (partial) results */
+		assert(parser->current == NULL);
+
+		parser->finished = parser->previous;
+		parser->previous = NULL;
+	}
 
 	struct song *song = parser->finished;
 	parser->finished = NULL;

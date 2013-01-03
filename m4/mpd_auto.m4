@@ -73,7 +73,8 @@ AC_DEFUN([MPD_AUTO_PKG_LIB], [
 			[eval "found_$1=yes"],
 			AC_CHECK_LIB($4, $5,
 				[eval "found_$1=yes $2_LIBS='$6' $2_CFLAGS='$7'"],
-				[eval "found_$1=no"]))
+				[eval "found_$1=no"],
+				[$6]))
 	fi
 
 	MPD_AUTO_RESULT([$1], [$8], [$9])
