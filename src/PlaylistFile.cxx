@@ -167,6 +167,7 @@ LoadPlaylistFileInfo(PlaylistFileInfo &info,
 		return false;
 
 	info.name = name_utf8;
+	g_free(name_utf8);
 	info.mtime = st.st_mtime;
 	return true;
 }
