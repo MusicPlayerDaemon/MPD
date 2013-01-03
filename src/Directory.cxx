@@ -36,8 +36,8 @@ extern "C" {
 #include <string.h>
 #include <stdlib.h>
 
-static Directory *
-directory_allocate(const char *path)
+inline Directory *
+Directory::Allocate(const char *path)
 {
 	assert(path != NULL);
 
@@ -46,30 +46,21 @@ directory_allocate(const char *path)
 		(Directory *)g_malloc0(sizeof(*directory)
 				       - sizeof(directory->path)
 				       + path_size);
-	INIT_LIST_HEAD(&directory->children);
-	INIT_LIST_HEAD(&directory->songs);
-	INIT_LIST_HEAD(&directory->playlists);
-
-	memcpy(directory->path, path, path_size);
+	new(directory) Directory(path);
 
 	return directory;
 }
 
-Directory *
-Directory::NewGeneric(const char *path, Directory *parent)
+Directory::Directory(const char *_path)
 {
-	assert(path != NULL);
-	assert((*path == 0) == (parent == NULL));
+	INIT_LIST_HEAD(&children);
+	INIT_LIST_HEAD(&songs);
+	INIT_LIST_HEAD(&playlists);
 
-	Directory *directory = directory_allocate(path);
-
-	directory->parent = parent;
-
-	return directory;
+	strcpy(path, _path);
 }
 
-void
-Directory::Free()
+Directory::~Directory()
 {
 	playlist_vector_deinit(&playlists);
 
@@ -80,7 +71,25 @@ Directory::Free()
 	Directory *child, *n;
 	directory_for_each_child_safe(child, n, this)
 		child->Free();
+}
 
+Directory *
+Directory::NewGeneric(const char *path, Directory *parent)
+{
+	assert(path != NULL);
+	assert((*path == 0) == (parent == NULL));
+
+	Directory *directory = Allocate(path);
+
+	directory->parent = parent;
+
+	return directory;
+}
+
+void
+Directory::Free()
+{
+	this->Directory::~Directory();
 	g_free(this);
 }
 

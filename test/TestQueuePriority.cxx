@@ -7,6 +7,8 @@ extern "C" {
 
 Directory detached_root;
 
+Directory::~Directory() {}
+
 struct song *
 song_dup_detached(const struct song *src)
 {

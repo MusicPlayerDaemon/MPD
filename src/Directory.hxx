@@ -90,6 +90,19 @@ struct Directory {
 	bool have_stat; /* not needed if ino_t == dev_t == 0 is impossible */
 	char path[sizeof(long)];
 
+protected:
+	Directory(const char *path);
+
+	gcc_malloc gcc_nonnull_all
+	static Directory *Allocate(const char *path);
+
+public:
+	/**
+	 * Default constructor, needed for #detached_root.
+	 */
+	Directory() = default;
+	~Directory();
+
 	/**
 	 * Generic constructor for #Directory object.
 	 */

@@ -20,6 +20,7 @@
 #include "config.h"
 #include "TagSave.hxx"
 #include "song.h"
+#include "Directory.hxx"
 
 extern "C" {
 #include "io_thread.h"
@@ -36,6 +37,8 @@ extern "C" {
 
 #include <unistd.h>
 #include <stdlib.h>
+
+Directory::~Directory() {}
 
 static void
 my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
