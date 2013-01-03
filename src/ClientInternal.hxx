@@ -22,6 +22,7 @@
 
 #include "Client.hxx"
 #include "ClientMessage.hxx"
+#include "CommandListBuilder.hxx"
 #include "command.h"
 
 #include <set>
@@ -63,9 +64,8 @@ public:
 	 */
 	GTimer *last_activity;
 
-	GSList *cmd_list;	/* for when in list mode */
-	int cmd_list_OK;	/* print OK after each command execution */
-	size_t cmd_list_size;	/* mem cmd_list consumes */
+	CommandListBuilder cmd_list;
+
 	GQueue *deferred_send;	/* for output if client is slow */
 	size_t deferred_bytes;	/* mem deferred_send consumes */
 	unsigned int num;	/* client number */
@@ -134,21 +134,6 @@ client_list_remove(Client *client);
 
 void
 client_close(Client *client);
-
-static inline void
-new_cmd_list_ptr(Client *client, const char *s)
-{
-	client->cmd_list = g_slist_prepend(client->cmd_list, g_strdup(s));
-}
-
-static inline void
-free_cmd_list(GSList *list)
-{
-	for (GSList *tmp = list; tmp != NULL; tmp = g_slist_next(tmp))
-		g_free(tmp->data);
-
-	g_slist_free(list);
-}
 
 void
 client_set_expired(Client *client);

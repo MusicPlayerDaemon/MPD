@@ -240,6 +240,7 @@ src_mpd_SOURCES = \
 	src/UpdateContainer.cxx src/UpdateContainer.hxx \
 	src/UpdateInternal.hxx \
 	src/UpdateRemove.cxx src/UpdateRemove.hxx \
+	src/CommandListBuilder.cxx src/CommandListBuilder.hxx \
 	src/Client.cxx src/Client.hxx \
 	src/ClientInternal.hxx \
 	src/ClientEvent.cxx \

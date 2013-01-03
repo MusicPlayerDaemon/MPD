@@ -52,7 +52,6 @@ Client::Client(struct player_control *_player_control,
 	 permission(getDefaultPermissions()),
 	 uid(_uid),
 	 last_activity(g_timer_new()),
-	 cmd_list(nullptr), cmd_list_OK(-1), cmd_list_size(0),
 	 deferred_send(g_queue_new()), deferred_bytes(0),
 	 num(_num),
 	 send_buf_used(0),
@@ -85,9 +84,6 @@ deferred_buffer_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 Client::~Client()
 {
 	g_timer_destroy(last_activity);
-
-	if (cmd_list != nullptr)
-		free_cmd_list(cmd_list);
 
 	g_queue_foreach(deferred_send, deferred_buffer_free, NULL);
 	g_queue_free(deferred_send);

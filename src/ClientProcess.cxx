@@ -76,19 +76,16 @@ client_process_line(Client *client, char *line)
 		return COMMAND_RETURN_CLOSE;
 	}
 
-	if (client->cmd_list_OK >= 0) {
+	if (client->cmd_list.IsActive()) {
 		if (strcmp(line, CLIENT_LIST_MODE_END) == 0) {
 			g_debug("[%u] process command list",
 				client->num);
 
-			/* for scalability reasons, we have prepended
-			   each new command; now we have to reverse it
-			   to restore the correct order */
-			client->cmd_list = g_slist_reverse(client->cmd_list);
+			auto cmd_list = client->cmd_list.Commit();
 
 			ret = client_process_command_list(client,
-							  client->cmd_list_OK,
-							  client->cmd_list);
+							  client->cmd_list.IsOKMode(),
+							  cmd_list);
 			g_debug("[%u] process command "
 				"list returned %i", client->num, ret);
 
@@ -100,31 +97,24 @@ client_process_line(Client *client, char *line)
 				command_success(client);
 
 			client_write_output(client);
-			free_cmd_list(client->cmd_list);
-			client->cmd_list = NULL;
-			client->cmd_list_OK = -1;
+			client->cmd_list.Reset();
 		} else {
-			size_t len = strlen(line) + 1;
-			client->cmd_list_size += len;
-			if (client->cmd_list_size >
-			    client_max_command_list_size) {
-				g_warning("[%u] command list size (%lu) "
+			if (!client->cmd_list.Add(line)) {
+				g_warning("[%u] command list size "
 					  "is larger than the max (%lu)",
 					  client->num,
-					  (unsigned long)client->cmd_list_size,
 					  (unsigned long)client_max_command_list_size);
 				return COMMAND_RETURN_CLOSE;
 			}
 
-			new_cmd_list_ptr(client, line);
 			ret = COMMAND_RETURN_OK;
 		}
 	} else {
 		if (strcmp(line, CLIENT_LIST_MODE_BEGIN) == 0) {
-			client->cmd_list_OK = 0;
+			client->cmd_list.Begin(false);
 			ret = COMMAND_RETURN_OK;
 		} else if (strcmp(line, CLIENT_LIST_OK_MODE_BEGIN) == 0) {
-			client->cmd_list_OK = 1;
+			client->cmd_list.Begin(true);
 			ret = COMMAND_RETURN_OK;
 		} else {
 			g_debug("[%u] process command \"%s\"",
