@@ -37,6 +37,7 @@ public:
 	using std::list<PlaylistInfo>::empty;
 	using std::list<PlaylistInfo>::begin;
 	using std::list<PlaylistInfo>::end;
+	using std::list<PlaylistInfo>::push_back;
 	using std::list<PlaylistInfo>::erase;
 
 	/**

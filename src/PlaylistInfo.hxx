@@ -50,6 +50,8 @@ struct PlaylistInfo {
 		}
 	};
 
+	PlaylistInfo() = default;
+
 	template<typename N>
 	PlaylistInfo(N &&_name, time_t _mtime)
 		:name(std::forward<N>(_name)), mtime(_mtime) {}

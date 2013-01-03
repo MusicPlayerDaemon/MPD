@@ -20,6 +20,8 @@
 #include "config.h"
 #include "PlaylistFile.hxx"
 #include "PlaylistSave.hxx"
+#include "PlaylistInfo.hxx"
+#include "PlaylistVector.hxx"
 #include "DatabasePlugin.hxx"
 #include "DatabaseGlue.hxx"
 #include "song.h"
@@ -140,7 +142,7 @@ playlist_errno(GError **error_r)
 }
 
 static bool
-LoadPlaylistFileInfo(PlaylistFileInfo &info,
+LoadPlaylistFileInfo(PlaylistInfo &info,
 		     const char *parent_path_fs, const char *name_fs)
 {
 	size_t name_length = strlen(name_fs);
@@ -172,10 +174,10 @@ LoadPlaylistFileInfo(PlaylistFileInfo &info,
 	return true;
 }
 
-PlaylistFileList
+PlaylistVector
 ListPlaylistFiles(GError **error_r)
 {
-	PlaylistFileList list;
+	PlaylistVector list;
 
 	const char *parent_path_fs = spl_map(error_r);
 	if (parent_path_fs == NULL)
@@ -187,7 +189,7 @@ ListPlaylistFiles(GError **error_r)
 		return list;
 	}
 
-	PlaylistFileInfo info;
+	PlaylistInfo info;
 	struct dirent *ent;
 	while ((ent = readdir(dir)) != NULL) {
 		if (LoadPlaylistFileInfo(info, parent_path_fs, ent->d_name))

@@ -20,7 +20,6 @@
 #ifndef MPD_PLAYLIST_FILE_HXX
 #define MPD_PLAYLIST_FILE_HXX
 
-#include <list>
 #include <vector>
 #include <string>
 
@@ -28,14 +27,8 @@
 #include <time.h>
 
 struct song;
-
-struct PlaylistFileInfo {
-	std::string name;
-
-	time_t mtime;
-};
-
-typedef std::list<PlaylistFileInfo> PlaylistFileList;
+struct PlaylistInfo;
+class PlaylistVector;
 
 typedef std::vector<std::string> PlaylistFileContents;
 
@@ -60,7 +53,7 @@ spl_valid_name(const char *name_utf8);
  * Returns a list of stored_playlist_info struct pointers.  Returns
  * NULL if an error occurred.
  */
-PlaylistFileList
+PlaylistVector
 ListPlaylistFiles(GError **error_r);
 
 PlaylistFileContents

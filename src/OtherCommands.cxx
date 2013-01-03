@@ -57,7 +57,7 @@ extern "C" {
 #include <string.h>
 
 static void
-print_spl_list(Client *client, const PlaylistFileList &list)
+print_spl_list(Client *client, const PlaylistVector &list)
 {
 	for (const auto &i : list) {
 		client_printf(client, "playlist: %s\n", i.name.c_str());

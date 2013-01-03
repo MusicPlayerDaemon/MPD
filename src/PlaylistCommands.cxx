@@ -24,6 +24,7 @@
 #include "PlaylistPrint.hxx"
 #include "PlaylistSave.hxx"
 #include "PlaylistFile.hxx"
+#include "PlaylistVector.hxx"
 #include "PlaylistQueue.hxx"
 #include "TimePrint.hxx"
 #include "ClientInternal.hxx"
@@ -40,7 +41,7 @@ extern "C" {
 #include <stdlib.h>
 
 static void
-print_spl_list(Client *client, const PlaylistFileList &list)
+print_spl_list(Client *client, const PlaylistVector &list)
 {
 	for (const auto &i : list) {
 		client_printf(client, "playlist: %s\n", i.name.c_str());
