@@ -27,17 +27,6 @@ extern "C" {
 
 #include <string.h>
 
-G_GNUC_PURE
-static GSList *
-client_find_subscription(const Client *client, const char *channel)
-{
-	for (GSList *i = client->subscriptions; i != NULL; i = g_slist_next(i))
-		if (strcmp((const char *)i->data, channel) == 0)
-			return i;
-
-	return NULL;
-}
-
 enum client_subscribe_result
 client_subscribe(Client *client, const char *channel)
 {
@@ -47,14 +36,13 @@ client_subscribe(Client *client, const char *channel)
 	if (!client_message_valid_channel_name(channel))
 		return CLIENT_SUBSCRIBE_INVALID;
 
-	if (client_find_subscription(client, channel) != NULL)
-		return CLIENT_SUBSCRIBE_ALREADY;
-
 	if (client->num_subscriptions >= CLIENT_MAX_SUBSCRIPTIONS)
 		return CLIENT_SUBSCRIBE_FULL;
 
-	client->subscriptions = g_slist_prepend(client->subscriptions,
-						g_strdup(channel));
+	auto r = client->subscriptions.insert(channel);
+	if (!r.second)
+		return CLIENT_SUBSCRIBE_ALREADY;
+
 	++client->num_subscriptions;
 
 	idle_add(IDLE_SUBSCRIPTION);
@@ -65,19 +53,19 @@ client_subscribe(Client *client, const char *channel)
 bool
 client_unsubscribe(Client *client, const char *channel)
 {
-	GSList *i = client_find_subscription(client, channel);
-	if (i == NULL)
+	const auto i = client->subscriptions.find(channel);
+	if (i == client->subscriptions.end())
 		return false;
 
 	assert(client->num_subscriptions > 0);
 
-	client->subscriptions = g_slist_remove(client->subscriptions, i->data);
+	client->subscriptions.erase(i);
 	--client->num_subscriptions;
 
 	idle_add(IDLE_SUBSCRIPTION);
 
 	assert((client->num_subscriptions == 0) ==
-	       (client->subscriptions == NULL));
+	       client->subscriptions.empty());
 
 	return true;
 }
@@ -85,11 +73,7 @@ client_unsubscribe(Client *client, const char *channel)
 void
 client_unsubscribe_all(Client *client)
 {
-	for (GSList *i = client->subscriptions; i != NULL; i = g_slist_next(i))
-		g_free(i->data);
-
-	g_slist_free(client->subscriptions);
-	client->subscriptions = NULL;
+	client->subscriptions.clear();
 	client->num_subscriptions = 0;
 }
 
@@ -101,7 +85,7 @@ client_push_message(Client *client, const struct client_message *msg)
 	assert(client_message_defined(msg));
 
 	if (client->num_messages >= CLIENT_MAX_MESSAGES ||
-	    client_find_subscription(client, msg->channel) == NULL)
+	    !client->IsSubscribed(msg->channel))
 		return false;
 
 	if (client->messages == NULL)

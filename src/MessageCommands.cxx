@@ -83,12 +83,8 @@ collect_channels(gpointer data, gpointer user_data)
 		(struct channels_context *)user_data;
 	const Client *client = (const Client *)data;
 
-	for (GSList *i = client->subscriptions; i != NULL;
-	     i = g_slist_next(i)) {
-		const char *channel = (const char *)i->data;
-
-		context->channels.insert(channel);
-	}
+	context->channels.insert(client->subscriptions.begin(),
+				 client->subscriptions.end());
 }
 
 enum command_return

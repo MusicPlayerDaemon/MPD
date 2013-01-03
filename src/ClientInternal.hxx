@@ -24,6 +24,9 @@
 #include "ClientMessage.hxx"
 #include "command.h"
 
+#include <set>
+#include <string>
+
 #include <glib.h>
 
 #undef G_LOG_DOMAIN
@@ -82,7 +85,7 @@ public:
 	/**
 	 * A list of channel names this client is subscribed to.
 	 */
-	GSList *subscriptions;
+	std::set<std::string> subscriptions;
 
 	/**
 	 * The number of subscriptions in #subscriptions.  Used to
@@ -100,6 +103,11 @@ public:
 	 * The number of messages in #messages.
 	 */
 	unsigned num_messages;
+
+	gcc_pure
+	bool IsSubscribed(const char *channel_name) const {
+		return subscriptions.find(channel_name) != subscriptions.end();
+	}
 };
 
 extern unsigned int client_max_connections;
