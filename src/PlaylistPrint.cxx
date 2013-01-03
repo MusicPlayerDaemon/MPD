@@ -37,7 +37,7 @@ extern "C" {
 }
 
 void
-playlist_print_uris(struct client *client, const struct playlist *playlist)
+playlist_print_uris(Client *client, const struct playlist *playlist)
 {
 	const struct queue *queue = &playlist->queue;
 
@@ -45,7 +45,7 @@ playlist_print_uris(struct client *client, const struct playlist *playlist)
 }
 
 bool
-playlist_print_info(struct client *client, const struct playlist *playlist,
+playlist_print_info(Client *client, const struct playlist *playlist,
 		    unsigned start, unsigned end)
 {
 	const struct queue *queue = &playlist->queue;
@@ -63,7 +63,7 @@ playlist_print_info(struct client *client, const struct playlist *playlist,
 }
 
 bool
-playlist_print_id(struct client *client, const struct playlist *playlist,
+playlist_print_id(Client *client, const struct playlist *playlist,
 		  unsigned id)
 {
 	const struct queue *queue = &playlist->queue;
@@ -78,7 +78,7 @@ playlist_print_id(struct client *client, const struct playlist *playlist,
 }
 
 bool
-playlist_print_current(struct client *client, const struct playlist *playlist)
+playlist_print_current(Client *client, const struct playlist *playlist)
 {
 	int current_position = playlist_get_current_song(playlist);
 
@@ -91,14 +91,14 @@ playlist_print_current(struct client *client, const struct playlist *playlist)
 }
 
 void
-playlist_print_find(struct client *client, const struct playlist *playlist,
+playlist_print_find(Client *client, const struct playlist *playlist,
 		    const SongFilter &filter)
 {
 	queue_find(client, &playlist->queue, filter);
 }
 
 void
-playlist_print_changes_info(struct client *client,
+playlist_print_changes_info(Client *client,
 			    const struct playlist *playlist,
 			    uint32_t version)
 {
@@ -106,7 +106,7 @@ playlist_print_changes_info(struct client *client,
 }
 
 void
-playlist_print_changes_position(struct client *client,
+playlist_print_changes_position(Client *client,
 				const struct playlist *playlist,
 				uint32_t version)
 {
@@ -114,7 +114,7 @@ playlist_print_changes_position(struct client *client,
 }
 
 static bool
-PrintSongDetails(struct client *client, const char *uri_utf8)
+PrintSongDetails(Client *client, const char *uri_utf8)
 {
 	const Database *db = GetDatabase(nullptr);
 	if (db == nullptr)
@@ -130,7 +130,7 @@ PrintSongDetails(struct client *client, const char *uri_utf8)
 }
 
 bool
-spl_print(struct client *client, const char *name_utf8, bool detail,
+spl_print(Client *client, const char *name_utf8, bool detail,
 	  GError **error_r)
 {
 	GError *error = NULL;
@@ -150,7 +150,7 @@ spl_print(struct client *client, const char *name_utf8, bool detail,
 }
 
 static void
-playlist_provider_print(struct client *client, const char *uri,
+playlist_provider_print(Client *client, const char *uri,
 			struct playlist_provider *playlist, bool detail)
 {
 	struct song *song;
@@ -173,7 +173,7 @@ playlist_provider_print(struct client *client, const char *uri,
 }
 
 bool
-playlist_file_print(struct client *client, const char *uri, bool detail)
+playlist_file_print(Client *client, const char *uri, bool detail)
 {
 	GMutex *mutex = g_mutex_new();
 	GCond *cond = g_cond_new();

@@ -40,7 +40,7 @@ extern "C" {
 #include <stdlib.h>
 
 static void
-print_spl_list(struct client *client, const PlaylistFileList &list)
+print_spl_list(Client *client, const PlaylistFileList &list)
 {
 	for (const auto &i : list) {
 		client_printf(client, "playlist: %s\n", i.name.c_str());
@@ -51,7 +51,7 @@ print_spl_list(struct client *client, const PlaylistFileList &list)
 }
 
 enum command_return
-handle_save(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_save(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	enum playlist_result result;
 
@@ -60,7 +60,7 @@ handle_save(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_load(struct client *client, int argc, char *argv[])
+handle_load(Client *client, int argc, char *argv[])
 {
 	unsigned start_index, end_index;
 
@@ -97,7 +97,7 @@ handle_load(struct client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_listplaylist(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_listplaylist(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	if (playlist_file_print(client, argv[1], false))
 		return COMMAND_RETURN_OK;
@@ -109,7 +109,7 @@ handle_listplaylist(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_listplaylistinfo(struct client *client,
+handle_listplaylistinfo(Client *client,
 			G_GNUC_UNUSED int argc, char *argv[])
 {
 	if (playlist_file_print(client, argv[1], true))
@@ -122,7 +122,7 @@ handle_listplaylistinfo(struct client *client,
 }
 
 enum command_return
-handle_rm(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_rm(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	GError *error = NULL;
 	return spl_delete(argv[1], &error)
@@ -131,7 +131,7 @@ handle_rm(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_rename(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_rename(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	GError *error = NULL;
 	return spl_rename(argv[1], argv[2], &error)
@@ -140,7 +140,7 @@ handle_rename(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_playlistdelete(struct client *client,
+handle_playlistdelete(Client *client,
 		      G_GNUC_UNUSED int argc, char *argv[]) {
 	char *playlist = argv[1];
 	unsigned from;
@@ -155,7 +155,7 @@ handle_playlistdelete(struct client *client,
 }
 
 enum command_return
-handle_playlistmove(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_playlistmove(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	char *playlist = argv[1];
 	unsigned from, to;
@@ -172,7 +172,7 @@ handle_playlistmove(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_playlistclear(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_playlistclear(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	GError *error = NULL;
 	return spl_clear(argv[1], &error)
@@ -181,7 +181,7 @@ handle_playlistclear(struct client *client, G_GNUC_UNUSED int argc, char *argv[]
 }
 
 enum command_return
-handle_playlistadd(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_playlistadd(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	char *playlist = argv[1];
 	char *uri = argv[2];
@@ -210,7 +210,7 @@ handle_playlistadd(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_listplaylists(struct client *client,
+handle_listplaylists(Client *client,
 		     G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	GError *error = NULL;

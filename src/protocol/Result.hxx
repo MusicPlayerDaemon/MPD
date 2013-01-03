@@ -24,20 +24,20 @@
 #include "gcc.h"
 #include "ack.h"
 
-struct client;
+class Client;
 
 extern const char *current_command;
 extern int command_list_num;
 
 void
-command_success(struct client *client);
+command_success(Client *client);
 
 void
-command_error_v(struct client *client, enum ack error,
+command_error_v(Client *client, enum ack error,
 		const char *fmt, va_list args);
 
 gcc_fprintf_
 void
-command_error(struct client *client, enum ack error, const char *fmt, ...);
+command_error(Client *client, enum ack error, const char *fmt, ...);
 
 #endif

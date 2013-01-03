@@ -28,7 +28,7 @@
 #include <unistd.h>
 
 bool
-client_allow_file(const struct client *client, const char *path_fs,
+client_allow_file(const Client *client, const char *path_fs,
 		  GError **error_r)
 {
 #ifdef WIN32

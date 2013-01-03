@@ -22,13 +22,15 @@
 
 #include "command.h"
 
-enum command_return
-handle_enableoutput(struct client *client, int argc, char *argv[]);
+class Client;
 
 enum command_return
-handle_disableoutput(struct client *client, int argc, char *argv[]);
+handle_enableoutput(Client *client, int argc, char *argv[]);
 
 enum command_return
-handle_devices(struct client *client, int argc, char *argv[]);
+handle_disableoutput(Client *client, int argc, char *argv[]);
+
+enum command_return
+handle_devices(Client *client, int argc, char *argv[]);
 
 #endif

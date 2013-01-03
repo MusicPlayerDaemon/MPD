@@ -24,7 +24,7 @@
 
 #include <stdbool.h>
 
-struct client;
+class Client;
 
 /**
  * Is this client allowed to use the specified local file?
@@ -37,7 +37,7 @@ struct client;
  * @return true if access is allowed
  */
 bool
-client_allow_file(const struct client *client, const char *path_fs,
+client_allow_file(const Client *client, const char *path_fs,
 		  GError **error_r);
 
 #endif

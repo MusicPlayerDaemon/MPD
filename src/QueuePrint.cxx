@@ -38,7 +38,7 @@ extern "C" {
  * @param end the index of the last song (excluding)
  */
 static void
-queue_print_song_info(struct client *client, const struct queue *queue,
+queue_print_song_info(Client *client, const struct queue *queue,
 		      unsigned position)
 {
 	song_print_info(client, queue_get(queue, position));
@@ -51,7 +51,7 @@ queue_print_song_info(struct client *client, const struct queue *queue,
 }
 
 void
-queue_print_info(struct client *client, const struct queue *queue,
+queue_print_info(Client *client, const struct queue *queue,
 		 unsigned start, unsigned end)
 {
 	assert(start <= end);
@@ -62,7 +62,7 @@ queue_print_info(struct client *client, const struct queue *queue,
 }
 
 void
-queue_print_uris(struct client *client, const struct queue *queue,
+queue_print_uris(Client *client, const struct queue *queue,
 		 unsigned start, unsigned end)
 {
 	assert(start <= end);
@@ -75,7 +75,7 @@ queue_print_uris(struct client *client, const struct queue *queue,
 }
 
 void
-queue_print_changes_info(struct client *client, const struct queue *queue,
+queue_print_changes_info(Client *client, const struct queue *queue,
 			 uint32_t version)
 {
 	for (unsigned i = 0; i < queue_length(queue); i++) {
@@ -85,7 +85,7 @@ queue_print_changes_info(struct client *client, const struct queue *queue,
 }
 
 void
-queue_print_changes_position(struct client *client, const struct queue *queue,
+queue_print_changes_position(Client *client, const struct queue *queue,
 			     uint32_t version)
 {
 	for (unsigned i = 0; i < queue_length(queue); i++)
@@ -95,7 +95,7 @@ queue_print_changes_position(struct client *client, const struct queue *queue,
 }
 
 void
-queue_find(struct client *client, const struct queue *queue,
+queue_find(Client *client, const struct queue *queue,
 	   const SongFilter &filter)
 {
 	for (unsigned i = 0; i < queue_length(queue); i++) {

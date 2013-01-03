@@ -27,7 +27,7 @@
 #include <errno.h>
 
 enum command_return
-print_playlist_result(struct client *client, enum playlist_result result)
+print_playlist_result(Client *client, enum playlist_result result)
 {
 	switch (result) {
 	case PLAYLIST_RESULT_SUCCESS:
@@ -89,7 +89,7 @@ print_playlist_result(struct client *client, enum playlist_result result)
  * Send the GError to the client and free the GError.
  */
 enum command_return
-print_error(struct client *client, GError *error)
+print_error(Client *client, GError *error)
 {
 	assert(client != NULL);
 	assert(error != NULL);

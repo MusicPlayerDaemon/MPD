@@ -66,7 +66,7 @@ void stats_update(void)
 }
 
 void
-stats_print(struct client *client)
+stats_print(Client *client)
 {
 	client_printf(client,
 		      "artists: %u\n"

@@ -31,7 +31,7 @@ extern "C" {
  * Send "idle" response to this client.
  */
 static void
-client_idle_notify(struct client *client)
+client_idle_notify(Client *client)
 {
 	unsigned flags, i;
 	const char *const* idle_names;
@@ -55,7 +55,7 @@ client_idle_notify(struct client *client)
 }
 
 void
-client_idle_add(struct client *client, unsigned flags)
+client_idle_add(Client *client, unsigned flags)
 {
 	if (client_is_expired(client))
 		return;
@@ -71,7 +71,7 @@ client_idle_add(struct client *client, unsigned flags)
 static void
 client_idle_callback(gpointer data, gpointer user_data)
 {
-	struct client *client = (struct client *)data;
+	Client *client = (Client *)data;
 	unsigned flags = GPOINTER_TO_UINT(user_data);
 
 	client_idle_add(client, flags);
@@ -84,7 +84,7 @@ void client_manager_idle_add(unsigned flags)
 	client_list_foreach(client_idle_callback, GUINT_TO_POINTER(flags));
 }
 
-bool client_idle_wait(struct client *client, unsigned flags)
+bool client_idle_wait(Client *client, unsigned flags)
 {
 	assert(!client->idle_waiting);
 

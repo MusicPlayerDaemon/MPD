@@ -24,7 +24,7 @@
 #include <glib.h>
 
 void
-time_print(struct client *client, const char *name, time_t t)
+time_print(Client *client, const char *name, time_t t)
 {
 #ifdef G_OS_WIN32
 	const struct tm *tm2 = gmtime(&t);

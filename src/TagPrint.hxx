@@ -21,10 +21,10 @@
 #define MPD_TAG_PRINT_HXX
 
 struct tag;
-struct client;
+class Client;
 
-void tag_print_types(struct client *client);
+void tag_print_types(Client *client);
 
-void tag_print(struct client *client, const struct tag *tag);
+void tag_print(Client *client, const struct tag *tag);
 
 #endif

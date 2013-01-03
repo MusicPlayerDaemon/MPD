@@ -22,7 +22,9 @@
 
 #include "command.h"
 
+class Client;
+
 enum command_return
-handle_sticker(struct client *client, int argc, char *argv[]);
+handle_sticker(Client *client, int argc, char *argv[]);
 
 #endif

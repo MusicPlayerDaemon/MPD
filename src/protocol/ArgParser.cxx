@@ -25,7 +25,7 @@
 #include <stdlib.h>
 
 bool
-check_uint32(struct client *client, uint32_t *dst, const char *s)
+check_uint32(Client *client, uint32_t *dst, const char *s)
 {
 	char *test;
 
@@ -39,7 +39,7 @@ check_uint32(struct client *client, uint32_t *dst, const char *s)
 }
 
 bool
-check_int(struct client *client, int *value_r, const char *s)
+check_int(Client *client, int *value_r, const char *s)
 {
 	char *test;
 	long value;
@@ -64,7 +64,7 @@ check_int(struct client *client, int *value_r, const char *s)
 }
 
 bool
-check_range(struct client *client, unsigned *value_r1, unsigned *value_r2,
+check_range(Client *client, unsigned *value_r1, unsigned *value_r2,
 	    const char *s)
 {
 	char *test, *test2;
@@ -134,7 +134,7 @@ check_range(struct client *client, unsigned *value_r1, unsigned *value_r2,
 }
 
 bool
-check_unsigned(struct client *client, unsigned *value_r, const char *s)
+check_unsigned(Client *client, unsigned *value_r, const char *s)
 {
 	unsigned long value;
 	char *endptr;
@@ -157,7 +157,7 @@ check_unsigned(struct client *client, unsigned *value_r, const char *s)
 }
 
 bool
-check_bool(struct client *client, bool *value_r, const char *s)
+check_bool(Client *client, bool *value_r, const char *s)
 {
 	long value;
 	char *endptr;
@@ -174,7 +174,7 @@ check_bool(struct client *client, bool *value_r, const char *s)
 }
 
 bool
-check_float(struct client *client, float *value_r, const char *s)
+check_float(Client *client, float *value_r, const char *s)
 {
 	float value;
 	char *endptr;

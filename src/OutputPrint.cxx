@@ -32,7 +32,7 @@ extern "C" {
 }
 
 void
-printAudioDevices(struct client *client)
+printAudioDevices(Client *client)
 {
 	const unsigned n = audio_output_count();
 

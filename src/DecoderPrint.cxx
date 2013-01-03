@@ -26,7 +26,7 @@
 #include <assert.h>
 
 static void
-decoder_plugin_print(struct client *client,
+decoder_plugin_print(Client *client,
 		     const struct decoder_plugin *plugin)
 {
 	const char *const*p;
@@ -46,7 +46,7 @@ decoder_plugin_print(struct client *client,
 }
 
 void
-decoder_list_print(struct client *client)
+decoder_list_print(Client *client)
 {
 	decoder_plugins_for_each_enabled(plugin)
 		decoder_plugin_print(client, plugin);

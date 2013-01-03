@@ -28,7 +28,7 @@ extern "C" {
 #include <string.h>
 
 static char *
-client_read_line(struct client *client)
+client_read_line(Client *client)
 {
 	size_t length;
 	const char *p = (const char *)fifo_buffer_read(client->input, &length);
@@ -46,7 +46,7 @@ client_read_line(struct client *client)
 }
 
 static enum command_return
-client_input_received(struct client *client, size_t bytesRead)
+client_input_received(Client *client, size_t bytesRead)
 {
 	char *line;
 
@@ -69,7 +69,7 @@ client_input_received(struct client *client, size_t bytesRead)
 }
 
 enum command_return
-client_read(struct client *client)
+client_read(Client *client)
 {
 	GError *error = NULL;
 	GIOStatus status;

@@ -27,7 +27,7 @@ static gboolean
 client_out_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 		 gpointer data)
 {
-	struct client *client = (struct client *)data;
+	Client *client = (Client *)data;
 
 	assert(!client_is_expired(client));
 
@@ -62,7 +62,7 @@ gboolean
 client_in_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 		gpointer data)
 {
-	struct client *client = (struct client *)data;
+	Client *client = (Client *)data;
 	enum command_return ret;
 
 	assert(!client_is_expired(client));

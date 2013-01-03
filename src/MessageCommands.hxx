@@ -22,19 +22,21 @@
 
 #include "command.h"
 
-enum command_return
-handle_subscribe(struct client *client, int argc, char *argv[]);
+class Client;
 
 enum command_return
-handle_unsubscribe(struct client *client, int argc, char *argv[]);
+handle_subscribe(Client *client, int argc, char *argv[]);
 
 enum command_return
-handle_channels(struct client *client, int argc, char *argv[]);
+handle_unsubscribe(Client *client, int argc, char *argv[]);
 
 enum command_return
-handle_read_messages(struct client *client, int argc, char *argv[]);
+handle_channels(Client *client, int argc, char *argv[]);
 
 enum command_return
-handle_send_message(struct client *client, int argc, char *argv[]);
+handle_read_messages(Client *client, int argc, char *argv[]);
+
+enum command_return
+handle_send_message(Client *client, int argc, char *argv[]);
 
 #endif

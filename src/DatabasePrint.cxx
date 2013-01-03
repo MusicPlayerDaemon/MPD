@@ -38,7 +38,7 @@ extern "C" {
 #include <functional>
 
 static bool
-PrintDirectory(struct client *client, const Directory &directory)
+PrintDirectory(Client *client, const Directory &directory)
 {
 	if (!directory.IsRoot())
 		client_printf(client, "directory: %s\n", directory.GetPath());
@@ -47,7 +47,7 @@ PrintDirectory(struct client *client, const Directory &directory)
 }
 
 static void
-print_playlist_in_directory(struct client *client,
+print_playlist_in_directory(Client *client,
 			    const Directory &directory,
 			    const char *name_utf8)
 {
@@ -59,7 +59,7 @@ print_playlist_in_directory(struct client *client,
 }
 
 static bool
-PrintSongBrief(struct client *client, song &song)
+PrintSongBrief(Client *client, song &song)
 {
 	assert(song.parent != NULL);
 
@@ -73,7 +73,7 @@ PrintSongBrief(struct client *client, song &song)
 }
 
 static bool
-PrintSongFull(struct client *client, song &song)
+PrintSongFull(Client *client, song &song)
 {
 	assert(song.parent != NULL);
 
@@ -87,7 +87,7 @@ PrintSongFull(struct client *client, song &song)
 }
 
 static bool
-PrintPlaylistBrief(struct client *client,
+PrintPlaylistBrief(Client *client,
 		   const PlaylistInfo &playlist,
 		   const Directory &directory)
 {
@@ -96,7 +96,7 @@ PrintPlaylistBrief(struct client *client,
 }
 
 static bool
-PrintPlaylistFull(struct client *client,
+PrintPlaylistFull(Client *client,
 		  const PlaylistInfo &playlist,
 		  const Directory &directory)
 {
@@ -109,7 +109,7 @@ PrintPlaylistFull(struct client *client,
 }
 
 bool
-db_selection_print(struct client *client, const DatabaseSelection &selection,
+db_selection_print(Client *client, const DatabaseSelection &selection,
 		   bool full, GError **error_r)
 {
 	const Database *db = GetDatabase(error_r);
@@ -135,7 +135,7 @@ struct SearchStats {
 	unsigned long playTime;
 };
 
-static void printSearchStats(struct client *client, SearchStats *stats)
+static void printSearchStats(Client *client, SearchStats *stats)
 {
 	client_printf(client, "songs: %i\n", stats->numberOfSongs);
 	client_printf(client, "playtime: %li\n", stats->playTime);
@@ -151,7 +151,7 @@ stats_visitor_song(SearchStats &stats, song &song)
 }
 
 bool
-searchStatsForSongsIn(struct client *client, const char *name,
+searchStatsForSongsIn(Client *client, const char *name,
 		      const SongFilter *filter,
 		      GError **error_r)
 {
@@ -176,14 +176,14 @@ searchStatsForSongsIn(struct client *client, const char *name,
 }
 
 bool
-printAllIn(struct client *client, const char *uri_utf8, GError **error_r)
+printAllIn(Client *client, const char *uri_utf8, GError **error_r)
 {
 	const DatabaseSelection selection(uri_utf8, true);
 	return db_selection_print(client, selection, false, error_r);
 }
 
 bool
-printInfoForAllIn(struct client *client, const char *uri_utf8,
+printInfoForAllIn(Client *client, const char *uri_utf8,
 		  GError **error_r)
 {
 	const DatabaseSelection selection(uri_utf8, true);
@@ -191,7 +191,7 @@ printInfoForAllIn(struct client *client, const char *uri_utf8,
 }
 
 static bool
-PrintSongURIVisitor(struct client *client, song &song)
+PrintSongURIVisitor(Client *client, song &song)
 {
 	song_print_uri(client, &song);
 
@@ -199,7 +199,7 @@ PrintSongURIVisitor(struct client *client, song &song)
 }
 
 static bool
-PrintUniqueTag(struct client *client, enum tag_type tag_type,
+PrintUniqueTag(Client *client, enum tag_type tag_type,
 	       const char *value)
 {
 	client_printf(client, "%s: %s\n", tag_item_names[tag_type], value);
@@ -207,7 +207,7 @@ PrintUniqueTag(struct client *client, enum tag_type tag_type,
 }
 
 bool
-listAllUniqueTags(struct client *client, int type,
+listAllUniqueTags(Client *client, int type,
 		  const SongFilter *filter,
 		  GError **error_r)
 {

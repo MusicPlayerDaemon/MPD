@@ -20,9 +20,9 @@
 #ifndef MPD_DECODER_PRINT_HXX
 #define MPD_DECODER_PRINT_HXX
 
-struct client;
+class Client;
 
 void
-decoder_list_print(struct client *client);
+decoder_list_print(Client *client);
 
 #endif

@@ -26,9 +26,9 @@
 #include <stddef.h>
 #include <stdarg.h>
 
-struct client;
 struct sockaddr;
 struct player_control;
+class Client;
 
 void client_manager_init(void);
 void client_manager_deinit(void);
@@ -37,14 +37,14 @@ void client_new(struct player_control *player_control,
 		int fd, const struct sockaddr *sa, size_t sa_length, int uid);
 
 gcc_pure
-bool client_is_expired(const struct client *client);
+bool client_is_expired(const Client *client);
 
 /**
  * returns the uid of the client process, or a negative value if the
  * uid is unknown
  */
 gcc_pure
-int client_get_uid(const struct client *client);
+int client_get_uid(const Client *client);
 
 /**
  * Is this client running on the same machine, connected with a local
@@ -52,31 +52,31 @@ int client_get_uid(const struct client *client);
  */
 gcc_pure
 static inline bool
-client_is_local(const struct client *client)
+client_is_local(const Client *client)
 {
 	return client_get_uid(client) > 0;
 }
 
 gcc_pure
-unsigned client_get_permission(const struct client *client);
+unsigned client_get_permission(const Client *client);
 
-void client_set_permission(struct client *client, unsigned permission);
+void client_set_permission(Client *client, unsigned permission);
 
 /**
  * Write a C string to the client.
  */
-void client_puts(struct client *client, const char *s);
+void client_puts(Client *client, const char *s);
 
 /**
  * Write a printf-like formatted string to the client.
  */
-void client_vprintf(struct client *client, const char *fmt, va_list args);
+void client_vprintf(Client *client, const char *fmt, va_list args);
 
 /**
  * Write a printf-like formatted string to the client.
  */
 gcc_fprintf
 void
-client_printf(struct client *client, const char *fmt, ...);
+client_printf(Client *client, const char *fmt, ...);
 
 #endif

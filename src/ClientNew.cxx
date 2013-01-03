@@ -50,7 +50,7 @@ client_new(struct player_control *player_control,
 	   int fd, const struct sockaddr *sa, size_t sa_length, int uid)
 {
 	static unsigned int next_client_num;
-	struct client *client;
+	Client *client;
 	char *remote;
 
 	assert(player_control != NULL);
@@ -87,7 +87,7 @@ client_new(struct player_control *player_control,
 		return;
 	}
 
-	client = g_new0(struct client, 1);
+	client = g_new0(Client, 1);
 	client->player_control = player_control;
 
 	client->channel = g_io_channel_new_socket(fd);
@@ -143,7 +143,7 @@ deferred_buffer_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 }
 
 void
-client_close(struct client *client)
+client_close(Client *client)
 {
 	client_list_remove(client);
 

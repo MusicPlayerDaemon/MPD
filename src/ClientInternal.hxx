@@ -39,7 +39,8 @@ struct deferred_buffer {
 	char data[sizeof(long)];
 };
 
-struct client {
+class Client {
+public:
 	struct player_control *player_control;
 
 	GIOChannel *channel;
@@ -112,23 +113,23 @@ client_list_is_empty(void);
 bool
 client_list_is_full(void);
 
-struct client *
+Client *
 client_list_get_first(void);
 
 void
-client_list_add(struct client *client);
+client_list_add(Client *client);
 
 void
 client_list_foreach(GFunc func, gpointer user_data);
 
 void
-client_list_remove(struct client *client);
+client_list_remove(Client *client);
 
 void
-client_close(struct client *client);
+client_close(Client *client);
 
 static inline void
-new_cmd_list_ptr(struct client *client, const char *s)
+new_cmd_list_ptr(Client *client, const char *s)
 {
 	client->cmd_list = g_slist_prepend(client->cmd_list, g_strdup(s));
 }
@@ -143,7 +144,7 @@ free_cmd_list(GSList *list)
 }
 
 void
-client_set_expired(struct client *client);
+client_set_expired(Client *client);
 
 /**
  * Schedule an "expired" check for all clients: permanently delete
@@ -159,16 +160,16 @@ void
 client_deinit_expire(void);
 
 enum command_return
-client_read(struct client *client);
+client_read(Client *client);
 
 enum command_return
-client_process_line(struct client *client, char *line);
+client_process_line(Client *client, char *line);
 
 void
-client_write_deferred(struct client *client);
+client_write_deferred(Client *client);
 
 void
-client_write_output(struct client *client);
+client_write_output(Client *client);
 
 gboolean
 client_in_event(GIOChannel *source, GIOCondition condition,

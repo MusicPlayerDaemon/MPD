@@ -31,7 +31,7 @@ extern "C" {
 }
 
 void
-song_print_uri(struct client *client, struct song *song)
+song_print_uri(Client *client, struct song *song)
 {
 	if (song_in_database(song) && !song->parent->IsRoot()) {
 		client_printf(client, "%s%s/%s\n", SONG_FILE,
@@ -52,7 +52,7 @@ song_print_uri(struct client *client, struct song *song)
 }
 
 void
-song_print_info(struct client *client, struct song *song)
+song_print_info(Client *client, struct song *song)
 {
 	song_print_uri(client, song);
 

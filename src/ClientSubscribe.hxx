@@ -23,7 +23,7 @@
 #include "gcc.h"
 
 typedef struct _GSList GSList;
-struct client;
+class Client;
 struct client_message;
 
 enum client_subscribe_result {
@@ -41,19 +41,19 @@ enum client_subscribe_result {
 };
 
 enum client_subscribe_result
-client_subscribe(struct client *client, const char *channel);
+client_subscribe(Client *client, const char *channel);
 
 bool
-client_unsubscribe(struct client *client, const char *channel);
+client_unsubscribe(Client *client, const char *channel);
 
 void
-client_unsubscribe_all(struct client *client);
+client_unsubscribe_all(Client *client);
 
 bool
-client_push_message(struct client *client, const struct client_message *msg);
+client_push_message(Client *client, const struct client_message *msg);
 
 gcc_malloc
 GSList *
-client_read_messages(struct client *client);
+client_read_messages(Client *client);
 
 #endif

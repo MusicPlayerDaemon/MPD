@@ -20,13 +20,13 @@
 #ifndef MPD_SONG_PRINT_HXX
 #define MPD_SONG_PRINT_HXX
 
-struct client;
 struct song;
+class Client;
 
 void
-song_print_info(struct client *client, struct song *song);
+song_print_info(Client *client, struct song *song);
 
 void
-song_print_uri(struct client *client, struct song *song);
+song_print_uri(Client *client, struct song *song);
 
 #endif

@@ -37,16 +37,16 @@ client_list_is_full(void)
 	return num_clients >= client_max_connections;
 }
 
-struct client *
+Client *
 client_list_get_first(void)
 {
 	assert(clients != NULL);
 
-	return (struct client *)clients->data;
+	return (Client *)clients->data;
 }
 
 void
-client_list_add(struct client *client)
+client_list_add(Client *client)
 {
 	clients = g_list_prepend(clients, client);
 	++num_clients;
@@ -59,7 +59,7 @@ client_list_foreach(GFunc func, gpointer user_data)
 }
 
 void
-client_list_remove(struct client *client)
+client_list_remove(Client *client)
 {
 	assert(num_clients > 0);
 	assert(clients != NULL);

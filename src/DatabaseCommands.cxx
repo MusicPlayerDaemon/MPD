@@ -34,7 +34,7 @@
 #include <string.h>
 
 enum command_return
-handle_lsinfo2(struct client *client, int argc, char *argv[])
+handle_lsinfo2(Client *client, int argc, char *argv[])
 {
 	const char *uri;
 
@@ -54,7 +54,7 @@ handle_lsinfo2(struct client *client, int argc, char *argv[])
 }
 
 static enum command_return
-handle_match(struct client *client, int argc, char *argv[], bool fold_case)
+handle_match(Client *client, int argc, char *argv[], bool fold_case)
 {
 	SongFilter filter;
 	if (!filter.Parse(argc - 1, argv + 1, fold_case)) {
@@ -71,19 +71,19 @@ handle_match(struct client *client, int argc, char *argv[], bool fold_case)
 }
 
 enum command_return
-handle_find(struct client *client, int argc, char *argv[])
+handle_find(Client *client, int argc, char *argv[])
 {
 	return handle_match(client, argc, argv, false);
 }
 
 enum command_return
-handle_search(struct client *client, int argc, char *argv[])
+handle_search(Client *client, int argc, char *argv[])
 {
 	return handle_match(client, argc, argv, true);
 }
 
 static enum command_return
-handle_match_add(struct client *client, int argc, char *argv[], bool fold_case)
+handle_match_add(Client *client, int argc, char *argv[], bool fold_case)
 {
 	SongFilter filter;
 	if (!filter.Parse(argc - 1, argv + 1, fold_case)) {
@@ -98,19 +98,19 @@ handle_match_add(struct client *client, int argc, char *argv[], bool fold_case)
 }
 
 enum command_return
-handle_findadd(struct client *client, int argc, char *argv[])
+handle_findadd(Client *client, int argc, char *argv[])
 {
 	return handle_match_add(client, argc, argv, false);
 }
 
 enum command_return
-handle_searchadd(struct client *client, int argc, char *argv[])
+handle_searchadd(Client *client, int argc, char *argv[])
 {
 	return handle_match_add(client, argc, argv, true);
 }
 
 enum command_return
-handle_searchaddpl(struct client *client, int argc, char *argv[])
+handle_searchaddpl(Client *client, int argc, char *argv[])
 {
 	const char *playlist = argv[1];
 
@@ -127,7 +127,7 @@ handle_searchaddpl(struct client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_count(struct client *client, int argc, char *argv[])
+handle_count(Client *client, int argc, char *argv[])
 {
 	SongFilter filter;
 	if (!filter.Parse(argc - 1, argv + 1, false)) {
@@ -142,7 +142,7 @@ handle_count(struct client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_listall(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_listall(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	const char *directory = "";
 
@@ -156,7 +156,7 @@ handle_listall(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_list(struct client *client, int argc, char *argv[])
+handle_list(Client *client, int argc, char *argv[])
 {
 	unsigned tagType = locate_parse_type(argv[1]);
 
@@ -205,7 +205,7 @@ handle_list(struct client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_listallinfo(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_listallinfo(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	const char *directory = "";
 

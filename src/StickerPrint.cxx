@@ -23,7 +23,7 @@
 #include "Client.hxx"
 
 void
-sticker_print_value(struct client *client,
+sticker_print_value(Client *client,
 		    const char *name, const char *value)
 {
 	client_printf(client, "sticker: %s=%s\n", name, value);
@@ -32,13 +32,13 @@ sticker_print_value(struct client *client,
 static void
 print_sticker_cb(const char *name, const char *value, void *data)
 {
-	struct client *client = (struct client *)data;
+	Client *client = (Client *)data;
 
 	sticker_print_value(client, name, value);
 }
 
 void
-sticker_print(struct client *client, const struct sticker *sticker)
+sticker_print(Client *client, const struct sticker *sticker)
 {
 	sticker_foreach(sticker, print_sticker_cb, client);
 }

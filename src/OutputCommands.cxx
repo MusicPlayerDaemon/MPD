@@ -30,7 +30,7 @@ extern "C" {
 #include <string.h>
 
 enum command_return
-handle_enableoutput(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_enableoutput(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned device;
 	bool ret;
@@ -49,7 +49,7 @@ handle_enableoutput(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_disableoutput(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_disableoutput(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned device;
 	bool ret;
@@ -68,7 +68,7 @@ handle_disableoutput(struct client *client, G_GNUC_UNUSED int argc, char *argv[]
 }
 
 enum command_return
-handle_devices(struct client *client,
+handle_devices(Client *client,
 	       G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	printAudioDevices(client);

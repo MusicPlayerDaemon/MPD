@@ -33,7 +33,7 @@
 #include <string.h>
 
 struct sticker_song_find_data {
-	struct client *client;
+	Client *client;
 	const char *name;
 };
 
@@ -49,7 +49,7 @@ sticker_song_find_print_cb(struct song *song, const char *value,
 }
 
 static enum command_return
-handle_sticker_song(struct client *client, int argc, char *argv[])
+handle_sticker_song(Client *client, int argc, char *argv[])
 {
 	GError *error = nullptr;
 	const Database *db = GetDatabase(&error);
@@ -156,7 +156,7 @@ handle_sticker_song(struct client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_sticker(struct client *client, int argc, char *argv[])
+handle_sticker(Client *client, int argc, char *argv[])
 {
 	assert(argc >= 4);
 

@@ -78,7 +78,7 @@ void print_supported_uri_schemes_to_fp(FILE *fp)
 	fprintf(fp,"\n");
 }
 
-void print_supported_uri_schemes(struct client *client)
+void print_supported_uri_schemes(Client *client)
 {
 	const char **prefixes = remoteUrlPrefixes;
 

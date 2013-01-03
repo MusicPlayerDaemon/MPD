@@ -20,22 +20,22 @@
 #include "config.h"
 #include "ClientInternal.hxx"
 
-bool client_is_expired(const struct client *client)
+bool client_is_expired(const Client *client)
 {
 	return client->channel == NULL;
 }
 
-int client_get_uid(const struct client *client)
+int client_get_uid(const Client *client)
 {
 	return client->uid;
 }
 
-unsigned client_get_permission(const struct client *client)
+unsigned client_get_permission(const Client *client)
 {
 	return client->permission;
 }
 
-void client_set_permission(struct client *client, unsigned permission)
+void client_set_permission(Client *client, unsigned permission)
 {
 	client->permission = permission;
 }

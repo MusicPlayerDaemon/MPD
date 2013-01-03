@@ -22,46 +22,48 @@
 
 #include "command.h"
 
-enum command_return
-handle_urlhandlers(struct client *client, int argc, char *argv[]);
+class Client;
 
 enum command_return
-handle_decoders(struct client *client, int argc, char *argv[]);
+handle_urlhandlers(Client *client, int argc, char *argv[]);
 
 enum command_return
-handle_tagtypes(struct client *client, int argc, char *argv[]);
+handle_decoders(Client *client, int argc, char *argv[]);
 
 enum command_return
-handle_kill(struct client *client, int argc, char *argv[]);
+handle_tagtypes(Client *client, int argc, char *argv[]);
 
 enum command_return
-handle_close(struct client *client, int argc, char *argv[]);
+handle_kill(Client *client, int argc, char *argv[]);
 
 enum command_return
-handle_lsinfo(struct client *client, int argc, char *argv[]);
+handle_close(Client *client, int argc, char *argv[]);
 
 enum command_return
-handle_update(struct client *client, int argc, char *argv[]);
+handle_lsinfo(Client *client, int argc, char *argv[]);
 
 enum command_return
-handle_rescan(struct client *client, int argc, char *argv[]);
+handle_update(Client *client, int argc, char *argv[]);
 
 enum command_return
-handle_setvol(struct client *client, int argc, char *argv[]);
+handle_rescan(Client *client, int argc, char *argv[]);
 
 enum command_return
-handle_stats(struct client *client, int argc, char *argv[]);
+handle_setvol(Client *client, int argc, char *argv[]);
 
 enum command_return
-handle_ping(struct client *client, int argc, char *argv[]);
+handle_stats(Client *client, int argc, char *argv[]);
 
 enum command_return
-handle_password(struct client *client, int argc, char *argv[]);
+handle_ping(Client *client, int argc, char *argv[]);
 
 enum command_return
-handle_config(struct client *client, int argc, char *argv[]);
+handle_password(Client *client, int argc, char *argv[]);
 
 enum command_return
-handle_idle(struct client *client, int argc, char *argv[]);
+handle_config(Client *client, int argc, char *argv[]);
+
+enum command_return
+handle_idle(Client *client, int argc, char *argv[]);
 
 #endif

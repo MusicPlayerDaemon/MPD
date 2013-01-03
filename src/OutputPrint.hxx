@@ -25,9 +25,9 @@
 #ifndef MPD_OUTPUT_PRINT_HXX
 #define MPD_OUTPUT_PRINT_HXX
 
-struct client;
+class Client;
 
 void
-printAudioDevices(struct client *client);
+printAudioDevices(Client *client);
 
 #endif

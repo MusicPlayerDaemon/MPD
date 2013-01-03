@@ -57,7 +57,7 @@ extern "C" {
 #include <string.h>
 
 static void
-print_spl_list(struct client *client, const PlaylistFileList &list)
+print_spl_list(Client *client, const PlaylistFileList &list)
 {
 	for (const auto &i : list) {
 		client_printf(client, "playlist: %s\n", i.name.c_str());
@@ -68,7 +68,7 @@ print_spl_list(struct client *client, const PlaylistFileList &list)
 }
 
 enum command_return
-handle_urlhandlers(struct client *client,
+handle_urlhandlers(Client *client,
 		   G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	if (client_is_local(client))
@@ -78,7 +78,7 @@ handle_urlhandlers(struct client *client,
 }
 
 enum command_return
-handle_decoders(struct client *client,
+handle_decoders(Client *client,
 		G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	decoder_list_print(client);
@@ -86,7 +86,7 @@ handle_decoders(struct client *client,
 }
 
 enum command_return
-handle_tagtypes(struct client *client,
+handle_tagtypes(Client *client,
 		G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	tag_print_types(client);
@@ -94,21 +94,21 @@ handle_tagtypes(struct client *client,
 }
 
 enum command_return
-handle_kill(G_GNUC_UNUSED struct client *client,
+handle_kill(G_GNUC_UNUSED Client *client,
 	    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	return COMMAND_RETURN_KILL;
 }
 
 enum command_return
-handle_close(G_GNUC_UNUSED struct client *client,
+handle_close(G_GNUC_UNUSED Client *client,
 	     G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	return COMMAND_RETURN_CLOSE;
 }
 
 enum command_return
-handle_lsinfo(struct client *client, int argc, char *argv[])
+handle_lsinfo(Client *client, int argc, char *argv[])
 {
 	const char *uri;
 
@@ -151,7 +151,7 @@ handle_lsinfo(struct client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_update(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_update(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	const char *path = NULL;
 	unsigned ret;
@@ -182,7 +182,7 @@ handle_update(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_rescan(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_rescan(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	const char *path = NULL;
 	unsigned ret;
@@ -210,7 +210,7 @@ handle_rescan(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_setvol(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_setvol(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned level;
 	bool success;
@@ -234,7 +234,7 @@ handle_setvol(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_stats(struct client *client,
+handle_stats(Client *client,
 	     G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	stats_print(client);
@@ -242,14 +242,14 @@ handle_stats(struct client *client,
 }
 
 enum command_return
-handle_ping(G_GNUC_UNUSED struct client *client,
+handle_ping(G_GNUC_UNUSED Client *client,
 	    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	return COMMAND_RETURN_OK;
 }
 
 enum command_return
-handle_password(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_password(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned permission = 0;
 
@@ -264,7 +264,7 @@ handle_password(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_config(struct client *client,
+handle_config(Client *client,
 	      G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	if (!client_is_local(client)) {
@@ -281,7 +281,7 @@ handle_config(struct client *client,
 }
 
 enum command_return
-handle_idle(struct client *client,
+handle_idle(Client *client,
 	    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	unsigned flags = 0, j;

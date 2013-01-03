@@ -25,7 +25,7 @@
 #include <stdio.h>
 
 static size_t
-client_write_deferred_buffer(struct client *client,
+client_write_deferred_buffer(Client *client,
 			     const struct deferred_buffer *buffer)
 {
 	GError *error = NULL;
@@ -67,7 +67,7 @@ client_write_deferred_buffer(struct client *client,
 }
 
 void
-client_write_deferred(struct client *client)
+client_write_deferred(Client *client)
 {
 	size_t ret;
 
@@ -109,8 +109,8 @@ client_write_deferred(struct client *client)
 	}
 }
 
-static void client_defer_output(struct client *client,
-				const void *data, size_t length)
+static void
+client_defer_output(Client *client, const void *data, size_t length)
 {
 	size_t alloc;
 	struct deferred_buffer *buf;
@@ -137,8 +137,8 @@ static void client_defer_output(struct client *client,
 	g_queue_push_tail(client->deferred_send, buf);
 }
 
-static void client_write_direct(struct client *client,
-				const char *data, size_t length)
+static void
+client_write_direct(Client *client, const char *data, size_t length)
 {
 	GError *error = NULL;
 	GIOStatus status;
@@ -182,7 +182,7 @@ static void client_write_direct(struct client *client,
 }
 
 void
-client_write_output(struct client *client)
+client_write_output(Client *client)
 {
 	if (client_is_expired(client) || !client->send_buf_used)
 		return;
@@ -212,7 +212,8 @@ client_write_output(struct client *client)
 /**
  * Write a block of data to the client.
  */
-static void client_write(struct client *client, const char *buffer, size_t buflen)
+static void
+client_write(Client *client, const char *buffer, size_t buflen)
 {
 	/* if the client is going to be closed, do nothing */
 	if (client_is_expired(client))
@@ -237,12 +238,14 @@ static void client_write(struct client *client, const char *buffer, size_t bufle
 	}
 }
 
-void client_puts(struct client *client, const char *s)
+void
+client_puts(Client *client, const char *s)
 {
 	client_write(client, s, strlen(s));
 }
 
-void client_vprintf(struct client *client, const char *fmt, va_list args)
+void
+client_vprintf(Client *client, const char *fmt, va_list args)
 {
 #ifndef G_OS_WIN32
 	va_list tmp;
@@ -274,7 +277,9 @@ void client_vprintf(struct client *client, const char *fmt, va_list args)
 #endif
 }
 
-G_GNUC_PRINTF(2, 3) void client_printf(struct client *client, const char *fmt, ...)
+G_GNUC_PRINTF(2, 3)
+void
+client_printf(Client *client, const char *fmt, ...)
 {
 	va_list args;
 

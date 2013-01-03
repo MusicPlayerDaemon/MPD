@@ -23,7 +23,7 @@
 static guint expire_source_id;
 
 void
-client_set_expired(struct client *client)
+client_set_expired(Client *client)
 {
 	if (!client_is_expired(client))
 		client_schedule_expire();
@@ -42,7 +42,7 @@ client_set_expired(struct client *client)
 static void
 client_check_expired_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
-	struct client *client = (struct client *)data;
+	Client *client = (Client *)data;
 
 	if (client_is_expired(client)) {
 		g_debug("[%u] expired", client->num);

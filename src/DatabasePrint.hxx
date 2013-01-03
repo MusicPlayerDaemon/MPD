@@ -23,34 +23,34 @@
 #include "gcc.h"
 #include "gerror.h"
 
-struct client;
 class SongFilter;
 struct DatabaseSelection;
 struct db_visitor;
+class Client;
 
 gcc_nonnull(1)
 bool
-db_selection_print(struct client *client, const DatabaseSelection &selection,
+db_selection_print(Client *client, const DatabaseSelection &selection,
 		   bool full, GError **error_r);
 
 gcc_nonnull(1,2)
 bool
-printAllIn(struct client *client, const char *uri_utf8, GError **error_r);
+printAllIn(Client *client, const char *uri_utf8, GError **error_r);
 
 gcc_nonnull(1,2)
 bool
-printInfoForAllIn(struct client *client, const char *uri_utf8,
+printInfoForAllIn(Client *client, const char *uri_utf8,
 		  GError **error_r);
 
 gcc_nonnull(1,2)
 bool
-searchStatsForSongsIn(struct client *client, const char *name,
+searchStatsForSongsIn(Client *client, const char *name,
 		      const SongFilter *filter,
 		      GError **error_r);
 
 gcc_nonnull(1)
 bool
-listAllUniqueTags(struct client *client, int type,
+listAllUniqueTags(Client *client, int type,
 		  const SongFilter *filter,
 		  GError **error_r);
 

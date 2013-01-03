@@ -20,10 +20,10 @@
 #ifndef MPD_CLIENT_IDLE_HXX
 #define MPD_CLIENT_IDLE_HXX
 
-struct client;
+class Client;
 
 void
-client_idle_add(struct client *client, unsigned flags);
+client_idle_add(Client *client, unsigned flags);
 
 /**
  * Adds the specified idle flags to all clients and immediately sends
@@ -38,6 +38,6 @@ client_manager_idle_add(unsigned flags);
  * client into waiting mode and returns false.
  */
 bool
-client_idle_wait(struct client *client, unsigned flags);
+client_idle_wait(Client *client, unsigned flags);
 
 #endif

@@ -58,16 +58,16 @@ struct command {
 	unsigned permission;
 	int min;
 	int max;
-	enum command_return (*handler)(struct client *client, int argc, char **argv);
+	enum command_return (*handler)(Client *client, int argc, char **argv);
 };
 
 /* don't be fooled, this is the command handler for "commands" command */
 static enum command_return
-handle_commands(struct client *client,
+handle_commands(Client *client,
 		G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[]);
 
 static enum command_return
-handle_not_commands(struct client *client,
+handle_not_commands(Client *client,
 		    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[]);
 
 /**
@@ -182,7 +182,7 @@ command_available(G_GNUC_UNUSED const struct command *cmd)
 
 /* don't be fooled, this is the command handler for "commands" command */
 static enum command_return
-handle_commands(struct client *client,
+handle_commands(Client *client,
 		G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	const unsigned permission = client_get_permission(client);
@@ -200,7 +200,7 @@ handle_commands(struct client *client,
 }
 
 static enum command_return
-handle_not_commands(struct client *client,
+handle_not_commands(Client *client,
 		    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	const unsigned permission = client_get_permission(client);
@@ -252,7 +252,7 @@ command_lookup(const char *name)
 }
 
 static bool
-command_check_request(const struct command *cmd, struct client *client,
+command_check_request(const struct command *cmd, Client *client,
 		      unsigned permission, int argc, char *argv[])
 {
 	int min = cmd->min + 1;
@@ -290,7 +290,7 @@ command_check_request(const struct command *cmd, struct client *client,
 }
 
 static const struct command *
-command_checked_lookup(struct client *client, unsigned permission,
+command_checked_lookup(Client *client, unsigned permission,
 		       int argc, char *argv[])
 {
 	const struct command *cmd;
@@ -317,7 +317,7 @@ command_checked_lookup(struct client *client, unsigned permission,
 }
 
 enum command_return
-command_process(struct client *client, unsigned num, char *line)
+command_process(Client *client, unsigned num, char *line)
 {
 	GError *error = NULL;
 	int argc;

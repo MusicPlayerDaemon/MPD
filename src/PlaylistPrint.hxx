@@ -23,15 +23,15 @@
 #include <glib.h>
 #include <stdint.h>
 
-struct client;
 struct playlist;
 class SongFilter;
+class Client;
 
 /**
  * Sends the whole playlist to the client, song URIs only.
  */
 void
-playlist_print_uris(struct client *client, const struct playlist *playlist);
+playlist_print_uris(Client *client, const struct playlist *playlist);
 
 /**
  * Sends a range of the playlist to the client, including all known
@@ -40,7 +40,7 @@ playlist_print_uris(struct client *client, const struct playlist *playlist);
  * This function however fails when the start offset is invalid.
  */
 bool
-playlist_print_info(struct client *client, const struct playlist *playlist,
+playlist_print_info(Client *client, const struct playlist *playlist,
 		    unsigned start, unsigned end);
 
 /**
@@ -49,7 +49,7 @@ playlist_print_info(struct client *client, const struct playlist *playlist,
  * @return true on suite, false if there is no such song
  */
 bool
-playlist_print_id(struct client *client, const struct playlist *playlist,
+playlist_print_id(Client *client, const struct playlist *playlist,
 		  unsigned id);
 
 /**
@@ -58,20 +58,20 @@ playlist_print_id(struct client *client, const struct playlist *playlist,
  * @return true on success, false if there is no current song
  */
 bool
-playlist_print_current(struct client *client, const struct playlist *playlist);
+playlist_print_current(Client *client, const struct playlist *playlist);
 
 /**
  * Find songs in the playlist.
  */
 void
-playlist_print_find(struct client *client, const struct playlist *playlist,
+playlist_print_find(Client *client, const struct playlist *playlist,
 		    const SongFilter &filter);
 
 /**
  * Print detailed changes since the specified playlist version.
  */
 void
-playlist_print_changes_info(struct client *client,
+playlist_print_changes_info(Client *client,
 			    const struct playlist *playlist,
 			    uint32_t version);
 
@@ -79,7 +79,7 @@ playlist_print_changes_info(struct client *client,
  * Print changes since the specified playlist version, position only.
  */
 void
-playlist_print_changes_position(struct client *client,
+playlist_print_changes_position(Client *client,
 				const struct playlist *playlist,
 				uint32_t version);
 
@@ -92,7 +92,7 @@ playlist_print_changes_position(struct client *client,
  * @return true on success, false if the playlist does not exist
  */
 bool
-spl_print(struct client *client, const char *name_utf8, bool detail,
+spl_print(Client *client, const char *name_utf8, bool detail,
 	  GError **error_r);
 
 /**
@@ -104,6 +104,6 @@ spl_print(struct client *client, const char *name_utf8, bool detail,
  * @return true on success, false if the playlist does not exist
  */
 bool
-playlist_file_print(struct client *client, const char *uri, bool detail);
+playlist_file_print(Client *client, const char *uri, bool detail);
 
 #endif

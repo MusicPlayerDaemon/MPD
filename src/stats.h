@@ -22,7 +22,7 @@
 
 #include <glib.h>
 
-struct client;
+class Client;
 
 struct stats {
 	GTimer *timer;
@@ -50,6 +50,6 @@ void stats_global_finish(void);
 void stats_update(void);
 
 void
-stats_print(struct client *client);
+stats_print(Client *client);
 
 #endif

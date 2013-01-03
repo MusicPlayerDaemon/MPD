@@ -30,7 +30,7 @@
 #include <assert.h>
 
 enum command_return
-handle_subscribe(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_subscribe(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	assert(argc == 2);
 
@@ -59,7 +59,7 @@ handle_subscribe(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_unsubscribe(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_unsubscribe(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	assert(argc == 2);
 
@@ -81,7 +81,7 @@ collect_channels(gpointer data, gpointer user_data)
 {
 	struct channels_context *context =
 		(struct channels_context *)user_data;
-	const struct client *client = (const struct client *)data;
+	const Client *client = (const Client *)data;
 
 	for (GSList *i = client->subscriptions; i != NULL;
 	     i = g_slist_next(i)) {
@@ -92,7 +92,7 @@ collect_channels(gpointer data, gpointer user_data)
 }
 
 enum command_return
-handle_channels(struct client *client,
+handle_channels(Client *client,
 		G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	assert(argc == 1);
@@ -108,7 +108,7 @@ handle_channels(struct client *client,
 }
 
 enum command_return
-handle_read_messages(struct client *client,
+handle_read_messages(Client *client,
 		     G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	assert(argc == 1);
@@ -139,14 +139,14 @@ send_message(gpointer data, gpointer user_data)
 {
 	struct send_message_context *context =
 		(struct send_message_context *)user_data;
-	struct client *client = (struct client *)data;
+	Client *client = (Client *)data;
 
 	if (client_push_message(client, &context->msg))
 		context->sent = true;
 }
 
 enum command_return
-handle_send_message(struct client *client,
+handle_send_message(Client *client,
 		    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	assert(argc == 3);

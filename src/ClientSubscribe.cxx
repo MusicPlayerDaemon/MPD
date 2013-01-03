@@ -29,7 +29,7 @@ extern "C" {
 
 G_GNUC_PURE
 static GSList *
-client_find_subscription(const struct client *client, const char *channel)
+client_find_subscription(const Client *client, const char *channel)
 {
 	for (GSList *i = client->subscriptions; i != NULL; i = g_slist_next(i))
 		if (strcmp((const char *)i->data, channel) == 0)
@@ -39,7 +39,7 @@ client_find_subscription(const struct client *client, const char *channel)
 }
 
 enum client_subscribe_result
-client_subscribe(struct client *client, const char *channel)
+client_subscribe(Client *client, const char *channel)
 {
 	assert(client != NULL);
 	assert(channel != NULL);
@@ -63,7 +63,7 @@ client_subscribe(struct client *client, const char *channel)
 }
 
 bool
-client_unsubscribe(struct client *client, const char *channel)
+client_unsubscribe(Client *client, const char *channel)
 {
 	GSList *i = client_find_subscription(client, channel);
 	if (i == NULL)
@@ -83,7 +83,7 @@ client_unsubscribe(struct client *client, const char *channel)
 }
 
 void
-client_unsubscribe_all(struct client *client)
+client_unsubscribe_all(Client *client)
 {
 	for (GSList *i = client->subscriptions; i != NULL; i = g_slist_next(i))
 		g_free(i->data);
@@ -94,7 +94,7 @@ client_unsubscribe_all(struct client *client)
 }
 
 bool
-client_push_message(struct client *client, const struct client_message *msg)
+client_push_message(Client *client, const struct client_message *msg)
 {
 	assert(client != NULL);
 	assert(msg != NULL);
@@ -115,7 +115,7 @@ client_push_message(struct client *client, const struct client_message *msg)
 }
 
 GSList *
-client_read_messages(struct client *client)
+client_read_messages(Client *client)
 {
 	GSList *messages = g_slist_reverse(client->messages);
 

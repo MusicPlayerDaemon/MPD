@@ -37,7 +37,7 @@ extern "C" {
 #include <string.h>
 
 enum command_return
-handle_add(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_add(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	char *uri = argv[1];
 	enum playlist_result result;
@@ -76,7 +76,7 @@ handle_add(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_addid(struct client *client, int argc, char *argv[])
+handle_addid(Client *client, int argc, char *argv[])
 {
 	char *uri = argv[1];
 	unsigned added_id;
@@ -128,7 +128,7 @@ handle_addid(struct client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_delete(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_delete(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned start, end;
 	enum playlist_result result;
@@ -142,7 +142,7 @@ handle_delete(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_deleteid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_deleteid(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned id;
 	enum playlist_result result;
@@ -155,7 +155,7 @@ handle_deleteid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_playlist(struct client *client,
+handle_playlist(Client *client,
 	        G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	playlist_print_uris(client, &g_playlist);
@@ -163,7 +163,7 @@ handle_playlist(struct client *client,
 }
 
 enum command_return
-handle_shuffle(G_GNUC_UNUSED struct client *client,
+handle_shuffle(G_GNUC_UNUSED Client *client,
 	       G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	unsigned start = 0, end = queue_length(&g_playlist.queue);
@@ -175,7 +175,7 @@ handle_shuffle(G_GNUC_UNUSED struct client *client,
 }
 
 enum command_return
-handle_clear(G_GNUC_UNUSED struct client *client,
+handle_clear(G_GNUC_UNUSED Client *client,
 	     G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	playlist_clear(&g_playlist, client->player_control);
@@ -183,7 +183,7 @@ handle_clear(G_GNUC_UNUSED struct client *client,
 }
 
 enum command_return
-handle_plchanges(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_plchanges(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	uint32_t version;
 
@@ -195,7 +195,7 @@ handle_plchanges(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_plchangesposid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_plchangesposid(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	uint32_t version;
 
@@ -207,7 +207,7 @@ handle_plchangesposid(struct client *client, G_GNUC_UNUSED int argc, char *argv[
 }
 
 enum command_return
-handle_playlistinfo(struct client *client, int argc, char *argv[])
+handle_playlistinfo(Client *client, int argc, char *argv[])
 {
 	unsigned start = 0, end = G_MAXUINT;
 	bool ret;
@@ -224,7 +224,7 @@ handle_playlistinfo(struct client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_playlistid(struct client *client, int argc, char *argv[])
+handle_playlistid(Client *client, int argc, char *argv[])
 {
 	if (argc >= 2) {
 		unsigned id;
@@ -243,7 +243,7 @@ handle_playlistid(struct client *client, int argc, char *argv[])
 }
 
 static enum command_return
-handle_playlist_match(struct client *client, int argc, char *argv[],
+handle_playlist_match(Client *client, int argc, char *argv[],
 		      bool fold_case)
 {
 	SongFilter filter;
@@ -257,19 +257,19 @@ handle_playlist_match(struct client *client, int argc, char *argv[],
 }
 
 enum command_return
-handle_playlistfind(struct client *client, int argc, char *argv[])
+handle_playlistfind(Client *client, int argc, char *argv[])
 {
 	return handle_playlist_match(client, argc, argv, false);
 }
 
 enum command_return
-handle_playlistsearch(struct client *client, int argc, char *argv[])
+handle_playlistsearch(Client *client, int argc, char *argv[])
 {
 	return handle_playlist_match(client, argc, argv, true);
 }
 
 enum command_return
-handle_prio(struct client *client, int argc, char *argv[])
+handle_prio(Client *client, int argc, char *argv[])
 {
 	unsigned priority;
 
@@ -301,7 +301,7 @@ handle_prio(struct client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_prioid(struct client *client, int argc, char *argv[])
+handle_prioid(Client *client, int argc, char *argv[])
 {
 	unsigned priority;
 
@@ -331,7 +331,7 @@ handle_prioid(struct client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_move(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_move(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned start, end;
 	int to;
@@ -347,7 +347,7 @@ handle_move(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_moveid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_moveid(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned id;
 	int to;
@@ -363,7 +363,7 @@ handle_moveid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_swap(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_swap(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned song1, song2;
 	enum playlist_result result;
@@ -378,7 +378,7 @@ handle_swap(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_swapid(struct client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_swapid(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned id1, id2;
 	enum playlist_result result;

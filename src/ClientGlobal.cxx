@@ -58,7 +58,7 @@ void client_manager_init(void)
 static void client_close_all(void)
 {
 	while (!client_list_is_empty()) {
-		struct client *client = client_list_get_first();
+		Client *client = client_list_get_first();
 
 		client_close(client);
 	}

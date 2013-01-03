@@ -29,7 +29,7 @@
 #define CLIENT_LIST_MODE_END "command_list_end"
 
 static enum command_return
-client_process_command_list(struct client *client, bool list_ok, GSList *list)
+client_process_command_list(Client *client, bool list_ok, GSList *list)
 {
 	enum command_return ret = COMMAND_RETURN_OK;
 	unsigned num = 0;
@@ -51,7 +51,7 @@ client_process_command_list(struct client *client, bool list_ok, GSList *list)
 }
 
 enum command_return
-client_process_line(struct client *client, char *line)
+client_process_line(Client *client, char *line)
 {
 	enum command_return ret;
 
