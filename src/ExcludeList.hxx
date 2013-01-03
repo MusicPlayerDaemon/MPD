@@ -25,25 +25,54 @@
 #ifndef MPD_EXCLUDE_H
 #define MPD_EXCLUDE_H
 
+#include "gcc.h"
+
+#include <forward_list>
+
 #include <glib.h>
 
-/**
- * Loads and parses a .mpdignore file.
- */
-GSList *
-exclude_list_load(const char *path_fs);
+class ExcludeList {
+	class Pattern {
+		GPatternSpec *pattern;
 
-/**
- * Frees a list returned by exclude_list_load().
- */
-void
-exclude_list_free(GSList *list);
+	public:
+		Pattern(const char *_pattern)
+			:pattern(g_pattern_spec_new(_pattern)) {}
 
-/**
- * Checks whether one of the patterns in the .mpdignore file matches
- * the specified file name.
- */
-bool
-exclude_list_check(GSList *list, const char *name_fs);
+		Pattern(Pattern &&other)
+			:pattern(other.pattern) {
+			other.pattern = nullptr;
+		}
+
+		~Pattern() {
+			g_pattern_spec_free(pattern);
+		}
+
+		gcc_pure
+		bool Check(const char *name_fs) const {
+			return g_pattern_match_string(pattern, name_fs);
+		}
+	};
+
+	std::forward_list<Pattern> patterns;
+
+public:
+	gcc_pure
+	bool IsEmpty() const {
+		return patterns.empty();
+	}
+
+	/**
+	 * Loads and parses a .mpdignore file.
+	 */
+	bool LoadFile(const char *path_fs);
+
+	/**
+	 * Checks whether one of the patterns in the .mpdignore file matches
+	 * the specified file name.
+	 */
+	bool Check(const char *name_fs) const;
+};
+
 
 #endif

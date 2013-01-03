@@ -95,7 +95,8 @@ directory_set_stat(Directory *dir, const struct stat *st)
 }
 
 static void
-remove_excluded_from_directory(Directory *directory, GSList *exclude_list)
+remove_excluded_from_directory(Directory *directory,
+			       const ExcludeList &exclude_list)
 {
 	db_lock();
 
@@ -103,7 +104,7 @@ remove_excluded_from_directory(Directory *directory, GSList *exclude_list)
 	directory_for_each_child_safe(child, n, directory) {
 		char *name_fs = utf8_to_fs_charset(child->GetName());
 
-		if (exclude_list_check(exclude_list, name_fs)) {
+		if (exclude_list.Check(name_fs)) {
 			delete_directory(child);
 			modified = true;
 		}
@@ -116,7 +117,7 @@ remove_excluded_from_directory(Directory *directory, GSList *exclude_list)
 		assert(song->parent == directory);
 
 		char *name_fs = utf8_to_fs_charset(song->uri);
-		if (exclude_list_check(exclude_list, name_fs)) {
+		if (exclude_list.Check(name_fs)) {
 			delete_song(directory, song);
 			modified = true;
 		}
@@ -371,12 +372,13 @@ update_directory(Directory *directory, const struct stat *st)
 	}
 
 	char *exclude_path_fs  = g_build_filename(path_fs, ".mpdignore", NULL);
-	GSList *exclude_list = exclude_list_load(exclude_path_fs);
+	ExcludeList exclude_list;
+	exclude_list.LoadFile(exclude_path_fs);
 	g_free(exclude_path_fs);
 
 	g_free(path_fs);
 
-	if (exclude_list != NULL)
+	if (!exclude_list.IsEmpty())
 		remove_excluded_from_directory(directory, exclude_list);
 
 	purge_deleted_from_directory(directory);
@@ -386,8 +388,7 @@ update_directory(Directory *directory, const struct stat *st)
 		char *utf8;
 		struct stat st2;
 
-		if (skip_path(ent->d_name) ||
-		    exclude_list_check(exclude_list, ent->d_name))
+		if (skip_path(ent->d_name) || exclude_list.Check(ent->d_name))
 			continue;
 
 		utf8 = fs_charset_to_utf8(ent->d_name);
@@ -407,8 +408,6 @@ update_directory(Directory *directory, const struct stat *st)
 
 		g_free(utf8);
 	}
-
-	exclude_list_free(exclude_list);
 
 	closedir(dir);
 

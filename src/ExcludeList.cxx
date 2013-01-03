@@ -34,8 +34,8 @@ extern "C" {
 #include <stdio.h>
 #include <errno.h>
 
-GSList *
-exclude_list_load(const char *path_fs)
+bool
+ExcludeList::LoadFile(const char *path_fs)
 {
 	assert(path_fs != NULL);
 
@@ -48,10 +48,9 @@ exclude_list_load(const char *path_fs)
 			g_free(path_utf8);
 		}
 
-		return NULL;
+		return false;
 	}
 
-	GSList *list = NULL;
 	char line[1024];
 	while (fgets(line, sizeof(line), file) != NULL) {
 		char *p = strchr(line, '#');
@@ -60,37 +59,24 @@ exclude_list_load(const char *path_fs)
 
 		p = g_strstrip(line);
 		if (*p != 0)
-			list = g_slist_prepend(list, g_pattern_spec_new(p));
+			patterns.emplace_front(p);
 	}
 
 	fclose(file);
 
-	return list;
-}
-
-void
-exclude_list_free(GSList *list)
-{
-	while (list != NULL) {
-		GPatternSpec *pattern = (GPatternSpec *)list->data;
-		g_pattern_spec_free(pattern);
-		list = g_slist_remove(list, list->data);
-	}
+	return true;
 }
 
 bool
-exclude_list_check(GSList *list, const char *name_fs)
+ExcludeList::Check(const char *name_fs) const
 {
 	assert(name_fs != NULL);
 
 	/* XXX include full path name in check */
 
-	for (; list != NULL; list = list->next) {
-		GPatternSpec *pattern = (GPatternSpec *)list->data;
-
-		if (g_pattern_match_string(pattern, name_fs))
+	for (const auto &i : patterns)
+		if (i.Check(name_fs))
 			return true;
-	}
 
 	return false;
 }
