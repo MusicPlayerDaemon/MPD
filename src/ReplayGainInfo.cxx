@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,10 @@
  */
 
 #include "config.h"
+
+extern "C" {
 #include "replay_gain_info.h"
+}
 
 float
 replay_gain_tuple_scale(const struct replay_gain_tuple *tuple, float preamp, float missing_preamp, bool peak_limit)

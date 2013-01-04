@@ -282,8 +282,8 @@ src_mpd_SOURCES = \
 	src/Queue.cxx src/Queue.hxx \
 	src/QueuePrint.cxx src/QueuePrint.hxx \
 	src/QueueSave.cxx src/QueueSave.hxx \
-	src/replay_gain_config.c \
-	src/replay_gain_info.c \
+	src/ReplayGainConfig.cxx \
+	src/ReplayGainInfo.cxx \
 	src/sig_handlers.c \
 	src/Song.cxx \
 	src/SongUpdate.cxx \
@@ -1102,7 +1102,7 @@ test_DumpPlaylist_SOURCES = test/DumpPlaylist.cxx \
 
 if HAVE_FLAC
 test_DumpPlaylist_SOURCES += \
-	src/replay_gain_info.c \
+	src/ReplayGainInfo.cxx \
 	src/decoder/FLACMetaData.cxx
 endif
 
@@ -1119,7 +1119,7 @@ test_run_decoder_SOURCES = test/run_decoder.c \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
 	src/tag.c src/tag_pool.c src/tag_handler.c \
-	src/replay_gain_info.c \
+	src/ReplayGainInfo.cxx \
 	src/uri.c \
 	src/fd_util.c \
 	src/audio_check.c \
@@ -1141,7 +1141,7 @@ test_read_tags_SOURCES = test/read_tags.c \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
 	src/tag.c src/tag_pool.c src/tag_handler.c \
-	src/replay_gain_info.c \
+	src/ReplayGainInfo.cxx \
 	src/uri.c \
 	src/fd_util.c \
 	src/audio_check.c \
@@ -1169,8 +1169,8 @@ test_run_filter_SOURCES = test/run_filter.c \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \
-	src/replay_gain_config.c \
-	src/replay_gain_info.c \
+	src/ReplayGainConfig.cxx \
+	src/ReplayGainInfo.cxx \
 	src/AudioCompress/compress.c
 
 if ENABLE_DESPOTIFY
@@ -1280,8 +1280,8 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/filter_plugin.c \
 	src/filter_config.c \
 	src/AudioCompress/compress.c \
-	src/replay_gain_info.c \
-	src/replay_gain_config.c \
+	src/ReplayGainInfo.cxx \
+	src/ReplayGainConfig.cxx \
 	src/fd_util.c \
 	src/server_socket.c
 
