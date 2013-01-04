@@ -24,11 +24,13 @@
 #include "gerror.h"
 
 class SongFilter;
+struct playlist;
 struct player_control;
 
-gcc_nonnull(1,2)
+gcc_nonnull(2,3)
 bool
-findAddIn(struct player_control *pc, const char *name,
+findAddIn(struct playlist &playlist, struct player_control *pc,
+	  const char *name,
 	  const SongFilter *filter, GError **error_r);
 
 #endif

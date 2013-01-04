@@ -27,10 +27,11 @@
 #include <functional>
 
 static bool
-AddToQueue(struct player_control *pc, song &song, GError **error_r)
+AddToQueue(struct playlist &playlist, struct player_control *pc,
+	   song &song, GError **error_r)
 {
 	enum playlist_result result =
-		playlist_append_song(&g_playlist, pc, &song, NULL);
+		playlist_append_song(&playlist, pc, &song, NULL);
 	if (result != PLAYLIST_RESULT_SUCCESS) {
 		g_set_error(error_r, playlist_quark(), result,
 			    "Playlist error");
@@ -41,7 +42,8 @@ AddToQueue(struct player_control *pc, song &song, GError **error_r)
 }
 
 bool
-findAddIn(struct player_control *pc, const char *uri,
+findAddIn(struct playlist &playlist, struct player_control *pc,
+	  const char *uri,
 	  const SongFilter *filter, GError **error_r)
 {
 	const Database *db = GetDatabase(error_r);
@@ -51,6 +53,6 @@ findAddIn(struct player_control *pc, const char *uri,
 	const DatabaseSelection selection(uri, true, filter);
 
 	using namespace std::placeholders;
-	const auto f = std::bind(AddToQueue, pc, _1, _2);
+	const auto f = std::bind(AddToQueue, playlist, pc, _1, _2);
 	return db->Visit(selection, f, error_r);
 }
