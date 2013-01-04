@@ -20,7 +20,9 @@
 #ifndef MPD_COMMAND_LIST_BUILDER_HXX
 #define MPD_COMMAND_LIST_BUILDER_HXX
 
-#include <glib.h>
+#include <list>
+#include <string>
+
 #include <assert.h>
 
 class CommandListBuilder {
@@ -47,7 +49,7 @@ class CommandListBuilder {
 	/**
 	 * for when in list mode
 	 */
-	GSList *list;
+	std::list<std::string> list;
 
 	/**
 	 * Memory consumed by the list.
@@ -56,10 +58,7 @@ class CommandListBuilder {
 
 public:
 	CommandListBuilder()
-		:mode(Mode::DISABLED), list(nullptr), size(0) {}
-	~CommandListBuilder() {
-		Reset();
-	}
+		:mode(Mode::DISABLED), size(0) {}
 
 	/**
 	 * Is a command list currently being built?
@@ -86,7 +85,7 @@ public:
 	 * Begin building a command list.
 	 */
 	void Begin(bool ok) {
-		assert(list == nullptr);
+		assert(list.empty());
 		assert(mode == Mode::DISABLED);
 
 		mode = (Mode)ok;
@@ -100,13 +99,10 @@ public:
 	/**
 	 * Finishes the list and returns it.
 	 */
-	GSList *Commit() {
+	std::list<std::string> &&Commit() {
 		assert(IsActive());
 
-		/* for scalability reasons, we have prepended each new
-		   command; now we have to reverse it to restore the
-		   correct order */
-		return list = g_slist_reverse(list);
+		return std::move(list);
 	}
 };
 

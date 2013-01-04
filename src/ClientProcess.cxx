@@ -29,13 +29,14 @@
 #define CLIENT_LIST_MODE_END "command_list_end"
 
 static enum command_return
-client_process_command_list(Client *client, bool list_ok, GSList *list)
+client_process_command_list(Client *client, bool list_ok,
+			    std::list<std::string> &&list)
 {
 	enum command_return ret = COMMAND_RETURN_OK;
 	unsigned num = 0;
 
-	for (GSList *cur = list; cur != NULL; cur = g_slist_next(cur)) {
-		char *cmd = (char *)cur->data;
+	for (auto &&i : list) {
+		char *cmd = &*i.begin();
 
 		g_debug("command_process_list: process command \"%s\"",
 			cmd);
@@ -81,11 +82,11 @@ client_process_line(Client *client, char *line)
 			g_debug("[%u] process command list",
 				client->num);
 
-			auto cmd_list = client->cmd_list.Commit();
+			auto &&cmd_list = client->cmd_list.Commit();
 
 			ret = client_process_command_list(client,
 							  client->cmd_list.IsOKMode(),
-							  cmd_list);
+							  std::move(cmd_list));
 			g_debug("[%u] process command "
 				"list returned %i", client->num, ret);
 

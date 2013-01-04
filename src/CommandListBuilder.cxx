@@ -25,12 +25,7 @@
 void
 CommandListBuilder::Reset()
 {
-	for (GSList *tmp = list; tmp != NULL; tmp = g_slist_next(tmp))
-		g_free(tmp->data);
-
-	g_slist_free(list);
-
-	list = nullptr;
+	list.clear();
 	mode = Mode::DISABLED;
 }
 
@@ -42,6 +37,6 @@ CommandListBuilder::Add(const char *cmd)
 	if (size > client_max_command_list_size)
 		return false;
 
-	list = g_slist_prepend(list, g_strdup(cmd));
+	list.emplace_back(cmd);
 	return true;
 }
