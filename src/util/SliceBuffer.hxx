@@ -20,9 +20,8 @@
 #ifndef MPD_SLICE_BUFFER_HXX
 #define MPD_SLICE_BUFFER_HXX
 
+#include "HugeAllocator.hxx"
 #include "gcc.h"
-
-#include <glib.h>
 
 #include <utility>
 #include <new>
@@ -66,10 +65,15 @@ class SliceBuffer {
 	 */
 	Slice *available;
 
+	size_t CalcAllocationSize() const {
+		return n_max * sizeof(Slice);
+	}
+
 public:
 	SliceBuffer(unsigned _count)
 		:n_max(_count), n_initialized(0), n_allocated(0),
-		 data(g_new(Slice, n_max)), available(nullptr) {
+		 data((Slice *)HugeAllocate(CalcAllocationSize())),
+		 available(nullptr) {
 		assert(n_max > 0);
 	}
 
@@ -78,11 +82,18 @@ public:
 		   assertion checks for leaks */
 		assert(n_allocated == 0);
 
-		g_free(data);
+		HugeFree(data, CalcAllocationSize());
 	}
 
 	SliceBuffer(const SliceBuffer &other) = delete;
 	SliceBuffer &operator=(const SliceBuffer &other) = delete;
+
+	/**
+	 * @return true if buffer allocation (by the constructor) has failed
+	 */
+	bool IsOOM() {
+		return data == nullptr;
+	}
 
 	unsigned GetCapacity() const {
 		return n_max;
@@ -136,6 +147,14 @@ public:
 		slice->next = available;
 		available = slice;
 		--n_allocated;
+
+		/* give memory back to the kernel when the last slice
+		   was freed */
+		if (n_allocated == 0) {
+			HugeDiscard(data, CalcAllocationSize());
+			n_initialized = 0;
+			available = nullptr;
+		}
 	}
 };
 

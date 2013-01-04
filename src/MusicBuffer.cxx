@@ -21,6 +21,7 @@
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
 #include "util/SliceBuffer.hxx"
+#include "mpd_error.h"
 
 #include <glib.h>
 
@@ -32,7 +33,10 @@ struct music_buffer : public SliceBuffer<music_chunk>  {
 
 	music_buffer(unsigned num_chunks)
 		:SliceBuffer(num_chunks),
-		 mutex(g_mutex_new()) {}
+		 mutex(g_mutex_new()) {
+		if (IsOOM())
+			MPD_ERROR("Failed to allocate buffer");
+	}
 
 	~music_buffer() {
 		g_mutex_free(mutex);
