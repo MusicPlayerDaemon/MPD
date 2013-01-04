@@ -20,6 +20,7 @@
 #ifndef MPD_ERROR_H
 #define MPD_ERROR_H
 
+#include <glib.h>
 #include <stdlib.h>
 
 /* This macro is used as an intermediate step to a proper error handling
