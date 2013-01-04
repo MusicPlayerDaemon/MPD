@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
-#include "pipe.h"
-#include "buffer.h"
-#include "chunk.h"
+#include "MusicPipe.hxx"
+#include "MusicBuffer.hxx"
+#include "MusicChunk.hxx"
 
 #include <glib.h>
 
@@ -137,7 +137,7 @@ music_pipe_shift(struct music_pipe *mp)
 
 #ifndef NDEBUG
 		/* poison the "next" reference */
-		chunk->next = (void*)0x01010101;
+		chunk->next = (struct music_chunk *)(void *)0x01010101;
 
 		if (mp->size == 0)
 			audio_format_clear(&mp->audio_format);

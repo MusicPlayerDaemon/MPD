@@ -19,11 +19,8 @@
 
 #include "config.h"
 #include "DecoderControl.hxx"
+#include "MusicPipe.hxx"
 #include "song.h"
-
-extern "C" {
-#include "pipe.h"
-}
 
 #include <assert.h>
 

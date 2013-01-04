@@ -20,14 +20,11 @@
 #include "config.h"
 #include "DecoderInternal.hxx"
 #include "DecoderControl.hxx"
-
-extern "C" {
-#include "pipe.h"
-#include "buffer.h"
-}
+#include "MusicPipe.hxx"
+#include "MusicBuffer.hxx"
+#include "MusicChunk.hxx"
 
 #include "input_stream.h"
-#include "chunk.h"
 
 #include <assert.h>
 

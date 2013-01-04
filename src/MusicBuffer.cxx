@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "buffer.h"
-#include "chunk.h"
+#include "MusicBuffer.hxx"
+#include "MusicChunk.hxx"
 #include "poison.h"
 
 #include <glib.h>

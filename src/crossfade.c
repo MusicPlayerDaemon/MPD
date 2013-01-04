@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "crossfade.h"
-#include "chunk.h"
+#include "MusicChunk.hxx"
 #include "audio_format.h"
 #include "tag.h"
 

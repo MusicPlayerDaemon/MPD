@@ -23,8 +23,6 @@
 extern "C" {
 #include "output_api.h"
 #include "output_internal.h"
-#include "chunk.h"
-#include "pipe.h"
 #include "player_control.h"
 #include "pcm_mix.h"
 #include "filter_plugin.h"
@@ -32,6 +30,9 @@ extern "C" {
 #include "filter/replay_gain_filter_plugin.h"
 #include "notify.h"
 }
+
+#include "MusicPipe.hxx"
+#include "MusicChunk.hxx"
 
 #include "mpd_error.h"
 #include "gcc.h"

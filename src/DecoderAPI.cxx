@@ -22,12 +22,12 @@
 extern "C" {
 #include "decoder_api.h"
 #include "audio_config.h"
-#include "buffer.h"
-#include "pipe.h"
-#include "chunk.h"
 #include "replay_gain_config.h"
 }
 
+#include "MusicChunk.hxx"
+#include "MusicBuffer.hxx"
+#include "MusicPipe.hxx"
 #include "DecoderControl.hxx"
 #include "DecoderInternal.hxx"
 #include "song.h"

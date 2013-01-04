@@ -22,7 +22,7 @@
 #include "CommandLine.hxx"
 #include "PlaylistFile.hxx"
 #include "UpdateGlue.hxx"
-#include "chunk.h"
+#include "MusicChunk.hxx"
 #include "StateFile.hxx"
 #include "PlayerThread.hxx"
 #include "Mapper.hxx"

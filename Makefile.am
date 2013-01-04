@@ -110,9 +110,6 @@ mpd_headers = \
 	src/daemon.h \
 	src/AudioCompress/config.h \
 	src/AudioCompress/compress.h \
-	src/buffer.h \
-	src/pipe.h \
-	src/chunk.h \
 	src/path.h \
 	src/open.h \
 	src/output/httpd_client.h \
@@ -260,9 +257,9 @@ src_mpd_SOURCES = \
 	src/event_pipe.c \
 	src/daemon.c \
 	src/AudioCompress/compress.c \
-	src/buffer.c \
-	src/pipe.c \
-	src/chunk.c \
+	src/MusicBuffer.cxx src/MusicBuffer.hxx \
+	src/MusicPipe.cxx src/MusicPipe.hxx \
+	src/MusicChunk.cxx src/MusicChunk.hxx \
 	src/path.c \
 	src/Mapper.cxx src/Mapper.hxx \
 	src/page.c \

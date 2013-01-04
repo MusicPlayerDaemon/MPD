@@ -22,8 +22,6 @@
 
 #include "gcc.h"
 
-#include <stdbool.h>
-
 #ifndef NDEBUG
 struct audio_format;
 #endif

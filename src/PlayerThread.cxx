@@ -21,6 +21,9 @@
 #include "PlayerThread.hxx"
 #include "DecoderThread.hxx"
 #include "DecoderControl.hxx"
+#include "MusicPipe.hxx"
+#include "MusicBuffer.hxx"
+#include "MusicChunk.hxx"
 #include "song.h"
 #include "Main.hxx"
 #include "mpd_error.h"
@@ -31,10 +34,7 @@ extern "C" {
 #include "event_pipe.h"
 #include "crossfade.h"
 #include "tag.h"
-#include "pipe.h"
-#include "chunk.h"
 #include "idle.h"
-#include "buffer.h"
 }
 
 #include <glib.h>

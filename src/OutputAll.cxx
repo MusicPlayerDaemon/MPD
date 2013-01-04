@@ -26,20 +26,16 @@ extern "C" {
 
 #include "OutputControl.hxx"
 #include "OutputError.hxx"
+#include "MusicBuffer.hxx"
+#include "MusicPipe.hxx"
+#include "MusicChunk.hxx"
 #include "mpd_error.h"
 
 extern "C" {
 #include "player_control.h"
 #include "conf.h"
-#include "chunk.h"
-#include "pipe.h"
-#include "buffer.h"
 #include "notify.h"
 }
-
-#ifndef NDEBUG
-#include "chunk.h"
-#endif
 
 #include <assert.h>
 #include <string.h>
