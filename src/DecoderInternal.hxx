@@ -81,12 +81,15 @@ struct decoder {
 	 */
 	unsigned replay_gain_serial;
 
-#ifdef __cplusplus
-	decoder(decoder_control *_dc, bool _initial_seek_pending)
+	decoder(decoder_control *_dc, bool _initial_seek_pending,
+		struct tag *_tag)
 		:dc(_dc),
+		 timestamp(0),
 		 initial_seek_pending(_initial_seek_pending),
-		 initial_seek_running(false) {}
-#endif
+		 initial_seek_running(false),
+		 seeking(false),
+		 song_tag(_tag), stream_tag(nullptr), decoder_tag(nullptr),
+		 chunk(nullptr) {}
 };
 
 /**

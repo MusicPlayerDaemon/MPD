@@ -380,16 +380,10 @@ static void
 decoder_run_song(struct decoder_control *dc,
 		 const struct song *song, const char *uri)
 {
-	decoder decoder(dc, dc->start_ms > 0);
+	decoder decoder(dc, dc->start_ms > 0,
+			song->tag != NULL && song_is_file(song)
+			? tag_dup(song->tag) : nullptr);
 	int ret;
-
-	decoder.timestamp = 0.0;
-	decoder.seeking = false;
-	decoder.song_tag = song->tag != NULL && song_is_file(song)
-		? tag_dup(song->tag) : NULL;
-	decoder.stream_tag = NULL;
-	decoder.decoder_tag = NULL;
-	decoder.chunk = NULL;
 
 	dc->state = DECODE_STATE_START;
 
