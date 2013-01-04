@@ -90,7 +90,11 @@ struct decoder {
 		 seeking(false),
 		 song_tag(_tag), stream_tag(nullptr), decoder_tag(nullptr),
 		 chunk(nullptr),
-		 replay_gain_serial(0) {}
+		 replay_gain_serial(0) {
+		pcm_convert_init(&conv_state);
+	}
+
+	~decoder();
 };
 
 /**

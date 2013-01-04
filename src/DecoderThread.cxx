@@ -389,29 +389,16 @@ decoder_run_song(struct decoder_control *dc,
 
 	decoder_command_finished_locked(dc);
 
-	pcm_convert_init(&decoder.conv_state);
-
 	ret = song_is_file(song)
 		? decoder_run_file(&decoder, uri)
 		: decoder_run_stream(&decoder, uri);
 
 	decoder_unlock(dc);
 
-	pcm_convert_deinit(&decoder.conv_state);
-
 	/* flush the last chunk */
 
 	if (decoder.chunk != NULL)
 		decoder_flush_chunk(&decoder);
-
-	if (decoder.song_tag != NULL)
-		tag_free(decoder.song_tag);
-
-	if (decoder.stream_tag != NULL)
-		tag_free(decoder.stream_tag);
-
-	if (decoder.decoder_tag != NULL)
-		tag_free(decoder.decoder_tag);
 
 	decoder_lock(dc);
 

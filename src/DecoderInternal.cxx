@@ -24,9 +24,30 @@
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
 
+extern "C" {
+#include "tag.h"
+}
+
 #include "input_stream.h"
 
 #include <assert.h>
+
+decoder::~decoder()
+{
+	/* caller must flush the chunk */
+	assert(chunk == nullptr);
+
+	if (song_tag != nullptr)
+		tag_free(song_tag);
+
+	if (stream_tag != nullptr)
+		tag_free(stream_tag);
+
+	if (decoder_tag != nullptr)
+		tag_free(decoder_tag);
+
+	pcm_convert_deinit(&conv_state);
+}
 
 /**
  * All chunks are full of decoded data; wait for the player to free
