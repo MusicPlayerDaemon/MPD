@@ -89,7 +89,8 @@ struct decoder {
 		 initial_seek_running(false),
 		 seeking(false),
 		 song_tag(_tag), stream_tag(nullptr), decoder_tag(nullptr),
-		 chunk(nullptr) {}
+		 chunk(nullptr),
+		 replay_gain_serial(0) {}
 };
 
 /**
