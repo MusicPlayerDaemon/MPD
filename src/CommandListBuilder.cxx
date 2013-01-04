@@ -25,23 +25,23 @@
 void
 CommandListBuilder::Reset()
 {
-	for (GSList *tmp = cmd_list; tmp != NULL; tmp = g_slist_next(tmp))
+	for (GSList *tmp = list; tmp != NULL; tmp = g_slist_next(tmp))
 		g_free(tmp->data);
 
-	g_slist_free(cmd_list);
+	g_slist_free(list);
 
-	cmd_list = nullptr;
-	cmd_list_OK = -1;
+	list = nullptr;
+	mode = Mode::DISABLED;
 }
 
 bool
 CommandListBuilder::Add(const char *cmd)
 {
 	size_t len = strlen(cmd) + 1;
-	cmd_list_size += len;
-	if (cmd_list_size > client_max_command_list_size)
+	size += len;
+	if (size > client_max_command_list_size)
 		return false;
 
-	cmd_list = g_slist_prepend(cmd_list, g_strdup(cmd));
+	list = g_slist_prepend(list, g_strdup(cmd));
 	return true;
 }

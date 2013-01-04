@@ -25,23 +25,38 @@
 
 class CommandListBuilder {
 	/**
-	 * for when in list mode
-	 */
-	GSList *cmd_list;
-
-	/**
 	 * print OK after each command execution
 	 */
-	int cmd_list_OK;
+	enum class Mode {
+		/**
+		 * Not active.
+		 */
+		DISABLED = -1,
+
+		/**
+		 * Enabled in normal list mode.
+		 */
+		ENABLED = false,
+
+		/**
+		 * Enabled in "list_OK" mode.
+		 */
+		OK = true,
+	} mode;
 
 	/**
-	 * mem cmd_list consumes
+	 * for when in list mode
 	 */
-	size_t cmd_list_size;
+	GSList *list;
+
+	/**
+	 * Memory consumed by the list.
+	 */
+	size_t size;
 
 public:
 	CommandListBuilder()
-		:cmd_list(nullptr), cmd_list_OK(-1), cmd_list_size(0) {}
+		:mode(Mode::DISABLED), list(nullptr), size(0) {}
 	~CommandListBuilder() {
 		Reset();
 	}
@@ -50,9 +65,7 @@ public:
 	 * Is a command list currently being built?
 	 */
 	bool IsActive() const {
-		assert(cmd_list_OK >= -1 && cmd_list_OK <= 1);
-
-		return cmd_list_OK >= 0;
+		return mode != Mode::DISABLED;
 	}
 
 	/**
@@ -61,7 +74,7 @@ public:
 	bool IsOKMode() const {
 		assert(IsActive());
 
-		return (bool)cmd_list_OK;
+		return (bool)mode;
 	}
 
 	/**
@@ -73,10 +86,10 @@ public:
 	 * Begin building a command list.
 	 */
 	void Begin(bool ok) {
-		assert(cmd_list == nullptr);
-		assert(cmd_list_OK == -1);
+		assert(list == nullptr);
+		assert(mode == Mode::DISABLED);
 
-		cmd_list_OK = (int)ok;
+		mode = (Mode)ok;
 	}
 
 	/**
@@ -93,7 +106,7 @@ public:
 		/* for scalability reasons, we have prepended each new
 		   command; now we have to reverse it to restore the
 		   correct order */
-		return cmd_list = g_slist_reverse(cmd_list);
+		return list = g_slist_reverse(list);
 	}
 };
 
