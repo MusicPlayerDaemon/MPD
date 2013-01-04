@@ -56,7 +56,7 @@ handle_save(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	enum playlist_result result;
 
-	result = spl_save_playlist(argv[1], &g_playlist);
+	result = spl_save_playlist(argv[1], &client->playlist);
 	return print_playlist_result(client, result);
 }
 
@@ -75,13 +75,13 @@ handle_load(Client *client, int argc, char *argv[])
 
 	result = playlist_open_into_queue(argv[1],
 					  start_index, end_index,
-					  &g_playlist,
+					  &client->playlist,
 					  client->player_control, true);
 	if (result != PLAYLIST_RESULT_NO_SUCH_LIST)
 		return print_playlist_result(client, result);
 
 	GError *error = NULL;
-	if (playlist_load_spl(&g_playlist, client->player_control,
+	if (playlist_load_spl(&client->playlist, client->player_control,
 			      argv[1], start_index, end_index,
 			      &error))
 		return COMMAND_RETURN_OK;

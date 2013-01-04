@@ -20,6 +20,7 @@
 #include "config.h"
 #include "Listen.hxx"
 #include "Main.hxx"
+#include "Playlist.hxx"
 #include "Client.hxx"
 
 extern "C" {
@@ -46,7 +47,8 @@ static void
 listen_callback(int fd, const struct sockaddr *address,
 		size_t address_length, int uid, G_GNUC_UNUSED void *ctx)
 {
-	client_new(global_player_control, fd, address, address_length, uid);
+	client_new(g_playlist, global_player_control,
+		   fd, address, address_length, uid);
 }
 
 static bool

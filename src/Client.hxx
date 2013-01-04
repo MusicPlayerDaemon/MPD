@@ -27,14 +27,16 @@
 #include <stdarg.h>
 
 struct sockaddr;
+struct playlist;
 struct player_control;
 class Client;
 
 void client_manager_init(void);
 void client_manager_deinit(void);
 
-void client_new(struct player_control *player_control,
-		int fd, const struct sockaddr *sa, size_t sa_length, int uid);
+void
+client_new(struct playlist &playlist, struct player_control *player_control,
+	   int fd, const struct sockaddr *sa, size_t sa_length, int uid);
 
 gcc_pure
 bool client_is_expired(const Client *client);

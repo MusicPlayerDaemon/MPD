@@ -65,7 +65,8 @@ handle_play(Client *client, int argc, char *argv[])
 
 	if (argc == 2 && !check_int(client, &song, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	result = playlist_play(&g_playlist, client->player_control, song);
+	result = playlist_play(&client->playlist, client->player_control,
+			       song);
 	return print_playlist_result(client, result);
 }
 
@@ -78,15 +79,16 @@ handle_playid(Client *client, int argc, char *argv[])
 	if (argc == 2 && !check_int(client, &id, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	result = playlist_play_id(&g_playlist, client->player_control, id);
+	result = playlist_play_id(&client->playlist, client->player_control,
+				  id);
 	return print_playlist_result(client, result);
 }
 
 enum command_return
-handle_stop(G_GNUC_UNUSED Client *client,
+handle_stop(Client *client,
 	    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	playlist_stop(&g_playlist, client->player_control);
+	playlist_stop(&client->playlist, client->player_control);
 	return COMMAND_RETURN_OK;
 }
 
@@ -94,7 +96,7 @@ enum command_return
 handle_currentsong(Client *client,
 		   G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	playlist_print_current(client, &g_playlist);
+	playlist_print_current(client, &client->playlist);
 	return COMMAND_RETURN_OK;
 }
 
@@ -138,6 +140,7 @@ handle_status(Client *client,
 		break;
 	}
 
+	const playlist &playlist = client->playlist;
 	client_printf(client,
 		      "volume: %i\n"
 		      COMMAND_STATUS_REPEAT ": %i\n"
@@ -151,23 +154,23 @@ handle_status(Client *client,
 		      COMMAND_STATUS_MIXRAMPDELAY ": %f\n"
 		      COMMAND_STATUS_STATE ": %s\n",
 		      volume_level_get(),
-		      playlist_get_repeat(&g_playlist),
-		      playlist_get_random(&g_playlist),
-		      playlist_get_single(&g_playlist),
-		      playlist_get_consume(&g_playlist),
-		      playlist_get_version(&g_playlist),
-		      playlist_get_length(&g_playlist),
+		      playlist_get_repeat(&playlist),
+		      playlist_get_random(&playlist),
+		      playlist_get_single(&playlist),
+		      playlist_get_consume(&playlist),
+		      playlist_get_version(&playlist),
+		      playlist_get_length(&playlist),
 		      (int)(pc_get_cross_fade(client->player_control) + 0.5),
 		      pc_get_mixramp_db(client->player_control),
 		      pc_get_mixramp_delay(client->player_control),
 		      state);
 
-	song = playlist_get_current_song(&g_playlist);
+	song = playlist_get_current_song(&playlist);
 	if (song >= 0) {
 		client_printf(client,
 			      COMMAND_STATUS_SONG ": %i\n"
 			      COMMAND_STATUS_SONGID ": %u\n",
-			      song, playlist_get_song_id(&g_playlist, song));
+			      song, playlist_get_song_id(&playlist, song));
 	}
 
 	if (player_status.state != PLAYER_STATE_STOP) {
@@ -200,37 +203,39 @@ handle_status(Client *client,
 		g_free(error);
 	}
 
-	song = playlist_get_next_song(&g_playlist);
+	song = playlist_get_next_song(&playlist);
 	if (song >= 0) {
 		client_printf(client,
 			      COMMAND_STATUS_NEXTSONG ": %i\n"
 			      COMMAND_STATUS_NEXTSONGID ": %u\n",
-			      song, playlist_get_song_id(&g_playlist, song));
+			      song, playlist_get_song_id(&playlist, song));
 	}
 
 	return COMMAND_RETURN_OK;
 }
 
 enum command_return
-handle_next(G_GNUC_UNUSED Client *client,
+handle_next(Client *client,
 	    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
+	playlist &playlist = client->playlist;
+
 	/* single mode is not considered when this is user who
 	 * wants to change song. */
-	const bool single = g_playlist.queue.single;
-	g_playlist.queue.single = false;
+	const bool single = playlist.queue.single;
+	playlist.queue.single = false;
 
-	playlist_next(&g_playlist, client->player_control);
+	playlist_next(&playlist, client->player_control);
 
-	g_playlist.queue.single = single;
+	playlist.queue.single = single;
 	return COMMAND_RETURN_OK;
 }
 
 enum command_return
-handle_previous(G_GNUC_UNUSED Client *client,
+handle_previous(Client *client,
 		G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	playlist_previous(&g_playlist, client->player_control);
+	playlist_previous(&client->playlist, client->player_control);
 	return COMMAND_RETURN_OK;
 }
 
@@ -241,7 +246,7 @@ handle_repeat(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (!check_bool(client, &status, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	playlist_set_repeat(&g_playlist, client->player_control, status);
+	playlist_set_repeat(&client->playlist, client->player_control, status);
 	return COMMAND_RETURN_OK;
 }
 
@@ -252,7 +257,7 @@ handle_single(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (!check_bool(client, &status, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	playlist_set_single(&g_playlist, client->player_control, status);
+	playlist_set_single(&client->playlist, client->player_control, status);
 	return COMMAND_RETURN_OK;
 }
 
@@ -263,7 +268,7 @@ handle_consume(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (!check_bool(client, &status, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	playlist_set_consume(&g_playlist, status);
+	playlist_set_consume(&client->playlist, status);
 	return COMMAND_RETURN_OK;
 }
 
@@ -274,7 +279,7 @@ handle_random(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (!check_bool(client, &status, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	playlist_set_random(&g_playlist, client->player_control, status);
+	playlist_set_random(&client->playlist, client->player_control, status);
 	return COMMAND_RETURN_OK;
 }
 
@@ -297,7 +302,7 @@ handle_seek(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (!check_unsigned(client, &seek_time, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
-	result = playlist_seek_song(&g_playlist, client->player_control,
+	result = playlist_seek_song(&client->playlist, client->player_control,
 				    song, seek_time);
 	return print_playlist_result(client, result);
 }
@@ -313,7 +318,8 @@ handle_seekid(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (!check_unsigned(client, &seek_time, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
-	result = playlist_seek_song_id(&g_playlist, client->player_control,
+	result = playlist_seek_song_id(&client->playlist,
+				       client->player_control,
 				       id, seek_time);
 	return print_playlist_result(client, result);
 }
@@ -328,7 +334,8 @@ handle_seekcur(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 
 	enum playlist_result result =
-		playlist_seek_current(&g_playlist, client->player_control,
+		playlist_seek_current(&client->playlist,
+				      client->player_control,
 				      seek_time, relative);
 	return print_playlist_result(client, result);
 }

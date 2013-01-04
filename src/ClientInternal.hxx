@@ -46,6 +46,7 @@ struct deferred_buffer {
 
 class Client {
 public:
+	struct playlist &playlist;
 	struct player_control *player_control;
 
 	GIOChannel *channel;
@@ -99,7 +100,8 @@ public:
 	 */
 	std::list<ClientMessage> messages;
 
-	Client(struct player_control *player_control,
+	Client(struct playlist &playlist,
+	       struct player_control *player_control,
 	       int fd, int uid, int num);
 	~Client();
 

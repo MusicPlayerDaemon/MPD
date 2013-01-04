@@ -45,9 +45,10 @@ extern "C" {
 
 static const char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
 
-Client::Client(struct player_control *_player_control,
+Client::Client(struct playlist &_playlist,
+	       struct player_control *_player_control,
 	       int fd, int _uid, int _num)
-	:player_control(_player_control),
+	:playlist(_playlist), player_control(_player_control),
 	 input(fifo_buffer_new(4096)),
 	 permission(getDefaultPermissions()),
 	 uid(_uid),
@@ -93,7 +94,7 @@ Client::~Client()
 }
 
 void
-client_new(struct player_control *player_control,
+client_new(struct playlist &playlist, struct player_control *player_control,
 	   int fd, const struct sockaddr *sa, size_t sa_length, int uid)
 {
 	static unsigned int next_client_num;
@@ -133,7 +134,7 @@ client_new(struct player_control *player_control,
 		return;
 	}
 
-	Client *client = new Client(player_control, fd, uid,
+	Client *client = new Client(playlist, player_control, fd, uid,
 				    next_client_num++);
 
 	(void)send(fd, GREETING, sizeof(GREETING) - 1, 0);
