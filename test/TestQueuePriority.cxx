@@ -1,7 +1,5 @@
 #include "config.h"
-extern "C" {
-#include "queue.h"
-}
+#include "Queue.hxx"
 #include "song.h"
 #include "Directory.hxx"
 

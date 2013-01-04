@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "replay_gain_config.h"
-#include "playlist.h"
+#include "Playlist.hxx"
 #include "conf.h"
 #include "idle.h"
 #include "mpd_error.h"

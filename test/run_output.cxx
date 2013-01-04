@@ -32,7 +32,7 @@ extern "C" {
 #include "idle.h"
 }
 
-#include "playlist.h"
+#include "Playlist.hxx"
 #include "player_control.h"
 #include "stdbin.h"
 

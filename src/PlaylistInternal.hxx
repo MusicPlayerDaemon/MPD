@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,10 +22,10 @@
  *
  */
 
-#ifndef PLAYLIST_INTERNAL_H
-#define PLAYLIST_INTERNAL_H
+#ifndef MPD_PLAYLIST_INTERNAL_HXX
+#define MPD_PLAYLIST_INTERNAL_HXX
 
-#include "playlist.h"
+#include "Playlist.hxx"
 
 struct player_control;
 

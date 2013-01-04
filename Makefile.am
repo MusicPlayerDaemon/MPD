@@ -115,9 +115,9 @@ mpd_headers = \
 	src/output/httpd_internal.h \
 	src/page.h \
 	src/player_control.h \
-	src/playlist.h \
+	src/Playlist.hxx \
 	src/playlist_error.h \
-	src/playlist_internal.h \
+	src/PlaylistInternal.hxx \
 	src/playlist_plugin.h \
 	src/playlist_list.h \
 	src/playlist/extm3u_playlist_plugin.h \
@@ -132,7 +132,6 @@ mpd_headers = \
 	src/poison.h \
 	src/riff.h \
 	src/aiff.h \
-	src/queue.h \
 	src/refcount.h \
 	src/replay_gain_config.h \
 	src/replay_gain_info.h \
@@ -267,9 +266,9 @@ src_mpd_SOURCES = \
 	src/Permission.cxx src/Permission.hxx \
 	src/PlayerThread.cxx src/PlayerThread.hxx \
 	src/PlayerControl.cxx \
-	src/playlist.c \
-	src/playlist_global.c \
-	src/playlist_control.c \
+	src/Playlist.cxx \
+	src/PlaylistGlobal.cxx \
+	src/PlaylistControl.cxx \
 	src/PlaylistEdit.cxx \
 	src/PlaylistPrint.cxx src/PlaylistPrint.hxx \
 	src/PlaylistSave.cxx src/PlaylistSave.hxx \
@@ -281,7 +280,7 @@ src_mpd_SOURCES = \
 	src/PlaylistVector.cxx src/PlaylistVector.hxx \
 	src/PlaylistInfo.hxx \
 	src/PlaylistDatabase.cxx \
-	src/queue.c \
+	src/Queue.cxx src/Queue.hxx \
 	src/QueuePrint.cxx src/QueuePrint.hxx \
 	src/QueueSave.cxx src/QueueSave.hxx \
 	src/replay_gain_config.c \
@@ -1339,7 +1338,7 @@ test_test_pcm_LDADD = \
 	$(GLIB_LIBS)
 
 test_TestQueuePriority_SOURCES = \
-	src/queue.c \
+	src/Queue.cxx \
 	test/TestQueuePriority.cxx
 test_TestQueuePriority_LDADD = \
 	$(GLIB_LIBS)

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "StateFile.hxx"
 #include "OutputState.hxx"
-#include "playlist.h"
+#include "Playlist.hxx"
 #include "PlaylistState.hxx"
 #include "TextFile.hxx"
 

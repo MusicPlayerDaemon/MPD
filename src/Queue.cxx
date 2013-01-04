@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "queue.h"
+#include "Queue.hxx"
 #include "song.h"
 
 #include <stdlib.h>
@@ -102,12 +102,11 @@ queue_append(struct queue *queue, struct song *song, uint8_t priority)
 
 	assert(!queue_is_full(queue));
 
-	queue->items[queue->length] = (struct queue_item){
-		.song = song_dup_detached(song),
-		.id = id,
-		.version = queue->version,
-		.priority = priority,
-	};
+	auto &item = queue->items[queue->length];
+	item.song = song_dup_detached(song);
+	item.id = id;
+	item.version = queue->version;
+	item.priority = priority;
 
 	queue->order[queue->length] = queue->length;
 	queue->id_to_position[id] = queue->length;
@@ -313,10 +312,11 @@ queue_init(struct queue *queue, unsigned max_length)
 	queue->consume = false;
 
 	queue->items = g_new(struct queue_item, max_length);
-	queue->order = g_malloc(sizeof(queue->order[0]) *
-				  max_length);
-	queue->id_to_position = g_malloc(sizeof(queue->id_to_position[0]) *
-				       max_length * QUEUE_HASH_MULT);
+	queue->order = (unsigned *)
+		g_malloc(sizeof(queue->order[0]) * max_length);
+	queue->id_to_position = (int *)
+		g_malloc(sizeof(queue->id_to_position[0]) *
+			 max_length * QUEUE_HASH_MULT);
 
 	for (unsigned i = 0; i < max_length * QUEUE_HASH_MULT; ++i)
 		queue->id_to_position[i] = -1;
@@ -355,9 +355,9 @@ static gint
 queue_item_compare_order_priority(gconstpointer av, gconstpointer bv,
 				  gpointer user_data)
 {
-	const struct queue *queue = user_data;
-	const unsigned *const ap = av;
-	const unsigned *const bp = bv;
+	const struct queue *queue = (const struct queue *)user_data;
+	const unsigned *const ap = (const unsigned *)av;
+	const unsigned *const bp = (const unsigned *)bv;
 	assert(ap >= queue->order && ap < queue->order + queue->length);
 	assert(bp >= queue->order && bp < queue->order + queue->length);
 	uint8_t a = queue->items[*ap].priority;

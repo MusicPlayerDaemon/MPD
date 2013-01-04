@@ -20,6 +20,7 @@
 #include "config.h"
 #include "PlayerCommands.hxx"
 #include "CommandError.hxx"
+#include "Playlist.hxx"
 #include "PlaylistPrint.hxx"
 #include "UpdateGlue.hxx"
 #include "ClientInternal.hxx"
@@ -28,7 +29,6 @@
 
 extern "C" {
 #include "player_control.h"
-#include "playlist.h"
 #include "volume.h"
 #include "replay_gain_config.h"
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,11 +20,11 @@
 #include "config.h"
 #include "PlaylistSave.hxx"
 #include "PlaylistFile.hxx"
+#include "Playlist.hxx"
 #include "song.h"
 #include "Mapper.hxx"
 
 extern "C" {
-#include "playlist.h"
 #include "path.h"
 #include "uri.h"
 #include "idle.h"

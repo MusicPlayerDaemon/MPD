@@ -19,10 +19,10 @@
 
 #include "config.h" /* must be first for large file support */
 #include "UpdateRemove.hxx"
+#include "Playlist.hxx"
 
 extern "C" {
 #include "event_pipe.h"
-#include "playlist.h"
 }
 
 #include "song.h"

@@ -31,9 +31,9 @@
 #include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
 #include "ls.hxx"
+#include "Playlist.hxx"
 
 extern "C" {
-#include "playlist.h"
 #include "uri.h"
 }
 

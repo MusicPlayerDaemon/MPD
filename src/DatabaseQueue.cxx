@@ -20,13 +20,9 @@
 #include "config.h"
 #include "DatabaseQueue.hxx"
 #include "DatabaseSelection.hxx"
-
-extern "C" {
-#include "playlist.h"
-}
-
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
+#include "Playlist.hxx"
 
 #include <functional>
 

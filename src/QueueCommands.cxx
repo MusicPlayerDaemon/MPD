@@ -22,6 +22,7 @@
 #include "CommandError.hxx"
 #include "DatabaseQueue.hxx"
 #include "SongFilter.hxx"
+#include "Playlist.hxx"
 #include "PlaylistPrint.hxx"
 #include "ClientFile.hxx"
 #include "ClientInternal.hxx"
@@ -30,7 +31,6 @@
 #include "ls.hxx"
 
 extern "C" {
-#include "playlist.h"
 #include "uri.h"
 }
 

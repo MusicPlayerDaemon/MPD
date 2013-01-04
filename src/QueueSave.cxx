@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "QueueSave.hxx"
+#include "Playlist.hxx"
 #include "song.h"
 #include "SongSave.hxx"
 #include "DatabasePlugin.hxx"
@@ -26,7 +27,6 @@
 #include "TextFile.hxx"
 
 extern "C" {
-#include "queue.h"
 #include "uri.h"
 }
 
