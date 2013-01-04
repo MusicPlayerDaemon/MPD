@@ -48,6 +48,13 @@ class SliceBuffer {
 	const unsigned n_max;
 
 	/**
+	 * The number of slices that are initialized.  This is used to
+	 * avoid page faulting on the new allocation, so the kernel
+	 * does not need to reserve physical memory pages.
+	 */
+	unsigned n_initialized;
+
+	/**
 	 * The number of slices currently allocated.
 	 */
 	unsigned n_allocated;
@@ -61,15 +68,9 @@ class SliceBuffer {
 
 public:
 	SliceBuffer(unsigned _count)
-		:n_max(_count), n_allocated(0),
-		 data(g_new(Slice, n_max)), available(data) {
+		:n_max(_count), n_initialized(0), n_allocated(0),
+		 data(g_new(Slice, n_max)), available(nullptr) {
 		assert(n_max > 0);
-
-		Slice *const last = data + n_max - 1;
-		for (Slice *slice = data; slice != last; ++slice)
-			slice->next = slice + 1;
-
-		last->next = nullptr;
 	}
 
 	~SliceBuffer() {
@@ -97,12 +98,18 @@ public:
 
 	template<typename... Args>
 	T *Allocate(Args&&... args) {
-		assert(n_allocated <= n_max);
+		assert(n_initialized <= n_max);
+		assert(n_allocated <= n_initialized);
 
 		if (available == nullptr) {
-			/* out of (internal) memory, buffer is full */
-			assert(n_allocated == n_max);
-			return nullptr;
+			if (n_initialized == n_max) {
+				/* out of (internal) memory, buffer is full */
+				assert(n_allocated == n_max);
+				return nullptr;
+			}
+
+			available = &data[n_initialized++];
+			available->next = nullptr;
 		}
 
 		/* allocate a slice */
@@ -115,8 +122,9 @@ public:
 	}
 
 	void Free(T *value) {
+		assert(n_initialized <= n_max);
 		assert(n_allocated > 0);
-		assert(n_allocated <= n_max);
+		assert(n_allocated <= n_initialized);
 
 		Slice *slice = reinterpret_cast<Slice *>(value);
 		assert(slice >= data && slice < data + n_max);
