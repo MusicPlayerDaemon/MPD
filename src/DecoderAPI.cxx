@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,15 +18,19 @@
  */
 
 #include "config.h"
+
+extern "C" {
 #include "decoder_api.h"
-#include "decoder_internal.h"
-#include "decoder_control.h"
 #include "audio_config.h"
-#include "song.h"
 #include "buffer.h"
 #include "pipe.h"
 #include "chunk.h"
 #include "replay_gain_config.h"
+}
+
+#include "DecoderControl.hxx"
+#include "DecoderInternal.hxx"
+#include "song.h"
 
 #include <glib.h>
 
@@ -362,11 +366,10 @@ update_stream_tag(struct decoder *decoder, struct input_stream *is)
 enum decoder_command
 decoder_data(struct decoder *decoder,
 	     struct input_stream *is,
-	     const void *_data, size_t length,
+	     const void *data, size_t length,
 	     uint16_t kbit_rate)
 {
 	struct decoder_control *dc = decoder->dc;
-	const char *data = _data;
 	GError *error = NULL;
 	enum decoder_command cmd;
 
@@ -417,7 +420,6 @@ decoder_data(struct decoder *decoder,
 
 	while (length > 0) {
 		struct music_chunk *chunk;
-		char *dest;
 		size_t nbytes;
 		bool full;
 
@@ -427,10 +429,10 @@ decoder_data(struct decoder *decoder,
 			return dc->command;
 		}
 
-		dest = music_chunk_write(chunk, &dc->out_audio_format,
-					 decoder->timestamp -
-					 dc->song->start_ms / 1000.0,
-					 kbit_rate, &nbytes);
+		void *dest = music_chunk_write(chunk, &dc->out_audio_format,
+					       decoder->timestamp -
+					       dc->song->start_ms / 1000.0,
+					       kbit_rate, &nbytes);
 		if (dest == NULL) {
 			/* the chunk is full, flush it */
 			decoder_flush_chunk(decoder);
@@ -456,7 +458,7 @@ decoder_data(struct decoder *decoder,
 			g_cond_signal(dc->client_cond);
 		}
 
-		data += nbytes;
+		data = (const uint8_t *)data + nbytes;
 		length -= nbytes;
 
 		decoder->timestamp += (double)nbytes /

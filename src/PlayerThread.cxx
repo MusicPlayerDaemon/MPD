@@ -20,13 +20,13 @@
 #include "config.h"
 #include "PlayerThread.hxx"
 #include "DecoderThread.hxx"
+#include "DecoderControl.hxx"
 #include "song.h"
 #include "Main.hxx"
 #include "mpd_error.h"
 
 extern "C" {
 #include "player_control.h"
-#include "decoder_control.h"
 #include "output_all.h"
 #include "event_pipe.h"
 #include "crossfade.h"

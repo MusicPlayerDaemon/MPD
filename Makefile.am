@@ -70,13 +70,11 @@ mpd_headers = \
 	src/idle.h \
 	src/conf.h \
 	src/crossfade.h \
-	src/decoder_control.h \
 	src/decoder_plugin.h \
 	src/decoder_command.h \
 	src/decoder_buffer.h \
 	src/decoder_api.h \
 	src/decoder_plugin.h \
-	src/decoder_internal.h \
 	src/encoder_plugin.h \
 	src/encoder_list.h \
 	src/encoder_api.h \
@@ -207,9 +205,9 @@ src_mpd_SOURCES = \
 	src/cue/cue_parser.c src/cue/cue_parser.h \
 	src/decoder_error.h \
 	src/DecoderThread.cxx src/DecoderThread.hxx \
-	src/decoder_control.c \
-	src/decoder_api.c \
-	src/decoder_internal.c \
+	src/DecoderControl.cxx src/DecoderControl.hxx \
+	src/DecoderAPI.cxx \
+	src/DecoderInternal.cxx src/DecoderInternal.hxx \
 	src/DecoderPrint.cxx src/DecoderPrint.hxx \
 	src/Directory.cxx src/Directory.hxx \
 	src/DirectorySave.cxx src/DirectorySave.hxx \
@@ -274,7 +272,7 @@ src_mpd_SOURCES = \
 	src/page.c \
 	src/Permission.cxx src/Permission.hxx \
 	src/PlayerThread.cxx src/PlayerThread.hxx \
-	src/player_control.c \
+	src/PlayerControl.cxx \
 	src/playlist.c \
 	src/playlist_global.c \
 	src/playlist_control.c \

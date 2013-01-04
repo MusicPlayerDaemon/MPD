@@ -19,6 +19,8 @@
 
 #include "config.h"
 #include "DecoderThread.hxx"
+#include "DecoderControl.hxx"
+#include "DecoderInternal.hxx"
 #include "decoder_error.h"
 #include "decoder_plugin.h"
 #include "song.h"
@@ -26,8 +28,6 @@
 #include "Mapper.hxx"
 
 extern "C" {
-#include "decoder_control.h"
-#include "decoder_internal.h"
 #include "decoder_list.h"
 #include "decoder_api.h"
 #include "replay_gain_ape.h"

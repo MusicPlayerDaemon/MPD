@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,14 +18,14 @@
  */
 
 #include "config.h"
+
+extern "C" {
 #include "player_control.h"
-#include "decoder_control.h"
-#include "path.h"
-#include "log.h"
-#include "tag.h"
-#include "song.h"
 #include "idle.h"
-#include "pcm_volume.h"
+}
+
+#include "song.h"
+#include "DecoderControl.hxx"
 #include "Main.hxx"
 
 #include <assert.h>
