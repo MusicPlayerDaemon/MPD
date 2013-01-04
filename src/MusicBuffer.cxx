@@ -37,49 +37,49 @@ struct music_buffer {
 #ifndef NDEBUG
 	unsigned num_allocated;
 #endif
+
+	music_buffer(unsigned _num_chunks)
+		:chunks(g_new(struct music_chunk, _num_chunks)),
+		 num_chunks(_num_chunks),
+		 available(chunks),
+		 mutex(g_mutex_new())
+#ifndef NDEBUG
+		, num_allocated(0)
+#endif
+	{
+		assert(num_chunks > 0);
+
+		struct music_chunk *chunk;
+		chunk = available = chunks;
+
+		for (unsigned i = 1; i < num_chunks; ++i) {
+			chunk->next = &chunks[i];
+			chunk = chunk->next;
+		}
+
+		chunk->next = nullptr;
+	}
+
+	~music_buffer() {
+		assert(chunks != nullptr);
+		assert(num_chunks > 0);
+		assert(num_allocated == 0);
+
+		g_mutex_free(mutex);
+		g_free(chunks);
+	}
 };
 
 struct music_buffer *
 music_buffer_new(unsigned num_chunks)
 {
-	struct music_buffer *buffer;
-	struct music_chunk *chunk;
-
-	assert(num_chunks > 0);
-
-	buffer = g_new(struct music_buffer, 1);
-
-	buffer->chunks = g_new(struct music_chunk, num_chunks);
-	buffer->num_chunks = num_chunks;
-
-	chunk = buffer->available = buffer->chunks;
-
-	for (unsigned i = 1; i < num_chunks; ++i) {
-		chunk->next = &buffer->chunks[i];
-		chunk = chunk->next;
-	}
-
-	chunk->next = NULL;
-
-	buffer->mutex = g_mutex_new();
-
-#ifndef NDEBUG
-	buffer->num_allocated = 0;
-#endif
-
-	return buffer;
+	return new music_buffer(num_chunks);
 }
 
 void
 music_buffer_free(struct music_buffer *buffer)
 {
-	assert(buffer->chunks != NULL);
-	assert(buffer->num_chunks > 0);
-	assert(buffer->num_allocated == 0);
-
-	g_mutex_free(buffer->mutex);
-	g_free(buffer->chunks);
-	g_free(buffer);
+	delete buffer;
 }
 
 unsigned
