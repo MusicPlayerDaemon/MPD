@@ -26,6 +26,7 @@
 #ifndef OUTPUT_ALL_H
 #define OUTPUT_ALL_H
 
+#include "replay_gain_info.h"
 #include "gerror.h"
 
 #include <stdbool.h>
@@ -101,6 +102,9 @@ audio_output_all_close(void);
  */
 void
 audio_output_all_release(void);
+
+void
+audio_output_all_set_replay_gain_mode(enum replay_gain_mode mode);
 
 /**
  * Enqueue a #music_chunk object for playing, i.e. pushes it to a

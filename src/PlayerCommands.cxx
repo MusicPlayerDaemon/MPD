@@ -31,6 +31,7 @@ extern "C" {
 #include "audio_format.h"
 #include "volume.h"
 #include "replay_gain_config.h"
+#include "output_all.h"
 }
 
 #include "PlayerControl.hxx"
@@ -280,6 +281,7 @@ handle_random(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 
 	playlist_set_random(&client->playlist, client->player_control, status);
+	audio_output_all_set_replay_gain_mode(replay_gain_get_real_mode(client->playlist.queue.random));
 	return COMMAND_RETURN_OK;
 }
 
@@ -385,6 +387,8 @@ handle_replay_gain_mode(Client *client,
 			      "Unrecognized replay gain mode");
 		return COMMAND_RETURN_ERROR;
 	}
+
+	audio_output_all_set_replay_gain_mode(replay_gain_get_real_mode(client->playlist.queue.random));
 
 	return COMMAND_RETURN_OK;
 }

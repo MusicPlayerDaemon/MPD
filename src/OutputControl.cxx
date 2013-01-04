@@ -27,6 +27,7 @@ extern "C" {
 #include "mixer_control.h"
 #include "mixer_plugin.h"
 #include "notify.h"
+#include "filter/replay_gain_filter_plugin.h"
 }
 
 #include "filter_plugin.h"
@@ -93,6 +94,14 @@ ao_lock_command(struct audio_output *ao, enum audio_output_command cmd)
 	g_mutex_lock(ao->mutex);
 	ao_command(ao, cmd);
 	g_mutex_unlock(ao->mutex);
+}
+
+void
+audio_output_set_replay_gain_mode(struct audio_output *ao,
+				  enum replay_gain_mode mode)
+{
+	if (ao->replay_gain_filter != NULL)
+		replay_gain_filter_set_mode(ao->replay_gain_filter, mode);
 }
 
 void

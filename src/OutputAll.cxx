@@ -273,6 +273,13 @@ audio_output_all_update(void)
 	return ret;
 }
 
+void
+audio_output_all_set_replay_gain_mode(enum replay_gain_mode mode)
+{
+	for (unsigned i = 0; i < num_audio_outputs; ++i)
+		audio_output_set_replay_gain_mode(audio_outputs[i], mode);
+}
+
 bool
 audio_output_all_play(struct music_chunk *chunk, GError **error_r)
 {

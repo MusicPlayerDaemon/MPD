@@ -47,4 +47,7 @@ void
 replay_gain_filter_set_info(struct filter *filter,
 			    const struct replay_gain_info *info);
 
+void
+replay_gain_filter_set_mode(struct filter *filter, enum replay_gain_mode mode);
+
 #endif

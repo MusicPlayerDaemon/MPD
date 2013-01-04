@@ -136,14 +136,15 @@ void replay_gain_global_init(void)
 	replay_gain_limit = config_get_bool(CONF_REPLAYGAIN_LIMIT, DEFAULT_REPLAYGAIN_LIMIT);
 }
 
-enum replay_gain_mode replay_gain_get_real_mode(void)
+enum replay_gain_mode
+replay_gain_get_real_mode(bool random_mode)
 {
 	enum replay_gain_mode rgm;
 
 	rgm = replay_gain_mode;
 
 	if (rgm == REPLAY_GAIN_AUTO)
-	    rgm = g_playlist.queue.random ? REPLAY_GAIN_TRACK : REPLAY_GAIN_ALBUM;
+	    rgm = random_mode ? REPLAY_GAIN_TRACK : REPLAY_GAIN_ALBUM;
 
 	return rgm;
 }

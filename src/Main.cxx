@@ -480,6 +480,8 @@ int mpd_main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
+	audio_output_all_set_replay_gain_mode(replay_gain_get_real_mode(g_playlist.queue.random));
+
 	success = config_get_bool(CONF_AUTO_UPDATE, false);
 #ifdef ENABLE_INOTIFY
 	if (success && mapper_has_music_directory())

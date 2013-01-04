@@ -119,7 +119,7 @@ replay_gain_filter_init(G_GNUC_UNUSED const struct config_param *param,
 	filter_init(&filter->filter, &replay_gain_filter_plugin);
 	filter->mixer = NULL;
 
-	filter->mode = replay_gain_get_real_mode();
+	filter->mode = REPLAY_GAIN_OFF;
 	replay_gain_info_init(&filter->info);
 	filter->volume = PCM_VOLUME_1;
 
@@ -164,16 +164,6 @@ replay_gain_filter_filter(struct filter *_filter,
 		(struct replay_gain_filter *)_filter;
 	bool success;
 	void *dest;
-	enum replay_gain_mode rg_mode;
-
-	/* check if the mode has been changed since the last call */
-	rg_mode = replay_gain_get_real_mode();
-
-	if (filter->mode != rg_mode) {
-		g_debug("replay gain mode has changed %d->%d\n", filter->mode, rg_mode);
-		filter->mode = rg_mode;
-		replay_gain_filter_update(filter);
-	}
 
 	*dest_size_r = src_size;
 
@@ -241,5 +231,21 @@ replay_gain_filter_set_info(struct filter *_filter,
 	} else
 		replay_gain_info_init(&filter->info);
 
+	replay_gain_filter_update(filter);
+}
+
+void
+replay_gain_filter_set_mode(struct filter *_filter, enum replay_gain_mode mode)
+{
+	struct replay_gain_filter *filter =
+		(struct replay_gain_filter *)_filter;
+
+	if (mode == filter->mode)
+		/* no change */
+		return;
+
+	g_debug("replay gain mode has changed %d->%d\n", filter->mode, mode);
+
+	filter->mode = mode;
 	replay_gain_filter_update(filter);
 }

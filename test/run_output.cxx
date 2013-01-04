@@ -32,7 +32,6 @@ extern "C" {
 #include "idle.h"
 }
 
-#include "Playlist.hxx"
 #include "PlayerControl.hxx"
 #include "stdbin.h"
 
@@ -42,8 +41,6 @@ extern "C" {
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
-
-struct playlist g_playlist;
 
 void
 idle_add(G_GNUC_UNUSED unsigned flags)
