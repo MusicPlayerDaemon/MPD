@@ -39,14 +39,18 @@ player_control::player_control(unsigned _buffer_chunks,
 			       unsigned _buffered_before_play)
 	:buffer_chunks(_buffer_chunks),
 	 buffered_before_play(_buffered_before_play),
+	 thread(nullptr),
 	 mutex(g_mutex_new()),
 	 cond(g_cond_new()),
 	 command(PLAYER_COMMAND_NONE),
 	 state(PLAYER_STATE_STOP),
 	 error_type(PLAYER_ERROR_NONE),
+	 error(nullptr),
+	 next_song(nullptr),
 	 cross_fade_seconds(0),
 	 mixramp_db(0),
-	 mixramp_delay_seconds(nanf(""))
+	 mixramp_delay_seconds(nanf("")),
+	 total_play_time(0)
 {
 }
 
