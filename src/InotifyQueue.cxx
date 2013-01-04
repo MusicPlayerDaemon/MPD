@@ -21,7 +21,7 @@
 #include "InotifyQueue.hxx"
 #include "UpdateGlue.hxx"
 
-#include <deque>
+#include <list>
 #include <string>
 
 #include <glib.h>
@@ -40,7 +40,7 @@ enum {
 	INOTIFY_UPDATE_DELAY_S = 5,
 };
 
-static std::deque<std::string> inotify_queue;
+static std::list<std::string> inotify_queue;
 static guint queue_source_id;
 
 void

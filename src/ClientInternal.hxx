@@ -27,7 +27,7 @@
 
 #include <set>
 #include <string>
-#include <deque>
+#include <list>
 
 #include <glib.h>
 
@@ -97,7 +97,7 @@ public:
 	/**
 	 * A list of messages this client has received.
 	 */
-	std::deque<ClientMessage> messages;
+	std::list<ClientMessage> messages;
 
 	Client(struct player_control *player_control,
 	       int fd, int uid, int num);
