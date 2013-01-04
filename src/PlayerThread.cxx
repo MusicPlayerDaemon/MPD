@@ -27,12 +27,12 @@
 #include "song.h"
 #include "Main.hxx"
 #include "mpd_error.h"
+#include "CrossFade.hxx"
 
 extern "C" {
 #include "player_control.h"
 #include "output_all.h"
 #include "event_pipe.h"
-#include "crossfade.h"
 #include "tag.h"
 #include "idle.h"
 }

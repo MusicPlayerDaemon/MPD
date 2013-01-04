@@ -65,7 +65,6 @@ mpd_headers = \
 	src/command.h \
 	src/idle.h \
 	src/conf.h \
-	src/crossfade.h \
 	src/decoder_plugin.h \
 	src/decoder_command.h \
 	src/decoder_buffer.h \
@@ -194,7 +193,7 @@ src_mpd_SOURCES = \
 	src/idle.c \
 	src/CommandLine.cxx src/CommandLine.hxx \
 	src/conf.c \
-	src/crossfade.c \
+	src/CrossFade.cxx src/CrossFade.hxx \
 	src/cue/cue_parser.c src/cue/cue_parser.h \
 	src/decoder_error.h \
 	src/DecoderThread.cxx src/DecoderThread.hxx \
