@@ -327,8 +327,8 @@ ao_chunk_data(struct audio_output *ao, const struct music_chunk *chunk,
 	      size_t *length_r)
 {
 	assert(chunk != NULL);
-	assert(!music_chunk_is_empty(chunk));
-	assert(music_chunk_check_format(chunk, &ao->in_audio_format));
+	assert(!chunk->IsEmpty());
+	assert(chunk->CheckFormat(ao->in_audio_format));
 
 	const void *data = chunk->data;
 	size_t length = chunk->length;

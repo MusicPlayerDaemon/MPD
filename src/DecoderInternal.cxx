@@ -88,7 +88,7 @@ decoder_flush_chunk(struct decoder *decoder)
 	assert(decoder != NULL);
 	assert(decoder->chunk != NULL);
 
-	if (music_chunk_is_empty(decoder->chunk))
+	if (decoder->chunk->IsEmpty())
 		music_buffer_return(dc->buffer, decoder->chunk);
 	else
 		music_pipe_push(dc->pipe, decoder->chunk);

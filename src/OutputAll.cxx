@@ -282,7 +282,7 @@ audio_output_all_play(struct music_chunk *chunk, GError **error_r)
 	assert(g_music_buffer != NULL);
 	assert(g_mp != NULL);
 	assert(chunk != NULL);
-	assert(music_chunk_check_format(chunk, &input_audio_format));
+	assert(chunk->CheckFormat(input_audio_format));
 
 	ret = audio_output_all_update();
 	if (!ret) {

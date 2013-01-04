@@ -686,7 +686,7 @@ play_chunk(struct player_control *pc,
 	   const struct audio_format *format,
 	   GError **error_r)
 {
-	assert(music_chunk_check_format(chunk, format));
+	assert(chunk->CheckFormat(*format));
 
 	if (chunk->tag != NULL)
 		update_song_tag(song, chunk->tag);
@@ -766,7 +766,7 @@ play_next_chunk(struct player *player)
 				chunk->mix_ratio = nan("");
 			}
 
-			if (music_chunk_is_empty(other_chunk)) {
+			if (other_chunk->IsEmpty()) {
 				/* the "other" chunk was a music_chunk
 				   which had only a tag, but no music
 				   data - we cannot cross-fade that;

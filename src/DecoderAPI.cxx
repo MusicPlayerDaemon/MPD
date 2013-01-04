@@ -429,10 +429,10 @@ decoder_data(struct decoder *decoder,
 			return dc->command;
 		}
 
-		void *dest = music_chunk_write(chunk, &dc->out_audio_format,
-					       decoder->timestamp -
-					       dc->song->start_ms / 1000.0,
-					       kbit_rate, &nbytes);
+		void *dest = chunk->Write(dc->out_audio_format,
+					  decoder->timestamp -
+					  dc->song->start_ms / 1000.0,
+					  kbit_rate, &nbytes);
 		if (dest == NULL) {
 			/* the chunk is full, flush it */
 			decoder_flush_chunk(decoder);
@@ -451,7 +451,7 @@ decoder_data(struct decoder *decoder,
 
 		/* expand the music pipe chunk */
 
-		full = music_chunk_expand(chunk, &dc->out_audio_format, nbytes);
+		full = chunk->Expand(dc->out_audio_format, nbytes);
 		if (full) {
 			/* the chunk is full, flush it */
 			decoder_flush_chunk(decoder);

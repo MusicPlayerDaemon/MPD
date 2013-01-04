@@ -111,7 +111,7 @@ music_pipe_shift(struct music_pipe *mp)
 
 	struct music_chunk *chunk = mp->head;
 	if (chunk != NULL) {
-		assert(!music_chunk_is_empty(chunk));
+		assert(!chunk->IsEmpty());
 
 		mp->head = chunk->next;
 		--mp->size;
@@ -150,14 +150,14 @@ music_pipe_clear(struct music_pipe *mp, struct music_buffer *buffer)
 void
 music_pipe_push(struct music_pipe *mp, struct music_chunk *chunk)
 {
-	assert(!music_chunk_is_empty(chunk));
+	assert(!chunk->IsEmpty());
 	assert(chunk->length == 0 || audio_format_valid(&chunk->audio_format));
 
 	const ScopeLock protect(mp->mutex);
 
 	assert(mp->size > 0 || !audio_format_defined(&mp->audio_format));
 	assert(!audio_format_defined(&mp->audio_format) ||
-	       music_chunk_check_format(chunk, &mp->audio_format));
+	       chunk->CheckFormat(mp->audio_format));
 
 #ifndef NDEBUG
 	if (!audio_format_defined(&mp->audio_format) && chunk->length > 0)

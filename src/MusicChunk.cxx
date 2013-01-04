@@ -27,79 +27,61 @@ extern "C" {
 
 #include <assert.h>
 
-void
-music_chunk_init(struct music_chunk *chunk)
+music_chunk::~music_chunk()
 {
-	chunk->other = NULL;
-	chunk->length = 0;
-	chunk->tag = NULL;
-	chunk->replay_gain_serial = 0;
-}
-
-void
-music_chunk_free(struct music_chunk *chunk)
-{
-	if (chunk->tag != NULL)
-		tag_free(chunk->tag);
+	if (tag != NULL)
+		tag_free(tag);
 }
 
 #ifndef NDEBUG
 bool
-music_chunk_check_format(const struct music_chunk *chunk,
-			 const struct audio_format *audio_format)
+music_chunk::CheckFormat(const struct audio_format &other_format) const
 {
-	assert(chunk != NULL);
-	assert(audio_format != NULL);
-	assert(audio_format_valid(audio_format));
+	assert(audio_format_valid(&other_format));
 
-	return chunk->length == 0 ||
-		audio_format_equals(&chunk->audio_format, audio_format);
+	return length == 0 ||
+		audio_format_equals(&audio_format, &other_format);
 }
 #endif
 
 void *
-music_chunk_write(struct music_chunk *chunk,
-		  const struct audio_format *audio_format,
-		  float data_time, uint16_t bit_rate,
-		  size_t *max_length_r)
+music_chunk::Write(const struct audio_format &af,
+		   float data_time, uint16_t _bit_rate,
+		   size_t *max_length_r)
 {
-	const size_t frame_size = audio_format_frame_size(audio_format);
-	size_t num_frames;
+	assert(CheckFormat(af));
+	assert(length == 0 || audio_format_valid(&audio_format));
 
-	assert(music_chunk_check_format(chunk, audio_format));
-	assert(chunk->length == 0 || audio_format_valid(&chunk->audio_format));
-
-	if (chunk->length == 0) {
+	if (length == 0) {
 		/* if the chunk is empty, nobody has set bitRate and
 		   times yet */
 
-		chunk->bit_rate = bit_rate;
-		chunk->times = data_time;
+		bit_rate = _bit_rate;
+		times = data_time;
 	}
 
-	num_frames = (sizeof(chunk->data) - chunk->length) / frame_size;
+	const size_t frame_size = audio_format_frame_size(&af);
+	size_t num_frames = (sizeof(data) - length) / frame_size;
 	if (num_frames == 0)
 		return NULL;
 
 #ifndef NDEBUG
-	chunk->audio_format = *audio_format;
+	audio_format = af;
 #endif
 
 	*max_length_r = num_frames * frame_size;
-	return chunk->data + chunk->length;
+	return data + length;
 }
 
 bool
-music_chunk_expand(struct music_chunk *chunk,
-		   const struct audio_format *audio_format, size_t length)
+music_chunk::Expand(const struct audio_format &af, size_t _length)
 {
-	const size_t frame_size = audio_format_frame_size(audio_format);
+	const size_t frame_size = audio_format_frame_size(&af);
 
-	assert(chunk != NULL);
-	assert(chunk->length + length <= sizeof(chunk->data));
-	assert(audio_format_equals(&chunk->audio_format, audio_format));
+	assert(length + _length <= sizeof(data));
+	assert(audio_format_equals(&audio_format, &af));
 
-	chunk->length += length;
+	length += _length;
 
-	return chunk->length + frame_size > sizeof(chunk->data);
+	return length + frame_size > sizeof(data);
 }

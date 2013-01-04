@@ -91,6 +91,57 @@ struct music_chunk {
 #ifndef NDEBUG
 	struct audio_format audio_format;
 #endif
+
+	music_chunk()
+		:other(nullptr),
+		 length(0),
+		 tag(nullptr),
+		 replay_gain_serial(0) {}
+
+	~music_chunk();
+
+	bool IsEmpty() const {
+		return length == 0 && tag == nullptr;
+	}
+
+#ifndef NDEBUG
+	/**
+	 * Checks if the audio format if the chunk is equal to the
+	 * specified audio_format.
+	 */
+	gcc_pure
+	bool CheckFormat(const struct audio_format &audio_format) const;
+#endif
+
+	/**
+	 * Prepares appending to the music chunk.  Returns a buffer
+	 * where you may write into.  After you are finished, call
+	 * music_chunk_expand().
+	 *
+	 * @param chunk the music_chunk object
+	 * @param audio_format the audio format for the appended data;
+	 * must stay the same for the life cycle of this chunk
+	 * @param data_time the time within the song
+	 * @param bit_rate the current bit rate of the source file
+	 * @param max_length_r the maximum write length is returned
+	 * here
+	 * @return a writable buffer, or NULL if the chunk is full
+	 */
+	void *Write(const struct audio_format &af,
+		    float data_time, uint16_t bit_rate,
+		    size_t *max_length_r);
+
+	/**
+	 * Increases the length of the chunk after the caller has written to
+	 * the buffer returned by music_chunk_write().
+	 *
+	 * @param chunk the music_chunk object
+	 * @param audio_format the audio format for the appended data; must
+	 * stay the same for the life cycle of this chunk
+	 * @param length the number of bytes which were appended
+	 * @return true if the chunk is full
+	 */
+	bool Expand(const struct audio_format &af, size_t length);
 };
 
 void
@@ -98,53 +149,5 @@ music_chunk_init(struct music_chunk *chunk);
 
 void
 music_chunk_free(struct music_chunk *chunk);
-
-static inline bool
-music_chunk_is_empty(const struct music_chunk *chunk)
-{
-	return chunk->length == 0 && chunk->tag == NULL;
-}
-
-#ifndef NDEBUG
-/**
- * Checks if the audio format if the chunk is equal to the specified
- * audio_format.
- */
-bool
-music_chunk_check_format(const struct music_chunk *chunk,
-			 const struct audio_format *audio_format);
-#endif
-
-/**
- * Prepares appending to the music chunk.  Returns a buffer where you
- * may write into.  After you are finished, call music_chunk_expand().
- *
- * @param chunk the music_chunk object
- * @param audio_format the audio format for the appended data; must
- * stay the same for the life cycle of this chunk
- * @param data_time the time within the song
- * @param bit_rate the current bit rate of the source file
- * @param max_length_r the maximum write length is returned here
- * @return a writable buffer, or NULL if the chunk is full
- */
-void *
-music_chunk_write(struct music_chunk *chunk,
-		  const struct audio_format *audio_format,
-		  float data_time, uint16_t bit_rate,
-		  size_t *max_length_r);
-
-/**
- * Increases the length of the chunk after the caller has written to
- * the buffer returned by music_chunk_write().
- *
- * @param chunk the music_chunk object
- * @param audio_format the audio format for the appended data; must
- * stay the same for the life cycle of this chunk
- * @param length the number of bytes which were appended
- * @return true if the chunk is full
- */
-bool
-music_chunk_expand(struct music_chunk *chunk,
-		   const struct audio_format *audio_format, size_t length);
 
 #endif
