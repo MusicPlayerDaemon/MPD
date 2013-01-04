@@ -28,10 +28,12 @@
 #include "protocol/ArgParser.hxx"
 
 extern "C" {
-#include "player_control.h"
+#include "audio_format.h"
 #include "volume.h"
 #include "replay_gain_config.h"
 }
+
+#include "PlayerControl.hxx"
 
 #include <errno.h>
 

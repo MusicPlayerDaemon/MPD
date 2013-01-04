@@ -114,7 +114,6 @@ mpd_headers = \
 	src/output/httpd_client.h \
 	src/output/httpd_internal.h \
 	src/page.h \
-	src/player_control.h \
 	src/Playlist.hxx \
 	src/playlist_error.h \
 	src/PlaylistInternal.hxx \
@@ -265,7 +264,7 @@ src_mpd_SOURCES = \
 	src/page.c \
 	src/Permission.cxx src/Permission.hxx \
 	src/PlayerThread.cxx src/PlayerThread.hxx \
-	src/PlayerControl.cxx \
+	src/PlayerControl.cxx src/PlayerControl.hxx \
 	src/Playlist.cxx \
 	src/PlaylistGlobal.cxx \
 	src/PlaylistControl.cxx \

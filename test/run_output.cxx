@@ -33,7 +33,7 @@ extern "C" {
 }
 
 #include "Playlist.hxx"
-#include "player_control.h"
+#include "PlayerControl.hxx"
 #include "stdbin.h"
 
 #include <glib.h>

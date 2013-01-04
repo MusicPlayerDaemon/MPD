@@ -24,6 +24,7 @@ extern "C" {
 #include "output_internal.h"
 }
 
+#include "PlayerControl.hxx"
 #include "OutputControl.hxx"
 #include "OutputError.hxx"
 #include "MusicBuffer.hxx"
@@ -32,7 +33,6 @@ extern "C" {
 #include "mpd_error.h"
 
 extern "C" {
-#include "player_control.h"
 #include "conf.h"
 #include "notify.h"
 }

@@ -21,9 +21,9 @@
 
 extern "C" {
 #include "stats.h"
-#include "player_control.h"
 }
 
+#include "PlayerControl.hxx"
 #include "ClientInternal.hxx"
 #include "DatabaseSelection.hxx"
 #include "DatabaseGlue.hxx"

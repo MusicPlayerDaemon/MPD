@@ -19,10 +19,10 @@
 
 #include "config.h"
 #include "PlaylistInternal.hxx"
+#include "PlayerControl.hxx"
 #include "song.h"
 
 extern "C" {
-#include "player_control.h"
 #include "conf.h"
 #include "idle.h"
 }

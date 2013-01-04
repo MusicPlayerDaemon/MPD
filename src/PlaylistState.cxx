@@ -27,9 +27,9 @@
 #include "Playlist.hxx"
 #include "QueueSave.hxx"
 #include "TextFile.hxx"
+#include "PlayerControl.hxx"
 
 extern "C" {
-#include "player_control.h"
 #include "conf.h"
 }
 

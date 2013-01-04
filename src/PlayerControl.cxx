@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
+#include "PlayerControl.hxx"
 
 extern "C" {
-#include "player_control.h"
 #include "idle.h"
 }
 
