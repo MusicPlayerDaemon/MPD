@@ -42,33 +42,34 @@ struct music_pipe {
 #ifndef NDEBUG
 	struct audio_format audio_format;
 #endif
+
+	music_pipe()
+		:head(nullptr), tail_r(&head),
+		 size(0),
+		 mutex(g_mutex_new()) {
+#ifndef NDEBUG
+		audio_format_clear(&audio_format);
+#endif
+	}
+
+	~music_pipe() {
+		assert(head == nullptr);
+		assert(tail_r == &head);
+
+		g_mutex_free(mutex);
+	}
 };
 
 struct music_pipe *
 music_pipe_new(void)
 {
-	struct music_pipe *mp = g_new(struct music_pipe, 1);
-
-	mp->head = NULL;
-	mp->tail_r = &mp->head;
-	mp->size = 0;
-	mp->mutex = g_mutex_new();
-
-#ifndef NDEBUG
-	audio_format_clear(&mp->audio_format);
-#endif
-
-	return mp;
+	return new music_pipe();
 }
 
 void
 music_pipe_free(struct music_pipe *mp)
 {
-	assert(mp->head == NULL);
-	assert(mp->tail_r == &mp->head);
-
-	g_mutex_free(mp->mutex);
-	g_free(mp);
+	delete mp;
 }
 
 #ifndef NDEBUG
