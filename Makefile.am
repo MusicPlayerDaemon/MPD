@@ -172,6 +172,8 @@ src_mpd_SOURCES = \
 	$(DECODER_SRC) \
 	$(OUTPUT_API_SRC) \
 	$(MIXER_API_SRC) \
+	src/thread/Mutex.hxx \
+	src/thread/CriticalSection.hxx \
 	src/glib_socket.h \
 	src/clock.c src/clock.h \
 	src/notify.c \

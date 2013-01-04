@@ -20,26 +20,20 @@
 #include "config.h"
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
+#include "thread/Mutex.hxx"
 #include "util/SliceBuffer.hxx"
 #include "mpd_error.h"
-
-#include <glib.h>
 
 #include <assert.h>
 
 struct music_buffer : public SliceBuffer<music_chunk>  {
 	/** a mutex which protects #available */
-	GMutex *mutex;
+	Mutex mutex;
 
 	music_buffer(unsigned num_chunks)
-		:SliceBuffer(num_chunks),
-		 mutex(g_mutex_new()) {
+		:SliceBuffer(num_chunks) {
 		if (IsOOM())
 			MPD_ERROR("Failed to allocate buffer");
-	}
-
-	~music_buffer() {
-		g_mutex_free(mutex);
 	}
 };
 
@@ -64,10 +58,8 @@ music_buffer_size(const struct music_buffer *buffer)
 struct music_chunk *
 music_buffer_allocate(struct music_buffer *buffer)
 {
-	g_mutex_lock(buffer->mutex);
-	struct music_chunk *chunk = buffer->Allocate();
-	g_mutex_unlock(buffer->mutex);
-	return chunk;
+	const ScopeLock protect(buffer->mutex);
+	return buffer->Allocate();
 }
 
 void
@@ -76,7 +68,7 @@ music_buffer_return(struct music_buffer *buffer, struct music_chunk *chunk)
 	assert(buffer != NULL);
 	assert(chunk != NULL);
 
-	g_mutex_lock(buffer->mutex);
+	const ScopeLock protect(buffer->mutex);
 
 	if (chunk->other != nullptr) {
 		assert(chunk->other->other == nullptr);
@@ -84,6 +76,4 @@ music_buffer_return(struct music_buffer *buffer, struct music_chunk *chunk)
 	}
 
 	buffer->Free(chunk);
-
-	g_mutex_unlock(buffer->mutex);
 }

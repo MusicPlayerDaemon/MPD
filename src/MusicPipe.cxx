@@ -21,6 +21,7 @@
 #include "MusicPipe.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
+#include "thread/Mutex.hxx"
 
 #include <glib.h>
 
@@ -37,16 +38,14 @@ struct music_pipe {
 	unsigned size;
 
 	/** a mutex which protects #head and #tail_r */
-	GMutex *mutex;
+	mutable Mutex mutex;
 
 #ifndef NDEBUG
 	struct audio_format audio_format;
 #endif
 
 	music_pipe()
-		:head(nullptr), tail_r(&head),
-		 size(0),
-		 mutex(g_mutex_new()) {
+		:head(nullptr), tail_r(&head), size(0) {
 #ifndef NDEBUG
 		audio_format_clear(&audio_format);
 #endif
@@ -55,8 +54,6 @@ struct music_pipe {
 	~music_pipe() {
 		assert(head == nullptr);
 		assert(tail_r == &head);
-
-		g_mutex_free(mutex);
 	}
 };
 
@@ -89,17 +86,12 @@ bool
 music_pipe_contains(const struct music_pipe *mp,
 		    const struct music_chunk *chunk)
 {
-	g_mutex_lock(mp->mutex);
+	const ScopeLock protect(mp->mutex);
 
 	for (const struct music_chunk *i = mp->head;
-	     i != NULL; i = i->next) {
-		if (i == chunk) {
-			g_mutex_unlock(mp->mutex);
+	     i != NULL; i = i->next)
+		if (i == chunk)
 			return true;
-		}
-	}
-
-	g_mutex_unlock(mp->mutex);
 
 	return false;
 }
@@ -115,11 +107,9 @@ music_pipe_peek(const struct music_pipe *mp)
 struct music_chunk *
 music_pipe_shift(struct music_pipe *mp)
 {
-	struct music_chunk *chunk;
+	const ScopeLock protect(mp->mutex);
 
-	g_mutex_lock(mp->mutex);
-
-	chunk = mp->head;
+	struct music_chunk *chunk = mp->head;
 	if (chunk != NULL) {
 		assert(!music_chunk_is_empty(chunk));
 
@@ -145,8 +135,6 @@ music_pipe_shift(struct music_pipe *mp)
 #endif
 	}
 
-	g_mutex_unlock(mp->mutex);
-
 	return chunk;
 }
 
@@ -165,7 +153,7 @@ music_pipe_push(struct music_pipe *mp, struct music_chunk *chunk)
 	assert(!music_chunk_is_empty(chunk));
 	assert(chunk->length == 0 || audio_format_valid(&chunk->audio_format));
 
-	g_mutex_lock(mp->mutex);
+	const ScopeLock protect(mp->mutex);
 
 	assert(mp->size > 0 || !audio_format_defined(&mp->audio_format));
 	assert(!audio_format_defined(&mp->audio_format) ||
@@ -181,15 +169,11 @@ music_pipe_push(struct music_pipe *mp, struct music_chunk *chunk)
 	mp->tail_r = &chunk->next;
 
 	++mp->size;
-
-	g_mutex_unlock(mp->mutex);
 }
 
 unsigned
 music_pipe_size(const struct music_pipe *mp)
 {
-	g_mutex_lock(mp->mutex);
-	unsigned size = mp->size;
-	g_mutex_unlock(mp->mutex);
-	return size;
+	const ScopeLock protect(mp->mutex);
+	return mp->size;
 }
