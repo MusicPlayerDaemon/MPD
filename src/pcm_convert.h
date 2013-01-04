@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,8 @@
 #include "pcm_resample.h"
 #include "pcm_dither.h"
 #include "pcm_buffer.h"
+
+#include <glib.h>
 
 struct audio_format;
 
@@ -51,6 +53,8 @@ pcm_convert_quark(void)
 {
 	return g_quark_from_static_string("pcm_convert");
 }
+
+G_BEGIN_DECLS
 
 /**
  * Initializes a pcm_convert_state object.
@@ -90,5 +94,7 @@ pcm_convert(struct pcm_convert_state *state,
 	    const struct audio_format *dest_format,
 	    size_t *dest_size_r,
 	    GError **error_r);
+
+G_END_DECLS
 
 #endif
