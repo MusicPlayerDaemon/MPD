@@ -25,36 +25,28 @@
 #include "config.h"
 #include "Playlist.hxx"
 #include "Main.hxx"
+#include "Partition.hxx"
 
 extern "C" {
 #include "event_pipe.h"
 }
 
-struct playlist g_playlist;
-
 static void
 playlist_tag_event(void)
 {
-	playlist_tag_changed(&g_playlist);
+	playlist_tag_changed(&global_partition->playlist);
 }
 
 static void
 playlist_event(void)
 {
-	playlist_sync(&g_playlist, global_player_control);
+	playlist_sync(&global_partition->playlist,
+		      &global_partition->pc);
 }
 
 void
-playlist_global_init(unsigned max_length)
+playlist_global_init()
 {
-	playlist_init(&g_playlist, max_length);
-
 	event_pipe_register(PIPE_EVENT_TAG, playlist_tag_event);
 	event_pipe_register(PIPE_EVENT_PLAYLIST, playlist_event);
-}
-
-void
-playlist_global_finish(void)
-{
-	playlist_finish(&g_playlist);
 }

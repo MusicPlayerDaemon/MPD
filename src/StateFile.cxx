@@ -20,9 +20,9 @@
 #include "config.h"
 #include "StateFile.hxx"
 #include "OutputState.hxx"
-#include "Playlist.hxx"
 #include "PlaylistState.hxx"
 #include "TextFile.hxx"
+#include "Partition.hxx"
 
 extern "C" {
 #include "volume.h"
@@ -49,7 +49,7 @@ static unsigned prev_volume_version, prev_output_version,
 	prev_playlist_version;
 
 static void
-state_file_write(struct player_control *pc)
+state_file_write(Partition &partition)
 {
 	FILE *fp;
 
@@ -66,17 +66,18 @@ state_file_write(struct player_control *pc)
 
 	save_sw_volume_state(fp);
 	audio_output_state_save(fp);
-	playlist_state_save(fp, &g_playlist, pc);
+	playlist_state_save(fp, &partition.playlist, &partition.pc);
 
 	fclose(fp);
 
 	prev_volume_version = sw_volume_state_get_hash();
 	prev_output_version = audio_output_state_get_version();
-	prev_playlist_version = playlist_state_get_hash(&g_playlist, pc);
+	prev_playlist_version = playlist_state_get_hash(&partition.playlist,
+							&partition.pc);
 }
 
 static void
-state_file_read(struct player_control *pc)
+state_file_read(Partition &partition)
 {
 	bool success;
 
@@ -95,14 +96,16 @@ state_file_read(struct player_control *pc)
 	while ((line = file.ReadLine()) != NULL) {
 		success = read_sw_volume_state(line) ||
 			audio_output_state_read(line) ||
-			playlist_state_restore(line, file, &g_playlist, pc);
+			playlist_state_restore(line, file, &partition.playlist,
+					       &partition.pc);
 		if (!success)
 			g_warning("Unrecognized line in state file: %s", line);
 	}
 
 	prev_volume_version = sw_volume_state_get_hash();
 	prev_output_version = audio_output_state_get_version();
-	prev_playlist_version = playlist_state_get_hash(&g_playlist, pc);
+	prev_playlist_version = playlist_state_get_hash(&partition.playlist,
+							&partition.pc);
 }
 
 /**
@@ -112,21 +115,22 @@ state_file_read(struct player_control *pc)
 static gboolean
 timer_save_state_file(gpointer data)
 {
-	struct player_control *pc = (struct player_control *)data;
+	Partition &partition = *(Partition *)data;
 
 	if (prev_volume_version == sw_volume_state_get_hash() &&
 	    prev_output_version == audio_output_state_get_version() &&
-	    prev_playlist_version == playlist_state_get_hash(&g_playlist, pc))
+	    prev_playlist_version == playlist_state_get_hash(&partition.playlist,
+							     &partition.pc))
 		/* nothing has changed - don't save the state file,
 		   don't spin up the hard disk */
 		return true;
 
-	state_file_write(pc);
+	state_file_write(partition);
 	return true;
 }
 
 void
-state_file_init(const char *path, struct player_control *pc)
+state_file_init(const char *path, Partition &partition)
 {
 	assert(state_file_path == NULL);
 
@@ -134,15 +138,15 @@ state_file_init(const char *path, struct player_control *pc)
 		return;
 
 	state_file_path = g_strdup(path);
-	state_file_read(pc);
+	state_file_read(partition);
 
 	save_state_source_id = g_timeout_add_seconds(5 * 60,
 						     timer_save_state_file,
-						     pc);
+						     &partition);
 }
 
 void
-state_file_finish(struct player_control *pc)
+state_file_finish(Partition &partition)
 {
 	if (state_file_path == NULL)
 		/* no state file configured, no cleanup required */
@@ -151,7 +155,7 @@ state_file_finish(struct player_control *pc)
 	if (save_state_source_id != 0)
 		g_source_remove(save_state_source_id);
 
-	state_file_write(pc);
+	state_file_write(partition);
 
 	g_free(state_file_path);
 }

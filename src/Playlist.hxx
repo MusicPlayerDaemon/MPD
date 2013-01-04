@@ -70,14 +70,8 @@ struct playlist {
 	int queued;
 };
 
-/** the global playlist object */
-extern struct playlist g_playlist;
-
 void
-playlist_global_init(unsigned max_length);
-
-void
-playlist_global_finish(void);
+playlist_global_init();
 
 void
 playlist_init(struct playlist *playlist, unsigned max_length);

@@ -28,7 +28,7 @@ extern GMainLoop *main_loop;
 
 extern GCond *main_cond;
 
-extern struct player_control *global_player_control;
+extern struct Partition *global_partition;
 
 /**
  * A entry point for application.

@@ -20,9 +20,7 @@
 #include "config.h"
 #include "Main.hxx"
 #include "CommandLine.hxx"
-#include "Playlist.hxx"
 #include "PlaylistFile.hxx"
-#include "PlayerControl.hxx"
 #include "UpdateGlue.hxx"
 #include "MusicChunk.hxx"
 #include "StateFile.hxx"
@@ -35,6 +33,7 @@
 #include "ClientIdle.hxx"
 #include "Client.hxx"
 #include "AllCommands.hxx"
+#include "Partition.hxx"
 
 extern "C" {
 #include "daemon.h"
@@ -100,7 +99,7 @@ GMainLoop *main_loop;
 
 GCond *main_cond;
 
-struct player_control *global_player_control;
+Partition *global_partition;
 
 static bool
 glue_daemonize_init(const struct options *options, GError **error_r)
@@ -231,7 +230,7 @@ glue_state_file_init(GError **error_r)
 		return false;
 	}
 
-	state_file_init(path, global_player_control);
+	state_file_init(path, *global_partition);
 	g_free(path);
 
 	return true;
@@ -306,8 +305,13 @@ initialize_decoder_and_player(void)
 	if (buffered_before_play > buffered_chunks)
 		buffered_before_play = buffered_chunks;
 
-	global_player_control = new player_control(buffered_chunks,
-						   buffered_before_play);
+	const unsigned max_length =
+		config_get_positive(CONF_MAX_PLAYLIST_LENGTH,
+				    DEFAULT_PLAYLIST_MAX_LENGTH);
+
+	global_partition = new Partition(max_length,
+					 buffered_chunks,
+					 buffered_before_play);
 }
 
 /**
@@ -414,8 +418,7 @@ int mpd_main(int argc, char *argv[])
 	}
 
 	initPermissions();
-	playlist_global_init(config_get_positive(CONF_MAX_PLAYLIST_LENGTH,
-						 DEFAULT_PLAYLIST_MAX_LENGTH));
+	playlist_global_init();
 	spl_global_init();
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_init_all();
@@ -438,7 +441,7 @@ int mpd_main(int argc, char *argv[])
 	initialize_decoder_and_player();
 	volume_init();
 	initAudioConfig();
-	audio_output_all_init(global_player_control);
+	audio_output_all_init(&global_partition->pc);
 	client_manager_init();
 	replay_gain_global_init();
 
@@ -464,7 +467,7 @@ int mpd_main(int argc, char *argv[])
 
 	initZeroconf();
 
-	player_create(global_player_control);
+	player_create(&global_partition->pc);
 
 	if (create_db) {
 		/* the database failed to load: recreate the
@@ -480,7 +483,7 @@ int mpd_main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	audio_output_all_set_replay_gain_mode(replay_gain_get_real_mode(g_playlist.queue.random));
+	audio_output_all_set_replay_gain_mode(replay_gain_get_real_mode(global_partition->playlist.queue.random));
 
 	success = config_get_bool(CONF_AUTO_UPDATE, false);
 #ifdef ENABLE_INOTIFY
@@ -496,7 +499,7 @@ int mpd_main(int argc, char *argv[])
 
 	/* enable all audio outputs (if not already done by
 	   playlist_state_restore() */
-	pc_update_audio(global_player_control);
+	pc_update_audio(&global_partition->pc);
 
 #ifdef WIN32
 	win32_app_started();
@@ -517,12 +520,11 @@ int mpd_main(int argc, char *argv[])
 	mpd_inotify_finish();
 #endif
 
-	state_file_finish(global_player_control);
-	pc_kill(global_player_control);
+	state_file_finish(*global_partition);
+	pc_kill(&global_partition->pc);
 	finishZeroconf();
 	client_manager_deinit();
 	listen_global_finish();
-	playlist_global_finish();
 
 	start = clock();
 	DatabaseGlobalDeinit();
@@ -542,7 +544,7 @@ int mpd_main(int argc, char *argv[])
 	volume_finish();
 	mapper_finish();
 	path_global_finish();
-	delete global_player_control;
+	delete global_partition;
 	command_finish();
 	update_global_finish();
 	decoder_plugin_deinit_all();

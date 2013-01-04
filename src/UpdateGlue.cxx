@@ -24,7 +24,6 @@
 #include "UpdateRemove.hxx"
 #include "Mapper.hxx"
 #include "DatabaseSimple.hxx"
-#include "Playlist.hxx"
 
 extern "C" {
 #include "event_pipe.h"
@@ -33,6 +32,7 @@ extern "C" {
 }
 
 #include "Main.hxx"
+#include "Partition.hxx"
 #include "mpd_error.h"
 
 #include <glib.h>
@@ -155,7 +155,7 @@ static void update_finished_event(void)
 
 	if (modified) {
 		/* send "idle" events */
-		playlist_increment_version_all(&g_playlist);
+		playlist_increment_version_all(&global_partition->playlist);
 		idle_add(IDLE_DATABASE);
 	}
 

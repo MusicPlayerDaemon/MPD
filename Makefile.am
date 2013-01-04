@@ -262,6 +262,7 @@ src_mpd_SOURCES = \
 	src/path.c \
 	src/Mapper.cxx src/Mapper.hxx \
 	src/page.c \
+	src/Partition.hxx \
 	src/Permission.cxx src/Permission.hxx \
 	src/PlayerThread.cxx src/PlayerThread.hxx \
 	src/PlayerControl.cxx src/PlayerControl.hxx \

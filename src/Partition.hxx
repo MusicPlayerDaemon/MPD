@@ -17,17 +17,31 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_STATE_FILE_HXX
-#define MPD_STATE_FILE_HXX
+#ifndef MPD_PARTITION_HXX
+#define MPD_PARTITION_HXX
 
-struct Partition;
+#include "Playlist.hxx"
+#include "PlayerControl.hxx"
 
-void
-state_file_init(const char *path, Partition &partition);
+/**
+ * A partition of the Music Player Daemon.  It is a separate unit with
+ * a playlist, a player, outputs etc.
+ */
+struct Partition {
+	struct playlist playlist;
 
-void
-state_file_finish(Partition &partition);
+	player_control pc;
 
-void write_state_file(void);
+	Partition(unsigned max_length,
+		  unsigned buffer_chunks,
+		  unsigned buffered_before_play)
+		:pc(buffer_chunks, buffered_before_play) {
+		playlist_init(&playlist, max_length);
+	}
 
-#endif /* STATE_FILE_H */
+	~Partition() {
+		playlist_finish(&playlist);
+	}
+};
+
+#endif

@@ -20,6 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "UpdateRemove.hxx"
 #include "Playlist.hxx"
+#include "Partition.hxx"
 
 extern "C" {
 #include "event_pipe.h"
@@ -63,7 +64,9 @@ song_remove_event(void)
 		sticker_song_delete(removed_song);
 #endif
 
-	playlist_delete_song(&g_playlist, global_player_control, removed_song);
+	playlist_delete_song(&global_partition->playlist,
+			     &global_partition->pc,
+			     removed_song);
 
 	/* clear "removed_song" and send signal to update thread */
 	g_mutex_lock(remove_mutex);
