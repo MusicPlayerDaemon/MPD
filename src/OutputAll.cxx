@@ -18,17 +18,24 @@
  */
 
 #include "config.h"
+
+extern "C" {
 #include "output_all.h"
-#include "output_error.h"
 #include "output_internal.h"
-#include "output_control.h"
-#include "chunk.h"
+}
+
+#include "OutputControl.hxx"
+#include "OutputError.hxx"
+#include "mpd_error.h"
+
+extern "C" {
+#include "player_control.h"
 #include "conf.h"
+#include "chunk.h"
 #include "pipe.h"
 #include "buffer.h"
-#include "player_control.h"
-#include "mpd_error.h"
 #include "notify.h"
+}
 
 #ifndef NDEBUG
 #include "chunk.h"

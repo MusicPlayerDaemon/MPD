@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,30 +17,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * Glue functions for controlling the audio outputs over the MPD
- * protocol.  These functions perform extra validation on all
- * parameters, because they might be from an untrusted source.
- *
- */
+#ifndef MPD_OUTPUT_LIST_HXX
+#define MPD_OUTPUT_LIST_HXX
 
-#ifndef OUTPUT_COMMAND_H
-#define OUTPUT_COMMAND_H
+extern const struct audio_output_plugin *const audio_output_plugins[];
 
-#include <stdbool.h>
+const struct audio_output_plugin *
+audio_output_plugin_get(const char *name);
 
-/**
- * Enables an audio output.  Returns false if the specified output
- * does not exist.
- */
-bool
-audio_output_enable_index(unsigned idx);
-
-/**
- * Disables an audio output.  Returns false if the specified output
- * does not exist.
- */
-bool
-audio_output_disable_index(unsigned idx);
+#define audio_output_plugins_for_each(plugin) \
+	for (const struct audio_output_plugin *plugin, \
+		*const*output_plugin_iterator = &audio_output_plugins[0]; \
+		(plugin = *output_plugin_iterator) != NULL; ++output_plugin_iterator)
 
 #endif

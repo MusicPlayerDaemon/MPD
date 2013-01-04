@@ -29,7 +29,7 @@ extern "C" {
 
 #include "decoder_list.h"
 #include "decoder_plugin.h"
-#include "output_list.h"
+#include "OutputList.hxx"
 #include "output_plugin.h"
 #include "input_registry.h"
 #include "input_plugin.h"

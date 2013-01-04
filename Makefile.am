@@ -52,11 +52,7 @@ mpd_headers = \
 	src/audio_parser.h \
 	src/output_internal.h \
 	src/output_api.h \
-	src/output_list.h \
 	src/output_all.h \
-	src/output_thread.h \
-	src/output_control.h \
-	src/output_command.h \
 	src/filter_internal.h \
 	src/filter_config.h \
 	src/filter_plugin.h \
@@ -785,17 +781,17 @@ OUTPUT_LIBS = \
 	$(SHOUT_LIBS)
 
 OUTPUT_API_SRC = \
-	src/output_list.c \
-	src/output_all.c \
-	src/output_thread.c \
-	src/output_error.h \
-	src/output_control.c \
+	src/OutputList.cxx src/OutputList.hxx \
+	src/OutputAll.cxx \
+	src/OutputThread.cxx src/OutputThread.hxx \
+	src/OutputError.hxx \
+	src/OutputControl.cxx src/OutputControl.hxx \
 	src/OutputState.cxx src/OutputState.hxx \
 	src/OutputPrint.cxx src/OutputPrint.hxx \
-	src/output_command.c \
-	src/output_plugin.c src/output_plugin.h \
-	src/output_finish.c \
-	src/output_init.c
+	src/OutputCommand.cxx src/OutputCommand.hxx \
+	src/OutputPlugin.cxx src/output_plugin.h \
+	src/OutputFinish.cxx \
+	src/OutputInit.cxx
 
 liboutput_plugins_a_SOURCES = \
 	src/output/null_output_plugin.h \
@@ -1265,7 +1261,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	$(FILTER_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
-test_run_output_SOURCES = test/run_output.c \
+test_run_output_SOURCES = test/run_output.cxx \
 	test/stdbin.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
 	src/io_thread.c src/io_thread.h \
@@ -1278,8 +1274,8 @@ test_run_output_SOURCES = test/run_output.c \
 	src/page.c \
 	src/socket_util.c \
 	src/resolver.c \
-	src/output_init.c src/output_finish.c src/output_list.c \
-	src/output_plugin.c \
+	src/OutputInit.cxx src/OutputFinish.cxx src/OutputList.cxx \
+	src/OutputPlugin.cxx \
 	src/mixer_api.c \
 	src/mixer_control.c \
 	src/mixer_type.c \

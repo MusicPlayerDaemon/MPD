@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,16 +18,20 @@
  */
 
 #include "config.h"
-#include "io_thread.h"
+#include "OutputControl.hxx"
+
+extern "C" {
 #include "output_plugin.h"
 #include "output_internal.h"
-#include "output_control.h"
+#include "io_thread.h"
 #include "conf.h"
 #include "audio_parser.h"
 #include "filter_registry.h"
 #include "pcm_convert.h"
 #include "event_pipe.h"
 #include "idle.h"
+}
+
 #include "playlist.h"
 #include "player_control.h"
 #include "stdbin.h"
@@ -103,7 +107,7 @@ load_audio_output(const char *name)
 	param = find_named_config_block(CONF_AUDIO_OUTPUT, name);
 	if (param == NULL) {
 		g_printerr("No such configured audio output: %s\n", name);
-		return false;
+		return nullptr;
 	}
 
 	static struct player_control dummy_player_control;

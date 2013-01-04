@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,17 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_OUTPUT_LIST_H
-#define MPD_OUTPUT_LIST_H
+#ifndef MPD_OUTPUT_THREAD_HXX
+#define MPD_OUTPUT_THREAD_HXX
 
-extern const struct audio_output_plugin *const audio_output_plugins[];
+struct audio_output;
 
-const struct audio_output_plugin *
-audio_output_plugin_get(const char *name);
-
-#define audio_output_plugins_for_each(plugin) \
-	for (const struct audio_output_plugin *plugin, \
-		*const*output_plugin_iterator = &audio_output_plugins[0]; \
-		(plugin = *output_plugin_iterator) != NULL; ++output_plugin_iterator)
+void audio_output_thread_start(struct audio_output *ao);
 
 #endif

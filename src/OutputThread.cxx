@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,9 @@
  */
 
 #include "config.h"
-#include "output_thread.h"
+#include "OutputThread.hxx"
+
+extern "C" {
 #include "output_api.h"
 #include "output_internal.h"
 #include "chunk.h"
@@ -28,8 +30,10 @@
 #include "filter_plugin.h"
 #include "filter/convert_filter_plugin.h"
 #include "filter/replay_gain_filter_plugin.h"
-#include "mpd_error.h"
 #include "notify.h"
+}
+
+#include "mpd_error.h"
 #include "gcc.h"
 
 #include <glib.h>
@@ -315,7 +319,7 @@ ao_wait(struct audio_output *ao)
 	}
 }
 
-static const char *
+static const void *
 ao_chunk_data(struct audio_output *ao, const struct music_chunk *chunk,
 	      struct filter *replay_gain_filter,
 	      unsigned *replay_gain_serial_p,
@@ -325,7 +329,7 @@ ao_chunk_data(struct audio_output *ao, const struct music_chunk *chunk,
 	assert(!music_chunk_is_empty(chunk));
 	assert(music_chunk_check_format(chunk, &ao->in_audio_format));
 
-	const char *data = chunk->data;
+	const void *data = chunk->data;
 	size_t length = chunk->length;
 
 	(void)ao;
@@ -356,14 +360,14 @@ ao_chunk_data(struct audio_output *ao, const struct music_chunk *chunk,
 	return data;
 }
 
-static const char *
+static const void *
 ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 		size_t *length_r)
 {
 	GError *error = NULL;
 
 	size_t length;
-	const char *data = ao_chunk_data(ao, chunk, ao->replay_gain_filter,
+	const void *data = ao_chunk_data(ao, chunk, ao->replay_gain_filter,
 					 &ao->replay_gain_serial, &length);
 	if (data == NULL)
 		return NULL;
@@ -378,7 +382,7 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 
 	if (chunk->other != NULL) {
 		size_t other_length;
-		const char *other_data =
+		const void *other_data =
 			ao_chunk_data(ao, chunk->other,
 				      ao->other_replay_gain_filter,
 				      &ao->other_replay_gain_serial,
@@ -399,13 +403,14 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 		if (length > other_length)
 			length = other_length;
 
-		char *dest = pcm_buffer_get(&ao->cross_fade_buffer,
+		void *dest = pcm_buffer_get(&ao->cross_fade_buffer,
 					    other_length);
 		memcpy(dest, other_data, other_length);
-		if (!pcm_mix(dest, data, length, ao->in_audio_format.format,
+		if (!pcm_mix(dest, data, length,
+			     sample_format(ao->in_audio_format.format),
 			     1.0 - chunk->mix_ratio)) {
 			g_warning("Cannot cross-fade format %s",
-				  sample_format_to_string(ao->in_audio_format.format));
+				  sample_format_to_string(sample_format(ao->in_audio_format.format)));
 			return NULL;
 		}
 
@@ -446,7 +451,7 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 	/* workaround -Wmaybe-uninitialized false positive */
 	size = 0;
 #endif
-	const char *data = ao_filter_chunk(ao, chunk, &size);
+	const char *data = (const char *)ao_filter_chunk(ao, chunk, &size);
 	if (data == NULL) {
 		ao_close(ao, false);
 
@@ -578,7 +583,7 @@ static void ao_pause(struct audio_output *ao)
 
 static gpointer audio_output_task(gpointer arg)
 {
-	struct audio_output *ao = arg;
+	struct audio_output *ao = (struct audio_output *)arg;
 
 	g_mutex_lock(ao->mutex);
 

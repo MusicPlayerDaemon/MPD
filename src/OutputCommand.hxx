@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,19 +17,28 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_OUTPUT_ERROR_H
-#define MPD_OUTPUT_ERROR_H
+/*
+ * Glue functions for controlling the audio outputs over the MPD
+ * protocol.  These functions perform extra validation on all
+ * parameters, because they might be from an untrusted source.
+ *
+ */
 
-#include <glib.h>
+#ifndef MPD_OUTPUT_COMMAND_HXX
+#define MPD_OUTPUT_COMMAND_HXX
 
 /**
- * Quark for GError.domain.
+ * Enables an audio output.  Returns false if the specified output
+ * does not exist.
  */
-G_GNUC_CONST
-static inline GQuark
-output_quark(void)
-{
-	return g_quark_from_static_string("output");
-}
+bool
+audio_output_enable_index(unsigned idx);
+
+/**
+ * Disables an audio output.  Returns false if the specified output
+ * does not exist.
+ */
+bool
+audio_output_disable_index(unsigned idx);
 
 #endif

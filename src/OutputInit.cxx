@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,10 +18,12 @@
  */
 
 #include "config.h"
-#include "output_control.h"
+#include "OutputControl.hxx"
+#include "OutputList.hxx"
+
+extern "C" {
 #include "output_api.h"
 #include "output_internal.h"
-#include "output_list.h"
 #include "audio_parser.h"
 #include "mixer_control.h"
 #include "mixer_type.h"
@@ -33,6 +35,7 @@
 #include "filter/chain_filter_plugin.h"
 #include "filter/autoconvert_filter_plugin.h"
 #include "filter/replay_gain_filter_plugin.h"
+}
 
 #include <glib.h>
 
@@ -298,14 +301,14 @@ audio_output_new(const struct config_param *param,
 		if (p == NULL) {
 			g_set_error(error_r, audio_output_quark(), 0,
 				    "Missing \"type\" configuration");
-			return false;
+			return nullptr;
 		}
 
 		plugin = audio_output_plugin_get(p);
 		if (plugin == NULL) {
 			g_set_error(error_r, audio_output_quark(), 0,
 				    "No such audio output plugin: %s", p);
-			return false;
+			return nullptr;
 		}
 	} else {
 		g_warning("No \"%s\" defined in config file\n",
@@ -313,7 +316,7 @@ audio_output_new(const struct config_param *param,
 
 		plugin = audio_output_detect(error_r);
 		if (plugin == NULL)
-			return false;
+			return nullptr;
 
 		g_message("Successfully detected a %s audio device",
 			  plugin->name);

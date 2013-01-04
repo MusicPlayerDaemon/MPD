@@ -25,13 +25,16 @@
  */
 
 #include "config.h"
-#include "output_command.h"
+#include "OutputCommand.hxx"
+
+extern "C" {
 #include "output_all.h"
 #include "output_internal.h"
 #include "output_plugin.h"
 #include "mixer_control.h"
 #include "player_control.h"
 #include "idle.h"
+}
 
 extern unsigned audio_output_state_version;
 
