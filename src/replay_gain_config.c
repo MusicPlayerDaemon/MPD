@@ -31,11 +31,6 @@
 #include <string.h>
 #include <math.h>
 
-static const char *const replay_gain_mode_names[] = {
-	[REPLAY_GAIN_ALBUM] = "album",
-	[REPLAY_GAIN_TRACK] = "track",
-};
-
 enum replay_gain_mode replay_gain_mode = REPLAY_GAIN_OFF;
 
 const bool DEFAULT_REPLAYGAIN_LIMIT = true;
