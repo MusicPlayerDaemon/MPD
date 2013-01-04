@@ -146,13 +146,11 @@ struct player_control {
 	 * time.
 	 */
 	bool border_pause;
+
+	player_control(unsigned buffer_chunks,
+		       unsigned buffered_before_play);
+	~player_control();
 };
-
-struct player_control *
-pc_new(unsigned buffer_chunks, unsigned buffered_before_play);
-
-void
-pc_free(struct player_control *pc);
 
 /**
  * Locks the #player_control object.

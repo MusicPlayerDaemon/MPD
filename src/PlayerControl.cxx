@@ -35,36 +35,28 @@ extern "C" {
 static void
 pc_enqueue_song_locked(struct player_control *pc, struct song *song);
 
-struct player_control *
-pc_new(unsigned buffer_chunks, unsigned int buffered_before_play)
+player_control::player_control(unsigned _buffer_chunks,
+			       unsigned _buffered_before_play)
+	:buffer_chunks(_buffer_chunks),
+	 buffered_before_play(_buffered_before_play),
+	 mutex(g_mutex_new()),
+	 cond(g_cond_new()),
+	 command(PLAYER_COMMAND_NONE),
+	 state(PLAYER_STATE_STOP),
+	 error_type(PLAYER_ERROR_NONE),
+	 cross_fade_seconds(0),
+	 mixramp_db(0),
+	 mixramp_delay_seconds(nanf(""))
 {
-	struct player_control *pc = g_new0(struct player_control, 1);
-
-	pc->buffer_chunks = buffer_chunks;
-	pc->buffered_before_play = buffered_before_play;
-
-	pc->mutex = g_mutex_new();
-	pc->cond = g_cond_new();
-
-	pc->command = PLAYER_COMMAND_NONE;
-	pc->error_type = PLAYER_ERROR_NONE;
-	pc->state = PLAYER_STATE_STOP;
-	pc->cross_fade_seconds = 0;
-	pc->mixramp_db = 0;
-	pc->mixramp_delay_seconds = nanf("");
-
-	return pc;
 }
 
-void
-pc_free(struct player_control *pc)
+player_control::~player_control()
 {
-	if (pc->next_song != NULL)
-		song_free(pc->next_song);
+	if (next_song != nullptr)
+		song_free(next_song);
 
-	g_cond_free(pc->cond);
-	g_mutex_free(pc->mutex);
-	g_free(pc);
+	g_cond_free(cond);
+	g_mutex_free(mutex);
 }
 
 void

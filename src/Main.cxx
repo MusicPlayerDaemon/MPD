@@ -306,7 +306,8 @@ initialize_decoder_and_player(void)
 	if (buffered_before_play > buffered_chunks)
 		buffered_before_play = buffered_chunks;
 
-	global_player_control = pc_new(buffered_chunks, buffered_before_play);
+	global_player_control = new player_control(buffered_chunks,
+						   buffered_before_play);
 }
 
 /**
@@ -538,7 +539,7 @@ int mpd_main(int argc, char *argv[])
 	volume_finish();
 	mapper_finish();
 	path_global_finish();
-	pc_free(global_player_control);
+	delete global_player_control;
 	command_finish();
 	update_global_finish();
 	decoder_plugin_deinit_all();
