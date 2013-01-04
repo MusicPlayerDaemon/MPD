@@ -45,9 +45,9 @@ playlist_event(void)
 }
 
 void
-playlist_global_init(void)
+playlist_global_init(unsigned max_length)
 {
-	playlist_init(&g_playlist);
+	playlist_init(&g_playlist, max_length);
 
 	event_pipe_register(PIPE_EVENT_TAG, playlist_tag_event);
 	event_pipe_register(PIPE_EVENT_PLAYLIST, playlist_event);

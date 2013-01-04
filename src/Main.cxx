@@ -414,7 +414,8 @@ int mpd_main(int argc, char *argv[])
 	}
 
 	initPermissions();
-	playlist_global_init();
+	playlist_global_init(config_get_positive(CONF_MAX_PLAYLIST_LENGTH,
+						 DEFAULT_PLAYLIST_MAX_LENGTH));
 	spl_global_init();
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_init_all();

@@ -23,7 +23,6 @@
 #include "song.h"
 
 extern "C" {
-#include "conf.h"
 #include "idle.h"
 }
 
@@ -54,11 +53,9 @@ playlist_tag_changed(struct playlist *playlist)
 }
 
 void
-playlist_init(struct playlist *playlist)
+playlist_init(struct playlist *playlist, unsigned max_length)
 {
-	queue_init(&playlist->queue,
-		   config_get_positive(CONF_MAX_PLAYLIST_LENGTH,
-				       DEFAULT_PLAYLIST_MAX_LENGTH));
+	queue_init(&playlist->queue, max_length);
 
 	playlist->queued = -1;
 	playlist->current = -1;
