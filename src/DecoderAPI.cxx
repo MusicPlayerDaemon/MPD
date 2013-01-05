@@ -531,9 +531,13 @@ decoder_replay_gain(struct decoder *decoder,
 			serial = 1;
 
 		if (REPLAY_GAIN_OFF != replay_gain_mode) {
+			enum replay_gain_mode rgm = replay_gain_mode;
+			if (rgm != REPLAY_GAIN_ALBUM)
+				rgm = REPLAY_GAIN_TRACK;
+
 			decoder->dc->replay_gain_db = 20.0 * log10f(
 				replay_gain_tuple_scale(
-					&replay_gain_info->tuples[replay_gain_get_real_mode()],
+					&replay_gain_info->tuples[rgm],
 					replay_gain_preamp, replay_gain_missing_preamp,
 					replay_gain_limit));
 		}
