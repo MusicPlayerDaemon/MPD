@@ -1009,9 +1009,9 @@ noinst_PROGRAMS = \
 	test/read_conf \
 	test/run_resolver \
 	test/DumpDatabase \
-	test/RunInput \
+	test/run_input \
 	test/dump_text_file \
-	test/DumpPlaylist \
+	test/dump_playlist \
 	test/run_decoder \
 	test/read_tags \
 	test/run_filter \
@@ -1056,11 +1056,11 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/TextFile.cxx \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c
 
-test_RunInput_LDADD = \
+test_run_input_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(GLIB_LIBS)
-test_RunInput_SOURCES = test/RunInput.c \
+test_run_input_SOURCES = test/run_input.c \
 	test/stdbin.h \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
@@ -1079,7 +1079,7 @@ test_dump_text_file_SOURCES = test/dump_text_file.c \
 	src/text_input_stream.c src/fifo_buffer.c \
 	src/fd_util.c
 
-test_DumpPlaylist_LDADD = \
+test_dump_playlist_LDADD = \
 	$(PLAYLIST_LIBS) \
 	$(FLAC_LIBS) \
 	$(INPUT_LIBS) \
@@ -1088,7 +1088,7 @@ test_DumpPlaylist_LDADD = \
 	$(TAG_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
-test_DumpPlaylist_SOURCES = test/DumpPlaylist.cxx \
+test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	$(DECODER_SRC) \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
@@ -1101,7 +1101,7 @@ test_DumpPlaylist_SOURCES = test/DumpPlaylist.cxx \
 	src/fd_util.c
 
 if HAVE_FLAC
-test_DumpPlaylist_SOURCES += \
+test_dump_playlist_SOURCES += \
 	src/ReplayGainInfo.cxx \
 	src/decoder/FLACMetaData.cxx
 endif
@@ -1176,11 +1176,11 @@ test_run_filter_SOURCES = test/run_filter.c \
 if ENABLE_DESPOTIFY
 test_read_tags_SOURCES += \
 	src/despotify_utils.c
-test_RunInput_SOURCES += \
+test_run_input_SOURCES += \
 	src/despotify_utils.c
 test_dump_text_file_SOURCES += \
 	src/despotify_utils.c
-test_DumpPlaylist_SOURCES += \
+test_dump_playlist_SOURCES += \
 	src/despotify_utils.c
 test_run_decoder_SOURCES += \
 	src/despotify_utils.c
