@@ -139,7 +139,7 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder,
 	return DECODE_COMMAND_NONE;
 }
 
-float
+void
 decoder_replay_gain(G_GNUC_UNUSED struct decoder *decoder,
 		    const struct replay_gain_info *replay_gain_info)
 {
@@ -153,13 +153,10 @@ decoder_replay_gain(G_GNUC_UNUSED struct decoder *decoder,
 	if (replay_gain_tuple_defined(tuple))
 		g_printerr("replay_gain[track]: gain=%f peak=%f\n",
 			   tuple->gain, tuple->peak);
-
-	return 0.0;
 }
 
 void
 decoder_mixramp(G_GNUC_UNUSED struct decoder *decoder,
-		G_GNUC_UNUSED float replay_gain_db,
 		char *mixramp_start, char *mixramp_end)
 {
 	g_free(mixramp_start);

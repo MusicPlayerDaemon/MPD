@@ -359,15 +359,14 @@ static void mp3_parse_id3(struct mp3_data *data, size_t tagsize,
 		struct replay_gain_info rgi;
 		char *mixramp_start;
 		char *mixramp_end;
-		float replay_gain_db = 0;
 
 		if (parse_id3_replay_gain_info(&rgi, id3_tag)) {
-			replay_gain_db = decoder_replay_gain(data->decoder, &rgi);
+			decoder_replay_gain(data->decoder, &rgi);
 			data->found_replay_gain = true;
 		}
 
 		if (parse_id3_mixramp(&mixramp_start, &mixramp_end, id3_tag))
-			decoder_mixramp(data->decoder, replay_gain_db,
+			decoder_mixramp(data->decoder,
 					mixramp_start, mixramp_end);
 	}
 
