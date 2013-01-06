@@ -53,6 +53,6 @@ findAddIn(struct playlist &playlist, struct player_control *pc,
 	const DatabaseSelection selection(uri, true, filter);
 
 	using namespace std::placeholders;
-	const auto f = std::bind(AddToQueue, playlist, pc, _1, _2);
+	const auto f = std::bind(AddToQueue, std::ref(playlist), pc, _1, _2);
 	return db->Visit(selection, f, error_r);
 }
