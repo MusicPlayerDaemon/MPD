@@ -52,21 +52,6 @@ playlist_tag_changed(struct playlist *playlist)
 	idle_add(IDLE_PLAYLIST);
 }
 
-void
-playlist_init(struct playlist *playlist, unsigned max_length)
-{
-	queue_init(&playlist->queue, max_length);
-
-	playlist->queued = -1;
-	playlist->current = -1;
-}
-
-void
-playlist_finish(struct playlist *playlist)
-{
-	queue_finish(&playlist->queue);
-}
-
 /**
  * Queue a song, addressed by its order number.
  */

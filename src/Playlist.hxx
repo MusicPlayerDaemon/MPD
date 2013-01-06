@@ -68,16 +68,19 @@ struct playlist {
 	 * This variable is only valid if #playing is true.
 	 */
 	int queued;
+
+	playlist(unsigned max_length)
+		:current(-1), queued(-1) {
+		queue_init(&queue, max_length);
+	}
+
+	~playlist() {
+		queue_finish(&queue);
+	}
 };
 
 void
 playlist_global_init();
-
-void
-playlist_init(struct playlist *playlist, unsigned max_length);
-
-void
-playlist_finish(struct playlist *playlist);
 
 void
 playlist_tag_changed(struct playlist *playlist);

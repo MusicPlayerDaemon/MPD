@@ -35,12 +35,8 @@ struct Partition {
 	Partition(unsigned max_length,
 		  unsigned buffer_chunks,
 		  unsigned buffered_before_play)
-		:pc(buffer_chunks, buffered_before_play) {
-		playlist_init(&playlist, max_length);
-	}
-
-	~Partition() {
-		playlist_finish(&playlist);
+		:playlist(max_length),
+		 pc(buffer_chunks, buffered_before_play) {
 	}
 };
 
