@@ -24,6 +24,8 @@
 
 #include <glib.h>
 
+#include <algorithm>
+
 #include <assert.h>
 #include <stdint.h>
 
@@ -265,9 +267,7 @@ struct queue {
 	 * Swaps two songs, addressed by their order number.
 	 */
 	void SwapOrders(unsigned order1, unsigned order2) {
-		unsigned tmp = order[order1];
-		order[order1] = order[order2];
-		order[order2] = tmp;
+		std::swap(order[order1], order[order2]);
 	}
 
 	/**

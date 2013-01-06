@@ -145,13 +145,10 @@ queue::Append(struct song *song, uint8_t priority)
 void
 queue::SwapPositions(unsigned position1, unsigned position2)
 {
-	struct queue_item tmp;
 	unsigned id1 = items[position1].id;
 	unsigned id2 = items[position2].id;
 
-	tmp = items[position1];
-	items[position1] = items[position2];
-	items[position2] = tmp;
+	std::swap(items[position1], items[position2]);
 
 	items[position1].version = version;
 	items[position2].version = version;
