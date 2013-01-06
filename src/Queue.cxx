@@ -300,40 +300,32 @@ queue_clear(struct queue *queue)
 	queue->length = 0;
 }
 
-void
-queue_init(struct queue *queue, unsigned max_length)
+queue::queue(unsigned _max_length)
+	:max_length(_max_length), length(0),
+	 version(1),
+	 items(g_new(struct queue_item, max_length)),
+	 order((unsigned *)g_malloc(sizeof(order[0]) * max_length)),
+	 id_to_position((int *)g_malloc(sizeof(id_to_position[0]) *
+					max_length * QUEUE_HASH_MULT)),
+	 repeat(false),
+	 single(false),
+	 consume(false),
+	 random(false),
+	 rand(g_rand_new())
 {
-	queue->max_length = max_length;
-	queue->length = 0;
-	queue->version = 1;
-	queue->repeat = false;
-	queue->random = false;
-	queue->single = false;
-	queue->consume = false;
-
-	queue->items = g_new(struct queue_item, max_length);
-	queue->order = (unsigned *)
-		g_malloc(sizeof(queue->order[0]) * max_length);
-	queue->id_to_position = (int *)
-		g_malloc(sizeof(queue->id_to_position[0]) *
-			 max_length * QUEUE_HASH_MULT);
-
 	for (unsigned i = 0; i < max_length * QUEUE_HASH_MULT; ++i)
-		queue->id_to_position[i] = -1;
-
-	queue->rand = g_rand_new();
+		id_to_position[i] = -1;
 }
 
-void
-queue_finish(struct queue *queue)
+queue::~queue()
 {
-	queue_clear(queue);
+	queue_clear(this);
 
-	g_free(queue->items);
-	g_free(queue->order);
-	g_free(queue->id_to_position);
+	g_free(items);
+	g_free(order);
+	g_free(id_to_position);
 
-	g_rand_free(queue->rand);
+	g_rand_free(rand);
 }
 
 static const struct queue_item *

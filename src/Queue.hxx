@@ -99,6 +99,17 @@ struct queue {
 
 	/** random number generator for shuffle and random mode */
 	GRand *rand;
+
+	queue(unsigned max_length);
+
+	/**
+	 * Deinitializes a queue object.  It does not free the queue
+	 * pointer itself.
+	 */
+	~queue();
+
+	queue(const queue &other) = delete;
+	queue &operator=(const queue &other) = delete;
 };
 
 static inline unsigned
@@ -231,19 +242,6 @@ queue_song_newer(const struct queue *queue, unsigned position,
 		queue->items[position].version >= version ||
 		queue->items[position].version == 0;
 }
-
-/**
- * Initialize a queue object.
- */
-void
-queue_init(struct queue *queue, unsigned max_length);
-
-/**
- * Deinitializes a queue object.  It does not free the queue pointer
- * itself.
- */
-void
-queue_finish(struct queue *queue);
 
 /**
  * Returns the order number following the specified one.  This takes

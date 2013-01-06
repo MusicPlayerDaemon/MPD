@@ -50,8 +50,7 @@ main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 {
 	struct song songs[16];
 
-	struct queue queue;
-	queue_init(&queue, 32);
+	struct queue queue(32);
 
 	for (unsigned i = 0; i < G_N_ELEMENTS(songs); ++i)
 		queue_append(&queue, &songs[i], 0);
