@@ -61,19 +61,19 @@ queue_save_song(FILE *fp, int idx, const struct song *song)
 void
 queue_save(FILE *fp, const struct queue *queue)
 {
-	for (unsigned i = 0; i < queue_length(queue); i++) {
-		uint8_t prio = queue_get_priority_at_position(queue, i);
+	for (unsigned i = 0; i < queue->GetLength(); i++) {
+		uint8_t prio = queue->GetPriorityAtPosition(i);
 		if (prio != 0)
 			fprintf(fp, PRIO_LABEL "%u\n", prio);
 
-		queue_save_song(fp, i, queue_get(queue, i));
+		queue_save_song(fp, i, queue->Get(i));
 	}
 }
 
 void
 queue_load_song(TextFile &file, const char *line, queue *queue)
 {
-	if (queue_is_full(queue))
+	if (queue->IsFull())
 		return;
 
 	uint8_t priority = 0;
@@ -123,7 +123,7 @@ queue_load_song(TextFile &file, const char *line, queue *queue)
 		}
 	}
 
-	queue_append(queue, song, priority);
+	queue->Append(song, priority);
 
 	if (db != nullptr)
 		db->ReturnSong(song);

@@ -98,8 +98,8 @@ spl_save_queue(const char *name_utf8, const struct queue *queue)
 	if (file == NULL)
 		return PLAYLIST_RESULT_ERRNO;
 
-	for (unsigned i = 0; i < queue_length(queue); i++)
-		playlist_print_song(file, queue_get(queue, i));
+	for (unsigned i = 0; i < queue->GetLength(); i++)
+		playlist_print_song(file, queue->Get(i));
 
 	fclose(file);
 

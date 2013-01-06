@@ -23,21 +23,21 @@ G_GNUC_UNUSED
 static void
 dump_order(const struct queue *queue)
 {
-	g_printerr("queue length=%u, order:\n", queue_length(queue));
-	for (unsigned i = 0; i < queue_length(queue); ++i)
+	g_printerr("queue length=%u, order:\n", queue->GetLength());
+	for (unsigned i = 0; i < queue->GetLength(); ++i)
 		g_printerr("  [%u] -> %u (prio=%u)\n", i, queue->order[i],
 			   queue->items[queue->order[i]].priority);
 }
 
 static void
-check_descending_priority(G_GNUC_UNUSED const struct queue *queue,
+check_descending_priority(const struct queue *queue,
 			 unsigned start_order)
 {
-	assert(start_order < queue_length(queue));
+	assert(start_order < queue->GetLength());
 
 	uint8_t last_priority = 0xff;
-	for (unsigned order = start_order; order < queue_length(queue); ++order) {
-		unsigned position = queue_order_to_position(queue, order);
+	for (unsigned order = start_order; order < queue->GetLength(); ++order) {
+		unsigned position = queue->OrderToPosition(order);
 		uint8_t priority = queue->items[position].priority;
 		assert(priority <= last_priority);
 		(void)last_priority;
@@ -48,74 +48,74 @@ check_descending_priority(G_GNUC_UNUSED const struct queue *queue,
 int
 main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 {
-	struct song songs[16];
+	static struct song songs[16];
 
 	struct queue queue(32);
 
 	for (unsigned i = 0; i < G_N_ELEMENTS(songs); ++i)
-		queue_append(&queue, &songs[i], 0);
+		queue.Append(&songs[i], 0);
 
-	assert(queue_length(&queue) == G_N_ELEMENTS(songs));
+	assert(queue.GetLength() == G_N_ELEMENTS(songs));
 
 	/* priority=10 for 4 items */
 
-	queue_set_priority_range(&queue, 4, 8, 10, -1);
+	queue.SetPriorityRange(4, 8, 10, -1);
 
 	queue.random = true;
-	queue_shuffle_order(&queue);
+	queue.ShuffleOrder();
 	check_descending_priority(&queue, 0);
 
 	for (unsigned i = 0; i < 4; ++i) {
-		assert(queue_position_to_order(&queue, i) >= 4);
+		assert(queue.PositionToOrder(i) >= 4);
 	}
 
 	for (unsigned i = 4; i < 8; ++i) {
-		assert(queue_position_to_order(&queue, i) < 4);
+		assert(queue.PositionToOrder(i) < 4);
 	}
 
 	for (unsigned i = 8; i < G_N_ELEMENTS(songs); ++i) {
-		assert(queue_position_to_order(&queue, i) >= 4);
+		assert(queue.PositionToOrder(i) >= 4);
 	}
 
 	/* priority=50 one more item */
 
-	queue_set_priority_range(&queue, 15, 16, 50, -1);
+	queue.SetPriorityRange(15, 16, 50, -1);
 	check_descending_priority(&queue, 0);
 
-	assert(queue_position_to_order(&queue, 15) == 0);
+	assert(queue.PositionToOrder(15) == 0);
 
 	for (unsigned i = 0; i < 4; ++i) {
-		assert(queue_position_to_order(&queue, i) >= 4);
+		assert(queue.PositionToOrder(i) >= 4);
 	}
 
 	for (unsigned i = 4; i < 8; ++i) {
-		assert(queue_position_to_order(&queue, i) >= 1 &&
-		       queue_position_to_order(&queue, i) < 5);
+		assert(queue.PositionToOrder(i) >= 1 &&
+		       queue.PositionToOrder(i) < 5);
 	}
 
 	for (unsigned i = 8; i < 15; ++i) {
-		assert(queue_position_to_order(&queue, i) >= 5);
+		assert(queue.PositionToOrder(i) >= 5);
 	}
 
 	/* priority=20 for one of the 4 priority=10 items */
 
-	queue_set_priority_range(&queue, 3, 4, 20, -1);
+	queue.SetPriorityRange(3, 4, 20, -1);
 	check_descending_priority(&queue, 0);
 
-	assert(queue_position_to_order(&queue, 3) == 1);
-	assert(queue_position_to_order(&queue, 15) == 0);
+	assert(queue.PositionToOrder(3) == 1);
+	assert(queue.PositionToOrder(15) == 0);
 
 	for (unsigned i = 0; i < 3; ++i) {
-		assert(queue_position_to_order(&queue, i) >= 5);
+		assert(queue.PositionToOrder(i) >= 5);
 	}
 
 	for (unsigned i = 4; i < 8; ++i) {
-		assert(queue_position_to_order(&queue, i) >= 2 &&
-		       queue_position_to_order(&queue, i) < 6);
+		assert(queue.PositionToOrder(i) >= 2 &&
+		       queue.PositionToOrder(i) < 6);
 	}
 
 	for (unsigned i = 8; i < 15; ++i) {
-		assert(queue_position_to_order(&queue, i) >= 6);
+		assert(queue.PositionToOrder(i) >= 6);
 	}
 
 	/* priority=20 for another one of the 4 priority=10 items;
@@ -124,17 +124,17 @@ main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 
 	unsigned current_order = 4;
 	unsigned current_position =
-		queue_order_to_position(&queue, current_order);
+		queue.OrderToPosition(current_order);
 
 	unsigned a_order = 3;
-	unsigned a_position = queue_order_to_position(&queue, a_order);
+	unsigned a_position = queue.OrderToPosition(a_order);
 	assert(queue.items[a_position].priority == 10);
-	queue_set_priority(&queue, a_position, 20, current_order);
+	queue.SetPriority(a_position, 20, current_order);
 
-	current_order = queue_position_to_order(&queue, current_position);
+	current_order = queue.PositionToOrder(current_position);
 	assert(current_order == 3);
 
-	a_order = queue_position_to_order(&queue, a_position);
+	a_order = queue.PositionToOrder(a_position);
 	assert(a_order == 4);
 
 	check_descending_priority(&queue, current_order + 1);
@@ -144,14 +144,14 @@ main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 	   just created */
 
 	unsigned b_order = 10;
-	unsigned b_position = queue_order_to_position(&queue, b_order);
+	unsigned b_position = queue.OrderToPosition(b_order);
 	assert(queue.items[b_position].priority == 0);
-	queue_set_priority(&queue, b_position, 70, current_order);
+	queue.SetPriority(b_position, 70, current_order);
 
-	current_order = queue_position_to_order(&queue, current_position);
+	current_order = queue.PositionToOrder(current_position);
 	assert(current_order == 3);
 
-	b_order = queue_position_to_order(&queue, b_position);
+	b_order = queue.PositionToOrder(b_position);
 	assert(b_order == 4);
 
 	check_descending_priority(&queue, current_order + 1);
@@ -161,27 +161,26 @@ main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 	   hasn't changed (it was already higher before) */
 
 	unsigned c_order = 0;
-	unsigned c_position = queue_order_to_position(&queue, c_order);
+	unsigned c_position = queue.OrderToPosition(c_order);
 	assert(queue.items[c_position].priority == 50);
-	queue_set_priority(&queue, c_position, 60, current_order);
+	queue.SetPriority(c_position, 60, current_order);
 
-	current_order = queue_position_to_order(&queue, current_position);
+	current_order = queue.PositionToOrder(current_position);
 	assert(current_order == 3);
 
-	c_order = queue_position_to_order(&queue, c_position);
+	c_order = queue.PositionToOrder(c_position);
 	assert(c_order == 0);
 
 	/* move the prio=20 item back */
 
-	a_order = queue_position_to_order(&queue, a_position);
+	a_order = queue.PositionToOrder(a_position);
 	assert(a_order == 5);
 	assert(queue.items[a_position].priority == 20);
-	queue_set_priority(&queue, a_position, 5, current_order);
+	queue.SetPriority(a_position, 5, current_order);
 
-
-	current_order = queue_position_to_order(&queue, current_position);
+	current_order = queue.PositionToOrder(current_position);
 	assert(current_order == 3);
 
-	a_order = queue_position_to_order(&queue, a_position);
+	a_order = queue.PositionToOrder(a_position);
 	assert(a_order == 6);
 }

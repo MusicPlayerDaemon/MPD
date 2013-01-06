@@ -41,11 +41,11 @@ static void
 queue_print_song_info(Client *client, const struct queue *queue,
 		      unsigned position)
 {
-	song_print_info(client, queue_get(queue, position));
+	song_print_info(client, queue->Get(position));
 	client_printf(client, "Pos: %u\nId: %u\n",
-		      position, queue_position_to_id(queue, position));
+		      position, queue->PositionToId(position));
 
-	uint8_t priority = queue_get_priority_at_position(queue, position);
+	uint8_t priority = queue->GetPriorityAtPosition(position);
 	if (priority != 0)
 		client_printf(client, "Prio: %u\n", priority);
 }
@@ -55,7 +55,7 @@ queue_print_info(Client *client, const struct queue *queue,
 		 unsigned start, unsigned end)
 {
 	assert(start <= end);
-	assert(end <= queue_length(queue));
+	assert(end <= queue->GetLength());
 
 	for (unsigned i = start; i < end; ++i)
 		queue_print_song_info(client, queue, i);
@@ -66,11 +66,11 @@ queue_print_uris(Client *client, const struct queue *queue,
 		 unsigned start, unsigned end)
 {
 	assert(start <= end);
-	assert(end <= queue_length(queue));
+	assert(end <= queue->GetLength());
 
 	for (unsigned i = start; i < end; ++i) {
 		client_printf(client, "%i:", i);
-		song_print_uri(client, queue_get(queue, i));
+		song_print_uri(client, queue->Get(i));
 	}
 }
 
@@ -78,8 +78,8 @@ void
 queue_print_changes_info(Client *client, const struct queue *queue,
 			 uint32_t version)
 {
-	for (unsigned i = 0; i < queue_length(queue); i++) {
-		if (queue_song_newer(queue, i, version))
+	for (unsigned i = 0; i < queue->GetLength(); i++) {
+		if (queue->IsNewerAtPosition(i, version))
 			queue_print_song_info(client, queue, i);
 	}
 }
@@ -88,18 +88,18 @@ void
 queue_print_changes_position(Client *client, const struct queue *queue,
 			     uint32_t version)
 {
-	for (unsigned i = 0; i < queue_length(queue); i++)
-		if (queue_song_newer(queue, i, version))
+	for (unsigned i = 0; i < queue->GetLength(); i++)
+		if (queue->IsNewerAtPosition(i, version))
 			client_printf(client, "cpos: %i\nId: %i\n",
-				      i, queue_position_to_id(queue, i));
+				      i, queue->PositionToId(i));
 }
 
 void
 queue_find(Client *client, const struct queue *queue,
 	   const SongFilter &filter)
 {
-	for (unsigned i = 0; i < queue_length(queue); i++) {
-		const struct song *song = queue_get(queue, i);
+	for (unsigned i = 0; i < queue->GetLength(); i++) {
+		const struct song *song = queue->Get(i);
 
 		if (filter.Match(*song))
 			queue_print_song_info(client, queue, i);

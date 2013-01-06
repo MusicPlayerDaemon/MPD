@@ -74,8 +74,7 @@ playlist_state_save(FILE *fp, const struct playlist *playlist,
 			fputs(PLAYLIST_STATE_FILE_STATE_PLAY "\n", fp);
 		}
 		fprintf(fp, PLAYLIST_STATE_FILE_CURRENT "%i\n",
-			queue_order_to_position(&playlist->queue,
-						playlist->current));
+			playlist->queue.OrderToPosition(playlist->current));
 		fprintf(fp, PLAYLIST_STATE_FILE_TIME "%i\n",
 			(int)player_status.elapsed_time);
 	} else {
@@ -83,8 +82,7 @@ playlist_state_save(FILE *fp, const struct playlist *playlist,
 
 		if (playlist->current >= 0)
 			fprintf(fp, PLAYLIST_STATE_FILE_CURRENT "%i\n",
-				queue_order_to_position(&playlist->queue,
-							playlist->current));
+				playlist->queue.OrderToPosition(playlist->current));
 	}
 
 	fprintf(fp, PLAYLIST_STATE_FILE_RANDOM "%i\n", playlist->queue.random);
@@ -123,7 +121,7 @@ playlist_state_load(TextFile &file, struct playlist *playlist)
 		}
 	}
 
-	queue_increment_version(&playlist->queue);
+	playlist->queue.IncrementVersion();
 }
 
 bool
@@ -195,8 +193,8 @@ playlist_state_restore(const char *line, TextFile &file,
 
 	playlist_set_random(playlist, pc, random_mode);
 
-	if (!queue_is_empty(&playlist->queue)) {
-		if (!queue_valid_position(&playlist->queue, current))
+	if (!playlist->queue.IsEmpty()) {
+		if (!playlist->queue.IsValidPosition(current))
 			current = 0;
 
 		if (state == PLAYER_STATE_PLAY &&
@@ -239,8 +237,7 @@ playlist_state_get_hash(const struct playlist *playlist,
 		 ? ((int)player_status.elapsed_time << 8)
 		 : 0) ^
 		(playlist->current >= 0
-		 ? (queue_order_to_position(&playlist->queue,
-					    playlist->current) << 16)
+		 ? (playlist->queue.OrderToPosition(playlist->current) << 16)
 		 : 0) ^
 		((int)pc_get_cross_fade(pc) << 20) ^
 		(player_status.state << 24) ^

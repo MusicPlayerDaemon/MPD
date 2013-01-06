@@ -20,10 +20,11 @@
 #ifndef MPD_QUEUE_HXX
 #define MPD_QUEUE_HXX
 
+#include "gcc.h"
+
 #include <glib.h>
 
 #include <assert.h>
-#include <stdbool.h>
 #include <stdint.h>
 
 enum {
@@ -110,268 +111,222 @@ struct queue {
 
 	queue(const queue &other) = delete;
 	queue &operator=(const queue &other) = delete;
-};
 
-static inline unsigned
-queue_length(const struct queue *queue)
-{
-	assert(queue->length <= queue->max_length);
+	unsigned GetLength() const {
+		assert(length <= max_length);
 
-	return queue->length;
-}
-
-/**
- * Determine if the queue is empty, i.e. there are no songs.
- */
-static inline bool
-queue_is_empty(const struct queue *queue)
-{
-	return queue->length == 0;
-}
-
-/**
- * Determine if the maximum number of songs has been reached.
- */
-static inline bool
-queue_is_full(const struct queue *queue)
-{
-	assert(queue->length <= queue->max_length);
-
-	return queue->length >= queue->max_length;
-}
-
-/**
- * Is that a valid position number?
- */
-static inline bool
-queue_valid_position(const struct queue *queue, unsigned position)
-{
-	return position < queue->length;
-}
-
-/**
- * Is that a valid order number?
- */
-static inline bool
-queue_valid_order(const struct queue *queue, unsigned order)
-{
-	return order < queue->length;
-}
-
-static inline int
-queue_id_to_position(const struct queue *queue, unsigned id)
-{
-	if (id >= queue->max_length * QUEUE_HASH_MULT)
-		return -1;
-
-	assert(queue->id_to_position[id] >= -1);
-	assert(queue->id_to_position[id] < (int)queue->length);
-
-	return queue->id_to_position[id];
-}
-
-static inline int
-queue_position_to_id(const struct queue *queue, unsigned position)
-{
-	assert(position < queue->length);
-
-	return queue->items[position].id;
-}
-
-static inline unsigned
-queue_order_to_position(const struct queue *queue, unsigned order)
-{
-	assert(order < queue->length);
-
-	return queue->order[order];
-}
-
-static inline unsigned
-queue_position_to_order(const struct queue *queue, unsigned position)
-{
-	assert(position < queue->length);
-
-	for (unsigned i = 0;; ++i) {
-		assert(i < queue->length);
-
-		if (queue->order[i] == position)
-			return i;
+		return length;
 	}
-}
 
-G_GNUC_PURE
-static inline uint8_t
-queue_get_priority_at_position(const struct queue *queue, unsigned position)
-{
-	assert(position < queue->length);
+	/**
+	 * Determine if the queue is empty, i.e. there are no songs.
+	 */
+	bool IsEmpty() const {
+		return length == 0;
+	}
 
-	return queue->items[position].priority;
-}
+	/**
+	 * Determine if the maximum number of songs has been reached.
+	 */
+	bool IsFull() const {
+		assert(length <= max_length);
 
-/**
- * Returns the song at the specified position.
- */
-static inline struct song *
-queue_get(const struct queue *queue, unsigned position)
-{
-	assert(position < queue->length);
+		return length >= max_length;
+	}
 
-	return queue->items[position].song;
-}
+	/**
+	 * Is that a valid position number?
+	 */
+	bool IsValidPosition(unsigned position) const {
+		return position < length;
+	}
 
-/**
- * Returns the song at the specified order number.
- */
-static inline struct song *
-queue_get_order(const struct queue *queue, unsigned order)
-{
-	return queue_get(queue, queue_order_to_position(queue, order));
-}
+	/**
+	 * Is that a valid order number?
+	 */
+	bool IsValidOrder(unsigned _order) const {
+		return _order < length;
+	}
 
-/**
- * Is the song at the specified position newer than the specified
- * version?
- */
-static inline bool
-queue_song_newer(const struct queue *queue, unsigned position,
-		 uint32_t version)
-{
-	assert(position < queue->length);
+	int IdToPosition(unsigned id) const {
+		if (id >= max_length * QUEUE_HASH_MULT)
+			return -1;
 
-	return version > queue->version ||
-		queue->items[position].version >= version ||
-		queue->items[position].version == 0;
-}
+		assert(id_to_position[id] >= -1);
+		assert(id_to_position[id] < (int)length);
 
-/**
- * Returns the order number following the specified one.  This takes
- * end of queue and "repeat" mode into account.
- *
- * @return the next order number, or -1 to stop playback
- */
-int
-queue_next_order(const struct queue *queue, unsigned order);
+		return id_to_position[id];
+	}
 
-/**
- * Increments the queue's version number.  This handles integer
- * overflow well.
- */
-void
-queue_increment_version(struct queue *queue);
+	int PositionToId(unsigned position) const
+	{
+		assert(position < length);
 
-/**
- * Marks the specified song as "modified" and increments the version
- * number.
- */
-void
-queue_modify(struct queue *queue, unsigned order);
+		return items[position].id;
+	}
 
-/**
- * Marks all songs as "modified" and increments the version number.
- */
-void
-queue_modify_all(struct queue *queue);
+	gcc_pure
+	unsigned OrderToPosition(unsigned _order) const {
+		assert(_order < length);
 
-/**
- * Appends a song to the queue and returns its position.  Prior to
- * that, the caller must check if the queue is already full.
- *
- * If a song is not in the database (determined by
- * song_in_database()), it is freed when removed from the queue.
- *
- * @param priority the priority of this new queue item
- */
-unsigned
-queue_append(struct queue *queue, struct song *song, uint8_t priority);
+		return order[_order];
+	}
 
-/**
- * Swaps two songs, addressed by their position.
- */
-void
-queue_swap(struct queue *queue, unsigned position1, unsigned position2);
+	gcc_pure
+	unsigned PositionToOrder(unsigned position) const {
+		assert(position < length);
 
-/**
- * Swaps two songs, addressed by their order number.
- */
-static inline void
-queue_swap_order(struct queue *queue, unsigned order1, unsigned order2)
-{
-	unsigned tmp = queue->order[order1];
-	queue->order[order1] = queue->order[order2];
-	queue->order[order2] = tmp;
-}
+		for (unsigned i = 0;; ++i) {
+			assert(i < length);
 
-/**
- * Moves a song to a new position.
- */
-void
-queue_move(struct queue *queue, unsigned from, unsigned to);
+			if (order[i] == position)
+				return i;
+		}
+	}
 
-/**
- * Moves a range of songs to a new position.
- */
-void
-queue_move_range(struct queue *queue, unsigned start, unsigned end, unsigned to);
+	G_GNUC_PURE
+	uint8_t GetPriorityAtPosition(unsigned position) const {
+		assert(position < length);
 
-/**
- * Removes a song from the playlist.
- */
-void
-queue_delete(struct queue *queue, unsigned position);
+		return items[position].priority;
+	}
 
-/**
- * Removes all songs from the playlist.
- */
-void
-queue_clear(struct queue *queue);
+	/**
+	 * Returns the song at the specified position.
+	 */
+	struct song *Get(unsigned position) const {
+		assert(position < length);
 
-/**
- * Initializes the "order" array, and restores "normal" order.
- */
-static inline void
-queue_restore_order(struct queue *queue)
-{
-	for (unsigned i = 0; i < queue->length; ++i)
-		queue->order[i] = i;
-}
+		return items[position].song;
+	}
 
-/**
- * Shuffle the order of items in the specified range, taking their
- * priorities into account.
- */
-void
-queue_shuffle_order_range_with_priority(struct queue *queue,
-					unsigned start, unsigned end);
+	/**
+	 * Returns the song at the specified order number.
+	 */
+	struct song *GetOrder(unsigned _order) const {
+		return Get(OrderToPosition(_order));
+	}
 
-/**
- * Shuffles the virtual order of songs, but does not move them
- * physically.  This is used in random mode.
- */
-void
-queue_shuffle_order(struct queue *queue);
+	/**
+	 * Is the song at the specified position newer than the specified
+	 * version?
+	 */
+	bool IsNewerAtPosition(unsigned position, uint32_t _version) const {
+		assert(position < length);
 
-/**
- * Shuffles the virtual order of the last song in the specified
- * (order) range.  This is used in random mode after a song has been
- * appended by queue_append().
- */
-void
-queue_shuffle_order_last(struct queue *queue, unsigned start, unsigned end);
+		return _version > version ||
+			items[position].version >= _version ||
+			items[position].version == 0;
+	}
 
-/**
- * Shuffles a (position) range in the queue.  The songs are physically
- * shuffled, not by using the "order" mapping.
- */
-void
-queue_shuffle_range(struct queue *queue, unsigned start, unsigned end);
+	/**
+	 * Returns the order number following the specified one.  This takes
+	 * end of queue and "repeat" mode into account.
+	 *
+	 * @return the next order number, or -1 to stop playback
+	 */
+	gcc_pure
+	int GetNextOrder(unsigned order) const;
 
-bool
-queue_set_priority(struct queue *queue, unsigned position,
-		   uint8_t priority, int after_order);
+	/**
+	 * Increments the queue's version number.  This handles integer
+	 * overflow well.
+	 */
+	void IncrementVersion();
 
-bool
-queue_set_priority_range(struct queue *queue,
-			 unsigned start_position, unsigned end_position,
-			 uint8_t priority, int after_order);
+	/**
+	 * Marks the specified song as "modified" and increments the version
+	 * number.
+	 */
+	void ModifyAtOrder(unsigned order);
+
+	/**
+	 * Marks all songs as "modified" and increments the version number.
+	 */
+	void ModifyAll();
+
+	/**
+	 * Appends a song to the queue and returns its position.  Prior to
+	 * that, the caller must check if the queue is already full.
+	 *
+	 * If a song is not in the database (determined by
+	 * song_in_database()), it is freed when removed from the queue.
+	 *
+	 * @param priority the priority of this new queue item
+	 */
+	unsigned Append(struct song *song, uint8_t priority);
+
+	/**
+	 * Swaps two songs, addressed by their position.
+	 */
+	void SwapPositions(unsigned position1, unsigned position2);
+
+	/**
+	 * Swaps two songs, addressed by their order number.
+	 */
+	void SwapOrders(unsigned order1, unsigned order2) {
+		unsigned tmp = order[order1];
+		order[order1] = order[order2];
+		order[order2] = tmp;
+	}
+
+	/**
+	 * Moves a song to a new position.
+	 */
+	void MovePostion(unsigned from, unsigned to);
+
+	/**
+	 * Moves a range of songs to a new position.
+	 */
+	void MoveRange(unsigned start, unsigned end, unsigned to);
+
+	/**
+	 * Removes a song from the playlist.
+	 */
+	void DeletePosition(unsigned position);
+
+	/**
+	 * Removes all songs from the playlist.
+	 */
+	void Clear();
+
+	/**
+	 * Initializes the "order" array, and restores "normal" order.
+	 */
+	void RestoreOrder() {
+		for (unsigned i = 0; i < length; ++i)
+			order[i] = i;
+	}
+
+	/**
+	 * Shuffle the order of items in the specified range, taking their
+	 * priorities into account.
+	 */
+	void ShuffleOrderRangeWithPriority(unsigned start, unsigned end);
+
+	/**
+	 * Shuffles the virtual order of songs, but does not move them
+	 * physically.  This is used in random mode.
+	 */
+	void ShuffleOrder();
+
+	/**
+	 * Shuffles the virtual order of the last song in the specified
+	 * (order) range.  This is used in random mode after a song has been
+	 * appended by queue_append().
+	 */
+	void ShuffleOrderLast(unsigned start, unsigned end);
+
+	/**
+	 * Shuffles a (position) range in the queue.  The songs are physically
+	 * shuffled, not by using the "order" mapping.
+	 */
+	void ShuffleRange(unsigned start, unsigned end);
+
+	bool SetPriority(unsigned position, uint8_t priority, int after_order);
+
+	bool SetPriorityRange(unsigned start_position, unsigned end_position,
+			      uint8_t priority, int after_order);
+};
 
 #endif

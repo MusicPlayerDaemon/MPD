@@ -36,7 +36,7 @@ extern "C" {
 void
 playlist_increment_version_all(struct playlist *playlist)
 {
-	queue_modify_all(&playlist->queue);
+	playlist->queue.ModifyAll();
 	idle_add(IDLE_PLAYLIST);
 }
 
@@ -48,7 +48,7 @@ playlist_tag_changed(struct playlist *playlist)
 
 	assert(playlist->current >= 0);
 
-	queue_modify(&playlist->queue, playlist->current);
+	playlist->queue.ModifyAtOrder(playlist->current);
 	idle_add(IDLE_PLAYLIST);
 }
 
@@ -61,12 +61,12 @@ playlist_queue_song_order(struct playlist *playlist, struct player_control *pc,
 {
 	char *uri;
 
-	assert(queue_valid_order(&playlist->queue, order));
+	assert(playlist->queue.IsValidOrder(order));
 
 	playlist->queued = order;
 
 	struct song *song =
-		song_dup_detached(queue_get_order(&playlist->queue, order));
+		song_dup_detached(playlist->queue.GetOrder(order));
 
 	uri = song_get_uri(song);
 	g_debug("queue song %i:\"%s\"", playlist->queued, uri);
@@ -93,8 +93,7 @@ playlist_song_started(struct playlist *playlist, struct player_control *pc)
 
 	if(playlist->queue.consume)
 		playlist_delete(playlist, pc,
-				queue_order_to_position(&playlist->queue,
-							current));
+				playlist->queue.OrderToPosition(current));
 
 	idle_add(IDLE_PLAYER);
 }
@@ -105,7 +104,7 @@ playlist_get_queued_song(struct playlist *playlist)
 	if (!playlist->playing || playlist->queued < 0)
 		return NULL;
 
-	return queue_get_order(&playlist->queue, playlist->queued);
+	return playlist->queue.GetOrder(playlist->queued);
 }
 
 void
@@ -119,11 +118,11 @@ playlist_update_queued_song(struct playlist *playlist,
 	if (!playlist->playing)
 		return;
 
-	assert(!queue_is_empty(&playlist->queue));
+	assert(!playlist->queue.IsEmpty());
 	assert((playlist->queued < 0) == (prev == NULL));
 
 	next_order = playlist->current >= 0
-		? queue_next_order(&playlist->queue, playlist->current)
+		? playlist->queue.GetNextOrder(playlist->current)
 		: 0;
 
 	if (next_order == 0 && playlist->queue.random &&
@@ -132,21 +131,19 @@ playlist_update_queued_song(struct playlist *playlist,
 		   order each time the playlist is played
 		   completely */
 		unsigned current_position =
-			queue_order_to_position(&playlist->queue,
-						playlist->current);
+			playlist->queue.OrderToPosition(playlist->current);
 
-		queue_shuffle_order(&playlist->queue);
+		playlist->queue.ShuffleOrder();
 
 		/* make sure that the playlist->current still points to
 		   the current song, after the song order has been
 		   shuffled */
 		playlist->current =
-			queue_position_to_order(&playlist->queue,
-						current_position);
+			playlist->queue.PositionToOrder(current_position);
 	}
 
 	if (next_order >= 0)
-		next_song = queue_get_order(&playlist->queue, next_order);
+		next_song = playlist->queue.GetOrder(next_order);
 	else
 		next_song = NULL;
 
@@ -174,7 +171,7 @@ playlist_play_order(struct playlist *playlist, struct player_control *pc,
 	playlist->queued = -1;
 
 	struct song *song =
-		song_dup_detached(queue_get_order(&playlist->queue, orderNum));
+		song_dup_detached(playlist->queue.GetOrder(orderNum));
 
 	uri = song_get_uri(song);
 	g_debug("play %i:\"%s\"", orderNum, uri);
@@ -247,7 +244,7 @@ playlist_resume_playback(struct playlist *playlist, struct player_control *pc)
 
 	if ((playlist->stop_on_error && error != PLAYER_ERROR_NONE) ||
 	    error == PLAYER_ERROR_OUTPUT ||
-	    playlist->error_count >= queue_length(&playlist->queue))
+	    playlist->error_count >= playlist->queue.GetLength())
 		/* too many errors, or critical error: stop
 		   playback */
 		playlist_stop(playlist, pc);
@@ -306,10 +303,9 @@ playlist_order(struct playlist *playlist)
 {
 	if (playlist->current >= 0)
 		/* update playlist.current, order==position now */
-		playlist->current = queue_order_to_position(&playlist->queue,
-							    playlist->current);
+		playlist->current = playlist->queue.OrderToPosition(playlist->current);
 
-	queue_restore_order(&playlist->queue);
+	playlist->queue.RestoreOrder();
 }
 
 void
@@ -362,20 +358,18 @@ playlist_set_random(struct playlist *playlist, struct player_control *pc,
 
 		int current_position =
 			playlist->playing && playlist->current >= 0
-			? (int)queue_order_to_position(&playlist->queue,
-						       playlist->current)
+			? (int)playlist->queue.OrderToPosition(playlist->current)
 			: -1;
 
-		queue_shuffle_order(&playlist->queue);
+		playlist->queue.ShuffleOrder();
 
 		if (current_position >= 0) {
 			/* make sure the current song is the first in
 			   the order list, so the whole rest of the
 			   playlist is played after that */
 			unsigned current_order =
-				queue_position_to_order(&playlist->queue,
-							current_position);
-			queue_swap_order(&playlist->queue, 0, current_order);
+				playlist->queue.PositionToOrder(current_position);
+			playlist->queue.SwapOrders(0, current_order);
 			playlist->current = 0;
 		} else
 			playlist->current = -1;
@@ -391,8 +385,7 @@ int
 playlist_get_current_song(const struct playlist *playlist)
 {
 	if (playlist->current >= 0)
-		return queue_order_to_position(&playlist->queue,
-					       playlist->current);
+		return playlist->queue.OrderToPosition(playlist->current);
 
 	return -1;
 }
@@ -403,13 +396,11 @@ playlist_get_next_song(const struct playlist *playlist)
 	if (playlist->current >= 0)
 	{
 		if (playlist->queue.single == 1 && playlist->queue.repeat == 1)
-			return queue_order_to_position(&playlist->queue,
-			                               playlist->current);
-		else if (playlist->current + 1 < (int)queue_length(&playlist->queue))
-			return queue_order_to_position(&playlist->queue,
-					       playlist->current + 1);
+			return playlist->queue.OrderToPosition(playlist->current);
+		else if (playlist->current + 1 < (int)playlist->queue.GetLength())
+			return playlist->queue.OrderToPosition(playlist->current + 1);
 		else if (playlist->queue.repeat == 1)
-			return queue_order_to_position(&playlist->queue, 0);
+			return playlist->queue.OrderToPosition(0);
 	}
 
 	return -1;
@@ -424,11 +415,11 @@ playlist_get_version(const struct playlist *playlist)
 int
 playlist_get_length(const struct playlist *playlist)
 {
-	return queue_length(&playlist->queue);
+	return playlist->queue.GetLength();
 }
 
 unsigned
 playlist_get_song_id(const struct playlist *playlist, unsigned song)
 {
-	return queue_position_to_id(&playlist->queue, song);
+	return playlist->queue.PositionToId(song);
 }

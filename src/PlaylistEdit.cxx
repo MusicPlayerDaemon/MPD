@@ -40,7 +40,7 @@ extern "C" {
 
 static void playlist_increment_version(struct playlist *playlist)
 {
-	queue_increment_version(&playlist->queue);
+	playlist->queue.IncrementVersion();
 
 	idle_add(IDLE_PLAYLIST);
 }
@@ -50,7 +50,7 @@ playlist_clear(struct playlist *playlist, struct player_control *pc)
 {
 	playlist_stop(playlist, pc);
 
-	queue_clear(&playlist->queue);
+	playlist->queue.Clear();
 
 	playlist->current = -1;
 
@@ -75,12 +75,12 @@ playlist_append_song(struct playlist *playlist, struct player_control *pc,
 	const struct song *queued;
 	unsigned id;
 
-	if (queue_is_full(&playlist->queue))
+	if (playlist->queue.IsFull())
 		return PLAYLIST_RESULT_TOO_LARGE;
 
 	queued = playlist_get_queued_song(playlist);
 
-	id = queue_append(&playlist->queue, song, 0);
+	id = playlist->queue.Append(song, 0);
 
 	if (playlist->queue.random) {
 		/* shuffle the new song into the list of remaining
@@ -91,9 +91,9 @@ playlist_append_song(struct playlist *playlist, struct player_control *pc,
 			start = playlist->queued + 1;
 		else
 			start = playlist->current + 1;
-		if (start < queue_length(&playlist->queue))
-			queue_shuffle_order_last(&playlist->queue, start,
-						 queue_length(&playlist->queue));
+		if (start < playlist->queue.GetLength())
+			playlist->queue.ShuffleOrderLast(start,
+							 playlist->queue.GetLength());
 	}
 
 	playlist_increment_version(playlist);
@@ -140,23 +140,20 @@ playlist_swap_songs(struct playlist *playlist, struct player_control *pc,
 {
 	const struct song *queued;
 
-	if (!queue_valid_position(&playlist->queue, song1) ||
-	    !queue_valid_position(&playlist->queue, song2))
+	if (!playlist->queue.IsValidPosition(song1) ||
+	    !playlist->queue.IsValidPosition(song2))
 		return PLAYLIST_RESULT_BAD_RANGE;
 
 	queued = playlist_get_queued_song(playlist);
 
-	queue_swap(&playlist->queue, song1, song2);
+	playlist->queue.SwapPositions(song1, song2);
 
 	if (playlist->queue.random) {
 		/* update the queue order, so that playlist->current
 		   still points to the current song order */
 
-		queue_swap_order(&playlist->queue,
-				 queue_position_to_order(&playlist->queue,
-							 song1),
-				 queue_position_to_order(&playlist->queue,
-							 song2));
+		playlist->queue.SwapOrders(playlist->queue.PositionToOrder(song1),
+					   playlist->queue.PositionToOrder(song2));
 	} else {
 		/* correct the "current" song order */
 
@@ -177,8 +174,8 @@ enum playlist_result
 playlist_swap_songs_id(struct playlist *playlist, struct player_control *pc,
 		       unsigned id1, unsigned id2)
 {
-	int song1 = queue_id_to_position(&playlist->queue, id1);
-	int song2 = queue_id_to_position(&playlist->queue, id2);
+	int song1 = playlist->queue.IdToPosition(id1);
+	int song2 = playlist->queue.IdToPosition(id2);
 
 	if (song1 < 0 || song2 < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
@@ -191,11 +188,11 @@ playlist_set_priority(struct playlist *playlist, struct player_control *pc,
 		      unsigned start, unsigned end,
 		      uint8_t priority)
 {
-	if (start >= queue_length(&playlist->queue))
+	if (start >= playlist->queue.GetLength())
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	if (end > queue_length(&playlist->queue))
-		end = queue_length(&playlist->queue);
+	if (end > playlist->queue.GetLength())
+		end = playlist->queue.GetLength();
 
 	if (start >= end)
 		return PLAYLIST_RESULT_SUCCESS;
@@ -203,24 +200,22 @@ playlist_set_priority(struct playlist *playlist, struct player_control *pc,
 	/* remember "current" and "queued" */
 
 	int current_position = playlist->current >= 0
-		? (int)queue_order_to_position(&playlist->queue,
-					       playlist->current)
+		? (int)playlist->queue.OrderToPosition(playlist->current)
 		: -1;
 
 	const struct song *queued = playlist_get_queued_song(playlist);
 
 	/* apply the priority changes */
 
-	queue_set_priority_range(&playlist->queue, start, end, priority,
-				 playlist->current);
+	playlist->queue.SetPriorityRange(start, end, priority,
+					 playlist->current);
 
 	playlist_increment_version(playlist);
 
 	/* restore "current" and choose a new "queued" */
 
 	if (current_position >= 0)
-		playlist->current = queue_position_to_order(&playlist->queue,
-							    current_position);
+		playlist->current = playlist->queue.PositionToOrder(current_position);
 
 	playlist_update_queued_song(playlist, pc, queued);
 
@@ -231,7 +226,7 @@ enum playlist_result
 playlist_set_priority_id(struct playlist *playlist, struct player_control *pc,
 			 unsigned song_id, uint8_t priority)
 {
-	int song_position = queue_id_to_position(&playlist->queue, song_id);
+	int song_position = playlist->queue.IdToPosition(song_id);
 	if (song_position < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
@@ -247,9 +242,9 @@ playlist_delete_internal(struct playlist *playlist, struct player_control *pc,
 {
 	unsigned songOrder;
 
-	assert(song < queue_length(&playlist->queue));
+	assert(song < playlist->queue.GetLength());
 
-	songOrder = queue_position_to_order(&playlist->queue, song);
+	songOrder = playlist->queue.PositionToOrder(song);
 
 	if (playlist->playing && playlist->current == (int)songOrder) {
 		bool paused = pc_get_state(pc) == PLAYER_STATE_PAUSE;
@@ -261,8 +256,7 @@ playlist_delete_internal(struct playlist *playlist, struct player_control *pc,
 
 		/* see which song is going to be played instead */
 
-		playlist->current = queue_next_order(&playlist->queue,
-						     playlist->current);
+		playlist->current = playlist->queue.GetNextOrder(playlist->current);
 		if (playlist->current == (int)songOrder)
 			playlist->current = -1;
 
@@ -282,7 +276,7 @@ playlist_delete_internal(struct playlist *playlist, struct player_control *pc,
 
 	/* now do it: remove the song */
 
-	queue_delete(&playlist->queue, song);
+	playlist->queue.DeletePosition(song);
 
 	/* update the "current" and "queued" variables */
 
@@ -297,7 +291,7 @@ playlist_delete(struct playlist *playlist, struct player_control *pc,
 {
 	const struct song *queued;
 
-	if (song >= queue_length(&playlist->queue))
+	if (song >= playlist->queue.GetLength())
 		return PLAYLIST_RESULT_BAD_RANGE;
 
 	queued = playlist_get_queued_song(playlist);
@@ -316,11 +310,11 @@ playlist_delete_range(struct playlist *playlist, struct player_control *pc,
 {
 	const struct song *queued;
 
-	if (start >= queue_length(&playlist->queue))
+	if (start >= playlist->queue.GetLength())
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	if (end > queue_length(&playlist->queue))
-		end = queue_length(&playlist->queue);
+	if (end > playlist->queue.GetLength())
+		end = playlist->queue.GetLength();
 
 	if (start >= end)
 		return PLAYLIST_RESULT_SUCCESS;
@@ -341,7 +335,7 @@ enum playlist_result
 playlist_delete_id(struct playlist *playlist, struct player_control *pc,
 		   unsigned id)
 {
-	int song = queue_id_to_position(&playlist->queue, id);
+	int song = playlist->queue.IdToPosition(id);
 	if (song < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
@@ -352,8 +346,8 @@ void
 playlist_delete_song(struct playlist *playlist, struct player_control *pc,
 		     const struct song *song)
 {
-	for (int i = queue_length(&playlist->queue) - 1; i >= 0; --i)
-		if (song == queue_get(&playlist->queue, i))
+	for (int i = playlist->queue.GetLength() - 1; i >= 0; --i)
+		if (song == playlist->queue.Get(i))
 			playlist_delete(playlist, pc, i);
 }
 
@@ -364,12 +358,12 @@ playlist_move_range(struct playlist *playlist, struct player_control *pc,
 	const struct song *queued;
 	int currentSong;
 
-	if (!queue_valid_position(&playlist->queue, start) ||
-		!queue_valid_position(&playlist->queue, end - 1))
+	if (!playlist->queue.IsValidPosition(start) ||
+	    !playlist->queue.IsValidPosition(end - 1))
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	if ((to >= 0 && to + end - start - 1 >= queue_length(&playlist->queue)) ||
-	    (to < 0 && abs(to) > (int)queue_length(&playlist->queue)))
+	if ((to >= 0 && to + end - start - 1 >= playlist->queue.GetLength()) ||
+	    (to < 0 && abs(to) > (int)playlist->queue.GetLength()))
 		return PLAYLIST_RESULT_BAD_RANGE;
 
 	if ((int)start == to)
@@ -383,19 +377,18 @@ playlist_move_range(struct playlist *playlist, struct player_control *pc,
 	 * (-playlist.length == to) => move to position BEFORE current song
 	 */
 	currentSong = playlist->current >= 0
-		? (int)queue_order_to_position(&playlist->queue,
-					      playlist->current)
+		? (int)playlist->queue.OrderToPosition(playlist->current)
 		: -1;
 	if (to < 0 && playlist->current >= 0) {
 		if (start <= (unsigned)currentSong && (unsigned)currentSong < end)
 			/* no-op, can't be moved to offset of itself */
 			return PLAYLIST_RESULT_SUCCESS;
-		to = (currentSong + abs(to)) % queue_length(&playlist->queue);
+		to = (currentSong + abs(to)) % playlist->queue.GetLength();
 		if (start < (unsigned)to)
 			to--;
 	}
 
-	queue_move_range(&playlist->queue, start, end, to);
+	playlist->queue.MoveRange(start, end, to);
 
 	if (!playlist->queue.random) {
 		/* update current/queued */
@@ -422,7 +415,7 @@ enum playlist_result
 playlist_move_id(struct playlist *playlist, struct player_control *pc,
 		 unsigned id1, int to)
 {
-	int song = queue_id_to_position(&playlist->queue, id1);
+	int song = playlist->queue.IdToPosition(id1);
 	if (song < 0)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
@@ -435,9 +428,9 @@ playlist_shuffle(struct playlist *playlist, struct player_control *pc,
 {
 	const struct song *queued;
 
-	if (end > queue_length(&playlist->queue))
+	if (end > playlist->queue.GetLength())
 		/* correct the "end" offset */
-		end = queue_length(&playlist->queue);
+		end = playlist->queue.GetLength();
 
 	if ((start+1) >= end)
 		/* needs at least two entries. */
@@ -446,17 +439,16 @@ playlist_shuffle(struct playlist *playlist, struct player_control *pc,
 	queued = playlist_get_queued_song(playlist);
 	if (playlist->playing && playlist->current >= 0) {
 		unsigned current_position;
-		current_position = queue_order_to_position(&playlist->queue,
-	                                                   playlist->current);
+		current_position = playlist->queue.OrderToPosition(playlist->current);
 
 		if (current_position >= start && current_position < end)
 		{
 			/* put current playing song first */
-			queue_swap(&playlist->queue, start, current_position);
+			playlist->queue.SwapPositions(start, current_position);
 
 			if (playlist->queue.random) {
 				playlist->current =
-					queue_position_to_order(&playlist->queue, start);
+					playlist->queue.PositionToOrder(start);
 			} else
 				playlist->current = start;
 
@@ -469,7 +461,7 @@ playlist_shuffle(struct playlist *playlist, struct player_control *pc,
 		playlist->current = -1;
 	}
 
-	queue_shuffle_range(&playlist->queue, start, end);
+	playlist->queue.ShuffleRange(start, end);
 
 	playlist_increment_version(playlist);
 

@@ -171,7 +171,7 @@ enum command_return
 handle_shuffle(G_GNUC_UNUSED Client *client,
 	       G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	unsigned start = 0, end = queue_length(&client->playlist.queue);
+	unsigned start = 0, end = client->playlist.queue.GetLength();
 	if (argc == 2 && !check_range(client, &start, &end, argv[1]))
 		return COMMAND_RETURN_ERROR;
 

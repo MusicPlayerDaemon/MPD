@@ -41,7 +41,7 @@ playlist_print_uris(Client *client, const struct playlist *playlist)
 {
 	const struct queue *queue = &playlist->queue;
 
-	queue_print_uris(client, queue, 0, queue_length(queue));
+	queue_print_uris(client, queue, 0, queue->GetLength());
 }
 
 bool
@@ -50,9 +50,9 @@ playlist_print_info(Client *client, const struct playlist *playlist,
 {
 	const struct queue *queue = &playlist->queue;
 
-	if (end > queue_length(queue))
+	if (end > queue->GetLength())
 		/* correct the "end" offset */
-		end = queue_length(queue);
+		end = queue->GetLength();
 
 	if (start > end)
 		/* an invalid "start" offset is fatal */
@@ -69,7 +69,7 @@ playlist_print_id(Client *client, const struct playlist *playlist,
 	const struct queue *queue = &playlist->queue;
 	int position;
 
-	position = queue_id_to_position(queue, id);
+	position = queue->IdToPosition(id);
 	if (position < 0)
 		/* no such song */
 		return false;
