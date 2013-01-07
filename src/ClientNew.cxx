@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ClientInternal.hxx"
+#include "Partition.hxx"
 #include "fd_util.h"
 extern "C" {
 #include "fifo_buffer.h"
@@ -45,10 +46,10 @@ extern "C" {
 
 static const char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
 
-Client::Client(struct playlist &_playlist,
-	       struct player_control *_player_control,
+Client::Client(Partition &_partition,
 	       int fd, int _uid, int _num)
-	:playlist(_playlist), player_control(_player_control),
+	:partition(_partition),
+	 playlist(partition.playlist), player_control(&partition.pc),
 	 input(fifo_buffer_new(4096)),
 	 permission(getDefaultPermissions()),
 	 uid(_uid),
@@ -94,13 +95,12 @@ Client::~Client()
 }
 
 void
-client_new(struct playlist &playlist, struct player_control *player_control,
+client_new(Partition &partition,
 	   int fd, const struct sockaddr *sa, size_t sa_length, int uid)
 {
 	static unsigned int next_client_num;
 	char *remote;
 
-	assert(player_control != NULL);
 	assert(fd >= 0);
 
 #ifdef HAVE_LIBWRAP
@@ -134,7 +134,7 @@ client_new(struct playlist &playlist, struct player_control *player_control,
 		return;
 	}
 
-	Client *client = new Client(playlist, player_control, fd, uid,
+	Client *client = new Client(partition, fd, uid,
 				    next_client_num++);
 
 	(void)send(fd, GREETING, sizeof(GREETING) - 1, 0);

@@ -44,8 +44,11 @@ struct deferred_buffer {
 	char data[sizeof(long)];
 };
 
+struct Partition;
+
 class Client {
 public:
+	Partition &partition;
 	struct playlist &playlist;
 	struct player_control *player_control;
 
@@ -100,8 +103,7 @@ public:
 	 */
 	std::list<ClientMessage> messages;
 
-	Client(struct playlist &playlist,
-	       struct player_control *player_control,
+	Client(Partition &partition,
 	       int fd, int uid, int num);
 	~Client();
 

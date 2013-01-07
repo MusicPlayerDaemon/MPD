@@ -27,15 +27,14 @@
 #include <stdarg.h>
 
 struct sockaddr;
-struct playlist;
-struct player_control;
+struct Partition;
 class Client;
 
 void client_manager_init(void);
 void client_manager_deinit(void);
 
 void
-client_new(struct playlist &playlist, struct player_control *player_control,
+client_new(Partition &partition,
 	   int fd, const struct sockaddr *sa, size_t sa_length, int uid);
 
 gcc_pure

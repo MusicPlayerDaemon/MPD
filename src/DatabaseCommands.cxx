@@ -92,8 +92,8 @@ handle_match_add(Client *client, int argc, char *argv[], bool fold_case)
 	}
 
 	GError *error = NULL;
-	return findAddIn(client->playlist, client->player_control,
-			 "", &filter, &error)
+	return AddFromDatabase(client->partition,
+			       "", &filter, &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
 }

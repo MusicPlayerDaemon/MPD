@@ -20,7 +20,6 @@
 #include "config.h"
 #include "Listen.hxx"
 #include "Main.hxx"
-#include "Partition.hxx"
 #include "Client.hxx"
 #include "conf.h"
 
@@ -47,7 +46,7 @@ static void
 listen_callback(int fd, const struct sockaddr *address,
 		size_t address_length, int uid, G_GNUC_UNUSED void *ctx)
 {
-	client_new(global_partition->playlist, &global_partition->pc,
+	client_new(*global_partition,
 		   fd, address, address_length, uid);
 }
 

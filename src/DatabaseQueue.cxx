@@ -22,16 +22,16 @@
 #include "DatabaseSelection.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
-#include "Playlist.hxx"
+#include "Partition.hxx"
 
 #include <functional>
 
 static bool
-AddToQueue(struct playlist &playlist, struct player_control *pc,
-	   song &song, GError **error_r)
+AddToQueue(Partition &partition, song &song, GError **error_r)
 {
 	enum playlist_result result =
-		playlist_append_song(&playlist, pc, &song, NULL);
+		playlist_append_song(&partition.playlist, &partition.pc,
+				     &song, NULL);
 	if (result != PLAYLIST_RESULT_SUCCESS) {
 		g_set_error(error_r, playlist_quark(), result,
 			    "Playlist error");
@@ -42,9 +42,9 @@ AddToQueue(struct playlist &playlist, struct player_control *pc,
 }
 
 bool
-findAddIn(struct playlist &playlist, struct player_control *pc,
-	  const char *uri,
-	  const SongFilter *filter, GError **error_r)
+AddFromDatabase(Partition &partition,
+		const char *uri,
+		const SongFilter *filter, GError **error_r)
 {
 	const Database *db = GetDatabase(error_r);
 	if (db == nullptr)
@@ -53,6 +53,6 @@ findAddIn(struct playlist &playlist, struct player_control *pc,
 	const DatabaseSelection selection(uri, true, filter);
 
 	using namespace std::placeholders;
-	const auto f = std::bind(AddToQueue, std::ref(playlist), pc, _1, _2);
+	const auto f = std::bind(AddToQueue, std::ref(partition), _1, _2);
 	return db->Visit(selection, f, error_r);
 }

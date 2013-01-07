@@ -70,8 +70,8 @@ handle_add(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 	}
 
 	GError *error = NULL;
-	return findAddIn(client->playlist, client->player_control,
-			 uri, nullptr, &error)
+	return AddFromDatabase(client->partition,
+			       uri, nullptr, &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
 }
