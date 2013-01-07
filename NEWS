@@ -12,7 +12,7 @@ ver 0.18 (2012/??/??)
   - new option "tags" may be used to disable sending tags to output
 * improved decoder/output error reporting
 
-ver 0.17.3 (2012/??/??)
+ver 0.17.3 (2013/01/06)
 * output:
   - osx: fix pops during playback
   - recorder: fix I/O error check
