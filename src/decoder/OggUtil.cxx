@@ -76,3 +76,43 @@ OggExpectPageIn(ogg_sync_state &oy, ogg_stream_state &os,
 	ogg_stream_pagein(&os, &page);
 	return true;
 }
+
+bool
+OggExpectPageSeek(ogg_sync_state &oy, ogg_page &page,
+		  decoder *decoder, input_stream *input_stream)
+{
+	size_t remaining_skipped = 16384;
+
+	while (true) {
+		int r = ogg_sync_pageseek(&oy, &page);
+		if (r > 0)
+			return true;
+
+		if (r < 0) {
+			/* skipped -r bytes */
+			size_t nbytes = -r;
+			if (nbytes > remaining_skipped)
+				/* still no ogg page - we lost our
+				   patience, abort */
+				return false;
+
+			remaining_skipped -= nbytes;
+			continue;
+		}
+
+		if (!OggFeed(oy, decoder, input_stream, 1024))
+			return false;
+	}
+}
+
+bool
+OggExpectPageSeekIn(ogg_sync_state &oy, ogg_stream_state &os,
+		    decoder *decoder, input_stream *is)
+{
+	ogg_page page;
+	if (!OggExpectPageSeek(oy, page, decoder, is))
+		return false;
+
+	ogg_stream_pagein(&os, &page);
+	return true;
+}

@@ -68,4 +68,20 @@ bool
 OggExpectPageIn(ogg_sync_state &oy, ogg_stream_state &os,
 		decoder *decoder, input_stream *is);
 
+/**
+ * Like OggExpectPage(), but allow skipping garbage (after seeking).
+ */
+bool
+OggExpectPageSeek(ogg_sync_state &oy, ogg_page &page,
+		  decoder *decoder, input_stream *input_stream);
+
+/**
+ * Combines OggExpectPageSeek() and ogg_stream_pagein().
+ *
+ * @return true if a page was delivered to the stream
+ */
+bool
+OggExpectPageSeekIn(ogg_sync_state &oy, ogg_stream_state &os,
+		    decoder *decoder, input_stream *is);
+
 #endif
