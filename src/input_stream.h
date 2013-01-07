@@ -168,6 +168,13 @@ void
 input_stream_lock_wait_ready(struct input_stream *is);
 
 /**
+ * Determines whether seeking is cheap.  This is true for local files.
+ */
+gcc_pure gcc_nonnull(1)
+bool
+input_stream_cheap_seeking(const struct input_stream *is);
+
+/**
  * Seeks to the specified position in the stream.  This will most
  * likely fail if the "seekable" flag is false.
  *

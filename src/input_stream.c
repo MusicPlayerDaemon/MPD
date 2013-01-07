@@ -22,6 +22,7 @@
 #include "input_registry.h"
 #include "input_plugin.h"
 #include "input/rewind_input_plugin.h"
+#include "uri.h"
 
 #include <glib.h>
 #include <assert.h>
@@ -112,6 +113,12 @@ input_stream_lock_wait_ready(struct input_stream *is)
 	g_mutex_lock(is->mutex);
 	input_stream_wait_ready(is);
 	g_mutex_unlock(is->mutex);
+}
+
+bool
+input_stream_cheap_seeking(const struct input_stream *is)
+{
+	return is->seekable && (is->uri == NULL || !uri_has_scheme(is->uri));
 }
 
 bool

@@ -1063,6 +1063,7 @@ test_run_input_SOURCES = test/run_input.c \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
+	src/uri.c \
 	src/fd_util.c
 
 test_dump_text_file_LDADD = \
@@ -1075,6 +1076,7 @@ test_dump_text_file_SOURCES = test/dump_text_file.c \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/text_input_stream.c src/fifo_buffer.c \
+	src/uri.c \
 	src/fd_util.c
 
 test_dump_playlist_LDADD = \

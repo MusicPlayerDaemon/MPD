@@ -139,9 +139,7 @@ vorbis_is_open(struct vorbis_input_stream *vis, OggVorbis_File *vf,
 {
 	vis->decoder = decoder;
 	vis->input_stream = input_stream;
-	vis->seekable = input_stream->seekable &&
-		(input_stream->uri == NULL ||
-		 !uri_has_scheme(input_stream->uri));
+	vis->seekable = input_stream_cheap_seeking(input_stream);
 
 	int ret = ov_open_callbacks(vis, vf, NULL, 0, vorbis_is_callbacks);
 	if (ret < 0) {
