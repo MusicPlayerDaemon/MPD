@@ -23,8 +23,6 @@
 #include "gcc.h"
 #include "util/LazyRandomEngine.hxx"
 
-#include <glib.h>
-
 #include <algorithm>
 
 #include <assert.h>
@@ -187,7 +185,7 @@ struct queue {
 		}
 	}
 
-	G_GNUC_PURE
+	gcc_pure
 	uint8_t GetPriorityAtPosition(unsigned position) const {
 		assert(position < length);
 
