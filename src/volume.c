@@ -19,20 +19,13 @@
 
 #include "config.h"
 #include "volume.h"
-#include "conf.h"
 #include "idle.h"
-#include "pcm_volume.h"
-#include "output_all.h"
-#include "mixer_control.h"
 #include "mixer_all.h"
-#include "mixer_type.h"
 #include "event_pipe.h"
 
 #include <glib.h>
 
 #include <assert.h>
-#include <math.h>
-#include <string.h>
 #include <stdlib.h>
 
 #undef G_LOG_DOMAIN

@@ -23,7 +23,6 @@
 #include "audio_parser.h"
 #include "output_internal.h"
 #include "output_plugin.h"
-#include "output_all.h"
 #include "conf.h"
 #include "mpd_error.h"
 

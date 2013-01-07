@@ -21,11 +21,9 @@
 #include "mixer_all.h"
 #include "mixer_control.h"
 #include "output_all.h"
-#include "output_plugin.h"
 #include "output_internal.h"
 #include "pcm_volume.h"
 #include "mixer_api.h"
-#include "mixer_list.h"
 
 #include <glib.h>
 
