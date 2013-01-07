@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,12 +18,15 @@
  */
 
 #include "config.h"
-#include "mixer_all.h"
-#include "mixer_control.h"
-#include "output_all.h"
-#include "output_internal.h"
+#include "MixerAll.hxx"
 #include "pcm_volume.h"
+#include "OutputAll.hxx"
+
+extern "C" {
+#include "mixer_control.h"
+#include "output_internal.h"
 #include "mixer_api.h"
+}
 
 #include <glib.h>
 

@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
+#include "OutputAll.hxx"
 
 extern "C" {
-#include "output_all.h"
 #include "output_internal.h"
 }
 

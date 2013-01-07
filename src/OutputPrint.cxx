@@ -24,12 +24,9 @@
 
 #include "config.h"
 #include "OutputPrint.hxx"
+#include "OutputAll.hxx"
 #include "output_internal.h"
 #include "Client.hxx"
-
-extern "C" {
-#include "output_all.h"
-}
 
 void
 printAudioDevices(Client *client)

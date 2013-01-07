@@ -52,7 +52,6 @@ mpd_headers = \
 	src/audio_parser.h \
 	src/output_internal.h \
 	src/output_api.h \
-	src/output_all.h \
 	src/filter_internal.h \
 	src/filter_config.h \
 	src/filter_plugin.h \
@@ -97,7 +96,6 @@ mpd_headers = \
 	src/server_socket.h \
 	src/log.h \
 	src/ls.h \
-	src/mixer_all.h \
 	src/mixer_api.h \
 	src/mixer_control.h \
 	src/mixer_list.h \
@@ -780,7 +778,7 @@ OUTPUT_LIBS = \
 
 OUTPUT_API_SRC = \
 	src/OutputList.cxx src/OutputList.hxx \
-	src/OutputAll.cxx \
+	src/OutputAll.cxx src/OutputAll.hxx \
 	src/OutputThread.cxx src/OutputThread.hxx \
 	src/OutputError.hxx \
 	src/OutputControl.cxx src/OutputControl.hxx \
@@ -802,7 +800,7 @@ MIXER_LIBS = \
 MIXER_API_SRC = \
 	src/mixer_control.c \
 	src/mixer_type.c \
-	src/mixer_all.c \
+	src/MixerAll.cxx src/MixerAll.hxx \
 	src/mixer_api.c
 
 libmixer_plugins_a_SOURCES = \

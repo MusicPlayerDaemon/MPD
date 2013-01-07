@@ -24,11 +24,8 @@
 
 #include "config.h"
 #include "OutputState.hxx"
+#include "OutputAll.hxx"
 #include "output_internal.h"
-
-extern "C" {
-#include "output_all.h"
-}
 
 #include <glib.h>
 

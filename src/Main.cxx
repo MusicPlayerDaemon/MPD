@@ -35,6 +35,7 @@
 #include "AllCommands.hxx"
 #include "Partition.hxx"
 #include "Volume.hxx"
+#include "OutputAll.hxx"
 
 extern "C" {
 #include "daemon.h"
@@ -45,7 +46,6 @@ extern "C" {
 #include "stats.h"
 #include "sig_handlers.h"
 #include "audio_config.h"
-#include "output_all.h"
 #include "log.h"
 #include "pcm_resample.h"
 #include "replay_gain_config.h"

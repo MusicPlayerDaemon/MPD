@@ -29,9 +29,9 @@
 #include "mpd_error.h"
 #include "CrossFade.hxx"
 #include "PlayerControl.hxx"
+#include "OutputAll.hxx"
 
 extern "C" {
-#include "output_all.h"
 #include "event_pipe.h"
 #include "tag.h"
 #include "idle.h"

@@ -26,10 +26,10 @@
 
 #include "config.h"
 #include "OutputCommand.hxx"
+#include "OutputAll.hxx"
 #include "PlayerControl.hxx"
 
 extern "C" {
-#include "output_all.h"
 #include "output_internal.h"
 #include "output_plugin.h"
 #include "mixer_control.h"

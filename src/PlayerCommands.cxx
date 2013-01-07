@@ -25,13 +25,13 @@
 #include "UpdateGlue.hxx"
 #include "ClientInternal.hxx"
 #include "Volume.hxx"
+#include "OutputAll.hxx"
 #include "protocol/Result.hxx"
 #include "protocol/ArgParser.hxx"
 
 extern "C" {
 #include "audio_format.h"
 #include "replay_gain_config.h"
-#include "output_all.h"
 }
 
 #include "PlayerControl.hxx"
