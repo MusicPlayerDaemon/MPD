@@ -22,6 +22,7 @@
 #include "CommandError.hxx"
 #include "DatabaseQueue.hxx"
 #include "SongFilter.hxx"
+#include "DatabaseSelection.hxx"
 #include "Playlist.hxx"
 #include "PlaylistPrint.hxx"
 #include "ClientFile.hxx"
@@ -69,9 +70,9 @@ handle_add(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 		return print_playlist_result(client, result);
 	}
 
+	const DatabaseSelection selection(uri, true);
 	GError *error = NULL;
-	return AddFromDatabase(client->partition,
-			       uri, nullptr, &error)
+	return AddFromDatabase(client->partition, selection, &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
 }

@@ -20,16 +20,13 @@
 #ifndef MPD_DATABASE_QUEUE_HXX
 #define MPD_DATABASE_QUEUE_HXX
 
-#include "gcc.h"
 #include "gerror.h"
 
-class SongFilter;
 struct Partition;
+struct DatabaseSelection;
 
-gcc_nonnull(2)
 bool
-AddFromDatabase(Partition &partition,
-		const char *name,
-		const SongFilter *filter, GError **error_r);
+AddFromDatabase(Partition &partition, const DatabaseSelection &selection,
+		GError **error_r);
 
 #endif

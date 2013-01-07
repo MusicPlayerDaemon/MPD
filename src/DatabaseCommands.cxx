@@ -91,9 +91,9 @@ handle_match_add(Client *client, int argc, char *argv[], bool fold_case)
 		return COMMAND_RETURN_ERROR;
 	}
 
+	const DatabaseSelection selection("", true, &filter);
 	GError *error = NULL;
-	return AddFromDatabase(client->partition,
-			       "", &filter, &error)
+	return AddFromDatabase(client->partition, selection, &error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
 }
