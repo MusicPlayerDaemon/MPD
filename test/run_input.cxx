@@ -20,13 +20,13 @@
 #include "config.h"
 #include "TagSave.hxx"
 #include "stdbin.h"
+#include "tag.h"
+#include "conf.h"
+#include "input_stream.h"
 
 extern "C" {
 #include "io_thread.h"
 #include "input_init.h"
-#include "input_stream.h"
-#include "tag.h"
-#include "conf.h"
 
 #ifdef ENABLE_ARCHIVE
 #include "archive_list.h"

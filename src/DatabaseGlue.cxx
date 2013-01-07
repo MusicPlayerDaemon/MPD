@@ -23,11 +23,11 @@
 #include "DatabaseRegistry.hxx"
 #include "DatabaseSave.hxx"
 #include "Directory.hxx"
+#include "conf.h"
 
 extern "C" {
 #include "db_error.h"
 #include "stats.h"
-#include "conf.h"
 #include "glib_compat.h"
 }
 

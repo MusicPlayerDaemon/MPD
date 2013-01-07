@@ -23,10 +23,10 @@
 #include "PlaylistAny.hxx"
 #include "PlaylistSong.hxx"
 #include "Playlist.hxx"
+#include "input_stream.h"
 
 extern "C" {
 #include "song.h"
-#include "input_stream.h"
 }
 
 enum playlist_result

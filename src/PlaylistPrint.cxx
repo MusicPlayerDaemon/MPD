@@ -28,12 +28,12 @@
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 #include "Client.hxx"
+#include "input_stream.h"
 
 extern "C" {
 #include "playlist_list.h"
 #include "playlist_plugin.h"
 #include "song.h"
-#include "input_stream.h"
 }
 
 void

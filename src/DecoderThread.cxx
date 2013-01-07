@@ -26,13 +26,13 @@
 #include "song.h"
 #include "mpd_error.h"
 #include "Mapper.hxx"
+#include "decoder_api.h"
+#include "tag.h"
+#include "input_stream.h"
 
 extern "C" {
 #include "decoder_list.h"
-#include "decoder_api.h"
 #include "replay_gain_ape.h"
-#include "input_stream.h"
-#include "tag.h"
 #include "uri.h"
 }
 

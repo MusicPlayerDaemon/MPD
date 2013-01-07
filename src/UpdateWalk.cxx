@@ -30,12 +30,12 @@
 #include "PlaylistVector.hxx"
 #include "Mapper.hxx"
 #include "ExcludeList.hxx"
+#include "conf.h"
 
 extern "C" {
 #include "uri.h"
 #include "path.h"
 #include "playlist_list.h"
-#include "conf.h"
 }
 
 #include <glib.h>

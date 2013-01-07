@@ -21,10 +21,7 @@
 #include "SongFilter.hxx"
 #include "path.h"
 #include "song.h"
-
-extern "C" {
 #include "tag.h"
-}
 
 #include <glib.h>
 

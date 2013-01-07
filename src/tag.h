@@ -101,6 +101,10 @@ struct tag {
 	unsigned num_items;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Parse the string, and convert it into a #tag_type.  Returns
  * #TAG_NUM_OF_ITEM_TYPES if the string could not be recognized.
@@ -235,5 +239,9 @@ bool tag_has_type(const struct tag *tag, enum tag_type type);
  * order of the tag items matters.
  */
 bool tag_equal(const struct tag *tag1, const struct tag *tag2);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

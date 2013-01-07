@@ -118,6 +118,8 @@ config_quark(void)
 	return g_quark_from_static_string("config");
 }
 
+G_BEGIN_DECLS
+
 void config_global_init(void);
 void config_global_finish(void);
 
@@ -223,5 +225,7 @@ config_param_free(struct config_param *param);
 void
 config_add_block_param(struct config_param * param, const char *name,
 		       const char *value, int line);
+
+G_END_DECLS
 
 #endif

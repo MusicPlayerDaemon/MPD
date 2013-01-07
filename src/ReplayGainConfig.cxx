@@ -18,13 +18,13 @@
  */
 
 #include "config.h"
+#include "replay_gain_config.h"
 
 extern "C" {
-#include "replay_gain_config.h"
-#include "conf.h"
 #include "idle.h"
 }
 
+#include "conf.h"
 #include "Playlist.hxx"
 #include "mpd_error.h"
 

@@ -31,9 +31,9 @@ extern "C" {
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
 #include "mpd_error.h"
+#include "conf.h"
 
 extern "C" {
-#include "conf.h"
 #include "notify.h"
 }
 

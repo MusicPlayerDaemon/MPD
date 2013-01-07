@@ -22,10 +22,10 @@
 #include "OpusHead.hxx"
 #include "OpusTags.hxx"
 #include "OggUtil.hxx"
+#include "decoder_api.h"
 
 extern "C" {
 #include "ogg_codec.h"
-#include "decoder_api.h"
 }
 
 #include "audio_check.h"

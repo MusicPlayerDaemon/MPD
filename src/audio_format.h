@@ -220,6 +220,10 @@ static inline bool audio_format_equals(const struct audio_format *a,
 		a->channels == b->channels;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void
 audio_format_mask_apply(struct audio_format *af,
 			const struct audio_format *mask);
@@ -304,5 +308,9 @@ gcc_pure gcc_malloc
 const char *
 audio_format_to_string(const struct audio_format *af,
 		       struct audio_format_string *s);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

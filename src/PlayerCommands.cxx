@@ -31,9 +31,9 @@
 
 extern "C" {
 #include "audio_format.h"
-#include "replay_gain_config.h"
 }
 
+#include "replay_gain_config.h"
 #include "PlayerControl.hxx"
 
 #include <errno.h>

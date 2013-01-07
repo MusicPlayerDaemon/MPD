@@ -30,6 +30,10 @@ extern float replay_gain_preamp;
 extern float replay_gain_missing_preamp;
 extern bool replay_gain_limit;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void replay_gain_global_init(void);
 
 /**
@@ -51,5 +55,9 @@ replay_gain_set_mode_string(const char *p);
   */
 enum replay_gain_mode
 replay_gain_get_real_mode(bool random_mode);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

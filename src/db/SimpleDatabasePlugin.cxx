@@ -27,10 +27,7 @@
 #include "DatabaseLock.hxx"
 #include "db_error.h"
 #include "TextFile.hxx"
-
-extern "C" {
 #include "conf.h"
-}
 
 #include <sys/types.h>
 #include <sys/stat.h>

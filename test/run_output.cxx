@@ -19,12 +19,12 @@
 
 #include "config.h"
 #include "OutputControl.hxx"
+#include "conf.h"
 
 extern "C" {
 #include "output_plugin.h"
 #include "output_internal.h"
 #include "io_thread.h"
-#include "conf.h"
 #include "audio_parser.h"
 #include "filter_registry.h"
 #include "pcm_convert.h"

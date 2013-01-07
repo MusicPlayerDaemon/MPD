@@ -26,15 +26,15 @@ extern "C" {
 
 #include "Directory.hxx"
 #include "Mapper.hxx"
+#include "tag.h"
+#include "input_stream.h"
 
 extern "C" {
 #include "decoder_list.h"
 #include "decoder_plugin.h"
 #include "tag_ape.h"
 #include "tag_id3.h"
-#include "tag.h"
 #include "tag_handler.h"
-#include "input_stream.h"
 }
 
 #include <glib.h>

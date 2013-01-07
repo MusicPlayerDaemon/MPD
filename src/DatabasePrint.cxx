@@ -26,10 +26,10 @@
 #include "TimePrint.hxx"
 #include "Directory.hxx"
 #include "Client.hxx"
+#include "tag.h"
 
 extern "C" {
 #include "song.h"
-#include "tag.h"
 }
 
 #include "DatabaseGlue.hxx"

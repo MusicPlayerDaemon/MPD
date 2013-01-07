@@ -24,11 +24,8 @@
 #include "Directory.hxx"
 #include "song.h"
 #include "PlaylistVector.hxx"
-
-extern "C" {
 #include "conf.h"
 #include "tag.h"
-}
 
 #include <iostream>
 using std::cout;

@@ -38,6 +38,10 @@
 
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Notify the player thread that it has finished initialization and
  * that it has read the song's meta data.
@@ -167,5 +171,9 @@ decoder_replay_gain(struct decoder *decoder,
 void
 decoder_mixramp(struct decoder *decoder,
 		char *mixramp_start, char *mixramp_end);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

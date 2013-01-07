@@ -24,12 +24,11 @@
 #include "PlaylistVector.hxx"
 #include "Directory.hxx"
 #include "gcc.h"
+#include "conf.h"
 
 extern "C" {
 #include "db_error.h"
-#include "conf.h"
 #include "song.h"
-#include "tag.h"
 }
 
 #undef MPD_DIRECTORY_H

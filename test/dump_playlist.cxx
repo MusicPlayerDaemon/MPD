@@ -21,13 +21,13 @@
 #include "TagSave.hxx"
 #include "song.h"
 #include "Directory.hxx"
+#include "input_stream.h"
+#include "conf.h"
+#include "decoder_api.h"
 
 extern "C" {
 #include "io_thread.h"
 #include "input_init.h"
-#include "input_stream.h"
-#include "conf.h"
-#include "decoder_api.h"
 #include "decoder_list.h"
 #include "playlist_list.h"
 #include "playlist_plugin.h"

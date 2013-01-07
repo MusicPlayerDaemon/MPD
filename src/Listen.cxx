@@ -22,10 +22,10 @@
 #include "Main.hxx"
 #include "Partition.hxx"
 #include "Client.hxx"
+#include "conf.h"
 
 extern "C" {
 #include "server_socket.h"
-#include "conf.h"
 }
 
 #include <string.h>

@@ -28,7 +28,6 @@
 #include "Mapper.hxx"
 
 extern "C" {
-#include "tag.h"
 #include "tag_handler.h"
 }
 

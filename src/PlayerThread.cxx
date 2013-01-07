@@ -30,10 +30,10 @@
 #include "CrossFade.hxx"
 #include "PlayerControl.hxx"
 #include "OutputAll.hxx"
+#include "tag.h"
 
 extern "C" {
 #include "event_pipe.h"
-#include "tag.h"
 #include "idle.h"
 }
 

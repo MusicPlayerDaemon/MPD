@@ -24,9 +24,9 @@
 
 extern "C" {
 #include "log.h"
-#include "conf.h"
 }
 
+#include "conf.h"
 #include "decoder_list.h"
 #include "decoder_plugin.h"
 #include "OutputList.hxx"

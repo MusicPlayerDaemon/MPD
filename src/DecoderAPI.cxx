@@ -18,13 +18,13 @@
  */
 
 #include "config.h"
+#include "decoder_api.h"
 
 extern "C" {
-#include "decoder_api.h"
 #include "audio_config.h"
-#include "replay_gain_config.h"
 }
 
+#include "replay_gain_config.h"
 #include "MusicChunk.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicPipe.hxx"

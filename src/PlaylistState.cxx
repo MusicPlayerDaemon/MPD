@@ -28,10 +28,7 @@
 #include "QueueSave.hxx"
 #include "TextFile.hxx"
 #include "PlayerControl.hxx"
-
-extern "C" {
 #include "conf.h"
-}
 
 #include <string.h>
 #include <stdlib.h>

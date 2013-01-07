@@ -61,6 +61,10 @@ replay_gain_tuple_defined(const struct replay_gain_tuple *tuple)
 	return !isinf(tuple->gain);
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 float
 replay_gain_tuple_scale(const struct replay_gain_tuple *tuple, float preamp, float missing_preamp, bool peak_limit);
 
@@ -70,5 +74,9 @@ replay_gain_tuple_scale(const struct replay_gain_tuple *tuple, float preamp, flo
  */
 void
 replay_gain_info_complete(struct replay_gain_info *info);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -88,6 +88,10 @@ struct input_stream {
 	char *mime;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Opens a new input stream.  You may not access it until the "ready"
  * flag is set.
@@ -263,5 +267,9 @@ gcc_nonnull(1, 2)
 size_t
 input_stream_lock_read(struct input_stream *is, void *ptr, size_t size,
 		       GError **error_r);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

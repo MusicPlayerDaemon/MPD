@@ -23,9 +23,9 @@
 #include "TagSave.hxx"
 #include "Directory.hxx"
 #include "TextFile.hxx"
+#include "tag.h"
 
 extern "C" {
-#include "tag.h"
 #include "string_util.h"
 }
 

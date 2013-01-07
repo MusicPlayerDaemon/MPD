@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
+#include "../decoder_api.h"
 
 extern "C" {
-#include "../decoder_api.h"
 #include "tag_handler.h"
 }
 

@@ -23,12 +23,12 @@
 #include "DatabasePlugin.hxx"
 #include "DatabaseGlue.hxx"
 #include "ls.hxx"
+#include "tag.h"
 
 extern "C" {
 #include "song.h"
 #include "uri.h"
 #include "path.h"
-#include "tag.h"
 }
 
 #include <assert.h>

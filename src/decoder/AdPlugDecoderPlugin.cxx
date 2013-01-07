@@ -20,9 +20,9 @@
 #include "config.h"
 #include "AdPlugDecoderPlugin.h"
 #include "tag_handler.h"
+#include "decoder_api.h"
 
 extern "C" {
-#include "decoder_api.h"
 #include "audio_check.h"
 }
 

@@ -20,10 +20,7 @@
 #include "config.h"
 #include "Permission.hxx"
 #include "mpd_error.h"
-
-extern "C" {
 #include "conf.h"
-}
 
 #include <map>
 #include <string>

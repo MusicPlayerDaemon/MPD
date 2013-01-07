@@ -25,9 +25,9 @@
 #define MPD_FLAC_COMMON_HXX
 
 #include "FLACInput.hxx"
+#include "decoder_api.h"
 
 extern "C" {
-#include "decoder_api.h"
 #include "pcm_buffer.h"
 }
 

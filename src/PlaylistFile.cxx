@@ -28,12 +28,12 @@
 #include "io_error.h"
 #include "Mapper.hxx"
 #include "TextFile.hxx"
+#include "conf.h"
 
 extern "C" {
 #include "path.h"
 #include "uri.h"
 #include "idle.h"
-#include "conf.h"
 }
 
 #include "glib_compat.h"

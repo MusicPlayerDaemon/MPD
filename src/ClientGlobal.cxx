@@ -19,10 +19,7 @@
 
 #include "config.h"
 #include "ClientInternal.hxx"
-
-extern "C" {
 #include "conf.h"
-}
 
 #include <assert.h>
 

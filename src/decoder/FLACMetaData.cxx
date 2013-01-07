@@ -22,12 +22,12 @@
 
 extern "C" {
 #include "XiphTags.h"
-#include "replay_gain_info.h"
-#include "tag.h"
 }
 
+#include "tag.h"
 #include "tag_handler.h"
 #include "tag_table.h"
+#include "replay_gain_info.h"
 
 #include <glib.h>
 

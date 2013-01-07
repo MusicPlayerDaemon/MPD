@@ -23,11 +23,7 @@
 #include "MusicPipe.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
-
-extern "C" {
 #include "tag.h"
-}
-
 #include "input_stream.h"
 
 #include <assert.h>
