@@ -28,9 +28,10 @@ extern "C" {
 #include "DecoderControl.hxx"
 #include "Main.hxx"
 
+#include <cmath>
+
 #include <assert.h>
 #include <stdio.h>
-#include <math.h>
 
 static void
 pc_enqueue_song_locked(struct player_control *pc, struct song *song);
@@ -49,7 +50,7 @@ player_control::player_control(unsigned _buffer_chunks,
 	 next_song(nullptr),
 	 cross_fade_seconds(0),
 	 mixramp_db(0),
-	 mixramp_delay_seconds(nanf("")),
+	 mixramp_delay_seconds(std::nanf("")),
 	 total_play_time(0)
 {
 }

@@ -33,7 +33,6 @@ extern "C" {
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 enum replay_gain_mode replay_gain_mode = REPLAY_GAIN_OFF;
 

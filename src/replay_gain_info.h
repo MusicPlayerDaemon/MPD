@@ -22,8 +22,12 @@
 
 #include "check.h"
 
+#ifdef __cplusplus
+#include <cmath>
+#else
 #include <stdbool.h>
 #include <math.h>
+#endif
 
 enum replay_gain_mode {
 	REPLAY_GAIN_AUTO = -2,
@@ -58,7 +62,11 @@ replay_gain_info_init(struct replay_gain_info *info)
 static inline bool
 replay_gain_tuple_defined(const struct replay_gain_tuple *tuple)
 {
+#ifdef __cplusplus
+	return !std::isinf(tuple->gain);
+#else
 	return !isinf(tuple->gain);
+#endif
 }
 
 #ifdef __cplusplus
