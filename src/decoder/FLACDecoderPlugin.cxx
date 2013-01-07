@@ -21,10 +21,7 @@
 #include "FLACDecoderPlugin.h"
 #include "FLACCommon.hxx"
 #include "FLACMetaData.hxx"
-
-extern "C" {
-#include "ogg_codec.h"
-}
+#include "OggCodec.hxx"
 
 #include <glib.h>
 

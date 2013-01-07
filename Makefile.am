@@ -561,7 +561,7 @@ endif
 if HAVE_XIPH
 libdecoder_plugins_a_SOURCES += \
 	src/decoder/XiphTags.c src/decoder/XiphTags.h \
-	src/decoder/ogg_codec.c src/decoder/ogg_codec.h
+	src/decoder/OggCodec.cxx src/decoder/OggCodec.hxx
 endif
 
 if ENABLE_VORBIS_DECODER

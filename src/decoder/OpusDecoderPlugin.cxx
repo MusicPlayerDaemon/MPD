@@ -23,11 +23,7 @@
 #include "OpusTags.hxx"
 #include "OggUtil.hxx"
 #include "decoder_api.h"
-
-extern "C" {
-#include "ogg_codec.h"
-}
-
+#include "OggCodec.hxx"
 #include "audio_check.h"
 #include "tag_handler.h"
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,8 +21,8 @@
  * Common functions used for Ogg data streams (Ogg-Vorbis and OggFLAC)
  */
 
-#ifndef MPD_OGG_CODEC_H
-#define MPD_OGG_CODEC_H
+#ifndef MPD_OGG_CODEC_HXX
+#define MPD_OGG_CODEC_HXX
 
 #include "decoder_api.h"
 
