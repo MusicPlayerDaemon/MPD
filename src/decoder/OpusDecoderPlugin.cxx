@@ -22,6 +22,7 @@
 #include "OpusHead.hxx"
 #include "OpusTags.hxx"
 #include "OggUtil.hxx"
+#include "OggFind.hxx"
 #include "decoder_api.h"
 #include "OggCodec.hxx"
 #include "audio_check.h"
@@ -291,6 +292,23 @@ mpd_opus_stream_decode(struct decoder *decoder,
 }
 
 static bool
+SeekFindEOS(ogg_sync_state &oy, ogg_stream_state &os, ogg_packet &packet,
+	    decoder *decoder, input_stream *is)
+{
+	if (is->size > 0 && is->size - is->offset < 65536)
+		return OggFindEOS(oy, os, packet, decoder, is);
+
+	if (!input_stream_cheap_seeking(is))
+		return false;
+
+	ogg_sync_reset(&oy);
+
+	return input_stream_lock_seek(is, -65536, SEEK_END, nullptr) &&
+		OggExpectPageSeekIn(oy, os, decoder, is) &&
+		OggFindEOS(oy, os, packet, decoder, is);
+}
+
+static bool
 mpd_opus_scan_stream(struct input_stream *is,
 		     const struct tag_handler *handler, void *handler_ctx)
 {
@@ -350,6 +368,10 @@ mpd_opus_scan_stream(struct input_stream *is,
 			break;
 		}
 	}
+
+	if (packet.e_o_s || SeekFindEOS(oy, os, packet, nullptr, is))
+		tag_handler_invoke_duration(handler, handler_ctx,
+					    packet.granulepos / opus_sample_rate);
 
 	ogg_stream_clear(&os);
 	ogg_sync_clear(&oy);

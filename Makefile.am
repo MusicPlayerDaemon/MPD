@@ -531,6 +531,7 @@ if HAVE_OPUS
 libdecoder_plugins_a_SOURCES += \
 	src/decoder/OggUtil.cxx \
 	src/decoder/OggUtil.hxx \
+	src/decoder/OggFind.cxx src/decoder/OggFind.hxx \
 	src/decoder/OpusReader.hxx \
 	src/decoder/OpusHead.hxx \
 	src/decoder/OpusHead.cxx \
