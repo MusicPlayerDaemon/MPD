@@ -34,14 +34,13 @@ extern "C" {
 static void
 playlist_tag_event(void)
 {
-	playlist_tag_changed(&global_partition->playlist);
+	global_partition->playlist.TagChanged();
 }
 
 static void
 playlist_event(void)
 {
-	playlist_sync(&global_partition->playlist,
-		      &global_partition->pc);
+	global_partition->playlist.SyncWithPlayer(global_partition->pc);
 }
 
 void

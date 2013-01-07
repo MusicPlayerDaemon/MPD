@@ -52,7 +52,7 @@ playlist_load_into_queue(const char *uri, struct playlist_provider *source,
 		if (song == NULL)
 			continue;
 
-		result = playlist_append_song(dest, pc, song, NULL);
+		result = dest->AppendSong(*pc, song);
 		song_free(song);
 		if (result != PLAYLIST_RESULT_SUCCESS) {
 			g_free(base_uri);

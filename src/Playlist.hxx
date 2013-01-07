@@ -75,175 +75,184 @@ struct playlist {
 
 	~playlist() {
 	}
+
+	uint32_t GetVersion() const {
+		return queue.version;
+	}
+
+	unsigned GetLength() const {
+		return queue.GetLength();
+	}
+
+	unsigned PositionToId(unsigned position) const {
+		return queue.PositionToId(position);
+	}
+
+	gcc_pure
+	int GetCurrentPosition() const;
+
+	gcc_pure
+	int GetNextPosition() const;
+
+	/**
+	 * Returns the song object which is currently queued.  Returns
+	 * none if there is none (yet?) or if MPD isn't playing.
+	 */
+	gcc_pure
+	const struct song *GetQueuedSong() const;
+
+	/**
+	 * This is the "PLAYLIST" event handler.  It is invoked by the
+	 * player thread whenever it requests a new queued song, or
+	 * when it exits.
+	 */
+	void SyncWithPlayer(player_control &pc);
+
+protected:
+	/**
+	 * Called by all editing methods after a modification.
+	 * Updates the queue version and emits #IDLE_PLAYLIST.
+	 */
+	void OnModified();
+
+	/**
+	 * Updates the "queued song".  Calculates the next song
+	 * according to the current one (if MPD isn't playing, it
+	 * takes the first song), and queues this song.  Clears the
+	 * old queued song if there was one.
+	 *
+	 * @param prev the song which was previously queued, as
+	 * determined by playlist_get_queued_song()
+	 */
+	void UpdateQueuedSong(player_control &pc, const song *prev);
+
+public:
+	void Clear(player_control &pc);
+
+	void TagChanged();
+
+	enum playlist_result AppendSong(player_control &pc,
+					struct song *song,
+					unsigned *added_id=nullptr);
+
+	/**
+	 * Appends a local file (outside the music database) to the
+	 * playlist.
+	 *
+	 * Note: the caller is responsible for checking permissions.
+	 */
+	enum playlist_result AppendFile(player_control &pc,
+					const char *path_fs,
+					unsigned *added_id=nullptr);
+
+	enum playlist_result AppendURI(player_control &pc,
+				       const char *uri_utf8,
+				       unsigned *added_id=nullptr);
+
+protected:
+	void DeleteInternal(player_control &pc,
+			    unsigned song, const struct song **queued_p);
+
+public:
+	enum playlist_result DeletePosition(player_control &pc,
+					    unsigned position);
+
+	enum playlist_result DeleteOrder(player_control &pc,
+					 unsigned order) {
+		return DeletePosition(pc, queue.OrderToPosition(order));
+	}
+
+	enum playlist_result DeleteId(player_control &pc, unsigned id);
+
+	/**
+	 * Deletes a range of songs from the playlist.
+	 *
+	 * @param start the position of the first song to delete
+	 * @param end the position after the last song to delete
+	 */
+	enum playlist_result DeleteRange(player_control &pc,
+					 unsigned start, unsigned end);
+
+	void DeleteSong(player_control &pc, const song &song);
+
+	void Shuffle(player_control &pc, unsigned start, unsigned end);
+
+	enum playlist_result MoveRange(player_control &pc,
+				       unsigned start, unsigned end, int to);
+
+	enum playlist_result MoveId(player_control &pc, unsigned id, int to);
+
+	enum playlist_result SwapPositions(player_control &pc,
+					   unsigned song1, unsigned song2);
+
+	enum playlist_result SwapIds(player_control &pc,
+				     unsigned id1, unsigned id2);
+
+	enum playlist_result SetPriorityRange(player_control &pc,
+					      unsigned start_position,
+					      unsigned end_position,
+					      uint8_t priority);
+
+	enum playlist_result SetPriorityId(player_control &pc,
+					   unsigned song_id, uint8_t priority);
+
+	void Stop(player_control &pc);
+
+	enum playlist_result PlayPosition(player_control &pc, int position);
+
+	void PlayOrder(player_control &pc, int order);
+
+	enum playlist_result PlayId(player_control &pc, int id);
+
+	void PlayNext(player_control &pc);
+
+	void PlayPrevious(player_control &pc);
+
+	enum playlist_result SeekSongPosition(player_control &pc,
+					      unsigned song_position,
+					      float seek_time);
+
+	enum playlist_result SeekSongId(player_control &pc,
+					unsigned song_id, float seek_time);
+
+	/**
+	 * Seek within the current song.  Fails if MPD is not currently
+	 * playing.
+	 *
+	 * @param time the time in seconds
+	 * @param relative if true, then the specified time is relative to the
+	 * current position
+	 */
+	enum playlist_result SeekCurrent(player_control &pc,
+					 float seek_time, bool relative);
+
+	bool GetRepeat() const {
+		return queue.repeat;
+	}
+
+	void SetRepeat(player_control &pc, bool new_value);
+
+	bool GetRandom() const {
+		return queue.random;
+	}
+
+	void SetRandom(player_control &pc, bool new_value);
+
+	bool GetSingle() const {
+		return queue.single;
+	}
+
+	void SetSingle(player_control &pc, bool new_value);
+
+	bool GetConsume() const {
+		return queue.consume;
+	}
+
+	void SetConsume(bool new_value);
 };
 
 void
 playlist_global_init();
-
-void
-playlist_tag_changed(struct playlist *playlist);
-
-/**
- * Returns the "queue" object of the global playlist instance.
- */
-static inline const struct queue *
-playlist_get_queue(const struct playlist *playlist)
-{
-	return &playlist->queue;
-}
-
-void
-playlist_clear(struct playlist *playlist, struct player_control *pc);
-
-/**
- * Appends a local file (outside the music database) to the playlist.
- *
- * Note: the caller is responsible for checking permissions.
- */
-enum playlist_result
-playlist_append_file(struct playlist *playlist, struct player_control *pc,
-		     const char *path_fs, unsigned *added_id);
-
-enum playlist_result
-playlist_append_uri(struct playlist *playlist, struct player_control *pc,
-		    const char *file, unsigned *added_id);
-
-enum playlist_result
-playlist_append_song(struct playlist *playlist, struct player_control *pc,
-		  struct song *song, unsigned *added_id);
-
-enum playlist_result
-playlist_delete(struct playlist *playlist, struct player_control *pc,
-		unsigned song);
-
-/**
- * Deletes a range of songs from the playlist.
- *
- * @param start the position of the first song to delete
- * @param end the position after the last song to delete
- */
-enum playlist_result
-playlist_delete_range(struct playlist *playlist, struct player_control *pc,
-		      unsigned start, unsigned end);
-
-enum playlist_result
-playlist_delete_id(struct playlist *playlist, struct player_control *pc,
-		   unsigned song);
-
-void
-playlist_stop(struct playlist *playlist, struct player_control *pc);
-
-enum playlist_result
-playlist_play(struct playlist *playlist, struct player_control *pc,
-	      int song);
-
-enum playlist_result
-playlist_play_id(struct playlist *playlist, struct player_control *pc,
-		 int song);
-
-void
-playlist_next(struct playlist *playlist, struct player_control *pc);
-
-void
-playlist_sync(struct playlist *playlist, struct player_control *pc);
-
-void
-playlist_previous(struct playlist *playlist, struct player_control *pc);
-
-void
-playlist_shuffle(struct playlist *playlist, struct player_control *pc,
-		 unsigned start, unsigned end);
-
-void
-playlist_delete_song(struct playlist *playlist, struct player_control *pc,
-		     const struct song *song);
-
-enum playlist_result
-playlist_move_range(struct playlist *playlist, struct player_control *pc,
-		    unsigned start, unsigned end, int to);
-
-enum playlist_result
-playlist_move_id(struct playlist *playlist, struct player_control *pc,
-		 unsigned id, int to);
-
-enum playlist_result
-playlist_swap_songs(struct playlist *playlist, struct player_control *pc,
-		    unsigned song1, unsigned song2);
-
-enum playlist_result
-playlist_swap_songs_id(struct playlist *playlist, struct player_control *pc,
-		       unsigned id1, unsigned id2);
-
-enum playlist_result
-playlist_set_priority(struct playlist *playlist, struct player_control *pc,
-		      unsigned start_position, unsigned end_position,
-		      uint8_t priority);
-
-enum playlist_result
-playlist_set_priority_id(struct playlist *playlist, struct player_control *pc,
-			 unsigned song_id, uint8_t priority);
-
-bool
-playlist_get_repeat(const struct playlist *playlist);
-
-void
-playlist_set_repeat(struct playlist *playlist, struct player_control *pc,
-		    bool status);
-
-bool
-playlist_get_random(const struct playlist *playlist);
-
-void
-playlist_set_random(struct playlist *playlist, struct player_control *pc,
-		    bool status);
-
-bool
-playlist_get_single(const struct playlist *playlist);
-
-void
-playlist_set_single(struct playlist *playlist, struct player_control *pc,
-		    bool status);
-
-bool
-playlist_get_consume(const struct playlist *playlist);
-
-void
-playlist_set_consume(struct playlist *playlist, bool status);
-
-int
-playlist_get_current_song(const struct playlist *playlist);
-
-int
-playlist_get_next_song(const struct playlist *playlist);
-
-unsigned
-playlist_get_song_id(const struct playlist *playlist, unsigned song);
-
-int
-playlist_get_length(const struct playlist *playlist);
-
-unsigned long
-playlist_get_version(const struct playlist *playlist);
-
-enum playlist_result
-playlist_seek_song(struct playlist *playlist, struct player_control *pc,
-		   unsigned song, float seek_time);
-
-enum playlist_result
-playlist_seek_song_id(struct playlist *playlist, struct player_control *pc,
-		       unsigned id, float seek_time);
-
-/**
- * Seek within the current song.  Fails if MPD is not currently
- * playing.
- *
- * @param time the time in seconds
- * @param relative if true, then the specified time is relative to the
- * current position
- */
-enum playlist_result
-playlist_seek_current(struct playlist *playlist, struct player_control *pc,
-		      float seek_time, bool relative);
 
 void
 playlist_increment_version_all(struct playlist *playlist);

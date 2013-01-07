@@ -145,26 +145,16 @@ playlist_state_restore(const char *line, TextFile &file,
 			seek_time =
 			    atoi(&(line[strlen(PLAYLIST_STATE_FILE_TIME)]));
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_REPEAT)) {
-			if (strcmp
-			    (&(line[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
-			     "1") == 0) {
-				playlist_set_repeat(playlist, pc, true);
-			} else
-				playlist_set_repeat(playlist, pc, false);
+			playlist->SetRepeat(*pc,
+					    strcmp(&(line[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
+						   "1") == 0);
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_SINGLE)) {
-			if (strcmp
-			    (&(line[strlen(PLAYLIST_STATE_FILE_SINGLE)]),
-			     "1") == 0) {
-				playlist_set_single(playlist, pc, true);
-			} else
-				playlist_set_single(playlist, pc, false);
+			playlist->SetSingle(*pc,
+					    strcmp(&(line[strlen(PLAYLIST_STATE_FILE_SINGLE)]),
+						   "1") == 0);
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_CONSUME)) {
-			if (strcmp
-			    (&(line[strlen(PLAYLIST_STATE_FILE_CONSUME)]),
-			     "1") == 0) {
-				playlist_set_consume(playlist, true);
-			} else
-				playlist_set_consume(playlist, false);
+			playlist->SetConsume(strcmp(&(line[strlen(PLAYLIST_STATE_FILE_CONSUME)]),
+						    "1") == 0);
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_CROSSFADE)) {
 			pc_set_cross_fade(pc,
 					  atoi(line + strlen(PLAYLIST_STATE_FILE_CROSSFADE)));
@@ -188,7 +178,7 @@ playlist_state_restore(const char *line, TextFile &file,
 		}
 	}
 
-	playlist_set_random(playlist, pc, random_mode);
+	playlist->SetRandom(*pc, random_mode);
 
 	if (!playlist->queue.IsEmpty()) {
 		if (!playlist->queue.IsValidPosition(current))
@@ -210,9 +200,9 @@ playlist_state_restore(const char *line, TextFile &file,
 		if (state == PLAYER_STATE_STOP /* && config_option */)
 			playlist->current = current;
 		else if (seek_time == 0)
-			playlist_play(playlist, pc, current);
+			playlist->PlayPosition(*pc, current);
 		else
-			playlist_seek_song(playlist, pc, current, seek_time);
+			playlist->SeekSongPosition(*pc, current, seek_time);
 
 		if (state == PLAYER_STATE_PAUSE)
 			pc_pause(pc);

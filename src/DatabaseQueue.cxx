@@ -30,8 +30,7 @@ static bool
 AddToQueue(Partition &partition, song &song, GError **error_r)
 {
 	enum playlist_result result =
-		playlist_append_song(&partition.playlist, &partition.pc,
-				     &song, NULL);
+		partition.playlist.AppendSong(partition.pc, &song, NULL);
 	if (result != PLAYLIST_RESULT_SUCCESS) {
 		g_set_error(error_r, playlist_quark(), result,
 			    "Playlist error");

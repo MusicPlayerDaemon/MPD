@@ -132,8 +132,7 @@ playlist_load_spl(struct playlist *playlist, struct player_control *pc,
 	for (unsigned i = start_index; i < end_index; ++i) {
 		const auto &uri_utf8 = contents[i];
 
-		if ((playlist_append_uri(playlist, pc, uri_utf8.c_str(),
-					 nullptr)) != PLAYLIST_RESULT_SUCCESS) {
+		if ((playlist->AppendURI(*pc, uri_utf8.c_str())) != PLAYLIST_RESULT_SUCCESS) {
 			/* for windows compatibility, convert slashes */
 			char *temp2 = g_strdup(uri_utf8.c_str());
 			char *p = temp2;
@@ -142,9 +141,10 @@ playlist_load_spl(struct playlist *playlist, struct player_control *pc,
 					*p = '/';
 				p++;
 			}
-			if ((playlist_append_uri(playlist, pc, temp2, NULL)) != PLAYLIST_RESULT_SUCCESS) {
+
+			if (playlist->AppendURI(*pc, temp2) != PLAYLIST_RESULT_SUCCESS)
 				g_warning("can't add file \"%s\"", temp2);
-			}
+
 			g_free(temp2);
 		}
 	}

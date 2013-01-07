@@ -113,7 +113,6 @@ mpd_headers = \
 	src/page.h \
 	src/Playlist.hxx \
 	src/playlist_error.h \
-	src/PlaylistInternal.hxx \
 	src/playlist_plugin.h \
 	src/playlist_list.h \
 	src/playlist/extm3u_playlist_plugin.h \

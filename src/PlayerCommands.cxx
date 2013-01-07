@@ -26,6 +26,7 @@
 #include "ClientInternal.hxx"
 #include "Volume.hxx"
 #include "OutputAll.hxx"
+#include "Partition.hxx"
 #include "protocol/Result.hxx"
 #include "protocol/ArgParser.hxx"
 
@@ -34,7 +35,6 @@ extern "C" {
 }
 
 #include "replay_gain_config.h"
-#include "PlayerControl.hxx"
 
 #include <errno.h>
 
@@ -62,12 +62,10 @@ enum command_return
 handle_play(Client *client, int argc, char *argv[])
 {
 	int song = -1;
-	enum playlist_result result;
 
 	if (argc == 2 && !check_int(client, &song, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	result = playlist_play(&client->playlist, client->player_control,
-			       song);
+	enum playlist_result result = client->partition.PlayPosition(song);
 	return print_playlist_result(client, result);
 }
 
@@ -75,13 +73,11 @@ enum command_return
 handle_playid(Client *client, int argc, char *argv[])
 {
 	int id = -1;
-	enum playlist_result result;
 
 	if (argc == 2 && !check_int(client, &id, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	result = playlist_play_id(&client->playlist, client->player_control,
-				  id);
+	enum playlist_result result = client->partition.PlayId(id);
 	return print_playlist_result(client, result);
 }
 
@@ -89,7 +85,7 @@ enum command_return
 handle_stop(Client *client,
 	    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	playlist_stop(&client->playlist, client->player_control);
+	client->partition.Stop();
 	return COMMAND_RETURN_OK;
 }
 
@@ -155,23 +151,23 @@ handle_status(Client *client,
 		      COMMAND_STATUS_MIXRAMPDELAY ": %f\n"
 		      COMMAND_STATUS_STATE ": %s\n",
 		      volume_level_get(),
-		      playlist_get_repeat(&playlist),
-		      playlist_get_random(&playlist),
-		      playlist_get_single(&playlist),
-		      playlist_get_consume(&playlist),
-		      playlist_get_version(&playlist),
-		      playlist_get_length(&playlist),
+		      playlist.GetRepeat(),
+		      playlist.GetRandom(),
+		      playlist.GetSingle(),
+		      playlist.GetConsume(),
+		      (unsigned long)playlist.GetVersion(),
+		      playlist.GetLength(),
 		      (int)(pc_get_cross_fade(client->player_control) + 0.5),
 		      pc_get_mixramp_db(client->player_control),
 		      pc_get_mixramp_delay(client->player_control),
 		      state);
 
-	song = playlist_get_current_song(&playlist);
+	song = playlist.GetCurrentPosition();
 	if (song >= 0) {
 		client_printf(client,
 			      COMMAND_STATUS_SONG ": %i\n"
 			      COMMAND_STATUS_SONGID ": %u\n",
-			      song, playlist_get_song_id(&playlist, song));
+			      song, playlist.PositionToId(song));
 	}
 
 	if (player_status.state != PLAYER_STATE_STOP) {
@@ -204,12 +200,12 @@ handle_status(Client *client,
 		g_free(error);
 	}
 
-	song = playlist_get_next_song(&playlist);
+	song = playlist.GetNextPosition();
 	if (song >= 0) {
 		client_printf(client,
 			      COMMAND_STATUS_NEXTSONG ": %i\n"
 			      COMMAND_STATUS_NEXTSONGID ": %u\n",
-			      song, playlist_get_song_id(&playlist, song));
+			      song, playlist.PositionToId(song));
 	}
 
 	return COMMAND_RETURN_OK;
@@ -226,7 +222,7 @@ handle_next(Client *client,
 	const bool single = playlist.queue.single;
 	playlist.queue.single = false;
 
-	playlist_next(&playlist, client->player_control);
+	client->partition.PlayNext();
 
 	playlist.queue.single = single;
 	return COMMAND_RETURN_OK;
@@ -236,7 +232,7 @@ enum command_return
 handle_previous(Client *client,
 		G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	playlist_previous(&client->playlist, client->player_control);
+	client->partition.PlayPrevious();
 	return COMMAND_RETURN_OK;
 }
 
@@ -247,7 +243,7 @@ handle_repeat(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (!check_bool(client, &status, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	playlist_set_repeat(&client->playlist, client->player_control, status);
+	client->partition.SetRepeat(status);
 	return COMMAND_RETURN_OK;
 }
 
@@ -258,7 +254,7 @@ handle_single(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (!check_bool(client, &status, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	playlist_set_single(&client->playlist, client->player_control, status);
+	client->partition.SetSingle(status);
 	return COMMAND_RETURN_OK;
 }
 
@@ -269,7 +265,7 @@ handle_consume(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (!check_bool(client, &status, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	playlist_set_consume(&client->playlist, status);
+	client->partition.SetConsume(status);
 	return COMMAND_RETURN_OK;
 }
 
@@ -280,8 +276,8 @@ handle_random(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 	if (!check_bool(client, &status, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	playlist_set_random(&client->playlist, client->player_control, status);
-	audio_output_all_set_replay_gain_mode(replay_gain_get_real_mode(client->playlist.queue.random));
+	client->partition.SetRandom(status);
+	audio_output_all_set_replay_gain_mode(replay_gain_get_real_mode(client->partition.GetRandom()));
 	return COMMAND_RETURN_OK;
 }
 
@@ -297,15 +293,14 @@ enum command_return
 handle_seek(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned song, seek_time;
-	enum playlist_result result;
 
 	if (!check_unsigned(client, &song, argv[1]))
 		return COMMAND_RETURN_ERROR;
 	if (!check_unsigned(client, &seek_time, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
-	result = playlist_seek_song(&client->playlist, client->player_control,
-				    song, seek_time);
+	enum playlist_result result =
+		client->partition.SeekSongPosition(song, seek_time);
 	return print_playlist_result(client, result);
 }
 
@@ -313,16 +308,14 @@ enum command_return
 handle_seekid(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned id, seek_time;
-	enum playlist_result result;
 
 	if (!check_unsigned(client, &id, argv[1]))
 		return COMMAND_RETURN_ERROR;
 	if (!check_unsigned(client, &seek_time, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
-	result = playlist_seek_song_id(&client->playlist,
-				       client->player_control,
-				       id, seek_time);
+	enum playlist_result result =
+		client->partition.SeekSongId(id, seek_time);
 	return print_playlist_result(client, result);
 }
 
@@ -336,9 +329,7 @@ handle_seekcur(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 
 	enum playlist_result result =
-		playlist_seek_current(&client->playlist,
-				      client->player_control,
-				      seek_time, relative);
+		client->partition.SeekCurrent(seek_time, relative);
 	return print_playlist_result(client, result);
 }
 

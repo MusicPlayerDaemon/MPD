@@ -27,6 +27,7 @@
 #include "PlaylistPrint.hxx"
 #include "ClientFile.hxx"
 #include "ClientInternal.hxx"
+#include "Partition.hxx"
 #include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
 #include "ls.hxx"
@@ -50,10 +51,7 @@ handle_add(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 		if (!client_allow_file(client, path, &error))
 			return print_error(client, error);
 
-		result = playlist_append_file(&client->playlist,
-					      client->player_control,
-					      path,
-					      NULL);
+		result = client->partition.AppendFile(path);
 		return print_playlist_result(client, result);
 	}
 
@@ -64,9 +62,7 @@ handle_add(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		result = playlist_append_uri(&client->playlist,
-					     client->player_control,
-					     uri, NULL);
+		result = client->partition.AppendURI(uri);
 		return print_playlist_result(client, result);
 	}
 
@@ -91,10 +87,7 @@ handle_addid(Client *client, int argc, char *argv[])
 		if (!client_allow_file(client, path, &error))
 			return print_error(client, error);
 
-		result = playlist_append_file(&client->playlist,
-					      client->player_control,
-					      path,
-					      &added_id);
+		result = client->partition.AppendFile(path, &added_id);
 	} else {
 		if (uri_has_scheme(uri) && !uri_supported_scheme(uri)) {
 			command_error(client, ACK_ERROR_NO_EXIST,
@@ -102,9 +95,7 @@ handle_addid(Client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		result = playlist_append_uri(&client->playlist,
-					     client->player_control,
-					     uri, &added_id);
+		result = client->partition.AppendURI(uri, &added_id);
 	}
 
 	if (result != PLAYLIST_RESULT_SUCCESS)
@@ -114,15 +105,11 @@ handle_addid(Client *client, int argc, char *argv[])
 		unsigned to;
 		if (!check_unsigned(client, &to, argv[2]))
 			return COMMAND_RETURN_ERROR;
-		result = playlist_move_id(&client->playlist,
-					  client->player_control,
-					  added_id, to);
+		result = client->partition.MoveId(added_id, to);
 		if (result != PLAYLIST_RESULT_SUCCESS) {
 			enum command_return ret =
 				print_playlist_result(client, result);
-			playlist_delete_id(&client->playlist,
-					   client->player_control,
-					   added_id);
+			client->partition.DeleteId(added_id);
 			return ret;
 		}
 	}
@@ -135,14 +122,11 @@ enum command_return
 handle_delete(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned start, end;
-	enum playlist_result result;
 
 	if (!check_range(client, &start, &end, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	result = playlist_delete_range(&client->playlist,
-				       client->player_control,
-				       start, end);
+	enum playlist_result result = client->partition.DeleteRange(start, end);
 	return print_playlist_result(client, result);
 }
 
@@ -150,13 +134,11 @@ enum command_return
 handle_deleteid(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned id;
-	enum playlist_result result;
 
 	if (!check_unsigned(client, &id, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	result = playlist_delete_id(&client->playlist,
-				    client->player_control, id);
+	enum playlist_result result = client->partition.DeleteId(id);
 	return print_playlist_result(client, result);
 }
 
@@ -176,8 +158,7 @@ handle_shuffle(G_GNUC_UNUSED Client *client,
 	if (argc == 2 && !check_range(client, &start, &end, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	playlist_shuffle(&client->playlist, client->player_control,
-			 start, end);
+	client->partition.Shuffle(start, end);
 	return COMMAND_RETURN_OK;
 }
 
@@ -185,7 +166,7 @@ enum command_return
 handle_clear(G_GNUC_UNUSED Client *client,
 	     G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	playlist_clear(&client->playlist, client->player_control);
+	client->partition.ClearQueue();
 	return COMMAND_RETURN_OK;
 }
 
@@ -296,10 +277,9 @@ handle_prio(Client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 
 		enum playlist_result result =
-			playlist_set_priority(&client->playlist,
-					      client->player_control,
-					      start_position, end_position,
-					      priority);
+			client->partition.SetPriorityRange(start_position,
+							   end_position,
+							   priority);
 		if (result != PLAYLIST_RESULT_SUCCESS)
 			return print_playlist_result(client, result);
 	}
@@ -327,9 +307,7 @@ handle_prioid(Client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 
 		enum playlist_result result =
-			playlist_set_priority_id(&client->playlist,
-						 client->player_control,
-						 song_id, priority);
+			client->partition.SetPriorityId(song_id, priority);
 		if (result != PLAYLIST_RESULT_SUCCESS)
 			return print_playlist_result(client, result);
 	}
@@ -342,14 +320,14 @@ handle_move(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned start, end;
 	int to;
-	enum playlist_result result;
 
 	if (!check_range(client, &start, &end, argv[1]))
 		return COMMAND_RETURN_ERROR;
 	if (!check_int(client, &to, argv[2]))
 		return COMMAND_RETURN_ERROR;
-	result = playlist_move_range(&client->playlist, client->player_control,
-				     start, end, to);
+
+	enum playlist_result result =
+		client->partition.MoveRange(start, end, to);
 	return print_playlist_result(client, result);
 }
 
@@ -358,14 +336,12 @@ handle_moveid(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned id;
 	int to;
-	enum playlist_result result;
 
 	if (!check_unsigned(client, &id, argv[1]))
 		return COMMAND_RETURN_ERROR;
 	if (!check_int(client, &to, argv[2]))
 		return COMMAND_RETURN_ERROR;
-	result = playlist_move_id(&client->playlist, client->player_control,
-				  id, to);
+	enum playlist_result result = client->partition.MoveId(id, to);
 	return print_playlist_result(client, result);
 }
 
@@ -373,14 +349,14 @@ enum command_return
 handle_swap(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned song1, song2;
-	enum playlist_result result;
 
 	if (!check_unsigned(client, &song1, argv[1]))
 		return COMMAND_RETURN_ERROR;
 	if (!check_unsigned(client, &song2, argv[2]))
 		return COMMAND_RETURN_ERROR;
-	result = playlist_swap_songs(&client->playlist, client->player_control,
-				     song1, song2);
+
+	enum playlist_result result =
+		client->partition.SwapPositions(song1, song2);
 	return print_playlist_result(client, result);
 }
 
@@ -388,14 +364,12 @@ enum command_return
 handle_swapid(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 {
 	unsigned id1, id2;
-	enum playlist_result result;
 
 	if (!check_unsigned(client, &id1, argv[1]))
 		return COMMAND_RETURN_ERROR;
 	if (!check_unsigned(client, &id2, argv[2]))
 		return COMMAND_RETURN_ERROR;
-	result = playlist_swap_songs_id(&client->playlist,
-					client->player_control,
-					id1, id2);
+
+	enum playlist_result result = client->partition.SwapIds(id1, id2);
 	return print_playlist_result(client, result);
 }

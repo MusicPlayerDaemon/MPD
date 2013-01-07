@@ -80,8 +80,7 @@ playlist_print_id(Client *client, const struct playlist *playlist,
 bool
 playlist_print_current(Client *client, const struct playlist *playlist)
 {
-	int current_position = playlist_get_current_song(playlist);
-
+	int current_position = playlist->GetCurrentPosition();
 	if (current_position < 0)
 		return false;
 
