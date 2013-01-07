@@ -21,10 +21,11 @@
 #define MPD_TAG_POOL_HXX
 
 #include "tag.h"
+#include "thread/Mutex.hxx"
 
 #include <glib.h>
 
-extern GStaticMutex tag_pool_lock;
+extern Mutex tag_pool_lock;
 
 struct tag_item;
 

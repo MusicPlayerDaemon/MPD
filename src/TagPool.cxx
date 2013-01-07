@@ -22,17 +22,7 @@
 
 #include <assert.h>
 
-#if GCC_CHECK_VERSION(4, 2)
-/* workaround for a warning caused by G_STATIC_MUTEX_INIT */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#endif
-
-GStaticMutex tag_pool_lock = G_STATIC_MUTEX_INIT;
-
-#if GCC_CHECK_VERSION(4, 2)
-#pragma GCC diagnostic pop
-#endif
+Mutex tag_pool_lock;
 
 #define NUM_SLOTS 4096
 

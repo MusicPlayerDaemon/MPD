@@ -145,9 +145,9 @@ static void tag_delete_item(struct tag *tag, unsigned idx)
 	assert(idx < tag->num_items);
 	tag->num_items--;
 
-	g_static_mutex_lock(&tag_pool_lock);
+	tag_pool_lock.lock();
 	tag_pool_put_item(tag->items[idx]);
-	g_static_mutex_unlock(&tag_pool_lock);
+	tag_pool_lock.unlock();
 
 	if (tag->num_items - idx > 0) {
 		memmove(tag->items + idx, tag->items + idx + 1,
@@ -180,10 +180,10 @@ void tag_free(struct tag *tag)
 
 	assert(tag != nullptr);
 
-	g_static_mutex_lock(&tag_pool_lock);
+	tag_pool_lock.lock();
 	for (i = tag->num_items; --i >= 0; )
 		tag_pool_put_item(tag->items[i]);
-	g_static_mutex_unlock(&tag_pool_lock);
+	tag_pool_lock.unlock();
 
 	if (tag->items == bulk.items) {
 #ifndef NDEBUG
@@ -211,10 +211,10 @@ struct tag *tag_dup(const struct tag *tag)
 		? (struct tag_item **)g_malloc(items_size(tag))
 		: nullptr;
 
-	g_static_mutex_lock(&tag_pool_lock);
+	tag_pool_lock.lock();
 	for (unsigned i = 0; i < tag->num_items; i++)
 		ret->items[i] = tag_pool_dup_item(tag->items[i]);
-	g_static_mutex_unlock(&tag_pool_lock);
+	tag_pool_lock.unlock();
 
 	return ret;
 }
@@ -237,7 +237,7 @@ tag_merge(const struct tag *base, const struct tag *add)
 		? (struct tag_item **)g_malloc(items_size(ret))
 		: nullptr;
 
-	g_static_mutex_lock(&tag_pool_lock);
+	tag_pool_lock.lock();
 
 	/* copy all items from "add" */
 
@@ -252,7 +252,7 @@ tag_merge(const struct tag *base, const struct tag *add)
 		if (!tag_has_type(add, base->items[i]->type))
 			ret->items[n++] = tag_pool_dup_item(base->items[i]);
 
-	g_static_mutex_unlock(&tag_pool_lock);
+	tag_pool_lock.unlock();
 
 	assert(n <= ret->num_items);
 
@@ -487,9 +487,9 @@ tag_add_item_internal(struct tag *tag, enum tag_type type,
 		       items_size(tag) - sizeof(struct tag_item *));
 	}
 
-	g_static_mutex_lock(&tag_pool_lock);
+	tag_pool_lock.lock();
 	tag->items[i] = tag_pool_get_item(type, value, len);
-	g_static_mutex_unlock(&tag_pool_lock);
+	tag_pool_lock.unlock();
 
 	g_free(p);
 }
