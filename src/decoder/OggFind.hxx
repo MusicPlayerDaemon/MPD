@@ -21,6 +21,7 @@
 #define MPD_OGG_FIND_HXX
 
 #include "check.h"
+#include "InputStream.hxx"
 
 #include <ogg/ogg.h>
 
@@ -35,6 +36,13 @@ class OggSyncState;
  */
 bool
 OggFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet);
+
+/**
+ * Seek the #InputStream and find the next Ogg page.
+ */
+bool
+OggSeekPageAtOffset(OggSyncState &oy, ogg_stream_state &os, InputStream &is,
+		    InputStream::offset_type offset, int whence);
 
 /**
  * Try to find the end-of-stream (EOS) packet.  Seek to the end of the

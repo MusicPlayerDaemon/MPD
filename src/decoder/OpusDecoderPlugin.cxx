@@ -80,6 +80,8 @@ class MPDOpusDecoder {
 
 	int opus_serialno;
 
+	ogg_int64_t eos_granulepos;
+
 	size_t frame_size;
 
 public:
@@ -99,6 +101,8 @@ public:
 	DecoderCommand HandleBOS(const ogg_packet &packet);
 	DecoderCommand HandleTags(const ogg_packet &packet);
 	DecoderCommand HandleAudio(const ogg_packet &packet);
+
+	bool Seek(OggSyncState &oy, double where);
 };
 
 MPDOpusDecoder::~MPDOpusDecoder()
@@ -252,15 +256,16 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 		return DecoderCommand::STOP;
 	}
 
-	const ogg_int64_t eos_granulepos =
-		LoadEOSGranulePos(input_stream, &decoder, opus_serialno);
+	eos_granulepos = LoadEOSGranulePos(input_stream, &decoder,
+					   opus_serialno);
 	const double duration = eos_granulepos >= 0
 		? double(eos_granulepos) / opus_sample_rate
 		: -1.0;
 
 	const AudioFormat audio_format(opus_sample_rate,
 				       SampleFormat::S16, channels);
-	decoder_initialized(decoder, audio_format, false, duration);
+	decoder_initialized(decoder, audio_format,
+			    eos_granulepos > 0, duration);
 	frame_size = audio_format.GetFrameSize();
 
 	/* allocate an output buffer for 16 bit PCM samples big enough
@@ -324,6 +329,29 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 	return DecoderCommand::NONE;
 }
 
+bool
+MPDOpusDecoder::Seek(OggSyncState &oy, double where_s)
+{
+	assert(eos_granulepos > 0);
+	assert(input_stream.seekable);
+	assert(input_stream.size > 0);
+	assert(input_stream.offset >= 0);
+
+	const ogg_int64_t where_granulepos(where_s * opus_sample_rate);
+
+	/* interpolate the file offset where we expect to find the
+	   given granule position */
+	/* TODO: implement binary search */
+	InputStream::offset_type offset(where_granulepos * input_stream.size
+					/ eos_granulepos);
+
+	if (!OggSeekPageAtOffset(oy, os, input_stream, offset, SEEK_SET))
+		return false;
+
+	decoder_timestamp(decoder, where_s);
+	return true;
+}
+
 static void
 mpd_opus_stream_decode(Decoder &decoder,
 		       InputStream &input_stream)
@@ -343,12 +371,20 @@ mpd_opus_stream_decode(Decoder &decoder,
 
 	while (true) {
 		auto cmd = d.HandlePackets();
+		if (cmd == DecoderCommand::SEEK) {
+			if (d.Seek(oy, decoder_seek_where(decoder)))
+				decoder_command_finished(decoder);
+			else
+				decoder_seek_error(decoder);
+
+			continue;
+		}
+
 		if (cmd != DecoderCommand::NONE)
 			break;
 
 		if (!d.ReadNextPage(oy))
 			break;
-
 	}
 }
 
