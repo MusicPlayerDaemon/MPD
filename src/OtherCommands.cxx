@@ -32,10 +32,10 @@
 #include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
 #include "ls.hxx"
+#include "Volume.hxx"
 
 extern "C" {
 #include "uri.h"
-#include "volume.h"
 #include "stats.h"
 }
 

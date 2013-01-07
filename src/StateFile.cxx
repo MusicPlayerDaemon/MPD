@@ -23,10 +23,7 @@
 #include "PlaylistState.hxx"
 #include "TextFile.hxx"
 #include "Partition.hxx"
-
-extern "C" {
-#include "volume.h"
-}
+#include "Volume.hxx"
 
 #include <glib.h>
 #include <assert.h>

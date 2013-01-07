@@ -24,12 +24,12 @@
 #include "PlaylistPrint.hxx"
 #include "UpdateGlue.hxx"
 #include "ClientInternal.hxx"
+#include "Volume.hxx"
 #include "protocol/Result.hxx"
 #include "protocol/ArgParser.hxx"
 
 extern "C" {
 #include "audio_format.h"
-#include "volume.h"
 #include "replay_gain_config.h"
 #include "output_all.h"
 }

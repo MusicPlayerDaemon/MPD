@@ -152,7 +152,6 @@ mpd_headers = \
 	src/uri.h \
 	src/utils.h \
 	src/string_util.h \
-	src/volume.h \
 	src/zeroconf.h src/zeroconf-internal.h \
 	src/timer.h \
 	src/archive_api.h \
@@ -306,7 +305,7 @@ src_mpd_SOURCES = \
 	src/uri.c \
 	src/utils.c \
 	src/string_util.c \
-	src/volume.c \
+	src/Volume.cxx src/Volume.hxx \
 	src/SongFilter.cxx src/SongFilter.hxx \
 	src/PlaylistFile.cxx src/PlaylistFile.hxx \
 	src/timer.c
