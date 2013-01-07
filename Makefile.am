@@ -1337,8 +1337,10 @@ test_test_pcm_LDADD = \
 
 test_TestQueuePriority_SOURCES = \
 	src/Queue.cxx \
+	src/fd_util.c \
 	test/TestQueuePriority.cxx
 test_TestQueuePriority_LDADD = \
+	libutil.a \
 	$(GLIB_LIBS)
 
 noinst_PROGRAMS += src/dsd2pcm/dsd2pcm

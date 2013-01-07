@@ -33,8 +33,7 @@ queue::queue(unsigned _max_length)
 	 repeat(false),
 	 single(false),
 	 consume(false),
-	 random(false),
-	 rand(g_rand_new())
+	 random(false)
 {
 	for (unsigned i = 0; i < max_length * QUEUE_HASH_MULT; ++i)
 		id_to_position[i] = -1;
@@ -47,8 +46,6 @@ queue::~queue()
 	g_free(items);
 	g_free(order);
 	g_free(id_to_position);
-
-	g_rand_free(rand);
 }
 
 /**
@@ -375,8 +372,8 @@ queue::ShuffleOrderRange(unsigned start, unsigned end)
 	assert(start <= end);
 	assert(end <= length);
 
-	for (unsigned i = start; i < end; ++i)
-		SwapOrders(i, g_rand_int_range(rand, i, end));
+	rand.AutoCreate();
+	std::shuffle(order + start, order + end, rand);
 }
 
 /**
@@ -426,13 +423,19 @@ queue::ShuffleOrder()
 void
 queue::ShuffleOrderFirst(unsigned start, unsigned end)
 {
-	SwapOrders(start, g_rand_int_range(rand, start, end));
+	rand.AutoCreate();
+
+	std::uniform_int_distribution<unsigned> distribution(start, end - 1);
+	SwapOrders(start, distribution(rand));
 }
 
 void
 queue::ShuffleOrderLast(unsigned start, unsigned end)
 {
-	SwapOrders(end - 1, g_rand_int_range(rand, start, end));
+	rand.AutoCreate();
+
+	std::uniform_int_distribution<unsigned> distribution(start, end - 1);
+	SwapOrders(end - 1, distribution(rand));
 }
 
 void
@@ -441,8 +444,12 @@ queue::ShuffleRange(unsigned start, unsigned end)
 	assert(start <= end);
 	assert(end <= length);
 
+	rand.AutoCreate();
+
 	for (unsigned i = start; i < end; i++) {
-		unsigned ri = g_rand_int_range(rand, i, end);
+		std::uniform_int_distribution<unsigned> distribution(start,
+								     end - 1);
+		unsigned ri = distribution(rand);
 		SwapPositions(i, ri);
 	}
 }

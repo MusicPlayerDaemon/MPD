@@ -21,6 +21,7 @@
 #define MPD_QUEUE_HXX
 
 #include "gcc.h"
+#include "util/LazyRandomEngine.hxx"
 
 #include <glib.h>
 
@@ -101,7 +102,7 @@ struct queue {
 	bool random;
 
 	/** random number generator for shuffle and random mode */
-	GRand *rand;
+	LazyRandomEngine rand;
 
 	queue(unsigned max_length);
 
