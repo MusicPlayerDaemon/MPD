@@ -27,6 +27,14 @@
 #include "CriticalSection.hxx"
 typedef CriticalSection Mutex;
 
+#else
+
+#include "PosixMutex.hxx"
+
+typedef PosixMutex Mutex;
+
+#endif
+
 class ScopeLock {
 	Mutex &mutex;
 
@@ -42,13 +50,5 @@ public:
 	ScopeLock(const ScopeLock &other) = delete;
 	ScopeLock &operator=(const ScopeLock &other) = delete;
 };
-
-#else
-
-#include <mutex>
-typedef std::mutex Mutex;
-typedef std::lock_guard<std::mutex> ScopeLock;
-
-#endif
 
 #endif
