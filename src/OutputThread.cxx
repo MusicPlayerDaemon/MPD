@@ -26,10 +26,10 @@ extern "C" {
 #include "pcm_mix.h"
 #include "filter_plugin.h"
 #include "filter/convert_filter_plugin.h"
-#include "filter/replay_gain_filter_plugin.h"
 #include "notify.h"
 }
 
+#include "filter/ReplayGainFilterPlugin.hxx"
 #include "PlayerControl.hxx"
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"

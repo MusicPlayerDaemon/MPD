@@ -27,9 +27,9 @@ extern "C" {
 #include "mixer_control.h"
 #include "mixer_plugin.h"
 #include "notify.h"
-#include "filter/replay_gain_filter_plugin.h"
 }
 
+#include "filter/ReplayGainFilterPlugin.hxx"
 #include "filter_plugin.h"
 
 #include <assert.h>

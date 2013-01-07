@@ -34,8 +34,9 @@ extern "C" {
 #include "filter_config.h"
 #include "filter/chain_filter_plugin.h"
 #include "filter/autoconvert_filter_plugin.h"
-#include "filter/replay_gain_filter_plugin.h"
 }
+
+#include "filter/ReplayGainFilterPlugin.hxx"
 
 #include <glib.h>
 

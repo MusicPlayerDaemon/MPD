@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef REPLAY_GAIN_FILTER_PLUGIN_H
-#define REPLAY_GAIN_FILTER_PLUGIN_H
+#ifndef MPD_REPLAY_GAIN_FILTER_PLUGIN_HXX
+#define MPD_REPLAY_GAIN_FILTER_PLUGIN_HXX
 
 #include "replay_gain_info.h"
 

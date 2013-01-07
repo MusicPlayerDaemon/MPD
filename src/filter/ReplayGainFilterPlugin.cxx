@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,16 +18,19 @@
  */
 
 #include "config.h"
-#include "filter/replay_gain_filter_plugin.h"
+#include "ReplayGainFilterPlugin.hxx"
 #include "filter_plugin.h"
 #include "filter_internal.h"
 #include "filter_registry.h"
 #include "audio_format.h"
-#include "pcm_buffer.h"
-#include "pcm_volume.h"
 #include "replay_gain_info.h"
 #include "replay_gain_config.h"
+
+extern "C" {
+#include "pcm_buffer.h"
+#include "pcm_volume.h"
 #include "mixer_control.h"
+}
 
 #include <assert.h>
 #include <string.h>
@@ -183,7 +186,8 @@ replay_gain_filter_filter(struct filter *_filter,
 
 	memcpy(dest, src, src_size);
 
-	success = pcm_volume(dest, src_size, filter->audio_format.format,
+	success = pcm_volume(dest, src_size,
+			     sample_format(filter->audio_format.format),
 			     filter->volume);
 	if (!success) {
 		g_set_error(error_r, replay_gain_quark(), 0,
@@ -195,12 +199,12 @@ replay_gain_filter_filter(struct filter *_filter,
 }
 
 const struct filter_plugin replay_gain_filter_plugin = {
-	.name = "replay_gain",
-	.init = replay_gain_filter_init,
-	.finish = replay_gain_filter_finish,
-	.open = replay_gain_filter_open,
-	.close = replay_gain_filter_close,
-	.filter = replay_gain_filter_filter,
+	"replay_gain",
+	replay_gain_filter_init,
+	replay_gain_filter_finish,
+	replay_gain_filter_open,
+	replay_gain_filter_close,
+	replay_gain_filter_filter,
 };
 
 void
