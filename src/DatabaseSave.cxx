@@ -24,11 +24,11 @@
 #include "DirectorySave.hxx"
 #include "song.h"
 #include "TextFile.hxx"
+#include "TagInternal.hxx"
+#include "tag.h"
 
 extern "C" {
 #include "path.h"
-#include "tag.h"
-#include "tag_internal.h"
 }
 
 #include <glib.h>

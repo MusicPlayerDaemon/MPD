@@ -140,7 +140,6 @@ mpd_headers = \
 	src/stats.h \
 	src/tag.h \
 	src/tag_internal.h \
-	src/tag_pool.h \
 	src/tag_table.h \
 	src/tag_ape.h \
 	src/tag_id3.h \
@@ -291,8 +290,9 @@ src_mpd_SOURCES = \
 	src/socket_util.c \
 	src/StateFile.cxx src/StateFile.hxx \
 	src/Stats.cxx \
-	src/tag.c \
-	src/tag_pool.c \
+	src/Tag.cxx \
+	src/TagNames.c \
+	src/TagPool.cxx src/TagPool.hxx \
 	src/TagPrint.cxx src/TagPrint.hxx \
 	src/TagSave.cxx src/TagSave.hxx \
 	src/tag_handler.c src/tag_handler.h \
@@ -1049,7 +1049,7 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/PlaylistVector.cxx src/PlaylistDatabase.cxx \
 	src/DatabaseLock.cxx src/DatabaseSave.cxx \
 	src/Song.cxx src/song_sort.c src/SongSave.cxx \
-	src/tag.c src/tag_pool.c src/TagSave.cxx \
+	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/path.c \
 	src/SongFilter.cxx \
 	src/TextFile.cxx \
@@ -1063,7 +1063,7 @@ test_run_input_SOURCES = test/run_input.c \
 	test/stdbin.h \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
-	src/tag.c src/tag_pool.c src/TagSave.cxx \
+	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/fd_util.c
 
 test_dump_text_file_LDADD = \
@@ -1074,7 +1074,7 @@ test_dump_text_file_SOURCES = test/dump_text_file.c \
 	test/stdbin.h \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
-	src/tag.c src/tag_pool.c \
+	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/text_input_stream.c src/fifo_buffer.c \
 	src/fd_util.c
 
@@ -1092,7 +1092,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/uri.c \
-	src/Song.cxx src/tag.c src/tag_pool.c src/TagSave.cxx \
+	src/Song.cxx src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/tag_handler.c src/tag_file.c \
 	src/audio_check.c src/pcm_buffer.c \
 	src/text_input_stream.c src/fifo_buffer.c \
@@ -1117,7 +1117,7 @@ test_run_decoder_SOURCES = test/run_decoder.c \
 	test/stdbin.h \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
-	src/tag.c src/tag_pool.c src/tag_handler.c \
+	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/tag_handler.c \
 	src/ReplayGainInfo.cxx \
 	src/uri.c \
 	src/fd_util.c \
@@ -1139,7 +1139,7 @@ test_read_tags_LDADD = \
 test_read_tags_SOURCES = test/read_tags.c \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
-	src/tag.c src/tag_pool.c src/tag_handler.c \
+	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/tag_handler.c \
 	src/ReplayGainInfo.cxx \
 	src/uri.c \
 	src/fd_util.c \
@@ -1192,7 +1192,7 @@ test_run_encoder_SOURCES = test/run_encoder.c \
 	src/fifo_buffer.c src/growing_fifo.c \
 	src/conf.c src/tokenizer.c \
 	src/utils.c src/string_util.c \
-	src/tag.c src/tag_pool.c \
+	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c
@@ -1210,7 +1210,7 @@ test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.c \
 	src/conf.c src/tokenizer.c \
 	src/utils.c \
 	src/string_util.c \
-	src/tag.c src/tag_pool.c \
+	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \
@@ -1266,7 +1266,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/audio_format.c \
 	src/audio_parser.c \
 	src/timer.c src/clock.c \
-	src/tag.c src/tag_pool.c \
+	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/fifo_buffer.c src/growing_fifo.c \
 	src/page.c \
 	src/socket_util.c \

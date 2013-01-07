@@ -18,21 +18,27 @@
  */
 
 #include "config.h"
-#include "TagSave.hxx"
 #include "tag.h"
-#include "TagInternal.hxx"
-#include "song.h"
 
-void tag_save(FILE *file, const struct tag *tag)
-{
-	if (tag->time >= 0)
-		fprintf(file, SONG_TIME "%i\n", tag->time);
+const char *tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
+	[TAG_ARTIST] = "Artist",
+	[TAG_ARTIST_SORT] = "ArtistSort",
+	[TAG_ALBUM] = "Album",
+	[TAG_ALBUM_ARTIST] = "AlbumArtist",
+	[TAG_ALBUM_ARTIST_SORT] = "AlbumArtistSort",
+	[TAG_TITLE] = "Title",
+	[TAG_TRACK] = "Track",
+	[TAG_NAME] = "Name",
+	[TAG_GENRE] = "Genre",
+	[TAG_DATE] = "Date",
+	[TAG_COMPOSER] = "Composer",
+	[TAG_PERFORMER] = "Performer",
+	[TAG_COMMENT] = "Comment",
+	[TAG_DISC] = "Disc",
 
-	if (tag->has_playlist)
-		fprintf(file, "Playlist: yes\n");
-
-	for (unsigned i = 0; i < tag->num_items; i++)
-		fprintf(file, "%s: %s\n",
-			tag_item_names[tag->items[i]->type],
-			tag->items[i]->value);
-}
+	/* MusicBrainz tags from http://musicbrainz.org/doc/MusicBrainzTag */
+	[TAG_MUSICBRAINZ_ARTISTID] = "MUSICBRAINZ_ARTISTID",
+	[TAG_MUSICBRAINZ_ALBUMID] = "MUSICBRAINZ_ALBUMID",
+	[TAG_MUSICBRAINZ_ALBUMARTISTID] = "MUSICBRAINZ_ALBUMARTISTID",
+	[TAG_MUSICBRAINZ_TRACKID] = "MUSICBRAINZ_TRACKID",
+};

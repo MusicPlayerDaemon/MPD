@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "tag_pool.h"
+#include "TagPool.hxx"
 
 #include <assert.h>
 
@@ -49,7 +49,7 @@ calc_hash_n(enum tag_type type, const char *p, size_t length)
 {
 	unsigned hash = 5381;
 
-	assert(p != NULL);
+	assert(p != nullptr);
 
 	while (length-- > 0)
 		hash = (hash << 5) + hash + *p++;
@@ -62,7 +62,7 @@ calc_hash(enum tag_type type, const char *p)
 {
 	unsigned hash = 5381;
 
-	assert(p != NULL);
+	assert(p != nullptr);
 
 	while (*p != 0)
 		hash = (hash << 5) + hash + *p++;
@@ -82,7 +82,8 @@ static struct slot *slot_alloc(struct slot *next,
 {
 	struct slot *slot;
 
-	slot = g_malloc(sizeof(*slot) - sizeof(slot->item.value) + length + 1);
+	slot = (struct slot *)
+		g_malloc(sizeof(*slot) - sizeof(slot->item.value) + length + 1);
 	slot->next = next;
 	slot->ref = 1;
 	slot->item.type = type;
@@ -97,7 +98,7 @@ tag_pool_get_item(enum tag_type type, const char *value, size_t length)
 	struct slot **slot_p, *slot;
 
 	slot_p = &slots[calc_hash_n(type, value, length) % NUM_SLOTS];
-	for (slot = *slot_p; slot != NULL; slot = slot->next) {
+	for (slot = *slot_p; slot != nullptr; slot = slot->next) {
 		if (slot->item.type == type &&
 		    length == strlen(slot->item.value) &&
 		    memcmp(value, slot->item.value, length) == 0 &&
@@ -150,7 +151,7 @@ void tag_pool_put_item(struct tag_item *item)
 	for (slot_p = &slots[calc_hash(item->type, item->value) % NUM_SLOTS];
 	     *slot_p != slot;
 	     slot_p = &(*slot_p)->next) {
-		assert(*slot_p != NULL);
+		assert(*slot_p != nullptr);
 	}
 
 	*slot_p = slot->next;

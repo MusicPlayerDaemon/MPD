@@ -20,7 +20,7 @@
 #include "config.h"
 #include "TagPrint.hxx"
 #include "tag.h"
-#include "tag_internal.h"
+#include "TagInternal.hxx"
 #include "song.h"
 #include "Client.hxx"
 

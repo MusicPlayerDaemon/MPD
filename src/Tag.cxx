@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "tag.h"
-#include "tag_internal.h"
-#include "tag_pool.h"
+#include "TagInternal.hxx"
+#include "TagPool.hxx"
 #include "conf.h"
 #include "song.h"
 #include "mpd_error.h"
@@ -43,38 +43,15 @@ static struct {
 	struct tag_item *items[BULK_MAX];
 } bulk;
 
-const char *tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
-	[TAG_ARTIST] = "Artist",
-	[TAG_ARTIST_SORT] = "ArtistSort",
-	[TAG_ALBUM] = "Album",
-	[TAG_ALBUM_ARTIST] = "AlbumArtist",
-	[TAG_ALBUM_ARTIST_SORT] = "AlbumArtistSort",
-	[TAG_TITLE] = "Title",
-	[TAG_TRACK] = "Track",
-	[TAG_NAME] = "Name",
-	[TAG_GENRE] = "Genre",
-	[TAG_DATE] = "Date",
-	[TAG_COMPOSER] = "Composer",
-	[TAG_PERFORMER] = "Performer",
-	[TAG_COMMENT] = "Comment",
-	[TAG_DISC] = "Disc",
-
-	/* MusicBrainz tags from http://musicbrainz.org/doc/MusicBrainzTag */
-	[TAG_MUSICBRAINZ_ARTISTID] = "MUSICBRAINZ_ARTISTID",
-	[TAG_MUSICBRAINZ_ALBUMID] = "MUSICBRAINZ_ALBUMID",
-	[TAG_MUSICBRAINZ_ALBUMARTISTID] = "MUSICBRAINZ_ALBUMARTISTID",
-	[TAG_MUSICBRAINZ_TRACKID] = "MUSICBRAINZ_TRACKID",
-};
-
 bool ignore_tag_items[TAG_NUM_OF_ITEM_TYPES];
 
 enum tag_type
 tag_name_parse(const char *name)
 {
-	assert(name != NULL);
+	assert(name != nullptr);
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
-		assert(tag_item_names[i] != NULL);
+		assert(tag_item_names[i] != nullptr);
 
 		if (strcmp(name, tag_item_names[i]) == 0)
 			return (enum tag_type)i;
@@ -86,10 +63,10 @@ tag_name_parse(const char *name)
 enum tag_type
 tag_name_parse_i(const char *name)
 {
-	assert(name != NULL);
+	assert(name != nullptr);
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
-		assert(tag_item_names[i] != NULL);
+		assert(tag_item_names[i] != nullptr);
 
 		if (g_ascii_strcasecmp(name, tag_item_names[i]) == 0)
 			return (enum tag_type)i;
@@ -117,8 +94,8 @@ void tag_lib_init(void)
 	/* ignore comments by default */
 	ignore_tag_items[TAG_COMMENT] = true;
 
-	value = config_get_string(CONF_METADATA_TO_USE, NULL);
-	if (value == NULL)
+	value = config_get_string(CONF_METADATA_TO_USE, nullptr);
+	if (value == nullptr)
 		return;
 
 	memset(ignore_tag_items, true, TAG_NUM_OF_ITEM_TYPES);
@@ -156,7 +133,7 @@ void tag_lib_init(void)
 struct tag *tag_new(void)
 {
 	struct tag *ret = g_new(struct tag, 1);
-	ret->items = NULL;
+	ret->items = nullptr;
 	ret->time = -1;
 	ret->has_playlist = false;
 	ret->num_items = 0;
@@ -178,10 +155,11 @@ static void tag_delete_item(struct tag *tag, unsigned idx)
 	}
 
 	if (tag->num_items > 0) {
-		tag->items = g_realloc(tag->items, items_size(tag));
+		tag->items = (struct tag_item **)
+			g_realloc(tag->items, items_size(tag));
 	} else {
 		g_free(tag->items);
-		tag->items = NULL;
+		tag->items = nullptr;
 	}
 }
 
@@ -200,7 +178,7 @@ void tag_free(struct tag *tag)
 {
 	int i;
 
-	assert(tag != NULL);
+	assert(tag != nullptr);
 
 	g_static_mutex_lock(&tag_pool_lock);
 	for (i = tag->num_items; --i >= 0; )
@@ -223,13 +201,15 @@ struct tag *tag_dup(const struct tag *tag)
 	struct tag *ret;
 
 	if (!tag)
-		return NULL;
+		return nullptr;
 
 	ret = tag_new();
 	ret->time = tag->time;
 	ret->has_playlist = tag->has_playlist;
 	ret->num_items = tag->num_items;
-	ret->items = ret->num_items > 0 ? g_malloc(items_size(tag)) : NULL;
+	ret->items = ret->num_items > 0
+		? (struct tag_item **)g_malloc(items_size(tag))
+		: nullptr;
 
 	g_static_mutex_lock(&tag_pool_lock);
 	for (unsigned i = 0; i < tag->num_items; i++)
@@ -245,15 +225,17 @@ tag_merge(const struct tag *base, const struct tag *add)
 	struct tag *ret;
 	unsigned n;
 
-	assert(base != NULL);
-	assert(add != NULL);
+	assert(base != nullptr);
+	assert(add != nullptr);
 
 	/* allocate new tag object */
 
 	ret = tag_new();
 	ret->time = add->time > 0 ? add->time : base->time;
 	ret->num_items = base->num_items + add->num_items;
-	ret->items = ret->num_items > 0 ? g_malloc(items_size(ret)) : NULL;
+	ret->items = ret->num_items > 0
+		? (struct tag_item **)g_malloc(items_size(ret))
+		: nullptr;
 
 	g_static_mutex_lock(&tag_pool_lock);
 
@@ -279,7 +261,8 @@ tag_merge(const struct tag *base, const struct tag *add)
 		assert(n > 0);
 
 		ret->num_items = n;
-		ret->items = g_realloc(ret->items, items_size(ret));
+		ret->items = (struct tag_item **)
+			g_realloc(ret->items, items_size(ret));
 	}
 
 	return ret;
@@ -288,10 +271,10 @@ tag_merge(const struct tag *base, const struct tag *add)
 struct tag *
 tag_merge_replace(struct tag *base, struct tag *add)
 {
-	if (add == NULL)
+	if (add == nullptr)
 		return base;
 
-	if (base == NULL)
+	if (base == nullptr)
 		return add;
 
 	struct tag *tag = tag_merge(base, add);
@@ -304,24 +287,24 @@ tag_merge_replace(struct tag *base, struct tag *add)
 const char *
 tag_get_value(const struct tag *tag, enum tag_type type)
 {
-	assert(tag != NULL);
+	assert(tag != nullptr);
 	assert(type < TAG_NUM_OF_ITEM_TYPES);
 
 	for (unsigned i = 0; i < tag->num_items; i++)
 		if (tag->items[i]->type == type)
 			return tag->items[i]->value;
 
-	return NULL;
+	return nullptr;
 }
 
 bool tag_has_type(const struct tag *tag, enum tag_type type)
 {
-	return tag_get_value(tag, type) != NULL;
+	return tag_get_value(tag, type) != nullptr;
 }
 
 bool tag_equal(const struct tag *tag1, const struct tag *tag2)
 {
-	if (tag1 == NULL && tag2 == NULL)
+	if (tag1 == nullptr && tag2 == nullptr)
 		return true;
 	else if (!tag1 || !tag2)
 		return false;
@@ -367,16 +350,16 @@ fix_utf8(const char *str, size_t length)
 	char *temp;
 	gsize written;
 
-	assert(str != NULL);
+	assert(str != nullptr);
 
 	/* check if the string is already valid UTF-8 */
 	if (g_utf8_validate(str, length, &end))
-		return NULL;
+		return nullptr;
 
 	/* no, it's not - try to import it from ISO-Latin-1 */
 	temp = g_convert(str, length, "utf-8", "iso-8859-1",
-			 NULL, &written, NULL);
-	if (temp != NULL)
+			 nullptr, &written, nullptr);
+	if (temp != nullptr)
 		/* success! */
 		return temp;
 
@@ -388,8 +371,8 @@ fix_utf8(const char *str, size_t length)
 void tag_begin_add(struct tag *tag)
 {
 	assert(!bulk.busy);
-	assert(tag != NULL);
-	assert(tag->items == NULL);
+	assert(tag != nullptr);
+	assert(tag->items == nullptr);
 	assert(tag->num_items == 0);
 
 #ifndef NDEBUG
@@ -406,10 +389,11 @@ void tag_end_add(struct tag *tag)
 		if (tag->num_items > 0) {
 			/* copy the tag items from the bulk list over
 			   to a new list (which fits exactly) */
-			tag->items = g_malloc(items_size(tag));
+			tag->items = (struct tag_item **)
+				g_malloc(items_size(tag));
 			memcpy(tag->items, bulk.items, items_size(tag));
 		} else
-			tag->items = NULL;
+			tag->items = nullptr;
 	}
 
 #ifndef NDEBUG
@@ -430,12 +414,12 @@ find_non_printable(const char *p, size_t length)
 		if (char_is_non_printable(p[i]))
 			return p + i;
 
-	return NULL;
+	return nullptr;
 }
 
 /**
  * Clears all non-printable characters, convert them to space.
- * Returns NULL if nothing needs to be cleared.
+ * Returns nullptr if nothing needs to be cleared.
  */
 static char *
 clear_non_printable(const char *p, size_t length)
@@ -443,8 +427,8 @@ clear_non_printable(const char *p, size_t length)
 	const char *first = find_non_printable(p, length);
 	char *dest;
 
-	if (first == NULL)
-		return NULL;
+	if (first == nullptr)
+		return nullptr;
 
 	dest = g_strndup(p, length);
 
@@ -461,13 +445,13 @@ fix_tag_value(const char *p, size_t length)
 	char *utf8, *cleared;
 
 	utf8 = fix_utf8(p, length);
-	if (utf8 != NULL) {
+	if (utf8 != nullptr) {
 		p = utf8;
 		length = strlen(p);
 	}
 
 	cleared = clear_non_printable(p, length);
-	if (cleared == NULL)
+	if (cleared == nullptr)
 		cleared = utf8;
 	else
 		g_free(utf8);
@@ -483,7 +467,7 @@ tag_add_item_internal(struct tag *tag, enum tag_type type,
 	char *p;
 
 	p = fix_tag_value(value, len);
-	if (p != NULL) {
+	if (p != nullptr) {
 		value = p;
 		len = strlen(value);
 	}
@@ -492,12 +476,13 @@ tag_add_item_internal(struct tag *tag, enum tag_type type,
 
 	if (tag->items != bulk.items)
 		/* bulk mode disabled */
-		tag->items = g_realloc(tag->items, items_size(tag));
+		tag->items = (struct tag_item **)
+			g_realloc(tag->items, items_size(tag));
 	else if (tag->num_items >= BULK_MAX) {
 		/* bulk list already full - switch back to non-bulk */
 		assert(bulk.busy);
 
-		tag->items = g_malloc(items_size(tag));
+		tag->items = (struct tag_item **)g_malloc(items_size(tag));
 		memcpy(tag->items, bulk.items,
 		       items_size(tag) - sizeof(struct tag_item *));
 	}
