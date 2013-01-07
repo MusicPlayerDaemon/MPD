@@ -316,6 +316,8 @@ struct queue {
 	 */
 	void ShuffleOrder();
 
+	void ShuffleOrderFirst(unsigned start, unsigned end);
+
 	/**
 	 * Shuffles the virtual order of the last song in the specified
 	 * (order) range.  This is used in random mode after a song has been

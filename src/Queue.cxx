@@ -423,10 +423,10 @@ queue::ShuffleOrder()
 	ShuffleOrderRangeWithPriority(0, length);
 }
 
-static void
-queue_shuffle_order_first(struct queue *queue, unsigned start, unsigned end)
+void
+queue::ShuffleOrderFirst(unsigned start, unsigned end)
 {
-	queue->SwapOrders(start, g_rand_int_range(queue->rand, start, end));
+	SwapOrders(start, g_rand_int_range(rand, start, end));
 }
 
 void
@@ -543,8 +543,7 @@ queue::SetPriority(unsigned position, uint8_t priority, int after_order)
 	const unsigned priority_count =
 		queue_count_same_priority(this, new_order, priority);
 	assert(priority_count >= 1);
-	queue_shuffle_order_first(this, new_order,
-				  new_order + priority_count);
+	ShuffleOrderFirst(new_order, new_order + priority_count);
 
 	return true;
 }
