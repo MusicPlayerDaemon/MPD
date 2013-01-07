@@ -344,6 +344,7 @@ endif
 # Generic utility library
 
 libutil_a_SOURCES = \
+	src/util/LazyRandomEngine.cxx src/util/LazyRandomEngine.hxx \
 	src/util/SliceBuffer.hxx \
 	src/util/HugeAllocator.cxx src/util/HugeAllocator.hxx \
 	src/util/list.h \
