@@ -299,6 +299,12 @@ struct queue {
 	}
 
 	/**
+	 * Shuffle the order of items in the specified range, ignoring
+	 * their priorities.
+	 */
+	void ShuffleOrderRange(unsigned start, unsigned end);
+
+	/**
 	 * Shuffle the order of items in the specified range, taking their
 	 * priorities into account.
 	 */

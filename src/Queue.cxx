@@ -368,20 +368,15 @@ queue_sort_order_by_priority(struct queue *queue, unsigned start, unsigned end)
 			  queue);
 }
 
-/**
- * Shuffle the order of items in the specified range, ignoring their
- * priorities.
- */
-static void
-queue_shuffle_order_range(struct queue *queue, unsigned start, unsigned end)
+void
+queue::ShuffleOrderRange(unsigned start, unsigned end)
 {
-	assert(queue != NULL);
-	assert(queue->random);
+	assert(random);
 	assert(start <= end);
-	assert(end <= queue->length);
+	assert(end <= length);
 
 	for (unsigned i = start; i < end; ++i)
-		queue->SwapOrders(i, g_rand_int_range(queue->rand, i, end));
+		SwapOrders(i, g_rand_int_range(rand, i, end));
 }
 
 /**
@@ -412,14 +407,14 @@ queue::ShuffleOrderRangeWithPriority(unsigned start, unsigned end)
 		if (priority != group_priority) {
 			/* start of a new group - shuffle the one that
 			   has just ended */
-			queue_shuffle_order_range(this, group_start, i);
+			ShuffleOrderRange(group_start, i);
 			group_start = i;
 			group_priority = priority;
 		}
 	}
 
 	/* shuffle the last group */
-	queue_shuffle_order_range(this, group_start, end);
+	ShuffleOrderRange(group_start, end);
 }
 
 void
