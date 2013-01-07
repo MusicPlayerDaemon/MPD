@@ -17,24 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_VORBIS_COMMENTS_H
-#define MPD_VORBIS_COMMENTS_H
+#ifndef MPD_DECODER_VORBIS_H
+#define MPD_DECODER_VORBIS_H
 
-#include "check.h"
-
-#include <stdbool.h>
-
-struct replay_gain_info;
-struct tag_handler;
-
-bool
-vorbis_comments_to_replay_gain(struct replay_gain_info *rgi, char **comments);
-
-void
-vorbis_comments_scan(char **comments,
-		     const struct tag_handler *handler, void *handler_ctx);
-
-struct tag *
-vorbis_comments_to_tag(char **comments);
+extern const struct decoder_plugin vorbis_decoder_plugin;
 
 #endif

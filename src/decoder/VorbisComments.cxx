@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "vorbis_comments.h"
+#include "VorbisComments.hxx"
 #include "XiphTags.h"
 #include "tag.h"
 #include "tag_table.h"
@@ -120,7 +120,7 @@ vorbis_scan_comment(const char *comment,
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (vorbis_copy_comment(comment,
-					tag_item_names[i], i,
+					tag_item_names[i], tag_type(i),
 					handler, handler_ctx))
 			return;
 }

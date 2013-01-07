@@ -18,10 +18,16 @@
  */
 
 #include "config.h"
-#include "vorbis_comments.h"
+#include "VorbisDecoderPlugin.h"
+#include "VorbisComments.hxx"
+#include "decoder_api.h"
+
+extern "C" {
 #include "ogg_codec.h"
 #include "audio_check.h"
 #include "uri.h"
+}
+
 #include "tag_handler.h"
 
 #ifndef HAVE_TREMOR
@@ -64,7 +70,7 @@ struct vorbis_input_stream {
 
 static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *data)
 {
-	struct vorbis_input_stream *vis = data;
+	struct vorbis_input_stream *vis = (struct vorbis_input_stream *)data;
 	size_t ret = decoder_read(vis->decoder, vis->input_stream,
 				  ptr, size * nmemb);
 
@@ -75,7 +81,7 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *data)
 
 static int ogg_seek_cb(void *data, ogg_int64_t offset, int whence)
 {
-	struct vorbis_input_stream *vis = data;
+	struct vorbis_input_stream *vis = (struct vorbis_input_stream *)data;
 
 	return vis->seekable &&
 		(!vis->decoder || decoder_get_command(vis->decoder) != DECODE_COMMAND_STOP) &&
@@ -91,16 +97,16 @@ static int ogg_close_cb(G_GNUC_UNUSED void *data)
 
 static long ogg_tell_cb(void *data)
 {
-	const struct vorbis_input_stream *vis = data;
+	struct vorbis_input_stream *vis = (struct vorbis_input_stream *)data;
 
 	return (long)vis->input_stream->offset;
 }
 
 static const ov_callbacks vorbis_is_callbacks = {
-	.read_func = ogg_read_cb,
-	.seek_func = ogg_seek_cb,
-	.close_func = ogg_close_cb,
-	.tell_func = ogg_tell_cb,
+	ogg_read_cb,
+	ogg_seek_cb,
+	ogg_close_cb,
+	ogg_tell_cb,
 };
 
 static const char *
@@ -343,9 +349,14 @@ static const char *const vorbis_mime_types[] = {
 };
 
 const struct decoder_plugin vorbis_decoder_plugin = {
-	.name = "vorbis",
-	.stream_decode = vorbis_stream_decode,
-	.scan_stream = vorbis_scan_stream,
-	.suffixes = vorbis_suffixes,
-	.mime_types = vorbis_mime_types
+	"vorbis",
+	nullptr,
+	nullptr,
+	vorbis_stream_decode,
+	nullptr,
+	nullptr,
+	vorbis_scan_stream,
+	nullptr,
+	vorbis_suffixes,
+	vorbis_mime_types
 };

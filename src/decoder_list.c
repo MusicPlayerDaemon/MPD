@@ -28,6 +28,7 @@
 #include "decoder/dsf_decoder_plugin.h"
 #include "decoder/FLACDecoderPlugin.h"
 #include "decoder/OpusDecoderPlugin.h"
+#include "decoder/VorbisDecoderPlugin.h"
 #include "decoder/AdPlugDecoderPlugin.h"
 
 #include <glib.h>
@@ -36,7 +37,6 @@
 
 extern const struct decoder_plugin mad_decoder_plugin;
 extern const struct decoder_plugin mpg123_decoder_plugin;
-extern const struct decoder_plugin vorbis_decoder_plugin;
 extern const struct decoder_plugin sndfile_decoder_plugin;
 extern const struct decoder_plugin audiofile_decoder_plugin;
 extern const struct decoder_plugin mp4ff_decoder_plugin;

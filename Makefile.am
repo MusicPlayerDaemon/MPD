@@ -566,9 +566,8 @@ endif
 
 if ENABLE_VORBIS_DECODER
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/vorbis_comments.c \
-	src/decoder/vorbis_comments.h \
-	src/decoder/vorbis_decoder_plugin.c
+	src/decoder/VorbisComments.cxx src/decoder/VorbisComments.hxx \
+	src/decoder/VorbisDecoderPlugin.cxx src/decoder/VorbisDecoderPlugin.h
 endif
 
 if HAVE_FLAC
