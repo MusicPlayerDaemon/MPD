@@ -21,8 +21,6 @@
 #include "Queue.hxx"
 #include "song.h"
 
-#include <glib.h>
-
 #include <stdlib.h>
 
 queue::queue(unsigned _max_length)
@@ -280,26 +278,6 @@ queue::Clear()
 	length = 0;
 }
 
-static gint
-queue_item_compare_order_priority(gconstpointer av, gconstpointer bv,
-				  gpointer user_data)
-{
-	const struct queue *queue = (const struct queue *)user_data;
-	const unsigned *const ap = (const unsigned *)av;
-	const unsigned *const bp = (const unsigned *)bv;
-	assert(ap >= queue->order && ap < queue->order + queue->length);
-	assert(bp >= queue->order && bp < queue->order + queue->length);
-	uint8_t a = queue->items[*ap].priority;
-	uint8_t b = queue->items[*bp].priority;
-
-	if (gcc_likely(a == b))
-		return 0;
-	else if (a > b)
-		return -1;
-	else
-		return 1;
-}
-
 static void
 queue_sort_order_by_priority(struct queue *queue, unsigned start, unsigned end)
 {
@@ -308,10 +286,14 @@ queue_sort_order_by_priority(struct queue *queue, unsigned start, unsigned end)
 	assert(start <= end);
 	assert(end <= queue->length);
 
-	g_qsort_with_data(&queue->order[start], end - start,
-			  sizeof(queue->order[0]),
-			  queue_item_compare_order_priority,
-			  queue);
+	auto cmp = [queue](unsigned a_pos, unsigned b_pos){
+		const queue::Item &a = queue->items[a_pos];
+		const queue::Item &b = queue->items[b_pos];
+
+		return a.priority > b.priority;
+	};
+
+	std::stable_sort(queue->order + start, queue->order + end, cmp);
 }
 
 void
