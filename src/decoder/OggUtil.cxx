@@ -23,7 +23,7 @@
 
 bool
 OggFeed(ogg_sync_state &oy, struct decoder *decoder,
-	struct input_stream *input_stream, size_t size)
+	input_stream *input_stream, size_t size)
 {
 		char *buffer = ogg_sync_buffer(&oy, size);
 		if (buffer == nullptr)
@@ -40,7 +40,7 @@ OggFeed(ogg_sync_state &oy, struct decoder *decoder,
 
 bool
 OggExpectPage(ogg_sync_state &oy, ogg_page &page,
-	      struct decoder *decoder, struct input_stream *input_stream)
+	      decoder *decoder, input_stream *input_stream)
 {
 	while (true) {
 		int r = ogg_sync_pageout(&oy, &page);

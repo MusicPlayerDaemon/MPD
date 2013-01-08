@@ -26,14 +26,17 @@
 
 #include <stddef.h>
 
+struct input_stream;
+struct decoder;
+
 /**
  * Feed data from the #input_stream into the #ogg_sync_state.
  *
  * @return false on error or end-of-file
  */
 bool
-OggFeed(ogg_sync_state &oy, struct decoder *decoder,
-	struct input_stream *input_stream, size_t size);
+OggFeed(ogg_sync_state &oy, struct decoder *decoder, input_stream *is,
+	size_t size);
 
 /**
  * Feed into the #ogg_sync_state until a page gets available.  Garbage
@@ -43,6 +46,6 @@ OggFeed(ogg_sync_state &oy, struct decoder *decoder,
  */
 bool
 OggExpectPage(ogg_sync_state &oy, ogg_page &page,
-	      struct decoder *decoder, struct input_stream *input_stream);
+	      decoder *decoder, input_stream *input_stream);
 
 #endif
