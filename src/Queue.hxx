@@ -21,6 +21,7 @@
 #define MPD_QUEUE_HXX
 
 #include "gcc.h"
+#include "IdTable.hxx"
 #include "util/LazyRandomEngine.hxx"
 
 #include <algorithm>
@@ -82,7 +83,7 @@ struct queue {
 	unsigned *order;
 
 	/** map song ids to positions */
-	int *id_to_position;
+	IdTable id_table;
 
 	/** repeat playback when the end of the queue has been
 	    reached? */
@@ -148,13 +149,7 @@ struct queue {
 	}
 
 	int IdToPosition(unsigned id) const {
-		if (id >= max_length * HASH_MULT)
-			return -1;
-
-		assert(id_to_position[id] >= -1);
-		assert(id_to_position[id] < (int)length);
-
-		return id_to_position[id];
+		return id_table.IdToPosition(id);
 	}
 
 	int PositionToId(unsigned position) const
@@ -344,8 +339,6 @@ struct queue {
 			      uint8_t priority, int after_order);
 
 private:
-	unsigned GenerateId() const;
-
 	/**
 	 * Moves a song to a new position in the "order" list.
 	 */
@@ -356,7 +349,7 @@ private:
 
 		items[to] = items[from];
 		items[to].version = version;
-		id_to_position[from_id] = to;
+		id_table.Move(from_id, to);
 	}
 
 	/**

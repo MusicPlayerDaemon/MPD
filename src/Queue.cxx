@@ -28,15 +28,12 @@ queue::queue(unsigned _max_length)
 	 version(1),
 	 items(g_new(Item, max_length)),
 	 order((unsigned *)g_malloc(sizeof(order[0]) * max_length)),
-	 id_to_position((int *)g_malloc(sizeof(id_to_position[0]) *
-					max_length * HASH_MULT)),
+	 id_table(max_length * HASH_MULT),
 	 repeat(false),
 	 single(false),
 	 consume(false),
 	 random(false)
 {
-	for (unsigned i = 0; i < max_length * HASH_MULT; ++i)
-		id_to_position[i] = -1;
 }
 
 queue::~queue()
@@ -45,25 +42,6 @@ queue::~queue()
 
 	g_free(items);
 	g_free(order);
-	g_free(id_to_position);
-}
-
-/**
- * Generate a non-existing id number.
- */
-unsigned
-queue::GenerateId() const
-{
-	static unsigned cur = (unsigned)-1;
-
-	do {
-		cur++;
-
-		if (cur >= max_length * HASH_MULT)
-			cur = 0;
-	} while (id_to_position[cur] != -1);
-
-	return cur;
 }
 
 int
@@ -121,20 +99,18 @@ queue::ModifyAll()
 unsigned
 queue::Append(struct song *song, uint8_t priority)
 {
-	const unsigned id = GenerateId();
-
 	assert(!IsFull());
 
-	auto &item = items[length];
+	const unsigned position = length++;
+	const unsigned id = id_table.Insert(position);
+
+	auto &item = items[position];
 	item.song = song_dup_detached(song);
 	item.id = id;
 	item.version = version;
 	item.priority = priority;
 
-	order[length] = length;
-	id_to_position[id] = length;
-
-	++length;
+	order[position] = position;
 
 	return id;
 }
@@ -150,8 +126,8 @@ queue::SwapPositions(unsigned position1, unsigned position2)
 	items[position1].version = version;
 	items[position2].version = version;
 
-	id_to_position[id1] = position2;
-	id_to_position[id2] = position1;
+	id_table.Move(id1, position2);
+	id_table.Move(id2, position1);
 }
 
 void
@@ -171,7 +147,7 @@ queue::MovePostion(unsigned from, unsigned to)
 
 	/* put song at _to_ */
 
-	id_to_position[tmp.id] = to;
+	id_table.Move(tmp.id, to);
 	items[to] = tmp;
 	items[to].version = version;
 
@@ -211,7 +187,7 @@ queue::MoveRange(unsigned start, unsigned end, unsigned to)
 	// Copy the original block back in, starting at to.
 	for (unsigned i = start; i< end; i++)
 	{
-		id_to_position[tmp[i-start].id] = to + i - start;
+		id_table.Move(tmp[i - start].id, to + i - start);
 		items[to + i - start] = tmp[i-start];
 		items[to + i - start].version = version;
 	}
@@ -267,7 +243,7 @@ queue::DeletePosition(unsigned position)
 
 	/* release the song id */
 
-	id_to_position[id] = -1;
+	id_table.Erase(id);
 
 	/* delete song from songs array */
 
@@ -296,7 +272,7 @@ queue::Clear()
 		       song_is_detached(item->song));
 		song_free(item->song);
 
-		id_to_position[item->id] = -1;
+		id_table.Erase(item->id);
 	}
 
 	length = 0;
