@@ -51,17 +51,17 @@ queue::~queue()
 /**
  * Generate a non-existing id number.
  */
-static unsigned
-queue_generate_id(const struct queue *queue)
+unsigned
+queue::GenerateId() const
 {
 	static unsigned cur = (unsigned)-1;
 
 	do {
 		cur++;
 
-		if (cur >= queue->max_length * QUEUE_HASH_MULT)
+		if (cur >= max_length * QUEUE_HASH_MULT)
 			cur = 0;
-	} while (queue->id_to_position[cur] != -1);
+	} while (id_to_position[cur] != -1);
 
 	return cur;
 }
@@ -121,7 +121,7 @@ queue::ModifyAll()
 unsigned
 queue::Append(struct song *song, uint8_t priority)
 {
-	unsigned id = queue_generate_id(this);
+	const unsigned id = GenerateId();
 
 	assert(!IsFull());
 
@@ -154,16 +154,6 @@ queue::SwapPositions(unsigned position1, unsigned position2)
 	id_to_position[id2] = position1;
 }
 
-static void
-queue_move_song_to(struct queue *queue, unsigned from, unsigned to)
-{
-	unsigned from_id = queue->items[from].id;
-
-	queue->items[to] = queue->items[from];
-	queue->items[to].version = queue->version;
-	queue->id_to_position[from_id] = to;
-}
-
 void
 queue::MovePostion(unsigned from, unsigned to)
 {
@@ -172,12 +162,12 @@ queue::MovePostion(unsigned from, unsigned to)
 	/* move songs to one less in from->to */
 
 	for (unsigned i = from; i < to; i++)
-		queue_move_song_to(this, i + 1, i);
+		MoveItemTo(i + 1, i);
 
 	/* move songs to one more in to->from */
 
 	for (unsigned i = from; i > to; i--)
-		queue_move_song_to(this, i - 1, i);
+		MoveItemTo(i - 1, i);
 
 	/* put song at _to_ */
 
@@ -210,13 +200,13 @@ queue::MoveRange(unsigned start, unsigned end, unsigned to)
 
 	// If to > start, we need to move to-start items to start, starting from end
 	for (unsigned i = end; i < end + to - start; i++)
-		queue_move_song_to(this, i, start + i - end);
+		MoveItemTo(i, start + i - end);
 
 	// If to < start, we need to move start-to items to newend (= end + to - start), starting from to
 	// This is the same as moving items from start-1 to to (decreasing), with start-1 going to end-1
 	// We have to iterate in this order to avoid writing over something we haven't yet moved
 	for (unsigned i = start - 1; i >= to && i != G_MAXUINT; i--)
-		queue_move_song_to(this, i, i + end - start);
+		MoveItemTo(i, i + end - start);
 
 	// Copy the original block back in, starting at to.
 	for (unsigned i = start; i< end; i++)
@@ -242,27 +232,23 @@ queue::MoveRange(unsigned start, unsigned end, unsigned to)
 	}
 }
 
-/**
- * Moves a song to a new position in the "order" list.
- */
-static void
-queue_move_order(struct queue *queue, unsigned from_order, unsigned to_order)
+void
+queue::MoveOrder(unsigned from_order, unsigned to_order)
 {
-	assert(queue != NULL);
-	assert(from_order < queue->length);
-	assert(to_order <= queue->length);
+	assert(from_order < length);
+	assert(to_order <= length);
 
-	const unsigned from_position = queue->OrderToPosition(from_order);
+	const unsigned from_position = OrderToPosition(from_order);
 
 	if (from_order < to_order) {
 		for (unsigned i = from_order; i < to_order; ++i)
-			queue->order[i] = queue->order[i + 1];
+			order[i] = order[i + 1];
 	} else {
 		for (unsigned i = from_order; i > to_order; --i)
-			queue->order[i] = queue->order[i - 1];
+			order[i] = order[i - 1];
 	}
 
-	queue->order[to_order] = from_position;
+	order[to_order] = from_position;
 }
 
 void
@@ -286,7 +272,7 @@ queue::DeletePosition(unsigned position)
 	/* delete song from songs array */
 
 	for (unsigned i = position; i < length; i++)
-		queue_move_song_to(this, i + 1, i);
+		MoveItemTo(i + 1, i);
 
 	/* delete the entry from the order array */
 
@@ -314,21 +300,6 @@ queue::Clear()
 	}
 
 	length = 0;
-}
-
-static const struct queue_item *
-queue_get_order_item_const(const struct queue *queue, unsigned order)
-{
-	assert(queue != NULL);
-	assert(order < queue->length);
-
-	return &queue->items[queue->order[order]];
-}
-
-static uint8_t
-queue_get_order_priority(const struct queue *queue, unsigned order)
-{
-	return queue_get_order_item_const(queue, order)->priority;
 }
 
 static gint
@@ -395,10 +366,10 @@ queue::ShuffleOrderRangeWithPriority(unsigned start, unsigned end)
 
 	/* now shuffle each priority group */
 	unsigned group_start = start;
-	uint8_t group_priority = queue_get_order_priority(this, start);
+	uint8_t group_priority = GetOrderPriority(start);
 
 	for (unsigned i = start + 1; i < end; ++i) {
-		uint8_t priority = queue_get_order_priority(this, i);
+		const uint8_t priority = GetOrderPriority(i);
 		assert(priority <= group_priority);
 
 		if (priority != group_priority) {
@@ -454,45 +425,37 @@ queue::ShuffleRange(unsigned start, unsigned end)
 	}
 }
 
-/**
- * Find the first item that has this specified priority or higher.
- */
-G_GNUC_PURE
-static unsigned
-queue_find_priority_order(const struct queue *queue, unsigned start_order,
-			  uint8_t priority, unsigned exclude_order)
+unsigned
+queue::FindPriorityOrder(unsigned start_order, uint8_t priority,
+			 unsigned exclude_order) const
 {
-	assert(queue != NULL);
-	assert(queue->random);
-	assert(start_order <= queue->length);
+	assert(random);
+	assert(start_order <= length);
 
-	for (unsigned order = start_order; order < queue->length; ++order) {
-		const unsigned position = queue->OrderToPosition(order);
-		const struct queue_item *item = &queue->items[position];
-		if (item->priority <= priority && order != exclude_order)
-			return order;
+	for (unsigned i = start_order; i < length; ++i) {
+		const unsigned position = OrderToPosition(i);
+		const struct queue_item *item = &items[position];
+		if (item->priority <= priority && i != exclude_order)
+			return i;
 	}
 
-	return queue->length;
+	return length;
 }
 
-G_GNUC_PURE
-static unsigned
-queue_count_same_priority(const struct queue *queue, unsigned start_order,
-			  uint8_t priority)
+unsigned
+queue::CountSamePriority(unsigned start_order, uint8_t priority) const
 {
-	assert(queue != NULL);
-	assert(queue->random);
-	assert(start_order <= queue->length);
+	assert(random);
+	assert(start_order <= length);
 
-	for (unsigned order = start_order; order < queue->length; ++order) {
-		const unsigned position = queue->OrderToPosition(order);
-		const struct queue_item *item = &queue->items[position];
+	for (unsigned i = start_order; i < length; ++i) {
+		const unsigned position = OrderToPosition(i);
+		const struct queue_item *item = &items[position];
 		if (item->priority != priority)
-			return order - start_order;
+			return i - start_order;
 	}
 
-	return queue->length - start_order;
+	return length - start_order;
 }
 
 bool
@@ -538,17 +501,15 @@ queue::SetPriority(unsigned position, uint8_t priority, int after_order)
 	   create a new priority group) */
 
 	const unsigned before_order =
-		queue_find_priority_order(this, after_order + 1, priority,
-					  _order);
+		FindPriorityOrder(after_order + 1, priority, _order);
 	const unsigned new_order = before_order > _order
 		? before_order - 1
 		: before_order;
-	queue_move_order(this, _order, new_order);
+	MoveOrder(_order, new_order);
 
 	/* shuffle the song within that priority group */
 
-	const unsigned priority_count =
-		queue_count_same_priority(this, new_order, priority);
+	const unsigned priority_count = CountSamePriority(new_order, priority);
 	assert(priority_count >= 1);
 	ShuffleOrderFirst(new_order, new_order + priority_count);
 

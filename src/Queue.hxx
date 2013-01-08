@@ -192,6 +192,16 @@ struct queue {
 		return items[position].priority;
 	}
 
+	const queue_item &GetOrderItem(unsigned i) const {
+		assert(IsValidOrder(i));
+
+		return items[OrderToPosition(i)];
+	}
+
+	uint8_t GetOrderPriority(unsigned i) const {
+		return GetOrderItem(i).priority;
+	}
+
 	/**
 	 * Returns the song at the specified position.
 	 */
@@ -334,6 +344,34 @@ struct queue {
 
 	bool SetPriorityRange(unsigned start_position, unsigned end_position,
 			      uint8_t priority, int after_order);
+
+private:
+	unsigned GenerateId() const;
+
+	/**
+	 * Moves a song to a new position in the "order" list.
+	 */
+	void MoveOrder(unsigned from_order, unsigned to_order);
+
+	void MoveItemTo(unsigned from, unsigned to) {
+		unsigned from_id = items[from].id;
+
+		items[to] = items[from];
+		items[to].version = version;
+		id_to_position[from_id] = to;
+	}
+
+	/**
+	 * Find the first item that has this specified priority or
+	 * higher.
+	 */
+	gcc_pure
+	unsigned FindPriorityOrder(unsigned start_order, uint8_t priority,
+				   unsigned exclude_order) const;
+
+	gcc_pure
+	unsigned CountSamePriority(unsigned start_order,
+				   uint8_t priority) const;
 };
 
 #endif
