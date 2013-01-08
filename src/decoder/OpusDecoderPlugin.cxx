@@ -84,7 +84,9 @@ public:
 		:decoder(_decoder), input_stream(_input_stream) {}
 	~MPDOpusDecoder();
 
-	enum decoder_command HandlePage(ogg_page &page);
+	bool ReadFirstPage(ogg_sync_state &oy);
+	bool ReadNextPage(ogg_sync_state &oy);
+
 	enum decoder_command HandlePackets();
 	enum decoder_command HandlePacket(const ogg_packet &packet);
 	enum decoder_command HandleBOS(const ogg_packet &packet);
@@ -103,19 +105,33 @@ MPDOpusDecoder::~MPDOpusDecoder()
 		ogg_stream_clear(&os);
 }
 
-inline enum decoder_command
-MPDOpusDecoder::HandlePage(ogg_page &page)
+inline bool
+MPDOpusDecoder::ReadFirstPage(ogg_sync_state &oy)
 {
+	assert(!os_initialized);
+
+	if (!OggExpectFirstPage(oy, os, decoder, input_stream))
+		return false;
+
+	os_initialized = true;
+	return true;
+}
+
+inline bool
+MPDOpusDecoder::ReadNextPage(ogg_sync_state &oy)
+{
+	assert(os_initialized);
+
+	ogg_page page;
+	if (!OggExpectPage(oy, page, decoder, input_stream))
+		return false;
+
 	const auto page_serialno = ogg_page_serialno(&page);
-	if (!os_initialized) {
-		os_initialized = true;
-		ogg_stream_init(&os, page_serialno);
-	} else if (page_serialno != os.serialno)
+	if (page_serialno != os.serialno)
 		ogg_stream_reset_serialno(&os, page_serialno);
 
 	ogg_stream_pagein(&os, &page);
-
-	return HandlePackets();
+	return true;
 }
 
 inline enum decoder_command
@@ -256,14 +272,19 @@ mpd_opus_stream_decode(struct decoder *decoder,
 	ogg_sync_state oy;
 	ogg_sync_init(&oy);
 
-	while (true) {
-		ogg_page page;
-		if (!OggExpectPage(oy, page, decoder, input_stream))
-			break;
+	if (!d.ReadFirstPage(oy)) {
+		ogg_sync_clear(&oy);
+		return;
+	}
 
-		enum decoder_command cmd = d.HandlePage(page);
+	while (true) {
+		enum decoder_command cmd = d.HandlePackets();
 		if (cmd != DECODE_COMMAND_NONE)
 			break;
+
+		if (!d.ReadNextPage(oy))
+			break;
+
 	}
 
 	ogg_sync_clear(&oy);
