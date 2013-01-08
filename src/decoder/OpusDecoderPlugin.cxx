@@ -250,15 +250,13 @@ mpd_opus_stream_decode(struct decoder *decoder,
 	ogg_sync_init(&oy);
 
 	while (true) {
-		if (!OggFeed(oy, decoder, input_stream, 1024))
+		ogg_page page;
+		if (!OggExpectPage(oy, page, decoder, input_stream))
 			break;
 
-		ogg_page page;
-		while (ogg_sync_pageout(&oy, &page) == 1) {
-			enum decoder_command cmd = d.HandlePage(page);
-			if (cmd != DECODE_COMMAND_NONE)
-				break;
-		}
+		enum decoder_command cmd = d.HandlePage(page);
+		if (cmd != DECODE_COMMAND_NONE)
+			break;
 	}
 
 	ogg_sync_clear(&oy);
