@@ -25,8 +25,6 @@
 #ifndef _LINUX_LIST_H
 #define _LINUX_LIST_H
 
-#include <glib.h>
-
 #ifdef __clang__
 /* allow typeof() */
 #pragma GCC diagnostic ignored "-Wlanguage-extension-token"
@@ -40,7 +38,7 @@
  *
  */
 #define container_of(ptr, type, member) \
-	(&G_STRUCT_MEMBER(type, ptr, -G_STRUCT_OFFSET(type, member)))
+	((type *)((uint8_t *)ptr - offsetof(type, member)))
 
 /*
  * These are non-NULL pointers that will result in page faults

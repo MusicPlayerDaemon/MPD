@@ -23,6 +23,8 @@
 #include "util/list.h"
 #include "gcc.h"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <stddef.h>
 #include <stdbool.h>
