@@ -26,16 +26,16 @@
 queue::queue(unsigned _max_length)
 	:max_length(_max_length), length(0),
 	 version(1),
-	 items(g_new(struct queue_item, max_length)),
+	 items(g_new(Item, max_length)),
 	 order((unsigned *)g_malloc(sizeof(order[0]) * max_length)),
 	 id_to_position((int *)g_malloc(sizeof(id_to_position[0]) *
-					max_length * QUEUE_HASH_MULT)),
+					max_length * HASH_MULT)),
 	 repeat(false),
 	 single(false),
 	 consume(false),
 	 random(false)
 {
-	for (unsigned i = 0; i < max_length * QUEUE_HASH_MULT; ++i)
+	for (unsigned i = 0; i < max_length * HASH_MULT; ++i)
 		id_to_position[i] = -1;
 }
 
@@ -59,7 +59,7 @@ queue::GenerateId() const
 	do {
 		cur++;
 
-		if (cur >= max_length * QUEUE_HASH_MULT)
+		if (cur >= max_length * HASH_MULT)
 			cur = 0;
 	} while (id_to_position[cur] != -1);
 
@@ -157,7 +157,7 @@ queue::SwapPositions(unsigned position1, unsigned position2)
 void
 queue::MovePostion(unsigned from, unsigned to)
 {
-	struct queue_item item = items[from];
+	const Item tmp = items[from];
 
 	/* move songs to one less in from->to */
 
@@ -171,8 +171,8 @@ queue::MovePostion(unsigned from, unsigned to)
 
 	/* put song at _to_ */
 
-	id_to_position[item.id] = to;
-	items[to] = item;
+	id_to_position[tmp.id] = to;
+	items[to] = tmp;
 	items[to].version = version;
 
 	/* now deal with order */
@@ -193,7 +193,7 @@ queue::MovePostion(unsigned from, unsigned to)
 void
 queue::MoveRange(unsigned start, unsigned end, unsigned to)
 {
-	struct queue_item tmp[end - start];
+	Item tmp[end - start];
 	// Copy the original block [start,end-1]
 	for (unsigned i = start; i < end; i++)
 		tmp[i - start] = items[i];
@@ -290,7 +290,7 @@ void
 queue::Clear()
 {
 	for (unsigned i = 0; i < length; i++) {
-		struct queue_item *item = &items[i];
+		Item *item = &items[i];
 
 		assert(!song_in_database(item->song) ||
 		       song_is_detached(item->song));
@@ -434,7 +434,7 @@ queue::FindPriorityOrder(unsigned start_order, uint8_t priority,
 
 	for (unsigned i = start_order; i < length; ++i) {
 		const unsigned position = OrderToPosition(i);
-		const struct queue_item *item = &items[position];
+		const Item *item = &items[position];
 		if (item->priority <= priority && i != exclude_order)
 			return i;
 	}
@@ -450,7 +450,7 @@ queue::CountSamePriority(unsigned start_order, uint8_t priority) const
 
 	for (unsigned i = start_order; i < length; ++i) {
 		const unsigned position = OrderToPosition(i);
-		const struct queue_item *item = &items[position];
+		const Item *item = &items[position];
 		if (item->priority != priority)
 			return i - start_order;
 	}
@@ -463,7 +463,7 @@ queue::SetPriority(unsigned position, uint8_t priority, int after_order)
 {
 	assert(position < length);
 
-	struct queue_item *item = &items[position];
+	Item *item = &items[position];
 	uint8_t old_priority = item->priority;
 	if (old_priority == priority)
 		return false;
@@ -488,7 +488,7 @@ queue::SetPriority(unsigned position, uint8_t priority, int after_order)
 
 			const unsigned after_position =
 				OrderToPosition(after_order);
-			const struct queue_item *after_item =
+			const Item *after_item =
 				&items[after_position];
 			if (old_priority > after_item->priority ||
 			    priority <= after_item->priority)

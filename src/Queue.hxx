@@ -40,16 +40,16 @@
  */
 struct queue {
 	/**
-	 * reserve max_length * QUEUE_HASH_MULT elements in the id
+	 * reserve max_length * HASH_MULT elements in the id
 	 * number space
 	 */
-	static constexpr unsigned QUEUE_HASH_MULT = 4;
+	static constexpr unsigned HASH_MULT = 4;
 
 	/**
 	 * One element of the queue: basically a song plus some queue specific
 	 * information attached.
 	 */
-	struct queue_item {
+	struct Item {
 		struct song *song;
 
 		/** the unique id of this item in the queue */
@@ -76,7 +76,7 @@ struct queue {
 	uint32_t version;
 
 	/** all songs in "position" order */
-	struct queue_item *items;
+	Item *items;
 
 	/** map order numbers to positions */
 	unsigned *order;
@@ -148,7 +148,7 @@ struct queue {
 	}
 
 	int IdToPosition(unsigned id) const {
-		if (id >= max_length * QUEUE_HASH_MULT)
+		if (id >= max_length * HASH_MULT)
 			return -1;
 
 		assert(id_to_position[id] >= -1);
@@ -190,7 +190,7 @@ struct queue {
 		return items[position].priority;
 	}
 
-	const queue_item &GetOrderItem(unsigned i) const {
+	const Item &GetOrderItem(unsigned i) const {
 		assert(IsValidOrder(i));
 
 		return items[OrderToPosition(i)];
