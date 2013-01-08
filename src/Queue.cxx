@@ -26,8 +26,8 @@
 queue::queue(unsigned _max_length)
 	:max_length(_max_length), length(0),
 	 version(1),
-	 items(g_new(Item, max_length)),
-	 order((unsigned *)g_malloc(sizeof(order[0]) * max_length)),
+	 items(new Item[max_length]),
+	 order(new unsigned[max_length]),
 	 id_table(max_length * HASH_MULT),
 	 repeat(false),
 	 single(false),
@@ -40,8 +40,8 @@ queue::~queue()
 {
 	Clear();
 
-	g_free(items);
-	g_free(order);
+	delete[] items;
+	delete[] order;
 }
 
 int
@@ -290,7 +290,7 @@ queue_item_compare_order_priority(gconstpointer av, gconstpointer bv,
 	uint8_t a = queue->items[*ap].priority;
 	uint8_t b = queue->items[*bp].priority;
 
-	if (G_LIKELY(a == b))
+	if (gcc_likely(a == b))
 		return 0;
 	else if (a > b)
 		return -1;
