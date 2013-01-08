@@ -85,6 +85,7 @@ public:
 	~MPDOpusDecoder();
 
 	enum decoder_command HandlePage(ogg_page &page);
+	enum decoder_command HandlePackets();
 	enum decoder_command HandlePacket(const ogg_packet &packet);
 	enum decoder_command HandleBOS(const ogg_packet &packet);
 	enum decoder_command HandleTags(const ogg_packet &packet);
@@ -114,6 +115,12 @@ MPDOpusDecoder::HandlePage(ogg_page &page)
 
 	ogg_stream_pagein(&os, &page);
 
+	return HandlePackets();
+}
+
+inline enum decoder_command
+MPDOpusDecoder::HandlePackets()
+{
 	ogg_packet packet;
 	while (ogg_stream_packetout(&os, &packet) == 1) {
 		enum decoder_command cmd = HandlePacket(packet);
