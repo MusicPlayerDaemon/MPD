@@ -181,7 +181,7 @@ queue::MoveRange(unsigned start, unsigned end, unsigned to)
 	// If to < start, we need to move start-to items to newend (= end + to - start), starting from to
 	// This is the same as moving items from start-1 to to (decreasing), with start-1 going to end-1
 	// We have to iterate in this order to avoid writing over something we haven't yet moved
-	for (unsigned i = start - 1; i >= to && i != G_MAXUINT; i--)
+	for (int i = start - 1; i >= int(to); i--)
 		MoveItemTo(i, i + end - start);
 
 	// Copy the original block back in, starting at to.
