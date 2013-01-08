@@ -21,6 +21,8 @@
 #include "Queue.hxx"
 #include "song.h"
 
+#include <glib.h>
+
 #include <stdlib.h>
 
 queue::queue(unsigned _max_length)

@@ -23,6 +23,8 @@
 #include "song.h"
 #include "tag.h"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <stdlib.h>
 

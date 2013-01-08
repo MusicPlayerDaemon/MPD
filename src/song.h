@@ -23,8 +23,6 @@
 #include "util/list.h"
 #include "gcc.h"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <stddef.h>
 #include <stdbool.h>
@@ -68,7 +66,9 @@ struct song {
  */
 extern struct Directory detached_root;
 
-G_BEGIN_DECLS
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /** allocate a new song with a remote URL */
 struct song *
@@ -160,6 +160,8 @@ song_get_uri(const struct song *song);
 double
 song_get_duration(const struct song *song);
 
-G_END_DECLS
+#ifdef __cplusplus
+}
+#endif
 
 #endif
