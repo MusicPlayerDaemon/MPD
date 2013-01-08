@@ -999,7 +999,7 @@ if ENABLE_TEST
 C_TESTS = \
 	test/test_byte_reverse \
 	test/test_pcm \
-	test/TestQueuePriority
+	test/test_queue_priority
 
 TESTS = $(C_TESTS)
 
@@ -1311,12 +1311,12 @@ TESTS += test/test_archive_iso9660.sh
 endif
 
 if ENABLE_INOTIFY
-noinst_PROGRAMS += test/RunInotify
-test_RunInotify_SOURCES = test/RunInotify.c \
+noinst_PROGRAMS += test/run_inotify
+test_run_inotify_SOURCES = test/run_inotify.cxx \
 	src/fd_util.c \
 	src/fifo_buffer.c \
 	src/InotifySource.cxx
-test_RunInotify_LDADD = $(GLIB_LIBS)
+test_run_inotify_LDADD = $(GLIB_LIBS)
 endif
 
 test_test_byte_reverse_SOURCES = \
@@ -1337,11 +1337,11 @@ test_test_pcm_LDADD = \
 	libutil.a \
 	$(GLIB_LIBS)
 
-test_TestQueuePriority_SOURCES = \
+test_test_queue_priority_SOURCES = \
 	src/Queue.cxx \
 	src/fd_util.c \
-	test/TestQueuePriority.cxx
-test_TestQueuePriority_LDADD = \
+	test/test_queue_priority.cxx
+test_test_queue_priority_LDADD = \
 	libutil.a \
 	$(GLIB_LIBS)
 
