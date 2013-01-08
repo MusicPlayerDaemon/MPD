@@ -102,7 +102,7 @@ MPDOpusDecoder::~MPDOpusDecoder()
 		ogg_stream_clear(&os);
 }
 
-enum decoder_command
+inline enum decoder_command
 MPDOpusDecoder::HandlePage(ogg_page &page)
 {
 	const auto page_serialno = ogg_page_serialno(&page);
@@ -124,7 +124,7 @@ MPDOpusDecoder::HandlePage(ogg_page &page)
 	return DECODE_COMMAND_NONE;
 }
 
-enum decoder_command
+inline enum decoder_command
 MPDOpusDecoder::HandlePacket(const ogg_packet &packet)
 {
 	if (packet.e_o_s)
@@ -141,7 +141,7 @@ MPDOpusDecoder::HandlePacket(const ogg_packet &packet)
 	return HandleAudio(packet);
 }
 
-enum decoder_command
+inline enum decoder_command
 MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 {
 	assert(packet.b_o_s);
@@ -189,7 +189,7 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 	return decoder_get_command(decoder);
 }
 
-enum decoder_command
+inline enum decoder_command
 MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 {
 	struct tag *tag = tag_new();
@@ -205,7 +205,7 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 	return cmd;
 }
 
-enum decoder_command
+inline enum decoder_command
 MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 {
 	assert(opus_decoder != nullptr);
