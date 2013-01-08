@@ -28,35 +28,6 @@
 #include <assert.h>
 #include <stdint.h>
 
-enum {
-	/**
-	 * reserve max_length * QUEUE_HASH_MULT elements in the id
-	 * number space
-	 */
-	QUEUE_HASH_MULT = 4,
-};
-
-/**
- * One element of the queue: basically a song plus some queue specific
- * information attached.
- */
-struct queue_item {
-	struct song *song;
-
-	/** the unique id of this item in the queue */
-	unsigned id;
-
-	/** when was this item last changed? */
-	uint32_t version;
-
-	/**
-	 * The priority of this item, between 0 and 255.  High
-	 * priority value means that this song gets played first in
-	 * "random" mode.
-	 */
-	uint8_t priority;
-};
-
 /**
  * A queue of songs.  This is the backend of the playlist: it contains
  * an ordered list of songs.
@@ -68,6 +39,33 @@ struct queue_item {
  * - the order number (which only differs from "position" in random mode)
  */
 struct queue {
+	/**
+	 * reserve max_length * QUEUE_HASH_MULT elements in the id
+	 * number space
+	 */
+	static constexpr unsigned QUEUE_HASH_MULT = 4;
+
+	/**
+	 * One element of the queue: basically a song plus some queue specific
+	 * information attached.
+	 */
+	struct queue_item {
+		struct song *song;
+
+		/** the unique id of this item in the queue */
+		unsigned id;
+
+		/** when was this item last changed? */
+		uint32_t version;
+
+		/**
+		 * The priority of this item, between 0 and 255.  High
+		 * priority value means that this song gets played first in
+		 * "random" mode.
+		 */
+		uint8_t priority;
+	};
+
 	/** configured maximum length of the queue */
 	unsigned max_length;
 
