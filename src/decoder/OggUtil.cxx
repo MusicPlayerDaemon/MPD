@@ -51,3 +51,28 @@ OggExpectPage(ogg_sync_state &oy, ogg_page &page,
 			return false;
 	}
 }
+
+bool
+OggExpectFirstPage(ogg_sync_state &oy, ogg_stream_state &os,
+		   decoder *decoder, input_stream *is)
+{
+	ogg_page page;
+	if (!OggExpectPage(oy, page, decoder, is))
+		return false;
+
+	ogg_stream_init(&os, ogg_page_serialno(&page));
+	ogg_stream_pagein(&os, &page);
+	return true;
+}
+
+bool
+OggExpectPageIn(ogg_sync_state &oy, ogg_stream_state &os,
+		decoder *decoder, input_stream *is)
+{
+	ogg_page page;
+	if (!OggExpectPage(oy, page, decoder, is))
+		return false;
+
+	ogg_stream_pagein(&os, &page);
+	return true;
+}

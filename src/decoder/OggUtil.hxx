@@ -48,4 +48,24 @@ bool
 OggExpectPage(ogg_sync_state &oy, ogg_page &page,
 	      decoder *decoder, input_stream *input_stream);
 
+/**
+ * Combines OggExpectPage(), ogg_stream_init() and
+ * ogg_stream_pagein().
+ *
+ * @return true if the stream was initialized and the first page was
+ * delivered to it
+ */
+bool
+OggExpectFirstPage(ogg_sync_state &oy, ogg_stream_state &os,
+		   decoder *decoder, input_stream *is);
+
+/**
+ * Combines OggExpectPage() and ogg_stream_pagein().
+ *
+ * @return true if a page was delivered to the stream
+ */
+bool
+OggExpectPageIn(ogg_sync_state &oy, ogg_stream_state &os,
+		decoder *decoder, input_stream *is);
+
 #endif

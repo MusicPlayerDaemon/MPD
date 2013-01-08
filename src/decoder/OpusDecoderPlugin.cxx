@@ -269,8 +269,8 @@ mpd_opus_scan_stream(struct input_stream *is,
 	ogg_sync_state oy;
 	ogg_sync_init(&oy);
 
-	ogg_page page;
-	if (!OggExpectPage(oy, page, nullptr, is)) {
+	ogg_stream_state os;
+	if (!OggExpectFirstPage(oy, os, nullptr, is)) {
 		ogg_sync_clear(&oy);
 		return false;
 	}
@@ -279,10 +279,6 @@ mpd_opus_scan_stream(struct input_stream *is,
 	unsigned remaining_pages = 2;
 
 	bool result = false;
-
-	ogg_stream_state os;
-	ogg_stream_init(&os, ogg_page_serialno(&page));
-	ogg_stream_pagein(&os, &page);
 
 	ogg_packet packet;
 	while (true) {
@@ -296,12 +292,11 @@ mpd_opus_scan_stream(struct input_stream *is,
 			if (remaining_pages-- == 0)
 				break;
 
-			if (!OggExpectPage(oy, page, nullptr, is)) {
+			if (!OggExpectPageIn(oy, os, nullptr, is)) {
 				result = false;
 				break;
 			}
 
-			ogg_stream_pagein(&os, &page);
 			continue;
 		}
 
