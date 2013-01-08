@@ -19,16 +19,15 @@
 
 #include "config.h"
 #include "OggFind.hxx"
-#include "OggUtil.hxx"
+#include "OggSyncState.hxx"
 
 bool
-OggFindEOS(ogg_sync_state &oy, ogg_stream_state &os, ogg_packet &packet,
-	   decoder *decoder, input_stream *is)
+OggFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet)
 {
 	while (true) {
 		int r = ogg_stream_packetout(&os, &packet);
 		if (r == 0) {
-			if (!OggExpectPageIn(oy, os, decoder, is))
+			if (!oy.ExpectPageIn(os))
 				return false;
 
 			continue;

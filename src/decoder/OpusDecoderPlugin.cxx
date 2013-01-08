@@ -23,6 +23,7 @@
 #include "OpusTags.hxx"
 #include "OggUtil.hxx"
 #include "OggFind.hxx"
+#include "OggSyncState.hxx"
 #include "decoder_api.h"
 #include "OggCodec.hxx"
 #include "audio_check.h"
@@ -85,8 +86,8 @@ public:
 		:decoder(_decoder), input_stream(_input_stream) {}
 	~MPDOpusDecoder();
 
-	bool ReadFirstPage(ogg_sync_state &oy);
-	bool ReadNextPage(ogg_sync_state &oy);
+	bool ReadFirstPage(OggSyncState &oy);
+	bool ReadNextPage(OggSyncState &oy);
 
 	enum decoder_command HandlePackets();
 	enum decoder_command HandlePacket(const ogg_packet &packet);
@@ -107,11 +108,11 @@ MPDOpusDecoder::~MPDOpusDecoder()
 }
 
 inline bool
-MPDOpusDecoder::ReadFirstPage(ogg_sync_state &oy)
+MPDOpusDecoder::ReadFirstPage(OggSyncState &oy)
 {
 	assert(!os_initialized);
 
-	if (!OggExpectFirstPage(oy, os, decoder, input_stream))
+	if (!oy.ExpectFirstPage(os))
 		return false;
 
 	os_initialized = true;
@@ -119,12 +120,12 @@ MPDOpusDecoder::ReadFirstPage(ogg_sync_state &oy)
 }
 
 inline bool
-MPDOpusDecoder::ReadNextPage(ogg_sync_state &oy)
+MPDOpusDecoder::ReadNextPage(OggSyncState &oy)
 {
 	assert(os_initialized);
 
 	ogg_page page;
-	if (!OggExpectPage(oy, page, decoder, input_stream))
+	if (!oy.ExpectPage(page))
 		return false;
 
 	const auto page_serialno = ogg_page_serialno(&page);
@@ -269,14 +270,10 @@ mpd_opus_stream_decode(struct decoder *decoder,
 	input_stream_lock_seek(input_stream, 0, SEEK_SET, nullptr);
 
 	MPDOpusDecoder d(decoder, input_stream);
+	OggSyncState oy(*input_stream, decoder);
 
-	ogg_sync_state oy;
-	ogg_sync_init(&oy);
-
-	if (!d.ReadFirstPage(oy)) {
-		ogg_sync_clear(&oy);
+	if (!d.ReadFirstPage(oy))
 		return;
-	}
 
 	while (true) {
 		enum decoder_command cmd = d.HandlePackets();
@@ -287,39 +284,34 @@ mpd_opus_stream_decode(struct decoder *decoder,
 			break;
 
 	}
-
-	ogg_sync_clear(&oy);
 }
 
 static bool
-SeekFindEOS(ogg_sync_state &oy, ogg_stream_state &os, ogg_packet &packet,
-	    decoder *decoder, input_stream *is)
+SeekFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet,
+	    input_stream *is)
 {
 	if (is->size > 0 && is->size - is->offset < 65536)
-		return OggFindEOS(oy, os, packet, decoder, is);
+		return OggFindEOS(oy, os, packet);
 
 	if (!input_stream_cheap_seeking(is))
 		return false;
 
-	ogg_sync_reset(&oy);
+	oy.Reset();
 
 	return input_stream_lock_seek(is, -65536, SEEK_END, nullptr) &&
-		OggExpectPageSeekIn(oy, os, decoder, is) &&
-		OggFindEOS(oy, os, packet, decoder, is);
+		oy.ExpectPageSeekIn(os) &&
+		OggFindEOS(oy, os, packet);
 }
 
 static bool
 mpd_opus_scan_stream(struct input_stream *is,
 		     const struct tag_handler *handler, void *handler_ctx)
 {
-	ogg_sync_state oy;
-	ogg_sync_init(&oy);
+	OggSyncState oy(*is);
 
 	ogg_stream_state os;
-	if (!OggExpectFirstPage(oy, os, nullptr, is)) {
-		ogg_sync_clear(&oy);
+	if (!oy.ExpectFirstPage(os))
 		return false;
-	}
 
 	/* read at most two more pages */
 	unsigned remaining_pages = 2;
@@ -338,7 +330,7 @@ mpd_opus_scan_stream(struct input_stream *is,
 			if (remaining_pages-- == 0)
 				break;
 
-			if (!OggExpectPageIn(oy, os, nullptr, is)) {
+			if (!oy.ExpectPageIn(os)) {
 				result = false;
 				break;
 			}
@@ -369,12 +361,11 @@ mpd_opus_scan_stream(struct input_stream *is,
 		}
 	}
 
-	if (packet.e_o_s || SeekFindEOS(oy, os, packet, nullptr, is))
+	if (packet.e_o_s || SeekFindEOS(oy, os, packet, is))
 		tag_handler_invoke_duration(handler, handler_ctx,
 					    packet.granulepos / opus_sample_rate);
 
 	ogg_stream_clear(&os);
-	ogg_sync_clear(&oy);
 
 	return result;
 }

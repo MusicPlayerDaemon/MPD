@@ -24,8 +24,7 @@
 
 #include <ogg/ogg.h>
 
-struct decoder;
-struct input_stream;
+class OggSyncState;
 
 /**
  * Skip all pages/packets until an end-of-stream (EOS) packet for the
@@ -34,7 +33,6 @@ struct input_stream;
  * @return true if the EOS packet was found
  */
 bool
-OggFindEOS(ogg_sync_state &oy, ogg_stream_state &os, ogg_packet &packet,
-	   decoder *decoder, input_stream *is);
+OggFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet);
 
 #endif
