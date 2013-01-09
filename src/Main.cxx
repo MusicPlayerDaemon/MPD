@@ -41,15 +41,15 @@
 #include "conf.h"
 #include "replay_gain_config.h"
 #include "Idle.hxx"
+#include "SignalHandlers.hxx"
+#include "Log.hxx"
 
 extern "C" {
 #include "daemon.h"
 #include "io_thread.h"
 #include "path.h"
 #include "stats.h"
-#include "sig_handlers.h"
 #include "audio_config.h"
-#include "log.h"
 #include "pcm_resample.h"
 #include "decoder_list.h"
 #include "input_init.h"

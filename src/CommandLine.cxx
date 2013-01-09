@@ -21,11 +21,7 @@
 #include "CommandLine.hxx"
 #include "path.h"
 #include "ls.hxx"
-
-extern "C" {
-#include "log.h"
-}
-
+#include "Log.hxx"
 #include "conf.h"
 #include "decoder_list.h"
 #include "decoder_plugin.h"

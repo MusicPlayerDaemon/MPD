@@ -18,11 +18,11 @@
  */
 
 #include "config.h"
-#include "sig_handlers.h"
+#include "SignalHandlers.hxx"
 
 #ifndef WIN32
 
-#include "log.h"
+#include "Log.hxx"
 #include "Main.hxx"
 #include "event_pipe.h"
 #include "mpd_error.h"

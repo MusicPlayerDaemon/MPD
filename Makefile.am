@@ -92,7 +92,6 @@ mpd_headers = \
 	src/icy_server.h \
 	src/icy_metadata.h \
 	src/server_socket.h \
-	src/log.h \
 	src/ls.h \
 	src/mixer_api.h \
 	src/mixer_control.h \
@@ -129,7 +128,6 @@ mpd_headers = \
 	src/replay_gain_config.h \
 	src/replay_gain_info.h \
 	src/replay_gain_ape.h \
-	src/sig_handlers.h \
 	src/TimePrint.cxx src/TimePrint.hxx \
 	src/song.h \
 	src/song_sort.c src/song_sort.h \
@@ -240,7 +238,7 @@ src_mpd_SOURCES = \
 	src/ClientFile.cxx src/ClientFile.hxx \
 	src/server_socket.c \
 	src/Listen.cxx src/Listen.hxx \
-	src/log.c \
+	src/Log.cxx src/Log.hxx \
 	src/ls.cxx \
 	src/io_error.h \
 	src/io_thread.c src/io_thread.h \
@@ -279,7 +277,7 @@ src_mpd_SOURCES = \
 	src/QueueSave.cxx src/QueueSave.hxx \
 	src/ReplayGainConfig.cxx \
 	src/ReplayGainInfo.cxx \
-	src/sig_handlers.c \
+	src/SignalHandlers.cxx src/SignalHandlers.hxx \
 	src/Song.cxx \
 	src/SongUpdate.cxx \
 	src/SongPrint.cxx src/SongPrint.hxx \
@@ -1118,7 +1116,7 @@ test_run_decoder_LDADD = \
 test_run_decoder_SOURCES = test/run_decoder.c \
 	test/stdbin.h \
 	src/io_thread.c src/io_thread.h \
-	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
+	src/conf.c src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/tag_handler.c \
 	src/ReplayGainInfo.cxx \
 	src/uri.c \
@@ -1140,7 +1138,7 @@ test_read_tags_LDADD = \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.c \
 	src/io_thread.c src/io_thread.h \
-	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
+	src/conf.c src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/tag_handler.c \
 	src/ReplayGainInfo.cxx \
 	src/uri.c \
@@ -1263,7 +1261,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 test_run_output_SOURCES = test/run_output.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/stdbin.h \
-	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
+	src/conf.c src/tokenizer.c src/utils.c src/string_util.c \
 	src/io_thread.c src/io_thread.h \
 	src/audio_check.c \
 	src/audio_format.c \
@@ -1292,7 +1290,7 @@ test_read_mixer_LDADD = \
 	$(OUTPUT_LIBS) \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.c \
-	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
+	src/conf.c src/tokenizer.c src/utils.c src/string_util.c \
 	src/mixer_control.c src/mixer_api.c \
 	src/filter_plugin.c \
 	src/filter/volume_filter_plugin.c \
