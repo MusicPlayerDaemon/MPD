@@ -70,9 +70,8 @@ client_idle_add(Client *client, unsigned flags)
 }
 
 static void
-client_idle_callback(gpointer data, gpointer user_data)
+client_idle_callback(Client *client, gpointer user_data)
 {
-	Client *client = (Client *)data;
 	unsigned flags = GPOINTER_TO_UINT(user_data);
 
 	client_idle_add(client, flags);

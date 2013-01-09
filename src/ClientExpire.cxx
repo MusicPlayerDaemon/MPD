@@ -41,10 +41,8 @@ client_set_expired(Client *client)
 }
 
 static void
-client_check_expired_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
+client_check_expired_callback(Client *client, G_GNUC_UNUSED gpointer user_data)
 {
-	Client *client = (Client *)data;
-
 	if (client_is_expired(client)) {
 		g_debug("[%u] expired", client->num);
 		client_close(client);

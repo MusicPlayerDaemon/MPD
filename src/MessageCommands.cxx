@@ -78,11 +78,10 @@ struct channels_context {
 };
 
 static void
-collect_channels(gpointer data, gpointer user_data)
+collect_channels(Client *client, gpointer user_data)
 {
 	struct channels_context *context =
 		(struct channels_context *)user_data;
-	const Client *client = (const Client *)data;
 
 	context->channels.insert(client->subscriptions.begin(),
 				 client->subscriptions.end());
@@ -133,11 +132,10 @@ struct send_message_context {
 };
 
 static void
-send_message(gpointer data, gpointer user_data)
+send_message(Client *client, gpointer user_data)
 {
 	struct send_message_context *context =
 		(struct send_message_context *)user_data;
-	Client *client = (Client *)data;
 
 	if (client_push_message(client, context->msg))
 		context->sent = true;

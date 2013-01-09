@@ -20,8 +20,6 @@
 #ifndef MPD_CLIENT_LIST_HXX
 #define MPD_CLIENT_LIST_HXX
 
-#include <glib.h>
-
 class Client;
 
 bool
@@ -37,7 +35,7 @@ void
 client_list_add(Client *client);
 
 void
-client_list_foreach(GFunc func, gpointer user_data);
+client_list_foreach(void (*callback)(Client *client, void *ctx), void *ctx);
 
 void
 client_list_remove(Client *client);

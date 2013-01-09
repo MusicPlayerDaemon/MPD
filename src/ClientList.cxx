@@ -21,9 +21,12 @@
 #include "ClientList.hxx"
 #include "ClientInternal.hxx"
 
+#include <list>
+#include <algorithm>
+
 #include <assert.h>
 
-static GList *clients;
+static std::list<Client *> clients;
 static unsigned num_clients;
 
 bool
@@ -41,30 +44,33 @@ client_list_is_full(void)
 Client *
 client_list_get_first(void)
 {
-	assert(clients != NULL);
+	assert(!clients.empty());
 
-	return (Client *)clients->data;
+	return clients.front();
 }
 
 void
 client_list_add(Client *client)
 {
-	clients = g_list_prepend(clients, client);
+	clients.push_front(client);
 	++num_clients;
 }
 
 void
-client_list_foreach(GFunc func, gpointer user_data)
+client_list_foreach(void (*callback)(Client *client, void *ctx), void *ctx)
 {
-	g_list_foreach(clients, func, user_data);
+	for (Client *client : clients)
+		callback(client, ctx);
 }
 
 void
 client_list_remove(Client *client)
 {
 	assert(num_clients > 0);
-	assert(clients != NULL);
+	assert(!clients.empty());
 
-	clients = g_list_remove(clients, client);
+	auto i = std::find(clients.begin(), clients.end(), client);
+	assert(i != clients.end());
+	clients.erase(i);
 	--num_clients;
 }
