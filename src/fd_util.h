@@ -144,6 +144,17 @@ inotify_init_cloexec(void);
 
 #endif
 
+#ifdef HAVE_EVENTFD
+
+/**
+ * Wrapper for eventfd() which sets the flags CLOEXEC and NONBLOCK
+ * flag (atomically if supported by the OS).
+ */
+int
+eventfd_cloexec_nonblock(unsigned initval, int flags);
+
+#endif
+
 /**
  * Portable wrapper for close(); use closesocket() on WIN32/WinSock.
  */

@@ -49,6 +49,10 @@
 #include <sys/inotify.h>
 #endif
 
+#ifdef HAVE_EVENTFD
+#include <sys/eventfd.h>
+#endif
+
 #ifndef WIN32
 
 static int
@@ -324,6 +328,16 @@ inotify_init_cloexec(void)
 		fd_set_cloexec(fd, true);
 
 	return fd;
+}
+
+#endif
+
+#ifdef HAVE_EVENTFD
+
+int
+eventfd_cloexec_nonblock(unsigned initval, int flags)
+{
+	return eventfd(initval, flags | EFD_CLOEXEC | EFD_NONBLOCK);
 }
 
 #endif
