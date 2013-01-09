@@ -48,7 +48,9 @@ public:
 
 	int Get() const {
 		assert(fds[0] >= 0);
+#ifndef HAVE_EVENTFD
 		assert(fds[1] >= 0);
+#endif
 
 		return fds[0];
 	}
@@ -64,6 +66,15 @@ public:
 	 * be combined to one wakeup.
 	 */
 	void Write();
+
+private:
+#ifdef HAVE_EVENTFD
+	bool IsEventFD() {
+		assert(fds[0] >= 0);
+
+		return fds[1] == -2;
+	}
+#endif
 };
 
 #endif /* MAIN_NOTIFY_H */

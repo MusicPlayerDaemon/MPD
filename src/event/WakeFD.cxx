@@ -24,11 +24,23 @@
 
 #include <unistd.h>
 
+#ifdef HAVE_EVENTFD
+#include <sys/eventfd.h>
+#endif
+
 bool
 WakeFD::Create()
 {
 	assert(fds[0] == -1);
 	assert(fds[1] == -1);
+
+#ifdef HAVE_EVENTFD
+	fds[0] = eventfd_cloexec_nonblock(0, 0);
+	if (fds[0] >= 0) {
+		fds[1] = -2;
+		return true;
+	}
+#endif
 
 	return pipe_cloexec_nonblock(fds) >= 0;
 }
@@ -40,7 +52,10 @@ WakeFD::Destroy()
 	/* By some strange reason this call hangs on Win32 */
 	close(fds[0]);
 #endif
-	close(fds[1]);
+#ifdef HAVE_EVENTFD
+	if (!IsEventFD())
+#endif
+		close(fds[1]);
 
 #ifndef NDEBUG
 	fds[0] = -1;
@@ -52,6 +67,15 @@ bool
 WakeFD::Read()
 {
 	assert(fds[0] >= 0);
+
+#ifdef HAVE_EVENTFD
+	if (IsEventFD()) {
+		eventfd_t value;
+		return read(fds[0], &value,
+			    sizeof(value)) == (ssize_t)sizeof(value);
+	}
+#endif
+
 	assert(fds[1] >= 0);
 
 	char buffer[256];
@@ -62,6 +86,16 @@ void
 WakeFD::Write()
 {
 	assert(fds[0] >= 0);
+
+#ifdef HAVE_EVENTFD
+	if (IsEventFD()) {
+		static constexpr eventfd_t value = 1;
+		gcc_unused ssize_t nbytes =
+			write(fds[0], &value, sizeof(value));
+		return;
+	}
+#endif
+
 	assert(fds[1] >= 0);
 
 	gcc_unused ssize_t nbytes = write(fds[1], "", 1);
