@@ -20,10 +20,7 @@
 #include "ClientSubscribe.hxx"
 #include "ClientIdle.hxx"
 #include "ClientInternal.hxx"
-
-extern "C" {
-#include "idle.h"
-}
+#include "Idle.hxx"
 
 #include <assert.h>
 #include <string.h>

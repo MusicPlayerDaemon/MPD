@@ -19,11 +19,7 @@
 
 #include "config.h"
 #include "PlayerControl.hxx"
-
-extern "C" {
-#include "idle.h"
-}
-
+#include "Idle.hxx"
 #include "song.h"
 #include "DecoderControl.hxx"
 #include "Main.hxx"

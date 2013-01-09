@@ -19,10 +19,7 @@
 
 #include "config.h"
 #include "StickerDatabase.hxx"
-
-extern "C" {
-#include "idle.h"
-}
+#include "Idle.hxx"
 
 #include <string>
 #include <map>

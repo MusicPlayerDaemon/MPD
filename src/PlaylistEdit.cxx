@@ -30,9 +30,9 @@
 extern "C" {
 #include "uri.h"
 #include "song.h"
-#include "idle.h"
 }
 
+#include "Idle.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 

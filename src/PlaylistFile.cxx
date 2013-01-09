@@ -29,11 +29,11 @@
 #include "Mapper.hxx"
 #include "TextFile.hxx"
 #include "conf.h"
+#include "Idle.hxx"
 
 extern "C" {
 #include "path.h"
 #include "uri.h"
-#include "idle.h"
 }
 
 #include "glib_compat.h"

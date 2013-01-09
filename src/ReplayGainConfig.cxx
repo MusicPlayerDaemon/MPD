@@ -19,11 +19,7 @@
 
 #include "config.h"
 #include "replay_gain_config.h"
-
-extern "C" {
-#include "idle.h"
-}
-
+#include "Idle.hxx"
 #include "conf.h"
 #include "Playlist.hxx"
 #include "mpd_error.h"

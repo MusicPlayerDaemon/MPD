@@ -21,10 +21,7 @@
 #include "ClientIdle.hxx"
 #include "ClientInternal.hxx"
 #include "ClientList.hxx"
-
-extern "C" {
-#include "idle.h"
-}
+#include "Idle.hxx"
 
 #include <assert.h>
 

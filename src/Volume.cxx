@@ -20,9 +20,9 @@
 #include "config.h"
 #include "Volume.hxx"
 #include "MixerAll.hxx"
+#include "Idle.hxx"
 
 extern "C" {
-#include "idle.h"
 #include "event_pipe.h"
 }
 

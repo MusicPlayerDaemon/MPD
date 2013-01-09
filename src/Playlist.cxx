@@ -21,10 +21,7 @@
 #include "Playlist.hxx"
 #include "PlayerControl.hxx"
 #include "song.h"
-
-extern "C" {
-#include "idle.h"
-}
+#include "Idle.hxx"
 
 #include <glib.h>
 

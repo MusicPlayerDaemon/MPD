@@ -24,10 +24,10 @@
 #include "UpdateRemove.hxx"
 #include "Mapper.hxx"
 #include "DatabaseSimple.hxx"
+#include "Idle.hxx"
 
 extern "C" {
 #include "event_pipe.h"
-#include "idle.h"
 #include "stats.h"
 }
 

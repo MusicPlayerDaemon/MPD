@@ -44,10 +44,7 @@ extern "C" {
 #include "ClientIdle.hxx"
 #include "ClientFile.hxx"
 #include "Client.hxx"
-
-extern "C" {
-#include "idle.h"
-}
+#include "Idle.hxx"
 
 #ifdef ENABLE_SQLITE
 #include "StickerDatabase.hxx"

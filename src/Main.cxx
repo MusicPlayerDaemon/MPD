@@ -39,11 +39,11 @@
 #include "tag.h"
 #include "conf.h"
 #include "replay_gain_config.h"
+#include "Idle.hxx"
 
 extern "C" {
 #include "daemon.h"
 #include "io_thread.h"
-#include "idle.h"
 #include "path.h"
 #include "stats.h"
 #include "sig_handlers.h"

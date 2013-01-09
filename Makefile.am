@@ -61,7 +61,6 @@ mpd_headers = \
 	src/filter/convert_filter_plugin.h \
 	src/filter/volume_filter_plugin.h \
 	src/command.h \
-	src/idle.h \
 	src/conf.h \
 	src/decoder_plugin.h \
 	src/decoder_command.h \
@@ -185,7 +184,7 @@ src_mpd_SOURCES = \
 	src/OutputCommands.cxx src/OutputCommands.hxx \
 	src/MessageCommands.cxx src/MessageCommands.hxx \
 	src/OtherCommands.cxx src/OtherCommands.hxx \
-	src/idle.c \
+	src/Idle.cxx src/Idle.hxx \
 	src/CommandLine.cxx src/CommandLine.hxx \
 	src/conf.c \
 	src/CrossFade.cxx src/CrossFade.hxx \

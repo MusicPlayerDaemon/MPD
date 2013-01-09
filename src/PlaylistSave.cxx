@@ -23,11 +23,11 @@
 #include "Playlist.hxx"
 #include "song.h"
 #include "Mapper.hxx"
+#include "Idle.hxx"
 
 extern "C" {
 #include "path.h"
 #include "uri.h"
-#include "idle.h"
 }
 
 #include "glib_compat.h"

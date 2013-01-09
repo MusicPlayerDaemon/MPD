@@ -31,10 +31,10 @@
 #include "PlayerControl.hxx"
 #include "OutputAll.hxx"
 #include "tag.h"
+#include "Idle.hxx"
 
 extern "C" {
 #include "event_pipe.h"
-#include "idle.h"
 }
 
 #include <cmath>
