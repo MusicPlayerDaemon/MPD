@@ -9,6 +9,7 @@ bin_PROGRAMS = src/mpd
 
 noinst_LIBRARIES = \
 	libutil.a \
+	libevent.a \
 	libpcm.a \
 	libtag.a \
 	libinput.a \
@@ -39,6 +40,7 @@ src_mpd_LDADD = \
 	$(ENCODER_LIBS) \
 	$(MIXER_LIBS) \
 	libutil.a \
+	libevent.a \
 	$(SYSTEMD_DAEMON_LIBS) \
 	$(GLIB_LIBS)
 
@@ -347,6 +349,11 @@ libutil_a_SOURCES = \
 	src/util/list_sort.c src/util/list_sort.h \
 	src/util/byte_reverse.c src/util/byte_reverse.h \
 	src/util/bit_reverse.c src/util/bit_reverse.h
+
+# Event loop library
+
+libevent_a_SOURCES = \
+	src/event/WakeFD.cxx
 
 # PCM library
 

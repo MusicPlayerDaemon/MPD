@@ -19,22 +19,20 @@
 
 #include "config.h"
 #include "GlobalEvents.hxx"
+#include "event/WakeFD.hxx"
 #include "thread/Mutex.hxx"
-#include "fd_util.h"
 #include "mpd_error.h"
 
 #include <assert.h>
 #include <glib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "global_events"
 
 namespace GlobalEvents {
-	static int fds[2];
-	static GIOChannel *channel;
+	static WakeFD wake_fd;
 	static guint source_id;
 	static Mutex mutex;
 	static bool flags[MAX];
@@ -58,14 +56,8 @@ GlobalEventCallback(G_GNUC_UNUSED GIOChannel *source,
 		    G_GNUC_UNUSED GIOCondition condition,
 		    G_GNUC_UNUSED gpointer data)
 {
-	char buffer[256];
-	gsize bytes_read;
-	GError *error = NULL;
-	GIOStatus status = g_io_channel_read_chars(GlobalEvents::channel,
-						   buffer, sizeof(buffer),
-						   &bytes_read, &error);
-	if (status == G_IO_STATUS_ERROR)
-		MPD_ERROR("error reading from pipe: %s", error->message);
+	if (!GlobalEvents::wake_fd.Read())
+		return true;
 
 	bool events[GlobalEvents::MAX];
 	GlobalEvents::mutex.lock();
@@ -85,32 +77,26 @@ GlobalEventCallback(G_GNUC_UNUSED GIOChannel *source,
 void
 GlobalEvents::Initialize()
 {
-	if (pipe_cloexec_nonblock(fds) < 0)
+	if (!wake_fd.Create())
 		MPD_ERROR("Couldn't open pipe: %s", strerror(errno));
 
 #ifndef G_OS_WIN32
-	channel = g_io_channel_unix_new(fds[0]);
+	GIOChannel *channel = g_io_channel_unix_new(wake_fd.Get());
 #else
-	channel = g_io_channel_win32_new_fd(fds[0]);
+	GIOChannel *channel = g_io_channel_win32_new_fd(wake_fd.Get());
 #endif
-	g_io_channel_set_encoding(channel, NULL, NULL);
-	g_io_channel_set_buffered(channel, false);
 
 	source_id = g_io_add_watch(channel, G_IO_IN,
 				   GlobalEventCallback, NULL);
+	g_io_channel_unref(channel);
 }
 
 void
 GlobalEvents::Deinitialize()
 {
 	g_source_remove(source_id);
-	g_io_channel_unref(channel);
 
-#ifndef WIN32
-	/* By some strange reason this call hangs on Win32 */
-	close(fds[0]);
-#endif
-	close(fds[1]);
+	wake_fd.Destroy();
 }
 
 void
@@ -137,9 +123,7 @@ GlobalEvents::Emit(Event event)
 	flags[event] = true;
 	mutex.unlock();
 
-	ssize_t w = write(fds[1], "", 1);
-	if (w < 0 && errno != EAGAIN && errno != EINTR)
-		MPD_ERROR("error writing to pipe: %s", strerror(errno));
+	wake_fd.Write();
 }
 
 void
@@ -149,5 +133,5 @@ GlobalEvents::FastEmit(Event event)
 
 	flags[event] = true;
 
-	G_GNUC_UNUSED ssize_t nbytes = write(fds[1], "", 1);
+	wake_fd.Write();
 }
