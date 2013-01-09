@@ -253,7 +253,4 @@ public:
 	void SetConsume(bool new_value);
 };
 
-void
-playlist_global_init();
-
 #endif

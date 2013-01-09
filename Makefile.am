@@ -261,7 +261,7 @@ src_mpd_SOURCES = \
 	src/PlayerThread.cxx src/PlayerThread.hxx \
 	src/PlayerControl.cxx src/PlayerControl.hxx \
 	src/Playlist.cxx \
-	src/PlaylistGlobal.cxx \
+	src/PlaylistGlobal.cxx src/PlaylistGlobal.hxx \
 	src/PlaylistControl.cxx \
 	src/PlaylistEdit.cxx \
 	src/PlaylistPrint.cxx src/PlaylistPrint.hxx \

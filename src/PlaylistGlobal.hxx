@@ -17,36 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * The manager of the global "struct playlist" instance (g_playlist).
- *
- */
-
-#include "config.h"
-#include "PlaylistGlobal.hxx"
-#include "Playlist.hxx"
-#include "Main.hxx"
-#include "Partition.hxx"
-
-extern "C" {
-#include "event_pipe.h"
-}
-
-static void
-playlist_tag_event(void)
-{
-	global_partition->playlist.TagChanged();
-}
-
-static void
-playlist_event(void)
-{
-	global_partition->playlist.SyncWithPlayer(global_partition->pc);
-}
+#ifndef MPD_PLAYLIST_GLOBAL_HXX
+#define MPD_PLAYLIST_GLOBAL_HXX
 
 void
-playlist_global_init()
-{
-	event_pipe_register(PIPE_EVENT_TAG, playlist_tag_event);
-	event_pipe_register(PIPE_EVENT_PLAYLIST, playlist_event);
-}
+playlist_global_init();
+
+#endif

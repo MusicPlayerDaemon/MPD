@@ -21,6 +21,7 @@
 #include "Main.hxx"
 #include "CommandLine.hxx"
 #include "PlaylistFile.hxx"
+#include "PlaylistGlobal.hxx"
 #include "UpdateGlue.hxx"
 #include "MusicChunk.hxx"
 #include "StateFile.hxx"
