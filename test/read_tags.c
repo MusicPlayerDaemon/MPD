@@ -24,11 +24,9 @@
 #include "input_init.h"
 #include "input_stream.h"
 #include "audio_format.h"
-#include "pcm_volume.h"
 #include "tag_ape.h"
 #include "tag_id3.h"
 #include "tag_handler.h"
-#include "idle.h"
 
 #include <glib.h>
 
@@ -39,25 +37,6 @@
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
-
-/**
- * No-op dummy.
- */
-void
-idle_add(G_GNUC_UNUSED unsigned flags)
-{
-}
-
-/**
- * No-op dummy.
- */
-bool
-pcm_volume(G_GNUC_UNUSED void *buffer, G_GNUC_UNUSED size_t length,
-	   G_GNUC_UNUSED enum sample_format format,
-	   G_GNUC_UNUSED int volume)
-{
-	return true;
-}
 
 void
 decoder_initialized(G_GNUC_UNUSED struct decoder *decoder,

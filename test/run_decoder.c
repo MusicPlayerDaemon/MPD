@@ -24,8 +24,6 @@
 #include "input_init.h"
 #include "input_stream.h"
 #include "audio_format.h"
-#include "pcm_volume.h"
-#include "idle.h"
 #include "stdbin.h"
 
 #include <glib.h>
@@ -42,25 +40,6 @@ my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
 		g_printerr("%s: %s\n", log_domain, message);
 	else
 		g_printerr("%s\n", message);
-}
-
-/**
- * No-op dummy.
- */
-void
-idle_add(G_GNUC_UNUSED unsigned flags)
-{
-}
-
-/**
- * No-op dummy.
- */
-bool
-pcm_volume(G_GNUC_UNUSED void *buffer, G_GNUC_UNUSED size_t length,
-	   G_GNUC_UNUSED enum sample_format format,
-	   G_GNUC_UNUSED int volume)
-{
-	return true;
 }
 
 struct decoder {
