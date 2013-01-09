@@ -40,7 +40,7 @@ static void exit_signal_handler(G_GNUC_UNUSED int signum)
 
 static void reload_signal_handler(G_GNUC_UNUSED int signum)
 {
-	GlobalEvents::FastEmit(GlobalEvents::RELOAD);
+	GlobalEvents::Emit(GlobalEvents::RELOAD);
 }
 
 static void

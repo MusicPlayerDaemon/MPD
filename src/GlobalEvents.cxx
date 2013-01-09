@@ -20,8 +20,9 @@
 #include "config.h"
 #include "GlobalEvents.hxx"
 #include "event/WakeFD.hxx"
-#include "thread/Mutex.hxx"
 #include "mpd_error.h"
+
+#include <atomic>
 
 #include <assert.h>
 #include <glib.h>
@@ -34,8 +35,7 @@
 namespace GlobalEvents {
 	static WakeFD wake_fd;
 	static guint source_id;
-	static Mutex mutex;
-	static bool flags[MAX];
+	static std::atomic_uint flags;
 	static Handler handlers[MAX];
 }
 
@@ -59,15 +59,10 @@ GlobalEventCallback(G_GNUC_UNUSED GIOChannel *source,
 	if (!GlobalEvents::wake_fd.Read())
 		return true;
 
-	bool events[GlobalEvents::MAX];
-	GlobalEvents::mutex.lock();
-	memcpy(events, GlobalEvents::flags, sizeof(events));
-	memset(GlobalEvents::flags, 0,
-	       sizeof(GlobalEvents::flags));
-	GlobalEvents::mutex.unlock();
+	const unsigned flags = GlobalEvents::flags.fetch_and(0);
 
 	for (unsigned i = 0; i < GlobalEvents::MAX; ++i)
-		if (events[i])
+		if (flags & (1u << i))
 			/* invoke the event handler */
 			InvokeGlobalEvent(GlobalEvents::Event(i));
 
@@ -113,25 +108,7 @@ GlobalEvents::Emit(Event event)
 {
 	assert((unsigned)event < MAX);
 
-	mutex.lock();
-	if (flags[event]) {
-		/* already set: don't write */
-		mutex.unlock();
-		return;
-	}
-
-	flags[event] = true;
-	mutex.unlock();
-
-	wake_fd.Write();
-}
-
-void
-GlobalEvents::FastEmit(Event event)
-{
-	assert((unsigned)event < MAX);
-
-	flags[event] = true;
-
-	wake_fd.Write();
+	const unsigned mask = 1u << unsigned(event);
+	if ((GlobalEvents::flags.fetch_or(mask) & mask) == 0)
+		wake_fd.Write();
 }

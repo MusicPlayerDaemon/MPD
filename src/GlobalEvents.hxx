@@ -58,13 +58,6 @@ namespace GlobalEvents {
 	void Register(Event event, Handler handler);
 
 	void Emit(Event event);
-
-	/**
-	 * Similar to event_pipe_emit(), but aimed for use in signal handlers:
-	 * it doesn't lock the mutex, and doesn't log on error.  That makes it
-	 * potentially lossy, but for its intended use, that does not matter.
-	 */
-	void FastEmit(Event event);
 }
 
 #endif /* MAIN_NOTIFY_H */
