@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -50,6 +50,10 @@ enum pipe_event {
 
 typedef void (*event_pipe_callback_t)(void);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void event_pipe_init(void);
 
 void event_pipe_deinit(void);
@@ -65,5 +69,9 @@ void event_pipe_emit(enum pipe_event event);
  * potentially lossy, but for its intended use, that does not matter.
  */
 void event_pipe_emit_fast(enum pipe_event event);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MAIN_NOTIFY_H */

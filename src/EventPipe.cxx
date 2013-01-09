@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -80,7 +80,7 @@ main_notify_event(G_GNUC_UNUSED GIOChannel *source,
 	for (unsigned i = 0; i < PIPE_EVENT_MAX; ++i)
 		if (events[i])
 			/* invoke the event handler */
-			event_pipe_invoke(i);
+			event_pipe_invoke(pipe_event(i));
 
 	return true;
 }
