@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "zeroconf-internal.h"
-#include "listen.h"
+#include "Listen.hxx"
 
 #include <glib.h>
 
