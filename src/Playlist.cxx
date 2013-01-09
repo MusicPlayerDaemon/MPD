@@ -31,9 +31,9 @@
 #define G_LOG_DOMAIN "playlist"
 
 void
-playlist_increment_version_all(struct playlist *playlist)
+playlist::FullIncrementVersions()
 {
-	playlist->queue.ModifyAll();
+	queue.ModifyAll();
 	idle_add(IDLE_PLAYLIST);
 }
 

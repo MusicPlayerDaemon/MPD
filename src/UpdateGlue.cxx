@@ -155,7 +155,7 @@ static void update_finished_event(void)
 
 	if (modified) {
 		/* send "idle" events */
-		playlist_increment_version_all(&global_partition->playlist);
+		global_partition->playlist.FullIncrementVersions();
 		idle_add(IDLE_DATABASE);
 	}
 

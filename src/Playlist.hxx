@@ -131,6 +131,8 @@ public:
 
 	void TagChanged();
 
+	void FullIncrementVersions();
+
 	enum playlist_result AppendSong(player_control &pc,
 					struct song *song,
 					unsigned *added_id=nullptr);
@@ -253,8 +255,5 @@ public:
 
 void
 playlist_global_init();
-
-void
-playlist_increment_version_all(struct playlist *playlist);
 
 #endif
