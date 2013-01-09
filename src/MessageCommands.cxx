@@ -21,6 +21,7 @@
 #include "MessageCommands.hxx"
 #include "ClientSubscribe.hxx"
 #include "ClientInternal.hxx"
+#include "ClientList.hxx"
 #include "protocol/Result.hxx"
 #include "protocol/ArgParser.hxx"
 

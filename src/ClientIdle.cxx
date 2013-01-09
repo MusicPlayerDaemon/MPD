@@ -20,6 +20,7 @@
 #include "config.h"
 #include "ClientIdle.hxx"
 #include "ClientInternal.hxx"
+#include "ClientList.hxx"
 
 extern "C" {
 #include "idle.h"

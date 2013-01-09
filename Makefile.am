@@ -232,7 +232,7 @@ src_mpd_SOURCES = \
 	src/ClientExpire.cxx \
 	src/ClientGlobal.cxx \
 	src/ClientIdle.cxx src/ClientIdle.hxx \
-	src/ClientList.cxx \
+	src/ClientList.cxx src/ClientList.hxx \
 	src/ClientNew.cxx \
 	src/ClientProcess.cxx \
 	src/ClientRead.cxx \

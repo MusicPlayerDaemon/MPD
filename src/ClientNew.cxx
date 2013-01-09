@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ClientInternal.hxx"
+#include "ClientList.hxx"
 #include "Partition.hxx"
 #include "fd_util.h"
 extern "C" {

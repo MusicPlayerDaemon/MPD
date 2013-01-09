@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ClientInternal.hxx"
+#include "ClientList.hxx"
 
 static guint expire_source_id;
 

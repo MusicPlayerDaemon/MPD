@@ -118,24 +118,6 @@ extern int client_timeout;
 extern size_t client_max_command_list_size;
 extern size_t client_max_output_buffer_size;
 
-bool
-client_list_is_empty(void);
-
-bool
-client_list_is_full(void);
-
-Client *
-client_list_get_first(void);
-
-void
-client_list_add(Client *client);
-
-void
-client_list_foreach(GFunc func, gpointer user_data);
-
-void
-client_list_remove(Client *client);
-
 void
 client_close(Client *client);
 
