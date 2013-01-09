@@ -1164,6 +1164,7 @@ test_run_filter_LDADD = \
 	$(FILTER_LIBS) \
 	$(GLIB_LIBS)
 test_run_filter_SOURCES = test/run_filter.c \
+	test/FakeReplayGainConfig.cxx \
 	test/stdbin.h \
 	src/filter_plugin.c \
 	src/filter_registry.c \
@@ -1171,7 +1172,6 @@ test_run_filter_SOURCES = test/run_filter.c \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \
-	src/ReplayGainConfig.cxx \
 	src/ReplayGainInfo.cxx \
 	src/AudioCompress/compress.c
 
@@ -1262,6 +1262,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
 test_run_output_SOURCES = test/run_output.cxx \
+	test/FakeReplayGainConfig.cxx \
 	test/stdbin.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c src/log.c \
 	src/io_thread.c src/io_thread.h \
@@ -1283,7 +1284,6 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/filter_config.c \
 	src/AudioCompress/compress.c \
 	src/ReplayGainInfo.cxx \
-	src/ReplayGainConfig.cxx \
 	src/fd_util.c \
 	src/server_socket.c
 

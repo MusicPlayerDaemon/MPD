@@ -43,11 +43,6 @@ extern "C" {
 #include <stdlib.h>
 
 void
-idle_add(G_GNUC_UNUSED unsigned flags)
-{
-}
-
-void
 event_pipe_emit(G_GNUC_UNUSED enum pipe_event event)
 {
 }
