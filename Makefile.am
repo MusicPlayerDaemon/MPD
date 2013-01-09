@@ -101,7 +101,6 @@ mpd_headers = \
 	src/mixer_plugin.h \
 	src/mixer_type.h \
 	src/mixer/software_mixer_plugin.h \
-	src/mixer/pulse_mixer_plugin.h \
 	src/daemon.h \
 	src/AudioCompress/config.h \
 	src/AudioCompress/compress.h \
@@ -812,7 +811,7 @@ libmixer_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 if HAVE_ALSA
 liboutput_plugins_a_SOURCES += \
 	src/output/alsa_output_plugin.c src/output/alsa_output_plugin.h
-libmixer_plugins_a_SOURCES += src/mixer/alsa_mixer_plugin.c
+libmixer_plugins_a_SOURCES += src/mixer/AlsaMixerPlugin.cxx
 endif
 
 if HAVE_ROAR
@@ -870,7 +869,8 @@ endif
 if HAVE_PULSE
 liboutput_plugins_a_SOURCES += \
 	src/output/pulse_output_plugin.c src/output/pulse_output_plugin.h
-libmixer_plugins_a_SOURCES += src/mixer/pulse_mixer_plugin.c
+libmixer_plugins_a_SOURCES += \
+	src/mixer/PulseMixerPlugin.cxx src/mixer/PulseMixerPlugin.h
 endif
 
 if HAVE_SHOUT

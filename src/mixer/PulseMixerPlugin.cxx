@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "pulse_mixer_plugin.h"
+#include "PulseMixerPlugin.h"
 #include "mixer_api.h"
 #include "output/pulse_output_plugin.h"
 #include "conf.h"
@@ -77,7 +77,7 @@ static void
 pulse_mixer_volume_cb(G_GNUC_UNUSED pa_context *context, const pa_sink_input_info *i,
 		      int eol, void *userdata)
 {
-	struct pulse_mixer *pm = userdata;
+	struct pulse_mixer *pm = (struct pulse_mixer *)userdata;
 
 	if (eol)
 		return;
@@ -153,16 +153,15 @@ static struct mixer *
 pulse_mixer_init(void *ao, G_GNUC_UNUSED const struct config_param *param,
 		 GError **error_r)
 {
-	struct pulse_mixer *pm;
-	struct pulse_output *po = ao;
+	struct pulse_output *po = (struct pulse_output *)ao;
 
 	if (ao == NULL) {
 		g_set_error(error_r, pulse_mixer_quark(), 0,
 			    "The pulse mixer cannot work without the audio output");
-		return false;
+		return nullptr;
 	}
 
-	pm = g_new(struct pulse_mixer,1);
+	struct pulse_mixer *pm = g_new(struct pulse_mixer,1);
 	mixer_init(&pm->base, &pulse_mixer_plugin);
 
 	pm->online = false;
@@ -229,8 +228,11 @@ pulse_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
 }
 
 const struct mixer_plugin pulse_mixer_plugin = {
-	.init = pulse_mixer_init,
-	.finish = pulse_mixer_finish,
-	.get_volume = pulse_mixer_get_volume,
-	.set_volume = pulse_mixer_set_volume,
+	pulse_mixer_init,
+	pulse_mixer_finish,
+	nullptr,
+	nullptr,
+	pulse_mixer_get_volume,
+	pulse_mixer_set_volume,
+	false,
 };

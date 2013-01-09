@@ -21,7 +21,7 @@
 #include "pulse_output_plugin.h"
 #include "output_api.h"
 #include "mixer_list.h"
-#include "mixer/pulse_mixer_plugin.h"
+#include "mixer/PulseMixerPlugin.h"
 
 #include <glib.h>
 

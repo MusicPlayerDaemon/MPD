@@ -46,7 +46,15 @@ struct mixer {
 	bool failed;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void
 mixer_init(struct mixer *mixer, const struct mixer_plugin *plugin);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

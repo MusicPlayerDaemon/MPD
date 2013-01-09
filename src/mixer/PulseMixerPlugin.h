@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,10 @@ struct pulse_mixer;
 struct pa_context;
 struct pa_stream;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void
 pulse_mixer_on_connect(struct pulse_mixer *pm, struct pa_context *context);
 
@@ -35,5 +39,9 @@ pulse_mixer_on_disconnect(struct pulse_mixer *pm);
 void
 pulse_mixer_on_change(struct pulse_mixer *pm,
 		      struct pa_context *context, struct pa_stream *stream);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

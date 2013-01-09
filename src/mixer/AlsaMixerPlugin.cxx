@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -77,7 +77,7 @@ find_fd(GSList **list_r, int fd)
 		if (list == NULL)
 			return NULL;
 
-		GPollFD *p = list->data;
+		GPollFD *p = (GPollFD *)list->data;
 		if (p->fd == fd)
 			return list_r;
 
@@ -103,7 +103,7 @@ alsa_mixer_update_fd(struct alsa_mixer_source *source, const struct pollfd *p,
 	GSList *found = *found_r;
 	*found_r = found->next;
 
-	GPollFD *q = found->data;
+	GPollFD *q = (GPollFD *)found->data;
 	if (q->events != p->events) {
 		/* refresh events */
 		g_source_remove_poll(&source->source, q);
@@ -135,7 +135,7 @@ alsa_mixer_update_fds(struct alsa_mixer_source *source)
 	g_free(pfds);
 
 	for (; old != NULL; old = old->next) {
-		GPollFD *q = old->data;
+		GPollFD *q = (GPollFD *)old->data;
 		g_source_remove_poll(&source->source, q);
 		g_free(q);
 	}
@@ -163,7 +163,7 @@ alsa_mixer_source_check(GSource *_source)
 	struct alsa_mixer_source *source = (struct alsa_mixer_source *)_source;
 
 	for (const GSList *i = source->fds; i != NULL; i = i->next) {
-		const GPollFD *poll_fd = i->data;
+		const GPollFD *poll_fd = (GPollFD *)i->data;
 		if (poll_fd->revents != 0)
 			return true;
 	}
@@ -194,10 +194,12 @@ alsa_mixer_source_finalize(GSource *_source)
 }
 
 static GSourceFuncs alsa_mixer_source_funcs = {
-	.prepare = alsa_mixer_source_prepare,
-	.check = alsa_mixer_source_check,
-	.dispatch = alsa_mixer_source_dispatch,
-	.finalize = alsa_mixer_source_finalize,
+	alsa_mixer_source_prepare,
+	alsa_mixer_source_check,
+	alsa_mixer_source_dispatch,
+	alsa_mixer_source_finalize,
+	nullptr,
+	nullptr,
 };
 
 /*
@@ -421,11 +423,11 @@ alsa_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
 }
 
 const struct mixer_plugin alsa_mixer_plugin = {
-	.init = alsa_mixer_init,
-	.finish = alsa_mixer_finish,
-	.open = alsa_mixer_open,
-	.close = alsa_mixer_close,
-	.get_volume = alsa_mixer_get_volume,
-	.set_volume = alsa_mixer_set_volume,
-	.global = true,
+	alsa_mixer_init,
+	alsa_mixer_finish,
+	alsa_mixer_open,
+	alsa_mixer_close,
+	alsa_mixer_get_volume,
+	alsa_mixer_set_volume,
+	true,
 };
