@@ -40,7 +40,7 @@ static constexpr bool DEFAULT_REPLAYGAIN_LIMIT = true;
 
 float replay_gain_preamp = 1.0;
 float replay_gain_missing_preamp = 1.0;
-bool replay_gain_limit;
+bool replay_gain_limit = DEFAULT_REPLAYGAIN_LIMIT;
 
 const char *
 replay_gain_get_mode_string(void)
