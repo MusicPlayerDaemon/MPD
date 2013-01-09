@@ -25,7 +25,7 @@
 #include "Mapper.hxx"
 #include "DatabaseSimple.hxx"
 #include "Idle.hxx"
-#include "EventPipe.hxx"
+#include "GlobalEvents.hxx"
 
 extern "C" {
 #include "stats.h"
@@ -92,7 +92,7 @@ static void * update_task(void *_path)
 	g_free(_path);
 
 	progress = UPDATE_PROGRESS_DONE;
-	event_pipe_emit(PIPE_EVENT_UPDATE);
+	GlobalEvents::Emit(GlobalEvents::UPDATE);
 	return NULL;
 }
 
@@ -173,7 +173,7 @@ static void update_finished_event(void)
 
 void update_global_init(void)
 {
-	event_pipe_register(PIPE_EVENT_UPDATE, update_finished_event);
+	GlobalEvents::Register(GlobalEvents::UPDATE, update_finished_event);
 
 	update_remove_global_init();
 	update_walk_global_init();

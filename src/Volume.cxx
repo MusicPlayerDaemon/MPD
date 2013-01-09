@@ -21,7 +21,7 @@
 #include "Volume.hxx"
 #include "MixerAll.hxx"
 #include "Idle.hxx"
-#include "EventPipe.hxx"
+#include "GlobalEvents.hxx"
 
 #include <glib.h>
 
@@ -41,7 +41,7 @@ static int last_hardware_volume = -1;
 static GTimer *hardware_volume_timer;
 
 /**
- * Handler for #PIPE_EVENT_MIXER.
+ * Handler for #GlobalEvents::MIXER.
  */
 static void
 mixer_event_callback(void)
@@ -62,7 +62,7 @@ void volume_init(void)
 {
 	hardware_volume_timer = g_timer_new();
 
-	event_pipe_register(PIPE_EVENT_MIXER, mixer_event_callback);
+	GlobalEvents::Register(GlobalEvents::MIXER, mixer_event_callback);
 }
 
 int volume_level_get(void)

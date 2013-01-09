@@ -26,7 +26,7 @@ extern "C" {
 }
 
 #include "pcm_volume.h"
-#include "EventPipe.hxx"
+#include "GlobalEvents.hxx"
 
 #include <glib.h>
 
@@ -88,7 +88,7 @@ roar_output_set_volume(G_GNUC_UNUSED struct roar *roar,
 #endif
 
 void
-event_pipe_emit(G_GNUC_UNUSED enum pipe_event event)
+GlobalEvents::Emit(gcc_unused Event event)
 {
 }
 

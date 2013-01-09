@@ -27,7 +27,7 @@
 #include "Playlist.hxx"
 #include "Main.hxx"
 #include "Partition.hxx"
-#include "EventPipe.hxx"
+#include "GlobalEvents.hxx"
 
 static void
 playlist_tag_event(void)
@@ -44,6 +44,6 @@ playlist_event(void)
 void
 playlist_global_init()
 {
-	event_pipe_register(PIPE_EVENT_TAG, playlist_tag_event);
-	event_pipe_register(PIPE_EVENT_PLAYLIST, playlist_event);
+	GlobalEvents::Register(GlobalEvents::TAG, playlist_tag_event);
+	GlobalEvents::Register(GlobalEvents::PLAYLIST, playlist_event);
 }

@@ -24,7 +24,7 @@
 
 #include "config.h"
 #include "Idle.hxx"
-#include "EventPipe.hxx"
+#include "GlobalEvents.hxx"
 
 #include <assert.h>
 #include <glib.h>
@@ -71,7 +71,7 @@ idle_add(unsigned flags)
 	idle_flags |= flags;
 	g_mutex_unlock(idle_mutex);
 
-	event_pipe_emit(PIPE_EVENT_IDLE);
+	GlobalEvents::Emit(GlobalEvents::IDLE);
 }
 
 unsigned

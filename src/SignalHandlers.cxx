@@ -24,7 +24,7 @@
 
 #include "Log.hxx"
 #include "Main.hxx"
-#include "EventPipe.hxx"
+#include "GlobalEvents.hxx"
 #include "mpd_error.h"
 
 #include <glib.h>
@@ -40,7 +40,7 @@ static void exit_signal_handler(G_GNUC_UNUSED int signum)
 
 static void reload_signal_handler(G_GNUC_UNUSED int signum)
 {
-	event_pipe_emit_fast(PIPE_EVENT_RELOAD);
+	GlobalEvents::FastEmit(GlobalEvents::RELOAD);
 }
 
 static void
@@ -73,7 +73,7 @@ void initSigHandlers(void)
 	x_sigaction(SIGINT, &sa);
 	x_sigaction(SIGTERM, &sa);
 
-	event_pipe_register(PIPE_EVENT_RELOAD, handle_reload_event);
+	GlobalEvents::Register(GlobalEvents::RELOAD, handle_reload_event);
 	sa.sa_handler = reload_signal_handler;
 	x_sigaction(SIGHUP, &sa);
 #endif

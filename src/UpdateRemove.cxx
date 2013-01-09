@@ -21,7 +21,7 @@
 #include "UpdateRemove.hxx"
 #include "Playlist.hxx"
 #include "Partition.hxx"
-#include "EventPipe.hxx"
+#include "GlobalEvents.hxx"
 
 #include "song.h"
 #include "Main.hxx"
@@ -76,7 +76,7 @@ update_remove_global_init(void)
 	remove_mutex = g_mutex_new();
 	remove_cond = g_cond_new();
 
-	event_pipe_register(PIPE_EVENT_DELETE, song_remove_event);
+	GlobalEvents::Register(GlobalEvents::DELETE, song_remove_event);
 }
 
 void
@@ -93,7 +93,7 @@ update_remove_song(const struct song *song)
 
 	removed_song = song;
 
-	event_pipe_emit(PIPE_EVENT_DELETE);
+	GlobalEvents::Emit(GlobalEvents::DELETE);
 
 	g_mutex_lock(remove_mutex);
 

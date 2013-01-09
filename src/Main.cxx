@@ -43,7 +43,7 @@
 #include "Idle.hxx"
 #include "SignalHandlers.hxx"
 #include "Log.hxx"
-#include "EventPipe.hxx"
+#include "GlobalEvents.hxx"
 
 extern "C" {
 #include "daemon.h"
@@ -316,7 +316,7 @@ initialize_decoder_and_player(void)
 }
 
 /**
- * event_pipe callback function for PIPE_EVENT_IDLE
+ * Handler for GlobalEvents::IDLE.
  */
 static void
 idle_event_emitted(void)
@@ -329,7 +329,7 @@ idle_event_emitted(void)
 }
 
 /**
- * event_pipe callback function for PIPE_EVENT_SHUTDOWN
+ * Handler for GlobalEvents::SHUTDOWN.
  */
 static void
 shutdown_event_emitted(void)
@@ -406,9 +406,9 @@ int mpd_main(int argc, char *argv[])
 	main_loop = g_main_loop_new(NULL, FALSE);
 	main_cond = g_cond_new();
 
-	event_pipe_init();
-	event_pipe_register(PIPE_EVENT_IDLE, idle_event_emitted);
-	event_pipe_register(PIPE_EVENT_SHUTDOWN, shutdown_event_emitted);
+	GlobalEvents::Initialize();
+	GlobalEvents::Register(GlobalEvents::IDLE, idle_event_emitted);
+	GlobalEvents::Register(GlobalEvents::SHUTDOWN, shutdown_event_emitted);
 
 	path_global_init();
 
@@ -537,7 +537,7 @@ int mpd_main(int argc, char *argv[])
 #endif
 
 	g_cond_free(main_cond);
-	event_pipe_deinit();
+	GlobalEvents::Deinitialize();
 
 	playlist_list_global_finish();
 	input_stream_global_finish();

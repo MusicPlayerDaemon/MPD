@@ -23,7 +23,7 @@
 #ifdef WIN32
 
 #include "mpd_error.h"
-#include "EventPipe.hxx"
+#include "GlobalEvents.hxx"
 
 #include <glib.h>
 
@@ -68,7 +68,7 @@ service_dispatcher(G_GNUC_UNUSED DWORD control, G_GNUC_UNUSED DWORD event_type,
 	switch (control) {
 	case SERVICE_CONTROL_SHUTDOWN:
 	case SERVICE_CONTROL_STOP:
-		event_pipe_emit(PIPE_EVENT_SHUTDOWN);
+		GlobalEvents::Emit(GlobalEvents::SHUTDOWN);
 		return NO_ERROR;
 	default:
 		return NO_ERROR;
@@ -104,7 +104,7 @@ console_handler(DWORD event)
 	case CTRL_C_EVENT:
 	case CTRL_CLOSE_EVENT:
 		if (!ignore_console_events)
-			event_pipe_emit(PIPE_EVENT_SHUTDOWN);
+			GlobalEvents::Emit(GlobalEvents::SHUTDOWN);
 		return TRUE;
 	default:
 		return FALSE;

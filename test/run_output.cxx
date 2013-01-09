@@ -21,7 +21,7 @@
 #include "OutputControl.hxx"
 #include "conf.h"
 #include "Idle.hxx"
-#include "EventPipe.hxx"
+#include "GlobalEvents.hxx"
 
 extern "C" {
 #include "output_plugin.h"
@@ -43,7 +43,7 @@ extern "C" {
 #include <stdlib.h>
 
 void
-event_pipe_emit(G_GNUC_UNUSED enum pipe_event event)
+GlobalEvents::Emit(gcc_unused Event event)
 {
 }
 

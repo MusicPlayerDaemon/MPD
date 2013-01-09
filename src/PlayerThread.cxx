@@ -32,7 +32,7 @@
 #include "OutputAll.hxx"
 #include "tag.h"
 #include "Idle.hxx"
-#include "EventPipe.hxx"
+#include "GlobalEvents.hxx"
 
 #include <cmath>
 
@@ -285,7 +285,7 @@ player_wait_for_decoder(struct player *player)
 	player_unlock(pc);
 
 	/* call syncPlaylistWithQueue() in the main thread */
-	event_pipe_emit(PIPE_EVENT_PLAYLIST);
+	GlobalEvents::Emit(GlobalEvents::PLAYLIST);
 
 	return true;
 }
@@ -665,7 +665,7 @@ update_song_tag(struct song *song, const struct tag *new_tag)
 
 	/* the main thread will update the playlist version when he
 	   receives this event */
-	event_pipe_emit(PIPE_EVENT_TAG);
+	GlobalEvents::Emit(GlobalEvents::TAG);
 
 	/* notify all clients that the tag of the current song has
 	   changed */
@@ -909,7 +909,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 		player_dc_stop(&player);
 		player_command_finished(pc);
 		music_pipe_free(player.pipe);
-		event_pipe_emit(PIPE_EVENT_PLAYLIST);
+		GlobalEvents::Emit(GlobalEvents::PLAYLIST);
 		player_lock(pc);
 		return;
 	}
@@ -1086,7 +1086,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 
 	player_unlock(pc);
 
-	event_pipe_emit(PIPE_EVENT_PLAYLIST);
+	GlobalEvents::Emit(GlobalEvents::PLAYLIST);
 
 	player_lock(pc);
 }

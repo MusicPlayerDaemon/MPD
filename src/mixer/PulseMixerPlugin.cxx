@@ -22,7 +22,7 @@
 #include "mixer_api.h"
 #include "output/pulse_output_plugin.h"
 #include "conf.h"
-#include "EventPipe.hxx"
+#include "GlobalEvents.hxx"
 
 #include <glib.h>
 
@@ -66,7 +66,7 @@ pulse_mixer_offline(struct pulse_mixer *pm)
 
 	pm->online = false;
 
-	event_pipe_emit(PIPE_EVENT_MIXER);
+	GlobalEvents::Emit(GlobalEvents::MIXER);
 }
 
 /**
@@ -90,7 +90,7 @@ pulse_mixer_volume_cb(G_GNUC_UNUSED pa_context *context, const pa_sink_input_inf
 	pm->online = true;
 	pm->volume = i->volume;
 
-	event_pipe_emit(PIPE_EVENT_MIXER);
+	GlobalEvents::Emit(GlobalEvents::MIXER);
 }
 
 static void

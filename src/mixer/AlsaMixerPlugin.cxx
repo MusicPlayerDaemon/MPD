@@ -20,7 +20,7 @@
 #include "config.h"
 #include "mixer_api.h"
 #include "output_api.h"
-#include "EventPipe.hxx"
+#include "GlobalEvents.hxx"
 
 #include <glib.h>
 #include <alsa/asoundlib.h>
@@ -211,7 +211,7 @@ static int
 alsa_mixer_elem_callback(G_GNUC_UNUSED snd_mixer_elem_t *elem, unsigned mask)
 {
 	if (mask & SND_CTL_EVENT_MASK_VALUE)
-		event_pipe_emit(PIPE_EVENT_MIXER);
+		GlobalEvents::Emit(GlobalEvents::MIXER);
 
 	return 0;
 }

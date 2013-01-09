@@ -52,7 +52,7 @@ win32_main(int argc, char *argv[]);
  * When running as a service reports to service control manager
  * that our service is started.
  * When running as a console application enables console handler that will
- * trigger PIPE_EVENT_SHUTDOWN when user closes console window
+ * trigger GlobalEvents::SHUTDOWN when user closes console window
  * or presses Ctrl+C.
  * This function should be called just before entering main loop.
  */
