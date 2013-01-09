@@ -36,7 +36,7 @@ extern "C" {
 
 enum replay_gain_mode replay_gain_mode = REPLAY_GAIN_OFF;
 
-const bool DEFAULT_REPLAYGAIN_LIMIT = true;
+static constexpr bool DEFAULT_REPLAYGAIN_LIMIT = true;
 
 float replay_gain_preamp = 1.0;
 float replay_gain_missing_preamp = 1.0;
