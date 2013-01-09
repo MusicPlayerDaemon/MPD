@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "EventPipe.hxx"
+#include "thread/Mutex.hxx"
 #include "fd_util.h"
 #include "mpd_error.h"
 
@@ -41,7 +42,7 @@
 static int event_pipe[2];
 static GIOChannel *event_channel;
 static guint event_pipe_source_id;
-static GMutex *event_pipe_mutex;
+static Mutex event_pipe_mutex;
 static bool pipe_events[PIPE_EVENT_MAX];
 static event_pipe_callback_t event_pipe_callbacks[PIPE_EVENT_MAX];
 
@@ -72,10 +73,10 @@ main_notify_event(G_GNUC_UNUSED GIOChannel *source,
 		MPD_ERROR("error reading from pipe: %s", error->message);
 
 	bool events[PIPE_EVENT_MAX];
-	g_mutex_lock(event_pipe_mutex);
+	event_pipe_mutex.lock();
 	memcpy(events, pipe_events, sizeof(events));
 	memset(pipe_events, 0, sizeof(pipe_events));
-	g_mutex_unlock(event_pipe_mutex);
+	event_pipe_mutex.unlock();
 
 	for (unsigned i = 0; i < PIPE_EVENT_MAX; ++i)
 		if (events[i])
@@ -106,14 +107,10 @@ void event_pipe_init(void)
 					      main_notify_event, NULL);
 
 	event_channel = channel;
-
-	event_pipe_mutex = g_mutex_new();
 }
 
 void event_pipe_deinit(void)
 {
-	g_mutex_free(event_pipe_mutex);
-
 	g_source_remove(event_pipe_source_id);
 	g_io_channel_unref(event_channel);
 
@@ -139,15 +136,15 @@ void event_pipe_emit(enum pipe_event event)
 
 	assert((unsigned)event < PIPE_EVENT_MAX);
 
-	g_mutex_lock(event_pipe_mutex);
+	event_pipe_mutex.lock();
 	if (pipe_events[event]) {
 		/* already set: don't write */
-		g_mutex_unlock(event_pipe_mutex);
+		event_pipe_mutex.unlock();
 		return;
 	}
 
 	pipe_events[event] = true;
-	g_mutex_unlock(event_pipe_mutex);
+	event_pipe_mutex.unlock();
 
 	w = write(event_pipe[1], "", 1);
 	if (w < 0 && errno != EAGAIN && errno != EINTR)
