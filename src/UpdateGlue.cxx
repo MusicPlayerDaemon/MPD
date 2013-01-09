@@ -25,9 +25,9 @@
 #include "Mapper.hxx"
 #include "DatabaseSimple.hxx"
 #include "Idle.hxx"
+#include "EventPipe.hxx"
 
 extern "C" {
-#include "event_pipe.h"
 #include "stats.h"
 }
 

@@ -18,11 +18,15 @@
  */
 
 #include "config.h"
+
+extern "C" {
 #include "mixer_control.h"
 #include "mixer_list.h"
 #include "filter_registry.h"
+}
+
 #include "pcm_volume.h"
-#include "event_pipe.h"
+#include "EventPipe.hxx"
 
 #include <glib.h>
 

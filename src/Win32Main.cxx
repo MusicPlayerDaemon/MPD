@@ -23,10 +23,7 @@
 #ifdef WIN32
 
 #include "mpd_error.h"
-
-extern "C" {
-#include "event_pipe.h"
-}
+#include "EventPipe.hxx"
 
 #include <glib.h>
 

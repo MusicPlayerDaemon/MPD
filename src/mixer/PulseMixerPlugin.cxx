@@ -22,7 +22,7 @@
 #include "mixer_api.h"
 #include "output/pulse_output_plugin.h"
 #include "conf.h"
-#include "event_pipe.h"
+#include "EventPipe.hxx"
 
 #include <glib.h>
 

@@ -24,7 +24,7 @@
 
 #include "Log.hxx"
 #include "Main.hxx"
-#include "event_pipe.h"
+#include "EventPipe.hxx"
 #include "mpd_error.h"
 
 #include <glib.h>

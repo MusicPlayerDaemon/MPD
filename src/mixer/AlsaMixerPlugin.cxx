@@ -20,7 +20,7 @@
 #include "config.h"
 #include "mixer_api.h"
 #include "output_api.h"
-#include "event_pipe.h"
+#include "EventPipe.hxx"
 
 #include <glib.h>
 #include <alsa/asoundlib.h>

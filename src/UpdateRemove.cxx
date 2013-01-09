@@ -21,10 +21,7 @@
 #include "UpdateRemove.hxx"
 #include "Playlist.hxx"
 #include "Partition.hxx"
-
-extern "C" {
-#include "event_pipe.h"
-}
+#include "EventPipe.hxx"
 
 #include "song.h"
 #include "Main.hxx"

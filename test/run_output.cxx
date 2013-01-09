@@ -21,6 +21,7 @@
 #include "OutputControl.hxx"
 #include "conf.h"
 #include "Idle.hxx"
+#include "EventPipe.hxx"
 
 extern "C" {
 #include "output_plugin.h"
@@ -29,7 +30,6 @@ extern "C" {
 #include "audio_parser.h"
 #include "filter_registry.h"
 #include "pcm_convert.h"
-#include "event_pipe.h"
 }
 
 #include "PlayerControl.hxx"

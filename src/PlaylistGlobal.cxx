@@ -27,10 +27,7 @@
 #include "Playlist.hxx"
 #include "Main.hxx"
 #include "Partition.hxx"
-
-extern "C" {
-#include "event_pipe.h"
-}
+#include "EventPipe.hxx"
 
 static void
 playlist_tag_event(void)

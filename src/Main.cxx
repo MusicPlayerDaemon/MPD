@@ -43,6 +43,7 @@
 #include "Idle.hxx"
 #include "SignalHandlers.hxx"
 #include "Log.hxx"
+#include "EventPipe.hxx"
 
 extern "C" {
 #include "daemon.h"
@@ -55,7 +56,6 @@ extern "C" {
 #include "input_init.h"
 #include "playlist_list.h"
 #include "zeroconf.h"
-#include "event_pipe.h"
 }
 
 #include "mpd_error.h"

@@ -24,10 +24,7 @@
 
 #include "config.h"
 #include "Idle.hxx"
-
-extern "C" {
-#include "event_pipe.h"
-}
+#include "EventPipe.hxx"
 
 #include <assert.h>
 #include <glib.h>

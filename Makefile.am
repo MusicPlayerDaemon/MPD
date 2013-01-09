@@ -96,7 +96,6 @@ mpd_headers = \
 	src/mixer_api.h \
 	src/mixer_control.h \
 	src/mixer_list.h \
-	src/event_pipe.h \
 	src/mixer_plugin.h \
 	src/mixer_type.h \
 	src/mixer/software_mixer_plugin.h \
@@ -244,7 +243,7 @@ src_mpd_SOURCES = \
 	src/io_thread.c src/io_thread.h \
 	src/Main.cxx src/Main.hxx \
 	src/Win32Main.cxx \
-	src/EventPipe.cxx \
+	src/EventPipe.cxx src/EventPipe.hxx \
 	src/daemon.c \
 	src/AudioCompress/compress.c \
 	src/MusicBuffer.cxx src/MusicBuffer.hxx \

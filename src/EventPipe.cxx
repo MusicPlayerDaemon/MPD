@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "event_pipe.h"
+#include "EventPipe.hxx"
 #include "fd_util.h"
 #include "mpd_error.h"
 
