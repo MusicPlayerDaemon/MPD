@@ -22,10 +22,10 @@
 #include "input_plugin.h"
 #include "conf.h"
 #include "tag.h"
+#include "IcyMetaDataParser.hxx"
 
 extern "C" {
 #include "input_internal.h"
-#include "icy_metadata.h"
 }
 
 #include "IOThread.hxx"
@@ -106,7 +106,7 @@ struct input_curl {
 	char error[CURL_ERROR_SIZE];
 
 	/** parser for icy-metadata */
-	struct icy_metadata icy_metadata;
+	IcyMetaDataParser icy;
 
 	/** the stream name from the icy-name response header */
 	char *meta_name;
@@ -125,7 +125,6 @@ struct input_curl {
 		 tag(nullptr),
 		 postponed_error(nullptr) {
 		input_stream_init(&base, &input_plugin_curl, url, mutex, cond);
-		icy_clear(&icy_metadata);
 	}
 
 	~input_curl();
@@ -811,7 +810,7 @@ consume_buffer(struct buffer *buffer, size_t length)
 }
 
 static size_t
-read_from_buffer(struct icy_metadata *icy_metadata, GQueue *buffers,
+read_from_buffer(IcyMetaDataParser &icy, GQueue *buffers,
 		 void *dest0, size_t length)
 {
 	struct buffer *buffer = (struct buffer *)g_queue_pop_head(buffers);
@@ -827,7 +826,7 @@ read_from_buffer(struct icy_metadata *icy_metadata, GQueue *buffers,
 	while (true) {
 		size_t chunk;
 
-		chunk = icy_data(icy_metadata, length);
+		chunk = icy.Data(length);
 		if (chunk > 0) {
 			memcpy(dest, buffer->data + buffer->consumed,
 			       chunk);
@@ -843,8 +842,7 @@ read_from_buffer(struct icy_metadata *icy_metadata, GQueue *buffers,
 			assert(buffer != NULL);
 		}
 
-		chunk = icy_meta(icy_metadata, buffer->data + buffer->consumed,
-				 length);
+		chunk = icy.Meta(buffer->data + buffer->consumed, length);
 		if (chunk > 0) {
 			buffer = consume_buffer(buffer, chunk);
 
@@ -866,7 +864,7 @@ read_from_buffer(struct icy_metadata *icy_metadata, GQueue *buffers,
 static void
 copy_icy_tag(struct input_curl *c)
 {
-	struct tag *tag = icy_tag(&c->icy_metadata);
+	struct tag *tag = c->icy.ReadTag();
 
 	if (tag == NULL)
 		return;
@@ -908,7 +906,7 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size,
 		/* send buffer contents */
 
 		while (size > 0 && !g_queue_is_empty(c->buffers)) {
-			size_t copy = read_from_buffer(&c->icy_metadata, c->buffers,
+			size_t copy = read_from_buffer(c->icy, c->buffers,
 						       dest + nbytes, size);
 
 			nbytes += copy;
@@ -916,7 +914,7 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size,
 		}
 	} while (nbytes == 0);
 
-	if (icy_defined(&c->icy_metadata))
+	if (c->icy.IsDefined())
 		copy_icy_tag(c);
 
 	is->offset += (goffset)nbytes;
@@ -979,7 +977,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 
 	if (g_ascii_strcasecmp(name, "accept-ranges") == 0) {
 		/* a stream with icy-metadata is not seekable */
-		if (!icy_defined(&c->icy_metadata))
+		if (!c->icy.IsDefined())
 			c->base.seekable = true;
 	} else if (g_ascii_strcasecmp(name, "content-length") == 0) {
 		char buffer[64];
@@ -1010,7 +1008,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 		size_t icy_metaint;
 
 		if ((size_t)(end - header) >= sizeof(buffer) ||
-		    icy_defined(&c->icy_metadata))
+		    c->icy.IsDefined())
 			return size;
 
 		memcpy(buffer, value, end - value);
@@ -1020,7 +1018,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 		g_debug("icy-metaint=%zu", icy_metaint);
 
 		if (icy_metaint > 0) {
-			icy_start(&c->icy_metadata, icy_metaint);
+			c->icy.Start(icy_metaint);
 
 			/* a stream with icy-metadata is not
 			   seekable */

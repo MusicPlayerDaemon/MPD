@@ -88,7 +88,6 @@ mpd_headers = \
 	src/despotify_utils.h \
 	src/text_input_stream.h \
 	src/icy_server.h \
-	src/icy_metadata.h \
 	src/server_socket.h \
 	src/ls.h \
 	src/mixer_api.h \
@@ -733,7 +732,7 @@ INPUT_LIBS = \
 if ENABLE_CURL
 libinput_a_SOURCES += \
 	src/input/CurlInputPlugin.cxx src/input/CurlInputPlugin.hxx \
-	src/icy_metadata.c
+	src/IcyMetaDataParser.cxx src/IcyMetaDataParser.hxx
 endif
 
 if ENABLE_SOUP

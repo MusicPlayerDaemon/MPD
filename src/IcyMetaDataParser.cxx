@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "icy_metadata.h"
+#include "IcyMetaDataParser.hxx"
 #include "tag.h"
 
 #include <glib.h>
@@ -30,46 +30,37 @@
 #define G_LOG_DOMAIN "icy_metadata"
 
 void
-icy_deinit(struct icy_metadata *im)
+IcyMetaDataParser::Reset()
 {
-	if (!icy_defined(im))
+	if (!IsDefined())
 		return;
 
-	if (im->data_rest == 0 && im->meta_size > 0)
-		g_free(im->meta_data);
+	if (data_rest == 0 && meta_size > 0)
+		g_free(meta_data);
 
-	if (im->tag != NULL)
-		tag_free(im->tag);
-}
+	if (tag != nullptr)
+		tag_free(tag);
 
-void
-icy_reset(struct icy_metadata *im)
-{
-	if (!icy_defined(im))
-		return;
-
-	icy_deinit(im);
-
-	im->data_rest = im->data_size;
-	im->meta_size = 0;
+	data_rest = data_size;
+	meta_size = 0;
 }
 
 size_t
-icy_data(struct icy_metadata *im, size_t length)
+IcyMetaDataParser::Data(size_t length)
 {
 	assert(length > 0);
 
-	if (!icy_defined(im))
+	if (!IsDefined())
 		return length;
 
-	if (im->data_rest == 0)
+	if (data_rest == 0)
 		return 0;
 
-	if (length >= im->data_rest) {
-		length = im->data_rest;
-		im->data_rest = 0;
+	if (length >= data_rest) {
+		length = data_rest;
+		data_rest = 0;
 	} else
-		im->data_rest -= length;
+		data_rest -= length;
 
 	return length;
 }
@@ -94,7 +85,7 @@ icy_parse_tag_item(struct tag *tag, const char *item)
 {
 	gchar **p = g_strsplit(item, "=", 0);
 
-	if (p[0] != NULL && p[1] != NULL) {
+	if (p[0] != nullptr && p[1] != nullptr) {
 		if (strcmp(p[0], "StreamTitle") == 0)
 			icy_add_item(tag, TAG_TITLE, p[1]);
 		else
@@ -110,7 +101,7 @@ icy_parse_tag(const char *p)
 	struct tag *tag = tag_new();
 	gchar **items = g_strsplit(p, ";", 0);
 
-	for (unsigned i = 0; items[i] != NULL; ++i)
+	for (unsigned i = 0; items[i] != nullptr; ++i)
 		icy_parse_tag_item(tag, items[i]);
 
 	g_strfreev(items);
@@ -119,21 +110,21 @@ icy_parse_tag(const char *p)
 }
 
 size_t
-icy_meta(struct icy_metadata *im, const void *data, size_t length)
+IcyMetaDataParser::Meta(const void *data, size_t length)
 {
-	const unsigned char *p = data;
+	const unsigned char *p = (const unsigned char *)data;
 
-	assert(icy_defined(im));
-	assert(im->data_rest == 0);
+	assert(IsDefined());
+	assert(data_rest == 0);
 	assert(length > 0);
 
-	if (im->meta_size == 0) {
+	if (meta_size == 0) {
 		/* read meta_size from the first byte of a meta
 		   block */
-		im->meta_size = *p++ * 16;
-		if (im->meta_size == 0) {
+		meta_size = *p++ * 16;
+		if (meta_size == 0) {
 			/* special case: no metadata */
-			im->data_rest = im->data_size;
+			data_rest = data_size;
 			return 1;
 		}
 
@@ -143,39 +134,39 @@ icy_meta(struct icy_metadata *im, const void *data, size_t length)
 
 		/* initialize metadata reader, allocate enough
 		   memory (+1 for the null terminator) */
-		im->meta_position = 0;
-		im->meta_data = g_malloc(im->meta_size + 1);
+		meta_position = 0;
+		meta_data = (char *)g_malloc(meta_size + 1);
 	}
 
-	assert(im->meta_position < im->meta_size);
+	assert(meta_position < meta_size);
 
-	if (length > im->meta_size - im->meta_position)
-		length = im->meta_size - im->meta_position;
+	if (length > meta_size - meta_position)
+		length = meta_size - meta_position;
 
-	memcpy(im->meta_data + im->meta_position, p, length);
-	im->meta_position += length;
+	memcpy(meta_data + meta_position, p, length);
+	meta_position += length;
 
 	if (p != data)
 		/* re-add the first byte (which contained meta_size) */
 		++length;
 
-	if (im->meta_position == im->meta_size) {
+	if (meta_position == meta_size) {
 		/* null-terminate the string */
 
-		im->meta_data[im->meta_size] = 0;
+		meta_data[meta_size] = 0;
 
 		/* parse */
 
-		if (im->tag != NULL)
-			tag_free(im->tag);
+		if (tag != nullptr)
+			tag_free(tag);
 
-		im->tag = icy_parse_tag(im->meta_data);
-		g_free(im->meta_data);
+		tag = icy_parse_tag(meta_data);
+		g_free(meta_data);
 
 		/* change back to normal data mode */
 
-		im->meta_size = 0;
-		im->data_rest = im->data_size;
+		meta_size = 0;
+		data_rest = data_size;
 	}
 
 	return length;
