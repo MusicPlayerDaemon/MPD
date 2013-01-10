@@ -98,8 +98,6 @@ enum {
 GThread *main_task;
 GMainLoop *main_loop;
 
-GCond *main_cond;
-
 Partition *global_partition;
 
 static bool
@@ -404,7 +402,6 @@ int mpd_main(int argc, char *argv[])
 
 	main_task = g_thread_self();
 	main_loop = g_main_loop_new(NULL, FALSE);
-	main_cond = g_cond_new();
 
 	GlobalEvents::Initialize();
 	GlobalEvents::Register(GlobalEvents::IDLE, idle_event_emitted);
@@ -536,7 +533,6 @@ int mpd_main(int argc, char *argv[])
 	sticker_global_finish();
 #endif
 
-	g_cond_free(main_cond);
 	GlobalEvents::Deinitialize();
 
 	playlist_list_global_finish();

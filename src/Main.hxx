@@ -26,8 +26,6 @@ extern GThread *main_task;
 
 extern GMainLoop *main_loop;
 
-extern GCond *main_cond;
-
 extern struct Partition *global_partition;
 
 /**

@@ -76,7 +76,7 @@ static void
 player_command_wait_locked(struct player_control *pc)
 {
 	while (pc->command != PLAYER_COMMAND_NONE)
-		g_cond_wait(main_cond, pc->mutex);
+		g_cond_wait(pc->cond, pc->mutex);
 }
 
 static void
