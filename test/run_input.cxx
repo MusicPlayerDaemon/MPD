@@ -23,10 +23,10 @@
 #include "tag.h"
 #include "conf.h"
 #include "input_stream.h"
+#include "InputInit.hxx"
 
 extern "C" {
 #include "io_thread.h"
-#include "input_init.h"
 
 #ifdef ENABLE_ARCHIVE
 #include "archive_list.h"

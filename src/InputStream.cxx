@@ -19,10 +19,13 @@
 
 #include "config.h"
 #include "input_stream.h"
-#include "input_registry.h"
+#include "InputRegistry.hxx"
 #include "input_plugin.h"
+
+extern "C" {
 #include "input/rewind_input_plugin.h"
 #include "uri.h"
+}
 
 #include <glib.h>
 #include <assert.h>
@@ -172,7 +175,7 @@ input_stream_lock_tag(struct input_stream *is)
 	assert(is->plugin != NULL);
 
 	if (is->plugin->tag == NULL)
-		return false;
+		return nullptr;
 
 	if (is->mutex == NULL)
 		/* no locking */

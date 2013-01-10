@@ -78,9 +78,7 @@ mpd_headers = \
 	src/gcc.h \
 	src/decoder_list.h \
 	src/decoder/pcm_decoder_plugin.h \
-	src/input_init.h \
 	src/input_plugin.h \
-	src/input_registry.h \
 	src/input_stream.h \
 	src/input/file_input_plugin.h \
 	src/input/ffmpeg_input_plugin.h \
@@ -708,9 +706,9 @@ endif
 #
 
 libinput_a_SOURCES = \
-	src/input_init.c \
-	src/input_registry.c \
-	src/input_stream.c \
+	src/InputInit.cxx src/InputInit.hxx \
+	src/InputRegistry.cxx src/InputRegistry.hxx \
+	src/InputStream.cxx \
 	src/input_internal.c src/input_internal.h \
 	src/input/rewind_input_plugin.c \
 	src/input/file_input_plugin.c
@@ -1078,7 +1076,7 @@ test_dump_text_file_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(GLIB_LIBS)
-test_dump_text_file_SOURCES = test/dump_text_file.c \
+test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	test/stdbin.h \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
@@ -1122,7 +1120,7 @@ test_run_decoder_LDADD = \
 	$(TAG_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
-test_run_decoder_SOURCES = test/run_decoder.c \
+test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/stdbin.h \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c \
@@ -1145,7 +1143,7 @@ test_read_tags_LDADD = \
 	$(TAG_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
-test_read_tags_SOURCES = test/read_tags.c \
+test_read_tags_SOURCES = test/read_tags.cxx \
 	src/io_thread.c src/io_thread.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/tag_handler.c \

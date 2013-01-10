@@ -44,6 +44,7 @@
 #include "SignalHandlers.hxx"
 #include "Log.hxx"
 #include "GlobalEvents.hxx"
+#include "InputInit.hxx"
 
 extern "C" {
 #include "daemon.h"
@@ -53,7 +54,6 @@ extern "C" {
 #include "audio_config.h"
 #include "pcm_resample.h"
 #include "decoder_list.h"
-#include "input_init.h"
 #include "playlist_list.h"
 #include "zeroconf.h"
 }

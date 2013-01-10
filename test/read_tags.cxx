@@ -18,13 +18,19 @@
  */
 
 #include "config.h"
+extern "C" {
 #include "io_thread.h"
 #include "decoder_list.h"
+}
 #include "decoder_api.h"
-#include "input_init.h"
+#include "InputInit.hxx"
 #include "input_stream.h"
 #include "audio_format.h"
-#include "stdbin.h"
+extern "C" {
+#include "tag_ape.h"
+#include "tag_id3.h"
+}
+#include "tag_handler.h"
 
 #include <glib.h>
 
@@ -32,39 +38,16 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-static void
-my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
-	    const gchar *message, G_GNUC_UNUSED gpointer user_data)
-{
-	if (log_domain != NULL)
-		g_printerr("%s: %s\n", log_domain, message);
-	else
-		g_printerr("%s\n", message);
-}
-
-struct decoder {
-	const char *uri;
-
-	const struct decoder_plugin *plugin;
-
-	bool initialized;
-};
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
 
 void
-decoder_initialized(struct decoder *decoder,
-		    const struct audio_format *audio_format,
+decoder_initialized(G_GNUC_UNUSED struct decoder *decoder,
+		    G_GNUC_UNUSED const struct audio_format *audio_format,
 		    G_GNUC_UNUSED bool seekable,
 		    G_GNUC_UNUSED float total_time)
 {
-	struct audio_format_string af_string;
-
-	assert(!decoder->initialized);
-	assert(audio_format_valid(audio_format));
-
-	g_printerr("audio_format=%s\n",
-		   audio_format_to_string(audio_format, &af_string));
-
-	decoder->initialized = true;
 }
 
 enum decoder_command
@@ -104,7 +87,7 @@ enum decoder_command
 decoder_data(G_GNUC_UNUSED struct decoder *decoder,
 	     G_GNUC_UNUSED struct input_stream *is,
 	     const void *data, size_t datalen,
-	     G_GNUC_UNUSED uint16_t kbit_rate)
+	     G_GNUC_UNUSED uint16_t bit_rate)
 {
 	G_GNUC_UNUSED ssize_t nbytes = write(1, data, datalen);
 	return DECODE_COMMAND_NONE;
@@ -120,18 +103,8 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder,
 
 void
 decoder_replay_gain(G_GNUC_UNUSED struct decoder *decoder,
-		    const struct replay_gain_info *replay_gain_info)
+		    G_GNUC_UNUSED const struct replay_gain_info *replay_gain_info)
 {
-	const struct replay_gain_tuple *tuple =
-		&replay_gain_info->tuples[REPLAY_GAIN_ALBUM];
-	if (replay_gain_tuple_defined(tuple))
-		g_printerr("replay_gain[album]: gain=%f peak=%f\n",
-			   tuple->gain, tuple->peak);
-
-	tuple = &replay_gain_info->tuples[REPLAY_GAIN_TRACK];
-	if (replay_gain_tuple_defined(tuple))
-		g_printerr("replay_gain[track]: gain=%f peak=%f\n",
-			   tuple->gain, tuple->peak);
 }
 
 void
@@ -142,23 +115,53 @@ decoder_mixramp(G_GNUC_UNUSED struct decoder *decoder,
 	g_free(mixramp_end);
 }
 
+static bool empty = true;
+
+static void
+print_duration(unsigned seconds, G_GNUC_UNUSED void *ctx)
+{
+	g_print("duration=%d\n", seconds);
+}
+
+static void
+print_tag(enum tag_type type, const char *value, G_GNUC_UNUSED void *ctx)
+{
+	g_print("[%s]=%s\n", tag_item_names[type], value);
+	empty = false;
+}
+
+static void
+print_pair(const char *name, const char *value, G_GNUC_UNUSED void *ctx)
+{
+	g_print("\"%s\"=%s\n", name, value);
+}
+
+static const struct tag_handler print_handler = {
+	print_duration,
+	print_tag,
+	print_pair,
+};
+
 int main(int argc, char **argv)
 {
 	GError *error = NULL;
-	const char *decoder_name;
-	struct decoder decoder;
+	const char *decoder_name, *path;
+	const struct decoder_plugin *plugin;
+
+#ifdef HAVE_LOCALE_H
+	/* initialize locale */
+	setlocale(LC_CTYPE,"");
+#endif
 
 	if (argc != 3) {
-		g_printerr("Usage: run_decoder DECODER URI >OUT\n");
+		g_printerr("Usage: read_tags DECODER FILE\n");
 		return 1;
 	}
 
 	decoder_name = argv[1];
-	decoder.uri = argv[2];
+	path = argv[2];
 
 	g_thread_init(NULL);
-	g_log_set_default_handler(my_log_func, NULL);
-
 	io_thread_init();
 	if (!io_thread_start(&error)) {
 		g_warning("%s", error->message);
@@ -174,51 +177,68 @@ int main(int argc, char **argv)
 
 	decoder_plugin_init_all();
 
-	decoder.plugin = decoder_plugin_from_name(decoder_name);
-	if (decoder.plugin == NULL) {
+	plugin = decoder_plugin_from_name(decoder_name);
+	if (plugin == NULL) {
 		g_printerr("No such decoder: %s\n", decoder_name);
 		return 1;
 	}
 
-	decoder.initialized = false;
-
-	if (decoder.plugin->file_decode != NULL) {
-		decoder_plugin_file_decode(decoder.plugin, &decoder,
-					   decoder.uri);
-	} else if (decoder.plugin->stream_decode != NULL) {
+	bool success = decoder_plugin_scan_file(plugin, path,
+						&print_handler, NULL);
+	if (!success && plugin->scan_stream != NULL) {
 		GMutex *mutex = g_mutex_new();
 		GCond *cond = g_cond_new();
 
 		struct input_stream *is =
-			input_stream_open(decoder.uri, mutex, cond, &error);
-		if (is == NULL) {
-			if (error != NULL) {
-				g_warning("%s", error->message);
-				g_error_free(error);
-			} else
-				g_printerr("input_stream_open() failed\n");
+			input_stream_open(path, mutex, cond, &error);
 
+		if (is == NULL) {
+			g_printerr("Failed to open %s: %s\n",
+				   path, error->message);
+			g_error_free(error);
 			return 1;
 		}
 
-		decoder_plugin_stream_decode(decoder.plugin, &decoder, is);
+		g_mutex_lock(mutex);
 
+		while (!is->ready) {
+			g_cond_wait(cond, mutex);
+			input_stream_update(is);
+		}
+
+		if (!input_stream_check(is, &error)) {
+			g_mutex_unlock(mutex);
+
+			g_printerr("Failed to read %s: %s\n",
+				   path, error->message);
+			g_error_free(error);
+
+			return EXIT_FAILURE;
+		}
+
+		g_mutex_unlock(mutex);
+
+		success = decoder_plugin_scan_stream(plugin, is,
+						     &print_handler, NULL);
 		input_stream_close(is);
 
 		g_cond_free(cond);
 		g_mutex_free(mutex);
-	} else {
-		g_printerr("Decoder plugin is not usable\n");
-		return 1;
 	}
 
 	decoder_plugin_deinit_all();
 	input_stream_global_finish();
 	io_thread_deinit();
 
-	if (!decoder.initialized) {
-		g_printerr("Decoding failed\n");
+	if (!success) {
+		g_printerr("Failed to read tags\n");
 		return 1;
+	}
+
+	if (empty) {
+		tag_ape_scan2(path, &print_handler, NULL);
+		if (empty)
+			tag_id3_scan(path, &print_handler, NULL);
 	}
 
 	return 0;

@@ -24,10 +24,10 @@
 #include "input_stream.h"
 #include "conf.h"
 #include "decoder_api.h"
+#include "InputInit.hxx"
 
 extern "C" {
 #include "io_thread.h"
-#include "input_init.h"
 #include "decoder_list.h"
 #include "playlist_list.h"
 #include "playlist_plugin.h"
