@@ -20,9 +20,7 @@
 #include "config.h"
 #include "decoder_api.h"
 #include "audio_check.h"
-#include "path.h"
 #include "utils.h"
-#include "tag_table.h"
 #include "tag_handler.h"
 #include "tag_ape.h"
 
@@ -30,7 +28,6 @@
 #include <glib.h>
 
 #include <assert.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 
