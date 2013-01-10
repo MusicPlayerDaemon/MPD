@@ -20,7 +20,6 @@
 #include "config.h"
 #include "Log.hxx"
 #include "conf.h"
-#include "utils.h"
 #include "fd_util.h"
 #include "mpd_error.h"
 

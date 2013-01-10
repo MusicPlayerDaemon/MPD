@@ -20,7 +20,6 @@
 #include "config.h"
 #include "fifo_output_plugin.h"
 #include "output_api.h"
-#include "utils.h"
 #include "timer.h"
 #include "fd_util.h"
 #include "open.h"

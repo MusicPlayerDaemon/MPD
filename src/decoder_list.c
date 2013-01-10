@@ -20,7 +20,6 @@
 #include "config.h"
 #include "decoder_list.h"
 #include "decoder_plugin.h"
-#include "utils.h"
 #include "conf.h"
 #include "mpd_error.h"
 #include "decoder/pcm_decoder_plugin.h"
