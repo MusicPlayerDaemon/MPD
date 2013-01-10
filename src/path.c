@@ -102,7 +102,7 @@ void path_global_init(void)
 		 * However this is true only if <gstdio.h> helpers are used.
 		 * MPD uses regular <stdio.h> functions.
 		 * Those functions use encoding determined by GetACP(). */
-		char win_charset[13];
+		static char win_charset[13];
 		sprintf(win_charset, "cp%u", GetACP());
 		charset = win_charset;
 #endif
