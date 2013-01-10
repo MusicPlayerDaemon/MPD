@@ -96,9 +96,6 @@ struct input_curl {
 	/** the source id of #source */
 	guint source_id;
 
-	/** a linked list of all registered GPollFD objects */
-	GSList *fds;
-
 	/** list of buffers, where input_curl_writefunction() appends
 	    to, and input_curl_read() reads from them */
 	GQueue *buffers;
@@ -153,6 +150,7 @@ static struct {
 	 */
 	guint source_id;
 
+	/** a linked list of all registered GPollFD objects */
 	GSList *fds;
 
 	/**
