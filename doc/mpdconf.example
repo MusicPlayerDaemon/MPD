@@ -281,6 +281,16 @@ input {
 ##	sink		"remote_server_sink"	# optional
 #}
 #
+# An example of a winmm output (Windows multimedia API).
+#
+#audio_output {
+#	type		"winmm"
+##	device		"Digital Audio (S/PDIF) (High Definition Audio Device)" # optional
+#		or
+##	device		"0"		# optional
+##	mixer_type	"hardware"	# optional
+#}
+#
 ## Example "pipe" output:
 #
 #audio_output {
