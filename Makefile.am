@@ -242,7 +242,7 @@ src_mpd_SOURCES = \
 	src/Log.cxx src/Log.hxx \
 	src/ls.cxx \
 	src/io_error.h \
-	src/io_thread.c src/io_thread.h \
+	src/IOThread.cxx src/IOThread.hxx \
 	src/Main.cxx src/Main.hxx \
 	src/Win32Main.cxx \
 	src/GlobalEvents.cxx src/GlobalEvents.hxx \
@@ -1065,7 +1065,7 @@ test_run_input_LDADD = \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.c \
 	test/stdbin.h \
-	src/io_thread.c src/io_thread.h \
+	src/IOThread.cxx \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/uri.c \
@@ -1077,7 +1077,7 @@ test_dump_text_file_LDADD = \
 	$(GLIB_LIBS)
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	test/stdbin.h \
-	src/io_thread.c src/io_thread.h \
+	src/IOThread.cxx \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/text_input_stream.c src/fifo_buffer.c \
@@ -1095,7 +1095,7 @@ test_dump_playlist_LDADD = \
 	$(GLIB_LIBS)
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	$(DECODER_SRC) \
-	src/io_thread.c src/io_thread.h \
+	src/IOThread.cxx \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c\
 	src/uri.c \
 	src/Song.cxx src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
@@ -1121,7 +1121,7 @@ test_run_decoder_LDADD = \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/stdbin.h \
-	src/io_thread.c src/io_thread.h \
+	src/IOThread.cxx \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/tag_handler.c \
 	src/ReplayGainInfo.cxx \
@@ -1143,7 +1143,7 @@ test_read_tags_LDADD = \
 	libutil.a \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.cxx \
-	src/io_thread.c src/io_thread.h \
+	src/IOThread.cxx \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/tag_handler.c \
 	src/ReplayGainInfo.cxx \
@@ -1268,7 +1268,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/stdbin.h \
 	src/conf.c src/tokenizer.c src/utils.c src/string_util.c \
-	src/io_thread.c src/io_thread.h \
+	src/IOThread.cxx \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \

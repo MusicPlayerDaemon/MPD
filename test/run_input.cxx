@@ -24,10 +24,9 @@
 #include "conf.h"
 #include "input_stream.h"
 #include "InputInit.hxx"
+#include "IOThread.hxx"
 
 extern "C" {
-#include "io_thread.h"
-
 #ifdef ENABLE_ARCHIVE
 #include "archive_list.h"
 #endif

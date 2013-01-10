@@ -26,9 +26,9 @@
 extern "C" {
 #include "input_internal.h"
 #include "icy_metadata.h"
-#include "io_thread.h"
 }
 
+#include "IOThread.hxx"
 #include "glib_compat.h"
 
 #include <assert.h>

@@ -23,9 +23,9 @@
 
 extern "C" {
 #include "input_internal.h"
-#include "io_thread.h"
 }
 
+#include "IOThread.hxx"
 #include "conf.h"
 
 extern "C" {

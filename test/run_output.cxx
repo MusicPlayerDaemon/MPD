@@ -22,11 +22,11 @@
 #include "conf.h"
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"
+#include "IOThread.hxx"
 
 extern "C" {
 #include "output_plugin.h"
 #include "output_internal.h"
-#include "io_thread.h"
 #include "audio_parser.h"
 #include "filter_registry.h"
 #include "pcm_convert.h"

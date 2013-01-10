@@ -18,13 +18,13 @@
  */
 
 #include "config.h"
+#include "IOThread.hxx"
 #include "InputInit.hxx"
 #include "input_stream.h"
 #include "conf.h"
 #include "stdbin.h"
 
 extern "C" {
-#include "io_thread.h"
 #include "text_input_stream.h"
 
 #ifdef ENABLE_ARCHIVE

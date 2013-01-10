@@ -25,9 +25,9 @@
 #include "conf.h"
 #include "decoder_api.h"
 #include "InputInit.hxx"
+#include "IOThread.hxx"
 
 extern "C" {
-#include "io_thread.h"
 #include "decoder_list.h"
 #include "playlist_list.h"
 #include "playlist_plugin.h"

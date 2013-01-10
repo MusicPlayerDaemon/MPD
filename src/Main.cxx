@@ -45,10 +45,10 @@
 #include "Log.hxx"
 #include "GlobalEvents.hxx"
 #include "InputInit.hxx"
+#include "IOThread.hxx"
 
 extern "C" {
 #include "daemon.h"
-#include "io_thread.h"
 #include "path.h"
 #include "stats.h"
 #include "audio_config.h"

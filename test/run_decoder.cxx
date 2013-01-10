@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
+#include "IOThread.hxx"
 extern "C" {
-#include "io_thread.h"
 #include "decoder_list.h"
 }
 #include "decoder_api.h"
