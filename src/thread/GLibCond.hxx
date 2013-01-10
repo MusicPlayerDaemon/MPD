@@ -27,63 +27,61 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MPD_THREAD_GLIB_MUTEX_HXX
-#define MPD_THREAD_GLIB_MUTEX_HXX
+#ifndef MPD_THREAD_GLIB_COND_HXX
+#define MPD_THREAD_GLIB_COND_HXX
 
-#include <glib.h>
+#include "GLibMutex.hxx"
 
 /**
- * A wrapper for GMutex.
+ * A wrapper for GCond.
  */
-class GLibMutex {
-	friend class GLibCond;
-
+class GLibCond {
 #if GLIB_CHECK_VERSION(2,32,0)
-	GMutex mutex;
+	GCond cond;
 #else
-	GMutex *mutex;
+	GCond *cond;
 #endif
 
 public:
-	GLibMutex() {
+	GLibCond() {
 #if GLIB_CHECK_VERSION(2,32,0)
-		g_mutex_init(&mutex);
+		g_cond_init(&cond);
 #else
-		mutex = g_mutex_new();
+		cond = g_cond_new();
 #endif
 	}
 
-	~GLibMutex() {
+	~GLibCond() {
 #if GLIB_CHECK_VERSION(2,32,0)
-		g_mutex_clear(&mutex);
+		g_cond_clear(&cond);
 #else
-		g_mutex_free(mutex);
+		g_cond_free(cond);
 #endif
 	}
 
-	GLibMutex(const GLibMutex &other) = delete;
-	GLibMutex &operator=(const GLibMutex &other) = delete;
+	GLibCond(const GLibCond &other) = delete;
+	GLibCond &operator=(const GLibCond &other) = delete;
 
 private:
-	GMutex *GetNative() {
+	GCond *GetNative() {
 #if GLIB_CHECK_VERSION(2,32,0)
-		return &mutex;
+		return &cond;
 #else
-		return mutex;
+		return cond;
 #endif
 	}
 
 public:
-	void lock() {
-		g_mutex_lock(GetNative());
+	void signal() {
+		g_cond_signal(GetNative());
 	}
 
-	bool try_lock() {
-		return g_mutex_trylock(GetNative());
+	void broadcast() {
+		g_cond_broadcast(GetNative());
 	}
 
-	void unlock() {
-		g_mutex_lock(GetNative());
+	void wait(GLibMutex &mutex) {
+		g_cond_wait(GetNative(), mutex.GetNative());
 	}
 };
 

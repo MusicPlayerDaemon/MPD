@@ -36,6 +36,8 @@
  * Low-level wrapper for a pthread_mutex_t.
  */
 class PosixMutex {
+	friend class PosixCond;
+
 	pthread_mutex_t mutex;
 
 public:

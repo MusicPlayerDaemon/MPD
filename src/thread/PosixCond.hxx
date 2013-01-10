@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2009-2013 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,63 +27,33 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MPD_THREAD_GLIB_MUTEX_HXX
-#define MPD_THREAD_GLIB_MUTEX_HXX
+#ifndef MPD_THREAD_POSIX_COND_HXX
+#define MPD_THREAD_POSIX_COND_HXX
 
-#include <glib.h>
+#include "PosixMutex.hxx"
 
 /**
- * A wrapper for GMutex.
+ * Low-level wrapper for a pthread_cond_t.
  */
-class GLibMutex {
-	friend class GLibCond;
-
-#if GLIB_CHECK_VERSION(2,32,0)
-	GMutex mutex;
-#else
-	GMutex *mutex;
-#endif
+class PosixCond {
+	pthread_cond_t cond;
 
 public:
-	GLibMutex() {
-#if GLIB_CHECK_VERSION(2,32,0)
-		g_mutex_init(&mutex);
-#else
-		mutex = g_mutex_new();
-#endif
+	constexpr PosixCond():cond(PTHREAD_COND_INITIALIZER) {}
+
+	PosixCond(const PosixCond &other) = delete;
+	PosixCond &operator=(const PosixCond &other) = delete;
+
+	void signal() {
+		pthread_cond_signal(&cond);
 	}
 
-	~GLibMutex() {
-#if GLIB_CHECK_VERSION(2,32,0)
-		g_mutex_clear(&mutex);
-#else
-		g_mutex_free(mutex);
-#endif
+	void broadcast() {
+		pthread_cond_broadcast(&cond);
 	}
 
-	GLibMutex(const GLibMutex &other) = delete;
-	GLibMutex &operator=(const GLibMutex &other) = delete;
-
-private:
-	GMutex *GetNative() {
-#if GLIB_CHECK_VERSION(2,32,0)
-		return &mutex;
-#else
-		return mutex;
-#endif
-	}
-
-public:
-	void lock() {
-		g_mutex_lock(GetNative());
-	}
-
-	bool try_lock() {
-		return g_mutex_trylock(GetNative());
-	}
-
-	void unlock() {
-		g_mutex_lock(GetNative());
+	void wait(PosixMutex &mutex) {
+		pthread_cond_wait(&cond, &mutex.mutex);
 	}
 };
 
