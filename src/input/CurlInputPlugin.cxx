@@ -85,7 +85,7 @@ struct input_curl {
 
 	/* some buffers which were passed to libcurl, which we have
 	   too free */
-	char *url, *range;
+	char *range;
 	struct curl_slist *request_headers;
 
 	/** the curl handles */
@@ -743,7 +743,6 @@ input_curl_free(struct input_curl *c)
 	if (c->postponed_error != NULL)
 		g_error_free(c->postponed_error);
 
-	g_free(c->url);
 	input_stream_deinit(&c->base);
 	g_free(c);
 }
@@ -1104,7 +1103,7 @@ input_curl_easy_init(struct input_curl *c, GError **error_r)
 		g_free(proxy_auth_str);
 	}
 
-	code = curl_easy_setopt(c->easy, CURLOPT_URL, c->url);
+	code = curl_easy_setopt(c->easy, CURLOPT_URL, c->base.uri);
 	if (code != CURLE_OK) {
 		g_set_error(error_r, curl_quark(), code,
 			    "curl_easy_setopt() failed: %s",
@@ -1244,7 +1243,6 @@ input_curl_open(const char *url, GMutex *mutex, GCond *cond,
 	input_stream_init(&c->base, &input_plugin_curl, url,
 			  mutex, cond);
 
-	c->url = g_strdup(url);
 	c->buffers = g_queue_new();
 
 	icy_clear(&c->icy_metadata);
