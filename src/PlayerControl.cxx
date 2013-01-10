@@ -61,15 +61,15 @@ player_control::~player_control()
 }
 
 void
-player_wait_decoder(struct player_control *pc, struct decoder_control *dc)
+player_wait_decoder(gcc_unused struct player_control *pc,
+		    struct decoder_control *dc)
 {
 	assert(pc != NULL);
 	assert(dc != NULL);
-	assert(dc->client_cond == pc->cond);
 
 	/* during this function, the decoder lock is held, because
 	   we're waiting for the decoder thread */
-	g_cond_wait(pc->cond, dc->mutex);
+	g_cond_wait(dc->client_cond, dc->mutex);
 }
 
 static void

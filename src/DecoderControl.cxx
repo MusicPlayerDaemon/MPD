@@ -28,7 +28,7 @@
 #define G_LOG_DOMAIN "decoder_control"
 
 struct decoder_control *
-dc_new(GCond *client_cond)
+dc_new()
 {
 	struct decoder_control *dc = g_new(struct decoder_control, 1);
 
@@ -36,7 +36,7 @@ dc_new(GCond *client_cond)
 
 	dc->mutex = g_mutex_new();
 	dc->cond = g_cond_new();
-	dc->client_cond = client_cond;
+	dc->client_cond = g_cond_new();
 
 	dc->state = DECODE_STATE_STOP;
 	dc->command = DECODE_COMMAND_NONE;
@@ -60,6 +60,7 @@ dc_free(struct decoder_control *dc)
 	if (dc->song != NULL)
 		song_free(dc->song);
 
+	g_cond_free(dc->client_cond);
 	g_cond_free(dc->cond);
 	g_mutex_free(dc->mutex);
 	g_free(dc->mixramp_start);

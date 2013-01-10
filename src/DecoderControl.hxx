@@ -133,7 +133,7 @@ struct decoder_control {
 
 G_GNUC_MALLOC
 struct decoder_control *
-dc_new(GCond *client_cond);
+dc_new();
 
 void
 dc_free(struct decoder_control *dc);
