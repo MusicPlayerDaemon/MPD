@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,9 +18,13 @@
  */
 
 #include "config.h"
+#include "WavpackDecoderPlugin.hxx"
 #include "decoder_api.h"
+
+extern "C" {
 #include "audio_check.h"
-#include "utils.h"
+}
+
 #include "tag_handler.h"
 #include "tag_ape.h"
 
@@ -50,18 +54,18 @@ typedef void (*format_samples_t)(
 static void
 format_samples_int(int bytes_per_sample, void *buffer, uint32_t count)
 {
-	int32_t *src = buffer;
+	int32_t *src = (int32_t *)buffer;
 
 	switch (bytes_per_sample) {
 	case 1: {
-		int8_t *dst = buffer;
+		int8_t *dst = (int8_t *)buffer;
 		/*
 		 * The asserts like the following one are because we do the
 		 * formatting of samples within a single buffer. The size
 		 * of the output samples never can be greater than the size
 		 * of the input ones. Otherwise we would have an overflow.
 		 */
-		assert_static(sizeof(*dst) <= sizeof(*src));
+		static_assert(sizeof(*dst) <= sizeof(*src), "Wrong size");
 
 		/* pass through and align 8-bit samples */
 		while (count--) {
@@ -70,8 +74,8 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t count)
 		break;
 	}
 	case 2: {
-		uint16_t *dst = buffer;
-		assert_static(sizeof(*dst) <= sizeof(*src));
+		uint16_t *dst = (uint16_t *)buffer;
+		static_assert(sizeof(*dst) <= sizeof(*src), "Wrong size");
 
 		/* pass through and align 16-bit samples */
 		while (count--) {
@@ -94,7 +98,7 @@ static void
 format_samples_float(G_GNUC_UNUSED int bytes_per_sample, void *buffer,
 		     uint32_t count)
 {
-	float *p = buffer;
+	float *p = (float *)buffer;
 
 	while (count--) {
 		*p /= (1 << 23);
@@ -356,7 +360,7 @@ static struct wavpack_input *
 wpin(void *id)
 {
 	assert(id);
-	return id;
+	return (struct wavpack_input *)id;
 }
 
 static int32_t
@@ -438,14 +442,14 @@ wavpack_input_can_seek(void *id)
 }
 
 static WavpackStreamReader mpd_is_reader = {
-	.read_bytes = wavpack_input_read_bytes,
-	.get_pos = wavpack_input_get_pos,
-	.set_pos_abs = wavpack_input_set_pos_abs,
-	.set_pos_rel = wavpack_input_set_pos_rel,
-	.push_back_byte = wavpack_input_push_back_byte,
-	.get_length = wavpack_input_get_length,
-	.can_seek = wavpack_input_can_seek,
-	.write_bytes = NULL /* no need to write edited tags */
+	wavpack_input_read_bytes,
+	wavpack_input_get_pos,
+	wavpack_input_set_pos_abs,
+	wavpack_input_set_pos_rel,
+	wavpack_input_push_back_byte,
+	wavpack_input_get_length,
+	wavpack_input_can_seek,
+	nullptr /* no need to write edited tags */
 };
 
 static void
@@ -472,7 +476,7 @@ wavpack_open_wvc(struct decoder *decoder, const char *uri,
 	 * single files. utf8url is not absolute file path :/
 	 */
 	if (uri == NULL)
-		return false;
+		return nullptr;
 
 	wvc_url = g_strconcat(uri, "c", NULL);
 	is_wvc = input_stream_open(wvc_url, mutex, cond, NULL);
@@ -584,10 +588,14 @@ static char const *const wavpack_mime_types[] = {
 };
 
 const struct decoder_plugin wavpack_decoder_plugin = {
-	.name = "wavpack",
-	.stream_decode = wavpack_streamdecode,
-	.file_decode = wavpack_filedecode,
-	.scan_file = wavpack_scan_file,
-	.suffixes = wavpack_suffixes,
-	.mime_types = wavpack_mime_types
+	"wavpack",
+	nullptr,
+	nullptr,
+	wavpack_streamdecode,
+	wavpack_filedecode,
+	wavpack_scan_file,
+	nullptr,
+	nullptr,
+	wavpack_suffixes,
+	wavpack_mime_types
 };

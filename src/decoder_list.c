@@ -30,6 +30,7 @@
 #include "decoder/OpusDecoderPlugin.h"
 #include "decoder/VorbisDecoderPlugin.h"
 #include "decoder/AdPlugDecoderPlugin.h"
+#include "decoder/WavpackDecoderPlugin.hxx"
 
 #include <glib.h>
 
@@ -42,7 +43,6 @@ extern const struct decoder_plugin audiofile_decoder_plugin;
 extern const struct decoder_plugin mp4ff_decoder_plugin;
 extern const struct decoder_plugin faad_decoder_plugin;
 extern const struct decoder_plugin mpcdec_decoder_plugin;
-extern const struct decoder_plugin wavpack_decoder_plugin;
 extern const struct decoder_plugin modplug_decoder_plugin;
 extern const struct decoder_plugin mikmod_decoder_plugin;
 extern const struct decoder_plugin sidplay_decoder_plugin;

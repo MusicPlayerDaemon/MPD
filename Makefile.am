@@ -544,7 +544,9 @@ libdecoder_plugins_a_SOURCES += \
 endif
 
 if HAVE_WAVPACK
-libdecoder_plugins_a_SOURCES += src/decoder/wavpack_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += \
+	src/decoder/WavpackDecoderPlugin.cxx \
+	src/decoder/WavpackDecoderPlugin.hxx
 endif
 
 if HAVE_ADPLUG
