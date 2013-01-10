@@ -26,11 +26,11 @@
 #endif
 
 #ifdef ENABLE_CURL
-#include "input/curl_input_plugin.h"
+#include "input/CurlInputPlugin.hxx"
 #endif
 
 #ifdef ENABLE_SOUP
-#include "input/soup_input_plugin.h"
+#include "input/SoupInputPlugin.hxx"
 #endif
 
 #ifdef HAVE_FFMPEG

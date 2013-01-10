@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,14 +18,20 @@
  */
 
 #include "config.h"
-#include "input/soup_input_plugin.h"
-#include "input_internal.h"
+#include "SoupInputPlugin.hxx"
 #include "input_plugin.h"
+
+extern "C" {
+#include "input_internal.h"
 #include "io_thread.h"
+}
+
 #include "conf.h"
 
+extern "C" {
 #include <libsoup/soup-uri.h>
 #include <libsoup/soup-session-async.h>
+}
 
 #include <assert.h>
 #include <string.h>
@@ -156,7 +162,7 @@ static void
 input_soup_session_callback(G_GNUC_UNUSED SoupSession *session,
 			    SoupMessage *msg, gpointer user_data)
 {
-	struct input_soup *s = user_data;
+	struct input_soup *s = (struct input_soup *)user_data;
 
 	assert(msg == s->msg);
 	assert(!s->completed);
@@ -177,7 +183,7 @@ input_soup_session_callback(G_GNUC_UNUSED SoupSession *session,
 static void
 input_soup_got_headers(SoupMessage *msg, gpointer user_data)
 {
-	struct input_soup *s = user_data;
+	struct input_soup *s = (struct input_soup *)user_data;
 
 	g_mutex_lock(s->base.mutex);
 
@@ -199,7 +205,7 @@ input_soup_got_headers(SoupMessage *msg, gpointer user_data)
 static void
 input_soup_got_chunk(SoupMessage *msg, SoupBuffer *chunk, gpointer user_data)
 {
-	struct input_soup *s = user_data;
+	struct input_soup *s = (struct input_soup *)user_data;
 
 	assert(msg == s->msg);
 
@@ -220,7 +226,7 @@ input_soup_got_chunk(SoupMessage *msg, SoupBuffer *chunk, gpointer user_data)
 static void
 input_soup_got_body(G_GNUC_UNUSED SoupMessage *msg, gpointer user_data)
 {
-	struct input_soup *s = user_data;
+	struct input_soup *s = (struct input_soup *)user_data;
 
 	assert(msg == s->msg);
 
@@ -256,7 +262,7 @@ input_soup_wait_data(struct input_soup *s)
 static gpointer
 input_soup_queue(gpointer data)
 {
-	struct input_soup *s = data;
+	struct input_soup *s = (struct input_soup *)data;
 
 	soup_session_queue_message(soup_session, s->msg,
 				   input_soup_session_callback, s);
@@ -320,7 +326,7 @@ input_soup_open(const char *uri,
 static gpointer
 input_soup_cancel(gpointer data)
 {
-	struct input_soup *s = data;
+	struct input_soup *s = (struct input_soup *)data;
 
 	if (!s->completed)
 		soup_session_cancel_message(soup_session, s->msg,
@@ -352,7 +358,7 @@ input_soup_close(struct input_stream *is)
 	g_mutex_unlock(s->base.mutex);
 
 	SoupBuffer *buffer;
-	while ((buffer = g_queue_pop_head(s->buffers)) != NULL)
+	while ((buffer = (SoupBuffer *)g_queue_pop_head(s->buffers)) != NULL)
 		soup_buffer_free(buffer);
 	g_queue_free(s->buffers);
 
@@ -403,10 +409,11 @@ input_soup_read(struct input_stream *is, void *ptr, size_t size,
 		return 0;
 	}
 
-	char *p0 = ptr, *p = p0, *p_end = p0 + size;
+	char *p0 = (char *)ptr, *p = p0, *p_end = p0 + size;
 
 	while (p < p_end) {
-		SoupBuffer *buffer = g_queue_pop_head(s->buffers);
+		SoupBuffer *buffer = (SoupBuffer *)
+			g_queue_pop_head(s->buffers);
 		if (buffer == NULL) {
 			assert(s->current_consumed == 0);
 			break;
@@ -460,14 +467,16 @@ input_soup_eof(G_GNUC_UNUSED struct input_stream *is)
 }
 
 const struct input_plugin input_plugin_soup = {
-	.name = "soup",
-	.init = input_soup_init,
-	.finish = input_soup_finish,
-
-	.open = input_soup_open,
-	.close = input_soup_close,
-	.check = input_soup_check,
-	.available = input_soup_available,
-	.read = input_soup_read,
-	.eof = input_soup_eof,
+	"soup",
+	input_soup_init,
+	input_soup_finish,
+	input_soup_open,
+	input_soup_close,
+	input_soup_check,
+	nullptr,
+	nullptr,
+	input_soup_available,
+	input_soup_read,
+	input_soup_eof,
+	nullptr,
 };

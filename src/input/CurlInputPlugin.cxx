@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,13 +18,17 @@
  */
 
 #include "config.h"
-#include "input/curl_input_plugin.h"
-#include "input_internal.h"
+#include "CurlInputPlugin.hxx"
 #include "input_plugin.h"
 #include "conf.h"
 #include "tag.h"
+
+extern "C" {
+#include "input_internal.h"
 #include "icy_metadata.h"
 #include "io_thread.h"
+}
+
 #include "glib_compat.h"
 
 #include <assert.h>
@@ -182,7 +186,7 @@ input_curl_find_request(CURL *easy)
 	assert(io_thread_inside());
 
 	for (GSList *i = curl.requests; i != NULL; i = g_slist_next(i)) {
-		struct input_curl *c = i->data;
+		struct input_curl *c = (struct input_curl *)i->data;
 		if (c->easy == easy)
 			return c;
 	}
@@ -197,7 +201,7 @@ input_curl_resume(gpointer data)
 {
 	assert(io_thread_inside());
 
-	struct input_curl *c = data;
+	struct input_curl *c = (struct input_curl *)data;
 
 	if (c->paused) {
 		c->paused = false;
@@ -266,7 +270,7 @@ curl_update_fds(void)
 	curl.fds = NULL;
 
 	while (fds != NULL) {
-		GPollFD *poll_fd = fds->data;
+		GPollFD *poll_fd = (GPollFD *)fds->data;
 		gushort events = input_curl_fd_events(poll_fd->fd, &rfds,
 						      &wfds, &efds);
 
@@ -335,7 +339,8 @@ struct easy_add_params {
 static gpointer
 input_curl_easy_add_callback(gpointer data)
 {
-	const struct easy_add_params *params = data;
+	const struct easy_add_params *params =
+		(const struct easy_add_params *)data;
 
 	bool success = input_curl_easy_add(params->c, params->error_r);
 	return GUINT_TO_POINTER(success);
@@ -352,8 +357,8 @@ input_curl_easy_add_indirect(struct input_curl *c, GError **error_r)
 	assert(c->easy != NULL);
 
 	struct easy_add_params params = {
-		.c = c,
-		.error_r = error_r,
+		c,
+		error_r,
 	};
 
 	gpointer result =
@@ -392,7 +397,7 @@ input_curl_easy_free(struct input_curl *c)
 static gpointer
 input_curl_easy_free_callback(gpointer data)
 {
-	struct input_curl *c = data;
+	struct input_curl *c = (struct input_curl *)data;
 
 	input_curl_easy_free(c);
 	curl_update_fds();
@@ -425,7 +430,8 @@ input_curl_abort_all_requests(GError *error)
 	assert(error != NULL);
 
 	while (curl.requests != NULL) {
-		struct input_curl *c = curl.requests->data;
+		struct input_curl *c =
+			(struct input_curl *)curl.requests->data;
 		assert(c->postponed_error == NULL);
 
 		input_curl_easy_free(c);
@@ -593,7 +599,7 @@ input_curl_source_check(G_GNUC_UNUSED GSource *source)
 #endif
 
 	for (GSList *i = curl.fds; i != NULL; i = i->next) {
-		GPollFD *poll_fd = i->data;
+		GPollFD *poll_fd = (GPollFD *)i->data;
 		if (poll_fd->revents != 0)
 			return true;
 	}
@@ -622,9 +628,12 @@ input_curl_source_dispatch(G_GNUC_UNUSED GSource *source,
  * pointer, for whatever reason.
  */
 static GSourceFuncs curl_source_funcs = {
-	.prepare = input_curl_source_prepare,
-	.check = input_curl_source_check,
-	.dispatch = input_curl_source_dispatch,
+	input_curl_source_prepare,
+	input_curl_source_check,
+	input_curl_source_dispatch,
+	nullptr,
+	nullptr,
+	nullptr,
 };
 
 /*
@@ -712,7 +721,7 @@ curl_total_buffer_size(const struct input_curl *c)
 
 	for (GList *i = g_queue_peek_head_link(c->buffers);
 	     i != NULL; i = g_list_next(i)) {
-		struct buffer *buffer = i->data;
+		struct buffer *buffer = (struct buffer *)i->data;
 		total += buffer->size;
 	}
 
@@ -724,7 +733,7 @@ curl_total_buffer_size(const struct input_curl *c)
 static void
 buffer_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
-	struct buffer *buffer = data;
+	struct buffer *buffer = (struct buffer *)data;
 
 	assert(buffer->consumed <= buffer->size);
 
@@ -824,8 +833,8 @@ static size_t
 read_from_buffer(struct icy_metadata *icy_metadata, GQueue *buffers,
 		 void *dest0, size_t length)
 {
-	struct buffer *buffer = g_queue_pop_head(buffers);
-	uint8_t *dest = dest0;
+	struct buffer *buffer = (struct buffer *)g_queue_pop_head(buffers);
+	uint8_t *dest = (uint8_t *)dest0;
 	size_t nbytes = 0;
 
 	assert(buffer->size > 0);
@@ -906,7 +915,7 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size,
 	struct input_curl *c = (struct input_curl *)is;
 	bool success;
 	size_t nbytes = 0;
-	char *dest = ptr;
+	char *dest = (char *)ptr;
 
 	do {
 		/* fill the buffer */
@@ -963,13 +972,14 @@ static size_t
 input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 {
 	struct input_curl *c = (struct input_curl *)stream;
-	const char *header = ptr, *end, *value;
 	char name[64];
 
 	size *= nmemb;
-	end = header + size;
 
-	value = memchr(header, ':', size);
+	const char *header = (const char *)ptr;
+	const char *end = header + size;
+
+	const char *value = (const char *)memchr(header, ':', size);
 	if (value == NULL || (size_t)(value - header) >= sizeof(name))
 		return size;
 
@@ -1047,7 +1057,6 @@ static size_t
 input_curl_writefunction(void *ptr, size_t size, size_t nmemb, void *stream)
 {
 	struct input_curl *c = (struct input_curl *)stream;
-	struct buffer *buffer;
 
 	size *= nmemb;
 	if (size == 0)
@@ -1063,7 +1072,8 @@ input_curl_writefunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	}
 #endif
 
-	buffer = g_malloc(sizeof(*buffer) - sizeof(buffer->data) + size);
+	struct buffer *buffer = (struct buffer *)
+		g_malloc(sizeof(*buffer) - sizeof(buffer->data) + size);
 	buffer->size = size;
 	buffer->consumed = 0;
 	memcpy(buffer->data, ptr, size);
@@ -1286,16 +1296,16 @@ input_curl_open(const char *url, GMutex *mutex, GCond *cond,
 }
 
 const struct input_plugin input_plugin_curl = {
-	.name = "curl",
-	.init = input_curl_init,
-	.finish = input_curl_finish,
-
-	.open = input_curl_open,
-	.close = input_curl_close,
-	.check = input_curl_check,
-	.tag = input_curl_tag,
-	.available = input_curl_available,
-	.read = input_curl_read,
-	.eof = input_curl_eof,
-	.seek = input_curl_seek,
+	"curl",
+	input_curl_init,
+	input_curl_finish,
+	input_curl_open,
+	input_curl_close,
+	input_curl_check,
+	nullptr,
+	input_curl_tag,
+	input_curl_available,
+	input_curl_read,
+	input_curl_eof,
+	input_curl_seek,
 };

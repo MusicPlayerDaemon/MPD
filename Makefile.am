@@ -82,7 +82,6 @@ mpd_headers = \
 	src/input_stream.h \
 	src/input/file_input_plugin.h \
 	src/input/ffmpeg_input_plugin.h \
-	src/input/curl_input_plugin.h \
 	src/input/rewind_input_plugin.h \
 	src/input/mms_input_plugin.h \
 	src/input/despotify_input_plugin.h \
@@ -731,14 +730,14 @@ INPUT_LIBS = \
 	$(MMS_LIBS)
 
 if ENABLE_CURL
-libinput_a_SOURCES += src/input/curl_input_plugin.c \
+libinput_a_SOURCES += \
+	src/input/CurlInputPlugin.cxx src/input/CurlInputPlugin.hxx \
 	src/icy_metadata.c
 endif
 
 if ENABLE_SOUP
 libinput_a_SOURCES += \
-	src/input/soup_input_plugin.c \
-	src/input/soup_input_plugin.h
+	src/input/SoupInputPlugin.cxx src/input/SoupInputPlugin.hxx
 endif
 
 if ENABLE_CDIO_PARANOIA
