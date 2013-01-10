@@ -97,13 +97,17 @@ static void free_shout_data(struct shout_data *sd)
 	g_free(sd);
 }
 
-#define check_block_param(name) {		  \
-		block_param = config_get_block_param(param, name);	\
-		if (!block_param) {					\
-			MPD_ERROR("no \"%s\" defined for shout device defined at line " \
-				  "%i\n", name, param->line);		\
-		}							\
-	}
+gcc_pure
+static const char *
+require_block_string(const struct config_param *param, const char *name)
+{
+	const char *value = config_get_block_string(param, name, NULL);
+	if (value == NULL)
+		MPD_ERROR("no \"%s\" defined for shout device defined at line " \
+			  "%i\n", name, param->line);			\
+
+	return value;
+}
 
 static bool
 my_shout_configure(struct shout_data *sd, const struct config_param *param,
@@ -120,12 +124,8 @@ my_shout_configure(struct shout_data *sd, const struct config_param *param,
 		return NULL;
 	}
 
-	const struct block_param *block_param;
-	check_block_param("host");
-	char *host = block_param->value;
-
-	check_block_param("mount");
-	char *mount = block_param->value;
+	const char *host = require_block_string(param, "host");
+	const char *mount = require_block_string(param, "mount");
 
 	unsigned port = config_get_block_unsigned(param, "port", 0);
 	if (port == 0) {
@@ -134,11 +134,8 @@ my_shout_configure(struct shout_data *sd, const struct config_param *param,
 		return false;
 	}
 
-	check_block_param("password");
-	const char *passwd = block_param->value;
-
-	check_block_param("name");
-	const char *name = block_param->value;
+	const char *passwd = require_block_string(param, "password");
+	const char *name = require_block_string(param, "name");
 
 	bool public = config_get_block_bool(param, "public", false);
 
