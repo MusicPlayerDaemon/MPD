@@ -24,6 +24,8 @@
 #include "TextFile.hxx"
 #include "Partition.hxx"
 #include "Volume.hxx"
+#include "Main.hxx"
+#include "event/Loop.hxx"
 
 #include <glib.h>
 #include <assert.h>
@@ -137,9 +139,9 @@ state_file_init(const char *path, Partition &partition)
 	state_file_path = g_strdup(path);
 	state_file_read(partition);
 
-	save_state_source_id = g_timeout_add_seconds(5 * 60,
-						     timer_save_state_file,
-						     &partition);
+	save_state_source_id =
+		main_loop->AddTimeoutSeconds(5 * 60, timer_save_state_file,
+					     &partition);
 }
 
 void

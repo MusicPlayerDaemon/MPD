@@ -17,9 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "IOThread.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "event/Loop.hxx"
 
 #include <assert.h>
 
@@ -27,8 +29,7 @@ static struct {
 	Mutex mutex;
 	Cond cond;
 
-	GMainContext *context;
-	GMainLoop *loop;
+	EventLoop *loop;
 	GThread *thread;
 } io;
 
@@ -36,10 +37,9 @@ void
 io_thread_run(void)
 {
 	assert(io_thread_inside());
-	assert(io.context != NULL);
 	assert(io.loop != NULL);
 
-	g_main_loop_run(io.loop);
+	io.loop->Run();
 }
 
 static gpointer
@@ -57,18 +57,15 @@ io_thread_func(G_GNUC_UNUSED gpointer arg)
 void
 io_thread_init(void)
 {
-	assert(io.context == NULL);
 	assert(io.loop == NULL);
 	assert(io.thread == NULL);
 
-	io.context = g_main_context_new();
-	io.loop = g_main_loop_new(io.context, false);
+	io.loop = new EventLoop();
 }
 
 bool
 io_thread_start(GError **error_r)
 {
-	assert(io.context != NULL);
 	assert(io.loop != NULL);
 	assert(io.thread == NULL);
 
@@ -86,7 +83,7 @@ io_thread_quit(void)
 {
 	assert(io.loop != NULL);
 
-	g_main_loop_quit(io.loop);
+	io.loop->Break();
 }
 
 void
@@ -98,52 +95,21 @@ io_thread_deinit(void)
 		g_thread_join(io.thread);
 	}
 
-	if (io.loop != NULL)
-		g_main_loop_unref(io.loop);
-
-	if (io.context != NULL)
-		g_main_context_unref(io.context);
+	delete io.loop;
 }
 
-GMainContext *
-io_thread_context(void)
+EventLoop &
+io_thread_get()
 {
-	return io.context;
+	assert(io.loop != nullptr);
+
+	return *io.loop;
 }
 
 bool
 io_thread_inside(void)
 {
 	return io.thread != NULL && g_thread_self() == io.thread;
-}
-
-guint
-io_thread_idle_add(GSourceFunc function, gpointer data)
-{
-	GSource *source = g_idle_source_new();
-	g_source_set_callback(source, function, data, NULL);
-	guint id = g_source_attach(source, io.context);
-	g_source_unref(source);
-	return id;
-}
-
-GSource *
-io_thread_timeout_add(guint interval_ms, GSourceFunc function, gpointer data)
-{
-	GSource *source = g_timeout_source_new(interval_ms);
-	g_source_set_callback(source, function, data, NULL);
-	g_source_attach(source, io.context);
-	return source;
-}
-
-GSource *
-io_thread_timeout_add_seconds(guint interval,
-			      GSourceFunc function, gpointer data)
-{
-	GSource *source = g_timeout_source_new_seconds(interval);
-	g_source_set_callback(source, function, data, NULL);
-	g_source_attach(source, io.context);
-	return source;
 }
 
 struct call_data {
@@ -186,7 +152,7 @@ io_thread_call(GThreadFunc function, gpointer _data)
 		nullptr,
 	};
 
-	io_thread_idle_add(io_thread_call_func, &data);
+	io.loop->AddIdle(io_thread_call_func, &data);
 
 	io.mutex.lock();
 	while (!data.done)

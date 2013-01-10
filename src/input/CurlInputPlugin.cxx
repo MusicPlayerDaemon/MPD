@@ -28,6 +28,7 @@ extern "C" {
 #include "input_internal.h"
 }
 
+#include "event/Loop.hxx"
 #include "IOThread.hxx"
 #include "glib_compat.h"
 
@@ -716,7 +717,8 @@ input_curl_init(const struct config_param *param,
 	}
 
 	curl.source = g_source_new(&curl_source_funcs, sizeof(*curl.source));
-	curl.source_id = g_source_attach(curl.source, io_thread_context());
+	curl.source_id = g_source_attach(curl.source,
+					 io_thread_get().GetContext());
 
 	return true;
 }

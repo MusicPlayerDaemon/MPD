@@ -20,6 +20,8 @@
 #include "config.h"
 #include "InotifyQueue.hxx"
 #include "UpdateGlue.hxx"
+#include "Main.hxx"
+#include "event/Loop.hxx"
 
 #include <list>
 #include <string>
@@ -93,8 +95,9 @@ mpd_inotify_enqueue(const char *uri_utf8)
 {
 	if (queue_source_id != 0)
 		g_source_remove(queue_source_id);
-	queue_source_id = g_timeout_add_seconds(INOTIFY_UPDATE_DELAY_S,
-					mpd_inotify_run_update, NULL);
+	queue_source_id = main_loop->AddTimeoutSeconds(INOTIFY_UPDATE_DELAY_S,
+						       mpd_inotify_run_update,
+						       nullptr);
 
 	for (auto i = inotify_queue.begin(), end = inotify_queue.end();
 	     i != end;) {

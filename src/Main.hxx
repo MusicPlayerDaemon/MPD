@@ -22,9 +22,11 @@
 
 #include <glib.h>
 
+class EventLoop;
+
 extern GThread *main_task;
 
-extern GMainLoop *main_loop;
+extern EventLoop *main_loop;
 
 extern struct Partition *global_partition;
 

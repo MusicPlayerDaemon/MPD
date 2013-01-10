@@ -353,7 +353,8 @@ libutil_a_SOURCES = \
 # Event loop library
 
 libevent_a_SOURCES = \
-	src/event/WakeFD.cxx
+	src/event/WakeFD.cxx src/event/WakeFD.hxx \
+	src/event/Loop.hxx
 
 # PCM library
 

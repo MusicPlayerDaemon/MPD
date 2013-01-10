@@ -24,6 +24,7 @@
 
 #include "Log.hxx"
 #include "Main.hxx"
+#include "event/Loop.hxx"
 #include "GlobalEvents.hxx"
 #include "mpd_error.h"
 
@@ -35,7 +36,7 @@
 
 static void exit_signal_handler(G_GNUC_UNUSED int signum)
 {
-	g_main_loop_quit(main_loop);
+	main_loop->Break();
 }
 
 static void reload_signal_handler(G_GNUC_UNUSED int signum)

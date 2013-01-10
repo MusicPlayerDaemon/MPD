@@ -26,6 +26,7 @@ extern "C" {
 }
 
 #include "IOThread.hxx"
+#include "event/Loop.hxx"
 #include "conf.h"
 
 extern "C" {
@@ -105,7 +106,7 @@ input_soup_init(const struct config_param *param, GError **error_r)
 		soup_session_async_new_with_options(SOUP_SESSION_PROXY_URI,
 						    soup_proxy,
 						    SOUP_SESSION_ASYNC_CONTEXT,
-						    io_thread_context(),
+						    io_thread_get().GetContext(),
 						    NULL);
 
 	return true;

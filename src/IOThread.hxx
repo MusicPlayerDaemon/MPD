@@ -24,6 +24,8 @@
 
 #include <glib.h>
 
+class EventLoop;
+
 void
 io_thread_init(void);
 
@@ -50,8 +52,8 @@ void
 io_thread_deinit(void);
 
 gcc_pure
-GMainContext *
-io_thread_context(void);
+EventLoop &
+io_thread_get();
 
 /**
  * Is the current thread the I/O thread?
@@ -59,18 +61,6 @@ io_thread_context(void);
 gcc_pure
 bool
 io_thread_inside(void);
-
-guint
-io_thread_idle_add(GSourceFunc function, gpointer data);
-
-gcc_malloc
-GSource *
-io_thread_timeout_add(guint interval_ms, GSourceFunc function, gpointer data);
-
-gcc_malloc
-GSource *
-io_thread_timeout_add_seconds(guint interval,
-			      GSourceFunc function, gpointer data);
 
 /**
  * Call a function synchronously in the I/O thread.

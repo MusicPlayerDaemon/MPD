@@ -20,6 +20,7 @@
 #include "config.h"
 #include "ClientInternal.hxx"
 #include "Main.hxx"
+#include "event/Loop.hxx"
 
 #include <assert.h>
 
@@ -83,7 +84,7 @@ client_in_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 
 	case COMMAND_RETURN_KILL:
 		client_close(client);
-		g_main_loop_quit(main_loop);
+		main_loop->Break();
 		return false;
 
 	case COMMAND_RETURN_CLOSE:

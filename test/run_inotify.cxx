@@ -19,18 +19,19 @@
 
 #include "config.h"
 #include "InotifySource.hxx"
+#include "event/Loop.hxx"
 
 #include <glib.h>
 
 #include <sys/inotify.h>
 #include <signal.h>
 
-static GMainLoop *main_loop;
+static EventLoop *event_loop;
 
 static void
 exit_signal_handler(G_GNUC_UNUSED int signum)
 {
-	g_main_loop_quit(main_loop);
+	event_loop->Break();
 }
 
 enum {
@@ -78,7 +79,7 @@ int main(int argc, char **argv)
 		return 2;
 	}
 
-	main_loop = g_main_loop_new(NULL, false);
+	event_loop = new EventLoop(EventLoop::Default());
 
 	struct sigaction sa;
 	sa.sa_flags = 0;
@@ -87,8 +88,8 @@ int main(int argc, char **argv)
 	sigaction(SIGINT, &sa, NULL);
 	sigaction(SIGTERM, &sa, NULL);
 
-	g_main_loop_run(main_loop);
-	g_main_loop_unref(main_loop);
+	event_loop->Run();
 
 	mpd_inotify_source_free(source);
+	delete event_loop;
 }

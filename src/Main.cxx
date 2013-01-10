@@ -45,6 +45,7 @@
 #include "Log.hxx"
 #include "GlobalEvents.hxx"
 #include "InputInit.hxx"
+#include "event/Loop.hxx"
 #include "IOThread.hxx"
 
 extern "C" {
@@ -96,7 +97,7 @@ enum {
 };
 
 GThread *main_task;
-GMainLoop *main_loop;
+EventLoop *main_loop;
 
 Partition *global_partition;
 
@@ -332,7 +333,7 @@ idle_event_emitted(void)
 static void
 shutdown_event_emitted(void)
 {
-	g_main_loop_quit(main_loop);
+	main_loop->Break();
 }
 
 int main(int argc, char *argv[])
@@ -401,7 +402,7 @@ int mpd_main(int argc, char *argv[])
 	daemonize_set_user();
 
 	main_task = g_thread_self();
-	main_loop = g_main_loop_new(NULL, FALSE);
+	main_loop = new EventLoop(EventLoop::Default());
 
 	GlobalEvents::Initialize();
 	GlobalEvents::Register(GlobalEvents::IDLE, idle_event_emitted);
@@ -504,7 +505,7 @@ int mpd_main(int argc, char *argv[])
 #endif
 
 	/* run the main loop */
-	g_main_loop_run(main_loop);
+	main_loop->Run();
 
 #ifdef WIN32
 	win32_app_stopping();
@@ -512,7 +513,7 @@ int mpd_main(int argc, char *argv[])
 
 	/* cleanup */
 
-	g_main_loop_unref(main_loop);
+	delete main_loop;
 
 #ifdef ENABLE_INOTIFY
 	mpd_inotify_finish();
