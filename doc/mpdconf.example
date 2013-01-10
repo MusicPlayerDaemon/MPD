@@ -291,6 +291,13 @@ input {
 ##	mixer_type	"hardware"	# optional
 #}
 #
+# An example of a openal output.
+#
+#audio_output {
+#	type		"openal"
+##	device		"Digital Audio (S/PDIF) (High Definition Audio Device)" # optional
+#}
+#
 ## Example "pipe" output:
 #
 #audio_output {
