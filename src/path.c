@@ -21,6 +21,7 @@
 #include "path.h"
 #include "conf.h"
 #include "mpd_error.h"
+#include "gcc.h"
 
 #include <glib.h>
 
@@ -60,18 +61,26 @@ utf8_to_fs_charset(const char *path_utf8)
 	return p;
 }
 
+gcc_pure
+static bool
+IsSupportedCharset(const char *charset)
+{
+	/* convert a space to check if the charset is valid */
+	char *test = g_convert(" ", 1, charset, "UTF-8", NULL, NULL, NULL);
+	if (test == NULL)
+		return false;
+
+	g_free(test);
+	return true;
+}
+
 static void
 path_set_fs_charset(const char *charset)
 {
-	char *test;
-
 	assert(charset != NULL);
 
-	/* convert a space to ensure that the charset is valid */
-	test = g_convert(" ", 1, charset, "UTF-8", NULL, NULL, NULL);
-	if (test == NULL)
+	if (!IsSupportedCharset(charset))
 		MPD_ERROR("invalid filesystem charset: %s", charset);
-	g_free(test);
 
 	g_free(fs_charset);
 	fs_charset = g_strdup(charset);
