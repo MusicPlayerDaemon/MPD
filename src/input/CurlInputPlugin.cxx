@@ -45,6 +45,10 @@ extern "C" {
 #include <curl/curl.h>
 #include <glib.h>
 
+#if LIBCURL_VERSION_NUM < 0x071200
+#error libcurl is too old
+#endif
+
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "input_curl"
 
@@ -99,14 +103,12 @@ struct input_curl {
 	    to, and input_curl_read() reads from them */
 	GQueue *buffers;
 
-#if LIBCURL_VERSION_NUM >= 0x071200
 	/**
 	 * Is the connection currently paused?  That happens when the
 	 * buffer was getting too large.  It will be unpaused when the
 	 * buffer is below the threshold again.
 	 */
 	bool paused;
-#endif
 
 	/** error message provided by libcurl */
 	char error[CURL_ERROR_SIZE];
@@ -153,7 +155,6 @@ static struct {
 
 	GSList *fds;
 
-#if LIBCURL_VERSION_NUM >= 0x070f04
 	/**
 	 * Did CURL give us a timeout?  If yes, then we need to call
 	 * curl_multi_perform(), even if there was no event on any
@@ -166,7 +167,6 @@ static struct {
 	 * used in the GSource method check().
 	 */
 	gint64 absolute_timeout;
-#endif
 } curl;
 
 static inline GQuark
@@ -194,8 +194,6 @@ input_curl_find_request(CURL *easy)
 	return NULL;
 }
 
-#if LIBCURL_VERSION_NUM >= 0x071200
-
 static gpointer
 input_curl_resume(gpointer data)
 {
@@ -210,8 +208,6 @@ input_curl_resume(gpointer data)
 
 	return NULL;
 }
-
-#endif
 
 /**
  * Calculates the GLib event bit mask for one file descriptor,
@@ -551,7 +547,6 @@ input_curl_source_prepare(G_GNUC_UNUSED GSource *source, gint *timeout_r)
 {
 	curl_update_fds();
 
-#if LIBCURL_VERSION_NUM >= 0x070f04
 	curl.timeout = false;
 
 	long timeout2;
@@ -574,9 +569,6 @@ input_curl_source_prepare(G_GNUC_UNUSED GSource *source, gint *timeout_r)
 	} else
 		g_warning("curl_multi_timeout() failed: %s\n",
 			  curl_multi_strerror(mcode));
-#else
-	(void)timeout_r;
-#endif
 
 	return false;
 }
@@ -587,7 +579,6 @@ input_curl_source_prepare(G_GNUC_UNUSED GSource *source, gint *timeout_r)
 static gboolean
 input_curl_source_check(G_GNUC_UNUSED GSource *source)
 {
-#if LIBCURL_VERSION_NUM >= 0x070f04
 	if (curl.timeout) {
 		/* when a timeout has expired, we need to call
 		   curl_multi_perform(), even if there was no file
@@ -596,7 +587,6 @@ input_curl_source_check(G_GNUC_UNUSED GSource *source)
 		if (g_source_get_time(source) >= curl.absolute_timeout)
 			return true;
 	}
-#endif
 
 	for (GSList *i = curl.fds; i != NULL; i = i->next) {
 		GPollFD *poll_fd = (GPollFD *)i->data;
@@ -705,8 +695,6 @@ input_curl_finish(void)
 	curl_global_cleanup();
 }
 
-#if LIBCURL_VERSION_NUM >= 0x071200
-
 /**
  * Determine the total sizes of all buffers, including portions that
  * have already been consumed.
@@ -727,8 +715,6 @@ curl_total_buffer_size(const struct input_curl *c)
 
 	return total;
 }
-
-#endif
 
 static void
 buffer_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
@@ -940,13 +926,11 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size,
 
 	is->offset += (goffset)nbytes;
 
-#if LIBCURL_VERSION_NUM >= 0x071200
 	if (c->paused && curl_total_buffer_size(c) < CURL_RESUME_AT) {
 		g_mutex_unlock(c->base.mutex);
 		io_thread_call(input_curl_resume, c);
 		g_mutex_lock(c->base.mutex);
 	}
-#endif
 
 	return nbytes;
 }
@@ -1064,13 +1048,11 @@ input_curl_writefunction(void *ptr, size_t size, size_t nmemb, void *stream)
 
 	g_mutex_lock(c->base.mutex);
 
-#if LIBCURL_VERSION_NUM >= 0x071200
 	if (curl_total_buffer_size(c) + size >= CURL_MAX_BUFFERED) {
 		c->paused = true;
 		g_mutex_unlock(c->base.mutex);
 		return CURL_WRITEFUNC_PAUSE;
 	}
-#endif
 
 	struct buffer *buffer = (struct buffer *)
 		g_malloc(sizeof(*buffer) - sizeof(buffer->data) + size);
@@ -1278,9 +1260,7 @@ input_curl_open(const char *url, GMutex *mutex, GCond *cond,
 
 	c->postponed_error = NULL;
 
-#if LIBCURL_VERSION_NUM >= 0x071200
 	c->paused = false;
-#endif
 
 	if (!input_curl_easy_init(c, error_r)) {
 		input_curl_free(c);

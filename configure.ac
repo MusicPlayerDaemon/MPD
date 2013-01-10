@@ -691,7 +691,7 @@ dnl Input Plugins
 dnl ---------------------------------------------------------------------------
 
 dnl ----------------------------------- CURL ----------------------------------
-MPD_AUTO_PKG(curl, CURL, [libcurl],
+MPD_AUTO_PKG(curl, CURL, [libcurl >= 7.18],
 	[libcurl HTTP streaming], [libcurl not found])
 if test x$enable_curl = xyes; then
 	AC_DEFINE(ENABLE_CURL, 1, [Define when libcurl is used for HTTP streaming])
