@@ -26,9 +26,9 @@ extern "C" {
 #include "output_internal.h"
 #include "mixer_control.h"
 #include "mixer_plugin.h"
-#include "notify.h"
 }
 
+#include "notify.hxx"
 #include "filter/ReplayGainFilterPlugin.hxx"
 #include "filter_plugin.h"
 
@@ -52,7 +52,7 @@ static void ao_command_wait(struct audio_output *ao)
 {
 	while (ao->command != AO_COMMAND_NONE) {
 		g_mutex_unlock(ao->mutex);
-		notify_wait(&audio_output_client_notify);
+		audio_output_client_notify.Wait();
 		g_mutex_lock(ao->mutex);
 	}
 }

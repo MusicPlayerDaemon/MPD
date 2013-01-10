@@ -46,7 +46,6 @@ src_mpd_LDADD = \
 
 mpd_headers = \
 	src/check.h \
-	src/notify.h \
 	src/ack.h \
 	src/ape.h \
 	src/audio_format.h \
@@ -166,7 +165,7 @@ src_mpd_SOURCES = \
 	src/thread/GLibCond.hxx \
 	src/glib_socket.h \
 	src/clock.c src/clock.h \
-	src/notify.c \
+	src/notify.cxx src/notify.hxx \
 	src/audio_config.c src/audio_config.h \
 	src/audio_check.c \
 	src/audio_format.c \

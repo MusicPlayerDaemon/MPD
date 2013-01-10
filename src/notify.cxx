@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,37 +17,29 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_NOTIFY_H
-#define MPD_NOTIFY_H
+#include "config.h"
+#include "notify.hxx"
 
-#include <glib.h>
+void
+notify::Wait()
+{
+	const ScopeLock protect(mutex);
+	while (!pending)
+		cond.wait(mutex);
+	pending = false;
+}
 
-#include <stdbool.h>
+void
+notify::Signal()
+{
+	const ScopeLock protect(mutex);
+	pending = true;
+	cond.signal();
+}
 
-struct notify {
-	GMutex *mutex;
-	GCond *cond;
-	bool pending;
-};
-
-void notify_init(struct notify *notify);
-
-void notify_deinit(struct notify *notify);
-
-/**
- * Wait for a notification.  Return immediately if we have already
- * been notified since we last returned from notify_wait().
- */
-void notify_wait(struct notify *notify);
-
-/**
- * Notify the thread.  This function never blocks.
- */
-void notify_signal(struct notify *notify);
-
-/**
- * Clears a pending notification.
- */
-void notify_clear(struct notify *notify);
-
-#endif
+void
+notify::Clear()
+{
+	const ScopeLock protect(mutex);
+	pending = false;
+}

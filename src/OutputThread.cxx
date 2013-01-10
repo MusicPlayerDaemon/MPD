@@ -26,9 +26,9 @@ extern "C" {
 #include "pcm_mix.h"
 #include "filter_plugin.h"
 #include "filter/convert_filter_plugin.h"
-#include "notify.h"
 }
 
+#include "notify.hxx"
 #include "filter/ReplayGainFilterPlugin.hxx"
 #include "PlayerControl.hxx"
 #include "MusicPipe.hxx"
@@ -52,7 +52,7 @@ static void ao_command_finished(struct audio_output *ao)
 	ao->command = AO_COMMAND_NONE;
 
 	g_mutex_unlock(ao->mutex);
-	notify_signal(&audio_output_client_notify);
+	audio_output_client_notify.Signal();
 	g_mutex_lock(ao->mutex);
 }
 

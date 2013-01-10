@@ -32,10 +32,7 @@ extern "C" {
 #include "MusicChunk.hxx"
 #include "mpd_error.h"
 #include "conf.h"
-
-extern "C" {
-#include "notify.h"
-}
+#include "notify.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -113,8 +110,6 @@ audio_output_all_init(struct player_control *pc)
 	unsigned int i;
 	GError *error = NULL;
 
-	notify_init(&audio_output_client_notify);
-
 	num_audio_outputs = audio_output_config_count();
 	audio_outputs = g_new(struct audio_output *, num_audio_outputs);
 
@@ -161,8 +156,6 @@ audio_output_all_finish(void)
 	g_free(audio_outputs);
 	audio_outputs = NULL;
 	num_audio_outputs = 0;
-
-	notify_deinit(&audio_output_client_notify);
 }
 
 void
@@ -211,7 +204,7 @@ audio_output_all_finished(void)
 static void audio_output_wait_all(void)
 {
 	while (!audio_output_all_finished())
-		notify_wait(&audio_output_client_notify);
+		audio_output_client_notify.Wait();
 }
 
 /**
