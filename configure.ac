@@ -1627,6 +1627,7 @@ results(wildmidi, [WildMidi])
 
 printf '\nOther features:\n\t'
 results(lsr, [libsamplerate])
+results(mpdclient, [libmpdclient])
 results(inotify, [inotify])
 results(sqlite, [SQLite])
 
