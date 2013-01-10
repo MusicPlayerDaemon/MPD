@@ -416,6 +416,8 @@ decoder_run_song(struct decoder_control *dc,
 					"Failed to decode %s", error_uri);
 		g_free(allocated);
 	}
+
+	g_cond_signal(dc->client_cond);
 }
 
 static void
