@@ -1617,7 +1617,7 @@ results(mpg123, [MPG123])
 results(mp4, [MP4])
 results(mpc, [Musepack])
 printf '\n\t'
-results(opus, [OPUS])
+results(opus, [Opus])
 results(tremor, [OggTremor])
 results(vorbis, [OggVorbis])
 results(audiofile, [WAVE])
