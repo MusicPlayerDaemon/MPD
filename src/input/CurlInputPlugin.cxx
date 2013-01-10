@@ -91,13 +91,6 @@ struct input_curl {
 	/** the curl handles */
 	CURL *easy;
 
-	/** the GMainLoop source used to poll all CURL file
-	    descriptors */
-	GSource *source;
-
-	/** the source id of #source */
-	guint source_id;
-
 	/** list of buffers, where input_curl_writefunction() appends
 	    to, and input_curl_read() reads from them */
 	GQueue *buffers;
