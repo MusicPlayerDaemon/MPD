@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,9 +19,13 @@
 
 #include "config.h"
 #include "conf.h"
+
+extern "C" {
 #include "utils.h"
 #include "string_util.h"
 #include "tokenizer.h"
+}
+
 #include "path.h"
 #include "mpd_error.h"
 
@@ -46,63 +50,68 @@ struct config_entry {
 	const bool block;
 
 	GSList *params;
+
+	constexpr config_entry(const char *_name,
+			       bool _repeatable, bool _block)
+		:name(_name), repeatable(_repeatable), block(_block),
+		 params(nullptr) {}
 };
 
 static struct config_entry config_entries[] = {
-	{ .name = CONF_MUSIC_DIR, false, false },
-	{ .name = CONF_PLAYLIST_DIR, false, false },
-	{ .name = CONF_FOLLOW_INSIDE_SYMLINKS, false, false },
-	{ .name = CONF_FOLLOW_OUTSIDE_SYMLINKS, false, false },
-	{ .name = CONF_DB_FILE, false, false },
-	{ .name = CONF_STICKER_FILE, false, false },
-	{ .name = CONF_LOG_FILE, false, false },
-	{ .name = CONF_PID_FILE, false, false },
-	{ .name = CONF_STATE_FILE, false, false },
-	{ .name = "restore_paused", false, false },
-	{ .name = CONF_USER, false, false },
-	{ .name = CONF_GROUP, false, false },
-	{ .name = CONF_BIND_TO_ADDRESS, true, false },
-	{ .name = CONF_PORT, false, false },
-	{ .name = CONF_LOG_LEVEL, false, false },
-	{ .name = CONF_ZEROCONF_NAME, false, false },
-	{ .name = CONF_ZEROCONF_ENABLED, false, false },
-	{ .name = CONF_PASSWORD, true, false },
-	{ .name = CONF_DEFAULT_PERMS, false, false },
-	{ .name = CONF_AUDIO_OUTPUT, true, true },
-	{ .name = CONF_AUDIO_OUTPUT_FORMAT, false, false },
-	{ .name = CONF_MIXER_TYPE, false, false },
-	{ .name = CONF_REPLAYGAIN, false, false },
-	{ .name = CONF_REPLAYGAIN_PREAMP, false, false },
-	{ .name = CONF_REPLAYGAIN_MISSING_PREAMP, false, false },
-	{ .name = CONF_REPLAYGAIN_LIMIT, false, false },
-	{ .name = CONF_VOLUME_NORMALIZATION, false, false },
-	{ .name = CONF_SAMPLERATE_CONVERTER, false, false },
-	{ .name = CONF_AUDIO_BUFFER_SIZE, false, false },
-	{ .name = CONF_BUFFER_BEFORE_PLAY, false, false },
-	{ .name = CONF_HTTP_PROXY_HOST, false, false },
-	{ .name = CONF_HTTP_PROXY_PORT, false, false },
-	{ .name = CONF_HTTP_PROXY_USER, false, false },
-	{ .name = CONF_HTTP_PROXY_PASSWORD, false, false },
-	{ .name = CONF_CONN_TIMEOUT, false, false },
-	{ .name = CONF_MAX_CONN, false, false },
-	{ .name = CONF_MAX_PLAYLIST_LENGTH, false, false },
-	{ .name = CONF_MAX_COMMAND_LIST_SIZE, false, false },
-	{ .name = CONF_MAX_OUTPUT_BUFFER_SIZE, false, false },
-	{ .name = CONF_FS_CHARSET, false, false },
-	{ .name = CONF_ID3V1_ENCODING, false, false },
-	{ .name = CONF_METADATA_TO_USE, false, false },
-	{ .name = CONF_SAVE_ABSOLUTE_PATHS, false, false },
-	{ .name = CONF_DECODER, true, true },
-	{ .name = CONF_INPUT, true, true },
-	{ .name = CONF_GAPLESS_MP3_PLAYBACK, false, false },
-	{ .name = CONF_PLAYLIST_PLUGIN, true, true },
-	{ .name = CONF_AUTO_UPDATE, false, false },
-	{ .name = CONF_AUTO_UPDATE_DEPTH, false, false },
-	{ .name = CONF_DESPOTIFY_USER, false, false },
-	{ .name = CONF_DESPOTIFY_PASSWORD, false, false},
-	{ .name = CONF_DESPOTIFY_HIGH_BITRATE, false, false },
-	{ .name = "filter", true, true },
-	{ .name = "database", false, true },
+	{ CONF_MUSIC_DIR, false, false },
+	{ CONF_PLAYLIST_DIR, false, false },
+	{ CONF_FOLLOW_INSIDE_SYMLINKS, false, false },
+	{ CONF_FOLLOW_OUTSIDE_SYMLINKS, false, false },
+	{ CONF_DB_FILE, false, false },
+	{ CONF_STICKER_FILE, false, false },
+	{ CONF_LOG_FILE, false, false },
+	{ CONF_PID_FILE, false, false },
+	{ CONF_STATE_FILE, false, false },
+	{ "restore_paused", false, false },
+	{ CONF_USER, false, false },
+	{ CONF_GROUP, false, false },
+	{ CONF_BIND_TO_ADDRESS, true, false },
+	{ CONF_PORT, false, false },
+	{ CONF_LOG_LEVEL, false, false },
+	{ CONF_ZEROCONF_NAME, false, false },
+	{ CONF_ZEROCONF_ENABLED, false, false },
+	{ CONF_PASSWORD, true, false },
+	{ CONF_DEFAULT_PERMS, false, false },
+	{ CONF_AUDIO_OUTPUT, true, true },
+	{ CONF_AUDIO_OUTPUT_FORMAT, false, false },
+	{ CONF_MIXER_TYPE, false, false },
+	{ CONF_REPLAYGAIN, false, false },
+	{ CONF_REPLAYGAIN_PREAMP, false, false },
+	{ CONF_REPLAYGAIN_MISSING_PREAMP, false, false },
+	{ CONF_REPLAYGAIN_LIMIT, false, false },
+	{ CONF_VOLUME_NORMALIZATION, false, false },
+	{ CONF_SAMPLERATE_CONVERTER, false, false },
+	{ CONF_AUDIO_BUFFER_SIZE, false, false },
+	{ CONF_BUFFER_BEFORE_PLAY, false, false },
+	{ CONF_HTTP_PROXY_HOST, false, false },
+	{ CONF_HTTP_PROXY_PORT, false, false },
+	{ CONF_HTTP_PROXY_USER, false, false },
+	{ CONF_HTTP_PROXY_PASSWORD, false, false },
+	{ CONF_CONN_TIMEOUT, false, false },
+	{ CONF_MAX_CONN, false, false },
+	{ CONF_MAX_PLAYLIST_LENGTH, false, false },
+	{ CONF_MAX_COMMAND_LIST_SIZE, false, false },
+	{ CONF_MAX_OUTPUT_BUFFER_SIZE, false, false },
+	{ CONF_FS_CHARSET, false, false },
+	{ CONF_ID3V1_ENCODING, false, false },
+	{ CONF_METADATA_TO_USE, false, false },
+	{ CONF_SAVE_ABSOLUTE_PATHS, false, false },
+	{ CONF_DECODER, true, true },
+	{ CONF_INPUT, true, true },
+	{ CONF_GAPLESS_MP3_PLAYBACK, false, false },
+	{ CONF_PLAYLIST_PLUGIN, true, true },
+	{ CONF_AUTO_UPDATE, false, false },
+	{ CONF_AUTO_UPDATE_DEPTH, false, false },
+	{ CONF_DESPOTIFY_USER, false, false },
+	{ CONF_DESPOTIFY_PASSWORD, false, false},
+	{ CONF_DESPOTIFY_HIGH_BITRATE, false, false },
+	{ "filter", true, true },
+	{ "database", false, true },
 };
 
 static bool
@@ -162,7 +171,7 @@ config_param_free(struct config_param *param)
 static void
 config_param_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
-	struct config_param *param = data;
+	struct config_param *param = (struct config_param *)data;
 
 	config_param_free(param);
 }
@@ -197,7 +206,7 @@ void config_global_init(void)
 static void
 config_param_check(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
-	struct config_param *param = data;
+	struct config_param *param = (struct config_param *)data;
 
 	if (!param->used)
 		/* this whole config_param was not queried at all -
@@ -233,9 +242,10 @@ config_add_block_param(struct config_param * param, const char *name,
 
 	param->num_block_params++;
 
-	param->block_params = g_realloc(param->block_params,
-					param->num_block_params *
-					sizeof(param->block_params[0]));
+	param->block_params = (struct block_param *)
+		g_realloc(param->block_params,
+			  param->num_block_params *
+			  sizeof(param->block_params[0]));
 
 	bp = &param->block_params[param->num_block_params - 1];
 
@@ -318,7 +328,7 @@ config_read_block(FILE *fp, int *count, char *string, GError **error_r)
 				g_set_error(error_r, config_quark(), 0,
 					    "line %i: Unknown tokens after '}'",
 					    *count);
-				return false;
+				return nullptr;
 			}
 
 			return ret;
@@ -390,7 +400,7 @@ config_read_file(const char *file, GError **error_r)
 		}
 
 		if (entry->params != NULL && !entry->repeatable) {
-			param = entry->params->data;
+			param = (struct config_param *)entry->params->data;
 			g_set_error(error_r, config_quark(), 0,
 				    "config parameter \"%s\" is first defined "
 				    "on line %i and redefined on line %i\n",
@@ -487,7 +497,7 @@ config_get_next_param(const char *name, const struct config_param * last)
 	if (node == NULL)
 		return NULL;
 
-	param = node->data;
+	param = (struct config_param *)node->data;
 	param->used = true;
 	return param;
 }
