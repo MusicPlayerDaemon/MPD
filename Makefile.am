@@ -163,7 +163,7 @@ src_mpd_SOURCES = \
 	$(MIXER_API_SRC) \
 	src/thread/Mutex.hxx \
 	src/thread/PosixMutex.hxx \
-	src/thread/CriticalSection.hxx \
+	src/thread/GLibMutex.hxx \
 	src/glib_socket.h \
 	src/clock.c src/clock.h \
 	src/notify.c \

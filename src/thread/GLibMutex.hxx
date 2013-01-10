@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2013 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,36 +27,61 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MPD_THREAD_CRITICAL_SECTION_HXX
-#define MPD_THREAD_CRITICAL_SECTION_HXX
+#ifndef MPD_THREAD_GLIB_MUTEX_HXX
+#define MPD_THREAD_GLIB_MUTEX_HXX
 
-#include <windows.h>
+#include <glib.h>
 
-class CriticalSection {
-	CRITICAL_SECTION critical_section;
+/**
+ * A wrapper for GMutex.
+ */
+class GLibMutex {
+#if GLIB_CHECK_VERSION(2,32,0)
+	GMutex mutex;
+#else
+	GMutex *mutex;
+#endif
 
 public:
-	CriticalSection() {
-		::InitializeCriticalSection(&critical_section);
+	GLibMutex() {
+#if GLIB_CHECK_VERSION(2,32,0)
+		g_mutex_init(&mutex);
+#else
+		mutex = g_mutex_new();
+#endif
 	}
 
-	~CriticalSection() {
-		::DeleteCriticalSection(&critical_section);
+	~GLibMutex() {
+#if GLIB_CHECK_VERSION(2,32,0)
+		g_mutex_clear(&mutex);
+#else
+		g_mutex_free(mutex);
+#endif
 	}
 
-	CriticalSection(const CriticalSection &other) = delete;
-	CriticalSection &operator=(const CriticalSection &other) = delete;
+	GLibMutex(const GLibMutex &other) = delete;
+	GLibMutex &operator=(const GLibMutex &other) = delete;
 
+private:
+	GMutex *GetNative() {
+#if GLIB_CHECK_VERSION(2,32,0)
+		return &mutex;
+#else
+		return mutex;
+#endif
+	}
+
+public:
 	void lock() {
-		::EnterCriticalSection(&critical_section);
-	};
+		g_mutex_lock(GetNative());
+	}
 
 	bool try_lock() {
-		return ::TryEnterCriticalSection(&critical_section) != 0;
-	};
+		return g_mutex_trylock(GetNative());
+	}
 
 	void unlock() {
-		::LeaveCriticalSection(&critical_section);
+		g_mutex_lock(GetNative());
 	}
 };
 
