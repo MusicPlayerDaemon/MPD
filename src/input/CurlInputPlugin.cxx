@@ -42,6 +42,8 @@ extern "C" {
 #include <string.h>
 #include <errno.h>
 
+#include <forward_list>
+
 #include <curl/curl.h>
 #include <glib.h>
 
@@ -137,7 +139,7 @@ static struct {
 	 * A linked list of all active HTTP requests.  An active
 	 * request is one that doesn't have the "eof" flag set.
 	 */
-	GSList *requests;
+	std::forward_list<input_curl *> requests;
 
 	/**
 	 * The GMainLoop source used to poll all CURL file
@@ -151,7 +153,7 @@ static struct {
 	guint source_id;
 
 	/** a linked list of all registered GPollFD objects */
-	GSList *fds;
+	std::forward_list<GPollFD> fds;
 
 	/**
 	 * Did CURL give us a timeout?  If yes, then we need to call
@@ -183,11 +185,9 @@ input_curl_find_request(CURL *easy)
 {
 	assert(io_thread_inside());
 
-	for (GSList *i = curl.requests; i != NULL; i = g_slist_next(i)) {
-		struct input_curl *c = (struct input_curl *)i->data;
+	for (auto c : curl.requests)
 		if (c->easy == easy)
 			return c;
-	}
 
 	return NULL;
 }
@@ -260,17 +260,14 @@ curl_update_fds(void)
 		return;
 	}
 
-	GSList *fds = curl.fds;
-	curl.fds = NULL;
-
-	while (fds != NULL) {
-		GPollFD *poll_fd = (GPollFD *)fds->data;
-		gushort events = input_curl_fd_events(poll_fd->fd, &rfds,
-						      &wfds, &efds);
-
+	for (auto prev = curl.fds.before_begin(), end = curl.fds.end(),
+		     i = std::next(prev);
+	     i != end; i = std::next(prev)) {
+		const auto poll_fd = &*i;
 		assert(poll_fd->events != 0);
 
-		fds = g_slist_remove(fds, poll_fd);
+		gushort events = input_curl_fd_events(poll_fd->fd, &rfds,
+						      &wfds, &efds);
 
 		if (events != poll_fd->events)
 			g_source_remove_poll(curl.source, poll_fd);
@@ -281,20 +278,20 @@ curl_update_fds(void)
 				g_source_add_poll(curl.source, poll_fd);
 			}
 
-			curl.fds = g_slist_prepend(curl.fds, poll_fd);
+			prev = i;
 		} else {
-			g_free(poll_fd);
+			curl.fds.erase_after(prev);
 		}
 	}
 
 	for (int fd = 0; fd <= max_fd; ++fd) {
 		gushort events = input_curl_fd_events(fd, &rfds, &wfds, &efds);
 		if (events != 0) {
-			GPollFD *poll_fd = g_new(GPollFD, 1);
+			curl.fds.push_front(GPollFD());
+			const auto poll_fd = &curl.fds.front();
 			poll_fd->fd = fd;
 			poll_fd->events = events;
 			g_source_add_poll(curl.source, poll_fd);
-			curl.fds = g_slist_prepend(curl.fds, poll_fd);
 		}
 	}
 }
@@ -310,7 +307,7 @@ input_curl_easy_add(struct input_curl *c, GError **error_r)
 	assert(c->easy != NULL);
 	assert(input_curl_find_request(c->easy) == NULL);
 
-	curl.requests = g_slist_prepend(curl.requests, c);
+	curl.requests.push_front(c);
 
 	CURLMcode mcode = curl_multi_add_handle(curl.multi, c->easy);
 	if (mcode != CURLM_OK) {
@@ -375,7 +372,7 @@ input_curl_easy_free(struct input_curl *c)
 	if (c->easy == NULL)
 		return;
 
-	curl.requests = g_slist_remove(curl.requests, c);
+	curl.requests.remove(c);
 
 	curl_multi_remove_handle(curl.multi, c->easy);
 	curl_easy_cleanup(c->easy);
@@ -423,9 +420,8 @@ input_curl_abort_all_requests(GError *error)
 	assert(io_thread_inside());
 	assert(error != NULL);
 
-	while (curl.requests != NULL) {
-		struct input_curl *c =
-			(struct input_curl *)curl.requests->data;
+	while (!curl.requests.empty()) {
+		struct input_curl *c = curl.requests.front();
 		assert(c->postponed_error == NULL);
 
 		input_curl_easy_free(c);
@@ -586,11 +582,9 @@ input_curl_source_check(G_GNUC_UNUSED GSource *source)
 			return true;
 	}
 
-	for (GSList *i = curl.fds; i != NULL; i = i->next) {
-		GPollFD *poll_fd = (GPollFD *)i->data;
-		if (poll_fd->revents != 0)
+	for (const auto &i : curl.fds)
+		if (i.revents != 0)
 			return true;
-	}
 
 	return false;
 }
@@ -682,7 +676,7 @@ curl_destroy_sources(G_GNUC_UNUSED gpointer data)
 static void
 input_curl_finish(void)
 {
-	assert(curl.requests == NULL);
+	assert(curl.requests.empty());
 
 	io_thread_call(curl_destroy_sources, NULL);
 
