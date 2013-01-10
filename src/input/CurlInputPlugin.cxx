@@ -116,6 +116,22 @@ struct input_curl {
 	struct tag *tag;
 
 	GError *postponed_error;
+
+	input_curl(const char *url, GMutex *mutex, GCond *cond)
+		:range(nullptr), request_headers(nullptr),
+		 buffers(g_queue_new()),
+		 paused(false),
+		 meta_name(nullptr),
+		 tag(nullptr),
+		 postponed_error(nullptr) {
+		input_stream_init(&base, &input_plugin_curl, url, mutex, cond);
+		icy_clear(&icy_metadata);
+	}
+
+	~input_curl();
+
+	input_curl(const input_curl &) = delete;
+	input_curl &operator=(const input_curl &) = delete;
 };
 
 /** libcurl should accept "ICY 200 OK" */
@@ -718,26 +734,21 @@ input_curl_flush_buffers(struct input_curl *c)
 	g_queue_clear(c->buffers);
 }
 
-/**
- * Frees this stream, including the input_stream struct.
- */
-static void
-input_curl_free(struct input_curl *c)
+input_curl::~input_curl()
 {
-	if (c->tag != NULL)
-		tag_free(c->tag);
-	g_free(c->meta_name);
+	if (tag != NULL)
+		tag_free(tag);
+	g_free(meta_name);
 
-	input_curl_easy_free_indirect(c);
-	input_curl_flush_buffers(c);
+	input_curl_easy_free_indirect(this);
+	input_curl_flush_buffers(this);
 
-	g_queue_free(c->buffers);
+	g_queue_free(buffers);
 
-	if (c->postponed_error != NULL)
-		g_error_free(c->postponed_error);
+	if (postponed_error != NULL)
+		g_error_free(postponed_error);
 
-	input_stream_deinit(&c->base);
-	g_free(c);
+	input_stream_deinit(&base);
 }
 
 static bool
@@ -924,7 +935,7 @@ input_curl_close(struct input_stream *is)
 {
 	struct input_curl *c = (struct input_curl *)is;
 
-	input_curl_free(c);
+	delete c;
 }
 
 static bool
@@ -1227,31 +1238,18 @@ input_curl_open(const char *url, GMutex *mutex, GCond *cond,
 	assert(mutex != NULL);
 	assert(cond != NULL);
 
-	struct input_curl *c;
-
 	if (strncmp(url, "http://", 7) != 0)
 		return NULL;
 
-	c = g_new0(struct input_curl, 1);
-	input_stream_init(&c->base, &input_plugin_curl, url,
-			  mutex, cond);
-
-	c->buffers = g_queue_new();
-
-	icy_clear(&c->icy_metadata);
-	c->tag = NULL;
-
-	c->postponed_error = NULL;
-
-	c->paused = false;
+	struct input_curl *c = new input_curl(url, mutex, cond);
 
 	if (!input_curl_easy_init(c, error_r)) {
-		input_curl_free(c);
+		delete c;
 		return NULL;
 	}
 
 	if (!input_curl_easy_add_indirect(c, error_r)) {
-		input_curl_free(c);
+		delete c;
 		return NULL;
 	}
 
