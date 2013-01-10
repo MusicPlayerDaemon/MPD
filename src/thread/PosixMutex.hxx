@@ -36,25 +36,25 @@
  * Low-level wrapper for a pthread_mutex_t.
  */
 class PosixMutex {
-  pthread_mutex_t mutex;
+	pthread_mutex_t mutex;
 
 public:
-  constexpr PosixMutex():mutex(PTHREAD_MUTEX_INITIALIZER) {}
+	constexpr PosixMutex():mutex(PTHREAD_MUTEX_INITIALIZER) {}
 
-  PosixMutex(const PosixMutex &other) = delete;
-  PosixMutex &operator=(const PosixMutex &other) = delete;
+	PosixMutex(const PosixMutex &other) = delete;
+	PosixMutex &operator=(const PosixMutex &other) = delete;
 
-  void lock() {
-    pthread_mutex_lock(&mutex);
-  }
+	void lock() {
+		pthread_mutex_lock(&mutex);
+	}
 
-  bool try_lock() {
-    return pthread_mutex_trylock(&mutex) == 0;
-  }
+	bool try_lock() {
+		return pthread_mutex_trylock(&mutex) == 0;
+	}
 
-  void unlock() {
-    pthread_mutex_unlock(&mutex);
-  }
+	void unlock() {
+		pthread_mutex_unlock(&mutex);
+	}
 };
 
 #endif
