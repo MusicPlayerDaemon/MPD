@@ -147,7 +147,7 @@ player_command_finished_locked(struct player_control *pc)
 	assert(pc->command != PLAYER_COMMAND_NONE);
 
 	pc->command = PLAYER_COMMAND_NONE;
-	g_cond_signal(pc->cond);
+	pc->cond.signal();
 }
 
 static void

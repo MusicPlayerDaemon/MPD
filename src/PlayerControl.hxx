@@ -21,6 +21,8 @@
 #define MPD_PLAYER_H
 
 #include "audio_format.h"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 
 #include <glib.h>
 
@@ -99,12 +101,12 @@ struct player_control {
 	/**
 	 * This lock protects #command, #state, #error.
 	 */
-	GMutex *mutex;
+	Mutex mutex;
 
 	/**
 	 * Trigger this object after you have modified #command.
 	 */
-	GCond *cond;
+	Cond cond;
 
 	enum player_command command;
 	enum player_state state;
@@ -158,7 +160,7 @@ struct player_control {
 static inline void
 player_lock(struct player_control *pc)
 {
-	g_mutex_lock(pc->mutex);
+	pc->mutex.lock();
 }
 
 /**
@@ -167,7 +169,7 @@ player_lock(struct player_control *pc)
 static inline void
 player_unlock(struct player_control *pc)
 {
-	g_mutex_unlock(pc->mutex);
+	pc->mutex.unlock();
 }
 
 /**
@@ -178,7 +180,7 @@ player_unlock(struct player_control *pc)
 static inline void
 player_wait(struct player_control *pc)
 {
-	g_cond_wait(pc->cond, pc->mutex);
+	pc->cond.wait(pc->mutex);
 }
 
 /**
@@ -198,7 +200,7 @@ player_wait_decoder(struct player_control *pc, struct decoder_control *dc);
 static inline void
 player_signal(struct player_control *pc)
 {
-	g_cond_signal(pc->cond);
+	pc->cond.signal();
 }
 
 /**

@@ -37,8 +37,6 @@ player_control::player_control(unsigned _buffer_chunks,
 	:buffer_chunks(_buffer_chunks),
 	 buffered_before_play(_buffered_before_play),
 	 thread(nullptr),
-	 mutex(g_mutex_new()),
-	 cond(g_cond_new()),
 	 command(PLAYER_COMMAND_NONE),
 	 state(PLAYER_STATE_STOP),
 	 error_type(PLAYER_ERROR_NONE),
@@ -55,9 +53,6 @@ player_control::~player_control()
 {
 	if (next_song != nullptr)
 		song_free(next_song);
-
-	g_cond_free(cond);
-	g_mutex_free(mutex);
 }
 
 void
@@ -76,7 +71,7 @@ static void
 player_command_wait_locked(struct player_control *pc)
 {
 	while (pc->command != PLAYER_COMMAND_NONE)
-		g_cond_wait(pc->cond, pc->mutex);
+		pc->cond.wait(pc->mutex);
 }
 
 static void
