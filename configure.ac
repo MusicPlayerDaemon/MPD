@@ -1603,6 +1603,7 @@ results(un,[UNIX Domain Sockets])
 
 printf '\nFile format support:\n\t'
 results(aac, [AAC])
+results(adplug, [AdPlug])
 results(sidplay, [C64 SID])
 results(ffmpeg, [FFMPEG])
 results(flac, [FLAC])
