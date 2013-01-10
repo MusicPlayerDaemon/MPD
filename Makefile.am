@@ -39,8 +39,8 @@ src_mpd_LDADD = \
 	$(FILTER_LIBS) \
 	$(ENCODER_LIBS) \
 	$(MIXER_LIBS) \
-	libutil.a \
 	libevent.a \
+	libutil.a \
 	$(SYSTEMD_DAEMON_LIBS) \
 	$(GLIB_LIBS)
 
@@ -357,6 +357,8 @@ libutil_a_SOURCES = \
 libevent_a_SOURCES = \
 	src/event/WakeFD.cxx src/event/WakeFD.hxx \
 	src/event/TimeoutMonitor.hxx src/event/TimeoutMonitor.cxx \
+	src/event/SocketMonitor.cxx src/event/SocketMonitor.hxx \
+	src/event/BufferedSocket.cxx src/event/BufferedSocket.hxx \
 	src/event/Loop.hxx
 
 # PCM library
