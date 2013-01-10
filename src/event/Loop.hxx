@@ -64,22 +64,20 @@ public:
 		return id;
 	}
 
-	guint AddTimeout(guint interval_ms,
-			 GSourceFunc function, gpointer data) {
+	GSource *AddTimeout(guint interval_ms,
+			    GSourceFunc function, gpointer data) {
 		GSource *source = g_timeout_source_new(interval_ms);
 		g_source_set_callback(source, function, data, nullptr);
-		guint id = g_source_attach(source, GetContext());
-		g_source_unref(source);
-		return id;
+		g_source_attach(source, GetContext());
+		return source;
 	}
 
-	guint AddTimeoutSeconds(guint interval_s,
-				GSourceFunc function, gpointer data) {
+	GSource *AddTimeoutSeconds(guint interval_s,
+				   GSourceFunc function, gpointer data) {
 		GSource *source = g_timeout_source_new_seconds(interval_s);
 		g_source_set_callback(source, function, data, nullptr);
-		guint id = g_source_attach(source, GetContext());
-		g_source_unref(source);
-		return id;
+		g_source_attach(source, GetContext());
+		return source;
 	}
 };
 

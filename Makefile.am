@@ -354,6 +354,7 @@ libutil_a_SOURCES = \
 
 libevent_a_SOURCES = \
 	src/event/WakeFD.cxx src/event/WakeFD.hxx \
+	src/event/TimeoutMonitor.hxx src/event/TimeoutMonitor.cxx \
 	src/event/Loop.hxx
 
 # PCM library

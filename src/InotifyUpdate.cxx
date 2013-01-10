@@ -22,6 +22,7 @@
 #include "InotifySource.hxx"
 #include "InotifyQueue.hxx"
 #include "Mapper.hxx"
+#include "Main.hxx"
 
 extern "C" {
 #include "path.h"
@@ -342,7 +343,7 @@ mpd_inotify_init(unsigned max_depth)
 
 	recursive_watch_subdirectories(&inotify_root, path, 0);
 
-	inotify_queue = new InotifyQueue();
+	inotify_queue = new InotifyQueue(*main_loop);
 
 	g_debug("watching music directory");
 }

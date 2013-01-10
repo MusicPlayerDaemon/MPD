@@ -17,37 +17,49 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_STATE_FILE_HXX
-#define MPD_STATE_FILE_HXX
+#include "config.h"
+#include "TimeoutMonitor.hxx"
+#include "Loop.hxx"
 
-#include "event/TimeoutMonitor.hxx"
-#include "gcc.h"
+void
+TimeoutMonitor::Cancel()
+{
+	if (source != nullptr) {
+		g_source_destroy(source);
+		g_source_unref(source);
+		source = nullptr;
+	}
+}
 
-#include <string>
+void
+TimeoutMonitor::Schedule(unsigned ms)
+{
+	Cancel();
+	source = loop.AddTimeout(ms, Callback, this);
+}
 
-struct Partition;
+void
+TimeoutMonitor::ScheduleSeconds(unsigned s)
+{
+	Cancel();
+	source = loop.AddTimeoutSeconds(s, Callback, this);
+}
 
-class StateFile final : private TimeoutMonitor {
-	std::string path;
+bool
+TimeoutMonitor::Run()
+{
+	bool result = OnTimeout();
+	if (!result && source != nullptr) {
+		g_source_unref(source);
+		source = nullptr;
+	}
 
-	Partition &partition;
+	return result;
+}
 
-	/**
-	 * These version numbers determine whether we need to save the state
-	 * file.  If nothing has changed, we won't let the hard drive spin up.
-	 */
-	unsigned prev_volume_version, prev_output_version,
-		prev_playlist_version;
-
-public:
-	StateFile(const char *path, Partition &partition, EventLoop &loop);
-
-	void Read();
-	void Write();
-	void AutoWrite();
-
-private:
-	virtual bool OnTimeout() override;
-};
-
-#endif /* STATE_FILE_H */
+gboolean
+TimeoutMonitor::Callback(gpointer data)
+{
+	TimeoutMonitor &monitor = *(TimeoutMonitor *)data;
+	return monitor.Run();
+}

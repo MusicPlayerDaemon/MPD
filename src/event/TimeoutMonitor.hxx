@@ -17,37 +17,44 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_STATE_FILE_HXX
-#define MPD_STATE_FILE_HXX
+#ifndef MPD_SOCKET_TIMEOUT_MONITOR_HXX
+#define MPD_SOCKET_TIMEOUT_MONITOR_HXX
 
-#include "event/TimeoutMonitor.hxx"
-#include "gcc.h"
+#include "check.h"
 
-#include <string>
+#include <glib.h>
 
-struct Partition;
+class EventLoop;
 
-class StateFile final : private TimeoutMonitor {
-	std::string path;
-
-	Partition &partition;
-
-	/**
-	 * These version numbers determine whether we need to save the state
-	 * file.  If nothing has changed, we won't let the hard drive spin up.
-	 */
-	unsigned prev_volume_version, prev_output_version,
-		prev_playlist_version;
+class TimeoutMonitor {
+	EventLoop &loop;
+	GSource *source;
 
 public:
-	StateFile(const char *path, Partition &partition, EventLoop &loop);
+	TimeoutMonitor(EventLoop &_loop)
+		:loop(_loop), source(nullptr) {}
 
-	void Read();
-	void Write();
-	void AutoWrite();
+	~TimeoutMonitor() {
+		Cancel();
+	}
+
+	bool IsActive() const {
+		return source != nullptr;
+	}
+
+	void Schedule(unsigned ms);
+	void ScheduleSeconds(unsigned s);
+	void Cancel();
+
+protected:
+	/**
+	 * @return true reschedules the timeout again
+	 */
+	virtual bool OnTimeout() = 0;
 
 private:
-	virtual bool OnTimeout() override;
+	bool Run();
+	static gboolean Callback(gpointer data);
 };
 
-#endif /* STATE_FILE_H */
+#endif /* MAIN_NOTIFY_H */

@@ -20,23 +20,22 @@
 #ifndef MPD_INOTIFY_QUEUE_HXX
 #define MPD_INOTIFY_QUEUE_HXX
 
-#include <glib.h>
+#include "event/TimeoutMonitor.hxx"
+#include "gcc.h"
 
 #include <list>
 #include <string>
 
-class InotifyQueue {
+class InotifyQueue final : private TimeoutMonitor {
 	std::list<std::string> queue;
-	guint source_id;
 
 public:
-	~InotifyQueue();
+	InotifyQueue(EventLoop &_loop):TimeoutMonitor(_loop) {}
 
 	void Enqueue(const char *uri_utf8);
 
 private:
-	bool Run();
-	static gboolean Run(gpointer ctx);
+	virtual bool OnTimeout() override;
 };
 
 #endif

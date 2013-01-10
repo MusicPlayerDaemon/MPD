@@ -20,7 +20,6 @@
 #include "config.h"
 #include "InotifyQueue.hxx"
 #include "UpdateGlue.hxx"
-#include "Main.hxx"
 #include "event/Loop.hxx"
 
 #include <glib.h>
@@ -39,14 +38,8 @@ enum {
 	INOTIFY_UPDATE_DELAY_S = 5,
 };
 
-InotifyQueue::~InotifyQueue()
-{
-	if (source_id != 0)
-		g_source_remove(source_id);
-}
-
-inline bool
-InotifyQueue::Run()
+bool
+InotifyQueue::OnTimeout()
 {
 	unsigned id;
 
@@ -64,15 +57,7 @@ InotifyQueue::Run()
 	}
 
 	/* done, remove the timer event by returning false */
-	source_id = 0;
 	return false;
-}
-
-gboolean
-InotifyQueue::Run(gpointer data)
-{
-	InotifyQueue &queue = *(InotifyQueue *)data;
-	return queue.Run();
 }
 
 static bool
@@ -88,10 +73,7 @@ path_in(const char *path, const char *possible_parent)
 void
 InotifyQueue::Enqueue(const char *uri_utf8)
 {
-	if (source_id != 0)
-		g_source_remove(source_id);
-	source_id = main_loop->AddTimeoutSeconds(INOTIFY_UPDATE_DELAY_S,
-						 Run, nullptr);
+	ScheduleSeconds(INOTIFY_UPDATE_DELAY_S);
 
 	for (auto i = queue.begin(), end = queue.end(); i != end;) {
 		const char *current_uri = i->c_str();

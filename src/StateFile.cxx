@@ -35,17 +35,11 @@
 #define G_LOG_DOMAIN "state_file"
 
 StateFile::StateFile(const char *_path, Partition &_partition, EventLoop &_loop)
-	:path(_path), partition(_partition), loop(_loop),
-	 source_id(0),
+	:TimeoutMonitor(_loop), path(_path), partition(_partition),
 	 prev_volume_version(0), prev_output_version(0),
 	 prev_playlist_version(0)
 {
-	source_id = loop.AddTimeoutSeconds(5 * 60, TimerCallback, this);
-}
-
-StateFile::~StateFile()
-{
-	g_source_remove(source_id);
+	ScheduleSeconds(5 * 60);
 }
 
 void
@@ -120,11 +114,9 @@ StateFile::AutoWrite()
  * This function is called every 5 minutes by the GLib main loop, and
  * saves the state file.
  */
-gboolean
-StateFile::TimerCallback(gpointer data)
+bool
+StateFile::OnTimeout()
 {
-	StateFile &state_file = *(StateFile *)data;
-
-	state_file.AutoWrite();
+	AutoWrite();
 	return true;
 }
