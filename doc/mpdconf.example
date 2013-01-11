@@ -285,16 +285,18 @@ input {
 #
 #audio_output {
 #	type		"winmm"
+#	name		"My WinMM output"
 ##	device		"Digital Audio (S/PDIF) (High Definition Audio Device)" # optional
 #		or
 ##	device		"0"		# optional
 ##	mixer_type	"hardware"	# optional
 #}
 #
-# An example of a openal output.
+# An example of an openal output.
 #
 #audio_output {
 #	type		"openal"
+#	name		"My OpenAL output"
 ##	device		"Digital Audio (S/PDIF) (High Definition Audio Device)" # optional
 #}
 #
