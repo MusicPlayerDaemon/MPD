@@ -23,6 +23,11 @@
 #include "gcc.h"
 
 #include <stdbool.h>
+#include <stdlib.h> /* for size_t */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * Remove the "const" attribute from a string pointer.  This is a
@@ -77,5 +82,26 @@ strchug_fast(char *p)
  */
 bool
 string_array_contains(const char *const* haystack, const char *needle);
+
+#if !defined(HAVE_STRNDUP)
+
+/**
+ * Duplicates the string to a newly allocated buffer
+ * copying at most n characters.
+ *
+ * @param str a string to duplicate
+ * @param n maximal number of characters to copy
+ * @return a pointer to the duplicated string,
+ * or NULL if memory allocation failed.
+ */
+gcc_malloc
+char *
+strndup(const char *str, size_t n);
+
+#endif
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif 
 
 #endif

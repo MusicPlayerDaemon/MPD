@@ -21,6 +21,7 @@
 #define MPD_OPUS_READER_HXX
 
 #include "check.h"
+#include "string_util.h"
 
 #include <stdint.h>
 #include <string.h>
