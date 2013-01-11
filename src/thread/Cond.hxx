@@ -24,8 +24,8 @@
 
 /* mingw-w64 4.6.3 lacks a std::cond implementation */
 
-#include "GLibCond.hxx"
-typedef GLibCond Cond;
+#include "WindowsCond.hxx"
+typedef WindowsCond Cond;
 
 #else
 

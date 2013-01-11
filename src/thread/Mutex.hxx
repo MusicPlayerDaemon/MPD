@@ -24,8 +24,8 @@
 
 /* mingw-w64 4.6.3 lacks a std::mutex implementation */
 
-#include "GLibMutex.hxx"
-typedef GLibMutex Mutex;
+#include "CriticalSection.hxx"
+typedef CriticalSection Mutex;
 
 #else
 
