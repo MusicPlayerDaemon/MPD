@@ -25,6 +25,7 @@
 #ifdef ENABLE_WINMM_OUTPUT
 
 #include <windows.h>
+#include <mmsystem.h>
 
 struct winmm_output;
 

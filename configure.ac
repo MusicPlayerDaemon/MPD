@@ -66,6 +66,7 @@ mingw32* | windows*)
 		src/win/mpd_win32_rc.rc
 	])
 	AC_CHECK_TOOL(WINDRES, windres)
+	AM_CPPFLAGS="$AM_CPPFLAGS -DWIN32_LEAN_AND_MEAN"
 	AM_CPPFLAGS="$AM_CPPFLAGS -DWINVER=0x0501"
 	LIBS="$LIBS -lws2_32"
 	HAVE_WINDOWS=1

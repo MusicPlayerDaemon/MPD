@@ -22,6 +22,8 @@
 #include "output_api.h"
 #include "output/winmm_output_plugin.h"
 
+#include <mmsystem.h>
+
 #include <assert.h>
 #include <math.h>
 #include <windows.h>
