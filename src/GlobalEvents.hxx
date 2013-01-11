@@ -20,6 +20,14 @@
 #ifndef MPD_GLOBAL_EVENTS_HXX
 #define MPD_GLOBAL_EVENTS_HXX
 
+#ifdef WIN32
+/* DELETE is a WIN32 macro that poisons our namespace; this is a
+   kludge to allow us to use it anyway */
+#ifdef DELETE
+#undef DELETE
+#endif
+#endif
+
 namespace GlobalEvents {
 	enum Event {
 		/** database update was finished */
