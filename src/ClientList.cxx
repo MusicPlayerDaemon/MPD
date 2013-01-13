@@ -59,7 +59,8 @@ client_list_add(Client *client)
 void
 client_list_foreach(void (*callback)(Client *client, void *ctx), void *ctx)
 {
-	for (Client *client : clients)
+	auto clients_local = std::list<Client *>(clients);
+	for (Client *client : clients_local)
 		callback(client, ctx);
 }
 
