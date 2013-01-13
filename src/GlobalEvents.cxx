@@ -78,7 +78,7 @@ GlobalEvents::Initialize()
 #ifndef G_OS_WIN32
 	GIOChannel *channel = g_io_channel_unix_new(wake_fd.Get());
 #else
-	GIOChannel *channel = g_io_channel_win32_new_fd(wake_fd.Get());
+	GIOChannel *channel = g_io_channel_win32_new_socket(wake_fd.Get());
 #endif
 
 	source_id = g_io_add_watch(channel, G_IO_IN,

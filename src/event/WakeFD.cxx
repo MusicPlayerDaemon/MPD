@@ -24,8 +24,18 @@
 
 #include <unistd.h>
 
+#ifdef WIN32
+#include <ws2tcpip.h>
+#include <winsock2.h>
+#include <cstring> /* for memset() */
+#endif
+
 #ifdef HAVE_EVENTFD
 #include <sys/eventfd.h>
+#endif
+
+#ifdef WIN32
+static bool PoorSocketPair(int fd[2]);
 #endif
 
 bool
@@ -34,6 +44,9 @@ WakeFD::Create()
 	assert(fds[0] == -1);
 	assert(fds[1] == -1);
 
+#ifdef WIN32
+	return PoorSocketPair(fds);
+#else
 #ifdef HAVE_EVENTFD
 	fds[0] = eventfd_cloexec_nonblock(0, 0);
 	if (fds[0] >= 0) {
@@ -41,21 +54,23 @@ WakeFD::Create()
 		return true;
 	}
 #endif
-
 	return pipe_cloexec_nonblock(fds) >= 0;
+#endif
 }
 
 void
 WakeFD::Destroy()
 {
-#ifndef WIN32
-	/* By some strange reason this call hangs on Win32 */
+#ifdef WIN32
+	closesocket(fds[0]);
+	closesocket(fds[1]);
+#else
 	close(fds[0]);
-#endif
 #ifdef HAVE_EVENTFD
 	if (!IsEventFD())
 #endif
 		close(fds[1]);
+#endif
 
 #ifndef NDEBUG
 	fds[0] = -1;
@@ -67,6 +82,12 @@ bool
 WakeFD::Read()
 {
 	assert(fds[0] >= 0);
+
+#ifdef WIN32
+	assert(fds[1] >= 0);
+	char buffer[256];
+	return recv(fds[0], buffer, sizeof(buffer), 0) > 0;
+#else
 
 #ifdef HAVE_EVENTFD
 	if (IsEventFD()) {
@@ -80,12 +101,19 @@ WakeFD::Read()
 
 	char buffer[256];
 	return read(fds[0], buffer, sizeof(buffer)) > 0;
+#endif
 }
 
 void
 WakeFD::Write()
 {
 	assert(fds[0] >= 0);
+
+#ifdef WIN32
+	assert(fds[1] >= 0);
+
+	send(fds[1], "", 1, 0);
+#else
 
 #ifdef HAVE_EVENTFD
 	if (IsEventFD()) {
@@ -99,4 +127,99 @@ WakeFD::Write()
 	assert(fds[1] >= 0);
 
 	gcc_unused ssize_t nbytes = write(fds[1], "", 1);
+#endif
 }
+
+#ifdef WIN32
+
+static void SafeCloseSocket(SOCKET s)
+{
+	int error = WSAGetLastError();
+	closesocket(s);
+	WSASetLastError(error);
+}
+
+/* Our poor man's socketpair() implementation
+ * Due to limited protocol/address family support and primitive error handling
+ * it's better to keep this as a private implementation detail of WakeFD
+ * rather than wide-available API.
+ */
+static bool PoorSocketPair(int fd[2])
+{
+	assert (fd != nullptr);
+
+	SOCKET listen_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (listen_socket == INVALID_SOCKET)
+		return false;
+
+	sockaddr_in address;
+	std::memset(&address, 0, sizeof(address));
+	address.sin_family = AF_INET;
+	address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+	int ret = bind(listen_socket,
+		       reinterpret_cast<sockaddr*>(&address),
+		       sizeof(address));
+	
+	if (ret < 0) {
+		SafeCloseSocket(listen_socket);
+		return false;
+	}
+
+	ret = listen(listen_socket, 1);
+	
+	if (ret < 0) {
+		SafeCloseSocket(listen_socket);
+		return false;
+	}
+
+	int address_len = sizeof(address);
+	ret = getsockname(listen_socket,
+			  reinterpret_cast<sockaddr*>(&address),
+			  &address_len);
+
+	if (ret < 0) {
+		SafeCloseSocket(listen_socket);
+		return false;
+	}
+
+	SOCKET socket0 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (socket0 == INVALID_SOCKET) {
+		SafeCloseSocket(listen_socket);
+		return false;
+	}
+
+	ret = connect(socket0,
+		      reinterpret_cast<sockaddr*>(&address),
+		      sizeof(address));
+
+	if (ret < 0) {
+		SafeCloseSocket(listen_socket);
+		SafeCloseSocket(socket0);
+		return false;
+	}
+
+	SOCKET socket1 = accept(listen_socket, nullptr, nullptr);
+	if (socket1 == INVALID_SOCKET) {
+		SafeCloseSocket(listen_socket);
+		SafeCloseSocket(socket0);
+		return false;
+	}
+
+	SafeCloseSocket(listen_socket);
+
+	u_long non_block = 1;
+	if (ioctlsocket(socket0, FIONBIO, &non_block) < 0
+	    || ioctlsocket(socket1, FIONBIO, &non_block) < 0) {
+		SafeCloseSocket(socket0);
+		SafeCloseSocket(socket1);
+		return false;
+	}
+
+	fd[0] = static_cast<int>(socket0);
+	fd[1] = static_cast<int>(socket1);
+
+	return true;
+}
+
+#endif
