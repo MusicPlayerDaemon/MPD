@@ -25,6 +25,9 @@
 #include "mpd_error.h"
 #include "GlobalEvents.hxx"
 
+#include <cstdlib>
+#include <atomic>
+
 #include <glib.h>
 
 #include <windows.h>
@@ -32,7 +35,7 @@
 static int service_argc;
 static char **service_argv;
 static char service_name[] = "";
-static BOOL ignore_console_events;
+static std::atomic_bool running;
 static SERVICE_STATUS_HANDLE service_handle;
 
 static void WINAPI
@@ -103,8 +106,22 @@ console_handler(DWORD event)
 	switch (event) {
 	case CTRL_C_EVENT:
 	case CTRL_CLOSE_EVENT:
-		if (!ignore_console_events)
+		if (running.load()) {
+			// Recent msdn docs that process is terminated
+			// if this function returns TRUE.
+			// We initiate correct shutdown sequence (if possible).
+			// Once main() returns CRT will terminate our process
+			// regardless our thread is still active.
+			// If this did not happen within 3 seconds
+			// let's shutdown anyway.
 			GlobalEvents::Emit(GlobalEvents::SHUTDOWN);
+			// Under debugger it's better to wait indefinitely
+			// to allow debugging of shutdown code.
+			Sleep(IsDebuggerPresent() ? INFINITE : 3000);
+		}
+		// If we're not running main loop there is no chance for
+		// clean shutdown.
+		std::exit(EXIT_FAILURE);
 		return TRUE;
 	default:
 		return FALSE;
@@ -125,8 +142,8 @@ int win32_main(int argc, char *argv[])
 	error_code = GetLastError();
 	if (error_code == ERROR_FAILED_SERVICE_CONTROLLER_CONNECT) {
 		/* running as console app */
+		running.store(false);
 		SetConsoleTitle("Music Player Daemon");
-		ignore_console_events = TRUE;
 		SetConsoleCtrlHandler(console_handler, TRUE);
 		return mpd_main(argc, argv);
 	}
@@ -140,7 +157,7 @@ void win32_app_started()
 	if (service_handle != 0)
 		service_notify_status(SERVICE_RUNNING);
 	else
-		ignore_console_events = FALSE;
+		running.store(true);
 }
 
 void win32_app_stopping()
@@ -148,7 +165,7 @@ void win32_app_stopping()
 	if (service_handle != 0)
 		service_notify_status(SERVICE_STOP_PENDING);
 	else
-		ignore_console_events = TRUE;
+		running.store(false);
 }
 
 #endif
