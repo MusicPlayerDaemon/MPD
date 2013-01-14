@@ -36,22 +36,6 @@ extern "C" {
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "inotify"
 
-struct mpd_inotify_source {
-	int fd;
-
-	GIOChannel *channel;
-
-	/**
-	 * The channel's source id in the GLib main loop.
-	 */
-	guint id;
-
-	struct fifo_buffer *buffer;
-
-	mpd_inotify_callback_t callback;
-	void *callback_ctx;
-};
-
 /**
  * A GQuark for GError instances.
  */
@@ -61,35 +45,32 @@ mpd_inotify_quark(void)
 	return g_quark_from_static_string("inotify");
 }
 
-static gboolean
-mpd_inotify_in_event(G_GNUC_UNUSED GIOChannel *_source,
-		     G_GNUC_UNUSED GIOCondition condition,
-		     gpointer data)
+inline void
+InotifySource::InEvent()
 {
-	struct mpd_inotify_source *source = (struct mpd_inotify_source *)data;
 	void *dest;
 	size_t length;
 	ssize_t nbytes;
 
-	dest = fifo_buffer_write(source->buffer, &length);
+	dest = fifo_buffer_write(buffer, &length);
 	if (dest == NULL)
 		MPD_ERROR("buffer full");
 
-	nbytes = read(source->fd, dest, length);
+	nbytes = read(fd, dest, length);
 	if (nbytes < 0)
 		MPD_ERROR("failed to read from inotify: %s",
 			  g_strerror(errno));
 	if (nbytes == 0)
 		MPD_ERROR("end of file from inotify");
 
-	fifo_buffer_append(source->buffer, nbytes);
+	fifo_buffer_append(buffer, nbytes);
 
 	while (true) {
 		const char *name;
 
 		const struct inotify_event *event =
 			(const struct inotify_event *)
-			fifo_buffer_read(source->buffer, &length);
+			fifo_buffer_read(buffer, &length);
 		if (event == NULL || length < sizeof(*event) ||
 		    length < sizeof(*event) + event->len)
 			break;
@@ -99,59 +80,58 @@ mpd_inotify_in_event(G_GNUC_UNUSED GIOChannel *_source,
 		else
 			name = NULL;
 
-		source->callback(event->wd, event->mask, name,
-				 source->callback_ctx);
-		fifo_buffer_consume(source->buffer,
-				    sizeof(*event) + event->len);
+		callback(event->wd, event->mask, name, callback_ctx);
+		fifo_buffer_consume(buffer, sizeof(*event) + event->len);
 	}
+}
 
+gboolean
+InotifySource::InEvent(G_GNUC_UNUSED GIOChannel *_source,
+		       G_GNUC_UNUSED GIOCondition condition,
+		       gpointer data)
+{
+	InotifySource &source = *(InotifySource *)data;
+	source.InEvent();
 	return true;
 }
 
-struct mpd_inotify_source *
-mpd_inotify_source_new(mpd_inotify_callback_t callback, void *callback_ctx,
-		       GError **error_r)
+inline
+InotifySource::InotifySource(mpd_inotify_callback_t _callback, void *_ctx,
+			     int _fd)
+	:callback(_callback), callback_ctx(_ctx), fd(_fd),
+	 channel(g_io_channel_unix_new(fd)),
+	 id(g_io_add_watch(channel, G_IO_IN, InEvent, this)),
+	 buffer(fifo_buffer_new(4096))
 {
-	struct mpd_inotify_source *source =
-		g_new(struct mpd_inotify_source, 1);
+}
 
-	source->fd = inotify_init_cloexec();
-	if (source->fd < 0) {
+InotifySource *
+InotifySource::Create(mpd_inotify_callback_t callback, void *callback_ctx,
+		      GError **error_r)
+{
+	int fd = inotify_init_cloexec();
+	if (fd < 0) {
 		g_set_error(error_r, mpd_inotify_quark(), errno,
 			    "inotify_init() has failed: %s",
 			    g_strerror(errno));
-		g_free(source);
 		return NULL;
 	}
 
-	source->buffer = fifo_buffer_new(4096);
-
-	source->channel = g_io_channel_unix_new(source->fd);
-	source->id = g_io_add_watch(source->channel, G_IO_IN,
-				    mpd_inotify_in_event, source);
-
-	source->callback = callback;
-	source->callback_ctx = callback_ctx;
-
-	return source;
+	return new InotifySource(callback, callback_ctx, fd);
 }
 
-void
-mpd_inotify_source_free(struct mpd_inotify_source *source)
+InotifySource::~InotifySource()
 {
-	g_source_remove(source->id);
-	g_io_channel_unref(source->channel);
-	fifo_buffer_free(source->buffer);
-	close(source->fd);
-	g_free(source);
+	g_source_remove(id);
+	g_io_channel_unref(channel);
+	fifo_buffer_free(buffer);
+	close(fd);
 }
 
 int
-mpd_inotify_source_add(struct mpd_inotify_source *source,
-		       const char *path_fs, unsigned mask,
-		       GError **error_r)
+InotifySource::Add(const char *path_fs, unsigned mask, GError **error_r)
 {
-	int wd = inotify_add_watch(source->fd, path_fs, mask);
+	int wd = inotify_add_watch(fd, path_fs, mask);
 	if (wd < 0)
 		g_set_error(error_r, mpd_inotify_quark(), errno,
 			    "inotify_add_watch() has failed: %s",
@@ -161,9 +141,9 @@ mpd_inotify_source_add(struct mpd_inotify_source *source,
 }
 
 void
-mpd_inotify_source_rm(struct mpd_inotify_source *source, unsigned wd)
+InotifySource::Remove(unsigned wd)
 {
-	int ret = inotify_rm_watch(source->fd, wd);
+	int ret = inotify_rm_watch(fd, wd);
 	if (ret < 0 && errno != EINVAL)
 		g_warning("inotify_rm_watch() has failed: %s",
 			  g_strerror(errno));

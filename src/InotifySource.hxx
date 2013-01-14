@@ -22,40 +22,60 @@
 
 #include "gerror.h"
 
+#include <glib.h>
+
 typedef void (*mpd_inotify_callback_t)(int wd, unsigned mask,
 				       const char *name, void *ctx);
 
-struct mpd_inotify_source;
+class InotifySource {
+	mpd_inotify_callback_t callback;
+	void *callback_ctx;
 
-/**
- * Creates a new inotify source and registers it in the GLib main
- * loop.
- *
- * @param a callback invoked for events received from the kernel
- */
-struct mpd_inotify_source *
-mpd_inotify_source_new(mpd_inotify_callback_t callback, void *callback_ctx,
-		       GError **error_r);
+	int fd;
 
-void
-mpd_inotify_source_free(struct mpd_inotify_source *source);
+	GIOChannel *channel;
 
-/**
- * Adds a path to the notify list.
- *
- * @return a watch descriptor or -1 on error
- */
-int
-mpd_inotify_source_add(struct mpd_inotify_source *source,
-		       const char *path_fs, unsigned mask,
-		       GError **error_r);
+	/**
+	 * The channel's source id in the GLib main loop.
+	 */
+	guint id;
 
-/**
- * Removes a path from the notify list.
- *
- * @param wd the watch descriptor returned by mpd_inotify_source_add()
- */
-void
-mpd_inotify_source_rm(struct mpd_inotify_source *source, unsigned wd);
+	struct fifo_buffer *buffer;
+
+	InotifySource(mpd_inotify_callback_t callback, void *ctx, int fd);
+
+public:
+	/**
+	 * Creates a new inotify source and registers it in the GLib main
+	 * loop.
+	 *
+	 * @param a callback invoked for events received from the kernel
+	 */
+	static InotifySource *Create(mpd_inotify_callback_t callback,
+				     void *ctx,
+				     GError **error_r);
+
+	~InotifySource();
+
+
+	/**
+	 * Adds a path to the notify list.
+	 *
+	 * @return a watch descriptor or -1 on error
+	 */
+	int Add(const char *path_fs, unsigned mask, GError **error_r);
+
+	/**
+	 * Removes a path from the notify list.
+	 *
+	 * @param wd the watch descriptor returned by mpd_inotify_source_add()
+	 */
+	void Remove(unsigned wd);
+
+private:
+	void InEvent();
+	static gboolean InEvent(GIOChannel *source, GIOCondition condition,
+				gpointer data);
+};
 
 #endif

@@ -61,19 +61,17 @@ int main(int argc, char **argv)
 
 	path = argv[1];
 
-	struct mpd_inotify_source *source =
-		mpd_inotify_source_new(my_inotify_callback, NULL,
-				       &error);
+	InotifySource *source = InotifySource::Create(my_inotify_callback,
+						      nullptr, &error);
 	if (source == NULL) {
 		g_warning("%s", error->message);
 		g_error_free(error);
 		return 2;
 	}
 
-	int descriptor = mpd_inotify_source_add(source, path,
-						IN_MASK, &error);
+	int descriptor = source->Add(path, IN_MASK, &error);
 	if (descriptor < 0) {
-		mpd_inotify_source_free(source);
+		delete source;
 		g_warning("%s", error->message);
 		g_error_free(error);
 		return 2;
@@ -90,6 +88,6 @@ int main(int argc, char **argv)
 
 	event_loop->Run();
 
-	mpd_inotify_source_free(source);
+	delete source;
 	delete event_loop;
 }

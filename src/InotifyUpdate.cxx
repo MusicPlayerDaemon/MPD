@@ -56,7 +56,7 @@ struct watch_directory {
 	GList *children;
 };
 
-static struct mpd_inotify_source *inotify_source;
+static InotifySource *inotify_source;
 
 static unsigned inotify_max_depth;
 static struct watch_directory inotify_root;
@@ -117,7 +117,7 @@ remove_watch_directory(struct watch_directory *directory)
 	directory->parent->children =
 		g_list_remove(directory->parent->children, directory);
 
-	mpd_inotify_source_rm(inotify_source, directory->descriptor);
+	inotify_source->Remove(directory->descriptor);
 	g_free(directory->name);
 	g_slice_free(struct watch_directory, directory);
 }
@@ -195,8 +195,7 @@ recursive_watch_subdirectories(struct watch_directory *directory,
 			continue;
 		}
 
-		ret = mpd_inotify_source_add(inotify_source, child_path_fs,
-					     IN_MASK, &error);
+		ret = inotify_source->Add(child_path_fs, IN_MASK, &error);
 		if (ret < 0) {
 			g_warning("Failed to register %s: %s",
 				  child_path_fs, error->message);
@@ -317,8 +316,8 @@ mpd_inotify_init(unsigned max_depth)
 		return;
 	}
 
-	inotify_source = mpd_inotify_source_new(mpd_inotify_callback, NULL,
-						&error);
+	inotify_source = InotifySource::Create(mpd_inotify_callback, nullptr,
+					       &error);
 	if (inotify_source == NULL) {
 		g_warning("%s", error->message);
 		g_error_free(error);
@@ -328,12 +327,11 @@ mpd_inotify_init(unsigned max_depth)
 	inotify_max_depth = max_depth;
 
 	inotify_root.name = g_strdup(path);
-	inotify_root.descriptor = mpd_inotify_source_add(inotify_source, path,
-							 IN_MASK, &error);
+	inotify_root.descriptor = inotify_source->Add(path, IN_MASK, &error);
 	if (inotify_root.descriptor < 0) {
 		g_warning("%s", error->message);
 		g_error_free(error);
-		mpd_inotify_source_free(inotify_source);
+		delete inotify_source;
 		inotify_source = NULL;
 		return;
 	}
@@ -370,7 +368,7 @@ mpd_inotify_finish(void)
 		return;
 
 	mpd_inotify_queue_finish();
-	mpd_inotify_source_free(inotify_source);
+	delete inotify_source;
 
 	g_tree_foreach(inotify_directories, free_watch_directory, NULL);
 	g_tree_destroy(inotify_directories);
