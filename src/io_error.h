@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -39,6 +39,13 @@ set_error_errno(GError **error_r)
 {
 	g_set_error_literal(error_r, errno_quark(), errno,
 			    g_strerror(errno));
+}
+
+static inline GError *
+new_error_errno(void)
+{
+	return g_error_new_literal(errno_quark(), errno,
+				   g_strerror(errno));
 }
 
 #endif
