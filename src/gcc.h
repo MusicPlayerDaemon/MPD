@@ -88,6 +88,7 @@
 /* support for C++11 "override" was added in gcc 4.7 */
 #if !defined(__clang__) && defined(__GNUC__) && !GCC_CHECK_VERSION(4,7)
 #define override
+#define final
 #endif
 
 #endif
