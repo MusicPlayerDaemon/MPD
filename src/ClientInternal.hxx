@@ -24,8 +24,8 @@
 #include "Client.hxx"
 #include "ClientMessage.hxx"
 #include "CommandListBuilder.hxx"
+#include "event/BufferedSocket.hxx"
 #include "command.h"
-#include "util/PeakBuffer.hxx"
 
 #include <set>
 #include <string>
@@ -42,19 +42,12 @@ enum {
 };
 
 struct Partition;
-class PeakBuffer;
 
-class Client {
+class Client final : private BufferedSocket {
 public:
 	Partition &partition;
 	struct playlist &playlist;
 	struct player_control *player_control;
-
-	GIOChannel *channel;
-	guint source_id;
-
-	/** the buffer for reading lines from the #channel */
-	struct fifo_buffer *input;
 
 	unsigned permission;
 
@@ -69,8 +62,6 @@ public:
 	CommandListBuilder cmd_list;
 
 	unsigned int num;	/* client number */
-
-	PeakBuffer output_buffer;
 
 	/** is this client waiting for an "idle" response? */
 	bool idle_waiting;
@@ -98,23 +89,35 @@ public:
 	 */
 	std::list<ClientMessage> messages;
 
-	Client(Partition &partition,
+	Client(EventLoop &loop, Partition &partition,
 	       int fd, int uid, int num);
 	~Client();
+
+	bool IsConnected() const {
+		return BufferedSocket::IsDefined();
+	}
 
 	gcc_pure
 	bool IsSubscribed(const char *channel_name) const {
 		return subscriptions.find(channel_name) != subscriptions.end();
 	}
 
-
 	gcc_pure
 	bool IsExpired() const {
-		return channel == nullptr;
+		return !BufferedSocket::IsDefined();
 	}
 
 	void Close();
 	void SetExpired();
+
+	using BufferedSocket::Write;
+
+private:
+	/* virtual methods from class BufferedSocket */
+	virtual InputResult OnSocketInput(const void *data,
+					  size_t length) override;
+	virtual void OnSocketError(GError *error) override;
+	virtual void OnSocketClosed() override;
 };
 
 extern unsigned int client_max_connections;
@@ -140,9 +143,6 @@ client_read(Client *client);
 
 enum command_return
 client_process_line(Client *client, char *line);
-
-void
-client_write_deferred(Client *client);
 
 void
 client_write_output(Client *client);

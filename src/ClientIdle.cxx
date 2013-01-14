@@ -60,10 +60,8 @@ client_idle_add(Client *client, unsigned flags)
 
 	client->idle_flags |= flags;
 	if (client->idle_waiting
-	    && (client->idle_flags & client->idle_subscriptions)) {
+	    && (client->idle_flags & client->idle_subscriptions))
 		client_idle_notify(client);
-		client_write_output(client);
-	}
 }
 
 static void

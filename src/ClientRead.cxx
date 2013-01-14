@@ -19,91 +19,48 @@
 
 #include "config.h"
 #include "ClientInternal.hxx"
-#include "util/fifo_buffer.h"
+#include "Main.hxx"
+#include "event/Loop.hxx"
 
 #include <assert.h>
 #include <string.h>
 
-static char *
-client_read_line(Client *client)
+BufferedSocket::InputResult
+Client::OnSocketInput(const void *data, size_t length)
 {
-	size_t length;
-	const char *p = (const char *)fifo_buffer_read(client->input, &length);
-	if (p == NULL)
-		return NULL;
+	g_timer_start(last_activity);
 
+	const char *p = (const char *)data;
 	const char *newline = (const char *)memchr(p, '\n', length);
 	if (newline == NULL)
-		return NULL;
+		return InputResult::MORE;
 
 	char *line = g_strndup(p, newline - p);
-	fifo_buffer_consume(client->input, newline - p + 1);
+	BufferedSocket::ConsumeInput(newline + 1 - p);
 
-	return g_strchomp(line);
-}
+	enum command_return result = client_process_line(this, line);
+	g_free(line);
 
-static enum command_return
-client_input_received(Client *client, size_t bytesRead)
-{
-	char *line;
+	switch (result) {
+	case COMMAND_RETURN_OK:
+	case COMMAND_RETURN_IDLE:
+	case COMMAND_RETURN_ERROR:
+		break;
 
-	fifo_buffer_append(client->input, bytesRead);
+	case COMMAND_RETURN_KILL:
+		Close();
+		main_loop->Break();
+		return InputResult::CLOSED;
 
-	/* process all lines */
-
-	while ((line = client_read_line(client)) != NULL) {
-		enum command_return ret = client_process_line(client, line);
-		g_free(line);
-
-		if (ret == COMMAND_RETURN_KILL ||
-		    ret == COMMAND_RETURN_CLOSE)
-			return ret;
-		if (client->IsExpired())
-			return COMMAND_RETURN_CLOSE;
+	case COMMAND_RETURN_CLOSE:
+		Close();
+		return InputResult::CLOSED;
 	}
 
-	return COMMAND_RETURN_OK;
-}
-
-enum command_return
-client_read(Client *client)
-{
-	GError *error = NULL;
-	GIOStatus status;
-	gsize bytes_read;
-
-	assert(client != NULL);
-	assert(client->channel != NULL);
-
-	size_t max_length;
-	char *p = (char *)fifo_buffer_write(client->input, &max_length);
-	if (p == NULL) {
-		g_warning("[%u] buffer overflow", client->num);
-		return COMMAND_RETURN_CLOSE;
+	if (IsExpired()) {
+		Close();
+		return InputResult::CLOSED;
 	}
 
-	status = g_io_channel_read_chars(client->channel, p, max_length,
-					 &bytes_read, &error);
-	switch (status) {
-	case G_IO_STATUS_NORMAL:
-		return client_input_received(client, bytes_read);
-
-	case G_IO_STATUS_AGAIN:
-		/* try again later, after select() */
-		return COMMAND_RETURN_OK;
-
-	case G_IO_STATUS_EOF:
-		/* peer disconnected */
-		return COMMAND_RETURN_CLOSE;
-
-	case G_IO_STATUS_ERROR:
-		/* I/O error */
-		g_warning("failed to read from client %d: %s",
-			  client->num, error->message);
-		g_error_free(error);
-		return COMMAND_RETURN_CLOSE;
-	}
-
-	/* unreachable */
-	return COMMAND_RETURN_CLOSE;
+	return InputResult::AGAIN;
 }

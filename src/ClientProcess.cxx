@@ -61,7 +61,6 @@ client_process_line(Client *client, char *line)
 			/* send empty idle response and leave idle mode */
 			client->idle_waiting = false;
 			command_success(client);
-			client_write_output(client);
 		}
 
 		/* do nothing if the client wasn't idling: the client
@@ -97,7 +96,6 @@ client_process_line(Client *client, char *line)
 			if (ret == COMMAND_RETURN_OK)
 				command_success(client);
 
-			client_write_output(client);
 			client->cmd_list.Reset();
 		} else {
 			if (!client->cmd_list.Add(line)) {
@@ -130,8 +128,6 @@ client_process_line(Client *client, char *line)
 
 			if (ret == COMMAND_RETURN_OK)
 				command_success(client);
-
-			client_write_output(client);
 		}
 	}
 

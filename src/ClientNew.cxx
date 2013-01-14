@@ -22,7 +22,6 @@
 #include "ClientList.hxx"
 #include "Partition.hxx"
 #include "fd_util.h"
-#include "util/fifo_buffer.h"
 extern "C" {
 #include "resolver.h"
 }
@@ -47,45 +46,27 @@ extern "C" {
 
 static const char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
 
-Client::Client(Partition &_partition,
-	       int fd, int _uid, int _num)
-	:partition(_partition),
+Client::Client(EventLoop &_loop, Partition &_partition,
+	       int _fd, int _uid, int _num)
+	:BufferedSocket(_fd, _loop, 16384, client_max_output_buffer_size),
+	 partition(_partition),
 	 playlist(partition.playlist), player_control(&partition.pc),
-	 input(fifo_buffer_new(4096)),
 	 permission(getDefaultPermissions()),
 	 uid(_uid),
 	 last_activity(g_timer_new()),
 	 num(_num),
-	 output_buffer(16384, client_max_output_buffer_size),
 	 idle_waiting(false), idle_flags(0),
 	 num_subscriptions(0)
 {
-	assert(fd >= 0);
-
-	channel = g_io_channel_new_socket(fd);
-	/* GLib is responsible for closing the file descriptor */
-	g_io_channel_set_close_on_unref(channel, true);
-	/* NULL encoding means the stream is binary safe; the MPD
-	   protocol is UTF-8 only, but we are doing this call anyway
-	   to prevent GLib from messing around with the stream */
-	g_io_channel_set_encoding(channel, NULL, NULL);
-	/* we prefer to do buffering */
-	g_io_channel_set_buffered(channel, false);
-
-	source_id = g_io_add_watch(channel,
-				   GIOCondition(G_IO_IN|G_IO_ERR|G_IO_HUP),
-				   client_in_event, this);
 }
 
 Client::~Client()
 {
 	g_timer_destroy(last_activity);
-
-	fifo_buffer_free(input);
 }
 
 void
-client_new(Partition &partition,
+client_new(EventLoop &loop, Partition &partition,
 	   int fd, const struct sockaddr *sa, size_t sa_length, int uid)
 {
 	static unsigned int next_client_num;
@@ -124,7 +105,7 @@ client_new(Partition &partition,
 		return;
 	}
 
-	Client *client = new Client(partition, fd, uid,
+	Client *client = new Client(loop, partition, fd, uid,
 				    next_client_num++);
 
 	(void)send(fd, GREETING, sizeof(GREETING) - 1, 0);

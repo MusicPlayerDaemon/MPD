@@ -22,11 +22,11 @@
 
 #include "gcc.h"
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdarg.h>
 
 struct sockaddr;
+class EventLoop;
 struct Partition;
 class Client;
 
@@ -34,7 +34,7 @@ void client_manager_init(void);
 void client_manager_deinit(void);
 
 void
-client_new(Partition &partition,
+client_new(EventLoop &loop, Partition &partition,
 	   int fd, const struct sockaddr *sa, size_t sa_length, int uid);
 
 /**

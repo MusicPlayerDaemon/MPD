@@ -19,92 +19,18 @@
 
 #include "config.h"
 #include "ClientInternal.hxx"
-#include "Main.hxx"
-#include "event/Loop.hxx"
 
-#include <assert.h>
-
-static gboolean
-client_out_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
-		 gpointer data)
+void
+Client::OnSocketError(GError *error)
 {
-	Client *client = (Client *)data;
+	g_warning("error on client %d: %s", num, error->message);
+	g_error_free(error);
 
-	assert(!client->IsExpired());
-
-	if (condition != G_IO_OUT) {
-		client->SetExpired();
-		return false;
-	}
-
-	client_write_deferred(client);
-
-	if (client->IsExpired()) {
-		client->Close();
-		return false;
-	}
-
-	g_timer_start(client->last_activity);
-
-	if (client->output_buffer.IsEmpty()) {
-		/* done sending deferred buffers exist: schedule
-		   read */
-		client->source_id = g_io_add_watch(client->channel,
-						   GIOCondition(G_IO_IN|G_IO_ERR|G_IO_HUP),
-						   client_in_event, client);
-		return false;
-	}
-
-	/* write more */
-	return true;
+	SetExpired();
 }
 
-gboolean
-client_in_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
-		gpointer data)
+void
+Client::OnSocketClosed()
 {
-	Client *client = (Client *)data;
-	enum command_return ret;
-
-	assert(!client->IsExpired());
-
-	if (condition != G_IO_IN) {
-		client->SetExpired();
-		return false;
-	}
-
-	g_timer_start(client->last_activity);
-
-	ret = client_read(client);
-	switch (ret) {
-	case COMMAND_RETURN_OK:
-	case COMMAND_RETURN_IDLE:
-	case COMMAND_RETURN_ERROR:
-		break;
-
-	case COMMAND_RETURN_KILL:
-		client->Close();
-		main_loop->Break();
-		return false;
-
-	case COMMAND_RETURN_CLOSE:
-		client->Close();
-		return false;
-	}
-
-	if (client->IsExpired()) {
-		client->Close();
-		return false;
-	}
-
-	if (!client->output_buffer.IsEmpty()) {
-		/* deferred buffers exist: schedule write */
-		client->source_id = g_io_add_watch(client->channel,
-						   GIOCondition(G_IO_OUT|G_IO_ERR|G_IO_HUP),
-						   client_out_event, client);
-		return false;
-	}
-
-	/* read more */
-	return true;
+	SetExpired();
 }

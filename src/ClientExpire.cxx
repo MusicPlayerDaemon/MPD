@@ -26,18 +26,11 @@ static guint expire_source_id;
 void
 Client::SetExpired()
 {
-	if (!IsExpired())
-		client_schedule_expire();
+	if (IsExpired())
+		return;
 
-	if (source_id != 0) {
-		g_source_remove(source_id);
-		source_id = 0;
-	}
-
-	if (channel != NULL) {
-		g_io_channel_unref(channel);
-		channel = nullptr;
-	}
+	client_schedule_expire();
+	BufferedSocket::Close();
 }
 
 static void
