@@ -20,6 +20,8 @@
 #ifndef MPD_IO_THREAD_HXX
 #define MPD_IO_THREAD_HXX
 
+#include "gcc.h"
+
 #include <glib.h>
 
 void
@@ -47,25 +49,25 @@ io_thread_quit(void);
 void
 io_thread_deinit(void);
 
-G_GNUC_PURE
+gcc_pure
 GMainContext *
 io_thread_context(void);
 
 /**
  * Is the current thread the I/O thread?
  */
-G_GNUC_PURE
+gcc_pure
 bool
 io_thread_inside(void);
 
 guint
 io_thread_idle_add(GSourceFunc function, gpointer data);
 
-G_GNUC_MALLOC
+gcc_malloc
 GSource *
 io_thread_timeout_add(guint interval_ms, GSourceFunc function, gpointer data);
 
-G_GNUC_MALLOC
+gcc_malloc
 GSource *
 io_thread_timeout_add_seconds(guint interval,
 			      GSourceFunc function, gpointer data);
