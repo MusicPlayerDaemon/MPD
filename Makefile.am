@@ -241,6 +241,7 @@ src_mpd_SOURCES = \
 	src/Listen.cxx src/Listen.hxx \
 	src/Log.cxx src/Log.hxx \
 	src/ls.cxx \
+	src/SocketError.hxx \
 	src/io_error.h \
 	src/IOThread.cxx src/IOThread.hxx \
 	src/Main.cxx src/Main.hxx \
