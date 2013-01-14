@@ -20,14 +20,39 @@
 #ifndef MPD_STATE_FILE_HXX
 #define MPD_STATE_FILE_HXX
 
+#include <glib.h>
+
+#include <string>
+
 struct Partition;
+class EventLoop;
 
-void
-state_file_init(const char *path, Partition &partition);
+class StateFile {
+	std::string path;
 
-void
-state_file_finish(Partition &partition);
+	Partition &partition;
+	EventLoop &loop;
 
-void write_state_file(void);
+	/** the GLib source id for the save timer */
+	guint source_id;
+
+	/**
+	 * These version numbers determine whether we need to save the state
+	 * file.  If nothing has changed, we won't let the hard drive spin up.
+	 */
+	unsigned prev_volume_version, prev_output_version,
+		prev_playlist_version;
+
+public:
+	StateFile(const char *path, Partition &partition, EventLoop &loop);
+	~StateFile();
+
+	void Read();
+	void Write();
+	void AutoWrite();
+
+private:
+	static gboolean TimerCallback(gpointer data);
+};
 
 #endif /* STATE_FILE_H */

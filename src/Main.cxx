@@ -101,6 +101,8 @@ EventLoop *main_loop;
 
 Partition *global_partition;
 
+static StateFile *state_file;
+
 static bool
 glue_daemonize_init(const struct options *options, GError **error_r)
 {
@@ -225,14 +227,18 @@ glue_state_file_init(GError **error_r)
 	GError *error = NULL;
 
 	char *path = config_dup_path(CONF_STATE_FILE, &error);
-	if (path == NULL && error != NULL) {
-		g_propagate_error(error_r, error);
-		return false;
+	if (path == nullptr) {
+		if (error != nullptr) {
+			g_propagate_error(error_r, error);
+			return false;
+		}
+
+		return true;
 	}
 
-	state_file_init(path, *global_partition);
+	state_file = new StateFile(path, *global_partition, *main_loop);
 	g_free(path);
-
+	state_file->Read();
 	return true;
 }
 
@@ -519,7 +525,11 @@ int mpd_main(int argc, char *argv[])
 	mpd_inotify_finish();
 #endif
 
-	state_file_finish(*global_partition);
+	if (state_file != nullptr) {
+		state_file->Write();
+		delete state_file;
+	}
+
 	pc_kill(&global_partition->pc);
 	finishZeroconf();
 	client_manager_deinit();

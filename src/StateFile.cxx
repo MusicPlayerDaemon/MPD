@@ -24,7 +24,6 @@
 #include "TextFile.hxx"
 #include "Partition.hxx"
 #include "Volume.hxx"
-#include "Main.hxx"
 #include "event/Loop.hxx"
 
 #include <glib.h>
@@ -35,31 +34,29 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "state_file"
 
-static char *state_file_path;
-
-/** the GLib source id for the save timer */
-static guint save_state_source_id;
-
-/**
- * These version numbers determine whether we need to save the state
- * file.  If nothing has changed, we won't let the hard drive spin up.
- */
-static unsigned prev_volume_version, prev_output_version,
-	prev_playlist_version;
-
-static void
-state_file_write(Partition &partition)
+StateFile::StateFile(const char *_path, Partition &_partition, EventLoop &_loop)
+	:path(_path), partition(_partition), loop(_loop),
+	 source_id(0),
+	 prev_volume_version(0), prev_output_version(0),
+	 prev_playlist_version(0)
 {
-	FILE *fp;
+	source_id = loop.AddTimeoutSeconds(5 * 60, TimerCallback, this);
+}
 
-	assert(state_file_path != NULL);
+StateFile::~StateFile()
+{
+	g_source_remove(source_id);
+}
 
-	g_debug("Saving state file %s", state_file_path);
+void
+StateFile::Write()
+{
+	g_debug("Saving state file %s", path.c_str());
 
-	fp = fopen(state_file_path, "w");
+	FILE *fp = fopen(path.c_str(), "w");
 	if (G_UNLIKELY(!fp)) {
 		g_warning("failed to create %s: %s",
-			  state_file_path, g_strerror(errno));
+			  path.c_str(), g_strerror(errno));
 		return;
 	}
 
@@ -75,19 +72,17 @@ state_file_write(Partition &partition)
 							&partition.pc);
 }
 
-static void
-state_file_read(Partition &partition)
+void
+StateFile::Read()
 {
 	bool success;
 
-	assert(state_file_path != NULL);
+	g_debug("Loading state file %s", path.c_str());
 
-	g_debug("Loading state file %s", state_file_path);
-
-	TextFile file(state_file_path);
+	TextFile file(path.c_str());
 	if (file.HasFailed()) {
 		g_warning("failed to open %s: %s",
-			  state_file_path, g_strerror(errno));
+			  path.c_str(), g_strerror(errno));
 		return;
 	}
 
@@ -107,54 +102,29 @@ state_file_read(Partition &partition)
 							&partition.pc);
 }
 
-/**
- * This function is called every 5 minutes by the GLib main loop, and
- * saves the state file.
- */
-static gboolean
-timer_save_state_file(gpointer data)
+inline void
+StateFile::AutoWrite()
 {
-	Partition &partition = *(Partition *)data;
-
 	if (prev_volume_version == sw_volume_state_get_hash() &&
 	    prev_output_version == audio_output_state_get_version() &&
 	    prev_playlist_version == playlist_state_get_hash(&partition.playlist,
 							     &partition.pc))
 		/* nothing has changed - don't save the state file,
 		   don't spin up the hard disk */
-		return true;
+		return;
 
-	state_file_write(partition);
+	Write();
+}
+
+/**
+ * This function is called every 5 minutes by the GLib main loop, and
+ * saves the state file.
+ */
+gboolean
+StateFile::TimerCallback(gpointer data)
+{
+	StateFile &state_file = *(StateFile *)data;
+
+	state_file.AutoWrite();
 	return true;
-}
-
-void
-state_file_init(const char *path, Partition &partition)
-{
-	assert(state_file_path == NULL);
-
-	if (path == NULL)
-		return;
-
-	state_file_path = g_strdup(path);
-	state_file_read(partition);
-
-	save_state_source_id =
-		main_loop->AddTimeoutSeconds(5 * 60, timer_save_state_file,
-					     &partition);
-}
-
-void
-state_file_finish(Partition &partition)
-{
-	if (state_file_path == NULL)
-		/* no state file configured, no cleanup required */
-		return;
-
-	if (save_state_source_id != 0)
-		g_source_remove(save_state_source_id);
-
-	state_file_write(partition);
-
-	g_free(state_file_path);
 }
