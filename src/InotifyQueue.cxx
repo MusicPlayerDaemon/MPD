@@ -23,9 +23,6 @@
 #include "Main.hxx"
 #include "event/Loop.hxx"
 
-#include <list>
-#include <string>
-
 #include <glib.h>
 
 #include <string.h>
@@ -42,28 +39,19 @@ enum {
 	INOTIFY_UPDATE_DELAY_S = 5,
 };
 
-static std::list<std::string> inotify_queue;
-static guint queue_source_id;
-
-void
-mpd_inotify_queue_init(void)
+InotifyQueue::~InotifyQueue()
 {
+	if (source_id != 0)
+		g_source_remove(source_id);
 }
 
-void
-mpd_inotify_queue_finish(void)
-{
-	if (queue_source_id != 0)
-		g_source_remove(queue_source_id);
-}
-
-static gboolean
-mpd_inotify_run_update(G_GNUC_UNUSED gpointer data)
+inline bool
+InotifyQueue::Run()
 {
 	unsigned id;
 
-	while (!inotify_queue.empty()) {
-		const char *uri_utf8 = inotify_queue.front().c_str();
+	while (!queue.empty()) {
+		const char *uri_utf8 = queue.front().c_str();
 
 		id = update_enqueue(uri_utf8, false);
 		if (id == 0)
@@ -72,12 +60,19 @@ mpd_inotify_run_update(G_GNUC_UNUSED gpointer data)
 
 		g_debug("updating '%s' job=%u", uri_utf8, id);
 
-		inotify_queue.pop_front();
+		queue.pop_front();
 	}
 
 	/* done, remove the timer event by returning false */
-	queue_source_id = 0;
+	source_id = 0;
 	return false;
+}
+
+gboolean
+InotifyQueue::Run(gpointer data)
+{
+	InotifyQueue &queue = *(InotifyQueue *)data;
+	return queue.Run();
 }
 
 static bool
@@ -91,16 +86,14 @@ path_in(const char *path, const char *possible_parent)
 }
 
 void
-mpd_inotify_enqueue(const char *uri_utf8)
+InotifyQueue::Enqueue(const char *uri_utf8)
 {
-	if (queue_source_id != 0)
-		g_source_remove(queue_source_id);
-	queue_source_id = main_loop->AddTimeoutSeconds(INOTIFY_UPDATE_DELAY_S,
-						       mpd_inotify_run_update,
-						       nullptr);
+	if (source_id != 0)
+		g_source_remove(source_id);
+	source_id = main_loop->AddTimeoutSeconds(INOTIFY_UPDATE_DELAY_S,
+						 Run, nullptr);
 
-	for (auto i = inotify_queue.begin(), end = inotify_queue.end();
-	     i != end;) {
+	for (auto i = queue.begin(), end = queue.end(); i != end;) {
 		const char *current_uri = i->c_str();
 
 		if (path_in(uri_utf8, current_uri))
@@ -111,10 +104,10 @@ mpd_inotify_enqueue(const char *uri_utf8)
 			/* existing path is a sub-path of the new
 			   path; we can dequeue the existing path and
 			   update the new path instead */
-			i = inotify_queue.erase(i);
+			i = queue.erase(i);
 		else
 			++i;
 	}
 
-	inotify_queue.emplace_back(uri_utf8);
+	queue.emplace_back(uri_utf8);
 }

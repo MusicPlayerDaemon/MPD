@@ -57,6 +57,7 @@ struct watch_directory {
 };
 
 static InotifySource *inotify_source;
+static InotifyQueue *inotify_queue;
 
 static unsigned inotify_max_depth;
 static struct watch_directory inotify_root;
@@ -295,7 +296,7 @@ mpd_inotify_callback(int wd, unsigned mask,
 			: g_strdup("");
 
 		if (uri_utf8 != NULL) {
-			mpd_inotify_enqueue(uri_utf8);
+			inotify_queue->Enqueue(uri_utf8);
 			g_free(uri_utf8);
 		}
 	}
@@ -341,7 +342,7 @@ mpd_inotify_init(unsigned max_depth)
 
 	recursive_watch_subdirectories(&inotify_root, path, 0);
 
-	mpd_inotify_queue_init();
+	inotify_queue = new InotifyQueue();
 
 	g_debug("watching music directory");
 }
@@ -367,7 +368,7 @@ mpd_inotify_finish(void)
 	if (inotify_source == NULL)
 		return;
 
-	mpd_inotify_queue_finish();
+	delete inotify_queue;
 	delete inotify_source;
 
 	g_tree_foreach(inotify_directories, free_watch_directory, NULL);

@@ -20,13 +20,23 @@
 #ifndef MPD_INOTIFY_QUEUE_HXX
 #define MPD_INOTIFY_QUEUE_HXX
 
-void
-mpd_inotify_queue_init(void);
+#include <glib.h>
 
-void
-mpd_inotify_queue_finish(void);
+#include <list>
+#include <string>
 
-void
-mpd_inotify_enqueue(const char *uri_utf8);
+class InotifyQueue {
+	std::list<std::string> queue;
+	guint source_id;
+
+public:
+	~InotifyQueue();
+
+	void Enqueue(const char *uri_utf8);
+
+private:
+	bool Run();
+	static gboolean Run(gpointer ctx);
+};
 
 #endif
