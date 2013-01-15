@@ -124,7 +124,6 @@ mpd_headers = \
 	src/TimePrint.cxx src/TimePrint.hxx \
 	src/song.h \
 	src/song_sort.c src/song_sort.h \
-	src/socket_util.h \
 	src/stats.h \
 	src/tag.h \
 	src/tag_internal.h \
@@ -280,7 +279,7 @@ src_mpd_SOURCES = \
 	src/SongPrint.cxx src/SongPrint.hxx \
 	src/SongSave.cxx src/SongSave.hxx \
 	src/resolver.c src/resolver.h \
-	src/socket_util.c \
+	src/SocketUtil.cxx src/SocketUtil.hxx \
 	src/StateFile.cxx src/StateFile.hxx \
 	src/Stats.cxx \
 	src/Tag.cxx \
@@ -1288,7 +1287,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/timer.c src/clock.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/page.c \
-	src/socket_util.c \
+	src/SocketUtil.cxx \
 	src/resolver.c \
 	src/OutputInit.cxx src/OutputFinish.cxx src/OutputList.cxx \
 	src/OutputPlugin.cxx \

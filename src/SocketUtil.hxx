@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,18 +23,14 @@
  *
  */
 
-#ifndef SOCKET_UTIL_H
-#define SOCKET_UTIL_H
+#ifndef MPD_SOCKET_UTIL_HXX
+#define MPD_SOCKET_UTIL_HXX
 
 #include "gerror.h"
 
 #include <stddef.h>
 
 struct sockaddr;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * Creates a socket listening on the specified address.  This is a
@@ -58,9 +54,5 @@ socket_bind_listen(int domain, int type, int protocol,
 
 int
 socket_keepalive(int fd);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

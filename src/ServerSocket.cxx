@@ -24,7 +24,7 @@
 #endif
 
 #include "ServerSocket.hxx"
-#include "socket_util.h"
+#include "SocketUtil.hxx"
 #include "resolver.h"
 #include "fd_util.h"
 #include "glib_socket.h"
