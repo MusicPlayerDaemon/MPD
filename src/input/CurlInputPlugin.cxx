@@ -776,6 +776,9 @@ read_from_buffer(IcyMetaDataParser &icy, std::list<CurlInputBuffer> &buffers,
 				buffers.pop_front();
 				break;
 			}
+
+			if (length == 0)
+				break;
 		}
 
 		chunk = icy.Meta(buffer.Begin(), length);
@@ -788,6 +791,9 @@ read_from_buffer(IcyMetaDataParser &icy, std::list<CurlInputBuffer> &buffers,
 				buffers.pop_front();
 				break;
 			}
+
+			if (length == 0)
+				break;
 		}
 	}
 
