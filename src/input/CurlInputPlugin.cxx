@@ -325,18 +325,11 @@ curl_update_fds(void)
 
 		gushort events = input_curl_fd_events(poll_fd->fd, &rfds,
 						      &wfds, &efds);
-
-		if (events != poll_fd->events)
-			g_source_remove_poll(curl.source, poll_fd);
-
 		if (events != 0) {
-			if (events != poll_fd->events) {
-				poll_fd->events = events;
-				g_source_add_poll(curl.source, poll_fd);
-			}
-
+			poll_fd->events = events;
 			prev = i;
 		} else {
+			g_source_remove_poll(curl.source, poll_fd);
 			curl.fds.erase_after(prev);
 		}
 	}
