@@ -55,7 +55,7 @@ client_idle_notify(Client *client)
 void
 client_idle_add(Client *client, unsigned flags)
 {
-	if (client_is_expired(client))
+	if (client->IsExpired())
 		return;
 
 	client->idle_flags |= flags;

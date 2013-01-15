@@ -20,11 +20,6 @@
 #include "config.h"
 #include "ClientInternal.hxx"
 
-bool client_is_expired(const Client *client)
-{
-	return client->channel == NULL;
-}
-
 int client_get_uid(const Client *client)
 {
 	return client->uid;

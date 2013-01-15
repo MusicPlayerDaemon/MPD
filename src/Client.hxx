@@ -37,9 +37,6 @@ void
 client_new(Partition &partition,
 	   int fd, const struct sockaddr *sa, size_t sa_length, int uid);
 
-gcc_pure
-bool client_is_expired(const Client *client);
-
 /**
  * returns the uid of the client process, or a negative value if the
  * uid is unknown

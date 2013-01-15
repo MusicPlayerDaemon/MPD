@@ -149,13 +149,12 @@ client_new(Partition &partition,
 }
 
 void
-client_close(Client *client)
+Client::Close()
 {
-	client_list_remove(client);
+	client_list_remove(this);
 
-	client_set_expired(client);
+	SetExpired();
 
-	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
-	      "[%u] closed", client->num);
-	delete client;
+	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE, "[%u] closed", num);
+	delete this;
 }

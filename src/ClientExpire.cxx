@@ -24,34 +24,34 @@
 static guint expire_source_id;
 
 void
-client_set_expired(Client *client)
+Client::SetExpired()
 {
-	if (!client_is_expired(client))
+	if (!IsExpired())
 		client_schedule_expire();
 
-	if (client->source_id != 0) {
-		g_source_remove(client->source_id);
-		client->source_id = 0;
+	if (source_id != 0) {
+		g_source_remove(source_id);
+		source_id = 0;
 	}
 
-	if (client->channel != NULL) {
-		g_io_channel_unref(client->channel);
-		client->channel = NULL;
+	if (channel != NULL) {
+		g_io_channel_unref(channel);
+		channel = nullptr;
 	}
 }
 
 static void
 client_check_expired_callback(Client *client, G_GNUC_UNUSED gpointer user_data)
 {
-	if (client_is_expired(client)) {
+	if (client->IsExpired()) {
 		g_debug("[%u] expired", client->num);
-		client_close(client);
+		client->Close();
 	} else if (!client->idle_waiting && /* idle clients
 					       never expire */
 		   (int)g_timer_elapsed(client->last_activity, NULL) >
 		   client_timeout) {
 		g_debug("[%u] timeout", client->num);
-		client_close(client);
+		client->Close();
 	}
 }
 

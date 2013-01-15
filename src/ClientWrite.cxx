@@ -49,13 +49,13 @@ client_write_deferred_buffer(Client *client,
 	case G_IO_STATUS_EOF:
 		/* client has disconnected */
 
-		client_set_expired(client);
+		client->SetExpired();
 		return 0;
 
 	case G_IO_STATUS_ERROR:
 		/* I/O error */
 
-		client_set_expired(client);
+		client->SetExpired();
 		g_warning("failed to flush buffer for %i: %s",
 			  client->num, error->message);
 		g_error_free(error);
@@ -126,7 +126,7 @@ client_defer_output(Client *client, const void *data, size_t length)
 			  (unsigned long)client->deferred_bytes,
 			  (unsigned long)client_max_output_buffer_size);
 		/* cause client to close */
-		client_set_expired(client);
+		client->SetExpired();
 		return;
 	}
 
@@ -160,13 +160,13 @@ client_write_direct(Client *client, const char *data, size_t length)
 	case G_IO_STATUS_EOF:
 		/* client has disconnected */
 
-		client_set_expired(client);
+		client->SetExpired();
 		return;
 
 	case G_IO_STATUS_ERROR:
 		/* I/O error */
 
-		client_set_expired(client);
+		client->SetExpired();
 		g_warning("failed to write to %i: %s",
 			  client->num, error->message);
 		g_error_free(error);
@@ -184,14 +184,14 @@ client_write_direct(Client *client, const char *data, size_t length)
 void
 client_write_output(Client *client)
 {
-	if (client_is_expired(client) || !client->send_buf_used)
+	if (client->IsExpired() || !client->send_buf_used)
 		return;
 
 	if (!g_queue_is_empty(client->deferred_send)) {
 		client_defer_output(client, client->send_buf,
 				    client->send_buf_used);
 
-		if (client_is_expired(client))
+		if (client->IsExpired())
 			return;
 
 		/* try to flush the deferred buffers now; the current
@@ -216,10 +216,10 @@ static void
 client_write(Client *client, const char *buffer, size_t buflen)
 {
 	/* if the client is going to be closed, do nothing */
-	if (client_is_expired(client))
+	if (client->IsExpired())
 		return;
 
-	while (buflen > 0 && !client_is_expired(client)) {
+	while (buflen > 0 && !client->IsExpired()) {
 		size_t copylen;
 
 		assert(client->send_buf_used < sizeof(client->send_buf));

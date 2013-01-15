@@ -42,7 +42,7 @@ client_process_command_list(Client *client, bool list_ok,
 			cmd);
 		ret = command_process(client, num++, cmd);
 		g_debug("command_process_list: command returned %i", ret);
-		if (ret != COMMAND_RETURN_OK || client_is_expired(client))
+		if (ret != COMMAND_RETURN_OK || client->IsExpired())
 			break;
 		else if (list_ok)
 			client_puts(client, "list_OK\n");
@@ -91,7 +91,7 @@ client_process_line(Client *client, char *line)
 				"list returned %i", client->num, ret);
 
 			if (ret == COMMAND_RETURN_CLOSE ||
-			    client_is_expired(client))
+			    client->IsExpired())
 				return COMMAND_RETURN_CLOSE;
 
 			if (ret == COMMAND_RETURN_OK)
@@ -125,7 +125,7 @@ client_process_line(Client *client, char *line)
 				client->num, ret);
 
 			if (ret == COMMAND_RETURN_CLOSE ||
-			    client_is_expired(client))
+			    client->IsExpired())
 				return COMMAND_RETURN_CLOSE;
 
 			if (ret == COMMAND_RETURN_OK)

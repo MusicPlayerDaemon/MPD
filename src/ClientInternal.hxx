@@ -112,18 +112,21 @@ public:
 	bool IsSubscribed(const char *channel_name) const {
 		return subscriptions.find(channel_name) != subscriptions.end();
 	}
+
+
+	gcc_pure
+	bool IsExpired() const {
+		return channel == nullptr;
+	}
+
+	void Close();
+	void SetExpired();
 };
 
 extern unsigned int client_max_connections;
 extern int client_timeout;
 extern size_t client_max_command_list_size;
 extern size_t client_max_output_buffer_size;
-
-void
-client_close(Client *client);
-
-void
-client_set_expired(Client *client);
 
 /**
  * Schedule an "expired" check for all clients: permanently delete

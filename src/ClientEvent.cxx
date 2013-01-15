@@ -30,17 +30,17 @@ client_out_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 {
 	Client *client = (Client *)data;
 
-	assert(!client_is_expired(client));
+	assert(!client->IsExpired());
 
 	if (condition != G_IO_OUT) {
-		client_set_expired(client);
+		client->SetExpired();
 		return false;
 	}
 
 	client_write_deferred(client);
 
-	if (client_is_expired(client)) {
-		client_close(client);
+	if (client->IsExpired()) {
+		client->Close();
 		return false;
 	}
 
@@ -66,10 +66,10 @@ client_in_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 	Client *client = (Client *)data;
 	enum command_return ret;
 
-	assert(!client_is_expired(client));
+	assert(!client->IsExpired());
 
 	if (condition != G_IO_IN) {
-		client_set_expired(client);
+		client->SetExpired();
 		return false;
 	}
 
@@ -83,17 +83,17 @@ client_in_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 		break;
 
 	case COMMAND_RETURN_KILL:
-		client_close(client);
+		client->Close();
 		main_loop->Break();
 		return false;
 
 	case COMMAND_RETURN_CLOSE:
-		client_close(client);
+		client->Close();
 		return false;
 	}
 
-	if (client_is_expired(client)) {
-		client_close(client);
+	if (client->IsExpired()) {
+		client->Close();
 		return false;
 	}
 

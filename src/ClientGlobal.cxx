@@ -58,7 +58,7 @@ static void client_close_all(void)
 	while (!client_list_is_empty()) {
 		Client *client = client_list_get_first();
 
-		client_close(client);
+		client->Close();
 	}
 
 	assert(client_list_is_empty());

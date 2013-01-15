@@ -58,7 +58,7 @@ client_input_received(Client *client, size_t bytesRead)
 		if (ret == COMMAND_RETURN_KILL ||
 		    ret == COMMAND_RETURN_CLOSE)
 			return ret;
-		if (client_is_expired(client))
+		if (client->IsExpired())
 			return COMMAND_RETURN_CLOSE;
 	}
 
