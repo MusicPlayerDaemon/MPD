@@ -318,7 +318,8 @@ mpd_inotify_init(unsigned max_depth)
 		return;
 	}
 
-	inotify_source = InotifySource::Create(mpd_inotify_callback, nullptr,
+	inotify_source = InotifySource::Create(*main_loop,
+					       mpd_inotify_callback, nullptr,
 					       &error);
 	if (inotify_source == NULL) {
 		g_warning("%s", error->message);

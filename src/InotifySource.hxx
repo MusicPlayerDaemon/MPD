@@ -20,29 +20,23 @@
 #ifndef MPD_INOTIFY_SOURCE_HXX
 #define MPD_INOTIFY_SOURCE_HXX
 
+#include "event/SocketMonitor.hxx"
 #include "gerror.h"
+#include "gcc.h"
 
 #include <glib.h>
 
 typedef void (*mpd_inotify_callback_t)(int wd, unsigned mask,
 				       const char *name, void *ctx);
 
-class InotifySource {
+class InotifySource final : private SocketMonitor {
 	mpd_inotify_callback_t callback;
 	void *callback_ctx;
 
-	int fd;
-
-	GIOChannel *channel;
-
-	/**
-	 * The channel's source id in the GLib main loop.
-	 */
-	guint id;
-
 	struct fifo_buffer *buffer;
 
-	InotifySource(mpd_inotify_callback_t callback, void *ctx, int fd);
+	InotifySource(EventLoop &_loop,
+		      mpd_inotify_callback_t callback, void *ctx, int fd);
 
 public:
 	/**
@@ -51,7 +45,8 @@ public:
 	 *
 	 * @param a callback invoked for events received from the kernel
 	 */
-	static InotifySource *Create(mpd_inotify_callback_t callback,
+	static InotifySource *Create(EventLoop &_loop,
+				     mpd_inotify_callback_t callback,
 				     void *ctx,
 				     GError **error_r);
 
@@ -73,9 +68,7 @@ public:
 	void Remove(unsigned wd);
 
 private:
-	void InEvent();
-	static gboolean InEvent(GIOChannel *source, GIOCondition condition,
-				gpointer data);
+	virtual void OnSocketReady(unsigned flags) override;
 };
 
 #endif

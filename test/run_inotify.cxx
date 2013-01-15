@@ -61,7 +61,10 @@ int main(int argc, char **argv)
 
 	path = argv[1];
 
-	InotifySource *source = InotifySource::Create(my_inotify_callback,
+	event_loop = new EventLoop(EventLoop::Default());
+
+	InotifySource *source = InotifySource::Create(*event_loop,
+						      my_inotify_callback,
 						      nullptr, &error);
 	if (source == NULL) {
 		g_warning("%s", error->message);
@@ -76,8 +79,6 @@ int main(int argc, char **argv)
 		g_error_free(error);
 		return 2;
 	}
-
-	event_loop = new EventLoop(EventLoop::Default());
 
 	struct sigaction sa;
 	sa.sa_flags = 0;

@@ -41,8 +41,8 @@ mpd_inotify_quark(void)
 	return g_quark_from_static_string("inotify");
 }
 
-inline void
-InotifySource::InEvent()
+void
+InotifySource::OnSocketReady(gcc_unused unsigned flags)
 {
 	void *dest;
 	size_t length;
@@ -52,7 +52,7 @@ InotifySource::InEvent()
 	if (dest == NULL)
 		MPD_ERROR("buffer full");
 
-	nbytes = read(fd, dest, length);
+	nbytes = read(Get(), dest, length);
 	if (nbytes < 0)
 		MPD_ERROR("failed to read from inotify: %s",
 			  g_strerror(errno));
@@ -81,28 +81,21 @@ InotifySource::InEvent()
 	}
 }
 
-gboolean
-InotifySource::InEvent(G_GNUC_UNUSED GIOChannel *_source,
-		       G_GNUC_UNUSED GIOCondition condition,
-		       gpointer data)
-{
-	InotifySource &source = *(InotifySource *)data;
-	source.InEvent();
-	return true;
-}
-
 inline
-InotifySource::InotifySource(mpd_inotify_callback_t _callback, void *_ctx,
+InotifySource::InotifySource(EventLoop &_loop,
+			     mpd_inotify_callback_t _callback, void *_ctx,
 			     int _fd)
-	:callback(_callback), callback_ctx(_ctx), fd(_fd),
-	 channel(g_io_channel_unix_new(fd)),
-	 id(g_io_add_watch(channel, G_IO_IN, InEvent, this)),
+	:SocketMonitor(_fd, _loop),
+	 callback(_callback), callback_ctx(_ctx),
 	 buffer(fifo_buffer_new(4096))
 {
+	ScheduleRead();
+
 }
 
 InotifySource *
-InotifySource::Create(mpd_inotify_callback_t callback, void *callback_ctx,
+InotifySource::Create(EventLoop &loop,
+		      mpd_inotify_callback_t callback, void *callback_ctx,
 		      GError **error_r)
 {
 	int fd = inotify_init_cloexec();
@@ -113,21 +106,18 @@ InotifySource::Create(mpd_inotify_callback_t callback, void *callback_ctx,
 		return NULL;
 	}
 
-	return new InotifySource(callback, callback_ctx, fd);
+	return new InotifySource(loop, callback, callback_ctx, fd);
 }
 
 InotifySource::~InotifySource()
 {
-	g_source_remove(id);
-	g_io_channel_unref(channel);
 	fifo_buffer_free(buffer);
-	close(fd);
 }
 
 int
 InotifySource::Add(const char *path_fs, unsigned mask, GError **error_r)
 {
-	int wd = inotify_add_watch(fd, path_fs, mask);
+	int wd = inotify_add_watch(Get(), path_fs, mask);
 	if (wd < 0)
 		g_set_error(error_r, mpd_inotify_quark(), errno,
 			    "inotify_add_watch() has failed: %s",
@@ -139,7 +129,7 @@ InotifySource::Add(const char *path_fs, unsigned mask, GError **error_r)
 void
 InotifySource::Remove(unsigned wd)
 {
-	int ret = inotify_rm_watch(fd, wd);
+	int ret = inotify_rm_watch(Get(), wd);
 	if (ret < 0 && errno != EINVAL)
 		g_warning("inotify_rm_watch() has failed: %s",
 			  g_strerror(errno));

@@ -1335,6 +1335,7 @@ test_run_inotify_SOURCES = test/run_inotify.cxx \
 	src/fd_util.c \
 	src/InotifySource.cxx
 test_run_inotify_LDADD = \
+	libevent.a \
 	libutil.a \
 	$(GLIB_LIBS)
 endif
