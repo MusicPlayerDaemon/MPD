@@ -32,6 +32,10 @@
 
 struct sockaddr;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Creates a socket listening on the specified address.  This is a
  * shortcut for socket(), bind() and listen().
@@ -54,5 +58,9 @@ socket_bind_listen(int domain, int type, int protocol,
 
 int
 socket_keepalive(int fd);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

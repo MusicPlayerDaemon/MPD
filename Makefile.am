@@ -88,7 +88,6 @@ mpd_headers = \
 	src/despotify_utils.h \
 	src/text_input_stream.h \
 	src/icy_server.h \
-	src/server_socket.h \
 	src/ls.h \
 	src/mixer_api.h \
 	src/mixer_control.h \
@@ -233,7 +232,7 @@ src_mpd_SOURCES = \
 	src/ClientMessage.cxx src/ClientMessage.hxx \
 	src/ClientSubscribe.cxx src/ClientSubscribe.hxx \
 	src/ClientFile.cxx src/ClientFile.hxx \
-	src/server_socket.c \
+	src/ServerSocket.cxx src/ServerSocket.hxx \
 	src/Listen.cxx src/Listen.hxx \
 	src/Log.cxx src/Log.hxx \
 	src/ls.cxx \
@@ -1301,7 +1300,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/AudioCompress/compress.c \
 	src/ReplayGainInfo.cxx \
 	src/fd_util.c \
-	src/server_socket.c
+	src/ServerSocket.cxx
 
 test_read_mixer_LDADD = \
 	libpcm.a \

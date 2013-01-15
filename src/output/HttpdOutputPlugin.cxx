@@ -28,7 +28,7 @@
 #include "page.h"
 #include "icy_server.h"
 #include "fd_util.h"
-#include "server_socket.h"
+#include "ServerSocket.hxx"
 
 #include <assert.h>
 

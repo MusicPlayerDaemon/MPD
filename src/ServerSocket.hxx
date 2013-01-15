@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,12 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_SERVER_SOCKET_H
-#define MPD_SERVER_SOCKET_H
+#ifndef MPD_SERVER_SOCKET_HXX
+#define MPD_SERVER_SOCKET_HXX
 
 #include "gerror.h"
 
-#include <stdbool.h>
 #include <stddef.h>
 
 struct sockaddr;
@@ -31,10 +30,6 @@ typedef void (*server_socket_callback_t)(int fd,
 					 const struct sockaddr *address,
 					 size_t address_length, int uid,
 					 void *ctx);
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 struct server_socket *
 server_socket_new(server_socket_callback_t callback, void *callback_ctx);
@@ -93,9 +88,5 @@ server_socket_add_host(struct server_socket *ss, const char *hostname,
 bool
 server_socket_add_path(struct server_socket *ss, const char *path,
 		       GError **error_r);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
