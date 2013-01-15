@@ -337,11 +337,8 @@ curl_update_fds(void)
 	for (int fd = 0; fd <= max_fd; ++fd) {
 		gushort events = input_curl_fd_events(fd, &rfds, &wfds, &efds);
 		if (events != 0) {
-			curl.fds.push_front(GPollFD());
-			const auto poll_fd = &curl.fds.front();
-			poll_fd->fd = fd;
-			poll_fd->events = events;
-			g_source_add_poll(curl.source, poll_fd);
+			curl.fds.push_front({fd, events, 0});
+			g_source_add_poll(curl.source, &curl.fds.front());
 		}
 	}
 }
