@@ -67,6 +67,10 @@ struct opus_encoder {
 	ogg_int64_t packetno;
 
 	ogg_int64_t granulepos;
+
+	opus_encoder() {
+		encoder_struct_init(&encoder, &opus_encoder_plugin);
+	}
 };
 
 gcc_const
@@ -123,15 +127,12 @@ opus_encoder_configure(struct opus_encoder *encoder,
 static struct encoder *
 opus_encoder_init(const struct config_param *param, GError **error)
 {
-	struct opus_encoder *encoder;
-
-	encoder = g_new(struct opus_encoder, 1);
-	encoder_struct_init(&encoder->encoder, &opus_encoder_plugin);
+	opus_encoder *encoder = new opus_encoder();
 
 	/* load configuration from "param" */
 	if (!opus_encoder_configure(encoder, param, error)) {
 		/* configuration has failed, roll back and return error */
-		g_free(encoder);
+		delete encoder;
 		return NULL;
 	}
 
@@ -145,7 +146,7 @@ opus_encoder_finish(struct encoder *_encoder)
 
 	/* the real libopus cleanup was already performed by
 	   opus_encoder_close(), so no real work here */
-	g_free(encoder);
+	delete encoder;
 }
 
 static bool

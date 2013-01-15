@@ -55,6 +55,10 @@ struct vorbis_encoder {
 	vorbis_info vi;
 
 	OggStream stream;
+
+	vorbis_encoder() {
+		encoder_struct_init(&encoder, &vorbis_encoder_plugin);
+	}
 };
 
 static inline GQuark
@@ -120,13 +124,12 @@ vorbis_encoder_configure(struct vorbis_encoder *encoder,
 static struct encoder *
 vorbis_encoder_init(const struct config_param *param, GError **error)
 {
-	struct vorbis_encoder *encoder = g_new(struct vorbis_encoder, 1);
-	encoder_struct_init(&encoder->encoder, &vorbis_encoder_plugin);
+	vorbis_encoder *encoder = new vorbis_encoder();
 
 	/* load configuration from "param" */
 	if (!vorbis_encoder_configure(encoder, param, error)) {
 		/* configuration has failed, roll back and return error */
-		g_free(encoder);
+		delete encoder;
 		return nullptr;
 	}
 
@@ -140,7 +143,7 @@ vorbis_encoder_finish(struct encoder *_encoder)
 
 	/* the real libvorbis/libogg cleanup was already performed by
 	   vorbis_encoder_close(), so no real work here */
-	g_free(encoder);
+	delete encoder;
 }
 
 static bool
