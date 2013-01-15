@@ -234,13 +234,8 @@ void init_avahi(const char *serviceName)
 	if (!avahiClient) {
 		g_warning("Failed to create client: %s",
 			  avahi_strerror(error));
-		goto fail;
+		avahi_finish();
 	}
-
-	return;
-
-fail:
-	avahi_finish();
 }
 
 void avahi_finish(void)
