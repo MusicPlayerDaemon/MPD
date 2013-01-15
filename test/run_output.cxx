@@ -21,6 +21,8 @@
 #include "OutputControl.hxx"
 #include "conf.h"
 #include "Idle.hxx"
+#include "Main.hxx"
+#include "event/Loop.hxx"
 #include "GlobalEvents.hxx"
 #include "IOThread.hxx"
 
@@ -41,6 +43,8 @@ extern "C" {
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+
+EventLoop *main_loop;
 
 void
 GlobalEvents::Emit(gcc_unused Event event)
@@ -211,6 +215,8 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	main_loop = new EventLoop(EventLoop::Default());
+
 	io_thread_init();
 	if (!io_thread_start(&error)) {
 		g_warning("%s", error->message);
@@ -246,6 +252,8 @@ int main(int argc, char **argv)
 	audio_output_free(ao);
 
 	io_thread_deinit();
+
+	delete main_loop;
 
 	config_global_finish();
 

@@ -27,12 +27,16 @@ extern "C" {
 
 #include "pcm_volume.h"
 #include "GlobalEvents.hxx"
+#include "Main.hxx"
+#include "event/Loop.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
+
+EventLoop *main_loop;
 
 #ifdef HAVE_PULSE
 #include "output/pulse_output_plugin.h"
@@ -122,6 +126,8 @@ int main(int argc, G_GNUC_UNUSED char **argv)
 
 	g_thread_init(NULL);
 
+	main_loop = new EventLoop(EventLoop::Default());
+
 	mixer = mixer_new(&alsa_mixer_plugin, NULL, NULL, &error);
 	if (mixer == NULL) {
 		g_printerr("mixer_new() failed: %s\n", error->message);
@@ -140,6 +146,8 @@ int main(int argc, G_GNUC_UNUSED char **argv)
 	volume = mixer_get_volume(mixer, &error);
 	mixer_close(mixer);
 	mixer_free(mixer);
+
+	delete main_loop;
 
 	assert(volume >= -1 && volume <= 100);
 

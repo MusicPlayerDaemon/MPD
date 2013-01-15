@@ -1276,6 +1276,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	$(ENCODER_LIBS) \
 	libmixer_plugins.a \
 	$(FILTER_LIBS) \
+	libevent.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_run_output_SOURCES = test/run_output.cxx \
@@ -1307,6 +1308,7 @@ test_read_mixer_LDADD = \
 	libpcm.a \
 	libmixer_plugins.a \
 	$(OUTPUT_LIBS) \
+	libevent.a \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.c \
 	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c \

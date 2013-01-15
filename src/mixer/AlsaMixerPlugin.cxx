@@ -21,6 +21,10 @@
 #include "mixer_api.h"
 #include "output_api.h"
 #include "GlobalEvents.hxx"
+#include "Main.hxx"
+#include "event/MultiSocketMonitor.hxx"
+
+#include <algorithm>
 
 #include <glib.h>
 #include <alsa/asoundlib.h>
@@ -29,13 +33,16 @@
 #define VOLUME_MIXER_ALSA_CONTROL_DEFAULT	"PCM"
 #define VOLUME_MIXER_ALSA_INDEX_DEFAULT		0
 
-struct alsa_mixer_source {
-	GSource source;
+class AlsaMixerMonitor final : private MultiSocketMonitor {
+	snd_mixer_t *const mixer;
 
-	snd_mixer_t *mixer;
+public:
+	AlsaMixerMonitor(EventLoop &_loop, snd_mixer_t *_mixer)
+		:MultiSocketMonitor(_loop), mixer(_mixer) {}
 
-	/** a linked list of all registered GPollFD objects */
-	GSList *fds;
+private:
+	virtual void PrepareSockets(gcc_unused gint *timeout_r) override;
+	virtual void DispatchSockets() override;
 };
 
 struct alsa_mixer {
@@ -52,7 +59,7 @@ struct alsa_mixer {
 	long volume_max;
 	int volume_set;
 
-	struct alsa_mixer_source *source;
+	AlsaMixerMonitor *monitor;
 };
 
 /**
@@ -64,143 +71,44 @@ alsa_mixer_quark(void)
 	return g_quark_from_static_string("alsa_mixer");
 }
 
-/*
- * GSource helper functions
- *
- */
-
-static GSList **
-find_fd(GSList **list_r, int fd)
+void
+AlsaMixerMonitor::PrepareSockets(gcc_unused gint *timeout_r)
 {
-	while (true) {
-		GSList *list = *list_r;
-		if (list == NULL)
-			return NULL;
-
-		GPollFD *p = (GPollFD *)list->data;
-		if (p->fd == fd)
-			return list_r;
-
-		list_r = &list->next;
-	}
-}
-
-static void
-alsa_mixer_update_fd(struct alsa_mixer_source *source, const struct pollfd *p,
-		     GSList **old_r)
-{
-	GSList **found_r = find_fd(old_r, p->fd);
-	if (found_r == NULL) {
-		/* new fd */
-		GPollFD *q = g_new(GPollFD, 1);
-		q->fd = p->fd;
-		q->events = p->events;
-		g_source_add_poll(&source->source, q);
-		source->fds = g_slist_prepend(source->fds, q);
-		return;
-	}
-
-	GSList *found = *found_r;
-	*found_r = found->next;
-
-	GPollFD *q = (GPollFD *)found->data;
-	if (q->events != p->events) {
-		/* refresh events */
-		g_source_remove_poll(&source->source, q);
-		q->events = p->events;
-		g_source_add_poll(&source->source, q);
-	}
-
-	found->next = source->fds;
-	source->fds = found;
-}
-
-static void
-alsa_mixer_update_fds(struct alsa_mixer_source *source)
-{
-	int count = snd_mixer_poll_descriptors_count(source->mixer);
+	int count = snd_mixer_poll_descriptors_count(mixer);
 	if (count < 0)
 		count = 0;
 
 	struct pollfd *pfds = g_new(struct pollfd, count);
-	count = snd_mixer_poll_descriptors(source->mixer, pfds, count);
+	count = snd_mixer_poll_descriptors(mixer, pfds, count);
 	if (count < 0)
 		count = 0;
 
-	GSList *old = source->fds;
-	source->fds = NULL;
+	struct pollfd *end = pfds + count;
 
-	for (int i = 0; i < count; ++i)
-		alsa_mixer_update_fd(source, &pfds[i], &old);
+	UpdateSocketList([pfds, end](int fd) -> unsigned {
+			auto i = std::find_if(pfds, end, [fd](const struct pollfd &pfd){
+					return pfd.fd == fd;
+				});
+			if (i == end)
+				return 0;
+
+			auto events = i->events;
+			i->events = 0;
+			return events;
+		});
+
+	for (auto i = pfds; i != end; ++i)
+		if (i->events != 0)
+			AddSocket(i->fd, i->events);
+
 	g_free(pfds);
-
-	for (; old != NULL; old = old->next) {
-		GPollFD *q = (GPollFD *)old->data;
-		g_source_remove_poll(&source->source, q);
-		g_free(q);
-	}
-
-	g_slist_free(old);
 }
 
-/*
- * GSource methods
- *
- */
-
-static gboolean
-alsa_mixer_source_prepare(GSource *_source, G_GNUC_UNUSED gint *timeout_r)
+void
+AlsaMixerMonitor::DispatchSockets()
 {
-	struct alsa_mixer_source *source = (struct alsa_mixer_source *)_source;
-	alsa_mixer_update_fds(source);
-
-	return false;
+	snd_mixer_handle_events(mixer);
 }
-
-static gboolean
-alsa_mixer_source_check(GSource *_source)
-{
-	struct alsa_mixer_source *source = (struct alsa_mixer_source *)_source;
-
-	for (const GSList *i = source->fds; i != NULL; i = i->next) {
-		const GPollFD *poll_fd = (GPollFD *)i->data;
-		if (poll_fd->revents != 0)
-			return true;
-	}
-
-	return false;
-}
-
-static gboolean
-alsa_mixer_source_dispatch(GSource *_source,
-			   G_GNUC_UNUSED GSourceFunc callback,
-			   G_GNUC_UNUSED gpointer user_data)
-{
-	struct alsa_mixer_source *source = (struct alsa_mixer_source *)_source;
-
-	snd_mixer_handle_events(source->mixer);
-	return true;
-}
-
-static void
-alsa_mixer_source_finalize(GSource *_source)
-{
-	struct alsa_mixer_source *source = (struct alsa_mixer_source *)_source;
-
-	for (GSList *i = source->fds; i != NULL; i = i->next)
-		g_free(i->data);
-
-	g_slist_free(source->fds);
-}
-
-static GSourceFuncs alsa_mixer_source_funcs = {
-	alsa_mixer_source_prepare,
-	alsa_mixer_source_check,
-	alsa_mixer_source_dispatch,
-	alsa_mixer_source_finalize,
-	nullptr,
-	nullptr,
-};
 
 /*
  * libasound callbacks
@@ -306,11 +214,7 @@ alsa_mixer_setup(struct alsa_mixer *am, GError **error_r)
 
 	snd_mixer_elem_set_callback(am->elem, alsa_mixer_elem_callback);
 
-	am->source = (struct alsa_mixer_source *)
-		g_source_new(&alsa_mixer_source_funcs, sizeof(*am->source));
-	am->source->mixer = am->handle;
-	am->source->fds = NULL;
-	g_source_attach(&am->source->source, g_main_context_default());
+	am->monitor = new AlsaMixerMonitor(*main_loop, am->handle);
 
 	return true;
 }
@@ -345,8 +249,7 @@ alsa_mixer_close(struct mixer *data)
 
 	assert(am->handle != NULL);
 
-	g_source_destroy(&am->source->source);
-	g_source_unref(&am->source->source);
+	delete am->monitor;
 
 	snd_mixer_elem_set_callback(am->elem, NULL);
 	snd_mixer_close(am->handle);
