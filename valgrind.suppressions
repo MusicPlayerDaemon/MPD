@@ -10,6 +10,15 @@
    ...
    fun:g_random_int
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:*alloc
+   fun:g_mutex_impl_new
+   fun:g_mutex_get_impl
+   fun:g_mutex_lock
+   fun:g_main_context_new
+}
 
 {
    g_main_context_dispatch
@@ -98,11 +107,19 @@
 }
 
 {
-   g_static_private_set
+   <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:*alloc
    ...
    fun:g_intern_static_string
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:g_intern_string
 }
 
 {
