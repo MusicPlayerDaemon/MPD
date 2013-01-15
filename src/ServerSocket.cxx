@@ -25,6 +25,7 @@
 
 #include "ServerSocket.hxx"
 #include "SocketUtil.hxx"
+#include "SocketError.hxx"
 #include "resolver.h"
 #include "fd_util.h"
 #include "glib_socket.h"
@@ -35,7 +36,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
-#include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -181,14 +181,17 @@ server_socket_in_event(G_GNUC_UNUSED GIOChannel *source,
 	int fd = accept_cloexec_nonblock(s->fd, (struct sockaddr*)&address,
 					 &address_length);
 	if (fd >= 0) {
-		if (socket_keepalive(fd))
+		if (socket_keepalive(fd)) {
+			const SocketErrorMessage msg;
 			g_warning("Could not set TCP keepalive option: %s",
-				  g_strerror(errno));
+				  (const char *)msg);
+		}
 		s->parent.callback(fd, (const struct sockaddr*)&address,
 				   address_length, get_remote_uid(fd),
 				   s->parent.callback_ctx);
 	} else {
-		g_warning("accept() failed: %s", g_strerror(errno));
+		const SocketErrorMessage msg;
+		g_warning("accept() failed: %s", (const char *)msg);
 	}
 
 	return true;
@@ -342,9 +345,8 @@ server_socket_add_fd(struct server_socket *ss, int fd, GError **error_r)
 	socklen_t address_length;
 	if (getsockname(fd, (struct sockaddr *)&address,
 			&address_length) < 0) {
-		g_set_error(error_r, server_socket_quark(), errno,
-			    "Failed to get socket address: %s",
-			    g_strerror(errno));
+		SetSocketError(error_r);
+		g_prefix_error(error_r, "Failed to get socket address");
 		return false;
 	}
 
