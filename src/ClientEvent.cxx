@@ -46,7 +46,7 @@ client_out_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 
 	g_timer_start(client->last_activity);
 
-	if (g_queue_is_empty(client->deferred_send)) {
+	if (client->output_buffer.IsEmpty()) {
 		/* done sending deferred buffers exist: schedule
 		   read */
 		client->source_id = g_io_add_watch(client->channel,
@@ -97,7 +97,7 @@ client_in_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 		return false;
 	}
 
-	if (!g_queue_is_empty(client->deferred_send)) {
+	if (!client->output_buffer.IsEmpty()) {
 		/* deferred buffers exist: schedule write */
 		client->source_id = g_io_add_watch(client->channel,
 						   GIOCondition(G_IO_OUT|G_IO_ERR|G_IO_HUP),

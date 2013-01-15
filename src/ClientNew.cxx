@@ -55,9 +55,8 @@ Client::Client(Partition &_partition,
 	 permission(getDefaultPermissions()),
 	 uid(_uid),
 	 last_activity(g_timer_new()),
-	 deferred_send(g_queue_new()), deferred_bytes(0),
 	 num(_num),
-	 send_buf_used(0),
+	 output_buffer(16384, client_max_output_buffer_size),
 	 idle_waiting(false), idle_flags(0),
 	 num_subscriptions(0)
 {
@@ -78,19 +77,9 @@ Client::Client(Partition &_partition,
 				   client_in_event, this);
 }
 
-static void
-deferred_buffer_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
-{
-	struct deferred_buffer *buffer = (struct deferred_buffer *)data;
-	g_free(buffer);
-}
-
 Client::~Client()
 {
 	g_timer_destroy(last_activity);
-
-	g_queue_foreach(deferred_send, deferred_buffer_free, NULL);
-	g_queue_free(deferred_send);
 
 	fifo_buffer_free(input);
 }

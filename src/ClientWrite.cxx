@@ -25,20 +25,18 @@
 #include <stdio.h>
 
 static size_t
-client_write_deferred_buffer(Client *client,
-			     const struct deferred_buffer *buffer)
+client_write_direct(Client *client, const void *data, size_t length)
 {
-	GError *error = NULL;
-	GIOStatus status;
-	gsize bytes_written;
-
 	assert(client != NULL);
 	assert(client->channel != NULL);
-	assert(buffer != NULL);
+	assert(data != NULL);
+	assert(length > 0);
 
-	status = g_io_channel_write_chars
-		(client->channel, buffer->data, buffer->size,
-		 &bytes_written, &error);
+	gsize bytes_written;
+	GError *error = NULL;
+	GIOStatus status =
+		g_io_channel_write_chars(client->channel, (const gchar *)data,
+					 length, &bytes_written, &error);
 	switch (status) {
 	case G_IO_STATUS_NORMAL:
 		return bytes_written;
@@ -56,186 +54,75 @@ client_write_deferred_buffer(Client *client,
 		/* I/O error */
 
 		client->SetExpired();
-		g_warning("failed to flush buffer for %i: %s",
+		g_warning("failed to write to %i: %s",
 			  client->num, error->message);
 		g_error_free(error);
 		return 0;
 	}
 
 	/* unreachable */
+	assert(false);
 	return 0;
 }
 
 void
 client_write_deferred(Client *client)
 {
-	size_t ret;
+	assert(!client_is_expired(client));
 
-	while (!g_queue_is_empty(client->deferred_send)) {
-		struct deferred_buffer *buf =
-			(struct deferred_buffer *)
-			g_queue_peek_head(client->deferred_send);
-
-		assert(buf->size > 0);
-		assert(buf->size <= client->deferred_bytes);
-
-		ret = client_write_deferred_buffer(client, buf);
-		if (ret == 0)
+	while (true) {
+		size_t length;
+		const void *data = client->output_buffer.Read(&length);
+		if (data == nullptr)
 			break;
 
-		if (ret < buf->size) {
-			assert(client->deferred_bytes >= (size_t)ret);
-			client->deferred_bytes -= ret;
-			buf->size -= ret;
-			memmove(buf->data, buf->data + ret, buf->size);
-			break;
-		} else {
-			size_t decr = sizeof(*buf) -
-				sizeof(buf->data) + buf->size;
+		size_t nbytes = client_write_direct(client, data, length);
+		if (nbytes == 0)
+			return;
 
-			assert(client->deferred_bytes >= decr);
-			client->deferred_bytes -= decr;
-			g_free(buf);
-			g_queue_pop_head(client->deferred_send);
-		}
+		client->output_buffer.Consume(nbytes);
+
+		if (nbytes < length)
+			return;
 
 		g_timer_start(client->last_activity);
-	}
-
-	if (g_queue_is_empty(client->deferred_send)) {
-		g_debug("[%u] buffer empty %lu", client->num,
-			(unsigned long)client->deferred_bytes);
-		assert(client->deferred_bytes == 0);
 	}
 }
 
 static void
 client_defer_output(Client *client, const void *data, size_t length)
 {
-	size_t alloc;
-	struct deferred_buffer *buf;
-
-	assert(length > 0);
-
-	alloc = sizeof(*buf) - sizeof(buf->data) + length;
-	client->deferred_bytes += alloc;
-	if (client->deferred_bytes > client_max_output_buffer_size) {
-		g_warning("[%u] output buffer size (%lu) is "
+	if (!client->output_buffer.Append(data, length)) {
+		g_warning("[%u] output buffer size is "
 			  "larger than the max (%lu)",
 			  client->num,
-			  (unsigned long)client->deferred_bytes,
 			  (unsigned long)client_max_output_buffer_size);
 		/* cause client to close */
 		client->SetExpired();
 		return;
 	}
-
-	buf = (struct deferred_buffer *)g_malloc(alloc);
-	buf->size = length;
-	memcpy(buf->data, data, length);
-
-	g_queue_push_tail(client->deferred_send, buf);
-}
-
-static void
-client_write_direct(Client *client, const char *data, size_t length)
-{
-	GError *error = NULL;
-	GIOStatus status;
-	gsize bytes_written;
-
-	assert(client != NULL);
-	assert(client->channel != NULL);
-	assert(data != NULL);
-	assert(length > 0);
-	assert(g_queue_is_empty(client->deferred_send));
-
-	status = g_io_channel_write_chars(client->channel, data, length,
-					  &bytes_written, &error);
-	switch (status) {
-	case G_IO_STATUS_NORMAL:
-	case G_IO_STATUS_AGAIN:
-		break;
-
-	case G_IO_STATUS_EOF:
-		/* client has disconnected */
-
-		client->SetExpired();
-		return;
-
-	case G_IO_STATUS_ERROR:
-		/* I/O error */
-
-		client->SetExpired();
-		g_warning("failed to write to %i: %s",
-			  client->num, error->message);
-		g_error_free(error);
-		return;
-	}
-
-	if (bytes_written < length)
-		client_defer_output(client, data + bytes_written,
-				    length - bytes_written);
-
-	if (!g_queue_is_empty(client->deferred_send))
-		g_debug("[%u] buffer created", client->num);
 }
 
 void
 client_write_output(Client *client)
 {
-	if (client->IsExpired() || !client->send_buf_used)
+	if (client->IsExpired())
 		return;
 
-	if (!g_queue_is_empty(client->deferred_send)) {
-		client_defer_output(client, client->send_buf,
-				    client->send_buf_used);
-
-		if (client->IsExpired())
-			return;
-
-		/* try to flush the deferred buffers now; the current
-		   server command may take too long to finish, and
-		   meanwhile try to feed output to the client,
-		   otherwise it will time out.  One reason why
-		   deferring is slow might be that currently each
-		   client_write() allocates a new deferred buffer.
-		   This should be optimized after MPD 0.14. */
-		client_write_deferred(client);
-	} else
-		client_write_direct(client, client->send_buf,
-				    client->send_buf_used);
-
-	client->send_buf_used = 0;
+	client_write_deferred(client);
 }
 
 /**
  * Write a block of data to the client.
  */
 static void
-client_write(Client *client, const char *buffer, size_t buflen)
+client_write(Client *client, const char *data, size_t length)
 {
 	/* if the client is going to be closed, do nothing */
-	if (client->IsExpired())
+	if (client->IsExpired() || length == 0)
 		return;
 
-	while (buflen > 0 && !client->IsExpired()) {
-		size_t copylen;
-
-		assert(client->send_buf_used < sizeof(client->send_buf));
-
-		copylen = sizeof(client->send_buf) - client->send_buf_used;
-		if (copylen > buflen)
-			copylen = buflen;
-
-		memcpy(client->send_buf + client->send_buf_used, buffer,
-		       copylen);
-		buflen -= copylen;
-		client->send_buf_used += copylen;
-		buffer += copylen;
-		if (client->send_buf_used >= sizeof(client->send_buf))
-			client_write_output(client);
-	}
+	client_defer_output(client, data, length);
 }
 
 void

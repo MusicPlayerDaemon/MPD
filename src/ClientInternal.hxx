@@ -25,6 +25,7 @@
 #include "ClientMessage.hxx"
 #include "CommandListBuilder.hxx"
 #include "command.h"
+#include "util/PeakBuffer.hxx"
 
 #include <set>
 #include <string>
@@ -40,12 +41,8 @@ enum {
 	CLIENT_MAX_MESSAGES = 64,
 };
 
-struct deferred_buffer {
-	size_t size;
-	char data[sizeof(long)];
-};
-
 struct Partition;
+class PeakBuffer;
 
 class Client {
 public:
@@ -71,12 +68,9 @@ public:
 
 	CommandListBuilder cmd_list;
 
-	GQueue *deferred_send;	/* for output if client is slow */
-	size_t deferred_bytes;	/* mem deferred_send consumes */
 	unsigned int num;	/* client number */
 
-	char send_buf[16384];
-	size_t send_buf_used;	/* bytes used this instance */
+	PeakBuffer output_buffer;
 
 	/** is this client waiting for an "idle" response? */
 	bool idle_waiting;

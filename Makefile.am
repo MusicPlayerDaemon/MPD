@@ -346,6 +346,7 @@ libutil_a_SOURCES = \
 	src/util/LazyRandomEngine.cxx src/util/LazyRandomEngine.hxx \
 	src/util/SliceBuffer.hxx \
 	src/util/HugeAllocator.cxx src/util/HugeAllocator.hxx \
+	src/util/PeakBuffer.cxx src/util/PeakBuffer.hxx \
 	src/util/list.h \
 	src/util/list_sort.c src/util/list_sort.h \
 	src/util/byte_reverse.c src/util/byte_reverse.h \
