@@ -45,7 +45,8 @@ player_control::player_control(unsigned _buffer_chunks,
 	 cross_fade_seconds(0),
 	 mixramp_db(0),
 	 mixramp_delay_seconds(std::nanf("")),
-	 total_play_time(0)
+	 total_play_time(0),
+	 border_pause(false)
 {
 }
 
