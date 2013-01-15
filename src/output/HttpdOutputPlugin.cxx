@@ -29,6 +29,7 @@
 #include "icy_server.h"
 #include "fd_util.h"
 #include "ServerSocket.hxx"
+#include "Main.hxx"
 
 #include <assert.h>
 
@@ -134,7 +135,8 @@ httpd_output_init(const struct config_param *param,
 
 	/* set up bind_to_address */
 
-	httpd->server_socket = server_socket_new(httpd_listen_in_event, httpd);
+	httpd->server_socket = server_socket_new(*main_loop,
+						 httpd_listen_in_event, httpd);
 
 	const char *bind_to_address =
 		config_get_block_string(param, "bind_to_address", NULL);

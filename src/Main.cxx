@@ -398,6 +398,9 @@ int mpd_main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
+	main_task = g_thread_self();
+	main_loop = new EventLoop(EventLoop::Default());
+
 	success = listen_global_init(&error);
 	if (!success) {
 		g_warning("%s", error->message);
@@ -406,9 +409,6 @@ int mpd_main(int argc, char *argv[])
 	}
 
 	daemonize_set_user();
-
-	main_task = g_thread_self();
-	main_loop = new EventLoop(EventLoop::Default());
 
 	GlobalEvents::Initialize();
 	GlobalEvents::Register(GlobalEvents::IDLE, idle_event_emitted);

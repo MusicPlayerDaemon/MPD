@@ -92,13 +92,15 @@ listen_systemd_activation(GError **error_r)
 bool
 listen_global_init(GError **error_r)
 {
+	assert(main_loop != nullptr);
+
 	int port = config_get_positive(CONF_PORT, DEFAULT_PORT);
 	const struct config_param *param =
 		config_get_next_param(CONF_BIND_TO_ADDRESS, NULL);
 	bool success;
 	GError *error = NULL;
 
-	listen_socket = server_socket_new(listen_callback, NULL);
+	listen_socket = server_socket_new(*main_loop, listen_callback, NULL);
 
 	if (listen_systemd_activation(&error))
 		return true;

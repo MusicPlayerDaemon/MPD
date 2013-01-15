@@ -26,9 +26,9 @@
 #include "ServerSocket.hxx"
 #include "SocketUtil.hxx"
 #include "SocketError.hxx"
+#include "event/SocketMonitor.hxx"
 #include "resolver.h"
 #include "fd_util.h"
-#include "glib_socket.h"
 
 #include <forward_list>
 
@@ -55,24 +55,22 @@
 
 #define DEFAULT_PORT	6600
 
-struct OneServerSocket {
+struct OneServerSocket final : private SocketMonitor {
 	const server_socket &parent;
 
 	const unsigned serial;
-
-	int fd;
-	guint source_id;
 
 	char *path;
 
 	size_t address_length;
 	struct sockaddr *address;
 
-	OneServerSocket(const server_socket &_parent, unsigned _serial,
+	OneServerSocket(EventLoop &_loop, const server_socket &_parent,
+			unsigned _serial,
 			const struct sockaddr *_address,
 			size_t _address_length)
-		:parent(_parent), serial(_serial),
-		 fd(-1),
+		:SocketMonitor(_loop),
+		 parent(_parent), serial(_serial),
 		 path(nullptr),
 		 address_length(_address_length),
 		 address((sockaddr *)g_memdup(_address, _address_length))
@@ -85,23 +83,30 @@ struct OneServerSocket {
 	OneServerSocket &operator=(const OneServerSocket &other) = delete;
 
 	~OneServerSocket() {
-		Close();
 		g_free(path);
 		g_free(address);
 	}
 
 	bool Open(GError **error_r);
 
-	void Close();
+	using SocketMonitor::Close;
 
 	char *ToString() const;
 
-	void SetFD(int fd);
+	void SetFD(int _fd) {
+		SocketMonitor::Open(_fd);
+		SocketMonitor::ScheduleRead();
+	}
 
 	void Accept();
+
+private:
+	virtual void OnSocketReady(unsigned flags) override;
 };
 
 struct server_socket {
+	EventLoop &loop;
+
 	server_socket_callback_t callback;
 	void *callback_ctx;
 
@@ -109,8 +114,10 @@ struct server_socket {
 
 	unsigned next_serial;
 
-	server_socket(server_socket_callback_t _callback, void *_callback_ctx)
-		:callback(_callback), callback_ctx(_callback_ctx),
+	server_socket(EventLoop &_loop,
+		      server_socket_callback_t _callback, void *_callback_ctx)
+		:loop(_loop),
+		 callback(_callback), callback_ctx(_callback_ctx),
 		 next_serial(1) {}
 
 	void Close();
@@ -123,9 +130,10 @@ server_socket_quark(void)
 }
 
 struct server_socket *
-server_socket_new(server_socket_callback_t callback, void *callback_ctx)
+server_socket_new(EventLoop &loop,
+		  server_socket_callback_t callback, void *callback_ctx)
 {
-	return new server_socket(callback, callback_ctx);
+	return new server_socket(loop, callback, callback_ctx);
 }
 
 void
@@ -177,7 +185,7 @@ OneServerSocket::Accept()
 	struct sockaddr_storage peer_address;
 	size_t peer_address_length = sizeof(peer_address);
 	int peer_fd =
-		accept_cloexec_nonblock(fd, (struct sockaddr*)&peer_address,
+		accept_cloexec_nonblock(Get(), (struct sockaddr*)&peer_address,
 					&peer_address_length);
 	if (peer_fd < 0) {
 		const SocketErrorMessage msg;
@@ -197,35 +205,16 @@ OneServerSocket::Accept()
 			parent.callback_ctx);
 }
 
-static gboolean
-server_socket_in_event(G_GNUC_UNUSED GIOChannel *source,
-		       G_GNUC_UNUSED GIOCondition condition,
-		       gpointer data)
-{
-	OneServerSocket &s = *(OneServerSocket *)data;
-
-	s.Accept();
-	return true;
-}
-
 void
-OneServerSocket::SetFD(int _fd)
+OneServerSocket::OnSocketReady(gcc_unused unsigned flags)
 {
-	assert(fd < 0);
-	assert(_fd >= 0);
-
-	fd = _fd;
-
-	GIOChannel *channel = g_io_channel_new_socket(fd);
-	source_id = g_io_add_watch(channel, G_IO_IN,
-				   server_socket_in_event, this);
-	g_io_channel_unref(channel);
+	Accept();
 }
 
 inline bool
 OneServerSocket::Open(GError **error_r)
 {
-	assert(fd < 0);
+	assert(!IsDefined());
 
 	int _fd = socket_bind_listen(address->sa_family,
 				     SOCK_STREAM, 0,
@@ -310,17 +299,6 @@ server_socket_open(struct server_socket *ss, GError **error_r)
 }
 
 void
-OneServerSocket::Close()
-{
-	if (fd < 0)
-		return;
-
-	g_source_remove(source_id);
-	close_socket(fd);
-	fd = -1;
-}
-
-void
 server_socket::Close()
 {
 	for (auto &i : sockets)
@@ -340,7 +318,7 @@ server_socket_add_address(struct server_socket *ss,
 {
 	assert(ss != nullptr);
 
-	ss->sockets.emplace_front(*ss, ss->next_serial,
+	ss->sockets.emplace_front(ss->loop, *ss, ss->next_serial,
 				  address, address_length);
 
 	return ss->sockets.front();

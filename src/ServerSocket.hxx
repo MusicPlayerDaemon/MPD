@@ -25,6 +25,7 @@
 #include <stddef.h>
 
 struct sockaddr;
+class EventLoop;
 
 typedef void (*server_socket_callback_t)(int fd,
 					 const struct sockaddr *address,
@@ -32,7 +33,8 @@ typedef void (*server_socket_callback_t)(int fd,
 					 void *ctx);
 
 struct server_socket *
-server_socket_new(server_socket_callback_t callback, void *callback_ctx);
+server_socket_new(EventLoop &loop,
+		  server_socket_callback_t callback, void *callback_ctx);
 
 void
 server_socket_free(struct server_socket *ss);
