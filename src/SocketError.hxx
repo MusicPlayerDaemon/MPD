@@ -87,27 +87,49 @@ IsSocketErrorClosed(socket_error_t code)
 #endif
 }
 
+/**
+ * Helper class that formats a socket error message into a
+ * human-readable string.  On Windows, a buffer is necessary for this,
+ * and this class hosts the buffer.
+ */
+class SocketErrorMessage {
+#ifdef WIN32
+	char msg[256];
+#else
+	const char *const msg;
+#endif
+
+public:
+#ifdef WIN32
+	explicit SocketErrorMessage(socket_error_t code=GetSocketError()) {
+		DWORD nbytes = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
+					     FORMAT_MESSAGE_IGNORE_INSERTS |
+					     FORMAT_MESSAGE_MAX_WIDTH_MASK,
+					     NULL, code, 0,
+					     (LPSTR)msg, sizeof(msg), NULL);
+		if (nbytes == 0)
+			strcpy(msg, "Unknown error");
+	}
+#else
+	explicit SocketErrorMessage(socket_error_t code=GetSocketError())
+		:msg(g_strerror(code)) {}
+#endif
+
+	operator const char *() const {
+		return msg;
+	}
+};
+
 static inline void
 SetSocketError(GError **error_r, socket_error_t code)
 {
 #ifdef WIN32
 	if (error_r == NULL)
 		return;
-
-	char buffer[256];
-	DWORD nbytes = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
-				     FORMAT_MESSAGE_IGNORE_INSERTS |
-				     FORMAT_MESSAGE_MAX_WIDTH_MASK,
-				     NULL, code, 0,
-				     (LPSTR)buffer, sizeof(buffer), NULL);
-	const char *msg = nbytes > 0
-		? buffer
-		: "Unknown error";
-	g_set_error_literal(error_r, SocketErrorQuark(), code, msg);
-#else
-	g_set_error_literal(error_r, SocketErrorQuark(), code,
-			    g_strerror(code));
 #endif
+
+	const SocketErrorMessage msg(code);
+	g_set_error_literal(error_r, SocketErrorQuark(), code, msg);
 }
 
 static inline void
@@ -120,20 +142,8 @@ gcc_malloc
 static inline GError *
 NewSocketError(socket_error_t code)
 {
-#ifdef WIN32
-	char buffer[256];
-	DWORD nbytes = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
-				     FORMAT_MESSAGE_IGNORE_INSERTS |
-				     FORMAT_MESSAGE_MAX_WIDTH_MASK,
-				     NULL, code, 0,
-				     (LPSTR)buffer, sizeof(buffer), NULL);
-	const char *msg = nbytes > 0
-		? buffer
-		: "Unknown error";
+	const SocketErrorMessage msg(code);
 	return g_error_new_literal(SocketErrorQuark(), code, msg);
-#else
-	return g_error_new_literal(SocketErrorQuark(), code, g_strerror(code));
-#endif
 }
 
 gcc_malloc
