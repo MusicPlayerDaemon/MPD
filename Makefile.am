@@ -359,6 +359,7 @@ libevent_a_SOURCES = \
 	src/event/TimeoutMonitor.hxx src/event/TimeoutMonitor.cxx \
 	src/event/SocketMonitor.cxx src/event/SocketMonitor.hxx \
 	src/event/BufferedSocket.cxx src/event/BufferedSocket.hxx \
+	src/event/MultiSocketMonitor.cxx src/event/MultiSocketMonitor.hxx \
 	src/event/Loop.hxx
 
 # PCM library
@@ -1070,6 +1071,7 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 test_run_input_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
+	libevent.a \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.c \
 	test/stdbin.h \
@@ -1080,9 +1082,10 @@ test_run_input_SOURCES = test/run_input.c \
 	src/fd_util.c
 
 test_dump_text_file_LDADD = \
-	libutil.a \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
+	libevent.a \
+	libutil.a \
 	$(GLIB_LIBS)
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	test/stdbin.h \
@@ -1100,6 +1103,7 @@ test_dump_playlist_LDADD = \
 	$(ARCHIVE_LIBS) \
 	$(DECODER_LIBS) \
 	$(TAG_LIBS) \
+	libevent.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
@@ -1126,6 +1130,7 @@ test_run_decoder_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(TAG_LIBS) \
+	libevent.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.cxx \
@@ -1149,6 +1154,7 @@ test_read_tags_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(TAG_LIBS) \
+	libevent.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.cxx \

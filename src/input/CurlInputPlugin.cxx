@@ -23,6 +23,7 @@
 #include "conf.h"
 #include "tag.h"
 #include "IcyMetaDataParser.hxx"
+#include "event/MultiSocketMonitor.hxx"
 
 extern "C" {
 #include "input_internal.h"
@@ -182,6 +183,36 @@ struct input_curl {
 	input_curl &operator=(const input_curl &) = delete;
 };
 
+/**
+ * This class monitors all CURL file descriptors.
+ */
+class CurlSockets final : private MultiSocketMonitor {
+	/**
+	 * Did CURL give us a timeout?  If yes, then we need to call
+	 * curl_multi_perform(), even if there was no event on any
+	 * file descriptor.
+	 */
+	bool have_timeout;
+
+	/**
+	 * The absolute time stamp when the timeout expires.
+	 */
+	gint64 absolute_timeout;
+
+public:
+	CurlSockets(EventLoop &_loop)
+		:MultiSocketMonitor(_loop) {}
+
+	using MultiSocketMonitor::InvalidateSockets;
+
+private:
+	void UpdateSockets();
+
+	virtual void PrepareSockets(gcc_unused gint *timeout_r) override;
+	virtual bool CheckSockets() const override;
+	virtual void DispatchSockets() override;
+};
+
 /** libcurl should accept "ICY 200 OK" */
 static struct curl_slist *http_200_aliases;
 
@@ -198,32 +229,7 @@ static struct {
 	 */
 	std::forward_list<input_curl *> requests;
 
-	/**
-	 * The GMainLoop source used to poll all CURL file
-	 * descriptors.
-	 */
-	GSource *source;
-
-	/**
-	 * The source id of #source.
-	 */
-	guint source_id;
-
-	/** a linked list of all registered GPollFD objects */
-	std::forward_list<GPollFD> fds;
-
-	/**
-	 * Did CURL give us a timeout?  If yes, then we need to call
-	 * curl_multi_perform(), even if there was no event on any
-	 * file descriptor.
-	 */
-	bool timeout;
-
-	/**
-	 * The absolute time stamp when the timeout expires.  This is
-	 * used in the GSource method check().
-	 */
-	gint64 absolute_timeout;
+	CurlSockets *sockets;
 } curl;
 
 static inline GQuark
@@ -268,7 +274,7 @@ input_curl_resume(gpointer data)
  * Calculates the GLib event bit mask for one file descriptor,
  * obtained from three #fd_set objects filled by curl_multi_fdset().
  */
-static gushort
+static unsigned
 input_curl_fd_events(int fd, fd_set *rfds, fd_set *wfds, fd_set *efds)
 {
 	gushort events = 0;
@@ -297,8 +303,8 @@ input_curl_fd_events(int fd, fd_set *rfds, fd_set *wfds, fd_set *efds)
  *
  * Runs in the I/O thread.  No lock needed.
  */
-static void
-curl_update_fds(void)
+void
+CurlSockets::UpdateSockets()
 {
 	assert(io_thread_inside());
 
@@ -317,29 +323,15 @@ curl_update_fds(void)
 		return;
 	}
 
-	for (auto prev = curl.fds.before_begin(), end = curl.fds.end(),
-		     i = std::next(prev);
-	     i != end; i = std::next(prev)) {
-		const auto poll_fd = &*i;
-		assert(poll_fd->events != 0);
-
-		gushort events = input_curl_fd_events(poll_fd->fd, &rfds,
-						      &wfds, &efds);
-		if (events != 0) {
-			poll_fd->events = events;
-			prev = i;
-		} else {
-			g_source_remove_poll(curl.source, poll_fd);
-			curl.fds.erase_after(prev);
-		}
-	}
+	UpdateSocketList([&rfds, &wfds, &efds](int fd){
+			return input_curl_fd_events(fd, &rfds,
+						    &wfds, &efds);
+		});
 
 	for (int fd = 0; fd <= max_fd; ++fd) {
-		gushort events = input_curl_fd_events(fd, &rfds, &wfds, &efds);
-		if (events != 0) {
-			curl.fds.push_front({fd, events, 0});
-			g_source_add_poll(curl.source, &curl.fds.front());
-		}
+		unsigned events = input_curl_fd_events(fd, &rfds, &wfds, &efds);
+		if (events != 0)
+			AddSocket(fd, events);
 	}
 }
 
@@ -364,7 +356,7 @@ input_curl_easy_add(struct input_curl *c, GError **error_r)
 		return false;
 	}
 
-	curl_update_fds();
+	curl.sockets->InvalidateSockets();
 
 	return true;
 }
@@ -438,7 +430,7 @@ input_curl_easy_free_callback(gpointer data)
 	struct input_curl *c = (struct input_curl *)data;
 
 	input_curl_easy_free(c);
-	curl_update_fds();
+	curl.sockets->InvalidateSockets();
 
 	return NULL;
 }
@@ -575,27 +567,18 @@ input_curl_perform(void)
 	return true;
 }
 
-/*
- * GSource methods
- *
- */
-
-/**
- * The GSource prepare() method implementation.
- */
-static gboolean
-input_curl_source_prepare(G_GNUC_UNUSED GSource *source, gint *timeout_r)
+void
+CurlSockets::PrepareSockets(gint *timeout_r)
 {
-	curl_update_fds();
+	UpdateSockets();
 
-	curl.timeout = false;
+	have_timeout = false;
 
 	long timeout2;
 	CURLMcode mcode = curl_multi_timeout(curl.multi, &timeout2);
 	if (mcode == CURLM_OK) {
 		if (timeout2 >= 0)
-			curl.absolute_timeout = g_source_get_time(source)
-				+ timeout2 * 1000;
+			absolute_timeout = GetTime() + timeout2 * 1000;
 
 		if (timeout2 >= 0 && timeout2 < 10)
 			/* CURL 7.21.1 likes to report "timeout=0",
@@ -606,64 +589,27 @@ input_curl_source_prepare(G_GNUC_UNUSED GSource *source, gint *timeout_r)
 
 		*timeout_r = timeout2;
 
-		curl.timeout = timeout2 >= 0;
+		have_timeout = timeout2 >= 0;
 	} else
 		g_warning("curl_multi_timeout() failed: %s\n",
 			  curl_multi_strerror(mcode));
-
-	return false;
 }
 
-/**
- * The GSource check() method implementation.
- */
-static gboolean
-input_curl_source_check(G_GNUC_UNUSED GSource *source)
+bool
+CurlSockets::CheckSockets() const
 {
-	if (curl.timeout) {
-		/* when a timeout has expired, we need to call
-		   curl_multi_perform(), even if there was no file
-		   descriptor event */
-
-		if (g_source_get_time(source) >= curl.absolute_timeout)
-			return true;
-	}
-
-	for (const auto &i : curl.fds)
-		if (i.revents != 0)
-			return true;
-
-	return false;
+	/* when a timeout has expired, we need to call
+	   curl_multi_perform(), even if there was no file descriptor
+	   event */
+	return have_timeout && GetTime() >= absolute_timeout;
 }
 
-/**
- * The GSource dispatch() method implementation.  The callback isn't
- * used, because we're handling all events directly.
- */
-static gboolean
-input_curl_source_dispatch(G_GNUC_UNUSED GSource *source,
-			   G_GNUC_UNUSED GSourceFunc callback,
-			   G_GNUC_UNUSED gpointer user_data)
+void
+CurlSockets::DispatchSockets()
 {
 	if (input_curl_perform())
 		input_curl_info_read();
-
-	return true;
 }
-
-/**
- * The vtable for our GSource implementation.  Unfortunately, we
- * cannot declare it "const", because g_source_new() takes a non-const
- * pointer, for whatever reason.
- */
-static GSourceFuncs curl_source_funcs = {
-	input_curl_source_prepare,
-	input_curl_source_check,
-	input_curl_source_dispatch,
-	nullptr,
-	nullptr,
-	nullptr,
-};
 
 /*
  * input_plugin methods
@@ -706,9 +652,7 @@ input_curl_init(const struct config_param *param,
 		return false;
 	}
 
-	curl.source = g_source_new(&curl_source_funcs, sizeof(*curl.source));
-	curl.source_id = g_source_attach(curl.source,
-					 io_thread_get().GetContext());
+	curl.sockets = new CurlSockets(io_thread_get());
 
 	return true;
 }
@@ -716,7 +660,7 @@ input_curl_init(const struct config_param *param,
 static gpointer
 curl_destroy_sources(G_GNUC_UNUSED gpointer data)
 {
-	g_source_destroy(curl.source);
+	delete curl.sockets;
 
 	return NULL;
 }
