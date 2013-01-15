@@ -25,14 +25,18 @@
 #ifndef MPD_OUTPUT_HTTPD_INTERNAL_H
 #define MPD_OUTPUT_HTTPD_INTERNAL_H
 
+#include "HttpdClient.hxx"
 #include "output_internal.h"
 #include "timer.h"
+#include "thread/Mutex.hxx"
 
 #include <glib.h>
 
+#include <forward_list>
+
 #include <stdbool.h>
 
-struct httpd_client;
+class HttpdClient;
 
 struct httpd_output {
 	struct audio_output base;
@@ -65,7 +69,7 @@ struct httpd_output {
 	 * This mutex protects the listener socket and the client
 	 * list.
 	 */
-	GMutex *mutex;
+	mutable Mutex mutex;
 
 	/**
 	 * A #timer object to synchronize this output with the
@@ -105,7 +109,7 @@ struct httpd_output {
 	 * A linked list containing all clients which are currently
 	 * connected.
 	 */
-	GList *clients;
+	std::forward_list<HttpdClient> clients;
 
 	/**
 	 * A temporary buffer for the httpd_output_read_page()
@@ -125,7 +129,7 @@ struct httpd_output {
  */
 void
 httpd_output_remove_client(struct httpd_output *httpd,
-			   struct httpd_client *client);
+			   HttpdClient *client);
 
 /**
  * Sends the encoder header to the client.  This is called right after
@@ -133,6 +137,6 @@ httpd_output_remove_client(struct httpd_output *httpd,
  */
 void
 httpd_output_send_header(struct httpd_output *httpd,
-			 struct httpd_client *client);
+			 HttpdClient *client);
 
 #endif

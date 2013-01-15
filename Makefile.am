@@ -101,8 +101,6 @@ mpd_headers = \
 	src/AudioCompress/compress.h \
 	src/path.h \
 	src/open.h \
-	src/output/httpd_client.h \
-	src/output/httpd_internal.h \
 	src/page.h \
 	src/Playlist.hxx \
 	src/playlist_error.h \
@@ -899,8 +897,9 @@ endif
 if ENABLE_HTTPD_OUTPUT
 liboutput_plugins_a_SOURCES += \
 	src/icy_server.c \
-	src/output/httpd_client.c \
-	src/output/httpd_output_plugin.c src/output/httpd_output_plugin.h
+	src/output/HttpdInternal.hxx \
+	src/output/HttpdClient.cxx src/output/HttpdClient.hxx \
+	src/output/HttpdOutputPlugin.cxx src/output/HttpdOutputPlugin.hxx
 endif
 
 if ENABLE_SOLARIS_OUTPUT

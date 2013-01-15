@@ -24,7 +24,7 @@
 #include "output/ao_output_plugin.h"
 #include "output/ffado_output_plugin.h"
 #include "output/fifo_output_plugin.h"
-#include "output/httpd_output_plugin.h"
+#include "output/HttpdOutputPlugin.hxx"
 #include "output/jack_output_plugin.h"
 #include "output/mvp_output_plugin.h"
 #include "output/null_output_plugin.h"
