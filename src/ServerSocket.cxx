@@ -97,6 +97,8 @@ struct OneServerSocket {
 	char *ToString() const;
 
 	void SetFD(int fd);
+
+	void Accept();
 };
 
 struct server_socket {
@@ -169,31 +171,40 @@ get_remote_uid(int fd)
 #endif
 }
 
+inline void
+OneServerSocket::Accept()
+{
+	struct sockaddr_storage peer_address;
+	size_t peer_address_length = sizeof(peer_address);
+	int peer_fd =
+		accept_cloexec_nonblock(fd, (struct sockaddr*)&peer_address,
+					&peer_address_length);
+	if (peer_fd < 0) {
+		const SocketErrorMessage msg;
+		g_warning("accept() failed: %s", (const char *)msg);
+		return;
+	}
+
+	if (socket_keepalive(peer_fd)) {
+		const SocketErrorMessage msg;
+		g_warning("Could not set TCP keepalive option: %s",
+			  (const char *)msg);
+	}
+
+	parent.callback(peer_fd,
+			(const struct sockaddr*)&peer_address,
+			peer_address_length, get_remote_uid(peer_fd),
+			parent.callback_ctx);
+}
+
 static gboolean
 server_socket_in_event(G_GNUC_UNUSED GIOChannel *source,
 		       G_GNUC_UNUSED GIOCondition condition,
 		       gpointer data)
 {
-	OneServerSocket *s = (OneServerSocket *)data;
+	OneServerSocket &s = *(OneServerSocket *)data;
 
-	struct sockaddr_storage address;
-	size_t address_length = sizeof(address);
-	int fd = accept_cloexec_nonblock(s->fd, (struct sockaddr*)&address,
-					 &address_length);
-	if (fd >= 0) {
-		if (socket_keepalive(fd)) {
-			const SocketErrorMessage msg;
-			g_warning("Could not set TCP keepalive option: %s",
-				  (const char *)msg);
-		}
-		s->parent.callback(fd, (const struct sockaddr*)&address,
-				   address_length, get_remote_uid(fd),
-				   s->parent.callback_ctx);
-	} else {
-		const SocketErrorMessage msg;
-		g_warning("accept() failed: %s", (const char *)msg);
-	}
-
+	s.Accept();
 	return true;
 }
 
