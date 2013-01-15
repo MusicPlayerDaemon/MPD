@@ -36,7 +36,7 @@
 
 static void exit_signal_handler(G_GNUC_UNUSED int signum)
 {
-	main_loop->Break();
+	GlobalEvents::Emit(GlobalEvents::SHUTDOWN);
 }
 
 static void reload_signal_handler(G_GNUC_UNUSED int signum)
