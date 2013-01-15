@@ -34,6 +34,10 @@ resolver_quark(void)
 	return g_quark_from_static_string("resolver");
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Converts the specified socket address into a string in the form
  * "IP:PORT".  The return value must be freed with g_free() when you
@@ -62,5 +66,9 @@ struct addrinfo *
 resolve_host_port(const char *host_port, unsigned default_port,
 		  int flags, int socktype,
 		  GError **error_r);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

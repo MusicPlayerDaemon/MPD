@@ -30,6 +30,10 @@ extern const struct encoder_plugin *const encoder_plugins[];
 		(plugin = *encoder_plugin_iterator) != NULL; \
 		++encoder_plugin_iterator)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Looks up an encoder plugin by its name.
  *
@@ -39,5 +43,9 @@ extern const struct encoder_plugin *const encoder_plugins[];
  */
 const struct encoder_plugin *
 encoder_plugin_get(const char *name);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

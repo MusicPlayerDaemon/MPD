@@ -25,6 +25,10 @@
 
 #include <stdarg.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 char*
 icy_server_metadata_header(const char *name,
 			   const char *genre, const char *url,
@@ -32,5 +36,9 @@ icy_server_metadata_header(const char *name,
 
 struct page*
 icy_server_metadata_page(const struct tag *tag, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

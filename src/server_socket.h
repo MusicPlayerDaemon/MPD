@@ -32,6 +32,10 @@ typedef void (*server_socket_callback_t)(int fd,
 					 size_t address_length, int uid,
 					 void *ctx);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct server_socket *
 server_socket_new(server_socket_callback_t callback, void *callback_ctx);
 
@@ -89,5 +93,9 @@ server_socket_add_host(struct server_socket *ss, const char *hostname,
 bool
 server_socket_add_path(struct server_socket *ss, const char *path,
 		       GError **error_r);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

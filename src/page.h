@@ -53,6 +53,10 @@ struct page {
 	unsigned char data[sizeof(long)];
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Creates a new #page object, and copies data from the specified
  * buffer.  It is initialized with a reference count of 1.
@@ -90,5 +94,9 @@ page_ref(struct page *page);
  */
 bool
 page_unref(struct page *page);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

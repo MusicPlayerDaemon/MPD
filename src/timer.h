@@ -30,6 +30,10 @@ struct timer {
 	int rate;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct timer *timer_new(const struct audio_format *af);
 
 void timer_free(struct timer *timer);
@@ -47,5 +51,9 @@ unsigned
 timer_delay(const struct timer *timer);
 
 void timer_sync(struct timer *timer);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

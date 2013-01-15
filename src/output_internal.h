@@ -257,6 +257,10 @@ audio_output_command_is_finished(const struct audio_output *ao)
 	return ao->command == AO_COMMAND_NONE;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct audio_output *
 audio_output_new(const struct config_param *param,
 		 struct player_control *pc,
@@ -272,5 +276,9 @@ ao_base_finish(struct audio_output *ao);
 
 void
 audio_output_free(struct audio_output *ao);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
