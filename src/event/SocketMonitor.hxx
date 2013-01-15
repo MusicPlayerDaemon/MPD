@@ -54,6 +54,9 @@ public:
 	static constexpr unsigned ERROR = G_IO_ERR;
 	static constexpr unsigned HANGUP = G_IO_HUP;
 
+	SocketMonitor(EventLoop &_loop)
+		:fd(-1), loop(_loop), source(nullptr) {}
+
 	SocketMonitor(int _fd, EventLoop &_loop);
 
 	~SocketMonitor();
@@ -67,6 +70,8 @@ public:
 
 		return fd;
 	}
+
+	void Open(int _fd);
 
 	void Close();
 

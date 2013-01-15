@@ -74,22 +74,35 @@ static GSourceFuncs socket_monitor_source_funcs = {
 };
 
 SocketMonitor::SocketMonitor(int _fd, EventLoop &_loop)
-	:fd(_fd), loop(_loop),
-	 source((Source *)g_source_new(&socket_monitor_source_funcs,
-				       sizeof(*source))),
-	 poll{fd, 0, 0} {
-	assert(fd >= 0);
+	:fd(-1), loop(_loop),
+	 source(nullptr) {
+	assert(_fd >= 0);
 
-	source->monitor = this;
-
-	g_source_attach(&source->base, loop.GetContext());
-	g_source_add_poll(&source->base, &poll);
+	Open(_fd);
 }
 
 SocketMonitor::~SocketMonitor()
 {
 	if (IsDefined())
 		Close();
+}
+
+void
+SocketMonitor::Open(int _fd)
+{
+	assert(fd < 0);
+	assert(source == nullptr);
+	assert(_fd >= 0);
+
+	fd = _fd;
+	poll = {fd, 0, 0};
+
+	source = (Source *)g_source_new(&socket_monitor_source_funcs,
+					sizeof(*source));
+	source->monitor = this;
+
+	g_source_attach(&source->base, loop.GetContext());
+	g_source_add_poll(&source->base, &poll);
 }
 
 void
