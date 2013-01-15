@@ -22,8 +22,8 @@
 #include "ClientList.hxx"
 #include "Partition.hxx"
 #include "fd_util.h"
-extern "C" {
 #include "fifo_buffer.h"
+extern "C" {
 #include "resolver.h"
 }
 #include "Permission.hxx"

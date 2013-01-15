@@ -19,10 +19,7 @@
 
 #include "config.h"
 #include "ClientInternal.hxx"
-
-extern "C" {
 #include "fifo_buffer.h"
-}
 
 #include <assert.h>
 #include <string.h>

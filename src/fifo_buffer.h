@@ -46,6 +46,10 @@
 
 struct fifo_buffer;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Creates a new #fifo_buffer object.  Free this object with
  * fifo_buffer_free().
@@ -149,5 +153,9 @@ fifo_buffer_is_empty(struct fifo_buffer *buffer);
  */
 bool
 fifo_buffer_is_full(struct fifo_buffer *buffer);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
