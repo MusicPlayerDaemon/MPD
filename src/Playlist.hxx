@@ -70,7 +70,7 @@ struct playlist {
 	int queued;
 
 	playlist(unsigned max_length)
-		:queue(max_length), current(-1), queued(-1) {
+		:queue(max_length), playing(false), current(-1), queued(-1) {
 	}
 
 	~playlist() {
