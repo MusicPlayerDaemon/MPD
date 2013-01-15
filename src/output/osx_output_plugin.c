@@ -20,7 +20,7 @@
 #include "config.h"
 #include "osx_output_plugin.h"
 #include "output_api.h"
-#include "fifo_buffer.h"
+#include "util/fifo_buffer.h"
 
 #include <glib.h>
 #include <CoreAudio/AudioHardware.h>

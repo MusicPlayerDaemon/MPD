@@ -20,7 +20,7 @@
 #include "config.h"
 #include "text_input_stream.h"
 #include "input_stream.h"
-#include "fifo_buffer.h"
+#include "util/fifo_buffer.h"
 
 #include <glib.h>
 

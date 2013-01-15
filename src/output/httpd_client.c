@@ -20,7 +20,7 @@
 #include "config.h"
 #include "httpd_client.h"
 #include "httpd_internal.h"
-#include "fifo_buffer.h"
+#include "util/fifo_buffer.h"
 #include "page.h"
 #include "icy_server.h"
 #include "glib_socket.h"

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "InotifySource.hxx"
-#include "fifo_buffer.h"
+#include "util/fifo_buffer.h"
 #include "fd_util.h"
 #include "mpd_error.h"
 

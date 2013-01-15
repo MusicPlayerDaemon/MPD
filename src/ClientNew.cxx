@@ -22,7 +22,7 @@
 #include "ClientList.hxx"
 #include "Partition.hxx"
 #include "fd_util.h"
-#include "fifo_buffer.h"
+#include "util/fifo_buffer.h"
 extern "C" {
 #include "resolver.h"
 }

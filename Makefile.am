@@ -208,8 +208,6 @@ src_mpd_SOURCES = \
 	src/DatabaseSelection.cxx src/DatabaseSelection.hxx \
 	src/ExcludeList.cxx src/ExcludeList.hxx \
 	src/fd_util.c \
-	src/fifo_buffer.c src/fifo_buffer.h \
-	src/growing_fifo.c src/growing_fifo.h \
 	src/filter_config.c \
 	src/filter_plugin.c \
 	src/filter_registry.c \
@@ -343,6 +341,8 @@ endif
 # Generic utility library
 
 libutil_a_SOURCES = \
+	src/util/fifo_buffer.c src/util/fifo_buffer.h \
+	src/util/growing_fifo.c src/util/growing_fifo.h \
 	src/util/LazyRandomEngine.cxx src/util/LazyRandomEngine.hxx \
 	src/util/SliceBuffer.hxx \
 	src/util/HugeAllocator.cxx src/util/HugeAllocator.hxx \
@@ -1077,6 +1077,7 @@ test_run_input_SOURCES = test/run_input.c \
 	src/fd_util.c
 
 test_dump_text_file_LDADD = \
+	libutil.a \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(GLIB_LIBS)
@@ -1085,7 +1086,7 @@ test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	src/IOThread.cxx \
 	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c\
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
-	src/text_input_stream.c src/fifo_buffer.c \
+	src/text_input_stream.c \
 	src/uri.c \
 	src/fd_util.c
 
@@ -1106,7 +1107,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	src/Song.cxx src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/tag_handler.c src/tag_file.c \
 	src/audio_check.c src/pcm_buffer.c \
-	src/text_input_stream.c src/fifo_buffer.c \
+	src/text_input_stream.c \
 	src/cue/cue_parser.c src/cue/cue_parser.h \
 	src/fd_util.c
 
@@ -1200,7 +1201,6 @@ if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
 test_run_encoder_SOURCES = test/run_encoder.c \
 	test/stdbin.h \
-	src/fifo_buffer.c src/growing_fifo.c \
 	src/ConfigFile.cxx src/tokenizer.c \
 	src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
@@ -1210,6 +1210,7 @@ test_run_encoder_SOURCES = test/run_encoder.c \
 test_run_encoder_LDADD = \
 	$(ENCODER_LIBS) \
 	libpcm.a \
+	libutil.a \
 	$(TAG_LIBS) \
 	$(GLIB_LIBS)
 endif
@@ -1226,12 +1227,12 @@ test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.c \
 	src/audio_format.c \
 	src/audio_parser.c \
 	src/pcm_buffer.c \
-	src/fifo_buffer.c src/growing_fifo.c \
 	$(ENCODER_SRC)
 test_test_vorbis_encoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ENCODER_CFLAGS)
 test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
 	$(ENCODER_LIBS) \
+	libutil.a \
 	$(GLIB_LIBS)
 endif
 
@@ -1253,7 +1254,6 @@ test_run_normalize_LDADD = \
 
 test_run_convert_SOURCES = test/run_convert.c \
 	src/dsd2pcm/dsd2pcm.c \
-	src/fifo_buffer.c \
 	src/audio_format.c \
 	src/audio_check.c \
 	src/audio_parser.c
@@ -1279,7 +1279,6 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/audio_parser.c \
 	src/timer.c src/clock.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
-	src/fifo_buffer.c src/growing_fifo.c \
 	src/page.c \
 	src/socket_util.c \
 	src/resolver.c \
@@ -1323,9 +1322,10 @@ if ENABLE_INOTIFY
 noinst_PROGRAMS += test/run_inotify
 test_run_inotify_SOURCES = test/run_inotify.cxx \
 	src/fd_util.c \
-	src/fifo_buffer.c \
 	src/InotifySource.cxx
-test_run_inotify_LDADD = $(GLIB_LIBS)
+test_run_inotify_LDADD = \
+	libutil.a \
+	$(GLIB_LIBS)
 endif
 
 test_test_byte_reverse_SOURCES = \

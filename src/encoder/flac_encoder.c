@@ -22,8 +22,8 @@
 #include "encoder_plugin.h"
 #include "audio_format.h"
 #include "pcm_buffer.h"
-#include "fifo_buffer.h"
-#include "growing_fifo.h"
+#include "util/fifo_buffer.h"
+#include "util/growing_fifo.h"
 
 #include <assert.h>
 #include <string.h>
