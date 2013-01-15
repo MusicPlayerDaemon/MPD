@@ -58,6 +58,14 @@ fifo_buffer_new(size_t size)
 	return buffer;
 }
 
+void
+fifo_buffer_init(struct fifo_buffer *buffer, size_t size)
+{
+	buffer->size = size - (sizeof(*buffer) - sizeof(buffer->buffer));
+	buffer->start = 0;
+	buffer->end = 0;
+}
+
 static void
 fifo_buffer_move(struct fifo_buffer *buffer);
 

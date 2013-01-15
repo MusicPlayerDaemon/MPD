@@ -60,6 +60,9 @@ extern "C" {
 struct fifo_buffer *
 fifo_buffer_new(size_t size);
 
+void
+fifo_buffer_init(struct fifo_buffer *buffer, size_t size);
+
 /**
  * Change the capacity of the #fifo_buffer, while preserving existing
  * data.
