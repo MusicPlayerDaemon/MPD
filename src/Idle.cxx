@@ -52,9 +52,10 @@ idle_add(unsigned flags)
 {
 	assert(flags != 0);
 
-	idle_flags |= flags;
+	unsigned old_flags = idle_flags.fetch_or(flags);
 
-	GlobalEvents::Emit(GlobalEvents::IDLE);
+	if ((old_flags & flags) != flags)
+		GlobalEvents::Emit(GlobalEvents::IDLE);
 }
 
 unsigned
