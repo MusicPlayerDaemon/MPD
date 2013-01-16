@@ -26,11 +26,11 @@
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"
 
-#include <assert.h>
-#include <glib.h>
+#include <atomic>
 
-static unsigned idle_flags;
-static GMutex *idle_mutex = NULL;
+#include <assert.h>
+
+static std::atomic_uint idle_flags;
 
 static const char *const idle_names[] = {
 	"database",
@@ -44,32 +44,15 @@ static const char *const idle_names[] = {
 	"update",
 	"subscription",
 	"message",
-        NULL
+	nullptr
 };
-
-void
-idle_init(void)
-{
-	g_assert(idle_mutex == NULL);
-	idle_mutex = g_mutex_new();
-}
-
-void
-idle_deinit(void)
-{
-	g_assert(idle_mutex != NULL);
-	g_mutex_free(idle_mutex);
-	idle_mutex = NULL;
-}
 
 void
 idle_add(unsigned flags)
 {
 	assert(flags != 0);
 
-	g_mutex_lock(idle_mutex);
 	idle_flags |= flags;
-	g_mutex_unlock(idle_mutex);
 
 	GlobalEvents::Emit(GlobalEvents::IDLE);
 }
@@ -77,14 +60,7 @@ idle_add(unsigned flags)
 unsigned
 idle_get(void)
 {
-	unsigned flags;
-
-	g_mutex_lock(idle_mutex);
-	flags = idle_flags;
-	idle_flags = 0;
-	g_mutex_unlock(idle_mutex);
-
-	return flags;
+	return idle_flags.fetch_and(0);
 }
 
 const char*const*

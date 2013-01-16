@@ -19,7 +19,6 @@
 
 #include "ClientMessage.hxx"
 
-#include <assert.h>
 #include <glib.h>
 
 G_GNUC_PURE

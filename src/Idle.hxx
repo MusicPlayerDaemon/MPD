@@ -62,18 +62,6 @@ enum {
 };
 
 /**
- * Initialize the mutex
- */
-void
-idle_init(void);
-
-/**
- * Destroy the mutex
- */
-void
-idle_deinit(void);
-
-/**
  * Adds idle flag (with bitwise "or") and queues notifications to all
  * clients.
  */

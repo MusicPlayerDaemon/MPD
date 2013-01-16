@@ -375,7 +375,6 @@ int mpd_main(int argc, char *argv[])
 
 	io_thread_init();
 	winsock_init();
-	idle_init();
 	config_global_init();
 
 	success = parse_cmdline(argc, argv, &options, &error);
@@ -565,7 +564,6 @@ int mpd_main(int argc, char *argv[])
 	archive_plugin_deinit_all();
 #endif
 	config_global_finish();
-	idle_deinit();
 	stats_global_finish();
 	io_thread_deinit();
 	daemonize_finish();
