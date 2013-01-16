@@ -1,4 +1,6 @@
 ver 0.17.4 (2013/??/??)
+* decoder:
+  - ffmpeg: support float planar audio (ffmpeg 1.1)
 
 
 ver 0.17.3 (2013/01/06)
