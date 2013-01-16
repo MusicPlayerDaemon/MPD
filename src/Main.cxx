@@ -328,7 +328,7 @@ initialize_decoder_and_player(void)
 static void
 idle_event_emitted(void)
 {
-	/* send "idle" notificaions to all subscribed
+	/* send "idle" notifications to all subscribed
 	   clients */
 	unsigned flags = idle_get();
 	if (flags != 0)
