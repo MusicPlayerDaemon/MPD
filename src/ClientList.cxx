@@ -30,23 +30,9 @@ static std::list<Client *> clients;
 static unsigned num_clients;
 
 bool
-client_list_is_empty(void)
-{
-	return num_clients == 0;
-}
-
-bool
 client_list_is_full(void)
 {
 	return num_clients >= client_max_connections;
-}
-
-Client *
-client_list_get_first(void)
-{
-	assert(!clients.empty());
-
-	return clients.front();
 }
 
 void
@@ -73,4 +59,13 @@ client_list_remove(Client *client)
 	assert(i != clients.end());
 	clients.erase(i);
 	--num_clients;
+}
+
+void
+client_list_close_all()
+{
+	while (!clients.empty())
+		clients.front()->Close();
+
+	assert(num_clients == 0);
 }

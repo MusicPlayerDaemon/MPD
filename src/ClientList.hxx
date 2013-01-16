@@ -23,13 +23,7 @@
 class Client;
 
 bool
-client_list_is_empty(void);
-
-bool
 client_list_is_full(void);
-
-Client *
-client_list_get_first(void);
 
 void
 client_list_add(Client *client);
@@ -39,5 +33,8 @@ client_list_foreach(void (*callback)(Client *client, void *ctx), void *ctx);
 
 void
 client_list_remove(Client *client);
+
+void
+client_list_close_all();
 
 #endif

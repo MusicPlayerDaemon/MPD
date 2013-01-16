@@ -53,20 +53,9 @@ void client_manager_init(void)
 		* 1024;
 }
 
-static void client_close_all(void)
-{
-	while (!client_list_is_empty()) {
-		Client *client = client_list_get_first();
-
-		client->Close();
-	}
-
-	assert(client_list_is_empty());
-}
-
 void client_manager_deinit(void)
 {
-	client_close_all();
+	client_list_close_all();
 
 	client_max_connections = 0;
 }
