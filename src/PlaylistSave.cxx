@@ -38,62 +38,47 @@ void
 playlist_print_song(FILE *file, const struct song *song)
 {
 	if (playlist_saveAbsolutePaths && song_in_database(song)) {
-		char *path = map_song_fs(song);
-		if (path != NULL) {
-			fprintf(file, "%s\n", path);
-			g_free(path);
-		}
+		const Path path = map_song_fs(song);
+		if (!path.IsNull())
+			fprintf(file, "%s\n", path.c_str());
 	} else {
-		char *uri = song_get_uri(song), *uri_fs;
-
-		uri_fs = utf8_to_fs_charset(uri);
+		char *uri = song_get_uri(song);
+		const Path uri_fs = Path::FromUTF8(uri);
 		g_free(uri);
 
-		fprintf(file, "%s\n", uri_fs);
-		g_free(uri_fs);
+		fprintf(file, "%s\n", uri_fs.c_str());
 	}
 }
 
 void
 playlist_print_uri(FILE *file, const char *uri)
 {
-	char *s;
+	Path path = playlist_saveAbsolutePaths && !uri_has_scheme(uri) &&
+		!g_path_is_absolute(uri)
+		? map_uri_fs(uri)
+		: Path::FromUTF8(uri);
 
-	if (playlist_saveAbsolutePaths && !uri_has_scheme(uri) &&
-	    !g_path_is_absolute(uri))
-		s = map_uri_fs(uri);
-	else
-		s = utf8_to_fs_charset(uri);
-
-	if (s != NULL) {
-		fprintf(file, "%s\n", s);
-		g_free(s);
-	}
+	if (!path.IsNull())
+		fprintf(file, "%s\n", path.c_str());
 }
 
 enum playlist_result
 spl_save_queue(const char *name_utf8, const struct queue *queue)
 {
-	char *path_fs;
-	FILE *file;
-
 	if (map_spl_path() == NULL)
 		return PLAYLIST_RESULT_DISABLED;
 
 	if (!spl_valid_name(name_utf8))
 		return PLAYLIST_RESULT_BAD_NAME;
 
-	path_fs = map_spl_utf8_to_fs(name_utf8);
-	if (path_fs == NULL)
+	const Path path_fs = map_spl_utf8_to_fs(name_utf8);
+	if (path_fs.IsNull())
 		return PLAYLIST_RESULT_BAD_NAME;
 
-	if (g_file_test(path_fs, G_FILE_TEST_EXISTS)) {
-		g_free(path_fs);
+	if (g_file_test(path_fs.c_str(), G_FILE_TEST_EXISTS))
 		return PLAYLIST_RESULT_LIST_EXISTS;
-	}
 
-	file = fopen(path_fs, "w");
-	g_free(path_fs);
+	FILE *file = fopen(path_fs.c_str(), "w");
 
 	if (file == NULL)
 		return PLAYLIST_RESULT_ERRNO;

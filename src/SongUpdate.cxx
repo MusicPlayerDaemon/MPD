@@ -26,6 +26,7 @@ extern "C" {
 
 #include "Directory.hxx"
 #include "Mapper.hxx"
+#include "Path.hxx"
 #include "tag.h"
 #include "input_stream.h"
 
@@ -85,7 +86,6 @@ bool
 song_file_update(struct song *song)
 {
 	const char *suffix;
-	char *path_fs;
 	const struct decoder_plugin *plugin;
 	struct stat st;
 	struct input_stream *is = NULL;
@@ -102,8 +102,8 @@ song_file_update(struct song *song)
 	if (plugin == NULL)
 		return false;
 
-	path_fs = map_song_fs(song);
-	if (path_fs == NULL)
+	const Path path_fs = map_song_fs(song);
+	if (path_fs.IsNull())
 		return false;
 
 	if (song->tag != NULL) {
@@ -111,8 +111,7 @@ song_file_update(struct song *song)
 		song->tag = NULL;
 	}
 
-	if (stat(path_fs, &st) < 0 || !S_ISREG(st.st_mode)) {
-		g_free(path_fs);
+	if (stat(path_fs.c_str(), &st) < 0 || !S_ISREG(st.st_mode)) {
 		return false;
 	}
 
@@ -129,7 +128,7 @@ song_file_update(struct song *song)
 	do {
 		/* load file tag */
 		song->tag = tag_new();
-		if (decoder_plugin_scan_file(plugin, path_fs,
+		if (decoder_plugin_scan_file(plugin, path_fs.c_str(),
 					     &full_tag_handler, song->tag))
 			break;
 
@@ -143,7 +142,8 @@ song_file_update(struct song *song)
 			if (is == NULL) {
 				mutex = g_mutex_new();
 				cond = g_cond_new();
-				is = input_stream_open(path_fs, mutex, cond,
+				is = input_stream_open(path_fs.c_str(),
+						       mutex, cond,
 						       NULL);
 			}
 
@@ -174,9 +174,9 @@ song_file_update(struct song *song)
 	}
 
 	if (song->tag != NULL && tag_is_empty(song->tag))
-		tag_scan_fallback(path_fs, &full_tag_handler, song->tag);
+		tag_scan_fallback(path_fs.c_str(), &full_tag_handler,
+				  song->tag);
 
-	g_free(path_fs);
 	return song->tag != NULL;
 }
 

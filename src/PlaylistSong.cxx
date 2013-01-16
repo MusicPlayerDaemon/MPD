@@ -65,8 +65,8 @@ apply_song_metadata(struct song *dest, const struct song *src)
 		return dest;
 
 	if (song_in_database(dest)) {
-		char *path_fs = map_song_fs(dest);
-		if (path_fs == NULL)
+		char *path_fs = map_song_fs(dest).Steal();
+		if (path_fs == nullptr)
 			return dest;
 
 		char *path_utf8 = fs_charset_to_utf8(path_fs);

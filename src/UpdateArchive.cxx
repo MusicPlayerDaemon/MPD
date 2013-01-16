@@ -24,6 +24,7 @@
 #include "Directory.hxx"
 #include "song.h"
 #include "Mapper.hxx"
+#include "Path.hxx"
 
 extern "C" {
 #include "archive_list.h"
@@ -96,20 +97,19 @@ update_archive_file2(Directory *parent, const char *name,
 		   changed since - don't consider updating it */
 		return;
 
-	char *path_fs = map_directory_child_fs(parent, name);
+	const Path path_fs = map_directory_child_fs(parent, name);
 
 	/* open archive */
 	GError *error = NULL;
-	struct archive_file *file = archive_file_open(plugin, path_fs, &error);
+	struct archive_file *file = archive_file_open(plugin, path_fs.c_str(),
+						      &error);
 	if (file == NULL) {
-		g_free(path_fs);
 		g_warning("%s", error->message);
 		g_error_free(error);
 		return;
 	}
 
-	g_debug("archive %s opened", path_fs);
-	g_free(path_fs);
+	g_debug("archive %s opened", path_fs.c_str());
 
 	if (directory == NULL) {
 		g_debug("creating archive directory: %s", name);

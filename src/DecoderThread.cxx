@@ -26,6 +26,7 @@
 #include "song.h"
 #include "mpd_error.h"
 #include "Mapper.hxx"
+#include "Path.hxx"
 #include "decoder_api.h"
 #include "tag.h"
 #include "input_stream.h"
@@ -431,7 +432,7 @@ decoder_run(struct decoder_control *dc)
 	assert(song != NULL);
 
 	if (song_is_file(song))
-		uri = map_song_fs(song);
+		uri = map_song_fs(song).Steal();
 	else
 		uri = song_get_uri(song);
 

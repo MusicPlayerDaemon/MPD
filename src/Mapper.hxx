@@ -29,6 +29,7 @@
 
 #define PLAYLIST_FILE_SUFFIX ".m3u"
 
+class Path;
 struct Directory;
 struct song;
 
@@ -75,8 +76,8 @@ map_to_relative_path(const char *path_utf8);
  * is basically done by converting the URI to the file system charset
  * and prepending the music directory.
  */
-gcc_malloc
-char *
+gcc_pure
+Path
 map_uri_fs(const char *uri);
 
 /**
@@ -85,8 +86,8 @@ map_uri_fs(const char *uri);
  * @param directory the directory object
  * @return the path in file system encoding, or nullptr if mapping failed
  */
-gcc_malloc
-char *
+gcc_pure
+Path
 map_directory_fs(const Directory *directory);
 
 /**
@@ -97,8 +98,8 @@ map_directory_fs(const Directory *directory);
  * @param name the child's name in UTF-8
  * @return the path in file system encoding, or nullptr if mapping failed
  */
-gcc_malloc
-char *
+gcc_pure
+Path
 map_directory_child_fs(const Directory *directory, const char *name);
 
 /**
@@ -108,8 +109,8 @@ map_directory_child_fs(const Directory *directory, const char *name);
  * @param song the song object
  * @return the path in file system encoding, or nullptr if mapping failed
  */
-gcc_malloc
-char *
+gcc_pure
+Path
 map_song_fs(const struct song *song);
 
 /**
@@ -138,7 +139,7 @@ map_spl_path(void);
  * @return the path in file system encoding, or nullptr if mapping failed
  */
 gcc_pure
-char *
+Path
 map_spl_utf8_to_fs(const char *name);
 
 #endif

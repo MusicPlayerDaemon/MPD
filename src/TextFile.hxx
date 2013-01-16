@@ -21,6 +21,7 @@
 #define MPD_TEXT_FILE_HXX
 
 #include "gcc.h"
+#include "Path.hxx"
 
 #include <glib.h>
 
@@ -35,8 +36,9 @@ class TextFile {
 	GString *const buffer;
 
 public:
-	TextFile(const char *path_fs)
-		:file(fopen(path_fs, "r")), buffer(g_string_sized_new(step)) {}
+	TextFile(const Path &path_fs)
+		:file(fopen(path_fs.c_str(), "r")),
+		 buffer(g_string_sized_new(step)) {}
 
 	TextFile(const TextFile &other) = delete;
 

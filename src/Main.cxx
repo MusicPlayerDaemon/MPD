@@ -238,7 +238,8 @@ glue_state_file_init(GError **error_r)
 		return true;
 	}
 
-	state_file = new StateFile(path, *global_partition, *main_loop);
+	state_file = new StateFile(Path::FromUTF8(path),
+				   *global_partition, *main_loop);
 	g_free(path);
 	state_file->Read();
 	return true;

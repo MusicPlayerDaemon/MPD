@@ -156,67 +156,54 @@ map_to_relative_path(const char *path_utf8)
 		: path_utf8;
 }
 
-char *
+Path
 map_uri_fs(const char *uri)
 {
-	char *uri_fs, *path_fs;
-
 	assert(uri != NULL);
 	assert(*uri != '/');
 
 	if (music_dir_fs == NULL)
-		return NULL;
+		return Path::Null();
 
-	uri_fs = utf8_to_fs_charset(uri);
-	if (uri_fs == NULL)
-		return NULL;
+	const Path uri_fs = Path::FromUTF8(uri);
+	if (uri_fs.IsNull())
+		return Path::Null();
 
-	path_fs = g_build_filename(music_dir_fs, uri_fs, NULL);
-	g_free(uri_fs);
-
-	return path_fs;
+	return Path::Build(music_dir_fs, uri_fs);
 }
 
-char *
+Path
 map_directory_fs(const Directory *directory)
 {
 	assert(music_dir_utf8 != NULL);
 	assert(music_dir_fs != NULL);
 
 	if (directory->IsRoot())
-		return g_strdup(music_dir_fs);
+		return Path::FromFS(music_dir_fs);
 
 	return map_uri_fs(directory->GetPath());
 }
 
-char *
+Path
 map_directory_child_fs(const Directory *directory, const char *name)
 {
 	assert(music_dir_utf8 != NULL);
 	assert(music_dir_fs != NULL);
 
-	char *name_fs, *parent_fs, *path;
-
 	/* check for invalid or unauthorized base names */
 	if (*name == 0 || strchr(name, '/') != NULL ||
 	    strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
-		return NULL;
+		return Path::Null();
 
-	parent_fs = map_directory_fs(directory);
-	if (parent_fs == NULL)
-		return NULL;
+	const Path parent_fs = map_directory_fs(directory);
+	if (parent_fs.IsNull())
+		return Path::Null();
 
-	name_fs = utf8_to_fs_charset(name);
-	if (name_fs == NULL) {
-		g_free(parent_fs);
-		return NULL;
-	}
+	const Path name_fs = Path::FromUTF8(name);
+	if (name_fs.IsNull())
+		return Path::Null();
 
-	path = g_build_filename(parent_fs, name_fs, NULL);
-	g_free(parent_fs);
-	g_free(name_fs);
-
-	return path;
+	return Path::Build(parent_fs, name_fs);
 }
 
 /**
@@ -224,19 +211,17 @@ map_directory_child_fs(const Directory *directory, const char *name)
  * not have a real parent directory, only the dummy object
  * #detached_root.
  */
-static char *
+static Path
 map_detached_song_fs(const char *uri_utf8)
 {
-	char *uri_fs = utf8_to_fs_charset(uri_utf8);
-	if (uri_fs == NULL)
-		return NULL;
+	Path uri_fs = Path::FromUTF8(uri_utf8);
+	if (uri_fs.IsNull())
+		return Path::Null();
 
-	char *path = g_build_filename(music_dir_fs, uri_fs, NULL);
-	g_free(uri_fs);
-	return path;
+	return Path::Build(music_dir_fs, uri_fs);
 }
 
-char *
+Path
 map_song_fs(const struct song *song)
 {
 	assert(song_is_file(song));
@@ -246,7 +231,7 @@ map_song_fs(const struct song *song)
 			? map_detached_song_fs(song->uri)
 			: map_directory_child_fs(song->parent, song->uri);
 	else
-		return utf8_to_fs_charset(song->uri);
+		return Path::FromUTF8(song->uri);
 }
 
 char *
@@ -273,22 +258,17 @@ map_spl_path(void)
 	return playlist_dir_fs;
 }
 
-char *
+Path
 map_spl_utf8_to_fs(const char *name)
 {
-	char *filename_utf8, *filename_fs, *path;
-
 	if (playlist_dir_fs == NULL)
-		return NULL;
+		return Path::Null();
 
-	filename_utf8 = g_strconcat(name, PLAYLIST_FILE_SUFFIX, NULL);
-	filename_fs = utf8_to_fs_charset(filename_utf8);
+	char *filename_utf8 = g_strconcat(name, PLAYLIST_FILE_SUFFIX, NULL);
+	const Path filename_fs = Path::FromUTF8(filename_utf8);
 	g_free(filename_utf8);
-	if (filename_fs == NULL)
-		return NULL;
+	if (filename_fs.IsNull())
+		return Path::Null();
 
-	path = g_build_filename(playlist_dir_fs, filename_fs, NULL);
-	g_free(filename_fs);
-
-	return path;
+	return Path::Build(playlist_dir_fs, filename_fs);
 }

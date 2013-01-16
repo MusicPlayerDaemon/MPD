@@ -34,8 +34,8 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "state_file"
 
-StateFile::StateFile(const char *_path, Partition &_partition, EventLoop &_loop)
-	:TimeoutMonitor(_loop), path(_path), partition(_partition),
+StateFile::StateFile(Path &&_path, Partition &_partition, EventLoop &_loop)
+	:TimeoutMonitor(_loop), path(std::move(_path)), partition(_partition),
 	 prev_volume_version(0), prev_output_version(0),
 	 prev_playlist_version(0)
 {
@@ -73,7 +73,7 @@ StateFile::Read()
 
 	g_debug("Loading state file %s", path.c_str());
 
-	TextFile file(path.c_str());
+	TextFile file(path);
 	if (file.HasFailed()) {
 		g_warning("failed to open %s: %s",
 			  path.c_str(), g_strerror(errno));

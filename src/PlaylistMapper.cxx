@@ -21,6 +21,7 @@
 #include "PlaylistMapper.hxx"
 #include "PlaylistFile.hxx"
 #include "Mapper.hxx"
+#include "Path.hxx"
 
 extern "C" {
 #include "playlist_list.h"
@@ -75,19 +76,13 @@ static struct playlist_provider *
 playlist_open_in_music_dir(const char *uri, GMutex *mutex, GCond *cond,
 			   struct input_stream **is_r)
 {
-	char *path_fs;
-
 	assert(uri_safe_local(uri));
 
-	path_fs = map_uri_fs(uri);
-	if (path_fs == NULL)
+	Path path = map_uri_fs(uri);
+	if (path.IsNull())
 		return NULL;
 
-	struct playlist_provider *playlist =
-		playlist_open_path(path_fs, mutex, cond, is_r);
-	g_free(path_fs);
-
-	return playlist;
+	return playlist_open_path(path.c_str(), mutex, cond, is_r);
 }
 
 struct playlist_provider *

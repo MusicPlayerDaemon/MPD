@@ -21,17 +21,17 @@
 #define MPD_SIMPLE_DATABASE_PLUGIN_HXX
 
 #include "DatabasePlugin.hxx"
+#include "Path.hxx"
 #include "gcc.h"
 
 #include <cassert>
-#include <string>
 
 #include <time.h>
 
 struct Directory;
 
 class SimpleDatabase : public Database {
-	std::string path;
+	Path path;
 
 	Directory *root;
 
@@ -40,6 +40,9 @@ class SimpleDatabase : public Database {
 #ifndef NDEBUG
 	unsigned borrowed_song_count;
 #endif
+
+	SimpleDatabase()
+		:path(Path::Null()) {}
 
 public:
 	gcc_pure

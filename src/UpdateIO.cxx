@@ -21,6 +21,7 @@
 #include "UpdateIO.hxx"
 #include "Directory.hxx"
 #include "Mapper.hxx"
+#include "Path.hxx"
 #include "glib_compat.h"
 
 #include <glib.h>
@@ -31,15 +32,15 @@
 int
 stat_directory(const Directory *directory, struct stat *st)
 {
-	char *path_fs = map_directory_fs(directory);
-	if (path_fs == NULL)
+	const Path path_fs = map_directory_fs(directory);
+	if (path_fs.IsNull())
 		return -1;
 
-	int ret = stat(path_fs, st);
+	int ret = stat(path_fs.c_str(), st);
 	if (ret < 0)
-		g_warning("Failed to stat %s: %s", path_fs, g_strerror(errno));
+		g_warning("Failed to stat %s: %s",
+			  path_fs.c_str(), g_strerror(errno));
 
-	g_free(path_fs);
 	return ret;
 }
 
@@ -47,23 +48,23 @@ int
 stat_directory_child(const Directory *parent, const char *name,
 		     struct stat *st)
 {
-	char *path_fs = map_directory_child_fs(parent, name);
-	if (path_fs == NULL)
+	const Path path_fs = map_directory_child_fs(parent, name);
+	if (path_fs.IsNull())
 		return -1;
 
-	int ret = stat(path_fs, st);
+	int ret = stat(path_fs.c_str(), st);
 	if (ret < 0)
-		g_warning("Failed to stat %s: %s", path_fs, g_strerror(errno));
+		g_warning("Failed to stat %s: %s",
+			  path_fs.c_str(), g_strerror(errno));
 
-	g_free(path_fs);
 	return ret;
 }
 
 bool
 directory_exists(const Directory *directory)
 {
-	char *path_fs = map_directory_fs(directory);
-	if (path_fs == NULL)
+	const Path path_fs = map_directory_fs(directory);
+	if (path_fs.IsNull())
 		/* invalid path: cannot exist */
 		return false;
 
@@ -72,25 +73,19 @@ directory_exists(const Directory *directory)
 		? G_FILE_TEST_IS_REGULAR
 		: G_FILE_TEST_IS_DIR;
 
-	bool exists = g_file_test(path_fs, test);
-	g_free(path_fs);
-
-	return exists;
+	return g_file_test(path_fs.c_str(), test);
 }
 
 bool
 directory_child_is_regular(const Directory *directory,
 			   const char *name_utf8)
 {
-	char *path_fs = map_directory_child_fs(directory, name_utf8);
-	if (path_fs == NULL)
+	const Path path_fs = map_directory_child_fs(directory, name_utf8);
+	if (path_fs.IsNull())
 		return false;
 
 	struct stat st;
-	bool is_regular = stat(path_fs, &st) == 0 && S_ISREG(st.st_mode);
-	g_free(path_fs);
-
-	return is_regular;
+	return stat(path_fs.c_str(), &st) == 0 && S_ISREG(st.st_mode);
 }
 
 bool
@@ -104,14 +99,12 @@ directory_child_access(const Directory *directory,
 	(void)mode;
 	return true;
 #else
-	char *path = map_directory_child_fs(directory, name);
-	if (path == NULL)
+	const Path path = map_directory_child_fs(directory, name);
+	if (path.IsNull())
 		/* something went wrong, but that isn't a permission
 		   problem */
 		return true;
 
-	bool success = access(path, mode) == 0 || errno != EACCES;
-	g_free(path);
-	return success;
+	return access(path.c_str(), mode) == 0 || errno != EACCES;
 #endif
 }

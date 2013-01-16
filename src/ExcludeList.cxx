@@ -32,14 +32,12 @@
 #include <errno.h>
 
 bool
-ExcludeList::LoadFile(const char *path_fs)
+ExcludeList::LoadFile(const Path &path_fs)
 {
-	assert(path_fs != NULL);
-
-	FILE *file = fopen(path_fs, "r");
+	FILE *file = fopen(path_fs.c_str(), "r");
 	if (file == NULL) {
 		if (errno != ENOENT) {
-			char *path_utf8 = fs_charset_to_utf8(path_fs);
+			char *path_utf8 = path_fs.ToUTF8();
 			g_debug("Failed to open %s: %s",
 				path_utf8, g_strerror(errno));
 			g_free(path_utf8);

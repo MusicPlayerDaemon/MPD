@@ -106,15 +106,15 @@ spl_check_name(const char *name_utf8, GError **error_r)
 	return true;
 }
 
-static char *
+static Path
 spl_map_to_fs(const char *name_utf8, GError **error_r)
 {
 	if (spl_map(error_r) == NULL ||
 	    !spl_check_name(name_utf8, error_r))
-		return NULL;
+		return Path::Null();
 
-	char *path_fs = map_spl_utf8_to_fs(name_utf8);
-	if (path_fs == NULL)
+	Path path_fs = map_spl_utf8_to_fs(name_utf8);
+	if (path_fs.IsNull())
 		g_set_error_literal(error_r, playlist_quark(),
 				    PLAYLIST_RESULT_BAD_NAME,
 				    "Bad playlist name");
@@ -209,12 +209,11 @@ SavePlaylistFile(const PlaylistFileContents &contents, const char *utf8path,
 	if (spl_map(error_r) == NULL)
 		return false;
 
-	char *path_fs = spl_map_to_fs(utf8path, error_r);
-	if (path_fs == NULL)
+	const Path path_fs = spl_map_to_fs(utf8path, error_r);
+	if (path_fs.IsNull())
 		return false;
 
-	FILE *file = fopen(path_fs, "w");
-	g_free(path_fs);
+	FILE *file = fopen(path_fs.c_str(), "w");
 	if (file == NULL) {
 		playlist_errno(error_r);
 		return false;
@@ -235,8 +234,8 @@ LoadPlaylistFile(const char *utf8path, GError **error_r)
 	if (spl_map(error_r) == NULL)
 		return contents;
 
-	char *path_fs = spl_map_to_fs(utf8path, error_r);
-	if (path_fs == NULL)
+	const Path path_fs = spl_map_to_fs(utf8path, error_r);
+	if (path_fs.IsNull())
 		return contents;
 
 	TextFile file(path_fs);
@@ -308,17 +307,14 @@ spl_move_index(const char *utf8path, unsigned src, unsigned dest,
 bool
 spl_clear(const char *utf8path, GError **error_r)
 {
-	FILE *file;
-
 	if (spl_map(error_r) == NULL)
 		return false;
 
-	char *path_fs = spl_map_to_fs(utf8path, error_r);
-	if (path_fs == NULL)
+	const Path path_fs = spl_map_to_fs(utf8path, error_r);
+	if (path_fs.IsNull())
 		return false;
 
-	file = fopen(path_fs, "w");
-	g_free(path_fs);
+	FILE *file = fopen(path_fs.c_str(), "w");
 	if (file == NULL) {
 		playlist_errno(error_r);
 		return false;
@@ -333,12 +329,11 @@ spl_clear(const char *utf8path, GError **error_r)
 bool
 spl_delete(const char *name_utf8, GError **error_r)
 {
-	char *path_fs = spl_map_to_fs(name_utf8, error_r);
-	if (path_fs == NULL)
+	const Path path_fs = spl_map_to_fs(name_utf8, error_r);
+	if (path_fs.IsNull())
 		return false;
 
-	int ret = unlink(path_fs);
-	g_free(path_fs);
+	int ret = unlink(path_fs.c_str());
 	if (ret < 0) {
 		playlist_errno(error_r);
 		return false;
@@ -376,17 +371,14 @@ spl_remove_index(const char *utf8path, unsigned pos, GError **error_r)
 bool
 spl_append_song(const char *utf8path, struct song *song, GError **error_r)
 {
-	FILE *file;
-
 	if (spl_map(error_r) == NULL)
 		return false;
 
-	char *path_fs = spl_map_to_fs(utf8path, error_r);
-	if (path_fs == NULL)
+	const Path path_fs = spl_map_to_fs(utf8path, error_r);
+	if (path_fs.IsNull())
 		return false;
 
-	file = fopen(path_fs, "a");
-	g_free(path_fs);
+	FILE *file = fopen(path_fs.c_str(), "a");
 	if (file == NULL) {
 		playlist_errno(error_r);
 		return false;
@@ -439,24 +431,24 @@ spl_append_uri(const char *url, const char *utf8file, GError **error_r)
 }
 
 static bool
-spl_rename_internal(const char *from_path_fs, const char *to_path_fs,
+spl_rename_internal(const Path &from_path_fs, const Path &to_path_fs,
 		    GError **error_r)
 {
-	if (!g_file_test(from_path_fs, G_FILE_TEST_IS_REGULAR)) {
+	if (!g_file_test(from_path_fs.c_str(), G_FILE_TEST_IS_REGULAR)) {
 		g_set_error_literal(error_r, playlist_quark(),
 				    PLAYLIST_RESULT_NO_SUCH_LIST,
 				    "No such playlist");
 		return false;
 	}
 
-	if (g_file_test(to_path_fs, G_FILE_TEST_EXISTS)) {
+	if (g_file_test(to_path_fs.c_str(), G_FILE_TEST_EXISTS)) {
 		g_set_error_literal(error_r, playlist_quark(),
 				    PLAYLIST_RESULT_LIST_EXISTS,
 				    "Playlist exists already");
 		return false;
 	}
 
-	if (rename(from_path_fs, to_path_fs) < 0) {
+	if (rename(from_path_fs.c_str(), to_path_fs.c_str()) < 0) {
 		playlist_errno(error_r);
 		return false;
 	}
@@ -471,20 +463,13 @@ spl_rename(const char *utf8from, const char *utf8to, GError **error_r)
 	if (spl_map(error_r) == NULL)
 		return false;
 
-	char *from_path_fs = spl_map_to_fs(utf8from, error_r);
-	if (from_path_fs == NULL)
+	Path from_path_fs = spl_map_to_fs(utf8from, error_r);
+	if (from_path_fs.IsNull())
 		return false;
 
-	char *to_path_fs = spl_map_to_fs(utf8to, error_r);
-	if (to_path_fs == NULL) {
-		g_free(from_path_fs);
+	Path to_path_fs = spl_map_to_fs(utf8to, error_r);
+	if (to_path_fs.IsNull())
 		return false;
-	}
 
-	bool success = spl_rename_internal(from_path_fs, to_path_fs, error_r);
-
-	g_free(from_path_fs);
-	g_free(to_path_fs);
-
-	return success;
+	return spl_rename_internal(from_path_fs, to_path_fs, error_r);
 }

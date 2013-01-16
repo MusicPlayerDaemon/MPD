@@ -68,7 +68,7 @@ SimpleDatabase::Configure(const struct config_param *param, GError **error_r)
 		return false;
 	}
 
-	path = _path;
+	path = Path::FromUTF8(_path);
 	free(_path);
 
 	return true;
@@ -77,6 +77,7 @@ SimpleDatabase::Configure(const struct config_param *param, GError **error_r)
 bool
 SimpleDatabase::Check(GError **error_r) const
 {
+	assert(!path.IsNull());
 	assert(!path.empty());
 
 	/* Check if the file exists */
@@ -153,7 +154,7 @@ SimpleDatabase::Load(GError **error_r)
 	assert(!path.empty());
 	assert(root != NULL);
 
-	TextFile file(path.c_str());
+	TextFile file(path);
 	if (file.HasFailed()) {
 		g_set_error(error_r, simple_db_quark(), errno,
 			    "Failed to open database file \"%s\": %s",

@@ -26,6 +26,7 @@
 #include "song.h"
 #include "decoder_plugin.h"
 #include "Mapper.hxx"
+#include "Path.hxx"
 
 extern "C" {
 #include "tag_handler.h"
@@ -84,22 +85,22 @@ update_container_file(Directory *directory,
 	contdir->device = DEVICE_CONTAINER;
 	db_unlock();
 
-	char *const pathname = map_directory_child_fs(directory, name);
+	const Path pathname = map_directory_child_fs(directory, name);
 
 	char *vtrack;
 	unsigned int tnum = 0;
-	while ((vtrack = plugin->container_scan(pathname, ++tnum)) != NULL) {
+	while ((vtrack = plugin->container_scan(pathname.c_str(), ++tnum)) != NULL) {
 		struct song *song = song_file_new(vtrack, contdir);
 
 		// shouldn't be necessary but it's there..
 		song->mtime = st->st_mtime;
 
-		char *child_path_fs = map_directory_child_fs(contdir, vtrack);
+		const Path child_path_fs =
+			map_directory_child_fs(contdir, vtrack);
 
 		song->tag = tag_new();
-		decoder_plugin_scan_file(plugin, child_path_fs,
+		decoder_plugin_scan_file(plugin, child_path_fs.c_str(),
 					 &add_tag_handler, song->tag);
-		g_free(child_path_fs);
 
 		db_lock();
 		contdir->AddSong(song);
@@ -110,8 +111,6 @@ update_container_file(Directory *directory,
 		g_message("added %s/%s", directory->GetPath(), vtrack);
 		g_free(vtrack);
 	}
-
-	g_free(pathname);
 
 	if (tnum == 1) {
 		db_lock();

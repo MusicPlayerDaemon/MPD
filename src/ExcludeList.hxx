@@ -31,6 +31,8 @@
 
 #include <glib.h>
 
+class Path;
+
 class ExcludeList {
 	class Pattern {
 		GPatternSpec *pattern;
@@ -65,7 +67,7 @@ public:
 	/**
 	 * Loads and parses a .mpdignore file.
 	 */
-	bool LoadFile(const char *path_fs);
+	bool LoadFile(const Path &path_fs);
 
 	/**
 	 * Checks whether one of the patterns in the .mpdignore file matches

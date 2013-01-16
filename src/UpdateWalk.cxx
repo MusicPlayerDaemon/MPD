@@ -102,27 +102,23 @@ remove_excluded_from_directory(Directory *directory,
 
 	Directory *child, *n;
 	directory_for_each_child_safe(child, n, directory) {
-		char *name_fs = utf8_to_fs_charset(child->GetName());
+		const Path name_fs = Path::FromUTF8(child->GetName());
 
-		if (exclude_list.Check(name_fs)) {
+		if (exclude_list.Check(name_fs.c_str())) {
 			delete_directory(child);
 			modified = true;
 		}
-
-		g_free(name_fs);
 	}
 
 	struct song *song, *ns;
 	directory_for_each_song_safe(song, ns, directory) {
 		assert(song->parent == directory);
 
-		char *name_fs = utf8_to_fs_charset(song->uri);
-		if (exclude_list.Check(name_fs)) {
+		const Path name_fs = Path::FromUTF8(song->uri);
+		if (exclude_list.Check(name_fs.c_str())) {
 			delete_song(directory, song);
 			modified = true;
 		}
-
-		g_free(name_fs);
 	}
 
 	db_unlock();
@@ -145,18 +141,16 @@ purge_deleted_from_directory(Directory *directory)
 
 	struct song *song, *ns;
 	directory_for_each_song_safe(song, ns, directory) {
-		char *path;
 		struct stat st;
-		if ((path = map_song_fs(song)) == NULL ||
-		    stat(path, &st) < 0 || !S_ISREG(st.st_mode)) {
+		const Path path = map_song_fs(song);
+		if (path.IsNull() ||
+		    stat(path.c_str(), &st) < 0 || !S_ISREG(st.st_mode)) {
 			db_lock();
 			delete_song(directory, song);
 			db_unlock();
 
 			modified = true;
 		}
-
-		g_free(path);
 	}
 
 	for (auto i = directory->playlists.begin(),
@@ -283,13 +277,12 @@ static bool
 skip_symlink(const Directory *directory, const char *utf8_name)
 {
 #ifndef WIN32
-	char *path_fs = map_directory_child_fs(directory, utf8_name);
-	if (path_fs == NULL)
+	const Path path_fs = map_directory_child_fs(directory, utf8_name);
+	if (path_fs.IsNull())
 		return true;
 
 	char buffer[MPD_PATH_MAX];
-	ssize_t length = readlink(path_fs, buffer, sizeof(buffer));
-	g_free(path_fs);
+	ssize_t length = readlink(path_fs.c_str(), buffer, sizeof(buffer));
 	if (length < 0)
 		/* don't skip if this is not a symlink */
 		return errno != EINVAL;
@@ -359,24 +352,19 @@ update_directory(Directory *directory, const struct stat *st)
 
 	directory_set_stat(directory, st);
 
-	char *path_fs = map_directory_fs(directory);
-	if (path_fs == NULL)
+	const Path path_fs = map_directory_fs(directory);
+	if (path_fs.IsNull())
 		return false;
 
-	DIR *dir = opendir(path_fs);
+	DIR *dir = opendir(path_fs.c_str());
 	if (!dir) {
 		g_warning("Failed to open directory %s: %s",
-			  path_fs, g_strerror(errno));
-		g_free(path_fs);
+			  path_fs.c_str(), g_strerror(errno));
 		return false;
 	}
 
-	char *exclude_path_fs  = g_build_filename(path_fs, ".mpdignore", NULL);
 	ExcludeList exclude_list;
-	exclude_list.LoadFile(exclude_path_fs);
-	g_free(exclude_path_fs);
-
-	g_free(path_fs);
+	exclude_list.LoadFile(Path::Build(path_fs, ".mpdignore"));
 
 	if (!exclude_list.IsEmpty())
 		remove_excluded_from_directory(directory, exclude_list);
