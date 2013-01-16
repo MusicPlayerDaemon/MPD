@@ -41,9 +41,8 @@ extern "C" {
 
 #include "Permission.hxx"
 #include "PlaylistFile.hxx"
-#include "ClientIdle.hxx"
 #include "ClientFile.hxx"
-#include "Client.hxx"
+#include "ClientInternal.hxx"
 #include "Idle.hxx"
 
 #ifdef ENABLE_SQLITE
@@ -302,7 +301,7 @@ handle_idle(Client *client,
 		flags = ~0;
 
 	/* enable "idle" mode on this client */
-	client_idle_wait(client, flags);
+	client->IdleWait(flags);
 
 	return COMMAND_RETURN_IDLE;
 }

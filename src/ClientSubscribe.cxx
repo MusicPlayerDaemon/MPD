@@ -86,7 +86,7 @@ client_push_message(Client *client, const ClientMessage &msg)
 		return false;
 
 	if (client->messages.empty())
-		client_idle_add(client, IDLE_MESSAGE);
+		client->IdleAdd(IDLE_MESSAGE);
 
 	client->messages.push_back(msg);
 	return true;

@@ -20,24 +20,11 @@
 #ifndef MPD_CLIENT_IDLE_HXX
 #define MPD_CLIENT_IDLE_HXX
 
-class Client;
-
-void
-client_idle_add(Client *client, unsigned flags);
-
 /**
  * Adds the specified idle flags to all clients and immediately sends
  * notifications to all waiting clients.
  */
 void
 client_manager_idle_add(unsigned flags);
-
-/**
- * Checks whether the client has pending idle flags.  If yes, they are
- * sent immediately and "true" is returned".  If no, it puts the
- * client into waiting mode and returns false.
- */
-bool
-client_idle_wait(Client *client, unsigned flags);
 
 #endif

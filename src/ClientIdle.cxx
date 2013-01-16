@@ -25,43 +25,36 @@
 
 #include <assert.h>
 
-/**
- * Send "idle" response to this client.
- */
-static void
-client_idle_notify(Client *client)
+void
+Client::IdleNotify()
 {
-	unsigned flags, i;
-	const char *const* idle_names;
+	assert(idle_waiting);
+	assert(idle_flags != 0);
 
-	assert(client->idle_waiting);
-	assert(client->idle_flags != 0);
+	unsigned flags = idle_flags;
+	idle_flags = 0;
+	idle_waiting = false;
 
-	flags = client->idle_flags;
-	client->idle_flags = 0;
-	client->idle_waiting = false;
-
-	idle_names = idle_get_names();
-	for (i = 0; idle_names[i]; ++i) {
-		if (flags & (1 << i) & client->idle_subscriptions)
-			client_printf(client, "changed: %s\n",
+	const char *const*idle_names = idle_get_names();
+	for (unsigned i = 0; idle_names[i]; ++i) {
+		if (flags & (1 << i) & idle_subscriptions)
+			client_printf(this, "changed: %s\n",
 				      idle_names[i]);
 	}
 
-	client_puts(client, "OK\n");
-	g_timer_start(client->last_activity);
+	client_puts(this, "OK\n");
+	g_timer_start(last_activity);
 }
 
 void
-client_idle_add(Client *client, unsigned flags)
+Client::IdleAdd(unsigned flags)
 {
-	if (client->IsExpired())
+	if (IsExpired())
 		return;
 
-	client->idle_flags |= flags;
-	if (client->idle_waiting
-	    && (client->idle_flags & client->idle_subscriptions))
-		client_idle_notify(client);
+	idle_flags |= flags;
+	if (idle_waiting && (idle_flags & idle_subscriptions))
+		IdleNotify();
 }
 
 static void
@@ -69,7 +62,7 @@ client_idle_callback(Client *client, gpointer user_data)
 {
 	unsigned flags = GPOINTER_TO_UINT(user_data);
 
-	client_idle_add(client, flags);
+	client->IdleAdd(flags);
 }
 
 void client_manager_idle_add(unsigned flags)
@@ -79,15 +72,16 @@ void client_manager_idle_add(unsigned flags)
 	client_list_foreach(client_idle_callback, GUINT_TO_POINTER(flags));
 }
 
-bool client_idle_wait(Client *client, unsigned flags)
+bool
+Client::IdleWait(unsigned flags)
 {
-	assert(!client->idle_waiting);
+	assert(!idle_waiting);
 
-	client->idle_waiting = true;
-	client->idle_subscriptions = flags;
+	idle_waiting = true;
+	idle_subscriptions = flags;
 
-	if (client->idle_flags & client->idle_subscriptions) {
-		client_idle_notify(client);
+	if (idle_flags & idle_subscriptions) {
+		IdleNotify();
 		return true;
 	} else
 		return false;

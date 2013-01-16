@@ -112,6 +112,13 @@ public:
 
 	using BufferedSocket::Write;
 
+	/**
+	 * Send "idle" response to this client.
+	 */
+	void IdleNotify();
+	void IdleAdd(unsigned flags);
+	bool IdleWait(unsigned flags);
+
 private:
 	/* virtual methods from class BufferedSocket */
 	virtual InputResult OnSocketInput(const void *data,
