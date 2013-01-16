@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2010 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * Copyright (C) 2010-2011 Philipp 'ph3-der-loewe' Schafft
  * Copyright (C) 2010-2011 Hans-Kristian 'maister' Arntzen
  *
@@ -19,25 +19,19 @@
  */
 
 #include "config.h"
-#include "roar_output_plugin.h"
+#include "RoarOutputPlugin.hxx"
 #include "output_api.h"
 #include "mixer_list.h"
-#include "roar_output_plugin.h"
+#include "thread/Mutex.hxx"
 
 #include <glib.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
 
 #include <roaraudio.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "roaraudio"
 
-typedef struct roar
-{
+struct RoarOutput {
 	struct audio_output base;
 
 	roar_vs_t * vss;
@@ -47,9 +41,18 @@ typedef struct roar
 	int role;
 	struct roar_connection con;
 	struct roar_audio_info info;
-	GMutex *lock;
+	Mutex mutex;
 	volatile bool alive;
-} roar_t;
+
+	RoarOutput()
+		:err(ROAR_ERROR_NONE),
+		 host(nullptr), name(nullptr) {}
+
+	~RoarOutput() {
+		g_free(host);
+		g_free(name);
+	}
+};
 
 static inline GQuark
 roar_output_quark(void)
@@ -58,9 +61,9 @@ roar_output_quark(void)
 }
 
 static int
-roar_output_get_volume_locked(struct roar *roar)
+roar_output_get_volume_locked(RoarOutput *roar)
 {
-	if (roar->vss == NULL || !roar->alive)
+	if (roar->vss == nullptr || !roar->alive)
 		return -1;
 
 	float l, r;
@@ -72,20 +75,18 @@ roar_output_get_volume_locked(struct roar *roar)
 }
 
 int
-roar_output_get_volume(struct roar *roar)
+roar_output_get_volume(RoarOutput *roar)
 {
-	g_mutex_lock(roar->lock);
-	int volume = roar_output_get_volume_locked(roar);
-	g_mutex_unlock(roar->lock);
-	return volume;
+	const ScopeLock protect(roar->mutex);
+	return roar_output_get_volume_locked(roar);
 }
 
 static bool
-roar_output_set_volume_locked(struct roar *roar, unsigned volume)
+roar_output_set_volume_locked(RoarOutput *roar, unsigned volume)
 {
 	assert(volume <= 100);
 
-	if (roar->vss == NULL || !roar->alive)
+	if (roar->vss == nullptr || !roar->alive)
 		return false;
 
 	int error;
@@ -96,22 +97,20 @@ roar_output_set_volume_locked(struct roar *roar, unsigned volume)
 }
 
 bool
-roar_output_set_volume(struct roar *roar, unsigned volume)
+roar_output_set_volume(RoarOutput *roar, unsigned volume)
 {
-	g_mutex_lock(roar->lock);
-	bool success = roar_output_set_volume_locked(roar, volume);
-	g_mutex_unlock(roar->lock);
-	return success;
+	const ScopeLock protect(roar->mutex);
+	return roar_output_set_volume_locked(roar, volume);
 }
 
 static void
-roar_configure(struct roar * self, const struct config_param *param)
+roar_configure(RoarOutput *self, const struct config_param *param)
 {
-	self->host = config_dup_block_string(param, "server", NULL);
+	self->host = config_dup_block_string(param, "server", nullptr);
 	self->name = config_dup_block_string(param, "name", "MPD");
 
 	const char *role = config_get_block_string(param, "role", "music");
-	self->role = role != NULL
+	self->role = role != nullptr
 		? roar_str2role(role)
 		: ROAR_ROLE_MUSIC;
 }
@@ -119,15 +118,13 @@ roar_configure(struct roar * self, const struct config_param *param)
 static struct audio_output *
 roar_init(const struct config_param *param, GError **error_r)
 {
-	struct roar *self = g_new0(struct roar, 1);
+	RoarOutput *self = new RoarOutput();
 
 	if (!ao_base_init(&self->base, &roar_output_plugin, param, error_r)) {
-		g_free(self);
-		return NULL;
+		delete self;
+		return nullptr;
 	}
 
-	self->lock = g_mutex_new();
-	self->err = ROAR_ERROR_NONE;
 	roar_configure(self, param);
 	return &self->base;
 }
@@ -135,14 +132,10 @@ roar_init(const struct config_param *param, GError **error_r)
 static void
 roar_finish(struct audio_output *ao)
 {
-	struct roar *self = (struct roar *)ao;
-
-	g_free(self->host);
-	g_free(self->name);
-	g_mutex_free(self->lock);
+	RoarOutput *self = (RoarOutput *)ao;
 
 	ao_base_finish(&self->base);
-	g_free(self);
+	delete self;
 }
 
 static void
@@ -181,24 +174,22 @@ roar_use_audio_format(struct roar_audio_info *info,
 static bool
 roar_open(struct audio_output *ao, struct audio_format *audio_format, GError **error)
 {
-	struct roar *self = (struct roar *)ao;
-	g_mutex_lock(self->lock);
+	RoarOutput *self = (RoarOutput *)ao;
+	const ScopeLock protect(self->mutex);
 
 	if (roar_simple_connect(&(self->con), self->host, self->name) < 0)
 	{
 		g_set_error(error, roar_output_quark(), 0,
 				"Failed to connect to Roar server");
-		g_mutex_unlock(self->lock);
 		return false;
 	}
 
 	self->vss = roar_vs_new_from_con(&(self->con), &(self->err));
 
-	if (self->vss == NULL || self->err != ROAR_ERROR_NONE)
+	if (self->vss == nullptr || self->err != ROAR_ERROR_NONE)
 	{
 		g_set_error(error, roar_output_quark(), 0,
 				"Failed to connect to server");
-		g_mutex_unlock(self->lock);
 		return false;
 	}
 
@@ -208,43 +199,41 @@ roar_open(struct audio_output *ao, struct audio_format *audio_format, GError **e
 				&(self->err)) < 0)
 	{
 		g_set_error(error, roar_output_quark(), 0, "Failed to start stream");
-		g_mutex_unlock(self->lock);
 		return false;
 	}
 	roar_vs_role(self->vss, self->role, &(self->err));
 	self->alive = true;
 
-	g_mutex_unlock(self->lock);
 	return true;
 }
 
 static void
 roar_close(struct audio_output *ao)
 {
-	struct roar *self = (struct roar *)ao;
-	g_mutex_lock(self->lock);
+	RoarOutput *self = (RoarOutput *)ao;
+	const ScopeLock protect(self->mutex);
+
 	self->alive = false;
 
-	if (self->vss != NULL)
+	if (self->vss != nullptr)
 		roar_vs_close(self->vss, ROAR_VS_TRUE, &(self->err));
-	self->vss = NULL;
+	self->vss = nullptr;
 	roar_disconnect(&(self->con));
-	g_mutex_unlock(self->lock);
 }
 
 static void
-roar_cancel_locked(struct roar *self)
+roar_cancel_locked(RoarOutput *self)
 {
-	if (self->vss == NULL)
+	if (self->vss == nullptr)
 		return;
 
 	roar_vs_t *vss = self->vss;
-	self->vss = NULL;
+	self->vss = nullptr;
 	roar_vs_close(vss, ROAR_VS_TRUE, &(self->err));
 	self->alive = false;
 
 	vss = roar_vs_new_from_con(&(self->con), &(self->err));
-	if (vss == NULL)
+	if (vss == nullptr)
 		return;
 
 	if (roar_vs_stream(vss, &(self->info), ROAR_DIR_PLAY,
@@ -262,20 +251,19 @@ roar_cancel_locked(struct roar *self)
 static void
 roar_cancel(struct audio_output *ao)
 {
-	struct roar *self = (struct roar *)ao;
+	RoarOutput *self = (RoarOutput *)ao;
 
-	g_mutex_lock(self->lock);
+	const ScopeLock protect(self->mutex);
 	roar_cancel_locked(self);
-	g_mutex_unlock(self->lock);
 }
 
 static size_t
 roar_play(struct audio_output *ao, const void *chunk, size_t size, GError **error)
 {
-	struct roar *self = (struct roar *)ao;
+	RoarOutput *self = (RoarOutput *)ao;
 	ssize_t rc;
 
-	if (self->vss == NULL)
+	if (self->vss == nullptr)
 	{
 		g_set_error(error, roar_output_quark(), 0, "Connection is invalid");
 		return 0;
@@ -332,19 +320,20 @@ roar_tag_convert(enum tag_type type, bool *is_uuid)
 			return "HASH";
 
 		default:
-			return NULL;
+			return nullptr;
 	}
 }
 
 static void
 roar_send_tag(struct audio_output *ao, const struct tag *meta)
 {
-	struct roar *self = (struct roar *)ao;
+	RoarOutput *self = (RoarOutput *)ao;
 
-	if (self->vss == NULL)
+	if (self->vss == nullptr)
 		return;
 
-	g_mutex_lock(self->lock);
+	const ScopeLock protect(self->mutex);
+
 	size_t cnt = 1;
 	struct roar_keyval vals[32];
 	memset(vals, 0, sizeof(vals));
@@ -361,7 +350,7 @@ roar_send_tag(struct audio_output *ao, const struct tag *meta)
 	{
 		bool is_uuid = false;
 		const char *key = roar_tag_convert(meta->items[i]->type, &is_uuid);
-		if (key != NULL)
+		if (key != nullptr)
 		{
 			if (is_uuid)
 			{
@@ -383,19 +372,22 @@ roar_send_tag(struct audio_output *ao, const struct tag *meta)
 
 	for (unsigned i = 0; i < 32; i++)
 		g_free(vals[i].key);
-
-	g_mutex_unlock(self->lock);
 }
 
 const struct audio_output_plugin roar_output_plugin = {
-	.name = "roar",
-	.init = roar_init,
-	.finish = roar_finish,
-	.open = roar_open,
-	.play = roar_play,
-	.cancel = roar_cancel,
-	.close = roar_close,
-	.send_tag = roar_send_tag,
-
-	.mixer_plugin = &roar_mixer_plugin
+	"roar",
+	nullptr,
+	roar_init,
+	roar_finish,
+	nullptr,
+	nullptr,
+	roar_open,
+	roar_close,
+	nullptr,
+	roar_send_tag,
+	roar_play,
+	nullptr,
+	roar_cancel,
+	nullptr,
+	&roar_mixer_plugin,
 };

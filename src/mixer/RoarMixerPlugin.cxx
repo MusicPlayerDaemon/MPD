@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2010 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * Copyright (C) 2010-2011 Philipp 'ph3-der-loewe' Schafft
  * Copyright (C) 2010-2011 Hans-Kristian 'maister' Arntzen
  *
@@ -22,83 +22,55 @@
 #include "config.h"
 #include "mixer_api.h"
 #include "output_api.h"
-#include "output/roar_output_plugin.h"
+#include "output/RoarOutputPlugin.hxx"
 
-#include <glib.h>
-
-#include <assert.h>
-#include <stdlib.h>
-#include <unistd.h>
-
-typedef struct roar_mpd_mixer
-{
+struct RoarMixer {
 	/** the base mixer class */
 	struct mixer base;
-	struct roar *self;
-} roar_mixer_t;
+	RoarOutput *self;
 
-/**
- * The quark used for GError.domain.
- */
-static inline GQuark
-roar_mixer_quark(void)
-{
-	return g_quark_from_static_string("roar_mixer");
-}
+	RoarMixer(RoarOutput *_output):self(_output) {
+		mixer_init(&base, &roar_mixer_plugin);
+	}
+};
 
 static struct mixer *
-roar_mixer_init(void *ao, G_GNUC_UNUSED const struct config_param *param,
-		G_GNUC_UNUSED GError **error_r)
+roar_mixer_init(void *ao, gcc_unused const struct config_param *param,
+		gcc_unused GError **error_r)
 {
-	roar_mixer_t *self = g_new(roar_mixer_t, 1);
-	self->self = ao;
-
-	mixer_init(&self->base, &roar_mixer_plugin);
-
+	RoarMixer *self = new RoarMixer((RoarOutput *)ao);
 	return &self->base;
 }
 
 static void
 roar_mixer_finish(struct mixer *data)
 {
-	roar_mixer_t *self = (roar_mixer_t *) data;
+	RoarMixer *self = (RoarMixer *) data;
 
-	g_free(self);
-}
-
-static void
-roar_mixer_close(G_GNUC_UNUSED struct mixer *data)
-{
-}
-
-static bool
-roar_mixer_open(G_GNUC_UNUSED struct mixer *data,
-		G_GNUC_UNUSED GError **error_r)
-{
-	return true;
+	delete self;
 }
 
 static int
-roar_mixer_get_volume(struct mixer *mixer, G_GNUC_UNUSED GError **error_r)
+roar_mixer_get_volume(struct mixer *mixer, gcc_unused GError **error_r)
 {
-	roar_mixer_t *self = (roar_mixer_t *)mixer;
+	RoarMixer *self = (RoarMixer *)mixer;
 	return roar_output_get_volume(self->self);
 }
 
 static bool
 roar_mixer_set_volume(struct mixer *mixer, unsigned volume,
-		G_GNUC_UNUSED GError **error_r)
+		      gcc_unused GError **error_r)
 {
-	roar_mixer_t *self = (roar_mixer_t *)mixer;
+	RoarMixer *self = (RoarMixer *)mixer;
 	return roar_output_set_volume(self->self, volume);
 }
 
 const struct mixer_plugin roar_mixer_plugin = {
-	.init = roar_mixer_init,
-	.finish = roar_mixer_finish,
-	.open = roar_mixer_open,
-	.close = roar_mixer_close,
-	.get_volume = roar_mixer_get_volume,
-	.set_volume = roar_mixer_set_volume,
-	.global = false,
+	roar_mixer_init,
+	roar_mixer_finish,
+	nullptr,
+	nullptr,
+	roar_mixer_get_volume,
+	roar_mixer_set_volume,
+	false,
 };

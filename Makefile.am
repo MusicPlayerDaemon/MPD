@@ -825,8 +825,8 @@ endif
 
 if HAVE_ROAR
 liboutput_plugins_a_SOURCES += \
-	src/output/roar_output_plugin.c src/output/roar_output_plugin.h
-libmixer_plugins_a_SOURCES += src/mixer/roar_mixer_plugin.c
+	src/output/RoarOutputPlugin.cxx src/output/RoarOutputPlugin.hxx
+libmixer_plugins_a_SOURCES += src/mixer/RoarMixerPlugin.cxx
 endif
 
 if ENABLE_FFADO_OUTPUT

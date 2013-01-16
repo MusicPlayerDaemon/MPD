@@ -34,7 +34,7 @@
 #include "output/pipe_output_plugin.h"
 #include "output/pulse_output_plugin.h"
 #include "output/recorder_output_plugin.h"
-#include "output/roar_output_plugin.h"
+#include "output/RoarOutputPlugin.hxx"
 #include "output/shout_output_plugin.h"
 #include "output/solaris_output_plugin.h"
 #include "output/winmm_output_plugin.h"
