@@ -21,6 +21,7 @@
 #include "ClientInternal.hxx"
 #include "ClientList.hxx"
 #include "Partition.hxx"
+#include "Main.hxx"
 #include "fd_util.h"
 extern "C" {
 #include "resolver.h"
@@ -95,7 +96,7 @@ client_new(EventLoop &loop, Partition &partition,
 	}
 #endif	/* HAVE_WRAP */
 
-	if (client_list_is_full()) {
+	if (client_list->IsFull()) {
 		g_warning("Max Connections Reached!");
 		close_socket(fd);
 		return;
@@ -106,7 +107,7 @@ client_new(EventLoop &loop, Partition &partition,
 
 	(void)send(fd, GREETING, sizeof(GREETING) - 1, 0);
 
-	client_list_add(client);
+	client_list->Add(*client);
 
 	remote = sockaddr_to_string(sa, sa_length, NULL);
 	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
@@ -117,7 +118,7 @@ client_new(EventLoop &loop, Partition &partition,
 void
 Client::Close()
 {
-	client_list_remove(this);
+	client_list->Remove(*this);
 
 	SetExpired();
 

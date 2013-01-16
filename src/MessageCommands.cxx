@@ -22,6 +22,7 @@
 #include "ClientSubscribe.hxx"
 #include "ClientInternal.hxx"
 #include "ClientList.hxx"
+#include "Main.hxx"
 #include "protocol/Result.hxx"
 #include "protocol/ArgParser.hxx"
 
@@ -73,31 +74,18 @@ handle_unsubscribe(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 	}
 }
 
-struct channels_context {
-	std::set<std::string> channels;
-};
-
-static void
-collect_channels(Client *client, gpointer user_data)
-{
-	struct channels_context *context =
-		(struct channels_context *)user_data;
-
-	context->channels.insert(client->subscriptions.begin(),
-				 client->subscriptions.end());
-}
-
 enum command_return
 handle_channels(Client *client,
 		G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	assert(argc == 1);
 
-	struct channels_context context;
+	std::set<std::string> channels;
+	for (const auto &c : *client_list)
+		channels.insert(c->subscriptions.begin(),
+				c->subscriptions.end());
 
-	client_list_foreach(collect_channels, &context);
-
-	for (const auto &channel : context.channels)
+	for (const auto &channel : channels)
 		client_printf(client, "channel: %s\n", channel.c_str());
 
 	return COMMAND_RETURN_OK;
@@ -120,27 +108,6 @@ handle_read_messages(Client *client,
 	return COMMAND_RETURN_OK;
 }
 
-struct send_message_context {
-	ClientMessage msg;
-
-	bool sent;
-
-	template<typename T, typename U>
-	send_message_context(T &&_channel, U &&_message)
-		:msg(std::forward<T>(_channel), std::forward<U>(_message)),
-		 sent(false) {}
-};
-
-static void
-send_message(Client *client, gpointer user_data)
-{
-	struct send_message_context *context =
-		(struct send_message_context *)user_data;
-
-	if (client_push_message(client, context->msg))
-		context->sent = true;
-}
-
 enum command_return
 handle_send_message(Client *client,
 		    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
@@ -153,11 +120,13 @@ handle_send_message(Client *client,
 		return COMMAND_RETURN_ERROR;
 	}
 
-	struct send_message_context context(argv[1], argv[2]);
+	bool sent = false;
+	const ClientMessage msg(argv[1], argv[2]);
+	for (const auto &c : *client_list)
+		if (client_push_message(c, msg))
+			sent = true;
 
-	client_list_foreach(send_message, &context);
-
-	if (context.sent)
+	if (sent)
 		return COMMAND_RETURN_OK;
 	else {
 		command_error(client, ACK_ERROR_NO_EXIST,

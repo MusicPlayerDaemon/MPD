@@ -125,7 +125,6 @@ private:
 	virtual bool OnTimeout() override;
 };
 
-extern unsigned int client_max_connections;
 extern int client_timeout;
 extern size_t client_max_command_list_size;
 extern size_t client_max_output_buffer_size;

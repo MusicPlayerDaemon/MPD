@@ -20,21 +20,42 @@
 #ifndef MPD_CLIENT_LIST_HXX
 #define MPD_CLIENT_LIST_HXX
 
+#include <list>
+
 class Client;
 
-bool
-client_list_is_full(void);
+class ClientList {
+	const unsigned max_size;
 
-void
-client_list_add(Client *client);
+	unsigned size;
+	std::list<Client *> list;
 
-void
-client_list_foreach(void (*callback)(Client *client, void *ctx), void *ctx);
+public:
+	ClientList(unsigned _max_size)
+		:max_size(_max_size), size(0) {}
 
-void
-client_list_remove(Client *client);
+	std::list<Client *>::iterator begin() {
+		return list.begin();
+	}
 
-void
-client_list_close_all();
+	std::list<Client *>::iterator end() {
+		return list.end();
+	}
+
+	bool IsFull() const {
+		return size >= max_size;
+	}
+
+	void Add(Client &client) {
+		list.push_front(&client);
+		++size;
+	}
+
+	void Remove(Client &client);
+
+	void CloseAll();
+
+	void IdleAdd(unsigned flags);
+};
 
 #endif

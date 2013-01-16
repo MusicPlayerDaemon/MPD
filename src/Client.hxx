@@ -31,7 +31,6 @@ struct Partition;
 class Client;
 
 void client_manager_init(void);
-void client_manager_deinit(void);
 
 void
 client_new(EventLoop &loop, Partition &partition,

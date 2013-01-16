@@ -31,8 +31,8 @@
 #include "DatabaseSimple.hxx"
 #include "Permission.hxx"
 #include "Listen.hxx"
-#include "ClientIdle.hxx"
 #include "Client.hxx"
+#include "ClientList.hxx"
 #include "AllCommands.hxx"
 #include "Partition.hxx"
 #include "Volume.hxx"
@@ -98,6 +98,8 @@ enum {
 
 GThread *main_task;
 EventLoop *main_loop;
+
+ClientList *client_list;
 
 Partition *global_partition;
 
@@ -330,7 +332,7 @@ idle_event_emitted(void)
 	   clients */
 	unsigned flags = idle_get();
 	if (flags != 0)
-		client_manager_idle_add(flags);
+		client_list->IdleAdd(flags);
 }
 
 /**
@@ -400,6 +402,9 @@ int mpd_main(int argc, char *argv[])
 
 	main_task = g_thread_self();
 	main_loop = new EventLoop(EventLoop::Default());
+
+	const unsigned max_clients = config_get_positive(CONF_MAX_CONN, 10);
+	client_list = new ClientList(max_clients);
 
 	success = listen_global_init(&error);
 	if (!success) {
@@ -532,8 +537,8 @@ int mpd_main(int argc, char *argv[])
 
 	pc_kill(&global_partition->pc);
 	finishZeroconf();
-	client_manager_deinit();
 	listen_global_finish();
+	delete client_list;
 
 	start = clock();
 	DatabaseGlobalDeinit();

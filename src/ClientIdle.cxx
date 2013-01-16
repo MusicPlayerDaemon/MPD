@@ -18,9 +18,7 @@
  */
 
 #include "config.h"
-#include "ClientIdle.hxx"
 #include "ClientInternal.hxx"
-#include "ClientList.hxx"
 #include "Idle.hxx"
 
 #include <assert.h>
@@ -56,21 +54,6 @@ Client::IdleAdd(unsigned flags)
 	idle_flags |= flags;
 	if (idle_waiting && (idle_flags & idle_subscriptions))
 		IdleNotify();
-}
-
-static void
-client_idle_callback(Client *client, gpointer user_data)
-{
-	unsigned flags = GPOINTER_TO_UINT(user_data);
-
-	client->IdleAdd(flags);
-}
-
-void client_manager_idle_add(unsigned flags)
-{
-	assert(flags != 0);
-
-	client_list_foreach(client_idle_callback, GUINT_TO_POINTER(flags));
 }
 
 bool

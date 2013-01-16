@@ -28,6 +28,8 @@ extern GThread *main_task;
 
 extern EventLoop *main_loop;
 
+extern class ClientList *client_list;
+
 extern struct Partition *global_partition;
 
 /**

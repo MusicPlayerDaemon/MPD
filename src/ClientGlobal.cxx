@@ -25,12 +25,9 @@
 #include <assert.h>
 
 #define CLIENT_TIMEOUT_DEFAULT			(60)
-#define CLIENT_MAX_CONNECTIONS_DEFAULT		(10)
 #define CLIENT_MAX_COMMAND_LIST_DEFAULT		(2048*1024)
 #define CLIENT_MAX_OUTPUT_BUFFER_SIZE_DEFAULT	(8192*1024)
 
-/* set this to zero to indicate we have no possible clients */
-unsigned int client_max_connections;
 int client_timeout;
 size_t client_max_command_list_size;
 size_t client_max_output_buffer_size;
@@ -39,9 +36,6 @@ void client_manager_init(void)
 {
 	client_timeout = config_get_positive(CONF_CONN_TIMEOUT,
 					     CLIENT_TIMEOUT_DEFAULT);
-	client_max_connections =
-		config_get_positive(CONF_MAX_CONN,
-				    CLIENT_MAX_CONNECTIONS_DEFAULT);
 	client_max_command_list_size =
 		config_get_positive(CONF_MAX_COMMAND_LIST_SIZE,
 				    CLIENT_MAX_COMMAND_LIST_DEFAULT / 1024)
@@ -51,11 +45,4 @@ void client_manager_init(void)
 		config_get_positive(CONF_MAX_OUTPUT_BUFFER_SIZE,
 				    CLIENT_MAX_OUTPUT_BUFFER_SIZE_DEFAULT / 1024)
 		* 1024;
-}
-
-void client_manager_deinit(void)
-{
-	client_list_close_all();
-
-	client_max_connections = 0;
 }

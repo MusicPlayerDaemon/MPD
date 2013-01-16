@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "ClientSubscribe.hxx"
-#include "ClientIdle.hxx"
 #include "ClientInternal.hxx"
 #include "Idle.hxx"
 

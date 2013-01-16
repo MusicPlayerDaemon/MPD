@@ -21,51 +21,36 @@
 #include "ClientList.hxx"
 #include "ClientInternal.hxx"
 
-#include <list>
 #include <algorithm>
 
 #include <assert.h>
 
-static std::list<Client *> clients;
-static unsigned num_clients;
-
-bool
-client_list_is_full(void)
+void
+ClientList::Remove(Client &client)
 {
-	return num_clients >= client_max_connections;
+	assert(size > 0);
+	assert(!list.empty());
+
+	auto i = std::find(list.begin(), list.end(), &client);
+	assert(i != list.end());
+	list.erase(i);
+	--size;
 }
 
 void
-client_list_add(Client *client)
+ClientList::CloseAll()
 {
-	clients.push_front(client);
-	++num_clients;
+	while (!list.empty())
+		list.front()->Close();
+
+	assert(size == 0);
 }
 
 void
-client_list_foreach(void (*callback)(Client *client, void *ctx), void *ctx)
+ClientList::IdleAdd(unsigned flags)
 {
-	for (Client *client : clients)
-		callback(client, ctx);
-}
+	assert(flags != 0);
 
-void
-client_list_remove(Client *client)
-{
-	assert(num_clients > 0);
-	assert(!clients.empty());
-
-	auto i = std::find(clients.begin(), clients.end(), client);
-	assert(i != clients.end());
-	clients.erase(i);
-	--num_clients;
-}
-
-void
-client_list_close_all()
-{
-	while (!clients.empty())
-		clients.front()->Close();
-
-	assert(num_clients == 0);
+	for (const auto &client : list)
+		client->IdleAdd(flags);
 }
