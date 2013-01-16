@@ -59,8 +59,8 @@ client_list_add(Client *client)
 void
 client_list_foreach(void (*callback)(Client *client, void *ctx), void *ctx)
 {
-	for (auto client = clients.begin(); client != clients.end();)
-		callback(*(client++), ctx);
+	for (Client *client : clients)
+		callback(client, ctx);
 }
 
 void
