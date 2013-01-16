@@ -886,7 +886,7 @@ fi
 AM_CONDITIONAL(ENABLE_FLUIDSYNTH, test x$enable_fluidsynth = xyes)
 
 dnl ---------------------------------- libgme ---------------------------------
-MPD_AUTO_PKG(gme, GME, [libgme],
+MPD_AUTO_PKG_LIB(gme, GME, [libgme], gme, gme_open_file, [-lgme -lstdc++], [],
 	[gme decoder plugin], [libgme not found])
 AM_CONDITIONAL(HAVE_GME, test x$enable_gme = xyes)
 if test x$enable_gme = xyes; then

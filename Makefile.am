@@ -1443,4 +1443,4 @@ endif
 EXTRA_DIST = $(doc_DATA) autogen.sh \
 	$(wildcard scripts/*.sh) \
 	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf \
-	src/win/mpd_win32_rc.rc.in
+	src/win/mpd_win32_rc.rc.in src/win/mpd.ico

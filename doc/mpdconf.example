@@ -281,6 +281,25 @@ input {
 ##	sink		"remote_server_sink"	# optional
 #}
 #
+# An example of a winmm output (Windows multimedia API).
+#
+#audio_output {
+#	type		"winmm"
+#	name		"My WinMM output"
+##	device		"Digital Audio (S/PDIF) (High Definition Audio Device)" # optional
+#		or
+##	device		"0"		# optional
+##	mixer_type	"hardware"	# optional
+#}
+#
+# An example of an openal output.
+#
+#audio_output {
+#	type		"openal"
+#	name		"My OpenAL output"
+##	device		"Digital Audio (S/PDIF) (High Definition Audio Device)" # optional
+#}
+#
 ## Example "pipe" output:
 #
 #audio_output {
@@ -321,8 +340,11 @@ input {
 # Normalization automatic volume adjustments ##################################
 #
 # This setting specifies the type of ReplayGain to use. This setting can have
-# the argument "off", "album" or "track". See <http://www.replaygain.org>
-# for more details. This setting is off by default.
+# the argument "off", "album", "track" or "auto". "auto" is a special mode that
+# chooses between "track" and "album" depending on the current state of
+# random playback. If random playback is enabled then "track" mode is used.
+# See <http://www.replaygain.org> for more details about ReplayGain.
+# This setting is off by default.
 #
 #replaygain			"album"
 #
@@ -330,6 +352,20 @@ input {
 # default this setting is disabled.
 #
 #replaygain_preamp		"0"
+#
+# This setting sets the pre-amp used for files that do NOT have ReplayGain tags.
+# By default this setting is disabled.
+#
+#replaygain_missing_preamp	"0"
+#
+# This setting enables or disables ReplayGain limiting.
+# MPD calculates actual amplification based on the ReplayGain tags
+# and replaygain_preamp / replaygain_missing_preamp setting.
+# If replaygain_limit is enabled MPD will never amplify audio signal
+# above its original level. If replaygain_limit is disabled such amplification
+# might occur. By default this setting is enabled.
+#
+#replaygain_limit		"yes"
 #
 # This setting enables on-the-fly normalization volume adjustment. This will
 # result in the volume of all playing audio to be adjusted so the output has 

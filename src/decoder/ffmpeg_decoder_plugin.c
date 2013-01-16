@@ -395,6 +395,11 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 #endif
 		return SAMPLE_FORMAT_S32;
 
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,17,0)
+	case AV_SAMPLE_FMT_FLTP:
+		return SAMPLE_FORMAT_FLOAT;
+#endif
+
 	default:
 		break;
 	}
