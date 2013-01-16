@@ -98,7 +98,6 @@ mpd_headers = \
 	src/daemon.h \
 	src/AudioCompress/config.h \
 	src/AudioCompress/compress.h \
-	src/path.h \
 	src/open.h \
 	src/page.h \
 	src/Playlist.hxx \
@@ -246,7 +245,7 @@ src_mpd_SOURCES = \
 	src/MusicBuffer.cxx src/MusicBuffer.hxx \
 	src/MusicPipe.cxx src/MusicPipe.hxx \
 	src/MusicChunk.cxx src/MusicChunk.hxx \
-	src/path.c \
+	src/Path.cxx src/Path.hxx \
 	src/Mapper.cxx src/Mapper.hxx \
 	src/page.c \
 	src/Partition.hxx \
@@ -1060,7 +1059,7 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/DatabaseLock.cxx src/DatabaseSave.cxx \
 	src/Song.cxx src/song_sort.c src/SongSave.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
-	src/path.c \
+	src/Path.cxx \
 	src/SongFilter.cxx \
 	src/TextFile.cxx \
 	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c

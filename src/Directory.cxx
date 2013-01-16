@@ -26,7 +26,6 @@
 extern "C" {
 #include "song.h"
 #include "song_sort.h"
-#include "path.h"
 #include "util/list_sort.h"
 }
 

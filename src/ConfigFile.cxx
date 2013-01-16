@@ -26,7 +26,7 @@ extern "C" {
 #include "tokenizer.h"
 }
 
-#include "path.h"
+#include "Path.hxx"
 #include "mpd_error.h"
 
 #include <glib.h>

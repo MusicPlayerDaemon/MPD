@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PATH_H
-#define MPD_PATH_H
+#ifndef MPD_PATH_HXX
+#define MPD_PATH_HXX
+
+#include "check.h"
 
 #include <limits.h>
 
@@ -32,9 +34,9 @@
 #  endif
 #endif
 
-void path_global_init(void);
+void path_global_init();
 
-void path_global_finish(void);
+void path_global_finish();
 
 /**
  * Converts a file name in the filesystem charset to UTF-8.  Returns
@@ -50,6 +52,6 @@ fs_charset_to_utf8(const char *path_fs);
 char *
 utf8_to_fs_charset(const char *path_utf8);
 
-const char *path_get_fs_charset(void);
+const char *path_get_fs_charset();
 
 #endif

@@ -24,10 +24,7 @@
 
 #include "config.h"
 #include "ExcludeList.hxx"
-
-extern "C" {
-#include "path.h"
-}
+#include "Path.hxx"
 
 #include <assert.h>
 #include <string.h>

@@ -26,10 +26,7 @@
 #include "TextFile.hxx"
 #include "TagInternal.hxx"
 #include "tag.h"
-
-extern "C" {
-#include "path.h"
-}
+#include "Path.hxx"
 
 #include <glib.h>
 

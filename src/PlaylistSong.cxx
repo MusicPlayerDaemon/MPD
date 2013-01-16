@@ -24,11 +24,11 @@
 #include "DatabaseGlue.hxx"
 #include "ls.hxx"
 #include "tag.h"
+#include "Path.hxx"
 
 extern "C" {
 #include "song.h"
 #include "uri.h"
-#include "path.h"
 }
 
 #include <glib.h>

@@ -25,10 +25,7 @@
 #include "Mapper.hxx"
 #include "Directory.hxx"
 #include "song.h"
-
-extern "C" {
-#include "path.h"
-}
+#include "Path.hxx"
 
 #include <glib.h>
 

@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "CommandLine.hxx"
-#include "path.h"
 #include "ls.hxx"
 #include "Log.hxx"
 #include "conf.h"

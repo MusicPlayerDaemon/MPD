@@ -24,9 +24,9 @@
 #include "song.h"
 #include "Mapper.hxx"
 #include "Idle.hxx"
+#include "Path.hxx"
 
 extern "C" {
-#include "path.h"
 #include "uri.h"
 }
 

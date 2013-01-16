@@ -47,10 +47,10 @@
 #include "InputInit.hxx"
 #include "event/Loop.hxx"
 #include "IOThread.hxx"
+#include "Path.hxx"
 
 extern "C" {
 #include "daemon.h"
-#include "path.h"
 #include "stats.h"
 #include "audio_config.h"
 #include "pcm_resample.h"

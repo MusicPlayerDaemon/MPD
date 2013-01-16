@@ -30,9 +30,9 @@
 #include "TextFile.hxx"
 #include "conf.h"
 #include "Idle.hxx"
+#include "Path.hxx"
 
 extern "C" {
-#include "path.h"
 #include "uri.h"
 }
 

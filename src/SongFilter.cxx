@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "SongFilter.hxx"
-#include "path.h"
 #include "song.h"
 #include "tag.h"
 

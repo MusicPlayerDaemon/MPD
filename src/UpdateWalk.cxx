@@ -31,10 +31,10 @@
 #include "Mapper.hxx"
 #include "ExcludeList.hxx"
 #include "conf.h"
+#include "Path.hxx"
 
 extern "C" {
 #include "uri.h"
-#include "path.h"
 #include "playlist_list.h"
 }
 
