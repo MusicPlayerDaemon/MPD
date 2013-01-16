@@ -19,9 +19,6 @@
 
 #include "config.h"
 #include "ClientInternal.hxx"
-#include "ClientList.hxx"
-
-static guint expire_source_id;
 
 void
 Client::SetExpired()
@@ -29,54 +26,18 @@ Client::SetExpired()
 	if (IsExpired())
 		return;
 
-	client_schedule_expire();
 	BufferedSocket::Close();
+	TimeoutMonitor::Schedule(0);
 }
 
-static void
-client_check_expired_callback(Client *client, G_GNUC_UNUSED gpointer user_data)
+bool
+Client::OnTimeout()
 {
-	if (client->IsExpired()) {
-		g_debug("[%u] expired", client->num);
-		client->Close();
-	} else if (!client->idle_waiting && /* idle clients
-					       never expire */
-		   (int)g_timer_elapsed(client->last_activity, NULL) >
-		   client_timeout) {
-		g_debug("[%u] timeout", client->num);
-		client->Close();
+	if (!IsExpired()) {
+		assert(!idle_waiting);
+		g_debug("[%u] timeout", num);
 	}
-}
 
-static void
-client_manager_expire(void)
-{
-	client_list_foreach(client_check_expired_callback, NULL);
-}
-
-/**
- * An idle event which calls client_manager_expire().
- */
-static gboolean
-client_manager_expire_event(G_GNUC_UNUSED gpointer data)
-{
-	expire_source_id = 0;
-	client_manager_expire();
+	Close();
 	return false;
-}
-
-void
-client_schedule_expire(void)
-{
-	if (expire_source_id == 0)
-		/* delayed deletion */
-		expire_source_id = g_idle_add(client_manager_expire_event,
-					      NULL);
-}
-
-void
-client_deinit_expire(void)
-{
-	if (expire_source_id != 0)
-		g_source_remove(expire_source_id);
 }

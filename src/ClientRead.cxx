@@ -28,12 +28,12 @@
 BufferedSocket::InputResult
 Client::OnSocketInput(const void *data, size_t length)
 {
-	g_timer_start(last_activity);
-
 	const char *p = (const char *)data;
 	const char *newline = (const char *)memchr(p, '\n', length);
 	if (newline == NULL)
 		return InputResult::MORE;
+
+	TimeoutMonitor::ScheduleSeconds(client_timeout);
 
 	char *line = g_strndup(p, newline - p);
 	BufferedSocket::ConsumeInput(newline + 1 - p);

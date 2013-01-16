@@ -69,6 +69,4 @@ void client_manager_deinit(void)
 	client_close_all();
 
 	client_max_connections = 0;
-
-	client_deinit_expire();
 }

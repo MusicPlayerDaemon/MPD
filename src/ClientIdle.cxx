@@ -43,7 +43,8 @@ Client::IdleNotify()
 	}
 
 	client_puts(this, "OK\n");
-	g_timer_start(last_activity);
+
+	TimeoutMonitor::ScheduleSeconds(client_timeout);
 }
 
 void
@@ -83,6 +84,9 @@ Client::IdleWait(unsigned flags)
 	if (idle_flags & idle_subscriptions) {
 		IdleNotify();
 		return true;
-	} else
+	} else {
+		/* disable timeouts while in "idle" */
+		TimeoutMonitor::Cancel();
 		return false;
+	}
 }

@@ -25,6 +25,7 @@
 #include "ClientMessage.hxx"
 #include "CommandListBuilder.hxx"
 #include "event/BufferedSocket.hxx"
+#include "event/TimeoutMonitor.hxx"
 #include "command.h"
 
 #include <set>
@@ -43,7 +44,7 @@ enum {
 
 struct Partition;
 
-class Client final : private BufferedSocket {
+class Client final : private BufferedSocket, TimeoutMonitor {
 public:
 	Partition &partition;
 	struct playlist &playlist;
@@ -53,11 +54,6 @@ public:
 
 	/** the uid of the client process, or -1 if unknown */
 	int uid;
-
-	/**
-	 * How long since the last activity from this client?
-	 */
-	GTimer *last_activity;
 
 	CommandListBuilder cmd_list;
 
@@ -91,7 +87,6 @@ public:
 
 	Client(EventLoop &loop, Partition &partition,
 	       int fd, int uid, int num);
-	~Client();
 
 	bool IsConnected() const {
 		return BufferedSocket::IsDefined();
@@ -125,25 +120,15 @@ private:
 					  size_t length) override;
 	virtual void OnSocketError(GError *error) override;
 	virtual void OnSocketClosed() override;
+
+	/* virtual methods from class TimeoutMonitor */
+	virtual bool OnTimeout() override;
 };
 
 extern unsigned int client_max_connections;
 extern int client_timeout;
 extern size_t client_max_command_list_size;
 extern size_t client_max_output_buffer_size;
-
-/**
- * Schedule an "expired" check for all clients: permanently delete
- * clients which have been set "expired" with client_set_expired().
- */
-void
-client_schedule_expire(void);
-
-/**
- * Removes a scheduled "expired" check.
- */
-void
-client_deinit_expire(void);
 
 enum command_return
 client_read(Client *client);

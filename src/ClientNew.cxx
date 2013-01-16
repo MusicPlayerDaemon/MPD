@@ -49,20 +49,16 @@ static const char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
 Client::Client(EventLoop &_loop, Partition &_partition,
 	       int _fd, int _uid, int _num)
 	:BufferedSocket(_fd, _loop, 16384, client_max_output_buffer_size),
+	 TimeoutMonitor(_loop),
 	 partition(_partition),
 	 playlist(partition.playlist), player_control(&partition.pc),
 	 permission(getDefaultPermissions()),
 	 uid(_uid),
-	 last_activity(g_timer_new()),
 	 num(_num),
 	 idle_waiting(false), idle_flags(0),
 	 num_subscriptions(0)
 {
-}
-
-Client::~Client()
-{
-	g_timer_destroy(last_activity);
+	TimeoutMonitor::ScheduleSeconds(client_timeout);
 }
 
 void
