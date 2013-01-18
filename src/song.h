@@ -76,7 +76,7 @@ song_remote_new(const char *uri);
 
 /** allocate a new song with a local file name */
 struct song *
-song_file_new(const char *path, struct Directory *parent);
+song_file_new(const char *path_utf8, struct Directory *parent);
 
 /**
  * allocate a new song structure with a local file name and attempt to
@@ -84,7 +84,7 @@ song_file_new(const char *path, struct Directory *parent);
  * data, NULL is returned.
  */
 struct song *
-song_file_load(const char *path, struct Directory *parent);
+song_file_load(const char *path_utf8, struct Directory *parent);
 
 /**
  * Replaces the URI of a song object.  The given song object is

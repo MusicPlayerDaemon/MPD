@@ -144,7 +144,7 @@ public:
 	 * Note: the caller is responsible for checking permissions.
 	 */
 	enum playlist_result AppendFile(player_control &pc,
-					const char *path_fs,
+					const char *path_utf8,
 					unsigned *added_id=nullptr);
 
 	enum playlist_result AppendURI(player_control &pc,

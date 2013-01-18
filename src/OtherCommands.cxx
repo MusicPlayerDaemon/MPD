@@ -116,13 +116,13 @@ handle_lsinfo(Client *client, int argc, char *argv[])
 
 	if (strncmp(uri, "file:///", 8) == 0) {
 		/* print information about an arbitrary local file */
-		const char *path = uri + 7;
+		const char *path_utf8 = uri + 7;
 
 		GError *error = NULL;
-		if (!client_allow_file(client, path, &error))
+		if (!client_allow_file(client, path_utf8, &error))
 			return print_error(client, error);
 
-		struct song *song = song_file_load(path, NULL);
+		struct song *song = song_file_load(path_utf8, NULL);
 		if (song == NULL) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "No such file");

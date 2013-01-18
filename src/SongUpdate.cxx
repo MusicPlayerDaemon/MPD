@@ -45,16 +45,16 @@ extern "C" {
 #include <stdio.h>
 
 struct song *
-song_file_load(const char *path, Directory *parent)
+song_file_load(const char *path_utf8, Directory *parent)
 {
 	struct song *song;
 	bool ret;
 
-	assert((parent == NULL) == g_path_is_absolute(path));
-	assert(!uri_has_scheme(path));
-	assert(strchr(path, '\n') == NULL);
+	assert((parent == NULL) == g_path_is_absolute(path_utf8));
+	assert(!uri_has_scheme(path_utf8));
+	assert(strchr(path_utf8, '\n') == NULL);
 
-	song = song_file_new(path, parent);
+	song = song_file_new(path_utf8, parent);
 
 	//in archive ?
 	if (parent != NULL && parent->device == DEVICE_INARCHIVE) {

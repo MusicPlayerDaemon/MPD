@@ -59,9 +59,9 @@ playlist::Clear(player_control &pc)
 
 enum playlist_result
 playlist::AppendFile(struct player_control &pc,
-		     const char *path_fs, unsigned *added_id)
+		     const char *path_utf8, unsigned *added_id)
 {
-	struct song *song = song_file_load(path_fs, NULL);
+	struct song *song = song_file_load(path_utf8, NULL);
 	if (song == NULL)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 

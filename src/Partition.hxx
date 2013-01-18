@@ -43,9 +43,9 @@ struct Partition {
 		playlist.Clear(pc);
 	}
 
-	enum playlist_result AppendFile(const char *path_fs,
+	enum playlist_result AppendFile(const char *path_utf8,
 					unsigned *added_id=nullptr) {
-		return playlist.AppendFile(pc, path_fs, added_id);
+		return playlist.AppendFile(pc, path_utf8, added_id);
 	}
 
 	enum playlist_result AppendURI(const char *uri_utf8,
