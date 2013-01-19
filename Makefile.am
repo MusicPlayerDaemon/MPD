@@ -607,7 +607,6 @@ endif
 
 if ENABLE_SIDPLAY
 libdecoder_plugins_a_SOURCES += src/decoder/sidplay_decoder_plugin.cxx
-DECODER_SRC += src/dummy.cxx
 endif
 
 if ENABLE_FLUIDSYNTH
