@@ -297,6 +297,7 @@ src_mpd_SOURCES = \
 	src/Volume.cxx src/Volume.hxx \
 	src/SongFilter.cxx src/SongFilter.hxx \
 	src/PlaylistFile.cxx src/PlaylistFile.hxx \
+	src/FileSystem.cxx src/FileSystem.hxx \
 	src/timer.c
 
 #
