@@ -509,7 +509,7 @@ int mpd_main(int argc, char *argv[])
 
 	/* enable all audio outputs (if not already done by
 	   playlist_state_restore() */
-	pc_update_audio(&global_partition->pc);
+	global_partition->pc.UpdateAudio();
 
 #ifdef WIN32
 	win32_app_started();
@@ -535,7 +535,7 @@ int mpd_main(int argc, char *argv[])
 		delete state_file;
 	}
 
-	pc_kill(&global_partition->pc);
+	global_partition->pc.Kill();
 	finishZeroconf();
 	listen_global_finish();
 	delete client_list;

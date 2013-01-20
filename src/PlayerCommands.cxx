@@ -106,9 +106,9 @@ handle_pause(Client *client,
 		if (!check_bool(client, &pause_flag, argv[1]))
 			return COMMAND_RETURN_ERROR;
 
-		pc_set_pause(client->player_control, pause_flag);
+		client->player_control->SetPause(pause_flag);
 	} else
-		pc_pause(client->player_control);
+		client->player_control->Pause();
 
 	return COMMAND_RETURN_OK;
 }
@@ -118,12 +118,10 @@ handle_status(Client *client,
 	      G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
 	const char *state = NULL;
-	struct player_status player_status;
 	int updateJobId;
-	char *error;
 	int song;
 
-	pc_get_status(client->player_control, &player_status);
+	const auto player_status = client->player_control->GetStatus();
 
 	switch (player_status.state) {
 	case PLAYER_STATE_STOP:
@@ -157,9 +155,9 @@ handle_status(Client *client,
 		      playlist.GetConsume(),
 		      (unsigned long)playlist.GetVersion(),
 		      playlist.GetLength(),
-		      (int)(pc_get_cross_fade(client->player_control) + 0.5),
-		      pc_get_mixramp_db(client->player_control),
-		      pc_get_mixramp_delay(client->player_control),
+		      (int)(client->player_control->GetCrossFade() + 0.5),
+		      client->player_control->GetMixRampDb(),
+		      client->player_control->GetMixRampDelay(),
 		      state);
 
 	song = playlist.GetCurrentPosition();
@@ -192,7 +190,7 @@ handle_status(Client *client,
 			      updateJobId);
 	}
 
-	error = pc_get_error_message(client->player_control);
+	char *error = client->player_control->GetErrorMessage();
 	if (error != NULL) {
 		client_printf(client,
 			      COMMAND_STATUS_ERROR ": %s\n",
@@ -285,7 +283,7 @@ enum command_return
 handle_clearerror(G_GNUC_UNUSED Client *client,
 		  G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {
-	pc_clear_error(client->player_control);
+	client->player_control->ClearError();
 	return COMMAND_RETURN_OK;
 }
 
@@ -340,7 +338,7 @@ handle_crossfade(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 
 	if (!check_unsigned(client, &xfade_time, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	pc_set_cross_fade(client->player_control, xfade_time);
+	client->player_control->SetCrossFade(xfade_time);
 
 	return COMMAND_RETURN_OK;
 }
@@ -352,7 +350,7 @@ handle_mixrampdb(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 
 	if (!check_float(client, &db, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	pc_set_mixramp_db(client->player_control, db);
+	client->player_control->SetMixRampDb(db);
 
 	return COMMAND_RETURN_OK;
 }
@@ -364,7 +362,7 @@ handle_mixrampdelay(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 
 	if (!check_float(client, &delay_secs, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	pc_set_mixramp_delay(client->player_control, delay_secs);
+	client->player_control->SetMixRampDelay(delay_secs);
 
 	return COMMAND_RETURN_OK;
 }

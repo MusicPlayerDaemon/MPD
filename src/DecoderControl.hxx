@@ -129,6 +129,15 @@ struct decoder_control {
 	char *mixramp_start;
 	char *mixramp_end;
 	char *mixramp_prev_end;
+
+	/**
+	 * Waits for a signal from the decoder thread.  This object
+	 * must be locked prior to calling this function.  This method
+	 * is only valid in the player thread.
+	 */
+	void WaitForDecoder() {
+		g_cond_wait(client_cond, mutex);
+	}
 };
 
 G_GNUC_MALLOC

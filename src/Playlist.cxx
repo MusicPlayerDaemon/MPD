@@ -69,7 +69,7 @@ playlist_queue_song_order(struct playlist *playlist, struct player_control *pc,
 	g_debug("queue song %i:\"%s\"", playlist->queued, uri);
 	g_free(uri);
 
-	pc_enqueue_song(pc, song);
+	pc->EnqueueSong(song);
 }
 
 /**
@@ -136,7 +136,7 @@ playlist::UpdateQueuedSong(player_control &pc, const song *prev)
 
 	if (prev != NULL && next_song != prev) {
 		/* clear the currently queued song */
-		pc_cancel(&pc);
+		pc.Cancel();
 		queued = -1;
 	}
 
@@ -160,7 +160,7 @@ playlist::PlayOrder(player_control &pc, int order)
 	g_debug("play %i:\"%s\"", order, uri);
 	g_free(uri);
 
-	pc_play(&pc, song);
+	pc.Play(song);
 	current = order;
 }
 
@@ -175,10 +175,10 @@ playlist::SyncWithPlayer(player_control &pc)
 		   playing anymore; ignore the event */
 		return;
 
-	player_lock(&pc);
-	const enum player_state pc_state = pc_get_state(&pc);
+	pc.Lock();
+	const player_state pc_state = pc.GetState();
 	const song *pc_next_song = pc.next_song;
-	player_unlock(&pc);
+	pc.Unlock();
 
 	if (pc_state == PLAYER_STATE_STOP)
 		/* the player thread has stopped: check if playback
@@ -192,9 +192,9 @@ playlist::SyncWithPlayer(player_control &pc)
 		if (pc_next_song == nullptr && queued != -1)
 			playlist_song_started(this, &pc);
 
-		player_lock(&pc);
+		pc.Lock();
 		pc_next_song = pc.next_song;
-		player_unlock(&pc);
+		pc.Unlock();
 
 		/* make sure the queued song is always set (if
 		   possible) */
@@ -210,12 +210,10 @@ playlist::SyncWithPlayer(player_control &pc)
 static void
 playlist_resume_playback(struct playlist *playlist, struct player_control *pc)
 {
-	enum player_error error;
-
 	assert(playlist->playing);
-	assert(pc_get_state(pc) == PLAYER_STATE_STOP);
+	assert(pc->GetState() == PLAYER_STATE_STOP);
 
-	error = pc_get_error_type(pc);
+	const auto error = pc->GetErrorType();
 	if (error == PLAYER_ERROR_NONE)
 		playlist->error_count = 0;
 	else
@@ -240,7 +238,7 @@ playlist::SetRepeat(player_control &pc, bool status)
 
 	queue.repeat = status;
 
-	pc_set_border_pause(&pc, queue.single && !queue.repeat);
+	pc.SetBorderPause(queue.single && !queue.repeat);
 
 	/* if the last song is currently being played, the "next song"
 	   might change when repeat mode is toggled */
@@ -267,7 +265,7 @@ playlist::SetSingle(player_control &pc, bool status)
 
 	queue.single = status;
 
-	pc_set_border_pause(&pc, queue.single && !queue.repeat);
+	pc.SetBorderPause(queue.single && !queue.repeat);
 
 	/* if the last song is currently being played, the "next song"
 	   might change when single mode is toggled */

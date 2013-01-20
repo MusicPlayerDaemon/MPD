@@ -101,7 +101,7 @@ struct player_control {
 	/**
 	 * This lock protects #command, #state, #error.
 	 */
-	Mutex mutex;
+	mutable Mutex mutex;
 
 	/**
 	 * Trigger this object after you have modified #command.
@@ -152,188 +152,142 @@ struct player_control {
 	player_control(unsigned buffer_chunks,
 		       unsigned buffered_before_play);
 	~player_control();
+
+	/**
+	 * Locks the object.
+	 */
+	void Lock() const {
+		mutex.lock();
+	}
+
+	/**
+	 * Unlocks the object.
+	 */
+	void Unlock() const {
+		mutex.unlock();
+	}
+
+	/**
+	 * Signals the object.  The object should be locked prior to
+	 * calling this function.
+	 */
+	void Signal() {
+		cond.signal();
+	}
+
+	/**
+	 * Signals the object.  The object is temporarily locked by
+	 * this function.
+	 */
+	void LockSignal() {
+		Lock();
+		Signal();
+		Unlock();
+	}
+
+	/**
+	 * Waits for a signal on the object.  This function is only
+	 * valid in the player thread.  The object must be locked
+	 * prior to calling this function.
+	 */
+	void Wait() {
+		cond.wait(mutex);
+	}
+
+	/**
+	 * @param song the song to be queued; the given instance will
+	 * be owned and freed by the player
+	 */
+	void Play(struct song *song);
+
+	/**
+	 * see PLAYER_COMMAND_CANCEL
+	 */
+	void Cancel();
+
+	void SetPause(bool pause_flag);
+
+	void Pause();
+
+	/**
+	 * Set the player's #border_pause flag.
+	 */
+	void SetBorderPause(bool border_pause);
+
+	void Kill();
+
+	gcc_pure
+	player_status GetStatus();
+
+	player_state GetState() const {
+		return state;
+	}
+
+	/**
+	 * Set the error.  Discards any previous error condition.
+	 *
+	 * Caller must lock the object.
+	 *
+	 * @param type the error type; must not be #PLAYER_ERROR_NONE
+	 * @param error detailed error information; must not be NULL; the
+	 * #player_control takes over ownership of this #GError instance
+	 */
+	void SetError(player_error type, GError *error);
+
+	void ClearError();
+
+	/**
+	 * Returns the human-readable message describing the last
+	 * error during playback, NULL if no error occurred.  The
+	 * caller has to free the returned string.
+	 */
+	char *GetErrorMessage() const;
+
+	player_error GetErrorType() const {
+		return error_type;
+	}
+
+	void Stop();
+
+	void UpdateAudio();
+
+	/**
+	 * @param song the song to be queued; the given instance will be owned
+	 * and freed by the player
+	 */
+	void EnqueueSong(struct song *song);
+
+	/**
+	 * Makes the player thread seek the specified song to a position.
+	 *
+	 * @param song the song to be queued; the given instance will be owned
+	 * and freed by the player
+	 * @return true on success, false on failure (e.g. if MPD isn't
+	 * playing currently)
+	 */
+	bool Seek(struct song *song, float seek_time);
+
+	void SetCrossFade(float cross_fade_seconds);
+
+	float GetCrossFade() const {
+		return cross_fade_seconds;
+	}
+
+	void SetMixRampDb(float mixramp_db);
+
+	float GetMixRampDb() const {
+		return mixramp_db;
+	}
+
+	void SetMixRampDelay(float mixramp_delay_seconds);
+
+	float GetMixRampDelay() const {
+		return mixramp_delay_seconds;
+	}
+
+	double GetTotalPlayTime() const {
+		return total_play_time;
+	}
 };
-
-/**
- * Locks the #player_control object.
- */
-static inline void
-player_lock(struct player_control *pc)
-{
-	pc->mutex.lock();
-}
-
-/**
- * Unlocks the #player_control object.
- */
-static inline void
-player_unlock(struct player_control *pc)
-{
-	pc->mutex.unlock();
-}
-
-/**
- * Waits for a signal on the #player_control object.  This function is
- * only valid in the player thread.  The object must be locked prior
- * to calling this function.
- */
-static inline void
-player_wait(struct player_control *pc)
-{
-	pc->cond.wait(pc->mutex);
-}
-
-/**
- * Waits for a signal on the #player_control object.  This function is
- * only valid in the player thread.  The #decoder_control object must
- * be locked prior to calling this function.
- *
- * Note the small difference to the player_wait() function!
- */
-void
-player_wait_decoder(struct player_control *pc, struct decoder_control *dc);
-
-/**
- * Signals the #player_control object.  The object should be locked
- * prior to calling this function.
- */
-static inline void
-player_signal(struct player_control *pc)
-{
-	pc->cond.signal();
-}
-
-/**
- * Signals the #player_control object.  The object is temporarily
- * locked by this function.
- */
-static inline void
-player_lock_signal(struct player_control *pc)
-{
-	player_lock(pc);
-	player_signal(pc);
-	player_unlock(pc);
-}
-
-/**
- * @param song the song to be queued; the given instance will be owned
- * and freed by the player
- */
-void
-pc_play(struct player_control *pc, struct song *song);
-
-/**
- * see PLAYER_COMMAND_CANCEL
- */
-void
-pc_cancel(struct player_control *pc);
-
-void
-pc_set_pause(struct player_control *pc, bool pause_flag);
-
-void
-pc_pause(struct player_control *pc);
-
-/**
- * Set the player's #border_pause flag.
- */
-void
-pc_set_border_pause(struct player_control *pc, bool border_pause);
-
-void
-pc_kill(struct player_control *pc);
-
-void
-pc_get_status(struct player_control *pc, struct player_status *status);
-
-static inline enum player_state
-pc_get_state(struct player_control *pc)
-{
-	return pc->state;
-}
-
-/**
- * Set the error.  Discards any previous error condition.
- *
- * Caller must lock the object.
- *
- * @param type the error type; must not be #PLAYER_ERROR_NONE
- * @param error detailed error information; must not be NULL; the
- * #player_control takes over ownership of this #GError instance
- */
-void
-pc_set_error(struct player_control *pc, enum player_error type,
-	     GError *error);
-
-void
-pc_clear_error(struct player_control *pc);
-
-/**
- * Returns the human-readable message describing the last error during
- * playback, NULL if no error occurred.  The caller has to free the
- * returned string.
- */
-char *
-pc_get_error_message(struct player_control *pc);
-
-static inline enum player_error
-pc_get_error_type(struct player_control *pc)
-{
-	return pc->error_type;
-}
-
-void
-pc_stop(struct player_control *pc);
-
-void
-pc_update_audio(struct player_control *pc);
-
-/**
- * @param song the song to be queued; the given instance will be owned
- * and freed by the player
- */
-void
-pc_enqueue_song(struct player_control *pc, struct song *song);
-
-/**
- * Makes the player thread seek the specified song to a position.
- *
- * @param song the song to be queued; the given instance will be owned
- * and freed by the player
- * @return true on success, false on failure (e.g. if MPD isn't
- * playing currently)
- */
-bool
-pc_seek(struct player_control *pc, struct song *song, float seek_time);
-
-void
-pc_set_cross_fade(struct player_control *pc, float cross_fade_seconds);
-
-float
-pc_get_cross_fade(const struct player_control *pc);
-
-void
-pc_set_mixramp_db(struct player_control *pc, float mixramp_db);
-
-static inline float
-pc_get_mixramp_db(const struct player_control *pc)
-{
-	return pc->mixramp_db;
-}
-
-void
-pc_set_mixramp_delay(struct player_control *pc, float mixramp_delay_seconds);
-
-static inline float
-pc_get_mixramp_delay(const struct player_control *pc)
-{
-	return pc->mixramp_delay_seconds;
-}
-
-static inline double
-pc_get_total_play_time(const struct player_control *pc)
-{
-	return pc->total_play_time;
-}
 
 #endif

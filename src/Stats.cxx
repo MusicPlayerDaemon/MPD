@@ -79,7 +79,7 @@ stats_print(Client *client)
 		      stats.album_count,
 		      stats.song_count,
 		      (long)g_timer_elapsed(stats.timer, NULL),
-		      (long)(pc_get_total_play_time(client->player_control) + 0.5),
+		      (long)(client->player_control->GetTotalPlayTime() + 0.5),
 		      stats.song_duration);
 
 	if (db_is_simple())

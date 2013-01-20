@@ -153,9 +153,9 @@ player_command_finished_locked(struct player_control *pc)
 static void
 player_command_finished(struct player_control *pc)
 {
-	player_lock(pc);
+	pc->Lock();
 	player_command_finished_locked(pc);
-	player_unlock(pc);
+	pc->Unlock();
 }
 
 /**
@@ -251,13 +251,13 @@ player_wait_for_decoder(struct player *player)
 
 	GError *error = dc_lock_get_error(dc);
 	if (error != NULL) {
-		player_lock(pc);
-		pc_set_error(pc, PLAYER_ERROR_DECODER, error);
+		pc->Lock();
+		pc->SetError(PLAYER_ERROR_DECODER, error);
 
 		song_free(pc->next_song);
 		pc->next_song = NULL;
 
-		player_unlock(pc);
+		pc->Unlock();
 
 		return false;
 	}
@@ -272,7 +272,7 @@ player_wait_for_decoder(struct player *player)
 	   player_check_decoder_startup() */
 	player->decoder_starting = true;
 
-	player_lock(pc);
+	pc->Lock();
 
 	/* update player_control's song information */
 	pc->total_time = song_get_duration(pc->next_song);
@@ -282,7 +282,7 @@ player_wait_for_decoder(struct player *player)
 	/* clear the queued song */
 	pc->next_song = NULL;
 
-	player_unlock(pc);
+	pc->Unlock();
 
 	/* call syncPlaylistWithQueue() in the main thread */
 	GlobalEvents::Emit(GlobalEvents::PLAYLIST);
@@ -331,9 +331,9 @@ player_open_output(struct player *player)
 		player->output_open = true;
 		player->paused = false;
 
-		player_lock(pc);
+		pc->Lock();
 		pc->state = PLAYER_STATE_PLAY;
-		player_unlock(pc);
+		pc->Unlock();
 
 		return true;
 	} else {
@@ -345,10 +345,10 @@ player_open_output(struct player *player)
 		   audio output becomes available */
 		player->paused = true;
 
-		player_lock(pc);
-		pc_set_error(pc, PLAYER_ERROR_OUTPUT, error);
+		pc->Lock();
+		pc->SetError(PLAYER_ERROR_OUTPUT, error);
 		pc->state = PLAYER_STATE_PAUSE;
-		player_unlock(pc);
+		pc->Unlock();
 
 		return false;
 	}
@@ -376,9 +376,9 @@ player_check_decoder_startup(struct player *player)
 		/* the decoder failed */
 		decoder_unlock(dc);
 
-		player_lock(pc);
-		pc_set_error(pc, PLAYER_ERROR_DECODER, error);
-		player_unlock(pc);
+		pc->Lock();
+		pc->SetError(PLAYER_ERROR_DECODER, error);
+		pc->Unlock();
 
 		return false;
 	} else if (!decoder_is_starting(dc)) {
@@ -392,10 +392,10 @@ player_check_decoder_startup(struct player *player)
 			   all chunks yet - wait for that */
 			return true;
 
-		player_lock(pc);
+		pc->Lock();
 		pc->total_time = real_song_duration(dc->song, dc->total_time);
 		pc->audio_format = dc->in_audio_format;
-		player_unlock(pc);
+		pc->Unlock();
 
 		player->play_audio_format = dc->out_audio_format;
 		player->decoder_starting = false;
@@ -413,7 +413,7 @@ player_check_decoder_startup(struct player *player)
 	} else {
 		/* the decoder is not yet ready; wait
 		   some more */
-		player_wait_decoder(pc, dc);
+		dc->WaitForDecoder();
 		decoder_unlock(dc);
 
 		return true;
@@ -565,9 +565,9 @@ static void player_process_command(struct player *player)
 		break;
 
 	case PLAYER_COMMAND_UPDATE_AUDIO:
-		player_unlock(pc);
+		pc->Unlock();
 		audio_output_all_enable_disable();
-		player_lock(pc);
+		pc->Lock();
 		player_command_finished_locked(pc);
 		break;
 
@@ -581,33 +581,33 @@ static void player_process_command(struct player *player)
 		break;
 
 	case PLAYER_COMMAND_PAUSE:
-		player_unlock(pc);
+		pc->Unlock();
 
 		player->paused = !player->paused;
 		if (player->paused) {
 			audio_output_all_pause();
-			player_lock(pc);
+			pc->Lock();
 
 			pc->state = PLAYER_STATE_PAUSE;
 		} else if (!audio_format_defined(&player->play_audio_format)) {
 			/* the decoder hasn't provided an audio format
 			   yet - don't open the audio device yet */
-			player_lock(pc);
+			pc->Lock();
 
 			pc->state = PLAYER_STATE_PLAY;
 		} else {
 			player_open_output(player);
 
-			player_lock(pc);
+			pc->Lock();
 		}
 
 		player_command_finished_locked(pc);
 		break;
 
 	case PLAYER_COMMAND_SEEK:
-		player_unlock(pc);
+		pc->Unlock();
 		player_seek_decoder(player);
-		player_lock(pc);
+		pc->Lock();
 		break;
 
 	case PLAYER_COMMAND_CANCEL:
@@ -622,9 +622,9 @@ static void player_process_command(struct player *player)
 		if (player_dc_at_next_song(player)) {
 			/* the decoder is already decoding the song -
 			   stop it and reset the position */
-			player_unlock(pc);
+			pc->Unlock();
 			player_dc_stop(player);
-			player_lock(pc);
+			pc->Lock();
 		}
 
 		song_free(pc->next_song);
@@ -635,9 +635,9 @@ static void player_process_command(struct player *player)
 
 	case PLAYER_COMMAND_REFRESH:
 		if (player->output_open && !player->paused) {
-			player_unlock(pc);
+			pc->Unlock();
 			audio_output_all_check();
-			player_lock(pc);
+			pc->Lock();
 		}
 
 		pc->elapsed_time = audio_output_all_get_elapsed_time();
@@ -695,9 +695,9 @@ play_chunk(struct player_control *pc,
 		return true;
 	}
 
-	player_lock(pc);
+	pc->Lock();
 	pc->bit_rate = chunk->bit_rate;
-	player_unlock(pc);
+	pc->Unlock();
 
 	/* send the chunk to the audio outputs */
 
@@ -793,7 +793,7 @@ play_next_chunk(struct player *player)
 			} else {
 				/* wait for the decoder */
 				decoder_signal(dc);
-				player_wait_decoder(pc, dc);
+				dc->WaitForDecoder();
 				decoder_unlock(dc);
 
 				return true;
@@ -823,16 +823,16 @@ play_next_chunk(struct player *player)
 
 		music_buffer_return(player_buffer, chunk);
 
-		player_lock(pc);
+		pc->Lock();
 
-		pc_set_error(pc, PLAYER_ERROR_OUTPUT, error);
+		pc->SetError(PLAYER_ERROR_OUTPUT, error);
 
 		/* pause: the user may resume playback as soon as an
 		   audio output becomes available */
 		pc->state = PLAYER_STATE_PAUSE;
 		player->paused = true;
 
-		player_unlock(pc);
+		pc->Unlock();
 
 		return false;
 	}
@@ -877,14 +877,14 @@ player_song_border(struct player *player)
 		return false;
 
 	struct player_control *const pc = player->pc;
-	player_lock(pc);
+	pc->Lock();
 
 	if (pc->border_pause) {
 		player->paused = true;
 		pc->state = PLAYER_STATE_PAUSE;
 	}
 
-	player_unlock(pc);
+	pc->Unlock();
 
 	return true;
 }
@@ -898,7 +898,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 {
 	player player(pc, dc);
 
-	player_unlock(pc);
+	pc->Unlock();
 
 	player.pipe = music_pipe_new();
 
@@ -910,11 +910,11 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 		player_command_finished(pc);
 		music_pipe_free(player.pipe);
 		GlobalEvents::Emit(GlobalEvents::PLAYLIST);
-		player_lock(pc);
+		pc->Lock();
 		return;
 	}
 
-	player_lock(pc);
+	pc->Lock();
 	pc->state = PLAYER_STATE_PLAY;
 
 	if (pc->command == PLAYER_COMMAND_SEEK)
@@ -927,12 +927,12 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 		if (pc->command == PLAYER_COMMAND_STOP ||
 		    pc->command == PLAYER_COMMAND_EXIT ||
 		    pc->command == PLAYER_COMMAND_CLOSE_AUDIO) {
-			player_unlock(pc);
+			pc->Unlock();
 			audio_output_all_cancel();
 			break;
 		}
 
-		player_unlock(pc);
+		pc->Unlock();
 
 		if (player.buffering) {
 			/* buffering at the start of the song - wait
@@ -951,9 +951,9 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 
 				decoder_lock(dc);
 				/* XXX race condition: check decoder again */
-				player_wait_decoder(pc, dc);
+				dc->WaitForDecoder();
 				decoder_unlock(dc);
-				player_lock(pc);
+				pc->Lock();
 				continue;
 			} else {
 				/* buffering is complete */
@@ -967,7 +967,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 			if (!player_check_decoder_startup(&player))
 				break;
 
-			player_lock(pc);
+			pc->Lock();
 			continue;
 		}
 
@@ -1020,10 +1020,10 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 		}
 
 		if (player.paused) {
-			player_lock(pc);
+			pc->Lock();
 
 			if (pc->command == PLAYER_COMMAND_NONE)
-				player_wait(pc);
+				pc->Wait();
 			continue;
 		} else if (!music_pipe_empty(player.pipe)) {
 			/* at least one music chunk is ready - send it
@@ -1060,7 +1060,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 				break;
 		}
 
-		player_lock(pc);
+		pc->Lock();
 	}
 
 	player_dc_stop(&player);
@@ -1074,7 +1074,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 	if (player.song != NULL)
 		song_free(player.song);
 
-	player_lock(pc);
+	pc->Lock();
 
 	if (player.queued) {
 		assert(pc->next_song != NULL);
@@ -1084,11 +1084,11 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 
 	pc->state = PLAYER_STATE_STOP;
 
-	player_unlock(pc);
+	pc->Unlock();
 
 	GlobalEvents::Emit(GlobalEvents::PLAYLIST);
 
-	player_lock(pc);
+	pc->Lock();
 }
 
 static gpointer
@@ -1101,7 +1101,7 @@ player_task(gpointer arg)
 
 	player_buffer = music_buffer_new(pc->buffer_chunks);
 
-	player_lock(pc);
+	pc->Lock();
 
 	while (1) {
 		switch (pc->command) {
@@ -1113,9 +1113,9 @@ player_task(gpointer arg)
 			break;
 
 		case PLAYER_COMMAND_STOP:
-			player_unlock(pc);
+			pc->Unlock();
 			audio_output_all_cancel();
-			player_lock(pc);
+			pc->Lock();
 
 			/* fall through */
 
@@ -1129,11 +1129,11 @@ player_task(gpointer arg)
 			break;
 
 		case PLAYER_COMMAND_CLOSE_AUDIO:
-			player_unlock(pc);
+			pc->Unlock();
 
 			audio_output_all_release();
 
-			player_lock(pc);
+			pc->Lock();
 			player_command_finished_locked(pc);
 
 #ifndef NDEBUG
@@ -1147,14 +1147,14 @@ player_task(gpointer arg)
 			break;
 
 		case PLAYER_COMMAND_UPDATE_AUDIO:
-			player_unlock(pc);
+			pc->Unlock();
 			audio_output_all_enable_disable();
-			player_lock(pc);
+			pc->Lock();
 			player_command_finished_locked(pc);
 			break;
 
 		case PLAYER_COMMAND_EXIT:
-			player_unlock(pc);
+			pc->Unlock();
 
 			dc_quit(dc);
 			dc_free(dc);
@@ -1179,7 +1179,7 @@ player_task(gpointer arg)
 			break;
 
 		case PLAYER_COMMAND_NONE:
-			player_wait(pc);
+			pc->Wait();
 			break;
 		}
 	}

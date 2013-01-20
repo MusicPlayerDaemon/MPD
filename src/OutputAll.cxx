@@ -481,15 +481,15 @@ audio_output_all_check(void)
 bool
 audio_output_all_wait(struct player_control *pc, unsigned threshold)
 {
-	player_lock(pc);
+	pc->Lock();
 
 	if (audio_output_all_check() < threshold) {
-		player_unlock(pc);
+		pc->Unlock();
 		return true;
 	}
 
-	player_wait(pc);
-	player_unlock(pc);
+	pc->Wait();
+	pc->Unlock();
 
 	return audio_output_all_check() < threshold;
 }

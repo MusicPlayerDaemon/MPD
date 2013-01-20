@@ -41,7 +41,7 @@ playlist::Stop(player_control &pc)
 	assert(current >= 0);
 
 	g_debug("stop");
-	pc_stop(&pc);
+	pc.Stop();
 	queued = -1;
 	playing = false;
 
@@ -62,7 +62,7 @@ playlist::Stop(player_control &pc)
 enum playlist_result
 playlist::PlayPosition(player_control &pc, int song)
 {
-	pc_clear_error(&pc);
+	pc.ClearError();
 
 	unsigned i = song;
 	if (song == -1) {
@@ -74,7 +74,7 @@ playlist::PlayPosition(player_control &pc, int song)
 		if (playing) {
 			/* already playing: unpause playback, just in
 			   case it was paused, and return */
-			pc_set_pause(&pc, false);
+			pc.SetPause(false);
 			return PLAYLIST_RESULT_SUCCESS;
 		}
 
@@ -204,7 +204,7 @@ playlist::SeekSongPosition(player_control &pc, unsigned song, float seek_time)
 		? queue.PositionToOrder(song)
 		: song;
 
-	pc_clear_error(&pc);
+	pc.ClearError();
 	stop_on_error = true;
 	error_count = 0;
 
@@ -219,7 +219,7 @@ playlist::SeekSongPosition(player_control &pc, unsigned song, float seek_time)
 	}
 
 	struct song *the_song = song_dup_detached(queue.GetOrder(i));
-	if (!pc_seek(&pc, the_song, seek_time)) {
+	if (!pc.Seek(the_song, seek_time)) {
 		UpdateQueuedSong(pc, queued_song);
 
 		return PLAYLIST_RESULT_NOT_PLAYING;
@@ -248,8 +248,7 @@ playlist::SeekCurrent(player_control &pc, float seek_time, bool relative)
 		return PLAYLIST_RESULT_NOT_PLAYING;
 
 	if (relative) {
-		struct player_status status;
-		pc_get_status(&pc, &status);
+		const auto status = pc.GetStatus();
 
 		if (status.state != PLAYER_STATE_PLAY &&
 		    status.state != PLAYER_STATE_PAUSE)

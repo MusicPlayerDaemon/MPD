@@ -56,9 +56,7 @@ void
 playlist_state_save(FILE *fp, const struct playlist *playlist,
 		    struct player_control *pc)
 {
-	struct player_status player_status;
-
-	pc_get_status(pc, &player_status);
+	const auto player_status = pc->GetStatus();
 
 	fputs(PLAYLIST_STATE_FILE_STATE, fp);
 
@@ -88,11 +86,11 @@ playlist_state_save(FILE *fp, const struct playlist *playlist,
 	fprintf(fp, PLAYLIST_STATE_FILE_CONSUME "%i\n",
 		playlist->queue.consume);
 	fprintf(fp, PLAYLIST_STATE_FILE_CROSSFADE "%i\n",
-		(int)(pc_get_cross_fade(pc)));
+		(int)pc->GetCrossFade());
 	fprintf(fp, PLAYLIST_STATE_FILE_MIXRAMPDB "%f\n",
-		pc_get_mixramp_db(pc));
+		pc->GetMixRampDb());
 	fprintf(fp, PLAYLIST_STATE_FILE_MIXRAMPDELAY "%f\n",
-		pc_get_mixramp_delay(pc));
+		pc->GetMixRampDelay());
 	fputs(PLAYLIST_STATE_FILE_PLAYLIST_BEGIN "\n", fp);
 	queue_save(fp, &playlist->queue);
 	fputs(PLAYLIST_STATE_FILE_PLAYLIST_END "\n", fp);
@@ -156,14 +154,11 @@ playlist_state_restore(const char *line, TextFile &file,
 			playlist->SetConsume(strcmp(&(line[strlen(PLAYLIST_STATE_FILE_CONSUME)]),
 						    "1") == 0);
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_CROSSFADE)) {
-			pc_set_cross_fade(pc,
-					  atoi(line + strlen(PLAYLIST_STATE_FILE_CROSSFADE)));
+			pc->SetCrossFade(atoi(line + strlen(PLAYLIST_STATE_FILE_CROSSFADE)));
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_MIXRAMPDB)) {
-			pc_set_mixramp_db(pc,
-					  atof(line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDB)));
+			pc->SetMixRampDb(atof(line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDB)));
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_MIXRAMPDELAY)) {
-			pc_set_mixramp_delay(pc,
-					     atof(line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDELAY)));
+			pc->SetMixRampDelay(atof(line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDELAY)));
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_RANDOM)) {
 			random_mode =
 				strcmp(line + strlen(PLAYLIST_STATE_FILE_RANDOM),
@@ -195,7 +190,7 @@ playlist_state_restore(const char *line, TextFile &file,
 		   called here, after the audio output states were
 		   restored, before playback begins */
 		if (state != PLAYER_STATE_STOP)
-			pc_update_audio(pc);
+			pc->UpdateAudio();
 
 		if (state == PLAYER_STATE_STOP /* && config_option */)
 			playlist->current = current;
@@ -205,7 +200,7 @@ playlist_state_restore(const char *line, TextFile &file,
 			playlist->SeekSongPosition(*pc, current, seek_time);
 
 		if (state == PLAYER_STATE_PAUSE)
-			pc_pause(pc);
+			pc->Pause();
 	}
 
 	return true;
@@ -215,9 +210,7 @@ unsigned
 playlist_state_get_hash(const struct playlist *playlist,
 			struct player_control *pc)
 {
-	struct player_status player_status;
-
-	pc_get_status(pc, &player_status);
+	const auto player_status = pc->GetStatus();
 
 	return playlist->queue.version ^
 		(player_status.state != PLAYER_STATE_STOP
@@ -226,7 +219,7 @@ playlist_state_get_hash(const struct playlist *playlist,
 		(playlist->current >= 0
 		 ? (playlist->queue.OrderToPosition(playlist->current) << 16)
 		 : 0) ^
-		((int)pc_get_cross_fade(pc) << 20) ^
+		((int)pc->GetCrossFade() << 20) ^
 		(player_status.state << 24) ^
 		(playlist->queue.random << 27) ^
 		(playlist->queue.repeat << 28) ^
