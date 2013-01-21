@@ -24,11 +24,7 @@
 #include "tag.h"
 #include "IcyMetaDataParser.hxx"
 #include "event/MultiSocketMonitor.hxx"
-
-extern "C" {
 #include "input_internal.h"
-}
-
 #include "event/Loop.hxx"
 #include "IOThread.hxx"
 #include "glib_compat.h"

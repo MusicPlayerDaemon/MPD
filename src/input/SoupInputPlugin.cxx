@@ -20,11 +20,7 @@
 #include "config.h"
 #include "SoupInputPlugin.hxx"
 #include "input_plugin.h"
-
-extern "C" {
 #include "input_internal.h"
-}
-
 #include "IOThread.hxx"
 #include "event/Loop.hxx"
 #include "conf.h"

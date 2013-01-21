@@ -27,6 +27,10 @@
 struct input_stream;
 struct input_plugin;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void
 input_stream_init(struct input_stream *is, const struct input_plugin *plugin,
 		  const char *uri, GMutex *mutex, GCond *cond);
@@ -39,5 +43,9 @@ input_stream_signal_client(struct input_stream *is);
 
 void
 input_stream_set_ready(struct input_stream *is);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
