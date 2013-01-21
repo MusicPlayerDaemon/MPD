@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "input/cdio_paranoia_input_plugin.h"
+#include "CdioParanoiaInputPlugin.hxx"
 #include "input_internal.h"
 #include "input_plugin.h"
 #include "refcount.h"
@@ -38,7 +38,7 @@
 #include <cdio/paranoia.h>
 #include <cdio/cd_types.h>
 
-struct input_cdio_paranoia {
+struct CdioParanoiaInputStream {
 	struct input_stream base;
 
 	cdrom_drive_t *drv;
@@ -52,6 +52,26 @@ struct input_cdio_paranoia {
 
 	char buffer[CDIO_CD_FRAMESIZE_RAW];
 	int buffer_lsn;
+
+	CdioParanoiaInputStream(const char *uri, GMutex *mutex, GCond *cond,
+				int _trackno)
+		:drv(nullptr), cdio(nullptr), para(nullptr),
+		 trackno(_trackno)
+	{
+		input_stream_init(&base, &input_plugin_cdio_paranoia, uri,
+				  mutex, cond);
+	}
+
+	~CdioParanoiaInputStream() {
+		if (para != nullptr)
+			cdio_paranoia_free(para);
+		if (drv != nullptr)
+			cdio_cddap_close_no_free_cdio(drv);
+		if (cdio != nullptr)
+			cdio_destroy(cdio);
+
+		input_stream_deinit(&base);
+	}
 };
 
 static inline GQuark
@@ -63,17 +83,9 @@ cdio_quark(void)
 static void
 input_cdio_close(struct input_stream *is)
 {
-	struct input_cdio_paranoia *i = (struct input_cdio_paranoia *)is;
+	CdioParanoiaInputStream *i = (CdioParanoiaInputStream *)is;
 
-	if (i->para)
-		cdio_paranoia_free(i->para);
-	if (i->drv)
-		cdio_cddap_close_no_free_cdio( i->drv);
-	if (i->cdio)
-		cdio_destroy( i->cdio );
-
-	input_stream_deinit(&i->base);
-	g_free(i);
+	delete i;
 }
 
 struct cdio_uri {
@@ -97,7 +109,7 @@ parse_cdio_uri(struct cdio_uri *dest, const char *src, GError **error_r)
 	}
 
 	const char *slash = strrchr(src, '/');
-	if (slash == NULL) {
+	if (slash == nullptr) {
 		/* play the whole CD in the specified drive */
 		g_strlcpy(dest->device, src, sizeof(dest->device));
 		dest->track = -1;
@@ -131,9 +143,10 @@ parse_cdio_uri(struct cdio_uri *dest, const char *src, GError **error_r)
 static char *
 cdio_detect_device(void)
 {
-	char **devices = cdio_get_devices_with_cap(NULL, CDIO_FS_AUDIO, false);
-	if (devices == NULL)
-		return NULL;
+	char **devices = cdio_get_devices_with_cap(nullptr, CDIO_FS_AUDIO,
+						   false);
+	if (devices == nullptr)
+		return nullptr;
 
 	char *device = g_strdup(devices[0]);
 	cdio_free_device_list(devices);
@@ -146,52 +159,44 @@ input_cdio_open(const char *uri,
 		GMutex *mutex, GCond *cond,
 		GError **error_r)
 {
-	struct input_cdio_paranoia *i;
-
 	struct cdio_uri parsed_uri;
 	if (!parse_cdio_uri(&parsed_uri, uri, error_r))
-		return NULL;
+		return nullptr;
 
-	i = g_new(struct input_cdio_paranoia, 1);
-	input_stream_init(&i->base, &input_plugin_cdio_paranoia, uri,
-			  mutex, cond);
-
-	/* initialize everything (should be already) */
-	i->drv = NULL;
-	i->cdio = NULL;
-	i->para = NULL;
-	i->trackno = parsed_uri.track;
+	CdioParanoiaInputStream *i =
+		new CdioParanoiaInputStream(uri, mutex, cond,
+					    parsed_uri.track);
 
 	/* get list of CD's supporting CD-DA */
 	char *device = parsed_uri.device[0] != 0
 		? g_strdup(parsed_uri.device)
 		: cdio_detect_device();
-	if (device == NULL) {
+	if (device == nullptr) {
 		g_set_error(error_r, cdio_quark(), 0,
 			    "Unable find or access a CD-ROM drive with an audio CD in it.");
-		input_cdio_close(&i->base);
-		return NULL;
+		delete i;
+		return nullptr;
 	}
 
 	/* Found such a CD-ROM with a CD-DA loaded. Use the first drive in the list. */
 	i->cdio = cdio_open(device, DRIVER_UNKNOWN);
 	g_free(device);
 
-	i->drv = cdio_cddap_identify_cdio(i->cdio, 1, NULL);
+	i->drv = cdio_cddap_identify_cdio(i->cdio, 1, nullptr);
 
 	if ( !i->drv ) {
 		g_set_error(error_r, cdio_quark(), 0,
 			    "Unable to identify audio CD disc.");
-		input_cdio_close(&i->base);
-		return NULL;
+		delete i;
+		return nullptr;
 	}
 
 	cdda_verbose_set(i->drv, CDDA_MESSAGE_FORGETIT, CDDA_MESSAGE_FORGETIT);
 
 	if ( 0 != cdio_cddap_open(i->drv) ) {
 		g_set_error(error_r, cdio_quark(), 0, "Unable to open disc.");
-		input_cdio_close(&i->base);
-		return NULL;
+		delete i;
+		return nullptr;
 	}
 
 	bool reverse_endian;
@@ -212,8 +217,8 @@ input_cdio_open(const char *uri,
 		g_set_error(error_r, cdio_quark(), 0,
 			    "Drive returns unknown data type %d",
 			    data_bigendianp(i->drv));
-		input_cdio_close(&i->base);
-		return NULL;
+		delete i;
+		return nullptr;
 	}
 
 	i->lsn_relofs = 0;
@@ -250,7 +255,7 @@ static bool
 input_cdio_seek(struct input_stream *is,
 		goffset offset, int whence, GError **error_r)
 {
-	struct input_cdio_paranoia *cis = (struct input_cdio_paranoia *)is;
+	CdioParanoiaInputStream *cis = (CdioParanoiaInputStream *)is;
 
 	/* calculate absolute offset */
 	switch (whence) {
@@ -288,7 +293,7 @@ static size_t
 input_cdio_read(struct input_stream *is, void *ptr, size_t length,
 		GError **error_r)
 {
-	struct input_cdio_paranoia *cis = (struct input_cdio_paranoia *)is;
+	CdioParanoiaInputStream *cis = (CdioParanoiaInputStream *)is;
 	size_t nbytes = 0;
 	int diff;
 	size_t len, maxwrite;
@@ -305,7 +310,7 @@ input_cdio_read(struct input_stream *is, void *ptr, size_t length,
 
 		//current sector was changed ?
 		if (cis->lsn_relofs != cis->buffer_lsn) {
-			rbuf = cdio_paranoia_read(cis->para, NULL);
+			rbuf = cdio_paranoia_read(cis->para, nullptr);
 
 			s_err = cdda_errors(cis->drv);
 			if (s_err) {
@@ -356,16 +361,22 @@ input_cdio_read(struct input_stream *is, void *ptr, size_t length,
 static bool
 input_cdio_eof(struct input_stream *is)
 {
-	struct input_cdio_paranoia *cis = (struct input_cdio_paranoia *)is;
+	CdioParanoiaInputStream *cis = (CdioParanoiaInputStream *)is;
 
 	return (cis->lsn_from + cis->lsn_relofs > cis->lsn_to);
 }
 
 const struct input_plugin input_plugin_cdio_paranoia = {
-	.name = "cdio_paranoia",
-	.open = input_cdio_open,
-	.close = input_cdio_close,
-	.seek = input_cdio_seek,
-	.read = input_cdio_read,
-	.eof = input_cdio_eof
+	"cdio_paranoia",
+	nullptr,
+	nullptr,
+	input_cdio_open,
+	input_cdio_close,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	input_cdio_read,
+	input_cdio_eof,
+	input_cdio_seek,
 };

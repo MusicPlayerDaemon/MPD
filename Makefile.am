@@ -80,7 +80,6 @@ mpd_headers = \
 	src/input_plugin.h \
 	src/input_stream.h \
 	src/input/despotify_input_plugin.h \
-	src/input/cdio_paranoia_input_plugin.h \
 	src/despotify_utils.h \
 	src/text_input_stream.h \
 	src/icy_server.h \
@@ -741,7 +740,9 @@ libinput_a_SOURCES += \
 endif
 
 if ENABLE_CDIO_PARANOIA
-libinput_a_SOURCES += src/input/cdio_paranoia_input_plugin.c
+libinput_a_SOURCES += \
+	src/input/CdioParanoiaInputPlugin.cxx \
+	src/input/CdioParanoiaInputPlugin.hxx
 endif
 
 if HAVE_FFMPEG

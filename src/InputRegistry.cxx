@@ -42,7 +42,7 @@
 #endif
 
 #ifdef ENABLE_CDIO_PARANOIA
-#include "input/cdio_paranoia_input_plugin.h"
+#include "input/CdioParanoiaInputPlugin.hxx"
 #endif
 
 #ifdef ENABLE_DESPOTIFY
