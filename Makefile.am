@@ -13,6 +13,7 @@ noinst_LIBRARIES = \
 	libpcm.a \
 	libtag.a \
 	libinput.a \
+	libfs.a \
 	libdb_plugins.a \
 	libplaylist_plugins.a \
 	libdecoder_plugins.a \
@@ -41,6 +42,7 @@ src_mpd_LDADD = \
 	$(MIXER_LIBS) \
 	libevent.a \
 	libutil.a \
+	libfs.a \
 	$(SYSTEMD_DAEMON_LIBS) \
 	$(GLIB_LIBS)
 
@@ -151,9 +153,6 @@ src_mpd_SOURCES = \
 	src/thread/PosixCond.hxx \
 	src/thread/WindowsCond.hxx \
 	src/thread/GLibCond.hxx \
-	src/fs/Path.cxx src/fs/Path.hxx \
-	src/fs/FileSystem.cxx src/fs/FileSystem.hxx \
-	src/fs/DirectoryReader.hxx \
 	src/glib_socket.h \
 	src/clock.c src/clock.h \
 	src/notify.cxx src/notify.hxx \
@@ -381,6 +380,13 @@ PCM_LIBS = \
 if HAVE_LIBSAMPLERATE
 libpcm_a_SOURCES += src/pcm_resample_libsamplerate.c
 endif
+
+# File system library
+
+libfs_a_SOURCES = \
+	src/fs/Path.cxx src/fs/Path.hxx \
+	src/fs/FileSystem.cxx src/fs/FileSystem.hxx \
+	src/fs/DirectoryReader.hxx
 
 # database plugins
 
@@ -1051,6 +1057,7 @@ test_run_resolver_SOURCES = test/run_resolver.c \
 test_DumpDatabase_LDADD = \
 	$(DB_LIBS) \
 	libutil.a \
+	libfs.a \
 	$(GLIB_LIBS)
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/DatabaseRegistry.cxx \
@@ -1060,7 +1067,6 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/DatabaseLock.cxx src/DatabaseSave.cxx \
 	src/Song.cxx src/song_sort.c src/SongSave.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
-	src/fs/Path.cxx \
 	src/SongFilter.cxx \
 	src/TextFile.cxx \
 	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c
