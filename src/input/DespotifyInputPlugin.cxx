@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 The Music Player Daemon Project
+ * Copyright (C) 2011-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,18 +18,21 @@
  */
 
 #include "config.h"
-#include "input/despotify_input_plugin.h"
+#include "DespotifyInputPlugin.hxx"
+#include "DespotifyUtils.hxx"
 #include "input_internal.h"
 #include "input_plugin.h"
 #include "tag.h"
-#include "despotify_utils.h"
+
+extern "C" {
+#include <despotify.h>
+}
 
 #include <glib.h>
 
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include <despotify.h>
 
 #include <stdio.h>
 
@@ -220,11 +223,16 @@ input_despotify_tag(struct input_stream *is)
 }
 
 const struct input_plugin input_plugin_despotify = {
-	.name = "spt",
-	.open = input_despotify_open,
-	.close = input_despotify_close,
-	.read = input_despotify_read,
-	.eof = input_despotify_eof,
-	.seek = input_despotify_seek,
+	"spt",
+	nullptr,
+	nullptr,
+	input_despotify_open,
+	input_despotify_close,
+	nullptr,
+	nullptr,
 	.tag = input_despotify_tag,
+	nullptr,
+	input_despotify_read,
+	input_despotify_eof,
+	input_despotify_seek,
 };

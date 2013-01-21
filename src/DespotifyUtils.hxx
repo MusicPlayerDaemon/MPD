@@ -20,8 +20,6 @@
 #ifndef MPD_DESPOTIFY_H
 #define MPD_DESPOTIFY_H
 
-#include <stdbool.h>
-
 struct despotify_session;
 struct ds_track;
 

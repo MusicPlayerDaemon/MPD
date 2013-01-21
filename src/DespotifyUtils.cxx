@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,12 +17,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "despotify_utils.h"
+#include "DespotifyUtils.hxx"
 #include "tag.h"
 #include "conf.h"
 
 #include <glib.h>
+
+extern "C" {
 #include <despotify.h>
+}
 
 static struct despotify_session *g_session;
 static void (*registered_callbacks[8])(struct despotify_session *,
@@ -116,24 +119,25 @@ struct despotify_session *mpd_despotify_get_session(void)
 
 	if (user == NULL || passwd == NULL) {
 		g_debug("disabling despotify because account is not configured");
-		return NULL;
+		return nullptr;
 	}
+
 	if (!despotify_init()) {
 		g_debug("Can't initialize despotify\n");
-		return false;
+		return nullptr;
 	}
 
 	g_session = despotify_init_client(callback, NULL,
 					  high_bitrate, true);
 	if (!g_session) {
 		g_debug("Can't initialize despotify client\n");
-		return false;
+		return nullptr;
 	}
 
 	if (!despotify_authenticate(g_session, user, passwd)) {
 		g_debug("Can't authenticate despotify session\n");
 		despotify_exit(g_session);
-		return false;
+		return nullptr;
 	}
 
 	return g_session;

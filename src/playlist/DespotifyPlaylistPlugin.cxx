@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 The Music Player Daemon Project
+ * Copyright (C) 2011-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,8 @@
  */
 
 #include "config.h"
-#include "playlist/despotify_playlist_plugin.h"
+#include "DespotifyPlaylistPlugin.hxx"
+#include "DespotifyUtils.hxx"
 #include "playlist_plugin.h"
 #include "playlist_list.h"
 #include "conf.h"
@@ -26,14 +27,16 @@
 #include "tag.h"
 #include "song.h"
 #include "input_stream.h"
-#include "despotify_utils.h"
+
+extern "C" {
+#include <despotify.h>
+}
 
 #include <glib.h>
 
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
-#include <despotify.h>
 
 struct despotify_playlist {
 	struct playlist_provider base;
@@ -131,7 +134,7 @@ despotify_playlist_open_uri(const char *url, G_GNUC_UNUSED GMutex *mutex,
 
 	ctx = g_new(struct despotify_playlist, 1);
 
-	ctx->list = NULL;
+	ctx->list = nullptr;
 	ctx->session = session;
 	playlist_provider_init(&ctx->base, &despotify_playlist_plugin);
 
@@ -159,7 +162,7 @@ clean_playlist:
 	g_slist_free(ctx->list);
 clean_none:
 
-	return NULL;
+	return nullptr;
 }
 
 static void
@@ -175,7 +178,7 @@ despotify_playlist_close(struct playlist_provider *_playlist)
 {
 	struct despotify_playlist *ctx = (struct despotify_playlist *)_playlist;
 
-	g_slist_foreach(ctx->list, track_free_callback, NULL);
+	g_slist_foreach(ctx->list, track_free_callback, nullptr);
 	g_slist_free(ctx->list);
 
 	g_free(ctx);
@@ -186,13 +189,12 @@ static struct song *
 despotify_playlist_read(struct playlist_provider *_playlist)
 {
 	struct despotify_playlist *ctx = (struct despotify_playlist *)_playlist;
-	struct song *out;
 
 	if (!ctx->list)
-		return NULL;
+		return nullptr;
 
 	/* Remove the current track */
-	out = ctx->list->data;
+	song *out = (song *)ctx->list->data;
 	ctx->list = g_slist_remove(ctx->list, out);
 
 	return out;
@@ -200,18 +202,22 @@ despotify_playlist_read(struct playlist_provider *_playlist)
 
 
 static const char *const despotify_schemes[] = {
-		"spt",
-		NULL
+	"spt",
+	nullptr
 };
 
 const struct playlist_plugin despotify_playlist_plugin = {
-		.name = "despotify",
+	"despotify",
 
-		.init = despotify_playlist_init,
-		.finish = despotify_playlist_finish,
-		.open_uri = despotify_playlist_open_uri,
-		.read = despotify_playlist_read,
-		.close = despotify_playlist_close,
+	despotify_playlist_init,
+	despotify_playlist_finish,
 
-		.schemes = despotify_schemes,
+	despotify_playlist_open_uri,
+	nullptr,
+	despotify_playlist_close,
+	despotify_playlist_read,
+
+	despotify_schemes,
+	nullptr,
+	nullptr,
 };

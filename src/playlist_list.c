@@ -24,7 +24,7 @@
 #include "playlist/m3u_playlist_plugin.h"
 #include "playlist/xspf_playlist_plugin.h"
 #include "playlist/lastfm_playlist_plugin.h"
-#include "playlist/despotify_playlist_plugin.h"
+#include "playlist/DespotifyPlaylistPlugin.hxx"
 #include "playlist/soundcloud_playlist_plugin.h"
 #include "playlist/pls_playlist_plugin.h"
 #include "playlist/asx_playlist_plugin.h"

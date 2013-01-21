@@ -79,8 +79,6 @@ mpd_headers = \
 	src/decoder/pcm_decoder_plugin.h \
 	src/input_plugin.h \
 	src/input_stream.h \
-	src/input/despotify_input_plugin.h \
-	src/despotify_utils.h \
 	src/text_input_stream.h \
 	src/icy_server.h \
 	src/ls.h \
@@ -106,7 +104,6 @@ mpd_headers = \
 	src/playlist/asx_playlist_plugin.h \
 	src/playlist/rss_playlist_plugin.h \
 	src/playlist/lastfm_playlist_plugin.h \
-	src/playlist/despotify_playlist_plugin.h \
 	src/playlist/cue_playlist_plugin.h \
 	src/poison.h \
 	src/riff.h \
@@ -311,7 +308,7 @@ endif
 
 if ENABLE_DESPOTIFY
 src_mpd_SOURCES += \
-	src/despotify_utils.c
+	src/DespotifyUtils.cxx src/DespotifyUtils.hxx
 endif
 
 if ENABLE_INOTIFY
@@ -756,7 +753,9 @@ libinput_a_SOURCES += \
 endif
 
 if ENABLE_DESPOTIFY
-libinput_a_SOURCES += src/input/despotify_input_plugin.c
+libinput_a_SOURCES += \
+	src/input/DespotifyInputPlugin.cxx \
+	src/input/DespotifyInputPlugin.hxx
 endif
 
 
@@ -938,7 +937,9 @@ libplaylist_plugins_a_SOURCES += src/playlist/lastfm_playlist_plugin.c
 endif
 
 if ENABLE_DESPOTIFY
-libplaylist_plugins_a_SOURCES += src/playlist/despotify_playlist_plugin.c
+libplaylist_plugins_a_SOURCES += \
+	src/playlist/DespotifyPlaylistPlugin.cxx \
+	src/playlist/DespotifyPlaylistPlugin.hxx
 endif
 
 if ENABLE_SOUNDCLOUD
@@ -1189,16 +1190,11 @@ test_run_filter_SOURCES = test/run_filter.c \
 	src/AudioCompress/compress.c
 
 if ENABLE_DESPOTIFY
-test_read_tags_SOURCES += \
-	src/despotify_utils.c
-test_run_input_SOURCES += \
-	src/despotify_utils.c
-test_dump_text_file_SOURCES += \
-	src/despotify_utils.c
-test_dump_playlist_SOURCES += \
-	src/despotify_utils.c
-test_run_decoder_SOURCES += \
-	src/despotify_utils.c
+test_read_tags_SOURCES += src/DespotifyUtils.cxx
+test_run_input_SOURCES += src/DespotifyUtils.cxx
+test_dump_text_file_SOURCES += src/DespotifyUtils.cxx
+test_dump_playlist_SOURCES += src/DespotifyUtils.cxx
+test_run_decoder_SOURCES += src/DespotifyUtils.cxx
 endif
 
 if ENABLE_ENCODER

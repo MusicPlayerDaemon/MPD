@@ -46,7 +46,7 @@
 #endif
 
 #ifdef ENABLE_DESPOTIFY
-#include "input/despotify_input_plugin.h"
+#include "input/DespotifyInputPlugin.hxx"
 #endif
 
 #include <glib.h>
