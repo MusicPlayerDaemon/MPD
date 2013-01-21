@@ -17,12 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <glib.h>
-#include <despotify.h>
-
+#include "despotify_utils.h"
 #include "tag.h"
 #include "conf.h"
-#include "despotify_utils.h"
+
+#include <glib.h>
+#include <despotify.h>
 
 static struct despotify_session *g_session;
 static void (*registered_callbacks[8])(struct despotify_session *,
