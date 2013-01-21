@@ -22,34 +22,22 @@
 
 #include <errno.h>
 
-bool ReadLink(const Path &path, Path &result)
+Path ReadLink(const Path &path)
 {
 #ifdef WIN32
 	(void)path;
-	result = Path::Null();
 	errno = EINVAL;
-	return false;
+	return Path::Null();
 #else
 	char buffer[MPD_PATH_MAX];
 	ssize_t size = readlink(path.c_str(), buffer, MPD_PATH_MAX);
-	int orig_errno = errno;
-	if (size < 0) {
-		result = Path::Null();
-		errno = orig_errno;
-		return false;
-	}
+	if (size < 0)
+		return Path::Null();
 	if (size >= MPD_PATH_MAX) {
-		result = Path::Null();
 		errno = ENOMEM;
-		return false;
+		return Path::Null();
 	}
 	buffer[size] = '\0';
-	result = Path::FromFS(buffer);
-	if (result.IsNull()) {
-		errno = ENOMEM;
-		return false;
-	}
-	errno = orig_errno;
-	return true;
+	return Path::FromFS(buffer);
 #endif
 }
