@@ -27,46 +27,30 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "decoder_control"
 
-struct decoder_control *
-dc_new()
+decoder_control::decoder_control()
+	:thread(nullptr),
+	 mutex(g_mutex_new()), cond(g_cond_new()),
+	 client_cond(g_cond_new()),
+	 state(DECODE_STATE_STOP),
+	 command(DECODE_COMMAND_NONE),
+	 song(nullptr),
+	 replay_gain_db(0), replay_gain_prev_db(0),
+	 mixramp_start(nullptr), mixramp_end(nullptr),
+	 mixramp_prev_end(nullptr) {}
+
+decoder_control::~decoder_control()
 {
-	struct decoder_control *dc = g_new(struct decoder_control, 1);
+	ClearError();
 
-	dc->thread = NULL;
+	if (song != NULL)
+		song_free(song);
 
-	dc->mutex = g_mutex_new();
-	dc->cond = g_cond_new();
-	dc->client_cond = g_cond_new();
-
-	dc->state = DECODE_STATE_STOP;
-	dc->command = DECODE_COMMAND_NONE;
-
-	dc->song = NULL;
-
-	dc->replay_gain_db = 0;
-	dc->replay_gain_prev_db = 0;
-	dc->mixramp_start = NULL;
-	dc->mixramp_end = NULL;
-	dc->mixramp_prev_end = NULL;
-
-	return dc;
-}
-
-void
-dc_free(struct decoder_control *dc)
-{
-	dc_clear_error(dc);
-
-	if (dc->song != NULL)
-		song_free(dc->song);
-
-	g_cond_free(dc->client_cond);
-	g_cond_free(dc->cond);
-	g_mutex_free(dc->mutex);
-	g_free(dc->mixramp_start);
-	g_free(dc->mixramp_end);
-	g_free(dc->mixramp_prev_end);
-	g_free(dc);
+	g_cond_free(client_cond);
+	g_cond_free(cond);
+	g_mutex_free(mutex);
+	g_free(mixramp_start);
+	g_free(mixramp_end);
+	g_free(mixramp_prev_end);
 }
 
 static void
@@ -80,45 +64,43 @@ static void
 dc_command_locked(struct decoder_control *dc, enum decoder_command cmd)
 {
 	dc->command = cmd;
-	decoder_signal(dc);
+	dc->Signal();
 	dc_command_wait_locked(dc);
 }
 
 static void
 dc_command(struct decoder_control *dc, enum decoder_command cmd)
 {
-	decoder_lock(dc);
-	dc_clear_error(dc);
+	dc->Lock();
+	dc->ClearError();
 	dc_command_locked(dc, cmd);
-	decoder_unlock(dc);
+	dc->Unlock();
 }
 
 static void
 dc_command_async(struct decoder_control *dc, enum decoder_command cmd)
 {
-	decoder_lock(dc);
+	dc->Lock();
 
 	dc->command = cmd;
-	decoder_signal(dc);
+	dc->Signal();
 
-	decoder_unlock(dc);
+	dc->Unlock();
 }
 
 bool
-decoder_is_current_song(const struct decoder_control *dc,
-			const struct song *song)
+decoder_control::IsCurrentSong(const struct song *_song) const
 {
-	assert(dc != NULL);
-	assert(song != NULL);
+	assert(_song != NULL);
 
-	switch (dc->state) {
+	switch (state) {
 	case DECODE_STATE_STOP:
 	case DECODE_STATE_ERROR:
 		return false;
 
 	case DECODE_STATE_START:
 	case DECODE_STATE_DECODE:
-		return song_equals(dc->song, song);
+		return song_equals(song, _song);
 	}
 
 	assert(false);
@@ -126,99 +108,91 @@ decoder_is_current_song(const struct decoder_control *dc,
 }
 
 void
-dc_start(struct decoder_control *dc, struct song *song,
-	 unsigned start_ms, unsigned end_ms,
-	 struct music_buffer *buffer, struct music_pipe *pipe)
+decoder_control::Start(struct song *_song,
+		       unsigned _start_ms, unsigned _end_ms,
+		       music_buffer *_buffer, music_pipe *_pipe)
 {
-	assert(song != NULL);
+	assert(_song != NULL);
 	assert(buffer != NULL);
 	assert(pipe != NULL);
 	assert(music_pipe_empty(pipe));
 
-	if (dc->song != NULL)
-		song_free(dc->song);
+	if (song != nullptr)
+		song_free(song);
 
-	dc->song = song;
-	dc->start_ms = start_ms;
-	dc->end_ms = end_ms;
-	dc->buffer = buffer;
-	dc->pipe = pipe;
-	dc_command(dc, DECODE_COMMAND_START);
+	song = _song;
+	start_ms = _start_ms;
+	end_ms = _end_ms;
+	buffer = _buffer;
+	pipe = _pipe;
+
+	dc_command(this, DECODE_COMMAND_START);
 }
 
 void
-dc_stop(struct decoder_control *dc)
+decoder_control::Stop()
 {
-	decoder_lock(dc);
+	Lock();
 
-	if (dc->command != DECODE_COMMAND_NONE)
+	if (command != DECODE_COMMAND_NONE)
 		/* Attempt to cancel the current command.  If it's too
 		   late and the decoder thread is already executing
 		   the old command, we'll call STOP again in this
 		   function (see below). */
-		dc_command_locked(dc, DECODE_COMMAND_STOP);
+		dc_command_locked(this, DECODE_COMMAND_STOP);
 
-	if (dc->state != DECODE_STATE_STOP && dc->state != DECODE_STATE_ERROR)
-		dc_command_locked(dc, DECODE_COMMAND_STOP);
+	if (state != DECODE_STATE_STOP && state != DECODE_STATE_ERROR)
+		dc_command_locked(this, DECODE_COMMAND_STOP);
 
-	decoder_unlock(dc);
+	Unlock();
 }
 
 bool
-dc_seek(struct decoder_control *dc, double where)
+decoder_control::Seek(double where)
 {
-	assert(dc->state != DECODE_STATE_START);
+	assert(state != DECODE_STATE_START);
 	assert(where >= 0.0);
 
-	if (dc->state == DECODE_STATE_STOP ||
-	    dc->state == DECODE_STATE_ERROR || !dc->seekable)
+	if (state == DECODE_STATE_STOP ||
+	    state == DECODE_STATE_ERROR || !seekable)
 		return false;
 
-	dc->seek_where = where;
-	dc->seek_error = false;
-	dc_command(dc, DECODE_COMMAND_SEEK);
+	seek_where = where;
+	seek_error = false;
+	dc_command(this, DECODE_COMMAND_SEEK);
 
-	if (dc->seek_error)
-		return false;
-
-	return true;
+	return !seek_error;
 }
 
 void
-dc_quit(struct decoder_control *dc)
+decoder_control::Quit()
 {
-	assert(dc->thread != NULL);
+	assert(thread != nullptr);
 
-	dc->quit = true;
-	dc_command_async(dc, DECODE_COMMAND_STOP);
+	quit = true;
+	dc_command_async(this, DECODE_COMMAND_STOP);
 
-	g_thread_join(dc->thread);
-	dc->thread = NULL;
+	g_thread_join(thread);
+	thread = nullptr;
 }
 
 void
-dc_mixramp_start(struct decoder_control *dc, char *mixramp_start)
+decoder_control::MixRampStart(char *_mixramp_start)
 {
-	assert(dc != NULL);
-
-	g_free(dc->mixramp_start);
-	dc->mixramp_start = mixramp_start;
+	g_free(mixramp_start);
+	mixramp_start = _mixramp_start;
 }
 
 void
-dc_mixramp_end(struct decoder_control *dc, char *mixramp_end)
+decoder_control::MixRampEnd(char *_mixramp_end)
 {
-	assert(dc != NULL);
-
-	g_free(dc->mixramp_end);
-	dc->mixramp_end = mixramp_end;
+	g_free(mixramp_end);
+	mixramp_end = _mixramp_end;
 }
 
 void
-dc_mixramp_prev_end(struct decoder_control *dc, char *mixramp_prev_end)
+decoder_control::MixRampPrevEnd(char *_mixramp_prev_end)
 {
-	assert(dc != NULL);
-
-	g_free(dc->mixramp_prev_end);
-	dc->mixramp_prev_end = mixramp_prev_end;
+	g_free(mixramp_prev_end);
+	mixramp_prev_end = _mixramp_prev_end;
 }

@@ -64,10 +64,10 @@ decoder_initialized(struct decoder *decoder,
 	dc->seekable = seekable;
 	dc->total_time = total_time;
 
-	decoder_lock(dc);
+	dc->Lock();
 	dc->state = DECODE_STATE_DECODE;
 	g_cond_signal(dc->client_cond);
-	decoder_unlock(dc);
+	dc->Unlock();
 
 	g_debug("audio_format=%s, seekable=%s",
 		audio_format_to_string(&dc->in_audio_format, &af_string),
@@ -155,7 +155,7 @@ decoder_command_finished(struct decoder *decoder)
 {
 	struct decoder_control *dc = decoder->dc;
 
-	decoder_lock(dc);
+	dc->Lock();
 
 	assert(dc->command != DECODE_COMMAND_NONE ||
 	       decoder->initial_seek_running);
@@ -171,7 +171,7 @@ decoder_command_finished(struct decoder *decoder)
 
 		decoder->initial_seek_running = false;
 		decoder->timestamp = dc->start_ms / 1000.;
-		decoder_unlock(dc);
+		dc->Unlock();
 		return;
 	}
 
@@ -192,7 +192,7 @@ decoder_command_finished(struct decoder *decoder)
 
 	dc->command = DECODE_COMMAND_NONE;
 	g_cond_signal(dc->client_cond);
-	decoder_unlock(dc);
+	dc->Unlock();
 }
 
 double decoder_seek_where(G_GNUC_UNUSED struct decoder * decoder)
@@ -377,9 +377,9 @@ decoder_data(struct decoder *decoder,
 	assert(dc->pipe != NULL);
 	assert(length % audio_format_frame_size(&dc->in_audio_format) == 0);
 
-	decoder_lock(dc);
+	dc->Lock();
 	cmd = decoder_get_virtual_command(decoder);
-	decoder_unlock(dc);
+	dc->Unlock();
 
 	if (cmd == DECODE_COMMAND_STOP || cmd == DECODE_COMMAND_SEEK ||
 	    length == 0)
@@ -564,6 +564,6 @@ decoder_mixramp(struct decoder *decoder,
 	struct decoder_control *dc = decoder->dc;
 	assert(dc != NULL);
 
-	dc_mixramp_start(dc, mixramp_start);
-	dc_mixramp_end(dc, mixramp_end);
+	dc->MixRampStart(mixramp_start);
+	dc->MixRampEnd(mixramp_end);
 }

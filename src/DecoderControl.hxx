@@ -130,6 +130,41 @@ struct decoder_control {
 	char *mixramp_end;
 	char *mixramp_prev_end;
 
+	decoder_control();
+	~decoder_control();
+
+	/**
+	 * Locks the object.
+	 */
+	void Lock() const {
+		g_mutex_lock(mutex);
+	}
+
+	/**
+	 * Unlocks the object.
+	 */
+	void Unlock() const {
+		g_mutex_unlock(mutex);
+	}
+
+	/**
+	 * Signals the object.  This function is only valid in the
+	 * player thread.  The object should be locked prior to
+	 * calling this function.
+	 */
+	void Signal() {
+		g_cond_signal(cond);
+	}
+
+	/**
+	 * Waits for a signal on the #decoder_control object.  This function
+	 * is only valid in the decoder thread.  The object must be locked
+	 * prior to calling this function.
+	 */
+	void Wait() {
+		g_cond_wait(cond, mutex);
+	}
+
 	/**
 	 * Waits for a signal from the decoder thread.  This object
 	 * must be locked prior to calling this function.  This method
@@ -138,211 +173,123 @@ struct decoder_control {
 	void WaitForDecoder() {
 		g_cond_wait(client_cond, mutex);
 	}
-};
 
-G_GNUC_MALLOC
-struct decoder_control *
-dc_new();
-
-void
-dc_free(struct decoder_control *dc);
-
-/**
- * Locks the #decoder_control object.
- */
-static inline void
-decoder_lock(struct decoder_control *dc)
-{
-	g_mutex_lock(dc->mutex);
-}
-
-/**
- * Unlocks the #decoder_control object.
- */
-static inline void
-decoder_unlock(struct decoder_control *dc)
-{
-	g_mutex_unlock(dc->mutex);
-}
-
-/**
- * Waits for a signal on the #decoder_control object.  This function
- * is only valid in the decoder thread.  The object must be locked
- * prior to calling this function.
- */
-static inline void
-decoder_wait(struct decoder_control *dc)
-{
-	g_cond_wait(dc->cond, dc->mutex);
-}
-
-/**
- * Signals the #decoder_control object.  This function is only valid
- * in the player thread.  The object should be locked prior to calling
- * this function.
- */
-static inline void
-decoder_signal(struct decoder_control *dc)
-{
-	g_cond_signal(dc->cond);
-}
-
-static inline bool
-decoder_is_idle(const struct decoder_control *dc)
-{
-	return dc->state == DECODE_STATE_STOP ||
-		dc->state == DECODE_STATE_ERROR;
-}
-
-static inline bool
-decoder_is_starting(const struct decoder_control *dc)
-{
-	return dc->state == DECODE_STATE_START;
-}
-
-static inline bool
-decoder_has_failed(const struct decoder_control *dc)
-{
-	assert(dc->command == DECODE_COMMAND_NONE);
-
-	return dc->state == DECODE_STATE_ERROR;
-}
-
-/**
- * Checks whether an error has occurred, and if so, returns a newly
- * allocated copy of the #GError object.
- *
- * Caller must lock the object.
- */
-static inline GError *
-dc_get_error(const struct decoder_control *dc)
-{
-	assert(dc != NULL);
-	assert(dc->command == DECODE_COMMAND_NONE);
-	assert(dc->state != DECODE_STATE_ERROR || dc->error != NULL);
-
-	return dc->state == DECODE_STATE_ERROR
-		? g_error_copy(dc->error)
-		: NULL;
-}
-
-/**
- * Like dc_get_error(), but locks and unlocks the object.
- */
-static inline GError *
-dc_lock_get_error(struct decoder_control *dc)
-{
-	decoder_lock(dc);
-	GError *error = dc_get_error(dc);
-	decoder_unlock(dc);
-	return error;
-}
-
-/**
- * Clear the error condition and free the #GError object (if any).
- *
- * Caller must lock the object.
- */
-static inline void
-dc_clear_error(struct decoder_control *dc)
-{
-	if (dc->state == DECODE_STATE_ERROR) {
-		g_error_free(dc->error);
-		dc->state = DECODE_STATE_STOP;
+	bool IsIdle() const {
+		return state == DECODE_STATE_STOP ||
+			state == DECODE_STATE_ERROR;
 	}
-}
 
-static inline bool
-decoder_lock_is_idle(struct decoder_control *dc)
-{
-	bool ret;
+	gcc_pure
+	bool LockIsIdle() const {
+		Lock();
+		bool result = IsIdle();
+		Unlock();
+		return result;
+	}
 
-	decoder_lock(dc);
-	ret = decoder_is_idle(dc);
-	decoder_unlock(dc);
+	bool IsStarting() const {
+		return state == DECODE_STATE_START;
+	}
 
-	return ret;
-}
+	gcc_pure
+	bool LockIsStarting() const {
+		Lock();
+		bool result = IsStarting();
+		Unlock();
+		return result;
+	}
 
-static inline bool
-decoder_lock_is_starting(struct decoder_control *dc)
-{
-	bool ret;
+	bool HasFailed() const {
+		assert(command == DECODE_COMMAND_NONE);
 
-	decoder_lock(dc);
-	ret = decoder_is_starting(dc);
-	decoder_unlock(dc);
+		return state == DECODE_STATE_ERROR;
+	}
 
-	return ret;
-}
+	gcc_pure
+	bool LockHasFailed() const {
+		Lock();
+		bool result = HasFailed();
+		Unlock();
+		return result;
+	}
 
-static inline bool
-decoder_lock_has_failed(struct decoder_control *dc)
-{
-	bool ret;
+	/**
+	 * Checks whether an error has occurred, and if so, returns a newly
+	 * allocated copy of the #GError object.
+	 *
+	 * Caller must lock the object.
+	 */
+	GError *GetError() const {
+		assert(command == DECODE_COMMAND_NONE);
+		assert(state != DECODE_STATE_ERROR || error != nullptr);
 
-	decoder_lock(dc);
-	ret = decoder_has_failed(dc);
-	decoder_unlock(dc);
+		return state == DECODE_STATE_ERROR
+			? g_error_copy(error)
+			: nullptr;
+	}
 
-	return ret;
-}
+	/**
+	 * Like dc_get_error(), but locks and unlocks the object.
+	 */
+	GError *LockGetError() const {
+		Lock();
+		GError *result = GetError();
+		Unlock();
+		return result;
+	}
 
-/**
- * Check if the specified song is currently being decoded.  If the
- * decoder is not running currently (or being started), then this
- * function returns false in any case.
- *
- * Caller must lock the object.
- */
-gcc_pure
-bool
-decoder_is_current_song(const struct decoder_control *dc,
-			const struct song *song);
+	/**
+	 * Clear the error condition and free the #GError object (if any).
+	 *
+	 * Caller must lock the object.
+	 */
+	void ClearError() {
+		if (state == DECODE_STATE_ERROR) {
+			g_error_free(error);
+			state = DECODE_STATE_STOP;
+		}
+	}
 
-gcc_pure
-static inline bool
-decoder_lock_is_current_song(struct decoder_control *dc,
-			     const struct song *song)
-{
-	decoder_lock(dc);
-	const bool result = decoder_is_current_song(dc, song);
-	decoder_unlock(dc);
-	return result;
-}
+	/**
+	 * Check if the specified song is currently being decoded.  If the
+	 * decoder is not running currently (or being started), then this
+	 * function returns false in any case.
+	 *
+	 * Caller must lock the object.
+	 */
+	gcc_pure
+	bool IsCurrentSong(const struct song *_song) const;
 
-/**
- * Start the decoder.
- *
- * @param the decoder
- * @param song the song to be decoded; the given instance will be
- * owned and freed by the decoder
- * @param start_ms see #decoder_control
- * @param end_ms see #decoder_control
- * @param pipe the pipe which receives the decoded chunks (owned by
- * the caller)
- */
-void
-dc_start(struct decoder_control *dc, struct song *song,
-	 unsigned start_ms, unsigned end_ms,
-	 struct music_buffer *buffer, struct music_pipe *pipe);
+	gcc_pure
+	bool LockIsCurrentSong(const struct song *_song) const {
+		Lock();
+		const bool result = IsCurrentSong(_song);
+		Unlock();
+		return result;
+	}
 
-void
-dc_stop(struct decoder_control *dc);
+	/**
+	 * Start the decoder.
+	 *
+	 * @param song the song to be decoded; the given instance will be
+	 * owned and freed by the decoder
+	 * @param start_ms see #decoder_control
+	 * @param end_ms see #decoder_control
+	 * @param pipe the pipe which receives the decoded chunks (owned by
+	 * the caller)
+	 */
+	void Start(struct song *song, unsigned start_ms, unsigned end_ms,
+		   music_buffer *buffer, music_pipe *pipe);
 
-bool
-dc_seek(struct decoder_control *dc, double where);
+	void Stop();
 
-void
-dc_quit(struct decoder_control *dc);
+	bool Seek(double where);
 
-void
-dc_mixramp_start(struct decoder_control *dc, char *mixramp_start);
+	void Quit();
 
-void
-dc_mixramp_end(struct decoder_control *dc, char *mixramp_end);
-
-void
-dc_mixramp_prev_end(struct decoder_control *dc, char *mixramp_prev_end);
+	void MixRampStart(char *_mixramp_start);
+	void MixRampEnd(char *_mixramp_end);
+	void MixRampPrevEnd(char *_mixramp_prev_end);
+};
 
 #endif

@@ -91,18 +91,18 @@ decoder_input_stream_open(struct decoder_control *dc, const char *uri)
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
 
-	decoder_lock(dc);
+	dc->Lock();
 
 	input_stream_update(is);
 	while (!is->ready &&
 	       dc->command != DECODE_COMMAND_STOP) {
-		decoder_wait(dc);
+		dc->Wait();
 
 		input_stream_update(is);
 	}
 
 	if (!input_stream_check(is, &error)) {
-		decoder_unlock(dc);
+		dc->Unlock();
 
 		g_warning("%s", error->message);
 		g_error_free(error);
@@ -110,7 +110,7 @@ decoder_input_stream_open(struct decoder_control *dc, const char *uri)
 		return NULL;
 	}
 
-	decoder_unlock(dc);
+	dc->Unlock();
 
 	return is;
 }
@@ -137,11 +137,11 @@ decoder_stream_decode(const struct decoder_plugin *plugin,
 	/* rewind the stream, so each plugin gets a fresh start */
 	input_stream_seek(input_stream, 0, SEEK_SET, NULL);
 
-	decoder_unlock(decoder->dc);
+	decoder->dc->Unlock();
 
 	decoder_plugin_stream_decode(plugin, decoder, input_stream);
 
-	decoder_lock(decoder->dc);
+	decoder->dc->Lock();
 
 	assert(decoder->dc->state == DECODE_STATE_START ||
 	       decoder->dc->state == DECODE_STATE_DECODE);
@@ -167,11 +167,11 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 	if (decoder->dc->command == DECODE_COMMAND_STOP)
 		return true;
 
-	decoder_unlock(decoder->dc);
+	decoder->dc->Unlock();
 
 	decoder_plugin_file_decode(plugin, decoder, path);
 
-	decoder_lock(decoder->dc);
+	decoder->dc->Lock();
 
 	assert(decoder->dc->state == DECODE_STATE_START ||
 	       decoder->dc->state == DECODE_STATE_DECODE);
@@ -280,15 +280,15 @@ decoder_run_stream(struct decoder *decoder, const char *uri)
 	struct input_stream *input_stream;
 	bool success;
 
-	decoder_unlock(dc);
+	dc->Unlock();
 
 	input_stream = decoder_input_stream_open(dc, uri);
 	if (input_stream == NULL) {
-		decoder_lock(dc);
+		dc->Lock();
 		return false;
 	}
 
-	decoder_lock(dc);
+	dc->Lock();
 
 	GSList *tried = NULL;
 
@@ -305,9 +305,9 @@ decoder_run_stream(struct decoder *decoder, const char *uri)
 
 	g_slist_free(tried);
 
-	decoder_unlock(dc);
+	dc->Unlock();
 	input_stream_close(input_stream);
-	decoder_lock(dc);
+	dc->Lock();
 
 	return success;
 }
@@ -337,18 +337,18 @@ decoder_run_file(struct decoder *decoder, const char *path_fs)
 	if (suffix == NULL)
 		return false;
 
-	decoder_unlock(dc);
+	dc->Unlock();
 
 	decoder_load_replay_gain(decoder, path_fs);
 
 	while ((plugin = decoder_plugin_from_suffix(suffix, plugin)) != NULL) {
 		if (plugin->file_decode != NULL) {
-			decoder_lock(dc);
+			dc->Lock();
 
 			if (decoder_file_decode(plugin, decoder, path_fs))
 				return true;
 
-			decoder_unlock(dc);
+			dc->Unlock();
 		} else if (plugin->stream_decode != NULL) {
 			struct input_stream *input_stream;
 			bool success;
@@ -357,23 +357,23 @@ decoder_run_file(struct decoder *decoder, const char *path_fs)
 			if (input_stream == NULL)
 				continue;
 
-			decoder_lock(dc);
+			dc->Lock();
 
 			success = decoder_stream_decode(plugin, decoder,
 							input_stream);
 
-			decoder_unlock(dc);
+			dc->Unlock();
 
 			input_stream_close(input_stream);
 
 			if (success) {
-				decoder_lock(dc);
+				dc->Lock();
 				return true;
 			}
 		}
 	}
 
-	decoder_lock(dc);
+	dc->Lock();
 	return false;
 }
 
@@ -394,14 +394,14 @@ decoder_run_song(struct decoder_control *dc,
 		? decoder_run_file(&decoder, uri)
 		: decoder_run_stream(&decoder, uri);
 
-	decoder_unlock(dc);
+	dc->Unlock();
 
 	/* flush the last chunk */
 
 	if (decoder.chunk != NULL)
 		decoder_flush_chunk(&decoder);
 
-	decoder_lock(dc);
+	dc->Lock();
 
 	if (ret)
 		dc->state = DECODE_STATE_STOP;
@@ -424,7 +424,7 @@ decoder_run_song(struct decoder_control *dc,
 static void
 decoder_run(struct decoder_control *dc)
 {
-	dc_clear_error(dc);
+	dc->ClearError();
 
 	const struct song *song = dc->song;
 	char *uri;
@@ -455,7 +455,7 @@ decoder_task(gpointer arg)
 {
 	struct decoder_control *dc = (struct decoder_control *)arg;
 
-	decoder_lock(dc);
+	dc->Lock();
 
 	do {
 		assert(dc->state == DECODE_STATE_STOP ||
@@ -463,8 +463,8 @@ decoder_task(gpointer arg)
 
 		switch (dc->command) {
 		case DECODE_COMMAND_START:
-			dc_mixramp_start(dc, NULL);
-			dc_mixramp_prev_end(dc, dc->mixramp_end);
+			dc->MixRampStart(nullptr);
+			dc->MixRampPrevEnd(dc->mixramp_end);
 			dc->mixramp_end = NULL; /* Don't free, it's copied above. */
 			dc->replay_gain_prev_db = dc->replay_gain_db;
 			dc->replay_gain_db = 0;
@@ -480,12 +480,12 @@ decoder_task(gpointer arg)
 			break;
 
 		case DECODE_COMMAND_NONE:
-			decoder_wait(dc);
+			dc->Wait();
 			break;
 		}
 	} while (dc->command != DECODE_COMMAND_NONE || !dc->quit);
 
-	decoder_unlock(dc);
+	dc->Unlock();
 
 	return NULL;
 }

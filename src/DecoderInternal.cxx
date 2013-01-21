@@ -57,7 +57,7 @@ need_chunks(struct decoder_control *dc, bool do_wait)
 		return dc->command;
 
 	if (do_wait) {
-		decoder_wait(dc);
+		dc->Wait();
 		g_cond_signal(dc->client_cond);
 
 		return dc->command;
@@ -89,9 +89,9 @@ decoder_get_chunk(struct decoder *decoder)
 			return decoder->chunk;
 		}
 
-		decoder_lock(dc);
+		dc->Lock();
 		cmd = need_chunks(dc, true);
-		decoder_unlock(dc);
+		dc->Unlock();
 	} while (cmd == DECODE_COMMAND_NONE);
 
 	return NULL;
