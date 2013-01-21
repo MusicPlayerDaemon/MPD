@@ -79,7 +79,6 @@ mpd_headers = \
 	src/decoder/pcm_decoder_plugin.h \
 	src/input_plugin.h \
 	src/input_stream.h \
-	src/input/ffmpeg_input_plugin.h \
 	src/input/despotify_input_plugin.h \
 	src/input/cdio_paranoia_input_plugin.h \
 	src/despotify_utils.h \
@@ -746,7 +745,8 @@ libinput_a_SOURCES += src/input/cdio_paranoia_input_plugin.c
 endif
 
 if HAVE_FFMPEG
-libinput_a_SOURCES += src/input/ffmpeg_input_plugin.c
+libinput_a_SOURCES += \
+	src/input/FfmpegInputPlugin.cxx src/input/FfmpegInputPlugin.hxx
 endif
 
 if ENABLE_MMS

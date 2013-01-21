@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,14 +17,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+/* necessary because libavutil/common.h uses UINT64_C */
+#define __STDC_CONSTANT_MACROS
+
 #include "config.h"
-#include "input/ffmpeg_input_plugin.h"
+#include "FfmpegInputPlugin.hxx"
 #include "input_internal.h"
 #include "input_plugin.h"
 
+extern "C" {
 #include <libavutil/avutil.h>
 #include <libavformat/avio.h>
 #include <libavformat/avformat.h>
+}
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "input_ffmpeg"
@@ -51,10 +56,10 @@ static inline bool
 input_ffmpeg_supported(void)
 {
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,0,0)
-	void *opaque = NULL;
-	return avio_enum_protocols(&opaque, 0) != NULL;
+	void *opaque = nullptr;
+	return avio_enum_protocols(&opaque, 0) != nullptr;
 #else
-	return av_protocol_next(NULL) != NULL;
+	return av_protocol_next(nullptr) != nullptr;
 #endif
 }
 
@@ -87,7 +92,7 @@ input_ffmpeg_open(const char *uri,
 	    !g_str_has_prefix(uri, "rtmp://") &&
 	    !g_str_has_prefix(uri, "rtmpt://") &&
 	    !g_str_has_prefix(uri, "rtmps://"))
-		return NULL;
+		return nullptr;
 
 	i = g_new(struct input_ffmpeg, 1);
 	input_stream_init(&i->base, &input_plugin_ffmpeg, uri,
@@ -104,7 +109,7 @@ input_ffmpeg_open(const char *uri,
 		g_free(i);
 		g_set_error(error_r, ffmpeg_quark(), ret,
 			    "libavformat failed to open the URI");
-		return NULL;
+		return nullptr;
 	}
 
 	i->eof = false;
@@ -134,9 +139,9 @@ input_ffmpeg_read(struct input_stream *is, void *ptr, size_t size,
 	struct input_ffmpeg *i = (struct input_ffmpeg *)is;
 
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,0,0)
-	int ret = avio_read(i->h, ptr, size);
+	int ret = avio_read(i->h, (unsigned char *)ptr, size);
 #else
-	int ret = url_read(i->h, ptr, size);
+	int ret = url_read(i->h, (unsigned char *)ptr, size);
 #endif
 	if (ret <= 0) {
 		if (ret < 0)
@@ -194,11 +199,16 @@ input_ffmpeg_seek(struct input_stream *is, goffset offset, int whence,
 }
 
 const struct input_plugin input_plugin_ffmpeg = {
-	.name = "ffmpeg",
-	.init = input_ffmpeg_init,
-	.open = input_ffmpeg_open,
-	.close = input_ffmpeg_close,
-	.read = input_ffmpeg_read,
-	.eof = input_ffmpeg_eof,
-	.seek = input_ffmpeg_seek,
+	"ffmpeg",
+	input_ffmpeg_init,
+	nullptr,
+	input_ffmpeg_open,
+	input_ffmpeg_close,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	input_ffmpeg_read,
+	input_ffmpeg_eof,
+	input_ffmpeg_seek,
 };

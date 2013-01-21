@@ -34,7 +34,7 @@
 #endif
 
 #ifdef HAVE_FFMPEG
-#include "input/ffmpeg_input_plugin.h"
+#include "input/FfmpegInputPlugin.hxx"
 #endif
 
 #ifdef ENABLE_MMS
