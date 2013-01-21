@@ -80,7 +80,6 @@ mpd_headers = \
 	src/input_plugin.h \
 	src/input_stream.h \
 	src/input/ffmpeg_input_plugin.h \
-	src/input/rewind_input_plugin.h \
 	src/input/despotify_input_plugin.h \
 	src/input/cdio_paranoia_input_plugin.h \
 	src/despotify_utils.h \
@@ -711,7 +710,7 @@ libinput_a_SOURCES = \
 	src/InputRegistry.cxx src/InputRegistry.hxx \
 	src/InputStream.cxx \
 	src/input_internal.c src/input_internal.h \
-	src/input/rewind_input_plugin.c \
+	src/input/RewindInputPlugin.cxx src/input/RewindInputPlugin.hxx \
 	src/input/FileInputPlugin.cxx src/input/FileInputPlugin.hxx
 
 libinput_a_CPPFLAGS = $(AM_CPPFLAGS) \

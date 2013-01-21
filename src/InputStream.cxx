@@ -21,9 +21,9 @@
 #include "input_stream.h"
 #include "InputRegistry.hxx"
 #include "input_plugin.h"
+#include "input/RewindInputPlugin.hxx"
 
 extern "C" {
-#include "input/rewind_input_plugin.h"
 #include "uri.h"
 }
 

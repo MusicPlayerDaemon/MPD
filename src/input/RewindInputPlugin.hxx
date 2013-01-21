@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,8 +24,8 @@
  * each decoder plugin peek a portion from the stream).
  */
 
-#ifndef MPD_INPUT_REWIND_H
-#define MPD_INPUT_REWIND_H
+#ifndef MPD_INPUT_REWIND_HXX
+#define MPD_INPUT_REWIND_HXX
 
 #include "check.h"
 
