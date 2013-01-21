@@ -63,8 +63,10 @@ input_archive_open(const char *pathname,
 	}
 
 	file = archive_file_open(arplug, archive, error_r);
-	if (file == NULL)
+	if (file == NULL) {
+		g_free(pname);
 		return NULL;
+	}
 
 	//setup fileops
 	is = archive_file_open_stream(file, filename, mutex, cond,
