@@ -118,23 +118,23 @@ struct despotify_session *mpd_despotify_get_session(void)
 		g_debug("disabling despotify because account is not configured");
 		return NULL;
 	}
-		if (!despotify_init()) {
+	if (!despotify_init()) {
 		g_debug("Can't initialize despotify\n");
 		return false;
 	}
 
 	g_session = despotify_init_client(callback, NULL,
-			high_bitrate, true);
+					  high_bitrate, true);
 	if (!g_session) {
 		g_debug("Can't initialize despotify client\n");
 		return false;
 	}
 
-    if (!despotify_authenticate(g_session, user, passwd)) {
-    	g_debug("Can't authenticate despotify session\n");
-    	despotify_exit(g_session);
-    	return false;
-    }
+	if (!despotify_authenticate(g_session, user, passwd)) {
+		g_debug("Can't authenticate despotify session\n");
+		despotify_exit(g_session);
+		return false;
+	}
 
 	return g_session;
 }
