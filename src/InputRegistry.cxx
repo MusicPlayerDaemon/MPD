@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "InputRegistry.hxx"
-#include "input/file_input_plugin.h"
+#include "input/FileInputPlugin.hxx"
 
 #ifdef ENABLE_ARCHIVE
 #include "input/archive_input_plugin.h"
@@ -38,7 +38,7 @@
 #endif
 
 #ifdef ENABLE_MMS
-#include "input/mms_input_plugin.h"
+#include "input/MmsInputPlugin.hxx"
 #endif
 
 #ifdef ENABLE_CDIO_PARANOIA

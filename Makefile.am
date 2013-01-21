@@ -79,10 +79,8 @@ mpd_headers = \
 	src/decoder/pcm_decoder_plugin.h \
 	src/input_plugin.h \
 	src/input_stream.h \
-	src/input/file_input_plugin.h \
 	src/input/ffmpeg_input_plugin.h \
 	src/input/rewind_input_plugin.h \
-	src/input/mms_input_plugin.h \
 	src/input/despotify_input_plugin.h \
 	src/input/cdio_paranoia_input_plugin.h \
 	src/despotify_utils.h \
@@ -714,7 +712,7 @@ libinput_a_SOURCES = \
 	src/InputStream.cxx \
 	src/input_internal.c src/input_internal.h \
 	src/input/rewind_input_plugin.c \
-	src/input/file_input_plugin.c
+	src/input/FileInputPlugin.cxx src/input/FileInputPlugin.hxx
 
 libinput_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(CURL_CFLAGS) \
@@ -753,7 +751,8 @@ libinput_a_SOURCES += src/input/ffmpeg_input_plugin.c
 endif
 
 if ENABLE_MMS
-libinput_a_SOURCES += src/input/mms_input_plugin.c
+libinput_a_SOURCES += \
+	src/input/MmsInputPlugin.cxx src/input/MmsInputPlugin.hxx
 endif
 
 if ENABLE_DESPOTIFY

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "input/file_input_plugin.h"
+#include "FileInputPlugin.hxx"
 #include "input_internal.h"
 #include "input_plugin.h"
 #include "fd_util.h"
@@ -34,10 +34,26 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "input_file"
 
-struct file_input_stream {
+struct FileInputStream {
 	struct input_stream base;
 
 	int fd;
+
+	FileInputStream(const char *path, int _fd, off_t size,
+			GMutex *mutex, GCond *cond)
+		:fd(_fd) {
+		input_stream_init(&base, &input_plugin_file, path,
+				  mutex, cond);
+
+		base.size = size;
+		base.seekable = true;
+		base.ready = true;
+	}
+
+	~FileInputStream() {
+		close(fd);
+		input_stream_deinit(&base);
+	}
 };
 
 static struct input_stream *
@@ -47,10 +63,9 @@ input_file_open(const char *filename,
 {
 	int fd, ret;
 	struct stat st;
-	struct file_input_stream *fis;
 
 	if (!g_path_is_absolute(filename))
-		return NULL;
+		return nullptr;
 
 	fd = open_cloexec(filename, O_RDONLY|O_BINARY, 0);
 	if (fd < 0) {
@@ -58,7 +73,7 @@ input_file_open(const char *filename,
 			g_set_error(error_r, errno_quark(), errno,
 				    "Failed to open \"%s\": %s",
 				    filename, g_strerror(errno));
-		return NULL;
+		return nullptr;
 	}
 
 	ret = fstat(fd, &st);
@@ -67,30 +82,22 @@ input_file_open(const char *filename,
 			    "Failed to stat \"%s\": %s",
 			    filename, g_strerror(errno));
 		close(fd);
-		return NULL;
+		return nullptr;
 	}
 
 	if (!S_ISREG(st.st_mode)) {
 		g_set_error(error_r, errno_quark(), 0,
 			    "Not a regular file: %s", filename);
 		close(fd);
-		return NULL;
+		return nullptr;
 	}
 
 #ifdef POSIX_FADV_SEQUENTIAL
 	posix_fadvise(fd, (off_t)0, st.st_size, POSIX_FADV_SEQUENTIAL);
 #endif
 
-	fis = g_new(struct file_input_stream, 1);
-	input_stream_init(&fis->base, &input_plugin_file, filename,
-			  mutex, cond);
-
-	fis->base.size = st.st_size;
-	fis->base.seekable = true;
-	fis->base.ready = true;
-
-	fis->fd = fd;
-
+	FileInputStream *fis = new FileInputStream(filename, fd, st.st_size,
+						   mutex, cond);
 	return &fis->base;
 }
 
@@ -98,7 +105,7 @@ static bool
 input_file_seek(struct input_stream *is, goffset offset, int whence,
 		GError **error_r)
 {
-	struct file_input_stream *fis = (struct file_input_stream *)is;
+	FileInputStream *fis = (FileInputStream *)is;
 
 	offset = (goffset)lseek(fis->fd, (off_t)offset, whence);
 	if (offset < 0) {
@@ -115,7 +122,7 @@ static size_t
 input_file_read(struct input_stream *is, void *ptr, size_t size,
 		GError **error_r)
 {
-	struct file_input_stream *fis = (struct file_input_stream *)is;
+	FileInputStream *fis = (FileInputStream *)is;
 	ssize_t nbytes;
 
 	nbytes = read(fis->fd, ptr, size);
@@ -132,11 +139,9 @@ input_file_read(struct input_stream *is, void *ptr, size_t size,
 static void
 input_file_close(struct input_stream *is)
 {
-	struct file_input_stream *fis = (struct file_input_stream *)is;
+	FileInputStream *fis = (FileInputStream *)is;
 
-	close(fis->fd);
-	input_stream_deinit(&fis->base);
-	g_free(fis);
+	delete fis;
 }
 
 static bool
@@ -146,10 +151,16 @@ input_file_eof(struct input_stream *is)
 }
 
 const struct input_plugin input_plugin_file = {
-	.name = "file",
-	.open = input_file_open,
-	.close = input_file_close,
-	.read = input_file_read,
-	.eof = input_file_eof,
-	.seek = input_file_seek,
+	"file",
+	nullptr,
+	nullptr,
+	input_file_open,
+	input_file_close,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	input_file_read,
+	input_file_eof,
+	input_file_seek,
 };

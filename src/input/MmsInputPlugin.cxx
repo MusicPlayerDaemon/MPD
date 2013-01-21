@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "input/mms_input_plugin.h"
+#include "MmsInputPlugin.hxx"
 #include "input_internal.h"
 #include "input_plugin.h"
 
@@ -31,12 +31,30 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "input_mms"
 
-struct input_mms {
+struct MmsInputStream {
 	struct input_stream base;
 
 	mmsx_t *mms;
 
 	bool eof;
+
+	MmsInputStream(const char *uri,
+		       GMutex *mutex, GCond *cond,
+		       mmsx_t *_mms)
+		:mms(_mms), eof(false) {
+		input_stream_init(&base, &input_plugin_mms, uri, mutex, cond);
+
+		/* XX is this correct?  at least this selects the ffmpeg
+		   decoder, which seems to work fine*/
+		base.mime = g_strdup("audio/x-ms-wma");
+
+		base.ready = true;
+	}
+
+	~MmsInputStream() {
+		mmsx_close(mms);
+		input_stream_deinit(&base);
+	}
 };
 
 static inline GQuark
@@ -50,33 +68,19 @@ input_mms_open(const char *url,
 	       GMutex *mutex, GCond *cond,
 	       GError **error_r)
 {
-	struct input_mms *m;
-
 	if (!g_str_has_prefix(url, "mms://") &&
 	    !g_str_has_prefix(url, "mmsh://") &&
 	    !g_str_has_prefix(url, "mmst://") &&
 	    !g_str_has_prefix(url, "mmsu://"))
-		return NULL;
+		return nullptr;
 
-	m = g_new(struct input_mms, 1);
-	input_stream_init(&m->base, &input_plugin_mms, url,
-			  mutex, cond);
-
-	m->mms = mmsx_connect(NULL, NULL, url, 128 * 1024);
-	if (m->mms == NULL) {
-		g_free(m);
+	const auto mms = mmsx_connect(nullptr, nullptr, url, 128 * 1024);
+	if (mms == nullptr) {
 		g_set_error(error_r, mms_quark(), 0, "mmsx_connect() failed");
-		return NULL;
+		return nullptr;
 	}
 
-	m->eof = false;
-
-	/* XX is this correct?  at least this selects the ffmpeg
-	   decoder, which seems to work fine*/
-	m->base.mime = g_strdup("audio/x-ms-wma");
-
-	m->base.ready = true;
-
+	auto m = new MmsInputStream(url, mutex, cond, mms);
 	return &m->base;
 }
 
@@ -84,10 +88,10 @@ static size_t
 input_mms_read(struct input_stream *is, void *ptr, size_t size,
 	       GError **error_r)
 {
-	struct input_mms *m = (struct input_mms *)is;
+	MmsInputStream *m = (MmsInputStream *)is;
 	int ret;
 
-	ret = mmsx_read(NULL, m->mms, ptr, size);
+	ret = mmsx_read(nullptr, m->mms, (char *)ptr, size);
 	if (ret <= 0) {
 		if (ret < 0) {
 			g_set_error(error_r, mms_quark(), errno,
@@ -107,17 +111,15 @@ input_mms_read(struct input_stream *is, void *ptr, size_t size,
 static void
 input_mms_close(struct input_stream *is)
 {
-	struct input_mms *m = (struct input_mms *)is;
+	MmsInputStream *m = (MmsInputStream *)is;
 
-	mmsx_close(m->mms);
-	input_stream_deinit(&m->base);
-	g_free(m);
+	delete m;
 }
 
 static bool
 input_mms_eof(struct input_stream *is)
 {
-	struct input_mms *m = (struct input_mms *)is;
+	MmsInputStream *m = (MmsInputStream *)is;
 
 	return m->eof;
 }
@@ -131,10 +133,16 @@ input_mms_seek(G_GNUC_UNUSED struct input_stream *is,
 }
 
 const struct input_plugin input_plugin_mms = {
-	.name = "mms",
-	.open = input_mms_open,
-	.close = input_mms_close,
-	.read = input_mms_read,
-	.eof = input_mms_eof,
-	.seek = input_mms_seek,
+	"mms",
+	nullptr,
+	nullptr,
+	input_mms_open,
+	input_mms_close,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	input_mms_read,
+	input_mms_eof,
+	input_mms_seek,
 };
