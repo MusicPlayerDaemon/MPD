@@ -182,5 +182,4 @@ void update_global_init(void)
 void update_global_finish(void)
 {
 	update_walk_global_finish();
-	update_remove_global_finish();
 }

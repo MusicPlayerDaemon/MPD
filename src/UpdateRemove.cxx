@@ -22,6 +22,8 @@
 #include "Playlist.hxx"
 #include "Partition.hxx"
 #include "GlobalEvents.hxx"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 
 #include "song.h"
 #include "Main.hxx"
@@ -37,8 +39,8 @@
 
 static const struct song *removed_song;
 
-static GMutex *remove_mutex;
-static GCond *remove_cond;
+static Mutex remove_mutex;
+static Cond remove_cond;
 
 /**
  * Safely remove a song from the database.  This must be done in the
@@ -64,26 +66,16 @@ song_remove_event(void)
 	global_partition->DeleteSong(*removed_song);
 
 	/* clear "removed_song" and send signal to update thread */
-	g_mutex_lock(remove_mutex);
+	remove_mutex.lock();
 	removed_song = NULL;
-	g_cond_signal(remove_cond);
-	g_mutex_unlock(remove_mutex);
+	remove_cond.signal();
+	remove_mutex.unlock();
 }
 
 void
 update_remove_global_init(void)
 {
-	remove_mutex = g_mutex_new();
-	remove_cond = g_cond_new();
-
 	GlobalEvents::Register(GlobalEvents::DELETE, song_remove_event);
-}
-
-void
-update_remove_global_finish(void)
-{
-	g_mutex_free(remove_mutex);
-	g_cond_free(remove_cond);
 }
 
 void
@@ -95,10 +87,10 @@ update_remove_song(const struct song *song)
 
 	GlobalEvents::Emit(GlobalEvents::DELETE);
 
-	g_mutex_lock(remove_mutex);
+	remove_mutex.lock();
 
 	while (removed_song != NULL)
-		g_cond_wait(remove_cond, remove_mutex);
+		remove_cond.wait(remove_mutex);
 
-	g_mutex_unlock(remove_mutex);
+	remove_mutex.unlock();
 }

@@ -27,9 +27,6 @@ struct song;
 void
 update_remove_global_init(void);
 
-void
-update_remove_global_finish(void);
-
 /**
  * Sends a signal to the main thread which will in turn remove the
  * song: from the sticker database and from the playlist.  This
