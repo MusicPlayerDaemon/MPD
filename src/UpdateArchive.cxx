@@ -24,7 +24,7 @@
 #include "Directory.hxx"
 #include "song.h"
 #include "Mapper.hxx"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 
 extern "C" {
 #include "archive_list.h"

@@ -26,7 +26,7 @@
 #include "song.h"
 #include "decoder_plugin.h"
 #include "Mapper.hxx"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 
 extern "C" {
 #include "tag_handler.h"

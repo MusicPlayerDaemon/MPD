@@ -26,7 +26,7 @@
 #include "song.h"
 #include "mpd_error.h"
 #include "Mapper.hxx"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 #include "decoder_api.h"
 #include "tag.h"
 #include "input_stream.h"

@@ -21,7 +21,7 @@
 #include "UpdateIO.hxx"
 #include "Directory.hxx"
 #include "Mapper.hxx"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 #include "glib_compat.h"
 
 #include <glib.h>

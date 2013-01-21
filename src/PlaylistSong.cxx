@@ -24,7 +24,7 @@
 #include "DatabaseGlue.hxx"
 #include "ls.hxx"
 #include "tag.h"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 
 extern "C" {
 #include "song.h"

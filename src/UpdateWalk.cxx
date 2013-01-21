@@ -31,7 +31,7 @@
 #include "Mapper.hxx"
 #include "ExcludeList.hxx"
 #include "conf.h"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 
 extern "C" {
 #include "uri.h"

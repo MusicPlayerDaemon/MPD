@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 #include "conf.h"
 #include "mpd_error.h"
 #include "gcc.h"

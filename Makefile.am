@@ -151,6 +151,7 @@ src_mpd_SOURCES = \
 	src/thread/PosixCond.hxx \
 	src/thread/WindowsCond.hxx \
 	src/thread/GLibCond.hxx \
+	src/fs/Path.cxx src/fs/Path.hxx \
 	src/fs/FileSystem.cxx src/fs/FileSystem.hxx \
 	src/fs/DirectoryReader.hxx \
 	src/glib_socket.h \
@@ -239,7 +240,6 @@ src_mpd_SOURCES = \
 	src/MusicBuffer.cxx src/MusicBuffer.hxx \
 	src/MusicPipe.cxx src/MusicPipe.hxx \
 	src/MusicChunk.cxx src/MusicChunk.hxx \
-	src/Path.cxx src/Path.hxx \
 	src/Mapper.cxx src/Mapper.hxx \
 	src/page.c \
 	src/Partition.hxx \
@@ -1060,7 +1060,7 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/DatabaseLock.cxx src/DatabaseSave.cxx \
 	src/Song.cxx src/song_sort.c src/SongSave.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
-	src/Path.cxx \
+	src/fs/Path.cxx \
 	src/SongFilter.cxx \
 	src/TextFile.cxx \
 	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c

@@ -25,7 +25,7 @@
 #include "Mapper.hxx"
 #include "Directory.hxx"
 #include "song.h"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 
 #include <glib.h>
 

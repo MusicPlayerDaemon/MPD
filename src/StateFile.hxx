@@ -21,7 +21,7 @@
 #define MPD_STATE_FILE_HXX
 
 #include "event/TimeoutMonitor.hxx"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 #include "gcc.h"
 
 #include <string>

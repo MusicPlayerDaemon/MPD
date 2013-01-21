@@ -23,7 +23,7 @@
 #include "InotifyQueue.hxx"
 #include "Mapper.hxx"
 #include "Main.hxx"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 
 #include <glib.h>
 #include <assert.h>

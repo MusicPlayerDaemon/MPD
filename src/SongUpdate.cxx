@@ -26,7 +26,7 @@ extern "C" {
 
 #include "Directory.hxx"
 #include "Mapper.hxx"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 #include "tag.h"
 #include "input_stream.h"
 

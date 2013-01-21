@@ -26,7 +26,7 @@
 #include "TextFile.hxx"
 #include "TagInternal.hxx"
 #include "tag.h"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 
 #include <glib.h>
 

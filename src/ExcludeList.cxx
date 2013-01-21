@@ -24,7 +24,7 @@
 
 #include "config.h"
 #include "ExcludeList.hxx"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 
 #include <assert.h>
 #include <string.h>

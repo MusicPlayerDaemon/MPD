@@ -21,7 +21,7 @@
 #define MPD_SIMPLE_DATABASE_PLUGIN_HXX
 
 #include "DatabasePlugin.hxx"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 #include "gcc.h"
 
 #include <cassert>

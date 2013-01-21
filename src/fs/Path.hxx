@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PATH_HXX
-#define MPD_PATH_HXX
+#ifndef MPD_FS_PATH_HXX
+#define MPD_FS_PATH_HXX
 
 #include "check.h"
 #include "gcc.h"

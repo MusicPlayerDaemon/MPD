@@ -21,7 +21,7 @@
 #include "PlaylistMapper.hxx"
 #include "PlaylistFile.hxx"
 #include "Mapper.hxx"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 
 extern "C" {
 #include "playlist_list.h"

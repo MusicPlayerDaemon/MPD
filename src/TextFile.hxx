@@ -21,7 +21,7 @@
 #define MPD_TEXT_FILE_HXX
 
 #include "gcc.h"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 
 #include <glib.h>
 

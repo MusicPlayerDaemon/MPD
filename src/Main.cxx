@@ -47,7 +47,7 @@
 #include "InputInit.hxx"
 #include "event/Loop.hxx"
 #include "IOThread.hxx"
-#include "Path.hxx"
+#include "fs/Path.hxx"
 
 extern "C" {
 #include "daemon.h"
