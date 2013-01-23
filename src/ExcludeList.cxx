@@ -37,10 +37,10 @@ ExcludeList::LoadFile(const Path &path_fs)
 	FILE *file = fopen(path_fs.c_str(), "r");
 	if (file == NULL) {
 		if (errno != ENOENT) {
-			char *path_utf8 = path_fs.ToUTF8();
+			const char *msg = g_strerror(errno);
+			const auto path_utf8 = path_fs.ToUTF8();
 			g_debug("Failed to open %s: %s",
-				path_utf8, g_strerror(errno));
-			g_free(path_utf8);
+				path_utf8.c_str(), msg);
 		}
 
 		return false;

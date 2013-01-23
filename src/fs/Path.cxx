@@ -38,6 +38,18 @@
 
 static char *fs_charset;
 
+std::string Path::ToUTF8() const
+{
+	if (value == nullptr)
+		return std::string();
+	char *path_utf8 = fs_charset_to_utf8(value);
+	if (path_utf8 == nullptr)
+		return std::string();
+	std::string result = value;
+	g_free(path_utf8);
+	return value;
+}
+
 char *
 fs_charset_to_utf8(const char *path_fs)
 {

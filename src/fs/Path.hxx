@@ -26,6 +26,7 @@
 #include <glib.h>
 
 #include <algorithm>
+#include <string>
 
 #include <assert.h>
 #include <string.h>
@@ -250,15 +251,11 @@ public:
 	}
 
 	/**
-	 * Convert the path to UTF-8.  The caller is responsible for
-	 * freeing the return value with g_free().  Returns nullptr on
-	 * error.
+	 * Convert the path to UTF-8.
+	 * Returns empty string on error or if this instance is "nulled"
+	 * (#IsNull returns true).
 	 */
-	char *ToUTF8() const {
-		return value != nullptr
-			? fs_charset_to_utf8(value)
-			: nullptr;
-	}
+	std::string ToUTF8() const;
 };
 
 #endif
