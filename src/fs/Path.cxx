@@ -75,8 +75,7 @@ std::string Path::ToUTF8(const_pointer path_fs)
 	return std::string(path_utf8, sizeof(path_utf8) - out_left);
 }
 
-char *
-utf8_to_fs_charset(const char *path_utf8)
+Path Path::FromUTF8(const char *path_utf8)
 {
 	gchar *p;
 
@@ -87,7 +86,7 @@ utf8_to_fs_charset(const char *path_utf8)
 		/* fall back to UTF-8 */
 		p = g_strdup(path_utf8);
 
-	return p;
+	return Path(Donate(), p);
 }
 
 gcc_pure

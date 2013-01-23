@@ -48,13 +48,6 @@ void path_global_init();
 
 void path_global_finish();
 
-/**
- * Converts a file name in UTF-8 to the filesystem charset.  Returns a
- * duplicate of the UTF-8 string on failure.
- */
-char *
-utf8_to_fs_charset(const char *path_utf8);
-
 const char *path_get_fs_charset();
 
 /**
@@ -157,14 +150,13 @@ public:
 
 	/**
 	 * Convert a UTF-8 C string to a #Path instance.
+	 * Returns a duplicate of the UTF-8 string on failure.
 	 *
 	 * TODO: return a "nulled" instance on error and add checks to
 	 * all callers
 	 */
 	gcc_pure
-	static Path FromUTF8(const char *utf8) {
-		return Path(Donate(), utf8_to_fs_charset(utf8));
-	}
+	static Path FromUTF8(const char *path_utf8);
 
 	/**
 	 * Convert the path to UTF-8.
