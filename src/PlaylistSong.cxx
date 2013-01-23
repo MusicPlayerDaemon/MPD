@@ -65,18 +65,15 @@ apply_song_metadata(struct song *dest, const struct song *src)
 		return dest;
 
 	if (song_in_database(dest)) {
-		char *path_fs = map_song_fs(dest).Steal();
-		if (path_fs == nullptr)
+		const Path &path_fs = map_song_fs(dest);
+		if (path_fs.IsNull())
 			return dest;
 
-		char *path_utf8 = fs_charset_to_utf8(path_fs);
-		if (path_utf8 != NULL)
-			g_free(path_fs);
-		else
-			path_utf8 = path_fs;
+		std::string path_utf8 = path_fs.ToUTF8();
+		if (path_utf8.empty())
+			path_utf8 = path_fs.c_str();
 
-		tmp = song_file_new(path_utf8, NULL);
-		g_free(path_utf8);
+		tmp = song_file_new(path_utf8.c_str(), NULL);
 
 		merge_song_metadata(tmp, dest, src);
 	} else {

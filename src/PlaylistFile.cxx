@@ -163,13 +163,12 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 
 	char *name = g_strndup(name_fs,
 			       name_length + 1 - sizeof(PLAYLIST_FILE_SUFFIX));
-	char *name_utf8 = fs_charset_to_utf8(name);
+	std::string name_utf8 = Path::ToUTF8(name);
 	g_free(name);
-	if (name_utf8 == NULL)
+	if (name_utf8.empty())
 		return false;
 
-	info.name = name_utf8;
-	g_free(name_utf8);
+	info.name = std::move(name_utf8);
 	info.mtime = st.st_mtime;
 	return true;
 }

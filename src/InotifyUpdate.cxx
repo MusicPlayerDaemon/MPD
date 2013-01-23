@@ -289,14 +289,14 @@ mpd_inotify_callback(int wd, unsigned mask,
 	     (mask & (IN_CREATE|IN_ISDIR)) == (IN_CREATE|IN_ISDIR))) {
 		/* a file was changed, or a directory was
 		   moved/deleted: queue a database update */
-		char *uri_utf8 = uri_fs != NULL
-			? fs_charset_to_utf8(uri_fs)
-			: g_strdup("");
 
-		if (uri_utf8 != NULL) {
-			inotify_queue->Enqueue(uri_utf8);
-			g_free(uri_utf8);
+		if (uri_fs != nullptr) {
+			const std::string uri_utf8 = Path::ToUTF8(uri_fs);
+			if (!uri_utf8.empty())
+				inotify_queue->Enqueue(uri_utf8.c_str());
 		}
+		else
+			inotify_queue->Enqueue("");
 	}
 
 	g_free(uri_fs);

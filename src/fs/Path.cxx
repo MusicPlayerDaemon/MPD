@@ -48,24 +48,31 @@
 
 static char *fs_charset;
 
-std::string Path::ToUTF8() const
+std::string Path::ToUTF8(const_pointer path_fs)
 {
-	if (value == nullptr)
+	if (path_fs == nullptr)
 		return std::string();
-	char *path_utf8 = fs_charset_to_utf8(value);
-	if (path_utf8 == nullptr)
-		return std::string();
-	std::string result = value;
-	g_free(path_utf8);
-	return value;
-}
 
-char *
-fs_charset_to_utf8(const char *path_fs)
-{
-	return g_convert(path_fs, -1,
-			 "utf-8", fs_charset,
-			 NULL, NULL, NULL);
+	GIConv conv = g_iconv_open("utf-8", fs_charset);
+	if (conv == reinterpret_cast<GIConv>(-1))
+		return std::string();
+
+	// g_iconv() does not need nul-terminator,
+	// std::string could be created without it too.
+	char path_utf8[MPD_PATH_MAX_UTF8 - 1];
+	char *in = const_cast<char *>(path_fs);
+	char *out = path_utf8;
+	size_t in_left = strlen(path_fs);
+	size_t out_left = sizeof(path_utf8);
+
+	size_t ret = g_iconv(conv, &in, &in_left, &out, &out_left);
+
+	g_iconv_close(conv);
+
+	if (ret == static_cast<size_t>(-1) || in_left > 0)
+		return std::string();
+
+	return std::string(path_utf8, sizeof(path_utf8) - out_left);
 }
 
 char *

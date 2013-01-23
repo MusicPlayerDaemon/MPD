@@ -49,13 +49,6 @@ void path_global_init();
 void path_global_finish();
 
 /**
- * Converts a file name in the filesystem charset to UTF-8.  Returns
- * NULL on failure.
- */
-char *
-fs_charset_to_utf8(const char *path_fs);
-
-/**
  * Converts a file name in UTF-8 to the filesystem charset.  Returns a
  * duplicate of the UTF-8 string on failure.
  */
@@ -174,6 +167,13 @@ public:
 	}
 
 	/**
+	 * Convert the path to UTF-8.
+	 * Returns empty string on error or if #path_fs is null pointer.
+	 */
+	gcc_pure
+	static std::string ToUTF8(const_pointer path_fs);
+
+	/**
 	 * Copy a #Path object.
 	 */
 	Path &operator=(const Path &other) {
@@ -257,7 +257,9 @@ public:
 	 * Returns empty string on error or if this instance is "nulled"
 	 * (#IsNull returns true).
 	 */
-	std::string ToUTF8() const;
+	std::string ToUTF8() const {
+		return ToUTF8(value);
+	}
 };
 
 #endif

@@ -373,28 +373,25 @@ update_directory(Directory *directory, const struct stat *st)
 
 	struct dirent *ent;
 	while ((ent = readdir(dir))) {
-		char *utf8;
+		std::string utf8;
 		struct stat st2;
 
 		if (skip_path(ent->d_name) || exclude_list.Check(ent->d_name))
 			continue;
 
-		utf8 = fs_charset_to_utf8(ent->d_name);
-		if (utf8 == NULL)
+		utf8 = Path::ToUTF8(ent->d_name);
+		if (utf8.empty())
 			continue;
 
-		if (skip_symlink(directory, utf8)) {
-			modified |= delete_name_in(directory, utf8);
-			g_free(utf8);
+		if (skip_symlink(directory, utf8.c_str())) {
+			modified |= delete_name_in(directory, utf8.c_str());
 			continue;
 		}
 
-		if (stat_directory_child(directory, utf8, &st2) == 0)
-			update_directory_child(directory, utf8, &st2);
+		if (stat_directory_child(directory, utf8.c_str(), &st2) == 0)
+			update_directory_child(directory, utf8.c_str(), &st2);
 		else
-			modified |= delete_name_in(directory, utf8);
-
-		g_free(utf8);
+			modified |= delete_name_in(directory, utf8.c_str());
 	}
 
 	closedir(dir);
