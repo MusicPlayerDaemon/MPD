@@ -84,13 +84,13 @@ spl_valid_name(const char *name_utf8)
 static const char *
 spl_map(GError **error_r)
 {
-	const char *path_fs = map_spl_path();
-	if (path_fs == NULL)
+	const Path &path_fs = map_spl_path();
+	if (path_fs.IsNull())
 		g_set_error_literal(error_r, playlist_quark(),
 				    PLAYLIST_RESULT_DISABLED,
 				    "Stored playlists are disabled");
 
-	return path_fs;
+	return path_fs.c_str();
 }
 
 static bool

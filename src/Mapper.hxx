@@ -49,7 +49,7 @@ mapper_get_music_directory_utf8(void);
  * filesystem character set.
  */
 gcc_const
-const char *
+const Path &
 mapper_get_music_directory_fs(void);
 
 /**
@@ -128,7 +128,7 @@ map_fs_to_utf8(const char *path_fs);
  * Returns the playlist directory.
  */
 gcc_const
-const char *
+const Path &
 map_spl_path(void);
 
 /**

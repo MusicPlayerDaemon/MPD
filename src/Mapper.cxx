@@ -26,6 +26,8 @@
 #include "Directory.hxx"
 #include "song.h"
 #include "fs/Path.hxx"
+#include "fs/FileSystem.hxx"
+#include "fs/DirectoryReader.hxx"
 
 #include <glib.h>
 
@@ -46,14 +48,14 @@ static size_t music_dir_utf8_length;
  * The absolute path of the music directory encoded in the filesystem
  * character set.
  */
-static char *music_dir_fs;
+static Path music_dir_fs = Path::Null();
 static size_t music_dir_fs_length;
 
 /**
  * The absolute path of the playlist directory encoded in the
  * filesystem character set.
  */
-static char *playlist_dir_fs;
+static Path playlist_dir_fs = Path::Null();
 
 /**
  * Duplicate a string, chop all trailing slashes.
@@ -70,33 +72,30 @@ strdup_chop_slash(const char *path_fs)
 }
 
 static void
-check_directory(const char *path)
+check_directory(const char *path_utf8, const Path &path_fs)
 {
 	struct stat st;
-	if (stat(path, &st) < 0) {
+	if (!StatFile(path_fs, st)) {
 		g_warning("Failed to stat directory \"%s\": %s",
-			  path, g_strerror(errno));
+			  path_utf8, g_strerror(errno));
 		return;
 	}
 
 	if (!S_ISDIR(st.st_mode)) {
-		g_warning("Not a directory: %s", path);
+		g_warning("Not a directory: %s", path_utf8);
 		return;
 	}
 
 #ifndef WIN32
-	char *x = g_build_filename(path, ".", NULL);
-	if (stat(x, &st) < 0 && errno == EACCES)
+	const Path x = Path::Build(path_fs, ".");
+	if (!StatFile(x, st) && errno == EACCES)
 		g_warning("No permission to traverse (\"execute\") directory: %s",
-			  path);
-	g_free(x);
+			  path_utf8);
 #endif
 
-	DIR *dir = opendir(path);
-	if (dir != NULL)
-		closedir(dir);
-	else if (errno == EACCES)
-		g_warning("No permission to read directory: %s", path);
+	const DirectoryReader reader(path_fs);
+	if (reader.Failed() && errno == EACCES)
+		g_warning("No permission to read directory: %s", path_utf8);
 }
 
 static void
@@ -105,16 +104,16 @@ mapper_set_music_dir(const char *path_utf8)
 	music_dir_utf8 = strdup_chop_slash(path_utf8);
 	music_dir_utf8_length = strlen(music_dir_utf8);
 
-	music_dir_fs = utf8_to_fs_charset(music_dir_utf8);
-	check_directory(music_dir_fs);
-	music_dir_fs_length = strlen(music_dir_fs);
+	music_dir_fs = Path::FromUTF8(path_utf8);
+	check_directory(path_utf8, music_dir_fs);
+	music_dir_fs_length = music_dir_fs.length();
 }
 
 static void
 mapper_set_playlist_dir(const char *path_utf8)
 {
-	playlist_dir_fs = utf8_to_fs_charset(path_utf8);
-	check_directory(playlist_dir_fs);
+	playlist_dir_fs = Path::FromUTF8(path_utf8);
+	check_directory(path_utf8, playlist_dir_fs);
 }
 
 void mapper_init(const char *_music_dir, const char *_playlist_dir)
@@ -129,8 +128,6 @@ void mapper_init(const char *_music_dir, const char *_playlist_dir)
 void mapper_finish(void)
 {
 	g_free(music_dir_utf8);
-	g_free(music_dir_fs);
-	g_free(playlist_dir_fs);
 }
 
 const char *
@@ -139,7 +136,7 @@ mapper_get_music_directory_utf8(void)
 	return music_dir_utf8;
 }
 
-const char *
+const Path &
 mapper_get_music_directory_fs(void)
 {
 	return music_dir_fs;
@@ -162,7 +159,7 @@ map_uri_fs(const char *uri)
 	assert(uri != NULL);
 	assert(*uri != '/');
 
-	if (music_dir_fs == NULL)
+	if (music_dir_fs.IsNull())
 		return Path::Null();
 
 	const Path uri_fs = Path::FromUTF8(uri);
@@ -176,10 +173,10 @@ Path
 map_directory_fs(const Directory *directory)
 {
 	assert(music_dir_utf8 != NULL);
-	assert(music_dir_fs != NULL);
+	assert(!music_dir_fs.IsNull());
 
 	if (directory->IsRoot())
-		return Path::FromFS(music_dir_fs);
+		return music_dir_fs;
 
 	return map_uri_fs(directory->GetPath());
 }
@@ -188,7 +185,7 @@ Path
 map_directory_child_fs(const Directory *directory, const char *name)
 {
 	assert(music_dir_utf8 != NULL);
-	assert(music_dir_fs != NULL);
+	assert(!music_dir_fs.IsNull());
 
 	/* check for invalid or unauthorized base names */
 	if (*name == 0 || strchr(name, '/') != NULL ||
@@ -237,8 +234,8 @@ map_song_fs(const struct song *song)
 char *
 map_fs_to_utf8(const char *path_fs)
 {
-	if (music_dir_fs != NULL &&
-	    strncmp(path_fs, music_dir_fs, music_dir_fs_length) == 0 &&
+	if (!music_dir_fs.IsNull() &&
+	    strncmp(path_fs, music_dir_fs.c_str(), music_dir_fs_length) == 0 &&
 	    G_IS_DIR_SEPARATOR(path_fs[music_dir_fs_length]))
 		/* remove musicDir prefix */
 		path_fs += music_dir_fs_length + 1;
@@ -252,7 +249,7 @@ map_fs_to_utf8(const char *path_fs)
 	return fs_charset_to_utf8(path_fs);
 }
 
-const char *
+const Path &
 map_spl_path(void)
 {
 	return playlist_dir_fs;
@@ -261,7 +258,7 @@ map_spl_path(void)
 Path
 map_spl_utf8_to_fs(const char *name)
 {
-	if (playlist_dir_fs == NULL)
+	if (playlist_dir_fs.IsNull())
 		return Path::Null();
 
 	char *filename_utf8 = g_strconcat(name, PLAYLIST_FILE_SUFFIX, NULL);

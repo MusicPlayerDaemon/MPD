@@ -56,11 +56,11 @@ playlist_open_in_playlist_dir(const char *uri, GMutex *mutex, GCond *cond,
 
 	assert(spl_valid_name(uri));
 
-	const char *playlist_directory_fs = map_spl_path();
-	if (playlist_directory_fs == NULL)
+	const Path &playlist_directory_fs = map_spl_path();
+	if (playlist_directory_fs.IsNull())
 		return NULL;
 
-	path_fs = g_build_filename(playlist_directory_fs, uri, NULL);
+	path_fs = g_build_filename(playlist_directory_fs.c_str(), uri, NULL);
 
 	struct playlist_provider *playlist =
 		playlist_open_path(path_fs, mutex, cond, is_r);

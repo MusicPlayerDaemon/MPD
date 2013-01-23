@@ -65,7 +65,7 @@ playlist_print_uri(FILE *file, const char *uri)
 enum playlist_result
 spl_save_queue(const char *name_utf8, const struct queue *queue)
 {
-	if (map_spl_path() == NULL)
+	if (map_spl_path().IsNull())
 		return PLAYLIST_RESULT_DISABLED;
 
 	if (!spl_valid_name(name_utf8))
