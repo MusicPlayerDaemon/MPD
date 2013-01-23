@@ -36,6 +36,16 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "path"
 
+/**
+ * Maximal number of bytes required to represent path name in UTF-8
+ * (including nul-terminator).
+ * This value is a rought estimate of upper bound.
+ * It's based on path name limit in bytes (MPD_PATH_MAX)
+ * and assumption that some weird encoding could represent some UTF-8 4 byte
+ * sequences with single byte.
+ */
+#define MPD_PATH_MAX_UTF8 ((MPD_PATH_MAX - 1) * 4 + 1)
+
 static char *fs_charset;
 
 std::string Path::ToUTF8() const
