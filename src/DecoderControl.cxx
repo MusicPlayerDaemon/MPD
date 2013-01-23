@@ -113,9 +113,9 @@ decoder_control::Start(struct song *_song,
 		       music_buffer *_buffer, music_pipe *_pipe)
 {
 	assert(_song != NULL);
-	assert(buffer != NULL);
-	assert(pipe != NULL);
-	assert(music_pipe_empty(pipe));
+	assert(_buffer != NULL);
+	assert(_pipe != NULL);
+	assert(music_pipe_empty(_pipe));
 
 	if (song != nullptr)
 		song_free(song);
