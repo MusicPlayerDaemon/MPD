@@ -22,7 +22,7 @@
 #include "input/FileInputPlugin.hxx"
 
 #ifdef ENABLE_ARCHIVE
-#include "input/archive_input_plugin.h"
+#include "input/ArchiveInputPlugin.hxx"
 #endif
 
 #ifdef ENABLE_CURL

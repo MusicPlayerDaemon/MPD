@@ -69,11 +69,9 @@ extern "C" {
 #include "StickerDatabase.hxx"
 #endif
 
-extern "C" {
 #ifdef ENABLE_ARCHIVE
-#include "archive_list.h"
+#include "ArchiveList.hxx"
 #endif
-}
 
 #include <glib.h>
 

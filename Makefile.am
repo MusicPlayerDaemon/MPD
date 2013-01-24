@@ -130,14 +130,6 @@ mpd_headers = \
 	src/string_util.h \
 	src/zeroconf.h src/zeroconf-internal.h \
 	src/timer.h \
-	src/archive_api.h \
-	src/archive_internal.h \
-	src/archive_list.h \
-	src/archive_plugin.h \
-	src/archive/bz2_archive_plugin.h \
-	src/archive/iso9660_archive_plugin.h \
-	src/archive/zzip_archive_plugin.h \
-	src/input/archive_input_plugin.h \
 	src/mpd_error.h
 
 src_mpd_SOURCES = \
@@ -414,10 +406,11 @@ src_mpd_SOURCES +=  \
 	src/UpdateArchive.cxx src/UpdateArchive.hxx
 
 libarchive_a_SOURCES = \
-	src/archive_api.c \
-	src/archive_list.c \
-	src/archive_plugin.c \
-	src/input/archive_input_plugin.c
+	src/ArchiveLookup.cxx src/ArchiveLookup.hxx \
+	src/ArchiveList.cxx src/ArchiveList.hxx \
+	src/ArchivePlugin.cxx src/ArchivePlugin.hxx \
+	src/ArchiveInternal.hxx \
+	src/input/ArchiveInputPlugin.cxx src/input/ArchiveInputPlugin.hxx
 libarchive_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(BZ2_CFLAGS) \
 	$(ISO9660_CFLAGS) \
@@ -430,15 +423,21 @@ ARCHIVE_LIBS = \
 	$(ZZIP_LIBS)
 
 if HAVE_BZ2
-libarchive_a_SOURCES += src/archive/bz2_archive_plugin.c
+libarchive_a_SOURCES += \
+	src/archive/Bzip2ArchivePlugin.cxx \
+	src/archive/Bzip2ArchivePlugin.hxx
 endif
 
 if HAVE_ZZIP
-libarchive_a_SOURCES += src/archive/zzip_archive_plugin.c
+libarchive_a_SOURCES += \
+	src/archive/ZzipArchivePlugin.cxx \
+	src/archive/ZzipArchivePlugin.hxx
 endif
 
 if HAVE_ISO9660
-libarchive_a_SOURCES += src/archive/iso9660_archive_plugin.c
+libarchive_a_SOURCES += \
+	src/archive/Iso9660ArchivePlugin.cxx \
+	src/archive/Iso9660ArchivePlugin.hxx
 endif
 
 else

@@ -25,11 +25,8 @@
 #include "song.h"
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
-
-extern "C" {
-#include "archive_list.h"
-#include "archive_plugin.h"
-}
+#include "ArchiveList.hxx"
+#include "ArchivePlugin.hxx"
 
 #include <glib.h>
 

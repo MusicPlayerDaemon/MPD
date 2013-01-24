@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,18 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ARCHIVE_INTERNAL_H
-#define MPD_ARCHIVE_INTERNAL_H
+#ifndef MPD_ARCHIVE_ZZIP_HXX
+#define MPD_ARCHIVE_ZZIP_HXX
 
-struct archive_file {
-	const struct archive_plugin *plugin;
-};
-
-static inline void
-archive_file_init(struct archive_file *archive_file,
-		  const struct archive_plugin *plugin)
-{
-	archive_file->plugin = plugin;
-}
+extern const struct archive_plugin zzip_archive_plugin;
 
 #endif

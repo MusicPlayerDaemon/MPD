@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,9 +22,9 @@
   */
 
 #include "config.h"
-#include "archive/zzip_archive_plugin.h"
-#include "archive_api.h"
-#include "archive_api.h"
+#include "ZzipArchivePlugin.hxx"
+#include "ArchiveInternal.hxx"
+#include "ArchivePlugin.hxx"
 #include "input_internal.h"
 #include "input_plugin.h"
 #include "refcount.h"
@@ -41,9 +41,30 @@ struct zzip_archive {
 	ZZIP_DIR *dir;
 	GSList	*list;
 	GSList	*iter;
+
+	zzip_archive() {
+		archive_file_init(&base, &zzip_archive_plugin);
+		refcount_init(&ref);
+	}
+
+	void Unref() {
+		if (!refcount_dec(&ref))
+			return;
+
+		if (list) {
+			//free list
+			for (GSList *tmp = list; tmp != NULL; tmp = g_slist_next(tmp))
+				g_free(tmp->data);
+			g_slist_free(list);
+		}
+		//close archive
+		zzip_dir_close (dir);
+
+		delete this;
+	}
 };
 
-static const struct input_plugin zzip_input_plugin;
+extern const struct input_plugin zzip_input_plugin;
 
 static inline GQuark
 zzip_quark(void)
@@ -56,11 +77,8 @@ zzip_quark(void)
 static struct archive_file *
 zzip_archive_open(const char *pathname, GError **error_r)
 {
-	struct zzip_archive *context = g_malloc(sizeof(*context));
+	struct zzip_archive *context = new zzip_archive();
 	ZZIP_DIRENT dirent;
-
-	archive_file_init(&context->base, &zzip_archive_plugin);
-	refcount_init(&context->ref);
 
 	// open archive
 	context->list = NULL;
@@ -97,7 +115,7 @@ zzip_archive_scan_next(struct archive_file *file)
 	char *data = NULL;
 	if (context->iter != NULL) {
 		///fetch data and goto next
-		data = context->iter->data;
+		data = (char *)context->iter->data;
 		context->iter = g_slist_next(context->iter);
 	}
 	return data;
@@ -108,19 +126,7 @@ zzip_archive_close(struct archive_file *file)
 {
 	struct zzip_archive *context = (struct zzip_archive *) file;
 
-	if (!refcount_dec(&context->ref))
-		return;
-
-	if (context->list) {
-		//free list
-		for (GSList *tmp = context->list; tmp != NULL; tmp = g_slist_next(tmp))
-			g_free(tmp->data);
-		g_slist_free(context->list);
-	}
-	//close archive
-	zzip_dir_close (context->dir);
-
-	g_free(context);
+	context->Unref();
 }
 
 /* single archive handling */
@@ -228,19 +234,29 @@ static const char *const zzip_archive_extensions[] = {
 	NULL
 };
 
-static const struct input_plugin zzip_input_plugin = {
-	.close = zzip_input_close,
-	.read = zzip_input_read,
-	.eof = zzip_input_eof,
-	.seek = zzip_input_seek,
+const struct input_plugin zzip_input_plugin = {
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	zzip_input_close,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	zzip_input_read,
+	zzip_input_eof,
+	zzip_input_seek,
 };
 
 const struct archive_plugin zzip_archive_plugin = {
-	.name = "zzip",
-	.open = zzip_archive_open,
-	.scan_reset = zzip_archive_scan_reset,
-	.scan_next = zzip_archive_scan_next,
-	.open_stream = zzip_archive_open_stream,
-	.close = zzip_archive_close,
-	.suffixes = zzip_archive_extensions
+	"zzip",
+	nullptr,
+	nullptr,
+	zzip_archive_open,
+	zzip_archive_scan_reset,
+	zzip_archive_scan_next,
+	zzip_archive_open_stream,
+	zzip_archive_close,
+	zzip_archive_extensions,
 };

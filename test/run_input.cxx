@@ -26,11 +26,9 @@
 #include "InputInit.hxx"
 #include "IOThread.hxx"
 
-extern "C" {
 #ifdef ENABLE_ARCHIVE
-#include "archive_list.h"
+#include "ArchiveList.hxx"
 #endif
-}
 
 #include <glib.h>
 

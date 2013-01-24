@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ARCHIVE_ISO9660_H
-#define MPD_ARCHIVE_ISO9660_H
+#ifndef MPD_INPUT_ARCHIVE_HXX
+#define MPD_INPUT_ARCHIVE_HXX
 
-extern const struct archive_plugin iso9660_archive_plugin;
+extern const struct input_plugin input_plugin_archive;
 
 #endif

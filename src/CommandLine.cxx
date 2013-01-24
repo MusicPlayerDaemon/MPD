@@ -39,8 +39,8 @@
 #endif
 
 #ifdef ENABLE_ARCHIVE
-#include "archive_list.h"
-#include "archive_plugin.h"
+#include "ArchiveList.hxx"
+#include "ArchivePlugin.hxx"
 #endif
 
 #include <glib.h>

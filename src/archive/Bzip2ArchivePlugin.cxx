@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,8 +22,9 @@
   */
 
 #include "config.h"
-#include "archive/bz2_archive_plugin.h"
-#include "archive_api.h"
+#include "Bzip2ArchivePlugin.hxx"
+#include "ArchiveInternal.hxx"
+#include "ArchivePlugin.hxx"
 #include "input_internal.h"
 #include "input_plugin.h"
 #include "refcount.h"
@@ -47,6 +48,21 @@ struct bz2_archive_file {
 	char *name;
 	bool reset;
 	struct input_stream *istream;
+
+	bz2_archive_file() {
+		archive_file_init(&base, &bz2_archive_plugin);
+		refcount_init(&ref);
+	}
+
+	void Unref() {
+		if (!refcount_dec(&ref))
+			return;
+
+		g_free(name);
+
+		input_stream_close(istream);
+		delete this;
+	}
 };
 
 struct bz2_input_stream {
@@ -61,7 +77,7 @@ struct bz2_input_stream {
 	char buffer[5000];
 };
 
-static const struct input_plugin bz2_inputplugin;
+extern const struct input_plugin bz2_inputplugin;
 
 static inline GQuark
 bz2_quark(void)
@@ -80,7 +96,7 @@ bz2_alloc(struct bz2_input_stream *data, GError **error_r)
 	data->bzstream.bzfree  = NULL;
 	data->bzstream.opaque  = NULL;
 
-	data->bzstream.next_in = (void *) data->buffer;
+	data->bzstream.next_in = (char *) data->buffer;
 	data->bzstream.avail_in = 0;
 
 	ret = BZ2_bzDecompressInit(&data->bzstream, 0, 0);
@@ -111,12 +127,8 @@ bz2_destroy(struct bz2_input_stream *data)
 static struct archive_file *
 bz2_open(const char *pathname, GError **error_r)
 {
-	struct bz2_archive_file *context;
+	struct bz2_archive_file *context = new bz2_archive_file();
 	int len;
-
-	context = g_malloc(sizeof(*context));
-	archive_file_init(&context->base, &bz2_archive_plugin);
-	refcount_init(&context->ref);
 
 	//open archive
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
@@ -125,7 +137,7 @@ bz2_open(const char *pathname, GError **error_r)
 					     NULL,
 					     error_r);
 	if (context->istream == NULL) {
-		g_free(context);
+		delete context;
 		return NULL;
 	}
 
@@ -166,13 +178,7 @@ bz2_close(struct archive_file *file)
 {
 	struct bz2_archive_file *context = (struct bz2_archive_file *) file;
 
-	if (!refcount_dec(&context->ref))
-		return;
-
-	g_free(context->name);
-
-	input_stream_close(context->istream);
-	g_free(context);
+	context->Unref();
 }
 
 /* single archive handling */
@@ -254,7 +260,7 @@ bz2_is_read(struct input_stream *is, void *ptr, size_t length,
 		return 0;
 
 	bzstream = &bis->bzstream;
-	bzstream->next_out = ptr;
+	bzstream->next_out = (char *)ptr;
 	bzstream->avail_out = length;
 
 	do {
@@ -296,19 +302,30 @@ static const char *const bz2_extensions[] = {
 	NULL
 };
 
-static const struct input_plugin bz2_inputplugin = {
-	.close = bz2_is_close,
-	.read = bz2_is_read,
-	.eof = bz2_is_eof,
+const struct input_plugin bz2_inputplugin = {
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	bz2_is_close,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	bz2_is_read,
+	bz2_is_eof,
+	nullptr,
 };
 
 const struct archive_plugin bz2_archive_plugin = {
-	.name = "bz2",
-	.open = bz2_open,
-	.scan_reset = bz2_scan_reset,
-	.scan_next = bz2_scan_next,
-	.open_stream = bz2_open_stream,
-	.close = bz2_close,
-	.suffixes = bz2_extensions
+	"bz2",
+	nullptr,
+	nullptr,
+	bz2_open,
+	bz2_scan_reset,
+	bz2_scan_next,
+	bz2_open_stream,
+	bz2_close,
+	bz2_extensions,
 };
 

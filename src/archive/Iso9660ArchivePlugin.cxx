@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,8 +22,9 @@
   */
 
 #include "config.h"
-#include "archive/iso9660_archive_plugin.h"
-#include "archive_api.h"
+#include "Iso9660ArchivePlugin.hxx"
+#include "ArchiveInternal.hxx"
+#include "ArchivePlugin.hxx"
 #include "input_internal.h"
 #include "input_plugin.h"
 #include "refcount.h"
@@ -46,7 +47,7 @@ struct iso9660_archive_file {
 	GSList	*iter;
 };
 
-static const struct input_plugin iso9660_input_plugin;
+extern const struct input_plugin iso9660_input_plugin;
 
 static inline GQuark
 iso9660_quark(void)
@@ -76,7 +77,7 @@ listdir_recur(const char *psz_path, struct iso9660_archive_file *context)
 		strcpy(pathname, psz_path);
 		strcat(pathname, statbuf->filename);
 
-		if (_STAT_DIR == statbuf->type ) {
+		if (iso9660_stat_s::_STAT_DIR == statbuf->type ) {
 			if (strcmp(statbuf->filename, ".") && strcmp(statbuf->filename, "..")) {
 				strcat(pathname, "/");
 				listdir_recur(pathname, context);
@@ -133,7 +134,7 @@ iso9660_archive_scan_next(struct archive_file *file)
 	char *data = NULL;
 	if (context->iter != NULL) {
 		///fetch data and goto next
-		data = context->iter->data;
+		data = (char *)context->iter->data;
 		context->iter = g_slist_next(context->iter);
 	}
 	return data;
@@ -273,18 +274,29 @@ static const char *const iso9660_archive_extensions[] = {
 	NULL
 };
 
-static const struct input_plugin iso9660_input_plugin = {
-	.close = iso9660_input_close,
-	.read = iso9660_input_read,
-	.eof = iso9660_input_eof,
+const struct input_plugin iso9660_input_plugin = {
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	iso9660_input_close,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	iso9660_input_read,
+	iso9660_input_eof,
+	nullptr,
 };
 
 const struct archive_plugin iso9660_archive_plugin = {
-	.name = "iso",
-	.open = iso9660_archive_open,
-	.scan_reset = iso9660_archive_scan_reset,
-	.scan_next = iso9660_archive_scan_next,
-	.open_stream = iso9660_archive_open_stream,
-	.close = iso9660_archive_close,
-	.suffixes = iso9660_archive_extensions
+	"iso",
+	nullptr,
+	nullptr,
+	iso9660_archive_open,
+	iso9660_archive_scan_reset,
+	iso9660_archive_scan_next,
+	iso9660_archive_open_stream,
+	iso9660_archive_close,
+	iso9660_archive_extensions,
 };
