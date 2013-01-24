@@ -25,6 +25,7 @@
 #include "decoder_api.h"
 #include "FfmpegMetaData.hxx"
 #include "tag_handler.h"
+#include "InputStream.hxx"
 
 extern "C" {
 #include "audio_check.h"

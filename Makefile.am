@@ -707,7 +707,7 @@ endif
 libinput_a_SOURCES = \
 	src/InputInit.cxx src/InputInit.hxx \
 	src/InputRegistry.cxx src/InputRegistry.hxx \
-	src/InputStream.cxx \
+	src/InputStream.cxx src/InputStream.hxx \
 	src/InputPlugin.hxx \
 	src/InputInternal.cxx src/InputInternal.hxx \
 	src/input/RewindInputPlugin.cxx src/input/RewindInputPlugin.hxx \

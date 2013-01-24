@@ -29,7 +29,7 @@
 #include "fs/Path.hxx"
 #include "decoder_api.h"
 #include "tag.h"
-#include "input_stream.h"
+#include "InputStream.hxx"
 
 extern "C" {
 #include "decoder_list.h"

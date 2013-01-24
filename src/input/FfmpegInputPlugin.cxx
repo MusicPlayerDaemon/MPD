@@ -23,6 +23,7 @@
 #include "config.h"
 #include "FfmpegInputPlugin.hxx"
 #include "InputInternal.hxx"
+#include "InputStream.hxx"
 #include "InputPlugin.hxx"
 
 extern "C" {

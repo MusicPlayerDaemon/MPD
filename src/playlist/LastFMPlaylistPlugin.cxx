@@ -242,8 +242,7 @@ lastfm_open_uri(const char *uri, GMutex *mutex, GCond *cond)
 
 	/* last.fm does not send a MIME type, we have to fake it here
 	   :-( */
-	g_free(playlist->is->mime);
-	playlist->is->mime = g_strdup("application/xspf+xml");
+	input_stream_override_mime_type(playlist->is, "application/xspf+xml");
 
 	g_mutex_unlock(mutex);
 

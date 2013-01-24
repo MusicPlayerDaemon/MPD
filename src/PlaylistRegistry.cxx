@@ -233,19 +233,19 @@ playlist_list_open_stream_mime2(struct input_stream *is, const char *mime)
 }
 
 static struct playlist_provider *
-playlist_list_open_stream_mime(struct input_stream *is)
+playlist_list_open_stream_mime(struct input_stream *is, const char *full_mime)
 {
-	assert(is->mime != NULL);
+	assert(full_mime != NULL);
 
-	const char *semicolon = strchr(is->mime, ';');
+	const char *semicolon = strchr(full_mime, ';');
 	if (semicolon == NULL)
-		return playlist_list_open_stream_mime2(is, is->mime);
+		return playlist_list_open_stream_mime2(is, full_mime);
 
-	if (semicolon == is->mime)
+	if (semicolon == full_mime)
 		return NULL;
 
 	/* probe only the portion before the semicolon*/
-	char *mime = g_strndup(is->mime, semicolon - is->mime);
+	char *mime = g_strndup(full_mime, semicolon - full_mime);
 	struct playlist_provider *playlist =
 		playlist_list_open_stream_mime2(is, mime);
 	g_free(mime);
@@ -285,8 +285,9 @@ playlist_list_open_stream(struct input_stream *is, const char *uri)
 
 	input_stream_lock_wait_ready(is);
 
-	if (is->mime != NULL) {
-		playlist = playlist_list_open_stream_mime(is);
+	const char *const mime = input_stream_get_mime_type(is);
+	if (mime != NULL) {
+		playlist = playlist_list_open_stream_mime(is, mime);
 		if (playlist != NULL)
 			return playlist;
 	}

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "IOThread.hxx"
 #include "InputInit.hxx"
-#include "input_stream.h"
+#include "InputStream.hxx"
 #include "conf.h"
 #include "stdbin.h"
 

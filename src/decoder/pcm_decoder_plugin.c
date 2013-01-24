@@ -38,8 +38,9 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 		.channels = 2,
 	};
 
-	const bool reverse_endian = is->mime != NULL &&
-		strcmp(is->mime, "audio/x-mpd-cdda-pcm-reverse") == 0;
+	const char *const mime = input_stream_get_mime_type(is);
+	const bool reverse_endian = mime != NULL &&
+		strcmp(mime, "audio/x-mpd-cdda-pcm-reverse") == 0;
 
 	GError *error = NULL;
 	enum decoder_command cmd;
@@ -47,10 +48,12 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 	double time_to_size = audio_format_time_to_size(&audio_format);
 
 	float total_time = -1;
-	if (is->size >= 0)
-		total_time = is->size / time_to_size;
+	const goffset size = input_stream_get_size(is);
+	if (size >= 0)
+		total_time = size / time_to_size;
 
-	decoder_initialized(decoder, &audio_format, is->seekable, total_time);
+	decoder_initialized(decoder, &audio_format,
+			    input_stream_is_seekable(is), total_time);
 
 	do {
 		char buffer[4096];

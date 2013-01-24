@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "InputInternal.hxx"
-#include "input_stream.h"
+#include "InputStream.hxx"
 
 #include <assert.h>
 

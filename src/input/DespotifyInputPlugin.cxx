@@ -21,6 +21,7 @@
 #include "DespotifyInputPlugin.hxx"
 #include "DespotifyUtils.hxx"
 #include "InputInternal.hxx"
+#include "InputStream.hxx"
 #include "InputPlugin.hxx"
 #include "tag.h"
 

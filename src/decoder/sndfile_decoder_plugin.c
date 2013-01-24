@@ -32,7 +32,7 @@ sndfile_vio_get_filelen(void *user_data)
 {
 	const struct input_stream *is = user_data;
 
-	return is->size;
+	return input_stream_get_size(is);
 }
 
 static sf_count_t
@@ -45,7 +45,7 @@ sndfile_vio_seek(sf_count_t offset, int whence, void *user_data)
 	if (!success)
 		return -1;
 
-	return is->offset;
+	return input_stream_get_offset(is);
 }
 
 static sf_count_t
@@ -79,7 +79,7 @@ sndfile_vio_tell(void *user_data)
 {
 	const struct input_stream *is = user_data;
 
-	return is->offset;
+	return input_stream_get_offset(is);
 }
 
 /**

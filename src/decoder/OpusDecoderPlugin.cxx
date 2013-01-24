@@ -28,6 +28,7 @@
 #include "OggCodec.hxx"
 #include "audio_check.h"
 #include "tag_handler.h"
+#include "InputStream.hxx"
 
 #include <opus.h>
 #include <ogg/ogg.h>

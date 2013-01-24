@@ -70,7 +70,7 @@ mpc_tell_cb(cb_first_arg)
 {
 	struct mpc_decoder_data *data = (struct mpc_decoder_data *) cb_data;
 
-	return (long)(data->is->offset);
+	return (long)input_stream_get_offset(data->is);
 }
 
 static mpc_bool_t
@@ -78,7 +78,7 @@ mpc_canseek_cb(cb_first_arg)
 {
 	struct mpc_decoder_data *data = (struct mpc_decoder_data *) cb_data;
 
-	return data->is->seekable;
+	return input_stream_is_seekable(data->is);
 }
 
 static mpc_int32_t
@@ -86,7 +86,7 @@ mpc_getsize_cb(cb_first_arg)
 {
 	struct mpc_decoder_data *data = (struct mpc_decoder_data *) cb_data;
 
-	return data->is->size;
+	return input_stream_get_size(data->is);
 }
 
 /* this _looks_ performance-critical, don't de-inline -- eric */
@@ -222,7 +222,7 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	decoder_replay_gain(mpd_decoder, &replay_gain_info);
 
 	decoder_initialized(mpd_decoder, &audio_format,
-			    is->seekable,
+			    input_stream_is_seekable(is),
 			    mpc_streaminfo_get_length(&info));
 
 	do {

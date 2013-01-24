@@ -24,7 +24,7 @@ extern "C" {
 }
 #include "decoder_api.h"
 #include "InputInit.hxx"
-#include "input_stream.h"
+#include "InputStream.hxx"
 #include "audio_format.h"
 extern "C" {
 #include "tag_ape.h"

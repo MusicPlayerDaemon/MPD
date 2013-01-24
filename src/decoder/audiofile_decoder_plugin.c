@@ -69,14 +69,14 @@ static AFfileoffset
 audiofile_file_length(AFvirtualfile *vfile)
 {
 	struct input_stream *is = (struct input_stream *) vfile->closure;
-	return is->size;
+	return input_stream_get_size(is);
 }
 
 static AFfileoffset
 audiofile_file_tell(AFvirtualfile *vfile)
 {
 	struct input_stream *is = (struct input_stream *) vfile->closure;
-	return is->offset;
+	return input_stream_get_offset(is);
 }
 
 static void
@@ -93,7 +93,7 @@ audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset offset, int is_relative)
 	struct input_stream *is = (struct input_stream *) vfile->closure;
 	int whence = (is_relative ? SEEK_CUR : SEEK_SET);
 	if (input_stream_lock_seek(is, offset, whence, NULL)) {
-		return is->offset;
+		return input_stream_get_offset(is);
 	} else {
 		return -1;
 	}
@@ -166,7 +166,7 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	char chunk[CHUNK_SIZE];
 	enum decoder_command cmd;
 
-	if (!is->seekable) {
+	if (!input_stream_is_seekable(is)) {
 		g_warning("not seekable");
 		return;
 	}
@@ -194,7 +194,7 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 
 	total_time = ((float)frame_count / (float)audio_format.sample_rate);
 
-	bit_rate = (uint16_t)(is->size * 8.0 / total_time / 1000.0 + 0.5);
+	bit_rate = (uint16_t)(input_stream_get_size(is) * 8.0 / total_time / 1000.0 + 0.5);
 
 	fs = (int)afGetVirtualFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
 

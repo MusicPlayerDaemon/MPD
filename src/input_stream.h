@@ -29,64 +29,7 @@
 #include <stdbool.h>
 #include <sys/types.h>
 
-struct input_stream {
-	/**
-	 * the plugin which implements this input stream
-	 */
-	const struct input_plugin *plugin;
-
-	/**
-	 * The absolute URI which was used to open this stream.  May
-	 * be NULL if this is unknown.
-	 */
-	char *uri;
-
-	/**
-	 * A mutex that protects the mutable attributes of this object
-	 * and its implementation.  It must be locked before calling
-	 * any of the public methods.
-	 *
-	 * This object is allocated by the client, and the client is
-	 * responsible for freeing it.
-	 */
-	GMutex *mutex;
-
-	/**
-	 * A cond that gets signalled when the state of this object
-	 * changes from the I/O thread.  The client of this object may
-	 * wait on it.  Optional, may be NULL.
-	 *
-	 * This object is allocated by the client, and the client is
-	 * responsible for freeing it.
-	 */
-	GCond *cond;
-
-	/**
-	 * indicates whether the stream is ready for reading and
-	 * whether the other attributes in this struct are valid
-	 */
-	bool ready;
-
-	/**
-	 * if true, then the stream is fully seekable
-	 */
-	bool seekable;
-
-	/**
-	 * the size of the resource, or -1 if unknown
-	 */
-	goffset size;
-
-	/**
-	 * the current offset within the stream
-	 */
-	goffset offset;
-
-	/**
-	 * the MIME content type of the resource, or NULL if unknown
-	 */
-	char *mime;
-};
+struct input_stream;
 
 #ifdef __cplusplus
 extern "C" {
@@ -118,20 +61,6 @@ input_stream_open(const char *uri,
 gcc_nonnull(1)
 void
 input_stream_close(struct input_stream *is);
-
-gcc_nonnull(1)
-static inline void
-input_stream_lock(struct input_stream *is)
-{
-	g_mutex_lock(is->mutex);
-}
-
-gcc_nonnull(1)
-static inline void
-input_stream_unlock(struct input_stream *is)
-{
-	g_mutex_unlock(is->mutex);
-}
 
 /**
  * Check for errors that may have occurred in the I/O thread.
@@ -166,6 +95,26 @@ input_stream_wait_ready(struct input_stream *is);
 gcc_nonnull(1)
 void
 input_stream_lock_wait_ready(struct input_stream *is);
+
+gcc_nonnull_all gcc_pure
+const char *
+input_stream_get_mime_type(const struct input_stream *is);
+
+gcc_nonnull_all
+void
+input_stream_override_mime_type(struct input_stream *is, const char *mime);
+
+gcc_nonnull_all gcc_pure
+goffset
+input_stream_get_size(const struct input_stream *is);
+
+gcc_nonnull_all gcc_pure
+goffset
+input_stream_get_offset(const struct input_stream *is);
+
+gcc_nonnull_all gcc_pure
+bool
+input_stream_is_seekable(const struct input_stream *is);
 
 /**
  * Determines whether seeking is cheap.  This is true for local files.

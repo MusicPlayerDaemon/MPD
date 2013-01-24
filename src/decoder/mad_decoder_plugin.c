@@ -755,7 +755,7 @@ mp3_frame_duration(const struct mad_frame *frame)
 static goffset
 mp3_this_frame_offset(const struct mp3_data *data)
 {
-	goffset offset = data->input_stream->offset;
+	goffset offset = input_stream_get_offset(data->input_stream);
 
 	if (data->stream.this_frame != NULL)
 		offset -= data->stream.bufend - data->stream.this_frame;
@@ -768,7 +768,8 @@ mp3_this_frame_offset(const struct mp3_data *data)
 static goffset
 mp3_rest_including_this_frame(const struct mp3_data *data)
 {
-	return data->input_stream->size - mp3_this_frame_offset(data);
+	return input_stream_get_size(data->input_stream)
+		- mp3_this_frame_offset(data);
 }
 
 /**
@@ -841,7 +842,7 @@ mp3_decode_first_frame(struct mp3_data *data, struct tag **tag)
 
 		if (parse_lame(&lame, &ptr, &bitlen)) {
 			if (gapless_playback &&
-			    data->input_stream->seekable) {
+			    input_stream_is_seekable(data->input_stream)) {
 				data->drop_start_samples = lame.encoder_delay +
 				                           DECODERDELAY;
 				data->drop_end_samples = lame.encoder_padding;
@@ -1081,7 +1082,7 @@ mp3_read(struct mp3_data *data)
 		if (cmd == DECODE_COMMAND_SEEK) {
 			unsigned long j;
 
-			assert(data->input_stream->seekable);
+			assert(input_stream_is_seekable(data->input_stream));
 
 			j = mp3_time_to_frame(data,
 					      decoder_seek_where(decoder));
@@ -1163,7 +1164,8 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 	}
 
 	decoder_initialized(decoder, &audio_format,
-			    data.input_stream->seekable, data.total_time);
+			    input_stream_is_seekable(input_stream),
+			    data.total_time);
 
 	if (tag != NULL) {
 		decoder_tag(decoder, input_stream, tag);

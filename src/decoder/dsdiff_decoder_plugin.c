@@ -128,12 +128,12 @@ dsdiff_read_prop_snd(struct decoder *decoder, struct input_stream *is,
 		     goffset end_offset)
 {
 	struct dsdiff_chunk_header header;
-	while ((goffset)(is->offset + sizeof(header)) <= end_offset) {
+	while ((goffset)(input_stream_get_offset(is) + sizeof(header)) <= end_offset) {
 		if (!dsdiff_read_chunk_header(decoder, is, &header))
 			return false;
 
-		goffset chunk_end_offset =
-			is->offset + dsdiff_chunk_size(&header);
+		goffset chunk_end_offset = input_stream_get_offset(is)
+			+ dsdiff_chunk_size(&header);
 		if (chunk_end_offset > end_offset)
 			return false;
 
@@ -174,7 +174,7 @@ dsdiff_read_prop_snd(struct decoder *decoder, struct input_stream *is,
 		}
 	}
 
-	return is->offset == end_offset;
+	return input_stream_get_offset(is) == end_offset;
 }
 
 /**
@@ -186,7 +186,7 @@ dsdiff_read_prop(struct decoder *decoder, struct input_stream *is,
 		 const struct dsdiff_chunk_header *prop_header)
 {
 	uint64_t prop_size = dsdiff_chunk_size(prop_header);
-	goffset end_offset = is->offset + prop_size;
+	goffset end_offset = input_stream_get_offset(is) + prop_size;
 
 	struct dsdlib_id prop_id;
 	if (prop_size < sizeof(prop_id) ||
@@ -261,8 +261,8 @@ dsdiff_read_metadata_extra(struct decoder *decoder, struct input_stream *is,
 	/* Now process all the remaining chunk headers in the stream
 	   and record their position and size */
 
-	while ( is->offset < is->size )
-	{
+	const goffset size = input_stream_get_size(is);
+	while (input_stream_get_offset(is) < size) {
 		uint64_t chunk_size = dsdiff_chunk_size(chunk_header);
 
 		/* DIIN chunk, is directly followed by other chunks  */
@@ -272,19 +272,19 @@ dsdiff_read_metadata_extra(struct decoder *decoder, struct input_stream *is,
 		/* DIAR chunk - DSDIFF native tag for Artist */
 		if (dsdlib_id_equals(&chunk_header->id, "DIAR")) {
 			chunk_size = dsdiff_chunk_size(chunk_header);
-			metadata->diar_offset = is->offset;
+			metadata->diar_offset = input_stream_get_offset(is);
 		}
 
 		/* DITI chunk - DSDIFF native tag for Title */
 		if (dsdlib_id_equals(&chunk_header->id, "DITI")) {
 			chunk_size = dsdiff_chunk_size(chunk_header);
-			metadata->diti_offset = is->offset;
+			metadata->diti_offset = input_stream_get_offset(is);
 		}
 #ifdef HAVE_ID3TAG
 		/* 'ID3 ' chunk, offspec. Used by sacdextract */
 		if (dsdlib_id_equals(&chunk_header->id, "ID3 ")) {
 			chunk_size = dsdiff_chunk_size(chunk_header);
-			metadata->id3_offset = is->offset;
+			metadata->id3_offset = input_stream_get_offset(is);
 			metadata->id3_size = chunk_size;
 		}
 #endif
@@ -293,7 +293,7 @@ dsdiff_read_metadata_extra(struct decoder *decoder, struct input_stream *is,
 				break;
 		}
 
-		if ( is->offset < is->size ) {
+		if (input_stream_get_offset(is) < size) {
 			if (!dsdiff_read_chunk_header(decoder, is, chunk_header))
 				return false;
 		}
@@ -355,7 +355,8 @@ dsdiff_read_metadata(struct decoder *decoder, struct input_stream *is,
 			/* ignore unknown chunk */
 			uint64_t chunk_size;
 			chunk_size = dsdiff_chunk_size(chunk_header);
-			goffset chunk_end_offset = is->offset + chunk_size;
+			goffset chunk_end_offset = input_stream_get_offset(is)
+				+ chunk_size;
 
 			if (!dsdlib_skip_to(decoder, is, chunk_end_offset))
 				return false;

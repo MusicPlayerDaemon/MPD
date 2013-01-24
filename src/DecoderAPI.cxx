@@ -31,6 +31,7 @@ extern "C" {
 #include "DecoderControl.hxx"
 #include "DecoderInternal.hxx"
 #include "song.h"
+#include "InputStream.hxx"
 
 #include <glib.h>
 

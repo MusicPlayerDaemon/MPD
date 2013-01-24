@@ -21,7 +21,7 @@
 #define MPD_FLAC_IO_HANDLE_HXX
 
 #include "gcc.h"
-#include "input_stream.h"
+#include "InputStream.hxx"
 
 #include <FLAC/callback.h>
 

@@ -41,19 +41,21 @@ static GByteArray *mod_loadfile(struct decoder *decoder, struct input_stream *is
 	GByteArray *bdatas;
 	size_t ret;
 
-	if (is->size == 0) {
+	const goffset size = input_stream_get_size(is);
+
+	if (size == 0) {
 		g_warning("file is empty");
 		return NULL;
 	}
 
-	if (is->size > MODPLUG_FILE_LIMIT) {
+	if (size > MODPLUG_FILE_LIMIT) {
 		g_warning("file too large");
 		return NULL;
 	}
 
 	//known/unknown size, preallocate array, lets read in chunks
-	if (is->size > 0) {
-		bdatas = g_byte_array_sized_new(is->size);
+	if (size > 0) {
+		bdatas = g_byte_array_sized_new(size);
 	} else {
 		bdatas = g_byte_array_sized_new(MODPLUG_PREALLOC_BLOCK);
 	}
@@ -126,7 +128,8 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 	assert(audio_format_valid(&audio_format));
 
 	decoder_initialized(decoder, &audio_format,
-			    is->seekable, ModPlug_GetLength(f) / 1000.0);
+			    input_stream_is_seekable(is),
+			    ModPlug_GetLength(f) / 1000.0);
 
 	do {
 		ret = ModPlug_Read(f, audio_buffer, MODPLUG_FRAME_SIZE);

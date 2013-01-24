@@ -165,14 +165,15 @@ dsf_read_metadata(struct decoder *decoder, struct input_stream *is,
 
 	metadata->chunk_size = data_size;
 	/* data_size cannot be bigger or equal to total file size */
-	if (data_size >= (unsigned) is->size)
+	const uint64_t size = (uint64_t)input_stream_get_size(is);
+	if (data_size >= size)
 		return false;
 
 	metadata->channels = (unsigned) dsf_fmt_chunk.channelnum;
 	metadata->sample_rate = samplefreq;
 #ifdef HAVE_ID3TAG
 	/* metada_offset cannot be bigger then or equal to total file size */
-	if (metadata_offset >= (unsigned) is->size)
+	if (metadata_offset >= size)
 		metadata->id3_offset = 0;
 	else
 		metadata->id3_offset = (goffset) metadata_offset;

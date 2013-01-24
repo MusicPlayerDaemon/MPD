@@ -64,24 +64,24 @@ bool
 dsdlib_skip_to(struct decoder *decoder, struct input_stream *is,
 	       goffset offset)
 {
-	if (is->seekable)
+	if (input_stream_is_seekable(is))
 		return input_stream_seek(is, offset, SEEK_SET, NULL);
 
-	if (is->offset > offset)
+	if (input_stream_get_offset(is) > offset)
 		return false;
 
 	char buffer[8192];
-	while (is->offset < offset) {
+	while (input_stream_get_offset(is) < offset) {
 		size_t length = sizeof(buffer);
-		if (offset - is->offset < (goffset)length)
-			length = offset - is->offset;
+		if (offset - input_stream_get_offset(is) < (goffset)length)
+			length = offset - input_stream_get_offset(is);
 
 		size_t nbytes = decoder_read(decoder, is, buffer, length);
 		if (nbytes == 0)
 			return false;
 	}
 
-	assert(is->offset == offset);
+	assert(input_stream_get_offset(is) == offset);
 	return true;
 }
 
@@ -97,7 +97,7 @@ dsdlib_skip(struct decoder *decoder, struct input_stream *is,
 	if (delta == 0)
 		return true;
 
-	if (is->seekable)
+	if (input_stream_is_seekable(is))
 		return input_stream_seek(is, delta, SEEK_CUR, NULL);
 
 	char buffer[8192];
@@ -139,10 +139,12 @@ dsdlib_tag_id3(struct input_stream *is,
 	id3_length_t count;
 
 	/* Prevent broken files causing problems */
-	if (is->offset >= is->size)
+	const goffset size = input_stream_get_size(is);
+	const goffset offset = input_stream_get_offset(is);
+	if (offset >= size)
 		return;
 
-	count = is->size - is->offset;
+	count = size - offset;
 
 	/* Check and limit id3 tag size to prevent a stack overflow */
 	if (count == 0 || count > 4096)

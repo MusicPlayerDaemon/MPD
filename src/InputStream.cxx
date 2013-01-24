@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "input_stream.h"
+#include "InputStream.hxx"
 #include "InputRegistry.hxx"
 #include "InputPlugin.hxx"
 #include "input/RewindInputPlugin.hxx"
@@ -116,6 +116,52 @@ input_stream_lock_wait_ready(struct input_stream *is)
 	g_mutex_lock(is->mutex);
 	input_stream_wait_ready(is);
 	g_mutex_unlock(is->mutex);
+}
+
+const char *
+input_stream_get_mime_type(const struct input_stream *is)
+{
+	assert(is != NULL);
+	assert(is->ready);
+
+	return is->mime;
+}
+
+void
+input_stream_override_mime_type(struct input_stream *is, const char *mime)
+{
+	assert(is != NULL);
+	assert(is->ready);
+
+	g_free(is->mime);
+	is->mime = g_strdup(mime);
+}
+
+goffset
+input_stream_get_size(const struct input_stream *is)
+{
+	assert(is != NULL);
+	assert(is->ready);
+
+	return is->size;
+}
+
+goffset
+input_stream_get_offset(const struct input_stream *is)
+{
+	assert(is != NULL);
+	assert(is->ready);
+
+	return is->offset;
+}
+
+bool
+input_stream_is_seekable(const struct input_stream *is)
+{
+	assert(is != NULL);
+	assert(is->ready);
+
+	return is->seekable;
 }
 
 bool

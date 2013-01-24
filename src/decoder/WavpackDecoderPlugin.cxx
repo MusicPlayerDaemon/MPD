@@ -20,6 +20,7 @@
 #include "config.h"
 #include "WavpackDecoderPlugin.hxx"
 #include "decoder_api.h"
+#include "InputStream.hxx"
 
 extern "C" {
 #include "audio_check.h"

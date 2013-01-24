@@ -23,6 +23,7 @@
 #include "tag.h"
 #include "conf.h"
 #include "input_stream.h"
+#include "InputStream.hxx"
 #include "InputInit.hxx"
 #include "IOThread.hxx"
 

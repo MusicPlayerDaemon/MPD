@@ -24,7 +24,6 @@
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
 #include "tag.h"
-#include "input_stream.h"
 
 #include <assert.h>
 

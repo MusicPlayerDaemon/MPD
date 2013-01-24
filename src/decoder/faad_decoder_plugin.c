@@ -175,7 +175,8 @@ faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
 	size_t length;
 	bool success;
 
-	fileread = is->size >= 0 ? is->size : 0;
+	const goffset size = input_stream_get_size(is);
+	fileread = size >= 0 ? size : 0;
 
 	decoder_buffer_fill(buffer);
 	data = decoder_buffer_read(buffer, &length);
@@ -201,7 +202,7 @@ faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
 			return -1;
 	}
 
-	if (is->seekable && length >= 2 &&
+	if (input_stream_is_seekable(is) && length >= 2 &&
 	    data[0] == 0xFF && ((data[1] & 0xF6) == 0xF0)) {
 		/* obtain the duration from the ADTS header */
 		float song_length = adts_song_duration(buffer);

@@ -26,6 +26,7 @@
 #include "ArchiveInternal.hxx"
 #include "ArchivePlugin.hxx"
 #include "InputInternal.hxx"
+#include "InputStream.hxx"
 #include "InputPlugin.hxx"
 #include "refcount.h"
 

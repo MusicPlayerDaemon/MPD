@@ -21,6 +21,7 @@
 #include "VorbisDecoderPlugin.h"
 #include "VorbisComments.hxx"
 #include "decoder_api.h"
+#include "InputStream.hxx"
 #include "OggCodec.hxx"
 
 extern "C" {
