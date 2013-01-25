@@ -108,6 +108,13 @@ struct player_control {
 	 */
 	Cond cond;
 
+	/**
+	 * This object gets signalled when the player thread has
+	 * finished the #command.  It wakes up the client that waits
+	 * (i.e. the main thread).
+	 */
+	Cond client_cond;
+
 	enum player_command command;
 	enum player_state state;
 
@@ -191,7 +198,32 @@ struct player_control {
 	 * prior to calling this function.
 	 */
 	void Wait() {
+		assert(thread == g_thread_self());
+
 		cond.wait(mutex);
+	}
+
+	/**
+	 * Wake up the client waiting for command completion.
+	 *
+	 * Caller must lock the object.
+	 */
+	void ClientSignal() {
+		assert(thread == g_thread_self());
+
+		client_cond.signal();
+	}
+
+	/**
+	 * The client calls this method to wait for command
+	 * completion.
+	 *
+	 * Caller must lock the object.
+	 */
+	void ClientWait() {
+		assert(thread != g_thread_self());
+
+		client_cond.wait(mutex);
 	}
 
 	/**

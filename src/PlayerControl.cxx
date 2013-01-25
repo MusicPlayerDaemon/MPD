@@ -60,7 +60,7 @@ static void
 player_command_wait_locked(struct player_control *pc)
 {
 	while (pc->command != PLAYER_COMMAND_NONE)
-		pc->cond.wait(pc->mutex);
+		pc->ClientWait();
 }
 
 static void
