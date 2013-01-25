@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,25 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_FFMPEG_METADATA_H
-#define MPD_FFMPEG_METADATA_H
+#ifndef MPD_DECODER_FFMPEG_HXX
+#define MPD_DECODER_FFMPEG_HXX
 
-#include <libavformat/avformat.h>
-#include <libavutil/avutil.h>
-#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,5,0)
-#include <libavutil/dict.h>
-#endif
-
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(53,1,0)
-#define AVDictionary AVMetadata
-#define AVDictionaryEntry AVMetadataTag
-#define av_dict_get av_metadata_get
-#endif
-
-struct tag_handler;
-
-void
-ffmpeg_scan_dictionary(AVDictionary *dict,
-		       const struct tag_handler *handler, void *handler_ctx);
+extern const struct decoder_plugin ffmpeg_decoder_plugin;
 
 #endif

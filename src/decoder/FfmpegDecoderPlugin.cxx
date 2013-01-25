@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,11 +17,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+/* necessary because libavutil/common.h uses UINT64_C */
+#define __STDC_CONSTANT_MACROS
+
 #include "config.h"
+#include "FfmpegDecoderPlugin.hxx"
 #include "decoder_api.h"
-#include "audio_check.h"
-#include "ffmpeg_metadata.h"
+#include "FfmpegMetaData.hxx"
 #include "tag_handler.h"
+
+extern "C" {
+#include "audio_check.h"
+}
 
 #include <glib.h>
 
@@ -34,6 +41,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavformat/avio.h>
@@ -43,6 +51,7 @@
 #if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,5,0)
 #include <libavutil/dict.h>
 #endif
+}
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "ffmpeg"
@@ -93,7 +102,7 @@ struct mpd_ffmpeg_stream {
 static int
 mpd_ffmpeg_stream_read(void *opaque, uint8_t *buf, int size)
 {
-	struct mpd_ffmpeg_stream *stream = opaque;
+	struct mpd_ffmpeg_stream *stream = (struct mpd_ffmpeg_stream *)opaque;
 
 	return decoder_read(stream->decoder, stream->input,
 			    (void *)buf, size);
@@ -102,7 +111,7 @@ mpd_ffmpeg_stream_read(void *opaque, uint8_t *buf, int size)
 static int64_t
 mpd_ffmpeg_stream_seek(void *opaque, int64_t pos, int whence)
 {
-	struct mpd_ffmpeg_stream *stream = opaque;
+	struct mpd_ffmpeg_stream *stream = (struct mpd_ffmpeg_stream *)opaque;
 
 	if (whence == AVSEEK_SIZE)
 		return stream->input->size;
@@ -305,7 +314,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 	/* libavcodec < 0.8 needs an aligned buffer */
 	uint8_t audio_buf[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2 + 16];
 	size_t buffer_size = sizeof(audio_buf);
-	int16_t *aligned_buffer = align16(audio_buf, &buffer_size);
+	int16_t *aligned_buffer = (int16_t *)align16(audio_buf, &buffer_size);
 #endif
 
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
@@ -426,7 +435,7 @@ ffmpeg_probe(struct decoder *decoder, struct input_stream *is)
 		PADDING = 16,
 	};
 
-	unsigned char *buffer = g_malloc(BUFFER_SIZE);
+	unsigned char *buffer = (unsigned char *)g_malloc(BUFFER_SIZE);
 	size_t nbytes = decoder_read(decoder, is, buffer, BUFFER_SIZE);
 	if (nbytes <= PADDING ||
 	    !input_stream_lock_seek(is, 0, SEEK_SET, NULL)) {
@@ -440,11 +449,10 @@ ffmpeg_probe(struct decoder *decoder, struct input_stream *is)
 	   size */
 	nbytes -= PADDING;
 
-	AVProbeData avpd = {
-		.buf = buffer,
-		.buf_size = nbytes,
-		.filename = is->uri,
-	};
+	AVProbeData avpd;
+	avpd.buf = buffer;
+	avpd.buf_size = nbytes;
+	avpd.filename = is->uri;
 
 	AVInputFormat *format = av_probe_input_format(&avpd, true);
 	g_free(buffer);
@@ -791,10 +799,14 @@ static const char *const ffmpeg_mime_types[] = {
 };
 
 const struct decoder_plugin ffmpeg_decoder_plugin = {
-	.name = "ffmpeg",
-	.init = ffmpeg_init,
-	.stream_decode = ffmpeg_decode,
-	.scan_stream = ffmpeg_scan_stream,
-	.suffixes = ffmpeg_suffixes,
-	.mime_types = ffmpeg_mime_types
+	"ffmpeg",
+	ffmpeg_init,
+	nullptr,
+	ffmpeg_decode,
+	nullptr,
+	nullptr,
+	ffmpeg_scan_stream,
+	nullptr,
+	ffmpeg_suffixes,
+	ffmpeg_mime_types
 };

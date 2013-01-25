@@ -617,9 +617,10 @@ endif
 
 if HAVE_FFMPEG
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/ffmpeg_metadata.c \
-	src/decoder/ffmpeg_metadata.h \
-	src/decoder/ffmpeg_decoder_plugin.c
+	src/decoder/FfmpegMetaData.cxx \
+	src/decoder/FfmpegMetaData.hxx \
+	src/decoder/FfmpegDecoderPlugin.cxx \
+	src/decoder/FfmpegDecoderPlugin.hxx
 endif
 
 if ENABLE_SNDFILE
