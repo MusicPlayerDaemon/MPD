@@ -20,7 +20,7 @@
 #include "config.h"
 #include "input_stream.h"
 #include "InputRegistry.hxx"
-#include "input_plugin.h"
+#include "InputPlugin.hxx"
 #include "input/RewindInputPlugin.hxx"
 
 extern "C" {

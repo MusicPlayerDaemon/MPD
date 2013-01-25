@@ -25,8 +25,8 @@
 #include "ZzipArchivePlugin.hxx"
 #include "ArchiveInternal.hxx"
 #include "ArchivePlugin.hxx"
-#include "input_internal.h"
-#include "input_plugin.h"
+#include "InputInternal.hxx"
+#include "InputPlugin.hxx"
 #include "refcount.h"
 
 #include <zzip/zzip.h>

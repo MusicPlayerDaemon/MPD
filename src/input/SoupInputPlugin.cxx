@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "SoupInputPlugin.hxx"
-#include "input_plugin.h"
-#include "input_internal.h"
+#include "InputPlugin.hxx"
+#include "InputInternal.hxx"
 #include "IOThread.hxx"
 #include "event/Loop.hxx"
 #include "conf.h"

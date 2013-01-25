@@ -20,8 +20,8 @@
 #include "config.h"
 #include "DespotifyInputPlugin.hxx"
 #include "DespotifyUtils.hxx"
-#include "input_internal.h"
-#include "input_plugin.h"
+#include "InputInternal.hxx"
+#include "InputPlugin.hxx"
 #include "tag.h"
 
 extern "C" {

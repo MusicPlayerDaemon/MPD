@@ -27,7 +27,7 @@
 #include "OutputList.hxx"
 #include "output_plugin.h"
 #include "InputRegistry.hxx"
-#include "input_plugin.h"
+#include "InputPlugin.hxx"
 #include "playlist_list.h"
 #include "playlist_plugin.h"
 #include "mpd_error.h"

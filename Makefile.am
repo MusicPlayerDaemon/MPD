@@ -79,7 +79,6 @@ mpd_headers = \
 	src/gcc.h \
 	src/decoder_list.h \
 	src/decoder/pcm_decoder_plugin.h \
-	src/input_plugin.h \
 	src/input_stream.h \
 	src/text_input_stream.h \
 	src/icy_server.h \
@@ -710,7 +709,8 @@ libinput_a_SOURCES = \
 	src/InputInit.cxx src/InputInit.hxx \
 	src/InputRegistry.cxx src/InputRegistry.hxx \
 	src/InputStream.cxx \
-	src/input_internal.c src/input_internal.h \
+	src/InputPlugin.hxx \
+	src/InputInternal.cxx src/InputInternal.hxx \
 	src/input/RewindInputPlugin.cxx src/input/RewindInputPlugin.hxx \
 	src/input/FileInputPlugin.cxx src/input/FileInputPlugin.hxx
 

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "InputInit.hxx"
 #include "InputRegistry.hxx"
-#include "input_plugin.h"
+#include "InputPlugin.hxx"
 #include "conf.h"
 
 #include <assert.h>

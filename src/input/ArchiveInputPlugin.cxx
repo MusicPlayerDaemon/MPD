@@ -22,7 +22,7 @@
 #include "ArchiveLookup.hxx"
 #include "ArchiveList.hxx"
 #include "ArchivePlugin.hxx"
-#include "input_plugin.h"
+#include "InputPlugin.hxx"
 
 #include <glib.h>
 

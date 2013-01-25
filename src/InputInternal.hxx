@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_INPUT_INTERNAL_H
-#define MPD_INPUT_INTERNAL_H
+#ifndef MPD_INPUT_INTERNAL_HXX
+#define MPD_INPUT_INTERNAL_HXX
 
 #include "check.h"
 
@@ -26,10 +26,6 @@
 
 struct input_stream;
 struct input_plugin;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 void
 input_stream_init(struct input_stream *is, const struct input_plugin *plugin,
@@ -43,9 +39,5 @@ input_stream_signal_client(struct input_stream *is);
 
 void
 input_stream_set_ready(struct input_stream *is);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
