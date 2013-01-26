@@ -29,9 +29,9 @@
 #include "tag.h"
 #include "tag_handler.h"
 #include "song.h"
+#include "TagFile.hxx"
 
 extern "C" {
-#include "tag_file.h"
 #include "tag_ape.h"
 #include "tag_id3.h"
 #include "cue/cue_parser.h"

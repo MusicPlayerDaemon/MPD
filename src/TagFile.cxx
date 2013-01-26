@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,9 +18,13 @@
  */
 
 #include "config.h"
-#include "tag_file.h"
+#include "TagFile.hxx"
+
+extern "C" {
 #include "uri.h"
 #include "decoder_list.h"
+}
+
 #include "decoder_plugin.h"
 #include "input_stream.h"
 

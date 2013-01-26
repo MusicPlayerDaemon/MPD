@@ -269,7 +269,7 @@ src_mpd_SOURCES = \
 	src/TagPrint.cxx src/TagPrint.hxx \
 	src/TagSave.cxx src/TagSave.hxx \
 	src/tag_handler.c src/tag_handler.h \
-	src/tag_file.c src/tag_file.h \
+	src/TagFile.cxx src/TagFile.hxx \
 	src/tokenizer.c \
 	src/TextFile.cxx src/TextFile.hxx \
 	src/text_input_stream.c \
@@ -1115,7 +1115,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c\
 	src/uri.c \
 	src/Song.cxx src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
-	src/tag_handler.c src/tag_file.c \
+	src/tag_handler.c src/TagFile.cxx \
 	src/audio_check.c src/pcm_buffer.c \
 	src/text_input_stream.c \
 	src/cue/cue_parser.c src/cue/cue_parser.h \
