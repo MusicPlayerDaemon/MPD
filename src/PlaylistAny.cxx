@@ -20,10 +20,10 @@
 #include "config.h"
 #include "PlaylistAny.hxx"
 #include "PlaylistMapper.hxx"
+#include "PlaylistRegistry.hxx"
 #include "input_stream.h"
 
 extern "C" {
-#include "playlist_list.h"
 #include "uri.h"
 }
 

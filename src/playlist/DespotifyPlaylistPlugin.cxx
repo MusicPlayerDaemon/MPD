@@ -21,7 +21,7 @@
 #include "DespotifyPlaylistPlugin.hxx"
 #include "DespotifyUtils.hxx"
 #include "playlist_plugin.h"
-#include "playlist_list.h"
+#include "PlaylistRegistry.hxx"
 #include "conf.h"
 #include "uri.h"
 #include "tag.h"

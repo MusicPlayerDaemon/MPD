@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "playlist/soundcloud_playlist_plugin.h"
+#include "SoundCloudPlaylistPlugin.hxx"
 #include "conf.h"
 #include "input_stream.h"
 #include "playlist_plugin.h"
@@ -434,15 +434,18 @@ static const char *const soundcloud_schemes[] = {
 };
 
 const struct playlist_plugin soundcloud_playlist_plugin = {
-	.name = "soundcloud",
+	"soundcloud",
 
-	.init = soundcloud_init,
-	.finish = soundcloud_finish,
-	.open_uri = soundcloud_open_uri,
-	.close = soundcloud_close,
-	.read = soundcloud_read,
+	soundcloud_init,
+	soundcloud_finish,
+	soundcloud_open_uri,
+	nullptr,
+	soundcloud_close,
+	soundcloud_read,
 
-	.schemes = soundcloud_schemes,
+	soundcloud_schemes,
+	nullptr,
+	nullptr,
 };
 
 

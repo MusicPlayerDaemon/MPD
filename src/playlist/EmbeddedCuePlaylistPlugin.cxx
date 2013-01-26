@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,15 +24,18 @@
  */
 
 #include "config.h"
-#include "playlist/embcue_playlist_plugin.h"
+#include "EmbeddedCuePlaylistPlugin.hxx"
 #include "playlist_plugin.h"
 #include "tag.h"
 #include "tag_handler.h"
+#include "song.h"
+
+extern "C" {
 #include "tag_file.h"
 #include "tag_ape.h"
 #include "tag_id3.h"
-#include "song.h"
 #include "cue/cue_parser.h"
+}
 
 #include <glib.h>
 #include <assert.h>
@@ -67,7 +70,7 @@ struct embcue_playlist {
 static void
 embcue_tag_pair(const char *name, const char *value, void *ctx)
 {
-	struct embcue_playlist *playlist = ctx;
+	struct embcue_playlist *playlist = (struct embcue_playlist *)ctx;
 
 	if (playlist->cuesheet == NULL &&
 	    g_ascii_strcasecmp(name, "cuesheet") == 0)
@@ -75,7 +78,9 @@ embcue_tag_pair(const char *name, const char *value, void *ctx)
 }
 
 static const struct tag_handler embcue_tag_handler = {
-	.pair = embcue_tag_pair,
+	nullptr,
+	nullptr,
+	embcue_tag_pair,
 };
 
 static struct playlist_provider *
@@ -170,12 +175,16 @@ static const char *const embcue_playlist_suffixes[] = {
 };
 
 const struct playlist_plugin embcue_playlist_plugin = {
-	.name = "cue",
+	"cue",
 
-	.open_uri = embcue_playlist_open_uri,
-	.close = embcue_playlist_close,
-	.read = embcue_playlist_read,
+	nullptr,
+	nullptr,
+	embcue_playlist_open_uri,
+	nullptr,
+	embcue_playlist_close,
+	embcue_playlist_read,
 
-	.suffixes = embcue_playlist_suffixes,
-	.mime_types = NULL,
+	embcue_playlist_suffixes,
+	nullptr,
+	nullptr,
 };

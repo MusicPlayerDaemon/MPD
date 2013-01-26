@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
-#include "playlist/lastfm_playlist_plugin.h"
+#include "LastFMPlaylistPlugin.hxx"
 #include "playlist_plugin.h"
-#include "playlist_list.h"
+#include "PlaylistRegistry.hxx"
 #include "conf.h"
 #include "uri.h"
 #include "song.h"
@@ -284,13 +284,16 @@ static const char *const lastfm_schemes[] = {
 };
 
 const struct playlist_plugin lastfm_playlist_plugin = {
-	.name = "lastfm",
+	"lastfm",
 
-	.init = lastfm_init,
-	.finish = lastfm_finish,
-	.open_uri = lastfm_open_uri,
-	.close = lastfm_close,
-	.read = lastfm_read,
+	lastfm_init,
+	lastfm_finish,
+	lastfm_open_uri,
+	nullptr,
+	lastfm_close,
+	lastfm_read,
 
-	.schemes = lastfm_schemes,
+	lastfm_schemes,
+	nullptr,
+	nullptr,
 };

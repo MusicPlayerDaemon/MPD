@@ -26,11 +26,11 @@
 #include "decoder_api.h"
 #include "InputInit.hxx"
 #include "IOThread.hxx"
+#include "PlaylistRegistry.hxx"
+#include "playlist_plugin.h"
 
 extern "C" {
 #include "decoder_list.h"
-#include "playlist_list.h"
-#include "playlist_plugin.h"
 }
 
 #include <glib.h>

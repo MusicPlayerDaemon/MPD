@@ -23,6 +23,7 @@
 #include "PlaylistAny.hxx"
 #include "PlaylistSong.hxx"
 #include "Playlist.hxx"
+#include "PlaylistRegistry.hxx"
 #include "QueuePrint.hxx"
 #include "SongPrint.hxx"
 #include "DatabaseGlue.hxx"
@@ -31,7 +32,6 @@
 #include "input_stream.h"
 
 extern "C" {
-#include "playlist_list.h"
 #include "playlist_plugin.h"
 #include "song.h"
 }

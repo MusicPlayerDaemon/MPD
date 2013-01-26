@@ -28,6 +28,7 @@
 #include "Directory.hxx"
 #include "song.h"
 #include "PlaylistVector.hxx"
+#include "PlaylistRegistry.hxx"
 #include "Mapper.hxx"
 #include "ExcludeList.hxx"
 #include "conf.h"
@@ -35,7 +36,6 @@
 
 extern "C" {
 #include "uri.h"
-#include "playlist_list.h"
 }
 
 #include <glib.h>

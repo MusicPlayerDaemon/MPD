@@ -28,7 +28,7 @@
 #include "output_plugin.h"
 #include "InputRegistry.hxx"
 #include "InputPlugin.hxx"
-#include "playlist_list.h"
+#include "PlaylistRegistry.hxx"
 #include "playlist_plugin.h"
 #include "mpd_error.h"
 #include "glib_compat.h"

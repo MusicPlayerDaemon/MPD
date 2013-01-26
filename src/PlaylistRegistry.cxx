@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,21 +18,25 @@
  */
 
 #include "config.h"
-#include "playlist_list.h"
+#include "PlaylistRegistry.hxx"
 #include "playlist_plugin.h"
 #include "playlist/extm3u_playlist_plugin.h"
 #include "playlist/m3u_playlist_plugin.h"
 #include "playlist/xspf_playlist_plugin.h"
-#include "playlist/lastfm_playlist_plugin.h"
+#include "playlist/LastFMPlaylistPlugin.hxx"
 #include "playlist/DespotifyPlaylistPlugin.hxx"
-#include "playlist/soundcloud_playlist_plugin.h"
+#include "playlist/SoundCloudPlaylistPlugin.hxx"
 #include "playlist/pls_playlist_plugin.h"
 #include "playlist/asx_playlist_plugin.h"
 #include "playlist/rss_playlist_plugin.h"
 #include "playlist/cue_playlist_plugin.h"
-#include "playlist/embcue_playlist_plugin.h"
+#include "playlist/EmbeddedCuePlaylistPlugin.hxx"
 #include "input_stream.h"
+
+extern "C" {
 #include "uri.h"
+}
+
 #include "string_util.h"
 #include "conf.h"
 #include "mpd_error.h"

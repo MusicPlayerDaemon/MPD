@@ -48,6 +48,7 @@
 #include "event/Loop.hxx"
 #include "IOThread.hxx"
 #include "fs/Path.hxx"
+#include "PlaylistRegistry.hxx"
 
 extern "C" {
 #include "daemon.h"
@@ -55,7 +56,6 @@ extern "C" {
 #include "audio_config.h"
 #include "pcm_resample.h"
 #include "decoder_list.h"
-#include "playlist_list.h"
 #include "zeroconf.h"
 }
 

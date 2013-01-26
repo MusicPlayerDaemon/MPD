@@ -97,14 +97,12 @@ mpd_headers = \
 	src/Playlist.hxx \
 	src/playlist_error.h \
 	src/playlist_plugin.h \
-	src/playlist_list.h \
 	src/playlist/extm3u_playlist_plugin.h \
 	src/playlist/m3u_playlist_plugin.h \
 	src/playlist/pls_playlist_plugin.h \
 	src/playlist/xspf_playlist_plugin.h \
 	src/playlist/asx_playlist_plugin.h \
 	src/playlist/rss_playlist_plugin.h \
-	src/playlist/lastfm_playlist_plugin.h \
 	src/playlist/cue_playlist_plugin.h \
 	src/poison.h \
 	src/riff.h \
@@ -928,9 +926,9 @@ libplaylist_plugins_a_SOURCES = \
 	src/playlist/asx_playlist_plugin.c \
 	src/playlist/rss_playlist_plugin.c \
 	src/playlist/cue_playlist_plugin.c \
-	src/playlist/embcue_playlist_plugin.c \
-	src/playlist/embcue_playlist_plugin.h \
-	src/playlist_list.c
+	src/playlist/EmbeddedCuePlaylistPlugin.cxx \
+	src/playlist/EmbeddedCuePlaylistPlugin.hxx \
+	src/PlaylistRegistry.cxx src/PlaylistRegistry.hxx
 libplaylist_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(YAJL_CFLAGS) \
 	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS))
@@ -940,7 +938,9 @@ PLAYLIST_LIBS = \
 	$(FLAC_LIBS)
 
 if ENABLE_LASTFM
-libplaylist_plugins_a_SOURCES += src/playlist/lastfm_playlist_plugin.c
+libplaylist_plugins_a_SOURCES += \
+	src/playlist/LastFMPlaylistPlugin.cxx \
+	src/playlist/LastFMPlaylistPlugin.hxx
 endif
 
 if ENABLE_DESPOTIFY
@@ -951,8 +951,8 @@ endif
 
 if ENABLE_SOUNDCLOUD
 libplaylist_plugins_a_SOURCES += \
-	src/playlist/soundcloud_playlist_plugin.h \
-	src/playlist/soundcloud_playlist_plugin.c
+	src/playlist/SoundCloudPlaylistPlugin.cxx \
+	src/playlist/SoundCloudPlaylistPlugin.hxx
 PLAYLIST_LIBS += $(YAJL_LIBS)
 endif
 
