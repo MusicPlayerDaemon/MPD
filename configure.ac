@@ -577,6 +577,27 @@ AM_CONDITIONAL(ENABLE_INOTIFY, test x$enable_inotify = xyes)
 dnl --------------------------------- libwrap ---------------------------------
 if test x$enable_libwrap != xno; then
 	AC_CHECK_LIBWRAP(found_libwrap=yes, found_libwrap=no)
+
+	if test x$found_libwrap = xyes; then
+		dnl  See if libwrap is compatible with C++; it is
+		dnl  broken on many systems
+		AC_MSG_CHECKING(whether libwrap is compatible with C++)
+		AC_LANG_PUSH([C++])
+		AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+			#include <tcpd.h>
+			bool CheckLibWrap(int fd, const char &progname) {
+				struct request_info req;
+				request_init(&req, RQ_FILE, fd, RQ_DAEMON, progname, 0);
+				fromhost(&req);
+				return hosts_access(&req);
+			}
+			])],
+			AC_MSG_RESULT([yes]),
+			[found_libwrap=no; AC_MSG_RESULT([no]);
+			AC_MSG_WARN([Your version of libwrap is broken with C++])])
+		AC_LANG_POP
+	fi
+
 	MPD_AUTO_RESULT(libwrap, libwrap, [libwrap not found])
 fi
 
