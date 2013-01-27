@@ -417,7 +417,7 @@ int mpd_main(int argc, char *argv[])
 	GlobalEvents::Register(GlobalEvents::IDLE, idle_event_emitted);
 	GlobalEvents::Register(GlobalEvents::SHUTDOWN, shutdown_event_emitted);
 
-	path_global_init();
+	Path::GlobalInit();
 
 	if (!glue_mapper_init(&error)) {
 		g_warning("%s", error->message);
@@ -554,7 +554,6 @@ int mpd_main(int argc, char *argv[])
 	audio_output_all_finish();
 	volume_finish();
 	mapper_finish();
-	path_global_finish();
 	delete global_partition;
 	command_finish();
 	update_global_finish();

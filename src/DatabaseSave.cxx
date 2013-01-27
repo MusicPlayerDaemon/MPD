@@ -62,7 +62,8 @@ db_save_internal(FILE *fp, const Directory *music_root)
 	fprintf(fp, "%s\n", DIRECTORY_INFO_BEGIN);
 	fprintf(fp, DB_FORMAT_PREFIX "%u\n", DB_FORMAT);
 	fprintf(fp, "%s%s\n", DIRECTORY_MPD_VERSION, VERSION);
-	fprintf(fp, "%s%s\n", DIRECTORY_FS_CHARSET, path_get_fs_charset());
+	fprintf(fp, "%s%s\n", DIRECTORY_FS_CHARSET,
+		Path::GetFSCharset().c_str());
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (!ignore_tag_items[i])
@@ -106,7 +107,7 @@ db_load_internal(TextFile &file, Directory *music_root, GError **error)
 
 			found_version = true;
 		} else if (g_str_has_prefix(line, DIRECTORY_FS_CHARSET)) {
-			const char *new_charset, *old_charset;
+			const char *new_charset;
 
 			if (found_charset) {
 				g_set_error(error, db_quark(), 0,
@@ -117,14 +118,14 @@ db_load_internal(TextFile &file, Directory *music_root, GError **error)
 			found_charset = true;
 
 			new_charset = line + sizeof(DIRECTORY_FS_CHARSET) - 1;
-			old_charset = path_get_fs_charset();
-			if (old_charset != NULL
-			    && strcmp(new_charset, old_charset)) {
+			const std::string &old_charset = Path::GetFSCharset();
+			if (!old_charset.empty()
+			    && strcmp(new_charset, old_charset.c_str())) {
 				g_set_error(error, db_quark(), 0,
 					    "Existing database has charset "
 					    "\"%s\" instead of \"%s\"; "
 					    "discarding database file",
-					    new_charset, old_charset);
+					    new_charset, old_charset.c_str());
 				return false;
 			}
 		} else if (g_str_has_prefix(line, DB_TAG_PREFIX)) {

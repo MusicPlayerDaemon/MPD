@@ -44,12 +44,6 @@
 #  endif
 #endif
 
-void path_global_init();
-
-void path_global_finish();
-
-const char *path_get_fs_charset();
-
 /**
  * A path name in the native file system character set.
  */
@@ -164,6 +158,16 @@ public:
 	 */
 	gcc_pure
 	static std::string ToUTF8(const_pointer path_fs);
+
+	/**
+	 * Performs global one-time initialization of this class.
+	 */
+	static void GlobalInit();
+
+	/**
+	 * Gets file system character set name.
+	 */
+	static const std::string &GetFSCharset();
 
 	/**
 	 * Copy a #Path object.

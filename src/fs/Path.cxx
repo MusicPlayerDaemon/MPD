@@ -46,14 +46,14 @@
  */
 #define MPD_PATH_MAX_UTF8 ((MPD_PATH_MAX - 1) * 4 + 1)
 
-static char *fs_charset;
+std::string fs_charset;
 
 std::string Path::ToUTF8(const_pointer path_fs)
 {
 	if (path_fs == nullptr)
 		return std::string();
 
-	GIConv conv = g_iconv_open("utf-8", fs_charset);
+	GIConv conv = g_iconv_open("utf-8", fs_charset.c_str());
 	if (conv == reinterpret_cast<GIConv>(-1))
 		return std::string();
 
@@ -80,7 +80,7 @@ Path Path::FromUTF8(const char *path_utf8)
 	gchar *p;
 
 	p = g_convert(path_utf8, -1,
-		      fs_charset, "utf-8",
+		      fs_charset.c_str(), "utf-8",
 		      NULL, NULL, NULL);
 	if (p == NULL)
 		/* fall back to UTF-8 */
@@ -103,25 +103,24 @@ IsSupportedCharset(const char *charset)
 }
 
 static void
-path_set_fs_charset(const char *charset)
+SetFSCharset(const char *charset)
 {
 	assert(charset != NULL);
 
 	if (!IsSupportedCharset(charset))
 		MPD_ERROR("invalid filesystem charset: %s", charset);
 
-	g_free(fs_charset);
-	fs_charset = g_strdup(charset);
+	fs_charset = charset;
 
-	g_debug("path_set_fs_charset: fs charset is: %s", fs_charset);
+	g_debug("SetFSCharset: fs charset is: %s", fs_charset.c_str());
 }
 
-const char *path_get_fs_charset(void)
+const std::string &Path::GetFSCharset()
 {
 	return fs_charset;
 }
 
-void path_global_init(void)
+void Path::GlobalInit()
 {
 	const char *charset = NULL;
 
@@ -146,14 +145,9 @@ void path_global_init(void)
 	}
 
 	if (charset) {
-		path_set_fs_charset(charset);
+		SetFSCharset(charset);
 	} else {
 		g_message("setting filesystem charset to ISO-8859-1");
-		path_set_fs_charset("ISO-8859-1");
+		SetFSCharset("ISO-8859-1");
 	}
-}
-
-void path_global_finish(void)
-{
-	g_free(fs_charset);
 }
