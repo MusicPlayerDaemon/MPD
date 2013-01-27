@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "playlist/asx_playlist_plugin.h"
-#include "playlist_plugin.h"
+#include "AsxPlaylistPlugin.hxx"
+#include "PlaylistPlugin.hxx"
 #include "input_stream.h"
 #include "song.h"
 #include "tag.h"
@@ -35,7 +35,7 @@
 /**
  * This is the state object for the GLib XML parser.
  */
-struct asx_parser {
+struct AsxParser {
 	/**
 	 * The list of songs (in reverse order because that's faster
 	 * while adding).
@@ -61,6 +61,11 @@ struct asx_parser {
 	 * element.
 	 */
 	struct song *song;
+
+	AsxParser()
+		:songs(nullptr),
+		 state(ROOT) {}
+
 };
 
 static const gchar *
@@ -81,19 +86,19 @@ asx_start_element(G_GNUC_UNUSED GMarkupParseContext *context,
 		  const gchar **attribute_values,
 		  gpointer user_data, G_GNUC_UNUSED GError **error)
 {
-	struct asx_parser *parser = user_data;
+	AsxParser *parser = (AsxParser *)user_data;
 
 	switch (parser->state) {
-	case ROOT:
+	case AsxParser::ROOT:
 		if (g_ascii_strcasecmp(element_name, "entry") == 0) {
-			parser->state = ENTRY;
+			parser->state = AsxParser::ENTRY;
 			parser->song = song_remote_new("asx:");
 			parser->tag = TAG_NUM_OF_ITEM_TYPES;
 		}
 
 		break;
 
-	case ENTRY:
+	case AsxParser::ENTRY:
 		if (g_ascii_strcasecmp(element_name, "ref") == 0) {
 			const gchar *href = get_attribute(attribute_names,
 							  attribute_values,
@@ -130,13 +135,13 @@ asx_end_element(G_GNUC_UNUSED GMarkupParseContext *context,
 		const gchar *element_name,
 		gpointer user_data, G_GNUC_UNUSED GError **error)
 {
-	struct asx_parser *parser = user_data;
+	AsxParser *parser = (AsxParser *)user_data;
 
 	switch (parser->state) {
-	case ROOT:
+	case AsxParser::ROOT:
 		break;
 
-	case ENTRY:
+	case AsxParser::ENTRY:
 		if (g_ascii_strcasecmp(element_name, "entry") == 0) {
 			if (strcmp(parser->song->uri, "asx:") != 0)
 				parser->songs = g_slist_prepend(parser->songs,
@@ -144,7 +149,7 @@ asx_end_element(G_GNUC_UNUSED GMarkupParseContext *context,
 			else
 				song_free(parser->song);
 
-			parser->state = ROOT;
+			parser->state = AsxParser::ROOT;
 		} else
 			parser->tag = TAG_NUM_OF_ITEM_TYPES;
 
@@ -157,13 +162,13 @@ asx_text(G_GNUC_UNUSED GMarkupParseContext *context,
 	 const gchar *text, gsize text_len,
 	 gpointer user_data, G_GNUC_UNUSED GError **error)
 {
-	struct asx_parser *parser = user_data;
+	AsxParser *parser = (AsxParser *)user_data;
 
 	switch (parser->state) {
-	case ROOT:
+	case AsxParser::ROOT:
 		break;
 
-	case ENTRY:
+	case AsxParser::ENTRY:
 		if (parser->tag != TAG_NUM_OF_ITEM_TYPES) {
 			if (parser->song->tag == NULL)
 				parser->song->tag = tag_new();
@@ -176,15 +181,17 @@ asx_text(G_GNUC_UNUSED GMarkupParseContext *context,
 }
 
 static const GMarkupParser asx_parser = {
-	.start_element = asx_start_element,
-	.end_element = asx_end_element,
-	.text = asx_text,
+	asx_start_element,
+	asx_end_element,
+	asx_text,
+	nullptr,
+	nullptr,
 };
 
 static void
 song_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
-	struct song *song = data;
+	struct song *song = (struct song *)data;
 
 	song_free(song);
 }
@@ -192,9 +199,9 @@ song_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 static void
 asx_parser_destroy(gpointer data)
 {
-	struct asx_parser *parser = data;
+	AsxParser *parser = (AsxParser *)data;
 
-	if (parser->state >= ENTRY)
+	if (parser->state >= AsxParser::ENTRY)
 		song_free(parser->song);
 
 	g_slist_foreach(parser->songs, song_free_callback, NULL);
@@ -206,7 +213,7 @@ asx_parser_destroy(gpointer data)
  *
  */
 
-struct asx_playlist {
+struct AsxPlaylist {
 	struct playlist_provider base;
 
 	GSList *songs;
@@ -215,11 +222,8 @@ struct asx_playlist {
 static struct playlist_provider *
 asx_open_stream(struct input_stream *is)
 {
-	struct asx_parser parser = {
-		.songs = NULL,
-		.state = ROOT,
-	};
-	struct asx_playlist *playlist;
+	AsxParser parser;
+	AsxPlaylist *playlist;
 	GMarkupParseContext *context;
 	char buffer[1024];
 	size_t nbytes;
@@ -264,9 +268,9 @@ asx_open_stream(struct input_stream *is)
 		return NULL;
 	}
 
-	/* create a #asx_playlist object from the parsed song list */
+	/* create a #AsxPlaylist object from the parsed song list */
 
-	playlist = g_new(struct asx_playlist, 1);
+	playlist = g_new(AsxPlaylist, 1);
 	playlist_provider_init(&playlist->base, &asx_playlist_plugin);
 	playlist->songs = g_slist_reverse(parser.songs);
 	parser.songs = NULL;
@@ -279,7 +283,7 @@ asx_open_stream(struct input_stream *is)
 static void
 asx_close(struct playlist_provider *_playlist)
 {
-	struct asx_playlist *playlist = (struct asx_playlist *)_playlist;
+	AsxPlaylist *playlist = (AsxPlaylist *)_playlist;
 
 	g_slist_foreach(playlist->songs, song_free_callback, NULL);
 	g_slist_free(playlist->songs);
@@ -289,13 +293,12 @@ asx_close(struct playlist_provider *_playlist)
 static struct song *
 asx_read(struct playlist_provider *_playlist)
 {
-	struct asx_playlist *playlist = (struct asx_playlist *)_playlist;
-	struct song *song;
+	AsxPlaylist *playlist = (AsxPlaylist *)_playlist;
 
 	if (playlist->songs == NULL)
 		return NULL;
 
-	song = playlist->songs->data;
+	struct song *song = (struct song *)playlist->songs->data;
 	playlist->songs = g_slist_remove(playlist->songs, song);
 
 	return song;
@@ -312,12 +315,16 @@ static const char *const asx_mime_types[] = {
 };
 
 const struct playlist_plugin asx_playlist_plugin = {
-	.name = "asx",
+	"asx",
 
-	.open_stream = asx_open_stream,
-	.close = asx_close,
-	.read = asx_read,
+	nullptr,
+	nullptr,
+	nullptr,
+	asx_open_stream,
+	asx_close,
+	asx_read,
 
-	.suffixes = asx_suffixes,
-	.mime_types = asx_mime_types,
+	nullptr,
+	asx_suffixes,
+	asx_mime_types,
 };

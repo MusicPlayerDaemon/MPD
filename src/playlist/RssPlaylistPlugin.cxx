@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "playlist/rss_playlist_plugin.h"
-#include "playlist_plugin.h"
+#include "RssPlaylistPlugin.hxx"
+#include "PlaylistPlugin.hxx"
 #include "input_stream.h"
 #include "song.h"
 #include "tag.h"
@@ -35,7 +35,7 @@
 /**
  * This is the state object for the GLib XML parser.
  */
-struct rss_parser {
+struct RssParser {
 	/**
 	 * The list of songs (in reverse order because that's faster
 	 * while adding).
@@ -61,6 +61,9 @@ struct rss_parser {
 	 * element.
 	 */
 	struct song *song;
+
+	RssParser()
+		:songs(nullptr), state(ROOT) {}
 };
 
 static const gchar *
@@ -81,19 +84,19 @@ rss_start_element(G_GNUC_UNUSED GMarkupParseContext *context,
 		  const gchar **attribute_values,
 		  gpointer user_data, G_GNUC_UNUSED GError **error)
 {
-	struct rss_parser *parser = user_data;
+	RssParser *parser = (RssParser *)user_data;
 
 	switch (parser->state) {
-	case ROOT:
+	case RssParser::ROOT:
 		if (g_ascii_strcasecmp(element_name, "item") == 0) {
-			parser->state = ITEM;
+			parser->state = RssParser::ITEM;
 			parser->song = song_remote_new("rss:");
 			parser->tag = TAG_NUM_OF_ITEM_TYPES;
 		}
 
 		break;
 
-	case ITEM:
+	case RssParser::ITEM:
 		if (g_ascii_strcasecmp(element_name, "enclosure") == 0) {
 			const gchar *href = get_attribute(attribute_names,
 							  attribute_values,
@@ -128,13 +131,13 @@ rss_end_element(G_GNUC_UNUSED GMarkupParseContext *context,
 		const gchar *element_name,
 		gpointer user_data, G_GNUC_UNUSED GError **error)
 {
-	struct rss_parser *parser = user_data;
+	RssParser *parser = (RssParser *)user_data;
 
 	switch (parser->state) {
-	case ROOT:
+	case RssParser::ROOT:
 		break;
 
-	case ITEM:
+	case RssParser::ITEM:
 		if (g_ascii_strcasecmp(element_name, "item") == 0) {
 			if (strcmp(parser->song->uri, "rss:") != 0)
 				parser->songs = g_slist_prepend(parser->songs,
@@ -142,7 +145,7 @@ rss_end_element(G_GNUC_UNUSED GMarkupParseContext *context,
 			else
 				song_free(parser->song);
 
-			parser->state = ROOT;
+			parser->state = RssParser::ROOT;
 		} else
 			parser->tag = TAG_NUM_OF_ITEM_TYPES;
 
@@ -155,13 +158,13 @@ rss_text(G_GNUC_UNUSED GMarkupParseContext *context,
 	 const gchar *text, gsize text_len,
 	 gpointer user_data, G_GNUC_UNUSED GError **error)
 {
-	struct rss_parser *parser = user_data;
+	RssParser *parser = (RssParser *)user_data;
 
 	switch (parser->state) {
-	case ROOT:
+	case RssParser::ROOT:
 		break;
 
-	case ITEM:
+	case RssParser::ITEM:
 		if (parser->tag != TAG_NUM_OF_ITEM_TYPES) {
 			if (parser->song->tag == NULL)
 				parser->song->tag = tag_new();
@@ -174,15 +177,17 @@ rss_text(G_GNUC_UNUSED GMarkupParseContext *context,
 }
 
 static const GMarkupParser rss_parser = {
-	.start_element = rss_start_element,
-	.end_element = rss_end_element,
-	.text = rss_text,
+	rss_start_element,
+	rss_end_element,
+	rss_text,
+	nullptr,
+	nullptr,
 };
 
 static void
 song_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
-	struct song *song = data;
+	struct song *song = (struct song *)data;
 
 	song_free(song);
 }
@@ -190,9 +195,9 @@ song_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 static void
 rss_parser_destroy(gpointer data)
 {
-	struct rss_parser *parser = data;
+	RssParser *parser = (RssParser *)data;
 
-	if (parser->state >= ITEM)
+	if (parser->state >= RssParser::ITEM)
 		song_free(parser->song);
 
 	g_slist_foreach(parser->songs, song_free_callback, NULL);
@@ -204,7 +209,7 @@ rss_parser_destroy(gpointer data)
  *
  */
 
-struct rss_playlist {
+struct RssPlaylist {
 	struct playlist_provider base;
 
 	GSList *songs;
@@ -213,11 +218,8 @@ struct rss_playlist {
 static struct playlist_provider *
 rss_open_stream(struct input_stream *is)
 {
-	struct rss_parser parser = {
-		.songs = NULL,
-		.state = ROOT,
-	};
-	struct rss_playlist *playlist;
+	RssParser parser;
+	RssPlaylist *playlist;
 	GMarkupParseContext *context;
 	char buffer[1024];
 	size_t nbytes;
@@ -264,7 +266,7 @@ rss_open_stream(struct input_stream *is)
 
 	/* create a #rss_playlist object from the parsed song list */
 
-	playlist = g_new(struct rss_playlist, 1);
+	playlist = g_new(RssPlaylist, 1);
 	playlist_provider_init(&playlist->base, &rss_playlist_plugin);
 	playlist->songs = g_slist_reverse(parser.songs);
 	parser.songs = NULL;
@@ -277,7 +279,7 @@ rss_open_stream(struct input_stream *is)
 static void
 rss_close(struct playlist_provider *_playlist)
 {
-	struct rss_playlist *playlist = (struct rss_playlist *)_playlist;
+	RssPlaylist *playlist = (RssPlaylist *)_playlist;
 
 	g_slist_foreach(playlist->songs, song_free_callback, NULL);
 	g_slist_free(playlist->songs);
@@ -287,13 +289,12 @@ rss_close(struct playlist_provider *_playlist)
 static struct song *
 rss_read(struct playlist_provider *_playlist)
 {
-	struct rss_playlist *playlist = (struct rss_playlist *)_playlist;
-	struct song *song;
+	RssPlaylist *playlist = (RssPlaylist *)_playlist;
 
 	if (playlist->songs == NULL)
 		return NULL;
 
-	song = playlist->songs->data;
+	struct song *song = (struct song *)playlist->songs->data;
 	playlist->songs = g_slist_remove(playlist->songs, song);
 
 	return song;
@@ -311,12 +312,16 @@ static const char *const rss_mime_types[] = {
 };
 
 const struct playlist_plugin rss_playlist_plugin = {
-	.name = "rss",
+	"rss",
 
-	.open_stream = rss_open_stream,
-	.close = rss_close,
-	.read = rss_read,
+	nullptr,
+	nullptr,
+	nullptr,
+	rss_open_stream,
+	rss_close,
+	rss_read,
 
-	.suffixes = rss_suffixes,
-	.mime_types = rss_mime_types,
+	nullptr,
+	rss_suffixes,
+	rss_mime_types,
 };

@@ -29,7 +29,7 @@
 #include "InputRegistry.hxx"
 #include "InputPlugin.hxx"
 #include "PlaylistRegistry.hxx"
-#include "playlist_plugin.h"
+#include "PlaylistPlugin.hxx"
 #include "mpd_error.h"
 #include "glib_compat.h"
 

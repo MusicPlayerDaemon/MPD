@@ -19,10 +19,9 @@
 
 #include "config.h"
 #include "LastFMPlaylistPlugin.hxx"
-#include "playlist_plugin.h"
+#include "PlaylistPlugin.hxx"
 #include "PlaylistRegistry.hxx"
 #include "conf.h"
-#include "uri.h"
 #include "song.h"
 #include "input_stream.h"
 

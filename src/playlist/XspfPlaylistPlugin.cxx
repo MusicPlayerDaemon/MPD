@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "playlist/xspf_playlist_plugin.h"
-#include "playlist_plugin.h"
+#include "XspfPlaylistPlugin.hxx"
+#include "PlaylistPlugin.hxx"
 #include "input_stream.h"
 #include "uri.h"
 #include "song.h"
@@ -36,7 +36,7 @@
 /**
  * This is the state object for the GLib XML parser.
  */
-struct xspf_parser {
+struct XspfParser {
 	/**
 	 * The list of songs (in reverse order because that's faster
 	 * while adding).
@@ -63,6 +63,9 @@ struct xspf_parser {
 	 * element.
 	 */
 	struct song *song;
+
+	XspfParser()
+		:songs(nullptr), state(ROOT) {}
 };
 
 static void
@@ -72,33 +75,33 @@ xspf_start_element(G_GNUC_UNUSED GMarkupParseContext *context,
 		   G_GNUC_UNUSED const gchar **attribute_values,
 		   gpointer user_data, G_GNUC_UNUSED GError **error)
 {
-	struct xspf_parser *parser = user_data;
+	XspfParser *parser = (XspfParser *)user_data;
 
 	switch (parser->state) {
-	case ROOT:
+	case XspfParser::ROOT:
 		if (strcmp(element_name, "playlist") == 0)
-			parser->state = PLAYLIST;
+			parser->state = XspfParser::PLAYLIST;
 
 		break;
 
-	case PLAYLIST:
+	case XspfParser::PLAYLIST:
 		if (strcmp(element_name, "trackList") == 0)
-			parser->state = TRACKLIST;
+			parser->state = XspfParser::TRACKLIST;
 
 		break;
 
-	case TRACKLIST:
+	case XspfParser::TRACKLIST:
 		if (strcmp(element_name, "track") == 0) {
-			parser->state = TRACK;
+			parser->state = XspfParser::TRACK;
 			parser->song = NULL;
 			parser->tag = TAG_NUM_OF_ITEM_TYPES;
 		}
 
 		break;
 
-	case TRACK:
+	case XspfParser::TRACK:
 		if (strcmp(element_name, "location") == 0)
-			parser->state = LOCATION;
+			parser->state = XspfParser::LOCATION;
 		else if (strcmp(element_name, "title") == 0)
 			parser->tag = TAG_TITLE;
 		else if (strcmp(element_name, "creator") == 0)
@@ -114,7 +117,7 @@ xspf_start_element(G_GNUC_UNUSED GMarkupParseContext *context,
 
 		break;
 
-	case LOCATION:
+	case XspfParser::LOCATION:
 		break;
 	}
 }
@@ -124,38 +127,38 @@ xspf_end_element(G_GNUC_UNUSED GMarkupParseContext *context,
 		 const gchar *element_name,
 		 gpointer user_data, G_GNUC_UNUSED GError **error)
 {
-	struct xspf_parser *parser = user_data;
+	XspfParser *parser = (XspfParser *)user_data;
 
 	switch (parser->state) {
-	case ROOT:
+	case XspfParser::ROOT:
 		break;
 
-	case PLAYLIST:
+	case XspfParser::PLAYLIST:
 		if (strcmp(element_name, "playlist") == 0)
-			parser->state = ROOT;
+			parser->state = XspfParser::ROOT;
 
 		break;
 
-	case TRACKLIST:
+	case XspfParser::TRACKLIST:
 		if (strcmp(element_name, "tracklist") == 0)
-			parser->state = PLAYLIST;
+			parser->state = XspfParser::PLAYLIST;
 
 		break;
 
-	case TRACK:
+	case XspfParser::TRACK:
 		if (strcmp(element_name, "track") == 0) {
 			if (parser->song != NULL)
 				parser->songs = g_slist_prepend(parser->songs,
 								parser->song);
 
-			parser->state = TRACKLIST;
+			parser->state = XspfParser::TRACKLIST;
 		} else
 			parser->tag = TAG_NUM_OF_ITEM_TYPES;
 
 		break;
 
-	case LOCATION:
-		parser->state = TRACK;
+	case XspfParser::LOCATION:
+		parser->state = XspfParser::TRACK;
 		break;
 	}
 }
@@ -165,15 +168,15 @@ xspf_text(G_GNUC_UNUSED GMarkupParseContext *context,
 	  const gchar *text, gsize text_len,
 	  gpointer user_data, G_GNUC_UNUSED GError **error)
 {
-	struct xspf_parser *parser = user_data;
+	XspfParser *parser = (XspfParser *)user_data;
 
 	switch (parser->state) {
-	case ROOT:
-	case PLAYLIST:
-	case TRACKLIST:
+	case XspfParser::ROOT:
+	case XspfParser::PLAYLIST:
+	case XspfParser::TRACKLIST:
 		break;
 
-	case TRACK:
+	case XspfParser::TRACK:
 		if (parser->song != NULL &&
 		    parser->tag != TAG_NUM_OF_ITEM_TYPES) {
 			if (parser->song->tag == NULL)
@@ -184,7 +187,7 @@ xspf_text(G_GNUC_UNUSED GMarkupParseContext *context,
 
 		break;
 
-	case LOCATION:
+	case XspfParser::LOCATION:
 		if (parser->song == NULL) {
 			char *uri = g_strndup(text, text_len);
 			parser->song = song_remote_new(uri);
@@ -196,15 +199,17 @@ xspf_text(G_GNUC_UNUSED GMarkupParseContext *context,
 }
 
 static const GMarkupParser xspf_parser = {
-	.start_element = xspf_start_element,
-	.end_element = xspf_end_element,
-	.text = xspf_text,
+	xspf_start_element,
+	xspf_end_element,
+	xspf_text,
+	nullptr,
+	nullptr,
 };
 
 static void
 song_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
-	struct song *song = data;
+	struct song *song = (struct song *)data;
 
 	song_free(song);
 }
@@ -212,9 +217,9 @@ song_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 static void
 xspf_parser_destroy(gpointer data)
 {
-	struct xspf_parser *parser = data;
+	XspfParser *parser = (XspfParser *)data;
 
-	if (parser->state >= TRACK && parser->song != NULL)
+	if (parser->state >= XspfParser::TRACK && parser->song != NULL)
 		song_free(parser->song);
 
 	g_slist_foreach(parser->songs, song_free_callback, NULL);
@@ -226,7 +231,7 @@ xspf_parser_destroy(gpointer data)
  *
  */
 
-struct xspf_playlist {
+struct XspfPlaylist {
 	struct playlist_provider base;
 
 	GSList *songs;
@@ -235,11 +240,8 @@ struct xspf_playlist {
 static struct playlist_provider *
 xspf_open_stream(struct input_stream *is)
 {
-	struct xspf_parser parser = {
-		.songs = NULL,
-		.state = ROOT,
-	};
-	struct xspf_playlist *playlist;
+	XspfParser parser;
+	XspfPlaylist *playlist;
 	GMarkupParseContext *context;
 	char buffer[1024];
 	size_t nbytes;
@@ -286,7 +288,7 @@ xspf_open_stream(struct input_stream *is)
 
 	/* create a #xspf_playlist object from the parsed song list */
 
-	playlist = g_new(struct xspf_playlist, 1);
+	playlist = g_new(XspfPlaylist, 1);
 	playlist_provider_init(&playlist->base, &xspf_playlist_plugin);
 	playlist->songs = g_slist_reverse(parser.songs);
 	parser.songs = NULL;
@@ -299,7 +301,7 @@ xspf_open_stream(struct input_stream *is)
 static void
 xspf_close(struct playlist_provider *_playlist)
 {
-	struct xspf_playlist *playlist = (struct xspf_playlist *)_playlist;
+	XspfPlaylist *playlist = (XspfPlaylist *)_playlist;
 
 	g_slist_foreach(playlist->songs, song_free_callback, NULL);
 	g_slist_free(playlist->songs);
@@ -309,13 +311,12 @@ xspf_close(struct playlist_provider *_playlist)
 static struct song *
 xspf_read(struct playlist_provider *_playlist)
 {
-	struct xspf_playlist *playlist = (struct xspf_playlist *)_playlist;
-	struct song *song;
+	XspfPlaylist *playlist = (XspfPlaylist *)_playlist;
 
 	if (playlist->songs == NULL)
 		return NULL;
 
-	song = playlist->songs->data;
+	struct song *song = (struct song *)playlist->songs->data;
 	playlist->songs = g_slist_remove(playlist->songs, song);
 
 	return song;
@@ -332,12 +333,16 @@ static const char *const xspf_mime_types[] = {
 };
 
 const struct playlist_plugin xspf_playlist_plugin = {
-	.name = "xspf",
+	"xspf",
 
-	.open_stream = xspf_open_stream,
-	.close = xspf_close,
-	.read = xspf_read,
+	nullptr,
+	nullptr,
+	nullptr,
+	xspf_open_stream,
+	xspf_close,
+	xspf_read,
 
-	.suffixes = xspf_suffixes,
-	.mime_types = xspf_mime_types,
+	nullptr,
+	xspf_suffixes,
+	xspf_mime_types,
 };

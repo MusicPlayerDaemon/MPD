@@ -96,14 +96,6 @@ mpd_headers = \
 	src/page.h \
 	src/Playlist.hxx \
 	src/playlist_error.h \
-	src/playlist_plugin.h \
-	src/playlist/extm3u_playlist_plugin.h \
-	src/playlist/m3u_playlist_plugin.h \
-	src/playlist/pls_playlist_plugin.h \
-	src/playlist/xspf_playlist_plugin.h \
-	src/playlist/asx_playlist_plugin.h \
-	src/playlist/rss_playlist_plugin.h \
-	src/playlist/cue_playlist_plugin.h \
 	src/poison.h \
 	src/riff.h \
 	src/aiff.h \
@@ -919,13 +911,21 @@ endif
 #
 
 libplaylist_plugins_a_SOURCES = \
-	src/playlist/extm3u_playlist_plugin.c \
-	src/playlist/m3u_playlist_plugin.c \
-	src/playlist/pls_playlist_plugin.c \
-	src/playlist/xspf_playlist_plugin.c \
-	src/playlist/asx_playlist_plugin.c \
-	src/playlist/rss_playlist_plugin.c \
-	src/playlist/cue_playlist_plugin.c \
+	src/PlaylistPlugin.hxx \
+	src/playlist/ExtM3uPlaylistPlugin.cxx \
+	src/playlist/ExtM3uPlaylistPlugin.hxx \
+	src/playlist/M3uPlaylistPlugin.cxx \
+	src/playlist/M3uPlaylistPlugin.hxx \
+	src/playlist/PlsPlaylistPlugin.cxx \
+	src/playlist/PlsPlaylistPlugin.hxx \
+	src/playlist/XspfPlaylistPlugin.cxx \
+	src/playlist/XspfPlaylistPlugin.hxx \
+	src/playlist/AsxPlaylistPlugin.cxx \
+	src/playlist/AsxPlaylistPlugin.hxx \
+	src/playlist/RssPlaylistPlugin.cxx \
+	src/playlist/RssPlaylistPlugin.hxx \
+	src/playlist/CuePlaylistPlugin.cxx \
+	src/playlist/CuePlaylistPlugin.hxx \
 	src/playlist/EmbeddedCuePlaylistPlugin.cxx \
 	src/playlist/EmbeddedCuePlaylistPlugin.hxx \
 	src/PlaylistRegistry.cxx src/PlaylistRegistry.hxx

@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "SoundCloudPlaylistPlugin.hxx"
+#include "PlaylistPlugin.hxx"
 #include "conf.h"
 #include "input_stream.h"
-#include "playlist_plugin.h"
 #include "song.h"
 #include "tag.h"
 

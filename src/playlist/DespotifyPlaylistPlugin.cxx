@@ -20,7 +20,7 @@
 #include "config.h"
 #include "DespotifyPlaylistPlugin.hxx"
 #include "DespotifyUtils.hxx"
-#include "playlist_plugin.h"
+#include "PlaylistPlugin.hxx"
 #include "PlaylistRegistry.hxx"
 #include "conf.h"
 #include "uri.h"

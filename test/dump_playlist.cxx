@@ -27,7 +27,7 @@
 #include "InputInit.hxx"
 #include "IOThread.hxx"
 #include "PlaylistRegistry.hxx"
-#include "playlist_plugin.h"
+#include "PlaylistPlugin.hxx"
 
 extern "C" {
 #include "decoder_list.h"

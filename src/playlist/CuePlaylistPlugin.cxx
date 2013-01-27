@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,13 +18,16 @@
  */
 
 #include "config.h"
-#include "playlist/cue_playlist_plugin.h"
-#include "playlist_plugin.h"
+#include "CuePlaylistPlugin.hxx"
+#include "PlaylistPlugin.hxx"
 #include "tag.h"
 #include "song.h"
-#include "cue/cue_parser.h"
 #include "input_stream.h"
+
+extern "C" {
 #include "text_input_stream.h"
+#include "cue/cue_parser.h"
+}
 
 #include <glib.h>
 #include <assert.h>
@@ -33,7 +36,7 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "cue"
 
-struct cue_playlist {
+struct CuePlaylist {
 	struct playlist_provider base;
 
 	struct input_stream *is;
@@ -44,13 +47,12 @@ struct cue_playlist {
 static struct playlist_provider *
 cue_playlist_open_stream(struct input_stream *is)
 {
-	struct cue_playlist *playlist = g_new(struct cue_playlist, 1);
+	CuePlaylist *playlist = g_new(CuePlaylist, 1);
 	playlist_provider_init(&playlist->base, &cue_playlist_plugin);
 
 	playlist->is = is;
 	playlist->tis = text_input_stream_new(is);
 	playlist->parser = cue_parser_new();
-
 
 	return &playlist->base;
 }
@@ -58,7 +60,7 @@ cue_playlist_open_stream(struct input_stream *is)
 static void
 cue_playlist_close(struct playlist_provider *_playlist)
 {
-	struct cue_playlist *playlist = (struct cue_playlist *)_playlist;
+	CuePlaylist *playlist = (CuePlaylist *)_playlist;
 
 	cue_parser_free(playlist->parser);
 	text_input_stream_free(playlist->tis);
@@ -68,7 +70,7 @@ cue_playlist_close(struct playlist_provider *_playlist)
 static struct song *
 cue_playlist_read(struct playlist_provider *_playlist)
 {
-	struct cue_playlist *playlist = (struct cue_playlist *)_playlist;
+	CuePlaylist *playlist = (CuePlaylist *)_playlist;
 
 	struct song *song = cue_parser_get(playlist->parser);
 	if (song != NULL)
@@ -97,12 +99,16 @@ static const char *const cue_playlist_mime_types[] = {
 };
 
 const struct playlist_plugin cue_playlist_plugin = {
-	.name = "cue",
+	"cue",
 
-	.open_stream = cue_playlist_open_stream,
-	.close = cue_playlist_close,
-	.read = cue_playlist_read,
+	nullptr,
+	nullptr,
+	nullptr,
+	cue_playlist_open_stream,
+	cue_playlist_close,
+	cue_playlist_read,
 
-	.suffixes = cue_playlist_suffixes,
-	.mime_types = cue_playlist_mime_types,
+	nullptr,
+	cue_playlist_suffixes,
+	cue_playlist_mime_types,
 };

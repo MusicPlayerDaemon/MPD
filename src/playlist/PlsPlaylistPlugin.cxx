@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,21 +18,22 @@
  */
 
 #include "config.h"
-#include "playlist/pls_playlist_plugin.h"
-#include "playlist_plugin.h"
+#include "PlsPlaylistPlugin.hxx"
+#include "PlaylistPlugin.hxx"
 #include "input_stream.h"
 #include "uri.h"
 #include "song.h"
 #include "tag.h"
+
 #include <glib.h>
 
-struct pls_playlist {
+struct PlsPlaylist {
 	struct playlist_provider base;
 
 	GSList *songs;
 };
 
-static void pls_parser(GKeyFile *keyfile, struct pls_playlist *playlist)
+static void pls_parser(GKeyFile *keyfile, PlsPlaylist *playlist)
 {
 	gchar *key;
 	gchar *value;
@@ -111,7 +112,7 @@ pls_open_stream(struct input_stream *is)
 	char buffer[1024];
 	bool success;
 	GKeyFile *keyfile;
-	struct pls_playlist *playlist;
+	PlsPlaylist *playlist;
 	GString *kf_data = g_string_new("");
 
 	do {
@@ -152,7 +153,7 @@ pls_open_stream(struct input_stream *is)
 		return NULL;
 	}
 
-	playlist = g_new(struct pls_playlist, 1);
+	playlist = g_new(PlsPlaylist, 1);
 	playlist_provider_init(&playlist->base, &pls_playlist_plugin);
 	playlist->songs = NULL;
 
@@ -166,7 +167,7 @@ pls_open_stream(struct input_stream *is)
 static void
 song_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
-	struct song *song = data;
+	struct song *song = (struct song *)data;
 
 	song_free(song);
 }
@@ -174,7 +175,7 @@ song_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 static void
 pls_close(struct playlist_provider *_playlist)
 {
-	struct pls_playlist *playlist = (struct pls_playlist *)_playlist;
+	PlsPlaylist *playlist = (PlsPlaylist *)_playlist;
 
 	g_slist_foreach(playlist->songs, song_free_callback, NULL);
 	g_slist_free(playlist->songs);
@@ -186,13 +187,12 @@ pls_close(struct playlist_provider *_playlist)
 static struct song *
 pls_read(struct playlist_provider *_playlist)
 {
-	struct pls_playlist *playlist = (struct pls_playlist *)_playlist;
-	struct song *song;
+	PlsPlaylist *playlist = (PlsPlaylist *)_playlist;
 
 	if (playlist->songs == NULL)
 		return NULL;
 
-	song = playlist->songs->data;
+	struct song *song = (struct song *)playlist->songs->data;
 	playlist->songs = g_slist_remove(playlist->songs, song);
 
 	return song;
@@ -209,12 +209,16 @@ static const char *const pls_mime_types[] = {
 };
 
 const struct playlist_plugin pls_playlist_plugin = {
-	.name = "pls",
+	"pls",
 
-	.open_stream = pls_open_stream,
-	.close = pls_close,
-	.read = pls_read,
+	nullptr,
+	nullptr,
+	nullptr,
+	pls_open_stream,
+	pls_close,
+	pls_read,
 
-	.suffixes = pls_suffixes,
-	.mime_types = pls_mime_types,
+	nullptr,
+	pls_suffixes,
+	pls_mime_types,
 };

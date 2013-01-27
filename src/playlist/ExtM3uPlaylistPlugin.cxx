@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,20 +18,22 @@
  */
 
 #include "config.h"
-#include "playlist/extm3u_playlist_plugin.h"
-#include "playlist_plugin.h"
-#include "text_input_stream.h"
-#include "uri.h"
+#include "ExtM3uPlaylistPlugin.hxx"
+#include "PlaylistPlugin.hxx"
 #include "song.h"
 #include "tag.h"
 #include "string_util.h"
+
+extern "C" {
+#include "text_input_stream.h"
+}
 
 #include <glib.h>
 
 #include <string.h>
 #include <stdlib.h>
 
-struct extm3u_playlist {
+struct ExtM3uPlaylist {
 	struct playlist_provider base;
 
 	struct text_input_stream *tis;
@@ -40,13 +42,10 @@ struct extm3u_playlist {
 static struct playlist_provider *
 extm3u_open_stream(struct input_stream *is)
 {
-	struct extm3u_playlist *playlist;
-	const char *line;
-
-	playlist = g_new(struct extm3u_playlist, 1);
+	ExtM3uPlaylist *playlist = g_new(ExtM3uPlaylist, 1);
 	playlist->tis = text_input_stream_new(is);
 
-	line = text_input_stream_read(playlist->tis);
+	const char *line = text_input_stream_read(playlist->tis);
 	if (line == NULL || strcmp(line, "#EXTM3U") != 0) {
 		/* no EXTM3U header: fall back to the plain m3u
 		   plugin */
@@ -62,7 +61,7 @@ extm3u_open_stream(struct input_stream *is)
 static void
 extm3u_close(struct playlist_provider *_playlist)
 {
-	struct extm3u_playlist *playlist = (struct extm3u_playlist *)_playlist;
+	ExtM3uPlaylist *playlist = (ExtM3uPlaylist *)_playlist;
 
 	text_input_stream_free(playlist->tis);
 	g_free(playlist);
@@ -111,7 +110,7 @@ extm3u_parse_tag(const char *line)
 static struct song *
 extm3u_read(struct playlist_provider *_playlist)
 {
-	struct extm3u_playlist *playlist = (struct extm3u_playlist *)_playlist;
+	ExtM3uPlaylist *playlist = (ExtM3uPlaylist *)_playlist;
 	struct tag *tag = NULL;
 	const char *line;
 	struct song *song;
@@ -151,12 +150,16 @@ static const char *const extm3u_mime_types[] = {
 };
 
 const struct playlist_plugin extm3u_playlist_plugin = {
-	.name = "extm3u",
+	"extm3u",
 
-	.open_stream = extm3u_open_stream,
-	.close = extm3u_close,
-	.read = extm3u_read,
+	nullptr,
+	nullptr,
+	nullptr,
+	extm3u_open_stream,
+	extm3u_close,
+	extm3u_read,
 
-	.suffixes = extm3u_suffixes,
-	.mime_types = extm3u_mime_types,
+	nullptr,
+	extm3u_suffixes,
+	extm3u_mime_types,
 };

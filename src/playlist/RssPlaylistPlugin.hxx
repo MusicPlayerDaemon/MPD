@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PLAYLIST_CUE_PLAYLIST_PLUGIN_H
-#define MPD_PLAYLIST_CUE_PLAYLIST_PLUGIN_H
+#ifndef MPD_RSS_PLAYLIST_PLUGIN_HXX
+#define MPD_RSS_PLAYLIST_PLUGIN_HXX
 
-extern const struct playlist_plugin cue_playlist_plugin;
+extern const struct playlist_plugin rss_playlist_plugin;
 
 #endif

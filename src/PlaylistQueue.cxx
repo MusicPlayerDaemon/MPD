@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "PlaylistQueue.hxx"
-#include "playlist_plugin.h"
+#include "PlaylistPlugin.hxx"
 #include "PlaylistAny.hxx"
 #include "PlaylistSong.hxx"
 #include "Playlist.hxx"
