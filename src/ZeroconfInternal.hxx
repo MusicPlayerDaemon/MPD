@@ -23,12 +23,4 @@
 /* The dns-sd service type qualifier to publish */
 #define SERVICE_TYPE		"_mpd._tcp"
 
-void init_avahi(const char *service_name);
-
-void avahi_finish(void);
-
-void init_zeroconf_osx(const char *service_name);
-
-void bonjour_finish(void);
-
 #endif

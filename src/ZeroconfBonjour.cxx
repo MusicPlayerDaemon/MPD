@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,8 @@
  */
 
 #include "config.h"
-#include "zeroconf-internal.h"
+#include "ZeroconfBonjour.hxx"
+#include "ZeroconfInternal.hxx"
 #include "Listen.hxx"
 
 #include <glib.h>
@@ -42,7 +43,7 @@ dnsRegisterCallback(G_GNUC_UNUSED DNSServiceRef sdRef,
 	if (errorCode != kDNSServiceErr_NoError) {
 		g_warning("Failed to register zeroconf service.");
 
-		bonjour_finish();
+		BonjourDeinit();
 	} else {
 		g_debug("Registered zeroconf service with name '%s'", name);
 	}
@@ -58,10 +59,11 @@ bonjour_channel_event(G_GNUC_UNUSED GIOChannel *source,
 	return dnsReference != NULL;
 }
 
-void init_zeroconf_osx(const char *serviceName)
+void
+BonjourInit(const char *service_name)
 {
 	DNSServiceErrorType error = DNSServiceRegister(&dnsReference,
-						       0, 0, serviceName,
+						       0, 0, service_name,
 						       SERVICE_TYPE, NULL, NULL,
 						       g_htons(listen_port), 0,
 						       NULL,
@@ -82,7 +84,8 @@ void init_zeroconf_osx(const char *serviceName)
 	g_io_add_watch(bonjour_channel, G_IO_IN, bonjour_channel_event, NULL);
 }
 
-void bonjour_finish(void)
+void
+BonjourDeinit()
 {
 	if (bonjour_channel != NULL) {
 		g_io_channel_unref(bonjour_channel);

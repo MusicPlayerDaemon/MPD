@@ -49,6 +49,7 @@
 #include "IOThread.hxx"
 #include "fs/Path.hxx"
 #include "PlaylistRegistry.hxx"
+#include "ZeroconfGlue.hxx"
 
 extern "C" {
 #include "daemon.h"
@@ -56,7 +57,6 @@ extern "C" {
 #include "audio_config.h"
 #include "pcm_resample.h"
 #include "decoder_list.h"
-#include "zeroconf.h"
 }
 
 #include "mpd_error.h"
@@ -490,7 +490,7 @@ int mpd_main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	initZeroconf();
+	ZeroconfInit();
 
 	player_create(&global_partition->pc);
 
@@ -551,7 +551,7 @@ int mpd_main(int argc, char *argv[])
 	}
 
 	global_partition->pc.Kill();
-	finishZeroconf();
+	ZeroconfDeinit();
 	listen_global_finish();
 	delete client_list;
 

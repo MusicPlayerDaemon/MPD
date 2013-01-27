@@ -18,8 +18,9 @@
  */
 
 #include "config.h"
-#include "zeroconf.h"
-#include "zeroconf-internal.h"
+#include "ZeroconfGlue.hxx"
+#include "ZeroconfAvahi.hxx"
+#include "ZeroconfBonjour.hxx"
 #include "conf.h"
 #include "Listen.hxx"
 
@@ -34,7 +35,8 @@
 
 static int zeroconfEnabled;
 
-void initZeroconf(void)
+void
+ZeroconfInit()
 {
 	const char *serviceName;
 
@@ -52,24 +54,25 @@ void initZeroconf(void)
 	serviceName = config_get_string(CONF_ZEROCONF_NAME, SERVICE_NAME);
 
 #ifdef HAVE_AVAHI
-	init_avahi(serviceName);
+	AvahiInit(serviceName);
 #endif
 
 #ifdef HAVE_BONJOUR
-	init_zeroconf_osx(serviceName);
+	BonjourInit(serviceName);
 #endif
 }
 
-void finishZeroconf(void)
+void
+ZeroconfDeinit()
 {
 	if (!zeroconfEnabled)
 		return;
 
 #ifdef HAVE_AVAHI
-	avahi_finish();
+	AvahiDeinit();
 #endif /* HAVE_AVAHI */
 
 #ifdef HAVE_BONJOUR
-	bonjour_finish();
+	BonjourDeinit();
 #endif
 }

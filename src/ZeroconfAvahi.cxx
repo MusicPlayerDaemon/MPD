@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,8 @@
  */
 
 #include "config.h"
-#include "zeroconf-internal.h"
+#include "ZeroconfAvahi.hxx"
+#include "ZeroconfInternal.hxx"
 #include "Listen.hxx"
 #include "mpd_error.h"
 
@@ -116,7 +117,8 @@ static void avahiRegisterService(AvahiClient * c)
 	 *       if that's better. */
 	ret = avahi_entry_group_add_service(avahiGroup,
 					    AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC,
-					    0, avahiName, SERVICE_TYPE, NULL,
+					    AvahiPublishFlags(0),
+					    avahiName, SERVICE_TYPE, NULL,
 					    NULL, listen_port, NULL);
 	if (ret < 0) {
 		g_warning("Failed to add service %s: %s", SERVICE_TYPE,
@@ -213,7 +215,8 @@ static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
 	}
 }
 
-void init_avahi(const char *serviceName)
+void
+AvahiInit(const char *serviceName)
 {
 	int error;
 	g_debug("Initializing interface");
@@ -234,11 +237,12 @@ void init_avahi(const char *serviceName)
 	if (!avahiClient) {
 		g_warning("Failed to create client: %s",
 			  avahi_strerror(error));
-		avahi_finish();
+		AvahiDeinit();
 	}
 }
 
-void avahi_finish(void)
+void
+AvahiDeinit(void)
 {
 	g_debug("Shutting down interface");
 

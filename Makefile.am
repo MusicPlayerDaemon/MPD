@@ -117,7 +117,6 @@ mpd_headers = \
 	src/uri.h \
 	src/utils.h \
 	src/string_util.h \
-	src/zeroconf.h src/zeroconf-internal.h \
 	src/timer.h \
 	src/mpd_error.h
 
@@ -681,14 +680,16 @@ endif
 
 
 if HAVE_ZEROCONF
-src_mpd_SOURCES += src/zeroconf.c
+src_mpd_SOURCES += \
+	src/ZeroconfInternal.hxx \
+	src/ZeroconfGlue.cxx src/ZeroconfGlue.hxx
 
 if HAVE_AVAHI
-src_mpd_SOURCES += src/zeroconf-avahi.c
+src_mpd_SOURCES += src/ZeroconfAvahi.cxx src/ZeroconfAvahi.hxx
 endif
 
 if HAVE_BONJOUR
-src_mpd_SOURCES += src/zeroconf-bonjour.c
+src_mpd_SOURCES += src/ZeroconfBonjour.cxx src/ZeroconfBonjour.hxx
 endif
 endif
 

@@ -17,21 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ZEROCONF_H
-#define MPD_ZEROCONF_H
+#ifndef MPD_ZEROCONF_AVAHI_HXX
+#define MPD_ZEROCONF_AVAHI_HXX
 
-#include "check.h"
+void
+AvahiInit(const char *service_name);
 
-#ifdef HAVE_ZEROCONF
-
-void initZeroconf(void);
-void finishZeroconf(void);
-
-#else /* ! HAVE_ZEROCONF */
-
-static void initZeroconf(void) { }
-static void finishZeroconf(void) { }
-
-#endif /* ! HAVE_ZEROCONF */
+void
+AvahiDeinit();
 
 #endif
