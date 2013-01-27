@@ -71,6 +71,12 @@ SimpleDatabase::Configure(const struct config_param *param, GError **error_r)
 	path = Path::FromUTF8(_path);
 	free(_path);
 
+	if (path.IsNull()) {
+		g_set_error(error_r, simple_db_quark(), 0,
+			    "Failed to convert database path to FS encoding");
+		return false;
+	}
+
 	return true;
 }
 

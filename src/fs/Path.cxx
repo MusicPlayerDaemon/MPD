@@ -82,9 +82,6 @@ Path Path::FromUTF8(const char *path_utf8)
 	p = g_convert(path_utf8, -1,
 		      fs_charset.c_str(), "utf-8",
 		      NULL, NULL, NULL);
-	if (p == NULL)
-		/* fall back to UTF-8 */
-		p = g_strdup(path_utf8);
 
 	return Path(Donate(), p);
 }

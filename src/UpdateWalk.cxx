@@ -104,7 +104,7 @@ remove_excluded_from_directory(Directory *directory,
 	directory_for_each_child_safe(child, n, directory) {
 		const Path name_fs = Path::FromUTF8(child->GetName());
 
-		if (exclude_list.Check(name_fs.c_str())) {
+		if (name_fs.IsNull() || exclude_list.Check(name_fs.c_str())) {
 			delete_directory(child);
 			modified = true;
 		}
@@ -115,7 +115,7 @@ remove_excluded_from_directory(Directory *directory,
 		assert(song->parent == directory);
 
 		const Path name_fs = Path::FromUTF8(song->uri);
-		if (exclude_list.Check(name_fs.c_str())) {
+		if (name_fs.IsNull() || exclude_list.Check(name_fs.c_str())) {
 			delete_song(directory, song);
 			modified = true;
 		}

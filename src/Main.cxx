@@ -103,6 +103,11 @@ Partition *global_partition;
 
 static StateFile *state_file;
 
+static inline GQuark main_quark()
+{
+  return g_quark_from_static_string ("main");
+}
+
 static bool
 glue_daemonize_init(const struct options *options, GError **error_r)
 {
@@ -144,7 +149,10 @@ glue_mapper_init(GError **error_r)
 	if (music_dir == NULL)
 		music_dir = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_MUSIC));
 
-	mapper_init(music_dir, playlist_dir);
+	if (!mapper_init(music_dir, playlist_dir, &error)) {
+		g_propagate_error(error_r, error);
+		return false;
+	}
 
 	g_free(music_dir);
 	g_free(playlist_dir);
@@ -236,9 +244,18 @@ glue_state_file_init(GError **error_r)
 		return true;
 	}
 
-	state_file = new StateFile(Path::FromUTF8(path),
-				   *global_partition, *main_loop);
+	Path path_fs = Path::FromUTF8(path);
+
 	g_free(path);
+
+	if (path_fs.IsNull()) {
+		g_set_error(error_r, main_quark(), 0,
+			    "Failed to convert state file path to FS encoding");
+		return false;
+	}
+
+	state_file = new StateFile(std::move(path_fs),
+				   *global_partition, *main_loop);
 	state_file->Read();
 	return true;
 }

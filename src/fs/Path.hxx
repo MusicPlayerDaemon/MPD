@@ -144,10 +144,7 @@ public:
 
 	/**
 	 * Convert a UTF-8 C string to a #Path instance.
-	 * Returns a duplicate of the UTF-8 string on failure.
-	 *
-	 * TODO: return a "nulled" instance on error and add checks to
-	 * all callers
+	 * Returns return a "nulled" instance on error.
 	 */
 	gcc_pure
 	static Path FromUTF8(const char *path_utf8);

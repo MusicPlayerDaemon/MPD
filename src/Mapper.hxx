@@ -33,7 +33,8 @@ class Path;
 struct Directory;
 struct song;
 
-void mapper_init(const char *_music_dir, const char *_playlist_dir);
+bool mapper_init(const char *_music_dir, const char *_playlist_dir,
+		 GError **error_r);
 
 void mapper_finish(void);
 
