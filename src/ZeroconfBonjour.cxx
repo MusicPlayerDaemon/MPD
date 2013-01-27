@@ -21,6 +21,8 @@
 #include "ZeroconfBonjour.hxx"
 #include "ZeroconfInternal.hxx"
 #include "Listen.hxx"
+#include "event/SocketMonitor.hxx"
+#include "gcc.h"
 
 #include <glib.h>
 
@@ -29,8 +31,28 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "bonjour"
 
-static DNSServiceRef dnsReference;
-static GIOChannel *bonjour_channel;
+class BonjourMonitor final : public SocketMonitor {
+	DNSServiceRef service_ref;
+
+public:
+	BonjourMonitor(EventLoop &_loop, DNSServiceRef _service_ref)
+		:SocketMonitor(DNSServiceRefSockFD(_service_ref), _loop),
+		 service_ref(_service_ref) {
+		ScheduleRead();
+	}
+
+	~BonjourMonitor() {
+		Steal();
+		DNSServiceRefDeallocate(service_ref);
+	}
+
+protected:
+	virtual void OnSocketReady(gcc_unused unsigned flags) override {
+		DNSServiceProcessResult(service_ref);
+	}
+};
+
+static BonjourMonitor *bonjour_monitor;
 
 static void
 dnsRegisterCallback(G_GNUC_UNUSED DNSServiceRef sdRef,
@@ -43,25 +65,16 @@ dnsRegisterCallback(G_GNUC_UNUSED DNSServiceRef sdRef,
 	if (errorCode != kDNSServiceErr_NoError) {
 		g_warning("Failed to register zeroconf service.");
 
-		BonjourDeinit();
+		bonjour_monitor->Cancel();
 	} else {
 		g_debug("Registered zeroconf service with name '%s'", name);
 	}
 }
 
-static gboolean
-bonjour_channel_event(G_GNUC_UNUSED GIOChannel *source,
-		      G_GNUC_UNUSED GIOCondition condition,
-		      G_GNUC_UNUSED gpointer data)
-{
-	DNSServiceProcessResult(dnsReference);
-
-	return dnsReference != NULL;
-}
-
 void
-BonjourInit(const char *service_name)
+BonjourInit(EventLoop &loop, const char *service_name)
 {
+	DNSServiceRef dnsReference;
 	DNSServiceErrorType error = DNSServiceRegister(&dnsReference,
 						       0, 0, service_name,
 						       SERVICE_TYPE, NULL, NULL,
@@ -80,21 +93,11 @@ BonjourInit(const char *service_name)
 		return;
 	}
 
-	bonjour_channel = g_io_channel_unix_new(DNSServiceRefSockFD(dnsReference));
-	g_io_add_watch(bonjour_channel, G_IO_IN, bonjour_channel_event, NULL);
+	bonjour_monitor = new BonjourMonitor(loop, dnsReference);
 }
 
 void
 BonjourDeinit()
 {
-	if (bonjour_channel != NULL) {
-		g_io_channel_unref(bonjour_channel);
-		bonjour_channel = NULL;
-	}
-
-	if (dnsReference != NULL) {
-		DNSServiceRefDeallocate(dnsReference);
-		dnsReference = NULL;
-		g_debug("Deregistered Zeroconf service.");
-	}
+	delete bonjour_monitor;
 }

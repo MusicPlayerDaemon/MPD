@@ -22,10 +22,12 @@
 
 #include "check.h"
 
+class EventLoop;
+
 #ifdef HAVE_ZEROCONF
 
 void
-ZeroconfInit();
+ZeroconfInit(EventLoop &loop);
 
 void
 ZeroconfDeinit();
@@ -33,7 +35,7 @@ ZeroconfDeinit();
 #else /* ! HAVE_ZEROCONF */
 
 static inline void
-ZeroconfInit()
+ZeroconfInit(EventLoop &)
 {}
 
 static inline void

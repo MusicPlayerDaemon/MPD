@@ -490,7 +490,7 @@ int mpd_main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	ZeroconfInit();
+	ZeroconfInit(*main_loop);
 
 	player_create(&global_partition->pc);
 

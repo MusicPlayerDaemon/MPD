@@ -23,6 +23,7 @@
 #include "ZeroconfBonjour.hxx"
 #include "conf.h"
 #include "Listen.hxx"
+#include "gcc.h"
 
 #include <glib.h>
 
@@ -36,7 +37,7 @@
 static int zeroconfEnabled;
 
 void
-ZeroconfInit()
+ZeroconfInit(gcc_unused EventLoop &loop)
 {
 	const char *serviceName;
 
@@ -58,7 +59,7 @@ ZeroconfInit()
 #endif
 
 #ifdef HAVE_BONJOUR
-	BonjourInit(serviceName);
+	BonjourInit(loop, serviceName);
 #endif
 }
 

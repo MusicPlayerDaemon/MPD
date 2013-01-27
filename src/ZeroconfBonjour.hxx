@@ -20,8 +20,10 @@
 #ifndef MPD_ZEROCONF_BONJOUR_HXX
 #define MPD_ZEROCONF_BONJOUR_HXX
 
+class EventLoop;
+
 void
-BonjourInit(const char *service_name);
+BonjourInit(EventLoop &loop, const char *service_name);
 
 void
 BonjourDeinit();
