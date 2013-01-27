@@ -48,6 +48,21 @@ string_array_contains(const char *const* haystack, const char *needle)
 	return false;
 }
 
+#ifndef HAVE_STRNLEN
+
+size_t
+strnlen(const char *s, size_t max)
+{
+	assert(s != NULL);
+
+	const char *t = memchr(s, 0, max);
+	return t != NULL
+		? (size_t)(t - s)
+		: max;
+}
+
+#endif
+
 #if !defined(HAVE_STRNDUP)
 
 char *

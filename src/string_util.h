@@ -83,6 +83,14 @@ strchug_fast(char *p)
 bool
 string_array_contains(const char *const* haystack, const char *needle);
 
+#ifndef HAVE_STRNLEN
+
+gcc_pure
+size_t
+strnlen(const char *s, size_t max);
+
+#endif
+
 #if !defined(HAVE_STRNDUP)
 
 /**
