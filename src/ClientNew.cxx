@@ -27,7 +27,6 @@ extern "C" {
 #include "resolver.h"
 }
 #include "Permission.hxx"
-#include "glib_socket.h"
 
 #include <assert.h>
 #include <sys/types.h>

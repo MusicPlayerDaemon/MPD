@@ -189,7 +189,7 @@ httpd_output_finish(struct audio_output *ao)
 inline void
 HttpdOutput::AddClient(int fd)
 {
-	clients.emplace_front(this, fd,
+	clients.emplace_front(this, fd, GetEventLoop(),
 			      encoder->plugin->tag == NULL);
 	++clients_cnt;
 

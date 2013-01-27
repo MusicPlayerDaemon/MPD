@@ -20,6 +20,7 @@
 #ifndef MPD_OUTPUT_HTTPD_CLIENT_HXX
 #define MPD_OUTPUT_HTTPD_CLIENT_HXX
 
+#include "event/BufferedSocket.hxx"
 #include "gcc.h"
 
 #include <glib.h>
@@ -31,35 +32,11 @@
 struct HttpdOutput;
 class Page;
 
-class HttpdClient final {
+class HttpdClient final : public BufferedSocket {
 	/**
 	 * The httpd output object this client is connected to.
 	 */
 	HttpdOutput *const httpd;
-
-	/**
-	 * The TCP socket.
-	 */
-	GIOChannel *channel;
-
-	/**
-	 * The GLib main loop source id for reading from the socket,
-	 * and to detect errors.
-	 */
-	guint read_source_id;
-
-	/**
-	 * The GLib main loop source id for writing to the socket.  If
-	 * 0, then there is no event source currently (because there
-	 * are no queued pages).
-	 */
-	guint write_source_id;
-
-	/**
-	 * For buffered reading.  This pointer is only valid while the
-	 * HTTP request is read.
-	 */
-	struct fifo_buffer *input;
 
 	/**
 	 * The current state of the client.
@@ -140,7 +117,8 @@ public:
 	 * @param httpd the HTTP output device
 	 * @param fd the socket file descriptor
 	 */
-	HttpdClient(HttpdOutput *httpd, int _fd, bool _metadata_supported);
+	HttpdClient(HttpdOutput *httpd, int _fd, EventLoop &_loop,
+		    bool _metadata_supported);
 
 	/**
 	 * Note: this does not remove the client from the
@@ -166,21 +144,6 @@ public:
 	 */
 	void CancelQueue();
 
-	bool Read();
-
-	/**
-	 * Data has been received from the client and it is appended
-	 * to the input buffer.
-	 */
-	bool Received();
-
-	/**
-	 * Check if a complete line of input is present in the input
-	 * buffer, and duplicates it.  It is removed from the input
-	 * buffer.  The return value has to be freed with g_free().
-	 */
-	char *ReadLine();
-
 	/**
 	 * Handle a line of the HTTP request.
 	 */
@@ -197,9 +160,12 @@ public:
 	bool SendResponse();
 
 	gcc_pure
-	int GetBytesTillMetaData() const;
+	ssize_t GetBytesTillMetaData() const;
 
-	bool Write();
+	ssize_t TryWritePage(const Page &page, size_t position);
+	ssize_t TryWritePageN(const Page &page, size_t position, ssize_t n);
+
+	bool TryWrite();
 
 	/**
 	 * Appends a page to the client's queue.
@@ -209,7 +175,14 @@ public:
 	/**
 	 * Sends the passed metadata.
 	 */
-void PushMetaData(Page *page);
+	void PushMetaData(Page *page);
+
+protected:
+	virtual bool OnSocketReady(unsigned flags) override;
+	virtual InputResult OnSocketInput(const void *data,
+					  size_t length) override;
+	virtual void OnSocketError(GError *error) override;
+	virtual void OnSocketClosed() override;
 };
 
 #endif

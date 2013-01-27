@@ -130,7 +130,6 @@ src_mpd_SOURCES = \
 	src/thread/PosixCond.hxx \
 	src/thread/WindowsCond.hxx \
 	src/thread/GLibCond.hxx \
-	src/glib_socket.h \
 	src/clock.c src/clock.h \
 	src/notify.cxx src/notify.hxx \
 	src/audio_config.c src/audio_config.h \
