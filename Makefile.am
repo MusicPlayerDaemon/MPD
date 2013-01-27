@@ -1076,7 +1076,7 @@ test_run_input_LDADD = \
 	$(ARCHIVE_LIBS) \
 	libevent.a \
 	$(GLIB_LIBS)
-test_run_input_SOURCES = test/run_input.c \
+test_run_input_SOURCES = test/run_input.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
 	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c\
