@@ -335,7 +335,7 @@ httpd_client_in_event(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition,
 	}
 }
 
-HttpdClient::HttpdClient(httpd_output *_httpd, int _fd,
+HttpdClient::HttpdClient(HttpdOutput *_httpd, int _fd,
 			 bool _metadata_supported)
 	:httpd(_httpd),
 	 channel(g_io_channel_new_socket(_fd)),

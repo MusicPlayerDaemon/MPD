@@ -38,7 +38,7 @@
 
 class HttpdClient;
 
-struct httpd_output {
+struct HttpdOutput {
 	struct audio_output base;
 
 	/**
@@ -128,7 +128,7 @@ struct httpd_output {
  * Removes a client from the httpd_output.clients linked list.
  */
 void
-httpd_output_remove_client(struct httpd_output *httpd,
+httpd_output_remove_client(struct HttpdOutput *httpd,
 			   HttpdClient *client);
 
 /**
@@ -136,7 +136,7 @@ httpd_output_remove_client(struct httpd_output *httpd,
  * the response headers have been sent.
  */
 void
-httpd_output_send_header(struct httpd_output *httpd,
+httpd_output_send_header(struct HttpdOutput *httpd,
 			 HttpdClient *client);
 
 #endif

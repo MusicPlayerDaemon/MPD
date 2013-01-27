@@ -28,14 +28,14 @@
 
 #include <stddef.h>
 
-struct httpd_output;
+struct HttpdOutput;
 struct page;
 
 class HttpdClient final {
 	/**
 	 * The httpd output object this client is connected to.
 	 */
-	httpd_output *const httpd;
+	HttpdOutput *const httpd;
 
 	/**
 	 * The TCP socket.
@@ -140,11 +140,11 @@ public:
 	 * @param httpd the HTTP output device
 	 * @param fd the socket file descriptor
 	 */
-	HttpdClient(httpd_output *httpd, int _fd, bool _metadata_supported);
+	HttpdClient(HttpdOutput *httpd, int _fd, bool _metadata_supported);
 
 	/**
 	 * Note: this does not remove the client from the
-	 * #httpd_output object.
+	 * #HttpdOutput object.
 	 */
 	~HttpdClient();
 
