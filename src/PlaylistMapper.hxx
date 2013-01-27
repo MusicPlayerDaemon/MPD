@@ -20,7 +20,8 @@
 #ifndef MPD_PLAYLIST_MAPPER_HXX
 #define MPD_PLAYLIST_MAPPER_HXX
 
-#include <glib.h>
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 
 struct input_stream;
 
@@ -33,7 +34,7 @@ struct input_stream;
  * freed
  */
 struct playlist_provider *
-playlist_mapper_open(const char *uri, GMutex *mutex, GCond *cond,
+playlist_mapper_open(const char *uri, Mutex &mutex, Cond &cond,
 		     struct input_stream **is_r);
 
 #endif

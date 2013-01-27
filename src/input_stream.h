@@ -33,7 +33,9 @@ struct input_stream;
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 
 /**
  * Opens a new input stream.  You may not access it until the "ready"
@@ -46,12 +48,14 @@ extern "C" {
  * notifications
  * @return an #input_stream object on success, NULL on error
  */
-gcc_nonnull(1, 2)
+gcc_nonnull(1)
 G_GNUC_MALLOC
 struct input_stream *
 input_stream_open(const char *uri,
-		  GMutex *mutex, GCond *cond,
+		  Mutex &mutex, Cond &cond,
 		  GError **error_r);
+
+#endif
 
 /**
  * Close the input stream and free resources.

@@ -54,7 +54,7 @@ struct CdioParanoiaInputStream {
 	char buffer[CDIO_CD_FRAMESIZE_RAW];
 	int buffer_lsn;
 
-	CdioParanoiaInputStream(const char *uri, GMutex *mutex, GCond *cond,
+	CdioParanoiaInputStream(const char *uri, Mutex &mutex, Cond &cond,
 				int _trackno)
 		:drv(nullptr), cdio(nullptr), para(nullptr),
 		 trackno(_trackno)
@@ -157,7 +157,7 @@ cdio_detect_device(void)
 
 static struct input_stream *
 input_cdio_open(const char *uri,
-		GMutex *mutex, GCond *cond,
+		Mutex &mutex, Cond &cond,
 		GError **error_r)
 {
 	struct cdio_uri parsed_uri;

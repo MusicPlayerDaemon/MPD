@@ -125,7 +125,7 @@ playlist_list_global_finish(void)
 }
 
 static struct playlist_provider *
-playlist_list_open_uri_scheme(const char *uri, GMutex *mutex, GCond *cond,
+playlist_list_open_uri_scheme(const char *uri, Mutex &mutex, Cond &cond,
 			      bool *tried)
 {
 	char *scheme;
@@ -159,7 +159,7 @@ playlist_list_open_uri_scheme(const char *uri, GMutex *mutex, GCond *cond,
 }
 
 static struct playlist_provider *
-playlist_list_open_uri_suffix(const char *uri, GMutex *mutex, GCond *cond,
+playlist_list_open_uri_suffix(const char *uri, Mutex &mutex, Cond &cond,
 			      const bool *tried)
 {
 	const char *suffix;
@@ -188,7 +188,7 @@ playlist_list_open_uri_suffix(const char *uri, GMutex *mutex, GCond *cond,
 }
 
 struct playlist_provider *
-playlist_list_open_uri(const char *uri, GMutex *mutex, GCond *cond)
+playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 {
 	struct playlist_provider *playlist;
 	/** this array tracks which plugins have already been tried by
@@ -317,7 +317,7 @@ playlist_suffix_supported(const char *suffix)
 }
 
 struct playlist_provider *
-playlist_list_open_path(const char *path_fs, GMutex *mutex, GCond *cond,
+playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
 			struct input_stream **is_r)
 {
 	GError *error = NULL;

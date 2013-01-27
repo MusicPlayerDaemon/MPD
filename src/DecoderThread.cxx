@@ -58,7 +58,7 @@ decoder_command_finished_locked(struct decoder_control *dc)
 
 	dc->command = DECODE_COMMAND_NONE;
 
-	g_cond_signal(dc->client_cond);
+	dc->client_cond.signal();
 }
 
 /**
@@ -418,7 +418,7 @@ decoder_run_song(struct decoder_control *dc,
 		g_free(allocated);
 	}
 
-	g_cond_signal(dc->client_cond);
+	dc->client_cond.signal();
 }
 
 static void

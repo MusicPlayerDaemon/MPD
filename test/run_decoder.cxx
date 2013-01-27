@@ -188,8 +188,8 @@ int main(int argc, char **argv)
 		decoder_plugin_file_decode(decoder.plugin, &decoder,
 					   decoder.uri);
 	} else if (decoder.plugin->stream_decode != NULL) {
-		GMutex *mutex = g_mutex_new();
-		GCond *cond = g_cond_new();
+		Mutex mutex;
+		Cond cond;
 
 		struct input_stream *is =
 			input_stream_open(decoder.uri, mutex, cond, &error);
@@ -206,9 +206,6 @@ int main(int argc, char **argv)
 		decoder_plugin_stream_decode(decoder.plugin, &decoder, is);
 
 		input_stream_close(is);
-
-		g_cond_free(cond);
-		g_mutex_free(mutex);
 	} else {
 		g_printerr("Decoder plugin is not usable\n");
 		return 1;

@@ -117,13 +117,8 @@ song_file_update(struct song *song)
 
 	song->mtime = st.st_mtime;
 
-	GMutex *mutex = NULL;
-	GCond *cond;
-#if !GCC_CHECK_VERSION(4, 2)
-	/* work around "may be used uninitialized in this function"
-	   false positive */
-	cond = NULL;
-#endif
+	Mutex mutex;
+	Cond cond;
 
 	do {
 		/* load file tag */
@@ -140,8 +135,6 @@ song_file_update(struct song *song)
 			/* open the input_stream (if not already
 			   open) */
 			if (is == NULL) {
-				mutex = g_mutex_new();
-				cond = g_cond_new();
 				is = input_stream_open(path_fs.c_str(),
 						       mutex, cond,
 						       NULL);
@@ -167,11 +160,6 @@ song_file_update(struct song *song)
 
 	if (is != NULL)
 		input_stream_close(is);
-
-	if (mutex != NULL) {
-		g_cond_free(cond);
-		g_mutex_free(mutex);
-	}
 
 	if (song->tag != NULL && tag_is_empty(song->tag))
 		tag_scan_fallback(path_fs.c_str(), &full_tag_handler,

@@ -48,7 +48,7 @@ struct input_plugin {
 	void (*finish)(void);
 
 	struct input_stream *(*open)(const char *uri,
-				     GMutex *mutex, GCond *cond,
+				     Mutex &mutex, Cond &cond,
 				     GError **error_r);
 	void (*close)(struct input_stream *is);
 

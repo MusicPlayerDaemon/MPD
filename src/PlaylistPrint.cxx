@@ -174,26 +174,20 @@ playlist_provider_print(Client *client, const char *uri,
 bool
 playlist_file_print(Client *client, const char *uri, bool detail)
 {
-	GMutex *mutex = g_mutex_new();
-	GCond *cond = g_cond_new();
+	Mutex mutex;
+	Cond cond;
 
 	struct input_stream *is;
 	struct playlist_provider *playlist =
 		playlist_open_any(uri, mutex, cond, &is);
-	if (playlist == NULL) {
-		g_cond_free(cond);
-		g_mutex_free(mutex);
+	if (playlist == NULL)
 		return false;
-	}
 
 	playlist_provider_print(client, uri, playlist, detail);
 	playlist_plugin_close(playlist);
 
 	if (is != NULL)
 		input_stream_close(is);
-
-	g_cond_free(cond);
-	g_mutex_free(mutex);
 
 	return true;
 }

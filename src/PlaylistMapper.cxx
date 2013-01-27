@@ -31,7 +31,7 @@ extern "C" {
 #include <assert.h>
 
 static struct playlist_provider *
-playlist_open_path(const char *path_fs, GMutex *mutex, GCond *cond,
+playlist_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
 		   struct input_stream **is_r)
 {
 	struct playlist_provider *playlist;
@@ -49,7 +49,7 @@ playlist_open_path(const char *path_fs, GMutex *mutex, GCond *cond,
  * Load a playlist from the configured playlist directory.
  */
 static struct playlist_provider *
-playlist_open_in_playlist_dir(const char *uri, GMutex *mutex, GCond *cond,
+playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond,
 			      struct input_stream **is_r)
 {
 	char *path_fs;
@@ -73,7 +73,7 @@ playlist_open_in_playlist_dir(const char *uri, GMutex *mutex, GCond *cond,
  * Load a playlist from the configured music directory.
  */
 static struct playlist_provider *
-playlist_open_in_music_dir(const char *uri, GMutex *mutex, GCond *cond,
+playlist_open_in_music_dir(const char *uri, Mutex &mutex, Cond &cond,
 			   struct input_stream **is_r)
 {
 	assert(uri_safe_local(uri));
@@ -86,7 +86,7 @@ playlist_open_in_music_dir(const char *uri, GMutex *mutex, GCond *cond,
 }
 
 struct playlist_provider *
-playlist_mapper_open(const char *uri, GMutex *mutex, GCond *cond,
+playlist_mapper_open(const char *uri, Mutex &mutex, Cond &cond,
 		     struct input_stream **is_r)
 {
 	struct playlist_provider *playlist;

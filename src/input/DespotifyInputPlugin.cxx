@@ -102,7 +102,7 @@ static void callback(G_GNUC_UNUSED struct despotify_session* ds,
 
 static struct input_stream *
 input_despotify_open(const char *url,
-		     GMutex *mutex, GCond *cond,
+		     Mutex &mutex, Cond &cond,
 		     G_GNUC_UNUSED GError **error_r)
 {
 	struct input_despotify *ctx;

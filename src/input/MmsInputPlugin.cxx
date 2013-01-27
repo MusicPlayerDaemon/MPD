@@ -40,7 +40,7 @@ struct MmsInputStream {
 	bool eof;
 
 	MmsInputStream(const char *uri,
-		       GMutex *mutex, GCond *cond,
+		       Mutex &mutex, Cond &cond,
 		       mmsx_t *_mms)
 		:mms(_mms), eof(false) {
 		input_stream_init(&base, &input_plugin_mms, uri, mutex, cond);
@@ -66,7 +66,7 @@ mms_quark(void)
 
 static struct input_stream *
 input_mms_open(const char *url,
-	       GMutex *mutex, GCond *cond,
+	       Mutex &mutex, Cond &cond,
 	       GError **error_r)
 {
 	if (!g_str_has_prefix(url, "mms://") &&

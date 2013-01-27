@@ -82,7 +82,7 @@ archive_file_scan_next(struct archive_file *file)
 
 struct input_stream *
 archive_file_open_stream(struct archive_file *file, const char *path,
-			 GMutex *mutex, GCond *cond,
+			 Mutex &mutex, Cond &cond,
 			 GError **error_r)
 {
 	assert(file != NULL);

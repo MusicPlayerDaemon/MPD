@@ -82,7 +82,7 @@ input_ffmpeg_init(G_GNUC_UNUSED const struct config_param *param,
 
 static struct input_stream *
 input_ffmpeg_open(const char *uri,
-		  GMutex *mutex, GCond *cond,
+		  Mutex &mutex, Cond &cond,
 		  GError **error_r)
 {
 	struct input_ffmpeg *i;

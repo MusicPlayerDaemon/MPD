@@ -186,8 +186,8 @@ int main(int argc, char **argv)
 
 	/* open the playlist */
 
-	GMutex *mutex = g_mutex_new();
-	GCond *cond = g_cond_new();
+	Mutex mutex;
+	Cond cond;
 
 	playlist = playlist_list_open_uri(uri, mutex, cond);
 	if (playlist == NULL) {
@@ -242,9 +242,6 @@ int main(int argc, char **argv)
 	playlist_plugin_close(playlist);
 	if (is != NULL)
 		input_stream_close(is);
-
-	g_cond_free(cond);
-	g_mutex_free(mutex);
 
 	decoder_plugin_deinit_all();
 	playlist_list_global_finish();

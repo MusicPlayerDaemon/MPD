@@ -41,7 +41,7 @@ struct FileInputStream {
 	int fd;
 
 	FileInputStream(const char *path, int _fd, off_t size,
-			GMutex *mutex, GCond *cond)
+			Mutex &mutex, Cond &cond)
 		:fd(_fd) {
 		input_stream_init(&base, &input_plugin_file, path,
 				  mutex, cond);
@@ -59,7 +59,7 @@ struct FileInputStream {
 
 static struct input_stream *
 input_file_open(const char *filename,
-		GMutex *mutex, GCond *cond,
+		Mutex &mutex, Cond &cond,
 		GError **error_r)
 {
 	int fd, ret;

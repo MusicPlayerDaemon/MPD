@@ -20,7 +20,8 @@
 #ifndef MPD_PLAYLIST_PLUGIN_HXX
 #define MPD_PLAYLIST_PLUGIN_HXX
 
-#include <glib.h>
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 
 #include <stddef.h>
 
@@ -66,7 +67,7 @@ struct playlist_plugin {
 	 * either matched one of the schemes or one of the suffixes.
 	 */
 	struct playlist_provider *(*open_uri)(const char *uri,
-					      GMutex *mutex, GCond *cond);
+					      Mutex &mutex, Cond &cond);
 
 	/**
 	 * Opens the playlist in the specified input stream.  It has
@@ -113,7 +114,7 @@ playlist_plugin_finish(const struct playlist_plugin *plugin)
 
 static inline struct playlist_provider *
 playlist_plugin_open_uri(const struct playlist_plugin *plugin, const char *uri,
-			 GMutex *mutex, GCond *cond)
+			 Mutex &mutex, Cond &cond)
 {
 	return plugin->open_uri(uri, mutex, cond);
 }

@@ -186,8 +186,8 @@ int main(int argc, char **argv)
 	bool success = decoder_plugin_scan_file(plugin, path,
 						&print_handler, NULL);
 	if (!success && plugin->scan_stream != NULL) {
-		GMutex *mutex = g_mutex_new();
-		GCond *cond = g_cond_new();
+		Mutex mutex;
+		Cond cond;
 
 		struct input_stream *is =
 			input_stream_open(path, mutex, cond, &error);
@@ -199,15 +199,15 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		g_mutex_lock(mutex);
+		mutex.lock();
 
 		while (!is->ready) {
-			g_cond_wait(cond, mutex);
+			cond.wait(mutex);
 			input_stream_update(is);
 		}
 
 		if (!input_stream_check(is, &error)) {
-			g_mutex_unlock(mutex);
+			mutex.unlock();
 
 			g_printerr("Failed to read %s: %s\n",
 				   path, error->message);
@@ -216,14 +216,11 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 
-		g_mutex_unlock(mutex);
+		mutex.unlock();
 
 		success = decoder_plugin_scan_stream(plugin, is,
 						     &print_handler, NULL);
 		input_stream_close(is);
-
-		g_cond_free(cond);
-		g_mutex_free(mutex);
 	}
 
 	decoder_plugin_deinit_all();

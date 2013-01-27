@@ -20,7 +20,9 @@
 #ifndef MPD_ARCHIVE_PLUGIN_HXX
 #define MPD_ARCHIVE_PLUGIN_HXX
 
-#include <glib.h>
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
+#include "gerror.h"
 
 struct input_stream;
 struct archive_file;
@@ -71,7 +73,7 @@ struct archive_plugin {
 	 */
 	struct input_stream *(*open_stream)(struct archive_file *af,
 					    const char *path,
-					    GMutex *mutex, GCond *cond,
+					    Mutex &mutex, Cond &cond,
 					    GError **error_r);
 
 	/**
@@ -101,7 +103,7 @@ archive_file_scan_next(struct archive_file *file);
 
 struct input_stream *
 archive_file_open_stream(struct archive_file *file, const char *path,
-			 GMutex *mutex, GCond *cond,
+			 Mutex &mutex, Cond &cond,
 			 GError **error_r);
 
 #endif

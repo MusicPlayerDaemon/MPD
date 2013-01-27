@@ -29,8 +29,6 @@
 
 decoder_control::decoder_control()
 	:thread(nullptr),
-	 mutex(g_mutex_new()), cond(g_cond_new()),
-	 client_cond(g_cond_new()),
 	 state(DECODE_STATE_STOP),
 	 command(DECODE_COMMAND_NONE),
 	 song(nullptr),
@@ -45,9 +43,6 @@ decoder_control::~decoder_control()
 	if (song != NULL)
 		song_free(song);
 
-	g_cond_free(client_cond);
-	g_cond_free(cond);
-	g_mutex_free(mutex);
 	g_free(mixramp_start);
 	g_free(mixramp_end);
 	g_free(mixramp_prev_end);
@@ -57,7 +52,7 @@ static void
 dc_command_wait_locked(struct decoder_control *dc)
 {
 	while (dc->command != DECODE_COMMAND_NONE)
-		g_cond_wait(dc->client_cond, dc->mutex);
+		dc->WaitForDecoder();
 }
 
 static void

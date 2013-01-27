@@ -149,8 +149,8 @@ int main(int argc, char **argv)
 
 	/* open the stream and dump it */
 
-	GMutex *mutex = g_mutex_new();
-	GCond *cond = g_cond_new();
+	Mutex mutex;
+	Cond cond;
 
 	is = input_stream_open(argv[1], mutex, cond, &error);
 	if (is != NULL) {
@@ -164,9 +164,6 @@ int main(int argc, char **argv)
 			g_printerr("input_stream_open() failed\n");
 		ret = 2;
 	}
-
-	g_cond_free(cond);
-	g_mutex_free(mutex);
 
 	/* deinitialize everything */
 

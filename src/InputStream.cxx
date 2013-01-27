@@ -38,12 +38,11 @@ input_quark(void)
 
 struct input_stream *
 input_stream_open(const char *url,
-		  GMutex *mutex, GCond *cond,
+		  Mutex &mutex, Cond &cond,
 		  GError **error_r)
 {
 	GError *error = NULL;
 
-	assert(mutex != NULL);
 	assert(error_r == NULL || *error_r == NULL);
 
 	input_plugins_for_each_enabled(plugin) {
@@ -102,7 +101,7 @@ input_stream_wait_ready(struct input_stream *is)
 		if (is->ready)
 			break;
 
-		g_cond_wait(is->cond, is->mutex);
+		is->cond->wait(*is->mutex);
 	}
 }
 
@@ -113,9 +112,8 @@ input_stream_lock_wait_ready(struct input_stream *is)
 	assert(is->mutex != NULL);
 	assert(is->cond != NULL);
 
-	g_mutex_lock(is->mutex);
+	const ScopeLock protect(*is->mutex);
 	input_stream_wait_ready(is);
-	g_mutex_unlock(is->mutex);
 }
 
 const char *
@@ -197,10 +195,8 @@ input_stream_lock_seek(struct input_stream *is, goffset offset, int whence,
 		/* no locking */
 		return input_stream_seek(is, offset, whence, error_r);
 
-	g_mutex_lock(is->mutex);
-	bool success = input_stream_seek(is, offset, whence, error_r);
-	g_mutex_unlock(is->mutex);
-	return success;
+	const ScopeLock protect(*is->mutex);
+	return input_stream_seek(is, offset, whence, error_r);
 }
 
 struct tag *
@@ -227,10 +223,8 @@ input_stream_lock_tag(struct input_stream *is)
 		/* no locking */
 		return input_stream_tag(is);
 
-	g_mutex_lock(is->mutex);
-	struct tag *tag = input_stream_tag(is);
-	g_mutex_unlock(is->mutex);
-	return tag;
+	const ScopeLock protect(*is->mutex);
+	return input_stream_tag(is);
 }
 
 bool
@@ -265,10 +259,8 @@ input_stream_lock_read(struct input_stream *is, void *ptr, size_t size,
 		/* no locking */
 		return input_stream_read(is, ptr, size, error_r);
 
-	g_mutex_lock(is->mutex);
-	size_t nbytes = input_stream_read(is, ptr, size, error_r);
-	g_mutex_unlock(is->mutex);
-	return nbytes;
+	const ScopeLock protect(*is->mutex);
+	return input_stream_read(is, ptr, size, error_r);
 }
 
 void input_stream_close(struct input_stream *is)
@@ -291,9 +283,7 @@ input_stream_lock_eof(struct input_stream *is)
 		/* no locking */
 		return input_stream_eof(is);
 
-	g_mutex_lock(is->mutex);
-	bool eof = input_stream_eof(is);
-	g_mutex_unlock(is->mutex);
-	return eof;
+	const ScopeLock protect(*is->mutex);
+	return input_stream_eof(is);
 }
 

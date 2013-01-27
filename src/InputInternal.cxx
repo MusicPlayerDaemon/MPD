@@ -25,7 +25,7 @@
 
 void
 input_stream_init(struct input_stream *is, const struct input_plugin *plugin,
-		  const char *uri, GMutex *mutex, GCond *cond)
+		  const char *uri, Mutex &mutex, Cond &cond)
 {
 	assert(is != NULL);
 	assert(plugin != NULL);
@@ -33,8 +33,8 @@ input_stream_init(struct input_stream *is, const struct input_plugin *plugin,
 
 	is->plugin = plugin;
 	is->uri = g_strdup(uri);
-	is->mutex = mutex;
-	is->cond = cond;
+	is->mutex = &mutex;
+	is->cond = &cond;
 	is->ready = false;
 	is->seekable = false;
 	is->size = -1;
@@ -56,18 +56,16 @@ void
 input_stream_signal_client(struct input_stream *is)
 {
 	if (is->cond != NULL)
-		g_cond_broadcast(is->cond);
+		is->cond->broadcast();
 }
 
 void
 input_stream_set_ready(struct input_stream *is)
 {
-	g_mutex_lock(is->mutex);
+	const ScopeLock protect(*is->mutex);
 
 	if (!is->ready) {
 		is->ready = true;
 		input_stream_signal_client(is);
 	}
-
-	g_mutex_unlock(is->mutex);
 }

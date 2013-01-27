@@ -71,17 +71,14 @@ playlist_open_into_queue(const char *uri,
 			 struct playlist *dest, struct player_control *pc,
 			 bool secure)
 {
-	GMutex *mutex = g_mutex_new();
-	GCond *cond = g_cond_new();
+	Mutex mutex;
+	Cond cond;
 
 	struct input_stream *is;
 	struct playlist_provider *playlist =
 		playlist_open_any(uri, mutex, cond, &is);
-	if (playlist == NULL) {
-		g_cond_free(cond);
-		g_mutex_free(mutex);
+	if (playlist == NULL)
 		return PLAYLIST_RESULT_NO_SUCH_LIST;
-	}
 
 	enum playlist_result result =
 		playlist_load_into_queue(uri, playlist, start_index, end_index,
@@ -90,9 +87,6 @@ playlist_open_into_queue(const char *uri,
 
 	if (is != NULL)
 		input_stream_close(is);
-
-	g_cond_free(cond);
-	g_mutex_free(mutex);
 
 	return result;
 }

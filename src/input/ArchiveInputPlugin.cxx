@@ -36,7 +36,7 @@
  */
 static struct input_stream *
 input_archive_open(const char *pathname,
-		   GMutex *mutex, GCond *cond,
+		   Mutex &mutex, Cond &cond,
 		   GError **error_r)
 {
 	const struct archive_plugin *arplug;

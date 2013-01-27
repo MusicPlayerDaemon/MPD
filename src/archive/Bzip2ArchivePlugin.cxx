@@ -132,10 +132,9 @@ bz2_open(const char *pathname, GError **error_r)
 	int len;
 
 	//open archive
-	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
-	context->istream = input_stream_open(pathname,
-					     g_static_mutex_get_mutex(&mutex),
-					     NULL,
+	static Mutex mutex;
+	static Cond cond;
+	context->istream = input_stream_open(pathname, mutex, cond,
 					     error_r);
 	if (context->istream == NULL) {
 		delete context;
@@ -186,7 +185,7 @@ bz2_close(struct archive_file *file)
 
 static struct input_stream *
 bz2_open_stream(struct archive_file *file, const char *path,
-		GMutex *mutex, GCond *cond,
+		Mutex &mutex, Cond &cond,
 		GError **error_r)
 {
 	struct bz2_archive_file *context = (struct bz2_archive_file *) file;

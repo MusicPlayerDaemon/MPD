@@ -57,7 +57,7 @@ need_chunks(struct decoder_control *dc, bool do_wait)
 
 	if (do_wait) {
 		dc->Wait();
-		g_cond_signal(dc->client_cond);
+		dc->client_cond.signal();
 
 		return dc->command;
 	}

@@ -30,7 +30,7 @@ extern "C" {
 #include <assert.h>
 
 static struct playlist_provider *
-playlist_open_remote(const char *uri, GMutex *mutex, GCond *cond,
+playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond,
 		     struct input_stream **is_r)
 {
 	assert(uri_has_scheme(uri));
@@ -65,7 +65,7 @@ playlist_open_remote(const char *uri, GMutex *mutex, GCond *cond,
 }
 
 struct playlist_provider *
-playlist_open_any(const char *uri, GMutex *mutex, GCond *cond,
+playlist_open_any(const char *uri, Mutex &mutex, Cond &cond,
 		  struct input_stream **is_r)
 {
 	return uri_has_scheme(uri)

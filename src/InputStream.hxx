@@ -22,6 +22,8 @@
 
 #include "input_stream.h"
 #include "check.h"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 #include "gcc.h"
 
 #include <glib.h>
@@ -46,7 +48,7 @@ struct input_stream {
 	 * This object is allocated by the client, and the client is
 	 * responsible for freeing it.
 	 */
-	GMutex *mutex;
+	Mutex *mutex;
 
 	/**
 	 * A cond that gets signalled when the state of this object
@@ -56,7 +58,7 @@ struct input_stream {
 	 * This object is allocated by the client, and the client is
 	 * responsible for freeing it.
 	 */
-	GCond *cond;
+	Cond *cond;
 
 	/**
 	 * indicates whether the stream is ready for reading and
@@ -89,14 +91,14 @@ gcc_nonnull(1)
 static inline void
 input_stream_lock(struct input_stream *is)
 {
-	g_mutex_lock(is->mutex);
+	is->mutex->lock();
 }
 
 gcc_nonnull(1)
 static inline void
 input_stream_unlock(struct input_stream *is)
 {
-	g_mutex_unlock(is->mutex);
+	is->mutex->unlock();
 }
 
 #endif

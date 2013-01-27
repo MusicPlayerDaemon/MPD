@@ -63,7 +63,7 @@ struct RewindInputStream {
 	RewindInputStream(input_stream *_input)
 		:input(_input), tail(0) {
 		input_stream_init(&base, &rewind_input_plugin, input->uri,
-				  input->mutex, input->cond);
+				  *input->mutex, *input->cond);
 	}
 
 	~RewindInputStream() {

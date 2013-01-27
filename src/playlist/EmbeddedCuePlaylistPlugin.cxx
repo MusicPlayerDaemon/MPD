@@ -85,8 +85,8 @@ static const struct tag_handler embcue_tag_handler = {
 
 static struct playlist_provider *
 embcue_playlist_open_uri(const char *uri,
-			 G_GNUC_UNUSED GMutex *mutex,
-			 G_GNUC_UNUSED GCond *cond)
+			 gcc_unused Mutex &mutex,
+			 gcc_unused Cond &cond)
 {
 	if (!g_path_is_absolute(uri))
 		/* only local files supported */

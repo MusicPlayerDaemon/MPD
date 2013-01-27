@@ -22,6 +22,8 @@
 
 #include "decoder_command.h"
 #include "audio_format.h"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 
 #include <glib.h>
 
@@ -49,20 +51,20 @@ struct decoder_control {
 	/**
 	 * This lock protects #state and #command.
 	 */
-	GMutex *mutex;
+	mutable Mutex mutex;
 
 	/**
 	 * Trigger this object after you have modified #command.  This
 	 * is also used by the decoder thread to notify the caller
 	 * when it has finished a command.
 	 */
-	GCond *cond;
+	Cond cond;
 
 	/**
 	 * The trigger of this object's client.  It is signalled
 	 * whenever an event occurs.
 	 */
-	GCond *client_cond;
+	Cond client_cond;
 
 	enum decoder_state state;
 	enum decoder_command command;
@@ -137,14 +139,14 @@ struct decoder_control {
 	 * Locks the object.
 	 */
 	void Lock() const {
-		g_mutex_lock(mutex);
+		mutex.lock();
 	}
 
 	/**
 	 * Unlocks the object.
 	 */
 	void Unlock() const {
-		g_mutex_unlock(mutex);
+		mutex.unlock();
 	}
 
 	/**
@@ -153,7 +155,7 @@ struct decoder_control {
 	 * calling this function.
 	 */
 	void Signal() {
-		g_cond_signal(cond);
+		cond.signal();
 	}
 
 	/**
@@ -162,7 +164,7 @@ struct decoder_control {
 	 * prior to calling this function.
 	 */
 	void Wait() {
-		g_cond_wait(cond, mutex);
+		cond.wait(mutex);
 	}
 
 	/**
@@ -171,7 +173,7 @@ struct decoder_control {
 	 * is only valid in the player thread.
 	 */
 	void WaitForDecoder() {
-		g_cond_wait(client_cond, mutex);
+		client_cond.wait(mutex);
 	}
 
 	bool IsIdle() const {

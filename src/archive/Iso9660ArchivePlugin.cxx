@@ -176,7 +176,7 @@ struct iso9660_input_stream {
 
 static struct input_stream *
 iso9660_archive_open_stream(struct archive_file *file, const char *pathname,
-			    GMutex *mutex, GCond *cond,
+			    Mutex &mutex, Cond &cond,
 			    GError **error_r)
 {
 	struct iso9660_archive_file *context =

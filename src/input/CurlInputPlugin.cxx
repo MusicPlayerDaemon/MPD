@@ -165,7 +165,7 @@ struct input_curl {
 
 	GError *postponed_error;
 
-	input_curl(const char *url, GMutex *mutex, GCond *cond)
+	input_curl(const char *url, Mutex &mutex, Cond &cond)
 		:range(nullptr), request_headers(nullptr),
 		 paused(false),
 		 meta_name(nullptr),
@@ -462,11 +462,12 @@ input_curl_abort_all_requests(GError *error)
 
 		input_curl_easy_free(c);
 
-		g_mutex_lock(c->base.mutex);
+		const ScopeLock protect(*c->base.mutex);
+
 		c->postponed_error = g_error_copy(error);
 		c->base.ready = true;
-		g_cond_broadcast(c->base.cond);
-		g_mutex_unlock(c->base.mutex);
+
+		c->base.cond->broadcast();
 	}
 
 	g_error_free(error);
@@ -486,7 +487,7 @@ input_curl_request_done(struct input_curl *c, CURLcode result, long status)
 	assert(c->easy == NULL);
 	assert(c->postponed_error == NULL);
 
-	g_mutex_lock(c->base.mutex);
+	const ScopeLock protect(*c->base.mutex);
 
 	if (result != CURLE_OK) {
 		c->postponed_error = g_error_new(curl_quark(), result,
@@ -499,8 +500,8 @@ input_curl_request_done(struct input_curl *c, CURLcode result, long status)
 	}
 
 	c->base.ready = true;
-	g_cond_broadcast(c->base.cond);
-	g_mutex_unlock(c->base.mutex);
+
+	c->base.cond->broadcast();
 }
 
 static void
@@ -736,7 +737,7 @@ static bool
 fill_buffer(struct input_curl *c, GError **error_r)
 {
 	while (c->easy != NULL && c->buffers.empty())
-		g_cond_wait(c->base.cond, c->base.mutex);
+		c->base.cond->wait(*c->base.mutex);
 
 	if (c->postponed_error != NULL) {
 		g_propagate_error(error_r, c->postponed_error);
@@ -856,9 +857,9 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size,
 	is->offset += (goffset)nbytes;
 
 	if (c->paused && curl_total_buffer_size(c) < CURL_RESUME_AT) {
-		g_mutex_unlock(c->base.mutex);
+		c->base.mutex->unlock();
 		io_thread_call(input_curl_resume, c);
-		g_mutex_lock(c->base.mutex);
+		c->base.mutex->lock();
 	}
 
 	return nbytes;
@@ -975,20 +976,17 @@ input_curl_writefunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	if (size == 0)
 		return 0;
 
-	g_mutex_lock(c->base.mutex);
+	const ScopeLock protect(*c->base.mutex);
 
 	if (curl_total_buffer_size(c) + size >= CURL_MAX_BUFFERED) {
 		c->paused = true;
-		g_mutex_unlock(c->base.mutex);
 		return CURL_WRITEFUNC_PAUSE;
 	}
 
 	c->buffers.emplace_back(ptr, size);
 	c->base.ready = true;
 
-	g_cond_broadcast(c->base.cond);
-	g_mutex_unlock(c->base.mutex);
-
+	c->base.cond->broadcast();
 	return size;
 }
 
@@ -1112,7 +1110,7 @@ input_curl_seek(struct input_stream *is, goffset offset, int whence,
 
 	/* close the old connection and open a new one */
 
-	g_mutex_unlock(c->base.mutex);
+	c->base.mutex->unlock();
 
 	input_curl_easy_free_indirect(c);
 	c->buffers.clear();
@@ -1141,10 +1139,10 @@ input_curl_seek(struct input_stream *is, goffset offset, int whence,
 	if (!input_curl_easy_add_indirect(c, error_r))
 		return false;
 
-	g_mutex_lock(c->base.mutex);
+	c->base.mutex->lock();
 
 	while (!c->base.ready)
-		g_cond_wait(c->base.cond, c->base.mutex);
+		c->base.cond->wait(*c->base.mutex);
 
 	if (c->postponed_error != NULL) {
 		g_propagate_error(error_r, c->postponed_error);
@@ -1156,12 +1154,9 @@ input_curl_seek(struct input_stream *is, goffset offset, int whence,
 }
 
 static struct input_stream *
-input_curl_open(const char *url, GMutex *mutex, GCond *cond,
+input_curl_open(const char *url, Mutex &mutex, Cond &cond,
 		GError **error_r)
 {
-	assert(mutex != NULL);
-	assert(cond != NULL);
-
 	if (strncmp(url, "http://", 7) != 0)
 		return NULL;
 

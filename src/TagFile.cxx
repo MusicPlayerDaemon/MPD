@@ -50,8 +50,8 @@ tag_file_scan(const char *path_fs,
 		return false;
 
 	struct input_stream *is = NULL;
-	GMutex *mutex = NULL;
-	GCond *cond = NULL;
+	Mutex mutex;
+	Cond cond;
 
 	do {
 		/* load file tag */
@@ -63,12 +63,9 @@ tag_file_scan(const char *path_fs,
 		if (plugin->scan_stream != NULL) {
 			/* open the input_stream (if not already
 			   open) */
-			if (is == NULL) {
-				mutex = g_mutex_new();
-				cond = g_cond_new();
+			if (is == nullptr)
 				is = input_stream_open(path_fs, mutex, cond,
 						       NULL);
-			}
 
 			/* now try the stream_tag() method */
 			if (is != NULL) {
@@ -84,11 +81,8 @@ tag_file_scan(const char *path_fs,
 		plugin = decoder_plugin_from_suffix(suffix, plugin);
 	} while (plugin != NULL);
 
-	if (is != NULL) {
+	if (is != NULL)
 		input_stream_close(is);
-		g_cond_free(cond);
-		g_mutex_free(mutex);
-	}
 
 	return plugin != NULL;
 }
