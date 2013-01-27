@@ -55,7 +55,7 @@ HttpdClient::~HttpdClient()
 void
 HttpdClient::Close()
 {
-	httpd_output_remove_client(httpd, this);
+	httpd->RemoveClient(*this);
 }
 
 void
@@ -74,7 +74,7 @@ HttpdClient::BeginResponse()
 	write_source_id = 0;
 	current_page = nullptr;
 
-	httpd_output_send_header(httpd, this);
+	httpd->SendHeader(*this);
 }
 
 /**

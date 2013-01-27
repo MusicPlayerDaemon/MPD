@@ -122,21 +122,79 @@ struct HttpdOutput {
 	 * at the same time.
 	 */
 	guint clients_max, clients_cnt;
+
+	bool Bind(GError **error_r);
+	void Unbind();
+
+	/**
+	 * Caller must lock the mutex.
+	 */
+	bool OpenEncoder(struct audio_format *audio_format,
+			 GError **error_r);
+
+	/**
+	 * Caller must lock the mutex.
+	 */
+	bool Open(struct audio_format *audio_format, GError **error_r);
+
+	/**
+	 * Caller must lock the mutex.
+	 */
+	void Close();
+
+	/**
+	 * Check whether there is at least one client.
+	 *
+	 * Caller must lock the mutex.
+	 */
+	gcc_pure
+	bool HasClients() const {
+		return !clients.empty();
+	}
+
+	/**
+	 * Check whether there is at least one client.
+	 */
+	gcc_pure
+	bool LockHasClients() const {
+		const ScopeLock protect(mutex);
+		return HasClients();
+	}
+
+	void AddClient(int fd);
+
+	/**
+	 * Removes a client from the httpd_output.clients linked list.
+	 */
+	void RemoveClient(HttpdClient &client);
+
+	/**
+	 * Sends the encoder header to the client.  This is called
+	 * right after the response headers have been sent.
+	 */
+	void SendHeader(HttpdClient &client) const;
+
+	/**
+	 * Reads data from the encoder (as much as available) and
+	 * returns it as a new #page object.
+	 */
+	page *ReadPage();
+
+	/**
+	 * Broadcasts a page struct to all clients.
+	 *
+	 * Mutext must not be locked.
+	 */
+	void BroadcastPage(struct page *page);
+
+	/**
+	 * Broadcasts data from the encoder to all clients.
+	 */
+	void BroadcastFromEncoder();
+
+	bool EncodeAndPlay(const void *chunk, size_t size, GError **error_r);
+
+	void SendTag(const struct tag *tag);
 };
-
-/**
- * Removes a client from the httpd_output.clients linked list.
- */
-void
-httpd_output_remove_client(struct HttpdOutput *httpd,
-			   HttpdClient *client);
-
-/**
- * Sends the encoder header to the client.  This is called right after
- * the response headers have been sent.
- */
-void
-httpd_output_send_header(struct HttpdOutput *httpd,
-			 HttpdClient *client);
 
 #endif

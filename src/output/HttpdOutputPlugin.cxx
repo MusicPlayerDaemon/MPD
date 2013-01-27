@@ -54,49 +54,26 @@ httpd_output_quark(void)
 	return g_quark_from_static_string("httpd_output");
 }
 
-/**
- * Check whether there is at least one client.
- *
- * Caller must lock the mutex.
- */
-G_GNUC_PURE
-static bool
-httpd_output_has_clients(const HttpdOutput *httpd)
-{
-	return !httpd->clients.empty();
-}
-
-/**
- * Check whether there is at least one client.
- */
-G_GNUC_PURE
-static bool
-httpd_output_lock_has_clients(const HttpdOutput *httpd)
-{
-	const ScopeLock protect(httpd->mutex);
-	return httpd_output_has_clients(httpd);
-}
-
 static void
 httpd_listen_in_event(int fd, const struct sockaddr *address,
 		      size_t address_length, int uid, void *ctx);
 
-static bool
-httpd_output_bind(HttpdOutput *httpd, GError **error_r)
+inline bool
+HttpdOutput::Bind(GError **error_r)
 {
-	httpd->open = false;
+	open = false;
 
-	const ScopeLock protect(httpd->mutex);
-	return server_socket_open(httpd->server_socket, error_r);
+	const ScopeLock protect(mutex);
+	return server_socket_open(server_socket, error_r);
 }
 
-static void
-httpd_output_unbind(HttpdOutput *httpd)
+inline void
+HttpdOutput::Unbind()
 {
-	assert(!httpd->open);
+	assert(!open);
 
-	const ScopeLock protect(httpd->mutex);
-	server_socket_close(httpd->server_socket);
+	const ScopeLock protect(mutex);
+	server_socket_close(server_socket);
 }
 
 static struct audio_output *
@@ -191,16 +168,16 @@ httpd_output_finish(struct audio_output *ao)
  * Creates a new #HttpdClient object and adds it into the
  * HttpdOutput.clients linked list.
  */
-static void
-httpd_client_add(HttpdOutput *httpd, int fd)
+inline void
+HttpdOutput::AddClient(int fd)
 {
-	httpd->clients.emplace_front(httpd, fd,
-				     httpd->encoder->plugin->tag == NULL);
-	httpd->clients_cnt++;
+	clients.emplace_front(this, fd,
+			      encoder->plugin->tag == NULL);
+	++clients_cnt;
 
 	/* pass metadata to client */
-	if (httpd->metadata)
-		httpd->clients.front().PushMetaData(httpd->metadata);
+	if (metadata != nullptr)
+		clients.front().PushMetaData(metadata);
 }
 
 static void
@@ -245,7 +222,7 @@ httpd_listen_in_event(int fd, const struct sockaddr *address,
 		if (httpd->open &&
 		    (httpd->clients_max == 0 ||
 		     httpd->clients_cnt < httpd->clients_max))
-			httpd_client_add(httpd, fd);
+			httpd->AddClient(fd);
 		else
 			close_socket(fd);
 	} else if (fd < 0 && errno != EINTR) {
@@ -253,56 +230,34 @@ httpd_listen_in_event(int fd, const struct sockaddr *address,
 	}
 }
 
-/**
- * Reads data from the encoder (as much as available) and returns it
- * as a new #page object.
- */
-static struct page *
-httpd_output_read_page(HttpdOutput *httpd)
+struct page *
+HttpdOutput::ReadPage()
 {
-	if (httpd->unflushed_input >= 65536) {
+	if (unflushed_input >= 65536) {
 		/* we have fed a lot of input into the encoder, but it
 		   didn't give anything back yet - flush now to avoid
 		   buffer underruns */
-		encoder_flush(httpd->encoder, NULL);
-		httpd->unflushed_input = 0;
+		encoder_flush(encoder, NULL);
+		unflushed_input = 0;
 	}
 
 	size_t size = 0;
 	do {
-		size_t nbytes = encoder_read(httpd->encoder,
-					     httpd->buffer + size,
-					     sizeof(httpd->buffer) - size);
+		size_t nbytes = encoder_read(encoder,
+					     buffer + size,
+					     sizeof(buffer) - size);
 		if (nbytes == 0)
 			break;
 
-		httpd->unflushed_input = 0;
+		unflushed_input = 0;
 
 		size += nbytes;
-	} while (size < sizeof(httpd->buffer));
+	} while (size < sizeof(buffer));
 
 	if (size == 0)
 		return NULL;
 
-	return page_new_copy(httpd->buffer, size);
-}
-
-static bool
-httpd_output_encoder_open(HttpdOutput *httpd,
-			  struct audio_format *audio_format,
-			  GError **error)
-{
-	if (!encoder_open(httpd->encoder, audio_format, error))
-		return false;
-
-	/* we have to remember the encoder header, i.e. the first
-	   bytes of encoder output after opening it, because it has to
-	   be sent to every new client */
-	httpd->header = httpd_output_read_page(httpd);
-
-	httpd->unflushed_input = 0;
-
-	return true;
+	return page_new_copy(buffer, size);
 }
 
 static bool
@@ -310,7 +265,7 @@ httpd_output_enable(struct audio_output *ao, GError **error_r)
 {
 	HttpdOutput *httpd = (HttpdOutput *)ao;
 
-	return httpd_output_bind(httpd, error_r);
+	return httpd->Bind(error_r);
 }
 
 static void
@@ -318,7 +273,44 @@ httpd_output_disable(struct audio_output *ao)
 {
 	HttpdOutput *httpd = (HttpdOutput *)ao;
 
-	httpd_output_unbind(httpd);
+	httpd->Unbind();
+}
+
+inline bool
+HttpdOutput::OpenEncoder(struct audio_format *audio_format, GError **error)
+{
+	if (!encoder_open(encoder, audio_format, error))
+		return false;
+
+	/* we have to remember the encoder header, i.e. the first
+	   bytes of encoder output after opening it, because it has to
+	   be sent to every new client */
+	header = ReadPage();
+
+	unflushed_input = 0;
+
+	return true;
+}
+
+inline bool
+HttpdOutput::Open(struct audio_format *audio_format, GError **error_r)
+{
+	assert(!open);
+	assert(clients.empty());
+
+	/* open the encoder */
+
+	if (!OpenEncoder(audio_format, error_r))
+		return false;
+
+	/* initialize other attributes */
+
+	clients_cnt = 0;
+	timer = timer_new(audio_format);
+
+	open = true;
+
+	return true;
 }
 
 static bool
@@ -330,20 +322,24 @@ httpd_output_open(struct audio_output *ao, struct audio_format *audio_format,
 	assert(httpd->clients.empty());
 
 	const ScopeLock protect(httpd->mutex);
+	return httpd->Open(audio_format, error);
+}
 
-	/* open the encoder */
+inline void
+HttpdOutput::Close()
+{
+	assert(open);
 
-	if (!httpd_output_encoder_open(httpd, audio_format, error))
-		return false;
+	open = false;
 
-	/* initialize other attributes */
+	timer_free(timer);
 
-	httpd->clients_cnt = 0;
-	httpd->timer = timer_new(audio_format);
+	clients.clear();
 
-	httpd->open = true;
+	if (header != NULL)
+		page_unref(header);
 
-	return true;
+	encoder_close(encoder);
 }
 
 static void
@@ -352,42 +348,30 @@ httpd_output_close(struct audio_output *ao)
 	HttpdOutput *httpd = (HttpdOutput *)ao;
 
 	const ScopeLock protect(httpd->mutex);
-
-	httpd->open = false;
-
-	timer_free(httpd->timer);
-
-	httpd->clients.clear();
-
-	if (httpd->header != NULL)
-		page_unref(httpd->header);
-
-	encoder_close(httpd->encoder);
+	httpd->Close();
 }
 
 void
-httpd_output_remove_client(HttpdOutput *httpd, HttpdClient *client)
+HttpdOutput::RemoveClient(HttpdClient &client)
 {
-	assert(httpd != NULL);
-	assert(httpd->clients_cnt > 0);
-	assert(client != NULL);
+	assert(clients_cnt > 0);
 
-	for (auto prev = httpd->clients.before_begin(), i = std::next(prev);;
+	for (auto prev = clients.before_begin(), i = std::next(prev);;
 	     prev = i, i = std::next(prev)) {
-		assert(i != httpd->clients.end());
-		if (&*i == client) {
-			httpd->clients.erase_after(prev);
-			httpd->clients_cnt--;
+		assert(i != clients.end());
+		if (&*i == &client) {
+			clients.erase_after(prev);
+			clients_cnt--;
 			break;
 		}
 	}
 }
 
 void
-httpd_output_send_header(HttpdOutput *httpd, HttpdClient *client)
+HttpdOutput::SendHeader(HttpdClient &client) const
 {
-	if (httpd->header != NULL)
-		client->PushPage(httpd->header);
+	if (header != NULL)
+		client.PushPage(header);
 }
 
 static unsigned
@@ -395,7 +379,7 @@ httpd_output_delay(struct audio_output *ao)
 {
 	HttpdOutput *httpd = (HttpdOutput *)ao;
 
-	if (!httpd_output_lock_has_clients(httpd) && httpd->base.pause) {
+	if (!httpd->LockHasClients() && httpd->base.pause) {
 		/* if there's no client and this output is paused,
 		   then httpd_output_pause() will not do anything, it
 		   will not fill the buffer and it will not update the
@@ -413,52 +397,44 @@ httpd_output_delay(struct audio_output *ao)
 		: 0;
 }
 
-/**
- * Broadcasts a page struct to all clients.
- */
-static void
-httpd_output_broadcast_page(HttpdOutput *httpd, struct page *page)
+void
+HttpdOutput::BroadcastPage(struct page *page)
 {
 	assert(page != NULL);
 
-	const ScopeLock protect(httpd->mutex);
-	for (auto &client : httpd->clients)
+	const ScopeLock protect(mutex);
+	for (auto &client : clients)
 		client.PushPage(page);
 }
 
-/**
- * Broadcasts data from the encoder to all clients.
- */
-static void
-httpd_output_encoder_to_clients(HttpdOutput *httpd)
+void
+HttpdOutput::BroadcastFromEncoder()
 {
-	httpd->mutex.lock();
-	for (auto &client : httpd->clients) {
+	mutex.lock();
+	for (auto &client : clients) {
 		if (client.GetQueueSize() > 256 * 1024) {
 			g_debug("client is too slow, flushing its queue");
 			client.CancelQueue();
 		}
 	}
-	httpd->mutex.unlock();
+	mutex.unlock();
 
 	struct page *page;
-	while ((page = httpd_output_read_page(httpd)) != NULL) {
-		httpd_output_broadcast_page(httpd, page);
+	while ((page = ReadPage()) != nullptr) {
+		BroadcastPage(page);
 		page_unref(page);
 	}
 }
 
-static bool
-httpd_output_encode_and_play(HttpdOutput *httpd,
-			     const void *chunk, size_t size, GError **error)
+inline bool
+HttpdOutput::EncodeAndPlay(const void *chunk, size_t size, GError **error_r)
 {
-	if (!encoder_write(httpd->encoder, chunk, size, error))
+	if (!encoder_write(encoder, chunk, size, error_r))
 		return false;
 
-	httpd->unflushed_input += size;
+	unflushed_input += size;
 
-	httpd_output_encoder_to_clients(httpd);
-
+	BroadcastFromEncoder();
 	return true;
 }
 
@@ -468,8 +444,8 @@ httpd_output_play(struct audio_output *ao, const void *chunk, size_t size,
 {
 	HttpdOutput *httpd = (HttpdOutput *)ao;
 
-	if (httpd_output_lock_has_clients(httpd)) {
-		if (!httpd_output_encode_and_play(httpd, chunk, size, error_r))
+	if (httpd->LockHasClients()) {
+		if (!httpd->EncodeAndPlay(chunk, size, error_r))
 			return 0;
 	}
 
@@ -485,7 +461,7 @@ httpd_output_pause(struct audio_output *ao)
 {
 	HttpdOutput *httpd = (HttpdOutput *)ao;
 
-	if (httpd_output_lock_has_clients(httpd)) {
+	if (httpd->LockHasClients()) {
 		static const char silence[1020] = { 0 };
 		return httpd_output_play(ao, silence, sizeof(silence),
 					 NULL) > 0;
@@ -494,53 +470,58 @@ httpd_output_pause(struct audio_output *ao)
 	}
 }
 
-static void
-httpd_output_tag(struct audio_output *ao, const struct tag *tag)
+inline void
+HttpdOutput::SendTag(const struct tag *tag)
 {
-	HttpdOutput *httpd = (HttpdOutput *)ao;
-
 	assert(tag != NULL);
 
-	if (httpd->encoder->plugin->tag != NULL) {
+	if (encoder->plugin->tag != NULL) {
 		/* embed encoder tags */
 
 		/* flush the current stream, and end it */
 
-		encoder_pre_tag(httpd->encoder, NULL);
-		httpd_output_encoder_to_clients(httpd);
+		encoder_pre_tag(encoder, NULL);
+		BroadcastFromEncoder();
 
 		/* send the tag to the encoder - which starts a new
 		   stream now */
 
-		encoder_tag(httpd->encoder, tag, NULL);
+		encoder_tag(encoder, tag, NULL);
 
 		/* the first page generated by the encoder will now be
 		   used as the new "header" page, which is sent to all
 		   new clients */
 
-		struct page *page = httpd_output_read_page(httpd);
+		struct page *page = ReadPage();
 		if (page != NULL) {
-			if (httpd->header != NULL)
-				page_unref(httpd->header);
-			httpd->header = page;
-			httpd_output_broadcast_page(httpd, page);
+			if (header != NULL)
+				page_unref(header);
+			header = page;
+			BroadcastPage(page);
 		}
 	} else {
 		/* use Icy-Metadata */
 
-		if (httpd->metadata != NULL)
-			page_unref (httpd->metadata);
+		if (metadata != NULL)
+			page_unref(metadata);
 
-		httpd->metadata =
-			icy_server_metadata_page(tag, TAG_ALBUM,
-						 TAG_ARTIST, TAG_TITLE,
-						 TAG_NUM_OF_ITEM_TYPES);
-		if (httpd->metadata != NULL) {
-			const ScopeLock protect(httpd->mutex);
-			for (auto &client : httpd->clients)
-				client.PushMetaData(httpd->metadata);
+		metadata = icy_server_metadata_page(tag, TAG_ALBUM,
+						    TAG_ARTIST, TAG_TITLE,
+						    TAG_NUM_OF_ITEM_TYPES);
+		if (metadata != NULL) {
+			const ScopeLock protect(mutex);
+			for (auto &client : clients)
+				client.PushMetaData(metadata);
 		}
 	}
+}
+
+static void
+httpd_output_tag(struct audio_output *ao, const struct tag *tag)
+{
+	HttpdOutput *httpd = (HttpdOutput *)ao;
+
+	httpd->SendTag(tag);
 }
 
 static void
