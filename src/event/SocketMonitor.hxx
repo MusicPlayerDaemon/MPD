@@ -73,6 +73,12 @@ public:
 
 	void Open(int _fd);
 
+	/**
+	 * "Steal" the socket descriptor.  This abandons the socket
+	 * and puts the responsibility for closing it to the caller.
+	 */
+	int Steal();
+
 	void Close();
 
 	void Schedule(unsigned flags) {

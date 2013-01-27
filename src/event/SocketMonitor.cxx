@@ -105,17 +105,25 @@ SocketMonitor::Open(int _fd)
 	g_source_add_poll(&source->base, &poll);
 }
 
-void
-SocketMonitor::Close()
+int
+SocketMonitor::Steal()
 {
 	assert(IsDefined());
 
 	Cancel();
 
-	close_socket(fd);
+	int result = fd;
 	fd = -1;
 
 	g_source_destroy(&source->base);
 	g_source_unref(&source->base);
 	source = nullptr;
+
+	return result;
+}
+
+void
+SocketMonitor::Close()
+{
+	close_socket(Steal());
 }
