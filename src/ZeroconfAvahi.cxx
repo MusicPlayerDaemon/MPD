@@ -21,6 +21,7 @@
 #include "ZeroconfAvahi.hxx"
 #include "ZeroconfInternal.hxx"
 #include "Listen.hxx"
+#include "event/Loop.hxx"
 #include "mpd_error.h"
 
 #include <glib.h>
@@ -216,7 +217,7 @@ static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
 }
 
 void
-AvahiInit(const char *serviceName)
+AvahiInit(EventLoop &loop, const char *serviceName)
 {
 	int error;
 	g_debug("Initializing interface");
@@ -228,7 +229,8 @@ AvahiInit(const char *serviceName)
 
 	avahiRunning = 1;
 
-	avahi_glib_poll = avahi_glib_poll_new(NULL, G_PRIORITY_DEFAULT);
+	avahi_glib_poll = avahi_glib_poll_new(loop.GetContext(),
+					      G_PRIORITY_DEFAULT);
 	avahi_poll = avahi_glib_poll_get(avahi_glib_poll);
 
 	avahiClient = avahi_client_new(avahi_poll, AVAHI_CLIENT_NO_FAIL,

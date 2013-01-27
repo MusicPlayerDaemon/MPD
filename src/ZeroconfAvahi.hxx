@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,8 +20,10 @@
 #ifndef MPD_ZEROCONF_AVAHI_HXX
 #define MPD_ZEROCONF_AVAHI_HXX
 
+class EventLoop;
+
 void
-AvahiInit(const char *service_name);
+AvahiInit(EventLoop &loop, const char *service_name);
 
 void
 AvahiDeinit();

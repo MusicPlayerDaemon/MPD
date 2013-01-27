@@ -55,7 +55,7 @@ ZeroconfInit(gcc_unused EventLoop &loop)
 	serviceName = config_get_string(CONF_ZEROCONF_NAME, SERVICE_NAME);
 
 #ifdef HAVE_AVAHI
-	AvahiInit(serviceName);
+	AvahiInit(loop, serviceName);
 #endif
 
 #ifdef HAVE_BONJOUR
