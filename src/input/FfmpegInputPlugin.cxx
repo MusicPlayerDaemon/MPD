@@ -35,7 +35,7 @@ extern "C" {
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "input_ffmpeg"
 
-struct input_ffmpeg {
+struct FfmpegInputStream {
 	struct input_stream base;
 
 	AVIOContext *h;
@@ -77,7 +77,7 @@ input_ffmpeg_open(const char *uri,
 		  Mutex &mutex, Cond &cond,
 		  GError **error_r)
 {
-	struct input_ffmpeg *i;
+	FfmpegInputStream *i;
 
 	if (!g_str_has_prefix(uri, "gopher://") &&
 	    !g_str_has_prefix(uri, "rtp://") &&
@@ -87,7 +87,7 @@ input_ffmpeg_open(const char *uri,
 	    !g_str_has_prefix(uri, "rtmps://"))
 		return nullptr;
 
-	i = g_new(struct input_ffmpeg, 1);
+	i = g_new(FfmpegInputStream, 1);
 	input_stream_init(&i->base, &input_plugin_ffmpeg, uri,
 			  mutex, cond);
 
@@ -118,7 +118,7 @@ static size_t
 input_ffmpeg_read(struct input_stream *is, void *ptr, size_t size,
 		  GError **error_r)
 {
-	struct input_ffmpeg *i = (struct input_ffmpeg *)is;
+	FfmpegInputStream *i = (FfmpegInputStream *)is;
 
 	int ret = avio_read(i->h, (unsigned char *)ptr, size);
 	if (ret <= 0) {
@@ -137,7 +137,7 @@ input_ffmpeg_read(struct input_stream *is, void *ptr, size_t size,
 static void
 input_ffmpeg_close(struct input_stream *is)
 {
-	struct input_ffmpeg *i = (struct input_ffmpeg *)is;
+	FfmpegInputStream *i = (FfmpegInputStream *)is;
 
 	avio_close(i->h);
 	input_stream_deinit(&i->base);
@@ -147,7 +147,7 @@ input_ffmpeg_close(struct input_stream *is)
 static bool
 input_ffmpeg_eof(struct input_stream *is)
 {
-	struct input_ffmpeg *i = (struct input_ffmpeg *)is;
+	FfmpegInputStream *i = (FfmpegInputStream *)is;
 
 	return i->eof;
 }
@@ -156,7 +156,7 @@ static bool
 input_ffmpeg_seek(struct input_stream *is, goffset offset, int whence,
 		  G_GNUC_UNUSED GError **error_r)
 {
-	struct input_ffmpeg *i = (struct input_ffmpeg *)is;
+	FfmpegInputStream *i = (FfmpegInputStream *)is;
 	int64_t ret = avio_seek(i->h, offset, whence);
 
 	if (ret >= 0) {
