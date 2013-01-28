@@ -34,6 +34,8 @@
 #include <cdio/iso9660.h>
 
 #include <glib.h>
+
+#include <stdlib.h>
 #include <string.h>
 
 #define CEILING(x, y) ((x+(y-1))/y)
@@ -46,6 +48,29 @@ struct Iso9660ArchiveFile {
 	iso9660_t *iso;
 	GSList	*list;
 	GSList	*iter;
+
+	Iso9660ArchiveFile(iso9660_t *_iso)
+		:iso(_iso), list(nullptr) {
+		archive_file_init(&base, &iso9660_archive_plugin);
+		refcount_init(&ref);
+	}
+
+	~Iso9660ArchiveFile() {
+		//free list
+		for (GSList *tmp = list; tmp != NULL; tmp = g_slist_next(tmp))
+			g_free(tmp->data);
+		g_slist_free(list);
+
+		//close archive
+		iso9660_close(iso);
+	}
+
+	void Unref() {
+		if (refcount_dec(&ref))
+			delete this;
+	}
+
+	void CollectRecursive(const char *path);
 };
 
 extern const struct input_plugin iso9660_input_plugin;
@@ -58,10 +83,9 @@ iso9660_quark(void)
 
 /* archive open && listing routine */
 
-static void
-listdir_recur(const char *psz_path, Iso9660ArchiveFile *context)
+void
+Iso9660ArchiveFile::CollectRecursive(const char *psz_path)
 {
-	iso9660_t *iso = context->iso;
 	CdioList_t *entlist;
 	CdioListNode_t *entnode;
 	iso9660_stat_t *statbuf;
@@ -81,12 +105,11 @@ listdir_recur(const char *psz_path, Iso9660ArchiveFile *context)
 		if (iso9660_stat_s::_STAT_DIR == statbuf->type ) {
 			if (strcmp(statbuf->filename, ".") && strcmp(statbuf->filename, "..")) {
 				strcat(pathname, "/");
-				listdir_recur(pathname, context);
+				CollectRecursive(pathname);
 			}
 		} else {
 			//remove leading /
-			context->list = g_slist_prepend( context->list,
-				g_strdup(pathname + 1));
+			list = g_slist_prepend(list, g_strdup(pathname + 1));
 		}
 	}
 	_cdio_list_free (entlist, true);
@@ -95,25 +118,17 @@ listdir_recur(const char *psz_path, Iso9660ArchiveFile *context)
 static struct archive_file *
 iso9660_archive_open(const char *pathname, GError **error_r)
 {
-	Iso9660ArchiveFile *context =
-		g_new(Iso9660ArchiveFile, 1);
-
-	archive_file_init(&context->base, &iso9660_archive_plugin);
-	refcount_init(&context->ref);
-
-	context->list = NULL;
-
 	/* open archive */
-	context->iso = iso9660_open (pathname);
-	if (context->iso   == NULL) {
+	auto iso = iso9660_open(pathname);
+	if (iso == nullptr) {
 		g_set_error(error_r, iso9660_quark(), 0,
 			    "Failed to open ISO9660 file %s", pathname);
 		return NULL;
 	}
 
-	listdir_recur("/", context);
-
-	return &context->base;
+	Iso9660ArchiveFile *archive = new Iso9660ArchiveFile(iso);
+	archive->CollectRecursive("/");
+	return &archive->base;
 }
 
 static void
@@ -146,21 +161,8 @@ iso9660_archive_close(struct archive_file *file)
 {
 	Iso9660ArchiveFile *context =
 		(Iso9660ArchiveFile *)file;
-	GSList *tmp;
 
-	if (!refcount_dec(&context->ref))
-		return;
-
-	if (context->list) {
-		//free list
-		for (tmp = context->list; tmp != NULL; tmp = g_slist_next(tmp))
-			g_free(tmp->data);
-		g_slist_free(context->list);
-	}
-	//close archive
-	iso9660_close(context->iso);
-
-	g_free(context);
+	context->Unref();
 }
 
 /* single archive handling */
@@ -172,6 +174,26 @@ struct Iso9660InputStream {
 
 	iso9660_stat_t *statbuf;
 	size_t max_blocks;
+
+	Iso9660InputStream(Iso9660ArchiveFile &_archive, const char *uri,
+			   Mutex &mutex, Cond &cond,
+			   iso9660_stat_t *_statbuf)
+		:archive(&_archive), statbuf(_statbuf),
+		 max_blocks(CEILING(statbuf->size, ISO_BLOCKSIZE)) {
+		input_stream_init(&base, &iso9660_input_plugin, uri,
+				  mutex, cond);
+
+		base.ready = true;
+		base.size = statbuf->size;
+
+		refcount_inc(&archive->ref);
+	}
+
+	~Iso9660InputStream() {
+		free(statbuf);
+		archive->Unref();
+		input_stream_deinit(&base);
+	}
 };
 
 static struct input_stream *
@@ -181,31 +203,17 @@ iso9660_archive_open_stream(struct archive_file *file, const char *pathname,
 {
 	Iso9660ArchiveFile *context =
 		(Iso9660ArchiveFile *)file;
-	Iso9660InputStream *iis;
 
-	iis = g_new(Iso9660InputStream, 1);
-	input_stream_init(&iis->base, &iso9660_input_plugin, pathname,
-			  mutex, cond);
-
-	iis->archive = context;
-	iis->statbuf = iso9660_ifs_stat_translate(context->iso, pathname);
-	if (iis->statbuf == NULL) {
-		g_free(iis);
+	auto statbuf = iso9660_ifs_stat_translate(context->iso, pathname);
+	if (statbuf == nullptr) {
 		g_set_error(error_r, iso9660_quark(), 0,
 			    "not found in the ISO file: %s", pathname);
 		return NULL;
 	}
 
-	iis->base.ready = true;
-	//we are not seekable
-	iis->base.seekable = false;
-
-	iis->base.size = iis->statbuf->size;
-
-	iis->max_blocks = CEILING(iis->statbuf->size, ISO_BLOCKSIZE);
-
-	refcount_inc(&context->ref);
-
+	Iso9660InputStream *iis =
+		new Iso9660InputStream(*context, pathname, mutex, cond,
+				       statbuf);
 	return &iis->base;
 }
 
@@ -214,12 +222,7 @@ iso9660_input_close(struct input_stream *is)
 {
 	Iso9660InputStream *iis = (Iso9660InputStream *)is;
 
-	g_free(iis->statbuf);
-
-	iso9660_archive_close(&iis->archive->base);
-
-	input_stream_deinit(&iis->base);
-	g_free(iis);
+	delete iis;
 }
 
 
