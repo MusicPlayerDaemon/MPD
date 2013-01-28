@@ -38,11 +38,7 @@ extern "C" {
 struct input_ffmpeg {
 	struct input_stream base;
 
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,0,0)
 	AVIOContext *h;
-#else
-	URLContext *h;
-#endif
 
 	bool eof;
 };
@@ -56,12 +52,8 @@ ffmpeg_quark(void)
 static inline bool
 input_ffmpeg_supported(void)
 {
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,0,0)
 	void *opaque = nullptr;
 	return avio_enum_protocols(&opaque, 0) != nullptr;
-#else
-	return av_protocol_next(nullptr) != nullptr;
-#endif
 }
 
 static bool
@@ -99,13 +91,7 @@ input_ffmpeg_open(const char *uri,
 	input_stream_init(&i->base, &input_plugin_ffmpeg, uri,
 			  mutex, cond);
 
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,1,0)
 	int ret = avio_open(&i->h, uri, AVIO_FLAG_READ);
-#elif LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,0,0)
-	int ret = avio_open(&i->h, uri, AVIO_RDONLY);
-#else
-	int ret = url_open(&i->h, uri, URL_RDONLY);
-#endif
 	if (ret != 0) {
 		g_free(i);
 		g_set_error(error_r, ffmpeg_quark(), ret,
@@ -116,13 +102,8 @@ input_ffmpeg_open(const char *uri,
 	i->eof = false;
 
 	i->base.ready = true;
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,0,0)
 	i->base.seekable = (i->h->seekable & AVIO_SEEKABLE_NORMAL) != 0;
 	i->base.size = avio_size(i->h);
-#else
-	i->base.seekable = !i->h->is_streamed;
-	i->base.size = url_filesize(i->h);
-#endif
 
 	/* hack to make MPD select the "ffmpeg" decoder plugin - since
 	   avio.h doesn't tell us the MIME type of the resource, we
@@ -139,11 +120,7 @@ input_ffmpeg_read(struct input_stream *is, void *ptr, size_t size,
 {
 	struct input_ffmpeg *i = (struct input_ffmpeg *)is;
 
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,0,0)
 	int ret = avio_read(i->h, (unsigned char *)ptr, size);
-#else
-	int ret = url_read(i->h, (unsigned char *)ptr, size);
-#endif
 	if (ret <= 0) {
 		if (ret < 0)
 			g_set_error(error_r, ffmpeg_quark(), 0,
@@ -162,11 +139,7 @@ input_ffmpeg_close(struct input_stream *is)
 {
 	struct input_ffmpeg *i = (struct input_ffmpeg *)is;
 
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,0,0)
 	avio_close(i->h);
-#else
-	url_close(i->h);
-#endif
 	input_stream_deinit(&i->base);
 	g_free(i);
 }
@@ -184,11 +157,7 @@ input_ffmpeg_seek(struct input_stream *is, goffset offset, int whence,
 		  G_GNUC_UNUSED GError **error_r)
 {
 	struct input_ffmpeg *i = (struct input_ffmpeg *)is;
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,0,0)
 	int64_t ret = avio_seek(i->h, offset, whence);
-#else
-	int64_t ret = url_seek(i->h, offset, whence);
-#endif
 
 	if (ret >= 0) {
 		i->eof = false;

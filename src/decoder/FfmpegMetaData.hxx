@@ -23,16 +23,8 @@
 extern "C" {
 #include <libavformat/avformat.h>
 #include <libavutil/avutil.h>
-#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,5,0)
 #include <libavutil/dict.h>
-#endif
 }
-
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(53,1,0)
-#define AVDictionary AVMetadata
-#define AVDictionaryEntry AVMetadataTag
-#define av_dict_get av_metadata_get
-#endif
 
 struct tag_handler;
 

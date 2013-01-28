@@ -29,9 +29,6 @@
 #define G_LOG_DOMAIN "ffmpeg"
 
 static const struct tag_table ffmpeg_tags[] = {
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(52,50,0)
-	{ "author", TAG_ARTIST },
-#endif
 	{ "year", TAG_DATE },
 	{ "author-sort", TAG_ARTIST_SORT },
 	{ "album_artist", TAG_ALBUM_ARTIST },
@@ -53,8 +50,6 @@ ffmpeg_copy_metadata(enum tag_type type,
 				       type, mt->value);
 }
 
-#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,5,0)
-
 static void
 ffmpeg_scan_pairs(AVDictionary *dict,
 		  const struct tag_handler *handler, void *handler_ctx)
@@ -65,8 +60,6 @@ ffmpeg_scan_pairs(AVDictionary *dict,
 		tag_handler_invoke_pair(handler, handler_ctx,
 					i->key, i->value);
 }
-
-#endif
 
 void
 ffmpeg_scan_dictionary(AVDictionary *dict,
@@ -81,8 +74,6 @@ ffmpeg_scan_dictionary(AVDictionary *dict,
 		ffmpeg_copy_metadata(i->type, dict, i->name,
 				     handler, handler_ctx);
 
-#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,5,0)
 	if (handler->pair != NULL)
 		ffmpeg_scan_pairs(dict, handler, handler_ctx);
-#endif
 }

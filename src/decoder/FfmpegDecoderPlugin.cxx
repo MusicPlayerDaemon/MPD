@@ -49,9 +49,7 @@ extern "C" {
 #include <libavutil/avutil.h>
 #include <libavutil/log.h>
 #include <libavutil/mathematics.h>
-#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,5,0)
 #include <libavutil/dict.h>
-#endif
 }
 
 #undef G_LOG_DOMAIN
@@ -92,11 +90,8 @@ struct mpd_ffmpeg_stream {
 	struct decoder *decoder;
 	struct input_stream *input;
 
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(52,101,0)
 	AVIOContext *io;
-#else
-	ByteIOContext *io;
-#endif
+
 	unsigned char buffer[8192];
 };
 
@@ -129,19 +124,11 @@ mpd_ffmpeg_stream_open(struct decoder *decoder, struct input_stream *input)
 	struct mpd_ffmpeg_stream *stream = g_new(struct mpd_ffmpeg_stream, 1);
 	stream->decoder = decoder;
 	stream->input = input;
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(52,101,0)
 	stream->io = avio_alloc_context(stream->buffer, sizeof(stream->buffer),
 					false, stream,
 					mpd_ffmpeg_stream_read, NULL,
 					input->seekable
 					? mpd_ffmpeg_stream_seek : NULL);
-#else
-	stream->io = av_alloc_put_byte(stream->buffer, sizeof(stream->buffer),
-				       false, stream,
-				       mpd_ffmpeg_stream_read, NULL,
-				       input->seekable
-				       ? mpd_ffmpeg_stream_seek : NULL);
-#endif
 	if (stream->io == NULL) {
 		g_free(stream);
 		return NULL;
@@ -156,15 +143,10 @@ mpd_ffmpeg_stream_open(struct decoder *decoder, struct input_stream *input)
  */
 static int
 mpd_ffmpeg_open_input(AVFormatContext **ic_ptr,
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(52,101,0)
 		      AVIOContext *pb,
-#else
-		      ByteIOContext *pb,
-#endif
 		      const char *filename,
 		      AVInputFormat *fmt)
 {
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53,1,3)
 	AVFormatContext *context = avformat_alloc_context();
 	if (context == NULL)
 		return AVERROR(ENOMEM);
@@ -172,9 +154,6 @@ mpd_ffmpeg_open_input(AVFormatContext **ic_ptr,
 	context->pb = pb;
 	*ic_ptr = context;
 	return avformat_open_input(ic_ptr, filename, fmt, NULL);
-#else
-	return av_open_input_stream(ic_ptr, pb, filename, fmt, NULL);
-#endif
 }
 
 static void
@@ -198,11 +177,7 @@ ffmpeg_find_audio_stream(const AVFormatContext *format_context)
 {
 	for (unsigned i = 0; i < format_context->nb_streams; ++i)
 		if (format_context->streams[i]->codec->codec_type ==
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 64, 0)
 		    AVMEDIA_TYPE_AUDIO)
-#else
-		    CODEC_TYPE_AUDIO)
-#endif
 			return i;
 
 	return -1;
@@ -301,12 +276,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		decoder_timestamp(decoder,
 				  time_from_ffmpeg(packet->pts, *time_base));
 
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52,25,0)
 	AVPacket packet2 = *packet;
-#else
-	const uint8_t *packet_data = packet->data;
-	int packet_size = packet->size;
-#endif
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53,25,0)
 	uint8_t aligned_buffer[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2 + 16];
@@ -319,12 +289,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 #endif
 
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
-	while (
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52,25,0)
-	       packet2.size > 0 &&
-#else
-	       packet_size > 0 &&
-#endif
+	while (packet2.size > 0 &&
 	       cmd == DECODE_COMMAND_NONE) {
 		int audio_size = buffer_size;
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53,25,0)
@@ -342,14 +307,10 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 				len = audio_size;
 		} else if (len >= 0)
 			len = -1;
-#elif LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52,25,0)
+#else
 		int len = avcodec_decode_audio3(codec_context,
 						aligned_buffer, &audio_size,
 						&packet2);
-#else
-		int len = avcodec_decode_audio2(codec_context,
-						aligned_buffer, &audio_size,
-						packet_data, packet_size);
 #endif
 
 		if (len < 0) {
@@ -358,13 +319,8 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 			break;
 		}
 
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52,25,0)
 		packet2.data += len;
 		packet2.size -= len;
-#else
-		packet_data += len;
-		packet_size -= len;
-#endif
 
 		if (audio_size <= 0)
 			continue;
@@ -376,32 +332,20 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 	return cmd;
 }
 
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 94, 1)
-#define AVSampleFormat SampleFormat
-#endif
-
 G_GNUC_CONST
 static enum sample_format
 ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 {
 	switch (sample_fmt) {
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 94, 1)
 	case AV_SAMPLE_FMT_S16:
 #if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,17,0)
 	case AV_SAMPLE_FMT_S16P:
 #endif
-#else
-	case SAMPLE_FMT_S16:
-#endif
 		return SAMPLE_FORMAT_S16;
 
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 94, 1)
 	case AV_SAMPLE_FMT_S32:
 #if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,17,0)
 	case AV_SAMPLE_FMT_S32P:
-#endif
-#else
-	case SAMPLE_FMT_S32:
 #endif
 		return SAMPLE_FORMAT_S32;
 
@@ -414,7 +358,6 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 		break;
 	}
 
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 94, 1)
 	char buffer[64];
 	const char *name = av_get_sample_fmt_string(buffer, sizeof(buffer),
 						    sample_fmt);
@@ -422,7 +365,6 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 		g_warning("Unsupported libavcodec SampleFormat value: %s (%d)",
 			  name, sample_fmt);
 	else
-#endif
 		g_warning("Unsupported libavcodec SampleFormat value: %d",
 			  sample_fmt);
 	return SAMPLE_FORMAT_UNDEFINED;
@@ -664,10 +606,6 @@ ffmpeg_scan_stream(struct input_stream *is,
 	if (f->duration != (int64_t)AV_NOPTS_VALUE)
 		tag_handler_invoke_duration(handler, handler_ctx,
 					    f->duration / AV_TIME_BASE);
-
-#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(52,101,0)
-	av_metadata_conv(f, NULL, f->iformat->metadata_conv);
-#endif
 
 	ffmpeg_scan_dictionary(f->metadata, handler, handler_ctx);
 	int idx = ffmpeg_find_audio_stream(f);
