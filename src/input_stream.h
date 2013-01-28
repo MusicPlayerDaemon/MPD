@@ -49,7 +49,7 @@ extern "C" {
  * @return an #input_stream object on success, NULL on error
  */
 gcc_nonnull(1)
-G_GNUC_MALLOC
+gcc_malloc
 struct input_stream *
 input_stream_open(const char *uri,
 		  Mutex &mutex, Cond &cond,
@@ -157,7 +157,7 @@ input_stream_lock_seek(struct input_stream *is, goffset offset, int whence,
  * The caller must lock the mutex.
  */
 gcc_nonnull(1)
-G_GNUC_PURE
+gcc_pure
 bool input_stream_eof(struct input_stream *is);
 
 /**
@@ -165,7 +165,7 @@ bool input_stream_eof(struct input_stream *is);
  * the caller must not be holding it already.
  */
 gcc_nonnull(1)
-G_GNUC_PURE
+gcc_pure
 bool
 input_stream_lock_eof(struct input_stream *is);
 
@@ -178,7 +178,7 @@ input_stream_lock_eof(struct input_stream *is);
  * if the tag has not changed since the last call
  */
 gcc_nonnull(1)
-G_GNUC_MALLOC
+gcc_malloc
 struct tag *
 input_stream_tag(struct input_stream *is);
 
@@ -187,7 +187,7 @@ input_stream_tag(struct input_stream *is);
  * mutex; the caller must not be holding it already.
  */
 gcc_nonnull(1)
-G_GNUC_MALLOC
+gcc_malloc
 struct tag *
 input_stream_lock_tag(struct input_stream *is);
 
@@ -199,7 +199,7 @@ input_stream_lock_tag(struct input_stream *is);
  * The caller must lock the mutex.
  */
 gcc_nonnull(1)
-G_GNUC_PURE
+gcc_pure
 bool
 input_stream_available(struct input_stream *is);
 
