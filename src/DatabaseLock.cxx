@@ -21,11 +21,6 @@
 #include "DatabaseLock.hxx"
 #include "gcc.h"
 
-#if GCC_CHECK_VERSION(4, 2)
-/* workaround for a warning caused by G_STATIC_MUTEX_INIT */
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#endif
-
 Mutex db_mutex;
 
 #ifndef NDEBUG

@@ -120,11 +120,6 @@ bz2_destroy(struct bz2_input_stream *data)
 
 /* archive open && listing routine */
 
-#if GCC_CHECK_VERSION(4, 2)
-/* workaround for a warning caused by G_STATIC_MUTEX_INIT */
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#endif
-
 static struct archive_file *
 bz2_open(const char *pathname, GError **error_r)
 {
