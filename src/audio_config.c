@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,15 +21,10 @@
 #include "audio_config.h"
 #include "audio_format.h"
 #include "audio_parser.h"
-#include "output_internal.h"
-#include "output_plugin.h"
 #include "conf.h"
 #include "mpd_error.h"
 
 #include <glib.h>
-
-#include <assert.h>
-#include <stdlib.h>
 
 static struct audio_format configured_audio_format;
 
