@@ -41,7 +41,7 @@
 #define BZ2_bzDecompress bzDecompress
 #endif
 
-struct bz2_archive_file {
+struct Bzip2ArchiveFile {
 	struct archive_file base;
 
 	struct refcount ref;
@@ -50,7 +50,7 @@ struct bz2_archive_file {
 	bool reset;
 	struct input_stream *istream;
 
-	bz2_archive_file() {
+	Bzip2ArchiveFile() {
 		archive_file_init(&base, &bz2_archive_plugin);
 		refcount_init(&ref);
 	}
@@ -66,10 +66,10 @@ struct bz2_archive_file {
 	}
 };
 
-struct bz2_input_stream {
+struct Bzip2InputStream {
 	struct input_stream base;
 
-	struct bz2_archive_file *archive;
+	Bzip2ArchiveFile *archive;
 
 	bool eof;
 
@@ -89,7 +89,7 @@ bz2_quark(void)
 /* single archive handling allocation helpers */
 
 static bool
-bz2_alloc(struct bz2_input_stream *data, GError **error_r)
+bz2_alloc(Bzip2InputStream *data, GError **error_r)
 {
 	int ret;
 
@@ -113,7 +113,7 @@ bz2_alloc(struct bz2_input_stream *data, GError **error_r)
 }
 
 static void
-bz2_destroy(struct bz2_input_stream *data)
+bz2_destroy(Bzip2InputStream *data)
 {
 	BZ2_bzDecompressEnd(&data->bzstream);
 }
@@ -123,7 +123,7 @@ bz2_destroy(struct bz2_input_stream *data)
 static struct archive_file *
 bz2_open(const char *pathname, GError **error_r)
 {
-	struct bz2_archive_file *context = new bz2_archive_file();
+	Bzip2ArchiveFile *context = new Bzip2ArchiveFile();
 	int len;
 
 	//open archive
@@ -150,14 +150,14 @@ bz2_open(const char *pathname, GError **error_r)
 static void
 bz2_scan_reset(struct archive_file *file)
 {
-	struct bz2_archive_file *context = (struct bz2_archive_file *) file;
+	Bzip2ArchiveFile *context = (Bzip2ArchiveFile *) file;
 	context->reset = true;
 }
 
 static char *
 bz2_scan_next(struct archive_file *file)
 {
-	struct bz2_archive_file *context = (struct bz2_archive_file *) file;
+	Bzip2ArchiveFile *context = (Bzip2ArchiveFile *) file;
 	char *name = NULL;
 
 	if (context->reset) {
@@ -171,7 +171,7 @@ bz2_scan_next(struct archive_file *file)
 static void
 bz2_close(struct archive_file *file)
 {
-	struct bz2_archive_file *context = (struct bz2_archive_file *) file;
+	Bzip2ArchiveFile *context = (Bzip2ArchiveFile *) file;
 
 	context->Unref();
 }
@@ -183,8 +183,8 @@ bz2_open_stream(struct archive_file *file, const char *path,
 		Mutex &mutex, Cond &cond,
 		GError **error_r)
 {
-	struct bz2_archive_file *context = (struct bz2_archive_file *) file;
-	struct bz2_input_stream *bis = g_new(struct bz2_input_stream, 1);
+	Bzip2ArchiveFile *context = (Bzip2ArchiveFile *) file;
+	Bzip2InputStream *bis = g_new(Bzip2InputStream, 1);
 
 	input_stream_init(&bis->base, &bz2_inputplugin, path,
 			  mutex, cond);
@@ -210,7 +210,7 @@ bz2_open_stream(struct archive_file *file, const char *path,
 static void
 bz2_is_close(struct input_stream *is)
 {
-	struct bz2_input_stream *bis = (struct bz2_input_stream *)is;
+	Bzip2InputStream *bis = (Bzip2InputStream *)is;
 
 	bz2_destroy(bis);
 
@@ -221,7 +221,7 @@ bz2_is_close(struct input_stream *is)
 }
 
 static bool
-bz2_fillbuffer(struct bz2_input_stream *bis, GError **error_r)
+bz2_fillbuffer(Bzip2InputStream *bis, GError **error_r)
 {
 	size_t count;
 	bz_stream *bzstream;
@@ -246,7 +246,7 @@ static size_t
 bz2_is_read(struct input_stream *is, void *ptr, size_t length,
 	    GError **error_r)
 {
-	struct bz2_input_stream *bis = (struct bz2_input_stream *)is;
+	Bzip2InputStream *bis = (Bzip2InputStream *)is;
 	bz_stream *bzstream;
 	int bz_result;
 	size_t nbytes = 0;
@@ -285,7 +285,7 @@ bz2_is_read(struct input_stream *is, void *ptr, size_t length,
 static bool
 bz2_is_eof(struct input_stream *is)
 {
-	struct bz2_input_stream *bis = (struct bz2_input_stream *)is;
+	Bzip2InputStream *bis = (Bzip2InputStream *)is;
 
 	return bis->eof;
 }
