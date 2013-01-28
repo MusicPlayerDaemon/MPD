@@ -46,6 +46,31 @@ struct DespotifyInputStream {
 	struct ds_pcm_data pcm;
 	size_t len_available;
 	bool eof;
+
+	DespotifyInputStream(const char *uri,
+			     Mutex &mutex, Cond &cond,
+			     despotify_session *_session,
+			     ds_track *_track)
+		:session(_session), track(_track),
+		 tag(mpd_despotify_tag_from_track(track)),
+		 len_available(0), eof(false) {
+		input_stream_init(&base, &input_plugin_despotify, uri,
+				  mutex, cond);
+
+		memset(&pcm, 0, sizeof(pcm));
+
+		/* Despotify outputs pcm data */
+		base.mime = g_strdup("audio/x-mpd-cdda-pcm");
+		base.ready = true;
+	}
+
+	~DespotifyInputStream() {
+		if (tag != NULL)
+			tag_free(tag);
+
+		despotify_free_track(track);
+		input_stream_deinit(&base);
+	}
 };
 
 static void
@@ -104,7 +129,6 @@ input_despotify_open(const char *url,
 		     Mutex &mutex, Cond &cond,
 		     G_GNUC_UNUSED GError **error_r)
 {
-	DespotifyInputStream *ctx;
 	struct despotify_session *session;
 	struct ds_link *ds_link;
 	struct ds_track *track;
@@ -126,35 +150,23 @@ input_despotify_open(const char *url,
 		return NULL;
 	}
 
-	ctx = g_new(DespotifyInputStream, 1);
-	memset(ctx, 0, sizeof(*ctx));
-
 	track = despotify_link_get_track(session, ds_link);
 	despotify_free_link(ds_link);
-	if (!track) {
-		g_free(ctx);
+	if (!track)
 		return NULL;
-	}
 
-	input_stream_init(&ctx->base, &input_plugin_despotify, url,
-			  mutex, cond);
-	ctx->session = session;
-	ctx->track = track;
-	ctx->tag = mpd_despotify_tag_from_track(track);
-	ctx->eof = false;
-	/* Despotify outputs pcm data */
-	ctx->base.mime = g_strdup("audio/x-mpd-cdda-pcm");
-	ctx->base.ready = true;
+	DespotifyInputStream *ctx =
+		new DespotifyInputStream(url, mutex, cond,
+					 session, track);
 
 	if (!mpd_despotify_register_callback(callback, ctx)) {
-		despotify_free_link(ds_link);
-
+		delete ctx;
 		return NULL;
 	}
 
 	if (despotify_play(ctx->session, ctx->track, false) == false) {
-		despotify_free_track(ctx->track);
-		g_free(ctx);
+		mpd_despotify_unregister_callback(callback);
+		delete ctx;
 		return NULL;
 	}
 
@@ -186,13 +198,8 @@ input_despotify_close(struct input_stream *is)
 {
 	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
 
-	if (ctx->tag != NULL)
-		tag_free(ctx->tag);
-
 	mpd_despotify_unregister_callback(callback);
-	despotify_free_track(ctx->track);
-	input_stream_deinit(&ctx->base);
-	g_free(ctx);
+	delete ctx;
 }
 
 static bool
