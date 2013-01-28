@@ -41,6 +41,28 @@ struct FfmpegInputStream {
 	AVIOContext *h;
 
 	bool eof;
+
+	FfmpegInputStream(const char *uri, Mutex &mutex, Cond &cond,
+			  AVIOContext *_h)
+		:h(_h), eof(false) {
+		input_stream_init(&base, &input_plugin_ffmpeg,
+				  uri, mutex, cond);
+
+		base.ready = true;
+		base.seekable = (h->seekable & AVIO_SEEKABLE_NORMAL) != 0;
+		base.size = avio_size(h);
+
+		/* hack to make MPD select the "ffmpeg" decoder plugin
+		   - since avio.h doesn't tell us the MIME type of the
+		   resource, we can't select a decoder plugin, but the
+		   "ffmpeg" plugin is quite good at auto-detection */
+		base.mime = g_strdup("audio/x-mpd-ffmpeg");
+	}
+
+	~FfmpegInputStream() {
+		avio_close(h);
+		input_stream_deinit(&base);
+	}
 };
 
 static inline GQuark
@@ -77,8 +99,6 @@ input_ffmpeg_open(const char *uri,
 		  Mutex &mutex, Cond &cond,
 		  GError **error_r)
 {
-	FfmpegInputStream *i;
-
 	if (!g_str_has_prefix(uri, "gopher://") &&
 	    !g_str_has_prefix(uri, "rtp://") &&
 	    !g_str_has_prefix(uri, "rtsp://") &&
@@ -87,30 +107,15 @@ input_ffmpeg_open(const char *uri,
 	    !g_str_has_prefix(uri, "rtmps://"))
 		return nullptr;
 
-	i = g_new(FfmpegInputStream, 1);
-	input_stream_init(&i->base, &input_plugin_ffmpeg, uri,
-			  mutex, cond);
-
-	int ret = avio_open(&i->h, uri, AVIO_FLAG_READ);
+	AVIOContext *h;
+	int ret = avio_open(&h, uri, AVIO_FLAG_READ);
 	if (ret != 0) {
-		g_free(i);
 		g_set_error(error_r, ffmpeg_quark(), ret,
 			    "libavformat failed to open the URI");
 		return nullptr;
 	}
 
-	i->eof = false;
-
-	i->base.ready = true;
-	i->base.seekable = (i->h->seekable & AVIO_SEEKABLE_NORMAL) != 0;
-	i->base.size = avio_size(i->h);
-
-	/* hack to make MPD select the "ffmpeg" decoder plugin - since
-	   avio.h doesn't tell us the MIME type of the resource, we
-	   can't select a decoder plugin, but the "ffmpeg" plugin is
-	   quite good at auto-detection */
-	i->base.mime = g_strdup("audio/x-mpd-ffmpeg");
-
+	auto *i = new FfmpegInputStream(uri, mutex, cond, h);
 	return &i->base;
 }
 
@@ -139,9 +144,7 @@ input_ffmpeg_close(struct input_stream *is)
 {
 	FfmpegInputStream *i = (FfmpegInputStream *)is;
 
-	avio_close(i->h);
-	input_stream_deinit(&i->base);
-	g_free(i);
+	delete i;
 }
 
 static bool
