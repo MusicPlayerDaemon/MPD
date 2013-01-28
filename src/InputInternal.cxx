@@ -21,37 +21,6 @@
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
 
-#include <assert.h>
-
-void
-input_stream_init(struct input_stream *is, const struct input_plugin *plugin,
-		  const char *uri, Mutex &mutex, Cond &cond)
-{
-	assert(is != NULL);
-	assert(plugin != NULL);
-	assert(uri != NULL);
-
-	is->plugin = plugin;
-	is->uri = g_strdup(uri);
-	is->mutex = &mutex;
-	is->cond = &cond;
-	is->ready = false;
-	is->seekable = false;
-	is->size = -1;
-	is->offset = 0;
-	is->mime = NULL;
-}
-
-void
-input_stream_deinit(struct input_stream *is)
-{
-	assert(is != NULL);
-	assert(is->plugin != NULL);
-
-	g_free(is->uri);
-	g_free(is->mime);
-}
-
 void
 input_stream_signal_client(struct input_stream *is)
 {

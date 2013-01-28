@@ -42,10 +42,8 @@ struct FileInputStream {
 
 	FileInputStream(const char *path, int _fd, off_t size,
 			Mutex &mutex, Cond &cond)
-		:fd(_fd) {
-		input_stream_init(&base, &input_plugin_file, path,
-				  mutex, cond);
-
+		:base(input_plugin_file, path, mutex, cond),
+		 fd(_fd) {
 		base.size = size;
 		base.seekable = true;
 		base.ready = true;
@@ -53,7 +51,6 @@ struct FileInputStream {
 
 	~FileInputStream() {
 		close(fd);
-		input_stream_deinit(&base);
 	}
 };
 

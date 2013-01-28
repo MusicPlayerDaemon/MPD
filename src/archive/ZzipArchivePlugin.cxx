@@ -142,10 +142,8 @@ struct ZzipInputStream {
 	ZzipInputStream(ZzipArchiveFile &_archive, const char *uri,
 			Mutex &mutex, Cond &cond,
 			ZZIP_FILE *_file)
-		:archive(&_archive), file(_file) {
-		input_stream_init(&base, &zzip_input_plugin, uri,
-				  mutex, cond);
-
+		:base(zzip_input_plugin, uri, mutex, cond),
+		 archive(&_archive), file(_file) {
 		base.ready = true;
 		//we are seekable (but its not recommendent to do so)
 		base.seekable = true;
@@ -160,7 +158,6 @@ struct ZzipInputStream {
 	~ZzipInputStream() {
 		zzip_file_close(file);
 		archive->Unref();
-		input_stream_deinit(&base);
 	}
 };
 

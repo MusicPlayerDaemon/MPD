@@ -21,18 +21,8 @@
 #define MPD_INPUT_INTERNAL_HXX
 
 #include "check.h"
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 
 struct input_stream;
-struct input_plugin;
-
-void
-input_stream_init(struct input_stream *is, const struct input_plugin *plugin,
-		  const char *uri, Mutex &mutex, Cond &cond);
-
-void
-input_stream_deinit(struct input_stream *is);
 
 void
 input_stream_signal_client(struct input_stream *is);

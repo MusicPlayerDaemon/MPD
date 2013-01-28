@@ -42,9 +42,8 @@ struct MmsInputStream {
 	MmsInputStream(const char *uri,
 		       Mutex &mutex, Cond &cond,
 		       mmsx_t *_mms)
-		:mms(_mms), eof(false) {
-		input_stream_init(&base, &input_plugin_mms, uri, mutex, cond);
-
+		:base(input_plugin_mms, uri, mutex, cond),
+		 mms(_mms), eof(false) {
 		/* XX is this correct?  at least this selects the ffmpeg
 		   decoder, which seems to work fine*/
 		base.mime = g_strdup("audio/x-ms-wma");
@@ -54,7 +53,6 @@ struct MmsInputStream {
 
 	~MmsInputStream() {
 		mmsx_close(mms);
-		input_stream_deinit(&base);
 	}
 };
 

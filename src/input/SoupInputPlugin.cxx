@@ -278,14 +278,12 @@ input_soup_queue(gpointer data)
 
 SoupInputStream::SoupInputStream(const char *uri,
 				 Mutex &mutex, Cond &cond)
-	:buffers(g_queue_new()),
+	:base(input_plugin_soup, uri, mutex, cond),
+	 buffers(g_queue_new()),
 	 current_consumed(0), total_buffered(0),
 	 alive(false), pause(false), eof(false), completed(false),
 	 postponed_error(nullptr)
 {
-	input_stream_init(&base, &input_plugin_soup, uri,
-			  mutex, cond);
-
 #if GCC_CHECK_VERSION(4,6)
 #pragma GCC diagnostic push
 	/* the libsoup macro SOUP_METHOD_GET discards the "const"
@@ -365,8 +363,6 @@ SoupInputStream::~SoupInputStream()
 
 	if (postponed_error != NULL)
 		g_error_free(postponed_error);
-
-	input_stream_deinit(&base);
 }
 
 static void

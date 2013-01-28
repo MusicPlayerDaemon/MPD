@@ -51,11 +51,10 @@ struct DespotifyInputStream {
 			     Mutex &mutex, Cond &cond,
 			     despotify_session *_session,
 			     ds_track *_track)
-		:session(_session), track(_track),
+		:base(input_plugin_despotify, uri, mutex, cond),
+		 session(_session), track(_track),
 		 tag(mpd_despotify_tag_from_track(track)),
 		 len_available(0), eof(false) {
-		input_stream_init(&base, &input_plugin_despotify, uri,
-				  mutex, cond);
 
 		memset(&pcm, 0, sizeof(pcm));
 
@@ -69,7 +68,6 @@ struct DespotifyInputStream {
 			tag_free(tag);
 
 		despotify_free_track(track);
-		input_stream_deinit(&base);
 	}
 };
 

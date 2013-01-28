@@ -61,15 +61,13 @@ struct RewindInputStream {
 	char buffer[64 * 1024];
 
 	RewindInputStream(input_stream *_input)
-		:input(_input), tail(0) {
-		input_stream_init(&base, &rewind_input_plugin, input->uri,
-				  *input->mutex, *input->cond);
+		:base(rewind_input_plugin, _input->uri,
+		      *_input->mutex, *_input->cond),
+		 input(_input), tail(0) {
 	}
 
 	~RewindInputStream() {
 		input_stream_close(input);
-
-		input_stream_deinit(&base);
 	}
 
 	/**

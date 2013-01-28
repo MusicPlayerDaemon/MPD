@@ -178,10 +178,9 @@ struct Iso9660InputStream {
 	Iso9660InputStream(Iso9660ArchiveFile &_archive, const char *uri,
 			   Mutex &mutex, Cond &cond,
 			   iso9660_stat_t *_statbuf)
-		:archive(&_archive), statbuf(_statbuf),
+		:base(iso9660_input_plugin, uri, mutex, cond),
+		      archive(&_archive), statbuf(_statbuf),
 		 max_blocks(CEILING(statbuf->size, ISO_BLOCKSIZE)) {
-		input_stream_init(&base, &iso9660_input_plugin, uri,
-				  mutex, cond);
 
 		base.ready = true;
 		base.size = statbuf->size;
@@ -192,7 +191,6 @@ struct Iso9660InputStream {
 	~Iso9660InputStream() {
 		free(statbuf);
 		archive->Unref();
-		input_stream_deinit(&base);
 	}
 };
 

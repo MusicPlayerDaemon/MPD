@@ -184,16 +184,15 @@ bz2_close(struct archive_file *file)
 
 Bzip2InputStream::Bzip2InputStream(Bzip2ArchiveFile &_context, const char *uri,
 				   Mutex &mutex, Cond &cond)
-	:archive(&_context), eof(false)
+	:base(bz2_inputplugin, uri, mutex, cond),
+	 archive(&_context), eof(false)
 {
-	input_stream_init(&base, &bz2_inputplugin, uri, mutex, cond);
 	refcount_inc(&archive->ref);
 }
 
 Bzip2InputStream::~Bzip2InputStream()
 {
 	bz2_close(&archive->base);
-	input_stream_deinit(&base);
 }
 
 static struct input_stream *

@@ -166,12 +166,12 @@ struct input_curl {
 	GError *postponed_error;
 
 	input_curl(const char *url, Mutex &mutex, Cond &cond)
-		:range(nullptr), request_headers(nullptr),
+		:base(input_plugin_curl, url, mutex, cond),
+		 range(nullptr), request_headers(nullptr),
 		 paused(false),
 		 meta_name(nullptr),
 		 tag(nullptr),
 		 postponed_error(nullptr) {
-		input_stream_init(&base, &input_plugin_curl, url, mutex, cond);
 	}
 
 	~input_curl();
@@ -705,8 +705,6 @@ input_curl::~input_curl()
 
 	if (postponed_error != NULL)
 		g_error_free(postponed_error);
-
-	input_stream_deinit(&base);
 }
 
 static bool

@@ -44,10 +44,8 @@ struct FfmpegInputStream {
 
 	FfmpegInputStream(const char *uri, Mutex &mutex, Cond &cond,
 			  AVIOContext *_h)
-		:h(_h), eof(false) {
-		input_stream_init(&base, &input_plugin_ffmpeg,
-				  uri, mutex, cond);
-
+		:base(input_plugin_ffmpeg, uri, mutex, cond),
+		 h(_h), eof(false) {
 		base.ready = true;
 		base.seekable = (h->seekable & AVIO_SEEKABLE_NORMAL) != 0;
 		base.size = avio_size(h);
@@ -61,7 +59,6 @@ struct FfmpegInputStream {
 
 	~FfmpegInputStream() {
 		avio_close(h);
-		input_stream_deinit(&base);
 	}
 };
 

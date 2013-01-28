@@ -56,11 +56,10 @@ struct CdioParanoiaInputStream {
 
 	CdioParanoiaInputStream(const char *uri, Mutex &mutex, Cond &cond,
 				int _trackno)
-		:drv(nullptr), cdio(nullptr), para(nullptr),
+		:base(input_plugin_cdio_paranoia, uri, mutex, cond),
+		 drv(nullptr), cdio(nullptr), para(nullptr),
 		 trackno(_trackno)
 	{
-		input_stream_init(&base, &input_plugin_cdio_paranoia, uri,
-				  mutex, cond);
 	}
 
 	~CdioParanoiaInputStream() {
@@ -70,8 +69,6 @@ struct CdioParanoiaInputStream {
 			cdio_cddap_close_no_free_cdio(drv);
 		if (cdio != nullptr)
 			cdio_destroy(cdio);
-
-		input_stream_deinit(&base);
 	}
 };
 

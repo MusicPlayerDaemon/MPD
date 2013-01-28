@@ -28,6 +28,8 @@
 
 #include <glib.h>
 
+#include <assert.h>
+
 struct input_stream {
 	/**
 	 * the plugin which implements this input stream
@@ -85,6 +87,21 @@ struct input_stream {
 	 * the MIME content type of the resource, or NULL if unknown
 	 */
 	char *mime;
+
+	input_stream(const input_plugin &_plugin,
+		     const char *_uri, Mutex &_mutex, Cond &_cond)
+		:plugin(&_plugin), uri(g_strdup(_uri)),
+		 mutex(&_mutex), cond(&_cond),
+		 ready(false), seekable(false),
+		 size(-1), offset(0),
+		 mime(nullptr) {
+		assert(_uri != NULL);
+	}
+
+	~input_stream() {
+		g_free(uri);
+		g_free(mime);
+	}
 };
 
 gcc_nonnull(1)
