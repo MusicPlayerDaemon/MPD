@@ -76,6 +76,13 @@ struct Bzip2InputStream {
 	bz_stream bzstream;
 
 	char buffer[5000];
+
+	Bzip2InputStream(Bzip2ArchiveFile &context, const char *uri,
+			 Mutex &mutex, Cond &cond);
+	~Bzip2InputStream();
+
+	bool Open(GError **error_r);
+	void Close();
 };
 
 extern const struct input_plugin bz2_inputplugin;
@@ -88,34 +95,31 @@ bz2_quark(void)
 
 /* single archive handling allocation helpers */
 
-static bool
-bz2_alloc(Bzip2InputStream *data, GError **error_r)
+inline bool
+Bzip2InputStream::Open(GError **error_r)
 {
-	int ret;
+	bzstream.bzalloc = nullptr;
+	bzstream.bzfree = nullptr;
+	bzstream.opaque = nullptr;
 
-	data->bzstream.bzalloc = NULL;
-	data->bzstream.bzfree  = NULL;
-	data->bzstream.opaque  = NULL;
+	bzstream.next_in = (char *)buffer;
+	bzstream.avail_in = 0;
 
-	data->bzstream.next_in = (char *) data->buffer;
-	data->bzstream.avail_in = 0;
-
-	ret = BZ2_bzDecompressInit(&data->bzstream, 0, 0);
+	int ret = BZ2_bzDecompressInit(&bzstream, 0, 0);
 	if (ret != BZ_OK) {
-		g_free(data);
-
 		g_set_error(error_r, bz2_quark(), ret,
 			    "BZ2_bzDecompressInit() has failed");
 		return false;
 	}
 
+	base.ready = true;
 	return true;
 }
 
-static void
-bz2_destroy(Bzip2InputStream *data)
+inline void
+Bzip2InputStream::Close()
 {
-	BZ2_bzDecompressEnd(&data->bzstream);
+	BZ2_bzDecompressEnd(&bzstream);
 }
 
 /* archive open && listing routine */
@@ -178,31 +182,33 @@ bz2_close(struct archive_file *file)
 
 /* single archive handling */
 
+Bzip2InputStream::Bzip2InputStream(Bzip2ArchiveFile &_context, const char *uri,
+				   Mutex &mutex, Cond &cond)
+	:archive(&_context), eof(false)
+{
+	input_stream_init(&base, &bz2_inputplugin, uri, mutex, cond);
+	refcount_inc(&archive->ref);
+}
+
+Bzip2InputStream::~Bzip2InputStream()
+{
+	bz2_close(&archive->base);
+	input_stream_deinit(&base);
+}
+
 static struct input_stream *
 bz2_open_stream(struct archive_file *file, const char *path,
 		Mutex &mutex, Cond &cond,
 		GError **error_r)
 {
 	Bzip2ArchiveFile *context = (Bzip2ArchiveFile *) file;
-	Bzip2InputStream *bis = g_new(Bzip2InputStream, 1);
+	Bzip2InputStream *bis =
+		new Bzip2InputStream(*context, path, mutex, cond);
 
-	input_stream_init(&bis->base, &bz2_inputplugin, path,
-			  mutex, cond);
-
-	bis->archive = context;
-
-	bis->base.ready = true;
-	bis->base.seekable = false;
-
-	if (!bz2_alloc(bis, error_r)) {
-		input_stream_deinit(&bis->base);
-		g_free(bis);
+	if (!bis->Open(error_r)) {
+		delete bis;
 		return NULL;
 	}
-
-	bis->eof = false;
-
-	refcount_inc(&context->ref);
 
 	return &bis->base;
 }
@@ -212,12 +218,8 @@ bz2_is_close(struct input_stream *is)
 {
 	Bzip2InputStream *bis = (Bzip2InputStream *)is;
 
-	bz2_destroy(bis);
-
-	bz2_close(&bis->archive->base);
-
-	input_stream_deinit(&bis->base);
-	g_free(bis);
+	bis->Close();
+	delete bis;
 }
 
 static bool
