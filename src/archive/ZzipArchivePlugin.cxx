@@ -138,6 +138,30 @@ struct ZzipInputStream {
 	ZzipArchiveFile *archive;
 
 	ZZIP_FILE *file;
+
+	ZzipInputStream(ZzipArchiveFile &_archive, const char *uri,
+			Mutex &mutex, Cond &cond,
+			ZZIP_FILE *_file)
+		:archive(&_archive), file(_file) {
+		input_stream_init(&base, &zzip_input_plugin, uri,
+				  mutex, cond);
+
+		base.ready = true;
+		//we are seekable (but its not recommendent to do so)
+		base.seekable = true;
+
+		ZZIP_STAT z_stat;
+		zzip_file_stat(file, &z_stat);
+		base.size = z_stat.st_size;
+
+		refcount_inc(&archive->ref);
+	}
+
+	~ZzipInputStream() {
+		zzip_file_close(file);
+		archive->Unref();
+		input_stream_deinit(&base);
+	}
 };
 
 static struct input_stream *
@@ -147,30 +171,18 @@ zzip_archive_open_stream(struct archive_file *file,
 			 GError **error_r)
 {
 	ZzipArchiveFile *context = (ZzipArchiveFile *) file;
-	ZZIP_STAT z_stat;
 
-	ZzipInputStream *zis = g_new(ZzipInputStream, 1);
-	input_stream_init(&zis->base, &zzip_input_plugin, pathname,
-			  mutex, cond);
-
-	zis->archive = context;
-	zis->file = zzip_file_open(context->dir, pathname, 0);
-	if (zis->file == NULL) {
-		g_free(zis);
+	ZZIP_FILE *_file = zzip_file_open(context->dir, pathname, 0);
+	if (_file == nullptr) {
 		g_set_error(error_r, zzip_quark(), 0,
 			    "not found in the ZIP file: %s", pathname);
 		return NULL;
 	}
 
-	zis->base.ready = true;
-	//we are seekable (but its not recommendent to do so)
-	zis->base.seekable = true;
-
-	zzip_file_stat(zis->file, &z_stat);
-	zis->base.size = z_stat.st_size;
-
-	refcount_inc(&context->ref);
-
+	ZzipInputStream *zis =
+		new ZzipInputStream(*context, pathname,
+				    mutex, cond,
+				    _file);
 	return &zis->base;
 }
 
@@ -179,10 +191,7 @@ zzip_input_close(struct input_stream *is)
 {
 	ZzipInputStream *zis = (ZzipInputStream *)is;
 
-	zzip_file_close(zis->file);
-	zzip_archive_close(&zis->archive->base);
-	input_stream_deinit(&zis->base);
-	g_free(zis);
+	delete zis;
 }
 
 static size_t
