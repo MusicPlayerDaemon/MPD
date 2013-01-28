@@ -38,7 +38,7 @@
 
 #define CEILING(x, y) ((x+(y-1))/y)
 
-struct iso9660_archive_file {
+struct Iso9660ArchiveFile {
 	struct archive_file base;
 
 	struct refcount ref;
@@ -59,7 +59,7 @@ iso9660_quark(void)
 /* archive open && listing routine */
 
 static void
-listdir_recur(const char *psz_path, struct iso9660_archive_file *context)
+listdir_recur(const char *psz_path, Iso9660ArchiveFile *context)
 {
 	iso9660_t *iso = context->iso;
 	CdioList_t *entlist;
@@ -95,8 +95,8 @@ listdir_recur(const char *psz_path, struct iso9660_archive_file *context)
 static struct archive_file *
 iso9660_archive_open(const char *pathname, GError **error_r)
 {
-	struct iso9660_archive_file *context =
-		g_new(struct iso9660_archive_file, 1);
+	Iso9660ArchiveFile *context =
+		g_new(Iso9660ArchiveFile, 1);
 
 	archive_file_init(&context->base, &iso9660_archive_plugin);
 	refcount_init(&context->ref);
@@ -119,8 +119,8 @@ iso9660_archive_open(const char *pathname, GError **error_r)
 static void
 iso9660_archive_scan_reset(struct archive_file *file)
 {
-	struct iso9660_archive_file *context =
-		(struct iso9660_archive_file *)file;
+	Iso9660ArchiveFile *context =
+		(Iso9660ArchiveFile *)file;
 
 	//reset iterator
 	context->iter = context->list;
@@ -129,8 +129,8 @@ iso9660_archive_scan_reset(struct archive_file *file)
 static char *
 iso9660_archive_scan_next(struct archive_file *file)
 {
-	struct iso9660_archive_file *context =
-		(struct iso9660_archive_file *)file;
+	Iso9660ArchiveFile *context =
+		(Iso9660ArchiveFile *)file;
 
 	char *data = NULL;
 	if (context->iter != NULL) {
@@ -144,8 +144,8 @@ iso9660_archive_scan_next(struct archive_file *file)
 static void
 iso9660_archive_close(struct archive_file *file)
 {
-	struct iso9660_archive_file *context =
-		(struct iso9660_archive_file *)file;
+	Iso9660ArchiveFile *context =
+		(Iso9660ArchiveFile *)file;
 	GSList *tmp;
 
 	if (!refcount_dec(&context->ref))
@@ -165,10 +165,10 @@ iso9660_archive_close(struct archive_file *file)
 
 /* single archive handling */
 
-struct iso9660_input_stream {
+struct Iso9660InputStream {
 	struct input_stream base;
 
-	struct iso9660_archive_file *archive;
+	Iso9660ArchiveFile *archive;
 
 	iso9660_stat_t *statbuf;
 	size_t max_blocks;
@@ -179,11 +179,11 @@ iso9660_archive_open_stream(struct archive_file *file, const char *pathname,
 			    Mutex &mutex, Cond &cond,
 			    GError **error_r)
 {
-	struct iso9660_archive_file *context =
-		(struct iso9660_archive_file *)file;
-	struct iso9660_input_stream *iis;
+	Iso9660ArchiveFile *context =
+		(Iso9660ArchiveFile *)file;
+	Iso9660InputStream *iis;
 
-	iis = g_new(struct iso9660_input_stream, 1);
+	iis = g_new(Iso9660InputStream, 1);
 	input_stream_init(&iis->base, &iso9660_input_plugin, pathname,
 			  mutex, cond);
 
@@ -212,7 +212,7 @@ iso9660_archive_open_stream(struct archive_file *file, const char *pathname,
 static void
 iso9660_input_close(struct input_stream *is)
 {
-	struct iso9660_input_stream *iis = (struct iso9660_input_stream *)is;
+	Iso9660InputStream *iis = (Iso9660InputStream *)is;
 
 	g_free(iis->statbuf);
 
@@ -226,7 +226,7 @@ iso9660_input_close(struct input_stream *is)
 static size_t
 iso9660_input_read(struct input_stream *is, void *ptr, size_t size, GError **error_r)
 {
-	struct iso9660_input_stream *iis = (struct iso9660_input_stream *)is;
+	Iso9660InputStream *iis = (Iso9660InputStream *)is;
 	int toread, readed = 0;
 	int no_blocks, cur_block;
 	size_t left_bytes = iis->statbuf->size - is->offset;
