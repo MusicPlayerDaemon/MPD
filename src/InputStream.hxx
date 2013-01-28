@@ -34,7 +34,7 @@ struct input_stream {
 	/**
 	 * the plugin which implements this input stream
 	 */
-	const struct input_plugin *plugin;
+	const struct input_plugin &plugin;
 
 	/**
 	 * The absolute URI which was used to open this stream.  May
@@ -50,7 +50,7 @@ struct input_stream {
 	 * This object is allocated by the client, and the client is
 	 * responsible for freeing it.
 	 */
-	Mutex *mutex;
+	Mutex &mutex;
 
 	/**
 	 * A cond that gets signalled when the state of this object
@@ -60,7 +60,7 @@ struct input_stream {
 	 * This object is allocated by the client, and the client is
 	 * responsible for freeing it.
 	 */
-	Cond *cond;
+	Cond &cond;
 
 	/**
 	 * indicates whether the stream is ready for reading and
@@ -90,8 +90,8 @@ struct input_stream {
 
 	input_stream(const input_plugin &_plugin,
 		     const char *_uri, Mutex &_mutex, Cond &_cond)
-		:plugin(&_plugin), uri(g_strdup(_uri)),
-		 mutex(&_mutex), cond(&_cond),
+		:plugin(_plugin), uri(g_strdup(_uri)),
+		 mutex(_mutex), cond(_cond),
 		 ready(false), seekable(false),
 		 size(-1), offset(0),
 		 mime(nullptr) {
@@ -108,14 +108,14 @@ gcc_nonnull(1)
 static inline void
 input_stream_lock(struct input_stream *is)
 {
-	is->mutex->lock();
+	is->mutex.lock();
 }
 
 gcc_nonnull(1)
 static inline void
 input_stream_unlock(struct input_stream *is)
 {
-	is->mutex->unlock();
+	is->mutex.unlock();
 }
 
 #endif

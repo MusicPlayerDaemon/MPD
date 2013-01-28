@@ -24,14 +24,13 @@
 void
 input_stream_signal_client(struct input_stream *is)
 {
-	if (is->cond != NULL)
-		is->cond->broadcast();
+	is->cond.broadcast();
 }
 
 void
 input_stream_set_ready(struct input_stream *is)
 {
-	const ScopeLock protect(*is->mutex);
+	const ScopeLock protect(is->mutex);
 
 	if (!is->ready) {
 		is->ready = true;

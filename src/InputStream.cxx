@@ -50,11 +50,10 @@ input_stream_open(const char *url,
 
 		is = plugin->open(url, mutex, cond, &error);
 		if (is != NULL) {
-			assert(is->plugin != NULL);
-			assert(is->plugin->close != NULL);
-			assert(is->plugin->read != NULL);
-			assert(is->plugin->eof != NULL);
-			assert(!is->seekable || is->plugin->seek != NULL);
+			assert(is->plugin.close != NULL);
+			assert(is->plugin.read != NULL);
+			assert(is->plugin.eof != NULL);
+			assert(!is->seekable || is->plugin.seek != NULL);
 
 			is = input_rewind_open(is);
 
@@ -73,35 +72,31 @@ bool
 input_stream_check(struct input_stream *is, GError **error_r)
 {
 	assert(is != NULL);
-	assert(is->plugin != NULL);
 
-	return is->plugin->check == NULL ||
-		is->plugin->check(is, error_r);
+	return is->plugin.check == NULL ||
+		is->plugin.check(is, error_r);
 }
 
 void
 input_stream_update(struct input_stream *is)
 {
 	assert(is != NULL);
-	assert(is->plugin != NULL);
 
-	if (is->plugin->update != NULL)
-		is->plugin->update(is);
+	if (is->plugin.update != NULL)
+		is->plugin.update(is);
 }
 
 void
 input_stream_wait_ready(struct input_stream *is)
 {
 	assert(is != NULL);
-	assert(is->mutex != NULL);
-	assert(is->cond != NULL);
 
 	while (true) {
 		input_stream_update(is);
 		if (is->ready)
 			break;
 
-		is->cond->wait(*is->mutex);
+		is->cond.wait(is->mutex);
 	}
 }
 
@@ -109,10 +104,8 @@ void
 input_stream_lock_wait_ready(struct input_stream *is)
 {
 	assert(is != NULL);
-	assert(is->mutex != NULL);
-	assert(is->cond != NULL);
 
-	const ScopeLock protect(*is->mutex);
+	const ScopeLock protect(is->mutex);
 	input_stream_wait_ready(is);
 }
 
@@ -173,12 +166,11 @@ input_stream_seek(struct input_stream *is, goffset offset, int whence,
 		  GError **error_r)
 {
 	assert(is != NULL);
-	assert(is->plugin != NULL);
 
-	if (is->plugin->seek == NULL)
+	if (is->plugin.seek == NULL)
 		return false;
 
-	return is->plugin->seek(is, offset, whence, error_r);
+	return is->plugin.seek(is, offset, whence, error_r);
 }
 
 bool
@@ -186,16 +178,11 @@ input_stream_lock_seek(struct input_stream *is, goffset offset, int whence,
 		       GError **error_r)
 {
 	assert(is != NULL);
-	assert(is->plugin != NULL);
 
-	if (is->plugin->seek == NULL)
+	if (is->plugin.seek == NULL)
 		return false;
 
-	if (is->mutex == NULL)
-		/* no locking */
-		return input_stream_seek(is, offset, whence, error_r);
-
-	const ScopeLock protect(*is->mutex);
+	const ScopeLock protect(is->mutex);
 	return input_stream_seek(is, offset, whence, error_r);
 }
 
@@ -203,10 +190,9 @@ struct tag *
 input_stream_tag(struct input_stream *is)
 {
 	assert(is != NULL);
-	assert(is->plugin != NULL);
 
-	return is->plugin->tag != NULL
-		? is->plugin->tag(is)
+	return is->plugin.tag != NULL
+		? is->plugin.tag(is)
 		: NULL;
 }
 
@@ -214,16 +200,11 @@ struct tag *
 input_stream_lock_tag(struct input_stream *is)
 {
 	assert(is != NULL);
-	assert(is->plugin != NULL);
 
-	if (is->plugin->tag == NULL)
+	if (is->plugin.tag == NULL)
 		return nullptr;
 
-	if (is->mutex == NULL)
-		/* no locking */
-		return input_stream_tag(is);
-
-	const ScopeLock protect(*is->mutex);
+	const ScopeLock protect(is->mutex);
 	return input_stream_tag(is);
 }
 
@@ -231,10 +212,9 @@ bool
 input_stream_available(struct input_stream *is)
 {
 	assert(is != NULL);
-	assert(is->plugin != NULL);
 
-	return is->plugin->available != NULL
-		? is->plugin->available(is)
+	return is->plugin.available != NULL
+		? is->plugin.available(is)
 		: true;
 }
 
@@ -245,7 +225,7 @@ input_stream_read(struct input_stream *is, void *ptr, size_t size,
 	assert(ptr != NULL);
 	assert(size > 0);
 
-	return is->plugin->read(is, ptr, size, error_r);
+	return is->plugin.read(is, ptr, size, error_r);
 }
 
 size_t
@@ -255,35 +235,26 @@ input_stream_lock_read(struct input_stream *is, void *ptr, size_t size,
 	assert(ptr != NULL);
 	assert(size > 0);
 
-	if (is->mutex == NULL)
-		/* no locking */
-		return input_stream_read(is, ptr, size, error_r);
-
-	const ScopeLock protect(*is->mutex);
+	const ScopeLock protect(is->mutex);
 	return input_stream_read(is, ptr, size, error_r);
 }
 
 void input_stream_close(struct input_stream *is)
 {
-	is->plugin->close(is);
+	is->plugin.close(is);
 }
 
 bool input_stream_eof(struct input_stream *is)
 {
-	return is->plugin->eof(is);
+	return is->plugin.eof(is);
 }
 
 bool
 input_stream_lock_eof(struct input_stream *is)
 {
 	assert(is != NULL);
-	assert(is->plugin != NULL);
 
-	if (is->mutex == NULL)
-		/* no locking */
-		return input_stream_eof(is);
-
-	const ScopeLock protect(*is->mutex);
+	const ScopeLock protect(is->mutex);
 	return input_stream_eof(is);
 }
 

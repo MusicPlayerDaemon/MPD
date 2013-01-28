@@ -285,7 +285,7 @@ size_t decoder_read(struct decoder *decoder,
 		if (input_stream_available(is))
 			break;
 
-		is->cond->wait(*is->mutex);
+		is->cond.wait(is->mutex);
 	}
 
 	nbytes = input_stream_read(is, buffer, length, &error);

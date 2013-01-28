@@ -174,7 +174,7 @@ input_soup_session_callback(G_GNUC_UNUSED SoupSession *session,
 	assert(msg == s->msg);
 	assert(!s->completed);
 
-	const ScopeLock protect(*s->base.mutex);
+	const ScopeLock protect(s->base.mutex);
 
 	if (!s->base.ready)
 		s->CopyError(msg);
@@ -183,7 +183,7 @@ input_soup_session_callback(G_GNUC_UNUSED SoupSession *session,
 	s->alive = false;
 	s->completed = true;
 
-	s->base.cond->broadcast();
+	s->base.cond.broadcast();
 }
 
 static void
@@ -191,10 +191,10 @@ input_soup_got_headers(SoupMessage *msg, gpointer user_data)
 {
 	SoupInputStream *s = (SoupInputStream *)user_data;
 
-	s->base.mutex->lock();
+	s->base.mutex.lock();
 
 	if (!s->CopyError(msg)) {
-		s->base.mutex->unlock();
+		s->base.mutex.unlock();
 
 		soup_session_cancel_message(soup_session, msg,
 					    SOUP_STATUS_CANCELLED);
@@ -202,8 +202,8 @@ input_soup_got_headers(SoupMessage *msg, gpointer user_data)
 	}
 
 	s->base.ready = true;
-	s->base.cond->broadcast();
-	s->base.mutex->unlock();
+	s->base.cond.broadcast();
+	s->base.mutex.unlock();
 
 	soup_message_body_set_accumulate(msg->response_body, false);
 }
@@ -215,7 +215,7 @@ input_soup_got_chunk(SoupMessage *msg, SoupBuffer *chunk, gpointer user_data)
 
 	assert(msg == s->msg);
 
-	const ScopeLock protect(*s->base.mutex);
+	const ScopeLock protect(s->base.mutex);
 
 	g_queue_push_tail(s->buffers, soup_buffer_copy(chunk));
 	s->total_buffered += chunk->length;
@@ -225,8 +225,8 @@ input_soup_got_chunk(SoupMessage *msg, SoupBuffer *chunk, gpointer user_data)
 		soup_session_pause_message(soup_session, msg);
 	}
 
-	s->base.cond->broadcast();
-	s->base.mutex->unlock();
+	s->base.cond.broadcast();
+	s->base.mutex.unlock();
 }
 
 static void
@@ -236,14 +236,14 @@ input_soup_got_body(G_GNUC_UNUSED SoupMessage *msg, gpointer user_data)
 
 	assert(msg == s->msg);
 
-	const ScopeLock protect(*s->base.mutex);
+	const ScopeLock protect(s->base.mutex);
 
 	s->base.ready = true;
 	s->eof = true;
 	s->alive = false;
 
-	s->base.cond->broadcast();
-	s->base.mutex->unlock();
+	s->base.cond.broadcast();
+	s->base.mutex.unlock();
 }
 
 inline bool
@@ -261,7 +261,7 @@ SoupInputStream::WaitData()
 
 		assert(current_consumed == 0);
 
-		base.cond->wait(*base.mutex);
+		base.cond.wait(base.mutex);
 	}
 }
 
@@ -339,22 +339,22 @@ input_soup_cancel(gpointer data)
 
 SoupInputStream::~SoupInputStream()
 {
-	base.mutex->lock();
+	base.mutex.lock();
 
 	if (!completed) {
 		/* the messages's session callback hasn't been invoked
 		   yet; cancel it and wait for completion */
 
-		base.mutex->unlock();
+		base.mutex.unlock();
 
 		io_thread_call(input_soup_cancel, this);
 
-		base.mutex->lock();
+		base.mutex.lock();
 		while (!completed)
-			base.cond->wait(*base.mutex);
+			base.cond.wait(base.mutex);
 	}
 
-	base.mutex->unlock();
+	base.mutex.unlock();
 
 	SoupBuffer *buffer;
 	while ((buffer = (SoupBuffer *)g_queue_pop_head(buffers)) != NULL)

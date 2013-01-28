@@ -517,7 +517,7 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 	struct wavpack_input isp, isp_wvc;
 	bool can_seek = is->seekable;
 
-	is_wvc = wavpack_open_wvc(decoder, is->uri, *is->mutex, *is->cond,
+	is_wvc = wavpack_open_wvc(decoder, is->uri, is->mutex, is->cond,
 				  &isp_wvc);
 	if (is_wvc != NULL) {
 		open_flags |= OPEN_WVC;
