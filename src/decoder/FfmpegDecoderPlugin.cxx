@@ -395,7 +395,7 @@ ffmpeg_probe(struct decoder *decoder, struct input_stream *is)
 	AVProbeData avpd;
 	avpd.buf = buffer;
 	avpd.buf_size = nbytes;
-	avpd.filename = is->uri;
+	avpd.filename = is->uri.c_str();
 
 	AVInputFormat *format = av_probe_input_format(&avpd, true);
 	g_free(buffer);
@@ -422,7 +422,8 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 
 	//ffmpeg works with ours "fileops" helper
 	AVFormatContext *format_context = NULL;
-	if (mpd_ffmpeg_open_input(&format_context, stream->io, input->uri,
+	if (mpd_ffmpeg_open_input(&format_context, stream->io,
+				  input->uri.c_str(),
 				  input_format) != 0) {
 		g_warning("Open failed\n");
 		mpd_ffmpeg_stream_close(stream);
@@ -581,7 +582,7 @@ ffmpeg_scan_stream(struct input_stream *is,
 		return false;
 
 	AVFormatContext *f = NULL;
-	if (mpd_ffmpeg_open_input(&f, stream->io, is->uri,
+	if (mpd_ffmpeg_open_input(&f, stream->io, is->uri.c_str(),
 				  input_format) != 0) {
 		mpd_ffmpeg_stream_close(stream);
 		return false;

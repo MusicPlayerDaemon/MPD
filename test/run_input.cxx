@@ -69,8 +69,8 @@ dump_input_stream(struct input_stream *is)
 
 	/* print meta data */
 
-	if (is->mime != NULL)
-		g_printerr("MIME type: %s\n", is->mime);
+	if (!is->mime.empty())
+		g_printerr("MIME type: %s\n", is->mime.c_str());
 
 	/* read data and tags from the stream */
 

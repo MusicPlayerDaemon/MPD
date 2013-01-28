@@ -26,7 +26,7 @@
 #include "thread/Cond.hxx"
 #include "gcc.h"
 
-#include <glib.h>
+#include <string>
 
 #include <assert.h>
 
@@ -37,10 +37,9 @@ struct input_stream {
 	const struct input_plugin &plugin;
 
 	/**
-	 * The absolute URI which was used to open this stream.  May
-	 * be NULL if this is unknown.
+	 * The absolute URI which was used to open this stream.
 	 */
-	char *uri;
+	std::string uri;
 
 	/**
 	 * A mutex that protects the mutable attributes of this object
@@ -84,23 +83,17 @@ struct input_stream {
 	goffset offset;
 
 	/**
-	 * the MIME content type of the resource, or NULL if unknown
+	 * the MIME content type of the resource, or empty if unknown.
 	 */
-	char *mime;
+	std::string mime;
 
 	input_stream(const input_plugin &_plugin,
 		     const char *_uri, Mutex &_mutex, Cond &_cond)
-		:plugin(_plugin), uri(g_strdup(_uri)),
+		:plugin(_plugin), uri(_uri),
 		 mutex(_mutex), cond(_cond),
 		 ready(false), seekable(false),
-		 size(-1), offset(0),
-		 mime(nullptr) {
+		 size(-1), offset(0) {
 		assert(_uri != NULL);
-	}
-
-	~input_stream() {
-		g_free(uri);
-		g_free(mime);
 	}
 };
 

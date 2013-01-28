@@ -202,10 +202,11 @@ decoder_run_stream_mime_type(struct decoder *decoder, struct input_stream *is,
 	const struct decoder_plugin *plugin;
 	unsigned int next = 0;
 
-	if (is->mime == NULL)
+	if (is->mime.empty())
 		return false;
 
-	while ((plugin = decoder_plugin_from_mime_type(is->mime, next++))) {
+	while ((plugin = decoder_plugin_from_mime_type(is->mime.c_str(),
+						       next++))) {
 		if (plugin->stream_decode == NULL)
 			continue;
 

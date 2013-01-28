@@ -115,7 +115,7 @@ input_stream_get_mime_type(const struct input_stream *is)
 	assert(is != NULL);
 	assert(is->ready);
 
-	return is->mime;
+	return is->mime.empty() ? nullptr : is->mime.c_str();
 }
 
 void
@@ -124,8 +124,7 @@ input_stream_override_mime_type(struct input_stream *is, const char *mime)
 	assert(is != NULL);
 	assert(is->ready);
 
-	g_free(is->mime);
-	is->mime = g_strdup(mime);
+	is->mime = mime;
 }
 
 goffset
@@ -158,7 +157,7 @@ input_stream_is_seekable(const struct input_stream *is)
 bool
 input_stream_cheap_seeking(const struct input_stream *is)
 {
-	return is->seekable && (is->uri == NULL || !uri_has_scheme(is->uri));
+	return is->seekable && !uri_has_scheme(is->uri.c_str());
 }
 
 bool

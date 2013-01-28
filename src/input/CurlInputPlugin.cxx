@@ -925,8 +925,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 
 		c->base.size = c->base.offset + g_ascii_strtoull(buffer, NULL, 10);
 	} else if (g_ascii_strcasecmp(name, "content-type") == 0) {
-		g_free(c->base.mime);
-		c->base.mime = g_strndup(value, end - value);
+		c->base.mime.assign(value, end);
 	} else if (g_ascii_strcasecmp(name, "icy-name") == 0 ||
 		   g_ascii_strcasecmp(name, "ice-name") == 0 ||
 		   g_ascii_strcasecmp(name, "x-audiocast-name") == 0) {
@@ -1031,7 +1030,7 @@ input_curl_easy_init(struct input_curl *c, GError **error_r)
 		g_free(proxy_auth_str);
 	}
 
-	code = curl_easy_setopt(c->easy, CURLOPT_URL, c->base.uri);
+	code = curl_easy_setopt(c->easy, CURLOPT_URL, c->base.uri.c_str());
 	if (code != CURLE_OK) {
 		g_set_error(error_r, curl_quark(), code,
 			    "curl_easy_setopt() failed: %s",

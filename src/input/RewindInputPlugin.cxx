@@ -61,7 +61,7 @@ struct RewindInputStream {
 	char buffer[64 * 1024];
 
 	RewindInputStream(input_stream *_input)
-		:base(rewind_input_plugin, _input->uri,
+		:base(rewind_input_plugin, _input->uri.c_str(),
 		      _input->mutex, _input->cond),
 		 input(_input), tail(0) {
 	}
@@ -89,7 +89,7 @@ struct RewindInputStream {
 		const struct input_stream *src = input;
 
 		assert(dest != src);
-		assert(src->mime == NULL || dest->mime != src->mime);
+		assert(src->mime.empty() || dest->mime != src->mime);
 
 		bool dest_ready = dest->ready;
 
@@ -98,10 +98,8 @@ struct RewindInputStream {
 		dest->size = src->size;
 		dest->offset = src->offset;
 
-		if (!dest_ready && src->ready) {
-			g_free(dest->mime);
-			dest->mime = g_strdup(src->mime);
-		}
+		if (!dest_ready && src->ready)
+			dest->mime = src->mime;
 	}
 };
 
