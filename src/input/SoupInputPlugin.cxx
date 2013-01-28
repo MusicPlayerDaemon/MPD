@@ -52,7 +52,7 @@ static const size_t SOUP_RESUME_AT = 384 * 1024;
 static SoupURI *soup_proxy;
 static SoupSession *soup_session;
 
-struct input_soup {
+struct SoupInputStream {
 	struct input_stream base;
 
 	SoupMessage *msg;
@@ -128,7 +128,7 @@ input_soup_finish(void)
  * @return true if there was no error
  */
 static bool
-input_soup_copy_error(struct input_soup *s, const SoupMessage *msg)
+input_soup_copy_error(SoupInputStream *s, const SoupMessage *msg)
 {
 	if (SOUP_STATUS_IS_SUCCESSFUL(msg->status_code))
 		return true;
@@ -160,7 +160,7 @@ static void
 input_soup_session_callback(G_GNUC_UNUSED SoupSession *session,
 			    SoupMessage *msg, gpointer user_data)
 {
-	struct input_soup *s = (struct input_soup *)user_data;
+	SoupInputStream *s = (SoupInputStream *)user_data;
 
 	assert(msg == s->msg);
 	assert(!s->completed);
@@ -180,7 +180,7 @@ input_soup_session_callback(G_GNUC_UNUSED SoupSession *session,
 static void
 input_soup_got_headers(SoupMessage *msg, gpointer user_data)
 {
-	struct input_soup *s = (struct input_soup *)user_data;
+	SoupInputStream *s = (SoupInputStream *)user_data;
 
 	s->base.mutex->lock();
 
@@ -202,7 +202,7 @@ input_soup_got_headers(SoupMessage *msg, gpointer user_data)
 static void
 input_soup_got_chunk(SoupMessage *msg, SoupBuffer *chunk, gpointer user_data)
 {
-	struct input_soup *s = (struct input_soup *)user_data;
+	SoupInputStream *s = (SoupInputStream *)user_data;
 
 	assert(msg == s->msg);
 
@@ -223,7 +223,7 @@ input_soup_got_chunk(SoupMessage *msg, SoupBuffer *chunk, gpointer user_data)
 static void
 input_soup_got_body(G_GNUC_UNUSED SoupMessage *msg, gpointer user_data)
 {
-	struct input_soup *s = (struct input_soup *)user_data;
+	SoupInputStream *s = (SoupInputStream *)user_data;
 
 	assert(msg == s->msg);
 
@@ -238,7 +238,7 @@ input_soup_got_body(G_GNUC_UNUSED SoupMessage *msg, gpointer user_data)
 }
 
 static bool
-input_soup_wait_data(struct input_soup *s)
+input_soup_wait_data(SoupInputStream *s)
 {
 	while (true) {
 		if (s->eof)
@@ -259,7 +259,7 @@ input_soup_wait_data(struct input_soup *s)
 static gpointer
 input_soup_queue(gpointer data)
 {
-	struct input_soup *s = (struct input_soup *)data;
+	SoupInputStream *s = (SoupInputStream *)data;
 
 	soup_session_queue_message(soup_session, s->msg,
 				   input_soup_session_callback, s);
@@ -275,7 +275,7 @@ input_soup_open(const char *uri,
 	if (strncmp(uri, "http://", 7) != 0)
 		return NULL;
 
-	struct input_soup *s = g_new(struct input_soup, 1);
+	SoupInputStream *s = g_new(SoupInputStream, 1);
 	input_stream_init(&s->base, &input_plugin_soup, uri,
 			  mutex, cond);
 
@@ -323,7 +323,7 @@ input_soup_open(const char *uri,
 static gpointer
 input_soup_cancel(gpointer data)
 {
-	struct input_soup *s = (struct input_soup *)data;
+	SoupInputStream *s = (SoupInputStream *)data;
 
 	if (!s->completed)
 		soup_session_cancel_message(soup_session, s->msg,
@@ -335,7 +335,7 @@ input_soup_cancel(gpointer data)
 static void
 input_soup_close(struct input_stream *is)
 {
-	struct input_soup *s = (struct input_soup *)is;
+	SoupInputStream *s = (SoupInputStream *)is;
 
 		s->base.mutex->lock();
 
@@ -369,7 +369,7 @@ input_soup_close(struct input_stream *is)
 static bool
 input_soup_check(struct input_stream *is, GError **error_r)
 {
-	struct input_soup *s = (struct input_soup *)is;
+	SoupInputStream *s = (SoupInputStream *)is;
 
 	bool success = s->postponed_error == NULL;
 	if (!success) {
@@ -383,7 +383,7 @@ input_soup_check(struct input_stream *is, GError **error_r)
 static bool
 input_soup_available(struct input_stream *is)
 {
-	struct input_soup *s = (struct input_soup *)is;
+	SoupInputStream *s = (SoupInputStream *)is;
 
 	return s->eof || !s->alive || !g_queue_is_empty(s->buffers);
 }
@@ -392,7 +392,7 @@ static size_t
 input_soup_read(struct input_stream *is, void *ptr, size_t size,
 		G_GNUC_UNUSED GError **error_r)
 {
-	struct input_soup *s = (struct input_soup *)is;
+	SoupInputStream *s = (SoupInputStream *)is;
 
 	if (!input_soup_wait_data(s)) {
 		assert(!s->alive);
@@ -458,7 +458,7 @@ input_soup_read(struct input_stream *is, void *ptr, size_t size,
 static bool
 input_soup_eof(G_GNUC_UNUSED struct input_stream *is)
 {
-	struct input_soup *s = (struct input_soup *)is;
+	SoupInputStream *s = (SoupInputStream *)is;
 
 	return !s->alive && g_queue_is_empty(s->buffers);
 }
