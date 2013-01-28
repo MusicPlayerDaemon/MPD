@@ -110,7 +110,7 @@ G_GNUC_CONST
 static enum mpd_tag_type
 Convert(enum tag_type tag_type)
 {
-	for (auto i = tag_table; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
+	for (auto i = &tag_table[0]; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (i->d == tag_type)
 			return i->s;
 
@@ -281,7 +281,7 @@ Convert(const struct mpd_song *song)
 	tag->time = mpd_song_get_duration(song);
 
 	tag_begin_add(tag);
-	for (auto i = tag_table; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
+	for (const auto *i = &tag_table[0]; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
 		Copy(tag, i->d, song, i->s);
 	tag_end_add(tag);
 
