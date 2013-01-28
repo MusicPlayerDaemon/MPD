@@ -37,7 +37,7 @@ extern "C" {
 
 #include <stdio.h>
 
-struct input_despotify {
+struct DespotifyInputStream {
 	struct input_stream base;
 
 	struct despotify_session *session;
@@ -48,9 +48,8 @@ struct input_despotify {
 	bool eof;
 };
 
-
 static void
-refill_buffer(struct input_despotify *ctx)
+refill_buffer(DespotifyInputStream *ctx)
 {
 	/* Wait until there is data */
 	while (1) {
@@ -77,7 +76,7 @@ refill_buffer(struct input_despotify *ctx)
 static void callback(G_GNUC_UNUSED struct despotify_session* ds,
 		int sig, G_GNUC_UNUSED void* data, void* callback_data)
 {
-	struct input_despotify *ctx = (struct input_despotify *)callback_data;
+	DespotifyInputStream *ctx = (DespotifyInputStream *)callback_data;
 
 	switch (sig) {
 	case DESPOTIFY_NEW_TRACK:
@@ -105,7 +104,7 @@ input_despotify_open(const char *url,
 		     Mutex &mutex, Cond &cond,
 		     G_GNUC_UNUSED GError **error_r)
 {
-	struct input_despotify *ctx;
+	DespotifyInputStream *ctx;
 	struct despotify_session *session;
 	struct ds_link *ds_link;
 	struct ds_track *track;
@@ -127,7 +126,7 @@ input_despotify_open(const char *url,
 		return NULL;
 	}
 
-	ctx = g_new(struct input_despotify, 1);
+	ctx = g_new(DespotifyInputStream, 1);
 	memset(ctx, 0, sizeof(*ctx));
 
 	track = despotify_link_get_track(session, ds_link);
@@ -166,7 +165,7 @@ static size_t
 input_despotify_read(struct input_stream *is, void *ptr, size_t size,
 	       G_GNUC_UNUSED GError **error_r)
 {
-	struct input_despotify *ctx = (struct input_despotify *)is;
+	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
 	size_t to_cpy = size;
 
 	if (ctx->len_available == 0)
@@ -185,7 +184,7 @@ input_despotify_read(struct input_stream *is, void *ptr, size_t size,
 static void
 input_despotify_close(struct input_stream *is)
 {
-	struct input_despotify *ctx = (struct input_despotify *)is;
+	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
 
 	if (ctx->tag != NULL)
 		tag_free(ctx->tag);
@@ -199,7 +198,7 @@ input_despotify_close(struct input_stream *is)
 static bool
 input_despotify_eof(struct input_stream *is)
 {
-	struct input_despotify *ctx = (struct input_despotify *)is;
+	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
 
 	return ctx->eof;
 }
@@ -215,7 +214,7 @@ input_despotify_seek(G_GNUC_UNUSED struct input_stream *is,
 static struct tag *
 input_despotify_tag(struct input_stream *is)
 {
-	struct input_despotify *ctx = (struct input_despotify *)is;
+	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
 	struct tag *tag = ctx->tag;
 
 	ctx->tag = NULL;
