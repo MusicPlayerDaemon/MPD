@@ -158,40 +158,6 @@ int main() {
 	CPPFLAGS=$oldcppflags
 fi
 
-if test x$enable_aac = xyes; then
-	enable_mp4=yes
-	MP4FF_LIBS="-lmp4ff"
-
-	oldcflags=$CFLAGS
-	oldlibs=$LIBS
-	oldcppflags=$CPPFLAGS
-	CFLAGS="$CFLAGS $FAAD_CFLAGS"
-	LIBS="$LIBS $FAAD_LIBS $MP4FF_LIBS"
-	CPPFLAGS=$CFLAGS
-
-	AC_CHECK_HEADER(mp4ff.h,,enable_mp4=no)
-
-	if test x$enable_mp4 = xyes; then
-		AC_CHECK_LIB(mp4ff,mp4ff_open_read,,enable_mp4=no)
-	fi
-
-	if test x$enable_mp4 = xyes; then
-		AC_SUBST(MP4FF_LIBS)
-		AC_DEFINE(HAVE_MP4, 1, [Define to use FAAD2+mp4ff for MP4 decoding])
-	else
-		AC_MSG_WARN([libmp4ff needed for MP4 support -- disabling MP4 support])
-		unset MP4FF_LIBS
-	fi
-
-	CFLAGS=$oldcflags
-	LIBS=$oldlibs
-	CPPFLAGS=$oldcppflags
-else
-	enable_mp4=no
-	FAAD_CFLAGS=""
-	FAAD_LIBS=""
-fi
-
 AC_SUBST(FAAD_CFLAGS)
 AC_SUBST(FAAD_LIBS)
 

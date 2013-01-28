@@ -499,7 +499,6 @@ DECODER_LIBS = \
 	$(MAD_LIBS) \
 	$(MPG123_LIBS) \
 	$(OPUS_LIBS) \
-	$(MP4FF_LIBS) \
 	$(FFMPEG_LIBS) \
 	$(MPCDEC_LIBS) \
 	$(ADPLUG_LIBS) \
@@ -547,10 +546,6 @@ endif
 
 if HAVE_FAAD
 libdecoder_plugins_a_SOURCES += src/decoder/faad_decoder_plugin.c
-endif
-
-if HAVE_MP4
-libdecoder_plugins_a_SOURCES += src/decoder/mp4ff_decoder_plugin.c
 endif
 
 if HAVE_XIPH

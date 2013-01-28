@@ -5,6 +5,7 @@ ver 0.18 (2012/??/??)
   - flac: support FLAC files inside archives
   - opus: new decoder plugin for the Opus codec
   - vorbis: skip 16 bit quantisation, provide float samples
+  - mp4ff: obsolete plugin removed
 * encoder:
   - opus: new encoder plugin for the Opus codec
   - vorbis: accept floating point input samples

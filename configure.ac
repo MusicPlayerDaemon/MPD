@@ -872,7 +872,6 @@ dnl ----------------------------------- FAAD ----------------------------------
 AM_PATH_FAAD()
 
 AM_CONDITIONAL(HAVE_FAAD, test x$enable_aac = xyes)
-AM_CONDITIONAL(HAVE_MP4, test x$enable_mp4 = xyes)
 
 dnl ---------------------------------- ffmpeg ---------------------------------
 MPD_AUTO_PKG(ffmpeg, FFMPEG, [libavformat >= 52.31 libavcodec >= 52.20 libavutil >= 49.15],
@@ -1148,7 +1147,6 @@ if
 	test x$enable_mad = xno &&
 	test x$enable_mikmod = xno; then
 	test x$enable_modplug = xno &&
-	test x$enable_mp4 = xno &&
 	test x$enable_mpc = xno &&
 	test x$enable_mpg123 = xno &&
 	test x$enable_opus = xno &&
@@ -1639,7 +1637,6 @@ results(mikmod, [MikMod])
 results(modplug, [MODPLUG])
 results(mad, [MAD])
 results(mpg123, [MPG123])
-results(mp4, [MP4])
 results(mpc, [Musepack])
 printf '\n\t'
 results(opus, [Opus])

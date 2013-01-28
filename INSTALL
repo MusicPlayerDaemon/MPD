@@ -91,7 +91,7 @@ Audio File - http://www.68k.org/~michael/audiofile/
 For WAVE, AIFF, and AU support.  You will need libaudiofile.
 
 FAAD2 - http://www.audiocoding.com/
-For MP4/AAC support.  You will need libmp4ff.
+For MP4/AAC support.
 
 libmpcdec - http://www.musepack.net/
 For Musepack support.
