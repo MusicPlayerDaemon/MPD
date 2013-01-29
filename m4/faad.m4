@@ -8,33 +8,9 @@ AC_ARG_ENABLE(aac,
 		[disable AAC support (default: enable)]),,
 	enable_aac=yes)
 
-AC_ARG_WITH(faad,
-	AS_HELP_STRING([--with-faad=PFX],
-		[prefix where faad2 is installed (optional)]),,
-	faad_prefix="")
-AC_ARG_WITH(faad-libraries,
-	AS_HELP_STRING([--with-faad-libraries=DIR],
-		[directory where faad2 library is installed (optional)]),,
-	faad_libraries="")
-AC_ARG_WITH(faad-includes,
-	AS_HELP_STRING([--with-faad-includes=DIR],
-		[directory where faad2 header files are installed (optional)]),,
-	faad_includes="")
-
 if test x$enable_aac = xyes; then
-	if test "x$faad_libraries" != "x" ; then
-		FAAD_LIBS="-L$faad_libraries"
-	elif test "x$faad_prefix" != "x" ; then
-		FAAD_LIBS="-L$faad_prefix/lib"
-	fi
-
-	FAAD_LIBS="$FAAD_LIBS -lfaad"
-
-	if test "x$faad_includes" != "x" ; then
-		FAAD_CFLAGS="-I$faad_includes"
-	elif test "x$faad_prefix" != "x" ; then
-		FAAD_CFLAGS="-I$faad_prefix/include"
-	fi
+	FAAD_LIBS="-lfaad"
+	FAAD_CFLAGS=""
 
 	oldcflags=$CFLAGS
 	oldlibs=$LIBS
