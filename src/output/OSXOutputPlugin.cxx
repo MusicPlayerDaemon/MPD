@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,9 +18,11 @@
  */
 
 #include "config.h"
-#include "osx_output_plugin.h"
+#include "OSXOutputPlugin.hxx"
 #include "output_api.h"
 #include "util/fifo_buffer.h"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 
 #include <glib.h>
 #include <CoreAudio/AudioHardware.h>
@@ -30,7 +32,7 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "osx"
 
-struct osx_output {
+struct OSXOutput {
 	struct audio_output base;
 
 	/* configuration settings */
@@ -39,8 +41,8 @@ struct osx_output {
 	const char *device_name;
 
 	AudioUnit au;
-	GMutex *mutex;
-	GCond *condition;
+	Mutex mutex;
+	Cond condition;
 
 	struct fifo_buffer *buffer;
 };
@@ -63,7 +65,7 @@ osx_output_test_default_device(void)
 }
 
 static void
-osx_output_configure(struct osx_output *oo, const struct config_param *param)
+osx_output_configure(OSXOutput *oo, const struct config_param *param)
 {
 	const char *device = config_get_block_string(param, "device", NULL);
 
@@ -85,15 +87,13 @@ osx_output_configure(struct osx_output *oo, const struct config_param *param)
 static struct audio_output *
 osx_output_init(const struct config_param *param, GError **error_r)
 {
-	struct osx_output *oo = g_new(struct osx_output, 1);
+	OSXOutput *oo = new OSXOutput();
 	if (!ao_base_init(&oo->base, &osx_output_plugin, param, error_r)) {
-		g_free(oo);
+		delete oo;
 		return NULL;
 	}
 
 	osx_output_configure(oo, param);
-	oo->mutex = g_mutex_new();
-	oo->condition = g_cond_new();
 
 	return &oo->base;
 }
@@ -101,15 +101,13 @@ osx_output_init(const struct config_param *param, GError **error_r)
 static void
 osx_output_finish(struct audio_output *ao)
 {
-	struct osx_output *od = (struct osx_output *)ao;
+	OSXOutput *oo = (OSXOutput *)ao;
 
-	g_mutex_free(od->mutex);
-	g_cond_free(od->condition);
-	g_free(od);
+	delete oo;
 }
 
 static bool
-osx_output_set_device(struct osx_output *oo, GError **error)
+osx_output_set_device(OSXOutput *oo, GError **error)
 {
 	bool ret = true;
 	OSStatus status;
@@ -135,7 +133,7 @@ osx_output_set_device(struct osx_output *oo, GError **error)
 
 	/* what are the available audio device IDs? */
 	numdevices = size / sizeof(AudioDeviceID);
-	deviceids = g_malloc(size);
+	deviceids = new AudioDeviceID[numdevices];
 	status = AudioHardwareGetProperty(kAudioHardwarePropertyDevices,
 					  &size,
 					  deviceids);
@@ -192,8 +190,7 @@ osx_output_set_device(struct osx_output *oo, GError **error)
 		(unsigned int) deviceids[i], name);
 
 done:
-	if (deviceids != NULL)
-		g_free(deviceids);
+	delete[] deviceids;
 	return ret;
 }
 
@@ -205,13 +202,13 @@ osx_render(void *vdata,
 	   G_GNUC_UNUSED UInt32 in_number_frames,
 	   AudioBufferList *buffer_list)
 {
-	struct osx_output *od = (struct osx_output *) vdata;
+	OSXOutput *od = (OSXOutput *) vdata;
 	AudioBuffer *buffer = &buffer_list->mBuffers[0];
 	size_t buffer_size = buffer->mDataByteSize;
 
 	assert(od->buffer != NULL);
 
-	g_mutex_lock(od->mutex);
+	od->mutex.lock();
 
 	size_t nbytes;
 	const void *src = fifo_buffer_read(od->buffer, &nbytes);
@@ -225,8 +222,8 @@ osx_render(void *vdata,
 	} else
 		nbytes = 0;
 
-	g_cond_signal(od->condition);
-	g_mutex_unlock(od->mutex);
+	od->condition.signal();
+	od->mutex.unlock();
 
 	buffer->mDataByteSize = nbytes;
 
@@ -242,7 +239,7 @@ osx_render(void *vdata,
 static bool
 osx_output_enable(struct audio_output *ao, GError **error_r)
 {
-	struct osx_output *oo = (struct osx_output *)ao;
+	OSXOutput *oo = (OSXOutput *)ao;
 
 	ComponentDescription desc;
 	desc.componentType = kAudioUnitType_Output;
@@ -293,7 +290,7 @@ osx_output_enable(struct audio_output *ao, GError **error_r)
 static void
 osx_output_disable(struct audio_output *ao)
 {
-	struct osx_output *oo = (struct osx_output *)ao;
+	OSXOutput *oo = (OSXOutput *)ao;
 
 	CloseComponent(oo->au);
 }
@@ -301,17 +298,16 @@ osx_output_disable(struct audio_output *ao)
 static void
 osx_output_cancel(struct audio_output *ao)
 {
-	struct osx_output *od = (struct osx_output *)ao;
+	OSXOutput *od = (OSXOutput *)ao;
 
-	g_mutex_lock(od->mutex);
+	const ScopeLock protect(od->mutex);
 	fifo_buffer_clear(od->buffer);
-	g_mutex_unlock(od->mutex);
 }
 
 static void
 osx_output_close(struct audio_output *ao)
 {
-	struct osx_output *od = (struct osx_output *)ao;
+	OSXOutput *od = (OSXOutput *)ao;
 
 	AudioOutputUnitStop(od->au);
 	AudioUnitUninitialize(od->au);
@@ -322,7 +318,7 @@ osx_output_close(struct audio_output *ao)
 static bool
 osx_output_open(struct audio_output *ao, struct audio_format *audio_format, GError **error)
 {
-	struct osx_output *od = (struct osx_output *)ao;
+	OSXOutput *od = (OSXOutput *)ao;
 
 	AudioStreamBasicDescription stream_description;
 	stream_description.mSampleRate = audio_format->sample_rate;
@@ -397,9 +393,9 @@ static size_t
 osx_output_play(struct audio_output *ao, const void *chunk, size_t size,
 		G_GNUC_UNUSED GError **error)
 {
-	struct osx_output *od = (struct osx_output *)ao;
+	OSXOutput *od = (OSXOutput *)ao;
 
-	g_mutex_lock(od->mutex);
+	const ScopeLock protect(od->mutex);
 
 	void *dest;
 	size_t max_length;
@@ -410,7 +406,7 @@ osx_output_play(struct audio_output *ao, const void *chunk, size_t size,
 			break;
 
 		/* wait for some free space in the buffer */
-		g_cond_wait(od->condition, od->mutex);
+		od->condition.wait(od->mutex);
 	}
 
 	if (size > max_length)
@@ -419,20 +415,23 @@ osx_output_play(struct audio_output *ao, const void *chunk, size_t size,
 	memcpy(dest, chunk, size);
 	fifo_buffer_append(od->buffer, size);
 
-	g_mutex_unlock(od->mutex);
-
 	return size;
 }
 
 const struct audio_output_plugin osx_output_plugin = {
-	.name = "osx",
-	.test_default_device = osx_output_test_default_device,
-	.init = osx_output_init,
-	.finish = osx_output_finish,
-	.enable = osx_output_enable,
-	.disable = osx_output_disable,
-	.open = osx_output_open,
-	.close = osx_output_close,
-	.play = osx_output_play,
-	.cancel = osx_output_cancel,
+	"osx",
+	osx_output_test_default_device,
+	osx_output_init,
+	osx_output_finish,
+	osx_output_enable,
+	osx_output_disable,
+	osx_output_open,
+	osx_output_close,
+	nullptr,
+	nullptr,
+	osx_output_play,
+	nullptr,
+	osx_output_cancel,
+	nullptr,
+	nullptr,
 };

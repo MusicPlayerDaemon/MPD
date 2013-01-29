@@ -864,7 +864,8 @@ endif
 
 if HAVE_OSX
 liboutput_plugins_a_SOURCES += \
-	src/output/osx_output_plugin.c src/output/osx_output_plugin.h
+	src/output/OSXOutputPlugin.cxx \
+	src/output/OSXOutputPlugin.hxx
 endif
 
 if HAVE_PULSE

@@ -30,7 +30,7 @@
 #include "output/null_output_plugin.h"
 #include "output/openal_output_plugin.h"
 #include "output/OssOutputPlugin.hxx"
-#include "output/osx_output_plugin.h"
+#include "output/OSXOutputPlugin.hxx"
 #include "output/pipe_output_plugin.h"
 #include "output/pulse_output_plugin.h"
 #include "output/recorder_output_plugin.h"
