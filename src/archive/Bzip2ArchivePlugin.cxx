@@ -25,6 +25,7 @@
 #include "Bzip2ArchivePlugin.hxx"
 #include "ArchiveInternal.hxx"
 #include "ArchivePlugin.hxx"
+#include "ArchiveVisitor.hxx"
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
@@ -47,7 +48,6 @@ struct Bzip2ArchiveFile {
 	struct refcount ref;
 
 	char *name;
-	bool reset;
 	struct input_stream *istream;
 
 	Bzip2ArchiveFile() {
@@ -152,24 +152,11 @@ bz2_open(const char *pathname, GError **error_r)
 }
 
 static void
-bz2_scan_reset(struct archive_file *file)
+bz2_visit(archive_file *file, ArchiveVisitor &visitor)
 {
 	Bzip2ArchiveFile *context = (Bzip2ArchiveFile *) file;
-	context->reset = true;
-}
 
-static const char *
-bz2_scan_next(struct archive_file *file)
-{
-	Bzip2ArchiveFile *context = (Bzip2ArchiveFile *) file;
-	const char *name = NULL;
-
-	if (context->reset) {
-		name = context->name;
-		context->reset = false;
-	}
-
-	return name;
+	visitor.VisitArchiveEntry(context->name);
 }
 
 static void
@@ -318,8 +305,7 @@ const struct archive_plugin bz2_archive_plugin = {
 	nullptr,
 	nullptr,
 	bz2_open,
-	bz2_scan_reset,
-	bz2_scan_next,
+	bz2_visit,
 	bz2_open_stream,
 	bz2_close,
 	bz2_extensions,

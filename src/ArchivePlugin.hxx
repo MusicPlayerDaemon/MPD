@@ -26,6 +26,7 @@
 
 struct input_stream;
 struct archive_file;
+class ArchiveVisitor;
 
 struct archive_plugin {
 	const char *name;
@@ -51,18 +52,9 @@ struct archive_plugin {
 	struct archive_file *(*open)(const char *path_fs, GError **error_r);
 
 	/**
-	 * reset routine will move current read index in archive to default
-	 * position and then the filenames from archives can be read
-	 * via scan_next routine
+	 * Visit all entries inside this archive.
 	 */
-	void  (*scan_reset)(struct archive_file *);
-
-	/**
-	 * the read method will return corresponding files from archive
-	 * (as pathnames) and move read index to next file. When there is no
-	 * next file it return NULL.
-	 */
-	const char *(*scan_next)(struct archive_file *);
+	void (*visit)(archive_file *af, ArchiveVisitor &visitor);
 
 	/**
 	 * Opens an input_stream of a file within the archive.
@@ -96,10 +88,7 @@ void
 archive_file_close(struct archive_file *file);
 
 void
-archive_file_scan_reset(struct archive_file *file);
-
-const char *
-archive_file_scan_next(struct archive_file *file);
+archive_file_visit(archive_file *file, ArchiveVisitor &visitor);
 
 struct input_stream *
 archive_file_open_stream(struct archive_file *file, const char *path,

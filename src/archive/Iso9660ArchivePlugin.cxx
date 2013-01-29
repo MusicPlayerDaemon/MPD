@@ -25,6 +25,7 @@
 #include "Iso9660ArchivePlugin.hxx"
 #include "ArchiveInternal.hxx"
 #include "ArchivePlugin.hxx"
+#include "ArchiveVisitor.hxx"
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
@@ -46,22 +47,14 @@ struct Iso9660ArchiveFile {
 	struct refcount ref;
 
 	iso9660_t *iso;
-	GSList	*list;
-	GSList	*iter;
 
 	Iso9660ArchiveFile(iso9660_t *_iso)
-		:iso(_iso), list(nullptr) {
+		:iso(_iso) {
 		archive_file_init(&base, &iso9660_archive_plugin);
 		refcount_init(&ref);
 	}
 
 	~Iso9660ArchiveFile() {
-		//free list
-		for (GSList *tmp = list; tmp != NULL; tmp = g_slist_next(tmp))
-			g_free(tmp->data);
-		g_slist_free(list);
-
-		//close archive
 		iso9660_close(iso);
 	}
 
@@ -70,7 +63,7 @@ struct Iso9660ArchiveFile {
 			delete this;
 	}
 
-	void CollectRecursive(const char *path);
+	void Visit(const char *path, ArchiveVisitor &visitor);
 };
 
 extern const struct input_plugin iso9660_input_plugin;
@@ -83,8 +76,8 @@ iso9660_quark(void)
 
 /* archive open && listing routine */
 
-void
-Iso9660ArchiveFile::CollectRecursive(const char *psz_path)
+inline void
+Iso9660ArchiveFile::Visit(const char *psz_path, ArchiveVisitor &visitor)
 {
 	CdioList_t *entlist;
 	CdioListNode_t *entnode;
@@ -105,11 +98,11 @@ Iso9660ArchiveFile::CollectRecursive(const char *psz_path)
 		if (iso9660_stat_s::_STAT_DIR == statbuf->type ) {
 			if (strcmp(statbuf->filename, ".") && strcmp(statbuf->filename, "..")) {
 				strcat(pathname, "/");
-				CollectRecursive(pathname);
+				Visit(pathname, visitor);
 			}
 		} else {
 			//remove leading /
-			list = g_slist_prepend(list, g_strdup(pathname + 1));
+			visitor.VisitArchiveEntry(pathname + 1);
 		}
 	}
 	_cdio_list_free (entlist, true);
@@ -127,33 +120,16 @@ iso9660_archive_open(const char *pathname, GError **error_r)
 	}
 
 	Iso9660ArchiveFile *archive = new Iso9660ArchiveFile(iso);
-	archive->CollectRecursive("/");
 	return &archive->base;
 }
 
 static void
-iso9660_archive_scan_reset(struct archive_file *file)
+iso9660_archive_visit(archive_file *file, ArchiveVisitor &visitor)
 {
 	Iso9660ArchiveFile *context =
 		(Iso9660ArchiveFile *)file;
 
-	//reset iterator
-	context->iter = context->list;
-}
-
-static const char *
-iso9660_archive_scan_next(struct archive_file *file)
-{
-	Iso9660ArchiveFile *context =
-		(Iso9660ArchiveFile *)file;
-
-	const char *data = NULL;
-	if (context->iter != NULL) {
-		///fetch data and goto next
-		data = (const char *)context->iter->data;
-		context->iter = g_slist_next(context->iter);
-	}
-	return data;
+	context->Visit("/", visitor);
 }
 
 static void
@@ -296,8 +272,7 @@ const struct archive_plugin iso9660_archive_plugin = {
 	nullptr,
 	nullptr,
 	iso9660_archive_open,
-	iso9660_archive_scan_reset,
-	iso9660_archive_scan_next,
+	iso9660_archive_visit,
 	iso9660_archive_open_stream,
 	iso9660_archive_close,
 	iso9660_archive_extensions,

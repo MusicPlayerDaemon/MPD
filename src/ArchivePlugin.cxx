@@ -38,8 +38,7 @@ archive_file_open(const struct archive_plugin *plugin, const char *path,
 	if (file != NULL) {
 		assert(file->plugin != NULL);
 		assert(file->plugin->close != NULL);
-		assert(file->plugin->scan_reset != NULL);
-		assert(file->plugin->scan_next != NULL);
+		assert(file->plugin->visit != nullptr);
 		assert(file->plugin->open_stream != NULL);
 		assert(error_r == NULL || *error_r == NULL);
 	} else {
@@ -60,24 +59,13 @@ archive_file_close(struct archive_file *file)
 }
 
 void
-archive_file_scan_reset(struct archive_file *file)
+archive_file_visit(archive_file *file, ArchiveVisitor &visitor)
 {
 	assert(file != NULL);
 	assert(file->plugin != NULL);
-	assert(file->plugin->scan_reset != NULL);
-	assert(file->plugin->scan_next != NULL);
+	assert(file->plugin->visit != nullptr);
 
-	file->plugin->scan_reset(file);
-}
-
-const char *
-archive_file_scan_next(struct archive_file *file)
-{
-	assert(file != NULL);
-	assert(file->plugin != NULL);
-	assert(file->plugin->scan_next != NULL);
-
-	return file->plugin->scan_next(file);
+	file->plugin->visit(file, visitor);
 }
 
 struct input_stream *

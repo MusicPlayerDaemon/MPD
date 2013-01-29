@@ -398,6 +398,7 @@ libarchive_a_SOURCES = \
 	src/ArchiveLookup.cxx src/ArchiveLookup.hxx \
 	src/ArchiveList.cxx src/ArchiveList.hxx \
 	src/ArchivePlugin.cxx src/ArchivePlugin.hxx \
+	src/ArchiveVisitor.hxx \
 	src/ArchiveInternal.hxx \
 	src/input/ArchiveInputPlugin.cxx src/input/ArchiveInputPlugin.hxx
 libarchive_a_CPPFLAGS = $(AM_CPPFLAGS) \

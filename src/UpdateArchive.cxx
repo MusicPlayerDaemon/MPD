@@ -27,6 +27,7 @@
 #include "fs/Path.hxx"
 #include "ArchiveList.hxx"
 #include "ArchivePlugin.hxx"
+#include "ArchiveVisitor.hxx"
 
 #include <glib.h>
 
@@ -122,14 +123,21 @@ update_archive_file2(Directory *parent, const char *name,
 
 	directory->mtime = st->st_mtime;
 
-	archive_file_scan_reset(file);
+	class UpdateArchiveVisitor final : public ArchiveVisitor {
+		Directory *directory;
 
-	const char *filepath;
-	while ((filepath = archive_file_scan_next(file)) != NULL) {
-		/* split name into directory and file */
-		g_debug("adding archive file: %s", filepath);
-		update_archive_tree(directory, filepath);
-	}
+	public:
+		UpdateArchiveVisitor(Directory *_directory)
+			:directory(_directory) {}
+
+		virtual void VisitArchiveEntry(const char *path_utf8) override {
+			g_debug("adding archive file: %s", path_utf8);
+			update_archive_tree(directory, path_utf8);
+		}
+	};
+
+	UpdateArchiveVisitor visitor(directory);
+	archive_file_visit(file, visitor);
 
 	archive_file_close(file);
 }

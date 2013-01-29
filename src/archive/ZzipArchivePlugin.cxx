@@ -25,6 +25,7 @@
 #include "ZzipArchivePlugin.hxx"
 #include "ArchiveInternal.hxx"
 #include "ArchivePlugin.hxx"
+#include "ArchiveVisitor.hxx"
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
@@ -40,8 +41,6 @@ struct ZzipArchiveFile {
 	struct refcount ref;
 
 	ZZIP_DIR *dir;
-	GSList	*list;
-	GSList	*iter;
 
 	ZzipArchiveFile() {
 		archive_file_init(&base, &zzip_archive_plugin);
@@ -52,17 +51,13 @@ struct ZzipArchiveFile {
 		if (!refcount_dec(&ref))
 			return;
 
-		if (list) {
-			//free list
-			for (GSList *tmp = list; tmp != NULL; tmp = g_slist_next(tmp))
-				g_free(tmp->data);
-			g_slist_free(list);
-		}
 		//close archive
 		zzip_dir_close (dir);
 
 		delete this;
 	}
+
+	void Visit(ArchiveVisitor &visitor);
 };
 
 extern const struct input_plugin zzip_input_plugin;
@@ -79,10 +74,8 @@ static struct archive_file *
 zzip_archive_open(const char *pathname, GError **error_r)
 {
 	ZzipArchiveFile *context = new ZzipArchiveFile();
-	ZZIP_DIRENT dirent;
 
 	// open archive
-	context->list = NULL;
 	context->dir = zzip_dir_open(pathname, NULL);
 	if (context->dir  == NULL) {
 		g_set_error(error_r, zzip_quark(), 0,
@@ -90,36 +83,27 @@ zzip_archive_open(const char *pathname, GError **error_r)
 		return NULL;
 	}
 
-	while (zzip_dir_read(context->dir, &dirent)) {
-		//add only files
-		if (dirent.st_size > 0) {
-			context->list = g_slist_prepend(context->list,
-							g_strdup(dirent.d_name));
-		}
-	}
-
 	return &context->base;
 }
 
-static void
-zzip_archive_scan_reset(struct archive_file *file)
+inline void
+ZzipArchiveFile::Visit(ArchiveVisitor &visitor)
 {
-	ZzipArchiveFile *context = (ZzipArchiveFile *) file;
-	//reset iterator
-	context->iter = context->list;
+	zzip_rewinddir(dir);
+
+	ZZIP_DIRENT dirent;
+	while (zzip_dir_read(dir, &dirent))
+		//add only files
+		if (dirent.st_size > 0)
+			visitor.VisitArchiveEntry(dirent.d_name);
 }
 
-static const char *
-zzip_archive_scan_next(struct archive_file *file)
+static void
+zzip_archive_visit(archive_file *file, ArchiveVisitor &visitor)
 {
 	ZzipArchiveFile *context = (ZzipArchiveFile *) file;
-	const char *data = NULL;
-	if (context->iter != NULL) {
-		///fetch data and goto next
-		data = (const char *)context->iter->data;
-		context->iter = g_slist_next(context->iter);
-	}
-	return data;
+
+	context->Visit(visitor);
 }
 
 static void
@@ -260,8 +244,7 @@ const struct archive_plugin zzip_archive_plugin = {
 	nullptr,
 	nullptr,
 	zzip_archive_open,
-	zzip_archive_scan_reset,
-	zzip_archive_scan_next,
+	zzip_archive_visit,
 	zzip_archive_open_stream,
 	zzip_archive_close,
 	zzip_archive_extensions,
