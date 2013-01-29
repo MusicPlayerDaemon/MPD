@@ -304,7 +304,7 @@ ServerSocket::AddFD(int fd, GError **error_r)
 	assert(fd >= 0);
 
 	struct sockaddr_storage address;
-	socklen_t address_length;
+	socklen_t address_length = sizeof(address);
 	if (getsockname(fd, (struct sockaddr *)&address,
 			&address_length) < 0) {
 		SetSocketError(error_r);
