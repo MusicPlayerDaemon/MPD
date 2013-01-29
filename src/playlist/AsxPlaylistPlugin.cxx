@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "AsxPlaylistPlugin.hxx"
-#include "PlaylistPlugin.hxx"
+#include "MemoryPlaylistProvider.hxx"
 #include "input_stream.h"
 #include "song.h"
 #include "tag.h"
@@ -213,17 +213,10 @@ asx_parser_destroy(gpointer data)
  *
  */
 
-struct AsxPlaylist {
-	struct playlist_provider base;
-
-	GSList *songs;
-};
-
 static struct playlist_provider *
 asx_open_stream(struct input_stream *is)
 {
 	AsxParser parser;
-	AsxPlaylist *playlist;
 	GMarkupParseContext *context;
 	char buffer[1024];
 	size_t nbytes;
@@ -270,38 +263,13 @@ asx_open_stream(struct input_stream *is)
 
 	/* create a #AsxPlaylist object from the parsed song list */
 
-	playlist = g_new(AsxPlaylist, 1);
-	playlist_provider_init(&playlist->base, &asx_playlist_plugin);
-	playlist->songs = g_slist_reverse(parser.songs);
+	MemoryPlaylistProvider *playlist =
+		new MemoryPlaylistProvider(g_slist_reverse(parser.songs));
 	parser.songs = NULL;
 
 	g_markup_parse_context_free(context);
 
-	return &playlist->base;
-}
-
-static void
-asx_close(struct playlist_provider *_playlist)
-{
-	AsxPlaylist *playlist = (AsxPlaylist *)_playlist;
-
-	g_slist_foreach(playlist->songs, song_free_callback, NULL);
-	g_slist_free(playlist->songs);
-	g_free(playlist);
-}
-
-static struct song *
-asx_read(struct playlist_provider *_playlist)
-{
-	AsxPlaylist *playlist = (AsxPlaylist *)_playlist;
-
-	if (playlist->songs == NULL)
-		return NULL;
-
-	struct song *song = (struct song *)playlist->songs->data;
-	playlist->songs = g_slist_remove(playlist->songs, song);
-
-	return song;
+	return playlist;
 }
 
 static const char *const asx_suffixes[] = {
@@ -321,8 +289,8 @@ const struct playlist_plugin asx_playlist_plugin = {
 	nullptr,
 	nullptr,
 	asx_open_stream,
-	asx_close,
-	asx_read,
+	nullptr,
+	nullptr,
 
 	nullptr,
 	asx_suffixes,

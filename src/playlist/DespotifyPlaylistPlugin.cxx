@@ -20,13 +20,9 @@
 #include "config.h"
 #include "DespotifyPlaylistPlugin.hxx"
 #include "DespotifyUtils.hxx"
-#include "PlaylistPlugin.hxx"
-#include "PlaylistRegistry.hxx"
-#include "conf.h"
-#include "uri.h"
+#include "MemoryPlaylistProvider.hxx"
 #include "tag.h"
 #include "song.h"
-#include "input_stream.h"
 
 extern "C" {
 #include <despotify.h>
@@ -34,13 +30,10 @@ extern "C" {
 
 #include <glib.h>
 
-#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 
 struct despotify_playlist {
-	struct playlist_provider base;
-
 	struct despotify_session *session;
 	GSList *list;
 };
@@ -116,7 +109,6 @@ static struct playlist_provider *
 despotify_playlist_open_uri(const char *url,
 			    gcc_unused Mutex &mutex, gcc_unused Cond &cond)
 {
-	struct despotify_playlist *ctx;
 	struct despotify_session *session;
 	struct ds_link *link;
 	bool parse_result;
@@ -132,19 +124,17 @@ despotify_playlist_open_uri(const char *url,
 		goto clean_none;
 	}
 
-	ctx = g_new(struct despotify_playlist, 1);
-
-	ctx->list = nullptr;
-	ctx->session = session;
-	playlist_provider_init(&ctx->base, &despotify_playlist_plugin);
+	struct despotify_playlist ctx;
+	ctx.list = nullptr;
+	ctx.session = session;
 
 	switch (link->type)
 	{
 	case LINK_TYPE_TRACK:
-		parse_result = parse_track(ctx, link);
+		parse_result = parse_track(&ctx, link);
 		break;
 	case LINK_TYPE_PLAYLIST:
-		parse_result = parse_playlist(ctx, link);
+		parse_result = parse_playlist(&ctx, link);
 		break;
 	default:
 		parse_result = false;
@@ -154,52 +144,14 @@ despotify_playlist_open_uri(const char *url,
 	if (!parse_result)
 		goto clean_playlist;
 
-	ctx->list = g_slist_reverse(ctx->list);
-
-	return &ctx->base;
+	return new MemoryPlaylistProvider(g_slist_reverse(ctx.list));
 
 clean_playlist:
-	g_slist_free(ctx->list);
+	g_slist_free(ctx.list);
 clean_none:
 
 	return nullptr;
 }
-
-static void
-track_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
-{
-	struct song *song = (struct song *)data;
-
-	song_free(song);
-}
-
-static void
-despotify_playlist_close(struct playlist_provider *_playlist)
-{
-	struct despotify_playlist *ctx = (struct despotify_playlist *)_playlist;
-
-	g_slist_foreach(ctx->list, track_free_callback, nullptr);
-	g_slist_free(ctx->list);
-
-	g_free(ctx);
-}
-
-
-static struct song *
-despotify_playlist_read(struct playlist_provider *_playlist)
-{
-	struct despotify_playlist *ctx = (struct despotify_playlist *)_playlist;
-
-	if (!ctx->list)
-		return nullptr;
-
-	/* Remove the current track */
-	song *out = (song *)ctx->list->data;
-	ctx->list = g_slist_remove(ctx->list, out);
-
-	return out;
-}
-
 
 static const char *const despotify_schemes[] = {
 	"spt",
@@ -214,8 +166,8 @@ const struct playlist_plugin despotify_playlist_plugin = {
 
 	despotify_playlist_open_uri,
 	nullptr,
-	despotify_playlist_close,
-	despotify_playlist_read,
+	nullptr,
+	nullptr,
 
 	despotify_schemes,
 	nullptr,

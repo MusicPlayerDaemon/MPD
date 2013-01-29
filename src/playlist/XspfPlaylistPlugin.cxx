@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "XspfPlaylistPlugin.hxx"
-#include "PlaylistPlugin.hxx"
+#include "MemoryPlaylistProvider.hxx"
 #include "input_stream.h"
 #include "uri.h"
 #include "song.h"
@@ -231,17 +231,10 @@ xspf_parser_destroy(gpointer data)
  *
  */
 
-struct XspfPlaylist {
-	struct playlist_provider base;
-
-	GSList *songs;
-};
-
 static struct playlist_provider *
 xspf_open_stream(struct input_stream *is)
 {
 	XspfParser parser;
-	XspfPlaylist *playlist;
 	GMarkupParseContext *context;
 	char buffer[1024];
 	size_t nbytes;
@@ -288,38 +281,13 @@ xspf_open_stream(struct input_stream *is)
 
 	/* create a #xspf_playlist object from the parsed song list */
 
-	playlist = g_new(XspfPlaylist, 1);
-	playlist_provider_init(&playlist->base, &xspf_playlist_plugin);
-	playlist->songs = g_slist_reverse(parser.songs);
+	MemoryPlaylistProvider *playlist =
+		new MemoryPlaylistProvider(g_slist_reverse(parser.songs));
 	parser.songs = NULL;
 
 	g_markup_parse_context_free(context);
 
-	return &playlist->base;
-}
-
-static void
-xspf_close(struct playlist_provider *_playlist)
-{
-	XspfPlaylist *playlist = (XspfPlaylist *)_playlist;
-
-	g_slist_foreach(playlist->songs, song_free_callback, NULL);
-	g_slist_free(playlist->songs);
-	g_free(playlist);
-}
-
-static struct song *
-xspf_read(struct playlist_provider *_playlist)
-{
-	XspfPlaylist *playlist = (XspfPlaylist *)_playlist;
-
-	if (playlist->songs == NULL)
-		return NULL;
-
-	struct song *song = (struct song *)playlist->songs->data;
-	playlist->songs = g_slist_remove(playlist->songs, song);
-
-	return song;
+	return playlist;
 }
 
 static const char *const xspf_suffixes[] = {
@@ -339,8 +307,8 @@ const struct playlist_plugin xspf_playlist_plugin = {
 	nullptr,
 	nullptr,
 	xspf_open_stream,
-	xspf_close,
-	xspf_read,
+	nullptr,
+	nullptr,
 
 	nullptr,
 	xspf_suffixes,

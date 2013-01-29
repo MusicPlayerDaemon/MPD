@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "SoundCloudPlaylistPlugin.hxx"
-#include "PlaylistPlugin.hxx"
+#include "MemoryPlaylistProvider.hxx"
 #include "conf.h"
 #include "input_stream.h"
 #include "song.h"
@@ -29,12 +29,6 @@
 #include <yajl/yajl_parse.h>
 
 #include <string.h>
-
-struct soundcloud_playlist {
-	struct playlist_provider base;
-
-	GSList *songs;
-};
 
 static struct {
 	char *apikey;
@@ -326,8 +320,6 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 static struct playlist_provider *
 soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 {
-	struct soundcloud_playlist *playlist = NULL;
-
 	char *s, *p;
 	char *scheme, *arg, *rest;
 	s = g_strdup(uri);
@@ -399,34 +391,7 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	if (ret == -1)
 		return NULL;
 
-	playlist = g_new(struct soundcloud_playlist, 1);
-	playlist_provider_init(&playlist->base, &soundcloud_playlist_plugin);
-	playlist->songs = g_slist_reverse(data.songs);
-
-	return &playlist->base;
-}
-
-static void
-soundcloud_close(struct playlist_provider *_playlist)
-{
-	struct soundcloud_playlist *playlist = (struct soundcloud_playlist *)_playlist;
-
-	g_free(playlist);
-}
-
-
-static struct song *
-soundcloud_read(struct playlist_provider *_playlist)
-{
-	struct soundcloud_playlist *playlist = (struct soundcloud_playlist *)_playlist;
-
-	if (playlist->songs == NULL)
-		return NULL;
-
-	struct song* s;
-	s = (struct song *)playlist->songs->data;
-	playlist->songs = g_slist_remove(playlist->songs, s);
-	return s;
+	return new MemoryPlaylistProvider(g_slist_reverse(data.songs));
 }
 
 static const char *const soundcloud_schemes[] = {
@@ -441,8 +406,8 @@ const struct playlist_plugin soundcloud_playlist_plugin = {
 	soundcloud_finish,
 	soundcloud_open_uri,
 	nullptr,
-	soundcloud_close,
-	soundcloud_read,
+	nullptr,
+	nullptr,
 
 	soundcloud_schemes,
 	nullptr,

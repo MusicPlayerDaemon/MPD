@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "RssPlaylistPlugin.hxx"
-#include "PlaylistPlugin.hxx"
+#include "MemoryPlaylistProvider.hxx"
 #include "input_stream.h"
 #include "song.h"
 #include "tag.h"
@@ -209,17 +209,10 @@ rss_parser_destroy(gpointer data)
  *
  */
 
-struct RssPlaylist {
-	struct playlist_provider base;
-
-	GSList *songs;
-};
-
 static struct playlist_provider *
 rss_open_stream(struct input_stream *is)
 {
 	RssParser parser;
-	RssPlaylist *playlist;
 	GMarkupParseContext *context;
 	char buffer[1024];
 	size_t nbytes;
@@ -266,38 +259,13 @@ rss_open_stream(struct input_stream *is)
 
 	/* create a #rss_playlist object from the parsed song list */
 
-	playlist = g_new(RssPlaylist, 1);
-	playlist_provider_init(&playlist->base, &rss_playlist_plugin);
-	playlist->songs = g_slist_reverse(parser.songs);
+	MemoryPlaylistProvider *playlist =
+		new MemoryPlaylistProvider(g_slist_reverse(parser.songs));
 	parser.songs = NULL;
 
 	g_markup_parse_context_free(context);
 
-	return &playlist->base;
-}
-
-static void
-rss_close(struct playlist_provider *_playlist)
-{
-	RssPlaylist *playlist = (RssPlaylist *)_playlist;
-
-	g_slist_foreach(playlist->songs, song_free_callback, NULL);
-	g_slist_free(playlist->songs);
-	g_free(playlist);
-}
-
-static struct song *
-rss_read(struct playlist_provider *_playlist)
-{
-	RssPlaylist *playlist = (RssPlaylist *)_playlist;
-
-	if (playlist->songs == NULL)
-		return NULL;
-
-	struct song *song = (struct song *)playlist->songs->data;
-	playlist->songs = g_slist_remove(playlist->songs, song);
-
-	return song;
+	return playlist;
 }
 
 static const char *const rss_suffixes[] = {
@@ -318,8 +286,8 @@ const struct playlist_plugin rss_playlist_plugin = {
 	nullptr,
 	nullptr,
 	rss_open_stream,
-	rss_close,
-	rss_read,
+	nullptr,
+	nullptr,
 
 	nullptr,
 	rss_suffixes,

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "PlsPlaylistPlugin.hxx"
-#include "PlaylistPlugin.hxx"
+#include "MemoryPlaylistProvider.hxx"
 #include "input_stream.h"
 #include "uri.h"
 #include "song.h"
@@ -28,8 +28,6 @@
 #include <glib.h>
 
 struct PlsPlaylist {
-	struct playlist_provider base;
-
 	GSList *songs;
 };
 
@@ -112,7 +110,6 @@ pls_open_stream(struct input_stream *is)
 	char buffer[1024];
 	bool success;
 	GKeyFile *keyfile;
-	PlsPlaylist *playlist;
 	GString *kf_data = g_string_new("");
 
 	do {
@@ -153,49 +150,13 @@ pls_open_stream(struct input_stream *is)
 		return NULL;
 	}
 
-	playlist = g_new(PlsPlaylist, 1);
-	playlist_provider_init(&playlist->base, &pls_playlist_plugin);
-	playlist->songs = NULL;
+	PlsPlaylist playlist;
+	playlist.songs = nullptr;
 
-	pls_parser(keyfile, playlist);
-
+	pls_parser(keyfile, &playlist);
 	g_key_file_free(keyfile);
-	return &playlist->base;
-}
 
-
-static void
-song_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
-{
-	struct song *song = (struct song *)data;
-
-	song_free(song);
-}
-
-static void
-pls_close(struct playlist_provider *_playlist)
-{
-	PlsPlaylist *playlist = (PlsPlaylist *)_playlist;
-
-	g_slist_foreach(playlist->songs, song_free_callback, NULL);
-	g_slist_free(playlist->songs);
-
-	g_free(playlist);
-
-}
-
-static struct song *
-pls_read(struct playlist_provider *_playlist)
-{
-	PlsPlaylist *playlist = (PlsPlaylist *)_playlist;
-
-	if (playlist->songs == NULL)
-		return NULL;
-
-	struct song *song = (struct song *)playlist->songs->data;
-	playlist->songs = g_slist_remove(playlist->songs, song);
-
-	return song;
+	return new MemoryPlaylistProvider(g_slist_reverse(playlist.songs));
 }
 
 static const char *const pls_suffixes[] = {
@@ -215,8 +176,8 @@ const struct playlist_plugin pls_playlist_plugin = {
 	nullptr,
 	nullptr,
 	pls_open_stream,
-	pls_close,
-	pls_read,
+	nullptr,
+	nullptr,
 
 	nullptr,
 	pls_suffixes,

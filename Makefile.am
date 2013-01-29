@@ -911,6 +911,8 @@ endif
 
 libplaylist_plugins_a_SOURCES = \
 	src/PlaylistPlugin.hxx \
+	src/playlist/MemoryPlaylistProvider.cxx \
+	src/playlist/MemoryPlaylistProvider.hxx \
 	src/playlist/ExtM3uPlaylistPlugin.cxx \
 	src/playlist/ExtM3uPlaylistPlugin.hxx \
 	src/playlist/M3uPlaylistPlugin.cxx \
