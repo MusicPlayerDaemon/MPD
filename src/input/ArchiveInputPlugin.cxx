@@ -22,6 +22,7 @@
 #include "ArchiveLookup.hxx"
 #include "ArchiveList.hxx"
 #include "ArchivePlugin.hxx"
+#include "ArchiveFile.hxx"
 #include "InputPlugin.hxx"
 
 #include <glib.h>
@@ -69,10 +70,9 @@ input_archive_open(const char *pathname,
 	}
 
 	//setup fileops
-	is = archive_file_open_stream(file, filename, mutex, cond,
-				      error_r);
-	archive_file_close(file);
+	is = file->OpenStream(filename, mutex, cond, error_r);
 	g_free(pname);
+	file->Close();
 
 	return is;
 }

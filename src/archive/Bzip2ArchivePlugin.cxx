@@ -42,7 +42,7 @@
 #define BZ2_bzDecompress bzDecompress
 #endif
 
-class Bzip2ArchiveFile : public ArchiveFile {
+class Bzip2ArchiveFile final : public ArchiveFile {
 public:
 	RefCount ref;
 
@@ -63,6 +63,10 @@ public:
 		input_stream_close(istream);
 	}
 
+	void Ref() {
+		ref.Increment();
+	}
+
 	void Unref() {
 		if (!ref.Decrement())
 			return;
@@ -70,6 +74,18 @@ public:
 		g_free(name);
 		delete this;
 	}
+
+	virtual void Close() override {
+		Unref();
+	}
+
+	virtual void Visit(ArchiveVisitor &visitor) override {
+		visitor.VisitArchiveEntry(name);
+	}
+
+	virtual input_stream *OpenStream(const char *path,
+					 Mutex &mutex, Cond &cond,
+					 GError **error_r) override;
 };
 
 struct Bzip2InputStream {
@@ -142,22 +158,6 @@ bz2_open(const char *pathname, GError **error_r)
 	return new Bzip2ArchiveFile(pathname, is);
 }
 
-static void
-bz2_visit(ArchiveFile *file, ArchiveVisitor &visitor)
-{
-	Bzip2ArchiveFile *context = (Bzip2ArchiveFile *) file;
-
-	visitor.VisitArchiveEntry(context->name);
-}
-
-static void
-bz2_close(ArchiveFile *file)
-{
-	Bzip2ArchiveFile *context = (Bzip2ArchiveFile *) file;
-
-	context->Unref();
-}
-
 /* single archive handling */
 
 Bzip2InputStream::Bzip2InputStream(Bzip2ArchiveFile &_context, const char *uri,
@@ -165,7 +165,7 @@ Bzip2InputStream::Bzip2InputStream(Bzip2ArchiveFile &_context, const char *uri,
 	:base(bz2_inputplugin, uri, mutex, cond),
 	 archive(&_context), eof(false)
 {
-	archive->ref.Increment();
+	archive->Ref();
 }
 
 Bzip2InputStream::~Bzip2InputStream()
@@ -173,15 +173,12 @@ Bzip2InputStream::~Bzip2InputStream()
 	archive->Unref();
 }
 
-static struct input_stream *
-bz2_open_stream(ArchiveFile *file, const char *path,
-		Mutex &mutex, Cond &cond,
-		GError **error_r)
+input_stream *
+Bzip2ArchiveFile::OpenStream(const char *path,
+			     Mutex &mutex, Cond &cond,
+			     GError **error_r)
 {
-	Bzip2ArchiveFile *context = (Bzip2ArchiveFile *) file;
-	Bzip2InputStream *bis =
-		new Bzip2InputStream(*context, path, mutex, cond);
-
+	Bzip2InputStream *bis = new Bzip2InputStream(*this, path, mutex, cond);
 	if (!bis->Open(error_r)) {
 		delete bis;
 		return NULL;
@@ -296,9 +293,6 @@ const struct archive_plugin bz2_archive_plugin = {
 	nullptr,
 	nullptr,
 	bz2_open,
-	bz2_visit,
-	bz2_open_stream,
-	bz2_close,
 	bz2_extensions,
 };
 

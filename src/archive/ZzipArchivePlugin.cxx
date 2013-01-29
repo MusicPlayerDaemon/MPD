@@ -35,7 +35,7 @@
 #include <glib.h>
 #include <string.h>
 
-class ZzipArchiveFile : public ArchiveFile {
+class ZzipArchiveFile final : public ArchiveFile {
 public:
 	RefCount ref;
 
@@ -53,7 +53,15 @@ public:
 			delete this;
 	}
 
-	void Visit(ArchiveVisitor &visitor);
+	virtual void Close() override {
+		Unref();
+	}
+
+	virtual void Visit(ArchiveVisitor &visitor) override;
+
+	virtual input_stream *OpenStream(const char *path,
+					 Mutex &mutex, Cond &cond,
+					 GError **error_r) override;
 };
 
 extern const struct input_plugin zzip_input_plugin;
@@ -91,22 +99,6 @@ ZzipArchiveFile::Visit(ArchiveVisitor &visitor)
 			visitor.VisitArchiveEntry(dirent.d_name);
 }
 
-static void
-zzip_archive_visit(ArchiveFile *file, ArchiveVisitor &visitor)
-{
-	ZzipArchiveFile *context = (ZzipArchiveFile *) file;
-
-	context->Visit(visitor);
-}
-
-static void
-zzip_archive_close(ArchiveFile *file)
-{
-	ZzipArchiveFile *context = (ZzipArchiveFile *) file;
-
-	context->Unref();
-}
-
 /* single archive handling */
 
 struct ZzipInputStream {
@@ -138,15 +130,12 @@ struct ZzipInputStream {
 	}
 };
 
-static struct input_stream *
-zzip_archive_open_stream(ArchiveFile *file,
-			 const char *pathname,
-			 Mutex &mutex, Cond &cond,
-			 GError **error_r)
+input_stream *
+ZzipArchiveFile::OpenStream(const char *pathname,
+			    Mutex &mutex, Cond &cond,
+			    GError **error_r)
 {
-	ZzipArchiveFile *context = (ZzipArchiveFile *) file;
-
-	ZZIP_FILE *_file = zzip_file_open(context->dir, pathname, 0);
+	ZZIP_FILE *_file = zzip_file_open(dir, pathname, 0);
 	if (_file == nullptr) {
 		g_set_error(error_r, zzip_quark(), 0,
 			    "not found in the ZIP file: %s", pathname);
@@ -154,7 +143,7 @@ zzip_archive_open_stream(ArchiveFile *file,
 	}
 
 	ZzipInputStream *zis =
-		new ZzipInputStream(*context, pathname,
+		new ZzipInputStream(*this, pathname,
 				    mutex, cond,
 				    _file);
 	return &zis->base;
@@ -237,8 +226,5 @@ const struct archive_plugin zzip_archive_plugin = {
 	nullptr,
 	nullptr,
 	zzip_archive_open,
-	zzip_archive_visit,
-	zzip_archive_open_stream,
-	zzip_archive_close,
 	zzip_archive_extensions,
 };

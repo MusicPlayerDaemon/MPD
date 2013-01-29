@@ -52,28 +52,6 @@ struct archive_plugin {
 	ArchiveFile *(*open)(const char *path_fs, GError **error_r);
 
 	/**
-	 * Visit all entries inside this archive.
-	 */
-	void (*visit)(ArchiveFile *af, ArchiveVisitor &visitor);
-
-	/**
-	 * Opens an input_stream of a file within the archive.
-	 *
-	 * @param path the path within the archive
-	 * @param error_r location to store the error occurring, or
-	 * NULL to ignore errors
-	 */
-	struct input_stream *(*open_stream)(ArchiveFile *af,
-					    const char *path,
-					    Mutex &mutex, Cond &cond,
-					    GError **error_r);
-
-	/**
-	 * closes archive file.
-	 */
-	void (*close)(ArchiveFile *);
-
-	/**
 	 * suffixes handled by this plugin.
 	 * last element in these arrays must always be a NULL
 	 */
@@ -83,16 +61,5 @@ struct archive_plugin {
 ArchiveFile *
 archive_file_open(const struct archive_plugin *plugin, const char *path,
 		  GError **error_r);
-
-void
-archive_file_close(ArchiveFile *file);
-
-void
-archive_file_visit(ArchiveFile *file, ArchiveVisitor &visitor);
-
-struct input_stream *
-archive_file_open_stream(ArchiveFile *file, const char *path,
-			 Mutex &mutex, Cond &cond,
-			 GError **error_r);
 
 #endif

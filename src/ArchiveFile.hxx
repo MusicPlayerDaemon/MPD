@@ -26,6 +26,31 @@ public:
 
 	ArchiveFile(const struct archive_plugin &_plugin)
 		:plugin(_plugin) {}
+
+protected:
+	/**
+	 * Use Close() instead of delete.
+	 */
+	~ArchiveFile() {}
+
+public:
+	virtual void Close() = 0;
+
+	/**
+	 * Visit all entries inside this archive.
+	 */
+	virtual void Visit(ArchiveVisitor &visitor) = 0;
+
+	/**
+	 * Opens an input_stream of a file within the archive.
+	 *
+	 * @param path the path within the archive
+	 * @param error_r location to store the error occurring, or
+	 * NULL to ignore errors
+	 */
+	virtual input_stream *OpenStream(const char *path,
+					 Mutex &mutex, Cond &cond,
+					 GError **error_r) = 0;
 };
 
 #endif

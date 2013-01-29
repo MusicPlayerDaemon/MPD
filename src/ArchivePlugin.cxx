@@ -34,43 +34,10 @@ archive_file_open(const struct archive_plugin *plugin, const char *path,
 	ArchiveFile *file = plugin->open(path, error_r);
 
 	if (file != NULL) {
-		assert(file->plugin.close != NULL);
-		assert(file->plugin.visit != nullptr);
-		assert(file->plugin.open_stream != NULL);
 		assert(error_r == NULL || *error_r == NULL);
 	} else {
 		assert(error_r == NULL || *error_r != NULL);
 	}
 
 	return file;
-}
-
-void
-archive_file_close(ArchiveFile *file)
-{
-	assert(file != NULL);
-	assert(file->plugin.close != NULL);
-
-	file->plugin.close(file);
-}
-
-void
-archive_file_visit(ArchiveFile *file, ArchiveVisitor &visitor)
-{
-	assert(file != NULL);
-	assert(file->plugin.visit != nullptr);
-
-	file->plugin.visit(file, visitor);
-}
-
-struct input_stream *
-archive_file_open_stream(ArchiveFile *file, const char *path,
-			 Mutex &mutex, Cond &cond,
-			 GError **error_r)
-{
-	assert(file != NULL);
-	assert(file->plugin.open_stream != NULL);
-
-	return file->plugin.open_stream(file, path, mutex, cond,
-					 error_r);
 }

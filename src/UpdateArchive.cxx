@@ -27,6 +27,7 @@
 #include "fs/Path.hxx"
 #include "ArchiveList.hxx"
 #include "ArchivePlugin.hxx"
+#include "ArchiveFile.hxx"
 #include "ArchiveVisitor.hxx"
 
 #include <glib.h>
@@ -136,9 +137,8 @@ update_archive_file2(Directory *parent, const char *name,
 	};
 
 	UpdateArchiveVisitor visitor(directory);
-	archive_file_visit(file, visitor);
-
-	archive_file_close(file);
+	file->Visit(visitor);
+	file->Close();
 }
 
 bool

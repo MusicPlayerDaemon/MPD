@@ -41,7 +41,7 @@
 
 #define CEILING(x, y) ((x+(y-1))/y)
 
-class Iso9660ArchiveFile : public ArchiveFile {
+class Iso9660ArchiveFile final : public ArchiveFile {
 public:
 	RefCount ref;
 
@@ -60,6 +60,16 @@ public:
 	}
 
 	void Visit(const char *path, ArchiveVisitor &visitor);
+
+	virtual void Close() override {
+		Unref();
+	}
+
+	virtual void Visit(ArchiveVisitor &visitor) override;
+
+	virtual input_stream *OpenStream(const char *path,
+					 Mutex &mutex, Cond &cond,
+					 GError **error_r) override;
 };
 
 extern const struct input_plugin iso9660_input_plugin;
@@ -118,22 +128,10 @@ iso9660_archive_open(const char *pathname, GError **error_r)
 	return new Iso9660ArchiveFile(iso);
 }
 
-static void
-iso9660_archive_visit(ArchiveFile *file, ArchiveVisitor &visitor)
+void
+Iso9660ArchiveFile::Visit(ArchiveVisitor &visitor)
 {
-	Iso9660ArchiveFile *context =
-		(Iso9660ArchiveFile *)file;
-
-	context->Visit("/", visitor);
-}
-
-static void
-iso9660_archive_close(ArchiveFile *file)
-{
-	Iso9660ArchiveFile *context =
-		(Iso9660ArchiveFile *)file;
-
-	context->Unref();
+	Visit("/", visitor);
 }
 
 /* single archive handling */
@@ -165,15 +163,12 @@ struct Iso9660InputStream {
 	}
 };
 
-static struct input_stream *
-iso9660_archive_open_stream(ArchiveFile *file, const char *pathname,
-			    Mutex &mutex, Cond &cond,
-			    GError **error_r)
+input_stream *
+Iso9660ArchiveFile::OpenStream(const char *pathname,
+			       Mutex &mutex, Cond &cond,
+			       GError **error_r)
 {
-	Iso9660ArchiveFile *context =
-		(Iso9660ArchiveFile *)file;
-
-	auto statbuf = iso9660_ifs_stat_translate(context->iso, pathname);
+	auto statbuf = iso9660_ifs_stat_translate(iso, pathname);
 	if (statbuf == nullptr) {
 		g_set_error(error_r, iso9660_quark(), 0,
 			    "not found in the ISO file: %s", pathname);
@@ -181,7 +176,7 @@ iso9660_archive_open_stream(ArchiveFile *file, const char *pathname,
 	}
 
 	Iso9660InputStream *iis =
-		new Iso9660InputStream(*context, pathname, mutex, cond,
+		new Iso9660InputStream(*this, pathname, mutex, cond,
 				       statbuf);
 	return &iis->base;
 }
@@ -267,8 +262,5 @@ const struct archive_plugin iso9660_archive_plugin = {
 	nullptr,
 	nullptr,
 	iso9660_archive_open,
-	iso9660_archive_visit,
-	iso9660_archive_open_stream,
-	iso9660_archive_close,
 	iso9660_archive_extensions,
 };

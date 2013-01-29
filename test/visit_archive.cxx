@@ -101,8 +101,8 @@ main(int argc, char **argv)
 	ArchiveFile *file = archive_file_open(plugin, path.c_str(), &error);
 	if (file != nullptr) {
 		MyArchiveVisitor visitor;
-		archive_file_visit(file, visitor);
-		archive_file_close(file);
+		file->Visit(visitor);
+		file->Close();
 	} else {
 		fprintf(stderr, "%s\n", error->message);
 		g_error_free(error);
