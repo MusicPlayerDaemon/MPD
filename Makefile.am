@@ -99,7 +99,6 @@ mpd_headers = \
 	src/poison.h \
 	src/riff.h \
 	src/aiff.h \
-	src/refcount.h \
 	src/replay_gain_config.h \
 	src/replay_gain_info.h \
 	src/replay_gain_ape.h \
@@ -310,6 +309,7 @@ endif
 # Generic utility library
 
 libutil_a_SOURCES = \
+	src/util/RefCount.hxx \
 	src/util/fifo_buffer.c src/util/fifo_buffer.h \
 	src/util/growing_fifo.c src/util/growing_fifo.h \
 	src/util/LazyRandomEngine.cxx src/util/LazyRandomEngine.hxx \

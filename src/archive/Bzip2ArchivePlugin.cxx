@@ -29,7 +29,7 @@
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
-#include "refcount.h"
+#include "util/RefCount.hxx"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -45,18 +45,17 @@
 struct Bzip2ArchiveFile {
 	struct archive_file base;
 
-	struct refcount ref;
+	RefCount ref;
 
 	char *name;
 	struct input_stream *istream;
 
 	Bzip2ArchiveFile() {
 		archive_file_init(&base, &bz2_archive_plugin);
-		refcount_init(&ref);
 	}
 
 	void Unref() {
-		if (!refcount_dec(&ref))
+		if (!ref.Decrement())
 			return;
 
 		g_free(name);
@@ -174,7 +173,7 @@ Bzip2InputStream::Bzip2InputStream(Bzip2ArchiveFile &_context, const char *uri,
 	:base(bz2_inputplugin, uri, mutex, cond),
 	 archive(&_context), eof(false)
 {
-	refcount_inc(&archive->ref);
+	archive->ref.Increment();
 }
 
 Bzip2InputStream::~Bzip2InputStream()

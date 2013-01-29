@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,35 +33,27 @@
  * A very simple reference counting library.
  */
 
-#ifndef MPD_REFCOUNT_H
-#define MPD_REFCOUNT_H
+#ifndef MPD_REFCOUNT_HXX
+#define MPD_REFCOUNT_HXX
 
-#include <glib.h>
-#include <stdbool.h>
+#include <atomic>
 
-struct refcount {
-	gint n;
+class RefCount {
+	std::atomic_uint n;
+
+public:
+	constexpr RefCount():n(1) {}
+
+	void Increment() {
+		++n;
+	}
+
+	/**
+	 * @return true if the number of references has been dropped to 0
+	 */
+	bool Decrement() {
+		return --n == 0;
+	}
 };
-
-static inline void
-refcount_init(struct refcount *r)
-{
-	r->n = 1;
-}
-
-static inline void
-refcount_inc(struct refcount *r)
-{
-	g_atomic_int_inc(&r->n);
-}
-
-/**
- * @return true if the number of references has been dropped to 0
- */
-static inline bool
-refcount_dec(struct refcount *r)
-{
-	return g_atomic_int_dec_and_test(&r->n);
-}
 
 #endif

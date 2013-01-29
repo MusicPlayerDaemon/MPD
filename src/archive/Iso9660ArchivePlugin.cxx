@@ -29,7 +29,7 @@
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
-#include "refcount.h"
+#include "util/RefCount.hxx"
 
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
@@ -44,14 +44,13 @@
 struct Iso9660ArchiveFile {
 	struct archive_file base;
 
-	struct refcount ref;
+	RefCount ref;
 
 	iso9660_t *iso;
 
 	Iso9660ArchiveFile(iso9660_t *_iso)
 		:iso(_iso) {
 		archive_file_init(&base, &iso9660_archive_plugin);
-		refcount_init(&ref);
 	}
 
 	~Iso9660ArchiveFile() {
@@ -59,7 +58,7 @@ struct Iso9660ArchiveFile {
 	}
 
 	void Unref() {
-		if (refcount_dec(&ref))
+		if (ref.Decrement())
 			delete this;
 	}
 
@@ -161,7 +160,7 @@ struct Iso9660InputStream {
 		base.ready = true;
 		base.size = statbuf->size;
 
-		refcount_inc(&archive->ref);
+		archive->ref.Increment();
 	}
 
 	~Iso9660InputStream() {

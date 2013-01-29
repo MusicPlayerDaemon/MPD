@@ -26,7 +26,6 @@
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
-#include "refcount.h"
 
 #include <stdio.h>
 #include <stdint.h>

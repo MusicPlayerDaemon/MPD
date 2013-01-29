@@ -29,7 +29,7 @@
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
-#include "refcount.h"
+#include "util/RefCount.hxx"
 
 #include <zzip/zzip.h>
 #include <glib.h>
@@ -38,17 +38,16 @@
 struct ZzipArchiveFile {
 	struct archive_file base;
 
-	struct refcount ref;
+	RefCount ref;
 
 	ZZIP_DIR *dir;
 
 	ZzipArchiveFile() {
 		archive_file_init(&base, &zzip_archive_plugin);
-		refcount_init(&ref);
 	}
 
 	void Unref() {
-		if (!refcount_dec(&ref))
+		if (!ref.Decrement())
 			return;
 
 		//close archive
@@ -136,7 +135,7 @@ struct ZzipInputStream {
 		zzip_file_stat(file, &z_stat);
 		base.size = z_stat.st_size;
 
-		refcount_inc(&archive->ref);
+		archive->ref.Increment();
 	}
 
 	~ZzipInputStream() {
