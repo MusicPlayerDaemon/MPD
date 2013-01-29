@@ -74,6 +74,10 @@ struct filter_plugin {
 			      GError **error_r);
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Creates a new instance of the specified filter plugin.
  *
@@ -146,5 +150,9 @@ const void *
 filter_filter(struct filter *filter, const void *src, size_t src_size,
 	      size_t *dest_size_r,
 	      GError **error_r);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1045,7 +1045,7 @@ endif
 
 test_read_conf_LDADD = \
 	$(GLIB_LIBS)
-test_read_conf_SOURCES = test/read_conf.c \
+test_read_conf_SOURCES = test/read_conf.cxx \
 	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c
 
 test_run_resolver_LDADD = \
@@ -1183,7 +1183,7 @@ endif
 test_run_filter_LDADD = \
 	$(FILTER_LIBS) \
 	$(GLIB_LIBS)
-test_run_filter_SOURCES = test/run_filter.c \
+test_run_filter_SOURCES = test/run_filter.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/stdbin.h \
 	src/filter_plugin.c \

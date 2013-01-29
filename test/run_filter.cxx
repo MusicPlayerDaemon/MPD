@@ -19,7 +19,11 @@
 
 #include "config.h"
 #include "conf.h"
+
+extern "C" {
 #include "audio_parser.h"
+}
+
 #include "audio_format.h"
 #include "filter_plugin.h"
 #include "pcm_volume.h"
@@ -75,7 +79,7 @@ load_filter(const char *name)
 	param = find_named_config_block("filter", name);
 	if (param == NULL) {
 		g_printerr("No such configured filter: %s\n", name);
-		return false;
+		return nullptr;
 	}
 
 	filter = filter_configured_new(param, &error);

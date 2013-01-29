@@ -25,11 +25,11 @@
 #include "audio_format.h"
 #include "replay_gain_info.h"
 #include "replay_gain_config.h"
+#include "mixer_control.h"
 
 extern "C" {
 #include "pcm_buffer.h"
 #include "pcm_volume.h"
-#include "mixer_control.h"
 }
 
 #include <assert.h>
