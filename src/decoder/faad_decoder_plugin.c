@@ -23,15 +23,17 @@
 #include "audio_check.h"
 #include "tag_handler.h"
 
-#define AAC_MAX_CHANNELS	6
+#include <neaacdec.h>
+
+#include <glib.h>
 
 #include <assert.h>
 #include <unistd.h>
-#include <faad.h>
-#include <glib.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "faad"
+
+#define AAC_MAX_CHANNELS	6
 
 static const unsigned adts_sample_rates[] =
     { 96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050,
@@ -239,11 +241,11 @@ faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
 }
 
 /**
- * Wrapper for faacDecInit() which works around some API
+ * Wrapper for NeAACDecInit() which works around some API
  * inconsistencies in libfaad.
  */
 static bool
-faad_decoder_init(faacDecHandle decoder, struct decoder_buffer *buffer,
+faad_decoder_init(NeAACDecHandle decoder, struct decoder_buffer *buffer,
 		  struct audio_format *audio_format, GError **error_r)
 {
 	union {
@@ -271,10 +273,8 @@ faad_decoder_init(faacDecHandle decoder, struct decoder_buffer *buffer,
 		return false;
 	}
 
-	nbytes = faacDecInit(decoder, u.out,
-#ifdef HAVE_FAAD_BUFLEN_FUNCS
+	nbytes = NeAACDecInit(decoder, u.out,
 			     length,
-#endif
 			     sample_rate_p, &channels);
 	if (nbytes < 0) {
 		g_set_error(error_r, faad_decoder_quark(), 0,
@@ -289,12 +289,12 @@ faad_decoder_init(faacDecHandle decoder, struct decoder_buffer *buffer,
 }
 
 /**
- * Wrapper for faacDecDecode() which works around some API
+ * Wrapper for NeAACDecDecode() which works around some API
  * inconsistencies in libfaad.
  */
 static const void *
-faad_decoder_decode(faacDecHandle decoder, struct decoder_buffer *buffer,
-		    faacDecFrameInfo *frame_info)
+faad_decoder_decode(NeAACDecHandle decoder, struct decoder_buffer *buffer,
+		    NeAACDecFrameInfo *frame_info)
 {
 	union {
 		/* deconst hack for libfaad */
@@ -302,20 +302,13 @@ faad_decoder_decode(faacDecHandle decoder, struct decoder_buffer *buffer,
 		void *out;
 	} u;
 	size_t length;
-	void *result;
 
 	u.in = decoder_buffer_read(buffer, &length);
 	if (u.in == NULL)
 		return NULL;
 
-	result = faacDecDecode(decoder, frame_info,
-			       u.out
-#ifdef HAVE_FAAD_BUFLEN_FUNCS
-			       , length
-#endif
-			       );
-
-	return result;
+	return NeAACDecDecode(decoder, frame_info,
+			      u.out, length);
 }
 
 /**
@@ -328,8 +321,6 @@ faad_get_file_time_float(struct input_stream *is)
 {
 	struct decoder_buffer *buffer;
 	float length;
-	faacDecHandle decoder;
-	faacDecConfigurationPtr config;
 
 	buffer = decoder_buffer_new(NULL, is,
 				    FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
@@ -339,11 +330,12 @@ faad_get_file_time_float(struct input_stream *is)
 		bool ret;
 		struct audio_format audio_format;
 
-		decoder = faacDecOpen();
+		NeAACDecHandle decoder = NeAACDecOpen();
 
-		config = faacDecGetCurrentConfiguration(decoder);
+		NeAACDecConfigurationPtr config =
+			NeAACDecGetCurrentConfiguration(decoder);
 		config->outputFormat = FAAD_FMT_16BIT;
-		faacDecSetConfiguration(decoder, config);
+		NeAACDecSetConfiguration(decoder, config);
 
 		decoder_buffer_fill(buffer);
 
@@ -351,7 +343,7 @@ faad_get_file_time_float(struct input_stream *is)
 		if (ret)
 			length = 0;
 
-		faacDecClose(decoder);
+		NeAACDecClose(decoder);
 	}
 
 	decoder_buffer_free(buffer);
@@ -381,9 +373,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 {
 	GError *error = NULL;
 	float total_time = 0;
-	faacDecHandle decoder;
 	struct audio_format audio_format;
-	faacDecConfigurationPtr config;
 	bool ret;
 	uint16_t bit_rate = 0;
 	struct decoder_buffer *buffer;
@@ -395,17 +385,14 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 	/* create the libfaad decoder */
 
-	decoder = faacDecOpen();
+	NeAACDecHandle decoder = NeAACDecOpen();
 
-	config = faacDecGetCurrentConfiguration(decoder);
+	NeAACDecConfigurationPtr config =
+		NeAACDecGetCurrentConfiguration(decoder);
 	config->outputFormat = FAAD_FMT_16BIT;
-#ifdef HAVE_FAACDECCONFIGURATION_DOWNMATRIX
 	config->downMatrix = 1;
-#endif
-#ifdef HAVE_FAACDECCONFIGURATION_DONTUPSAMPLEIMPLICITSBR
 	config->dontUpSampleImplicitSBR = 0;
-#endif
-	faacDecSetConfiguration(decoder, config);
+	NeAACDecSetConfiguration(decoder, config);
 
 	while (!decoder_buffer_is_full(buffer) &&
 	       !input_stream_lock_eof(is) &&
@@ -420,7 +407,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	if (!ret) {
 		g_warning("%s", error->message);
 		g_error_free(error);
-		faacDecClose(decoder);
+		NeAACDecClose(decoder);
 		return;
 	}
 
@@ -433,7 +420,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	do {
 		size_t frame_size;
 		const void *decoded;
-		faacDecFrameInfo frame_info;
+		NeAACDecFrameInfo frame_info;
 
 		/* find the next frame */
 
@@ -448,7 +435,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 		if (frame_info.error > 0) {
 			g_warning("error decoding AAC stream: %s\n",
-				  faacDecGetErrorMessage(frame_info.error));
+				  NeAACDecGetErrorMessage(frame_info.error));
 			break;
 		}
 
@@ -458,14 +445,12 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 			break;
 		}
 
-#ifdef HAVE_FAACDECFRAMEINFO_SAMPLERATE
 		if (frame_info.samplerate != audio_format.sample_rate) {
 			g_warning("sample rate changed from %u to %lu",
 				  audio_format.sample_rate,
 				  (unsigned long)frame_info.samplerate);
 			break;
 		}
-#endif
 
 		decoder_buffer_consume(buffer, frame_info.bytesconsumed);
 
@@ -486,7 +471,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 	/* cleanup */
 
-	faacDecClose(decoder);
+	NeAACDecClose(decoder);
 }
 
 static bool
