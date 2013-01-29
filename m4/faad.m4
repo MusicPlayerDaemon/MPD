@@ -132,6 +132,9 @@ int main() {
 	CFLAGS=$oldcflags
 	LIBS=$oldlibs
 	CPPFLAGS=$oldcppflags
+else
+	FAAD_LIBS=""
+	FAAD_CFLAGS=""
 fi
 
 AC_SUBST(FAAD_CFLAGS)
