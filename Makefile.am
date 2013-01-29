@@ -1038,6 +1038,10 @@ noinst_PROGRAMS = \
 	test/run_normalize \
 	test/software_volume
 
+if ENABLE_ARCHIVE
+noinst_PROGRAMS += test/visit_archive
+endif
+
 if HAVE_ID3TAG
 noinst_PROGRAMS += test/dump_rva2
 endif
@@ -1088,6 +1092,28 @@ test_run_input_SOURCES = test/run_input.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/uri.c \
 	src/fd_util.c
+
+if ENABLE_ARCHIVE
+
+test_visit_archive_LDADD = \
+	$(INPUT_LIBS) \
+	$(ARCHIVE_LIBS) \
+	libevent.a \
+	libfs.a \
+	$(GLIB_LIBS)
+test_visit_archive_SOURCES = test/visit_archive.cxx \
+	src/IOThread.cxx \
+	src/InputStream.cxx \
+	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c \
+	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
+	src/uri.c \
+	src/fd_util.c
+
+if ENABLE_DESPOTIFY
+test_visit_archive_SOURCES += src/DespotifyUtils.cxx
+endif
+
+endif
 
 test_dump_text_file_LDADD = \
 	$(INPUT_LIBS) \
