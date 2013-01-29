@@ -101,7 +101,8 @@ struct parse_data {
 	long duration;
 	char* title;
 	int got_url; /* nesting level of last stream_url */
-	GSList* songs;
+
+	std::forward_list<SongPointer> songs;
 };
 
 static int handle_integer(void *ctx,
@@ -215,7 +216,7 @@ static int handle_end_map(void *ctx)
 		tag_add_item(t, TAG_NAME, data->title);
 	s->tag = t;
 
-	data->songs = g_slist_prepend(data->songs, s);
+	data->songs.emplace_front(s);
 
 	return 1;
 }
@@ -370,7 +371,6 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	struct parse_data data;
 
 	data.got_url = 0;
-	data.songs = NULL;
 	data.title = NULL;
 	data.stream_url = NULL;
 #ifdef HAVE_YAJL1
@@ -391,7 +391,8 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	if (ret == -1)
 		return NULL;
 
-	return new MemoryPlaylistProvider(g_slist_reverse(data.songs));
+	data.songs.reverse();
+	return new MemoryPlaylistProvider(std::move(data.songs));
 }
 
 static const char *const soundcloud_schemes[] = {

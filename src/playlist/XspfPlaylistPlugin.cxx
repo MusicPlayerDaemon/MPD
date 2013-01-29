@@ -22,7 +22,6 @@
 #include "MemoryPlaylistProvider.hxx"
 #include "input_stream.h"
 #include "uri.h"
-#include "song.h"
 #include "tag.h"
 
 #include <glib.h>
@@ -41,7 +40,7 @@ struct XspfParser {
 	 * The list of songs (in reverse order because that's faster
 	 * while adding).
 	 */
-	GSList *songs;
+	std::forward_list<SongPointer> songs;
 
 	/**
 	 * The current position in the XML file.
@@ -65,7 +64,7 @@ struct XspfParser {
 	struct song *song;
 
 	XspfParser()
-		:songs(nullptr), state(ROOT) {}
+		:state(ROOT) {}
 };
 
 static void
@@ -148,8 +147,7 @@ xspf_end_element(G_GNUC_UNUSED GMarkupParseContext *context,
 	case XspfParser::TRACK:
 		if (strcmp(element_name, "track") == 0) {
 			if (parser->song != NULL)
-				parser->songs = g_slist_prepend(parser->songs,
-								parser->song);
+				parser->songs.emplace_front(parser->song);
 
 			parser->state = XspfParser::TRACKLIST;
 		} else
@@ -207,23 +205,12 @@ static const GMarkupParser xspf_parser = {
 };
 
 static void
-song_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
-{
-	struct song *song = (struct song *)data;
-
-	song_free(song);
-}
-
-static void
 xspf_parser_destroy(gpointer data)
 {
 	XspfParser *parser = (XspfParser *)data;
 
 	if (parser->state >= XspfParser::TRACK && parser->song != NULL)
 		song_free(parser->song);
-
-	g_slist_foreach(parser->songs, song_free_callback, NULL);
-	g_slist_free(parser->songs);
 }
 
 /*
@@ -279,11 +266,9 @@ xspf_open_stream(struct input_stream *is)
 		return NULL;
 	}
 
-	/* create a #xspf_playlist object from the parsed song list */
-
+	parser.songs.reverse();
 	MemoryPlaylistProvider *playlist =
-		new MemoryPlaylistProvider(g_slist_reverse(parser.songs));
-	parser.songs = NULL;
+		new MemoryPlaylistProvider(std::move(parser.songs));
 
 	g_markup_parse_context_free(context);
 

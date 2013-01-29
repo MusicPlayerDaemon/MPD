@@ -52,33 +52,18 @@ static constexpr struct playlist_plugin memory_playlist_plugin = {
 	nullptr,
 };
 
-MemoryPlaylistProvider::MemoryPlaylistProvider(GSList *_songs)
-	:songs(_songs) {
+MemoryPlaylistProvider::MemoryPlaylistProvider(std::forward_list<SongPointer> &&_songs)
+	:songs(std::move(_songs)) {
 	playlist_provider_init(this, &memory_playlist_plugin);
-}
-
-static void
-song_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
-{
-	struct song *song = (struct song *)data;
-
-	song_free(song);
-}
-
-MemoryPlaylistProvider::~MemoryPlaylistProvider()
-{
-	g_slist_foreach(songs, song_free_callback, NULL);
-	g_slist_free(songs);
 }
 
 inline song *
 MemoryPlaylistProvider::Read()
 {
-	if (songs == nullptr)
-		return nullptr;
+	if (songs.empty())
+		return NULL;
 
-	song *result = (song *)songs->data;
-	songs = g_slist_remove(songs, result);
+	auto result = songs.front().Steal();
+	songs.pop_front();
 	return result;
 }
-

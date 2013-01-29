@@ -35,7 +35,8 @@ extern "C" {
 
 struct despotify_playlist {
 	struct despotify_session *session;
-	GSList *list;
+
+	std::forward_list<SongPointer> songs;
 };
 
 static void
@@ -59,7 +60,7 @@ add_song(struct despotify_playlist *ctx, struct ds_track *track)
 	song = song_remote_new(uri);
 	song->tag = mpd_despotify_tag_from_track(track);
 
-	ctx->list = g_slist_prepend(ctx->list, song);
+	ctx->songs.emplace_front(song);
 }
 
 static bool
@@ -115,17 +116,16 @@ despotify_playlist_open_uri(const char *url,
 
 	session = mpd_despotify_get_session();
 	if (!session)
-		goto clean_none;
+		return nullptr;
 
 	/* Get link without spt:// */
 	link = despotify_link_from_uri(url + strlen(despotify_playlist_plugin.schemes[0]) + 3);
 	if (!link) {
 		g_debug("Can't find %s\n", url);
-		goto clean_none;
+		return nullptr;
 	}
 
 	struct despotify_playlist ctx;
-	ctx.list = nullptr;
 	ctx.session = session;
 
 	switch (link->type)
@@ -142,15 +142,10 @@ despotify_playlist_open_uri(const char *url,
 	}
 	despotify_free_link(link);
 	if (!parse_result)
-		goto clean_playlist;
+		return nullptr;
 
-	return new MemoryPlaylistProvider(g_slist_reverse(ctx.list));
-
-clean_playlist:
-	g_slist_free(ctx.list);
-clean_none:
-
-	return nullptr;
+	ctx.songs.reverse();
+	return new MemoryPlaylistProvider(std::move(ctx.songs));
 }
 
 static const char *const despotify_schemes[] = {

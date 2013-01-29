@@ -269,6 +269,7 @@ src_mpd_SOURCES = \
 	src/string_util.c \
 	src/Volume.cxx src/Volume.hxx \
 	src/SongFilter.cxx src/SongFilter.hxx \
+	src/SongPointer.hxx \
 	src/PlaylistFile.cxx src/PlaylistFile.hxx \
 	src/timer.c
 

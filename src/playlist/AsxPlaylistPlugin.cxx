@@ -40,7 +40,7 @@ struct AsxParser {
 	 * The list of songs (in reverse order because that's faster
 	 * while adding).
 	 */
-	GSList *songs;
+	std::forward_list<SongPointer> songs;
 
 	/**
 	 * The current position in the XML file.
@@ -63,8 +63,7 @@ struct AsxParser {
 	struct song *song;
 
 	AsxParser()
-		:songs(nullptr),
-		 state(ROOT) {}
+		:state(ROOT) {}
 
 };
 
@@ -144,8 +143,7 @@ asx_end_element(G_GNUC_UNUSED GMarkupParseContext *context,
 	case AsxParser::ENTRY:
 		if (g_ascii_strcasecmp(element_name, "entry") == 0) {
 			if (strcmp(parser->song->uri, "asx:") != 0)
-				parser->songs = g_slist_prepend(parser->songs,
-								parser->song);
+				parser->songs.emplace_front(parser->song);
 			else
 				song_free(parser->song);
 
@@ -189,23 +187,12 @@ static const GMarkupParser asx_parser = {
 };
 
 static void
-song_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
-{
-	struct song *song = (struct song *)data;
-
-	song_free(song);
-}
-
-static void
 asx_parser_destroy(gpointer data)
 {
 	AsxParser *parser = (AsxParser *)data;
 
 	if (parser->state >= AsxParser::ENTRY)
 		song_free(parser->song);
-
-	g_slist_foreach(parser->songs, song_free_callback, NULL);
-	g_slist_free(parser->songs);
 }
 
 /*
@@ -261,11 +248,9 @@ asx_open_stream(struct input_stream *is)
 		return NULL;
 	}
 
-	/* create a #AsxPlaylist object from the parsed song list */
-
+	parser.songs.reverse();
 	MemoryPlaylistProvider *playlist =
-		new MemoryPlaylistProvider(g_slist_reverse(parser.songs));
-	parser.songs = NULL;
+		new MemoryPlaylistProvider(std::move(parser.songs));
 
 	g_markup_parse_context_free(context);
 

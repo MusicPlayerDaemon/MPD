@@ -40,7 +40,7 @@ struct RssParser {
 	 * The list of songs (in reverse order because that's faster
 	 * while adding).
 	 */
-	GSList *songs;
+	std::forward_list<SongPointer> songs;
 
 	/**
 	 * The current position in the XML file.
@@ -63,7 +63,7 @@ struct RssParser {
 	struct song *song;
 
 	RssParser()
-		:songs(nullptr), state(ROOT) {}
+		:state(ROOT) {}
 };
 
 static const gchar *
@@ -140,8 +140,7 @@ rss_end_element(G_GNUC_UNUSED GMarkupParseContext *context,
 	case RssParser::ITEM:
 		if (g_ascii_strcasecmp(element_name, "item") == 0) {
 			if (strcmp(parser->song->uri, "rss:") != 0)
-				parser->songs = g_slist_prepend(parser->songs,
-								parser->song);
+				parser->songs.emplace_front(parser->song);
 			else
 				song_free(parser->song);
 
@@ -185,23 +184,12 @@ static const GMarkupParser rss_parser = {
 };
 
 static void
-song_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
-{
-	struct song *song = (struct song *)data;
-
-	song_free(song);
-}
-
-static void
 rss_parser_destroy(gpointer data)
 {
 	RssParser *parser = (RssParser *)data;
 
 	if (parser->state >= RssParser::ITEM)
 		song_free(parser->song);
-
-	g_slist_foreach(parser->songs, song_free_callback, NULL);
-	g_slist_free(parser->songs);
 }
 
 /*
@@ -257,11 +245,9 @@ rss_open_stream(struct input_stream *is)
 		return NULL;
 	}
 
-	/* create a #rss_playlist object from the parsed song list */
-
+	parser.songs.reverse();
 	MemoryPlaylistProvider *playlist =
-		new MemoryPlaylistProvider(g_slist_reverse(parser.songs));
-	parser.songs = NULL;
+		new MemoryPlaylistProvider(std::move(parser.songs));
 
 	g_markup_parse_context_free(context);
 

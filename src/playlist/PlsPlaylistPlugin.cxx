@@ -27,11 +27,8 @@
 
 #include <glib.h>
 
-struct PlsPlaylist {
-	GSList *songs;
-};
-
-static void pls_parser(GKeyFile *keyfile, PlsPlaylist *playlist)
+static void
+pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 {
 	gchar *key;
 	gchar *value;
@@ -96,7 +93,7 @@ static void pls_parser(GKeyFile *keyfile, PlsPlaylist *playlist)
 		if(error) g_error_free(error);
 		error = NULL;
 
-		playlist->songs = g_slist_prepend(playlist->songs, song);
+		songs.emplace_front(song);
 		num_entries--;
 	}
 
@@ -150,13 +147,12 @@ pls_open_stream(struct input_stream *is)
 		return NULL;
 	}
 
-	PlsPlaylist playlist;
-	playlist.songs = nullptr;
-
-	pls_parser(keyfile, &playlist);
+	std::forward_list<SongPointer> songs;
+	pls_parser(keyfile, songs);
 	g_key_file_free(keyfile);
 
-	return new MemoryPlaylistProvider(g_slist_reverse(playlist.songs));
+	songs.reverse();
+	return new MemoryPlaylistProvider(std::move(songs));
 }
 
 static const char *const pls_suffixes[] = {

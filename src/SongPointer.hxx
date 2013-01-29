@@ -17,23 +17,47 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_MEMORY_PLAYLIST_PROVIDER_HXX
-#define MPD_MEMORY_PLAYLIST_PROVIDER_HXX
+#ifndef MPD_SONG_POINTER_HXX
+#define MPD_SONG_POINTER_HXX
 
-#include "PlaylistPlugin.hxx"
-#include "SongPointer.hxx"
+#include "song.h"
 
-#include <forward_list>
+#include <utility>
 
-struct song;
-
-class MemoryPlaylistProvider : public playlist_provider {
-	std::forward_list<SongPointer> songs;
+class SongPointer {
+	struct song *song;
 
 public:
-	MemoryPlaylistProvider(std::forward_list<SongPointer> &&_songs);
+	explicit SongPointer(struct song *_song)
+		:song(_song) {}
 
-	song *Read();
+	SongPointer(const SongPointer &) = delete;
+
+	SongPointer(SongPointer &&other):song(other.song) {
+		other.song = nullptr;
+	}
+
+	~SongPointer() {
+		if (song != nullptr)
+			song_free(song);
+	}
+
+	SongPointer &operator=(const SongPointer &) = delete;
+
+	SongPointer &operator=(SongPointer &&other) {
+		std::swap(song, other.song);
+		return *this;
+	}
+
+	operator const struct song *() const {
+		return song;
+	}
+
+	struct song *Steal() {
+		auto result = song;
+		song = nullptr;
+		return result;
+	}
 };
 
 #endif
