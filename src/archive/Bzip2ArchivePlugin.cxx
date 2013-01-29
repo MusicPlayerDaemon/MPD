@@ -23,8 +23,8 @@
 
 #include "config.h"
 #include "Bzip2ArchivePlugin.hxx"
-#include "ArchiveInternal.hxx"
 #include "ArchivePlugin.hxx"
+#include "ArchiveFile.hxx"
 #include "ArchiveVisitor.hxx"
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
@@ -42,17 +42,14 @@
 #define BZ2_bzDecompress bzDecompress
 #endif
 
-struct Bzip2ArchiveFile {
-	struct archive_file base;
-
+class Bzip2ArchiveFile : public ArchiveFile {
+public:
 	RefCount ref;
 
 	char *name;
 	struct input_stream *istream;
 
-	Bzip2ArchiveFile() {
-		archive_file_init(&base, &bz2_archive_plugin);
-	}
+	Bzip2ArchiveFile():ArchiveFile(bz2_archive_plugin) {}
 
 	void Unref() {
 		if (!ref.Decrement())
@@ -123,7 +120,7 @@ Bzip2InputStream::Close()
 
 /* archive open && listing routine */
 
-static struct archive_file *
+static ArchiveFile *
 bz2_open(const char *pathname, GError **error_r)
 {
 	Bzip2ArchiveFile *context = new Bzip2ArchiveFile();
@@ -147,11 +144,11 @@ bz2_open(const char *pathname, GError **error_r)
 		context->name[len - 4] = 0; //remove .bz2 suffix
 	}
 
-	return &context->base;
+	return context;
 }
 
 static void
-bz2_visit(archive_file *file, ArchiveVisitor &visitor)
+bz2_visit(ArchiveFile *file, ArchiveVisitor &visitor)
 {
 	Bzip2ArchiveFile *context = (Bzip2ArchiveFile *) file;
 
@@ -159,7 +156,7 @@ bz2_visit(archive_file *file, ArchiveVisitor &visitor)
 }
 
 static void
-bz2_close(struct archive_file *file)
+bz2_close(ArchiveFile *file)
 {
 	Bzip2ArchiveFile *context = (Bzip2ArchiveFile *) file;
 
@@ -178,11 +175,11 @@ Bzip2InputStream::Bzip2InputStream(Bzip2ArchiveFile &_context, const char *uri,
 
 Bzip2InputStream::~Bzip2InputStream()
 {
-	bz2_close(&archive->base);
+	archive->Unref();
 }
 
 static struct input_stream *
-bz2_open_stream(struct archive_file *file, const char *path,
+bz2_open_stream(ArchiveFile *file, const char *path,
 		Mutex &mutex, Cond &cond,
 		GError **error_r)
 {

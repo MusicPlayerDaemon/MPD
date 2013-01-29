@@ -101,8 +101,7 @@ update_archive_file2(Directory *parent, const char *name,
 
 	/* open archive */
 	GError *error = NULL;
-	struct archive_file *file = archive_file_open(plugin, path_fs.c_str(),
-						      &error);
+	ArchiveFile *file = archive_file_open(plugin, path_fs.c_str(), &error);
 	if (file == NULL) {
 		g_warning("%s", error->message);
 		g_error_free(error);

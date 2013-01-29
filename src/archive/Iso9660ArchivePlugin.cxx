@@ -23,8 +23,8 @@
 
 #include "config.h"
 #include "Iso9660ArchivePlugin.hxx"
-#include "ArchiveInternal.hxx"
 #include "ArchivePlugin.hxx"
+#include "ArchiveFile.hxx"
 #include "ArchiveVisitor.hxx"
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
@@ -41,17 +41,14 @@
 
 #define CEILING(x, y) ((x+(y-1))/y)
 
-struct Iso9660ArchiveFile {
-	struct archive_file base;
-
+class Iso9660ArchiveFile : public ArchiveFile {
+public:
 	RefCount ref;
 
 	iso9660_t *iso;
 
 	Iso9660ArchiveFile(iso9660_t *_iso)
-		:iso(_iso) {
-		archive_file_init(&base, &iso9660_archive_plugin);
-	}
+		:ArchiveFile(iso9660_archive_plugin), iso(_iso) {}
 
 	~Iso9660ArchiveFile() {
 		iso9660_close(iso);
@@ -107,7 +104,7 @@ Iso9660ArchiveFile::Visit(const char *psz_path, ArchiveVisitor &visitor)
 	_cdio_list_free (entlist, true);
 }
 
-static struct archive_file *
+static ArchiveFile *
 iso9660_archive_open(const char *pathname, GError **error_r)
 {
 	/* open archive */
@@ -118,12 +115,11 @@ iso9660_archive_open(const char *pathname, GError **error_r)
 		return NULL;
 	}
 
-	Iso9660ArchiveFile *archive = new Iso9660ArchiveFile(iso);
-	return &archive->base;
+	return new Iso9660ArchiveFile(iso);
 }
 
 static void
-iso9660_archive_visit(archive_file *file, ArchiveVisitor &visitor)
+iso9660_archive_visit(ArchiveFile *file, ArchiveVisitor &visitor)
 {
 	Iso9660ArchiveFile *context =
 		(Iso9660ArchiveFile *)file;
@@ -132,7 +128,7 @@ iso9660_archive_visit(archive_file *file, ArchiveVisitor &visitor)
 }
 
 static void
-iso9660_archive_close(struct archive_file *file)
+iso9660_archive_close(ArchiveFile *file)
 {
 	Iso9660ArchiveFile *context =
 		(Iso9660ArchiveFile *)file;
@@ -170,7 +166,7 @@ struct Iso9660InputStream {
 };
 
 static struct input_stream *
-iso9660_archive_open_stream(struct archive_file *file, const char *pathname,
+iso9660_archive_open_stream(ArchiveFile *file, const char *pathname,
 			    Mutex &mutex, Cond &cond,
 			    GError **error_r)
 {

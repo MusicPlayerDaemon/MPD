@@ -25,7 +25,7 @@
 #include "gerror.h"
 
 struct input_stream;
-struct archive_file;
+class ArchiveFile;
 class ArchiveVisitor;
 
 struct archive_plugin {
@@ -49,12 +49,12 @@ struct archive_plugin {
 	 * returns pointer to handle used is all operations with this archive
 	 * or NULL when opening fails
 	 */
-	struct archive_file *(*open)(const char *path_fs, GError **error_r);
+	ArchiveFile *(*open)(const char *path_fs, GError **error_r);
 
 	/**
 	 * Visit all entries inside this archive.
 	 */
-	void (*visit)(archive_file *af, ArchiveVisitor &visitor);
+	void (*visit)(ArchiveFile *af, ArchiveVisitor &visitor);
 
 	/**
 	 * Opens an input_stream of a file within the archive.
@@ -63,7 +63,7 @@ struct archive_plugin {
 	 * @param error_r location to store the error occurring, or
 	 * NULL to ignore errors
 	 */
-	struct input_stream *(*open_stream)(struct archive_file *af,
+	struct input_stream *(*open_stream)(ArchiveFile *af,
 					    const char *path,
 					    Mutex &mutex, Cond &cond,
 					    GError **error_r);
@@ -71,7 +71,7 @@ struct archive_plugin {
 	/**
 	 * closes archive file.
 	 */
-	void (*close)(struct archive_file *);
+	void (*close)(ArchiveFile *);
 
 	/**
 	 * suffixes handled by this plugin.
@@ -80,18 +80,18 @@ struct archive_plugin {
 	const char *const*suffixes;
 };
 
-struct archive_file *
+ArchiveFile *
 archive_file_open(const struct archive_plugin *plugin, const char *path,
 		  GError **error_r);
 
 void
-archive_file_close(struct archive_file *file);
+archive_file_close(ArchiveFile *file);
 
 void
-archive_file_visit(archive_file *file, ArchiveVisitor &visitor);
+archive_file_visit(ArchiveFile *file, ArchiveVisitor &visitor);
 
 struct input_stream *
-archive_file_open_stream(struct archive_file *file, const char *path,
+archive_file_open_stream(ArchiveFile *file, const char *path,
 			 Mutex &mutex, Cond &cond,
 			 GError **error_r);
 

@@ -23,8 +23,8 @@
 
 #include "config.h"
 #include "ZzipArchivePlugin.hxx"
-#include "ArchiveInternal.hxx"
 #include "ArchivePlugin.hxx"
+#include "ArchiveFile.hxx"
 #include "ArchiveVisitor.hxx"
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
@@ -35,16 +35,13 @@
 #include <glib.h>
 #include <string.h>
 
-struct ZzipArchiveFile {
-	struct archive_file base;
-
+class ZzipArchiveFile : public ArchiveFile {
+public:
 	RefCount ref;
 
 	ZZIP_DIR *dir;
 
-	ZzipArchiveFile() {
-		archive_file_init(&base, &zzip_archive_plugin);
-	}
+	ZzipArchiveFile():ArchiveFile(zzip_archive_plugin) {}
 
 	void Unref() {
 		if (!ref.Decrement())
@@ -69,7 +66,7 @@ zzip_quark(void)
 
 /* archive open && listing routine */
 
-static struct archive_file *
+static ArchiveFile *
 zzip_archive_open(const char *pathname, GError **error_r)
 {
 	ZzipArchiveFile *context = new ZzipArchiveFile();
@@ -82,7 +79,7 @@ zzip_archive_open(const char *pathname, GError **error_r)
 		return NULL;
 	}
 
-	return &context->base;
+	return context;
 }
 
 inline void
@@ -98,7 +95,7 @@ ZzipArchiveFile::Visit(ArchiveVisitor &visitor)
 }
 
 static void
-zzip_archive_visit(archive_file *file, ArchiveVisitor &visitor)
+zzip_archive_visit(ArchiveFile *file, ArchiveVisitor &visitor)
 {
 	ZzipArchiveFile *context = (ZzipArchiveFile *) file;
 
@@ -106,7 +103,7 @@ zzip_archive_visit(archive_file *file, ArchiveVisitor &visitor)
 }
 
 static void
-zzip_archive_close(struct archive_file *file)
+zzip_archive_close(ArchiveFile *file)
 {
 	ZzipArchiveFile *context = (ZzipArchiveFile *) file;
 
@@ -145,7 +142,7 @@ struct ZzipInputStream {
 };
 
 static struct input_stream *
-zzip_archive_open_stream(struct archive_file *file,
+zzip_archive_open_stream(ArchiveFile *file,
 			 const char *pathname,
 			 Mutex &mutex, Cond &cond,
 			 GError **error_r)

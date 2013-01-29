@@ -17,18 +17,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ARCHIVE_INTERNAL_HXX
-#define MPD_ARCHIVE_INTERNAL_HXX
+#ifndef MPD_ARCHIVE_FILE_HXX
+#define MPD_ARCHIVE_FILE_HXX
 
-struct archive_file {
-	const struct archive_plugin *plugin;
+class ArchiveFile {
+public:
+	const struct archive_plugin &plugin;
+
+	ArchiveFile(const struct archive_plugin &_plugin)
+		:plugin(_plugin) {}
 };
-
-static inline void
-archive_file_init(struct archive_file *archive_file,
-		  const struct archive_plugin *plugin)
-{
-	archive_file->plugin = plugin;
-}
 
 #endif

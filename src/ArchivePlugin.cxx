@@ -18,28 +18,25 @@
  */
 
 #include "ArchivePlugin.hxx"
-#include "ArchiveInternal.hxx"
+#include "ArchiveFile.hxx"
 
 #include <assert.h>
 
-struct archive_file *
+ArchiveFile *
 archive_file_open(const struct archive_plugin *plugin, const char *path,
 		  GError **error_r)
 {
-	struct archive_file *file;
-
 	assert(plugin != NULL);
 	assert(plugin->open != NULL);
 	assert(path != NULL);
 	assert(error_r == NULL || *error_r == NULL);
 
-	file = plugin->open(path, error_r);
+	ArchiveFile *file = plugin->open(path, error_r);
 
 	if (file != NULL) {
-		assert(file->plugin != NULL);
-		assert(file->plugin->close != NULL);
-		assert(file->plugin->visit != nullptr);
-		assert(file->plugin->open_stream != NULL);
+		assert(file->plugin.close != NULL);
+		assert(file->plugin.visit != nullptr);
+		assert(file->plugin.open_stream != NULL);
 		assert(error_r == NULL || *error_r == NULL);
 	} else {
 		assert(error_r == NULL || *error_r != NULL);
@@ -49,34 +46,31 @@ archive_file_open(const struct archive_plugin *plugin, const char *path,
 }
 
 void
-archive_file_close(struct archive_file *file)
+archive_file_close(ArchiveFile *file)
 {
 	assert(file != NULL);
-	assert(file->plugin != NULL);
-	assert(file->plugin->close != NULL);
+	assert(file->plugin.close != NULL);
 
-	file->plugin->close(file);
+	file->plugin.close(file);
 }
 
 void
-archive_file_visit(archive_file *file, ArchiveVisitor &visitor)
+archive_file_visit(ArchiveFile *file, ArchiveVisitor &visitor)
 {
 	assert(file != NULL);
-	assert(file->plugin != NULL);
-	assert(file->plugin->visit != nullptr);
+	assert(file->plugin.visit != nullptr);
 
-	file->plugin->visit(file, visitor);
+	file->plugin.visit(file, visitor);
 }
 
 struct input_stream *
-archive_file_open_stream(struct archive_file *file, const char *path,
+archive_file_open_stream(ArchiveFile *file, const char *path,
 			 Mutex &mutex, Cond &cond,
 			 GError **error_r)
 {
 	assert(file != NULL);
-	assert(file->plugin != NULL);
-	assert(file->plugin->open_stream != NULL);
+	assert(file->plugin.open_stream != NULL);
 
-	return file->plugin->open_stream(file, path, mutex, cond,
+	return file->plugin.open_stream(file, path, mutex, cond,
 					 error_r);
 }

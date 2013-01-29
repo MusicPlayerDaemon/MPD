@@ -25,6 +25,7 @@
 #include "InputInit.hxx"
 #include "ArchiveList.hxx"
 #include "ArchivePlugin.hxx"
+#include "ArchiveFile.hxx"
 #include "ArchiveVisitor.hxx"
 #include "fs/Path.hxx"
 
@@ -97,10 +98,11 @@ main(int argc, char **argv)
 
 	int result = EXIT_SUCCESS;
 
-	archive_file *file = archive_file_open(plugin, path.c_str(), &error);
+	ArchiveFile *file = archive_file_open(plugin, path.c_str(), &error);
 	if (file != nullptr) {
 		MyArchiveVisitor visitor;
 		archive_file_visit(file, visitor);
+		archive_file_close(file);
 	} else {
 		fprintf(stderr, "%s\n", error->message);
 		g_error_free(error);

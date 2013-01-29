@@ -40,7 +40,6 @@ input_archive_open(const char *pathname,
 		   GError **error_r)
 {
 	const struct archive_plugin *arplug;
-	struct archive_file *file;
 	char *archive, *filename, *suffix, *pname;
 	struct input_stream *is;
 
@@ -63,7 +62,7 @@ input_archive_open(const char *pathname,
 		return NULL;
 	}
 
-	file = archive_file_open(arplug, archive, error_r);
+	auto file = archive_file_open(arplug, archive, error_r);
 	if (file == NULL) {
 		g_free(pname);
 		return NULL;
