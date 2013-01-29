@@ -81,6 +81,10 @@
 
 #define MAX_FILTER_CHAIN_LENGTH 255
 
+#ifdef __cplusplus
+class Path;
+#endif
+
 struct block_param {
 	char *name;
 	char *value;
@@ -118,8 +122,6 @@ config_quark(void)
 	return g_quark_from_static_string("config");
 }
 
-G_BEGIN_DECLS
-
 void config_global_init(void);
 void config_global_finish(void);
 
@@ -129,8 +131,14 @@ void config_global_finish(void);
  */
 void config_global_check(void);
 
+#ifdef __cplusplus
+
 bool
-config_read_file(const char *file, GError **error_r);
+ReadConfigFile(const Path &path, GError **error_r);
+
+#endif
+
+G_BEGIN_DECLS
 
 /* don't free the returned value
    set _last_ to NULL to get first entry */

@@ -26,6 +26,7 @@
 #include "PlaylistVector.hxx"
 #include "conf.h"
 #include "tag.h"
+#include "fs/Path.hxx"
 
 #include <iostream>
 using std::cout;
@@ -76,7 +77,7 @@ main(int argc, char **argv)
 		return 1;
 	}
 
-	const char *const config_path = argv[1];
+	const Path config_path = Path::FromFS(argv[1]);
 	const char *const plugin_name = argv[2];
 
 	const DatabasePlugin *plugin = GetDatabasePluginByName(plugin_name);
@@ -94,7 +95,7 @@ main(int argc, char **argv)
 
 	config_global_init();
 
-	if (!config_read_file(config_path, &error)) {
+	if (!ReadConfigFile(config_path, &error)) {
 		cerr << error->message << endl;
 		g_error_free(error);
 		return EXIT_FAILURE;

@@ -25,6 +25,7 @@
 #include "event/Loop.hxx"
 #include "GlobalEvents.hxx"
 #include "IOThread.hxx"
+#include "fs/Path.hxx"
 
 extern "C" {
 #include "output_plugin.h"
@@ -201,6 +202,8 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	const Path config_path = Path::FromFS(argv[1]);
+
 	audio_format_init(&audio_format, 44100, SAMPLE_FORMAT_S16, 2);
 
 	g_thread_init(NULL);
@@ -208,8 +211,7 @@ int main(int argc, char **argv)
 	/* read configuration file (mpd.conf) */
 
 	config_global_init();
-	success = config_read_file(argv[1], &error);
-	if (!success) {
+	if (!ReadConfigFile(config_path, &error)) {
 		g_printerr("%s:", error->message);
 		g_error_free(error);
 		return 1;

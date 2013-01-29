@@ -31,7 +31,8 @@
 #include "PlaylistRegistry.hxx"
 #include "PlaylistPlugin.hxx"
 #include "mpd_error.h"
-#include "glib_compat.h"
+#include "fs/Path.hxx"
+#include "fs/FileSystem.hxx"
 
 #ifdef ENABLE_ENCODER
 #include "encoder_list.h"
@@ -133,6 +134,16 @@ static void version(void)
 static const char *summary =
 	"Music Player Daemon - a daemon for playing music.";
 
+gcc_pure
+static Path
+PathBuildChecked(const Path &a, Path::const_pointer b)
+{
+	if (a.IsNull())
+		return Path::Null();
+
+	return Path::Build(a, b);
+}
+
 bool
 parse_cmdline(int argc, char **argv, struct options *options,
 	      GError **error_r)
@@ -191,59 +202,44 @@ parse_cmdline(int argc, char **argv, struct options *options,
 		return true;
 	} else if (argc <= 1) {
 		/* default configuration file path */
-		char *path1;
 
 #ifdef G_OS_WIN32
-		path1 = g_build_filename(g_get_user_config_dir(),
-					CONFIG_FILE_LOCATION, NULL);
-		if (g_file_test(path1, G_FILE_TEST_IS_REGULAR))
-			ret = config_read_file(path1, error_r);
-		else {
-			int i = 0;
-			char *system_path = NULL;
-			const char * const *system_config_dirs;
+		Path path = PathBuildChecked(Path::FromUTF8(g_get_user_config_dir()),
+					     CONFIG_FILE_LOCATION);
+		if (!path.IsNull() && FileExists(path))
+			return ReadConfigFile(path, error_r);
 
-			system_config_dirs = g_get_system_config_dirs();
+		const char *const*system_config_dirs =
+			g_get_system_config_dirs();
 
-			while(system_config_dirs[i] != NULL) {
-				system_path = g_build_filename(system_config_dirs[i],
-						CONFIG_FILE_LOCATION,
-						NULL);
-				if(g_file_test(system_path,
-						G_FILE_TEST_IS_REGULAR)) {
-					ret = config_read_file(system_path,error_r);
-					g_free(system_path);
-					break;
-				} else
-					g_free(system_path);
-				++i;
-			}
+		for (unsigned i = 0; system_config_dirs[i] != nullptr; ++i) {
+			path = PathBuildChecked(Path::FromUTF8(system_config_dirs[i]),
+						CONFIG_FILE_LOCATION);
+			if (!path.IsNull() && FileExists(path))
+				return ReadConfigFile(path, error_r);
 		}
 #else /* G_OS_WIN32 */
-		char *path2;
-		path1 = g_build_filename(g_get_home_dir(),
-					USER_CONFIG_FILE_LOCATION1, NULL);
-		path2 = g_build_filename(g_get_home_dir(),
-					USER_CONFIG_FILE_LOCATION2, NULL);
-		if (g_file_test(path1, G_FILE_TEST_IS_REGULAR))
-			ret = config_read_file(path1, error_r);
-		else if (g_file_test(path2, G_FILE_TEST_IS_REGULAR))
-			ret = config_read_file(path2, error_r);
-		else if (g_file_test(SYSTEM_CONFIG_FILE_LOCATION,
-				     G_FILE_TEST_IS_REGULAR))
-			ret = config_read_file(SYSTEM_CONFIG_FILE_LOCATION,
-					       error_r);
+		Path path = PathBuildChecked(Path::FromUTF8(g_get_home_dir()),
+					     USER_CONFIG_FILE_LOCATION1);
+		if (!path.IsNull() && FileExists(path))
+			return ReadConfigFile(path, error_r);
+
+		path = PathBuildChecked(Path::FromUTF8(g_get_home_dir()),
+					USER_CONFIG_FILE_LOCATION2);
+		if (!path.IsNull() && FileExists(path))
+			return ReadConfigFile(path, error_r);
+
+		path = Path::FromUTF8(SYSTEM_CONFIG_FILE_LOCATION);
+		if (!path.IsNull() && FileExists(path))
+			return ReadConfigFile(path, error_r);
 #endif
 
-		g_free(path1);
-#ifndef G_OS_WIN32
-		g_free(path2);
-#endif
-
-		return ret;
+		g_set_error(error_r, cmdline_quark(), 0,
+			    "No configuration file found");
+		return false;
 	} else if (argc == 2) {
 		/* specified configuration file */
-		return config_read_file(argv[1], error_r);
+		return ReadConfigFile(Path::FromFS(argv[1]), error_r);
 	} else {
 		g_set_error(error_r, cmdline_quark(), 0,
 			    "too many arguments");

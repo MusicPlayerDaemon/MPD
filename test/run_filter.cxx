@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "conf.h"
+#include "fs/Path.hxx"
 
 extern "C" {
 #include "audio_parser.h"
@@ -107,6 +108,8 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	const Path config_path = Path::FromFS(argv[1]);
+
 	audio_format_init(&audio_format, 44100, SAMPLE_FORMAT_S16, 2);
 
 	/* initialize GLib */
@@ -117,8 +120,7 @@ int main(int argc, char **argv)
 	/* read configuration file (mpd.conf) */
 
 	config_global_init();
-	success = config_read_file(argv[1], &error);
-	if (!success) {
+	if (!ReadConfigFile(config_path, &error)) {
 		g_printerr("%s:", error->message);
 		g_error_free(error);
 		return 1;

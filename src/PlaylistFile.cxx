@@ -31,6 +31,7 @@
 #include "conf.h"
 #include "Idle.hxx"
 #include "fs/Path.hxx"
+#include "fs/FileSystem.hxx"
 
 extern "C" {
 #include "uri.h"
@@ -433,14 +434,14 @@ static bool
 spl_rename_internal(const Path &from_path_fs, const Path &to_path_fs,
 		    GError **error_r)
 {
-	if (!g_file_test(from_path_fs.c_str(), G_FILE_TEST_IS_REGULAR)) {
+	if (!FileExists(from_path_fs)) {
 		g_set_error_literal(error_r, playlist_quark(),
 				    PLAYLIST_RESULT_NO_SUCH_LIST,
 				    "No such playlist");
 		return false;
 	}
 
-	if (g_file_test(to_path_fs.c_str(), G_FILE_TEST_EXISTS)) {
+	if (FileExists(to_path_fs)) {
 		g_set_error_literal(error_r, playlist_quark(),
 				    PLAYLIST_RESULT_LIST_EXISTS,
 				    "Playlist exists already");

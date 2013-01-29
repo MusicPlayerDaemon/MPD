@@ -27,6 +27,7 @@ extern "C" {
 }
 
 #include "fs/Path.hxx"
+#include "fs/FileSystem.hxx"
 #include "mpd_error.h"
 
 #include <glib.h>
@@ -347,20 +348,23 @@ config_read_block(FILE *fp, int *count, char *string, GError **error_r)
 }
 
 bool
-config_read_file(const char *file, GError **error_r)
+ReadConfigFile(const Path &path, GError **error_r)
 {
+	assert(!path.IsNull());
+	const std::string path_utf8 = path.ToUTF8();
+
 	FILE *fp;
 	char string[MAX_STRING_SIZE + 1];
 	int count = 0;
 	struct config_entry *entry;
 	struct config_param *param;
 
-	g_debug("loading file %s", file);
+	g_debug("loading file %s", path_utf8.c_str());
 
-	if (!(fp = fopen(file, "r"))) {
+	if (!(fp = FOpen(path, "r"))) {
 		g_set_error(error_r, config_quark(), errno,
 			    "Failed to open %s: %s",
-			    file, g_strerror(errno));
+			    path_utf8.c_str(), g_strerror(errno));
 		return false;
 	}
 

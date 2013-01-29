@@ -1044,6 +1044,7 @@ noinst_PROGRAMS += test/read_mixer
 endif
 
 test_read_conf_LDADD = \
+	libfs.a \
 	$(GLIB_LIBS)
 test_read_conf_SOURCES = test/read_conf.cxx \
 	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c
@@ -1074,6 +1075,7 @@ test_run_input_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	libevent.a \
+	libfs.a \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.cxx \
 	test/stdbin.h \
@@ -1087,6 +1089,7 @@ test_dump_text_file_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	libevent.a \
+	libfs.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
@@ -1106,6 +1109,7 @@ test_dump_playlist_LDADD = \
 	$(DECODER_LIBS) \
 	$(TAG_LIBS) \
 	libevent.a \
+	libfs.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
@@ -1133,6 +1137,7 @@ test_run_decoder_LDADD = \
 	$(ARCHIVE_LIBS) \
 	$(TAG_LIBS) \
 	libevent.a \
+	libfs.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.cxx \
@@ -1157,6 +1162,7 @@ test_read_tags_LDADD = \
 	$(ARCHIVE_LIBS) \
 	$(TAG_LIBS) \
 	libevent.a \
+	libfs.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.cxx \
@@ -1182,6 +1188,7 @@ endif
 
 test_run_filter_LDADD = \
 	$(FILTER_LIBS) \
+	libfs.a \
 	$(GLIB_LIBS)
 test_run_filter_SOURCES = test/run_filter.cxx \
 	test/FakeReplayGainConfig.cxx \
@@ -1216,6 +1223,7 @@ test_run_encoder_SOURCES = test/run_encoder.c \
 test_run_encoder_LDADD = \
 	$(ENCODER_LIBS) \
 	libpcm.a \
+	libfs.a \
 	libutil.a \
 	$(TAG_LIBS) \
 	$(GLIB_LIBS)
@@ -1238,6 +1246,7 @@ test_test_vorbis_encoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ENCODER_CFLAGS)
 test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
 	$(ENCODER_LIBS) \
+	libfs.a \
 	libutil.a \
 	$(GLIB_LIBS)
 endif
@@ -1274,6 +1283,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	libmixer_plugins.a \
 	$(FILTER_LIBS) \
 	libevent.a \
+	libfs.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_run_output_SOURCES = test/run_output.cxx \
@@ -1306,6 +1316,7 @@ test_read_mixer_LDADD = \
 	libmixer_plugins.a \
 	$(OUTPUT_LIBS) \
 	libevent.a \
+	libfs.a \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.c \
 	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c \

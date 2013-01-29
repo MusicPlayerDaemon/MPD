@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "conf.h"
+#include "fs/Path.hxx"
 
 #include <glib.h>
 
@@ -42,7 +43,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	const char *path = argv[1];
+	const Path config_path = Path::FromFS(argv[1]);
 	const char *name = argv[2];
 
 	g_log_set_default_handler(my_log_func, NULL);
@@ -50,8 +51,7 @@ int main(int argc, char **argv)
 	config_global_init();
 
 	GError *error = NULL;
-	bool success = config_read_file(path, &error);
-	if (!success) {
+	if (!ReadConfigFile(config_path, &error)) {
 		g_printerr("%s:", error->message);
 		g_error_free(error);
 		return 1;

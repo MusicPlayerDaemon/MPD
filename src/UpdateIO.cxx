@@ -22,7 +22,7 @@
 #include "Directory.hxx"
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
-#include "glib_compat.h"
+#include "fs/FileSystem.hxx"
 
 #include <glib.h>
 
@@ -68,12 +68,10 @@ directory_exists(const Directory *directory)
 		/* invalid path: cannot exist */
 		return false;
 
-	GFileTest test = directory->device == DEVICE_INARCHIVE ||
+	return directory->device == DEVICE_INARCHIVE ||
 		directory->device == DEVICE_CONTAINER
-		? G_FILE_TEST_IS_REGULAR
-		: G_FILE_TEST_IS_DIR;
-
-	return g_file_test(path_fs.c_str(), test);
+		? FileExists(path_fs)
+		: DirectoryExists(path_fs);
 }
 
 bool

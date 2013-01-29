@@ -25,6 +25,7 @@
 #include "Mapper.hxx"
 #include "Idle.hxx"
 #include "fs/Path.hxx"
+#include "fs/FileSystem.hxx"
 
 extern "C" {
 #include "uri.h"
@@ -76,7 +77,7 @@ spl_save_queue(const char *name_utf8, const struct queue *queue)
 	if (path_fs.IsNull())
 		return PLAYLIST_RESULT_BAD_NAME;
 
-	if (g_file_test(path_fs.c_str(), G_FILE_TEST_EXISTS))
+	if (FileExists(path_fs))
 		return PLAYLIST_RESULT_LIST_EXISTS;
 
 	FILE *file = fopen(path_fs.c_str(), "w");

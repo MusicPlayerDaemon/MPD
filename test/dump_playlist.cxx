@@ -28,6 +28,7 @@
 #include "IOThread.hxx"
 #include "PlaylistRegistry.hxx"
 #include "PlaylistPlugin.hxx"
+#include "fs/Path.hxx"
 
 extern "C" {
 #include "decoder_list.h"
@@ -141,7 +142,6 @@ int main(int argc, char **argv)
 {
 	const char *uri;
 	struct input_stream *is = NULL;
-	bool success;
 	GError *error = NULL;
 	struct playlist_provider *playlist;
 	struct song *song;
@@ -151,6 +151,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	const Path config_path = Path::FromFS(argv[1]);
 	uri = argv[2];
 
 	/* initialize GLib */
@@ -161,8 +162,7 @@ int main(int argc, char **argv)
 	/* initialize MPD */
 
 	config_global_init();
-	success = config_read_file(argv[1], &error);
-	if (!success) {
+	if (!ReadConfigFile(config_path, &error)) {
 		g_printerr("%s\n", error->message);
 		g_error_free(error);
 		return 1;
