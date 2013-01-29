@@ -22,7 +22,6 @@
 
 #include "gcc.h"
 
-typedef struct _GSList GSList;
 class Client;
 class ClientMessage;
 
