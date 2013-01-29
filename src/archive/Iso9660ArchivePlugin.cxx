@@ -141,16 +141,16 @@ iso9660_archive_scan_reset(struct archive_file *file)
 	context->iter = context->list;
 }
 
-static char *
+static const char *
 iso9660_archive_scan_next(struct archive_file *file)
 {
 	Iso9660ArchiveFile *context =
 		(Iso9660ArchiveFile *)file;
 
-	char *data = NULL;
+	const char *data = NULL;
 	if (context->iter != NULL) {
 		///fetch data and goto next
-		data = (char *)context->iter->data;
+		data = (const char *)context->iter->data;
 		context->iter = g_slist_next(context->iter);
 	}
 	return data;

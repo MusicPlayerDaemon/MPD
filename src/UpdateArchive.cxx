@@ -33,17 +33,19 @@
 #include <string.h>
 
 static void
-update_archive_tree(Directory *directory, char *name)
+update_archive_tree(Directory *directory, const char *name)
 {
-	char *tmp = strchr(name, '/');
+	const char *tmp = strchr(name, '/');
 	if (tmp) {
-		*tmp = 0;
+		char *child_name = g_strndup(name, tmp - name);
 		//add dir is not there already
 		db_lock();
 		Directory *subdir =
-			directory->MakeChild(name);
+			directory->MakeChild(child_name);
 		subdir->device = DEVICE_INARCHIVE;
 		db_unlock();
+		g_free(child_name);
+
 		//create directories first
 		update_archive_tree(subdir, tmp+1);
 	} else {
@@ -122,7 +124,7 @@ update_archive_file2(Directory *parent, const char *name,
 
 	archive_file_scan_reset(file);
 
-	char *filepath;
+	const char *filepath;
 	while ((filepath = archive_file_scan_next(file)) != NULL) {
 		/* split name into directory and file */
 		g_debug("adding archive file: %s", filepath);

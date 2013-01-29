@@ -158,11 +158,11 @@ bz2_scan_reset(struct archive_file *file)
 	context->reset = true;
 }
 
-static char *
+static const char *
 bz2_scan_next(struct archive_file *file)
 {
 	Bzip2ArchiveFile *context = (Bzip2ArchiveFile *) file;
-	char *name = NULL;
+	const char *name = NULL;
 
 	if (context->reset) {
 		name = context->name;

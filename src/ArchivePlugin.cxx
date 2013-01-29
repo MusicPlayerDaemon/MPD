@@ -70,7 +70,7 @@ archive_file_scan_reset(struct archive_file *file)
 	file->plugin->scan_reset(file);
 }
 
-char *
+const char *
 archive_file_scan_next(struct archive_file *file)
 {
 	assert(file != NULL);

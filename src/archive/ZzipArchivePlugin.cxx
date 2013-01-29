@@ -109,14 +109,14 @@ zzip_archive_scan_reset(struct archive_file *file)
 	context->iter = context->list;
 }
 
-static char *
+static const char *
 zzip_archive_scan_next(struct archive_file *file)
 {
 	ZzipArchiveFile *context = (ZzipArchiveFile *) file;
-	char *data = NULL;
+	const char *data = NULL;
 	if (context->iter != NULL) {
 		///fetch data and goto next
-		data = (char *)context->iter->data;
+		data = (const char *)context->iter->data;
 		context->iter = g_slist_next(context->iter);
 	}
 	return data;

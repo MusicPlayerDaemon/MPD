@@ -62,7 +62,7 @@ struct archive_plugin {
 	 * (as pathnames) and move read index to next file. When there is no
 	 * next file it return NULL.
 	 */
-	char *(*scan_next)(struct archive_file *);
+	const char *(*scan_next)(struct archive_file *);
 
 	/**
 	 * Opens an input_stream of a file within the archive.
@@ -98,7 +98,7 @@ archive_file_close(struct archive_file *file);
 void
 archive_file_scan_reset(struct archive_file *file);
 
-char *
+const char *
 archive_file_scan_next(struct archive_file *file);
 
 struct input_stream *
