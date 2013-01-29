@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -206,11 +206,11 @@ oss_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
 }
 
 const struct mixer_plugin oss_mixer_plugin = {
-	.init = oss_mixer_init,
-	.finish = oss_mixer_finish,
-	.open = oss_mixer_open,
-	.close = oss_mixer_close,
-	.get_volume = oss_mixer_get_volume,
-	.set_volume = oss_mixer_set_volume,
-	.global = true,
+	oss_mixer_init,
+	oss_mixer_finish,
+	oss_mixer_open,
+	oss_mixer_close,
+	oss_mixer_get_volume,
+	oss_mixer_set_volume,
+	true,
 };

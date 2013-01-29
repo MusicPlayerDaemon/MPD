@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,13 +18,15 @@
  */
 
 #include "config.h"
-#include "alsa_output_plugin.h"
+#include "AlsaOutputPlugin.hxx"
 #include "output_api.h"
 #include "mixer_list.h"
 #include "pcm_export.h"
 
 #include <glib.h>
 #include <alsa/asoundlib.h>
+
+#include <string>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "alsa"
@@ -43,14 +45,16 @@ enum {
 typedef snd_pcm_sframes_t alsa_writei_t(snd_pcm_t * pcm, const void *buffer,
 					snd_pcm_uframes_t size);
 
-struct alsa_data {
+struct AlsaOutput {
 	struct audio_output base;
 
-	struct pcm_export_state export;
+	struct pcm_export_state pcm_export;
 
-	/** the configured name of the ALSA device; NULL for the
-	    default device */
-	char *device;
+	/**
+	 * The configured name of the ALSA device; empty for the
+	 * default device
+	 */
+	std::string device;
 
 	/** use memory mapped I/O? */
 	bool use_mmap;
@@ -101,6 +105,18 @@ struct alsa_data {
 	 * The number of frames written in the current period.
 	 */
 	snd_pcm_uframes_t period_position;
+
+	AlsaOutput():mode(0), writei(snd_pcm_writei) {
+	}
+
+	bool Init(const config_param *param, GError **error_r) {
+		return ao_base_init(&base, &alsa_output_plugin,
+				    param, error_r);
+	}
+
+	void Deinit() {
+		ao_base_finish(&base);
+	}
 };
 
 /**
@@ -113,24 +129,13 @@ alsa_output_quark(void)
 }
 
 static const char *
-alsa_device(const struct alsa_data *ad)
+alsa_device(const AlsaOutput *ad)
 {
-	return ad->device != NULL ? ad->device : default_device;
-}
-
-static struct alsa_data *
-alsa_data_new(void)
-{
-	struct alsa_data *ret = g_new(struct alsa_data, 1);
-
-	ret->mode = 0;
-	ret->writei = snd_pcm_writei;
-
-	return ret;
+	return ad->device.empty() ? default_device : ad->device.c_str();
 }
 
 static void
-alsa_configure(struct alsa_data *ad, const struct config_param *param)
+alsa_configure(AlsaOutput *ad, const struct config_param *param)
 {
 	ad->device = config_dup_block_string(param, "device", NULL);
 
@@ -161,10 +166,10 @@ alsa_configure(struct alsa_data *ad, const struct config_param *param)
 static struct audio_output *
 alsa_init(const struct config_param *param, GError **error_r)
 {
-	struct alsa_data *ad = alsa_data_new();
+	AlsaOutput *ad = new AlsaOutput();
 
-	if (!ao_base_init(&ad->base, &alsa_output_plugin, param, error_r)) {
-		g_free(ad);
+	if (!ad->Init(param, error_r)) {
+		delete ad;
 		return NULL;
 	}
 
@@ -176,12 +181,10 @@ alsa_init(const struct config_param *param, GError **error_r)
 static void
 alsa_finish(struct audio_output *ao)
 {
-	struct alsa_data *ad = (struct alsa_data *)ao;
+	AlsaOutput *ad = (AlsaOutput *)ao;
 
-	ao_base_finish(&ad->base);
-
-	g_free(ad->device);
-	g_free(ad);
+	ad->Deinit();
+	delete ad;
 
 	/* free libasound's config cache */
 	snd_config_update_free_global();
@@ -190,18 +193,18 @@ alsa_finish(struct audio_output *ao)
 static bool
 alsa_output_enable(struct audio_output *ao, G_GNUC_UNUSED GError **error_r)
 {
-	struct alsa_data *ad = (struct alsa_data *)ao;
+	AlsaOutput *ad = (AlsaOutput *)ao;
 
-	pcm_export_init(&ad->export);
+	pcm_export_init(&ad->pcm_export);
 	return true;
 }
 
 static void
 alsa_output_disable(struct audio_output *ao)
 {
-	struct alsa_data *ad = (struct alsa_data *)ao;
+	AlsaOutput *ad = (AlsaOutput *)ao;
 
-	pcm_export_deinit(&ad->export);
+	pcm_export_deinit(&ad->pcm_export);
 }
 
 static bool
@@ -349,7 +352,8 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 {
 	/* try the input format first */
 
-	int err = alsa_output_try_format(pcm, hwparams, audio_format->format,
+	int err = alsa_output_try_format(pcm, hwparams,
+					 sample_format(audio_format->format),
 					 packed_r, reverse_endian_r);
 
 	/* if unsupported by the hardware, try other formats */
@@ -383,15 +387,11 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
  * the configured settings and the audio format.
  */
 static bool
-alsa_setup(struct alsa_data *ad, struct audio_format *audio_format,
+alsa_setup(AlsaOutput *ad, struct audio_format *audio_format,
 	   bool *packed_r, bool *reverse_endian_r, GError **error)
 {
-	snd_pcm_hw_params_t *hwparams;
-	snd_pcm_sw_params_t *swparams;
 	unsigned int sample_rate = audio_format->sample_rate;
 	unsigned int channels = audio_format->channels;
-	snd_pcm_uframes_t alsa_buffer_size;
-	snd_pcm_uframes_t alsa_period_size;
 	int err;
 	const char *cmd = NULL;
 	int retry = MPD_ALSA_RETRY_NR;
@@ -401,6 +401,7 @@ alsa_setup(struct alsa_data *ad, struct audio_format *audio_format,
 	period_time_ro = period_time = ad->period_time;
 configure_hw:
 	/* configure HW params */
+	snd_pcm_hw_params_t *hwparams;
 	snd_pcm_hw_params_alloca(&hwparams);
 	cmd = "snd_pcm_hw_params_any";
 	err = snd_pcm_hw_params_any(ad->pcm, hwparams);
@@ -434,7 +435,7 @@ configure_hw:
 		g_set_error(error, alsa_output_quark(), err,
 			    "ALSA device \"%s\" does not support format %s: %s",
 			    alsa_device(ad),
-			    sample_format_to_string(audio_format->format),
+			    sample_format_to_string(sample_format(audio_format->format)),
 			    snd_strerror(-err));
 		return false;
 	}
@@ -525,11 +526,13 @@ configure_hw:
 	if (retry != MPD_ALSA_RETRY_NR)
 		g_debug("ALSA period_time set to %d\n", period_time);
 
+	snd_pcm_uframes_t alsa_buffer_size;
 	cmd = "snd_pcm_hw_params_get_buffer_size";
 	err = snd_pcm_hw_params_get_buffer_size(hwparams, &alsa_buffer_size);
 	if (err < 0)
 		goto error;
 
+	snd_pcm_uframes_t alsa_period_size;
 	cmd = "snd_pcm_hw_params_get_period_size";
 	err = snd_pcm_hw_params_get_period_size(hwparams, &alsa_period_size,
 						NULL);
@@ -537,6 +540,7 @@ configure_hw:
 		goto error;
 
 	/* configure SW params */
+	snd_pcm_sw_params_t *swparams;
 	snd_pcm_sw_params_alloca(&swparams);
 
 	cmd = "snd_pcm_sw_params_current";
@@ -586,7 +590,7 @@ error:
 }
 
 static bool
-alsa_setup_dsd(struct alsa_data *ad, struct audio_format *audio_format,
+alsa_setup_dsd(AlsaOutput *ad, struct audio_format *audio_format,
 	       bool *shift8_r, bool *packed_r, bool *reverse_endian_r,
 	       GError **error_r)
 {
@@ -626,7 +630,7 @@ alsa_setup_dsd(struct alsa_data *ad, struct audio_format *audio_format,
 }
 
 static bool
-alsa_setup_or_dsd(struct alsa_data *ad, struct audio_format *audio_format,
+alsa_setup_or_dsd(AlsaOutput *ad, struct audio_format *audio_format,
 		  GError **error_r)
 {
 	bool shift8 = false, packed, reverse_endian;
@@ -642,8 +646,9 @@ alsa_setup_or_dsd(struct alsa_data *ad, struct audio_format *audio_format,
 	if (!success)
 		return false;
 
-	pcm_export_open(&ad->export,
-			audio_format->format, audio_format->channels,
+	pcm_export_open(&ad->pcm_export,
+			sample_format(audio_format->format),
+			audio_format->channels,
 			dsd_usb, shift8, packed, reverse_endian);
 	return true;
 }
@@ -651,12 +656,10 @@ alsa_setup_or_dsd(struct alsa_data *ad, struct audio_format *audio_format,
 static bool
 alsa_open(struct audio_output *ao, struct audio_format *audio_format, GError **error)
 {
-	struct alsa_data *ad = (struct alsa_data *)ao;
-	int err;
-	bool success;
+	AlsaOutput *ad = (AlsaOutput *)ao;
 
-	err = snd_pcm_open(&ad->pcm, alsa_device(ad),
-			   SND_PCM_STREAM_PLAYBACK, ad->mode);
+	int err = snd_pcm_open(&ad->pcm, alsa_device(ad),
+			       SND_PCM_STREAM_PLAYBACK, ad->mode);
 	if (err < 0) {
 		g_set_error(error, alsa_output_quark(), err,
 			    "Failed to open ALSA device \"%s\": %s",
@@ -667,20 +670,20 @@ alsa_open(struct audio_output *ao, struct audio_format *audio_format, GError **e
 	g_debug("opened %s type=%s", snd_pcm_name(ad->pcm),
 		snd_pcm_type_name(snd_pcm_type(ad->pcm)));
 
-	success = alsa_setup_or_dsd(ad, audio_format, error);
-	if (!success) {
+	if (!alsa_setup_or_dsd(ad, audio_format, error)) {
 		snd_pcm_close(ad->pcm);
 		return false;
 	}
 
 	ad->in_frame_size = audio_format_frame_size(audio_format);
-	ad->out_frame_size = pcm_export_frame_size(&ad->export, audio_format);
+	ad->out_frame_size = pcm_export_frame_size(&ad->pcm_export,
+						   audio_format);
 
 	return true;
 }
 
 static int
-alsa_recover(struct alsa_data *ad, int err)
+alsa_recover(AlsaOutput *ad, int err)
 {
 	if (err == -EPIPE) {
 		g_debug("Underrun on ALSA device \"%s\"\n", alsa_device(ad));
@@ -719,7 +722,7 @@ alsa_recover(struct alsa_data *ad, int err)
 static void
 alsa_drain(struct audio_output *ao)
 {
-	struct alsa_data *ad = (struct alsa_data *)ao;
+	AlsaOutput *ad = (AlsaOutput *)ao;
 
 	if (snd_pcm_state(ad->pcm) != SND_PCM_STATE_RUNNING)
 		return;
@@ -753,7 +756,7 @@ alsa_drain(struct audio_output *ao)
 static void
 alsa_cancel(struct audio_output *ao)
 {
-	struct alsa_data *ad = (struct alsa_data *)ao;
+	AlsaOutput *ad = (AlsaOutput *)ao;
 
 	ad->period_position = 0;
 
@@ -763,7 +766,7 @@ alsa_cancel(struct audio_output *ao)
 static void
 alsa_close(struct audio_output *ao)
 {
-	struct alsa_data *ad = (struct alsa_data *)ao;
+	AlsaOutput *ad = (AlsaOutput *)ao;
 
 	snd_pcm_close(ad->pcm);
 }
@@ -772,11 +775,11 @@ static size_t
 alsa_play(struct audio_output *ao, const void *chunk, size_t size,
 	  GError **error)
 {
-	struct alsa_data *ad = (struct alsa_data *)ao;
+	AlsaOutput *ad = (AlsaOutput *)ao;
 
 	assert(size % ad->in_frame_size == 0);
 
-	chunk = pcm_export(&ad->export, chunk, size, &size);
+	chunk = pcm_export(&ad->pcm_export, chunk, size, &size);
 
 	assert(size % ad->out_frame_size == 0);
 
@@ -789,7 +792,7 @@ alsa_play(struct audio_output *ao, const void *chunk, size_t size,
 				% ad->period_frames;
 
 			size_t bytes_written = ret * ad->out_frame_size;
-			return pcm_export_source_size(&ad->export,
+			return pcm_export_source_size(&ad->pcm_export,
 						      bytes_written);
 		}
 
@@ -803,17 +806,20 @@ alsa_play(struct audio_output *ao, const void *chunk, size_t size,
 }
 
 const struct audio_output_plugin alsa_output_plugin = {
-	.name = "alsa",
-	.test_default_device = alsa_test_default_device,
-	.init = alsa_init,
-	.finish = alsa_finish,
-	.enable = alsa_output_enable,
-	.disable = alsa_output_disable,
-	.open = alsa_open,
-	.play = alsa_play,
-	.drain = alsa_drain,
-	.cancel = alsa_cancel,
-	.close = alsa_close,
+	"alsa",
+	alsa_test_default_device,
+	alsa_init,
+	alsa_finish,
+	alsa_output_enable,
+	alsa_output_disable,
+	alsa_open,
+	alsa_close,
+	nullptr,
+	nullptr,
+	alsa_play,
+	alsa_drain,
+	alsa_cancel,
+	nullptr,
 
-	.mixer_plugin = &alsa_mixer_plugin,
+	&alsa_mixer_plugin,
 };

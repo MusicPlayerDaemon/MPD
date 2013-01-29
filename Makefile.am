@@ -809,7 +809,8 @@ libmixer_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 
 if HAVE_ALSA
 liboutput_plugins_a_SOURCES += \
-	src/output/alsa_output_plugin.c src/output/alsa_output_plugin.h
+	src/output/AlsaOutputPlugin.cxx \
+	src/output/AlsaOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += src/mixer/AlsaMixerPlugin.cxx
 endif
 
@@ -851,8 +852,9 @@ endif
 
 if HAVE_OSS
 liboutput_plugins_a_SOURCES += \
-	src/output/oss_output_plugin.c src/output/oss_output_plugin.h
-libmixer_plugins_a_SOURCES += src/mixer/oss_mixer_plugin.c
+	src/output/OssOutputPlugin.cxx \
+	src/output/OssOutputPlugin.hxx
+libmixer_plugins_a_SOURCES += src/mixer/OssMixerPlugin.cxx
 endif
 
 if HAVE_OPENAL

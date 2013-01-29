@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "oss_output_plugin.h"
+#include "OssOutputPlugin.hxx"
 #include "output_api.h"
 #include "mixer_list.h"
 #include "fd_util.h"
@@ -60,7 +60,7 @@ struct oss_data {
 	struct audio_output base;
 
 #ifdef AFMT_S24_PACKED
-	struct pcm_export_state export;
+	struct pcm_export_state pcm_export;
 #endif
 
 	int fd;
@@ -163,11 +163,10 @@ oss_output_test_default_device(void)
 static struct audio_output *
 oss_open_default(GError **error)
 {
-	int i;
 	int err[G_N_ELEMENTS(default_devices)];
 	enum oss_stat ret[G_N_ELEMENTS(default_devices)];
 
-	for (i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
+	for (int i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
 		ret[i] = oss_stat_device(default_devices[i], &err[i]);
 		if (ret[i] == OSS_STAT_NO_ERROR) {
 			struct oss_data *od = oss_data_new();
@@ -182,7 +181,7 @@ oss_open_default(GError **error)
 		}
 	}
 
-	for (i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
+	for (int i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
 		const char *dev = default_devices[i];
 		switch(ret[i]) {
 		case OSS_STAT_NO_ERROR:
@@ -243,7 +242,7 @@ oss_output_enable(struct audio_output *ao, G_GNUC_UNUSED GError **error_r)
 {
 	struct oss_data *od = (struct oss_data *)ao;
 
-	pcm_export_init(&od->export);
+	pcm_export_init(&od->pcm_export);
 	return true;
 }
 
@@ -252,7 +251,7 @@ oss_output_disable(struct audio_output *ao)
 {
 	struct oss_data *od = (struct oss_data *)ao;
 
-	pcm_export_deinit(&od->export);
+	pcm_export_deinit(&od->pcm_export);
 }
 
 #endif
@@ -504,7 +503,7 @@ oss_probe_sample_format(int fd, enum sample_format sample_format,
 			enum sample_format *sample_format_r,
 			int *oss_format_r,
 #ifdef AFMT_S24_PACKED
-			struct pcm_export_state *export,
+			struct pcm_export_state *pcm_export,
 #endif
 			GError **error_r)
 {
@@ -539,7 +538,7 @@ oss_probe_sample_format(int fd, enum sample_format sample_format,
 	*oss_format_r = oss_format;
 
 #ifdef AFMT_S24_PACKED
-	pcm_export_open(export, sample_format, 0, false, false,
+	pcm_export_open(pcm_export, sample_format, 0, false, false,
 			oss_format == AFMT_S24_PACKED,
 			oss_format == AFMT_S24_PACKED &&
 			G_BYTE_ORDER != G_LITTLE_ENDIAN);
@@ -556,16 +555,16 @@ static bool
 oss_setup_sample_format(int fd, struct audio_format *audio_format,
 			int *oss_format_r,
 #ifdef AFMT_S24_PACKED
-			struct pcm_export_state *export,
+			struct pcm_export_state *pcm_export,
 #endif
 			GError **error_r)
 {
 	enum sample_format mpd_format;
 	enum oss_setup_result result =
-		oss_probe_sample_format(fd, audio_format->format,
+		oss_probe_sample_format(fd, sample_format(audio_format->format),
 					&mpd_format, oss_format_r,
 #ifdef AFMT_S24_PACKED
-					export,
+					pcm_export,
 #endif
 					error_r);
 	switch (result) {
@@ -603,7 +602,7 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
 		result = oss_probe_sample_format(fd, mpd_format,
 						 &mpd_format, oss_format_r,
 #ifdef AFMT_S24_PACKED
-						 export,
+						 pcm_export,
 #endif
 						 error_r);
 		switch (result) {
@@ -635,7 +634,7 @@ oss_setup(struct oss_data *od, struct audio_format *audio_format,
 		oss_setup_sample_rate(od->fd, audio_format, error_r) &&
 		oss_setup_sample_format(od->fd, audio_format, &od->oss_format,
 #ifdef AFMT_S24_PACKED
-					&od->export,
+					&od->pcm_export,
 #endif
 					error_r);
 }
@@ -749,14 +748,14 @@ oss_output_play(struct audio_output *ao, const void *chunk, size_t size,
 		return 0;
 
 #ifdef AFMT_S24_PACKED
-	chunk = pcm_export(&od->export, chunk, size, &size);
+	chunk = pcm_export(&od->pcm_export, chunk, size, &size);
 #endif
 
 	while (true) {
 		ret = write(od->fd, chunk, size);
 		if (ret > 0) {
 #ifdef AFMT_S24_PACKED
-			ret = pcm_export_source_size(&od->export, ret);
+			ret = pcm_export_source_size(&od->pcm_export, ret);
 #endif
 			return ret;
 		}
@@ -771,18 +770,25 @@ oss_output_play(struct audio_output *ao, const void *chunk, size_t size,
 }
 
 const struct audio_output_plugin oss_output_plugin = {
-	.name = "oss",
-	.test_default_device = oss_output_test_default_device,
-	.init = oss_output_init,
-	.finish = oss_output_finish,
+	"oss",
+	oss_output_test_default_device,
+	oss_output_init,
+	oss_output_finish,
 #ifdef AFMT_S24_PACKED
-	.enable = oss_output_enable,
-	.disable = oss_output_disable,
+	oss_output_enable,
+	oss_output_disable,
+#else
+	nullptr,
+	nullptr,
 #endif
-	.open = oss_output_open,
-	.close = oss_output_close,
-	.play = oss_output_play,
-	.cancel = oss_output_cancel,
+	oss_output_open,
+	oss_output_close,
+	nullptr,
+	nullptr,
+	oss_output_play,
+	nullptr,
+	oss_output_cancel,
+	nullptr,
 
-	.mixer_plugin = &oss_mixer_plugin,
+	&oss_mixer_plugin,
 };

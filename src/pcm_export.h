@@ -87,6 +87,10 @@ struct pcm_export_state {
 	uint8_t reverse_endian;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Initialize a #pcm_export_state object.
  */
@@ -143,5 +147,9 @@ pcm_export(struct pcm_export_state *state, const void *src, size_t src_size,
 G_GNUC_PURE
 size_t
 pcm_export_source_size(const struct pcm_export_state *state, size_t dest_size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
