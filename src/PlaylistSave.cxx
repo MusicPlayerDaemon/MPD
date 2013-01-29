@@ -31,8 +31,6 @@ extern "C" {
 #include "uri.h"
 }
 
-#include "glib_compat.h"
-
 #include <glib.h>
 
 void

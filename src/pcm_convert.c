@@ -23,7 +23,6 @@
 #include "pcm_format.h"
 #include "pcm_pack.h"
 #include "audio_format.h"
-#include "glib_compat.h"
 
 #include <assert.h>
 #include <string.h>

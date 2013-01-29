@@ -28,7 +28,6 @@
 #include "event/MultiSocketMonitor.hxx"
 #include "event/Loop.hxx"
 #include "IOThread.hxx"
-#include "glib_compat.h"
 
 #include <assert.h>
 

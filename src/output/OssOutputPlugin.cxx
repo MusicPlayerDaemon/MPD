@@ -22,7 +22,6 @@
 #include "output_api.h"
 #include "mixer_list.h"
 #include "fd_util.h"
-#include "glib_compat.h"
 
 #include <glib.h>
 

@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "gcc.h"
+#include "glib_compat.h"
 
 #include <glib.h>
 

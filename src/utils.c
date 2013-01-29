@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "utils.h"
-#include "glib_compat.h"
 #include "conf.h"
 
 #include <glib.h>

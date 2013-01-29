@@ -37,8 +37,6 @@ extern "C" {
 #include "uri.h"
 }
 
-#include "glib_compat.h"
-
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>

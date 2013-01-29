@@ -28,7 +28,6 @@
 extern "C" {
 #include "db_error.h"
 #include "stats.h"
-#include "glib_compat.h"
 }
 
 #include "DatabasePlugin.hxx"
