@@ -301,6 +301,7 @@ endif
 # Generic utility library
 
 libutil_a_SOURCES = \
+	src/util/Manual.hxx \
 	src/util/RefCount.hxx \
 	src/util/fifo_buffer.c src/util/fifo_buffer.h \
 	src/util/growing_fifo.c src/util/growing_fifo.h \
