@@ -25,7 +25,6 @@
 #include "gcc.h"
 
 #ifdef __cplusplus
-#include <glib.h>
 #include <string>
 #include <array>
 #include <vector>
@@ -54,6 +53,12 @@ struct block_param {
 #endif
 
 struct config_param {
+	/**
+	 * The next config_param with the same name.  The destructor
+	 * deletes the whole chain.
+	 */
+	struct config_param *next;
+
 	char *value;
 	unsigned int line;
 
@@ -67,7 +72,7 @@ struct config_param {
 	bool used;
 
 	config_param(int _line=-1)
-		:value(nullptr), line(_line), used(false) {}
+		:next(nullptr), value(nullptr), line(_line), used(false) {}
 
 	gcc_nonnull_all
 	config_param(const char *_value, int _line=-1);
@@ -92,7 +97,7 @@ struct config_param {
 #ifdef __cplusplus
 
 struct ConfigData {
-	std::array<GSList *, std::size_t(CONF_MAX)> params;
+	std::array<config_param *, std::size_t(CONF_MAX)> params;
 };
 
 #endif

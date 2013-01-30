@@ -32,10 +32,11 @@ extern "C" {
 #include <stdlib.h>
 
 config_param::config_param(const char *_value, int _line)
-	:value(g_strdup(_value)), line(_line) {}
+	:next(nullptr), value(g_strdup(_value)), line(_line) {}
 
 config_param::~config_param()
 {
+	delete next;
 	g_free(value);
 }
 

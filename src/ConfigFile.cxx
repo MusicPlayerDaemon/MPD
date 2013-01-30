@@ -137,6 +137,19 @@ config_read_block(FILE *fp, int *count, char *string, GError **error_r)
 	}
 }
 
+gcc_nonnull_all
+static void
+Append(config_param *&head, config_param *p)
+{
+	assert(p->next == nullptr);
+
+	config_param **i = &head;
+	while (*i != nullptr)
+		i = &(*i)->next;
+
+	*i = p;
+}
+
 static bool
 ReadConfigFile(ConfigData &config_data, FILE *fp, GError **error_r)
 {
@@ -179,12 +192,12 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, GError **error_r)
 			return false;
 		}
 
-		const unsigned i = ParseConfigOptionName(name);
+		const unsigned i = unsigned(o);
 		const ConfigTemplate &option = config_templates[i];
-		GSList *&params = config_data.params[i];
+		config_param *&head = config_data.params[i];
 
-		if (params != NULL && !option.repeatable) {
-			param = (struct config_param *)params->data;
+		if (head != nullptr && !option.repeatable) {
+			param = head;
 			g_set_error(error_r, config_quark(), 0,
 				    "config parameter \"%s\" is first defined "
 				    "on line %i and redefined on line %i\n",
@@ -244,7 +257,7 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, GError **error_r)
 			param = new config_param(value, count);
 		}
 
-		params = g_slist_append(params, param);
+		Append(head, param);
 	}
 
 	return true;

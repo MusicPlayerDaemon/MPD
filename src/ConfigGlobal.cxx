@@ -39,20 +39,10 @@ extern "C" {
 
 static ConfigData config_data;
 
-static void
-config_param_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
-{
-	struct config_param *param = (struct config_param *)data;
-
-	delete param;
-}
-
 void config_global_finish(void)
 {
-	for (auto i : config_data.params) {
-		g_slist_foreach(i, config_param_free_callback, NULL);
-		g_slist_free(i);
-	}
+	for (auto i : config_data.params)
+		delete i;
 }
 
 void config_global_init(void)
@@ -66,10 +56,8 @@ ReadConfigFile(const Path &path, GError **error_r)
 }
 
 static void
-config_param_check(gpointer data, G_GNUC_UNUSED gpointer user_data)
+Check(const config_param *param)
 {
-	struct config_param *param = (struct config_param *)data;
-
 	if (!param->used)
 		/* this whole config_param was not queried at all -
 		   the feature might be disabled at compile time?
@@ -86,27 +74,18 @@ config_param_check(gpointer data, G_GNUC_UNUSED gpointer user_data)
 void config_global_check(void)
 {
 	for (auto i : config_data.params)
-		g_slist_foreach(i, config_param_check, NULL);
+		for (const config_param *p = i; p != nullptr; p = p->next)
+			Check(p);
 }
 
 const struct config_param *
 config_get_next_param(ConfigOption option, const struct config_param * last)
 {
-	GSList *node = config_data.params[unsigned(option)];
-
-	if (last) {
-		node = g_slist_find(node, last);
-		if (node == NULL)
-			return NULL;
-
-		node = g_slist_next(node);
-	}
-
-	if (node == NULL)
-		return NULL;
-
-	struct config_param *param = (struct config_param *)node->data;
-	param->used = true;
+	config_param *param = last != nullptr
+		? last->next
+		: config_data.params[unsigned(option)];
+	if (param != nullptr)
+		param->used = true;
 	return param;
 }
 
