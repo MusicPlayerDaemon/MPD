@@ -47,7 +47,6 @@ void initAudioConfig(void)
 	ret = audio_format_parse(&configured_audio_format, param->value,
 				 true, &error);
 	if (!ret)
-		MPD_ERROR("error parsing \"%s\" at line %i: %s",
-			  CONF_AUDIO_OUTPUT_FORMAT, param->line,
-			  error->message);
+		MPD_ERROR("error parsing line %i: %s",
+			  param->line, error->message);
 }

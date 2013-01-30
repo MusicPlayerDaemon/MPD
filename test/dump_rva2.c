@@ -33,7 +33,8 @@
 #include <stdlib.h>
 
 const char *
-config_get_string(G_GNUC_UNUSED const char *name, const char *default_value)
+config_get_string(gcc_unused enum ConfigOption option,
+		  const char *default_value)
 {
 	return default_value;
 }

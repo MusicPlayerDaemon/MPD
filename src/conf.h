@@ -20,61 +20,11 @@
 #ifndef MPD_CONF_H
 #define MPD_CONF_H
 
+#include "ConfigOption.hxx"
+#include "gcc.h"
+
 #include <stdbool.h>
 #include <glib.h>
-
-#define CONF_MUSIC_DIR                  "music_directory"
-#define CONF_PLAYLIST_DIR               "playlist_directory"
-#define CONF_FOLLOW_INSIDE_SYMLINKS     "follow_inside_symlinks"
-#define CONF_FOLLOW_OUTSIDE_SYMLINKS    "follow_outside_symlinks"
-#define CONF_DB_FILE                    "db_file"
-#define CONF_STICKER_FILE               "sticker_file"
-#define CONF_LOG_FILE                   "log_file"
-#define CONF_PID_FILE                   "pid_file"
-#define CONF_STATE_FILE                 "state_file"
-#define CONF_USER                       "user"
-#define CONF_GROUP                      "group"
-#define CONF_BIND_TO_ADDRESS            "bind_to_address"
-#define CONF_PORT                       "port"
-#define CONF_LOG_LEVEL                  "log_level"
-#define CONF_ZEROCONF_NAME              "zeroconf_name"
-#define CONF_ZEROCONF_ENABLED           "zeroconf_enabled"
-#define CONF_PASSWORD                   "password"
-#define CONF_DEFAULT_PERMS              "default_permissions"
-#define CONF_AUDIO_OUTPUT               "audio_output"
-#define CONF_AUDIO_FILTER               "filter"
-#define CONF_AUDIO_OUTPUT_FORMAT        "audio_output_format"
-#define CONF_MIXER_TYPE                 "mixer_type"
-#define CONF_REPLAYGAIN                 "replaygain"
-#define CONF_REPLAYGAIN_PREAMP          "replaygain_preamp"
-#define CONF_REPLAYGAIN_MISSING_PREAMP  "replaygain_missing_preamp"
-#define CONF_REPLAYGAIN_LIMIT           "replaygain_limit"
-#define CONF_VOLUME_NORMALIZATION       "volume_normalization"
-#define CONF_SAMPLERATE_CONVERTER       "samplerate_converter"
-#define CONF_AUDIO_BUFFER_SIZE          "audio_buffer_size"
-#define CONF_BUFFER_BEFORE_PLAY         "buffer_before_play"
-#define CONF_HTTP_PROXY_HOST            "http_proxy_host"
-#define CONF_HTTP_PROXY_PORT            "http_proxy_port"
-#define CONF_HTTP_PROXY_USER            "http_proxy_user"
-#define CONF_HTTP_PROXY_PASSWORD        "http_proxy_password"
-#define CONF_CONN_TIMEOUT               "connection_timeout"
-#define CONF_MAX_CONN                   "max_connections"
-#define CONF_MAX_PLAYLIST_LENGTH        "max_playlist_length"
-#define CONF_MAX_COMMAND_LIST_SIZE      "max_command_list_size"
-#define CONF_MAX_OUTPUT_BUFFER_SIZE     "max_output_buffer_size"
-#define CONF_FS_CHARSET                 "filesystem_charset"
-#define CONF_ID3V1_ENCODING             "id3v1_encoding"
-#define CONF_METADATA_TO_USE            "metadata_to_use"
-#define CONF_SAVE_ABSOLUTE_PATHS        "save_absolute_paths_in_playlists"
-#define CONF_DECODER                    "decoder"
-#define CONF_INPUT                      "input"
-#define CONF_GAPLESS_MP3_PLAYBACK       "gapless_mp3_playback"
-#define CONF_PLAYLIST_PLUGIN            "playlist_plugin"
-#define CONF_AUTO_UPDATE                "auto_update"
-#define CONF_AUTO_UPDATE_DEPTH          "auto_update_depth"
-#define CONF_DESPOTIFY_USER             "despotify_user"
-#define CONF_DESPOTIFY_PASSWORD         "despotify_password"
-#define CONF_DESPOTIFY_HIGH_BITRATE     "despotify_high_bitrate"
 
 #define DEFAULT_PLAYLIST_MAX_LENGTH (1024*16)
 #define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS false
@@ -144,13 +94,14 @@ G_BEGIN_DECLS
    set _last_ to NULL to get first entry */
 G_GNUC_PURE
 const struct config_param *
-config_get_next_param(const char *name, const struct config_param *last);
+config_get_next_param(enum ConfigOption option,
+		      const struct config_param *last);
 
 G_GNUC_PURE
 static inline const struct config_param *
-config_get_param(const char *name)
+config_get_param(enum ConfigOption option)
 {
-	return config_get_next_param(name, NULL);
+	return config_get_next_param(option, NULL);
 }
 
 /* Note on G_GNUC_PURE: Some of the functions declared pure are not
@@ -162,7 +113,7 @@ config_get_param(const char *name)
 
 G_GNUC_PURE
 const char *
-config_get_string(const char *name, const char *default_value);
+config_get_string(enum ConfigOption option, const char *default_value);
 
 /**
  * Returns an optional configuration variable which contains an
@@ -174,22 +125,22 @@ config_get_string(const char *name, const char *default_value);
  */
 G_GNUC_MALLOC
 char *
-config_dup_path(const char *name, GError **error_r);
+config_dup_path(enum ConfigOption option, GError **error_r);
 
 G_GNUC_PURE
 unsigned
-config_get_unsigned(const char *name, unsigned default_value);
+config_get_unsigned(enum ConfigOption option, unsigned default_value);
 
 G_GNUC_PURE
 unsigned
-config_get_positive(const char *name, unsigned default_value);
+config_get_positive(enum ConfigOption option, unsigned default_value);
 
 G_GNUC_PURE
 const struct block_param *
 config_get_block_param(const struct config_param *param, const char *name);
 
 G_GNUC_PURE
-bool config_get_bool(const char *name, bool default_value);
+bool config_get_bool(enum ConfigOption option, bool default_value);
 
 G_GNUC_PURE
 const char *

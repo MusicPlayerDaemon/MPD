@@ -81,11 +81,11 @@ filter_plugin_by_name(G_GNUC_UNUSED const char *name)
 }
 
 static const struct config_param *
-find_named_config_block(const char *block, const char *name)
+find_named_config_block(ConfigOption option, const char *name)
 {
 	const struct config_param *param = NULL;
 
-	while ((param = config_get_next_param(block, param)) != NULL) {
+	while ((param = config_get_next_param(option, param)) != NULL) {
 		const char *current_name =
 			config_get_block_string(param, "name", NULL);
 		if (current_name != NULL && strcmp(current_name, name) == 0)

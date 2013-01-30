@@ -91,7 +91,8 @@ audio_output_mixer_type(const struct config_param *param)
 
 	/* fall back to the global "mixer_type" setting (also
 	   deprecated) */
-	return mixer_type_parse(config_get_string("mixer_type", "hardware"));
+	return mixer_type_parse(config_get_string(CONF_MIXER_TYPE,
+						  "hardware"));
 }
 
 static struct mixer *
@@ -312,8 +313,7 @@ audio_output_new(const struct config_param *param,
 			return nullptr;
 		}
 	} else {
-		g_warning("No \"%s\" defined in config file\n",
-			  CONF_AUDIO_OUTPUT);
+		g_warning("No 'audio_output' defined in config file\n");
 
 		plugin = audio_output_detect(error_r);
 		if (plugin == NULL)

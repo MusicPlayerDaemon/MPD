@@ -57,7 +57,10 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	const char *value = config_get_string(name, NULL);
+	ConfigOption option = ParseConfigOptionName(name);
+	const char *value = option != CONF_MAX
+		? config_get_string(option, nullptr)
+		: nullptr;
 	int ret;
 	if (value != NULL) {
 		g_print("%s\n", value);

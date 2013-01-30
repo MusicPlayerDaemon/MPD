@@ -148,7 +148,8 @@ src_mpd_SOURCES = \
 	src/Idle.cxx src/Idle.hxx \
 	src/CommandLine.cxx src/CommandLine.hxx \
 	src/ConfigFile.cxx \
-	src/ConfigTemplates.hxx \
+	src/ConfigTemplates.cxx src/ConfigTemplates.hxx \
+	src/ConfigOption.hxx \
 	src/CrossFade.cxx src/CrossFade.hxx \
 	src/cue/cue_parser.c src/cue/cue_parser.h \
 	src/decoder_error.h \
@@ -1052,7 +1053,8 @@ test_read_conf_LDADD = \
 	libfs.a \
 	$(GLIB_LIBS)
 test_read_conf_SOURCES = test/read_conf.cxx \
-	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c
+	src/ConfigFile.cxx src/ConfigTemplates.cxx \
+	src/tokenizer.c src/utils.c src/string_util.c
 
 test_run_resolver_LDADD = \
 	$(GLIB_LIBS)
@@ -1074,7 +1076,8 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/SongFilter.cxx \
 	src/TextFile.cxx \
-	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c
+	src/ConfigFile.cxx src/ConfigTemplates.cxx \
+	src/tokenizer.c src/utils.c src/string_util.c
 
 test_run_input_LDADD = \
 	$(INPUT_LIBS) \
@@ -1085,7 +1088,8 @@ test_run_input_LDADD = \
 test_run_input_SOURCES = test/run_input.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
-	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c\
+	src/ConfigFile.cxx src/ConfigTemplates.cxx \
+	src/tokenizer.c src/utils.c src/string_util.c\
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/uri.c \
 	src/fd_util.c
@@ -1101,7 +1105,8 @@ test_visit_archive_LDADD = \
 test_visit_archive_SOURCES = test/visit_archive.cxx \
 	src/IOThread.cxx \
 	src/InputStream.cxx \
-	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c \
+	src/ConfigFile.cxx src/ConfigTemplates.cxx \
+	src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/uri.c \
 	src/fd_util.c
@@ -1122,7 +1127,8 @@ test_dump_text_file_LDADD = \
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
-	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c\
+	src/ConfigFile.cxx src/ConfigTemplates.cxx \
+	src/tokenizer.c src/utils.c src/string_util.c\
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/text_input_stream.c \
 	src/uri.c \
@@ -1142,7 +1148,8 @@ test_dump_playlist_LDADD = \
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	$(DECODER_SRC) \
 	src/IOThread.cxx \
-	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c\
+	src/ConfigFile.cxx src/ConfigTemplates.cxx \
+	src/tokenizer.c src/utils.c src/string_util.c\
 	src/uri.c \
 	src/Song.cxx src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/tag_handler.c src/TagFile.cxx \
@@ -1170,7 +1177,8 @@ test_run_decoder_LDADD = \
 test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
-	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c \
+	src/ConfigFile.cxx src/ConfigTemplates.cxx \
+	src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/tag_handler.c \
 	src/ReplayGainInfo.cxx \
 	src/uri.c \
@@ -1194,7 +1202,8 @@ test_read_tags_LDADD = \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.cxx \
 	src/IOThread.cxx \
-	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c \
+	src/ConfigFile.cxx src/ConfigTemplates.cxx \
+	src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/tag_handler.c \
 	src/ReplayGainInfo.cxx \
 	src/uri.c \
@@ -1222,7 +1231,8 @@ test_run_filter_SOURCES = test/run_filter.cxx \
 	test/stdbin.h \
 	src/filter_plugin.c \
 	src/filter_registry.c \
-	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c \
+	src/ConfigFile.cxx src/ConfigTemplates.cxx \
+	src/tokenizer.c src/utils.c src/string_util.c \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/audio_parser.c \
@@ -1241,8 +1251,8 @@ if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
 test_run_encoder_SOURCES = test/run_encoder.c \
 	test/stdbin.h \
-	src/ConfigFile.cxx src/tokenizer.c \
-	src/utils.c src/string_util.c \
+	src/ConfigFile.cxx src/ConfigTemplates.cxx \
+	src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/audio_check.c \
 	src/audio_format.c \
@@ -1260,9 +1270,8 @@ if ENABLE_VORBIS_ENCODER
 noinst_PROGRAMS += test/test_vorbis_encoder
 test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.c \
 	test/stdbin.h \
-	src/ConfigFile.cxx src/tokenizer.c \
-	src/utils.c \
-	src/string_util.c \
+	src/ConfigFile.cxx src/ConfigTemplates.cxx \
+	src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/audio_check.c \
 	src/audio_format.c \
@@ -1316,7 +1325,8 @@ test_run_output_LDADD = $(MPD_LIBS) \
 test_run_output_SOURCES = test/run_output.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/stdbin.h \
-	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c \
+	src/ConfigFile.cxx src/ConfigTemplates.cxx \
+	src/tokenizer.c src/utils.c src/string_util.c \
 	src/IOThread.cxx \
 	src/audio_check.c \
 	src/audio_format.c \
@@ -1345,7 +1355,8 @@ test_read_mixer_LDADD = \
 	libfs.a \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.cxx \
-	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c \
+	src/ConfigFile.cxx src/ConfigTemplates.cxx \
+	src/tokenizer.c src/utils.c src/string_util.c \
 	src/mixer_control.c src/mixer_api.c \
 	src/filter_plugin.c \
 	src/filter/volume_filter_plugin.c \

@@ -46,7 +46,7 @@ extern "C" {
 
 #define CONF_COMMENT		'#'
 
-static GSList *config_params[G_N_ELEMENTS(config_templates)];
+static GSList *config_params[unsigned(CONF_MAX)];
 
 static bool
 get_bool(const char *value, bool *value_r)
@@ -309,8 +309,8 @@ ReadConfigFile(const Path &path, GError **error_r)
 		/* get the definition of that option, and check the
 		   "repeatable" flag */
 
-		int i = ConfigFindByName(name);
-		if (i < 0) {
+		const ConfigOption o = ParseConfigOptionName(name);
+		if (o == CONF_MAX) {
 			g_set_error(error_r, config_quark(), 0,
 				    "unrecognized parameter in config file at "
 				    "line %i: %s\n", count, name);
@@ -318,6 +318,7 @@ ReadConfigFile(const Path &path, GError **error_r)
 			return false;
 		}
 
+		const unsigned i = ParseConfigOptionName(name);
 		const ConfigTemplate &option = config_templates[i];
 		GSList *&params = config_params[i];
 
@@ -396,15 +397,9 @@ ReadConfigFile(const Path &path, GError **error_r)
 }
 
 const struct config_param *
-config_get_next_param(const char *name, const struct config_param * last)
+config_get_next_param(ConfigOption option, const struct config_param * last)
 {
-	struct config_param *param;
-
-	int i = ConfigFindByName(name);
-	if (i < 0)
-		return NULL;
-
-	GSList *node = config_params[i];
+	GSList *node = config_params[unsigned(option)];
 
 	if (last) {
 		node = g_slist_find(node, last);
@@ -417,15 +412,15 @@ config_get_next_param(const char *name, const struct config_param * last)
 	if (node == NULL)
 		return NULL;
 
-	param = (struct config_param *)node->data;
+	struct config_param *param = (struct config_param *)node->data;
 	param->used = true;
 	return param;
 }
 
 const char *
-config_get_string(const char *name, const char *default_value)
+config_get_string(ConfigOption option, const char *default_value)
 {
-	const struct config_param *param = config_get_param(name);
+	const struct config_param *param = config_get_param(option);
 
 	if (param == NULL)
 		return default_value;
@@ -434,28 +429,28 @@ config_get_string(const char *name, const char *default_value)
 }
 
 char *
-config_dup_path(const char *name, GError **error_r)
+config_dup_path(ConfigOption option, GError **error_r)
 {
 	assert(error_r != NULL);
 	assert(*error_r == NULL);
 
-	const struct config_param *param = config_get_param(name);
+	const struct config_param *param = config_get_param(option);
 	if (param == NULL)
 		return NULL;
 
 	char *path = parsePath(param->value, error_r);
 	if (G_UNLIKELY(path == NULL))
 		g_prefix_error(error_r,
-			       "Invalid path in \"%s\" at line %i: ",
-			       name, param->line);
+			       "Invalid path at line %i: ",
+			       param->line);
 
 	return path;
 }
 
 unsigned
-config_get_unsigned(const char *name, unsigned default_value)
+config_get_unsigned(ConfigOption option, unsigned default_value)
 {
-	const struct config_param *param = config_get_param(name);
+	const struct config_param *param = config_get_param(option);
 	long value;
 	char *endptr;
 
@@ -471,9 +466,9 @@ config_get_unsigned(const char *name, unsigned default_value)
 }
 
 unsigned
-config_get_positive(const char *name, unsigned default_value)
+config_get_positive(ConfigOption option, unsigned default_value)
 {
-	const struct config_param *param = config_get_param(name);
+	const struct config_param *param = config_get_param(option);
 	long value;
 	char *endptr;
 
@@ -507,9 +502,10 @@ config_get_block_param(const struct config_param * param, const char *name)
 	return NULL;
 }
 
-bool config_get_bool(const char *name, bool default_value)
+bool
+config_get_bool(ConfigOption option, bool default_value)
 {
-	const struct config_param *param = config_get_param(name);
+	const struct config_param *param = config_get_param(option);
 	bool success, value;
 
 	if (param == NULL)
@@ -517,9 +513,9 @@ bool config_get_bool(const char *name, bool default_value)
 
 	success = get_bool(param->value, &value);
 	if (!success)
-		MPD_ERROR("%s is not a boolean value (yes, true, 1) or "
+		MPD_ERROR("Expected boolean value (yes, true, 1) or "
 			  "(no, false, 0) on line %i\n",
-			  name, param->line);
+			  param->line);
 
 	return value;
 }

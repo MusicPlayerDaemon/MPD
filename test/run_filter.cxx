@@ -56,11 +56,11 @@ my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
 }
 
 static const struct config_param *
-find_named_config_block(const char *block, const char *name)
+find_named_config_block(ConfigOption option, const char *name)
 {
 	const struct config_param *param = NULL;
 
-	while ((param = config_get_next_param(block, param)) != NULL) {
+	while ((param = config_get_next_param(option, param)) != NULL) {
 		const char *current_name =
 			config_get_block_string(param, "name", NULL);
 		if (current_name != NULL && strcmp(current_name, name) == 0)
@@ -77,7 +77,7 @@ load_filter(const char *name)
 	struct filter *filter;
 	GError *error = NULL;
 
-	param = find_named_config_block("filter", name);
+	param = find_named_config_block(CONF_AUDIO_FILTER, name);
 	if (param == NULL) {
 		g_printerr("No such configured filter: %s\n", name);
 		return nullptr;

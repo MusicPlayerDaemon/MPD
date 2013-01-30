@@ -261,8 +261,7 @@ log_init(bool verbose, bool use_stdout, GError **error_r)
 			return true;
 #else
 			g_set_error(error_r, log_quark(), 0,
-				    "config parameter \"%s\" not found",
-				    CONF_LOG_FILE);
+				    "config parameter 'log_file' not found");
 			return false;
 #endif
 #ifdef HAVE_SYSLOG

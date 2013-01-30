@@ -180,7 +180,7 @@ playlist_state_restore(const char *line, TextFile &file,
 			current = 0;
 
 		if (state == PLAYER_STATE_PLAY &&
-		    config_get_bool("restore_paused", false))
+		    config_get_bool(CONF_RESTORE_PAUSED, false))
 			/* the user doesn't want MPD to auto-start
 			   playback after startup; fall back to
 			   "pause" */

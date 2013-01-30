@@ -167,12 +167,11 @@ glue_mapper_init(GError **error_r)
 static bool
 glue_db_init_and_load(void)
 {
-	const struct config_param *param = config_get_param("database");
+	const struct config_param *param = config_get_param(CONF_DATABASE);
 	const struct config_param *path = config_get_param(CONF_DB_FILE);
 
 	if (param != NULL && path != NULL)
-		g_message("Found both 'database' and '" CONF_DB_FILE
-			  "' setting - ignoring the latter");
+		g_message("Found both 'database' and 'db_file' setting - ignoring the latter");
 
 	GError *error = NULL;
 	bool ret;
@@ -180,10 +179,10 @@ glue_db_init_and_load(void)
 	if (!mapper_has_music_directory()) {
 		if (param != NULL)
 			g_message("Found database setting without "
-				  CONF_MUSIC_DIR " - disabling database");
+				  "music_directory - disabling database");
 		if (path != NULL)
-			g_message("Found " CONF_DB_FILE " setting without "
-				  CONF_MUSIC_DIR " - disabling database");
+			g_message("Found db_file setting without "
+				  "music_directory - disabling database");
 		return true;
 	}
 
