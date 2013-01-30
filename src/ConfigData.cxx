@@ -39,22 +39,10 @@ config_param::~config_param()
 	g_free(value);
 }
 
-void
-config_add_block_param(struct config_param * param, const char *name,
-		       const char *value, int line)
+const block_param *
+config_param::GetBlockParam(const char *name) const
 {
-	assert(config_get_block_param(param, name) == NULL);
-
-	param->block_params.emplace_back(name, value, line);
-}
-
-const struct block_param *
-config_get_block_param(const struct config_param * param, const char *name)
-{
-	if (param == NULL)
-		return NULL;
-
-	for (auto &i : param->block_params) {
+	for (const auto &i : block_params) {
 		if (i.name == name) {
 			i.used = true;
 			return &i;
@@ -68,8 +56,10 @@ const char *
 config_get_block_string(const struct config_param *param, const char *name,
 			const char *default_value)
 {
-	const struct block_param *bp = config_get_block_param(param, name);
+	if (param == nullptr)
+		return default_value;
 
+	const block_param *bp = param->GetBlockParam(name);
 	if (bp == NULL)
 		return default_value;
 
@@ -90,7 +80,10 @@ config_dup_block_path(const struct config_param *param, const char *name,
 	assert(error_r != NULL);
 	assert(*error_r == NULL);
 
-	const struct block_param *bp = config_get_block_param(param, name);
+	if (param == nullptr)
+		return nullptr;
+
+	const block_param *bp = param->GetBlockParam(name);
 	if (bp == NULL)
 		return NULL;
 
@@ -107,14 +100,15 @@ unsigned
 config_get_block_unsigned(const struct config_param *param, const char *name,
 			  unsigned default_value)
 {
-	const struct block_param *bp = config_get_block_param(param, name);
-	long value;
-	char *endptr;
+	if (param == nullptr)
+		return default_value;
 
+	const block_param *bp = param->GetBlockParam(name);
 	if (bp == NULL)
 		return default_value;
 
-	value = strtol(bp->value.c_str(), &endptr, 0);
+	char *endptr;
+	long value = strtol(bp->value.c_str(), &endptr, 0);
 	if (*endptr != 0)
 		MPD_ERROR("Not a valid number in line %i", bp->line);
 
@@ -128,7 +122,10 @@ bool
 config_get_block_bool(const struct config_param *param, const char *name,
 		      bool default_value)
 {
-	const struct block_param *bp = config_get_block_param(param, name);
+	if (param == nullptr)
+		return default_value;
+
+	const block_param *bp = param->GetBlockParam(name);
 	bool success, value;
 
 	if (bp == NULL)

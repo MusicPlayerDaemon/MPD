@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 	}
 
 	config_param param;
-	config_add_block_param(&param, "quality", "5.0", -1);
+	param.AddBlockParam("quality", "5.0", -1);
 
 	encoder = encoder_init(plugin, &param, &error);
 	if (encoder == NULL) {

@@ -68,8 +68,20 @@ struct config_param {
 
 	config_param(int _line=-1)
 		:value(nullptr), line(_line), used(false) {}
+
+	gcc_nonnull_all
 	config_param(const char *_value, int _line=-1);
+
 	~config_param();
+
+	gcc_nonnull_all
+	void AddBlockParam(const char *_name, const char *_value,
+			   int _line=-1) {
+		block_params.emplace_back(_name, _value, _line);
+	}
+
+	gcc_nonnull_all gcc_pure
+	const block_param *GetBlockParam(const char *_name) const;
 #endif
 };
 
@@ -84,14 +96,6 @@ struct ConfigData {
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-void
-config_add_block_param(struct config_param * param, const char *name,
-		       const char *value, int line);
-
-gcc_pure
-const struct block_param *
-config_get_block_param(const struct config_param *param, const char *name);
 
 gcc_pure
 const char *

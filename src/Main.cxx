@@ -190,8 +190,7 @@ glue_db_init_and_load(void)
 
 	if (param == NULL && path != NULL) {
 		allocated = new config_param("database", path->line);
-		config_add_block_param(allocated, "path",
-				       path->value, path->line);
+		allocated->AddBlockParam("path", path->value, path->line);
 		param = allocated;
 	}
 

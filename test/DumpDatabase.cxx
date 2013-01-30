@@ -108,8 +108,7 @@ main(int argc, char **argv)
 	const struct config_param *path = config_get_param(CONF_DB_FILE);
 	config_param param("database", path->line);
 	if (path != nullptr)
-		config_add_block_param(&param, "path", path->value,
-				       path->line);
+		param.AddBlockParam("path", path->value, path->line);
 
 	Database *db = plugin->create(&param, &error);
 

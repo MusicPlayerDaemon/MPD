@@ -75,7 +75,7 @@ config_read_name_value(struct config_param *param, char *input, unsigned line,
 		return false;
 	}
 
-	const struct block_param *bp = config_get_block_param(param, name);
+	const struct block_param *bp = param->GetBlockParam(name);
 	if (bp != NULL) {
 		g_set_error(error_r, config_quark(), 0,
 			    "\"%s\" is duplicate, first defined on line %i",
@@ -83,7 +83,7 @@ config_read_name_value(struct config_param *param, char *input, unsigned line,
 		return false;
 	}
 
-	config_add_block_param(param, name, value, line);
+	param->AddBlockParam(name, value, line);
 	return true;
 }
 
