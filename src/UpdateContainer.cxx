@@ -52,7 +52,6 @@ make_directory_if_modified(Directory *parent, const char *name,
 	if (directory != NULL) {
 		if (directory->mtime == st->st_mtime && !walk_discard) {
 			/* not modified */
-			db_unlock();
 			return NULL;
 		}
 
