@@ -56,7 +56,6 @@ struct WatchDirectory {
 
 	GList *children;
 
-	WatchDirectory() = default;
 	WatchDirectory(WatchDirectory *_parent, const char *_name,
 		       int _descriptor)
 		:parent(_parent), name(g_strdup(_name)),
@@ -68,7 +67,7 @@ static InotifySource *inotify_source;
 static InotifyQueue *inotify_queue;
 
 static unsigned inotify_max_depth;
-static WatchDirectory inotify_root;
+static WatchDirectory *inotify_root;
 static std::map<int, WatchDirectory *> inotify_directories;
 
 static void
@@ -322,10 +321,8 @@ mpd_inotify_init(unsigned max_depth)
 
 	inotify_max_depth = max_depth;
 
-	inotify_root.name = g_strdup(path.c_str());
-	inotify_root.descriptor = inotify_source->Add(path.c_str(),
-						      IN_MASK, &error);
-	if (inotify_root.descriptor < 0) {
+	int descriptor = inotify_source->Add(path.c_str(), IN_MASK, &error);
+	if (descriptor < 0) {
 		g_warning("%s", error->message);
 		g_error_free(error);
 		delete inotify_source;
@@ -333,9 +330,11 @@ mpd_inotify_init(unsigned max_depth)
 		return;
 	}
 
-	tree_add_watch_directory(&inotify_root);
+	inotify_root = new WatchDirectory(nullptr, path.c_str(), descriptor);
 
-	recursive_watch_subdirectories(&inotify_root, path.c_str(), 0);
+	tree_add_watch_directory(inotify_root);
+
+	recursive_watch_subdirectories(inotify_root, path.c_str(), 0);
 
 	inotify_queue = new InotifyQueue(*main_loop);
 
@@ -357,8 +356,7 @@ mpd_inotify_finish(void)
 		g_free(directory->name);
 		g_list_free(directory->children);
 
-		if (directory != &inotify_root)
-			delete directory;
+		delete directory;
 	}
 
 	inotify_directories.clear();
