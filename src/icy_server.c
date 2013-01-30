@@ -85,9 +85,8 @@ icy_server_metadata_string(const char *stream_title, const char* stream_url)
 }
 
 struct page*
-icy_server_metadata_page(const struct tag *tag, ...)
+icy_server_metadata_page(const struct tag *tag, const enum tag_type *types)
 {
-	va_list args;
 	const gchar *tag_items[TAG_NUM_OF_ITEM_TYPES];
 	gint last_item, item;
 	guint position;
@@ -100,22 +99,11 @@ icy_server_metadata_page(const struct tag *tag, ...)
 
 	last_item = -1;
 
-	va_start(args, tag);
-	while (1) {
-		enum tag_type type;
-		const gchar *tag_item;
-
-		type = va_arg(args, enum tag_type);
-
-		if (type == TAG_NUM_OF_ITEM_TYPES)
-			break;
-
-		tag_item = tag_get_value(tag, type);
-
+	while (*types != TAG_NUM_OF_ITEM_TYPES) {
+		const gchar *tag_item = tag_get_value(tag, *types);
 		if (tag_item)
 			tag_items[++last_item] = tag_item;
 	}
-	va_end(args);
 
 	position = item = 0;
 	while (position < sizeof(stream_title) && item <= last_item) {

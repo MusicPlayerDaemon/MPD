@@ -505,9 +505,12 @@ HttpdOutput::SendTag(const struct tag *tag)
 		if (metadata != NULL)
 			page_unref(metadata);
 
-		metadata = icy_server_metadata_page(tag, TAG_ALBUM,
-						    TAG_ARTIST, TAG_TITLE,
-						    TAG_NUM_OF_ITEM_TYPES);
+		static constexpr tag_type types[] = {
+			TAG_ALBUM, TAG_ARTIST, TAG_TITLE,
+			TAG_NUM_OF_ITEM_TYPES
+		};
+
+		metadata = icy_server_metadata_page(tag, &types[0]);
 		if (metadata != NULL) {
 			const ScopeLock protect(mutex);
 			for (auto &client : clients)

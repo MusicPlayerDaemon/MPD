@@ -23,8 +23,6 @@
 #include "page.h"
 #include "tag.h"
 
-#include <stdarg.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -35,7 +33,7 @@ icy_server_metadata_header(const char *name,
 			   const char *content_type, int metaint);
 
 struct page*
-icy_server_metadata_page(const struct tag *tag, ...);
+icy_server_metadata_page(const struct tag *tag, const enum tag_type *types);
 
 #ifdef __cplusplus
 }
