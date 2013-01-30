@@ -165,10 +165,16 @@ httpd_output_init(const struct config_param *param,
 	return &httpd->base;
 }
 
+static inline constexpr HttpdOutput *
+Cast(audio_output *ao)
+{
+	return (HttpdOutput *)((char *)ao - offsetof(HttpdOutput, base));
+}
+
 static void
 httpd_output_finish(struct audio_output *ao)
 {
-	HttpdOutput *httpd = (HttpdOutput *)ao;
+	HttpdOutput *httpd = Cast(ao);
 
 	ao_base_finish(&httpd->base);
 	delete httpd;
@@ -273,7 +279,7 @@ HttpdOutput::ReadPage()
 static bool
 httpd_output_enable(struct audio_output *ao, GError **error_r)
 {
-	HttpdOutput *httpd = (HttpdOutput *)ao;
+	HttpdOutput *httpd = Cast(ao);
 
 	return httpd->Bind(error_r);
 }
@@ -281,7 +287,7 @@ httpd_output_enable(struct audio_output *ao, GError **error_r)
 static void
 httpd_output_disable(struct audio_output *ao)
 {
-	HttpdOutput *httpd = (HttpdOutput *)ao;
+	HttpdOutput *httpd = Cast(ao);
 
 	httpd->Unbind();
 }
@@ -327,7 +333,7 @@ static bool
 httpd_output_open(struct audio_output *ao, struct audio_format *audio_format,
 		  GError **error)
 {
-	HttpdOutput *httpd = (HttpdOutput *)ao;
+	HttpdOutput *httpd = Cast(ao);
 
 	assert(httpd->clients.empty());
 
@@ -355,7 +361,7 @@ HttpdOutput::Close()
 static void
 httpd_output_close(struct audio_output *ao)
 {
-	HttpdOutput *httpd = (HttpdOutput *)ao;
+	HttpdOutput *httpd = Cast(ao);
 
 	const ScopeLock protect(httpd->mutex);
 	httpd->Close();
@@ -387,7 +393,7 @@ HttpdOutput::SendHeader(HttpdClient &client) const
 static unsigned
 httpd_output_delay(struct audio_output *ao)
 {
-	HttpdOutput *httpd = (HttpdOutput *)ao;
+	HttpdOutput *httpd = Cast(ao);
 
 	if (!httpd->LockHasClients() && httpd->base.pause) {
 		/* if there's no client and this output is paused,
@@ -452,7 +458,7 @@ static size_t
 httpd_output_play(struct audio_output *ao, const void *chunk, size_t size,
 		  GError **error_r)
 {
-	HttpdOutput *httpd = (HttpdOutput *)ao;
+	HttpdOutput *httpd = Cast(ao);
 
 	if (httpd->LockHasClients()) {
 		if (!httpd->EncodeAndPlay(chunk, size, error_r))
@@ -469,7 +475,7 @@ httpd_output_play(struct audio_output *ao, const void *chunk, size_t size,
 static bool
 httpd_output_pause(struct audio_output *ao)
 {
-	HttpdOutput *httpd = (HttpdOutput *)ao;
+	HttpdOutput *httpd = Cast(ao);
 
 	if (httpd->LockHasClients()) {
 		static const char silence[1020] = { 0 };
@@ -532,7 +538,7 @@ HttpdOutput::SendTag(const struct tag *tag)
 static void
 httpd_output_tag(struct audio_output *ao, const struct tag *tag)
 {
-	HttpdOutput *httpd = (HttpdOutput *)ao;
+	HttpdOutput *httpd = Cast(ao);
 
 	httpd->SendTag(tag);
 }
@@ -540,7 +546,7 @@ httpd_output_tag(struct audio_output *ao, const struct tag *tag)
 static void
 httpd_output_cancel(struct audio_output *ao)
 {
-	HttpdOutput *httpd = (HttpdOutput *)ao;
+	HttpdOutput *httpd = Cast(ao);
 
 	const ScopeLock protect(httpd->mutex);
 	for (auto &client : httpd->clients)
