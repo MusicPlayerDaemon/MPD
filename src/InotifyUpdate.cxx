@@ -28,6 +28,7 @@
 #include <glib.h>
 
 #include <map>
+#include <forward_list>
 
 #include <assert.h>
 #include <sys/inotify.h>
@@ -54,17 +55,18 @@ struct WatchDirectory {
 
 	int descriptor;
 
-	GList *children;
+	std::forward_list<WatchDirectory> children;
 
 	WatchDirectory(WatchDirectory *_parent, const char *_name,
 		       int _descriptor)
 		:parent(_parent), name(g_strdup(_name)),
-		 descriptor(_descriptor),
-		 children(nullptr) {}
+		 descriptor(_descriptor) {}
+
+	WatchDirectory(const WatchDirectory &) = delete;
+	WatchDirectory &operator=(const WatchDirectory &) = delete;
 
 	~WatchDirectory() {
 		g_free(name);
-		g_list_free(children);
 	}
 };
 
@@ -101,6 +103,17 @@ tree_find_watch_directory(int wd)
 }
 
 static void
+disable_watch_directory(WatchDirectory &directory)
+{
+	tree_remove_watch_directory(&directory);
+
+	for (WatchDirectory &child : directory.children)
+		disable_watch_directory(child);
+
+	inotify_source->Remove(directory.descriptor);
+}
+
+static void
 remove_watch_directory(WatchDirectory *directory)
 {
 	assert(directory != NULL);
@@ -111,18 +124,12 @@ remove_watch_directory(WatchDirectory *directory)
 		return;
 	}
 
-	assert(directory->parent->children != NULL);
+	disable_watch_directory(*directory);
 
-	tree_remove_watch_directory(directory);
-
-	while (directory->children != NULL)
-		remove_watch_directory((WatchDirectory *)directory->children->data);
-
-	directory->parent->children =
-		g_list_remove(directory->parent->children, directory);
-
-	inotify_source->Remove(directory->descriptor);
-	delete directory;
+	/* remove it from the parent, which effectively deletes it */
+	directory->parent->children.remove_if([directory](const WatchDirectory &child){
+			return &child == directory;
+		});
 }
 
 static char *
@@ -214,10 +221,8 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 			continue;
 		}
 
-		child = new WatchDirectory(directory, ent->d_name, ret);
-
-		directory->children = g_list_prepend(directory->children,
-						     child);
+		directory->children.emplace_front(directory, ent->d_name, ret);
+		child = &directory->children.front();
 
 		tree_add_watch_directory(child);
 
@@ -353,11 +358,6 @@ mpd_inotify_finish(void)
 
 	delete inotify_queue;
 	delete inotify_source;
-
-	for (auto i : inotify_directories) {
-		WatchDirectory *directory = i.second;
-		delete directory;
-	}
-
+	delete inotify_root;
 	inotify_directories.clear();
 }
