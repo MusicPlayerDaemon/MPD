@@ -55,6 +55,13 @@ struct WatchDirectory {
 	int descriptor;
 
 	GList *children;
+
+	WatchDirectory() = default;
+	WatchDirectory(WatchDirectory *_parent, const char *_name,
+		       int _descriptor)
+		:parent(_parent), name(g_strdup(_name)),
+		 descriptor(_descriptor),
+		 children(nullptr) {}
 };
 
 static InotifySource *inotify_source;
@@ -112,7 +119,7 @@ remove_watch_directory(WatchDirectory *directory)
 
 	inotify_source->Remove(directory->descriptor);
 	g_free(directory->name);
-	g_slice_free(WatchDirectory, directory);
+	delete directory;
 }
 
 static char *
@@ -169,7 +176,6 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 		char *child_path_fs;
 		struct stat st;
 		int ret;
-		WatchDirectory *child;
 
 		if (skip_path(ent->d_name))
 			continue;
@@ -198,18 +204,14 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 			continue;
 		}
 
-		child = tree_find_watch_directory(ret);
+		WatchDirectory *child = tree_find_watch_directory(ret);
 		if (child != NULL) {
 			/* already being watched */
 			g_free(child_path_fs);
 			continue;
 		}
 
-		child = g_slice_new(WatchDirectory);
-		child->parent = directory;
-		child->name = g_strdup(ent->d_name);
-		child->descriptor = ret;
-		child->children = NULL;
+		child = new WatchDirectory(directory, ent->d_name, ret);
 
 		directory->children = g_list_prepend(directory->children,
 						     child);
@@ -356,7 +358,7 @@ mpd_inotify_finish(void)
 		g_list_free(directory->children);
 
 		if (directory != &inotify_root)
-			g_slice_free(WatchDirectory, directory);
+			delete directory;
 	}
 
 	inotify_directories.clear();
