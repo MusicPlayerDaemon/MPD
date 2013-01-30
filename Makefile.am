@@ -1276,7 +1276,7 @@ endif
 
 if ENABLE_VORBIS_ENCODER
 noinst_PROGRAMS += test/test_vorbis_encoder
-test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.c \
+test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.cxx \
 	test/stdbin.h \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
