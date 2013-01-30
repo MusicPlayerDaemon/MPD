@@ -29,6 +29,8 @@ extern "C" {
 #include "filter_internal.h"
 #include "filter_registry.h"
 
+#include <glib.h>
+
 #include <string.h>
 
 static GQuark
