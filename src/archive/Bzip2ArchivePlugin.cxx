@@ -46,18 +46,28 @@ class Bzip2ArchiveFile : public ArchiveFile {
 public:
 	RefCount ref;
 
-	char *name;
-	struct input_stream *istream;
+	char *const name;
+	struct input_stream *const istream;
 
-	Bzip2ArchiveFile():ArchiveFile(bz2_archive_plugin) {}
+	Bzip2ArchiveFile(const char *path, input_stream *_is)
+		:ArchiveFile(bz2_archive_plugin),
+		 name(g_path_get_basename(path)),
+		 istream(_is) {
+		// remove .bz2 suffix
+		size_t len = strlen(name);
+		if (len > 4)
+			name[len - 4] = 0;
+	}
+
+	~Bzip2ArchiveFile() {
+		input_stream_close(istream);
+	}
 
 	void Unref() {
 		if (!ref.Decrement())
 			return;
 
 		g_free(name);
-
-		input_stream_close(istream);
 		delete this;
 	}
 };
@@ -123,28 +133,13 @@ Bzip2InputStream::Close()
 static ArchiveFile *
 bz2_open(const char *pathname, GError **error_r)
 {
-	Bzip2ArchiveFile *context = new Bzip2ArchiveFile();
-	int len;
-
-	//open archive
 	static Mutex mutex;
 	static Cond cond;
-	context->istream = input_stream_open(pathname, mutex, cond,
-					     error_r);
-	if (context->istream == NULL) {
-		delete context;
-		return NULL;
-	}
+	input_stream *is = input_stream_open(pathname, mutex, cond, error_r);
+	if (is == nullptr)
+		return nullptr;
 
-	context->name = g_path_get_basename(pathname);
-
-	//remove suffix
-	len = strlen(context->name);
-	if (len > 4) {
-		context->name[len - 4] = 0; //remove .bz2 suffix
-	}
-
-	return context;
+	return new Bzip2ArchiveFile(pathname, is);
 }
 
 static void
