@@ -36,16 +36,20 @@
 
 #define DEFAULT_PORT	6600
 
-static ServerSocket *listen_socket;
-int listen_port;
+class ClientListener final : public ServerSocket {
+public:
+	ClientListener():ServerSocket(*main_loop) {}
 
-static void
-listen_callback(int fd, const struct sockaddr *address,
-		size_t address_length, int uid, G_GNUC_UNUSED void *ctx)
-{
-	client_new(*main_loop, *global_partition,
-		   fd, address, address_length, uid);
-}
+private:
+	virtual void OnAccept(int fd, const sockaddr &address,
+			      size_t address_length, int uid) {
+		client_new(*main_loop, *global_partition,
+			   fd, &address, address_length, uid);
+	}
+};
+
+static ClientListener *listen_socket;
+int listen_port;
 
 static bool
 listen_add_config_param(unsigned int port,
@@ -98,7 +102,7 @@ listen_global_init(GError **error_r)
 	bool success;
 	GError *error = NULL;
 
-	listen_socket = new ServerSocket(*main_loop, listen_callback, nullptr);
+	listen_socket = new ClientListener();
 
 	if (listen_systemd_activation(&error))
 		return true;

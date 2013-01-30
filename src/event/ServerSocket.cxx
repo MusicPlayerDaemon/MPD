@@ -54,7 +54,7 @@
 #define DEFAULT_PORT	6600
 
 class OneServerSocket final : private SocketMonitor {
-	const ServerSocket &parent;
+	ServerSocket &parent;
 
 	const unsigned serial;
 
@@ -64,7 +64,7 @@ class OneServerSocket final : private SocketMonitor {
 	struct sockaddr *address;
 
 public:
-	OneServerSocket(EventLoop &_loop, const ServerSocket &_parent,
+	OneServerSocket(EventLoop &_loop, ServerSocket &_parent,
 			unsigned _serial,
 			const struct sockaddr *_address,
 			size_t _address_length)
@@ -176,10 +176,9 @@ OneServerSocket::Accept()
 			  (const char *)msg);
 	}
 
-	parent.callback(peer_fd,
-			(const struct sockaddr*)&peer_address,
-			peer_address_length, get_remote_uid(peer_fd),
-			parent.callback_ctx);
+	parent.OnAccept(peer_fd,
+			(const sockaddr &)peer_address,
+			peer_address_length, get_remote_uid(peer_fd));
 }
 
 bool
@@ -213,12 +212,8 @@ OneServerSocket::Open(GError **error_r)
 	return true;
 }
 
-ServerSocket::ServerSocket(EventLoop &_loop,
-			   server_socket_callback_t _callback,
-			   void *_callback_ctx)
-	:loop(_loop),
-	 callback(_callback), callback_ctx(_callback_ctx),
-	 next_serial(1) {}
+ServerSocket::ServerSocket(EventLoop &_loop)
+	:loop(_loop), next_serial(1) {}
 
 /* this is just here to allow the OneServerSocket forward
    declaration */

@@ -28,6 +28,7 @@
 #include "output_internal.h"
 #include "timer.h"
 #include "thread/Mutex.hxx"
+#include "event/ServerSocket.hxx"
 
 #include <glib.h>
 
@@ -39,7 +40,7 @@ class ServerSocket;
 class HttpdClient;
 class Page;
 
-struct HttpdOutput {
+struct HttpdOutput final : private ServerSocket {
 	struct audio_output base;
 
 	/**
@@ -77,11 +78,6 @@ struct HttpdOutput {
 	 * wallclock.
 	 */
 	struct timer *timer;
-
-	/**
-	 * The listener socket.
-	 */
-	ServerSocket *server_socket;
 
 	/**
 	 * The header page, which is sent to every client on connect.
@@ -201,6 +197,10 @@ struct HttpdOutput {
 	bool EncodeAndPlay(const void *chunk, size_t size, GError **error_r);
 
 	void SendTag(const struct tag *tag);
+
+private:
+	virtual void OnAccept(int fd, const sockaddr &address,
+			      size_t address_length, int uid) override;
 };
 
 #endif

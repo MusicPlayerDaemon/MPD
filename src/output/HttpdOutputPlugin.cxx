@@ -28,7 +28,6 @@
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "fd_util.h"
-#include "event/ServerSocket.hxx"
 #include "Main.hxx"
 
 #include <assert.h>
@@ -54,14 +53,10 @@ httpd_output_quark(void)
 	return g_quark_from_static_string("httpd_output");
 }
 
-static void
-httpd_listen_in_event(int fd, const struct sockaddr *address,
-		      size_t address_length, int uid, void *ctx);
-
 inline
 HttpdOutput::HttpdOutput(EventLoop &_loop)
-	:encoder(nullptr), unflushed_input(0),
-	 server_socket(new ServerSocket(_loop, httpd_listen_in_event, this)),
+	:ServerSocket(_loop),
+	 encoder(nullptr), unflushed_input(0),
 	 metadata(nullptr)
 {
 }
@@ -74,8 +69,6 @@ HttpdOutput::~HttpdOutput()
 	if (encoder != nullptr)
 		encoder_finish(encoder);
 
-	delete server_socket;
-
 }
 
 inline bool
@@ -84,7 +77,7 @@ HttpdOutput::Bind(GError **error_r)
 	open = false;
 
 	const ScopeLock protect(mutex);
-	return server_socket->Open(error_r);
+	return ServerSocket::Open(error_r);
 }
 
 inline void
@@ -93,7 +86,7 @@ HttpdOutput::Unbind()
 	assert(!open);
 
 	const ScopeLock protect(mutex);
-	server_socket->Close();
+	ServerSocket::Close();
 }
 
 inline bool
@@ -125,8 +118,8 @@ HttpdOutput::Configure(const config_param *param, GError **error_r)
 		config_get_block_string(param, "bind_to_address", NULL);
 	bool success = bind_to_address != NULL &&
 		strcmp(bind_to_address, "any") != 0
-		? server_socket->AddHost(bind_to_address, port, error_r)
-		: server_socket->AddPort(port, error_r);
+		? AddHost(bind_to_address, port, error_r)
+		: AddPort(port, error_r);
 	if (!success)
 		return false;
 
@@ -165,11 +158,20 @@ httpd_output_init(const struct config_param *param,
 	return &httpd->base;
 }
 
+#if GCC_CHECK_VERSION(4,6) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif
+
 static inline constexpr HttpdOutput *
 Cast(audio_output *ao)
 {
 	return (HttpdOutput *)((char *)ao - offsetof(HttpdOutput, base));
 }
+
+#if GCC_CHECK_VERSION(4,6) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 static void
 httpd_output_finish(struct audio_output *ao)
@@ -196,18 +198,16 @@ HttpdOutput::AddClient(int fd)
 		clients.front().PushMetaData(metadata);
 }
 
-static void
-httpd_listen_in_event(int fd, const struct sockaddr *address,
-		      size_t address_length, G_GNUC_UNUSED int uid, void *ctx)
+void
+HttpdOutput::OnAccept(int fd, const sockaddr &address,
+		      size_t address_length, gcc_unused int uid)
 {
-	HttpdOutput *httpd = (HttpdOutput *)ctx;
-
 	/* the listener socket has become readable - a client has
 	   connected */
 
 #ifdef HAVE_LIBWRAP
-	if (address->sa_family != AF_UNIX) {
-		char *hostaddr = sockaddr_to_string(address, address_length, NULL);
+	if (address.sa_family != AF_UNIX) {
+		char *hostaddr = sockaddr_to_string(&address, address_length, NULL);
 		const char *progname = g_get_prgname();
 
 		struct request_info req;
@@ -231,14 +231,12 @@ httpd_listen_in_event(int fd, const struct sockaddr *address,
 	(void)address_length;
 #endif	/* HAVE_WRAP */
 
-	const ScopeLock protect(httpd->mutex);
+	const ScopeLock protect(mutex);
 
 	if (fd >= 0) {
 		/* can we allow additional client */
-		if (httpd->open &&
-		    (httpd->clients_max == 0 ||
-		     httpd->clients_cnt < httpd->clients_max))
-			httpd->AddClient(fd);
+		if (open && (clients_max == 0 ||  clients_cnt < clients_max))
+			AddClient(fd);
 		else
 			close_socket(fd);
 	} else if (fd < 0 && errno != EINTR) {

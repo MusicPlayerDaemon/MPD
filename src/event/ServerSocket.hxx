@@ -41,16 +41,12 @@ class ServerSocket {
 
 	EventLoop &loop;
 
-	server_socket_callback_t callback;
-	void *callback_ctx;
-
 	std::forward_list<OneServerSocket> sockets;
 
 	unsigned next_serial;
 
 public:
-	ServerSocket(EventLoop &_loop,
-		     server_socket_callback_t _callback, void *_callback_ctx);
+	ServerSocket(EventLoop &_loop);
 	~ServerSocket();
 
 private:
@@ -112,6 +108,10 @@ public:
 
 	bool Open(GError **error_r);
 	void Close();
+
+protected:
+	virtual void OnAccept(int fd, const sockaddr &address,
+			      size_t address_length, int uid) = 0;
 };
 
 #endif
