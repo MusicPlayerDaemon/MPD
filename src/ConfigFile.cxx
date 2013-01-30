@@ -47,7 +47,7 @@ extern "C" {
 
 #define CONF_COMMENT		'#'
 
-static GSList *config_params[unsigned(CONF_MAX)];
+static ConfigData config_data;
 
 static void
 config_param_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
@@ -59,10 +59,9 @@ config_param_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 
 void config_global_finish(void)
 {
-	for (unsigned i = 0; i < G_N_ELEMENTS(config_params); ++i) {
-		g_slist_foreach(config_params[i],
-				config_param_free_callback, NULL);
-		g_slist_free(config_params[i]);
+	for (auto i : config_data.params) {
+		g_slist_foreach(i, config_param_free_callback, NULL);
+		g_slist_free(i);
 	}
 }
 
@@ -92,8 +91,8 @@ config_param_check(gpointer data, G_GNUC_UNUSED gpointer user_data)
 
 void config_global_check(void)
 {
-	for (unsigned i = 0; i < G_N_ELEMENTS(config_params); ++i)
-		g_slist_foreach(config_params[i], config_param_check, NULL);
+	for (auto i : config_data.params)
+		g_slist_foreach(i, config_param_check, NULL);
 }
 
 static bool
@@ -244,7 +243,7 @@ ReadConfigFile(const Path &path, GError **error_r)
 
 		const unsigned i = ParseConfigOptionName(name);
 		const ConfigTemplate &option = config_templates[i];
-		GSList *&params = config_params[i];
+		GSList *&params = config_data.params[i];
 
 		if (params != NULL && !option.repeatable) {
 			param = (struct config_param *)params->data;
@@ -323,7 +322,7 @@ ReadConfigFile(const Path &path, GError **error_r)
 const struct config_param *
 config_get_next_param(ConfigOption option, const struct config_param * last)
 {
-	GSList *node = config_params[unsigned(option)];
+	GSList *node = config_data.params[unsigned(option)];
 
 	if (last) {
 		node = g_slist_find(node, last);

@@ -20,10 +20,18 @@
 #ifndef MPD_CONFIG_DATA_HXX
 #define MPD_CONFIG_DATA_HXX
 
+#include "ConfigOption.hxx"
 #include "gerror.h"
 #include "gcc.h"
 
+#ifdef __cplusplus
+#include <glib.h>
+#include <array>
+#endif
+
 #include <stdbool.h>
+
+#ifdef __cplusplus
 
 struct block_param {
 	char *name;
@@ -36,6 +44,8 @@ struct block_param {
 	 */
 	bool used;
 };
+
+#endif
 
 struct config_param {
 	char *value;
@@ -50,6 +60,14 @@ struct config_param {
 	 */
 	bool used;
 };
+
+#ifdef __cplusplus
+
+struct ConfigData {
+	std::array<GSList *, std::size_t(CONF_MAX)> params;
+};
+
+#endif
 
 #ifdef __cplusplus
 extern "C" {
