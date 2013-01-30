@@ -53,10 +53,10 @@ main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 	const struct encoder_plugin *plugin = encoder_plugin_get("vorbis");
 	assert(plugin != NULL);
 
-	struct config_param *param = config_new_param(NULL, -1);
-	config_add_block_param(param, "quality", "5.0", -1);
+	config_param param;
+	config_add_block_param(&param, "quality", "5.0", -1);
 
-	struct encoder *encoder = encoder_init(plugin, param, NULL);
+	struct encoder *encoder = encoder_init(plugin, &param, NULL);
 	assert(encoder != NULL);
 
 	/* open the encoder */

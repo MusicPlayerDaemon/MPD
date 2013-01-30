@@ -45,6 +45,10 @@ struct block_param {
 	 * this option yet.
 	 */
 	mutable bool used;
+
+	gcc_nonnull_all
+	block_param(const char *_name, const char *_value, int _line=-1)
+		:name(_name), value(_value), line(_line), used(false) {}
 };
 
 #endif
@@ -61,6 +65,11 @@ struct config_param {
 	 * this option yet.
 	 */
 	bool used;
+
+	config_param(int _line=-1)
+		:value(nullptr), line(_line), used(false) {}
+	config_param(const char *_value, int _line=-1);
+	~config_param();
 #endif
 };
 
@@ -75,13 +84,6 @@ struct ConfigData {
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-gcc_malloc
-struct config_param *
-config_new_param(const char *value, int line);
-
-void
-config_param_free(struct config_param *param);
 
 void
 config_add_block_param(struct config_param * param, const char *name,

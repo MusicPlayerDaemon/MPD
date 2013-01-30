@@ -90,7 +90,7 @@ config_read_name_value(struct config_param *param, char *input, unsigned line,
 static struct config_param *
 config_read_block(FILE *fp, int *count, char *string, GError **error_r)
 {
-	struct config_param *ret = config_new_param(NULL, *count);
+	struct config_param *ret = new config_param(*count);
 	GError *error = NULL;
 
 	while (true) {
@@ -98,7 +98,7 @@ config_read_block(FILE *fp, int *count, char *string, GError **error_r)
 
 		line = fgets(string, MAX_STRING_SIZE, fp);
 		if (line == NULL) {
-			config_param_free(ret);
+			delete ret;
 			g_set_error(error_r, config_quark(), 0,
 				    "Expected '}' before end-of-file");
 			return NULL;
@@ -115,7 +115,7 @@ config_read_block(FILE *fp, int *count, char *string, GError **error_r)
 
 			line = strchug_fast(line + 1);
 			if (*line != 0 && *line != CONF_COMMENT) {
-				config_param_free(ret);
+				delete ret;
 				g_set_error(error_r, config_quark(), 0,
 					    "line %i: Unknown tokens after '}'",
 					    *count);
@@ -129,7 +129,7 @@ config_read_block(FILE *fp, int *count, char *string, GError **error_r)
 
 		if (!config_read_name_value(ret, line, *count, &error)) {
 			assert(*line != 0);
-			config_param_free(ret);
+			delete ret;
 			g_propagate_prefixed_error(error_r, error,
 						   "line %i: ", *count);
 			return NULL;
@@ -241,7 +241,7 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, GError **error_r)
 				return false;
 			}
 
-			param = config_new_param(value, count);
+			param = new config_param(value, count);
 		}
 
 		params = g_slist_append(params, param);

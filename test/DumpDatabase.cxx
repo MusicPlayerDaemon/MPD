@@ -106,13 +106,12 @@ main(int argc, char **argv)
 	/* do it */
 
 	const struct config_param *path = config_get_param(CONF_DB_FILE);
-	struct config_param *param = config_new_param("database", path->line);
+	config_param param("database", path->line);
 	if (path != nullptr)
-		config_add_block_param(param, "path", path->value, path->line);
+		config_add_block_param(&param, "path", path->value,
+				       path->line);
 
-	Database *db = plugin->create(param, &error);
-
-	config_param_free(param);
+	Database *db = plugin->create(&param, &error);
 
 	if (db == nullptr) {
 		cerr << error->message << endl;

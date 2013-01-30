@@ -31,29 +31,12 @@ extern "C" {
 #include <string.h>
 #include <stdlib.h>
 
-struct config_param *
-config_new_param(const char *value, int line)
+config_param::config_param(const char *_value, int _line)
+	:value(g_strdup(_value)), line(_line) {}
+
+config_param::~config_param()
 {
-	config_param *ret = new config_param();
-
-	if (!value)
-		ret->value = NULL;
-	else
-		ret->value = g_strdup(value);
-
-	ret->line = line;
-
-	ret->used = false;
-
-	return ret;
-}
-
-void
-config_param_free(struct config_param *param)
-{
-	g_free(param->value);
-
-	delete param;
+	g_free(value);
 }
 
 void
@@ -62,13 +45,7 @@ config_add_block_param(struct config_param * param, const char *name,
 {
 	assert(config_get_block_param(param, name) == NULL);
 
-	param->block_params.push_back(block_param());
-	struct block_param *bp = &param->block_params.back();
-
-	bp->name = name;
-	bp->value = value;
-	bp->line = line;
-	bp->used = false;
+	param->block_params.emplace_back(name, value, line);
 }
 
 const struct block_param *

@@ -49,7 +49,6 @@ int main(int argc, char **argv)
 	const char *encoder_name;
 	const struct encoder_plugin *plugin;
 	struct encoder *encoder;
-	struct config_param *param;
 	static char buffer[32768];
 
 	/* parse command line */
@@ -74,10 +73,10 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	param = config_new_param(NULL, -1);
-	config_add_block_param(param, "quality", "5.0", -1);
+	config_param param;
+	config_add_block_param(&param, "quality", "5.0", -1);
 
-	encoder = encoder_init(plugin, param, &error);
+	encoder = encoder_init(plugin, &param, &error);
 	if (encoder == NULL) {
 		g_printerr("Failed to initialize encoder: %s\n",
 			   error->message);

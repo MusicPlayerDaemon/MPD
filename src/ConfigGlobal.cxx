@@ -44,7 +44,7 @@ config_param_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
 	struct config_param *param = (struct config_param *)data;
 
-	config_param_free(param);
+	delete param;
 }
 
 void config_global_finish(void)
