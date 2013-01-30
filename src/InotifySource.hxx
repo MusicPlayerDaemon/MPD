@@ -68,7 +68,7 @@ public:
 	void Remove(unsigned wd);
 
 private:
-	virtual void OnSocketReady(unsigned flags) override;
+	virtual bool OnSocketReady(unsigned flags) override;
 };
 
 #endif

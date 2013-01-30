@@ -202,21 +202,21 @@ BufferedSocket::ConsumeInput(size_t nbytes)
 	fifo_buffer_consume(input, nbytes);
 }
 
-void
+bool
 BufferedSocket::OnSocketReady(unsigned flags)
 {
 	assert(IsDefined());
 
 	if (gcc_unlikely(flags & (ERROR|HANGUP))) {
 		OnSocketClosed();
-		return;
+		return false;
 	}
 
 	if (flags & READ) {
 		assert(input == nullptr || !fifo_buffer_is_full(input));
 
 		if (!ReadToBuffer() || !ResumeInput())
-			return;
+			return false;
 
 		if (input == nullptr || !fifo_buffer_is_full(input))
 			ScheduleRead();
@@ -233,6 +233,8 @@ BufferedSocket::OnSocketReady(unsigned flags)
 		assert(!output.IsEmpty());
 
 		if (!WriteFromBuffer())
-			return;
+			return false;
 	}
+
+	return true;
 }

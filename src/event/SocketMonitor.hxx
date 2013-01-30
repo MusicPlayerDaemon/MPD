@@ -115,7 +115,10 @@ public:
 	ssize_t Write(const void *data, size_t length);
 
 protected:
-	virtual void OnSocketReady(unsigned flags) = 0;
+	/**
+	 * @return false if the socket has been closed
+	 */
+	virtual bool OnSocketReady(unsigned flags) = 0;
 
 public:
 	/* GSource callbacks */

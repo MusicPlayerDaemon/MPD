@@ -101,7 +101,7 @@ struct OneServerSocket final : private SocketMonitor {
 	void Accept();
 
 private:
-	virtual void OnSocketReady(unsigned flags) override;
+	virtual bool OnSocketReady(unsigned flags) override;
 };
 
 struct server_socket {
@@ -205,10 +205,11 @@ OneServerSocket::Accept()
 			parent.callback_ctx);
 }
 
-void
+bool
 OneServerSocket::OnSocketReady(gcc_unused unsigned flags)
 {
 	Accept();
+	return true;
 }
 
 inline bool

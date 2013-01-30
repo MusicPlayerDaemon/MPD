@@ -41,7 +41,7 @@ mpd_inotify_quark(void)
 	return g_quark_from_static_string("inotify");
 }
 
-void
+bool
 InotifySource::OnSocketReady(gcc_unused unsigned flags)
 {
 	void *dest;
@@ -79,6 +79,8 @@ InotifySource::OnSocketReady(gcc_unused unsigned flags)
 		callback(event->wd, event->mask, name, callback_ctx);
 		fifo_buffer_consume(buffer, sizeof(*event) + event->len);
 	}
+
+	return true;
 }
 
 inline

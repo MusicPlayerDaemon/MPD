@@ -113,7 +113,7 @@ protected:
 	virtual void OnSocketClosed() = 0;
 
 private:
-	virtual void OnSocketReady(unsigned flags) override;
+	virtual bool OnSocketReady(unsigned flags) override;
 };
 
 #endif
