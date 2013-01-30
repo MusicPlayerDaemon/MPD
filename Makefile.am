@@ -56,7 +56,6 @@ mpd_headers = \
 	src/output_internal.h \
 	src/output_api.h \
 	src/filter_internal.h \
-	src/filter_config.h \
 	src/filter_plugin.h \
 	src/filter_registry.h \
 	src/filter/autoconvert_filter_plugin.h \
@@ -172,7 +171,7 @@ src_mpd_SOURCES = \
 	src/DatabaseSelection.cxx src/DatabaseSelection.hxx \
 	src/ExcludeList.cxx src/ExcludeList.hxx \
 	src/fd_util.c \
-	src/filter_config.c \
+	src/FilterConfig.cxx src/FilterConfig.hxx \
 	src/filter_plugin.c \
 	src/filter_registry.c \
 	src/UpdateGlue.cxx src/UpdateGlue.hxx \
@@ -1332,7 +1331,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/mixer_control.c \
 	src/mixer_type.c \
 	src/filter_plugin.c \
-	src/filter_config.c \
+	src/FilterConfig.cxx \
 	src/AudioCompress/compress.c \
 	src/ReplayGainInfo.cxx \
 	src/fd_util.c

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,16 +17,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "filter_config.h"
 #include "config.h"
+#include "FilterConfig.hxx"
 #include "conf.h"
+
+extern "C" {
 #include "filter/chain_filter_plugin.h"
+}
+
 #include "filter_plugin.h"
 #include "filter_internal.h"
 #include "filter_registry.h"
 
 #include <string.h>
-
 
 static GQuark
 filter_quark(void)
@@ -83,7 +86,7 @@ filter_chain_parse(struct filter *chain, const char *spec, GError **error_r)
 	// Split on comma
 	gchar** tokens = g_strsplit_set(spec, ",", 255);
 
-	int added_filters = 0;
+	unsigned added_filters = 0;
 
 	// Add each name to the filter chain by instantiating an actual filter
 	char **template_names = tokens;

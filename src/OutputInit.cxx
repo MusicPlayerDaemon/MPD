@@ -20,6 +20,7 @@
 #include "config.h"
 #include "OutputControl.hxx"
 #include "OutputList.hxx"
+#include "FilterConfig.hxx"
 
 extern "C" {
 #include "output_api.h"
@@ -31,7 +32,6 @@ extern "C" {
 #include "mixer/software_mixer_plugin.h"
 #include "filter_plugin.h"
 #include "filter_registry.h"
-#include "filter_config.h"
 #include "filter/chain_filter_plugin.h"
 #include "filter/autoconvert_filter_plugin.h"
 }

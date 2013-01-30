@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,15 +22,12 @@
  * Utility functions for filter configuration
  */
 
-#ifndef MPD_FILTER_CONFIG_H
-#define MPD_FILTER_CONFIG_H
+#ifndef MPD_FILTER_CONFIG_HXX
+#define MPD_FILTER_CONFIG_HXX
 
-#include "conf.h"
-#include "filter/chain_filter_plugin.h"
-#include "filter_plugin.h"
-#include "filter_internal.h"
-#include "filter_registry.h"
+#include "gerror.h"
 
+struct filter;
 
 /**
  * Builds a filter chain from a configuration string on the form
