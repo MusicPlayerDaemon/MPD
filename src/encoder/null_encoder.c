@@ -22,6 +22,9 @@
 #include "encoder_plugin.h"
 #include "util/fifo_buffer.h"
 #include "util/growing_fifo.h"
+#include "gcc.h"
+
+#include <glib.h>
 
 #include <assert.h>
 #include <string.h>
@@ -34,15 +37,9 @@ struct null_encoder {
 
 extern const struct encoder_plugin null_encoder_plugin;
 
-static inline GQuark
-null_encoder_quark(void)
-{
-	return g_quark_from_static_string("null_encoder");
-}
-
 static struct encoder *
-null_encoder_init(G_GNUC_UNUSED const struct config_param *param,
-		  G_GNUC_UNUSED GError **error)
+null_encoder_init(gcc_unused const struct config_param *param,
+		  gcc_unused GError **error)
 {
 	struct null_encoder *encoder;
 
@@ -71,8 +68,8 @@ null_encoder_close(struct encoder *_encoder)
 
 static bool
 null_encoder_open(struct encoder *_encoder,
-		  G_GNUC_UNUSED struct audio_format *audio_format,
-		  G_GNUC_UNUSED GError **error)
+		  gcc_unused struct audio_format *audio_format,
+		  gcc_unused GError **error)
 {
 	struct null_encoder *encoder = (struct null_encoder *)_encoder;
 
@@ -83,7 +80,7 @@ null_encoder_open(struct encoder *_encoder,
 static bool
 null_encoder_write(struct encoder *_encoder,
 		   const void *data, size_t length,
-		   G_GNUC_UNUSED GError **error)
+		   gcc_unused GError **error)
 {
 	struct null_encoder *encoder = (struct null_encoder *)_encoder;
 

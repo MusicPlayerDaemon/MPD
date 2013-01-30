@@ -25,6 +25,8 @@
 #include "filter_registry.h"
 #include "audio_format.h"
 
+#include <glib.h>
+
 #include <assert.h>
 
 struct filter_chain {

@@ -26,6 +26,8 @@
 
 #include <id3tag.h>
 
+#include <glib.h>
+
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
@@ -46,8 +48,8 @@ tag_new(void)
 }
 
 void
-tag_add_item_n(G_GNUC_UNUSED struct tag *tag, G_GNUC_UNUSED enum tag_type type,
-	       G_GNUC_UNUSED const char *value, G_GNUC_UNUSED size_t len)
+tag_add_item_n(gcc_unused struct tag *tag, gcc_unused enum tag_type type,
+	       gcc_unused const char *value, gcc_unused size_t len)
 {
 }
 

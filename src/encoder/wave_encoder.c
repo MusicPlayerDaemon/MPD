@@ -23,6 +23,8 @@
 #include "util/fifo_buffer.h"
 #include "util/growing_fifo.h"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <string.h>
 
@@ -50,12 +52,6 @@ struct wave_header {
 };
 
 extern const struct encoder_plugin wave_encoder_plugin;
-
-static inline GQuark
-wave_encoder_quark(void)
-{
-	return g_quark_from_static_string("wave_encoder");
-}
 
 static void
 fill_wave_header(struct wave_header *header, int channels, int bits,
@@ -85,8 +81,8 @@ fill_wave_header(struct wave_header *header, int channels, int bits,
 }
 
 static struct encoder *
-wave_encoder_init(G_GNUC_UNUSED const struct config_param *param,
-		  G_GNUC_UNUSED GError **error)
+wave_encoder_init(gcc_unused const struct config_param *param,
+		  gcc_unused GError **error)
 {
 	struct wave_encoder *encoder;
 
@@ -106,8 +102,8 @@ wave_encoder_finish(struct encoder *_encoder)
 
 static bool
 wave_encoder_open(struct encoder *_encoder,
-		  G_GNUC_UNUSED struct audio_format *audio_format,
-		  G_GNUC_UNUSED GError **error)
+		  gcc_unused struct audio_format *audio_format,
+		  gcc_unused GError **error)
 {
 	struct wave_encoder *encoder = (struct wave_encoder *)_encoder;
 
@@ -202,7 +198,7 @@ pcm24_to_wave(uint8_t *dst8, const uint32_t *src32, size_t length)
 static bool
 wave_encoder_write(struct encoder *_encoder,
 		   const void *src, size_t length,
-		   G_GNUC_UNUSED GError **error)
+		   gcc_unused GError **error)
 {
 	struct wave_encoder *encoder = (struct wave_encoder *)_encoder;
 
@@ -261,7 +257,7 @@ wave_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 }
 
 static const char *
-wave_encoder_get_mime_type(G_GNUC_UNUSED struct encoder *_encoder)
+wave_encoder_get_mime_type(gcc_unused struct encoder *_encoder)
 {
 	return "audio/wav";
 }
