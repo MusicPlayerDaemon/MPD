@@ -22,21 +22,19 @@
 
 #include "check.h"
 #include "SocketMonitor.hxx"
-#include "util/PeakBuffer.hxx"
 #include "gcc.h"
 
 struct fifo_buffer;
-class EventLoop;
 
-class BufferedSocket : private SocketMonitor {
+/**
+ * A #SocketMonitor specialization that adds an input buffer.
+ */
+class BufferedSocket : protected SocketMonitor {
 	fifo_buffer *input;
-	PeakBuffer output;
 
 public:
-	BufferedSocket(int _fd, EventLoop &_loop,
-		       size_t normal_size, size_t peak_size=0)
-		:SocketMonitor(_fd, _loop), input(nullptr),
-		 output(normal_size, peak_size) {
+	BufferedSocket(int _fd, EventLoop &_loop)
+		:SocketMonitor(_fd, _loop), input(nullptr) {
 		ScheduleRead();
 	}
 
@@ -44,17 +42,10 @@ public:
 
 	using SocketMonitor::IsDefined;
 	using SocketMonitor::Close;
+	using SocketMonitor::Write;
 
 private:
-	ssize_t DirectWrite(const void *data, size_t length);
 	ssize_t DirectRead(void *data, size_t length);
-
-	/**
-	 * Send data from the output buffer to the socket.
-	 *
-	 * @return false if the socket has been closed
-	 */
-	bool WriteFromBuffer();
 
 	/**
 	 * Receive data from the socket to the input buffer.
@@ -64,11 +55,6 @@ private:
 	bool ReadToBuffer();
 
 protected:
-	/**
-	 * @return false if the socket has been closed
-	 */
-	bool Write(const void *data, size_t length);
-
 	/**
 	 * @return false if the socket has been closed
 	 */
@@ -112,7 +98,6 @@ protected:
 	virtual void OnSocketError(GError *error) = 0;
 	virtual void OnSocketClosed() = 0;
 
-private:
 	virtual bool OnSocketReady(unsigned flags) override;
 };
 

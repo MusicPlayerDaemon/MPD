@@ -26,7 +26,7 @@ Client::SetExpired()
 	if (IsExpired())
 		return;
 
-	BufferedSocket::Close();
+	FullyBufferedSocket::Close();
 	TimeoutMonitor::Schedule(0);
 }
 

@@ -24,7 +24,7 @@
 #include "Client.hxx"
 #include "ClientMessage.hxx"
 #include "CommandListBuilder.hxx"
-#include "event/BufferedSocket.hxx"
+#include "event/FullyBufferedSocket.hxx"
 #include "event/TimeoutMonitor.hxx"
 #include "command.h"
 
@@ -44,7 +44,7 @@ enum {
 
 struct Partition;
 
-class Client final : private BufferedSocket, TimeoutMonitor {
+class Client final : private FullyBufferedSocket, TimeoutMonitor {
 public:
 	Partition &partition;
 	struct playlist &playlist;
@@ -89,7 +89,7 @@ public:
 	       int fd, int uid, int num);
 
 	bool IsConnected() const {
-		return BufferedSocket::IsDefined();
+		return FullyBufferedSocket::IsDefined();
 	}
 
 	gcc_pure
@@ -99,13 +99,13 @@ public:
 
 	gcc_pure
 	bool IsExpired() const {
-		return !BufferedSocket::IsDefined();
+		return !FullyBufferedSocket::IsDefined();
 	}
 
 	void Close();
 	void SetExpired();
 
-	using BufferedSocket::Write;
+	using FullyBufferedSocket::Write;
 
 	/**
 	 * Send "idle" response to this client.

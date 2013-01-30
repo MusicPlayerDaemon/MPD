@@ -33,26 +33,6 @@ BufferedSocket::~BufferedSocket()
 }
 
 BufferedSocket::ssize_t
-BufferedSocket::DirectWrite(const void *data, size_t length)
-{
-	const auto nbytes = SocketMonitor::Write((const char *)data, length);
-	if (gcc_unlikely(nbytes < 0)) {
-		const auto code = GetSocketError();
-		if (IsSocketErrorAgain(code))
-			return 0;
-
-		Cancel();
-
-		if (IsSocketErrorClosed(code))
-			OnSocketClosed();
-		else
-			OnSocketError(NewSocketError(code));
-	}
-
-	return nbytes;
-}
-
-BufferedSocket::ssize_t
 BufferedSocket::DirectRead(void *data, size_t length)
 {
 	const auto nbytes = SocketMonitor::Read((char *)data, length);
@@ -76,30 +56,6 @@ BufferedSocket::DirectRead(void *data, size_t length)
 }
 
 bool
-BufferedSocket::WriteFromBuffer()
-{
-	assert(IsDefined());
-
-	size_t length;
-	const void *data = output.Read(&length);
-	if (data == nullptr) {
-		CancelWrite();
-		return true;
-	}
-
-	auto nbytes = DirectWrite(data, length);
-	if (gcc_unlikely(nbytes <= 0))
-		return nbytes == 0;
-
-	output.Consume(nbytes);
-
-	if (output.IsEmpty())
-		CancelWrite();
-
-	return true;
-}
-
-bool
 BufferedSocket::ReadToBuffer()
 {
 	assert(IsDefined());
@@ -116,38 +72,6 @@ BufferedSocket::ReadToBuffer()
 		fifo_buffer_append(input, nbytes);
 
 	return nbytes >= 0;
-}
-
-bool
-BufferedSocket::Write(const void *data, size_t length)
-{
-	assert(IsDefined());
-
-#if 0
-	/* TODO: disabled because this would add overhead on some callers (the ones that often), but it may be useful */
-
-	if (output.IsEmpty()) {
-		/* try to write it directly first */
-		const auto nbytes = DirectWrite(data, length);
-		if (gcc_likely(nbytes > 0)) {
-			data = (const uint8_t *)data + nbytes;
-			length -= nbytes;
-			if (length == 0)
-				return true;
-		} else if (nbytes < 0)
-			return false;
-	}
-#endif
-
-	if (!output.Append(data, length)) {
-		// TODO
-		OnSocketError(g_error_new_literal(g_quark_from_static_string("buffered_socket"),
-						  0, "Output buffer is full"));
-		return false;
-	}
-
-	ScheduleWrite();
-	return true;
 }
 
 bool
@@ -220,20 +144,6 @@ BufferedSocket::OnSocketReady(unsigned flags)
 
 		if (input == nullptr || !fifo_buffer_is_full(input))
 			ScheduleRead();
-
-		/* just in case the OnSocketInput() method has added
-		   data to the output buffer: try to send it now
-		   instead of waiting for the next event loop
-		   iteration */
-		if (!output.IsEmpty())
-			flags |= WRITE;
-	}
-
-	if (flags & WRITE) {
-		assert(!output.IsEmpty());
-
-		if (!WriteFromBuffer())
-			return false;
 	}
 
 	return true;

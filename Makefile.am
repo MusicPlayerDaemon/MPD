@@ -326,6 +326,7 @@ libevent_a_SOURCES = \
 	src/event/TimeoutMonitor.hxx src/event/TimeoutMonitor.cxx \
 	src/event/SocketMonitor.cxx src/event/SocketMonitor.hxx \
 	src/event/BufferedSocket.cxx src/event/BufferedSocket.hxx \
+	src/event/FullyBufferedSocket.cxx src/event/FullyBufferedSocket.hxx \
 	src/event/MultiSocketMonitor.cxx src/event/MultiSocketMonitor.hxx \
 	src/event/Loop.hxx
 
