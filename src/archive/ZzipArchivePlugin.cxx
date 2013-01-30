@@ -39,18 +39,18 @@ class ZzipArchiveFile : public ArchiveFile {
 public:
 	RefCount ref;
 
-	ZZIP_DIR *dir;
+	ZZIP_DIR *const dir;
 
-	ZzipArchiveFile():ArchiveFile(zzip_archive_plugin) {}
+	ZzipArchiveFile(ZZIP_DIR *_dir)
+		:ArchiveFile(zzip_archive_plugin), dir(_dir) {}
+
+	~ZzipArchiveFile() {
+		zzip_dir_close(dir);
+	}
 
 	void Unref() {
-		if (!ref.Decrement())
-			return;
-
-		//close archive
-		zzip_dir_close (dir);
-
-		delete this;
+		if (ref.Decrement())
+			delete this;
 	}
 
 	void Visit(ArchiveVisitor &visitor);
@@ -69,17 +69,14 @@ zzip_quark(void)
 static ArchiveFile *
 zzip_archive_open(const char *pathname, GError **error_r)
 {
-	ZzipArchiveFile *context = new ZzipArchiveFile();
-
-	// open archive
-	context->dir = zzip_dir_open(pathname, NULL);
-	if (context->dir  == NULL) {
+	ZZIP_DIR *dir = zzip_dir_open(pathname, NULL);
+	if (dir == nullptr) {
 		g_set_error(error_r, zzip_quark(), 0,
 			    "Failed to open ZIP file %s", pathname);
 		return NULL;
 	}
 
-	return context;
+	return new ZzipArchiveFile(dir);
 }
 
 inline void
