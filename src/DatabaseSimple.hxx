@@ -21,11 +21,9 @@
 #define MPD_DATABASE_SIMPLE_HXX
 
 #include "gcc.h"
-
-#include <glib.h>
+#include "gerror.h"
 
 #include <sys/time.h>
-#include <stdbool.h>
 
 struct config_param;
 struct Directory;

@@ -22,8 +22,7 @@
 
 #include "command.h"
 #include "playlist_error.h"
-
-#include <glib.h>
+#include "gerror.h"
 
 class Client;
 

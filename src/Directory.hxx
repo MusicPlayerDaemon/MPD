@@ -25,8 +25,8 @@
 #include "gcc.h"
 #include "DatabaseVisitor.hxx"
 #include "PlaylistVector.hxx"
+#include "gerror.h"
 
-#include <glib.h>
 #include <stdbool.h>
 #include <sys/types.h>
 

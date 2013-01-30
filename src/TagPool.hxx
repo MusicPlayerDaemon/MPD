@@ -23,8 +23,6 @@
 #include "tag.h"
 #include "thread/Mutex.hxx"
 
-#include <glib.h>
-
 extern Mutex tag_pool_lock;
 
 struct tag_item;

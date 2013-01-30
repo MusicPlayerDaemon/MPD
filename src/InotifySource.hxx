@@ -24,8 +24,6 @@
 #include "gerror.h"
 #include "gcc.h"
 
-#include <glib.h>
-
 typedef void (*mpd_inotify_callback_t)(int wd, unsigned mask,
 				       const char *name, void *ctx);
 

@@ -37,8 +37,6 @@ update_archive_file(Directory *directory,
 
 #else
 
-#include <glib.h>
-
 static inline bool
 update_archive_file(gcc_unused Directory *directory,
 		    gcc_unused const char *name,

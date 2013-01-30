@@ -25,7 +25,6 @@
 #ifndef MPD_QUEUE_SAVE_HXX
 #define MPD_QUEUE_SAVE_HXX
 
-#include <glib.h>
 #include <stdio.h>
 
 struct queue;

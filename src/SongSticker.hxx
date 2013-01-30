@@ -20,7 +20,7 @@
 #ifndef MPD_SONG_STICKER_HXX
 #define MPD_SONG_STICKER_HXX
 
-#include <glib.h>
+#include "gerror.h"
 
 struct song;
 struct Directory;
@@ -77,7 +77,7 @@ sticker_song_get(const struct song *song);
 bool
 sticker_song_find(Directory *directory, const char *name,
 		  void (*func)(struct song *song, const char *value,
-			       gpointer user_data),
-		  gpointer user_data);
+			       void *user_data),
+		  void *user_data);
 
 #endif

@@ -21,6 +21,7 @@
 #define MPD_TAG_TABLE_H
 
 #include "tag.h"
+#include "gcc.h"
 
 #include <glib.h>
 
@@ -35,7 +36,7 @@ struct tag_table {
  * Returns TAG_NUM_OF_ITEM_TYPES if the specified name was not found
  * in the table.
  */
-G_GNUC_PURE
+gcc_pure
 static inline enum tag_type
 tag_table_lookup(const struct tag_table *table, const char *name)
 {
@@ -51,7 +52,7 @@ tag_table_lookup(const struct tag_table *table, const char *name)
  * Returns TAG_NUM_OF_ITEM_TYPES if the specified name was not found
  * in the table.
  */
-G_GNUC_PURE
+gcc_pure
 static inline enum tag_type
 tag_table_lookup_i(const struct tag_table *table, const char *name)
 {

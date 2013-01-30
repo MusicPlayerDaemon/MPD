@@ -20,7 +20,7 @@
 #ifndef MPD_SONG_SAVE_HXX
 #define MPD_SONG_SAVE_HXX
 
-#include <glib.h>
+#include "gerror.h"
 
 #include <stdio.h>
 

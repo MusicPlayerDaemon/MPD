@@ -23,8 +23,6 @@
 #include "event/BufferedSocket.hxx"
 #include "gcc.h"
 
-#include <glib.h>
-
 #include <list>
 
 #include <stddef.h>

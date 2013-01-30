@@ -20,6 +20,8 @@
 #include "config.h"
 #include "TagPool.hxx"
 
+#include <glib.h>
+
 #include <assert.h>
 
 Mutex tag_pool_lock;

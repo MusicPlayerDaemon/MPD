@@ -21,9 +21,9 @@
 #define MPD_PLAYLIST_DATABASE_HXX
 
 #include "check.h"
+#include "gerror.h"
 
 #include <stdio.h>
-#include <glib.h>
 
 #define PLAYLIST_META_BEGIN "playlist_begin: "
 

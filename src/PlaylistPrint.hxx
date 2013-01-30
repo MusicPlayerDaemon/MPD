@@ -20,7 +20,8 @@
 #ifndef MPD_PLAYLIST_PRINT_HXX
 #define MPD_PLAYLIST_PRINT_HXX
 
-#include <glib.h>
+#include "gerror.h"
+
 #include <stdint.h>
 
 struct playlist;

@@ -32,8 +32,6 @@
 #include <string>
 #include <list>
 
-#include <glib.h>
-
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "client"
 
@@ -130,16 +128,6 @@ extern size_t client_max_command_list_size;
 extern size_t client_max_output_buffer_size;
 
 enum command_return
-client_read(Client *client);
-
-enum command_return
 client_process_line(Client *client, char *line);
-
-void
-client_write_output(Client *client);
-
-gboolean
-client_in_event(GIOChannel *source, GIOCondition condition,
-		gpointer data);
 
 #endif

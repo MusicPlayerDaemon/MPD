@@ -3,6 +3,8 @@
 #include "song.h"
 #include "Directory.hxx"
 
+#include <glib.h>
+
 Directory detached_root;
 
 Directory::Directory() {}
@@ -15,11 +17,11 @@ song_dup_detached(const struct song *src)
 }
 
 void
-song_free(G_GNUC_UNUSED struct song *song)
+song_free(gcc_unused struct song *song)
 {
 }
 
-G_GNUC_UNUSED
+gcc_unused
 static void
 dump_order(const struct queue *queue)
 {
@@ -46,7 +48,7 @@ check_descending_priority(const struct queue *queue,
 }
 
 int
-main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
+main(gcc_unused int argc, gcc_unused char **argv)
 {
 	static struct song songs[16];
 

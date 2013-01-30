@@ -20,11 +20,10 @@
 #ifndef MPD_PLAYLIST_FILE_HXX
 #define MPD_PLAYLIST_FILE_HXX
 
+#include "gerror.h"
+
 #include <vector>
 #include <string>
-
-#include <glib.h>
-#include <time.h>
 
 struct song;
 struct PlaylistInfo;

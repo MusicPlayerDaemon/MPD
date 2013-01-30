@@ -22,8 +22,6 @@
 
 #include "replay_gain_info.h"
 
-#include <glib.h>
-
 #include <stddef.h>
 
 struct audio_output;
@@ -31,12 +29,6 @@ struct audio_format;
 struct config_param;
 struct music_pipe;
 struct player_control;
-
-static inline GQuark
-audio_output_quark(void)
-{
-	return g_quark_from_static_string("audio_output");
-}
 
 void
 audio_output_set_replay_gain_mode(struct audio_output *ao,

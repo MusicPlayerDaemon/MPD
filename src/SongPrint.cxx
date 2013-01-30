@@ -30,6 +30,8 @@ extern "C" {
 #include "uri.h"
 }
 
+#include <glib.h>
+
 void
 song_print_uri(Client *client, struct song *song)
 {

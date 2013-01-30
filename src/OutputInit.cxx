@@ -20,6 +20,7 @@
 #include "config.h"
 #include "OutputControl.hxx"
 #include "OutputList.hxx"
+#include "OutputError.hxx"
 #include "FilterConfig.hxx"
 #include "output_api.h"
 #include "AudioParser.hxx"
@@ -65,7 +66,7 @@ audio_output_detect(GError **error)
 			return plugin;
 	}
 
-	g_set_error(error, audio_output_quark(), 0,
+	g_set_error(error, output_quark(), 0,
 		    "Unable to detect an audio device");
 	return NULL;
 }
@@ -148,7 +149,7 @@ ao_base_init(struct audio_output *ao,
 		ao->name = config_get_block_string(param, AUDIO_OUTPUT_NAME,
 						   NULL);
 		if (ao->name == NULL) {
-			g_set_error(error_r, audio_output_quark(), 0,
+			g_set_error(error_r, output_quark(), 0,
 				    "Missing \"name\" configuration");
 			return false;
 		}
@@ -274,7 +275,7 @@ audio_output_setup(struct audio_output *ao, const struct config_param *param,
 			g_warning("No such mixer for output '%s'", ao->name);
 	} else if (strcmp(replay_gain_handler, "software") != 0 &&
 		   ao->replay_gain_filter != NULL) {
-		g_set_error(error_r, audio_output_quark(), 0,
+		g_set_error(error_r, output_quark(), 0,
 			    "Invalid \"replay_gain_handler\" value");
 		return false;
 	}
@@ -301,14 +302,14 @@ audio_output_new(const struct config_param *param,
 
 		p = config_get_block_string(param, AUDIO_OUTPUT_TYPE, NULL);
 		if (p == NULL) {
-			g_set_error(error_r, audio_output_quark(), 0,
+			g_set_error(error_r, output_quark(), 0,
 				    "Missing \"type\" configuration");
 			return nullptr;
 		}
 
 		plugin = audio_output_plugin_get(p);
 		if (plugin == NULL) {
-			g_set_error(error_r, audio_output_quark(), 0,
+			g_set_error(error_r, output_quark(), 0,
 				    "No such audio output plugin: %s", p);
 			return nullptr;
 		}

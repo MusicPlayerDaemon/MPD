@@ -23,10 +23,6 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
-#include <glib.h>
-
-#include <stdbool.h>
-
 struct playlist_provider;
 struct input_stream;
 

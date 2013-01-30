@@ -30,8 +30,6 @@
 #include "thread/Mutex.hxx"
 #include "event/ServerSocket.hxx"
 
-#include <glib.h>
-
 #include <forward_list>
 
 struct config_param;

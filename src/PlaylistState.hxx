@@ -25,7 +25,6 @@
 #ifndef MPD_PLAYLIST_STATE_HXX
 #define MPD_PLAYLIST_STATE_HXX
 
-#include <glib.h>
 #include <stdio.h>
 
 struct playlist;
