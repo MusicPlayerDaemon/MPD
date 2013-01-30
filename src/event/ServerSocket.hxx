@@ -49,6 +49,10 @@ public:
 	ServerSocket(EventLoop &_loop);
 	~ServerSocket();
 
+	EventLoop &GetEventLoop() {
+		return loop;
+	}
+
 private:
 	OneServerSocket &AddAddress(const sockaddr &address, size_t length);
 
