@@ -27,6 +27,7 @@
 #ifdef __cplusplus
 #include <glib.h>
 #include <array>
+#include <vector>
 #endif
 
 #include <stdbool.h>
@@ -42,7 +43,7 @@ struct block_param {
 	 * This flag is false when nobody has queried the value of
 	 * this option yet.
 	 */
-	bool used;
+	mutable bool used;
 };
 
 #endif
@@ -51,14 +52,15 @@ struct config_param {
 	char *value;
 	unsigned int line;
 
-	struct block_param *block_params;
-	unsigned num_block_params;
+#ifdef __cplusplus
+	std::vector<block_param> block_params;
 
 	/**
 	 * This flag is false when nobody has queried the value of
 	 * this option yet.
 	 */
 	bool used;
+#endif
 };
 
 #ifdef __cplusplus

@@ -76,12 +76,10 @@ config_param_check(gpointer data, G_GNUC_UNUSED gpointer user_data)
 		   Silently ignore it here. */
 		return;
 
-	for (unsigned i = 0; i < param->num_block_params; i++) {
-		struct block_param *bp = &param->block_params[i];
-
-		if (!bp->used)
+	for (const auto &i : param->block_params) {
+		if (!i.used)
 			g_warning("option '%s' on line %i was not recognized",
-				  bp->name, bp->line);
+				  i.name, i.line);
 	}
 }
 

@@ -43,8 +43,6 @@ config_new_param(const char *value, int line)
 
 	ret->line = line;
 
-	ret->num_block_params = 0;
-	ret->block_params = NULL;
 	ret->used = false;
 
 	return ret;
@@ -55,13 +53,10 @@ config_param_free(struct config_param *param)
 {
 	g_free(param->value);
 
-	for (unsigned i = 0; i < param->num_block_params; i++) {
-		g_free(param->block_params[i].name);
-		g_free(param->block_params[i].value);
+	for (auto &i : param->block_params) {
+		g_free(i.name);
+		g_free(i.value);
 	}
-
-	if (param->num_block_params)
-		g_free(param->block_params);
 
 	delete param;
 }
@@ -70,18 +65,10 @@ void
 config_add_block_param(struct config_param * param, const char *name,
 		       const char *value, int line)
 {
-	struct block_param *bp;
-
 	assert(config_get_block_param(param, name) == NULL);
 
-	param->num_block_params++;
-
-	param->block_params = (struct block_param *)
-		g_realloc(param->block_params,
-			  param->num_block_params *
-			  sizeof(param->block_params[0]));
-
-	bp = &param->block_params[param->num_block_params - 1];
+	param->block_params.push_back(block_param());
+	struct block_param *bp = &param->block_params.back();
 
 	bp->name = g_strdup(name);
 	bp->value = g_strdup(value);
@@ -95,11 +82,10 @@ config_get_block_param(const struct config_param * param, const char *name)
 	if (param == NULL)
 		return NULL;
 
-	for (unsigned i = 0; i < param->num_block_params; i++) {
-		if (0 == strcmp(name, param->block_params[i].name)) {
-			struct block_param *bp = &param->block_params[i];
-			bp->used = true;
-			return bp;
+	for (auto &i : param->block_params) {
+		if (0 == strcmp(name, i.name)) {
+			i.used = true;
+			return &i;
 		}
 	}
 
