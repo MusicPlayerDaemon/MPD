@@ -36,6 +36,7 @@
 
 #include <stdbool.h>
 
+class ServerSocket;
 class HttpdClient;
 
 struct HttpdOutput {
@@ -80,7 +81,7 @@ struct HttpdOutput {
 	/**
 	 * The listener socket.
 	 */
-	struct server_socket *server_socket;
+	ServerSocket *server_socket;
 
 	/**
 	 * The header page, which is sent to every client on connect.

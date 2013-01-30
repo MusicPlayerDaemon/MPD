@@ -30,8 +30,6 @@
 #include "resolver.h"
 #include "fd_util.h"
 
-#include <forward_list>
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -55,8 +53,8 @@
 
 #define DEFAULT_PORT	6600
 
-struct OneServerSocket final : private SocketMonitor {
-	const server_socket &parent;
+class OneServerSocket final : private SocketMonitor {
+	const ServerSocket &parent;
 
 	const unsigned serial;
 
@@ -65,7 +63,8 @@ struct OneServerSocket final : private SocketMonitor {
 	size_t address_length;
 	struct sockaddr *address;
 
-	OneServerSocket(EventLoop &_loop, const server_socket &_parent,
+public:
+	OneServerSocket(EventLoop &_loop, const ServerSocket &_parent,
 			unsigned _serial,
 			const struct sockaddr *_address,
 			size_t _address_length)
@@ -87,6 +86,16 @@ struct OneServerSocket final : private SocketMonitor {
 		g_free(address);
 	}
 
+	unsigned GetSerial() const {
+		return serial;
+	}
+
+	void SetPath(const char *_path) {
+		assert(path == nullptr);
+
+		path = g_strdup(_path);
+	}
+
 	bool Open(GError **error_r);
 
 	using SocketMonitor::Close;
@@ -104,42 +113,10 @@ private:
 	virtual bool OnSocketReady(unsigned flags) override;
 };
 
-struct server_socket {
-	EventLoop &loop;
-
-	server_socket_callback_t callback;
-	void *callback_ctx;
-
-	std::forward_list<OneServerSocket> sockets;
-
-	unsigned next_serial;
-
-	server_socket(EventLoop &_loop,
-		      server_socket_callback_t _callback, void *_callback_ctx)
-		:loop(_loop),
-		 callback(_callback), callback_ctx(_callback_ctx),
-		 next_serial(1) {}
-
-	void Close();
-};
-
 static GQuark
 server_socket_quark(void)
 {
 	return g_quark_from_static_string("server_socket");
-}
-
-struct server_socket *
-server_socket_new(EventLoop &loop,
-		  server_socket_callback_t callback, void *callback_ctx)
-{
-	return new server_socket(loop, callback, callback_ctx);
-}
-
-void
-server_socket_free(struct server_socket *ss)
-{
-	delete ss;
 }
 
 /**
@@ -236,25 +213,36 @@ OneServerSocket::Open(GError **error_r)
 	return true;
 }
 
+ServerSocket::ServerSocket(EventLoop &_loop,
+			   server_socket_callback_t _callback,
+			   void *_callback_ctx)
+	:loop(_loop),
+	 callback(_callback), callback_ctx(_callback_ctx),
+	 next_serial(1) {}
+
+/* this is just here to allow the OneServerSocket forward
+   declaration */
+ServerSocket::~ServerSocket() {}
+
 bool
-server_socket_open(struct server_socket *ss, GError **error_r)
+ServerSocket::Open(GError **error_r)
 {
-	struct OneServerSocket *good = nullptr, *bad = nullptr;
+	OneServerSocket *good = nullptr, *bad = nullptr;
 	GError *last_error = nullptr;
 
-	for (auto &i : ss->sockets) {
-		assert(i.serial > 0);
-		assert(good == nullptr || i.serial <= good->serial);
+	for (auto &i : sockets) {
+		assert(i.GetSerial() > 0);
+		assert(good == nullptr || i.GetSerial() <= good->GetSerial());
 
-		if (bad != nullptr && i.serial != bad->serial) {
-			server_socket_close(ss);
+		if (bad != nullptr && i.GetSerial() != bad->GetSerial()) {
+			Close();
 			g_propagate_error(error_r, last_error);
 			return false;
 		}
 
 		GError *error = nullptr;
 		if (!i.Open(&error)) {
-			if (good != nullptr && good->serial == i.serial) {
+			if (good != nullptr && good->GetSerial() == i.GetSerial()) {
 				char *address_string = i.ToString();
 				char *good_string = good->ToString();
 				g_warning("bind to '%s' failed: %s "
@@ -291,7 +279,7 @@ server_socket_open(struct server_socket *ss, GError **error_r)
 	}
 
 	if (bad != nullptr) {
-		server_socket_close(ss);
+		Close();
 		g_propagate_error(error_r, last_error);
 		return false;
 	}
@@ -300,35 +288,24 @@ server_socket_open(struct server_socket *ss, GError **error_r)
 }
 
 void
-server_socket::Close()
+ServerSocket::Close()
 {
 	for (auto &i : sockets)
 		i.Close();
 }
 
-void
-server_socket_close(struct server_socket *ss)
+OneServerSocket &
+ServerSocket::AddAddress(const sockaddr &address, size_t address_length)
 {
-	ss->Close();
-}
+	sockets.emplace_front(loop, *this, next_serial,
+			      &address, address_length);
 
-static OneServerSocket &
-server_socket_add_address(struct server_socket *ss,
-			  const struct sockaddr *address,
-			  size_t address_length)
-{
-	assert(ss != nullptr);
-
-	ss->sockets.emplace_front(ss->loop, *ss, ss->next_serial,
-				  address, address_length);
-
-	return ss->sockets.front();
+	return sockets.front();
 }
 
 bool
-server_socket_add_fd(struct server_socket *ss, int fd, GError **error_r)
+ServerSocket::AddFD(int fd, GError **error_r)
 {
-	assert(ss != nullptr);
 	assert(fd >= 0);
 
 	struct sockaddr_storage address;
@@ -340,9 +317,8 @@ server_socket_add_fd(struct server_socket *ss, int fd, GError **error_r)
 		return false;
 	}
 
-	OneServerSocket &s =
-		server_socket_add_address(ss, (struct sockaddr *)&address,
-					  address_length);
+	OneServerSocket &s = AddAddress((const sockaddr &)address,
+					address_length);
 	s.SetFD(fd);
 
 	return true;
@@ -350,13 +326,8 @@ server_socket_add_fd(struct server_socket *ss, int fd, GError **error_r)
 
 #ifdef HAVE_TCP
 
-/**
- * Add a listener on a port on all IPv4 interfaces.
- *
- * @param port the TCP port
- */
-static void
-server_socket_add_port_ipv4(struct server_socket *ss, unsigned port)
+inline void
+ServerSocket::AddPortIPv4(unsigned port)
 {
 	struct sockaddr_in sin;
 	memset(&sin, 0, sizeof(sin));
@@ -364,34 +335,26 @@ server_socket_add_port_ipv4(struct server_socket *ss, unsigned port)
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = INADDR_ANY;
 
-	server_socket_add_address(ss, (const struct sockaddr *)&sin,
-				  sizeof(sin));
+	AddAddress((const sockaddr &)sin, sizeof(sin));
 }
 
 #ifdef HAVE_IPV6
-/**
- * Add a listener on a port on all IPv6 interfaces.
- *
- * @param port the TCP port
- */
-static void
-server_socket_add_port_ipv6(struct server_socket *ss, unsigned port)
+inline void
+ServerSocket::AddPortIPv6(unsigned port)
 {
 	struct sockaddr_in6 sin;
 	memset(&sin, 0, sizeof(sin));
 	sin.sin6_port = htons(port);
 	sin.sin6_family = AF_INET6;
 
-	server_socket_add_address(ss, (const struct sockaddr *)&sin,
-				  sizeof(sin));
+	AddAddress((const sockaddr &)sin, sizeof(sin));
 }
 #endif /* HAVE_IPV6 */
 
 #endif /* HAVE_TCP */
 
 bool
-server_socket_add_port(struct server_socket *ss, unsigned port,
-		       GError **error_r)
+ServerSocket::AddPort(unsigned port, GError **error_r)
 {
 #ifdef HAVE_TCP
 	if (port == 0 || port > 0xffff) {
@@ -401,15 +364,14 @@ server_socket_add_port(struct server_socket *ss, unsigned port,
 	}
 
 #ifdef HAVE_IPV6
-	server_socket_add_port_ipv6(ss, port);
+	AddPortIPv6(port);
 #endif
-	server_socket_add_port_ipv4(ss, port);
+	AddPortIPv4(port);
 
-	++ss->next_serial;
+	++next_serial;
 
 	return true;
 #else /* HAVE_TCP */
-	(void)ss;
 	(void)port;
 
 	g_set_error(error_r, server_socket_quark(), 0,
@@ -419,8 +381,7 @@ server_socket_add_port(struct server_socket *ss, unsigned port,
 }
 
 bool
-server_socket_add_host(struct server_socket *ss, const char *hostname,
-		       unsigned port, GError **error_r)
+ServerSocket::AddHost(const char *hostname, unsigned port, GError **error_r)
 {
 #ifdef HAVE_TCP
 	struct addrinfo *ai = resolve_host_port(hostname, port,
@@ -430,15 +391,14 @@ server_socket_add_host(struct server_socket *ss, const char *hostname,
 		return false;
 
 	for (const struct addrinfo *i = ai; i != nullptr; i = i->ai_next)
-		server_socket_add_address(ss, i->ai_addr, i->ai_addrlen);
+		AddAddress(*i->ai_addr, i->ai_addrlen);
 
 	freeaddrinfo(ai);
 
-	++ss->next_serial;
+	++next_serial;
 
 	return true;
 #else /* HAVE_TCP */
-	(void)ss;
 	(void)hostname;
 	(void)port;
 
@@ -449,8 +409,7 @@ server_socket_add_host(struct server_socket *ss, const char *hostname,
 }
 
 bool
-server_socket_add_path(struct server_socket *ss, const char *path,
-		       GError **error_r)
+ServerSocket::AddPath(const char *path, GError **error_r)
 {
 #ifdef HAVE_UN
 	struct sockaddr_un s_un;
@@ -467,14 +426,11 @@ server_socket_add_path(struct server_socket *ss, const char *path,
 	s_un.sun_family = AF_UNIX;
 	memcpy(s_un.sun_path, path, path_length + 1);
 
-	OneServerSocket &s =
-		server_socket_add_address(ss, (const struct sockaddr *)&s_un,
-					  sizeof(s_un));
-	s.path = g_strdup(path);
+	OneServerSocket &s = AddAddress((const sockaddr &)s_un, sizeof(s_un));
+	s.SetPath(path);
 
 	return true;
 #else /* !HAVE_UN */
-	(void)ss;
 	(void)path;
 
 	g_set_error(error_r, server_socket_quark(), 0,

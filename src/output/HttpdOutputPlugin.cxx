@@ -64,7 +64,7 @@ HttpdOutput::Bind(GError **error_r)
 	open = false;
 
 	const ScopeLock protect(mutex);
-	return server_socket_open(server_socket, error_r);
+	return server_socket->Open(error_r);
 }
 
 inline void
@@ -73,7 +73,7 @@ HttpdOutput::Unbind()
 	assert(!open);
 
 	const ScopeLock protect(mutex);
-	server_socket_close(server_socket);
+	server_socket->Close();
 }
 
 static struct audio_output *
@@ -112,16 +112,15 @@ httpd_output_init(const struct config_param *param,
 
 	/* set up bind_to_address */
 
-	httpd->server_socket = server_socket_new(*main_loop,
-						 httpd_listen_in_event, httpd);
+	httpd->server_socket = new ServerSocket(*main_loop,
+						httpd_listen_in_event, httpd);
 
 	const char *bind_to_address =
 		config_get_block_string(param, "bind_to_address", NULL);
 	bool success = bind_to_address != NULL &&
 		strcmp(bind_to_address, "any") != 0
-		? server_socket_add_host(httpd->server_socket, bind_to_address,
-					 port, error)
-		: server_socket_add_port(httpd->server_socket, port, error);
+		? httpd->server_socket->AddHost(bind_to_address, port, error)
+		: httpd->server_socket->AddPort(port, error);
 	if (!success) {
 		ao_base_finish(&httpd->base);
 		g_free(httpd);
@@ -159,7 +158,7 @@ httpd_output_finish(struct audio_output *ao)
 		httpd->metadata->Unref();
 
 	encoder_finish(httpd->encoder);
-	server_socket_free(httpd->server_socket);
+	delete httpd->server_socket;
 	ao_base_finish(&httpd->base);
 	delete httpd;
 }

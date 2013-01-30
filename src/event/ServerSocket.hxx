@@ -22,6 +22,8 @@
 
 #include "gerror.h"
 
+#include <forward_list>
+
 #include <stddef.h>
 
 struct sockaddr;
@@ -32,63 +34,84 @@ typedef void (*server_socket_callback_t)(int fd,
 					 size_t address_length, int uid,
 					 void *ctx);
 
-struct server_socket *
-server_socket_new(EventLoop &loop,
-		  server_socket_callback_t callback, void *callback_ctx);
+class OneServerSocket;
 
-void
-server_socket_free(struct server_socket *ss);
+class ServerSocket {
+	friend class OneServerSocket;
 
-bool
-server_socket_open(struct server_socket *ss, GError **error_r);
+	EventLoop &loop;
 
-void
-server_socket_close(struct server_socket *ss);
+	server_socket_callback_t callback;
+	void *callback_ctx;
 
-/**
- * Add a socket descriptor that is accepting connections.  After this
- * has been called, don't call server_socket_open(), because the
- * socket is already open.
- */
-bool
-server_socket_add_fd(struct server_socket *ss, int fd, GError **error_r);
+	std::forward_list<OneServerSocket> sockets;
 
-/**
- * Add a listener on a port on all interfaces.
- *
- * @param port the TCP port
- * @param error_r location to store the error occurring, or NULL to
- * ignore errors
- * @return true on success
- */
-bool
-server_socket_add_port(struct server_socket *ss, unsigned port,
-		       GError **error_r);
+	unsigned next_serial;
 
-/**
- * Resolves a host name, and adds listeners on all addresses in the
- * result set.
- *
- * @param hostname the host name to be resolved
- * @param port the TCP port
- * @param error_r location to store the error occurring, or NULL to
- * ignore errors
- * @return true on success
- */
-bool
-server_socket_add_host(struct server_socket *ss, const char *hostname,
-		       unsigned port, GError **error_r);
+public:
+	ServerSocket(EventLoop &_loop,
+		     server_socket_callback_t _callback, void *_callback_ctx);
+	~ServerSocket();
 
-/**
- * Add a listener on a Unix domain socket.
- *
- * @param path the absolute socket path
- * @param error_r location to store the error occurring, or NULL to
- * ignore errors
- * @return true on success
- */
-bool
-server_socket_add_path(struct server_socket *ss, const char *path,
-		       GError **error_r);
+private:
+	OneServerSocket &AddAddress(const sockaddr &address, size_t length);
+
+	/**
+	 * Add a listener on a port on all IPv4 interfaces.
+	 *
+	 * @param port the TCP port
+	 */
+	void AddPortIPv4(unsigned port);
+
+	/**
+	 * Add a listener on a port on all IPv6 interfaces.
+	 *
+	 * @param port the TCP port
+	 */
+	void AddPortIPv6(unsigned port);
+
+public:
+	/**
+	 * Add a listener on a port on all interfaces.
+	 *
+	 * @param port the TCP port
+	 * @param error_r location to store the error occurring, or NULL to
+	 * ignore errors
+	 * @return true on success
+	 */
+	bool AddPort(unsigned port, GError **error_r);
+
+	/**
+	 * Resolves a host name, and adds listeners on all addresses in the
+	 * result set.
+	 *
+	 * @param hostname the host name to be resolved
+	 * @param port the TCP port
+	 * @param error_r location to store the error occurring, or NULL to
+	 * ignore errors
+	 * @return true on success
+	 */
+	bool AddHost(const char *hostname, unsigned port, GError **error_r);
+
+	/**
+	 * Add a listener on a Unix domain socket.
+	 *
+	 * @param path the absolute socket path
+	 * @param error_r location to store the error occurring, or NULL to
+	 * ignore errors
+	 * @return true on success
+	 */
+	bool AddPath(const char *path, GError **error_r);
+
+	/**
+	 * Add a socket descriptor that is accepting connections.  After this
+	 * has been called, don't call server_socket_open(), because the
+	 * socket is already open.
+	 */
+	bool AddFD(int fd, GError **error_r);
+
+	bool Open(GError **error_r);
+	void Close();
+};
 
 #endif

@@ -36,7 +36,7 @@
 
 #define DEFAULT_PORT	6600
 
-static struct server_socket *listen_socket;
+static ServerSocket *listen_socket;
 int listen_port;
 
 static void
@@ -55,13 +55,11 @@ listen_add_config_param(unsigned int port,
 	assert(param != NULL);
 
 	if (0 == strcmp(param->value, "any")) {
-		return server_socket_add_port(listen_socket, port, error_r);
+		return listen_socket->AddPort(port, error_r);
 	} else if (param->value[0] == '/') {
-		return server_socket_add_path(listen_socket, param->value,
-					      error_r);
+		return listen_socket->AddPath(param->value, error_r);
 	} else {
-		return server_socket_add_host(listen_socket, param->value,
-					      port, error_r);
+		return listen_socket->AddHost(param->value, port, error_r);
 	}
 }
 
@@ -79,7 +77,7 @@ listen_systemd_activation(GError **error_r)
 
 	for (int i = SD_LISTEN_FDS_START, end = SD_LISTEN_FDS_START + n;
 	     i != end; ++i)
-		if (!server_socket_add_fd(listen_socket, i, error_r))
+		if (!listen_socket->AddFD(i, error_r))
 			return false;
 
 	return true;
@@ -100,7 +98,7 @@ listen_global_init(GError **error_r)
 	bool success;
 	GError *error = NULL;
 
-	listen_socket = server_socket_new(*main_loop, listen_callback, NULL);
+	listen_socket = new ServerSocket(*main_loop, listen_callback, nullptr);
 
 	if (listen_systemd_activation(&error))
 		return true;
@@ -117,6 +115,7 @@ listen_global_init(GError **error_r)
 		do {
 			success = listen_add_config_param(port, param, &error);
 			if (!success) {
+				delete listen_socket;
 				g_propagate_prefixed_error(error_r, error,
 							   "Failed to listen on %s (line %i): ",
 							   param->value, param->line);
@@ -130,8 +129,9 @@ listen_global_init(GError **error_r)
 		/* no "bind_to_address" configured, bind the
 		   configured port on all interfaces */
 
-		success = server_socket_add_port(listen_socket, port, error_r);
+		success = listen_socket->AddPort(port, error_r);
 		if (!success) {
+			delete listen_socket;
 			g_propagate_prefixed_error(error_r, error,
 						   "Failed to listen on *:%d: ",
 						   port);
@@ -139,8 +139,10 @@ listen_global_init(GError **error_r)
 		}
 	}
 
-	if (!server_socket_open(listen_socket, error_r))
+	if (!listen_socket->Open(error_r)) {
+		delete listen_socket;
 		return false;
+	}
 
 	listen_port = port;
 	return true;
@@ -152,5 +154,5 @@ void listen_global_finish(void)
 
 	assert(listen_socket != NULL);
 
-	server_socket_free(listen_socket);
+	delete listen_socket;
 }
