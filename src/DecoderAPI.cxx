@@ -402,10 +402,11 @@ decoder_data(struct decoder *decoder,
 	}
 
 	if (!audio_format_equals(&dc->in_audio_format, &dc->out_audio_format)) {
-		data = pcm_convert(&decoder->conv_state,
-				   &dc->in_audio_format, data, length,
-				   &dc->out_audio_format, &length,
-				   &error);
+		data = decoder->conv_state.Convert(&dc->in_audio_format,
+						   data, length,
+						   &dc->out_audio_format,
+						   &length,
+						   &error);
 		if (data == NULL) {
 			/* the PCM conversion has failed - stop
 			   playback, since we have no better way to

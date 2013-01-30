@@ -40,8 +40,6 @@ decoder::~decoder()
 
 	if (decoder_tag != nullptr)
 		tag_free(decoder_tag);
-
-	pcm_convert_deinit(&conv_state);
 }
 
 /**

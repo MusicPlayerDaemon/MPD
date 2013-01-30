@@ -18,9 +18,13 @@
  */
 
 #include "config.h"
-#include "pcm_convert.h"
+#include "PcmConvert.hxx"
+
+extern "C" {
 #include "pcm_channels.h"
 #include "pcm_format.h"
+}
+
 #include "pcm_pack.h"
 #include "audio_format.h"
 
@@ -32,58 +36,58 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "pcm"
 
-void pcm_convert_init(struct pcm_convert_state *state)
+PcmConvert::PcmConvert()
 {
-	memset(state, 0, sizeof(*state));
+	memset(this, 0, sizeof(*this));
 
-	pcm_dsd_init(&state->dsd);
-	pcm_resample_init(&state->resample);
-	pcm_dither_24_init(&state->dither);
+	pcm_dsd_init(&dsd);
+	pcm_resample_init(&resample);
+	pcm_dither_24_init(&dither);
 
-	pcm_buffer_init(&state->format_buffer);
-	pcm_buffer_init(&state->channels_buffer);
+	pcm_buffer_init(&format_buffer);
+	pcm_buffer_init(&channels_buffer);
 }
 
-void pcm_convert_deinit(struct pcm_convert_state *state)
+PcmConvert::~PcmConvert()
 {
-	pcm_dsd_deinit(&state->dsd);
-	pcm_resample_deinit(&state->resample);
+	pcm_dsd_deinit(&dsd);
+	pcm_resample_deinit(&resample);
 
-	pcm_buffer_deinit(&state->format_buffer);
-	pcm_buffer_deinit(&state->channels_buffer);
+	pcm_buffer_deinit(&format_buffer);
+	pcm_buffer_deinit(&channels_buffer);
 }
 
 void
-pcm_convert_reset(struct pcm_convert_state *state)
+PcmConvert::Reset()
 {
-	pcm_dsd_reset(&state->dsd);
-	pcm_resample_reset(&state->resample);
+	pcm_dsd_reset(&dsd);
+	pcm_resample_reset(&resample);
 }
 
-static const int16_t *
-pcm_convert_16(struct pcm_convert_state *state,
-	       const struct audio_format *src_format,
-	       const void *src_buffer, size_t src_size,
-	       const struct audio_format *dest_format, size_t *dest_size_r,
-	       GError **error_r)
+inline const int16_t *
+PcmConvert::Convert16(const audio_format *src_format,
+		      const void *src_buffer, size_t src_size,
+		      const audio_format *dest_format, size_t *dest_size_r,
+		      GError **error_r)
 {
 	const int16_t *buf;
 	size_t len;
 
 	assert(dest_format->format == SAMPLE_FORMAT_S16);
 
-	buf = pcm_convert_to_16(&state->format_buffer, &state->dither,
-				src_format->format, src_buffer, src_size,
+	buf = pcm_convert_to_16(&format_buffer, &dither,
+				sample_format(src_format->format),
+				src_buffer, src_size,
 				&len);
 	if (buf == NULL) {
 		g_set_error(error_r, pcm_convert_quark(), 0,
 			    "Conversion from %s to 16 bit is not implemented",
-			    sample_format_to_string(src_format->format));
+			    sample_format_to_string(sample_format(src_format->format)));
 		return NULL;
 	}
 
 	if (src_format->channels != dest_format->channels) {
-		buf = pcm_convert_channels_16(&state->channels_buffer,
+		buf = pcm_convert_channels_16(&channels_buffer,
 					      dest_format->channels,
 					      src_format->channels,
 					      buf, len, &len);
@@ -98,7 +102,7 @@ pcm_convert_16(struct pcm_convert_state *state,
 	}
 
 	if (src_format->sample_rate != dest_format->sample_rate) {
-		buf = pcm_resample_16(&state->resample,
+		buf = pcm_resample_16(&resample,
 				      dest_format->channels,
 				      src_format->sample_rate, buf, len,
 				      dest_format->sample_rate, &len,
@@ -111,29 +115,29 @@ pcm_convert_16(struct pcm_convert_state *state,
 	return buf;
 }
 
-static const int32_t *
-pcm_convert_24(struct pcm_convert_state *state,
-	       const struct audio_format *src_format,
-	       const void *src_buffer, size_t src_size,
-	       const struct audio_format *dest_format, size_t *dest_size_r,
-	       GError **error_r)
+inline const int32_t *
+PcmConvert::Convert24(const audio_format *src_format,
+		      const void *src_buffer, size_t src_size,
+		      const audio_format *dest_format, size_t *dest_size_r,
+		      GError **error_r)
 {
 	const int32_t *buf;
 	size_t len;
 
 	assert(dest_format->format == SAMPLE_FORMAT_S24_P32);
 
-	buf = pcm_convert_to_24(&state->format_buffer, src_format->format,
+	buf = pcm_convert_to_24(&format_buffer,
+				sample_format(src_format->format),
 				src_buffer, src_size, &len);
 	if (buf == NULL) {
 		g_set_error(error_r, pcm_convert_quark(), 0,
 			    "Conversion from %s to 24 bit is not implemented",
-			    sample_format_to_string(src_format->format));
+			    sample_format_to_string(sample_format(src_format->format)));
 		return NULL;
 	}
 
 	if (src_format->channels != dest_format->channels) {
-		buf = pcm_convert_channels_24(&state->channels_buffer,
+		buf = pcm_convert_channels_24(&channels_buffer,
 					      dest_format->channels,
 					      src_format->channels,
 					      buf, len, &len);
@@ -148,7 +152,7 @@ pcm_convert_24(struct pcm_convert_state *state,
 	}
 
 	if (src_format->sample_rate != dest_format->sample_rate) {
-		buf = pcm_resample_24(&state->resample,
+		buf = pcm_resample_24(&resample,
 				      dest_format->channels,
 				      src_format->sample_rate, buf, len,
 				      dest_format->sample_rate, &len,
@@ -161,29 +165,29 @@ pcm_convert_24(struct pcm_convert_state *state,
 	return buf;
 }
 
-static const int32_t *
-pcm_convert_32(struct pcm_convert_state *state,
-	       const struct audio_format *src_format,
-	       const void *src_buffer, size_t src_size,
-	       const struct audio_format *dest_format, size_t *dest_size_r,
-	       GError **error_r)
+inline const int32_t *
+PcmConvert::Convert32(const audio_format *src_format,
+		      const void *src_buffer, size_t src_size,
+		      const audio_format *dest_format, size_t *dest_size_r,
+		      GError **error_r)
 {
 	const int32_t *buf;
 	size_t len;
 
 	assert(dest_format->format == SAMPLE_FORMAT_S32);
 
-	buf = pcm_convert_to_32(&state->format_buffer, src_format->format,
+	buf = pcm_convert_to_32(&format_buffer,
+				sample_format(src_format->format),
 				src_buffer, src_size, &len);
 	if (buf == NULL) {
 		g_set_error(error_r, pcm_convert_quark(), 0,
 			    "Conversion from %s to 32 bit is not implemented",
-			    sample_format_to_string(src_format->format));
+			    sample_format_to_string(sample_format(src_format->format)));
 		return NULL;
 	}
 
 	if (src_format->channels != dest_format->channels) {
-		buf = pcm_convert_channels_32(&state->channels_buffer,
+		buf = pcm_convert_channels_32(&channels_buffer,
 					      dest_format->channels,
 					      src_format->channels,
 					      buf, len, &len);
@@ -198,7 +202,7 @@ pcm_convert_32(struct pcm_convert_state *state,
 	}
 
 	if (src_format->sample_rate != dest_format->sample_rate) {
-		buf = pcm_resample_32(&state->resample,
+		buf = pcm_resample_32(&resample,
 				      dest_format->channels,
 				      src_format->sample_rate, buf, len,
 				      dest_format->sample_rate, &len,
@@ -211,34 +215,33 @@ pcm_convert_32(struct pcm_convert_state *state,
 	return buf;
 }
 
-static const float *
-pcm_convert_float(struct pcm_convert_state *state,
-		  const struct audio_format *src_format,
-		  const void *src_buffer, size_t src_size,
-		  const struct audio_format *dest_format, size_t *dest_size_r,
-		  GError **error_r)
+inline const float *
+PcmConvert::ConvertFloat(const audio_format *src_format,
+			 const void *src_buffer, size_t src_size,
+			 const audio_format *dest_format, size_t *dest_size_r,
+			 GError **error_r)
 {
-	const float *buffer = src_buffer;
+	const float *buffer = (const float *)src_buffer;
 	size_t size = src_size;
 
 	assert(dest_format->format == SAMPLE_FORMAT_FLOAT);
 
 	/* convert to float now */
 
-	buffer = pcm_convert_to_float(&state->format_buffer,
-				      src_format->format,
+	buffer = pcm_convert_to_float(&format_buffer,
+				      sample_format(src_format->format),
 				      buffer, size, &size);
 	if (buffer == NULL) {
 		g_set_error(error_r, pcm_convert_quark(), 0,
 			    "Conversion from %s to float is not implemented",
-			    sample_format_to_string(src_format->format));
+			    sample_format_to_string(sample_format(src_format->format)));
 		return NULL;
 	}
 
 	/* convert channels */
 
 	if (src_format->channels != dest_format->channels) {
-		buffer = pcm_convert_channels_float(&state->channels_buffer,
+		buffer = pcm_convert_channels_float(&channels_buffer,
 						    dest_format->channels,
 						    src_format->channels,
 						    buffer, size, &size);
@@ -256,7 +259,7 @@ pcm_convert_float(struct pcm_convert_state *state,
 	   libsamplerate */
 
 	if (src_format->sample_rate != dest_format->sample_rate) {
-		buffer = pcm_resample_float(&state->resample,
+		buffer = pcm_resample_float(&resample,
 					    dest_format->channels,
 					    src_format->sample_rate,
 					    buffer, size,
@@ -271,20 +274,19 @@ pcm_convert_float(struct pcm_convert_state *state,
 }
 
 const void *
-pcm_convert(struct pcm_convert_state *state,
-	    const struct audio_format *src_format,
-	    const void *src, size_t src_size,
-	    const struct audio_format *dest_format,
-	    size_t *dest_size_r,
-	    GError **error_r)
+PcmConvert::Convert(const audio_format *src_format,
+		    const void *src, size_t src_size,
+		    const audio_format *dest_format,
+		    size_t *dest_size_r,
+		    GError **error_r)
 {
 	struct audio_format float_format;
 	if (src_format->format == SAMPLE_FORMAT_DSD) {
 		size_t f_size;
-		const float *f = pcm_dsd_to_float(&state->dsd,
+		const float *f = pcm_dsd_to_float(&dsd,
 						  src_format->channels,
-						  false, src, src_size,
-						  &f_size);
+						  false, (const uint8_t *)src,
+						  src_size, &f_size);
 		if (f == NULL) {
 			g_set_error_literal(error_r, pcm_convert_quark(), 0,
 					    "DSD to PCM conversion failed");
@@ -299,35 +301,31 @@ pcm_convert(struct pcm_convert_state *state,
 		src_size = f_size;
 	}
 
-	switch (dest_format->format) {
+	switch (sample_format(dest_format->format)) {
 	case SAMPLE_FORMAT_S16:
-		return pcm_convert_16(state,
-				      src_format, src, src_size,
-				      dest_format, dest_size_r,
-				      error_r);
+		return Convert16(src_format, src, src_size,
+				 dest_format, dest_size_r,
+				 error_r);
 
 	case SAMPLE_FORMAT_S24_P32:
-		return pcm_convert_24(state,
-				      src_format, src, src_size,
-				      dest_format, dest_size_r,
-				      error_r);
+		return Convert24(src_format, src, src_size,
+				 dest_format, dest_size_r,
+				 error_r);
 
 	case SAMPLE_FORMAT_S32:
-		return pcm_convert_32(state,
-				      src_format, src, src_size,
-				      dest_format, dest_size_r,
-				      error_r);
+		return Convert32(src_format, src, src_size,
+				 dest_format, dest_size_r,
+				 error_r);
 
 	case SAMPLE_FORMAT_FLOAT:
-		return pcm_convert_float(state,
-					 src_format, src, src_size,
-					 dest_format, dest_size_r,
-					 error_r);
+		return ConvertFloat(src_format, src, src_size,
+				    dest_format, dest_size_r,
+				    error_r);
 
 	default:
 		g_set_error(error_r, pcm_convert_quark(), 0,
 			    "PCM conversion to %s is not implemented",
-			    sample_format_to_string(dest_format->format));
+			    sample_format_to_string(sample_format(dest_format->format)));
 		return NULL;
 	}
 }

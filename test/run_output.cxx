@@ -27,12 +27,12 @@
 #include "IOThread.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
+#include "PcmConvert.hxx"
 
 extern "C" {
 #include "output_plugin.h"
 #include "output_internal.h"
 #include "filter_registry.h"
-#include "pcm_convert.h"
 }
 
 #include "PlayerControl.hxx"
@@ -52,21 +52,15 @@ GlobalEvents::Emit(gcc_unused Event event)
 {
 }
 
-void pcm_convert_init(G_GNUC_UNUSED struct pcm_convert_state *state)
-{
-}
-
-void pcm_convert_deinit(G_GNUC_UNUSED struct pcm_convert_state *state)
-{
-}
+PcmConvert::PcmConvert() {}
+PcmConvert::~PcmConvert() {}
 
 const void *
-pcm_convert(G_GNUC_UNUSED struct pcm_convert_state *state,
-	    G_GNUC_UNUSED const struct audio_format *src_format,
-	    G_GNUC_UNUSED const void *src, G_GNUC_UNUSED size_t src_size,
-	    G_GNUC_UNUSED const struct audio_format *dest_format,
-	    G_GNUC_UNUSED size_t *dest_size_r,
-	    GError **error_r)
+PcmConvert::Convert(gcc_unused const audio_format *src_format,
+		    gcc_unused const void *src, gcc_unused size_t src_size,
+		    gcc_unused const audio_format *dest_format,
+		    gcc_unused size_t *dest_size_r,
+		    gcc_unused GError **error_r)
 {
 	g_set_error(error_r, pcm_convert_quark(), 0,
 		    "Not implemented");

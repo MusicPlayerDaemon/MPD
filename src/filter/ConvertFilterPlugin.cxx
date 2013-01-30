@@ -23,7 +23,8 @@
 #include "filter_internal.h"
 #include "filter_registry.h"
 #include "conf.h"
-#include "pcm_convert.h"
+#include "PcmConvert.hxx"
+#include "util/Manual.hxx"
 #include "audio_format.h"
 #include "poison.h"
 
@@ -51,7 +52,7 @@ struct ConvertFilter {
 	 */
 	struct audio_format out_audio_format;
 
-	struct pcm_convert_state state;
+	Manual<PcmConvert> state;
 
 	ConvertFilter() {
 		filter_init(&base, &convert_filter_plugin);
@@ -81,7 +82,7 @@ convert_filter_open(struct filter *_filter, struct audio_format *audio_format,
 	assert(audio_format_valid(audio_format));
 
 	filter->in_audio_format = filter->out_audio_format = *audio_format;
-	pcm_convert_init(&filter->state);
+	filter->state.Construct();
 
 	return &filter->in_audio_format;
 }
@@ -91,7 +92,7 @@ convert_filter_close(struct filter *_filter)
 {
 	ConvertFilter *filter = (ConvertFilter *)_filter;
 
-	pcm_convert_deinit(&filter->state);
+	filter->state.Destruct();
 
 	poison_undefined(&filter->in_audio_format,
 			 sizeof(filter->in_audio_format));
@@ -113,10 +114,10 @@ convert_filter_filter(struct filter *_filter, const void *src, size_t src_size,
 		return src;
 	}
 
-	dest = pcm_convert(&filter->state, &filter->in_audio_format,
-			   src, src_size,
-			   &filter->out_audio_format, dest_size_r,
-			   error_r);
+	dest = filter->state->Convert(&filter->in_audio_format,
+				      src, src_size,
+				      &filter->out_audio_format, dest_size_r,
+				      error_r);
 	if (dest == NULL)
 		return NULL;
 

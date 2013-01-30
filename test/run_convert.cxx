@@ -26,7 +26,7 @@
 #include "config.h"
 #include "AudioParser.hxx"
 #include "audio_format.h"
-#include "pcm_convert.h"
+#include "PcmConvert.hxx"
 #include "conf.h"
 #include "util/fifo_buffer.h"
 #include "stdbin.h"
@@ -58,7 +58,6 @@ int main(int argc, char **argv)
 {
 	GError *error = NULL;
 	struct audio_format in_audio_format, out_audio_format;
-	struct pcm_convert_state state;
 	const void *output;
 	ssize_t nbytes;
 	size_t length;
@@ -90,7 +89,7 @@ int main(int argc, char **argv)
 
 	const size_t in_frame_size = audio_format_frame_size(&in_audio_format);
 
-	pcm_convert_init(&state);
+	PcmConvert state;
 
 	struct fifo_buffer *buffer = fifo_buffer_new(4096);
 
@@ -113,8 +112,8 @@ int main(int argc, char **argv)
 
 		fifo_buffer_consume(buffer, length);
 
-		output = pcm_convert(&state, &in_audio_format, src, length,
-				     &out_audio_format, &length, &error);
+		output = state.Convert(&in_audio_format, src, length,
+				       &out_audio_format, &length, &error);
 		if (output == NULL) {
 			g_printerr("Failed to convert: %s\n", error->message);
 			return 2;
@@ -123,5 +122,5 @@ int main(int argc, char **argv)
 		G_GNUC_UNUSED ssize_t ignored = write(1, output, length);
 	}
 
-	pcm_convert_deinit(&state);
+	return EXIT_SUCCESS;
 }

@@ -21,7 +21,7 @@
 #define MPD_DECODER_INTERNAL_HXX
 
 #include "decoder_command.h"
-#include "pcm_convert.h"
+#include "PcmConvert.hxx"
 #include "replay_gain_info.h"
 
 struct input_stream;
@@ -29,7 +29,7 @@ struct input_stream;
 struct decoder {
 	struct decoder_control *dc;
 
-	struct pcm_convert_state conv_state;
+	PcmConvert conv_state;
 
 	/**
 	 * The time stamp of the next data chunk, in seconds.
@@ -91,7 +91,6 @@ struct decoder {
 		 song_tag(_tag), stream_tag(nullptr), decoder_tag(nullptr),
 		 chunk(nullptr),
 		 replay_gain_serial(0) {
-		pcm_convert_init(&conv_state);
 	}
 
 	~decoder();
