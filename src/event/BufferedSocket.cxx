@@ -26,11 +26,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#ifndef WIN32
-#include <sys/types.h>
-#include <sys/socket.h>
-#endif
-
 BufferedSocket::~BufferedSocket()
 {
 	if (input != nullptr)
@@ -40,15 +35,7 @@ BufferedSocket::~BufferedSocket()
 BufferedSocket::ssize_t
 BufferedSocket::DirectWrite(const void *data, size_t length)
 {
-	int flags = 0;
-#ifdef MSG_NOSIGNAL
-	flags |= MSG_NOSIGNAL;
-#endif
-#ifdef MSG_DONTWAIT
-	flags |= MSG_DONTWAIT;
-#endif
-
-	const auto nbytes = send(Get(), (const char *)data, length, flags);
+	const auto nbytes = SocketMonitor::Write((const char *)data, length);
 	if (gcc_unlikely(nbytes < 0)) {
 		const auto code = GetSocketError();
 		if (IsSocketErrorAgain(code))
@@ -65,15 +52,10 @@ BufferedSocket::DirectWrite(const void *data, size_t length)
 	return nbytes;
 }
 
-ssize_t
+BufferedSocket::ssize_t
 BufferedSocket::DirectRead(void *data, size_t length)
 {
-	int flags = 0;
-#ifdef MSG_DONTWAIT
-	flags |= MSG_DONTWAIT;
-#endif
-
-	const auto nbytes = recv(Get(), (char *)data, length, flags);
+	const auto nbytes = SocketMonitor::Read((char *)data, length);
 	if (gcc_likely(nbytes > 0))
 		return nbytes;
 

@@ -25,16 +25,10 @@
 #include "util/PeakBuffer.hxx"
 #include "gcc.h"
 
-#include <type_traits>
-
-#include <stddef.h>
-
 struct fifo_buffer;
 class EventLoop;
 
 class BufferedSocket : private SocketMonitor {
-	typedef std::make_signed<size_t>::type ssize_t;
-
 	fifo_buffer *input;
 	PeakBuffer output;
 

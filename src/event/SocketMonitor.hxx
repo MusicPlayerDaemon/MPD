@@ -24,7 +24,10 @@
 
 #include <glib.h>
 
+#include <type_traits>
+
 #include <assert.h>
+#include <stddef.h>
 
 #ifdef WIN32
 /* ERRORis a WIN32 macro that poisons our namespace; this is a
@@ -53,6 +56,8 @@ public:
 	static constexpr unsigned WRITE = G_IO_OUT;
 	static constexpr unsigned ERROR = G_IO_ERR;
 	static constexpr unsigned HANGUP = G_IO_HUP;
+
+	typedef std::make_signed<size_t>::type ssize_t;
 
 	SocketMonitor(EventLoop &_loop)
 		:fd(-1), loop(_loop), source(nullptr) {}
@@ -105,6 +110,9 @@ public:
 	void CancelWrite() {
 		poll.events &= ~WRITE;
 	}
+
+	ssize_t Read(void *data, size_t length);
+	ssize_t Write(const void *data, size_t length);
 
 protected:
 	virtual void OnSocketReady(unsigned flags) = 0;

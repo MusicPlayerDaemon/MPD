@@ -25,6 +25,13 @@
 
 #include <assert.h>
 
+#ifdef WIN32
+#include <winsock2.h>
+#else
+#include <sys/types.h>
+#include <sys/socket.h>
+#endif
+
 /*
  * GSource methods
  *
@@ -126,4 +133,29 @@ void
 SocketMonitor::Close()
 {
 	close_socket(Steal());
+}
+
+SocketMonitor::ssize_t
+SocketMonitor::Read(void *data, size_t length)
+{
+	int flags = 0;
+#ifdef MSG_DONTWAIT
+	flags |= MSG_DONTWAIT;
+#endif
+
+	return recv(Get(), (char *)data, length, flags);
+}
+
+SocketMonitor::ssize_t
+SocketMonitor::Write(const void *data, size_t length)
+{
+	int flags = 0;
+#ifdef MSG_NOSIGNAL
+	flags |= MSG_NOSIGNAL;
+#endif
+#ifdef MSG_DONTWAIT
+	flags |= MSG_DONTWAIT;
+#endif
+
+	return send(Get(), (const char *)data, length, flags);
 }
