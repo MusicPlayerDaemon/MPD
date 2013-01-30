@@ -29,7 +29,7 @@
 #include <stddef.h>
 
 struct HttpdOutput;
-struct page;
+class Page;
 
 class HttpdClient final {
 	/**
@@ -76,14 +76,14 @@ class HttpdClient final {
 	} state;
 
 	/**
-	 * A queue of #page objects to be sent to the client.
+	 * A queue of #Page objects to be sent to the client.
 	 */
-	std::list<page *> pages;
+	std::list<Page *> pages;
 
 	/**
 	 * The #page which is currently being sent to the client.
 	 */
-	page *current_page;
+	Page *current_page;
 
 	/**
 	 * The amount of bytes which were already sent from
@@ -120,9 +120,9 @@ class HttpdClient final {
 	guint metaint;
 
 	/**
-	 * The metadata as #page which is currently being sent to the client.
+	 * The metadata as #Page which is currently being sent to the client.
 	 */
-	page *metadata;
+	Page *metadata;
 
 	/*
 	 * The amount of bytes which were already sent from the metadata.
@@ -204,12 +204,12 @@ public:
 	/**
 	 * Appends a page to the client's queue.
 	 */
-	void PushPage(page *page);
+	void PushPage(Page *page);
 
 	/**
 	 * Sends the passed metadata.
 	 */
-	void PushMetaData(page *page);
+void PushMetaData(Page *page);
 };
 
 #endif

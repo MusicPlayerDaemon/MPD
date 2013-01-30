@@ -92,7 +92,6 @@ mpd_headers = \
 	src/AudioCompress/config.h \
 	src/AudioCompress/compress.h \
 	src/open.h \
-	src/page.h \
 	src/Playlist.hxx \
 	src/playlist_error.h \
 	src/poison.h \
@@ -218,7 +217,7 @@ src_mpd_SOURCES = \
 	src/MusicPipe.cxx src/MusicPipe.hxx \
 	src/MusicChunk.cxx src/MusicChunk.hxx \
 	src/Mapper.cxx src/Mapper.hxx \
-	src/page.c \
+	src/Page.cxx src/Page.hxx \
 	src/Partition.hxx \
 	src/Permission.cxx src/Permission.hxx \
 	src/PlayerThread.cxx src/PlayerThread.hxx \
@@ -1325,7 +1324,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/audio_parser.c \
 	src/timer.c src/clock.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
-	src/page.c \
+	src/Page.cxx \
 	src/SocketUtil.cxx \
 	src/resolver.c \
 	src/OutputInit.cxx src/OutputFinish.cxx src/OutputList.cxx \

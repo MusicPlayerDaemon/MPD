@@ -18,72 +18,53 @@
  */
 
 #include "config.h"
-#include "page.h"
+#include "Page.hxx"
 
 #include <glib.h>
+
+#include <new>
 
 #include <assert.h>
 #include <string.h>
 
-/**
- * Allocates a new #page object, without filling the data element.
- */
-static struct page *
-page_new(size_t size)
+Page *
+Page::Create(size_t size)
 {
-	struct page *page = g_malloc(sizeof(*page) + size -
-				     sizeof(page->data));
-
-	assert(size > 0);
-
-	page->ref = 1;
-	page->size = size;
-	return page;
+	void *p = g_malloc(sizeof(Page) + size -
+			   sizeof(Page::data));
+	return ::new(p) Page(size);
 }
 
-struct page *
-page_new_copy(const void *data, size_t size)
+Page *
+Page::Copy(const void *data, size_t size)
 {
-	struct page *page = page_new(size);
+	assert(data != nullptr);
 
-	assert(data != NULL);
-
+	Page *page = Create(size);
 	memcpy(page->data, data, size);
 	return page;
 }
 
-struct page *
-page_new_concat(const struct page *a, const struct page *b)
+Page *
+Page::Concat(const Page &a, const Page &b)
 {
-	struct page *page = page_new(a->size + b->size);
+	Page *page = Create(a.size + b.size);
 
-	memcpy(page->data, a->data, a->size);
-	memcpy(page->data + a->size, b->data, b->size);
+	memcpy(page->data, a.data, a.size);
+	memcpy(page->data + a.size, b.data, b.size);
 
 	return page;
 }
 
-void
-page_ref(struct page *page)
-{
-	g_atomic_int_inc(&page->ref);
-}
-
-static void
-page_free(struct page *page)
-{
-	assert(page->ref == 0);
-
-	g_free(page);
-}
-
 bool
-page_unref(struct page *page)
+Page::Unref()
 {
-	bool unused = g_atomic_int_dec_and_test(&page->ref);
+	bool unused = ref.Decrement();
 
-	if (unused)
-		page_free(page);
+	if (unused) {
+		this->Page::~Page();
+		g_free(this);
+	}
 
 	return unused;
 }

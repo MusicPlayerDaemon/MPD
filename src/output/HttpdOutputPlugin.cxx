@@ -25,7 +25,7 @@
 #include "encoder_plugin.h"
 #include "encoder_list.h"
 #include "resolver.h"
-#include "page.h"
+#include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "fd_util.h"
 #include "ServerSocket.hxx"
@@ -156,7 +156,7 @@ httpd_output_finish(struct audio_output *ao)
 	HttpdOutput *httpd = (HttpdOutput *)ao;
 
 	if (httpd->metadata)
-		page_unref(httpd->metadata);
+		httpd->metadata->Unref();
 
 	encoder_finish(httpd->encoder);
 	server_socket_free(httpd->server_socket);
@@ -230,7 +230,7 @@ httpd_listen_in_event(int fd, const struct sockaddr *address,
 	}
 }
 
-struct page *
+Page *
 HttpdOutput::ReadPage()
 {
 	if (unflushed_input >= 65536) {
@@ -257,7 +257,7 @@ HttpdOutput::ReadPage()
 	if (size == 0)
 		return NULL;
 
-	return page_new_copy(buffer, size);
+	return Page::Copy(buffer, size);
 }
 
 static bool
@@ -337,7 +337,7 @@ HttpdOutput::Close()
 	clients.clear();
 
 	if (header != NULL)
-		page_unref(header);
+		header->Unref();
 
 	encoder_close(encoder);
 }
@@ -398,7 +398,7 @@ httpd_output_delay(struct audio_output *ao)
 }
 
 void
-HttpdOutput::BroadcastPage(struct page *page)
+HttpdOutput::BroadcastPage(Page *page)
 {
 	assert(page != NULL);
 
@@ -419,10 +419,10 @@ HttpdOutput::BroadcastFromEncoder()
 	}
 	mutex.unlock();
 
-	struct page *page;
+	Page *page;
 	while ((page = ReadPage()) != nullptr) {
 		BroadcastPage(page);
-		page_unref(page);
+		page->Unref();
 	}
 }
 
@@ -492,10 +492,10 @@ HttpdOutput::SendTag(const struct tag *tag)
 		   used as the new "header" page, which is sent to all
 		   new clients */
 
-		struct page *page = ReadPage();
+		Page *page = ReadPage();
 		if (page != NULL) {
 			if (header != NULL)
-				page_unref(header);
+				header->Unref();
 			header = page;
 			BroadcastPage(page);
 		}
@@ -503,7 +503,7 @@ HttpdOutput::SendTag(const struct tag *tag)
 		/* use Icy-Metadata */
 
 		if (metadata != NULL)
-			page_unref(metadata);
+			metadata->Unref();
 
 		static constexpr tag_type types[] = {
 			TAG_ALBUM, TAG_ARTIST, TAG_TITLE,

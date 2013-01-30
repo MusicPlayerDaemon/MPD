@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "IcyMetaDataServer.hxx"
-#include "page.h"
+#include "Page.hxx"
 #include "tag.h"
 
 #include <glib.h>
@@ -86,14 +86,13 @@ icy_server_metadata_string(const char *stream_title, const char* stream_url)
 	return icy_metadata;
 }
 
-struct page*
+Page *
 icy_server_metadata_page(const struct tag *tag, const enum tag_type *types)
 {
 	const gchar *tag_items[TAG_NUM_OF_ITEM_TYPES];
 	gint last_item, item;
 	guint position;
 	gchar *icy_string;
-	struct page *icy_metadata;
 	gchar stream_title[(1 + 255 - 28) * 16]; // Length + Metadata -
 						 // "StreamTitle='';StreamUrl='';"
 						 // = 4081 - 28
@@ -131,7 +130,7 @@ icy_server_metadata_page(const struct tag *tag, const enum tag_type *types)
 	if (icy_string == NULL)
 		return NULL;
 
-	icy_metadata = page_new_copy(icy_string, (icy_string[0] * 16) + 1);
+	Page *icy_metadata = Page::Copy(icy_string, (icy_string[0] * 16) + 1);
 
 	g_free(icy_string);
 

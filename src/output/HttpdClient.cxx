@@ -21,7 +21,7 @@
 #include "HttpdClient.hxx"
 #include "HttpdInternal.hxx"
 #include "util/fifo_buffer.h"
-#include "page.h"
+#include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "glib_socket.h"
 
@@ -38,15 +38,15 @@ HttpdClient::~HttpdClient()
 			g_source_remove(write_source_id);
 
 		if (current_page != nullptr)
-			page_unref(current_page);
+			current_page->Unref();
 
 		for (auto page : pages)
-			page_unref(page);
+			page->Unref();
 	} else
 		fifo_buffer_free(input);
 
 	if (metadata)
-		page_unref(metadata);
+		metadata->Unref();
 
 	g_source_remove(read_source_id);
 	g_io_channel_unref(channel);
@@ -379,7 +379,7 @@ HttpdClient::CancelQueue()
 		return;
 
 	for (auto page : pages)
-		page_unref(page);
+		page->Unref();
 	pages.clear();
 
 	if (write_source_id != 0 && current_page == nullptr) {
@@ -390,36 +390,34 @@ HttpdClient::CancelQueue()
 
 static GIOStatus
 write_page_to_channel(GIOChannel *channel,
-		      const struct page *page, size_t position,
+		      const Page &page, size_t position,
 		      gsize *bytes_written_r, GError **error)
 {
 	assert(channel != nullptr);
-	assert(page != nullptr);
-	assert(position < page->size);
+	assert(position < page.size);
 
 	return g_io_channel_write_chars(channel,
-					(const gchar*)page->data + position,
-					page->size - position,
+					(const gchar*)page.data + position,
+					page.size - position,
 					bytes_written_r, error);
 }
 
 static GIOStatus
-write_n_bytes_to_channel(GIOChannel *channel, const struct page *page,
+write_n_bytes_to_channel(GIOChannel *channel, const Page &page,
 			 size_t position, gint n,
 			 gsize *bytes_written_r, GError **error)
 {
 	GIOStatus status;
 
 	assert(channel != nullptr);
-	assert(page != nullptr);
-	assert(position < page->size);
+	assert(position < page.size);
 
 	if (n == -1) {
 		status =  write_page_to_channel (channel, page, position,
 						 bytes_written_r, error);
 	} else {
 		status = g_io_channel_write_chars(channel,
-						  (const gchar*)page->data + position,
+						  (const gchar*)page.data + position,
 						  n, bytes_written_r, error);
 	}
 
@@ -466,7 +464,7 @@ HttpdClient::Write()
 
 		if (!metadata_sent) {
 			status = write_page_to_channel(channel,
-						       metadata,
+						       *metadata,
 						       metadata_to_write,
 						       &bytes_written, &error);
 
@@ -478,13 +476,12 @@ HttpdClient::Write()
 				metadata_sent = true;
 			}
 		} else {
-			struct page *empty_meta;
 			guchar empty_data = 0;
 
-			empty_meta = page_new_copy(&empty_data, 1);
+			Page *empty_meta = Page::Copy(&empty_data, 1);
 
 			status = write_page_to_channel(channel,
-						       empty_meta,
+						       *empty_meta,
 						       metadata_to_write,
 						       &bytes_written, &error);
 
@@ -494,11 +491,13 @@ HttpdClient::Write()
 				metadata_fill = 0;
 				metadata_current_position = 0;
 			}
+
+			empty_meta->Unref();
 		}
 
 		bytes_written = 0;
 	} else {
-		status = write_n_bytes_to_channel(channel, current_page,
+		status = write_n_bytes_to_channel(channel, *current_page,
 						  current_position, bytes_to_write,
 						  &bytes_written, &error);
 	}
@@ -512,7 +511,7 @@ HttpdClient::Write()
 			metadata_fill += bytes_written;
 
 		if (current_position >= current_page->size) {
-			page_unref(current_page);
+			current_page->Unref();
 			current_page = nullptr;
 
 			if (pages.empty()) {
@@ -561,13 +560,13 @@ httpd_client_out_event(gcc_unused GIOChannel *source,
 }
 
 void
-HttpdClient::PushPage(struct page *page)
+HttpdClient::PushPage(Page *page)
 {
 	if (state != RESPONSE)
 		/* the client is still writing the HTTP request */
 		return;
 
-	page_ref(page);
+	page->Ref();
 	pages.push_back(page);
 
 	if (write_source_id == 0)
@@ -577,16 +576,16 @@ HttpdClient::PushPage(struct page *page)
 }
 
 void
-HttpdClient::PushMetaData(struct page *page)
+HttpdClient::PushMetaData(Page *page)
 {
 	if (metadata) {
-		page_unref(metadata);
+		metadata->Unref();
 		metadata = nullptr;
 	}
 
 	g_return_if_fail (page);
 
-	page_ref(page);
+	page->Ref();
 	metadata = page;
 	metadata_sent = false;
 }

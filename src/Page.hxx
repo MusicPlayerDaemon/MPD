@@ -22,81 +22,83 @@
  * This is a library which manages reference counted buffers.
  */
 
-#ifndef MPD_PAGE_H
-#define MPD_PAGE_H
+#ifndef MPD_PAGE_HXX
+#define MPD_PAGE_HXX
+
+#include "util/RefCount.hxx"
+
+#include <algorithm>
 
 #include <stddef.h>
-#include <stdbool.h>
 
 /**
  * A dynamically allocated buffer which keeps track of its reference
  * count.  This is useful for passing buffers around, when several
  * instances hold references to one buffer.
  */
-struct page {
+class Page {
 	/**
 	 * The number of references to this buffer.  This library uses
 	 * atomic functions to access it, i.e. no locks are required.
 	 * As soon as this attribute reaches zero, the buffer is
 	 * freed.
 	 */
-	int ref;
+	RefCount ref;
 
+public:
 	/**
 	 * The size of this buffer in bytes.
 	 */
-	size_t size;
+	const size_t size;
 
 	/**
 	 * Dynamic array containing the buffer data.
 	 */
 	unsigned char data[sizeof(long)];
+
+protected:
+	Page(size_t _size):size(_size) {}
+	~Page() = default;
+
+	/**
+	 * Allocates a new #Page object, without filling the data
+	 * element.
+	 */
+	static Page *Create(size_t size);
+
+public:
+	/**
+	 * Creates a new #page object, and copies data from the
+	 * specified buffer.  It is initialized with a reference count
+	 * of 1.
+	 *
+	 * @param data the source buffer
+	 * @param size the size of the source buffer
+	 */
+	static Page *Copy(const void *data, size_t size);
+
+	/**
+	 * Concatenates two pages to a new page.
+	 *
+	 * @param a the first page
+	 * @param b the second page, which is appended
+	 */
+	static Page *Concat(const Page &a, const Page &b);
+
+	/**
+	 * Increases the reference counter.
+	 */
+	void Ref() {
+		ref.Increment();
+	}
+
+	/**
+	 * Decreases the reference counter.  If it reaches zero, the #page is
+	 * freed.
+	 *
+	 * @return true if the #page has been freed
+	 */
+	bool Unref();
 };
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/**
- * Creates a new #page object, and copies data from the specified
- * buffer.  It is initialized with a reference count of 1.
- *
- * @param data the source buffer
- * @param size the size of the source buffer
- * @return the new #page object
- */
-struct page *
-page_new_copy(const void *data, size_t size);
-
-/**
- * Concatenates two pages to a new page.
- *
- * @param a the first page
- * @param b the second page, which is appended
- */
-struct page *
-page_new_concat(const struct page *a, const struct page *b);
-
-/**
- * Increases the reference counter.
- *
- * @param page the #page object
- */
-void
-page_ref(struct page *page);
-
-/**
- * Decreases the reference counter.  If it reaches zero, the #page is
- * freed.
- *
- * @param page the #page object
- * @return true if the #page has been freed
- */
-bool
-page_unref(struct page *page);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

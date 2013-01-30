@@ -85,12 +85,12 @@ struct HttpdOutput {
 	/**
 	 * The header page, which is sent to every client on connect.
 	 */
-	struct page *header;
+	Page *header;
 
 	/**
 	 * The metadata, which is sent to every client.
 	 */
-	struct page *metadata;
+	Page *metadata;
 
 	/**
 	 * The configured name.
@@ -178,14 +178,14 @@ struct HttpdOutput {
 	 * Reads data from the encoder (as much as available) and
 	 * returns it as a new #page object.
 	 */
-	page *ReadPage();
+	Page *ReadPage();
 
 	/**
 	 * Broadcasts a page struct to all clients.
 	 *
 	 * Mutext must not be locked.
 	 */
-	void BroadcastPage(struct page *page);
+	void BroadcastPage(Page *page);
 
 	/**
 	 * Broadcasts data from the encoder to all clients.
