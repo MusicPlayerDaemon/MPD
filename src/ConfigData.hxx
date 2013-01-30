@@ -72,7 +72,11 @@ struct config_param {
 	gcc_nonnull_all
 	config_param(const char *_value, int _line=-1);
 
+	config_param(const config_param &) = delete;
+
 	~config_param();
+
+	config_param &operator=(const config_param &) = delete;
 
 	gcc_nonnull_all
 	void AddBlockParam(const char *_name, const char *_value,
