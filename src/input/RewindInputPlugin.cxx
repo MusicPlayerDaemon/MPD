@@ -89,7 +89,6 @@ struct RewindInputStream {
 		const struct input_stream *src = input;
 
 		assert(dest != src);
-		assert(src->mime.empty() || dest->mime != src->mime);
 
 		bool dest_ready = dest->ready;
 
