@@ -136,25 +136,14 @@ config_read_block(FILE *fp, int *count, char *string, GError **error_r)
 	}
 }
 
-bool
-ReadConfigFile(ConfigData &config_data, const Path &path, GError **error_r)
+static bool
+ReadConfigFile(ConfigData &config_data, FILE *fp, GError **error_r)
 {
-	assert(!path.IsNull());
-	const std::string path_utf8 = path.ToUTF8();
+	assert(fp != nullptr);
 
-	FILE *fp;
 	char string[MAX_STRING_SIZE + 1];
 	int count = 0;
 	struct config_param *param;
-
-	g_debug("loading file %s", path_utf8.c_str());
-
-	if (!(fp = FOpen(path, "r"))) {
-		g_set_error(error_r, config_quark(), errno,
-			    "Failed to open %s: %s",
-			    path_utf8.c_str(), g_strerror(errno));
-		return false;
-	}
 
 	while (fgets(string, MAX_STRING_SIZE, fp)) {
 		char *line;
@@ -175,7 +164,6 @@ ReadConfigFile(ConfigData &config_data, const Path &path, GError **error_r)
 			assert(*line != 0);
 			g_propagate_prefixed_error(error_r, error,
 						   "line %i: ", count);
-			fclose(fp);
 			return false;
 		}
 
@@ -187,7 +175,6 @@ ReadConfigFile(ConfigData &config_data, const Path &path, GError **error_r)
 			g_set_error(error_r, config_quark(), 0,
 				    "unrecognized parameter in config file at "
 				    "line %i: %s\n", count, name);
-			fclose(fp);
 			return false;
 		}
 
@@ -201,7 +188,6 @@ ReadConfigFile(ConfigData &config_data, const Path &path, GError **error_r)
 				    "config parameter \"%s\" is first defined "
 				    "on line %i and redefined on line %i\n",
 				    name, param->line, count);
-			fclose(fp);
 			return false;
 		}
 
@@ -213,7 +199,6 @@ ReadConfigFile(ConfigData &config_data, const Path &path, GError **error_r)
 			if (*line != '{') {
 				g_set_error(error_r, config_quark(), 0,
 					    "line %i: '{' expected", count);
-				fclose(fp);
 				return false;
 			}
 
@@ -222,13 +207,11 @@ ReadConfigFile(ConfigData &config_data, const Path &path, GError **error_r)
 				g_set_error(error_r, config_quark(), 0,
 					    "line %i: Unknown tokens after '{'",
 					    count);
-				fclose(fp);
 				return false;
 			}
 
 			param = config_read_block(fp, &count, string, error_r);
 			if (param == NULL) {
-				fclose(fp);
 				return false;
 			}
 		} else {
@@ -247,7 +230,6 @@ ReadConfigFile(ConfigData &config_data, const Path &path, GError **error_r)
 					g_error_free(error);
 				}
 
-				fclose(fp);
 				return false;
 			}
 
@@ -255,7 +237,6 @@ ReadConfigFile(ConfigData &config_data, const Path &path, GError **error_r)
 				g_set_error(error_r, config_quark(), 0,
 					    "line %i: Unknown tokens after value",
 					    count);
-				fclose(fp);
 				return false;
 			}
 
@@ -264,7 +245,27 @@ ReadConfigFile(ConfigData &config_data, const Path &path, GError **error_r)
 
 		params = g_slist_append(params, param);
 	}
-	fclose(fp);
 
 	return true;
+}
+
+bool
+ReadConfigFile(ConfigData &config_data, const Path &path, GError **error_r)
+{
+	assert(!path.IsNull());
+	const std::string path_utf8 = path.ToUTF8();
+
+	g_debug("loading file %s", path_utf8.c_str());
+
+	FILE *fp = FOpen(path, "r");
+	if (fp == nullptr) {
+		g_set_error(error_r, config_quark(), errno,
+			    "Failed to open %s: %s",
+			    path_utf8.c_str(), g_strerror(errno));
+		return false;
+	}
+
+	bool result = ReadConfigFile(config_data, fp, error_r);
+	fclose(fp);
+	return result;
 }
