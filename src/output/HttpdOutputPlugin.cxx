@@ -26,7 +26,7 @@
 #include "encoder_list.h"
 #include "resolver.h"
 #include "page.h"
-#include "icy_server.h"
+#include "IcyMetaDataServer.hxx"
 #include "fd_util.h"
 #include "ServerSocket.hxx"
 #include "Main.hxx"

@@ -81,7 +81,6 @@ mpd_headers = \
 	src/decoder/pcm_decoder_plugin.h \
 	src/input_stream.h \
 	src/text_input_stream.h \
-	src/icy_server.h \
 	src/ls.h \
 	src/mixer_api.h \
 	src/mixer_control.h \
@@ -889,7 +888,7 @@ endif
 
 if ENABLE_HTTPD_OUTPUT
 liboutput_plugins_a_SOURCES += \
-	src/icy_server.c \
+	src/IcyMetaDataServer.cxx src/IcyMetaDataServer.hxx \
 	src/output/HttpdInternal.hxx \
 	src/output/HttpdClient.cxx src/output/HttpdClient.hxx \
 	src/output/HttpdOutputPlugin.cxx src/output/HttpdOutputPlugin.hxx

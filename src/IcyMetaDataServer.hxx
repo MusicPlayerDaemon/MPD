@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,15 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef ICY_SERVER_H
-#define ICY_SERVER_H
+#ifndef MPD_ICY_META_DATA_SERVER_HXX
+#define MPD_ICY_META_DATA_SERVER_HXX
 
-#include "page.h"
 #include "tag.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 char*
 icy_server_metadata_header(const char *name,
@@ -34,9 +29,5 @@ icy_server_metadata_header(const char *name,
 
 struct page*
 icy_server_metadata_page(const struct tag *tag, const enum tag_type *types);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

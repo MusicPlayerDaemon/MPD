@@ -22,7 +22,7 @@
 #include "HttpdInternal.hxx"
 #include "util/fifo_buffer.h"
 #include "page.h"
-#include "icy_server.h"
+#include "IcyMetaDataServer.hxx"
 #include "glib_socket.h"
 
 #include <assert.h>
