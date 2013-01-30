@@ -26,6 +26,7 @@
 
 #ifdef __cplusplus
 #include <glib.h>
+#include <string>
 #include <array>
 #include <vector>
 #endif
@@ -35,8 +36,8 @@
 #ifdef __cplusplus
 
 struct block_param {
-	char *name;
-	char *value;
+	std::string name;
+	std::string value;
 	int line;
 
 	/**

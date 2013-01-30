@@ -53,11 +53,6 @@ config_param_free(struct config_param *param)
 {
 	g_free(param->value);
 
-	for (auto &i : param->block_params) {
-		g_free(i.name);
-		g_free(i.value);
-	}
-
 	delete param;
 }
 
@@ -70,8 +65,8 @@ config_add_block_param(struct config_param * param, const char *name,
 	param->block_params.push_back(block_param());
 	struct block_param *bp = &param->block_params.back();
 
-	bp->name = g_strdup(name);
-	bp->value = g_strdup(value);
+	bp->name = name;
+	bp->value = value;
 	bp->line = line;
 	bp->used = false;
 }
@@ -83,7 +78,7 @@ config_get_block_param(const struct config_param * param, const char *name)
 		return NULL;
 
 	for (auto &i : param->block_params) {
-		if (0 == strcmp(name, i.name)) {
+		if (i.name == name) {
 			i.used = true;
 			return &i;
 		}
@@ -101,7 +96,7 @@ config_get_block_string(const struct config_param *param, const char *name,
 	if (bp == NULL)
 		return default_value;
 
-	return bp->value;
+	return bp->value.c_str();
 }
 
 char *
@@ -122,7 +117,7 @@ config_dup_block_path(const struct config_param *param, const char *name,
 	if (bp == NULL)
 		return NULL;
 
-	char *path = parsePath(bp->value, error_r);
+	char *path = parsePath(bp->value.c_str(), error_r);
 	if (G_UNLIKELY(path == NULL))
 		g_prefix_error(error_r,
 			       "Invalid path in \"%s\" at line %i: ",
@@ -142,7 +137,7 @@ config_get_block_unsigned(const struct config_param *param, const char *name,
 	if (bp == NULL)
 		return default_value;
 
-	value = strtol(bp->value, &endptr, 0);
+	value = strtol(bp->value.c_str(), &endptr, 0);
 	if (*endptr != 0)
 		MPD_ERROR("Not a valid number in line %i", bp->line);
 
@@ -162,7 +157,7 @@ config_get_block_bool(const struct config_param *param, const char *name,
 	if (bp == NULL)
 		return default_value;
 
-	success = get_bool(bp->value, &value);
+	success = get_bool(bp->value.c_str(), &value);
 	if (!success)
 		MPD_ERROR("%s is not a boolean value (yes, true, 1) or "
 			  "(no, false, 0) on line %i\n",

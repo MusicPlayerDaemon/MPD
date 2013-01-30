@@ -79,7 +79,7 @@ config_param_check(gpointer data, G_GNUC_UNUSED gpointer user_data)
 	for (const auto &i : param->block_params) {
 		if (!i.used)
 			g_warning("option '%s' on line %i was not recognized",
-				  i.name, i.line);
+				  i.name.c_str(), i.line);
 	}
 }
 
