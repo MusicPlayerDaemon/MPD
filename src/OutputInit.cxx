@@ -34,9 +34,9 @@ extern "C" {
 #include "filter_plugin.h"
 #include "filter_registry.h"
 #include "filter/chain_filter_plugin.h"
-#include "filter/autoconvert_filter_plugin.h"
 }
 
+#include "filter/AutoConvertFilterPlugin.hxx"
 #include "filter/ReplayGainFilterPlugin.hxx"
 
 #include <glib.h>

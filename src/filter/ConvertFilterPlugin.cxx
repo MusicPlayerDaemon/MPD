@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "filter/convert_filter_plugin.h"
+#include "ConvertFilterPlugin.hxx"
 #include "filter_plugin.h"
 #include "filter_internal.h"
 #include "filter_registry.h"
@@ -30,7 +30,7 @@
 #include <assert.h>
 #include <string.h>
 
-struct convert_filter {
+struct ConvertFilter {
 	struct filter base;
 
 	/**
@@ -52,29 +52,31 @@ struct convert_filter {
 	struct audio_format out_audio_format;
 
 	struct pcm_convert_state state;
+
+	ConvertFilter() {
+		filter_init(&base, &convert_filter_plugin);
+	}
 };
 
 static struct filter *
-convert_filter_init(G_GNUC_UNUSED const struct config_param *param,
-		    G_GNUC_UNUSED GError **error_r)
+convert_filter_init(gcc_unused const struct config_param *param,
+		    gcc_unused GError **error_r)
 {
-	struct convert_filter *filter = g_new(struct convert_filter, 1);
-
-	filter_init(&filter->base, &convert_filter_plugin);
+	ConvertFilter *filter = new ConvertFilter();
 	return &filter->base;
 }
 
 static void
 convert_filter_finish(struct filter *filter)
 {
-	g_free(filter);
+	delete filter;
 }
 
 static const struct audio_format *
 convert_filter_open(struct filter *_filter, struct audio_format *audio_format,
-		    G_GNUC_UNUSED GError **error_r)
+		    gcc_unused GError **error_r)
 {
-	struct convert_filter *filter = (struct convert_filter *)_filter;
+	ConvertFilter *filter = (ConvertFilter *)_filter;
 
 	assert(audio_format_valid(audio_format));
 
@@ -87,7 +89,7 @@ convert_filter_open(struct filter *_filter, struct audio_format *audio_format,
 static void
 convert_filter_close(struct filter *_filter)
 {
-	struct convert_filter *filter = (struct convert_filter *)_filter;
+	ConvertFilter *filter = (ConvertFilter *)_filter;
 
 	pcm_convert_deinit(&filter->state);
 
@@ -101,7 +103,7 @@ static const void *
 convert_filter_filter(struct filter *_filter, const void *src, size_t src_size,
 		     size_t *dest_size_r, GError **error_r)
 {
-	struct convert_filter *filter = (struct convert_filter *)_filter;
+	ConvertFilter *filter = (ConvertFilter *)_filter;
 	const void *dest;
 
 	if (audio_format_equals(&filter->in_audio_format,
@@ -122,19 +124,19 @@ convert_filter_filter(struct filter *_filter, const void *src, size_t src_size,
 }
 
 const struct filter_plugin convert_filter_plugin = {
-	.name = "convert",
-	.init = convert_filter_init,
-	.finish = convert_filter_finish,
-	.open = convert_filter_open,
-	.close = convert_filter_close,
-	.filter = convert_filter_filter,
+	"convert",
+	convert_filter_init,
+	convert_filter_finish,
+	convert_filter_open,
+	convert_filter_close,
+	convert_filter_filter,
 };
 
 void
 convert_filter_set(struct filter *_filter,
 		   const struct audio_format *out_audio_format)
 {
-	struct convert_filter *filter = (struct convert_filter *)_filter;
+	ConvertFilter *filter = (ConvertFilter *)_filter;
 
 	assert(filter != NULL);
 	assert(audio_format_valid(&filter->in_audio_format));

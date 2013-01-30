@@ -18,18 +18,16 @@
  */
 
 #include "config.h"
-#include "filter/autoconvert_filter_plugin.h"
-#include "filter/convert_filter_plugin.h"
+#include "AutoConvertFilterPlugin.hxx"
+#include "ConvertFilterPlugin.hxx"
 #include "filter_plugin.h"
 #include "filter_internal.h"
 #include "filter_registry.h"
 #include "audio_format.h"
 
-#include <glib.h>
-
 #include <assert.h>
 
-struct autoconvert_filter {
+struct AutoConvertFilter {
 	struct filter base;
 
 	/**
@@ -45,20 +43,27 @@ struct autoconvert_filter {
 	struct filter *filter;
 
 	/**
-	 * A convert_filter, just in case conversion is needed.  NULL
+	 * A convert_filter, just in case conversion is needed.  nullptr
 	 * if unused.
 	 */
 	struct filter *convert;
+
+	AutoConvertFilter(const filter_plugin &plugin, struct filter *_filter)
+		:filter(_filter) {
+		filter_init(&base, &plugin);
+	}
+
+	~AutoConvertFilter() {
+		filter_free(filter);
+	}
 };
 
 static void
 autoconvert_filter_finish(struct filter *_filter)
 {
-	struct autoconvert_filter *filter =
-		(struct autoconvert_filter *)_filter;
+	AutoConvertFilter *filter = (AutoConvertFilter *)_filter;
 
-	filter_free(filter->filter);
-	g_free(filter);
+	delete filter;
 }
 
 static const struct audio_format *
@@ -66,8 +71,7 @@ autoconvert_filter_open(struct filter *_filter,
 			struct audio_format *in_audio_format,
 			GError **error_r)
 {
-	struct autoconvert_filter *filter =
-		(struct autoconvert_filter *)_filter;
+	AutoConvertFilter *filter = (AutoConvertFilter *)_filter;
 	const struct audio_format *out_audio_format;
 
 	assert(audio_format_valid(in_audio_format));
@@ -78,8 +82,8 @@ autoconvert_filter_open(struct filter *_filter,
 
 	out_audio_format = filter_open(filter->filter,
 				       &filter->in_audio_format, error_r);
-	if (out_audio_format == NULL)
-		return NULL;
+	if (out_audio_format == nullptr)
+		return nullptr;
 
 	/* need to convert? */
 
@@ -88,19 +92,19 @@ autoconvert_filter_open(struct filter *_filter,
 		struct audio_format audio_format2 = *in_audio_format;
 		const struct audio_format *audio_format3;
 
-		filter->convert = filter_new(&convert_filter_plugin, NULL,
+		filter->convert = filter_new(&convert_filter_plugin, nullptr,
 					     error_r);
-		if (filter->convert == NULL) {
+		if (filter->convert == nullptr) {
 			filter_close(filter->filter);
-			return NULL;
+			return nullptr;
 		}
 
 		audio_format3 = filter_open(filter->convert, &audio_format2,
 					    error_r);
-		if (audio_format3 == NULL) {
+		if (audio_format3 == nullptr) {
 			filter_free(filter->convert);
 			filter_close(filter->filter);
-			return NULL;
+			return nullptr;
 		}
 
 		assert(audio_format_equals(&audio_format2, in_audio_format));
@@ -108,7 +112,7 @@ autoconvert_filter_open(struct filter *_filter,
 		convert_filter_set(filter->convert, &filter->in_audio_format);
 	} else
 		/* no */
-		filter->convert = NULL;
+		filter->convert = nullptr;
 
 	return out_audio_format;
 }
@@ -116,10 +120,10 @@ autoconvert_filter_open(struct filter *_filter,
 static void
 autoconvert_filter_close(struct filter *_filter)
 {
-	struct autoconvert_filter *filter =
-		(struct autoconvert_filter *)_filter;
+	AutoConvertFilter *filter =
+		(AutoConvertFilter *)_filter;
 
-	if (filter->convert != NULL) {
+	if (filter->convert != nullptr) {
 		filter_close(filter->convert);
 		filter_free(filter->convert);
 	}
@@ -132,14 +136,13 @@ autoconvert_filter_filter(struct filter *_filter, const void *src,
 			  size_t src_size, size_t *dest_size_r,
 			  GError **error_r)
 {
-	struct autoconvert_filter *filter =
-		(struct autoconvert_filter *)_filter;
+	AutoConvertFilter *filter = (AutoConvertFilter *)_filter;
 
-	if (filter->convert != NULL) {
+	if (filter->convert != nullptr) {
 		src = filter_filter(filter->convert, src, src_size, &src_size,
 				    error_r);
-		if (src == NULL)
-			return NULL;
+		if (src == nullptr)
+			return nullptr;
 	}
 
 	return filter_filter(filter->filter, src, src_size, dest_size_r,
@@ -147,21 +150,20 @@ autoconvert_filter_filter(struct filter *_filter, const void *src,
 }
 
 static const struct filter_plugin autoconvert_filter_plugin = {
-	.name = "convert",
-	.finish = autoconvert_filter_finish,
-	.open = autoconvert_filter_open,
-	.close = autoconvert_filter_close,
-	.filter = autoconvert_filter_filter,
+	"convert",
+	nullptr,
+	autoconvert_filter_finish,
+	autoconvert_filter_open,
+	autoconvert_filter_close,
+	autoconvert_filter_filter,
 };
 
 struct filter *
 autoconvert_filter_new(struct filter *_filter)
 {
-	struct autoconvert_filter *filter =
-		g_new(struct autoconvert_filter, 1);
-
-	filter_init(&filter->base, &autoconvert_filter_plugin);
-	filter->filter = _filter;
+	AutoConvertFilter *filter =
+		new AutoConvertFilter(autoconvert_filter_plugin,
+				      _filter);
 
 	return &filter->base;
 }

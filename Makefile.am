@@ -59,9 +59,7 @@ mpd_headers = \
 	src/filter_internal.h \
 	src/filter_plugin.h \
 	src/filter_registry.h \
-	src/filter/autoconvert_filter_plugin.h \
 	src/filter/chain_filter_plugin.h \
-	src/filter/convert_filter_plugin.h \
 	src/filter/volume_filter_plugin.h \
 	src/command.h \
 	src/conf.h \
@@ -972,8 +970,10 @@ endif
 libfilter_plugins_a_SOURCES = \
 	src/filter/null_filter_plugin.c \
 	src/filter/chain_filter_plugin.c \
-	src/filter/autoconvert_filter_plugin.c \
-	src/filter/convert_filter_plugin.c \
+	src/filter/AutoConvertFilterPlugin.cxx \
+	src/filter/AutoConvertFilterPlugin.hxx \
+	src/filter/ConvertFilterPlugin.cxx \
+	src/filter/ConvertFilterPlugin.hxx \
 	src/filter/route_filter_plugin.c \
 	src/filter/normalize_filter_plugin.c \
 	src/filter/ReplayGainFilterPlugin.cxx \
