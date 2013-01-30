@@ -31,6 +31,10 @@
 
 struct audio_format;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Parses a string in the form "SAMPLE_RATE:BITS:CHANNELS" into an
  * #audio_format.
@@ -45,5 +49,9 @@ struct audio_format;
 bool
 audio_format_parse(struct audio_format *dest, const char *src,
 		   bool mask, GError **error_r);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

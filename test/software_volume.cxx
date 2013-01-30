@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -59,7 +59,8 @@ int main(int argc, char **argv)
 		audio_format_init(&audio_format, 48000, SAMPLE_FORMAT_S16, 2);
 
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
-		if (!pcm_volume(buffer, nbytes, audio_format.format,
+		if (!pcm_volume(buffer, nbytes,
+				sample_format(audio_format.format),
 				PCM_VOLUME_1 / 2)) {
 			g_printerr("pcm_volume() has failed\n");
 			return 2;

@@ -1257,7 +1257,7 @@ endif
 
 if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
-test_run_encoder_SOURCES = test/run_encoder.c \
+test_run_encoder_SOURCES = test/run_encoder.cxx \
 	test/stdbin.h \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
@@ -1295,7 +1295,7 @@ test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
 	$(GLIB_LIBS)
 endif
 
-test_software_volume_SOURCES = test/software_volume.c \
+test_software_volume_SOURCES = test/software_volume.cxx \
 	test/stdbin.h \
 	src/audio_check.c \
 	src/audio_parser.c
@@ -1311,7 +1311,7 @@ test_run_normalize_SOURCES = test/run_normalize.c \
 test_run_normalize_LDADD = \
 	$(GLIB_LIBS)
 
-test_run_convert_SOURCES = test/run_convert.c \
+test_run_convert_SOURCES = test/run_convert.cxx \
 	src/dsd2pcm/dsd2pcm.c \
 	src/audio_format.c \
 	src/audio_check.c \

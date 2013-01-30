@@ -65,6 +65,10 @@ pcm_volume_dither(void)
 	return (r & 511) - ((r >> 9) & 511);
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Adjust the volume of the specified PCM buffer.
  *
@@ -78,5 +82,9 @@ bool
 pcm_volume(void *buffer, size_t length,
 	   enum sample_format format,
 	   int volume);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

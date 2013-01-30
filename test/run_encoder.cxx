@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -51,7 +51,6 @@ int main(int argc, char **argv)
 	struct encoder *encoder;
 	struct config_param *param;
 	static char buffer[32768];
-	ssize_t nbytes;
 
 	/* parse command line */
 
@@ -110,6 +109,7 @@ int main(int argc, char **argv)
 
 	/* do it */
 
+	ssize_t nbytes;
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
 		ret = encoder_write(encoder, buffer, nbytes, &error);
 		if (!ret) {
