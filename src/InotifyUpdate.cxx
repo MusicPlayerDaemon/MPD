@@ -26,6 +26,9 @@
 #include "fs/Path.hxx"
 
 #include <glib.h>
+
+#include <map>
+
 #include <assert.h>
 #include <sys/inotify.h>
 #include <sys/stat.h>
@@ -59,40 +62,31 @@ static InotifyQueue *inotify_queue;
 
 static unsigned inotify_max_depth;
 static struct watch_directory inotify_root;
-static GTree *inotify_directories;
-
-static gint
-compare(gconstpointer a, gconstpointer b)
-{
-	if (a < b)
-		return -1;
-	else if (a > b)
-		return 1;
-	else
-		return 0;
-}
+static std::map<int, watch_directory *> inotify_directories;
 
 static void
 tree_add_watch_directory(struct watch_directory *directory)
 {
-	g_tree_insert(inotify_directories,
-		      GINT_TO_POINTER(directory->descriptor), directory);
+	inotify_directories.insert(std::make_pair(directory->descriptor,
+						  directory));
 }
 
 static void
 tree_remove_watch_directory(struct watch_directory *directory)
 {
-	G_GNUC_UNUSED
-	bool found = g_tree_remove(inotify_directories,
-				   GINT_TO_POINTER(directory->descriptor));
-	assert(found);
+	auto i = inotify_directories.find(directory->descriptor);
+	assert(i != inotify_directories.end());
+	inotify_directories.erase(i);
 }
 
 static struct watch_directory *
 tree_find_watch_directory(int wd)
 {
-	return (struct watch_directory *)
-		g_tree_lookup(inotify_directories, GINT_TO_POINTER(wd));
+	auto i = inotify_directories.find(wd);
+	if (i == inotify_directories.end())
+		return nullptr;
+
+	return i->second;
 }
 
 static void
@@ -337,7 +331,6 @@ mpd_inotify_init(unsigned max_depth)
 		return;
 	}
 
-	inotify_directories = g_tree_new(compare);
 	tree_add_watch_directory(&inotify_root);
 
 	recursive_watch_subdirectories(&inotify_root, path.c_str(), 0);
@@ -345,21 +338,6 @@ mpd_inotify_init(unsigned max_depth)
 	inotify_queue = new InotifyQueue(*main_loop);
 
 	g_debug("watching music directory");
-}
-
-static gboolean
-free_watch_directory(G_GNUC_UNUSED gpointer key, gpointer value,
-		     G_GNUC_UNUSED gpointer data)
-{
-	struct watch_directory *directory = (struct watch_directory *)value;
-
-	g_free(directory->name);
-	g_list_free(directory->children);
-
-	if (directory != &inotify_root)
-		g_slice_free(struct watch_directory, directory);
-
-	return false;
 }
 
 void
@@ -371,6 +349,15 @@ mpd_inotify_finish(void)
 	delete inotify_queue;
 	delete inotify_source;
 
-	g_tree_foreach(inotify_directories, free_watch_directory, NULL);
-	g_tree_destroy(inotify_directories);
+	for (auto i : inotify_directories) {
+		watch_directory *directory = i.second;
+
+		g_free(directory->name);
+		g_list_free(directory->children);
+
+		if (directory != &inotify_root)
+			g_slice_free(struct watch_directory, directory);
+	}
+
+	inotify_directories.clear();
 }
