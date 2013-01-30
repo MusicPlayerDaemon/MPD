@@ -35,11 +35,6 @@ struct ConvertFilter {
 	struct filter base;
 
 	/**
-	 * The current convert, from 0 to #PCM_CONVERT_1.
-	 */
-	unsigned convert;
-
-	/**
 	 * The input audio format; PCM data is passed to the filter()
 	 * method in this format.
 	 */
