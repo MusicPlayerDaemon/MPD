@@ -47,8 +47,8 @@ enum {
 #endif
 };
 
-struct watch_directory {
-	struct watch_directory *parent;
+struct WatchDirectory {
+	WatchDirectory *parent;
 
 	char *name;
 
@@ -61,25 +61,25 @@ static InotifySource *inotify_source;
 static InotifyQueue *inotify_queue;
 
 static unsigned inotify_max_depth;
-static struct watch_directory inotify_root;
-static std::map<int, watch_directory *> inotify_directories;
+static WatchDirectory inotify_root;
+static std::map<int, WatchDirectory *> inotify_directories;
 
 static void
-tree_add_watch_directory(struct watch_directory *directory)
+tree_add_watch_directory(WatchDirectory *directory)
 {
 	inotify_directories.insert(std::make_pair(directory->descriptor,
 						  directory));
 }
 
 static void
-tree_remove_watch_directory(struct watch_directory *directory)
+tree_remove_watch_directory(WatchDirectory *directory)
 {
 	auto i = inotify_directories.find(directory->descriptor);
 	assert(i != inotify_directories.end());
 	inotify_directories.erase(i);
 }
 
-static struct watch_directory *
+static WatchDirectory *
 tree_find_watch_directory(int wd)
 {
 	auto i = inotify_directories.find(wd);
@@ -90,7 +90,7 @@ tree_find_watch_directory(int wd)
 }
 
 static void
-remove_watch_directory(struct watch_directory *directory)
+remove_watch_directory(WatchDirectory *directory)
 {
 	assert(directory != NULL);
 
@@ -105,18 +105,18 @@ remove_watch_directory(struct watch_directory *directory)
 	tree_remove_watch_directory(directory);
 
 	while (directory->children != NULL)
-		remove_watch_directory((struct watch_directory *)directory->children->data);
+		remove_watch_directory((WatchDirectory *)directory->children->data);
 
 	directory->parent->children =
 		g_list_remove(directory->parent->children, directory);
 
 	inotify_source->Remove(directory->descriptor);
 	g_free(directory->name);
-	g_slice_free(struct watch_directory, directory);
+	g_slice_free(WatchDirectory, directory);
 }
 
 static char *
-watch_directory_get_uri_fs(const struct watch_directory *directory)
+watch_directory_get_uri_fs(const WatchDirectory *directory)
 {
 	char *parent_uri, *uri;
 
@@ -142,7 +142,7 @@ static bool skip_path(const char *path)
 }
 
 static void
-recursive_watch_subdirectories(struct watch_directory *directory,
+recursive_watch_subdirectories(WatchDirectory *directory,
 			       const char *path_fs, unsigned depth)
 {
 	GError *error = NULL;
@@ -169,7 +169,7 @@ recursive_watch_subdirectories(struct watch_directory *directory,
 		char *child_path_fs;
 		struct stat st;
 		int ret;
-		struct watch_directory *child;
+		WatchDirectory *child;
 
 		if (skip_path(ent->d_name))
 			continue;
@@ -205,7 +205,7 @@ recursive_watch_subdirectories(struct watch_directory *directory,
 			continue;
 		}
 
-		child = g_slice_new(struct watch_directory);
+		child = g_slice_new(WatchDirectory);
 		child->parent = directory;
 		child->name = g_strdup(ent->d_name);
 		child->descriptor = ret;
@@ -225,7 +225,7 @@ recursive_watch_subdirectories(struct watch_directory *directory,
 
 G_GNUC_PURE
 static unsigned
-watch_directory_depth(const struct watch_directory *d)
+watch_directory_depth(const WatchDirectory *d)
 {
 	assert(d != NULL);
 
@@ -240,7 +240,7 @@ static void
 mpd_inotify_callback(int wd, unsigned mask,
 		     G_GNUC_UNUSED const char *name, G_GNUC_UNUSED void *ctx)
 {
-	struct watch_directory *directory;
+	WatchDirectory *directory;
 	char *uri_fs;
 
 	/*g_debug("wd=%d mask=0x%x name='%s'", wd, mask, name);*/
@@ -350,13 +350,13 @@ mpd_inotify_finish(void)
 	delete inotify_source;
 
 	for (auto i : inotify_directories) {
-		watch_directory *directory = i.second;
+		WatchDirectory *directory = i.second;
 
 		g_free(directory->name);
 		g_list_free(directory->children);
 
 		if (directory != &inotify_root)
-			g_slice_free(struct watch_directory, directory);
+			g_slice_free(WatchDirectory, directory);
 	}
 
 	inotify_directories.clear();
