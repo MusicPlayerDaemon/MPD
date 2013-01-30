@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ConfigFile.hxx"
+#include "ConfigQuark.hxx"
 #include "ConfigData.hxx"
 #include "ConfigTemplates.hxx"
 #include "conf.h"

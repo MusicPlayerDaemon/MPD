@@ -41,6 +41,7 @@
 
 #include "config.h"
 #include "conf.h"
+#include "ConfigQuark.hxx"
 #include "audio_format.h"
 #include "audio_check.h"
 #include "filter_plugin.h"
