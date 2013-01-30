@@ -34,8 +34,8 @@
 
 #include <forward_list>
 
-#include <stdbool.h>
-
+struct config_param;
+class EventLoop;
 class ServerSocket;
 class HttpdClient;
 
@@ -123,6 +123,11 @@ struct HttpdOutput {
 	 * at the same time.
 	 */
 	guint clients_max, clients_cnt;
+
+	HttpdOutput(EventLoop &_loop);
+	~HttpdOutput();
+
+	bool Configure(const config_param *param, GError **error_r);
 
 	bool Bind(GError **error_r);
 	void Unbind();

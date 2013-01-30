@@ -58,6 +58,26 @@ static void
 httpd_listen_in_event(int fd, const struct sockaddr *address,
 		      size_t address_length, int uid, void *ctx);
 
+inline
+HttpdOutput::HttpdOutput(EventLoop &_loop)
+	:encoder(nullptr), unflushed_input(0),
+	 server_socket(new ServerSocket(_loop, httpd_listen_in_event, this)),
+	 metadata(nullptr)
+{
+}
+
+HttpdOutput::~HttpdOutput()
+{
+	if (metadata != nullptr)
+		metadata->Unref();
+
+	if (encoder != nullptr)
+		encoder_finish(encoder);
+
+	delete server_socket;
+
+}
+
 inline bool
 HttpdOutput::Bind(GError **error_r)
 {
@@ -76,23 +96,14 @@ HttpdOutput::Unbind()
 	server_socket->Close();
 }
 
-static struct audio_output *
-httpd_output_init(const struct config_param *param,
-		  GError **error)
+inline bool
+HttpdOutput::Configure(const config_param *param, GError **error_r)
 {
-	HttpdOutput *httpd = new HttpdOutput();
-	if (!ao_base_init(&httpd->base, &httpd_output_plugin, param, error)) {
-		g_free(httpd);
-		return NULL;
-	}
-
 	/* read configuration */
-	httpd->name =
-		config_get_block_string(param, "name", "Set name in config");
-	httpd->genre =
-		config_get_block_string(param, "genre", "Set genre in config");
-	httpd->website =
-		config_get_block_string(param, "website", "Set website in config");
+	name = config_get_block_string(param, "name", "Set name in config");
+	genre = config_get_block_string(param, "genre", "Set genre in config");
+	website = config_get_block_string(param, "website",
+					  "Set website in config");
 
 	guint port = config_get_block_unsigned(param, "port", 8000);
 
@@ -101,49 +112,54 @@ httpd_output_init(const struct config_param *param,
 	const struct encoder_plugin *encoder_plugin =
 		encoder_plugin_get(encoder_name);
 	if (encoder_plugin == NULL) {
-		g_set_error(error, httpd_output_quark(), 0,
+		g_set_error(error_r, httpd_output_quark(), 0,
 			    "No such encoder: %s", encoder_name);
-		ao_base_finish(&httpd->base);
-		g_free(httpd);
-		return NULL;
+		return false;
 	}
 
-	httpd->clients_max = config_get_block_unsigned(param,"max_clients", 0);
+	clients_max = config_get_block_unsigned(param,"max_clients", 0);
 
 	/* set up bind_to_address */
-
-	httpd->server_socket = new ServerSocket(*main_loop,
-						httpd_listen_in_event, httpd);
 
 	const char *bind_to_address =
 		config_get_block_string(param, "bind_to_address", NULL);
 	bool success = bind_to_address != NULL &&
 		strcmp(bind_to_address, "any") != 0
-		? httpd->server_socket->AddHost(bind_to_address, port, error)
-		: httpd->server_socket->AddPort(port, error);
-	if (!success) {
-		ao_base_finish(&httpd->base);
-		g_free(httpd);
-		return NULL;
-	}
-
-	/* initialize metadata */
-	httpd->metadata = NULL;
-	httpd->unflushed_input = 0;
+		? server_socket->AddHost(bind_to_address, port, error_r)
+		: server_socket->AddPort(port, error_r);
+	if (!success)
+		return false;
 
 	/* initialize encoder */
 
-	httpd->encoder = encoder_init(encoder_plugin, param, error);
-	if (httpd->encoder == NULL) {
-		ao_base_finish(&httpd->base);
-		g_free(httpd);
-		return NULL;
-	}
+	encoder = encoder_init(encoder_plugin, param, error_r);
+	if (encoder == nullptr)
+		return false;
 
 	/* determine content type */
-	httpd->content_type = encoder_get_mime_type(httpd->encoder);
-	if (httpd->content_type == NULL) {
-		httpd->content_type = "application/octet-stream";
+	content_type = encoder_get_mime_type(encoder);
+	if (content_type == nullptr)
+		content_type = "application/octet-stream";
+
+	return true;
+}
+
+static struct audio_output *
+httpd_output_init(const struct config_param *param,
+		  GError **error_r)
+{
+	HttpdOutput *httpd = new HttpdOutput(*main_loop);
+
+	if (!ao_base_init(&httpd->base, &httpd_output_plugin, param,
+			  error_r)) {
+		delete httpd;
+		return nullptr;
+	}
+
+	if (!httpd->Configure(param, error_r)) {
+		ao_base_finish(&httpd->base);
+		delete httpd;
+		return nullptr;
 	}
 
 	return &httpd->base;
@@ -154,11 +170,6 @@ httpd_output_finish(struct audio_output *ao)
 {
 	HttpdOutput *httpd = (HttpdOutput *)ao;
 
-	if (httpd->metadata)
-		httpd->metadata->Unref();
-
-	encoder_finish(httpd->encoder);
-	delete httpd->server_socket;
 	ao_base_finish(&httpd->base);
 	delete httpd;
 }
