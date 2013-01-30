@@ -20,11 +20,7 @@
 #include "config.h"
 #include "OpusEncoderPlugin.hxx"
 #include "OggStream.hxx"
-
-extern "C" {
 #include "encoder_api.h"
-}
-
 #include "encoder_plugin.h"
 #include "audio_format.h"
 #include "mpd_error.h"

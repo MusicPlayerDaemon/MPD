@@ -166,6 +166,10 @@ ao_plugin_test_default_device(const struct audio_output_plugin *plugin)
 		: false;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 gcc_malloc
 struct audio_output *
 ao_plugin_init(const struct audio_output_plugin *plugin,
@@ -207,5 +211,9 @@ ao_plugin_cancel(struct audio_output *ao);
 
 bool
 ao_plugin_pause(struct audio_output *ao);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -62,6 +62,10 @@ pcm_buffer_deinit(struct pcm_buffer *buffer)
 	buffer->buffer = NULL;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Get the buffer, and guarantee a minimum size.  This buffer becomes
  * invalid with the next pcm_buffer_get() call.
@@ -73,5 +77,9 @@ pcm_buffer_deinit(struct pcm_buffer *buffer)
 G_GNUC_MALLOC
 void *
 pcm_buffer_get(struct pcm_buffer *buffer, size_t size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

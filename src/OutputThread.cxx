@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "OutputThread.hxx"
+#include "output_api.h"
 
 extern "C" {
-#include "output_api.h"
 #include "output_internal.h"
 #include "pcm_mix.h"
 #include "filter_plugin.h"

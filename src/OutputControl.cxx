@@ -20,9 +20,9 @@
 #include "config.h"
 #include "OutputControl.hxx"
 #include "OutputThread.hxx"
+#include "output_api.h"
 
 extern "C" {
-#include "output_api.h"
 #include "output_internal.h"
 #include "mixer_control.h"
 #include "mixer_plugin.h"

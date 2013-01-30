@@ -21,9 +21,9 @@
 #include "OutputControl.hxx"
 #include "OutputList.hxx"
 #include "FilterConfig.hxx"
+#include "output_api.h"
 
 extern "C" {
-#include "output_api.h"
 #include "output_internal.h"
 #include "audio_parser.h"
 #include "mixer_control.h"
