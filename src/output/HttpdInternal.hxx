@@ -25,7 +25,6 @@
 #ifndef MPD_OUTPUT_HTTPD_INTERNAL_H
 #define MPD_OUTPUT_HTTPD_INTERNAL_H
 
-#include "HttpdClient.hxx"
 #include "output_internal.h"
 #include "timer.h"
 #include "thread/Mutex.hxx"
@@ -38,6 +37,7 @@ struct config_param;
 class EventLoop;
 class ServerSocket;
 class HttpdClient;
+class Page;
 
 struct HttpdOutput {
 	struct audio_output base;
