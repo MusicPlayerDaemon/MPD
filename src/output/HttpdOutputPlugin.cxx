@@ -28,7 +28,7 @@
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "fd_util.h"
-#include "ServerSocket.hxx"
+#include "event/ServerSocket.hxx"
 #include "Main.hxx"
 
 #include <assert.h>

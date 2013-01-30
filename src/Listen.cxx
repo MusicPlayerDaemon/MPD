@@ -22,7 +22,7 @@
 #include "Main.hxx"
 #include "Client.hxx"
 #include "conf.h"
-#include "ServerSocket.hxx"
+#include "event/ServerSocket.hxx"
 
 #include <string.h>
 #include <assert.h>

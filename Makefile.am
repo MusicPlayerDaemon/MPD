@@ -201,7 +201,6 @@ src_mpd_SOURCES = \
 	src/ClientMessage.cxx src/ClientMessage.hxx \
 	src/ClientSubscribe.cxx src/ClientSubscribe.hxx \
 	src/ClientFile.cxx src/ClientFile.hxx \
-	src/ServerSocket.cxx src/ServerSocket.hxx \
 	src/Listen.cxx src/Listen.hxx \
 	src/Log.cxx src/Log.hxx \
 	src/ls.cxx \
@@ -328,6 +327,7 @@ libevent_a_SOURCES = \
 	src/event/BufferedSocket.cxx src/event/BufferedSocket.hxx \
 	src/event/FullyBufferedSocket.cxx src/event/FullyBufferedSocket.hxx \
 	src/event/MultiSocketMonitor.cxx src/event/MultiSocketMonitor.hxx \
+	src/event/ServerSocket.cxx src/event/ServerSocket.hxx \
 	src/event/Loop.hxx
 
 # PCM library
@@ -1337,8 +1337,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/filter_config.c \
 	src/AudioCompress/compress.c \
 	src/ReplayGainInfo.cxx \
-	src/fd_util.c \
-	src/ServerSocket.cxx
+	src/fd_util.c
 
 test_read_mixer_LDADD = \
 	libpcm.a \
