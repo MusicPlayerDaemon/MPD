@@ -89,26 +89,32 @@ public:
 	void Schedule(unsigned flags) {
 		poll.events = flags;
 		poll.revents &= flags;
+		CommitEventFlags();
 	}
 
 	void Cancel() {
 		poll.events = 0;
+		CommitEventFlags();
 	}
 
 	void ScheduleRead() {
 		poll.events |= READ|HANGUP|ERROR;
+		CommitEventFlags();
 	}
 
 	void ScheduleWrite() {
 		poll.events |= WRITE;
+		CommitEventFlags();
 	}
 
 	void CancelRead() {
 		poll.events &= ~(READ|HANGUP|ERROR);
+		CommitEventFlags();
 	}
 
 	void CancelWrite() {
 		poll.events &= ~WRITE;
+		CommitEventFlags();
 	}
 
 	ssize_t Read(void *data, size_t length);
@@ -128,6 +134,8 @@ public:
 				 gpointer user_data);
 
 private:
+	void CommitEventFlags();
+
 	bool Check() const {
 		return (poll.revents & poll.events) != 0;
 	}

@@ -159,3 +159,9 @@ SocketMonitor::Write(const void *data, size_t length)
 
 	return send(Get(), (const char *)data, length, flags);
 }
+
+void
+SocketMonitor::CommitEventFlags()
+{
+	loop.WakeUp();
+}
