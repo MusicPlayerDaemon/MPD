@@ -1343,7 +1343,7 @@ test_read_mixer_LDADD = \
 	libevent.a \
 	libfs.a \
 	$(GLIB_LIBS)
-test_read_mixer_SOURCES = test/read_mixer.c \
+test_read_mixer_SOURCES = test/read_mixer.cxx \
 	src/ConfigFile.cxx src/tokenizer.c src/utils.c src/string_util.c \
 	src/mixer_control.c src/mixer_api.c \
 	src/filter_plugin.c \
