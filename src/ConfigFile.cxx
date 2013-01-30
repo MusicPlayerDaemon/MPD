@@ -45,20 +45,13 @@ extern "C" {
 
 #define CONF_COMMENT		'#'
 
-struct config_entry {
+struct ConfigOption {
 	const char *const name;
 	const bool repeatable;
 	const bool block;
-
-	GSList *params;
-
-	constexpr config_entry(const char *_name,
-			       bool _repeatable, bool _block)
-		:name(_name), repeatable(_repeatable), block(_block),
-		 params(nullptr) {}
 };
 
-static struct config_entry config_entries[] = {
+static constexpr struct ConfigOption config_options[] = {
 	{ CONF_MUSIC_DIR, false, false },
 	{ CONF_PLAYLIST_DIR, false, false },
 	{ CONF_FOLLOW_INSIDE_SYMLINKS, false, false },
@@ -114,6 +107,8 @@ static struct config_entry config_entries[] = {
 	{ "filter", true, true },
 	{ "database", false, true },
 };
+
+static GSList *config_params[G_N_ELEMENTS(config_options)];
 
 static bool
 get_bool(const char *value, bool *value_r)
@@ -177,26 +172,22 @@ config_param_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
 	config_param_free(param);
 }
 
-static struct config_entry *
-config_entry_get(const char *name)
+static int
+ConfigFindByName(const char *name)
 {
-	for (unsigned i = 0; i < G_N_ELEMENTS(config_entries); ++i) {
-		struct config_entry *entry = &config_entries[i];
-		if (strcmp(entry->name, name) == 0)
-			return entry;
-	}
+	for (unsigned i = 0; i < G_N_ELEMENTS(config_options); ++i)
+		if (strcmp(config_options[i].name, name) == 0)
+			return i;
 
-	return NULL;
+	return -1;
 }
 
 void config_global_finish(void)
 {
-	for (unsigned i = 0; i < G_N_ELEMENTS(config_entries); ++i) {
-		struct config_entry *entry = &config_entries[i];
-
-		g_slist_foreach(entry->params,
+	for (unsigned i = 0; i < G_N_ELEMENTS(config_params); ++i) {
+		g_slist_foreach(config_params[i],
 				config_param_free_callback, NULL);
-		g_slist_free(entry->params);
+		g_slist_free(config_params[i]);
 	}
 }
 
@@ -226,11 +217,8 @@ config_param_check(gpointer data, G_GNUC_UNUSED gpointer user_data)
 
 void config_global_check(void)
 {
-	for (unsigned i = 0; i < G_N_ELEMENTS(config_entries); ++i) {
-		struct config_entry *entry = &config_entries[i];
-
-		g_slist_foreach(entry->params, config_param_check, NULL);
-	}
+	for (unsigned i = 0; i < G_N_ELEMENTS(config_params); ++i)
+		g_slist_foreach(config_params[i], config_param_check, NULL);
 }
 
 void
@@ -356,7 +344,6 @@ ReadConfigFile(const Path &path, GError **error_r)
 	FILE *fp;
 	char string[MAX_STRING_SIZE + 1];
 	int count = 0;
-	struct config_entry *entry;
 	struct config_param *param;
 
 	g_debug("loading file %s", path_utf8.c_str());
@@ -394,8 +381,8 @@ ReadConfigFile(const Path &path, GError **error_r)
 		/* get the definition of that option, and check the
 		   "repeatable" flag */
 
-		entry = config_entry_get(name);
-		if (entry == NULL) {
+		int i = ConfigFindByName(name);
+		if (i < 0) {
 			g_set_error(error_r, config_quark(), 0,
 				    "unrecognized parameter in config file at "
 				    "line %i: %s\n", count, name);
@@ -403,8 +390,11 @@ ReadConfigFile(const Path &path, GError **error_r)
 			return false;
 		}
 
-		if (entry->params != NULL && !entry->repeatable) {
-			param = (struct config_param *)entry->params->data;
+		const ConfigOption &option = config_options[i];
+		GSList *&params = config_params[i];
+
+		if (params != NULL && !option.repeatable) {
+			param = (struct config_param *)params->data;
 			g_set_error(error_r, config_quark(), 0,
 				    "config parameter \"%s\" is first defined "
 				    "on line %i and redefined on line %i\n",
@@ -415,7 +405,7 @@ ReadConfigFile(const Path &path, GError **error_r)
 
 		/* now parse the block or the value */
 
-		if (entry->block) {
+		if (option.block) {
 			/* it's a block, call config_read_block() */
 
 			if (*line != '{') {
@@ -470,7 +460,7 @@ ReadConfigFile(const Path &path, GError **error_r)
 			param = config_new_param(value, count);
 		}
 
-		entry->params = g_slist_append(entry->params, param);
+		params = g_slist_append(params, param);
 	}
 	fclose(fp);
 
@@ -480,15 +470,13 @@ ReadConfigFile(const Path &path, GError **error_r)
 const struct config_param *
 config_get_next_param(const char *name, const struct config_param * last)
 {
-	struct config_entry *entry;
-	GSList *node;
 	struct config_param *param;
 
-	entry = config_entry_get(name);
-	if (entry == NULL)
+	int i = ConfigFindByName(name);
+	if (i < 0)
 		return NULL;
 
-	node = entry->params;
+	GSList *node = config_params[i];
 
 	if (last) {
 		node = g_slist_find(node, last);
