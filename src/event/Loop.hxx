@@ -48,6 +48,10 @@ public:
 		return context;
 	}
 
+	void WakeUp() {
+		g_main_context_wakeup(context);
+	}
+
 	void Break() {
 		g_main_loop_quit(loop);
 	}
