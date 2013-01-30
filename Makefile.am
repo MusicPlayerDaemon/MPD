@@ -148,6 +148,7 @@ src_mpd_SOURCES = \
 	src/Idle.cxx src/Idle.hxx \
 	src/CommandLine.cxx src/CommandLine.hxx \
 	src/ConfigFile.cxx \
+	src/ConfigTemplates.hxx \
 	src/CrossFade.cxx src/CrossFade.hxx \
 	src/cue/cue_parser.c src/cue/cue_parser.h \
 	src/decoder_error.h \

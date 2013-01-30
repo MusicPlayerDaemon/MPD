@@ -23,13 +23,13 @@
 
 #include <string.h>
 
-struct ConfigOption {
+struct ConfigTemplate {
 	const char *const name;
 	const bool repeatable;
 	const bool block;
 };
 
-static constexpr struct ConfigOption config_options[] = {
+static constexpr struct ConfigTemplate config_templates[] = {
 	{ CONF_MUSIC_DIR, false, false },
 	{ CONF_PLAYLIST_DIR, false, false },
 	{ CONF_FOLLOW_INSIDE_SYMLINKS, false, false },
@@ -90,8 +90,8 @@ gcc_pure
 static int
 ConfigFindByName(const char *name)
 {
-	for (unsigned i = 0; i < G_N_ELEMENTS(config_options); ++i)
-		if (strcmp(config_options[i].name, name) == 0)
+	for (unsigned i = 0; i < G_N_ELEMENTS(config_templates); ++i)
+		if (strcmp(config_templates[i].name, name) == 0)
 			return i;
 
 	return -1;

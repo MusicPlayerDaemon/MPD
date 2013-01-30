@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "conf.h"
-#include "ConfigOptions.hxx"
+#include "ConfigTemplates.hxx"
 
 extern "C" {
 #include "utils.h"
@@ -46,7 +46,7 @@ extern "C" {
 
 #define CONF_COMMENT		'#'
 
-static GSList *config_params[G_N_ELEMENTS(config_options)];
+static GSList *config_params[G_N_ELEMENTS(config_templates)];
 
 static bool
 get_bool(const char *value, bool *value_r)
@@ -318,7 +318,7 @@ ReadConfigFile(const Path &path, GError **error_r)
 			return false;
 		}
 
-		const ConfigOption &option = config_options[i];
+		const ConfigTemplate &option = config_templates[i];
 		GSList *&params = config_params[i];
 
 		if (params != NULL && !option.repeatable) {
