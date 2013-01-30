@@ -22,9 +22,9 @@
 
 extern "C" {
 #include "uri.h"
-#include "decoder_list.h"
 }
 
+#include "DecoderList.hxx"
 #include "decoder_plugin.h"
 #include "input_stream.h"
 

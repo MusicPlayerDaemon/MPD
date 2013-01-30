@@ -27,10 +27,7 @@
 #include "Directory.hxx"
 #include "song.h"
 #include "decoder_plugin.h"
-
-extern "C" {
-#include "decoder_list.h"
-}
+#include "DecoderList.hxx"
 
 #include <glib.h>
 

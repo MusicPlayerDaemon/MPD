@@ -19,9 +19,7 @@
 
 #include "config.h"
 #include "IOThread.hxx"
-extern "C" {
-#include "decoder_list.h"
-}
+#include "DecoderList.hxx"
 #include "decoder_api.h"
 #include "InputInit.hxx"
 #include "input_stream.h"

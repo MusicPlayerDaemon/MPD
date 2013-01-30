@@ -24,15 +24,12 @@
 #include "input_stream.h"
 #include "conf.h"
 #include "decoder_api.h"
+#include "DecoderList.hxx"
 #include "InputInit.hxx"
 #include "IOThread.hxx"
 #include "PlaylistRegistry.hxx"
 #include "PlaylistPlugin.hxx"
 #include "fs/Path.hxx"
-
-extern "C" {
-#include "decoder_list.h"
-}
 
 #include <glib.h>
 

@@ -29,10 +29,10 @@ extern "C" {
 #include "fs/Path.hxx"
 #include "tag.h"
 #include "input_stream.h"
+#include "decoder_plugin.h"
+#include "DecoderList.hxx"
 
 extern "C" {
-#include "decoder_list.h"
-#include "decoder_plugin.h"
 #include "tag_ape.h"
 #include "tag_id3.h"
 #include "tag_handler.h"

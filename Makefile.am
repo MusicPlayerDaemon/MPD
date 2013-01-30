@@ -77,7 +77,6 @@ mpd_headers = \
 	src/gerror.h \
 	src/glib_compat.h \
 	src/gcc.h \
-	src/decoder_list.h \
 	src/decoder/pcm_decoder_plugin.h \
 	src/input_stream.h \
 	src/text_input_stream.h \
@@ -465,7 +464,7 @@ libdecoder_plugins_a_SOURCES = \
 	src/decoder/dsdlib.h \
 	src/decoder_buffer.c \
 	src/decoder_plugin.c \
-	src/decoder_list.c
+	src/DecoderList.cxx src/DecoderList.hxx
 libdecoder_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(VORBIS_CFLAGS) $(TREMOR_CFLAGS) \
 	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \

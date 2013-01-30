@@ -30,9 +30,9 @@
 #include "decoder_api.h"
 #include "tag.h"
 #include "InputStream.hxx"
+#include "DecoderList.hxx"
 
 extern "C" {
-#include "decoder_list.h"
 #include "replay_gain_ape.h"
 #include "uri.h"
 }

@@ -50,13 +50,13 @@
 #include "fs/Path.hxx"
 #include "PlaylistRegistry.hxx"
 #include "ZeroconfGlue.hxx"
+#include "DecoderList.hxx"
 
 extern "C" {
 #include "daemon.h"
 #include "stats.h"
 #include "audio_config.h"
 #include "pcm_resample.h"
-#include "decoder_list.h"
 }
 
 #include "mpd_error.h"
