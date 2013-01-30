@@ -20,6 +20,7 @@
 #include "config.h"
 #include "conf.h"
 #include "ConfigTemplates.hxx"
+#include "ConfigParser.hxx"
 
 extern "C" {
 #include "utils.h"
@@ -47,60 +48,6 @@ extern "C" {
 #define CONF_COMMENT		'#'
 
 static GSList *config_params[unsigned(CONF_MAX)];
-
-static bool
-get_bool(const char *value, bool *value_r)
-{
-	static const char *t[] = { "yes", "true", "1", NULL };
-	static const char *f[] = { "no", "false", "0", NULL };
-
-	if (string_array_contains(t, value)) {
-		*value_r = true;
-		return true;
-	}
-
-	if (string_array_contains(f, value)) {
-		*value_r = false;
-		return true;
-	}
-
-	return false;
-}
-
-struct config_param *
-config_new_param(const char *value, int line)
-{
-	struct config_param *ret = g_new(struct config_param, 1);
-
-	if (!value)
-		ret->value = NULL;
-	else
-		ret->value = g_strdup(value);
-
-	ret->line = line;
-
-	ret->num_block_params = 0;
-	ret->block_params = NULL;
-	ret->used = false;
-
-	return ret;
-}
-
-void
-config_param_free(struct config_param *param)
-{
-	g_free(param->value);
-
-	for (unsigned i = 0; i < param->num_block_params; i++) {
-		g_free(param->block_params[i].name);
-		g_free(param->block_params[i].value);
-	}
-
-	if (param->num_block_params)
-		g_free(param->block_params);
-
-	g_free(param);
-}
 
 static void
 config_param_free_callback(gpointer data, G_GNUC_UNUSED gpointer user_data)
@@ -147,29 +94,6 @@ void config_global_check(void)
 {
 	for (unsigned i = 0; i < G_N_ELEMENTS(config_params); ++i)
 		g_slist_foreach(config_params[i], config_param_check, NULL);
-}
-
-void
-config_add_block_param(struct config_param * param, const char *name,
-		       const char *value, int line)
-{
-	struct block_param *bp;
-
-	assert(config_get_block_param(param, name) == NULL);
-
-	param->num_block_params++;
-
-	param->block_params = (struct block_param *)
-		g_realloc(param->block_params,
-			  param->num_block_params *
-			  sizeof(param->block_params[0]));
-
-	bp = &param->block_params[param->num_block_params - 1];
-
-	bp->name = g_strdup(name);
-	bp->value = g_strdup(value);
-	bp->line = line;
-	bp->used = false;
 }
 
 static bool
@@ -485,23 +409,6 @@ config_get_positive(ConfigOption option, unsigned default_value)
 	return (unsigned)value;
 }
 
-const struct block_param *
-config_get_block_param(const struct config_param * param, const char *name)
-{
-	if (param == NULL)
-		return NULL;
-
-	for (unsigned i = 0; i < param->num_block_params; i++) {
-		if (0 == strcmp(name, param->block_params[i].name)) {
-			struct block_param *bp = &param->block_params[i];
-			bp->used = true;
-			return bp;
-		}
-	}
-
-	return NULL;
-}
-
 bool
 config_get_bool(ConfigOption option, bool default_value)
 {
@@ -516,78 +423,6 @@ config_get_bool(ConfigOption option, bool default_value)
 		MPD_ERROR("Expected boolean value (yes, true, 1) or "
 			  "(no, false, 0) on line %i\n",
 			  param->line);
-
-	return value;
-}
-
-const char *
-config_get_block_string(const struct config_param *param, const char *name,
-			const char *default_value)
-{
-	const struct block_param *bp = config_get_block_param(param, name);
-
-	if (bp == NULL)
-		return default_value;
-
-	return bp->value;
-}
-
-char *
-config_dup_block_path(const struct config_param *param, const char *name,
-		      GError **error_r)
-{
-	assert(error_r != NULL);
-	assert(*error_r == NULL);
-
-	const struct block_param *bp = config_get_block_param(param, name);
-	if (bp == NULL)
-		return NULL;
-
-	char *path = parsePath(bp->value, error_r);
-	if (G_UNLIKELY(path == NULL))
-		g_prefix_error(error_r,
-			       "Invalid path in \"%s\" at line %i: ",
-			       name, bp->line);
-
-	return path;
-}
-
-unsigned
-config_get_block_unsigned(const struct config_param *param, const char *name,
-			  unsigned default_value)
-{
-	const struct block_param *bp = config_get_block_param(param, name);
-	long value;
-	char *endptr;
-
-	if (bp == NULL)
-		return default_value;
-
-	value = strtol(bp->value, &endptr, 0);
-	if (*endptr != 0)
-		MPD_ERROR("Not a valid number in line %i", bp->line);
-
-	if (value < 0)
-		MPD_ERROR("Not a positive number in line %i", bp->line);
-
-	return (unsigned)value;
-}
-
-bool
-config_get_block_bool(const struct config_param *param, const char *name,
-		      bool default_value)
-{
-	const struct block_param *bp = config_get_block_param(param, name);
-	bool success, value;
-
-	if (bp == NULL)
-		return default_value;
-
-	success = get_bool(bp->value, &value);
-	if (!success)
-		MPD_ERROR("%s is not a boolean value (yes, true, 1) or "
-			  "(no, false, 0) on line %i\n",
-			  name, bp->line);
 
 	return value;
 }

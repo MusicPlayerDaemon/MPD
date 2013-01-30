@@ -21,6 +21,7 @@
 #define MPD_CONF_H
 
 #include "ConfigOption.hxx"
+#include "ConfigData.hxx"
 #include "gcc.h"
 
 #include <stdbool.h>
@@ -34,32 +35,6 @@
 #ifdef __cplusplus
 class Path;
 #endif
-
-struct block_param {
-	char *name;
-	char *value;
-	int line;
-
-	/**
-	 * This flag is false when nobody has queried the value of
-	 * this option yet.
-	 */
-	bool used;
-};
-
-struct config_param {
-	char *value;
-	unsigned int line;
-
-	struct block_param *block_params;
-	unsigned num_block_params;
-
-	/**
-	 * This flag is false when nobody has queried the value of
-	 * this option yet.
-	 */
-	bool used;
-};
 
 /**
  * A GQuark for GError instances, resulting from malformed
@@ -136,54 +111,7 @@ unsigned
 config_get_positive(enum ConfigOption option, unsigned default_value);
 
 G_GNUC_PURE
-const struct block_param *
-config_get_block_param(const struct config_param *param, const char *name);
-
-G_GNUC_PURE
 bool config_get_bool(enum ConfigOption option, bool default_value);
-
-G_GNUC_PURE
-const char *
-config_get_block_string(const struct config_param *param, const char *name,
-			const char *default_value);
-
-G_GNUC_MALLOC
-static inline char *
-config_dup_block_string(const struct config_param *param, const char *name,
-			const char *default_value)
-{
-	return g_strdup(config_get_block_string(param, name, default_value));
-}
-
-/**
- * Same as config_dup_path(), but looks up the setting in the
- * specified block.
- */
-G_GNUC_MALLOC
-char *
-config_dup_block_path(const struct config_param *param, const char *name,
-		      GError **error_r);
-
-G_GNUC_PURE
-unsigned
-config_get_block_unsigned(const struct config_param *param, const char *name,
-			  unsigned default_value);
-
-G_GNUC_PURE
-bool
-config_get_block_bool(const struct config_param *param, const char *name,
-		      bool default_value);
-
-G_GNUC_MALLOC
-struct config_param *
-config_new_param(const char *value, int line);
-
-void
-config_param_free(struct config_param *param);
-
-void
-config_add_block_param(struct config_param * param, const char *name,
-		       const char *value, int line);
 
 G_END_DECLS
 
