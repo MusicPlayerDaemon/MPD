@@ -539,8 +539,6 @@ int mpd_main(int argc, char *argv[])
 
 	/* cleanup */
 
-	delete main_loop;
-
 #ifdef ENABLE_INOTIFY
 	mpd_inotify_finish();
 #endif
@@ -581,6 +579,7 @@ int mpd_main(int argc, char *argv[])
 	config_global_finish();
 	stats_global_finish();
 	io_thread_deinit();
+	delete main_loop;
 	daemonize_finish();
 #ifdef WIN32
 	WSACleanup();
