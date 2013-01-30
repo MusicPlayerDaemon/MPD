@@ -34,7 +34,7 @@ extern "C" {
 struct config_param *
 config_new_param(const char *value, int line)
 {
-	struct config_param *ret = g_new(struct config_param, 1);
+	config_param *ret = new config_param();
 
 	if (!value)
 		ret->value = NULL;
@@ -63,7 +63,7 @@ config_param_free(struct config_param *param)
 	if (param->num_block_params)
 		g_free(param->block_params);
 
-	g_free(param);
+	delete param;
 }
 
 void
