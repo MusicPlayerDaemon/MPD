@@ -17,36 +17,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "audio_config.h"
-#include "audio_format.h"
-#include "audio_parser.h"
-#include "conf.h"
-#include "mpd_error.h"
+#ifndef MPD_AUDIO_CONFIG_HXX
+#define MPD_AUDIO_CONFIG_HXX
 
-#include <glib.h>
+struct audio_format;
 
-static struct audio_format configured_audio_format;
+void getOutputAudioFormat(const struct audio_format *inFormat,
+			  struct audio_format *outFormat);
 
-void getOutputAudioFormat(const struct audio_format *inAudioFormat,
-			  struct audio_format *outAudioFormat)
-{
-	*outAudioFormat = *inAudioFormat;
-	audio_format_mask_apply(outAudioFormat, &configured_audio_format);
-}
+/* make sure initPlayerData is called before this function!! */
+void initAudioConfig(void);
 
-void initAudioConfig(void)
-{
-	const struct config_param *param = config_get_param(CONF_AUDIO_OUTPUT_FORMAT);
-	GError *error = NULL;
-	bool ret;
-
-	if (param == NULL)
-		return;
-
-	ret = audio_format_parse(&configured_audio_format, param->value,
-				 true, &error);
-	if (!ret)
-		MPD_ERROR("error parsing line %i: %s",
-			  param->line, error->message);
-}
+#endif

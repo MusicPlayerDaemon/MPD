@@ -26,11 +26,11 @@
 #include "GlobalEvents.hxx"
 #include "IOThread.hxx"
 #include "fs/Path.hxx"
+#include "AudioParser.hxx"
 
 extern "C" {
 #include "output_plugin.h"
 #include "output_internal.h"
-#include "audio_parser.h"
 #include "filter_registry.h"
 #include "pcm_convert.h"
 }

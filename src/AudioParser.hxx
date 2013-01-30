@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,18 +22,12 @@
  * Parser functions for audio related objects.
  */
 
-#ifndef AUDIO_PARSER_H
-#define AUDIO_PARSER_H
+#ifndef MPD_AUDIO_PARSER_HXX
+#define MPD_AUDIO_PARSER_HXX
 
 #include "gerror.h"
 
-#include <stdbool.h>
-
 struct audio_format;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * Parses a string in the form "SAMPLE_RATE:BITS:CHANNELS" into an
@@ -49,9 +43,5 @@ extern "C" {
 bool
 audio_format_parse(struct audio_format *dest, const char *src,
 		   bool mask, GError **error_r);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "audio_parser.h"
+#include "AudioParser.hxx"
 #include "audio_format.h"
 #include "audio_check.h"
 #include "gcc.h"

@@ -21,7 +21,7 @@
 #include "encoder_list.h"
 #include "encoder_plugin.h"
 #include "audio_format.h"
-#include "audio_parser.h"
+#include "AudioParser.hxx"
 #include "conf.h"
 #include "stdbin.h"
 

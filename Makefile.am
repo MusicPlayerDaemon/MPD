@@ -54,7 +54,6 @@ mpd_headers = \
 	src/ape.h \
 	src/audio_format.h \
 	src/audio_check.h \
-	src/audio_parser.h \
 	src/output_internal.h \
 	src/output_api.h \
 	src/filter_internal.h \
@@ -132,10 +131,10 @@ src_mpd_SOURCES = \
 	src/thread/GLibCond.hxx \
 	src/clock.c src/clock.h \
 	src/notify.cxx src/notify.hxx \
-	src/audio_config.c src/audio_config.h \
+	src/AudioConfig.cxx src/AudioConfig.hxx \
 	src/audio_check.c \
 	src/audio_format.c \
-	src/audio_parser.c \
+	src/AudioParser.cxx src/AudioParser.hxx \
 	src/protocol/ArgParser.cxx src/protocol/ArgParser.hxx \
 	src/protocol/Result.cxx src/protocol/Result.hxx \
 	src/CommandError.cxx src/CommandError.hxx \
@@ -1244,7 +1243,7 @@ test_run_filter_SOURCES = test/run_filter.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/audio_check.c \
 	src/audio_format.c \
-	src/audio_parser.c \
+	src/AudioParser.cxx \
 	src/ReplayGainInfo.cxx \
 	src/AudioCompress/compress.c
 
@@ -1264,7 +1263,7 @@ test_run_encoder_SOURCES = test/run_encoder.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/audio_check.c \
 	src/audio_format.c \
-	src/audio_parser.c
+	src/AudioParser.cxx
 test_run_encoder_LDADD = \
 	$(ENCODER_LIBS) \
 	$(TAG_LIBS) \
@@ -1283,7 +1282,7 @@ test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/audio_check.c \
 	src/audio_format.c \
-	src/audio_parser.c \
+	src/AudioParser.cxx \
 	src/pcm_buffer.c \
 	$(ENCODER_SRC)
 test_test_vorbis_encoder_CPPFLAGS = $(AM_CPPFLAGS) \
@@ -1299,15 +1298,15 @@ endif
 test_software_volume_SOURCES = test/software_volume.cxx \
 	test/stdbin.h \
 	src/audio_check.c \
-	src/audio_parser.c
+	src/AudioParser.cxx
 test_software_volume_LDADD = \
 	$(PCM_LIBS) \
 	$(GLIB_LIBS)
 
-test_run_normalize_SOURCES = test/run_normalize.c \
+test_run_normalize_SOURCES = test/run_normalize.cxx \
 	test/stdbin.h \
 	src/audio_check.c \
-	src/audio_parser.c \
+	src/AudioParser.cxx \
 	src/AudioCompress/compress.c
 test_run_normalize_LDADD = \
 	$(GLIB_LIBS)
@@ -1316,7 +1315,7 @@ test_run_convert_SOURCES = test/run_convert.cxx \
 	src/dsd2pcm/dsd2pcm.c \
 	src/audio_format.c \
 	src/audio_check.c \
-	src/audio_parser.c
+	src/AudioParser.cxx
 test_run_convert_LDADD = \
 	$(PCM_LIBS) \
 	libutil.a \
@@ -1339,7 +1338,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/IOThread.cxx \
 	src/audio_check.c \
 	src/audio_format.c \
-	src/audio_parser.c \
+	src/AudioParser.cxx \
 	src/timer.c src/clock.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/Page.cxx \

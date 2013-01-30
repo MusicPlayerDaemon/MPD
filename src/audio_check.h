@@ -35,6 +35,10 @@ audio_format_quark(void)
 	return g_quark_from_static_string("audio_format");
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 bool
 audio_check_sample_rate(unsigned long sample_rate, GError **error_r);
 
@@ -51,5 +55,9 @@ bool
 audio_format_init_checked(struct audio_format *af, unsigned long sample_rate,
 			  enum sample_format sample_format, unsigned channels,
 			  GError **error_r);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

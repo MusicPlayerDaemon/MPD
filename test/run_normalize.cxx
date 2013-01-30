@@ -25,7 +25,7 @@
 
 #include "config.h"
 #include "AudioCompress/compress.h"
-#include "audio_parser.h"
+#include "AudioParser.hxx"
 #include "audio_format.h"
 #include "stdbin.h"
 
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 			return 1;
 		}
 	} else
-		audio_format_init(&audio_format, 48000, 16, 2);
+		audio_format_init(&audio_format, 48000, SAMPLE_FORMAT_S16, 2);
 
 	compressor = Compressor_new(0);
 

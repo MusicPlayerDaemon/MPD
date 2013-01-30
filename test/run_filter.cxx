@@ -20,11 +20,7 @@
 #include "config.h"
 #include "conf.h"
 #include "fs/Path.hxx"
-
-extern "C" {
-#include "audio_parser.h"
-}
-
+#include "AudioParser.hxx"
 #include "audio_format.h"
 #include "filter_plugin.h"
 #include "pcm_volume.h"

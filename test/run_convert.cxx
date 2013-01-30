@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "audio_parser.h"
+#include "AudioParser.hxx"
 #include "audio_format.h"
 #include "pcm_convert.h"
 #include "conf.h"

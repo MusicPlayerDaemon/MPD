@@ -51,11 +51,11 @@
 #include "PlaylistRegistry.hxx"
 #include "ZeroconfGlue.hxx"
 #include "DecoderList.hxx"
+#include "AudioConfig.hxx"
 
 extern "C" {
 #include "daemon.h"
 #include "stats.h"
-#include "audio_config.h"
 #include "pcm_resample.h"
 }
 

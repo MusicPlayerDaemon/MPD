@@ -22,10 +22,10 @@
 #include "OutputList.hxx"
 #include "FilterConfig.hxx"
 #include "output_api.h"
+#include "AudioParser.hxx"
 
 extern "C" {
 #include "output_internal.h"
-#include "audio_parser.h"
 #include "mixer_control.h"
 #include "mixer_type.h"
 #include "mixer_list.h"

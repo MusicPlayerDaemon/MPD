@@ -19,11 +19,7 @@
 
 #include "config.h"
 #include "decoder_api.h"
-
-extern "C" {
-#include "audio_config.h"
-}
-
+#include "AudioConfig.hxx"
 #include "replay_gain_config.h"
 #include "MusicChunk.hxx"
 #include "MusicBuffer.hxx"
