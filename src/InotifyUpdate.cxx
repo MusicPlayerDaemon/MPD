@@ -61,6 +61,11 @@ struct WatchDirectory {
 		:parent(_parent), name(g_strdup(_name)),
 		 descriptor(_descriptor),
 		 children(nullptr) {}
+
+	~WatchDirectory() {
+		g_free(name);
+		g_list_free(children);
+	}
 };
 
 static InotifySource *inotify_source;
@@ -117,7 +122,6 @@ remove_watch_directory(WatchDirectory *directory)
 		g_list_remove(directory->parent->children, directory);
 
 	inotify_source->Remove(directory->descriptor);
-	g_free(directory->name);
 	delete directory;
 }
 
@@ -352,10 +356,6 @@ mpd_inotify_finish(void)
 
 	for (auto i : inotify_directories) {
 		WatchDirectory *directory = i.second;
-
-		g_free(directory->name);
-		g_list_free(directory->children);
-
 		delete directory;
 	}
 
