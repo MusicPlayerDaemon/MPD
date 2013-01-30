@@ -11,6 +11,7 @@ noinst_LIBRARIES = \
 	libutil.a \
 	libevent.a \
 	libpcm.a \
+	libconf.a \
 	libtag.a \
 	libinput.a \
 	libfs.a \
@@ -40,6 +41,7 @@ src_mpd_LDADD = \
 	$(FILTER_LIBS) \
 	$(ENCODER_LIBS) \
 	$(MIXER_LIBS) \
+	libconf.a \
 	libevent.a \
 	libutil.a \
 	libfs.a \
@@ -147,9 +149,6 @@ src_mpd_SOURCES = \
 	src/OtherCommands.cxx src/OtherCommands.hxx \
 	src/Idle.cxx src/Idle.hxx \
 	src/CommandLine.cxx src/CommandLine.hxx \
-	src/ConfigFile.cxx \
-	src/ConfigTemplates.cxx src/ConfigTemplates.hxx \
-	src/ConfigOption.hxx \
 	src/CrossFade.cxx src/CrossFade.hxx \
 	src/cue/cue_parser.c src/cue/cue_parser.h \
 	src/decoder_error.h \
@@ -432,6 +431,12 @@ else
 ARCHIVE_LIBS =
 endif
 
+# configuration library
+
+libconf_a_SOURCES = \
+	src/ConfigFile.cxx \
+	src/ConfigTemplates.cxx src/ConfigTemplates.hxx \
+	src/ConfigOption.hxx
 
 # tag plugins
 
@@ -1050,10 +1055,10 @@ noinst_PROGRAMS += test/read_mixer
 endif
 
 test_read_conf_LDADD = \
+	libconf.a \
 	libfs.a \
 	$(GLIB_LIBS)
 test_read_conf_SOURCES = test/read_conf.cxx \
-	src/ConfigFile.cxx src/ConfigTemplates.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c
 
 test_run_resolver_LDADD = \
@@ -1063,6 +1068,7 @@ test_run_resolver_SOURCES = test/run_resolver.c \
 
 test_DumpDatabase_LDADD = \
 	$(DB_LIBS) \
+	libconf.a \
 	libutil.a \
 	libfs.a \
 	$(GLIB_LIBS)
@@ -1076,19 +1082,18 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/SongFilter.cxx \
 	src/TextFile.cxx \
-	src/ConfigFile.cxx src/ConfigTemplates.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c
 
 test_run_input_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
+	libconf.a \
 	libevent.a \
 	libfs.a \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
-	src/ConfigFile.cxx src/ConfigTemplates.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c\
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/uri.c \
@@ -1099,13 +1104,13 @@ if ENABLE_ARCHIVE
 test_visit_archive_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
+	libconf.a \
 	libevent.a \
 	libfs.a \
 	$(GLIB_LIBS)
 test_visit_archive_SOURCES = test/visit_archive.cxx \
 	src/IOThread.cxx \
 	src/InputStream.cxx \
-	src/ConfigFile.cxx src/ConfigTemplates.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/uri.c \
@@ -1120,6 +1125,7 @@ endif
 test_dump_text_file_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
+	libconf.a \
 	libevent.a \
 	libfs.a \
 	libutil.a \
@@ -1127,7 +1133,6 @@ test_dump_text_file_LDADD = \
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
-	src/ConfigFile.cxx src/ConfigTemplates.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c\
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/text_input_stream.c \
@@ -1141,6 +1146,7 @@ test_dump_playlist_LDADD = \
 	$(ARCHIVE_LIBS) \
 	$(DECODER_LIBS) \
 	$(TAG_LIBS) \
+	libconf.a \
 	libevent.a \
 	libfs.a \
 	libutil.a \
@@ -1148,7 +1154,6 @@ test_dump_playlist_LDADD = \
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	$(DECODER_SRC) \
 	src/IOThread.cxx \
-	src/ConfigFile.cxx src/ConfigTemplates.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c\
 	src/uri.c \
 	src/Song.cxx src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
@@ -1170,6 +1175,7 @@ test_run_decoder_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(TAG_LIBS) \
+	libconf.a \
 	libevent.a \
 	libfs.a \
 	libutil.a \
@@ -1177,7 +1183,6 @@ test_run_decoder_LDADD = \
 test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
-	src/ConfigFile.cxx src/ConfigTemplates.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/tag_handler.c \
 	src/ReplayGainInfo.cxx \
@@ -1196,13 +1201,13 @@ test_read_tags_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	$(TAG_LIBS) \
+	libconf.a \
 	libevent.a \
 	libfs.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.cxx \
 	src/IOThread.cxx \
-	src/ConfigFile.cxx src/ConfigTemplates.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/tag_handler.c \
 	src/ReplayGainInfo.cxx \
@@ -1224,6 +1229,7 @@ endif
 
 test_run_filter_LDADD = \
 	$(FILTER_LIBS) \
+	libconf.a \
 	libfs.a \
 	$(GLIB_LIBS)
 test_run_filter_SOURCES = test/run_filter.cxx \
@@ -1231,7 +1237,6 @@ test_run_filter_SOURCES = test/run_filter.cxx \
 	test/stdbin.h \
 	src/filter_plugin.c \
 	src/filter_registry.c \
-	src/ConfigFile.cxx src/ConfigTemplates.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/audio_check.c \
 	src/audio_format.c \
@@ -1251,7 +1256,6 @@ if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
 test_run_encoder_SOURCES = test/run_encoder.c \
 	test/stdbin.h \
-	src/ConfigFile.cxx src/ConfigTemplates.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/audio_check.c \
@@ -1259,10 +1263,11 @@ test_run_encoder_SOURCES = test/run_encoder.c \
 	src/audio_parser.c
 test_run_encoder_LDADD = \
 	$(ENCODER_LIBS) \
+	$(TAG_LIBS) \
+	libconf.a \
 	libpcm.a \
 	libfs.a \
 	libutil.a \
-	$(TAG_LIBS) \
 	$(GLIB_LIBS)
 endif
 
@@ -1270,7 +1275,6 @@ if ENABLE_VORBIS_ENCODER
 noinst_PROGRAMS += test/test_vorbis_encoder
 test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.c \
 	test/stdbin.h \
-	src/ConfigFile.cxx src/ConfigTemplates.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/audio_check.c \
@@ -1282,6 +1286,7 @@ test_test_vorbis_encoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ENCODER_CFLAGS)
 test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
 	$(ENCODER_LIBS) \
+	libconf.a \
 	libfs.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -1318,6 +1323,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	$(ENCODER_LIBS) \
 	libmixer_plugins.a \
 	$(FILTER_LIBS) \
+	libconf.a \
 	libevent.a \
 	libfs.a \
 	libutil.a \
@@ -1325,7 +1331,6 @@ test_run_output_LDADD = $(MPD_LIBS) \
 test_run_output_SOURCES = test/run_output.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/stdbin.h \
-	src/ConfigFile.cxx src/ConfigTemplates.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/IOThread.cxx \
 	src/audio_check.c \
@@ -1351,11 +1356,11 @@ test_read_mixer_LDADD = \
 	libpcm.a \
 	libmixer_plugins.a \
 	$(OUTPUT_LIBS) \
+	libconf.a \
 	libevent.a \
 	libfs.a \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.cxx \
-	src/ConfigFile.cxx src/ConfigTemplates.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/mixer_control.c src/mixer_api.c \
 	src/filter_plugin.c \
