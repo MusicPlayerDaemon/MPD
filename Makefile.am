@@ -436,7 +436,8 @@ endif
 libconf_a_SOURCES = \
 	src/ConfigData.cxx src/ConfigData.hxx \
 	src/ConfigParser.cxx src/ConfigParser.hxx \
-	src/ConfigFile.cxx \
+	src/ConfigGlobal.cxx src/ConfigGlobal.hxx \
+	src/ConfigFile.cxx src/ConfigFile.hxx \
 	src/ConfigTemplates.cxx src/ConfigTemplates.hxx \
 	src/ConfigOption.hxx
 

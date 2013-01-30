@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,30 +17,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CONF_H
-#define MPD_CONF_H
+#ifndef MPD_CONFIG_FILE_HXX
+#define MPD_CONFIG_FILE_HXX
 
-#include "ConfigGlobal.hxx"
-#include "ConfigOption.hxx"
-#include "ConfigData.hxx"
-#include "gcc.h"
+#include "gerror.h"
 
-#include <glib.h>
+class Path;
+struct ConfigData;
 
-#define DEFAULT_PLAYLIST_MAX_LENGTH (1024*16)
-#define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS false
-
-#define MAX_FILTER_CHAIN_LENGTH 255
-
-/**
- * A GQuark for GError instances, resulting from malformed
- * configuration.
- */
-G_GNUC_CONST
-static inline GQuark
-config_quark(void)
-{
-	return g_quark_from_static_string("config");
-}
+bool
+ReadConfigFile(ConfigData &data, const Path &path, GError **error_r);
 
 #endif
