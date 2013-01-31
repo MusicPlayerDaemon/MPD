@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "test_pcm_all.hxx"
+#include "test_pcm_util.hxx"
 #include "PcmChannels.hxx"
 #include "pcm_buffer.h"
 
@@ -27,11 +28,8 @@
 void
 test_pcm_channels_16()
 {
-	enum { N = 256 };
-	int16_t src[N * 2];
-
-	for (unsigned i = 0; i < G_N_ELEMENTS(src); ++i)
-		src[i] = g_random_int();
+	constexpr unsigned N = 256;
+	const auto src = TestDataBuffer<int16_t, N * 2>();
 
 	struct pcm_buffer buffer;
 	pcm_buffer_init(&buffer);
@@ -65,11 +63,8 @@ test_pcm_channels_16()
 void
 test_pcm_channels_32()
 {
-	enum { N = 256 };
-	int32_t src[N * 2];
-
-	for (unsigned i = 0; i < G_N_ELEMENTS(src); ++i)
-		src[i] = g_random_int();
+	constexpr unsigned N = 256;
+	const auto src = TestDataBuffer<int32_t, N * 2>();
 
 	struct pcm_buffer buffer;
 	pcm_buffer_init(&buffer);

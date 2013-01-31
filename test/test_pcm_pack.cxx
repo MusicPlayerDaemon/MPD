@@ -18,6 +18,7 @@
  */
 
 #include "test_pcm_all.hxx"
+#include "test_pcm_util.hxx"
 
 extern "C" {
 #include "pcm_pack.h"
@@ -25,29 +26,14 @@ extern "C" {
 
 #include <glib.h>
 
-/**
- * Generate a random 24 bit PCM sample.
- */
-static int32_t
-random24()
-{
-	int32_t x = g_random_int() & 0xffffff;
-	if (x & 0x800000)
-		x |= 0xff000000;
-	return x;
-}
-
 void
 test_pcm_pack_24()
 {
-	enum { N = 256 };
-	int32_t src[N * 3];
-	for (unsigned i = 0; i < N; ++i)
-		src[i] = random24();
+	constexpr unsigned N = 256;
+	const auto src = TestDataBuffer<int32_t, N>(GlibRandomInt24());
 
 	uint8_t dest[N * 3];
-
-	pcm_pack_24(dest, src, src + N);
+	pcm_pack_24(dest, src.begin(), src.end());
 
 	for (unsigned i = 0; i < N; ++i) {
 		int32_t d;
@@ -67,14 +53,11 @@ test_pcm_pack_24()
 void
 test_pcm_unpack_24()
 {
-	enum { N = 256 };
-	uint8_t src[N * 3];
-	for (unsigned i = 0; i < G_N_ELEMENTS(src); ++i)
-		src[i] = g_random_int_range(0, 256);
+	constexpr unsigned N = 256;
+	const auto src = TestDataBuffer<uint8_t, N * 3>();
 
 	int32_t dest[N];
-
-	pcm_unpack_24(dest, src, src + G_N_ELEMENTS(src));
+	pcm_unpack_24(dest, src.begin(), src.end());
 
 	for (unsigned i = 0; i < N; ++i) {
 		int32_t s;

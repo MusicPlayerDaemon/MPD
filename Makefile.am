@@ -1401,6 +1401,7 @@ test_test_byte_reverse_LDADD = \
 	$(GLIB_LIBS)
 
 test_test_pcm_SOURCES = \
+	test/test_pcm_util.hxx \
 	test/test_pcm_dither.cxx \
 	test/test_pcm_pack.cxx \
 	test/test_pcm_channels.cxx \

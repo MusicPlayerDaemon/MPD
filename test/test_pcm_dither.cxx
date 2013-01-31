@@ -18,35 +18,20 @@
  */
 
 #include "test_pcm_all.hxx"
+#include "test_pcm_util.hxx"
 #include "PcmDither.hxx"
 
 #include <glib.h>
 
-/**
- * Generate a random 24 bit PCM sample.
- */
-static int32_t
-random24()
-{
-	int32_t x = g_random_int() & 0xffffff;
-	if (x & 0x800000)
-		x |= 0xff000000;
-	return x;
-}
-
 void
 test_pcm_dither_24()
 {
-	PcmDither dither;
-
-	enum { N = 256 };
-	int32_t src[N];
-	for (unsigned i = 0; i < N; ++i)
-		src[i] = random24();
+	constexpr unsigned N = 256;
+	const auto src = TestDataBuffer<int32_t, N>(GlibRandomInt24());
 
 	int16_t dest[N];
-
-	dither.Dither24To16(dest, src, src + N);
+	PcmDither dither;
+	dither.Dither24To16(dest, src.begin(), src.end());
 
 	for (unsigned i = 0; i < N; ++i) {
 		g_assert_cmpint(dest[i], >=, (src[i] >> 8) - 8);
@@ -57,16 +42,12 @@ test_pcm_dither_24()
 void
 test_pcm_dither_32()
 {
-	PcmDither dither;
-
-	enum { N = 256 };
-	int32_t src[N];
-	for (unsigned i = 0; i < N; ++i)
-		src[i] = g_random_int();
+	constexpr unsigned N = 256;
+	const auto src = TestDataBuffer<int32_t, N>();
 
 	int16_t dest[N];
-
-	dither.Dither32To16(dest, src, src + N);
+	PcmDither dither;
+	dither.Dither32To16(dest, src.begin(), src.end());
 
 	for (unsigned i = 0; i < N; ++i) {
 		g_assert_cmpint(dest[i], >=, (src[i] >> 16) - 8);

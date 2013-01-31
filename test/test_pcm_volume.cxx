@@ -19,33 +19,34 @@
 
 #include "test_pcm_all.hxx"
 #include "PcmVolume.hxx"
+#include "test_pcm_util.hxx"
 
 #include <glib.h>
+
+#include <algorithm>
 
 #include <string.h>
 
 void
 test_pcm_volume_8()
 {
-	enum { N = 256 };
+	constexpr unsigned N = 256;
 	static int8_t zero[N];
-	int8_t src[N];
-	for (unsigned i = 0; i < N; ++i)
-		src[i] = g_random_int();
+	const auto src = TestDataBuffer<int8_t, N>();
 
 	int8_t dest[N];
 
-	memcpy(dest, src, sizeof(src));
+	std::copy(src.begin(), src.end(), dest);
 	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SAMPLE_FORMAT_S8,
 				   0), ==, true);
 	g_assert_cmpint(memcmp(dest, zero, sizeof(zero)), ==, 0);
 
-	memcpy(dest, src, sizeof(src));
+	std::copy(src.begin(), src.end(), dest);
 	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SAMPLE_FORMAT_S8,
 				   PCM_VOLUME_1), ==, true);
 	g_assert_cmpint(memcmp(dest, src, sizeof(src)), ==, 0);
 
-	memcpy(dest, src, sizeof(src));
+	std::copy(src.begin(), src.end(), dest);
 	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SAMPLE_FORMAT_S8,
 				   PCM_VOLUME_1 / 2), ==, true);
 
@@ -58,25 +59,23 @@ test_pcm_volume_8()
 void
 test_pcm_volume_16()
 {
-	enum { N = 256 };
+	constexpr unsigned N = 256;
 	static int16_t zero[N];
-	int16_t src[N];
-	for (unsigned i = 0; i < N; ++i)
-		src[i] = g_random_int();
+	const auto src = TestDataBuffer<int16_t, N>();
 
 	int16_t dest[N];
 
-	memcpy(dest, src, sizeof(src));
+	std::copy(src.begin(), src.end(), dest);
 	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SAMPLE_FORMAT_S16,
 				   0), ==, true);
 	g_assert_cmpint(memcmp(dest, zero, sizeof(zero)), ==, 0);
 
-	memcpy(dest, src, sizeof(src));
+	std::copy(src.begin(), src.end(), dest);
 	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SAMPLE_FORMAT_S16,
 				   PCM_VOLUME_1), ==, true);
 	g_assert_cmpint(memcmp(dest, src, sizeof(src)), ==, 0);
 
-	memcpy(dest, src, sizeof(src));
+	std::copy(src.begin(), src.end(), dest);
 	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SAMPLE_FORMAT_S16,
 				   PCM_VOLUME_1 / 2), ==, true);
 
@@ -86,40 +85,26 @@ test_pcm_volume_16()
 	}
 }
 
-/**
- * Generate a random 24 bit PCM sample.
- */
-static int32_t
-random24()
-{
-	int32_t x = g_random_int() & 0xffffff;
-	if (x & 0x800000)
-		x |= 0xff000000;
-	return x;
-}
-
 void
 test_pcm_volume_24()
 {
-	enum { N = 256 };
+	constexpr unsigned N = 256;
 	static int32_t zero[N];
-	int32_t src[N];
-	for (unsigned i = 0; i < N; ++i)
-		src[i] = random24();
+	const auto src = TestDataBuffer<int32_t, N>(GlibRandomInt24());
 
 	int32_t dest[N];
 
-	memcpy(dest, src, sizeof(src));
+	std::copy(src.begin(), src.end(), dest);
 	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SAMPLE_FORMAT_S24_P32,
 				   0), ==, true);
 	g_assert_cmpint(memcmp(dest, zero, sizeof(zero)), ==, 0);
 
-	memcpy(dest, src, sizeof(src));
+	std::copy(src.begin(), src.end(), dest);
 	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SAMPLE_FORMAT_S24_P32,
 				   PCM_VOLUME_1), ==, true);
 	g_assert_cmpint(memcmp(dest, src, sizeof(src)), ==, 0);
 
-	memcpy(dest, src, sizeof(src));
+	std::copy(src.begin(), src.end(), dest);
 	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SAMPLE_FORMAT_S24_P32,
 				   PCM_VOLUME_1 / 2), ==, true);
 
@@ -132,25 +117,23 @@ test_pcm_volume_24()
 void
 test_pcm_volume_32()
 {
-	enum { N = 256 };
+	constexpr unsigned N = 256;
 	static int32_t zero[N];
-	int32_t src[N];
-	for (unsigned i = 0; i < N; ++i)
-		src[i] = g_random_int();
+	const auto src = TestDataBuffer<int32_t, N>();
 
 	int32_t dest[N];
 
-	memcpy(dest, src, sizeof(src));
+	std::copy(src.begin(), src.end(), dest);
 	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SAMPLE_FORMAT_S32,
 				   0), ==, true);
 	g_assert_cmpint(memcmp(dest, zero, sizeof(zero)), ==, 0);
 
-	memcpy(dest, src, sizeof(src));
+	std::copy(src.begin(), src.end(), dest);
 	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SAMPLE_FORMAT_S32,
 				   PCM_VOLUME_1), ==, true);
 	g_assert_cmpint(memcmp(dest, src, sizeof(src)), ==, 0);
 
-	memcpy(dest, src, sizeof(src));
+	std::copy(src.begin(), src.end(), dest);
 	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SAMPLE_FORMAT_S32,
 				   PCM_VOLUME_1 / 2), ==, true);
 
@@ -163,25 +146,23 @@ test_pcm_volume_32()
 void
 test_pcm_volume_float()
 {
-	enum { N = 256 };
+	constexpr unsigned N = 256;
 	static float zero[N];
-	float src[N];
-	for (unsigned i = 0; i < N; ++i)
-		src[i] = g_random_double_range(-1.0, 1.0);
+	const auto src = TestDataBuffer<float, N>(GlibRandomFloat());
 
 	float dest[N];
 
-	memcpy(dest, src, sizeof(src));
+	std::copy(src.begin(), src.end(), dest);
 	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SAMPLE_FORMAT_FLOAT,
 				   0), ==, true);
 	g_assert_cmpint(memcmp(dest, zero, sizeof(zero)), ==, 0);
 
-	memcpy(dest, src, sizeof(src));
+	std::copy(src.begin(), src.end(), dest);
 	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SAMPLE_FORMAT_FLOAT,
 				   PCM_VOLUME_1), ==, true);
 	g_assert_cmpint(memcmp(dest, src, sizeof(src)), ==, 0);
 
-	memcpy(dest, src, sizeof(src));
+	std::copy(src.begin(), src.end(), dest);
 	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SAMPLE_FORMAT_FLOAT,
 				   PCM_VOLUME_1 / 2), ==, true);
 
