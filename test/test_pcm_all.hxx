@@ -53,4 +53,16 @@ test_pcm_volume_32();
 void
 test_pcm_volume_float();
 
+void
+test_pcm_format_8_to_16();
+
+void
+test_pcm_format_16_to_24();
+
+void
+test_pcm_format_16_to_32();
+
+void
+test_pcm_format_float();
+
 #endif

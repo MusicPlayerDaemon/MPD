@@ -1405,6 +1405,7 @@ test_test_pcm_SOURCES = \
 	test/test_pcm_dither.cxx \
 	test/test_pcm_pack.cxx \
 	test/test_pcm_channels.cxx \
+	test/test_pcm_format.cxx \
 	test/test_pcm_volume.cxx \
 	test/test_pcm_all.hxx \
 	test/test_pcm_main.cxx
