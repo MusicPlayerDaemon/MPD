@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "filter/volume_filter_plugin.h"
+#include "VolumeFilterPlugin.hxx"
 #include "filter_plugin.h"
 #include "filter_internal.h"
 #include "filter_registry.h"
@@ -113,7 +113,8 @@ volume_filter_filter(struct filter *_filter, const void *src, size_t src_size,
 
 	memcpy(dest, src, src_size);
 
-	success = pcm_volume(dest, src_size, filter->audio_format.format,
+	success = pcm_volume(dest, src_size,
+			     sample_format(filter->audio_format.format),
 			     filter->volume);
 	if (!success) {
 		g_set_error(error_r, volume_quark(), 0,
@@ -125,12 +126,12 @@ volume_filter_filter(struct filter *_filter, const void *src, size_t src_size,
 }
 
 const struct filter_plugin volume_filter_plugin = {
-	.name = "volume",
-	.init = volume_filter_init,
-	.finish = volume_filter_finish,
-	.open = volume_filter_open,
-	.close = volume_filter_close,
-	.filter = volume_filter_filter,
+	"volume",
+	volume_filter_init,
+	volume_filter_finish,
+	volume_filter_open,
+	volume_filter_close,
+	volume_filter_filter,
 };
 
 unsigned

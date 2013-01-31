@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,15 +17,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef VOLUME_FILTER_PLUGIN_H
-#define VOLUME_FILTER_PLUGIN_H
+#ifndef MPD_SOFTWARE_MIXER_PLUGIN_HXX
+#define MPD_SOFTWARE_MIXER_PLUGIN_HXX
 
+struct mixer;
 struct filter;
 
-unsigned
-volume_filter_get(const struct filter *filter);
-
-void
-volume_filter_set(struct filter *filter, unsigned volume);
+/**
+ * Returns the (volume) filter associated with this mixer.  All users
+ * of this mixer plugin should install this filter.
+ */
+struct filter *
+software_mixer_get_filter(struct mixer *mixer);
 
 #endif

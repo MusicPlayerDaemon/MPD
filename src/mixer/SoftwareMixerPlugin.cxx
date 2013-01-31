@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,11 +18,11 @@
  */
 
 #include "config.h"
-#include "software_mixer_plugin.h"
+#include "SoftwareMixerPlugin.hxx"
 #include "mixer_api.h"
 #include "filter_plugin.h"
 #include "filter_registry.h"
-#include "filter/volume_filter_plugin.h"
+#include "filter/VolumeFilterPlugin.hxx"
 #include "pcm_volume.h"
 
 #include <assert.h>
@@ -91,11 +91,13 @@ software_mixer_set_volume(struct mixer *mixer, unsigned volume,
 }
 
 const struct mixer_plugin software_mixer_plugin = {
-	.init = software_mixer_init,
-	.finish = software_mixer_finish,
-	.get_volume = software_mixer_get_volume,
-	.set_volume = software_mixer_set_volume,
-	.global = true,
+	software_mixer_init,
+	software_mixer_finish,
+	nullptr,
+	nullptr,
+	software_mixer_get_volume,
+	software_mixer_set_volume,
+	true,
 };
 
 struct filter *

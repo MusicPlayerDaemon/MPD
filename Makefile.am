@@ -60,7 +60,6 @@ mpd_headers = \
 	src/filter_plugin.h \
 	src/filter_registry.h \
 	src/filter/chain_filter_plugin.h \
-	src/filter/volume_filter_plugin.h \
 	src/command.h \
 	src/conf.h \
 	src/decoder_plugin.h \
@@ -84,7 +83,6 @@ mpd_headers = \
 	src/mixer_list.h \
 	src/mixer_plugin.h \
 	src/mixer_type.h \
-	src/mixer/software_mixer_plugin.h \
 	src/daemon.h \
 	src/AudioCompress/config.h \
 	src/AudioCompress/compress.h \
@@ -809,7 +807,8 @@ MIXER_API_SRC = \
 	src/mixer_api.c
 
 libmixer_plugins_a_SOURCES = \
-	src/mixer/software_mixer_plugin.c
+	src/mixer/SoftwareMixerPlugin.cxx \
+	src/mixer/SoftwareMixerPlugin.hxx
 libmixer_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ALSA_CFLAGS) \
 	$(PULSE_CFLAGS)
@@ -979,7 +978,8 @@ libfilter_plugins_a_SOURCES = \
 	src/filter/normalize_filter_plugin.c \
 	src/filter/ReplayGainFilterPlugin.cxx \
 	src/filter/ReplayGainFilterPlugin.hxx \
-	src/filter/volume_filter_plugin.c
+	src/filter/VolumeFilterPlugin.cxx \
+	src/filter/VolumeFilterPlugin.hxx
 
 FILTER_LIBS = \
 	libfilter_plugins.a \
@@ -1368,7 +1368,7 @@ test_read_mixer_SOURCES = test/read_mixer.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/mixer_control.c src/mixer_api.c \
 	src/filter_plugin.c \
-	src/filter/volume_filter_plugin.c \
+	src/filter/VolumeFilterPlugin.cxx \
 	src/fd_util.c
 
 if ENABLE_BZIP2_TEST
