@@ -81,6 +81,14 @@
 
 #ifdef __cplusplus
 
+#ifdef __GNUC__
+/* "__restrict__" is a GCC extension for C++ */
+#define restrict __restrict__
+#else
+/* disable it on other compilers */
+#define restrict
+#endif
+
 #if !defined(__clang__) && defined(__GNUC__) && !GCC_CHECK_VERSION(4,6)
 #error Your gcc version is too old.  MPD requires gcc 4.6 or newer.
 #endif
