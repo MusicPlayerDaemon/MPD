@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "test_pcm_all.h"
+#include "test_pcm_all.hxx"
+
+extern "C" {
 #include "pcm_pack.h"
+}
 
 #include <glib.h>
 
@@ -26,7 +29,7 @@
  * Generate a random 24 bit PCM sample.
  */
 static int32_t
-random24(void)
+random24()
 {
 	int32_t x = g_random_int() & 0xffffff;
 	if (x & 0x800000)
@@ -35,7 +38,7 @@ random24(void)
 }
 
 void
-test_pcm_pack_24(void)
+test_pcm_pack_24()
 {
 	enum { N = 256 };
 	int32_t src[N * 3];
@@ -62,7 +65,7 @@ test_pcm_pack_24(void)
 }
 
 void
-test_pcm_unpack_24(void)
+test_pcm_unpack_24()
 {
 	enum { N = 256 };
 	uint8_t src[N * 3];

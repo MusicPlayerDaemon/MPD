@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "test_pcm_all.h"
+#include "test_pcm_all.hxx"
 #include "pcm_volume.h"
 
 #include <glib.h>
@@ -25,10 +25,10 @@
 #include <string.h>
 
 void
-test_pcm_volume_8(void)
+test_pcm_volume_8()
 {
 	enum { N = 256 };
-	static const int8_t zero[N];
+	static int8_t zero[N];
 	int8_t src[N];
 	for (unsigned i = 0; i < N; ++i)
 		src[i] = g_random_int();
@@ -56,10 +56,10 @@ test_pcm_volume_8(void)
 }
 
 void
-test_pcm_volume_16(void)
+test_pcm_volume_16()
 {
 	enum { N = 256 };
-	static const int16_t zero[N];
+	static int16_t zero[N];
 	int16_t src[N];
 	for (unsigned i = 0; i < N; ++i)
 		src[i] = g_random_int();
@@ -90,7 +90,7 @@ test_pcm_volume_16(void)
  * Generate a random 24 bit PCM sample.
  */
 static int32_t
-random24(void)
+random24()
 {
 	int32_t x = g_random_int() & 0xffffff;
 	if (x & 0x800000)
@@ -99,10 +99,10 @@ random24(void)
 }
 
 void
-test_pcm_volume_24(void)
+test_pcm_volume_24()
 {
 	enum { N = 256 };
-	static const int32_t zero[N];
+	static int32_t zero[N];
 	int32_t src[N];
 	for (unsigned i = 0; i < N; ++i)
 		src[i] = random24();
@@ -130,10 +130,10 @@ test_pcm_volume_24(void)
 }
 
 void
-test_pcm_volume_32(void)
+test_pcm_volume_32()
 {
 	enum { N = 256 };
-	static const int32_t zero[N];
+	static int32_t zero[N];
 	int32_t src[N];
 	for (unsigned i = 0; i < N; ++i)
 		src[i] = g_random_int();
@@ -161,10 +161,10 @@ test_pcm_volume_32(void)
 }
 
 void
-test_pcm_volume_float(void)
+test_pcm_volume_float()
 {
 	enum { N = 256 };
-	static const float zero[N];
+	static float zero[N];
 	float src[N];
 	for (unsigned i = 0; i < N; ++i)
 		src[i] = g_random_double_range(-1.0, 1.0);

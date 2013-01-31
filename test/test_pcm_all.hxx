@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,40 +17,40 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TEST_PCM_ALL_H
-#define MPD_TEST_PCM_ALL_H
+#ifndef MPD_TEST_PCM_ALL_HXX
+#define MPD_TEST_PCM_ALL_HXX
 
 void
-test_pcm_dither_24(void);
+test_pcm_dither_24();
 
 void
-test_pcm_dither_32(void);
+test_pcm_dither_32();
 
 void
-test_pcm_pack_24(void);
+test_pcm_pack_24();
 
 void
-test_pcm_unpack_24(void);
+test_pcm_unpack_24();
 
 void
-test_pcm_channels_16(void);
+test_pcm_channels_16();
 
 void
-test_pcm_channels_32(void);
+test_pcm_channels_32();
 
 void
-test_pcm_volume_8(void);
+test_pcm_volume_8();
 
 void
-test_pcm_volume_16(void);
+test_pcm_volume_16();
 
 void
-test_pcm_volume_24(void);
+test_pcm_volume_24();
 
 void
-test_pcm_volume_32(void);
+test_pcm_volume_32();
 
 void
-test_pcm_volume_float(void);
+test_pcm_volume_float();
 
 #endif

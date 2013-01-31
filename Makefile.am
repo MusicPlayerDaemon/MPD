@@ -1401,12 +1401,12 @@ test_test_byte_reverse_LDADD = \
 	$(GLIB_LIBS)
 
 test_test_pcm_SOURCES = \
-	test/test_pcm_dither.c \
-	test/test_pcm_pack.c \
-	test/test_pcm_channels.c \
-	test/test_pcm_volume.c \
-	test/test_pcm_all.h \
-	test/test_pcm_main.c
+	test/test_pcm_dither.cxx \
+	test/test_pcm_pack.cxx \
+	test/test_pcm_channels.cxx \
+	test/test_pcm_volume.cxx \
+	test/test_pcm_all.hxx \
+	test/test_pcm_main.cxx
 test_test_pcm_LDADD = \
 	$(PCM_LIBS) \
 	libutil.a \

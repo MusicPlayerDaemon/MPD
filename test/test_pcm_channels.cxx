@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,14 +18,16 @@
  */
 
 #include "config.h"
-#include "test_pcm_all.h"
+#include "test_pcm_all.hxx"
+extern "C" {
 #include "pcm_channels.h"
+}
 #include "pcm_buffer.h"
 
 #include <glib.h>
 
 void
-test_pcm_channels_16(void)
+test_pcm_channels_16()
 {
 	enum { N = 256 };
 	int16_t src[N * 2];
@@ -63,7 +65,7 @@ test_pcm_channels_16(void)
 }
 
 void
-test_pcm_channels_32(void)
+test_pcm_channels_32()
 {
 	enum { N = 256 };
 	int32_t src[N * 2];
