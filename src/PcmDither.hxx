@@ -22,24 +22,23 @@
 
 #include <stdint.h>
 
-struct pcm_dither {
+class PcmDither {
 	int32_t error[3];
 	int32_t random;
+
+public:
+	constexpr PcmDither()
+		:error{0, 0, 0}, random(0) {}
+
+	void Dither24To16(int16_t *dest, const int32_t *src,
+			  const int32_t *src_end);
+
+	void Dither32To16(int16_t *dest, const int32_t *src,
+			  const int32_t *src_end);
+
+private:
+	int16_t Dither24To16(int_fast32_t sample);
+	int16_t Dither32To16(int_fast32_t sample);
 };
-
-static inline void
-pcm_dither_24_init(struct pcm_dither *dither)
-{
-	dither->error[0] = dither->error[1] = dither->error[2] = 0;
-	dither->random = 0;
-}
-
-void
-pcm_dither_24_to_16(struct pcm_dither *dither,
-		    int16_t *dest, const int32_t *src, const int32_t *src_end);
-
-void
-pcm_dither_32_to_16(struct pcm_dither *dither,
-		    int16_t *dest, const int32_t *src, const int32_t *src_end);
 
 #endif

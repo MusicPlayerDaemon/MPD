@@ -37,9 +37,7 @@ random24()
 void
 test_pcm_dither_24()
 {
-	struct pcm_dither dither;
-
-	pcm_dither_24_init(&dither);
+	PcmDither dither;
 
 	enum { N = 256 };
 	int32_t src[N];
@@ -48,7 +46,7 @@ test_pcm_dither_24()
 
 	int16_t dest[N];
 
-	pcm_dither_24_to_16(&dither, dest, src, src + N);
+	dither.Dither24To16(dest, src, src + N);
 
 	for (unsigned i = 0; i < N; ++i) {
 		g_assert_cmpint(dest[i], >=, (src[i] >> 8) - 8);
@@ -59,9 +57,7 @@ test_pcm_dither_24()
 void
 test_pcm_dither_32()
 {
-	struct pcm_dither dither;
-
-	pcm_dither_24_init(&dither);
+	PcmDither dither;
 
 	enum { N = 256 };
 	int32_t src[N];
@@ -70,7 +66,7 @@ test_pcm_dither_32()
 
 	int16_t dest[N];
 
-	pcm_dither_32_to_16(&dither, dest, src, src + N);
+	dither.Dither32To16(dest, src, src + N);
 
 	for (unsigned i = 0; i < N; ++i) {
 		g_assert_cmpint(dest[i], >=, (src[i] >> 16) - 8);

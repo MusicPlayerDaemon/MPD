@@ -26,7 +26,7 @@
 #include <stddef.h>
 
 struct pcm_buffer;
-struct pcm_dither;
+class PcmDither;
 
 /**
  * Converts PCM samples to 16 bit.  If the source format is 24 bit,
@@ -41,7 +41,7 @@ struct pcm_dither;
  * @return the destination buffer
  */
 const int16_t *
-pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
+pcm_convert_to_16(struct pcm_buffer *buffer, PcmDither &dither,
 		  enum sample_format src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r);
 

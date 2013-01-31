@@ -21,11 +21,9 @@
 #include "PcmDither.hxx"
 #include "PcmPrng.hxx"
 
-static int16_t
-pcm_dither_sample_24_to_16(int32_t sample, struct pcm_dither *dither)
+inline int16_t
+PcmDither::Dither24To16(int_fast32_t sample)
 {
-	int32_t output, rnd;
-
 	enum {
 		from_bits = 24,
 		to_bits = 16,
@@ -37,18 +35,18 @@ pcm_dither_sample_24_to_16(int32_t sample, struct pcm_dither *dither)
 		MAX = ONE - 1
 	};
 
-	sample += dither->error[0] - dither->error[1] + dither->error[2];
+	sample += error[0] - error[1] + error[2];
 
-	dither->error[2] = dither->error[1];
-	dither->error[1] = dither->error[0] / 2;
+	error[2] = error[1];
+	error[1] = error[0] / 2;
 
 	/* round */
-	output = sample + round;
+	int_fast32_t output = sample + round;
 
-	rnd = pcm_prng(dither->random);
-	output += (rnd & mask) - (dither->random & mask);
+	int_fast32_t rnd = pcm_prng(random);
+	output += (rnd & mask) - (random & mask);
 
-	dither->random = rnd;
+	random = rnd;
 
 	/* clip */
 	if (output > MAX) {
@@ -65,29 +63,29 @@ pcm_dither_sample_24_to_16(int32_t sample, struct pcm_dither *dither)
 
 	output &= ~mask;
 
-	dither->error[0] = sample - output;
+	error[0] = sample - output;
 
 	return (int16_t)(output >> scale_bits);
 }
 
 void
-pcm_dither_24_to_16(struct pcm_dither *dither,
-		    int16_t *dest, const int32_t *src, const int32_t *src_end)
+PcmDither::Dither24To16(int16_t *dest, const int32_t *src,
+			const int32_t *src_end)
 {
 	while (src < src_end)
-		*dest++ = pcm_dither_sample_24_to_16(*src++, dither);
+		*dest++ = Dither24To16(*src++);
 }
 
-static int16_t
-pcm_dither_sample_32_to_16(int32_t sample, struct pcm_dither *dither)
+inline int16_t
+PcmDither::Dither32To16(int_fast32_t sample)
 {
-	return pcm_dither_sample_24_to_16(sample >> 8, dither);
+	return Dither24To16(sample >> 8);
 }
 
 void
-pcm_dither_32_to_16(struct pcm_dither *dither,
-		    int16_t *dest, const int32_t *src, const int32_t *src_end)
+PcmDither::Dither32To16(int16_t *dest, const int32_t *src,
+			const int32_t *src_end)
 {
 	while (src < src_end)
-		*dest++ = pcm_dither_sample_32_to_16(*src++, dither);
+		*dest++ = Dither32To16(*src++);
 }

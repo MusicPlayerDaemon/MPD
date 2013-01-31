@@ -42,7 +42,7 @@ class PcmConvert {
 
 	struct pcm_resample_state resample;
 
-	struct pcm_dither dither;
+	PcmDither dither;
 
 	/** the buffer for converting the sample format */
 	struct pcm_buffer format_buffer;

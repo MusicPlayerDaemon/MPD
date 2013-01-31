@@ -38,7 +38,6 @@ PcmConvert::PcmConvert()
 
 	pcm_dsd_init(&dsd);
 	pcm_resample_init(&resample);
-	pcm_dither_24_init(&dither);
 
 	pcm_buffer_init(&format_buffer);
 	pcm_buffer_init(&channels_buffer);
@@ -71,7 +70,7 @@ PcmConvert::Convert16(const audio_format *src_format,
 
 	assert(dest_format->format == SAMPLE_FORMAT_S16);
 
-	buf = pcm_convert_to_16(&format_buffer, &dither,
+	buf = pcm_convert_to_16(&format_buffer, dither,
 				sample_format(src_format->format),
 				src_buffer, src_size,
 				&len);

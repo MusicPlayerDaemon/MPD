@@ -33,17 +33,17 @@ pcm_convert_8_to_16(int16_t *out, const int8_t *in, const int8_t *in_end)
 }
 
 static void
-pcm_convert_24_to_16(struct pcm_dither *dither,
+pcm_convert_24_to_16(PcmDither &dither,
 		     int16_t *out, const int32_t *in, const int32_t *in_end)
 {
-	pcm_dither_24_to_16(dither, out, in, in_end);
+	dither.Dither24To16(out, in, in_end);
 }
 
 static void
-pcm_convert_32_to_16(struct pcm_dither *dither,
+pcm_convert_32_to_16(PcmDither &dither,
 		     int16_t *out, const int32_t *in, const int32_t *in_end)
 {
-	pcm_dither_32_to_16(dither, out, in, in_end);
+	dither.Dither32To16(out, in, in_end);
 }
 
 static void
@@ -70,7 +70,7 @@ pcm_allocate_8_to_16(struct pcm_buffer *buffer,
 }
 
 static int16_t *
-pcm_allocate_24p32_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
+pcm_allocate_24p32_to_16(struct pcm_buffer *buffer, PcmDither &dither,
 			 const int32_t *src, size_t src_size,
 			 size_t *dest_size_r)
 {
@@ -84,7 +84,7 @@ pcm_allocate_24p32_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
 }
 
 static int16_t *
-pcm_allocate_32_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
+pcm_allocate_32_to_16(struct pcm_buffer *buffer, PcmDither &dither,
 		      const int32_t *src, size_t src_size,
 		      size_t *dest_size_r)
 {
@@ -112,7 +112,7 @@ pcm_allocate_float_to_16(struct pcm_buffer *buffer,
 }
 
 const int16_t *
-pcm_convert_to_16(struct pcm_buffer *buffer, struct pcm_dither *dither,
+pcm_convert_to_16(struct pcm_buffer *buffer, PcmDither &dither,
 		  enum sample_format src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r)
 {
