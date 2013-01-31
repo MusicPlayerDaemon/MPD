@@ -24,16 +24,14 @@
 inline int16_t
 PcmDither::Dither24To16(int_fast32_t sample)
 {
-	enum {
-		from_bits = 24,
-		to_bits = 16,
-		scale_bits = from_bits - to_bits,
-		round = 1 << (scale_bits - 1),
-		mask = (1 << scale_bits) - 1,
-		ONE = 1 << (from_bits - 1),
-		MIN = -ONE,
-		MAX = ONE - 1
-	};
+	constexpr unsigned from_bits = 24;
+	constexpr unsigned to_bits = 16;
+	constexpr unsigned scale_bits = from_bits - to_bits;
+	constexpr int_fast32_t round = 1 << (scale_bits - 1);
+	constexpr int_fast32_t mask = (1 << scale_bits) - 1;
+	constexpr int_fast32_t ONE = 1 << (from_bits - 1);
+	constexpr int_fast32_t MIN = -ONE;
+	constexpr int_fast32_t MAX = ONE - 1;
 
 	sample += error[0] - error[1] + error[2];
 
