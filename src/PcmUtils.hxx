@@ -22,6 +22,8 @@
 
 #include "gcc.h"
 
+#include <limits>
+
 #include <stdint.h>
 
 /**
@@ -64,32 +66,39 @@ pcm_range_64(int64_t sample, unsigned bits)
 	return sample;
 }
 
+template<typename T, typename U, unsigned bits>
+gcc_const
+static inline T
+PcmClamp(U x)
+{
+	constexpr U MIN_VALUE = -(1 << (bits - 1));
+	constexpr U MAX_VALUE = (1 << (bits - 1)) - 1;
+
+	typedef std::numeric_limits<T> limits;
+	static_assert(MIN_VALUE >= limits::min(), "out of range");
+	static_assert(MAX_VALUE <= limits::max(), "out of range");
+
+	if (gcc_unlikely(x < MIN_VALUE))
+		return T(MIN_VALUE);
+
+	if (gcc_unlikely(x > MAX_VALUE))
+		return T(MAX_VALUE);
+
+	return T(x);
+}
+
 gcc_const
 static inline int16_t
 pcm_clamp_16(int x)
 {
-	static const int32_t MIN_VALUE = -(1 << 15);
-	static const int32_t MAX_VALUE = (1 << 15) - 1;
-
-	if (gcc_unlikely(x < MIN_VALUE))
-		return MIN_VALUE;
-	if (gcc_unlikely(x > MAX_VALUE))
-		return MAX_VALUE;
-	return x;
+	return PcmClamp<int16_t, int, 16>(x);
 }
 
 gcc_const
 static inline int32_t
 pcm_clamp_24(int x)
 {
-	static const int32_t MIN_VALUE = -(1 << 23);
-	static const int32_t MAX_VALUE = (1 << 23) - 1;
-
-	if (gcc_unlikely(x < MIN_VALUE))
-		return MIN_VALUE;
-	if (gcc_unlikely(x > MAX_VALUE))
-		return MAX_VALUE;
-	return x;
+	return PcmClamp<int32_t, int, 24>(x);
 }
 
 #endif
