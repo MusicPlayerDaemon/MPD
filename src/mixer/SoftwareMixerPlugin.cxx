@@ -23,7 +23,7 @@
 #include "filter_plugin.h"
 #include "filter_registry.h"
 #include "filter/VolumeFilterPlugin.hxx"
-#include "pcm_volume.h"
+#include "PcmVolume.hxx"
 
 #include <assert.h>
 #include <math.h>

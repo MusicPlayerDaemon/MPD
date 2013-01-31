@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
-#include "pcm_channels.h"
+#include "PcmChannels.hxx"
 #include "pcm_buffer.h"
-#include "pcm_utils.h"
+#include "PcmUtils.hxx"
 
 #include <assert.h>
 
@@ -84,7 +84,7 @@ pcm_convert_channels_16(struct pcm_buffer *buffer,
 	size_t dest_size = src_size / src_channels * dest_channels;
 	*dest_size_r = dest_size;
 
-	int16_t *dest = pcm_buffer_get(buffer, dest_size);
+	int16_t *dest = (int16_t *)pcm_buffer_get(buffer, dest_size);
 	const int16_t *src_end = pcm_end_pointer(src, src_size);
 
 	if (src_channels == 1 && dest_channels == 2)
@@ -160,8 +160,9 @@ pcm_convert_channels_24(struct pcm_buffer *buffer,
 	size_t dest_size = src_size / src_channels * dest_channels;
 	*dest_size_r = dest_size;
 
-	int32_t *dest = pcm_buffer_get(buffer, dest_size);
-	const int32_t *src_end = pcm_end_pointer(src, src_size);
+	int32_t *dest = (int32_t *)pcm_buffer_get(buffer, dest_size);
+	const int32_t *src_end = (const int32_t *)
+		pcm_end_pointer(src, src_size);
 
 	if (src_channels == 1 && dest_channels == 2)
 		pcm_convert_channels_24_1_to_2(dest, src, src_end);
@@ -229,8 +230,9 @@ pcm_convert_channels_32(struct pcm_buffer *buffer,
 	size_t dest_size = src_size / src_channels * dest_channels;
 	*dest_size_r = dest_size;
 
-	int32_t *dest = pcm_buffer_get(buffer, dest_size);
-	const int32_t *src_end = pcm_end_pointer(src, src_size);
+	int32_t *dest = (int32_t *)pcm_buffer_get(buffer, dest_size);
+	const int32_t *src_end = (const int32_t *)
+		pcm_end_pointer(src, src_size);
 
 	if (src_channels == 1 && dest_channels == 2)
 		pcm_convert_channels_32_1_to_2(dest, src, src_end);
@@ -300,8 +302,8 @@ pcm_convert_channels_float(struct pcm_buffer *buffer,
 	size_t dest_size = src_size / src_channels * dest_channels;
 	*dest_size_r = dest_size;
 
-	float *dest = pcm_buffer_get(buffer, dest_size);
-	const float *src_end = pcm_end_pointer(src, src_size);
+	float *dest = (float *)pcm_buffer_get(buffer, dest_size);
+	const float *src_end = (const float *)pcm_end_pointer(src, src_size);
 
 	if (src_channels == 1 && dest_channels == 2)
 		pcm_convert_channels_float_1_to_2(dest, src, src_end);

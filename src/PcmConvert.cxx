@@ -19,12 +19,8 @@
 
 #include "config.h"
 #include "PcmConvert.hxx"
-
-extern "C" {
-#include "pcm_channels.h"
-#include "pcm_format.h"
-}
-
+#include "PcmChannels.hxx"
+#include "PcmFormat.hxx"
 #include "pcm_pack.h"
 #include "audio_format.h"
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,29 +17,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PCM_DITHER_H
-#define MPD_PCM_DITHER_H
+#ifndef MPD_PCM_PRNG_HXX
+#define MPD_PCM_PRNG_HXX
 
-#include <stdint.h>
-
-struct pcm_dither {
-	int32_t error[3];
-	int32_t random;
-};
-
-static inline void
-pcm_dither_24_init(struct pcm_dither *dither)
+/**
+ * A very simple linear congruential PRNG.  It's good enough for PCM
+ * dithering.
+ */
+static unsigned long
+pcm_prng(unsigned long state)
 {
-	dither->error[0] = dither->error[1] = dither->error[2] = 0;
-	dither->random = 0;
+	return (state * 0x0019660dL + 0x3c6ef35fL) & 0xffffffffL;
 }
-
-void
-pcm_dither_24_to_16(struct pcm_dither *dither,
-		    int16_t *dest, const int32_t *src, const int32_t *src_end);
-
-void
-pcm_dither_32_to_16(struct pcm_dither *dither,
-		    int16_t *dest, const int32_t *src, const int32_t *src_end);
 
 #endif

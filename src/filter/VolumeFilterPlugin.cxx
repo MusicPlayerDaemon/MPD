@@ -24,7 +24,7 @@
 #include "filter_registry.h"
 #include "conf.h"
 #include "pcm_buffer.h"
-#include "pcm_volume.h"
+#include "PcmVolume.hxx"
 #include "audio_format.h"
 
 #include <assert.h>

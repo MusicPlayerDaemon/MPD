@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "pcm_volume.h"
-#include "pcm_utils.h"
+#include "PcmVolume.hxx"
+#include "PcmUtils.hxx"
 #include "audio_format.h"
 
 #include <glib.h>
@@ -163,23 +163,27 @@ pcm_volume(void *buffer, size_t length,
 		return false;
 
 	case SAMPLE_FORMAT_S8:
-		pcm_volume_change_8(buffer, end, volume);
+		pcm_volume_change_8((int8_t *)buffer, (const int8_t *)end,
+				    volume);
 		return true;
 
 	case SAMPLE_FORMAT_S16:
-		pcm_volume_change_16(buffer, end, volume);
+		pcm_volume_change_16((int16_t *)buffer, (const int16_t *)end,
+				     volume);
 		return true;
 
 	case SAMPLE_FORMAT_S24_P32:
-		pcm_volume_change_24(buffer, end, volume);
+		pcm_volume_change_24((int32_t *)buffer, (const int32_t *)end,
+				     volume);
 		return true;
 
 	case SAMPLE_FORMAT_S32:
-		pcm_volume_change_32(buffer, end, volume);
+		pcm_volume_change_32((int32_t *)buffer, (const int32_t *)end,
+				     volume);
 		return true;
 
 	case SAMPLE_FORMAT_FLOAT:
-		pcm_volume_change_float(buffer, end,
+		pcm_volume_change_float((float *)buffer, (const float *)end,
 					pcm_volume_to_float(volume));
 		return true;
 	}

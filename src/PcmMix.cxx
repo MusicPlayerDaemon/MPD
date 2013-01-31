@@ -18,17 +18,12 @@
  */
 
 #include "config.h"
-#include "pcm_mix.h"
-#include "pcm_volume.h"
-#include "pcm_utils.h"
+#include "PcmMix.hxx"
+#include "PcmVolume.hxx"
+#include "PcmUtils.hxx"
 #include "audio_format.h"
 
-#include <glib.h>
-
 #include <math.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "pcm"
 
 static void
 pcm_add_vol_8(int8_t *buffer1, const int8_t *buffer2,
@@ -144,7 +139,8 @@ pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
 		return true;
 
 	case SAMPLE_FORMAT_FLOAT:
-		pcm_add_vol_float(buffer1, buffer2, size / 4,
+		pcm_add_vol_float((float *)buffer1, (const float *)buffer2,
+				  size / 4,
 				  pcm_volume_to_float(vol1),
 				  pcm_volume_to_float(vol2));
 		return true;
@@ -249,7 +245,8 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 		return true;
 
 	case SAMPLE_FORMAT_FLOAT:
-		pcm_add_float(buffer1, buffer2, size / 4);
+		pcm_add_float((float *)buffer1, (const float *)buffer2,
+			      size / 4);
 		return true;
 	}
 

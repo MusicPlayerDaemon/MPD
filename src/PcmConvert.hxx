@@ -20,10 +20,11 @@
 #ifndef PCM_CONVERT_HXX
 #define PCM_CONVERT_HXX
 
+#include "PcmDither.hxx"
+
 extern "C" {
 #include "pcm_dsd.h"
 #include "pcm_resample.h"
-#include "pcm_dither.h"
 #include "pcm_buffer.h"
 }
 

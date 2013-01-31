@@ -18,10 +18,7 @@
  */
 
 #include "test_pcm_all.hxx"
-
-extern "C" {
-#include "pcm_dither.h"
-}
+#include "PcmDither.hxx"
 
 #include <glib.h>
 

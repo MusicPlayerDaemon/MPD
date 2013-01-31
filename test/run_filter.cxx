@@ -23,7 +23,7 @@
 #include "AudioParser.hxx"
 #include "audio_format.h"
 #include "filter_plugin.h"
-#include "pcm_volume.h"
+#include "PcmVolume.hxx"
 #include "mixer_control.h"
 #include "stdbin.h"
 

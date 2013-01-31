@@ -333,17 +333,17 @@ libpcm_a_SOURCES = \
 	src/dsd2pcm/dsd2pcm.c src/dsd2pcm/dsd2pcm.h \
 	src/pcm_dsd.c src/pcm_dsd.h \
 	src/pcm_dsd_usb.c src/pcm_dsd_usb.h \
-	src/pcm_volume.c src/pcm_volume.h \
-	src/pcm_mix.c src/pcm_mix.h \
-	src/pcm_channels.c src/pcm_channels.h \
+	src/PcmVolume.cxx src/PcmVolume.hxx \
+	src/PcmMix.cxx src/PcmMix.hxx \
+	src/PcmChannels.cxx src/PcmChannels.hxx \
 	src/pcm_pack.c src/pcm_pack.h \
-	src/pcm_format.c src/pcm_format.h \
+	src/PcmFormat.cxx src/PcmFormat.hxx \
 	src/pcm_resample.c src/pcm_resample.h \
 	src/pcm_resample_fallback.c \
 	src/pcm_resample_internal.h \
-	src/pcm_dither.c src/pcm_dither.h \
-	src/pcm_prng.h \
-	src/pcm_utils.h
+	src/PcmDither.cxx src/PcmDither.hxx \
+	src/PcmPrng.hxx \
+	src/PcmUtils.hxx
 libpcm_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(SAMPLERATE_CFLAGS)
 

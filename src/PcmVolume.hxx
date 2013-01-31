@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,10 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef PCM_VOLUME_H
-#define PCM_VOLUME_H
+#ifndef MPD_PCM_VOLUME_HXX
+#define MPD_PCM_VOLUME_HXX
 
-#include "pcm_prng.h"
+#include "PcmPrng.hxx"
 #include "audio_format.h"
 
 #include <stdint.h>
@@ -65,10 +65,6 @@ pcm_volume_dither(void)
 	return (r & 511) - ((r >> 9) & 511);
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * Adjust the volume of the specified PCM buffer.
  *
@@ -82,9 +78,5 @@ bool
 pcm_volume(void *buffer, size_t length,
 	   enum sample_format format,
 	   int volume);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

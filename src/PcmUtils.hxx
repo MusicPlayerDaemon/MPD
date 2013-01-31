@@ -29,10 +29,11 @@
  * function to convert a source pointer and a byte count to an "end"
  * pointer for use in loops.
  */
-static inline const void *
-pcm_end_pointer(const void *p, size_t size)
+template<typename T>
+static inline const T *
+pcm_end_pointer(const T *p, size_t size)
 {
-	return (const char *)p + size;
+	return (const T *)((const uint8_t *)p + size);
 }
 
 /**

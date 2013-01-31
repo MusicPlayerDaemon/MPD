@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "MixerAll.hxx"
-#include "pcm_volume.h"
 #include "OutputAll.hxx"
+#include "PcmVolume.hxx"
 
 extern "C" {
 #include "mixer_control.h"

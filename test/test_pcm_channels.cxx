@@ -19,9 +19,7 @@
 
 #include "config.h"
 #include "test_pcm_all.hxx"
-extern "C" {
-#include "pcm_channels.h"
-}
+#include "PcmChannels.hxx"
 #include "pcm_buffer.h"
 
 #include <glib.h>

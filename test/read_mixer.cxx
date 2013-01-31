@@ -25,7 +25,7 @@ extern "C" {
 #include "filter_registry.h"
 }
 
-#include "pcm_volume.h"
+#include "PcmVolume.hxx"
 #include "GlobalEvents.hxx"
 #include "Main.hxx"
 #include "event/Loop.hxx"
