@@ -24,17 +24,17 @@
 
 #include <assert.h>
 
+template<typename D, typename S>
 static void
-pcm_convert_channels_16_1_to_2(int16_t *restrict dest,
-			       const int16_t *restrict src,
-			       const int16_t *restrict src_end)
+MonoToStereo(D dest, S src, S end)
 {
-	while (src < src_end) {
-		int16_t value = *src++;
+	while (src != end) {
+		const auto value = *src++;
 
 		*dest++ = value;
 		*dest++ = value;
 	}
+
 }
 
 static void
@@ -88,7 +88,7 @@ pcm_convert_channels_16(struct pcm_buffer *buffer,
 	const int16_t *src_end = pcm_end_pointer(src, src_size);
 
 	if (src_channels == 1 && dest_channels == 2)
-		pcm_convert_channels_16_1_to_2(dest, src, src_end);
+		MonoToStereo(dest, src, src_end);
 	else if (src_channels == 2 && dest_channels == 1)
 		pcm_convert_channels_16_2_to_1(dest, src, src_end);
 	else if (dest_channels == 2)
@@ -98,19 +98,6 @@ pcm_convert_channels_16(struct pcm_buffer *buffer,
 		return NULL;
 
 	return dest;
-}
-
-static void
-pcm_convert_channels_24_1_to_2(int32_t *restrict dest,
-			       const int32_t *restrict src,
-			       const int32_t *restrict src_end)
-{
-	while (src < src_end) {
-		int32_t value = *src++;
-
-		*dest++ = value;
-		*dest++ = value;
-	}
 }
 
 static void
@@ -165,7 +152,7 @@ pcm_convert_channels_24(struct pcm_buffer *buffer,
 		pcm_end_pointer(src, src_size);
 
 	if (src_channels == 1 && dest_channels == 2)
-		pcm_convert_channels_24_1_to_2(dest, src, src_end);
+		MonoToStereo(dest, src, src_end);
 	else if (src_channels == 2 && dest_channels == 1)
 		pcm_convert_channels_24_2_to_1(dest, src, src_end);
 	else if (dest_channels == 2)
@@ -175,13 +162,6 @@ pcm_convert_channels_24(struct pcm_buffer *buffer,
 		return NULL;
 
 	return dest;
-}
-
-static void
-pcm_convert_channels_32_1_to_2(int32_t *dest, const int32_t *src,
-			       const int32_t *src_end)
-{
-	pcm_convert_channels_24_1_to_2(dest, src, src_end);
 }
 
 static void
@@ -235,7 +215,7 @@ pcm_convert_channels_32(struct pcm_buffer *buffer,
 		pcm_end_pointer(src, src_size);
 
 	if (src_channels == 1 && dest_channels == 2)
-		pcm_convert_channels_32_1_to_2(dest, src, src_end);
+		MonoToStereo(dest, src, src_end);
 	else if (src_channels == 2 && dest_channels == 1)
 		pcm_convert_channels_32_2_to_1(dest, src, src_end);
 	else if (dest_channels == 2)
@@ -245,15 +225,6 @@ pcm_convert_channels_32(struct pcm_buffer *buffer,
 		return NULL;
 
 	return dest;
-}
-
-static void
-pcm_convert_channels_float_1_to_2(float *dest, const float *src,
-			       const float *src_end)
-{
-	pcm_convert_channels_24_1_to_2((int32_t *)dest,
-				       (const int32_t *)src,
-				       (const int32_t *)src_end);
 }
 
 static void
@@ -306,7 +277,7 @@ pcm_convert_channels_float(struct pcm_buffer *buffer,
 	const float *src_end = (const float *)pcm_end_pointer(src, src_size);
 
 	if (src_channels == 1 && dest_channels == 2)
-		pcm_convert_channels_float_1_to_2(dest, src, src_end);
+		MonoToStereo(dest, src, src_end);
 	else if (src_channels == 2 && dest_channels == 1)
 		pcm_convert_channels_float_2_to_1(dest, src, src_end);
 	else if (dest_channels == 2)
