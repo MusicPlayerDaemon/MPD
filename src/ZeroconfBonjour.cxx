@@ -47,8 +47,9 @@ public:
 	}
 
 protected:
-	virtual void OnSocketReady(gcc_unused unsigned flags) override {
+	virtual bool OnSocketReady(gcc_unused unsigned flags) override {
 		DNSServiceProcessResult(service_ref);
+		return false;
 	}
 };
 
