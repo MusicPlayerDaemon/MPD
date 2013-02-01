@@ -63,7 +63,7 @@ const ConfigTemplate config_templates[] = {
 	{ "max_command_list_size", false, false },
 	{ "max_output_buffer_size", false, false },
 	{ "filesystem_charset", false, false },
-	{ "id3vtrue_encoding", false, false },
+	{ "id3v1_encoding", false, false },
 	{ "metadata_to_use", false, false },
 	{ "save_absolute_paths_in_playlists", false, false },
 	{ "decoder", true, true },
