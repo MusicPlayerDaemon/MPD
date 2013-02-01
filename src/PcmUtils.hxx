@@ -71,8 +71,8 @@ gcc_const
 static inline T
 PcmClamp(U x)
 {
-	constexpr U MIN_VALUE = -(1 << (bits - 1));
-	constexpr U MAX_VALUE = (1 << (bits - 1)) - 1;
+	constexpr U MIN_VALUE = -(U(1) << (bits - 1));
+	constexpr U MAX_VALUE = (U(1) << (bits - 1)) - 1;
 
 	typedef std::numeric_limits<T> limits;
 	static_assert(MIN_VALUE >= limits::min(), "out of range");
