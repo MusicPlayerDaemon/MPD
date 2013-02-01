@@ -25,72 +25,36 @@
 
 #include <math.h>
 
-static void
-pcm_add_vol_8(int8_t *buffer1, const int8_t *buffer2,
-	      unsigned num_samples, int volume1, int volume2)
+template<typename T, typename U, unsigned bits>
+static T
+PcmAddVolume(T _a, T _b, int volume1, int volume2)
 {
-	while (num_samples > 0) {
-		int32_t sample1 = *buffer1;
-		int32_t sample2 = *buffer2++;
+	U a(_a), b(_b);
 
-		sample1 = ((sample1 * volume1 + sample2 * volume2) +
-			   pcm_volume_dither() + PCM_VOLUME_1 / 2)
-			/ PCM_VOLUME_1;
+	U c = ((a * volume1 + b * volume2) +
+	       pcm_volume_dither() + PCM_VOLUME_1 / 2)
+		/ PCM_VOLUME_1;
 
-		*buffer1++ = PcmClamp<int8_t, int32_t, 8>(sample1);
-		--num_samples;
-	}
+	return PcmClamp<T, U, bits>(c);
 }
 
+template<typename T, typename U, unsigned bits>
 static void
-pcm_add_vol_16(int16_t *buffer1, const int16_t *buffer2,
-	       unsigned num_samples, int volume1, int volume2)
+PcmAddVolume(T *a, const T *b, unsigned n, int volume1, int volume2)
 {
-	while (num_samples > 0) {
-		int32_t sample1 = *buffer1;
-		int32_t sample2 = *buffer2++;
-
-		sample1 = ((sample1 * volume1 + sample2 * volume2) +
-			   pcm_volume_dither() + PCM_VOLUME_1 / 2)
-			/ PCM_VOLUME_1;
-
-		*buffer1++ = PcmClamp<int16_t, int32_t, 16>(sample1);
-		--num_samples;
-	}
+	for (size_t i = 0; i != n; ++i)
+		a[i] = PcmAddVolume<T, U, bits>(a[i], b[i], volume1, volume2);
 }
 
+template<typename T, typename U, unsigned bits>
 static void
-pcm_add_vol_24(int32_t *buffer1, const int32_t *buffer2,
-	       unsigned num_samples, unsigned volume1, unsigned volume2)
+PcmAddVolumeVoid(void *a, const void *b, size_t size, int volume1, int volume2)
 {
-	while (num_samples > 0) {
-		int64_t sample1 = *buffer1;
-		int64_t sample2 = *buffer2++;
+	constexpr size_t sample_size = sizeof(T);
+	assert(size % sample_size == 0);
 
-		sample1 = ((sample1 * volume1 + sample2 * volume2) +
-			   pcm_volume_dither() + PCM_VOLUME_1 / 2)
-			/ PCM_VOLUME_1;
-
-		*buffer1++ = PcmClamp<int32_t, int64_t, 24>(sample1);
-		--num_samples;
-	}
-}
-
-static void
-pcm_add_vol_32(int32_t *buffer1, const int32_t *buffer2,
-	       unsigned num_samples, unsigned volume1, unsigned volume2)
-{
-	while (num_samples > 0) {
-		int64_t sample1 = *buffer1;
-		int64_t sample2 = *buffer2++;
-
-		sample1 = ((sample1 * volume1 + sample2 * volume2) +
-			   pcm_volume_dither() + PCM_VOLUME_1 / 2)
-			/ PCM_VOLUME_1;
-
-		*buffer1++ = PcmClamp<int32_t, int64_t, 32>(sample1);
-		--num_samples;
-	}
+	PcmAddVolume<T, U, bits>((T *)a, (const T *)b, size / sample_size,
+				 volume1, volume2);
 }
 
 static void
@@ -119,23 +83,23 @@ pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
 		return false;
 
 	case SAMPLE_FORMAT_S8:
-		pcm_add_vol_8((int8_t *)buffer1, (const int8_t *)buffer2,
-			      size, vol1, vol2);
+		PcmAddVolumeVoid<int8_t, int32_t, 8>(buffer1, buffer2, size,
+						     vol1, vol2);
 		return true;
 
 	case SAMPLE_FORMAT_S16:
-		pcm_add_vol_16((int16_t *)buffer1, (const int16_t *)buffer2,
-			       size / 2, vol1, vol2);
+		PcmAddVolumeVoid<int16_t, int32_t, 16>(buffer1, buffer2, size,
+						       vol1, vol2);
 		return true;
 
 	case SAMPLE_FORMAT_S24_P32:
-		pcm_add_vol_24((int32_t *)buffer1, (const int32_t *)buffer2,
-			       size / 4, vol1, vol2);
+		PcmAddVolumeVoid<int32_t, int64_t, 24>(buffer1, buffer2, size,
+						       vol1, vol2);
 		return true;
 
 	case SAMPLE_FORMAT_S32:
-		pcm_add_vol_32((int32_t *)buffer1, (const int32_t *)buffer2,
-			       size / 4, vol1, vol2);
+		PcmAddVolumeVoid<int32_t, int64_t, 32>(buffer1, buffer2, size,
+						       vol1, vol2);
 		return true;
 
 	case SAMPLE_FORMAT_FLOAT:
@@ -151,60 +115,30 @@ pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
 	return false;
 }
 
-static void
-pcm_add_8(int8_t *buffer1, const int8_t *buffer2, unsigned num_samples)
+template<typename T, typename U, unsigned bits>
+static T
+PcmAdd(T _a, T _b)
 {
-	while (num_samples > 0) {
-		int32_t sample1 = *buffer1;
-		int32_t sample2 = *buffer2++;
-
-		sample1 += sample2;
-
-		*buffer1++ = PcmClamp<int8_t, int32_t, 8>(sample1);
-		--num_samples;
-	}
+	U a(_a), b(_b);
+	return PcmClamp<T, U, bits>(a + b);
 }
 
+template<typename T, typename U, unsigned bits>
 static void
-pcm_add_16(int16_t *buffer1, const int16_t *buffer2, unsigned num_samples)
+PcmAdd(T *a, const T *b, unsigned n)
 {
-	while (num_samples > 0) {
-		int32_t sample1 = *buffer1;
-		int32_t sample2 = *buffer2++;
-
-		sample1 += sample2;
-
-		*buffer1++ = PcmClamp<int16_t, int32_t, 16>(sample1);
-		--num_samples;
-	}
+	for (size_t i = 0; i != n; ++i)
+		a[i] = PcmAdd<T, U, bits>(a[i], b[i]);
 }
 
+template<typename T, typename U, unsigned bits>
 static void
-pcm_add_24(int32_t *buffer1, const int32_t *buffer2, unsigned num_samples)
+PcmAddVoid(void *a, const void *b, size_t size)
 {
-	while (num_samples > 0) {
-		int64_t sample1 = *buffer1;
-		int64_t sample2 = *buffer2++;
+	constexpr size_t sample_size = sizeof(T);
+	assert(size % sample_size == 0);
 
-		sample1 += sample2;
-
-		*buffer1++ = PcmClamp<int32_t, int64_t, 24>(sample1);
-		--num_samples;
-	}
-}
-
-static void
-pcm_add_32(int32_t *buffer1, const int32_t *buffer2, unsigned num_samples)
-{
-	while (num_samples > 0) {
-		int64_t sample1 = *buffer1;
-		int64_t sample2 = *buffer2++;
-
-		sample1 += sample2;
-
-		*buffer1++ = PcmClamp<int32_t, int64_t, 32>(sample1);
-		--num_samples;
-	}
+	PcmAdd<T, U, bits>((T *)a, (const T *)b, size / sample_size);
 }
 
 static void
@@ -229,19 +163,19 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 		return false;
 
 	case SAMPLE_FORMAT_S8:
-		pcm_add_8((int8_t *)buffer1, (const int8_t *)buffer2, size);
+		PcmAddVoid<int8_t, int32_t, 8>(buffer1, buffer2, size);
 		return true;
 
 	case SAMPLE_FORMAT_S16:
-		pcm_add_16((int16_t *)buffer1, (const int16_t *)buffer2, size / 2);
+		PcmAddVoid<int16_t, int32_t, 16>(buffer1, buffer2, size);
 		return true;
 
 	case SAMPLE_FORMAT_S24_P32:
-		pcm_add_24((int32_t *)buffer1, (const int32_t *)buffer2, size / 4);
+		PcmAddVoid<int32_t, int64_t, 24>(buffer1, buffer2, size);
 		return true;
 
 	case SAMPLE_FORMAT_S32:
-		pcm_add_32((int32_t *)buffer1, (const int32_t *)buffer2, size / 4);
+		PcmAddVoid<int32_t, int64_t, 32>(buffer1, buffer2, size);
 		return true;
 
 	case SAMPLE_FORMAT_FLOAT:
