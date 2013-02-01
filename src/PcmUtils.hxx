@@ -42,30 +42,6 @@ pcm_end_pointer(const T *p, size_t size)
  * Check if the value is within the range of the provided bit size,
  * and caps it if necessary.
  */
-static inline int32_t
-pcm_range(int32_t sample, unsigned bits)
-{
-	if (gcc_unlikely(sample < (-1 << (bits - 1))))
-		return -1 << (bits - 1);
-	if (gcc_unlikely(sample >= (1 << (bits - 1))))
-		return (1 << (bits - 1)) - 1;
-	return sample;
-}
-
-/**
- * Check if the value is within the range of the provided bit size,
- * and caps it if necessary.
- */
-static inline int64_t
-pcm_range_64(int64_t sample, unsigned bits)
-{
-	if (gcc_unlikely(sample < ((int64_t)-1 << (bits - 1))))
-		return (int64_t)-1 << (bits - 1);
-	if (gcc_unlikely(sample >= ((int64_t)1 << (bits - 1))))
-		return ((int64_t)1 << (bits - 1)) - 1;
-	return sample;
-}
-
 template<typename T, typename U, unsigned bits>
 gcc_const
 static inline T

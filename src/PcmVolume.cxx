@@ -40,7 +40,7 @@ pcm_volume_change_8(int8_t *buffer, const int8_t *end, int volume)
 			  PCM_VOLUME_1 / 2)
 			/ PCM_VOLUME_1;
 
-		*buffer++ = pcm_range(sample, 8);
+		*buffer++ = PcmClamp<int8_t, int16_t, 8>(sample);
 	}
 }
 
@@ -54,7 +54,7 @@ pcm_volume_change_16(int16_t *buffer, const int16_t *end, int volume)
 			  PCM_VOLUME_1 / 2)
 			/ PCM_VOLUME_1;
 
-		*buffer++ = pcm_range(sample, 16);
+		*buffer++ = PcmClamp<int16_t, int32_t, 16>(sample);
 	}
 }
 
@@ -107,7 +107,7 @@ pcm_volume_change_24(int32_t *buffer, const int32_t *end, int volume)
 			  PCM_VOLUME_1 / 2)
 			/ PCM_VOLUME_1;
 #endif
-		*buffer++ = pcm_range(sample, 24);
+		*buffer++ = PcmClamp<int32_t, int32_t, 24>(sample);
 	}
 }
 
@@ -127,7 +127,7 @@ pcm_volume_change_32(int32_t *buffer, const int32_t *end, int volume)
 		sample = (sample * volume + pcm_volume_dither() +
 			  PCM_VOLUME_1 / 2)
 			/ PCM_VOLUME_1;
-		*buffer++ = pcm_range_64(sample, 32);
+		*buffer++ = PcmClamp<int32_t, int64_t, 32>(sample);
 #endif
 	}
 }

@@ -37,7 +37,7 @@ pcm_add_vol_8(int8_t *buffer1, const int8_t *buffer2,
 			   pcm_volume_dither() + PCM_VOLUME_1 / 2)
 			/ PCM_VOLUME_1;
 
-		*buffer1++ = pcm_range(sample1, 8);
+		*buffer1++ = PcmClamp<int8_t, int32_t, 8>(sample1);
 		--num_samples;
 	}
 }
@@ -54,7 +54,7 @@ pcm_add_vol_16(int16_t *buffer1, const int16_t *buffer2,
 			   pcm_volume_dither() + PCM_VOLUME_1 / 2)
 			/ PCM_VOLUME_1;
 
-		*buffer1++ = pcm_range(sample1, 16);
+		*buffer1++ = PcmClamp<int16_t, int32_t, 16>(sample1);
 		--num_samples;
 	}
 }
@@ -71,7 +71,7 @@ pcm_add_vol_24(int32_t *buffer1, const int32_t *buffer2,
 			   pcm_volume_dither() + PCM_VOLUME_1 / 2)
 			/ PCM_VOLUME_1;
 
-		*buffer1++ = pcm_range(sample1, 24);
+		*buffer1++ = PcmClamp<int32_t, int64_t, 24>(sample1);
 		--num_samples;
 	}
 }
@@ -88,7 +88,7 @@ pcm_add_vol_32(int32_t *buffer1, const int32_t *buffer2,
 			   pcm_volume_dither() + PCM_VOLUME_1 / 2)
 			/ PCM_VOLUME_1;
 
-		*buffer1++ = pcm_range_64(sample1, 32);
+		*buffer1++ = PcmClamp<int32_t, int64_t, 32>(sample1);
 		--num_samples;
 	}
 }
@@ -160,7 +160,7 @@ pcm_add_8(int8_t *buffer1, const int8_t *buffer2, unsigned num_samples)
 
 		sample1 += sample2;
 
-		*buffer1++ = pcm_range(sample1, 8);
+		*buffer1++ = PcmClamp<int8_t, int32_t, 8>(sample1);
 		--num_samples;
 	}
 }
@@ -174,7 +174,7 @@ pcm_add_16(int16_t *buffer1, const int16_t *buffer2, unsigned num_samples)
 
 		sample1 += sample2;
 
-		*buffer1++ = pcm_range(sample1, 16);
+		*buffer1++ = PcmClamp<int16_t, int32_t, 16>(sample1);
 		--num_samples;
 	}
 }
@@ -188,7 +188,7 @@ pcm_add_24(int32_t *buffer1, const int32_t *buffer2, unsigned num_samples)
 
 		sample1 += sample2;
 
-		*buffer1++ = pcm_range(sample1, 24);
+		*buffer1++ = PcmClamp<int32_t, int64_t, 24>(sample1);
 		--num_samples;
 	}
 }
@@ -202,7 +202,7 @@ pcm_add_32(int32_t *buffer1, const int32_t *buffer2, unsigned num_samples)
 
 		sample1 += sample2;
 
-		*buffer1++ = pcm_range_64(sample1, 32);
+		*buffer1++ = PcmClamp<int32_t, int64_t, 32>(sample1);
 		--num_samples;
 	}
 }
