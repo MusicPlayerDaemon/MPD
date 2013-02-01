@@ -65,4 +65,16 @@ test_pcm_format_16_to_32();
 void
 test_pcm_format_float();
 
+void
+test_pcm_mix_8();
+
+void
+test_pcm_mix_16();
+
+void
+test_pcm_mix_24();
+
+void
+test_pcm_mix_32();
+
 #endif

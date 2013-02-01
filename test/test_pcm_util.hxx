@@ -51,6 +51,7 @@ template<typename T, size_t N>
 class TestDataBuffer : std::array<T, N> {
 public:
 	using typename std::array<T, N>::const_pointer;
+	using std::array<T, N>::size;
 	using std::array<T, N>::begin;
 	using std::array<T, N>::end;
 	using std::array<T, N>::operator[];
@@ -66,3 +67,19 @@ public:
 		return begin();
 	}
 };
+
+template<typename T>
+bool
+AssertEqualWithTolerance(const T &a, const T &b, unsigned tolerance)
+{
+	g_assert_cmpint(a.size(), ==, b.size());
+
+	for (unsigned i = 0; i < a.size(); ++i) {
+		int64_t x = a[i], y = b[i];
+
+		g_assert_cmpint(x, >=, y - int64_t(tolerance));
+		g_assert_cmpint(x, <=, y + int64_t(tolerance));
+	}
+
+	return true;
+}

@@ -43,5 +43,10 @@ main(int argc, char **argv)
 	g_test_add_func("/pcm/format/16_to_32", test_pcm_format_16_to_32);
 	g_test_add_func("/pcm/format/float", test_pcm_format_float);
 
+	g_test_add_func("/pcm/mix/8", test_pcm_mix_8);
+	g_test_add_func("/pcm/mix/16", test_pcm_mix_16);
+	g_test_add_func("/pcm/mix/24", test_pcm_mix_24);
+	g_test_add_func("/pcm/mix/32", test_pcm_mix_32);
+
 	g_test_run();
 }
