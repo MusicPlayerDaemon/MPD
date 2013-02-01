@@ -20,7 +20,7 @@
 #ifndef MPD_CONVERT_FILTER_PLUGIN_HXX
 #define MPD_CONVERT_FILTER_PLUGIN_HXX
 
-struct filter;
+class Filter;
 struct audio_format;
 
 /**
@@ -30,7 +30,6 @@ struct audio_format;
  * the last in a chain.
  */
 void
-convert_filter_set(struct filter *filter,
-		   const audio_format *out_audio_format);
+convert_filter_set(Filter *filter, const audio_format &out_audio_format);
 
 #endif

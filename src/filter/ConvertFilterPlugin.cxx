@@ -31,114 +31,89 @@
 #include <assert.h>
 #include <string.h>
 
-struct ConvertFilter {
-	struct filter base;
-
+class ConvertFilter final : public Filter {
 	/**
 	 * The input audio format; PCM data is passed to the filter()
 	 * method in this format.
 	 */
-	struct audio_format in_audio_format;
+	audio_format in_audio_format;
 
 	/**
 	 * The output audio format; the consumer of this plugin
 	 * expects PCM data in this format.  This defaults to
 	 * #in_audio_format, and can be set with convert_filter_set().
 	 */
-	struct audio_format out_audio_format;
+	audio_format out_audio_format;
 
 	Manual<PcmConvert> state;
 
-	ConvertFilter() {
-		filter_init(&base, &convert_filter_plugin);
+public:
+	void Set(const audio_format &_out_audio_format) {
+		assert(audio_format_valid(&in_audio_format));
+		assert(audio_format_valid(&out_audio_format));
+		assert(audio_format_valid(&_out_audio_format));
+
+		out_audio_format = _out_audio_format;
 	}
+
+	virtual const audio_format *Open(audio_format &af, GError **error_r);
+	virtual void Close();
+	virtual const void *FilterPCM(const void *src, size_t src_size,
+				      size_t *dest_size_r, GError **error_r);
 };
 
-static struct filter *
+static Filter *
 convert_filter_init(gcc_unused const struct config_param *param,
 		    gcc_unused GError **error_r)
 {
-	ConvertFilter *filter = new ConvertFilter();
-	return &filter->base;
+	return new ConvertFilter();
 }
 
-static void
-convert_filter_finish(struct filter *filter)
+const struct audio_format *
+ConvertFilter::Open(audio_format &audio_format, gcc_unused GError **error_r)
 {
-	delete filter;
+	assert(audio_format_valid(&audio_format));
+
+	in_audio_format = out_audio_format = audio_format;
+	state.Construct();
+
+	return &in_audio_format;
 }
 
-static const struct audio_format *
-convert_filter_open(struct filter *_filter, struct audio_format *audio_format,
-		    gcc_unused GError **error_r)
+void
+ConvertFilter::Close()
 {
-	ConvertFilter *filter = (ConvertFilter *)_filter;
+	state.Destruct();
 
-	assert(audio_format_valid(audio_format));
-
-	filter->in_audio_format = filter->out_audio_format = *audio_format;
-	filter->state.Construct();
-
-	return &filter->in_audio_format;
+	poison_undefined(&in_audio_format, sizeof(in_audio_format));
+	poison_undefined(&out_audio_format, sizeof(out_audio_format));
 }
 
-static void
-convert_filter_close(struct filter *_filter)
+const void *
+ConvertFilter::FilterPCM(const void *src, size_t src_size,
+			 size_t *dest_size_r, GError **error_r)
 {
-	ConvertFilter *filter = (ConvertFilter *)_filter;
-
-	filter->state.Destruct();
-
-	poison_undefined(&filter->in_audio_format,
-			 sizeof(filter->in_audio_format));
-	poison_undefined(&filter->out_audio_format,
-			 sizeof(filter->out_audio_format));
-}
-
-static const void *
-convert_filter_filter(struct filter *_filter, const void *src, size_t src_size,
-		     size_t *dest_size_r, GError **error_r)
-{
-	ConvertFilter *filter = (ConvertFilter *)_filter;
-	const void *dest;
-
-	if (audio_format_equals(&filter->in_audio_format,
-				&filter->out_audio_format)) {
+	if (audio_format_equals(&in_audio_format, &out_audio_format)) {
 		/* optimized special case: no-op */
 		*dest_size_r = src_size;
 		return src;
 	}
 
-	dest = filter->state->Convert(&filter->in_audio_format,
-				      src, src_size,
-				      &filter->out_audio_format, dest_size_r,
-				      error_r);
-	if (dest == NULL)
-		return NULL;
-
-	return dest;
+	return state->Convert(&in_audio_format,
+			      src, src_size,
+			      &out_audio_format, dest_size_r,
+			      error_r);
 }
 
 const struct filter_plugin convert_filter_plugin = {
 	"convert",
 	convert_filter_init,
-	convert_filter_finish,
-	convert_filter_open,
-	convert_filter_close,
-	convert_filter_filter,
 };
 
 void
-convert_filter_set(struct filter *_filter,
-		   const struct audio_format *out_audio_format)
+convert_filter_set(Filter *_filter, const audio_format &out_audio_format)
 {
 	ConvertFilter *filter = (ConvertFilter *)_filter;
 
-	assert(filter != NULL);
-	assert(audio_format_valid(&filter->in_audio_format));
-	assert(audio_format_valid(&filter->out_audio_format));
-	assert(out_audio_format != NULL);
-	assert(audio_format_valid(out_audio_format));
-
-	filter->out_audio_format = *out_audio_format;
+	filter->Set(out_audio_format);
 }

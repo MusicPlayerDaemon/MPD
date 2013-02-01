@@ -25,14 +25,47 @@
 #ifndef MPD_FILTER_INTERNAL_HXX
 #define MPD_FILTER_INTERNAL_HXX
 
-struct filter {
-	const struct filter_plugin *plugin;
-};
+struct audio_format;
 
-static inline void
-filter_init(struct filter *filter, const struct filter_plugin *plugin)
-{
-	filter->plugin = plugin;
-}
+class Filter {
+public:
+	virtual ~Filter() {}
+
+	/**
+	 * Opens the filter, preparing it for FilterPCM().
+	 *
+	 * @param filter the filter object
+	 * @param audio_format the audio format of incoming data; the
+	 * plugin may modify the object to enforce another input
+	 * format
+	 * @param error location to store the error occurring, or NULL
+	 * to ignore errors.
+	 * @return the format of outgoing data
+	 */
+	virtual const audio_format *Open(audio_format &af,
+					 GError **error_r) = 0;
+
+	/**
+	 * Closes the filter.  After that, you may call Open() again.
+	 */
+	virtual void Close() = 0;
+
+	/**
+	 * Filters a block of PCM data.
+	 *
+	 * @param filter the filter object
+	 * @param src the input buffer
+	 * @param src_size the size of #src_buffer in bytes
+	 * @param dest_size_r the size of the returned buffer
+	 * @param error location to store the error occurring, or NULL
+	 * to ignore errors.
+	 * @return the destination buffer on success (will be
+	 * invalidated by filter_close() or filter_filter()), NULL on
+	 * error
+	 */
+	virtual const void *FilterPCM(const void *src, size_t src_size,
+				      size_t *dest_size_r,
+				      GError **error_r) = 0;
+};
 
 #endif

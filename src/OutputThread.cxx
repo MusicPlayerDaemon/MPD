@@ -27,7 +27,7 @@ extern "C" {
 }
 
 #include "notify.hxx"
-#include "FilterPlugin.hxx"
+#include "FilterInternal.hxx"
 #include "filter/ConvertFilterPlugin.hxx"
 #include "filter/ReplayGainFilterPlugin.hxx"
 #include "PlayerControl.hxx"
@@ -98,26 +98,24 @@ ao_disable(struct audio_output *ao)
 }
 
 static const struct audio_format *
-ao_filter_open(struct audio_output *ao,
-	       struct audio_format *audio_format,
+ao_filter_open(struct audio_output *ao, audio_format &format,
 	       GError **error_r)
 {
-	assert(audio_format_valid(audio_format));
+	assert(audio_format_valid(&format));
 
 	/* the replay_gain filter cannot fail here */
 	if (ao->replay_gain_filter != NULL)
-		filter_open(ao->replay_gain_filter, audio_format, error_r);
+		ao->replay_gain_filter->Open(format, error_r);
 	if (ao->other_replay_gain_filter != NULL)
-		filter_open(ao->other_replay_gain_filter, audio_format,
-			    error_r);
+		ao->other_replay_gain_filter->Open(format, error_r);
 
 	const struct audio_format *af
-		= filter_open(ao->filter, audio_format, error_r);
+		= ao->filter->Open(format, error_r);
 	if (af == NULL) {
 		if (ao->replay_gain_filter != NULL)
-			filter_close(ao->replay_gain_filter);
+			ao->replay_gain_filter->Close();
 		if (ao->other_replay_gain_filter != NULL)
-			filter_close(ao->other_replay_gain_filter);
+			ao->other_replay_gain_filter->Close();
 	}
 
 	return af;
@@ -127,11 +125,11 @@ static void
 ao_filter_close(struct audio_output *ao)
 {
 	if (ao->replay_gain_filter != NULL)
-		filter_close(ao->replay_gain_filter);
+		ao->replay_gain_filter->Close();
 	if (ao->other_replay_gain_filter != NULL)
-		filter_close(ao->other_replay_gain_filter);
+		ao->other_replay_gain_filter->Close();
 
-	filter_close(ao->filter);
+	ao->filter->Close();
 }
 
 static void
@@ -139,7 +137,6 @@ ao_open(struct audio_output *ao)
 {
 	bool success;
 	GError *error = NULL;
-	const struct audio_format *filter_audio_format;
 	struct audio_format_string af_string;
 
 	assert(!ao->open);
@@ -164,7 +161,8 @@ ao_open(struct audio_output *ao)
 
 	/* open the filter */
 
-	filter_audio_format = ao_filter_open(ao, &ao->in_audio_format, &error);
+	const audio_format *filter_audio_format =
+		ao_filter_open(ao, ao->in_audio_format, &error);
 	if (filter_audio_format == NULL) {
 		g_warning("Failed to open filter for \"%s\" [%s]: %s",
 			  ao->name, ao->plugin->name, error->message);
@@ -196,7 +194,7 @@ ao_open(struct audio_output *ao)
 		return;
 	}
 
-	convert_filter_set(ao->convert_filter, &ao->out_audio_format);
+	convert_filter_set(ao->convert_filter, ao->out_audio_format);
 
 	ao->open = true;
 
@@ -244,7 +242,7 @@ ao_reopen_filter(struct audio_output *ao)
 	GError *error = NULL;
 
 	ao_filter_close(ao);
-	filter_audio_format = ao_filter_open(ao, &ao->in_audio_format, &error);
+	filter_audio_format = ao_filter_open(ao, ao->in_audio_format, &error);
 	if (filter_audio_format == NULL) {
 		g_warning("Failed to open filter for \"%s\" [%s]: %s",
 			  ao->name, ao->plugin->name, error->message);
@@ -267,7 +265,7 @@ ao_reopen_filter(struct audio_output *ao)
 		return;
 	}
 
-	convert_filter_set(ao->convert_filter, &ao->out_audio_format);
+	convert_filter_set(ao->convert_filter, ao->out_audio_format);
 }
 
 static void
@@ -322,7 +320,7 @@ ao_wait(struct audio_output *ao)
 
 static const void *
 ao_chunk_data(struct audio_output *ao, const struct music_chunk *chunk,
-	      struct filter *replay_gain_filter,
+	      Filter *replay_gain_filter,
 	      unsigned *replay_gain_serial_p,
 	      size_t *length_r)
 {
@@ -347,8 +345,8 @@ ao_chunk_data(struct audio_output *ao, const struct music_chunk *chunk,
 		}
 
 		GError *error = NULL;
-		data = filter_filter(replay_gain_filter, data, length,
-				     &length, &error);
+		data = replay_gain_filter->FilterPCM(data, length,
+						     &length, &error);
 		if (data == NULL) {
 			g_warning("\"%s\" [%s] failed to filter: %s",
 				  ao->name, ao->plugin->name, error->message);
@@ -421,7 +419,7 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 
 	/* apply filter chain */
 
-	data = filter_filter(ao->filter, data, length, &length, &error);
+	data = ao->filter->FilterPCM(data, length, &length, &error);
 	if (data == NULL) {
 		g_warning("\"%s\" [%s] failed to filter: %s",
 			  ao->name, ao->plugin->name, error->message);

@@ -100,7 +100,7 @@ static struct mixer *
 audio_output_load_mixer(struct audio_output *ao,
 			const struct config_param *param,
 			const struct mixer_plugin *plugin,
-			struct filter *filter_chain,
+			Filter &filter_chain,
 			GError **error_r)
 {
 	struct mixer *mixer;
@@ -120,7 +120,7 @@ audio_output_load_mixer(struct audio_output *ao,
 		mixer = mixer_new(&software_mixer_plugin, NULL, NULL, NULL);
 		assert(mixer != NULL);
 
-		filter_chain_append(filter_chain,
+		filter_chain_append(filter_chain, "software_mixer",
 				    software_mixer_get_filter(mixer));
 		return mixer;
 	}
@@ -190,15 +190,15 @@ ao_base_init(struct audio_output *ao,
 	/* create the normalization filter (if configured) */
 
 	if (config_get_bool(CONF_VOLUME_NORMALIZATION, false)) {
-		struct filter *normalize_filter =
+		Filter *normalize_filter =
 			filter_new(&normalize_filter_plugin, NULL, NULL);
 		assert(normalize_filter != NULL);
 
-		filter_chain_append(ao->filter,
+		filter_chain_append(*ao->filter, "normalize",
 				    autoconvert_filter_new(normalize_filter));
 	}
 
-	filter_chain_parse(ao->filter,
+	filter_chain_parse(*ao->filter,
 	                   config_get_block_string(param, AUDIO_FILTERS, ""),
 	                   &error
 	);
@@ -258,7 +258,7 @@ audio_output_setup(struct audio_output *ao, const struct config_param *param,
 	GError *error = NULL;
 	ao->mixer = audio_output_load_mixer(ao, param,
 					    ao->plugin->mixer_plugin,
-					    ao->filter, &error);
+					    *ao->filter, &error);
 	if (ao->mixer == NULL && error != NULL) {
 		g_warning("Failed to initialize hardware mixer for '%s': %s",
 			  ao->name, error->message);
@@ -285,7 +285,7 @@ audio_output_setup(struct audio_output *ao, const struct config_param *param,
 	ao->convert_filter = filter_new(&convert_filter_plugin, NULL, NULL);
 	assert(ao->convert_filter != NULL);
 
-	filter_chain_append(ao->filter, ao->convert_filter);
+	filter_chain_append(*ao->filter, "convert", ao->convert_filter);
 
 	return true;
 }

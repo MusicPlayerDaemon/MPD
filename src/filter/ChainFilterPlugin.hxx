@@ -27,12 +27,12 @@
 #ifndef MPD_FILTER_CHAIN_HXX
 #define MPD_FILTER_CHAIN_HXX
 
-struct filter;
+class Filter;
 
 /**
  * Creates a new filter chain.
  */
-struct filter *
+Filter *
 filter_chain_new(void);
 
 /**
@@ -43,6 +43,6 @@ filter_chain_new(void);
  * @param filter the filter to be appended to #chain
  */
 void
-filter_chain_append(struct filter *chain, struct filter *filter);
+filter_chain_append(Filter &chain, const char *name, Filter *filter);
 
 #endif

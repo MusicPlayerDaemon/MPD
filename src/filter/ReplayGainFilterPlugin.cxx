@@ -38,9 +38,7 @@ extern "C" {
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "replay_gain"
 
-struct replay_gain_filter {
-	struct filter filter;
-
+class ReplayGainFilter final : public Filter {
 	/**
 	 * If set, then this hardware mixer is used for applying
 	 * replay gain, instead of the software volume library.
@@ -71,9 +69,56 @@ struct replay_gain_filter {
 	 */
 	unsigned volume;
 
-	struct audio_format audio_format;
+	struct audio_format format;
 
 	struct pcm_buffer buffer;
+
+public:
+	ReplayGainFilter()
+		:mixer(nullptr), mode(REPLAY_GAIN_OFF),
+		volume(PCM_VOLUME_1) {
+		replay_gain_info_init(&info);
+	}
+
+	void SetMixer(struct mixer *_mixer, unsigned _base) {
+		assert(_mixer == NULL || (_base > 0 && _base <= 100));
+
+		mixer = _mixer;
+		base = _base;
+
+		Update();
+	}
+
+	void SetInfo(const struct replay_gain_info *_info) {
+		if (_info != NULL) {
+			info = *_info;
+			replay_gain_info_complete(&info);
+		} else
+			replay_gain_info_init(&info);
+
+		Update();
+	}
+
+	void SetMode(enum replay_gain_mode _mode) {
+		if (_mode == mode)
+			/* no change */
+			return;
+
+		g_debug("replay gain mode has changed %d->%d\n", mode, _mode);
+
+		mode = _mode;
+		Update();
+	}
+
+	/**
+	 * Recalculates the new volume after a property was changed.
+	 */
+	void Update();
+
+	virtual const audio_format *Open(audio_format &af, GError **error_r);
+	virtual void Close();
+	virtual const void *FilterPCM(const void *src, size_t src_size,
+				      size_t *dest_size_r, GError **error_r);
 };
 
 static inline GQuark
@@ -82,30 +127,27 @@ replay_gain_quark(void)
 	return g_quark_from_static_string("replay_gain");
 }
 
-/**
- * Recalculates the new volume after a property was changed.
- */
-static void
-replay_gain_filter_update(struct replay_gain_filter *filter)
+void
+ReplayGainFilter::Update()
 {
-	if (filter->mode != REPLAY_GAIN_OFF) {
-		float scale = replay_gain_tuple_scale(&filter->info.tuples[filter->mode],
+	if (mode != REPLAY_GAIN_OFF) {
+		float scale = replay_gain_tuple_scale(&info.tuples[mode],
 		    replay_gain_preamp, replay_gain_missing_preamp, replay_gain_limit);
 		g_debug("scale=%f\n", (double)scale);
 
-		filter->volume = pcm_float_to_volume(scale);
+		volume = pcm_float_to_volume(scale);
 	} else
-		filter->volume = PCM_VOLUME_1;
+		volume = PCM_VOLUME_1;
 
-	if (filter->mixer != NULL) {
+	if (mixer != NULL) {
 		/* update the hardware mixer volume */
 
-		unsigned volume = (filter->volume * filter->base) / PCM_VOLUME_1;
-		if (volume > 100)
-			volume = 100;
+		unsigned _volume = (volume * base) / PCM_VOLUME_1;
+		if (_volume > 100)
+			_volume = 100;
 
 		GError *error = NULL;
-		if (!mixer_set_volume(filter->mixer, volume, &error)) {
+		if (!mixer_set_volume(mixer, _volume, &error)) {
 			g_warning("Failed to update hardware mixer: %s",
 				  error->message);
 			g_error_free(error);
@@ -113,70 +155,41 @@ replay_gain_filter_update(struct replay_gain_filter *filter)
 	}
 }
 
-static struct filter *
+static Filter *
 replay_gain_filter_init(gcc_unused const struct config_param *param,
 			gcc_unused GError **error_r)
 {
-	struct replay_gain_filter *filter = g_new(struct replay_gain_filter, 1);
-
-	filter_init(&filter->filter, &replay_gain_filter_plugin);
-	filter->mixer = NULL;
-
-	filter->mode = REPLAY_GAIN_OFF;
-	replay_gain_info_init(&filter->info);
-	filter->volume = PCM_VOLUME_1;
-
-	return &filter->filter;
+	return new ReplayGainFilter();
 }
 
-static void
-replay_gain_filter_finish(struct filter *filter)
+const audio_format *
+ReplayGainFilter::Open(audio_format &af, gcc_unused GError **error_r)
 {
-	g_free(filter);
+	format = af;
+	pcm_buffer_init(&buffer);
+
+	return &format;
 }
 
-static const struct audio_format *
-replay_gain_filter_open(struct filter *_filter,
-			struct audio_format *audio_format,
-			gcc_unused GError **error_r)
+void
+ReplayGainFilter::Close()
 {
-	struct replay_gain_filter *filter =
-		(struct replay_gain_filter *)_filter;
-
-	filter->audio_format = *audio_format;
-	pcm_buffer_init(&filter->buffer);
-
-	return &filter->audio_format;
+	pcm_buffer_deinit(&buffer);
 }
 
-static void
-replay_gain_filter_close(struct filter *_filter)
+const void *
+ReplayGainFilter::FilterPCM(const void *src, size_t src_size,
+			    size_t *dest_size_r, GError **error_r)
 {
-	struct replay_gain_filter *filter =
-		(struct replay_gain_filter *)_filter;
-
-	pcm_buffer_deinit(&filter->buffer);
-}
-
-static const void *
-replay_gain_filter_filter(struct filter *_filter,
-			  const void *src, size_t src_size,
-			  size_t *dest_size_r, GError **error_r)
-{
-	struct replay_gain_filter *filter =
-		(struct replay_gain_filter *)_filter;
-	bool success;
-	void *dest;
 
 	*dest_size_r = src_size;
 
-	if (filter->volume == PCM_VOLUME_1)
+	if (volume == PCM_VOLUME_1)
 		/* optimized special case: 100% volume = no-op */
 		return src;
 
-	dest = pcm_buffer_get(&filter->buffer, src_size);
-
-	if (filter->volume <= 0) {
+	void *dest = pcm_buffer_get(&buffer, src_size);
+	if (volume <= 0) {
 		/* optimized special case: 0% volume = memset(0) */
 		/* XXX is this valid for all sample formats? What
 		   about floating point? */
@@ -186,9 +199,9 @@ replay_gain_filter_filter(struct filter *_filter,
 
 	memcpy(dest, src, src_size);
 
-	success = pcm_volume(dest, src_size,
-			     sample_format(filter->audio_format.format),
-			     filter->volume);
+	bool success = pcm_volume(dest, src_size,
+				  sample_format(format.format),
+				  volume);
 	if (!success) {
 		g_set_error(error_r, replay_gain_quark(), 0,
 			    "pcm_volume() has failed");
@@ -201,55 +214,29 @@ replay_gain_filter_filter(struct filter *_filter,
 const struct filter_plugin replay_gain_filter_plugin = {
 	"replay_gain",
 	replay_gain_filter_init,
-	replay_gain_filter_finish,
-	replay_gain_filter_open,
-	replay_gain_filter_close,
-	replay_gain_filter_filter,
 };
 
 void
-replay_gain_filter_set_mixer(struct filter *_filter, struct mixer *mixer,
+replay_gain_filter_set_mixer(Filter *_filter, struct mixer *mixer,
 			     unsigned base)
 {
-	struct replay_gain_filter *filter =
-		(struct replay_gain_filter *)_filter;
+	ReplayGainFilter *filter = (ReplayGainFilter *)_filter;
 
-	assert(mixer == NULL || (base > 0 && base <= 100));
-
-	filter->mixer = mixer;
-	filter->base = base;
-
-	replay_gain_filter_update(filter);
+	filter->SetMixer(mixer, base);
 }
 
 void
-replay_gain_filter_set_info(struct filter *_filter,
-			    const struct replay_gain_info *info)
+replay_gain_filter_set_info(Filter *_filter, const replay_gain_info *info)
 {
-	struct replay_gain_filter *filter =
-		(struct replay_gain_filter *)_filter;
+	ReplayGainFilter *filter = (ReplayGainFilter *)_filter;
 
-	if (info != NULL) {
-		filter->info = *info;
-		replay_gain_info_complete(&filter->info);
-	} else
-		replay_gain_info_init(&filter->info);
-
-	replay_gain_filter_update(filter);
+	filter->SetInfo(info);
 }
 
 void
-replay_gain_filter_set_mode(struct filter *_filter, enum replay_gain_mode mode)
+replay_gain_filter_set_mode(Filter *_filter, enum replay_gain_mode mode)
 {
-	struct replay_gain_filter *filter =
-		(struct replay_gain_filter *)_filter;
+	ReplayGainFilter *filter = (ReplayGainFilter *)_filter;
 
-	if (mode == filter->mode)
-		/* no change */
-		return;
-
-	g_debug("replay gain mode has changed %d->%d\n", filter->mode, mode);
-
-	filter->mode = mode;
-	replay_gain_filter_update(filter);
+	filter->SetMode(mode);
 }

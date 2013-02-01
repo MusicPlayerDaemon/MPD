@@ -53,14 +53,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-
-struct route_filter {
-
-	/**
-	 * Inherit (and support cast to/from) filter
-	 */
-	struct filter base;
-
+class RouteFilter final : public Filter {
 	/**
 	 * The minimum number of channels we need for output
 	 * to be able to perform all the copies the user has specified
@@ -110,21 +103,31 @@ struct route_filter {
 	 */
 	struct pcm_buffer output_buffer;
 
+public:
+	RouteFilter():sources(nullptr) {}
+	~RouteFilter() {
+		g_free(sources);
+	}
+
+	/**
+	 * Parse the "routes" section, a string on the form
+	 *  a>b, c>d, e>f, ...
+	 * where a... are non-unique, non-negative integers
+	 * and input channel a gets copied to output channel b, etc.
+	 * @param param the configuration block to read
+	 * @param filter a route_filter whose min_channels and sources[] to set
+	 * @return true on success, false on error
+	 */
+	bool Configure(const config_param *param, GError **error_r);
+
+	virtual const audio_format *Open(audio_format &af, GError **error_r);
+	virtual void Close();
+	virtual const void *FilterPCM(const void *src, size_t src_size,
+				      size_t *dest_size_r, GError **error_r);
 };
 
-/**
- * Parse the "routes" section, a string on the form
- *  a>b, c>d, e>f, ...
- * where a... are non-unique, non-negative integers
- * and input channel a gets copied to output channel b, etc.
- * @param param the configuration block to read
- * @param filter a route_filter whose min_channels and sources[] to set
- * @return true on success, false on error
- */
-static bool
-route_filter_parse(const struct config_param *param,
-		   struct route_filter *filter,
-		   GError **error_r) {
+bool
+RouteFilter::Configure(const config_param *param, GError **error_r) {
 
 	/* TODO:
 	 * With a more clever way of marking "don't copy to output N",
@@ -139,8 +142,8 @@ route_filter_parse(const struct config_param *param,
 	const char *routes =
 		config_get_block_string(param, "routes", "0>0, 1>1");
 
-	filter->min_input_channels = 0;
-	filter->min_output_channels = 0;
+	min_input_channels = 0;
+	min_output_channels = 0;
 
 	tokens = g_strsplit(routes, ",", 255);
 	number_of_copies = g_strv_length(tokens);
@@ -171,28 +174,28 @@ route_filter_parse(const struct config_param *param,
 
 		// Keep track of the highest channel numbers seen
 		// as either in- or outputs
-		if (source >= filter->min_input_channels)
-			filter->min_input_channels = source + 1;
-		if (dest   >= filter->min_output_channels)
-			filter->min_output_channels = dest + 1;
+		if (source >= min_input_channels)
+			min_input_channels = source + 1;
+		if (dest >= min_output_channels)
+			min_output_channels = dest + 1;
 
 		g_strfreev(sd);
 	}
 
-	if (!audio_valid_channel_count(filter->min_output_channels)) {
+	if (!audio_valid_channel_count(min_output_channels)) {
 		g_strfreev(tokens);
 		g_set_error(error_r, audio_format_quark(), 0,
 			    "Invalid number of output channels requested: %d",
-			    filter->min_output_channels);
+			    min_output_channels);
 		return false;
 	}
 
 	// Allocate a map of "copy nothing to me"
-	filter->sources = (signed char *)
-		g_malloc(filter->min_output_channels * sizeof(signed char));
+	sources = (signed char *)
+		g_malloc(min_output_channels * sizeof(signed char));
 
-	for (int i=0; i<filter->min_output_channels; ++i)
-		filter->sources[i] = -1;
+	for (int i=0; i<min_output_channels; ++i)
+		sources[i] = -1;
 
 	// Run through the spec again, and save the
 	// actual mapping output <- input
@@ -216,7 +219,7 @@ route_filter_parse(const struct config_param *param,
 		source = strtol(sd[0], NULL, 10);
 		dest = strtol(sd[1], NULL, 10);
 
-		filter->sources[dest] = source;
+		sources[dest] = source;
 
 		g_strfreev(sd);
 	}
@@ -226,73 +229,53 @@ route_filter_parse(const struct config_param *param,
 	return true;
 }
 
-static struct filter *
-route_filter_init(const struct config_param *param,
-		  gcc_unused GError **error_r)
+static Filter *
+route_filter_init(const config_param *param, GError **error_r)
 {
-	struct route_filter *filter = g_new(struct route_filter, 1);
-	filter_init(&filter->base, &route_filter_plugin);
+	RouteFilter *filter = new RouteFilter();
+	if (!filter->Configure(param, error_r)) {
+		delete filter;
+		return nullptr;
+	}
 
-	// Allocate and set the filter->sources[] array
-	route_filter_parse(param, filter, error_r);
-
-	return &filter->base;
+	return filter;
 }
 
-static void
-route_filter_finish(struct filter *_filter)
+const struct audio_format *
+RouteFilter::Open(audio_format &audio_format, gcc_unused GError **error_r)
 {
-	struct route_filter *filter = (struct route_filter *)_filter;
-
-	g_free(filter->sources);
-	g_free(filter);
-}
-
-static const struct audio_format *
-route_filter_open(struct filter *_filter, struct audio_format *audio_format,
-		  gcc_unused GError **error_r)
-{
-	struct route_filter *filter = (struct route_filter *)_filter;
-
 	// Copy the input format for later reference
-	filter->input_format = *audio_format;
-	filter->input_frame_size =
-		audio_format_frame_size(&filter->input_format);
+	input_format = audio_format;
+	input_frame_size = audio_format_frame_size(&input_format);
 
 	// Decide on an output format which has enough channels,
 	// and is otherwise identical
-	filter->output_format = *audio_format;
-	filter->output_format.channels = filter->min_output_channels;
+	output_format = audio_format;
+	output_format.channels = min_output_channels;
 
 	// Precalculate this simple value, to speed up allocation later
-	filter->output_frame_size =
-		audio_format_frame_size(&filter->output_format);
+	output_frame_size = audio_format_frame_size(&output_format);
 
 	// This buffer grows as needed
-	pcm_buffer_init(&filter->output_buffer);
+	pcm_buffer_init(&output_buffer);
 
-	return &filter->output_format;
+	return &output_format;
 }
 
-static void
-route_filter_close(struct filter *_filter)
+void
+RouteFilter::Close()
 {
-	struct route_filter *filter = (struct route_filter *)_filter;
-
-	pcm_buffer_deinit(&filter->output_buffer);
+	pcm_buffer_deinit(&output_buffer);
 }
 
-static const void *
-route_filter_filter(struct filter *_filter,
-		   const void *src, size_t src_size,
-		   size_t *dest_size_r, gcc_unused GError **error_r)
+const void *
+RouteFilter::FilterPCM(const void *src, size_t src_size,
+		       size_t *dest_size_r, gcc_unused GError **error_r)
 {
-	struct route_filter *filter = (struct route_filter *)_filter;
-
-	size_t number_of_frames = src_size / filter->input_frame_size;
+	size_t number_of_frames = src_size / input_frame_size;
 
 	size_t bytes_per_frame_per_channel =
-		audio_format_sample_size(&filter->input_format);
+		audio_format_sample_size(&input_format);
 
 	// A moving pointer that always refers to channel 0 in the input, at the currently handled frame
 	const uint8_t *base_source = (const uint8_t *)src;
@@ -301,18 +284,18 @@ route_filter_filter(struct filter *_filter,
 	uint8_t *chan_destination;
 
 	// Grow our reusable buffer, if needed, and set the moving pointer
-	*dest_size_r = number_of_frames * filter->output_frame_size;
+	*dest_size_r = number_of_frames * output_frame_size;
 	chan_destination = (uint8_t *)
-		pcm_buffer_get(&filter->output_buffer, *dest_size_r);
+		pcm_buffer_get(&output_buffer, *dest_size_r);
 
 
 	// Perform our copy operations, with N input channels and M output channels
 	for (unsigned int s=0; s<number_of_frames; ++s) {
 
 		// Need to perform one copy per output channel
-		for (unsigned int c=0; c<filter->min_output_channels; ++c) {
-			if (filter->sources[c] == -1 ||
-			    (unsigned)filter->sources[c] >= filter->input_format.channels) {
+		for (unsigned int c=0; c<min_output_channels; ++c) {
+			if (sources[c] == -1 ||
+			    (unsigned)sources[c] >= input_format.channels) {
 				// No source for this destination output,
 				// give it zeroes as input
 				memset(chan_destination,
@@ -322,7 +305,7 @@ route_filter_filter(struct filter *_filter,
 				// Get the data from channel sources[c]
 				// and copy it to the output
 				const uint8_t *data = base_source +
-					(filter->sources[c] * bytes_per_frame_per_channel);
+					(sources[c] * bytes_per_frame_per_channel);
 				memcpy(chan_destination,
 					  data,
 					  bytes_per_frame_per_channel);
@@ -333,18 +316,14 @@ route_filter_filter(struct filter *_filter,
 
 
 		// Go on to the next N input samples
-		base_source += filter->input_frame_size;
+		base_source += input_frame_size;
 	}
 
 	// Here it is, ladies and gentlemen! Rerouted data!
-	return (void *) filter->output_buffer.buffer;
+	return (void *) output_buffer.buffer;
 }
 
 const struct filter_plugin route_filter_plugin = {
 	"route",
 	route_filter_init,
-	route_filter_finish,
-	route_filter_open,
-	route_filter_close,
-	route_filter_filter,
 };

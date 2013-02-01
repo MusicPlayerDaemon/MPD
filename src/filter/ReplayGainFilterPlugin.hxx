@@ -22,7 +22,7 @@
 
 #include "replay_gain_info.h"
 
-struct filter;
+class Filter;
 struct mixer;
 
 /**
@@ -34,7 +34,7 @@ struct mixer;
  * (including).
  */
 void
-replay_gain_filter_set_mixer(struct filter *_filter, struct mixer *mixer,
+replay_gain_filter_set_mixer(Filter *_filter, struct mixer *mixer,
 			     unsigned base);
 
 /**
@@ -44,10 +44,9 @@ replay_gain_filter_set_mixer(struct filter *_filter, struct mixer *mixer,
  * gain data is available for the current song
  */
 void
-replay_gain_filter_set_info(struct filter *filter,
-			    const struct replay_gain_info *info);
+replay_gain_filter_set_info(Filter *filter, const replay_gain_info *info);
 
 void
-replay_gain_filter_set_mode(struct filter *filter, enum replay_gain_mode mode);
+replay_gain_filter_set_mode(Filter *filter, enum replay_gain_mode mode);
 
 #endif

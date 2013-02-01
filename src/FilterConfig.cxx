@@ -78,7 +78,7 @@ filter_plugin_config(const char *filter_template_name, GError **error_r)
  * @return the number of filters which were successfully added
  */
 unsigned int
-filter_chain_parse(struct filter *chain, const char *spec, GError **error_r)
+filter_chain_parse(Filter &chain, const char *spec, GError **error_r)
 {
 
 	// Split on comma
@@ -89,26 +89,27 @@ filter_chain_parse(struct filter *chain, const char *spec, GError **error_r)
 	// Add each name to the filter chain by instantiating an actual filter
 	char **template_names = tokens;
 	while (*template_names != NULL) {
-		struct filter *f;
-		const struct config_param *cfg;
-
 		// Squeeze whitespace
 		g_strstrip(*template_names);
 
-		cfg = filter_plugin_config(*template_names, error_r);
+		const struct config_param *cfg =
+			filter_plugin_config(*template_names, error_r);
 		if (cfg == NULL) {
 			// The error has already been set, just stop.
 			break;
 		}
 
 		// Instantiate one of those filter plugins with the template name as a hint
-		f = filter_configured_new(cfg, error_r);
+		Filter *f = filter_configured_new(cfg, error_r);
 		if (f == NULL) {
 			// The error has already been set, just stop.
 			break;
 		}
 
-		filter_chain_append(chain, f);
+		const char *plugin_name =
+			config_get_block_string(cfg, "plugin", "unknown");
+
+		filter_chain_append(chain, plugin_name, f);
 		++added_filters;
 
 		++template_names;

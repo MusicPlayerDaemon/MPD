@@ -21,13 +21,13 @@
 #define MPD_SOFTWARE_MIXER_PLUGIN_HXX
 
 struct mixer;
-struct filter;
+class Filter;
 
 /**
  * Returns the (volume) filter associated with this mixer.  All users
  * of this mixer plugin should install this filter.
  */
-struct filter *
+Filter *
 software_mixer_get_filter(struct mixer *mixer);
 
 #endif

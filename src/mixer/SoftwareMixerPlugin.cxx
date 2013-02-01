@@ -32,7 +32,7 @@ struct software_mixer {
 	/** the base mixer class */
 	struct mixer base;
 
-	struct filter *filter;
+	Filter *filter;
 
 	unsigned volume;
 };
@@ -100,7 +100,7 @@ const struct mixer_plugin software_mixer_plugin = {
 	true,
 };
 
-struct filter *
+Filter *
 software_mixer_get_filter(struct mixer *mixer)
 {
 	struct software_mixer *sm = (struct software_mixer *)mixer;

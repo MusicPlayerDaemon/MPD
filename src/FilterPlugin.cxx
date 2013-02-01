@@ -24,13 +24,9 @@
 #include "conf.h"
 #include "ConfigQuark.hxx"
 
-#ifndef NDEBUG
-#include "audio_format.h"
-#endif
-
 #include <assert.h>
 
-struct filter *
+Filter *
 filter_new(const struct filter_plugin *plugin,
 	   const struct config_param *param, GError **error_r)
 {
@@ -40,7 +36,7 @@ filter_new(const struct filter_plugin *plugin,
 	return plugin->init(param, error_r);
 }
 
-struct filter *
+Filter *
 filter_configured_new(const struct config_param *param, GError **error_r)
 {
 	const char *plugin_name;
@@ -64,54 +60,4 @@ filter_configured_new(const struct config_param *param, GError **error_r)
 	}
 
 	return filter_new(plugin, param, error_r);
-}
-
-void
-filter_free(struct filter *filter)
-{
-	assert(filter != NULL);
-
-	filter->plugin->finish(filter);
-}
-
-const struct audio_format *
-filter_open(struct filter *filter, struct audio_format *audio_format,
-	    GError **error_r)
-{
-	const struct audio_format *out_audio_format;
-
-	assert(filter != NULL);
-	assert(audio_format != NULL);
-	assert(audio_format_valid(audio_format));
-	assert(error_r == NULL || *error_r == NULL);
-
-	out_audio_format = filter->plugin->open(filter, audio_format, error_r);
-
-	assert(out_audio_format == NULL || audio_format_valid(audio_format));
-	assert(out_audio_format == NULL ||
-	       audio_format_valid(out_audio_format));
-
-	return out_audio_format;
-}
-
-void
-filter_close(struct filter *filter)
-{
-	assert(filter != NULL);
-
-	filter->plugin->close(filter);
-}
-
-const void *
-filter_filter(struct filter *filter, const void *src, size_t src_size,
-	      size_t *dest_size_r,
-	      GError **error_r)
-{
-	assert(filter != NULL);
-	assert(src != NULL);
-	assert(src_size > 0);
-	assert(dest_size_r != NULL);
-	assert(error_r == NULL || *error_r == NULL);
-
-	return filter->plugin->filter(filter, src, src_size, dest_size_r, error_r);
 }

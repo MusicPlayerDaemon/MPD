@@ -27,6 +27,12 @@
 
 #include <time.h>
 
+#ifdef __cplusplus
+class Filter;
+#else
+typedef void *Filter;
+#endif
+
 struct config_param;
 
 enum audio_output_command {
@@ -156,13 +162,13 @@ struct audio_output {
 	 * The filter object of this audio output.  This is an
 	 * instance of chain_filter_plugin.
 	 */
-	struct filter *filter;
+	Filter *filter;
 
 	/**
 	 * The replay_gain_filter_plugin instance of this audio
 	 * output.
 	 */
-	struct filter *replay_gain_filter;
+	Filter *replay_gain_filter;
 
 	/**
 	 * The serial number of the last replay gain info.  0 means no
@@ -175,7 +181,7 @@ struct audio_output {
 	 * output, to be applied to the second chunk during
 	 * cross-fading.
 	 */
-	struct filter *other_replay_gain_filter;
+	Filter *other_replay_gain_filter;
 
 	/**
 	 * The serial number of the last replay gain info by the
@@ -189,7 +195,7 @@ struct audio_output {
 	 * for converting the input data into the appropriate format
 	 * for this audio output.
 	 */
-	struct filter *convert_filter;
+	Filter *convert_filter;
 
 	/**
 	 * The thread handle, or NULL if the output thread isn't

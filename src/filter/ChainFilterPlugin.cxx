@@ -31,20 +31,39 @@
 
 #include <assert.h>
 
-struct ChainFilter {
-	/** the base class */
-	struct filter base;
+class ChainFilter final : public Filter {
+	struct Child {
+		const char *name;
+		Filter *filter;
 
-	std::list<struct filter *> children;
+		Child(const char *_name, Filter *_filter)
+			:name(_name), filter(_filter) {}
+		~Child() {
+			delete filter;
+		}
 
-	ChainFilter() {
-		filter_init(&base, &chain_filter_plugin);
+		Child(const Child &) = delete;
+		Child &operator=(const Child &) = delete;
+	};
+
+	std::list<Child> children;
+
+public:
+	void Append(const char *name, Filter *filter) {
+		children.emplace_back(name, filter);
 	}
 
-	~ChainFilter() {
-		for (auto i : children)
-			filter_free(i);
-	}
+	virtual const audio_format *Open(audio_format &af, GError **error_r);
+	virtual void Close();
+	virtual const void *FilterPCM(const void *src, size_t src_size,
+				      size_t *dest_size_r, GError **error_r);
+
+private:
+	/**
+	 * Close all filters in the chain until #until is reached.
+	 * #until itself is not closed.
+	 */
+	void CloseUntil(const Filter *until);
 };
 
 static inline GQuark
@@ -53,37 +72,23 @@ filter_quark(void)
 	return g_quark_from_static_string("filter");
 }
 
-static struct filter *
+static Filter *
 chain_filter_init(gcc_unused const struct config_param *param,
 		  gcc_unused GError **error_r)
 {
-	ChainFilter *chain = new ChainFilter();
-
-	return &chain->base;
+	return new ChainFilter();
 }
 
-static void
-chain_filter_finish(struct filter *_filter)
+void
+ChainFilter::CloseUntil(const Filter *until)
 {
-	ChainFilter *chain = (ChainFilter *)_filter;
-
-	delete chain;
-}
-
-/**
- * Close all filters in the chain until #until is reached.  #until
- * itself is not closed.
- */
-static void
-chain_close_until(ChainFilter *chain, const struct filter *until)
-{
-	for (auto filter : chain->children) {
-		if (filter == until)
+	for (auto &child : children) {
+		if (child.filter == until)
 			/* don't close this filter */
 			return;
 
 		/* close this filter */
-		filter_close(filter);
+		child.filter->Close();
 	}
 
 	/* this assertion fails if #until does not exist (anymore) */
@@ -91,43 +96,41 @@ chain_close_until(ChainFilter *chain, const struct filter *until)
 }
 
 static const struct audio_format *
-chain_open_child(struct filter *filter,
-		 const struct audio_format *prev_audio_format,
+chain_open_child(const char *name, Filter *filter,
+		 const audio_format &prev_audio_format,
 		 GError **error_r)
 {
-	struct audio_format conv_audio_format = *prev_audio_format;
-	const struct audio_format *next_audio_format;
-
-	next_audio_format = filter_open(filter, &conv_audio_format, error_r);
+	audio_format conv_audio_format = prev_audio_format;
+	const audio_format *next_audio_format =
+		filter->Open(conv_audio_format, error_r);
 	if (next_audio_format == NULL)
 		return NULL;
 
-	if (!audio_format_equals(&conv_audio_format, prev_audio_format)) {
+	if (!audio_format_equals(&conv_audio_format, &prev_audio_format)) {
 		struct audio_format_string s;
 
-		filter_close(filter);
+		filter->Close();
 		g_set_error(error_r, filter_quark(), 0,
 			    "Audio format not supported by filter '%s': %s",
-			    filter->plugin->name,
-			    audio_format_to_string(prev_audio_format, &s));
+			    name,
+			    audio_format_to_string(&prev_audio_format, &s));
 		return NULL;
 	}
 
 	return next_audio_format;
 }
 
-static const struct audio_format *
-chain_filter_open(struct filter *_filter, struct audio_format *in_audio_format,
-		  GError **error_r)
+const audio_format *
+ChainFilter::Open(audio_format &in_audio_format, GError **error_r)
 {
-	ChainFilter *chain = (ChainFilter *)_filter;
-	const struct audio_format *audio_format = in_audio_format;
+	const audio_format *audio_format = &in_audio_format;
 
-	for (auto filter : chain->children) {
-		audio_format = chain_open_child(filter, audio_format, error_r);
+	for (auto &child : children) {
+		audio_format = chain_open_child(child.name, child.filter,
+						*audio_format, error_r);
 		if (audio_format == NULL) {
 			/* rollback, close all children */
-			chain_close_until(chain, filter);
+			CloseUntil(child.filter);
 			return NULL;
 		}
 	}
@@ -136,26 +139,22 @@ chain_filter_open(struct filter *_filter, struct audio_format *in_audio_format,
 	return audio_format;
 }
 
-static void
-chain_filter_close(struct filter *_filter)
+void
+ChainFilter::Close()
 {
-	ChainFilter *chain = (ChainFilter *)_filter;
-
-	for (auto filter : chain->children)
-		filter_close(filter);
+	for (auto &child : children)
+		child.filter->Close();
 }
 
-static const void *
-chain_filter_filter(struct filter *_filter,
-		    const void *src, size_t src_size,
-		    size_t *dest_size_r, GError **error_r)
+const void *
+ChainFilter::FilterPCM(const void *src, size_t src_size,
+		       size_t *dest_size_r, GError **error_r)
 {
-	ChainFilter *chain = (ChainFilter *)_filter;
-
-	for (auto filter : chain->children) {
+	for (auto &child : children) {
 		/* feed the output of the previous filter as input
 		   into the current one */
-		src = filter_filter(filter, src, src_size, &src_size, error_r);
+		src = child.filter->FilterPCM(src, src_size, &src_size,
+					      error_r);
 		if (src == NULL)
 			return NULL;
 	}
@@ -168,26 +167,18 @@ chain_filter_filter(struct filter *_filter,
 const struct filter_plugin chain_filter_plugin = {
 	"chain",
 	chain_filter_init,
-	chain_filter_finish,
-	chain_filter_open,
-	chain_filter_close,
-	chain_filter_filter,
 };
 
-struct filter *
+Filter *
 filter_chain_new(void)
 {
-	struct filter *filter = filter_new(&chain_filter_plugin, NULL, NULL);
-	/* chain_filter_init() never fails */
-	assert(filter != NULL);
-
-	return filter;
+	return new ChainFilter();
 }
 
 void
-filter_chain_append(struct filter *_chain, struct filter *filter)
+filter_chain_append(Filter &_chain, const char *name, Filter *filter)
 {
-	ChainFilter *chain = (ChainFilter *)_chain;
+	ChainFilter &chain = (ChainFilter &)_chain;
 
-	chain->children.push_back(filter);
+	chain.Append(name, filter);
 }

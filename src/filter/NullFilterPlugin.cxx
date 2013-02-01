@@ -30,65 +30,31 @@
 #include "FilterRegistry.hxx"
 #include "gcc.h"
 
-#include <glib.h>
+class NullFilter final : public Filter {
+public:
+	virtual const audio_format *Open(audio_format &af,
+					 gcc_unused GError **error_r) {
+		return &af;
+	}
 
-struct null_filter {
-	struct filter filter;
+	virtual void Close() {}
+
+	virtual const void *FilterPCM(const void *src, size_t src_size,
+				      size_t *dest_size_r,
+				      gcc_unused GError **error_r) {
+		*dest_size_r = src_size;
+		return src;
+	}
 };
 
-static struct filter *
+static Filter *
 null_filter_init(gcc_unused const struct config_param *param,
 		 gcc_unused GError **error_r)
 {
-	struct null_filter *filter = g_new(struct null_filter, 1);
-
-	filter_init(&filter->filter, &null_filter_plugin);
-	return &filter->filter;
-}
-
-static void
-null_filter_finish(struct filter *_filter)
-{
-	struct null_filter *filter = (struct null_filter *)_filter;
-
-	g_free(filter);
-}
-
-static const struct audio_format *
-null_filter_open(struct filter *_filter, struct audio_format *audio_format,
-		 gcc_unused GError **error_r)
-{
-	struct null_filter *filter = (struct null_filter *)_filter;
-	(void)filter;
-
-	return audio_format;
-}
-
-static void
-null_filter_close(struct filter *_filter)
-{
-	struct null_filter *filter = (struct null_filter *)_filter;
-	(void)filter;
-}
-
-static const void *
-null_filter_filter(struct filter *_filter,
-		   const void *src, size_t src_size,
-		   size_t *dest_size_r, gcc_unused GError **error_r)
-{
-	struct null_filter *filter = (struct null_filter *)_filter;
-	(void)filter;
-
-	/* return the unmodified source buffer */
-	*dest_size_r = src_size;
-	return src;
+	return new NullFilter();
 }
 
 const struct filter_plugin null_filter_plugin = {
 	"null",
 	null_filter_init,
-	null_filter_finish,
-	null_filter_open,
-	null_filter_close,
-	null_filter_filter,
 };

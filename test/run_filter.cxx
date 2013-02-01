@@ -23,6 +23,7 @@
 #include "AudioParser.hxx"
 #include "audio_format.h"
 #include "FilterPlugin.hxx"
+#include "FilterInternal.hxx"
 #include "PcmVolume.hxx"
 #include "mixer_control.h"
 #include "stdbin.h"
@@ -66,11 +67,10 @@ find_named_config_block(ConfigOption option, const char *name)
 	return NULL;
 }
 
-static struct filter *
+static Filter *
 load_filter(const char *name)
 {
 	const struct config_param *param;
-	struct filter *filter;
 	GError *error = NULL;
 
 	param = find_named_config_block(CONF_AUDIO_FILTER, name);
@@ -79,7 +79,7 @@ load_filter(const char *name)
 		return nullptr;
 	}
 
-	filter = filter_configured_new(param, &error);
+	Filter *filter = filter_configured_new(param, &error);
 	if (filter == NULL) {
 		g_printerr("Failed to load filter: %s\n", error->message);
 		g_error_free(error);
@@ -95,7 +95,6 @@ int main(int argc, char **argv)
 	struct audio_format_string af_string;
 	bool success;
 	GError *error = NULL;
-	struct filter *filter;
 	const struct audio_format *out_audio_format;
 	char buffer[4096];
 
@@ -137,17 +136,17 @@ int main(int argc, char **argv)
 
 	/* initialize the filter */
 
-	filter = load_filter(argv[2]);
+	Filter *filter = load_filter(argv[2]);
 	if (filter == NULL)
 		return 1;
 
 	/* open the filter */
 
-	out_audio_format = filter_open(filter, &audio_format, &error);
+	out_audio_format = filter->Open(audio_format, &error);
 	if (out_audio_format == NULL) {
 		g_printerr("Failed to open filter: %s\n", error->message);
 		g_error_free(error);
-		filter_free(filter);
+		delete filter;
 		return 1;
 	}
 
@@ -165,28 +164,28 @@ int main(int argc, char **argv)
 		if (nbytes <= 0)
 			break;
 
-		dest = filter_filter(filter, buffer, (size_t)nbytes,
-				     &length, &error);
+		dest = filter->FilterPCM(buffer, (size_t)nbytes,
+					 &length, &error);
 		if (dest == NULL) {
 			g_printerr("Filter failed: %s\n", error->message);
-			filter_close(filter);
-			filter_free(filter);
+			filter->Close();
+			delete filter;
 			return 1;
 		}
 
 		nbytes = write(1, dest, length);
 		if (nbytes < 0) {
 			g_printerr("Failed to write: %s\n", g_strerror(errno));
-			filter_close(filter);
-			filter_free(filter);
+			filter->Close();
+			delete filter;
 			return 1;
 		}
 	}
 
 	/* cleanup and exit */
 
-	filter_close(filter);
-	filter_free(filter);
+	filter->Close();
+	delete filter;
 
 	config_global_finish();
 

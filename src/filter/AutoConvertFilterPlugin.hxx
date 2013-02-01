@@ -20,7 +20,7 @@
 #ifndef MPD_AUTOCONVERT_FILTER_PLUGIN_HXX
 #define MPD_AUTOCONVERT_FILTER_PLUGIN_HXX
 
-struct filter;
+class Filter;
 
 /**
  * Creates a new "autoconvert" filter.  When opened, it ensures that
@@ -28,7 +28,7 @@ struct filter;
  * requests a different format, it automatically creates a
  * convert_filter.
  */
-struct filter *
-autoconvert_filter_new(struct filter *filter);
+Filter *
+autoconvert_filter_new(Filter *filter);
 
 #endif

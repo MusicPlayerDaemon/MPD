@@ -20,12 +20,12 @@
 #ifndef MPD_VOLUME_FILTER_PLUGIN_HXX
 #define MPD_VOLUME_FILTER_PLUGIN_HXX
 
-struct filter;
+class Filter;
 
 unsigned
-volume_filter_get(const struct filter *filter);
+volume_filter_get(const Filter *filter);
 
 void
-volume_filter_set(struct filter *filter, unsigned volume);
+volume_filter_set(Filter *filter, unsigned volume);
 
 #endif

@@ -27,7 +27,7 @@
 
 #include "gerror.h"
 
-struct filter;
+class Filter;
 
 /**
  * Builds a filter chain from a configuration string on the form
@@ -39,6 +39,6 @@ struct filter;
  * @return the number of filters which were successfully added
  */
 unsigned int
-filter_chain_parse(struct filter *chain, const char *spec, GError **error_r);
+filter_chain_parse(Filter &chain, const char *spec, GError **error_r);
 
 #endif

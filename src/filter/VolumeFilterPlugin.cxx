@@ -30,17 +30,36 @@
 #include <assert.h>
 #include <string.h>
 
-struct volume_filter {
-	struct filter filter;
-
+class VolumeFilter final : public Filter {
 	/**
 	 * The current volume, from 0 to #PCM_VOLUME_1.
 	 */
 	unsigned volume;
 
-	struct audio_format audio_format;
+	struct audio_format format;
 
 	struct pcm_buffer buffer;
+
+public:
+	VolumeFilter()
+		:volume(PCM_VOLUME_1) {}
+
+	unsigned GetVolume() const {
+		assert(volume <= PCM_VOLUME_1);
+
+		return volume;
+	}
+
+	void SetVolume(unsigned _volume) {
+		assert(_volume <= PCM_VOLUME_1);
+
+		volume = _volume;
+	}
+
+	virtual const audio_format *Open(audio_format &af, GError **error_r);
+	virtual void Close();
+	virtual const void *FilterPCM(const void *src, size_t src_size,
+				      size_t *dest_size_r, GError **error_r);
 };
 
 static inline GQuark
@@ -49,61 +68,41 @@ volume_quark(void)
 	return g_quark_from_static_string("pcm_volume");
 }
 
-static struct filter *
+static Filter *
 volume_filter_init(gcc_unused const struct config_param *param,
 		   gcc_unused GError **error_r)
 {
-	struct volume_filter *filter = g_new(struct volume_filter, 1);
-
-	filter_init(&filter->filter, &volume_filter_plugin);
-	filter->volume = PCM_VOLUME_1;
-
-	return &filter->filter;
+	return new VolumeFilter();
 }
 
-static void
-volume_filter_finish(struct filter *filter)
+const struct audio_format *
+VolumeFilter::Open(audio_format &audio_format, gcc_unused GError **error_r)
 {
-	g_free(filter);
+	format = audio_format;
+	pcm_buffer_init(&buffer);
+
+	return &format;
 }
 
-static const struct audio_format *
-volume_filter_open(struct filter *_filter, struct audio_format *audio_format,
-		   gcc_unused GError **error_r)
+void
+VolumeFilter::Close()
 {
-	struct volume_filter *filter = (struct volume_filter *)_filter;
-
-	filter->audio_format = *audio_format;
-	pcm_buffer_init(&filter->buffer);
-
-	return &filter->audio_format;
+	pcm_buffer_deinit(&buffer);
 }
 
-static void
-volume_filter_close(struct filter *_filter)
+const void *
+VolumeFilter::FilterPCM(const void *src, size_t src_size,
+			size_t *dest_size_r, GError **error_r)
 {
-	struct volume_filter *filter = (struct volume_filter *)_filter;
-
-	pcm_buffer_deinit(&filter->buffer);
-}
-
-static const void *
-volume_filter_filter(struct filter *_filter, const void *src, size_t src_size,
-		     size_t *dest_size_r, GError **error_r)
-{
-	struct volume_filter *filter = (struct volume_filter *)_filter;
-	bool success;
-	void *dest;
-
 	*dest_size_r = src_size;
 
-	if (filter->volume >= PCM_VOLUME_1)
+	if (volume >= PCM_VOLUME_1)
 		/* optimized special case: 100% volume = no-op */
 		return src;
 
-	dest = pcm_buffer_get(&filter->buffer, src_size);
+	void *dest = pcm_buffer_get(&buffer, src_size);
 
-	if (filter->volume <= 0) {
+	if (volume <= 0) {
 		/* optimized special case: 0% volume = memset(0) */
 		/* XXX is this valid for all sample formats? What
 		   about floating point? */
@@ -113,9 +112,9 @@ volume_filter_filter(struct filter *_filter, const void *src, size_t src_size,
 
 	memcpy(dest, src, src_size);
 
-	success = pcm_volume(dest, src_size,
-			     sample_format(filter->audio_format.format),
-			     filter->volume);
+	bool success = pcm_volume(dest, src_size,
+				  sample_format(format.format),
+				  volume);
 	if (!success) {
 		g_set_error(error_r, volume_quark(), 0,
 			    "pcm_volume() has failed");
@@ -128,32 +127,22 @@ volume_filter_filter(struct filter *_filter, const void *src, size_t src_size,
 const struct filter_plugin volume_filter_plugin = {
 	"volume",
 	volume_filter_init,
-	volume_filter_finish,
-	volume_filter_open,
-	volume_filter_close,
-	volume_filter_filter,
 };
 
 unsigned
-volume_filter_get(const struct filter *_filter)
+volume_filter_get(const Filter *_filter)
 {
-	const struct volume_filter *filter =
-		(const struct volume_filter *)_filter;
+	const VolumeFilter *filter =
+		(const VolumeFilter *)_filter;
 
-	assert(filter->filter.plugin == &volume_filter_plugin);
-	assert(filter->volume <= PCM_VOLUME_1);
-
-	return filter->volume;
+	return filter->GetVolume();
 }
 
 void
-volume_filter_set(struct filter *_filter, unsigned volume)
+volume_filter_set(Filter *_filter, unsigned volume)
 {
-	struct volume_filter *filter = (struct volume_filter *)_filter;
+	VolumeFilter *filter = (VolumeFilter *)_filter;
 
-	assert(filter->filter.plugin == &volume_filter_plugin);
-	assert(volume <= PCM_VOLUME_1);
-
-	filter->volume = volume;
+	filter->SetVolume(volume);
 }
 
