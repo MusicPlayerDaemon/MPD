@@ -87,18 +87,4 @@ PcmClamp(U x)
 	return T(x);
 }
 
-gcc_const
-static inline int16_t
-pcm_clamp_16(int x)
-{
-	return PcmClamp<int16_t, int, 16>(x);
-}
-
-gcc_const
-static inline int32_t
-pcm_clamp_24(int x)
-{
-	return PcmClamp<int32_t, int, 24>(x);
-}
-
 #endif
