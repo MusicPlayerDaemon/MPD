@@ -30,7 +30,7 @@ extern "C" {
 
 #include "notify.hxx"
 #include "filter/ReplayGainFilterPlugin.hxx"
-#include "filter_plugin.h"
+#include "FilterPlugin.hxx"
 
 #include <assert.h>
 #include <stdlib.h>

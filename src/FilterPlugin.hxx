@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,12 +23,11 @@
  * plugin API for objects which filter raw PCM data.
  */
 
-#ifndef MPD_FILTER_PLUGIN_H
-#define MPD_FILTER_PLUGIN_H
+#ifndef MPD_FILTER_PLUGIN_HXX
+#define MPD_FILTER_PLUGIN_HXX
 
 #include "gerror.h"
 
-#include <stdbool.h>
 #include <stddef.h>
 
 struct config_param;
@@ -73,10 +72,6 @@ struct filter_plugin {
 			      size_t *dest_buffer_r,
 			      GError **error_r);
 };
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * Creates a new instance of the specified filter plugin.
@@ -150,9 +145,5 @@ const void *
 filter_filter(struct filter *filter, const void *src, size_t src_size,
 	      size_t *dest_size_r,
 	      GError **error_r);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

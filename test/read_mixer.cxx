@@ -22,9 +22,9 @@
 extern "C" {
 #include "mixer_control.h"
 #include "mixer_list.h"
-#include "filter_registry.h"
 }
 
+#include "FilterRegistry.hxx"
 #include "PcmVolume.hxx"
 #include "GlobalEvents.hxx"
 #include "Main.hxx"

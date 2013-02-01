@@ -22,7 +22,7 @@
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
 #include "audio_format.h"
-#include "filter_plugin.h"
+#include "FilterPlugin.hxx"
 #include "PcmVolume.hxx"
 #include "mixer_control.h"
 #include "stdbin.h"

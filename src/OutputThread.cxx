@@ -24,10 +24,10 @@
 
 extern "C" {
 #include "output_internal.h"
-#include "filter_plugin.h"
 }
 
 #include "notify.hxx"
+#include "FilterPlugin.hxx"
 #include "filter/ConvertFilterPlugin.hxx"
 #include "filter/ReplayGainFilterPlugin.hxx"
 #include "PlayerControl.hxx"

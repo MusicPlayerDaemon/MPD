@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,22 +18,26 @@
  */
 
 #include "config.h"
+#include "ChainFilterPlugin.hxx"
 #include "conf.h"
-#include "filter/chain_filter_plugin.h"
-#include "filter_plugin.h"
-#include "filter_internal.h"
-#include "filter_registry.h"
+#include "FilterPlugin.hxx"
+#include "FilterInternal.hxx"
+#include "FilterRegistry.hxx"
 #include "audio_format.h"
 
 #include <glib.h>
 
 #include <assert.h>
 
-struct filter_chain {
+struct ChainFilter {
 	/** the base class */
 	struct filter base;
 
 	GSList *children;
+
+	ChainFilter():children(nullptr) {
+		filter_init(&base, &chain_filter_plugin);
+	}
 };
 
 static inline GQuark
@@ -46,10 +50,7 @@ static struct filter *
 chain_filter_init(G_GNUC_UNUSED const struct config_param *param,
 		  G_GNUC_UNUSED GError **error_r)
 {
-	struct filter_chain *chain = g_new(struct filter_chain, 1);
-
-	filter_init(&chain->base, &chain_filter_plugin);
-	chain->children = NULL;
+	ChainFilter *chain = new ChainFilter();
 
 	return &chain->base;
 }
@@ -57,7 +58,7 @@ chain_filter_init(G_GNUC_UNUSED const struct config_param *param,
 static void
 chain_free_child(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
-	struct filter *filter = data;
+	struct filter *filter = (struct filter *)data;
 
 	filter_free(filter);
 }
@@ -65,12 +66,12 @@ chain_free_child(gpointer data, G_GNUC_UNUSED gpointer user_data)
 static void
 chain_filter_finish(struct filter *_filter)
 {
-	struct filter_chain *chain = (struct filter_chain *)_filter;
+	ChainFilter *chain = (ChainFilter *)_filter;
 
 	g_slist_foreach(chain->children, chain_free_child, NULL);
 	g_slist_free(chain->children);
 
-	g_free(chain);
+	delete chain;
 }
 
 /**
@@ -78,10 +79,9 @@ chain_filter_finish(struct filter *_filter)
  * itself is not closed.
  */
 static void
-chain_close_until(struct filter_chain *chain, const struct filter *until)
+chain_close_until(ChainFilter *chain, const struct filter *until)
 {
 	GSList *i = chain->children;
-	struct filter *filter;
 
 	while (true) {
 		/* this assertion fails if #until does not exist
@@ -93,7 +93,7 @@ chain_close_until(struct filter_chain *chain, const struct filter *until)
 			break;
 
 		/* close this filter */
-		filter = i->data;
+		struct filter *filter = (struct filter *)i->data;
 		filter_close(filter);
 
 		i = g_slist_next(i);
@@ -130,11 +130,11 @@ static const struct audio_format *
 chain_filter_open(struct filter *_filter, struct audio_format *in_audio_format,
 		  GError **error_r)
 {
-	struct filter_chain *chain = (struct filter_chain *)_filter;
+	ChainFilter *chain = (ChainFilter *)_filter;
 	const struct audio_format *audio_format = in_audio_format;
 
 	for (GSList *i = chain->children; i != NULL; i = g_slist_next(i)) {
-		struct filter *filter = i->data;
+		struct filter *filter = (struct filter *)i->data;
 
 		audio_format = chain_open_child(filter, audio_format, error_r);
 		if (audio_format == NULL) {
@@ -151,7 +151,7 @@ chain_filter_open(struct filter *_filter, struct audio_format *in_audio_format,
 static void
 chain_close_child(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
-	struct filter *filter = data;
+	struct filter *filter = (struct filter *)data;
 
 	filter_close(filter);
 }
@@ -159,7 +159,7 @@ chain_close_child(gpointer data, G_GNUC_UNUSED gpointer user_data)
 static void
 chain_filter_close(struct filter *_filter)
 {
-	struct filter_chain *chain = (struct filter_chain *)_filter;
+	ChainFilter *chain = (ChainFilter *)_filter;
 
 	g_slist_foreach(chain->children, chain_close_child, NULL);
 }
@@ -169,10 +169,10 @@ chain_filter_filter(struct filter *_filter,
 		    const void *src, size_t src_size,
 		    size_t *dest_size_r, GError **error_r)
 {
-	struct filter_chain *chain = (struct filter_chain *)_filter;
+	ChainFilter *chain = (ChainFilter *)_filter;
 
 	for (GSList *i = chain->children; i != NULL; i = g_slist_next(i)) {
-		struct filter *filter = i->data;
+		struct filter *filter = (struct filter *)i->data;
 
 		/* feed the output of the previous filter as input
 		   into the current one */
@@ -187,12 +187,12 @@ chain_filter_filter(struct filter *_filter,
 }
 
 const struct filter_plugin chain_filter_plugin = {
-	.name = "chain",
-	.init = chain_filter_init,
-	.finish = chain_filter_finish,
-	.open = chain_filter_open,
-	.close = chain_filter_close,
-	.filter = chain_filter_filter,
+	"chain",
+	chain_filter_init,
+	chain_filter_finish,
+	chain_filter_open,
+	chain_filter_close,
+	chain_filter_filter,
 };
 
 struct filter *
@@ -208,8 +208,7 @@ filter_chain_new(void)
 void
 filter_chain_append(struct filter *_chain, struct filter *filter)
 {
-	struct filter_chain *chain = (struct filter_chain *)_chain;
+	ChainFilter *chain = (ChainFilter *)_chain;
 
 	chain->children = g_slist_append(chain->children, filter);
 }
-

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -44,9 +44,9 @@
 #include "ConfigQuark.hxx"
 #include "audio_format.h"
 #include "audio_check.h"
-#include "filter_plugin.h"
-#include "filter_internal.h"
-#include "filter_registry.h"
+#include "FilterPlugin.hxx"
+#include "FilterInternal.hxx"
+#include "FilterRegistry.hxx"
 #include "pcm_buffer.h"
 
 #include <assert.h>
@@ -188,7 +188,7 @@ route_filter_parse(const struct config_param *param,
 	}
 
 	// Allocate a map of "copy nothing to me"
-	filter->sources =
+	filter->sources = (signed char *)
 		g_malloc(filter->min_output_channels * sizeof(signed char));
 
 	for (int i=0; i<filter->min_output_channels; ++i)
@@ -295,14 +295,15 @@ route_filter_filter(struct filter *_filter,
 		audio_format_sample_size(&filter->input_format);
 
 	// A moving pointer that always refers to channel 0 in the input, at the currently handled frame
-	const uint8_t *base_source = src;
+	const uint8_t *base_source = (const uint8_t *)src;
 
 	// A moving pointer that always refers to the currently filled channel of the currently handled frame, in the output
 	uint8_t *chan_destination;
 
 	// Grow our reusable buffer, if needed, and set the moving pointer
 	*dest_size_r = number_of_frames * filter->output_frame_size;
-	chan_destination = pcm_buffer_get(&filter->output_buffer, *dest_size_r);
+	chan_destination = (uint8_t *)
+		pcm_buffer_get(&filter->output_buffer, *dest_size_r);
 
 
 	// Perform our copy operations, with N input channels and M output channels
@@ -340,10 +341,10 @@ route_filter_filter(struct filter *_filter,
 }
 
 const struct filter_plugin route_filter_plugin = {
-	.name = "route",
-	.init = route_filter_init,
-	.finish = route_filter_finish,
-	.open = route_filter_open,
-	.close = route_filter_close,
-	.filter = route_filter_filter,
+	"route",
+	route_filter_init,
+	route_filter_finish,
+	route_filter_open,
+	route_filter_close,
+	route_filter_filter,
 };

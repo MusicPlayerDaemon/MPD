@@ -23,8 +23,9 @@ extern "C" {
 #include "output_internal.h"
 #include "output_plugin.h"
 #include "mixer_control.h"
-#include "filter_plugin.h"
 }
+
+#include "FilterPlugin.hxx"
 
 #include <assert.h>
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,8 +23,8 @@
  * compile time.
  */
 
-#ifndef MPD_FILTER_REGISTRY_H
-#define MPD_FILTER_REGISTRY_H
+#ifndef MPD_FILTER_REGISTRY_HXX
+#define MPD_FILTER_REGISTRY_HXX
 
 extern const struct filter_plugin null_filter_plugin;
 extern const struct filter_plugin chain_filter_plugin;

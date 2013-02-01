@@ -20,9 +20,9 @@
 #include "config.h"
 #include "AutoConvertFilterPlugin.hxx"
 #include "ConvertFilterPlugin.hxx"
-#include "filter_plugin.h"
-#include "filter_internal.h"
-#include "filter_registry.h"
+#include "FilterPlugin.hxx"
+#include "FilterInternal.hxx"
+#include "FilterRegistry.hxx"
 #include "audio_format.h"
 
 #include <assert.h>

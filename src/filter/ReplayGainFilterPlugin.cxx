@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "ReplayGainFilterPlugin.hxx"
-#include "filter_plugin.h"
-#include "filter_internal.h"
-#include "filter_registry.h"
+#include "FilterPlugin.hxx"
+#include "FilterInternal.hxx"
+#include "FilterRegistry.hxx"
 #include "audio_format.h"
 #include "replay_gain_info.h"
 #include "replay_gain_config.h"

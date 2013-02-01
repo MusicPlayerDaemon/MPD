@@ -57,9 +57,6 @@ mpd_headers = \
 	src/output_internal.h \
 	src/output_api.h \
 	src/filter_internal.h \
-	src/filter_plugin.h \
-	src/filter_registry.h \
-	src/filter/chain_filter_plugin.h \
 	src/command.h \
 	src/conf.h \
 	src/decoder_plugin.h \
@@ -168,8 +165,8 @@ src_mpd_SOURCES = \
 	src/ExcludeList.cxx src/ExcludeList.hxx \
 	src/fd_util.c \
 	src/FilterConfig.cxx src/FilterConfig.hxx \
-	src/filter_plugin.c \
-	src/filter_registry.c \
+	src/FilterPlugin.cxx src/FilterPlugin.hxx \
+	src/FilterRegistry.cxx src/FilterRegistry.hxx \
 	src/UpdateGlue.cxx src/UpdateGlue.hxx \
 	src/UpdateQueue.cxx src/UpdateQueue.hxx \
 	src/UpdateIO.cxx src/UpdateIO.hxx \
@@ -968,14 +965,15 @@ endif
 #
 
 libfilter_plugins_a_SOURCES = \
-	src/filter/null_filter_plugin.c \
-	src/filter/chain_filter_plugin.c \
+	src/filter/NullFilterPlugin.cxx \
+	src/filter/ChainFilterPlugin.cxx \
+	src/filter/ChainFilterPlugin.hxx \
 	src/filter/AutoConvertFilterPlugin.cxx \
 	src/filter/AutoConvertFilterPlugin.hxx \
 	src/filter/ConvertFilterPlugin.cxx \
 	src/filter/ConvertFilterPlugin.hxx \
-	src/filter/route_filter_plugin.c \
-	src/filter/normalize_filter_plugin.c \
+	src/filter/RouteFilterPlugin.cxx \
+	src/filter/NormalizeFilterPlugin.cxx \
 	src/filter/ReplayGainFilterPlugin.cxx \
 	src/filter/ReplayGainFilterPlugin.hxx \
 	src/filter/VolumeFilterPlugin.cxx \
@@ -1239,8 +1237,7 @@ test_run_filter_LDADD = \
 test_run_filter_SOURCES = test/run_filter.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/stdbin.h \
-	src/filter_plugin.c \
-	src/filter_registry.c \
+	src/FilterPlugin.cxx src/FilterRegistry.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/audio_check.c \
 	src/audio_format.c \
@@ -1350,7 +1347,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/mixer_api.c \
 	src/mixer_control.c \
 	src/mixer_type.c \
-	src/filter_plugin.c \
+	src/FilterPlugin.cxx \
 	src/FilterConfig.cxx \
 	src/AudioCompress/compress.c \
 	src/ReplayGainInfo.cxx \
@@ -1367,7 +1364,7 @@ test_read_mixer_LDADD = \
 test_read_mixer_SOURCES = test/read_mixer.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/mixer_control.c src/mixer_api.c \
-	src/filter_plugin.c \
+	src/FilterPlugin.cxx \
 	src/filter/VolumeFilterPlugin.cxx \
 	src/fd_util.c
 

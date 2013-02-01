@@ -20,8 +20,8 @@
 #include "config.h"
 #include "SoftwareMixerPlugin.hxx"
 #include "mixer_api.h"
-#include "filter_plugin.h"
-#include "filter_registry.h"
+#include "FilterPlugin.hxx"
+#include "FilterRegistry.hxx"
 #include "filter/VolumeFilterPlugin.hxx"
 #include "PcmVolume.hxx"
 

@@ -30,14 +30,14 @@ extern "C" {
 #include "mixer_control.h"
 #include "mixer_type.h"
 #include "mixer_list.h"
-#include "filter_plugin.h"
-#include "filter_registry.h"
-#include "filter/chain_filter_plugin.h"
 }
 
 #include "mixer/SoftwareMixerPlugin.hxx"
+#include "FilterPlugin.hxx"
+#include "FilterRegistry.hxx"
 #include "filter/AutoConvertFilterPlugin.hxx"
 #include "filter/ReplayGainFilterPlugin.hxx"
+#include "filter/ChainFilterPlugin.hxx"
 
 #include <glib.h>
 

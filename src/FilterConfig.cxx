@@ -20,14 +20,10 @@
 #include "config.h"
 #include "FilterConfig.hxx"
 #include "conf.h"
-
-extern "C" {
-#include "filter/chain_filter_plugin.h"
-}
-
-#include "filter_plugin.h"
-#include "filter_internal.h"
-#include "filter_registry.h"
+#include "filter/ChainFilterPlugin.hxx"
+#include "FilterPlugin.hxx"
+#include "FilterInternal.hxx"
+#include "FilterRegistry.hxx"
 
 #include <glib.h>
 

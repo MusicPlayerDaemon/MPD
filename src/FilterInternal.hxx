@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,8 +22,8 @@
  * Internal stuff for the filter core and filter plugins.
  */
 
-#ifndef MPD_FILTER_INTERNAL_H
-#define MPD_FILTER_INTERNAL_H
+#ifndef MPD_FILTER_INTERNAL_HXX
+#define MPD_FILTER_INTERNAL_HXX
 
 struct filter {
 	const struct filter_plugin *plugin;

@@ -32,9 +32,9 @@
 extern "C" {
 #include "output_plugin.h"
 #include "output_internal.h"
-#include "filter_registry.h"
 }
 
+#include "FilterRegistry.hxx"
 #include "PlayerControl.hxx"
 #include "stdbin.h"
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,9 +25,9 @@
  */
 
 #include "config.h"
-#include "filter_plugin.h"
-#include "filter_internal.h"
-#include "filter_registry.h"
+#include "FilterPlugin.hxx"
+#include "FilterInternal.hxx"
+#include "FilterRegistry.hxx"
 
 #include <glib.h>
 #include <assert.h>
@@ -85,10 +85,10 @@ null_filter_filter(struct filter *_filter,
 }
 
 const struct filter_plugin null_filter_plugin = {
-	.name = "null",
-	.init = null_filter_init,
-	.finish = null_filter_finish,
-	.open = null_filter_open,
-	.close = null_filter_close,
-	.filter = null_filter_filter,
+	"null",
+	null_filter_init,
+	null_filter_finish,
+	null_filter_open,
+	null_filter_close,
+	null_filter_filter,
 };

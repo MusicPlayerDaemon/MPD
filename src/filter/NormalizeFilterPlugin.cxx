@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
-#include "filter_plugin.h"
-#include "filter_internal.h"
-#include "filter_registry.h"
+#include "FilterPlugin.hxx"
+#include "FilterInternal.hxx"
+#include "FilterRegistry.hxx"
 #include "pcm_buffer.h"
 #include "audio_format.h"
 #include "AudioCompress/compress.h"
@@ -90,9 +90,8 @@ normalize_filter_filter(struct filter *_filter,
 			G_GNUC_UNUSED GError **error_r)
 {
 	struct normalize_filter *filter = (struct normalize_filter *)_filter;
-	void *dest;
 
-	dest = pcm_buffer_get(&filter->buffer, src_size);
+	int16_t *dest = (int16_t *)pcm_buffer_get(&filter->buffer, src_size);
 
 	memcpy(dest, src, src_size);
 
@@ -103,10 +102,10 @@ normalize_filter_filter(struct filter *_filter,
 }
 
 const struct filter_plugin normalize_filter_plugin = {
-	.name = "normalize",
-	.init = normalize_filter_init,
-	.finish = normalize_filter_finish,
-	.open = normalize_filter_open,
-	.close = normalize_filter_close,
-	.filter = normalize_filter_filter,
+	"normalize",
+	normalize_filter_init,
+	normalize_filter_finish,
+	normalize_filter_open,
+	normalize_filter_close,
+	normalize_filter_filter,
 };

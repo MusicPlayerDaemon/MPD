@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "VolumeFilterPlugin.hxx"
-#include "filter_plugin.h"
-#include "filter_internal.h"
-#include "filter_registry.h"
+#include "FilterPlugin.hxx"
+#include "FilterInternal.hxx"
+#include "FilterRegistry.hxx"
 #include "conf.h"
 #include "pcm_buffer.h"
 #include "PcmVolume.hxx"
