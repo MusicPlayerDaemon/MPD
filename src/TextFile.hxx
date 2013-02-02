@@ -22,10 +22,9 @@
 
 #include "gcc.h"
 #include "fs/Path.hxx"
+#include "fs/FileSystem.hxx"
 
 #include <glib.h>
-
-#include <stdio.h>
 
 class TextFile {
 	static constexpr size_t max_length = 512 * 1024;
@@ -37,7 +36,7 @@ class TextFile {
 
 public:
 	TextFile(const Path &path_fs)
-		:file(fopen(path_fs.c_str(), "r")),
+		:file(FOpen(path_fs, FOpenMode::ReadText)),
 		 buffer(g_string_sized_new(step)) {}
 
 	TextFile(const TextFile &other) = delete;
