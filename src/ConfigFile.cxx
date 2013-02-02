@@ -271,7 +271,7 @@ ReadConfigFile(ConfigData &config_data, const Path &path, GError **error_r)
 
 	g_debug("loading file %s", path_utf8.c_str());
 
-	FILE *fp = FOpen(path, "r");
+	FILE *fp = FOpen(path, FOpenMode::ReadText);
 	if (fp == nullptr) {
 		g_set_error(error_r, config_quark(), errno,
 			    "Failed to open %s: %s",
