@@ -27,6 +27,7 @@ extern "C" {
 #include "Directory.hxx"
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
+#include "fs/FileSystem.hxx"
 #include "tag.h"
 #include "input_stream.h"
 #include "decoder_plugin.h"
@@ -111,7 +112,7 @@ song_file_update(struct song *song)
 		song->tag = NULL;
 	}
 
-	if (stat(path_fs.c_str(), &st) < 0 || !S_ISREG(st.st_mode)) {
+	if (!StatFile(path_fs, st) || !S_ISREG(st.st_mode)) {
 		return false;
 	}
 
