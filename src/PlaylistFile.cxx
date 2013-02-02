@@ -211,7 +211,7 @@ SavePlaylistFile(const PlaylistFileContents &contents, const char *utf8path,
 	if (path_fs.IsNull())
 		return false;
 
-	FILE *file = fopen(path_fs.c_str(), "w");
+	FILE *file = FOpen(path_fs, FOpenMode::WriteText);
 	if (file == NULL) {
 		playlist_errno(error_r);
 		return false;
@@ -312,7 +312,7 @@ spl_clear(const char *utf8path, GError **error_r)
 	if (path_fs.IsNull())
 		return false;
 
-	FILE *file = fopen(path_fs.c_str(), "w");
+	FILE *file = FOpen(path_fs, FOpenMode::WriteText);
 	if (file == NULL) {
 		playlist_errno(error_r);
 		return false;
@@ -331,8 +331,7 @@ spl_delete(const char *name_utf8, GError **error_r)
 	if (path_fs.IsNull())
 		return false;
 
-	int ret = unlink(path_fs.c_str());
-	if (ret < 0) {
+	if (!RemoveFile(path_fs)) {
 		playlist_errno(error_r);
 		return false;
 	}
@@ -376,7 +375,7 @@ spl_append_song(const char *utf8path, struct song *song, GError **error_r)
 	if (path_fs.IsNull())
 		return false;
 
-	FILE *file = fopen(path_fs.c_str(), "a");
+	FILE *file = FOpen(path_fs, FOpenMode::AppendText);
 	if (file == NULL) {
 		playlist_errno(error_r);
 		return false;
@@ -446,7 +445,7 @@ spl_rename_internal(const Path &from_path_fs, const Path &to_path_fs,
 		return false;
 	}
 
-	if (rename(from_path_fs.c_str(), to_path_fs.c_str()) < 0) {
+	if (!RenameFile(from_path_fs, to_path_fs)) {
 		playlist_errno(error_r);
 		return false;
 	}
