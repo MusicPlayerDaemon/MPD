@@ -36,12 +36,15 @@ stat_directory(const Directory *directory, struct stat *st)
 	if (path_fs.IsNull())
 		return -1;
 
-	int ret = stat(path_fs.c_str(), st);
-	if (ret < 0)
+	if (!StatFile(path_fs, *st)) {
+		int error = errno;
+		const std::string path_utf8 = path_fs.ToUTF8();
 		g_warning("Failed to stat %s: %s",
-			  path_fs.c_str(), g_strerror(errno));
+			  path_utf8.c_str(), g_strerror(error));
+		return -1;
+	}
 
-	return ret;
+	return 0;
 }
 
 int
@@ -52,12 +55,15 @@ stat_directory_child(const Directory *parent, const char *name,
 	if (path_fs.IsNull())
 		return -1;
 
-	int ret = stat(path_fs.c_str(), st);
-	if (ret < 0)
+	if (!StatFile(path_fs, *st)) {
+		int error = errno;
+		const std::string path_utf8 = path_fs.ToUTF8();
 		g_warning("Failed to stat %s: %s",
-			  path_fs.c_str(), g_strerror(errno));
+			  path_utf8.c_str(), g_strerror(error));
+		return -1;
+	}
 
-	return ret;
+	return 0;
 }
 
 bool
@@ -82,8 +88,7 @@ directory_child_is_regular(const Directory *directory,
 	if (path_fs.IsNull())
 		return false;
 
-	struct stat st;
-	return stat(path_fs.c_str(), &st) == 0 && S_ISREG(st.st_mode);
+	return FileExists(path_fs);
 }
 
 bool
@@ -91,7 +96,7 @@ directory_child_access(const Directory *directory,
 		       const char *name, int mode)
 {
 #ifdef WIN32
-	/* access() is useless on WIN32 */
+	/* CheckAccess() is useless on WIN32 */
 	(void)directory;
 	(void)name;
 	(void)mode;
@@ -103,6 +108,6 @@ directory_child_access(const Directory *directory,
 		   problem */
 		return true;
 
-	return access(path.c_str(), mode) == 0 || errno != EACCES;
+	return CheckAccess(path, mode) || errno != EACCES;
 #endif
 }
