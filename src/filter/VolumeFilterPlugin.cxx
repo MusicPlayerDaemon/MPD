@@ -50,8 +50,8 @@ volume_quark(void)
 }
 
 static struct filter *
-volume_filter_init(G_GNUC_UNUSED const struct config_param *param,
-		   G_GNUC_UNUSED GError **error_r)
+volume_filter_init(gcc_unused const struct config_param *param,
+		   gcc_unused GError **error_r)
 {
 	struct volume_filter *filter = g_new(struct volume_filter, 1);
 
@@ -69,7 +69,7 @@ volume_filter_finish(struct filter *filter)
 
 static const struct audio_format *
 volume_filter_open(struct filter *_filter, struct audio_format *audio_format,
-		   G_GNUC_UNUSED GError **error_r)
+		   gcc_unused GError **error_r)
 {
 	struct volume_filter *filter = (struct volume_filter *)_filter;
 

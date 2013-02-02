@@ -28,17 +28,17 @@
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
+#include "gcc.h"
 
 #include <glib.h>
-#include <assert.h>
 
 struct null_filter {
 	struct filter filter;
 };
 
 static struct filter *
-null_filter_init(G_GNUC_UNUSED const struct config_param *param,
-		 G_GNUC_UNUSED GError **error_r)
+null_filter_init(gcc_unused const struct config_param *param,
+		 gcc_unused GError **error_r)
 {
 	struct null_filter *filter = g_new(struct null_filter, 1);
 
@@ -56,7 +56,7 @@ null_filter_finish(struct filter *_filter)
 
 static const struct audio_format *
 null_filter_open(struct filter *_filter, struct audio_format *audio_format,
-		 G_GNUC_UNUSED GError **error_r)
+		 gcc_unused GError **error_r)
 {
 	struct null_filter *filter = (struct null_filter *)_filter;
 	(void)filter;
@@ -74,7 +74,7 @@ null_filter_close(struct filter *_filter)
 static const void *
 null_filter_filter(struct filter *_filter,
 		   const void *src, size_t src_size,
-		   size_t *dest_size_r, G_GNUC_UNUSED GError **error_r)
+		   size_t *dest_size_r, gcc_unused GError **error_r)
 {
 	struct null_filter *filter = (struct null_filter *)_filter;
 	(void)filter;

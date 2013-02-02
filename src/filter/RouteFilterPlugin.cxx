@@ -228,7 +228,7 @@ route_filter_parse(const struct config_param *param,
 
 static struct filter *
 route_filter_init(const struct config_param *param,
-		 G_GNUC_UNUSED GError **error_r)
+		  gcc_unused GError **error_r)
 {
 	struct route_filter *filter = g_new(struct route_filter, 1);
 	filter_init(&filter->base, &route_filter_plugin);
@@ -250,7 +250,7 @@ route_filter_finish(struct filter *_filter)
 
 static const struct audio_format *
 route_filter_open(struct filter *_filter, struct audio_format *audio_format,
-		  G_GNUC_UNUSED GError **error_r)
+		  gcc_unused GError **error_r)
 {
 	struct route_filter *filter = (struct route_filter *)_filter;
 
@@ -285,7 +285,7 @@ route_filter_close(struct filter *_filter)
 static const void *
 route_filter_filter(struct filter *_filter,
 		   const void *src, size_t src_size,
-		   size_t *dest_size_r, G_GNUC_UNUSED GError **error_r)
+		   size_t *dest_size_r, gcc_unused GError **error_r)
 {
 	struct route_filter *filter = (struct route_filter *)_filter;
 

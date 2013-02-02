@@ -54,8 +54,8 @@ filter_quark(void)
 }
 
 static struct filter *
-chain_filter_init(G_GNUC_UNUSED const struct config_param *param,
-		  G_GNUC_UNUSED GError **error_r)
+chain_filter_init(gcc_unused const struct config_param *param,
+		  gcc_unused GError **error_r)
 {
 	ChainFilter *chain = new ChainFilter();
 

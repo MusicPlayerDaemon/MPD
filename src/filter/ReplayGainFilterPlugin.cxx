@@ -114,8 +114,8 @@ replay_gain_filter_update(struct replay_gain_filter *filter)
 }
 
 static struct filter *
-replay_gain_filter_init(G_GNUC_UNUSED const struct config_param *param,
-			G_GNUC_UNUSED GError **error_r)
+replay_gain_filter_init(gcc_unused const struct config_param *param,
+			gcc_unused GError **error_r)
 {
 	struct replay_gain_filter *filter = g_new(struct replay_gain_filter, 1);
 
@@ -138,7 +138,7 @@ replay_gain_filter_finish(struct filter *filter)
 static const struct audio_format *
 replay_gain_filter_open(struct filter *_filter,
 			struct audio_format *audio_format,
-			G_GNUC_UNUSED GError **error_r)
+			gcc_unused GError **error_r)
 {
 	struct replay_gain_filter *filter =
 		(struct replay_gain_filter *)_filter;

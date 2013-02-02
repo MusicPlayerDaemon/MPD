@@ -36,15 +36,9 @@ struct normalize_filter {
 	struct pcm_buffer buffer;
 };
 
-static inline GQuark
-normalize_quark(void)
-{
-	return g_quark_from_static_string("normalize");
-}
-
 static struct filter *
-normalize_filter_init(G_GNUC_UNUSED const struct config_param *param,
-		      G_GNUC_UNUSED GError **error_r)
+normalize_filter_init(gcc_unused const struct config_param *param,
+		      gcc_unused GError **error_r)
 {
 	struct normalize_filter *filter = g_new(struct normalize_filter, 1);
 
@@ -62,7 +56,7 @@ normalize_filter_finish(struct filter *filter)
 static const struct audio_format *
 normalize_filter_open(struct filter *_filter,
 		      struct audio_format *audio_format,
-		      G_GNUC_UNUSED GError **error_r)
+		      gcc_unused GError **error_r)
 {
 	struct normalize_filter *filter = (struct normalize_filter *)_filter;
 
@@ -87,7 +81,7 @@ normalize_filter_close(struct filter *_filter)
 static const void *
 normalize_filter_filter(struct filter *_filter,
 			const void *src, size_t src_size, size_t *dest_size_r,
-			G_GNUC_UNUSED GError **error_r)
+			gcc_unused GError **error_r)
 {
 	struct normalize_filter *filter = (struct normalize_filter *)_filter;
 
