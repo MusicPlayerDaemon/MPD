@@ -78,7 +78,7 @@ spl_save_queue(const char *name_utf8, const struct queue *queue)
 	if (FileExists(path_fs))
 		return PLAYLIST_RESULT_LIST_EXISTS;
 
-	FILE *file = fopen(path_fs.c_str(), "w");
+	FILE *file = FOpen(path_fs, FOpenMode::WriteText);
 
 	if (file == NULL)
 		return PLAYLIST_RESULT_ERRNO;
