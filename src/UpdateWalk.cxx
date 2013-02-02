@@ -33,6 +33,7 @@
 #include "ExcludeList.hxx"
 #include "conf.h"
 #include "fs/Path.hxx"
+#include "fs/FileSystem.hxx"
 
 extern "C" {
 #include "uri.h"
@@ -141,10 +142,8 @@ purge_deleted_from_directory(Directory *directory)
 
 	struct song *song, *ns;
 	directory_for_each_song_safe(song, ns, directory) {
-		struct stat st;
 		const Path path = map_song_fs(song);
-		if (path.IsNull() ||
-		    stat(path.c_str(), &st) < 0 || !S_ISREG(st.st_mode)) {
+		if (path.IsNull() || !FileExists(path)) {
 			db_lock();
 			delete_song(directory, song);
 			db_unlock();
