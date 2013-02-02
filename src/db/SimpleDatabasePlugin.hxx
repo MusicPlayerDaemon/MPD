@@ -32,6 +32,7 @@ struct Directory;
 
 class SimpleDatabase : public Database {
 	Path path;
+	std::string path_utf8;
 
 	Directory *root;
 

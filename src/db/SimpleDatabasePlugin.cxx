@@ -28,10 +28,9 @@
 #include "db_error.h"
 #include "TextFile.hxx"
 #include "conf.h"
+#include "fs/FileSystem.hxx"
 
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <errno.h>
 
 G_GNUC_CONST
@@ -69,6 +68,8 @@ SimpleDatabase::Configure(const struct config_param *param, GError **error_r)
 	}
 
 	path = Path::FromUTF8(_path);
+	path_utf8 = _path;
+
 	free(_path);
 
 	if (path.IsNull()) {
@@ -87,67 +88,64 @@ SimpleDatabase::Check(GError **error_r) const
 	assert(!path.empty());
 
 	/* Check if the file exists */
-	if (access(path.c_str(), F_OK)) {
+	if (!CheckAccess(path, F_OK)) {
 		/* If the file doesn't exist, we can't check if we can write
 		 * it, so we are going to try to get the directory path, and
 		 * see if we can write a file in that */
-		char *dirPath = g_path_get_dirname(path.c_str());
+		const Path dirPath = path.GetDirectoryName();
 
 		/* Check that the parent part of the path is a directory */
 		struct stat st;
-		if (stat(dirPath, &st) < 0) {
-			g_free(dirPath);
+		if (!StatFile(dirPath, st)) {
 			g_set_error(error_r, simple_db_quark(), errno,
 				    "Couldn't stat parent directory of db file "
 				    "\"%s\": %s",
-				    path.c_str(), g_strerror(errno));
+				    path_utf8.c_str(), g_strerror(errno));
 			return false;
 		}
 
 		if (!S_ISDIR(st.st_mode)) {
-			g_free(dirPath);
 			g_set_error(error_r, simple_db_quark(), 0,
 				    "Couldn't create db file \"%s\" because the "
 				    "parent path is not a directory",
-				    path.c_str());
+				    path_utf8.c_str());
 			return false;
 		}
 
 		/* Check if we can write to the directory */
-		if (access(dirPath, X_OK | W_OK)) {
-			g_set_error(error_r, simple_db_quark(), errno,
+		if (!CheckAccess(dirPath, X_OK | W_OK)) {
+			int error = errno;
+			const std::string dirPath_utf8 = dirPath.ToUTF8();
+			g_set_error(error_r, simple_db_quark(), error,
 				    "Can't create db file in \"%s\": %s",
-				    dirPath, g_strerror(errno));
-			g_free(dirPath);
+				    dirPath_utf8.c_str(), g_strerror(error));
 			return false;
 		}
-
-		g_free(dirPath);
 
 		return true;
 	}
 
 	/* Path exists, now check if it's a regular file */
 	struct stat st;
-	if (stat(path.c_str(), &st) < 0) {
+	if (!StatFile(path, st)) {
 		g_set_error(error_r, simple_db_quark(), errno,
 			    "Couldn't stat db file \"%s\": %s",
-			    path.c_str(), g_strerror(errno));
+			    path_utf8.c_str(), g_strerror(errno));
 		return false;
 	}
 
 	if (!S_ISREG(st.st_mode)) {
 		g_set_error(error_r, simple_db_quark(), 0,
 			    "db file \"%s\" is not a regular file",
-			    path.c_str());
+			    path_utf8.c_str());
 		return false;
 	}
 
 	/* And check that we can write to it */
-	if (access(path.c_str(), R_OK | W_OK)) {
+	if (!CheckAccess(path, R_OK | W_OK)) {
 		g_set_error(error_r, simple_db_quark(), errno,
 			    "Can't open db file \"%s\" for reading/writing: %s",
-			    path.c_str(), g_strerror(errno));
+			    path_utf8.c_str(), g_strerror(errno));
 		return false;
 	}
 
@@ -164,7 +162,7 @@ SimpleDatabase::Load(GError **error_r)
 	if (file.HasFailed()) {
 		g_set_error(error_r, simple_db_quark(), errno,
 			    "Failed to open database file \"%s\": %s",
-			    path.c_str(), g_strerror(errno));
+			    path_utf8.c_str(), g_strerror(errno));
 		return false;
 	}
 
@@ -172,7 +170,7 @@ SimpleDatabase::Load(GError **error_r)
 		return false;
 
 	struct stat st;
-	if (stat(path.c_str(), &st) == 0)
+	if (StatFile(path, st))
 		mtime = st.st_mtime;
 
 	return true;
@@ -318,11 +316,11 @@ SimpleDatabase::Save(GError **error_r)
 
 	g_debug("writing DB");
 
-	FILE *fp = fopen(path.c_str(), "w");
+	FILE *fp = FOpen(path, FOpenMode::WriteText);
 	if (!fp) {
 		g_set_error(error_r, simple_db_quark(), errno,
 			    "unable to write to db file \"%s\": %s",
-			    path.c_str(), g_strerror(errno));
+			    path_utf8.c_str(), g_strerror(errno));
 		return false;
 	}
 
@@ -339,7 +337,7 @@ SimpleDatabase::Save(GError **error_r)
 	fclose(fp);
 
 	struct stat st;
-	if (stat(path.c_str(), &st) == 0)
+	if (StatFile(path, st))
 		mtime = st.st_mtime;
 
 	return true;
