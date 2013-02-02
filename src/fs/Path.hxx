@@ -253,6 +253,15 @@ public:
 	std::string ToUTF8() const {
 		return ToUTF8(value);
 	}
+
+	/**
+	 * Gets directory name of this path.
+	 * Returns a "nulled" instance on error.
+	 */
+	Path GetDirectoryName() const {
+		assert(value != nullptr);
+		return Path(Donate(), g_path_get_dirname(value));
+	}
 };
 
 #endif
