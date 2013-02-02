@@ -34,8 +34,10 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "state_file"
 
-StateFile::StateFile(Path &&_path, Partition &_partition, EventLoop &_loop)
-	:TimeoutMonitor(_loop), path(std::move(_path)), partition(_partition),
+StateFile::StateFile(Path &&_path, const char *_path_utf8,
+                     Partition &_partition, EventLoop &_loop)
+	:TimeoutMonitor(_loop), path(std::move(_path)), path_utf8(_path_utf8),
+	 partition(_partition),
 	 prev_volume_version(0), prev_output_version(0),
 	 prev_playlist_version(0)
 {
@@ -45,12 +47,12 @@ StateFile::StateFile(Path &&_path, Partition &_partition, EventLoop &_loop)
 void
 StateFile::Write()
 {
-	g_debug("Saving state file %s", path.c_str());
+	g_debug("Saving state file %s", path_utf8.c_str());
 
-	FILE *fp = fopen(path.c_str(), "w");
+	FILE *fp = FOpen(path, FOpenMode::WriteText);
 	if (G_UNLIKELY(!fp)) {
 		g_warning("failed to create %s: %s",
-			  path.c_str(), g_strerror(errno));
+			  path_utf8.c_str(), g_strerror(errno));
 		return;
 	}
 
@@ -71,12 +73,12 @@ StateFile::Read()
 {
 	bool success;
 
-	g_debug("Loading state file %s", path.c_str());
+	g_debug("Loading state file %s", path_utf8.c_str());
 
 	TextFile file(path);
 	if (file.HasFailed()) {
 		g_warning("failed to open %s: %s",
-			  path.c_str(), g_strerror(errno));
+			  path_utf8.c_str(), g_strerror(errno));
 		return;
 	}
 

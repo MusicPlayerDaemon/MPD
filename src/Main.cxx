@@ -243,16 +243,17 @@ glue_state_file_init(GError **error_r)
 
 	Path path_fs = Path::FromUTF8(path);
 
-	g_free(path);
-
 	if (path_fs.IsNull()) {
+		g_free(path);
 		g_set_error(error_r, main_quark(), 0,
 			    "Failed to convert state file path to FS encoding");
 		return false;
 	}
 
-	state_file = new StateFile(std::move(path_fs),
+	state_file = new StateFile(std::move(path_fs), path,
 				   *global_partition, *main_loop);
+	g_free(path);
+
 	state_file->Read();
 	return true;
 }
