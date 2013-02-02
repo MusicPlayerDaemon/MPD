@@ -50,6 +50,16 @@ constexpr Path::const_pointer WriteText = "w";
  * Open mode for writing binary files.
  */
 constexpr Path::const_pointer WriteBinary = "wb";
+
+/**
+ * Open mode for appending text files.
+ */
+constexpr Path::const_pointer AppendText = "a";
+
+/**
+ * Open mode for appending binary files.
+ */
+constexpr Path::const_pointer AppendBinary = "ab";
 }
 
 /**
