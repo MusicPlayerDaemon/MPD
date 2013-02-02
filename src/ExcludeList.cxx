@@ -25,16 +25,16 @@
 #include "config.h"
 #include "ExcludeList.hxx"
 #include "fs/Path.hxx"
+#include "fs/FileSystem.hxx"
 
 #include <assert.h>
 #include <string.h>
-#include <stdio.h>
 #include <errno.h>
 
 bool
 ExcludeList::LoadFile(const Path &path_fs)
 {
-	FILE *file = fopen(path_fs.c_str(), "r");
+	FILE *file = FOpen(path_fs, FOpenMode::ReadText);
 	if (file == NULL) {
 		if (errno != ENOENT) {
 			const char *msg = g_strerror(errno);
