@@ -27,7 +27,7 @@
 #include "output/HttpdOutputPlugin.hxx"
 #include "output/jack_output_plugin.h"
 #include "output/mvp_output_plugin.h"
-#include "output/null_output_plugin.h"
+#include "output/NullOutputPlugin.hxx"
 #include "output/openal_output_plugin.h"
 #include "output/OssOutputPlugin.hxx"
 #include "output/OSXOutputPlugin.hxx"

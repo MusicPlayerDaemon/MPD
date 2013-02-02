@@ -790,8 +790,8 @@ OUTPUT_API_SRC = \
 	src/OutputInit.cxx
 
 liboutput_plugins_a_SOURCES = \
-	src/output/null_output_plugin.h \
-	src/output/null_output_plugin.c
+	src/output/NullOutputPlugin.cxx \
+	src/output/NullOutputPlugin.hxx
 
 MIXER_LIBS = \
 	libmixer_plugins.a \
