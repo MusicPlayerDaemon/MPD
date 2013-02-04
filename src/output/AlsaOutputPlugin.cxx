@@ -682,6 +682,28 @@ alsa_open(struct audio_output *ao, struct audio_format *audio_format, GError **e
 	return true;
 }
 
+/**
+ * Write silence to the ALSA device.
+ */
+static void
+alsa_write_silence(AlsaOutput *ad, snd_pcm_uframes_t nframes)
+{
+	size_t nbytes = nframes * ad->out_frame_size;
+	void *buffer = g_malloc(nbytes);
+	snd_pcm_hw_params_t *params;
+	snd_pcm_format_t format;
+	unsigned channels;
+
+	snd_pcm_hw_params_alloca(&params);
+	snd_pcm_hw_params_current(ad->pcm, params);
+	snd_pcm_hw_params_get_format(params, &format);
+	snd_pcm_hw_params_get_channels(params, &channels);
+
+	snd_pcm_format_set_silence(format, buffer, nframes * channels);
+	ad->writei(ad->pcm, buffer, nframes);
+	g_free(buffer);
+}
+
 static int
 alsa_recover(AlsaOutput *ad, int err)
 {
@@ -732,20 +754,7 @@ alsa_drain(struct audio_output *ao)
 		   period */
 		snd_pcm_uframes_t nframes =
 			ad->period_frames - ad->period_position;
-		size_t nbytes = nframes * ad->out_frame_size;
-		void *buffer = g_malloc(nbytes);
-		snd_pcm_hw_params_t *params;
-		snd_pcm_format_t format;
-		unsigned channels;
-
-		snd_pcm_hw_params_alloca(&params);
-		snd_pcm_hw_params_current(ad->pcm, params);
-		snd_pcm_hw_params_get_format(params, &format);
-		snd_pcm_hw_params_get_channels(params, &channels);
-
-		snd_pcm_format_set_silence(format, buffer, nframes * channels);
-		ad->writei(ad->pcm, buffer, nframes);
-		g_free(buffer);
+		alsa_write_silence(ad, nframes);
 	}
 
 	snd_pcm_drain(ad->pcm);
