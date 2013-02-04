@@ -70,12 +70,12 @@ class MPDOpusDecoder {
 
 	ogg_stream_state os;
 
-	OpusDecoder *opus_decoder = nullptr;
-	opus_int16 *output_buffer = nullptr;
-	unsigned output_size = 0;
+	OpusDecoder *opus_decoder;
+	opus_int16 *output_buffer;
+	unsigned output_size;
 
-	bool os_initialized = false;
-	bool found_opus = false;
+	bool os_initialized;
+	bool found_opus;
 
 	int opus_serialno;
 
@@ -84,7 +84,10 @@ class MPDOpusDecoder {
 public:
 	MPDOpusDecoder(struct decoder *_decoder,
 		       struct input_stream *_input_stream)
-		:decoder(_decoder), input_stream(_input_stream) {}
+		:decoder(_decoder), input_stream(_input_stream),
+		 opus_decoder(nullptr),
+		 output_buffer(nullptr), output_size(0),
+		 os_initialized(false), found_opus(false) {}
 	~MPDOpusDecoder();
 
 	bool ReadFirstPage(OggSyncState &oy);
