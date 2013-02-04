@@ -98,6 +98,7 @@ public:
 
 	bool Open(GError **error_r);
 
+	using SocketMonitor::IsDefined;
 	using SocketMonitor::Close;
 
 	char *ToString() const;
@@ -286,7 +287,8 @@ void
 ServerSocket::Close()
 {
 	for (auto &i : sockets)
-		i.Close();
+		if (i.IsDefined())
+			i.Close();
 }
 
 OneServerSocket &
