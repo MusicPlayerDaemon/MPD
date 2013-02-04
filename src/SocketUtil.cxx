@@ -49,7 +49,7 @@ socket_bind_listen(int domain, int type, int protocol,
 	fd = socket_cloexec_nonblock(domain, type, protocol);
 	if (fd < 0) {
 		SetSocketError(error_r);
-		g_prefix_error(error_r, "Failed to create socket");
+		g_prefix_error(error_r, "Failed to create socket: ");
 		return -1;
 	}
 
@@ -57,7 +57,7 @@ socket_bind_listen(int domain, int type, int protocol,
 			 (const char *) &reuse, sizeof(reuse));
 	if (ret < 0) {
 		SetSocketError(error_r);
-		g_prefix_error(error_r, "setsockopt() failed");
+		g_prefix_error(error_r, "setsockopt() failed: ");
 		close_socket(fd);
 		return -1;
 	}
@@ -72,7 +72,7 @@ socket_bind_listen(int domain, int type, int protocol,
 	ret = listen(fd, backlog);
 	if (ret < 0) {
 		SetSocketError(error_r);
-		g_prefix_error(error_r, "listen() failed");
+		g_prefix_error(error_r, "listen() failed: ");
 		close_socket(fd);
 		return -1;
 	}
