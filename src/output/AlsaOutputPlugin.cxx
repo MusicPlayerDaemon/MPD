@@ -106,6 +106,13 @@ struct AlsaOutput {
 	 */
 	snd_pcm_uframes_t period_position;
 
+	/**
+	 * This buffer gets allocated after opening the ALSA device.
+	 * It contains silence samples, enough to fill one period (see
+	 * #period_frames).
+	 */
+	void *silence;
+
 	AlsaOutput():mode(0), writei(snd_pcm_writei) {
 	}
 
@@ -580,6 +587,11 @@ configure_hw:
 	ad->period_frames = alsa_period_size;
 	ad->period_position = 0;
 
+	ad->silence = g_malloc(snd_pcm_frames_to_bytes(ad->pcm,
+						       alsa_period_size));
+	snd_pcm_format_set_silence(format, ad->silence,
+				   alsa_period_size * channels);
+
 	return true;
 
 error:
@@ -623,6 +635,7 @@ alsa_setup_dsd(AlsaOutput *ad, struct audio_format *audio_format,
 		g_set_error(error_r, alsa_output_quark(), 0,
 			    "Failed to configure DSD-over-USB on ALSA device \"%s\"",
 			    alsa_device(ad));
+		g_free(ad->silence);
 		return false;
 	}
 
@@ -688,20 +701,7 @@ alsa_open(struct audio_output *ao, struct audio_format *audio_format, GError **e
 static void
 alsa_write_silence(AlsaOutput *ad, snd_pcm_uframes_t nframes)
 {
-	size_t nbytes = nframes * ad->out_frame_size;
-	void *buffer = g_malloc(nbytes);
-	snd_pcm_hw_params_t *params;
-	snd_pcm_format_t format;
-	unsigned channels;
-
-	snd_pcm_hw_params_alloca(&params);
-	snd_pcm_hw_params_current(ad->pcm, params);
-	snd_pcm_hw_params_get_format(params, &format);
-	snd_pcm_hw_params_get_channels(params, &channels);
-
-	snd_pcm_format_set_silence(format, buffer, nframes * channels);
-	ad->writei(ad->pcm, buffer, nframes);
-	g_free(buffer);
+	ad->writei(ad->pcm, ad->silence, nframes);
 }
 
 static int
@@ -778,6 +778,7 @@ alsa_close(struct audio_output *ao)
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
 	snd_pcm_close(ad->pcm);
+	g_free(ad->silence);
 }
 
 static size_t
