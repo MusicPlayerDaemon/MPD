@@ -726,6 +726,26 @@ alsa_recover(AlsaOutput *ad, int err)
 	case SND_PCM_STATE_XRUN:
 		ad->period_position = 0;
 		err = snd_pcm_prepare(ad->pcm);
+
+		if (err == 0) {
+			/* this works around a driver bug observed on
+			   the Raspberry Pi: after snd_pcm_drop(), the
+			   whole ring buffer must be invalidated, but
+			   the snd_pcm_prepare() call above makes the
+			   driver play random data that just happens
+			   to be still in the buffer; by adding and
+			   cancelling some silence, this bug does not
+			   occur */
+			alsa_write_silence(ad, ad->period_frames);
+
+			/* cancel the silence data right away to avoid
+			   increasing latency; even though this
+			   function call invalidates the portion of
+			   silence, the driver seems to avoid the
+			   bug */
+			snd_pcm_reset(ad->pcm);
+		}
+
 		break;
 	case SND_PCM_STATE_DISCONNECTED:
 		break;

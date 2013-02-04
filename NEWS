@@ -11,6 +11,7 @@ ver 0.18 (2012/??/??)
   - vorbis: accept floating point input samples
 * output:
   - new option "tags" may be used to disable sending tags to output
+  - alsa: workaround for noise after manual song change
 * improved decoder/output error reporting
 
 
