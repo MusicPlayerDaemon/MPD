@@ -137,7 +137,7 @@ alsa_device(const AlsaOutput *ad)
 static void
 alsa_configure(AlsaOutput *ad, const struct config_param *param)
 {
-	ad->device = config_dup_block_string(param, "device", NULL);
+	ad->device = config_get_block_string(param, "device", "");
 
 	ad->use_mmap = config_get_block_bool(param, "use_mmap", false);
 
