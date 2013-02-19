@@ -103,7 +103,7 @@ check_range(Client *client, unsigned *value_r1, unsigned *value_r2,
 
 	if (*test == ':') {
 		value = strtol(++test, &test2, 10);
-		if (test2 == test || *test2 != '\0') {
+		if (*test2 != '\0') {
 			command_error(client, ACK_ERROR_ARG,
 				      "Integer or range expected: %s", s);
 			return false;

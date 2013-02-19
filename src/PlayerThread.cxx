@@ -350,6 +350,8 @@ player_open_output(struct player *player)
 		pc->state = PLAYER_STATE_PAUSE;
 		pc->Unlock();
 
+		idle_add(IDLE_PLAYER);
+
 		return false;
 	}
 }
@@ -834,6 +836,8 @@ play_next_chunk(struct player *player)
 
 		pc->Unlock();
 
+		idle_add(IDLE_PLAYER);
+
 		return false;
 	}
 
@@ -879,12 +883,16 @@ player_song_border(struct player *player)
 	struct player_control *const pc = player->pc;
 	pc->Lock();
 
-	if (pc->border_pause) {
+	const bool border_pause = pc->border_pause;
+	if (border_pause) {
 		player->paused = true;
 		pc->state = PLAYER_STATE_PAUSE;
 	}
 
 	pc->Unlock();
+
+	if (border_pause)
+		idle_add(IDLE_PLAYER);
 
 	return true;
 }

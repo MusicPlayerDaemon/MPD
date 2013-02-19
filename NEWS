@@ -16,8 +16,12 @@ ver 0.18 (2012/??/??)
 
 
 ver 0.17.4 (2013/??/??)
+* protocol:
+  - allow to omit END in ranges (START:END)
 * decoder:
   - ffmpeg: support float planar audio (ffmpeg 1.1)
+* player:
+  - implement missing "idle" events on output errors
 
 ver 0.17.3 (2013/01/06)
 * output:
