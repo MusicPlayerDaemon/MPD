@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "mixer_api.h"
+#include "MixerInternal.hxx"
 #include "output_api.h"
 #include "GlobalEvents.hxx"
 #include "Main.hxx"

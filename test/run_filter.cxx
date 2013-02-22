@@ -25,7 +25,7 @@
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
 #include "PcmVolume.hxx"
-#include "mixer_control.h"
+#include "MixerControl.hxx"
 #include "stdbin.h"
 
 #include <glib.h>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,23 +17,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "mixer_type.h"
+/** \file
+ *
+ * This header provides "extern" declarations for all mixer plugins.
+ */
 
-#include <assert.h>
-#include <string.h>
+#ifndef MPD_MIXER_LIST_HXX
+#define MPD_MIXER_LIST_HXX
 
-enum mixer_type
-mixer_type_parse(const char *input)
-{
-	assert(input != NULL);
+extern const struct mixer_plugin software_mixer_plugin;
+extern const struct mixer_plugin alsa_mixer_plugin;
+extern const struct mixer_plugin oss_mixer_plugin;
+extern const struct mixer_plugin roar_mixer_plugin;
+extern const struct mixer_plugin pulse_mixer_plugin;
+extern const struct mixer_plugin winmm_mixer_plugin;
 
-	if (strcmp(input, "none") == 0 || strcmp(input, "disabled") == 0)
-		return MIXER_TYPE_NONE;
-	else if (strcmp(input, "hardware") == 0)
-		return MIXER_TYPE_HARDWARE;
-	else if (strcmp(input, "software") == 0)
-		return MIXER_TYPE_SOFTWARE;
-	else
-		return MIXER_TYPE_UNKNOWN;
-}
+#endif

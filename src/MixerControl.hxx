@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,12 +22,10 @@
  * Functions which manipulate a #mixer object.
  */
 
-#ifndef MPD_MIXER_CONTROL_H
-#define MPD_MIXER_CONTROL_H
+#ifndef MPD_MIXER_CONTROL_HXX
+#define MPD_MIXER_CONTROL_HXX
 
 #include "gerror.h"
-
-#include <stdbool.h>
 
 struct mixer;
 struct mixer_plugin;

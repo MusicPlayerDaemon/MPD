@@ -21,7 +21,7 @@
 #include "WinmmOutputPlugin.hxx"
 #include "output_api.h"
 #include "pcm_buffer.h"
-#include "mixer_list.h"
+#include "MixerList.hxx"
 
 #include <stdlib.h>
 #include <string.h>

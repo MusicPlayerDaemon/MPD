@@ -20,7 +20,7 @@
 #include "config.h"
 #include "pulse_output_plugin.h"
 #include "output_api.h"
-#include "mixer_list.h"
+#include "MixerList.hxx"
 #include "mixer/PulseMixerPlugin.h"
 
 #include <glib.h>

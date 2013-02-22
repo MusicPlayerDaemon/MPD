@@ -18,12 +18,8 @@
  */
 
 #include "config.h"
-
-extern "C" {
-#include "mixer_control.h"
-#include "mixer_list.h"
-}
-
+#include "MixerControl.hxx"
+#include "MixerList.hxx"
 #include "FilterRegistry.hxx"
 #include "PcmVolume.hxx"
 #include "GlobalEvents.hxx"

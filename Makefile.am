@@ -75,11 +75,7 @@ mpd_headers = \
 	src/input_stream.h \
 	src/text_input_stream.h \
 	src/ls.h \
-	src/mixer_api.h \
-	src/mixer_control.h \
-	src/mixer_list.h \
 	src/mixer_plugin.h \
-	src/mixer_type.h \
 	src/daemon.h \
 	src/AudioCompress/config.h \
 	src/AudioCompress/compress.h \
@@ -798,10 +794,11 @@ MIXER_LIBS = \
 	$(PULSE_LIBS)
 
 MIXER_API_SRC = \
-	src/mixer_control.c \
-	src/mixer_type.c \
+	src/MixerList.hxx \
+	src/MixerControl.cxx src/MixerControl.hxx \
+	src/MixerType.cxx src/MixerType.hxx \
 	src/MixerAll.cxx src/MixerAll.hxx \
-	src/mixer_api.c
+	src/MixerInternal.cxx src/MixerInternal.hxx
 
 libmixer_plugins_a_SOURCES = \
 	src/mixer/SoftwareMixerPlugin.cxx \
@@ -1344,9 +1341,9 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/resolver.c \
 	src/OutputInit.cxx src/OutputFinish.cxx src/OutputList.cxx \
 	src/OutputPlugin.cxx \
-	src/mixer_api.c \
-	src/mixer_control.c \
-	src/mixer_type.c \
+	src/MixerInternal.cxx \
+	src/MixerControl.cxx \
+	src/MixerType.cxx \
 	src/FilterPlugin.cxx \
 	src/FilterConfig.cxx \
 	src/AudioCompress/compress.c \
@@ -1363,7 +1360,8 @@ test_read_mixer_LDADD = \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c \
-	src/mixer_control.c src/mixer_api.c \
+	src/MixerControl.cxx \
+	src/MixerInternal.cxx \
 	src/FilterPlugin.cxx \
 	src/filter/VolumeFilterPlugin.cxx \
 	src/fd_util.c

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,19 +17,31 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/** \file
+#ifndef MPD_MIXER_TYPE_HXX
+#define MPD_MIXER_TYPE_HXX
+
+enum mixer_type {
+	/** parser error */
+	MIXER_TYPE_UNKNOWN,
+
+	/** mixer disabled */
+	MIXER_TYPE_NONE,
+
+	/** software mixer with pcm_volume() */
+	MIXER_TYPE_SOFTWARE,
+
+	/** hardware mixer (output's plugin) */
+	MIXER_TYPE_HARDWARE,
+};
+
+/**
+ * Parses a "mixer_type" setting from the configuration file.
  *
- * This header provides "extern" declarations for all mixer plugins.
+ * @param input the configured string value; must not be NULL
+ * @return a #mixer_type value; MIXER_TYPE_UNKNOWN means #input could
+ * not be parsed
  */
-
-#ifndef MPD_MIXER_LIST_H
-#define MPD_MIXER_LIST_H
-
-extern const struct mixer_plugin software_mixer_plugin;
-extern const struct mixer_plugin alsa_mixer_plugin;
-extern const struct mixer_plugin oss_mixer_plugin;
-extern const struct mixer_plugin roar_mixer_plugin;
-extern const struct mixer_plugin pulse_mixer_plugin;
-extern const struct mixer_plugin winmm_mixer_plugin;
+enum mixer_type
+mixer_type_parse(const char *input);
 
 #endif

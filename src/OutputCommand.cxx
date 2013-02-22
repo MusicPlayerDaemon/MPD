@@ -28,12 +28,12 @@
 #include "OutputCommand.hxx"
 #include "OutputAll.hxx"
 #include "PlayerControl.hxx"
+#include "MixerControl.hxx"
 #include "Idle.hxx"
 
 extern "C" {
 #include "output_internal.h"
 #include "output_plugin.h"
-#include "mixer_control.h"
 }
 
 extern unsigned audio_output_state_version;

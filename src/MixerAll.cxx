@@ -19,13 +19,14 @@
 
 #include "config.h"
 #include "MixerAll.hxx"
+#include "MixerControl.hxx"
+#include "MixerInternal.hxx"
+#include "MixerList.hxx"
 #include "OutputAll.hxx"
 #include "PcmVolume.hxx"
 
 extern "C" {
-#include "mixer_control.h"
 #include "output_internal.h"
-#include "mixer_api.h"
 }
 
 #include <glib.h>

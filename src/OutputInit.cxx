@@ -27,11 +27,11 @@
 
 extern "C" {
 #include "output_internal.h"
-#include "mixer_control.h"
-#include "mixer_type.h"
-#include "mixer_list.h"
 }
 
+#include "MixerList.hxx"
+#include "MixerType.hxx"
+#include "MixerControl.hxx"
 #include "mixer/SoftwareMixerPlugin.hxx"
 #include "FilterPlugin.hxx"
 #include "FilterRegistry.hxx"

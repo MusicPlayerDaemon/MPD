@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,12 +20,12 @@
 /** \file
  *
  * This header declares the mixer_plugin class.  It should not be
- * included directly; use mixer_api.h instead in mixer
+ * included directly; use MixerInternal.hxx instead in mixer
  * implementations.
  */
 
-#ifndef MPD_MIXER_PLUGIN_H
-#define MPD_MIXER_PLUGIN_H
+#ifndef MPD_MIXER_PLUGIN_HXX
+#define MPD_MIXER_PLUGIN_HXX
 
 #include "gerror.h"
 

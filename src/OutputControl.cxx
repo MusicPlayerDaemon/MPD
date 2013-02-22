@@ -24,10 +24,10 @@
 
 extern "C" {
 #include "output_internal.h"
-#include "mixer_control.h"
-#include "mixer_plugin.h"
 }
 
+#include "MixerPlugin.hxx"
+#include "MixerControl.hxx"
 #include "notify.hxx"
 #include "filter/ReplayGainFilterPlugin.hxx"
 #include "FilterPlugin.hxx"

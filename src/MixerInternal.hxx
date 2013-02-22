@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,17 +17,36 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "mixer_api.h"
+#ifndef MPD_MIXER_INTERNAL_HXX
+#define MPD_MIXER_INTERNAL_HXX
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "mixer"
+#include "MixerPlugin.hxx"
+#include "MixerList.hxx"
+
+#include <glib.h>
+
+struct mixer {
+	const struct mixer_plugin *plugin;
+
+	/**
+	 * This mutex protects all of the mixer struct, including its
+	 * implementation, so plugins don't have to deal with that.
+	 */
+	GMutex *mutex;
+
+	/**
+	 * Is the mixer device currently open?
+	 */
+	bool open;
+
+	/**
+	 * Has this mixer failed, and should not be reopened
+	 * automatically?
+	 */
+	bool failed;
+};
 
 void
-mixer_init(struct mixer *mixer, const struct mixer_plugin *plugin)
-{
-	mixer->plugin = plugin;
-	mixer->mutex = g_mutex_new();
-	mixer->open = false;
-	mixer->failed = false;
-}
+mixer_init(struct mixer *mixer, const struct mixer_plugin *plugin);
+
+#endif

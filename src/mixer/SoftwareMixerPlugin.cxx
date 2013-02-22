@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "SoftwareMixerPlugin.hxx"
-#include "mixer_api.h"
+#include "MixerInternal.hxx"
 #include "FilterPlugin.hxx"
 #include "FilterRegistry.hxx"
 #include "filter/VolumeFilterPlugin.hxx"

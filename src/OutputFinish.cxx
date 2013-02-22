@@ -22,9 +22,9 @@
 extern "C" {
 #include "output_internal.h"
 #include "output_plugin.h"
-#include "mixer_control.h"
 }
 
+#include "MixerControl.hxx"
 #include "FilterInternal.hxx"
 
 #include <assert.h>

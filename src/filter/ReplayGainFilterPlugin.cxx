@@ -25,7 +25,7 @@
 #include "audio_format.h"
 #include "replay_gain_info.h"
 #include "replay_gain_config.h"
-#include "mixer_control.h"
+#include "MixerControl.hxx"
 #include "PcmVolume.hxx"
 
 extern "C" {

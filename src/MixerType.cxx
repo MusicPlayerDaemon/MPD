@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,31 +17,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_MIXER_TYPE_H
-#define MPD_MIXER_TYPE_H
+#include "config.h"
+#include "MixerType.hxx"
 
-enum mixer_type {
-	/** parser error */
-	MIXER_TYPE_UNKNOWN,
+#include <assert.h>
+#include <string.h>
 
-	/** mixer disabled */
-	MIXER_TYPE_NONE,
-
-	/** software mixer with pcm_volume() */
-	MIXER_TYPE_SOFTWARE,
-
-	/** hardware mixer (output's plugin) */
-	MIXER_TYPE_HARDWARE,
-};
-
-/**
- * Parses a "mixer_type" setting from the configuration file.
- *
- * @param input the configured string value; must not be NULL
- * @return a #mixer_type value; MIXER_TYPE_UNKNOWN means #input could
- * not be parsed
- */
 enum mixer_type
-mixer_type_parse(const char *input);
+mixer_type_parse(const char *input)
+{
+	assert(input != NULL);
 
-#endif
+	if (strcmp(input, "none") == 0 || strcmp(input, "disabled") == 0)
+		return MIXER_TYPE_NONE;
+	else if (strcmp(input, "hardware") == 0)
+		return MIXER_TYPE_HARDWARE;
+	else if (strcmp(input, "software") == 0)
+		return MIXER_TYPE_SOFTWARE;
+	else
+		return MIXER_TYPE_UNKNOWN;
+}
