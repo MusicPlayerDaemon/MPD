@@ -37,7 +37,7 @@
 #include "output/RoarOutputPlugin.hxx"
 #include "output/shout_output_plugin.h"
 #include "output/solaris_output_plugin.h"
-#include "output/winmm_output_plugin.h"
+#include "output/WinmmOutputPlugin.hxx"
 
 const struct audio_output_plugin *const audio_output_plugins[] = {
 #ifdef HAVE_SHOUT

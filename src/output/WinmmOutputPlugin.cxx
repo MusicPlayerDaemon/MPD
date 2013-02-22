@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,11 +18,10 @@
  */
 
 #include "config.h"
-#include "winmm_output_plugin.h"
+#include "WinmmOutputPlugin.hxx"
 #include "output_api.h"
 #include "pcm_buffer.h"
 #include "mixer_list.h"
-#include "winmm_output_plugin.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -30,13 +29,13 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "winmm_output"
 
-struct winmm_buffer {
+struct WinmmBuffer {
 	struct pcm_buffer buffer;
 
 	WAVEHDR hdr;
 };
 
-struct winmm_output {
+struct WinmmOutput {
 	struct audio_output base;
 
 	UINT device_id;
@@ -48,7 +47,7 @@ struct winmm_output {
 	 */
 	HANDLE event;
 
-	struct winmm_buffer buffers[8];
+	WinmmBuffer buffers[8];
 	unsigned next_buffer;
 };
 
@@ -62,7 +61,7 @@ winmm_output_quark(void)
 }
 
 HWAVEOUT
-winmm_output_get_handle(struct winmm_output* output)
+winmm_output_get_handle(WinmmOutput *output)
 {
 	return output->handle;
 }
@@ -77,7 +76,7 @@ static bool
 get_device_id(const char *device_name, UINT *device_id, GError **error_r)
 {
 	/* if device is not specified use wave mapper */
-	if (device_name == NULL) {
+	if (device_name == nullptr) {
 		*device_id = WAVE_MAPPER;
 		return true;
 	}
@@ -117,17 +116,17 @@ fail:
 static struct audio_output *
 winmm_output_init(const struct config_param *param, GError **error_r)
 {
-	struct winmm_output *wo = g_new(struct winmm_output, 1);
+	WinmmOutput *wo = new WinmmOutput();
 	if (!ao_base_init(&wo->base, &winmm_output_plugin, param, error_r)) {
 		g_free(wo);
-		return NULL;
+		return nullptr;
 	}
 
-	const char *device = config_get_block_string(param, "device", NULL);
+	const char *device = config_get_block_string(param, "device", nullptr);
 	if (!get_device_id(device, &wo->device_id, error_r)) {
 		ao_base_finish(&wo->base);
 		g_free(wo);
-		return NULL;
+		return nullptr;
 	}
 
 	return &wo->base;
@@ -136,20 +135,20 @@ winmm_output_init(const struct config_param *param, GError **error_r)
 static void
 winmm_output_finish(struct audio_output *ao)
 {
-	struct winmm_output *wo = (struct winmm_output *)ao;
+	WinmmOutput *wo = (WinmmOutput *)ao;
 
 	ao_base_finish(&wo->base);
-	g_free(wo);
+	delete wo;
 }
 
 static bool
 winmm_output_open(struct audio_output *ao, struct audio_format *audio_format,
 		  GError **error_r)
 {
-	struct winmm_output *wo = (struct winmm_output *)ao;
+	WinmmOutput *wo = (WinmmOutput *)ao;
 
-	wo->event = CreateEvent(NULL, false, false, NULL);
-	if (wo->event == NULL) {
+	wo->event = CreateEvent(nullptr, false, false, nullptr);
+	if (wo->event == nullptr) {
 		g_set_error(error_r, winmm_output_quark(), 0,
 			    "CreateEvent() failed");
 		return false;
@@ -203,7 +202,7 @@ winmm_output_open(struct audio_output *ao, struct audio_format *audio_format,
 static void
 winmm_output_close(struct audio_output *ao)
 {
-	struct winmm_output *wo = (struct winmm_output *)ao;
+	WinmmOutput *wo = (WinmmOutput *)ao;
 
 	for (unsigned i = 0; i < G_N_ELEMENTS(wo->buffers); ++i)
 		pcm_buffer_deinit(&wo->buffers[i].buffer);
@@ -217,17 +216,17 @@ winmm_output_close(struct audio_output *ao)
  * Copy data into a buffer, and prepare the wave header.
  */
 static bool
-winmm_set_buffer(struct winmm_output *wo, struct winmm_buffer *buffer,
+winmm_set_buffer(WinmmOutput *wo, WinmmBuffer *buffer,
 		 const void *data, size_t size,
 		 GError **error_r)
 {
 	void *dest = pcm_buffer_get(&buffer->buffer, size);
-	assert(dest != NULL);
+	assert(dest != nullptr);
 
 	memcpy(dest, data, size);
 
 	memset(&buffer->hdr, 0, sizeof(buffer->hdr));
-	buffer->hdr.lpData = dest;
+	buffer->hdr.lpData = (LPSTR)dest;
 	buffer->hdr.dwBufferLength = size;
 
 	MMRESULT result = waveOutPrepareHeader(wo->handle, &buffer->hdr,
@@ -245,7 +244,7 @@ winmm_set_buffer(struct winmm_output *wo, struct winmm_buffer *buffer,
  * Wait until the buffer is finished.
  */
 static bool
-winmm_drain_buffer(struct winmm_output *wo, struct winmm_buffer *buffer,
+winmm_drain_buffer(WinmmOutput *wo, WinmmBuffer *buffer,
 		   GError **error_r)
 {
 	if ((buffer->hdr.dwFlags & WHDR_DONE) == WHDR_DONE)
@@ -272,10 +271,10 @@ winmm_drain_buffer(struct winmm_output *wo, struct winmm_buffer *buffer,
 static size_t
 winmm_output_play(struct audio_output *ao, const void *chunk, size_t size, GError **error_r)
 {
-	struct winmm_output *wo = (struct winmm_output *)ao;
+	WinmmOutput *wo = (WinmmOutput *)ao;
 
 	/* get the next buffer from the ring and prepare it */
-	struct winmm_buffer *buffer = &wo->buffers[wo->next_buffer];
+	WinmmBuffer *buffer = &wo->buffers[wo->next_buffer];
 	if (!winmm_drain_buffer(wo, buffer, error_r) ||
 	    !winmm_set_buffer(wo, buffer, chunk, size, error_r))
 		return 0;
@@ -299,7 +298,7 @@ winmm_output_play(struct audio_output *ao, const void *chunk, size_t size, GErro
 }
 
 static bool
-winmm_drain_all_buffers(struct winmm_output *wo, GError **error_r)
+winmm_drain_all_buffers(WinmmOutput *wo, GError **error_r)
 {
 	for (unsigned i = wo->next_buffer; i < G_N_ELEMENTS(wo->buffers); ++i)
 		if (!winmm_drain_buffer(wo, &wo->buffers[i], error_r))
@@ -313,12 +312,12 @@ winmm_drain_all_buffers(struct winmm_output *wo, GError **error_r)
 }
 
 static void
-winmm_stop(struct winmm_output *wo)
+winmm_stop(WinmmOutput *wo)
 {
 	waveOutReset(wo->handle);
 
 	for (unsigned i = 0; i < G_N_ELEMENTS(wo->buffers); ++i) {
-		struct winmm_buffer *buffer = &wo->buffers[i];
+		WinmmBuffer *buffer = &wo->buffers[i];
 		waveOutUnprepareHeader(wo->handle, &buffer->hdr,
 				       sizeof(buffer->hdr));
 	}
@@ -327,29 +326,34 @@ winmm_stop(struct winmm_output *wo)
 static void
 winmm_output_drain(struct audio_output *ao)
 {
-	struct winmm_output *wo = (struct winmm_output *)ao;
+	WinmmOutput *wo = (WinmmOutput *)ao;
 
-	if (!winmm_drain_all_buffers(wo, NULL))
+	if (!winmm_drain_all_buffers(wo, nullptr))
 		winmm_stop(wo);
 }
 
 static void
 winmm_output_cancel(struct audio_output *ao)
 {
-	struct winmm_output *wo = (struct winmm_output *)ao;
+	WinmmOutput *wo = (WinmmOutput *)ao;
 
 	winmm_stop(wo);
 }
 
 const struct audio_output_plugin winmm_output_plugin = {
-	.name = "winmm",
-	.test_default_device = winmm_output_test_default_device,
-	.init = winmm_output_init,
-	.finish = winmm_output_finish,
-	.open = winmm_output_open,
-	.close = winmm_output_close,
-	.play = winmm_output_play,
-	.drain = winmm_output_drain,
-	.cancel = winmm_output_cancel,
-	.mixer_plugin = &winmm_mixer_plugin,
+	"winmm",
+	winmm_output_test_default_device,
+	winmm_output_init,
+	winmm_output_finish,
+	nullptr,
+	nullptr,
+	winmm_output_open,
+	winmm_output_close,
+	nullptr,
+	nullptr,
+	winmm_output_play,
+	winmm_output_drain,
+	winmm_output_cancel,
+	nullptr,
+	&winmm_mixer_plugin,
 };

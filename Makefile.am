@@ -903,8 +903,8 @@ endif
 
 if ENABLE_WINMM_OUTPUT
 liboutput_plugins_a_SOURCES += \
-	src/output/winmm_output_plugin.c src/output/winmm_output_plugin.h
-libmixer_plugins_a_SOURCES += src/mixer/winmm_mixer_plugin.c
+	src/output/WinmmOutputPlugin.cxx src/output/WinmmOutputPlugin.hxx
+libmixer_plugins_a_SOURCES += src/mixer/WinmmMixerPlugin.cxx
 endif
 
 

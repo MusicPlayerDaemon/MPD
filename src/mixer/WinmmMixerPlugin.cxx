@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #include "config.h"
 #include "mixer_api.h"
 #include "output_api.h"
-#include "output/winmm_output_plugin.h"
+#include "output/WinmmOutputPlugin.hxx"
 
 #include <mmsystem.h>
 
@@ -33,7 +33,7 @@
 
 struct winmm_mixer {
 	struct mixer base;
-	struct winmm_output *output;
+	WinmmOutput *output;
 };
 
 static inline GQuark
@@ -59,11 +59,11 @@ static struct mixer *
 winmm_mixer_init(void *ao, G_GNUC_UNUSED const struct config_param *param,
 		 G_GNUC_UNUSED GError **error_r)
 {
-	assert(ao != NULL);
+	assert(ao != nullptr);
 
 	struct winmm_mixer *wm = g_new(struct winmm_mixer, 1);
 	mixer_init(&wm->base, &winmm_mixer_plugin);
-	wm->output = (struct winmm_output *) ao;
+	wm->output = (WinmmOutput *) ao;
 
 	return &wm->base;
 }
@@ -109,8 +109,11 @@ winmm_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
 }
 
 const struct mixer_plugin winmm_mixer_plugin = {
-	.init = winmm_mixer_init,
-	.finish = winmm_mixer_finish,
-	.get_volume = winmm_mixer_get_volume,
-	.set_volume = winmm_mixer_set_volume,
+	winmm_mixer_init,
+	winmm_mixer_finish,
+	nullptr,
+	nullptr,
+	winmm_mixer_get_volume,
+	winmm_mixer_set_volume,
+	false,
 };

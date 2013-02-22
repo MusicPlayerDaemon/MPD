@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,21 +17,25 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_WINMM_OUTPUT_PLUGIN_H
-#define MPD_WINMM_OUTPUT_PLUGIN_H
+#ifndef MPD_WINMM_OUTPUT_PLUGIN_HXX
+#define MPD_WINMM_OUTPUT_PLUGIN_HXX
 
 #include "check.h"
 
 #ifdef ENABLE_WINMM_OUTPUT
 
+#include "gcc.h"
+
 #include <windows.h>
 #include <mmsystem.h>
 
-struct winmm_output;
+struct WinmmOutput;
 
 extern const struct audio_output_plugin winmm_output_plugin;
 
-HWAVEOUT winmm_output_get_handle(struct winmm_output*);
+gcc_pure
+HWAVEOUT
+winmm_output_get_handle(WinmmOutput *);
 
 #endif
 
