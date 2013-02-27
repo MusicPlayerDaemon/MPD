@@ -25,6 +25,9 @@
 #include <mach/mach_time.h>
 #else
 #include <time.h>
+#ifndef CLOCK_MONOTONIC
+#include <sys/time.h>
+#endif
 #endif
 
 unsigned
