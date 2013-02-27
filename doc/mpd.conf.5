@@ -175,7 +175,7 @@ only choice) if MPD was compiled without libsamplerate.
 .RE
 .IP
 For an up-to-date list of available converters, please see the libsamplerate
-documentation (available online at <\fBhttp://www.mega-nerd.com/SRC/\fP>).
+documentation (available online at <\fBhttp://www.mega\-nerd.com/SRC/\fP>).
 .TP
 .B replaygain <off or album or track or auto>
 If specified, mpd will adjust the volume of songs played using ReplayGain tags
@@ -186,7 +186,7 @@ tags if random play is activated otherwise the album ReplayGain tags. Currently
 only FLAC, Ogg Vorbis, Musepack, and MP3 (through ID3v2 ReplayGain tags, not
 APEv2) are supported.
 .TP
-.B replaygain_preamp <-15 to 15>
+.B replaygain_preamp <\-15 to 15>
 This is the gain (in dB) applied to songs with ReplayGain tags.
 .TP
 .B volume_normalization <yes or no>
@@ -227,12 +227,12 @@ is 8192.
 .TP
 .B filesystem_charset <charset>
 This specifies the character set used for the filesystem.  A list of supported
-character sets can be obtained by running "iconv -l".  The default is
+character sets can be obtained by running "iconv \-l".  The default is
 determined from the locale when the db was originally created.
 .TP
 .B id3v1_encoding <charset>
 This specifies the character set which ID3v1 tags are encoded in.  A list of
-supported character sets can be obtained by running "iconv -l".  The default is
+supported character sets can be obtained by running "iconv \-l".  The default is
 to let libid3tag convert them (from ISO-8859-1, as the standard specifies) and
 do no additional conversion.
 .TP
@@ -260,7 +260,7 @@ be used alone to disable all metadata.  The default is to use all known tag
 types except for comments and those starting with "musicbrainz".
 .TP
 .B auto_update <yes or no>
-This specifies the wheter to support automatic update of music database when
+This specifies the whether to support automatic update of music database when
 files are changed in music_directory. The default is to disable autoupdate
 of database.
 .TP
@@ -282,7 +282,7 @@ better but requires more processing and higher bandwidth. Default is yes.
 .TP
 .B type <type>
 This specifies the audio output type.  See the list of supported outputs in mpd
---version for possible values.
+\-\-version for possible values.
 .TP
 .B name <name>
 This specifies a unique name for the audio output.

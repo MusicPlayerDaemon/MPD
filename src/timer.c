@@ -31,9 +31,9 @@
 struct timer *timer_new(const struct audio_format *af)
 {
 	struct timer *timer = g_new(struct timer, 1);
-	timer->time = 0;
-	timer->started = 0;
-	timer->rate = af->sample_rate * audio_format_frame_size(af);
+	timer->time = 0; // us
+	timer->started = 0; // false
+	timer->rate = af->sample_rate * audio_format_frame_size(af); // samples per second
 
 	return timer;
 }
@@ -59,6 +59,8 @@ void timer_add(struct timer *timer, int size)
 {
 	assert(timer->started);
 
+	// (size samples) / (rate samples per second) = duration seconds
+	// duration seconds * 1000000 = duration us
 	timer->time += ((uint64_t)size * 1000000) / timer->rate;
 }
 

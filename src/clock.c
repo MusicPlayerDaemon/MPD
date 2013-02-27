@@ -25,6 +25,9 @@
 #include <mach/mach_time.h>
 #else
 #include <time.h>
+#ifndef CLOCK_MONOTONIC
+#include <sys/time.h>
+#endif
 #endif
 
 unsigned
@@ -89,7 +92,7 @@ monotonic_clock_us(void)
 	/* we have no monotonic clock, fall back to gettimeofday() */
 	struct timeval tv;
 	gettimeofday(&tv, 0);
-	return (uint64_t)tv.tv_sec * 1000 + (uint64_t)(tv.tv_usec) / 1000(;
+	return (uint64_t)tv.tv_sec * 1000 + (uint64_t)tv.tv_usec;
 #endif
 }
 
