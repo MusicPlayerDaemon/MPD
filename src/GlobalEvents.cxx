@@ -109,6 +109,6 @@ GlobalEvents::Emit(Event event)
 	assert((unsigned)event < MAX);
 
 	const unsigned mask = 1u << unsigned(event);
-	if ((GlobalEvents::flags.fetch_or(mask) & mask) == 0)
+	if (GlobalEvents::flags.fetch_or(mask) == 0)
 		wake_fd.Write();
 }
