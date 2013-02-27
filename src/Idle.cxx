@@ -61,7 +61,7 @@ idle_add(unsigned flags)
 unsigned
 idle_get(void)
 {
-	return idle_flags.fetch_and(0);
+	return idle_flags.exchange(0);
 }
 
 const char*const*

@@ -59,7 +59,7 @@ GlobalEventCallback(G_GNUC_UNUSED GIOChannel *source,
 	if (!GlobalEvents::wake_fd.Read())
 		return true;
 
-	const unsigned flags = GlobalEvents::flags.fetch_and(0);
+	const unsigned flags = GlobalEvents::flags.exchange(0);
 
 	for (unsigned i = 0; i < GlobalEvents::MAX; ++i)
 		if (flags & (1u << i))
