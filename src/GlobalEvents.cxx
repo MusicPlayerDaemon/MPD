@@ -19,21 +19,16 @@
 
 #include "config.h"
 #include "GlobalEvents.hxx"
-#include "event/WakeFD.hxx"
-#include "mpd_error.h"
 
 #include <atomic>
 
 #include <assert.h>
 #include <glib.h>
-#include <string.h>
-#include <errno.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "global_events"
 
 namespace GlobalEvents {
-	static WakeFD wake_fd;
 	static guint source_id;
 	static std::atomic_uint flags;
 	static Handler handlers[MAX];
@@ -52,13 +47,8 @@ InvokeGlobalEvent(GlobalEvents::Event event)
 }
 
 static gboolean
-GlobalEventCallback(G_GNUC_UNUSED GIOChannel *source,
-		    G_GNUC_UNUSED GIOCondition condition,
-		    G_GNUC_UNUSED gpointer data)
+GlobalEventCallback(G_GNUC_UNUSED gpointer data)
 {
-	if (!GlobalEvents::wake_fd.Read())
-		return true;
-
 	const unsigned flags = GlobalEvents::flags.exchange(0);
 
 	for (unsigned i = 0; i < GlobalEvents::MAX; ++i)
@@ -66,32 +56,19 @@ GlobalEventCallback(G_GNUC_UNUSED GIOChannel *source,
 			/* invoke the event handler */
 			InvokeGlobalEvent(GlobalEvents::Event(i));
 
-	return true;
+	return false;
 }
 
 void
 GlobalEvents::Initialize()
 {
-	if (!wake_fd.Create())
-		MPD_ERROR("Couldn't open pipe: %s", strerror(errno));
-
-#ifndef G_OS_WIN32
-	GIOChannel *channel = g_io_channel_unix_new(wake_fd.Get());
-#else
-	GIOChannel *channel = g_io_channel_win32_new_socket(wake_fd.Get());
-#endif
-
-	source_id = g_io_add_watch(channel, G_IO_IN,
-				   GlobalEventCallback, NULL);
-	g_io_channel_unref(channel);
 }
 
 void
 GlobalEvents::Deinitialize()
 {
-	g_source_remove(source_id);
-
-	wake_fd.Destroy();
+	if (source_id != 0)
+		g_source_remove(source_id);
 }
 
 void
@@ -110,5 +87,5 @@ GlobalEvents::Emit(Event event)
 
 	const unsigned mask = 1u << unsigned(event);
 	if (GlobalEvents::flags.fetch_or(mask) == 0)
-		wake_fd.Write();
+		source_id = g_idle_add(GlobalEventCallback, nullptr);
 }
