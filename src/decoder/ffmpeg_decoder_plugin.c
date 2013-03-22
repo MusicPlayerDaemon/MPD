@@ -318,20 +318,33 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 	       cmd == DECODE_COMMAND_NONE) {
 		int audio_size = buffer_size;
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53,25,0)
-		AVFrame frame;
+
+		AVFrame *frame = avcodec_alloc_frame();
+		if (frame == NULL) {
+			g_warning("Could not allocate frame");
+			break;
+		}
+
 		int got_frame = 0;
 		int len = avcodec_decode_audio4(codec_context,
-						&frame, &got_frame,
+						frame, &got_frame,
 						&packet2);
 		if (len >= 0 && got_frame) {
 			audio_size = copy_interleave_frame(codec_context,
-							   &frame,
+							   frame,
 							   aligned_buffer,
 							   buffer_size);
 			if (audio_size < 0)
 				len = audio_size;
 		} else if (len >= 0)
 			len = -1;
+
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 28, 0)
+		avcodec_free_frame(&frame);
+#else
+		av_freep(&frame);
+#endif
+
 #elif LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52,25,0)
 		int len = avcodec_decode_audio3(codec_context,
 						aligned_buffer, &audio_size,

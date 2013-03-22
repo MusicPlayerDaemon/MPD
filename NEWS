@@ -3,6 +3,7 @@ ver 0.17.4 (2013/??/??)
   - allow to omit END in ranges (START:END)
 * decoder:
   - ffmpeg: support float planar audio (ffmpeg 1.1)
+  - ffmpeg: fix AVFrame allocation
 * player:
   - implement missing "idle" events on output errors
 * clock: fix build failure
