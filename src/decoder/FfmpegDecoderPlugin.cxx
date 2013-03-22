@@ -270,7 +270,8 @@ static enum decoder_command
 ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		   const AVPacket *packet,
 		   AVCodecContext *codec_context,
-		   const AVRational *time_base)
+		   const AVRational *time_base,
+		   AVFrame *frame)
 {
 	if (packet->pts >= 0 && packet->pts != (int64_t)AV_NOPTS_VALUE)
 		decoder_timestamp(decoder,
@@ -293,14 +294,13 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 	       cmd == DECODE_COMMAND_NONE) {
 		int audio_size = buffer_size;
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53,25,0)
-		AVFrame frame;
 		int got_frame = 0;
 		int len = avcodec_decode_audio4(codec_context,
-						&frame, &got_frame,
+						frame, &got_frame,
 						&packet2);
 		if (len >= 0 && got_frame) {
 			audio_size = copy_interleave_frame(codec_context,
-							   &frame,
+							   frame,
 							   aligned_buffer,
 							   buffer_size);
 			if (audio_size < 0)
@@ -528,6 +528,18 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	decoder_initialized(decoder, &audio_format,
 			    input->seekable, total_time);
 
+	AVFrame *frame = avcodec_alloc_frame();
+	if (!frame) {
+		g_warning("Could not allocate frame\n");
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
+		avformat_close_input(&format_context);
+#else
+		av_close_input_stream(format_context);
+#endif
+		mpd_ffmpeg_stream_close(stream);
+		return;
+	}
+
 	enum decoder_command cmd;
 	do {
 		AVPacket packet;
@@ -538,7 +550,8 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		if (packet.stream_index == audio_stream)
 			cmd = ffmpeg_send_packet(decoder, input,
 						 &packet, codec_context,
-						 &av_stream->time_base);
+						 &av_stream->time_base,
+						 frame);
 		else
 			cmd = decoder_get_command(decoder);
 
@@ -558,6 +571,12 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 			}
 		}
 	} while (cmd != DECODE_COMMAND_STOP);
+
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 28, 0)
+	avcodec_free_frame(&frame);
+#else
+	av_freep(&frame);
+#endif
 
 	avcodec_close(codec_context);
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
