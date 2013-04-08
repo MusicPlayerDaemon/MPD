@@ -67,7 +67,7 @@ private:
 	bool IsModified() const;
 
 	/* virtual methods from TimeoutMonitor */
-	virtual bool OnTimeout() override;
+	virtual void OnTimeout() override;
 };
 
 #endif /* STATE_FILE_H */

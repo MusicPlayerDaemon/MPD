@@ -35,7 +35,7 @@ public:
 	void Enqueue(const char *uri_utf8);
 
 private:
-	virtual bool OnTimeout() override;
+	virtual void OnTimeout() override;
 };
 
 #endif

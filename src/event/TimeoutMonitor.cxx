@@ -45,21 +45,17 @@ TimeoutMonitor::ScheduleSeconds(unsigned s)
 	source = loop.AddTimeoutSeconds(s, Callback, this);
 }
 
-bool
+void
 TimeoutMonitor::Run()
 {
-	bool result = OnTimeout();
-	if (!result && source != nullptr) {
-		g_source_unref(source);
-		source = nullptr;
-	}
-
-	return result;
+	Cancel();
+	OnTimeout();
 }
 
 gboolean
 TimeoutMonitor::Callback(gpointer data)
 {
 	TimeoutMonitor &monitor = *(TimeoutMonitor *)data;
-	return monitor.Run();
+	monitor.Run();
+	return false;
 }

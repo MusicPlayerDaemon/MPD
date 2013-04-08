@@ -116,9 +116,8 @@ StateFile::CheckModified()
 		ScheduleSeconds(2 * 60);
 }
 
-bool
+void
 StateFile::OnTimeout()
 {
 	Write();
-	return false;
 }

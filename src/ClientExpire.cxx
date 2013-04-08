@@ -30,7 +30,7 @@ Client::SetExpired()
 	TimeoutMonitor::Schedule(0);
 }
 
-bool
+void
 Client::OnTimeout()
 {
 	if (!IsExpired()) {
@@ -39,5 +39,4 @@ Client::OnTimeout()
 	}
 
 	Close();
-	return false;
 }

@@ -38,7 +38,7 @@ enum {
 	INOTIFY_UPDATE_DELAY_S = 5,
 };
 
-bool
+void
 InotifyQueue::OnTimeout()
 {
 	unsigned id;
@@ -47,17 +47,16 @@ InotifyQueue::OnTimeout()
 		const char *uri_utf8 = queue.front().c_str();
 
 		id = update_enqueue(uri_utf8, false);
-		if (id == 0)
+		if (id == 0) {
 			/* retry later */
-			return true;
+			ScheduleSeconds(INOTIFY_UPDATE_DELAY_S);
+			return;
+		}
 
 		g_debug("updating '%s' job=%u", uri_utf8, id);
 
 		queue.pop_front();
 	}
-
-	/* done, remove the timer event by returning false */
-	return false;
 }
 
 static bool

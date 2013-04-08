@@ -47,13 +47,10 @@ public:
 	void Cancel();
 
 protected:
-	/**
-	 * @return true reschedules the timeout again
-	 */
-	virtual bool OnTimeout() = 0;
+	virtual void OnTimeout() = 0;
 
 private:
-	bool Run();
+	void Run();
 	static gboolean Callback(gpointer data);
 };
 

@@ -120,7 +120,7 @@ private:
 	virtual void OnSocketClosed() override;
 
 	/* virtual methods from class TimeoutMonitor */
-	virtual bool OnTimeout() override;
+	virtual void OnTimeout() override;
 };
 
 extern int client_timeout;
