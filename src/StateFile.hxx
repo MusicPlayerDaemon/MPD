@@ -47,9 +47,11 @@ public:
 
 	void Read();
 	void Write();
-	void AutoWrite();
 
 private:
+	void AutoWrite();
+
+	/* virtual methods from TimeoutMonitor */
 	virtual bool OnTimeout() override;
 };
 
