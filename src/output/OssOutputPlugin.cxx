@@ -52,7 +52,7 @@
 #endif
 
 #ifdef AFMT_S24_PACKED
-#include "pcm_export.h"
+#include "pcm/pcm_export.h"
 #endif
 
 struct oss_data {

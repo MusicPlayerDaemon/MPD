@@ -21,7 +21,7 @@
 #include "MixerControl.hxx"
 #include "MixerList.hxx"
 #include "FilterRegistry.hxx"
-#include "PcmVolume.hxx"
+#include "pcm/PcmVolume.hxx"
 #include "GlobalEvents.hxx"
 #include "Main.hxx"
 #include "event/Loop.hxx"

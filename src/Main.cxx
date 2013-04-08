@@ -56,7 +56,7 @@
 extern "C" {
 #include "daemon.h"
 #include "stats.h"
-#include "pcm_resample.h"
+#include "pcm/pcm_resample.h"
 }
 
 #include "mpd_error.h"

@@ -18,7 +18,7 @@
  */
 
 #include "test_pcm_all.hxx"
-#include "PcmVolume.hxx"
+#include "pcm/PcmVolume.hxx"
 #include "test_pcm_util.hxx"
 
 #include <glib.h>

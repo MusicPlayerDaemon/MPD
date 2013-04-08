@@ -20,7 +20,7 @@
 #include "config.h"
 #include "OutputThread.hxx"
 #include "output_api.h"
-#include "PcmMix.hxx"
+#include "pcm/PcmMix.hxx"
 
 extern "C" {
 #include "output_internal.h"

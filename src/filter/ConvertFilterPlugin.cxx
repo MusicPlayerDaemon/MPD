@@ -23,7 +23,7 @@
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
 #include "conf.h"
-#include "PcmConvert.hxx"
+#include "pcm/PcmConvert.hxx"
 #include "util/Manual.hxx"
 #include "audio_format.h"
 #include "poison.h"

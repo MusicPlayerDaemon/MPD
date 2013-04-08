@@ -20,7 +20,7 @@
 #include "config.h"
 #include "test_pcm_all.hxx"
 #include "test_pcm_util.hxx"
-#include "PcmMix.hxx"
+#include "pcm/PcmMix.hxx"
 
 #include <glib.h>
 

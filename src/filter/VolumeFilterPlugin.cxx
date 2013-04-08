@@ -23,8 +23,8 @@
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
 #include "conf.h"
-#include "pcm_buffer.h"
-#include "PcmVolume.hxx"
+#include "pcm/pcm_buffer.h"
+#include "pcm/PcmVolume.hxx"
 #include "audio_format.h"
 
 #include <assert.h>

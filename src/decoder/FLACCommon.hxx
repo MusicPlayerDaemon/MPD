@@ -28,7 +28,7 @@
 #include "decoder_api.h"
 
 extern "C" {
-#include "pcm_buffer.h"
+#include "pcm/pcm_buffer.h"
 }
 
 #include <FLAC/stream_decoder.h>

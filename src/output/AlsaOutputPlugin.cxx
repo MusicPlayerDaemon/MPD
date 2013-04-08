@@ -21,7 +21,7 @@
 #include "AlsaOutputPlugin.hxx"
 #include "output_api.h"
 #include "MixerList.hxx"
-#include "pcm_export.h"
+#include "pcm/pcm_export.h"
 
 #include <glib.h>
 #include <alsa/asoundlib.h>

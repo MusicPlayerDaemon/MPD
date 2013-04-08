@@ -21,7 +21,7 @@
 #define MPD_DECODER_INTERNAL_HXX
 
 #include "decoder_command.h"
-#include "PcmConvert.hxx"
+#include "pcm/PcmConvert.hxx"
 #include "replay_gain_info.h"
 
 struct input_stream;

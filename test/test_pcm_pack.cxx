@@ -21,7 +21,7 @@
 #include "test_pcm_util.hxx"
 
 extern "C" {
-#include "pcm_pack.h"
+#include "pcm/pcm_pack.h"
 }
 
 #include <glib.h>

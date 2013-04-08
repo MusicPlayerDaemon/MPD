@@ -315,23 +315,23 @@ libevent_a_SOURCES = \
 # PCM library
 
 libpcm_a_SOURCES = \
-	src/pcm_buffer.c src/pcm_buffer.h \
-	src/pcm_export.c src/pcm_export.h \
-	src/PcmConvert.cxx src/PcmConvert.hxx \
-	src/dsd2pcm/dsd2pcm.c src/dsd2pcm/dsd2pcm.h \
-	src/pcm_dsd.c src/pcm_dsd.h \
-	src/pcm_dsd_usb.c src/pcm_dsd_usb.h \
-	src/PcmVolume.cxx src/PcmVolume.hxx \
-	src/PcmMix.cxx src/PcmMix.hxx \
-	src/PcmChannels.cxx src/PcmChannels.hxx \
-	src/pcm_pack.c src/pcm_pack.h \
-	src/PcmFormat.cxx src/PcmFormat.hxx \
-	src/pcm_resample.c src/pcm_resample.h \
-	src/pcm_resample_fallback.c \
-	src/pcm_resample_internal.h \
-	src/PcmDither.cxx src/PcmDither.hxx \
-	src/PcmPrng.hxx \
-	src/PcmUtils.hxx
+	src/pcm/pcm_buffer.c src/pcm/pcm_buffer.h \
+	src/pcm/pcm_export.c src/pcm/pcm_export.h \
+	src/pcm/PcmConvert.cxx src/pcm/PcmConvert.hxx \
+	src/pcm/dsd2pcm/dsd2pcm.c src/pcm/dsd2pcm/dsd2pcm.h \
+	src/pcm/pcm_dsd.c src/pcm/pcm_dsd.h \
+	src/pcm/pcm_dsd_usb.c src/pcm/pcm_dsd_usb.h \
+	src/pcm/PcmVolume.cxx src/pcm/PcmVolume.hxx \
+	src/pcm/PcmMix.cxx src/pcm/PcmMix.hxx \
+	src/pcm/PcmChannels.cxx src/pcm/PcmChannels.hxx \
+	src/pcm/pcm_pack.c src/pcm/pcm_pack.h \
+	src/pcm/PcmFormat.cxx src/pcm/PcmFormat.hxx \
+	src/pcm/pcm_resample.c src/pcm/pcm_resample.h \
+	src/pcm/pcm_resample_fallback.c \
+	src/pcm/pcm_resample_internal.h \
+	src/pcm/PcmDither.cxx src/pcm/PcmDither.hxx \
+	src/pcm/PcmPrng.hxx \
+	src/pcm/PcmUtils.hxx
 libpcm_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(SAMPLERATE_CFLAGS)
 
@@ -340,7 +340,7 @@ PCM_LIBS = \
 	$(SAMPLERATE_LIBS)
 
 if HAVE_LIBSAMPLERATE
-libpcm_a_SOURCES += src/pcm_resample_libsamplerate.c
+libpcm_a_SOURCES += src/pcm/pcm_resample_libsamplerate.c
 endif
 
 # File system library
@@ -1141,13 +1141,14 @@ test_dump_playlist_LDADD = \
 	libevent.a \
 	libfs.a \
 	libutil.a \
+	libpcm.a \
 	$(GLIB_LIBS)
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	$(DECODER_SRC) \
 	src/IOThread.cxx \
 	src/Song.cxx src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/tag_handler.c src/TagFile.cxx \
-	src/audio_check.c src/pcm_buffer.c \
+	src/audio_check.c \
 	src/text_input_stream.c \
 	src/cue/CueParser.cxx src/cue/CueParser.hxx \
 	src/fd_util.c
@@ -1262,12 +1263,12 @@ test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.cxx \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/AudioParser.cxx \
-	src/pcm_buffer.c \
 	$(ENCODER_SRC)
 test_test_vorbis_encoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ENCODER_CFLAGS)
 test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
 	$(ENCODER_LIBS) \
+	$(PCM_LIBS) \
 	libconf.a \
 	libfs.a \
 	libutil.a \
@@ -1291,7 +1292,6 @@ test_run_normalize_LDADD = \
 	$(GLIB_LIBS)
 
 test_run_convert_SOURCES = test/run_convert.cxx \
-	src/dsd2pcm/dsd2pcm.c \
 	src/audio_format.c \
 	src/audio_check.c \
 	src/AudioParser.cxx
@@ -1401,13 +1401,13 @@ test_test_queue_priority_LDADD = \
 	libutil.a \
 	$(GLIB_LIBS)
 
-noinst_PROGRAMS += src/dsd2pcm/dsd2pcm
+noinst_PROGRAMS += src/pcm/dsd2pcm/dsd2pcm
 
-src_dsd2pcm_dsd2pcm_SOURCES = \
-	src/dsd2pcm/dsd2pcm.c src/dsd2pcm/dsd2pcm.h \
-	src/dsd2pcm/noiseshape.c src/dsd2pcm/noiseshape.h \
-	src/dsd2pcm/main.cpp
-src_dsd2pcm_dsd2pcm_LDADD = libutil.a
+src_pcm_dsd2pcm_dsd2pcm_SOURCES = \
+	src/pcm/dsd2pcm/dsd2pcm.c src/pcm/dsd2pcm/dsd2pcm.h \
+	src/pcm/dsd2pcm/noiseshape.c src/pcm/dsd2pcm/noiseshape.h \
+	src/pcm/dsd2pcm/main.cpp
+src_pcm_dsd2pcm_dsd2pcm_LDADD = libutil.a
 
 endif
 

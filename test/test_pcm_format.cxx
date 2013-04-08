@@ -20,10 +20,10 @@
 #include "config.h"
 #include "test_pcm_all.hxx"
 #include "test_pcm_util.hxx"
-#include "PcmFormat.hxx"
-#include "PcmDither.hxx"
-#include "PcmUtils.hxx"
-#include "pcm_buffer.h"
+#include "pcm/PcmFormat.hxx"
+#include "pcm/PcmDither.hxx"
+#include "pcm/PcmUtils.hxx"
+#include "pcm/pcm_buffer.h"
 #include "audio_format.h"
 
 #include <glib.h>

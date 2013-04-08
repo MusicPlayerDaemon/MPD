@@ -20,8 +20,8 @@
 #include "config.h"
 #include "test_pcm_all.hxx"
 #include "test_pcm_util.hxx"
-#include "PcmChannels.hxx"
-#include "pcm_buffer.h"
+#include "pcm/PcmChannels.hxx"
+#include "pcm/pcm_buffer.h"
 
 #include <glib.h>
 

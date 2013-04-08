@@ -21,7 +21,7 @@
 #include "encoder_api.h"
 #include "encoder_plugin.h"
 #include "audio_format.h"
-#include "pcm_buffer.h"
+#include "pcm/pcm_buffer.h"
 #include "util/fifo_buffer.h"
 #include "util/growing_fifo.h"
 

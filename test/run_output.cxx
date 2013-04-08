@@ -27,7 +27,7 @@
 #include "IOThread.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
-#include "PcmConvert.hxx"
+#include "pcm/PcmConvert.hxx"
 
 extern "C" {
 #include "output_plugin.h"

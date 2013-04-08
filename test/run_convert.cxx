@@ -26,7 +26,7 @@
 #include "config.h"
 #include "AudioParser.hxx"
 #include "audio_format.h"
-#include "PcmConvert.hxx"
+#include "pcm/PcmConvert.hxx"
 #include "conf.h"
 #include "util/fifo_buffer.h"
 #include "stdbin.h"

@@ -26,10 +26,10 @@
 #include "replay_gain_info.h"
 #include "replay_gain_config.h"
 #include "MixerControl.hxx"
-#include "PcmVolume.hxx"
+#include "pcm/PcmVolume.hxx"
 
 extern "C" {
-#include "pcm_buffer.h"
+#include "pcm/pcm_buffer.h"
 }
 
 #include <assert.h>

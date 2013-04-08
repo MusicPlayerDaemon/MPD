@@ -21,7 +21,7 @@
 #define MPD_OUTPUT_INTERNAL_H
 
 #include "audio_format.h"
-#include "pcm_buffer.h"
+#include "pcm/pcm_buffer.h"
 
 #include <glib.h>
 

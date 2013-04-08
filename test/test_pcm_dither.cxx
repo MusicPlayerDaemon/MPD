@@ -19,7 +19,7 @@
 
 #include "test_pcm_all.hxx"
 #include "test_pcm_util.hxx"
-#include "PcmDither.hxx"
+#include "pcm/PcmDither.hxx"
 
 #include <glib.h>
 
