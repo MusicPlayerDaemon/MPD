@@ -30,11 +30,11 @@
 #include "tag_handler.h"
 #include "song.h"
 #include "TagFile.hxx"
+#include "cue/CueParser.hxx"
 
 extern "C" {
 #include "tag_ape.h"
 #include "tag_id3.h"
-#include "cue/cue_parser.h"
 }
 
 #include <glib.h>
@@ -64,7 +64,7 @@ struct embcue_playlist {
 	 */
 	char *next;
 
-	struct cue_parser *parser;
+	CueParser *parser;
 };
 
 static void
@@ -112,7 +112,7 @@ embcue_playlist_open_uri(const char *uri,
 	playlist->filename = g_path_get_basename(uri);
 
 	playlist->next = playlist->cuesheet;
-	playlist->parser = cue_parser_new();
+	playlist->parser = new CueParser();
 
 	return &playlist->base;
 }
@@ -122,7 +122,7 @@ embcue_playlist_close(struct playlist_provider *_playlist)
 {
 	struct embcue_playlist *playlist = (struct embcue_playlist *)_playlist;
 
-	cue_parser_free(playlist->parser);
+	delete playlist->parser;
 	g_free(playlist->cuesheet);
 	g_free(playlist->filename);
 	g_free(playlist);
@@ -133,7 +133,7 @@ embcue_playlist_read(struct playlist_provider *_playlist)
 {
 	struct embcue_playlist *playlist = (struct embcue_playlist *)_playlist;
 
-	struct song *song = cue_parser_get(playlist->parser);
+	struct song *song = playlist->parser->Get();
 	if (song != NULL)
 		return song;
 
@@ -149,14 +149,14 @@ embcue_playlist_read(struct playlist_provider *_playlist)
 			   end of the buffer */
 			playlist->next += strlen(line);
 
-		cue_parser_feed(playlist->parser, line);
-		song = cue_parser_get(playlist->parser);
+		playlist->parser->Feed(line);
+		song = playlist->parser->Get();
 		if (song != NULL)
 			return song_replace_uri(song, playlist->filename);
 	}
 
-	cue_parser_finish(playlist->parser);
-	song = cue_parser_get(playlist->parser);
+	playlist->parser->Finish();
+	song = playlist->parser->Get();
 	if (song != NULL)
 		song = song_replace_uri(song, playlist->filename);
 	return song;

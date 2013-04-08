@@ -136,7 +136,7 @@ src_mpd_SOURCES = \
 	src/Idle.cxx src/Idle.hxx \
 	src/CommandLine.cxx src/CommandLine.hxx \
 	src/CrossFade.cxx src/CrossFade.hxx \
-	src/cue/cue_parser.c src/cue/cue_parser.h \
+	src/cue/CueParser.cxx src/cue/CueParser.hxx \
 	src/decoder_error.h \
 	src/DecoderThread.cxx src/DecoderThread.hxx \
 	src/DecoderControl.cxx src/DecoderControl.hxx \
@@ -1157,7 +1157,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	src/tag_handler.c src/TagFile.cxx \
 	src/audio_check.c src/pcm_buffer.c \
 	src/text_input_stream.c \
-	src/cue/cue_parser.c src/cue/cue_parser.h \
+	src/cue/CueParser.cxx src/cue/CueParser.hxx \
 	src/fd_util.c
 
 if HAVE_FLAC

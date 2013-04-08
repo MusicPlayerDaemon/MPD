@@ -23,10 +23,10 @@
 #include "tag.h"
 #include "song.h"
 #include "input_stream.h"
+#include "cue/CueParser.hxx"
 
 extern "C" {
 #include "text_input_stream.h"
-#include "cue/cue_parser.h"
 }
 
 #include <glib.h>
@@ -41,16 +41,14 @@ struct CuePlaylist {
 
 	struct input_stream *is;
 	struct text_input_stream *tis;
-	struct cue_parser *parser;
+	CueParser parser;
 
 	CuePlaylist(struct input_stream *_is)
-		:is(_is), tis(text_input_stream_new(is)),
-		 parser(cue_parser_new()) {
+		:is(_is), tis(text_input_stream_new(is)) {
 		playlist_provider_init(&base, &cue_playlist_plugin);
 	}
 
 	~CuePlaylist() {
-		cue_parser_free(parser);
 		text_input_stream_free(tis);
 	}
 };
@@ -74,20 +72,20 @@ cue_playlist_read(struct playlist_provider *_playlist)
 {
 	CuePlaylist *playlist = (CuePlaylist *)_playlist;
 
-	struct song *song = cue_parser_get(playlist->parser);
+	struct song *song = playlist->parser.Get();
 	if (song != NULL)
 		return song;
 
 	const char *line;
 	while ((line = text_input_stream_read(playlist->tis)) != NULL) {
-		cue_parser_feed(playlist->parser, line);
-		song = cue_parser_get(playlist->parser);
+		playlist->parser.Feed(line);
+		song = playlist->parser.Get();
 		if (song != NULL)
 			return song;
 	}
 
-	cue_parser_finish(playlist->parser);
-	return cue_parser_get(playlist->parser);
+	playlist->parser.Finish();
+	return playlist->parser.Get();
 }
 
 static const char *const cue_playlist_suffixes[] = {
