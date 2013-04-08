@@ -18,8 +18,10 @@ ver 0.18 (2012/??/??)
 ver 0.17.4 (2013/??/??)
 * protocol:
   - allow to omit END in ranges (START:END)
+  - don't emit IDLE_PLAYER before audio format is known
 * decoder:
   - ffmpeg: support float planar audio (ffmpeg 1.1)
+  - ffmpeg: fix AVFrame allocation
 * player:
   - implement missing "idle" events on output errors
 * clock: fix build failure

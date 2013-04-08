@@ -104,8 +104,6 @@ player_control::Play(struct song *song)
 	assert(next_song == nullptr);
 
 	Unlock();
-
-	idle_add(IDLE_PLAYER);
 }
 
 void
