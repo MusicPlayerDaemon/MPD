@@ -316,7 +316,7 @@ libevent_a_SOURCES = \
 
 libpcm_a_SOURCES = \
 	src/pcm/pcm_buffer.c src/pcm/pcm_buffer.h \
-	src/pcm/pcm_export.c src/pcm/pcm_export.h \
+	src/pcm/PcmExport.cxx src/pcm/PcmExport.hxx \
 	src/pcm/PcmConvert.cxx src/pcm/PcmConvert.hxx \
 	src/pcm/dsd2pcm/dsd2pcm.c src/pcm/dsd2pcm/dsd2pcm.h \
 	src/pcm/pcm_dsd.c src/pcm/pcm_dsd.h \
@@ -1301,6 +1301,7 @@ test_run_convert_LDADD = \
 	$(GLIB_LIBS)
 
 test_run_output_LDADD = $(MPD_LIBS) \
+	$(PCM_LIBS) \
 	$(OUTPUT_LIBS) \
 	$(ENCODER_LIBS) \
 	libmixer_plugins.a \

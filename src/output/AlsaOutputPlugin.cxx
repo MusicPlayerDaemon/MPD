@@ -21,7 +21,8 @@
 #include "AlsaOutputPlugin.hxx"
 #include "output_api.h"
 #include "MixerList.hxx"
-#include "pcm/pcm_export.h"
+#include "pcm/PcmExport.hxx"
+#include "util/Manual.hxx"
 
 #include <glib.h>
 #include <alsa/asoundlib.h>
@@ -48,7 +49,7 @@ typedef snd_pcm_sframes_t alsa_writei_t(snd_pcm_t * pcm, const void *buffer,
 struct AlsaOutput {
 	struct audio_output base;
 
-	struct pcm_export_state pcm_export;
+	Manual<PcmExport> pcm_export;
 
 	/**
 	 * The configured name of the ALSA device; empty for the
@@ -202,7 +203,7 @@ alsa_output_enable(struct audio_output *ao, G_GNUC_UNUSED GError **error_r)
 {
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
-	pcm_export_init(&ad->pcm_export);
+	ad->pcm_export.Construct();
 	return true;
 }
 
@@ -211,7 +212,7 @@ alsa_output_disable(struct audio_output *ao)
 {
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
-	pcm_export_deinit(&ad->pcm_export);
+	ad->pcm_export.Destruct();
 }
 
 static bool
@@ -659,10 +660,9 @@ alsa_setup_or_dsd(AlsaOutput *ad, struct audio_format *audio_format,
 	if (!success)
 		return false;
 
-	pcm_export_open(&ad->pcm_export,
-			sample_format(audio_format->format),
-			audio_format->channels,
-			dsd_usb, shift8, packed, reverse_endian);
+	ad->pcm_export->Open(sample_format(audio_format->format),
+			     audio_format->channels,
+			     dsd_usb, shift8, packed, reverse_endian);
 	return true;
 }
 
@@ -689,8 +689,7 @@ alsa_open(struct audio_output *ao, struct audio_format *audio_format, GError **e
 	}
 
 	ad->in_frame_size = audio_format_frame_size(audio_format);
-	ad->out_frame_size = pcm_export_frame_size(&ad->pcm_export,
-						   audio_format);
+	ad->out_frame_size = ad->pcm_export->GetFrameSize(*audio_format);
 
 	return true;
 }
@@ -809,7 +808,7 @@ alsa_play(struct audio_output *ao, const void *chunk, size_t size,
 
 	assert(size % ad->in_frame_size == 0);
 
-	chunk = pcm_export(&ad->pcm_export, chunk, size, &size);
+	chunk = ad->pcm_export->Export(chunk, size, size);
 
 	assert(size % ad->out_frame_size == 0);
 
@@ -822,8 +821,7 @@ alsa_play(struct audio_output *ao, const void *chunk, size_t size,
 				% ad->period_frames;
 
 			size_t bytes_written = ret * ad->out_frame_size;
-			return pcm_export_source_size(&ad->pcm_export,
-						      bytes_written);
+			return ad->pcm_export->CalcSourceSize(bytes_written);
 		}
 
 		if (ret < 0 && ret != -EAGAIN && ret != -EINTR &&

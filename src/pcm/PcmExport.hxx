@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,14 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef PCM_EXPORT_H
-#define PCM_EXPORT_H
+#ifndef PCM_EXPORT_HXX
+#define PCM_EXPORT_HXX
 
 #include "check.h"
 #include "pcm_buffer.h"
 #include "audio_format.h"
-
-#include <stdbool.h>
 
 struct audio_format;
 
@@ -33,7 +31,7 @@ struct audio_format;
  * outside of MPD.  It has a few more options to tweak the binary
  * representation which are not supported by the pcm_convert library.
  */
-struct pcm_export_state {
+struct PcmExport {
 	/**
 	 * The buffer is used to convert DSD samples to the
 	 * DSD-over-USB format.
@@ -85,71 +83,57 @@ struct pcm_export_state {
 	 * sample (2 or bigger).
 	 */
 	uint8_t reverse_endian;
+
+	PcmExport() {
+		pcm_buffer_init(&reverse_buffer);
+		pcm_buffer_init(&pack_buffer);
+		pcm_buffer_init(&dsd_buffer);
+	}
+
+	~PcmExport() {
+		pcm_buffer_deinit(&reverse_buffer);
+		pcm_buffer_deinit(&pack_buffer);
+		pcm_buffer_deinit(&dsd_buffer);
+	}
+
+	/**
+	 * Open the #pcm_export_state object.
+	 *
+	 * There is no "close" method.  This function may be called multiple
+	 * times to reuse the object, until pcm_export_deinit() is called.
+	 *
+	 * This function cannot fail.
+	 *
+	 * @param channels the number of channels; ignored unless dsd_usb is set
+	 */
+	void Open(enum sample_format sample_format, unsigned channels,
+		  bool dsd_usb, bool shift8, bool pack, bool reverse_endian);
+
+	/**
+	 * Calculate the size of one output frame.
+	 */
+	gcc_pure
+	size_t GetFrameSize(const struct audio_format &audio_format) const;
+
+	/**
+	 * Export a PCM buffer.
+	 *
+	 * @param state an initialized and open pcm_export_state object
+	 * @param src the source PCM buffer
+	 * @param src_size the size of #src in bytes
+	 * @param dest_size_r returns the number of bytes of the destination buffer
+	 * @return the destination buffer (may be a pointer to the source buffer)
+	 */
+	const void *Export(const void *src, size_t src_size,
+			   size_t &dest_size_r);
+
+	/**
+	 * Converts the number of consumed bytes from the pcm_export()
+	 * destination buffer to the according number of bytes from the
+	 * pcm_export() source buffer.
+	 */
+	gcc_pure
+	size_t CalcSourceSize(size_t dest_size) const;
 };
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/**
- * Initialize a #pcm_export_state object.
- */
-void
-pcm_export_init(struct pcm_export_state *state);
-
-/**
- * Deinitialize a #pcm_export_state object and free allocated memory.
- */
-void
-pcm_export_deinit(struct pcm_export_state *state);
-
-/**
- * Open the #pcm_export_state object.
- *
- * There is no "close" method.  This function may be called multiple
- * times to reuse the object, until pcm_export_deinit() is called.
- *
- * This function cannot fail.
- *
- * @param channels the number of channels; ignored unless dsd_usb is set
- */
-void
-pcm_export_open(struct pcm_export_state *state,
-		enum sample_format sample_format, unsigned channels,
-		bool dsd_usb, bool shift8, bool pack, bool reverse_endian);
-
-/**
- * Calculate the size of one output frame.
- */
-G_GNUC_PURE
-size_t
-pcm_export_frame_size(const struct pcm_export_state *state,
-		      const struct audio_format *audio_format);
-
-/**
- * Export a PCM buffer.
- *
- * @param state an initialized and open pcm_export_state object
- * @param src the source PCM buffer
- * @param src_size the size of #src in bytes
- * @param dest_size_r returns the number of bytes of the destination buffer
- * @return the destination buffer (may be a pointer to the source buffer)
- */
-const void *
-pcm_export(struct pcm_export_state *state, const void *src, size_t src_size,
-	   size_t *dest_size_r);
-
-/**
- * Converts the number of consumed bytes from the pcm_export()
- * destination buffer to the according number of bytes from the
- * pcm_export() source buffer.
- */
-G_GNUC_PURE
-size_t
-pcm_export_source_size(const struct pcm_export_state *state, size_t dest_size);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

@@ -52,14 +52,15 @@
 #endif
 
 #ifdef AFMT_S24_PACKED
-#include "pcm/pcm_export.h"
+#include "pcm/PcmExport.hxx"
+#include "util/Manual.hxx"
 #endif
 
 struct oss_data {
 	struct audio_output base;
 
 #ifdef AFMT_S24_PACKED
-	struct pcm_export_state pcm_export;
+	Manual<PcmExport> pcm_export;
 #endif
 
 	int fd;
@@ -241,7 +242,7 @@ oss_output_enable(struct audio_output *ao, G_GNUC_UNUSED GError **error_r)
 {
 	struct oss_data *od = (struct oss_data *)ao;
 
-	pcm_export_init(&od->pcm_export);
+	od->pcm_export.Construct();
 	return true;
 }
 
@@ -250,7 +251,7 @@ oss_output_disable(struct audio_output *ao)
 {
 	struct oss_data *od = (struct oss_data *)ao;
 
-	pcm_export_deinit(&od->pcm_export);
+	od->pcm_export.Destruct();
 }
 
 #endif
@@ -502,7 +503,7 @@ oss_probe_sample_format(int fd, enum sample_format sample_format,
 			enum sample_format *sample_format_r,
 			int *oss_format_r,
 #ifdef AFMT_S24_PACKED
-			struct pcm_export_state *pcm_export,
+			PcmExport &pcm_export,
 #endif
 			GError **error_r)
 {
@@ -537,7 +538,7 @@ oss_probe_sample_format(int fd, enum sample_format sample_format,
 	*oss_format_r = oss_format;
 
 #ifdef AFMT_S24_PACKED
-	pcm_export_open(pcm_export, sample_format, 0, false, false,
+	pcm_export.Open(sample_format, 0, false, false,
 			oss_format == AFMT_S24_PACKED,
 			oss_format == AFMT_S24_PACKED &&
 			G_BYTE_ORDER != G_LITTLE_ENDIAN);
@@ -554,7 +555,7 @@ static bool
 oss_setup_sample_format(int fd, struct audio_format *audio_format,
 			int *oss_format_r,
 #ifdef AFMT_S24_PACKED
-			struct pcm_export_state *pcm_export,
+			PcmExport &pcm_export,
 #endif
 			GError **error_r)
 {
@@ -633,7 +634,7 @@ oss_setup(struct oss_data *od, struct audio_format *audio_format,
 		oss_setup_sample_rate(od->fd, audio_format, error_r) &&
 		oss_setup_sample_format(od->fd, audio_format, &od->oss_format,
 #ifdef AFMT_S24_PACKED
-					&od->pcm_export,
+					od->pcm_export,
 #endif
 					error_r);
 }
@@ -747,14 +748,14 @@ oss_output_play(struct audio_output *ao, const void *chunk, size_t size,
 		return 0;
 
 #ifdef AFMT_S24_PACKED
-	chunk = pcm_export(&od->pcm_export, chunk, size, &size);
+	chunk = od->pcm_export->Export(chunk, size, size);
 #endif
 
 	while (true) {
 		ret = write(od->fd, chunk, size);
 		if (ret > 0) {
 #ifdef AFMT_S24_PACKED
-			ret = pcm_export_source_size(&od->pcm_export, ret);
+			ret = od->pcm_export->CalcSourceSize(ret);
 #endif
 			return ret;
 		}
