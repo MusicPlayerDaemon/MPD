@@ -136,8 +136,6 @@ AC_SEARCH_LIBS([gethostbyname], [nsl])
 
 AC_CHECK_FUNCS(pipe2 accept4 eventfd)
 
-AC_CHECK_FUNCS(strnlen strndup)
-
 AC_SEARCH_LIBS([exp], [m],,
 	[AC_MSG_ERROR([exp() not found])])
 

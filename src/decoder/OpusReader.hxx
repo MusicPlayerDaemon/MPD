@@ -21,7 +21,6 @@
 #define MPD_OPUS_READER_HXX
 
 #include "check.h"
-#include "string_util.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -91,7 +90,10 @@ public:
 		if (src == nullptr)
 			return nullptr;
 
-		return strndup(src, length);
+		char *dest = new char[length + 1];
+		memcpy(dest, src, length);
+		dest[length] = 0;
+		return dest;
 	}
 };
 

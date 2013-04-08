@@ -17,11 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
 #include "string_util.h"
 
-#include <stdlib.h> /* for malloc() */
-#include <string.h> /* for strnlen() */
 #include <glib.h>
 
 #include <assert.h>
@@ -47,37 +44,3 @@ string_array_contains(const char *const* haystack, const char *needle)
 
 	return false;
 }
-
-#ifndef HAVE_STRNLEN
-
-size_t
-strnlen(const char *s, size_t max)
-{
-	assert(s != NULL);
-
-	const char *t = memchr(s, 0, max);
-	return t != NULL
-		? (size_t)(t - s)
-		: max;
-}
-
-#endif
-
-#if !defined(HAVE_STRNDUP)
-
-char *
-strndup(const char *str, size_t n)
-{
-	assert(str != NULL);
-
-	size_t len = strnlen(str, n);
-	char* ret = (char *) malloc(len + 1);
-	if (ret == NULL)
-		return NULL;
-
-	memcpy(ret, str, len);
-	ret[len] = '\0';
-	return ret;
-}
-
-#endif
