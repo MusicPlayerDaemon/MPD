@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,16 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_STRING_UTIL_H
-#define MPD_STRING_UTIL_H
+#ifndef MPD_STRING_UTIL_HXX
+#define MPD_STRING_UTIL_HXX
 
 #include "gcc.h"
-
-#include <stdbool.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * Remove the "const" attribute from a string pointer.  This is a
@@ -79,11 +73,8 @@ strchug_fast(char *p)
  * case-insensitive for ASCII characters
  * @return true if found
  */
+gcc_pure
 bool
 string_array_contains(const char *const* haystack, const char *needle);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif 
 
 #endif

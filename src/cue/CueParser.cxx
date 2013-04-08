@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "CueParser.hxx"
-#include "string_util.h"
+#include "util/StringUtil.hxx"
 #include "song.h"
 #include "tag.h"
 

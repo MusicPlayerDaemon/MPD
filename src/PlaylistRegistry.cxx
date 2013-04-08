@@ -33,8 +33,7 @@
 #include "playlist/EmbeddedCuePlaylistPlugin.hxx"
 #include "input_stream.h"
 #include "util/UriUtil.hxx"
-
-#include "string_util.h"
+#include "util/StringUtil.hxx"
 #include "conf.h"
 #include "mpd_error.h"
 

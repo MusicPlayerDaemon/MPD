@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Tokenizer.hxx"
-#include "string_util.h"
+#include "StringUtil.hxx"
 
 #include <glib.h>
 

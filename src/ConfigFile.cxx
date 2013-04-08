@@ -24,11 +24,7 @@
 #include "ConfigTemplates.hxx"
 #include "conf.h"
 #include "util/Tokenizer.hxx"
-
-extern "C" {
-#include "string_util.h"
-}
-
+#include "util/StringUtil.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
 

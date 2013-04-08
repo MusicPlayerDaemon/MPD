@@ -24,10 +24,7 @@
 #include "Directory.hxx"
 #include "TextFile.hxx"
 #include "tag.h"
-
-extern "C" {
-#include "string_util.h"
-}
+#include "util/StringUtil.hxx"
 
 #include <glib.h>
 

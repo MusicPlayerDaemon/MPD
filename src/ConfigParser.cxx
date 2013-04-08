@@ -18,10 +18,7 @@
  */
 
 #include "ConfigParser.hxx"
-
-extern "C" {
-#include "string_util.h"
-}
+#include "util/StringUtil.hxx"
 
 bool
 get_bool(const char *value, bool *value_r)

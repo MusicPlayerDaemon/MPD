@@ -21,10 +21,7 @@
 #include "PlaylistDatabase.hxx"
 #include "PlaylistVector.hxx"
 #include "TextFile.hxx"
-
-extern "C" {
-#include "string_util.h"
-}
+#include "util/StringUtil.hxx"
 
 #include <string.h>
 #include <stdlib.h>

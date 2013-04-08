@@ -22,7 +22,7 @@
 #include "PlaylistPlugin.hxx"
 #include "song.h"
 #include "tag.h"
-#include "string_util.h"
+#include "util/StringUtil.hxx"
 
 extern "C" {
 #include "text_input_stream.h"

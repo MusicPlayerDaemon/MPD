@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ArchiveList.hxx"
 #include "ArchivePlugin.hxx"
-#include "string_util.h"
+#include "util/StringUtil.hxx"
 #include "archive/Bzip2ArchivePlugin.hxx"
 #include "archive/Iso9660ArchivePlugin.hxx"
 #include "archive/ZzipArchivePlugin.hxx"
