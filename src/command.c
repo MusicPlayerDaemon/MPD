@@ -381,18 +381,21 @@ handle_status(struct client *client,
 			      song, playlist_get_song_id(&g_playlist, song));
 	}
 
-	if (player_status.state != PLAYER_STATE_STOP) {
-		struct audio_format_string af_string;
-
+	if (player_status.state != PLAYER_STATE_STOP)
 		client_printf(client,
 			      COMMAND_STATUS_TIME ": %i:%i\n"
 			      "elapsed: %1.3f\n"
-			      COMMAND_STATUS_BITRATE ": %u\n"
-			      COMMAND_STATUS_AUDIO ": %s\n",
+			      COMMAND_STATUS_BITRATE ": %u\n",
 			      (int)(player_status.elapsed_time + 0.5),
 			      (int)(player_status.total_time + 0.5),
 			      player_status.elapsed_time,
-			      player_status.bit_rate,
+			      player_status.bit_rate);
+
+	if (audio_format_defined(&player_status.audio_format)) {
+		struct audio_format_string af_string;
+
+		client_printf(client,
+			      COMMAND_STATUS_AUDIO ": %s\n",
 			      audio_format_to_string(&player_status.audio_format,
 						     &af_string));
 	}
