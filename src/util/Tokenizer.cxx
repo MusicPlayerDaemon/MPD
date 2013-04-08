@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "tokenizer.h"
+#include "Tokenizer.hxx"
 #include "string_util.h"
 
 #include <glib.h>
@@ -47,24 +47,19 @@ valid_word_char(char ch)
 }
 
 char *
-tokenizer_next_word(char **input_p, GError **error_r)
+Tokenizer::NextWord(GError **error_r)
 {
-	char *word, *input;
-
-	assert(input_p != NULL);
-	assert(*input_p != NULL);
-
-	word = input = *input_p;
+	char *const word = input;
 
 	if (*input == 0)
-		return NULL;
+		return nullptr;
 
 	/* check the first character */
 
 	if (!valid_word_first_char(*input)) {
 		g_set_error(error_r, tokenizer_quark(), 0,
 			    "Letter expected");
-		return NULL;
+		return nullptr;
 	}
 
 	/* now iterate over the other characters until we find a
@@ -80,17 +75,15 @@ tokenizer_next_word(char **input_p, GError **error_r)
 		}
 
 		if (!valid_word_char(*input)) {
-			*input_p = input;
 			g_set_error(error_r, tokenizer_quark(), 0,
 				    "Invalid word character");
-			return NULL;
+			return nullptr;
 		}
 	}
 
 	/* end of string: the string is already null-terminated
 	   here */
 
-	*input_p = input;
 	return word;
 }
 
@@ -101,24 +94,19 @@ valid_unquoted_char(char ch)
 }
 
 char *
-tokenizer_next_unquoted(char **input_p, GError **error_r)
+Tokenizer::NextUnquoted(GError **error_r)
 {
-	char *word, *input;
-
-	assert(input_p != NULL);
-	assert(*input_p != NULL);
-
-	word = input = *input_p;
+	char *const word = input;
 
 	if (*input == 0)
-		return NULL;
+		return nullptr;
 
 	/* check the first character */
 
 	if (!valid_unquoted_char(*input)) {
 		g_set_error(error_r, tokenizer_quark(), 0,
 			    "Invalid unquoted character");
-		return NULL;
+		return nullptr;
 	}
 
 	/* now iterate over the other characters until we find a
@@ -134,40 +122,33 @@ tokenizer_next_unquoted(char **input_p, GError **error_r)
 		}
 
 		if (!valid_unquoted_char(*input)) {
-			*input_p = input;
 			g_set_error(error_r, tokenizer_quark(), 0,
 				    "Invalid unquoted character");
-			return NULL;
+			return nullptr;
 		}
 	}
 
 	/* end of string: the string is already null-terminated
 	   here */
 
-	*input_p = input;
 	return word;
 }
 
 char *
-tokenizer_next_string(char **input_p, GError **error_r)
+Tokenizer::NextString(GError **error_r)
 {
-	char *word, *dest, *input;
-
-	assert(input_p != NULL);
-	assert(*input_p != NULL);
-
-	word = dest = input = *input_p;
+	char *const word = input, *dest = input;
 
 	if (*input == 0)
 		/* end of line */
-		return NULL;
+		return nullptr;
 
 	/* check for the opening " */
 
 	if (*input != '"') {
 		g_set_error(error_r, tokenizer_quark(), 0,
 			    "'\"' expected");
-		return NULL;
+		return nullptr;
 	}
 
 	++input;
@@ -184,10 +165,10 @@ tokenizer_next_string(char **input_p, GError **error_r)
 			/* return input-1 so the caller can see the
 			   difference between "end of line" and
 			   "error" */
-			*input_p = input - 1;
+			--input;
 			g_set_error(error_r, tokenizer_quark(), 0,
 				    "Missing closing '\"'");
-			return NULL;
+			return nullptr;
 		}
 
 		/* copy one character */
@@ -199,27 +180,23 @@ tokenizer_next_string(char **input_p, GError **error_r)
 
 	++input;
 	if (*input != 0 && !g_ascii_isspace(*input)) {
-		*input_p = input;
 		g_set_error(error_r, tokenizer_quark(), 0,
 			    "Space expected after closing '\"'");
-		return NULL;
+		return nullptr;
 	}
 
 	/* finish the string and return it */
 
 	*dest = 0;
-	*input_p = strchug_fast(input);
+	input = strchug_fast(input);
 	return word;
 }
 
 char *
-tokenizer_next_param(char **input_p, GError **error_r)
+Tokenizer::NextParam(GError **error_r)
 {
-	assert(input_p != NULL);
-	assert(*input_p != NULL);
-
-	if (**input_p == '"')
-		return tokenizer_next_string(input_p, error_r);
+	if (*input == '"')
+		return NextString(error_r);
 	else
-		return tokenizer_next_unquoted(input_p, error_r);
+		return NextUnquoted(error_r);
 }

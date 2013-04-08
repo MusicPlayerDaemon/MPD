@@ -23,10 +23,10 @@
 #include "ConfigData.hxx"
 #include "ConfigTemplates.hxx"
 #include "conf.h"
+#include "util/Tokenizer.hxx"
 
 extern "C" {
 #include "string_util.h"
-#include "tokenizer.h"
 }
 
 #include "fs/Path.hxx"
@@ -50,15 +50,17 @@ static bool
 config_read_name_value(struct config_param *param, char *input, unsigned line,
 		       GError **error_r)
 {
-	const char *name = tokenizer_next_word(&input, error_r);
+	Tokenizer tokenizer(input);
+
+	const char *name = tokenizer.NextWord(error_r);
 	if (name == NULL) {
-		assert(*input != 0);
+		assert(!tokenizer.IsEnd());
 		return false;
 	}
 
-	const char *value = tokenizer_next_string(&input, error_r);
+	const char *value = tokenizer.NextString(error_r);
 	if (value == NULL) {
-		if (*input == 0) {
+		if (tokenizer.IsEnd()) {
 			assert(error_r == NULL || *error_r == NULL);
 			g_set_error(error_r, config_quark(), 0,
 				    "Value missing");
@@ -69,7 +71,7 @@ config_read_name_value(struct config_param *param, char *input, unsigned line,
 		return false;
 	}
 
-	if (*input != 0 && *input != CONF_COMMENT) {
+	if (!tokenizer.IsEnd() && tokenizer.CurrentChar() != CONF_COMMENT) {
 		g_set_error(error_r, config_quark(), 0,
 			    "Unknown tokens after value");
 		return false;
@@ -173,9 +175,10 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, GError **error_r)
 		/* the first token in each line is the name, followed
 		   by either the value or '{' */
 
-		name = tokenizer_next_word(&line, &error);
+		Tokenizer tokenizer(line);
+		name = tokenizer.NextWord(&error);
 		if (name == NULL) {
-			assert(*line != 0);
+			assert(!tokenizer.IsEnd());
 			g_propagate_prefixed_error(error_r, error,
 						   "line %i: ", count);
 			return false;
@@ -210,13 +213,13 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, GError **error_r)
 		if (option.block) {
 			/* it's a block, call config_read_block() */
 
-			if (*line != '{') {
+			if (tokenizer.CurrentChar() != '{') {
 				g_set_error(error_r, config_quark(), 0,
 					    "line %i: '{' expected", count);
 				return false;
 			}
 
-			line = strchug_fast(line + 1);
+			line = strchug_fast(tokenizer.Rest() + 1);
 			if (*line != 0 && *line != CONF_COMMENT) {
 				g_set_error(error_r, config_quark(), 0,
 					    "line %i: Unknown tokens after '{'",
@@ -231,9 +234,9 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, GError **error_r)
 		} else {
 			/* a string value */
 
-			value = tokenizer_next_string(&line, &error);
+			value = tokenizer.NextString(&error);
 			if (value == NULL) {
-				if (*line == 0)
+				if (tokenizer.IsEnd())
 					g_set_error(error_r, config_quark(), 0,
 						    "line %i: Value missing",
 						    count);
@@ -247,7 +250,8 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, GError **error_r)
 				return false;
 			}
 
-			if (*line != 0 && *line != CONF_COMMENT) {
+			if (!tokenizer.IsEnd() &&
+			    tokenizer.CurrentChar() != CONF_COMMENT) {
 				g_set_error(error_r, config_quark(), 0,
 					    "line %i: Unknown tokens after value",
 					    count);

@@ -31,10 +31,7 @@
 #include "tag.h"
 #include "protocol/Result.hxx"
 #include "Client.hxx"
-
-extern "C" {
-#include "tokenizer.h"
-}
+#include "util/Tokenizer.hxx"
 
 #ifdef ENABLE_SQLITE
 #include "StickerCommands.hxx"
@@ -329,10 +326,11 @@ command_process(Client *client, unsigned num, char *line)
 
 	/* get the command name (first word on the line) */
 
-	argv[0] = tokenizer_next_word(&line, &error);
+	Tokenizer tokenizer(line);
+	argv[0] = tokenizer.NextWord(&error);
 	if (argv[0] == NULL) {
 		current_command = "";
-		if (*line == 0)
+		if (tokenizer.IsEnd())
 			command_error(client, ACK_ERROR_UNKNOWN,
 				      "No command given");
 		else {
@@ -351,7 +349,7 @@ command_process(Client *client, unsigned num, char *line)
 
 	while (argc < (int)G_N_ELEMENTS(argv) &&
 	       (argv[argc] =
-		tokenizer_next_param(&line, &error)) != NULL)
+		tokenizer.NextParam(&error)) != NULL)
 		++argc;
 
 	/* some error checks; we have to set current_command because
@@ -365,7 +363,7 @@ command_process(Client *client, unsigned num, char *line)
 		return COMMAND_RETURN_ERROR;
 	}
 
-	if (*line != 0) {
+	if (!tokenizer.IsEnd()) {
 		command_error(client, ACK_ERROR_ARG,
 			      "%s", error->message);
 		current_command = NULL;
