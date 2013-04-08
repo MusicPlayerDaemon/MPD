@@ -42,18 +42,23 @@ struct CuePlaylist {
 	struct input_stream *is;
 	struct text_input_stream *tis;
 	struct cue_parser *parser;
+
+	CuePlaylist(struct input_stream *_is)
+		:is(_is), tis(text_input_stream_new(is)),
+		 parser(cue_parser_new()) {
+		playlist_provider_init(&base, &cue_playlist_plugin);
+	}
+
+	~CuePlaylist() {
+		cue_parser_free(parser);
+		text_input_stream_free(tis);
+	}
 };
 
 static struct playlist_provider *
 cue_playlist_open_stream(struct input_stream *is)
 {
-	CuePlaylist *playlist = g_new(CuePlaylist, 1);
-	playlist_provider_init(&playlist->base, &cue_playlist_plugin);
-
-	playlist->is = is;
-	playlist->tis = text_input_stream_new(is);
-	playlist->parser = cue_parser_new();
-
+	CuePlaylist *playlist = new CuePlaylist(is);
 	return &playlist->base;
 }
 
@@ -61,10 +66,7 @@ static void
 cue_playlist_close(struct playlist_provider *_playlist)
 {
 	CuePlaylist *playlist = (CuePlaylist *)_playlist;
-
-	cue_parser_free(playlist->parser);
-	text_input_stream_free(playlist->tis);
-	g_free(playlist);
+	delete playlist;
 }
 
 static struct song *
