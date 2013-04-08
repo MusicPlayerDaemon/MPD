@@ -308,6 +308,8 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		} else if (len >= 0)
 			len = -1;
 #else
+		(void)frame;
+
 		int len = avcodec_decode_audio3(codec_context,
 						aligned_buffer, &audio_size,
 						&packet2);
