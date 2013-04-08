@@ -189,7 +189,7 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 		cmd = decoder_data(decoder, nullptr, buf, sizeof(buf), 0);
 		if (cmd == DECODE_COMMAND_SEEK) {
 			float where = decoder_seek_where(decoder);
-			gme_err = gme_seek(emu, (int)where * 1000);
+			gme_err = gme_seek(emu, int(where * 1000));
 			if (gme_err != nullptr)
 				g_warning("%s", gme_err);
 			decoder_command_finished(decoder);
