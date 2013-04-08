@@ -48,6 +48,11 @@ public:
 	void Read();
 	void Write();
 
+	/**
+	 * Schedules a write if MPD's state was modified.
+	 */
+	void CheckModified();
+
 private:
 	/**
 	 * Save the current state versions for use with IsModified().
@@ -60,8 +65,6 @@ private:
 	 */
 	gcc_pure
 	bool IsModified() const;
-
-	void AutoWrite();
 
 	/* virtual methods from TimeoutMonitor */
 	virtual bool OnTimeout() override;

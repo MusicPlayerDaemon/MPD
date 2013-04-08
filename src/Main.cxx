@@ -347,6 +347,9 @@ idle_event_emitted(void)
 	unsigned flags = idle_get();
 	if (flags != 0)
 		client_list->IdleAdd(flags);
+
+	if (flags & (IDLE_PLAYLIST|IDLE_PLAYER|IDLE_MIXER|IDLE_OUTPUT))
+		state_file->CheckModified();
 }
 
 /**

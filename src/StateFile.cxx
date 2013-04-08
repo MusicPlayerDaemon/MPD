@@ -41,7 +41,6 @@ StateFile::StateFile(Path &&_path, const char *_path_utf8,
 	 prev_volume_version(0), prev_output_version(0),
 	 prev_playlist_version(0)
 {
-	ScheduleSeconds(5 * 60);
 }
 
 void
@@ -110,24 +109,16 @@ StateFile::Read()
 	RememberVersions();
 }
 
-inline void
-StateFile::AutoWrite()
+void
+StateFile::CheckModified()
 {
-	if (!IsModified())
-		/* nothing has changed - don't save the state file,
-		   don't spin up the hard disk */
-		return;
-
-	Write();
+	if (!IsActive() && IsModified())
+		ScheduleSeconds(2 * 60);
 }
 
-/**
- * This function is called every 5 minutes by the GLib main loop, and
- * saves the state file.
- */
 bool
 StateFile::OnTimeout()
 {
-	AutoWrite();
-	return true;
+	Write();
+	return false;
 }
