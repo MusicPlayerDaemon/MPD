@@ -8,7 +8,7 @@ VERSION_REVISION=0
 VERSION_EXTRA=0
 
 AC_CONFIG_SRCDIR([src/main.c])
-AM_INIT_AUTOMAKE([foreign 1.11 dist-bzip2 subdir-objects])
+AM_INIT_AUTOMAKE([foreign 1.11 dist-bzip2 dist-xz subdir-objects])
 AM_SILENT_RULES
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_MACRO_DIR([m4])

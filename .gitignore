@@ -73,3 +73,5 @@ test/test_vorbis_encoder
 
 /*.tar.gz
 /*.tar.bz2
+/*.tar.xz
+/mpd-*/
