@@ -460,7 +460,7 @@ libdecoder_plugins_a_SOURCES = \
 	src/decoder/dsdlib.c \
 	src/decoder/dsdlib.h \
 	src/decoder_buffer.c \
-	src/decoder_plugin.c \
+	src/DecoderPlugin.cxx \
 	src/DecoderList.cxx src/DecoderList.hxx
 libdecoder_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(VORBIS_CFLAGS) $(TREMOR_CFLAGS) \

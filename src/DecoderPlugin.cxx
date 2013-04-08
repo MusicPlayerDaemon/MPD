@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,10 +27,10 @@ bool
 decoder_plugin_supports_suffix(const struct decoder_plugin *plugin,
 			       const char *suffix)
 {
-	assert(plugin != NULL);
-	assert(suffix != NULL);
+	assert(plugin != nullptr);
+	assert(suffix != nullptr);
 
-	return plugin->suffixes != NULL &&
+	return plugin->suffixes != nullptr &&
 		string_array_contains(plugin->suffixes, suffix);
 
 }
@@ -39,9 +39,9 @@ bool
 decoder_plugin_supports_mime_type(const struct decoder_plugin *plugin,
 				  const char *mime_type)
 {
-	assert(plugin != NULL);
-	assert(mime_type != NULL);
+	assert(plugin != nullptr);
+	assert(mime_type != nullptr);
 
-	return plugin->mime_types != NULL &&
+	return plugin->mime_types != nullptr &&
 		string_array_contains(plugin->mime_types, mime_type);
 }
