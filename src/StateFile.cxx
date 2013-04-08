@@ -45,6 +45,24 @@ StateFile::StateFile(Path &&_path, const char *_path_utf8,
 }
 
 void
+StateFile::RememberVersions()
+{
+	prev_volume_version = sw_volume_state_get_hash();
+	prev_output_version = audio_output_state_get_version();
+	prev_playlist_version = playlist_state_get_hash(&partition.playlist,
+							&partition.pc);
+}
+
+bool
+StateFile::IsModified() const
+{
+	return prev_volume_version != sw_volume_state_get_hash() ||
+		prev_output_version != audio_output_state_get_version() ||
+		prev_playlist_version != playlist_state_get_hash(&partition.playlist,
+								 &partition.pc);
+}
+
+void
 StateFile::Write()
 {
 	g_debug("Saving state file %s", path_utf8.c_str());
@@ -62,10 +80,7 @@ StateFile::Write()
 
 	fclose(fp);
 
-	prev_volume_version = sw_volume_state_get_hash();
-	prev_output_version = audio_output_state_get_version();
-	prev_playlist_version = playlist_state_get_hash(&partition.playlist,
-							&partition.pc);
+	RememberVersions();
 }
 
 void
@@ -92,19 +107,13 @@ StateFile::Read()
 			g_warning("Unrecognized line in state file: %s", line);
 	}
 
-	prev_volume_version = sw_volume_state_get_hash();
-	prev_output_version = audio_output_state_get_version();
-	prev_playlist_version = playlist_state_get_hash(&partition.playlist,
-							&partition.pc);
+	RememberVersions();
 }
 
 inline void
 StateFile::AutoWrite()
 {
-	if (prev_volume_version == sw_volume_state_get_hash() &&
-	    prev_output_version == audio_output_state_get_version() &&
-	    prev_playlist_version == playlist_state_get_hash(&partition.playlist,
-							     &partition.pc))
+	if (!IsModified())
 		/* nothing has changed - don't save the state file,
 		   don't spin up the hard disk */
 		return;

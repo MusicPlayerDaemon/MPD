@@ -49,6 +49,18 @@ public:
 	void Write();
 
 private:
+	/**
+	 * Save the current state versions for use with IsModified().
+	 */
+	void RememberVersions();
+
+	/**
+	 * Check if MPD's state was modified since the last
+	 * RememberVersions() call.
+	 */
+	gcc_pure
+	bool IsModified() const;
+
 	void AutoWrite();
 
 	/* virtual methods from TimeoutMonitor */
