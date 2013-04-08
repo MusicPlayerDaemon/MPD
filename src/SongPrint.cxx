@@ -25,10 +25,7 @@
 #include "TagPrint.hxx"
 #include "Mapper.hxx"
 #include "Client.hxx"
-
-extern "C" {
-#include "uri.h"
-}
+#include "util/UriUtil.hxx"
 
 #include <glib.h>
 

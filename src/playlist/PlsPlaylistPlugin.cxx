@@ -21,7 +21,6 @@
 #include "PlsPlaylistPlugin.hxx"
 #include "MemoryPlaylistProvider.hxx"
 #include "input_stream.h"
-#include "uri.h"
 #include "song.h"
 #include "tag.h"
 

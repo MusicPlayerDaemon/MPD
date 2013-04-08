@@ -23,10 +23,7 @@
 #include "PlaylistRegistry.hxx"
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
-
-extern "C" {
-#include "uri.h"
-}
+#include "util/UriUtil.hxx"
 
 #include <assert.h>
 

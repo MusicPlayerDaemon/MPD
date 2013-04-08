@@ -22,10 +22,7 @@
 #include "InputRegistry.hxx"
 #include "InputPlugin.hxx"
 #include "input/RewindInputPlugin.hxx"
-
-extern "C" {
-#include "uri.h"
-}
+#include "util/UriUtil.hxx"
 
 #include <glib.h>
 #include <assert.h>

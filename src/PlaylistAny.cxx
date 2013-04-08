@@ -21,11 +21,8 @@
 #include "PlaylistAny.hxx"
 #include "PlaylistMapper.hxx"
 #include "PlaylistRegistry.hxx"
+#include "util/UriUtil.hxx"
 #include "input_stream.h"
-
-extern "C" {
-#include "uri.h"
-}
 
 #include <assert.h>
 

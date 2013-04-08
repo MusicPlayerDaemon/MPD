@@ -34,10 +34,7 @@
 #include "conf.h"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
-
-extern "C" {
-#include "uri.h"
-}
+#include "util/UriUtil.hxx"
 
 #include <glib.h>
 

@@ -19,11 +19,7 @@
 
 #include "config.h"
 #include "TagFile.hxx"
-
-extern "C" {
-#include "uri.h"
-}
-
+#include "util/UriUtil.hxx"
 #include "DecoderList.hxx"
 #include "decoder_plugin.h"
 #include "input_stream.h"

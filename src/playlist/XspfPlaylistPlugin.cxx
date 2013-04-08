@@ -21,7 +21,6 @@
 #include "XspfPlaylistPlugin.hxx"
 #include "MemoryPlaylistProvider.hxx"
 #include "input_stream.h"
-#include "uri.h"
 #include "tag.h"
 
 #include <glib.h>

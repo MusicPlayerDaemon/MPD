@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "uri.h"
+#include "UriUtil.hxx"
 
 #include <glib.h>
 
@@ -27,7 +26,7 @@
 
 bool uri_has_scheme(const char *uri)
 {
-	return strstr(uri, "://") != NULL;
+	return strstr(uri, "://") != nullptr;
 }
 
 /* suffixes should be ascii only characters */
@@ -35,13 +34,13 @@ const char *
 uri_get_suffix(const char *uri)
 {
 	const char *suffix = strrchr(uri, '.');
-	if (suffix == NULL)
-		return NULL;
+	if (suffix == nullptr)
+		return nullptr;
 
 	++suffix;
 
-	if (strpbrk(suffix, "/\\") != NULL)
-		return NULL;
+	if (strpbrk(suffix, "/\\") != nullptr)
+		return nullptr;
 
 	return suffix;
 }
@@ -58,10 +57,10 @@ verify_uri_segment(const char *p)
 	}
 
 	if (dots <= 2 && (*p == 0 || *p == '/'))
-		return NULL;
+		return nullptr;
 
 	q = strchr(p + 1, '/');
-	return q != NULL ? q : "";
+	return q != nullptr ? q : "";
 }
 
 bool
@@ -69,7 +68,7 @@ uri_safe_local(const char *uri)
 {
 	while (true) {
 		uri = verify_uri_segment(uri);
-		if (uri == NULL)
+		if (uri == nullptr)
 			return false;
 
 		if (*uri == 0)
@@ -93,16 +92,16 @@ uri_remove_auth(const char *uri)
 		auth = uri + 8;
 	else
 		/* unrecognized URI */
-		return NULL;
+		return nullptr;
 
 	slash = strchr(auth, '/');
-	if (slash == NULL)
+	if (slash == nullptr)
 		slash = auth + strlen(auth);
 
-	at = memchr(auth, '@', slash - auth);
-	if (at == NULL)
+	at = (const char *)memchr(auth, '@', slash - auth);
+	if (at == nullptr)
 		/* no auth info present, do nothing */
-		return NULL;
+		return nullptr;
 
 	/* duplicate the full URI and then delete the auth
 	   information */

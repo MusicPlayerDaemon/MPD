@@ -33,9 +33,9 @@
 #include "protocol/Result.hxx"
 #include "ls.hxx"
 #include "Volume.hxx"
+#include "util/UriUtil.hxx"
 
 extern "C" {
-#include "uri.h"
 #include "stats.h"
 }
 

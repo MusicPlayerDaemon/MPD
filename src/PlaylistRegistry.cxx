@@ -32,10 +32,7 @@
 #include "playlist/CuePlaylistPlugin.hxx"
 #include "playlist/EmbeddedCuePlaylistPlugin.hxx"
 #include "input_stream.h"
-
-extern "C" {
-#include "uri.h"
-}
+#include "util/UriUtil.hxx"
 
 #include "string_util.h"
 #include "conf.h"

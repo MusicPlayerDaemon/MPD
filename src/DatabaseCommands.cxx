@@ -26,7 +26,7 @@
 #include "CommandError.hxx"
 #include "ClientInternal.hxx"
 #include "tag.h"
-#include "uri.h"
+#include "util/UriUtil.hxx"
 #include "SongFilter.hxx"
 #include "protocol/Result.hxx"
 

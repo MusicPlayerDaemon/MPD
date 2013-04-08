@@ -26,9 +26,9 @@
 #include "config.h"
 #include "Playlist.hxx"
 #include "PlayerControl.hxx"
+#include "util/UriUtil.hxx"
 
 extern "C" {
-#include "uri.h"
 #include "song.h"
 }
 

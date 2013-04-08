@@ -99,7 +99,6 @@ mpd_headers = \
 	src/tag_id3.h \
 	src/tag_rva2.h \
 	src/tokenizer.h \
-	src/uri.h \
 	src/utils.h \
 	src/string_util.h \
 	src/timer.h \
@@ -246,7 +245,6 @@ src_mpd_SOURCES = \
 	src/tokenizer.c \
 	src/TextFile.cxx src/TextFile.hxx \
 	src/text_input_stream.c \
-	src/uri.c \
 	src/utils.c \
 	src/string_util.c \
 	src/Volume.cxx src/Volume.hxx \
@@ -292,6 +290,7 @@ endif
 # Generic utility library
 
 libutil_a_SOURCES = \
+	src/util/UriUtil.cxx src/util/UriUtil.hxx \
 	src/util/Manual.hxx \
 	src/util/RefCount.hxx \
 	src/util/fifo_buffer.c src/util/fifo_buffer.h \
@@ -1088,6 +1087,7 @@ test_run_input_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	libconf.a \
+	libutil.a \
 	libevent.a \
 	libfs.a \
 	$(GLIB_LIBS)
@@ -1096,7 +1096,6 @@ test_run_input_SOURCES = test/run_input.cxx \
 	src/IOThread.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c\
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
-	src/uri.c \
 	src/fd_util.c
 
 if ENABLE_ARCHIVE
@@ -1105,6 +1104,7 @@ test_visit_archive_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	libconf.a \
+	libutil.a \
 	libevent.a \
 	libfs.a \
 	$(GLIB_LIBS)
@@ -1113,7 +1113,6 @@ test_visit_archive_SOURCES = test/visit_archive.cxx \
 	src/InputStream.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
-	src/uri.c \
 	src/fd_util.c
 
 if ENABLE_DESPOTIFY
@@ -1136,7 +1135,6 @@ test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c\
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/text_input_stream.c \
-	src/uri.c \
 	src/fd_util.c
 
 test_dump_playlist_LDADD = \
@@ -1155,7 +1153,6 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	$(DECODER_SRC) \
 	src/IOThread.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c\
-	src/uri.c \
 	src/Song.cxx src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/tag_handler.c src/TagFile.cxx \
 	src/audio_check.c src/pcm_buffer.c \
@@ -1186,7 +1183,6 @@ test_run_decoder_SOURCES = test/run_decoder.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/tag_handler.c \
 	src/ReplayGainInfo.cxx \
-	src/uri.c \
 	src/fd_util.c \
 	src/audio_check.c \
 	src/audio_format.c \
@@ -1211,7 +1207,6 @@ test_read_tags_SOURCES = test/read_tags.cxx \
 	src/tokenizer.c src/utils.c src/string_util.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/tag_handler.c \
 	src/ReplayGainInfo.cxx \
-	src/uri.c \
 	src/fd_util.c \
 	src/audio_check.c \
 	$(DECODER_SRC)

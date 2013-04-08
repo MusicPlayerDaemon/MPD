@@ -22,10 +22,7 @@
 #include "decoder_api.h"
 #include "audio_check.h"
 #include "tag_handler.h"
-
-extern "C" {
-#include "uri.h"
-}
+#include "util/UriUtil.hxx"
 
 #include <glib.h>
 #include <assert.h>

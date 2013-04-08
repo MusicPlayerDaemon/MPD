@@ -25,10 +25,7 @@
 #include "DatabasePlugin.hxx"
 #include "DatabaseGlue.hxx"
 #include "TextFile.hxx"
-
-extern "C" {
-#include "uri.h"
-}
+#include "util/UriUtil.hxx"
 
 #include <stdlib.h>
 

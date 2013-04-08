@@ -25,10 +25,10 @@
 #include "ls.hxx"
 #include "tag.h"
 #include "fs/Path.hxx"
+#include "util/UriUtil.hxx"
 
 extern "C" {
 #include "song.h"
-#include "uri.h"
 }
 
 #include <glib.h>

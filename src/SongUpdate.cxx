@@ -21,9 +21,9 @@
 
 extern "C" {
 #include "song.h"
-#include "uri.h"
 }
 
+#include "util/UriUtil.hxx"
 #include "Directory.hxx"
 #include "Mapper.hxx"
 #include "fs/Path.hxx"

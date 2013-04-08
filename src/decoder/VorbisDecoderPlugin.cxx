@@ -23,10 +23,10 @@
 #include "decoder_api.h"
 #include "InputStream.hxx"
 #include "OggCodec.hxx"
+#include "util/UriUtil.hxx"
 
 extern "C" {
 #include "audio_check.h"
-#include "uri.h"
 }
 
 #include "tag_handler.h"

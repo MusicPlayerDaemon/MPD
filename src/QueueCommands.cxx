@@ -31,10 +31,7 @@
 #include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
 #include "ls.hxx"
-
-extern "C" {
-#include "uri.h"
-}
+#include "util/UriUtil.hxx"
 
 #include <string.h>
 

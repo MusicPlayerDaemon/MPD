@@ -32,10 +32,7 @@
 #include "protocol/Result.hxx"
 #include "ls.hxx"
 #include "Playlist.hxx"
-
-extern "C" {
-#include "uri.h"
-}
+#include "util/UriUtil.hxx"
 
 #include <assert.h>
 #include <stdlib.h>

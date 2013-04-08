@@ -31,10 +31,10 @@
 #include "tag.h"
 #include "InputStream.hxx"
 #include "DecoderList.hxx"
+#include "util/UriUtil.hxx"
 
 extern "C" {
 #include "replay_gain_ape.h"
-#include "uri.h"
 }
 
 #include <glib.h>
