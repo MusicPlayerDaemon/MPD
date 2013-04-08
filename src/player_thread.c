@@ -313,6 +313,8 @@ player_open_output(struct player *player)
 		pc->state = PLAYER_STATE_PLAY;
 		player_unlock(pc);
 
+		idle_add(IDLE_PLAYER);
+
 		return true;
 	} else {
 		player->output_open = false;
@@ -374,6 +376,8 @@ player_check_decoder_startup(struct player *player)
 		pc->total_time = real_song_duration(dc->song, dc->total_time);
 		pc->audio_format = dc->in_audio_format;
 		player_unlock(pc);
+
+		idle_add(IDLE_PLAYER);
 
 		player->play_audio_format = dc->out_audio_format;
 		player->decoder_starting = false;

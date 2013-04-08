@@ -127,8 +127,6 @@ pc_play(struct player_control *pc, struct song *song)
 	assert(pc->next_song == NULL);
 
 	player_unlock(pc);
-
-	idle_add(IDLE_PLAYER);
 }
 
 void
