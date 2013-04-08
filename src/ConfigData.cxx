@@ -19,11 +19,8 @@
 
 #include "ConfigData.hxx"
 #include "ConfigParser.hxx"
+#include "ConfigPath.hxx"
 #include "mpd_error.h"
-
-extern "C" {
-#include "utils.h"
-}
 
 #include <glib.h>
 

@@ -22,11 +22,7 @@
 #include "ConfigParser.hxx"
 #include "ConfigData.hxx"
 #include "ConfigFile.hxx"
-
-extern "C" {
-#include "utils.h"
-}
-
+#include "ConfigPath.hxx"
 #include "mpd_error.h"
 
 #include <glib.h>

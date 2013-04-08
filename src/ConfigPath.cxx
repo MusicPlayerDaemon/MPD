@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "utils.h"
+#include "ConfigPath.hxx"
 #include "conf.h"
 
 #include <glib.h>
@@ -55,35 +55,35 @@ parse_path_quark(void)
 char *
 parsePath(const char *path, G_GNUC_UNUSED GError **error_r)
 {
-	assert(path != NULL);
-	assert(error_r == NULL || *error_r == NULL);
+	assert(path != nullptr);
+	assert(error_r == nullptr || *error_r == nullptr);
 
 #ifndef WIN32
 	if (!g_path_is_absolute(path) && path[0] != '~') {
 		g_set_error(error_r, parse_path_quark(), 0,
 			    "not an absolute path: %s", path);
-		return NULL;
+		return nullptr;
 	} else if (path[0] == '~') {
 		const char *home;
 
 		if (path[1] == '/' || path[1] == '\0') {
-			const char *user = config_get_string(CONF_USER, NULL);
-			if (user != NULL) {
+			const char *user = config_get_string(CONF_USER, nullptr);
+			if (user != nullptr) {
 				struct passwd *passwd = getpwnam(user);
 				if (!passwd) {
 					g_set_error(error_r, parse_path_quark(), 0,
 						    "no such user: %s", user);
-					return NULL;
+					return nullptr;
 				}
 
 				home = passwd->pw_dir;
 			} else {
 				home = g_get_home_dir();
-				if (home == NULL) {
+				if (home == nullptr) {
 					g_set_error_literal(error_r, parse_path_quark(), 0,
 							    "problems getting home "
 							    "for current user");
-					return NULL;
+					return nullptr;
 				}
 			}
 
@@ -92,7 +92,7 @@ parsePath(const char *path, G_GNUC_UNUSED GError **error_r)
 			++path;
 
 			const char *slash = strchr(path, '/');
-			char *user = slash != NULL
+			char *user = slash != nullptr
 				? g_strndup(path, slash - path)
 				: g_strdup(path);
 
@@ -101,7 +101,7 @@ parsePath(const char *path, G_GNUC_UNUSED GError **error_r)
 				g_set_error(error_r, parse_path_quark(), 0,
 					    "no such user: %s", user);
 				g_free(user);
-				return NULL;
+				return nullptr;
 			}
 
 			g_free(user);
@@ -110,7 +110,7 @@ parsePath(const char *path, G_GNUC_UNUSED GError **error_r)
 			path = slash;
 		}
 
-		return g_strconcat(home, path, NULL);
+		return g_strconcat(home, path, nullptr);
 	} else {
 #endif
 		return g_strdup(path);
