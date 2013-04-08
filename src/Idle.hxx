@@ -57,7 +57,7 @@ enum {
 	/** a client has subscribed or unsubscribed to/from a channel */
 	IDLE_SUBSCRIPTION = 0x200,
 
-	/** a message on the subscribed channel was receivedd */
+	/** a message on the subscribed channel was received */
 	IDLE_MESSAGE = 0x400,
 };
 
