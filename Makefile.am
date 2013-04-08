@@ -610,7 +610,8 @@ libdecoder_plugins_a_SOURCES += src/decoder/sndfile_decoder_plugin.c
 endif
 
 if HAVE_GME
-libdecoder_plugins_a_SOURCES += src/decoder/gme_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += \
+	src/decoder/GmeDecoderPlugin.cxx src/decoder/GmeDecoderPlugin.hxx
 endif
 
 # encoder plugins

@@ -31,6 +31,7 @@
 #include "decoder/AdPlugDecoderPlugin.h"
 #include "decoder/WavpackDecoderPlugin.hxx"
 #include "decoder/FfmpegDecoderPlugin.hxx"
+#include "decoder/GmeDecoderPlugin.hxx"
 
 #include <glib.h>
 
@@ -47,7 +48,6 @@ extern const struct decoder_plugin mikmod_decoder_plugin;
 extern const struct decoder_plugin sidplay_decoder_plugin;
 extern const struct decoder_plugin wildmidi_decoder_plugin;
 extern const struct decoder_plugin fluidsynth_decoder_plugin;
-extern const struct decoder_plugin gme_decoder_plugin;
 
 const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef HAVE_MAD

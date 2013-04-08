@@ -1,12 +1,34 @@
+/*
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
+ * http://www.musicpd.org
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
 #include "config.h"
-#include "../decoder_api.h"
+#include "GmeDecoderPlugin.hxx"
+#include "decoder_api.h"
 #include "audio_check.h"
-#include "uri.h"
 #include "tag_handler.h"
+
+extern "C" {
+#include "uri.h"
+}
 
 #include <glib.h>
 #include <assert.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -17,12 +39,11 @@
 
 #define SUBTUNE_PREFIX "tune_"
 
-enum {
-	GME_SAMPLE_RATE = 44100,
-	GME_CHANNELS = 2,
-	GME_BUFFER_FRAMES = 2048,
-	GME_BUFFER_SAMPLES = GME_BUFFER_FRAMES * GME_CHANNELS,
-};
+static constexpr unsigned GME_SAMPLE_RATE = 44100;
+static constexpr unsigned GME_CHANNELS = 2;
+static constexpr unsigned GME_BUFFER_FRAMES = 2048;
+static constexpr unsigned GME_BUFFER_SAMPLES =
+	GME_BUFFER_FRAMES * GME_CHANNELS;
 
 /**
  * returns the file path stripped of any /tune_xxx.* subtune
@@ -33,17 +54,18 @@ get_container_name(const char *path_fs)
 {
 	const char *subtune_suffix = uri_get_suffix(path_fs);
 	char *path_container = g_strdup(path_fs);
-	char *pat = g_strconcat("*/" SUBTUNE_PREFIX "???.", subtune_suffix, NULL);
+	char *pat = g_strconcat("*/" SUBTUNE_PREFIX "???.",
+				subtune_suffix, nullptr);
 	GPatternSpec *path_with_subtune = g_pattern_spec_new(pat);
 	g_free(pat);
 	if (!g_pattern_match(path_with_subtune,
-			     strlen(path_container), path_container, NULL)) {
+			     strlen(path_container), path_container, nullptr)) {
 		g_pattern_spec_free(path_with_subtune);
 		return path_container;
 	}
 
 	char *ptr = g_strrstr(path_container, "/" SUBTUNE_PREFIX);
-	if (ptr != NULL)
+	if (ptr != nullptr)
 		*ptr='\0';
 
 	g_pattern_spec_free(path_with_subtune);
@@ -58,19 +80,20 @@ static int
 get_song_num(const char *path_fs)
 {
 	const char *subtune_suffix = uri_get_suffix(path_fs);
-	char *pat = g_strconcat("*/" SUBTUNE_PREFIX "???.", subtune_suffix, NULL);
+	char *pat = g_strconcat("*/" SUBTUNE_PREFIX "???.",
+				subtune_suffix, nullptr);
 	GPatternSpec *path_with_subtune = g_pattern_spec_new(pat);
 	g_free(pat);
 
 	if (g_pattern_match(path_with_subtune,
-			    strlen(path_fs), path_fs, NULL)) {
+			    strlen(path_fs), path_fs, nullptr)) {
 		char *sub = g_strrstr(path_fs, "/" SUBTUNE_PREFIX);
 		g_pattern_spec_free(path_with_subtune);
-		if(!sub)
+		if (!sub)
 			return 0;
 
 		sub += strlen("/" SUBTUNE_PREFIX);
-		int song_num = strtol(sub, NULL, 10);
+		int song_num = strtol(sub, nullptr, 10);
 
 		return song_num - 1;
 	} else {
@@ -83,19 +106,16 @@ static char *
 gme_container_scan(const char *path_fs, const unsigned int tnum)
 {
 	Music_Emu *emu;
-	const char* gme_err;
-	unsigned int num_songs;
-
-	gme_err = gme_open_file(path_fs, &emu, GME_SAMPLE_RATE);
-	if (gme_err != NULL) {
+	const char *gme_err = gme_open_file(path_fs, &emu, GME_SAMPLE_RATE);
+	if (gme_err != nullptr) {
 		g_warning("%s", gme_err);
-		return NULL;
+		return nullptr;
 	}
 
-	num_songs = gme_track_count(emu);
+	const unsigned num_songs = gme_track_count(emu);
 	/* if it only contains a single tune, don't treat as container */
 	if (num_songs < 2)
-		return NULL;
+		return nullptr;
 
 	const char *subtune_suffix = uri_get_suffix(path_fs);
 	if (tnum <= num_songs){
@@ -103,42 +123,40 @@ gme_container_scan(const char *path_fs, const unsigned int tnum)
 			SUBTUNE_PREFIX "%03u.%s", tnum, subtune_suffix);
 		return subtune;
 	} else
-		return NULL;
+		return nullptr;
 }
 
 static void
 gme_file_decode(struct decoder *decoder, const char *path_fs)
 {
-	float song_len;
-	Music_Emu *emu;
-	gme_info_t *ti;
-	struct audio_format audio_format;
-	enum decoder_command cmd;
-	short buf[GME_BUFFER_SAMPLES];
-	const char* gme_err;
 	char *path_container = get_container_name(path_fs);
-	int song_num = get_song_num(path_fs);
 
-	gme_err = gme_open_file(path_container, &emu, GME_SAMPLE_RATE);
+	Music_Emu *emu;
+	const char *gme_err =
+		gme_open_file(path_container, &emu, GME_SAMPLE_RATE);
 	g_free(path_container);
-	if (gme_err != NULL) {
+	if (gme_err != nullptr) {
 		g_warning("%s", gme_err);
 		return;
 	}
 
-	if((gme_err = gme_track_info(emu, &ti, song_num)) != NULL){
+	gme_info_t *ti;
+	const int song_num = get_song_num(path_fs);
+	gme_err = gme_track_info(emu, &ti, song_num);
+	if (gme_err != nullptr) {
 		g_warning("%s", gme_err);
 		gme_delete(emu);
 		return;
 	}
 
-	if(ti->length > 0)
-		song_len = ti->length / 1000.0;
-	else song_len = -1;
+	const float song_len = ti->length > 0
+		? ti->length / 1000.0
+		: -1.0;
 
 	/* initialize the MPD decoder */
 
-	GError *error = NULL;
+	GError *error = nullptr;
+	struct audio_format audio_format;
 	if (!audio_format_init_checked(&audio_format, GME_SAMPLE_RATE,
 				       SAMPLE_FORMAT_S16, GME_CHANNELS,
 				       &error)) {
@@ -151,31 +169,35 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 
 	decoder_initialized(decoder, &audio_format, true, song_len);
 
-	if((gme_err = gme_start_track(emu, song_num)) != NULL)
+	gme_err = gme_start_track(emu, song_num);
+	if (gme_err != nullptr)
 		g_warning("%s", gme_err);
 
-	if(ti->length > 0)
+	if (ti->length > 0)
 		gme_set_fade(emu, ti->length);
 
 	/* play */
+	enum decoder_command cmd;
 	do {
+		short buf[GME_BUFFER_SAMPLES];
 		gme_err = gme_play(emu, GME_BUFFER_SAMPLES, buf);
-		if (gme_err != NULL) {
+		if (gme_err != nullptr) {
 			g_warning("%s", gme_err);
 			return;
 		}
-		cmd = decoder_data(decoder, NULL, buf, sizeof(buf), 0);
 
-		if(cmd == DECODE_COMMAND_SEEK) {
+		cmd = decoder_data(decoder, nullptr, buf, sizeof(buf), 0);
+		if (cmd == DECODE_COMMAND_SEEK) {
 			float where = decoder_seek_where(decoder);
-			if((gme_err = gme_seek(emu, (int)where*1000)) != NULL)
+			gme_err = gme_seek(emu, (int)where * 1000);
+			if (gme_err != nullptr)
 				g_warning("%s", gme_err);
 			decoder_command_finished(decoder);
 		}
 
-		if(gme_track_ended(emu))
+		if (gme_track_ended(emu))
 			break;
-	} while(cmd != DECODE_COMMAND_STOP);
+	} while (cmd != DECODE_COMMAND_STOP);
 
 	gme_free_info(ti);
 	gme_delete(emu);
@@ -185,53 +207,61 @@ static bool
 gme_scan_file(const char *path_fs,
 	      const struct tag_handler *handler, void *handler_ctx)
 {
-	Music_Emu *emu;
-	gme_info_t *ti;
-	const char* gme_err;
-	char *path_container=get_container_name(path_fs);
-	int song_num;
-	song_num=get_song_num(path_fs);
+	char *path_container = get_container_name(path_fs);
 
-	gme_err = gme_open_file(path_container, &emu, GME_SAMPLE_RATE);
+	Music_Emu *emu;
+	const char *gme_err =
+		gme_open_file(path_container, &emu, GME_SAMPLE_RATE);
 	g_free(path_container);
-	if (gme_err != NULL) {
+	if (gme_err != nullptr) {
 		g_warning("%s", gme_err);
 		return false;
 	}
-	if((gme_err = gme_track_info(emu, &ti, song_num)) != NULL){
+
+	const int song_num = get_song_num(path_fs);
+
+	gme_info_t *ti;
+	gme_err = gme_track_info(emu, &ti, song_num);
+	if (gme_err != nullptr) {
 		g_warning("%s", gme_err);
 		gme_delete(emu);
 		return false;
 	}
 
-	assert(ti != NULL);
+	assert(ti != nullptr);
 
-	if(ti->length > 0)
+	if (ti->length > 0)
 		tag_handler_invoke_duration(handler, handler_ctx,
 					    ti->length / 100);
 
-	if(ti->song != NULL){
-		if(gme_track_count(emu) > 1){
+	if (ti->song != nullptr) {
+		if (gme_track_count(emu) > 1) {
 			/* start numbering subtunes from 1 */
-			char *tag_title=g_strdup_printf("%s (%d/%d)",
-							ti->song, song_num+1, gme_track_count(emu));
+			char *tag_title =
+				g_strdup_printf("%s (%d/%d)",
+						ti->song, song_num + 1,
+						gme_track_count(emu));
 			tag_handler_invoke_tag(handler, handler_ctx,
 					       TAG_TITLE, tag_title);
 			g_free(tag_title);
-		}else
+		} else
 			tag_handler_invoke_tag(handler, handler_ctx,
 					       TAG_TITLE, ti->song);
 	}
-	if(ti->author != NULL)
+
+	if (ti->author != nullptr)
 		tag_handler_invoke_tag(handler, handler_ctx,
 				       TAG_ARTIST, ti->author);
-	if(ti->game != NULL)
+
+	if (ti->game != nullptr)
 		tag_handler_invoke_tag(handler, handler_ctx,
 				       TAG_ALBUM, ti->game);
-	if(ti->comment != NULL)
+
+	if (ti->comment != nullptr)
 		tag_handler_invoke_tag(handler, handler_ctx,
 				       TAG_COMMENT, ti->comment);
-	if(ti->copyright != NULL)
+
+	if (ti->copyright != nullptr)
 		tag_handler_invoke_tag(handler, handler_ctx,
 				       TAG_DATE, ti->copyright);
 
@@ -244,14 +274,19 @@ gme_scan_file(const char *path_fs,
 static const char *const gme_suffixes[] = {
 	"ay", "gbs", "gym", "hes", "kss", "nsf",
 	"nsfe", "sap", "spc", "vgm", "vgz",
-	NULL
+	nullptr
 };
 
 extern const struct decoder_plugin gme_decoder_plugin;
 const struct decoder_plugin gme_decoder_plugin = {
-	.name = "gme",
-	.file_decode = gme_file_decode,
-	.scan_file = gme_scan_file,
-	.suffixes = gme_suffixes,
-	.container_scan = gme_container_scan,
+	"gme",
+	nullptr,
+	nullptr,
+	nullptr,
+	gme_file_decode,
+	gme_scan_file,
+	nullptr,
+	gme_container_scan,
+	gme_suffixes,
+	nullptr,
 };
