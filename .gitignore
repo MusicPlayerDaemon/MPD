@@ -1,9 +1,7 @@
 *.Plo
 *.Po
 *.a
-*.bz2
 *.d
-*.gz
 *.la
 *.lo
 *.o
@@ -72,3 +70,6 @@ test/dump_rva2
 test/dump_text_file
 test/test_byte_reverse
 test/test_vorbis_encoder
+
+/*.tar.gz
+/*.tar.bz2
