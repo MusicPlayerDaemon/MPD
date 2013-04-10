@@ -40,6 +40,11 @@
 
 #include <assert.h>
 
+#if defined(__clang__) || GCC_CHECK_VERSION(4,7)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
+
 /**
  * Container for an object that gets constructed and destructed
  * manually.  The object is constructed in-place, and therefore
@@ -107,5 +112,9 @@ public:
 		return (T *)data;
 	}
 };
+
+#if defined(__clang__) || GCC_VERSION >= 40700
+#pragma GCC diagnostic pop
+#endif
 
 #endif
