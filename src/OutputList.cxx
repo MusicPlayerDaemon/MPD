@@ -34,7 +34,7 @@
 #include "output/RecorderOutputPlugin.hxx"
 #include "output/RoarOutputPlugin.hxx"
 #include "output/ShoutOutputPlugin.hxx"
-#include "output/solaris_output_plugin.h"
+#include "output/SolarisOutputPlugin.hxx"
 #include "output/WinmmOutputPlugin.hxx"
 
 const struct audio_output_plugin *const audio_output_plugins[] = {

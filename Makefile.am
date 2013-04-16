@@ -880,7 +880,7 @@ endif
 
 if ENABLE_SOLARIS_OUTPUT
 liboutput_plugins_a_SOURCES += \
-	src/output/solaris_output_plugin.c src/output/solaris_output_plugin.h
+	src/output/SolarisOutputPlugin.cxx src/output/SolarisOutputPlugin.hxx
 endif
 
 if ENABLE_WINMM_OUTPUT
