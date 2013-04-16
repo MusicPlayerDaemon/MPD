@@ -56,7 +56,7 @@
 #include "util/Manual.hxx"
 #endif
 
-struct oss_data {
+struct OssOutput {
 	struct audio_output base;
 
 #ifdef AFMT_S24_PACKED
@@ -77,6 +77,17 @@ struct oss_data {
 	 * device after cancel().
 	 */
 	int oss_format;
+
+	OssOutput():fd(-1), device(nullptr) {}
+
+	bool Initialize(const config_param *param, GError **error_r) {
+		return ao_base_init(&base, &oss_output_plugin, param,
+				    error_r);
+	}
+
+	void Deinitialize() {
+		ao_base_finish(&base);
+	}
 };
 
 /**
@@ -86,23 +97,6 @@ static inline GQuark
 oss_output_quark(void)
 {
 	return g_quark_from_static_string("oss_output");
-}
-
-static struct oss_data *
-oss_data_new(void)
-{
-	struct oss_data *ret = g_new(struct oss_data, 1);
-
-	ret->device = NULL;
-	ret->fd = -1;
-
-	return ret;
-}
-
-static void
-oss_data_free(struct oss_data *od)
-{
-	g_free(od);
 }
 
 enum oss_stat {
@@ -169,10 +163,9 @@ oss_open_default(GError **error)
 	for (int i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
 		ret[i] = oss_stat_device(default_devices[i], &err[i]);
 		if (ret[i] == OSS_STAT_NO_ERROR) {
-			struct oss_data *od = oss_data_new();
-			if (!ao_base_init(&od->base, &oss_output_plugin, NULL,
-					  error)) {
-				g_free(od);
+			OssOutput *od = new OssOutput();
+			if (!od->Initialize(nullptr, error)) {
+				delete od;
 				return NULL;
 			}
 
@@ -208,14 +201,13 @@ oss_open_default(GError **error)
 }
 
 static struct audio_output *
-oss_output_init(const struct config_param *param, GError **error)
+oss_output_init(const config_param *param, GError **error_r)
 {
 	const char *device = config_get_block_string(param, "device", NULL);
 	if (device != NULL) {
-		struct oss_data *od = oss_data_new();
-		if (!ao_base_init(&od->base, &oss_output_plugin, param,
-				  error)) {
-			g_free(od);
+		OssOutput *od = new OssOutput();
+		if (!od->Initialize(param, error_r)) {
+			delete od;
 			return NULL;
 		}
 
@@ -223,16 +215,16 @@ oss_output_init(const struct config_param *param, GError **error)
 		return &od->base;
 	}
 
-	return oss_open_default(error);
+	return oss_open_default(error_r);
 }
 
 static void
 oss_output_finish(struct audio_output *ao)
 {
-	struct oss_data *od = (struct oss_data *)ao;
+	OssOutput *od = (OssOutput *)ao;
 
 	ao_base_finish(&od->base);
-	oss_data_free(od);
+	delete od;
 }
 
 #ifdef AFMT_S24_PACKED
@@ -240,7 +232,7 @@ oss_output_finish(struct audio_output *ao)
 static bool
 oss_output_enable(struct audio_output *ao, G_GNUC_UNUSED GError **error_r)
 {
-	struct oss_data *od = (struct oss_data *)ao;
+	OssOutput *od = (OssOutput *)ao;
 
 	od->pcm_export.Construct();
 	return true;
@@ -249,7 +241,7 @@ oss_output_enable(struct audio_output *ao, G_GNUC_UNUSED GError **error_r)
 static void
 oss_output_disable(struct audio_output *ao)
 {
-	struct oss_data *od = (struct oss_data *)ao;
+	OssOutput *od = (OssOutput *)ao;
 
 	od->pcm_export.Destruct();
 }
@@ -257,7 +249,7 @@ oss_output_disable(struct audio_output *ao)
 #endif
 
 static void
-oss_close(struct oss_data *od)
+oss_close(OssOutput *od)
 {
 	if (od->fd >= 0)
 		close(od->fd);
@@ -627,7 +619,7 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
  * Sets up the OSS device which was opened before.
  */
 static bool
-oss_setup(struct oss_data *od, struct audio_format *audio_format,
+oss_setup(OssOutput *od, struct audio_format *audio_format,
 	  GError **error_r)
 {
 	return oss_setup_channels(od->fd, audio_format, error_r) &&
@@ -643,7 +635,7 @@ oss_setup(struct oss_data *od, struct audio_format *audio_format,
  * Reopen the device with the saved audio_format, without any probing.
  */
 static bool
-oss_reopen(struct oss_data *od, GError **error_r)
+oss_reopen(OssOutput *od, GError **error_r)
 {
 	assert(od->fd < 0);
 
@@ -698,7 +690,7 @@ static bool
 oss_output_open(struct audio_output *ao, struct audio_format *audio_format,
 		GError **error)
 {
-	struct oss_data *od = (struct oss_data *)ao;
+	OssOutput *od = (OssOutput *)ao;
 
 	od->fd = open_cloexec(od->device, O_WRONLY, 0);
 	if (od->fd < 0) {
@@ -720,7 +712,7 @@ oss_output_open(struct audio_output *ao, struct audio_format *audio_format,
 static void
 oss_output_close(struct audio_output *ao)
 {
-	struct oss_data *od = (struct oss_data *)ao;
+	OssOutput *od = (OssOutput *)ao;
 
 	oss_close(od);
 }
@@ -728,7 +720,7 @@ oss_output_close(struct audio_output *ao)
 static void
 oss_output_cancel(struct audio_output *ao)
 {
-	struct oss_data *od = (struct oss_data *)ao;
+	OssOutput *od = (OssOutput *)ao;
 
 	if (od->fd >= 0) {
 		ioctl(od->fd, SNDCTL_DSP_RESET, 0);
@@ -740,7 +732,7 @@ static size_t
 oss_output_play(struct audio_output *ao, const void *chunk, size_t size,
 		GError **error)
 {
-	struct oss_data *od = (struct oss_data *)ao;
+	OssOutput *od = (OssOutput *)ao;
 	ssize_t ret;
 
 	/* reopen the device since it was closed by dropBufferedAudio */

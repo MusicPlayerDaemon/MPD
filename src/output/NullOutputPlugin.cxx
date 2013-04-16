@@ -22,8 +22,6 @@
 #include "output_api.h"
 #include "timer.h"
 
-#include <glib.h>
-
 #include <assert.h>
 
 struct NullOutput {
@@ -32,16 +30,25 @@ struct NullOutput {
 	bool sync;
 
 	struct timer *timer;
+
+	bool Initialize(const config_param *param, GError **error_r) {
+		return ao_base_init(&base, &null_output_plugin, param,
+				    error_r);
+	}
+
+	void Deinitialize() {
+		ao_base_finish(&base);
+	}
 };
 
 static struct audio_output *
-null_init(const struct config_param *param, GError **error_r)
+null_init(const config_param *param, GError **error_r)
 {
-	NullOutput *nd = g_new(NullOutput, 1);
+	NullOutput *nd = new NullOutput();
 
-	if (!ao_base_init(&nd->base, &null_output_plugin, param, error_r)) {
-		g_free(nd);
-		return NULL;
+	if (!nd->Initialize(param, error_r)) {
+		delete nd;
+		return nullptr;
 	}
 
 	nd->sync = config_get_block_bool(param, "sync", true);
@@ -54,13 +61,13 @@ null_finish(struct audio_output *ao)
 {
 	NullOutput *nd = (NullOutput *)ao;
 
-	ao_base_finish(&nd->base);
-	g_free(nd);
+	nd->Deinitialize();
+	delete nd;
 }
 
 static bool
 null_open(struct audio_output *ao, struct audio_format *audio_format,
-	  G_GNUC_UNUSED GError **error)
+	  gcc_unused GError **error)
 {
 	NullOutput *nd = (NullOutput *)ao;
 
@@ -90,8 +97,8 @@ null_delay(struct audio_output *ao)
 }
 
 static size_t
-null_play(struct audio_output *ao, G_GNUC_UNUSED const void *chunk, size_t size,
-	  G_GNUC_UNUSED GError **error)
+null_play(struct audio_output *ao, gcc_unused const void *chunk, size_t size,
+	  gcc_unused GError **error)
 {
 	NullOutput *nd = (NullOutput *)ao;
 	struct timer *timer = nd->timer;
