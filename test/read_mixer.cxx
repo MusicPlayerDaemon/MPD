@@ -35,32 +35,32 @@
 EventLoop *main_loop;
 
 #ifdef HAVE_PULSE
-#include "output/pulse_output_plugin.h"
+#include "output/PulseOutputPlugin.hxx"
 
 void
-pulse_output_lock(G_GNUC_UNUSED struct pulse_output *po)
+pulse_output_lock(G_GNUC_UNUSED PulseOutput *po)
 {
 }
 
 void
-pulse_output_unlock(G_GNUC_UNUSED struct pulse_output *po)
+pulse_output_unlock(G_GNUC_UNUSED PulseOutput *po)
 {
 }
 
 void
-pulse_output_set_mixer(G_GNUC_UNUSED struct pulse_output *po,
+pulse_output_set_mixer(G_GNUC_UNUSED PulseOutput *po,
 		       G_GNUC_UNUSED struct pulse_mixer *pm)
 {
 }
 
 void
-pulse_output_clear_mixer(G_GNUC_UNUSED struct pulse_output *po,
+pulse_output_clear_mixer(G_GNUC_UNUSED PulseOutput *po,
 			 G_GNUC_UNUSED struct pulse_mixer *pm)
 {
 }
 
 bool
-pulse_output_set_volume(G_GNUC_UNUSED struct pulse_output *po,
+pulse_output_set_volume(G_GNUC_UNUSED PulseOutput *po,
 			G_GNUC_UNUSED const struct pa_cvolume *volume,
 			G_GNUC_UNUSED GError **error_r)
 {

@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
-#include "PulseMixerPlugin.h"
+#include "PulseMixerPlugin.hxx"
 #include "MixerInternal.hxx"
-#include "output/pulse_output_plugin.h"
+#include "output/PulseOutputPlugin.hxx"
 #include "conf.h"
 #include "GlobalEvents.hxx"
 
@@ -42,7 +42,7 @@
 struct pulse_mixer {
 	struct mixer base;
 
-	struct pulse_output *output;
+	PulseOutput *output;
 
 	bool online;
 	struct pa_cvolume volume;
@@ -153,7 +153,7 @@ static struct mixer *
 pulse_mixer_init(void *ao, G_GNUC_UNUSED const struct config_param *param,
 		 GError **error_r)
 {
-	struct pulse_output *po = (struct pulse_output *)ao;
+	PulseOutput *po = (PulseOutput *)ao;
 
 	if (ao == NULL) {
 		g_set_error(error_r, pulse_mixer_quark(), 0,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,38 +17,28 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PULSE_OUTPUT_PLUGIN_H
-#define MPD_PULSE_OUTPUT_PLUGIN_H
+#ifndef MPD_PULSE_MIXER_PLUGIN_HXX
+#define MPD_PULSE_MIXER_PLUGIN_HXX
 
-#include "gerror.h"
+#include <pulse/def.h>
 
-#include <stdbool.h>
-
-struct pulse_output;
 struct pulse_mixer;
-struct pa_cvolume;
-
-extern const struct audio_output_plugin pulse_output_plugin;
+struct pa_context;
+struct pa_stream;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void
-pulse_output_lock(struct pulse_output *po);
+pulse_mixer_on_connect(struct pulse_mixer *pm, struct pa_context *context);
 
 void
-pulse_output_unlock(struct pulse_output *po);
+pulse_mixer_on_disconnect(struct pulse_mixer *pm);
 
 void
-pulse_output_set_mixer(struct pulse_output *po, struct pulse_mixer *pm);
-
-void
-pulse_output_clear_mixer(struct pulse_output *po, struct pulse_mixer *pm);
-
-bool
-pulse_output_set_volume(struct pulse_output *po,
-			const struct pa_cvolume *volume, GError **error_r);
+pulse_mixer_on_change(struct pulse_mixer *pm,
+		      struct pa_context *context, struct pa_stream *stream);
 
 #ifdef __cplusplus
 }

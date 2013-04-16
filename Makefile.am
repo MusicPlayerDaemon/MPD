@@ -867,9 +867,9 @@ endif
 
 if HAVE_PULSE
 liboutput_plugins_a_SOURCES += \
-	src/output/pulse_output_plugin.c src/output/pulse_output_plugin.h
+	src/output/PulseOutputPlugin.cxx src/output/PulseOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += \
-	src/mixer/PulseMixerPlugin.cxx src/mixer/PulseMixerPlugin.h
+	src/mixer/PulseMixerPlugin.cxx src/mixer/PulseMixerPlugin.hxx
 endif
 
 if HAVE_SHOUT
