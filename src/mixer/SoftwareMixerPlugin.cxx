@@ -22,19 +22,30 @@
 #include "MixerInternal.hxx"
 #include "FilterPlugin.hxx"
 #include "FilterRegistry.hxx"
+#include "FilterInternal.hxx"
 #include "filter/VolumeFilterPlugin.hxx"
 #include "pcm/PcmVolume.hxx"
 
 #include <assert.h>
 #include <math.h>
 
-struct software_mixer {
-	/** the base mixer class */
-	struct mixer base;
-
+struct SoftwareMixer final : public mixer {
 	Filter *filter;
 
 	unsigned volume;
+
+	SoftwareMixer()
+		:filter(filter_new(&volume_filter_plugin, nullptr, nullptr)),
+		 volume(100)
+	{
+		assert(filter != nullptr);
+
+		mixer_init(this, &software_mixer_plugin);
+	}
+
+	~SoftwareMixer() {
+		delete filter;
+	}
 };
 
 static struct mixer *
@@ -42,30 +53,21 @@ software_mixer_init(G_GNUC_UNUSED void *ao,
 		    G_GNUC_UNUSED const struct config_param *param,
 		    G_GNUC_UNUSED GError **error_r)
 {
-	struct software_mixer *sm = g_new(struct software_mixer, 1);
-
-	mixer_init(&sm->base, &software_mixer_plugin);
-
-	sm->filter = filter_new(&volume_filter_plugin, NULL, NULL);
-	assert(sm->filter != NULL);
-
-	sm->volume = 100;
-
-	return &sm->base;
+	return new SoftwareMixer();
 }
 
 static void
 software_mixer_finish(struct mixer *data)
 {
-	struct software_mixer *sm = (struct software_mixer *)data;
+	SoftwareMixer *sm = (SoftwareMixer *)data;
 
-	g_free(sm);
+	delete sm;
 }
 
 static int
 software_mixer_get_volume(struct mixer *mixer, G_GNUC_UNUSED GError **error_r)
 {
-	struct software_mixer *sm = (struct software_mixer *)mixer;
+	SoftwareMixer *sm = (SoftwareMixer *)mixer;
 
 	return sm->volume;
 }
@@ -74,7 +76,7 @@ static bool
 software_mixer_set_volume(struct mixer *mixer, unsigned volume,
 			  G_GNUC_UNUSED GError **error_r)
 {
-	struct software_mixer *sm = (struct software_mixer *)mixer;
+	SoftwareMixer *sm = (SoftwareMixer *)mixer;
 
 	assert(volume <= 100);
 
@@ -103,9 +105,9 @@ const struct mixer_plugin software_mixer_plugin = {
 Filter *
 software_mixer_get_filter(struct mixer *mixer)
 {
-	struct software_mixer *sm = (struct software_mixer *)mixer;
+	SoftwareMixer *sm = (SoftwareMixer *)mixer;
 
-	assert(sm->base.plugin == &software_mixer_plugin);
+	assert(sm->plugin == &software_mixer_plugin);
 
 	return sm->filter;
 }
