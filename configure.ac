@@ -325,11 +325,6 @@ AC_ARG_ENABLE(mpg123,
 		[enable libmpg123 decoder plugin]),,
 	enable_mpg123=auto)
 
-AC_ARG_ENABLE(mvp,
-	AS_HELP_STRING([--enable-mvp],
-		[enable support for Hauppauge Media MVP (default: disable)]),,
-	enable_mvp=no)
-
 AC_ARG_ENABLE(openal,
 	AS_HELP_STRING([--enable-openal],
 		[enable OpenAL support (default: disable)]),,
@@ -1358,13 +1353,6 @@ fi
 
 AM_CONDITIONAL(HAVE_AO, test x$enable_ao = xyes)
 
-dnl ----------------------------------- MVP -----------------------------------
-if test x$enable_mvp = xyes; then
-   AC_DEFINE(HAVE_MVP,1,[Define to enable Hauppauge Media MVP support])
-fi
-
-AM_CONDITIONAL(HAVE_MVP, test x$enable_mvp = xyes)
-
 dnl ---------------------------------- OpenAL ---------------------------------
 AC_SUBST(OPENAL_CFLAGS,"")
 AC_SUBST(OPENAL_LIBS,"")
@@ -1504,7 +1492,6 @@ if
 	test x$enable_fifo = xno &&
 	test x$enable_httpd_output = xno &&
 	test x$enable_jack = xno &&
-	test x$enable_mvp = xno; then
 	test x$enable_openal = xno &&
 	test x$enable_oss = xno &&
 	test x$enable_osx = xno &&
@@ -1513,7 +1500,7 @@ if
 	test x$enable_recorder_output = xno &&
 	test x$enable_shout = xno &&
 	test x$enable_solaris_output = xno &&
-	test x$enable_winmm_output = xno &&
+	test x$enable_winmm_output = xno; then
 
 		AC_MSG_ERROR([No Audio Output types configured!])
 fi
@@ -1662,7 +1649,6 @@ results(httpd_output,[HTTP Daemon])
 results(jack,[JACK])
 printf '\n\t'
 results(ao,[libao])
-results(mvp, [Media MVP])
 results(oss,[OSS])
 results(openal,[OpenAL])
 results(osx, [OS X])

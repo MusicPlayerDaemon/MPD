@@ -1493,16 +1493,6 @@ systemctl start mpd.socket</programlisting>
       </section>
 
       <section>
-        <title><varname>mvp</varname></title>
-
-        <para>
-          The <varname>mvp</varname> plugin uses the proprietary
-          Hauppauge Media MVP interface.  We do not know any user of
-          this plugin, and we do not know if it actually works.
-        </para>
-      </section>
-
-      <section>
         <title><varname>httpd</varname></title>
 
         <para>

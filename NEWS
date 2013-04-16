@@ -12,6 +12,7 @@ ver 0.18 (2012/??/??)
 * output:
   - new option "tags" may be used to disable sending tags to output
   - alsa: workaround for noise after manual song change
+  - mvp: remove obsolete plugin
 * improved decoder/output error reporting
 * eliminate timer wakeup on idle MPD
 

@@ -26,7 +26,6 @@
 #include "output/FifoOutputPlugin.hxx"
 #include "output/HttpdOutputPlugin.hxx"
 #include "output/JackOutputPlugin.hxx"
-#include "output/mvp_output_plugin.h"
 #include "output/NullOutputPlugin.hxx"
 #include "output/openal_output_plugin.h"
 #include "output/OssOutputPlugin.hxx"
@@ -73,9 +72,6 @@ const struct audio_output_plugin *const audio_output_plugins[] = {
 #endif
 #ifdef HAVE_PULSE
 	&pulse_output_plugin,
-#endif
-#ifdef HAVE_MVP
-	&mvp_output_plugin,
 #endif
 #ifdef HAVE_JACK
 	&jack_output_plugin,

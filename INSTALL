@@ -37,9 +37,6 @@ Linux.  You will need libasound.
 FIFO
 This is a mostly undocumented, developer plugin to transmit raw data.
 
-MVP - http://en.wikipedia.org/wiki/Hauppauge_MediaMVP
-A network media player.
-
 OSS - http://www.opensound.com
 Open Sound System.
 

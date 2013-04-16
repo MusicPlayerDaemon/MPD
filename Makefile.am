@@ -842,11 +842,6 @@ liboutput_plugins_a_SOURCES += \
 	src/output/JackOutputPlugin.cxx src/output/JackOutputPlugin.hxx
 endif
 
-if HAVE_MVP
-liboutput_plugins_a_SOURCES += \
-	src/output/mvp_output_plugin.c src/output/mvp_output_plugin.h
-endif
-
 if HAVE_OSS
 liboutput_plugins_a_SOURCES += \
 	src/output/OssOutputPlugin.cxx \
