@@ -161,9 +161,9 @@ audio_output_all_enable_disable(void)
 		struct audio_output *ao = audio_outputs[i];
 		bool enabled;
 
-		g_mutex_lock(ao->mutex);
+		ao->mutex.lock();
 		enabled = ao->really_enabled;
-		g_mutex_unlock(ao->mutex);
+		ao->mutex.unlock();
 
 		if (ao->enabled != enabled) {
 			if (ao->enabled)
@@ -183,14 +183,10 @@ audio_output_all_finished(void)
 {
 	for (unsigned i = 0; i < num_audio_outputs; ++i) {
 		struct audio_output *ao = audio_outputs[i];
-		bool not_finished;
 
-		g_mutex_lock(ao->mutex);
-		not_finished = audio_output_is_open(ao) &&
-			!audio_output_command_is_finished(ao);
-		g_mutex_unlock(ao->mutex);
-
-		if (not_finished)
+		const ScopeLock protect(ao->mutex);
+		if (audio_output_is_open(ao) &&
+		    !audio_output_command_is_finished(ao))
 			return false;
 	}
 
@@ -216,14 +212,12 @@ audio_output_allow_play_all(void)
 static void
 audio_output_reset_reopen(struct audio_output *ao)
 {
-	g_mutex_lock(ao->mutex);
+	const ScopeLock protect(ao->mutex);
 
 	if (!ao->open && ao->fail_timer != NULL) {
 		g_timer_destroy(ao->fail_timer);
 		ao->fail_timer = NULL;
 	}
-
-	g_mutex_unlock(ao->mutex);
 }
 
 /**
@@ -383,14 +377,10 @@ static bool
 chunk_is_consumed(const struct music_chunk *chunk)
 {
 	for (unsigned i = 0; i < num_audio_outputs; ++i) {
-		const struct audio_output *ao = audio_outputs[i];
-		bool consumed;
+		struct audio_output *ao = audio_outputs[i];
 
-		g_mutex_lock(ao->mutex);
-		consumed = chunk_is_consumed_in(ao, chunk);
-		g_mutex_unlock(ao->mutex);
-
-		if (!consumed)
+		const ScopeLock protect(ao->mutex);
+		if (!chunk_is_consumed_in(ao, chunk))
 			return false;
 	}
 
@@ -412,11 +402,11 @@ clear_tail_chunk(G_GNUC_UNUSED const struct music_chunk *chunk, bool *locked)
 
 		/* this mutex will be unlocked by the caller when it's
 		   ready */
-		g_mutex_lock(ao->mutex);
+		ao->mutex.lock();
 		locked[i] = ao->open;
 
 		if (!locked[i]) {
-			g_mutex_unlock(ao->mutex);
+			ao->mutex.unlock();
 			continue;
 		}
 
@@ -465,7 +455,7 @@ audio_output_all_check(void)
 			   by clear_tail_chunk() */
 			for (unsigned i = 0; i < num_audio_outputs; ++i)
 				if (locked[i])
-					g_mutex_unlock(audio_outputs[i]->mutex);
+					audio_outputs[i]->mutex.unlock();
 
 		/* return the chunk to the buffer */
 		music_buffer_return(g_music_buffer, shifted);

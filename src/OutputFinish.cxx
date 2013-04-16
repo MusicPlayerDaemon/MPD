@@ -35,9 +35,6 @@ ao_base_finish(struct audio_output *ao)
 	if (ao->mixer != NULL)
 		mixer_free(ao->mixer);
 
-	g_cond_free(ao->cond);
-	g_mutex_free(ao->mutex);
-
 	delete ao->replay_gain_filter;
 	delete ao->other_replay_gain_filter;
 	delete ao->filter;

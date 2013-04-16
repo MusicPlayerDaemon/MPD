@@ -47,9 +47,9 @@ static void ao_command_finished(struct audio_output *ao)
 	assert(ao->command != AO_COMMAND_NONE);
 	ao->command = AO_COMMAND_NONE;
 
-	g_mutex_unlock(ao->mutex);
+	ao->mutex.unlock();
 	audio_output_client_notify.Signal();
-	g_mutex_lock(ao->mutex);
+	ao->mutex.lock();
 }
 
 static bool
@@ -61,9 +61,9 @@ ao_enable(struct audio_output *ao)
 	if (ao->really_enabled)
 		return true;
 
-	g_mutex_unlock(ao->mutex);
+	ao->mutex.unlock();
 	success = ao_plugin_enable(ao, &error);
-	g_mutex_lock(ao->mutex);
+	ao->mutex.lock();
 	if (!success) {
 		g_warning("Failed to enable \"%s\" [%s]: %s\n",
 			  ao->name, ao->plugin->name, error->message);
@@ -87,9 +87,9 @@ ao_disable(struct audio_output *ao)
 	if (ao->really_enabled) {
 		ao->really_enabled = false;
 
-		g_mutex_unlock(ao->mutex);
+		ao->mutex.unlock();
 		ao_plugin_disable(ao);
-		g_mutex_lock(ao->mutex);
+		ao->mutex.lock();
 	}
 }
 
@@ -174,9 +174,9 @@ ao_open(struct audio_output *ao)
 	audio_format_mask_apply(&ao->out_audio_format,
 				&ao->config_audio_format);
 
-	g_mutex_unlock(ao->mutex);
+	ao->mutex.unlock();
 	success = ao_plugin_open(ao, &ao->out_audio_format, &error);
-	g_mutex_lock(ao->mutex);
+	ao->mutex.lock();
 
 	assert(!ao->open);
 
@@ -216,7 +216,7 @@ ao_close(struct audio_output *ao, bool drain)
 	ao->chunk = NULL;
 	ao->open = false;
 
-	g_mutex_unlock(ao->mutex);
+	ao->mutex.unlock();
 
 	if (drain)
 		ao_plugin_drain(ao);
@@ -226,7 +226,7 @@ ao_close(struct audio_output *ao, bool drain)
 	ao_plugin_close(ao);
 	ao_filter_close(ao);
 
-	g_mutex_lock(ao->mutex);
+	ao->mutex.lock();
 
 	g_debug("closed plugin=%s name=\"%s\"", ao->plugin->name, ao->name);
 }
@@ -254,9 +254,9 @@ ao_reopen_filter(struct audio_output *ao)
 		ao->open = false;
 		ao->fail_timer = g_timer_new();
 
-		g_mutex_unlock(ao->mutex);
+		ao->mutex.unlock();
 		ao_plugin_close(ao);
-		g_mutex_lock(ao->mutex);
+		ao->mutex.lock();
 
 		return;
 	}
@@ -304,10 +304,7 @@ ao_wait(struct audio_output *ao)
 		if (delay == 0)
 			return true;
 
-		GTimeVal tv;
-		g_get_current_time(&tv);
-		g_time_val_add(&tv, delay * 1000);
-		(void)g_cond_timed_wait(ao->cond, ao->mutex, &tv);
+		(void)ao->cond.timed_wait(ao->mutex, delay);
 
 		if (ao->command != AO_COMMAND_NONE)
 			return false;
@@ -436,9 +433,9 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 	assert(ao->filter != NULL);
 
 	if (ao->tags && gcc_unlikely(chunk->tag != NULL)) {
-		g_mutex_unlock(ao->mutex);
+		ao->mutex.unlock();
 		ao_plugin_send_tag(ao, chunk->tag);
-		g_mutex_lock(ao->mutex);
+		ao->mutex.lock();
 	}
 
 	size_t size;
@@ -462,9 +459,9 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 		if (!ao_wait(ao))
 			break;
 
-		g_mutex_unlock(ao->mutex);
+		ao->mutex.unlock();
 		nbytes = ao_plugin_play(ao, data, size, &error);
-		g_mutex_lock(ao->mutex);
+		ao->mutex.lock();
 		if (nbytes == 0) {
 			/* play()==0 means failure */
 			g_warning("\"%s\" [%s] failed to play: %s",
@@ -541,9 +538,9 @@ ao_play(struct audio_output *ao)
 
 	ao->chunk_finished = true;
 
-	g_mutex_unlock(ao->mutex);
+	ao->mutex.unlock();
 	ao->player_control->LockSignal();
-	g_mutex_lock(ao->mutex);
+	ao->mutex.lock();
 
 	return true;
 }
@@ -552,9 +549,9 @@ static void ao_pause(struct audio_output *ao)
 {
 	bool ret;
 
-	g_mutex_unlock(ao->mutex);
+	ao->mutex.unlock();
 	ao_plugin_cancel(ao);
-	g_mutex_lock(ao->mutex);
+	ao->mutex.lock();
 
 	ao->pause = true;
 	ao_command_finished(ao);
@@ -563,9 +560,9 @@ static void ao_pause(struct audio_output *ao)
 		if (!ao_wait(ao))
 			break;
 
-		g_mutex_unlock(ao->mutex);
+		ao->mutex.unlock();
 		ret = ao_plugin_pause(ao);
-		g_mutex_lock(ao->mutex);
+		ao->mutex.lock();
 
 		if (!ret) {
 			ao_close(ao, false);
@@ -580,7 +577,7 @@ static gpointer audio_output_task(gpointer arg)
 {
 	struct audio_output *ao = (struct audio_output *)arg;
 
-	g_mutex_lock(ao->mutex);
+	ao->mutex.lock();
 
 	while (1) {
 		switch (ao->command) {
@@ -637,9 +634,9 @@ static gpointer audio_output_task(gpointer arg)
 				assert(ao->chunk == NULL);
 				assert(music_pipe_peek(ao->pipe) == NULL);
 
-				g_mutex_unlock(ao->mutex);
+				ao->mutex.unlock();
 				ao_plugin_drain(ao);
-				g_mutex_lock(ao->mutex);
+				ao->mutex.lock();
 			}
 
 			ao_command_finished(ao);
@@ -649,9 +646,9 @@ static gpointer audio_output_task(gpointer arg)
 			ao->chunk = NULL;
 
 			if (ao->open) {
-				g_mutex_unlock(ao->mutex);
+				ao->mutex.unlock();
 				ao_plugin_cancel(ao);
-				g_mutex_lock(ao->mutex);
+				ao->mutex.lock();
 			}
 
 			ao_command_finished(ao);
@@ -660,7 +657,7 @@ static gpointer audio_output_task(gpointer arg)
 		case AO_COMMAND_KILL:
 			ao->chunk = NULL;
 			ao_command_finished(ao);
-			g_mutex_unlock(ao->mutex);
+			ao->mutex.unlock();
 			return NULL;
 		}
 
@@ -670,7 +667,7 @@ static gpointer audio_output_task(gpointer arg)
 			continue;
 
 		if (ao->command == AO_COMMAND_NONE)
-			g_cond_wait(ao->cond, ao->mutex);
+			ao->cond.wait(ao->mutex);
 	}
 }
 

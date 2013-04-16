@@ -209,8 +209,6 @@ ao_base_init(struct audio_output *ao,
 
 	ao->thread = NULL;
 	ao->command = AO_COMMAND_NONE;
-	ao->mutex = g_mutex_new();
-	ao->cond = g_cond_new();
 
 	ao->mixer = NULL;
 	ao->replay_gain_filter = NULL;

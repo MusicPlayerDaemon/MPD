@@ -22,6 +22,8 @@
 
 #include "audio_format.h"
 #include "pcm/pcm_buffer.h"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 
 #include <glib.h>
 
@@ -212,13 +214,13 @@ struct audio_output {
 	 * This mutex protects #open, #fail_timer, #chunk and
 	 * #chunk_finished.
 	 */
-	GMutex *mutex;
+	Mutex mutex;
 
 	/**
 	 * This condition object wakes up the output thread after
 	 * #command has been set.
 	 */
-	GCond *cond;
+	Cond cond;
 
 	/**
 	 * The player_control object which "owns" this output.  This
