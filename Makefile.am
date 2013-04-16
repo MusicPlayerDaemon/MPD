@@ -817,7 +817,7 @@ endif
 
 if HAVE_AO
 liboutput_plugins_a_SOURCES += \
-	src/output/ao_output_plugin.c src/output/ao_output_plugin.h
+	src/output/AoOutputPlugin.cxx src/output/AoOutputPlugin.hxx
 endif
 
 if HAVE_FIFO

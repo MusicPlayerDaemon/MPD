@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "ao_output_plugin.h"
+#include "AoOutputPlugin.hxx"
 #include "output_api.h"
 
 #include <ao/ao.h>
@@ -28,18 +28,29 @@
 #define G_LOG_DOMAIN "ao"
 
 /* An ao_sample_format, with all fields set to zero: */
-static const ao_sample_format OUR_AO_FORMAT_INITIALIZER;
+static ao_sample_format OUR_AO_FORMAT_INITIALIZER;
 
 static unsigned ao_output_ref;
 
-struct ao_data {
+struct AoOutput {
 	struct audio_output base;
 
 	size_t write_size;
 	int driver;
 	ao_option *options;
 	ao_device *device;
-} AoData;
+
+	bool Initialize(const config_param *param, GError **error_r) {
+		return ao_base_init(&base, &ao_output_plugin, param,
+				    error_r);
+	}
+
+	void Deinitialize() {
+		ao_base_finish(&base);
+	}
+
+	bool Configure(const config_param *param, GError **error_r);
+};
 
 static inline GQuark
 ao_output_quark(void)
@@ -81,23 +92,14 @@ ao_output_error(GError **error_r)
 		    "%s", error);
 }
 
-static struct audio_output *
-ao_output_init(const struct config_param *param,
-	       GError **error)
+inline bool
+AoOutput::Configure(const config_param *param, GError **error_r)
 {
-	struct ao_data *ad = g_new(struct ao_data, 1);
-
-	if (!ao_base_init(&ad->base, &ao_output_plugin, param, error)) {
-		g_free(ad);
-		return NULL;
-	}
-
-	ao_info *ai;
 	const char *value;
 
-	ad->options = NULL;
+	options = nullptr;
 
-	ad->write_size = config_get_block_unsigned(param, "write_size", 1024);
+	write_size = config_get_block_unsigned(param, "write_size", 1024);
 
 	if (ao_output_ref == 0) {
 		ao_initialize();
@@ -106,53 +108,67 @@ ao_output_init(const struct config_param *param,
 
 	value = config_get_block_string(param, "driver", "default");
 	if (0 == strcmp(value, "default"))
-		ad->driver = ao_default_driver_id();
+		driver = ao_default_driver_id();
 	else
-		ad->driver = ao_driver_id(value);
+		driver = ao_driver_id(value);
 
-	if (ad->driver < 0) {
-		g_set_error(error, ao_output_quark(), 0,
+	if (driver < 0) {
+		g_set_error(error_r, ao_output_quark(), 0,
 			    "\"%s\" is not a valid ao driver",
 			    value);
-		ao_base_finish(&ad->base);
-		g_free(ad);
-		return NULL;
+		return false;
 	}
 
-	if ((ai = ao_driver_info(ad->driver)) == NULL) {
-		g_set_error(error, ao_output_quark(), 0,
+	ao_info *ai = ao_driver_info(driver);
+	if (ai == nullptr) {
+		g_set_error(error_r, ao_output_quark(), 0,
 			    "problems getting driver info");
-		ao_base_finish(&ad->base);
-		g_free(ad);
-		return NULL;
+		return false;
 	}
 
 	g_debug("using ao driver \"%s\" for \"%s\"\n", ai->short_name,
-		config_get_block_string(param, "name", NULL));
+		config_get_block_string(param, "name", nullptr));
 
-	value = config_get_block_string(param, "options", NULL);
-	if (value != NULL) {
-		gchar **options = g_strsplit(value, ";", 0);
+	value = config_get_block_string(param, "options", nullptr);
+	if (value != nullptr) {
+		gchar **_options = g_strsplit(value, ";", 0);
 
-		for (unsigned i = 0; options[i] != NULL; ++i) {
-			gchar **key_value = g_strsplit(options[i], "=", 2);
+		for (unsigned i = 0; _options[i] != nullptr; ++i) {
+			gchar **key_value = g_strsplit(_options[i], "=", 2);
 
-			if (key_value[0] == NULL || key_value[1] == NULL) {
-				g_set_error(error, ao_output_quark(), 0,
+			if (key_value[0] == nullptr || key_value[1] == nullptr) {
+				g_set_error(error_r, ao_output_quark(), 0,
 					    "problems parsing options \"%s\"",
-					    options[i]);
-				ao_base_finish(&ad->base);
-				g_free(ad);
-				return NULL;
+					    _options[i]);
+				return false;
 			}
 
-			ao_append_option(&ad->options, key_value[0],
+			ao_append_option(&options, key_value[0],
 					 key_value[1]);
 
 			g_strfreev(key_value);
 		}
 
-		g_strfreev(options);
+		g_strfreev(_options);
+	}
+
+	return true;
+}
+
+static struct audio_output *
+ao_output_init(const config_param *param, GError **error_r)
+{
+	AoOutput *ad = new AoOutput();
+
+	if (!ad->Initialize(param, error_r)) {
+		delete ad;
+		return nullptr;
+	}
+
+	if (!ad->Configure(param, error_r)) {
+		ad->Deinitialize();
+		delete ad;
+		return nullptr;
 	}
 
 	return &ad->base;
@@ -161,11 +177,11 @@ ao_output_init(const struct config_param *param,
 static void
 ao_output_finish(struct audio_output *ao)
 {
-	struct ao_data *ad = (struct ao_data *)ao;
+	AoOutput *ad = (AoOutput *)ao;
 
 	ao_free_options(ad->options);
-	ao_base_finish(&ad->base);
-	g_free(ad);
+	ad->Deinitialize();
+	delete ad;
 
 	ao_output_ref--;
 
@@ -176,7 +192,7 @@ ao_output_finish(struct audio_output *ao)
 static void
 ao_output_close(struct audio_output *ao)
 {
-	struct ao_data *ad = (struct ao_data *)ao;
+	AoOutput *ad = (AoOutput *)ao;
 
 	ao_close(ad->device);
 }
@@ -186,7 +202,7 @@ ao_output_open(struct audio_output *ao, struct audio_format *audio_format,
 	       GError **error)
 {
 	ao_sample_format format = OUR_AO_FORMAT_INITIALIZER;
-	struct ao_data *ad = (struct ao_data *)ao;
+	AoOutput *ad = (AoOutput *)ao;
 
 	switch (audio_format->format) {
 	case SAMPLE_FORMAT_S8:
@@ -212,7 +228,7 @@ ao_output_open(struct audio_output *ao, struct audio_format *audio_format,
 
 	ad->device = ao_open_live(ad->driver, &format, ad->options);
 
-	if (ad->device == NULL) {
+	if (ad->device == nullptr) {
 		ao_output_error(error);
 		return false;
 	}
@@ -230,7 +246,7 @@ static int ao_play_deconst(ao_device *device, const void *output_samples,
 {
 	union {
 		const void *in;
-		void *out;
+		char *out;
 	} u;
 
 	u.in = output_samples;
@@ -241,7 +257,7 @@ static size_t
 ao_output_play(struct audio_output *ao, const void *chunk, size_t size,
 	       GError **error)
 {
-	struct ao_data *ad = (struct ao_data *)ao;
+	AoOutput *ad = (AoOutput *)ao;
 
 	if (size > ad->write_size)
 		size = ad->write_size;
@@ -255,10 +271,19 @@ ao_output_play(struct audio_output *ao, const void *chunk, size_t size,
 }
 
 const struct audio_output_plugin ao_output_plugin = {
-	.name = "ao",
-	.init = ao_output_init,
-	.finish = ao_output_finish,
-	.open = ao_output_open,
-	.close = ao_output_close,
-	.play = ao_output_play,
+	"ao",
+	nullptr,
+	ao_output_init,
+	ao_output_finish,
+	nullptr,
+	nullptr,
+	ao_output_open,
+	ao_output_close,
+	nullptr,
+	nullptr,
+	ao_output_play,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
 };

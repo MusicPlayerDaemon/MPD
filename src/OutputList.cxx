@@ -21,7 +21,7 @@
 #include "OutputList.hxx"
 #include "output_api.h"
 #include "output/AlsaOutputPlugin.hxx"
-#include "output/ao_output_plugin.h"
+#include "output/AoOutputPlugin.hxx"
 #include "output/FifoOutputPlugin.hxx"
 #include "output/HttpdOutputPlugin.hxx"
 #include "output/JackOutputPlugin.hxx"
