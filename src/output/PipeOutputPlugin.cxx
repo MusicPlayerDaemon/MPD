@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,17 +18,28 @@
  */
 
 #include "config.h"
-#include "pipe_output_plugin.h"
+#include "PipeOutputPlugin.hxx"
 #include "output_api.h"
 
 #include <stdio.h>
 #include <errno.h>
 
-struct pipe_output {
+struct PipeOutput {
 	struct audio_output base;
 
 	char *cmd;
 	FILE *fh;
+
+	bool Initialize(const config_param *param, GError **error_r) {
+		return ao_base_init(&base, &pipe_output_plugin, param,
+				    error_r);
+	}
+
+	void Deinitialize() {
+		ao_base_finish(&base);
+	}
+
+	bool Configure(const config_param *param, GError **error_r);
 };
 
 /**
@@ -40,22 +51,33 @@ pipe_output_quark(void)
 	return g_quark_from_static_string("pipe_output");
 }
 
-static struct audio_output *
-pipe_output_init(const struct config_param *param,
-		 GError **error)
+inline bool
+PipeOutput::Configure(const config_param *param, GError **error_r)
 {
-	struct pipe_output *pd = g_new(struct pipe_output, 1);
-
-	if (!ao_base_init(&pd->base, &pipe_output_plugin, param, error)) {
-		g_free(pd);
-		return NULL;
+	cmd = config_dup_block_string(param, "command", nullptr);
+	if (cmd == nullptr) {
+		g_set_error(error_r, pipe_output_quark(), 0,
+			    "No \"command\" parameter specified");
+		return false;
 	}
 
-	pd->cmd = config_dup_block_string(param, "command", NULL);
-	if (pd->cmd == NULL) {
-		g_set_error(error, pipe_output_quark(), 0,
-			    "No \"command\" parameter specified");
-		return NULL;
+	return true;
+}
+
+static struct audio_output *
+pipe_output_init(const config_param *param, GError **error_r)
+{
+	PipeOutput *pd = new PipeOutput();
+
+	if (!pd->Initialize(param, error_r)) {
+		delete pd;
+		return nullptr;
+	}
+
+	if (!pd->Configure(param, error_r)) {
+		pd->Deinitialize();
+		delete pd;
+		return nullptr;
 	}
 
 	return &pd->base;
@@ -64,11 +86,11 @@ pipe_output_init(const struct config_param *param,
 static void
 pipe_output_finish(struct audio_output *ao)
 {
-	struct pipe_output *pd = (struct pipe_output *)ao;
+	PipeOutput *pd = (PipeOutput *)ao;
 
 	g_free(pd->cmd);
-	ao_base_finish(&pd->base);
-	g_free(pd);
+	pd->Deinitialize();
+	delete pd;
 }
 
 static bool
@@ -76,10 +98,10 @@ pipe_output_open(struct audio_output *ao,
 		 G_GNUC_UNUSED struct audio_format *audio_format,
 		 G_GNUC_UNUSED GError **error)
 {
-	struct pipe_output *pd = (struct pipe_output *)ao;
+	PipeOutput *pd = (PipeOutput *)ao;
 
 	pd->fh = popen(pd->cmd, "w");
-	if (pd->fh == NULL) {
+	if (pd->fh == nullptr) {
 		g_set_error(error, pipe_output_quark(), errno,
 			    "Error opening pipe \"%s\": %s",
 			    pd->cmd, g_strerror(errno));
@@ -92,7 +114,7 @@ pipe_output_open(struct audio_output *ao,
 static void
 pipe_output_close(struct audio_output *ao)
 {
-	struct pipe_output *pd = (struct pipe_output *)ao;
+	PipeOutput *pd = (PipeOutput *)ao;
 
 	pclose(pd->fh);
 }
@@ -100,7 +122,7 @@ pipe_output_close(struct audio_output *ao)
 static size_t
 pipe_output_play(struct audio_output *ao, const void *chunk, size_t size, GError **error)
 {
-	struct pipe_output *pd = (struct pipe_output *)ao;
+	PipeOutput *pd = (PipeOutput *)ao;
 	size_t ret;
 
 	ret = fwrite(chunk, 1, size, pd->fh);
@@ -112,10 +134,19 @@ pipe_output_play(struct audio_output *ao, const void *chunk, size_t size, GError
 }
 
 const struct audio_output_plugin pipe_output_plugin = {
-	.name = "pipe",
-	.init = pipe_output_init,
-	.finish = pipe_output_finish,
-	.open = pipe_output_open,
-	.close = pipe_output_close,
-	.play = pipe_output_play,
+	"pipe",
+	nullptr,
+	pipe_output_init,
+	pipe_output_finish,
+	nullptr,
+	nullptr,
+	pipe_output_open,
+	pipe_output_close,
+	nullptr,
+	nullptr,
+	pipe_output_play,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
 };

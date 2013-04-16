@@ -31,7 +31,7 @@
 #include "output/openal_output_plugin.h"
 #include "output/OssOutputPlugin.hxx"
 #include "output/OSXOutputPlugin.hxx"
-#include "output/pipe_output_plugin.h"
+#include "output/PipeOutputPlugin.hxx"
 #include "output/PulseOutputPlugin.hxx"
 #include "output/RecorderOutputPlugin.hxx"
 #include "output/RoarOutputPlugin.hxx"

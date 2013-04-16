@@ -834,7 +834,7 @@ endif
 
 if ENABLE_PIPE_OUTPUT
 liboutput_plugins_a_SOURCES += \
-	src/output/pipe_output_plugin.c src/output/pipe_output_plugin.h
+	src/output/PipeOutputPlugin.cxx src/output/PipeOutputPlugin.hxx
 endif
 
 if HAVE_JACK
