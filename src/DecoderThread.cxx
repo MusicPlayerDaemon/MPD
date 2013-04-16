@@ -494,13 +494,16 @@ decoder_task(gpointer arg)
 void
 decoder_thread_start(struct decoder_control *dc)
 {
-	GError *e = NULL;
-
 	assert(dc->thread == NULL);
 
 	dc->quit = false;
 
+#if GLIB_CHECK_VERSION(2,32,0)
+	dc->thread = g_thread_new("thread", decoder_task, dc);
+#else
+	GError *e = NULL;
 	dc->thread = g_thread_create(decoder_task, dc, true, &e);
 	if (dc->thread == NULL)
 		MPD_ERROR("Failed to spawn decoder task: %s", e->message);
+#endif
 }

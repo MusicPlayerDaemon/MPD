@@ -99,16 +99,19 @@ static void * update_task(void *_path)
 static void
 spawn_update_task(const char *path)
 {
-	GError *e = NULL;
-
 	assert(g_thread_self() == main_task);
 
 	progress = UPDATE_PROGRESS_RUNNING;
 	modified = false;
 
+#if GLIB_CHECK_VERSION(2,32,0)
+	update_thr = g_thread_new("updadte", update_task, g_strdup(path));
+#else
+	GError *e = NULL;
 	update_thr = g_thread_create(update_task, g_strdup(path), TRUE, &e);
 	if (update_thr == NULL)
 		MPD_ERROR("Failed to spawn update task: %s", e->message);
+#endif
 
 	if (++update_task_id > update_task_id_max)
 		update_task_id = 1;

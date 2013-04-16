@@ -64,16 +64,20 @@ io_thread_init(void)
 }
 
 bool
-io_thread_start(GError **error_r)
+io_thread_start(gcc_unused GError **error_r)
 {
 	assert(io.loop != NULL);
 	assert(io.thread == NULL);
 
-	io.mutex.lock();
+	const ScopeLock protect(io.mutex);
+
+#if GLIB_CHECK_VERSION(2,32,0)
+	io.thread = g_thread_new("io", io_thread_func, nullptr);
+#else
 	io.thread = g_thread_create(io_thread_func, NULL, true, error_r);
-	io.mutex.unlock();
 	if (io.thread == NULL)
 		return false;
+#endif
 
 	return true;
 }

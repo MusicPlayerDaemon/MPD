@@ -673,10 +673,13 @@ static gpointer audio_output_task(gpointer arg)
 
 void audio_output_thread_start(struct audio_output *ao)
 {
-	GError *e = NULL;
-
 	assert(ao->command == AO_COMMAND_NONE);
 
+#if GLIB_CHECK_VERSION(2,32,0)
+	ao->thread = g_thread_new("output", audio_output_task, ao);
+#else
+	GError *e = nullptr;
 	if (!(ao->thread = g_thread_create(audio_output_task, ao, true, &e)))
 		MPD_ERROR("Failed to spawn output task: %s\n", e->message);
+#endif
 }

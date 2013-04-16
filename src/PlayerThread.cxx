@@ -1202,8 +1202,12 @@ player_create(struct player_control *pc)
 {
 	assert(pc->thread == NULL);
 
+#if GLIB_CHECK_VERSION(2,32,0)
+	pc->thread = g_thread_new("player", player_task, pc);
+#else
 	GError *e = NULL;
 	pc->thread = g_thread_create(player_task, pc, true, &e);
 	if (pc->thread == NULL)
 		MPD_ERROR("Failed to spawn player task: %s", e->message);
+#endif
 }
