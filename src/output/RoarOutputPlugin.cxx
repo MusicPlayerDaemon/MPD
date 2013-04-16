@@ -26,7 +26,11 @@
 
 #include <glib.h>
 
+/* libroar/services.h declares roar_service_stream::new - work around
+   this C++ problem */
+#define new _new
 #include <roaraudio.h>
+#undef new
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "roaraudio"
