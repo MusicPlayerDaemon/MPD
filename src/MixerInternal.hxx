@@ -22,8 +22,7 @@
 
 #include "MixerPlugin.hxx"
 #include "MixerList.hxx"
-
-#include <glib.h>
+#include "thread/Mutex.hxx"
 
 class Mixer {
 public:
@@ -33,7 +32,7 @@ public:
 	 * This mutex protects all of the mixer struct, including its
 	 * implementation, so plugins don't have to deal with that.
 	 */
-	GMutex *mutex;
+	Mutex mutex;
 
 	/**
 	 * Is the mixer device currently open?
@@ -49,7 +48,6 @@ public:
 public:
 	Mixer(const mixer_plugin &_plugin)
 		:plugin(&_plugin),
-		 mutex(g_mutex_new()),
 		 open(false),
 		 failed(false) {}
 

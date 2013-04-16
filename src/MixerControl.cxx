@@ -21,6 +21,8 @@
 #include "MixerControl.hxx"
 #include "MixerInternal.hxx"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <stddef.h>
 
@@ -48,13 +50,10 @@ mixer_free(Mixer *mixer)
 {
 	assert(mixer != NULL);
 	assert(mixer->plugin != NULL);
-	assert(mixer->mutex != NULL);
 
 	/* mixers with the "global" flag set might still be open at
 	   this point (see mixer_auto_close()) */
 	mixer_close(mixer);
-
-	g_mutex_free(mixer->mutex);
 
 	mixer->plugin->finish(mixer);
 }
@@ -67,7 +66,7 @@ mixer_open(Mixer *mixer, GError **error_r)
 	assert(mixer != NULL);
 	assert(mixer->plugin != NULL);
 
-	g_mutex_lock(mixer->mutex);
+	const ScopeLock protect(mixer->mutex);
 
 	if (mixer->open)
 		success = true;
@@ -77,8 +76,6 @@ mixer_open(Mixer *mixer, GError **error_r)
 		success = mixer->open = mixer->plugin->open(mixer, error_r);
 
 	mixer->failed = !success;
-
-	g_mutex_unlock(mixer->mutex);
 
 	return success;
 }
@@ -102,12 +99,10 @@ mixer_close(Mixer *mixer)
 	assert(mixer != NULL);
 	assert(mixer->plugin != NULL);
 
-	g_mutex_lock(mixer->mutex);
+	const ScopeLock protect(mixer->mutex);
 
 	if (mixer->open)
 		mixer_close_internal(mixer);
-
-	g_mutex_unlock(mixer->mutex);
 }
 
 void
@@ -142,7 +137,7 @@ mixer_get_volume(Mixer *mixer, GError **error_r)
 	    !mixer_open(mixer, error_r))
 		return -1;
 
-	g_mutex_lock(mixer->mutex);
+	const ScopeLock protect(mixer->mutex);
 
 	if (mixer->open) {
 		GError *error = NULL;
@@ -155,16 +150,12 @@ mixer_get_volume(Mixer *mixer, GError **error_r)
 	} else
 		volume = -1;
 
-	g_mutex_unlock(mixer->mutex);
-
 	return volume;
 }
 
 bool
 mixer_set_volume(Mixer *mixer, unsigned volume, GError **error_r)
 {
-	bool success;
-
 	assert(mixer != NULL);
 	assert(volume <= 100);
 
@@ -172,14 +163,8 @@ mixer_set_volume(Mixer *mixer, unsigned volume, GError **error_r)
 	    !mixer_open(mixer, error_r))
 		return false;
 
-	g_mutex_lock(mixer->mutex);
+	const ScopeLock protect(mixer->mutex);
 
-	if (mixer->open) {
-		success = mixer->plugin->set_volume(mixer, volume, error_r);
-	} else
-		success = false;
-
-	g_mutex_unlock(mixer->mutex);
-
-	return success;
+	return mixer->open &&
+		mixer->plugin->set_volume(mixer, volume, error_r);
 }
