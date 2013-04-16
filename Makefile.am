@@ -844,7 +844,7 @@ endif
 
 if HAVE_OPENAL
 liboutput_plugins_a_SOURCES += \
-	src/output/openal_output_plugin.c src/output/openal_output_plugin.h
+	src/output/OpenALOutputPlugin.cxx src/output/OpenALOutputPlugin.hxx
 endif
 
 if HAVE_OSX

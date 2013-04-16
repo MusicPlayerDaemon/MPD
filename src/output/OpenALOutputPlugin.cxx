@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "openal_output_plugin.h"
+#include "OpenALOutputPlugin.hxx"
 #include "output_api.h"
 
 #include <glib.h>
@@ -37,7 +37,7 @@
 /* should be enough for buffer size = 2048 */
 #define NUM_BUFFERS 16
 
-struct openal_data {
+struct OpenALOutput {
 	struct audio_output base;
 
 	const char *device_name;
@@ -48,6 +48,15 @@ struct openal_data {
 	ALuint source;
 	ALenum format;
 	ALuint frequency;
+
+	bool Initialize(const config_param *param, GError **error_r) {
+		return ao_base_init(&base, &openal_output_plugin, param,
+				    error_r);
+	}
+
+	void Deinitialize() {
+		ao_base_finish(&base);
+	}
 };
 
 static inline GQuark
@@ -83,7 +92,7 @@ openal_audio_format(struct audio_format *audio_format)
 
 G_GNUC_PURE
 static inline ALint
-openal_get_source_i(const struct openal_data *od, ALenum param)
+openal_get_source_i(const OpenALOutput *od, ALenum param)
 {
 	ALint value;
 	alGetSourcei(od->source, param, &value);
@@ -92,34 +101,34 @@ openal_get_source_i(const struct openal_data *od, ALenum param)
 
 G_GNUC_PURE
 static inline bool
-openal_has_processed(const struct openal_data *od)
+openal_has_processed(const OpenALOutput *od)
 {
 	return openal_get_source_i(od, AL_BUFFERS_PROCESSED) > 0;
 }
 
 G_GNUC_PURE
 static inline ALint
-openal_is_playing(const struct openal_data *od)
+openal_is_playing(const OpenALOutput *od)
 {
 	return openal_get_source_i(od, AL_SOURCE_STATE) == AL_PLAYING;
 }
 
 static bool
-openal_setup_context(struct openal_data *od,
+openal_setup_context(OpenALOutput *od,
 		     GError **error)
 {
 	od->device = alcOpenDevice(od->device_name);
 
-	if (od->device == NULL) {
+	if (od->device == nullptr) {
 		g_set_error(error, openal_output_quark(), 0,
 			    "Error opening OpenAL device \"%s\"\n",
 			    od->device_name);
 		return false;
 	}
 
-	od->context = alcCreateContext(od->device, NULL);
+	od->context = alcCreateContext(od->device, nullptr);
 
-	if (od->context == NULL) {
+	if (od->context == nullptr) {
 		g_set_error(error, openal_output_quark(), 0,
 			    "Error creating context for \"%s\"\n",
 			    od->device_name);
@@ -131,19 +140,18 @@ openal_setup_context(struct openal_data *od,
 }
 
 static struct audio_output *
-openal_init(const struct config_param *param, GError **error_r)
+openal_init(const config_param *param, GError **error_r)
 {
-	const char *device_name = config_get_block_string(param, "device", NULL);
-	struct openal_data *od;
+	const char *device_name = config_get_block_string(param, "device", nullptr);
 
-	if (device_name == NULL) {
-		device_name = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
+	if (device_name == nullptr) {
+		device_name = alcGetString(nullptr, ALC_DEFAULT_DEVICE_SPECIFIER);
 	}
 
-	od = g_new(struct openal_data, 1);
-	if (!ao_base_init(&od->base, &openal_output_plugin, param, error_r)) {
-		g_free(od);
-		return NULL;
+	OpenALOutput *od = new OpenALOutput();
+	if (!od->Initialize(param, error_r)) {
+		delete od;
+		return nullptr;
 	}
 
 	od->device_name = device_name;
@@ -154,17 +162,17 @@ openal_init(const struct config_param *param, GError **error_r)
 static void
 openal_finish(struct audio_output *ao)
 {
-	struct openal_data *od = (struct openal_data *)ao;
+	OpenALOutput *od = (OpenALOutput *)ao;
 
-	ao_base_finish(&od->base);
-	g_free(od);
+	od->Deinitialize();
+	delete od;
 }
 
 static bool
 openal_open(struct audio_output *ao, struct audio_format *audio_format,
 	    GError **error)
 {
-	struct openal_data *od = (struct openal_data *)ao;
+	OpenALOutput *od = (OpenALOutput *)ao;
 
 	od->format = openal_audio_format(audio_format);
 
@@ -199,7 +207,7 @@ openal_open(struct audio_output *ao, struct audio_format *audio_format,
 static void
 openal_close(struct audio_output *ao)
 {
-	struct openal_data *od = (struct openal_data *)ao;
+	OpenALOutput *od = (OpenALOutput *)ao;
 
 	alcMakeContextCurrent(od->context);
 	alDeleteSources(1, &od->source);
@@ -211,7 +219,7 @@ openal_close(struct audio_output *ao)
 static unsigned
 openal_delay(struct audio_output *ao)
 {
-	struct openal_data *od = (struct openal_data *)ao;
+	OpenALOutput *od = (OpenALOutput *)ao;
 
 	return od->filled < NUM_BUFFERS || openal_has_processed(od)
 		? 0
@@ -225,7 +233,7 @@ static size_t
 openal_play(struct audio_output *ao, const void *chunk, size_t size,
 	    G_GNUC_UNUSED GError **error)
 {
-	struct openal_data *od = (struct openal_data *)ao;
+	OpenALOutput *od = (OpenALOutput *)ao;
 	ALuint buffer;
 
 	if (alcGetCurrentContext() != od->context) {
@@ -256,7 +264,7 @@ openal_play(struct audio_output *ao, const void *chunk, size_t size,
 static void
 openal_cancel(struct audio_output *ao)
 {
-	struct openal_data *od = (struct openal_data *)ao;
+	OpenALOutput *od = (OpenALOutput *)ao;
 
 	od->filled = 0;
 	alcMakeContextCurrent(od->context);
@@ -268,12 +276,19 @@ openal_cancel(struct audio_output *ao)
 }
 
 const struct audio_output_plugin openal_output_plugin = {
-	.name = "openal",
-	.init = openal_init,
-	.finish = openal_finish,
-	.open = openal_open,
-	.close = openal_close,
-	.delay = openal_delay,
-	.play = openal_play,
-	.cancel = openal_cancel,
+	"openal",
+	nullptr,
+	openal_init,
+	openal_finish,
+	nullptr,
+	nullptr,
+	openal_open,
+	openal_close,
+	openal_delay,
+	nullptr,
+	openal_play,
+	nullptr,
+	openal_cancel,
+	nullptr,
+	nullptr,
 };
