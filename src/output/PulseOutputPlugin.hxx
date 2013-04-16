@@ -25,7 +25,7 @@
 #include <stdbool.h>
 
 struct PulseOutput;
-struct pulse_mixer;
+struct PulseMixer;
 struct pa_cvolume;
 
 extern const struct audio_output_plugin pulse_output_plugin;
@@ -41,10 +41,10 @@ void
 pulse_output_unlock(PulseOutput *po);
 
 void
-pulse_output_set_mixer(PulseOutput *po, struct pulse_mixer *pm);
+pulse_output_set_mixer(PulseOutput *po, PulseMixer *pm);
 
 void
-pulse_output_clear_mixer(PulseOutput *po, struct pulse_mixer *pm);
+pulse_output_clear_mixer(PulseOutput *po, PulseMixer *pm);
 
 bool
 pulse_output_set_volume(PulseOutput *po,

@@ -49,13 +49,13 @@ pulse_output_unlock(G_GNUC_UNUSED PulseOutput *po)
 
 void
 pulse_output_set_mixer(G_GNUC_UNUSED PulseOutput *po,
-		       G_GNUC_UNUSED struct pulse_mixer *pm)
+		       G_GNUC_UNUSED PulseMixer *pm)
 {
 }
 
 void
 pulse_output_clear_mixer(G_GNUC_UNUSED PulseOutput *po,
-			 G_GNUC_UNUSED struct pulse_mixer *pm)
+			 G_GNUC_UNUSED PulseMixer *pm)
 {
 }
 

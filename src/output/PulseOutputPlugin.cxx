@@ -52,7 +52,7 @@ struct PulseOutput {
 	const char *server;
 	const char *sink;
 
-	struct pulse_mixer *mixer;
+	PulseMixer *mixer;
 
 	struct pa_threaded_mainloop *mainloop;
 	struct pa_context *context;
@@ -91,7 +91,7 @@ pulse_output_unlock(PulseOutput *po)
 }
 
 void
-pulse_output_set_mixer(PulseOutput *po, struct pulse_mixer *pm)
+pulse_output_set_mixer(PulseOutput *po, PulseMixer *pm)
 {
 	assert(po != nullptr);
 	assert(po->mixer == nullptr);
@@ -117,8 +117,7 @@ pulse_output_set_mixer(PulseOutput *po, struct pulse_mixer *pm)
 }
 
 void
-pulse_output_clear_mixer(PulseOutput *po,
-			 G_GNUC_UNUSED struct pulse_mixer *pm)
+pulse_output_clear_mixer(PulseOutput *po, gcc_unused PulseMixer *pm)
 {
 	assert(po != nullptr);
 	assert(pm != nullptr);
