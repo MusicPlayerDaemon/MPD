@@ -31,9 +31,13 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "winmm_mixer"
 
-struct winmm_mixer {
-	struct mixer base;
+struct WinmmMixer final : public mixer {
 	WinmmOutput *output;
+
+	WinmmMixer(WinmmOutput *_output)
+		:output(_output) {
+		mixer_init(this, &winmm_mixer_plugin);
+	}
 };
 
 static inline GQuark
@@ -61,23 +65,21 @@ winmm_mixer_init(void *ao, G_GNUC_UNUSED const struct config_param *param,
 {
 	assert(ao != nullptr);
 
-	struct winmm_mixer *wm = g_new(struct winmm_mixer, 1);
-	mixer_init(&wm->base, &winmm_mixer_plugin);
-	wm->output = (WinmmOutput *) ao;
-
-	return &wm->base;
+	return new WinmmMixer((WinmmOutput *)ao);
 }
 
 static void
 winmm_mixer_finish(struct mixer *data)
 {
-	g_free(data);
+	WinmmMixer *wm = (WinmmMixer *)data;
+
+	delete wm;
 }
 
 static int
 winmm_mixer_get_volume(struct mixer *mixer, GError **error_r)
 {
-	struct winmm_mixer *wm = (struct winmm_mixer *) mixer;
+	WinmmMixer *wm = (WinmmMixer *) mixer;
 	DWORD volume;
 	HWAVEOUT handle = winmm_output_get_handle(wm->output);
 	MMRESULT result = waveOutGetVolume(handle, &volume);
@@ -94,7 +96,7 @@ winmm_mixer_get_volume(struct mixer *mixer, GError **error_r)
 static bool
 winmm_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
 {
-	struct winmm_mixer *wm = (struct winmm_mixer *) mixer;
+	WinmmMixer *wm = (WinmmMixer *) mixer;
 	DWORD value = winmm_volume_encode(volume);
 	HWAVEOUT handle = winmm_output_get_handle(wm->output);
 	MMRESULT result = waveOutSetVolume(handle, value);
