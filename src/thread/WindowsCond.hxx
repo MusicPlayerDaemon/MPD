@@ -54,9 +54,13 @@ public:
 		WakeAllConditionVariable(&cond);
 	}
 
+	bool timed_wait(CriticalSection &mutex, DWORD timeout_ms) {
+		return SleepConditionVariableCS(&cond, &mutex.critical_section,
+						timeout_ms);
+	}
+
 	void wait(CriticalSection &mutex) {
-		SleepConditionVariableCS(&cond, &mutex.critical_section,
-					 INFINITE);
+		timed_wait(mutex, INFINITE);
 	}
 };
 

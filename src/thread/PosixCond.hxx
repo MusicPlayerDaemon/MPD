@@ -32,6 +32,8 @@
 
 #include "PosixMutex.hxx"
 
+#include <sys/time.h>
+
 /**
  * Low-level wrapper for a pthread_cond_t.
  */
@@ -54,6 +56,17 @@ public:
 
 	void wait(PosixMutex &mutex) {
 		pthread_cond_wait(&cond, &mutex.mutex);
+	}
+
+	bool timed_wait(PosixMutex &mutex, unsigned timeout_ms) {
+		struct timeval now;
+		gettimeofday(&now, nullptr);
+
+		struct timespec ts;
+		ts.tv_sec = now.tv_sec + timeout_ms / 1000;
+		ts.tv_nsec = (now.tv_usec + (timeout_ms % 1000) * 1000) * 1000;
+
+		return pthread_cond_timedwait(&cond, &mutex.mutex, &ts) == 0;
 	}
 };
 
