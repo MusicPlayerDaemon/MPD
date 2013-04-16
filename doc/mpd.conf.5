@@ -32,14 +32,14 @@ configuration file.
 .B db_file <file>
 This specifies where the db file will be stored.
 .TP
-.B sticker_file <file>
-The location of the sticker database.  This is a database which
-manages dynamic information attached to songs.
-.TP
 .B log_file <file>
 This specifies where the log file should be located.
 The special value "syslog" makes MPD use the local syslog daemon.
 .SH OPTIONAL PARAMETERS
+.TP
+.B sticker_file <file>
+The location of the sticker database.  This is a database which
+manages dynamic information attached to songs.
 .TP
 .B pid_file <file>
 This specifies the file to save mpd's process ID in.
