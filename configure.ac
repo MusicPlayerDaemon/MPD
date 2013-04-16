@@ -146,7 +146,7 @@ dnl ---------------------------------------------------------------------------
 dnl Allow tools to be specifically built
 dnl ---------------------------------------------------------------------------
 
-AC_ARG_ENABLE(mpdclient,
+AC_ARG_ENABLE(libmpdclient,
 	AS_HELP_STRING([--enable-libmpdclient],
 		[enable support for the MPD client]),,
 	enable_libmpdclient=auto)
