@@ -33,7 +33,7 @@
 #include "output/OSXOutputPlugin.hxx"
 #include "output/pipe_output_plugin.h"
 #include "output/PulseOutputPlugin.hxx"
-#include "output/recorder_output_plugin.h"
+#include "output/RecorderOutputPlugin.hxx"
 #include "output/RoarOutputPlugin.hxx"
 #include "output/shout_output_plugin.h"
 #include "output/solaris_output_plugin.h"

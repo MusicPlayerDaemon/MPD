@@ -879,7 +879,7 @@ endif
 
 if ENABLE_RECORDER_OUTPUT
 liboutput_plugins_a_SOURCES += \
-	src/output/recorder_output_plugin.c src/output/recorder_output_plugin.h
+	src/output/RecorderOutputPlugin.cxx src/output/RecorderOutputPlugin.hxx
 endif
 
 if ENABLE_HTTPD_OUTPUT
