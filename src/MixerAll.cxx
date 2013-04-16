@@ -40,7 +40,6 @@ static int
 output_mixer_get_volume(unsigned i)
 {
 	struct audio_output *output;
-	struct mixer *mixer;
 	int volume;
 	GError *error = NULL;
 
@@ -50,7 +49,7 @@ output_mixer_get_volume(unsigned i)
 	if (!output->enabled)
 		return -1;
 
-	mixer = output->mixer;
+	Mixer *mixer = output->mixer;
 	if (mixer == NULL)
 		return -1;
 
@@ -88,7 +87,6 @@ static bool
 output_mixer_set_volume(unsigned i, unsigned volume)
 {
 	struct audio_output *output;
-	struct mixer *mixer;
 	bool success;
 	GError *error = NULL;
 
@@ -99,7 +97,7 @@ output_mixer_set_volume(unsigned i, unsigned volume)
 	if (!output->enabled)
 		return false;
 
-	mixer = output->mixer;
+	Mixer *mixer = output->mixer;
 	if (mixer == NULL)
 		return false;
 
@@ -132,7 +130,6 @@ static int
 output_mixer_get_software_volume(unsigned i)
 {
 	struct audio_output *output;
-	struct mixer *mixer;
 
 	assert(i < audio_output_count());
 
@@ -140,8 +137,8 @@ output_mixer_get_software_volume(unsigned i)
 	if (!output->enabled)
 		return -1;
 
-	mixer = output->mixer;
-	if (mixer == NULL || mixer->plugin != &software_mixer_plugin)
+	Mixer *mixer = output->mixer;
+	if (mixer == NULL || !mixer->IsPlugin(software_mixer_plugin))
 		return -1;
 
 	return mixer_get_volume(mixer, NULL);

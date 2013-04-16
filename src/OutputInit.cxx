@@ -96,14 +96,14 @@ audio_output_mixer_type(const struct config_param *param)
 						  "hardware"));
 }
 
-static struct mixer *
+static Mixer *
 audio_output_load_mixer(struct audio_output *ao,
 			const struct config_param *param,
 			const struct mixer_plugin *plugin,
 			Filter &filter_chain,
 			GError **error_r)
 {
-	struct mixer *mixer;
+	Mixer *mixer;
 
 	switch (audio_output_mixer_type(param)) {
 	case MIXER_TYPE_NONE:

@@ -795,7 +795,7 @@ MIXER_API_SRC = \
 	src/MixerControl.cxx src/MixerControl.hxx \
 	src/MixerType.cxx src/MixerType.hxx \
 	src/MixerAll.cxx src/MixerAll.hxx \
-	src/MixerInternal.cxx src/MixerInternal.hxx
+	src/MixerInternal.hxx
 
 libmixer_plugins_a_SOURCES = \
 	src/mixer/SoftwareMixerPlugin.cxx \
@@ -1325,7 +1325,6 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/resolver.c \
 	src/OutputInit.cxx src/OutputFinish.cxx src/OutputList.cxx \
 	src/OutputPlugin.cxx \
-	src/MixerInternal.cxx \
 	src/MixerControl.cxx \
 	src/MixerType.cxx \
 	src/FilterPlugin.cxx \
@@ -1345,7 +1344,6 @@ test_read_mixer_LDADD = \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.cxx \
 	src/MixerControl.cxx \
-	src/MixerInternal.cxx \
 	src/FilterPlugin.cxx \
 	src/filter/VolumeFilterPlugin.cxx \
 	src/fd_util.c

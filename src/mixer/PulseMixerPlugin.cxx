@@ -39,16 +39,16 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "pulse_mixer"
 
-struct PulseMixer : mixer {
+struct PulseMixer final : public Mixer {
 	PulseOutput *output;
 
 	bool online;
 	struct pa_cvolume volume;
 
 	PulseMixer(PulseOutput *_output)
-		:output(_output), online(false)
+		:Mixer(pulse_mixer_plugin),
+		output(_output), online(false)
 	{
-		mixer_init(this, &pulse_mixer_plugin);
 	}
 };
 
@@ -152,7 +152,7 @@ pulse_mixer_on_change(PulseMixer *pm,
 	pulse_mixer_update(pm, context, stream);
 }
 
-static struct mixer *
+static Mixer *
 pulse_mixer_init(void *ao, G_GNUC_UNUSED const struct config_param *param,
 		 GError **error_r)
 {
@@ -172,7 +172,7 @@ pulse_mixer_init(void *ao, G_GNUC_UNUSED const struct config_param *param,
 }
 
 static void
-pulse_mixer_finish(struct mixer *data)
+pulse_mixer_finish(Mixer *data)
 {
 	PulseMixer *pm = (PulseMixer *) data;
 
@@ -182,7 +182,7 @@ pulse_mixer_finish(struct mixer *data)
 }
 
 static int
-pulse_mixer_get_volume(struct mixer *mixer, G_GNUC_UNUSED GError **error_r)
+pulse_mixer_get_volume(Mixer *mixer, G_GNUC_UNUSED GError **error_r)
 {
 	PulseMixer *pm = (PulseMixer *) mixer;
 	int ret;
@@ -199,7 +199,7 @@ pulse_mixer_get_volume(struct mixer *mixer, G_GNUC_UNUSED GError **error_r)
 }
 
 static bool
-pulse_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
+pulse_mixer_set_volume(Mixer *mixer, unsigned volume, GError **error_r)
 {
 	PulseMixer *pm = (PulseMixer *) mixer;
 	struct pa_cvolume cvolume;

@@ -31,12 +31,12 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "winmm_mixer"
 
-struct WinmmMixer final : public mixer {
+struct WinmmMixer final : public Mixer {
 	WinmmOutput *output;
 
 	WinmmMixer(WinmmOutput *_output)
-		:output(_output) {
-		mixer_init(this, &winmm_mixer_plugin);
+		:Mixer(winmm_mixer_plugin),
+		output(_output) {
 	}
 };
 
@@ -59,7 +59,7 @@ winmm_volume_encode(int volume)
 	return MAKELONG(value, value);
 }
 
-static struct mixer *
+static Mixer *
 winmm_mixer_init(void *ao, G_GNUC_UNUSED const struct config_param *param,
 		 G_GNUC_UNUSED GError **error_r)
 {
@@ -69,7 +69,7 @@ winmm_mixer_init(void *ao, G_GNUC_UNUSED const struct config_param *param,
 }
 
 static void
-winmm_mixer_finish(struct mixer *data)
+winmm_mixer_finish(Mixer *data)
 {
 	WinmmMixer *wm = (WinmmMixer *)data;
 
@@ -77,7 +77,7 @@ winmm_mixer_finish(struct mixer *data)
 }
 
 static int
-winmm_mixer_get_volume(struct mixer *mixer, GError **error_r)
+winmm_mixer_get_volume(Mixer *mixer, GError **error_r)
 {
 	WinmmMixer *wm = (WinmmMixer *) mixer;
 	DWORD volume;
@@ -94,7 +94,7 @@ winmm_mixer_get_volume(struct mixer *mixer, GError **error_r)
 }
 
 static bool
-winmm_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
+winmm_mixer_set_volume(Mixer *mixer, unsigned volume, GError **error_r)
 {
 	WinmmMixer *wm = (WinmmMixer *) mixer;
 	DWORD value = winmm_volume_encode(volume);

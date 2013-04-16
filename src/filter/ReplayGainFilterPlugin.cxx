@@ -43,7 +43,7 @@ class ReplayGainFilter final : public Filter {
 	 * If set, then this hardware mixer is used for applying
 	 * replay gain, instead of the software volume library.
 	 */
-	struct mixer *mixer;
+	Mixer *mixer;
 
 	/**
 	 * The base volume level for scale=1.0, between 1 and 100
@@ -80,7 +80,7 @@ public:
 		replay_gain_info_init(&info);
 	}
 
-	void SetMixer(struct mixer *_mixer, unsigned _base) {
+	void SetMixer(Mixer *_mixer, unsigned _base) {
 		assert(_mixer == NULL || (_base > 0 && _base <= 100));
 
 		mixer = _mixer;
@@ -217,7 +217,7 @@ const struct filter_plugin replay_gain_filter_plugin = {
 };
 
 void
-replay_gain_filter_set_mixer(Filter *_filter, struct mixer *mixer,
+replay_gain_filter_set_mixer(Filter *_filter, Mixer *mixer,
 			     unsigned base)
 {
 	ReplayGainFilter *filter = (ReplayGainFilter *)_filter;

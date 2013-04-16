@@ -40,7 +40,7 @@
 
 #define VOLUME_MIXER_OSS_DEFAULT		"/dev/mixer"
 
-class OssMixer : public mixer {
+class OssMixer : public Mixer {
 	const char *device;
 	const char *control;
 
@@ -48,9 +48,7 @@ class OssMixer : public mixer {
 	int volume_control;
 
 public:
-	OssMixer() {
-		mixer_init(this, &oss_mixer_plugin);
-	}
+	OssMixer():Mixer(oss_mixer_plugin) {}
 
 	bool Configure(const config_param *param, GError **error_r);
 	bool Open(GError **error_r);
@@ -104,7 +102,7 @@ OssMixer::Configure(const config_param *param, GError **error_r)
 	return true;
 }
 
-static struct mixer *
+static Mixer *
 oss_mixer_init(G_GNUC_UNUSED void *ao, const struct config_param *param,
 	       GError **error_r)
 {
@@ -119,7 +117,7 @@ oss_mixer_init(G_GNUC_UNUSED void *ao, const struct config_param *param,
 }
 
 static void
-oss_mixer_finish(struct mixer *data)
+oss_mixer_finish(Mixer *data)
 {
 	OssMixer *om = (OssMixer *) data;
 
@@ -135,7 +133,7 @@ OssMixer::Close()
 }
 
 static void
-oss_mixer_close(struct mixer *data)
+oss_mixer_close(Mixer *data)
 {
 	OssMixer *om = (OssMixer *) data;
 	om->Close();
@@ -176,7 +174,7 @@ OssMixer::Open(GError **error_r)
 }
 
 static bool
-oss_mixer_open(struct mixer *data, GError **error_r)
+oss_mixer_open(Mixer *data, GError **error_r)
 {
 	OssMixer *om = (OssMixer *) data;
 
@@ -211,7 +209,7 @@ OssMixer::GetVolume(GError **error_r)
 }
 
 static int
-oss_mixer_get_volume(struct mixer *mixer, GError **error_r)
+oss_mixer_get_volume(Mixer *mixer, GError **error_r)
 {
 	OssMixer *om = (OssMixer *)mixer;
 	return om->GetVolume(error_r);
@@ -240,7 +238,7 @@ OssMixer::SetVolume(unsigned volume, GError **error_r)
 }
 
 static bool
-oss_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
+oss_mixer_set_volume(Mixer *mixer, unsigned volume, GError **error_r)
 {
 	OssMixer *om = (OssMixer *)mixer;
 	return om->SetVolume(volume, error_r);

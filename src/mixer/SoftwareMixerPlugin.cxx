@@ -29,18 +29,17 @@
 #include <assert.h>
 #include <math.h>
 
-struct SoftwareMixer final : public mixer {
+struct SoftwareMixer final : public Mixer {
 	Filter *filter;
 
 	unsigned volume;
 
 	SoftwareMixer()
-		:filter(filter_new(&volume_filter_plugin, nullptr, nullptr)),
-		 volume(100)
+		:Mixer(software_mixer_plugin),
+		filter(filter_new(&volume_filter_plugin, nullptr, nullptr)),
+		volume(100)
 	{
 		assert(filter != nullptr);
-
-		mixer_init(this, &software_mixer_plugin);
 	}
 
 	~SoftwareMixer() {
@@ -48,7 +47,7 @@ struct SoftwareMixer final : public mixer {
 	}
 };
 
-static struct mixer *
+static Mixer *
 software_mixer_init(G_GNUC_UNUSED void *ao,
 		    G_GNUC_UNUSED const struct config_param *param,
 		    G_GNUC_UNUSED GError **error_r)
@@ -57,7 +56,7 @@ software_mixer_init(G_GNUC_UNUSED void *ao,
 }
 
 static void
-software_mixer_finish(struct mixer *data)
+software_mixer_finish(Mixer *data)
 {
 	SoftwareMixer *sm = (SoftwareMixer *)data;
 
@@ -65,7 +64,7 @@ software_mixer_finish(struct mixer *data)
 }
 
 static int
-software_mixer_get_volume(struct mixer *mixer, G_GNUC_UNUSED GError **error_r)
+software_mixer_get_volume(Mixer *mixer, G_GNUC_UNUSED GError **error_r)
 {
 	SoftwareMixer *sm = (SoftwareMixer *)mixer;
 
@@ -73,7 +72,7 @@ software_mixer_get_volume(struct mixer *mixer, G_GNUC_UNUSED GError **error_r)
 }
 
 static bool
-software_mixer_set_volume(struct mixer *mixer, unsigned volume,
+software_mixer_set_volume(Mixer *mixer, unsigned volume,
 			  G_GNUC_UNUSED GError **error_r)
 {
 	SoftwareMixer *sm = (SoftwareMixer *)mixer;
@@ -103,11 +102,10 @@ const struct mixer_plugin software_mixer_plugin = {
 };
 
 Filter *
-software_mixer_get_filter(struct mixer *mixer)
+software_mixer_get_filter(Mixer *mixer)
 {
 	SoftwareMixer *sm = (SoftwareMixer *)mixer;
-
-	assert(sm->plugin == &software_mixer_plugin);
+	assert(sm->IsPlugin(software_mixer_plugin));
 
 	return sm->filter;
 }

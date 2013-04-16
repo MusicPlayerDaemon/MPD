@@ -76,7 +76,11 @@ struct audio_output {
 	 * May be NULL if none is available, or if software volume is
 	 * configured.
 	 */
+#ifdef __cplusplus
+	class Mixer *mixer;
+#else
 	struct mixer *mixer;
+#endif
 
 	/**
 	 * Will this output receive tags from the decoder?  The

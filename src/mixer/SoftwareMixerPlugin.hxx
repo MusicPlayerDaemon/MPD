@@ -20,7 +20,7 @@
 #ifndef MPD_SOFTWARE_MIXER_PLUGIN_HXX
 #define MPD_SOFTWARE_MIXER_PLUGIN_HXX
 
-struct mixer;
+class Mixer;
 class Filter;
 
 /**
@@ -28,6 +28,6 @@ class Filter;
  * of this mixer plugin should install this filter.
  */
 Filter *
-software_mixer_get_filter(struct mixer *mixer);
+software_mixer_get_filter(Mixer *mixer);
 
 #endif

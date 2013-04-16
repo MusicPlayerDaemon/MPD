@@ -64,7 +64,6 @@ bool
 audio_output_disable_index(unsigned idx)
 {
 	struct audio_output *ao;
-	struct mixer *mixer;
 
 	if (idx >= audio_output_count())
 		return false;
@@ -76,7 +75,7 @@ audio_output_disable_index(unsigned idx)
 	ao->enabled = false;
 	idle_add(IDLE_OUTPUT);
 
-	mixer = ao->mixer;
+	Mixer *mixer = ao->mixer;
 	if (mixer != NULL) {
 		mixer_close(mixer);
 		idle_add(IDLE_MIXER);

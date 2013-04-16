@@ -25,7 +25,8 @@
 
 #include <glib.h>
 
-struct mixer {
+class Mixer {
+public:
 	const struct mixer_plugin *plugin;
 
 	/**
@@ -44,9 +45,17 @@ struct mixer {
 	 * automatically?
 	 */
 	bool failed;
-};
 
-void
-mixer_init(struct mixer *mixer, const struct mixer_plugin *plugin);
+public:
+	Mixer(const mixer_plugin &_plugin)
+		:plugin(&_plugin),
+		 mutex(g_mutex_new()),
+		 open(false),
+		 failed(false) {}
+
+	bool IsPlugin(const mixer_plugin &other) const {
+		return plugin == &other;
+	}
+};
 
 #endif

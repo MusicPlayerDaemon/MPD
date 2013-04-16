@@ -27,7 +27,7 @@
 
 #include "gerror.h"
 
-struct mixer;
+class Mixer;
 struct mixer_plugin;
 struct config_param;
 
@@ -35,32 +35,32 @@ struct config_param;
 extern "C" {
 #endif
 
-struct mixer *
+Mixer *
 mixer_new(const struct mixer_plugin *plugin, void *ao,
 	  const struct config_param *param,
 	  GError **error_r);
 
 void
-mixer_free(struct mixer *mixer);
+mixer_free(Mixer *mixer);
 
 bool
-mixer_open(struct mixer *mixer, GError **error_r);
+mixer_open(Mixer *mixer, GError **error_r);
 
 void
-mixer_close(struct mixer *mixer);
+mixer_close(Mixer *mixer);
 
 /**
  * Close the mixer unless the plugin's "global" flag is set.  This is
  * called when the #audio_output is closed.
  */
 void
-mixer_auto_close(struct mixer *mixer);
+mixer_auto_close(Mixer *mixer);
 
 int
-mixer_get_volume(struct mixer *mixer, GError **error_r);
+mixer_get_volume(Mixer *mixer, GError **error_r);
 
 bool
-mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r);
+mixer_set_volume(Mixer *mixer, unsigned volume, GError **error_r);
 
 #ifdef __cplusplus
 }

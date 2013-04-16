@@ -27,24 +27,24 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "mixer"
 
-struct mixer *
+Mixer *
 mixer_new(const struct mixer_plugin *plugin, void *ao,
 	  const struct config_param *param,
 	  GError **error_r)
 {
-	struct mixer *mixer;
+	Mixer *mixer;
 
 	assert(plugin != NULL);
 
 	mixer = plugin->init(ao, param, error_r);
 
-	assert(mixer == NULL || mixer->plugin == plugin);
+	assert(mixer == NULL || mixer->IsPlugin(*plugin));
 
 	return mixer;
 }
 
 void
-mixer_free(struct mixer *mixer)
+mixer_free(Mixer *mixer)
 {
 	assert(mixer != NULL);
 	assert(mixer->plugin != NULL);
@@ -60,7 +60,7 @@ mixer_free(struct mixer *mixer)
 }
 
 bool
-mixer_open(struct mixer *mixer, GError **error_r)
+mixer_open(Mixer *mixer, GError **error_r)
 {
 	bool success;
 
@@ -84,7 +84,7 @@ mixer_open(struct mixer *mixer, GError **error_r)
 }
 
 static void
-mixer_close_internal(struct mixer *mixer)
+mixer_close_internal(Mixer *mixer)
 {
 	assert(mixer != NULL);
 	assert(mixer->plugin != NULL);
@@ -97,7 +97,7 @@ mixer_close_internal(struct mixer *mixer)
 }
 
 void
-mixer_close(struct mixer *mixer)
+mixer_close(Mixer *mixer)
 {
 	assert(mixer != NULL);
 	assert(mixer->plugin != NULL);
@@ -111,7 +111,7 @@ mixer_close(struct mixer *mixer)
 }
 
 void
-mixer_auto_close(struct mixer *mixer)
+mixer_auto_close(Mixer *mixer)
 {
 	if (!mixer->plugin->global)
 		mixer_close(mixer);
@@ -122,7 +122,7 @@ mixer_auto_close(struct mixer *mixer)
  * calling this function.
  */
 static void
-mixer_failed(struct mixer *mixer)
+mixer_failed(Mixer *mixer)
 {
 	assert(mixer->open);
 
@@ -132,7 +132,7 @@ mixer_failed(struct mixer *mixer)
 }
 
 int
-mixer_get_volume(struct mixer *mixer, GError **error_r)
+mixer_get_volume(Mixer *mixer, GError **error_r)
 {
 	int volume;
 
@@ -161,7 +161,7 @@ mixer_get_volume(struct mixer *mixer, GError **error_r)
 }
 
 bool
-mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
+mixer_set_volume(Mixer *mixer, unsigned volume, GError **error_r)
 {
 	bool success;
 

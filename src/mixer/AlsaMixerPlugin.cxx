@@ -45,7 +45,7 @@ private:
 	virtual void DispatchSockets() override;
 };
 
-class AlsaMixer final : public mixer {
+class AlsaMixer final : public Mixer {
 	const char *device;
 	const char *control;
 	unsigned int index;
@@ -59,9 +59,7 @@ class AlsaMixer final : public mixer {
 	AlsaMixerMonitor *monitor;
 
 public:
-	AlsaMixer() {
-		mixer_init(this, &alsa_mixer_plugin);
-	}
+	AlsaMixer():Mixer(alsa_mixer_plugin) {}
 
 	void Configure(const config_param *param);
 	bool Setup(GError **error_r);
@@ -150,7 +148,7 @@ AlsaMixer::Configure(const config_param *param)
 					  VOLUME_MIXER_ALSA_INDEX_DEFAULT);
 }
 
-static struct mixer *
+static Mixer *
 alsa_mixer_init(G_GNUC_UNUSED void *ao, const struct config_param *param,
 		G_GNUC_UNUSED GError **error_r)
 {
@@ -161,7 +159,7 @@ alsa_mixer_init(G_GNUC_UNUSED void *ao, const struct config_param *param,
 }
 
 static void
-alsa_mixer_finish(struct mixer *data)
+alsa_mixer_finish(Mixer *data)
 {
 	AlsaMixer *am = (AlsaMixer *)data;
 
@@ -254,7 +252,7 @@ AlsaMixer::Open(GError **error_r)
 }
 
 static bool
-alsa_mixer_open(struct mixer *data, GError **error_r)
+alsa_mixer_open(Mixer *data, GError **error_r)
 {
 	AlsaMixer *am = (AlsaMixer *)data;
 
@@ -273,7 +271,7 @@ AlsaMixer::Close()
 }
 
 static void
-alsa_mixer_close(struct mixer *data)
+alsa_mixer_close(Mixer *data)
 {
 	AlsaMixer *am = (AlsaMixer *)data;
 	am->Close();
@@ -319,7 +317,7 @@ AlsaMixer::GetVolume(GError **error_r)
 }
 
 static int
-alsa_mixer_get_volume(struct mixer *mixer, GError **error_r)
+alsa_mixer_get_volume(Mixer *mixer, GError **error_r)
 {
 	AlsaMixer *am = (AlsaMixer *)mixer;
 	return am->GetVolume(error_r);
@@ -355,7 +353,7 @@ AlsaMixer::SetVolume(unsigned volume, GError **error_r)
 }
 
 static bool
-alsa_mixer_set_volume(struct mixer *mixer, unsigned volume, GError **error_r)
+alsa_mixer_set_volume(Mixer *mixer, unsigned volume, GError **error_r)
 {
 	AlsaMixer *am = (AlsaMixer *)mixer;
 	return am->SetVolume(volume, error_r);

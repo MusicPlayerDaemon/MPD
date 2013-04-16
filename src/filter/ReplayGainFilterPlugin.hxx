@@ -23,7 +23,7 @@
 #include "replay_gain_info.h"
 
 class Filter;
-struct mixer;
+class Mixer;
 
 /**
  * Enables or disables the hardware mixer for applying replay gain.
@@ -34,7 +34,7 @@ struct mixer;
  * (including).
  */
 void
-replay_gain_filter_set_mixer(Filter *_filter, struct mixer *mixer,
+replay_gain_filter_set_mixer(Filter *_filter, Mixer *mixer,
 			     unsigned base);
 
 /**

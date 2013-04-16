@@ -111,7 +111,6 @@ pcm_volume(G_GNUC_UNUSED void *buffer, G_GNUC_UNUSED size_t length,
 int main(int argc, G_GNUC_UNUSED char **argv)
 {
 	GError *error = NULL;
-	struct mixer *mixer;
 	bool success;
 	int volume;
 
@@ -124,7 +123,7 @@ int main(int argc, G_GNUC_UNUSED char **argv)
 
 	main_loop = new EventLoop(EventLoop::Default());
 
-	mixer = mixer_new(&alsa_mixer_plugin, NULL, NULL, &error);
+	Mixer *mixer = mixer_new(&alsa_mixer_plugin, NULL, NULL, &error);
 	if (mixer == NULL) {
 		g_printerr("mixer_new() failed: %s\n", error->message);
 		g_error_free(error);

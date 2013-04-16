@@ -36,7 +36,7 @@
 #include <unistd.h>
 
 bool
-mixer_set_volume(G_GNUC_UNUSED struct mixer *mixer,
+mixer_set_volume(gcc_unused Mixer *mixer,
 		 G_GNUC_UNUSED unsigned volume, G_GNUC_UNUSED GError **error_r)
 {
 	return true;

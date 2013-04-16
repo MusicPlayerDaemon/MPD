@@ -32,7 +32,7 @@
 #include <stdbool.h>
 
 struct config_param;
-struct mixer;
+class Mixer;
 
 struct mixer_plugin {
 	/**
@@ -45,13 +45,13 @@ struct mixer_plugin {
 	 * NULL to ignore errors
 	 * @return a mixer object, or NULL on error
 	 */
-	struct mixer *(*init)(void *ao, const struct config_param *param,
-			      GError **error_r);
+	Mixer *(*init)(void *ao, const struct config_param *param,
+		       GError **error_r);
 
 	/**
 	 * Finish and free mixer data
          */
-	void (*finish)(struct mixer *data);
+	void (*finish)(Mixer *data);
 
 	/**
 	 * Open mixer device
@@ -60,12 +60,12 @@ struct mixer_plugin {
 	 * NULL to ignore errors
 	 * @return true on success, false on error
 	 */
-	bool (*open)(struct mixer *data, GError **error_r);
+	bool (*open)(Mixer *data, GError **error_r);
 
 	/**
 	 * Close mixer device
 	 */
-	void (*close)(struct mixer *data);
+	void (*close)(Mixer *data);
 
 	/**
 	 * Reads the current volume.
@@ -75,7 +75,7 @@ struct mixer_plugin {
 	 * @return the current volume (0..100 including) or -1 if
 	 * unavailable or on error (error_r set, mixer will be closed)
 	 */
-	int (*get_volume)(struct mixer *mixer, GError **error_r);
+	int (*get_volume)(Mixer *mixer, GError **error_r);
 
 	/**
 	 * Sets the volume.
@@ -85,7 +85,7 @@ struct mixer_plugin {
 	 * @param volume the new volume (0..100 including)
 	 * @return true on success, false on error
 	 */
-	bool (*set_volume)(struct mixer *mixer, unsigned volume,
+	bool (*set_volume)(Mixer *mixer, unsigned volume,
 			   GError **error_r);
 
 	/**
