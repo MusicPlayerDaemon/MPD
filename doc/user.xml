@@ -1372,43 +1372,6 @@ systemctl start mpd.socket</programlisting>
       </section>
 
       <section>
-        <title><varname>ffado</varname></title>
-
-        <para>
-          The <varname>ffado</varname> plugin connects to FireWire
-          audio devices via <filename>libffado</filename>.
-        </para>
-
-        <para>
-          Warning: this plugin was not tested successfully.  I just
-          couldn't keep libffado2 from crashing.  Use at your own
-          risk.
-        </para>
-
-        <informaltable>
-          <tgroup cols="2">
-            <thead>
-              <row>
-                <entry>Setting</entry>
-                <entry>Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>
-                  <varname>device</varname>
-                  <parameter>NAME</parameter>
-                </entry>
-                <entry>
-                  Sets the device which should be used, e.g. "hw:0".
-                </entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
-      </section>
-
-      <section>
         <title><varname>jack</varname></title>
 
         <para>

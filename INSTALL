@@ -56,9 +56,6 @@ You also need an encoder: either libvorbisenc (ogg), or liblame (mp3).
 OpenAL - http://kcat.strangesoft.net/openal.html
 Open Audio Library
 
-libffado - http://www.ffado.org/
-For FireWire audio devices.
-
 
 Optional Input Dependencies
 ---------------------------

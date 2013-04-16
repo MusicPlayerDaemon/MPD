@@ -549,14 +549,3 @@
    fun:call_init
    fun:_dl_init
 }
-
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   fun:*alloc
-   fun:_dl_allocate_tls
-   ...
-   obj:*/libffado.so*
-   fun:call_init
-   fun:_dl_init
-}

@@ -750,7 +750,6 @@ endif
 liboutput_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(AO_CFLAGS) \
 	$(ALSA_CFLAGS) \
-	$(FFADO_CFLAGS) \
 	$(JACK_CFLAGS) \
 	$(OPENAL_CFLAGS) \
 	$(OPENSSL_CFLAGS) \
@@ -763,7 +762,6 @@ OUTPUT_LIBS = \
 	$(AO_LIBS) \
 	$(ALSA_LIBS) \
 	$(ROAR_LIBS) \
-	$(FFADO_LIBS) \
 	$(JACK_LIBS) \
 	$(OPENAL_LIBS) \
 	$(PULSE_LIBS) \
@@ -815,11 +813,6 @@ if HAVE_ROAR
 liboutput_plugins_a_SOURCES += \
 	src/output/RoarOutputPlugin.cxx src/output/RoarOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += src/mixer/RoarMixerPlugin.cxx
-endif
-
-if ENABLE_FFADO_OUTPUT
-liboutput_plugins_a_SOURCES += \
-	src/output/ffado_output_plugin.c src/output/ffado_output_plugin.h
 endif
 
 if HAVE_AO

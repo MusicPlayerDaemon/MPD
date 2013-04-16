@@ -22,7 +22,6 @@
 #include "output_api.h"
 #include "output/AlsaOutputPlugin.hxx"
 #include "output/ao_output_plugin.h"
-#include "output/ffado_output_plugin.h"
 #include "output/FifoOutputPlugin.hxx"
 #include "output/HttpdOutputPlugin.hxx"
 #include "output/JackOutputPlugin.hxx"
@@ -84,9 +83,6 @@ const struct audio_output_plugin *const audio_output_plugins[] = {
 #endif
 #ifdef ENABLE_WINMM_OUTPUT
 	&winmm_output_plugin,
-#endif
-#ifdef ENABLE_FFADO_OUTPUT
-	&ffado_output_plugin,
 #endif
 	NULL
 };

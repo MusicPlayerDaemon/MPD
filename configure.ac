@@ -205,10 +205,6 @@ AC_ARG_ENABLE(documentation,
 		[build documentation (default: disable)]),,
 	[enable_documentation=no])
 
-AC_ARG_ENABLE(ffado,
-	AS_HELP_STRING([--enable-ffado], [enable libffado (FireWire) support]),,
-	[enable_ffado=no])
-
 AC_ARG_ENABLE(ffmpeg,
 	AS_HELP_STRING([--enable-ffmpeg],
 		[enable FFMPEG support]),,
@@ -1287,17 +1283,6 @@ fi
 
 AM_CONDITIONAL(HAVE_ROAR, test x$enable_roar = xyes)
 
-dnl ----------------------------------- FFADO ---------------------------------
-
-MPD_AUTO_PKG(ffado, FFADO, [libffado],
-	[libffado output plugin], [libffado not found])
-
-if test x$enable_ffado = xyes; then
-	AC_DEFINE(ENABLE_FFADO_OUTPUT, 1, [Define to enable the libffado output plugin])
-fi
-
-AM_CONDITIONAL(ENABLE_FFADO_OUTPUT, test x$enable_ffado = xyes)
-
 dnl ----------------------------------- FIFO ----------------------------------
 if test x$enable_fifo = xyes; then
 	AC_CHECK_FUNC([mkfifo],
@@ -1488,7 +1473,6 @@ if
 	test x$enable_alsa = xno &&
 	test x$enable_roar = xno &&
 	test x$enable_ao = xno &&
-	test x$enable_ffado = xno &&
 	test x$enable_fifo = xno &&
 	test x$enable_httpd_output = xno &&
 	test x$enable_jack = xno &&
@@ -1642,7 +1626,6 @@ results(id3,[ID3])
 
 printf '\nPlayback support:\n\t'
 results(alsa,ALSA)
-results(ffado,FFADO)
 results(fifo,FIFO)
 results(recorder_output,[File Recorder])
 results(httpd_output,[HTTP Daemon])
