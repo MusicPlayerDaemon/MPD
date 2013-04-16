@@ -862,7 +862,7 @@ endif
 
 if HAVE_SHOUT
 liboutput_plugins_a_SOURCES += \
-	src/output/shout_output_plugin.c src/output/shout_output_plugin.h
+	src/output/ShoutOutputPlugin.cxx src/output/ShoutOutputPlugin.hxx
 endif
 
 if ENABLE_RECORDER_OUTPUT

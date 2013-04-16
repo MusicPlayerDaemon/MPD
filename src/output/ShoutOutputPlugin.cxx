@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "shout_output_plugin.h"
+#include "ShoutOutputPlugin.hxx"
 #include "output_api.h"
 #include "encoder_plugin.h"
 #include "encoder_list.h"
@@ -36,7 +36,7 @@
 
 #define DEFAULT_CONN_TIMEOUT  2
 
-struct shout_data {
+struct ShoutOutput final {
 	struct audio_output base;
 
 	shout_t *shout_conn;
@@ -50,6 +50,31 @@ struct shout_data {
 	int timeout;
 
 	uint8_t buffer[32768];
+
+	ShoutOutput()
+		:shout_conn(shout_new()),
+		shout_meta(shout_metadata_new()),
+		quality(-2.0),
+		bitrate(-1),
+		timeout(DEFAULT_CONN_TIMEOUT) {}
+
+	~ShoutOutput() {
+		if (shout_meta != nullptr)
+			shout_metadata_free(shout_meta);
+		if (shout_conn != nullptr)
+			shout_free(shout_conn);
+	}
+
+	bool Initialize(const config_param *param, GError **error_r) {
+		return ao_base_init(&base, &shout_output_plugin, param,
+				    error_r);
+	}
+
+	void Deinitialize() {
+		ao_base_finish(&base);
+	}
+
+	bool Configure(const config_param *param, GError **error_r);
 };
 
 static int shout_init_count;
@@ -74,54 +99,28 @@ shout_encoder_plugin_get(const char *name)
 	return encoder_plugin_get(name);
 }
 
-static struct shout_data *new_shout_data(void)
-{
-	struct shout_data *ret = g_new(struct shout_data, 1);
-
-	ret->shout_conn = shout_new();
-	ret->shout_meta = shout_metadata_new();
-	ret->bitrate = -1;
-	ret->quality = -2.0;
-	ret->timeout = DEFAULT_CONN_TIMEOUT;
-
-	return ret;
-}
-
-static void free_shout_data(struct shout_data *sd)
-{
-	if (sd->shout_meta)
-		shout_metadata_free(sd->shout_meta);
-	if (sd->shout_conn)
-		shout_free(sd->shout_conn);
-
-	g_free(sd);
-}
-
 gcc_pure
 static const char *
 require_block_string(const struct config_param *param, const char *name)
 {
-	const char *value = config_get_block_string(param, name, NULL);
-	if (value == NULL)
+	const char *value = config_get_block_string(param, name, nullptr);
+	if (value == nullptr)
 		MPD_ERROR("no \"%s\" defined for shout device defined at line " \
 			  "%i\n", name, param->line);			\
 
 	return value;
 }
 
-static bool
-my_shout_configure(struct shout_data *sd, const struct config_param *param,
-		   GError **error)
+inline bool
+ShoutOutput::Configure(const config_param *param, GError **error_r)
 {
 
 	const struct audio_format *audio_format =
-		&sd->base.config_audio_format;
+		&base.config_audio_format;
 	if (!audio_format_fully_defined(audio_format)) {
-		g_set_error(error, shout_output_quark(), 0,
+		g_set_error(error_r, shout_output_quark(), 0,
 			    "Need full audio format specification");
-		ao_base_finish(&sd->base);
-		free_shout_data(sd);
-		return NULL;
+		return nullptr;
 	}
 
 	const char *host = require_block_string(param, "host");
@@ -129,7 +128,7 @@ my_shout_configure(struct shout_data *sd, const struct config_param *param,
 
 	unsigned port = config_get_block_unsigned(param, "port", 0);
 	if (port == 0) {
-		g_set_error(error, shout_output_quark(), 0,
+		g_set_error(error_r, shout_output_quark(), 0,
 			    "shout port must be configured");
 		return false;
 	}
@@ -137,42 +136,42 @@ my_shout_configure(struct shout_data *sd, const struct config_param *param,
 	const char *passwd = require_block_string(param, "password");
 	const char *name = require_block_string(param, "name");
 
-	bool public = config_get_block_bool(param, "public", false);
+	bool is_public = config_get_block_bool(param, "public", false);
 
 	const char *user = config_get_block_string(param, "user", "source");
 
-	const char *value = config_get_block_string(param, "quality", NULL);
-	if (value != NULL) {
+	const char *value = config_get_block_string(param, "quality", nullptr);
+	if (value != nullptr) {
 		char *test;
-		sd->quality = strtod(value, &test);
+		quality = strtod(value, &test);
 
-		if (*test != '\0' || sd->quality < -1.0 || sd->quality > 10.0) {
-			g_set_error(error, shout_output_quark(), 0,
+		if (*test != '\0' || quality < -1.0 || quality > 10.0) {
+			g_set_error(error_r, shout_output_quark(), 0,
 				    "shout quality \"%s\" is not a number in the "
 				    "range -1 to 10, line %i",
 				    value, param->line);
 			return false;
 		}
 
-		if (config_get_block_string(param, "bitrate", NULL) != NULL) {
-			g_set_error(error, shout_output_quark(), 0,
+		if (config_get_block_string(param, "bitrate", nullptr) != nullptr) {
+			g_set_error(error_r, shout_output_quark(), 0,
 				    "quality and bitrate are "
 				    "both defined");
 			return false;
 		}
 	} else {
-		value = config_get_block_string(param, "bitrate", NULL);
-		if (value == NULL) {
-			g_set_error(error, shout_output_quark(), 0,
+		value = config_get_block_string(param, "bitrate", nullptr);
+		if (value == nullptr) {
+			g_set_error(error_r, shout_output_quark(), 0,
 				    "neither bitrate nor quality defined");
 			return false;
 		}
 
 		char *test;
-		sd->bitrate = strtol(value, &test, 10);
+		bitrate = strtol(value, &test, 10);
 
-		if (*test != '\0' || sd->bitrate <= 0) {
-			g_set_error(error, shout_output_quark(), 0,
+		if (*test != '\0' || bitrate <= 0) {
+			g_set_error(error_r, shout_output_quark(), 0,
 				    "bitrate must be a positive integer");
 			return false;
 		}
@@ -182,15 +181,15 @@ my_shout_configure(struct shout_data *sd, const struct config_param *param,
 						       "ogg");
 	const struct encoder_plugin *encoder_plugin =
 		shout_encoder_plugin_get(encoding);
-	if (encoder_plugin == NULL) {
-		g_set_error(error, shout_output_quark(), 0,
+	if (encoder_plugin == nullptr) {
+		g_set_error(error_r, shout_output_quark(), 0,
 			    "couldn't find shout encoder plugin \"%s\"",
 			    encoding);
 		return false;
 	}
 
-	sd->encoder = encoder_init(encoder_plugin, param, error);
-	if (sd->encoder == NULL)
+	encoder = encoder_init(encoder_plugin, param, error_r);
+	if (encoder == nullptr)
 		return false;
 
 	unsigned shout_format;
@@ -200,11 +199,11 @@ my_shout_configure(struct shout_data *sd, const struct config_param *param,
 		shout_format = SHOUT_FORMAT_OGG;
 
 	unsigned protocol;
-	value = config_get_block_string(param, "protocol", NULL);
-	if (value != NULL) {
+	value = config_get_block_string(param, "protocol", nullptr);
+	if (value != nullptr) {
 		if (0 == strcmp(value, "shoutcast") &&
 		    0 != strcmp(encoding, "mp3")) {
-			g_set_error(error, shout_output_quark(), 0,
+			g_set_error(error_r, shout_output_quark(), 0,
 				    "you cannot stream \"%s\" to shoutcast, use mp3",
 				    encoding);
 			return false;
@@ -215,7 +214,7 @@ my_shout_configure(struct shout_data *sd, const struct config_param *param,
 		else if (0 == strcmp(value, "icecast2"))
 			protocol = SHOUT_PROTOCOL_HTTP;
 		else {
-			g_set_error(error, shout_output_quark(), 0,
+			g_set_error(error_r, shout_output_quark(), 0,
 				    "shout protocol \"%s\" is not \"shoutcast\" or "
 				    "\"icecast1\"or \"icecast2\"",
 				    value);
@@ -225,44 +224,44 @@ my_shout_configure(struct shout_data *sd, const struct config_param *param,
 		protocol = SHOUT_PROTOCOL_HTTP;
 	}
 
-	if (shout_set_host(sd->shout_conn, host) != SHOUTERR_SUCCESS ||
-	    shout_set_port(sd->shout_conn, port) != SHOUTERR_SUCCESS ||
-	    shout_set_password(sd->shout_conn, passwd) != SHOUTERR_SUCCESS ||
-	    shout_set_mount(sd->shout_conn, mount) != SHOUTERR_SUCCESS ||
-	    shout_set_name(sd->shout_conn, name) != SHOUTERR_SUCCESS ||
-	    shout_set_user(sd->shout_conn, user) != SHOUTERR_SUCCESS ||
-	    shout_set_public(sd->shout_conn, public) != SHOUTERR_SUCCESS ||
-	    shout_set_format(sd->shout_conn, shout_format)
+	if (shout_set_host(shout_conn, host) != SHOUTERR_SUCCESS ||
+	    shout_set_port(shout_conn, port) != SHOUTERR_SUCCESS ||
+	    shout_set_password(shout_conn, passwd) != SHOUTERR_SUCCESS ||
+	    shout_set_mount(shout_conn, mount) != SHOUTERR_SUCCESS ||
+	    shout_set_name(shout_conn, name) != SHOUTERR_SUCCESS ||
+	    shout_set_user(shout_conn, user) != SHOUTERR_SUCCESS ||
+	    shout_set_public(shout_conn, is_public) != SHOUTERR_SUCCESS ||
+	    shout_set_format(shout_conn, shout_format)
 	    != SHOUTERR_SUCCESS ||
-	    shout_set_protocol(sd->shout_conn, protocol) != SHOUTERR_SUCCESS ||
-	    shout_set_agent(sd->shout_conn, "MPD") != SHOUTERR_SUCCESS) {
-		g_set_error(error, shout_output_quark(), 0,
-			    "%s", shout_get_error(sd->shout_conn));
+	    shout_set_protocol(shout_conn, protocol) != SHOUTERR_SUCCESS ||
+	    shout_set_agent(shout_conn, "MPD") != SHOUTERR_SUCCESS) {
+		g_set_error(error_r, shout_output_quark(), 0,
+			    "%s", shout_get_error(shout_conn));
 		return false;
 	}
 
 	/* optional paramters */
-	sd->timeout = config_get_block_unsigned(param, "timeout",
-						DEFAULT_CONN_TIMEOUT);
+	timeout = config_get_block_unsigned(param, "timeout",
+					    DEFAULT_CONN_TIMEOUT);
 
-	value = config_get_block_string(param, "genre", NULL);
-	if (value != NULL && shout_set_genre(sd->shout_conn, value)) {
-		g_set_error(error, shout_output_quark(), 0,
-			    "%s", shout_get_error(sd->shout_conn));
+	value = config_get_block_string(param, "genre", nullptr);
+	if (value != nullptr && shout_set_genre(shout_conn, value)) {
+		g_set_error(error_r, shout_output_quark(), 0,
+			    "%s", shout_get_error(shout_conn));
 		return false;
 	}
 
-	value = config_get_block_string(param, "description", NULL);
-	if (value != NULL && shout_set_description(sd->shout_conn, value)) {
-		g_set_error(error, shout_output_quark(), 0,
-			    "%s", shout_get_error(sd->shout_conn));
+	value = config_get_block_string(param, "description", nullptr);
+	if (value != nullptr && shout_set_description(shout_conn, value)) {
+		g_set_error(error_r, shout_output_quark(), 0,
+			    "%s", shout_get_error(shout_conn));
 		return false;
 	}
 
-	value = config_get_block_string(param, "url", NULL);
-	if (value != NULL && shout_set_url(sd->shout_conn, value)) {
-		g_set_error(error, shout_output_quark(), 0,
-			    "%s", shout_get_error(sd->shout_conn));
+	value = config_get_block_string(param, "url", nullptr);
+	if (value != nullptr && shout_set_url(shout_conn, value)) {
+		g_set_error(error_r, shout_output_quark(), 0,
+			    "%s", shout_get_error(shout_conn));
 		return false;
 	}
 
@@ -271,19 +270,19 @@ my_shout_configure(struct shout_data *sd, const struct config_param *param,
 		memset(temp, 0, sizeof(temp));
 
 		snprintf(temp, sizeof(temp), "%u", audio_format->channels);
-		shout_set_audio_info(sd->shout_conn, SHOUT_AI_CHANNELS, temp);
+		shout_set_audio_info(shout_conn, SHOUT_AI_CHANNELS, temp);
 
 		snprintf(temp, sizeof(temp), "%u", audio_format->sample_rate);
 
-		shout_set_audio_info(sd->shout_conn, SHOUT_AI_SAMPLERATE, temp);
+		shout_set_audio_info(shout_conn, SHOUT_AI_SAMPLERATE, temp);
 
-		if (sd->quality >= -1.0) {
-			snprintf(temp, sizeof(temp), "%2.2f", sd->quality);
-			shout_set_audio_info(sd->shout_conn, SHOUT_AI_QUALITY,
+		if (quality >= -1.0) {
+			snprintf(temp, sizeof(temp), "%2.2f", quality);
+			shout_set_audio_info(shout_conn, SHOUT_AI_QUALITY,
 					     temp);
 		} else {
-			snprintf(temp, sizeof(temp), "%d", sd->bitrate);
-			shout_set_audio_info(sd->shout_conn, SHOUT_AI_BITRATE,
+			snprintf(temp, sizeof(temp), "%d", bitrate);
+			shout_set_audio_info(shout_conn, SHOUT_AI_BITRATE,
 					     temp);
 		}
 	}
@@ -292,19 +291,18 @@ my_shout_configure(struct shout_data *sd, const struct config_param *param,
 }
 
 static struct audio_output *
-my_shout_init_driver(const struct config_param *param,
-		     GError **error)
+my_shout_init_driver(const config_param *param, GError **error_r)
 {
-	struct shout_data *sd = new_shout_data();
-	if (!ao_base_init(&sd->base, &shout_output_plugin, param, error)) {
-		free_shout_data(sd);
-		return NULL;
+	ShoutOutput *sd = new ShoutOutput();
+	if (!sd->Initialize(param, error_r)) {
+		delete sd;
+		return nullptr;
 	}
 
-	if (!my_shout_configure(sd, param, error)) {
-		ao_base_finish(&sd->base);
-		free_shout_data(sd);
-		return NULL;
+	if (!sd->Configure(param, error_r)) {
+		sd->Deinitialize();
+		delete sd;
+		return nullptr;
 	}
 
 	if (shout_init_count == 0)
@@ -316,7 +314,7 @@ my_shout_init_driver(const struct config_param *param,
 }
 
 static bool
-handle_shout_error(struct shout_data *sd, int err, GError **error)
+handle_shout_error(ShoutOutput *sd, int err, GError **error)
 {
 	switch (err) {
 	case SHOUTERR_SUCCESS:
@@ -344,9 +342,9 @@ handle_shout_error(struct shout_data *sd, int err, GError **error)
 }
 
 static bool
-write_page(struct shout_data *sd, GError **error)
+write_page(ShoutOutput *sd, GError **error)
 {
-	assert(sd->encoder != NULL);
+	assert(sd->encoder != nullptr);
 
 	while (true) {
 		size_t nbytes = encoder_read(sd->encoder,
@@ -362,11 +360,11 @@ write_page(struct shout_data *sd, GError **error)
 	return true;
 }
 
-static void close_shout_conn(struct shout_data * sd)
+static void close_shout_conn(ShoutOutput * sd)
 {
-	if (sd->encoder != NULL) {
-		if (encoder_end(sd->encoder, NULL))
-			write_page(sd, NULL);
+	if (sd->encoder != nullptr) {
+		if (encoder_end(sd->encoder, nullptr))
+			write_page(sd, nullptr);
 
 		encoder_close(sd->encoder);
 	}
@@ -381,12 +379,12 @@ static void close_shout_conn(struct shout_data * sd)
 static void
 my_shout_finish_driver(struct audio_output *ao)
 {
-	struct shout_data *sd = (struct shout_data *)ao;
+	ShoutOutput *sd = (ShoutOutput *)ao;
 
 	encoder_finish(sd->encoder);
 
-	ao_base_finish(&sd->base);
-	free_shout_data(sd);
+	sd->Deinitialize();
+	delete sd;
 
 	shout_init_count--;
 
@@ -398,7 +396,7 @@ static void
 my_shout_drop_buffered_audio(struct audio_output *ao)
 {
 	G_GNUC_UNUSED
-	struct shout_data *sd = (struct shout_data *)ao;
+	ShoutOutput *sd = (ShoutOutput *)ao;
 
 	/* needs to be implemented for shout */
 }
@@ -406,13 +404,13 @@ my_shout_drop_buffered_audio(struct audio_output *ao)
 static void
 my_shout_close_device(struct audio_output *ao)
 {
-	struct shout_data *sd = (struct shout_data *)ao;
+	ShoutOutput *sd = (ShoutOutput *)ao;
 
 	close_shout_conn(sd);
 }
 
 static bool
-shout_connect(struct shout_data *sd, GError **error)
+shout_connect(ShoutOutput *sd, GError **error)
 {
 	switch (shout_open(sd->shout_conn)) {
 	case SHOUTERR_SUCCESS:
@@ -433,7 +431,7 @@ static bool
 my_shout_open_device(struct audio_output *ao, struct audio_format *audio_format,
 		     GError **error)
 {
-	struct shout_data *sd = (struct shout_data *)ao;
+	ShoutOutput *sd = (ShoutOutput *)ao;
 
 	if (!shout_connect(sd, error))
 		return false;
@@ -455,7 +453,7 @@ my_shout_open_device(struct audio_output *ao, struct audio_format *audio_format,
 static unsigned
 my_shout_delay(struct audio_output *ao)
 {
-	struct shout_data *sd = (struct shout_data *)ao;
+	ShoutOutput *sd = (ShoutOutput *)ao;
 
 	int delay = shout_delay(sd->shout_conn);
 	if (delay < 0)
@@ -468,7 +466,7 @@ static size_t
 my_shout_play(struct audio_output *ao, const void *chunk, size_t size,
 	      GError **error)
 {
-	struct shout_data *sd = (struct shout_data *)ao;
+	ShoutOutput *sd = (ShoutOutput *)ao;
 
 	return encoder_write(sd->encoder, chunk, size, error) &&
 		write_page(sd, error)
@@ -479,9 +477,9 @@ my_shout_play(struct audio_output *ao, const void *chunk, size_t size,
 static bool
 my_shout_pause(struct audio_output *ao)
 {
-	static const char silence[1020];
+	static char silence[1020];
 
-	return my_shout_play(ao, silence, sizeof(silence), NULL);
+	return my_shout_play(ao, silence, sizeof(silence), nullptr);
 }
 
 static void
@@ -513,10 +511,10 @@ shout_tag_to_metadata(const struct tag *tag, char *dest, size_t size)
 static void my_shout_set_tag(struct audio_output *ao,
 			     const struct tag *tag)
 {
-	struct shout_data *sd = (struct shout_data *)ao;
-	GError *error = NULL;
+	ShoutOutput *sd = (ShoutOutput *)ao;
+	GError *error = nullptr;
 
-	if (sd->encoder->plugin->tag != NULL) {
+	if (sd->encoder->plugin->tag != nullptr) {
 		/* encoder plugin supports stream tags */
 
 		if (!encoder_pre_tag(sd->encoder, &error)) {
@@ -525,7 +523,7 @@ static void my_shout_set_tag(struct audio_output *ao,
 			return;
 		}
 
-		if (!write_page(sd, NULL))
+		if (!write_page(sd, nullptr))
 			return;
 
 		if (!encoder_tag(sd->encoder, tag, &error)) {
@@ -544,18 +542,23 @@ static void my_shout_set_tag(struct audio_output *ao,
 		}
 	}
 
-	write_page(sd, NULL);
+	write_page(sd, nullptr);
 }
 
 const struct audio_output_plugin shout_output_plugin = {
-	.name = "shout",
-	.init = my_shout_init_driver,
-	.finish = my_shout_finish_driver,
-	.open = my_shout_open_device,
-	.delay = my_shout_delay,
-	.play = my_shout_play,
-	.pause = my_shout_pause,
-	.cancel = my_shout_drop_buffered_audio,
-	.close = my_shout_close_device,
-	.send_tag = my_shout_set_tag,
+	"shout",
+	nullptr,
+	my_shout_init_driver,
+	my_shout_finish_driver,
+	nullptr,
+	nullptr,
+	my_shout_open_device,
+	my_shout_close_device,
+	my_shout_delay,
+	my_shout_set_tag,
+	my_shout_play,
+	nullptr,
+	my_shout_drop_buffered_audio,
+	my_shout_pause,
+	nullptr,
 };
