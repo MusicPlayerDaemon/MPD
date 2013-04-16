@@ -196,7 +196,9 @@ int main(int argc, char **argv)
 
 	audio_format_init(&audio_format, 44100, SAMPLE_FORMAT_S16, 2);
 
+#if !GLIB_CHECK_VERSION(2,32,0)
 	g_thread_init(NULL);
+#endif
 
 	/* read configuration file (mpd.conf) */
 

@@ -159,7 +159,10 @@ int main(int argc, char **argv)
 	decoder_name = argv[1];
 	path = argv[2];
 
+#if !GLIB_CHECK_VERSION(2,32,0)
 	g_thread_init(NULL);
+#endif
+
 	io_thread_init();
 	if (!io_thread_start(&error)) {
 		g_warning("%s", error->message);

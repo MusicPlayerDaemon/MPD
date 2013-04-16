@@ -119,7 +119,9 @@ int main(int argc, G_GNUC_UNUSED char **argv)
 		return 1;
 	}
 
+#if !GLIB_CHECK_VERSION(2,32,0)
 	g_thread_init(NULL);
+#endif
 
 	main_loop = new EventLoop(EventLoop::Default());
 

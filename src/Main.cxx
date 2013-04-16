@@ -387,8 +387,10 @@ int mpd_main(int argc, char *argv[])
 
 	g_set_application_name("Music Player Daemon");
 
+#if !GLIB_CHECK_VERSION(2,32,0)
 	/* enable GLib's thread safety code */
 	g_thread_init(NULL);
+#endif
 
 	io_thread_init();
 	winsock_init();
