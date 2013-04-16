@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_OUTPUT_INTERNAL_H
-#define MPD_OUTPUT_INTERNAL_H
+#ifndef MPD_OUTPUT_INTERNAL_HXX
+#define MPD_OUTPUT_INTERNAL_HXX
 
 #include "audio_format.h"
 #include "pcm/pcm_buffer.h"
@@ -27,12 +27,7 @@
 
 #include <time.h>
 
-#ifdef __cplusplus
 class Filter;
-#else
-typedef void *Filter;
-#endif
-
 struct config_param;
 
 enum audio_output_command {
@@ -76,11 +71,7 @@ struct audio_output {
 	 * May be NULL if none is available, or if software volume is
 	 * configured.
 	 */
-#ifdef __cplusplus
 	class Mixer *mixer;
-#else
-	struct mixer *mixer;
-#endif
 
 	/**
 	 * Will this output receive tags from the decoder?  The
@@ -267,10 +258,6 @@ audio_output_command_is_finished(const struct audio_output *ao)
 	return ao->command == AO_COMMAND_NONE;
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 struct audio_output *
 audio_output_new(const struct config_param *param,
 		 struct player_control *pc,
@@ -286,9 +273,5 @@ ao_base_finish(struct audio_output *ao);
 
 void
 audio_output_free(struct audio_output *ao);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

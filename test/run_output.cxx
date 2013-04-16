@@ -19,6 +19,8 @@
 
 #include "config.h"
 #include "OutputControl.hxx"
+#include "OutputInternal.hxx"
+#include "OutputPlugin.hxx"
 #include "conf.h"
 #include "Idle.hxx"
 #include "Main.hxx"
@@ -28,12 +30,6 @@
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
 #include "pcm/PcmConvert.hxx"
-
-extern "C" {
-#include "output_plugin.h"
-#include "output_internal.h"
-}
-
 #include "FilterRegistry.hxx"
 #include "PlayerControl.hxx"
 #include "stdbin.h"

@@ -19,13 +19,9 @@
 
 #include "config.h"
 #include "OutputThread.hxx"
+#include "OutputInternal.hxx"
 #include "output_api.h"
 #include "pcm/PcmMix.hxx"
-
-extern "C" {
-#include "output_internal.h"
-}
-
 #include "notify.hxx"
 #include "FilterInternal.hxx"
 #include "filter/ConvertFilterPlugin.hxx"

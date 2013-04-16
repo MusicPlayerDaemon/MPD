@@ -18,12 +18,8 @@
  */
 
 #include "config.h"
-
-extern "C" {
-#include "output_internal.h"
-#include "output_plugin.h"
-}
-
+#include "OutputInternal.hxx"
+#include "OutputPlugin.hxx"
 #include "MixerControl.hxx"
 #include "FilterInternal.hxx"
 

@@ -18,17 +18,13 @@
  */
 
 #include "config.h"
+#include "OutputInternal.hxx"
 #include "OutputControl.hxx"
 #include "OutputList.hxx"
 #include "OutputError.hxx"
 #include "FilterConfig.hxx"
 #include "output_api.h"
 #include "AudioParser.hxx"
-
-extern "C" {
-#include "output_internal.h"
-}
-
 #include "MixerList.hxx"
 #include "MixerType.hxx"
 #include "MixerControl.hxx"

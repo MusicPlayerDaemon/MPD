@@ -25,7 +25,7 @@
 #include "DecoderList.hxx"
 #include "decoder_plugin.h"
 #include "OutputList.hxx"
-#include "output_plugin.h"
+#include "OutputPlugin.hxx"
 #include "InputRegistry.hxx"
 #include "InputPlugin.hxx"
 #include "PlaylistRegistry.hxx"

@@ -54,7 +54,6 @@ mpd_headers = \
 	src/ape.h \
 	src/audio_format.h \
 	src/audio_check.h \
-	src/output_internal.h \
 	src/output_api.h \
 	src/filter_internal.h \
 	src/command.h \
@@ -768,6 +767,7 @@ OUTPUT_LIBS = \
 	$(SHOUT_LIBS)
 
 OUTPUT_API_SRC = \
+	src/OutputInternal.hxx \
 	src/OutputList.cxx src/OutputList.hxx \
 	src/OutputAll.cxx src/OutputAll.hxx \
 	src/OutputThread.cxx src/OutputThread.hxx \
@@ -776,7 +776,7 @@ OUTPUT_API_SRC = \
 	src/OutputState.cxx src/OutputState.hxx \
 	src/OutputPrint.cxx src/OutputPrint.hxx \
 	src/OutputCommand.cxx src/OutputCommand.hxx \
-	src/OutputPlugin.cxx src/output_plugin.h \
+	src/OutputPlugin.cxx src/OutputPlugin.hxx \
 	src/OutputFinish.cxx \
 	src/OutputInit.cxx
 

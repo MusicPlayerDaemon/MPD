@@ -20,12 +20,8 @@
 #include "config.h"
 #include "OutputControl.hxx"
 #include "OutputThread.hxx"
-#include "output_api.h"
-
-extern "C" {
-#include "output_internal.h"
-}
-
+#include "OutputInternal.hxx"
+#include "OutputPlugin.hxx"
 #include "MixerPlugin.hxx"
 #include "MixerControl.hxx"
 #include "notify.hxx"

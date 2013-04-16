@@ -18,12 +18,8 @@
  */
 
 #include "config.h"
-
-extern "C" {
-#include "output_plugin.h"
-}
-
-#include "output_internal.h"
+#include "OutputPlugin.hxx"
+#include "OutputInternal.hxx"
 
 struct audio_output *
 ao_plugin_init(const struct audio_output_plugin *plugin,

@@ -19,12 +19,8 @@
 
 #include "config.h"
 #include "OutputAll.hxx"
-
-extern "C" {
-#include "output_internal.h"
-}
-
 #include "PlayerControl.hxx"
+#include "OutputInternal.hxx"
 #include "OutputControl.hxx"
 #include "OutputError.hxx"
 #include "MusicBuffer.hxx"

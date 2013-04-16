@@ -24,10 +24,7 @@
 #include "MixerList.hxx"
 #include "OutputAll.hxx"
 #include "pcm/PcmVolume.hxx"
-
-extern "C" {
-#include "output_internal.h"
-}
+#include "OutputInternal.hxx"
 
 #include <glib.h>
 
