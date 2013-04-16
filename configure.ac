@@ -1453,7 +1453,7 @@ if
 	test x$enable_fifo = xno &&
 	test x$enable_httpd_output = xno &&
 	test x$enable_jack = xno &&
-	test x$enable_mvp = xno; then
+	test x$enable_mvp = xno &&
 	test x$enable_openal = xno &&
 	test x$enable_oss = xno &&
 	test x$enable_osx = xno &&
@@ -1462,7 +1462,7 @@ if
 	test x$enable_recorder_output = xno &&
 	test x$enable_shout = xno &&
 	test x$enable_solaris_output = xno &&
-	test x$enable_winmm_output = xno &&
+	test x$enable_winmm_output = xno; then
 
 		AC_MSG_ERROR([No Audio Output types configured!])
 fi
