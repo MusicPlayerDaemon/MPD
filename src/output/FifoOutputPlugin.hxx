@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_FIFO_OUTPUT_PLUGIN_H
-#define MPD_FIFO_OUTPUT_PLUGIN_H
+#ifndef MPD_FIFO_OUTPUT_PLUGIN_HXX
+#define MPD_FIFO_OUTPUT_PLUGIN_HXX
 
 extern const struct audio_output_plugin fifo_output_plugin;
 

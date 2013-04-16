@@ -829,7 +829,7 @@ endif
 
 if HAVE_FIFO
 liboutput_plugins_a_SOURCES += \
-	src/output/fifo_output_plugin.c src/output/fifo_output_plugin.h
+	src/output/FifoOutputPlugin.cxx src/output/FifoOutputPlugin.hxx
 endif
 
 if ENABLE_PIPE_OUTPUT
