@@ -1,3 +1,5 @@
+ver 0.17.5 (not yet released)
+
 ver 0.17.4 (2013/04/08)
 * protocol:
   - allow to omit END in ranges (START:END)
@@ -8,7 +10,6 @@ ver 0.17.4 (2013/04/08)
 * player:
   - implement missing "idle" events on output errors
 * clock: fix build failure
-
 
 ver 0.17.3 (2013/01/06)
 * output:
