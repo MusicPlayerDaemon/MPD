@@ -839,7 +839,7 @@ endif
 
 if HAVE_JACK
 liboutput_plugins_a_SOURCES += \
-	src/output/jack_output_plugin.c src/output/jack_output_plugin.h
+	src/output/JackOutputPlugin.cxx src/output/JackOutputPlugin.hxx
 endif
 
 if HAVE_MVP

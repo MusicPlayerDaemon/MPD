@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "jack_output_plugin.h"
+#include "JackOutputPlugin.hxx"
 #include "output_api.h"
 
 #include <assert.h>
@@ -43,7 +43,7 @@ enum {
 
 static const size_t jack_sample_size = sizeof(jack_default_audio_sample_t);
 
-struct jack_data {
+struct JackOutput {
 	struct audio_output base;
 
 	/**
@@ -80,6 +80,15 @@ struct jack_data {
 	 * silence.
 	 */
 	bool pause;
+
+	bool Initialize(const config_param *param, GError **error_r) {
+		return ao_base_init(&base, &jack_output_plugin, param,
+				    error_r);
+	}
+
+	void Deinitialize() {
+		ao_base_finish(&base);
+	}
 };
 
 /**
@@ -96,7 +105,7 @@ jack_output_quark(void)
  * channels.
  */
 static jack_nframes_t
-mpd_jack_available(const struct jack_data *jd)
+mpd_jack_available(const JackOutput *jd)
 {
 	size_t min = jack_ringbuffer_read_space(jd->ringbuffer[0]);
 
@@ -114,8 +123,7 @@ mpd_jack_available(const struct jack_data *jd)
 static int
 mpd_jack_process(jack_nframes_t nframes, void *arg)
 {
-	struct jack_data *jd = (struct jack_data *) arg;
-	jack_default_audio_sample_t *out;
+	JackOutput *jd = (JackOutput *) arg;
 
 	if (nframes <= 0)
 		return 0;
@@ -131,7 +139,9 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 		/* generate silence while MPD is paused */
 
 		for (unsigned i = 0; i < jd->audio_format.channels; ++i) {
-			out = jack_port_get_buffer(jd->ports[i], nframes);
+			jack_default_audio_sample_t *out =
+				(jack_default_audio_sample_t *)
+				jack_port_get_buffer(jd->ports[i], nframes);
 
 			for (jack_nframes_t f = 0; f < nframes; ++f)
 				out[f] = 0.0;
@@ -145,8 +155,10 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 		available = nframes;
 
 	for (unsigned i = 0; i < jd->audio_format.channels; ++i) {
-		out = jack_port_get_buffer(jd->ports[i], nframes);
-		if (out == NULL)
+		jack_default_audio_sample_t *out =
+			(jack_default_audio_sample_t *)
+			jack_port_get_buffer(jd->ports[i], nframes);
+		if (out == nullptr)
 			/* workaround for libjack1 bug: if the server
 			   connection fails, the process callback is
 			   invoked anyway, but unable to get a
@@ -165,8 +177,10 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 
 	for (unsigned i = jd->audio_format.channels;
 	     i < jd->num_source_ports; ++i) {
-		out = jack_port_get_buffer(jd->ports[i], nframes);
-		if (out == NULL)
+		jack_default_audio_sample_t *out =
+			(jack_default_audio_sample_t *)
+			jack_port_get_buffer(jd->ports[i], nframes);
+		if (out == nullptr)
 			/* workaround for libjack1 bug: if the server
 			   connection fails, the process callback is
 			   invoked anyway, but unable to get a
@@ -183,12 +197,12 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 static void
 mpd_jack_shutdown(void *arg)
 {
-	struct jack_data *jd = (struct jack_data *) arg;
+	JackOutput *jd = (JackOutput *) arg;
 	jd->shutdown = true;
 }
 
 static void
-set_audioformat(struct jack_data *jd, struct audio_format *audio_format)
+set_audioformat(JackOutput *jd, struct audio_format *audio_format)
 {
 	audio_format->sample_rate = jack_get_sample_rate(jd->client);
 
@@ -220,14 +234,14 @@ mpd_jack_info(const char *msg)
  * Disconnect the JACK client.
  */
 static void
-mpd_jack_disconnect(struct jack_data *jd)
+mpd_jack_disconnect(JackOutput *jd)
 {
-	assert(jd != NULL);
-	assert(jd->client != NULL);
+	assert(jd != nullptr);
+	assert(jd->client != nullptr);
 
 	jack_deactivate(jd->client);
 	jack_client_close(jd->client);
-	jd->client = NULL;
+	jd->client = nullptr;
 }
 
 /**
@@ -235,17 +249,17 @@ mpd_jack_disconnect(struct jack_data *jd)
  * (e.g. register callbacks).
  */
 static bool
-mpd_jack_connect(struct jack_data *jd, GError **error_r)
+mpd_jack_connect(JackOutput *jd, GError **error_r)
 {
 	jack_status_t status;
 
-	assert(jd != NULL);
+	assert(jd != nullptr);
 
 	jd->shutdown = false;
 
 	jd->client = jack_client_open(jd->name, jd->options, &status,
 				      jd->server_name);
-	if (jd->client == NULL) {
+	if (jd->client == nullptr) {
 		g_set_error(error_r, jack_output_quark(), 0,
 			    "Failed to connect to JACK server, status=%d",
 			    status);
@@ -260,7 +274,7 @@ mpd_jack_connect(struct jack_data *jd, GError **error_r)
 						  jd->source_ports[i],
 						  JACK_DEFAULT_AUDIO_TYPE,
 						  JackPortIsOutput, 0);
-		if (jd->ports[i] == NULL) {
+		if (jd->ports[i] == nullptr) {
 			g_set_error(error_r, jack_output_quark(), 0,
 				    "Cannot register output port \"%s\"",
 				    jd->source_ports[i]);
@@ -284,7 +298,7 @@ parse_port_list(int line, const char *source, char **dest, GError **error_r)
 	char **list = g_strsplit(source, ",", 0);
 	unsigned n = 0;
 
-	for (n = 0; list[n] != NULL; ++n) {
+	for (n = 0; list[n] != nullptr; ++n) {
 		if (n >= MAX_PORTS) {
 			g_set_error(error_r, jack_output_quark(), 0,
 				    "too many port names in line %d",
@@ -308,33 +322,33 @@ parse_port_list(int line, const char *source, char **dest, GError **error_r)
 }
 
 static struct audio_output *
-mpd_jack_init(const struct config_param *param, GError **error_r)
+mpd_jack_init(const config_param *param, GError **error_r)
 {
-	struct jack_data *jd = g_new(struct jack_data, 1);
+	JackOutput *jd = new JackOutput();
 
-	if (!ao_base_init(&jd->base, &jack_output_plugin, param, error_r)) {
-		g_free(jd);
-		return NULL;
+	if (!jd->Initialize(param, error_r)) {
+		delete jd;
+		return nullptr;
 	}
 
 	const char *value;
 
 	jd->options = JackNullOption;
 
-	jd->name = config_get_block_string(param, "client_name", NULL);
-	if (jd->name != NULL)
-		jd->options |= JackUseExactName;
+	jd->name = config_get_block_string(param, "client_name", nullptr);
+	if (jd->name != nullptr)
+		jd->options = jack_options_t(jd->options | JackUseExactName);
 	else
 		/* if there's a no configured client name, we don't
 		   care about the JackUseExactName option */
 		jd->name = "Music Player Daemon";
 
-	jd->server_name = config_get_block_string(param, "server_name", NULL);
-	if (jd->server_name != NULL)
-		jd->options |= JackServerName;
+	jd->server_name = config_get_block_string(param, "server_name", nullptr);
+	if (jd->server_name != nullptr)
+		jd->options = jack_options_t(jd->options | JackServerName);
 
 	if (!config_get_block_bool(param, "autostart", false))
-		jd->options |= JackNoStartServer;
+		jd->options = jack_options_t(jd->options | JackNoStartServer);
 
 	/* configure the source ports */
 
@@ -342,25 +356,25 @@ mpd_jack_init(const struct config_param *param, GError **error_r)
 	jd->num_source_ports = parse_port_list(param->line, value,
 					       jd->source_ports, error_r);
 	if (jd->num_source_ports == 0)
-		return NULL;
+		return nullptr;
 
 	/* configure the destination ports */
 
-	value = config_get_block_string(param, "destination_ports", NULL);
-	if (value == NULL) {
+	value = config_get_block_string(param, "destination_ports", nullptr);
+	if (value == nullptr) {
 		/* compatibility with MPD < 0.16 */
-		value = config_get_block_string(param, "ports", NULL);
-		if (value != NULL)
+		value = config_get_block_string(param, "ports", nullptr);
+		if (value != nullptr)
 			g_warning("deprecated option 'ports' in line %d",
 				  param->line);
 	}
 
-	if (value != NULL) {
+	if (value != nullptr) {
 		jd->num_destination_ports =
 			parse_port_list(param->line, value,
 					jd->destination_ports, error_r);
 		if (jd->num_destination_ports == 0)
-			return NULL;
+			return nullptr;
 	} else {
 		jd->num_destination_ports = 0;
 	}
@@ -387,7 +401,7 @@ mpd_jack_init(const struct config_param *param, GError **error_r)
 static void
 mpd_jack_finish(struct audio_output *ao)
 {
-	struct jack_data *jd = (struct jack_data *)ao;
+	JackOutput *jd = (JackOutput *)ao;
 
 	for (unsigned i = 0; i < jd->num_source_ports; ++i)
 		g_free(jd->source_ports[i]);
@@ -395,17 +409,17 @@ mpd_jack_finish(struct audio_output *ao)
 	for (unsigned i = 0; i < jd->num_destination_ports; ++i)
 		g_free(jd->destination_ports[i]);
 
-	ao_base_finish(&jd->base);
-	g_free(jd);
+	jd->Deinitialize();
+	delete jd;
 }
 
 static bool
 mpd_jack_enable(struct audio_output *ao, GError **error_r)
 {
-	struct jack_data *jd = (struct jack_data *)ao;
+	JackOutput *jd = (JackOutput *)ao;
 
 	for (unsigned i = 0; i < jd->num_source_ports; ++i)
-		jd->ringbuffer[i] = NULL;
+		jd->ringbuffer[i] = nullptr;
 
 	return mpd_jack_connect(jd, error_r);
 }
@@ -413,15 +427,15 @@ mpd_jack_enable(struct audio_output *ao, GError **error_r)
 static void
 mpd_jack_disable(struct audio_output *ao)
 {
-	struct jack_data *jd = (struct jack_data *)ao;
+	JackOutput *jd = (JackOutput *)ao;
 
-	if (jd->client != NULL)
+	if (jd->client != nullptr)
 		mpd_jack_disconnect(jd);
 
 	for (unsigned i = 0; i < jd->num_source_ports; ++i) {
-		if (jd->ringbuffer[i] != NULL) {
+		if (jd->ringbuffer[i] != nullptr) {
 			jack_ringbuffer_free(jd->ringbuffer[i]);
-			jd->ringbuffer[i] = NULL;
+			jd->ringbuffer[i] = nullptr;
 		}
 	}
 }
@@ -430,11 +444,11 @@ mpd_jack_disable(struct audio_output *ao)
  * Stops the playback on the JACK connection.
  */
 static void
-mpd_jack_stop(struct jack_data *jd)
+mpd_jack_stop(JackOutput *jd)
 {
-	assert(jd != NULL);
+	assert(jd != nullptr);
 
-	if (jd->client == NULL)
+	if (jd->client == nullptr)
 		return;
 
 	if (jd->shutdown)
@@ -446,13 +460,13 @@ mpd_jack_stop(struct jack_data *jd)
 }
 
 static bool
-mpd_jack_start(struct jack_data *jd, GError **error_r)
+mpd_jack_start(JackOutput *jd, GError **error_r)
 {
 	const char *destination_ports[MAX_PORTS], **jports;
-	const char *duplicate_port = NULL;
+	const char *duplicate_port = nullptr;
 	unsigned num_destination_ports;
 
-	assert(jd->client != NULL);
+	assert(jd->client != nullptr);
 	assert(jd->audio_format.channels <= jd->num_source_ports);
 
 	/* allocate the ring buffers on the first open(); these
@@ -460,7 +474,7 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 	   because we can never know when mpd_jack_process() gets
 	   called */
 	for (unsigned i = 0; i < jd->num_source_ports; ++i) {
-		if (jd->ringbuffer[i] == NULL)
+		if (jd->ringbuffer[i] == nullptr)
 			jd->ringbuffer[i] =
 				jack_ringbuffer_create(jd->ringbuffer_size);
 
@@ -479,20 +493,20 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 	if (jd->num_destination_ports == 0) {
 		/* no output ports were configured - ask libjack for
 		   defaults */
-		jports = jack_get_ports(jd->client, NULL, NULL,
+		jports = jack_get_ports(jd->client, nullptr, nullptr,
 					JackPortIsPhysical | JackPortIsInput);
-		if (jports == NULL) {
+		if (jports == nullptr) {
 			g_set_error(error_r, jack_output_quark(), 0,
 				    "no ports found");
 			mpd_jack_stop(jd);
 			return false;
 		}
 
-		assert(*jports != NULL);
+		assert(*jports != nullptr);
 
 		for (num_destination_ports = 0;
 		     num_destination_ports < MAX_PORTS &&
-			     jports[num_destination_ports] != NULL;
+			     jports[num_destination_ports] != nullptr;
 		     ++num_destination_ports) {
 			g_debug("destination_port[%u] = '%s'\n",
 				num_destination_ports,
@@ -507,7 +521,7 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 		memcpy(destination_ports, jd->destination_ports,
 		       num_destination_ports * sizeof(*destination_ports));
 
-		jports = NULL;
+		jports = nullptr;
 	}
 
 	assert(num_destination_ports > 0);
@@ -541,7 +555,7 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 				    "Not a valid JACK port: %s",
 				    destination_ports[i]);
 
-			if (jports != NULL)
+			if (jports != nullptr)
 				free(jports);
 
 			mpd_jack_stop(jd);
@@ -549,7 +563,7 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 		}
 	}
 
-	if (duplicate_port != NULL) {
+	if (duplicate_port != nullptr) {
 		/* mono input file: connect the one source channel to
 		   the both destination channels */
 		int ret;
@@ -561,7 +575,7 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 				    "Not a valid JACK port: %s",
 				    duplicate_port);
 
-			if (jports != NULL)
+			if (jports != nullptr)
 				free(jports);
 
 			mpd_jack_stop(jd);
@@ -569,7 +583,7 @@ mpd_jack_start(struct jack_data *jd, GError **error_r)
 		}
 	}
 
-	if (jports != NULL)
+	if (jports != nullptr)
 		free(jports);
 
 	return true;
@@ -579,16 +593,16 @@ static bool
 mpd_jack_open(struct audio_output *ao, struct audio_format *audio_format,
 	      GError **error_r)
 {
-	struct jack_data *jd = (struct jack_data *)ao;
+	JackOutput *jd = (JackOutput *)ao;
 
-	assert(jd != NULL);
+	assert(jd != nullptr);
 
 	jd->pause = false;
 
-	if (jd->client != NULL && jd->shutdown)
+	if (jd->client != nullptr && jd->shutdown)
 		mpd_jack_disconnect(jd);
 
-	if (jd->client == NULL && !mpd_jack_connect(jd, error_r))
+	if (jd->client == nullptr && !mpd_jack_connect(jd, error_r))
 		return false;
 
 	set_audioformat(jd, audio_format);
@@ -603,7 +617,7 @@ mpd_jack_open(struct audio_output *ao, struct audio_format *audio_format,
 static void
 mpd_jack_close(G_GNUC_UNUSED struct audio_output *ao)
 {
-	struct jack_data *jd = (struct jack_data *)ao;
+	JackOutput *jd = (JackOutput *)ao;
 
 	mpd_jack_stop(jd);
 }
@@ -611,7 +625,7 @@ mpd_jack_close(G_GNUC_UNUSED struct audio_output *ao)
 static unsigned
 mpd_jack_delay(struct audio_output *ao)
 {
-	struct jack_data *jd = (struct jack_data *)ao;
+	JackOutput *jd = (JackOutput *)ao;
 
 	return jd->base.pause && jd->pause && !jd->shutdown
 		? 1000
@@ -625,7 +639,7 @@ sample_16_to_jack(int16_t sample)
 }
 
 static void
-mpd_jack_write_samples_16(struct jack_data *jd, const int16_t *src,
+mpd_jack_write_samples_16(JackOutput *jd, const int16_t *src,
 			  unsigned num_samples)
 {
 	jack_default_audio_sample_t sample;
@@ -634,7 +648,8 @@ mpd_jack_write_samples_16(struct jack_data *jd, const int16_t *src,
 	while (num_samples-- > 0) {
 		for (i = 0; i < jd->audio_format.channels; ++i) {
 			sample = sample_16_to_jack(*src++);
-			jack_ringbuffer_write(jd->ringbuffer[i], (void*)&sample,
+			jack_ringbuffer_write(jd->ringbuffer[i],
+					      (const char *)&sample,
 					      sizeof(sample));
 		}
 	}
@@ -647,7 +662,7 @@ sample_24_to_jack(int32_t sample)
 }
 
 static void
-mpd_jack_write_samples_24(struct jack_data *jd, const int32_t *src,
+mpd_jack_write_samples_24(JackOutput *jd, const int32_t *src,
 			  unsigned num_samples)
 {
 	jack_default_audio_sample_t sample;
@@ -656,14 +671,15 @@ mpd_jack_write_samples_24(struct jack_data *jd, const int32_t *src,
 	while (num_samples-- > 0) {
 		for (i = 0; i < jd->audio_format.channels; ++i) {
 			sample = sample_24_to_jack(*src++);
-			jack_ringbuffer_write(jd->ringbuffer[i], (void*)&sample,
+			jack_ringbuffer_write(jd->ringbuffer[i],
+					      (const char *)&sample,
 					      sizeof(sample));
 		}
 	}
 }
 
 static void
-mpd_jack_write_samples(struct jack_data *jd, const void *src,
+mpd_jack_write_samples(JackOutput *jd, const void *src,
 		       unsigned num_samples)
 {
 	switch (jd->audio_format.format) {
@@ -686,7 +702,7 @@ static size_t
 mpd_jack_play(struct audio_output *ao, const void *chunk, size_t size,
 	      GError **error_r)
 {
-	struct jack_data *jd = (struct jack_data *)ao;
+	JackOutput *jd = (JackOutput *)ao;
 	const size_t frame_size = audio_format_frame_size(&jd->audio_format);
 	size_t space = 0, space1;
 
@@ -730,7 +746,7 @@ mpd_jack_play(struct audio_output *ao, const void *chunk, size_t size,
 static bool
 mpd_jack_pause(struct audio_output *ao)
 {
-	struct jack_data *jd = (struct jack_data *)ao;
+	JackOutput *jd = (JackOutput *)ao;
 
 	if (jd->shutdown)
 		return false;
@@ -741,15 +757,19 @@ mpd_jack_pause(struct audio_output *ao)
 }
 
 const struct audio_output_plugin jack_output_plugin = {
-	.name = "jack",
-	.test_default_device = mpd_jack_test_default_device,
-	.init = mpd_jack_init,
-	.finish = mpd_jack_finish,
-	.enable = mpd_jack_enable,
-	.disable = mpd_jack_disable,
-	.open = mpd_jack_open,
-	.delay = mpd_jack_delay,
-	.play = mpd_jack_play,
-	.pause = mpd_jack_pause,
-	.close = mpd_jack_close,
+	"jack",
+	mpd_jack_test_default_device,
+	mpd_jack_init,
+	mpd_jack_finish,
+	mpd_jack_enable,
+	mpd_jack_disable,
+	mpd_jack_open,
+	mpd_jack_close,
+	mpd_jack_delay,
+	nullptr,
+	mpd_jack_play,
+	nullptr,
+	nullptr,
+	mpd_jack_pause,
+	nullptr,
 };

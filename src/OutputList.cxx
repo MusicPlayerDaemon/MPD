@@ -25,7 +25,7 @@
 #include "output/ffado_output_plugin.h"
 #include "output/FifoOutputPlugin.hxx"
 #include "output/HttpdOutputPlugin.hxx"
-#include "output/jack_output_plugin.h"
+#include "output/JackOutputPlugin.hxx"
 #include "output/mvp_output_plugin.h"
 #include "output/NullOutputPlugin.hxx"
 #include "output/openal_output_plugin.h"
