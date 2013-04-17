@@ -394,54 +394,6 @@
    Memcheck:Leak
    fun:*alloc
    ...
-   fun:g_type_init_with_debug_flags
-}
-
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   fun:*alloc
-   ...
-   fun:g_type_register_static
-}
-
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   fun:*alloc
-   ...
-   fun:g_type_add_interface_static
-}
-
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   fun:*alloc
-   ...
-   fun:g_type_add_interface_check
-}
-
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   fun:*alloc
-   ...
-   fun:g_type_interface_add_prerequisite
-}
-
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   fun:calloc
-   fun:g_malloc0
-   fun:g_type_class_ref
-}
-
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   fun:*alloc
-   ...
    fun:g_*_class_intern_init
 }
 
@@ -475,38 +427,6 @@
    fun:*alloc
    ...
    fun:g_object_class_install_property
-}
-
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   fun:*alloc
-   ...
-   fun:soup_*_class_intern_init
-}
-
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   fun:*alloc
-   ...
-   fun:soup_auth_manager_add_type
-}
-
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   fun:*alloc
-   ...
-   fun:soup_auth_manager_class_intern_init
-}
-
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   fun:*alloc
-   ...
-   fun:soup_auth_manager_ntlm_class_intern_init
 }
 
 {

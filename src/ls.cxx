@@ -34,7 +34,7 @@
   * connected by IPC socket.
   */
 static const char *remoteUrlPrefixes[] = {
-#if defined(ENABLE_CURL) || defined(ENABLE_SOUP)
+#if defined(ENABLE_CURL)
 	"http://",
 #endif
 #ifdef ENABLE_MMS

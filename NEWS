@@ -1,4 +1,6 @@
 ver 0.18 (2012/??/??)
+* innput:
+  - soup: plugin removed
 * decoder:
   - adplug: new decoder plugin using libadplug
   - flac: require libFLAC 1.2 or newer

@@ -190,11 +190,6 @@ AC_ARG_ENABLE(curl,
 		[enable support for libcurl HTTP streaming (default: auto)]),,
 	[enable_curl=auto])
 
-AC_ARG_ENABLE(soup,
-	AS_HELP_STRING([--enable-soup],
-		[enable support for libsoup HTTP streaming (default: auto)]),,
-	[enable_soup=auto])
-
 AC_ARG_ENABLE(debug,
 	AS_HELP_STRING([--enable-debug],
 		[enable debugging (default: disabled)]),,
@@ -710,14 +705,6 @@ if test x$enable_curl = xyes; then
 	AC_DEFINE(ENABLE_CURL, 1, [Define when libcurl is used for HTTP streaming])
 fi
 AM_CONDITIONAL(ENABLE_CURL, test x$enable_curl = xyes)
-
-dnl ----------------------------------- SOUP ----------------------------------
-MPD_AUTO_PKG(soup, SOUP, [libsoup-2.4],
-	[libsoup HTTP streaming], [libsoup not found])
-if test x$enable_soup = xyes; then
-	AC_DEFINE(ENABLE_SOUP, 1, [Define when libsoup is used for HTTP streaming])
-fi
-AM_CONDITIONAL(ENABLE_SOUP, test x$enable_soup = xyes)
 
 dnl --------------------------------- Last.FM ---------------------------------
 if test x$enable_lastfm = xyes; then
@@ -1664,7 +1651,6 @@ results(lastfm,[Last.FM])
 results(soundcloud,[Soundcloud])
 printf '\n\t'
 results(mms,[MMS])
-results(soup, [SOUP])
 
 printf '\n\n##########################################\n\n'
 
