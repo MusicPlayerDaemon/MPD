@@ -22,10 +22,10 @@
 #include "SongFilter.hxx"
 #include "PlaylistVector.hxx"
 #include "DatabaseLock.hxx"
+#include "SongSort.hxx"
 
 extern "C" {
 #include "song.h"
-#include "song_sort.h"
 #include "util/list_sort.h"
 }
 

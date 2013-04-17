@@ -88,7 +88,6 @@ mpd_headers = \
 	src/replay_gain_ape.h \
 	src/TimePrint.cxx src/TimePrint.hxx \
 	src/song.h \
-	src/song_sort.c src/song_sort.h \
 	src/stats.h \
 	src/tag.h \
 	src/tag_internal.h \
@@ -226,6 +225,7 @@ src_mpd_SOURCES = \
 	src/SongUpdate.cxx \
 	src/SongPrint.cxx src/SongPrint.hxx \
 	src/SongSave.cxx src/SongSave.hxx \
+	src/SongSort.cxx src/SongSort.hxx \
 	src/resolver.c src/resolver.h \
 	src/SocketUtil.cxx src/SocketUtil.hxx \
 	src/StateFile.cxx src/StateFile.hxx \
@@ -1054,7 +1054,7 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/Directory.cxx src/DirectorySave.cxx \
 	src/PlaylistVector.cxx src/PlaylistDatabase.cxx \
 	src/DatabaseLock.cxx src/DatabaseSave.cxx \
-	src/Song.cxx src/song_sort.c src/SongSave.cxx \
+	src/Song.cxx src/SongSave.cxx src/SongSort.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/SongFilter.cxx \
 	src/TextFile.cxx
