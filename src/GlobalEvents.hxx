@@ -21,6 +21,7 @@
 #define MPD_GLOBAL_EVENTS_HXX
 
 #ifdef WIN32
+#include <windows.h>
 /* DELETE is a WIN32 macro that poisons our namespace; this is a
    kludge to allow us to use it anyway */
 #ifdef DELETE
