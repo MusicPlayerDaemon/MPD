@@ -186,6 +186,7 @@ src_mpd_SOURCES = \
 	src/io_error.h \
 	src/IOThread.cxx src/IOThread.hxx \
 	src/Main.cxx src/Main.hxx \
+	src/Instance.cxx src/Instance.hxx \
 	src/Win32Main.cxx \
 	src/GlobalEvents.cxx src/GlobalEvents.hxx \
 	src/daemon.c \

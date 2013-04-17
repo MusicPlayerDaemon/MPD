@@ -20,6 +20,7 @@
 #include "config.h"
 #include "Listen.hxx"
 #include "Main.hxx"
+#include "Instance.hxx"
 #include "Client.hxx"
 #include "conf.h"
 #include "event/ServerSocket.hxx"
@@ -43,7 +44,7 @@ public:
 private:
 	virtual void OnAccept(int fd, const sockaddr &address,
 			      size_t address_length, int uid) {
-		client_new(*main_loop, *global_partition,
+		client_new(*main_loop, *instance->partition,
 			   fd, &address, address_length, uid);
 	}
 };

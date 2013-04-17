@@ -23,14 +23,13 @@
 #include <glib.h>
 
 class EventLoop;
+struct Instance;
 
 extern GThread *main_task;
 
 extern EventLoop *main_loop;
 
-extern class ClientList *client_list;
-
-extern struct Partition *global_partition;
+extern Instance *instance;
 
 /**
  * A entry point for application.

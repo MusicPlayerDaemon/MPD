@@ -22,6 +22,7 @@
 #include "ClientSubscribe.hxx"
 #include "ClientInternal.hxx"
 #include "ClientList.hxx"
+#include "Instance.hxx"
 #include "Main.hxx"
 #include "protocol/Result.hxx"
 #include "protocol/ArgParser.hxx"
@@ -81,7 +82,7 @@ handle_channels(Client *client,
 	assert(argc == 1);
 
 	std::set<std::string> channels;
-	for (const auto &c : *client_list)
+	for (const auto &c : *instance->client_list)
 		channels.insert(c->subscriptions.begin(),
 				c->subscriptions.end());
 
@@ -122,7 +123,7 @@ handle_send_message(Client *client,
 
 	bool sent = false;
 	const ClientMessage msg(argv[1], argv[2]);
-	for (const auto &c : *client_list)
+	for (const auto &c : *instance->client_list)
 		if (client_push_message(c, msg))
 			sent = true;
 

@@ -20,13 +20,13 @@
 #include "config.h" /* must be first for large file support */
 #include "UpdateRemove.hxx"
 #include "Playlist.hxx"
-#include "Partition.hxx"
 #include "GlobalEvents.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
 #include "song.h"
 #include "Main.hxx"
+#include "Instance.hxx"
 
 #ifdef ENABLE_SQLITE
 #include "StickerDatabase.hxx"
@@ -63,7 +63,7 @@ song_remove_event(void)
 		sticker_song_delete(removed_song);
 #endif
 
-	global_partition->DeleteSong(*removed_song);
+	instance->DeleteSong(*removed_song);
 
 	/* clear "removed_song" and send signal to update thread */
 	remove_mutex.lock();

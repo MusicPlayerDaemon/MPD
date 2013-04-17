@@ -32,7 +32,7 @@ extern "C" {
 }
 
 #include "Main.hxx"
-#include "Partition.hxx"
+#include "Instance.hxx"
 #include "mpd_error.h"
 
 #include <glib.h>
@@ -156,11 +156,9 @@ static void update_finished_event(void)
 
 	idle_add(IDLE_UPDATE);
 
-	if (modified) {
+	if (modified)
 		/* send "idle" events */
-		global_partition->playlist.FullIncrementVersions();
-		idle_add(IDLE_DATABASE);
-	}
+		instance->DatabaseModified();
 
 	path = update_queue_shift(&discard);
 	if (path != NULL) {

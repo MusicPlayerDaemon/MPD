@@ -17,33 +17,32 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * The manager of the global "struct playlist" instance (g_playlist).
- *
- */
-
 #include "config.h"
-#include "PlaylistGlobal.hxx"
-#include "Playlist.hxx"
-#include "Main.hxx"
 #include "Instance.hxx"
-#include "GlobalEvents.hxx"
+#include "Partition.hxx"
+#include "Idle.hxx"
 
-static void
-playlist_tag_event(void)
+void
+Instance::DeleteSong(const song &song)
 {
-	instance->TagModified();
-}
-
-static void
-playlist_event(void)
-{
-	instance->SyncWithPlayer();
+	partition->DeleteSong(song);
 }
 
 void
-playlist_global_init()
+Instance::DatabaseModified()
 {
-	GlobalEvents::Register(GlobalEvents::TAG, playlist_tag_event);
-	GlobalEvents::Register(GlobalEvents::PLAYLIST, playlist_event);
+	partition->playlist.FullIncrementVersions();
+	idle_add(IDLE_DATABASE);
+}
+
+void
+Instance::TagModified()
+{
+	partition->playlist.TagChanged();
+}
+
+void
+Instance::SyncWithPlayer()
+{
+	partition->playlist.SyncWithPlayer(partition->pc);
 }

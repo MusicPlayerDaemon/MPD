@@ -17,33 +17,38 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * The manager of the global "struct playlist" instance (g_playlist).
- *
- */
+#ifndef MPD_INSTANCE_HXX
+#define MPD_INSTANCE_HXX
 
-#include "config.h"
-#include "PlaylistGlobal.hxx"
-#include "Playlist.hxx"
-#include "Main.hxx"
-#include "Instance.hxx"
-#include "GlobalEvents.hxx"
+#include "check.h"
 
-static void
-playlist_tag_event(void)
-{
-	instance->TagModified();
-}
+class ClientList;
+struct Partition;
+struct song;
 
-static void
-playlist_event(void)
-{
-	instance->SyncWithPlayer();
-}
+struct Instance {
+	ClientList *client_list;
 
-void
-playlist_global_init()
-{
-	GlobalEvents::Register(GlobalEvents::TAG, playlist_tag_event);
-	GlobalEvents::Register(GlobalEvents::PLAYLIST, playlist_event);
-}
+	Partition *partition;
+
+	void DeleteSong(const song &song);
+
+	/**
+	 * The database has been modified.  Propagate the change to
+	 * all subsystems.
+	 */
+	void DatabaseModified();
+
+	/**
+	 * A tag in the play queue has been modified.  Propagate the
+	 * change to all subsystems.
+	 */
+	void TagModified();
+
+	/**
+	 * Synchronize the player with the play queue.
+	 */
+	void SyncWithPlayer();
+};
+
+#endif

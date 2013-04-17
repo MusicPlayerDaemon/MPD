@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Main.hxx"
+#include "Instance.hxx"
 #include "CommandLine.hxx"
 #include "PlaylistFile.hxx"
 #include "PlaylistGlobal.hxx"
@@ -97,9 +98,7 @@ enum {
 GThread *main_task;
 EventLoop *main_loop;
 
-ClientList *client_list;
-
-Partition *global_partition;
+Instance *instance;
 
 static StateFile *state_file;
 
@@ -251,7 +250,7 @@ glue_state_file_init(GError **error_r)
 	}
 
 	state_file = new StateFile(std::move(path_fs), path,
-				   *global_partition, *main_loop);
+				   *instance->partition, *main_loop);
 	g_free(path);
 
 	state_file->Read();
@@ -331,9 +330,10 @@ initialize_decoder_and_player(void)
 		config_get_positive(CONF_MAX_PLAYLIST_LENGTH,
 				    DEFAULT_PLAYLIST_MAX_LENGTH);
 
-	global_partition = new Partition(max_length,
-					 buffered_chunks,
-					 buffered_before_play);
+	instance->partition = new Partition(*instance,
+					    max_length,
+					    buffered_chunks,
+					    buffered_before_play);
 }
 
 /**
@@ -346,7 +346,7 @@ idle_event_emitted(void)
 	   clients */
 	unsigned flags = idle_get();
 	if (flags != 0)
-		client_list->IdleAdd(flags);
+		instance->client_list->IdleAdd(flags);
 
 	if (flags & (IDLE_PLAYLIST|IDLE_PLAYER|IDLE_MIXER|IDLE_OUTPUT))
 		state_file->CheckModified();
@@ -421,8 +421,10 @@ int mpd_main(int argc, char *argv[])
 	main_task = g_thread_self();
 	main_loop = new EventLoop(EventLoop::Default());
 
+	instance = new Instance();
+
 	const unsigned max_clients = config_get_positive(CONF_MAX_CONN, 10);
-	client_list = new ClientList(max_clients);
+	instance->client_list = new ClientList(max_clients);
 
 	success = listen_global_init(&error);
 	if (!success) {
@@ -469,7 +471,7 @@ int mpd_main(int argc, char *argv[])
 	initialize_decoder_and_player();
 	volume_init();
 	initAudioConfig();
-	audio_output_all_init(&global_partition->pc);
+	audio_output_all_init(&instance->partition->pc);
 	client_manager_init();
 	replay_gain_global_init();
 
@@ -495,7 +497,7 @@ int mpd_main(int argc, char *argv[])
 
 	ZeroconfInit(*main_loop);
 
-	player_create(&global_partition->pc);
+	player_create(&instance->partition->pc);
 
 	if (create_db) {
 		/* the database failed to load: recreate the
@@ -511,7 +513,7 @@ int mpd_main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	audio_output_all_set_replay_gain_mode(replay_gain_get_real_mode(global_partition->playlist.queue.random));
+	audio_output_all_set_replay_gain_mode(replay_gain_get_real_mode(instance->partition->playlist.queue.random));
 
 	success = config_get_bool(CONF_AUTO_UPDATE, false);
 #ifdef ENABLE_INOTIFY
@@ -527,7 +529,7 @@ int mpd_main(int argc, char *argv[])
 
 	/* enable all audio outputs (if not already done by
 	   playlist_state_restore() */
-	global_partition->pc.UpdateAudio();
+	instance->partition->pc.UpdateAudio();
 
 #ifdef WIN32
 	win32_app_started();
@@ -551,10 +553,10 @@ int mpd_main(int argc, char *argv[])
 		delete state_file;
 	}
 
-	global_partition->pc.Kill();
+	instance->partition->pc.Kill();
 	ZeroconfDeinit();
 	listen_global_finish();
-	delete client_list;
+	delete instance->client_list;
 
 	start = clock();
 	DatabaseGlobalDeinit();
@@ -572,7 +574,7 @@ int mpd_main(int argc, char *argv[])
 	audio_output_all_finish();
 	volume_finish();
 	mapper_finish();
-	delete global_partition;
+	delete instance->partition;
 	command_finish();
 	update_global_finish();
 	decoder_plugin_deinit_all();
@@ -582,6 +584,7 @@ int mpd_main(int argc, char *argv[])
 	config_global_finish();
 	stats_global_finish();
 	io_thread_deinit();
+	delete instance;
 	delete main_loop;
 	daemonize_finish();
 #ifdef WIN32
