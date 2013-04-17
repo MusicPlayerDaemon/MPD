@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,14 +18,14 @@
  */
 
 #include "config.h"
-#include "decoder_buffer.h"
+#include "DecoderBuffer.hxx"
 #include "decoder_api.h"
 
 #include <glib.h>
 
 #include <assert.h>
 
-struct decoder_buffer {
+struct DecoderBuffer {
 	struct decoder *decoder;
 	struct input_stream *is;
 
@@ -43,14 +43,14 @@ struct decoder_buffer {
 	unsigned char data[sizeof(size_t)];
 };
 
-struct decoder_buffer *
+DecoderBuffer *
 decoder_buffer_new(struct decoder *decoder, struct input_stream *is,
 		   size_t size)
 {
-	struct decoder_buffer *buffer =
+	DecoderBuffer *buffer = (DecoderBuffer *)
 		g_malloc(sizeof(*buffer) - sizeof(buffer->data) + size);
 
-	assert(is != NULL);
+	assert(is != nullptr);
 	assert(size > 0);
 
 	buffer->decoder = decoder;
@@ -63,27 +63,27 @@ decoder_buffer_new(struct decoder *decoder, struct input_stream *is,
 }
 
 void
-decoder_buffer_free(struct decoder_buffer *buffer)
+decoder_buffer_free(DecoderBuffer *buffer)
 {
-	assert(buffer != NULL);
+	assert(buffer != nullptr);
 
 	g_free(buffer);
 }
 
 bool
-decoder_buffer_is_empty(const struct decoder_buffer *buffer)
+decoder_buffer_is_empty(const DecoderBuffer *buffer)
 {
 	return buffer->consumed == buffer->length;
 }
 
 bool
-decoder_buffer_is_full(const struct decoder_buffer *buffer)
+decoder_buffer_is_full(const DecoderBuffer *buffer)
 {
 	return buffer->consumed == 0 && buffer->length == buffer->size;
 }
 
 static void
-decoder_buffer_shift(struct decoder_buffer *buffer)
+decoder_buffer_shift(DecoderBuffer *buffer)
 {
 	assert(buffer->consumed > 0);
 
@@ -93,7 +93,7 @@ decoder_buffer_shift(struct decoder_buffer *buffer)
 }
 
 bool
-decoder_buffer_fill(struct decoder_buffer *buffer)
+decoder_buffer_fill(DecoderBuffer *buffer)
 {
 	size_t nbytes;
 
@@ -119,18 +119,18 @@ decoder_buffer_fill(struct decoder_buffer *buffer)
 }
 
 const void *
-decoder_buffer_read(const struct decoder_buffer *buffer, size_t *length_r)
+decoder_buffer_read(const DecoderBuffer *buffer, size_t *length_r)
 {
 	if (buffer->consumed >= buffer->length)
 		/* buffer is empty */
-		return NULL;
+		return nullptr;
 
 	*length_r = buffer->length - buffer->consumed;
 	return buffer->data + buffer->consumed;
 }
 
 void
-decoder_buffer_consume(struct decoder_buffer *buffer, size_t nbytes)
+decoder_buffer_consume(DecoderBuffer *buffer, size_t nbytes)
 {
 	/* just move the "consumed" pointer - decoder_buffer_shift()
 	   will do the real work later (called by
@@ -141,7 +141,7 @@ decoder_buffer_consume(struct decoder_buffer *buffer, size_t nbytes)
 }
 
 bool
-decoder_buffer_skip(struct decoder_buffer *buffer, size_t nbytes)
+decoder_buffer_skip(DecoderBuffer *buffer, size_t nbytes)
 {
 	size_t length;
 	const void *data;
@@ -151,7 +151,7 @@ decoder_buffer_skip(struct decoder_buffer *buffer, size_t nbytes)
 
 	while (true) {
 		data = decoder_buffer_read(buffer, &length);
-		if (data != NULL) {
+		if (data != nullptr) {
 			if (length > nbytes)
 				length = nbytes;
 			decoder_buffer_consume(buffer, length);

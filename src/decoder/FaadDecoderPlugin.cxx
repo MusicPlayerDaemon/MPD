@@ -20,9 +20,7 @@
 #include "config.h"
 #include "FaadDecoderPlugin.hxx"
 #include "decoder_api.h"
-extern "C" {
-#include "decoder_buffer.h"
-}
+#include "DecoderBuffer.hxx"
 #include "audio_check.h"
 #include "tag_handler.h"
 
@@ -73,7 +71,7 @@ adts_check_frame(const unsigned char *data)
  * found or if not enough data is available.
  */
 static size_t
-adts_find_frame(struct decoder_buffer *buffer)
+adts_find_frame(DecoderBuffer *buffer)
 {
 	size_t length, frame_length;
 	bool ret;
@@ -138,7 +136,7 @@ adts_find_frame(struct decoder_buffer *buffer)
 }
 
 static float
-adts_song_duration(struct decoder_buffer *buffer)
+adts_song_duration(DecoderBuffer *buffer)
 {
 	unsigned int frames, frame_length;
 	unsigned sample_rate = 0;
@@ -172,7 +170,7 @@ adts_song_duration(struct decoder_buffer *buffer)
 }
 
 static float
-faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
+faad_song_duration(DecoderBuffer *buffer, struct input_stream *is)
 {
 	size_t fileread;
 	size_t tagsize;
@@ -248,7 +246,7 @@ faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
  * inconsistencies in libfaad.
  */
 static bool
-faad_decoder_init(NeAACDecHandle decoder, struct decoder_buffer *buffer,
+faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer *buffer,
 		  struct audio_format *audio_format, GError **error_r)
 {
 	int32_t nbytes;
@@ -294,7 +292,7 @@ faad_decoder_init(NeAACDecHandle decoder, struct decoder_buffer *buffer,
  * inconsistencies in libfaad.
  */
 static const void *
-faad_decoder_decode(NeAACDecHandle decoder, struct decoder_buffer *buffer,
+faad_decoder_decode(NeAACDecHandle decoder, DecoderBuffer *buffer,
 		    NeAACDecFrameInfo *frame_info)
 {
 	size_t length;
@@ -317,7 +315,7 @@ faad_decoder_decode(NeAACDecHandle decoder, struct decoder_buffer *buffer,
 static float
 faad_get_file_time_float(struct input_stream *is)
 {
-	struct decoder_buffer *buffer;
+	DecoderBuffer *buffer;
 	float length;
 
 	buffer = decoder_buffer_new(nullptr, is,
@@ -374,7 +372,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	struct audio_format audio_format;
 	bool ret;
 	uint16_t bit_rate = 0;
-	struct decoder_buffer *buffer;
+	DecoderBuffer *buffer;
 	enum decoder_command cmd;
 
 	buffer = decoder_buffer_new(mpd_decoder, is,

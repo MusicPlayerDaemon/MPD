@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,10 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DECODER_BUFFER_H
-#define MPD_DECODER_BUFFER_H
+#ifndef MPD_DECODER_BUFFER_HXX
+#define MPD_DECODER_BUFFER_HXX
 
-#include <stdbool.h>
 #include <stddef.h>
 
 /**
@@ -28,7 +27,7 @@
  * create a buffer object, and use its high-level methods to fill and
  * read it.  It will automatically handle shifting the buffer.
  */
-struct decoder_buffer;
+struct DecoderBuffer;
 
 struct decoder;
 struct input_stream;
@@ -41,7 +40,7 @@ struct input_stream;
  * @param size the maximum size of the buffer
  * @return the new decoder_buffer object
  */
-struct decoder_buffer *
+DecoderBuffer *
 decoder_buffer_new(struct decoder *decoder, struct input_stream *is,
 		   size_t size);
 
@@ -49,13 +48,13 @@ decoder_buffer_new(struct decoder *decoder, struct input_stream *is,
  * Frees resources used by the decoder_buffer object.
  */
 void
-decoder_buffer_free(struct decoder_buffer *buffer);
+decoder_buffer_free(DecoderBuffer *buffer);
 
 bool
-decoder_buffer_is_empty(const struct decoder_buffer *buffer);
+decoder_buffer_is_empty(const DecoderBuffer *buffer);
 
 bool
-decoder_buffer_is_full(const struct decoder_buffer *buffer);
+decoder_buffer_is_full(const DecoderBuffer *buffer);
 
 /**
  * Read data from the input_stream and append it to the buffer.
@@ -65,7 +64,7 @@ decoder_buffer_is_full(const struct decoder_buffer *buffer);
  * received
  */
 bool
-decoder_buffer_fill(struct decoder_buffer *buffer);
+decoder_buffer_fill(DecoderBuffer *buffer);
 
 /**
  * Reads data from the buffer.  This data is not yet consumed, you
@@ -80,7 +79,7 @@ decoder_buffer_fill(struct decoder_buffer *buffer);
  * available
  */
 const void *
-decoder_buffer_read(const struct decoder_buffer *buffer, size_t *length_r);
+decoder_buffer_read(const DecoderBuffer *buffer, size_t *length_r);
 
 /**
  * Consume (delete, invalidate) a part of the buffer.  The "nbytes"
@@ -91,7 +90,7 @@ decoder_buffer_read(const struct decoder_buffer *buffer, size_t *length_r);
  * @param nbytes the number of bytes to consume
  */
 void
-decoder_buffer_consume(struct decoder_buffer *buffer, size_t nbytes);
+decoder_buffer_consume(DecoderBuffer *buffer, size_t nbytes);
 
 /**
  * Skips the specified number of bytes, discarding its data.
@@ -101,6 +100,6 @@ decoder_buffer_consume(struct decoder_buffer *buffer, size_t nbytes);
  * @return true on success, false on error
  */
 bool
-decoder_buffer_skip(struct decoder_buffer *buffer, size_t nbytes);
+decoder_buffer_skip(DecoderBuffer *buffer, size_t nbytes);
 
 #endif

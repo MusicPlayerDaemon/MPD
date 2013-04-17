@@ -60,7 +60,6 @@ mpd_headers = \
 	src/conf.h \
 	src/decoder_plugin.h \
 	src/decoder_command.h \
-	src/decoder_buffer.h \
 	src/decoder_api.h \
 	src/decoder_plugin.h \
 	src/encoder_plugin.h \
@@ -455,7 +454,7 @@ libdecoder_plugins_a_SOURCES = \
 	src/decoder/dsf_decoder_plugin.h \
 	src/decoder/dsdlib.c \
 	src/decoder/dsdlib.h \
-	src/decoder_buffer.c \
+	src/DecoderBuffer.cxx src/DecoderBuffer.hxx \
 	src/DecoderPlugin.cxx \
 	src/DecoderList.cxx src/DecoderList.hxx
 libdecoder_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
