@@ -32,6 +32,7 @@
 #include "decoder/WavpackDecoderPlugin.hxx"
 #include "decoder/FfmpegDecoderPlugin.hxx"
 #include "decoder/GmeDecoderPlugin.hxx"
+#include "decoder/FaadDecoderPlugin.hxx"
 
 #include <glib.h>
 
@@ -41,7 +42,6 @@ extern const struct decoder_plugin mad_decoder_plugin;
 extern const struct decoder_plugin mpg123_decoder_plugin;
 extern const struct decoder_plugin sndfile_decoder_plugin;
 extern const struct decoder_plugin audiofile_decoder_plugin;
-extern const struct decoder_plugin faad_decoder_plugin;
 extern const struct decoder_plugin mpcdec_decoder_plugin;
 extern const struct decoder_plugin modplug_decoder_plugin;
 extern const struct decoder_plugin mikmod_decoder_plugin;

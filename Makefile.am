@@ -537,7 +537,8 @@ libdecoder_plugins_a_SOURCES += \
 endif
 
 if HAVE_FAAD
-libdecoder_plugins_a_SOURCES += src/decoder/faad_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += \
+	src/decoder/FaadDecoderPlugin.cxx src/decoder/FaadDecoderPlugin.hxx
 endif
 
 if HAVE_XIPH

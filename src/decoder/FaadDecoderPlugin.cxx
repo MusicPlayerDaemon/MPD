@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,11 @@
  */
 
 #include "config.h"
+#include "FaadDecoderPlugin.hxx"
 #include "decoder_api.h"
+extern "C" {
 #include "decoder_buffer.h"
+}
 #include "audio_check.h"
 #include "tag_handler.h"
 
@@ -72,13 +75,13 @@ adts_check_frame(const unsigned char *data)
 static size_t
 adts_find_frame(struct decoder_buffer *buffer)
 {
-	const unsigned char *data, *p;
 	size_t length, frame_length;
 	bool ret;
 
 	while (true) {
-		data = decoder_buffer_read(buffer, &length);
-		if (data == NULL || length < 8) {
+		const uint8_t *data = (const uint8_t *)
+			decoder_buffer_read(buffer, &length);
+		if (data == nullptr || length < 8) {
 			/* not enough data yet */
 			ret = decoder_buffer_fill(buffer);
 			if (!ret)
@@ -89,8 +92,8 @@ adts_find_frame(struct decoder_buffer *buffer)
 		}
 
 		/* find the 0xff marker */
-		p = memchr(data, 0xff, length);
-		if (p == NULL) {
+		const uint8_t *p = (const uint8_t *)memchr(data, 0xff, length);
+		if (p == nullptr) {
 			/* no marker - discard the buffer */
 			decoder_buffer_consume(buffer, length);
 			continue;
@@ -120,8 +123,9 @@ adts_find_frame(struct decoder_buffer *buffer)
 				/* not enough data; discard this frame
 				   to prevent a possible buffer
 				   overflow */
-				data = decoder_buffer_read(buffer, &length);
-				if (data != NULL)
+				data = (const uint8_t *)
+					decoder_buffer_read(buffer, &length);
+				if (data != nullptr)
 					decoder_buffer_consume(buffer, length);
 			}
 
@@ -148,11 +152,10 @@ adts_song_duration(struct decoder_buffer *buffer)
 
 
 		if (frames == 0) {
-			const unsigned char *data;
 			size_t buffer_length;
-
-			data = decoder_buffer_read(buffer, &buffer_length);
-			assert(data != NULL);
+			const uint8_t *data = (const uint8_t *)
+				decoder_buffer_read(buffer, &buffer_length);
+			assert(data != nullptr);
 			assert(frame_length <= buffer_length);
 
 			sample_rate = adts_sample_rates[(data[2] & 0x3c) >> 2];
@@ -173,7 +176,6 @@ faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
 {
 	size_t fileread;
 	size_t tagsize;
-	const unsigned char *data;
 	size_t length;
 	bool success;
 
@@ -181,8 +183,9 @@ faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
 	fileread = size >= 0 ? size : 0;
 
 	decoder_buffer_fill(buffer);
-	data = decoder_buffer_read(buffer, &length);
-	if (data == NULL)
+	const uint8_t *data = (const uint8_t *)
+		decoder_buffer_read(buffer, &length);
+	if (data == nullptr)
 		return -1;
 
 	tagsize = 0;
@@ -199,8 +202,8 @@ faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
 		if (!success)
 			return -1;
 
-		data = decoder_buffer_read(buffer, &length);
-		if (data == NULL)
+		data = (const uint8_t *)decoder_buffer_read(buffer, &length);
+		if (data == nullptr)
 			return -1;
 	}
 
@@ -209,10 +212,10 @@ faad_song_duration(struct decoder_buffer *buffer, struct input_stream *is)
 		/* obtain the duration from the ADTS header */
 		float song_length = adts_song_duration(buffer);
 
-		input_stream_lock_seek(is, tagsize, SEEK_SET, NULL);
+		input_stream_lock_seek(is, tagsize, SEEK_SET, nullptr);
 
-		data = decoder_buffer_read(buffer, &length);
-		if (data != NULL)
+		data = (const uint8_t *)decoder_buffer_read(buffer, &length);
+		if (data != nullptr)
 			decoder_buffer_consume(buffer, length);
 		decoder_buffer_fill(buffer);
 
@@ -248,12 +251,6 @@ static bool
 faad_decoder_init(NeAACDecHandle decoder, struct decoder_buffer *buffer,
 		  struct audio_format *audio_format, GError **error_r)
 {
-	union {
-		/* deconst hack for libfaad */
-		const void *in;
-		void *out;
-	} u;
-	size_t length;
 	int32_t nbytes;
 	uint32_t sample_rate;
 	uint8_t channels;
@@ -266,14 +263,18 @@ faad_decoder_init(NeAACDecHandle decoder, struct decoder_buffer *buffer,
 	uint32_t *sample_rate_p = &sample_rate;
 #endif
 
-	u.in = decoder_buffer_read(buffer, &length);
-	if (u.in == NULL) {
+	size_t length;
+	const unsigned char *data = (const unsigned char *)
+		decoder_buffer_read(buffer, &length);
+	if (data == nullptr) {
 		g_set_error(error_r, faad_decoder_quark(), 0,
 			    "Empty file");
 		return false;
 	}
 
-	nbytes = NeAACDecInit(decoder, u.out,
+	nbytes = NeAACDecInit(decoder,
+			      /* deconst hack, libfaad requires this */
+			      const_cast<unsigned char *>(data),
 			     length,
 			     sample_rate_p, &channels);
 	if (nbytes < 0) {
@@ -296,19 +297,16 @@ static const void *
 faad_decoder_decode(NeAACDecHandle decoder, struct decoder_buffer *buffer,
 		    NeAACDecFrameInfo *frame_info)
 {
-	union {
-		/* deconst hack for libfaad */
-		const void *in;
-		void *out;
-	} u;
 	size_t length;
-
-	u.in = decoder_buffer_read(buffer, &length);
-	if (u.in == NULL)
-		return NULL;
+	const unsigned char *data = (const unsigned char *)
+		decoder_buffer_read(buffer, &length);
+	if (data == nullptr)
+		return nullptr;
 
 	return NeAACDecDecode(decoder, frame_info,
-			      u.out, length);
+			      /* deconst hack, libfaad requires this */
+			      const_cast<unsigned char *>(data),
+			      length);
 }
 
 /**
@@ -322,7 +320,7 @@ faad_get_file_time_float(struct input_stream *is)
 	struct decoder_buffer *buffer;
 	float length;
 
-	buffer = decoder_buffer_new(NULL, is,
+	buffer = decoder_buffer_new(nullptr, is,
 				    FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
 	length = faad_song_duration(buffer, is);
 
@@ -339,7 +337,7 @@ faad_get_file_time_float(struct input_stream *is)
 
 		decoder_buffer_fill(buffer);
 
-		ret = faad_decoder_init(decoder, buffer, &audio_format, NULL);
+		ret = faad_decoder_init(decoder, buffer, &audio_format, nullptr);
 		if (ret)
 			length = 0;
 
@@ -371,7 +369,7 @@ faad_get_file_time(struct input_stream *is)
 static void
 faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 {
-	GError *error = NULL;
+	GError *error = nullptr;
 	float total_time = 0;
 	struct audio_format audio_format;
 	bool ret;
@@ -487,15 +485,20 @@ faad_scan_stream(struct input_stream *is,
 	return true;
 }
 
-static const char *const faad_suffixes[] = { "aac", NULL };
+static const char *const faad_suffixes[] = { "aac", nullptr };
 static const char *const faad_mime_types[] = {
-	"audio/aac", "audio/aacp", NULL
+	"audio/aac", "audio/aacp", nullptr
 };
 
 const struct decoder_plugin faad_decoder_plugin = {
-	.name = "faad",
-	.stream_decode = faad_stream_decode,
-	.scan_stream = faad_scan_stream,
-	.suffixes = faad_suffixes,
-	.mime_types = faad_mime_types,
+	"faad",
+	nullptr,
+	nullptr,
+	faad_stream_decode,
+	nullptr,
+	nullptr,
+	faad_scan_stream,
+	nullptr,
+	faad_suffixes,
+	faad_mime_types,
 };
