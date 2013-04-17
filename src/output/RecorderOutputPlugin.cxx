@@ -21,7 +21,7 @@
 #include "RecorderOutputPlugin.hxx"
 #include "output_api.h"
 #include "encoder_plugin.h"
-#include "encoder_list.h"
+#include "EncoderList.hxx"
 #include "fd_util.h"
 #include "open.h"
 

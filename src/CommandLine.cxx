@@ -35,7 +35,7 @@
 #include "fs/FileSystem.hxx"
 
 #ifdef ENABLE_ENCODER
-#include "encoder_list.h"
+#include "EncoderList.hxx"
 #include "encoder_plugin.h"
 #endif
 

@@ -64,7 +64,6 @@ mpd_headers = \
 	src/decoder_api.h \
 	src/decoder_plugin.h \
 	src/encoder_plugin.h \
-	src/encoder_list.h \
 	src/encoder_api.h \
 	src/fd_util.h \
 	src/gerror.h \
@@ -633,7 +632,7 @@ ENCODER_LIBS = \
 libencoder_plugins_a_SOURCES = \
 	src/encoder/OggStream.hxx \
 	src/encoder/null_encoder.c \
-	src/encoder_list.c
+	src/EncoderList.cxx src/EncoderList.hxx
 
 if ENABLE_WAVE_ENCODER
 libencoder_plugins_a_SOURCES += src/encoder/wave_encoder.c

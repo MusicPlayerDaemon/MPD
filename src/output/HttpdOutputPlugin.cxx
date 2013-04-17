@@ -23,7 +23,7 @@
 #include "HttpdClient.hxx"
 #include "output_api.h"
 #include "encoder_plugin.h"
-#include "encoder_list.h"
+#include "EncoderList.hxx"
 #include "resolver.h"
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"

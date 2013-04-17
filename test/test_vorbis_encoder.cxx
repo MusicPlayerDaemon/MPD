@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "encoder_list.h"
+#include "EncoderList.hxx"
 #include "encoder_plugin.h"
 #include "audio_format.h"
 #include "conf.h"

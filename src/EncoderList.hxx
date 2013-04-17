@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ENCODER_LIST_H
-#define MPD_ENCODER_LIST_H
+#ifndef MPD_ENCODER_LIST_HXX
+#define MPD_ENCODER_LIST_HXX
 
 struct encoder_plugin;
 
@@ -30,10 +30,6 @@ extern const struct encoder_plugin *const encoder_plugins[];
 		(plugin = *encoder_plugin_iterator) != NULL; \
 		++encoder_plugin_iterator)
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * Looks up an encoder plugin by its name.
  *
@@ -43,9 +39,5 @@ extern "C" {
  */
 const struct encoder_plugin *
 encoder_plugin_get(const char *name);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
