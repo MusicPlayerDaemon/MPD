@@ -200,7 +200,11 @@ mikmod_decoder_scan_file(const char *path_fs,
 	if (title != NULL) {
 		tag_handler_invoke_tag(handler, handler_ctx,
 				       TAG_TITLE, title);
+#if (LIBMIKMOD_VERSION >= 0x030200)
+		MikMod_free(title);
+#else
 		free(title);
+#endif
 	}
 
 	return true;
