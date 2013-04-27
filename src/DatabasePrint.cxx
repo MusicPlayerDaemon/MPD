@@ -34,13 +34,25 @@
 #include <functional>
 
 static bool
-PrintDirectory(Client *client, const Directory &directory)
+PrintDirectoryBrief(Client *client, const Directory &directory)
 {
 	if (!directory.IsRoot())
 		client_printf(client, "directory: %s\n", directory.GetPath());
 
 	return true;
 }
+
+static bool
+PrintDirectoryFull(Client *client, const Directory &directory)
+{
+	if (!directory.IsRoot()) {
+		client_printf(client, "directory: %s\n", directory.GetPath());
+		time_print(client, "Last-Modified", directory.mtime);
+	}
+
+	return true;
+}
+
 
 static void
 print_playlist_in_directory(Client *client,
@@ -114,7 +126,8 @@ db_selection_print(Client *client, const DatabaseSelection &selection,
 
 	using namespace std::placeholders;
 	const auto d = selection.filter == nullptr
-		? std::bind(PrintDirectory, client, _1)
+		? std::bind(full ? PrintDirectoryFull : PrintDirectoryBrief,
+			    client, _1)
 		: VisitDirectory();
 	const auto s = std::bind(full ? PrintSongFull : PrintSongBrief,
 				 client, _1);
