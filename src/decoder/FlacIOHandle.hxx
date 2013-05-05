@@ -29,13 +29,13 @@ extern const FLAC__IOCallbacks flac_io_callbacks;
 extern const FLAC__IOCallbacks flac_io_callbacks_seekable;
 
 static inline FLAC__IOHandle
-ToFLACIOHandle(input_stream *is)
+ToFlacIOHandle(input_stream *is)
 {
 	return (FLAC__IOHandle)is;
 }
 
 static inline const FLAC__IOCallbacks &
-GetFLACIOCallbacks(const input_stream *is)
+GetFlacIOCallbacks(const input_stream *is)
 {
 	return is->seekable
 		? flac_io_callbacks_seekable

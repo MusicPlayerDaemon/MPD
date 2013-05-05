@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "FLACMetaData.hxx"
+#include "FlacMetadata.hxx"
 
 extern "C" {
 #include "XiphTags.h"
@@ -239,7 +239,7 @@ flac_vorbis_comments_to_tag(struct tag *tag,
 }
 
 void
-FLACMetadataChain::Scan(const struct tag_handler *handler, void *handler_ctx)
+FlacMetadataChain::Scan(const struct tag_handler *handler, void *handler_ctx)
 {
 	FLACMetadataIterator iterator(*this);
 

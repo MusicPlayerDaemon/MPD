@@ -26,13 +26,13 @@
  * This class wraps an #input_stream in libFLAC stream decoder
  * callbacks.
  */
-class FLACInput {
+class FlacInput {
 	struct decoder *decoder;
 
 	struct input_stream *input_stream;
 
 public:
-	FLACInput(struct input_stream *_input_stream,
+	FlacInput(struct input_stream *_input_stream,
 		  struct decoder *_decoder=nullptr)
 		:decoder(_decoder), input_stream(_input_stream) {}
 

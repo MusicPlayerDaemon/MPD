@@ -555,13 +555,13 @@ endif
 
 if HAVE_FLAC
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/FLACInput.cxx src/decoder/FLACInput.hxx \
-	src/decoder/FLACIOHandle.cxx src/decoder/FLACIOHandle.hxx \
-	src/decoder/FLACMetaData.cxx src/decoder/FLACMetaData.hxx \
-	src/decoder/FLAC_PCM.cxx src/decoder/FLAC_PCM.hxx \
-	src/decoder/FLACCommon.cxx src/decoder/FLACCommon.hxx \
-	src/decoder/FLACDecoderPlugin.cxx \
-	src/decoder/FLACDecoderPlugin.h
+	src/decoder/FlacInput.cxx src/decoder/FlacInput.hxx \
+	src/decoder/FlacIOHandle.cxx src/decoder/FlacIOHandle.hxx \
+	src/decoder/FlacMetadata.cxx src/decoder/FlacMetadata.hxx \
+	src/decoder/FlacPcm.cxx src/decoder/FlacPcm.hxx \
+	src/decoder/FlacCommon.cxx src/decoder/FlacCommon.hxx \
+	src/decoder/FlacDecoderPlugin.cxx \
+	src/decoder/FlacDecoderPlugin.h
 endif
 
 if HAVE_AUDIOFILE
@@ -1137,7 +1137,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 if HAVE_FLAC
 test_dump_playlist_SOURCES += \
 	src/ReplayGainInfo.cxx \
-	src/decoder/FLACMetaData.cxx
+	src/decoder/FlacMetadata.cxx
 endif
 
 test_run_decoder_LDADD = \

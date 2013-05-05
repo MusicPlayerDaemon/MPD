@@ -18,9 +18,9 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "FLACDecoderPlugin.h"
-#include "FLACCommon.hxx"
-#include "FLACMetaData.hxx"
+#include "FlacDecoderPlugin.h"
+#include "FlacCommon.hxx"
+#include "FlacMetadata.hxx"
 #include "OggCodec.hxx"
 
 #include <glib.h>
@@ -87,7 +87,7 @@ static bool
 flac_scan_file(const char *file,
 	       const struct tag_handler *handler, void *handler_ctx)
 {
-	FLACMetadataChain chain;
+	FlacMetadataChain chain;
 	if (!chain.Read(file)) {
 		g_debug("Failed to read FLAC tags: %s",
 			chain.GetStatusString());
@@ -102,7 +102,7 @@ static bool
 flac_scan_stream(struct input_stream *is,
 		 const struct tag_handler *handler, void *handler_ctx)
 {
-	FLACMetadataChain chain;
+	FlacMetadataChain chain;
 	if (!chain.Read(is)) {
 		g_debug("Failed to read FLAC tags: %s",
 			chain.GetStatusString());
@@ -214,14 +214,14 @@ static FLAC__StreamDecoderInitStatus
 stream_init_oggflac(FLAC__StreamDecoder *flac_dec, struct flac_data *data)
 {
 	return FLAC__stream_decoder_init_ogg_stream(flac_dec,
-						    FLACInput::Read,
-						    FLACInput::Seek,
-						    FLACInput::Tell,
-						    FLACInput::Length,
-						    FLACInput::Eof,
+						    FlacInput::Read,
+						    FlacInput::Seek,
+						    FlacInput::Tell,
+						    FlacInput::Length,
+						    FlacInput::Eof,
 						    flac_write_cb,
 						    flacMetadata,
-						    FLACInput::Error,
+						    FlacInput::Error,
 						    data);
 }
 
@@ -229,14 +229,14 @@ static FLAC__StreamDecoderInitStatus
 stream_init_flac(FLAC__StreamDecoder *flac_dec, struct flac_data *data)
 {
 	return FLAC__stream_decoder_init_stream(flac_dec,
-						FLACInput::Read,
-						FLACInput::Seek,
-						FLACInput::Tell,
-						FLACInput::Length,
-						FLACInput::Eof,
+						FlacInput::Read,
+						FlacInput::Seek,
+						FlacInput::Tell,
+						FlacInput::Length,
+						FlacInput::Eof,
 						flac_write_cb,
 						flacMetadata,
-						FLACInput::Error,
+						FlacInput::Error,
 						data);
 }
 
@@ -298,7 +298,7 @@ static bool
 oggflac_scan_file(const char *file,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
-	FLACMetadataChain chain;
+	FlacMetadataChain chain;
 	if (!chain.ReadOgg(file)) {
 		g_debug("Failed to read OggFLAC tags: %s",
 			chain.GetStatusString());
@@ -313,7 +313,7 @@ static bool
 oggflac_scan_stream(struct input_stream *is,
 		    const struct tag_handler *handler, void *handler_ctx)
 {
-	FLACMetadataChain chain;
+	FlacMetadataChain chain;
 	if (!chain.ReadOgg(is)) {
 		g_debug("Failed to read OggFLAC tags: %s",
 			chain.GetStatusString());
