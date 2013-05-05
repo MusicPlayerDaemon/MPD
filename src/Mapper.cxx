@@ -100,7 +100,7 @@ check_directory(const char *path_utf8, const Path &path_fs)
 #endif
 
 	const DirectoryReader reader(path_fs);
-	if (reader.Failed() && errno == EACCES)
+	if (reader.HasFailed() && errno == EACCES)
 		g_warning("No permission to read directory: %s", path_utf8);
 }
 
