@@ -73,7 +73,7 @@ public:
 	 * Checks whether one of the patterns in the .mpdignore file matches
 	 * the specified file name.
 	 */
-	bool Check(const char *name_fs) const;
+	bool Check(const Path &name_fs) const;
 };
 
 
