@@ -23,10 +23,7 @@
 #include "song.h"
 #include "tag.h"
 #include "util/StringUtil.hxx"
-
-extern "C" {
-#include "text_input_stream.h"
-}
+#include "TextInputStream.hxx"
 
 #include <glib.h>
 
@@ -36,20 +33,21 @@ extern "C" {
 struct ExtM3uPlaylist {
 	struct playlist_provider base;
 
-	struct text_input_stream *tis;
+	TextInputStream *tis;
 };
 
 static struct playlist_provider *
 extm3u_open_stream(struct input_stream *is)
 {
 	ExtM3uPlaylist *playlist = g_new(ExtM3uPlaylist, 1);
-	playlist->tis = text_input_stream_new(is);
+	playlist->tis = new TextInputStream(is);
 
-	const char *line = text_input_stream_read(playlist->tis);
-	if (line == NULL || strcmp(line, "#EXTM3U") != 0) {
+	std::string line;
+	if (!playlist->tis->ReadLine(line)
+	   || strcmp(line.c_str(), "#EXTM3U") != 0) {
 		/* no EXTM3U header: fall back to the plain m3u
 		   plugin */
-		text_input_stream_free(playlist->tis);
+		delete playlist->tis;
 		g_free(playlist);
 		return NULL;
 	}
@@ -63,7 +61,7 @@ extm3u_close(struct playlist_provider *_playlist)
 {
 	ExtM3uPlaylist *playlist = (ExtM3uPlaylist *)_playlist;
 
-	text_input_stream_free(playlist->tis);
+	delete playlist->tis;
 	g_free(playlist);
 }
 
@@ -112,29 +110,31 @@ extm3u_read(struct playlist_provider *_playlist)
 {
 	ExtM3uPlaylist *playlist = (ExtM3uPlaylist *)_playlist;
 	struct tag *tag = NULL;
-	const char *line;
+	std::string line;
+	const char *line_s;
 	struct song *song;
 
 	do {
-		line = text_input_stream_read(playlist->tis);
-		if (line == NULL) {
+		if (!playlist->tis->ReadLine(line)) {
 			if (tag != NULL)
 				tag_free(tag);
 			return NULL;
 		}
+		
+		line_s = line.c_str();
 
-		if (g_str_has_prefix(line, "#EXTINF:")) {
+		if (g_str_has_prefix(line_s, "#EXTINF:")) {
 			if (tag != NULL)
 				tag_free(tag);
-			tag = extm3u_parse_tag(line + 8);
+			tag = extm3u_parse_tag(line_s + 8);
 			continue;
 		}
 
-		while (*line != 0 && g_ascii_isspace(*line))
-			++line;
-	} while (line[0] == '#' || *line == 0);
+		while (*line_s != 0 && g_ascii_isspace(*line_s))
+			++line_s;
+	} while (line_s[0] == '#' || *line_s == 0);
 
-	song = song_remote_new(line);
+	song = song_remote_new(line_s);
 	song->tag = tag;
 	return song;
 }

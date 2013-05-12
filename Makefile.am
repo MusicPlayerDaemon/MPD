@@ -70,7 +70,7 @@ mpd_headers = \
 	src/gcc.h \
 	src/decoder/pcm_decoder_plugin.h \
 	src/input_stream.h \
-	src/text_input_stream.h \
+	src/TextInputStream.hxx \
 	src/ls.h \
 	src/mixer_plugin.h \
 	src/daemon.h \
@@ -238,7 +238,7 @@ src_mpd_SOURCES = \
 	src/tag_handler.c src/tag_handler.h \
 	src/TagFile.cxx src/TagFile.hxx \
 	src/TextFile.cxx src/TextFile.hxx \
-	src/text_input_stream.c \
+	src/TextInputStream.cxx \
 	src/Volume.cxx src/Volume.hxx \
 	src/SongFilter.cxx src/SongFilter.hxx \
 	src/SongPointer.hxx \
@@ -1108,7 +1108,7 @@ test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
-	src/text_input_stream.c \
+	src/TextInputStream.cxx \
 	src/fd_util.c
 
 test_dump_playlist_LDADD = \
@@ -1130,7 +1130,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	src/Song.cxx src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/tag_handler.c src/TagFile.cxx \
 	src/audio_check.c \
-	src/text_input_stream.c \
+	src/TextInputStream.cxx \
 	src/cue/CueParser.cxx src/cue/CueParser.hxx \
 	src/fd_util.c
 
