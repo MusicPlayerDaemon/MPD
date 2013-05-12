@@ -17,43 +17,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TIMER_H
-#define MPD_TIMER_H
+#ifndef MPD_TIMER_HXX
+#define MPD_TIMER_HXX
 
 #include <stdint.h>
 
 struct audio_format;
 
-struct timer {
+class Timer {
 	uint64_t time;
-	int started;
-	int rate;
+	bool started;
+	const int rate;
+public:
+	explicit Timer(const struct audio_format& af);
+
+	bool IsStarted() const { return started; }
+
+	void Start();
+	void Reset();
+
+	void Add(int size);
+
+	/**
+	 * Returns the number of milliseconds to sleep to get back to sync.
+	 */
+	unsigned GetDelay() const;
+
+	void Synchronize() const;
 };
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-struct timer *timer_new(const struct audio_format *af);
-
-void timer_free(struct timer *timer);
-
-void timer_start(struct timer *timer);
-
-void timer_reset(struct timer *timer);
-
-void timer_add(struct timer *timer, int size);
-
-/**
- * Returns the number of milliseconds to sleep to get back to sync.
- */
-unsigned
-timer_delay(const struct timer *timer);
-
-void timer_sync(struct timer *timer);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

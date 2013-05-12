@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "timer.h"
+#include "Timer.hxx"
 #include "audio_format.h"
 #include "clock.h"
 
@@ -28,46 +28,37 @@
 #include <limits.h>
 #include <stddef.h>
 
-struct timer *timer_new(const struct audio_format *af)
+Timer::Timer(const struct audio_format &af)
+	: time(0),
+	  started(false),
+	  rate(af.sample_rate * audio_format_frame_size(&af))
 {
-	struct timer *timer = g_new(struct timer, 1);
-	timer->time = 0; // us
-	timer->started = 0; // false
-	timer->rate = af->sample_rate * audio_format_frame_size(af); // samples per second
-
-	return timer;
 }
 
-void timer_free(struct timer *timer)
+void Timer::Start()
 {
-	g_free(timer);
+	time = monotonic_clock_us();
+	started = true;
 }
 
-void timer_start(struct timer *timer)
+void Timer::Reset()
 {
-	timer->time = monotonic_clock_us();
-	timer->started = 1;
+	time = 0;
+	started = false;
 }
 
-void timer_reset(struct timer *timer)
+void Timer::Add(int size)
 {
-	timer->time = 0;
-	timer->started = 0;
-}
-
-void timer_add(struct timer *timer, int size)
-{
-	assert(timer->started);
+	assert(started);
 
 	// (size samples) / (rate samples per second) = duration seconds
 	// duration seconds * 1000000 = duration us
-	timer->time += ((uint64_t)size * 1000000) / timer->rate;
+	time += ((uint64_t)size * 1000000) / rate;
 }
 
-unsigned
-timer_delay(const struct timer *timer)
+unsigned Timer::GetDelay() const
 {
-	int64_t delay = (int64_t)(timer->time - monotonic_clock_us()) / 1000;
+	int64_t delay = (int64_t)(time - monotonic_clock_us()) / 1000;
 	if (delay < 0)
 		return 0;
 
@@ -77,13 +68,13 @@ timer_delay(const struct timer *timer)
 	return delay;
 }
 
-void timer_sync(struct timer *timer)
+void Timer::Synchronize() const
 {
 	int64_t sleep_duration;
 
-	assert(timer->started);
+	assert(started);
 
-	sleep_duration = timer->time - monotonic_clock_us();
+	sleep_duration = time - monotonic_clock_us();
 	if (sleep_duration > 0)
 		g_usleep(sleep_duration);
 }

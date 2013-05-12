@@ -94,7 +94,7 @@ mpd_headers = \
 	src/tag_ape.h \
 	src/tag_id3.h \
 	src/tag_rva2.h \
-	src/timer.h \
+	src/Timer.hxx \
 	src/mpd_error.h
 
 src_mpd_SOURCES = \
@@ -243,7 +243,7 @@ src_mpd_SOURCES = \
 	src/SongFilter.cxx src/SongFilter.hxx \
 	src/SongPointer.hxx \
 	src/PlaylistFile.cxx src/PlaylistFile.hxx \
-	src/timer.c
+	src/Timer.cxx
 
 #
 # Windows resource file
@@ -1299,7 +1299,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/AudioParser.cxx \
-	src/timer.c src/clock.c \
+	src/Timer.cxx src/clock.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/Page.cxx \
 	src/SocketUtil.cxx \

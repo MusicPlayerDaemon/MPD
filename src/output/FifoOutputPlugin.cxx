@@ -20,7 +20,7 @@
 #include "config.h"
 #include "FifoOutputPlugin.hxx"
 #include "output_api.h"
-#include "timer.h"
+#include "Timer.hxx"
 #include "fd_util.h"
 #include "open.h"
 
@@ -44,7 +44,7 @@ struct FifoOutput {
 	int input;
 	int output;
 	bool created;
-	struct timer *timer;
+	Timer *timer;
 
 	FifoOutput()
 		:path(nullptr), input(-1), output(-1), created(false) {}
@@ -232,7 +232,7 @@ fifo_output_open(struct audio_output *ao, struct audio_format *audio_format,
 {
 	FifoOutput *fd = (FifoOutput *)ao;
 
-	fd->timer = timer_new(audio_format);
+	fd->timer = new Timer(*audio_format);
 
 	return true;
 }
@@ -242,7 +242,7 @@ fifo_output_close(struct audio_output *ao)
 {
 	FifoOutput *fd = (FifoOutput *)ao;
 
-	timer_free(fd->timer);
+	delete fd->timer;
 }
 
 static void
@@ -252,7 +252,7 @@ fifo_output_cancel(struct audio_output *ao)
 	char buf[FIFO_BUFFER_SIZE];
 	int bytes = 1;
 
-	timer_reset(fd->timer);
+	fd->timer->Reset();
 
 	while (bytes > 0 && errno != EINTR)
 		bytes = read(fd->input, buf, FIFO_BUFFER_SIZE);
@@ -268,8 +268,8 @@ fifo_output_delay(struct audio_output *ao)
 {
 	FifoOutput *fd = (FifoOutput *)ao;
 
-	return fd->timer->started
-		? timer_delay(fd->timer)
+	return fd->timer->IsStarted()
+		? fd->timer->GetDelay()
 		: 0;
 }
 
@@ -280,9 +280,9 @@ fifo_output_play(struct audio_output *ao, const void *chunk, size_t size,
 	FifoOutput *fd = (FifoOutput *)ao;
 	ssize_t bytes;
 
-	if (!fd->timer->started)
-		timer_start(fd->timer);
-	timer_add(fd->timer, size);
+	if (!fd->timer->IsStarted())
+		fd->timer->Start();
+	fd->timer->Add(size);
 
 	while (true) {
 		bytes = write(fd->output, chunk, size);
