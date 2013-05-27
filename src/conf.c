@@ -317,7 +317,7 @@ config_read_block(FILE *fp, int *count, char *string, GError **error_r)
 				g_set_error(error_r, config_quark(), 0,
 					    "line %i: Unknown tokens after '}'",
 					    *count);
-				return false;
+				return NULL;
 			}
 
 			return ret;

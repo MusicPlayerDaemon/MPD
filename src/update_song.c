@@ -104,7 +104,7 @@ update_song_file(struct directory *directory,
 		 const struct stat *st)
 {
 	const struct decoder_plugin *plugin =
-		decoder_plugin_from_suffix(suffix, false);
+		decoder_plugin_from_suffix(suffix, NULL);
 	if (plugin == NULL)
 		return false;
 

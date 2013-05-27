@@ -187,7 +187,7 @@ song_file_update_inarchive(struct song *song)
 	if (suffix == NULL)
 		return false;
 
-	plugin = decoder_plugin_from_suffix(suffix, false);
+	plugin = decoder_plugin_from_suffix(suffix, NULL);
 	if (plugin == NULL)
 		return false;
 
