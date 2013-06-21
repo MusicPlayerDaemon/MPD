@@ -106,11 +106,11 @@ opus_encoder_configure(struct opus_encoder *encoder,
 
 	value = config_get_block_string(param, "signal", "auto");
 	if (strcmp(value, "auto") == 0)
-		encoder->bitrate = OPUS_AUTO;
+		encoder->signal = OPUS_AUTO;
 	else if (strcmp(value, "voice") == 0)
-		encoder->bitrate = OPUS_SIGNAL_VOICE;
+		encoder->signal = OPUS_SIGNAL_VOICE;
 	else if (strcmp(value, "music") == 0)
-		encoder->bitrate = OPUS_SIGNAL_MUSIC;
+		encoder->signal = OPUS_SIGNAL_MUSIC;
 	else {
 		g_set_error(error_r, opus_encoder_quark(), 0,
 			    "Invalid signal");
