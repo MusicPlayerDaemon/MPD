@@ -24,7 +24,7 @@
 #ifndef MPD_FLAC_COMMON_HXX
 #define MPD_FLAC_COMMON_HXX
 
-#include "FLACInput.hxx"
+#include "FlacInput.hxx"
 #include "decoder_api.h"
 
 extern "C" {
@@ -37,7 +37,7 @@ extern "C" {
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "flac"
 
-struct flac_data : public FLACInput {
+struct flac_data : public FlacInput {
 	struct pcm_buffer buffer;
 
 	/**

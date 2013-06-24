@@ -25,7 +25,7 @@
 #include "decoder/pcm_decoder_plugin.h"
 #include "decoder/dsdiff_decoder_plugin.h"
 #include "decoder/dsf_decoder_plugin.h"
-#include "decoder/FLACDecoderPlugin.h"
+#include "decoder/FlacDecoderPlugin.h"
 #include "decoder/OpusDecoderPlugin.h"
 #include "decoder/VorbisDecoderPlugin.h"
 #include "decoder/AdPlugDecoderPlugin.h"

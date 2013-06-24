@@ -24,6 +24,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Returns the value of a monotonic clock in milliseconds.
  */
@@ -37,5 +41,9 @@ monotonic_clock_ms(void);
 gcc_pure
 uint64_t
 monotonic_clock_us(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

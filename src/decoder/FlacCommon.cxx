@@ -22,9 +22,9 @@
  */
 
 #include "config.h"
-#include "FLACCommon.hxx"
-#include "FLACMetaData.hxx"
-#include "FLAC_PCM.hxx"
+#include "FlacCommon.hxx"
+#include "FlacMetadata.hxx"
+#include "FlacPcm.hxx"
 
 extern "C" {
 #include "audio_check.h"
@@ -36,7 +36,7 @@ extern "C" {
 
 flac_data::flac_data(struct decoder *_decoder,
 		     struct input_stream *_input_stream)
-	:FLACInput(_input_stream, _decoder),
+	:FlacInput(_input_stream, _decoder),
 	 initialized(false), unsupported(false),
 	 total_frames(0), first_frame(0), next_frame(0), position(0),
 	 decoder(_decoder), input_stream(_input_stream),

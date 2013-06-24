@@ -5,6 +5,7 @@
 *.la
 *.lo
 *.o
+*.exe
 .deps
 .dirstamp
 Makefile
@@ -31,7 +32,6 @@ ltmain.sh
 missing
 mkinstalldirs
 mpd
-mpd.exe
 mpd.service
 stamp-h1
 tags

@@ -320,7 +320,7 @@ HttpdOutput::Open(struct audio_format *audio_format, GError **error_r)
 	/* initialize other attributes */
 
 	clients_cnt = 0;
-	timer = timer_new(audio_format);
+	timer = new Timer(*audio_format);
 
 	open = true;
 
@@ -346,7 +346,7 @@ HttpdOutput::Close()
 
 	open = false;
 
-	timer_free(timer);
+	delete timer;
 
 	clients.clear();
 
@@ -398,7 +398,7 @@ httpd_output_delay(struct audio_output *ao)
 		   then httpd_output_pause() will not do anything, it
 		   will not fill the buffer and it will not update the
 		   timer; therefore, we reset the timer here */
-		timer_reset(httpd->timer);
+		httpd->timer->Reset();
 
 		/* some arbitrary delay that is long enough to avoid
 		   consuming too much CPU, and short enough to notice
@@ -406,8 +406,8 @@ httpd_output_delay(struct audio_output *ao)
 		return 1000;
 	}
 
-	return httpd->timer->started
-		? timer_delay(httpd->timer)
+	return httpd->timer->IsStarted()
+		? httpd->timer->GetDelay()
 		: 0;
 }
 
@@ -463,9 +463,9 @@ httpd_output_play(struct audio_output *ao, const void *chunk, size_t size,
 			return 0;
 	}
 
-	if (!httpd->timer->started)
-		timer_start(httpd->timer);
-	timer_add(httpd->timer, size);
+	if (!httpd->timer->IsStarted())
+		httpd->timer->Start();
+	httpd->timer->Add(size);
 
 	return size;
 }

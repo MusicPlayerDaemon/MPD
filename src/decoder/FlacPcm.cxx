@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "FLAC_PCM.hxx"
+#include "FlacPcm.hxx"
 
 #include <assert.h>
 

@@ -32,6 +32,7 @@
 #include "protocol/Result.hxx"
 #include "ls.hxx"
 #include "util/UriUtil.hxx"
+#include "fs/Path.hxx"
 
 #include <string.h>
 
@@ -42,13 +43,20 @@ handle_add(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 	enum playlist_result result;
 
 	if (strncmp(uri, "file:///", 8) == 0) {
-		const char *path = uri + 7;
+		const char *path_utf8 = uri + 7;
+		const Path path_fs = Path::FromUTF8(path_utf8);
+
+		if (path_fs.IsNull()) {
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "unsupported file name");
+			return COMMAND_RETURN_ERROR;
+		}
 
 		GError *error = NULL;
-		if (!client_allow_file(client, path, &error))
+		if (!client_allow_file(client, path_fs, &error))
 			return print_error(client, error);
 
-		result = client->partition.AppendFile(path);
+		result = client->partition.AppendFile(path_utf8);
 		return print_playlist_result(client, result);
 	}
 
@@ -78,13 +86,20 @@ handle_addid(Client *client, int argc, char *argv[])
 	enum playlist_result result;
 
 	if (strncmp(uri, "file:///", 8) == 0) {
-		const char *path = uri + 7;
+		const char *path_utf8 = uri + 7;
+		const Path path_fs = Path::FromUTF8(path_utf8);
+
+		if (path_fs.IsNull()) {
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "unsupported file name");
+			return COMMAND_RETURN_ERROR;
+		}
 
 		GError *error = NULL;
-		if (!client_allow_file(client, path, &error))
+		if (!client_allow_file(client, path_fs, &error))
 			return print_error(client, error);
 
-		result = client->partition.AppendFile(path, &added_id);
+		result = client->partition.AppendFile(path_utf8, &added_id);
 	} else {
 		if (uri_has_scheme(uri) && !uri_supported_scheme(uri)) {
 			command_error(client, ACK_ERROR_NO_EXIST,

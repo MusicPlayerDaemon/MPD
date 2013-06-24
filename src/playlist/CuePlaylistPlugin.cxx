@@ -24,10 +24,7 @@
 #include "song.h"
 #include "input_stream.h"
 #include "cue/CueParser.hxx"
-
-extern "C" {
-#include "text_input_stream.h"
-}
+#include "TextInputStream.hxx"
 
 #include <glib.h>
 #include <assert.h>
@@ -40,16 +37,15 @@ struct CuePlaylist {
 	struct playlist_provider base;
 
 	struct input_stream *is;
-	struct text_input_stream *tis;
+	TextInputStream tis;
 	CueParser parser;
 
 	CuePlaylist(struct input_stream *_is)
-		:is(_is), tis(text_input_stream_new(is)) {
+		:is(_is), tis(is) {
 		playlist_provider_init(&base, &cue_playlist_plugin);
 	}
 
 	~CuePlaylist() {
-		text_input_stream_free(tis);
 	}
 };
 
@@ -76,9 +72,9 @@ cue_playlist_read(struct playlist_provider *_playlist)
 	if (song != NULL)
 		return song;
 
-	const char *line;
-	while ((line = text_input_stream_read(playlist->tis)) != NULL) {
-		playlist->parser.Feed(line);
+	std::string line;
+	while (playlist->tis.ReadLine(line)) {
+		playlist->parser.Feed(line.c_str());
 		song = playlist->parser.Get();
 		if (song != NULL)
 			return song;

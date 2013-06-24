@@ -26,7 +26,7 @@
 #define MPD_OUTPUT_HTTPD_INTERNAL_H
 
 #include "OutputInternal.hxx"
-#include "timer.h"
+#include "Timer.hxx"
 #include "thread/Mutex.hxx"
 #include "event/ServerSocket.hxx"
 
@@ -72,10 +72,10 @@ struct HttpdOutput final : private ServerSocket {
 	mutable Mutex mutex;
 
 	/**
-	 * A #timer object to synchronize this output with the
+	 * A #Timer object to synchronize this output with the
 	 * wallclock.
 	 */
-	struct timer *timer;
+	Timer *timer;
 
 	/**
 	 * The header page, which is sent to every client on connect.

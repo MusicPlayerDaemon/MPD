@@ -20,7 +20,7 @@
 #include "config.h"
 #include "NullOutputPlugin.hxx"
 #include "output_api.h"
-#include "timer.h"
+#include "Timer.hxx"
 
 #include <assert.h>
 
@@ -29,7 +29,7 @@ struct NullOutput {
 
 	bool sync;
 
-	struct timer *timer;
+	Timer *timer;
 
 	bool Initialize(const config_param *param, GError **error_r) {
 		return ao_base_init(&base, &null_output_plugin, param,
@@ -72,7 +72,7 @@ null_open(struct audio_output *ao, struct audio_format *audio_format,
 	NullOutput *nd = (NullOutput *)ao;
 
 	if (nd->sync)
-		nd->timer = timer_new(audio_format);
+		nd->timer = new Timer(*audio_format);
 
 	return true;
 }
@@ -83,7 +83,7 @@ null_close(struct audio_output *ao)
 	NullOutput *nd = (NullOutput *)ao;
 
 	if (nd->sync)
-		timer_free(nd->timer);
+		delete nd->timer;
 }
 
 static unsigned
@@ -91,8 +91,8 @@ null_delay(struct audio_output *ao)
 {
 	NullOutput *nd = (NullOutput *)ao;
 
-	return nd->sync && nd->timer->started
-		? timer_delay(nd->timer)
+	return nd->sync && nd->timer->IsStarted()
+		? nd->timer->GetDelay()
 		: 0;
 }
 
@@ -101,14 +101,14 @@ null_play(struct audio_output *ao, gcc_unused const void *chunk, size_t size,
 	  gcc_unused GError **error)
 {
 	NullOutput *nd = (NullOutput *)ao;
-	struct timer *timer = nd->timer;
+	Timer *timer = nd->timer;
 
 	if (!nd->sync)
 		return size;
 
-	if (!timer->started)
-		timer_start(timer);
-	timer_add(timer, size);
+	if (!timer->IsStarted())
+		timer->Start();
+	timer->Add(size);
 
 	return size;
 }
@@ -121,7 +121,7 @@ null_cancel(struct audio_output *ao)
 	if (!nd->sync)
 		return;
 
-	timer_reset(nd->timer);
+	nd->timer->Reset();
 }
 
 const struct audio_output_plugin null_output_plugin = {

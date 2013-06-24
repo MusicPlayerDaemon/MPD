@@ -23,10 +23,7 @@
 #include "InputStream.hxx"
 #include "conf.h"
 #include "stdbin.h"
-
-extern "C" {
-#include "text_input_stream.h"
-}
+#include "TextInputStream.hxx"
 
 #ifdef ENABLE_ARCHIVE
 #include "ArchiveList.hxx"
@@ -49,11 +46,11 @@ my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
 }
 
 static void
-dump_text_file(struct text_input_stream *is)
+dump_text_file(TextInputStream &is)
 {
-	const char *line;
-	while ((line = text_input_stream_read(is)) != NULL)
-		printf("'%s'\n", line);
+	std::string line;
+	while (is.ReadLine(line))
+		printf("'%s'\n", line.c_str());
 }
 
 static int
@@ -77,11 +74,10 @@ dump_input_stream(struct input_stream *is)
 	/* read data and tags from the stream */
 
 	input_stream_unlock(is);
-
-	struct text_input_stream *tis = text_input_stream_new(is);
-	dump_text_file(tis);
-	text_input_stream_free(tis);
-
+	{
+		TextInputStream tis(is);
+		dump_text_file(tis);
+	}
 	input_stream_lock(is);
 
 	if (!input_stream_check(is, &error)) {

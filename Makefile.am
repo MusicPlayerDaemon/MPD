@@ -70,7 +70,7 @@ mpd_headers = \
 	src/gcc.h \
 	src/decoder/pcm_decoder_plugin.h \
 	src/input_stream.h \
-	src/text_input_stream.h \
+	src/TextInputStream.hxx \
 	src/ls.h \
 	src/mixer_plugin.h \
 	src/daemon.h \
@@ -94,7 +94,7 @@ mpd_headers = \
 	src/tag_ape.h \
 	src/tag_id3.h \
 	src/tag_rva2.h \
-	src/timer.h \
+	src/Timer.hxx \
 	src/mpd_error.h
 
 src_mpd_SOURCES = \
@@ -238,12 +238,12 @@ src_mpd_SOURCES = \
 	src/tag_handler.c src/tag_handler.h \
 	src/TagFile.cxx src/TagFile.hxx \
 	src/TextFile.cxx src/TextFile.hxx \
-	src/text_input_stream.c \
+	src/TextInputStream.cxx \
 	src/Volume.cxx src/Volume.hxx \
 	src/SongFilter.cxx src/SongFilter.hxx \
 	src/SongPointer.hxx \
 	src/PlaylistFile.cxx src/PlaylistFile.hxx \
-	src/timer.c
+	src/Timer.cxx
 
 #
 # Windows resource file
@@ -555,13 +555,13 @@ endif
 
 if HAVE_FLAC
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/FLACInput.cxx src/decoder/FLACInput.hxx \
-	src/decoder/FLACIOHandle.cxx src/decoder/FLACIOHandle.hxx \
-	src/decoder/FLACMetaData.cxx src/decoder/FLACMetaData.hxx \
-	src/decoder/FLAC_PCM.cxx src/decoder/FLAC_PCM.hxx \
-	src/decoder/FLACCommon.cxx src/decoder/FLACCommon.hxx \
-	src/decoder/FLACDecoderPlugin.cxx \
-	src/decoder/FLACDecoderPlugin.h
+	src/decoder/FlacInput.cxx src/decoder/FlacInput.hxx \
+	src/decoder/FlacIOHandle.cxx src/decoder/FlacIOHandle.hxx \
+	src/decoder/FlacMetadata.cxx src/decoder/FlacMetadata.hxx \
+	src/decoder/FlacPcm.cxx src/decoder/FlacPcm.hxx \
+	src/decoder/FlacCommon.cxx src/decoder/FlacCommon.hxx \
+	src/decoder/FlacDecoderPlugin.cxx \
+	src/decoder/FlacDecoderPlugin.h
 endif
 
 if HAVE_AUDIOFILE
@@ -1108,7 +1108,7 @@ test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
-	src/text_input_stream.c \
+	src/TextInputStream.cxx \
 	src/fd_util.c
 
 test_dump_playlist_LDADD = \
@@ -1130,14 +1130,14 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	src/Song.cxx src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/tag_handler.c src/TagFile.cxx \
 	src/audio_check.c \
-	src/text_input_stream.c \
+	src/TextInputStream.cxx \
 	src/cue/CueParser.cxx src/cue/CueParser.hxx \
 	src/fd_util.c
 
 if HAVE_FLAC
 test_dump_playlist_SOURCES += \
 	src/ReplayGainInfo.cxx \
-	src/decoder/FLACMetaData.cxx
+	src/decoder/FlacMetadata.cxx
 endif
 
 test_run_decoder_LDADD = \
@@ -1299,7 +1299,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/audio_check.c \
 	src/audio_format.c \
 	src/AudioParser.cxx \
-	src/timer.c src/clock.c \
+	src/Timer.cxx src/clock.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/Page.cxx \
 	src/SocketUtil.cxx \

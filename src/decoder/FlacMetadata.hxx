@@ -21,19 +21,19 @@
 #define MPD_FLAC_METADATA_H
 
 #include "gcc.h"
-#include "FLACIOHandle.hxx"
+#include "FlacIOHandle.hxx"
 
 #include <FLAC/metadata.h>
 
 #include <assert.h>
 
-class FLACMetadataChain {
+class FlacMetadataChain {
 	FLAC__Metadata_Chain *chain;
 
 public:
-	FLACMetadataChain():chain(::FLAC__metadata_chain_new()) {}
+	FlacMetadataChain():chain(::FLAC__metadata_chain_new()) {}
 
-	~FLACMetadataChain() {
+	~FlacMetadataChain() {
 		::FLAC__metadata_chain_delete(chain);
 	}
 
@@ -52,7 +52,7 @@ public:
 	}
 
 	bool Read(input_stream *is) {
-		return Read(::ToFLACIOHandle(is), ::GetFLACIOCallbacks(is));
+		return Read(::ToFlacIOHandle(is), ::GetFlacIOCallbacks(is));
 	}
 
 	bool ReadOgg(const char *path) {
@@ -66,7 +66,7 @@ public:
 	}
 
 	bool ReadOgg(input_stream *is) {
-		return ReadOgg(::ToFLACIOHandle(is), ::GetFLACIOCallbacks(is));
+		return ReadOgg(::ToFlacIOHandle(is), ::GetFlacIOCallbacks(is));
 	}
 
 	gcc_pure
@@ -88,7 +88,7 @@ class FLACMetadataIterator {
 public:
 	FLACMetadataIterator():iterator(::FLAC__metadata_iterator_new()) {}
 
-	FLACMetadataIterator(FLACMetadataChain &chain)
+	FLACMetadataIterator(FlacMetadataChain &chain)
 		:iterator(::FLAC__metadata_iterator_new()) {
 		::FLAC__metadata_iterator_init(iterator,
 					       (FLAC__Metadata_Chain *)chain);

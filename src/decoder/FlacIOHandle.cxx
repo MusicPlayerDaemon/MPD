@@ -18,14 +18,14 @@
  */
 
 #include "config.h"
-#include "FLACIOHandle.hxx"
+#include "FlacIOHandle.hxx"
 #include "io_error.h"
 #include "gcc.h"
 
 #include <errno.h>
 
 static size_t
-FLACIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)
+FlacIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)
 {
 	input_stream *is = (input_stream *)handle;
 
@@ -63,7 +63,7 @@ FLACIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)
 }
 
 static int
-FLACIOSeek(FLAC__IOHandle handle, FLAC__int64 offset, int whence)
+FlacIOSeek(FLAC__IOHandle handle, FLAC__int64 offset, int whence)
 {
 	input_stream *is = (input_stream *)handle;
 
@@ -71,7 +71,7 @@ FLACIOSeek(FLAC__IOHandle handle, FLAC__int64 offset, int whence)
 }
 
 static FLAC__int64
-FLACIOTell(FLAC__IOHandle handle)
+FlacIOTell(FLAC__IOHandle handle)
 {
 	input_stream *is = (input_stream *)handle;
 
@@ -79,7 +79,7 @@ FLACIOTell(FLAC__IOHandle handle)
 }
 
 static int
-FLACIOEof(FLAC__IOHandle handle)
+FlacIOEof(FLAC__IOHandle handle)
 {
 	input_stream *is = (input_stream *)handle;
 
@@ -87,7 +87,7 @@ FLACIOEof(FLAC__IOHandle handle)
 }
 
 static int
-FLACIOClose(gcc_unused FLAC__IOHandle handle)
+FlacIOClose(gcc_unused FLAC__IOHandle handle)
 {
 	/* no-op because the libFLAC caller is repsonsible for closing
 	   the #input_stream */
@@ -96,19 +96,19 @@ FLACIOClose(gcc_unused FLAC__IOHandle handle)
 }
 
 const FLAC__IOCallbacks flac_io_callbacks = {
-	FLACIORead,
+	FlacIORead,
 	nullptr,
 	nullptr,
 	nullptr,
-	FLACIOEof,
-	FLACIOClose,
+	FlacIOEof,
+	FlacIOClose,
 };
 
 const FLAC__IOCallbacks flac_io_callbacks_seekable = {
-	FLACIORead,
+	FlacIORead,
 	nullptr,
-	FLACIOSeek,
-	FLACIOTell,
-	FLACIOEof,
-	FLACIOClose,
+	FlacIOSeek,
+	FlacIOTell,
+	FlacIOEof,
+	FlacIOClose,
 };

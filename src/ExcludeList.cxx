@@ -63,14 +63,14 @@ ExcludeList::LoadFile(const Path &path_fs)
 }
 
 bool
-ExcludeList::Check(const char *name_fs) const
+ExcludeList::Check(const Path &name_fs) const
 {
-	assert(name_fs != NULL);
+	assert(!name_fs.IsNull());
 
 	/* XXX include full path name in check */
 
 	for (const auto &i : patterns)
-		if (i.Check(name_fs))
+		if (i.Check(name_fs.c_str()))
 			return true;
 
 	return false;

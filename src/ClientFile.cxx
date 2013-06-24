@@ -17,10 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "ClientFile.hxx"
 #include "Client.hxx"
 #include "ack.h"
 #include "io_error.h"
+#include "fs/Path.hxx"
+#include "fs/FileSystem.hxx"
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -28,7 +31,7 @@
 #include <unistd.h>
 
 bool
-client_allow_file(const Client *client, const char *path_fs,
+client_allow_file(const Client *client, const Path &path_fs,
 		  GError **error_r)
 {
 #ifdef WIN32
@@ -53,7 +56,7 @@ client_allow_file(const Client *client, const char *path_fs,
 	}
 
 	struct stat st;
-	if (stat(path_fs, &st) < 0) {
+	if (!StatFile(path_fs, st)) {
 		set_error_errno(error_r);
 		return false;
 	}

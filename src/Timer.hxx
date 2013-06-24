@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2011 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,29 +17,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_FLAC_IO_HANDLE_HXX
-#define MPD_FLAC_IO_HANDLE_HXX
+#ifndef MPD_TIMER_HXX
+#define MPD_TIMER_HXX
 
-#include "gcc.h"
-#include "InputStream.hxx"
+#include <stdint.h>
 
-#include <FLAC/callback.h>
+struct audio_format;
 
-extern const FLAC__IOCallbacks flac_io_callbacks;
-extern const FLAC__IOCallbacks flac_io_callbacks_seekable;
+class Timer {
+	uint64_t time;
+	bool started;
+	const int rate;
+public:
+	explicit Timer(const struct audio_format& af);
 
-static inline FLAC__IOHandle
-ToFLACIOHandle(input_stream *is)
-{
-	return (FLAC__IOHandle)is;
-}
+	bool IsStarted() const { return started; }
 
-static inline const FLAC__IOCallbacks &
-GetFLACIOCallbacks(const input_stream *is)
-{
-	return is->seekable
-		? flac_io_callbacks_seekable
-		: flac_io_callbacks;
-}
+	void Start();
+	void Reset();
+
+	void Add(int size);
+
+	/**
+	 * Returns the number of milliseconds to sleep to get back to sync.
+	 */
+	unsigned GetDelay() const;
+
+	void Synchronize() const;
+};
 
 #endif

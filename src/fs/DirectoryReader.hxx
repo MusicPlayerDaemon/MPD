@@ -47,14 +47,14 @@ public:
 	 * Destroys this instance.
 	 */
 	~DirectoryReader() {
-		if (!Failed())
+		if (!HasFailed())
 			closedir(dirp);
 	}
 
 	/**
 	 * Checks if directory failed to open. 
 	 */
-	bool Failed() const {
+	bool HasFailed() const {
 		return dirp == nullptr;
 	}
 
@@ -62,7 +62,7 @@ public:
 	 * Checks if directory entry is available.
 	 */
 	bool HasEntry() const {
-		assert(!Failed());
+		assert(!HasFailed());
 		return ent != nullptr;
 	}
 
@@ -70,7 +70,7 @@ public:
 	 * Reads next directory entry.
 	 */
 	bool ReadEntry() {
-		assert(!Failed());
+		assert(!HasFailed());
 		ent = readdir(dirp);
 		return HasEntry();
 	}
