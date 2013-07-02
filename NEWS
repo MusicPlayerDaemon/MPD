@@ -3,6 +3,7 @@ ver 0.17.5 (not yet released)
   - fix "playlistadd" with URI
   - fix "move" relative to current when there is no current song
 * decoder:
+  - ffmpeg: support "application/flv"
   - mikmod: adapt to libmikmod 3.2
 * configure.ac:
   - detect system "ar"

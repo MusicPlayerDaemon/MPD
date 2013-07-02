@@ -717,6 +717,7 @@ static const char *const ffmpeg_suffixes[] = {
 };
 
 static const char *const ffmpeg_mime_types[] = {
+	"application/flv",
 	"application/m4a",
 	"application/mp4",
 	"application/octet-stream",
