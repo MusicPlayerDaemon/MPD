@@ -33,12 +33,12 @@
 #include "decoder/FfmpegDecoderPlugin.hxx"
 #include "decoder/GmeDecoderPlugin.hxx"
 #include "decoder/FaadDecoderPlugin.hxx"
+#include "decoder/MadDecoderPlugin.hxx"
 
 #include <glib.h>
 
 #include <string.h>
 
-extern const struct decoder_plugin mad_decoder_plugin;
 extern const struct decoder_plugin mpg123_decoder_plugin;
 extern const struct decoder_plugin sndfile_decoder_plugin;
 extern const struct decoder_plugin audiofile_decoder_plugin;

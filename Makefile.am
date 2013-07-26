@@ -499,7 +499,9 @@ DECODER_LIBS = \
 DECODER_SRC =
 
 if HAVE_MAD
-libdecoder_plugins_a_SOURCES += src/decoder/mad_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += \
+	src/decoder/MadDecoderPlugin.cxx \
+	src/decoder/MadDecoderPlugin.hxx
 endif
 
 if HAVE_MPG123
