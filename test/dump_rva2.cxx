@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,10 @@
  */
 
 #include "config.h"
+extern "C" {
 #include "tag_id3.h"
-#include "tag_rva2.h"
+}
+#include "TagRva2.hxx"
 #include "replay_gain_info.h"
 #include "conf.h"
 #include "tag.h"

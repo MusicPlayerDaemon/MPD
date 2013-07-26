@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "tag_rva2.h"
+#include "TagRva2.hxx"
 #include "replay_gain_info.h"
 
 #include <stdint.h>
@@ -102,7 +102,7 @@ rva2_apply_frame(struct replay_gain_info *replay_gain_info,
 	const id3_byte_t *data =
 		id3_field_getbinarydata(id3_frame_field(frame, 1), &length);
 
-	if (id == NULL || data == NULL)
+	if (id == nullptr || data == nullptr)
 		return false;
 
 	/*
@@ -141,7 +141,7 @@ tag_rva2_parse(struct id3_tag *tag, struct replay_gain_info *replay_gain_info)
 	   track and album gain in separate tags */
 	const struct id3_frame *frame;
 	for (unsigned i = 0;
-	     (frame = id3_tag_findframe(tag, "RVA2", i)) != NULL;
+	     (frame = id3_tag_findframe(tag, "RVA2", i)) != nullptr;
 	     ++i)
 		if (rva2_apply_frame(replay_gain_info, frame))
 			found = true;

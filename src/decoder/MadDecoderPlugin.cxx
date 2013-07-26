@@ -24,9 +24,9 @@
 
 extern "C" {
 #include "tag_id3.h"
-#include "tag_rva2.h"
 }
 
+#include "TagRva2.hxx"
 #include "tag_handler.h"
 #include "audio_check.h"
 
