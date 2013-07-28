@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "ape.h"
+#include "ApeLoader.hxx"
 
 #include <glib.h>
 
@@ -37,7 +37,7 @@ struct ape_footer {
 };
 
 static bool
-ape_scan_internal(FILE *fp, tag_ape_callback_t callback, void *ctx)
+ape_scan_internal(FILE *fp, ApeTagCallback callback)
 {
 	/* determine if file has an apeV2 tag */
 	struct ape_footer footer;
@@ -59,7 +59,7 @@ ape_scan_internal(FILE *fp, tag_ape_callback_t callback, void *ctx)
 	remaining -= sizeof(footer);
 	assert(remaining > 10);
 
-	char *buffer = g_malloc(remaining);
+	char *buffer = (char *)g_malloc(remaining);
 	if (fread(buffer, 1, remaining, fp) != remaining) {
 		g_free(buffer);
 		return false;
@@ -89,7 +89,7 @@ ape_scan_internal(FILE *fp, tag_ape_callback_t callback, void *ctx)
 		if (remaining < size)
 			break;
 
-		if (!callback(flags, key, p, size, ctx))
+		if (!callback(flags, key, p, size))
 			break;
 
 		p += size;
@@ -101,15 +101,15 @@ ape_scan_internal(FILE *fp, tag_ape_callback_t callback, void *ctx)
 }
 
 bool
-tag_ape_scan(const char *path_fs, tag_ape_callback_t callback, void *ctx)
+tag_ape_scan(const char *path_fs, ApeTagCallback callback)
 {
 	FILE *fp;
 
 	fp = fopen(path_fs, "rb");
-	if (fp == NULL)
+	if (fp == nullptr)
 		return false;
 
-	bool success = ape_scan_internal(fp, callback, ctx);
+	bool success = ape_scan_internal(fp, callback);
 	fclose(fp);
 	return success;
 }

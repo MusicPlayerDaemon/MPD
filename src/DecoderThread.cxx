@@ -32,10 +32,7 @@
 #include "InputStream.hxx"
 #include "DecoderList.hxx"
 #include "util/UriUtil.hxx"
-
-extern "C" {
-#include "replay_gain_ape.h"
-}
+#include "ApeReplayGain.hxx"
 
 #include <glib.h>
 

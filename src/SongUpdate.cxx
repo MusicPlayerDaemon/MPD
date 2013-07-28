@@ -29,9 +29,9 @@
 #include "DecoderPlugin.hxx"
 #include "DecoderList.hxx"
 #include "TagId3.hxx"
+#include "ApeTag.hxx"
 
 extern "C" {
-#include "tag_ape.h"
 #include "tag_handler.h"
 }
 

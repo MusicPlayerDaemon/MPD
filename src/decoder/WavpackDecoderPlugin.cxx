@@ -27,7 +27,7 @@ extern "C" {
 }
 
 #include "tag_handler.h"
-#include "tag_ape.h"
+#include "ApeTag.hxx"
 
 #include <wavpack/wavpack.h>
 #include <glib.h>

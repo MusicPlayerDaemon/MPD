@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,26 +17,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_APE_H
-#define MPD_APE_H
+#ifndef MPD_APE_REPLAY_GAIN_HXX
+#define MPD_APE_REPLAY_GAIN_HXX
 
 #include "check.h"
 
-#include <stdbool.h>
-#include <stddef.h>
+struct replay_gain_info;
 
-typedef bool (*tag_ape_callback_t)(unsigned long flags, const char *key,
-				   const char *value, size_t value_length,
-				   void *ctx);
-
-/**
- * Scans the APE tag values from a file.
- *
- * @param path_fs the path of the file in filesystem encoding
- * @return false if the file could not be opened or if no APE tag is
- * present
- */
 bool
-tag_ape_scan(const char *path_fs, tag_ape_callback_t callback, void *ctx);
+replay_gain_ape_read(const char *path_fs, struct replay_gain_info *info);
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,16 +18,16 @@
  */
 
 #include "config.h"
-#include "tag_ape.h"
+#include "ApeTag.hxx"
+#include "ApeLoader.hxx"
 #include "tag.h"
 #include "tag_table.h"
 #include "tag_handler.h"
-#include "ape.h"
 
 const struct tag_table ape_tags[] = {
 	{ "album artist", TAG_ALBUM_ARTIST },
 	{ "year", TAG_DATE },
-	{ NULL, TAG_NUM_OF_ITEM_TYPES }
+	{ nullptr, TAG_NUM_OF_ITEM_TYPES }
 };
 
 static enum tag_type
@@ -62,8 +62,8 @@ tag_ape_import_item(unsigned long flags,
 	const char *end = value + value_length;
 	while (true) {
 		/* multiple values are separated by null bytes */
-		const char *n = memchr(value, 0, end - value);
-		if (n != NULL) {
+		const char *n = (const char *)memchr(value, 0, end - value);
+		if (n != nullptr) {
 			if (n > value) {
 				tag_handler_invoke_tag(handler, handler_ctx,
 						       type, value);
@@ -84,34 +84,21 @@ tag_ape_import_item(unsigned long flags,
 	return recognized;
 }
 
-struct tag_ape_ctx {
-	const struct tag_handler *handler;
-	void *handler_ctx;
-
-	bool recognized;
-};
-
-static bool
-tag_ape_callback(unsigned long flags, const char *key,
-		 const char *value, size_t value_length, void *_ctx)
-{
-	struct tag_ape_ctx *ctx = _ctx;
-
-	ctx->recognized |= tag_ape_import_item(flags, key, value, value_length,
-					       ctx->handler, ctx->handler_ctx);
-	return true;
-}
-
 bool
 tag_ape_scan2(const char *path_fs,
 	      const struct tag_handler *handler, void *handler_ctx)
 {
-	struct tag_ape_ctx ctx = {
-		.handler = handler,
-		.handler_ctx = handler_ctx,
-		.recognized = false,
+	bool recognized = false;
+
+	auto callback = [handler, handler_ctx, &recognized]
+		(unsigned long flags, const char *key,
+		 const char *value,
+		 size_t value_length) {
+		recognized |= tag_ape_import_item(flags, key, value,
+						  value_length,
+						  handler, handler_ctx);
+		return true;
 	};
 
-	return tag_ape_scan(path_fs, tag_ape_callback, &ctx) &&
-		ctx.recognized;
+	return tag_ape_scan(path_fs, callback) && recognized;
 }

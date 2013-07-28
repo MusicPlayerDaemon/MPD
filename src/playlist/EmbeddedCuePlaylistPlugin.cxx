@@ -29,13 +29,10 @@
 #include "tag.h"
 #include "tag_handler.h"
 #include "TagId3.hxx"
+#include "ApeTag.hxx"
 #include "Song.hxx"
 #include "TagFile.hxx"
 #include "cue/CueParser.hxx"
-
-extern "C" {
-#include "tag_ape.h"
-}
 
 #include <glib.h>
 #include <assert.h>

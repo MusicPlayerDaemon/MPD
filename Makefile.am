@@ -51,7 +51,6 @@ src_mpd_LDADD = \
 mpd_headers = \
 	src/check.h \
 	src/ack.h \
-	src/ape.h \
 	src/audio_format.h \
 	src/audio_check.h \
 	src/output_api.h \
@@ -79,13 +78,11 @@ mpd_headers = \
 	src/aiff.h \
 	src/replay_gain_config.h \
 	src/replay_gain_info.h \
-	src/replay_gain_ape.h \
 	src/TimePrint.cxx src/TimePrint.hxx \
 	src/stats.h \
 	src/tag.h \
 	src/tag_internal.h \
 	src/tag_table.h \
-	src/tag_ape.h \
 	src/Timer.hxx \
 	src/mpd_error.h
 
@@ -428,9 +425,9 @@ TAG_LIBS = \
 	$(ID3TAG_LIBS)
 
 libtag_a_SOURCES =\
-	src/ape.c \
-	src/replay_gain_ape.c \
-	src/tag_ape.c
+	src/ApeLoader.cxx src/ApeLoader.hxx \
+	src/ApeReplayGain.cxx src/ApeReplayGain.hxx \
+	src/ApeTag.cxx src/ApeTag.hxx
 
 if HAVE_ID3TAG
 libtag_a_SOURCES += \

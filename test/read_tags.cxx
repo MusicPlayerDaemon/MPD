@@ -24,11 +24,9 @@
 #include "InputInit.hxx"
 #include "InputStream.hxx"
 #include "audio_format.h"
-extern "C" {
-#include "tag_ape.h"
-}
 #include "tag_handler.h"
 #include "TagId3.hxx"
+#include "ApeTag.hxx"
 
 #include <glib.h>
 

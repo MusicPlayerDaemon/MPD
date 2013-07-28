@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,24 +17,27 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAG_APE_H
-#define MPD_TAG_APE_H
+#ifndef MPD_APE_LOADER_HXX
+#define MPD_APE_LOADER_HXX
 
-#include "tag_table.h"
+#include "check.h"
 
-#include <stdbool.h>
+#include <functional>
 
-struct tag_handler;
+#include <stddef.h>
 
-extern const struct tag_table ape_tags[];
+typedef std::function<bool(unsigned long flags, const char *key,
+			   const char *value,
+			   size_t value_length)> ApeTagCallback;
 
 /**
- * Scan the APE tags of a file.
+ * Scans the APE tag values from a file.
  *
  * @param path_fs the path of the file in filesystem encoding
+ * @return false if the file could not be opened or if no APE tag is
+ * present
  */
 bool
-tag_ape_scan2(const char *path_fs,
-	      const struct tag_handler *handler, void *handler_ctx);
+tag_ape_scan(const char *path_fs, ApeTagCallback callback);
 
 #endif
