@@ -594,7 +594,9 @@ libdecoder_plugins_a_SOURCES += src/decoder/fluidsynth_decoder_plugin.c
 endif
 
 if ENABLE_WILDMIDI
-libdecoder_plugins_a_SOURCES += src/decoder/wildmidi_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += \
+	src/decoder/WildmidiDecoderPlugin.cxx \
+	src/decoder/WildmidiDecoderPlugin.hxx
 endif
 
 if HAVE_FFMPEG

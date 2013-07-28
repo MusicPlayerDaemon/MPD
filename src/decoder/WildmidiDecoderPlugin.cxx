@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,20 +18,21 @@
  */
 
 #include "config.h"
+#include "WildmidiDecoderPlugin.hxx"
 #include "decoder_api.h"
 #include "tag_handler.h"
 #include "glib_compat.h"
 
 #include <glib.h>
 
+extern "C" {
 #include <wildmidi_lib.h>
+}
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "wildmidi"
 
-enum {
-	WILDMIDI_SAMPLE_RATE = 48000,
-};
+static constexpr unsigned WILDMIDI_SAMPLE_RATE = 48000;
 
 static bool
 wildmidi_init(const struct config_param *param)
@@ -60,20 +61,20 @@ static void
 wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 {
 	static const struct audio_format audio_format = {
-		.sample_rate = WILDMIDI_SAMPLE_RATE,
-		.format = SAMPLE_FORMAT_S16,
-		.channels = 2,
+		WILDMIDI_SAMPLE_RATE,
+		SAMPLE_FORMAT_S16,
+		2,
 	};
 	midi *wm;
 	const struct _WM_Info *info;
 	enum decoder_command cmd;
 
 	wm = WildMidi_Open(path_fs);
-	if (wm == NULL)
+	if (wm == nullptr)
 		return;
 
 	info = WildMidi_GetInfo(wm);
-	if (info == NULL) {
+	if (info == nullptr) {
 		WildMidi_Close(wm);
 		return;
 	}
@@ -86,14 +87,14 @@ wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 		int len;
 
 		info = WildMidi_GetInfo(wm);
-		if (info == NULL)
+		if (info == nullptr)
 			break;
 
 		len = WildMidi_GetOutput(wm, buffer, sizeof(buffer));
 		if (len <= 0)
 			break;
 
-		cmd = decoder_data(decoder, NULL, buffer, len, 0);
+		cmd = decoder_data(decoder, nullptr, buffer, len, 0);
 
 		if (cmd == DECODE_COMMAND_SEEK) {
 			unsigned long seek_where = WILDMIDI_SAMPLE_RATE *
@@ -118,11 +119,11 @@ wildmidi_scan_file(const char *path_fs,
 		   const struct tag_handler *handler, void *handler_ctx)
 {
 	midi *wm = WildMidi_Open(path_fs);
-	if (wm == NULL)
+	if (wm == nullptr)
 		return false;
 
 	const struct _WM_Info *info = WildMidi_GetInfo(wm);
-	if (info == NULL) {
+	if (info == nullptr) {
 		WildMidi_Close(wm);
 		return false;
 	}
@@ -137,14 +138,18 @@ wildmidi_scan_file(const char *path_fs,
 
 static const char *const wildmidi_suffixes[] = {
 	"mid",
-	NULL
+	nullptr
 };
 
 const struct decoder_plugin wildmidi_decoder_plugin = {
-	.name = "wildmidi",
-	.init = wildmidi_init,
-	.finish = wildmidi_finish,
-	.file_decode = wildmidi_file_decode,
-	.scan_file = wildmidi_scan_file,
-	.suffixes = wildmidi_suffixes,
+	"wildmidi",
+	wildmidi_init,
+	wildmidi_finish,
+	nullptr,
+	wildmidi_file_decode,
+	wildmidi_scan_file,
+	nullptr,
+	nullptr,
+	wildmidi_suffixes,
+	nullptr,
 };
