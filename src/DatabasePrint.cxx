@@ -27,11 +27,7 @@
 #include "Directory.hxx"
 #include "Client.hxx"
 #include "tag.h"
-
-extern "C" {
-#include "song.h"
-}
-
+#include "Song.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 
@@ -59,7 +55,7 @@ print_playlist_in_directory(Client *client,
 }
 
 static bool
-PrintSongBrief(Client *client, song &song)
+PrintSongBrief(Client *client, Song &song)
 {
 	assert(song.parent != NULL);
 
@@ -73,7 +69,7 @@ PrintSongBrief(Client *client, song &song)
 }
 
 static bool
-PrintSongFull(Client *client, song &song)
+PrintSongFull(Client *client, Song &song)
 {
 	assert(song.parent != NULL);
 
@@ -142,10 +138,10 @@ static void printSearchStats(Client *client, SearchStats *stats)
 }
 
 static bool
-stats_visitor_song(SearchStats &stats, song &song)
+stats_visitor_song(SearchStats &stats, Song &song)
 {
 	stats.numberOfSongs++;
-	stats.playTime += song_get_duration(&song);
+	stats.playTime += song.GetDuration();
 
 	return true;
 }
@@ -191,7 +187,7 @@ printInfoForAllIn(Client *client, const char *uri_utf8,
 }
 
 static bool
-PrintSongURIVisitor(Client *client, song &song)
+PrintSongURIVisitor(Client *client, Song &song)
 {
 	song_print_uri(client, &song);
 

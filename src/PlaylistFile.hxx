@@ -25,7 +25,7 @@
 #include <vector>
 #include <string>
 
-struct song;
+struct Song;
 struct PlaylistInfo;
 class PlaylistVector;
 
@@ -72,7 +72,7 @@ bool
 spl_remove_index(const char *utf8path, unsigned pos, GError **error_r);
 
 bool
-spl_append_song(const char *utf8path, struct song *song, GError **error_r);
+spl_append_song(const char *utf8path, Song *song, GError **error_r);
 
 bool
 spl_append_uri(const char *file, const char *utf8file, GError **error_r);

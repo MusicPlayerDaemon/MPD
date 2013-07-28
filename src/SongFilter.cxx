@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "SongFilter.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "tag.h"
 
 #include <glib.h>
@@ -107,10 +107,10 @@ SongFilter::Item::Match(const struct tag &_tag) const
 }
 
 bool
-SongFilter::Item::Match(const song &song) const
+SongFilter::Item::Match(const Song &song) const
 {
 	if (tag == LOCATE_TAG_FILE_TYPE || tag == LOCATE_TAG_ANY_TYPE) {
-		char *uri = song_get_uri(&song);
+		char *uri = song.GetURI();
 		const bool result = StringMatch(uri);
 		g_free(uri);
 
@@ -156,7 +156,7 @@ SongFilter::Parse(unsigned argc, char *argv[], bool fold_case)
 }
 
 bool
-SongFilter::Match(const song &song) const
+SongFilter::Match(const Song &song) const
 {
 	for (const auto &i : items)
 		if (!i.Match(song))

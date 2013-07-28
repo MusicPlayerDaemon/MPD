@@ -20,7 +20,7 @@
 #include "config.h"
 #include "DirectorySave.hxx"
 #include "Directory.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "SongSave.hxx"
 #include "PlaylistDatabase.hxx"
 #include "TextFile.hxx"
@@ -65,7 +65,7 @@ directory_save(FILE *fp, const Directory *directory)
 			return;
 	}
 
-	struct song *song;
+	Song *song;
 	directory_for_each_song(song, directory)
 		song_save(fp, song);
 
@@ -143,7 +143,7 @@ directory_load(TextFile &file, Directory *directory, GError **error)
 				return false;
 		} else if (g_str_has_prefix(line, SONG_BEGIN)) {
 			const char *name = line + sizeof(SONG_BEGIN) - 1;
-			struct song *song;
+			Song *song;
 
 			if (directory->FindSong(name) != nullptr) {
 				g_set_error(error, directory_quark(), 0,

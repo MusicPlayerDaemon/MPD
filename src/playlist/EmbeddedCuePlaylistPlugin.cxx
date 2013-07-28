@@ -28,7 +28,7 @@
 #include "PlaylistPlugin.hxx"
 #include "tag.h"
 #include "tag_handler.h"
-#include "song.h"
+#include "Song.hxx"
 #include "TagFile.hxx"
 #include "cue/CueParser.hxx"
 
@@ -128,12 +128,12 @@ embcue_playlist_close(struct playlist_provider *_playlist)
 	g_free(playlist);
 }
 
-static struct song *
+static Song *
 embcue_playlist_read(struct playlist_provider *_playlist)
 {
 	struct embcue_playlist *playlist = (struct embcue_playlist *)_playlist;
 
-	struct song *song = playlist->parser->Get();
+	Song *song = playlist->parser->Get();
 	if (song != NULL)
 		return song;
 
@@ -152,13 +152,13 @@ embcue_playlist_read(struct playlist_provider *_playlist)
 		playlist->parser->Feed(line);
 		song = playlist->parser->Get();
 		if (song != NULL)
-			return song_replace_uri(song, playlist->filename);
+			return song->ReplaceURI(playlist->filename);
 	}
 
 	playlist->parser->Finish();
 	song = playlist->parser->Get();
 	if (song != NULL)
-		song = song_replace_uri(song, playlist->filename);
+		song = song->ReplaceURI(playlist->filename);
 	return song;
 }
 

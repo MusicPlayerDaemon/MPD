@@ -20,7 +20,7 @@
 #include "config.h"
 #include "SongSticker.hxx"
 #include "StickerDatabase.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "Directory.hxx"
 
 #include <glib.h>
@@ -29,80 +29,66 @@
 #include <string.h>
 
 char *
-sticker_song_get_value(const struct song *song, const char *name)
+sticker_song_get_value(const Song *song, const char *name)
 {
-	char *uri, *value;
-
 	assert(song != NULL);
-	assert(song_in_database(song));
+	assert(song->IsInDatabase());
 
-	uri = song_get_uri(song);
-	value = sticker_load_value("song", uri, name);
+	char *uri = song->GetURI();
+	char *value = sticker_load_value("song", uri, name);
 	g_free(uri);
 
 	return value;
 }
 
 bool
-sticker_song_set_value(const struct song *song,
+sticker_song_set_value(const Song *song,
 		       const char *name, const char *value)
 {
-	char *uri;
-	bool ret;
-
 	assert(song != NULL);
-	assert(song_in_database(song));
+	assert(song->IsInDatabase());
 
-	uri = song_get_uri(song);
-	ret = sticker_store_value("song", uri, name, value);
+	char *uri = song->GetURI();
+	bool ret = sticker_store_value("song", uri, name, value);
 	g_free(uri);
 
 	return ret;
 }
 
 bool
-sticker_song_delete(const struct song *song)
+sticker_song_delete(const Song *song)
 {
-	char *uri;
-	bool ret;
-
 	assert(song != NULL);
-	assert(song_in_database(song));
+	assert(song->IsInDatabase());
 
-	uri = song_get_uri(song);
-	ret = sticker_delete("song", uri);
+	char *uri = song->GetURI();
+	bool ret = sticker_delete("song", uri);
 	g_free(uri);
 
 	return ret;
 }
 
 bool
-sticker_song_delete_value(const struct song *song, const char *name)
+sticker_song_delete_value(const Song *song, const char *name)
 {
-	char *uri;
-	bool success;
-
 	assert(song != NULL);
-	assert(song_in_database(song));
+	assert(song->IsInDatabase());
 
-	uri = song_get_uri(song);
-	success = sticker_delete_value("song", uri, name);
+	char *uri = song->GetURI();
+	bool success = sticker_delete_value("song", uri, name);
 	g_free(uri);
 
 	return success;
 }
 
 struct sticker *
-sticker_song_get(const struct song *song)
+sticker_song_get(const Song *song)
 {
-	char *uri;
-	struct sticker *sticker;
-
 	assert(song != NULL);
-	assert(song_in_database(song));
+	assert(song->IsInDatabase());
 
-	uri = song_get_uri(song);
-	sticker = sticker_load("song", uri);
+	char *uri = song->GetURI();
+	struct sticker *sticker = sticker_load("song", uri);
 	g_free(uri);
 
 	return sticker;
@@ -113,7 +99,7 @@ struct sticker_song_find_data {
 	const char *base_uri;
 	size_t base_uri_length;
 
-	void (*func)(struct song *song, const char *value,
+	void (*func)(Song *song, const char *value,
 		     void *user_data);
 	void *user_data;
 };
@@ -128,14 +114,14 @@ sticker_song_find_cb(const char *uri, const char *value, void *user_data)
 		/* should not happen, ignore silently */
 		return;
 
-	song *song = data->directory->LookupSong(uri + data->base_uri_length);
+	Song *song = data->directory->LookupSong(uri + data->base_uri_length);
 	if (song != NULL)
 		data->func(song, value, data->user_data);
 }
 
 bool
 sticker_song_find(Directory *directory, const char *name,
-		  void (*func)(struct song *song, const char *value,
+		  void (*func)(Song *song, const char *value,
 			       void *user_data),
 		  void *user_data)
 {

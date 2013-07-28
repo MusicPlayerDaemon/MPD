@@ -21,7 +21,7 @@
 #include "TagSave.hxx"
 #include "tag.h"
 #include "TagInternal.hxx"
-#include "song.h"
+#include "Song.hxx"
 
 void tag_save(FILE *file, const struct tag *tag)
 {

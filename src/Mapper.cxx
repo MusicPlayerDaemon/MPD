@@ -24,7 +24,7 @@
 #include "config.h"
 #include "Mapper.hxx"
 #include "Directory.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/DirectoryReader.hxx"
@@ -246,12 +246,12 @@ map_detached_song_fs(const char *uri_utf8)
 }
 
 Path
-map_song_fs(const struct song *song)
+map_song_fs(const Song *song)
 {
-	assert(song_is_file(song));
+	assert(song->IsFile());
 
-	if (song_in_database(song))
-		return song_is_detached(song)
+	if (song->IsInDatabase())
+		return song->IsDetached()
 			? map_detached_song_fs(song->uri)
 			: map_directory_child_fs(song->parent, song->uri);
 	else

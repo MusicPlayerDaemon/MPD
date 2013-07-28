@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "SongSort.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "util/list.h"
 #include "tag.h"
 
@@ -94,8 +94,8 @@ compare_tag_item(const struct tag *a, const struct tag *b, enum tag_type type)
 static int
 song_cmp(G_GNUC_UNUSED void *priv, struct list_head *_a, struct list_head *_b)
 {
-	const struct song *a = (const struct song *)_a;
-	const struct song *b = (const struct song *)_b;
+	const Song *a = (const Song *)_a;
+	const Song *b = (const Song *)_b;
 	int ret;
 
 	/* first sort by album */

@@ -25,11 +25,11 @@
 #include <functional>
 
 struct Directory;
-struct song;
+struct Song;
 struct PlaylistInfo;
 
 typedef std::function<bool(const Directory &, GError **)> VisitDirectory;
-typedef std::function<bool(struct song &, GError **)> VisitSong;
+typedef std::function<bool(struct Song &, GError **)> VisitSong;
 typedef std::function<bool(const PlaylistInfo &, const Directory &,
 			   GError **)> VisitPlaylist;
 

@@ -23,7 +23,7 @@
 #include "CommandError.hxx"
 #include "UpdateGlue.hxx"
 #include "Directory.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "SongPrint.hxx"
 #include "TagPrint.hxx"
 #include "TimePrint.hxx"
@@ -130,7 +130,7 @@ handle_lsinfo(Client *client, int argc, char *argv[])
 		if (!client_allow_file(client, path_fs, &error))
 			return print_error(client, error);
 
-		struct song *song = song_file_load(path_utf8, NULL);
+		Song *song = Song::LoadFile(path_utf8, nullptr);
 		if (song == NULL) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "No such file");
@@ -138,7 +138,7 @@ handle_lsinfo(Client *client, int argc, char *argv[])
 		}
 
 		song_print_info(client, song);
-		song_free(song);
+		song->Free();
 		return COMMAND_RETURN_OK;
 	}
 

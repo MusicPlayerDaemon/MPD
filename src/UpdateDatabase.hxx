@@ -23,13 +23,13 @@
 #include "check.h"
 
 struct Directory;
-struct song;
+struct Song;
 
 /**
  * Caller must lock the #db_mutex.
  */
 void
-delete_song(Directory *parent, struct song *song);
+delete_song(Directory *parent, Song *song);
 
 /**
  * Recursively free a directory and all its contents.

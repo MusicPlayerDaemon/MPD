@@ -66,9 +66,9 @@ public:
 	virtual bool Open(GError **error_r) override;
 	virtual void Close() override;
 
-	virtual struct song *GetSong(const char *uri_utf8,
+	virtual Song *GetSong(const char *uri_utf8,
 				     GError **error_r) const override;
-	virtual void ReturnSong(struct song *song) const;
+	virtual void ReturnSong(Song *song) const;
 
 	virtual bool Visit(const DatabaseSelection &selection,
 			   VisitDirectory visit_directory,

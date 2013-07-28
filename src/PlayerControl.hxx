@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 struct decoder_control;
+struct Song;
 
 enum player_state {
 	PLAYER_STATE_STOP = 0,
@@ -139,7 +140,7 @@ struct player_control {
 	 * This is a duplicate, and must be freed when this attribute
 	 * is cleared.
 	 */
-	struct song *next_song;
+	Song *next_song;
 
 	double seek_where;
 	float cross_fade_seconds;
@@ -230,7 +231,7 @@ struct player_control {
 	 * @param song the song to be queued; the given instance will
 	 * be owned and freed by the player
 	 */
-	void Play(struct song *song);
+	void Play(Song *song);
 
 	/**
 	 * see PLAYER_COMMAND_CANCEL
@@ -287,7 +288,7 @@ struct player_control {
 	 * @param song the song to be queued; the given instance will be owned
 	 * and freed by the player
 	 */
-	void EnqueueSong(struct song *song);
+	void EnqueueSong(Song *song);
 
 	/**
 	 * Makes the player thread seek the specified song to a position.
@@ -297,7 +298,7 @@ struct player_control {
 	 * @return true on success, false on failure (e.g. if MPD isn't
 	 * playing currently)
 	 */
-	bool Seek(struct song *song, float seek_time);
+	bool Seek(Song *song, float seek_time);
 
 	void SetCrossFade(float cross_fade_seconds);
 

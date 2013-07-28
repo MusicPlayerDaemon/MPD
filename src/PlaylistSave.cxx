@@ -21,7 +21,7 @@
 #include "PlaylistSave.hxx"
 #include "PlaylistFile.hxx"
 #include "Playlist.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "Mapper.hxx"
 #include "Idle.hxx"
 #include "fs/Path.hxx"
@@ -31,14 +31,14 @@
 #include <glib.h>
 
 void
-playlist_print_song(FILE *file, const struct song *song)
+playlist_print_song(FILE *file, const Song *song)
 {
-	if (playlist_saveAbsolutePaths && song_in_database(song)) {
+	if (playlist_saveAbsolutePaths && song->IsInDatabase()) {
 		const Path path = map_song_fs(song);
 		if (!path.IsNull())
 			fprintf(file, "%s\n", path.c_str());
 	} else {
-		char *uri = song_get_uri(song);
+		char *uri = song->GetURI();
 		const Path uri_fs = Path::FromUTF8(uri);
 		g_free(uri);
 

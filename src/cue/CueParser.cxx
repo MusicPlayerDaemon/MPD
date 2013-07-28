@@ -20,7 +20,7 @@
 #include "config.h"
 #include "CueParser.hxx"
 #include "util/StringUtil.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "tag.h"
 
 #include <glib.h>
@@ -42,13 +42,13 @@ CueParser::~CueParser()
 	g_free(filename);
 
 	if (current != nullptr)
-		song_free(current);
+		current->Free();
 
 	if (previous != nullptr)
-		song_free(previous);
+		previous->Free();
 
 	if (finished != nullptr)
-		song_free(finished);
+		finished->Free();
 }
 
 static const char *
@@ -250,7 +250,7 @@ CueParser::Feed2(char *p)
 		}
 
 		state = TRACK;
-		current = song_remote_new(filename);
+		current = Song::NewRemote(filename);
 		assert(current->tag == nullptr);
 		current->tag = tag_dup(tag);
 		tag_add_item(current->tag, TAG_TRACK, nr);
@@ -304,7 +304,7 @@ CueParser::Finish()
 	end = true;
 }
 
-struct song *
+Song *
 CueParser::Get()
 {
 	if (finished == nullptr && end) {
@@ -316,7 +316,7 @@ CueParser::Get()
 		previous = nullptr;
 	}
 
-	struct song *song = finished;
+	Song *song = finished;
 	finished = nullptr;
 	return song;
 }

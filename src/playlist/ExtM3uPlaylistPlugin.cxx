@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ExtM3uPlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "tag.h"
 #include "util/StringUtil.hxx"
 #include "TextInputStream.hxx"
@@ -105,14 +105,14 @@ extm3u_parse_tag(const char *line)
 	return tag;
 }
 
-static struct song *
+static Song *
 extm3u_read(struct playlist_provider *_playlist)
 {
 	ExtM3uPlaylist *playlist = (ExtM3uPlaylist *)_playlist;
 	struct tag *tag = NULL;
 	std::string line;
 	const char *line_s;
-	struct song *song;
+	Song *song;
 
 	do {
 		if (!playlist->tis->ReadLine(line)) {
@@ -134,7 +134,7 @@ extm3u_read(struct playlist_provider *_playlist)
 			++line_s;
 	} while (line_s[0] == '#' || *line_s == 0);
 
-	song = song_remote_new(line_s);
+	song = Song::NewRemote(line_s);
 	song->tag = tag;
 	return song;
 }

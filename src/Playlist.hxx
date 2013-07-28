@@ -26,6 +26,7 @@
 #include <stdbool.h>
 
 struct player_control;
+struct Song;
 
 struct playlist {
 	/**
@@ -99,7 +100,7 @@ struct playlist {
 	 * none if there is none (yet?) or if MPD isn't playing.
 	 */
 	gcc_pure
-	const struct song *GetQueuedSong() const;
+	const Song *GetQueuedSong() const;
 
 	/**
 	 * This is the "PLAYLIST" event handler.  It is invoked by the
@@ -124,7 +125,7 @@ protected:
 	 * @param prev the song which was previously queued, as
 	 * determined by playlist_get_queued_song()
 	 */
-	void UpdateQueuedSong(player_control &pc, const song *prev);
+	void UpdateQueuedSong(player_control &pc, const Song *prev);
 
 public:
 	void Clear(player_control &pc);
@@ -134,7 +135,7 @@ public:
 	void FullIncrementVersions();
 
 	enum playlist_result AppendSong(player_control &pc,
-					struct song *song,
+					Song *song,
 					unsigned *added_id=nullptr);
 
 	/**
@@ -153,7 +154,7 @@ public:
 
 protected:
 	void DeleteInternal(player_control &pc,
-			    unsigned song, const struct song **queued_p);
+			    unsigned song, const Song **queued_p);
 
 public:
 	enum playlist_result DeletePosition(player_control &pc,
@@ -175,7 +176,7 @@ public:
 	enum playlist_result DeleteRange(player_control &pc,
 					 unsigned start, unsigned end);
 
-	void DeleteSong(player_control &pc, const song &song);
+	void DeleteSong(player_control &pc, const Song &song);
 
 	void Shuffle(player_control &pc, unsigned start, unsigned end);
 

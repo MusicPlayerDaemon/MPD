@@ -22,7 +22,7 @@
 
 #include "gerror.h"
 
-struct song;
+struct Song;
 struct Directory;
 struct sticker;
 
@@ -31,28 +31,28 @@ struct sticker;
  * free the return value with g_free().
  */
 char *
-sticker_song_get_value(const struct song *song, const char *name);
+sticker_song_get_value(const Song *song, const char *name);
 
 /**
  * Sets a sticker value in the specified song.  Overwrites existing
  * values.
  */
 bool
-sticker_song_set_value(const struct song *song,
+sticker_song_set_value(const Song *song,
 		       const char *name, const char *value);
 
 /**
  * Deletes a sticker from the database.  All values are deleted.
  */
 bool
-sticker_song_delete(const struct song *song);
+sticker_song_delete(const Song *song);
 
 /**
  * Deletes a sticker value.  Does nothing if the sticker did not
  * exist.
  */
 bool
-sticker_song_delete_value(const struct song *song, const char *name);
+sticker_song_delete_value(const Song *song, const char *name);
 
 /**
  * Loads the sticker for the specified song.
@@ -61,7 +61,7 @@ sticker_song_delete_value(const struct song *song, const char *name);
  * @return a sticker object, or NULL on error or if there is no sticker
  */
 struct sticker *
-sticker_song_get(const struct song *song);
+sticker_song_get(const Song *song);
 
 /**
  * Finds stickers with the specified name below the specified
@@ -76,7 +76,7 @@ sticker_song_get(const struct song *song);
  */
 bool
 sticker_song_find(Directory *directory, const char *name,
-		  void (*func)(struct song *song, const char *value,
+		  void (*func)(Song *song, const char *value,
 			       void *user_data),
 		  void *user_data);
 

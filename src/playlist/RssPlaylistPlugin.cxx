@@ -21,7 +21,7 @@
 #include "RssPlaylistPlugin.hxx"
 #include "MemoryPlaylistProvider.hxx"
 #include "input_stream.h"
-#include "song.h"
+#include "Song.hxx"
 #include "tag.h"
 
 #include <glib.h>
@@ -60,7 +60,7 @@ struct RssParser {
 	 * The current song.  It is allocated after the "location"
 	 * element.
 	 */
-	struct song *song;
+	Song *song;
 
 	RssParser()
 		:state(ROOT) {}
@@ -90,7 +90,7 @@ rss_start_element(G_GNUC_UNUSED GMarkupParseContext *context,
 	case RssParser::ROOT:
 		if (g_ascii_strcasecmp(element_name, "item") == 0) {
 			parser->state = RssParser::ITEM;
-			parser->song = song_remote_new("rss:");
+			parser->song = Song::NewRemote("rss:");
 			parser->tag = TAG_NUM_OF_ITEM_TYPES;
 		}
 
@@ -107,12 +107,12 @@ rss_start_element(G_GNUC_UNUSED GMarkupParseContext *context,
 				   replace the existing song's URI,
 				   because that attribute is
 				   immutable */
-				struct song *song = song_remote_new(href);
+				Song *song = Song::NewRemote(href);
 
 				if (parser->song != NULL) {
 					song->tag = parser->song->tag;
 					parser->song->tag = NULL;
-					song_free(parser->song);
+					parser->song->Free();
 				}
 
 				parser->song = song;
@@ -142,7 +142,7 @@ rss_end_element(G_GNUC_UNUSED GMarkupParseContext *context,
 			if (strcmp(parser->song->uri, "rss:") != 0)
 				parser->songs.emplace_front(parser->song);
 			else
-				song_free(parser->song);
+				parser->song->Free();
 
 			parser->state = RssParser::ROOT;
 		} else
@@ -189,7 +189,7 @@ rss_parser_destroy(gpointer data)
 	RssParser *parser = (RssParser *)data;
 
 	if (parser->state >= RssParser::ITEM)
-		song_free(parser->song);
+		parser->song->Free();
 }
 
 /*

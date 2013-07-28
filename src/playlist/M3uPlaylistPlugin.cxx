@@ -20,7 +20,7 @@
 #include "config.h"
 #include "M3uPlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "TextInputStream.hxx"
 
 #include <glib.h>
@@ -51,7 +51,7 @@ m3u_close(struct playlist_provider *_playlist)
 	g_free(playlist);
 }
 
-static struct song *
+static Song *
 m3u_read(struct playlist_provider *_playlist)
 {
 	M3uPlaylist *playlist = (M3uPlaylist *)_playlist;
@@ -68,7 +68,7 @@ m3u_read(struct playlist_provider *_playlist)
 			++line_s;
 	} while (line_s[0] == '#' || *line_s == 0);
 
-	return song_remote_new(line_s);
+	return Song::NewRemote(line_s);
 }
 
 static const char *const m3u_suffixes[] = {

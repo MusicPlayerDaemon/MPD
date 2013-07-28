@@ -28,7 +28,7 @@
 
 static bool
 AddSong(const char *playlist_path_utf8,
-	song &song, GError **error_r)
+	Song &song, GError **error_r)
 {
 	return spl_append_song(playlist_path_utf8, &song, error_r);
 }

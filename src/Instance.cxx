@@ -23,7 +23,7 @@
 #include "Idle.hxx"
 
 void
-Instance::DeleteSong(const song &song)
+Instance::DeleteSong(const Song &song)
 {
 	partition->DeleteSong(song);
 }

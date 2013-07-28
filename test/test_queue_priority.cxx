@@ -1,6 +1,6 @@
 #include "config.h"
 #include "Queue.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "Directory.hxx"
 
 #include <glib.h>
@@ -10,14 +10,14 @@ Directory detached_root;
 Directory::Directory() {}
 Directory::~Directory() {}
 
-struct song *
-song_dup_detached(const struct song *src)
+Song *
+Song::DupDetached() const
 {
-	return const_cast<song *>(src);
+	return const_cast<Song *>(this);
 }
 
 void
-song_free(gcc_unused struct song *song)
+Song::Free()
 {
 }
 
@@ -50,7 +50,7 @@ check_descending_priority(const struct queue *queue,
 int
 main(gcc_unused int argc, gcc_unused char **argv)
 {
-	static struct song songs[16];
+	static Song songs[16];
 
 	struct queue queue(32);
 

@@ -23,9 +23,9 @@
 #include "PlaylistVector.hxx"
 #include "DatabaseLock.hxx"
 #include "SongSort.hxx"
+#include "Song.hxx"
 
 extern "C" {
-#include "song.h"
 #include "util/list_sort.h"
 }
 
@@ -68,9 +68,9 @@ Directory::Directory(const char *_path)
 
 Directory::~Directory()
 {
-	struct song *song, *ns;
+	Song *song, *ns;
 	directory_for_each_song_safe(song, ns, this)
-		song_free(song);
+		song->Free();
 
 	Directory *child, *n;
 	directory_for_each_child_safe(child, n, this)
@@ -208,7 +208,7 @@ Directory::LookupDirectory(const char *uri)
 }
 
 void
-Directory::AddSong(struct song *song)
+Directory::AddSong(Song *song)
 {
 	assert(holding_db_lock());
 	assert(song != NULL);
@@ -218,7 +218,7 @@ Directory::AddSong(struct song *song)
 }
 
 void
-Directory::RemoveSong(struct song *song)
+Directory::RemoveSong(Song *song)
 {
 	assert(holding_db_lock());
 	assert(song != NULL);
@@ -227,13 +227,13 @@ Directory::RemoveSong(struct song *song)
 	list_del(&song->siblings);
 }
 
-const song *
+const Song *
 Directory::FindSong(const char *name_utf8) const
 {
 	assert(holding_db_lock());
 	assert(name_utf8 != NULL);
 
-	struct song *song;
+	Song *song;
 	directory_for_each_song(song, this) {
 		assert(song->parent == this);
 
@@ -244,7 +244,7 @@ Directory::FindSong(const char *name_utf8) const
 	return NULL;
 }
 
-struct song *
+Song *
 Directory::LookupSong(const char *uri)
 {
 	char *duplicated, *base;
@@ -266,7 +266,7 @@ Directory::LookupSong(const char *uri)
 	} else
 		base = duplicated;
 
-	struct song *song = d->FindSong(base);
+	Song *song = d->FindSong(base);
 	assert(song == NULL || song->parent == d);
 
 	g_free(duplicated);
@@ -305,7 +305,7 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 	assert(error_r == NULL || *error_r == NULL);
 
 	if (visit_song) {
-		struct song *song;
+		Song *song;
 		directory_for_each_song(song, this)
 			if ((filter == nullptr || filter->Match(*song)) &&
 			    !visit_song(*song, error_r))

@@ -21,7 +21,7 @@
 #include "CuePlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
 #include "tag.h"
-#include "song.h"
+#include "Song.hxx"
 #include "input_stream.h"
 #include "cue/CueParser.hxx"
 #include "TextInputStream.hxx"
@@ -63,12 +63,12 @@ cue_playlist_close(struct playlist_provider *_playlist)
 	delete playlist;
 }
 
-static struct song *
+static Song *
 cue_playlist_read(struct playlist_provider *_playlist)
 {
 	CuePlaylist *playlist = (CuePlaylist *)_playlist;
 
-	struct song *song = playlist->parser.Get();
+	Song *song = playlist->parser.Get();
 	if (song != NULL)
 		return song;
 

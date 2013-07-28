@@ -20,7 +20,7 @@
 #include "config.h"
 #include "QueueSave.hxx"
 #include "Playlist.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "SongSave.hxx"
 #include "DatabasePlugin.hxx"
 #include "DatabaseGlue.hxx"
@@ -32,24 +32,24 @@
 #define PRIO_LABEL "Prio: "
 
 static void
-queue_save_database_song(FILE *fp, int idx, const struct song *song)
+queue_save_database_song(FILE *fp, int idx, const Song *song)
 {
-	char *uri = song_get_uri(song);
+	char *uri = song->GetURI();
 
 	fprintf(fp, "%i:%s\n", idx, uri);
 	g_free(uri);
 }
 
 static void
-queue_save_full_song(FILE *fp, const struct song *song)
+queue_save_full_song(FILE *fp, const Song *song)
 {
 	song_save(fp, song);
 }
 
 static void
-queue_save_song(FILE *fp, int idx, const struct song *song)
+queue_save_song(FILE *fp, int idx, const Song *song)
 {
-	if (song_in_database(song))
+	if (song->IsInDatabase())
 		queue_save_database_song(fp, idx, song);
 	else
 		queue_save_full_song(fp, song);
@@ -83,7 +83,7 @@ queue_load_song(TextFile &file, const char *line, queue *queue)
 	}
 
 	const Database *db = nullptr;
-	struct song *song;
+	Song *song;
 
 	if (g_str_has_prefix(line, SONG_BEGIN)) {
 		const char *uri = line + sizeof(SONG_BEGIN) - 1;
@@ -108,7 +108,7 @@ queue_load_song(TextFile &file, const char *line, queue *queue)
 		const char *uri = endptr + 1;
 
 		if (uri_has_scheme(uri)) {
-			song = song_remote_new(uri);
+			song = Song::NewRemote(uri);
 		} else {
 			db = GetDatabase(nullptr);
 			if (db == nullptr)

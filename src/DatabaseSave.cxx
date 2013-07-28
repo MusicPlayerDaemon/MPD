@@ -22,7 +22,7 @@
 #include "DatabaseLock.hxx"
 #include "Directory.hxx"
 #include "DirectorySave.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "TextFile.hxx"
 #include "TagInternal.hxx"
 #include "tag.h"

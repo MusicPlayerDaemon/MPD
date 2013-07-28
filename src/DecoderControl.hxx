@@ -29,6 +29,8 @@
 
 #include <assert.h>
 
+struct Song;
+
 enum decoder_state {
 	DECODE_STATE_STOP = 0,
 	DECODE_STATE_START,
@@ -96,7 +98,7 @@ struct decoder_control {
 	 * This is a duplicate, and must be freed when this attribute
 	 * is cleared.
 	 */
-	struct song *song;
+	Song *song;
 
 	/**
 	 * The initial seek position (in milliseconds), e.g. to the
@@ -260,10 +262,10 @@ struct decoder_control {
 	 * Caller must lock the object.
 	 */
 	gcc_pure
-	bool IsCurrentSong(const struct song *_song) const;
+	bool IsCurrentSong(const Song *_song) const;
 
 	gcc_pure
-	bool LockIsCurrentSong(const struct song *_song) const {
+	bool LockIsCurrentSong(const Song *_song) const {
 		Lock();
 		const bool result = IsCurrentSong(_song);
 		Unlock();
@@ -280,7 +282,7 @@ struct decoder_control {
 	 * @param pipe the pipe which receives the decoded chunks (owned by
 	 * the caller)
 	 */
-	void Start(struct song *song, unsigned start_ms, unsigned end_ms,
+	void Start(Song *song, unsigned start_ms, unsigned end_ms,
 		   music_buffer *buffer, music_pipe *pipe);
 
 	void Stop();

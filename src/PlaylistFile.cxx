@@ -24,7 +24,7 @@
 #include "PlaylistVector.hxx"
 #include "DatabasePlugin.hxx"
 #include "DatabaseGlue.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "io_error.h"
 #include "Mapper.hxx"
 #include "TextFile.hxx"
@@ -360,7 +360,7 @@ spl_remove_index(const char *utf8path, unsigned pos, GError **error_r)
 }
 
 bool
-spl_append_song(const char *utf8path, struct song *song, GError **error_r)
+spl_append_song(const char *utf8path, Song *song, GError **error_r)
 {
 	if (spl_map(error_r).IsNull())
 		return false;
@@ -402,16 +402,16 @@ bool
 spl_append_uri(const char *url, const char *utf8file, GError **error_r)
 {
 	if (uri_has_scheme(url)) {
-		struct song *song = song_remote_new(url);
+		Song *song = Song::NewRemote(url);
 		bool success = spl_append_song(utf8file, song, error_r);
-		song_free(song);
+		song->Free();
 		return success;
 	} else {
 		const Database *db = GetDatabase(error_r);
 		if (db == nullptr)
 			return false;
 
-		song *song = db->GetSong(url, error_r);
+		Song *song = db->GetSong(url, error_r);
 		if (song == nullptr)
 			return false;
 

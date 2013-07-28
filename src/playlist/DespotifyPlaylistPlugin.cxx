@@ -22,7 +22,7 @@
 #include "DespotifyUtils.hxx"
 #include "MemoryPlaylistProvider.hxx"
 #include "tag.h"
-#include "song.h"
+#include "Song.hxx"
 
 extern "C" {
 #include <despotify.h>
@@ -37,7 +37,7 @@ static void
 add_song(std::forward_list<SongPointer> &songs, struct ds_track *track)
 {
 	const char *dsp_scheme = despotify_playlist_plugin.schemes[0];
-	struct song *song;
+	Song *song;
 	char uri[128];
 	char *ds_uri;
 
@@ -51,7 +51,7 @@ add_song(std::forward_list<SongPointer> &songs, struct ds_track *track)
 		return;
 	}
 
-	song = song_remote_new(uri);
+	song = Song::NewRemote(uri);
 	song->tag = mpd_despotify_tag_from_track(track);
 
 	songs.emplace_front(song);

@@ -26,7 +26,7 @@
 #include "Client.hxx"
 
 extern "C" {
-#include "song.h"
+#include "Song.hxx"
 }
 
 /**
@@ -99,7 +99,7 @@ queue_find(Client *client, const struct queue *queue,
 	   const SongFilter &filter)
 {
 	for (unsigned i = 0; i < queue->GetLength(); i++) {
-		const struct song *song = queue->Get(i);
+		const Song *song = queue->Get(i);
 
 		if (filter.Match(*song))
 			queue_print_song_info(client, queue, i);

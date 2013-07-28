@@ -28,6 +28,7 @@
 struct config_param;
 struct input_stream;
 struct tag;
+struct Song;
 
 /**
  * An object which provides the contents of a playlist.
@@ -78,7 +79,7 @@ struct playlist_plugin {
 
 	void (*close)(struct playlist_provider *playlist);
 
-	struct song *(*read)(struct playlist_provider *playlist);
+	Song *(*read)(struct playlist_provider *playlist);
 
 	const char *const*schemes;
 	const char *const*suffixes;
@@ -132,7 +133,7 @@ playlist_plugin_close(struct playlist_provider *playlist)
 	playlist->plugin->close(playlist);
 }
 
-static inline struct song *
+static inline Song *
 playlist_plugin_read(struct playlist_provider *playlist)
 {
 	return playlist->plugin->read(playlist);

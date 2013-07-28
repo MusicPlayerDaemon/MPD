@@ -25,7 +25,7 @@
 
 #include <forward_list>
 
-struct song;
+struct Song;
 
 class MemoryPlaylistProvider : public playlist_provider {
 	std::forward_list<SongPointer> songs;
@@ -33,7 +33,7 @@ class MemoryPlaylistProvider : public playlist_provider {
 public:
 	MemoryPlaylistProvider(std::forward_list<SongPointer> &&_songs);
 
-	song *Read();
+	Song *Read();
 };
 
 #endif

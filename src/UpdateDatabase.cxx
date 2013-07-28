@@ -22,14 +22,14 @@
 #include "UpdateRemove.hxx"
 #include "PlaylistVector.hxx"
 #include "Directory.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "DatabaseLock.hxx"
 
 #include <glib.h>
 #include <assert.h>
 
 void
-delete_song(Directory *dir, struct song *del)
+delete_song(Directory *dir, Song *del)
 {
 	assert(del->parent == dir);
 
@@ -42,7 +42,7 @@ delete_song(Directory *dir, struct song *del)
 	update_remove_song(del);
 
 	/* finally, all possible references gone, free it */
-	song_free(del);
+	del->Free();
 
 	db_lock();
 }
@@ -60,7 +60,7 @@ clear_directory(Directory *directory)
 	directory_for_each_child_safe(child, n, directory)
 		delete_directory(child);
 
-	struct song *song, *ns;
+	Song *song, *ns;
 	directory_for_each_song_safe(song, ns, directory) {
 		assert(song->parent == directory);
 		delete_song(directory, song);
@@ -90,7 +90,7 @@ delete_name_in(Directory *parent, const char *name)
 		modified = true;
 	}
 
-	struct song *song = parent->FindSong(name);
+	Song *song = parent->FindSong(name);
 	if (song != NULL) {
 		delete_song(parent, song);
 		modified = true;

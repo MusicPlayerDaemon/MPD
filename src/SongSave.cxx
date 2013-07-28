@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "SongSave.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "TagSave.hxx"
 #include "Directory.hxx"
 #include "TextFile.hxx"
@@ -43,7 +43,7 @@ song_save_quark(void)
 }
 
 void
-song_save(FILE *fp, const struct song *song)
+song_save(FILE *fp, const Song *song)
 {
 	fprintf(fp, SONG_BEGIN "%s\n", song->uri);
 
@@ -59,13 +59,13 @@ song_save(FILE *fp, const struct song *song)
 	fprintf(fp, SONG_END "\n");
 }
 
-struct song *
+Song *
 song_load(TextFile &file, Directory *parent, const char *uri,
 	  GError **error_r)
 {
-	struct song *song = parent != NULL
-		? song_file_new(uri, parent)
-		: song_remote_new(uri);
+	Song *song = parent != NULL
+		? Song::NewFile(uri, parent)
+		: Song::NewRemote(uri);
 	char *line, *colon;
 	enum tag_type type;
 	const char *value;
@@ -76,7 +76,7 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 		if (colon == NULL || colon == line) {
 			if (song->tag != NULL)
 				tag_end_add(song->tag);
-			song_free(song);
+			song->Free();
 
 			g_set_error(error_r, song_save_quark(), 0,
 				    "unknown line in db: %s", line);
@@ -118,7 +118,7 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 		} else {
 			if (song->tag != NULL)
 				tag_end_add(song->tag);
-			song_free(song);
+			song->Free();
 
 			g_set_error(error_r, song_save_quark(), 0,
 				    "unknown line in db: %s", line);

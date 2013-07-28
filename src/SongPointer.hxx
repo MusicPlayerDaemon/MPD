@@ -20,15 +20,15 @@
 #ifndef MPD_SONG_POINTER_HXX
 #define MPD_SONG_POINTER_HXX
 
-#include "song.h"
+#include "Song.hxx"
 
 #include <utility>
 
 class SongPointer {
-	struct song *song;
+	Song *song;
 
 public:
-	explicit SongPointer(struct song *_song)
+	explicit SongPointer(Song *_song)
 		:song(_song) {}
 
 	SongPointer(const SongPointer &) = delete;
@@ -39,7 +39,7 @@ public:
 
 	~SongPointer() {
 		if (song != nullptr)
-			song_free(song);
+			song->Free();
 	}
 
 	SongPointer &operator=(const SongPointer &) = delete;
@@ -49,11 +49,11 @@ public:
 		return *this;
 	}
 
-	operator const struct song *() const {
+	operator const Song *() const {
 		return song;
 	}
 
-	struct song *Steal() {
+	Song *Steal() {
 		auto result = song;
 		song = nullptr;
 		return result;

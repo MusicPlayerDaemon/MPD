@@ -21,7 +21,7 @@
 #include "PlsPlaylistPlugin.hxx"
 #include "MemoryPlaylistProvider.hxx"
 #include "input_stream.h"
-#include "song.h"
+#include "Song.hxx"
 #include "tag.h"
 
 #include <glib.h>
@@ -50,7 +50,7 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 	}
 
 	while (num_entries > 0) {
-		struct song *song;
+		Song *song;
 		key = g_strdup_printf("File%i", num_entries);
 		value = g_key_file_get_string(keyfile, "playlist", key,
 					      &error);
@@ -62,7 +62,7 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 		}
 		g_free(key);
 
-		song = song_remote_new(value);
+		song = Song::NewRemote(value);
 		g_free(value);
 
 		key = g_strdup_printf("Title%i", num_entries);

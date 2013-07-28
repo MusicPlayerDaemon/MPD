@@ -29,6 +29,8 @@
 #include <assert.h>
 #include <stdint.h>
 
+struct Song;
+
 /**
  * A queue of songs.  This is the backend of the playlist: it contains
  * an ordered list of songs.
@@ -51,7 +53,7 @@ struct queue {
 	 * information attached.
 	 */
 	struct Item {
-		struct song *song;
+		Song *song;
 
 		/** the unique id of this item in the queue */
 		unsigned id;
@@ -198,7 +200,7 @@ struct queue {
 	/**
 	 * Returns the song at the specified position.
 	 */
-	struct song *Get(unsigned position) const {
+	Song *Get(unsigned position) const {
 		assert(position < length);
 
 		return items[position].song;
@@ -207,7 +209,7 @@ struct queue {
 	/**
 	 * Returns the song at the specified order number.
 	 */
-	struct song *GetOrder(unsigned _order) const {
+	Song *GetOrder(unsigned _order) const {
 		return Get(OrderToPosition(_order));
 	}
 
@@ -254,11 +256,12 @@ struct queue {
 	 * that, the caller must check if the queue is already full.
 	 *
 	 * If a song is not in the database (determined by
-	 * song_in_database()), it is freed when removed from the queue.
+	 * Song::IsInDatabase()), it is freed when removed from the
+	 * queue.
 	 *
 	 * @param priority the priority of this new queue item
 	 */
-	unsigned Append(struct song *song, uint8_t priority);
+	unsigned Append(Song *song, uint8_t priority);
 
 	/**
 	 * Swaps two songs, addressed by their position.

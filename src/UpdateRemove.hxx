@@ -22,7 +22,7 @@
 
 #include "check.h"
 
-struct song;
+struct Song;
 
 void
 update_remove_global_init(void);
@@ -33,6 +33,6 @@ update_remove_global_init(void);
  * serialized access is implemented to avoid excessive locking.
  */
 void
-update_remove_song(const struct song *song);
+update_remove_song(const Song *song);
 
 #endif

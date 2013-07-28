@@ -21,7 +21,7 @@
 #include "AsxPlaylistPlugin.hxx"
 #include "MemoryPlaylistProvider.hxx"
 #include "input_stream.h"
-#include "song.h"
+#include "Song.hxx"
 #include "tag.h"
 
 #include <glib.h>
@@ -60,7 +60,7 @@ struct AsxParser {
 	 * The current song.  It is allocated after the "location"
 	 * element.
 	 */
-	struct song *song;
+	Song *song;
 
 	AsxParser()
 		:state(ROOT) {}
@@ -91,7 +91,7 @@ asx_start_element(G_GNUC_UNUSED GMarkupParseContext *context,
 	case AsxParser::ROOT:
 		if (g_ascii_strcasecmp(element_name, "entry") == 0) {
 			parser->state = AsxParser::ENTRY;
-			parser->song = song_remote_new("asx:");
+			parser->song = Song::NewRemote("asx:");
 			parser->tag = TAG_NUM_OF_ITEM_TYPES;
 		}
 
@@ -108,12 +108,12 @@ asx_start_element(G_GNUC_UNUSED GMarkupParseContext *context,
 				   replace the existing song's URI,
 				   because that attribute is
 				   immutable */
-				struct song *song = song_remote_new(href);
+				Song *song = Song::NewRemote(href);
 
 				if (parser->song != NULL) {
 					song->tag = parser->song->tag;
 					parser->song->tag = NULL;
-					song_free(parser->song);
+					parser->song->Free();
 				}
 
 				parser->song = song;
@@ -145,7 +145,7 @@ asx_end_element(G_GNUC_UNUSED GMarkupParseContext *context,
 			if (strcmp(parser->song->uri, "asx:") != 0)
 				parser->songs.emplace_front(parser->song);
 			else
-				song_free(parser->song);
+				parser->song->Free();
 
 			parser->state = AsxParser::ROOT;
 		} else
@@ -192,7 +192,7 @@ asx_parser_destroy(gpointer data)
 	AsxParser *parser = (AsxParser *)data;
 
 	if (parser->state >= AsxParser::ENTRY)
-		song_free(parser->song);
+		parser->song->Free();
 }
 
 /*

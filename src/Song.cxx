@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "song.h"
+#include "Song.hxx"
 #include "Directory.hxx"
 #include "tag.h"
 
@@ -28,7 +28,7 @@
 
 Directory detached_root;
 
-static struct song *
+static Song *
 song_alloc(const char *uri, Directory *parent)
 {
 	size_t uri_length;
@@ -37,7 +37,7 @@ song_alloc(const char *uri, Directory *parent)
 	uri_length = strlen(uri);
 	assert(uri_length);
 
-	struct song *song = (struct song *)
+	Song *song = (Song *)
 		g_malloc(sizeof(*song) - sizeof(song->uri) + uri_length + 1);
 
 	song->tag = nullptr;
@@ -49,67 +49,65 @@ song_alloc(const char *uri, Directory *parent)
 	return song;
 }
 
-struct song *
-song_remote_new(const char *uri)
+Song *
+Song::NewRemote(const char *uri)
 {
 	return song_alloc(uri, nullptr);
 }
 
-struct song *
-song_file_new(const char *path, Directory *parent)
+Song *
+Song::NewFile(const char *path, Directory *parent)
 {
 	assert((parent == nullptr) == (*path == '/'));
 
 	return song_alloc(path, parent);
 }
 
-struct song *
-song_replace_uri(struct song *old_song, const char *uri)
+Song *
+Song::ReplaceURI(const char *new_uri)
 {
-	struct song *new_song = song_alloc(uri, old_song->parent);
-	new_song->tag = old_song->tag;
-	new_song->mtime = old_song->mtime;
-	new_song->start_ms = old_song->start_ms;
-	new_song->end_ms = old_song->end_ms;
-	g_free(old_song);
+	Song *new_song = song_alloc(new_uri, parent);
+	new_song->tag = tag;
+	new_song->mtime = mtime;
+	new_song->start_ms = start_ms;
+	new_song->end_ms = end_ms;
+	g_free(this);
 	return new_song;
 }
 
-struct song *
-song_detached_new(const char *uri)
+Song *
+Song::NewDetached(const char *uri)
 {
 	assert(uri != nullptr);
 
 	return song_alloc(uri, &detached_root);
 }
 
-struct song *
-song_dup_detached(const struct song *src)
+Song *
+Song::DupDetached() const
 {
-	assert(src != nullptr);
-
-	struct song *song;
-	if (song_in_database(src)) {
-		char *uri = song_get_uri(src);
-		song = song_detached_new(uri);
-		g_free(uri);
+	Song *song;
+	if (IsInDatabase()) {
+		char *new_uri = GetURI();
+		song = NewDetached(new_uri);
+		g_free(new_uri);
 	} else
-		song = song_alloc(src->uri, nullptr);
+		song = song_alloc(uri, nullptr);
 
-	song->tag = tag_dup(src->tag);
-	song->mtime = src->mtime;
-	song->start_ms = src->start_ms;
-	song->end_ms = src->end_ms;
+	song->tag = tag_dup(tag);
+	song->mtime = mtime;
+	song->start_ms = start_ms;
+	song->end_ms = end_ms;
 
 	return song;
 }
 
 void
-song_free(struct song *song)
+Song::Free()
 {
-	if (song->tag)
-		tag_free(song->tag);
-	g_free(song);
+	if (tag != nullptr)
+		tag_free(tag);
+	g_free(this);
 }
 
 gcc_pure
@@ -130,7 +128,7 @@ directory_is_same(const Directory *a, const Directory *b)
 }
 
 bool
-song_equals(const struct song *a, const struct song *b)
+song_equals(const Song *a, const Song *b)
 {
 	assert(a != nullptr);
 	assert(b != nullptr);
@@ -140,8 +138,8 @@ song_equals(const struct song *a, const struct song *b)
 	    (a->parent == &detached_root || b->parent == &detached_root)) {
 		/* must compare the full URI if one of the objects is
 		   "detached" */
-		char *au = song_get_uri(a);
-		char *bu = song_get_uri(b);
+		char *au = a->GetURI();
+		char *bu = b->GetURI();
 		const bool result = strcmp(au, bu) == 0;
 		g_free(bu);
 		g_free(au);
@@ -153,26 +151,25 @@ song_equals(const struct song *a, const struct song *b)
 }
 
 char *
-song_get_uri(const struct song *song)
+Song::GetURI() const
 {
-	assert(song != nullptr);
-	assert(*song->uri);
+	assert(*uri);
 
-	if (!song_in_database(song) || song->parent->IsRoot())
-		return g_strdup(song->uri);
+	if (!IsInDatabase() || parent->IsRoot())
+		return g_strdup(uri);
 	else
-		return g_strconcat(song->parent->GetPath(),
-				   "/", song->uri, nullptr);
+		return g_strconcat(parent->GetPath(),
+				   "/", uri, nullptr);
 }
 
 double
-song_get_duration(const struct song *song)
+Song::GetDuration() const
 {
-	if (song->end_ms > 0)
-		return (song->end_ms - song->start_ms) / 1000.0;
+	if (end_ms > 0)
+		return (end_ms - start_ms) / 1000.0;
 
-	if (song->tag == nullptr)
+	if (tag == nullptr)
 		return 0;
 
-	return song->tag->time - song->start_ms / 1000.0;
+	return tag->time - start_ms / 1000.0;
 }

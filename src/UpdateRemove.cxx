@@ -24,7 +24,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
-#include "song.h"
+#include "Song.hxx"
 #include "Main.hxx"
 #include "Instance.hxx"
 
@@ -37,7 +37,7 @@
 
 #include <assert.h>
 
-static const struct song *removed_song;
+static const Song *removed_song;
 
 static Mutex remove_mutex;
 static Cond remove_cond;
@@ -53,7 +53,7 @@ song_remove_event(void)
 
 	assert(removed_song != NULL);
 
-	uri = song_get_uri(removed_song);
+	uri = removed_song->GetURI();
 	g_message("removing %s", uri);
 	g_free(uri);
 
@@ -79,7 +79,7 @@ update_remove_global_init(void)
 }
 
 void
-update_remove_song(const struct song *song)
+update_remove_song(const Song *song)
 {
 	assert(removed_song == NULL);
 

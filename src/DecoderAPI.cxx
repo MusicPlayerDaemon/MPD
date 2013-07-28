@@ -26,7 +26,7 @@
 #include "MusicPipe.hxx"
 #include "DecoderControl.hxx"
 #include "DecoderInternal.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "InputStream.hxx"
 
 #include <glib.h>

@@ -31,7 +31,7 @@
 
 struct tag;
 struct tag_item;
-struct song;
+struct Song;
 
 class SongFilter {
 	class Item {
@@ -71,7 +71,7 @@ class SongFilter {
 		bool Match(const struct tag &tag) const;
 
 		gcc_pure
-		bool Match(const song &song) const;
+		bool Match(const Song &song) const;
 	};
 
 	std::list<Item> items;
@@ -94,7 +94,7 @@ public:
 	bool Match(const tag &tag) const;
 
 	gcc_pure
-	bool Match(const song &song) const;
+	bool Match(const Song &song) const;
 };
 
 /**

@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "song.h"
+#include "Song.hxx"
 #include "directory.h"
 #include "gcc.h"
 
@@ -26,8 +26,8 @@
 
 struct directory detached_root;
 
-struct song *
-song_dup_detached(gcc_unused const struct song *src)
+Song *
+song_dup_detached(gcc_unused const Song *src)
 {
 	abort();
 }

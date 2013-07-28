@@ -31,10 +31,7 @@
 #include "DatabasePlugin.hxx"
 #include "Client.hxx"
 #include "input_stream.h"
-
-extern "C" {
-#include "song.h"
-}
+#include "Song.hxx"
 
 void
 playlist_print_uris(Client *client, const struct playlist *playlist)
@@ -119,7 +116,7 @@ PrintSongDetails(Client *client, const char *uri_utf8)
 	if (db == nullptr)
 		return false;
 
-	song *song = db->GetSong(uri_utf8, nullptr);
+	Song *song = db->GetSong(uri_utf8, nullptr);
 	if (song == nullptr)
 		return false;
 
@@ -152,7 +149,7 @@ static void
 playlist_provider_print(Client *client, const char *uri,
 			struct playlist_provider *playlist, bool detail)
 {
-	struct song *song;
+	Song *song;
 	char *base_uri = uri != NULL ? g_path_get_dirname(uri) : NULL;
 
 	while ((song = playlist_plugin_read(playlist)) != NULL) {
@@ -165,7 +162,7 @@ playlist_provider_print(Client *client, const char *uri,
 		else
 			song_print_uri(client, song);
 
-		song_free(song);
+		song->Free();
 	}
 
 	g_free(base_uri);

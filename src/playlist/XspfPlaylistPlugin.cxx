@@ -60,7 +60,7 @@ struct XspfParser {
 	 * The current song.  It is allocated after the "location"
 	 * element.
 	 */
-	struct song *song;
+	Song *song;
 
 	XspfParser()
 		:state(ROOT) {}
@@ -187,7 +187,7 @@ xspf_text(G_GNUC_UNUSED GMarkupParseContext *context,
 	case XspfParser::LOCATION:
 		if (parser->song == NULL) {
 			char *uri = g_strndup(text, text_len);
-			parser->song = song_remote_new(uri);
+			parser->song = Song::NewRemote(uri);
 			g_free(uri);
 		}
 
@@ -209,7 +209,7 @@ xspf_parser_destroy(gpointer data)
 	XspfParser *parser = (XspfParser *)data;
 
 	if (parser->state >= XspfParser::TRACK && parser->song != NULL)
-		song_free(parser->song);
+		parser->song->Free();
 }
 
 /*

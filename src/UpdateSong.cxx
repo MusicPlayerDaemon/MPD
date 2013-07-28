@@ -25,7 +25,7 @@
 #include "UpdateContainer.hxx"
 #include "DatabaseLock.hxx"
 #include "Directory.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "DecoderPlugin.hxx"
 #include "DecoderList.hxx"
 
@@ -39,7 +39,7 @@ update_song_file2(Directory *directory,
 		  const struct decoder_plugin *plugin)
 {
 	db_lock();
-	struct song *song = directory->FindSong(name);
+	Song *song = directory->FindSong(name);
 	db_unlock();
 
 	if (!directory_child_access(directory, name, R_OK)) {
@@ -68,7 +68,7 @@ update_song_file2(Directory *directory,
 
 	if (song == NULL) {
 		g_debug("reading %s/%s", directory->GetPath(), name);
-		song = song_file_load(name, directory);
+		song = Song::LoadFile(name, directory);
 		if (song == NULL) {
 			g_debug("ignoring unrecognized file %s/%s",
 				directory->GetPath(), name);
@@ -85,7 +85,7 @@ update_song_file2(Directory *directory,
 	} else if (st->st_mtime != song->mtime || walk_discard) {
 		g_message("updating %s/%s",
 			  directory->GetPath(), name);
-		if (!song_file_update(song)) {
+		if (!song->UpdateFile()) {
 			g_debug("deleting unrecognized file %s/%s",
 				directory->GetPath(), name);
 			db_lock();

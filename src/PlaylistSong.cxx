@@ -26,10 +26,7 @@
 #include "tag.h"
 #include "fs/Path.hxx"
 #include "util/UriUtil.hxx"
-
-extern "C" {
-#include "song.h"
-}
+#include "Song.hxx"
 
 #include <glib.h>
 
@@ -37,8 +34,8 @@ extern "C" {
 #include <string.h>
 
 static void
-merge_song_metadata(struct song *dest, const struct song *base,
-		    const struct song *add)
+merge_song_metadata(Song *dest, const Song *base,
+		    const Song *add)
 {
 	dest->tag = base->tag != NULL
 		? (add->tag != NULL
@@ -53,10 +50,10 @@ merge_song_metadata(struct song *dest, const struct song *base,
 	dest->end_ms = add->end_ms;
 }
 
-static struct song *
-apply_song_metadata(struct song *dest, const struct song *src)
+static Song *
+apply_song_metadata(Song *dest, const Song *src)
 {
-	struct song *tmp;
+	Song *tmp;
 
 	assert(dest != NULL);
 	assert(src != NULL);
@@ -64,7 +61,7 @@ apply_song_metadata(struct song *dest, const struct song *src)
 	if (src->tag == NULL && src->start_ms == 0 && src->end_ms == 0)
 		return dest;
 
-	if (song_in_database(dest)) {
+	if (dest->IsInDatabase()) {
 		const Path &path_fs = map_song_fs(dest);
 		if (path_fs.IsNull())
 			return dest;
@@ -73,11 +70,11 @@ apply_song_metadata(struct song *dest, const struct song *src)
 		if (path_utf8.empty())
 			path_utf8 = path_fs.c_str();
 
-		tmp = song_file_new(path_utf8.c_str(), NULL);
+		tmp = Song::NewFile(path_utf8.c_str(), NULL);
 
 		merge_song_metadata(tmp, dest, src);
 	} else {
-		tmp = song_file_new(dest->uri, NULL);
+		tmp = Song::NewFile(dest->uri, NULL);
 		merge_song_metadata(tmp, dest, src);
 	}
 
@@ -89,19 +86,19 @@ apply_song_metadata(struct song *dest, const struct song *src)
 		   (e.g. last track on a CUE file); fix it up here */
 		tmp->tag->time = dest->tag->time - src->start_ms / 1000;
 
-	song_free(dest);
+	dest->Free();
 	return tmp;
 }
 
-static struct song *
-playlist_check_load_song(const struct song *song, const char *uri, bool secure)
+static Song *
+playlist_check_load_song(const Song *song, const char *uri, bool secure)
 {
-	struct song *dest;
+	Song *dest;
 
 	if (uri_has_scheme(uri)) {
-		dest = song_remote_new(uri);
+		dest = Song::NewRemote(uri);
 	} else if (g_path_is_absolute(uri) && secure) {
-		dest = song_file_load(uri, NULL);
+		dest = Song::LoadFile(uri, nullptr);
 		if (dest == NULL)
 			return NULL;
 	} else {
@@ -109,23 +106,23 @@ playlist_check_load_song(const struct song *song, const char *uri, bool secure)
 		if (db == nullptr)
 			return nullptr;
 
-		struct song *tmp = db->GetSong(uri, nullptr);
+		Song *tmp = db->GetSong(uri, nullptr);
 		if (tmp == NULL)
 			/* not found in database */
 			return NULL;
 
-		dest = song_dup_detached(tmp);
+		dest = tmp->DupDetached();
 		db->ReturnSong(tmp);
 	}
 
 	return apply_song_metadata(dest, song);
 }
 
-struct song *
-playlist_check_translate_song(struct song *song, const char *base_uri,
+Song *
+playlist_check_translate_song(Song *song, const char *base_uri,
 			      bool secure)
 {
-	if (song_in_database(song))
+	if (song->IsInDatabase())
 		/* already ok */
 		return song;
 
@@ -137,7 +134,7 @@ playlist_check_translate_song(struct song *song, const char *base_uri,
 			return song;
 		else {
 			/* unsupported remote song */
-			song_free(song);
+			song->Free();
 			return NULL;
 		}
 	}
@@ -159,7 +156,7 @@ playlist_check_translate_song(struct song *song, const char *base_uri,
 		else if (!secure) {
 			/* local files must be relative to the music
 			   directory when "secure" is enabled */
-			song_free(song);
+			song->Free();
 			return NULL;
 		}
 
@@ -170,8 +167,8 @@ playlist_check_translate_song(struct song *song, const char *base_uri,
 	if (base_uri != NULL)
 		uri = allocated = g_build_filename(base_uri, uri, NULL);
 
-	struct song *dest = playlist_check_load_song(song, uri, secure);
-	song_free(song);
+	Song *dest = playlist_check_load_song(song, uri, secure);
+	song->Free();
 	g_free(allocated);
 	return dest;
 }

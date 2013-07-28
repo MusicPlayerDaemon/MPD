@@ -26,12 +26,12 @@
 
 #define SONG_BEGIN "song_begin: "
 
-struct song;
+struct Song;
 struct Directory;
 class TextFile;
 
 void
-song_save(FILE *fp, const struct song *song);
+song_save(FILE *fp, const Song *song);
 
 /**
  * Loads a song from the input file.  Reading stops after the
@@ -41,7 +41,7 @@ song_save(FILE *fp, const struct song *song);
  * ignore errors
  * @return true on success, false on error
  */
-struct song *
+Song *
 song_load(TextFile &file, Directory *parent, const char *uri,
 	  GError **error_r);
 

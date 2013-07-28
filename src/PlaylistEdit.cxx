@@ -27,11 +27,7 @@
 #include "Playlist.hxx"
 #include "PlayerControl.hxx"
 #include "util/UriUtil.hxx"
-
-extern "C" {
-#include "song.h"
-}
-
+#include "Song.hxx"
 #include "Idle.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
@@ -61,7 +57,7 @@ enum playlist_result
 playlist::AppendFile(struct player_control &pc,
 		     const char *path_utf8, unsigned *added_id)
 {
-	struct song *song = song_file_load(path_utf8, NULL);
+	Song *song = Song::LoadFile(path_utf8, nullptr);
 	if (song == NULL)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
@@ -70,14 +66,14 @@ playlist::AppendFile(struct player_control &pc,
 
 enum playlist_result
 playlist::AppendSong(struct player_control &pc,
-		     struct song *song, unsigned *added_id)
+		     Song *song, unsigned *added_id)
 {
 	unsigned id;
 
 	if (queue.IsFull())
 		return PLAYLIST_RESULT_TOO_LARGE;
 
-	const struct song *const queued_song = GetQueuedSong();
+	const Song *const queued_song = GetQueuedSong();
 
 	id = queue.Append(song, 0);
 
@@ -110,9 +106,9 @@ playlist::AppendURI(struct player_control &pc,
 	g_debug("add to playlist: %s", uri);
 
 	const Database *db = nullptr;
-	struct song *song;
+	Song *song;
 	if (uri_has_scheme(uri)) {
-		song = song_remote_new(uri);
+		song = Song::NewRemote(uri);
 	} else {
 		db = GetDatabase(nullptr);
 		if (db == nullptr)
@@ -136,7 +132,7 @@ playlist::SwapPositions(player_control &pc, unsigned song1, unsigned song2)
 	if (!queue.IsValidPosition(song1) || !queue.IsValidPosition(song2))
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	const struct song *const queued_song = GetQueuedSong();
+	const Song *const queued_song = GetQueuedSong();
 
 	queue.SwapPositions(song1, song2);
 
@@ -190,7 +186,7 @@ playlist::SetPriorityRange(player_control &pc,
 	/* remember "current" and "queued" */
 
 	const int current_position = GetCurrentPosition();
-	const struct song *const queued_song = GetQueuedSong();
+	const Song *const queued_song = GetQueuedSong();
 
 	/* apply the priority changes */
 
@@ -222,7 +218,7 @@ playlist::SetPriorityId(struct player_control &pc,
 
 void
 playlist::DeleteInternal(player_control &pc,
-			 unsigned song, const struct song **queued_p)
+			 unsigned song, const Song **queued_p)
 {
 	assert(song < GetLength());
 
@@ -272,7 +268,7 @@ playlist::DeletePosition(struct player_control &pc, unsigned song)
 	if (song >= queue.GetLength())
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	const struct song *queued_song = GetQueuedSong();
+	const Song *queued_song = GetQueuedSong();
 
 	DeleteInternal(pc, song, &queued_song);
 
@@ -294,7 +290,7 @@ playlist::DeleteRange(struct player_control &pc, unsigned start, unsigned end)
 	if (start >= end)
 		return PLAYLIST_RESULT_SUCCESS;
 
-	const struct song *queued_song = GetQueuedSong();
+	const Song *queued_song = GetQueuedSong();
 
 	do {
 		DeleteInternal(pc, --end, &queued_song);
@@ -317,7 +313,7 @@ playlist::DeleteId(struct player_control &pc, unsigned id)
 }
 
 void
-playlist::DeleteSong(struct player_control &pc, const struct song &song)
+playlist::DeleteSong(struct player_control &pc, const struct Song &song)
 {
 	for (int i = queue.GetLength() - 1; i >= 0; --i)
 		// TODO: compare URI instead of pointer
@@ -339,7 +335,7 @@ playlist::MoveRange(player_control &pc, unsigned start, unsigned end, int to)
 		/* nothing happens */
 		return PLAYLIST_RESULT_SUCCESS;
 
-	const struct song *const queued_song = GetQueuedSong();
+	const Song *const queued_song = GetQueuedSong();
 
 	/*
 	 * (to < 0) => move to offset from current song
@@ -394,7 +390,7 @@ playlist::Shuffle(player_control &pc, unsigned start, unsigned end)
 		/* needs at least two entries. */
 		return;
 
-	const struct song *const queued_song = GetQueuedSong();
+	const Song *const queued_song = GetQueuedSong();
 	if (playing && current >= 0) {
 		unsigned current_position = queue.OrderToPosition(current);
 

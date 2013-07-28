@@ -23,7 +23,7 @@
 #include "DecoderInternal.hxx"
 #include "DecoderError.hxx"
 #include "DecoderPlugin.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "mpd_error.h"
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
@@ -380,10 +380,10 @@ decoder_run_file(struct decoder *decoder, const char *path_fs)
 
 static void
 decoder_run_song(struct decoder_control *dc,
-		 const struct song *song, const char *uri)
+		 const Song *song, const char *uri)
 {
 	decoder decoder(dc, dc->start_ms > 0,
-			song->tag != NULL && song_is_file(song)
+			song->tag != NULL && song->IsFile()
 			? tag_dup(song->tag) : nullptr);
 	int ret;
 
@@ -391,7 +391,7 @@ decoder_run_song(struct decoder_control *dc,
 
 	decoder_command_finished_locked(dc);
 
-	ret = song_is_file(song)
+	ret = song->IsFile()
 		? decoder_run_file(&decoder, uri)
 		: decoder_run_stream(&decoder, uri);
 
@@ -427,15 +427,15 @@ decoder_run(struct decoder_control *dc)
 {
 	dc->ClearError();
 
-	const struct song *song = dc->song;
+	const Song *song = dc->song;
 	char *uri;
 
 	assert(song != NULL);
 
-	if (song_is_file(song))
+	if (song->IsFile())
 		uri = map_song_fs(song).Steal();
 	else
-		uri = song_get_uri(song);
+		uri = song->GetURI();
 
 	if (uri == NULL) {
 		dc->state = DECODE_STATE_ERROR;

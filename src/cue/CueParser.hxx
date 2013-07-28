@@ -23,6 +23,8 @@
 #include "check.h"
 #include "gcc.h"
 
+struct Song;
+
 class CueParser {
 	enum {
 		/**
@@ -58,19 +60,19 @@ class CueParser {
 	/**
 	 * The song currently being edited.
 	 */
-	struct song *current;
+	Song *current;
 
 	/**
 	 * The previous song.  It is remembered because its end_time
 	 * will be set to the current song's start time.
 	 */
-	struct song *previous;
+	Song *previous;
 
 	/**
 	 * A song that is completely finished and can be returned to
 	 * the caller via cue_parser_get().
 	 */
-	struct song *finished;
+	Song *finished;
 
 	/**
 	 * Set to true after previous.end_time has been updated to the
@@ -109,7 +111,7 @@ public:
 	 * @return a song object that must be freed by the caller, or NULL if
 	 * no song was finished at this time
 	 */
-	struct song *Get();
+	Song *Get();
 
 private:
 	gcc_pure

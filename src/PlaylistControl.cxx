@@ -25,7 +25,7 @@
 #include "config.h"
 #include "Playlist.hxx"
 #include "PlayerControl.hxx"
-#include "song.h"
+#include "Song.hxx"
 
 #include <glib.h>
 
@@ -198,7 +198,7 @@ playlist::SeekSongPosition(player_control &pc, unsigned song, float seek_time)
 	if (!queue.IsValidPosition(song))
 		return PLAYLIST_RESULT_BAD_RANGE;
 
-	const struct song *queued_song = GetQueuedSong();
+	const Song *queued_song = GetQueuedSong();
 
 	unsigned i = queue.random
 		? queue.PositionToOrder(song)
@@ -218,7 +218,7 @@ playlist::SeekSongPosition(player_control &pc, unsigned song, float seek_time)
 		queued_song = nullptr;
 	}
 
-	struct song *the_song = song_dup_detached(queue.GetOrder(i));
+	Song *the_song = queue.GetOrder(i)->DupDetached();
 	if (!pc.Seek(the_song, seek_time)) {
 		UpdateQueuedSong(pc, queued_song);
 

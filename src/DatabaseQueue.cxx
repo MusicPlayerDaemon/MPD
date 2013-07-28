@@ -27,7 +27,7 @@
 #include <functional>
 
 static bool
-AddToQueue(Partition &partition, song &song, GError **error_r)
+AddToQueue(Partition &partition, Song &song, GError **error_r)
 {
 	enum playlist_result result =
 		partition.playlist.AppendSong(partition.pc, &song, NULL);

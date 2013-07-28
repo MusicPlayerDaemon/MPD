@@ -26,7 +26,7 @@
 #include "DatabaseLock.hxx"
 #include "DatabaseSimple.hxx"
 #include "Directory.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "PlaylistVector.hxx"
 #include "PlaylistRegistry.hxx"
 #include "Mapper.hxx"
@@ -109,7 +109,7 @@ remove_excluded_from_directory(Directory *directory,
 		}
 	}
 
-	struct song *song, *ns;
+	Song *song, *ns;
 	directory_for_each_song_safe(song, ns, directory) {
 		assert(song->parent == directory);
 
@@ -138,7 +138,7 @@ purge_deleted_from_directory(Directory *directory)
 		modified = true;
 	}
 
-	struct song *song, *ns;
+	Song *song, *ns;
 	directory_for_each_song_safe(song, ns, directory) {
 		const Path path = map_song_fs(song);
 		if (path.IsNull() || !FileExists(path)) {
@@ -414,7 +414,7 @@ directory_make_child_checked(Directory *parent, const char *name_utf8)
 	/* if we're adding directory paths, make sure to delete filenames
 	   with potentially the same name */
 	db_lock();
-	struct song *conflicting = parent->FindSong(name_utf8);
+	Song *conflicting = parent->FindSong(name_utf8);
 	if (conflicting)
 		delete_song(parent, conflicting);
 

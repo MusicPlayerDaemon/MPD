@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Queue.hxx"
-#include "song.h"
+#include "Song.hxx"
 
 #include <stdlib.h>
 
@@ -97,7 +97,7 @@ queue::ModifyAll()
 }
 
 unsigned
-queue::Append(struct song *song, uint8_t priority)
+queue::Append(Song *song, uint8_t priority)
 {
 	assert(!IsFull());
 
@@ -105,7 +105,7 @@ queue::Append(struct song *song, uint8_t priority)
 	const unsigned id = id_table.Insert(position);
 
 	auto &item = items[position];
-	item.song = song_dup_detached(song);
+	item.song = song->DupDetached();
 	item.id = id;
 	item.version = version;
 	item.priority = priority;
@@ -232,9 +232,9 @@ queue::DeletePosition(unsigned position)
 {
 	assert(position < length);
 
-	struct song *song = Get(position);
-	assert(!song_in_database(song) || song_is_detached(song));
-	song_free(song);
+	Song *song = Get(position);
+	assert(!song->IsInDatabase() || song->IsDetached());
+	song->Free();
 
 	const unsigned id = PositionToId(position);
 	const unsigned _order = PositionToOrder(position);
@@ -268,9 +268,9 @@ queue::Clear()
 	for (unsigned i = 0; i < length; i++) {
 		Item *item = &items[i];
 
-		assert(!song_in_database(item->song) ||
-		       song_is_detached(item->song));
-		song_free(item->song);
+		assert(!item->song->IsInDatabase() ||
+		       item->song->IsDetached());
+		item->song->Free();
 
 		id_table.Erase(item->id);
 	}

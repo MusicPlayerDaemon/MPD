@@ -21,7 +21,7 @@
 #include "SongFilter.hxx"
 
 bool
-DatabaseSelection::Match(const song &song) const
+DatabaseSelection::Match(const Song &song) const
 {
 	return filter == nullptr || filter->Match(song);
 }

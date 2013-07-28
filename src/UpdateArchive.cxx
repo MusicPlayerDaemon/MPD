@@ -22,7 +22,7 @@
 #include "UpdateInternal.hxx"
 #include "DatabaseLock.hxx"
 #include "Directory.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
 #include "ArchiveList.hxx"
@@ -58,10 +58,10 @@ update_archive_tree(Directory *directory, const char *name)
 
 		//add file
 		db_lock();
-		struct song *song = directory->FindSong(name);
+		Song *song = directory->FindSong(name);
 		db_unlock();
 		if (song == NULL) {
-			song = song_file_load(name, directory);
+			song = Song::LoadFile(name, directory);
 			if (song != NULL) {
 				db_lock();
 				directory->AddSong(song);

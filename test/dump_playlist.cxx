@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "TagSave.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "Directory.hxx"
 #include "input_stream.h"
 #include "conf.h"
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 	struct input_stream *is = NULL;
 	GError *error = NULL;
 	struct playlist_provider *playlist;
-	struct song *song;
+	Song *song;
 
 	if (argc != 3) {
 		g_printerr("Usage: dump_playlist CONFIG URI\n");
@@ -234,7 +234,7 @@ int main(int argc, char **argv)
 		if (song->tag != NULL)
 			tag_save(stdout, song->tag);
 
-		song_free(song);
+		song->Free();
 	}
 
 	/* deinitialize everything */

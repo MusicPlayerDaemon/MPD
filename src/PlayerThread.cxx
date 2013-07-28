@@ -24,7 +24,7 @@
 #include "MusicPipe.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "Main.hxx"
 #include "mpd_error.h"
 #include "CrossFade.hxx"
@@ -86,7 +86,7 @@ struct player {
 	/**
 	 * the song currently being played
 	 */
-	struct song *song;
+	Song *song;
 
 	/**
 	 * is cross fading enabled?
@@ -176,7 +176,7 @@ player_dc_start(struct player *player, struct music_pipe *pipe)
 	if (pc->command == PLAYER_COMMAND_SEEK)
 		start_ms += (unsigned)(pc->seek_where * 1000);
 
-	dc->Start(song_dup_detached(pc->next_song),
+	dc->Start(pc->next_song->DupDetached(),
 		  start_ms, pc->next_song->end_ms,
 		  player_buffer, pipe);
 }
@@ -254,7 +254,7 @@ player_wait_for_decoder(struct player *player)
 		pc->Lock();
 		pc->SetError(PLAYER_ERROR_DECODER, error);
 
-		song_free(pc->next_song);
+		pc->next_song->Free();
 		pc->next_song = NULL;
 
 		pc->Unlock();
@@ -263,7 +263,7 @@ player_wait_for_decoder(struct player *player)
 	}
 
 	if (player->song != NULL)
-		song_free(player->song);
+		player->song->Free();
 
 	player->song = pc->next_song;
 	player->elapsed_time = 0.0;
@@ -275,7 +275,7 @@ player_wait_for_decoder(struct player *player)
 	pc->Lock();
 
 	/* update player_control's song information */
-	pc->total_time = song_get_duration(pc->next_song);
+	pc->total_time = pc->next_song->GetDuration();
 	pc->bit_rate = 0;
 	audio_format_clear(&pc->audio_format);
 
@@ -295,14 +295,14 @@ player_wait_for_decoder(struct player *player)
  * indicated by the decoder plugin.
  */
 static double
-real_song_duration(const struct song *song, double decoder_duration)
+real_song_duration(const Song *song, double decoder_duration)
 {
 	assert(song != NULL);
 
 	if (decoder_duration <= 0.0)
 		/* the decoder plugin didn't provide information; fall
-		   back to song_get_duration() */
-		return song_get_duration(song);
+		   back to Song::GetDuration() */
+		return song->GetDuration();
 
 	if (song->end_ms > 0 && song->end_ms / 1000.0 < decoder_duration)
 		return (song->end_ms - song->start_ms) / 1000.0;
@@ -407,7 +407,7 @@ player_check_decoder_startup(struct player *player)
 		player->decoder_starting = false;
 
 		if (!player->paused && !player_open_output(player)) {
-			char *uri = song_get_uri(dc->song);
+			char *uri = dc->song->GetURI();
 			g_warning("problems opening audio device "
 				  "while playing \"%s\"", uri);
 			g_free(uri);
@@ -479,7 +479,7 @@ player_send_silence(struct player *player)
 static bool player_seek_decoder(struct player *player)
 {
 	struct player_control *pc = player->pc;
-	struct song *song = pc->next_song;
+	Song *song = pc->next_song;
 	struct decoder_control *dc = player->dc;
 
 	assert(pc->next_song != NULL);
@@ -512,7 +512,7 @@ static bool player_seek_decoder(struct player *player)
 			player->pipe = dc->pipe;
 		}
 
-		song_free(pc->next_song);
+		pc->next_song->Free();
 		pc->next_song = NULL;
 		player->queued = false;
 	}
@@ -633,7 +633,7 @@ static void player_process_command(struct player *player)
 			pc->Lock();
 		}
 
-		song_free(pc->next_song);
+		pc->next_song->Free();
 		pc->next_song = NULL;
 		player->queued = false;
 		player_command_finished_locked(pc);
@@ -656,9 +656,9 @@ static void player_process_command(struct player *player)
 }
 
 static void
-update_song_tag(struct song *song, const struct tag *new_tag)
+update_song_tag(Song *song, const struct tag *new_tag)
 {
-	if (song_is_file(song))
+	if (song->IsFile())
 		/* don't update tags of local files, only remote
 		   streams may change tags dynamically */
 		return;
@@ -687,7 +687,7 @@ update_song_tag(struct song *song, const struct tag *new_tag)
  */
 static bool
 play_chunk(struct player_control *pc,
-	   struct song *song, struct music_chunk *chunk,
+	   Song *song, struct music_chunk *chunk,
 	   const struct audio_format *format,
 	   GError **error_r)
 {
@@ -872,7 +872,7 @@ player_song_border(struct player *player)
 {
 	player->xfade = XFADE_UNKNOWN;
 
-	char *uri = song_get_uri(player->song);
+	char *uri = player->song->GetURI();
 	g_message("played \"%s\"", uri);
 	g_free(uri);
 
@@ -1084,13 +1084,13 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 		tag_free(player.cross_fade_tag);
 
 	if (player.song != NULL)
-		song_free(player.song);
+		player.song->Free();
 
 	pc->Lock();
 
 	if (player.queued) {
 		assert(pc->next_song != NULL);
-		song_free(pc->next_song);
+		pc->next_song->Free();
 		pc->next_song = NULL;
 	}
 
@@ -1133,7 +1133,7 @@ player_task(gpointer arg)
 
 		case PLAYER_COMMAND_PAUSE:
 			if (pc->next_song != NULL) {
-				song_free(pc->next_song);
+				pc->next_song->Free();
 				pc->next_song = NULL;
 			}
 
@@ -1178,7 +1178,7 @@ player_task(gpointer arg)
 
 		case PLAYER_COMMAND_CANCEL:
 			if (pc->next_song != NULL) {
-				song_free(pc->next_song);
+				pc->next_song->Free();
 				pc->next_song = NULL;
 			}
 

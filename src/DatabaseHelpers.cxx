@@ -19,7 +19,7 @@
 
 #include "DatabaseHelpers.hxx"
 #include "DatabasePlugin.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "tag.h"
 
 #include <functional>
@@ -37,7 +37,7 @@ struct StringLess {
 typedef std::set<const char *, StringLess> StringSet;
 
 static bool
-CollectTags(StringSet &set, enum tag_type tag_type, song &song)
+CollectTags(StringSet &set, enum tag_type tag_type, Song &song)
 {
 	struct tag *tag = song.tag;
 	if (tag == nullptr)
@@ -104,7 +104,7 @@ StatsVisitTag(DatabaseStats &stats, StringSet &artists, StringSet &albums,
 
 static bool
 StatsVisitSong(DatabaseStats &stats, StringSet &artists, StringSet &albums,
-	       song &song)
+	       Song &song)
 {
 	++stats.song_count;
 

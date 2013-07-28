@@ -23,12 +23,12 @@
 #include "DatabaseSelection.hxx"
 #include "PlaylistVector.hxx"
 #include "Directory.hxx"
+#include "Song.hxx"
 #include "gcc.h"
 #include "conf.h"
 
 extern "C" {
 #include "db_error.h"
-#include "song.h"
 }
 
 #undef MPD_DIRECTORY_H
@@ -52,9 +52,9 @@ public:
 
 	virtual bool Open(GError **error_r) override;
 	virtual void Close() override;
-	virtual struct song *GetSong(const char *uri_utf8,
+	virtual Song *GetSong(const char *uri_utf8,
 				     GError **error_r) const override;
-	virtual void ReturnSong(struct song *song) const;
+	virtual void ReturnSong(Song *song) const;
 
 	virtual bool Visit(const DatabaseSelection &selection,
 			   VisitDirectory visit_directory,
@@ -181,10 +181,10 @@ ProxyDatabase::Close()
 	mpd_connection_free(connection);
 }
 
-static song *
+static Song *
 Convert(const struct mpd_song *song);
 
-struct song *
+Song *
 ProxyDatabase::GetSong(const char *uri, GError **error_r) const
 {
 	// TODO: implement
@@ -196,13 +196,13 @@ ProxyDatabase::GetSong(const char *uri, GError **error_r) const
 	}
 
 	struct mpd_song *song = mpd_recv_song(connection);
-	struct song *song2 = song != nullptr
+	Song *song2 = song != nullptr
 		? Convert(song)
 		: nullptr;
 	mpd_song_free(song);
 	if (!mpd_response_finish(connection)) {
 		if (song2 != nullptr)
-			song_free(song2);
+			song2->Free();
 
 		CheckError(connection, error_r);
 		return nullptr;
@@ -216,13 +216,13 @@ ProxyDatabase::GetSong(const char *uri, GError **error_r) const
 }
 
 void
-ProxyDatabase::ReturnSong(struct song *song) const
+ProxyDatabase::ReturnSong(Song *song) const
 {
 	assert(song != nullptr);
-	assert(song_in_database(song));
-	assert(song_is_detached(song));
+	assert(song->IsInDatabase());
+	assert(song->IsDetached());
 
-	song_free(song);
+	song->Free();
 }
 
 static bool
@@ -268,10 +268,10 @@ Copy(struct tag *tag, enum tag_type d_tag,
 	}
 }
 
-static song *
+static Song *
 Convert(const struct mpd_song *song)
 {
-	struct song *s = song_detached_new(mpd_song_get_uri(song));
+	Song *s = Song::NewDetached(mpd_song_get_uri(song));
 
 	s->mtime = mpd_song_get_last_modified(song);
 	s->start_ms = mpd_song_get_start(song) * 1000;
@@ -297,9 +297,9 @@ Visit(const struct mpd_song *song,
 	if (!visit_song)
 		return true;
 
-	struct song *s = Convert(song);
+	Song *s = Convert(song);
 	bool success = visit_song(*s, error_r);
-	song_free(s);
+	s->Free();
 
 	return success;
 }

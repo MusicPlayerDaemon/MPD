@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Playlist.hxx"
 #include "PlayerControl.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "Idle.hxx"
 
 #include <glib.h>
@@ -62,10 +62,9 @@ playlist_queue_song_order(struct playlist *playlist, struct player_control *pc,
 
 	playlist->queued = order;
 
-	struct song *song =
-		song_dup_detached(playlist->queue.GetOrder(order));
+	Song *song = playlist->queue.GetOrder(order)->DupDetached();
 
-	uri = song_get_uri(song);
+	uri = song->GetURI();
 	g_debug("queue song %i:\"%s\"", playlist->queued, uri);
 	g_free(uri);
 
@@ -94,7 +93,7 @@ playlist_song_started(struct playlist *playlist, struct player_control *pc)
 	idle_add(IDLE_PLAYER);
 }
 
-const struct song *
+const Song *
 playlist::GetQueuedSong() const
 {
 	return playing && queued >= 0
@@ -103,7 +102,7 @@ playlist::GetQueuedSong() const
 }
 
 void
-playlist::UpdateQueuedSong(player_control &pc, const song *prev)
+playlist::UpdateQueuedSong(player_control &pc, const Song *prev)
 {
 	if (!playing)
 		return;
@@ -130,7 +129,7 @@ playlist::UpdateQueuedSong(player_control &pc, const song *prev)
 		current = queue.PositionToOrder(current_position);
 	}
 
-	const struct song *const next_song = next_order >= 0
+	const Song *const next_song = next_order >= 0
 		? queue.GetOrder(next_order)
 		: nullptr;
 
@@ -154,9 +153,9 @@ playlist::PlayOrder(player_control &pc, int order)
 	playing = true;
 	queued = -1;
 
-	struct song *song = song_dup_detached(queue.GetOrder(order));
+	Song *song = queue.GetOrder(order)->DupDetached();
 
-	char *uri = song_get_uri(song);
+	char *uri = song->GetURI();
 	g_debug("play %i:\"%s\"", order, uri);
 	g_free(uri);
 
@@ -177,7 +176,7 @@ playlist::SyncWithPlayer(player_control &pc)
 
 	pc.Lock();
 	const player_state pc_state = pc.GetState();
-	const song *pc_next_song = pc.next_song;
+	const Song *pc_next_song = pc.next_song;
 	pc.Unlock();
 
 	if (pc_state == PLAYER_STATE_STOP)
@@ -290,7 +289,7 @@ playlist::SetRandom(player_control &pc, bool status)
 	if (status == queue.random)
 		return;
 
-	const struct song *const queued_song = GetQueuedSong();
+	const Song *const queued_song = GetQueuedSong();
 
 	queue.random = status;
 

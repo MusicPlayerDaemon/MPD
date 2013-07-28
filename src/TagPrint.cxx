@@ -21,7 +21,7 @@
 #include "TagPrint.hxx"
 #include "tag.h"
 #include "TagInternal.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "Client.hxx"
 
 void tag_print_types(Client *client)

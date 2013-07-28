@@ -26,7 +26,7 @@
 #include <stddef.h>
 
 class SongFilter;
-struct song;
+struct Song;
 
 struct DatabaseSelection {
 	/**
@@ -50,7 +50,7 @@ struct DatabaseSelection {
 	}
 
 	gcc_pure
-	bool Match(const song &song) const;
+	bool Match(const Song &song) const;
 };
 
 #endif

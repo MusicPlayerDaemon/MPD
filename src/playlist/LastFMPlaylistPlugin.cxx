@@ -22,7 +22,7 @@
 #include "PlaylistPlugin.hxx"
 #include "PlaylistRegistry.hxx"
 #include "conf.h"
-#include "song.h"
+#include "Song.hxx"
 #include "input_stream.h"
 
 #include <glib.h>
@@ -268,7 +268,7 @@ lastfm_close(struct playlist_provider *_playlist)
 	g_free(playlist);
 }
 
-static struct song *
+static Song *
 lastfm_read(struct playlist_provider *_playlist)
 {
 	struct lastfm_playlist *playlist = (struct lastfm_playlist *)_playlist;

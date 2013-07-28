@@ -211,13 +211,13 @@ SimpleDatabase::Close()
 	root->Free();
 }
 
-struct song *
+Song *
 SimpleDatabase::GetSong(const char *uri, GError **error_r) const
 {
 	assert(root != NULL);
 
 	db_lock();
-	song *song = root->LookupSong(uri);
+	Song *song = root->LookupSong(uri);
 	db_unlock();
 	if (song == NULL)
 		g_set_error(error_r, db_quark(), DB_NOT_FOUND,
@@ -231,7 +231,7 @@ SimpleDatabase::GetSong(const char *uri, GError **error_r) const
 }
 
 void
-SimpleDatabase::ReturnSong(gcc_unused struct song *song) const
+SimpleDatabase::ReturnSong(gcc_unused Song *song) const
 {
 	assert(song != nullptr);
 
@@ -264,7 +264,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 	const Directory *directory = root->LookupDirectory(selection.uri);
 	if (directory == NULL) {
 		if (visit_song) {
-			song *song = root->LookupSong(selection.uri);
+			Song *song = root->LookupSong(selection.uri);
 			if (song != nullptr)
 				return !selection.Match(*song) ||
 					visit_song(*song, error_r);

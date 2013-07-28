@@ -76,7 +76,7 @@ struct Partition {
 		return playlist.DeleteRange(pc, start, end);
 	}
 
-	void DeleteSong(const song &song) {
+	void DeleteSong(const Song &song) {
 		playlist.DeleteSong(pc, song);
 	}
 

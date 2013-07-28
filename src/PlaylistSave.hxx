@@ -24,13 +24,13 @@
 
 #include <stdio.h>
 
-struct song;
+struct Song;
 struct queue;
 struct playlist;
 struct player_control;
 
 void
-playlist_print_song(FILE *fp, const struct song *song);
+playlist_print_song(FILE *fp, const Song *song);
 
 void
 playlist_print_uri(FILE *fp, const char *uri);

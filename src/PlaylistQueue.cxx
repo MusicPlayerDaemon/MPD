@@ -24,10 +24,7 @@
 #include "PlaylistSong.hxx"
 #include "Playlist.hxx"
 #include "input_stream.h"
-
-extern "C" {
-#include "song.h"
-}
+#include "Song.hxx"
 
 enum playlist_result
 playlist_load_into_queue(const char *uri, struct playlist_provider *source,
@@ -36,7 +33,7 @@ playlist_load_into_queue(const char *uri, struct playlist_provider *source,
 			 bool secure)
 {
 	enum playlist_result result;
-	struct song *song;
+	Song *song;
 	char *base_uri = uri != NULL ? g_path_get_dirname(uri) : NULL;
 
 	for (unsigned i = 0;
@@ -44,7 +41,7 @@ playlist_load_into_queue(const char *uri, struct playlist_provider *source,
 	     ++i) {
 		if (i < start_index) {
 			/* skip songs before the start index */
-			song_free(song);
+			song->Free();
 			continue;
 		}
 
@@ -53,7 +50,7 @@ playlist_load_into_queue(const char *uri, struct playlist_provider *source,
 			continue;
 
 		result = dest->AppendSong(*pc, song);
-		song_free(song);
+		song->Free();
 		if (result != PLAYLIST_RESULT_SUCCESS) {
 			g_free(base_uri);
 			return result;

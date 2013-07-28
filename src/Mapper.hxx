@@ -31,7 +31,7 @@
 
 class Path;
 struct Directory;
-struct song;
+struct Song;
 
 bool mapper_init(const char *_music_dir, const char *_playlist_dir,
 		 GError **error_r);
@@ -112,7 +112,7 @@ map_directory_child_fs(const Directory *directory, const char *name);
  */
 gcc_pure
 Path
-map_song_fs(const struct song *song);
+map_song_fs(const Song *song);
 
 /**
  * Maps a file system path (relative to the music directory or

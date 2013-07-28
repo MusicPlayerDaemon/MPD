@@ -20,7 +20,7 @@
 #include "config.h"
 #include "PlayerControl.hxx"
 #include "Idle.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "DecoderControl.hxx"
 #include "Main.hxx"
 
@@ -30,7 +30,7 @@
 #include <stdio.h>
 
 static void
-pc_enqueue_song_locked(struct player_control *pc, struct song *song);
+pc_enqueue_song_locked(struct player_control *pc, Song *song);
 
 player_control::player_control(unsigned _buffer_chunks,
 			       unsigned _buffered_before_play)
@@ -59,7 +59,7 @@ player_control::player_control(unsigned _buffer_chunks,
 player_control::~player_control()
 {
 	if (next_song != nullptr)
-		song_free(next_song);
+		next_song->Free();
 }
 
 static void
@@ -88,7 +88,7 @@ player_command(struct player_control *pc, enum player_command cmd)
 }
 
 void
-player_control::Play(struct song *song)
+player_control::Play(Song *song)
 {
 	assert(song != NULL);
 
@@ -253,7 +253,7 @@ player_control::GetErrorMessage() const
 }
 
 static void
-pc_enqueue_song_locked(struct player_control *pc, struct song *song)
+pc_enqueue_song_locked(struct player_control *pc, Song *song)
 {
 	assert(song != NULL);
 	assert(pc->next_song == NULL);
@@ -263,7 +263,7 @@ pc_enqueue_song_locked(struct player_control *pc, struct song *song)
 }
 
 void
-player_control::EnqueueSong(struct song *song)
+player_control::EnqueueSong(Song *song)
 {
 	assert(song != NULL);
 
@@ -273,14 +273,14 @@ player_control::EnqueueSong(struct song *song)
 }
 
 bool
-player_control::Seek(struct song *song, float seek_time)
+player_control::Seek(Song *song, float seek_time)
 {
 	assert(song != NULL);
 
 	Lock();
 
 	if (next_song != nullptr)
-		song_free(next_song);
+		next_song->Free();
 
 	next_song = song;
 	seek_where = seek_time;

@@ -22,7 +22,7 @@
 #include "TagInternal.hxx"
 #include "TagPool.hxx"
 #include "conf.h"
-#include "song.h"
+#include "Song.hxx"
 #include "mpd_error.h"
 
 #include <glib.h>

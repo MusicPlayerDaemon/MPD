@@ -45,7 +45,7 @@
 #define directory_for_each_song_safe(pos, n, directory) \
 	list_for_each_entry_safe(pos, n, &directory->songs, siblings)
 
-struct song;
+struct Song;
 struct db_visitor;
 class SongFilter;
 
@@ -202,12 +202,12 @@ public:
 	 * Caller must lock the #db_mutex.
 	 */
 	gcc_pure
-	const song *FindSong(const char *name_utf8) const;
+	const Song *FindSong(const char *name_utf8) const;
 
 	gcc_pure
-	song *FindSong(const char *name_utf8) {
+	Song *FindSong(const char *name_utf8) {
 		const Directory *cthis = this;
-		return const_cast<song *>(cthis->FindSong(name_utf8));
+		return const_cast<Song *>(cthis->FindSong(name_utf8));
 	}
 
 	/**
@@ -219,20 +219,20 @@ public:
 	 * @return the song, or NULL if none was found
 	 */
 	gcc_pure
-	song *LookupSong(const char *uri);
+	Song *LookupSong(const char *uri);
 
 	/**
 	 * Add a song object to this directory.  Its "parent" attribute must
 	 * be set already.
 	 */
-	void AddSong(song *song);
+	void AddSong(Song *song);
 
 	/**
 	 * Remove a song object from this directory (which effectively
 	 * invalidates the song object, because the "parent" attribute becomes
 	 * stale), but does not free it.
 	 */
-	void RemoveSong(song *song);
+	void RemoveSong(Song *song);
 
 	/**
 	 * Caller must lock the #db_mutex.

@@ -22,7 +22,7 @@
 #include "DatabasePlugin.hxx"
 #include "DatabaseSelection.hxx"
 #include "Directory.hxx"
-#include "song.h"
+#include "Song.hxx"
 #include "PlaylistVector.hxx"
 #include "conf.h"
 #include "tag.h"
@@ -53,7 +53,7 @@ DumpDirectory(const Directory &directory, GError **)
 }
 
 static bool
-DumpSong(song &song, GError **)
+DumpSong(Song &song, GError **)
 {
 	cout << "S " << song.parent->path << "/" << song.uri << endl;
 	return true;

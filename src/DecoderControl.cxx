@@ -20,7 +20,7 @@
 #include "config.h"
 #include "DecoderControl.hxx"
 #include "MusicPipe.hxx"
-#include "song.h"
+#include "Song.hxx"
 
 #include <assert.h>
 
@@ -41,7 +41,7 @@ decoder_control::~decoder_control()
 	ClearError();
 
 	if (song != NULL)
-		song_free(song);
+		song->Free();
 
 	g_free(mixramp_start);
 	g_free(mixramp_end);
@@ -84,7 +84,7 @@ dc_command_async(struct decoder_control *dc, enum decoder_command cmd)
 }
 
 bool
-decoder_control::IsCurrentSong(const struct song *_song) const
+decoder_control::IsCurrentSong(const Song *_song) const
 {
 	assert(_song != NULL);
 
@@ -103,7 +103,7 @@ decoder_control::IsCurrentSong(const struct song *_song) const
 }
 
 void
-decoder_control::Start(struct song *_song,
+decoder_control::Start(Song *_song,
 		       unsigned _start_ms, unsigned _end_ms,
 		       music_buffer *_buffer, music_pipe *_pipe)
 {
@@ -113,7 +113,7 @@ decoder_control::Start(struct song *_song,
 	assert(music_pipe_empty(_pipe));
 
 	if (song != nullptr)
-		song_free(song);
+		song->Free();
 
 	song = _song;
 	start_ms = _start_ms;

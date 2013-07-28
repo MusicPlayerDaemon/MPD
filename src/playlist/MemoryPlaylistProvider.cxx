@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "MemoryPlaylistProvider.hxx"
-#include "song.h"
+#include "Song.hxx"
 
 static void
 memory_playlist_close(struct playlist_provider *_playlist)
@@ -29,7 +29,7 @@ memory_playlist_close(struct playlist_provider *_playlist)
 	delete playlist;
 }
 
-static struct song *
+static Song *
 memory_playlist_read(struct playlist_provider *_playlist)
 {
 	MemoryPlaylistProvider *playlist = (MemoryPlaylistProvider *)_playlist;
@@ -57,7 +57,7 @@ MemoryPlaylistProvider::MemoryPlaylistProvider(std::forward_list<SongPointer> &&
 	playlist_provider_init(this, &memory_playlist_plugin);
 }
 
-inline song *
+inline Song *
 MemoryPlaylistProvider::Read()
 {
 	if (songs.empty())

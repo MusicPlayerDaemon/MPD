@@ -22,7 +22,7 @@
 #include "MemoryPlaylistProvider.hxx"
 #include "conf.h"
 #include "input_stream.h"
-#include "song.h"
+#include "Song.hxx"
 #include "tag.h"
 
 #include <glib.h>
@@ -203,12 +203,12 @@ static int handle_end_map(void *ctx)
 	/* got_url == 1, track finished, make it into a song */
 	data->got_url = 0;
 
-	struct song *s;
+	Song *s;
 	struct tag *t;
 	char *u;
 
 	u = g_strconcat(data->stream_url, "?client_id=", soundcloud_config.apikey, NULL);
-	s = song_remote_new(u);
+	s = Song::NewRemote(u);
 	g_free(u);
 	t = tag_new();
 	t->time = data->duration / 1000;
