@@ -23,7 +23,7 @@
 #include "conf.h"
 #include "mpd_error.h"
 #include "decoder/AudiofileDecoderPlugin.hxx"
-#include "decoder/pcm_decoder_plugin.h"
+#include "decoder/PcmDecoderPlugin.hxx"
 #include "decoder/DsdiffDecoderPlugin.hxx"
 #include "decoder/DsfDecoderPlugin.hxx"
 #include "decoder/FlacDecoderPlugin.h"

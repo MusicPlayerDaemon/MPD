@@ -68,7 +68,6 @@ mpd_headers = \
 	src/gerror.h \
 	src/glib_compat.h \
 	src/gcc.h \
-	src/decoder/pcm_decoder_plugin.h \
 	src/input_stream.h \
 	src/TextInputStream.hxx \
 	src/ls.h \
@@ -447,7 +446,8 @@ endif
 # decoder plugins
 
 libdecoder_plugins_a_SOURCES = \
-	src/decoder/pcm_decoder_plugin.c \
+	src/decoder/PcmDecoderPlugin.cxx \
+	src/decoder/PcmDecoderPlugin.hxx \
 	src/decoder/DsdiffDecoderPlugin.cxx \
 	src/decoder/DsdiffDecoderPlugin.hxx \
 	src/decoder/DsfDecoderPlugin.cxx \

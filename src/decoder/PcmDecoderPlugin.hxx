@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,8 +25,8 @@
  * which does not need a decoder.
  */
 
-#ifndef MPD_DECODER_PCM_H
-#define MPD_DECODER_PCM_H
+#ifndef MPD_DECODER_PCM_HXX
+#define MPD_DECODER_PCM_HXX
 
 extern const struct decoder_plugin pcm_decoder_plugin;
 

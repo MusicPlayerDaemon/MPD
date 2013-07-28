@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,9 +18,12 @@
  */
 
 #include "config.h"
-#include "decoder/pcm_decoder_plugin.h"
+#include "decoder/PcmDecoderPlugin.hxx"
 #include "decoder_api.h"
+
+extern "C" {
 #include "util/byte_reverse.h"
+}
 
 #include <glib.h>
 #include <unistd.h>
@@ -32,17 +35,17 @@
 static void
 pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 {
-	static const struct audio_format audio_format = {
-		.sample_rate = 44100,
-		.format = SAMPLE_FORMAT_S16,
-		.channels = 2,
+	static constexpr struct audio_format audio_format = {
+		44100,
+		SAMPLE_FORMAT_S16,
+		2,
 	};
 
 	const char *const mime = input_stream_get_mime_type(is);
-	const bool reverse_endian = mime != NULL &&
+	const bool reverse_endian = mime != nullptr &&
 		strcmp(mime, "audio/x-mpd-cdda-pcm-reverse") == 0;
 
-	GError *error = NULL;
+	GError *error = nullptr;
 	enum decoder_command cmd;
 
 	double time_to_size = audio_format_time_to_size(&audio_format);
@@ -98,11 +101,18 @@ static const char *const pcm_mime_types[] = {
 	/* same as above, but with reverse byte order */
 	"audio/x-mpd-cdda-pcm-reverse",
 
-	NULL
+	nullptr
 };
 
 const struct decoder_plugin pcm_decoder_plugin = {
-	.name = "pcm",
-	.stream_decode = pcm_stream_decode,
-	.mime_types = pcm_mime_types,
+	"pcm",
+	nullptr,
+	nullptr,
+	pcm_stream_decode,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	pcm_mime_types,
 };
