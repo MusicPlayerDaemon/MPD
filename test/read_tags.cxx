@@ -26,9 +26,9 @@
 #include "audio_format.h"
 extern "C" {
 #include "tag_ape.h"
-#include "tag_id3.h"
 }
 #include "tag_handler.h"
+#include "TagId3.hxx"
 
 #include <glib.h>
 

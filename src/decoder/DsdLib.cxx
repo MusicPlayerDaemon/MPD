@@ -28,10 +28,7 @@
 #include "DecoderAPI.hxx"
 #include "util/bit_reverse.h"
 #include "tag_handler.h"
-
-extern "C" {
-#include "tag_id3.h"
-}
+#include "TagId3.hxx"
 
 #include <unistd.h>
 #include <stdio.h> /* for SEEK_SET, SEEK_CUR */

@@ -28,13 +28,13 @@
 #include "PlaylistPlugin.hxx"
 #include "tag.h"
 #include "tag_handler.h"
+#include "TagId3.hxx"
 #include "Song.hxx"
 #include "TagFile.hxx"
 #include "cue/CueParser.hxx"
 
 extern "C" {
 #include "tag_ape.h"
-#include "tag_id3.h"
 }
 
 #include <glib.h>

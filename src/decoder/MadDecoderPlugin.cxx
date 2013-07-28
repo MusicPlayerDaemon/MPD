@@ -21,11 +21,7 @@
 #include "MadDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
 #include "conf.h"
-
-extern "C" {
-#include "tag_id3.h"
-}
-
+#include "TagId3.hxx"
 #include "TagRva2.hxx"
 #include "tag_handler.h"
 #include "audio_check.h"

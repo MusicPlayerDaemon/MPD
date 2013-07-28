@@ -86,7 +86,6 @@ mpd_headers = \
 	src/tag_internal.h \
 	src/tag_table.h \
 	src/tag_ape.h \
-	src/tag_id3.h \
 	src/Timer.hxx \
 	src/mpd_error.h
 
@@ -435,7 +434,7 @@ libtag_a_SOURCES =\
 
 if HAVE_ID3TAG
 libtag_a_SOURCES += \
-	src/tag_id3.c \
+	src/TagId3.cxx src/TagId3.hxx \
 	src/TagRva2.cxx src/TagRva2.hxx \
 	src/riff.c src/aiff.c
 endif
@@ -1204,7 +1203,7 @@ test_dump_rva2_LDADD = \
 test_dump_rva2_SOURCES = test/dump_rva2.cxx \
 	src/riff.c src/aiff.c \
 	src/tag_handler.c \
-	src/tag_id3.c \
+	src/TagId3.cxx \
 	src/TagRva2.cxx
 endif
 

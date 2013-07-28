@@ -28,10 +28,10 @@
 #include "input_stream.h"
 #include "DecoderPlugin.hxx"
 #include "DecoderList.hxx"
+#include "TagId3.hxx"
 
 extern "C" {
 #include "tag_ape.h"
-#include "tag_id3.h"
 #include "tag_handler.h"
 }
 
