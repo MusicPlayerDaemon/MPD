@@ -35,13 +35,13 @@
 #include "decoder/GmeDecoderPlugin.hxx"
 #include "decoder/FaadDecoderPlugin.hxx"
 #include "decoder/MadDecoderPlugin.hxx"
+#include "decoder/SndfileDecoderPlugin.hxx"
 
 #include <glib.h>
 
 #include <string.h>
 
 extern const struct decoder_plugin mpg123_decoder_plugin;
-extern const struct decoder_plugin sndfile_decoder_plugin;
 extern const struct decoder_plugin mpcdec_decoder_plugin;
 extern const struct decoder_plugin modplug_decoder_plugin;
 extern const struct decoder_plugin mikmod_decoder_plugin;

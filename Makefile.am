@@ -604,7 +604,9 @@ libdecoder_plugins_a_SOURCES += \
 endif
 
 if ENABLE_SNDFILE
-libdecoder_plugins_a_SOURCES += src/decoder/sndfile_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += \
+	src/decoder/SndfileDecoderPlugin.cxx \
+	src/decoder/SndfileDecoderPlugin.hxx
 endif
 
 if HAVE_GME
