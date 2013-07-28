@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "ModplugDecoderPlugin.hxx"
 #include "decoder_api.h"
 #include "tag_handler.h"
 
@@ -28,42 +29,39 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "modplug"
 
-enum {
-	MODPLUG_FRAME_SIZE = 4096,
-	MODPLUG_PREALLOC_BLOCK = 256 * 1024,
-	MODPLUG_READ_BLOCK = 128 * 1024,
-	MODPLUG_FILE_LIMIT = 100 * 1024 * 1024,
-};
+static constexpr size_t MODPLUG_FRAME_SIZE = 4096;
+static constexpr size_t MODPLUG_PREALLOC_BLOCK = 256 * 1024;
+static constexpr size_t MODPLUG_READ_BLOCK = 128 * 1024;
+static constexpr goffset MODPLUG_FILE_LIMIT = 100 * 1024 * 1024;
 
-static GByteArray *mod_loadfile(struct decoder *decoder, struct input_stream *is)
+static GByteArray *
+mod_loadfile(struct decoder *decoder, struct input_stream *is)
 {
-	unsigned char *data;
-	GByteArray *bdatas;
-	size_t ret;
-
 	const goffset size = input_stream_get_size(is);
 
 	if (size == 0) {
 		g_warning("file is empty");
-		return NULL;
+		return nullptr;
 	}
 
 	if (size > MODPLUG_FILE_LIMIT) {
 		g_warning("file too large");
-		return NULL;
+		return nullptr;
 	}
 
 	//known/unknown size, preallocate array, lets read in chunks
+	GByteArray *bdatas;
 	if (size > 0) {
 		bdatas = g_byte_array_sized_new(size);
 	} else {
 		bdatas = g_byte_array_sized_new(MODPLUG_PREALLOC_BLOCK);
 	}
 
-	data = g_malloc(MODPLUG_READ_BLOCK);
+	unsigned char *data = (unsigned char *)g_malloc(MODPLUG_READ_BLOCK);
 
 	while (true) {
-		ret = decoder_read(decoder, is, data, MODPLUG_READ_BLOCK);
+		size_t ret = decoder_read(decoder, is, data,
+					  MODPLUG_READ_BLOCK);
 		if (ret == 0) {
 			if (input_stream_lock_eof(is))
 				/* end of file */
@@ -72,14 +70,14 @@ static GByteArray *mod_loadfile(struct decoder *decoder, struct input_stream *is
 			/* I/O error - skip this song */
 			g_free(data);
 			g_byte_array_free(bdatas, true);
-			return NULL;
+			return nullptr;
 		}
 
-		if (bdatas->len + ret > MODPLUG_FILE_LIMIT) {
+		if (goffset(bdatas->len + ret) > MODPLUG_FILE_LIMIT) {
 			g_warning("stream too large\n");
 			g_free(data);
 			g_byte_array_free(bdatas, TRUE);
-			return NULL;
+			return nullptr;
 		}
 
 		g_byte_array_append(bdatas, data, ret);
@@ -136,7 +134,7 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 		if (ret <= 0)
 			break;
 
-		cmd = decoder_data(decoder, NULL,
+		cmd = decoder_data(decoder, nullptr,
 				   audio_buffer, ret,
 				   0);
 
@@ -160,20 +158,20 @@ modplug_scan_stream(struct input_stream *is,
 	ModPlugFile *f;
 	GByteArray *bdatas;
 
-	bdatas = mod_loadfile(NULL, is);
+	bdatas = mod_loadfile(nullptr, is);
 	if (!bdatas)
 		return false;
 
 	f = ModPlug_Load(bdatas->data, bdatas->len);
 	g_byte_array_free(bdatas, TRUE);
-	if (f == NULL)
+	if (f == nullptr)
 		return false;
 
 	tag_handler_invoke_duration(handler, handler_ctx,
 				    ModPlug_GetLength(f) / 1000);
 
 	const char *title = ModPlug_GetName(f);
-	if (title != NULL)
+	if (title != nullptr)
 		tag_handler_invoke_tag(handler, handler_ctx,
 				       TAG_TITLE, title);
 
@@ -186,12 +184,18 @@ static const char *const mod_suffixes[] = {
 	"669", "amf", "ams", "dbm", "dfm", "dsm", "far", "it",
 	"med", "mdl", "mod", "mtm", "mt2", "okt", "s3m", "stm",
 	"ult", "umx", "xm",
-	NULL
+	nullptr
 };
 
 const struct decoder_plugin modplug_decoder_plugin = {
-	.name = "modplug",
-	.stream_decode = mod_decode,
-	.scan_stream = modplug_scan_stream,
-	.suffixes = mod_suffixes,
+	"modplug",
+	nullptr,
+	nullptr,
+	mod_decode,
+	nullptr,
+	nullptr,
+	modplug_scan_stream,
+	nullptr,
+	mod_suffixes,
+	nullptr,
 };
