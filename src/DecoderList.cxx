@@ -41,13 +41,13 @@
 #include "decoder/MikmodDecoderPlugin.hxx"
 #include "decoder/ModplugDecoderPlugin.hxx"
 #include "decoder/MpcdecDecoderPlugin.hxx"
+#include "decoder/FluidsynthDecoderPlugin.hxx"
 
 #include <glib.h>
 
 #include <string.h>
 
 extern const struct decoder_plugin sidplay_decoder_plugin;
-extern const struct decoder_plugin fluidsynth_decoder_plugin;
 
 const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef HAVE_MAD

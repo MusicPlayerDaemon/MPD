@@ -596,7 +596,9 @@ libdecoder_plugins_a_SOURCES += src/decoder/sidplay_decoder_plugin.cxx
 endif
 
 if ENABLE_FLUIDSYNTH
-libdecoder_plugins_a_SOURCES += src/decoder/fluidsynth_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += \
+	src/decoder/FluidsynthDecoderPlugin.cxx \
+	src/decoder/FluidsynthDecoderPlugin.hxx
 endif
 
 if ENABLE_WILDMIDI

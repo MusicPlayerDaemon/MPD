@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "FluidsynthDecoderPlugin.hxx"
 #include "decoder_api.h"
 #include "audio_check.h"
 #include "conf.h"
@@ -65,13 +66,14 @@ fluidsynth_level_to_glib(enum fluid_log_level level)
 static void
 fluidsynth_mpd_log_function(int level, char *message, G_GNUC_UNUSED void *data)
 {
-	g_log(G_LOG_DOMAIN, fluidsynth_level_to_glib(level), "%s", message);
+	g_log(G_LOG_DOMAIN, fluidsynth_level_to_glib(fluid_log_level(level)),
+	      "%s", message);
 }
 
 static bool
 fluidsynth_init(const struct config_param *param)
 {
-	GError *error = NULL;
+	GError *error = nullptr;
 
 	sample_rate = config_get_block_unsigned(param, "sample_rate", 48000);
 	if (!audio_check_sample_rate(sample_rate, &error)) {
@@ -85,7 +87,7 @@ fluidsynth_init(const struct config_param *param)
 					"/usr/share/sounds/sf2/FluidR3_GM.sf2");
 
 	fluid_set_log_function(LAST_LOG_LEVEL,
-			       fluidsynth_mpd_log_function, NULL);
+			       fluidsynth_mpd_log_function, nullptr);
 
 	return true;
 }
@@ -107,7 +109,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	/* set up fluid settings */
 
 	settings = new_fluid_settings();
-	if (settings == NULL)
+	if (settings == nullptr)
 		return;
 
 	fluid_settings_setnum(settings, setting_sample_rate, sample_rate);
@@ -119,7 +121,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	/* create the fluid synth */
 
 	synth = new_fluid_synth(settings);
-	if (synth == NULL) {
+	if (synth == nullptr) {
 		delete_fluid_settings(settings);
 		return;
 	}
@@ -135,7 +137,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	/* create the fluid player */
 
 	player = new_fluid_player(synth);
-	if (player == NULL) {
+	if (player == nullptr) {
 		delete_fluid_synth(synth);
 		delete_fluid_settings(settings);
 		return;
@@ -181,7 +183,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 		if (ret != 0)
 			break;
 
-		cmd = decoder_data(decoder, NULL, buffer, sizeof(buffer),
+		cmd = decoder_data(decoder, nullptr, buffer, sizeof(buffer),
 				   0);
 		if (cmd != DECODE_COMMAND_NONE)
 			break;
@@ -207,13 +209,18 @@ fluidsynth_scan_file(const char *file,
 
 static const char *const fluidsynth_suffixes[] = {
 	"mid",
-	NULL
+	nullptr
 };
 
 const struct decoder_plugin fluidsynth_decoder_plugin = {
-	.name = "fluidsynth",
-	.init = fluidsynth_init,
-	.file_decode = fluidsynth_file_decode,
-	.scan_file = fluidsynth_scan_file,
-	.suffixes = fluidsynth_suffixes,
+	"fluidsynth",
+	fluidsynth_init,
+	nullptr,
+	nullptr,
+	fluidsynth_file_decode,
+	fluidsynth_scan_file,
+	nullptr,
+	nullptr,
+	fluidsynth_suffixes,
+	nullptr,
 };
