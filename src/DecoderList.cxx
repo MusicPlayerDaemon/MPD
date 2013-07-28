@@ -22,6 +22,7 @@
 #include "decoder_plugin.h"
 #include "conf.h"
 #include "mpd_error.h"
+#include "decoder/AudiofileDecoderPlugin.hxx"
 #include "decoder/pcm_decoder_plugin.h"
 #include "decoder/DsdiffDecoderPlugin.hxx"
 #include "decoder/DsfDecoderPlugin.hxx"
@@ -41,7 +42,6 @@
 
 extern const struct decoder_plugin mpg123_decoder_plugin;
 extern const struct decoder_plugin sndfile_decoder_plugin;
-extern const struct decoder_plugin audiofile_decoder_plugin;
 extern const struct decoder_plugin mpcdec_decoder_plugin;
 extern const struct decoder_plugin modplug_decoder_plugin;
 extern const struct decoder_plugin mikmod_decoder_plugin;

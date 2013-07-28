@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "AudiofileDecoderPlugin.hxx"
 #include "decoder_api.h"
 #include "audio_check.h"
 #include "tag_handler.h"
@@ -37,7 +38,7 @@
 static int audiofile_get_duration(const char *file)
 {
 	int total_time;
-	AFfilehandle af_fp = afOpenFile(file, "r", NULL);
+	AFfilehandle af_fp = afOpenFile(file, "r", nullptr);
 	if (af_fp == AF_NULL_FILEHANDLE) {
 		return -1;
 	}
@@ -52,11 +53,11 @@ static ssize_t
 audiofile_file_read(AFvirtualfile *vfile, void *data, size_t length)
 {
 	struct input_stream *is = (struct input_stream *) vfile->closure;
-	GError *error = NULL;
+	GError *error = nullptr;
 	size_t nbytes;
 
 	nbytes = input_stream_lock_read(is, data, length, &error);
-	if (nbytes == 0 && error != NULL) {
+	if (nbytes == 0 && error != nullptr) {
 		g_warning("%s", error->message);
 		g_error_free(error);
 		return -1;
@@ -82,9 +83,9 @@ audiofile_file_tell(AFvirtualfile *vfile)
 static void
 audiofile_file_destroy(AFvirtualfile *vfile)
 {
-	assert(vfile->closure != NULL);
+	assert(vfile->closure != nullptr);
 
-	vfile->closure = NULL;
+	vfile->closure = nullptr;
 }
 
 static AFfileoffset
@@ -92,7 +93,7 @@ audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset offset, int is_relative)
 {
 	struct input_stream *is = (struct input_stream *) vfile->closure;
 	int whence = (is_relative ? SEEK_CUR : SEEK_SET);
-	if (input_stream_lock_seek(is, offset, whence, NULL)) {
+	if (input_stream_lock_seek(is, offset, whence, nullptr)) {
 		return input_stream_get_offset(is);
 	} else {
 		return -1;
@@ -102,9 +103,9 @@ audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset offset, int is_relative)
 static AFvirtualfile *
 setup_virtual_fops(struct input_stream *stream)
 {
-	AFvirtualfile *vf = g_malloc(sizeof(AFvirtualfile));
+	AFvirtualfile *vf = new AFvirtualfile();
 	vf->closure = stream;
-	vf->write   = NULL;
+	vf->write = nullptr;
 	vf->read    = audiofile_file_read;
 	vf->length  = audiofile_file_length;
 	vf->destroy = audiofile_file_destroy;
@@ -155,7 +156,7 @@ audiofile_setup_sample_format(AFfilehandle af_fp)
 static void
 audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 {
-	GError *error = NULL;
+	GError *error = nullptr;
 	AFvirtualfile *vf;
 	int fs, frame_count;
 	AFfilehandle af_fp;
@@ -173,7 +174,7 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 
 	vf = setup_virtual_fops(is);
 
-	af_fp = afOpenVirtualFile(vf, "r", NULL);
+	af_fp = afOpenVirtualFile(vf, "r", nullptr);
 	if (af_fp == AF_NULL_FILEHANDLE) {
 		g_warning("failed to input stream\n");
 		return;
@@ -206,7 +207,7 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 		if (ret <= 0)
 			break;
 
-		cmd = decoder_data(decoder, NULL,
+		cmd = decoder_data(decoder, nullptr,
 				   chunk, ret * fs,
 				   bit_rate);
 
@@ -240,19 +241,24 @@ audiofile_scan_file(const char *file,
 }
 
 static const char *const audiofile_suffixes[] = {
-	"wav", "au", "aiff", "aif", NULL
+	"wav", "au", "aiff", "aif", nullptr
 };
 
 static const char *const audiofile_mime_types[] = {
 	"audio/x-wav",
 	"audio/x-aiff",
-	NULL
+	nullptr
 };
 
 const struct decoder_plugin audiofile_decoder_plugin = {
-	.name = "audiofile",
-	.stream_decode = audiofile_stream_decode,
-	.scan_file = audiofile_scan_file,
-	.suffixes = audiofile_suffixes,
-	.mime_types = audiofile_mime_types,
+	"audiofile",
+	nullptr,
+	nullptr,
+	audiofile_stream_decode,
+	nullptr,
+	audiofile_scan_file,
+	nullptr,
+	nullptr,
+	audiofile_suffixes,
+	audiofile_mime_types,
 };

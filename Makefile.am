@@ -566,7 +566,9 @@ libdecoder_plugins_a_SOURCES += \
 endif
 
 if HAVE_AUDIOFILE
-libdecoder_plugins_a_SOURCES += src/decoder/audiofile_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += \
+	src/decoder/AudiofileDecoderPlugin.cxx \
+	src/decoder/AudiofileDecoderPlugin.hxx
 endif
 
 if ENABLE_MIKMOD_DECODER
