@@ -504,7 +504,9 @@ libdecoder_plugins_a_SOURCES += \
 endif
 
 if HAVE_MPG123
-libdecoder_plugins_a_SOURCES += src/decoder/mpg123_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += \
+	src/decoder/Mpg123DecoderPlugin.cxx \
+	src/decoder/Mpg123DecoderPlugin.hxx
 endif
 
 if HAVE_MPCDEC

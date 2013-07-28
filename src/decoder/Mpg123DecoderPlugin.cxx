@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,6 +18,7 @@
  */
 
 #include "config.h" /* must be first for large file support */
+#include "Mpg123DecoderPlugin.hxx"
 #include "decoder_api.h"
 #include "audio_check.h"
 #include "tag_handler.h"
@@ -57,7 +58,7 @@ static bool
 mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 		struct audio_format *audio_format)
 {
-	GError *gerror = NULL;
+	GError *gerror = nullptr;
 	char *path_dup;
 	int error;
 	int channels, encoding;
@@ -111,8 +112,8 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 
 	/* open the file */
 
-	handle = mpg123_new(NULL, &error);
-	if (handle == NULL) {
+	handle = mpg123_new(nullptr, &error);
+	if (handle == nullptr) {
 		g_warning("mpg123_new() failed: %s",
 			  mpg123_plain_strerror(error));
 		return;
@@ -172,7 +173,7 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 
 		/* send to MPD */
 
-		cmd = decoder_data(decoder, NULL, buffer, nbytes, info.bitrate);
+		cmd = decoder_data(decoder, nullptr, buffer, nbytes, info.bitrate);
 
 		if (cmd == DECODE_COMMAND_SEEK) {
 			off_t c = decoder_seek_where(decoder)*audio_format.sample_rate;
@@ -202,8 +203,8 @@ mpd_mpg123_scan_file(const char *path_fs,
 	int error;
 	off_t num_samples;
 
-	handle = mpg123_new(NULL, &error);
-	if (handle == NULL) {
+	handle = mpg123_new(nullptr, &error);
+	if (handle == nullptr) {
 		g_warning("mpg123_new() failed: %s",
 			  mpg123_plain_strerror(error));
 		return false;
@@ -231,15 +232,19 @@ mpd_mpg123_scan_file(const char *path_fs,
 
 static const char *const mpg123_suffixes[] = {
 	"mp3",
-	NULL
+	nullptr
 };
 
 const struct decoder_plugin mpg123_decoder_plugin = {
-	.name = "mpg123",
-	.init = mpd_mpg123_init,
-	.finish = mpd_mpg123_finish,
-	.file_decode = mpd_mpg123_file_decode,
+	"mpg123",
+	mpd_mpg123_init,
+	mpd_mpg123_finish,
 	/* streaming not yet implemented */
-	.scan_file = mpd_mpg123_scan_file,
-	.suffixes = mpg123_suffixes,
+	nullptr,
+	mpd_mpg123_file_decode,
+	mpd_mpg123_scan_file,
+	nullptr,
+	nullptr,
+	mpg123_suffixes,
+	nullptr,
 };
