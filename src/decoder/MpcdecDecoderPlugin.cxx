@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "MpcdecDecoderPlugin.hxx"
 #include "decoder_api.h"
 #include "audio_check.h"
 #include "tag_handler.h"
@@ -62,7 +63,7 @@ mpc_seek_cb(cb_first_arg, mpc_int32_t offset)
 {
 	struct mpc_decoder_data *data = (struct mpc_decoder_data *) cb_data;
 
-	return input_stream_lock_seek(data->is, offset, SEEK_SET, NULL);
+	return input_stream_lock_seek(data->is, offset, SEEK_SET, nullptr);
 }
 
 static mpc_int32_t
@@ -144,7 +145,7 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 #endif
 	mpc_reader reader;
 	mpc_streaminfo info;
-	GError *error = NULL;
+	GError *error = nullptr;
 	struct audio_format audio_format;
 
 	struct mpc_decoder_data data;
@@ -185,7 +186,7 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	}
 #else
 	demux = mpc_demux_init(&reader);
-	if (demux == NULL) {
+	if (demux == nullptr) {
 		if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP)
 			g_warning("Not a valid musepack stream");
 		return;
@@ -296,7 +297,7 @@ mpcdec_get_file_duration(struct input_stream *is)
 	struct mpc_decoder_data data;
 
 	data.is = is;
-	data.decoder = NULL;
+	data.decoder = nullptr;
 
 	reader.read = mpc_read_cb;
 	reader.seek = mpc_seek_cb;
@@ -312,7 +313,7 @@ mpcdec_get_file_duration(struct input_stream *is)
 		return -1;
 #else
 	demux = mpc_demux_init(&reader);
-	if (demux == NULL)
+	if (demux == nullptr)
 		return -1;
 
 	mpc_demux_get_info(demux, &info);
@@ -337,11 +338,17 @@ mpcdec_scan_stream(struct input_stream *is,
 	return true;
 }
 
-static const char *const mpcdec_suffixes[] = { "mpc", NULL };
+static const char *const mpcdec_suffixes[] = { "mpc", nullptr };
 
 const struct decoder_plugin mpcdec_decoder_plugin = {
-	.name = "mpcdec",
-	.stream_decode = mpcdec_decode,
-	.scan_stream = mpcdec_scan_stream,
-	.suffixes = mpcdec_suffixes,
+	"mpcdec",
+	nullptr,
+	nullptr,
+	mpcdec_decode,
+	nullptr,
+	nullptr,
+	mpcdec_scan_stream,
+	nullptr,
+	mpcdec_suffixes,
+	nullptr,
 };

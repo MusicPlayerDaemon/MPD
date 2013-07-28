@@ -510,7 +510,9 @@ libdecoder_plugins_a_SOURCES += \
 endif
 
 if HAVE_MPCDEC
-libdecoder_plugins_a_SOURCES += src/decoder/mpcdec_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += \
+	src/decoder/MpcdecDecoderPlugin.cxx \
+	src/decoder/MpcdecDecoderPlugin.hxx
 endif
 
 if HAVE_OPUS
