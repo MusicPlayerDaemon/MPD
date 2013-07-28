@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,11 +28,11 @@
  */
 
 #include "config.h"
-#include "dsf_decoder_plugin.h"
+#include "DsfDecoderPlugin.hxx"
 #include "decoder_api.h"
 #include "audio_check.h"
 #include "util/bit_reverse.h"
-#include "dsdlib.h"
+#include "DsdLib.hxx"
 #include "tag_handler.h"
 
 #include <unistd.h>
@@ -41,7 +41,7 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "dsf"
 
-struct dsf_metadata {
+struct DsfMetaData {
 	unsigned sample_rate, channels;
 	bool bitreverse;
 	uint64_t chunk_size;
@@ -51,7 +51,7 @@ struct dsf_metadata {
 #endif
 };
 
-struct dsf_header {
+struct DsfHeader {
 	/** DSF header id: "DSD " */
 	struct dsdlib_id id;
 	/** DSD chunk size, including id = 28 */
@@ -63,8 +63,7 @@ struct dsf_header {
 };
 
 /** DSF file fmt chunk */
-struct dsf_fmt_chunk {
-
+struct DsfFmtChunk {
 	/** id: "fmt " */
 	struct dsdlib_id id;
 	/** fmt chunk size, including id, normally 52 */
@@ -89,7 +88,7 @@ struct dsf_fmt_chunk {
 	uint32_t reserved;
 };
 
-struct dsf_data_chunk {
+struct DsfDataChunk {
 	struct dsdlib_id id;
 	/** "data" chunk size, includes header (id+size) */
 	uint32_t size_low, size_high;
@@ -100,10 +99,10 @@ struct dsf_data_chunk {
  */
 static bool
 dsf_read_metadata(struct decoder *decoder, struct input_stream *is,
-		  struct dsf_metadata *metadata)
+		  DsfMetaData *metadata)
 {
 	uint64_t chunk_size;
-	struct dsf_header dsf_header;
+	DsfHeader dsf_header;
 	if (!dsdlib_read(decoder, is, &dsf_header, sizeof(dsf_header)) ||
 	    !dsdlib_id_equals(&dsf_header.id, "DSD "))
 		return false;
@@ -121,7 +120,7 @@ dsf_read_metadata(struct decoder *decoder, struct input_stream *is,
 #endif
 
 	/* read the 'fmt ' chunk of the DSF file */
-	struct dsf_fmt_chunk dsf_fmt_chunk;
+	DsfFmtChunk dsf_fmt_chunk;
 	if (!dsdlib_read(decoder, is, &dsf_fmt_chunk, sizeof(dsf_fmt_chunk)) ||
 	    !dsdlib_id_equals(&dsf_fmt_chunk.id, "fmt "))
 		return false;
@@ -150,7 +149,7 @@ dsf_read_metadata(struct decoder *decoder, struct input_stream *is,
 		return false;
 
 	/* read the 'data' chunk of the DSF file */
-	struct dsf_data_chunk data_chunk;
+	DsfDataChunk data_chunk;
 	if (!dsdlib_read(decoder, is, &data_chunk, sizeof(data_chunk)) ||
 	    !dsdlib_id_equals(&data_chunk.id, "data"))
 		return false;
@@ -280,12 +279,8 @@ dsf_decode_chunk(struct decoder *decoder, struct input_stream *is,
 static void
 dsf_stream_decode(struct decoder *decoder, struct input_stream *is)
 {
-	struct dsf_metadata metadata = {
-		.sample_rate = 0,
-		.channels = 0,
-	};
-
 	/* check if it is a proper DSF file */
+	DsfMetaData metadata;
 	if (!dsf_read_metadata(decoder, is, &metadata))
 		return;
 
@@ -317,12 +312,8 @@ dsf_scan_stream(struct input_stream *is,
 		   G_GNUC_UNUSED const struct tag_handler *handler,
 		   G_GNUC_UNUSED void *handler_ctx)
 {
-	struct dsf_metadata metadata = {
-		.sample_rate = 0,
-		.channels = 0,
-	};
-
 	/* check DSF metadata */
+	DsfMetaData metadata;
 	if (!dsf_read_metadata(NULL, is, &metadata))
 		return false;
 
@@ -356,9 +347,14 @@ static const char *const dsf_mime_types[] = {
 };
 
 const struct decoder_plugin dsf_decoder_plugin = {
-	.name = "dsf",
-	.stream_decode = dsf_stream_decode,
-	.scan_stream = dsf_scan_stream,
-	.suffixes = dsf_suffixes,
-	.mime_types = dsf_mime_types,
+	"dsf",
+	nullptr,
+	nullptr,
+	dsf_stream_decode,
+	nullptr,
+	nullptr,
+	dsf_scan_stream,
+	nullptr,
+	dsf_suffixes,
+	dsf_mime_types,
 };

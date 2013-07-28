@@ -448,12 +448,12 @@ endif
 
 libdecoder_plugins_a_SOURCES = \
 	src/decoder/pcm_decoder_plugin.c \
-	src/decoder/dsdiff_decoder_plugin.c \
-	src/decoder/dsdiff_decoder_plugin.h \
-	src/decoder/dsf_decoder_plugin.c \
-	src/decoder/dsf_decoder_plugin.h \
-	src/decoder/dsdlib.c \
-	src/decoder/dsdlib.h \
+	src/decoder/DsdiffDecoderPlugin.cxx \
+	src/decoder/DsdiffDecoderPlugin.hxx \
+	src/decoder/DsfDecoderPlugin.cxx \
+	src/decoder/DsfDecoderPlugin.hxx \
+	src/decoder/DsdLib.cxx \
+	src/decoder/DsdLib.hxx \
 	src/DecoderBuffer.cxx src/DecoderBuffer.hxx \
 	src/DecoderPlugin.cxx \
 	src/DecoderList.cxx src/DecoderList.hxx

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,12 +27,12 @@
  */
 
 #include "config.h"
-#include "dsdiff_decoder_plugin.h"
+#include "DsdiffDecoderPlugin.hxx"
 #include "decoder_api.h"
 #include "audio_check.h"
 #include "util/bit_reverse.h"
 #include "tag_handler.h"
-#include "dsdlib.h"
+#include "DsdLib.hxx"
 #include "tag_handler.h"
 
 #include <unistd.h>
@@ -41,15 +41,25 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "dsdiff"
 
-struct dsdiff_header {
+struct DsdiffHeader {
 	struct dsdlib_id id;
 	uint32_t size_high, size_low;
 	struct dsdlib_id format;
 };
 
-struct dsdiff_chunk_header {
+struct DsdiffChunkHeader {
 	struct dsdlib_id id;
 	uint32_t size_high, size_low;
+
+	/**
+	 * Read the "size" attribute from the specified header, converting it
+	 * to the host byte order if needed.
+	 */
+	gcc_const
+	uint64_t GetSize() const {
+		return (((uint64_t)GUINT32_FROM_BE(size_high)) << 32) |
+			((uint64_t)GUINT32_FROM_BE(size_low));
+	}
 };
 
 /** struct for DSDIFF native Artist and Title tags */
@@ -57,7 +67,7 @@ struct dsdiff_native_tag {
 	uint32_t size;
 };
 
-struct dsdiff_metadata {
+struct DsdiffMetaData {
 	unsigned sample_rate, channels;
 	bool bitreverse;
 	uint64_t chunk_size;
@@ -80,18 +90,6 @@ dsdiff_init(const struct config_param *param)
 	return true;
 }
 
-/**
- * Read the "size" attribute from the specified header, converting it
- * to the host byte order if needed.
- */
-G_GNUC_CONST
-static uint64_t
-dsdiff_chunk_size(const struct dsdiff_chunk_header *header)
-{
-	return (((uint64_t)GUINT32_FROM_BE(header->size_high)) << 32) |
-		((uint64_t)GUINT32_FROM_BE(header->size_low));
-}
-
 static bool
 dsdiff_read_id(struct decoder *decoder, struct input_stream *is,
 	       struct dsdlib_id *id)
@@ -101,17 +99,17 @@ dsdiff_read_id(struct decoder *decoder, struct input_stream *is,
 
 static bool
 dsdiff_read_chunk_header(struct decoder *decoder, struct input_stream *is,
-			 struct dsdiff_chunk_header *header)
+			 DsdiffChunkHeader *header)
 {
 	return dsdlib_read(decoder, is, header, sizeof(*header));
 }
 
 static bool
 dsdiff_read_payload(struct decoder *decoder, struct input_stream *is,
-		    const struct dsdiff_chunk_header *header,
+		    const DsdiffChunkHeader *header,
 		    void *data, size_t length)
 {
-	uint64_t size = dsdiff_chunk_size(header);
+	uint64_t size = header->GetSize();
 	if (size != (uint64_t)length)
 		return false;
 
@@ -124,16 +122,16 @@ dsdiff_read_payload(struct decoder *decoder, struct input_stream *is,
  */
 static bool
 dsdiff_read_prop_snd(struct decoder *decoder, struct input_stream *is,
-		     struct dsdiff_metadata *metadata,
+		     DsdiffMetaData *metadata,
 		     goffset end_offset)
 {
-	struct dsdiff_chunk_header header;
+	DsdiffChunkHeader header;
 	while ((goffset)(input_stream_get_offset(is) + sizeof(header)) <= end_offset) {
 		if (!dsdiff_read_chunk_header(decoder, is, &header))
 			return false;
 
 		goffset chunk_end_offset = input_stream_get_offset(is)
-			+ dsdiff_chunk_size(&header);
+			+ header.GetSize();
 		if (chunk_end_offset > end_offset)
 			return false;
 
@@ -147,7 +145,7 @@ dsdiff_read_prop_snd(struct decoder *decoder, struct input_stream *is,
 			metadata->sample_rate = GUINT32_FROM_BE(sample_rate);
 		} else if (dsdlib_id_equals(&header.id, "CHNL")) {
 			uint16_t channels;
-			if (dsdiff_chunk_size(&header) < sizeof(channels) ||
+			if (header.GetSize() < sizeof(channels) ||
 			    !dsdlib_read(decoder, is,
 					 &channels, sizeof(channels)) ||
 			    !dsdlib_skip_to(decoder, is, chunk_end_offset))
@@ -156,7 +154,7 @@ dsdiff_read_prop_snd(struct decoder *decoder, struct input_stream *is,
 			metadata->channels = GUINT16_FROM_BE(channels);
 		} else if (dsdlib_id_equals(&header.id, "CMPR")) {
 			struct dsdlib_id type;
-			if (dsdiff_chunk_size(&header) < sizeof(type) ||
+			if (header.GetSize() < sizeof(type) ||
 			    !dsdlib_read(decoder, is,
 					 &type, sizeof(type)) ||
 			    !dsdlib_skip_to(decoder, is, chunk_end_offset))
@@ -182,10 +180,10 @@ dsdiff_read_prop_snd(struct decoder *decoder, struct input_stream *is,
  */
 static bool
 dsdiff_read_prop(struct decoder *decoder, struct input_stream *is,
-		 struct dsdiff_metadata *metadata,
-		 const struct dsdiff_chunk_header *prop_header)
+		 DsdiffMetaData *metadata,
+		 const DsdiffChunkHeader *prop_header)
 {
-	uint64_t prop_size = dsdiff_chunk_size(prop_header);
+	uint64_t prop_size = prop_header->GetSize();
 	goffset end_offset = input_stream_get_offset(is) + prop_size;
 
 	struct dsdlib_id prop_id;
@@ -206,12 +204,12 @@ dsdiff_handle_native_tag(struct input_stream *is,
 			 void *handler_ctx, goffset tagoffset,
 			 enum tag_type type)
 {
-	if (!dsdlib_skip_to(NULL, is, tagoffset))
+	if (!dsdlib_skip_to(nullptr, is, tagoffset))
 		return;
 
 	struct dsdiff_native_tag metatag;
 
-	if (!dsdlib_read(NULL, is, &metatag, sizeof(metatag)))
+	if (!dsdlib_read(nullptr, is, &metatag, sizeof(metatag)))
 		return;
 
 	uint32_t length = GUINT32_FROM_BE(metatag.size);
@@ -224,7 +222,7 @@ dsdiff_handle_native_tag(struct input_stream *is,
 	char *label;
 	label = string;
 
-	if (!dsdlib_read(NULL, is, label, (size_t)length))
+	if (!dsdlib_read(nullptr, is, label, (size_t)length))
 		return;
 
 	string[length] = '\0';
@@ -242,8 +240,8 @@ dsdiff_handle_native_tag(struct input_stream *is,
 
 static bool
 dsdiff_read_metadata_extra(struct decoder *decoder, struct input_stream *is,
-			   struct dsdiff_metadata *metadata,
-			   struct dsdiff_chunk_header *chunk_header,
+			   DsdiffMetaData *metadata,
+			   DsdiffChunkHeader *chunk_header,
 			   const struct tag_handler *handler,
 			   void *handler_ctx)
 {
@@ -263,7 +261,7 @@ dsdiff_read_metadata_extra(struct decoder *decoder, struct input_stream *is,
 
 	const goffset size = input_stream_get_size(is);
 	while (input_stream_get_offset(is) < size) {
-		uint64_t chunk_size = dsdiff_chunk_size(chunk_header);
+		uint64_t chunk_size = chunk_header->GetSize();
 
 		/* DIIN chunk, is directly followed by other chunks  */
 		if (dsdlib_id_equals(&chunk_header->id, "DIIN"))
@@ -271,19 +269,19 @@ dsdiff_read_metadata_extra(struct decoder *decoder, struct input_stream *is,
 
 		/* DIAR chunk - DSDIFF native tag for Artist */
 		if (dsdlib_id_equals(&chunk_header->id, "DIAR")) {
-			chunk_size = dsdiff_chunk_size(chunk_header);
+			chunk_size = chunk_header->GetSize();
 			metadata->diar_offset = input_stream_get_offset(is);
 		}
 
 		/* DITI chunk - DSDIFF native tag for Title */
 		if (dsdlib_id_equals(&chunk_header->id, "DITI")) {
-			chunk_size = dsdiff_chunk_size(chunk_header);
+			chunk_size = chunk_header->GetSize();
 			metadata->diti_offset = input_stream_get_offset(is);
 		}
 #ifdef HAVE_ID3TAG
 		/* 'ID3 ' chunk, offspec. Used by sacdextract */
 		if (dsdlib_id_equals(&chunk_header->id, "ID3 ")) {
-			chunk_size = dsdiff_chunk_size(chunk_header);
+			chunk_size = chunk_header->GetSize();
 			metadata->id3_offset = input_stream_get_offset(is);
 			metadata->id3_size = chunk_size;
 		}
@@ -328,10 +326,10 @@ dsdiff_read_metadata_extra(struct decoder *decoder, struct input_stream *is,
  */
 static bool
 dsdiff_read_metadata(struct decoder *decoder, struct input_stream *is,
-		     struct dsdiff_metadata *metadata,
-		     struct dsdiff_chunk_header *chunk_header)
+		     DsdiffMetaData *metadata,
+		     DsdiffChunkHeader *chunk_header)
 {
-	struct dsdiff_header header;
+	DsdiffHeader header;
 	if (!dsdlib_read(decoder, is, &header, sizeof(header)) ||
 	    !dsdlib_id_equals(&header.id, "FRM8") ||
 	    !dsdlib_id_equals(&header.format, "DSD "))
@@ -347,14 +345,12 @@ dsdiff_read_metadata(struct decoder *decoder, struct input_stream *is,
 					      chunk_header))
 					return false;
 		} else if (dsdlib_id_equals(&chunk_header->id, "DSD ")) {
-			uint64_t chunk_size;
-			chunk_size = dsdiff_chunk_size(chunk_header);
+			const uint64_t chunk_size = chunk_header->GetSize();
 			metadata->chunk_size = chunk_size;
 			return true;
 		} else {
 			/* ignore unknown chunk */
-			uint64_t chunk_size;
-			chunk_size = dsdiff_chunk_size(chunk_header);
+			const uint64_t chunk_size = chunk_header->GetSize();
 			goffset chunk_end_offset = input_stream_get_offset(is)
 				+ chunk_size;
 
@@ -429,17 +425,14 @@ dsdiff_decode_chunk(struct decoder *decoder, struct input_stream *is,
 static void
 dsdiff_stream_decode(struct decoder *decoder, struct input_stream *is)
 {
-	struct dsdiff_metadata metadata = {
-		.sample_rate = 0,
-		.channels = 0,
-	};
+	DsdiffMetaData metadata;
 
-	struct dsdiff_chunk_header chunk_header;
+	DsdiffChunkHeader chunk_header;
 	/* check if it is is a proper DFF file */
 	if (!dsdiff_read_metadata(decoder, is, &metadata, &chunk_header))
 		return;
 
-	GError *error = NULL;
+	GError *error = nullptr;
 	struct audio_format audio_format;
 	if (!audio_format_init_checked(&audio_format, metadata.sample_rate / 8,
 				       SAMPLE_FORMAT_DSD,
@@ -461,7 +454,7 @@ dsdiff_stream_decode(struct decoder *decoder, struct input_stream *is)
 	   chunk from a DFF file */
 
 	while (true) {
-		chunk_size = dsdiff_chunk_size(&chunk_header);
+		chunk_size = chunk_header.GetSize();
 
 		if (dsdlib_id_equals(&chunk_header.id, "DSD ")) {
 			if (!dsdiff_decode_chunk(decoder, is,
@@ -487,20 +480,17 @@ dsdiff_scan_stream(struct input_stream *is,
 		   G_GNUC_UNUSED const struct tag_handler *handler,
 		   G_GNUC_UNUSED void *handler_ctx)
 {
-	struct dsdiff_metadata metadata = {
-		.sample_rate = 0,
-		.channels = 0,
-	};
+	DsdiffMetaData metadata;
+	DsdiffChunkHeader chunk_header;
 
-	struct dsdiff_chunk_header chunk_header;
 	/* First check for DFF metadata */
-	if (!dsdiff_read_metadata(NULL, is, &metadata, &chunk_header))
+	if (!dsdiff_read_metadata(nullptr, is, &metadata, &chunk_header))
 		return false;
 
 	struct audio_format audio_format;
 	if (!audio_format_init_checked(&audio_format, metadata.sample_rate / 8,
 				       SAMPLE_FORMAT_DSD,
-				       metadata.channels, NULL))
+				       metadata.channels, nullptr))
 		/* refuse to parse files which we cannot play anyway */
 		return false;
 
@@ -510,7 +500,7 @@ dsdiff_scan_stream(struct input_stream *is,
 	tag_handler_invoke_duration(handler, handler_ctx, songtime);
 
 	/* Read additional metadata and created tags if available */
-	dsdiff_read_metadata_extra(NULL, is, &metadata, &chunk_header,
+	dsdiff_read_metadata_extra(nullptr, is, &metadata, &chunk_header,
 				   handler, handler_ctx);
 
 	return true;
@@ -518,19 +508,23 @@ dsdiff_scan_stream(struct input_stream *is,
 
 static const char *const dsdiff_suffixes[] = {
 	"dff",
-	NULL
+	nullptr
 };
 
 static const char *const dsdiff_mime_types[] = {
 	"application/x-dff",
-	NULL
+	nullptr
 };
 
 const struct decoder_plugin dsdiff_decoder_plugin = {
-	.name = "dsdiff",
-	.init = dsdiff_init,
-	.stream_decode = dsdiff_stream_decode,
-	.scan_stream = dsdiff_scan_stream,
-	.suffixes = dsdiff_suffixes,
-	.mime_types = dsdiff_mime_types,
+	"dsdiff",
+	dsdiff_init,
+	nullptr,
+	dsdiff_stream_decode,
+	nullptr,
+	nullptr,
+	dsdiff_scan_stream,
+	nullptr,
+	dsdiff_suffixes,
+	dsdiff_mime_types,
 };

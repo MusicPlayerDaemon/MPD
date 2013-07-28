@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,13 +24,14 @@
  */
 
 #include "config.h"
-#include "dsf_decoder_plugin.h"
+#include "DsdLib.hxx"
 #include "decoder_api.h"
 #include "util/bit_reverse.h"
 #include "tag_handler.h"
+
+extern "C" {
 #include "tag_id3.h"
-#include "dsdlib.h"
-#include "dsdiff_decoder_plugin.h"
+}
 
 #include <unistd.h>
 #include <stdio.h> /* for SEEK_SET, SEEK_CUR */
@@ -42,8 +43,8 @@
 bool
 dsdlib_id_equals(const struct dsdlib_id *id, const char *s)
 {
-	assert(id != NULL);
-	assert(s != NULL);
+	assert(id != nullptr);
+	assert(s != nullptr);
 	assert(strlen(s) == sizeof(id->value));
 
 	return memcmp(id->value, s, sizeof(id->value)) == 0;
@@ -65,7 +66,7 @@ dsdlib_skip_to(struct decoder *decoder, struct input_stream *is,
 	       goffset offset)
 {
 	if (input_stream_is_seekable(is))
-		return input_stream_seek(is, offset, SEEK_SET, NULL);
+		return input_stream_seek(is, offset, SEEK_SET, nullptr);
 
 	if (input_stream_get_offset(is) > offset)
 		return false;
@@ -98,7 +99,7 @@ dsdlib_skip(struct decoder *decoder, struct input_stream *is,
 		return true;
 
 	if (input_stream_is_seekable(is))
-		return input_stream_seek(is, delta, SEEK_CUR, NULL);
+		return input_stream_seek(is, delta, SEEK_CUR, nullptr);
 
 	char buffer[8192];
 	while (delta > 0) {
@@ -132,10 +133,10 @@ dsdlib_tag_id3(struct input_stream *is,
 	if (tagoffset == 0)
 		return;
 
-	if (!dsdlib_skip_to(NULL, is, tagoffset))
+	if (!dsdlib_skip_to(nullptr, is, tagoffset))
 		return;
 
-	struct id3_tag *id3_tag = NULL;
+	struct id3_tag *id3_tag = nullptr;
 	id3_length_t count;
 
 	/* Prevent broken files causing problems */
@@ -154,11 +155,11 @@ dsdlib_tag_id3(struct input_stream *is,
 	id3_byte_t *dsdid3data;
 	dsdid3data = dsdid3;
 
-	if (!dsdlib_read(NULL, is, dsdid3data, count))
+	if (!dsdlib_read(nullptr, is, dsdid3data, count))
 		return;
 
 	id3_tag = id3_tag_parse(dsdid3data, count);
-	if (id3_tag == NULL)
+	if (id3_tag == nullptr)
 		return;
 
 	scan_id3_tag(id3_tag, handler, handler_ctx);
