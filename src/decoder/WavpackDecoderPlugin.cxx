@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "WavpackDecoderPlugin.hxx"
-#include "decoder_api.h"
+#include "DecoderAPI.hxx"
 #include "InputStream.hxx"
 
 extern "C" {

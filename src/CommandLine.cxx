@@ -23,7 +23,7 @@
 #include "Log.hxx"
 #include "conf.h"
 #include "DecoderList.hxx"
-#include "decoder_plugin.h"
+#include "DecoderPlugin.hxx"
 #include "OutputList.hxx"
 #include "OutputPlugin.hxx"
 #include "InputRegistry.hxx"

@@ -20,7 +20,7 @@
 #ifndef MPD_DECODER_CONTROL_HXX
 #define MPD_DECODER_CONTROL_HXX
 
-#include "decoder_command.h"
+#include "DecoderCommand.hxx"
 #include "audio_format.h"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,14 +17,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DECODER_COMMAND_H
-#define MPD_DECODER_COMMAND_H
+#ifndef MPD_DECODER_ERROR_HXX
+#define MPD_DECODER_ERROR_HXX
 
-enum decoder_command {
-	DECODE_COMMAND_NONE = 0,
-	DECODE_COMMAND_START,
-	DECODE_COMMAND_STOP,
-	DECODE_COMMAND_SEEK
-};
+#include <glib.h>
+
+/**
+ * Quark for GError.domain.
+ */
+G_GNUC_CONST
+static inline GQuark
+decoder_quark(void)
+{
+	return g_quark_from_static_string("decoder");
+}
 
 #endif

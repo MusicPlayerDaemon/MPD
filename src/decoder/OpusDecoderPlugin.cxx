@@ -24,7 +24,7 @@
 #include "OggUtil.hxx"
 #include "OggFind.hxx"
 #include "OggSyncState.hxx"
-#include "decoder_api.h"
+#include "DecoderAPI.hxx"
 #include "OggCodec.hxx"
 #include "audio_check.h"
 #include "tag_handler.h"

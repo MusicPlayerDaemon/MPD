@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "FlacInput.hxx"
-#include "decoder_api.h"
+#include "DecoderAPI.hxx"
 #include "gcc.h"
 #include "InputStream.hxx"
 

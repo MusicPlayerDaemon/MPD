@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "decoder/PcmDecoderPlugin.hxx"
-#include "decoder_api.h"
+#include "DecoderAPI.hxx"
 
 extern "C" {
 #include "util/byte_reverse.h"

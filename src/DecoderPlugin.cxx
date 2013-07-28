@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "decoder_plugin.h"
+#include "DecoderPlugin.hxx"
 #include "util/StringUtil.hxx"
 
 #include <assert.h>

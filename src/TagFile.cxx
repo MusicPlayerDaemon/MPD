@@ -21,7 +21,7 @@
 #include "TagFile.hxx"
 #include "util/UriUtil.hxx"
 #include "DecoderList.hxx"
-#include "decoder_plugin.h"
+#include "DecoderPlugin.hxx"
 #include "input_stream.h"
 
 #include <assert.h>

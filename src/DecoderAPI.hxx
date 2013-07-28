@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,23 +24,17 @@
  * communicate with the mpd core.
  */
 
-#ifndef MPD_DECODER_API_H
-#define MPD_DECODER_API_H
+#ifndef MPD_DECODER_API_HXX
+#define MPD_DECODER_API_HXX
 
 #include "check.h"
-#include "decoder_command.h"
-#include "decoder_plugin.h"
+#include "DecoderCommand.hxx"
+#include "DecoderPlugin.hxx"
 #include "input_stream.h"
 #include "replay_gain_info.h"
 #include "tag.h"
 #include "audio_format.h"
 #include "conf.h"
-
-#include <stdbool.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * Notify the player thread that it has finished initialization and
@@ -171,9 +165,5 @@ decoder_replay_gain(struct decoder *decoder,
 void
 decoder_mixramp(struct decoder *decoder,
 		char *mixramp_start, char *mixramp_end);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

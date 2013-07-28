@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "FluidsynthDecoderPlugin.hxx"
-#include "decoder_api.h"
+#include "DecoderAPI.hxx"
 #include "audio_check.h"
 #include "conf.h"
 

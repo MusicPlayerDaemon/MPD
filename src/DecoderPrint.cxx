@@ -20,7 +20,7 @@
 #include "config.h"
 #include "DecoderPrint.hxx"
 #include "DecoderList.hxx"
-#include "decoder_plugin.h"
+#include "DecoderPlugin.hxx"
 #include "Client.hxx"
 
 #include <assert.h>

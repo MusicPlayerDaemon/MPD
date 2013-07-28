@@ -20,7 +20,7 @@
 #include "config.h"
 #include "IOThread.hxx"
 #include "DecoderList.hxx"
-#include "decoder_api.h"
+#include "DecoderAPI.hxx"
 #include "InputInit.hxx"
 #include "input_stream.h"
 #include "audio_format.h"

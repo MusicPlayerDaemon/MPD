@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "MikmodDecoderPlugin.hxx"
-#include "decoder_api.h"
+#include "DecoderAPI.hxx"
 #include "mpd_error.h"
 #include "tag_handler.h"
 

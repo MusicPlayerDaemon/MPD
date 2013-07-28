@@ -26,7 +26,7 @@
 #include "DatabaseLock.hxx"
 #include "Directory.hxx"
 #include "song.h"
-#include "decoder_plugin.h"
+#include "DecoderPlugin.hxx"
 #include "DecoderList.hxx"
 
 #include <glib.h>

@@ -30,7 +30,7 @@ extern "C" {
 #include "fs/FileSystem.hxx"
 #include "tag.h"
 #include "input_stream.h"
-#include "decoder_plugin.h"
+#include "DecoderPlugin.hxx"
 #include "DecoderList.hxx"
 
 extern "C" {

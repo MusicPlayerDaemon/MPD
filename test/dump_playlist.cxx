@@ -23,7 +23,7 @@
 #include "Directory.hxx"
 #include "input_stream.h"
 #include "conf.h"
-#include "decoder_api.h"
+#include "DecoderAPI.hxx"
 #include "DecoderList.hxx"
 #include "InputInit.hxx"
 #include "IOThread.hxx"

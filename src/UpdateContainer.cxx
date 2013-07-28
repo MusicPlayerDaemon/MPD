@@ -24,7 +24,7 @@
 #include "DatabaseLock.hxx"
 #include "Directory.hxx"
 #include "song.h"
-#include "decoder_plugin.h"
+#include "DecoderPlugin.hxx"
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
 

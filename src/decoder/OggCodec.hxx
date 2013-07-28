@@ -24,7 +24,7 @@
 #ifndef MPD_OGG_CODEC_HXX
 #define MPD_OGG_CODEC_HXX
 
-#include "decoder_api.h"
+#include "DecoderAPI.hxx"
 
 enum ogg_codec {
 	OGG_CODEC_UNKNOWN,

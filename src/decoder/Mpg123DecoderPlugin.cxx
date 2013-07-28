@@ -19,7 +19,7 @@
 
 #include "config.h" /* must be first for large file support */
 #include "Mpg123DecoderPlugin.hxx"
-#include "decoder_api.h"
+#include "DecoderAPI.hxx"
 #include "audio_check.h"
 #include "tag_handler.h"
 

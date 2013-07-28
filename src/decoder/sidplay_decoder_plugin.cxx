@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "../decoder_api.h"
+#include "../DecoderAPI.hxx"
 
 extern "C" {
 #include "tag_handler.h"

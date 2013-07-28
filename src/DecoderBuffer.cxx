@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "DecoderBuffer.hxx"
-#include "decoder_api.h"
+#include "DecoderAPI.hxx"
 
 #include <glib.h>
 

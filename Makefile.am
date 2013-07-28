@@ -58,10 +58,6 @@ mpd_headers = \
 	src/filter_internal.h \
 	src/command.h \
 	src/conf.h \
-	src/decoder_plugin.h \
-	src/decoder_command.h \
-	src/decoder_api.h \
-	src/decoder_plugin.h \
 	src/encoder_plugin.h \
 	src/encoder_api.h \
 	src/fd_util.h \
@@ -129,10 +125,12 @@ src_mpd_SOURCES = \
 	src/CommandLine.cxx src/CommandLine.hxx \
 	src/CrossFade.cxx src/CrossFade.hxx \
 	src/cue/CueParser.cxx src/cue/CueParser.hxx \
-	src/decoder_error.h \
+	src/DecoderError.hxx \
 	src/DecoderThread.cxx src/DecoderThread.hxx \
+	src/DecoderCommand.hxx \
 	src/DecoderControl.cxx src/DecoderControl.hxx \
-	src/DecoderAPI.cxx \
+	src/DecoderAPI.cxx src/DecoderAPI.hxx \
+	src/DecoderPlugin.hxx \
 	src/DecoderInternal.cxx src/DecoderInternal.hxx \
 	src/DecoderPrint.cxx src/DecoderPrint.hxx \
 	src/Directory.cxx src/Directory.hxx \

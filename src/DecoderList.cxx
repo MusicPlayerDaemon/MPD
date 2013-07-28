@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "DecoderList.hxx"
-#include "decoder_plugin.h"
+#include "DecoderPlugin.hxx"
 #include "conf.h"
 #include "mpd_error.h"
 #include "decoder/AudiofileDecoderPlugin.hxx"

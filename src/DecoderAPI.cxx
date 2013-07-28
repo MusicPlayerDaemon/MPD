@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "decoder_api.h"
+#include "DecoderAPI.hxx"
 #include "AudioConfig.hxx"
 #include "replay_gain_config.h"
 #include "MusicChunk.hxx"

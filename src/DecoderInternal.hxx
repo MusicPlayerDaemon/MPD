@@ -20,7 +20,7 @@
 #ifndef MPD_DECODER_INTERNAL_HXX
 #define MPD_DECODER_INTERNAL_HXX
 
-#include "decoder_command.h"
+#include "DecoderCommand.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "replay_gain_info.h"
 

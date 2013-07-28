@@ -28,7 +28,7 @@
 
 #include "config.h"
 #include "DsdiffDecoderPlugin.hxx"
-#include "decoder_api.h"
+#include "DecoderAPI.hxx"
 #include "audio_check.h"
 #include "util/bit_reverse.h"
 #include "tag_handler.h"

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "MadDecoderPlugin.hxx"
-#include "decoder_api.h"
+#include "DecoderAPI.hxx"
 #include "conf.h"
 
 extern "C" {

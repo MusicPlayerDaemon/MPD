@@ -29,7 +29,7 @@
 
 #include "config.h"
 #include "DsfDecoderPlugin.hxx"
-#include "decoder_api.h"
+#include "DecoderAPI.hxx"
 #include "audio_check.h"
 #include "util/bit_reverse.h"
 #include "DsdLib.hxx"

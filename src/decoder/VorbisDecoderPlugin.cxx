@@ -20,7 +20,7 @@
 #include "config.h"
 #include "VorbisDecoderPlugin.h"
 #include "VorbisComments.hxx"
-#include "decoder_api.h"
+#include "DecoderAPI.hxx"
 #include "InputStream.hxx"
 #include "OggCodec.hxx"
 #include "util/UriUtil.hxx"
