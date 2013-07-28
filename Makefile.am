@@ -574,7 +574,9 @@ libdecoder_plugins_a_SOURCES += \
 endif
 
 if ENABLE_MIKMOD_DECODER
-libdecoder_plugins_a_SOURCES += src/decoder/mikmod_decoder_plugin.c
+libdecoder_plugins_a_SOURCES += \
+	src/decoder/MikmodDecoderPlugin.cxx \
+	src/decoder/MikmodDecoderPlugin.hxx
 endif
 
 if HAVE_MODPLUG

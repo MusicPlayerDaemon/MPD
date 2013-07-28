@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "MikmodDecoderPlugin.hxx"
 #include "decoder_api.h"
 #include "mpd_error.h"
 #include "tag_handler.h"
@@ -31,7 +32,7 @@
 
 /* this is largely copied from alsaplayer */
 
-#define MIKMOD_FRAME_SIZE	4096
+static constexpr size_t MIKMOD_FRAME_SIZE = 4096;
 
 static BOOL
 mikmod_mpd_init(void)
@@ -64,7 +65,7 @@ static char drv_alias[] = PACKAGE;
 #endif
 
 static MDRIVER drv_mpd = {
-	NULL,
+	nullptr,
 	drv_name,
 	drv_version,
 	0,
@@ -72,9 +73,9 @@ static MDRIVER drv_mpd = {
 #if (LIBMIKMOD_VERSION > 0x030106)
 	drv_alias,
 #if (LIBMIKMOD_VERSION >= 0x030200)
-	NULL,  /* CmdLineHelp */
+	nullptr,  /* CmdLineHelp */
 #endif
-	NULL,  /* CommandLine */
+	nullptr,  /* CommandLine */
 #endif
 	mikmod_mpd_is_present,
 	VC_SampleLoad,
@@ -83,12 +84,12 @@ static MDRIVER drv_mpd = {
 	VC_SampleLength,
 	mikmod_mpd_init,
 	mikmod_mpd_exit,
-	NULL,
+	nullptr,
 	VC_SetNumVoices,
 	VC_PlayStart,
 	VC_PlayStop,
 	mikmod_mpd_update,
-	NULL,
+	nullptr,
 	VC_VoiceSetVolume,
 	VC_VoiceGetVolume,
 	VC_VoiceSetFrequency,
@@ -155,7 +156,7 @@ mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 	handle = Player_Load(path2, 128, 0);
 	g_free(path2);
 
-	if (handle == NULL) {
+	if (handle == nullptr) {
 		g_warning("failed to open mod: %s", path_fs);
 		return;
 	}
@@ -171,7 +172,7 @@ mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 	Player_Start(handle);
 	while (cmd == DECODE_COMMAND_NONE && Player_Active()) {
 		ret = VC_WriteBytes(buffer, sizeof(buffer));
-		cmd = decoder_data(decoder, NULL, buffer, ret, 0);
+		cmd = decoder_data(decoder, nullptr, buffer, ret, 0);
 	}
 
 	Player_Stop();
@@ -185,7 +186,7 @@ mikmod_decoder_scan_file(const char *path_fs,
 	char *path2 = g_strdup(path_fs);
 	MODULE *handle = Player_Load(path2, 128, 0);
 
-	if (handle == NULL) {
+	if (handle == nullptr) {
 		g_free(path2);
 		g_debug("Failed to open file: %s", path_fs);
 		return false;
@@ -197,7 +198,7 @@ mikmod_decoder_scan_file(const char *path_fs,
 	char *title = Player_LoadTitle(path2);
 	g_free(path2);
 
-	if (title != NULL) {
+	if (title != nullptr) {
 		tag_handler_invoke_tag(handler, handler_ctx,
 				       TAG_TITLE, title);
 		free(title);
@@ -222,14 +223,18 @@ static const char *const mikmod_decoder_suffixes[] = {
 	"ult",
 	"uni",
 	"xm",
-	NULL
+	nullptr
 };
 
 const struct decoder_plugin mikmod_decoder_plugin = {
-	.name = "mikmod",
-	.init = mikmod_decoder_init,
-	.finish = mikmod_decoder_finish,
-	.file_decode = mikmod_decoder_file_decode,
-	.scan_file = mikmod_decoder_scan_file,
-	.suffixes = mikmod_decoder_suffixes,
+	"mikmod",
+	mikmod_decoder_init,
+	mikmod_decoder_finish,
+	nullptr,
+	mikmod_decoder_file_decode,
+	mikmod_decoder_scan_file,
+	nullptr,
+	nullptr,
+	mikmod_decoder_suffixes,
+	nullptr,
 };
