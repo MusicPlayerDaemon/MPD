@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAG_TABLE_H
-#define MPD_TAG_TABLE_H
+#ifndef MPD_TAG_TABLE_HXX
+#define MPD_TAG_TABLE_HXX
 
 #include "tag.h"
 #include "gcc.h"
@@ -40,7 +40,7 @@ gcc_pure
 static inline enum tag_type
 tag_table_lookup(const struct tag_table *table, const char *name)
 {
-	for (; table->name != NULL; ++table)
+	for (; table->name != nullptr; ++table)
 		if (strcmp(name, table->name) == 0)
 			return table->type;
 
@@ -56,7 +56,7 @@ gcc_pure
 static inline enum tag_type
 tag_table_lookup_i(const struct tag_table *table, const char *name)
 {
-	for (; table->name != NULL; ++table)
+	for (; table->name != nullptr; ++table)
 		if (g_ascii_strcasecmp(name, table->name) == 0)
 			return table->type;
 

@@ -82,7 +82,6 @@ mpd_headers = \
 	src/stats.h \
 	src/tag.h \
 	src/tag_internal.h \
-	src/tag_table.h \
 	src/Timer.hxx \
 	src/mpd_error.h
 
@@ -222,6 +221,7 @@ src_mpd_SOURCES = \
 	src/StateFile.cxx src/StateFile.hxx \
 	src/Stats.cxx \
 	src/Tag.cxx \
+	src/TagTable.hxx \
 	src/TagNames.c \
 	src/TagPool.cxx src/TagPool.hxx \
 	src/TagPrint.cxx src/TagPrint.hxx \

@@ -20,7 +20,7 @@
 #ifndef MPD_APE_TAG_HXX
 #define MPD_APE_TAG_HXX
 
-#include "tag_table.h"
+#include "TagTable.hxx"
 
 #include <stdbool.h>
 

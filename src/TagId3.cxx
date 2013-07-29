@@ -20,7 +20,7 @@
 #include "config.h"
 #include "TagId3.hxx"
 #include "TagHandler.hxx"
-#include "tag_table.h"
+#include "TagTable.hxx"
 #include "tag.h"
 
 extern "C" {

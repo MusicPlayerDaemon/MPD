@@ -21,7 +21,7 @@
 #include "VorbisComments.hxx"
 #include "XiphTags.hxx"
 #include "tag.h"
-#include "tag_table.h"
+#include "TagTable.hxx"
 #include "TagHandler.hxx"
 #include "replay_gain_info.h"
 

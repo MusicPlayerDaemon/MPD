@@ -21,7 +21,7 @@
 #include "ApeTag.hxx"
 #include "ApeLoader.hxx"
 #include "tag.h"
-#include "tag_table.h"
+#include "TagTable.hxx"
 #include "TagHandler.hxx"
 
 const struct tag_table ape_tags[] = {
