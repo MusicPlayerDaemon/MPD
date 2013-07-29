@@ -29,7 +29,7 @@ extern "C" {
 #include "audio_check.h"
 }
 
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 
 #ifndef HAVE_TREMOR
 #define OV_EXCLUDE_STATIC_CALLBACKS

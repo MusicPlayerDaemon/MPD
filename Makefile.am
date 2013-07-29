@@ -226,7 +226,7 @@ src_mpd_SOURCES = \
 	src/TagPool.cxx src/TagPool.hxx \
 	src/TagPrint.cxx src/TagPrint.hxx \
 	src/TagSave.cxx src/TagSave.hxx \
-	src/tag_handler.c src/tag_handler.h \
+	src/TagHandler.cxx src/TagHandler.hxx \
 	src/TagFile.cxx src/TagFile.hxx \
 	src/TextFile.cxx src/TextFile.hxx \
 	src/TextInputStream.cxx \
@@ -1138,7 +1138,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	$(DECODER_SRC) \
 	src/IOThread.cxx \
 	src/Song.cxx src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
-	src/tag_handler.c src/TagFile.cxx \
+	src/TagHandler.cxx src/TagFile.cxx \
 	src/audio_check.c \
 	src/TextInputStream.cxx \
 	src/cue/CueParser.cxx src/cue/CueParser.hxx \
@@ -1164,7 +1164,7 @@ test_run_decoder_LDADD = \
 test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
-	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/tag_handler.c \
+	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagHandler.cxx \
 	src/ReplayGainInfo.cxx \
 	src/fd_util.c \
 	src/audio_check.c \
@@ -1187,7 +1187,7 @@ test_read_tags_LDADD = \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.cxx \
 	src/IOThread.cxx \
-	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/tag_handler.c \
+	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagHandler.cxx \
 	src/ReplayGainInfo.cxx \
 	src/fd_util.c \
 	src/audio_check.c \
@@ -1199,7 +1199,7 @@ test_dump_rva2_LDADD = \
 	$(GLIB_LIBS)
 test_dump_rva2_SOURCES = test/dump_rva2.cxx \
 	src/riff.c src/aiff.c \
-	src/tag_handler.c \
+	src/TagHandler.cxx \
 	src/TagId3.cxx \
 	src/TagRva2.cxx
 endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,14 +18,14 @@
  */
 
 #include "config.h"
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 
 #include <glib.h>
 
 static void
 add_tag_duration(unsigned seconds, void *ctx)
 {
-	struct tag *tag = ctx;
+	struct tag *tag = (struct tag *)ctx;
 
 	tag->time = seconds;
 }
@@ -33,28 +33,29 @@ add_tag_duration(unsigned seconds, void *ctx)
 static void
 add_tag_tag(enum tag_type type, const char *value, void *ctx)
 {
-	struct tag *tag = ctx;
+	struct tag *tag = (struct tag *)ctx;
 
 	tag_add_item(tag, type, value);
 }
 
 const struct tag_handler add_tag_handler = {
-	.duration = add_tag_duration,
-	.tag = add_tag_tag,
+	add_tag_duration,
+	add_tag_tag,
+	nullptr,
 };
 
 static void
 full_tag_pair(const char *name, G_GNUC_UNUSED const char *value, void *ctx)
 {
-	struct tag *tag = ctx;
+	struct tag *tag = (struct tag *)ctx;
 
 	if (g_ascii_strcasecmp(name, "cuesheet") == 0)
 		tag->has_playlist = true;
 }
 
 const struct tag_handler full_tag_handler = {
-	.duration = add_tag_duration,
-	.tag = add_tag_tag,
-	.pair = full_tag_pair,
+	add_tag_duration,
+	add_tag_tag,
+	full_tag_pair,
 };
 

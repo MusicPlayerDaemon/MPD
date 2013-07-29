@@ -25,7 +25,7 @@ extern "C" {
 }
 
 #include "tag.h"
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 #include "tag_table.h"
 #include "replay_gain_info.h"
 

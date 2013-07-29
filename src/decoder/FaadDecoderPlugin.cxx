@@ -22,7 +22,7 @@
 #include "DecoderAPI.hxx"
 #include "DecoderBuffer.hxx"
 #include "audio_check.h"
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 
 #include <neaacdec.h>
 

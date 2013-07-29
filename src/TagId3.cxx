@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "TagId3.hxx"
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 #include "tag_table.h"
 #include "tag.h"
 

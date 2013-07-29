@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "AdPlugDecoderPlugin.h"
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 #include "DecoderAPI.hxx"
 
 extern "C" {

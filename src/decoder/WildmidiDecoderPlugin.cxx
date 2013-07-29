@@ -20,7 +20,7 @@
 #include "config.h"
 #include "WildmidiDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 #include "glib_compat.h"
 
 #include <glib.h>

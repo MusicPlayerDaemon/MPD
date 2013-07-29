@@ -27,10 +27,7 @@
 #include "DecoderPlugin.hxx"
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
-
-extern "C" {
-#include "tag_handler.h"
-}
+#include "TagHandler.hxx"
 
 #include <glib.h>
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAG_HANDLER_H
-#define MPD_TAG_HANDLER_H
+#ifndef MPD_TAG_HANDLER_HXX
+#define MPD_TAG_HANDLER_HXX
 
 #include "check.h"
 #include "tag.h"
@@ -55,9 +55,9 @@ static inline void
 tag_handler_invoke_duration(const struct tag_handler *handler, void *ctx,
 			  unsigned seconds)
 {
-	assert(handler != NULL);
+	assert(handler != nullptr);
 
-	if (handler->duration != NULL)
+	if (handler->duration != nullptr)
 		handler->duration(seconds, ctx);
 }
 
@@ -65,11 +65,11 @@ static inline void
 tag_handler_invoke_tag(const struct tag_handler *handler, void *ctx,
 		       enum tag_type type, const char *value)
 {
-	assert(handler != NULL);
+	assert(handler != nullptr);
 	assert((unsigned)type < TAG_NUM_OF_ITEM_TYPES);
-	assert(value != NULL);
+	assert(value != nullptr);
 
-	if (handler->tag != NULL)
+	if (handler->tag != nullptr)
 		handler->tag(type, value, ctx);
 }
 
@@ -77,11 +77,11 @@ static inline void
 tag_handler_invoke_pair(const struct tag_handler *handler, void *ctx,
 			const char *name, const char *value)
 {
-	assert(handler != NULL);
-	assert(name != NULL);
-	assert(value != NULL);
+	assert(handler != nullptr);
+	assert(name != nullptr);
+	assert(value != nullptr);
 
-	if (handler->pair != NULL)
+	if (handler->pair != nullptr)
 		handler->pair(name, value, ctx);
 }
 

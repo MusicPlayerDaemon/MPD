@@ -23,7 +23,7 @@
 #include "conf.h"
 #include "TagId3.hxx"
 #include "TagRva2.hxx"
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 #include "audio_check.h"
 
 #include <assert.h>

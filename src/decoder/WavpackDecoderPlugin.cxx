@@ -26,7 +26,7 @@ extern "C" {
 #include "audio_check.h"
 }
 
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 #include "ApeTag.hxx"
 
 #include <wavpack/wavpack.h>

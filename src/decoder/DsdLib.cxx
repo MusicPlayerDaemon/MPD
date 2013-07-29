@@ -27,7 +27,7 @@
 #include "DsdLib.hxx"
 #include "DecoderAPI.hxx"
 #include "util/bit_reverse.h"
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 #include "TagId3.hxx"
 
 #include <unistd.h>

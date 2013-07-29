@@ -24,7 +24,7 @@
 #include "FfmpegDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 #include "InputStream.hxx"
 
 extern "C" {

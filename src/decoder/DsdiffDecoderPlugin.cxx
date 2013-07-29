@@ -31,9 +31,9 @@
 #include "DecoderAPI.hxx"
 #include "audio_check.h"
 #include "util/bit_reverse.h"
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 #include "DsdLib.hxx"
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 
 #include <unistd.h>
 #include <stdio.h> /* for SEEK_SET, SEEK_CUR */

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ModplugDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 
 #include <glib.h>
 #include <modplug.h>

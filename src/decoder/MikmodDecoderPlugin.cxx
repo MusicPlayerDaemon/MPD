@@ -21,7 +21,7 @@
 #include "MikmodDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
 #include "mpd_error.h"
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 
 #include <glib.h>
 #include <mikmod.h>

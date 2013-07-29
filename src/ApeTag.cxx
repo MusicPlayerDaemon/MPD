@@ -22,7 +22,7 @@
 #include "ApeLoader.hxx"
 #include "tag.h"
 #include "tag_table.h"
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 
 const struct tag_table ape_tags[] = {
 	{ "album artist", TAG_ALBUM_ARTIST },

@@ -24,7 +24,7 @@
 #include "InputInit.hxx"
 #include "InputStream.hxx"
 #include "audio_format.h"
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 #include "TagId3.hxx"
 #include "ApeTag.hxx"
 

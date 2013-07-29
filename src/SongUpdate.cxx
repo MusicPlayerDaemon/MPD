@@ -28,12 +28,9 @@
 #include "input_stream.h"
 #include "DecoderPlugin.hxx"
 #include "DecoderList.hxx"
+#include "TagHandler.hxx"
 #include "TagId3.hxx"
 #include "ApeTag.hxx"
-
-extern "C" {
-#include "tag_handler.h"
-}
 
 #include <glib.h>
 

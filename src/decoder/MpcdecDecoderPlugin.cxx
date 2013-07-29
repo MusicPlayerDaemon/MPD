@@ -21,7 +21,7 @@
 #include "MpcdecDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
 #include "audio_check.h"
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 
 #ifdef MPC_IS_OLD_API
 #include <mpcdec/mpcdec.h>

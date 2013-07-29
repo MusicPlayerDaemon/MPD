@@ -21,7 +21,7 @@
 #include "../DecoderAPI.hxx"
 
 extern "C" {
-#include "tag_handler.h"
+#include "TagHandler.hxx"
 }
 
 #include <errno.h>
