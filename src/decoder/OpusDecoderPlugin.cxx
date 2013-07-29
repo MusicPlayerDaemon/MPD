@@ -26,7 +26,7 @@
 #include "OggSyncState.hxx"
 #include "DecoderAPI.hxx"
 #include "OggCodec.hxx"
-#include "audio_check.h"
+#include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
 #include "InputStream.hxx"
 

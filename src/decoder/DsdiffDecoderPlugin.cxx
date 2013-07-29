@@ -29,7 +29,7 @@
 #include "config.h"
 #include "DsdiffDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
-#include "audio_check.h"
+#include "CheckAudioFormat.hxx"
 #include "util/bit_reverse.h"
 #include "TagHandler.hxx"
 #include "DsdLib.hxx"

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "SndfileDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
-#include "audio_check.h"
+#include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
 
 #include <sndfile.h>

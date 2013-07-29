@@ -26,10 +26,7 @@
 #include "FfmpegMetaData.hxx"
 #include "TagHandler.hxx"
 #include "InputStream.hxx"
-
-extern "C" {
-#include "audio_check.h"
-}
+#include "CheckAudioFormat.hxx"
 
 #include <glib.h>
 

@@ -21,10 +21,7 @@
 #include "AdPlugDecoderPlugin.h"
 #include "TagHandler.hxx"
 #include "DecoderAPI.hxx"
-
-extern "C" {
-#include "audio_check.h"
-}
+#include "CheckAudioFormat.hxx"
 
 #include <adplug/adplug.h>
 #include <adplug/emuopl.h>

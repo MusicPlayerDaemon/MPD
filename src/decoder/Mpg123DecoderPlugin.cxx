@@ -20,7 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "Mpg123DecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
-#include "audio_check.h"
+#include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
 
 #include <glib.h>

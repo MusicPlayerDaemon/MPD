@@ -25,7 +25,7 @@
 #include "config.h"
 #include "AudioParser.hxx"
 #include "audio_format.h"
-#include "audio_check.h"
+#include "CheckAudioFormat.hxx"
 #include "gcc.h"
 
 #include <assert.h>

@@ -21,11 +21,7 @@
 #include "WavpackDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
 #include "InputStream.hxx"
-
-extern "C" {
-#include "audio_check.h"
-}
-
+#include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
 #include "ApeTag.hxx"
 

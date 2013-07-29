@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,13 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_AUDIO_CHECK_H
-#define MPD_AUDIO_CHECK_H
+#ifndef MPD_CHECK_AUDIO_FORMAT_HXX
+#define MPD_CHECK_AUDIO_FORMAT_HXX
 
 #include "audio_format.h"
 
 #include <glib.h>
-#include <stdbool.h>
 
 /**
  * The GLib quark used for errors reported by this library.
@@ -34,10 +33,6 @@ audio_format_quark(void)
 {
 	return g_quark_from_static_string("audio_format");
 }
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 bool
 audio_check_sample_rate(unsigned long sample_rate, GError **error_r);
@@ -55,9 +50,5 @@ bool
 audio_format_init_checked(struct audio_format *af, unsigned long sample_rate,
 			  enum sample_format sample_format, unsigned channels,
 			  GError **error_r);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

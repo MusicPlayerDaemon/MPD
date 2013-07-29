@@ -24,11 +24,7 @@
 #include "InputStream.hxx"
 #include "OggCodec.hxx"
 #include "util/UriUtil.hxx"
-
-extern "C" {
-#include "audio_check.h"
-}
-
+#include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
 
 #ifndef HAVE_TREMOR

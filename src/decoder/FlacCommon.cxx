@@ -25,10 +25,7 @@
 #include "FlacCommon.hxx"
 #include "FlacMetadata.hxx"
 #include "FlacPcm.hxx"
-
-extern "C" {
-#include "audio_check.h"
-}
+#include "CheckAudioFormat.hxx"
 
 #include <glib.h>
 

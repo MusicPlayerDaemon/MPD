@@ -24,7 +24,7 @@
 #include "TagId3.hxx"
 #include "TagRva2.hxx"
 #include "TagHandler.hxx"
-#include "audio_check.h"
+#include "CheckAudioFormat.hxx"
 
 #include <assert.h>
 #include <unistd.h>

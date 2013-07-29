@@ -52,7 +52,6 @@ mpd_headers = \
 	src/check.h \
 	src/ack.h \
 	src/audio_format.h \
-	src/audio_check.h \
 	src/output_api.h \
 	src/filter_internal.h \
 	src/command.h \
@@ -101,7 +100,7 @@ src_mpd_SOURCES = \
 	src/clock.c src/clock.h \
 	src/notify.cxx src/notify.hxx \
 	src/AudioConfig.cxx src/AudioConfig.hxx \
-	src/audio_check.c \
+	src/CheckAudioFormat.cxx src/CheckAudioFormat.hxx \
 	src/audio_format.c \
 	src/AudioParser.cxx src/AudioParser.hxx \
 	src/protocol/ArgParser.cxx src/protocol/ArgParser.hxx \
@@ -1139,7 +1138,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	src/IOThread.cxx \
 	src/Song.cxx src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
 	src/TagHandler.cxx src/TagFile.cxx \
-	src/audio_check.c \
+	src/CheckAudioFormat.cxx \
 	src/TextInputStream.cxx \
 	src/cue/CueParser.cxx src/cue/CueParser.hxx \
 	src/fd_util.c
@@ -1167,7 +1166,7 @@ test_run_decoder_SOURCES = test/run_decoder.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagHandler.cxx \
 	src/ReplayGainInfo.cxx \
 	src/fd_util.c \
-	src/audio_check.c \
+	src/CheckAudioFormat.cxx \
 	src/audio_format.c \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
@@ -1190,7 +1189,7 @@ test_read_tags_SOURCES = test/read_tags.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagHandler.cxx \
 	src/ReplayGainInfo.cxx \
 	src/fd_util.c \
-	src/audio_check.c \
+	src/CheckAudioFormat.cxx \
 	$(DECODER_SRC)
 
 if HAVE_ID3TAG
@@ -1214,7 +1213,7 @@ test_run_filter_SOURCES = test/run_filter.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/stdbin.h \
 	src/FilterPlugin.cxx src/FilterRegistry.cxx \
-	src/audio_check.c \
+	src/CheckAudioFormat.cxx \
 	src/audio_format.c \
 	src/AudioParser.cxx \
 	src/ReplayGainInfo.cxx \
@@ -1233,7 +1232,7 @@ noinst_PROGRAMS += test/run_encoder
 test_run_encoder_SOURCES = test/run_encoder.cxx \
 	test/stdbin.h \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
-	src/audio_check.c \
+	src/CheckAudioFormat.cxx \
 	src/audio_format.c \
 	src/AudioParser.cxx
 test_run_encoder_LDADD = \
@@ -1251,7 +1250,7 @@ noinst_PROGRAMS += test/test_vorbis_encoder
 test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.cxx \
 	test/stdbin.h \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
-	src/audio_check.c \
+	src/CheckAudioFormat.cxx \
 	src/audio_format.c \
 	src/AudioParser.cxx \
 	$(ENCODER_SRC)
@@ -1268,7 +1267,7 @@ endif
 
 test_software_volume_SOURCES = test/software_volume.cxx \
 	test/stdbin.h \
-	src/audio_check.c \
+	src/CheckAudioFormat.cxx \
 	src/AudioParser.cxx
 test_software_volume_LDADD = \
 	$(PCM_LIBS) \
@@ -1276,7 +1275,7 @@ test_software_volume_LDADD = \
 
 test_run_normalize_SOURCES = test/run_normalize.cxx \
 	test/stdbin.h \
-	src/audio_check.c \
+	src/CheckAudioFormat.cxx \
 	src/AudioParser.cxx \
 	src/AudioCompress/compress.c
 test_run_normalize_LDADD = \
@@ -1284,7 +1283,7 @@ test_run_normalize_LDADD = \
 
 test_run_convert_SOURCES = test/run_convert.cxx \
 	src/audio_format.c \
-	src/audio_check.c \
+	src/CheckAudioFormat.cxx \
 	src/AudioParser.cxx
 test_run_convert_LDADD = \
 	$(PCM_LIBS) \
@@ -1306,7 +1305,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
-	src/audio_check.c \
+	src/CheckAudioFormat.cxx \
 	src/audio_format.c \
 	src/AudioParser.cxx \
 	src/Timer.cxx src/clock.c \

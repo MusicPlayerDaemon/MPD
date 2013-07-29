@@ -21,7 +21,7 @@
 #include "FaadDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
 #include "DecoderBuffer.hxx"
-#include "audio_check.h"
+#include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
 
 #include <neaacdec.h>

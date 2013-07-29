@@ -20,7 +20,7 @@
 #include "config.h"
 #include "MpcdecDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
-#include "audio_check.h"
+#include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
 
 #ifdef MPC_IS_OLD_API

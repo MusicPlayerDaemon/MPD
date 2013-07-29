@@ -43,7 +43,7 @@
 #include "conf.h"
 #include "ConfigQuark.hxx"
 #include "audio_format.h"
-#include "audio_check.h"
+#include "CheckAudioFormat.hxx"
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"

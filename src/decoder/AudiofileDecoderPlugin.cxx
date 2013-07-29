@@ -20,7 +20,7 @@
 #include "config.h"
 #include "AudiofileDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
-#include "audio_check.h"
+#include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
 
 #include <audiofile.h>
