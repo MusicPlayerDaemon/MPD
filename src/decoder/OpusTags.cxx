@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #include "config.h"
 #include "OpusTags.hxx"
 #include "OpusReader.hxx"
-#include "XiphTags.h"
+#include "XiphTags.hxx"
 #include "TagHandler.hxx"
 
 #include <stdint.h>

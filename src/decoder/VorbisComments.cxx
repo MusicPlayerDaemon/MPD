@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "VorbisComments.hxx"
-#include "XiphTags.h"
+#include "XiphTags.hxx"
 #include "tag.h"
 #include "tag_table.h"
 #include "TagHandler.hxx"
