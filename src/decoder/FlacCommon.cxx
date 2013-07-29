@@ -39,13 +39,10 @@ flac_data::flac_data(struct decoder *_decoder,
 	 decoder(_decoder), input_stream(_input_stream),
 	 tag(nullptr)
 {
-	pcm_buffer_init(&buffer);
 }
 
 flac_data::~flac_data()
 {
-	pcm_buffer_deinit(&buffer);
-
 	if (tag != nullptr)
 		tag_free(tag);
 }
@@ -178,7 +175,7 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 
 	size_t buffer_size = frame->header.blocksize * data->frame_size;
-	buffer = pcm_buffer_get(&data->buffer, buffer_size);
+	buffer = data->buffer.Get(buffer_size);
 
 	flac_convert(buffer, frame->header.channels,
 		     (enum sample_format)data->audio_format.format, buf,

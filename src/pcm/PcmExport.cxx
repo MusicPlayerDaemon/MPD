@@ -78,7 +78,7 @@ const void *
 PcmExport::Export(const void *data, size_t size, size_t &dest_size_r)
 {
 	if (dsd_usb)
-		data = pcm_dsd_to_usb(&dsd_buffer, channels,
+		data = pcm_dsd_to_usb(dsd_buffer, channels,
 				      (const uint8_t *)data, size, &size);
 
 	if (pack24) {
@@ -89,8 +89,7 @@ PcmExport::Export(const void *data, size_t size, size_t &dest_size_r)
 
 		const uint8_t *src8 = (const uint8_t *)data;
 		const uint8_t *src_end8 = src8 + size;
-		uint8_t *dest = (uint8_t *)
-			pcm_buffer_get(&pack_buffer, dest_size);
+		uint8_t *dest = (uint8_t *)pack_buffer.Get(dest_size);
 		assert(dest != NULL);
 
 		pcm_pack_24(dest, (const int32_t *)src8,
@@ -106,8 +105,7 @@ PcmExport::Export(const void *data, size_t size, size_t &dest_size_r)
 		const uint32_t *src = (const uint32_t *)src8;
 		const uint32_t *const src_end = (const uint32_t *)src_end8;
 
-		uint32_t *dest = (uint32_t *)
-			pcm_buffer_get(&pack_buffer, size);
+		uint32_t *dest = (uint32_t *)pack_buffer.Get(size);
 		data = dest;
 
 		while (src < src_end)
@@ -118,8 +116,7 @@ PcmExport::Export(const void *data, size_t size, size_t &dest_size_r)
 	if (reverse_endian > 0) {
 		assert(reverse_endian >= 2);
 
-		uint8_t *dest = (uint8_t *)
-			pcm_buffer_get(&reverse_buffer, size);
+		uint8_t *dest = (uint8_t *)reverse_buffer.Get(size);
 		assert(dest != NULL);
 
 		const uint8_t *src = (const uint8_t *)data;

@@ -47,7 +47,7 @@
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
-#include "pcm/pcm_buffer.h"
+#include "pcm/PcmBuffer.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -101,7 +101,7 @@ class RouteFilter final : public Filter {
 	/**
 	 * The output buffer used last time around, can be reused if the size doesn't differ.
 	 */
-	struct pcm_buffer output_buffer;
+	PcmBuffer output_buffer;
 
 public:
 	RouteFilter():sources(nullptr) {}
@@ -256,16 +256,13 @@ RouteFilter::Open(audio_format &audio_format, gcc_unused GError **error_r)
 	// Precalculate this simple value, to speed up allocation later
 	output_frame_size = audio_format_frame_size(&output_format);
 
-	// This buffer grows as needed
-	pcm_buffer_init(&output_buffer);
-
 	return &output_format;
 }
 
 void
 RouteFilter::Close()
 {
-	pcm_buffer_deinit(&output_buffer);
+	output_buffer.Clear();
 }
 
 const void *
@@ -285,9 +282,7 @@ RouteFilter::FilterPCM(const void *src, size_t src_size,
 
 	// Grow our reusable buffer, if needed, and set the moving pointer
 	*dest_size_r = number_of_frames * output_frame_size;
-	chan_destination = (uint8_t *)
-		pcm_buffer_get(&output_buffer, *dest_size_r);
-
+	chan_destination = (uint8_t *)output_buffer.Get(*dest_size_r);
 
 	// Perform our copy operations, with N input channels and M output channels
 	for (unsigned int s=0; s<number_of_frames; ++s) {

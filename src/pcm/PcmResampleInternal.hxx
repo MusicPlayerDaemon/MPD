@@ -71,12 +71,6 @@ pcm_resample_lsr_32(PcmResampler *state,
 
 #endif
 
-void
-pcm_resample_fallback_init(PcmResampler *state);
-
-void
-pcm_resample_fallback_deinit(PcmResampler *state);
-
 const int16_t *
 pcm_resample_fallback_16(PcmResampler *state,
 			 unsigned channels,

@@ -23,8 +23,8 @@
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
 #include "conf.h"
-#include "pcm/pcm_buffer.h"
 #include "pcm/PcmVolume.hxx"
+#include "pcm/PcmBuffer.hxx"
 #include "audio_format.h"
 
 #include <assert.h>
@@ -38,7 +38,7 @@ class VolumeFilter final : public Filter {
 
 	struct audio_format format;
 
-	struct pcm_buffer buffer;
+	PcmBuffer buffer;
 
 public:
 	VolumeFilter()
@@ -79,7 +79,6 @@ const struct audio_format *
 VolumeFilter::Open(audio_format &audio_format, gcc_unused GError **error_r)
 {
 	format = audio_format;
-	pcm_buffer_init(&buffer);
 
 	return &format;
 }
@@ -87,7 +86,7 @@ VolumeFilter::Open(audio_format &audio_format, gcc_unused GError **error_r)
 void
 VolumeFilter::Close()
 {
-	pcm_buffer_deinit(&buffer);
+	buffer.Clear();
 }
 
 const void *
@@ -100,7 +99,7 @@ VolumeFilter::FilterPCM(const void *src, size_t src_size,
 		/* optimized special case: 100% volume = no-op */
 		return src;
 
-	void *dest = pcm_buffer_get(&buffer, src_size);
+	void *dest = buffer.Get(src_size);
 
 	if (volume <= 0) {
 		/* optimized special case: 0% volume = memset(0) */

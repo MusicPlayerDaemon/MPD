@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,10 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef PCM_BUFFER_H
-#define PCM_BUFFER_H
+#ifndef PCM_BUFFER_HXX
+#define PCM_BUFFER_HXX
 
 #include "check.h"
+#include "gcc.h"
 
 #include <glib.h>
 
@@ -31,55 +32,32 @@
  * allocate a new buffer every time pcm_convert() is called, but that
  * would put too much stress on the allocator.
  */
-struct pcm_buffer {
+struct PcmBuffer {
 	void *buffer;
 
 	size_t size;
+
+	PcmBuffer():buffer(nullptr), size(0) {}
+
+	~PcmBuffer() {
+		g_free(buffer);
+	}
+
+	void Clear() {
+		g_free(buffer);
+		buffer = nullptr;
+	}
+
+	/**
+	 * Get the buffer, and guarantee a minimum size.  This buffer becomes
+	 * invalid with the next pcm_buffer_get() call.
+	 *
+	 * This function will never return NULL, even if size is zero, because
+	 * the PCM library uses the NULL return value to signal "error".  An
+	 * empty destination buffer is not always an error.
+	 */
+	gcc_malloc
+	void *Get(size_t size);
 };
-
-/**
- * Initialize the buffer, but don't allocate anything yet.
- */
-static inline void
-pcm_buffer_init(struct pcm_buffer *buffer)
-{
-	assert(buffer != NULL);
-
-	buffer->buffer = NULL;
-	buffer->size = 0;
-}
-
-/**
- * Free resources.  This function may be called more than once.
- */
-static inline void
-pcm_buffer_deinit(struct pcm_buffer *buffer)
-{
-	assert(buffer != NULL);
-
-	g_free(buffer->buffer);
-
-	buffer->buffer = NULL;
-}
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/**
- * Get the buffer, and guarantee a minimum size.  This buffer becomes
- * invalid with the next pcm_buffer_get() call.
- *
- * This function will never return NULL, even if size is zero, because
- * the PCM library uses the NULL return value to signal "error".  An
- * empty destination buffer is not always an error.
- */
-G_GNUC_MALLOC
-void *
-pcm_buffer_get(struct pcm_buffer *buffer, size_t size);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

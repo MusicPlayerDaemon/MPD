@@ -22,18 +22,6 @@
 
 #include <assert.h>
 
-void
-pcm_resample_fallback_init(PcmResampler *state)
-{
-	pcm_buffer_init(&state->buffer);
-}
-
-void
-pcm_resample_fallback_deinit(PcmResampler *state)
-{
-	pcm_buffer_deinit(&state->buffer);
-}
-
 /* resampling code blatantly ripped from ESD */
 const int16_t *
 pcm_resample_fallback_16(PcmResampler *state,
@@ -49,8 +37,7 @@ pcm_resample_fallback_16(PcmResampler *state,
 		(src_frames * dest_rate + src_rate - 1) / src_rate;
 	unsigned dest_samples = dest_frames * channels;
 	size_t dest_size = dest_samples * sizeof(*src_buffer);
-	int16_t *dest_buffer = (int16_t *)
-		pcm_buffer_get(&state->buffer, dest_size);
+	int16_t *dest_buffer = (int16_t *)state->buffer.Get(dest_size);
 
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
 
@@ -91,8 +78,7 @@ pcm_resample_fallback_32(PcmResampler *state,
 		(src_frames * dest_rate + src_rate - 1) / src_rate;
 	unsigned dest_samples = dest_frames * channels;
 	size_t dest_size = dest_samples * sizeof(*src_buffer);
-	int32_t *dest_buffer = (int32_t *)
-		pcm_buffer_get(&state->buffer, dest_size);
+	int32_t *dest_buffer = (int32_t *)state->buffer.Get(dest_size);
 
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
 

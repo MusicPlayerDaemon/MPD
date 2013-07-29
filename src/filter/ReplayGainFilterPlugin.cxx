@@ -27,10 +27,7 @@
 #include "replay_gain_config.h"
 #include "MixerControl.hxx"
 #include "pcm/PcmVolume.hxx"
-
-extern "C" {
-#include "pcm/pcm_buffer.h"
-}
+#include "pcm/PcmBuffer.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -71,7 +68,7 @@ class ReplayGainFilter final : public Filter {
 
 	struct audio_format format;
 
-	struct pcm_buffer buffer;
+	PcmBuffer buffer;
 
 public:
 	ReplayGainFilter()
@@ -166,7 +163,6 @@ const audio_format *
 ReplayGainFilter::Open(audio_format &af, gcc_unused GError **error_r)
 {
 	format = af;
-	pcm_buffer_init(&buffer);
 
 	return &format;
 }
@@ -174,7 +170,7 @@ ReplayGainFilter::Open(audio_format &af, gcc_unused GError **error_r)
 void
 ReplayGainFilter::Close()
 {
-	pcm_buffer_deinit(&buffer);
+	buffer.Clear();
 }
 
 const void *
@@ -188,7 +184,7 @@ ReplayGainFilter::FilterPCM(const void *src, size_t src_size,
 		/* optimized special case: 100% volume = no-op */
 		return src;
 
-	void *dest = pcm_buffer_get(&buffer, src_size);
+	void *dest = buffer.Get(src_size);
 	if (volume <= 0) {
 		/* optimized special case: 0% volume = memset(0) */
 		/* XXX is this valid for all sample formats? What

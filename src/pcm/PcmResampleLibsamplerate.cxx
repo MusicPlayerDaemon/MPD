@@ -86,11 +86,10 @@ pcm_resample_lsr_global_init(const char *converter, GError **error_r)
 void
 pcm_resample_lsr_init(PcmResampler *state)
 {
-	memset(state, 0, sizeof(*state));
-
-	pcm_buffer_init(&state->in);
-	pcm_buffer_init(&state->out);
-	pcm_buffer_init(&state->buffer);
+	state->state = nullptr;
+	memset(&state->data, 0, sizeof(state->data));
+	memset(&state->prev, 0, sizeof(state->prev));
+	state->error = 0;
 }
 
 void
@@ -98,10 +97,6 @@ pcm_resample_lsr_deinit(PcmResampler *state)
 {
 	if (state->state != nullptr)
 		state->state = src_delete(state->state);
-
-	pcm_buffer_deinit(&state->in);
-	pcm_buffer_deinit(&state->out);
-	pcm_buffer_deinit(&state->buffer);
 }
 
 void
@@ -184,7 +179,7 @@ pcm_resample_lsr_float(PcmResampler *state,
 
 	data->output_frames = (src_size * dest_rate + src_rate - 1) / src_rate;
 	size_t data_out_size = data->output_frames * sizeof(float) * channels;
-	data->data_out = (float *)pcm_buffer_get(&state->out, data_out_size);
+	data->data_out = (float *)state->out.Get(data_out_size);
 
 	if (!lsr_process(state, error_r))
 		return nullptr;
@@ -212,11 +207,11 @@ pcm_resample_lsr_16(PcmResampler *state,
 
 	data->input_frames = src_size / sizeof(*src_buffer) / channels;
 	size_t data_in_size = data->input_frames * sizeof(float) * channels;
-	data->data_in = (float *)pcm_buffer_get(&state->in, data_in_size);
+	data->data_in = (float *)state->in.Get(data_in_size);
 
 	data->output_frames = (src_size * dest_rate + src_rate - 1) / src_rate;
 	size_t data_out_size = data->output_frames * sizeof(float) * channels;
-	data->data_out = (float *)pcm_buffer_get(&state->out, data_out_size);
+	data->data_out = (float *)state->out.Get(data_out_size);
 
 	src_short_to_float_array(src_buffer, data->data_in,
 				 data->input_frames * channels);
@@ -227,7 +222,7 @@ pcm_resample_lsr_16(PcmResampler *state,
 	int16_t *dest_buffer;
 	*dest_size_r = data->output_frames_gen *
 		sizeof(*dest_buffer) * channels;
-	dest_buffer = (int16_t *)pcm_buffer_get(&state->buffer, *dest_size_r);
+	dest_buffer = (int16_t *)state->buffer.Get(*dest_size_r);
 	src_float_to_short_array(data->data_out, dest_buffer,
 				 data->output_frames_gen * channels);
 
@@ -272,11 +267,11 @@ pcm_resample_lsr_32(PcmResampler *state,
 
 	data->input_frames = src_size / sizeof(*src_buffer) / channels;
 	size_t data_in_size = data->input_frames * sizeof(float) * channels;
-	data->data_in = (float *)pcm_buffer_get(&state->in, data_in_size);
+	data->data_in = (float *)state->in.Get(data_in_size);
 
 	data->output_frames = (src_size * dest_rate + src_rate - 1) / src_rate;
 	size_t data_out_size = data->output_frames * sizeof(float) * channels;
-	data->data_out = (float *)pcm_buffer_get(&state->out, data_out_size);
+	data->data_out = (float *)state->out.Get(data_out_size);
 
 	src_int_to_float_array(src_buffer, data->data_in,
 			       data->input_frames * channels);
@@ -287,7 +282,7 @@ pcm_resample_lsr_32(PcmResampler *state,
 	int32_t *dest_buffer;
 	*dest_size_r = data->output_frames_gen *
 		sizeof(*dest_buffer) * channels;
-	dest_buffer = (int32_t *)pcm_buffer_get(&state->buffer, *dest_size_r);
+	dest_buffer = (int32_t *)state->buffer.Get(*dest_size_r);
 	src_float_to_int_array(data->data_out, dest_buffer,
 			       data->output_frames_gen * channels);
 

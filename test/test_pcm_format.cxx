@@ -23,7 +23,7 @@
 #include "pcm/PcmFormat.hxx"
 #include "pcm/PcmDither.hxx"
 #include "pcm/PcmUtils.hxx"
-#include "pcm/pcm_buffer.h"
+#include "pcm/PcmBuffer.hxx"
 #include "audio_format.h"
 
 #include <glib.h>
@@ -34,20 +34,17 @@ test_pcm_format_8_to_16()
 	constexpr unsigned N = 256;
 	const auto src = TestDataBuffer<int8_t, N>();
 
-	struct pcm_buffer buffer;
-	pcm_buffer_init(&buffer);
+	PcmBuffer buffer;
 
 	size_t d_size;
 	PcmDither dither;
-	auto d = pcm_convert_to_16(&buffer, dither, SAMPLE_FORMAT_S8,
+	auto d = pcm_convert_to_16(buffer, dither, SAMPLE_FORMAT_S8,
 				   src, sizeof(src), &d_size);
 	auto d_end = pcm_end_pointer(d, d_size);
 	g_assert_cmpint(d_end - d, ==, N);
 
 	for (size_t i = 0; i < N; ++i)
 		g_assert_cmpint(src[i], ==, d[i] >> 8);
-
-	pcm_buffer_deinit(&buffer);
 }
 
 void
@@ -56,19 +53,16 @@ test_pcm_format_16_to_24()
 	constexpr unsigned N = 256;
 	const auto src = TestDataBuffer<int16_t, N>();
 
-	struct pcm_buffer buffer;
-	pcm_buffer_init(&buffer);
+	PcmBuffer buffer;
 
 	size_t d_size;
-	auto d = pcm_convert_to_24(&buffer, SAMPLE_FORMAT_S16,
+	auto d = pcm_convert_to_24(buffer, SAMPLE_FORMAT_S16,
 				   src, sizeof(src), &d_size);
 	auto d_end = pcm_end_pointer(d, d_size);
 	g_assert_cmpint(d_end - d, ==, N);
 
 	for (size_t i = 0; i < N; ++i)
 		g_assert_cmpint(src[i], ==, d[i] >> 8);
-
-	pcm_buffer_deinit(&buffer);
 }
 
 void
@@ -77,19 +71,16 @@ test_pcm_format_16_to_32()
 	constexpr unsigned N = 256;
 	const auto src = TestDataBuffer<int16_t, N>();
 
-	struct pcm_buffer buffer;
-	pcm_buffer_init(&buffer);
+	PcmBuffer buffer;
 
 	size_t d_size;
-	auto d = pcm_convert_to_32(&buffer, SAMPLE_FORMAT_S16,
+	auto d = pcm_convert_to_32(buffer, SAMPLE_FORMAT_S16,
 				   src, sizeof(src), &d_size);
 	auto d_end = pcm_end_pointer(d, d_size);
 	g_assert_cmpint(d_end - d, ==, N);
 
 	for (size_t i = 0; i < N; ++i)
 		g_assert_cmpint(src[i], ==, d[i] >> 16);
-
-	pcm_buffer_deinit(&buffer);
 }
 
 void
@@ -98,12 +89,10 @@ test_pcm_format_float()
 	constexpr unsigned N = 256;
 	const auto src = TestDataBuffer<int16_t, N>();
 
-	struct pcm_buffer buffer1, buffer2;
-	pcm_buffer_init(&buffer1);
-	pcm_buffer_init(&buffer2);
+	PcmBuffer buffer1, buffer2;
 
 	size_t f_size;
-	auto f = pcm_convert_to_float(&buffer1, SAMPLE_FORMAT_S16,
+	auto f = pcm_convert_to_float(buffer1, SAMPLE_FORMAT_S16,
 				      src, sizeof(src), &f_size);
 	auto f_end = pcm_end_pointer(f, f_size);
 	g_assert_cmpint(f_end - f, ==, N);
@@ -116,7 +105,7 @@ test_pcm_format_float()
 	PcmDither dither;
 
 	size_t d_size;
-	auto d = pcm_convert_to_16(&buffer2, dither,
+	auto d = pcm_convert_to_16(buffer2, dither,
 				   SAMPLE_FORMAT_FLOAT,
 				   f, f_size, &d_size);
 	auto d_end = pcm_end_pointer(d, d_size);
@@ -124,7 +113,4 @@ test_pcm_format_float()
 
 	for (size_t i = 0; i < N; ++i)
 		g_assert_cmpint(src[i], ==, d[i]);
-
-	pcm_buffer_deinit(&buffer1);
-	pcm_buffer_deinit(&buffer2);
 }

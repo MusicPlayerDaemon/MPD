@@ -29,15 +29,11 @@
 
 PcmDsd::PcmDsd()
 {
-	pcm_buffer_init(&buffer);
-
 	std::fill_n(dsd2pcm, G_N_ELEMENTS(dsd2pcm), nullptr);
 }
 
 PcmDsd::~PcmDsd()
 {
-	pcm_buffer_deinit(&buffer);
-
 	for (unsigned i = 0; i < G_N_ELEMENTS(dsd2pcm); ++i)
 		if (dsd2pcm[i] != nullptr)
 			dsd2pcm_destroy(dsd2pcm[i]);
@@ -67,7 +63,7 @@ PcmDsd::ToFloat(unsigned channels, bool lsbfirst,
 	float *dest;
 	const size_t dest_size = num_samples * sizeof(*dest);
 	*dest_size_r = dest_size;
-	dest = (float *)pcm_buffer_get(&buffer, dest_size);
+	dest = (float *)buffer.Get(dest_size);
 
 	for (unsigned c = 0; c < channels; ++c) {
 		if (dsd2pcm[c] == nullptr) {

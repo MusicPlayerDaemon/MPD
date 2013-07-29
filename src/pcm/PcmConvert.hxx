@@ -23,10 +23,7 @@
 #include "PcmDither.hxx"
 #include "PcmDsd.hxx"
 #include "PcmResample.hxx"
-
-extern "C" {
-#include "pcm_buffer.h"
-}
+#include "PcmBuffer.hxx"
 
 #include <glib.h>
 
@@ -45,10 +42,10 @@ class PcmConvert {
 	PcmDither dither;
 
 	/** the buffer for converting the sample format */
-	struct pcm_buffer format_buffer;
+	PcmBuffer format_buffer;
 
 	/** the buffer for converting the channel count */
-	struct pcm_buffer channels_buffer;
+	PcmBuffer channels_buffer;
 
 public:
 	PcmConvert();

@@ -25,14 +25,14 @@
 #include <stdint.h>
 #include <stddef.h>
 
-struct pcm_buffer;
+struct PcmBuffer;
 class PcmDither;
 
 /**
  * Converts PCM samples to 16 bit.  If the source format is 24 bit,
  * then dithering is applied.
  *
- * @param buffer a pcm_buffer object
+ * @param buffer a PcmBuffer object
  * @param dither a pcm_dither object for 24-to-16 conversion
  * @param bits the number of in the source buffer
  * @param src the source PCM buffer
@@ -41,14 +41,14 @@ class PcmDither;
  * @return the destination buffer
  */
 const int16_t *
-pcm_convert_to_16(struct pcm_buffer *buffer, PcmDither &dither,
+pcm_convert_to_16(PcmBuffer &buffer, PcmDither &dither,
 		  enum sample_format src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r);
 
 /**
  * Converts PCM samples to 24 bit (32 bit alignment).
  *
- * @param buffer a pcm_buffer object
+ * @param buffer a PcmBuffer object
  * @param bits the number of in the source buffer
  * @param src the source PCM buffer
  * @param src_size the size of #src in bytes
@@ -56,14 +56,14 @@ pcm_convert_to_16(struct pcm_buffer *buffer, PcmDither &dither,
  * @return the destination buffer
  */
 const int32_t *
-pcm_convert_to_24(struct pcm_buffer *buffer,
+pcm_convert_to_24(PcmBuffer &buffer,
 		  enum sample_format src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r);
 
 /**
  * Converts PCM samples to 32 bit.
  *
- * @param buffer a pcm_buffer object
+ * @param buffer a PcmBuffer object
  * @param bits the number of in the source buffer
  * @param src the source PCM buffer
  * @param src_size the size of #src in bytes
@@ -71,14 +71,14 @@ pcm_convert_to_24(struct pcm_buffer *buffer,
  * @return the destination buffer
  */
 const int32_t *
-pcm_convert_to_32(struct pcm_buffer *buffer,
+pcm_convert_to_32(PcmBuffer &buffer,
 		  enum sample_format src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r);
 
 /**
  * Converts PCM samples to 32 bit floating point.
  *
- * @param buffer a pcm_buffer object
+ * @param buffer a PcmBuffer object
  * @param bits the number of in the source buffer
  * @param src the source PCM buffer
  * @param src_size the size of #src in bytes
@@ -86,7 +86,7 @@ pcm_convert_to_32(struct pcm_buffer *buffer,
  * @return the destination buffer
  */
 const float *
-pcm_convert_to_float(struct pcm_buffer *buffer,
+pcm_convert_to_float(PcmBuffer &buffer,
 		     enum sample_format src_format, const void *src,
 		     size_t src_size, size_t *dest_size_r);
 

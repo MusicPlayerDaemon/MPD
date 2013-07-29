@@ -303,7 +303,7 @@ libevent_a_SOURCES = \
 # PCM library
 
 libpcm_a_SOURCES = \
-	src/pcm/pcm_buffer.c src/pcm/pcm_buffer.h \
+	src/pcm/PcmBuffer.cxx src/pcm/PcmBuffer.hxx \
 	src/pcm/PcmExport.cxx src/pcm/PcmExport.hxx \
 	src/pcm/PcmConvert.cxx src/pcm/PcmConvert.hxx \
 	src/pcm/dsd2pcm/dsd2pcm.c src/pcm/dsd2pcm/dsd2pcm.h \

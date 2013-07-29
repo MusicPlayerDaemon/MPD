@@ -61,9 +61,7 @@ PcmResampler::PcmResampler()
 #ifdef HAVE_LIBSAMPLERATE
 	if (pcm_resample_lsr_enabled())
 		pcm_resample_lsr_init(this);
-	else
 #endif
-		pcm_resample_fallback_init(this);
 }
 
 PcmResampler::~PcmResampler()
@@ -71,9 +69,7 @@ PcmResampler::~PcmResampler()
 #ifdef HAVE_LIBSAMPLERATE
 	if (pcm_resample_lsr_enabled())
 		pcm_resample_lsr_deinit(this);
-	else
 #endif
-		pcm_resample_fallback_deinit(this);
 }
 
 void

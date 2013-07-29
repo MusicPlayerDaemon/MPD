@@ -21,7 +21,7 @@
 #define MPD_OUTPUT_INTERNAL_HXX
 
 #include "audio_format.h"
-#include "pcm/pcm_buffer.h"
+#include "pcm/PcmBuffer.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
@@ -153,7 +153,7 @@ struct audio_output {
 	/**
 	 * The buffer used to allocate the cross-fading result.
 	 */
-	struct pcm_buffer cross_fade_buffer;
+	PcmBuffer cross_fade_buffer;
 
 	/**
 	 * The filter object of this audio output.  This is an

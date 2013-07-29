@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-struct pcm_buffer;
+struct PcmBuffer;
 
 /**
  * Pack DSD 1 bit samples into (padded) 24 bit PCM samples for
@@ -34,7 +34,7 @@ struct pcm_buffer;
  * http://www.sonore.us/DoP_openStandard_1v1.pdf
  */
 const uint32_t *
-pcm_dsd_to_usb(struct pcm_buffer *buffer, unsigned channels,
+pcm_dsd_to_usb(PcmBuffer &buffer, unsigned channels,
 	       const uint8_t *src, size_t src_size,
 	       size_t *dest_size_r);
 

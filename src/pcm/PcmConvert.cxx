@@ -34,14 +34,10 @@
 
 PcmConvert::PcmConvert()
 {
-	pcm_buffer_init(&format_buffer);
-	pcm_buffer_init(&channels_buffer);
 }
 
 PcmConvert::~PcmConvert()
 {
-	pcm_buffer_deinit(&format_buffer);
-	pcm_buffer_deinit(&channels_buffer);
 }
 
 void
@@ -62,7 +58,7 @@ PcmConvert::Convert16(const audio_format *src_format,
 
 	assert(dest_format->format == SAMPLE_FORMAT_S16);
 
-	buf = pcm_convert_to_16(&format_buffer, dither,
+	buf = pcm_convert_to_16(format_buffer, dither,
 				sample_format(src_format->format),
 				src_buffer, src_size,
 				&len);
@@ -74,7 +70,7 @@ PcmConvert::Convert16(const audio_format *src_format,
 	}
 
 	if (src_format->channels != dest_format->channels) {
-		buf = pcm_convert_channels_16(&channels_buffer,
+		buf = pcm_convert_channels_16(channels_buffer,
 					      dest_format->channels,
 					      src_format->channels,
 					      buf, len, &len);
@@ -112,7 +108,7 @@ PcmConvert::Convert24(const audio_format *src_format,
 
 	assert(dest_format->format == SAMPLE_FORMAT_S24_P32);
 
-	buf = pcm_convert_to_24(&format_buffer,
+	buf = pcm_convert_to_24(format_buffer,
 				sample_format(src_format->format),
 				src_buffer, src_size, &len);
 	if (buf == NULL) {
@@ -123,7 +119,7 @@ PcmConvert::Convert24(const audio_format *src_format,
 	}
 
 	if (src_format->channels != dest_format->channels) {
-		buf = pcm_convert_channels_24(&channels_buffer,
+		buf = pcm_convert_channels_24(channels_buffer,
 					      dest_format->channels,
 					      src_format->channels,
 					      buf, len, &len);
@@ -161,7 +157,7 @@ PcmConvert::Convert32(const audio_format *src_format,
 
 	assert(dest_format->format == SAMPLE_FORMAT_S32);
 
-	buf = pcm_convert_to_32(&format_buffer,
+	buf = pcm_convert_to_32(format_buffer,
 				sample_format(src_format->format),
 				src_buffer, src_size, &len);
 	if (buf == NULL) {
@@ -172,7 +168,7 @@ PcmConvert::Convert32(const audio_format *src_format,
 	}
 
 	if (src_format->channels != dest_format->channels) {
-		buf = pcm_convert_channels_32(&channels_buffer,
+		buf = pcm_convert_channels_32(channels_buffer,
 					      dest_format->channels,
 					      src_format->channels,
 					      buf, len, &len);
@@ -212,7 +208,7 @@ PcmConvert::ConvertFloat(const audio_format *src_format,
 
 	/* convert to float now */
 
-	buffer = pcm_convert_to_float(&format_buffer,
+	buffer = pcm_convert_to_float(format_buffer,
 				      sample_format(src_format->format),
 				      buffer, size, &size);
 	if (buffer == NULL) {
@@ -225,7 +221,7 @@ PcmConvert::ConvertFloat(const audio_format *src_format,
 	/* convert channels */
 
 	if (src_format->channels != dest_format->channels) {
-		buffer = pcm_convert_channels_float(&channels_buffer,
+		buffer = pcm_convert_channels_float(channels_buffer,
 						    dest_format->channels,
 						    src_format->channels,
 						    buffer, size, &size);

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "PcmChannels.hxx"
-#include "pcm_buffer.h"
+#include "PcmBuffer.hxx"
 #include "PcmUtils.hxx"
 
 #include <assert.h>
@@ -74,7 +74,7 @@ pcm_convert_channels_16_n_to_2(int16_t *restrict dest,
 }
 
 const int16_t *
-pcm_convert_channels_16(struct pcm_buffer *buffer,
+pcm_convert_channels_16(PcmBuffer &buffer,
 			unsigned dest_channels,
 			unsigned src_channels, const int16_t *src,
 			size_t src_size, size_t *dest_size_r)
@@ -84,7 +84,7 @@ pcm_convert_channels_16(struct pcm_buffer *buffer,
 	size_t dest_size = src_size / src_channels * dest_channels;
 	*dest_size_r = dest_size;
 
-	int16_t *dest = (int16_t *)pcm_buffer_get(buffer, dest_size);
+	int16_t *dest = (int16_t *)buffer.Get(dest_size);
 	const int16_t *src_end = pcm_end_pointer(src, src_size);
 
 	if (src_channels == 1 && dest_channels == 2)
@@ -137,7 +137,7 @@ pcm_convert_channels_24_n_to_2(int32_t *restrict dest,
 }
 
 const int32_t *
-pcm_convert_channels_24(struct pcm_buffer *buffer,
+pcm_convert_channels_24(PcmBuffer &buffer,
 			unsigned dest_channels,
 			unsigned src_channels, const int32_t *src,
 			size_t src_size, size_t *dest_size_r)
@@ -147,7 +147,7 @@ pcm_convert_channels_24(struct pcm_buffer *buffer,
 	size_t dest_size = src_size / src_channels * dest_channels;
 	*dest_size_r = dest_size;
 
-	int32_t *dest = (int32_t *)pcm_buffer_get(buffer, dest_size);
+	int32_t *dest = (int32_t *)buffer.Get(dest_size);
 	const int32_t *src_end = (const int32_t *)
 		pcm_end_pointer(src, src_size);
 
@@ -200,7 +200,7 @@ pcm_convert_channels_32_n_to_2(int32_t *dest,
 }
 
 const int32_t *
-pcm_convert_channels_32(struct pcm_buffer *buffer,
+pcm_convert_channels_32(PcmBuffer &buffer,
 			unsigned dest_channels,
 			unsigned src_channels, const int32_t *src,
 			size_t src_size, size_t *dest_size_r)
@@ -210,7 +210,7 @@ pcm_convert_channels_32(struct pcm_buffer *buffer,
 	size_t dest_size = src_size / src_channels * dest_channels;
 	*dest_size_r = dest_size;
 
-	int32_t *dest = (int32_t *)pcm_buffer_get(buffer, dest_size);
+	int32_t *dest = (int32_t *)buffer.Get(dest_size);
 	const int32_t *src_end = (const int32_t *)
 		pcm_end_pointer(src, src_size);
 
@@ -263,7 +263,7 @@ pcm_convert_channels_float_n_to_2(float *dest,
 }
 
 const float *
-pcm_convert_channels_float(struct pcm_buffer *buffer,
+pcm_convert_channels_float(PcmBuffer &buffer,
 			   unsigned dest_channels,
 			   unsigned src_channels, const float *src,
 			   size_t src_size, size_t *dest_size_r)
@@ -273,7 +273,7 @@ pcm_convert_channels_float(struct pcm_buffer *buffer,
 	size_t dest_size = src_size / src_channels * dest_channels;
 	*dest_size_r = dest_size;
 
-	float *dest = (float *)pcm_buffer_get(buffer, dest_size);
+	float *dest = (float *)buffer.Get(dest_size);
 	const float *src_end = (const float *)pcm_end_pointer(src, src_size);
 
 	if (src_channels == 1 && dest_channels == 2)

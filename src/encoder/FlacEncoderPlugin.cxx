@@ -22,7 +22,7 @@
 #include "encoder_api.h"
 #include "encoder_plugin.h"
 #include "audio_format.h"
-#include "pcm/pcm_buffer.h"
+#include "pcm/PcmBuffer.hxx"
 #include "util/fifo_buffer.h"
 
 extern "C" {
@@ -46,7 +46,7 @@ struct flac_encoder {
 
 	FLAC__StreamEncoder *fse;
 
-	struct pcm_buffer expand_buffer;
+	PcmBuffer expand_buffer;
 
 	/**
 	 * This buffer will hold encoded data from libFLAC until it is
@@ -160,7 +160,7 @@ flac_encoder_close(struct encoder *_encoder)
 
 	FLAC__stream_encoder_delete(encoder->fse);
 
-	pcm_buffer_deinit(&encoder->expand_buffer);
+	encoder->expand_buffer.Clear();
 	fifo_buffer_free(encoder->output_buffer);
 }
 
@@ -204,8 +204,6 @@ flac_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 		FLAC__stream_encoder_delete(encoder->fse);
 		return false;
 	}
-
-	pcm_buffer_init(&encoder->expand_buffer);
 
 	encoder->output_buffer = growing_fifo_new();
 
@@ -275,14 +273,14 @@ flac_encoder_write(struct encoder *_encoder,
 
 	switch (encoder->audio_format.format) {
 	case SAMPLE_FORMAT_S8:
-		exbuffer = pcm_buffer_get(&encoder->expand_buffer, length*4);
+		exbuffer = encoder->expand_buffer.Get(length * 4);
 		pcm8_to_flac((int32_t *)exbuffer, (const int8_t *)data,
 			     num_samples);
 		buffer = exbuffer;
 		break;
 
 	case SAMPLE_FORMAT_S16:
-		exbuffer = pcm_buffer_get(&encoder->expand_buffer, length*2);
+		exbuffer = encoder->expand_buffer.Get(length * 2);
 		pcm16_to_flac((int32_t *)exbuffer, (const int16_t *)data,
 			      num_samples);
 		buffer = exbuffer;

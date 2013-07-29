@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "pcm_buffer.h"
+#include "PcmBuffer.hxx"
 #include "poison.h"
 
 /**
@@ -32,27 +32,25 @@ align_8k(size_t size)
 }
 
 void *
-pcm_buffer_get(struct pcm_buffer *buffer, size_t size)
+PcmBuffer::Get(size_t new_size)
 {
-	assert(buffer != NULL);
-
-	if (size == 0)
+	if (new_size == 0)
 		/* never return NULL, because NULL would be assumed to
 		   be an error condition */
-		size = 1;
+		new_size = 1;
 
-	if (buffer->size < size) {
+	if (size < new_size) {
 		/* free the old buffer */
-		g_free(buffer->buffer);
+		g_free(buffer);
 
-		buffer->size = align_8k(size);
-		buffer->buffer = g_malloc(buffer->size);
+		size = align_8k(new_size);
+		buffer = g_malloc(size);
 	} else {
 		/* discard old buffer contents */
-		poison_undefined(buffer->buffer, buffer->size);
+		poison_undefined(buffer, size);
 	}
 
-	assert(buffer->size >= size);
+	assert(size >= new_size);
 
-	return buffer->buffer;
+	return buffer;
 }

@@ -23,7 +23,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-struct pcm_buffer;
+struct PcmBuffer;
 
 /**
  * Changes the number of channels in 16 bit PCM data.
@@ -37,7 +37,7 @@ struct pcm_buffer;
  * @return the destination buffer
  */
 const int16_t *
-pcm_convert_channels_16(struct pcm_buffer *buffer,
+pcm_convert_channels_16(PcmBuffer &buffer,
 			unsigned dest_channels,
 			unsigned src_channels, const int16_t *src,
 			size_t src_size, size_t *dest_size_r);
@@ -55,7 +55,7 @@ pcm_convert_channels_16(struct pcm_buffer *buffer,
  * @return the destination buffer
  */
 const int32_t *
-pcm_convert_channels_24(struct pcm_buffer *buffer,
+pcm_convert_channels_24(PcmBuffer &buffer,
 			unsigned dest_channels,
 			unsigned src_channels, const int32_t *src,
 			size_t src_size, size_t *dest_size_r);
@@ -72,7 +72,7 @@ pcm_convert_channels_24(struct pcm_buffer *buffer,
  * @return the destination buffer
  */
 const int32_t *
-pcm_convert_channels_32(struct pcm_buffer *buffer,
+pcm_convert_channels_32(PcmBuffer &buffer,
 			unsigned dest_channels,
 			unsigned src_channels, const int32_t *src,
 			size_t src_size, size_t *dest_size_r);
@@ -89,7 +89,7 @@ pcm_convert_channels_32(struct pcm_buffer *buffer,
  * @return the destination buffer
  */
 const float *
-pcm_convert_channels_float(struct pcm_buffer *buffer,
+pcm_convert_channels_float(PcmBuffer &buffer,
 			   unsigned dest_channels,
 			   unsigned src_channels, const float *src,
 			   size_t src_size, size_t *dest_size_r);

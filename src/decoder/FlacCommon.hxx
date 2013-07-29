@@ -26,10 +26,7 @@
 
 #include "FlacInput.hxx"
 #include "DecoderAPI.hxx"
-
-extern "C" {
-#include "pcm/pcm_buffer.h"
-}
+#include "pcm/PcmBuffer.hxx"
 
 #include <FLAC/stream_decoder.h>
 #include <FLAC/metadata.h>
@@ -38,7 +35,7 @@ extern "C" {
 #define G_LOG_DOMAIN "flac"
 
 struct flac_data : public FlacInput {
-	struct pcm_buffer buffer;
+	PcmBuffer buffer;
 
 	/**
 	 * The size of one frame in the output buffer.

@@ -38,8 +38,6 @@ ao_base_finish(struct audio_output *ao)
 	delete ao->replay_gain_filter;
 	delete ao->other_replay_gain_filter;
 	delete ao->filter;
-
-	pcm_buffer_deinit(&ao->cross_fade_buffer);
 }
 
 void

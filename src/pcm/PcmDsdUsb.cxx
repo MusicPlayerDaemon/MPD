@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "PcmDsdUsb.hxx"
-#include "pcm_buffer.h"
+#include "PcmBuffer.hxx"
 #include "audio_format.h"
 
 G_GNUC_CONST
@@ -38,11 +38,10 @@ pcm_two_dsd_to_usb_marker2(uint8_t a, uint8_t b)
 
 
 const uint32_t *
-pcm_dsd_to_usb(struct pcm_buffer *buffer, unsigned channels,
+pcm_dsd_to_usb(PcmBuffer &buffer, unsigned channels,
 	       const uint8_t *src, size_t src_size,
 	       size_t *dest_size_r)
 {
-	assert(buffer != NULL);
 	assert(audio_valid_channel_count(channels));
 	assert(src != NULL);
 	assert(src_size > 0);
@@ -58,7 +57,7 @@ pcm_dsd_to_usb(struct pcm_buffer *buffer, unsigned channels,
 
 	const size_t dest_size = num_samples * 4;
 	*dest_size_r = dest_size;
-	uint32_t *const dest0 = (uint32_t *)pcm_buffer_get(buffer, dest_size),
+	uint32_t *const dest0 = (uint32_t *)buffer.Get(dest_size),
 		*dest = dest0;
 
 	for (unsigned i = num_frames / 2; i > 0; --i) {

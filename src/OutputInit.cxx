@@ -176,8 +176,6 @@ ao_base_init(struct audio_output *ao,
 	ao->allow_play = true;
 	ao->fail_timer = NULL;
 
-	pcm_buffer_init(&ao->cross_fade_buffer);
-
 	/* set up the filter chain */
 
 	ao->filter = filter_chain_new();

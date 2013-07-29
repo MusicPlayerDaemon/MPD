@@ -21,7 +21,7 @@
 #define MPD_PCM_RESAMPLE_HXX
 
 #include "check.h"
-#include "pcm_buffer.h"
+#include "PcmBuffer.hxx"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -40,7 +40,7 @@ struct PcmResampler {
 	SRC_STATE *state;
 	SRC_DATA data;
 
-	struct pcm_buffer in, out;
+	PcmBuffer in, out;
 
 	struct {
 		unsigned src_rate;
@@ -51,7 +51,7 @@ struct PcmResampler {
 	int error;
 #endif
 
-	struct pcm_buffer buffer;
+	PcmBuffer buffer;
 
 	PcmResampler();
 	~PcmResampler();

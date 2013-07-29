@@ -21,7 +21,7 @@
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
-#include "pcm/pcm_buffer.h"
+#include "pcm/PcmBuffer.hxx"
 #include "audio_format.h"
 #include "AudioCompress/compress.h"
 
@@ -31,7 +31,7 @@
 class NormalizeFilter final : public Filter {
 	struct Compressor *compressor;
 
-	struct pcm_buffer buffer;
+	PcmBuffer buffer;
 
 public:
 	virtual const audio_format *Open(audio_format &af, GError **error_r);
@@ -53,7 +53,6 @@ NormalizeFilter::Open(audio_format &audio_format, gcc_unused GError **error_r)
 	audio_format.format = SAMPLE_FORMAT_S16;
 
 	compressor = Compressor_new(0);
-	pcm_buffer_init(&buffer);
 
 	return &audio_format;
 }
@@ -61,7 +60,7 @@ NormalizeFilter::Open(audio_format &audio_format, gcc_unused GError **error_r)
 void
 NormalizeFilter::Close()
 {
-	pcm_buffer_deinit(&buffer);
+	buffer.Clear();
 	Compressor_delete(compressor);
 }
 
@@ -69,7 +68,7 @@ const void *
 NormalizeFilter::FilterPCM(const void *src, size_t src_size,
 			   size_t *dest_size_r, gcc_unused GError **error_r)
 {
-	int16_t *dest = (int16_t *)pcm_buffer_get(&buffer, src_size);
+	int16_t *dest = (int16_t *)buffer.Get(src_size);
 	memcpy(dest, src, src_size);
 
 	Compressor_Process_int16(compressor, dest, src_size / 2);

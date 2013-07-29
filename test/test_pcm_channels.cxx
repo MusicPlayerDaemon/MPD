@@ -21,7 +21,7 @@
 #include "test_pcm_all.hxx"
 #include "test_pcm_util.hxx"
 #include "pcm/PcmChannels.hxx"
-#include "pcm/pcm_buffer.h"
+#include "pcm/PcmBuffer.hxx"
 
 #include <glib.h>
 
@@ -31,14 +31,13 @@ test_pcm_channels_16()
 	constexpr unsigned N = 256;
 	const auto src = TestDataBuffer<int16_t, N * 2>();
 
-	struct pcm_buffer buffer;
-	pcm_buffer_init(&buffer);
+	PcmBuffer buffer;
 
 	/* stereo to mono */
 
 	size_t dest_size;
 	const int16_t *dest =
-		pcm_convert_channels_16(&buffer, 1, 2, src, sizeof(src),
+		pcm_convert_channels_16(buffer, 1, 2, src, sizeof(src),
 					&dest_size);
 	g_assert(dest != NULL);
 	g_assert_cmpint(dest_size, ==, sizeof(src) / 2);
@@ -48,7 +47,7 @@ test_pcm_channels_16()
 
 	/* mono to stereo */
 
-	dest = pcm_convert_channels_16(&buffer, 2, 1, src, sizeof(src),
+	dest = pcm_convert_channels_16(buffer, 2, 1, src, sizeof(src),
 				       &dest_size);
 	g_assert(dest != NULL);
 	g_assert_cmpint(dest_size, ==, sizeof(src) * 2);
@@ -56,8 +55,6 @@ test_pcm_channels_16()
 		g_assert_cmpint(dest[i * 2], ==, src[i]);
 		g_assert_cmpint(dest[i * 2 + 1], ==, src[i]);
 	}
-
-	pcm_buffer_deinit(&buffer);
 }
 
 void
@@ -66,14 +63,13 @@ test_pcm_channels_32()
 	constexpr unsigned N = 256;
 	const auto src = TestDataBuffer<int32_t, N * 2>();
 
-	struct pcm_buffer buffer;
-	pcm_buffer_init(&buffer);
+	PcmBuffer buffer;
 
 	/* stereo to mono */
 
 	size_t dest_size;
 	const int32_t *dest =
-		pcm_convert_channels_32(&buffer, 1, 2, src, sizeof(src),
+		pcm_convert_channels_32(buffer, 1, 2, src, sizeof(src),
 					&dest_size);
 	g_assert(dest != NULL);
 	g_assert_cmpint(dest_size, ==, sizeof(src) / 2);
@@ -83,7 +79,7 @@ test_pcm_channels_32()
 
 	/* mono to stereo */
 
-	dest = pcm_convert_channels_32(&buffer, 2, 1, src, sizeof(src),
+	dest = pcm_convert_channels_32(buffer, 2, 1, src, sizeof(src),
 				       &dest_size);
 	g_assert(dest != NULL);
 	g_assert_cmpint(dest_size, ==, sizeof(src) * 2);
@@ -91,6 +87,4 @@ test_pcm_channels_32()
 		g_assert_cmpint(dest[i * 2], ==, src[i]);
 		g_assert_cmpint(dest[i * 2 + 1], ==, src[i]);
 	}
-
-	pcm_buffer_deinit(&buffer);
 }

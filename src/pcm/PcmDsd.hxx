@@ -21,7 +21,7 @@
 #define MPD_PCM_DSD_HXX
 
 #include "check.h"
-#include "pcm_buffer.h"
+#include "PcmBuffer.hxx"
 
 #include <stdint.h>
 
@@ -29,7 +29,7 @@
  * Wrapper for the dsd2pcm library.
  */
 struct PcmDsd {
-	struct pcm_buffer buffer;
+	PcmBuffer buffer;
 
 	struct dsd2pcm_ctx_s *dsd2pcm[32];
 

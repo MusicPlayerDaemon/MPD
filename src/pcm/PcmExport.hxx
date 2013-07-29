@@ -21,7 +21,7 @@
 #define PCM_EXPORT_HXX
 
 #include "check.h"
-#include "pcm_buffer.h"
+#include "PcmBuffer.hxx"
 #include "audio_format.h"
 
 struct audio_format;
@@ -38,21 +38,21 @@ struct PcmExport {
 	 *
 	 * @see #dsd_usb
 	 */
-	struct pcm_buffer dsd_buffer;
+	PcmBuffer dsd_buffer;
 
 	/**
 	 * The buffer is used to pack samples, removing padding.
 	 *
 	 * @see #pack24
 	 */
-	struct pcm_buffer pack_buffer;
+	PcmBuffer pack_buffer;
 
 	/**
 	 * The buffer is used to reverse the byte order.
 	 *
 	 * @see #reverse_endian
 	 */
-	struct pcm_buffer reverse_buffer;
+	PcmBuffer reverse_buffer;
 
 	/**
 	 * The number of channels.
@@ -83,18 +83,6 @@ struct PcmExport {
 	 * sample (2 or bigger).
 	 */
 	uint8_t reverse_endian;
-
-	PcmExport() {
-		pcm_buffer_init(&reverse_buffer);
-		pcm_buffer_init(&pack_buffer);
-		pcm_buffer_init(&dsd_buffer);
-	}
-
-	~PcmExport() {
-		pcm_buffer_deinit(&reverse_buffer);
-		pcm_buffer_deinit(&pack_buffer);
-		pcm_buffer_deinit(&dsd_buffer);
-	}
 
 	/**
 	 * Open the #pcm_export_state object.
