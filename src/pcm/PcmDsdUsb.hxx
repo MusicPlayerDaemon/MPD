@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,12 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PCM_DSD_USB_H
-#define MPD_PCM_DSD_USB_H
+#ifndef MPD_PCM_DSD_USB_HXX
+#define MPD_PCM_DSD_USB_HXX
 
 #include "check.h"
 
-#include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
 

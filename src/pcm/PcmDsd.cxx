@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,48 +18,48 @@
  */
 
 #include "config.h"
-#include "pcm_dsd.h"
+#include "PcmDsd.hxx"
 #include "dsd2pcm/dsd2pcm.h"
 
 #include <glib.h>
+
+#include <algorithm>
+
 #include <string.h>
 
-void
-pcm_dsd_init(struct pcm_dsd *dsd)
+PcmDsd::PcmDsd()
 {
-	pcm_buffer_init(&dsd->buffer);
+	pcm_buffer_init(&buffer);
 
-	memset(dsd->dsd2pcm, 0, sizeof(dsd->dsd2pcm));
+	std::fill_n(dsd2pcm, G_N_ELEMENTS(dsd2pcm), nullptr);
+}
+
+PcmDsd::~PcmDsd()
+{
+	pcm_buffer_deinit(&buffer);
+
+	for (unsigned i = 0; i < G_N_ELEMENTS(dsd2pcm); ++i)
+		if (dsd2pcm[i] != nullptr)
+			dsd2pcm_destroy(dsd2pcm[i]);
 }
 
 void
-pcm_dsd_deinit(struct pcm_dsd *dsd)
+PcmDsd::Reset()
 {
-	pcm_buffer_deinit(&dsd->buffer);
-
-	for (unsigned i = 0; i < G_N_ELEMENTS(dsd->dsd2pcm); ++i)
-		if (dsd->dsd2pcm[i] != NULL)
-			dsd2pcm_destroy(dsd->dsd2pcm[i]);
-}
-
-void
-pcm_dsd_reset(struct pcm_dsd *dsd)
-{
-	for (unsigned i = 0; i < G_N_ELEMENTS(dsd->dsd2pcm); ++i)
-		if (dsd->dsd2pcm[i] != NULL)
-			dsd2pcm_reset(dsd->dsd2pcm[i]);
+	for (unsigned i = 0; i < G_N_ELEMENTS(dsd2pcm); ++i)
+		if (dsd2pcm[i] != nullptr)
+			dsd2pcm_reset(dsd2pcm[i]);
 }
 
 const float *
-pcm_dsd_to_float(struct pcm_dsd *dsd, unsigned channels, bool lsbfirst,
-		 const uint8_t *src, size_t src_size,
-		 size_t *dest_size_r)
+PcmDsd::ToFloat(unsigned channels, bool lsbfirst,
+		const uint8_t *src, size_t src_size,
+		size_t *dest_size_r)
 {
-	assert(dsd != NULL);
-	assert(src != NULL);
+	assert(src != nullptr);
 	assert(src_size > 0);
 	assert(src_size % channels == 0);
-	assert(channels <= G_N_ELEMENTS(dsd->dsd2pcm));
+	assert(channels <= G_N_ELEMENTS(dsd2pcm));
 
 	const unsigned num_samples = src_size;
 	const unsigned num_frames = src_size / channels;
@@ -67,16 +67,16 @@ pcm_dsd_to_float(struct pcm_dsd *dsd, unsigned channels, bool lsbfirst,
 	float *dest;
 	const size_t dest_size = num_samples * sizeof(*dest);
 	*dest_size_r = dest_size;
-	dest = pcm_buffer_get(&dsd->buffer, dest_size);
+	dest = (float *)pcm_buffer_get(&buffer, dest_size);
 
 	for (unsigned c = 0; c < channels; ++c) {
-		if (dsd->dsd2pcm[c] == NULL) {
-			dsd->dsd2pcm[c] = dsd2pcm_init();
-			if (dsd->dsd2pcm[c] == NULL)
-				return NULL;
+		if (dsd2pcm[c] == nullptr) {
+			dsd2pcm[c] = dsd2pcm_init();
+			if (dsd2pcm[c] == nullptr)
+				return nullptr;
 		}
 
-		dsd2pcm_translate(dsd->dsd2pcm[c], num_frames,
+		dsd2pcm_translate(dsd2pcm[c], num_frames,
 				  src + c, channels,
 				  lsbfirst, dest + c, channels);
 	}

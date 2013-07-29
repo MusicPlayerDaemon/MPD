@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "PcmExport.hxx"
+#include "PcmDsdUsb.hxx"
 
 extern "C" {
-#include "pcm_dsd_usb.h"
 #include "pcm_pack.h"
 #include "util/byte_reverse.h"
 }

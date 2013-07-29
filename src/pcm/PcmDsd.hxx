@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,36 +17,30 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PCM_DSD_H
-#define MPD_PCM_DSD_H
+#ifndef MPD_PCM_DSD_HXX
+#define MPD_PCM_DSD_HXX
 
 #include "check.h"
 #include "pcm_buffer.h"
 
-#include <stdbool.h>
 #include <stdint.h>
 
 /**
  * Wrapper for the dsd2pcm library.
  */
-struct pcm_dsd {
+struct PcmDsd {
 	struct pcm_buffer buffer;
 
 	struct dsd2pcm_ctx_s *dsd2pcm[32];
+
+	PcmDsd();
+	~PcmDsd();
+
+	void Reset();
+
+	const float *ToFloat(unsigned channels, bool lsbfirst,
+			     const uint8_t *src, size_t src_size,
+			     size_t *dest_size_r);
 };
-
-void
-pcm_dsd_init(struct pcm_dsd *dsd);
-
-void
-pcm_dsd_deinit(struct pcm_dsd *dsd);
-
-void
-pcm_dsd_reset(struct pcm_dsd *dsd);
-
-const float *
-pcm_dsd_to_float(struct pcm_dsd *dsd, unsigned channels, bool lsbfirst,
-		 const uint8_t *src, size_t src_size,
-		 size_t *dest_size_r);
 
 #endif

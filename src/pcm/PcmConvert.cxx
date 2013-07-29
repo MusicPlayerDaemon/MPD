@@ -36,7 +36,6 @@ PcmConvert::PcmConvert()
 {
 	memset(this, 0, sizeof(*this));
 
-	pcm_dsd_init(&dsd);
 	pcm_resample_init(&resample);
 
 	pcm_buffer_init(&format_buffer);
@@ -45,7 +44,6 @@ PcmConvert::PcmConvert()
 
 PcmConvert::~PcmConvert()
 {
-	pcm_dsd_deinit(&dsd);
 	pcm_resample_deinit(&resample);
 
 	pcm_buffer_deinit(&format_buffer);
@@ -55,7 +53,7 @@ PcmConvert::~PcmConvert()
 void
 PcmConvert::Reset()
 {
-	pcm_dsd_reset(&dsd);
+	dsd.Reset();
 	pcm_resample_reset(&resample);
 }
 
@@ -278,10 +276,9 @@ PcmConvert::Convert(const audio_format *src_format,
 	struct audio_format float_format;
 	if (src_format->format == SAMPLE_FORMAT_DSD) {
 		size_t f_size;
-		const float *f = pcm_dsd_to_float(&dsd,
-						  src_format->channels,
-						  false, (const uint8_t *)src,
-						  src_size, &f_size);
+		const float *f = dsd.ToFloat(src_format->channels,
+					     false, (const uint8_t *)src,
+					     src_size, &f_size);
 		if (f == NULL) {
 			g_set_error_literal(error_r, pcm_convert_quark(), 0,
 					    "DSD to PCM conversion failed");

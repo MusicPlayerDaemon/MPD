@@ -21,9 +21,9 @@
 #define PCM_CONVERT_HXX
 
 #include "PcmDither.hxx"
+#include "PcmDsd.hxx"
 
 extern "C" {
-#include "pcm_dsd.h"
 #include "pcm_resample.h"
 #include "pcm_buffer.h"
 }
@@ -38,7 +38,7 @@ struct audio_format;
  * conversions.
  */
 class PcmConvert {
-	struct pcm_dsd dsd;
+	PcmDsd dsd;
 
 	struct pcm_resample_state resample;
 

@@ -307,8 +307,8 @@ libpcm_a_SOURCES = \
 	src/pcm/PcmExport.cxx src/pcm/PcmExport.hxx \
 	src/pcm/PcmConvert.cxx src/pcm/PcmConvert.hxx \
 	src/pcm/dsd2pcm/dsd2pcm.c src/pcm/dsd2pcm/dsd2pcm.h \
-	src/pcm/pcm_dsd.c src/pcm/pcm_dsd.h \
-	src/pcm/pcm_dsd_usb.c src/pcm/pcm_dsd_usb.h \
+	src/pcm/PcmDsd.cxx src/pcm/PcmDsd.hxx \
+	src/pcm/PcmDsdUsb.cxx src/pcm/PcmDsdUsb.hxx \
 	src/pcm/PcmVolume.cxx src/pcm/PcmVolume.hxx \
 	src/pcm/PcmMix.cxx src/pcm/PcmMix.hxx \
 	src/pcm/PcmChannels.cxx src/pcm/PcmChannels.hxx \
