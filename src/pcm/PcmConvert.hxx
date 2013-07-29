@@ -22,9 +22,9 @@
 
 #include "PcmDither.hxx"
 #include "PcmDsd.hxx"
+#include "PcmResample.hxx"
 
 extern "C" {
-#include "pcm_resample.h"
 #include "pcm_buffer.h"
 }
 
@@ -40,7 +40,7 @@ struct audio_format;
 class PcmConvert {
 	PcmDsd dsd;
 
-	struct pcm_resample_state resample;
+	PcmResampler resampler;
 
 	PcmDither dither;
 

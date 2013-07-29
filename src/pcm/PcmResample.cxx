@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "pcm_resample_internal.h"
+#include "PcmResampleInternal.hxx"
 
 #ifdef HAVE_LIBSAMPLERATE
 #include "conf.h"
@@ -56,47 +56,43 @@ pcm_resample_global_init(GError **error_r)
 #endif
 }
 
-void pcm_resample_init(struct pcm_resample_state *state)
+PcmResampler::PcmResampler()
 {
 #ifdef HAVE_LIBSAMPLERATE
 	if (pcm_resample_lsr_enabled())
-		pcm_resample_lsr_init(state);
+		pcm_resample_lsr_init(this);
 	else
 #endif
-		pcm_resample_fallback_init(state);
+		pcm_resample_fallback_init(this);
 }
 
-void pcm_resample_deinit(struct pcm_resample_state *state)
+PcmResampler::~PcmResampler()
 {
 #ifdef HAVE_LIBSAMPLERATE
 	if (pcm_resample_lsr_enabled())
-		pcm_resample_lsr_deinit(state);
+		pcm_resample_lsr_deinit(this);
 	else
 #endif
-		pcm_resample_fallback_deinit(state);
+		pcm_resample_fallback_deinit(this);
 }
 
 void
-pcm_resample_reset(struct pcm_resample_state *state)
+PcmResampler::Reset()
 {
 #ifdef HAVE_LIBSAMPLERATE
-	pcm_resample_lsr_reset(state);
-#else
-	(void)state;
+	pcm_resample_lsr_reset(this);
 #endif
 }
 
 const float *
-pcm_resample_float(struct pcm_resample_state *state,
-		   unsigned channels,
-		   unsigned src_rate,
-		   const float *src_buffer, size_t src_size,
-		   unsigned dest_rate, size_t *dest_size_r,
-		   GError **error_r)
+PcmResampler::ResampleFloat(unsigned channels, unsigned src_rate,
+			    const float *src_buffer, size_t src_size,
+			    unsigned dest_rate, size_t *dest_size_r,
+			    GError **error_r)
 {
 #ifdef HAVE_LIBSAMPLERATE
 	if (pcm_resample_lsr_enabled())
-		return pcm_resample_lsr_float(state, channels,
+		return pcm_resample_lsr_float(this, channels,
 					      src_rate, src_buffer, src_size,
 					      dest_rate, dest_size_r,
 					      error_r);
@@ -108,22 +104,21 @@ pcm_resample_float(struct pcm_resample_state *state,
 	   not do any math on the sample values, so this hack is
 	   possible: */
 	return (const float *)
-		pcm_resample_fallback_32(state, channels,
+		pcm_resample_fallback_32(this, channels,
 					 src_rate, (const int32_t *)src_buffer,
 					 src_size,
 					 dest_rate, dest_size_r);
 }
 
 const int16_t *
-pcm_resample_16(struct pcm_resample_state *state,
-		unsigned channels,
-		unsigned src_rate, const int16_t *src_buffer, size_t src_size,
-		unsigned dest_rate, size_t *dest_size_r,
-		GError **error_r)
+PcmResampler::Resample16(unsigned channels,
+			 unsigned src_rate, const int16_t *src_buffer, size_t src_size,
+			 unsigned dest_rate, size_t *dest_size_r,
+			 GError **error_r)
 {
 #ifdef HAVE_LIBSAMPLERATE
 	if (pcm_resample_lsr_enabled())
-		return pcm_resample_lsr_16(state, channels,
+		return pcm_resample_lsr_16(this, channels,
 					   src_rate, src_buffer, src_size,
 					   dest_rate, dest_size_r,
 					   error_r);
@@ -131,21 +126,20 @@ pcm_resample_16(struct pcm_resample_state *state,
 	(void)error_r;
 #endif
 
-	return pcm_resample_fallback_16(state, channels,
+	return pcm_resample_fallback_16(this, channels,
 					src_rate, src_buffer, src_size,
 					dest_rate, dest_size_r);
 }
 
 const int32_t *
-pcm_resample_32(struct pcm_resample_state *state,
-		unsigned channels,
-		unsigned src_rate, const int32_t *src_buffer, size_t src_size,
-		unsigned dest_rate, size_t *dest_size_r,
-		GError **error_r)
+PcmResampler::Resample32(unsigned channels, unsigned src_rate,
+			 const int32_t *src_buffer, size_t src_size,
+			 unsigned dest_rate, size_t *dest_size_r,
+			 GError **error_r)
 {
 #ifdef HAVE_LIBSAMPLERATE
 	if (pcm_resample_lsr_enabled())
-		return pcm_resample_lsr_32(state, channels,
+		return pcm_resample_lsr_32(this, channels,
 					   src_rate, src_buffer, src_size,
 					   dest_rate, dest_size_r,
 					   error_r);
@@ -153,7 +147,7 @@ pcm_resample_32(struct pcm_resample_state *state,
 	(void)error_r;
 #endif
 
-	return pcm_resample_fallback_32(state, channels,
+	return pcm_resample_fallback_32(this, channels,
 					src_rate, src_buffer, src_size,
 					dest_rate, dest_size_r);
 }

@@ -34,16 +34,12 @@
 
 PcmConvert::PcmConvert()
 {
-	pcm_resample_init(&resample);
-
 	pcm_buffer_init(&format_buffer);
 	pcm_buffer_init(&channels_buffer);
 }
 
 PcmConvert::~PcmConvert()
 {
-	pcm_resample_deinit(&resample);
-
 	pcm_buffer_deinit(&format_buffer);
 	pcm_buffer_deinit(&channels_buffer);
 }
@@ -52,7 +48,7 @@ void
 PcmConvert::Reset()
 {
 	dsd.Reset();
-	pcm_resample_reset(&resample);
+	resampler.Reset();
 }
 
 inline const int16_t *
@@ -93,11 +89,10 @@ PcmConvert::Convert16(const audio_format *src_format,
 	}
 
 	if (src_format->sample_rate != dest_format->sample_rate) {
-		buf = pcm_resample_16(&resample,
-				      dest_format->channels,
-				      src_format->sample_rate, buf, len,
-				      dest_format->sample_rate, &len,
-				      error_r);
+		buf = resampler.Resample16(dest_format->channels,
+					   src_format->sample_rate, buf, len,
+					   dest_format->sample_rate, &len,
+					   error_r);
 		if (buf == NULL)
 			return NULL;
 	}
@@ -143,11 +138,10 @@ PcmConvert::Convert24(const audio_format *src_format,
 	}
 
 	if (src_format->sample_rate != dest_format->sample_rate) {
-		buf = pcm_resample_24(&resample,
-				      dest_format->channels,
-				      src_format->sample_rate, buf, len,
-				      dest_format->sample_rate, &len,
-				      error_r);
+		buf = resampler.Resample24(dest_format->channels,
+					   src_format->sample_rate, buf, len,
+					   dest_format->sample_rate, &len,
+					   error_r);
 		if (buf == NULL)
 			return NULL;
 	}
@@ -193,11 +187,10 @@ PcmConvert::Convert32(const audio_format *src_format,
 	}
 
 	if (src_format->sample_rate != dest_format->sample_rate) {
-		buf = pcm_resample_32(&resample,
-				      dest_format->channels,
-				      src_format->sample_rate, buf, len,
-				      dest_format->sample_rate, &len,
-				      error_r);
+		buf = resampler.Resample32(dest_format->channels,
+					   src_format->sample_rate, buf, len,
+					   dest_format->sample_rate, &len,
+					   error_r);
 		if (buf == NULL)
 			return buf;
 	}
@@ -250,12 +243,11 @@ PcmConvert::ConvertFloat(const audio_format *src_format,
 	   libsamplerate */
 
 	if (src_format->sample_rate != dest_format->sample_rate) {
-		buffer = pcm_resample_float(&resample,
-					    dest_format->channels,
-					    src_format->sample_rate,
-					    buffer, size,
-					    dest_format->sample_rate, &size,
-					    error_r);
+		buffer = resampler.ResampleFloat(dest_format->channels,
+						 src_format->sample_rate,
+						 buffer, size,
+						 dest_format->sample_rate,
+						 &size, error_r);
 		if (buffer == NULL)
 			return NULL;
 	}

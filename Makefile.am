@@ -314,9 +314,9 @@ libpcm_a_SOURCES = \
 	src/pcm/PcmChannels.cxx src/pcm/PcmChannels.hxx \
 	src/pcm/pcm_pack.c src/pcm/pcm_pack.h \
 	src/pcm/PcmFormat.cxx src/pcm/PcmFormat.hxx \
-	src/pcm/pcm_resample.c src/pcm/pcm_resample.h \
-	src/pcm/pcm_resample_fallback.c \
-	src/pcm/pcm_resample_internal.h \
+	src/pcm/PcmResample.cxx src/pcm/PcmResample.hxx \
+	src/pcm/PcmResampleFallback.cxx \
+	src/pcm/PcmResampleInternal.hxx \
 	src/pcm/PcmDither.cxx src/pcm/PcmDither.hxx \
 	src/pcm/PcmPrng.hxx \
 	src/pcm/PcmUtils.hxx
@@ -328,7 +328,7 @@ PCM_LIBS = \
 	$(SAMPLERATE_LIBS)
 
 if HAVE_LIBSAMPLERATE
-libpcm_a_SOURCES += src/pcm/pcm_resample_libsamplerate.c
+libpcm_a_SOURCES += src/pcm/PcmResampleLibsamplerate.cxx
 endif
 
 # File system library

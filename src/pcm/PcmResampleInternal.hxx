@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,11 +24,11 @@
  * of this header is somewhat unrelated to it.
  */
 
-#ifndef MPD_PCM_RESAMPLE_INTERNAL_H
-#define MPD_PCM_RESAMPLE_INTERNAL_H
+#ifndef MPD_PCM_RESAMPLE_INTERNAL_HXX
+#define MPD_PCM_RESAMPLE_INTERNAL_HXX
 
 #include "check.h"
-#include "pcm_resample.h"
+#include "PcmResample.hxx"
 
 #ifdef HAVE_LIBSAMPLERATE
 
@@ -36,16 +36,16 @@ bool
 pcm_resample_lsr_global_init(const char *converter, GError **error_r);
 
 void
-pcm_resample_lsr_init(struct pcm_resample_state *state);
+pcm_resample_lsr_init(PcmResampler *state);
 
 void
-pcm_resample_lsr_deinit(struct pcm_resample_state *state);
+pcm_resample_lsr_deinit(PcmResampler *state);
 
 void
-pcm_resample_lsr_reset(struct pcm_resample_state *state);
+pcm_resample_lsr_reset(PcmResampler *state);
 
 const float *
-pcm_resample_lsr_float(struct pcm_resample_state *state,
+pcm_resample_lsr_float(PcmResampler *state,
 		       unsigned channels,
 		       unsigned src_rate,
 		       const float *src_buffer, size_t src_size,
@@ -53,7 +53,7 @@ pcm_resample_lsr_float(struct pcm_resample_state *state,
 		       GError **error_r);
 
 const int16_t *
-pcm_resample_lsr_16(struct pcm_resample_state *state,
+pcm_resample_lsr_16(PcmResampler *state,
 		    unsigned channels,
 		    unsigned src_rate,
 		    const int16_t *src_buffer, size_t src_size,
@@ -61,7 +61,7 @@ pcm_resample_lsr_16(struct pcm_resample_state *state,
 		    GError **error_r);
 
 const int32_t *
-pcm_resample_lsr_32(struct pcm_resample_state *state,
+pcm_resample_lsr_32(PcmResampler *state,
 		    unsigned channels,
 		    unsigned src_rate,
 		    const int32_t *src_buffer,
@@ -72,13 +72,13 @@ pcm_resample_lsr_32(struct pcm_resample_state *state,
 #endif
 
 void
-pcm_resample_fallback_init(struct pcm_resample_state *state);
+pcm_resample_fallback_init(PcmResampler *state);
 
 void
-pcm_resample_fallback_deinit(struct pcm_resample_state *state);
+pcm_resample_fallback_deinit(PcmResampler *state);
 
 const int16_t *
-pcm_resample_fallback_16(struct pcm_resample_state *state,
+pcm_resample_fallback_16(PcmResampler *state,
 			 unsigned channels,
 			 unsigned src_rate,
 			 const int16_t *src_buffer, size_t src_size,
@@ -86,7 +86,7 @@ pcm_resample_fallback_16(struct pcm_resample_state *state,
 			 size_t *dest_size_r);
 
 const int32_t *
-pcm_resample_fallback_32(struct pcm_resample_state *state,
+pcm_resample_fallback_32(PcmResampler *state,
 			 unsigned channels,
 			 unsigned src_rate,
 			 const int32_t *src_buffer,

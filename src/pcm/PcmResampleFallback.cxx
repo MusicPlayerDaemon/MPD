@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,52 +18,53 @@
  */
 
 #include "config.h"
-#include "pcm_resample_internal.h"
+#include "PcmResampleInternal.hxx"
 
 #include <assert.h>
 
 void
-pcm_resample_fallback_init(struct pcm_resample_state *state)
+pcm_resample_fallback_init(PcmResampler *state)
 {
 	pcm_buffer_init(&state->buffer);
 }
 
 void
-pcm_resample_fallback_deinit(struct pcm_resample_state *state)
+pcm_resample_fallback_deinit(PcmResampler *state)
 {
 	pcm_buffer_deinit(&state->buffer);
 }
 
 /* resampling code blatantly ripped from ESD */
 const int16_t *
-pcm_resample_fallback_16(struct pcm_resample_state *state,
+pcm_resample_fallback_16(PcmResampler *state,
 			 unsigned channels,
 			 unsigned src_rate,
 			 const int16_t *src_buffer, size_t src_size,
 			 unsigned dest_rate,
 			 size_t *dest_size_r)
 {
-	unsigned src_pos, dest_pos = 0;
+	unsigned dest_pos = 0;
 	unsigned src_frames = src_size / channels / sizeof(*src_buffer);
 	unsigned dest_frames =
 		(src_frames * dest_rate + src_rate - 1) / src_rate;
 	unsigned dest_samples = dest_frames * channels;
 	size_t dest_size = dest_samples * sizeof(*src_buffer);
-	int16_t *dest_buffer = pcm_buffer_get(&state->buffer, dest_size);
+	int16_t *dest_buffer = (int16_t *)
+		pcm_buffer_get(&state->buffer, dest_size);
 
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
 
 	switch (channels) {
 	case 1:
 		while (dest_pos < dest_samples) {
-			src_pos = dest_pos * src_rate / dest_rate;
+			unsigned src_pos = dest_pos * src_rate / dest_rate;
 
 			dest_buffer[dest_pos++] = src_buffer[src_pos];
 		}
 		break;
 	case 2:
 		while (dest_pos < dest_samples) {
-			src_pos = dest_pos * src_rate / dest_rate;
+			unsigned src_pos = dest_pos * src_rate / dest_rate;
 			src_pos &= ~1;
 
 			dest_buffer[dest_pos++] = src_buffer[src_pos];
@@ -77,34 +78,35 @@ pcm_resample_fallback_16(struct pcm_resample_state *state,
 }
 
 const int32_t *
-pcm_resample_fallback_32(struct pcm_resample_state *state,
+pcm_resample_fallback_32(PcmResampler *state,
 			 unsigned channels,
 			 unsigned src_rate,
 			 const int32_t *src_buffer, size_t src_size,
 			 unsigned dest_rate,
 			 size_t *dest_size_r)
 {
-	unsigned src_pos, dest_pos = 0;
+	unsigned dest_pos = 0;
 	unsigned src_frames = src_size / channels / sizeof(*src_buffer);
 	unsigned dest_frames =
 		(src_frames * dest_rate + src_rate - 1) / src_rate;
 	unsigned dest_samples = dest_frames * channels;
 	size_t dest_size = dest_samples * sizeof(*src_buffer);
-	int32_t *dest_buffer = pcm_buffer_get(&state->buffer, dest_size);
+	int32_t *dest_buffer = (int32_t *)
+		pcm_buffer_get(&state->buffer, dest_size);
 
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
 
 	switch (channels) {
 	case 1:
 		while (dest_pos < dest_samples) {
-			src_pos = dest_pos * src_rate / dest_rate;
+			unsigned src_pos = dest_pos * src_rate / dest_rate;
 
 			dest_buffer[dest_pos++] = src_buffer[src_pos];
 		}
 		break;
 	case 2:
 		while (dest_pos < dest_samples) {
-			src_pos = dest_pos * src_rate / dest_rate;
+			unsigned src_pos = dest_pos * src_rate / dest_rate;
 			src_pos &= ~1;
 
 			dest_buffer[dest_pos++] = src_buffer[src_pos];

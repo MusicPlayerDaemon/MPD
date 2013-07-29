@@ -53,11 +53,11 @@
 #include "ZeroconfGlue.hxx"
 #include "DecoderList.hxx"
 #include "AudioConfig.hxx"
+#include "pcm/PcmResample.hxx"
 
 extern "C" {
 #include "daemon.h"
 #include "stats.h"
-#include "pcm/pcm_resample.h"
 }
 
 #include "mpd_error.h"
