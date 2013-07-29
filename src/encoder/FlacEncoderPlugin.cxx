@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,12 +18,16 @@
  */
 
 #include "config.h"
+#include "FlacEncoderPlugin.hxx"
 #include "encoder_api.h"
 #include "encoder_plugin.h"
 #include "audio_format.h"
 #include "pcm/pcm_buffer.h"
 #include "util/fifo_buffer.h"
+
+extern "C" {
 #include "util/growing_fifo.h"
+}
 
 #include <assert.h>
 #include <string.h>
@@ -82,7 +86,7 @@ flac_encoder_init(const struct config_param *param, GError **error)
 	if (!flac_encoder_configure(encoder, param, error)) {
 		/* configuration has failed, roll back and return error */
 		g_free(encoder);
-		return NULL;
+		return nullptr;
 	}
 
 	return &encoder->encoder;
@@ -190,7 +194,7 @@ flac_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 
 	/* allocate the encoder */
 	encoder->fse = FLAC__stream_encoder_new();
-	if (encoder->fse == NULL) {
+	if (encoder->fse == nullptr) {
 		g_set_error(error, flac_encoder_quark(), 0,
 			    "flac_new() failed");
 		return false;
@@ -212,7 +216,7 @@ flac_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 
 		init_status = FLAC__stream_encoder_init_stream(encoder->fse,
 			    flac_write_callback,
-			    NULL, NULL, NULL, encoder);
+			    nullptr, nullptr, nullptr, encoder);
 
 		if(init_status != FLAC__STREAM_ENCODER_INIT_STATUS_OK) {
 			g_set_error(error, flac_encoder_quark(), 0,
@@ -262,7 +266,7 @@ flac_encoder_write(struct encoder *_encoder,
 	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
 	unsigned num_frames, num_samples;
 	void *exbuffer;
-	const void *buffer = NULL;
+	const void *buffer = nullptr;
 
 	/* format conversion */
 
@@ -272,13 +276,15 @@ flac_encoder_write(struct encoder *_encoder,
 	switch (encoder->audio_format.format) {
 	case SAMPLE_FORMAT_S8:
 		exbuffer = pcm_buffer_get(&encoder->expand_buffer, length*4);
-		pcm8_to_flac(exbuffer, data, num_samples);
+		pcm8_to_flac((int32_t *)exbuffer, (const int8_t *)data,
+			     num_samples);
 		buffer = exbuffer;
 		break;
 
 	case SAMPLE_FORMAT_S16:
 		exbuffer = pcm_buffer_get(&encoder->expand_buffer, length*2);
-		pcm16_to_flac(exbuffer, data, num_samples);
+		pcm16_to_flac((int32_t *)exbuffer, (const int16_t *)data,
+			      num_samples);
 		buffer = exbuffer;
 		break;
 
@@ -292,8 +298,9 @@ flac_encoder_write(struct encoder *_encoder,
 
 	/* feed samples to encoder */
 
-	if (!FLAC__stream_encoder_process_interleaved(encoder->fse, buffer,
-							num_frames)) {
+	if (!FLAC__stream_encoder_process_interleaved(encoder->fse,
+						      (const FLAC__int32 *)buffer,
+						      num_frames)) {
 		g_set_error(error, flac_encoder_quark(), 0,
 			    "flac encoder process failed");
 		return false;
@@ -308,9 +315,9 @@ flac_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
 
 	size_t max_length;
-	const char *src = fifo_buffer_read(encoder->output_buffer,
-					   &max_length);
-	if (src == NULL)
+	const char *src = (const char *)
+		fifo_buffer_read(encoder->output_buffer, &max_length);
+	if (src == nullptr)
 		return 0;
 
 	if (length > max_length)
@@ -328,15 +335,17 @@ flac_encoder_get_mime_type(G_GNUC_UNUSED struct encoder *_encoder)
 }
 
 const struct encoder_plugin flac_encoder_plugin = {
-	.name = "flac",
-	.init = flac_encoder_init,
-	.finish = flac_encoder_finish,
-	.open = flac_encoder_open,
-	.close = flac_encoder_close,
-	.end = flac_encoder_flush,
-	.flush = flac_encoder_flush,
-	.write = flac_encoder_write,
-	.read = flac_encoder_read,
-	.get_mime_type = flac_encoder_get_mime_type,
+	"flac",
+	flac_encoder_init,
+	flac_encoder_finish,
+	flac_encoder_open,
+	flac_encoder_close,
+	flac_encoder_flush,
+	flac_encoder_flush,
+	nullptr,
+	nullptr,
+	flac_encoder_write,
+	flac_encoder_read,
+	flac_encoder_get_mime_type,
 };
 

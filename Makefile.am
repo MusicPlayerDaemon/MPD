@@ -669,7 +669,8 @@ libencoder_plugins_a_SOURCES += src/encoder/twolame_encoder.c
 endif
 
 if ENABLE_FLAC_ENCODER
-libencoder_plugins_a_SOURCES += src/encoder/flac_encoder.c
+libencoder_plugins_a_SOURCES += \
+	src/encoder/FlacEncoderPlugin.cxx src/encoder/FlacEncoderPlugin.hxx
 endif
 
 else
