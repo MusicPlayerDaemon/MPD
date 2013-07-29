@@ -24,18 +24,16 @@
 #include "pcm_pack.h"
 #include "audio_format.h"
 
-#include <assert.h>
-#include <string.h>
-#include <math.h>
 #include <glib.h>
+
+#include <assert.h>
+#include <math.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "pcm"
 
 PcmConvert::PcmConvert()
 {
-	memset(this, 0, sizeof(*this));
-
 	pcm_resample_init(&resample);
 
 	pcm_buffer_init(&format_buffer);
