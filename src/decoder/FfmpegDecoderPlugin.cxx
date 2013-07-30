@@ -180,23 +180,6 @@ ffmpeg_find_audio_stream(const AVFormatContext *format_context)
 	return -1;
 }
 
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53,25,0)
-/**
- * On some platforms, libavcodec wants the output buffer aligned to 16
- * bytes (because it uses SSE/Altivec internally).  This function
- * returns the aligned version of the specified buffer, and corrects
- * the buffer size.
- */
-static void *
-align16(void *p, size_t *length_p)
-{
-	unsigned add = 16 - (size_t)p % 16;
-
-	*length_p -= add;
-	return (char *)p + add;
-}
-#endif
-
 G_GNUC_CONST
 static double
 time_from_ffmpeg(int64_t t, const AVRational time_base)
@@ -214,8 +197,6 @@ time_to_ffmpeg(double t, const AVRational time_base)
 	return av_rescale_q((int64_t)(t * 1024), (AVRational){1, 1024},
 			    time_base);
 }
-
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53,25,0)
 
 static void
 copy_interleave_frame2(uint8_t *dest, uint8_t **src,
@@ -261,7 +242,6 @@ copy_interleave_frame(const AVCodecContext *codec_context,
 
 	return data_size;
 }
-#endif
 
 static enum decoder_command
 ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
@@ -276,21 +256,13 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 
 	AVPacket packet2 = *packet;
 
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53,25,0)
 	uint8_t aligned_buffer[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2 + 16];
 	const size_t buffer_size = sizeof(aligned_buffer);
-#else
-	/* libavcodec < 0.8 needs an aligned buffer */
-	uint8_t audio_buf[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2 + 16];
-	size_t buffer_size = sizeof(audio_buf);
-	int16_t *aligned_buffer = (int16_t *)align16(audio_buf, &buffer_size);
-#endif
 
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 	while (packet2.size > 0 &&
 	       cmd == DECODE_COMMAND_NONE) {
 		int audio_size = buffer_size;
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53,25,0)
 		int got_frame = 0;
 		int len = avcodec_decode_audio4(codec_context,
 						frame, &got_frame,
@@ -304,13 +276,6 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 				len = audio_size;
 		} else if (len >= 0)
 			len = -1;
-#else
-		(void)frame;
-
-		int len = avcodec_decode_audio3(codec_context,
-						aligned_buffer, &audio_size,
-						&packet2);
-#endif
 
 		if (len < 0) {
 			/* if error, we skip the frame */
@@ -337,21 +302,15 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 {
 	switch (sample_fmt) {
 	case AV_SAMPLE_FMT_S16:
-#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,17,0)
 	case AV_SAMPLE_FMT_S16P:
-#endif
 		return SAMPLE_FORMAT_S16;
 
 	case AV_SAMPLE_FMT_S32:
-#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,17,0)
 	case AV_SAMPLE_FMT_S32P:
-#endif
 		return SAMPLE_FORMAT_S32;
 
-#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51,17,0)
 	case AV_SAMPLE_FMT_FLTP:
 		return SAMPLE_FORMAT_FLOAT;
-#endif
 
 	default:
 		break;
@@ -429,19 +388,11 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		return;
 	}
 
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,6,0)
 	const int find_result =
 		avformat_find_stream_info(format_context, NULL);
-#else
-	const int find_result = av_find_stream_info(format_context);
-#endif
 	if (find_result < 0) {
 		g_warning("Couldn't find stream info\n");
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
 		avformat_close_input(&format_context);
-#else
-		av_close_input_stream(format_context);
-#endif
 		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
@@ -449,11 +400,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	int audio_stream = ffmpeg_find_audio_stream(format_context);
 	if (audio_stream == -1) {
 		g_warning("No audio stream inside\n");
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
 		avformat_close_input(&format_context);
-#else
-		av_close_input_stream(format_context);
-#endif
 		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
@@ -468,11 +415,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 
 	if (!codec) {
 		g_warning("Unsupported audio codec\n");
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
 		avformat_close_input(&format_context);
-#else
-		av_close_input_stream(format_context);
-#endif
 		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
@@ -490,11 +433,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 				       codec_context->channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
 		avformat_close_input(&format_context);
-#else
-		av_close_input_stream(format_context);
-#endif
 		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
@@ -504,18 +443,10 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	   values into AVCodecContext.channels - a change that will be
 	   reverted later by avcodec_decode_audio3() */
 
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53,6,0)
 	const int open_result = avcodec_open2(codec_context, codec, NULL);
-#else
-	const int open_result = avcodec_open(codec_context, codec);
-#endif
 	if (open_result < 0) {
 		g_warning("Could not open codec\n");
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
 		avformat_close_input(&format_context);
-#else
-		av_close_input_stream(format_context);
-#endif
 		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
@@ -530,11 +461,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	AVFrame *frame = avcodec_alloc_frame();
 	if (!frame) {
 		g_warning("Could not allocate frame\n");
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
 		avformat_close_input(&format_context);
-#else
-		av_close_input_stream(format_context);
-#endif
 		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
@@ -578,11 +505,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 #endif
 
 	avcodec_close(codec_context);
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
 	avformat_close_input(&format_context);
-#else
-	av_close_input_stream(format_context);
-#endif
 	mpd_ffmpeg_stream_close(stream);
 }
 
@@ -606,18 +529,10 @@ ffmpeg_scan_stream(struct input_stream *is,
 		return false;
 	}
 
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,6,0)
 	const int find_result =
 		avformat_find_stream_info(f, NULL);
-#else
-	const int find_result = av_find_stream_info(f);
-#endif
 	if (find_result < 0) {
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
 		avformat_close_input(&f);
-#else
-		av_close_input_stream(f);
-#endif
 		mpd_ffmpeg_stream_close(stream);
 		return false;
 	}
@@ -632,11 +547,7 @@ ffmpeg_scan_stream(struct input_stream *is,
 		ffmpeg_scan_dictionary(f->streams[idx]->metadata,
 				       handler, handler_ctx);
 
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53,17,0)
 	avformat_close_input(&f);
-#else
-	av_close_input_stream(f);
-#endif
 	mpd_ffmpeg_stream_close(stream);
 
 	return true;

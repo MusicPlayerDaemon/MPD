@@ -3,6 +3,7 @@ ver 0.18 (2012/??/??)
   - soup: plugin removed
 * decoder:
   - adplug: new decoder plugin using libadplug
+  - ffmpeg: drop support for pre-0.8 ffmpeg
   - flac: require libFLAC 1.2 or newer
   - flac: support FLAC files inside archives
   - opus: new decoder plugin for the Opus codec

@@ -850,7 +850,7 @@ AM_PATH_FAAD()
 AM_CONDITIONAL(HAVE_FAAD, test x$enable_aac = xyes)
 
 dnl ---------------------------------- ffmpeg ---------------------------------
-MPD_AUTO_PKG(ffmpeg, FFMPEG, [libavformat >= 53.2 libavcodec >= 53.5 libavutil >= 51.7],
+MPD_AUTO_PKG(ffmpeg, FFMPEG, [libavformat >= 53.17 libavcodec >= 53.25 libavutil >= 51.17],
 	[ffmpeg decoder library], [libavformat+libavcodec+libavutil not found])
 
 if test x$enable_ffmpeg = xyes; then
