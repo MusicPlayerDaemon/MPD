@@ -20,13 +20,13 @@
 #include "config.h"
 #include "EncoderList.hxx"
 #include "encoder_plugin.h"
+#include "encoder/NullEncoderPlugin.hxx"
 #include "encoder/VorbisEncoderPlugin.hxx"
 #include "encoder/OpusEncoderPlugin.hxx"
 #include "encoder/FlacEncoderPlugin.hxx"
 
 #include <string.h>
 
-extern const struct encoder_plugin null_encoder_plugin;
 extern const struct encoder_plugin lame_encoder_plugin;
 extern const struct encoder_plugin twolame_encoder_plugin;
 extern const struct encoder_plugin wave_encoder_plugin;

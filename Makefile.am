@@ -640,7 +640,7 @@ ENCODER_LIBS = \
 
 libencoder_plugins_a_SOURCES = \
 	src/encoder/OggStream.hxx \
-	src/encoder/null_encoder.c \
+	src/encoder/NullEncoderPlugin.cxx src/encoder/NullEncoderPlugin.hxx \
 	src/EncoderList.cxx src/EncoderList.hxx
 
 if ENABLE_WAVE_ENCODER

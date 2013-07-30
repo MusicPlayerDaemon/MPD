@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,10 +18,13 @@
  */
 
 #include "config.h"
+#include "NullEncoderPlugin.hxx"
 #include "encoder_api.h"
 #include "encoder_plugin.h"
 #include "util/fifo_buffer.h"
+extern "C" {
 #include "util/growing_fifo.h"
+}
 #include "gcc.h"
 
 #include <glib.h>
@@ -29,38 +32,36 @@
 #include <assert.h>
 #include <string.h>
 
-struct null_encoder {
+struct NullEncoder final {
 	struct encoder encoder;
 
 	struct fifo_buffer *buffer;
-};
 
-extern const struct encoder_plugin null_encoder_plugin;
+	NullEncoder() {
+		encoder_struct_init(&encoder, &null_encoder_plugin);
+	}
+};
 
 static struct encoder *
 null_encoder_init(gcc_unused const struct config_param *param,
 		  gcc_unused GError **error)
 {
-	struct null_encoder *encoder;
-
-	encoder = g_new(struct null_encoder, 1);
-	encoder_struct_init(&encoder->encoder, &null_encoder_plugin);
-
+	NullEncoder *encoder = new NullEncoder();
 	return &encoder->encoder;
 }
 
 static void
 null_encoder_finish(struct encoder *_encoder)
 {
-	struct null_encoder *encoder = (struct null_encoder *)_encoder;
+	NullEncoder *encoder = (NullEncoder *)_encoder;
 
-	g_free(encoder);
+	delete encoder;
 }
 
 static void
 null_encoder_close(struct encoder *_encoder)
 {
-	struct null_encoder *encoder = (struct null_encoder *)_encoder;
+	NullEncoder *encoder = (NullEncoder *)_encoder;
 
 	fifo_buffer_free(encoder->buffer);
 }
@@ -71,8 +72,7 @@ null_encoder_open(struct encoder *_encoder,
 		  gcc_unused struct audio_format *audio_format,
 		  gcc_unused GError **error)
 {
-	struct null_encoder *encoder = (struct null_encoder *)_encoder;
-
+	NullEncoder *encoder = (NullEncoder *)_encoder;
 	encoder->buffer = growing_fifo_new();
 	return true;
 }
@@ -82,7 +82,7 @@ null_encoder_write(struct encoder *_encoder,
 		   const void *data, size_t length,
 		   gcc_unused GError **error)
 {
-	struct null_encoder *encoder = (struct null_encoder *)_encoder;
+	NullEncoder *encoder = (NullEncoder *)_encoder;
 
 	growing_fifo_append(&encoder->buffer, data, length);
 	return length;
@@ -91,11 +91,11 @@ null_encoder_write(struct encoder *_encoder,
 static size_t
 null_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 {
-	struct null_encoder *encoder = (struct null_encoder *)_encoder;
+	NullEncoder *encoder = (NullEncoder *)_encoder;
 
 	size_t max_length;
 	const void *src = fifo_buffer_read(encoder->buffer, &max_length);
-	if (src == NULL)
+	if (src == nullptr)
 		return 0;
 
 	if (length > max_length)
@@ -107,11 +107,16 @@ null_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 }
 
 const struct encoder_plugin null_encoder_plugin = {
-	.name = "null",
-	.init = null_encoder_init,
-	.finish = null_encoder_finish,
-	.open = null_encoder_open,
-	.close = null_encoder_close,
-	.write = null_encoder_write,
-	.read = null_encoder_read,
+	"null",
+	null_encoder_init,
+	null_encoder_finish,
+	null_encoder_open,
+	null_encoder_close,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	null_encoder_write,
+	null_encoder_read,
+	nullptr,
 };
