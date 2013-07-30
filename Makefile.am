@@ -644,7 +644,9 @@ libencoder_plugins_a_SOURCES = \
 	src/EncoderList.cxx src/EncoderList.hxx
 
 if ENABLE_WAVE_ENCODER
-libencoder_plugins_a_SOURCES += src/encoder/wave_encoder.c
+libencoder_plugins_a_SOURCES += \
+	src/encoder/WaveEncoderPlugin.cxx \
+	src/encoder/WaveEncoderPlugin.hxx
 endif
 
 if ENABLE_VORBIS_ENCODER

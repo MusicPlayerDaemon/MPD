@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,21 +18,28 @@
  */
 
 #include "config.h"
+#include "WaveEncoderPlugin.hxx"
 #include "encoder_api.h"
 #include "encoder_plugin.h"
 #include "util/fifo_buffer.h"
+extern "C" {
 #include "util/growing_fifo.h"
+}
 
 #include <glib.h>
 
 #include <assert.h>
 #include <string.h>
 
-struct wave_encoder {
+struct WaveEncoder {
 	struct encoder encoder;
 	unsigned bits;
 
 	struct fifo_buffer *buffer;
+
+	WaveEncoder() {
+		encoder_struct_init(&encoder, &wave_encoder_plugin);
+	}
 };
 
 struct wave_header {
@@ -84,18 +91,14 @@ static struct encoder *
 wave_encoder_init(gcc_unused const struct config_param *param,
 		  gcc_unused GError **error)
 {
-	struct wave_encoder *encoder;
-
-	encoder = g_new(struct wave_encoder, 1);
-	encoder_struct_init(&encoder->encoder, &wave_encoder_plugin);
-
+	WaveEncoder *encoder = new WaveEncoder();
 	return &encoder->encoder;
 }
 
 static void
 wave_encoder_finish(struct encoder *_encoder)
 {
-	struct wave_encoder *encoder = (struct wave_encoder *)_encoder;
+	WaveEncoder *encoder = (WaveEncoder *)_encoder;
 
 	g_free(encoder);
 }
@@ -105,7 +108,7 @@ wave_encoder_open(struct encoder *_encoder,
 		  gcc_unused struct audio_format *audio_format,
 		  gcc_unused GError **error)
 {
-	struct wave_encoder *encoder = (struct wave_encoder *)_encoder;
+	WaveEncoder *encoder = (WaveEncoder *)_encoder;
 
 	assert(audio_format_valid(audio_format));
 
@@ -133,7 +136,7 @@ wave_encoder_open(struct encoder *_encoder,
 	}
 
 	encoder->buffer = growing_fifo_new();
-	struct wave_header *header =
+	wave_header *header = (wave_header *)
 		growing_fifo_write(&encoder->buffer, sizeof(*header));
 
 	/* create PCM wave header in initial buffer */
@@ -150,7 +153,7 @@ wave_encoder_open(struct encoder *_encoder,
 static void
 wave_encoder_close(struct encoder *_encoder)
 {
-	struct wave_encoder *encoder = (struct wave_encoder *)_encoder;
+	WaveEncoder *encoder = (WaveEncoder *)_encoder;
 
 	fifo_buffer_free(encoder->buffer);
 }
@@ -200,9 +203,9 @@ wave_encoder_write(struct encoder *_encoder,
 		   const void *src, size_t length,
 		   gcc_unused GError **error)
 {
-	struct wave_encoder *encoder = (struct wave_encoder *)_encoder;
+	WaveEncoder *encoder = (WaveEncoder *)_encoder;
 
-	void *dst = growing_fifo_write(&encoder->buffer, length);
+	uint8_t *dst = (uint8_t *)growing_fifo_write(&encoder->buffer, length);
 
 #if (G_BYTE_ORDER == G_LITTLE_ENDIAN)
 	switch (encoder->bits) {
@@ -212,7 +215,7 @@ wave_encoder_write(struct encoder *_encoder,
 		memcpy(dst, src, length);
 		break;
 	case 24:
-		length = pcm24_to_wave(dst, src, length);
+		length = pcm24_to_wave(dst, (const uint32_t *)src, length);
 		break;
 	}
 #elif (G_BYTE_ORDER == G_BIG_ENDIAN)
@@ -221,13 +224,13 @@ wave_encoder_write(struct encoder *_encoder,
 		memcpy(dst, src, length);
 		break;
 	case 16:
-		length = pcm16_to_wave(dst, src, length);
+		length = pcm16_to_wave(dst, (const uint16_t *)src, length);
 		break;
 	case 24:
-		length = pcm24_to_wave(dst, src, length);
+		length = pcm24_to_wave(dst, (const uint32_t *)src, length);
 		break;
 	case 32:
-		length = pcm32_to_wave(dst, src, length);
+		length = pcm32_to_wave(dst, (const uint32_t *)src, length);
 		break;
 	}
 #else
@@ -241,7 +244,7 @@ wave_encoder_write(struct encoder *_encoder,
 static size_t
 wave_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 {
-	struct wave_encoder *encoder = (struct wave_encoder *)_encoder;
+	WaveEncoder *encoder = (WaveEncoder *)_encoder;
 
 	size_t max_length;
 	const void *src = fifo_buffer_read(encoder->buffer, &max_length);
@@ -263,12 +266,16 @@ wave_encoder_get_mime_type(gcc_unused struct encoder *_encoder)
 }
 
 const struct encoder_plugin wave_encoder_plugin = {
-	.name = "wave",
-	.init = wave_encoder_init,
-	.finish = wave_encoder_finish,
-	.open = wave_encoder_open,
-	.close = wave_encoder_close,
-	.write = wave_encoder_write,
-	.read = wave_encoder_read,
-	.get_mime_type = wave_encoder_get_mime_type,
+	"wave",
+	wave_encoder_init,
+	wave_encoder_finish,
+	wave_encoder_open,
+	wave_encoder_close,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	wave_encoder_write,
+	wave_encoder_read,
+	wave_encoder_get_mime_type,
 };

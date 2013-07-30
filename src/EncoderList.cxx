@@ -21,6 +21,7 @@
 #include "EncoderList.hxx"
 #include "encoder_plugin.h"
 #include "encoder/NullEncoderPlugin.hxx"
+#include "encoder/WaveEncoderPlugin.hxx"
 #include "encoder/VorbisEncoderPlugin.hxx"
 #include "encoder/OpusEncoderPlugin.hxx"
 #include "encoder/FlacEncoderPlugin.hxx"
@@ -29,7 +30,6 @@
 
 extern const struct encoder_plugin lame_encoder_plugin;
 extern const struct encoder_plugin twolame_encoder_plugin;
-extern const struct encoder_plugin wave_encoder_plugin;
 
 const struct encoder_plugin *const encoder_plugins[] = {
 	&null_encoder_plugin,
