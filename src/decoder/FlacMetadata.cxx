@@ -228,10 +228,10 @@ flac_scan_metadata(const FLAC__StreamMetadata *block,
 }
 
 void
-flac_vorbis_comments_to_tag(Tag *tag,
+flac_vorbis_comments_to_tag(Tag &tag,
 			    const FLAC__StreamMetadata_VorbisComment *comment)
 {
-	flac_scan_comments(comment, &add_tag_handler, tag);
+	flac_scan_comments(comment, &add_tag_handler, &tag);
 }
 
 void

@@ -172,11 +172,10 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 	data->first_frame = t_start;
 
 	while (true) {
-		if (data->tag != nullptr && !data->tag->IsEmpty()) {
+		if (!data->tag.IsEmpty()) {
 			cmd = decoder_tag(data->decoder, data->input_stream,
-					  std::move(*data->tag));
-			delete data->tag;
-			data->tag = new Tag();
+					  std::move(data->tag));
+			data->tag.Clear();
 		} else
 			cmd = decoder_get_command(decoder);
 
@@ -260,7 +259,6 @@ flac_decode_internal(struct decoder * decoder,
 		return;
 
 	struct flac_data data(decoder, input_stream);
-	data.tag = new Tag();
 
 	FLAC__StreamDecoderInitStatus status =
 		stream_init(flac_dec, &data, is_ogg);

@@ -133,6 +133,22 @@ void tag_lib_init(void)
 }
 
 void
+Tag::Clear()
+{
+	time = -1;
+	has_playlist = false;
+
+	tag_pool_lock.lock();
+	for (unsigned i = 0; i < num_items; ++i)
+		tag_pool_put_item(items[i]);
+	tag_pool_lock.unlock();
+
+	g_free(items);
+	items = nullptr;
+	num_items = 0;
+}
+
+void
 Tag::DeleteItem(unsigned idx)
 {
 	assert(idx < num_items);

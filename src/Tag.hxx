@@ -112,6 +112,11 @@ struct Tag {
 		return !IsEmpty() || time >= 0;
 	}
 
+	/**
+	 * Clear everything, as if this was a new Tag object.
+	 */
+	void Clear();
+
 	void DeleteItem(unsigned i);
 
 	/**
