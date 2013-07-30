@@ -23,7 +23,7 @@
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 
 extern "C" {
 #include <despotify.h>
@@ -42,7 +42,7 @@ struct DespotifyInputStream {
 
 	struct despotify_session *session;
 	struct ds_track *track;
-	struct tag *tag;
+	Tag *tag;
 	struct ds_pcm_data pcm;
 	size_t len_available;
 	bool eof;
@@ -64,8 +64,7 @@ struct DespotifyInputStream {
 	}
 
 	~DespotifyInputStream() {
-		if (tag != NULL)
-			tag_free(tag);
+		delete tag;
 
 		despotify_free_track(track);
 	}
@@ -216,11 +215,11 @@ input_despotify_seek(G_GNUC_UNUSED struct input_stream *is,
 	return false;
 }
 
-static struct tag *
+static Tag *
 input_despotify_tag(struct input_stream *is)
 {
 	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
-	struct tag *tag = ctx->tag;
+	Tag *tag = ctx->tag;
 
 	ctx->tag = NULL;
 

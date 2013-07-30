@@ -329,7 +329,7 @@ roar_tag_convert(enum tag_type type, bool *is_uuid)
 }
 
 static void
-roar_send_tag(struct audio_output *ao, const struct tag *meta)
+roar_send_tag(struct audio_output *ao, const Tag *meta)
 {
 	RoarOutput *self = (RoarOutput *)ao;
 

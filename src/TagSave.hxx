@@ -22,8 +22,9 @@
 
 #include <stdio.h>
 
-struct tag;
+struct Tag;
 
-void tag_save(FILE *file, const struct tag *tag);
+void
+tag_save(FILE *file, const Tag &tag);
 
 #endif

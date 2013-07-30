@@ -22,7 +22,7 @@
 #include "MemoryPlaylistProvider.hxx"
 #include "input_stream.h"
 #include "Song.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 
 #include <glib.h>
 
@@ -169,9 +169,9 @@ asx_text(G_GNUC_UNUSED GMarkupParseContext *context,
 	case AsxParser::ENTRY:
 		if (parser->tag != TAG_NUM_OF_ITEM_TYPES) {
 			if (parser->song->tag == NULL)
-				parser->song->tag = tag_new();
-			tag_add_item_n(parser->song->tag, parser->tag,
-				       text, text_len);
+				parser->song->tag = new Tag();
+			parser->song->tag->AddItem(parser->tag,
+						   text, text_len);
 		}
 
 		break;

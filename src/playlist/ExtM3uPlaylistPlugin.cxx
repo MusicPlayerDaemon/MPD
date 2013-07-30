@@ -21,7 +21,7 @@
 #include "ExtM3uPlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
 #include "Song.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 #include "util/StringUtil.hxx"
 #include "TextInputStream.hxx"
 
@@ -70,13 +70,13 @@ extm3u_close(struct playlist_provider *_playlist)
  *
  * @param line the rest of the input line after the colon
  */
-static struct tag *
+static Tag *
 extm3u_parse_tag(const char *line)
 {
 	long duration;
 	char *endptr;
 	const char *name;
-	struct tag *tag;
+	Tag *tag;
 
 	duration = strtol(line, &endptr, 10);
 	if (endptr[0] != ',')
@@ -93,14 +93,14 @@ extm3u_parse_tag(const char *line)
 		   object */
 		return NULL;
 
-	tag = tag_new();
+	tag = new Tag();
 	tag->time = duration;
 
 	/* unfortunately, there is no real specification for the
 	   EXTM3U format, so we must assume that the string after the
 	   comma is opaque, and is just the song name*/
 	if (*name != 0)
-		tag_add_item(tag, TAG_NAME, name);
+		tag->AddItem(TAG_NAME, name);
 
 	return tag;
 }
@@ -109,23 +109,21 @@ static Song *
 extm3u_read(struct playlist_provider *_playlist)
 {
 	ExtM3uPlaylist *playlist = (ExtM3uPlaylist *)_playlist;
-	struct tag *tag = NULL;
+	Tag *tag = NULL;
 	std::string line;
 	const char *line_s;
 	Song *song;
 
 	do {
 		if (!playlist->tis->ReadLine(line)) {
-			if (tag != NULL)
-				tag_free(tag);
+			delete tag;
 			return NULL;
 		}
 		
 		line_s = line.c_str();
 
 		if (g_str_has_prefix(line_s, "#EXTINF:")) {
-			if (tag != NULL)
-				tag_free(tag);
+			delete tag;
 			tag = extm3u_parse_tag(line_s + 8);
 			continue;
 		}

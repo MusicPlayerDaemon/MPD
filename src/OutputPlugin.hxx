@@ -27,7 +27,7 @@
 
 struct config_param;
 struct audio_format;
-struct tag;
+struct Tag;
 
 /**
  * A plugin which controls an audio output device.
@@ -111,7 +111,7 @@ struct audio_output_plugin {
 	 * Display metadata for the next chunk.  Optional method,
 	 * because not all devices can display metadata.
 	 */
-	void (*send_tag)(struct audio_output *data, const struct tag *tag);
+	void (*send_tag)(struct audio_output *data, const Tag *tag);
 
 	/**
 	 * Play a chunk of audio data.
@@ -192,7 +192,7 @@ unsigned
 ao_plugin_delay(struct audio_output *ao);
 
 void
-ao_plugin_send_tag(struct audio_output *ao, const struct tag *tag);
+ao_plugin_send_tag(struct audio_output *ao, const Tag *tag);
 
 size_t
 ao_plugin_play(struct audio_output *ao, const void *chunk, size_t size,

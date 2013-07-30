@@ -34,6 +34,7 @@ enum {
 };
 
 struct audio_format;
+struct Tag;
 
 /**
  * A chunk of music data.  Its format is defined by the
@@ -70,7 +71,7 @@ struct music_chunk {
 	 * object is owned by this chunk, and must be freed when this
 	 * chunk is deinitialized in music_chunk_free()
 	 */
-	struct tag *tag;
+	Tag *tag;
 
 	/**
 	 * Replay gain information associated with this chunk.

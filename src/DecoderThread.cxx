@@ -28,7 +28,7 @@
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
 #include "DecoderAPI.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 #include "InputStream.hxx"
 #include "DecoderList.hxx"
 #include "util/UriUtil.hxx"
@@ -381,7 +381,7 @@ decoder_run_song(struct decoder_control *dc,
 {
 	decoder decoder(dc, dc->start_ms > 0,
 			song->tag != NULL && song->IsFile()
-			? tag_dup(song->tag) : nullptr);
+			? new Tag(*song->tag) : nullptr);
 	int ret;
 
 	dc->state = DECODE_STATE_START;

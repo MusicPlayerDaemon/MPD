@@ -30,13 +30,15 @@
 #include "CrossFade.hxx"
 #include "PlayerControl.hxx"
 #include "OutputAll.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"
 
 #include <cmath>
 
 #include <glib.h>
+
+#include <string.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "player_thread"
@@ -108,7 +110,7 @@ struct player {
 	 * postponed, and sent to the output thread when the new song
 	 * really begins.
 	 */
-	struct tag *cross_fade_tag;
+	Tag *cross_fade_tag;
 
 	/**
 	 * The current audio format for the audio outputs.
@@ -656,18 +658,17 @@ static void player_process_command(struct player *player)
 }
 
 static void
-update_song_tag(Song *song, const struct tag *new_tag)
+update_song_tag(Song *song, const Tag &new_tag)
 {
 	if (song->IsFile())
 		/* don't update tags of local files, only remote
 		   streams may change tags dynamically */
 		return;
 
-	struct tag *old_tag = song->tag;
-	song->tag = tag_dup(new_tag);
+	Tag *old_tag = song->tag;
+	song->tag = new Tag(new_tag);
 
-	if (old_tag != NULL)
-		tag_free(old_tag);
+	delete old_tag;
 
 	/* the main thread will update the playlist version when he
 	   receives this event */
@@ -694,7 +695,7 @@ play_chunk(struct player_control *pc,
 	assert(chunk->CheckFormat(*format));
 
 	if (chunk->tag != NULL)
-		update_song_tag(song, chunk->tag);
+		update_song_tag(song, *chunk->tag);
 
 	if (chunk->length == 0) {
 		music_buffer_return(player_buffer, chunk);
@@ -760,7 +761,7 @@ play_next_chunk(struct player *player)
 			   is being faded in) yet; postpone it until
 			   the current song is faded out */
 			player->cross_fade_tag =
-				tag_merge_replace(player->cross_fade_tag,
+				Tag::MergeReplace(player->cross_fade_tag,
 						  other_chunk->tag);
 			other_chunk->tag = NULL;
 
@@ -815,7 +816,7 @@ play_next_chunk(struct player *player)
 	/* insert the postponed tag if cross-fading is finished */
 
 	if (player->xfade != XFADE_ENABLED && player->cross_fade_tag != NULL) {
-		chunk->tag = tag_merge_replace(chunk->tag,
+		chunk->tag = Tag::MergeReplace(chunk->tag,
 					       player->cross_fade_tag);
 		player->cross_fade_tag = NULL;
 	}
@@ -1080,8 +1081,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 	music_pipe_clear(player.pipe, player_buffer);
 	music_pipe_free(player.pipe);
 
-	if (player.cross_fade_tag != NULL)
-		tag_free(player.cross_fade_tag);
+	delete player.cross_fade_tag;
 
 	if (player.song != NULL)
 		player.song->Free();

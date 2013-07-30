@@ -75,7 +75,7 @@ ao_plugin_delay(struct audio_output *ao)
 }
 
 void
-ao_plugin_send_tag(struct audio_output *ao, const struct tag *tag)
+ao_plugin_send_tag(struct audio_output *ao, const Tag *tag)
 {
 	if (ao->plugin->send_tag != NULL)
 		ao->plugin->send_tag(ao, tag);

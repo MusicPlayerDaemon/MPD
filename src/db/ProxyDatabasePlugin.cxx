@@ -26,7 +26,7 @@
 #include "Song.hxx"
 #include "gcc.h"
 #include "conf.h"
-#include "tag.h"
+#include "Tag.hxx"
 
 extern "C" {
 #include "db_error.h"
@@ -256,7 +256,7 @@ Visit(struct mpd_connection *connection,
 }
 
 static void
-Copy(struct tag *tag, enum tag_type d_tag,
+Copy(Tag &tag, enum tag_type d_tag,
      const struct mpd_song *song, enum mpd_tag_type s_tag)
 {
 
@@ -265,7 +265,7 @@ Copy(struct tag *tag, enum tag_type d_tag,
 		if (value == NULL)
 			break;
 
-		tag_add_item(tag, d_tag, value);
+		tag.AddItem(d_tag, value);
 	}
 }
 
@@ -278,13 +278,13 @@ Convert(const struct mpd_song *song)
 	s->start_ms = mpd_song_get_start(song) * 1000;
 	s->end_ms = mpd_song_get_end(song) * 1000;
 
-	struct tag *tag = tag_new();
+	Tag *tag = new Tag();
 	tag->time = mpd_song_get_duration(song);
 
-	tag_begin_add(tag);
+	tag->BeginAdd();
 	for (const auto *i = &tag_table[0]; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
-		Copy(tag, i->d, song, i->s);
-	tag_end_add(tag);
+		Copy(*tag, i->d, song, i->s);
+	tag->EndAdd();
 
 	s->tag = tag;
 

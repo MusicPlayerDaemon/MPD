@@ -20,7 +20,7 @@
 #include "config.h"
 #include "FlacMetadata.hxx"
 #include "XiphTags.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 #include "TagHandler.hxx"
 #include "TagTable.hxx"
 #include "replay_gain_info.h"
@@ -228,7 +228,7 @@ flac_scan_metadata(const FLAC__StreamMetadata *block,
 }
 
 void
-flac_vorbis_comments_to_tag(struct tag *tag,
+flac_vorbis_comments_to_tag(Tag *tag,
 			    const FLAC__StreamMetadata_VorbisComment *comment)
 {
 	flac_scan_comments(comment, &add_tag_handler, tag);

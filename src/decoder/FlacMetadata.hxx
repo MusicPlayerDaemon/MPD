@@ -109,7 +109,7 @@ public:
 };
 
 struct tag_handler;
-struct tag;
+struct Tag;
 struct replay_gain_info;
 
 static inline unsigned
@@ -130,7 +130,7 @@ flac_parse_mixramp(char **mixramp_start, char **mixramp_end,
 		   const FLAC__StreamMetadata *block);
 
 void
-flac_vorbis_comments_to_tag(struct tag *tag,
+flac_vorbis_comments_to_tag(Tag *tag,
 			    const FLAC__StreamMetadata_VorbisComment *comment);
 
 void

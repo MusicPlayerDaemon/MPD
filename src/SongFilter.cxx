@@ -20,11 +20,12 @@
 #include "config.h"
 #include "SongFilter.hxx"
 #include "Song.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
+#include <string.h>
 #include <stdlib.h>
 
 #define LOCATE_TAG_FILE_KEY     "file"
@@ -74,14 +75,14 @@ SongFilter::Item::StringMatch(const char *s) const
 }
 
 bool
-SongFilter::Item::Match(const tag_item &item) const
+SongFilter::Item::Match(const TagItem &item) const
 {
 	return (tag == LOCATE_TAG_ANY_TYPE || (unsigned)item.type == tag) &&
 		StringMatch(item.value);
 }
 
 bool
-SongFilter::Item::Match(const struct tag &_tag) const
+SongFilter::Item::Match(const Tag &_tag) const
 {
 	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
 	std::fill(visited_types, visited_types + TAG_NUM_OF_ITEM_TYPES, false);

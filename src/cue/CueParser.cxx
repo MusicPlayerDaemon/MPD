@@ -21,15 +21,16 @@
 #include "CueParser.hxx"
 #include "util/StringUtil.hxx"
 #include "Song.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
+#include <string.h>
 #include <stdlib.h>
 
 CueParser::CueParser()
-	:state(HEADER), tag(tag_new()),
+	:state(HEADER), tag(new Tag()),
 	 filename(nullptr),
 	 current(nullptr),
 	 previous(nullptr),
@@ -38,7 +39,7 @@ CueParser::CueParser()
 
 CueParser::~CueParser()
 {
-	tag_free(tag);
+	delete tag;
 	g_free(filename);
 
 	if (current != nullptr)
@@ -109,16 +110,16 @@ cue_next_value(char **pp)
 }
 
 static void
-cue_add_tag(struct tag *tag, enum tag_type type, char *p)
+cue_add_tag(Tag &tag, enum tag_type type, char *p)
 {
 	const char *value = cue_next_value(&p);
 	if (value != nullptr)
-		tag_add_item(tag, type, value);
+		tag.AddItem(type, value);
 
 }
 
 static void
-cue_parse_rem(char *p, struct tag *tag)
+cue_parse_rem(char *p, Tag &tag)
 {
 	const char *type = cue_next_token(&p);
 	if (type == nullptr)
@@ -129,7 +130,7 @@ cue_parse_rem(char *p, struct tag *tag)
 		cue_add_tag(tag, type2, p);
 }
 
-struct tag *
+Tag *
 CueParser::GetCurrentTag()
 {
 	if (state == HEADER)
@@ -188,9 +189,9 @@ CueParser::Feed2(char *p)
 		return;
 
 	if (strcmp(command, "REM") == 0) {
-		struct tag *current_tag = GetCurrentTag();
+		Tag *current_tag = GetCurrentTag();
 		if (current_tag != nullptr)
-			cue_parse_rem(p, current_tag);
+			cue_parse_rem(p, *current_tag);
 	} else if (strcmp(command, "PERFORMER") == 0) {
 		/* MPD knows a "performer" tag, but it is not a good
 		   match for this CUE tag; from the Hydrogenaudio
@@ -202,14 +203,14 @@ CueParser::Feed2(char *p)
 			? TAG_ARTIST
 			: TAG_ALBUM_ARTIST;
 
-		struct tag *current_tag = GetCurrentTag();
+		Tag *current_tag = GetCurrentTag();
 		if (current_tag != nullptr)
-			cue_add_tag(current_tag, type, p);
+			cue_add_tag(*current_tag, type, p);
 	} else if (strcmp(command, "TITLE") == 0) {
 		if (state == HEADER)
-			cue_add_tag(tag, TAG_ALBUM, p);
+			cue_add_tag(*tag, TAG_ALBUM, p);
 		else if (state == TRACK)
-			cue_add_tag(current->tag, TAG_TITLE, p);
+			cue_add_tag(*current->tag, TAG_TITLE, p);
 	} else if (strcmp(command, "FILE") == 0) {
 		Commit();
 
@@ -252,8 +253,8 @@ CueParser::Feed2(char *p)
 		state = TRACK;
 		current = Song::NewRemote(filename);
 		assert(current->tag == nullptr);
-		current->tag = tag_dup(tag);
-		tag_add_item(current->tag, TAG_TRACK, nr);
+		current->tag = new Tag(*tag);
+		current->tag->AddItem(TAG_TRACK, nr);
 		last_updated = false;
 	} else if (state == IGNORE_TRACK) {
 		return;

@@ -76,7 +76,6 @@ mpd_headers = \
 	src/replay_gain_info.h \
 	src/TimePrint.cxx src/TimePrint.hxx \
 	src/stats.h \
-	src/tag.h \
 	src/tag_internal.h \
 	src/Timer.hxx \
 	src/mpd_error.h
@@ -217,7 +216,7 @@ src_mpd_SOURCES = \
 	src/StateFile.cxx src/StateFile.hxx \
 	src/Stats.cxx \
 	src/TagType.h \
-	src/Tag.cxx \
+	src/Tag.cxx src/Tag.hxx \
 	src/TagTable.hxx \
 	src/TagNames.c \
 	src/TagPool.cxx src/TagPool.hxx \

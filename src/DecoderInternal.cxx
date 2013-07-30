@@ -23,7 +23,7 @@
 #include "MusicPipe.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 
 #include <assert.h>
 
@@ -32,14 +32,9 @@ decoder::~decoder()
 	/* caller must flush the chunk */
 	assert(chunk == nullptr);
 
-	if (song_tag != nullptr)
-		tag_free(song_tag);
-
-	if (stream_tag != nullptr)
-		tag_free(stream_tag);
-
-	if (decoder_tag != nullptr)
-		tag_free(decoder_tag);
+	delete song_tag;
+	delete stream_tag;
+	delete decoder_tag;
 }
 
 /**

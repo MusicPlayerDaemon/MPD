@@ -36,6 +36,7 @@
 #include <glib.h>
 
 #include <stdio.h>
+#include <string.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "opus"
@@ -221,16 +222,16 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 inline enum decoder_command
 MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 {
-	struct tag *tag = tag_new();
+	Tag tag;
 
 	enum decoder_command cmd;
-	if (ScanOpusTags(packet.packet, packet.bytes, &add_tag_handler, tag) &&
-	    !tag_is_empty(tag))
-		cmd = decoder_tag(decoder, input_stream, tag);
+	if (ScanOpusTags(packet.packet, packet.bytes,
+			 &add_tag_handler, &tag) &&
+	    !tag.IsEmpty())
+		cmd = decoder_tag(decoder, input_stream, &tag);
 	else
 		cmd = decoder_get_command(decoder);
 
-	tag_free(tag);
 	return cmd;
 }
 

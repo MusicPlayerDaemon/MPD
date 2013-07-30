@@ -22,7 +22,7 @@
 #include "MemoryPlaylistProvider.hxx"
 #include "input_stream.h"
 #include "Song.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 
 #include <glib.h>
 
@@ -71,8 +71,8 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 		g_free(key);
 		if(error == NULL && value){
 			if (song->tag == NULL)
-				song->tag = tag_new();
-			tag_add_item(song->tag,TAG_TITLE, value);
+				song->tag = new Tag();
+			song->tag->AddItem(TAG_TITLE, value);
 		}
 		/* Ignore errors? Most likely value not present */
 		if(error) g_error_free(error);
@@ -85,7 +85,7 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 		g_free(key);
 		if(error == NULL && length > 0){
 			if (song->tag == NULL)
-				song->tag = tag_new();
+				song->tag = new Tag();
 			song->tag->time = length;
 		}
 		/* Ignore errors? Most likely value not present */

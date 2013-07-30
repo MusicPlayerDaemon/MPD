@@ -66,7 +66,7 @@ struct input_plugin {
 	 */
 	void (*update)(struct input_stream *is);
 
-	struct tag *(*tag)(struct input_stream *is);
+	Tag *(*tag)(struct input_stream *is);
 
 	/**
 	 * Returns true if the next read operation will not block:

@@ -24,6 +24,7 @@
 
 struct replay_gain_info;
 struct tag_handler;
+struct Tag;
 
 bool
 vorbis_comments_to_replay_gain(struct replay_gain_info *rgi, char **comments);
@@ -32,7 +33,7 @@ void
 vorbis_comments_scan(char **comments,
 		     const struct tag_handler *handler, void *handler_ctx);
 
-struct tag *
+Tag *
 vorbis_comments_to_tag(char **comments);
 
 #endif

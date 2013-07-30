@@ -21,7 +21,7 @@
 #include "TagId3.hxx"
 #include "TagHandler.hxx"
 #include "TagTable.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 
 extern "C" {
 #include "riff.h"
@@ -385,14 +385,15 @@ scan_id3_tag(struct id3_tag *tag,
 	tag_id3_import_ufid(tag, handler, handler_ctx);
 }
 
-struct tag *tag_id3_import(struct id3_tag * tag)
+Tag *
+tag_id3_import(struct id3_tag *tag)
 {
-	struct tag *ret = tag_new();
+	Tag *ret = new Tag();
 
 	scan_id3_tag(tag, &add_tag_handler, ret);
 
-	if (tag_is_empty(ret)) {
-		tag_free(ret);
+	if (ret->IsEmpty()) {
+		delete ret;
 		ret = nullptr;
 	}
 

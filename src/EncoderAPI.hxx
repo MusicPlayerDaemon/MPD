@@ -27,7 +27,7 @@
 
 #include "EncoderPlugin.hxx"
 #include "audio_format.h"
-#include "tag.h"
+#include "Tag.hxx"
 #include "conf.h"
 
 #endif

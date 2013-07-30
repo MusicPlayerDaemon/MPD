@@ -25,7 +25,8 @@
 #include "gerror.h"
 
 struct tag_handler;
-struct tag;
+struct Tag;
+struct id3_tag;
 
 #ifdef HAVE_ID3TAG
 
@@ -33,8 +34,8 @@ bool
 tag_id3_scan(const char *path_fs,
 	     const struct tag_handler *handler, void *handler_ctx);
 
-struct id3_tag;
-struct tag *tag_id3_import(struct id3_tag *);
+Tag *
+tag_id3_import(struct id3_tag *);
 
 /**
  * Loads the ID3 tags from the file into a libid3tag object.  The

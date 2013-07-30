@@ -20,11 +20,12 @@
 #include "config.h"
 #include "IcyMetaDataServer.hxx"
 #include "Page.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
+#include <string.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "icy_server"
@@ -87,7 +88,7 @@ icy_server_metadata_string(const char *stream_title, const char* stream_url)
 }
 
 Page *
-icy_server_metadata_page(const struct tag *tag, const enum tag_type *types)
+icy_server_metadata_page(const Tag &tag, const enum tag_type *types)
 {
 	const gchar *tag_items[TAG_NUM_OF_ITEM_TYPES];
 	gint last_item, item;
@@ -101,7 +102,7 @@ icy_server_metadata_page(const struct tag *tag, const enum tag_type *types)
 	last_item = -1;
 
 	while (*types != TAG_NUM_OF_ITEM_TYPES) {
-		const gchar *tag_item = tag_get_value(tag, *types++);
+		const gchar *tag_item = tag.GetValue(*types++);
 		if (tag_item)
 			tag_items[++last_item] = tag_item;
 	}

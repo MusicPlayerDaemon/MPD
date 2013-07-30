@@ -24,6 +24,7 @@
 #include "gcc.h"
 
 struct Song;
+struct Tag;
 
 class CueParser {
 	enum {
@@ -53,7 +54,7 @@ class CueParser {
 		IGNORE_TRACK,
 	} state;
 
-	struct tag *tag;
+	Tag *tag;
 
 	char *filename;
 
@@ -115,7 +116,7 @@ public:
 
 private:
 	gcc_pure
-	struct tag *GetCurrentTag();
+	Tag *GetCurrentTag();
 
 	/**
 	 * Commit the current song.  It will be moved to "previous",

@@ -32,7 +32,7 @@
 #include "DecoderPlugin.hxx"
 #include "input_stream.h"
 #include "replay_gain_info.h"
-#include "tag.h"
+#include "Tag.hxx"
 #include "audio_format.h"
 #include "conf.h"
 
@@ -142,7 +142,7 @@ decoder_data(struct decoder *decoder, struct input_stream *is,
  */
 enum decoder_command
 decoder_tag(struct decoder *decoder, struct input_stream *is,
-	    const struct tag *tag);
+	    const Tag *tag);
 
 /**
  * Set replay gain values for the following chunks.

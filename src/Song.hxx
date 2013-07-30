@@ -29,6 +29,8 @@
 #define SONG_FILE	"file: "
 #define SONG_TIME	"Time: "
 
+struct Tag;
+
 /**
  * A dummy #directory instance that is used for "detached" song
  * copies.
@@ -46,7 +48,7 @@ struct Song {
 	 */
 	struct list_head siblings;
 
-	struct tag *tag;
+	Tag *tag;
 	Directory *parent;
 	time_t mtime;
 

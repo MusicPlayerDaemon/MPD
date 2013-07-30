@@ -24,6 +24,8 @@
 #include "config.h"
 #include "OggCodec.hxx"
 
+#include <string.h>
+
 enum ogg_codec
 ogg_codec_detect(struct decoder *decoder, struct input_stream *is)
 {

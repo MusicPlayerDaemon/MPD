@@ -24,6 +24,7 @@
 #include <glib.h>
 
 #include <assert.h>
+#include <string.h>
 
 struct DecoderBuffer {
 	struct decoder *decoder;

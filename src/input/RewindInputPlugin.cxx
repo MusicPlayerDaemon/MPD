@@ -22,11 +22,12 @@
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
+#include <string.h>
 #include <stdio.h>
 
 #undef G_LOG_DOMAIN
@@ -127,7 +128,7 @@ input_rewind_update(struct input_stream *is)
 		r->CopyAttributes();
 }
 
-static struct tag *
+static Tag *
 input_rewind_tag(struct input_stream *is)
 {
 	RewindInputStream *r = (RewindInputStream *)is;

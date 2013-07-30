@@ -22,13 +22,15 @@
 
 #include <stddef.h>
 
+struct Tag;
+
 class IcyMetaDataParser {
 	size_t data_size, data_rest;
 
 	size_t meta_size, meta_position;
 	char *meta_data;
 
-	struct tag *tag;
+	Tag *tag;
 
 public:
 	IcyMetaDataParser():data_size(0) {}
@@ -73,8 +75,8 @@ public:
 	 */
 	size_t Meta(const void *data, size_t length);
 
-	struct tag *ReadTag() {
-		struct tag *result = tag;
+	Tag *ReadTag() {
+		Tag *result = tag;
 		tag = nullptr;
 		return result;
 	}

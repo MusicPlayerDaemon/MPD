@@ -22,6 +22,7 @@
 
 #include "TagType.h"
 
+struct Tag;
 class Page;
 
 char*
@@ -30,6 +31,6 @@ icy_server_metadata_header(const char *name,
 			   const char *content_type, int metaint);
 
 Page *
-icy_server_metadata_page(const struct tag *tag, const enum tag_type *types);
+icy_server_metadata_page(const Tag &tag, const enum tag_type *types);
 
 #endif

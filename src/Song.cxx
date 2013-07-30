@@ -20,11 +20,12 @@
 #include "config.h"
 #include "Song.hxx"
 #include "Directory.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
+#include <string.h>
 
 Directory detached_root;
 
@@ -94,7 +95,7 @@ Song::DupDetached() const
 	} else
 		song = song_alloc(uri, nullptr);
 
-	song->tag = tag_dup(tag);
+	song->tag = tag != nullptr ? new Tag(*tag) : nullptr;
 	song->mtime = mtime;
 	song->start_ms = start_ms;
 	song->end_ms = end_ms;
@@ -105,8 +106,7 @@ Song::DupDetached() const
 void
 Song::Free()
 {
-	if (tag != nullptr)
-		tag_free(tag);
+	delete tag;
 	g_free(this);
 }
 

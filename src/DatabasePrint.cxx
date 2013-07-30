@@ -26,7 +26,7 @@
 #include "TimePrint.hxx"
 #include "Directory.hxx"
 #include "Client.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 #include "Song.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"

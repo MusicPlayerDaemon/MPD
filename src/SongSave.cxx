@@ -23,7 +23,7 @@
 #include "TagSave.hxx"
 #include "Directory.hxx"
 #include "TextFile.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 #include "util/StringUtil.hxx"
 
 #include <glib.h>
@@ -52,8 +52,8 @@ song_save(FILE *fp, const Song *song)
 	else if (song->start_ms > 0)
 		fprintf(fp, "Range: %u-\n", song->start_ms);
 
-	if (song->tag != NULL)
-		tag_save(fp, song->tag);
+	if (song->tag != nullptr)
+		tag_save(fp, *song->tag);
 
 	fprintf(fp, SONG_MTIME ": %li\n", (long)song->mtime);
 	fprintf(fp, SONG_END "\n");
@@ -75,7 +75,7 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 		colon = strchr(line, ':');
 		if (colon == NULL || colon == line) {
 			if (song->tag != NULL)
-				tag_end_add(song->tag);
+				song->tag->EndAdd();
 			song->Free();
 
 			g_set_error(error_r, song_save_quark(), 0,
@@ -88,22 +88,22 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 
 		if ((type = tag_name_parse(line)) != TAG_NUM_OF_ITEM_TYPES) {
 			if (!song->tag) {
-				song->tag = tag_new();
-				tag_begin_add(song->tag);
+				song->tag = new Tag();
+				song->tag->BeginAdd();
 			}
 
-			tag_add_item(song->tag, type, value);
+			song->tag->AddItem(type, value);
 		} else if (strcmp(line, "Time") == 0) {
 			if (!song->tag) {
-				song->tag = tag_new();
-				tag_begin_add(song->tag);
+				song->tag = new Tag();
+				song->tag->BeginAdd();
 			}
 
 			song->tag->time = atoi(value);
 		} else if (strcmp(line, "Playlist") == 0) {
 			if (!song->tag) {
-				song->tag = tag_new();
-				tag_begin_add(song->tag);
+				song->tag = new Tag();
+				song->tag->BeginAdd();
 			}
 
 			song->tag->has_playlist = strcmp(value, "yes") == 0;
@@ -117,7 +117,7 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 				song->end_ms = strtoul(endptr + 1, NULL, 10);
 		} else {
 			if (song->tag != NULL)
-				tag_end_add(song->tag);
+				song->tag->EndAdd();
 			song->Free();
 
 			g_set_error(error_r, song_save_quark(), 0,
@@ -127,7 +127,7 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 	}
 
 	if (song->tag != NULL)
-		tag_end_add(song->tag);
+		song->tag->EndAdd();
 
 	return song;
 }

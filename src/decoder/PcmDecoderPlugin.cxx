@@ -27,6 +27,7 @@ extern "C" {
 
 #include <glib.h>
 #include <unistd.h>
+#include <string.h>
 #include <stdio.h> /* for SEEK_SET */
 
 #undef G_LOG_DOMAIN

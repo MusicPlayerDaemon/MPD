@@ -33,6 +33,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "decoder"
@@ -312,7 +313,7 @@ decoder_timestamp(struct decoder *decoder, double t)
  * (decoder.chunk) if there is one.
  */
 static enum decoder_command
-do_send_tag(struct decoder *decoder, const struct tag *tag)
+do_send_tag(struct decoder *decoder, const Tag &tag)
 {
 	struct music_chunk *chunk;
 
@@ -331,14 +332,14 @@ do_send_tag(struct decoder *decoder, const struct tag *tag)
 		return decoder->dc->command;
 	}
 
-	chunk->tag = tag_dup(tag);
+	chunk->tag = new Tag(tag);
 	return DECODE_COMMAND_NONE;
 }
 
 static bool
 update_stream_tag(struct decoder *decoder, struct input_stream *is)
 {
-	struct tag *tag;
+	Tag *tag;
 
 	tag = is != NULL
 		? input_stream_lock_tag(is)
@@ -353,9 +354,7 @@ update_stream_tag(struct decoder *decoder, struct input_stream *is)
 		decoder->song_tag = NULL;
 	}
 
-	if (decoder->stream_tag != NULL)
-		tag_free(decoder->stream_tag);
-
+	delete decoder->stream_tag;
 	decoder->stream_tag = tag;
 	return true;
 }
@@ -387,15 +386,13 @@ decoder_data(struct decoder *decoder,
 	if (update_stream_tag(decoder, is)) {
 		if (decoder->decoder_tag != NULL) {
 			/* merge with tag from decoder plugin */
-			struct tag *tag;
-
-			tag = tag_merge(decoder->decoder_tag,
-					decoder->stream_tag);
-			cmd = do_send_tag(decoder, tag);
-			tag_free(tag);
+			Tag *tag = Tag::Merge(*decoder->decoder_tag,
+					      *decoder->stream_tag);
+			cmd = do_send_tag(decoder, *tag);
+			delete tag;
 		} else
 			/* send only the stream tag */
-			cmd = do_send_tag(decoder, decoder->stream_tag);
+			cmd = do_send_tag(decoder, *decoder->stream_tag);
 
 		if (cmd != DECODE_COMMAND_NONE)
 			return cmd;
@@ -474,7 +471,7 @@ decoder_data(struct decoder *decoder,
 
 enum decoder_command
 decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
-	    const struct tag *tag)
+	    const Tag *tag)
 {
 	G_GNUC_UNUSED const struct decoder_control *dc = decoder->dc;
 	enum decoder_command cmd;
@@ -485,9 +482,8 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
 
 	/* save the tag */
 
-	if (decoder->decoder_tag != NULL)
-		tag_free(decoder->decoder_tag);
-	decoder->decoder_tag = tag_dup(tag);
+	delete decoder->decoder_tag;
+	decoder->decoder_tag = new Tag(*tag);
 
 	/* check for a new stream tag */
 
@@ -505,14 +501,15 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
 
 	if (decoder->stream_tag != NULL) {
 		/* merge with tag from input stream */
-		struct tag *merged;
+		Tag *merged;
 
-		merged = tag_merge(decoder->stream_tag, decoder->decoder_tag);
-		cmd = do_send_tag(decoder, merged);
-		tag_free(merged);
+		merged = Tag::Merge(*decoder->stream_tag,
+				    *decoder->decoder_tag);
+		cmd = do_send_tag(decoder, *merged);
+		delete merged;
 	} else
 		/* send only the decoder tag */
-		cmd = do_send_tag(decoder, tag);
+		cmd = do_send_tag(decoder, *tag);
 
 	return cmd;
 }

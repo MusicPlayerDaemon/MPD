@@ -20,14 +20,13 @@
 #include "config.h"
 #include "MusicChunk.hxx"
 #include "audio_format.h"
-#include "tag.h"
+#include "Tag.hxx"
 
 #include <assert.h>
 
 music_chunk::~music_chunk()
 {
-	if (tag != NULL)
-		tag_free(tag);
+	delete tag;
 }
 
 #ifndef NDEBUG

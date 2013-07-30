@@ -37,6 +37,8 @@
 #include "output/SolarisOutputPlugin.hxx"
 #include "output/WinmmOutputPlugin.hxx"
 
+#include <string.h>
+
 const struct audio_output_plugin *const audio_output_plugins[] = {
 #ifdef HAVE_SHOUT
 	&shout_output_plugin,

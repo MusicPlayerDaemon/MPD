@@ -23,7 +23,7 @@
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
 #include "conf.h"
-#include "tag.h"
+#include "Tag.hxx"
 #include "IcyMetaDataParser.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/Loop.hxx"
@@ -160,7 +160,7 @@ struct input_curl {
 
 	/** the tag object ready to be requested via
 	    input_stream_tag() */
-	struct tag *tag;
+	Tag *tag;
 
 	GError *postponed_error;
 
@@ -696,8 +696,8 @@ curl_total_buffer_size(const struct input_curl *c)
 
 input_curl::~input_curl()
 {
-	if (tag != NULL)
-		tag_free(tag);
+	delete tag;
+
 	g_free(meta_name);
 
 	input_curl_easy_free_indirect(this);
@@ -720,11 +720,11 @@ input_curl_check(struct input_stream *is, GError **error_r)
 	return success;
 }
 
-static struct tag *
+static Tag *
 input_curl_tag(struct input_stream *is)
 {
 	struct input_curl *c = (struct input_curl *)is;
-	struct tag *tag = c->tag;
+	Tag *tag = c->tag;
 
 	c->tag = NULL;
 	return tag;
@@ -798,16 +798,15 @@ read_from_buffer(IcyMetaDataParser &icy, std::list<CurlInputBuffer> &buffers,
 static void
 copy_icy_tag(struct input_curl *c)
 {
-	struct tag *tag = c->icy.ReadTag();
+	Tag *tag = c->icy.ReadTag();
 
 	if (tag == NULL)
 		return;
 
-	if (c->tag != NULL)
-		tag_free(c->tag);
+	delete c->tag;
 
-	if (c->meta_name != NULL && !tag_has_type(tag, TAG_NAME))
-		tag_add_item(tag, TAG_NAME, c->meta_name);
+	if (c->meta_name != NULL && !tag->HasType(TAG_NAME))
+		tag->AddItem(TAG_NAME, c->meta_name);
 
 	c->tag = tag;
 }
@@ -931,11 +930,10 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 		g_free(c->meta_name);
 		c->meta_name = g_strndup(value, end - value);
 
-		if (c->tag != NULL)
-			tag_free(c->tag);
+		delete c->tag;
 
-		c->tag = tag_new();
-		tag_add_item(c->tag, TAG_NAME, c->meta_name);
+		c->tag = new Tag();
+		c->tag->AddItem(TAG_NAME, c->meta_name);
 	} else if (g_ascii_strcasecmp(name, "icy-metaint") == 0) {
 		char buffer[64];
 		size_t icy_metaint;

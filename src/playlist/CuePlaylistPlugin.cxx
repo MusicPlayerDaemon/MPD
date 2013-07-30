@@ -20,7 +20,7 @@
 #include "config.h"
 #include "CuePlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 #include "Song.hxx"
 #include "input_stream.h"
 #include "cue/CueParser.hxx"

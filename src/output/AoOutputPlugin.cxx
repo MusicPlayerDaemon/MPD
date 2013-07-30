@@ -24,6 +24,8 @@
 #include <ao/ao.h>
 #include <glib.h>
 
+#include <string.h>
+
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "ao"
 

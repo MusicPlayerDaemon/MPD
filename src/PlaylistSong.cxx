@@ -23,7 +23,7 @@
 #include "DatabasePlugin.hxx"
 #include "DatabaseGlue.hxx"
 #include "ls.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 #include "fs/Path.hxx"
 #include "util/UriUtil.hxx"
 #include "Song.hxx"
@@ -39,10 +39,10 @@ merge_song_metadata(Song *dest, const Song *base,
 {
 	dest->tag = base->tag != NULL
 		? (add->tag != NULL
-		   ? tag_merge(base->tag, add->tag)
-		   : tag_dup(base->tag))
+		   ? Tag::Merge(*base->tag, *add->tag)
+		   : new Tag(*base->tag))
 		: (add->tag != NULL
-		   ? tag_dup(add->tag)
+		   ? new Tag(*add->tag)
 		   : NULL);
 
 	dest->mtime = base->mtime;

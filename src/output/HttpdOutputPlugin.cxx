@@ -34,6 +34,7 @@
 
 #include <sys/types.h>
 #include <unistd.h>
+#include <string.h>
 #include <errno.h>
 
 #ifdef HAVE_LIBWRAP
@@ -484,7 +485,7 @@ httpd_output_pause(struct audio_output *ao)
 }
 
 inline void
-HttpdOutput::SendTag(const struct tag *tag)
+HttpdOutput::SendTag(const Tag *tag)
 {
 	assert(tag != NULL);
 
@@ -523,7 +524,7 @@ HttpdOutput::SendTag(const struct tag *tag)
 			TAG_NUM_OF_ITEM_TYPES
 		};
 
-		metadata = icy_server_metadata_page(tag, &types[0]);
+		metadata = icy_server_metadata_page(*tag, &types[0]);
 		if (metadata != NULL) {
 			const ScopeLock protect(mutex);
 			for (auto &client : clients)
@@ -533,7 +534,7 @@ HttpdOutput::SendTag(const struct tag *tag)
 }
 
 static void
-httpd_output_tag(struct audio_output *ao, const struct tag *tag)
+httpd_output_tag(struct audio_output *ao, const Tag *tag)
 {
 	HttpdOutput *httpd = Cast(ao);
 

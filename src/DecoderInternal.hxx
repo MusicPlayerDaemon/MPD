@@ -25,6 +25,7 @@
 #include "replay_gain_info.h"
 
 struct input_stream;
+struct Tag;
 
 struct decoder {
 	struct decoder_control *dc;
@@ -62,13 +63,13 @@ struct decoder {
 	 * files, because we expect the stream server to send us a new
 	 * tag each time we play it.
 	 */
-	struct tag *song_tag;
+	Tag *song_tag;
 
 	/** the last tag received from the stream */
-	struct tag *stream_tag;
+	Tag *stream_tag;
 
 	/** the last tag received from the decoder plugin */
-	struct tag *decoder_tag;
+	Tag *decoder_tag;
 
 	/** the chunk currently being written to */
 	struct music_chunk *chunk;
@@ -81,8 +82,7 @@ struct decoder {
 	 */
 	unsigned replay_gain_serial;
 
-	decoder(decoder_control *_dc, bool _initial_seek_pending,
-		struct tag *_tag)
+	decoder(decoder_control *_dc, bool _initial_seek_pending, Tag *_tag)
 		:dc(_dc),
 		 timestamp(0),
 		 initial_seek_pending(_initial_seek_pending),

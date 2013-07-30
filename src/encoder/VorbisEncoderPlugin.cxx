@@ -21,7 +21,7 @@
 #include "VorbisEncoderPlugin.hxx"
 #include "OggStream.hxx"
 #include "EncoderAPI.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 #include "audio_format.h"
 #include "mpd_error.h"
 
@@ -278,18 +278,18 @@ vorbis_encoder_pre_tag(Encoder *_encoder, G_GNUC_UNUSED GError **error)
 }
 
 static void
-copy_tag_to_vorbis_comment(vorbis_comment *vc, const struct tag *tag)
+copy_tag_to_vorbis_comment(vorbis_comment *vc, const Tag *tag)
 {
 	for (unsigned i = 0; i < tag->num_items; i++) {
-		struct tag_item *item = tag->items[i];
-		char *name = g_ascii_strup(tag_item_names[item->type], -1);
-		vorbis_comment_add_tag(vc, name, item->value);
+		const TagItem &item = *tag->items[i];
+		char *name = g_ascii_strup(tag_item_names[item.type], -1);
+		vorbis_comment_add_tag(vc, name, item.value);
 		g_free(name);
 	}
 }
 
 static bool
-vorbis_encoder_tag(Encoder *_encoder, const struct tag *tag,
+vorbis_encoder_tag(Encoder *_encoder, const Tag *tag,
 		   G_GNUC_UNUSED GError **error)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;

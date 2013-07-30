@@ -22,7 +22,7 @@
 
 struct config_param;
 struct input_stream;
-struct tag;
+struct Tag;
 struct tag_handler;
 
 /**

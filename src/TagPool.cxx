@@ -19,11 +19,12 @@
 
 #include "config.h"
 #include "TagPool.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
+#include <string.h>
 
 Mutex tag_pool_lock;
 
@@ -32,7 +33,7 @@ Mutex tag_pool_lock;
 struct slot {
 	struct slot *next;
 	unsigned char ref;
-	struct tag_item item;
+	TagItem item;
 } mpd_packed;
 
 static struct slot *slots[NUM_SLOTS];
@@ -64,7 +65,7 @@ calc_hash(enum tag_type type, const char *p)
 }
 
 static inline struct slot *
-tag_item_to_slot(struct tag_item *item)
+tag_item_to_slot(TagItem *item)
 {
 	return (struct slot*)(((char*)item) - offsetof(struct slot, item));
 }
@@ -85,7 +86,7 @@ static struct slot *slot_alloc(struct slot *next,
 	return slot;
 }
 
-struct tag_item *
+TagItem *
 tag_pool_get_item(enum tag_type type, const char *value, size_t length)
 {
 	struct slot **slot_p, *slot;
@@ -107,7 +108,8 @@ tag_pool_get_item(enum tag_type type, const char *value, size_t length)
 	return &slot->item;
 }
 
-struct tag_item *tag_pool_dup_item(struct tag_item *item)
+TagItem *
+tag_pool_dup_item(TagItem *item)
 {
 	struct slot *slot = tag_item_to_slot(item);
 
@@ -130,7 +132,8 @@ struct tag_item *tag_pool_dup_item(struct tag_item *item)
 	}
 }
 
-void tag_pool_put_item(struct tag_item *item)
+void
+tag_pool_put_item(TagItem *item)
 {
 	struct slot **slot_p, *slot;
 

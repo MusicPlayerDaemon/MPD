@@ -37,6 +37,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 
 #undef G_LOG_DOMAIN

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "TagSave.hxx"
 #include "stdbin.h"
-#include "tag.h"
+#include "Tag.hxx"
 #include "conf.h"
 #include "input_stream.h"
 #include "InputStream.hxx"
@@ -75,11 +75,11 @@ dump_input_stream(struct input_stream *is)
 	/* read data and tags from the stream */
 
 	while (!input_stream_eof(is)) {
-		struct tag *tag = input_stream_tag(is);
+		Tag *tag = input_stream_tag(is);
 		if (tag != NULL) {
 			g_printerr("Received a tag:\n");
-			tag_save(stderr, tag);
-			tag_free(tag);
+			tag_save(stderr, *tag);
+			delete tag;
 		}
 
 		num_read = input_stream_read(is, buffer, sizeof(buffer),

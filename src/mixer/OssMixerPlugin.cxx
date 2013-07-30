@@ -25,6 +25,7 @@
 #include <glib.h>
 
 #include <assert.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>

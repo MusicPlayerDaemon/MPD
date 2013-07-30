@@ -154,12 +154,12 @@ static void
 vorbis_send_comments(struct decoder *decoder, struct input_stream *is,
 		     char **comments)
 {
-	struct tag *tag = vorbis_comments_to_tag(comments);
+	Tag *tag = vorbis_comments_to_tag(comments);
 	if (!tag)
 		return;
 
 	decoder_tag(decoder, is, tag);
-	tag_free(tag);
+	delete tag;
 }
 
 #ifndef HAVE_TREMOR

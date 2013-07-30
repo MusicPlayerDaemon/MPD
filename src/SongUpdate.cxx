@@ -24,7 +24,7 @@
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 #include "input_stream.h"
 #include "DecoderPlugin.hxx"
 #include "DecoderList.hxx"
@@ -100,10 +100,8 @@ Song::UpdateFile()
 	if (path_fs.IsNull())
 		return false;
 
-	if (tag != NULL) {
-		tag_free(tag);
-		tag = NULL;
-	}
+	delete tag;
+	tag = nullptr;
 
 	if (!StatFile(path_fs, st) || !S_ISREG(st.st_mode)) {
 		return false;
@@ -116,12 +114,12 @@ Song::UpdateFile()
 
 	do {
 		/* load file tag */
-		tag = tag_new();
+		tag = new Tag();
 		if (decoder_plugin_scan_file(plugin, path_fs.c_str(),
 					     &full_tag_handler, tag))
 			break;
 
-		tag_free(tag);
+		delete tag;
 		tag = nullptr;
 
 		/* fall back to stream tag */
@@ -136,13 +134,13 @@ Song::UpdateFile()
 
 			/* now try the stream_tag() method */
 			if (is != NULL) {
-				tag = tag_new();
+				tag = new Tag();
 				if (decoder_plugin_scan_stream(plugin, is,
 							       &full_tag_handler,
 							       tag))
 					break;
 
-				tag_free(tag);
+				delete tag;
 				tag = nullptr;
 
 				input_stream_lock_seek(is, 0, SEEK_SET, NULL);
@@ -155,7 +153,7 @@ Song::UpdateFile()
 	if (is != NULL)
 		input_stream_close(is);
 
-	if (tag != nullptr && tag_is_empty(tag))
+	if (tag != nullptr && tag->IsEmpty())
 		tag_scan_fallback(path_fs.c_str(), &full_tag_handler, tag);
 
 	return tag != nullptr;
@@ -179,13 +177,12 @@ Song::UpdateFileInArchive()
 	if (plugin == NULL)
 		return false;
 
-	if (tag != nullptr)
-		tag_free(tag);
+	delete tag;
 
 	//accept every file that has music suffix
 	//because we don't support tag reading through
 	//input streams
-	tag = tag_new();
+	tag = new Tag();
 
 	return true;
 }

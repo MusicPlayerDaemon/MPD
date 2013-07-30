@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <glib.h>
 #include <mad.h>
 
@@ -143,8 +144,8 @@ struct MadDecoder {
 
 	bool Seek(long offset);
 	bool FillBuffer();
-	void ParseId3(size_t tagsize, struct tag **mpd_tag);
-	enum mp3_action DecodeNextFrameHeader(struct tag **tag);
+	void ParseId3(size_t tagsize, Tag **mpd_tag);
+	enum mp3_action DecodeNextFrameHeader(Tag **tag);
 	enum mp3_action DecodeNextFrame();
 
 	gcc_pure
@@ -158,7 +159,7 @@ struct MadDecoder {
 	 */
 	void FileSizeToSongLength();
 
-	bool DecodeFirstFrame(struct tag **tag);
+	bool DecodeFirstFrame(Tag **tag);
 
 	gcc_pure
 	long TimeToFrame(double t) const;
@@ -334,7 +335,7 @@ parse_id3_mixramp(char **mixramp_start, char **mixramp_end,
 #endif
 
 inline void
-MadDecoder::ParseId3(size_t tagsize, struct tag **mpd_tag)
+MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 {
 #ifdef HAVE_ID3TAG
 	struct id3_tag *id3_tag = nullptr;
@@ -379,10 +380,9 @@ MadDecoder::ParseId3(size_t tagsize, struct tag **mpd_tag)
 	}
 
 	if (mpd_tag) {
-		struct tag *tmp_tag = tag_id3_import(id3_tag);
+		Tag *tmp_tag = tag_id3_import(id3_tag);
 		if (tmp_tag != nullptr) {
-			if (*mpd_tag != nullptr)
-				tag_free(*mpd_tag);
+			delete *mpd_tag;
 			*mpd_tag = tmp_tag;
 		}
 	}
@@ -453,7 +453,7 @@ id3_tag_query(const void *p0, size_t length)
 #endif /* !HAVE_ID3TAG */
 
 enum mp3_action
-MadDecoder::DecodeNextFrameHeader(struct tag **tag)
+MadDecoder::DecodeNextFrameHeader(Tag **tag)
 {
 	if ((stream.buffer == nullptr || stream.error == MAD_ERROR_BUFLEN) &&
 	    !FillBuffer())
@@ -807,7 +807,7 @@ MadDecoder::FileSizeToSongLength()
 }
 
 inline bool
-MadDecoder::DecodeFirstFrame(struct tag **tag)
+MadDecoder::DecodeFirstFrame(Tag **tag)
 {
 	struct xing xing;
 	struct lame lame;
@@ -1079,13 +1079,13 @@ MadDecoder::Read()
 		bool skip = false;
 
 		do {
-			struct tag *tag = nullptr;
+			Tag *tag = nullptr;
 
 			ret = DecodeNextFrameHeader(&tag);
 
 			if (tag != nullptr) {
 				decoder_tag(decoder, input_stream, tag);
-				tag_free(tag);
+				delete tag;
 			}
 		} while (ret == DECODE_CONT);
 		if (ret == DECODE_BREAK)
@@ -1113,10 +1113,9 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 {
 	MadDecoder data(decoder, input_stream);
 
-	struct tag *tag = nullptr;
+	Tag *tag = nullptr;
 	if (!data.DecodeFirstFrame(&tag)) {
-		if (tag != nullptr)
-			tag_free(tag);
+		delete tag;
 
 		if (decoder_get_command(decoder) == DECODE_COMMAND_NONE)
 			g_warning
@@ -1134,8 +1133,7 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 		g_warning("%s", error->message);
 		g_error_free(error);
 
-		if (tag != nullptr)
-			tag_free(tag);
+		delete tag;
 		return;
 	}
 
@@ -1145,7 +1143,7 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 
 	if (tag != nullptr) {
 		decoder_tag(decoder, input_stream, tag);
-		tag_free(tag);
+		delete tag;
 	}
 
 	while (data.Read()) {}

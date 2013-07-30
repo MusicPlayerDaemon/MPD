@@ -182,7 +182,7 @@ input_stream_lock_seek(struct input_stream *is, goffset offset, int whence,
 	return input_stream_seek(is, offset, whence, error_r);
 }
 
-struct tag *
+Tag *
 input_stream_tag(struct input_stream *is)
 {
 	assert(is != NULL);
@@ -192,7 +192,7 @@ input_stream_tag(struct input_stream *is)
 		: NULL;
 }
 
-struct tag *
+Tag *
 input_stream_lock_tag(struct input_stream *is)
 {
 	assert(is != NULL);

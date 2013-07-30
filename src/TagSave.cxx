@@ -19,20 +19,21 @@
 
 #include "config.h"
 #include "TagSave.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 #include "TagInternal.hxx"
 #include "Song.hxx"
 
-void tag_save(FILE *file, const struct tag *tag)
+void
+tag_save(FILE *file, const Tag &tag)
 {
-	if (tag->time >= 0)
-		fprintf(file, SONG_TIME "%i\n", tag->time);
+	if (tag.time >= 0)
+		fprintf(file, SONG_TIME "%i\n", tag.time);
 
-	if (tag->has_playlist)
+	if (tag.has_playlist)
 		fprintf(file, "Playlist: yes\n");
 
-	for (unsigned i = 0; i < tag->num_items; i++)
+	for (unsigned i = 0; i < tag.num_items; i++)
 		fprintf(file, "%s: %s\n",
-			tag_item_names[tag->items[i]->type],
-			tag->items[i]->value);
+			tag_item_names[tag.items[i]->type],
+			tag.items[i]->value);
 }

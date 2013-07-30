@@ -21,7 +21,7 @@
 #include "DespotifyPlaylistPlugin.hxx"
 #include "DespotifyUtils.hxx"
 #include "MemoryPlaylistProvider.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 #include "Song.hxx"
 
 extern "C" {

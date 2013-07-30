@@ -21,7 +21,7 @@
 #include "SongSort.hxx"
 #include "Song.hxx"
 #include "util/list.h"
-#include "tag.h"
+#include "Tag.hxx"
 
 extern "C" {
 #include "util/list_sort.h"
@@ -33,10 +33,10 @@ extern "C" {
 #include <stdlib.h>
 
 static const char *
-tag_get_value_checked(const struct tag *tag, enum tag_type type)
+tag_get_value_checked(const Tag *tag, enum tag_type type)
 {
 	return tag != NULL
-		? tag_get_value(tag, type)
+		? tag->GetValue(type)
 		: NULL;
 }
 
@@ -57,7 +57,7 @@ compare_utf8_string(const char *a, const char *b)
  * NULL.
  */
 static int
-compare_string_tag_item(const struct tag *a, const struct tag *b,
+compare_string_tag_item(const Tag *a, const Tag *b,
 			enum tag_type type)
 {
 	return compare_utf8_string(tag_get_value_checked(a, type),
@@ -84,7 +84,7 @@ compare_number_string(const char *a, const char *b)
 }
 
 static int
-compare_tag_item(const struct tag *a, const struct tag *b, enum tag_type type)
+compare_tag_item(const Tag *a, const Tag *b, enum tag_type type)
 {
 	return compare_number_string(tag_get_value_checked(a, type),
 				     tag_get_value_checked(b, type));

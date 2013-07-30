@@ -29,6 +29,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 
 #undef G_LOG_DOMAIN
@@ -482,7 +483,7 @@ my_shout_pause(struct audio_output *ao)
 }
 
 static void
-shout_tag_to_metadata(const struct tag *tag, char *dest, size_t size)
+shout_tag_to_metadata(const Tag *tag, char *dest, size_t size)
 {
 	char artist[size];
 	char title[size];
@@ -508,7 +509,7 @@ shout_tag_to_metadata(const struct tag *tag, char *dest, size_t size)
 }
 
 static void my_shout_set_tag(struct audio_output *ao,
-			     const struct tag *tag)
+			     const Tag *tag)
 {
 	ShoutOutput *sd = (ShoutOutput *)ao;
 	GError *error = nullptr;

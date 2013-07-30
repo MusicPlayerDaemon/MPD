@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "IcyMetaDataParser.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 
 #include <glib.h>
 
@@ -38,8 +38,7 @@ IcyMetaDataParser::Reset()
 	if (data_rest == 0 && meta_size > 0)
 		g_free(meta_data);
 
-	if (tag != nullptr)
-		tag_free(tag);
+	delete tag;
 
 	data_rest = data_size;
 	meta_size = 0;
@@ -66,7 +65,7 @@ IcyMetaDataParser::Data(size_t length)
 }
 
 static void
-icy_add_item(struct tag *tag, enum tag_type type, const char *value)
+icy_add_item(Tag &tag, enum tag_type type, const char *value)
 {
 	size_t length = strlen(value);
 
@@ -77,11 +76,11 @@ icy_add_item(struct tag *tag, enum tag_type type, const char *value)
 	}
 
 	if (length > 0)
-		tag_add_item_n(tag, type, value, length);
+		tag.AddItem(type, value, length);
 }
 
 static void
-icy_parse_tag_item(struct tag *tag, const char *item)
+icy_parse_tag_item(Tag &tag, const char *item)
 {
 	gchar **p = g_strsplit(item, "=", 0);
 
@@ -95,14 +94,14 @@ icy_parse_tag_item(struct tag *tag, const char *item)
 	g_strfreev(p);
 }
 
-static struct tag *
+static Tag *
 icy_parse_tag(const char *p)
 {
-	struct tag *tag = tag_new();
+	Tag *tag = new Tag();
 	gchar **items = g_strsplit(p, ";", 0);
 
 	for (unsigned i = 0; items[i] != nullptr; ++i)
-		icy_parse_tag_item(tag, items[i]);
+		icy_parse_tag_item(*tag, items[i]);
 
 	g_strfreev(items);
 
@@ -157,8 +156,7 @@ IcyMetaDataParser::Meta(const void *data, size_t length)
 
 		/* parse */
 
-		if (tag != nullptr)
-			tag_free(tag);
+		delete tag;
 
 		tag = icy_parse_tag(meta_data);
 		g_free(meta_data);

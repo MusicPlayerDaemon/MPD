@@ -20,6 +20,7 @@
 #ifndef MPD_DESPOTIFY_H
 #define MPD_DESPOTIFY_H
 
+struct Tag;
 struct despotify_session;
 struct ds_track;
 
@@ -41,7 +42,8 @@ struct despotify_session *mpd_despotify_get_session(void);
  *
  * @return a pointer to the filled in tags structure
  */
-struct tag *mpd_despotify_tag_from_track(struct ds_track *track);
+Tag *
+mpd_despotify_tag_from_track(struct ds_track *track);
 
 /**
  * Register a despotify callback.

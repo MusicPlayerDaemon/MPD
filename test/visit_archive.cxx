@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "stdbin.h"
-#include "tag.h"
+#include "Tag.hxx"
 #include "conf.h"
 #include "IOThread.hxx"
 #include "InputInit.hxx"

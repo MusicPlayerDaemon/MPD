@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ApeTag.hxx"
 #include "ApeLoader.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 #include "TagTable.hxx"
 #include "TagHandler.hxx"
 

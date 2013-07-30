@@ -38,6 +38,7 @@ class ServerSocket;
 class HttpdClient;
 class Page;
 struct Encoder;
+struct Tag;
 
 struct HttpdOutput final : private ServerSocket {
 	struct audio_output base;
@@ -195,7 +196,7 @@ struct HttpdOutput final : private ServerSocket {
 
 	bool EncodeAndPlay(const void *chunk, size_t size, GError **error_r);
 
-	void SendTag(const struct tag *tag);
+	void SendTag(const Tag *tag);
 
 private:
 	virtual void OnAccept(int fd, const sockaddr &address,

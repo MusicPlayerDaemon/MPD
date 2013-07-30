@@ -28,7 +28,7 @@
 #include "MessageCommands.hxx"
 #include "OtherCommands.hxx"
 #include "Permission.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 #include "protocol/Result.hxx"
 #include "Client.hxx"
 #include "util/Tokenizer.hxx"

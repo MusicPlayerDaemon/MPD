@@ -31,6 +31,7 @@
 #include "TagId3.hxx"
 
 #include <unistd.h>
+#include <string.h>
 #include <stdio.h> /* for SEEK_SET, SEEK_CUR */
 
 #ifdef HAVE_ID3TAG

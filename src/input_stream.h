@@ -29,6 +29,7 @@
 #include <stdbool.h>
 #include <sys/types.h>
 
+struct Tag;
 struct input_stream;
 
 #ifdef __cplusplus
@@ -174,12 +175,12 @@ input_stream_lock_eof(struct input_stream *is);
  *
  * The caller must lock the mutex.
  *
- * @return a tag object which must be freed with tag_free(), or NULL
+ * @return a tag object which must be freed by the caller, or nullptr
  * if the tag has not changed since the last call
  */
 gcc_nonnull(1)
 gcc_malloc
-struct tag *
+Tag *
 input_stream_tag(struct input_stream *is);
 
 /**
@@ -188,7 +189,7 @@ input_stream_tag(struct input_stream *is);
  */
 gcc_nonnull(1)
 gcc_malloc
-struct tag *
+Tag *
 input_stream_lock_tag(struct input_stream *is);
 
 /**

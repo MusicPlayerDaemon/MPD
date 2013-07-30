@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "TagPrint.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 #include "TagInternal.hxx"
 #include "Song.hxx"
 #include "Client.hxx"
@@ -35,14 +35,14 @@ void tag_print_types(Client *client)
 	}
 }
 
-void tag_print(Client *client, const struct tag *tag)
+void tag_print(Client *client, const Tag &tag)
 {
-	if (tag->time >= 0)
-		client_printf(client, SONG_TIME "%i\n", tag->time);
+	if (tag.time >= 0)
+		client_printf(client, SONG_TIME "%i\n", tag.time);
 
-	for (unsigned i = 0; i < tag->num_items; i++) {
+	for (unsigned i = 0; i < tag.num_items; i++) {
 		client_printf(client, "%s: %s\n",
-			      tag_item_names[tag->items[i]->type],
-			      tag->items[i]->value);
+			      tag_item_names[tag.items[i]->type],
+			      tag.items[i]->value);
 	}
 }

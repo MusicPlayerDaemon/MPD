@@ -28,7 +28,7 @@
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
 #include "TagHandler.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 
 #include <glib.h>
 
@@ -95,7 +95,7 @@ update_container_file(Directory *directory,
 		const Path child_path_fs =
 			map_directory_child_fs(contdir, vtrack);
 
-		song->tag = tag_new();
+		song->tag = new Tag();
 		decoder_plugin_scan_file(plugin, child_path_fs.c_str(),
 					 &add_tag_handler, song->tag);
 

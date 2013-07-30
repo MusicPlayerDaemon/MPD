@@ -29,6 +29,7 @@
 #include <glib.h>
 
 #include <assert.h>
+#include <string.h>
 #include <unistd.h>
 
 #undef G_LOG_DOMAIN

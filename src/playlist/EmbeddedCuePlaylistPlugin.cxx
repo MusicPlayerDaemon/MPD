@@ -26,7 +26,7 @@
 #include "config.h"
 #include "EmbeddedCuePlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 #include "TagHandler.hxx"
 #include "TagId3.hxx"
 #include "ApeTag.hxx"

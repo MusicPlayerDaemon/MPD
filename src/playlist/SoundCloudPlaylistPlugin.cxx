@@ -23,7 +23,7 @@
 #include "conf.h"
 #include "input_stream.h"
 #include "Song.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 
 #include <glib.h>
 #include <yajl/yajl_parse.h>
@@ -204,16 +204,16 @@ static int handle_end_map(void *ctx)
 	data->got_url = 0;
 
 	Song *s;
-	struct tag *t;
 	char *u;
 
 	u = g_strconcat(data->stream_url, "?client_id=", soundcloud_config.apikey, NULL);
 	s = Song::NewRemote(u);
 	g_free(u);
-	t = tag_new();
+
+	Tag *t = new Tag();
 	t->time = data->duration / 1000;
 	if (data->title != NULL)
-		tag_add_item(t, TAG_NAME, data->title);
+		t->AddItem(TAG_NAME, data->title);
 	s->tag = t;
 
 	data->songs.emplace_front(s);

@@ -20,7 +20,7 @@
 #include "DatabaseHelpers.hxx"
 #include "DatabasePlugin.hxx"
 #include "Song.hxx"
-#include "tag.h"
+#include "Tag.hxx"
 
 #include <functional>
 #include <set>
@@ -39,7 +39,7 @@ typedef std::set<const char *, StringLess> StringSet;
 static bool
 CollectTags(StringSet &set, enum tag_type tag_type, Song &song)
 {
-	struct tag *tag = song.tag;
+	Tag *tag = song.tag;
 	if (tag == nullptr)
 		return true;
 
@@ -79,13 +79,13 @@ VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
 
 static void
 StatsVisitTag(DatabaseStats &stats, StringSet &artists, StringSet &albums,
-	      const struct tag &tag)
+	      const Tag &tag)
 {
 	if (tag.time > 0)
 		stats.total_duration += tag.time;
 
 	for (unsigned i = 0; i < tag.num_items; ++i) {
-		const struct tag_item &item = *tag.items[i];
+		const TagItem &item = *tag.items[i];
 
 		switch (item.type) {
 		case TAG_ARTIST:

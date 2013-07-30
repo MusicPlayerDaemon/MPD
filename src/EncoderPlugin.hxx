@@ -29,7 +29,7 @@
 struct EncoderPlugin;
 struct audio_format;
 struct config_param;
-struct tag;
+struct Tag;
 
 struct Encoder {
 	const EncoderPlugin &plugin;
@@ -66,7 +66,7 @@ struct EncoderPlugin {
 
 	bool (*pre_tag)(Encoder *encoder, GError **error);
 
-	bool (*tag)(Encoder *encoder, const struct tag *tag,
+	bool (*tag)(Encoder *encoder, const Tag *tag,
 		    GError **error);
 
 	bool (*write)(Encoder *encoder,
@@ -246,7 +246,7 @@ encoder_pre_tag(Encoder *encoder, GError **error)
  * @return true on success
  */
 static inline bool
-encoder_tag(Encoder *encoder, const struct tag *tag, GError **error)
+encoder_tag(Encoder *encoder, const Tag *tag, GError **error)
 {
 	assert(encoder->open);
 	assert(!encoder->pre_tag);

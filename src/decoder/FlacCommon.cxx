@@ -43,8 +43,7 @@ flac_data::flac_data(struct decoder *_decoder,
 
 flac_data::~flac_data()
 {
-	if (tag != nullptr)
-		tag_free(tag);
+	delete tag;
 }
 
 static enum sample_format

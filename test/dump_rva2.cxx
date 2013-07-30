@@ -22,7 +22,7 @@
 #include "TagRva2.hxx"
 #include "replay_gain_info.h"
 #include "conf.h"
-#include "tag.h"
+#include "Tag.hxx"
 
 #include <id3tag.h>
 
@@ -41,23 +41,13 @@ config_get_string(gcc_unused enum ConfigOption option,
 	return default_value;
 }
 
-struct tag *
-tag_new(void)
-{
-	return NULL;
-}
-
 void
-tag_add_item_n(gcc_unused struct tag *tag, gcc_unused enum tag_type type,
-	       gcc_unused const char *value, gcc_unused size_t len)
+Tag::AddItem(gcc_unused enum tag_type type,
+	     gcc_unused const char *value)
 {
 }
 
-void
-tag_free(struct tag *tag)
-{
-	g_free(tag);
-}
+Tag::~Tag() {}
 
 int main(int argc, char **argv)
 {

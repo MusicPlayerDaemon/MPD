@@ -23,7 +23,7 @@
 #include "audio_format.h"
 #include "conf.h"
 #include "stdbin.h"
-#include "tag.h"
+#include "Tag.hxx"
 
 #include <glib.h>
 
@@ -83,14 +83,12 @@ main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 
 	encoder_to_stdout(*encoder);
 
-	struct tag *tag = tag_new();
-	tag_add_item(tag, TAG_ARTIST, "Foo");
-	tag_add_item(tag, TAG_TITLE, "Bar");
+	Tag tag;
+	tag.AddItem(TAG_ARTIST, "Foo");
+	tag.AddItem(TAG_TITLE, "Bar");
 
-	success = encoder_tag(encoder, tag, NULL);
+	success = encoder_tag(encoder, &tag, NULL);
 	assert(success);
-
-	tag_free(tag);
 
 	encoder_to_stdout(*encoder);
 

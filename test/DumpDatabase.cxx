@@ -25,7 +25,7 @@
 #include "Song.hxx"
 #include "PlaylistVector.hxx"
 #include "conf.h"
-#include "tag.h"
+#include "Tag.hxx"
 #include "fs/Path.hxx"
 
 #include <iostream>
