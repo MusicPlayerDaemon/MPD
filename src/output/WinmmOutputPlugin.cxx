@@ -20,7 +20,7 @@
 #include "config.h"
 #include "WinmmOutputPlugin.hxx"
 #include "OutputAPI.hxx"
-#include "pcm/pcm_buffer.h"
+#include "pcm/PcmBuffer.hxx"
 #include "MixerList.hxx"
 
 #include <stdlib.h>
@@ -30,7 +30,7 @@
 #define G_LOG_DOMAIN "winmm_output"
 
 struct WinmmBuffer {
-	struct pcm_buffer buffer;
+	PcmBuffer buffer;
 
 	WAVEHDR hdr;
 };
@@ -190,7 +190,6 @@ winmm_output_open(struct audio_output *ao, struct audio_format *audio_format,
 	}
 
 	for (unsigned i = 0; i < G_N_ELEMENTS(wo->buffers); ++i) {
-		pcm_buffer_init(&wo->buffers[i].buffer);
 		memset(&wo->buffers[i].hdr, 0, sizeof(wo->buffers[i].hdr));
 	}
 
@@ -205,7 +204,7 @@ winmm_output_close(struct audio_output *ao)
 	WinmmOutput *wo = (WinmmOutput *)ao;
 
 	for (unsigned i = 0; i < G_N_ELEMENTS(wo->buffers); ++i)
-		pcm_buffer_deinit(&wo->buffers[i].buffer);
+		wo->buffers[i].buffer.Clear();
 
 	waveOutClose(wo->handle);
 
@@ -220,7 +219,7 @@ winmm_set_buffer(WinmmOutput *wo, WinmmBuffer *buffer,
 		 const void *data, size_t size,
 		 GError **error_r)
 {
-	void *dest = pcm_buffer_get(&buffer->buffer, size);
+	void *dest = buffer->buffer.Get(size);
 	assert(dest != nullptr);
 
 	memcpy(dest, data, size);
