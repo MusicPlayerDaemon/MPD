@@ -158,7 +158,7 @@ vorbis_send_comments(struct decoder *decoder, struct input_stream *is,
 	if (!tag)
 		return;
 
-	decoder_tag(decoder, is, tag);
+	decoder_tag(decoder, is, std::move(*tag));
 	delete tag;
 }
 

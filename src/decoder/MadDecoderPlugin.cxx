@@ -1084,7 +1084,8 @@ MadDecoder::Read()
 			ret = DecodeNextFrameHeader(&tag);
 
 			if (tag != nullptr) {
-				decoder_tag(decoder, input_stream, tag);
+				decoder_tag(decoder, input_stream,
+					    std::move(*tag));
 				delete tag;
 			}
 		} while (ret == DECODE_CONT);
@@ -1142,7 +1143,7 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 			    data.total_time);
 
 	if (tag != nullptr) {
-		decoder_tag(decoder, input_stream, tag);
+		decoder_tag(decoder, input_stream, std::move(*tag));
 		delete tag;
 	}
 

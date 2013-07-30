@@ -141,8 +141,7 @@ decoder_data(struct decoder *decoder, struct input_stream *is,
  * command pending
  */
 enum decoder_command
-decoder_tag(struct decoder *decoder, struct input_stream *is,
-	    const Tag *tag);
+decoder_tag(struct decoder *decoder, struct input_stream *is, Tag &&tag);
 
 /**
  * Set replay gain values for the following chunks.

@@ -113,7 +113,7 @@ decoder_data(G_GNUC_UNUSED struct decoder *decoder,
 enum decoder_command
 decoder_tag(G_GNUC_UNUSED struct decoder *decoder,
 	    G_GNUC_UNUSED struct input_stream *is,
-	    G_GNUC_UNUSED const Tag *tag)
+	    G_GNUC_UNUSED Tag &&tag)
 {
 	return DECODE_COMMAND_NONE;
 }

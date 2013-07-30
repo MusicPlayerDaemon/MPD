@@ -471,19 +471,18 @@ decoder_data(struct decoder *decoder,
 
 enum decoder_command
 decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
-	    const Tag *tag)
+	    Tag &&tag)
 {
 	G_GNUC_UNUSED const struct decoder_control *dc = decoder->dc;
 	enum decoder_command cmd;
 
 	assert(dc->state == DECODE_STATE_DECODE);
 	assert(dc->pipe != NULL);
-	assert(tag != NULL);
 
 	/* save the tag */
 
 	delete decoder->decoder_tag;
-	decoder->decoder_tag = new Tag(*tag);
+	decoder->decoder_tag = new Tag(tag);
 
 	/* check for a new stream tag */
 
@@ -509,7 +508,7 @@ decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
 		delete merged;
 	} else
 		/* send only the decoder tag */
-		cmd = do_send_tag(decoder, *tag);
+		cmd = do_send_tag(decoder, *decoder->decoder_tag);
 
 	return cmd;
 }

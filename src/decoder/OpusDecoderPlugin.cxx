@@ -228,7 +228,7 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 	if (ScanOpusTags(packet.packet, packet.bytes,
 			 &add_tag_handler, &tag) &&
 	    !tag.IsEmpty())
-		cmd = decoder_tag(decoder, input_stream, &tag);
+		cmd = decoder_tag(decoder, input_stream, std::move(tag));
 	else
 		cmd = decoder_get_command(decoder);
 

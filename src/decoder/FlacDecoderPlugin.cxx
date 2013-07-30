@@ -174,7 +174,7 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 	while (true) {
 		if (data->tag != nullptr && !data->tag->IsEmpty()) {
 			cmd = decoder_tag(data->decoder, data->input_stream,
-					  data->tag);
+					  std::move(*data->tag));
 			delete data->tag;
 			data->tag = new Tag();
 		} else
