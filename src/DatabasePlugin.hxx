@@ -27,11 +27,8 @@
 #define MPD_DATABASE_PLUGIN_HXX
 
 #include "DatabaseVisitor.hxx"
+#include "TagType.h"
 #include "gcc.h"
-
-extern "C" {
-#include "tag.h"
-}
 
 struct config_param;
 struct DatabaseSelection;

@@ -28,6 +28,7 @@
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
 #include "TagHandler.hxx"
+#include "tag.h"
 
 #include <glib.h>
 

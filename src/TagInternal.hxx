@@ -20,7 +20,7 @@
 #ifndef MPD_TAG_INTERNAL_HXX
 #define MPD_TAG_INTERNAL_HXX
 
-#include "tag.h"
+#include "TagType.h"
 
 extern bool ignore_tag_items[TAG_NUM_OF_ITEM_TYPES];
 

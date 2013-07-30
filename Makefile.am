@@ -216,6 +216,7 @@ src_mpd_SOURCES = \
 	src/SocketUtil.cxx src/SocketUtil.hxx \
 	src/StateFile.cxx src/StateFile.hxx \
 	src/Stats.cxx \
+	src/TagType.h \
 	src/Tag.cxx \
 	src/TagTable.hxx \
 	src/TagNames.c \

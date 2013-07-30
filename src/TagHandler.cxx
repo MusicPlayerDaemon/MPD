@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "TagHandler.hxx"
+#include "tag.h"
 
 #include <glib.h>
 

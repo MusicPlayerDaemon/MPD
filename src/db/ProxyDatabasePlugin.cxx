@@ -26,6 +26,7 @@
 #include "Song.hxx"
 #include "gcc.h"
 #include "conf.h"
+#include "tag.h"
 
 extern "C" {
 #include "db_error.h"

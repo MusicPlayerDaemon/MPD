@@ -17,28 +17,40 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "TagType.h"
+#ifndef MPD_TAG_TYPE_H
+#define MPD_TAG_TYPE_H
 
-const char *tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
-	[TAG_ARTIST] = "Artist",
-	[TAG_ARTIST_SORT] = "ArtistSort",
-	[TAG_ALBUM] = "Album",
-	[TAG_ALBUM_ARTIST] = "AlbumArtist",
-	[TAG_ALBUM_ARTIST_SORT] = "AlbumArtistSort",
-	[TAG_TITLE] = "Title",
-	[TAG_TRACK] = "Track",
-	[TAG_NAME] = "Name",
-	[TAG_GENRE] = "Genre",
-	[TAG_DATE] = "Date",
-	[TAG_COMPOSER] = "Composer",
-	[TAG_PERFORMER] = "Performer",
-	[TAG_COMMENT] = "Comment",
-	[TAG_DISC] = "Disc",
+/**
+ * Codes for the type of a tag item.
+ */
+enum tag_type {
+	TAG_ARTIST,
+	TAG_ARTIST_SORT,
+	TAG_ALBUM,
+	TAG_ALBUM_ARTIST,
+	TAG_ALBUM_ARTIST_SORT,
+	TAG_TITLE,
+	TAG_TRACK,
+	TAG_NAME,
+	TAG_GENRE,
+	TAG_DATE,
+	TAG_COMPOSER,
+	TAG_PERFORMER,
+	TAG_COMMENT,
+	TAG_DISC,
 
-	/* MusicBrainz tags from http://musicbrainz.org/doc/MusicBrainzTag */
-	[TAG_MUSICBRAINZ_ARTISTID] = "MUSICBRAINZ_ARTISTID",
-	[TAG_MUSICBRAINZ_ALBUMID] = "MUSICBRAINZ_ALBUMID",
-	[TAG_MUSICBRAINZ_ALBUMARTISTID] = "MUSICBRAINZ_ALBUMARTISTID",
-	[TAG_MUSICBRAINZ_TRACKID] = "MUSICBRAINZ_TRACKID",
+	TAG_MUSICBRAINZ_ARTISTID,
+	TAG_MUSICBRAINZ_ALBUMID,
+	TAG_MUSICBRAINZ_ALBUMARTISTID,
+	TAG_MUSICBRAINZ_TRACKID,
+
+	TAG_NUM_OF_ITEM_TYPES
 };
+
+/**
+ * An array of strings, which map the #tag_type to its machine
+ * readable name (specific to the MPD protocol).
+ */
+extern const char *tag_item_names[];
+
+#endif

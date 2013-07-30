@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "TagPool.hxx"
+#include "tag.h"
 
 #include <glib.h>
 

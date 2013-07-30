@@ -20,45 +20,13 @@
 #ifndef MPD_TAG_H
 #define MPD_TAG_H
 
+#include "TagType.h"
 #include "gcc.h"
 
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
 #include <string.h>
-
-/**
- * Codes for the type of a tag item.
- */
-enum tag_type {
-	TAG_ARTIST,
-	TAG_ARTIST_SORT,
-	TAG_ALBUM,
-	TAG_ALBUM_ARTIST,
-	TAG_ALBUM_ARTIST_SORT,
-	TAG_TITLE,
-	TAG_TRACK,
-	TAG_NAME,
-	TAG_GENRE,
-	TAG_DATE,
-	TAG_COMPOSER,
-	TAG_PERFORMER,
-	TAG_COMMENT,
-	TAG_DISC,
-
-	TAG_MUSICBRAINZ_ARTISTID,
-	TAG_MUSICBRAINZ_ALBUMID,
-	TAG_MUSICBRAINZ_ALBUMARTISTID,
-	TAG_MUSICBRAINZ_TRACKID,
-
-	TAG_NUM_OF_ITEM_TYPES
-};
-
-/**
- * An array of strings, which map the #tag_type to its machine
- * readable name (specific to the MPD protocol).
- */
-extern const char *tag_item_names[];
 
 /**
  * One tag value.  It is a mapping of #tag_type to am arbitrary string

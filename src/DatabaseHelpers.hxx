@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 #define MPD_MEMORY_DATABASE_PLUGIN_HXX
 
 #include "DatabaseVisitor.hxx"
-#include "tag.h"
+#include "TagType.h"
 #include "gcc.h"
 
 class Database;

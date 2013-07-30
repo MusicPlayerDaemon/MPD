@@ -20,10 +20,12 @@
 #ifndef MPD_TAG_TABLE_HXX
 #define MPD_TAG_TABLE_HXX
 
-#include "tag.h"
+#include "TagType.h"
 #include "gcc.h"
 
 #include <glib.h>
+
+#include <string.h>
 
 struct tag_table {
 	const char *name;

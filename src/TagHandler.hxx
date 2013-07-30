@@ -21,7 +21,7 @@
 #define MPD_TAG_HANDLER_HXX
 
 #include "check.h"
-#include "tag.h"
+#include "TagType.h"
 
 #include <assert.h>
 
