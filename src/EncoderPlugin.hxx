@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ENCODER_PLUGIN_H
-#define MPD_ENCODER_PLUGIN_H
+#ifndef MPD_ENCODER_PLUGIN_HXX
+#define MPD_ENCODER_PLUGIN_HXX
 
 #include "gerror.h"
 
@@ -26,65 +26,57 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-struct encoder_plugin;
+struct EncoderPlugin;
 struct audio_format;
 struct config_param;
 struct tag;
 
-struct encoder {
-	const struct encoder_plugin *plugin;
+struct Encoder {
+	const EncoderPlugin &plugin;
 
 #ifndef NDEBUG
 	bool open, pre_tag, tag, end;
 #endif
+
+	explicit Encoder(const EncoderPlugin &_plugin)
+		:plugin(_plugin)
+#ifndef NDEBUG
+		, open(false)
+#endif
+	{}
 };
 
-struct encoder_plugin {
+struct EncoderPlugin {
 	const char *name;
 
-	struct encoder *(*init)(const struct config_param *param,
-				GError **error);
+	Encoder *(*init)(const struct config_param *param,
+			 GError **error);
 
-	void (*finish)(struct encoder *encoder);
+	void (*finish)(Encoder *encoder);
 
-	bool (*open)(struct encoder *encoder,
+	bool (*open)(Encoder *encoder,
 		     struct audio_format *audio_format,
 		     GError **error);
 
-	void (*close)(struct encoder *encoder);
+	void (*close)(Encoder *encoder);
 
-	bool (*end)(struct encoder *encoder, GError **error);
+	bool (*end)(Encoder *encoder, GError **error);
 
-	bool (*flush)(struct encoder *encoder, GError **error);
+	bool (*flush)(Encoder *encoder, GError **error);
 
-	bool (*pre_tag)(struct encoder *encoder, GError **error);
+	bool (*pre_tag)(Encoder *encoder, GError **error);
 
-	bool (*tag)(struct encoder *encoder, const struct tag *tag,
+	bool (*tag)(Encoder *encoder, const struct tag *tag,
 		    GError **error);
 
-	bool (*write)(struct encoder *encoder,
+	bool (*write)(Encoder *encoder,
 		      const void *data, size_t length,
 		      GError **error);
 
-	size_t (*read)(struct encoder *encoder, void *dest, size_t length);
+	size_t (*read)(Encoder *encoder, void *dest, size_t length);
 
-	const char *(*get_mime_type)(struct encoder *encoder);
+	const char *(*get_mime_type)(Encoder *encoder);
 };
-
-/**
- * Initializes an encoder object.  This should be used by encoder
- * plugins to initialize their base class.
- */
-static inline void
-encoder_struct_init(struct encoder *encoder,
-		    const struct encoder_plugin *plugin)
-{
-	encoder->plugin = plugin;
-
-#ifndef NDEBUG
-	encoder->open = false;
-#endif
-}
 
 /**
  * Creates a new encoder object.
@@ -94,11 +86,11 @@ encoder_struct_init(struct encoder *encoder,
  * @param error location to store the error occurring, or NULL to ignore errors.
  * @return an encoder object on success, NULL on failure
  */
-static inline struct encoder *
-encoder_init(const struct encoder_plugin *plugin,
-	     const struct config_param *param, GError **error)
+static inline Encoder *
+encoder_init(const EncoderPlugin &plugin, const config_param *param,
+	     GError **error_r)
 {
-	return plugin->init(param, error);
+	return plugin.init(param, error_r);
 }
 
 /**
@@ -107,11 +99,11 @@ encoder_init(const struct encoder_plugin *plugin,
  * @param encoder the encoder
  */
 static inline void
-encoder_finish(struct encoder *encoder)
+encoder_finish(Encoder *encoder)
 {
 	assert(!encoder->open);
 
-	encoder->plugin->finish(encoder);
+	encoder->plugin.finish(encoder);
 }
 
 /**
@@ -130,12 +122,12 @@ encoder_finish(struct encoder *encoder)
  * @return true on success
  */
 static inline bool
-encoder_open(struct encoder *encoder, struct audio_format *audio_format,
+encoder_open(Encoder *encoder, struct audio_format *audio_format,
 	     GError **error)
 {
 	assert(!encoder->open);
 
-	bool success = encoder->plugin->open(encoder, audio_format, error);
+	bool success = encoder->plugin.open(encoder, audio_format, error);
 #ifndef NDEBUG
 	encoder->open = success;
 	encoder->pre_tag = encoder->tag = encoder->end = false;
@@ -150,12 +142,12 @@ encoder_open(struct encoder *encoder, struct audio_format *audio_format,
  * @param encoder the encoder
  */
 static inline void
-encoder_close(struct encoder *encoder)
+encoder_close(Encoder *encoder)
 {
 	assert(encoder->open);
 
-	if (encoder->plugin->close != NULL)
-		encoder->plugin->close(encoder);
+	if (encoder->plugin.close != NULL)
+		encoder->plugin.close(encoder);
 
 #ifndef NDEBUG
 	encoder->open = false;
@@ -176,7 +168,7 @@ encoder_close(struct encoder *encoder)
  * @return true on success
  */
 static inline bool
-encoder_end(struct encoder *encoder, GError **error)
+encoder_end(Encoder *encoder, GError **error)
 {
 	assert(encoder->open);
 	assert(!encoder->end);
@@ -186,8 +178,8 @@ encoder_end(struct encoder *encoder, GError **error)
 #endif
 
 	/* this method is optional */
-	return encoder->plugin->end != NULL
-		? encoder->plugin->end(encoder, error)
+	return encoder->plugin.end != NULL
+		? encoder->plugin.end(encoder, error)
 		: true;
 }
 
@@ -200,7 +192,7 @@ encoder_end(struct encoder *encoder, GError **error)
  * @return true on success
  */
 static inline bool
-encoder_flush(struct encoder *encoder, GError **error)
+encoder_flush(Encoder *encoder, GError **error)
 {
 	assert(encoder->open);
 	assert(!encoder->pre_tag);
@@ -208,8 +200,8 @@ encoder_flush(struct encoder *encoder, GError **error)
 	assert(!encoder->end);
 
 	/* this method is optional */
-	return encoder->plugin->flush != NULL
-		? encoder->plugin->flush(encoder, error)
+	return encoder->plugin.flush != NULL
+		? encoder->plugin.flush(encoder, error)
 		: true;
 }
 
@@ -224,7 +216,7 @@ encoder_flush(struct encoder *encoder, GError **error)
  * @return true on success
  */
 static inline bool
-encoder_pre_tag(struct encoder *encoder, GError **error)
+encoder_pre_tag(Encoder *encoder, GError **error)
 {
 	assert(encoder->open);
 	assert(!encoder->pre_tag);
@@ -232,8 +224,8 @@ encoder_pre_tag(struct encoder *encoder, GError **error)
 	assert(!encoder->end);
 
 	/* this method is optional */
-	bool success = encoder->plugin->pre_tag != NULL
-		? encoder->plugin->pre_tag(encoder, error)
+	bool success = encoder->plugin.pre_tag != NULL
+		? encoder->plugin.pre_tag(encoder, error)
 		: true;
 
 #ifndef NDEBUG
@@ -254,7 +246,7 @@ encoder_pre_tag(struct encoder *encoder, GError **error)
  * @return true on success
  */
 static inline bool
-encoder_tag(struct encoder *encoder, const struct tag *tag, GError **error)
+encoder_tag(Encoder *encoder, const struct tag *tag, GError **error)
 {
 	assert(encoder->open);
 	assert(!encoder->pre_tag);
@@ -266,8 +258,8 @@ encoder_tag(struct encoder *encoder, const struct tag *tag, GError **error)
 #endif
 
 	/* this method is optional */
-	return encoder->plugin->tag != NULL
-		? encoder->plugin->tag(encoder, tag, error)
+	return encoder->plugin.tag != NULL
+		? encoder->plugin.tag(encoder, tag, error)
 		: true;
 }
 
@@ -281,7 +273,7 @@ encoder_tag(struct encoder *encoder, const struct tag *tag, GError **error)
  * @return true on success
  */
 static inline bool
-encoder_write(struct encoder *encoder, const void *data, size_t length,
+encoder_write(Encoder *encoder, const void *data, size_t length,
 	      GError **error)
 {
 	assert(encoder->open);
@@ -289,7 +281,7 @@ encoder_write(struct encoder *encoder, const void *data, size_t length,
 	assert(!encoder->tag);
 	assert(!encoder->end);
 
-	return encoder->plugin->write(encoder, data, length, error);
+	return encoder->plugin.write(encoder, data, length, error);
 }
 
 /**
@@ -303,7 +295,7 @@ encoder_write(struct encoder *encoder, const void *data, size_t length,
  * @return the number of bytes written to #dest
  */
 static inline size_t
-encoder_read(struct encoder *encoder, void *dest, size_t length)
+encoder_read(Encoder *encoder, void *dest, size_t length)
 {
 	assert(encoder->open);
 	assert(!encoder->pre_tag || !encoder->tag);
@@ -315,7 +307,7 @@ encoder_read(struct encoder *encoder, void *dest, size_t length)
 	}
 #endif
 
-	return encoder->plugin->read(encoder, dest, length);
+	return encoder->plugin.read(encoder, dest, length);
 }
 
 /**
@@ -325,11 +317,11 @@ encoder_read(struct encoder *encoder, void *dest, size_t length)
  * @return an constant string, NULL on failure
  */
 static inline const char *
-encoder_get_mime_type(struct encoder *encoder)
+encoder_get_mime_type(Encoder *encoder)
 {
 	/* this method is optional */
-	return encoder->plugin->get_mime_type != NULL
-		? encoder->plugin->get_mime_type(encoder)
+	return encoder->plugin.get_mime_type != NULL
+		? encoder->plugin.get_mime_type(encoder)
 		: NULL;
 }
 

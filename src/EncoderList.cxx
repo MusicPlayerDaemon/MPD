@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "EncoderList.hxx"
-#include "encoder_plugin.h"
+#include "EncoderPlugin.hxx"
 #include "encoder/NullEncoderPlugin.hxx"
 #include "encoder/WaveEncoderPlugin.hxx"
 #include "encoder/VorbisEncoderPlugin.hxx"
@@ -30,7 +30,7 @@
 
 #include <string.h>
 
-const struct encoder_plugin *const encoder_plugins[] = {
+const EncoderPlugin *const encoder_plugins[] = {
 	&null_encoder_plugin,
 #ifdef ENABLE_VORBIS_ENCODER
 	&vorbis_encoder_plugin,
@@ -53,7 +53,7 @@ const struct encoder_plugin *const encoder_plugins[] = {
 	NULL
 };
 
-const struct encoder_plugin *
+const EncoderPlugin *
 encoder_plugin_get(const char *name)
 {
 	encoder_plugins_for_each(plugin)

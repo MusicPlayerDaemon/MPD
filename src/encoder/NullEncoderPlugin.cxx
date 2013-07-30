@@ -19,8 +19,7 @@
 
 #include "config.h"
 #include "NullEncoderPlugin.hxx"
-#include "encoder_api.h"
-#include "encoder_plugin.h"
+#include "EncoderAPI.hxx"
 #include "util/fifo_buffer.h"
 extern "C" {
 #include "util/growing_fifo.h"
@@ -33,16 +32,14 @@ extern "C" {
 #include <string.h>
 
 struct NullEncoder final {
-	struct encoder encoder;
+	Encoder encoder;
 
 	struct fifo_buffer *buffer;
 
-	NullEncoder() {
-		encoder_struct_init(&encoder, &null_encoder_plugin);
-	}
+	NullEncoder():encoder(null_encoder_plugin) {}
 };
 
-static struct encoder *
+static Encoder *
 null_encoder_init(gcc_unused const struct config_param *param,
 		  gcc_unused GError **error)
 {
@@ -51,7 +48,7 @@ null_encoder_init(gcc_unused const struct config_param *param,
 }
 
 static void
-null_encoder_finish(struct encoder *_encoder)
+null_encoder_finish(Encoder *_encoder)
 {
 	NullEncoder *encoder = (NullEncoder *)_encoder;
 
@@ -59,7 +56,7 @@ null_encoder_finish(struct encoder *_encoder)
 }
 
 static void
-null_encoder_close(struct encoder *_encoder)
+null_encoder_close(Encoder *_encoder)
 {
 	NullEncoder *encoder = (NullEncoder *)_encoder;
 
@@ -68,7 +65,7 @@ null_encoder_close(struct encoder *_encoder)
 
 
 static bool
-null_encoder_open(struct encoder *_encoder,
+null_encoder_open(Encoder *_encoder,
 		  gcc_unused struct audio_format *audio_format,
 		  gcc_unused GError **error)
 {
@@ -78,7 +75,7 @@ null_encoder_open(struct encoder *_encoder,
 }
 
 static bool
-null_encoder_write(struct encoder *_encoder,
+null_encoder_write(Encoder *_encoder,
 		   const void *data, size_t length,
 		   gcc_unused GError **error)
 {
@@ -89,7 +86,7 @@ null_encoder_write(struct encoder *_encoder,
 }
 
 static size_t
-null_encoder_read(struct encoder *_encoder, void *dest, size_t length)
+null_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
 	NullEncoder *encoder = (NullEncoder *)_encoder;
 
@@ -106,7 +103,7 @@ null_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 	return length;
 }
 
-const struct encoder_plugin null_encoder_plugin = {
+const EncoderPlugin null_encoder_plugin = {
 	"null",
 	null_encoder_init,
 	null_encoder_finish,

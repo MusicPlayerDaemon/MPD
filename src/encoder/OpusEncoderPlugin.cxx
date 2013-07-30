@@ -20,8 +20,7 @@
 #include "config.h"
 #include "OpusEncoderPlugin.hxx"
 #include "OggStream.hxx"
-#include "encoder_api.h"
-#include "encoder_plugin.h"
+#include "EncoderAPI.hxx"
 #include "audio_format.h"
 #include "mpd_error.h"
 
@@ -35,7 +34,7 @@
 
 struct opus_encoder {
 	/** the base class */
-	struct encoder encoder;
+	Encoder encoder;
 
 	/* configuration */
 
@@ -64,9 +63,7 @@ struct opus_encoder {
 
 	ogg_int64_t granulepos;
 
-	opus_encoder() {
-		encoder_struct_init(&encoder, &opus_encoder_plugin);
-	}
+	opus_encoder():encoder(opus_encoder_plugin) {}
 };
 
 gcc_const
@@ -120,7 +117,7 @@ opus_encoder_configure(struct opus_encoder *encoder,
 	return true;
 }
 
-static struct encoder *
+static Encoder *
 opus_encoder_init(const struct config_param *param, GError **error)
 {
 	opus_encoder *encoder = new opus_encoder();
@@ -136,7 +133,7 @@ opus_encoder_init(const struct config_param *param, GError **error)
 }
 
 static void
-opus_encoder_finish(struct encoder *_encoder)
+opus_encoder_finish(Encoder *_encoder)
 {
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
 
@@ -146,7 +143,7 @@ opus_encoder_finish(struct encoder *_encoder)
 }
 
 static bool
-opus_encoder_open(struct encoder *_encoder,
+opus_encoder_open(Encoder *_encoder,
 		  struct audio_format *audio_format,
 		  GError **error_r)
 {
@@ -205,7 +202,7 @@ opus_encoder_open(struct encoder *_encoder,
 }
 
 static void
-opus_encoder_close(struct encoder *_encoder)
+opus_encoder_close(Encoder *_encoder)
 {
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
 
@@ -255,7 +252,7 @@ opus_encoder_do_encode(struct opus_encoder *encoder, bool eos,
 }
 
 static bool
-opus_encoder_end(struct encoder *_encoder, GError **error_r)
+opus_encoder_end(Encoder *_encoder, GError **error_r)
 {
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
 
@@ -269,7 +266,7 @@ opus_encoder_end(struct encoder *_encoder, GError **error_r)
 }
 
 static bool
-opus_encoder_flush(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
+opus_encoder_flush(Encoder *_encoder, G_GNUC_UNUSED GError **error)
 {
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
 
@@ -303,7 +300,7 @@ opus_encoder_write_silence(struct opus_encoder *encoder, unsigned fill_frames,
 }
 
 static bool
-opus_encoder_write(struct encoder *_encoder,
+opus_encoder_write(Encoder *_encoder,
 		   const void *_data, size_t length,
 		   GError **error_r)
 {
@@ -395,7 +392,7 @@ opus_encoder_generate_tags(struct opus_encoder *encoder)
 }
 
 static size_t
-opus_encoder_read(struct encoder *_encoder, void *dest, size_t length)
+opus_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
 
@@ -408,12 +405,12 @@ opus_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 }
 
 static const char *
-opus_encoder_get_mime_type(G_GNUC_UNUSED struct encoder *_encoder)
+opus_encoder_get_mime_type(G_GNUC_UNUSED Encoder *_encoder)
 {
 	return  "audio/ogg";
 }
 
-const struct encoder_plugin opus_encoder_plugin = {
+const EncoderPlugin opus_encoder_plugin = {
 	"opus",
 	opus_encoder_init,
 	opus_encoder_finish,

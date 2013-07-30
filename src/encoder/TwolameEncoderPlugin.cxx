@@ -19,8 +19,7 @@
 
 #include "config.h"
 #include "TwolameEncoderPlugin.hxx"
-#include "encoder_api.h"
-#include "encoder_plugin.h"
+#include "EncoderAPI.hxx"
 #include "audio_format.h"
 
 #include <twolame.h>
@@ -31,7 +30,7 @@
 #include <string.h>
 
 struct TwolameEncoder final {
-	struct encoder encoder;
+	Encoder encoder;
 
 	struct audio_format audio_format;
 	float quality;
@@ -47,9 +46,7 @@ struct TwolameEncoder final {
 	 */
 	bool flush;
 
-	TwolameEncoder() {
-		encoder_struct_init(&encoder, &twolame_encoder_plugin);
-	}
+	TwolameEncoder():encoder(twolame_encoder_plugin) {}
 
 	bool Configure(const config_param *param, GError **error);
 };
@@ -113,7 +110,7 @@ TwolameEncoder::Configure(const config_param *param, GError **error)
 	return true;
 }
 
-static struct encoder *
+static Encoder *
 twolame_encoder_init(const struct config_param *param, GError **error_r)
 {
 	g_debug("libtwolame version %s", get_twolame_version());
@@ -131,7 +128,7 @@ twolame_encoder_init(const struct config_param *param, GError **error_r)
 }
 
 static void
-twolame_encoder_finish(struct encoder *_encoder)
+twolame_encoder_finish(Encoder *_encoder)
 {
 	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 
@@ -190,7 +187,7 @@ twolame_encoder_setup(TwolameEncoder *encoder, GError **error)
 }
 
 static bool
-twolame_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
+twolame_encoder_open(Encoder *_encoder, struct audio_format *audio_format,
 		     GError **error)
 {
 	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
@@ -219,7 +216,7 @@ twolame_encoder_open(struct encoder *_encoder, struct audio_format *audio_format
 }
 
 static void
-twolame_encoder_close(struct encoder *_encoder)
+twolame_encoder_close(Encoder *_encoder)
 {
 	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 
@@ -227,7 +224,7 @@ twolame_encoder_close(struct encoder *_encoder)
 }
 
 static bool
-twolame_encoder_flush(struct encoder *_encoder, gcc_unused GError **error)
+twolame_encoder_flush(Encoder *_encoder, gcc_unused GError **error)
 {
 	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 
@@ -236,7 +233,7 @@ twolame_encoder_flush(struct encoder *_encoder, gcc_unused GError **error)
 }
 
 static bool
-twolame_encoder_write(struct encoder *_encoder,
+twolame_encoder_write(Encoder *_encoder,
 		      const void *data, size_t length,
 		      gcc_unused GError **error)
 {
@@ -263,7 +260,7 @@ twolame_encoder_write(struct encoder *_encoder,
 }
 
 static size_t
-twolame_encoder_read(struct encoder *_encoder, void *dest, size_t length)
+twolame_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
 	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 
@@ -290,12 +287,12 @@ twolame_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 }
 
 static const char *
-twolame_encoder_get_mime_type(gcc_unused struct encoder *_encoder)
+twolame_encoder_get_mime_type(gcc_unused Encoder *_encoder)
 {
 	return "audio/mpeg";
 }
 
-const struct encoder_plugin twolame_encoder_plugin = {
+const EncoderPlugin twolame_encoder_plugin = {
 	"twolame",
 	twolame_encoder_init,
 	twolame_encoder_finish,

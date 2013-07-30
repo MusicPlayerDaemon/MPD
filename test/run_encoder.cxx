@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "EncoderList.hxx"
-#include "encoder_plugin.h"
+#include "EncoderPlugin.hxx"
 #include "audio_format.h"
 #include "AudioParser.hxx"
 #include "conf.h"
@@ -31,12 +31,12 @@
 #include <unistd.h>
 
 static void
-encoder_to_stdout(struct encoder *encoder)
+encoder_to_stdout(Encoder &encoder)
 {
 	size_t length;
 	static char buffer[32768];
 
-	while ((length = encoder_read(encoder, buffer, sizeof(buffer))) > 0) {
+	while ((length = encoder_read(&encoder, buffer, sizeof(buffer))) > 0) {
 		G_GNUC_UNUSED ssize_t ignored = write(1, buffer, length);
 	}
 }
@@ -47,8 +47,6 @@ int main(int argc, char **argv)
 	struct audio_format audio_format;
 	bool ret;
 	const char *encoder_name;
-	const struct encoder_plugin *plugin;
-	struct encoder *encoder;
 	static char buffer[32768];
 
 	/* parse command line */
@@ -67,7 +65,7 @@ int main(int argc, char **argv)
 
 	/* create the encoder */
 
-	plugin = encoder_plugin_get(encoder_name);
+	const auto plugin = encoder_plugin_get(encoder_name);
 	if (plugin == NULL) {
 		g_printerr("No such encoder: %s\n", encoder_name);
 		return 1;
@@ -76,7 +74,7 @@ int main(int argc, char **argv)
 	config_param param;
 	param.AddBlockParam("quality", "5.0", -1);
 
-	encoder = encoder_init(plugin, &param, &error);
+	const auto encoder = encoder_init(*plugin, &param, &error);
 	if (encoder == NULL) {
 		g_printerr("Failed to initialize encoder: %s\n",
 			   error->message);
@@ -104,7 +102,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	encoder_to_stdout(encoder);
+	encoder_to_stdout(*encoder);
 
 	/* do it */
 
@@ -118,7 +116,7 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		encoder_to_stdout(encoder);
+		encoder_to_stdout(*encoder);
 	}
 
 	ret = encoder_end(encoder, &error);
@@ -129,5 +127,5 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	encoder_to_stdout(encoder);
+	encoder_to_stdout(*encoder);
 }

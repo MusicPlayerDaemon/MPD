@@ -20,6 +20,6 @@
 #ifndef MPD_ENCODER_NULL_HXX
 #define MPD_ENCODER_NULL_HXX
 
-extern const struct encoder_plugin null_encoder_plugin;
+extern const struct EncoderPlugin null_encoder_plugin;
 
 #endif

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "RecorderOutputPlugin.hxx"
 #include "OutputAPI.hxx"
-#include "encoder_plugin.h"
+#include "EncoderPlugin.hxx"
 #include "EncoderList.hxx"
 #include "fd_util.h"
 #include "open.h"
@@ -40,7 +40,7 @@ struct RecorderOutput {
 	/**
 	 * The configured encoder plugin.
 	 */
-	struct encoder *encoder;
+	Encoder *encoder;
 
 	/**
 	 * The destination file name.
@@ -92,8 +92,7 @@ RecorderOutput::Configure(const config_param *param, GError **error_r)
 
 	const char *encoder_name =
 		config_get_block_string(param, "encoder", "vorbis");
-	const struct encoder_plugin *encoder_plugin =
-		encoder_plugin_get(encoder_name);
+	const auto encoder_plugin = encoder_plugin_get(encoder_name);
 	if (encoder_plugin == nullptr) {
 		g_set_error(error_r, recorder_output_quark(), 0,
 			    "No such encoder: %s", encoder_name);
@@ -109,7 +108,7 @@ RecorderOutput::Configure(const config_param *param, GError **error_r)
 
 	/* initialize encoder */
 
-	encoder = encoder_init(encoder_plugin, param, error_r);
+	encoder = encoder_init(*encoder_plugin, param, error_r);
 	if (encoder == nullptr)
 		return false;
 

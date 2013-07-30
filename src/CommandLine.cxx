@@ -36,7 +36,7 @@
 
 #ifdef ENABLE_ENCODER
 #include "EncoderList.hxx"
-#include "encoder_plugin.h"
+#include "EncoderPlugin.hxx"
 #endif
 
 #ifdef ENABLE_ARCHIVE

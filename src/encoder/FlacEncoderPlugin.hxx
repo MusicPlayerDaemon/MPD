@@ -20,6 +20,6 @@
 #ifndef MPD_ENCODER_FLAC_HXX
 #define MPD_ENCODER_FLAC_HXX
 
-extern const struct encoder_plugin flac_encoder_plugin;
+extern const struct EncoderPlugin flac_encoder_plugin;
 
 #endif

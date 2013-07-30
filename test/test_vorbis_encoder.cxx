@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "EncoderList.hxx"
-#include "encoder_plugin.h"
+#include "EncoderPlugin.hxx"
 #include "audio_format.h"
 #include "conf.h"
 #include "stdbin.h"
@@ -33,12 +33,12 @@
 static uint8_t zero[256];
 
 static void
-encoder_to_stdout(struct encoder *encoder)
+encoder_to_stdout(Encoder &encoder)
 {
 	size_t length;
 	static char buffer[32768];
 
-	while ((length = encoder_read(encoder, buffer, sizeof(buffer))) > 0) {
+	while ((length = encoder_read(&encoder, buffer, sizeof(buffer))) > 0) {
 		G_GNUC_UNUSED ssize_t ignored = write(1, buffer, length);
 	}
 }
@@ -50,13 +50,13 @@ main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 
 	/* create the encoder */
 
-	const struct encoder_plugin *plugin = encoder_plugin_get("vorbis");
+	const auto plugin = encoder_plugin_get("vorbis");
 	assert(plugin != NULL);
 
 	config_param param;
 	param.AddBlockParam("quality", "5.0", -1);
 
-	struct encoder *encoder = encoder_init(plugin, &param, NULL);
+	const auto encoder = encoder_init(*plugin, &param, NULL);
 	assert(encoder != NULL);
 
 	/* open the encoder */
@@ -67,21 +67,21 @@ main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 	success = encoder_open(encoder, &audio_format, NULL);
 	assert(success);
 
-	encoder_to_stdout(encoder);
+	encoder_to_stdout(*encoder);
 
 	/* write a block of data */
 
 	success = encoder_write(encoder, zero, sizeof(zero), NULL);
 	assert(success);
 
-	encoder_to_stdout(encoder);
+	encoder_to_stdout(*encoder);
 
 	/* write a tag */
 
 	success = encoder_pre_tag(encoder, NULL);
 	assert(success);
 
-	encoder_to_stdout(encoder);
+	encoder_to_stdout(*encoder);
 
 	struct tag *tag = tag_new();
 	tag_add_item(tag, TAG_ARTIST, "Foo");
@@ -92,7 +92,7 @@ main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 
 	tag_free(tag);
 
-	encoder_to_stdout(encoder);
+	encoder_to_stdout(*encoder);
 
 	/* write another block of data */
 
@@ -104,7 +104,7 @@ main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 	success = encoder_end(encoder, NULL);
 	assert(success);
 
-	encoder_to_stdout(encoder);
+	encoder_to_stdout(*encoder);
 
 	encoder_close(encoder);
 	encoder_finish(encoder);

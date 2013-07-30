@@ -20,6 +20,6 @@
 #ifndef MPD_ENCODER_TWOLAME_HXX
 #define MPD_ENCODER_TWOLAME_HXX
 
-extern const struct encoder_plugin twolame_encoder_plugin;
+extern const struct EncoderPlugin twolame_encoder_plugin;
 
 #endif

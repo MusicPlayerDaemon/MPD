@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ShoutOutputPlugin.hxx"
 #include "OutputAPI.hxx"
-#include "encoder_plugin.h"
+#include "EncoderPlugin.hxx"
 #include "EncoderList.hxx"
 #include "mpd_error.h"
 
@@ -42,7 +42,7 @@ struct ShoutOutput final {
 	shout_t *shout_conn;
 	shout_metadata_t *shout_meta;
 
-	struct encoder *encoder;
+	Encoder *encoder;
 
 	float quality;
 	int bitrate;
@@ -88,7 +88,7 @@ shout_output_quark(void)
 	return g_quark_from_static_string("shout_output");
 }
 
-static const struct encoder_plugin *
+static const EncoderPlugin *
 shout_encoder_plugin_get(const char *name)
 {
 	if (strcmp(name, "ogg") == 0)
@@ -179,8 +179,7 @@ ShoutOutput::Configure(const config_param *param, GError **error_r)
 
 	const char *encoding = config_get_block_string(param, "encoding",
 						       "ogg");
-	const struct encoder_plugin *encoder_plugin =
-		shout_encoder_plugin_get(encoding);
+	const auto encoder_plugin = shout_encoder_plugin_get(encoding);
 	if (encoder_plugin == nullptr) {
 		g_set_error(error_r, shout_output_quark(), 0,
 			    "couldn't find shout encoder plugin \"%s\"",
@@ -188,7 +187,7 @@ ShoutOutput::Configure(const config_param *param, GError **error_r)
 		return false;
 	}
 
-	encoder = encoder_init(encoder_plugin, param, error_r);
+	encoder = encoder_init(*encoder_plugin, param, error_r);
 	if (encoder == nullptr)
 		return false;
 
@@ -514,7 +513,7 @@ static void my_shout_set_tag(struct audio_output *ao,
 	ShoutOutput *sd = (ShoutOutput *)ao;
 	GError *error = nullptr;
 
-	if (sd->encoder->plugin->tag != nullptr) {
+	if (sd->encoder->plugin.tag != nullptr) {
 		/* encoder plugin supports stream tags */
 
 		if (!encoder_pre_tag(sd->encoder, &error)) {

@@ -20,8 +20,7 @@
 #include "config.h"
 #include "VorbisEncoderPlugin.hxx"
 #include "OggStream.hxx"
-#include "encoder_api.h"
-#include "encoder_plugin.h"
+#include "EncoderAPI.hxx"
 #include "tag.h"
 #include "audio_format.h"
 #include "mpd_error.h"
@@ -35,7 +34,7 @@
 
 struct vorbis_encoder {
 	/** the base class */
-	struct encoder encoder;
+	Encoder encoder;
 
 	/* configuration */
 
@@ -52,9 +51,7 @@ struct vorbis_encoder {
 
 	OggStream stream;
 
-	vorbis_encoder() {
-		encoder_struct_init(&encoder, &vorbis_encoder_plugin);
-	}
+	vorbis_encoder():encoder(vorbis_encoder_plugin) {}
 };
 
 static inline GQuark
@@ -117,7 +114,7 @@ vorbis_encoder_configure(struct vorbis_encoder *encoder,
 	return true;
 }
 
-static struct encoder *
+static Encoder *
 vorbis_encoder_init(const struct config_param *param, GError **error)
 {
 	vorbis_encoder *encoder = new vorbis_encoder();
@@ -133,7 +130,7 @@ vorbis_encoder_init(const struct config_param *param, GError **error)
 }
 
 static void
-vorbis_encoder_finish(struct encoder *_encoder)
+vorbis_encoder_finish(Encoder *_encoder)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 
@@ -204,7 +201,7 @@ vorbis_encoder_send_header(struct vorbis_encoder *encoder)
 }
 
 static bool
-vorbis_encoder_open(struct encoder *_encoder,
+vorbis_encoder_open(Encoder *_encoder,
 		    struct audio_format *audio_format,
 		    GError **error)
 {
@@ -232,7 +229,7 @@ vorbis_encoder_clear(struct vorbis_encoder *encoder)
 }
 
 static void
-vorbis_encoder_close(struct encoder *_encoder)
+vorbis_encoder_close(Encoder *_encoder)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 
@@ -253,7 +250,7 @@ vorbis_encoder_blockout(struct vorbis_encoder *encoder)
 }
 
 static bool
-vorbis_encoder_flush(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
+vorbis_encoder_flush(Encoder *_encoder, G_GNUC_UNUSED GError **error)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 
@@ -262,7 +259,7 @@ vorbis_encoder_flush(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
 }
 
 static bool
-vorbis_encoder_pre_tag(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
+vorbis_encoder_pre_tag(Encoder *_encoder, G_GNUC_UNUSED GError **error)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 
@@ -292,7 +289,7 @@ copy_tag_to_vorbis_comment(vorbis_comment *vc, const struct tag *tag)
 }
 
 static bool
-vorbis_encoder_tag(struct encoder *_encoder, const struct tag *tag,
+vorbis_encoder_tag(Encoder *_encoder, const struct tag *tag,
 		   G_GNUC_UNUSED GError **error)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
@@ -325,7 +322,7 @@ interleaved_to_vorbis_buffer(float **dest, const float *src,
 }
 
 static bool
-vorbis_encoder_write(struct encoder *_encoder,
+vorbis_encoder_write(Encoder *_encoder,
 		     const void *data, size_t length,
 		     G_GNUC_UNUSED GError **error)
 {
@@ -348,7 +345,7 @@ vorbis_encoder_write(struct encoder *_encoder,
 }
 
 static size_t
-vorbis_encoder_read(struct encoder *_encoder, void *dest, size_t length)
+vorbis_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 
@@ -356,12 +353,12 @@ vorbis_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 }
 
 static const char *
-vorbis_encoder_get_mime_type(G_GNUC_UNUSED struct encoder *_encoder)
+vorbis_encoder_get_mime_type(G_GNUC_UNUSED Encoder *_encoder)
 {
 	return  "audio/ogg";
 }
 
-const struct encoder_plugin vorbis_encoder_plugin = {
+const EncoderPlugin vorbis_encoder_plugin = {
 	"vorbis",
 	vorbis_encoder_init,
 	vorbis_encoder_finish,

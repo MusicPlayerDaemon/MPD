@@ -20,6 +20,6 @@
 #ifndef MPD_ENCODER_WAVE_HXX
 #define MPD_ENCODER_WAVE_HXX
 
-extern const struct encoder_plugin wave_encoder_plugin;
+extern const struct EncoderPlugin wave_encoder_plugin;
 
 #endif

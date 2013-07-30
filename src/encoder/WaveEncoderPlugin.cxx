@@ -19,8 +19,7 @@
 
 #include "config.h"
 #include "WaveEncoderPlugin.hxx"
-#include "encoder_api.h"
-#include "encoder_plugin.h"
+#include "EncoderAPI.hxx"
 #include "util/fifo_buffer.h"
 extern "C" {
 #include "util/growing_fifo.h"
@@ -32,14 +31,12 @@ extern "C" {
 #include <string.h>
 
 struct WaveEncoder {
-	struct encoder encoder;
+	Encoder encoder;
 	unsigned bits;
 
 	struct fifo_buffer *buffer;
 
-	WaveEncoder() {
-		encoder_struct_init(&encoder, &wave_encoder_plugin);
-	}
+	WaveEncoder():encoder(wave_encoder_plugin) {}
 };
 
 struct wave_header {
@@ -57,8 +54,6 @@ struct wave_header {
 	uint32_t id_data;
 	uint32_t data_size;
 };
-
-extern const struct encoder_plugin wave_encoder_plugin;
 
 static void
 fill_wave_header(struct wave_header *header, int channels, int bits,
@@ -87,7 +82,7 @@ fill_wave_header(struct wave_header *header, int channels, int bits,
 					 (8 + data_size));
 }
 
-static struct encoder *
+static Encoder *
 wave_encoder_init(gcc_unused const struct config_param *param,
 		  gcc_unused GError **error)
 {
@@ -96,7 +91,7 @@ wave_encoder_init(gcc_unused const struct config_param *param,
 }
 
 static void
-wave_encoder_finish(struct encoder *_encoder)
+wave_encoder_finish(Encoder *_encoder)
 {
 	WaveEncoder *encoder = (WaveEncoder *)_encoder;
 
@@ -104,7 +99,7 @@ wave_encoder_finish(struct encoder *_encoder)
 }
 
 static bool
-wave_encoder_open(struct encoder *_encoder,
+wave_encoder_open(Encoder *_encoder,
 		  gcc_unused struct audio_format *audio_format,
 		  gcc_unused GError **error)
 {
@@ -151,7 +146,7 @@ wave_encoder_open(struct encoder *_encoder,
 }
 
 static void
-wave_encoder_close(struct encoder *_encoder)
+wave_encoder_close(Encoder *_encoder)
 {
 	WaveEncoder *encoder = (WaveEncoder *)_encoder;
 
@@ -199,7 +194,7 @@ pcm24_to_wave(uint8_t *dst8, const uint32_t *src32, size_t length)
 }
 
 static bool
-wave_encoder_write(struct encoder *_encoder,
+wave_encoder_write(Encoder *_encoder,
 		   const void *src, size_t length,
 		   gcc_unused GError **error)
 {
@@ -242,7 +237,7 @@ wave_encoder_write(struct encoder *_encoder,
 }
 
 static size_t
-wave_encoder_read(struct encoder *_encoder, void *dest, size_t length)
+wave_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
 	WaveEncoder *encoder = (WaveEncoder *)_encoder;
 
@@ -260,12 +255,12 @@ wave_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 }
 
 static const char *
-wave_encoder_get_mime_type(gcc_unused struct encoder *_encoder)
+wave_encoder_get_mime_type(gcc_unused Encoder *_encoder)
 {
 	return "audio/wav";
 }
 
-const struct encoder_plugin wave_encoder_plugin = {
+const EncoderPlugin wave_encoder_plugin = {
 	"wave",
 	wave_encoder_init,
 	wave_encoder_finish,

@@ -20,6 +20,6 @@
 #ifndef MPD_ENCODER_LAME_HXX
 #define MPD_ENCODER_LAME_HXX
 
-extern const struct encoder_plugin lame_encoder_plugin;
+extern const struct EncoderPlugin lame_encoder_plugin;
 
 #endif

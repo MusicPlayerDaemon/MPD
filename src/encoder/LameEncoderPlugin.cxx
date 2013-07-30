@@ -19,8 +19,7 @@
 
 #include "config.h"
 #include "LameEncoderPlugin.hxx"
-#include "encoder_api.h"
-#include "encoder_plugin.h"
+#include "EncoderAPI.hxx"
 #include "audio_format.h"
 
 #include <lame/lame.h>
@@ -31,7 +30,7 @@
 #include <string.h>
 
 struct LameEncoder final {
-	struct encoder encoder;
+	Encoder encoder;
 
 	struct audio_format audio_format;
 	float quality;
@@ -42,9 +41,7 @@ struct LameEncoder final {
 	unsigned char buffer[32768];
 	size_t buffer_length;
 
-	LameEncoder() {
-		encoder_struct_init(&encoder, &lame_encoder_plugin);
-	}
+	LameEncoder():encoder(lame_encoder_plugin) {}
 
 	bool Configure(const config_param *param, GError **error);
 };
@@ -108,7 +105,7 @@ LameEncoder::Configure(const config_param *param, GError **error)
 	return true;
 }
 
-static struct encoder *
+static Encoder *
 lame_encoder_init(const struct config_param *param, GError **error_r)
 {
 	LameEncoder *encoder = new LameEncoder();
@@ -124,7 +121,7 @@ lame_encoder_init(const struct config_param *param, GError **error_r)
 }
 
 static void
-lame_encoder_finish(struct encoder *_encoder)
+lame_encoder_finish(Encoder *_encoder)
 {
 	LameEncoder *encoder = (LameEncoder *)_encoder;
 
@@ -190,7 +187,7 @@ lame_encoder_setup(LameEncoder *encoder, GError **error)
 }
 
 static bool
-lame_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
+lame_encoder_open(Encoder *_encoder, struct audio_format *audio_format,
 		  GError **error)
 {
 	LameEncoder *encoder = (LameEncoder *)_encoder;
@@ -218,7 +215,7 @@ lame_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 }
 
 static void
-lame_encoder_close(struct encoder *_encoder)
+lame_encoder_close(Encoder *_encoder)
 {
 	LameEncoder *encoder = (LameEncoder *)_encoder;
 
@@ -226,7 +223,7 @@ lame_encoder_close(struct encoder *_encoder)
 }
 
 static bool
-lame_encoder_write(struct encoder *_encoder,
+lame_encoder_write(Encoder *_encoder,
 		   const void *data, size_t length,
 		   gcc_unused GError **error)
 {
@@ -265,7 +262,7 @@ lame_encoder_write(struct encoder *_encoder,
 }
 
 static size_t
-lame_encoder_read(struct encoder *_encoder, void *dest, size_t length)
+lame_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
 	LameEncoder *encoder = (LameEncoder *)_encoder;
 
@@ -282,12 +279,12 @@ lame_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 }
 
 static const char *
-lame_encoder_get_mime_type(gcc_unused struct encoder *_encoder)
+lame_encoder_get_mime_type(gcc_unused Encoder *_encoder)
 {
 	return "audio/mpeg";
 }
 
-const struct encoder_plugin lame_encoder_plugin = {
+const EncoderPlugin lame_encoder_plugin = {
 	"lame",
 	lame_encoder_init,
 	lame_encoder_finish,

@@ -55,8 +55,6 @@ mpd_headers = \
 	src/filter_internal.h \
 	src/command.h \
 	src/conf.h \
-	src/encoder_plugin.h \
-	src/encoder_api.h \
 	src/fd_util.h \
 	src/gerror.h \
 	src/glib_compat.h \
@@ -639,6 +637,8 @@ ENCODER_LIBS = \
 	$(VORBISENC_LIBS)
 
 libencoder_plugins_a_SOURCES = \
+	src/EncoderAPI.hxx \
+	src/EncoderPlugin.hxx \
 	src/encoder/OggStream.hxx \
 	src/encoder/NullEncoderPlugin.cxx src/encoder/NullEncoderPlugin.hxx \
 	src/EncoderList.cxx src/EncoderList.hxx

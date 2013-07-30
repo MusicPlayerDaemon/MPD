@@ -19,8 +19,7 @@
 
 #include "config.h"
 #include "FlacEncoderPlugin.hxx"
-#include "encoder_api.h"
-#include "encoder_plugin.h"
+#include "EncoderAPI.hxx"
 #include "audio_format.h"
 #include "pcm/PcmBuffer.hxx"
 #include "util/fifo_buffer.h"
@@ -39,7 +38,7 @@ extern "C" {
 #endif
 
 struct flac_encoder {
-	struct encoder encoder;
+	Encoder encoder;
 
 	struct audio_format audio_format;
 	unsigned compression;
@@ -53,10 +52,9 @@ struct flac_encoder {
 	 * picked up with flac_encoder_read().
 	 */
 	struct fifo_buffer *output_buffer;
+
+	flac_encoder():encoder(flac_encoder_plugin) {}
 };
-
-extern const struct encoder_plugin flac_encoder_plugin;
-
 
 static inline GQuark
 flac_encoder_quark(void)
@@ -74,18 +72,15 @@ flac_encoder_configure(struct flac_encoder *encoder,
 	return true;
 }
 
-static struct encoder *
+static Encoder *
 flac_encoder_init(const struct config_param *param, GError **error)
 {
-	struct flac_encoder *encoder;
-
-	encoder = g_new(struct flac_encoder, 1);
-	encoder_struct_init(&encoder->encoder, &flac_encoder_plugin);
+	flac_encoder *encoder = new flac_encoder();
 
 	/* load configuration from "param" */
 	if (!flac_encoder_configure(encoder, param, error)) {
 		/* configuration has failed, roll back and return error */
-		g_free(encoder);
+		delete encoder;
 		return nullptr;
 	}
 
@@ -93,13 +88,13 @@ flac_encoder_init(const struct config_param *param, GError **error)
 }
 
 static void
-flac_encoder_finish(struct encoder *_encoder)
+flac_encoder_finish(Encoder *_encoder)
 {
 	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
 
 	/* the real libFLAC cleanup was already performed by
 	   flac_encoder_close(), so no real work here */
-	g_free(encoder);
+	delete encoder;
 }
 
 static bool
@@ -154,7 +149,7 @@ flac_write_callback(G_GNUC_UNUSED const FLAC__StreamEncoder *fse,
 }
 
 static void
-flac_encoder_close(struct encoder *_encoder)
+flac_encoder_close(Encoder *_encoder)
 {
 	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
 
@@ -165,7 +160,7 @@ flac_encoder_close(struct encoder *_encoder)
 }
 
 static bool
-flac_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
+flac_encoder_open(Encoder *_encoder, struct audio_format *audio_format,
 		     GError **error)
 {
 	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
@@ -230,7 +225,7 @@ flac_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 
 
 static bool
-flac_encoder_flush(struct encoder *_encoder, G_GNUC_UNUSED GError **error)
+flac_encoder_flush(Encoder *_encoder, G_GNUC_UNUSED GError **error)
 {
 	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
 
@@ -257,7 +252,7 @@ pcm16_to_flac(int32_t *out, const int16_t *in, unsigned num_samples)
 }
 
 static bool
-flac_encoder_write(struct encoder *_encoder,
+flac_encoder_write(Encoder *_encoder,
 		      const void *data, size_t length,
 		      G_GNUC_UNUSED GError **error)
 {
@@ -308,7 +303,7 @@ flac_encoder_write(struct encoder *_encoder,
 }
 
 static size_t
-flac_encoder_read(struct encoder *_encoder, void *dest, size_t length)
+flac_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
 	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
 
@@ -327,12 +322,12 @@ flac_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 }
 
 static const char *
-flac_encoder_get_mime_type(G_GNUC_UNUSED struct encoder *_encoder)
+flac_encoder_get_mime_type(G_GNUC_UNUSED Encoder *_encoder)
 {
 	return "audio/flac";
 }
 
-const struct encoder_plugin flac_encoder_plugin = {
+const EncoderPlugin flac_encoder_plugin = {
 	"flac",
 	flac_encoder_init,
 	flac_encoder_finish,

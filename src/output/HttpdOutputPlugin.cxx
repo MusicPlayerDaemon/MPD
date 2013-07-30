@@ -22,7 +22,7 @@
 #include "HttpdInternal.hxx"
 #include "HttpdClient.hxx"
 #include "OutputAPI.hxx"
-#include "encoder_plugin.h"
+#include "EncoderPlugin.hxx"
 #include "EncoderList.hxx"
 #include "resolver.h"
 #include "Page.hxx"
@@ -102,8 +102,7 @@ HttpdOutput::Configure(const config_param *param, GError **error_r)
 
 	const char *encoder_name =
 		config_get_block_string(param, "encoder", "vorbis");
-	const struct encoder_plugin *encoder_plugin =
-		encoder_plugin_get(encoder_name);
+	const auto encoder_plugin = encoder_plugin_get(encoder_name);
 	if (encoder_plugin == NULL) {
 		g_set_error(error_r, httpd_output_quark(), 0,
 			    "No such encoder: %s", encoder_name);
@@ -125,7 +124,7 @@ HttpdOutput::Configure(const config_param *param, GError **error_r)
 
 	/* initialize encoder */
 
-	encoder = encoder_init(encoder_plugin, param, error_r);
+	encoder = encoder_init(*encoder_plugin, param, error_r);
 	if (encoder == nullptr)
 		return false;
 
@@ -190,7 +189,7 @@ inline void
 HttpdOutput::AddClient(int fd)
 {
 	clients.emplace_front(this, fd, GetEventLoop(),
-			      encoder->plugin->tag == NULL);
+			      encoder->plugin.tag == nullptr);
 	++clients_cnt;
 
 	/* pass metadata to client */
@@ -489,7 +488,7 @@ HttpdOutput::SendTag(const struct tag *tag)
 {
 	assert(tag != NULL);
 
-	if (encoder->plugin->tag != NULL) {
+	if (encoder->plugin.tag != nullptr) {
 		/* embed encoder tags */
 
 		/* flush the current stream, and end it */

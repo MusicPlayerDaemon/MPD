@@ -20,12 +20,12 @@
 #ifndef MPD_ENCODER_LIST_HXX
 #define MPD_ENCODER_LIST_HXX
 
-struct encoder_plugin;
+struct EncoderPlugin;
 
-extern const struct encoder_plugin *const encoder_plugins[];
+extern const EncoderPlugin *const encoder_plugins[];
 
 #define encoder_plugins_for_each(plugin) \
-	for (const struct encoder_plugin *plugin, \
+	for (const EncoderPlugin *plugin, \
 		*const*encoder_plugin_iterator = &encoder_plugins[0]; \
 		(plugin = *encoder_plugin_iterator) != NULL; \
 		++encoder_plugin_iterator)
@@ -37,7 +37,7 @@ extern const struct encoder_plugin *const encoder_plugins[];
  * @return the encoder plugin with the specified name, or NULL if none
  * was found
  */
-const struct encoder_plugin *
+const EncoderPlugin *
 encoder_plugin_get(const char *name);
 
 #endif

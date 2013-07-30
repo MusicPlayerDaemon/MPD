@@ -37,6 +37,7 @@ class EventLoop;
 class ServerSocket;
 class HttpdClient;
 class Page;
+struct Encoder;
 
 struct HttpdOutput final : private ServerSocket {
 	struct audio_output base;
@@ -50,7 +51,7 @@ struct HttpdOutput final : private ServerSocket {
 	/**
 	 * The configured encoder plugin.
 	 */
-	struct encoder *encoder;
+	Encoder *encoder;
 
 	/**
 	 * Number of bytes which were fed into the encoder, without
