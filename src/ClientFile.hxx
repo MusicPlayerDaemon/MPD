@@ -22,8 +22,6 @@
 
 #include "gerror.h"
 
-#include <stdbool.h>
-
 class Client;
 class Path;
 

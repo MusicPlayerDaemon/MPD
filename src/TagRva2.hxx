@@ -22,8 +22,6 @@
 
 #include "check.h"
 
-#include <stdbool.h>
-
 struct id3_tag;
 struct replay_gain_info;
 

@@ -27,7 +27,6 @@
 #include "PlaylistVector.hxx"
 #include "gerror.h"
 
-#include <stdbool.h>
 #include <sys/types.h>
 
 #define DEVICE_INARCHIVE (dev_t)(-1)

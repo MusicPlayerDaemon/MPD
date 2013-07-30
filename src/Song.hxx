@@ -24,8 +24,6 @@
 #include "gcc.h"
 
 #include <assert.h>
-#include <stddef.h>
-#include <stdbool.h>
 #include <sys/time.h>
 
 #define SONG_FILE	"file: "

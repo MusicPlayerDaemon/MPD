@@ -22,8 +22,6 @@
 
 #include "check.h"
 
-#include <stdbool.h>
-
 struct replay_gain_info;
 struct tag_handler;
 

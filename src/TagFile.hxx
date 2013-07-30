@@ -22,8 +22,6 @@
 
 #include "check.h"
 
-#include <stdbool.h>
-
 struct tag_handler;
 
 /**

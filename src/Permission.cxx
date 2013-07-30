@@ -27,7 +27,6 @@
 
 #include <glib.h>
 
-#include <stdbool.h>
 #include <string.h>
 
 #define PERMISSION_PASSWORD_CHAR	'@'

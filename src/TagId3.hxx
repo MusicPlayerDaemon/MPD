@@ -24,8 +24,6 @@
 #include "gcc.h"
 #include "gerror.h"
 
-#include <stdbool.h>
-
 struct tag_handler;
 struct tag;
 

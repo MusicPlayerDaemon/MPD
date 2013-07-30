@@ -22,8 +22,6 @@
 
 #include "gerror.h"
 
-#include <stdbool.h>
-
 extern int listen_port;
 
 bool

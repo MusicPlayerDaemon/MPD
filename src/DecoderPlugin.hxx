@@ -20,9 +20,6 @@
 #ifndef MPD_DECODER_PLUGIN_HXX
 #define MPD_DECODER_PLUGIN_HXX
 
-#include <stdbool.h>
-#include <stddef.h>
-
 struct config_param;
 struct input_stream;
 struct tag;
@@ -40,7 +37,7 @@ struct decoder_plugin {
 	/**
 	 * Initialize the decoder plugin.  Optional method.
 	 *
-	 * @param param a configuration block for this plugin, or NULL
+	 * @param param a configuration block for this plugin, or nullptr
 	 * if none is configured
 	 * @return true if the plugin was initialized successfully,
 	 * false if the plugin is not available
@@ -94,13 +91,13 @@ struct decoder_plugin {
 	 * @param const char* pathname full pathname for the file on fs
 	 * @param const unsigned int tnum track number
 	 *
-	 * @return NULL if there are no multiple files
+	 * @return nullptr if there are no multiple files
 	 * a filename for every single track according to tnum (param 2)
 	 * do not include full pathname here, just the "virtual" file
 	 */
 	char* (*container_scan)(const char *path_fs, const unsigned int tnum);
 
-	/* last element in these arrays must always be a NULL: */
+	/* last element in these arrays must always be a nullptr: */
 	const char *const*suffixes;
 	const char *const*mime_types;
 };
@@ -108,7 +105,7 @@ struct decoder_plugin {
 /**
  * Initialize a decoder plugin.
  *
- * @param param a configuration block for this plugin, or NULL if none
+ * @param param a configuration block for this plugin, or nullptr if none
  * is configured
  * @return true if the plugin was initialized successfully, false if
  * the plugin is not available
@@ -117,7 +114,7 @@ static inline bool
 decoder_plugin_init(const struct decoder_plugin *plugin,
 		    const struct config_param *param)
 {
-	return plugin->init != NULL
+	return plugin->init != nullptr
 		? plugin->init(param)
 		: true;
 }
@@ -128,7 +125,7 @@ decoder_plugin_init(const struct decoder_plugin *plugin,
 static inline void
 decoder_plugin_finish(const struct decoder_plugin *plugin)
 {
-	if (plugin->finish != NULL)
+	if (plugin->finish != nullptr)
 		plugin->finish();
 }
 
@@ -160,7 +157,7 @@ decoder_plugin_scan_file(const struct decoder_plugin *plugin,
 			 const char *path_fs,
 			 const struct tag_handler *handler, void *handler_ctx)
 {
-	return plugin->scan_file != NULL
+	return plugin->scan_file != nullptr
 		? plugin->scan_file(path_fs, handler, handler_ctx)
 		: false;
 }
@@ -174,7 +171,7 @@ decoder_plugin_scan_stream(const struct decoder_plugin *plugin,
 			   const struct tag_handler *handler,
 			   void *handler_ctx)
 {
-	return plugin->scan_stream != NULL
+	return plugin->scan_stream != nullptr
 		? plugin->scan_stream(is, handler, handler_ctx)
 		: false;
 }

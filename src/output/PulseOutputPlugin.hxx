@@ -22,8 +22,6 @@
 
 #include "gerror.h"
 
-#include <stdbool.h>
-
 struct PulseOutput;
 struct PulseMixer;
 struct pa_cvolume;

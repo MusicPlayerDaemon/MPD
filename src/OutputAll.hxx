@@ -29,9 +29,6 @@
 #include "replay_gain_info.h"
 #include "gerror.h"
 
-#include <stdbool.h>
-#include <stddef.h>
-
 struct audio_format;
 struct music_buffer;
 struct music_chunk;

@@ -22,8 +22,6 @@
 
 #include "TagTable.hxx"
 
-#include <stdbool.h>
-
 struct tag_handler;
 
 extern const struct tag_table ape_tags[];

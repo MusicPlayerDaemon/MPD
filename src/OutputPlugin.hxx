@@ -23,7 +23,6 @@
 #include "gcc.h"
 #include "gerror.h"
 
-#include <stdbool.h>
 #include <stddef.h>
 
 struct config_param;

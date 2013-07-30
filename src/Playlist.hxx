@@ -23,8 +23,6 @@
 #include "Queue.hxx"
 #include "playlist_error.h"
 
-#include <stdbool.h>
-
 struct player_control;
 struct Song;
 

@@ -30,8 +30,6 @@
 #include <vector>
 #endif
 
-#include <stdbool.h>
-
 #ifdef __cplusplus
 
 struct block_param {

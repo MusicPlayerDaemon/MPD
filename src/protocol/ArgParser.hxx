@@ -22,7 +22,6 @@
 
 #include "check.h"
 
-#include <stdbool.h>
 #include <stdint.h>
 
 class Client;

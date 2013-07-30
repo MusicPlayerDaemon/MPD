@@ -21,7 +21,6 @@
 #define MPD_LOG_HXX
 
 #include <glib.h>
-#include <stdbool.h>
 
 G_GNUC_CONST
 static inline GQuark

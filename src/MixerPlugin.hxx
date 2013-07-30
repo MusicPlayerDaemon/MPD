@@ -29,8 +29,6 @@
 
 #include "gerror.h"
 
-#include <stdbool.h>
-
 struct config_param;
 class Mixer;
 
