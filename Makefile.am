@@ -52,7 +52,6 @@ mpd_headers = \
 	src/check.h \
 	src/ack.h \
 	src/audio_format.h \
-	src/output_api.h \
 	src/filter_internal.h \
 	src/command.h \
 	src/conf.h \
@@ -770,6 +769,7 @@ OUTPUT_LIBS = \
 	$(SHOUT_LIBS)
 
 OUTPUT_API_SRC = \
+	src/OutputAPI.hxx \
 	src/OutputInternal.hxx \
 	src/OutputList.cxx src/OutputList.hxx \
 	src/OutputAll.cxx src/OutputAll.hxx \

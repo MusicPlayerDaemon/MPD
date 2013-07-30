@@ -20,7 +20,7 @@
 #include "config.h"
 #include "OutputThread.hxx"
 #include "OutputInternal.hxx"
-#include "output_api.h"
+#include "OutputAPI.hxx"
 #include "pcm/PcmMix.hxx"
 #include "notify.hxx"
 #include "FilterInternal.hxx"

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "SolarisOutputPlugin.hxx"
-#include "output_api.h"
+#include "OutputAPI.hxx"
 #include "fd_util.h"
 
 #include <glib.h>

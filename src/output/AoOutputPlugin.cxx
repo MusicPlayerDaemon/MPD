@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "AoOutputPlugin.hxx"
-#include "output_api.h"
+#include "OutputAPI.hxx"
 
 #include <ao/ao.h>
 #include <glib.h>

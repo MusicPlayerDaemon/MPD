@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "ShoutOutputPlugin.hxx"
-#include "output_api.h"
+#include "OutputAPI.hxx"
 #include "encoder_plugin.h"
 #include "EncoderList.hxx"
 #include "mpd_error.h"

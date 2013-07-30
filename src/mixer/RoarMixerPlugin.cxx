@@ -21,7 +21,7 @@
 
 #include "config.h"
 #include "MixerInternal.hxx"
-#include "output_api.h"
+#include "OutputAPI.hxx"
 #include "output/RoarOutputPlugin.hxx"
 
 struct RoarMixer final : public Mixer {

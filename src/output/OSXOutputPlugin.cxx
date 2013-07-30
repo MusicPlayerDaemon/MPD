@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "OSXOutputPlugin.hxx"
-#include "output_api.h"
+#include "OutputAPI.hxx"
 #include "util/fifo_buffer.h"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"

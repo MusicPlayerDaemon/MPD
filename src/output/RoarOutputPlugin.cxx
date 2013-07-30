@@ -20,7 +20,7 @@
 
 #include "config.h"
 #include "RoarOutputPlugin.hxx"
-#include "output_api.h"
+#include "OutputAPI.hxx"
 #include "MixerList.hxx"
 #include "thread/Mutex.hxx"
 

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "RecorderOutputPlugin.hxx"
-#include "output_api.h"
+#include "OutputAPI.hxx"
 #include "encoder_plugin.h"
 #include "EncoderList.hxx"
 #include "fd_util.h"

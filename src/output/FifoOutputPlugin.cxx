@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "FifoOutputPlugin.hxx"
-#include "output_api.h"
+#include "OutputAPI.hxx"
 #include "Timer.hxx"
 #include "fd_util.h"
 #include "open.h"

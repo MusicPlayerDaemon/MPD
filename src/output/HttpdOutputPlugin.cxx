@@ -21,7 +21,7 @@
 #include "HttpdOutputPlugin.hxx"
 #include "HttpdInternal.hxx"
 #include "HttpdClient.hxx"
-#include "output_api.h"
+#include "OutputAPI.hxx"
 #include "encoder_plugin.h"
 #include "EncoderList.hxx"
 #include "resolver.h"

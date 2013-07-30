@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "OutputList.hxx"
-#include "output_api.h"
+#include "OutputAPI.hxx"
 #include "output/AlsaOutputPlugin.hxx"
 #include "output/AoOutputPlugin.hxx"
 #include "output/FifoOutputPlugin.hxx"

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "PipeOutputPlugin.hxx"
-#include "output_api.h"
+#include "OutputAPI.hxx"
 
 #include <stdio.h>
 #include <errno.h>

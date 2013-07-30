@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "JackOutputPlugin.hxx"
-#include "output_api.h"
+#include "OutputAPI.hxx"
 
 #include <assert.h>
 

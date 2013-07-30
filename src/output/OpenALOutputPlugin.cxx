@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "OpenALOutputPlugin.hxx"
-#include "output_api.h"
+#include "OutputAPI.hxx"
 
 #include <glib.h>
 

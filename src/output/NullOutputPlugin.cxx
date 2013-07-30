@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "NullOutputPlugin.hxx"
-#include "output_api.h"
+#include "OutputAPI.hxx"
 #include "Timer.hxx"
 
 #include <assert.h>

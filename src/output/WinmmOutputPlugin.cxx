@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "WinmmOutputPlugin.hxx"
-#include "output_api.h"
+#include "OutputAPI.hxx"
 #include "pcm/pcm_buffer.h"
 #include "MixerList.hxx"
 
