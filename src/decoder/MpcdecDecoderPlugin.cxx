@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,16 +23,12 @@
 #include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
 
-#ifdef MPC_IS_OLD_API
-#include <mpcdec/mpcdec.h>
-#else
 #include <mpc/mpcdec.h>
-#include <math.h>
-#endif
 
 #include <glib.h>
 #include <assert.h>
 #include <unistd.h>
+#include <math.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "mpcdec"
@@ -42,50 +38,47 @@ struct mpc_decoder_data {
 	struct decoder *decoder;
 };
 
-#ifdef MPC_IS_OLD_API
-#define cb_first_arg void *vdata
-#define cb_data vdata
-#else
-#define cb_first_arg mpc_reader *reader
-#define cb_data reader->data
-#endif
-
 static mpc_int32_t
-mpc_read_cb(cb_first_arg, void *ptr, mpc_int32_t size)
+mpc_read_cb(mpc_reader *reader, void *ptr, mpc_int32_t size)
 {
-	struct mpc_decoder_data *data = (struct mpc_decoder_data *) cb_data;
+	struct mpc_decoder_data *data =
+		(struct mpc_decoder_data *)reader->data;
 
 	return decoder_read(data->decoder, data->is, ptr, size);
 }
 
 static mpc_bool_t
-mpc_seek_cb(cb_first_arg, mpc_int32_t offset)
+mpc_seek_cb(mpc_reader *reader, mpc_int32_t offset)
 {
-	struct mpc_decoder_data *data = (struct mpc_decoder_data *) cb_data;
+	struct mpc_decoder_data *data =
+		(struct mpc_decoder_data *)reader->data;
 
 	return input_stream_lock_seek(data->is, offset, SEEK_SET, nullptr);
 }
 
 static mpc_int32_t
-mpc_tell_cb(cb_first_arg)
+mpc_tell_cb(mpc_reader *reader)
 {
-	struct mpc_decoder_data *data = (struct mpc_decoder_data *) cb_data;
+	struct mpc_decoder_data *data =
+		(struct mpc_decoder_data *)reader->data;
 
 	return (long)input_stream_get_offset(data->is);
 }
 
 static mpc_bool_t
-mpc_canseek_cb(cb_first_arg)
+mpc_canseek_cb(mpc_reader *reader)
 {
-	struct mpc_decoder_data *data = (struct mpc_decoder_data *) cb_data;
+	struct mpc_decoder_data *data =
+		(struct mpc_decoder_data *)reader->data;
 
 	return input_stream_is_seekable(data->is);
 }
 
 static mpc_int32_t
-mpc_getsize_cb(cb_first_arg)
+mpc_getsize_cb(mpc_reader *reader)
 {
-	struct mpc_decoder_data *data = (struct mpc_decoder_data *) cb_data;
+	struct mpc_decoder_data *data =
+		(struct mpc_decoder_data *)reader->data;
 
 	return input_stream_get_size(data->is);
 }
@@ -136,31 +129,13 @@ mpc_to_mpd_buffer(int32_t *dest, const MPC_SAMPLE_FORMAT *src,
 static void
 mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 {
-#ifdef MPC_IS_OLD_API
-	mpc_decoder decoder;
-#else
-	mpc_demux *demux;
-	mpc_frame_info frame;
-	mpc_status status;
-#endif
-	mpc_reader reader;
-	mpc_streaminfo info;
-	GError *error = nullptr;
-	struct audio_format audio_format;
-
-	struct mpc_decoder_data data;
-
 	MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
 
-	mpc_uint32_t ret;
-	int32_t chunk[G_N_ELEMENTS(sample_buffer)];
-	long bit_rate = 0;
-	mpc_uint32_t vbr_update_bits;
-	enum decoder_command cmd = DECODE_COMMAND_NONE;
-
+	struct mpc_decoder_data data;
 	data.is = is;
 	data.decoder = mpd_decoder;
 
+	mpc_reader reader;
 	reader.read = mpc_read_cb;
 	reader.seek = mpc_seek_cb;
 	reader.tell = mpc_tell_cb;
@@ -168,57 +143,33 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	reader.canseek = mpc_canseek_cb;
 	reader.data = &data;
 
-#ifdef MPC_IS_OLD_API
-	mpc_streaminfo_init(&info);
-
-	if ((ret = mpc_streaminfo_read(&info, &reader)) != ERROR_CODE_OK) {
-		if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP)
-			g_warning("Not a valid musepack stream\n");
-		return;
-	}
-
-	mpc_decoder_setup(&decoder, &reader);
-
-	if (!mpc_decoder_initialize(&decoder, &info)) {
-		if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP)
-			g_warning("Not a valid musepack stream\n");
-		return;
-	}
-#else
-	demux = mpc_demux_init(&reader);
+	mpc_demux *demux = mpc_demux_init(&reader);
 	if (demux == nullptr) {
 		if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP)
 			g_warning("Not a valid musepack stream");
 		return;
 	}
 
+	mpc_streaminfo info;
 	mpc_demux_get_info(demux, &info);
-#endif
 
+	GError *error = nullptr;
+	struct audio_format audio_format;
 	if (!audio_format_init_checked(&audio_format, info.sample_freq,
 				       SAMPLE_FORMAT_S24_P32,
 				       info.channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
-#ifndef MPC_IS_OLD_API
 		mpc_demux_exit(demux);
-#endif
 		return;
 	}
 
 	struct replay_gain_info replay_gain_info;
 	replay_gain_info_init(&replay_gain_info);
-#ifdef MPC_IS_OLD_API
-	replay_gain_info.tuples[REPLAY_GAIN_ALBUM].gain = info.gain_album * 0.01;
-	replay_gain_info.tuples[REPLAY_GAIN_ALBUM].peak = info.peak_album / 32767.0;
-	replay_gain_info.tuples[REPLAY_GAIN_TRACK].gain = info.gain_title * 0.01;
-	replay_gain_info.tuples[REPLAY_GAIN_TRACK].peak = info.peak_title / 32767.0;
-#else
 	replay_gain_info.tuples[REPLAY_GAIN_ALBUM].gain = MPC_OLD_GAIN_REF  - (info.gain_album  / 256.);
 	replay_gain_info.tuples[REPLAY_GAIN_ALBUM].peak = pow(10, info.peak_album / 256. / 20) / 32767;
 	replay_gain_info.tuples[REPLAY_GAIN_TRACK].gain = MPC_OLD_GAIN_REF  - (info.gain_title  / 256.);
 	replay_gain_info.tuples[REPLAY_GAIN_TRACK].peak = pow(10, info.peak_title / 256. / 20) / 32767;
-#endif
 
 	decoder_replay_gain(mpd_decoder, &replay_gain_info);
 
@@ -226,36 +177,26 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 			    input_stream_is_seekable(is),
 			    mpc_streaminfo_get_length(&info));
 
+	enum decoder_command cmd = DECODE_COMMAND_NONE;
 	do {
 		if (cmd == DECODE_COMMAND_SEEK) {
 			mpc_int64_t where = decoder_seek_where(mpd_decoder) *
 				audio_format.sample_rate;
 			bool success;
 
-#ifdef MPC_IS_OLD_API
-			success = mpc_decoder_seek_sample(&decoder, where);
-#else
 			success = mpc_demux_seek_sample(demux, where)
 				== MPC_STATUS_OK;
-#endif
 			if (success)
 				decoder_command_finished(mpd_decoder);
 			else
 				decoder_seek_error(mpd_decoder);
 		}
 
-		vbr_update_bits = 0;
+		mpc_uint32_t vbr_update_bits = 0;
 
-#ifdef MPC_IS_OLD_API
-		mpc_uint32_t vbr_update_acc = 0;
-
-		ret = mpc_decoder_decode(&decoder, sample_buffer,
-					 &vbr_update_acc, &vbr_update_bits);
-		if (ret == 0 || ret == (mpc_uint32_t)-1)
-			break;
-#else
+		mpc_frame_info frame;
 		frame.buffer = (MPC_SAMPLE_FORMAT *)sample_buffer;
-		status = mpc_demux_decode(demux, &frame);
+		mpc_status status = mpc_demux_decode(demux, &frame);
 		if (status != MPC_STATUS_OK) {
 			g_warning("Failed to decode sample");
 			break;
@@ -264,14 +205,13 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 		if (frame.bits == -1)
 			break;
 
-		ret = frame.samples;
-#endif
-
+		mpc_uint32_t ret = frame.samples;
 		ret *= info.channels;
 
+		int32_t chunk[G_N_ELEMENTS(sample_buffer)];
 		mpc_to_mpd_buffer(chunk, sample_buffer, ret);
 
-		bit_rate = vbr_update_bits * audio_format.sample_rate
+		long bit_rate = vbr_update_bits * audio_format.sample_rate
 			/ 1152 / 1000;
 
 		cmd = decoder_data(mpd_decoder, is,
@@ -279,26 +219,17 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 				   bit_rate);
 	} while (cmd != DECODE_COMMAND_STOP);
 
-#ifndef MPC_IS_OLD_API
 	mpc_demux_exit(demux);
-#endif
 }
 
 static float
 mpcdec_get_file_duration(struct input_stream *is)
 {
-	float total_time = -1;
-
-	mpc_reader reader;
-#ifndef MPC_IS_OLD_API
-	mpc_demux *demux;
-#endif
-	mpc_streaminfo info;
 	struct mpc_decoder_data data;
-
 	data.is = is;
 	data.decoder = nullptr;
 
+	mpc_reader reader;
 	reader.read = mpc_read_cb;
 	reader.seek = mpc_seek_cb;
 	reader.tell = mpc_tell_cb;
@@ -306,23 +237,15 @@ mpcdec_get_file_duration(struct input_stream *is)
 	reader.canseek = mpc_canseek_cb;
 	reader.data = &data;
 
-#ifdef MPC_IS_OLD_API
-	mpc_streaminfo_init(&info);
-
-	if (mpc_streaminfo_read(&info, &reader) != ERROR_CODE_OK)
-		return -1;
-#else
-	demux = mpc_demux_init(&reader);
+	mpc_demux *demux = mpc_demux_init(&reader);
 	if (demux == nullptr)
 		return -1;
 
+	mpc_streaminfo info;
 	mpc_demux_get_info(demux, &info);
 	mpc_demux_exit(demux);
-#endif
 
-	total_time = mpc_streaminfo_get_length(&info);
-
-	return total_time;
+	return mpc_streaminfo_get_length(&info);
 }
 
 static bool
