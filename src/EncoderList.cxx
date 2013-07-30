@@ -25,11 +25,10 @@
 #include "encoder/VorbisEncoderPlugin.hxx"
 #include "encoder/OpusEncoderPlugin.hxx"
 #include "encoder/FlacEncoderPlugin.hxx"
+#include "encoder/LameEncoderPlugin.hxx"
+#include "encoder/TwolameEncoderPlugin.hxx"
 
 #include <string.h>
-
-extern const struct encoder_plugin lame_encoder_plugin;
-extern const struct encoder_plugin twolame_encoder_plugin;
 
 const struct encoder_plugin *const encoder_plugins[] = {
 	&null_encoder_plugin,

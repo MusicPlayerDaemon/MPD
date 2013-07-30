@@ -662,11 +662,15 @@ libencoder_plugins_a_SOURCES += \
 endif
 
 if ENABLE_LAME_ENCODER
-libencoder_plugins_a_SOURCES += src/encoder/lame_encoder.c
+libencoder_plugins_a_SOURCES += \
+	src/encoder/LameEncoderPlugin.cxx \
+	src/encoder/LameEncoderPlugin.hxx
 endif
 
 if ENABLE_TWOLAME_ENCODER
-libencoder_plugins_a_SOURCES += src/encoder/twolame_encoder.c
+libencoder_plugins_a_SOURCES += \
+	src/encoder/TwolameEncoderPlugin.cxx \
+	src/encoder/TwolameEncoderPlugin.hxx
 endif
 
 if ENABLE_FLAC_ENCODER

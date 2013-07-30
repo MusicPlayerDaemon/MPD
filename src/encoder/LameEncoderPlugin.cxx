@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "LameEncoderPlugin.hxx"
 #include "encoder_api.h"
 #include "encoder_plugin.h"
 #include "audio_format.h"
@@ -29,7 +30,7 @@
 #include <assert.h>
 #include <string.h>
 
-struct lame_encoder {
+struct LameEncoder final {
 	struct encoder encoder;
 
 	struct audio_format audio_format;
@@ -40,9 +41,13 @@ struct lame_encoder {
 
 	unsigned char buffer[32768];
 	size_t buffer_length;
-};
 
-extern const struct encoder_plugin lame_encoder_plugin;
+	LameEncoder() {
+		encoder_struct_init(&encoder, &lame_encoder_plugin);
+	}
+
+	bool Configure(const config_param *param, GError **error);
+};
 
 static inline GQuark
 lame_encoder_quark(void)
@@ -50,21 +55,19 @@ lame_encoder_quark(void)
 	return g_quark_from_static_string("lame_encoder");
 }
 
-static bool
-lame_encoder_configure(struct lame_encoder *encoder,
-		       const struct config_param *param, GError **error)
+bool
+LameEncoder::Configure(const config_param *param, GError **error)
 {
 	const char *value;
 	char *endptr;
 
-	value = config_get_block_string(param, "quality", NULL);
-	if (value != NULL) {
+	value = config_get_block_string(param, "quality", nullptr);
+	if (value != nullptr) {
 		/* a quality was configured (VBR) */
 
-		encoder->quality = g_ascii_strtod(value, &endptr);
+		quality = g_ascii_strtod(value, &endptr);
 
-		if (*endptr != '\0' || encoder->quality < -1.0 ||
-		    encoder->quality > 10.0) {
+		if (*endptr != '\0' || quality < -1.0 || quality > 10.0) {
 			g_set_error(error, lame_encoder_quark(), 0,
 				    "quality \"%s\" is not a number in the "
 				    "range -1 to 10, line %i",
@@ -72,7 +75,7 @@ lame_encoder_configure(struct lame_encoder *encoder,
 			return false;
 		}
 
-		if (config_get_block_string(param, "bitrate", NULL) != NULL) {
+		if (config_get_block_string(param, "bitrate", nullptr) != nullptr) {
 			g_set_error(error, lame_encoder_quark(), 0,
 				    "quality and bitrate are "
 				    "both defined (line %i)",
@@ -82,8 +85,8 @@ lame_encoder_configure(struct lame_encoder *encoder,
 	} else {
 		/* a bit rate was configured */
 
-		value = config_get_block_string(param, "bitrate", NULL);
-		if (value == NULL) {
+		value = config_get_block_string(param, "bitrate", nullptr);
+		if (value == nullptr) {
 			g_set_error(error, lame_encoder_quark(), 0,
 				    "neither bitrate nor quality defined "
 				    "at line %i",
@@ -91,10 +94,10 @@ lame_encoder_configure(struct lame_encoder *encoder,
 			return false;
 		}
 
-		encoder->quality = -2.0;
-		encoder->bitrate = g_ascii_strtoll(value, &endptr, 10);
+		quality = -2.0;
+		bitrate = g_ascii_strtoll(value, &endptr, 10);
 
-		if (*endptr != '\0' || encoder->bitrate <= 0) {
+		if (*endptr != '\0' || bitrate <= 0) {
 			g_set_error(error, lame_encoder_quark(), 0,
 				    "bitrate at line %i should be a positive integer",
 				    param->line);
@@ -106,18 +109,15 @@ lame_encoder_configure(struct lame_encoder *encoder,
 }
 
 static struct encoder *
-lame_encoder_init(const struct config_param *param, GError **error)
+lame_encoder_init(const struct config_param *param, GError **error_r)
 {
-	struct lame_encoder *encoder;
-
-	encoder = g_new(struct lame_encoder, 1);
-	encoder_struct_init(&encoder->encoder, &lame_encoder_plugin);
+	LameEncoder *encoder = new LameEncoder();
 
 	/* load configuration from "param" */
-	if (!lame_encoder_configure(encoder, param, error)) {
+	if (!encoder->Configure(param, error_r)) {
 		/* configuration has failed, roll back and return error */
-		g_free(encoder);
-		return NULL;
+		delete encoder;
+		return nullptr;
 	}
 
 	return &encoder->encoder;
@@ -126,7 +126,7 @@ lame_encoder_init(const struct config_param *param, GError **error)
 static void
 lame_encoder_finish(struct encoder *_encoder)
 {
-	struct lame_encoder *encoder = (struct lame_encoder *)_encoder;
+	LameEncoder *encoder = (LameEncoder *)_encoder;
 
 	/* the real liblame cleanup was already performed by
 	   lame_encoder_close(), so no real work here */
@@ -134,7 +134,7 @@ lame_encoder_finish(struct encoder *_encoder)
 }
 
 static bool
-lame_encoder_setup(struct lame_encoder *encoder, GError **error)
+lame_encoder_setup(LameEncoder *encoder, GError **error)
 {
 	if (encoder->quality >= -1.0) {
 		/* a quality was configured (VBR) */
@@ -193,7 +193,7 @@ static bool
 lame_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 		  GError **error)
 {
-	struct lame_encoder *encoder = (struct lame_encoder *)_encoder;
+	LameEncoder *encoder = (LameEncoder *)_encoder;
 
 	audio_format->format = SAMPLE_FORMAT_S16;
 	audio_format->channels = 2;
@@ -201,7 +201,7 @@ lame_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 	encoder->audio_format = *audio_format;
 
 	encoder->gfp = lame_init();
-	if (encoder->gfp == NULL) {
+	if (encoder->gfp == nullptr) {
 		g_set_error(error, lame_encoder_quark(), 0,
 			    "lame_init() failed");
 		return false;
@@ -220,7 +220,7 @@ lame_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 static void
 lame_encoder_close(struct encoder *_encoder)
 {
-	struct lame_encoder *encoder = (struct lame_encoder *)_encoder;
+	LameEncoder *encoder = (LameEncoder *)_encoder;
 
 	lame_close(encoder->gfp);
 }
@@ -230,30 +230,26 @@ lame_encoder_write(struct encoder *_encoder,
 		   const void *data, size_t length,
 		   gcc_unused GError **error)
 {
-	struct lame_encoder *encoder = (struct lame_encoder *)_encoder;
-	unsigned num_frames;
-	float *left, *right;
+	LameEncoder *encoder = (LameEncoder *)_encoder;
 	const int16_t *src = (const int16_t*)data;
-	unsigned int i;
-	int bytes_out;
 
 	assert(encoder->buffer_length == 0);
 
-	num_frames =
+	const unsigned num_frames =
 		length / audio_format_frame_size(&encoder->audio_format);
-	left = g_malloc(sizeof(left[0]) * num_frames);
-	right = g_malloc(sizeof(right[0]) * num_frames);
+	float *left = g_new(float, num_frames);
+	float *right = g_new(float, num_frames);
 
 	/* this is for only 16-bit audio */
 
-	for (i = 0; i < num_frames; i++) {
+	for (unsigned i = 0; i < num_frames; i++) {
 		left[i] = *src++;
 		right[i] = *src++;
 	}
 
-	bytes_out = lame_encode_buffer_float(encoder->gfp, left, right,
-					     num_frames, encoder->buffer,
-					     sizeof(encoder->buffer));
+	int bytes_out = lame_encode_buffer_float(encoder->gfp, left, right,
+						 num_frames, encoder->buffer,
+						 sizeof(encoder->buffer));
 
 	g_free(left);
 	g_free(right);
@@ -271,7 +267,7 @@ lame_encoder_write(struct encoder *_encoder,
 static size_t
 lame_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 {
-	struct lame_encoder *encoder = (struct lame_encoder *)_encoder;
+	LameEncoder *encoder = (LameEncoder *)_encoder;
 
 	if (length > encoder->buffer_length)
 		length = encoder->buffer_length;
@@ -292,12 +288,16 @@ lame_encoder_get_mime_type(gcc_unused struct encoder *_encoder)
 }
 
 const struct encoder_plugin lame_encoder_plugin = {
-	.name = "lame",
-	.init = lame_encoder_init,
-	.finish = lame_encoder_finish,
-	.open = lame_encoder_open,
-	.close = lame_encoder_close,
-	.write = lame_encoder_write,
-	.read = lame_encoder_read,
-	.get_mime_type = lame_encoder_get_mime_type,
+	"lame",
+	lame_encoder_init,
+	lame_encoder_finish,
+	lame_encoder_open,
+	lame_encoder_close,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	lame_encoder_write,
+	lame_encoder_read,
+	lame_encoder_get_mime_type,
 };

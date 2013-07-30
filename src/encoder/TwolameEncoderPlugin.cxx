@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "TwolameEncoderPlugin.hxx"
 #include "encoder_api.h"
 #include "encoder_plugin.h"
 #include "audio_format.h"
@@ -29,7 +30,7 @@
 #include <assert.h>
 #include <string.h>
 
-struct twolame_encoder {
+struct TwolameEncoder final {
 	struct encoder encoder;
 
 	struct audio_format audio_format;
@@ -45,9 +46,13 @@ struct twolame_encoder {
 	 * Call libtwolame's flush function when the buffer is empty?
 	 */
 	bool flush;
-};
 
-extern const struct encoder_plugin twolame_encoder_plugin;
+	TwolameEncoder() {
+		encoder_struct_init(&encoder, &twolame_encoder_plugin);
+	}
+
+	bool Configure(const config_param *param, GError **error);
+};
 
 static inline GQuark
 twolame_encoder_quark(void)
@@ -55,21 +60,19 @@ twolame_encoder_quark(void)
 	return g_quark_from_static_string("twolame_encoder");
 }
 
-static bool
-twolame_encoder_configure(struct twolame_encoder *encoder,
-			  const struct config_param *param, GError **error)
+bool
+TwolameEncoder::Configure(const config_param *param, GError **error)
 {
 	const char *value;
 	char *endptr;
 
-	value = config_get_block_string(param, "quality", NULL);
-	if (value != NULL) {
+	value = config_get_block_string(param, "quality", nullptr);
+	if (value != nullptr) {
 		/* a quality was configured (VBR) */
 
-		encoder->quality = g_ascii_strtod(value, &endptr);
+		quality = g_ascii_strtod(value, &endptr);
 
-		if (*endptr != '\0' || encoder->quality < -1.0 ||
-		    encoder->quality > 10.0) {
+		if (*endptr != '\0' || quality < -1.0 || quality > 10.0) {
 			g_set_error(error, twolame_encoder_quark(), 0,
 				    "quality \"%s\" is not a number in the "
 				    "range -1 to 10, line %i",
@@ -77,7 +80,7 @@ twolame_encoder_configure(struct twolame_encoder *encoder,
 			return false;
 		}
 
-		if (config_get_block_string(param, "bitrate", NULL) != NULL) {
+		if (config_get_block_string(param, "bitrate", nullptr) != nullptr) {
 			g_set_error(error, twolame_encoder_quark(), 0,
 				    "quality and bitrate are "
 				    "both defined (line %i)",
@@ -87,8 +90,8 @@ twolame_encoder_configure(struct twolame_encoder *encoder,
 	} else {
 		/* a bit rate was configured */
 
-		value = config_get_block_string(param, "bitrate", NULL);
-		if (value == NULL) {
+		value = config_get_block_string(param, "bitrate", nullptr);
+		if (value == nullptr) {
 			g_set_error(error, twolame_encoder_quark(), 0,
 				    "neither bitrate nor quality defined "
 				    "at line %i",
@@ -96,10 +99,10 @@ twolame_encoder_configure(struct twolame_encoder *encoder,
 			return false;
 		}
 
-		encoder->quality = -2.0;
-		encoder->bitrate = g_ascii_strtoll(value, &endptr, 10);
+		quality = -2.0;
+		bitrate = g_ascii_strtoll(value, &endptr, 10);
 
-		if (*endptr != '\0' || encoder->bitrate <= 0) {
+		if (*endptr != '\0' || bitrate <= 0) {
 			g_set_error(error, twolame_encoder_quark(), 0,
 				    "bitrate at line %i should be a positive integer",
 				    param->line);
@@ -111,20 +114,17 @@ twolame_encoder_configure(struct twolame_encoder *encoder,
 }
 
 static struct encoder *
-twolame_encoder_init(const struct config_param *param, GError **error)
+twolame_encoder_init(const struct config_param *param, GError **error_r)
 {
-	struct twolame_encoder *encoder;
-
 	g_debug("libtwolame version %s", get_twolame_version());
 
-	encoder = g_new(struct twolame_encoder, 1);
-	encoder_struct_init(&encoder->encoder, &twolame_encoder_plugin);
+	TwolameEncoder *encoder = new TwolameEncoder();
 
 	/* load configuration from "param" */
-	if (!twolame_encoder_configure(encoder, param, error)) {
+	if (!encoder->Configure(param, error_r)) {
 		/* configuration has failed, roll back and return error */
-		g_free(encoder);
-		return NULL;
+		delete encoder;
+		return nullptr;
 	}
 
 	return &encoder->encoder;
@@ -133,15 +133,15 @@ twolame_encoder_init(const struct config_param *param, GError **error)
 static void
 twolame_encoder_finish(struct encoder *_encoder)
 {
-	struct twolame_encoder *encoder = (struct twolame_encoder *)_encoder;
+	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 
 	/* the real libtwolame cleanup was already performed by
 	   twolame_encoder_close(), so no real work here */
-	g_free(encoder);
+	delete encoder;
 }
 
 static bool
-twolame_encoder_setup(struct twolame_encoder *encoder, GError **error)
+twolame_encoder_setup(TwolameEncoder *encoder, GError **error)
 {
 	if (encoder->quality >= -1.0) {
 		/* a quality was configured (VBR) */
@@ -193,7 +193,7 @@ static bool
 twolame_encoder_open(struct encoder *_encoder, struct audio_format *audio_format,
 		     GError **error)
 {
-	struct twolame_encoder *encoder = (struct twolame_encoder *)_encoder;
+	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 
 	audio_format->format = SAMPLE_FORMAT_S16;
 	audio_format->channels = 2;
@@ -201,7 +201,7 @@ twolame_encoder_open(struct encoder *_encoder, struct audio_format *audio_format
 	encoder->audio_format = *audio_format;
 
 	encoder->options = twolame_init();
-	if (encoder->options == NULL) {
+	if (encoder->options == nullptr) {
 		g_set_error(error, twolame_encoder_quark(), 0,
 			    "twolame_init() failed");
 		return false;
@@ -221,7 +221,7 @@ twolame_encoder_open(struct encoder *_encoder, struct audio_format *audio_format
 static void
 twolame_encoder_close(struct encoder *_encoder)
 {
-	struct twolame_encoder *encoder = (struct twolame_encoder *)_encoder;
+	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 
 	twolame_close(&encoder->options);
 }
@@ -229,7 +229,7 @@ twolame_encoder_close(struct encoder *_encoder)
 static bool
 twolame_encoder_flush(struct encoder *_encoder, gcc_unused GError **error)
 {
-	struct twolame_encoder *encoder = (struct twolame_encoder *)_encoder;
+	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 
 	encoder->flush = true;
 	return true;
@@ -240,20 +240,18 @@ twolame_encoder_write(struct encoder *_encoder,
 		      const void *data, size_t length,
 		      gcc_unused GError **error)
 {
-	struct twolame_encoder *encoder = (struct twolame_encoder *)_encoder;
-	unsigned num_frames;
+	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 	const int16_t *src = (const int16_t*)data;
-	int bytes_out;
 
 	assert(encoder->buffer_length == 0);
 
-	num_frames =
+	const unsigned num_frames =
 		length / audio_format_frame_size(&encoder->audio_format);
 
-	bytes_out = twolame_encode_buffer_interleaved(encoder->options,
-						      src, num_frames,
-						      encoder->buffer,
-						      sizeof(encoder->buffer));
+	int bytes_out = twolame_encode_buffer_interleaved(encoder->options,
+							  src, num_frames,
+							  encoder->buffer,
+							  sizeof(encoder->buffer));
 	if (bytes_out < 0) {
 		g_set_error(error, twolame_encoder_quark(), 0,
 			    "twolame encoder failed");
@@ -267,7 +265,7 @@ twolame_encoder_write(struct encoder *_encoder,
 static size_t
 twolame_encoder_read(struct encoder *_encoder, void *dest, size_t length)
 {
-	struct twolame_encoder *encoder = (struct twolame_encoder *)_encoder;
+	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 
 	if (encoder->buffer_length == 0 && encoder->flush) {
 		int ret = twolame_encode_flush(encoder->options,
@@ -298,14 +296,16 @@ twolame_encoder_get_mime_type(gcc_unused struct encoder *_encoder)
 }
 
 const struct encoder_plugin twolame_encoder_plugin = {
-	.name = "twolame",
-	.init = twolame_encoder_init,
-	.finish = twolame_encoder_finish,
-	.open = twolame_encoder_open,
-	.close = twolame_encoder_close,
-	.end = twolame_encoder_flush,
-	.flush = twolame_encoder_flush,
-	.write = twolame_encoder_write,
-	.read = twolame_encoder_read,
-	.get_mime_type = twolame_encoder_get_mime_type,
+	"twolame",
+	twolame_encoder_init,
+	twolame_encoder_finish,
+	twolame_encoder_open,
+	twolame_encoder_close,
+	twolame_encoder_flush,
+	twolame_encoder_flush,
+	nullptr,
+	nullptr,
+	twolame_encoder_write,
+	twolame_encoder_read,
+	twolame_encoder_get_mime_type,
 };
