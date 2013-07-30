@@ -348,7 +348,8 @@ idle_event_emitted(void)
 	if (flags != 0)
 		instance->client_list->IdleAdd(flags);
 
-	if (flags & (IDLE_PLAYLIST|IDLE_PLAYER|IDLE_MIXER|IDLE_OUTPUT))
+	if (flags & (IDLE_PLAYLIST|IDLE_PLAYER|IDLE_MIXER|IDLE_OUTPUT) &&
+	    state_file != nullptr)
 		state_file->CheckModified();
 }
 
