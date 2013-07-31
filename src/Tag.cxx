@@ -143,7 +143,14 @@ Tag::Clear()
 		tag_pool_put_item(items[i]);
 	tag_pool_lock.unlock();
 
-	g_free(items);
+	if (items == bulk.items) {
+#ifndef NDEBUG
+		assert(bulk.busy);
+		bulk.busy = false;
+#endif
+	} else
+		g_free(items);
+
 	items = nullptr;
 	num_items = 0;
 }
