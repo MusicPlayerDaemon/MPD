@@ -23,6 +23,11 @@ AC_PROG_CC_C99
 AC_PROG_CXX
 AC_PROG_RANLIB
 
+AN_MAKEVAR([AR], [AC_PROG_AR])
+AN_PROGRAM([ar], [AC_PROG_AR])
+AC_DEFUN([AC_PROG_AR], [AC_CHECK_TOOL(AR, ar, :)])
+AC_PROG_AR
+
 HAVE_CXX=yes
 if test x$CXX = xg++; then
 	# CXX=g++ probably means that autoconf hasn't found any C++

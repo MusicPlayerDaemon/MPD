@@ -1,6 +1,8 @@
 ver 0.17.5 (not yet released)
 * protocol:
   - fix "playlistadd" with URI
+* configure.ac:
+  - detect system "ar"
 
 ver 0.17.4 (2013/04/08)
 * protocol:
