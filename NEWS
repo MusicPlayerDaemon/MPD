@@ -1,6 +1,7 @@
 ver 0.17.5 (not yet released)
 * protocol:
   - fix "playlistadd" with URI
+  - fix "move" relative to current when there is no current song
 * configure.ac:
   - detect system "ar"
 

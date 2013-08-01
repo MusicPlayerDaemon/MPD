@@ -396,7 +396,12 @@ playlist_move_range(struct playlist *playlist, struct player_control *pc,
 		? (int)queue_order_to_position(&playlist->queue,
 					      playlist->current)
 		: -1;
-	if (to < 0 && playlist->current >= 0) {
+	if (to < 0) {
+		if (currentSong < 0)
+			/* can't move relative to current song,
+			   because there is no current song */
+			return PLAYLIST_RESULT_BAD_RANGE;
+
 		if (start <= (unsigned)currentSong && (unsigned)currentSong < end)
 			/* no-op, can't be moved to offset of itself */
 			return PLAYLIST_RESULT_SUCCESS;
