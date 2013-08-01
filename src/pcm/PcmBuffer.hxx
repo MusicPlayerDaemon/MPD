@@ -46,6 +46,7 @@ struct PcmBuffer {
 	void Clear() {
 		g_free(buffer);
 		buffer = nullptr;
+		size = 0;
 	}
 
 	/**
