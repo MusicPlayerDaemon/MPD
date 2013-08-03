@@ -24,13 +24,9 @@
 #include "gerror.h"
 #include "gcc.h"
 
-#ifdef __cplusplus
 #include <string>
 #include <array>
 #include <vector>
-#endif
-
-#ifdef __cplusplus
 
 struct block_param {
 	std::string name;
@@ -48,8 +44,6 @@ struct block_param {
 		:name(_name), value(_value), line(_line), used(false) {}
 };
 
-#endif
-
 struct config_param {
 	/**
 	 * The next config_param with the same name.  The destructor
@@ -60,7 +54,6 @@ struct config_param {
 	char *value;
 	unsigned int line;
 
-#ifdef __cplusplus
 	std::vector<block_param> block_params;
 
 	/**
@@ -89,20 +82,11 @@ struct config_param {
 
 	gcc_nonnull_all gcc_pure
 	const block_param *GetBlockParam(const char *_name) const;
-#endif
 };
-
-#ifdef __cplusplus
 
 struct ConfigData {
 	std::array<config_param *, std::size_t(CONF_MAX)> params;
 };
-
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 gcc_pure
 const char *
@@ -132,9 +116,5 @@ gcc_pure
 bool
 config_get_block_bool(const struct config_param *param, const char *name,
 		      bool default_value);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
