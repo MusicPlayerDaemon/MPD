@@ -99,7 +99,7 @@ decoder_control::IsCurrentSong(const Song *_song) const
 	}
 
 	assert(false);
-	return false;
+	gcc_unreachable();
 }
 
 void

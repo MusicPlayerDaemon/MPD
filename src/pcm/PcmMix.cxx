@@ -110,9 +110,8 @@ pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
 		return true;
 	}
 
-	/* unreachable */
 	assert(false);
-	return false;
+	gcc_unreachable();
 }
 
 template<typename T, typename U, unsigned bits>
@@ -184,9 +183,8 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 		return true;
 	}
 
-	/* unreachable */
 	assert(false);
-	return false;
+	gcc_unreachable();
 }
 
 bool

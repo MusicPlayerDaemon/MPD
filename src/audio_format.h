@@ -253,7 +253,7 @@ sample_format_size(enum sample_format format)
 	}
 
 	assert(false);
-	return 0;
+	gcc_unreachable();
 }
 
 /**

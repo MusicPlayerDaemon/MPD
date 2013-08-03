@@ -257,7 +257,7 @@ get_bitformat(enum sample_format sample_format)
 	}
 
 	assert(false);
-	return SND_PCM_FORMAT_UNKNOWN;
+	gcc_unreachable();
 }
 
 static snd_pcm_format_t

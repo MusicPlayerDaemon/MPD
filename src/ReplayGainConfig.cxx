@@ -55,9 +55,8 @@ replay_gain_get_mode_string(void)
 		return "album";
 	}
 
-	/* unreachable */
 	assert(false);
-	return "off";
+	gcc_unreachable();
 }
 
 bool

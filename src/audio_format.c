@@ -69,7 +69,7 @@ sample_format_to_string(enum sample_format format)
 
 	/* unreachable */
 	assert(false);
-	return "?";
+	gcc_unreachable();
 }
 
 const char *

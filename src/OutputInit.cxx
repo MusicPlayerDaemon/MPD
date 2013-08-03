@@ -123,7 +123,7 @@ audio_output_load_mixer(struct audio_output *ao,
 	}
 
 	assert(false);
-	return NULL;
+	gcc_unreachable();
 }
 
 bool

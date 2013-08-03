@@ -93,6 +93,7 @@ ChainFilter::CloseUntil(const Filter *until)
 
 	/* this assertion fails if #until does not exist (anymore) */
 	assert(false);
+	gcc_unreachable();
 }
 
 static const struct audio_format *

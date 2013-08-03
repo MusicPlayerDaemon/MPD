@@ -696,6 +696,7 @@ mpd_jack_write_samples(JackOutput *jd, const void *src,
 
 	default:
 		assert(false);
+		gcc_unreachable();
 	}
 }
 

@@ -188,7 +188,6 @@ pcm_volume(void *buffer, size_t length,
 		return true;
 	}
 
-	/* unreachable */
 	assert(false);
-	return false;
+	gcc_unreachable();
 }
