@@ -29,7 +29,7 @@
 #include "replay_gain_info.h"
 #include "gerror.h"
 
-struct audio_format;
+struct AudioFormat;
 struct music_buffer;
 struct music_chunk;
 struct player_control;
@@ -76,14 +76,13 @@ audio_output_all_enable_disable(void);
 /**
  * Opens all audio outputs which are not disabled.
  *
- * @param audio_format the preferred audio format, or NULL to reuse
- * the previous format
+ * @param audio_format the preferred audio format
  * @param buffer the #music_buffer where consumed #music_chunk objects
  * should be returned
  * @return true on success, false on failure
  */
 bool
-audio_output_all_open(const struct audio_format *audio_format,
+audio_output_all_open(AudioFormat audio_format,
 		      struct music_buffer *buffer,
 		      GError **error_r);
 

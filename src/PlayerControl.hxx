@@ -20,7 +20,7 @@
 #ifndef MPD_PLAYER_H
 #define MPD_PLAYER_H
 
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
@@ -85,7 +85,7 @@ enum player_error {
 struct player_status {
 	enum player_state state;
 	uint16_t bit_rate;
-	struct audio_format audio_format;
+	AudioFormat audio_format;
 	float total_time;
 	float elapsed_time;
 };
@@ -130,7 +130,7 @@ struct player_control {
 	GError *error;
 
 	uint16_t bit_rate;
-	struct audio_format audio_format;
+	AudioFormat audio_format;
 	float total_time;
 	float elapsed_time;
 

@@ -20,10 +20,10 @@
 #ifndef MPD_AUDIO_CONFIG_HXX
 #define MPD_AUDIO_CONFIG_HXX
 
-struct audio_format;
+struct AudioFormat;
 
-void getOutputAudioFormat(const struct audio_format *inFormat,
-			  struct audio_format *outFormat);
+AudioFormat
+getOutputAudioFormat(AudioFormat inFormat);
 
 /* make sure initPlayerData is called before this function!! */
 void initAudioConfig(void);

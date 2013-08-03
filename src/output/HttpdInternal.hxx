@@ -131,13 +131,13 @@ struct HttpdOutput final : private ServerSocket {
 	/**
 	 * Caller must lock the mutex.
 	 */
-	bool OpenEncoder(struct audio_format *audio_format,
+	bool OpenEncoder(AudioFormat &audio_format,
 			 GError **error_r);
 
 	/**
 	 * Caller must lock the mutex.
 	 */
-	bool Open(struct audio_format *audio_format, GError **error_r);
+	bool Open(AudioFormat &audio_format, GError **error_r);
 
 	/**
 	 * Caller must lock the mutex.

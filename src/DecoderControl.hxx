@@ -21,7 +21,7 @@
 #define MPD_DECODER_CONTROL_HXX
 
 #include "DecoderCommand.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
@@ -85,10 +85,10 @@ struct decoder_control {
 	double seek_where;
 
 	/** the format of the song file */
-	struct audio_format in_audio_format;
+	AudioFormat in_audio_format;
 
 	/** the format being sent to the music pipe */
-	struct audio_format out_audio_format;
+	AudioFormat out_audio_format;
 
 	/**
 	 * The song currently being decoded.  This attribute is set by

@@ -144,39 +144,41 @@ roar_finish(struct audio_output *ao)
 
 static void
 roar_use_audio_format(struct roar_audio_info *info,
-		      struct audio_format *audio_format)
+		      AudioFormat &audio_format)
 {
-	info->rate = audio_format->sample_rate;
-	info->channels = audio_format->channels;
+	info->rate = audio_format.sample_rate;
+	info->channels = audio_format.channels;
 	info->codec = ROAR_CODEC_PCM_S;
 
-	switch (audio_format->format) {
-	case SAMPLE_FORMAT_UNDEFINED:
+	switch (audio_format.format) {
+	case SampleFormat::UNDEFINED:
+	case SampleFormat::FLOAT:
+	case SampleFormat::DSD:
 		info->bits = 16;
-		audio_format->format = SAMPLE_FORMAT_S16;
+		audio_format.format = SampleFormat::S16;
 		break;
 
-	case SAMPLE_FORMAT_S8:
+	case SampleFormat::S8:
 		info->bits = 8;
 		break;
 
-	case SAMPLE_FORMAT_S16:
+	case SampleFormat::S16:
 		info->bits = 16;
 		break;
 
-	case SAMPLE_FORMAT_S24_P32:
+	case SampleFormat::S24_P32:
 		info->bits = 32;
-		audio_format->format = SAMPLE_FORMAT_S32;
+		audio_format.format = SampleFormat::S32;
 		break;
 
-	case SAMPLE_FORMAT_S32:
+	case SampleFormat::S32:
 		info->bits = 32;
 		break;
 	}
 }
 
 static bool
-roar_open(struct audio_output *ao, struct audio_format *audio_format, GError **error)
+roar_open(struct audio_output *ao, AudioFormat &audio_format, GError **error)
 {
 	RoarOutput *self = (RoarOutput *)ao;
 	const ScopeLock protect(self->mutex);

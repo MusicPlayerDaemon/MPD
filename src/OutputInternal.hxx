@@ -20,7 +20,7 @@
 #ifndef MPD_OUTPUT_INTERNAL_HXX
 #define MPD_OUTPUT_INTERNAL_HXX
 
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
@@ -134,13 +134,13 @@ struct audio_output {
 	/**
 	 * The configured audio format.
 	 */
-	struct audio_format config_audio_format;
+	AudioFormat config_audio_format;
 
 	/**
 	 * The audio_format in which audio data is received from the
 	 * player thread (which in turn receives it from the decoder).
 	 */
-	struct audio_format in_audio_format;
+	AudioFormat in_audio_format;
 
 	/**
 	 * The audio_format which is really sent to the device.  This
@@ -148,7 +148,7 @@ struct audio_output {
 	 * in_audio_format, but may have been modified by
 	 * plugin->open().
 	 */
-	struct audio_format out_audio_format;
+	AudioFormat out_audio_format;
 
 	/**
 	 * The buffer used to allocate the cross-fading result.

@@ -115,7 +115,7 @@ struct player {
 	/**
 	 * The current audio format for the audio outputs.
 	 */
-	struct audio_format play_audio_format;
+	AudioFormat play_audio_format;
 
 	/**
 	 * The time stamp of the chunk most recently sent to the
@@ -279,7 +279,7 @@ player_wait_for_decoder(struct player *player)
 	/* update player_control's song information */
 	pc->total_time = pc->next_song->GetDuration();
 	pc->bit_rate = 0;
-	audio_format_clear(&pc->audio_format);
+	pc->audio_format.Clear();
 
 	/* clear the queued song */
 	pc->next_song = NULL;
@@ -323,12 +323,12 @@ player_open_output(struct player *player)
 {
 	struct player_control *pc = player->pc;
 
-	assert(audio_format_defined(&player->play_audio_format));
+	assert(player->play_audio_format.IsDefined());
 	assert(pc->state == PLAYER_STATE_PLAY ||
 	       pc->state == PLAYER_STATE_PAUSE);
 
 	GError *error = NULL;
-	if (audio_output_all_open(&player->play_audio_format, player_buffer,
+	if (audio_output_all_open(player->play_audio_format, player_buffer,
 				  &error)) {
 		player->output_open = true;
 		player->paused = false;
@@ -439,7 +439,7 @@ static bool
 player_send_silence(struct player *player)
 {
 	assert(player->output_open);
-	assert(audio_format_defined(&player->play_audio_format));
+	assert(player->play_audio_format.IsDefined());
 
 	struct music_chunk *chunk = music_buffer_allocate(player_buffer);
 	if (chunk == NULL) {
@@ -451,8 +451,7 @@ player_send_silence(struct player *player)
 	chunk->audio_format = player->play_audio_format;
 #endif
 
-	size_t frame_size =
-		audio_format_frame_size(&player->play_audio_format);
+	const size_t frame_size = player->play_audio_format.GetFrameSize();
 	/* this formula ensures that we don't send
 	   partial frames */
 	unsigned num_frames = sizeof(chunk->data) / frame_size;
@@ -597,7 +596,7 @@ static void player_process_command(struct player *player)
 			pc->Lock();
 
 			pc->state = PLAYER_STATE_PAUSE;
-		} else if (!audio_format_defined(&player->play_audio_format)) {
+		} else if (!player->play_audio_format.IsDefined()) {
 			/* the decoder hasn't provided an audio format
 			   yet - don't open the audio device yet */
 			pc->Lock();
@@ -689,10 +688,10 @@ update_song_tag(Song *song, const Tag &new_tag)
 static bool
 play_chunk(struct player_control *pc,
 	   Song *song, struct music_chunk *chunk,
-	   const struct audio_format *format,
+	   const AudioFormat format,
 	   GError **error_r)
 {
-	assert(chunk->CheckFormat(*format));
+	assert(chunk->CheckFormat(format));
 
 	if (chunk->tag != NULL)
 		update_song_tag(song, *chunk->tag);
@@ -712,7 +711,7 @@ play_chunk(struct player_control *pc,
 		return false;
 
 	pc->total_play_time += (double)chunk->length /
-		audio_format_time_to_size(format);
+		format.GetTimeToSize();
 	return true;
 }
 
@@ -825,7 +824,7 @@ play_next_chunk(struct player *player)
 
 	GError *error = NULL;
 	if (!play_chunk(player->pc, player->song, chunk,
-			&player->play_audio_format, &error)) {
+			player->play_audio_format, &error)) {
 		g_warning("%s", error->message);
 
 		music_buffer_return(player_buffer, chunk);
@@ -1019,8 +1018,8 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 						dc->replay_gain_prev_db,
 						dc->mixramp_start,
 						dc->mixramp_prev_end,
-						&dc->out_audio_format,
-						&player.play_audio_format,
+						dc->out_audio_format,
+						player.play_audio_format,
 						music_buffer_size(player_buffer) -
 						pc->buffered_before_play);
 			if (player.cross_fade_chunks > 0) {

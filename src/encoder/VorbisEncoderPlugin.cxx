@@ -22,7 +22,7 @@
 #include "OggStream.hxx"
 #include "EncoderAPI.hxx"
 #include "Tag.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "mpd_error.h"
 
 #include <vorbis/vorbisenc.h>
@@ -43,7 +43,7 @@ struct vorbis_encoder {
 
 	/* runtime information */
 
-	struct audio_format audio_format;
+	AudioFormat audio_format;
 
 	vorbis_dsp_state vd;
 	vorbis_block vb;
@@ -202,14 +202,14 @@ vorbis_encoder_send_header(struct vorbis_encoder *encoder)
 
 static bool
 vorbis_encoder_open(Encoder *_encoder,
-		    struct audio_format *audio_format,
+		    AudioFormat &audio_format,
 		    GError **error)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 
-	audio_format->format = SAMPLE_FORMAT_FLOAT;
+	audio_format.format = SampleFormat::FLOAT;
 
-	encoder->audio_format = *audio_format;
+	encoder->audio_format = audio_format;
 
 	if (!vorbis_encoder_reinit(encoder, error))
 		return false;
@@ -328,8 +328,7 @@ vorbis_encoder_write(Encoder *_encoder,
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 
-	unsigned num_frames = length
-		/ audio_format_frame_size(&encoder->audio_format);
+	unsigned num_frames = length / encoder->audio_format.GetFrameSize();
 
 	/* this is for only 16-bit audio */
 

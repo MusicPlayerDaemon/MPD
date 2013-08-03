@@ -27,21 +27,21 @@ extern "C" {
 }
 
 void
-PcmExport::Open(enum sample_format sample_format, unsigned _channels,
+PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 		bool _dsd_usb, bool _shift8, bool _pack, bool _reverse_endian)
 {
 	assert(audio_valid_sample_format(sample_format));
 	assert(!_dsd_usb || audio_valid_channel_count(_channels));
 
 	channels = _channels;
-	dsd_usb = _dsd_usb && sample_format == SAMPLE_FORMAT_DSD;
+	dsd_usb = _dsd_usb && sample_format == SampleFormat::DSD;
 	if (dsd_usb)
 		/* after the conversion to DSD-over-USB, the DSD
 		   samples are stuffed inside fake 24 bit samples */
-		sample_format = SAMPLE_FORMAT_S24_P32;
+		sample_format = SampleFormat::S24_P32;
 
-	shift8 = _shift8 && sample_format == SAMPLE_FORMAT_S24_P32;
-	pack24 = _pack && sample_format == SAMPLE_FORMAT_S24_P32;
+	shift8 = _shift8 && sample_format == SampleFormat::S24_P32;
+	pack24 = _pack && sample_format == SampleFormat::S24_P32;
 
 	assert(!shift8 || !pack24);
 
@@ -58,7 +58,7 @@ PcmExport::Open(enum sample_format sample_format, unsigned _channels,
 }
 
 size_t
-PcmExport::GetFrameSize(const struct audio_format &audio_format) const
+PcmExport::GetFrameSize(const AudioFormat &audio_format) const
 {
 	if (pack24)
 		/* packed 24 bit samples (3 bytes per sample) */
@@ -71,7 +71,7 @@ PcmExport::GetFrameSize(const struct audio_format &audio_format) const
 		   bytes per sample) */
 		return channels * 4;
 
-	return audio_format_frame_size(&audio_format);
+	return audio_format.GetFrameSize();
 }
 
 const void *

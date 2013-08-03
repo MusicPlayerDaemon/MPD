@@ -147,7 +147,6 @@ mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 {
 	char *path2;
 	MODULE *handle;
-	struct audio_format audio_format;
 	int ret;
 	SBYTE buffer[MIKMOD_FRAME_SIZE];
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
@@ -164,10 +163,10 @@ mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 	/* Prevent module from looping forever */
 	handle->loop = 0;
 
-	audio_format_init(&audio_format, mikmod_sample_rate, SAMPLE_FORMAT_S16, 2);
-	assert(audio_format_valid(&audio_format));
+	const AudioFormat audio_format(mikmod_sample_rate, SampleFormat::S16, 2);
+	assert(audio_format.IsValid());
 
-	decoder_initialized(decoder, &audio_format, false, 0);
+	decoder_initialized(decoder, audio_format, false, 0);
 
 	Player_Start(handle);
 	while (cmd == DECODE_COMMAND_NONE && Player_Active()) {

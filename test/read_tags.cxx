@@ -23,7 +23,7 @@
 #include "DecoderAPI.hxx"
 #include "InputInit.hxx"
 #include "InputStream.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "TagHandler.hxx"
 #include "TagId3.hxx"
 #include "ApeTag.hxx"
@@ -40,7 +40,7 @@
 
 void
 decoder_initialized(G_GNUC_UNUSED struct decoder *decoder,
-		    G_GNUC_UNUSED const struct audio_format *audio_format,
+		    G_GNUC_UNUSED const AudioFormat audio_format,
 		    G_GNUC_UNUSED bool seekable,
 		    G_GNUC_UNUSED float total_time)
 {

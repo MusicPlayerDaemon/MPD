@@ -20,7 +20,7 @@
 #ifndef MPD_PCM_FORMAT_HXX
 #define MPD_PCM_FORMAT_HXX
 
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -42,7 +42,7 @@ class PcmDither;
  */
 const int16_t *
 pcm_convert_to_16(PcmBuffer &buffer, PcmDither &dither,
-		  enum sample_format src_format, const void *src,
+		  SampleFormat src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r);
 
 /**
@@ -57,7 +57,7 @@ pcm_convert_to_16(PcmBuffer &buffer, PcmDither &dither,
  */
 const int32_t *
 pcm_convert_to_24(PcmBuffer &buffer,
-		  enum sample_format src_format, const void *src,
+		  SampleFormat src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r);
 
 /**
@@ -72,7 +72,7 @@ pcm_convert_to_24(PcmBuffer &buffer,
  */
 const int32_t *
 pcm_convert_to_32(PcmBuffer &buffer,
-		  enum sample_format src_format, const void *src,
+		  SampleFormat src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r);
 
 /**
@@ -87,7 +87,7 @@ pcm_convert_to_32(PcmBuffer &buffer,
  */
 const float *
 pcm_convert_to_float(PcmBuffer &buffer,
-		     enum sample_format src_format, const void *src,
+		     SampleFormat src_format, const void *src,
 		     size_t src_size, size_t *dest_size_r);
 
 #endif

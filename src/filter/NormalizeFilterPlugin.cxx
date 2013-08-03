@@ -22,7 +22,7 @@
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
 #include "pcm/PcmBuffer.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "AudioCompress/compress.h"
 
 #include <assert.h>
@@ -34,7 +34,7 @@ class NormalizeFilter final : public Filter {
 	PcmBuffer buffer;
 
 public:
-	virtual const audio_format *Open(audio_format &af, GError **error_r);
+	virtual AudioFormat Open(AudioFormat &af, GError **error_r) override;
 	virtual void Close();
 	virtual const void *FilterPCM(const void *src, size_t src_size,
 				      size_t *dest_size_r, GError **error_r);
@@ -47,14 +47,14 @@ normalize_filter_init(gcc_unused const struct config_param *param,
 	return new NormalizeFilter();
 }
 
-const struct audio_format *
-NormalizeFilter::Open(audio_format &audio_format, gcc_unused GError **error_r)
+AudioFormat
+NormalizeFilter::Open(AudioFormat &audio_format, gcc_unused GError **error_r)
 {
-	audio_format.format = SAMPLE_FORMAT_S16;
+	audio_format.format = SampleFormat::S16;
 
 	compressor = Compressor_new(0);
 
-	return &audio_format;
+	return audio_format;
 }
 
 void

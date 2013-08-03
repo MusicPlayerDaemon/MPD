@@ -20,7 +20,7 @@
 #ifndef MPD_CHECK_AUDIO_FORMAT_HXX
 #define MPD_CHECK_AUDIO_FORMAT_HXX
 
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 
 #include <glib.h>
 
@@ -38,7 +38,7 @@ bool
 audio_check_sample_rate(unsigned long sample_rate, GError **error_r);
 
 bool
-audio_check_sample_format(enum sample_format, GError **error_r);
+audio_check_sample_format(SampleFormat sample_format, GError **error_r);
 
 bool
 audio_check_channel_count(unsigned sample_format, GError **error_r);
@@ -47,8 +47,8 @@ audio_check_channel_count(unsigned sample_format, GError **error_r);
  * Wrapper for audio_format_init(), which checks all attributes.
  */
 bool
-audio_format_init_checked(struct audio_format *af, unsigned long sample_rate,
-			  enum sample_format sample_format, unsigned channels,
+audio_format_init_checked(AudioFormat &af, unsigned long sample_rate,
+			  SampleFormat sample_format, unsigned channels,
 			  GError **error_r);
 
 #endif

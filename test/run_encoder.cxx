@@ -20,7 +20,7 @@
 #include "config.h"
 #include "EncoderList.hxx"
 #include "EncoderPlugin.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "AudioParser.hxx"
 #include "conf.h"
 #include "stdbin.h"
@@ -44,7 +44,6 @@ encoder_to_stdout(Encoder &encoder)
 int main(int argc, char **argv)
 {
 	GError *error = NULL;
-	struct audio_format audio_format;
 	bool ret;
 	const char *encoder_name;
 	static char buffer[32768];
@@ -60,8 +59,6 @@ int main(int argc, char **argv)
 		encoder_name = argv[1];
 	else
 		encoder_name = "vorbis";
-
-	audio_format_init(&audio_format, 44100, SAMPLE_FORMAT_S16, 2);
 
 	/* create the encoder */
 
@@ -84,8 +81,9 @@ int main(int argc, char **argv)
 
 	/* open the encoder */
 
+	AudioFormat audio_format(44100, SampleFormat::S16, 2);
 	if (argc > 2) {
-		ret = audio_format_parse(&audio_format, argv[2],
+		ret = audio_format_parse(audio_format, argv[2],
 					 false, &error);
 		if (!ret) {
 			g_printerr("Failed to parse audio format: %s\n",
@@ -95,7 +93,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (!encoder_open(encoder, &audio_format, &error)) {
+	if (!encoder_open(encoder, audio_format, &error)) {
 		g_printerr("Failed to open encoder: %s\n",
 			   error->message);
 		g_error_free(error);

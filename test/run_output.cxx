@@ -52,9 +52,9 @@ PcmConvert::PcmConvert() {}
 PcmConvert::~PcmConvert() {}
 
 const void *
-PcmConvert::Convert(gcc_unused const audio_format *src_format,
+PcmConvert::Convert(gcc_unused const AudioFormat src_format,
 		    gcc_unused const void *src, gcc_unused size_t src_size,
-		    gcc_unused const audio_format *dest_format,
+		    gcc_unused const AudioFormat dest_format,
 		    gcc_unused size_t *dest_size_r,
 		    gcc_unused GError **error_r)
 {
@@ -114,7 +114,7 @@ load_audio_output(const char *name)
 }
 
 static bool
-run_output(struct audio_output *ao, struct audio_format *audio_format)
+run_output(struct audio_output *ao, AudioFormat audio_format)
 {
 	/* open the audio output */
 
@@ -138,7 +138,7 @@ run_output(struct audio_output *ao, struct audio_format *audio_format)
 	g_printerr("audio_format=%s\n",
 		   audio_format_to_string(audio_format, &af_string));
 
-	size_t frame_size = audio_format_frame_size(audio_format);
+	size_t frame_size = audio_format.GetFrameSize();
 
 	/* play */
 
@@ -183,7 +183,6 @@ run_output(struct audio_output *ao, struct audio_format *audio_format)
 
 int main(int argc, char **argv)
 {
-	struct audio_format audio_format;
 	bool success;
 	GError *error = NULL;
 
@@ -194,7 +193,7 @@ int main(int argc, char **argv)
 
 	const Path config_path = Path::FromFS(argv[1]);
 
-	audio_format_init(&audio_format, 44100, SAMPLE_FORMAT_S16, 2);
+	AudioFormat audio_format(44100, SampleFormat::S16, 2);
 
 #if !GLIB_CHECK_VERSION(2,32,0)
 	g_thread_init(NULL);
@@ -227,7 +226,7 @@ int main(int argc, char **argv)
 	/* parse the audio format */
 
 	if (argc > 3) {
-		success = audio_format_parse(&audio_format, argv[3],
+		success = audio_format_parse(audio_format, argv[3],
 					     false, &error);
 		if (!success) {
 			g_printerr("Failed to parse audio format: %s\n",
@@ -239,7 +238,7 @@ int main(int argc, char **argv)
 
 	/* do it */
 
-	success = run_output(ao, &audio_format);
+	success = run_output(ao, audio_format);
 
 	/* cleanup and exit */
 

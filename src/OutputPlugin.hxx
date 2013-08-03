@@ -26,7 +26,7 @@
 #include <stddef.h>
 
 struct config_param;
-struct audio_format;
+struct AudioFormat;
 struct Tag;
 
 /**
@@ -89,7 +89,7 @@ struct audio_output_plugin {
 	 * @param error location to store the error occurring, or NULL
 	 * to ignore errors
 	 */
-	bool (*open)(struct audio_output *data, struct audio_format *audio_format,
+	bool (*open)(struct audio_output *data, AudioFormat &audio_format,
 		     GError **error);
 
 	/**
@@ -181,7 +181,7 @@ void
 ao_plugin_disable(struct audio_output *ao);
 
 bool
-ao_plugin_open(struct audio_output *ao, struct audio_format *audio_format,
+ao_plugin_open(struct audio_output *ao, AudioFormat &audio_format,
 	       GError **error);
 
 void

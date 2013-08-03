@@ -27,7 +27,7 @@
 #include <stddef.h>
 
 struct EncoderPlugin;
-struct audio_format;
+struct AudioFormat;
 struct config_param;
 struct Tag;
 
@@ -55,7 +55,7 @@ struct EncoderPlugin {
 	void (*finish)(Encoder *encoder);
 
 	bool (*open)(Encoder *encoder,
-		     struct audio_format *audio_format,
+		     AudioFormat &audio_format,
 		     GError **error);
 
 	void (*close)(Encoder *encoder);
@@ -122,7 +122,7 @@ encoder_finish(Encoder *encoder)
  * @return true on success
  */
 static inline bool
-encoder_open(Encoder *encoder, struct audio_format *audio_format,
+encoder_open(Encoder *encoder, AudioFormat &audio_format,
 	     GError **error)
 {
 	assert(!encoder->open);

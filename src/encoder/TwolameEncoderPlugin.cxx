@@ -20,7 +20,7 @@
 #include "config.h"
 #include "TwolameEncoderPlugin.hxx"
 #include "EncoderAPI.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 
 #include <twolame.h>
 
@@ -32,7 +32,7 @@
 struct TwolameEncoder final {
 	Encoder encoder;
 
-	struct audio_format audio_format;
+	AudioFormat audio_format;
 	float quality;
 	int bitrate;
 
@@ -187,15 +187,15 @@ twolame_encoder_setup(TwolameEncoder *encoder, GError **error)
 }
 
 static bool
-twolame_encoder_open(Encoder *_encoder, struct audio_format *audio_format,
+twolame_encoder_open(Encoder *_encoder, AudioFormat &audio_format,
 		     GError **error)
 {
 	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 
-	audio_format->format = SAMPLE_FORMAT_S16;
-	audio_format->channels = 2;
+	audio_format.format = SampleFormat::S16;
+	audio_format.channels = 2;
 
-	encoder->audio_format = *audio_format;
+	encoder->audio_format = audio_format;
 
 	encoder->options = twolame_init();
 	if (encoder->options == nullptr) {
@@ -243,7 +243,7 @@ twolame_encoder_write(Encoder *_encoder,
 	assert(encoder->buffer_length == 0);
 
 	const unsigned num_frames =
-		length / audio_format_frame_size(&encoder->audio_format);
+		length / encoder->audio_format.GetFrameSize();
 
 	int bytes_out = twolame_encode_buffer_interleaved(encoder->options,
 							  src, num_frames,

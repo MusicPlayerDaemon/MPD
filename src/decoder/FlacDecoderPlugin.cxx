@@ -144,7 +144,7 @@ flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd,
 
 	if (data->initialized) {
 		/* done */
-		decoder_initialized(data->decoder, &data->audio_format,
+		decoder_initialized(data->decoder, data->audio_format,
 				    data->input_stream->seekable,
 				    (float)data->total_frames /
 				    (float)data->audio_format.sample_rate);

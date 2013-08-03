@@ -433,9 +433,9 @@ dsdiff_stream_decode(struct decoder *decoder, struct input_stream *is)
 		return;
 
 	GError *error = nullptr;
-	struct audio_format audio_format;
-	if (!audio_format_init_checked(&audio_format, metadata.sample_rate / 8,
-				       SAMPLE_FORMAT_DSD,
+	AudioFormat audio_format;
+	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8,
+				       SampleFormat::DSD,
 				       metadata.channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
@@ -448,7 +448,7 @@ dsdiff_stream_decode(struct decoder *decoder, struct input_stream *is)
 			 (float) metadata.sample_rate;
 
 	/* success: file was recognized */
-	decoder_initialized(decoder, &audio_format, false, songtime);
+	decoder_initialized(decoder, audio_format, false, songtime);
 
 	/* every iteration of the following loop decodes one "DSD"
 	   chunk from a DFF file */
@@ -487,9 +487,9 @@ dsdiff_scan_stream(struct input_stream *is,
 	if (!dsdiff_read_metadata(nullptr, is, &metadata, &chunk_header))
 		return false;
 
-	struct audio_format audio_format;
-	if (!audio_format_init_checked(&audio_format, metadata.sample_rate / 8,
-				       SAMPLE_FORMAT_DSD,
+	AudioFormat audio_format;
+	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8,
+				       SampleFormat::DSD,
 				       metadata.channels, nullptr))
 		/* refuse to parse files which we cannot play anyway */
 		return false;

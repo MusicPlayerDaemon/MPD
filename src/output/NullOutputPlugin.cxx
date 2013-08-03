@@ -66,13 +66,13 @@ null_finish(struct audio_output *ao)
 }
 
 static bool
-null_open(struct audio_output *ao, struct audio_format *audio_format,
+null_open(struct audio_output *ao, AudioFormat &audio_format,
 	  gcc_unused GError **error)
 {
 	NullOutput *nd = (NullOutput *)ao;
 
 	if (nd->sync)
-		nd->timer = new Timer(*audio_format);
+		nd->timer = new Timer(audio_format);
 
 	return true;
 }

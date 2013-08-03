@@ -113,7 +113,7 @@ solaris_output_finish(struct audio_output *ao)
 }
 
 static bool
-solaris_output_open(struct audio_output *ao, struct audio_format *audio_format,
+solaris_output_open(struct audio_output *ao, AudioFormat &audio_format,
 		    GError **error)
 {
 	SolarisOutput *so = (SolarisOutput *)ao;
@@ -122,7 +122,7 @@ solaris_output_open(struct audio_output *ao, struct audio_format *audio_format,
 
 	/* support only 16 bit mono/stereo for now; nothing else has
 	   been tested */
-	audio_format->format = SAMPLE_FORMAT_S16;
+	audio_format.format = SampleFormat::S16;
 
 	/* open the device in non-blocking mode */
 
@@ -150,8 +150,8 @@ solaris_output_open(struct audio_output *ao, struct audio_format *audio_format,
 		return false;
 	}
 
-	info.play.sample_rate = audio_format->sample_rate;
-	info.play.channels = audio_format->channels;
+	info.play.sample_rate = audio_format.sample_rate;
+	info.play.channels = audio_format.channels;
 	info.play.precision = 16;
 	info.play.encoding = AUDIO_ENCODING_LINEAR;
 

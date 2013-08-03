@@ -40,7 +40,7 @@
 
 void
 decoder_initialized(struct decoder *decoder,
-		    const struct audio_format *audio_format,
+		    const AudioFormat audio_format,
 		    bool seekable, float total_time)
 {
 	struct decoder_control *dc = decoder->dc;
@@ -52,12 +52,11 @@ decoder_initialized(struct decoder *decoder,
 	assert(decoder->stream_tag == NULL);
 	assert(decoder->decoder_tag == NULL);
 	assert(!decoder->seeking);
-	assert(audio_format != NULL);
-	assert(audio_format_defined(audio_format));
-	assert(audio_format_valid(audio_format));
+	assert(audio_format.IsDefined());
+	assert(audio_format.IsValid());
 
-	dc->in_audio_format = *audio_format;
-	getOutputAudioFormat(audio_format, &dc->out_audio_format);
+	dc->in_audio_format = audio_format;
+	dc->out_audio_format = getOutputAudioFormat(audio_format);
 
 	dc->seekable = seekable;
 	dc->total_time = total_time;
@@ -68,13 +67,12 @@ decoder_initialized(struct decoder *decoder,
 	dc->Unlock();
 
 	g_debug("audio_format=%s, seekable=%s",
-		audio_format_to_string(&dc->in_audio_format, &af_string),
+		audio_format_to_string(dc->in_audio_format, &af_string),
 		seekable ? "true" : "false");
 
-	if (!audio_format_equals(&dc->in_audio_format,
-				 &dc->out_audio_format))
+	if (dc->in_audio_format != dc->out_audio_format)
 		g_debug("converting to %s",
-			audio_format_to_string(&dc->out_audio_format,
+			audio_format_to_string(dc->out_audio_format,
 					       &af_string));
 }
 
@@ -371,7 +369,7 @@ decoder_data(struct decoder *decoder,
 
 	assert(dc->state == DECODE_STATE_DECODE);
 	assert(dc->pipe != NULL);
-	assert(length % audio_format_frame_size(&dc->in_audio_format) == 0);
+	assert(length % dc->in_audio_format.GetFrameSize() == 0);
 
 	dc->Lock();
 	cmd = decoder_get_virtual_command(decoder);
@@ -398,10 +396,10 @@ decoder_data(struct decoder *decoder,
 			return cmd;
 	}
 
-	if (!audio_format_equals(&dc->in_audio_format, &dc->out_audio_format)) {
-		data = decoder->conv_state.Convert(&dc->in_audio_format,
+	if (dc->in_audio_format != dc->out_audio_format) {
+		data = decoder->conv_state.Convert(dc->in_audio_format,
 						   data, length,
-						   &dc->out_audio_format,
+						   dc->out_audio_format,
 						   &length,
 						   &error);
 		if (data == NULL) {
@@ -457,7 +455,7 @@ decoder_data(struct decoder *decoder,
 		length -= nbytes;
 
 		decoder->timestamp += (double)nbytes /
-			audio_format_time_to_size(&dc->out_audio_format);
+			dc->out_audio_format.GetTimeToSize();
 
 		if (dc->end_ms > 0 &&
 		    decoder->timestamp >= dc->end_ms / 1000.0)

@@ -166,9 +166,8 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	/* initialization complete - announce the audio format to the
 	   MPD core */
 
-	struct audio_format audio_format;
-	audio_format_init(&audio_format, sample_rate, SAMPLE_FORMAT_S16, 2);
-	decoder_initialized(decoder, &audio_format, false, -1);
+	const AudioFormat audio_format(sample_rate, SampleFormat::S16, 2);
+	decoder_initialized(decoder, audio_format, false, -1);
 
 	while (fluid_player_get_status(player) == FLUID_PLAYER_PLAYING) {
 		int16_t buffer[2048];

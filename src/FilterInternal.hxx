@@ -25,7 +25,7 @@
 #ifndef MPD_FILTER_INTERNAL_HXX
 #define MPD_FILTER_INTERNAL_HXX
 
-struct audio_format;
+struct AudioFormat;
 
 class Filter {
 public:
@@ -40,10 +40,10 @@ public:
 	 * format
 	 * @param error location to store the error occurring, or NULL
 	 * to ignore errors.
-	 * @return the format of outgoing data
+	 * @return the format of outgoing data or
+	 * AudioFormat::Undefined() on error
 	 */
-	virtual const audio_format *Open(audio_format &af,
-					 GError **error_r) = 0;
+	virtual AudioFormat Open(AudioFormat &af, GError **error_r) = 0;
 
 	/**
 	 * Closes the filter.  After that, you may call Open() again.

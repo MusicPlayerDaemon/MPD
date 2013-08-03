@@ -22,7 +22,7 @@
 
 #include "OutputPlugin.hxx"
 #include "OutputInternal.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "Tag.hxx"
 #include "conf.h"
 

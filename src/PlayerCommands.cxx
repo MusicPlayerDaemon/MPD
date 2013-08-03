@@ -31,7 +31,7 @@
 #include "protocol/ArgParser.hxx"
 
 extern "C" {
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 }
 
 #include "replay_gain_config.h"
@@ -178,12 +178,12 @@ handle_status(Client *client,
 			      player_status.elapsed_time,
 			      player_status.bit_rate);
 
-		if (audio_format_defined(&player_status.audio_format)) {
+		if (player_status.audio_format.IsDefined()) {
 			struct audio_format_string af_string;
 
 			client_printf(client,
 				      COMMAND_STATUS_AUDIO ": %s\n",
-				      audio_format_to_string(&player_status.audio_format,
+				      audio_format_to_string(player_status.audio_format,
 							     &af_string));
 		}
 	}

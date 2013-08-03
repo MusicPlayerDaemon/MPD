@@ -27,7 +27,7 @@
 
 #include <glib.h>
 
-struct audio_format;
+struct AudioFormat;
 
 /**
  * This object is statically allocated (within another struct), and
@@ -71,34 +71,34 @@ public:
 	 * ignore errors
 	 * @return the destination buffer, or NULL on error
 	 */
-	const void *Convert(const audio_format *src_format,
+	const void *Convert(AudioFormat src_format,
 			    const void *src, size_t src_size,
-			    const audio_format *dest_format,
+			    AudioFormat dest_format,
 			    size_t *dest_size_r,
 			    GError **error_r);
 
 private:
-	const int16_t *Convert16(const audio_format *src_format,
+	const int16_t *Convert16(AudioFormat src_format,
 				 const void *src_buffer, size_t src_size,
-				 const audio_format *dest_format,
+				 AudioFormat dest_format,
 				 size_t *dest_size_r,
 				 GError **error_r);
 
-	const int32_t *Convert24(const audio_format *src_format,
+	const int32_t *Convert24(AudioFormat src_format,
 				 const void *src_buffer, size_t src_size,
-				 const audio_format *dest_format,
+				 AudioFormat dest_format,
 				 size_t *dest_size_r,
 				 GError **error_r);
 
-	const int32_t *Convert32(const audio_format *src_format,
+	const int32_t *Convert32(AudioFormat src_format,
 				 const void *src_buffer, size_t src_size,
-				 const audio_format *dest_format,
+				 AudioFormat dest_format,
 				 size_t *dest_size_r,
 				 GError **error_r);
 
-	const float *ConvertFloat(const audio_format *src_format,
+	const float *ConvertFloat(AudioFormat src_format,
 				  const void *src_buffer, size_t src_size,
-				  const audio_format *dest_format,
+				  AudioFormat dest_format,
 				  size_t *dest_size_r,
 				  GError **error_r);
 };

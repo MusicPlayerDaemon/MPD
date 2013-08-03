@@ -18,7 +18,7 @@
  */
 
 #include "CheckAudioFormat.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 
 #include <assert.h>
 
@@ -35,11 +35,12 @@ audio_check_sample_rate(unsigned long sample_rate, GError **error_r)
 }
 
 bool
-audio_check_sample_format(enum sample_format sample_format, GError **error_r)
+audio_check_sample_format(SampleFormat sample_format, GError **error_r)
 {
 	if (!audio_valid_sample_format(sample_format)) {
 		g_set_error(error_r, audio_format_quark(), 0,
-			    "Invalid sample format: %u", sample_format);
+			    "Invalid sample format: %u",
+			    unsigned(sample_format));
 		return false;
 	}
 
@@ -59,15 +60,15 @@ audio_check_channel_count(unsigned channels, GError **error_r)
 }
 
 bool
-audio_format_init_checked(struct audio_format *af, unsigned long sample_rate,
-			  enum sample_format sample_format, unsigned channels,
+audio_format_init_checked(AudioFormat &af, unsigned long sample_rate,
+			  SampleFormat sample_format, unsigned channels,
 			  GError **error_r)
 {
 	if (audio_check_sample_rate(sample_rate, error_r) &&
 	    audio_check_sample_format(sample_format, error_r) &&
 	    audio_check_channel_count(channels, error_r)) {
-		audio_format_init(af, sample_rate, sample_format, channels);
-		assert(audio_format_valid(af));
+		af = AudioFormat(sample_rate, sample_format, channels);
+		assert(af.IsValid());
 		return true;
 	} else
 		return false;

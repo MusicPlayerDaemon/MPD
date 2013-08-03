@@ -60,11 +60,10 @@ adplug_file_decode(struct decoder *decoder, const char *path_fs)
 	if (player == nullptr)
 		return;
 
-	struct audio_format audio_format;
-	audio_format_init(&audio_format, sample_rate, SAMPLE_FORMAT_S16, 2);
-	assert(audio_format_valid(&audio_format));
+	const AudioFormat audio_format(sample_rate, SampleFormat::S16, 2);
+	assert(audio_format.IsValid());
 
-	decoder_initialized(decoder, &audio_format, false,
+	decoder_initialized(decoder, audio_format, false,
 		player->songlength() / 1000.);
 
 	int16_t buffer[2048];

@@ -26,6 +26,11 @@ extern "C" {
 #include <libavutil/dict.h>
 }
 
+/* suppress the ffmpeg compatibility macro */
+#ifdef SampleFormat
+#undef SampleFormat
+#endif
+
 struct tag_handler;
 
 void

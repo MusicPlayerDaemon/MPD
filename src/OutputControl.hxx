@@ -25,7 +25,7 @@
 #include <stddef.h>
 
 struct audio_output;
-struct audio_format;
+struct AudioFormat;
 struct config_param;
 struct music_pipe;
 struct player_control;
@@ -53,7 +53,7 @@ audio_output_disable(struct audio_output *ao);
  */
 bool
 audio_output_update(struct audio_output *ao,
-		    const struct audio_format *audio_format,
+		    AudioFormat audio_format,
 		    const struct music_pipe *mp);
 
 void

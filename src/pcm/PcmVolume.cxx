@@ -20,7 +20,7 @@
 #include "config.h"
 #include "PcmVolume.hxx"
 #include "PcmUtils.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 
 #include <glib.h>
 
@@ -144,7 +144,7 @@ pcm_volume_change_float(float *buffer, const float *end, float volume)
 
 bool
 pcm_volume(void *buffer, size_t length,
-	   enum sample_format format,
+	   SampleFormat format,
 	   int volume)
 {
 	if (volume == PCM_VOLUME_1)
@@ -157,32 +157,32 @@ pcm_volume(void *buffer, size_t length,
 
 	const void *end = pcm_end_pointer(buffer, length);
 	switch (format) {
-	case SAMPLE_FORMAT_UNDEFINED:
-	case SAMPLE_FORMAT_DSD:
+	case SampleFormat::UNDEFINED:
+	case SampleFormat::DSD:
 		/* not implemented */
 		return false;
 
-	case SAMPLE_FORMAT_S8:
+	case SampleFormat::S8:
 		pcm_volume_change_8((int8_t *)buffer, (const int8_t *)end,
 				    volume);
 		return true;
 
-	case SAMPLE_FORMAT_S16:
+	case SampleFormat::S16:
 		pcm_volume_change_16((int16_t *)buffer, (const int16_t *)end,
 				     volume);
 		return true;
 
-	case SAMPLE_FORMAT_S24_P32:
+	case SampleFormat::S24_P32:
 		pcm_volume_change_24((int32_t *)buffer, (const int32_t *)end,
 				     volume);
 		return true;
 
-	case SAMPLE_FORMAT_S32:
+	case SampleFormat::S32:
 		pcm_volume_change_32((int32_t *)buffer, (const int32_t *)end,
 				     volume);
 		return true;
 
-	case SAMPLE_FORMAT_FLOAT:
+	case SampleFormat::FLOAT:
 		pcm_volume_change_float((float *)buffer, (const float *)end,
 					pcm_volume_to_float(volume));
 		return true;

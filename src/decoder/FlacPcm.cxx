@@ -76,12 +76,12 @@ flac_convert_8(int8_t *dest,
 
 void
 flac_convert(void *dest,
-	     unsigned int num_channels, enum sample_format sample_format,
+	     unsigned int num_channels, SampleFormat sample_format,
 	     const FLAC__int32 *const buf[],
 	     unsigned int position, unsigned int end)
 {
 	switch (sample_format) {
-	case SAMPLE_FORMAT_S16:
+	case SampleFormat::S16:
 		if (num_channels == 2)
 			flac_convert_stereo16((int16_t*)dest, buf,
 					      position, end);
@@ -90,20 +90,20 @@ flac_convert(void *dest,
 					position, end);
 		break;
 
-	case SAMPLE_FORMAT_S24_P32:
-	case SAMPLE_FORMAT_S32:
+	case SampleFormat::S24_P32:
+	case SampleFormat::S32:
 		flac_convert_32((int32_t*)dest, num_channels, buf,
 				position, end);
 		break;
 
-	case SAMPLE_FORMAT_S8:
+	case SampleFormat::S8:
 		flac_convert_8((int8_t*)dest, num_channels, buf,
 			       position, end);
 		break;
 
-	case SAMPLE_FORMAT_FLOAT:
-	case SAMPLE_FORMAT_DSD:
-	case SAMPLE_FORMAT_UNDEFINED:
+	case SampleFormat::FLOAT:
+	case SampleFormat::DSD:
+	case SampleFormat::UNDEFINED:
 		assert(false);
 		gcc_unreachable();
 	}

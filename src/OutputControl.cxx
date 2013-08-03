@@ -139,14 +139,14 @@ audio_output_disable(struct audio_output *ao)
  */
 static bool
 audio_output_open(struct audio_output *ao,
-		  const struct audio_format *audio_format,
+		  const AudioFormat audio_format,
 		  const struct music_pipe *mp)
 {
 	bool open;
 
 	assert(ao != NULL);
 	assert(ao->allow_play);
-	assert(audio_format_valid(audio_format));
+	assert(audio_format.IsValid());
 	assert(mp != NULL);
 
 	if (ao->fail_timer != NULL) {
@@ -154,8 +154,7 @@ audio_output_open(struct audio_output *ao,
 		ao->fail_timer = NULL;
 	}
 
-	if (ao->open &&
-	    audio_format_equals(audio_format, &ao->in_audio_format)) {
+	if (ao->open && audio_format == ao->in_audio_format) {
 		assert(ao->pipe == mp ||
 		       (ao->always_on && ao->pause));
 
@@ -176,7 +175,7 @@ audio_output_open(struct audio_output *ao,
 		return true;
 	}
 
-	ao->in_audio_format = *audio_format;
+	ao->in_audio_format = audio_format;
 	ao->chunk = NULL;
 
 	ao->pipe = mp;
@@ -225,7 +224,7 @@ audio_output_close_locked(struct audio_output *ao)
 
 bool
 audio_output_update(struct audio_output *ao,
-		    const struct audio_format *audio_format,
+		    const AudioFormat audio_format,
 		    const struct music_pipe *mp)
 {
 	assert(mp != NULL);

@@ -27,7 +27,7 @@
 
 #include "gerror.h"
 
-struct audio_format;
+struct AudioFormat;
 
 /**
  * Parses a string in the form "SAMPLE_RATE:BITS:CHANNELS" into an
@@ -41,7 +41,7 @@ struct audio_format;
  * @return true on success
  */
 bool
-audio_format_parse(struct audio_format *dest, const char *src,
+audio_format_parse(AudioFormat &dest, const char *src,
 		   bool mask, GError **error_r);
 
 #endif

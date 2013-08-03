@@ -21,7 +21,7 @@
 #include "OpusEncoderPlugin.hxx"
 #include "OggStream.hxx"
 #include "EncoderAPI.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "mpd_error.h"
 
 #include <opus.h>
@@ -44,7 +44,7 @@ struct opus_encoder {
 
 	/* runtime information */
 
-	struct audio_format audio_format;
+	AudioFormat audio_format;
 
 	size_t frame_size;
 
@@ -144,37 +144,37 @@ opus_encoder_finish(Encoder *_encoder)
 
 static bool
 opus_encoder_open(Encoder *_encoder,
-		  struct audio_format *audio_format,
+		  AudioFormat &audio_format,
 		  GError **error_r)
 {
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
 
 	/* libopus supports only 48 kHz */
-	audio_format->sample_rate = 48000;
+	audio_format.sample_rate = 48000;
 
-	if (audio_format->channels > 2)
-		audio_format->channels = 1;
+	if (audio_format.channels > 2)
+		audio_format.channels = 1;
 
-	switch ((enum sample_format)audio_format->format) {
-	case SAMPLE_FORMAT_S16:
-	case SAMPLE_FORMAT_FLOAT:
+	switch (audio_format.format) {
+	case SampleFormat::S16:
+	case SampleFormat::FLOAT:
 		break;
 
-	case SAMPLE_FORMAT_S8:
-		audio_format->format = SAMPLE_FORMAT_S16;
+	case SampleFormat::S8:
+		audio_format.format = SampleFormat::S16;
 		break;
 
 	default:
-		audio_format->format = SAMPLE_FORMAT_FLOAT;
+		audio_format.format = SampleFormat::FLOAT;
 		break;
 	}
 
-	encoder->audio_format = *audio_format;
-	encoder->frame_size = audio_format_frame_size(audio_format);
+	encoder->audio_format = audio_format;
+	encoder->frame_size = audio_format.GetFrameSize();
 
 	int error;
-	encoder->enc = opus_encoder_create(audio_format->sample_rate,
-					   audio_format->channels,
+	encoder->enc = opus_encoder_create(audio_format.sample_rate,
+					   audio_format.channels,
 					   OPUS_APPLICATION_AUDIO,
 					   &error);
 	if (encoder->enc == nullptr) {
@@ -190,7 +190,7 @@ opus_encoder_open(Encoder *_encoder,
 
 	opus_encoder_ctl(encoder->enc, OPUS_GET_LOOKAHEAD(&encoder->lookahead));
 
-	encoder->buffer_frames = audio_format->sample_rate / 50;
+	encoder->buffer_frames = audio_format.sample_rate / 50;
 	encoder->buffer_size = encoder->frame_size * encoder->buffer_frames;
 	encoder->buffer_position = 0;
 	encoder->buffer = (unsigned char *)g_malloc(encoder->buffer_size);
@@ -218,7 +218,7 @@ opus_encoder_do_encode(struct opus_encoder *encoder, bool eos,
 	assert(encoder->buffer_position == encoder->buffer_size);
 
 	opus_int32 result =
-		encoder->audio_format.format == SAMPLE_FORMAT_S16
+		encoder->audio_format.format == SampleFormat::S16
 		? opus_encode(encoder->enc,
 			      (const opus_int16 *)encoder->buffer,
 			      encoder->buffer_frames,

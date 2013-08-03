@@ -154,9 +154,9 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	mpc_demux_get_info(demux, &info);
 
 	GError *error = nullptr;
-	struct audio_format audio_format;
-	if (!audio_format_init_checked(&audio_format, info.sample_freq,
-				       SAMPLE_FORMAT_S24_P32,
+	AudioFormat audio_format;
+	if (!audio_format_init_checked(audio_format, info.sample_freq,
+				       SampleFormat::S24_P32,
 				       info.channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
@@ -173,7 +173,7 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 	decoder_replay_gain(mpd_decoder, &replay_gain_info);
 
-	decoder_initialized(mpd_decoder, &audio_format,
+	decoder_initialized(mpd_decoder, audio_format,
 			    input_stream_is_seekable(is),
 			    mpc_streaminfo_get_length(&info));
 

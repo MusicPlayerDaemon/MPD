@@ -142,7 +142,7 @@ winmm_output_finish(struct audio_output *ao)
 }
 
 static bool
-winmm_output_open(struct audio_output *ao, struct audio_format *audio_format,
+winmm_output_open(struct audio_output *ao, AudioFormat &audio_format,
 		  GError **error_r)
 {
 	WinmmOutput *wo = (WinmmOutput *)ao;
@@ -154,30 +154,32 @@ winmm_output_open(struct audio_output *ao, struct audio_format *audio_format,
 		return false;
 	}
 
-	switch (audio_format->format) {
-	case SAMPLE_FORMAT_S8:
-	case SAMPLE_FORMAT_S16:
+	switch (audio_format.format) {
+	case SampleFormat::S8:
+	case SampleFormat::S16:
 		break;
 
-	case SAMPLE_FORMAT_S24_P32:
-	case SAMPLE_FORMAT_S32:
-	case SAMPLE_FORMAT_UNDEFINED:
+	case SampleFormat::S24_P32:
+	case SampleFormat::S32:
+	case SampleFormat::FLOAT:
+	case SampleFormat::DSD:
+	case SampleFormat::UNDEFINED:
 		/* we havn't tested formats other than S16 */
-		audio_format->format = SAMPLE_FORMAT_S16;
+		audio_format.format = SampleFormat::S16;
 		break;
 	}
 
-	if (audio_format->channels > 2)
+	if (audio_format.channels > 2)
 		/* same here: more than stereo was not tested */
-		audio_format->channels = 2;
+		audio_format.channels = 2;
 
 	WAVEFORMATEX format;
 	format.wFormatTag = WAVE_FORMAT_PCM;
-	format.nChannels = audio_format->channels;
-	format.nSamplesPerSec = audio_format->sample_rate;
-	format.nBlockAlign = audio_format_frame_size(audio_format);
+	format.nChannels = audio_format.channels;
+	format.nSamplesPerSec = audio_format.sample_rate;
+	format.nBlockAlign = audio_format.GetFrameSize();
 	format.nAvgBytesPerSec = format.nSamplesPerSec * format.nBlockAlign;
-	format.wBitsPerSample = audio_format_sample_size(audio_format) * 8;
+	format.wBitsPerSample = audio_format.GetSampleSize() * 8;
 	format.cbSize = 0;
 
 	MMRESULT result = waveOutOpen(&wo->handle, wo->device_id, &format,

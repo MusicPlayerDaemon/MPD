@@ -22,7 +22,7 @@
 #include "PcmChannels.hxx"
 #include "PcmFormat.hxx"
 #include "pcm_pack.h"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 
 #include <glib.h>
 
@@ -48,46 +48,46 @@ PcmConvert::Reset()
 }
 
 inline const int16_t *
-PcmConvert::Convert16(const audio_format *src_format,
+PcmConvert::Convert16(const AudioFormat src_format,
 		      const void *src_buffer, size_t src_size,
-		      const audio_format *dest_format, size_t *dest_size_r,
+		      const AudioFormat dest_format, size_t *dest_size_r,
 		      GError **error_r)
 {
 	const int16_t *buf;
 	size_t len;
 
-	assert(dest_format->format == SAMPLE_FORMAT_S16);
+	assert(dest_format.format == SampleFormat::S16);
 
 	buf = pcm_convert_to_16(format_buffer, dither,
-				sample_format(src_format->format),
+				src_format.format,
 				src_buffer, src_size,
 				&len);
 	if (buf == NULL) {
 		g_set_error(error_r, pcm_convert_quark(), 0,
 			    "Conversion from %s to 16 bit is not implemented",
-			    sample_format_to_string(sample_format(src_format->format)));
+			    sample_format_to_string(src_format.format));
 		return NULL;
 	}
 
-	if (src_format->channels != dest_format->channels) {
+	if (src_format.channels != dest_format.channels) {
 		buf = pcm_convert_channels_16(channels_buffer,
-					      dest_format->channels,
-					      src_format->channels,
+					      dest_format.channels,
+					      src_format.channels,
 					      buf, len, &len);
 		if (buf == NULL) {
 			g_set_error(error_r, pcm_convert_quark(), 0,
 				    "Conversion from %u to %u channels "
 				    "is not implemented",
-				    src_format->channels,
-				    dest_format->channels);
+				    src_format.channels,
+				    dest_format.channels);
 			return NULL;
 		}
 	}
 
-	if (src_format->sample_rate != dest_format->sample_rate) {
-		buf = resampler.Resample16(dest_format->channels,
-					   src_format->sample_rate, buf, len,
-					   dest_format->sample_rate, &len,
+	if (src_format.sample_rate != dest_format.sample_rate) {
+		buf = resampler.Resample16(dest_format.channels,
+					   src_format.sample_rate, buf, len,
+					   dest_format.sample_rate, &len,
 					   error_r);
 		if (buf == NULL)
 			return NULL;
@@ -98,45 +98,45 @@ PcmConvert::Convert16(const audio_format *src_format,
 }
 
 inline const int32_t *
-PcmConvert::Convert24(const audio_format *src_format,
+PcmConvert::Convert24(const AudioFormat src_format,
 		      const void *src_buffer, size_t src_size,
-		      const audio_format *dest_format, size_t *dest_size_r,
+		      const AudioFormat dest_format, size_t *dest_size_r,
 		      GError **error_r)
 {
 	const int32_t *buf;
 	size_t len;
 
-	assert(dest_format->format == SAMPLE_FORMAT_S24_P32);
+	assert(dest_format.format == SampleFormat::S24_P32);
 
 	buf = pcm_convert_to_24(format_buffer,
-				sample_format(src_format->format),
+				src_format.format,
 				src_buffer, src_size, &len);
 	if (buf == NULL) {
 		g_set_error(error_r, pcm_convert_quark(), 0,
 			    "Conversion from %s to 24 bit is not implemented",
-			    sample_format_to_string(sample_format(src_format->format)));
+			    sample_format_to_string(src_format.format));
 		return NULL;
 	}
 
-	if (src_format->channels != dest_format->channels) {
+	if (src_format.channels != dest_format.channels) {
 		buf = pcm_convert_channels_24(channels_buffer,
-					      dest_format->channels,
-					      src_format->channels,
+					      dest_format.channels,
+					      src_format.channels,
 					      buf, len, &len);
 		if (buf == NULL) {
 			g_set_error(error_r, pcm_convert_quark(), 0,
 				    "Conversion from %u to %u channels "
 				    "is not implemented",
-				    src_format->channels,
-				    dest_format->channels);
+				    src_format.channels,
+				    dest_format.channels);
 			return NULL;
 		}
 	}
 
-	if (src_format->sample_rate != dest_format->sample_rate) {
-		buf = resampler.Resample24(dest_format->channels,
-					   src_format->sample_rate, buf, len,
-					   dest_format->sample_rate, &len,
+	if (src_format.sample_rate != dest_format.sample_rate) {
+		buf = resampler.Resample24(dest_format.channels,
+					   src_format.sample_rate, buf, len,
+					   dest_format.sample_rate, &len,
 					   error_r);
 		if (buf == NULL)
 			return NULL;
@@ -147,45 +147,45 @@ PcmConvert::Convert24(const audio_format *src_format,
 }
 
 inline const int32_t *
-PcmConvert::Convert32(const audio_format *src_format,
+PcmConvert::Convert32(const AudioFormat src_format,
 		      const void *src_buffer, size_t src_size,
-		      const audio_format *dest_format, size_t *dest_size_r,
+		      const AudioFormat dest_format, size_t *dest_size_r,
 		      GError **error_r)
 {
 	const int32_t *buf;
 	size_t len;
 
-	assert(dest_format->format == SAMPLE_FORMAT_S32);
+	assert(dest_format.format == SampleFormat::S32);
 
 	buf = pcm_convert_to_32(format_buffer,
-				sample_format(src_format->format),
+				src_format.format,
 				src_buffer, src_size, &len);
 	if (buf == NULL) {
 		g_set_error(error_r, pcm_convert_quark(), 0,
 			    "Conversion from %s to 32 bit is not implemented",
-			    sample_format_to_string(sample_format(src_format->format)));
+			    sample_format_to_string(src_format.format));
 		return NULL;
 	}
 
-	if (src_format->channels != dest_format->channels) {
+	if (src_format.channels != dest_format.channels) {
 		buf = pcm_convert_channels_32(channels_buffer,
-					      dest_format->channels,
-					      src_format->channels,
+					      dest_format.channels,
+					      src_format.channels,
 					      buf, len, &len);
 		if (buf == NULL) {
 			g_set_error(error_r, pcm_convert_quark(), 0,
 				    "Conversion from %u to %u channels "
 				    "is not implemented",
-				    src_format->channels,
-				    dest_format->channels);
+				    src_format.channels,
+				    dest_format.channels);
 			return NULL;
 		}
 	}
 
-	if (src_format->sample_rate != dest_format->sample_rate) {
-		buf = resampler.Resample32(dest_format->channels,
-					   src_format->sample_rate, buf, len,
-					   dest_format->sample_rate, &len,
+	if (src_format.sample_rate != dest_format.sample_rate) {
+		buf = resampler.Resample32(dest_format.channels,
+					   src_format.sample_rate, buf, len,
+					   dest_format.sample_rate, &len,
 					   error_r);
 		if (buf == NULL)
 			return buf;
@@ -196,41 +196,41 @@ PcmConvert::Convert32(const audio_format *src_format,
 }
 
 inline const float *
-PcmConvert::ConvertFloat(const audio_format *src_format,
+PcmConvert::ConvertFloat(const AudioFormat src_format,
 			 const void *src_buffer, size_t src_size,
-			 const audio_format *dest_format, size_t *dest_size_r,
+			 const AudioFormat dest_format, size_t *dest_size_r,
 			 GError **error_r)
 {
 	const float *buffer = (const float *)src_buffer;
 	size_t size = src_size;
 
-	assert(dest_format->format == SAMPLE_FORMAT_FLOAT);
+	assert(dest_format.format == SampleFormat::FLOAT);
 
 	/* convert to float now */
 
 	buffer = pcm_convert_to_float(format_buffer,
-				      sample_format(src_format->format),
+				      src_format.format,
 				      buffer, size, &size);
 	if (buffer == NULL) {
 		g_set_error(error_r, pcm_convert_quark(), 0,
 			    "Conversion from %s to float is not implemented",
-			    sample_format_to_string(sample_format(src_format->format)));
+			    sample_format_to_string(src_format.format));
 		return NULL;
 	}
 
 	/* convert channels */
 
-	if (src_format->channels != dest_format->channels) {
+	if (src_format.channels != dest_format.channels) {
 		buffer = pcm_convert_channels_float(channels_buffer,
-						    dest_format->channels,
-						    src_format->channels,
+						    dest_format.channels,
+						    src_format.channels,
 						    buffer, size, &size);
 		if (buffer == NULL) {
 			g_set_error(error_r, pcm_convert_quark(), 0,
 				    "Conversion from %u to %u channels "
 				    "is not implemented",
-				    src_format->channels,
-				    dest_format->channels);
+				    src_format.channels,
+				    dest_format.channels);
 			return NULL;
 		}
 	}
@@ -238,11 +238,11 @@ PcmConvert::ConvertFloat(const audio_format *src_format,
 	/* resample with float, because this is the best format for
 	   libsamplerate */
 
-	if (src_format->sample_rate != dest_format->sample_rate) {
-		buffer = resampler.ResampleFloat(dest_format->channels,
-						 src_format->sample_rate,
+	if (src_format.sample_rate != dest_format.sample_rate) {
+		buffer = resampler.ResampleFloat(dest_format.channels,
+						 src_format.sample_rate,
 						 buffer, size,
-						 dest_format->sample_rate,
+						 dest_format.sample_rate,
 						 &size, error_r);
 		if (buffer == NULL)
 			return NULL;
@@ -253,16 +253,16 @@ PcmConvert::ConvertFloat(const audio_format *src_format,
 }
 
 const void *
-PcmConvert::Convert(const audio_format *src_format,
+PcmConvert::Convert(AudioFormat src_format,
 		    const void *src, size_t src_size,
-		    const audio_format *dest_format,
+		    const AudioFormat dest_format,
 		    size_t *dest_size_r,
 		    GError **error_r)
 {
-	struct audio_format float_format;
-	if (src_format->format == SAMPLE_FORMAT_DSD) {
+	AudioFormat float_format;
+	if (src_format.format == SampleFormat::DSD) {
 		size_t f_size;
-		const float *f = dsd.ToFloat(src_format->channels,
+		const float *f = dsd.ToFloat(src_format.channels,
 					     false, (const uint8_t *)src,
 					     src_size, &f_size);
 		if (f == NULL) {
@@ -271,31 +271,31 @@ PcmConvert::Convert(const audio_format *src_format,
 			return NULL;
 		}
 
-		float_format = *src_format;
-		float_format.format = SAMPLE_FORMAT_FLOAT;
+		float_format = src_format;
+		float_format.format = SampleFormat::FLOAT;
 
-		src_format = &float_format;
+		src_format = float_format;
 		src = f;
 		src_size = f_size;
 	}
 
-	switch (sample_format(dest_format->format)) {
-	case SAMPLE_FORMAT_S16:
+	switch (dest_format.format) {
+	case SampleFormat::S16:
 		return Convert16(src_format, src, src_size,
 				 dest_format, dest_size_r,
 				 error_r);
 
-	case SAMPLE_FORMAT_S24_P32:
+	case SampleFormat::S24_P32:
 		return Convert24(src_format, src, src_size,
 				 dest_format, dest_size_r,
 				 error_r);
 
-	case SAMPLE_FORMAT_S32:
+	case SampleFormat::S32:
 		return Convert32(src_format, src, src_size,
 				 dest_format, dest_size_r,
 				 error_r);
 
-	case SAMPLE_FORMAT_FLOAT:
+	case SampleFormat::FLOAT:
 		return ConvertFloat(src_format, src, src_size,
 				    dest_format, dest_size_r,
 				    error_r);
@@ -303,7 +303,7 @@ PcmConvert::Convert(const audio_format *src_format,
 	default:
 		g_set_error(error_r, pcm_convert_quark(), 0,
 			    "PCM conversion to %s is not implemented",
-			    sample_format_to_string(sample_format(dest_format->format)));
+			    sample_format_to_string(dest_format.format));
 		return NULL;
 	}
 }

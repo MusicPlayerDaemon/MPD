@@ -36,9 +36,9 @@ extern "C" {
 static void
 pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 {
-	static constexpr struct audio_format audio_format = {
+	static constexpr AudioFormat audio_format = {
 		44100,
-		SAMPLE_FORMAT_S16,
+		SampleFormat::S16,
 		2,
 	};
 
@@ -49,14 +49,14 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 	GError *error = nullptr;
 	enum decoder_command cmd;
 
-	double time_to_size = audio_format_time_to_size(&audio_format);
+	const double time_to_size = audio_format.GetTimeToSize();
 
 	float total_time = -1;
 	const goffset size = input_stream_get_size(is);
 	if (size >= 0)
 		total_time = size / time_to_size;
 
-	decoder_initialized(decoder, &audio_format,
+	decoder_initialized(decoder, audio_format,
 			    input_stream_is_seekable(is), total_time);
 
 	do {

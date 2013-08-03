@@ -202,11 +202,10 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 		return DECODE_COMMAND_STOP;
 	}
 
-	struct audio_format audio_format;
-	audio_format_init(&audio_format, opus_sample_rate,
-			  SAMPLE_FORMAT_S16, channels);
-	decoder_initialized(decoder, &audio_format, false, -1);
-	frame_size = audio_format_frame_size(&audio_format);
+	const AudioFormat audio_format(opus_sample_rate,
+				       SampleFormat::S16, channels);
+	decoder_initialized(decoder, audio_format, false, -1);
+	frame_size = audio_format.GetFrameSize();
 
 	/* allocate an output buffer for 16 bit PCM samples big enough
 	   to hold a quarter second, larger than 120ms required by

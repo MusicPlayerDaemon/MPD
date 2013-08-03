@@ -20,7 +20,7 @@
 #include "config.h"
 #include "FlacEncoderPlugin.hxx"
 #include "EncoderAPI.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "util/fifo_buffer.h"
 
@@ -40,7 +40,7 @@ extern "C" {
 struct flac_encoder {
 	Encoder encoder;
 
-	struct audio_format audio_format;
+	AudioFormat audio_format;
 	unsigned compression;
 
 	FLAC__StreamEncoder *fse;
@@ -160,31 +160,31 @@ flac_encoder_close(Encoder *_encoder)
 }
 
 static bool
-flac_encoder_open(Encoder *_encoder, struct audio_format *audio_format,
+flac_encoder_open(Encoder *_encoder, AudioFormat &audio_format,
 		     GError **error)
 {
 	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
 	unsigned bits_per_sample;
 
-	encoder->audio_format = *audio_format;
+	encoder->audio_format = audio_format;
 
 	/* FIXME: flac should support 32bit as well */
-	switch (audio_format->format) {
-	case SAMPLE_FORMAT_S8:
+	switch (audio_format.format) {
+	case SampleFormat::S8:
 		bits_per_sample = 8;
 		break;
 
-	case SAMPLE_FORMAT_S16:
+	case SampleFormat::S16:
 		bits_per_sample = 16;
 		break;
 
-	case SAMPLE_FORMAT_S24_P32:
+	case SampleFormat::S24_P32:
 		bits_per_sample = 24;
 		break;
 
 	default:
 		bits_per_sample = 24;
-		audio_format->format = SAMPLE_FORMAT_S24_P32;
+		audio_format.format = SampleFormat::S24_P32;
 	}
 
 	/* allocate the encoder */
@@ -263,30 +263,33 @@ flac_encoder_write(Encoder *_encoder,
 
 	/* format conversion */
 
-	num_frames = length / audio_format_frame_size(&encoder->audio_format);
+	num_frames = length / encoder->audio_format.GetFrameSize();
 	num_samples = num_frames * encoder->audio_format.channels;
 
 	switch (encoder->audio_format.format) {
-	case SAMPLE_FORMAT_S8:
+	case SampleFormat::S8:
 		exbuffer = encoder->expand_buffer.Get(length * 4);
 		pcm8_to_flac((int32_t *)exbuffer, (const int8_t *)data,
 			     num_samples);
 		buffer = exbuffer;
 		break;
 
-	case SAMPLE_FORMAT_S16:
+	case SampleFormat::S16:
 		exbuffer = encoder->expand_buffer.Get(length * 2);
 		pcm16_to_flac((int32_t *)exbuffer, (const int16_t *)data,
 			      num_samples);
 		buffer = exbuffer;
 		break;
 
-	case SAMPLE_FORMAT_S24_P32:
-	case SAMPLE_FORMAT_S32:
+	case SampleFormat::S24_P32:
+	case SampleFormat::S32:
 		/* nothing need to be done; format is the same for
 		   both mpd and libFLAC */
 		buffer = data;
 		break;
+
+	default:
+		gcc_unreachable();
 	}
 
 	/* feed samples to encoder */

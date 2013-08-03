@@ -66,7 +66,7 @@ null_encoder_close(Encoder *_encoder)
 
 static bool
 null_encoder_open(Encoder *_encoder,
-		  gcc_unused struct audio_format *audio_format,
+		  gcc_unused AudioFormat &audio_format,
 		  gcc_unused GError **error)
 {
 	NullEncoder *encoder = (NullEncoder *)_encoder;

@@ -116,9 +116,8 @@ inline bool
 ShoutOutput::Configure(const config_param *param, GError **error_r)
 {
 
-	const struct audio_format *audio_format =
-		&base.config_audio_format;
-	if (!audio_format_fully_defined(audio_format)) {
+	const AudioFormat audio_format = base.config_audio_format;
+	if (!audio_format.IsFullyDefined()) {
 		g_set_error(error_r, shout_output_quark(), 0,
 			    "Need full audio format specification");
 		return nullptr;
@@ -269,10 +268,10 @@ ShoutOutput::Configure(const config_param *param, GError **error_r)
 		char temp[11];
 		memset(temp, 0, sizeof(temp));
 
-		snprintf(temp, sizeof(temp), "%u", audio_format->channels);
+		snprintf(temp, sizeof(temp), "%u", audio_format.channels);
 		shout_set_audio_info(shout_conn, SHOUT_AI_CHANNELS, temp);
 
-		snprintf(temp, sizeof(temp), "%u", audio_format->sample_rate);
+		snprintf(temp, sizeof(temp), "%u", audio_format.sample_rate);
 
 		shout_set_audio_info(shout_conn, SHOUT_AI_SAMPLERATE, temp);
 
@@ -428,7 +427,7 @@ shout_connect(ShoutOutput *sd, GError **error)
 }
 
 static bool
-my_shout_open_device(struct audio_output *ao, struct audio_format *audio_format,
+my_shout_open_device(struct audio_output *ao, AudioFormat &audio_format,
 		     GError **error)
 {
 	ShoutOutput *sd = (ShoutOutput *)ao;

@@ -21,7 +21,7 @@
 #include "PcmMix.hxx"
 #include "PcmVolume.hxx"
 #include "PcmUtils.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 
 #include <math.h>
 
@@ -74,35 +74,35 @@ pcm_add_vol_float(float *buffer1, const float *buffer2,
 static bool
 pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
 	    int vol1, int vol2,
-	    enum sample_format format)
+	    SampleFormat format)
 {
 	switch (format) {
-	case SAMPLE_FORMAT_UNDEFINED:
-	case SAMPLE_FORMAT_DSD:
+	case SampleFormat::UNDEFINED:
+	case SampleFormat::DSD:
 		/* not implemented */
 		return false;
 
-	case SAMPLE_FORMAT_S8:
+	case SampleFormat::S8:
 		PcmAddVolumeVoid<int8_t, int32_t, 8>(buffer1, buffer2, size,
 						     vol1, vol2);
 		return true;
 
-	case SAMPLE_FORMAT_S16:
+	case SampleFormat::S16:
 		PcmAddVolumeVoid<int16_t, int32_t, 16>(buffer1, buffer2, size,
 						       vol1, vol2);
 		return true;
 
-	case SAMPLE_FORMAT_S24_P32:
+	case SampleFormat::S24_P32:
 		PcmAddVolumeVoid<int32_t, int64_t, 24>(buffer1, buffer2, size,
 						       vol1, vol2);
 		return true;
 
-	case SAMPLE_FORMAT_S32:
+	case SampleFormat::S32:
 		PcmAddVolumeVoid<int32_t, int64_t, 32>(buffer1, buffer2, size,
 						       vol1, vol2);
 		return true;
 
-	case SAMPLE_FORMAT_FLOAT:
+	case SampleFormat::FLOAT:
 		pcm_add_vol_float((float *)buffer1, (const float *)buffer2,
 				  size / 4,
 				  pcm_volume_to_float(vol1),
@@ -153,31 +153,31 @@ pcm_add_float(float *buffer1, const float *buffer2, unsigned num_samples)
 
 static bool
 pcm_add(void *buffer1, const void *buffer2, size_t size,
-	enum sample_format format)
+	SampleFormat format)
 {
 	switch (format) {
-	case SAMPLE_FORMAT_UNDEFINED:
-	case SAMPLE_FORMAT_DSD:
+	case SampleFormat::UNDEFINED:
+	case SampleFormat::DSD:
 		/* not implemented */
 		return false;
 
-	case SAMPLE_FORMAT_S8:
+	case SampleFormat::S8:
 		PcmAddVoid<int8_t, int32_t, 8>(buffer1, buffer2, size);
 		return true;
 
-	case SAMPLE_FORMAT_S16:
+	case SampleFormat::S16:
 		PcmAddVoid<int16_t, int32_t, 16>(buffer1, buffer2, size);
 		return true;
 
-	case SAMPLE_FORMAT_S24_P32:
+	case SampleFormat::S24_P32:
 		PcmAddVoid<int32_t, int64_t, 24>(buffer1, buffer2, size);
 		return true;
 
-	case SAMPLE_FORMAT_S32:
+	case SampleFormat::S32:
 		PcmAddVoid<int32_t, int64_t, 32>(buffer1, buffer2, size);
 		return true;
 
-	case SAMPLE_FORMAT_FLOAT:
+	case SampleFormat::FLOAT:
 		pcm_add_float((float *)buffer1, (const float *)buffer2,
 			      size / 4);
 		return true;
@@ -189,7 +189,7 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 
 bool
 pcm_mix(void *buffer1, const void *buffer2, size_t size,
-	enum sample_format format, float portion1)
+	SampleFormat format, float portion1)
 {
 	int vol1;
 	float s;

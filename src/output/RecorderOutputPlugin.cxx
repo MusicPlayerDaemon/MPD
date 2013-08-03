@@ -192,7 +192,7 @@ RecorderOutput::EncoderToFile(GError **error_r)
 
 static bool
 recorder_output_open(struct audio_output *ao,
-		     struct audio_format *audio_format,
+		     AudioFormat &audio_format,
 		     GError **error_r)
 {
 	RecorderOutput *recorder = (RecorderOutput *)ao;

@@ -33,7 +33,7 @@
 #include "input_stream.h"
 #include "replay_gain_info.h"
 #include "Tag.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "conf.h"
 
 /**
@@ -48,7 +48,7 @@
  */
 void
 decoder_initialized(struct decoder *decoder,
-		    const struct audio_format *audio_format,
+		    AudioFormat audio_format,
 		    bool seekable, float total_time);
 
 /**

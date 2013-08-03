@@ -51,7 +51,7 @@ my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
 
 void
 decoder_initialized(G_GNUC_UNUSED struct decoder *decoder,
-		    G_GNUC_UNUSED const struct audio_format *audio_format,
+		    G_GNUC_UNUSED const AudioFormat audio_format,
 		    G_GNUC_UNUSED bool seekable,
 		    G_GNUC_UNUSED float total_time)
 {

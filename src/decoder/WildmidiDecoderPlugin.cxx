@@ -60,9 +60,9 @@ wildmidi_finish(void)
 static void
 wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 {
-	static const struct audio_format audio_format = {
+	static constexpr AudioFormat audio_format = {
 		WILDMIDI_SAMPLE_RATE,
-		SAMPLE_FORMAT_S16,
+		SampleFormat::S16,
 		2,
 	};
 	midi *wm;
@@ -79,7 +79,7 @@ wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 		return;
 	}
 
-	decoder_initialized(decoder, &audio_format, true,
+	decoder_initialized(decoder, audio_format, true,
 			    info->approx_total_samples / WILDMIDI_SAMPLE_RATE);
 
 	do {

@@ -23,7 +23,7 @@
 #include "DecoderAPI.hxx"
 #include "InputInit.hxx"
 #include "input_stream.h"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "stdbin.h"
 
 #include <glib.h>
@@ -52,14 +52,14 @@ struct decoder {
 
 void
 decoder_initialized(struct decoder *decoder,
-		    const struct audio_format *audio_format,
+		    const AudioFormat audio_format,
 		    G_GNUC_UNUSED bool seekable,
 		    G_GNUC_UNUSED float total_time)
 {
 	struct audio_format_string af_string;
 
 	assert(!decoder->initialized);
-	assert(audio_format_valid(audio_format));
+	assert(audio_format.IsValid());
 
 	g_printerr("audio_format=%s\n",
 		   audio_format_to_string(audio_format, &af_string));

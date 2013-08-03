@@ -22,7 +22,7 @@
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "replay_gain_info.h"
 #include "replay_gain_config.h"
 #include "MixerControl.hxx"
@@ -66,7 +66,7 @@ class ReplayGainFilter final : public Filter {
 	 */
 	unsigned volume;
 
-	struct audio_format format;
+	AudioFormat format;
 
 	PcmBuffer buffer;
 
@@ -112,7 +112,7 @@ public:
 	 */
 	void Update();
 
-	virtual const audio_format *Open(audio_format &af, GError **error_r);
+	virtual AudioFormat Open(AudioFormat &af, GError **error_r) override;
 	virtual void Close();
 	virtual const void *FilterPCM(const void *src, size_t src_size,
 				      size_t *dest_size_r, GError **error_r);
@@ -159,12 +159,12 @@ replay_gain_filter_init(gcc_unused const struct config_param *param,
 	return new ReplayGainFilter();
 }
 
-const audio_format *
-ReplayGainFilter::Open(audio_format &af, gcc_unused GError **error_r)
+AudioFormat
+ReplayGainFilter::Open(AudioFormat &af, gcc_unused GError **error_r)
 {
 	format = af;
 
-	return &format;
+	return format;
 }
 
 void
@@ -196,7 +196,7 @@ ReplayGainFilter::FilterPCM(const void *src, size_t src_size,
 	memcpy(dest, src, src_size);
 
 	bool success = pcm_volume(dest, src_size,
-				  sample_format(format.format),
+				  format.format,
 				  volume);
 	if (!success) {
 		g_set_error(error_r, replay_gain_quark(), 0,

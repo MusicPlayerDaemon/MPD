@@ -106,27 +106,27 @@ format_samples_float(G_GNUC_UNUSED int bytes_per_sample, void *buffer,
 /**
  * Choose a MPD sample format from libwavpacks' number of bits.
  */
-static enum sample_format
+static SampleFormat
 wavpack_bits_to_sample_format(bool is_float, int bytes_per_sample)
 {
 	if (is_float)
-		return SAMPLE_FORMAT_FLOAT;
+		return SampleFormat::FLOAT;
 
 	switch (bytes_per_sample) {
 	case 1:
-		return SAMPLE_FORMAT_S8;
+		return SampleFormat::S8;
 
 	case 2:
-		return SAMPLE_FORMAT_S16;
+		return SampleFormat::S16;
 
 	case 3:
-		return SAMPLE_FORMAT_S24_P32;
+		return SampleFormat::S24_P32;
 
 	case 4:
-		return SAMPLE_FORMAT_S32;
+		return SampleFormat::S32;
 
 	default:
-		return SAMPLE_FORMAT_UNDEFINED;
+		return SampleFormat::UNDEFINED;
 	}
 }
 
@@ -139,8 +139,8 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
 {
 	GError *error = NULL;
 	bool is_float;
-	enum sample_format sample_format;
-	struct audio_format audio_format;
+	SampleFormat sample_format;
+	AudioFormat audio_format;
 	format_samples_t format_samples;
 	float total_time;
 	int bytes_per_sample, output_sample_size;
@@ -150,7 +150,7 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
 		wavpack_bits_to_sample_format(is_float,
 					      WavpackGetBytesPerSample(wpc));
 
-	if (!audio_format_init_checked(&audio_format,
+	if (!audio_format_init_checked(audio_format,
 				       WavpackGetSampleRate(wpc),
 				       sample_format,
 				       WavpackGetNumChannels(wpc), &error)) {
@@ -168,14 +168,14 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
 	total_time = WavpackGetNumSamples(wpc);
 	total_time /= audio_format.sample_rate;
 	bytes_per_sample = WavpackGetBytesPerSample(wpc);
-	output_sample_size = audio_format_frame_size(&audio_format);
+	output_sample_size = audio_format.GetFrameSize();
 
 	/* wavpack gives us all kind of samples in a 32-bit space */
 	int32_t chunk[1024];
 	const uint32_t samples_requested = G_N_ELEMENTS(chunk) /
 		audio_format.channels;
 
-	decoder_initialized(decoder, &audio_format, can_seek, total_time);
+	decoder_initialized(decoder, audio_format, can_seek, total_time);
 
 	enum decoder_command cmd = decoder_get_command(decoder);
 	while (cmd != DECODE_COMMAND_STOP) {

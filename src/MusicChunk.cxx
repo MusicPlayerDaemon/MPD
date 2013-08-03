@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "MusicChunk.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "Tag.hxx"
 
 #include <assert.h>
@@ -31,22 +31,21 @@ music_chunk::~music_chunk()
 
 #ifndef NDEBUG
 bool
-music_chunk::CheckFormat(const struct audio_format &other_format) const
+music_chunk::CheckFormat(const AudioFormat other_format) const
 {
-	assert(audio_format_valid(&other_format));
+	assert(other_format.IsValid());
 
-	return length == 0 ||
-		audio_format_equals(&audio_format, &other_format);
+	return length == 0 || audio_format == other_format;
 }
 #endif
 
 void *
-music_chunk::Write(const struct audio_format &af,
+music_chunk::Write(const AudioFormat af,
 		   float data_time, uint16_t _bit_rate,
 		   size_t *max_length_r)
 {
 	assert(CheckFormat(af));
-	assert(length == 0 || audio_format_valid(&audio_format));
+	assert(length == 0 || audio_format.IsValid());
 
 	if (length == 0) {
 		/* if the chunk is empty, nobody has set bitRate and
@@ -56,7 +55,7 @@ music_chunk::Write(const struct audio_format &af,
 		times = data_time;
 	}
 
-	const size_t frame_size = audio_format_frame_size(&af);
+	const size_t frame_size = af.GetFrameSize();
 	size_t num_frames = (sizeof(data) - length) / frame_size;
 	if (num_frames == 0)
 		return NULL;
@@ -70,12 +69,12 @@ music_chunk::Write(const struct audio_format &af,
 }
 
 bool
-music_chunk::Expand(const struct audio_format &af, size_t _length)
+music_chunk::Expand(const AudioFormat af, size_t _length)
 {
-	const size_t frame_size = audio_format_frame_size(&af);
+	const size_t frame_size = af.GetFrameSize();
 
 	assert(length + _length <= sizeof(data));
-	assert(audio_format_equals(&audio_format, &af));
+	assert(audio_format == af);
 
 	length += _length;
 

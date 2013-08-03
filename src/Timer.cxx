@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Timer.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "clock.h"
 
 #include <glib.h>
@@ -28,10 +28,10 @@
 #include <limits.h>
 #include <stddef.h>
 
-Timer::Timer(const struct audio_format &af)
+Timer::Timer(const AudioFormat af)
 	: time(0),
 	  started(false),
-	  rate(af.sample_rate * audio_format_frame_size(&af))
+	 rate(af.sample_rate * af.GetFrameSize())
 {
 }
 

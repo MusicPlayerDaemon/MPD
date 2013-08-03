@@ -70,7 +70,7 @@ struct OssOutput {
 	 * The current input audio format.  This is needed to reopen
 	 * the device after cancel().
 	 */
-	struct audio_format audio_format;
+	AudioFormat audio_format;
 
 	/**
 	 * The current OSS audio format.  This is needed to reopen the
@@ -308,10 +308,10 @@ oss_try_ioctl(int fd, unsigned long request, int value,
  * specified number is not supported.
  */
 static bool
-oss_setup_channels(int fd, struct audio_format *audio_format, GError **error_r)
+oss_setup_channels(int fd, AudioFormat &audio_format, GError **error_r)
 {
 	const char *const msg = "Failed to set channel count";
-	int channels = audio_format->channels;
+	int channels = audio_format.channels;
 	enum oss_setup_result result =
 		oss_try_ioctl_r(fd, SNDCTL_DSP_CHANNELS, &channels, msg, error_r);
 	switch (result) {
@@ -319,7 +319,7 @@ oss_setup_channels(int fd, struct audio_format *audio_format, GError **error_r)
 		if (!audio_valid_channel_count(channels))
 		    break;
 
-		audio_format->channels = channels;
+		audio_format.channels = channels;
 		return true;
 
 	case ERROR:
@@ -330,7 +330,7 @@ oss_setup_channels(int fd, struct audio_format *audio_format, GError **error_r)
 	}
 
 	for (unsigned i = 1; i < 2; ++i) {
-		if (i == audio_format->channels)
+		if (i == audio_format.channels)
 			/* don't try that again */
 			continue;
 
@@ -342,7 +342,7 @@ oss_setup_channels(int fd, struct audio_format *audio_format, GError **error_r)
 			if (!audio_valid_channel_count(channels))
 			    break;
 
-			audio_format->channels = channels;
+			audio_format.channels = channels;
 			return true;
 
 		case ERROR:
@@ -362,11 +362,11 @@ oss_setup_channels(int fd, struct audio_format *audio_format, GError **error_r)
  * specified sample rate is not supported.
  */
 static bool
-oss_setup_sample_rate(int fd, struct audio_format *audio_format,
+oss_setup_sample_rate(int fd, AudioFormat &audio_format,
 		      GError **error_r)
 {
 	const char *const msg = "Failed to set sample rate";
-	int sample_rate = audio_format->sample_rate;
+	int sample_rate = audio_format.sample_rate;
 	enum oss_setup_result result =
 		oss_try_ioctl_r(fd, SNDCTL_DSP_SPEED, &sample_rate,
 				msg, error_r);
@@ -375,7 +375,7 @@ oss_setup_sample_rate(int fd, struct audio_format *audio_format,
 		if (!audio_valid_sample_rate(sample_rate))
 			break;
 
-		audio_format->sample_rate = sample_rate;
+		audio_format.sample_rate = sample_rate;
 		return true;
 
 	case ERROR:
@@ -388,7 +388,7 @@ oss_setup_sample_rate(int fd, struct audio_format *audio_format,
 	static const int sample_rates[] = { 48000, 44100, 0 };
 	for (unsigned i = 0; sample_rates[i] != 0; ++i) {
 		sample_rate = sample_rates[i];
-		if (sample_rate == (int)audio_format->sample_rate)
+		if (sample_rate == (int)audio_format.sample_rate)
 			continue;
 
 		result = oss_try_ioctl_r(fd, SNDCTL_DSP_SPEED, &sample_rate,
@@ -398,7 +398,7 @@ oss_setup_sample_rate(int fd, struct audio_format *audio_format,
 			if (!audio_valid_sample_rate(sample_rate))
 				break;
 
-			audio_format->sample_rate = sample_rate;
+			audio_format.sample_rate = sample_rate;
 			return true;
 
 		case ERROR:
@@ -418,28 +418,28 @@ oss_setup_sample_rate(int fd, struct audio_format *audio_format,
  * AFMT_QUERY if there is no direct counterpart.
  */
 static int
-sample_format_to_oss(enum sample_format format)
+sample_format_to_oss(SampleFormat format)
 {
 	switch (format) {
-	case SAMPLE_FORMAT_UNDEFINED:
-	case SAMPLE_FORMAT_FLOAT:
-	case SAMPLE_FORMAT_DSD:
+	case SampleFormat::UNDEFINED:
+	case SampleFormat::FLOAT:
+	case SampleFormat::DSD:
 		return AFMT_QUERY;
 
-	case SAMPLE_FORMAT_S8:
+	case SampleFormat::S8:
 		return AFMT_S8;
 
-	case SAMPLE_FORMAT_S16:
+	case SampleFormat::S16:
 		return AFMT_S16_NE;
 
-	case SAMPLE_FORMAT_S24_P32:
+	case SampleFormat::S24_P32:
 #ifdef AFMT_S24_NE
 		return AFMT_S24_NE;
 #else
 		return AFMT_QUERY;
 #endif
 
-	case SAMPLE_FORMAT_S32:
+	case SampleFormat::S32:
 #ifdef AFMT_S32_NE
 		return AFMT_S32_NE;
 #else
@@ -452,47 +452,47 @@ sample_format_to_oss(enum sample_format format)
 
 /**
  * Convert an OSS sample format to its MPD counterpart.  Returns
- * SAMPLE_FORMAT_UNDEFINED if there is no direct counterpart.
+ * SampleFormat::UNDEFINED if there is no direct counterpart.
  */
-static enum sample_format
+static SampleFormat
 sample_format_from_oss(int format)
 {
 	switch (format) {
 	case AFMT_S8:
-		return SAMPLE_FORMAT_S8;
+		return SampleFormat::S8;
 
 	case AFMT_S16_NE:
-		return SAMPLE_FORMAT_S16;
+		return SampleFormat::S16;
 
 #ifdef AFMT_S24_PACKED
 	case AFMT_S24_PACKED:
-		return SAMPLE_FORMAT_S24_P32;
+		return SampleFormat::S24_P32;
 #endif
 
 #ifdef AFMT_S24_NE
 	case AFMT_S24_NE:
-		return SAMPLE_FORMAT_S24_P32;
+		return SampleFormat::S24_P32;
 #endif
 
 #ifdef AFMT_S32_NE
 	case AFMT_S32_NE:
-		return SAMPLE_FORMAT_S32;
+		return SampleFormat::S32;
 #endif
 
 	default:
-		return SAMPLE_FORMAT_UNDEFINED;
+		return SampleFormat::UNDEFINED;
 	}
 }
 
 /**
  * Probe one sample format.
  *
- * @return the selected sample format or SAMPLE_FORMAT_UNDEFINED on
+ * @return the selected sample format or SampleFormat::UNDEFINED on
  * error
  */
 static enum oss_setup_result
-oss_probe_sample_format(int fd, enum sample_format sample_format,
-			enum sample_format *sample_format_r,
+oss_probe_sample_format(int fd, SampleFormat sample_format,
+			SampleFormat *sample_format_r,
 			int *oss_format_r,
 #ifdef AFMT_S24_PACKED
 			PcmExport &pcm_export,
@@ -509,7 +509,7 @@ oss_probe_sample_format(int fd, enum sample_format sample_format,
 				"Failed to set sample format", error_r);
 
 #ifdef AFMT_S24_PACKED
-	if (result == UNSUPPORTED && sample_format == SAMPLE_FORMAT_S24_P32) {
+	if (result == UNSUPPORTED && sample_format == SampleFormat::S24_P32) {
 		/* if the driver doesn't support padded 24 bit, try
 		   packed 24 bit */
 		oss_format = AFMT_S24_PACKED;
@@ -523,7 +523,7 @@ oss_probe_sample_format(int fd, enum sample_format sample_format,
 		return result;
 
 	sample_format = sample_format_from_oss(oss_format);
-	if (sample_format == SAMPLE_FORMAT_UNDEFINED)
+	if (sample_format == SampleFormat::UNDEFINED)
 		return UNSUPPORTED;
 
 	*sample_format_r = sample_format;
@@ -544,16 +544,16 @@ oss_probe_sample_format(int fd, enum sample_format sample_format,
  * specified format is not supported.
  */
 static bool
-oss_setup_sample_format(int fd, struct audio_format *audio_format,
+oss_setup_sample_format(int fd, AudioFormat &audio_format,
 			int *oss_format_r,
 #ifdef AFMT_S24_PACKED
 			PcmExport &pcm_export,
 #endif
 			GError **error_r)
 {
-	enum sample_format mpd_format;
+	SampleFormat mpd_format;
 	enum oss_setup_result result =
-		oss_probe_sample_format(fd, sample_format(audio_format->format),
+		oss_probe_sample_format(fd, audio_format.format,
 					&mpd_format, oss_format_r,
 #ifdef AFMT_S24_PACKED
 					pcm_export,
@@ -561,7 +561,7 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
 					error_r);
 	switch (result) {
 	case SUCCESS:
-		audio_format->format = mpd_format;
+		audio_format.format = mpd_format;
 		return true;
 
 	case ERROR:
@@ -577,17 +577,17 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
 	/* the requested sample format is not available - probe for
 	   other formats supported by MPD */
 
-	static const enum sample_format sample_formats[] = {
-		SAMPLE_FORMAT_S24_P32,
-		SAMPLE_FORMAT_S32,
-		SAMPLE_FORMAT_S16,
-		SAMPLE_FORMAT_S8,
-		SAMPLE_FORMAT_UNDEFINED /* sentinel */
+	static const SampleFormat sample_formats[] = {
+		SampleFormat::S24_P32,
+		SampleFormat::S32,
+		SampleFormat::S16,
+		SampleFormat::S8,
+		SampleFormat::UNDEFINED /* sentinel */
 	};
 
-	for (unsigned i = 0; sample_formats[i] != SAMPLE_FORMAT_UNDEFINED; ++i) {
+	for (unsigned i = 0; sample_formats[i] != SampleFormat::UNDEFINED; ++i) {
 		mpd_format = sample_formats[i];
-		if (mpd_format == audio_format->format)
+		if (mpd_format == audio_format.format)
 			/* don't try that again */
 			continue;
 
@@ -599,7 +599,7 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
 						 error_r);
 		switch (result) {
 		case SUCCESS:
-			audio_format->format = mpd_format;
+			audio_format.format = mpd_format;
 			return true;
 
 		case ERROR:
@@ -619,7 +619,7 @@ oss_setup_sample_format(int fd, struct audio_format *audio_format,
  * Sets up the OSS device which was opened before.
  */
 static bool
-oss_setup(OssOutput *od, struct audio_format *audio_format,
+oss_setup(OssOutput *od, AudioFormat &audio_format,
 	  GError **error_r)
 {
 	return oss_setup_channels(od->fd, audio_format, error_r) &&
@@ -687,7 +687,7 @@ oss_reopen(OssOutput *od, GError **error_r)
 }
 
 static bool
-oss_output_open(struct audio_output *ao, struct audio_format *audio_format,
+oss_output_open(struct audio_output *ao, AudioFormat &audio_format,
 		GError **error)
 {
 	OssOutput *od = (OssOutput *)ao;
@@ -705,7 +705,7 @@ oss_output_open(struct audio_output *ao, struct audio_format *audio_format,
 		return false;
 	}
 
-	od->audio_format = *audio_format;
+	od->audio_format = audio_format;
 	return true;
 }
 

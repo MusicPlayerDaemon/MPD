@@ -23,7 +23,7 @@
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 
 #include <glib.h>
 
@@ -53,7 +53,7 @@ public:
 		children.emplace_back(name, filter);
 	}
 
-	virtual const audio_format *Open(audio_format &af, GError **error_r);
+	virtual AudioFormat Open(AudioFormat &af, GError **error_r) override;
 	virtual void Close();
 	virtual const void *FilterPCM(const void *src, size_t src_size,
 				      size_t *dest_size_r, GError **error_r);
@@ -96,43 +96,43 @@ ChainFilter::CloseUntil(const Filter *until)
 	gcc_unreachable();
 }
 
-static const struct audio_format *
+static AudioFormat
 chain_open_child(const char *name, Filter *filter,
-		 const audio_format &prev_audio_format,
+		 const AudioFormat &prev_audio_format,
 		 GError **error_r)
 {
-	audio_format conv_audio_format = prev_audio_format;
-	const audio_format *next_audio_format =
+	AudioFormat conv_audio_format = prev_audio_format;
+	const AudioFormat next_audio_format =
 		filter->Open(conv_audio_format, error_r);
-	if (next_audio_format == NULL)
-		return NULL;
+	if (!next_audio_format.IsDefined())
+		return next_audio_format;
 
-	if (!audio_format_equals(&conv_audio_format, &prev_audio_format)) {
+	if (conv_audio_format != prev_audio_format) {
 		struct audio_format_string s;
 
 		filter->Close();
 		g_set_error(error_r, filter_quark(), 0,
 			    "Audio format not supported by filter '%s': %s",
 			    name,
-			    audio_format_to_string(&prev_audio_format, &s));
-		return NULL;
+			    audio_format_to_string(prev_audio_format, &s));
+		return AudioFormat::Undefined();
 	}
 
 	return next_audio_format;
 }
 
-const audio_format *
-ChainFilter::Open(audio_format &in_audio_format, GError **error_r)
+AudioFormat
+ChainFilter::Open(AudioFormat &in_audio_format, GError **error_r)
 {
-	const audio_format *audio_format = &in_audio_format;
+	AudioFormat audio_format = in_audio_format;
 
 	for (auto &child : children) {
 		audio_format = chain_open_child(child.name, child.filter,
-						*audio_format, error_r);
-		if (audio_format == NULL) {
+						audio_format, error_r);
+		if (!audio_format.IsDefined()) {
 			/* rollback, close all children */
 			CloseUntil(child.filter);
-			return NULL;
+			break;
 		}
 	}
 

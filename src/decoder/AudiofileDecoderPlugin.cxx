@@ -114,27 +114,27 @@ setup_virtual_fops(struct input_stream *stream)
 	return vf;
 }
 
-static enum sample_format
+static SampleFormat
 audiofile_bits_to_sample_format(int bits)
 {
 	switch (bits) {
 	case 8:
-		return SAMPLE_FORMAT_S8;
+		return SampleFormat::S8;
 
 	case 16:
-		return SAMPLE_FORMAT_S16;
+		return SampleFormat::S16;
 
 	case 24:
-		return SAMPLE_FORMAT_S24_P32;
+		return SampleFormat::S24_P32;
 
 	case 32:
-		return SAMPLE_FORMAT_S32;
+		return SampleFormat::S32;
 	}
 
-	return SAMPLE_FORMAT_UNDEFINED;
+	return SampleFormat::UNDEFINED;
 }
 
-static enum sample_format
+static SampleFormat
 audiofile_setup_sample_format(AFfilehandle af_fp)
 {
 	int fs, bits;
@@ -160,7 +160,7 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	AFvirtualfile *vf;
 	int fs, frame_count;
 	AFfilehandle af_fp;
-	struct audio_format audio_format;
+	AudioFormat audio_format;
 	float total_time;
 	uint16_t bit_rate;
 	int ret;
@@ -180,7 +180,7 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 		return;
 	}
 
-	if (!audio_format_init_checked(&audio_format,
+	if (!audio_format_init_checked(audio_format,
 				       afGetRate(af_fp, AF_DEFAULT_TRACK),
 				       audiofile_setup_sample_format(af_fp),
 				       afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK),
@@ -199,7 +199,7 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 
 	fs = (int)afGetVirtualFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
 
-	decoder_initialized(decoder, &audio_format, true, total_time);
+	decoder_initialized(decoder, audio_format, true, total_time);
 
 	do {
 		ret = afReadFrames(af_fp, AF_DEFAULT_TRACK, chunk,

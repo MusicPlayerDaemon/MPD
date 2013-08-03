@@ -25,7 +25,7 @@
 
 #include "config.h"
 #include "AudioParser.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "conf.h"
 #include "util/fifo_buffer.h"
@@ -57,7 +57,7 @@ config_get_string(gcc_unused enum ConfigOption option,
 int main(int argc, char **argv)
 {
 	GError *error = NULL;
-	struct audio_format in_audio_format, out_audio_format;
+	AudioFormat in_audio_format, out_audio_format;
 	const void *output;
 	ssize_t nbytes;
 	size_t length;
@@ -69,15 +69,15 @@ int main(int argc, char **argv)
 
 	g_log_set_default_handler(my_log_func, NULL);
 
-	if (!audio_format_parse(&in_audio_format, argv[1],
+	if (!audio_format_parse(in_audio_format, argv[1],
 				false, &error)) {
 		g_printerr("Failed to parse audio format: %s\n",
 			   error->message);
 		return 1;
 	}
 
-	struct audio_format out_audio_format_mask;
-	if (!audio_format_parse(&out_audio_format_mask, argv[2],
+	AudioFormat out_audio_format_mask;
+	if (!audio_format_parse(out_audio_format_mask, argv[2],
 				true, &error)) {
 		g_printerr("Failed to parse audio format: %s\n",
 			   error->message);
@@ -85,9 +85,9 @@ int main(int argc, char **argv)
 	}
 
 	out_audio_format = in_audio_format;
-	audio_format_mask_apply(&out_audio_format, &out_audio_format_mask);
+	out_audio_format.ApplyMask(out_audio_format_mask);
 
-	const size_t in_frame_size = audio_format_frame_size(&in_audio_format);
+	const size_t in_frame_size = in_audio_format.GetFrameSize();
 
 	PcmConvert state;
 
@@ -112,8 +112,8 @@ int main(int argc, char **argv)
 
 		fifo_buffer_consume(buffer, length);
 
-		output = state.Convert(&in_audio_format, src, length,
-				       &out_audio_format, &length, &error);
+		output = state.Convert(in_audio_format, src, length,
+				       out_audio_format, &length, &error);
 		if (output == NULL) {
 			g_printerr("Failed to convert: %s\n", error->message);
 			return 2;

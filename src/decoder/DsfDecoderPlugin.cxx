@@ -285,9 +285,9 @@ dsf_stream_decode(struct decoder *decoder, struct input_stream *is)
 		return;
 
 	GError *error = NULL;
-	struct audio_format audio_format;
-	if (!audio_format_init_checked(&audio_format, metadata.sample_rate / 8,
-				       SAMPLE_FORMAT_DSD,
+	AudioFormat audio_format;
+	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8,
+				       SampleFormat::DSD,
 				       metadata.channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
@@ -299,7 +299,7 @@ dsf_stream_decode(struct decoder *decoder, struct input_stream *is)
 			 (float) metadata.sample_rate;
 
 	/* success: file was recognized */
-	decoder_initialized(decoder, &audio_format, false, songtime);
+	decoder_initialized(decoder, audio_format, false, songtime);
 
 	if (!dsf_decode_chunk(decoder, is, metadata.channels,
 			      chunk_size,
@@ -317,9 +317,9 @@ dsf_scan_stream(struct input_stream *is,
 	if (!dsf_read_metadata(NULL, is, &metadata))
 		return false;
 
-	struct audio_format audio_format;
-	if (!audio_format_init_checked(&audio_format, metadata.sample_rate / 8,
-				       SAMPLE_FORMAT_DSD,
+	AudioFormat audio_format;
+	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8,
+				       SampleFormat::DSD,
 				       metadata.channels, NULL))
 		/* refuse to parse files which we cannot play anyway */
 		return false;

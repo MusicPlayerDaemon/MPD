@@ -22,14 +22,14 @@
 
 #include <stdint.h>
 
-struct audio_format;
+struct AudioFormat;
 
 class Timer {
 	uint64_t time;
 	bool started;
 	const int rate;
 public:
-	explicit Timer(const struct audio_format& af);
+	explicit Timer(AudioFormat af);
 
 	bool IsStarted() const { return started; }
 

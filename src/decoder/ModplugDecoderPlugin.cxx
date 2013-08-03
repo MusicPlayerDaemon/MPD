@@ -94,7 +94,6 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 	ModPlugFile *f;
 	ModPlug_Settings settings;
 	GByteArray *bdatas;
-	struct audio_format audio_format;
 	int ret;
 	char audio_buffer[MODPLUG_FRAME_SIZE];
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
@@ -122,10 +121,10 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 		return;
 	}
 
-	audio_format_init(&audio_format, 44100, SAMPLE_FORMAT_S16, 2);
-	assert(audio_format_valid(&audio_format));
+	static constexpr AudioFormat audio_format(44100, SampleFormat::S16, 2);
+	assert(audio_format.IsValid());
 
-	decoder_initialized(decoder, &audio_format,
+	decoder_initialized(decoder, audio_format,
 			    input_stream_is_seekable(is),
 			    ModPlug_GetLength(f) / 1000.0);
 

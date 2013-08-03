@@ -25,7 +25,7 @@
 #include "conf.h"
 #include "pcm/PcmVolume.hxx"
 #include "pcm/PcmBuffer.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -36,7 +36,7 @@ class VolumeFilter final : public Filter {
 	 */
 	unsigned volume;
 
-	struct audio_format format;
+	AudioFormat format;
 
 	PcmBuffer buffer;
 
@@ -56,7 +56,7 @@ public:
 		volume = _volume;
 	}
 
-	virtual const audio_format *Open(audio_format &af, GError **error_r);
+	virtual AudioFormat Open(AudioFormat &af, GError **error_r) override;
 	virtual void Close();
 	virtual const void *FilterPCM(const void *src, size_t src_size,
 				      size_t *dest_size_r, GError **error_r);
@@ -75,12 +75,12 @@ volume_filter_init(gcc_unused const struct config_param *param,
 	return new VolumeFilter();
 }
 
-const struct audio_format *
-VolumeFilter::Open(audio_format &audio_format, gcc_unused GError **error_r)
+AudioFormat
+VolumeFilter::Open(AudioFormat &audio_format, gcc_unused GError **error_r)
 {
 	format = audio_format;
 
-	return &format;
+	return format;
 }
 
 void
@@ -112,7 +112,7 @@ VolumeFilter::FilterPCM(const void *src, size_t src_size,
 	memcpy(dest, src, src_size);
 
 	bool success = pcm_volume(dest, src_size,
-				  sample_format(format.format),
+				  format.format,
 				  volume);
 	if (!success) {
 		g_set_error(error_r, volume_quark(), 0,

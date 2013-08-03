@@ -20,7 +20,7 @@
 #ifndef MPD_CROSSFADE_HXX
 #define MPD_CROSSFADE_HXX
 
-struct audio_format;
+struct AudioFormat;
 struct music_chunk;
 
 /**
@@ -44,8 +44,7 @@ unsigned cross_fade_calc(float duration, float total_time,
 			 float mixramp_db, float mixramp_delay,
 			 float replay_gain_db, float replay_gain_prev_db,
 			 char *mixramp_start, char *mixramp_prev_end,
-			 const struct audio_format *af,
-			 const struct audio_format *old_format,
+			 AudioFormat af, AudioFormat old_format,
 			 unsigned max_chunks);
 
 #endif

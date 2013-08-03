@@ -54,7 +54,7 @@ ao_plugin_disable(struct audio_output *ao)
 }
 
 bool
-ao_plugin_open(struct audio_output *ao, struct audio_format *audio_format,
+ao_plugin_open(struct audio_output *ao, AudioFormat &audio_format,
 	       GError **error)
 {
 	return ao->plugin->open(ao, audio_format, error);

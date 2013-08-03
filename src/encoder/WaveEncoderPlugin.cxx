@@ -100,32 +100,32 @@ wave_encoder_finish(Encoder *_encoder)
 
 static bool
 wave_encoder_open(Encoder *_encoder,
-		  gcc_unused struct audio_format *audio_format,
+		  AudioFormat &audio_format,
 		  gcc_unused GError **error)
 {
 	WaveEncoder *encoder = (WaveEncoder *)_encoder;
 
-	assert(audio_format_valid(audio_format));
+	assert(audio_format.IsValid());
 
-	switch (audio_format->format) {
-	case SAMPLE_FORMAT_S8:
+	switch (audio_format.format) {
+	case SampleFormat::S8:
 		encoder->bits = 8;
 		break;
 
-	case SAMPLE_FORMAT_S16:
+	case SampleFormat::S16:
 		encoder->bits = 16;
 		break;
 
-	case SAMPLE_FORMAT_S24_P32:
+	case SampleFormat::S24_P32:
 		encoder->bits = 24;
 		break;
 
-	case SAMPLE_FORMAT_S32:
+	case SampleFormat::S32:
 		encoder->bits = 32;
 		break;
 
 	default:
-		audio_format->format = SAMPLE_FORMAT_S16;
+		audio_format.format = SampleFormat::S16;
 		encoder->bits = 16;
 		break;
 	}
@@ -136,10 +136,10 @@ wave_encoder_open(Encoder *_encoder,
 
 	/* create PCM wave header in initial buffer */
 	fill_wave_header(header,
-			audio_format->channels,
+			 audio_format.channels,
 			 encoder->bits,
-			audio_format->sample_rate,
-			 (encoder->bits / 8) * audio_format->channels );
+			 audio_format.sample_rate,
+			 (encoder->bits / 8) * audio_format.channels);
 	fifo_buffer_append(encoder->buffer, sizeof(*header));
 
 	return true;

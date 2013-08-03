@@ -24,7 +24,7 @@
 
 #include <glib.h>
 
-template<typename T, sample_format format, typename G=GlibRandomInt<T>>
+template<typename T, SampleFormat format, typename G=GlibRandomInt<T>>
 void
 TestPcmMix(G g=G())
 {
@@ -62,23 +62,23 @@ TestPcmMix(G g=G())
 void
 test_pcm_mix_8()
 {
-	TestPcmMix<int8_t, SAMPLE_FORMAT_S8>();
+	TestPcmMix<int8_t, SampleFormat::S8>();
 }
 
 void
 test_pcm_mix_16()
 {
-	TestPcmMix<int16_t, SAMPLE_FORMAT_S16>();
+	TestPcmMix<int16_t, SampleFormat::S16>();
 }
 
 void
 test_pcm_mix_24()
 {
-	TestPcmMix<int32_t, SAMPLE_FORMAT_S24_P32>(GlibRandomInt24());
+	TestPcmMix<int32_t, SampleFormat::S24_P32>(GlibRandomInt24());
 }
 
 void
 test_pcm_mix_32()
 {
-	TestPcmMix<int32_t, SAMPLE_FORMAT_S32>();
+	TestPcmMix<int32_t, SampleFormat::S32>();
 }

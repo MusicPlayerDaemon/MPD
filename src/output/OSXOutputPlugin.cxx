@@ -316,30 +316,30 @@ osx_output_close(struct audio_output *ao)
 }
 
 static bool
-osx_output_open(struct audio_output *ao, struct audio_format *audio_format, GError **error)
+osx_output_open(struct audio_output *ao, AudioFormat &audio_format, GError **error)
 {
 	OSXOutput *od = (OSXOutput *)ao;
 
 	AudioStreamBasicDescription stream_description;
-	stream_description.mSampleRate = audio_format->sample_rate;
+	stream_description.mSampleRate = audio_format.sample_rate;
 	stream_description.mFormatID = kAudioFormatLinearPCM;
 	stream_description.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
 
-	switch (audio_format->format) {
-	case SAMPLE_FORMAT_S8:
+	switch (audio_format.format) {
+	case SampleFormat::S8:
 		stream_description.mBitsPerChannel = 8;
 		break;
 
-	case SAMPLE_FORMAT_S16:
+	case SampleFormat::S16:
 		stream_description.mBitsPerChannel = 16;
 		break;
 
-	case SAMPLE_FORMAT_S32:
+	case SampleFormat::S32:
 		stream_description.mBitsPerChannel = 32;
 		break;
 
 	default:
-		audio_format->format = SAMPLE_FORMAT_S32;
+		audio_format.format = SampleFormat::S32;
 		stream_description.mBitsPerChannel = 32;
 		break;
 	}
@@ -348,11 +348,10 @@ osx_output_open(struct audio_output *ao, struct audio_format *audio_format, GErr
 	stream_description.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
 #endif
 
-	stream_description.mBytesPerPacket =
-		audio_format_frame_size(audio_format);
+	stream_description.mBytesPerPacket = audio_format.GetFrameSize();
 	stream_description.mFramesPerPacket = 1;
 	stream_description.mBytesPerFrame = stream_description.mBytesPerPacket;
-	stream_description.mChannelsPerFrame = audio_format->channels;
+	stream_description.mChannelsPerFrame = audio_format.channels;
 
 	ComponentResult result =
 		AudioUnitSetProperty(od->au, kAudioUnitProperty_StreamFormat,
@@ -374,8 +373,8 @@ osx_output_open(struct audio_output *ao, struct audio_format *audio_format, GErr
 	}
 
 	/* create a buffer of 1s */
-	od->buffer = fifo_buffer_new(audio_format->sample_rate *
-				     audio_format_frame_size(audio_format));
+	od->buffer = fifo_buffer_new(audio_format.sample_rate *
+				     audio_format.GetFrameSize());
 
 	status = AudioOutputUnitStart(od->au);
 	if (status != 0) {

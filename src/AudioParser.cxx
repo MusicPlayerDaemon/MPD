@@ -24,7 +24,7 @@
 
 #include "config.h"
 #include "AudioParser.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "CheckAudioFormat.hxx"
 #include "gcc.h"
 
@@ -69,27 +69,27 @@ parse_sample_rate(const char *src, bool mask, uint32_t *sample_rate_r,
 
 static bool
 parse_sample_format(const char *src, bool mask,
-		    enum sample_format *sample_format_r,
+		    SampleFormat *sample_format_r,
 		    const char **endptr_r, GError **error_r)
 {
 	unsigned long value;
 	char *endptr;
-	enum sample_format sample_format;
+	SampleFormat sample_format;
 
 	if (mask && *src == '*') {
-		*sample_format_r = SAMPLE_FORMAT_UNDEFINED;
+		*sample_format_r = SampleFormat::UNDEFINED;
 		*endptr_r = src + 1;
 		return true;
 	}
 
 	if (*src == 'f') {
-		*sample_format_r = SAMPLE_FORMAT_FLOAT;
+		*sample_format_r = SampleFormat::FLOAT;
 		*endptr_r = src + 1;
 		return true;
 	}
 
 	if (memcmp(src, "dsd", 3) == 0) {
-		*sample_format_r = SAMPLE_FORMAT_DSD;
+		*sample_format_r = SampleFormat::DSD;
 		*endptr_r = src + 3;
 		return true;
 	}
@@ -103,11 +103,11 @@ parse_sample_format(const char *src, bool mask,
 
 	switch (value) {
 	case 8:
-		sample_format = SAMPLE_FORMAT_S8;
+		sample_format = SampleFormat::S8;
 		break;
 
 	case 16:
-		sample_format = SAMPLE_FORMAT_S16;
+		sample_format = SampleFormat::S16;
 		break;
 
 	case 24:
@@ -115,11 +115,11 @@ parse_sample_format(const char *src, bool mask,
 			/* for backwards compatibility */
 			endptr += 2;
 
-		sample_format = SAMPLE_FORMAT_S24_P32;
+		sample_format = SampleFormat::S24_P32;
 		break;
 
 	case 32:
-		sample_format = SAMPLE_FORMAT_S32;
+		sample_format = SampleFormat::S32;
 		break;
 
 	default:
@@ -162,14 +162,14 @@ parse_channel_count(const char *src, bool mask, uint8_t *channels_r,
 }
 
 bool
-audio_format_parse(struct audio_format *dest, const char *src,
+audio_format_parse(AudioFormat &dest, const char *src,
 		   bool mask, GError **error_r)
 {
 	uint32_t rate;
-	enum sample_format sample_format;
+	SampleFormat sample_format;
 	uint8_t channels;
 
-	audio_format_clear(dest);
+	dest.Clear();
 
 	/* parse sample rate */
 
@@ -191,7 +191,7 @@ audio_format_parse(struct audio_format *dest, const char *src,
 
 #if GCC_CHECK_VERSION(4,7)
 	/* workaround -Wmaybe-uninitialized false positive */
-	sample_format = SAMPLE_FORMAT_UNDEFINED;
+	sample_format = SampleFormat::UNDEFINED;
 #endif
 
 	if (!parse_sample_format(src, mask, &sample_format, &src, error_r))
@@ -214,9 +214,10 @@ audio_format_parse(struct audio_format *dest, const char *src,
 		return false;
 	}
 
-	audio_format_init(dest, rate, sample_format, channels);
-	assert(mask ? audio_format_mask_valid(dest)
-	       : audio_format_valid(dest));
+	dest = AudioFormat(rate, sample_format, channels);
+	assert(mask
+	       ? dest.IsMaskValid()
+	       : dest.IsValid());
 
 	return true;
 }

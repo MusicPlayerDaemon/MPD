@@ -28,13 +28,14 @@
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
+#include "AudioFormat.hxx"
 #include "gcc.h"
 
 class NullFilter final : public Filter {
 public:
-	virtual const audio_format *Open(audio_format &af,
-					 gcc_unused GError **error_r) {
-		return &af;
+	virtual AudioFormat Open(AudioFormat &af,
+				 gcc_unused GError **error_r) {
+		return af;
 	}
 
 	virtual void Close() {}

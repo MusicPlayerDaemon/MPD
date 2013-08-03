@@ -291,7 +291,7 @@ httpd_output_disable(struct audio_output *ao)
 }
 
 inline bool
-HttpdOutput::OpenEncoder(struct audio_format *audio_format, GError **error)
+HttpdOutput::OpenEncoder(AudioFormat &audio_format, GError **error)
 {
 	if (!encoder_open(encoder, audio_format, error))
 		return false;
@@ -307,7 +307,7 @@ HttpdOutput::OpenEncoder(struct audio_format *audio_format, GError **error)
 }
 
 inline bool
-HttpdOutput::Open(struct audio_format *audio_format, GError **error_r)
+HttpdOutput::Open(AudioFormat &audio_format, GError **error_r)
 {
 	assert(!open);
 	assert(clients.empty());
@@ -320,7 +320,7 @@ HttpdOutput::Open(struct audio_format *audio_format, GError **error_r)
 	/* initialize other attributes */
 
 	clients_cnt = 0;
-	timer = new Timer(*audio_format);
+	timer = new Timer(audio_format);
 
 	open = true;
 
@@ -328,7 +328,7 @@ HttpdOutput::Open(struct audio_format *audio_format, GError **error_r)
 }
 
 static bool
-httpd_output_open(struct audio_output *ao, struct audio_format *audio_format,
+httpd_output_open(struct audio_output *ao, AudioFormat &audio_format,
 		  GError **error)
 {
 	HttpdOutput *httpd = Cast(ao);

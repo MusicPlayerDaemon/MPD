@@ -94,11 +94,11 @@ ao_disable(struct audio_output *ao)
 	}
 }
 
-static const struct audio_format *
-ao_filter_open(struct audio_output *ao, audio_format &format,
+static AudioFormat
+ao_filter_open(struct audio_output *ao, AudioFormat &format,
 	       GError **error_r)
 {
-	assert(audio_format_valid(&format));
+	assert(format.IsValid());
 
 	/* the replay_gain filter cannot fail here */
 	if (ao->replay_gain_filter != NULL)
@@ -106,9 +106,8 @@ ao_filter_open(struct audio_output *ao, audio_format &format,
 	if (ao->other_replay_gain_filter != NULL)
 		ao->other_replay_gain_filter->Open(format, error_r);
 
-	const struct audio_format *af
-		= ao->filter->Open(format, error_r);
-	if (af == NULL) {
+	const AudioFormat af = ao->filter->Open(format, error_r);
+	if (!af.IsDefined()) {
 		if (ao->replay_gain_filter != NULL)
 			ao->replay_gain_filter->Close();
 		if (ao->other_replay_gain_filter != NULL)
@@ -139,7 +138,7 @@ ao_open(struct audio_output *ao)
 	assert(!ao->open);
 	assert(ao->pipe != NULL);
 	assert(ao->chunk == NULL);
-	assert(audio_format_valid(&ao->in_audio_format));
+	assert(ao->in_audio_format.IsValid());
 
 	if (ao->fail_timer != NULL) {
 		/* this can only happen when this
@@ -158,9 +157,9 @@ ao_open(struct audio_output *ao)
 
 	/* open the filter */
 
-	const audio_format *filter_audio_format =
+	const AudioFormat filter_audio_format =
 		ao_filter_open(ao, ao->in_audio_format, &error);
-	if (filter_audio_format == NULL) {
+	if (!filter_audio_format.IsDefined()) {
 		g_warning("Failed to open filter for \"%s\" [%s]: %s",
 			  ao->name, ao->plugin->name, error->message);
 		g_error_free(error);
@@ -169,14 +168,13 @@ ao_open(struct audio_output *ao)
 		return;
 	}
 
-	assert(audio_format_valid(filter_audio_format));
+	assert(filter_audio_format.IsValid());
 
-	ao->out_audio_format = *filter_audio_format;
-	audio_format_mask_apply(&ao->out_audio_format,
-				&ao->config_audio_format);
+	ao->out_audio_format = filter_audio_format;
+	ao->out_audio_format.ApplyMask(ao->config_audio_format);
 
 	ao->mutex.unlock();
-	success = ao_plugin_open(ao, &ao->out_audio_format, &error);
+	success = ao_plugin_open(ao, ao->out_audio_format, &error);
 	ao->mutex.lock();
 
 	assert(!ao->open);
@@ -198,12 +196,11 @@ ao_open(struct audio_output *ao)
 	g_debug("opened plugin=%s name=\"%s\" "
 		"audio_format=%s",
 		ao->plugin->name, ao->name,
-		audio_format_to_string(&ao->out_audio_format, &af_string));
+		audio_format_to_string(ao->out_audio_format, &af_string));
 
-	if (!audio_format_equals(&ao->in_audio_format,
-				 &ao->out_audio_format))
+	if (ao->in_audio_format != ao->out_audio_format)
 		g_debug("converting from %s",
-			audio_format_to_string(&ao->in_audio_format,
+			audio_format_to_string(ao->in_audio_format,
 					       &af_string));
 }
 
@@ -235,12 +232,12 @@ ao_close(struct audio_output *ao, bool drain)
 static void
 ao_reopen_filter(struct audio_output *ao)
 {
-	const struct audio_format *filter_audio_format;
 	GError *error = NULL;
 
 	ao_filter_close(ao);
-	filter_audio_format = ao_filter_open(ao, ao->in_audio_format, &error);
-	if (filter_audio_format == NULL) {
+	const AudioFormat filter_audio_format =
+		ao_filter_open(ao, ao->in_audio_format, &error);
+	if (!filter_audio_format.IsDefined()) {
 		g_warning("Failed to open filter for \"%s\" [%s]: %s",
 			  ao->name, ao->plugin->name, error->message);
 		g_error_free(error);
@@ -268,7 +265,7 @@ ao_reopen_filter(struct audio_output *ao)
 static void
 ao_reopen(struct audio_output *ao)
 {
-	if (!audio_format_fully_defined(&ao->config_audio_format)) {
+	if (!ao->config_audio_format.IsFullyDefined()) {
 		if (ao->open) {
 			const struct music_pipe *mp = ao->pipe;
 			ao_close(ao, true);
@@ -279,8 +276,7 @@ ao_reopen(struct audio_output *ao)
 		   the output's open() method determine the effective
 		   out_audio_format */
 		ao->out_audio_format = ao->in_audio_format;
-		audio_format_mask_apply(&ao->out_audio_format,
-					&ao->config_audio_format);
+		ao->out_audio_format.ApplyMask(ao->config_audio_format);
 	}
 
 	if (ao->open)
@@ -327,7 +323,7 @@ ao_chunk_data(struct audio_output *ao, const struct music_chunk *chunk,
 
 	(void)ao;
 
-	assert(length % audio_format_frame_size(&ao->in_audio_format) == 0);
+	assert(length % ao->in_audio_format.GetFrameSize() == 0);
 
 	if (length > 0 && replay_gain_filter != NULL) {
 		if (chunk->replay_gain_serial != *replay_gain_serial_p) {
@@ -399,10 +395,10 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 		void *dest = ao->cross_fade_buffer.Get(other_length);
 		memcpy(dest, other_data, other_length);
 		if (!pcm_mix(dest, data, length,
-			     sample_format(ao->in_audio_format.format),
+			     ao->in_audio_format.format,
 			     1.0 - chunk->mix_ratio)) {
 			g_warning("Cannot cross-fade format %s",
-				  sample_format_to_string(sample_format(ao->in_audio_format.format)));
+				  sample_format_to_string(ao->in_audio_format.format));
 			return NULL;
 		}
 
@@ -479,7 +475,7 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 		}
 
 		assert(nbytes <= size);
-		assert(nbytes % audio_format_frame_size(&ao->out_audio_format) == 0);
+		assert(nbytes % ao->out_audio_format.GetFrameSize() == 0);
 
 		data += nbytes;
 		size -= nbytes;

@@ -26,7 +26,7 @@
 #define MPD_ENCODER_API_HXX
 
 #include "EncoderPlugin.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "Tag.hxx"
 #include "conf.h"
 

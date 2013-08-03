@@ -42,7 +42,7 @@
 #include "config.h"
 #include "conf.h"
 #include "ConfigQuark.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "CheckAudioFormat.hxx"
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
@@ -79,12 +79,12 @@ class RouteFilter final : public Filter {
 	/**
 	 * The actual input format of our signal, once opened
 	 */
-	struct audio_format input_format;
+	AudioFormat input_format;
 
 	/**
 	 * The decided upon output format, once opened
 	 */
-	struct audio_format output_format;
+	AudioFormat output_format;
 
 	/**
 	 * The size, in bytes, of each multichannel frame in the
@@ -120,7 +120,7 @@ public:
 	 */
 	bool Configure(const config_param *param, GError **error_r);
 
-	virtual const audio_format *Open(audio_format &af, GError **error_r);
+	virtual AudioFormat Open(AudioFormat &af, GError **error_r) override;
 	virtual void Close();
 	virtual const void *FilterPCM(const void *src, size_t src_size,
 				      size_t *dest_size_r, GError **error_r);
@@ -241,12 +241,12 @@ route_filter_init(const config_param *param, GError **error_r)
 	return filter;
 }
 
-const struct audio_format *
-RouteFilter::Open(audio_format &audio_format, gcc_unused GError **error_r)
+AudioFormat
+RouteFilter::Open(AudioFormat &audio_format, gcc_unused GError **error_r)
 {
 	// Copy the input format for later reference
 	input_format = audio_format;
-	input_frame_size = audio_format_frame_size(&input_format);
+	input_frame_size = input_format.GetFrameSize();
 
 	// Decide on an output format which has enough channels,
 	// and is otherwise identical
@@ -254,9 +254,9 @@ RouteFilter::Open(audio_format &audio_format, gcc_unused GError **error_r)
 	output_format.channels = min_output_channels;
 
 	// Precalculate this simple value, to speed up allocation later
-	output_frame_size = audio_format_frame_size(&output_format);
+	output_frame_size = output_format.GetFrameSize();
 
-	return &output_format;
+	return output_format;
 }
 
 void
@@ -271,8 +271,7 @@ RouteFilter::FilterPCM(const void *src, size_t src_size,
 {
 	size_t number_of_frames = src_size / input_frame_size;
 
-	size_t bytes_per_frame_per_channel =
-		audio_format_sample_size(&input_format);
+	const size_t bytes_per_frame_per_channel = input_format.GetSampleSize();
 
 	// A moving pointer that always refers to channel 0 in the input, at the currently handled frame
 	const uint8_t *base_source = (const uint8_t *)src;

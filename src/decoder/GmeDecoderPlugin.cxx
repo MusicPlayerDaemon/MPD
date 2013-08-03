@@ -153,9 +153,9 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 	/* initialize the MPD decoder */
 
 	GError *error = nullptr;
-	struct audio_format audio_format;
-	if (!audio_format_init_checked(&audio_format, GME_SAMPLE_RATE,
-				       SAMPLE_FORMAT_S16, GME_CHANNELS,
+	AudioFormat audio_format;
+	if (!audio_format_init_checked(audio_format, GME_SAMPLE_RATE,
+				       SampleFormat::S16, GME_CHANNELS,
 				       &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
@@ -164,7 +164,7 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 		return;
 	}
 
-	decoder_initialized(decoder, &audio_format, true, song_len);
+	decoder_initialized(decoder, audio_format, true, song_len);
 
 	gme_err = gme_start_track(emu, song_num);
 	if (gme_err != nullptr)

@@ -23,7 +23,7 @@
 #include "gcc.h"
 
 #ifndef NDEBUG
-struct audio_format;
+struct AudioFormat;
 #endif
 
 struct music_chunk;
@@ -56,7 +56,7 @@ music_pipe_free(struct music_pipe *mp);
  */
 bool
 music_pipe_check_format(const struct music_pipe *pipe,
-			const struct audio_format *audio_format);
+			AudioFormat audio_format);
 
 /**
  * Checks if the specified chunk is enqueued in the music pipe.

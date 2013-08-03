@@ -66,26 +66,26 @@ openal_output_quark(void)
 }
 
 static ALenum
-openal_audio_format(struct audio_format *audio_format)
+openal_audio_format(AudioFormat &audio_format)
 {
-	/* note: cannot map SAMPLE_FORMAT_S8 to AL_FORMAT_STEREO8 or
+	/* note: cannot map SampleFormat::S8 to AL_FORMAT_STEREO8 or
 	   AL_FORMAT_MONO8 since OpenAL expects unsigned 8 bit
 	   samples, while MPD uses signed samples */
 
-	switch (audio_format->format) {
-	case SAMPLE_FORMAT_S16:
-		if (audio_format->channels == 2)
+	switch (audio_format.format) {
+	case SampleFormat::S16:
+		if (audio_format.channels == 2)
 			return AL_FORMAT_STEREO16;
-		if (audio_format->channels == 1)
+		if (audio_format.channels == 1)
 			return AL_FORMAT_MONO16;
 
 		/* fall back to mono */
-		audio_format->channels = 1;
+		audio_format.channels = 1;
 		return openal_audio_format(audio_format);
 
 	default:
 		/* fall back to 16 bit */
-		audio_format->format = SAMPLE_FORMAT_S16;
+		audio_format.format = SampleFormat::S16;
 		return openal_audio_format(audio_format);
 	}
 }
@@ -169,7 +169,7 @@ openal_finish(struct audio_output *ao)
 }
 
 static bool
-openal_open(struct audio_output *ao, struct audio_format *audio_format,
+openal_open(struct audio_output *ao, AudioFormat &audio_format,
 	    GError **error)
 {
 	OpenALOutput *od = (OpenALOutput *)ao;
@@ -199,7 +199,7 @@ openal_open(struct audio_output *ao, struct audio_format *audio_format,
 	}
 
 	od->filled = 0;
-	od->frequency = audio_format->sample_rate;
+	od->frequency = audio_format.sample_rate;
 
 	return true;
 }

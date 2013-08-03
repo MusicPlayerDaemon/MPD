@@ -36,7 +36,7 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "output"
 
-static struct audio_format input_audio_format;
+static AudioFormat input_audio_format;
 
 static struct audio_output **audio_outputs;
 static unsigned int num_audio_outputs;
@@ -246,12 +246,12 @@ audio_output_all_update(void)
 	unsigned int i;
 	bool ret = false;
 
-	if (!audio_format_defined(&input_audio_format))
+	if (!input_audio_format.IsDefined())
 		return false;
 
 	for (i = 0; i < num_audio_outputs; ++i)
 		ret = audio_output_update(audio_outputs[i],
-					  &input_audio_format, g_mp) || ret;
+					  input_audio_format, g_mp) || ret;
 
 	return ret;
 }
@@ -291,14 +291,13 @@ audio_output_all_play(struct music_chunk *chunk, GError **error_r)
 }
 
 bool
-audio_output_all_open(const struct audio_format *audio_format,
+audio_output_all_open(const AudioFormat audio_format,
 		      struct music_buffer *buffer,
 		      GError **error_r)
 {
 	bool ret = false, enabled = false;
 	unsigned int i;
 
-	assert(audio_format != NULL);
 	assert(buffer != NULL);
 	assert(g_music_buffer == NULL || g_music_buffer == buffer);
 	assert((g_mp == NULL) == (g_music_buffer == NULL));
@@ -315,10 +314,9 @@ audio_output_all_open(const struct audio_format *audio_format,
 		/* if the pipe hasn't been cleared, the the audio
 		   format must not have changed */
 		assert(music_pipe_empty(g_mp) ||
-		       audio_format_equals(audio_format,
-					   &input_audio_format));
+		       audio_format == input_audio_format);
 
-	input_audio_format = *audio_format;
+	input_audio_format = audio_format;
 
 	audio_output_all_reset_reopen();
 	audio_output_all_enable_disable();
@@ -547,7 +545,7 @@ audio_output_all_close(void)
 
 	g_music_buffer = NULL;
 
-	audio_format_clear(&input_audio_format);
+	input_audio_format.Clear();
 
 	audio_output_all_elapsed_time = -1.0;
 }
@@ -570,7 +568,7 @@ audio_output_all_release(void)
 
 	g_music_buffer = NULL;
 
-	audio_format_clear(&input_audio_format);
+	input_audio_format.Clear();
 
 	audio_output_all_elapsed_time = -1.0;
 }

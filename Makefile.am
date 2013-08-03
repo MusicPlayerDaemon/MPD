@@ -51,7 +51,6 @@ src_mpd_LDADD = \
 mpd_headers = \
 	src/check.h \
 	src/ack.h \
-	src/audio_format.h \
 	src/filter_internal.h \
 	src/command.h \
 	src/conf.h \
@@ -97,7 +96,7 @@ src_mpd_SOURCES = \
 	src/notify.cxx src/notify.hxx \
 	src/AudioConfig.cxx src/AudioConfig.hxx \
 	src/CheckAudioFormat.cxx src/CheckAudioFormat.hxx \
-	src/audio_format.c \
+	src/AudioFormat.cxx src/AudioFormat.hxx \
 	src/AudioParser.cxx src/AudioParser.hxx \
 	src/protocol/ArgParser.cxx src/protocol/ArgParser.hxx \
 	src/protocol/Result.cxx src/protocol/Result.hxx \
@@ -1173,8 +1172,7 @@ test_run_decoder_SOURCES = test/run_decoder.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagHandler.cxx \
 	src/ReplayGainInfo.cxx \
 	src/fd_util.c \
-	src/CheckAudioFormat.cxx \
-	src/audio_format.c \
+	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
 	$(TAG_SRC) \
@@ -1221,7 +1219,7 @@ test_run_filter_SOURCES = test/run_filter.cxx \
 	test/stdbin.h \
 	src/FilterPlugin.cxx src/FilterRegistry.cxx \
 	src/CheckAudioFormat.cxx \
-	src/audio_format.c \
+	src/AudioFormat.cxx \
 	src/AudioParser.cxx \
 	src/ReplayGainInfo.cxx \
 	src/AudioCompress/compress.c
@@ -1240,7 +1238,7 @@ test_run_encoder_SOURCES = test/run_encoder.cxx \
 	test/stdbin.h \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/CheckAudioFormat.cxx \
-	src/audio_format.c \
+	src/AudioFormat.cxx \
 	src/AudioParser.cxx
 test_run_encoder_LDADD = \
 	$(ENCODER_LIBS) \
@@ -1258,7 +1256,7 @@ test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.cxx \
 	test/stdbin.h \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/CheckAudioFormat.cxx \
-	src/audio_format.c \
+	src/AudioFormat.cxx \
 	src/AudioParser.cxx \
 	$(ENCODER_SRC)
 test_test_vorbis_encoder_CPPFLAGS = $(AM_CPPFLAGS) \
@@ -1289,7 +1287,7 @@ test_run_normalize_LDADD = \
 	$(GLIB_LIBS)
 
 test_run_convert_SOURCES = test/run_convert.cxx \
-	src/audio_format.c \
+	src/AudioFormat.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioParser.cxx
 test_run_convert_LDADD = \
@@ -1313,7 +1311,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
 	src/CheckAudioFormat.cxx \
-	src/audio_format.c \
+	src/AudioFormat.cxx \
 	src/AudioParser.cxx \
 	src/Timer.cxx src/clock.c \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \

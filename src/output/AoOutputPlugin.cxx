@@ -200,18 +200,18 @@ ao_output_close(struct audio_output *ao)
 }
 
 static bool
-ao_output_open(struct audio_output *ao, struct audio_format *audio_format,
+ao_output_open(struct audio_output *ao, AudioFormat &audio_format,
 	       GError **error)
 {
 	ao_sample_format format = OUR_AO_FORMAT_INITIALIZER;
 	AoOutput *ad = (AoOutput *)ao;
 
-	switch (audio_format->format) {
-	case SAMPLE_FORMAT_S8:
+	switch (audio_format.format) {
+	case SampleFormat::S8:
 		format.bits = 8;
 		break;
 
-	case SAMPLE_FORMAT_S16:
+	case SampleFormat::S16:
 		format.bits = 16;
 		break;
 
@@ -219,14 +219,14 @@ ao_output_open(struct audio_output *ao, struct audio_format *audio_format,
 		/* support for 24 bit samples in libao is currently
 		   dubious, and until we have sorted that out,
 		   convert everything to 16 bit */
-		audio_format->format = SAMPLE_FORMAT_S16;
+		audio_format.format = SampleFormat::S16;
 		format.bits = 16;
 		break;
 	}
 
-	format.rate = audio_format->sample_rate;
+	format.rate = audio_format.sample_rate;
 	format.byte_format = AO_FMT_NATIVE;
-	format.channels = audio_format->channels;
+	format.channels = audio_format.channels;
 
 	ad->device = ao_open_live(ad->driver, &format, ad->options);
 

@@ -202,12 +202,12 @@ vorbis_stream_decode(struct decoder *decoder,
 		return;
 	}
 
-	struct audio_format audio_format;
-	if (!audio_format_init_checked(&audio_format, vi->rate,
+	AudioFormat audio_format;
+	if (!audio_format_init_checked(audio_format, vi->rate,
 #ifdef HAVE_TREMOR
-				       SAMPLE_FORMAT_S16,
+				       SampleFormat::S16,
 #else
-				       SAMPLE_FORMAT_FLOAT,
+				       SampleFormat::FLOAT,
 #endif
 				       vi->channels, &error)) {
 		g_warning("%s", error->message);
@@ -219,7 +219,7 @@ vorbis_stream_decode(struct decoder *decoder,
 	if (total_time < 0)
 		total_time = 0;
 
-	decoder_initialized(decoder, &audio_format, vis.seekable, total_time);
+	decoder_initialized(decoder, audio_format, vis.seekable, total_time);
 
 	enum decoder_command cmd = decoder_get_command(decoder);
 

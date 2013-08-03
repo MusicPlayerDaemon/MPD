@@ -56,7 +56,7 @@ mpd_mpg123_finish(void)
  */
 static bool
 mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
-		struct audio_format *audio_format)
+		AudioFormat &audio_format)
 {
 	GError *gerror = nullptr;
 	char *path_dup;
@@ -90,7 +90,7 @@ mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 		return false;
 	}
 
-	if (!audio_format_init_checked(audio_format, rate, SAMPLE_FORMAT_S16,
+	if (!audio_format_init_checked(audio_format, rate, SampleFormat::S16,
 				       channels, &gerror)) {
 		g_warning("%s", gerror->message);
 		g_error_free(gerror);
@@ -103,7 +103,6 @@ mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 static void
 mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 {
-	struct audio_format audio_format;
 	mpg123_handle *handle;
 	int error;
 	off_t num_samples;
@@ -119,7 +118,8 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 		return;
 	}
 
-	if (!mpd_mpg123_open(handle, path_fs, &audio_format)) {
+	AudioFormat audio_format;
+	if (!mpd_mpg123_open(handle, path_fs, audio_format)) {
 		mpg123_delete(handle);
 		return;
 	}
@@ -128,7 +128,7 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 
 	/* tell MPD core we're ready */
 
-	decoder_initialized(decoder, &audio_format, true,
+	decoder_initialized(decoder, audio_format, true,
 			    (float)num_samples /
 			    (float)audio_format.sample_rate);
 
@@ -198,7 +198,6 @@ static bool
 mpd_mpg123_scan_file(const char *path_fs,
 		     const struct tag_handler *handler, void *handler_ctx)
 {
-	struct audio_format audio_format;
 	mpg123_handle *handle;
 	int error;
 	off_t num_samples;
@@ -210,7 +209,8 @@ mpd_mpg123_scan_file(const char *path_fs,
 		return false;
 	}
 
-	if (!mpd_mpg123_open(handle, path_fs, &audio_format)) {
+	AudioFormat audio_format;
+	if (!mpd_mpg123_open(handle, path_fs, audio_format)) {
 		mpg123_delete(handle);
 		return false;
 	}

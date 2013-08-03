@@ -99,7 +99,7 @@ static SF_VIRTUAL_IO vio = {
  * Converts a frame number to a timestamp (in seconds).
  */
 static float
-frame_to_time(sf_count_t frame, const struct audio_format *audio_format)
+frame_to_time(sf_count_t frame, const AudioFormat *audio_format)
 {
 	return (float)frame / (float)audio_format->sample_rate;
 }
@@ -108,7 +108,7 @@ frame_to_time(sf_count_t frame, const struct audio_format *audio_format)
  * Converts a timestamp (in seconds) to a frame number.
  */
 static sf_count_t
-time_to_frame(float t, const struct audio_format *audio_format)
+time_to_frame(float t, const AudioFormat *audio_format)
 {
 	return (sf_count_t)(t * audio_format->sample_rate);
 }
@@ -119,7 +119,6 @@ sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	GError *error = nullptr;
 	SNDFILE *sf;
 	SF_INFO info;
-	struct audio_format audio_format;
 	size_t frame_size;
 	sf_count_t read_frames, num_frames;
 	int buffer[4096];
@@ -136,18 +135,19 @@ sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	/* for now, always read 32 bit samples.  Later, we could lower
 	   MPD's CPU usage by reading 16 bit samples with
 	   sf_readf_short() on low-quality source files. */
-	if (!audio_format_init_checked(&audio_format, info.samplerate,
-				       SAMPLE_FORMAT_S32,
+	AudioFormat audio_format;
+	if (!audio_format_init_checked(audio_format, info.samplerate,
+				       SampleFormat::S32,
 				       info.channels, &error)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
 		return;
 	}
 
-	decoder_initialized(decoder, &audio_format, info.seekable,
+	decoder_initialized(decoder, audio_format, info.seekable,
 			    frame_to_time(info.frames, &audio_format));
 
-	frame_size = audio_format_frame_size(&audio_format);
+	frame_size = audio_format.GetFrameSize();
 	read_frames = sizeof(buffer) / frame_size;
 
 	do {

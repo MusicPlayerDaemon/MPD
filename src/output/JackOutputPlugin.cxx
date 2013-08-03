@@ -67,7 +67,7 @@ struct JackOutput {
 	size_t ringbuffer_size;
 
 	/* the current audio format */
-	struct audio_format audio_format;
+	AudioFormat audio_format;
 
 	/* jack library stuff */
 	jack_port_t *ports[MAX_PORTS];
@@ -203,18 +203,18 @@ mpd_jack_shutdown(void *arg)
 }
 
 static void
-set_audioformat(JackOutput *jd, struct audio_format *audio_format)
+set_audioformat(JackOutput *jd, AudioFormat &audio_format)
 {
-	audio_format->sample_rate = jack_get_sample_rate(jd->client);
+	audio_format.sample_rate = jack_get_sample_rate(jd->client);
 
 	if (jd->num_source_ports == 1)
-		audio_format->channels = 1;
-	else if (audio_format->channels > jd->num_source_ports)
-		audio_format->channels = 2;
+		audio_format.channels = 1;
+	else if (audio_format.channels > jd->num_source_ports)
+		audio_format.channels = 2;
 
-	if (audio_format->format != SAMPLE_FORMAT_S16 &&
-	    audio_format->format != SAMPLE_FORMAT_S24_P32)
-		audio_format->format = SAMPLE_FORMAT_S24_P32;
+	if (audio_format.format != SampleFormat::S16 &&
+	    audio_format.format != SampleFormat::S24_P32)
+		audio_format.format = SampleFormat::S24_P32;
 }
 
 static void
@@ -591,7 +591,7 @@ mpd_jack_start(JackOutput *jd, GError **error_r)
 }
 
 static bool
-mpd_jack_open(struct audio_output *ao, struct audio_format *audio_format,
+mpd_jack_open(struct audio_output *ao, AudioFormat &audio_format,
 	      GError **error_r)
 {
 	JackOutput *jd = (JackOutput *)ao;
@@ -607,7 +607,7 @@ mpd_jack_open(struct audio_output *ao, struct audio_format *audio_format,
 		return false;
 
 	set_audioformat(jd, audio_format);
-	jd->audio_format = *audio_format;
+	jd->audio_format = audio_format;
 
 	if (!mpd_jack_start(jd, error_r))
 		return false;
@@ -684,12 +684,12 @@ mpd_jack_write_samples(JackOutput *jd, const void *src,
 		       unsigned num_samples)
 {
 	switch (jd->audio_format.format) {
-	case SAMPLE_FORMAT_S16:
+	case SampleFormat::S16:
 		mpd_jack_write_samples_16(jd, (const int16_t*)src,
 					  num_samples);
 		break;
 
-	case SAMPLE_FORMAT_S24_P32:
+	case SampleFormat::S24_P32:
 		mpd_jack_write_samples_24(jd, (const int32_t*)src,
 					  num_samples);
 		break;
@@ -705,7 +705,7 @@ mpd_jack_play(struct audio_output *ao, const void *chunk, size_t size,
 	      GError **error_r)
 {
 	JackOutput *jd = (JackOutput *)ao;
-	const size_t frame_size = audio_format_frame_size(&jd->audio_format);
+	const size_t frame_size = jd->audio_format.GetFrameSize();
 	size_t space = 0, space1;
 
 	jd->pause = false;

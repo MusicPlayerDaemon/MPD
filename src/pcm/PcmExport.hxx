@@ -22,9 +22,9 @@
 
 #include "check.h"
 #include "PcmBuffer.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 
-struct audio_format;
+struct AudioFormat;
 
 /**
  * An object that handles export of PCM samples to some instance
@@ -61,8 +61,8 @@ struct PcmExport {
 
 	/**
 	 * Convert DSD to DSD-over-USB?  Input format must be
-	 * SAMPLE_FORMAT_DSD and output format must be
-	 * SAMPLE_FORMAT_S24_P32.
+	 * SampleFormat::DSD and output format must be
+	 * SampleFormat::S24_P32.
 	 */
 	bool dsd_usb;
 
@@ -94,14 +94,14 @@ struct PcmExport {
 	 *
 	 * @param channels the number of channels; ignored unless dsd_usb is set
 	 */
-	void Open(enum sample_format sample_format, unsigned channels,
+	void Open(SampleFormat sample_format, unsigned channels,
 		  bool dsd_usb, bool shift8, bool pack, bool reverse_endian);
 
 	/**
 	 * Calculate the size of one output frame.
 	 */
 	gcc_pure
-	size_t GetFrameSize(const struct audio_format &audio_format) const;
+	size_t GetFrameSize(const AudioFormat &audio_format) const;
 
 	/**
 	 * Export a PCM buffer.

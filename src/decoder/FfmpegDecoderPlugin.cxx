@@ -52,6 +52,11 @@ extern "C" {
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "ffmpeg"
 
+/* suppress the ffmpeg compatibility macro */
+#ifdef SampleFormat
+#undef SampleFormat
+#endif
+
 static GLogLevelFlags
 level_ffmpeg_to_glib(int level)
 {
@@ -297,20 +302,20 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 }
 
 G_GNUC_CONST
-static enum sample_format
+static SampleFormat
 ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 {
 	switch (sample_fmt) {
 	case AV_SAMPLE_FMT_S16:
 	case AV_SAMPLE_FMT_S16P:
-		return SAMPLE_FORMAT_S16;
+		return SampleFormat::S16;
 
 	case AV_SAMPLE_FMT_S32:
 	case AV_SAMPLE_FMT_S32P:
-		return SAMPLE_FORMAT_S32;
+		return SampleFormat::S32;
 
 	case AV_SAMPLE_FMT_FLTP:
-		return SAMPLE_FORMAT_FLOAT;
+		return SampleFormat::FLOAT;
 
 	default:
 		break;
@@ -325,7 +330,7 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 	else
 		g_warning("Unsupported libavcodec SampleFormat value: %d",
 			  sample_fmt);
-	return SAMPLE_FORMAT_UNDEFINED;
+	return SampleFormat::UNDEFINED;
 }
 
 static AVInputFormat *
@@ -420,14 +425,14 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		return;
 	}
 
-	const enum sample_format sample_format =
+	const SampleFormat sample_format =
 		ffmpeg_sample_format(codec_context->sample_fmt);
-	if (sample_format == SAMPLE_FORMAT_UNDEFINED)
+	if (sample_format == SampleFormat::UNDEFINED)
 		return;
 
 	GError *error = NULL;
-	struct audio_format audio_format;
-	if (!audio_format_init_checked(&audio_format,
+	AudioFormat audio_format;
+	if (!audio_format_init_checked(audio_format,
 				       codec_context->sample_rate,
 				       sample_format,
 				       codec_context->channels, &error)) {
@@ -455,7 +460,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		? format_context->duration / AV_TIME_BASE
 		: 0;
 
-	decoder_initialized(decoder, &audio_format,
+	decoder_initialized(decoder, audio_format,
 			    input->seekable, total_time);
 
 	AVFrame *frame = avcodec_alloc_frame();

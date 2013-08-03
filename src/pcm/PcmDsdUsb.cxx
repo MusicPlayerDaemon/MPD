@@ -20,7 +20,7 @@
 #include "config.h"
 #include "PcmDsdUsb.hxx"
 #include "PcmBuffer.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 
 G_GNUC_CONST
 static inline uint32_t

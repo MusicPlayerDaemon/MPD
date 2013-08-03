@@ -56,7 +56,7 @@ struct flac_data : public FlacInput {
 	 * The validated audio format of the FLAC file.  This
 	 * attribute is defined if "initialized" is true.
 	 */
-	struct audio_format audio_format;
+	AudioFormat audio_format;
 
 	/**
 	 * The total number of frames in this song.  The decoder

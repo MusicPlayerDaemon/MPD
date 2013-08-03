@@ -20,7 +20,7 @@
 #ifndef MPD_PCM_MIX_HXX
 #define MPD_PCM_MIX_HXX
 
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "gcc.h"
 
 #include <stddef.h>
@@ -44,6 +44,6 @@
 gcc_warn_unused_result
 bool
 pcm_mix(void *buffer1, const void *buffer2, size_t size,
-	enum sample_format format, float portion1);
+	SampleFormat format, float portion1);
 
 #endif

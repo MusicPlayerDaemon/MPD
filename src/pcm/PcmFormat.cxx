@@ -142,36 +142,36 @@ pcm_allocate_float_to_16(PcmBuffer &buffer,
 
 const int16_t *
 pcm_convert_to_16(PcmBuffer &buffer, PcmDither &dither,
-		  enum sample_format src_format, const void *src,
+		  SampleFormat src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r)
 {
 	assert(src_size % sample_format_size(src_format) == 0);
 
 	switch (src_format) {
-	case SAMPLE_FORMAT_UNDEFINED:
-	case SAMPLE_FORMAT_DSD:
+	case SampleFormat::UNDEFINED:
+	case SampleFormat::DSD:
 		break;
 
-	case SAMPLE_FORMAT_S8:
+	case SampleFormat::S8:
 		return pcm_allocate_8_to_16(buffer,
 					    (const int8_t *)src, src_size,
 					    dest_size_r);
 
-	case SAMPLE_FORMAT_S16:
+	case SampleFormat::S16:
 		*dest_size_r = src_size;
 		return (const int16_t *)src;
 
-	case SAMPLE_FORMAT_S24_P32:
+	case SampleFormat::S24_P32:
 		return pcm_allocate_24p32_to_16(buffer, dither,
 						(const int32_t *)src, src_size,
 						dest_size_r);
 
-	case SAMPLE_FORMAT_S32:
+	case SampleFormat::S32:
 		return pcm_allocate_32_to_16(buffer, dither,
 					     (const int32_t *)src, src_size,
 					     dest_size_r);
 
-	case SAMPLE_FORMAT_FLOAT:
+	case SampleFormat::FLOAT:
 		return pcm_allocate_float_to_16(buffer,
 						(const float *)src, src_size,
 						dest_size_r);
@@ -247,36 +247,36 @@ pcm_allocate_float_to_24(PcmBuffer &buffer,
 
 const int32_t *
 pcm_convert_to_24(PcmBuffer &buffer,
-		  enum sample_format src_format, const void *src,
+		  SampleFormat src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r)
 {
 	assert(src_size % sample_format_size(src_format) == 0);
 
 	switch (src_format) {
-	case SAMPLE_FORMAT_UNDEFINED:
-	case SAMPLE_FORMAT_DSD:
+	case SampleFormat::UNDEFINED:
+	case SampleFormat::DSD:
 		break;
 
-	case SAMPLE_FORMAT_S8:
+	case SampleFormat::S8:
 		return pcm_allocate_8_to_24(buffer,
 					    (const int8_t *)src, src_size,
 					    dest_size_r);
 
-	case SAMPLE_FORMAT_S16:
+	case SampleFormat::S16:
 		return pcm_allocate_16_to_24(buffer,
 					     (const int16_t *)src, src_size,
 					     dest_size_r);
 
-	case SAMPLE_FORMAT_S24_P32:
+	case SampleFormat::S24_P32:
 		*dest_size_r = src_size;
 		return (const int32_t *)src;
 
-	case SAMPLE_FORMAT_S32:
+	case SampleFormat::S32:
 		return pcm_allocate_32_to_24(buffer,
 					     (const int32_t *)src, src_size,
 					     dest_size_r);
 
-	case SAMPLE_FORMAT_FLOAT:
+	case SampleFormat::FLOAT:
 		return pcm_allocate_float_to_24(buffer,
 						(const float *)src, src_size,
 						dest_size_r);
@@ -358,36 +358,36 @@ pcm_allocate_float_to_32(PcmBuffer &buffer,
 
 const int32_t *
 pcm_convert_to_32(PcmBuffer &buffer,
-		  enum sample_format src_format, const void *src,
+		  SampleFormat src_format, const void *src,
 		  size_t src_size, size_t *dest_size_r)
 {
 	assert(src_size % sample_format_size(src_format) == 0);
 
 	switch (src_format) {
-	case SAMPLE_FORMAT_UNDEFINED:
-	case SAMPLE_FORMAT_DSD:
+	case SampleFormat::UNDEFINED:
+	case SampleFormat::DSD:
 		break;
 
-	case SAMPLE_FORMAT_S8:
+	case SampleFormat::S8:
 		return pcm_allocate_8_to_32(buffer,
 					    (const int8_t *)src, src_size,
 					    dest_size_r);
 
-	case SAMPLE_FORMAT_S16:
+	case SampleFormat::S16:
 		return pcm_allocate_16_to_32(buffer,
 					     (const int16_t *)src, src_size,
 					     dest_size_r);
 
-	case SAMPLE_FORMAT_S24_P32:
+	case SampleFormat::S24_P32:
 		return pcm_allocate_24p32_to_32(buffer,
 						(const int32_t *)src, src_size,
 						dest_size_r);
 
-	case SAMPLE_FORMAT_S32:
+	case SampleFormat::S32:
 		*dest_size_r = src_size;
 		return (const int32_t *)src;
 
-	case SAMPLE_FORMAT_FLOAT:
+	case SampleFormat::FLOAT:
 		return pcm_allocate_float_to_32(buffer,
 						(const float *)src, src_size,
 						dest_size_r);
@@ -463,35 +463,35 @@ pcm_allocate_32_to_float(PcmBuffer &buffer,
 
 const float *
 pcm_convert_to_float(PcmBuffer &buffer,
-		     enum sample_format src_format, const void *src,
+		     SampleFormat src_format, const void *src,
 		     size_t src_size, size_t *dest_size_r)
 {
 	switch (src_format) {
-	case SAMPLE_FORMAT_UNDEFINED:
-	case SAMPLE_FORMAT_DSD:
+	case SampleFormat::UNDEFINED:
+	case SampleFormat::DSD:
 		break;
 
-	case SAMPLE_FORMAT_S8:
+	case SampleFormat::S8:
 		return pcm_allocate_8_to_float(buffer,
 					       (const int8_t *)src, src_size,
 					       dest_size_r);
 
-	case SAMPLE_FORMAT_S16:
+	case SampleFormat::S16:
 		return pcm_allocate_16_to_float(buffer,
 						(const int16_t *)src, src_size,
 						dest_size_r);
 
-	case SAMPLE_FORMAT_S24_P32:
+	case SampleFormat::S24_P32:
 		return pcm_allocate_24p32_to_float(buffer,
 						   (const int32_t *)src, src_size,
 						   dest_size_r);
 
-	case SAMPLE_FORMAT_S32:
+	case SampleFormat::S32:
 		return pcm_allocate_32_to_float(buffer,
 						(const int32_t *)src, src_size,
 						dest_size_r);
 
-	case SAMPLE_FORMAT_FLOAT:
+	case SampleFormat::FLOAT:
 		*dest_size_r = src_size;
 		return (const float *)src;
 	}

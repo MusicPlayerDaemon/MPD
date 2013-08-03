@@ -40,24 +40,24 @@ flac_data::flac_data(struct decoder *_decoder,
 {
 }
 
-static enum sample_format
+static SampleFormat
 flac_sample_format(unsigned bits_per_sample)
 {
 	switch (bits_per_sample) {
 	case 8:
-		return SAMPLE_FORMAT_S8;
+		return SampleFormat::S8;
 
 	case 16:
-		return SAMPLE_FORMAT_S16;
+		return SampleFormat::S16;
 
 	case 24:
-		return SAMPLE_FORMAT_S24_P32;
+		return SampleFormat::S24_P32;
 
 	case 32:
-		return SAMPLE_FORMAT_S32;
+		return SampleFormat::S32;
 
 	default:
-		return SAMPLE_FORMAT_UNDEFINED;
+		return SampleFormat::UNDEFINED;
 	}
 }
 
@@ -69,7 +69,7 @@ flac_got_stream_info(struct flac_data *data,
 		return;
 
 	GError *error = nullptr;
-	if (!audio_format_init_checked(&data->audio_format,
+	if (!audio_format_init_checked(data->audio_format,
 				       stream_info->sample_rate,
 				       flac_sample_format(stream_info->bits_per_sample),
 				       stream_info->channels, &error)) {
@@ -79,7 +79,7 @@ flac_got_stream_info(struct flac_data *data,
 		return;
 	}
 
-	data->frame_size = audio_format_frame_size(&data->audio_format);
+	data->frame_size = data->audio_format.GetFrameSize();
 
 	if (data->total_frames == 0)
 		data->total_frames = stream_info->total_samples;
@@ -132,7 +132,7 @@ flac_got_first_frame(struct flac_data *data, const FLAC__FrameHeader *header)
 		return false;
 
 	GError *error = nullptr;
-	if (!audio_format_init_checked(&data->audio_format,
+	if (!audio_format_init_checked(data->audio_format,
 				       header->sample_rate,
 				       flac_sample_format(header->bits_per_sample),
 				       header->channels, &error)) {
@@ -142,9 +142,9 @@ flac_got_first_frame(struct flac_data *data, const FLAC__FrameHeader *header)
 		return false;
 	}
 
-	data->frame_size = audio_format_frame_size(&data->audio_format);
+	data->frame_size = data->audio_format.GetFrameSize();
 
-	decoder_initialized(data->decoder, &data->audio_format,
+	decoder_initialized(data->decoder, data->audio_format,
 			    data->input_stream->seekable,
 			    (float)data->total_frames /
 			    (float)data->audio_format.sample_rate);
@@ -170,7 +170,7 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 	buffer = data->buffer.Get(buffer_size);
 
 	flac_convert(buffer, frame->header.channels,
-		     (enum sample_format)data->audio_format.format, buf,
+		     data->audio_format.format, buf,
 		     0, frame->header.blocksize);
 
 	if (nbytes > 0)

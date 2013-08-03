@@ -248,7 +248,7 @@ faad_song_duration(DecoderBuffer *buffer, struct input_stream *is)
  */
 static bool
 faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer *buffer,
-		  struct audio_format *audio_format, GError **error_r)
+		  AudioFormat &audio_format, GError **error_r)
 {
 	int32_t nbytes;
 	uint32_t sample_rate;
@@ -285,7 +285,7 @@ faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer *buffer,
 	decoder_buffer_consume(buffer, nbytes);
 
 	return audio_format_init_checked(audio_format, sample_rate,
-					 SAMPLE_FORMAT_S16, channels, error_r);
+					 SampleFormat::S16, channels, error_r);
 }
 
 /**
@@ -325,7 +325,7 @@ faad_get_file_time_float(struct input_stream *is)
 
 	if (length < 0) {
 		bool ret;
-		struct audio_format audio_format;
+		AudioFormat audio_format;
 
 		NeAACDecHandle decoder = NeAACDecOpen();
 
@@ -336,7 +336,7 @@ faad_get_file_time_float(struct input_stream *is)
 
 		decoder_buffer_fill(buffer);
 
-		ret = faad_decoder_init(decoder, buffer, &audio_format, nullptr);
+		ret = faad_decoder_init(decoder, buffer, audio_format, nullptr);
 		if (ret)
 			length = 0;
 
@@ -370,7 +370,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 {
 	GError *error = nullptr;
 	float total_time = 0;
-	struct audio_format audio_format;
+	AudioFormat audio_format;
 	bool ret;
 	uint16_t bit_rate = 0;
 	DecoderBuffer *buffer;
@@ -400,7 +400,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 	/* initialize it */
 
-	ret = faad_decoder_init(decoder, buffer, &audio_format, &error);
+	ret = faad_decoder_init(decoder, buffer, audio_format, &error);
 	if (!ret) {
 		g_warning("%s", error->message);
 		g_error_free(error);
@@ -410,7 +410,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 	/* initialize the MPD core */
 
-	decoder_initialized(mpd_decoder, &audio_format, false, total_time);
+	decoder_initialized(mpd_decoder, audio_format, false, total_time);
 
 	/* the decoder loop */
 

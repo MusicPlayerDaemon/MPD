@@ -41,13 +41,13 @@ struct music_pipe {
 	mutable Mutex mutex;
 
 #ifndef NDEBUG
-	struct audio_format audio_format;
+	AudioFormat audio_format;
 #endif
 
 	music_pipe()
 		:head(nullptr), tail_r(&head), size(0) {
 #ifndef NDEBUG
-		audio_format_clear(&audio_format);
+		audio_format.Clear();
 #endif
 	}
 
@@ -73,13 +73,12 @@ music_pipe_free(struct music_pipe *mp)
 
 bool
 music_pipe_check_format(const struct music_pipe *pipe,
-			const struct audio_format *audio_format)
+			const AudioFormat audio_format)
 {
 	assert(pipe != NULL);
-	assert(audio_format != NULL);
 
-	return !audio_format_defined(&pipe->audio_format) ||
-		audio_format_equals(&pipe->audio_format, audio_format);
+	return !pipe->audio_format.IsDefined() ||
+		pipe->audio_format == audio_format;
 }
 
 bool
@@ -131,7 +130,7 @@ music_pipe_shift(struct music_pipe *mp)
 		chunk->next = (struct music_chunk *)(void *)0x01010101;
 
 		if (mp->size == 0)
-			audio_format_clear(&mp->audio_format);
+			mp->audio_format.Clear();
 #endif
 	}
 
@@ -151,16 +150,16 @@ void
 music_pipe_push(struct music_pipe *mp, struct music_chunk *chunk)
 {
 	assert(!chunk->IsEmpty());
-	assert(chunk->length == 0 || audio_format_valid(&chunk->audio_format));
+	assert(chunk->length == 0 || chunk->audio_format.IsValid());
 
 	const ScopeLock protect(mp->mutex);
 
-	assert(mp->size > 0 || !audio_format_defined(&mp->audio_format));
-	assert(!audio_format_defined(&mp->audio_format) ||
+	assert(mp->size > 0 || !mp->audio_format.IsDefined());
+	assert(!mp->audio_format.IsDefined() ||
 	       chunk->CheckFormat(mp->audio_format));
 
 #ifndef NDEBUG
-	if (!audio_format_defined(&mp->audio_format) && chunk->length > 0)
+	if (!mp->audio_format.IsDefined() && chunk->length > 0)
 		mp->audio_format = chunk->audio_format;
 #endif
 

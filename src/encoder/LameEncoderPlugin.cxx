@@ -20,7 +20,7 @@
 #include "config.h"
 #include "LameEncoderPlugin.hxx"
 #include "EncoderAPI.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 
 #include <lame/lame.h>
 
@@ -32,7 +32,7 @@
 struct LameEncoder final {
 	Encoder encoder;
 
-	struct audio_format audio_format;
+	AudioFormat audio_format;
 	float quality;
 	int bitrate;
 
@@ -187,15 +187,15 @@ lame_encoder_setup(LameEncoder *encoder, GError **error)
 }
 
 static bool
-lame_encoder_open(Encoder *_encoder, struct audio_format *audio_format,
+lame_encoder_open(Encoder *_encoder, AudioFormat &audio_format,
 		  GError **error)
 {
 	LameEncoder *encoder = (LameEncoder *)_encoder;
 
-	audio_format->format = SAMPLE_FORMAT_S16;
-	audio_format->channels = 2;
+	audio_format.format = SampleFormat::S16;
+	audio_format.channels = 2;
 
-	encoder->audio_format = *audio_format;
+	encoder->audio_format = audio_format;
 
 	encoder->gfp = lame_init();
 	if (encoder->gfp == nullptr) {
@@ -233,7 +233,7 @@ lame_encoder_write(Encoder *_encoder,
 	assert(encoder->buffer_length == 0);
 
 	const unsigned num_frames =
-		length / audio_format_frame_size(&encoder->audio_format);
+		length / encoder->audio_format.GetFrameSize();
 	float *left = g_new(float, num_frames);
 	float *right = g_new(float, num_frames);
 

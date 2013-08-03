@@ -24,7 +24,7 @@
 #include "pcm/PcmDither.hxx"
 #include "pcm/PcmUtils.hxx"
 #include "pcm/PcmBuffer.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 
 #include <glib.h>
 
@@ -38,7 +38,7 @@ test_pcm_format_8_to_16()
 
 	size_t d_size;
 	PcmDither dither;
-	auto d = pcm_convert_to_16(buffer, dither, SAMPLE_FORMAT_S8,
+	auto d = pcm_convert_to_16(buffer, dither, SampleFormat::S8,
 				   src, sizeof(src), &d_size);
 	auto d_end = pcm_end_pointer(d, d_size);
 	g_assert_cmpint(d_end - d, ==, N);
@@ -56,7 +56,7 @@ test_pcm_format_16_to_24()
 	PcmBuffer buffer;
 
 	size_t d_size;
-	auto d = pcm_convert_to_24(buffer, SAMPLE_FORMAT_S16,
+	auto d = pcm_convert_to_24(buffer, SampleFormat::S16,
 				   src, sizeof(src), &d_size);
 	auto d_end = pcm_end_pointer(d, d_size);
 	g_assert_cmpint(d_end - d, ==, N);
@@ -74,7 +74,7 @@ test_pcm_format_16_to_32()
 	PcmBuffer buffer;
 
 	size_t d_size;
-	auto d = pcm_convert_to_32(buffer, SAMPLE_FORMAT_S16,
+	auto d = pcm_convert_to_32(buffer, SampleFormat::S16,
 				   src, sizeof(src), &d_size);
 	auto d_end = pcm_end_pointer(d, d_size);
 	g_assert_cmpint(d_end - d, ==, N);
@@ -92,7 +92,7 @@ test_pcm_format_float()
 	PcmBuffer buffer1, buffer2;
 
 	size_t f_size;
-	auto f = pcm_convert_to_float(buffer1, SAMPLE_FORMAT_S16,
+	auto f = pcm_convert_to_float(buffer1, SampleFormat::S16,
 				      src, sizeof(src), &f_size);
 	auto f_end = pcm_end_pointer(f, f_size);
 	g_assert_cmpint(f_end - f, ==, N);
@@ -106,7 +106,7 @@ test_pcm_format_float()
 
 	size_t d_size;
 	auto d = pcm_convert_to_16(buffer2, dither,
-				   SAMPLE_FORMAT_FLOAT,
+				   SampleFormat::FLOAT,
 				   f, f_size, &d_size);
 	auto d_end = pcm_end_pointer(d, d_size);
 	g_assert_cmpint(d_end - d, ==, N);

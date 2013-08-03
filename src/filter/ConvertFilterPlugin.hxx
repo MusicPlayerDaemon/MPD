@@ -21,7 +21,7 @@
 #define MPD_CONVERT_FILTER_PLUGIN_HXX
 
 class Filter;
-struct audio_format;
+struct AudioFormat;
 
 /**
  * Sets the output audio format for the specified filter.  You must
@@ -30,6 +30,6 @@ struct audio_format;
  * the last in a chain.
  */
 void
-convert_filter_set(Filter *filter, const audio_format &out_audio_format);
+convert_filter_set(Filter *filter, AudioFormat out_audio_format);
 
 #endif

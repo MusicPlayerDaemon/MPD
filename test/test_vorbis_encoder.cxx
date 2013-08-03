@@ -20,7 +20,7 @@
 #include "config.h"
 #include "EncoderList.hxx"
 #include "EncoderPlugin.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "conf.h"
 #include "stdbin.h"
 #include "Tag.hxx"
@@ -61,10 +61,8 @@ main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 
 	/* open the encoder */
 
-	struct audio_format audio_format;
-
-	audio_format_init(&audio_format, 44100, SAMPLE_FORMAT_S16, 2);
-	success = encoder_open(encoder, &audio_format, NULL);
+	AudioFormat audio_format(44100, SampleFormat::S16, 2);
+	success = encoder_open(encoder, audio_format, NULL);
 	assert(success);
 
 	encoder_to_stdout(*encoder);

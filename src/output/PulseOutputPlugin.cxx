@@ -578,7 +578,7 @@ pulse_output_setup_stream(PulseOutput *po, const pa_sample_spec *ss,
 }
 
 static bool
-pulse_output_open(struct audio_output *ao, struct audio_format *audio_format,
+pulse_output_open(struct audio_output *ao, AudioFormat &audio_format,
 		  GError **error_r)
 {
 	PulseOutput *po = (PulseOutput *)ao;
@@ -615,11 +615,11 @@ pulse_output_open(struct audio_output *ao, struct audio_format *audio_format,
 
 	/* MPD doesn't support the other pulseaudio sample formats, so
 	   we just force MPD to send us everything as 16 bit */
-	audio_format->format = SAMPLE_FORMAT_S16;
+	audio_format.format = SampleFormat::S16;
 
 	ss.format = PA_SAMPLE_S16NE;
-	ss.rate = audio_format->sample_rate;
-	ss.channels = audio_format->channels;
+	ss.rate = audio_format.sample_rate;
+	ss.channels = audio_format.channels;
 
 	/* create a stream .. */
 

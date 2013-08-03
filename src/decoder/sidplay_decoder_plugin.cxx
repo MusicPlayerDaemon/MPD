@@ -285,11 +285,10 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 
 	/* initialize the MPD decoder */
 
-	struct audio_format audio_format;
-	audio_format_init(&audio_format, 48000, SAMPLE_FORMAT_S16, channels);
-	assert(audio_format_valid(&audio_format));
+	const AudioFormat audio_format(48000, SampleFormat::S16, channels);
+	assert(audio_format.IsValid());
 
-	decoder_initialized(decoder, &audio_format, true, (float)song_len);
+	decoder_initialized(decoder, audio_format, true, (float)song_len);
 
 	/* .. and play */
 

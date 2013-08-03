@@ -21,7 +21,7 @@
 #define MPD_PCM_VOLUME_HXX
 
 #include "PcmPrng.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -31,7 +31,7 @@ enum {
 	PCM_VOLUME_1 = 1024,
 };
 
-struct audio_format;
+struct AudioFormat;
 
 /**
  * Converts a float value (0.0 = silence, 1.0 = 100% volume) to an
@@ -75,7 +75,7 @@ pcm_volume_dither(void)
  */
 bool
 pcm_volume(void *buffer, size_t length,
-	   enum sample_format format,
+	   SampleFormat format,
 	   int volume);
 
 #endif

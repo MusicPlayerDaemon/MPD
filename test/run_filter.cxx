@@ -21,7 +21,7 @@
 #include "conf.h"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
-#include "audio_format.h"
+#include "AudioFormat.hxx"
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
 #include "pcm/PcmVolume.hxx"
@@ -91,11 +91,9 @@ load_filter(const char *name)
 
 int main(int argc, char **argv)
 {
-	struct audio_format audio_format;
 	struct audio_format_string af_string;
 	bool success;
 	GError *error = NULL;
-	const struct audio_format *out_audio_format;
 	char buffer[4096];
 
 	if (argc < 3 || argc > 4) {
@@ -105,7 +103,7 @@ int main(int argc, char **argv)
 
 	const Path config_path = Path::FromFS(argv[1]);
 
-	audio_format_init(&audio_format, 44100, SAMPLE_FORMAT_S16, 2);
+	AudioFormat audio_format(44100, SampleFormat::S16, 2);
 
 	/* initialize GLib */
 
@@ -127,7 +125,7 @@ int main(int argc, char **argv)
 	/* parse the audio format */
 
 	if (argc > 3) {
-		success = audio_format_parse(&audio_format, argv[3],
+		success = audio_format_parse(audio_format, argv[3],
 					     false, &error);
 		if (!success) {
 			g_printerr("Failed to parse audio format: %s\n",
@@ -145,8 +143,9 @@ int main(int argc, char **argv)
 
 	/* open the filter */
 
-	out_audio_format = filter->Open(audio_format, &error);
-	if (out_audio_format == NULL) {
+	const AudioFormat out_audio_format =
+		filter->Open(audio_format, &error);
+	if (!out_audio_format.IsDefined()) {
 		g_printerr("Failed to open filter: %s\n", error->message);
 		g_error_free(error);
 		delete filter;

@@ -1124,11 +1124,11 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 		return;
 	}
 
-	struct audio_format audio_format;
+	AudioFormat audio_format;
 	GError *error = nullptr;
-	if (!audio_format_init_checked(&audio_format,
+	if (!audio_format_init_checked(audio_format,
 				       data.frame.header.samplerate,
-				       SAMPLE_FORMAT_S24_P32,
+				       SampleFormat::S24_P32,
 				       MAD_NCHANNELS(&data.frame.header),
 				       &error)) {
 		g_warning("%s", error->message);
@@ -1138,7 +1138,7 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 		return;
 	}
 
-	decoder_initialized(decoder, &audio_format,
+	decoder_initialized(decoder, audio_format,
 			    input_stream_is_seekable(input_stream),
 			    data.total_time);
 

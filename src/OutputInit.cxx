@@ -155,16 +155,16 @@ ao_base_init(struct audio_output *ao,
 						 NULL);
 		if (p != NULL) {
 			bool success =
-				audio_format_parse(&ao->config_audio_format,
+				audio_format_parse(ao->config_audio_format,
 						   p, true, error_r);
 			if (!success)
 				return false;
 		} else
-			audio_format_clear(&ao->config_audio_format);
+			ao->config_audio_format.Clear();
 	} else {
 		ao->name = "default detected output";
 
-		audio_format_clear(&ao->config_audio_format);
+		ao->config_audio_format.Clear();
 	}
 
 	ao->plugin = plugin;
