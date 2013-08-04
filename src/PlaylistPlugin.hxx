@@ -55,7 +55,7 @@ struct playlist_plugin {
 	 * @return true if the plugin was initialized successfully,
 	 * false if the plugin is not available
 	 */
-	bool (*init)(const struct config_param *param);
+	bool (*init)(const config_param &param);
 
 	/**
 	 * Deinitialize a plugin which was initialized successfully.
@@ -96,7 +96,7 @@ struct playlist_plugin {
  */
 static inline bool
 playlist_plugin_init(const struct playlist_plugin *plugin,
-		     const struct config_param *param)
+		     const config_param &param)
 {
 	return plugin->init != NULL
 		? plugin->init(param)

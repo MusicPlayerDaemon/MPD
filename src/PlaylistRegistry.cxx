@@ -83,8 +83,7 @@ playlist_plugin_config(const char *plugin_name)
 	assert(plugin_name != NULL);
 
 	while ((param = config_get_next_param(CONF_PLAYLIST_PLUGIN, param)) != NULL) {
-		const char *name =
-			config_get_block_string(param, "name", NULL);
+		const char *name = param->GetBlockValue("name");
 		if (name == NULL)
 			MPD_ERROR("playlist configuration without 'plugin' name in line %d",
 				param->line);
@@ -99,17 +98,20 @@ playlist_plugin_config(const char *plugin_name)
 void
 playlist_list_global_init(void)
 {
+	const config_param empty;
+
 	for (unsigned i = 0; playlist_plugins[i] != NULL; ++i) {
 		const struct playlist_plugin *plugin = playlist_plugins[i];
 		const struct config_param *param =
 			playlist_plugin_config(plugin->name);
-
-		if (!config_get_block_bool(param, "enabled", true))
+		if (param == nullptr)
+			param = &empty;
+		else if (!param->GetBlockValue("enabled", true))
 			/* the plugin is disabled in mpd.conf */
 			continue;
 
 		playlist_plugins_enabled[i] =
-			playlist_plugin_init(playlist_plugins[i], param);
+			playlist_plugin_init(playlist_plugins[i], *param);
 	}
 }
 

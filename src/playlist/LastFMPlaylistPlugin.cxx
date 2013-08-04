@@ -44,10 +44,10 @@ static struct {
 } lastfm_config;
 
 static bool
-lastfm_init(const struct config_param *param)
+lastfm_init(const config_param &param)
 {
-	const char *user = config_get_block_string(param, "user", NULL);
-	const char *passwd = config_get_block_string(param, "password", NULL);
+	const char *user = param.GetBlockValue("user");
+	const char *passwd = param.GetBlockValue("password");
 
 	if (user == NULL || passwd == NULL) {
 		g_debug("disabling the last.fm playlist plugin "
