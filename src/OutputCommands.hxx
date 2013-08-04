@@ -31,6 +31,9 @@ enum command_return
 handle_disableoutput(Client *client, int argc, char *argv[]);
 
 enum command_return
+handle_toggleoutput(Client *client, int argc, char *argv[]);
+
+enum command_return
 handle_devices(Client *client, int argc, char *argv[]);
 
 #endif

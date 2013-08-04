@@ -1876,6 +1876,20 @@ OK
             </para>
           </listitem>
         </varlistentry>
+        <varlistentry id="command_toggleoutput">
+          <term>
+            <cmdsynopsis>
+              <command>toggleoutput</command>
+              <arg choice="req"><replaceable>ID</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Turns an output on or off, depending on the current
+              state.
+            </para>
+          </listitem>
+        </varlistentry>
         <varlistentry id="command_outputs">
           <term>
             <cmdsynopsis>

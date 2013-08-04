@@ -65,6 +65,22 @@ handle_disableoutput(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
+handle_toggleoutput(Client *client, gcc_unused int argc, char *argv[])
+{
+	unsigned device;
+	if (!check_unsigned(client, &device, argv[1]))
+		return COMMAND_RETURN_ERROR;
+
+	if (!audio_output_toggle_index(device)) {
+		command_error(client, ACK_ERROR_NO_EXIST,
+			      "No such audio output");
+		return COMMAND_RETURN_ERROR;
+	}
+
+	return COMMAND_RETURN_OK;
+}
+
+enum command_return
 handle_devices(Client *client,
 	       G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
 {

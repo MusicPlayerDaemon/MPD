@@ -1,4 +1,6 @@
 ver 0.18 (2012/??/??)
+* protocol:
+  - new command "toggleoutput"
 * innput:
   - soup: plugin removed
 * decoder:

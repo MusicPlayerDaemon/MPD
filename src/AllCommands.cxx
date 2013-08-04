@@ -159,6 +159,7 @@ static const struct command commands[] = {
 	{ "swap", PERMISSION_CONTROL, 2, 2, handle_swap },
 	{ "swapid", PERMISSION_CONTROL, 2, 2, handle_swapid },
 	{ "tagtypes", PERMISSION_READ, 0, 0, handle_tagtypes },
+	{ "toggleoutput", PERMISSION_ADMIN, 1, 1, handle_toggleoutput },
 	{ "unsubscribe", PERMISSION_READ, 1, 1, handle_unsubscribe },
 	{ "update", PERMISSION_CONTROL, 0, 1, handle_update },
 	{ "urlhandlers", PERMISSION_READ, 0, 0, handle_urlhandlers },

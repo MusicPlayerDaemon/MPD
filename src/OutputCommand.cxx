@@ -84,3 +84,30 @@ audio_output_disable_index(unsigned idx)
 
 	return true;
 }
+
+bool
+audio_output_toggle_index(unsigned idx)
+{
+	struct audio_output *ao;
+
+	if (idx >= audio_output_count())
+		return false;
+
+	ao = audio_output_get(idx);
+	const bool enabled = ao->enabled = !ao->enabled;
+	idle_add(IDLE_OUTPUT);
+
+	if (!enabled) {
+		Mixer *mixer = ao->mixer;
+		if (mixer != nullptr) {
+			mixer_close(mixer);
+			idle_add(IDLE_MIXER);
+		}
+	}
+
+	ao->player_control->UpdateAudio();
+
+	++audio_output_state_version;
+
+	return true;
+}
