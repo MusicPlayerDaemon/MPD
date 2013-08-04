@@ -123,7 +123,7 @@ struct HttpdOutput final : private ServerSocket {
 	HttpdOutput(EventLoop &_loop);
 	~HttpdOutput();
 
-	bool Configure(const config_param *param, GError **error_r);
+	bool Configure(const config_param &param, GError **error_r);
 
 	bool Bind(GError **error_r);
 	void Unbind();

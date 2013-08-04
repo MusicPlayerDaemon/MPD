@@ -80,6 +80,15 @@ struct config_param {
 
 	config_param &operator=(const config_param &) = delete;
 
+	/**
+	 * Determine if this is a "null" instance, i.e. an empty
+	 * object that was synthesized and not loaded from a
+	 * configuration file.
+	 */
+	bool IsNull() const {
+		return line == unsigned(-1);
+	}
+
 	gcc_nonnull_all
 	void AddBlockParam(const char *_name, const char *_value,
 			   int _line=-1) {

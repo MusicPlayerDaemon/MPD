@@ -49,7 +49,7 @@ struct OpenALOutput {
 	ALenum format;
 	ALuint frequency;
 
-	bool Initialize(const config_param *param, GError **error_r) {
+	bool Initialize(const config_param &param, GError **error_r) {
 		return ao_base_init(&base, &openal_output_plugin, param,
 				    error_r);
 	}
@@ -140,10 +140,9 @@ openal_setup_context(OpenALOutput *od,
 }
 
 static struct audio_output *
-openal_init(const config_param *param, GError **error_r)
+openal_init(const config_param &param, GError **error_r)
 {
-	const char *device_name = config_get_block_string(param, "device", nullptr);
-
+	const char *device_name = param.GetBlockValue("device");
 	if (device_name == nullptr) {
 		device_name = alcGetString(nullptr, ALC_DEFAULT_DEVICE_SPECIFIER);
 	}

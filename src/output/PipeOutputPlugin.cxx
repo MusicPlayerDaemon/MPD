@@ -30,7 +30,7 @@ struct PipeOutput {
 	char *cmd;
 	FILE *fh;
 
-	bool Initialize(const config_param *param, GError **error_r) {
+	bool Initialize(const config_param &param, GError **error_r) {
 		return ao_base_init(&base, &pipe_output_plugin, param,
 				    error_r);
 	}
@@ -39,7 +39,7 @@ struct PipeOutput {
 		ao_base_finish(&base);
 	}
 
-	bool Configure(const config_param *param, GError **error_r);
+	bool Configure(const config_param &param, GError **error_r);
 };
 
 /**
@@ -52,9 +52,9 @@ pipe_output_quark(void)
 }
 
 inline bool
-PipeOutput::Configure(const config_param *param, GError **error_r)
+PipeOutput::Configure(const config_param &param, GError **error_r)
 {
-	cmd = config_dup_block_string(param, "command", nullptr);
+	cmd = param.DupBlockString("command");
 	if (cmd == nullptr) {
 		g_set_error(error_r, pipe_output_quark(), 0,
 			    "No \"command\" parameter specified");
@@ -65,7 +65,7 @@ PipeOutput::Configure(const config_param *param, GError **error_r)
 }
 
 static struct audio_output *
-pipe_output_init(const config_param *param, GError **error_r)
+pipe_output_init(const config_param &param, GError **error_r)
 {
 	PipeOutput *pd = new PipeOutput();
 

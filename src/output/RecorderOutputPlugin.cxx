@@ -57,7 +57,7 @@ struct RecorderOutput {
 	 */
 	char buffer[32768];
 
-	bool Initialize(const config_param *param, GError **error_r) {
+	bool Initialize(const config_param &param, GError **error_r) {
 		return ao_base_init(&base, &recorder_output_plugin, param,
 				    error_r);
 	}
@@ -66,7 +66,7 @@ struct RecorderOutput {
 		ao_base_finish(&base);
 	}
 
-	bool Configure(const config_param *param, GError **error_r);
+	bool Configure(const config_param &param, GError **error_r);
 
 	bool WriteToFile(const void *data, size_t length, GError **error_r);
 
@@ -86,12 +86,12 @@ recorder_output_quark(void)
 }
 
 inline bool
-RecorderOutput::Configure(const config_param *param, GError **error_r)
+RecorderOutput::Configure(const config_param &param, GError **error_r)
 {
 	/* read configuration */
 
 	const char *encoder_name =
-		config_get_block_string(param, "encoder", "vorbis");
+		param.GetBlockValue("encoder", "vorbis");
 	const auto encoder_plugin = encoder_plugin_get(encoder_name);
 	if (encoder_plugin == nullptr) {
 		g_set_error(error_r, recorder_output_quark(), 0,
@@ -99,7 +99,7 @@ RecorderOutput::Configure(const config_param *param, GError **error_r)
 		return false;
 	}
 
-	path = config_get_block_string(param, "path", nullptr);
+	path = param.GetBlockValue("path");
 	if (path == nullptr) {
 		g_set_error(error_r, recorder_output_quark(), 0,
 			    "'path' not configured");
@@ -108,7 +108,7 @@ RecorderOutput::Configure(const config_param *param, GError **error_r)
 
 	/* initialize encoder */
 
-	encoder = encoder_init(*encoder_plugin, param, error_r);
+	encoder = encoder_init(*encoder_plugin, &param, error_r);
 	if (encoder == nullptr)
 		return false;
 
@@ -116,7 +116,7 @@ RecorderOutput::Configure(const config_param *param, GError **error_r)
 }
 
 static audio_output *
-recorder_output_init(const config_param *param, GError **error_r)
+recorder_output_init(const config_param &param, GError **error_r)
 {
 	RecorderOutput *recorder = new RecorderOutput();
 

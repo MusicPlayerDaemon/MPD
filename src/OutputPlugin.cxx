@@ -23,7 +23,7 @@
 
 struct audio_output *
 ao_plugin_init(const struct audio_output_plugin *plugin,
-	       const struct config_param *param,
+	       const config_param &param,
 	       GError **error)
 {
 	assert(plugin != NULL);

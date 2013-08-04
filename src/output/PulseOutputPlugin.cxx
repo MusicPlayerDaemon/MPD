@@ -344,7 +344,7 @@ pulse_output_setup_context(PulseOutput *po, GError **error_r)
 }
 
 static struct audio_output *
-pulse_output_init(const struct config_param *param, GError **error_r)
+pulse_output_init(const config_param &param, GError **error_r)
 {
 	PulseOutput *po;
 
@@ -356,9 +356,9 @@ pulse_output_init(const struct config_param *param, GError **error_r)
 		return nullptr;
 	}
 
-	po->name = config_get_block_string(param, "name", "mpd_pulse");
-	po->server = config_get_block_string(param, "server", nullptr);
-	po->sink = config_get_block_string(param, "sink", nullptr);
+	po->name = param.GetBlockValue("name", "mpd_pulse");
+	po->server = param.GetBlockValue("server");
+	po->sink = param.GetBlockValue("sink");
 
 	po->mixer = nullptr;
 	po->mainloop = nullptr;
@@ -923,10 +923,10 @@ pulse_output_pause(struct audio_output *ao)
 static bool
 pulse_output_test_default_device(void)
 {
-	PulseOutput *po;
 	bool success;
 
-	po = (PulseOutput *)pulse_output_init(nullptr, nullptr);
+	const config_param empty;
+	PulseOutput *po = (PulseOutput *)pulse_output_init(empty, nullptr);
 	if (po == nullptr)
 		return false;
 

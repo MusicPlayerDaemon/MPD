@@ -261,14 +261,14 @@ audio_output_command_is_finished(const struct audio_output *ao)
 }
 
 struct audio_output *
-audio_output_new(const struct config_param *param,
+audio_output_new(const config_param &param,
 		 struct player_control *pc,
 		 GError **error_r);
 
 bool
 ao_base_init(struct audio_output *ao,
 	     const struct audio_output_plugin *plugin,
-	     const struct config_param *param, GError **error_r);
+	     const config_param &param, GError **error_r);
 
 void
 ao_base_finish(struct audio_output *ao);

@@ -76,8 +76,7 @@ find_named_config_block(ConfigOption option, const char *name)
 	const struct config_param *param = NULL;
 
 	while ((param = config_get_next_param(option, param)) != NULL) {
-		const char *current_name =
-			config_get_block_string(param, "name", NULL);
+		const char *current_name = param->GetBlockValue("name");
 		if (current_name != NULL && strcmp(current_name, name) == 0)
 			return param;
 	}
@@ -104,7 +103,7 @@ load_audio_output(const char *name)
 	static struct player_control dummy_player_control(32, 4);
 
 	struct audio_output *ao =
-		audio_output_new(param, &dummy_player_control, &error);
+		audio_output_new(*param, &dummy_player_control, &error);
 	if (ao == NULL) {
 		g_printerr("%s\n", error->message);
 		g_error_free(error);

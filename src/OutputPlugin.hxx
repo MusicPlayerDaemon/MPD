@@ -55,7 +55,7 @@ struct audio_output_plugin {
 	 * @return NULL on error, or an opaque pointer to the plugin's
 	 * data
 	 */
-	struct audio_output *(*init)(const struct config_param *param,
+	struct audio_output *(*init)(const config_param &param,
 				     GError **error);
 
 	/**
@@ -168,7 +168,7 @@ ao_plugin_test_default_device(const struct audio_output_plugin *plugin)
 gcc_malloc
 struct audio_output *
 ao_plugin_init(const struct audio_output_plugin *plugin,
-	       const struct config_param *param,
+	       const config_param &param,
 	       GError **error);
 
 void

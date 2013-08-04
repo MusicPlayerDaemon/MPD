@@ -42,7 +42,7 @@ struct AoOutput {
 	ao_option *options;
 	ao_device *device;
 
-	bool Initialize(const config_param *param, GError **error_r) {
+	bool Initialize(const config_param &param, GError **error_r) {
 		return ao_base_init(&base, &ao_output_plugin, param,
 				    error_r);
 	}
@@ -51,7 +51,7 @@ struct AoOutput {
 		ao_base_finish(&base);
 	}
 
-	bool Configure(const config_param *param, GError **error_r);
+	bool Configure(const config_param &param, GError **error_r);
 };
 
 static inline GQuark
@@ -95,20 +95,20 @@ ao_output_error(GError **error_r)
 }
 
 inline bool
-AoOutput::Configure(const config_param *param, GError **error_r)
+AoOutput::Configure(const config_param &param, GError **error_r)
 {
 	const char *value;
 
 	options = nullptr;
 
-	write_size = config_get_block_unsigned(param, "write_size", 1024);
+	write_size = param.GetBlockValue("write_size", 1024u);
 
 	if (ao_output_ref == 0) {
 		ao_initialize();
 	}
 	ao_output_ref++;
 
-	value = config_get_block_string(param, "driver", "default");
+	value = param.GetBlockValue("driver", "default");
 	if (0 == strcmp(value, "default"))
 		driver = ao_default_driver_id();
 	else
@@ -129,9 +129,9 @@ AoOutput::Configure(const config_param *param, GError **error_r)
 	}
 
 	g_debug("using ao driver \"%s\" for \"%s\"\n", ai->short_name,
-		config_get_block_string(param, "name", nullptr));
+		param.GetBlockValue("name", nullptr));
 
-	value = config_get_block_string(param, "options", nullptr);
+	value = param.GetBlockValue("options", nullptr);
 	if (value != nullptr) {
 		gchar **_options = g_strsplit(value, ";", 0);
 
@@ -158,7 +158,7 @@ AoOutput::Configure(const config_param *param, GError **error_r)
 }
 
 static struct audio_output *
-ao_output_init(const config_param *param, GError **error_r)
+ao_output_init(const config_param &param, GError **error_r)
 {
 	AoOutput *ad = new AoOutput();
 

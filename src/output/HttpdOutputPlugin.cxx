@@ -91,18 +91,17 @@ HttpdOutput::Unbind()
 }
 
 inline bool
-HttpdOutput::Configure(const config_param *param, GError **error_r)
+HttpdOutput::Configure(const config_param &param, GError **error_r)
 {
 	/* read configuration */
-	name = config_get_block_string(param, "name", "Set name in config");
-	genre = config_get_block_string(param, "genre", "Set genre in config");
-	website = config_get_block_string(param, "website",
-					  "Set website in config");
+	name = param.GetBlockValue("name", "Set name in config");
+	genre = param.GetBlockValue("genre", "Set genre in config");
+	website = param.GetBlockValue("website", "Set website in config");
 
-	guint port = config_get_block_unsigned(param, "port", 8000);
+	guint port = param.GetBlockValue("port", 8000u);
 
 	const char *encoder_name =
-		config_get_block_string(param, "encoder", "vorbis");
+		param.GetBlockValue("encoder", "vorbis");
 	const auto encoder_plugin = encoder_plugin_get(encoder_name);
 	if (encoder_plugin == NULL) {
 		g_set_error(error_r, httpd_output_quark(), 0,
@@ -110,12 +109,11 @@ HttpdOutput::Configure(const config_param *param, GError **error_r)
 		return false;
 	}
 
-	clients_max = config_get_block_unsigned(param,"max_clients", 0);
+	clients_max = param.GetBlockValue("max_clients", 0u);
 
 	/* set up bind_to_address */
 
-	const char *bind_to_address =
-		config_get_block_string(param, "bind_to_address", NULL);
+	const char *bind_to_address = param.GetBlockValue("bind_to_address");
 	bool success = bind_to_address != NULL &&
 		strcmp(bind_to_address, "any") != 0
 		? AddHost(bind_to_address, port, error_r)
@@ -125,7 +123,7 @@ HttpdOutput::Configure(const config_param *param, GError **error_r)
 
 	/* initialize encoder */
 
-	encoder = encoder_init(*encoder_plugin, param, error_r);
+	encoder = encoder_init(*encoder_plugin, &param, error_r);
 	if (encoder == nullptr)
 		return false;
 
@@ -138,7 +136,7 @@ HttpdOutput::Configure(const config_param *param, GError **error_r)
 }
 
 static struct audio_output *
-httpd_output_init(const struct config_param *param,
+httpd_output_init(const struct config_param &param,
 		  GError **error_r)
 {
 	HttpdOutput *httpd = new HttpdOutput(*main_loop);

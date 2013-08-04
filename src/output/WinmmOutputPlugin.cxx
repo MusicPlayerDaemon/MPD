@@ -114,7 +114,7 @@ fail:
 }
 
 static struct audio_output *
-winmm_output_init(const struct config_param *param, GError **error_r)
+winmm_output_init(const config_param &param, GError **error_r)
 {
 	WinmmOutput *wo = new WinmmOutput();
 	if (!ao_base_init(&wo->base, &winmm_output_plugin, param, error_r)) {
@@ -122,7 +122,7 @@ winmm_output_init(const struct config_param *param, GError **error_r)
 		return nullptr;
 	}
 
-	const char *device = config_get_block_string(param, "device", nullptr);
+	const char *device = param.GetBlockValue("device");
 	if (!get_device_id(device, &wo->device_id, error_r)) {
 		ao_base_finish(&wo->base);
 		g_free(wo);

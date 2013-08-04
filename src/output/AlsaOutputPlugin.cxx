@@ -37,9 +37,7 @@
 
 static const char default_device[] = "default";
 
-enum {
-	MPD_ALSA_BUFFER_TIME_US = 500000,
-};
+static constexpr unsigned MPD_ALSA_BUFFER_TIME_US = 500000;
 
 #define MPD_ALSA_RETRY_NR 5
 
@@ -117,7 +115,7 @@ struct AlsaOutput {
 	AlsaOutput():mode(0), writei(snd_pcm_writei) {
 	}
 
-	bool Init(const config_param *param, GError **error_r) {
+	bool Init(const config_param &param, GError **error_r) {
 		return ao_base_init(&base, &alsa_output_plugin,
 				    param, error_r);
 	}
@@ -143,36 +141,36 @@ alsa_device(const AlsaOutput *ad)
 }
 
 static void
-alsa_configure(AlsaOutput *ad, const struct config_param *param)
+alsa_configure(AlsaOutput *ad, const config_param &param)
 {
-	ad->device = config_get_block_string(param, "device", "");
+	ad->device = param.GetBlockValue("device", "");
 
-	ad->use_mmap = config_get_block_bool(param, "use_mmap", false);
+	ad->use_mmap = param.GetBlockValue("use_mmap", false);
 
-	ad->dsd_usb = config_get_block_bool(param, "dsd_usb", false);
+	ad->dsd_usb = param.GetBlockValue("dsd_usb", false);
 
-	ad->buffer_time = config_get_block_unsigned(param, "buffer_time",
-			MPD_ALSA_BUFFER_TIME_US);
-	ad->period_time = config_get_block_unsigned(param, "period_time", 0);
+	ad->buffer_time = param.GetBlockValue("buffer_time",
+					      MPD_ALSA_BUFFER_TIME_US);
+	ad->period_time = param.GetBlockValue("period_time", 0u);
 
 #ifdef SND_PCM_NO_AUTO_RESAMPLE
-	if (!config_get_block_bool(param, "auto_resample", true))
+	if (!param.GetBlockValue("auto_resample", true))
 		ad->mode |= SND_PCM_NO_AUTO_RESAMPLE;
 #endif
 
 #ifdef SND_PCM_NO_AUTO_CHANNELS
-	if (!config_get_block_bool(param, "auto_channels", true))
+	if (!param.GetBlockValue("auto_channels", true))
 		ad->mode |= SND_PCM_NO_AUTO_CHANNELS;
 #endif
 
 #ifdef SND_PCM_NO_AUTO_FORMAT
-	if (!config_get_block_bool(param, "auto_format", true))
+	if (!param.GetBlockValue("auto_format", true))
 		ad->mode |= SND_PCM_NO_AUTO_FORMAT;
 #endif
 }
 
 static struct audio_output *
-alsa_init(const struct config_param *param, GError **error_r)
+alsa_init(const config_param &param, GError **error_r)
 {
 	AlsaOutput *ad = new AlsaOutput();
 

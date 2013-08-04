@@ -35,7 +35,7 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "shout"
 
-#define DEFAULT_CONN_TIMEOUT  2
+static constexpr unsigned DEFAULT_CONN_TIMEOUT = 2;
 
 struct ShoutOutput final {
 	struct audio_output base;
@@ -66,7 +66,7 @@ struct ShoutOutput final {
 			shout_free(shout_conn);
 	}
 
-	bool Initialize(const config_param *param, GError **error_r) {
+	bool Initialize(const config_param &param, GError **error_r) {
 		return ao_base_init(&base, &shout_output_plugin, param,
 				    error_r);
 	}
@@ -75,7 +75,7 @@ struct ShoutOutput final {
 		ao_base_finish(&base);
 	}
 
-	bool Configure(const config_param *param, GError **error_r);
+	bool Configure(const config_param &param, GError **error_r);
 };
 
 static int shout_init_count;
@@ -102,18 +102,18 @@ shout_encoder_plugin_get(const char *name)
 
 gcc_pure
 static const char *
-require_block_string(const struct config_param *param, const char *name)
+require_block_string(const config_param &param, const char *name)
 {
-	const char *value = config_get_block_string(param, name, nullptr);
+	const char *value = param.GetBlockValue(name);
 	if (value == nullptr)
 		MPD_ERROR("no \"%s\" defined for shout device defined at line " \
-			  "%i\n", name, param->line);			\
+			  "%i\n", name, param.line);
 
 	return value;
 }
 
 inline bool
-ShoutOutput::Configure(const config_param *param, GError **error_r)
+ShoutOutput::Configure(const config_param &param, GError **error_r)
 {
 
 	const AudioFormat audio_format = base.config_audio_format;
@@ -125,8 +125,7 @@ ShoutOutput::Configure(const config_param *param, GError **error_r)
 
 	const char *host = require_block_string(param, "host");
 	const char *mount = require_block_string(param, "mount");
-
-	unsigned port = config_get_block_unsigned(param, "port", 0);
+	unsigned port = param.GetBlockValue("port", 0u);
 	if (port == 0) {
 		g_set_error(error_r, shout_output_quark(), 0,
 			    "shout port must be configured");
@@ -136,11 +135,11 @@ ShoutOutput::Configure(const config_param *param, GError **error_r)
 	const char *passwd = require_block_string(param, "password");
 	const char *name = require_block_string(param, "name");
 
-	bool is_public = config_get_block_bool(param, "public", false);
+	bool is_public = param.GetBlockValue("public", false);
 
-	const char *user = config_get_block_string(param, "user", "source");
+	const char *user = param.GetBlockValue("user", "source");
 
-	const char *value = config_get_block_string(param, "quality", nullptr);
+	const char *value = param.GetBlockValue("quality");
 	if (value != nullptr) {
 		char *test;
 		quality = strtod(value, &test);
@@ -149,18 +148,18 @@ ShoutOutput::Configure(const config_param *param, GError **error_r)
 			g_set_error(error_r, shout_output_quark(), 0,
 				    "shout quality \"%s\" is not a number in the "
 				    "range -1 to 10, line %i",
-				    value, param->line);
+				    value, param.line);
 			return false;
 		}
 
-		if (config_get_block_string(param, "bitrate", nullptr) != nullptr) {
+		if (param.GetBlockValue("bitrate") != nullptr) {
 			g_set_error(error_r, shout_output_quark(), 0,
 				    "quality and bitrate are "
 				    "both defined");
 			return false;
 		}
 	} else {
-		value = config_get_block_string(param, "bitrate", nullptr);
+		value = param.GetBlockValue("bitrate");
 		if (value == nullptr) {
 			g_set_error(error_r, shout_output_quark(), 0,
 				    "neither bitrate nor quality defined");
@@ -177,8 +176,7 @@ ShoutOutput::Configure(const config_param *param, GError **error_r)
 		}
 	}
 
-	const char *encoding = config_get_block_string(param, "encoding",
-						       "ogg");
+	const char *encoding = param.GetBlockValue("encoding", "ogg");
 	const auto encoder_plugin = shout_encoder_plugin_get(encoding);
 	if (encoder_plugin == nullptr) {
 		g_set_error(error_r, shout_output_quark(), 0,
@@ -187,7 +185,7 @@ ShoutOutput::Configure(const config_param *param, GError **error_r)
 		return false;
 	}
 
-	encoder = encoder_init(*encoder_plugin, param, error_r);
+	encoder = encoder_init(*encoder_plugin, &param, error_r);
 	if (encoder == nullptr)
 		return false;
 
@@ -198,7 +196,7 @@ ShoutOutput::Configure(const config_param *param, GError **error_r)
 		shout_format = SHOUT_FORMAT_OGG;
 
 	unsigned protocol;
-	value = config_get_block_string(param, "protocol", nullptr);
+	value = param.GetBlockValue("protocol");
 	if (value != nullptr) {
 		if (0 == strcmp(value, "shoutcast") &&
 		    0 != strcmp(encoding, "mp3")) {
@@ -240,24 +238,23 @@ ShoutOutput::Configure(const config_param *param, GError **error_r)
 	}
 
 	/* optional paramters */
-	timeout = config_get_block_unsigned(param, "timeout",
-					    DEFAULT_CONN_TIMEOUT);
+	timeout = param.GetBlockValue("timeout", DEFAULT_CONN_TIMEOUT);
 
-	value = config_get_block_string(param, "genre", nullptr);
+	value = param.GetBlockValue("genre");
 	if (value != nullptr && shout_set_genre(shout_conn, value)) {
 		g_set_error(error_r, shout_output_quark(), 0,
 			    "%s", shout_get_error(shout_conn));
 		return false;
 	}
 
-	value = config_get_block_string(param, "description", nullptr);
+	value = param.GetBlockValue("description");
 	if (value != nullptr && shout_set_description(shout_conn, value)) {
 		g_set_error(error_r, shout_output_quark(), 0,
 			    "%s", shout_get_error(shout_conn));
 		return false;
 	}
 
-	value = config_get_block_string(param, "url", nullptr);
+	value = param.GetBlockValue("url");
 	if (value != nullptr && shout_set_url(shout_conn, value)) {
 		g_set_error(error_r, shout_output_quark(), 0,
 			    "%s", shout_get_error(shout_conn));
@@ -290,7 +287,7 @@ ShoutOutput::Configure(const config_param *param, GError **error_r)
 }
 
 static struct audio_output *
-my_shout_init_driver(const config_param *param, GError **error_r)
+my_shout_init_driver(const config_param &param, GError **error_r)
 {
 	ShoutOutput *sd = new ShoutOutput();
 	if (!sd->Initialize(param, error_r)) {

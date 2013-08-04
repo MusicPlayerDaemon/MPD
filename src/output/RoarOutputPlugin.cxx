@@ -108,19 +108,19 @@ roar_output_set_volume(RoarOutput *roar, unsigned volume)
 }
 
 static void
-roar_configure(RoarOutput *self, const struct config_param *param)
+roar_configure(RoarOutput *self, const config_param &param)
 {
-	self->host = config_dup_block_string(param, "server", nullptr);
-	self->name = config_dup_block_string(param, "name", "MPD");
+	self->host = param.DupBlockString("server", nullptr);
+	self->name = param.DupBlockString("name", "MPD");
 
-	const char *role = config_get_block_string(param, "role", "music");
+	const char *role = param.GetBlockValue("role", "music");
 	self->role = role != nullptr
 		? roar_str2role(role)
 		: ROAR_ROLE_MUSIC;
 }
 
 static struct audio_output *
-roar_init(const struct config_param *param, GError **error_r)
+roar_init(const config_param &param, GError **error_r)
 {
 	RoarOutput *self = new RoarOutput();
 

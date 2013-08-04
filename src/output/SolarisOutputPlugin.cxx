@@ -61,7 +61,7 @@ struct SolarisOutput {
 
 	int fd;
 
-	bool Initialize(const config_param *param, GError **error_r) {
+	bool Initialize(const config_param &param, GError **error_r) {
 		return ao_base_init(&base, &solaris_output_plugin, param,
 				    error_r);
 	}
@@ -90,7 +90,7 @@ solaris_output_test_default_device(void)
 }
 
 static struct audio_output *
-solaris_output_init(const config_param *param, GError **error_r)
+solaris_output_init(const config_param &param, GError **error_r)
 {
 	SolarisOutput *so = new SolarisOutput();
 	if (!so->Initialize(param, error_r)) {
@@ -98,7 +98,7 @@ solaris_output_init(const config_param *param, GError **error_r)
 		return nullptr;
 	}
 
-	so->device = config_get_block_string(param, "device", "/dev/audio");
+	so->device = param.GetBlockValue("device", "/dev/audio");
 
 	return &so->base;
 }

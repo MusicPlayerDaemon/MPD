@@ -109,16 +109,23 @@ audio_output_all_init(struct player_control *pc)
 	num_audio_outputs = audio_output_config_count();
 	audio_outputs = g_new(struct audio_output *, num_audio_outputs);
 
+	const config_param empty;
+
 	for (i = 0; i < num_audio_outputs; i++)
 	{
 		unsigned int j;
 
 		param = config_get_next_param(CONF_AUDIO_OUTPUT, param);
+		if (param == nullptr) {
+			/* only allow param to be nullptr if there
+			   just one audio output */
+			assert(i == 0);
+			assert(num_audio_outputs == 1);
 
-		/* only allow param to be NULL if there just one audioOutput */
-		assert(param || (num_audio_outputs == 1));
+			param = &empty;
+		}
 
-		struct audio_output *output = audio_output_new(param, pc, &error);
+		struct audio_output *output = audio_output_new(*param, pc, &error);
 		if (output == NULL) {
 			if (param != NULL)
 				MPD_ERROR("line %i: %s",

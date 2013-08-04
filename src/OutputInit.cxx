@@ -75,16 +75,17 @@ audio_output_detect(GError **error)
  * This handles the deprecated options mixer_type (global) and
  * mixer_enabled, if the mixer_type setting is not configured.
  */
+gcc_pure
 static enum mixer_type
-audio_output_mixer_type(const struct config_param *param)
+audio_output_mixer_type(const config_param &param)
 {
 	/* read the local "mixer_type" setting */
-	const char *p = config_get_block_string(param, "mixer_type", NULL);
+	const char *p = param.GetBlockValue("mixer_type");
 	if (p != NULL)
 		return mixer_type_parse(p);
 
 	/* try the local "mixer_enabled" setting next (deprecated) */
-	if (!config_get_block_bool(param, "mixer_enabled", true))
+	if (!param.GetBlockValue("mixer_enabled", true))
 		return MIXER_TYPE_NONE;
 
 	/* fall back to the global "mixer_type" setting (also
@@ -95,7 +96,7 @@ audio_output_mixer_type(const struct config_param *param)
 
 static Mixer *
 audio_output_load_mixer(struct audio_output *ao,
-			const struct config_param *param,
+			const config_param &param,
 			const struct mixer_plugin *plugin,
 			Filter &filter_chain,
 			GError **error_r)
@@ -111,7 +112,7 @@ audio_output_load_mixer(struct audio_output *ao,
 		if (plugin == NULL)
 			return NULL;
 
-		return mixer_new(plugin, ao, param, error_r);
+		return mixer_new(plugin, ao, &param, error_r);
 
 	case MIXER_TYPE_SOFTWARE:
 		mixer = mixer_new(&software_mixer_plugin, NULL, NULL, NULL);
@@ -129,7 +130,7 @@ audio_output_load_mixer(struct audio_output *ao,
 bool
 ao_base_init(struct audio_output *ao,
 	     const struct audio_output_plugin *plugin,
-	     const struct config_param *param, GError **error_r)
+	     const config_param &param, GError **error_r)
 {
 	assert(ao != NULL);
 	assert(plugin != NULL);
@@ -140,19 +141,15 @@ ao_base_init(struct audio_output *ao,
 
 	GError *error = NULL;
 
-	if (param) {
-		const char *p;
-
-		ao->name = config_get_block_string(param, AUDIO_OUTPUT_NAME,
-						   NULL);
+	if (!param.IsNull()) {
+		ao->name = param.GetBlockValue(AUDIO_OUTPUT_NAME);
 		if (ao->name == NULL) {
 			g_set_error(error_r, output_quark(), 0,
 				    "Missing \"name\" configuration");
 			return false;
 		}
 
-		p = config_get_block_string(param, AUDIO_OUTPUT_FORMAT,
-						 NULL);
+		const char *p = param.GetBlockValue(AUDIO_OUTPUT_FORMAT);
 		if (p != NULL) {
 			bool success =
 				audio_format_parse(ao->config_audio_format,
@@ -168,9 +165,9 @@ ao_base_init(struct audio_output *ao,
 	}
 
 	ao->plugin = plugin;
-	ao->tags = config_get_block_bool(param, "tags", true);
-	ao->always_on = config_get_block_bool(param, "always_on", false);
-	ao->enabled = config_get_block_bool(param, "enabled", true);
+	ao->tags = param.GetBlockValue("tags", true);
+	ao->always_on = param.GetBlockValue("always_on", false);
+	ao->enabled = param.GetBlockValue("enabled", true);
 	ao->really_enabled = false;
 	ao->open = false;
 	ao->pause = false;
@@ -194,7 +191,7 @@ ao_base_init(struct audio_output *ao,
 	}
 
 	filter_chain_parse(*ao->filter,
-	                   config_get_block_string(param, AUDIO_FILTERS, ""),
+			   param.GetBlockValue(AUDIO_FILTERS, ""),
 	                   &error
 	);
 
@@ -219,25 +216,24 @@ ao_base_init(struct audio_output *ao,
 }
 
 static bool
-audio_output_setup(struct audio_output *ao, const struct config_param *param,
+audio_output_setup(struct audio_output *ao, const config_param &param,
 		   GError **error_r)
 {
 
 	/* create the replay_gain filter */
 
 	const char *replay_gain_handler =
-		config_get_block_string(param, "replay_gain_handler",
-					"software");
+		param.GetBlockValue("replay_gain_handler", "software");
 
 	if (strcmp(replay_gain_handler, "none") != 0) {
 		ao->replay_gain_filter = filter_new(&replay_gain_filter_plugin,
-						    param, NULL);
+						    &param, NULL);
 		assert(ao->replay_gain_filter != NULL);
 
 		ao->replay_gain_serial = 0;
 
 		ao->other_replay_gain_filter = filter_new(&replay_gain_filter_plugin,
-							  param, NULL);
+							  &param, NULL);
 		assert(ao->other_replay_gain_filter != NULL);
 
 		ao->other_replay_gain_serial = 0;
@@ -284,16 +280,16 @@ audio_output_setup(struct audio_output *ao, const struct config_param *param,
 }
 
 struct audio_output *
-audio_output_new(const struct config_param *param,
+audio_output_new(const config_param &param,
 		 struct player_control *pc,
 		 GError **error_r)
 {
 	const struct audio_output_plugin *plugin;
 
-	if (param) {
+	if (!param.IsNull()) {
 		const char *p;
 
-		p = config_get_block_string(param, AUDIO_OUTPUT_TYPE, NULL);
+		p = param.GetBlockValue(AUDIO_OUTPUT_TYPE);
 		if (p == NULL) {
 			g_set_error(error_r, output_quark(), 0,
 				    "Missing \"type\" configuration");

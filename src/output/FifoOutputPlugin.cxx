@@ -53,7 +53,7 @@ struct FifoOutput {
 		g_free(path);
 	}
 
-	bool Initialize(const config_param *param, GError **error_r) {
+	bool Initialize(const config_param &param, GError **error_r) {
 		return ao_base_init(&base, &fifo_output_plugin, param,
 				    error_r);
 	}
@@ -186,10 +186,10 @@ fifo_open(FifoOutput *fd, GError **error_r)
 }
 
 static struct audio_output *
-fifo_output_init(const config_param *param, GError **error_r)
+fifo_output_init(const config_param &param, GError **error_r)
 {
 	GError *error = nullptr;
-	char *path = config_dup_block_path(param, "path", &error);
+	char *path = param.DupBlockPath("path", &error);
 	if (!path) {
 		if (error != nullptr)
 			g_propagate_error(error_r, error);

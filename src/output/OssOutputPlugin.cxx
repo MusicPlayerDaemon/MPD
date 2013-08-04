@@ -80,7 +80,7 @@ struct OssOutput {
 
 	OssOutput():fd(-1), device(nullptr) {}
 
-	bool Initialize(const config_param *param, GError **error_r) {
+	bool Initialize(const config_param &param, GError **error_r) {
 		return ao_base_init(&base, &oss_output_plugin, param,
 				    error_r);
 	}
@@ -160,11 +160,12 @@ oss_open_default(GError **error)
 	int err[G_N_ELEMENTS(default_devices)];
 	enum oss_stat ret[G_N_ELEMENTS(default_devices)];
 
+	const config_param empty;
 	for (int i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
 		ret[i] = oss_stat_device(default_devices[i], &err[i]);
 		if (ret[i] == OSS_STAT_NO_ERROR) {
 			OssOutput *od = new OssOutput();
-			if (!od->Initialize(nullptr, error)) {
+			if (!od->Initialize(empty, error)) {
 				delete od;
 				return NULL;
 			}
@@ -201,9 +202,9 @@ oss_open_default(GError **error)
 }
 
 static struct audio_output *
-oss_output_init(const config_param *param, GError **error_r)
+oss_output_init(const config_param &param, GError **error_r)
 {
-	const char *device = config_get_block_string(param, "device", NULL);
+	const char *device = param.GetBlockValue("device");
 	if (device != NULL) {
 		OssOutput *od = new OssOutput();
 		if (!od->Initialize(param, error_r)) {

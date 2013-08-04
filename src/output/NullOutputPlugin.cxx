@@ -31,7 +31,7 @@ struct NullOutput {
 
 	Timer *timer;
 
-	bool Initialize(const config_param *param, GError **error_r) {
+	bool Initialize(const config_param &param, GError **error_r) {
 		return ao_base_init(&base, &null_output_plugin, param,
 				    error_r);
 	}
@@ -42,7 +42,7 @@ struct NullOutput {
 };
 
 static struct audio_output *
-null_init(const config_param *param, GError **error_r)
+null_init(const config_param &param, GError **error_r)
 {
 	NullOutput *nd = new NullOutput();
 
@@ -51,7 +51,7 @@ null_init(const config_param *param, GError **error_r)
 		return nullptr;
 	}
 
-	nd->sync = config_get_block_bool(param, "sync", true);
+	nd->sync = param.GetBlockValue("sync", true);
 
 	return &nd->base;
 }
