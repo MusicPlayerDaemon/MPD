@@ -173,7 +173,7 @@ Song::UpdateFileInArchive()
 	if (suffix == NULL)
 		return false;
 
-	plugin = decoder_plugin_from_suffix(suffix, nullptr);
+	plugin = decoder_plugin_from_suffix(suffix, NULL);
 	if (plugin == NULL)
 		return false;
 

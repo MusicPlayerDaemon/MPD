@@ -29,28 +29,17 @@ See \fBdocs/mpdconf.example\fP in the source tarball for an example
 configuration file.
 .SH REQUIRED PARAMETERS
 .TP
-.B follow_outside_symlinks <yes or no>
-Control if MPD will follow symbolic links pointing outside the music dir.
-You must recreate the database after changing this option.
-The default is "yes".
-.TP
-.B follow_inside_symlinks <yes or no>
-Control if MPD will follow symbolic links pointing inside the music dir,
-potentially adding duplicates to the database.
-You must recreate the database after changing this option.
-The default is "yes".
-.TP
 .B db_file <file>
 This specifies where the db file will be stored.
-.TP
-.B sticker_file <file>
-The location of the sticker database.  This is a database which
-manages dynamic information attached to songs.
 .TP
 .B log_file <file>
 This specifies where the log file should be located.
 The special value "syslog" makes MPD use the local syslog daemon.
 .SH OPTIONAL PARAMETERS
+.TP
+.B sticker_file <file>
+The location of the sticker database.  This is a database which
+manages dynamic information attached to songs.
 .TP
 .B pid_file <file>
 This specifies the file to save mpd's process ID in.
@@ -98,6 +87,17 @@ This specifies how verbose logs are.  "default" is minimal logging, "secure"
 reports from what address a connection is opened, and when it is closed, and
 "verbose" records excessive amounts of information for debugging purposes.  The
 default is "default".
+.TP
+.B follow_outside_symlinks <yes or no>
+Control if MPD will follow symbolic links pointing outside the music dir.
+You must recreate the database after changing this option.
+The default is "yes".
+.TP
+.B follow_inside_symlinks <yes or no>
+Control if MPD will follow symbolic links pointing inside the music dir,
+potentially adding duplicates to the database.
+You must recreate the database after changing this option.
+The default is "yes".
 .TP
 .B zeroconf_enabled <yes or no>
 If yes, and MPD has been compiled with support for Avahi or Bonjour, service

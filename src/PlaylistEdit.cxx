@@ -342,7 +342,12 @@ playlist::MoveRange(player_control &pc, unsigned start, unsigned end, int to)
 	 * (-playlist.length == to) => move to position BEFORE current song
 	 */
 	const int currentSong = GetCurrentPosition();
-	if (to < 0 && currentSong >= 0) {
+	if (to < 0) {
+		if (currentSong < 0)
+			/* can't move relative to current song,
+			   because there is no current song */
+			return PLAYLIST_RESULT_BAD_RANGE;
+
 		if (start <= (unsigned)currentSong && (unsigned)currentSong < end)
 			/* no-op, can't be moved to offset of itself */
 			return PLAYLIST_RESULT_SUCCESS;

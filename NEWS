@@ -20,7 +20,17 @@ ver 0.18 (2012/??/??)
 * improved decoder/output error reporting
 * eliminate timer wakeup on idle MPD
 
-ver 0.17.4 (2013/??/??)
+ver 0.17.5 (2013/08/04)
+* protocol:
+  - fix "playlistadd" with URI
+  - fix "move" relative to current when there is no current song
+* decoder:
+  - ffmpeg: support "application/flv"
+  - mikmod: adapt to libmikmod 3.2
+* configure.ac:
+  - detect system "ar"
+
+ver 0.17.4 (2013/04/08)
 * protocol:
   - allow to omit END in ranges (START:END)
   - don't emit IDLE_PLAYER before audio format is known

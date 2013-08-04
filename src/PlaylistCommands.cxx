@@ -193,7 +193,7 @@ handle_playlistadd(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		success = spl_append_uri(argv[1], playlist, &error);
+		success = spl_append_uri(uri, playlist, &error);
 	} else
 		success = search_add_to_playlist(uri, playlist, nullptr,
 						 &error);
