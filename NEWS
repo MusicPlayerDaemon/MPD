@@ -1,4 +1,4 @@
-ver 0.17.5 (not yet released)
+ver 0.17.5 (2013/08/04)
 * protocol:
   - fix "playlistadd" with URI
   - fix "move" relative to current when there is no current song
