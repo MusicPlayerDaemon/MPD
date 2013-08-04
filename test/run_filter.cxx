@@ -58,8 +58,7 @@ find_named_config_block(ConfigOption option, const char *name)
 	const struct config_param *param = NULL;
 
 	while ((param = config_get_next_param(option, param)) != NULL) {
-		const char *current_name =
-			config_get_block_string(param, "name", NULL);
+		const char *current_name = param->GetBlockValue("name");
 		if (current_name != NULL && strcmp(current_name, name) == 0)
 			return param;
 	}
@@ -79,7 +78,7 @@ load_filter(const char *name)
 		return nullptr;
 	}
 
-	Filter *filter = filter_configured_new(param, &error);
+	Filter *filter = filter_configured_new(*param, &error);
 	if (filter == NULL) {
 		g_printerr("Failed to load filter: %s\n", error->message);
 		g_error_free(error);

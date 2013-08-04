@@ -25,6 +25,7 @@
 #include "FilterInternal.hxx"
 #include "filter/VolumeFilterPlugin.hxx"
 #include "pcm/PcmVolume.hxx"
+#include "ConfigData.hxx"
 
 #include <assert.h>
 #include <math.h>
@@ -36,7 +37,8 @@ struct SoftwareMixer final : public Mixer {
 
 	SoftwareMixer()
 		:Mixer(software_mixer_plugin),
-		filter(filter_new(&volume_filter_plugin, nullptr, nullptr)),
+		filter(filter_new(&volume_filter_plugin, config_param(),
+				  nullptr)),
 		volume(100)
 	{
 		assert(filter != nullptr);

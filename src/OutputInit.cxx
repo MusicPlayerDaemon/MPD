@@ -183,7 +183,8 @@ ao_base_init(struct audio_output *ao,
 
 	if (config_get_bool(CONF_VOLUME_NORMALIZATION, false)) {
 		Filter *normalize_filter =
-			filter_new(&normalize_filter_plugin, NULL, NULL);
+			filter_new(&normalize_filter_plugin, config_param(),
+				   nullptr);
 		assert(normalize_filter != NULL);
 
 		filter_chain_append(*ao->filter, "normalize",
@@ -227,13 +228,13 @@ audio_output_setup(struct audio_output *ao, const config_param &param,
 
 	if (strcmp(replay_gain_handler, "none") != 0) {
 		ao->replay_gain_filter = filter_new(&replay_gain_filter_plugin,
-						    &param, NULL);
+						    param, NULL);
 		assert(ao->replay_gain_filter != NULL);
 
 		ao->replay_gain_serial = 0;
 
 		ao->other_replay_gain_filter = filter_new(&replay_gain_filter_plugin,
-							  &param, NULL);
+							  param, NULL);
 		assert(ao->other_replay_gain_filter != NULL);
 
 		ao->other_replay_gain_serial = 0;
@@ -271,7 +272,8 @@ audio_output_setup(struct audio_output *ao, const config_param &param,
 
 	/* the "convert" filter must be the last one in the chain */
 
-	ao->convert_filter = filter_new(&convert_filter_plugin, NULL, NULL);
+	ao->convert_filter = filter_new(&convert_filter_plugin, config_param(),
+					nullptr);
 	assert(ao->convert_filter != NULL);
 
 	filter_chain_append(*ao->filter, "convert", ao->convert_filter);

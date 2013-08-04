@@ -153,7 +153,7 @@ ReplayGainFilter::Update()
 }
 
 static Filter *
-replay_gain_filter_init(gcc_unused const struct config_param *param,
+replay_gain_filter_init(gcc_unused const config_param &param,
 			gcc_unused GError **error_r)
 {
 	return new ReplayGainFilter();

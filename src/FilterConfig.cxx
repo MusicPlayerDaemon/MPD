@@ -48,8 +48,7 @@ filter_plugin_config(const char *filter_template_name, GError **error_r)
 	const struct config_param *param = NULL;
 
 	while ((param = config_get_next_param(CONF_AUDIO_FILTER, param)) != NULL) {
-		const char *name =
-			config_get_block_string(param, "name", NULL);
+		const char *name = param->GetBlockValue("name");
 		if (name == NULL) {
 			g_set_error(error_r, filter_quark(), 1,
 				    "filter configuration without 'name' name in line %d",
@@ -100,14 +99,14 @@ filter_chain_parse(Filter &chain, const char *spec, GError **error_r)
 		}
 
 		// Instantiate one of those filter plugins with the template name as a hint
-		Filter *f = filter_configured_new(cfg, error_r);
+		Filter *f = filter_configured_new(*cfg, error_r);
 		if (f == NULL) {
 			// The error has already been set, just stop.
 			break;
 		}
 
-		const char *plugin_name =
-			config_get_block_string(cfg, "plugin", "unknown");
+		const char *plugin_name = cfg->GetBlockValue("plugin",
+							     "unknown");
 
 		filter_chain_append(chain, plugin_name, f);
 		++added_filters;

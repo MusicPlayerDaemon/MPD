@@ -24,6 +24,7 @@
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
 #include "AudioFormat.hxx"
+#include "ConfigData.hxx"
 
 #include <assert.h>
 
@@ -68,7 +69,8 @@ AutoConvertFilter::Open(AudioFormat &in_audio_format, GError **error_r)
 	if (in_audio_format != child_audio_format) {
 		/* yes - create a convert_filter */
 
-		convert = filter_new(&convert_filter_plugin, nullptr, error_r);
+		const config_param empty;
+		convert = filter_new(&convert_filter_plugin, empty, error_r);
 		if (convert == nullptr) {
 			filter->Close();
 			return AudioFormat::Undefined();

@@ -28,7 +28,7 @@
 
 Filter *
 filter_new(const struct filter_plugin *plugin,
-	   const struct config_param *param, GError **error_r)
+	   const config_param &param, GError **error_r)
 {
 	assert(plugin != NULL);
 	assert(error_r == NULL || *error_r == NULL);
@@ -37,15 +37,13 @@ filter_new(const struct filter_plugin *plugin,
 }
 
 Filter *
-filter_configured_new(const struct config_param *param, GError **error_r)
+filter_configured_new(const config_param &param, GError **error_r)
 {
-	const char *plugin_name;
 	const struct filter_plugin *plugin;
 
-	assert(param != NULL);
 	assert(error_r == NULL || *error_r == NULL);
 
-	plugin_name = config_get_block_string(param, "plugin", NULL);
+	const char *plugin_name = param.GetBlockValue("plugin");
 	if (plugin_name == NULL) {
 		g_set_error(error_r, config_quark(), 0,
 			    "No filter plugin specified");

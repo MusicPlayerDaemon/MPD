@@ -118,7 +118,7 @@ public:
 	 * @param filter a route_filter whose min_channels and sources[] to set
 	 * @return true on success, false on error
 	 */
-	bool Configure(const config_param *param, GError **error_r);
+	bool Configure(const config_param &param, GError **error_r);
 
 	virtual AudioFormat Open(AudioFormat &af, GError **error_r) override;
 	virtual void Close();
@@ -127,7 +127,7 @@ public:
 };
 
 bool
-RouteFilter::Configure(const config_param *param, GError **error_r) {
+RouteFilter::Configure(const config_param &param, GError **error_r) {
 
 	/* TODO:
 	 * With a more clever way of marking "don't copy to output N",
@@ -139,8 +139,7 @@ RouteFilter::Configure(const config_param *param, GError **error_r) {
 	int number_of_copies;
 
 	// A cowardly default, just passthrough stereo
-	const char *routes =
-		config_get_block_string(param, "routes", "0>0, 1>1");
+	const char *const routes = param.GetBlockValue("routes", "0>0, 1>1");
 
 	min_input_channels = 0;
 	min_output_channels = 0;
@@ -163,7 +162,7 @@ RouteFilter::Configure(const config_param *param, GError **error_r) {
 		if (g_strv_length(sd) != 2) {
 			g_set_error(error_r, config_quark(), 1,
 				"Invalid copy around %d in routes spec: %s",
-				param->line, tokens[c]);
+				param.line, tokens[c]);
 			g_strfreev(sd);
 			g_strfreev(tokens);
 			return false;
@@ -210,7 +209,7 @@ RouteFilter::Configure(const config_param *param, GError **error_r) {
 		if (g_strv_length(sd) != 2) {
 			g_set_error(error_r, config_quark(), 1,
 				"Invalid copy around %d in routes spec: %s",
-				param->line, tokens[c]);
+				param.line, tokens[c]);
 			g_strfreev(sd);
 			g_strfreev(tokens);
 			return false;
@@ -230,7 +229,7 @@ RouteFilter::Configure(const config_param *param, GError **error_r) {
 }
 
 static Filter *
-route_filter_init(const config_param *param, GError **error_r)
+route_filter_init(const config_param &param, GError **error_r)
 {
 	RouteFilter *filter = new RouteFilter();
 	if (!filter->Configure(param, error_r)) {

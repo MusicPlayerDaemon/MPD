@@ -39,7 +39,7 @@ struct filter_plugin {
 	/**
          * Allocates and configures a filter.
 	 */
-	Filter *(*init)(const struct config_param *param, GError **error_r);
+	Filter *(*init)(const config_param &param, GError **error_r);
 };
 
 /**
@@ -53,7 +53,7 @@ struct filter_plugin {
  */
 Filter *
 filter_new(const struct filter_plugin *plugin,
-	   const struct config_param *param, GError **error_r);
+	   const config_param &param, GError **error_r);
 
 /**
  * Creates a new filter, loads configuration and the plugin name from
@@ -65,6 +65,6 @@ filter_new(const struct filter_plugin *plugin,
  * @return a new filter object, or NULL on error
  */
 Filter *
-filter_configured_new(const struct config_param *param, GError **error_r);
+filter_configured_new(const config_param &param, GError **error_r);
 
 #endif

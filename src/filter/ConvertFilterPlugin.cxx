@@ -63,7 +63,7 @@ public:
 };
 
 static Filter *
-convert_filter_init(gcc_unused const struct config_param *param,
+convert_filter_init(gcc_unused const config_param &param,
 		    gcc_unused GError **error_r)
 {
 	return new ConvertFilter();
