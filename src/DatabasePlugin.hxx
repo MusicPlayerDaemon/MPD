@@ -139,7 +139,7 @@ struct DatabasePlugin {
 	/**
 	 * Allocates and configures a database.
 	 */
-	Database *(*create)(const struct config_param *param,
+	Database *(*create)(const config_param &param,
 			    GError **error_r);
 };
 

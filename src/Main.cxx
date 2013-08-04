@@ -193,7 +193,7 @@ glue_db_init_and_load(void)
 		param = allocated;
 	}
 
-	if (!DatabaseGlobalInit(param, &error))
+	if (!DatabaseGlobalInit(*param, &error))
 		MPD_ERROR("%s", error->message);
 
 	delete allocated;

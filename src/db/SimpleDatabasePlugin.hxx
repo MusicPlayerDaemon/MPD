@@ -60,7 +60,7 @@ public:
 		return mtime;
 	}
 
-	static Database *Create(const struct config_param *param,
+	static Database *Create(const config_param &param,
 				GError **error_r);
 
 	virtual bool Open(GError **error_r) override;
@@ -86,7 +86,7 @@ public:
 			      GError **error_r) const override;
 
 protected:
-	bool Configure(const struct config_param *param, GError **error_r);
+	bool Configure(const config_param &param, GError **error_r);
 
 	gcc_pure
 	bool Check(GError **error_r) const;

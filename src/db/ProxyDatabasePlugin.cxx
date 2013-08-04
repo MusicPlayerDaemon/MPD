@@ -48,7 +48,7 @@ class ProxyDatabase : public Database {
 	Directory *root;
 
 public:
-	static Database *Create(const struct config_param *param,
+	static Database *Create(const config_param &param,
 				GError **error_r);
 
 	virtual bool Open(GError **error_r) override;
@@ -73,7 +73,7 @@ public:
 			      GError **error_r) const override;
 
 protected:
-	bool Configure(const struct config_param *param, GError **error_r);
+	bool Configure(const config_param &param, GError **error_r);
 };
 
 G_GNUC_CONST
@@ -132,7 +132,7 @@ CheckError(struct mpd_connection *connection, GError **error_r)
 }
 
 Database *
-ProxyDatabase::Create(const struct config_param *param, GError **error_r)
+ProxyDatabase::Create(const config_param &param, GError **error_r)
 {
 	ProxyDatabase *db = new ProxyDatabase();
 	if (!db->Configure(param, error_r)) {
@@ -144,10 +144,10 @@ ProxyDatabase::Create(const struct config_param *param, GError **error_r)
 }
 
 bool
-ProxyDatabase::Configure(const struct config_param *param, GError **)
+ProxyDatabase::Configure(const config_param &param, GError **)
 {
-	host = config_get_block_string(param, "host", "");
-	port = config_get_block_unsigned(param, "port", 0);
+	host = param.GetBlockValue("host", "");
+	port = param.GetBlockValue("port", 0u);
 
 	return true;
 }

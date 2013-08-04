@@ -50,13 +50,13 @@ static bool db_is_open;
 static bool is_simple;
 
 bool
-DatabaseGlobalInit(const config_param *param, GError **error_r)
+DatabaseGlobalInit(const config_param &param, GError **error_r)
 {
 	assert(db == NULL);
 	assert(!db_is_open);
 
 	const char *plugin_name =
-		config_get_block_string(param, "plugin", "simple");
+		param.GetBlockValue("plugin", "simple");
 	is_simple = strcmp(plugin_name, "simple") == 0;
 
 	const DatabasePlugin *plugin = GetDatabasePluginByName(plugin_name);

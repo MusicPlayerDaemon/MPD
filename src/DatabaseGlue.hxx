@@ -32,7 +32,7 @@ class Database;
  * @param param the database configuration block
  */
 bool
-DatabaseGlobalInit(const config_param *param, GError **error_r);
+DatabaseGlobalInit(const config_param &param, GError **error_r);
 
 void
 DatabaseGlobalDeinit(void);

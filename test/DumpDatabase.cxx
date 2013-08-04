@@ -113,7 +113,7 @@ main(int argc, char **argv)
 	if (path != nullptr)
 		param.AddBlockParam("path", path->value, path->line);
 
-	Database *db = plugin->create(&param, &error);
+	Database *db = plugin->create(param, &error);
 
 	if (db == nullptr) {
 		cerr << error->message << endl;

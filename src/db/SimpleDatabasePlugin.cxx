@@ -41,7 +41,7 @@ simple_db_quark(void)
 }
 
 Database *
-SimpleDatabase::Create(const struct config_param *param, GError **error_r)
+SimpleDatabase::Create(const config_param &param, GError **error_r)
 {
 	SimpleDatabase *db = new SimpleDatabase();
 	if (!db->Configure(param, error_r)) {
@@ -53,11 +53,11 @@ SimpleDatabase::Create(const struct config_param *param, GError **error_r)
 }
 
 bool
-SimpleDatabase::Configure(const struct config_param *param, GError **error_r)
+SimpleDatabase::Configure(const config_param &param, GError **error_r)
 {
 	GError *error = NULL;
 
-	char *_path = config_dup_block_path(param, "path", &error);
+	char *_path = param.DupBlockPath("path", &error);
 	if (_path == NULL) {
 		if (error != NULL)
 			g_propagate_error(error_r, error);
