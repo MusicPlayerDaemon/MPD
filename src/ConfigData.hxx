@@ -42,6 +42,12 @@ struct block_param {
 	gcc_nonnull_all
 	block_param(const char *_name, const char *_value, int _line=-1)
 		:name(_name), value(_value), line(_line), used(false) {}
+
+	gcc_pure
+	unsigned GetUnsignedValue() const;
+
+	gcc_pure
+	bool GetBoolValue() const;
 };
 
 struct config_param {
@@ -82,6 +88,27 @@ struct config_param {
 
 	gcc_nonnull_all gcc_pure
 	const block_param *GetBlockParam(const char *_name) const;
+
+	gcc_pure
+	const char *GetBlockValue(const char *name,
+				  const char *default_value=nullptr) const;
+
+	gcc_malloc
+	char *DupBlockString(const char *name,
+			     const char *default_value=nullptr) const;
+
+	/**
+	 * Same as config_dup_path(), but looks up the setting in the
+	 * specified block.
+	 */
+	gcc_malloc
+	char *DupBlockPath(const char *name, GError **error_r) const;
+
+	gcc_pure
+	unsigned GetBlockValue(const char *name, unsigned default_value) const;
+
+	gcc_pure
+	bool GetBlockValue(const char *name, bool default_value) const;
 };
 
 struct ConfigData {
