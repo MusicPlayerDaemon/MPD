@@ -13,7 +13,7 @@ AM_SILENT_RULES
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
-AC_DEFINE(PROTOCOL_VERSION, "0.17.0", [The MPD protocol version])
+AC_DEFINE(PROTOCOL_VERSION, "0.18.0", [The MPD protocol version])
 
 
 dnl ---------------------------------------------------------------------------
