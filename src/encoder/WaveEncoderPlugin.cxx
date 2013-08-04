@@ -83,7 +83,7 @@ fill_wave_header(struct wave_header *header, int channels, int bits,
 }
 
 static Encoder *
-wave_encoder_init(gcc_unused const struct config_param *param,
+wave_encoder_init(gcc_unused const config_param &param,
 		  gcc_unused GError **error)
 {
 	WaveEncoder *encoder = new WaveEncoder();

@@ -62,9 +62,9 @@ vorbis_encoder_quark(void)
 
 static bool
 vorbis_encoder_configure(struct vorbis_encoder *encoder,
-			 const struct config_param *param, GError **error)
+			 const config_param &param, GError **error)
 {
-	const char *value = config_get_block_string(param, "quality", nullptr);
+	const char *value = param.GetBlockValue("quality");
 	if (value != nullptr) {
 		/* a quality was configured (VBR) */
 
@@ -76,26 +76,26 @@ vorbis_encoder_configure(struct vorbis_encoder *encoder,
 			g_set_error(error, vorbis_encoder_quark(), 0,
 				    "quality \"%s\" is not a number in the "
 				    "range -1 to 10, line %i",
-				    value, param->line);
+				    value, param.line);
 			return false;
 		}
 
-		if (config_get_block_string(param, "bitrate", nullptr) != nullptr) {
+		if (param.GetBlockValue("bitrate") != nullptr) {
 			g_set_error(error, vorbis_encoder_quark(), 0,
 				    "quality and bitrate are "
 				    "both defined (line %i)",
-				    param->line);
+				    param.line);
 			return false;
 		}
 	} else {
 		/* a bit rate was configured */
 
-		value = config_get_block_string(param, "bitrate", nullptr);
+		value = param.GetBlockValue("bitrate");
 		if (value == nullptr) {
 			g_set_error(error, vorbis_encoder_quark(), 0,
 				    "neither bitrate nor quality defined "
 				    "at line %i",
-				    param->line);
+				    param.line);
 			return false;
 		}
 
@@ -106,7 +106,7 @@ vorbis_encoder_configure(struct vorbis_encoder *encoder,
 		if (*endptr != '\0' || encoder->bitrate <= 0) {
 			g_set_error(error, vorbis_encoder_quark(), 0,
 				    "bitrate at line %i should be a positive integer",
-				    param->line);
+				    param.line);
 			return false;
 		}
 	}
@@ -115,7 +115,7 @@ vorbis_encoder_configure(struct vorbis_encoder *encoder,
 }
 
 static Encoder *
-vorbis_encoder_init(const struct config_param *param, GError **error)
+vorbis_encoder_init(const config_param &param, GError **error)
 {
 	vorbis_encoder *encoder = new vorbis_encoder();
 

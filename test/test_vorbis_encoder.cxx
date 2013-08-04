@@ -56,7 +56,7 @@ main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
 	config_param param;
 	param.AddBlockParam("quality", "5.0", -1);
 
-	const auto encoder = encoder_init(*plugin, &param, NULL);
+	const auto encoder = encoder_init(*plugin, param, NULL);
 	assert(encoder != NULL);
 
 	/* open the encoder */

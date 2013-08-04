@@ -43,7 +43,7 @@ struct LameEncoder final {
 
 	LameEncoder():encoder(lame_encoder_plugin) {}
 
-	bool Configure(const config_param *param, GError **error);
+	bool Configure(const config_param &param, GError **error);
 };
 
 static inline GQuark
@@ -53,12 +53,12 @@ lame_encoder_quark(void)
 }
 
 bool
-LameEncoder::Configure(const config_param *param, GError **error)
+LameEncoder::Configure(const config_param &param, GError **error)
 {
 	const char *value;
 	char *endptr;
 
-	value = config_get_block_string(param, "quality", nullptr);
+	value = param.GetBlockValue("quality");
 	if (value != nullptr) {
 		/* a quality was configured (VBR) */
 
@@ -68,26 +68,26 @@ LameEncoder::Configure(const config_param *param, GError **error)
 			g_set_error(error, lame_encoder_quark(), 0,
 				    "quality \"%s\" is not a number in the "
 				    "range -1 to 10, line %i",
-				    value, param->line);
+				    value, param.line);
 			return false;
 		}
 
-		if (config_get_block_string(param, "bitrate", nullptr) != nullptr) {
+		if (param.GetBlockValue("bitrate") != nullptr) {
 			g_set_error(error, lame_encoder_quark(), 0,
 				    "quality and bitrate are "
 				    "both defined (line %i)",
-				    param->line);
+				    param.line);
 			return false;
 		}
 	} else {
 		/* a bit rate was configured */
 
-		value = config_get_block_string(param, "bitrate", nullptr);
+		value = param.GetBlockValue("bitrate");
 		if (value == nullptr) {
 			g_set_error(error, lame_encoder_quark(), 0,
 				    "neither bitrate nor quality defined "
 				    "at line %i",
-				    param->line);
+				    param.line);
 			return false;
 		}
 
@@ -97,7 +97,7 @@ LameEncoder::Configure(const config_param *param, GError **error)
 		if (*endptr != '\0' || bitrate <= 0) {
 			g_set_error(error, lame_encoder_quark(), 0,
 				    "bitrate at line %i should be a positive integer",
-				    param->line);
+				    param.line);
 			return false;
 		}
 	}
@@ -106,7 +106,7 @@ LameEncoder::Configure(const config_param *param, GError **error)
 }
 
 static Encoder *
-lame_encoder_init(const struct config_param *param, GError **error_r)
+lame_encoder_init(const config_param &param, GError **error_r)
 {
 	LameEncoder *encoder = new LameEncoder();
 

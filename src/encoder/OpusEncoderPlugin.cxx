@@ -75,9 +75,9 @@ opus_encoder_quark(void)
 
 static bool
 opus_encoder_configure(struct opus_encoder *encoder,
-		       const struct config_param *param, GError **error_r)
+		       const config_param &param, GError **error_r)
 {
-	const char *value = config_get_block_string(param, "bitrate", "auto");
+	const char *value = param.GetBlockValue("bitrate", "auto");
 	if (strcmp(value, "auto") == 0)
 		encoder->bitrate = OPUS_AUTO;
 	else if (strcmp(value, "max") == 0)
@@ -93,15 +93,14 @@ opus_encoder_configure(struct opus_encoder *encoder,
 		}
 	}
 
-	encoder->complexity = config_get_block_unsigned(param, "complexity",
-							10);
+	encoder->complexity = param.GetBlockValue("complexity", 10u);
 	if (encoder->complexity > 10) {
 		g_set_error(error_r, opus_encoder_quark(), 0,
 			    "Invalid complexity");
 		return false;
 	}
 
-	value = config_get_block_string(param, "signal", "auto");
+	value = param.GetBlockValue("signal", "auto");
 	if (strcmp(value, "auto") == 0)
 		encoder->signal = OPUS_AUTO;
 	else if (strcmp(value, "voice") == 0)
@@ -118,7 +117,7 @@ opus_encoder_configure(struct opus_encoder *encoder,
 }
 
 static Encoder *
-opus_encoder_init(const struct config_param *param, GError **error)
+opus_encoder_init(const config_param &param, GError **error)
 {
 	opus_encoder *encoder = new opus_encoder();
 

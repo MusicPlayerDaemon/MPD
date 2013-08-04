@@ -40,7 +40,7 @@ struct NullEncoder final {
 };
 
 static Encoder *
-null_encoder_init(gcc_unused const struct config_param *param,
+null_encoder_init(gcc_unused const config_param &param,
 		  gcc_unused GError **error)
 {
 	NullEncoder *encoder = new NullEncoder();

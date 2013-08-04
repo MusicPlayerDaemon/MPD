@@ -49,7 +49,7 @@ struct Encoder {
 struct EncoderPlugin {
 	const char *name;
 
-	Encoder *(*init)(const struct config_param *param,
+	Encoder *(*init)(const config_param &param,
 			 GError **error);
 
 	void (*finish)(Encoder *encoder);
@@ -87,7 +87,7 @@ struct EncoderPlugin {
  * @return an encoder object on success, NULL on failure
  */
 static inline Encoder *
-encoder_init(const EncoderPlugin &plugin, const config_param *param,
+encoder_init(const EncoderPlugin &plugin, const config_param &param,
 	     GError **error_r)
 {
 	return plugin.init(param, error_r);

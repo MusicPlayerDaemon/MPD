@@ -63,17 +63,16 @@ flac_encoder_quark(void)
 }
 
 static bool
-flac_encoder_configure(struct flac_encoder *encoder,
-		const struct config_param *param, G_GNUC_UNUSED GError **error)
+flac_encoder_configure(struct flac_encoder *encoder, const config_param &param,
+		       gcc_unused GError **error)
 {
-	encoder->compression = config_get_block_unsigned(param,
-						"compression", 5);
+	encoder->compression = param.GetBlockValue("compression", 5u);
 
 	return true;
 }
 
 static Encoder *
-flac_encoder_init(const struct config_param *param, GError **error)
+flac_encoder_init(const config_param &param, GError **error)
 {
 	flac_encoder *encoder = new flac_encoder();
 

@@ -108,7 +108,7 @@ RecorderOutput::Configure(const config_param &param, GError **error_r)
 
 	/* initialize encoder */
 
-	encoder = encoder_init(*encoder_plugin, &param, error_r);
+	encoder = encoder_init(*encoder_plugin, param, error_r);
 	if (encoder == nullptr)
 		return false;
 

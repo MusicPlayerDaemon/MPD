@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 	config_param param;
 	param.AddBlockParam("quality", "5.0", -1);
 
-	const auto encoder = encoder_init(*plugin, &param, &error);
+	const auto encoder = encoder_init(*plugin, param, &error);
 	if (encoder == NULL) {
 		g_printerr("Failed to initialize encoder: %s\n",
 			   error->message);
