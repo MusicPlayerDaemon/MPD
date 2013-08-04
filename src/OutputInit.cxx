@@ -112,10 +112,12 @@ audio_output_load_mixer(struct audio_output *ao,
 		if (plugin == NULL)
 			return NULL;
 
-		return mixer_new(plugin, ao, &param, error_r);
+		return mixer_new(plugin, ao, param, error_r);
 
 	case MIXER_TYPE_SOFTWARE:
-		mixer = mixer_new(&software_mixer_plugin, NULL, NULL, NULL);
+		mixer = mixer_new(&software_mixer_plugin, nullptr,
+				  config_param(),
+				  nullptr);
 		assert(mixer != NULL);
 
 		filter_chain_append(filter_chain, "software_mixer",

@@ -51,7 +51,7 @@ class OssMixer : public Mixer {
 public:
 	OssMixer():Mixer(oss_mixer_plugin) {}
 
-	bool Configure(const config_param *param, GError **error_r);
+	bool Configure(const config_param &param, GError **error_r);
 	bool Open(GError **error_r);
 	void Close();
 
@@ -84,11 +84,11 @@ oss_find_mixer(const char *name)
 }
 
 inline bool
-OssMixer::Configure(const config_param *param, GError **error_r)
+OssMixer::Configure(const config_param &param, GError **error_r)
 {
-	device = config_get_block_string(param, "mixer_device",
+	device = param.GetBlockValue("mixer_device",
 					     VOLUME_MIXER_OSS_DEFAULT);
-	control = config_get_block_string(param, "mixer_control", NULL);
+	control = param.GetBlockValue("mixer_control");
 
 	if (control != NULL) {
 		volume_control = oss_find_mixer(control);
@@ -104,7 +104,7 @@ OssMixer::Configure(const config_param *param, GError **error_r)
 }
 
 static Mixer *
-oss_mixer_init(G_GNUC_UNUSED void *ao, const struct config_param *param,
+oss_mixer_init(G_GNUC_UNUSED void *ao, const config_param &param,
 	       GError **error_r)
 {
 	OssMixer *om = new OssMixer();

@@ -51,7 +51,7 @@ struct SoftwareMixer final : public Mixer {
 
 static Mixer *
 software_mixer_init(gcc_unused void *ao,
-		    gcc_unused const struct config_param *param,
+		    gcc_unused const config_param &param,
 		    gcc_unused GError **error_r)
 {
 	return new SoftwareMixer();

@@ -34,7 +34,7 @@ struct RoarMixer final : public Mixer {
 };
 
 static Mixer *
-roar_mixer_init(void *ao, gcc_unused const struct config_param *param,
+roar_mixer_init(void *ao, gcc_unused const config_param &param,
 		gcc_unused GError **error_r)
 {
 	return new RoarMixer((RoarOutput *)ao);

@@ -31,7 +31,7 @@
 
 Mixer *
 mixer_new(const struct mixer_plugin *plugin, void *ao,
-	  const struct config_param *param,
+	  const config_param &param,
 	  GError **error_r)
 {
 	Mixer *mixer;

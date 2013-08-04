@@ -25,6 +25,7 @@
 #include "GlobalEvents.hxx"
 #include "Main.hxx"
 #include "event/Loop.hxx"
+#include "ConfigData.hxx"
 
 #include <glib.h>
 
@@ -125,7 +126,8 @@ int main(int argc, G_GNUC_UNUSED char **argv)
 
 	main_loop = new EventLoop(EventLoop::Default());
 
-	Mixer *mixer = mixer_new(&alsa_mixer_plugin, NULL, NULL, &error);
+	Mixer *mixer = mixer_new(&alsa_mixer_plugin, nullptr,
+				 config_param(), &error);
 	if (mixer == NULL) {
 		g_printerr("mixer_new() failed: %s\n", error->message);
 		g_error_free(error);

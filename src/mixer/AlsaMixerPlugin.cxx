@@ -31,7 +31,7 @@
 
 #define VOLUME_MIXER_ALSA_DEFAULT		"default"
 #define VOLUME_MIXER_ALSA_CONTROL_DEFAULT	"PCM"
-#define VOLUME_MIXER_ALSA_INDEX_DEFAULT		0
+static constexpr unsigned VOLUME_MIXER_ALSA_INDEX_DEFAULT = 0;
 
 class AlsaMixerMonitor final : private MultiSocketMonitor {
 	snd_mixer_t *const mixer;
@@ -61,7 +61,7 @@ class AlsaMixer final : public Mixer {
 public:
 	AlsaMixer():Mixer(alsa_mixer_plugin) {}
 
-	void Configure(const config_param *param);
+	void Configure(const config_param &param);
 	bool Setup(GError **error_r);
 	bool Open(GError **error_r);
 	void Close();
@@ -138,18 +138,18 @@ alsa_mixer_elem_callback(G_GNUC_UNUSED snd_mixer_elem_t *elem, unsigned mask)
  */
 
 inline void
-AlsaMixer::Configure(const config_param *param)
+AlsaMixer::Configure(const config_param &param)
 {
-	device = config_get_block_string(param, "mixer_device",
-					 VOLUME_MIXER_ALSA_DEFAULT);
-	control = config_get_block_string(param, "mixer_control",
-					  VOLUME_MIXER_ALSA_CONTROL_DEFAULT);
-	index = config_get_block_unsigned(param, "mixer_index",
-					  VOLUME_MIXER_ALSA_INDEX_DEFAULT);
+	device = param.GetBlockValue("mixer_device",
+				     VOLUME_MIXER_ALSA_DEFAULT);
+	control = param.GetBlockValue("mixer_control",
+				      VOLUME_MIXER_ALSA_CONTROL_DEFAULT);
+	index = param.GetBlockValue("mixer_index",
+				    VOLUME_MIXER_ALSA_INDEX_DEFAULT);
 }
 
 static Mixer *
-alsa_mixer_init(G_GNUC_UNUSED void *ao, const struct config_param *param,
+alsa_mixer_init(G_GNUC_UNUSED void *ao, const config_param &param,
 		G_GNUC_UNUSED GError **error_r)
 {
 	AlsaMixer *am = new AlsaMixer();

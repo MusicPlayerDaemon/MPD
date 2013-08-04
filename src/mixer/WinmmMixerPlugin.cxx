@@ -60,7 +60,7 @@ winmm_volume_encode(int volume)
 }
 
 static Mixer *
-winmm_mixer_init(void *ao, G_GNUC_UNUSED const struct config_param *param,
+winmm_mixer_init(void *ao, gcc_unused const config_param &param,
 		 G_GNUC_UNUSED GError **error_r)
 {
 	assert(ao != nullptr);

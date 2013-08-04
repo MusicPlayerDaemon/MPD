@@ -153,7 +153,7 @@ pulse_mixer_on_change(PulseMixer *pm,
 }
 
 static Mixer *
-pulse_mixer_init(void *ao, G_GNUC_UNUSED const struct config_param *param,
+pulse_mixer_init(void *ao, gcc_unused const config_param &param,
 		 GError **error_r)
 {
 	PulseOutput *po = (PulseOutput *)ao;
