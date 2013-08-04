@@ -124,33 +124,4 @@ struct ConfigData {
 	std::array<config_param *, std::size_t(CONF_MAX)> params;
 };
 
-gcc_pure
-const char *
-config_get_block_string(const struct config_param *param, const char *name,
-			const char *default_value);
-
-gcc_malloc
-char *
-config_dup_block_string(const struct config_param *param, const char *name,
-			const char *default_value);
-
-/**
- * Same as config_dup_path(), but looks up the setting in the
- * specified block.
- */
-gcc_malloc
-char *
-config_dup_block_path(const struct config_param *param, const char *name,
-		      GError **error_r);
-
-gcc_pure
-unsigned
-config_get_block_unsigned(const struct config_param *param, const char *name,
-			  unsigned default_value);
-
-gcc_pure
-bool
-config_get_block_bool(const struct config_param *param, const char *name,
-		      bool default_value);
-
 #endif
