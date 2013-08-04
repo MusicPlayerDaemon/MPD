@@ -35,13 +35,13 @@ extern "C" {
 static constexpr unsigned WILDMIDI_SAMPLE_RATE = 48000;
 
 static bool
-wildmidi_init(const struct config_param *param)
+wildmidi_init(const config_param &param)
 {
 	const char *config_file;
 	int ret;
 
-	config_file = config_get_block_string(param, "config_file",
-					      "/etc/timidity/timidity.cfg");
+	config_file = param.GetBlockValue("config_file",
+					  "/etc/timidity/timidity.cfg");
 	if (!g_file_test(config_file, G_FILE_TEST_IS_REGULAR)) {
 		g_debug("configuration file does not exist: %s", config_file);
 		return false;

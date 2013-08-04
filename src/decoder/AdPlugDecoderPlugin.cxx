@@ -36,11 +36,11 @@
 static unsigned sample_rate;
 
 static bool
-adplug_init(const struct config_param *param)
+adplug_init(const config_param &param)
 {
 	GError *error = NULL;
 
-	sample_rate = config_get_block_unsigned(param, "sample_rate", 48000);
+	sample_rate = param.GetBlockValue("sample_rate", 48000u);
 	if (!audio_check_sample_rate(sample_rate, &error)) {
 		g_warning("%s\n", error->message);
 		g_error_free(error);

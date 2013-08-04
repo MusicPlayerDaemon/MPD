@@ -201,8 +201,7 @@ decoder_plugin_config(const char *plugin_name)
 	const struct config_param *param = NULL;
 
 	while ((param = config_get_next_param(CONF_DECODER, param)) != NULL) {
-		const char *name =
-			config_get_block_string(param, "plugin", NULL);
+		const char *name = param->GetBlockValue("plugin");
 		if (name == NULL)
 			MPD_ERROR("decoder configuration without 'plugin' name in line %d",
 				  param->line);
@@ -216,16 +215,20 @@ decoder_plugin_config(const char *plugin_name)
 
 void decoder_plugin_init_all(void)
 {
+	struct config_param empty;
+
 	for (unsigned i = 0; decoder_plugins[i] != NULL; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
 		const struct config_param *param =
 			decoder_plugin_config(plugin->name);
 
-		if (!config_get_block_bool(param, "enabled", true))
+		if (param == nullptr)
+			param = &empty;
+		else if (!param->GetBlockValue("enabled", true))
 			/* the plugin is disabled in mpd.conf */
 			continue;
 
-		if (decoder_plugin_init(plugin, param))
+		if (decoder_plugin_init(plugin, *param))
 			decoder_plugins_enabled[i] = true;
 	}
 }

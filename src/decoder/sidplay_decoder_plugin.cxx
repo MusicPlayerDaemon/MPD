@@ -83,24 +83,22 @@ sidplay_load_songlength_db(const char *path)
 }
 
 static bool
-sidplay_init(const struct config_param *param)
+sidplay_init(const config_param &param)
 {
 	/* read the songlengths database file */
-	songlength_file=config_get_block_string(param,
-		"songlength_database", NULL);
+	songlength_file = param.GetBlockValue("songlength_database");
 	if (songlength_file != NULL)
 		songlength_database = sidplay_load_songlength_db(songlength_file);
 
-	default_songlength=config_get_block_unsigned(param,
-		"default_songlength", 0);
+	default_songlength = param.GetBlockValue("default_songlength", 0u);
 
-	all_files_are_containers=config_get_block_bool(param,
-		"all_files_are_containers", true);
+	all_files_are_containers =
+		param.GetBlockValue("all_files_are_containers", true);
 
 	path_with_subtune=g_pattern_spec_new(
 			"*/" SUBTUNE_PREFIX "???.sid");
 
-	filter_setting=config_get_block_bool(param, "filter", true);
+	filter_setting = param.GetBlockValue("filter", true);
 
 	return true;
 }

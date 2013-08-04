@@ -287,7 +287,7 @@ flac_decode(struct decoder * decoder, struct input_stream *input_stream)
 }
 
 static bool
-oggflac_init(G_GNUC_UNUSED const struct config_param *param)
+oggflac_init(gcc_unused const config_param &param)
 {
 	return !!FLAC_API_SUPPORTS_OGG_FLAC;
 }

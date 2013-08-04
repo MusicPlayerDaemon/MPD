@@ -42,7 +42,7 @@ struct decoder_plugin {
 	 * @return true if the plugin was initialized successfully,
 	 * false if the plugin is not available
 	 */
-	bool (*init)(const struct config_param *param);
+	bool (*init)(const config_param &param);
 
 	/**
 	 * Deinitialize a decoder plugin which was initialized
@@ -112,7 +112,7 @@ struct decoder_plugin {
  */
 static inline bool
 decoder_plugin_init(const struct decoder_plugin *plugin,
-		    const struct config_param *param)
+		    const config_param &param)
 {
 	return plugin->init != nullptr
 		? plugin->init(param)

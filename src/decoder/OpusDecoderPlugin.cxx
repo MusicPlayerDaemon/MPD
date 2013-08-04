@@ -58,7 +58,7 @@ IsOpusTags(const ogg_packet &packet)
 }
 
 static bool
-mpd_opus_init(G_GNUC_UNUSED const struct config_param *param)
+mpd_opus_init(gcc_unused const config_param &param)
 {
 	g_debug("%s", opus_get_version_string());
 

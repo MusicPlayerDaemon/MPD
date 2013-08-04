@@ -166,7 +166,7 @@ mpd_ffmpeg_stream_close(struct mpd_ffmpeg_stream *stream)
 }
 
 static bool
-ffmpeg_init(G_GNUC_UNUSED const struct config_param *param)
+ffmpeg_init(gcc_unused const config_param &param)
 {
 	av_log_set_callback(mpd_ffmpeg_log_callback);
 
