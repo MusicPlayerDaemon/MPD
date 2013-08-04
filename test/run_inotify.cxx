@@ -29,7 +29,7 @@
 static EventLoop *event_loop;
 
 static void
-exit_signal_handler(G_GNUC_UNUSED int signum)
+exit_signal_handler(gcc_unused int signum)
 {
 	event_loop->Break();
 }
@@ -43,8 +43,8 @@ enum {
 };
 
 static void
-my_inotify_callback(G_GNUC_UNUSED int wd, unsigned mask,
-		    const char *name, G_GNUC_UNUSED void *ctx)
+my_inotify_callback(gcc_unused int wd, unsigned mask,
+		    const char *name, gcc_unused void *ctx)
 {
 	g_print("mask=0x%x name='%s'\n", mask, name);
 }

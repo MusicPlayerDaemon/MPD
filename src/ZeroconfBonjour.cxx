@@ -56,12 +56,12 @@ protected:
 static BonjourMonitor *bonjour_monitor;
 
 static void
-dnsRegisterCallback(G_GNUC_UNUSED DNSServiceRef sdRef,
-		    G_GNUC_UNUSED DNSServiceFlags flags,
+dnsRegisterCallback(gcc_unused DNSServiceRef sdRef,
+		    gcc_unused DNSServiceFlags flags,
 		    DNSServiceErrorType errorCode, const char *name,
-		    G_GNUC_UNUSED const char *regtype,
-		    G_GNUC_UNUSED const char *domain,
-		    G_GNUC_UNUSED void *context)
+		    gcc_unused const char *regtype,
+		    gcc_unused const char *domain,
+		    gcc_unused void *context)
 {
 	if (errorCode != kDNSServiceErr_NoError) {
 		g_warning("Failed to register zeroconf service.");

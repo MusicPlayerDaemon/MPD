@@ -309,8 +309,8 @@ dsf_stream_decode(struct decoder *decoder, struct input_stream *is)
 
 static bool
 dsf_scan_stream(struct input_stream *is,
-		   G_GNUC_UNUSED const struct tag_handler *handler,
-		   G_GNUC_UNUSED void *handler_ctx)
+		gcc_unused const struct tag_handler *handler,
+		gcc_unused void *handler_ctx)
 {
 	/* check DSF metadata */
 	DsfMetaData metadata;

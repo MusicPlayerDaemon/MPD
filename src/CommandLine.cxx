@@ -49,7 +49,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef G_OS_WIN32
+#ifdef WIN32
 #define CONFIG_FILE_LOCATION		"\\mpd\\mpd.conf"
 #else /* G_OS_WIN32 */
 #define USER_CONFIG_FILE_LOCATION1	".mpdconf"
@@ -62,7 +62,7 @@ cmdline_quark(void)
 	return g_quark_from_static_string("cmdline");
 }
 
-G_GNUC_NORETURN
+gcc_noreturn
 static void version(void)
 {
 	puts(PACKAGE " (MPD: Music Player Daemon) " VERSION " \n"
@@ -203,7 +203,7 @@ parse_cmdline(int argc, char **argv, struct options *options,
 	} else if (argc <= 1) {
 		/* default configuration file path */
 
-#ifdef G_OS_WIN32
+#ifdef WIN32
 		Path path = PathBuildChecked(Path::FromUTF8(g_get_user_config_dir()),
 					     CONFIG_FILE_LOCATION);
 		if (!path.IsNull() && FileExists(path))

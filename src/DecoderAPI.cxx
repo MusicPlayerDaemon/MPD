@@ -80,7 +80,7 @@ decoder_initialized(struct decoder *decoder,
  * Checks if we need an "initial seek".  If so, then the initial seek
  * is prepared, and the function returns true.
  */
-G_GNUC_PURE
+gcc_pure
 static bool
 decoder_prepare_initial_seek(struct decoder *decoder)
 {
@@ -127,7 +127,7 @@ decoder_prepare_initial_seek(struct decoder *decoder)
  * synthesized command, e.g. to seek to the beginning of the CUE
  * track.
  */
-G_GNUC_PURE
+gcc_pure
 static enum decoder_command
 decoder_get_virtual_command(struct decoder *decoder)
 {
@@ -191,7 +191,7 @@ decoder_command_finished(struct decoder *decoder)
 	dc->Unlock();
 }
 
-double decoder_seek_where(G_GNUC_UNUSED struct decoder * decoder)
+double decoder_seek_where(gcc_unused struct decoder * decoder)
 {
 	const struct decoder_control *dc = decoder->dc;
 
@@ -232,7 +232,7 @@ void decoder_seek_error(struct decoder * decoder)
  * Should be read operation be cancelled?  That is the case when the
  * player thread has sent a command such as "STOP".
  */
-G_GNUC_PURE
+gcc_pure
 static inline bool
 decoder_check_cancel_read(const struct decoder *decoder)
 {
@@ -287,7 +287,7 @@ size_t decoder_read(struct decoder *decoder,
 	assert(nbytes == 0 || error == NULL);
 	assert(nbytes > 0 || error != NULL || input_stream_eof(is));
 
-	if (G_UNLIKELY(nbytes == 0 && error != NULL)) {
+	if (gcc_unlikely(nbytes == 0 && error != nullptr)) {
 		g_warning("%s", error->message);
 		g_error_free(error);
 	}
@@ -468,10 +468,10 @@ decoder_data(struct decoder *decoder,
 }
 
 enum decoder_command
-decoder_tag(G_GNUC_UNUSED struct decoder *decoder, struct input_stream *is,
+decoder_tag(gcc_unused struct decoder *decoder, struct input_stream *is,
 	    Tag &&tag)
 {
-	G_GNUC_UNUSED const struct decoder_control *dc = decoder->dc;
+	gcc_unused const struct decoder_control *dc = decoder->dc;
 	enum decoder_command cmd;
 
 	assert(dc->state == DECODE_STATE_DECODE);

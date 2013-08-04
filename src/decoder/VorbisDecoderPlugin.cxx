@@ -87,7 +87,7 @@ static int ogg_seek_cb(void *data, ogg_int64_t offset, int whence)
 }
 
 /* TODO: check Ogg libraries API and see if we can just not have this func */
-static int ogg_close_cb(G_GNUC_UNUSED void *data)
+static int ogg_close_cb(gcc_unused void *data)
 {
 	return 0;
 }

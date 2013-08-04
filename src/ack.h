@@ -20,6 +20,8 @@
 #ifndef MPD_ACK_H
 #define MPD_ACK_H
 
+#include "gcc.h"
+
 #include <glib.h>
 
 enum ack {
@@ -41,7 +43,7 @@ enum ack {
 /**
  * Quark for GError.domain; the code is an enum #ack.
  */
-G_GNUC_CONST
+gcc_const
 static inline GQuark
 ack_quark(void)
 {

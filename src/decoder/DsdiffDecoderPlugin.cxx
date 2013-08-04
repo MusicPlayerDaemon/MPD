@@ -477,8 +477,8 @@ dsdiff_stream_decode(struct decoder *decoder, struct input_stream *is)
 
 static bool
 dsdiff_scan_stream(struct input_stream *is,
-		   G_GNUC_UNUSED const struct tag_handler *handler,
-		   G_GNUC_UNUSED void *handler_ctx)
+		   gcc_unused const struct tag_handler *handler,
+		   gcc_unused void *handler_ctx)
 {
 	DsdiffMetaData metadata;
 	DsdiffChunkHeader chunk_header;

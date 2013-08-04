@@ -261,7 +261,7 @@ update_directory_child(Directory *directory,
 }
 
 /* we don't look at "." / ".." nor files with newlines in their name */
-G_GNUC_PURE
+gcc_pure
 static bool skip_path(const Path &path_fs)
 {
 	const char *path = path_fs.c_str();
@@ -270,7 +270,7 @@ static bool skip_path(const Path &path_fs)
 		strchr(path, '\n') != NULL;
 }
 
-G_GNUC_PURE
+gcc_pure
 static bool
 skip_symlink(const Directory *directory, const char *utf8_name)
 {

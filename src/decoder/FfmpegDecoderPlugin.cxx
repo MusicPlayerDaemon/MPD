@@ -73,7 +73,7 @@ level_ffmpeg_to_glib(int level)
 }
 
 static void
-mpd_ffmpeg_log_callback(G_GNUC_UNUSED void *ptr, int level,
+mpd_ffmpeg_log_callback(gcc_unused void *ptr, int level,
 			const char *fmt, va_list vl)
 {
 	const AVClass * cls = NULL;
@@ -185,7 +185,7 @@ ffmpeg_find_audio_stream(const AVFormatContext *format_context)
 	return -1;
 }
 
-G_GNUC_CONST
+gcc_const
 static double
 time_from_ffmpeg(int64_t t, const AVRational time_base)
 {
@@ -195,7 +195,7 @@ time_from_ffmpeg(int64_t t, const AVRational time_base)
 		/ (double)1024;
 }
 
-G_GNUC_CONST
+gcc_const
 static int64_t
 time_to_ffmpeg(double t, const AVRational time_base)
 {
@@ -301,7 +301,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 	return cmd;
 }
 
-G_GNUC_CONST
+gcc_const
 static SampleFormat
 ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 {

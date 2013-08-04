@@ -39,31 +39,31 @@ EventLoop *main_loop;
 #include "output/PulseOutputPlugin.hxx"
 
 void
-pulse_output_lock(G_GNUC_UNUSED PulseOutput *po)
+pulse_output_lock(gcc_unused PulseOutput *po)
 {
 }
 
 void
-pulse_output_unlock(G_GNUC_UNUSED PulseOutput *po)
+pulse_output_unlock(gcc_unused PulseOutput *po)
 {
 }
 
 void
-pulse_output_set_mixer(G_GNUC_UNUSED PulseOutput *po,
-		       G_GNUC_UNUSED PulseMixer *pm)
+pulse_output_set_mixer(gcc_unused PulseOutput *po,
+		       gcc_unused PulseMixer *pm)
 {
 }
 
 void
-pulse_output_clear_mixer(G_GNUC_UNUSED PulseOutput *po,
-			 G_GNUC_UNUSED PulseMixer *pm)
+pulse_output_clear_mixer(gcc_unused PulseOutput *po,
+			 gcc_unused PulseMixer *pm)
 {
 }
 
 bool
-pulse_output_set_volume(G_GNUC_UNUSED PulseOutput *po,
-			G_GNUC_UNUSED const struct pa_cvolume *volume,
-			G_GNUC_UNUSED GError **error_r)
+pulse_output_set_volume(gcc_unused PulseOutput *po,
+			gcc_unused const struct pa_cvolume *volume,
+			gcc_unused GError **error_r)
 {
 	return false;
 }
@@ -81,7 +81,7 @@ roar_output_get_volume(gcc_unused RoarOutput *roar)
 
 bool
 roar_output_set_volume(gcc_unused RoarOutput *roar,
-		       G_GNUC_UNUSED unsigned volume)
+		       gcc_unused unsigned volume)
 {
 	return true;
 }
@@ -94,22 +94,22 @@ GlobalEvents::Emit(gcc_unused Event event)
 }
 
 const struct filter_plugin *
-filter_plugin_by_name(G_GNUC_UNUSED const char *name)
+filter_plugin_by_name(gcc_unused const char *name)
 {
 	assert(false);
 	return NULL;
 }
 
 bool
-pcm_volume(G_GNUC_UNUSED void *buffer, G_GNUC_UNUSED size_t length,
-	   G_GNUC_UNUSED SampleFormat format,
-	   G_GNUC_UNUSED int volume)
+pcm_volume(gcc_unused void *buffer, gcc_unused size_t length,
+	   gcc_unused SampleFormat format,
+	   gcc_unused int volume)
 {
 	assert(false);
 	return false;
 }
 
-int main(int argc, G_GNUC_UNUSED char **argv)
+int main(int argc, gcc_unused char **argv)
 {
 	GError *error = NULL;
 	bool success;

@@ -228,6 +228,7 @@ static struct {
 	CurlSockets *sockets;
 } curl;
 
+gcc_const
 static inline GQuark
 curl_quark(void)
 {
@@ -615,7 +616,7 @@ CurlSockets::DispatchSockets()
 
 static bool
 input_curl_init(const config_param &param,
-		G_GNUC_UNUSED GError **error_r)
+		gcc_unused GError **error_r)
 {
 	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
 	if (code != CURLE_OK) {
@@ -654,7 +655,7 @@ input_curl_init(const config_param &param,
 }
 
 static gpointer
-curl_destroy_sources(G_GNUC_UNUSED gpointer data)
+curl_destroy_sources(gcc_unused gpointer data)
 {
 	delete curl.sockets;
 
@@ -681,7 +682,7 @@ input_curl_finish(void)
  *
  * The caller must lock the mutex.
  */
-G_GNUC_PURE
+gcc_pure
 static size_t
 curl_total_buffer_size(const struct input_curl *c)
 {
@@ -869,7 +870,7 @@ input_curl_close(struct input_stream *is)
 }
 
 static bool
-input_curl_eof(G_GNUC_UNUSED struct input_stream *is)
+input_curl_eof(gcc_unused struct input_stream *is)
 {
 	struct input_curl *c = (struct input_curl *)is;
 

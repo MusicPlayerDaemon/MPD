@@ -20,6 +20,8 @@
 #ifndef MPD_PLAYLIST_ERROR_H
 #define MPD_PLAYLIST_ERROR_H
 
+#include "gcc.h"
+
 #include <glib.h>
 
 enum playlist_result {
@@ -39,7 +41,7 @@ enum playlist_result {
 /**
  * Quark for GError.domain; the code is an enum #playlist_result.
  */
-G_GNUC_CONST
+gcc_const
 static inline GQuark
 playlist_quark(void)
 {

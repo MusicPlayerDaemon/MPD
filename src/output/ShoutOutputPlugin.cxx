@@ -391,7 +391,7 @@ my_shout_finish_driver(struct audio_output *ao)
 static void
 my_shout_drop_buffered_audio(struct audio_output *ao)
 {
-	G_GNUC_UNUSED
+	gcc_unused
 	ShoutOutput *sd = (ShoutOutput *)ao;
 
 	/* needs to be implemented for shout */

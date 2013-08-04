@@ -33,7 +33,7 @@
 #include <assert.h>
 
 enum command_return
-handle_subscribe(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_subscribe(Client *client, gcc_unused int argc, char *argv[])
 {
 	assert(argc == 2);
 
@@ -62,7 +62,7 @@ handle_subscribe(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_unsubscribe(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_unsubscribe(Client *client, gcc_unused int argc, char *argv[])
 {
 	assert(argc == 2);
 
@@ -77,7 +77,7 @@ handle_unsubscribe(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 
 enum command_return
 handle_channels(Client *client,
-		G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
+		gcc_unused int argc, gcc_unused char *argv[])
 {
 	assert(argc == 1);
 
@@ -94,7 +94,7 @@ handle_channels(Client *client,
 
 enum command_return
 handle_read_messages(Client *client,
-		     G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
+		     gcc_unused int argc, gcc_unused char *argv[])
 {
 	assert(argc == 1);
 
@@ -111,7 +111,7 @@ handle_read_messages(Client *client,
 
 enum command_return
 handle_send_message(Client *client,
-		    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
+		    gcc_unused int argc, gcc_unused char *argv[])
 {
 	assert(argc == 3);
 

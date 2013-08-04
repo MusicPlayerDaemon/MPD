@@ -184,8 +184,8 @@ pulse_wait_for_operation(struct pa_threaded_mainloop *mainloop,
  * the caller thread, to wake pulse_wait_for_operation() up.
  */
 static void
-pulse_output_stream_success_cb(G_GNUC_UNUSED pa_stream *s,
-			       G_GNUC_UNUSED int success, void *userdata)
+pulse_output_stream_success_cb(gcc_unused pa_stream *s,
+			       gcc_unused int success, void *userdata)
 {
 	PulseOutput *po = (PulseOutput *)userdata;
 
@@ -485,7 +485,7 @@ pulse_output_wait_connection(PulseOutput *po, GError **error_r)
 #if PA_CHECK_VERSION(0,9,8)
 
 static void
-pulse_output_stream_suspended_cb(G_GNUC_UNUSED pa_stream *stream, void *userdata)
+pulse_output_stream_suspended_cb(gcc_unused pa_stream *stream, void *userdata)
 {
 	PulseOutput *po = (PulseOutput *)userdata;
 
@@ -531,7 +531,7 @@ pulse_output_stream_state_cb(pa_stream *stream, void *userdata)
 }
 
 static void
-pulse_output_stream_write_cb(G_GNUC_UNUSED pa_stream *stream, size_t nbytes,
+pulse_output_stream_write_cb(gcc_unused pa_stream *stream, size_t nbytes,
 			     void *userdata)
 {
 	PulseOutput *po = (PulseOutput *)userdata;

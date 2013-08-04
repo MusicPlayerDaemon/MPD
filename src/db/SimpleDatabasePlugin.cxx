@@ -33,7 +33,7 @@
 #include <sys/types.h>
 #include <errno.h>
 
-G_GNUC_CONST
+gcc_const
 static inline GQuark
 simple_db_quark(void)
 {
@@ -241,7 +241,7 @@ SimpleDatabase::ReturnSong(gcc_unused Song *song) const
 #endif
 }
 
-G_GNUC_PURE
+gcc_pure
 const Directory *
 SimpleDatabase::LookupDirectory(const char *uri) const
 {

@@ -35,6 +35,7 @@
 #  define gcc_const __attribute__((const))
 #  define gcc_pure __attribute__((pure))
 #  define gcc_malloc __attribute__((malloc))
+#  define gcc_noreturn __attribute__((noreturn))
 #  define gcc_must_check	__attribute__ ((warn_unused_result))
 #  define gcc_packed		__attribute__ ((packed))
 /* these are very useful for type checking */
@@ -59,6 +60,7 @@
 #  define gcc_const
 #  define gcc_pure
 #  define gcc_malloc
+#  define gcc_noreturn
 #  define gcc_must_check
 #  define gcc_packed
 #  define gcc_printf

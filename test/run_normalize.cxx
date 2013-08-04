@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 		Compressor_Process_int16(compressor,
 					 (int16_t *)buffer, nbytes / 2);
 
-		G_GNUC_UNUSED ssize_t ignored = write(1, buffer, nbytes);
+		gcc_unused ssize_t ignored = write(1, buffer, nbytes);
 	}
 
 	Compressor_delete(compressor);

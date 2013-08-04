@@ -196,10 +196,10 @@ done:
 
 static OSStatus
 osx_render(void *vdata,
-	   G_GNUC_UNUSED AudioUnitRenderActionFlags *io_action_flags,
-	   G_GNUC_UNUSED const AudioTimeStamp *in_timestamp,
-	   G_GNUC_UNUSED UInt32 in_bus_number,
-	   G_GNUC_UNUSED UInt32 in_number_frames,
+	   gcc_unused AudioUnitRenderActionFlags *io_action_flags,
+	   gcc_unused const AudioTimeStamp *in_timestamp,
+	   gcc_unused UInt32 in_bus_number,
+	   gcc_unused UInt32 in_number_frames,
 	   AudioBufferList *buffer_list)
 {
 	OSXOutput *od = (OSXOutput *) vdata;
@@ -390,7 +390,7 @@ osx_output_open(struct audio_output *ao, AudioFormat &audio_format, GError **err
 
 static size_t
 osx_output_play(struct audio_output *ao, const void *chunk, size_t size,
-		G_GNUC_UNUSED GError **error)
+		gcc_unused GError **error)
 {
 	OSXOutput *od = (OSXOutput *)ao;
 

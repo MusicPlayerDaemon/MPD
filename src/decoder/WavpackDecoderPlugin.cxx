@@ -92,7 +92,7 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t count)
  * This function converts floating point sample data to 24-bit integer.
  */
 static void
-format_samples_float(G_GNUC_UNUSED int bytes_per_sample, void *buffer,
+format_samples_float(gcc_unused int bytes_per_sample, void *buffer,
 		     uint32_t count)
 {
 	float *p = (float *)buffer;

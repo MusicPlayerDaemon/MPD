@@ -77,7 +77,7 @@ input_ffmpeg_supported(void)
 
 static bool
 input_ffmpeg_init(gcc_unused const config_param &param,
-		  G_GNUC_UNUSED GError **error_r)
+		  gcc_unused GError **error_r)
 {
 	av_register_all();
 
@@ -154,7 +154,7 @@ input_ffmpeg_eof(struct input_stream *is)
 
 static bool
 input_ffmpeg_seek(struct input_stream *is, goffset offset, int whence,
-		  G_GNUC_UNUSED GError **error_r)
+		  gcc_unused GError **error_r)
 {
 	FfmpegInputStream *i = (FfmpegInputStream *)is;
 	int64_t ret = avio_seek(i->h, offset, whence);

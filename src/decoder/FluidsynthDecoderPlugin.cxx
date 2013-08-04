@@ -64,7 +64,7 @@ fluidsynth_level_to_glib(enum fluid_log_level level)
  * logging library.
  */
 static void
-fluidsynth_mpd_log_function(int level, char *message, G_GNUC_UNUSED void *data)
+fluidsynth_mpd_log_function(int level, char *message, gcc_unused void *data)
 {
 	g_log(G_LOG_DOMAIN, fluidsynth_level_to_glib(fluid_log_level(level)),
 	      "%s", message);
@@ -199,8 +199,8 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 
 static bool
 fluidsynth_scan_file(const char *file,
-		     G_GNUC_UNUSED const struct tag_handler *handler,
-		     G_GNUC_UNUSED void *handler_ctx)
+		     gcc_unused const struct tag_handler *handler,
+		     gcc_unused void *handler_ctx)
 {
 	return fluid_is_midifile(file);
 }

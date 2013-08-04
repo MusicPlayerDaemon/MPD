@@ -60,12 +60,10 @@ struct command {
 
 /* don't be fooled, this is the command handler for "commands" command */
 static enum command_return
-handle_commands(Client *client,
-		G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[]);
+handle_commands(Client *client, int argc, char *argv[]);
 
 static enum command_return
-handle_not_commands(Client *client,
-		    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[]);
+handle_not_commands(Client *client, int argc, char *argv[]);
 
 /**
  * The command registry.
@@ -168,7 +166,7 @@ static const struct command commands[] = {
 static const unsigned num_commands = sizeof(commands) / sizeof(commands[0]);
 
 static bool
-command_available(G_GNUC_UNUSED const struct command *cmd)
+command_available(gcc_unused const struct command *cmd)
 {
 #ifdef ENABLE_SQLITE
 	if (strcmp(cmd->cmd, "sticker") == 0)
@@ -181,7 +179,7 @@ command_available(G_GNUC_UNUSED const struct command *cmd)
 /* don't be fooled, this is the command handler for "commands" command */
 static enum command_return
 handle_commands(Client *client,
-		G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
+		gcc_unused int argc, gcc_unused char *argv[])
 {
 	const unsigned permission = client_get_permission(client);
 	const struct command *cmd;
@@ -199,7 +197,7 @@ handle_commands(Client *client,
 
 static enum command_return
 handle_not_commands(Client *client,
-		    G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
+		    gcc_unused int argc, gcc_unused char *argv[])
 {
 	const unsigned permission = client_get_permission(client);
 	const struct command *cmd;
@@ -318,7 +316,6 @@ enum command_return
 command_process(Client *client, unsigned num, char *line)
 {
 	GError *error = NULL;
-	int argc;
 	char *argv[COMMAND_ARGV_MAX] = { NULL };
 	const struct command *cmd;
 	enum command_return ret = COMMAND_RETURN_ERROR;
@@ -344,11 +341,11 @@ command_process(Client *client, unsigned num, char *line)
 		return COMMAND_RETURN_ERROR;
 	}
 
-	argc = 1;
+	unsigned argc = 1;
 
 	/* now parse the arguments (quoted or unquoted) */
 
-	while (argc < (int)G_N_ELEMENTS(argv) &&
+	while (argc < COMMAND_ARGV_MAX &&
 	       (argv[argc] =
 		tokenizer.NextParam(&error)) != NULL)
 		++argc;
@@ -358,7 +355,7 @@ command_process(Client *client, unsigned num, char *line)
 
 	current_command = argv[0];
 
-	if (argc >= (int)G_N_ELEMENTS(argv)) {
+	if (argc >= COMMAND_ARGV_MAX) {
 		command_error(client, ACK_ERROR_ARG, "Too many arguments");
 		current_command = NULL;
 		return COMMAND_RETURN_ERROR;

@@ -18,10 +18,11 @@
  */
 
 #include "ClientMessage.hxx"
+#include "gcc.h"
 
 #include <glib.h>
 
-G_GNUC_PURE
+gcc_const
 static bool
 valid_channel_char(const char ch)
 {

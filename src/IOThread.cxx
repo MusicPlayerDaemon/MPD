@@ -43,7 +43,7 @@ io_thread_run(void)
 }
 
 static gpointer
-io_thread_func(G_GNUC_UNUSED gpointer arg)
+io_thread_func(gcc_unused gpointer arg)
 {
 	/* lock+unlock to synchronize with io_thread_start(), to be
 	   sure that io.thread is set */

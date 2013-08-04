@@ -37,14 +37,14 @@
 
 bool
 mixer_set_volume(gcc_unused Mixer *mixer,
-		 G_GNUC_UNUSED unsigned volume, G_GNUC_UNUSED GError **error_r)
+		 gcc_unused unsigned volume, gcc_unused GError **error_r)
 {
 	return true;
 }
 
 static void
-my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
-	    const gchar *message, G_GNUC_UNUSED gpointer user_data)
+my_log_func(const gchar *log_domain, gcc_unused GLogLevelFlags log_level,
+	    const gchar *message, gcc_unused gpointer user_data)
 {
 	if (log_domain != NULL)
 		g_printerr("%s: %s\n", log_domain, message);

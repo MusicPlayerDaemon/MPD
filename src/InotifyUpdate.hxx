@@ -33,7 +33,7 @@ mpd_inotify_finish(void);
 #else /* !HAVE_INOTIFY_INIT */
 
 static inline void
-mpd_inotify_init(G_GNUC_UNUSED unsigned max_depth)
+mpd_inotify_init(gcc_unused unsigned max_depth)
 {
 }
 

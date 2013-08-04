@@ -36,8 +36,8 @@
 #include <stdlib.h>
 
 static void
-my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
-	    const gchar *message, G_GNUC_UNUSED gpointer user_data)
+my_log_func(const gchar *log_domain, gcc_unused GLogLevelFlags log_level,
+	    const gchar *message, gcc_unused gpointer user_data)
 {
 	if (log_domain != NULL)
 		g_printerr("%s: %s\n", log_domain, message);

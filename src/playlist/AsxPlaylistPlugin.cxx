@@ -79,11 +79,11 @@ get_attribute(const gchar **attribute_names, const gchar **attribute_values,
 }
 
 static void
-asx_start_element(G_GNUC_UNUSED GMarkupParseContext *context,
+asx_start_element(gcc_unused GMarkupParseContext *context,
 		  const gchar *element_name,
 		  const gchar **attribute_names,
 		  const gchar **attribute_values,
-		  gpointer user_data, G_GNUC_UNUSED GError **error)
+		  gpointer user_data, gcc_unused GError **error)
 {
 	AsxParser *parser = (AsxParser *)user_data;
 
@@ -130,9 +130,9 @@ asx_start_element(G_GNUC_UNUSED GMarkupParseContext *context,
 }
 
 static void
-asx_end_element(G_GNUC_UNUSED GMarkupParseContext *context,
+asx_end_element(gcc_unused GMarkupParseContext *context,
 		const gchar *element_name,
-		gpointer user_data, G_GNUC_UNUSED GError **error)
+		gpointer user_data, gcc_unused GError **error)
 {
 	AsxParser *parser = (AsxParser *)user_data;
 
@@ -156,9 +156,9 @@ asx_end_element(G_GNUC_UNUSED GMarkupParseContext *context,
 }
 
 static void
-asx_text(G_GNUC_UNUSED GMarkupParseContext *context,
+asx_text(gcc_unused GMarkupParseContext *context,
 	 const gchar *text, gsize text_len,
-	 gpointer user_data, G_GNUC_UNUSED GError **error)
+	 gpointer user_data, gcc_unused GError **error)
 {
 	AsxParser *parser = (AsxParser *)user_data;
 

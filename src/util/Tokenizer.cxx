@@ -26,7 +26,7 @@
 #include <assert.h>
 #include <string.h>
 
-G_GNUC_CONST
+gcc_const
 static GQuark
 tokenizer_quark(void)
 {

@@ -133,11 +133,11 @@ flac_encoder_setup(struct flac_encoder *encoder, unsigned bits_per_sample,
 }
 
 static FLAC__StreamEncoderWriteStatus
-flac_write_callback(G_GNUC_UNUSED const FLAC__StreamEncoder *fse,
+flac_write_callback(gcc_unused const FLAC__StreamEncoder *fse,
 		    const FLAC__byte data[],
 		    size_t bytes,
-		    G_GNUC_UNUSED unsigned samples,
-	G_GNUC_UNUSED unsigned current_frame, void *client_data)
+		    gcc_unused unsigned samples,
+		    gcc_unused unsigned current_frame, void *client_data)
 {
 	struct flac_encoder *encoder = (struct flac_encoder *) client_data;
 
@@ -224,7 +224,7 @@ flac_encoder_open(Encoder *_encoder, AudioFormat &audio_format,
 
 
 static bool
-flac_encoder_flush(Encoder *_encoder, G_GNUC_UNUSED GError **error)
+flac_encoder_flush(Encoder *_encoder, gcc_unused GError **error)
 {
 	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
 
@@ -252,8 +252,8 @@ pcm16_to_flac(int32_t *out, const int16_t *in, unsigned num_samples)
 
 static bool
 flac_encoder_write(Encoder *_encoder,
-		      const void *data, size_t length,
-		      G_GNUC_UNUSED GError **error)
+		   const void *data, size_t length,
+		   gcc_unused GError **error)
 {
 	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
 	unsigned num_frames, num_samples;
@@ -324,7 +324,7 @@ flac_encoder_read(Encoder *_encoder, void *dest, size_t length)
 }
 
 static const char *
-flac_encoder_get_mime_type(G_GNUC_UNUSED Encoder *_encoder)
+flac_encoder_get_mime_type(gcc_unused Encoder *_encoder)
 {
 	return "audio/flac";
 }

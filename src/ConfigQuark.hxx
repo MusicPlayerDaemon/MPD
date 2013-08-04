@@ -20,13 +20,15 @@
 #ifndef MPD_CONFIG_QUARK_HXX
 #define MPD_CONFIG_QUARK_HXX
 
+#include "gcc.h"
+
 #include <glib.h>
 
 /**
  * A GQuark for GError instances, resulting from malformed
  * configuration.
  */
-G_GNUC_CONST
+gcc_const
 static inline GQuark
 config_quark(void)
 {

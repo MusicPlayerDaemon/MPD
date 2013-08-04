@@ -51,7 +51,7 @@ static void avahiRegisterService(AvahiClient * c);
 /* Callback when the EntryGroup changes state */
 static void avahiGroupCallback(AvahiEntryGroup * g,
 			       AvahiEntryGroupState state,
-			       G_GNUC_UNUSED void *userdata)
+			       gcc_unused void *userdata)
 {
 	char *n;
 	assert(g);
@@ -142,7 +142,7 @@ fail:
 
 /* Callback when avahi changes state */
 static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
-				G_GNUC_UNUSED void *userdata)
+				gcc_unused void *userdata)
 {
 	int reason;
 	assert(c);

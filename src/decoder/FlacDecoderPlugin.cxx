@@ -56,7 +56,7 @@ static void flacPrintErroredState(FLAC__StreamDecoderState state)
 	g_warning("%s\n", FLAC__StreamDecoderStateString[state]);
 }
 
-static void flacMetadata(G_GNUC_UNUSED const FLAC__StreamDecoder * dec,
+static void flacMetadata(gcc_unused const FLAC__StreamDecoder * dec,
 			 const FLAC__StreamMetadata * block, void *vdata)
 {
 	flac_metadata_common_cb(block, (struct flac_data *) vdata);

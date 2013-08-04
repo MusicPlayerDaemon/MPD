@@ -33,8 +33,8 @@
 #include <stdlib.h>
 
 static void
-my_log_func(const gchar *log_domain, G_GNUC_UNUSED GLogLevelFlags log_level,
-	    const gchar *message, G_GNUC_UNUSED gpointer user_data)
+my_log_func(const gchar *log_domain, gcc_unused GLogLevelFlags log_level,
+	    const gchar *message, gcc_unused gpointer user_data)
 {
 	if (log_domain != NULL)
 		g_printerr("%s: %s\n", log_domain, message);
@@ -53,8 +53,8 @@ struct decoder {
 void
 decoder_initialized(struct decoder *decoder,
 		    const AudioFormat audio_format,
-		    G_GNUC_UNUSED bool seekable,
-		    G_GNUC_UNUSED float total_time)
+		    gcc_unused bool seekable,
+		    gcc_unused float total_time)
 {
 	struct audio_format_string af_string;
 
@@ -68,26 +68,26 @@ decoder_initialized(struct decoder *decoder,
 }
 
 enum decoder_command
-decoder_get_command(G_GNUC_UNUSED struct decoder *decoder)
+decoder_get_command(gcc_unused struct decoder *decoder)
 {
 	return DECODE_COMMAND_NONE;
 }
 
-void decoder_command_finished(G_GNUC_UNUSED struct decoder *decoder)
+void decoder_command_finished(gcc_unused struct decoder *decoder)
 {
 }
 
-double decoder_seek_where(G_GNUC_UNUSED struct decoder *decoder)
+double decoder_seek_where(gcc_unused struct decoder *decoder)
 {
 	return 1.0;
 }
 
-void decoder_seek_error(G_GNUC_UNUSED struct decoder *decoder)
+void decoder_seek_error(gcc_unused struct decoder *decoder)
 {
 }
 
 size_t
-decoder_read(G_GNUC_UNUSED struct decoder *decoder,
+decoder_read(gcc_unused struct decoder *decoder,
 	     struct input_stream *is,
 	     void *buffer, size_t length)
 {
@@ -95,31 +95,31 @@ decoder_read(G_GNUC_UNUSED struct decoder *decoder,
 }
 
 void
-decoder_timestamp(G_GNUC_UNUSED struct decoder *decoder,
-		  G_GNUC_UNUSED double t)
+decoder_timestamp(gcc_unused struct decoder *decoder,
+		  gcc_unused double t)
 {
 }
 
 enum decoder_command
-decoder_data(G_GNUC_UNUSED struct decoder *decoder,
-	     G_GNUC_UNUSED struct input_stream *is,
+decoder_data(gcc_unused struct decoder *decoder,
+	     gcc_unused struct input_stream *is,
 	     const void *data, size_t datalen,
-	     G_GNUC_UNUSED uint16_t kbit_rate)
+	     gcc_unused uint16_t kbit_rate)
 {
-	G_GNUC_UNUSED ssize_t nbytes = write(1, data, datalen);
+	gcc_unused ssize_t nbytes = write(1, data, datalen);
 	return DECODE_COMMAND_NONE;
 }
 
 enum decoder_command
-decoder_tag(G_GNUC_UNUSED struct decoder *decoder,
-	    G_GNUC_UNUSED struct input_stream *is,
-	    G_GNUC_UNUSED Tag &&tag)
+decoder_tag(gcc_unused struct decoder *decoder,
+	    gcc_unused struct input_stream *is,
+	    gcc_unused Tag &&tag)
 {
 	return DECODE_COMMAND_NONE;
 }
 
 void
-decoder_replay_gain(G_GNUC_UNUSED struct decoder *decoder,
+decoder_replay_gain(gcc_unused struct decoder *decoder,
 		    const struct replay_gain_info *replay_gain_info)
 {
 	const struct replay_gain_tuple *tuple =
@@ -135,7 +135,7 @@ decoder_replay_gain(G_GNUC_UNUSED struct decoder *decoder,
 }
 
 void
-decoder_mixramp(G_GNUC_UNUSED struct decoder *decoder,
+decoder_mixramp(gcc_unused struct decoder *decoder,
 		char *mixramp_start, char *mixramp_end)
 {
 	g_free(mixramp_start);

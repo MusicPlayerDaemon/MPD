@@ -275,7 +275,7 @@ Directory::LookupSong(const char *uri)
 }
 
 static int
-directory_cmp(G_GNUC_UNUSED void *priv,
+directory_cmp(gcc_unused void *priv,
 	      struct list_head *_a, struct list_head *_b)
 {
 	const Directory *a = (const Directory *)_a;

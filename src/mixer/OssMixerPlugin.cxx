@@ -104,7 +104,7 @@ OssMixer::Configure(const config_param &param, GError **error_r)
 }
 
 static Mixer *
-oss_mixer_init(G_GNUC_UNUSED void *ao, const config_param &param,
+oss_mixer_init(gcc_unused void *ao, const config_param &param,
 	       GError **error_r)
 {
 	OssMixer *om = new OssMixer();

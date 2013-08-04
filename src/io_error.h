@@ -27,7 +27,7 @@
 /**
  * A GQuark for GError for I/O errors.  The code is an errno value.
  */
-G_GNUC_CONST
+gcc_const
 static inline GQuark
 errno_quark(void)
 {

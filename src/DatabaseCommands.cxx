@@ -143,7 +143,7 @@ handle_count(Client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_listall(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_listall(Client *client, gcc_unused int argc, char *argv[])
 {
 	const char *directory = "";
 
@@ -206,7 +206,7 @@ handle_list(Client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_listallinfo(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_listallinfo(Client *client, gcc_unused int argc, char *argv[])
 {
 	const char *directory = "";
 

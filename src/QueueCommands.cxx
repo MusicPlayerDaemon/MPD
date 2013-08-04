@@ -37,7 +37,7 @@
 #include <string.h>
 
 enum command_return
-handle_add(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_add(Client *client, gcc_unused int argc, char *argv[])
 {
 	char *uri = argv[1];
 	enum playlist_result result;
@@ -131,7 +131,7 @@ handle_addid(Client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_delete(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_delete(Client *client, gcc_unused int argc, char *argv[])
 {
 	unsigned start, end;
 
@@ -143,7 +143,7 @@ handle_delete(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_deleteid(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_deleteid(Client *client, gcc_unused int argc, char *argv[])
 {
 	unsigned id;
 
@@ -156,15 +156,15 @@ handle_deleteid(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 
 enum command_return
 handle_playlist(Client *client,
-	        G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
+		gcc_unused int argc, gcc_unused char *argv[])
 {
 	playlist_print_uris(client, &client->playlist);
 	return COMMAND_RETURN_OK;
 }
 
 enum command_return
-handle_shuffle(G_GNUC_UNUSED Client *client,
-	       G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
+handle_shuffle(gcc_unused Client *client,
+	       gcc_unused int argc, gcc_unused char *argv[])
 {
 	unsigned start = 0, end = client->playlist.queue.GetLength();
 	if (argc == 2 && !check_range(client, &start, &end, argv[1]))
@@ -175,15 +175,15 @@ handle_shuffle(G_GNUC_UNUSED Client *client,
 }
 
 enum command_return
-handle_clear(G_GNUC_UNUSED Client *client,
-	     G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
+handle_clear(gcc_unused Client *client,
+	     gcc_unused int argc, gcc_unused char *argv[])
 {
 	client->partition.ClearQueue();
 	return COMMAND_RETURN_OK;
 }
 
 enum command_return
-handle_plchanges(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_plchanges(Client *client, gcc_unused int argc, char *argv[])
 {
 	uint32_t version;
 
@@ -195,7 +195,7 @@ handle_plchanges(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_plchangesposid(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_plchangesposid(Client *client, gcc_unused int argc, char *argv[])
 {
 	uint32_t version;
 
@@ -328,7 +328,7 @@ handle_prioid(Client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_move(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_move(Client *client, gcc_unused int argc, char *argv[])
 {
 	unsigned start, end;
 	int to;
@@ -344,7 +344,7 @@ handle_move(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_moveid(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_moveid(Client *client, gcc_unused int argc, char *argv[])
 {
 	unsigned id;
 	int to;
@@ -358,7 +358,7 @@ handle_moveid(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_swap(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_swap(Client *client, gcc_unused int argc, char *argv[])
 {
 	unsigned song1, song2;
 
@@ -373,7 +373,7 @@ handle_swap(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_swapid(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_swapid(Client *client, gcc_unused int argc, char *argv[])
 {
 	unsigned id1, id2;
 

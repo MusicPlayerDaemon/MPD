@@ -75,7 +75,6 @@ client_vprintf(Client *client, const char *fmt, va_list args)
 #endif
 }
 
-G_GNUC_PRINTF(2, 3)
 void
 client_printf(Client *client, const char *fmt, ...)
 {

@@ -37,7 +37,7 @@ encoder_to_stdout(Encoder &encoder)
 	static char buffer[32768];
 
 	while ((length = encoder_read(&encoder, buffer, sizeof(buffer))) > 0) {
-		G_GNUC_UNUSED ssize_t ignored = write(1, buffer, length);
+		gcc_unused ssize_t ignored = write(1, buffer, length);
 	}
 }
 

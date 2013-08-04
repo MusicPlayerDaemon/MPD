@@ -59,6 +59,7 @@ struct OpenALOutput {
 	}
 };
 
+gcc_const
 static inline GQuark
 openal_output_quark(void)
 {
@@ -90,7 +91,7 @@ openal_audio_format(AudioFormat &audio_format)
 	}
 }
 
-G_GNUC_PURE
+gcc_pure
 static inline ALint
 openal_get_source_i(const OpenALOutput *od, ALenum param)
 {
@@ -99,14 +100,14 @@ openal_get_source_i(const OpenALOutput *od, ALenum param)
 	return value;
 }
 
-G_GNUC_PURE
+gcc_pure
 static inline bool
 openal_has_processed(const OpenALOutput *od)
 {
 	return openal_get_source_i(od, AL_BUFFERS_PROCESSED) > 0;
 }
 
-G_GNUC_PURE
+gcc_pure
 static inline ALint
 openal_is_playing(const OpenALOutput *od)
 {
@@ -230,7 +231,7 @@ openal_delay(struct audio_output *ao)
 
 static size_t
 openal_play(struct audio_output *ao, const void *chunk, size_t size,
-	    G_GNUC_UNUSED GError **error)
+	    gcc_unused GError **error)
 {
 	OpenALOutput *od = (OpenALOutput *)ao;
 	ALuint buffer;

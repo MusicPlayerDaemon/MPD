@@ -233,7 +233,7 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 	closedir(dir);
 }
 
-G_GNUC_PURE
+gcc_pure
 static unsigned
 watch_directory_depth(const WatchDirectory *d)
 {
@@ -248,7 +248,7 @@ watch_directory_depth(const WatchDirectory *d)
 
 static void
 mpd_inotify_callback(int wd, unsigned mask,
-		     G_GNUC_UNUSED const char *name, G_GNUC_UNUSED void *ctx)
+		     gcc_unused const char *name, gcc_unused void *ctx)
 {
 	WatchDirectory *directory;
 	char *uri_fs;

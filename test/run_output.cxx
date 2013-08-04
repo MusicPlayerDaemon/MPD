@@ -64,7 +64,7 @@ PcmConvert::Convert(gcc_unused const AudioFormat src_format,
 }
 
 const struct filter_plugin *
-filter_plugin_by_name(G_GNUC_UNUSED const char *name)
+filter_plugin_by_name(gcc_unused const char *name)
 {
 	assert(false);
 	return NULL;

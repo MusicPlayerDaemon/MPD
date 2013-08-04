@@ -30,7 +30,7 @@
 #include <string.h>
 
 static void
-quit_signal_handler(G_GNUC_UNUSED int signum)
+quit_signal_handler(gcc_unused int signum)
 {
 	on_quit();
 }

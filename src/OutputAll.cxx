@@ -397,7 +397,7 @@ chunk_is_consumed(const struct music_chunk *chunk)
  * outputs have consumed it already.  Clear the reference.
  */
 static void
-clear_tail_chunk(G_GNUC_UNUSED const struct music_chunk *chunk, bool *locked)
+clear_tail_chunk(gcc_unused const struct music_chunk *chunk, bool *locked)
 {
 	assert(chunk->next == NULL);
 	assert(music_pipe_contains(g_mp, chunk));

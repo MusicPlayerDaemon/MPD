@@ -20,12 +20,14 @@
 #ifndef MPD_OUTPUT_ERROR_HXX
 #define MPD_OUTPUT_ERROR_HXX
 
+#include "gcc.h"
+
 #include <glib.h>
 
 /**
  * Quark for GError.domain.
  */
-G_GNUC_CONST
+gcc_const
 static inline GQuark
 output_quark(void)
 {

@@ -39,14 +39,14 @@ encoder_to_stdout(Encoder &encoder)
 	static char buffer[32768];
 
 	while ((length = encoder_read(&encoder, buffer, sizeof(buffer))) > 0) {
-		G_GNUC_UNUSED ssize_t ignored = write(1, buffer, length);
+		gcc_unused ssize_t ignored = write(1, buffer, length);
 	}
 }
 
 int
-main(G_GNUC_UNUSED int argc, G_GNUC_UNUSED char **argv)
+main(gcc_unused int argc, gcc_unused char **argv)
 {
-	G_GNUC_UNUSED bool success;
+	gcc_unused bool success;
 
 	/* create the encoder */
 

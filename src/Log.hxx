@@ -20,9 +20,11 @@
 #ifndef MPD_LOG_HXX
 #define MPD_LOG_HXX
 
+#include "gcc.h"
+
 #include <glib.h>
 
-G_GNUC_CONST
+gcc_const
 static inline GQuark
 log_quark(void)
 {

@@ -65,7 +65,7 @@ pcm_resample_lsr_32(PcmResampler *state,
 		    unsigned channels,
 		    unsigned src_rate,
 		    const int32_t *src_buffer,
-		    G_GNUC_UNUSED size_t src_size,
+		    size_t src_size,
 		    unsigned dest_rate, size_t *dest_size_r,
 		    GError **error_r);
 
@@ -84,7 +84,7 @@ pcm_resample_fallback_32(PcmResampler *state,
 			 unsigned channels,
 			 unsigned src_rate,
 			 const int32_t *src_buffer,
-			 G_GNUC_UNUSED size_t src_size,
+			 size_t src_size,
 			 unsigned dest_rate,
 			 size_t *dest_size_r);
 

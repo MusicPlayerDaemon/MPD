@@ -615,7 +615,7 @@ mpd_jack_open(struct audio_output *ao, AudioFormat &audio_format,
 }
 
 static void
-mpd_jack_close(G_GNUC_UNUSED struct audio_output *ao)
+mpd_jack_close(gcc_unused struct audio_output *ao)
 {
 	JackOutput *jd = (JackOutput *)ao;
 

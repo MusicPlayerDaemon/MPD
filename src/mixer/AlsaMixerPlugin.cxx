@@ -73,6 +73,7 @@ public:
 /**
  * The quark used for GError.domain.
  */
+gcc_const
 static inline GQuark
 alsa_mixer_quark(void)
 {
@@ -124,7 +125,7 @@ AlsaMixerMonitor::DispatchSockets()
  */
 
 static int
-alsa_mixer_elem_callback(G_GNUC_UNUSED snd_mixer_elem_t *elem, unsigned mask)
+alsa_mixer_elem_callback(gcc_unused snd_mixer_elem_t *elem, unsigned mask)
 {
 	if (mask & SND_CTL_EVENT_MASK_VALUE)
 		GlobalEvents::Emit(GlobalEvents::MIXER);
@@ -149,8 +150,8 @@ AlsaMixer::Configure(const config_param &param)
 }
 
 static Mixer *
-alsa_mixer_init(G_GNUC_UNUSED void *ao, const config_param &param,
-		G_GNUC_UNUSED GError **error_r)
+alsa_mixer_init(gcc_unused void *ao, const config_param &param,
+		gcc_unused GError **error_r)
 {
 	AlsaMixer *am = new AlsaMixer();
 	am->Configure(param);
@@ -169,7 +170,7 @@ alsa_mixer_finish(Mixer *data)
 	snd_config_update_free_global();
 }
 
-G_GNUC_PURE
+gcc_pure
 static snd_mixer_elem_t *
 alsa_mixer_lookup_elem(snd_mixer_t *handle, const char *name, unsigned idx)
 {

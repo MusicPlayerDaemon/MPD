@@ -26,9 +26,9 @@
 #include <assert.h>
 
 static void
-my_log_func(G_GNUC_UNUSED const gchar *log_domain,
+my_log_func(gcc_unused const gchar *log_domain,
 	    GLogLevelFlags log_level,
-	    const gchar *message, G_GNUC_UNUSED gpointer user_data)
+	    const gchar *message, gcc_unused gpointer user_data)
 {
 	if (log_level > G_LOG_LEVEL_WARNING)
 		return;

@@ -24,7 +24,7 @@
 /**
  * Align the specified size to the next 8k boundary.
  */
-G_GNUC_CONST
+constexpr
 static size_t
 align_8k(size_t size)
 {

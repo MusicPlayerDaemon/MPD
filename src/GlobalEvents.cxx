@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "GlobalEvents.hxx"
+#include "gcc.h"
 
 #include <atomic>
 
@@ -47,7 +48,7 @@ InvokeGlobalEvent(GlobalEvents::Event event)
 }
 
 static gboolean
-GlobalEventCallback(G_GNUC_UNUSED gpointer data)
+GlobalEventCallback(gcc_unused gpointer data)
 {
 	const unsigned flags = GlobalEvents::flags.exchange(0);
 

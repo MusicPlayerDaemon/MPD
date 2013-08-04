@@ -95,8 +95,8 @@ refill_buffer(DespotifyInputStream *ctx)
 	}
 }
 
-static void callback(G_GNUC_UNUSED struct despotify_session* ds,
-		int sig, G_GNUC_UNUSED void* data, void* callback_data)
+static void callback(gcc_unused struct despotify_session* ds,
+		     int sig, gcc_unused void* data, void* callback_data)
 {
 	DespotifyInputStream *ctx = (DespotifyInputStream *)callback_data;
 
@@ -124,7 +124,7 @@ static void callback(G_GNUC_UNUSED struct despotify_session* ds,
 static struct input_stream *
 input_despotify_open(const char *url,
 		     Mutex &mutex, Cond &cond,
-		     G_GNUC_UNUSED GError **error_r)
+		     gcc_unused GError **error_r)
 {
 	struct despotify_session *session;
 	struct ds_link *ds_link;
@@ -172,7 +172,7 @@ input_despotify_open(const char *url,
 
 static size_t
 input_despotify_read(struct input_stream *is, void *ptr, size_t size,
-	       G_GNUC_UNUSED GError **error_r)
+		     gcc_unused GError **error_r)
 {
 	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
 	size_t to_cpy = size;
@@ -208,9 +208,9 @@ input_despotify_eof(struct input_stream *is)
 }
 
 static bool
-input_despotify_seek(G_GNUC_UNUSED struct input_stream *is,
-	       G_GNUC_UNUSED goffset offset, G_GNUC_UNUSED int whence,
-	       G_GNUC_UNUSED GError **error_r)
+input_despotify_seek(gcc_unused struct input_stream *is,
+		     gcc_unused goffset offset, gcc_unused int whence,
+		     gcc_unused GError **error_r)
 {
 	return false;
 }

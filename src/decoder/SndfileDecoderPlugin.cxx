@@ -67,9 +67,9 @@ sndfile_vio_read(void *ptr, sf_count_t count, void *user_data)
 }
 
 static sf_count_t
-sndfile_vio_write(G_GNUC_UNUSED const void *ptr,
-		  G_GNUC_UNUSED sf_count_t count,
-		  G_GNUC_UNUSED void *user_data)
+sndfile_vio_write(gcc_unused const void *ptr,
+		  gcc_unused sf_count_t count,
+		  gcc_unused void *user_data)
 {
 	/* no writing! */
 	return -1;

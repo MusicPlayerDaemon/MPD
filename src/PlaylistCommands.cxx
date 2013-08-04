@@ -49,7 +49,7 @@ print_spl_list(Client *client, const PlaylistVector &list)
 }
 
 enum command_return
-handle_save(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_save(Client *client, gcc_unused int argc, char *argv[])
 {
 	enum playlist_result result;
 
@@ -95,7 +95,7 @@ handle_load(Client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_listplaylist(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_listplaylist(Client *client, gcc_unused int argc, char *argv[])
 {
 	if (playlist_file_print(client, argv[1], false))
 		return COMMAND_RETURN_OK;
@@ -108,7 +108,7 @@ handle_listplaylist(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 
 enum command_return
 handle_listplaylistinfo(Client *client,
-			G_GNUC_UNUSED int argc, char *argv[])
+			gcc_unused int argc, char *argv[])
 {
 	if (playlist_file_print(client, argv[1], true))
 		return COMMAND_RETURN_OK;
@@ -120,7 +120,7 @@ handle_listplaylistinfo(Client *client,
 }
 
 enum command_return
-handle_rm(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_rm(Client *client, gcc_unused int argc, char *argv[])
 {
 	GError *error = NULL;
 	return spl_delete(argv[1], &error)
@@ -129,7 +129,7 @@ handle_rm(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_rename(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_rename(Client *client, gcc_unused int argc, char *argv[])
 {
 	GError *error = NULL;
 	return spl_rename(argv[1], argv[2], &error)
@@ -139,7 +139,7 @@ handle_rename(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 
 enum command_return
 handle_playlistdelete(Client *client,
-		      G_GNUC_UNUSED int argc, char *argv[]) {
+		      gcc_unused int argc, char *argv[]) {
 	char *playlist = argv[1];
 	unsigned from;
 
@@ -153,7 +153,7 @@ handle_playlistdelete(Client *client,
 }
 
 enum command_return
-handle_playlistmove(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_playlistmove(Client *client, gcc_unused int argc, char *argv[])
 {
 	char *playlist = argv[1];
 	unsigned from, to;
@@ -170,7 +170,7 @@ handle_playlistmove(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_playlistclear(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_playlistclear(Client *client, gcc_unused int argc, char *argv[])
 {
 	GError *error = NULL;
 	return spl_clear(argv[1], &error)
@@ -179,7 +179,7 @@ handle_playlistclear(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_playlistadd(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_playlistadd(Client *client, gcc_unused int argc, char *argv[])
 {
 	char *playlist = argv[1];
 	char *uri = argv[2];
@@ -209,7 +209,7 @@ handle_playlistadd(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 
 enum command_return
 handle_listplaylists(Client *client,
-		     G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
+		     gcc_unused int argc, gcc_unused char *argv[])
 {
 	GError *error = NULL;
 	const auto list = ListPlaylistFiles(&error);

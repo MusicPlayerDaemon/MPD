@@ -67,11 +67,11 @@ struct XspfParser {
 };
 
 static void
-xspf_start_element(G_GNUC_UNUSED GMarkupParseContext *context,
+xspf_start_element(gcc_unused GMarkupParseContext *context,
 		   const gchar *element_name,
-		   G_GNUC_UNUSED const gchar **attribute_names,
-		   G_GNUC_UNUSED const gchar **attribute_values,
-		   gpointer user_data, G_GNUC_UNUSED GError **error)
+		   gcc_unused const gchar **attribute_names,
+		   gcc_unused const gchar **attribute_values,
+		   gpointer user_data, gcc_unused GError **error)
 {
 	XspfParser *parser = (XspfParser *)user_data;
 
@@ -121,9 +121,9 @@ xspf_start_element(G_GNUC_UNUSED GMarkupParseContext *context,
 }
 
 static void
-xspf_end_element(G_GNUC_UNUSED GMarkupParseContext *context,
+xspf_end_element(gcc_unused GMarkupParseContext *context,
 		 const gchar *element_name,
-		 gpointer user_data, G_GNUC_UNUSED GError **error)
+		 gpointer user_data, gcc_unused GError **error)
 {
 	XspfParser *parser = (XspfParser *)user_data;
 
@@ -161,9 +161,9 @@ xspf_end_element(G_GNUC_UNUSED GMarkupParseContext *context,
 }
 
 static void
-xspf_text(G_GNUC_UNUSED GMarkupParseContext *context,
+xspf_text(gcc_unused GMarkupParseContext *context,
 	  const gchar *text, gsize text_len,
-	  gpointer user_data, G_GNUC_UNUSED GError **error)
+	  gpointer user_data, gcc_unused GError **error)
 {
 	XspfParser *parser = (XspfParser *)user_data;
 

@@ -28,6 +28,7 @@
 
 #include "check.h"
 #include "thread/Mutex.hxx"
+#include "gcc.h"
 
 #include <glib.h>
 #include <assert.h>
@@ -41,7 +42,7 @@ extern GThread *db_mutex_holder;
 /**
  * Does the current thread hold the database lock?
  */
-G_GNUC_PURE
+gcc_pure
 static inline bool
 holding_db_lock(void)
 {

@@ -27,7 +27,7 @@
 #include <string.h>
 
 enum command_return
-handle_enableoutput(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_enableoutput(Client *client, gcc_unused int argc, char *argv[])
 {
 	unsigned device;
 	bool ret;
@@ -46,7 +46,7 @@ handle_enableoutput(Client *client, G_GNUC_UNUSED int argc, char *argv[])
 }
 
 enum command_return
-handle_disableoutput(Client *client, G_GNUC_UNUSED int argc, char *argv[])
+handle_disableoutput(Client *client, gcc_unused int argc, char *argv[])
 {
 	unsigned device;
 	bool ret;
@@ -82,7 +82,7 @@ handle_toggleoutput(Client *client, gcc_unused int argc, char *argv[])
 
 enum command_return
 handle_devices(Client *client,
-	       G_GNUC_UNUSED int argc, G_GNUC_UNUSED char *argv[])
+	       gcc_unused int argc, gcc_unused char *argv[])
 {
 	printAudioDevices(client);
 

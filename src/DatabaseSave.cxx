@@ -47,7 +47,7 @@ enum {
 	DB_FORMAT = 1,
 };
 
-G_GNUC_CONST
+gcc_const
 static GQuark
 db_quark(void)
 {

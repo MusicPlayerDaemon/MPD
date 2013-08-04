@@ -34,12 +34,12 @@
 #include <errno.h>
 #include <string.h>
 
-static void exit_signal_handler(G_GNUC_UNUSED int signum)
+static void exit_signal_handler(gcc_unused int signum)
 {
 	GlobalEvents::Emit(GlobalEvents::SHUTDOWN);
 }
 
-static void reload_signal_handler(G_GNUC_UNUSED int signum)
+static void reload_signal_handler(gcc_unused int signum)
 {
 	GlobalEvents::Emit(GlobalEvents::RELOAD);
 }

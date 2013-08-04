@@ -20,6 +20,8 @@
 #ifndef MPD_DB_ERROR_H
 #define MPD_DB_ERROR_H
 
+#include "gcc.h"
+
 #include <glib.h>
 
 enum db_error {
@@ -35,7 +37,7 @@ enum db_error {
 /**
  * Quark for GError.domain; the code is an enum #db_error.
  */
-G_GNUC_CONST
+gcc_const
 static inline GQuark
 db_quark(void)
 {

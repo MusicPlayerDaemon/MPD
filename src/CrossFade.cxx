@@ -35,7 +35,7 @@
 
 #ifdef G_OS_WIN32
 static char *
-strtok_r(char *str, const char *delim, G_GNUC_UNUSED char **saveptr)
+strtok_r(char *str, const char *delim, gcc_unused char **saveptr)
 {
 	return strtok(str, delim);
 }

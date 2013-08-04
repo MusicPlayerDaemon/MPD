@@ -22,6 +22,7 @@
 
 #ifdef WIN32
 
+#include "gcc.h"
 #include "mpd_error.h"
 #include "GlobalEvents.hxx"
 
@@ -65,8 +66,8 @@ service_notify_status(DWORD status_code)
 }
 
 static DWORD WINAPI
-service_dispatcher(G_GNUC_UNUSED DWORD control, G_GNUC_UNUSED DWORD event_type,
-		   G_GNUC_UNUSED void *event_data, G_GNUC_UNUSED void *context)
+service_dispatcher(gcc_unused DWORD control, gcc_unused DWORD event_type,
+		   gcc_unused void *event_data, gcc_unused void *context)
 {
 	switch (control) {
 	case SERVICE_CONTROL_SHUTDOWN:
@@ -79,7 +80,7 @@ service_dispatcher(G_GNUC_UNUSED DWORD control, G_GNUC_UNUSED DWORD event_type,
 }
 
 static void WINAPI
-service_main(G_GNUC_UNUSED DWORD argc, G_GNUC_UNUSED CHAR *argv[])
+service_main(gcc_unused DWORD argc, gcc_unused CHAR *argv[])
 {
 	DWORD error_code;
 	gchar* error_message;

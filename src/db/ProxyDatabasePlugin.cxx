@@ -76,7 +76,7 @@ protected:
 	bool Configure(const config_param &param, GError **error_r);
 };
 
-G_GNUC_CONST
+gcc_pure
 static inline GQuark
 libmpdclient_quark(void)
 {
@@ -107,7 +107,7 @@ static constexpr struct {
 	{ TAG_NUM_OF_ITEM_TYPES, MPD_TAG_COUNT }
 };
 
-G_GNUC_CONST
+gcc_const
 static enum mpd_tag_type
 Convert(enum tag_type tag_type)
 {

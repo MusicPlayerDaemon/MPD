@@ -265,7 +265,7 @@ opus_encoder_end(Encoder *_encoder, GError **error_r)
 }
 
 static bool
-opus_encoder_flush(Encoder *_encoder, G_GNUC_UNUSED GError **error)
+opus_encoder_flush(Encoder *_encoder, gcc_unused GError **error)
 {
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
 
@@ -404,7 +404,7 @@ opus_encoder_read(Encoder *_encoder, void *dest, size_t length)
 }
 
 static const char *
-opus_encoder_get_mime_type(G_GNUC_UNUSED Encoder *_encoder)
+opus_encoder_get_mime_type(gcc_unused Encoder *_encoder)
 {
 	return  "audio/ogg";
 }

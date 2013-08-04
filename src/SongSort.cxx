@@ -92,7 +92,7 @@ compare_tag_item(const Tag *a, const Tag *b, enum tag_type type)
 
 /* Only used for sorting/searchin a songvec, not general purpose compares */
 static int
-song_cmp(G_GNUC_UNUSED void *priv, struct list_head *_a, struct list_head *_b)
+song_cmp(gcc_unused void *priv, struct list_head *_a, struct list_head *_b)
 {
 	const Song *a = (const Song *)_a;
 	const Song *b = (const Song *)_b;

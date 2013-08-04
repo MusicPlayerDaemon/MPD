@@ -64,7 +64,7 @@ pcm_volume_change_16(int16_t *buffer, const int16_t *end, int volume)
  * multiplication result instead of emulating 64 bit multiplication.
  */
 static inline int32_t
-pcm_volume_sample_24(int32_t sample, int32_t volume, G_GNUC_UNUSED int32_t dither)
+pcm_volume_sample_24(int32_t sample, int32_t volume, gcc_unused int32_t dither)
 {
 	int32_t result;
 
