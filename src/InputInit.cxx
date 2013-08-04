@@ -44,8 +44,7 @@ input_plugin_config(const char *plugin_name, GError **error_r)
 	const struct config_param *param = NULL;
 
 	while ((param = config_get_next_param(CONF_INPUT, param)) != NULL) {
-		const char *name =
-			config_get_block_string(param, "plugin", NULL);
+		const char *name = param->GetBlockValue("plugin");
 		if (name == NULL) {
 			g_set_error(error_r, input_quark(), 0,
 				    "input configuration without 'plugin' name in line %d",
@@ -63,6 +62,8 @@ input_plugin_config(const char *plugin_name, GError **error_r)
 bool
 input_stream_global_init(GError **error_r)
 {
+	const config_param empty;
+
 	GError *error = NULL;
 
 	for (unsigned i = 0; input_plugins[i] != NULL; ++i) {
@@ -74,16 +75,18 @@ input_stream_global_init(GError **error_r)
 
 		const struct config_param *param =
 			input_plugin_config(plugin->name, &error);
-		if (param == NULL && error != NULL) {
-			g_propagate_error(error_r, error);
-			return false;
-		}
+		if (param == nullptr) {
+			if (error != nullptr) {
+				g_propagate_error(error_r, error);
+				return false;
+			}
 
-		if (!config_get_block_bool(param, "enabled", true))
+			param = &empty;
+		} else if (!param->GetBlockValue("enabled", true))
 			/* the plugin is disabled in mpd.conf */
 			continue;
 
-		if (plugin->init == NULL || plugin->init(param, &error))
+		if (plugin->init == NULL || plugin->init(*param, &error))
 			input_plugins_enabled[i] = true;
 		else {
 			g_propagate_prefixed_error(error_r, error,

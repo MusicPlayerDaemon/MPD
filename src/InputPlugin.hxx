@@ -39,7 +39,7 @@ struct input_plugin {
 	 * @return true on success, false if the plugin should be
 	 * disabled
 	 */
-	bool (*init)(const struct config_param *param, GError **error_r);
+	bool (*init)(const config_param &param, GError **error_r);
 
 	/**
 	 * Global deinitialization.  Called once before MPD shuts

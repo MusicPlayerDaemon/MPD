@@ -76,7 +76,7 @@ input_ffmpeg_supported(void)
 }
 
 static bool
-input_ffmpeg_init(G_GNUC_UNUSED const struct config_param *param,
+input_ffmpeg_init(gcc_unused const config_param &param,
 		  G_GNUC_UNUSED GError **error_r)
 {
 	av_register_all();

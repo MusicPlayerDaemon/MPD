@@ -614,7 +614,7 @@ CurlSockets::DispatchSockets()
  */
 
 static bool
-input_curl_init(const struct config_param *param,
+input_curl_init(const config_param &param,
 		G_GNUC_UNUSED GError **error_r)
 {
 	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
@@ -627,11 +627,10 @@ input_curl_init(const struct config_param *param,
 
 	http_200_aliases = curl_slist_append(http_200_aliases, "ICY 200 OK");
 
-	proxy = config_get_block_string(param, "proxy", NULL);
-	proxy_port = config_get_block_unsigned(param, "proxy_port", 0);
-	proxy_user = config_get_block_string(param, "proxy_user", NULL);
-	proxy_password = config_get_block_string(param, "proxy_password",
-						 NULL);
+	proxy = param.GetBlockValue("proxy");
+	proxy_port = param.GetBlockValue("proxy_port", 0u);
+	proxy_user = param.GetBlockValue("proxy_user");
+	proxy_password = param.GetBlockValue("proxy_password");
 
 	if (proxy == NULL) {
 		/* deprecated proxy configuration */
