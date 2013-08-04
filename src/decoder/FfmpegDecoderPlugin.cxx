@@ -88,19 +88,29 @@ mpd_ffmpeg_log_callback(gcc_unused void *ptr, int level,
 	}
 }
 
-struct mpd_ffmpeg_stream {
+struct AvioStream {
 	struct decoder *decoder;
 	struct input_stream *input;
 
 	AVIOContext *io;
 
 	unsigned char buffer[8192];
+
+	AvioStream(struct decoder *_decoder, input_stream *_input)
+		:decoder(_decoder), input(_input), io(nullptr) {}
+
+	~AvioStream() {
+		if (io != nullptr)
+			av_free(io);
+	}
+
+	bool Open();
 };
 
 static int
 mpd_ffmpeg_stream_read(void *opaque, uint8_t *buf, int size)
 {
-	struct mpd_ffmpeg_stream *stream = (struct mpd_ffmpeg_stream *)opaque;
+	AvioStream *stream = (AvioStream *)opaque;
 
 	return decoder_read(stream->decoder, stream->input,
 			    (void *)buf, size);
@@ -109,7 +119,7 @@ mpd_ffmpeg_stream_read(void *opaque, uint8_t *buf, int size)
 static int64_t
 mpd_ffmpeg_stream_seek(void *opaque, int64_t pos, int whence)
 {
-	struct mpd_ffmpeg_stream *stream = (struct mpd_ffmpeg_stream *)opaque;
+	AvioStream *stream = (AvioStream *)opaque;
 
 	if (whence == AVSEEK_SIZE)
 		return stream->input->size;
@@ -120,23 +130,15 @@ mpd_ffmpeg_stream_seek(void *opaque, int64_t pos, int whence)
 	return stream->input->offset;
 }
 
-static struct mpd_ffmpeg_stream *
-mpd_ffmpeg_stream_open(struct decoder *decoder, struct input_stream *input)
+bool
+AvioStream::Open()
 {
-	struct mpd_ffmpeg_stream *stream = g_new(struct mpd_ffmpeg_stream, 1);
-	stream->decoder = decoder;
-	stream->input = input;
-	stream->io = avio_alloc_context(stream->buffer, sizeof(stream->buffer),
-					false, stream,
-					mpd_ffmpeg_stream_read, NULL,
-					input->seekable
-					? mpd_ffmpeg_stream_seek : NULL);
-	if (stream->io == NULL) {
-		g_free(stream);
-		return NULL;
-	}
-
-	return stream;
+	io = avio_alloc_context(buffer, sizeof(buffer),
+				false, this,
+				mpd_ffmpeg_stream_read, nullptr,
+				input->seekable
+				? mpd_ffmpeg_stream_seek : nullptr);
+	return io != nullptr;
 }
 
 /**
@@ -156,13 +158,6 @@ mpd_ffmpeg_open_input(AVFormatContext **ic_ptr,
 	context->pb = pb;
 	*ic_ptr = context;
 	return avformat_open_input(ic_ptr, filename, fmt, NULL);
-}
-
-static void
-mpd_ffmpeg_stream_close(struct mpd_ffmpeg_stream *stream)
-{
-	av_free(stream->io);
-	g_free(stream);
 }
 
 static bool
@@ -376,20 +371,18 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	g_debug("detected input format '%s' (%s)",
 		input_format->name, input_format->long_name);
 
-	struct mpd_ffmpeg_stream *stream =
-		mpd_ffmpeg_stream_open(decoder, input);
-	if (stream == NULL) {
+	AvioStream stream(decoder, input);
+	if (!stream.Open()) {
 		g_warning("Failed to open stream");
 		return;
 	}
 
 	//ffmpeg works with ours "fileops" helper
 	AVFormatContext *format_context = NULL;
-	if (mpd_ffmpeg_open_input(&format_context, stream->io,
+	if (mpd_ffmpeg_open_input(&format_context, stream.io,
 				  input->uri.c_str(),
 				  input_format) != 0) {
 		g_warning("Open failed\n");
-		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
 
@@ -398,7 +391,6 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	if (find_result < 0) {
 		g_warning("Couldn't find stream info\n");
 		avformat_close_input(&format_context);
-		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
 
@@ -406,7 +398,6 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	if (audio_stream == -1) {
 		g_warning("No audio stream inside\n");
 		avformat_close_input(&format_context);
-		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
 
@@ -421,7 +412,6 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	if (!codec) {
 		g_warning("Unsupported audio codec\n");
 		avformat_close_input(&format_context);
-		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
 
@@ -439,7 +429,6 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		g_warning("%s", error->message);
 		g_error_free(error);
 		avformat_close_input(&format_context);
-		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
 
@@ -452,7 +441,6 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	if (open_result < 0) {
 		g_warning("Could not open codec\n");
 		avformat_close_input(&format_context);
-		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
 
@@ -467,7 +455,6 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	if (!frame) {
 		g_warning("Could not allocate frame\n");
 		avformat_close_input(&format_context);
-		mpd_ffmpeg_stream_close(stream);
 		return;
 	}
 
@@ -511,7 +498,6 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 
 	avcodec_close(codec_context);
 	avformat_close_input(&format_context);
-	mpd_ffmpeg_stream_close(stream);
 }
 
 //no tag reading in ffmpeg, check if playable
@@ -523,22 +509,19 @@ ffmpeg_scan_stream(struct input_stream *is,
 	if (input_format == NULL)
 		return false;
 
-	struct mpd_ffmpeg_stream *stream = mpd_ffmpeg_stream_open(NULL, is);
-	if (stream == NULL)
+	AvioStream stream(nullptr, is);
+	if (!stream.Open())
 		return false;
 
 	AVFormatContext *f = NULL;
-	if (mpd_ffmpeg_open_input(&f, stream->io, is->uri.c_str(),
-				  input_format) != 0) {
-		mpd_ffmpeg_stream_close(stream);
+	if (mpd_ffmpeg_open_input(&f, stream.io, is->uri.c_str(),
+				  input_format) != 0)
 		return false;
-	}
 
 	const int find_result =
 		avformat_find_stream_info(f, NULL);
 	if (find_result < 0) {
 		avformat_close_input(&f);
-		mpd_ffmpeg_stream_close(stream);
 		return false;
 	}
 
@@ -553,8 +536,6 @@ ffmpeg_scan_stream(struct input_stream *is,
 				       handler, handler_ctx);
 
 	avformat_close_input(&f);
-	mpd_ffmpeg_stream_close(stream);
-
 	return true;
 }
 
