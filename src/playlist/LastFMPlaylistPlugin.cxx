@@ -156,7 +156,6 @@ lastfm_find(const char *response, const char *name)
 static struct playlist_provider *
 lastfm_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 {
-	struct lastfm_playlist *playlist;
 	GError *error = NULL;
 	char *p, *q, *response, *session;
 
@@ -209,11 +208,6 @@ lastfm_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 		}
 	}
 
-	/* create the playlist object */
-
-	playlist = g_new(struct lastfm_playlist, 1);
-	playlist_provider_init(&playlist->base, &lastfm_playlist_plugin);
-
 	/* open the last.fm playlist */
 
 	p = g_strconcat("http://ws.audioscrobbler.com/radio/xspf.php?"
@@ -221,39 +215,44 @@ lastfm_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 			NULL);
 	g_free(session);
 
-	playlist->is = input_stream_open(p, mutex, cond, &error);
+	const auto is = input_stream_open(p, mutex, cond, &error);
 	g_free(p);
 
-	if (playlist->is == NULL) {
+	if (is == nullptr) {
 		if (error != NULL) {
 			g_warning("Failed to load XSPF playlist: %s",
 				  error->message);
 			g_error_free(error);
 		} else
 			g_warning("Failed to load XSPF playlist");
-		g_free(playlist);
 		return NULL;
 	}
 
 	mutex.lock();
 
-	input_stream_wait_ready(playlist->is);
+	input_stream_wait_ready(is);
 
 	/* last.fm does not send a MIME type, we have to fake it here
 	   :-( */
-	input_stream_override_mime_type(playlist->is, "application/xspf+xml");
+	input_stream_override_mime_type(is, "application/xspf+xml");
 
 	mutex.unlock();
 
 	/* parse the XSPF playlist */
 
-	playlist->xspf = playlist_list_open_stream(playlist->is, NULL);
-	if (playlist->xspf == NULL) {
-		input_stream_close(playlist->is);
-		g_free(playlist);
+	const auto xspf = playlist_list_open_stream(is, nullptr);
+	if (xspf == nullptr) {
+		input_stream_close(is);
 		g_warning("Failed to parse XSPF playlist");
 		return NULL;
 	}
+
+	/* create the playlist object */
+
+	const auto playlist = g_new(struct lastfm_playlist, 1);
+	playlist_provider_init(&playlist->base, &lastfm_playlist_plugin);
+	playlist->is = is;
+	playlist->xspf = xspf;
 
 	return &playlist->base;
 }
