@@ -28,16 +28,18 @@
 struct M3uPlaylist {
 	struct playlist_provider base;
 
-	TextInputStream *tis;
+	TextInputStream tis;
+
+	M3uPlaylist(input_stream *is)
+		:tis(is) {
+		playlist_provider_init(&base, &m3u_playlist_plugin);
+	}
 };
 
 static struct playlist_provider *
 m3u_open_stream(struct input_stream *is)
 {
-	M3uPlaylist *playlist = g_new(M3uPlaylist, 1);
-
-	playlist_provider_init(&playlist->base, &m3u_playlist_plugin);
-	playlist->tis = new TextInputStream(is);
+	M3uPlaylist *playlist = new M3uPlaylist(is);
 
 	return &playlist->base;
 }
@@ -47,8 +49,7 @@ m3u_close(struct playlist_provider *_playlist)
 {
 	M3uPlaylist *playlist = (M3uPlaylist *)_playlist;
 
-	delete playlist->tis;
-	g_free(playlist);
+	delete playlist;
 }
 
 static Song *
@@ -59,7 +60,7 @@ m3u_read(struct playlist_provider *_playlist)
 	const char *line_s;
 
 	do {
-		if (!playlist->tis->ReadLine(line))
+		if (!playlist->tis.ReadLine(line))
 			return NULL;
 
 		line_s = line.c_str();
