@@ -41,7 +41,7 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "cue"
 
-struct embcue_playlist {
+struct EmbeddedCuePlaylist {
 	struct playlist_provider base;
 
 	/**
@@ -62,12 +62,25 @@ struct embcue_playlist {
 	char *next;
 
 	CueParser *parser;
+
+	EmbeddedCuePlaylist()
+		:filename(nullptr), cuesheet(nullptr), parser(nullptr) {
+		playlist_provider_init(&base, &embcue_playlist_plugin);
+	}
+
+	~EmbeddedCuePlaylist() {
+		delete parser;
+		g_free(cuesheet);
+		g_free(filename);
+	}
+
+	Song *Read();
 };
 
 static void
 embcue_tag_pair(const char *name, const char *value, void *ctx)
 {
-	struct embcue_playlist *playlist = (struct embcue_playlist *)ctx;
+	EmbeddedCuePlaylist *playlist = (EmbeddedCuePlaylist *)ctx;
 
 	if (playlist->cuesheet == NULL &&
 	    g_ascii_strcasecmp(name, "cuesheet") == 0)
@@ -89,9 +102,7 @@ embcue_playlist_open_uri(const char *uri,
 		/* only local files supported */
 		return NULL;
 
-	struct embcue_playlist *playlist = g_new(struct embcue_playlist, 1);
-	playlist_provider_init(&playlist->base, &embcue_playlist_plugin);
-	playlist->cuesheet = NULL;
+	const auto playlist = new EmbeddedCuePlaylist();
 
 	tag_file_scan(uri, &embcue_tag_handler, playlist);
 	if (playlist->cuesheet == NULL) {
@@ -102,7 +113,7 @@ embcue_playlist_open_uri(const char *uri,
 
 	if (playlist->cuesheet == NULL) {
 		/* no "CUESHEET" tag found */
-		g_free(playlist);
+		delete playlist;
 		return NULL;
 	}
 
@@ -117,46 +128,49 @@ embcue_playlist_open_uri(const char *uri,
 static void
 embcue_playlist_close(struct playlist_provider *_playlist)
 {
-	struct embcue_playlist *playlist = (struct embcue_playlist *)_playlist;
+	EmbeddedCuePlaylist *playlist = (EmbeddedCuePlaylist *)_playlist;
 
-	delete playlist->parser;
-	g_free(playlist->cuesheet);
-	g_free(playlist->filename);
-	g_free(playlist);
+	delete playlist;
+}
+
+inline Song *
+EmbeddedCuePlaylist::Read()
+{
+	Song *song = parser->Get();
+	if (song != NULL)
+		return song;
+
+	while (*next != 0) {
+		const char *line = next;
+		char *eol = strpbrk(next, "\r\n");
+		if (eol != NULL) {
+			/* null-terminate the line */
+			*eol = 0;
+			next = eol + 1;
+		} else
+			/* last line; put the "next" pointer to the
+			   end of the buffer */
+			next += strlen(line);
+
+		parser->Feed(line);
+		song = parser->Get();
+		if (song != NULL)
+			return song->ReplaceURI(filename);
+	}
+
+	parser->Finish();
+	song = parser->Get();
+	if (song != NULL)
+		song = song->ReplaceURI(filename);
+	return song;
 }
 
 static Song *
 embcue_playlist_read(struct playlist_provider *_playlist)
 {
-	struct embcue_playlist *playlist = (struct embcue_playlist *)_playlist;
+	EmbeddedCuePlaylist *playlist = (EmbeddedCuePlaylist *)_playlist;
 
-	Song *song = playlist->parser->Get();
-	if (song != NULL)
-		return song;
-
-	while (*playlist->next != 0) {
-		const char *line = playlist->next;
-		char *eol = strpbrk(playlist->next, "\r\n");
-		if (eol != NULL) {
-			/* null-terminate the line */
-			*eol = 0;
-			playlist->next = eol + 1;
-		} else
-			/* last line; put the "next" pointer to the
-			   end of the buffer */
-			playlist->next += strlen(line);
-
-		playlist->parser->Feed(line);
-		song = playlist->parser->Get();
-		if (song != NULL)
-			return song->ReplaceURI(playlist->filename);
-	}
-
-	playlist->parser->Finish();
-	song = playlist->parser->Get();
-	if (song != NULL)
-		song = song->ReplaceURI(playlist->filename);
-	return song;
+	return playlist->Read();
 }
 
 static const char *const embcue_playlist_suffixes[] = {
