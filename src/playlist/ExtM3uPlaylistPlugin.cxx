@@ -33,26 +33,28 @@
 struct ExtM3uPlaylist {
 	struct playlist_provider base;
 
-	TextInputStream *tis;
+	TextInputStream tis;
+
+	ExtM3uPlaylist(input_stream *is)
+		:tis(is) {
+		playlist_provider_init(&base, &extm3u_playlist_plugin);
+	}
 };
 
 static struct playlist_provider *
 extm3u_open_stream(struct input_stream *is)
 {
-	ExtM3uPlaylist *playlist = g_new(ExtM3uPlaylist, 1);
-	playlist->tis = new TextInputStream(is);
+	ExtM3uPlaylist *playlist = new ExtM3uPlaylist(is);
 
 	std::string line;
-	if (!playlist->tis->ReadLine(line)
+	if (!playlist->tis.ReadLine(line)
 	   || strcmp(line.c_str(), "#EXTM3U") != 0) {
 		/* no EXTM3U header: fall back to the plain m3u
 		   plugin */
-		delete playlist->tis;
-		g_free(playlist);
+		delete playlist;
 		return NULL;
 	}
 
-	playlist_provider_init(&playlist->base, &extm3u_playlist_plugin);
 	return &playlist->base;
 }
 
@@ -61,8 +63,7 @@ extm3u_close(struct playlist_provider *_playlist)
 {
 	ExtM3uPlaylist *playlist = (ExtM3uPlaylist *)_playlist;
 
-	delete playlist->tis;
-	g_free(playlist);
+	delete playlist;
 }
 
 /**
@@ -115,7 +116,7 @@ extm3u_read(struct playlist_provider *_playlist)
 	Song *song;
 
 	do {
-		if (!playlist->tis->ReadLine(line)) {
+		if (!playlist->tis.ReadLine(line)) {
 			delete tag;
 			return NULL;
 		}
