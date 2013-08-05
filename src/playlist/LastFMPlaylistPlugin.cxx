@@ -30,12 +30,22 @@
 #include <assert.h>
 #include <string.h>
 
-struct lastfm_playlist {
+struct LastfmPlaylist {
 	struct playlist_provider base;
 
 	struct input_stream *is;
 
 	struct playlist_provider *xspf;
+
+	LastfmPlaylist(input_stream *_is, playlist_provider *_xspf)
+		:is(_is), xspf(_xspf) {
+		playlist_provider_init(&base, &lastfm_playlist_plugin);
+	}
+
+	~LastfmPlaylist() {
+		playlist_plugin_close(xspf);
+		input_stream_close(is);
+	}
 };
 
 static struct {
@@ -249,28 +259,22 @@ lastfm_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 
 	/* create the playlist object */
 
-	const auto playlist = g_new(struct lastfm_playlist, 1);
-	playlist_provider_init(&playlist->base, &lastfm_playlist_plugin);
-	playlist->is = is;
-	playlist->xspf = xspf;
-
+	const auto playlist = new LastfmPlaylist(is, xspf);
 	return &playlist->base;
 }
 
 static void
 lastfm_close(struct playlist_provider *_playlist)
 {
-	struct lastfm_playlist *playlist = (struct lastfm_playlist *)_playlist;
+	LastfmPlaylist *playlist = (LastfmPlaylist *)_playlist;
 
-	playlist_plugin_close(playlist->xspf);
-	input_stream_close(playlist->is);
-	g_free(playlist);
+	delete playlist;
 }
 
 static Song *
 lastfm_read(struct playlist_provider *_playlist)
 {
-	struct lastfm_playlist *playlist = (struct lastfm_playlist *)_playlist;
+	LastfmPlaylist *playlist = (LastfmPlaylist *)_playlist;
 
 	return playlist_plugin_read(playlist->xspf);
 }
