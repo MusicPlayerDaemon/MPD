@@ -33,6 +33,7 @@
 #include "gcc.h"
 
 #include <new>
+#include <utility>
 
 #if !defined(__clang__) && __GNUC__ && !GCC_CHECK_VERSION(4,8)
 #include <type_traits>
