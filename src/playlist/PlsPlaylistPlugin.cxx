@@ -26,6 +26,8 @@
 
 #include <glib.h>
 
+#include <string>
+
 static void
 pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 {
@@ -106,14 +108,14 @@ pls_open_stream(struct input_stream *is)
 	char buffer[1024];
 	bool success;
 	GKeyFile *keyfile;
-	GString *kf_data = g_string_new("");
+
+	std::string kf_data;
 
 	do {
 		nbytes = input_stream_lock_read(is, buffer, sizeof(buffer),
 						&error);
 		if (nbytes == 0) {
 			if (error != NULL) {
-				g_string_free(kf_data, TRUE);
 				g_warning("%s", error->message);
 				g_error_free(error);
 				return NULL;
@@ -122,22 +124,19 @@ pls_open_stream(struct input_stream *is)
 			break;
 		}
 
-		kf_data = g_string_append_len(kf_data, buffer,nbytes);
+		kf_data.append(buffer, nbytes);
 		/* Limit to 64k */
-	} while(kf_data->len < 65536);
+	} while (kf_data.length() < 65536);
 
-	if (kf_data->len == 0) {
+	if (kf_data.empty()) {
 		g_warning("KeyFile parser failed: No Data");
-		g_string_free(kf_data, TRUE);
 		return NULL;
 	}
 
 	keyfile = g_key_file_new();
 	success = g_key_file_load_from_data(keyfile,
-					    kf_data->str, kf_data->len,
+					    kf_data.data(), kf_data.length(),
 					    G_KEY_FILE_NONE, &error);
-
-	g_string_free(kf_data, TRUE);
 
 	if (!success) {
 		g_warning("KeyFile parser failed: %s", error->message);
