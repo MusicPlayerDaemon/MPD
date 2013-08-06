@@ -21,6 +21,8 @@
 #include "LameEncoderPlugin.hxx"
 #include "EncoderAPI.hxx"
 #include "AudioFormat.hxx"
+#include "util/AllocatedArray.hxx"
+#include "util/Manual.hxx"
 
 #include <lame/lame.h>
 
@@ -38,7 +40,7 @@ struct LameEncoder final {
 
 	lame_global_flags *gfp;
 
-	unsigned char output_buffer[32768];
+	Manual<AllocatedArray<unsigned char>> output_buffer;
 	size_t output_buffer_length, output_buffer_position;
 
 	LameEncoder():encoder(lame_encoder_plugin) {}
@@ -209,6 +211,8 @@ lame_encoder_open(Encoder *_encoder, AudioFormat &audio_format,
 		return false;
 	}
 
+	encoder->output_buffer.Construct();
+
 	encoder->output_buffer_length = 0;
 	encoder->output_buffer_position = 0;
 
@@ -221,6 +225,7 @@ lame_encoder_close(Encoder *_encoder)
 	LameEncoder *encoder = (LameEncoder *)_encoder;
 
 	lame_close(encoder->gfp);
+	encoder->output_buffer.Destruct();
 }
 
 static bool
@@ -236,14 +241,22 @@ lame_encoder_write(Encoder *_encoder,
 
 	const unsigned num_frames =
 		length / encoder->audio_format.GetFrameSize();
+	const unsigned num_samples =
+		length / encoder->audio_format.GetSampleSize();
+
+	/* worst-case formula according to LAME documentation */
+	const size_t output_buffer_size = 5 * num_samples / 4 + 7200;
+	encoder->output_buffer->GrowDiscard(output_buffer_size);
+
+	const auto output_buffer = encoder->output_buffer->begin();
 
 	/* this is for only 16-bit audio */
 
 	int bytes_out = lame_encode_buffer_interleaved(encoder->gfp,
 						       const_cast<short *>(src),
 						       num_frames,
-						       encoder->output_buffer,
-						       sizeof(encoder->output_buffer));
+						       output_buffer,
+						       output_buffer_size);
 
 	if (bytes_out < 0) {
 		g_set_error(error, lame_encoder_quark(), 0,
@@ -269,7 +282,8 @@ lame_encoder_read(Encoder *_encoder, void *dest, size_t length)
 	if (length > remainning)
 		length = remainning;
 
-	memcpy(dest, encoder->output_buffer + encoder->output_buffer_position,
+	memcpy(dest,
+	       encoder->output_buffer->begin() + encoder->output_buffer_position,
 	       length);
 
 	encoder->output_buffer_position += length;
