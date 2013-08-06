@@ -20,6 +20,12 @@
 #ifndef MPD_SIGNAL_HANDLERS_HXX
 #define MPD_SIGNAL_HANDLERS_HXX
 
-void initSigHandlers(void);
+class EventLoop;
+
+void
+SignalHandlersInit(EventLoop &loop);
+
+void
+SignalHandlersFinish();
 
 #endif

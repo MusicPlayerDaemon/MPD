@@ -296,6 +296,7 @@ libevent_a_SOURCES = \
 	src/event/EventPipe.cxx src/event/EventPipe.hxx \
 	src/event/EventFD.cxx src/event/EventFD.hxx \
 	src/event/WakeFD.hxx \
+	src/event/SignalMonitor.hxx src/event/SignalMonitor.cxx \
 	src/event/TimeoutMonitor.hxx src/event/TimeoutMonitor.cxx \
 	src/event/SocketMonitor.cxx src/event/SocketMonitor.hxx \
 	src/event/BufferedSocket.cxx src/event/BufferedSocket.hxx \

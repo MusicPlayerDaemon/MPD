@@ -17,55 +17,48 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_GLOBAL_EVENTS_HXX
-#define MPD_GLOBAL_EVENTS_HXX
+#ifndef MPD_SOCKET_SIGNAL_MONITOR_HXX
+#define MPD_SOCKET_SIGNAL_MONITOR_HXX
 
-#ifdef WIN32
-#include <windows.h>
-/* DELETE is a WIN32 macro that poisons our namespace; this is a
-   kludge to allow us to use it anyway */
-#ifdef DELETE
-#undef DELETE
-#endif
-#endif
+#include "check.h"
 
-namespace GlobalEvents {
-	enum Event {
-		/** database update was finished */
-		UPDATE,
+class EventLoop;
 
-		/** during database update, a song was deleted */
-		DELETE,
+#ifndef WIN32
 
-		/** an idle event was emitted */
-		IDLE,
+typedef void (*SignalHandler)();
 
-		/** must call playlist_sync() */
-		PLAYLIST,
+/**
+ * Initialise the signal monitor subsystem.
+ */
+void
+SignalMonitorInit(EventLoop &loop);
 
-		/** the current song's tag has changed */
-		TAG,
+/**
+ * Deinitialise the signal monitor subsystem.
+ */
+void
+SignalMonitorFinish();
 
-		/** a hardware mixer plugin has detected a change */
-		MIXER,
+/**
+ * Register a handler for the specified signal.  The handler will be
+ * invoked in a safe context.
+ */
+void
+SignalMonitorRegister(int signo, SignalHandler handler);
 
-#ifdef WIN32
-		/** shutdown requested */
-		SHUTDOWN,
-#endif
+#else
 
-		MAX
-	};
-
-	typedef void (*Handler)();
-
-	void Initialize();
-
-	void Deinitialize();
-
-	void Register(Event event, Handler handler);
-
-	void Emit(Event event);
+static inline void
+SignalMonitorInit(EventLoop &)
+{
 }
+
+static inline void
+SignalMonitorFinish()
+{
+}
+
+#endif
 
 #endif /* MAIN_NOTIFY_H */

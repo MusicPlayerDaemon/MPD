@@ -351,6 +351,8 @@ idle_event_emitted(void)
 		state_file->CheckModified();
 }
 
+#ifdef WIN32
+
 /**
  * Handler for GlobalEvents::SHUTDOWN.
  */
@@ -359,6 +361,8 @@ shutdown_event_emitted(void)
 {
 	main_loop->Break();
 }
+
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -436,7 +440,9 @@ int mpd_main(int argc, char *argv[])
 
 	GlobalEvents::Initialize();
 	GlobalEvents::Register(GlobalEvents::IDLE, idle_event_emitted);
+#ifdef WIN32
 	GlobalEvents::Register(GlobalEvents::SHUTDOWN, shutdown_event_emitted);
+#endif
 
 	Path::GlobalInit();
 
@@ -486,7 +492,7 @@ int mpd_main(int argc, char *argv[])
 
 	setup_log_output(options.log_stderr);
 
-	initSigHandlers();
+	SignalHandlersInit(*main_loop);
 
 	if (!io_thread_start(&error)) {
 		g_warning("%s", error->message);
@@ -583,6 +589,7 @@ int mpd_main(int argc, char *argv[])
 	config_global_finish();
 	stats_global_finish();
 	io_thread_deinit();
+	SignalHandlersFinish();
 	delete instance;
 	delete main_loop;
 	daemonize_finish();

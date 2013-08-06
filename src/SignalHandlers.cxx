@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "SignalHandlers.hxx"
+#include "event/SignalMonitor.hxx"
 
 #ifndef WIN32
 
@@ -32,14 +33,12 @@
 
 #include <signal.h>
 
-static void exit_signal_handler(gcc_unused int signum)
-{
-	GlobalEvents::Emit(GlobalEvents::SHUTDOWN);
-}
+static EventLoop *shutdown_loop;
 
-static void reload_signal_handler(gcc_unused int signum)
+static void
+HandleShutdownSignal()
 {
-	GlobalEvents::Emit(GlobalEvents::RELOAD);
+	shutdown_loop->Break();
 }
 
 static void
@@ -58,8 +57,11 @@ handle_reload_event(void)
 
 #endif
 
-void initSigHandlers(void)
+void
+SignalHandlersInit(EventLoop &loop)
 {
+	SignalMonitorInit(loop);
+
 #ifndef WIN32
 	struct sigaction sa;
 
@@ -68,12 +70,16 @@ void initSigHandlers(void)
 	sa.sa_handler = SIG_IGN;
 	x_sigaction(SIGPIPE, &sa);
 
-	sa.sa_handler = exit_signal_handler;
-	x_sigaction(SIGINT, &sa);
-	x_sigaction(SIGTERM, &sa);
+	shutdown_loop = &loop;
+	SignalMonitorRegister(SIGINT, HandleShutdownSignal);
+	SignalMonitorRegister(SIGTERM, HandleShutdownSignal);
 
-	GlobalEvents::Register(GlobalEvents::RELOAD, handle_reload_event);
-	sa.sa_handler = reload_signal_handler;
-	x_sigaction(SIGHUP, &sa);
+	SignalMonitorRegister(SIGHUP, handle_reload_event);
 #endif
+}
+
+void
+SignalHandlersFinish()
+{
+	SignalMonitorFinish();
 }
