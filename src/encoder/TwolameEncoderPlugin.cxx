@@ -38,11 +38,12 @@ struct TwolameEncoder final {
 
 	twolame_options *options;
 
-	unsigned char buffer[32768];
-	size_t buffer_length;
+	unsigned char output_buffer[32768];
+	size_t output_buffer_length;
 
 	/**
-	 * Call libtwolame's flush function when the buffer is empty?
+	 * Call libtwolame's flush function when the output_buffer is
+	 * empty?
 	 */
 	bool flush;
 
@@ -209,7 +210,7 @@ twolame_encoder_open(Encoder *_encoder, AudioFormat &audio_format,
 		return false;
 	}
 
-	encoder->buffer_length = 0;
+	encoder->output_buffer_length = 0;
 	encoder->flush = false;
 
 	return true;
@@ -240,22 +241,22 @@ twolame_encoder_write(Encoder *_encoder,
 	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 	const int16_t *src = (const int16_t*)data;
 
-	assert(encoder->buffer_length == 0);
+	assert(encoder->output_buffer_length == 0);
 
 	const unsigned num_frames =
 		length / encoder->audio_format.GetFrameSize();
 
 	int bytes_out = twolame_encode_buffer_interleaved(encoder->options,
 							  src, num_frames,
-							  encoder->buffer,
-							  sizeof(encoder->buffer));
+							  encoder->output_buffer,
+							  sizeof(encoder->output_buffer));
 	if (bytes_out < 0) {
 		g_set_error(error, twolame_encoder_quark(), 0,
 			    "twolame encoder failed");
 		return false;
 	}
 
-	encoder->buffer_length = (size_t)bytes_out;
+	encoder->output_buffer_length = (size_t)bytes_out;
 	return true;
 }
 
@@ -264,24 +265,24 @@ twolame_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
 	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 
-	if (encoder->buffer_length == 0 && encoder->flush) {
+	if (encoder->output_buffer_length == 0 && encoder->flush) {
 		int ret = twolame_encode_flush(encoder->options,
-					       encoder->buffer,
-					       sizeof(encoder->buffer));
+					       encoder->output_buffer,
+					       sizeof(encoder->output_buffer));
 		if (ret > 0)
-			encoder->buffer_length = (size_t)ret;
+			encoder->output_buffer_length = (size_t)ret;
 
 		encoder->flush = false;
 	}
 
-	if (length > encoder->buffer_length)
-		length = encoder->buffer_length;
+	if (length > encoder->output_buffer_length)
+		length = encoder->output_buffer_length;
 
-	memcpy(dest, encoder->buffer, length);
+	memcpy(dest, encoder->output_buffer, length);
 
-	encoder->buffer_length -= length;
-	memmove(encoder->buffer, encoder->buffer + length,
-		encoder->buffer_length);
+	encoder->output_buffer_length -= length;
+	memmove(encoder->output_buffer, encoder->output_buffer + length,
+		encoder->output_buffer_length);
 
 	return length;
 }

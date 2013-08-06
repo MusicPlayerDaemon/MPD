@@ -38,8 +38,8 @@ struct LameEncoder final {
 
 	lame_global_flags *gfp;
 
-	unsigned char buffer[32768];
-	size_t buffer_length;
+	unsigned char output_buffer[32768];
+	size_t output_buffer_length;
 
 	LameEncoder():encoder(lame_encoder_plugin) {}
 
@@ -209,7 +209,7 @@ lame_encoder_open(Encoder *_encoder, AudioFormat &audio_format,
 		return false;
 	}
 
-	encoder->buffer_length = 0;
+	encoder->output_buffer_length = 0;
 
 	return true;
 }
@@ -230,7 +230,7 @@ lame_encoder_write(Encoder *_encoder,
 	LameEncoder *encoder = (LameEncoder *)_encoder;
 	const int16_t *src = (const int16_t*)data;
 
-	assert(encoder->buffer_length == 0);
+	assert(encoder->output_buffer_length == 0);
 
 	const unsigned num_frames =
 		length / encoder->audio_format.GetFrameSize();
@@ -245,8 +245,9 @@ lame_encoder_write(Encoder *_encoder,
 	}
 
 	int bytes_out = lame_encode_buffer_float(encoder->gfp, left, right,
-						 num_frames, encoder->buffer,
-						 sizeof(encoder->buffer));
+						 num_frames,
+						 encoder->output_buffer,
+						 sizeof(encoder->output_buffer));
 
 	g_free(left);
 	g_free(right);
@@ -257,7 +258,7 @@ lame_encoder_write(Encoder *_encoder,
 		return false;
 	}
 
-	encoder->buffer_length = (size_t)bytes_out;
+	encoder->output_buffer_length = (size_t)bytes_out;
 	return true;
 }
 
@@ -266,14 +267,14 @@ lame_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
 	LameEncoder *encoder = (LameEncoder *)_encoder;
 
-	if (length > encoder->buffer_length)
-		length = encoder->buffer_length;
+	if (length > encoder->output_buffer_length)
+		length = encoder->output_buffer_length;
 
-	memcpy(dest, encoder->buffer, length);
+	memcpy(dest, encoder->output_buffer, length);
 
-	encoder->buffer_length -= length;
-	memmove(encoder->buffer, encoder->buffer + length,
-		encoder->buffer_length);
+	encoder->output_buffer_length -= length;
+	memmove(encoder->output_buffer, encoder->output_buffer + length,
+		encoder->output_buffer_length);
 
 	return length;
 }
