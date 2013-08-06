@@ -288,6 +288,7 @@ libsystem_a_SOURCES = \
 	src/system/SocketUtil.cxx src/system/SocketUtil.hxx \
 	src/system/SocketError.hxx \
 	src/system/resolver.c src/system/resolver.h \
+	src/system/SignalFD.cxx src/system/SignalFD.hxx \
 	src/system/clock.c src/system/clock.h
 
 # Event loop library

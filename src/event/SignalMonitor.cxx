@@ -27,27 +27,58 @@
 #include "util/Manual.hxx"
 #include "system/FatalError.hxx"
 
+#ifdef USE_SIGNALFD
+#include "system/SignalFD.hxx"
+#else
+#include "WakeFD.hxx"
+#endif
+
+#ifndef USE_SIGNALFD
 #include <atomic>
+#endif
+
 #include <algorithm>
 
 class SignalMonitor final : private SocketMonitor {
+#ifdef USE_SIGNALFD
+	SignalFD fd;
+#else
 	WakeFD fd;
+#endif
 
 public:
 	SignalMonitor(EventLoop &_loop)
 		:SocketMonitor(_loop) {
+#ifndef USE_SIGNALFD
 		SocketMonitor::Open(fd.Get());
 		SocketMonitor::ScheduleRead();
+#endif
 	}
 
 	~SignalMonitor() {
 		/* prevent the descriptor to be closed twice */
-		SocketMonitor::Steal();
+#ifdef USE_SIGNALFD
+		if (SocketMonitor::IsDefined())
+#endif
+			SocketMonitor::Steal();
 	}
 
+#ifdef USE_SIGNALFD
+	void Update(sigset_t &mask) {
+		const bool was_open = SocketMonitor::IsDefined();
+
+		fd.Create(mask);
+
+		if (!was_open) {
+			SocketMonitor::Open(fd.Get());
+			SocketMonitor::ScheduleRead();
+		}
+	}
+#else
 	void WakeUp() {
 		fd.Write();
 	}
+#endif
 
 private:
 	virtual bool OnSocketReady(unsigned flags) override;
@@ -57,10 +88,16 @@ private:
 static constexpr unsigned MAX_SIGNAL = 64;
 
 static SignalHandler signal_handlers[MAX_SIGNAL];
+
+#ifdef USE_SIGNALFD
+static sigset_t signal_mask;
+#else
 static std::atomic_bool signal_pending[MAX_SIGNAL];
+#endif
 
 static Manual<SignalMonitor> monitor;
 
+#ifndef USE_SIGNALFD
 static void
 SignalCallback(int signo)
 {
@@ -69,12 +106,19 @@ SignalCallback(int signo)
 	if (!signal_pending[signo].exchange(true))
 		monitor->WakeUp();
 }
+#endif
 
 void
 SignalMonitorInit(EventLoop &loop)
 {
+#ifdef USE_SIGNALFD
+	sigemptyset(&signal_mask);
+#endif
+
 	monitor.Construct(loop);
 }
+
+#ifndef USE_SIGNALFD
 
 static void
 x_sigaction(int signum, const struct sigaction &act)
@@ -83,9 +127,14 @@ x_sigaction(int signum, const struct sigaction &act)
 		FatalSystemError("sigaction() failed");
 }
 
+#endif
+
 void
 SignalMonitorFinish()
 {
+#ifdef USE_SIGNALFD
+	std::fill_n(signal_handlers, MAX_SIGNAL, nullptr);
+#else
 	struct sigaction sa;
 	sa.sa_flags = 0;
 	sigemptyset(&sa.sa_mask);
@@ -99,6 +148,7 @@ SignalMonitorFinish()
 	}
 
 	std::fill_n(signal_pending, MAX_SIGNAL, false);
+#endif
 
 	monitor.Destruct();
 }
@@ -107,25 +157,46 @@ void
 SignalMonitorRegister(int signo, SignalHandler handler)
 {
 	assert(signal_handlers[signo] == nullptr);
+#ifndef USE_SIGNALFD
 	assert(!signal_pending[signo]);
+#endif
 
 	signal_handlers[signo] = handler;
 
+#ifdef USE_SIGNALFD
+	sigaddset(&signal_mask, signo);
+
+	if (sigprocmask(SIG_BLOCK, &signal_mask, nullptr) < 0)
+		FatalSystemError("sigprocmask() failed");
+
+	monitor->Update(signal_mask);
+#else
 	struct sigaction sa;
 	sa.sa_flags = 0;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = SignalCallback;
 	x_sigaction(signo, sa);
+#endif
 }
 
 bool
 SignalMonitor::OnSocketReady(unsigned)
 {
+#ifdef USE_SIGNALFD
+	int signo;
+	while ((signo = fd.Read()) >= 0) {
+		assert(unsigned(signo) < MAX_SIGNAL);
+		assert(signal_handlers[signo] != nullptr);
+
+		signal_handlers[signo]();
+	}
+#else
 	fd.Read();
 
 	for (unsigned i = 0; i < MAX_SIGNAL; ++i)
 		if (signal_pending[i].exchange(false))
 			signal_handlers[i]();
+#endif
 
 	return true;
 }
