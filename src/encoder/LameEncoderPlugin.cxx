@@ -127,7 +127,7 @@ lame_encoder_finish(Encoder *_encoder)
 
 	/* the real liblame cleanup was already performed by
 	   lame_encoder_close(), so no real work here */
-	g_free(encoder);
+	delete encoder;
 }
 
 static bool
