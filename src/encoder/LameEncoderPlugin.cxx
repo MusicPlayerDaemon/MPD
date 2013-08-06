@@ -236,23 +236,14 @@ lame_encoder_write(Encoder *_encoder,
 
 	const unsigned num_frames =
 		length / encoder->audio_format.GetFrameSize();
-	float *left = g_new(float, num_frames);
-	float *right = g_new(float, num_frames);
 
 	/* this is for only 16-bit audio */
 
-	for (unsigned i = 0; i < num_frames; i++) {
-		left[i] = *src++;
-		right[i] = *src++;
-	}
-
-	int bytes_out = lame_encode_buffer_float(encoder->gfp, left, right,
-						 num_frames,
-						 encoder->output_buffer,
-						 sizeof(encoder->output_buffer));
-
-	g_free(left);
-	g_free(right);
+	int bytes_out = lame_encode_buffer_interleaved(encoder->gfp,
+						       const_cast<short *>(src),
+						       num_frames,
+						       encoder->output_buffer,
+						       sizeof(encoder->output_buffer));
 
 	if (bytes_out < 0) {
 		g_set_error(error, lame_encoder_quark(), 0,
