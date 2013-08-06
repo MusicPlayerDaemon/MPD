@@ -139,7 +139,8 @@ AC_SEARCH_LIBS([syslog], [bsd socket inet],
 AC_SEARCH_LIBS([socket], [socket])
 AC_SEARCH_LIBS([gethostbyname], [nsl])
 
-AC_CHECK_FUNCS(pipe2 accept4 eventfd)
+AC_CHECK_FUNCS(pipe2 accept4)
+MPD_OPTIONAL_FUNC(eventfd, USE_EVENTFD)
 
 AC_SEARCH_LIBS([exp], [m],,
 	[AC_MSG_ERROR([exp() not found])])

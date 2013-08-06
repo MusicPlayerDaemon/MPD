@@ -17,19 +17,56 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_WAKE_FD_HXX
-#define MPD_WAKE_FD_HXX
-
-#include "check.h"
-
-#include <assert.h>
-
+#include "config.h"
 #ifdef USE_EVENTFD
 #include "EventFD.hxx"
-#define WakeFD EventFD
-#else
-#include "EventPipe.hxx"
-#define WakeFD EventPipe
+#include "fd_util.h"
+#include "gcc.h"
+
+#include <unistd.h>
+
+#include <sys/eventfd.h>
+
+#ifdef WIN32
+static bool PoorSocketPair(int fd[2]);
 #endif
 
-#endif /* MAIN_NOTIFY_H */
+bool
+EventFD::Create()
+{
+	assert(fd == -1);
+
+	fd = eventfd_cloexec_nonblock(0, 0);
+	return fd >= 0;
+}
+
+void
+EventFD::Destroy()
+{
+	close(fd);
+
+#ifndef NDEBUG
+	fd = -1;
+#endif
+}
+
+bool
+EventFD::Read()
+{
+	assert(fd >= 0);
+
+	eventfd_t value;
+	return read(fd, &value, sizeof(value)) == (ssize_t)sizeof(value);
+}
+
+void
+EventFD::Write()
+{
+	assert(fd >= 0);
+
+	static constexpr eventfd_t value = 1;
+	gcc_unused ssize_t nbytes =
+		write(fd, &value, sizeof(value));
+}
+
+#endif /* USE_EVENTFD */

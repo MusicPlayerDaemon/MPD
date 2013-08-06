@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "WakeFD.hxx"
+#include "EventPipe.hxx"
 #include "fd_util.h"
 #include "gcc.h"
 
@@ -30,16 +30,12 @@
 #include <cstring> /* for memset() */
 #endif
 
-#ifdef HAVE_EVENTFD
-#include <sys/eventfd.h>
-#endif
-
 #ifdef WIN32
 static bool PoorSocketPair(int fd[2]);
 #endif
 
 bool
-WakeFD::Create()
+EventPipe::Create()
 {
 	assert(fds[0] == -1);
 	assert(fds[1] == -1);
@@ -47,85 +43,50 @@ WakeFD::Create()
 #ifdef WIN32
 	return PoorSocketPair(fds);
 #else
-#ifdef HAVE_EVENTFD
-	fds[0] = eventfd_cloexec_nonblock(0, 0);
-	if (fds[0] >= 0) {
-		fds[1] = -2;
-		return true;
-	}
-#endif
 	return pipe_cloexec_nonblock(fds) >= 0;
 #endif
 }
 
 void
-WakeFD::Destroy()
+EventPipe::Destroy()
 {
 #ifdef WIN32
 	closesocket(fds[0]);
 	closesocket(fds[1]);
 #else
 	close(fds[0]);
-#ifdef HAVE_EVENTFD
-	if (!IsEventFD())
-#endif
-		close(fds[1]);
-#endif
+	close(fds[1]);
 
 #ifndef NDEBUG
 	fds[0] = -1;
 	fds[1] = -1;
 #endif
+#endif
 }
 
 bool
-WakeFD::Read()
+EventPipe::Read()
 {
 	assert(fds[0] >= 0);
-
-#ifdef WIN32
 	assert(fds[1] >= 0);
+
 	char buffer[256];
+#ifdef WIN32
 	return recv(fds[0], buffer, sizeof(buffer), 0) > 0;
 #else
-
-#ifdef HAVE_EVENTFD
-	if (IsEventFD()) {
-		eventfd_t value;
-		return read(fds[0], &value,
-			    sizeof(value)) == (ssize_t)sizeof(value);
-	}
-#endif
-
-	assert(fds[1] >= 0);
-
-	char buffer[256];
 	return read(fds[0], buffer, sizeof(buffer)) > 0;
 #endif
 }
 
 void
-WakeFD::Write()
+EventPipe::Write()
 {
 	assert(fds[0] >= 0);
+	assert(fds[1] >= 0);
 
 #ifdef WIN32
-	assert(fds[1] >= 0);
-
 	send(fds[1], "", 1, 0);
 #else
-
-#ifdef HAVE_EVENTFD
-	if (IsEventFD()) {
-		static constexpr eventfd_t value = 1;
-		gcc_unused ssize_t nbytes =
-			write(fds[0], &value, sizeof(value));
-		return;
-	}
-#endif
-
-	assert(fds[1] >= 0);
-
 	gcc_unused ssize_t nbytes = write(fds[1], "", 1);
 #endif
 }
@@ -141,7 +102,7 @@ static void SafeCloseSocket(SOCKET s)
 
 /* Our poor man's socketpair() implementation
  * Due to limited protocol/address family support and primitive error handling
- * it's better to keep this as a private implementation detail of WakeFD
+ * it's better to keep this as a private implementation detail of EventPipe
  * rather than wide-available API.
  */
 static bool PoorSocketPair(int fd[2])
@@ -160,14 +121,14 @@ static bool PoorSocketPair(int fd[2])
 	int ret = bind(listen_socket,
 		       reinterpret_cast<sockaddr*>(&address),
 		       sizeof(address));
-	
+
 	if (ret < 0) {
 		SafeCloseSocket(listen_socket);
 		return false;
 	}
 
 	ret = listen(listen_socket, 1);
-	
+
 	if (ret < 0) {
 		SafeCloseSocket(listen_socket);
 		return false;

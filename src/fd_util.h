@@ -144,7 +144,7 @@ inotify_init_cloexec(void);
 
 #endif
 
-#ifdef HAVE_EVENTFD
+#ifdef USE_EVENTFD
 
 /**
  * Wrapper for eventfd() which sets the flags CLOEXEC and NONBLOCK

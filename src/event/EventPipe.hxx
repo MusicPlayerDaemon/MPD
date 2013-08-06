@@ -17,19 +17,53 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_WAKE_FD_HXX
-#define MPD_WAKE_FD_HXX
+#ifndef MPD_EVENT_PIPE_HXX
+#define MPD_EVENT_PIPE_HXX
 
 #include "check.h"
 
 #include <assert.h>
 
-#ifdef USE_EVENTFD
-#include "EventFD.hxx"
-#define WakeFD EventFD
+/**
+ * A pipe that can be used to trigger an event to the read side.
+ *
+ * For optimization purposes, this class does not have a constructor
+ * or a destructor.
+ */
+class EventPipe {
+	int fds[2];
+
+public:
+#ifdef NDEBUG
+	EventPipe() = default;
 #else
-#include "EventPipe.hxx"
-#define WakeFD EventPipe
+	EventPipe():fds{-1, -1} {};
 #endif
+
+	EventPipe(const EventPipe &other) = delete;
+	EventPipe &operator=(const EventPipe &other) = delete;
+
+	bool Create();
+	void Destroy();
+
+	int Get() const {
+		assert(fds[0] >= 0);
+		assert(fds[1] >= 0);
+
+		return fds[0];
+	}
+
+	/**
+	 * Checks if Write() was called at least once since the last
+	 * Read() call.
+	 */
+	bool Read();
+
+	/**
+	 * Wakes up the reader.  Multiple calls to this function will
+	 * be combined to one wakeup.
+	 */
+	void Write();
+};
 
 #endif /* MAIN_NOTIFY_H */

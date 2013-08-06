@@ -288,7 +288,9 @@ libutil_a_SOURCES = \
 # Event loop library
 
 libevent_a_SOURCES = \
-	src/event/WakeFD.cxx src/event/WakeFD.hxx \
+	src/event/EventPipe.cxx src/event/EventPipe.hxx \
+	src/event/EventFD.cxx src/event/EventFD.hxx \
+	src/event/WakeFD.hxx \
 	src/event/TimeoutMonitor.hxx src/event/TimeoutMonitor.cxx \
 	src/event/SocketMonitor.cxx src/event/SocketMonitor.hxx \
 	src/event/BufferedSocket.cxx src/event/BufferedSocket.hxx \

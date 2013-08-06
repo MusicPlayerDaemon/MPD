@@ -49,7 +49,7 @@
 #include <sys/inotify.h>
 #endif
 
-#ifdef HAVE_EVENTFD
+#ifdef USE_EVENTFD
 #include <sys/eventfd.h>
 #endif
 
@@ -332,7 +332,7 @@ inotify_init_cloexec(void)
 
 #endif
 
-#ifdef HAVE_EVENTFD
+#ifdef USE_EVENTFD
 
 int
 eventfd_cloexec_nonblock(unsigned initval, int flags)

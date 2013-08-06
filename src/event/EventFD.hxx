@@ -17,19 +17,52 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_WAKE_FD_HXX
-#define MPD_WAKE_FD_HXX
+#ifndef MPD_EVENT_FD_HXX
+#define MPD_EVENT_FD_HXX
 
 #include "check.h"
 
 #include <assert.h>
 
-#ifdef USE_EVENTFD
-#include "EventFD.hxx"
-#define WakeFD EventFD
+/**
+ * A class that wraps eventfd().
+ *
+ * For optimization purposes, this class does not have a constructor
+ * or a destructor.
+ */
+class EventFD {
+	int fd;
+
+public:
+#ifdef NDEBUG
+	EventFD() = default;
 #else
-#include "EventPipe.hxx"
-#define WakeFD EventPipe
+	EventFD():fd(-1) {}
 #endif
 
-#endif /* MAIN_NOTIFY_H */
+	EventFD(const EventFD &other) = delete;
+	EventFD &operator=(const EventFD &other) = delete;
+
+	bool Create();
+	void Destroy();
+
+	int Get() const {
+		assert(fd >= 0);
+
+		return fd;
+	}
+
+	/**
+	 * Checks if Write() was called at least once since the last
+	 * Read() call.
+	 */
+	bool Read();
+
+	/**
+	 * Wakes up the reader.  Multiple calls to this function will
+	 * be combined to one wakeup.
+	 */
+	void Write();
+};
+
+#endif
