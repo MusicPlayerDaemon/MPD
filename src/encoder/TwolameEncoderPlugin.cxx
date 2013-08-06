@@ -40,6 +40,7 @@ struct TwolameEncoder final {
 
 	unsigned char output_buffer[32768];
 	size_t output_buffer_length;
+	size_t output_buffer_position;
 
 	/**
 	 * Call libtwolame's flush function when the output_buffer is
@@ -211,6 +212,7 @@ twolame_encoder_open(Encoder *_encoder, AudioFormat &audio_format,
 	}
 
 	encoder->output_buffer_length = 0;
+	encoder->output_buffer_position = 0;
 	encoder->flush = false;
 
 	return true;
@@ -241,7 +243,8 @@ twolame_encoder_write(Encoder *_encoder,
 	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 	const int16_t *src = (const int16_t*)data;
 
-	assert(encoder->output_buffer_length == 0);
+	assert(encoder->output_buffer_position ==
+	       encoder->output_buffer_length);
 
 	const unsigned num_frames =
 		length / encoder->audio_format.GetFrameSize();
@@ -257,6 +260,7 @@ twolame_encoder_write(Encoder *_encoder,
 	}
 
 	encoder->output_buffer_length = (size_t)bytes_out;
+	encoder->output_buffer_position = 0;
 	return true;
 }
 
@@ -265,24 +269,32 @@ twolame_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
 	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 
-	if (encoder->output_buffer_length == 0 && encoder->flush) {
+	assert(encoder->output_buffer_position <=
+	       encoder->output_buffer_length);
+
+	if (encoder->output_buffer_position == encoder->output_buffer_length &&
+	    encoder->flush) {
 		int ret = twolame_encode_flush(encoder->options,
 					       encoder->output_buffer,
 					       sizeof(encoder->output_buffer));
-		if (ret > 0)
+		if (ret > 0) {
 			encoder->output_buffer_length = (size_t)ret;
+			encoder->output_buffer_position = 0;
+		}
 
 		encoder->flush = false;
 	}
 
-	if (length > encoder->output_buffer_length)
-		length = encoder->output_buffer_length;
 
-	memcpy(dest, encoder->output_buffer, length);
+	const size_t remainning = encoder->output_buffer_length
+		- encoder->output_buffer_position;
+	if (length > remainning)
+		length = remainning;
 
-	encoder->output_buffer_length -= length;
-	memmove(encoder->output_buffer, encoder->output_buffer + length,
-		encoder->output_buffer_length);
+	memcpy(dest, encoder->output_buffer + encoder->output_buffer_position,
+	       length);
+
+	encoder->output_buffer_position += length;
 
 	return length;
 }
