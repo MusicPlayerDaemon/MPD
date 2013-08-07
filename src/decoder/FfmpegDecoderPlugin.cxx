@@ -218,7 +218,8 @@ copy_interleave_frame2(uint8_t *dest, uint8_t **src,
 static int
 copy_interleave_frame(const AVCodecContext *codec_context,
 		      const AVFrame *frame,
-		      uint8_t *buffer, size_t buffer_size)
+		      uint8_t **output_buffer,
+		      uint8_t **global_buffer, int *global_buffer_size)
 {
 	int plane_size;
 	const int data_size =
@@ -226,18 +227,25 @@ copy_interleave_frame(const AVCodecContext *codec_context,
 					   codec_context->channels,
 					   frame->nb_samples,
 					   codec_context->sample_fmt, 1);
-	if (buffer_size < (size_t)data_size)
-		/* buffer is too small - shouldn't happen */
-		return AVERROR(EINVAL);
-
 	if (av_sample_fmt_is_planar(codec_context->sample_fmt) &&
 	    codec_context->channels > 1) {
-		copy_interleave_frame2(buffer, frame->extended_data,
+		if(*global_buffer_size < data_size) {
+			av_freep(global_buffer);
+
+			*global_buffer = (uint8_t*)av_malloc(data_size);
+
+			if (!*global_buffer)
+				/* Not enough memory - shouldn't happen */
+				return AVERROR(ENOMEM);
+			*global_buffer_size = data_size;
+		}
+		*output_buffer = *global_buffer;
+		copy_interleave_frame2(*output_buffer, frame->extended_data,
 				       frame->nb_samples,
 				       codec_context->channels,
 				       av_get_bytes_per_sample(codec_context->sample_fmt));
 	} else {
-		memcpy(buffer, frame->extended_data[0], data_size);
+		*output_buffer = frame->extended_data[0];
 	}
 
 	return data_size;
@@ -248,7 +256,8 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		   const AVPacket *packet,
 		   AVCodecContext *codec_context,
 		   const AVRational *time_base,
-		   AVFrame *frame)
+		   AVFrame *frame,
+		   uint8_t **buffer, int *buffer_size)
 {
 	if (packet->pts >= 0 && packet->pts != (int64_t)AV_NOPTS_VALUE)
 		decoder_timestamp(decoder,
@@ -256,13 +265,12 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 
 	AVPacket packet2 = *packet;
 
-	uint8_t aligned_buffer[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2 + 16];
-	const size_t buffer_size = sizeof(aligned_buffer);
+	uint8_t *output_buffer;
 
 	enum decoder_command cmd = DECODE_COMMAND_NONE;
 	while (packet2.size > 0 &&
 	       cmd == DECODE_COMMAND_NONE) {
-		int audio_size = buffer_size;
+		int audio_size = 0;
 		int got_frame = 0;
 		int len = avcodec_decode_audio4(codec_context,
 						frame, &got_frame,
@@ -270,12 +278,11 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		if (len >= 0 && got_frame) {
 			audio_size = copy_interleave_frame(codec_context,
 							   frame,
-							   aligned_buffer,
-							   buffer_size);
+							   &output_buffer,
+							   buffer, buffer_size);
 			if (audio_size < 0)
 				len = audio_size;
-		} else if (len >= 0)
-			len = -1;
+		}
 
 		if (len < 0) {
 			/* if error, we skip the frame */
@@ -290,7 +297,7 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 			continue;
 
 		cmd = decoder_data(decoder, is,
-				   aligned_buffer, audio_size,
+				   output_buffer, audio_size,
 				   codec_context->bit_rate / 1000);
 	}
 	return cmd;
@@ -458,6 +465,9 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		return;
 	}
 
+	uint8_t *interleaved_buffer = NULL;
+	int interleaved_buffer_size = 0;
+
 	enum decoder_command cmd;
 	do {
 		AVPacket packet;
@@ -469,7 +479,8 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 			cmd = ffmpeg_send_packet(decoder, input,
 						 &packet, codec_context,
 						 &av_stream->time_base,
-						 frame);
+						 frame,
+						 &interleaved_buffer, &interleaved_buffer_size);
 		else
 			cmd = decoder_get_command(decoder);
 
@@ -495,6 +506,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 #else
 	av_freep(&frame);
 #endif
+	av_freep(&interleaved_buffer);
 
 	avcodec_close(codec_context);
 	avformat_close_input(&format_context);
