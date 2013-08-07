@@ -48,10 +48,10 @@ public:
 	void Cancel();
 
 protected:
-	virtual void Run() = 0;
+	virtual void RunDeferred() = 0;
 
 private:
-	void DoRun();
+	void Run();
 	static gboolean Callback(gpointer data);
 };
 

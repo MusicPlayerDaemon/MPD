@@ -39,11 +39,11 @@ DeferredMonitor::Schedule()
 }
 
 void
-DeferredMonitor::DoRun()
+DeferredMonitor::Run()
 {
 	const auto id = source_id.exchange(0);
 	if (id != 0)
-		Run();
+		RunDeferred();
 }
 
 gboolean

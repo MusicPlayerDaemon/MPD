@@ -37,7 +37,7 @@ namespace GlobalEvents {
 		Monitor(EventLoop &_loop):DeferredMonitor(_loop) {}
 
 	protected:
-		virtual void Run() override;
+		virtual void RunDeferred() override;
 	};
 
 	static Manual<Monitor> monitor;
@@ -59,7 +59,7 @@ InvokeGlobalEvent(GlobalEvents::Event event)
 }
 
 void
-GlobalEvents::Monitor::Run()
+GlobalEvents::Monitor::RunDeferred()
 {
 	const unsigned f = flags.exchange(0);
 
