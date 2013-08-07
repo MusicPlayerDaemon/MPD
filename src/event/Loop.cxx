@@ -23,7 +23,12 @@
 void
 EventLoop::Run()
 {
+	assert(thread == nullptr);
+	thread = g_thread_self();
+
 	g_main_loop_run(loop);
+
+	assert(thread == g_thread_self());
 }
 
 guint

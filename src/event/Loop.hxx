@@ -25,23 +25,42 @@
 
 #include <glib.h>
 
+#include <assert.h>
+
 class EventLoop {
 	GMainContext *context;
 	GMainLoop *loop;
 
+	/**
+	 * A reference to the thread that is currently inside Run().
+	 */
+	GThread *thread;
+
 public:
 	EventLoop()
 		:context(g_main_context_new()),
-		 loop(g_main_loop_new(context, false)) {}
+		 loop(g_main_loop_new(context, false)),
+		 thread(nullptr) {}
 
 	struct Default {};
 	EventLoop(gcc_unused Default _dummy)
 		:context(g_main_context_ref(g_main_context_default())),
-		 loop(g_main_loop_new(context, false)) {}
+		 loop(g_main_loop_new(context, false)),
+		 thread(nullptr) {}
 
 	~EventLoop() {
 		g_main_loop_unref(loop);
 		g_main_context_unref(context);
+	}
+
+	/**
+	 * Are we currently running inside this EventLoop's thread?
+	 */
+	gcc_pure
+	bool IsInside() const {
+		assert(thread != nullptr);
+
+		return g_thread_self() == thread;
 	}
 
 	GMainContext *GetContext() {
