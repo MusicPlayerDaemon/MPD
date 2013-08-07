@@ -22,7 +22,9 @@
 
 #include "gerror.h"
 
-char *
-parsePath(const char *path, GError **error_r);
+class Path;
+
+Path
+ParsePath(const char *path, GError **error_r);
 
 #endif

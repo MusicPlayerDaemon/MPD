@@ -23,6 +23,7 @@
 #include "ConfigData.hxx"
 #include "ConfigFile.hxx"
 #include "ConfigPath.hxx"
+#include "fs/Path.hxx"
 #include "mpd_error.h"
 
 #include <glib.h>
@@ -96,18 +97,18 @@ config_get_string(ConfigOption option, const char *default_value)
 	return param->value;
 }
 
-char *
-config_dup_path(ConfigOption option, GError **error_r)
+Path
+config_get_path(ConfigOption option, GError **error_r)
 {
 	assert(error_r != NULL);
 	assert(*error_r == NULL);
 
 	const struct config_param *param = config_get_param(option);
 	if (param == NULL)
-		return NULL;
+		return Path::Null();
 
-	char *path = parsePath(param->value, error_r);
-	if (G_UNLIKELY(path == NULL))
+	Path path = ParsePath(param->value, error_r);
+	if (gcc_unlikely(path.IsNull()))
 		g_prefix_error(error_r,
 			       "Invalid path at line %i: ",
 			       param->line);

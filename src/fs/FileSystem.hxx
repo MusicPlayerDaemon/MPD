@@ -116,6 +116,12 @@ static inline bool RemoveFile(const Path &file)
  */
 Path ReadLink(const Path &path);
 
+static inline bool
+MakeFifo(const Path &path, mode_t mode)
+{
+	return mkfifo(path.c_str(), mode) == 0;
+}
+
 /**
  * Wrapper for access() that uses #Path names.
  */

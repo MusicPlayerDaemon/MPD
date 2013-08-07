@@ -20,12 +20,14 @@
 #ifndef MPD_DAEMON_HXX
 #define MPD_DAEMON_HXX
 
+class Path;
+
 #ifndef WIN32
 void
-daemonize_init(const char *user, const char *group, const char *pidfile);
+daemonize_init(const char *user, const char *group, Path &&pidfile);
 #else
 static inline void
-daemonize_init(const char *user, const char *group, const char *pidfile)
+daemonize_init(const char *user, const char *group, Path &&pidfile)
 { (void)user; (void)group; (void)pidfile; }
 #endif
 

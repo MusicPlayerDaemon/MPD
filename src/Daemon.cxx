@@ -20,6 +20,8 @@
 #include "config.h"
 #include "Daemon.hxx"
 #include "system/FatalError.hxx"
+#include "fs/Path.hxx"
+#include "fs/FileSystem.hxx"
 
 #include <glib.h>
 
@@ -52,7 +54,7 @@ static uid_t user_uid = (uid_t)-1;
 static gid_t user_gid = (pid_t)-1;
 
 /** the absolute path of the pidfile */
-static char *pidfile;
+static Path pidfile = Path::Null();
 
 /* whether "group" conf. option was given */
 static bool had_group = false;
@@ -64,17 +66,20 @@ daemonize_kill(void)
 	FILE *fp;
 	int pid, ret;
 
-	if (pidfile == nullptr)
+	if (pidfile.IsNull())
 		FatalError("no pid_file specified in the config file");
 
-	fp = fopen(pidfile, "r");
-	if (fp == nullptr)
+	fp = FOpen(pidfile, "r");
+	if (fp == nullptr) {
+		const std::string utf8 = pidfile.ToUTF8();
 		FormatFatalSystemError("Unable to open pid file \"%s\"",
-				       pidfile);
+				       utf8.c_str());
+	}
 
 	if (fscanf(fp, "%i", &pid) != 1) {
+		const std::string utf8 = pidfile.ToUTF8();
 		FormatFatalError("unable to read the pid from file \"%s\"",
-				 pidfile);
+				 utf8.c_str());
 	}
 	fclose(fp);
 
@@ -173,21 +178,22 @@ daemonize(bool detach)
 {
 	FILE *fp = nullptr;
 
-	if (pidfile != nullptr) {
+	if (!pidfile.IsNull()) {
 		/* do this before daemon'izing so we can fail gracefully if we can't
 		 * write to the pid file */
 		g_debug("opening pid file");
-		fp = fopen(pidfile, "w+");
+		fp = FOpen(pidfile, "w+");
 		if (!fp) {
+			const std::string utf8 = pidfile.ToUTF8();
 			FormatFatalSystemError("Failed to create pid file \"%s\"",
-					       pidfile);
+					       pidfile.c_str());
 		}
 	}
 
 	if (detach)
 		daemonize_detach();
 
-	if (pidfile != nullptr) {
+	if (!pidfile.IsNull()) {
 		g_debug("writing pid file");
 		fprintf(fp, "%lu\n", (unsigned long)getpid());
 		fclose(fp);
@@ -195,7 +201,7 @@ daemonize(bool detach)
 }
 
 void
-daemonize_init(const char *user, const char *group, const char *_pidfile)
+daemonize_init(const char *user, const char *group, Path &&_pidfile)
 {
 	if (user) {
 		struct passwd *pwd = getpwnam(user);
@@ -220,17 +226,18 @@ daemonize_init(const char *user, const char *group, const char *_pidfile)
 	}
 
 
-	pidfile = g_strdup(_pidfile);
+	pidfile = _pidfile;
 }
 
 void
 daemonize_finish(void)
 {
-	if (pidfile != nullptr)
-		unlink(pidfile);
+	if (!pidfile.IsNull()) {
+		RemoveFile(pidfile);
+		pidfile = Path::Null();
+	}
 
 	g_free(user_name);
-	g_free(pidfile);
 }
 
 #endif

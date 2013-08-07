@@ -34,9 +34,10 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "state_file"
 
-StateFile::StateFile(Path &&_path, const char *_path_utf8,
-                     Partition &_partition, EventLoop &_loop)
-	:TimeoutMonitor(_loop), path(std::move(_path)), path_utf8(_path_utf8),
+StateFile::StateFile(Path &&_path,
+		     Partition &_partition, EventLoop &_loop)
+	:TimeoutMonitor(_loop),
+	 path(std::move(_path)), path_utf8(path.ToUTF8()),
 	 partition(_partition),
 	 prev_volume_version(0), prev_output_version(0),
 	 prev_playlist_version(0)

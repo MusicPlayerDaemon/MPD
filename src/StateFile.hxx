@@ -42,8 +42,7 @@ class StateFile final : private TimeoutMonitor {
 		prev_playlist_version;
 
 public:
-	StateFile(Path &&path, const char *path_utf8,
-	          Partition &partition, EventLoop &loop);
+	StateFile(Path &&path, Partition &partition, EventLoop &loop);
 
 	void Read();
 	void Write();

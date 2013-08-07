@@ -44,6 +44,7 @@
 
 #include "gerror.h"
 
+class Path;
 struct sticker;
 
 /**
@@ -54,7 +55,7 @@ struct sticker;
  * @return true on success, false on error
  */
 bool
-sticker_global_init(const char *path, GError **error_r);
+sticker_global_init(Path &&path, GError **error_r);
 
 /**
  * Close the sticker database.

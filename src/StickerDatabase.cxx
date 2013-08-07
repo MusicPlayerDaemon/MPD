@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "StickerDatabase.hxx"
+#include "fs/Path.hxx"
 #include "Idle.hxx"
 
 #include <string>
@@ -104,21 +105,22 @@ sticker_prepare(const char *sql, GError **error_r)
 }
 
 bool
-sticker_global_init(const char *path, GError **error_r)
+sticker_global_init(Path &&path, GError **error_r)
 {
 	int ret;
 
-	if (path == NULL)
+	if (path.IsNull())
 		/* not configured */
 		return true;
 
 	/* open/create the sqlite database */
 
-	ret = sqlite3_open(path, &sticker_db);
+	ret = sqlite3_open(path.c_str(), &sticker_db);
 	if (ret != SQLITE_OK) {
+		const std::string utf8 = path.ToUTF8();
 		g_set_error(error_r, sticker_quark(), ret,
 			    "Failed to open sqlite database '%s': %s",
-			    path, sqlite3_errmsg(sticker_db));
+			    utf8.c_str(), sqlite3_errmsg(sticker_db));
 		return false;
 	}
 

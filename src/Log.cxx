@@ -22,6 +22,8 @@
 #include "conf.h"
 #include "system/fd_util.h"
 #include "system/FatalError.hxx"
+#include "fs/Path.hxx"
+#include "fs/FileSystem.hxx"
 #include "mpd_error.h"
 
 #include <assert.h>
@@ -55,7 +57,7 @@ static const char *log_charset;
 
 static bool stdout_mode = true;
 static int out_fd;
-static char *out_filename;
+static Path out_path = Path::Null();
 
 static void redirect_logs(int fd)
 {
@@ -128,21 +130,22 @@ log_init_stdout(void)
 static int
 open_log_file(void)
 {
-	assert(out_filename != NULL);
+	assert(!out_path.IsNull());
 
-	return open_cloexec(out_filename, O_CREAT | O_WRONLY | O_APPEND, 0666);
+	return OpenFile(out_path, O_CREAT | O_WRONLY | O_APPEND, 0666);
 }
 
 static bool
 log_init_file(unsigned line, GError **error_r)
 {
-	assert(out_filename != NULL);
+	assert(!out_path.IsNull());
 
 	out_fd = open_log_file();
 	if (out_fd < 0) {
+		const std::string out_path_utf8 = out_path.ToUTF8();
 		g_set_error(error_r, log_quark(), errno,
 			    "failed to open log file \"%s\" (config line %u): %s",
-			    out_filename, line, g_strerror(errno));
+			    out_path_utf8.c_str(), line, g_strerror(errno));
 		return false;
 	}
 
@@ -204,7 +207,7 @@ syslog_log_func(const gchar *log_domain,
 static void
 log_init_syslog(void)
 {
-	assert(out_filename == NULL);
+	assert(out_path.IsNull());
 
 	openlog(PACKAGE, 0, LOG_DAEMON);
 	g_log_set_default_handler(syslog_log_func, NULL);
@@ -271,8 +274,8 @@ log_init(bool verbose, bool use_stdout, GError **error_r)
 			return true;
 #endif
 		} else {
-			out_filename = config_dup_path(CONF_LOG_FILE, error_r);
-			return out_filename != NULL &&
+			out_path = config_get_path(CONF_LOG_FILE, error_r);
+			return !out_path.IsNull() &&
 				log_init_file(param->line, error_r);
 		}
 	}
@@ -285,7 +288,7 @@ close_log_files(void)
 		return;
 
 #ifdef HAVE_SYSLOG
-	if (out_filename == NULL)
+	if (out_path.IsNull())
 		closelog();
 #endif
 }
@@ -294,7 +297,7 @@ void
 log_deinit(void)
 {
 	close_log_files();
-	g_free(out_filename);
+	out_path = Path::Null();
 }
 
 
@@ -303,7 +306,7 @@ void setup_log_output(bool use_stdout)
 	fflush(NULL);
 	if (!use_stdout) {
 #ifndef WIN32
-		if (out_filename == NULL)
+		if (out_path.IsNull())
 			out_fd = open("/dev/null", O_WRONLY);
 #endif
 
@@ -321,16 +324,19 @@ int cycle_log_files(void)
 {
 	int fd;
 
-	if (stdout_mode || out_filename == NULL)
+	if (stdout_mode || out_path.IsNull())
 		return 0;
-	assert(out_filename);
+
+	assert(!out_path.IsNull());
 
 	g_debug("Cycling log files...\n");
 	close_log_files();
 
 	fd = open_log_file();
 	if (fd < 0) {
-		g_warning("error re-opening log file: %s\n", out_filename);
+		const std::string out_path_utf8 = out_path.ToUTF8();
+		g_warning("error re-opening log file: %s",
+			  out_path_utf8.c_str());
 		return -1;
 	}
 

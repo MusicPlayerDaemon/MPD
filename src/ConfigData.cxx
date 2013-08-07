@@ -17,9 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "ConfigData.hxx"
 #include "ConfigParser.hxx"
 #include "ConfigPath.hxx"
+#include "fs/Path.hxx"
 #include "mpd_error.h"
 
 #include <glib.h>
@@ -92,18 +94,18 @@ config_param::DupBlockString(const char *name, const char *default_value) const
 	return g_strdup(GetBlockValue(name, default_value));
 }
 
-char *
-config_param::DupBlockPath(const char *name, GError **error_r) const
+Path
+config_param::GetBlockPath(const char *name, GError **error_r) const
 {
 	assert(error_r != nullptr);
 	assert(*error_r == nullptr);
 
 	const block_param *bp = GetBlockParam(name);
 	if (bp == nullptr)
-		return nullptr;
+		return Path::Null();
 
-	char *path = parsePath(bp->value.c_str(), error_r);
-	if (G_UNLIKELY(path == nullptr))
+	Path path = ParsePath(bp->value.c_str(), error_r);
+	if (gcc_unlikely(path.IsNull()))
 		g_prefix_error(error_r,
 			       "Invalid path in \"%s\" at line %i: ",
 			       name, bp->line);

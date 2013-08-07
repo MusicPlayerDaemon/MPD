@@ -72,14 +72,11 @@ config_get_string(enum ConfigOption option, const char *default_value);
 /**
  * Returns an optional configuration variable which contains an
  * absolute path.  If there is a tilde prefix, it is expanded.
- * Returns NULL if the value is not present.  If the path could not be
- * parsed, returns NULL and sets the error.
- *
- * The return value must be freed with g_free().
+ * Returns Path::Null() if the value is not present.  If the path
+ * could not be parsed, returns Path::Null() and sets the error.
  */
-gcc_malloc
-char *
-config_dup_path(enum ConfigOption option, GError **error_r);
+Path
+config_get_path(enum ConfigOption option, GError **error_r);
 
 gcc_pure
 unsigned

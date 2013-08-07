@@ -28,6 +28,8 @@
 #include <array>
 #include <vector>
 
+class Path;
+
 struct block_param {
 	std::string name;
 	std::string value;
@@ -110,8 +112,7 @@ struct config_param {
 	 * Same as config_dup_path(), but looks up the setting in the
 	 * specified block.
 	 */
-	gcc_malloc
-	char *DupBlockPath(const char *name, GError **error_r) const;
+	Path GetBlockPath(const char *name, GError **error_r) const;
 
 	gcc_pure
 	unsigned GetBlockValue(const char *name, unsigned default_value) const;

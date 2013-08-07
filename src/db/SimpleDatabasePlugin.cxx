@@ -57,8 +57,8 @@ SimpleDatabase::Configure(const config_param &param, GError **error_r)
 {
 	GError *error = NULL;
 
-	char *_path = param.DupBlockPath("path", &error);
-	if (_path == NULL) {
+	path = param.GetBlockPath("path", &error);
+	if (path.IsNull()) {
 		if (error != NULL)
 			g_propagate_error(error_r, error);
 		else
@@ -67,16 +67,7 @@ SimpleDatabase::Configure(const config_param &param, GError **error_r)
 		return false;
 	}
 
-	path = Path::FromUTF8(_path);
-	path_utf8 = _path;
-
-	free(_path);
-
-	if (path.IsNull()) {
-		g_set_error(error_r, simple_db_quark(), 0,
-			    "Failed to convert database path to FS encoding");
-		return false;
-	}
+	path_utf8 = path.ToUTF8();
 
 	return true;
 }

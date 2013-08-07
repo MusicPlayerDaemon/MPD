@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ConfigPath.hxx"
+#include "fs/Path.hxx"
 #include "conf.h"
 
 #include <glib.h>
@@ -52,17 +53,25 @@ parse_path_quark(void)
 	return g_quark_from_static_string("path");
 }
 
-char *
-parsePath(const char *path, gcc_unused GError **error_r)
+Path
+ParsePath(const char *path, GError **error_r)
 {
 	assert(path != nullptr);
 	assert(error_r == nullptr || *error_r == nullptr);
+
+	Path path2 = Path::FromUTF8(path);
+	if (path2.IsNull()) {
+		g_set_error(error_r, parse_path_quark(), 0,
+			    "Failed to convert path to file system charset: %s",
+			    path);
+		return Path::Null();
+	}
 
 #ifndef WIN32
 	if (!g_path_is_absolute(path) && path[0] != '~') {
 		g_set_error(error_r, parse_path_quark(), 0,
 			    "not an absolute path: %s", path);
-		return nullptr;
+		return Path::Null();
 	} else if (path[0] == '~') {
 		const char *home;
 
@@ -73,7 +82,7 @@ parsePath(const char *path, gcc_unused GError **error_r)
 				if (!passwd) {
 					g_set_error(error_r, parse_path_quark(), 0,
 						    "no such user: %s", user);
-					return nullptr;
+					return Path::Null();
 				}
 
 				home = passwd->pw_dir;
@@ -83,7 +92,7 @@ parsePath(const char *path, gcc_unused GError **error_r)
 					g_set_error_literal(error_r, parse_path_quark(), 0,
 							    "problems getting home "
 							    "for current user");
-					return nullptr;
+					return Path::Null();
 				}
 			}
 
@@ -101,7 +110,7 @@ parsePath(const char *path, gcc_unused GError **error_r)
 				g_set_error(error_r, parse_path_quark(), 0,
 					    "no such user: %s", user);
 				g_free(user);
-				return nullptr;
+				return Path::Null();
 			}
 
 			g_free(user);
@@ -110,10 +119,10 @@ parsePath(const char *path, gcc_unused GError **error_r)
 			path = slash;
 		}
 
-		return g_strconcat(home, path, nullptr);
+		return Path::Build(home, path2);
 	} else {
 #endif
-		return g_strdup(path);
+		return path2;
 #ifndef WIN32
 	}
 #endif

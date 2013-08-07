@@ -111,16 +111,15 @@ glue_daemonize_init(const struct options *options, GError **error_r)
 {
 	GError *error = NULL;
 
-	char *pid_file = config_dup_path(CONF_PID_FILE, &error);
-	if (pid_file == NULL && error != NULL) {
+	Path pid_file = config_get_path(CONF_PID_FILE, &error);
+	if (pid_file.IsNull() && error != NULL) {
 		g_propagate_error(error_r, error);
 		return false;
 	}
 
 	daemonize_init(config_get_string(CONF_USER, NULL),
 		       config_get_string(CONF_GROUP, NULL),
-		       pid_file);
-	g_free(pid_file);
+		       std::move(pid_file));
 
 	if (options->kill)
 		daemonize_kill();
@@ -132,28 +131,22 @@ static bool
 glue_mapper_init(GError **error_r)
 {
 	GError *error = NULL;
-	char *music_dir = config_dup_path(CONF_MUSIC_DIR, &error);
-	if (music_dir == NULL && error != NULL) {
+	Path music_dir = config_get_path(CONF_MUSIC_DIR, &error);
+	if (music_dir.IsNull() && error != NULL) {
 		g_propagate_error(error_r, error);
 		return false;
 	}
 
-	char *playlist_dir = config_dup_path(CONF_PLAYLIST_DIR, &error);
-	if (playlist_dir == NULL && error != NULL) {
+	Path playlist_dir = config_get_path(CONF_PLAYLIST_DIR, &error);
+	if (playlist_dir.IsNull() && error != NULL) {
 		g_propagate_error(error_r, error);
 		return false;
 	}
 
-	if (music_dir == NULL)
-		music_dir = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_MUSIC));
+	if (music_dir.IsNull())
+		music_dir = Path::FromUTF8(g_get_user_special_dir(G_USER_DIRECTORY_MUSIC));
 
-	if (!mapper_init(music_dir, playlist_dir, &error)) {
-		g_propagate_error(error_r, error);
-		return false;
-	}
-
-	g_free(music_dir);
-	g_free(playlist_dir);
+	mapper_init(std::move(music_dir), std::move(playlist_dir));
 	return true;
 }
 
@@ -213,14 +206,12 @@ glue_sticker_init(void)
 {
 #ifdef ENABLE_SQLITE
 	GError *error = NULL;
-	char *sticker_file = config_dup_path(CONF_STICKER_FILE, &error);
-	if (sticker_file == NULL && error != NULL)
+	Path sticker_file = config_get_path(CONF_STICKER_FILE, &error);
+	if (sticker_file.IsNull() && error != NULL)
 		FatalError(error);
 
-	if (!sticker_global_init(sticker_file, &error))
+	if (!sticker_global_init(std::move(sticker_file), &error))
 		FatalError(error);
-
-	g_free(sticker_file);
 #endif
 }
 
@@ -229,8 +220,8 @@ glue_state_file_init(GError **error_r)
 {
 	GError *error = NULL;
 
-	char *path = config_dup_path(CONF_STATE_FILE, &error);
-	if (path == nullptr) {
+	Path path_fs = config_get_path(CONF_STATE_FILE, &error);
+	if (path_fs.IsNull()) {
 		if (error != nullptr) {
 			g_propagate_error(error_r, error);
 			return false;
@@ -239,19 +230,14 @@ glue_state_file_init(GError **error_r)
 		return true;
 	}
 
-	Path path_fs = Path::FromUTF8(path);
-
 	if (path_fs.IsNull()) {
-		g_free(path);
 		g_set_error(error_r, main_quark(), 0,
 			    "Failed to convert state file path to FS encoding");
 		return false;
 	}
 
-	state_file = new StateFile(std::move(path_fs), path,
+	state_file = new StateFile(std::move(path_fs),
 				   *instance->partition, *main_loop);
-	g_free(path);
-
 	state_file->Read();
 	return true;
 }

@@ -104,52 +104,40 @@ check_directory(const char *path_utf8, const Path &path_fs)
 		g_warning("No permission to read directory: %s", path_utf8);
 }
 
-static bool
-mapper_set_music_dir(const char *path_utf8, GError **error_r)
+static void
+mapper_set_music_dir(Path &&path)
 {
-	music_dir_fs = Path::FromUTF8(path_utf8);
-	if (music_dir_fs.IsNull()) {
-		g_set_error(error_r, mapper_quark(), 0,
-			    "Failed to convert music path to FS encoding");
-		return false;
-	}
+	assert(!path.IsNull());
 
+	music_dir_fs = path;
 	music_dir_fs_length = music_dir_fs.length();
 
-	music_dir_utf8 = strdup_chop_slash(path_utf8);
+	const auto utf8 = music_dir_fs.ToUTF8();
+	music_dir_utf8 = strdup_chop_slash(utf8.c_str());
 	music_dir_utf8_length = strlen(music_dir_utf8);
 
-	check_directory(path_utf8, music_dir_fs);
-
-	return true;
+	check_directory(music_dir_utf8, music_dir_fs);
 }
 
-static bool
-mapper_set_playlist_dir(const char *path_utf8, GError **error_r)
+static void
+mapper_set_playlist_dir(Path &&path)
 {
-	playlist_dir_fs = Path::FromUTF8(path_utf8);
-	if (playlist_dir_fs.IsNull()) {
-		g_set_error(error_r, mapper_quark(), 0,
-			    "Failed to convert playlist path to FS encoding");
-		return false;
-	}
+	assert(!path.IsNull());
 
-	check_directory(path_utf8, playlist_dir_fs);
-	return true;
+	playlist_dir_fs = path;
+
+	const auto utf8 = playlist_dir_fs.ToUTF8();
+	check_directory(utf8.c_str(), playlist_dir_fs);
 }
 
-bool mapper_init(const char *_music_dir, const char *_playlist_dir,
-		 GError **error_r)
+void
+mapper_init(Path &&_music_dir, Path &&_playlist_dir)
 {
-	if (_music_dir != NULL)
-		if (!mapper_set_music_dir(_music_dir, error_r))
-			return false;
+	if (!_music_dir.IsNull())
+		mapper_set_music_dir(std::move(_music_dir));
 
-	if (_playlist_dir != NULL)
-		if (!mapper_set_playlist_dir(_playlist_dir, error_r))
-			return false;
-
-	return true;
+	if (!_playlist_dir.IsNull())
+		mapper_set_playlist_dir(std::move(_playlist_dir));
 }
 
 void mapper_finish(void)
