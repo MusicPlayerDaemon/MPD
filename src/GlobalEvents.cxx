@@ -19,6 +19,8 @@
 
 #include "config.h"
 #include "GlobalEvents.hxx"
+#include "util/Manual.hxx"
+#include "event/DeferredMonitor.hxx"
 #include "gcc.h"
 
 #include <atomic>
@@ -30,7 +32,13 @@
 #define G_LOG_DOMAIN "global_events"
 
 namespace GlobalEvents {
-	static guint source_id;
+	class Monitor final : public DeferredMonitor {
+	protected:
+		virtual void Run() override;
+	};
+
+	static Manual<Monitor> monitor;
+
 	static std::atomic_uint flags;
 	static Handler handlers[MAX];
 }
@@ -47,29 +55,27 @@ InvokeGlobalEvent(GlobalEvents::Event event)
 	GlobalEvents::handlers[event]();
 }
 
-static gboolean
-GlobalEventCallback(gcc_unused gpointer data)
+void
+GlobalEvents::Monitor::Run()
 {
-	const unsigned flags = GlobalEvents::flags.exchange(0);
+	const unsigned f = flags.exchange(0);
 
-	for (unsigned i = 0; i < GlobalEvents::MAX; ++i)
-		if (flags & (1u << i))
+	for (unsigned i = 0; i < MAX; ++i)
+		if (f & (1u << i))
 			/* invoke the event handler */
-			InvokeGlobalEvent(GlobalEvents::Event(i));
-
-	return false;
+			InvokeGlobalEvent(Event(i));
 }
 
 void
 GlobalEvents::Initialize()
 {
+	monitor.Construct();
 }
 
 void
 GlobalEvents::Deinitialize()
 {
-	if (source_id != 0)
-		g_source_remove(source_id);
+	monitor.Destruct();
 }
 
 void
@@ -88,5 +94,5 @@ GlobalEvents::Emit(Event event)
 
 	const unsigned mask = 1u << unsigned(event);
 	if (GlobalEvents::flags.fetch_or(mask) == 0)
-		source_id = g_idle_add(GlobalEventCallback, nullptr);
+		monitor->Schedule();
 }
