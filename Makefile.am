@@ -53,7 +53,6 @@ src_mpd_LDADD = \
 mpd_headers = \
 	src/check.h \
 	src/ack.h \
-	src/filter_internal.h \
 	src/command.h \
 	src/conf.h \
 	src/gerror.h \
@@ -61,8 +60,6 @@ mpd_headers = \
 	src/gcc.h \
 	src/input_stream.h \
 	src/TextInputStream.hxx \
-	src/ls.h \
-	src/mixer_plugin.h \
 	src/AudioCompress/config.h \
 	src/AudioCompress/compress.h \
 	src/open.h \
@@ -75,7 +72,6 @@ mpd_headers = \
 	src/replay_gain_info.h \
 	src/TimePrint.cxx src/TimePrint.hxx \
 	src/stats.h \
-	src/tag_internal.h \
 	src/Timer.hxx \
 	src/mpd_error.h
 
@@ -136,6 +132,7 @@ src_mpd_SOURCES = \
 	src/ExcludeList.cxx src/ExcludeList.hxx \
 	src/FilterConfig.cxx src/FilterConfig.hxx \
 	src/FilterPlugin.cxx src/FilterPlugin.hxx \
+	src/FilterInternal.hxx \
 	src/FilterRegistry.cxx src/FilterRegistry.hxx \
 	src/UpdateGlue.cxx src/UpdateGlue.hxx \
 	src/UpdateQueue.cxx src/UpdateQueue.hxx \
@@ -163,7 +160,7 @@ src_mpd_SOURCES = \
 	src/ClientFile.cxx src/ClientFile.hxx \
 	src/Listen.cxx src/Listen.hxx \
 	src/Log.cxx src/Log.hxx \
-	src/ls.cxx \
+	src/ls.cxx src/ls.hxx \
 	src/io_error.h \
 	src/IOThread.cxx src/IOThread.hxx \
 	src/Main.cxx src/Main.hxx \
@@ -194,7 +191,7 @@ src_mpd_SOURCES = \
 	src/PlaylistQueue.cxx src/PlaylistQueue.hxx \
 	src/PlaylistVector.cxx src/PlaylistVector.hxx \
 	src/PlaylistInfo.hxx \
-	src/PlaylistDatabase.cxx \
+	src/PlaylistDatabase.cxx src/PlaylistDatabase.hxx \
 	src/IdTable.hxx \
 	src/Queue.cxx src/Queue.hxx \
 	src/QueuePrint.cxx src/QueuePrint.hxx \
@@ -211,6 +208,7 @@ src_mpd_SOURCES = \
 	src/Stats.cxx \
 	src/TagType.h \
 	src/Tag.cxx src/Tag.hxx \
+	src/TagInternal.hxx \
 	src/TagTable.hxx \
 	src/TagNames.c \
 	src/TagPool.cxx src/TagPool.hxx \
@@ -517,6 +515,7 @@ if HAVE_OPUS
 libdecoder_plugins_a_SOURCES += \
 	src/decoder/OggUtil.cxx \
 	src/decoder/OggUtil.hxx \
+	src/decoder/OggSyncState.hxx \
 	src/decoder/OggFind.cxx src/decoder/OggFind.hxx \
 	src/decoder/OpusReader.hxx \
 	src/decoder/OpusHead.hxx \
@@ -807,6 +806,7 @@ MIXER_LIBS = \
 	$(PULSE_LIBS)
 
 MIXER_API_SRC = \
+	src/MixerPlugin.hxx \
 	src/MixerList.hxx \
 	src/MixerControl.cxx src/MixerControl.hxx \
 	src/MixerType.cxx src/MixerType.hxx \
