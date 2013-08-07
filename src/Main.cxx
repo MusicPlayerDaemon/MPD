@@ -54,9 +54,9 @@
 #include "DecoderList.hxx"
 #include "AudioConfig.hxx"
 #include "pcm/PcmResample.hxx"
+#include "Daemon.hxx"
 
 extern "C" {
-#include "daemon.h"
 #include "stats.h"
 }
 

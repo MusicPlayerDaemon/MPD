@@ -62,7 +62,6 @@ mpd_headers = \
 	src/TextInputStream.hxx \
 	src/ls.h \
 	src/mixer_plugin.h \
-	src/daemon.h \
 	src/AudioCompress/config.h \
 	src/AudioCompress/compress.h \
 	src/open.h \
@@ -173,7 +172,7 @@ src_mpd_SOURCES = \
 	src/Instance.cxx src/Instance.hxx \
 	src/Win32Main.cxx \
 	src/GlobalEvents.cxx src/GlobalEvents.hxx \
-	src/daemon.c \
+	src/Daemon.cxx src/Daemon.hxx \
 	src/AudioCompress/compress.c \
 	src/MusicBuffer.cxx src/MusicBuffer.hxx \
 	src/MusicPipe.cxx src/MusicPipe.hxx \

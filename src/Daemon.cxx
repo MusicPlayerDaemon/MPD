@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "daemon.h"
+#include "Daemon.hxx"
 
 #include <glib.h>
 
@@ -64,11 +64,11 @@ daemonize_kill(void)
 	FILE *fp;
 	int pid, ret;
 
-	if (pidfile == NULL)
+	if (pidfile == nullptr)
 		MPD_ERROR("no pid_file specified in the config file");
 
 	fp = fopen(pidfile, "r");
-	if (fp == NULL)
+	if (fp == nullptr)
 		MPD_ERROR("unable to open pid file \"%s\": %s",
 			  pidfile, g_strerror(errno));
 
@@ -96,7 +96,7 @@ daemonize_close_stdin(void)
 void
 daemonize_set_user(void)
 {
-	if (user_name == NULL)
+	if (user_name == nullptr)
 		return;
 
 	/* set gid */
@@ -131,7 +131,7 @@ daemonize_detach(void)
 {
 	/* flush all file handles before duplicating the buffers */
 
-	fflush(NULL);
+	fflush(nullptr);
 
 #ifdef HAVE_DAEMON
 
@@ -171,9 +171,9 @@ daemonize_detach(void)
 void
 daemonize(bool detach)
 {
-	FILE *fp = NULL;
+	FILE *fp = nullptr;
 
-	if (pidfile != NULL) {
+	if (pidfile != nullptr) {
 		/* do this before daemon'izing so we can fail gracefully if we can't
 		 * write to the pid file */
 		g_debug("opening pid file");
@@ -187,7 +187,7 @@ daemonize(bool detach)
 	if (detach)
 		daemonize_detach();
 
-	if (pidfile != NULL) {
+	if (pidfile != nullptr) {
 		g_debug("writing pid file");
 		fprintf(fp, "%lu\n", (unsigned long)getpid());
 		fclose(fp);
@@ -199,7 +199,7 @@ daemonize_init(const char *user, const char *group, const char *_pidfile)
 {
 	if (user) {
 		struct passwd *pwd = getpwnam(user);
-		if (!pwd)
+		if (pwd == nullptr)
 			MPD_ERROR("no such user \"%s\"", user);
 
 		user_uid = pwd->pw_uid;
@@ -212,8 +212,8 @@ daemonize_init(const char *user, const char *group, const char *_pidfile)
 	}
 
 	if (group) {
-		struct group *grp = grp = getgrnam(group);
-		if (!grp)
+		struct group *grp = getgrnam(group);
+		if (grp == nullptr)
 			MPD_ERROR("no such group \"%s\"", group);
 		user_gid = grp->gr_gid;
 		had_group = true;
@@ -226,7 +226,7 @@ daemonize_init(const char *user, const char *group, const char *_pidfile)
 void
 daemonize_finish(void)
 {
-	if (pidfile != NULL)
+	if (pidfile != nullptr)
 		unlink(pidfile);
 
 	g_free(user_name);
