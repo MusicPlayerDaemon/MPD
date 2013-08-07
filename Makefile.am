@@ -288,14 +288,14 @@ libsystem_a_SOURCES = \
 	src/system/SocketUtil.cxx src/system/SocketUtil.hxx \
 	src/system/SocketError.hxx \
 	src/system/resolver.c src/system/resolver.h \
+	src/system/EventPipe.cxx src/system/EventPipe.hxx \
+	src/system/EventFD.cxx src/system/EventFD.hxx \
 	src/system/SignalFD.cxx src/system/SignalFD.hxx \
 	src/system/clock.c src/system/clock.h
 
 # Event loop library
 
 libevent_a_SOURCES = \
-	src/event/EventPipe.cxx src/event/EventPipe.hxx \
-	src/event/EventFD.cxx src/event/EventFD.hxx \
 	src/event/WakeFD.hxx \
 	src/event/SignalMonitor.hxx src/event/SignalMonitor.cxx \
 	src/event/TimeoutMonitor.hxx src/event/TimeoutMonitor.cxx \

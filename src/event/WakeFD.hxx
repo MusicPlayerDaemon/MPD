@@ -25,10 +25,10 @@
 #include <assert.h>
 
 #ifdef USE_EVENTFD
-#include "EventFD.hxx"
+#include "system/EventFD.hxx"
 #define WakeFD EventFD
 #else
-#include "EventPipe.hxx"
+#include "system/EventPipe.hxx"
 #define WakeFD EventPipe
 #endif
 
