@@ -32,7 +32,7 @@ DeferredMonitor::Cancel()
 void
 DeferredMonitor::Schedule()
 {
-	const unsigned id = g_idle_add(Callback, this);
+	const unsigned id = loop.AddIdle(Callback, this);
 	const auto old_id = source_id.exchange(id);
 	if (old_id != 0)
 		g_source_remove(old_id);

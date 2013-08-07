@@ -33,6 +33,9 @@
 
 namespace GlobalEvents {
 	class Monitor final : public DeferredMonitor {
+	public:
+		Monitor(EventLoop &_loop):DeferredMonitor(_loop) {}
+
 	protected:
 		virtual void Run() override;
 	};
@@ -67,9 +70,9 @@ GlobalEvents::Monitor::Run()
 }
 
 void
-GlobalEvents::Initialize()
+GlobalEvents::Initialize(EventLoop &loop)
 {
-	monitor.Construct();
+	monitor.Construct(loop);
 }
 
 void

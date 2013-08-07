@@ -26,15 +26,19 @@
 
 #include <atomic>
 
+class EventLoop;
+
 /**
  * Defer execution of an event into an #EventLoop.
  */
 class DeferredMonitor {
+	EventLoop &loop;
+
 	std::atomic<guint> source_id;
 
 public:
-	DeferredMonitor()
-		:source_id(0) {}
+	DeferredMonitor(EventLoop &_loop)
+		:loop(_loop), source_id(0) {}
 
 	~DeferredMonitor() {
 		Cancel();

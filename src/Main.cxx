@@ -438,7 +438,7 @@ int mpd_main(int argc, char *argv[])
 
 	daemonize_set_user();
 
-	GlobalEvents::Initialize();
+	GlobalEvents::Initialize(*main_loop);
 	GlobalEvents::Register(GlobalEvents::IDLE, idle_event_emitted);
 #ifdef WIN32
 	GlobalEvents::Register(GlobalEvents::SHUTDOWN, shutdown_event_emitted);

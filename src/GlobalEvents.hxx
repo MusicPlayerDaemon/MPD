@@ -29,6 +29,8 @@
 #endif
 #endif
 
+class EventLoop;
+
 namespace GlobalEvents {
 	enum Event {
 		/** database update was finished */
@@ -59,7 +61,7 @@ namespace GlobalEvents {
 
 	typedef void (*Handler)();
 
-	void Initialize();
+	void Initialize(EventLoop &loop);
 
 	void Deinitialize();
 
