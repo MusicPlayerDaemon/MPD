@@ -20,6 +20,8 @@
 #include "config.h"
 #include "ClientInternal.hxx"
 
+#include <glib.h>
+
 #include <string.h>
 #include <stdio.h>
 
