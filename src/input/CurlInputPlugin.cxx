@@ -26,7 +26,7 @@
 #include "Tag.hxx"
 #include "IcyMetaDataParser.hxx"
 #include "event/MultiSocketMonitor.hxx"
-#include "event/Loop.hxx"
+#include "event/Call.hxx"
 #include "IOThread.hxx"
 
 #include <assert.h>
@@ -252,19 +252,15 @@ input_curl_find_request(CURL *easy)
 	return NULL;
 }
 
-static gpointer
-input_curl_resume(gpointer data)
+static void
+input_curl_resume(struct input_curl *c)
 {
 	assert(io_thread_inside());
-
-	struct input_curl *c = (struct input_curl *)data;
 
 	if (c->paused) {
 		c->paused = false;
 		curl_easy_pause(c->easy, CURLPAUSE_CONT);
 	}
-
-	return NULL;
 }
 
 /**
@@ -358,21 +354,6 @@ input_curl_easy_add(struct input_curl *c, GError **error_r)
 	return true;
 }
 
-struct easy_add_params {
-	struct input_curl *c;
-	GError **error_r;
-};
-
-static gpointer
-input_curl_easy_add_callback(gpointer data)
-{
-	const struct easy_add_params *params =
-		(const struct easy_add_params *)data;
-
-	bool success = input_curl_easy_add(params->c, params->error_r);
-	return GUINT_TO_POINTER(success);
-}
-
 /**
  * Call input_curl_easy_add() in the I/O thread.  May be called from
  * any thread.  Caller must not hold a mutex.
@@ -383,14 +364,11 @@ input_curl_easy_add_indirect(struct input_curl *c, GError **error_r)
 	assert(c != NULL);
 	assert(c->easy != NULL);
 
-	struct easy_add_params params = {
-		c,
-		error_r,
-	};
-
-	gpointer result =
-		io_thread_call(input_curl_easy_add_callback, &params);
-	return GPOINTER_TO_UINT(result);
+	bool result;
+	BlockingCall(io_thread_get(), [c, error_r, &result](){
+			result = input_curl_easy_add(c, error_r);
+		});
+	return result;
 }
 
 /**
@@ -421,17 +399,6 @@ input_curl_easy_free(struct input_curl *c)
 	c->range = NULL;
 }
 
-static gpointer
-input_curl_easy_free_callback(gpointer data)
-{
-	struct input_curl *c = (struct input_curl *)data;
-
-	input_curl_easy_free(c);
-	curl.sockets->InvalidateSockets();
-
-	return NULL;
-}
-
 /**
  * Frees the current "libcurl easy" handle, and everything associated
  * with it.
@@ -441,7 +408,11 @@ input_curl_easy_free_callback(gpointer data)
 static void
 input_curl_easy_free_indirect(struct input_curl *c)
 {
-	io_thread_call(input_curl_easy_free_callback, c);
+	BlockingCall(io_thread_get(), [c](){
+			input_curl_easy_free(c);
+			curl.sockets->InvalidateSockets();
+		});
+
 	assert(c->easy == NULL);
 }
 
@@ -654,20 +625,14 @@ input_curl_init(const config_param &param,
 	return true;
 }
 
-static gpointer
-curl_destroy_sources(gcc_unused gpointer data)
-{
-	delete curl.sockets;
-
-	return NULL;
-}
-
 static void
 input_curl_finish(void)
 {
 	assert(curl.requests.empty());
 
-	io_thread_call(curl_destroy_sources, NULL);
+	BlockingCall(io_thread_get(), [](){
+			delete curl.sockets;
+		});
 
 	curl_multi_cleanup(curl.multi);
 
@@ -854,7 +819,11 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size,
 
 	if (c->paused && curl_total_buffer_size(c) < CURL_RESUME_AT) {
 		c->base.mutex.unlock();
-		io_thread_call(input_curl_resume, c);
+
+		BlockingCall(io_thread_get(), [c](){
+				input_curl_resume(c);
+			});
+
 		c->base.mutex.lock();
 	}
 

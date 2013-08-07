@@ -17,49 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_IO_THREAD_HXX
-#define MPD_IO_THREAD_HXX
+#ifndef MPD_EVENT_CALL_HXX
+#define MPD_EVENT_CALL_HXX
 
-#include "gcc.h"
+#include "check.h"
 
-#include <glib.h>
+#include <functional>
 
 class EventLoop;
 
-void
-io_thread_init(void);
-
-bool
-io_thread_start(GError **error_r);
-
 /**
- * Run the I/O event loop synchronously in the current thread.  This
- * can be called instead of io_thread_start().  For testing purposes
- * only.
+ * Call the given function in the context of the #EventLoop, and wait
+ * for it to finish.
  */
 void
-io_thread_run(void);
+BlockingCall(EventLoop &loop, std::function<void()> &&f);
 
-/**
- * Ask the I/O thread to quit, but does not wait for it.  Usually, you
- * don't need to call this function, because io_thread_deinit()
- * includes this.
- */
-void
-io_thread_quit(void);
-
-void
-io_thread_deinit(void);
-
-gcc_pure
-EventLoop &
-io_thread_get();
-
-/**
- * Is the current thread the I/O thread?
- */
-gcc_pure
-bool
-io_thread_inside(void);
-
-#endif
+#endif /* MAIN_NOTIFY_H */
