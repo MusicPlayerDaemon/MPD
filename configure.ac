@@ -142,6 +142,7 @@ AC_SEARCH_LIBS([gethostbyname], [nsl])
 AC_CHECK_FUNCS(pipe2 accept4)
 MPD_OPTIONAL_FUNC(eventfd, eventfd, USE_EVENTFD)
 MPD_OPTIONAL_FUNC(signalfd, signalfd, USE_SIGNALFD)
+MPD_OPTIONAL_FUNC(epoll, epoll_create1, USE_EPOLL)
 
 AC_SEARCH_LIBS([exp], [m],,
 	[AC_MSG_ERROR([exp() not found])])
