@@ -135,6 +135,20 @@ SocketMonitor::Close()
 	close_socket(Steal());
 }
 
+void
+SocketMonitor::Schedule(unsigned flags)
+{
+	assert(IsDefined());
+
+	if (flags == GetScheduledFlags())
+		return;
+
+	poll.events = flags;
+	poll.revents &= flags;
+
+	loop.WakeUp();
+}
+
 SocketMonitor::ssize_t
 SocketMonitor::Read(void *data, size_t length)
 {
@@ -162,12 +176,4 @@ SocketMonitor::Write(const void *data, size_t length)
 #endif
 
 	return send(Get(), (const char *)data, length, flags);
-}
-
-void
-SocketMonitor::CommitEventFlags()
-{
-	assert(IsDefined());
-
-	loop.WakeUp();
 }

@@ -86,37 +86,32 @@ public:
 
 	void Close();
 
-	void Schedule(unsigned flags) {
+	unsigned GetScheduledFlags() const {
 		assert(IsDefined());
 
-		poll.events = flags;
-		poll.revents &= flags;
-		CommitEventFlags();
+		return poll.events;
 	}
 
+	void Schedule(unsigned flags);
+
 	void Cancel() {
-		poll.events = 0;
-		CommitEventFlags();
+		Schedule(0);
 	}
 
 	void ScheduleRead() {
-		poll.events |= READ|HANGUP|ERROR;
-		CommitEventFlags();
+		Schedule(GetScheduledFlags() | READ | HANGUP | ERROR);
 	}
 
 	void ScheduleWrite() {
-		poll.events |= WRITE;
-		CommitEventFlags();
+		Schedule(GetScheduledFlags() | WRITE);
 	}
 
 	void CancelRead() {
-		poll.events &= ~(READ|HANGUP|ERROR);
-		CommitEventFlags();
+		Schedule(GetScheduledFlags() & ~(READ|HANGUP|ERROR));
 	}
 
 	void CancelWrite() {
-		poll.events &= ~WRITE;
-		CommitEventFlags();
+		Schedule(GetScheduledFlags() & ~WRITE);
 	}
 
 	ssize_t Read(void *data, size_t length);
@@ -136,8 +131,6 @@ public:
 				 gpointer user_data);
 
 private:
-	void CommitEventFlags();
-
 	bool Check() const {
 		assert(IsDefined());
 
