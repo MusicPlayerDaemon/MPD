@@ -138,6 +138,8 @@ SocketMonitor::Close()
 SocketMonitor::ssize_t
 SocketMonitor::Read(void *data, size_t length)
 {
+	assert(IsDefined());
+
 	int flags = 0;
 #ifdef MSG_DONTWAIT
 	flags |= MSG_DONTWAIT;
@@ -149,6 +151,8 @@ SocketMonitor::Read(void *data, size_t length)
 SocketMonitor::ssize_t
 SocketMonitor::Write(const void *data, size_t length)
 {
+	assert(IsDefined());
+
 	int flags = 0;
 #ifdef MSG_NOSIGNAL
 	flags |= MSG_NOSIGNAL;
@@ -163,5 +167,7 @@ SocketMonitor::Write(const void *data, size_t length)
 void
 SocketMonitor::CommitEventFlags()
 {
+	assert(IsDefined());
+
 	loop.WakeUp();
 }

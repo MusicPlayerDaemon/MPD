@@ -87,6 +87,8 @@ public:
 	void Close();
 
 	void Schedule(unsigned flags) {
+		assert(IsDefined());
+
 		poll.events = flags;
 		poll.revents &= flags;
 		CommitEventFlags();
@@ -137,10 +139,14 @@ private:
 	void CommitEventFlags();
 
 	bool Check() const {
+		assert(IsDefined());
+
 		return (poll.revents & poll.events) != 0;
 	}
 
 	void Dispatch() {
+		assert(IsDefined());
+
 		OnSocketReady(poll.revents & poll.events);
 	}
 };
