@@ -22,33 +22,22 @@
 
 #include "check.h"
 
-#include <assert.h>
-
 /**
  * A class that wraps eventfd().
  *
- * For optimization purposes, this class does not have a constructor
- * or a destructor.
+ * Errors in the constructor are fatal.
  */
 class EventFD {
 	int fd;
 
 public:
-#ifdef NDEBUG
-	EventFD() = default;
-#else
-	EventFD():fd(-1) {}
-#endif
+	EventFD();
+	~EventFD();
 
 	EventFD(const EventFD &other) = delete;
 	EventFD &operator=(const EventFD &other) = delete;
 
-	bool Create();
-	void Destroy();
-
 	int Get() const {
-		assert(fd >= 0);
-
 		return fd;
 	}
 

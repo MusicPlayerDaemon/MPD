@@ -20,8 +20,10 @@
 #include "config.h"
 #include "EventPipe.hxx"
 #include "system/fd_util.h"
+#include "system/FatalError.hxx"
 #include "gcc.h"
 
+#include <assert.h>
 #include <unistd.h>
 
 #ifdef WIN32
@@ -34,21 +36,18 @@
 static bool PoorSocketPair(int fd[2]);
 #endif
 
-bool
-EventPipe::Create()
+EventPipe::EventPipe()
 {
-	assert(fds[0] == -1);
-	assert(fds[1] == -1);
-
 #ifdef WIN32
-	return PoorSocketPair(fds);
+	bool success = PoorSocketPair(fds);
 #else
-	return pipe_cloexec_nonblock(fds) >= 0;
+	bool success = pipe_cloexec_nonblock(fds) >= 0;
 #endif
+	if (!success)
+		FatalSystemError("pipe() has failed");
 }
 
-void
-EventPipe::Destroy()
+EventPipe::~EventPipe()
 {
 #ifdef WIN32
 	closesocket(fds[0]);
@@ -56,11 +55,6 @@ EventPipe::Destroy()
 #else
 	close(fds[0]);
 	close(fds[1]);
-
-#ifndef NDEBUG
-	fds[0] = -1;
-	fds[1] = -1;
-#endif
 #endif
 }
 

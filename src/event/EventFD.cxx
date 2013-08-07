@@ -21,33 +21,26 @@
 #ifdef USE_EVENTFD
 #include "EventFD.hxx"
 #include "system/fd_util.h"
+#include "system/FatalError.hxx"
 #include "gcc.h"
 
+#include <assert.h>
 #include <unistd.h>
 
 #include <sys/eventfd.h>
 
-#ifdef WIN32
-static bool PoorSocketPair(int fd[2]);
-#endif
-
-bool
-EventFD::Create()
+EventFD::EventFD()
+	:fd(eventfd_cloexec_nonblock(0, 0))
 {
-	assert(fd == -1);
-
-	fd = eventfd_cloexec_nonblock(0, 0);
-	return fd >= 0;
+	if (fd < 0)
+		FatalSystemError("eventfd() failed");
 }
 
-void
-EventFD::Destroy()
+EventFD::~EventFD()
 {
-	close(fd);
+	assert(fd >= 0);
 
-#ifndef NDEBUG
-	fd = -1;
-#endif
+	close(fd);
 }
 
 bool

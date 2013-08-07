@@ -22,34 +22,22 @@
 
 #include "check.h"
 
-#include <assert.h>
-
 /**
  * A pipe that can be used to trigger an event to the read side.
  *
- * For optimization purposes, this class does not have a constructor
- * or a destructor.
+ * Errors in the constructor are fatal.
  */
 class EventPipe {
 	int fds[2];
 
 public:
-#ifdef NDEBUG
-	EventPipe() = default;
-#else
-	EventPipe():fds{-1, -1} {};
-#endif
+	EventPipe();
+	~EventPipe();
 
 	EventPipe(const EventPipe &other) = delete;
 	EventPipe &operator=(const EventPipe &other) = delete;
 
-	bool Create();
-	void Destroy();
-
 	int Get() const {
-		assert(fds[0] >= 0);
-		assert(fds[1] >= 0);
-
 		return fds[0];
 	}
 
