@@ -22,7 +22,11 @@
 
 #include "check.h"
 
+#ifdef USE_EPOLL
+#include <sys/epoll.h>
+#else
 #include <glib.h>
+#endif
 
 #include <type_traits>
 
@@ -40,29 +44,55 @@
 class EventLoop;
 
 class SocketMonitor {
+#ifdef USE_EPOLL
+#else
 	struct Source {
 		GSource base;
 
 		SocketMonitor *monitor;
 	};
+#endif
 
 	int fd;
 	EventLoop &loop;
+
+#ifdef USE_EPOLL
+	/**
+	 * A bit mask of events that is currently registered in the EventLoop.
+	 */
+	unsigned scheduled_flags;
+#else
 	Source *source;
 	GPollFD poll;
+#endif
 
 public:
+#ifdef USE_EPOLL
+	static constexpr unsigned READ = EPOLLIN;
+	static constexpr unsigned WRITE = EPOLLOUT;
+	static constexpr unsigned ERROR = EPOLLERR;
+	static constexpr unsigned HANGUP = EPOLLHUP;
+#else
 	static constexpr unsigned READ = G_IO_IN;
 	static constexpr unsigned WRITE = G_IO_OUT;
 	static constexpr unsigned ERROR = G_IO_ERR;
 	static constexpr unsigned HANGUP = G_IO_HUP;
+#endif
 
 	typedef std::make_signed<size_t>::type ssize_t;
 
+#ifdef USE_EPOLL
+	SocketMonitor(EventLoop &_loop)
+		:fd(-1), loop(_loop), scheduled_flags(0) {}
+
+	SocketMonitor(int _fd, EventLoop &_loop)
+		:fd(_fd), loop(_loop), scheduled_flags(0) {}
+#else
 	SocketMonitor(EventLoop &_loop)
 		:fd(-1), loop(_loop), source(nullptr) {}
 
 	SocketMonitor(int _fd, EventLoop &_loop);
+#endif
 
 	~SocketMonitor();
 
@@ -93,7 +123,11 @@ public:
 	unsigned GetScheduledFlags() const {
 		assert(IsDefined());
 
+#ifdef USE_EPOLL
+		return scheduled_flags;
+#else
 		return poll.events;
+#endif
 	}
 
 	void Schedule(unsigned flags);
@@ -128,6 +162,9 @@ protected:
 	virtual bool OnSocketReady(unsigned flags) = 0;
 
 public:
+#ifdef USE_EPOLL
+	void Dispatch(unsigned flags);
+#else
 	/* GSource callbacks */
 	static gboolean Prepare(GSource *source, gint *timeout_r);
 	static gboolean Check(GSource *source);
@@ -146,6 +183,7 @@ private:
 
 		OnSocketReady(poll.revents & poll.events);
 	}
+#endif
 };
 
 #endif

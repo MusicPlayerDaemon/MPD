@@ -25,6 +25,48 @@
 
 #include <assert.h>
 
+#ifdef USE_EPOLL
+
+MultiSocketMonitor::MultiSocketMonitor(EventLoop &_loop)
+	:IdleMonitor(_loop), TimeoutMonitor(_loop), ready(false) {
+}
+
+MultiSocketMonitor::~MultiSocketMonitor()
+{
+	// TODO
+}
+
+void
+MultiSocketMonitor::Prepare()
+{
+	int timeout_ms = PrepareSockets();
+	if (timeout_ms >= 0)
+		TimeoutMonitor::Schedule(timeout_ms);
+	else
+		TimeoutMonitor::Cancel();
+
+}
+
+void
+MultiSocketMonitor::OnIdle()
+{
+	if (ready) {
+		ready = false;
+		DispatchSockets();
+
+		/* TODO: don't refresh always; require users to call
+		   InvalidateSockets() */
+		refresh = true;
+	}
+
+	if (refresh) {
+		refresh = false;
+		Prepare();
+	}
+}
+
+#else
+
 /**
  * The vtable for our GSource implementation.  Unfortunately, we
  * cannot declare it "const", because g_source_new() takes a non-const
@@ -117,3 +159,5 @@ MultiSocketMonitor::Dispatch(GSource *_source,
 	monitor.Dispatch();
 	return true;
 }
+
+#endif

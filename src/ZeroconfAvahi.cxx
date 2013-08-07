@@ -41,7 +41,9 @@
 
 static char *avahiName;
 static int avahiRunning;
+#ifndef USE_EPOLL
 static AvahiGLibPoll *avahi_glib_poll;
+#endif
 static const AvahiPoll *avahi_poll;
 static AvahiClient *avahiClient;
 static AvahiEntryGroup *avahiGroup;
@@ -229,9 +231,14 @@ AvahiInit(EventLoop &loop, const char *serviceName)
 
 	avahiRunning = 1;
 
+#ifdef USE_EPOLL
+	// TODO
+	(void)loop;
+#else
 	avahi_glib_poll = avahi_glib_poll_new(loop.GetContext(),
 					      G_PRIORITY_DEFAULT);
 	avahi_poll = avahi_glib_poll_get(avahi_glib_poll);
+#endif
 
 	avahiClient = avahi_client_new(avahi_poll, AVAHI_CLIENT_NO_FAIL,
 				       avahiClientCallback, NULL, &error);
@@ -258,10 +265,14 @@ AvahiDeinit(void)
 		avahiClient = NULL;
 	}
 
+#ifdef USE_EPOLL
+	// TODO
+#else
 	if (avahi_glib_poll != NULL) {
 		avahi_glib_poll_free(avahi_glib_poll);
 		avahi_glib_poll = NULL;
 	}
+#endif
 
 	avahi_free(avahiName);
 	avahiName = NULL;

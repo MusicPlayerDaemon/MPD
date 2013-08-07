@@ -27,7 +27,11 @@
 
 #include <assert.h>
 
-class BlockingCallMonitor final : DeferredMonitor {
+class BlockingCallMonitor final
+#ifndef USE_EPOLL
+	: DeferredMonitor
+#endif
+{
 	const std::function<void()> f;
 
 	Mutex mutex;
@@ -36,13 +40,24 @@ class BlockingCallMonitor final : DeferredMonitor {
 	bool done;
 
 public:
+#ifdef USE_EPOLL
+	BlockingCallMonitor(EventLoop &loop, std::function<void()> &&_f)
+		:f(std::move(_f)), done(false) {
+		loop.AddCall([this](){
+				this->DoRun();
+			});
+	}
+#else
 	BlockingCallMonitor(EventLoop &_loop, std::function<void()> &&_f)
 		:DeferredMonitor(_loop), f(std::move(_f)), done(false) {}
+#endif
 
 	void Run() {
+#ifndef USE_EPOLL
 		assert(!done);
 
 		Schedule();
+#endif
 
 		mutex.lock();
 		while (!done)
@@ -50,8 +65,18 @@ public:
 		mutex.unlock();
 	}
 
+#ifndef USE_EPOLL
 private:
 	virtual void RunDeferred() override {
+		DoRun();
+	}
+
+#else
+public:
+#endif
+	void DoRun() {
+		assert(!done);
+
 		f();
 
 		mutex.lock();

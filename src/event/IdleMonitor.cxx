@@ -29,8 +29,13 @@ IdleMonitor::Cancel()
 	if (!IsActive())
 		return;
 
+#ifdef USE_EPOLL
+	active = false;
+	loop.RemoveIdle(*this);
+#else
 	g_source_remove(source_id);
 	source_id = 0;
+#endif
 }
 
 void
@@ -42,18 +47,31 @@ IdleMonitor::Schedule()
 		/* already scheduled */
 		return;
 
+#ifdef USE_EPOLL
+	active = true;
+	loop.AddIdle(*this);
+#else
 	source_id = loop.AddIdle(Callback, this);
+#endif
 }
 
 void
 IdleMonitor::Run()
 {
 	assert(loop.IsInside());
+
+#ifdef USE_EPOLL
+	assert(active);
+	active = false;
+#else
 	assert(source_id != 0);
 	source_id = 0;
+#endif
 
 	OnIdle();
 }
+
+#ifndef USE_EPOLL
 
 gboolean
 IdleMonitor::Callback(gpointer data)
@@ -62,3 +80,5 @@ IdleMonitor::Callback(gpointer data)
 	monitor.Run();
 	return false;
 }
+
+#endif

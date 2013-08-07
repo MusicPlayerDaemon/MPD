@@ -24,19 +24,43 @@
 void
 DeferredMonitor::Cancel()
 {
+#ifdef USE_EPOLL
+	pending = false;
+#else
 	const auto id = source_id.exchange(0);
 	if (id != 0)
 		g_source_remove(id);
+#endif
 }
 
 void
 DeferredMonitor::Schedule()
 {
+#ifdef USE_EPOLL
+	if (!pending.exchange(true))
+		fd.Write();
+#else
 	const unsigned id = loop.AddIdle(Callback, this);
 	const auto old_id = source_id.exchange(id);
 	if (old_id != 0)
 		g_source_remove(old_id);
+#endif
 }
+
+#ifdef USE_EPOLL
+
+bool
+DeferredMonitor::OnSocketReady(unsigned)
+{
+	fd.Read();
+
+	if (pending.exchange(false))
+		RunDeferred();
+
+	return true;
+}
+
+#else
 
 void
 DeferredMonitor::Run()
@@ -53,3 +77,5 @@ DeferredMonitor::Callback(gpointer data)
 	monitor.Run();
 	return false;
 }
+
+#endif

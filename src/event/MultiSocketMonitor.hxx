@@ -22,9 +22,16 @@
 
 #include "check.h"
 #include "gcc.h"
-#include "glib_compat.h"
 
+#ifdef USE_EPOLL
+#include "IdleMonitor.hxx"
+#include "TimeoutMonitor.hxx"
+#include "SocketMonitor.hxx"
+#else
+#include "glib_compat.h"
 #include <glib.h>
+
+#endif
 
 #include <forward_list>
 
@@ -44,7 +51,57 @@ class EventLoop;
 /**
  * Monitor multiple sockets.
  */
-class MultiSocketMonitor {
+class MultiSocketMonitor
+#ifdef USE_EPOLL
+	: private IdleMonitor, private TimeoutMonitor
+#endif
+{
+#ifdef USE_EPOLL
+	class SingleFD final : public SocketMonitor {
+		MultiSocketMonitor &multi;
+
+		unsigned revents;
+
+	public:
+		SingleFD(MultiSocketMonitor &_multi, int _fd, unsigned events)
+			:SocketMonitor(_fd, _multi.GetEventLoop()),
+			multi(_multi), revents(0) {
+			Schedule(events);
+		}
+
+		int GetFD() const {
+			return SocketMonitor::Get();
+		}
+
+		unsigned GetEvents() const {
+			return SocketMonitor::GetScheduledFlags();
+		}
+
+		void SetEvents(unsigned _events) {
+			revents &= _events;
+			SocketMonitor::Schedule(_events);
+		}
+
+		unsigned GetReturnedEvents() const {
+			return revents;
+		}
+
+		void ClearReturnedEvents() {
+			revents = 0;
+		}
+
+	protected:
+		virtual bool OnSocketReady(unsigned flags) override {
+			revents = flags;
+			multi.SetReady();
+			return true;
+		}
+	};
+
+	friend class SingleFD;
+
+	bool ready, refresh;
+#else
 	struct Source {
 		GSource base;
 
@@ -78,34 +135,57 @@ class MultiSocketMonitor {
 	EventLoop &loop;
 	Source *source;
 	uint64_t absolute_timeout_us;
+#endif
+
 	std::forward_list<SingleFD> fds;
 
 public:
+#ifdef USE_EPOLL
+	static constexpr unsigned READ = SocketMonitor::READ;
+	static constexpr unsigned WRITE = SocketMonitor::WRITE;
+	static constexpr unsigned ERROR = SocketMonitor::ERROR;
+	static constexpr unsigned HANGUP = SocketMonitor::HANGUP;
+#else
 	static constexpr unsigned READ = G_IO_IN;
 	static constexpr unsigned WRITE = G_IO_OUT;
 	static constexpr unsigned ERROR = G_IO_ERR;
 	static constexpr unsigned HANGUP = G_IO_HUP;
+#endif
 
 	MultiSocketMonitor(EventLoop &_loop);
 	~MultiSocketMonitor();
 
+#ifdef USE_EPOLL
+	using IdleMonitor::GetEventLoop;
+#else
 	EventLoop &GetEventLoop() {
 		return loop;
 	}
+#endif
 
+public:
+#ifndef USE_EPOLL
 	gcc_pure
 	uint64_t GetTime() const {
 		return g_source_get_time(&source->base);
 	}
+#endif
 
 	void InvalidateSockets() {
+#ifdef USE_EPOLL
+		refresh = true;
+		IdleMonitor::Schedule();
+#else
 		/* no-op because GLib always calls the GSource's
 		   "prepare" method before each poll() anyway */
+#endif
 	}
 
 	void AddSocket(int fd, unsigned events) {
 		fds.emplace_front(*this, fd, events);
+#ifndef USE_EPOLL
 		g_source_add_poll(&source->base, &fds.front().pfd);
+#endif
 	}
 
 	template<typename E>
@@ -120,7 +200,11 @@ public:
 				i->SetEvents(events);
 				prev = i;
 			} else {
+#ifdef USE_EPOLL
+				i->Steal();
+#else
 				g_source_remove_poll(&source->base, &i->pfd);
+#endif
 				fds.erase_after(prev);
 			}
 		}
@@ -133,6 +217,23 @@ protected:
 	virtual int PrepareSockets() = 0;
 	virtual void DispatchSockets() = 0;
 
+#ifdef USE_EPOLL
+private:
+	void SetReady() {
+		ready = true;
+		IdleMonitor::Schedule();
+	}
+
+	void Prepare();
+
+	virtual void OnTimeout() final {
+		SetReady();
+		IdleMonitor::Schedule();
+	}
+
+	virtual void OnIdle() final;
+
+#else
 public:
 	/* GSource callbacks */
 	static gboolean Prepare(GSource *source, gint *timeout_r);
@@ -147,6 +248,7 @@ private:
 	void Dispatch() {
 		DispatchSockets();
 	}
+#endif
 };
 
 #endif

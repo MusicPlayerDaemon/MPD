@@ -22,7 +22,9 @@
 
 #include "check.h"
 
+#ifndef USE_EPOLL
 #include <glib.h>
+#endif
 
 class EventLoop;
 
@@ -32,13 +34,26 @@ class EventLoop;
  * methods must be run from EventLoop's thread.
  */
 class IdleMonitor {
+#ifdef USE_EPOLL
+	friend class EventLoop;
+#endif
+
 	EventLoop &loop;
 
+#ifdef USE_EPOLL
+	bool active;
+#else
 	guint source_id;
+#endif
 
 public:
+#ifdef USE_EPOLL
+	IdleMonitor(EventLoop &_loop)
+		:loop(_loop), active(false) {}
+#else
 	IdleMonitor(EventLoop &_loop)
 		:loop(_loop), source_id(0) {}
+#endif
 
 	~IdleMonitor() {
 		Cancel();
@@ -49,7 +64,11 @@ public:
 	}
 
 	bool IsActive() const {
+#ifdef USE_EPOLL
+		return active;
+#else
 		return source_id != 0;
+#endif
 	}
 
 	void Schedule();
@@ -60,7 +79,9 @@ protected:
 
 private:
 	void Run();
+#ifndef USE_EPOLL
 	static gboolean Callback(gpointer data);
+#endif
 };
 
 #endif /* MAIN_NOTIFY_H */

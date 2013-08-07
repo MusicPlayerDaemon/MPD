@@ -24,10 +24,15 @@
 void
 TimeoutMonitor::Cancel()
 {
-	if (source != nullptr) {
+	if (IsActive()) {
+#ifdef USE_EPOLL
+		active = false;
+		loop.CancelTimer(*this);
+#else
 		g_source_destroy(source);
 		g_source_unref(source);
 		source = nullptr;
+#endif
 	}
 }
 
@@ -35,22 +40,38 @@ void
 TimeoutMonitor::Schedule(unsigned ms)
 {
 	Cancel();
+
+#ifdef USE_EPOLL
+	active = true;
+	loop.AddTimer(*this, ms);
+#else
 	source = loop.AddTimeout(ms, Callback, this);
+#endif
 }
 
 void
 TimeoutMonitor::ScheduleSeconds(unsigned s)
 {
 	Cancel();
+
+#ifdef USE_EPOLL
+	Schedule(s * 1000u);
+#else
 	source = loop.AddTimeoutSeconds(s, Callback, this);
+#endif
 }
 
 void
 TimeoutMonitor::Run()
 {
+#ifndef USE_EPOLL
 	Cancel();
+#endif
+
 	OnTimeout();
 }
+
+#ifndef USE_EPOLL
 
 gboolean
 TimeoutMonitor::Callback(gpointer data)
@@ -59,3 +80,5 @@ TimeoutMonitor::Callback(gpointer data)
 	monitor.Run();
 	return false;
 }
+
+#endif

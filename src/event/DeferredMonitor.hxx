@@ -21,8 +21,14 @@
 #define MPD_SOCKET_DEFERRED_MONITOR_HXX
 
 #include "check.h"
+#include "gcc.h"
 
+#ifdef USE_EPOLL
+#include "SocketMonitor.hxx"
+#include "WakeFD.hxx"
+#else
 #include <glib.h>
+#endif
 
 #include <atomic>
 
@@ -31,21 +37,47 @@ class EventLoop;
 /**
  * Defer execution of an event into an #EventLoop.
  */
-class DeferredMonitor {
+class DeferredMonitor
+#ifdef USE_EPOLL
+	: private SocketMonitor
+#endif
+{
+#ifdef USE_EPOLL
+	std::atomic_bool pending;
+	WakeFD fd;
+#else
 	EventLoop &loop;
 
 	std::atomic<guint> source_id;
+#endif
 
 public:
+#ifdef USE_EPOLL
+	DeferredMonitor(EventLoop &_loop)
+		:SocketMonitor(_loop), pending(false) {
+		SocketMonitor::Open(fd.Get());
+		SocketMonitor::Schedule(SocketMonitor::READ);
+	}
+#else
 	DeferredMonitor(EventLoop &_loop)
 		:loop(_loop), source_id(0) {}
+#endif
 
 	~DeferredMonitor() {
+#ifdef USE_EPOLL
+		/* avoid closing the WakeFD twice */
+		SocketMonitor::Steal();
+#else
 		Cancel();
+#endif
 	}
 
 	EventLoop &GetEventLoop() {
+#ifdef USE_EPOLL
+		return SocketMonitor::GetEventLoop();
+#else
 		return loop;
+#endif
 	}
 
 	void Schedule();
@@ -55,8 +87,12 @@ protected:
 	virtual void RunDeferred() = 0;
 
 private:
+#ifdef USE_EPOLL
+	virtual bool OnSocketReady(unsigned flags) override final;
+#else
 	void Run();
 	static gboolean Callback(gpointer data);
+#endif
 };
 
 #endif /* MAIN_NOTIFY_H */
