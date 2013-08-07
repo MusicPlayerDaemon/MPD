@@ -82,8 +82,6 @@ db_unlock(void)
 	db_mutex.unlock();
 }
 
-#ifdef __cplusplus
-
 class ScopeDatabaseLock {
 public:
 	ScopeDatabaseLock() {
@@ -94,7 +92,5 @@ public:
 		db_unlock();
 	}
 };
-
-#endif
 
 #endif

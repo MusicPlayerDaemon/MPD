@@ -26,10 +26,6 @@ struct PulseMixer;
 struct pa_context;
 struct pa_stream;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void
 pulse_mixer_on_connect(PulseMixer *pm, struct pa_context *context);
 
@@ -39,9 +35,5 @@ pulse_mixer_on_disconnect(PulseMixer *pm);
 void
 pulse_mixer_on_change(PulseMixer *pm,
 		      struct pa_context *context, struct pa_stream *stream);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

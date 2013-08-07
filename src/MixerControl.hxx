@@ -31,10 +31,6 @@ class Mixer;
 struct mixer_plugin;
 struct config_param;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 Mixer *
 mixer_new(const struct mixer_plugin *plugin, void *ao,
 	  const config_param &param,
@@ -61,9 +57,5 @@ mixer_get_volume(Mixer *mixer, GError **error_r);
 
 bool
 mixer_set_volume(Mixer *mixer, unsigned volume, GError **error_r);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

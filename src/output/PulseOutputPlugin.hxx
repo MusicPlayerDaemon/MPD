@@ -28,10 +28,6 @@ struct pa_cvolume;
 
 extern const struct audio_output_plugin pulse_output_plugin;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void
 pulse_output_lock(PulseOutput *po);
 
@@ -47,9 +43,5 @@ pulse_output_clear_mixer(PulseOutput *po, PulseMixer *pm);
 bool
 pulse_output_set_volume(PulseOutput *po,
 			const struct pa_cvolume *volume, GError **error_r);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

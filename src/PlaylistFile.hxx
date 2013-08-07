@@ -39,8 +39,6 @@ extern bool playlist_saveAbsolutePaths;
 void
 spl_global_init(void);
 
-#ifdef __cplusplus
-
 /**
  * Determines whether the specified string is a valid name for a
  * stored playlist.
@@ -79,7 +77,5 @@ spl_append_uri(const char *file, const char *utf8file, GError **error_r);
 
 bool
 spl_rename(const char *utf8from, const char *utf8to, GError **error_r);
-
-#endif
 
 #endif

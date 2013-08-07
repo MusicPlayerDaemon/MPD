@@ -23,28 +23,6 @@
 #include "gcc.h"
 
 /**
- * Remove the "const" attribute from a string pointer.  This is a
- * dirty hack, don't use it unless you know what you're doing!
- */
-gcc_const
-static inline char *
-deconst_string(const char *p)
-{
-#ifdef __cplusplus
-	return const_cast<char *>(p);
-#else
-	union {
-		const char *in;
-		char *out;
-	} u = {
-		.in = p,
-	};
-
-	return u.out;
-#endif
-}
-
-/**
  * Returns a pointer to the first non-whitespace character in the
  * string, or to the end of the string.
  *
@@ -62,7 +40,7 @@ gcc_pure
 static inline char *
 strchug_fast(char *p)
 {
-	return deconst_string(strchug_fast_c(p));
+	return const_cast<char *>(strchug_fast_c(p));
 }
 
 /**

@@ -30,9 +30,7 @@
 #define DEFAULT_PLAYLIST_MAX_LENGTH (1024*16)
 #define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS false
 
-#ifdef __cplusplus
 class Path;
-#endif
 
 void config_global_init(void);
 void config_global_finish(void);
@@ -43,16 +41,8 @@ void config_global_finish(void);
  */
 void config_global_check(void);
 
-#ifdef __cplusplus
-
 bool
 ReadConfigFile(const Path &path, GError **error_r);
-
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* don't free the returned value
    set _last_ to NULL to get first entry */
@@ -101,9 +91,5 @@ config_get_positive(enum ConfigOption option, unsigned default_value);
 
 gcc_pure
 bool config_get_bool(enum ConfigOption option, bool default_value);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
