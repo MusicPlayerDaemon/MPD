@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Daemon.hxx"
-#include "FatalError.hxx"
+#include "system/FatalError.hxx"
 
 #include <glib.h>
 

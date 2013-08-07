@@ -20,8 +20,8 @@
 #include "config.h"
 #include "InotifySource.hxx"
 #include "util/fifo_buffer.h"
-#include "fd_util.h"
-#include "FatalError.hxx"
+#include "system/fd_util.h"
+#include "system/FatalError.hxx"
 
 #include <glib.h>
 

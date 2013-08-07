@@ -23,7 +23,7 @@
 #include "util/fifo_buffer.h"
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
-#include "SocketError.hxx"
+#include "system/SocketError.hxx"
 
 #include <assert.h>
 #include <string.h>

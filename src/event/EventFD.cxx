@@ -20,7 +20,7 @@
 #include "config.h"
 #ifdef USE_EVENTFD
 #include "EventFD.hxx"
-#include "fd_util.h"
+#include "system/fd_util.h"
 #include "gcc.h"
 
 #include <unistd.h>

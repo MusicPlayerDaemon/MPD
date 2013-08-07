@@ -26,7 +26,7 @@
 #include "Main.hxx"
 #include "event/Loop.hxx"
 #include "GlobalEvents.hxx"
-#include "FatalError.hxx"
+#include "system/FatalError.hxx"
 
 #include <glib.h>
 

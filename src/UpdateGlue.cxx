@@ -33,7 +33,7 @@ extern "C" {
 
 #include "Main.hxx"
 #include "Instance.hxx"
-#include "FatalError.hxx"
+#include "system/FatalError.hxx"
 
 #include <glib.h>
 

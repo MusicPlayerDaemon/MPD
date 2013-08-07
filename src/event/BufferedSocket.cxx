@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "BufferedSocket.hxx"
-#include "SocketError.hxx"
+#include "system/SocketError.hxx"
 #include "util/fifo_buffer.h"
 
 #include <assert.h>

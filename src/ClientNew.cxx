@@ -22,9 +22,9 @@
 #include "ClientList.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
-#include "fd_util.h"
+#include "system/fd_util.h"
 extern "C" {
-#include "resolver.h"
+#include "system/resolver.h"
 }
 #include "Permission.hxx"
 

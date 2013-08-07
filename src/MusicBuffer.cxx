@@ -22,7 +22,7 @@
 #include "MusicChunk.hxx"
 #include "thread/Mutex.hxx"
 #include "util/SliceBuffer.hxx"
-#include "FatalError.hxx"
+#include "system/FatalError.hxx"
 
 #include <assert.h>
 

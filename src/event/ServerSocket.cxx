@@ -24,11 +24,11 @@
 #endif
 
 #include "ServerSocket.hxx"
-#include "SocketUtil.hxx"
-#include "SocketError.hxx"
+#include "system/SocketUtil.hxx"
+#include "system/SocketError.hxx"
 #include "event/SocketMonitor.hxx"
-#include "resolver.h"
-#include "fd_util.h"
+#include "system/resolver.h"
+#include "system/fd_util.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

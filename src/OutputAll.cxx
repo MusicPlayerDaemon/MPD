@@ -26,7 +26,7 @@
 #include "MusicBuffer.hxx"
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
-#include "FatalError.hxx"
+#include "system/FatalError.hxx"
 #include "conf.h"
 #include "notify.hxx"
 

@@ -21,7 +21,7 @@
 #include "FifoOutputPlugin.hxx"
 #include "OutputAPI.hxx"
 #include "Timer.hxx"
-#include "fd_util.h"
+#include "system/fd_util.h"
 #include "open.h"
 
 #include <glib.h>

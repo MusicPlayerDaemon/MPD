@@ -26,7 +26,7 @@
 #include "MusicChunk.hxx"
 #include "Song.hxx"
 #include "Main.hxx"
-#include "FatalError.hxx"
+#include "system/FatalError.hxx"
 #include "CrossFade.hxx"
 #include "PlayerControl.hxx"
 #include "OutputAll.hxx"

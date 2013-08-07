@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Timer.hxx"
 #include "AudioFormat.hxx"
-#include "clock.h"
+#include "system/clock.h"
 
 #include <glib.h>
 

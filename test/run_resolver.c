@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "resolver.h"
+#include "system/resolver.h"
 
 #ifdef WIN32
 #include <ws2tcpip.h>

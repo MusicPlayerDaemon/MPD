@@ -29,7 +29,7 @@
 #include "PlayerControl.hxx"
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
-#include "FatalError.hxx"
+#include "system/FatalError.hxx"
 #include "gcc.h"
 
 #include <glib.h>

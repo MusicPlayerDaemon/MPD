@@ -46,7 +46,7 @@ daemonize_finish(void)
 void
 daemonize_kill(void);
 #else
-#include "FatalError.hxx"
+#include "system/FatalError.hxx"
 static inline void
 daemonize_kill(void)
 {

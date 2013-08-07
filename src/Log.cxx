@@ -20,8 +20,8 @@
 #include "config.h"
 #include "Log.hxx"
 #include "conf.h"
-#include "fd_util.h"
-#include "FatalError.hxx"
+#include "system/fd_util.h"
+#include "system/FatalError.hxx"
 #include "mpd_error.h"
 
 #include <assert.h>

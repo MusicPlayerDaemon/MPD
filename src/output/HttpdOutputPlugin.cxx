@@ -24,10 +24,10 @@
 #include "OutputAPI.hxx"
 #include "EncoderPlugin.hxx"
 #include "EncoderList.hxx"
-#include "resolver.h"
+#include "system/resolver.h"
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
-#include "fd_util.h"
+#include "system/fd_util.h"
 #include "Main.hxx"
 
 #include <assert.h>

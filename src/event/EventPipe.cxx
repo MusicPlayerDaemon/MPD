@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "EventPipe.hxx"
-#include "fd_util.h"
+#include "system/fd_util.h"
 #include "gcc.h"
 
 #include <unistd.h>

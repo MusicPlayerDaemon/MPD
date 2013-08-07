@@ -9,6 +9,7 @@ bin_PROGRAMS = src/mpd
 
 noinst_LIBRARIES = \
 	libutil.a \
+	libsystem.a \
 	libevent.a \
 	libpcm.a \
 	libconf.a \
@@ -43,6 +44,7 @@ src_mpd_LDADD = \
 	$(MIXER_LIBS) \
 	libconf.a \
 	libevent.a \
+	libsystem.a \
 	libutil.a \
 	libfs.a \
 	$(SYSTEMD_DAEMON_LIBS) \
@@ -54,7 +56,6 @@ mpd_headers = \
 	src/filter_internal.h \
 	src/command.h \
 	src/conf.h \
-	src/fd_util.h \
 	src/gerror.h \
 	src/glib_compat.h \
 	src/gcc.h \
@@ -91,8 +92,6 @@ src_mpd_SOURCES = \
 	src/thread/PosixCond.hxx \
 	src/thread/WindowsCond.hxx \
 	src/thread/GLibCond.hxx \
-	src/FatalError.cxx src/FatalError.hxx \
-	src/clock.c src/clock.h \
 	src/notify.cxx src/notify.hxx \
 	src/AudioConfig.cxx src/AudioConfig.hxx \
 	src/CheckAudioFormat.cxx src/CheckAudioFormat.hxx \
@@ -135,7 +134,6 @@ src_mpd_SOURCES = \
 	src/DatabaseVisitor.hxx \
 	src/DatabaseSelection.cxx src/DatabaseSelection.hxx \
 	src/ExcludeList.cxx src/ExcludeList.hxx \
-	src/fd_util.c \
 	src/FilterConfig.cxx src/FilterConfig.hxx \
 	src/FilterPlugin.cxx src/FilterPlugin.hxx \
 	src/FilterRegistry.cxx src/FilterRegistry.hxx \
@@ -166,7 +164,6 @@ src_mpd_SOURCES = \
 	src/Listen.cxx src/Listen.hxx \
 	src/Log.cxx src/Log.hxx \
 	src/ls.cxx \
-	src/SocketError.hxx \
 	src/io_error.h \
 	src/IOThread.cxx src/IOThread.hxx \
 	src/Main.cxx src/Main.hxx \
@@ -210,8 +207,6 @@ src_mpd_SOURCES = \
 	src/SongPrint.cxx src/SongPrint.hxx \
 	src/SongSave.cxx src/SongSave.hxx \
 	src/SongSort.cxx src/SongSort.hxx \
-	src/resolver.c src/resolver.h \
-	src/SocketUtil.cxx src/SocketUtil.hxx \
 	src/StateFile.cxx src/StateFile.hxx \
 	src/Stats.cxx \
 	src/TagType.h \
@@ -284,6 +279,16 @@ libutil_a_SOURCES = \
 	src/util/list_sort.c src/util/list_sort.h \
 	src/util/byte_reverse.c src/util/byte_reverse.h \
 	src/util/bit_reverse.c src/util/bit_reverse.h
+
+# System library
+
+libsystem_a_SOURCES = \
+	src/system/FatalError.cxx src/system/FatalError.hxx \
+	src/system/fd_util.c src/system/fd_util.h \
+	src/system/SocketUtil.cxx src/system/SocketUtil.hxx \
+	src/system/SocketError.hxx \
+	src/system/resolver.c src/system/resolver.h \
+	src/system/clock.c src/system/clock.h
 
 # Event loop library
 
@@ -1057,9 +1062,9 @@ test_read_conf_LDADD = \
 test_read_conf_SOURCES = test/read_conf.cxx
 
 test_run_resolver_LDADD = \
+	libsystem.a \
 	$(GLIB_LIBS)
-test_run_resolver_SOURCES = test/run_resolver.c \
-	src/resolver.c
+test_run_resolver_SOURCES = test/run_resolver.c
 
 test_DumpDatabase_LDADD = \
 	$(DB_LIBS) \
@@ -1084,13 +1089,13 @@ test_run_input_LDADD = \
 	libconf.a \
 	libutil.a \
 	libevent.a \
+	libsystem.a \
 	libfs.a \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
-	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
-	src/fd_util.c
+	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx
 
 if ENABLE_ARCHIVE
 
@@ -1100,13 +1105,13 @@ test_visit_archive_LDADD = \
 	libconf.a \
 	libutil.a \
 	libevent.a \
+	libsystem.a \
 	libfs.a \
 	$(GLIB_LIBS)
 test_visit_archive_SOURCES = test/visit_archive.cxx \
 	src/IOThread.cxx \
 	src/InputStream.cxx \
-	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
-	src/fd_util.c
+	src/Tag.cxx src/TagNames.c src/TagPool.cxx
 
 if ENABLE_DESPOTIFY
 test_visit_archive_SOURCES += src/DespotifyUtils.cxx
@@ -1120,14 +1125,14 @@ test_dump_text_file_LDADD = \
 	libconf.a \
 	libevent.a \
 	libfs.a \
+	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
-	src/TextInputStream.cxx \
-	src/fd_util.c
+	src/TextInputStream.cxx
 
 test_dump_playlist_LDADD = \
 	$(PLAYLIST_LIBS) \
@@ -1138,6 +1143,7 @@ test_dump_playlist_LDADD = \
 	$(TAG_LIBS) \
 	libconf.a \
 	libevent.a \
+	libsystem.a \
 	libfs.a \
 	libutil.a \
 	libpcm.a \
@@ -1149,8 +1155,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	src/TagHandler.cxx src/TagFile.cxx \
 	src/CheckAudioFormat.cxx \
 	src/TextInputStream.cxx \
-	src/cue/CueParser.cxx src/cue/CueParser.hxx \
-	src/fd_util.c
+	src/cue/CueParser.cxx src/cue/CueParser.hxx
 
 if HAVE_FLAC
 test_dump_playlist_SOURCES += \
@@ -1166,6 +1171,7 @@ test_run_decoder_LDADD = \
 	$(TAG_LIBS) \
 	libconf.a \
 	libevent.a \
+	libsystem.a \
 	libfs.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -1174,7 +1180,6 @@ test_run_decoder_SOURCES = test/run_decoder.cxx \
 	src/IOThread.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagHandler.cxx \
 	src/ReplayGainInfo.cxx \
-	src/fd_util.c \
 	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
@@ -1189,6 +1194,7 @@ test_read_tags_LDADD = \
 	$(TAG_LIBS) \
 	libconf.a \
 	libevent.a \
+	libsystem.a \
 	libfs.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -1196,7 +1202,6 @@ test_read_tags_SOURCES = test/read_tags.cxx \
 	src/IOThread.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagHandler.cxx \
 	src/ReplayGainInfo.cxx \
-	src/fd_util.c \
 	src/CheckAudioFormat.cxx \
 	$(DECODER_SRC)
 
@@ -1307,6 +1312,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	libconf.a \
 	libevent.a \
 	libfs.a \
+	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_run_output_SOURCES = test/run_output.cxx \
@@ -1316,11 +1322,9 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
 	src/AudioParser.cxx \
-	src/Timer.cxx src/clock.c \
+	src/Timer.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/Page.cxx \
-	src/SocketUtil.cxx \
-	src/resolver.c \
 	src/OutputInit.cxx src/OutputFinish.cxx src/OutputList.cxx \
 	src/OutputPlugin.cxx \
 	src/MixerControl.cxx \
@@ -1328,8 +1332,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/FilterPlugin.cxx \
 	src/FilterConfig.cxx \
 	src/AudioCompress/compress.c \
-	src/ReplayGainInfo.cxx \
-	src/fd_util.c
+	src/ReplayGainInfo.cxx
 
 test_read_mixer_LDADD = \
 	libpcm.a \
@@ -1338,13 +1341,13 @@ test_read_mixer_LDADD = \
 	libconf.a \
 	libutil.a \
 	libevent.a \
+	libsystem.a \
 	libfs.a \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.cxx \
 	src/MixerControl.cxx \
 	src/FilterPlugin.cxx \
-	src/filter/VolumeFilterPlugin.cxx \
-	src/fd_util.c
+	src/filter/VolumeFilterPlugin.cxx
 
 if ENABLE_BZIP2_TEST
 TESTS += test/test_archive_bzip2.sh
@@ -1361,11 +1364,10 @@ endif
 if ENABLE_INOTIFY
 noinst_PROGRAMS += test/run_inotify
 test_run_inotify_SOURCES = test/run_inotify.cxx \
-	src/FatalError.cxx \
-	src/fd_util.c \
 	src/InotifySource.cxx
 test_run_inotify_LDADD = \
 	libevent.a \
+	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
 endif
@@ -1393,9 +1395,9 @@ test_test_pcm_LDADD = \
 
 test_test_queue_priority_SOURCES = \
 	src/Queue.cxx \
-	src/fd_util.c \
 	test/test_queue_priority.cxx
 test_test_queue_priority_LDADD = \
+	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
 

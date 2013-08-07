@@ -55,7 +55,7 @@
 #include "AudioConfig.hxx"
 #include "pcm/PcmResample.hxx"
 #include "Daemon.hxx"
-#include "FatalError.hxx"
+#include "system/FatalError.hxx"
 
 extern "C" {
 #include "stats.h"

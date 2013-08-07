@@ -24,7 +24,7 @@
 #include "DecoderError.hxx"
 #include "DecoderPlugin.hxx"
 #include "Song.hxx"
-#include "FatalError.hxx"
+#include "system/FatalError.hxx"
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
 #include "DecoderAPI.hxx"

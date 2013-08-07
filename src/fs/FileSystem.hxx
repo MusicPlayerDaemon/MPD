@@ -21,7 +21,7 @@
 #define MPD_FS_FILESYSTEM_HXX
 
 #include "check.h"
-#include "fd_util.h"
+#include "system/fd_util.h"
 
 #include "Path.hxx"
 

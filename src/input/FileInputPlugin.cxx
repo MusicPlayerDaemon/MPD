@@ -22,7 +22,7 @@
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
-#include "fd_util.h"
+#include "system/fd_util.h"
 #include "open.h"
 #include "io_error.h"
 
