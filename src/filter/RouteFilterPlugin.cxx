@@ -275,12 +275,12 @@ RouteFilter::FilterPCM(const void *src, size_t src_size,
 	// A moving pointer that always refers to channel 0 in the input, at the currently handled frame
 	const uint8_t *base_source = (const uint8_t *)src;
 
-	// A moving pointer that always refers to the currently filled channel of the currently handled frame, in the output
-	uint8_t *chan_destination;
-
 	// Grow our reusable buffer, if needed, and set the moving pointer
 	*dest_size_r = number_of_frames * output_frame_size;
-	chan_destination = (uint8_t *)output_buffer.Get(*dest_size_r);
+	void *const result = output_buffer.Get(*dest_size_r);
+
+	// A moving pointer that always refers to the currently filled channel of the currently handled frame, in the output
+	uint8_t *chan_destination = (uint8_t *)result;
 
 	// Perform our copy operations, with N input channels and M output channels
 	for (unsigned int s=0; s<number_of_frames; ++s) {
@@ -313,7 +313,7 @@ RouteFilter::FilterPCM(const void *src, size_t src_size,
 	}
 
 	// Here it is, ladies and gentlemen! Rerouted data!
-	return (void *) output_buffer.buffer;
+	return result;
 }
 
 const struct filter_plugin route_filter_plugin = {
