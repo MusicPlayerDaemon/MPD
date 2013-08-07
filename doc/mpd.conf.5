@@ -3,8 +3,9 @@
 mpd.conf \- Music Player Daemon configuration file
 .SH DESCRIPTION
 \fBmpd.conf\fP is the configuration file for mpd(1).  If not specified on the
-command line, MPD first searches for it at \fB~/.mpdconf\fP then at
-\fB~/.mpd/mpd.conf\fP and then in \fB/etc/mpd.conf\fP.
+command line, MPD first searches for it at \fB$XDG_CONFIG_HOME/mpd/mpd.conf\fP
+then at \fB~/.mpdconf\fP then at \fB~/.mpd/mpd.conf\fP and then in
+\fB/etc/mpd.conf\fP.
 
 Lines beginning with a "#" character are comments.  All other non-empty lines
 specify parameters and their values.  These lines contain the parameter name

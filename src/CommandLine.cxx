@@ -54,6 +54,7 @@
 #else /* G_OS_WIN32 */
 #define USER_CONFIG_FILE_LOCATION1	".mpdconf"
 #define USER_CONFIG_FILE_LOCATION2	".mpd/mpd.conf"
+#define USER_CONFIG_FILE_LOCATION_XDG	"mpd/mpd.conf"
 #endif
 
 static GQuark
@@ -219,7 +220,12 @@ parse_cmdline(int argc, char **argv, struct options *options,
 				return ReadConfigFile(path, error_r);
 		}
 #else /* G_OS_WIN32 */
-		Path path = PathBuildChecked(Path::FromUTF8(g_get_home_dir()),
+		Path path = PathBuildChecked(Path::FromUTF8(g_get_user_config_dir()),
+					     USER_CONFIG_FILE_LOCATION_XDG);
+		if (!path.IsNull() && FileExists(path))
+			return ReadConfigFile(path, error_r);
+
+		path = PathBuildChecked(Path::FromUTF8(g_get_home_dir()),
 					     USER_CONFIG_FILE_LOCATION1);
 		if (!path.IsNull() && FileExists(path))
 			return ReadConfigFile(path, error_r);

@@ -196,9 +196,9 @@ Run
 
 $ mpd <config file>
 
-First default is ~/.mpdconf then ~/.mpd/mpd.conf then /etc/mpd.conf. If
-neither of these exist a mpd configuration file must be specified at
-runtime.
+First default is $XDG_CONFIG_HOME/mpd/mpd.conf then ~/.mpdconf then
+~/.mpd/mpd.conf then /etc/mpd.conf. If neither of these exist a mpd
+configuration file must be specified at runtime.
 
 A sample config file is included with the source of MPD, mpdconf.example.
 
