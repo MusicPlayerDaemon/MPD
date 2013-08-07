@@ -21,7 +21,7 @@
 #include "LameEncoderPlugin.hxx"
 #include "EncoderAPI.hxx"
 #include "AudioFormat.hxx"
-#include "util/AllocatedArray.hxx"
+#include "util/ReusableArray.hxx"
 #include "util/Manual.hxx"
 
 #include <lame/lame.h>
@@ -40,8 +40,8 @@ struct LameEncoder final {
 
 	lame_global_flags *gfp;
 
-	Manual<AllocatedArray<unsigned char>> output_buffer;
-	size_t output_buffer_length, output_buffer_position;
+	Manual<ReusableArray<unsigned char, 32768>> output_buffer;
+	unsigned char *output_begin, *output_end;
 
 	LameEncoder():encoder(lame_encoder_plugin) {}
 
@@ -212,9 +212,7 @@ lame_encoder_open(Encoder *_encoder, AudioFormat &audio_format,
 	}
 
 	encoder->output_buffer.Construct();
-
-	encoder->output_buffer_length = 0;
-	encoder->output_buffer_position = 0;
+	encoder->output_begin = encoder->output_end = nullptr;
 
 	return true;
 }
@@ -236,8 +234,7 @@ lame_encoder_write(Encoder *_encoder,
 	LameEncoder *encoder = (LameEncoder *)_encoder;
 	const int16_t *src = (const int16_t*)data;
 
-	assert(encoder->output_buffer_position ==
-	       encoder->output_buffer_length);
+	assert(encoder->output_begin == encoder->output_end);
 
 	const unsigned num_frames =
 		length / encoder->audio_format.GetFrameSize();
@@ -246,9 +243,7 @@ lame_encoder_write(Encoder *_encoder,
 
 	/* worst-case formula according to LAME documentation */
 	const size_t output_buffer_size = 5 * num_samples / 4 + 7200;
-	encoder->output_buffer->GrowDiscard(output_buffer_size);
-
-	const auto output_buffer = encoder->output_buffer->begin();
+	const auto output_buffer = encoder->output_buffer->Get(output_buffer_size);
 
 	/* this is for only 16-bit audio */
 
@@ -264,8 +259,8 @@ lame_encoder_write(Encoder *_encoder,
 		return false;
 	}
 
-	encoder->output_buffer_length = (size_t)bytes_out;
-	encoder->output_buffer_position = 0;
+	encoder->output_begin = output_buffer;
+	encoder->output_end = output_buffer + bytes_out;
 	return true;
 }
 
@@ -274,20 +269,15 @@ lame_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
 	LameEncoder *encoder = (LameEncoder *)_encoder;
 
-	assert(encoder->output_buffer_position <=
-	       encoder->output_buffer_length);
-
-	const size_t remainning = encoder->output_buffer_length
-		- encoder->output_buffer_position;
+	const auto begin = encoder->output_begin;
+	assert(begin <= encoder->output_end);
+	const size_t remainning = encoder->output_end - begin;
 	if (length > remainning)
 		length = remainning;
 
-	memcpy(dest,
-	       encoder->output_buffer->begin() + encoder->output_buffer_position,
-	       length);
+	memcpy(dest, begin, length);
 
-	encoder->output_buffer_position += length;
-
+	encoder->output_begin = begin + length;
 	return length;
 }
 
