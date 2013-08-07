@@ -23,6 +23,7 @@
 #include "GlobalEvents.hxx"
 #include "Main.hxx"
 #include "event/MultiSocketMonitor.hxx"
+#include "util/ReusableArray.hxx"
 
 #include <algorithm>
 
@@ -35,6 +36,8 @@ static constexpr unsigned VOLUME_MIXER_ALSA_INDEX_DEFAULT = 0;
 
 class AlsaMixerMonitor final : private MultiSocketMonitor {
 	snd_mixer_t *const mixer;
+
+	ReusableArray<pollfd> pfd_buffer;
 
 public:
 	AlsaMixerMonitor(EventLoop &_loop, snd_mixer_t *_mixer)
@@ -87,7 +90,8 @@ AlsaMixerMonitor::PrepareSockets(gcc_unused gint *timeout_r)
 	if (count < 0)
 		count = 0;
 
-	struct pollfd *pfds = g_new(struct pollfd, count);
+	struct pollfd *pfds = pfd_buffer.Get(count);
+
 	count = snd_mixer_poll_descriptors(mixer, pfds, count);
 	if (count < 0)
 		count = 0;
@@ -109,8 +113,6 @@ AlsaMixerMonitor::PrepareSockets(gcc_unused gint *timeout_r)
 	for (auto i = pfds; i != end; ++i)
 		if (i->events != 0)
 			AddSocket(i->fd, i->events);
-
-	g_free(pfds);
 }
 
 void
