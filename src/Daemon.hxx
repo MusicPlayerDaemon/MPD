@@ -20,8 +20,6 @@
 #ifndef MPD_DAEMON_HXX
 #define MPD_DAEMON_HXX
 
-#include "mpd_error.h"
-
 #ifndef WIN32
 void
 daemonize_init(const char *user, const char *group, const char *pidfile);
@@ -48,10 +46,12 @@ daemonize_finish(void)
 void
 daemonize_kill(void);
 #else
-#include <glib.h>
+#include "FatalError.hxx"
 static inline void
 daemonize_kill(void)
-{ MPD_ERROR("--kill is not available on WIN32"); }
+{
+	FatalError("--kill is not available on WIN32");
+}
 #endif
 
 /**

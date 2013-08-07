@@ -55,12 +55,11 @@
 #include "AudioConfig.hxx"
 #include "pcm/PcmResample.hxx"
 #include "Daemon.hxx"
+#include "FatalError.hxx"
 
 extern "C" {
 #include "stats.h"
 }
-
-#include "mpd_error.h"
 
 #ifdef ENABLE_INOTIFY
 #include "InotifyUpdate.hxx"
@@ -194,13 +193,13 @@ glue_db_init_and_load(void)
 	}
 
 	if (!DatabaseGlobalInit(*param, &error))
-		MPD_ERROR("%s", error->message);
+		FatalError(error);
 
 	delete allocated;
 
 	ret = DatabaseGlobalOpen(&error);
 	if (!ret)
-		MPD_ERROR("%s", error->message);
+		FatalError(error);
 
 	/* run database update after daemonization? */
 	return !db_is_simple() || db_exists();
@@ -216,10 +215,10 @@ glue_sticker_init(void)
 	GError *error = NULL;
 	char *sticker_file = config_dup_path(CONF_STICKER_FILE, &error);
 	if (sticker_file == NULL && error != NULL)
-		MPD_ERROR("%s", error->message);
+		FatalError(error);
 
 	if (!sticker_global_init(sticker_file, &error))
-		MPD_ERROR("%s", error->message);
+		FatalError(error);
 
 	g_free(sticker_file);
 #endif
@@ -268,16 +267,12 @@ static void winsock_init(void)
 
 	retval = WSAStartup(MAKEWORD(2, 2), &sockinfo);
 	if(retval != 0)
-	{
-		MPD_ERROR("Attempt to open Winsock2 failed; error code %d\n",
-			retval);
-	}
+		FormatFatalError("Attempt to open Winsock2 failed; error code %d",
+				 retval);
 
 	if (LOBYTE(sockinfo.wVersion) != 2)
-	{
-		MPD_ERROR("We use Winsock2 but your version is either too new "
-			  "or old; please install Winsock 2.x\n");
-	}
+		FatalError("We use Winsock2 but your version is either too new "
+			   "or old; please install Winsock 2.x");
 #endif
 }
 
@@ -298,8 +293,9 @@ initialize_decoder_and_player(void)
 	if (param != NULL) {
 		long tmp = strtol(param->value, &test, 10);
 		if (*test != '\0' || tmp <= 0 || tmp == LONG_MAX)
-			MPD_ERROR("buffer size \"%s\" is not a positive integer, "
-				  "line %i\n", param->value, param->line);
+			FormatFatalError("buffer size \"%s\" is not a "
+					 "positive integer, line %i",
+					 param->value, param->line);
 		buffer_size = tmp;
 	} else
 		buffer_size = DEFAULT_BUFFER_SIZE;
@@ -309,15 +305,17 @@ initialize_decoder_and_player(void)
 	buffered_chunks = buffer_size / CHUNK_SIZE;
 
 	if (buffered_chunks >= 1 << 15)
-		MPD_ERROR("buffer size \"%li\" is too big\n", (long)buffer_size);
+		FormatFatalError("buffer size \"%lu\" is too big",
+				 (unsigned long)buffer_size);
 
 	param = config_get_param(CONF_BUFFER_BEFORE_PLAY);
 	if (param != NULL) {
 		perc = strtod(param->value, &test);
 		if (*test != '%' || perc < 0 || perc > 100) {
-			MPD_ERROR("buffered before play \"%s\" is not a positive "
-				  "percentage and less than 100 percent, line %i",
-				  param->value, param->line);
+			FormatFatalError("buffered before play \"%s\" is not "
+					 "a positive percentage and less "
+					 "than 100 percent, line %i",
+					 param->value, param->line);
 		}
 	} else
 		perc = DEFAULT_BUFFER_BEFORE_PLAY;
@@ -505,7 +503,7 @@ int mpd_main(int argc, char *argv[])
 		   database */
 		unsigned job = update_enqueue(NULL, true);
 		if (job == 0)
-			MPD_ERROR("directory update failed");
+			FatalError("directory update failed");
 	}
 
 	if (!glue_state_file_init(&error)) {

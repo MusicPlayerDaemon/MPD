@@ -29,8 +29,7 @@
 #include "PlayerControl.hxx"
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
-
-#include "mpd_error.h"
+#include "FatalError.hxx"
 #include "gcc.h"
 
 #include <glib.h>
@@ -676,6 +675,6 @@ void audio_output_thread_start(struct audio_output *ao)
 #else
 	GError *e = nullptr;
 	if (!(ao->thread = g_thread_create(audio_output_task, ao, true, &e)))
-		MPD_ERROR("Failed to spawn output task: %s\n", e->message);
+		FatalError("Failed to spawn output task", e);
 #endif
 }

@@ -22,7 +22,7 @@
 #include "MusicChunk.hxx"
 #include "thread/Mutex.hxx"
 #include "util/SliceBuffer.hxx"
-#include "mpd_error.h"
+#include "FatalError.hxx"
 
 #include <assert.h>
 
@@ -33,7 +33,7 @@ struct music_buffer : public SliceBuffer<music_chunk>  {
 	music_buffer(unsigned num_chunks)
 		:SliceBuffer(num_chunks) {
 		if (IsOOM())
-			MPD_ERROR("Failed to allocate buffer");
+			FatalError("Failed to allocate buffer");
 	}
 };
 

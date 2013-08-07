@@ -19,13 +19,13 @@
 
 #include "config.h"
 #include "Daemon.hxx"
+#include "FatalError.hxx"
 
 #include <glib.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -65,23 +65,23 @@ daemonize_kill(void)
 	int pid, ret;
 
 	if (pidfile == nullptr)
-		MPD_ERROR("no pid_file specified in the config file");
+		FatalError("no pid_file specified in the config file");
 
 	fp = fopen(pidfile, "r");
 	if (fp == nullptr)
-		MPD_ERROR("unable to open pid file \"%s\": %s",
-			  pidfile, g_strerror(errno));
+		FormatFatalSystemError("Unable to open pid file \"%s\"",
+				       pidfile);
 
 	if (fscanf(fp, "%i", &pid) != 1) {
-		MPD_ERROR("unable to read the pid from file \"%s\"",
-			  pidfile);
+		FormatFatalError("unable to read the pid from file \"%s\"",
+				 pidfile);
 	}
 	fclose(fp);
 
 	ret = kill(pid, SIGTERM);
 	if (ret < 0)
-		MPD_ERROR("unable to kill process %i: %s",
-			  pid, g_strerror(errno));
+		FormatFatalSystemError("unable to kill process %i",
+				       int(pid));
 
 	exit(EXIT_SUCCESS);
 }
@@ -102,8 +102,8 @@ daemonize_set_user(void)
 	/* set gid */
 	if (user_gid != (gid_t)-1 && user_gid != getgid()) {
 		if (setgid(user_gid) == -1) {
-			MPD_ERROR("cannot setgid to %d: %s",
-				  (int)user_gid, g_strerror(errno));
+			FormatFatalSystemError("Failed to set group %d",
+					       (int)user_gid);
 		}
 	}
 
@@ -112,17 +112,17 @@ daemonize_set_user(void)
 	 * (must be done before we change our uid)
 	 */
 	if (!had_group && initgroups(user_name, user_gid) == -1) {
-		g_warning("cannot init supplementary groups "
-			  "of user \"%s\": %s",
-			  user_name, g_strerror(errno));
+		FormatFatalSystemError("Failed to set supplementary groups "
+				       "of user \"%s\"",
+				       user_name);
 	}
 #endif
 
 	/* set uid */
 	if (user_uid != (uid_t)-1 && user_uid != getuid() &&
 	    setuid(user_uid) == -1) {
-		MPD_ERROR("cannot change to uid of user \"%s\": %s",
-			  user_name, g_strerror(errno));
+		FormatFatalSystemError("Failed to set user \"%s\"",
+				       user_name);
 	}
 }
 
@@ -136,7 +136,7 @@ daemonize_detach(void)
 #ifdef HAVE_DAEMON
 
 	if (daemon(0, 1))
-		MPD_ERROR("daemon() failed: %s", g_strerror(errno));
+		FatalSystemError("daemon() failed");
 
 #elif defined(HAVE_FORK)
 
@@ -144,7 +144,7 @@ daemonize_detach(void)
 
 	switch (fork()) {
 	case -1:
-		MPD_ERROR("fork() failed: %s", g_strerror(errno));
+		FatalSystemError("fork() failed");
 	case 0:
 		break;
 	default:
@@ -155,14 +155,14 @@ daemonize_detach(void)
 	/* release the current working directory */
 
 	if (chdir("/") < 0)
-		MPD_ERROR("problems changing to root directory");
+		FatalError("problems changing to root directory");
 
 	/* detach from the current session */
 
 	setsid();
 
 #else
-	MPD_ERROR("no support for daemonizing");
+	FatalError("no support for daemonizing");
 #endif
 
 	g_debug("daemonized!");
@@ -179,8 +179,8 @@ daemonize(bool detach)
 		g_debug("opening pid file");
 		fp = fopen(pidfile, "w+");
 		if (!fp) {
-			MPD_ERROR("could not create pid file \"%s\": %s",
-				  pidfile, g_strerror(errno));
+			FormatFatalSystemError("Failed to create pid file \"%s\"",
+					       pidfile);
 		}
 	}
 
@@ -200,7 +200,7 @@ daemonize_init(const char *user, const char *group, const char *_pidfile)
 	if (user) {
 		struct passwd *pwd = getpwnam(user);
 		if (pwd == nullptr)
-			MPD_ERROR("no such user \"%s\"", user);
+			FormatFatalError("no such user \"%s\"", user);
 
 		user_uid = pwd->pw_uid;
 		user_gid = pwd->pw_gid;
@@ -214,7 +214,7 @@ daemonize_init(const char *user, const char *group, const char *_pidfile)
 	if (group) {
 		struct group *grp = getgrnam(group);
 		if (grp == nullptr)
-			MPD_ERROR("no such group \"%s\"", group);
+			FormatFatalError("no such group \"%s\"", group);
 		user_gid = grp->gr_gid;
 		had_group = true;
 	}

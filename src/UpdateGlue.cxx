@@ -33,7 +33,7 @@ extern "C" {
 
 #include "Main.hxx"
 #include "Instance.hxx"
-#include "mpd_error.h"
+#include "FatalError.hxx"
 
 #include <glib.h>
 
@@ -110,7 +110,7 @@ spawn_update_task(const char *path)
 	GError *e = NULL;
 	update_thr = g_thread_create(update_task, g_strdup(path), TRUE, &e);
 	if (update_thr == NULL)
-		MPD_ERROR("Failed to spawn update task: %s", e->message);
+		FatalError("Failed to spawn update task", e);
 #endif
 
 	if (++update_task_id > update_task_id_max)

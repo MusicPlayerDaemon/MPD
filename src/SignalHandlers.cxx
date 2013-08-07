@@ -26,13 +26,11 @@
 #include "Main.hxx"
 #include "event/Loop.hxx"
 #include "GlobalEvents.hxx"
-#include "mpd_error.h"
+#include "FatalError.hxx"
 
 #include <glib.h>
 
 #include <signal.h>
-#include <errno.h>
-#include <string.h>
 
 static void exit_signal_handler(gcc_unused int signum)
 {
@@ -48,7 +46,7 @@ static void
 x_sigaction(int signum, const struct sigaction *act)
 {
 	if (sigaction(signum, act, NULL) < 0)
-		MPD_ERROR("sigaction() failed: %s", strerror(errno));
+		FatalSystemError("sigaction() failed");
 }
 
 static void

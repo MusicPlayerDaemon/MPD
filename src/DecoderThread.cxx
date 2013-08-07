@@ -24,7 +24,7 @@
 #include "DecoderError.hxx"
 #include "DecoderPlugin.hxx"
 #include "Song.hxx"
-#include "mpd_error.h"
+#include "FatalError.hxx"
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
 #include "DecoderAPI.hxx"
@@ -501,6 +501,6 @@ decoder_thread_start(struct decoder_control *dc)
 	GError *e = NULL;
 	dc->thread = g_thread_create(decoder_task, dc, true, &e);
 	if (dc->thread == NULL)
-		MPD_ERROR("Failed to spawn decoder task: %s", e->message);
+		FatalError("Failed to spawn decoder task", e);
 #endif
 }

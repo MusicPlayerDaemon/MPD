@@ -21,6 +21,7 @@
 #include "Log.hxx"
 #include "conf.h"
 #include "fd_util.h"
+#include "FatalError.hxx"
 #include "mpd_error.h"
 
 #include <assert.h>
@@ -60,9 +61,9 @@ static void redirect_logs(int fd)
 {
 	assert(fd >= 0);
 	if (dup2(fd, STDOUT_FILENO) < 0)
-		MPD_ERROR("problems dup2 stdout : %s\n", strerror(errno));
+		FatalSystemError("Failed to dup2 stdout");
 	if (dup2(fd, STDERR_FILENO) < 0)
-		MPD_ERROR("problems dup2 stderr : %s\n", strerror(errno));
+		FatalSystemError("Failed to dup2 stderr");
 }
 
 static const char *log_date(void)

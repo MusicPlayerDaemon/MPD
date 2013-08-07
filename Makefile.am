@@ -91,6 +91,7 @@ src_mpd_SOURCES = \
 	src/thread/PosixCond.hxx \
 	src/thread/WindowsCond.hxx \
 	src/thread/GLibCond.hxx \
+	src/FatalError.cxx src/FatalError.hxx \
 	src/clock.c src/clock.h \
 	src/notify.cxx src/notify.hxx \
 	src/AudioConfig.cxx src/AudioConfig.hxx \
@@ -1360,6 +1361,7 @@ endif
 if ENABLE_INOTIFY
 noinst_PROGRAMS += test/run_inotify
 test_run_inotify_SOURCES = test/run_inotify.cxx \
+	src/FatalError.cxx \
 	src/fd_util.c \
 	src/InotifySource.cxx
 test_run_inotify_LDADD = \

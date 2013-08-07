@@ -21,7 +21,7 @@
 #include "InotifySource.hxx"
 #include "util/fifo_buffer.h"
 #include "fd_util.h"
-#include "mpd_error.h"
+#include "FatalError.hxx"
 
 #include <glib.h>
 
@@ -50,14 +50,13 @@ InotifySource::OnSocketReady(gcc_unused unsigned flags)
 
 	dest = fifo_buffer_write(buffer, &length);
 	if (dest == NULL)
-		MPD_ERROR("buffer full");
+		FatalError("buffer full");
 
 	nbytes = read(Get(), dest, length);
 	if (nbytes < 0)
-		MPD_ERROR("failed to read from inotify: %s",
-			  g_strerror(errno));
+		FatalSystemError("Failed to read from inotify");
 	if (nbytes == 0)
-		MPD_ERROR("end of file from inotify");
+		FatalError("end of file from inotify");
 
 	fifo_buffer_append(buffer, nbytes);
 

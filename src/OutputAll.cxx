@@ -26,7 +26,7 @@
 #include "MusicBuffer.hxx"
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
-#include "mpd_error.h"
+#include "FatalError.hxx"
 #include "conf.h"
 #include "notify.hxx"
 
@@ -128,10 +128,10 @@ audio_output_all_init(struct player_control *pc)
 		struct audio_output *output = audio_output_new(*param, pc, &error);
 		if (output == NULL) {
 			if (param != NULL)
-				MPD_ERROR("line %i: %s",
-					  param->line, error->message);
+				FormatFatalError("line %i: %s",
+						 param->line, error->message);
 			else
-				MPD_ERROR("%s", error->message);
+				FatalError(error);
 		}
 
 		audio_outputs[i] = output;
@@ -139,8 +139,8 @@ audio_output_all_init(struct player_control *pc)
 		/* require output names to be unique: */
 		for (j = 0; j < i; j++) {
 			if (!strcmp(output->name, audio_outputs[j]->name)) {
-				MPD_ERROR("output devices with identical "
-					  "names: %s\n", output->name);
+				FormatFatalError("output devices with identical "
+						 "names: %s", output->name);
 			}
 		}
 	}

@@ -26,7 +26,7 @@
 #include "MusicChunk.hxx"
 #include "Song.hxx"
 #include "Main.hxx"
-#include "mpd_error.h"
+#include "FatalError.hxx"
 #include "CrossFade.hxx"
 #include "PlayerControl.hxx"
 #include "OutputAll.hxx"
@@ -1207,6 +1207,6 @@ player_create(struct player_control *pc)
 	GError *e = NULL;
 	pc->thread = g_thread_create(player_task, pc, true, &e);
 	if (pc->thread == NULL)
-		MPD_ERROR("Failed to spawn player task: %s", e->message);
+		FatalError("Failed to spawn player task", e);
 #endif
 }
