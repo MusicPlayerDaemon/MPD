@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-struct PcmBuffer;
+class PcmBuffer;
 
 /**
  * Pack DSD 1 bit samples into (padded) 24 bit PCM samples for

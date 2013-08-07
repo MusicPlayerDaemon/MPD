@@ -261,6 +261,7 @@ endif
 # Generic utility library
 
 libutil_a_SOURCES = \
+	src/util/ReusableArray.hxx \
 	src/util/AllocatedArray.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \

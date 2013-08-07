@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-struct PcmBuffer;
+class PcmBuffer;
 class PcmDither;
 
 /**

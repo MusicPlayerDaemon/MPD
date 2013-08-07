@@ -23,7 +23,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-struct PcmBuffer;
+class PcmBuffer;
 
 /**
  * Changes the number of channels in 16 bit PCM data.

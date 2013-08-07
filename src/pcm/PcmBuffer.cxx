@@ -21,16 +21,6 @@
 #include "PcmBuffer.hxx"
 #include "poison.h"
 
-/**
- * Align the specified size to the next 8k boundary.
- */
-constexpr
-static size_t
-align_8k(size_t size)
-{
-	return ((size - 1) | 0x1fff) + 1;
-}
-
 void *
 PcmBuffer::Get(size_t new_size)
 {
@@ -39,18 +29,5 @@ PcmBuffer::Get(size_t new_size)
 		   be an error condition */
 		new_size = 1;
 
-	if (size < new_size) {
-		/* free the old buffer */
-		g_free(buffer);
-
-		size = align_8k(new_size);
-		buffer = g_malloc(size);
-	} else {
-		/* discard old buffer contents */
-		poison_undefined(buffer, size);
-	}
-
-	assert(size >= new_size);
-
-	return buffer;
+	return buffer.Get(new_size);
 }

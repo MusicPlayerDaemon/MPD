@@ -20,33 +20,22 @@
 #ifndef PCM_BUFFER_HXX
 #define PCM_BUFFER_HXX
 
-#include "check.h"
+#include "util/ReusableArray.hxx"
 #include "gcc.h"
 
-#include <glib.h>
-
-#include <assert.h>
+#include <stdint.h>
 
 /**
  * Manager for a temporary buffer which grows as needed.  We could
  * allocate a new buffer every time pcm_convert() is called, but that
  * would put too much stress on the allocator.
  */
-struct PcmBuffer {
-	void *buffer;
+class PcmBuffer {
+	ReusableArray<uint8_t, 8192> buffer;
 
-	size_t size;
-
-	PcmBuffer():buffer(nullptr), size(0) {}
-
-	~PcmBuffer() {
-		g_free(buffer);
-	}
-
+public:
 	void Clear() {
-		g_free(buffer);
-		buffer = nullptr;
-		size = 0;
+		buffer.Clear();
 	}
 
 	/**
