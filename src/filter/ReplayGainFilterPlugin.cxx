@@ -29,6 +29,8 @@
 #include "pcm/PcmVolume.hxx"
 #include "pcm/PcmBuffer.hxx"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <string.h>
 

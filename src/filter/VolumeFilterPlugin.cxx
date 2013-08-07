@@ -27,6 +27,8 @@
 #include "pcm/PcmBuffer.hxx"
 #include "AudioFormat.hxx"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <string.h>
 

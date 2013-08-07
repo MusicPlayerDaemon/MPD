@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "PcmBuffer.hxx"
+#include "gerror.h"
 
 #include <stdint.h>
 #include <stddef.h>
