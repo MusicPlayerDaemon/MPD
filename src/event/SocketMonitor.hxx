@@ -66,6 +66,10 @@ public:
 
 	~SocketMonitor();
 
+	EventLoop &GetEventLoop() {
+		return loop;
+	}
+
 	bool IsDefined() const {
 		return fd >= 0;
 	}

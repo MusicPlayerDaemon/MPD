@@ -63,7 +63,10 @@ public:
 	MultiSocketMonitor(EventLoop &_loop);
 	~MultiSocketMonitor();
 
-public:
+	EventLoop &GetEventLoop() {
+		return loop;
+	}
+
 	gcc_pure
 	gint64 GetTime() const {
 		return g_source_get_time(&source->base);

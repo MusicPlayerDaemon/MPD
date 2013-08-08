@@ -38,6 +38,10 @@ public:
 		Cancel();
 	}
 
+	EventLoop &GetEventLoop() {
+		return loop;
+	}
+
 	bool IsActive() const {
 		return source != nullptr;
 	}

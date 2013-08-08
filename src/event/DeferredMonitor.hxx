@@ -44,6 +44,10 @@ public:
 		Cancel();
 	}
 
+	EventLoop &GetEventLoop() {
+		return loop;
+	}
+
 	void Schedule();
 	void Cancel();
 
