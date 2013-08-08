@@ -56,33 +56,15 @@ public:
 		g_main_loop_quit(loop);
 	}
 
-	void Run() {
-		g_main_loop_run(loop);
-	}
+	void Run();
 
-	guint AddIdle(GSourceFunc function, gpointer data) {
-		GSource *source = g_idle_source_new();
-		g_source_set_callback(source, function, data, NULL);
-		guint id = g_source_attach(source, GetContext());
-		g_source_unref(source);
-		return id;
-	}
+	guint AddIdle(GSourceFunc function, gpointer data);
 
 	GSource *AddTimeout(guint interval_ms,
-			    GSourceFunc function, gpointer data) {
-		GSource *source = g_timeout_source_new(interval_ms);
-		g_source_set_callback(source, function, data, nullptr);
-		g_source_attach(source, GetContext());
-		return source;
-	}
+			    GSourceFunc function, gpointer data);
 
 	GSource *AddTimeoutSeconds(guint interval_s,
-				   GSourceFunc function, gpointer data) {
-		GSource *source = g_timeout_source_new_seconds(interval_s);
-		g_source_set_callback(source, function, data, nullptr);
-		g_source_attach(source, GetContext());
-		return source;
-	}
+				   GSourceFunc function, gpointer data);
 };
 
 #endif /* MAIN_NOTIFY_H */

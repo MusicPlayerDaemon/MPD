@@ -304,7 +304,7 @@ libevent_a_SOURCES = \
 	src/event/FullyBufferedSocket.cxx src/event/FullyBufferedSocket.hxx \
 	src/event/MultiSocketMonitor.cxx src/event/MultiSocketMonitor.hxx \
 	src/event/ServerSocket.cxx src/event/ServerSocket.hxx \
-	src/event/Loop.hxx
+	src/event/Loop.cxx src/event/Loop.hxx
 
 # PCM library
 
