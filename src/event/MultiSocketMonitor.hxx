@@ -101,7 +101,10 @@ public:
 	}
 
 protected:
-	virtual void PrepareSockets(gcc_unused gint *timeout_r) {}
+	/**
+	 * @return timeout [ms] or -1 for no timeout
+	 */
+	virtual int PrepareSockets() = 0;
 	virtual bool CheckSockets() const { return false; }
 	virtual void DispatchSockets() = 0;
 
@@ -114,7 +117,7 @@ public:
 
 private:
 	bool Prepare(gint *timeout_r) {
-		PrepareSockets(timeout_r);
+		*timeout_r = PrepareSockets();
 		return false;
 	}
 

@@ -204,7 +204,7 @@ public:
 private:
 	void UpdateSockets();
 
-	virtual void PrepareSockets(gcc_unused gint *timeout_r) override;
+	virtual int PrepareSockets() override;
 	virtual bool CheckSockets() const override;
 	virtual void DispatchSockets() override;
 };
@@ -536,8 +536,8 @@ input_curl_perform(void)
 	return true;
 }
 
-void
-CurlSockets::PrepareSockets(gint *timeout_r)
+int
+CurlSockets::PrepareSockets()
 {
 	UpdateSockets();
 
@@ -556,12 +556,13 @@ CurlSockets::PrepareSockets(gint *timeout_r)
 			   Let's use a lower limit of 10ms. */
 			timeout2 = 10;
 
-		*timeout_r = timeout2;
-
 		have_timeout = timeout2 >= 0;
-	} else
+		return timeout2;
+	} else {
 		g_warning("curl_multi_timeout() failed: %s\n",
 			  curl_multi_strerror(mcode));
+		return -1;
+	}
 }
 
 bool

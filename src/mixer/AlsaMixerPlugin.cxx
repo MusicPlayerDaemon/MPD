@@ -44,7 +44,7 @@ public:
 		:MultiSocketMonitor(_loop), mixer(_mixer) {}
 
 private:
-	virtual void PrepareSockets(gcc_unused gint *timeout_r) override;
+	virtual int PrepareSockets() override;
 	virtual void DispatchSockets() override;
 };
 
@@ -83,8 +83,8 @@ alsa_mixer_quark(void)
 	return g_quark_from_static_string("alsa_mixer");
 }
 
-void
-AlsaMixerMonitor::PrepareSockets(gcc_unused gint *timeout_r)
+int
+AlsaMixerMonitor::PrepareSockets()
 {
 	int count = snd_mixer_poll_descriptors_count(mixer);
 	if (count < 0)
@@ -113,6 +113,8 @@ AlsaMixerMonitor::PrepareSockets(gcc_unused gint *timeout_r)
 	for (auto i = pfds; i != end; ++i)
 		if (i->events != 0)
 			AddSocket(i->fd, i->events);
+
+	return -1;
 }
 
 void
