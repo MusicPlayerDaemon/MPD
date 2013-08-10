@@ -40,32 +40,4 @@ g_source_get_time(GSource *source)
 
 #endif
 
-#if defined(G_OS_WIN32) && defined(g_file_test)
-
-/* Modern GLib on Win32 likes to use UTF-8 for file names.
-It redefines g_file_test() to be g_file_test_utf8().
-This gives incorrect results for non-ASCII files.
-Old g_file_test() is available for *binary compatibility*,
-but symbol is hidden from linker, we copy-paste its definition here */
-
-#undef g_file_test
-
-static inline gboolean
-g_file_test(const gchar *filename, GFileTest test)
-{
-	gchar *utf8_filename = g_locale_to_utf8(filename, -1, NULL, NULL, NULL);
-	gboolean retval;
-
-	if (utf8_filename == NULL)
-		return FALSE;
-
-	retval = g_file_test_utf8(utf8_filename, test);
-
-	g_free(utf8_filename);
-
-	return retval;
-}
-
-#endif
-
 #endif
