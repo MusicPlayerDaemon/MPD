@@ -21,16 +21,13 @@
 #include "ProxyDatabasePlugin.hxx"
 #include "DatabasePlugin.hxx"
 #include "DatabaseSelection.hxx"
+#include "DatabaseError.hxx"
 #include "PlaylistVector.hxx"
 #include "Directory.hxx"
 #include "Song.hxx"
 #include "gcc.h"
 #include "conf.h"
 #include "Tag.hxx"
-
-extern "C" {
-#include "db_error.h"
-}
 
 #undef MPD_DIRECTORY_H
 #undef MPD_SONG_H

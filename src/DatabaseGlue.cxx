@@ -22,11 +22,11 @@
 #include "DatabaseSimple.hxx"
 #include "DatabaseRegistry.hxx"
 #include "DatabaseSave.hxx"
+#include "DatabaseError.hxx"
 #include "Directory.hxx"
 #include "conf.h"
 
 extern "C" {
-#include "db_error.h"
 #include "stats.h"
 }
 

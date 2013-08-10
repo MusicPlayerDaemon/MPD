@@ -123,7 +123,7 @@ src_mpd_SOURCES = \
 	src/DatabasePrint.cxx src/DatabasePrint.hxx \
 	src/DatabaseQueue.cxx src/DatabaseQueue.hxx \
 	src/DatabasePlaylist.cxx src/DatabasePlaylist.hxx \
-	src/db_error.h \
+	src/DatabaseError.hxx \
 	src/DatabaseLock.cxx src/DatabaseLock.hxx \
 	src/DatabaseSave.cxx src/DatabaseSave.hxx \
 	src/DatabasePlugin.hxx \

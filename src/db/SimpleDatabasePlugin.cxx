@@ -25,7 +25,7 @@
 #include "SongFilter.hxx"
 #include "DatabaseSave.hxx"
 #include "DatabaseLock.hxx"
-#include "db_error.h"
+#include "DatabaseError.hxx"
 #include "TextFile.hxx"
 #include "conf.h"
 #include "fs/FileSystem.hxx"
