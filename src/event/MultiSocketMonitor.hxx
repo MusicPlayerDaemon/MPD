@@ -29,6 +29,7 @@
 #include <forward_list>
 
 #include <assert.h>
+#include <stdint.h>
 
 #ifdef WIN32
 /* ERRORis a WIN32 macro that poisons our namespace; this is a
@@ -52,7 +53,7 @@ class MultiSocketMonitor {
 
 	EventLoop &loop;
 	Source *source;
-	gint64 absolute_timeout_us;
+	uint64_t absolute_timeout_us;
 	std::forward_list<GPollFD> fds;
 
 public:
@@ -69,7 +70,7 @@ public:
 	}
 
 	gcc_pure
-	gint64 GetTime() const {
+	uint64_t GetTime() const {
 		return g_source_get_time(&source->base);
 	}
 
