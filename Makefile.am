@@ -1063,6 +1063,7 @@ endif
 test_read_conf_LDADD = \
 	libconf.a \
 	libutil.a \
+	libsystem.a \
 	libfs.a \
 	$(GLIB_LIBS)
 test_read_conf_SOURCES = test/read_conf.cxx
@@ -1076,6 +1077,7 @@ test_DumpDatabase_LDADD = \
 	$(DB_LIBS) \
 	libconf.a \
 	libutil.a \
+	libsystem.a \
 	libfs.a \
 	$(GLIB_LIBS)
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
@@ -1226,6 +1228,7 @@ test_run_filter_LDADD = \
 	$(FILTER_LIBS) \
 	libconf.a \
 	libutil.a \
+	libsystem.a \
 	libfs.a \
 	$(GLIB_LIBS)
 test_run_filter_SOURCES = test/run_filter.cxx \
@@ -1259,6 +1262,7 @@ test_run_encoder_LDADD = \
 	$(TAG_LIBS) \
 	libconf.a \
 	libpcm.a \
+	libsystem.a \
 	libfs.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -1279,6 +1283,7 @@ test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
 	$(ENCODER_LIBS) \
 	$(PCM_LIBS) \
 	libconf.a \
+	libsystem.a \
 	libfs.a \
 	libutil.a \
 	$(GLIB_LIBS)

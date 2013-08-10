@@ -22,6 +22,7 @@
 #include "ConfigParser.hxx"
 #include "ConfigPath.hxx"
 #include "fs/Path.hxx"
+#include "system/FatalError.hxx"
 #include "mpd_error.h"
 
 #include <glib.h>
@@ -36,10 +37,10 @@ block_param::GetUnsignedValue() const
 	char *endptr;
 	long value2 = strtol(value.c_str(), &endptr, 0);
 	if (*endptr != 0)
-		MPD_ERROR("Not a valid number in line %i", line);
+		FormatFatalError("Not a valid number in line %i", line);
 
 	if (value2 < 0)
-		MPD_ERROR("Not a positive number in line %i", line);
+		FormatFatalError("Not a positive number in line %i", line);
 
 	return (unsigned)value2;
 }
@@ -49,9 +50,9 @@ block_param::GetBoolValue() const
 {
 	bool value2;
 	if (!get_bool(value.c_str(), &value2))
-		MPD_ERROR("%s is not a boolean value (yes, true, 1) or "
-			  "(no, false, 0) on line %i\n",
-			  name.c_str(), line);
+		FormatFatalError("%s is not a boolean value (yes, true, 1) or "
+				 "(no, false, 0) on line %i\n",
+				 name.c_str(), line);
 
 	return value2;
 }
