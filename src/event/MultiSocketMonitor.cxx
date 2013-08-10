@@ -74,7 +74,7 @@ MultiSocketMonitor::Check() const
 		return true;
 
 	for (const auto &i : fds)
-		if (i.revents != 0)
+		if (i.GetReturnedEvents() != 0)
 			return true;
 
 	return false;

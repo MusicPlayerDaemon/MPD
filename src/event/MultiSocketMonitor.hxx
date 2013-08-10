@@ -51,10 +51,34 @@ class MultiSocketMonitor {
 		MultiSocketMonitor *monitor;
 	};
 
+	struct SingleFD {
+		GPollFD pfd;
+
+		constexpr SingleFD(gcc_unused MultiSocketMonitor &m,
+				   int fd, unsigned events)
+			:pfd{fd, gushort(events), 0} {}
+
+		constexpr int GetFD() const {
+			return pfd.fd;
+		}
+
+		constexpr unsigned GetEvents() const {
+			return pfd.events;
+		}
+
+		constexpr unsigned GetReturnedEvents() const {
+			return pfd.revents;
+		}
+
+		void SetEvents(unsigned _events) {
+			pfd.events = _events;
+		}
+	};
+
 	EventLoop &loop;
 	Source *source;
 	uint64_t absolute_timeout_us;
-	std::forward_list<GPollFD> fds;
+	std::forward_list<SingleFD> fds;
 
 public:
 	static constexpr unsigned READ = G_IO_IN;
@@ -80,8 +104,8 @@ public:
 	}
 
 	void AddSocket(int fd, unsigned events) {
-		fds.push_front({fd, gushort(events), 0});
-		g_source_add_poll(&source->base, &fds.front());
+		fds.emplace_front(*this, fd, events);
+		g_source_add_poll(&source->base, &fds.front().pfd);
 	}
 
 	template<typename E>
@@ -89,14 +113,14 @@ public:
 		for (auto prev = fds.before_begin(), end = fds.end(),
 			     i = std::next(prev);
 		     i != end; i = std::next(prev)) {
-			assert(i->events != 0);
+			assert(i->GetEvents() != 0);
 
-			unsigned events = e(i->fd);
+			unsigned events = e(i->GetFD());
 			if (events != 0) {
-				i->events = events;
+				i->SetEvents(events);
 				prev = i;
 			} else {
-				g_source_remove_poll(&source->base, &*i);
+				g_source_remove_poll(&source->base, &i->pfd);
 				fds.erase_after(prev);
 			}
 		}
