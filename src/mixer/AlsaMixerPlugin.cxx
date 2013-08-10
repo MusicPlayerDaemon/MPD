@@ -41,7 +41,9 @@ class AlsaMixerMonitor final : private MultiSocketMonitor {
 
 public:
 	AlsaMixerMonitor(EventLoop &_loop, snd_mixer_t *_mixer)
-		:MultiSocketMonitor(_loop), mixer(_mixer) {}
+		:MultiSocketMonitor(_loop), mixer(_mixer) {
+		InvalidateSockets();
+	}
 
 private:
 	virtual int PrepareSockets() override;
