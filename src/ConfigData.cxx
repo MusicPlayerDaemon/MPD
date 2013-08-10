@@ -96,22 +96,35 @@ config_param::DupBlockString(const char *name, const char *default_value) const
 }
 
 Path
-config_param::GetBlockPath(const char *name, GError **error_r) const
+config_param::GetBlockPath(const char *name, const char *default_value,
+			   GError **error_r) const
 {
 	assert(error_r != nullptr);
 	assert(*error_r == nullptr);
 
-	const block_param *bp = GetBlockParam(name);
-	if (bp == nullptr)
-		return Path::Null();
+	int line2 = line;
+	const char *s;
 
-	Path path = ParsePath(bp->value.c_str(), error_r);
+	const block_param *bp = GetBlockParam(name);
+	if (bp != nullptr) {
+		line2 = bp->line;
+		s = bp->value.c_str();
+	} else
+		s = default_value;
+
+	Path path = ParsePath(s, error_r);
 	if (gcc_unlikely(path.IsNull()))
 		g_prefix_error(error_r,
 			       "Invalid path in \"%s\" at line %i: ",
-			       name, bp->line);
+			       name, line2);
 
 	return path;
+}
+
+Path
+config_param::GetBlockPath(const char *name, GError **error_r) const
+{
+	return GetBlockPath(name, nullptr, error_r);
 }
 
 unsigned

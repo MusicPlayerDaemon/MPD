@@ -112,6 +112,9 @@ struct config_param {
 	 * Same as config_dup_path(), but looks up the setting in the
 	 * specified block.
 	 */
+	Path GetBlockPath(const char *name, const char *default_value,
+			  GError **error_r) const;
+
 	Path GetBlockPath(const char *name, GError **error_r) const;
 
 	gcc_pure
