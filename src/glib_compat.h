@@ -30,12 +30,12 @@
 
 #if !GLIB_CHECK_VERSION(2,28,0)
 
+#include "system/clock.h"
+
 static inline gint64
 g_source_get_time(GSource *source)
 {
-	GTimeVal tv;
-	g_source_get_current_time(source, &tv);
-	return tv.tv_sec * 1000000 + tv.tv_usec;
+	return monotonic_clock_us();
 }
 
 #endif
