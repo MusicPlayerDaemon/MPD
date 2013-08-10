@@ -24,5 +24,5 @@
 Mutex db_mutex;
 
 #ifndef NDEBUG
-GThread *db_mutex_holder;
+ThreadId db_mutex_holder;
 #endif

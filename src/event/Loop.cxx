@@ -23,12 +23,12 @@
 void
 EventLoop::Run()
 {
-	assert(thread == nullptr);
-	thread = g_thread_self();
+	assert(thread.IsNull());
+	thread = ThreadId::GetCurrent();
 
 	g_main_loop_run(loop);
 
-	assert(thread == g_thread_self());
+	assert(thread.IsInside());
 }
 
 guint

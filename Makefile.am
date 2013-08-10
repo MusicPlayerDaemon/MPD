@@ -80,6 +80,7 @@ src_mpd_SOURCES = \
 	$(DECODER_SRC) \
 	$(OUTPUT_API_SRC) \
 	$(MIXER_API_SRC) \
+	src/thread/Id.hxx \
 	src/thread/Mutex.hxx \
 	src/thread/PosixMutex.hxx \
 	src/thread/CriticalSection.hxx \

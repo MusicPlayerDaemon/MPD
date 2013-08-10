@@ -21,6 +21,7 @@
 #define MPD_EVENT_LOOP_HXX
 
 #include "check.h"
+#include "thread/Id.hxx"
 #include "gcc.h"
 
 #include <glib.h>
@@ -34,19 +35,19 @@ class EventLoop {
 	/**
 	 * A reference to the thread that is currently inside Run().
 	 */
-	GThread *thread;
+	ThreadId thread;
 
 public:
 	EventLoop()
 		:context(g_main_context_new()),
 		 loop(g_main_loop_new(context, false)),
-		 thread(nullptr) {}
+		 thread(ThreadId::Null()) {}
 
 	struct Default {};
 	EventLoop(gcc_unused Default _dummy)
 		:context(g_main_context_ref(g_main_context_default())),
 		 loop(g_main_loop_new(context, false)),
-		 thread(nullptr) {}
+		 thread(ThreadId::Null()) {}
 
 	~EventLoop() {
 		g_main_loop_unref(loop);
@@ -58,9 +59,9 @@ public:
 	 */
 	gcc_pure
 	bool IsInside() const {
-		assert(thread != nullptr);
+		assert(!thread.IsNull());
 
-		return g_thread_self() == thread;
+		return thread.IsInside();
 	}
 
 	GMainContext *GetContext() {
