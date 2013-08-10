@@ -26,6 +26,7 @@
 #include "DatabaseSimple.hxx"
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"
+#include "util/Error.hxx"
 
 extern "C" {
 #include "stats.h"
@@ -77,12 +78,10 @@ static void * update_task(void *_path)
 	modified = update_walk(path, discard);
 
 	if (modified || !db_exists()) {
-		GError *error = NULL;
-		if (!db_save(&error)) {
+		Error error;
+		if (!db_save(error))
 			g_warning("Failed to save database: %s",
-				  error->message);
-			g_error_free(error);
-		}
+				  error.GetMessage());
 	}
 
 	if (path != NULL && *path != 0)

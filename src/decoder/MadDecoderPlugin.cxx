@@ -25,6 +25,7 @@
 #include "TagRva2.hxx"
 #include "TagHandler.hxx"
 #include "CheckAudioFormat.hxx"
+#include "util/Error.hxx"
 
 #include <assert.h>
 #include <unistd.h>
@@ -203,8 +204,9 @@ MadDecoder::MadDecoder(struct decoder *_decoder,
 inline bool
 MadDecoder::Seek(long offset)
 {
+	Error error;
 	if (!input_stream_lock_seek(input_stream, offset, SEEK_SET,
-				    nullptr))
+				    error))
 		return false;
 
 	mad_stream_buffer(&stream, input_buffer, 0);
@@ -1124,16 +1126,14 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 		return;
 	}
 
+	Error error;
 	AudioFormat audio_format;
-	GError *error = nullptr;
 	if (!audio_format_init_checked(audio_format,
 				       data.frame.header.samplerate,
 				       SampleFormat::S24_P32,
 				       MAD_NCHANNELS(&data.frame.header),
-				       &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
-
+				       error)) {
+		g_warning("%s", error.GetMessage());
 		delete tag;
 		return;
 	}

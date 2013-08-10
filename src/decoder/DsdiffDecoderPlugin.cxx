@@ -31,6 +31,7 @@
 #include "DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/bit_reverse.h"
+#include "util/Error.hxx"
 #include "TagHandler.hxx"
 #include "DsdLib.hxx"
 #include "TagHandler.hxx"
@@ -432,13 +433,12 @@ dsdiff_stream_decode(struct decoder *decoder, struct input_stream *is)
 	if (!dsdiff_read_metadata(decoder, is, &metadata, &chunk_header))
 		return;
 
-	GError *error = nullptr;
+	Error error;
 	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8,
 				       SampleFormat::DSD,
-				       metadata.channels, &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+				       metadata.channels, error)) {
+		g_warning("%s", error.GetMessage());
 		return;
 	}
 
@@ -490,7 +490,7 @@ dsdiff_scan_stream(struct input_stream *is,
 	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8,
 				       SampleFormat::DSD,
-				       metadata.channels, nullptr))
+				       metadata.channels, IgnoreError()))
 		/* refuse to parse files which we cannot play anyway */
 		return false;
 

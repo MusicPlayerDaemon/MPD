@@ -27,6 +27,7 @@
 #include "TagHandler.hxx"
 #include "InputStream.hxx"
 #include "CheckAudioFormat.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -124,7 +125,8 @@ mpd_ffmpeg_stream_seek(void *opaque, int64_t pos, int whence)
 	if (whence == AVSEEK_SIZE)
 		return stream->input->size;
 
-	if (!input_stream_lock_seek(stream->input, pos, whence, NULL))
+	Error error;
+	if (!input_stream_lock_seek(stream->input, pos, whence, error))
 		return -1;
 
 	return stream->input->offset;
@@ -343,10 +345,12 @@ ffmpeg_probe(struct decoder *decoder, struct input_stream *is)
 		PADDING = 16,
 	};
 
+	Error error;
+
 	unsigned char *buffer = (unsigned char *)g_malloc(BUFFER_SIZE);
 	size_t nbytes = decoder_read(decoder, is, buffer, BUFFER_SIZE);
 	if (nbytes <= PADDING ||
-	    !input_stream_lock_seek(is, 0, SEEK_SET, NULL)) {
+	    !input_stream_lock_seek(is, 0, SEEK_SET, error)) {
 		g_free(buffer);
 		return NULL;
 	}
@@ -427,14 +431,13 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	if (sample_format == SampleFormat::UNDEFINED)
 		return;
 
-	GError *error = NULL;
+	Error error;
 	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format,
 				       codec_context->sample_rate,
 				       sample_format,
-				       codec_context->channels, &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+				       codec_context->channels, error)) {
+		g_warning("%s", error.GetMessage());
 		avformat_close_input(&format_context);
 		return;
 	}

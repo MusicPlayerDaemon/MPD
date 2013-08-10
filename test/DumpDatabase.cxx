@@ -27,6 +27,7 @@
 #include "conf.h"
 #include "Tag.hxx"
 #include "fs/Path.hxx"
+#include "util/Error.hxx"
 
 #include <iostream>
 using std::cout;
@@ -46,14 +47,14 @@ my_log_func(const gchar *log_domain, gcc_unused GLogLevelFlags log_level,
 }
 
 static bool
-DumpDirectory(const Directory &directory, GError **)
+DumpDirectory(const Directory &directory, Error &)
 {
 	cout << "D " << directory.path << endl;
 	return true;
 }
 
 static bool
-DumpSong(Song &song, GError **)
+DumpSong(Song &song, Error &)
 {
 	cout << "S " << song.parent->path << "/" << song.uri << endl;
 	return true;
@@ -61,7 +62,7 @@ DumpSong(Song &song, GError **)
 
 static bool
 DumpPlaylist(const PlaylistInfo &playlist,
-	     const Directory &directory, GError **)
+	     const Directory &directory, Error &)
 {
 	cout << "P " << directory.path << "/" << playlist.name.c_str() << endl;
 	return true;
@@ -70,8 +71,6 @@ DumpPlaylist(const PlaylistInfo &playlist,
 int
 main(int argc, char **argv)
 {
-	GError *error = nullptr;
-
 	if (argc != 3) {
 		cerr << "Usage: DumpDatabase CONFIG PLUGIN" << endl;
 		return 1;
@@ -98,9 +97,9 @@ main(int argc, char **argv)
 
 	config_global_init();
 
-	if (!ReadConfigFile(config_path, &error)) {
-		cerr << error->message << endl;
-		g_error_free(error);
+	Error error;
+	if (!ReadConfigFile(config_path, error)) {
+		cerr << error.GetMessage() << endl;
 		return EXIT_FAILURE;
 	}
 
@@ -113,29 +112,26 @@ main(int argc, char **argv)
 	if (path != nullptr)
 		param.AddBlockParam("path", path->value, path->line);
 
-	Database *db = plugin->create(param, &error);
+	Database *db = plugin->create(param, error);
 
 	if (db == nullptr) {
-		cerr << error->message << endl;
-		g_error_free(error);
+		cerr << error.GetMessage() << endl;
 		return EXIT_FAILURE;
 	}
 
-	if (!db->Open(&error)) {
+	if (!db->Open(error)) {
 		delete db;
-		cerr << error->message << endl;
-		g_error_free(error);
+		cerr << error.GetMessage() << endl;
 		return EXIT_FAILURE;
 	}
 
 	const DatabaseSelection selection("", true);
 
 	if (!db->Visit(selection, DumpDirectory, DumpSong, DumpPlaylist,
-		       &error)) {
+		       error)) {
 		db->Close();
 		delete db;
-		cerr << error->message << endl;
-		g_error_free(error);
+		cerr << error.GetMessage() << endl;
 		return EXIT_FAILURE;
 	}
 

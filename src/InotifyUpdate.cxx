@@ -24,6 +24,7 @@
 #include "Mapper.hxx"
 #include "Main.hxx"
 #include "fs/Path.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -162,7 +163,7 @@ static void
 recursive_watch_subdirectories(WatchDirectory *directory,
 			       const char *path_fs, unsigned depth)
 {
-	GError *error = NULL;
+	Error error;
 	DIR *dir;
 	struct dirent *ent;
 
@@ -204,12 +205,11 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 			continue;
 		}
 
-		ret = inotify_source->Add(child_path_fs, IN_MASK, &error);
+		ret = inotify_source->Add(child_path_fs, IN_MASK, error);
 		if (ret < 0) {
 			g_warning("Failed to register %s: %s",
-				  child_path_fs, error->message);
-			g_error_free(error);
-			error = NULL;
+				  child_path_fs, error.GetMessage());
+			error.Clear();
 			g_free(child_path_fs);
 			continue;
 		}
@@ -309,8 +309,6 @@ mpd_inotify_callback(int wd, unsigned mask,
 void
 mpd_inotify_init(unsigned max_depth)
 {
-	GError *error = NULL;
-
 	g_debug("initializing inotify");
 
 	const Path &path = mapper_get_music_directory_fs();
@@ -319,21 +317,20 @@ mpd_inotify_init(unsigned max_depth)
 		return;
 	}
 
+	Error error;
 	inotify_source = InotifySource::Create(*main_loop,
 					       mpd_inotify_callback, nullptr,
-					       &error);
+					       error);
 	if (inotify_source == NULL) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+		g_warning("%s", error.GetMessage());
 		return;
 	}
 
 	inotify_max_depth = max_depth;
 
-	int descriptor = inotify_source->Add(path.c_str(), IN_MASK, &error);
+	int descriptor = inotify_source->Add(path.c_str(), IN_MASK, error);
 	if (descriptor < 0) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+		g_warning("%s", error.GetMessage());
 		delete inotify_source;
 		inotify_source = NULL;
 		return;

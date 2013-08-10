@@ -118,9 +118,9 @@ PrintPlaylistFull(Client *client,
 
 bool
 db_selection_print(Client *client, const DatabaseSelection &selection,
-		   bool full, GError **error_r)
+		   bool full, Error &error)
 {
-	const Database *db = GetDatabase(error_r);
+	const Database *db = GetDatabase(error);
 	if (db == nullptr)
 		return false;
 
@@ -136,7 +136,7 @@ db_selection_print(Client *client, const DatabaseSelection &selection,
 			    client, _1, _2)
 		: VisitPlaylist();
 
-	return db->Visit(selection, d, s, p, error_r);
+	return db->Visit(selection, d, s, p, error);
 }
 
 struct SearchStats {
@@ -162,9 +162,9 @@ stats_visitor_song(SearchStats &stats, Song &song)
 bool
 searchStatsForSongsIn(Client *client, const char *name,
 		      const SongFilter *filter,
-		      GError **error_r)
+		      Error &error)
 {
-	const Database *db = GetDatabase(error_r);
+	const Database *db = GetDatabase(error);
 	if (db == nullptr)
 		return false;
 
@@ -177,7 +177,7 @@ searchStatsForSongsIn(Client *client, const char *name,
 	using namespace std::placeholders;
 	const auto f = std::bind(stats_visitor_song, std::ref(stats),
 				 _1);
-	if (!db->Visit(selection, f, error_r))
+	if (!db->Visit(selection, f, error))
 		return false;
 
 	printSearchStats(client, &stats);
@@ -185,18 +185,18 @@ searchStatsForSongsIn(Client *client, const char *name,
 }
 
 bool
-printAllIn(Client *client, const char *uri_utf8, GError **error_r)
+printAllIn(Client *client, const char *uri_utf8, Error &error)
 {
 	const DatabaseSelection selection(uri_utf8, true);
-	return db_selection_print(client, selection, false, error_r);
+	return db_selection_print(client, selection, false, error);
 }
 
 bool
 printInfoForAllIn(Client *client, const char *uri_utf8,
-		  GError **error_r)
+		  Error &error)
 {
 	const DatabaseSelection selection(uri_utf8, true);
-	return db_selection_print(client, selection, true, error_r);
+	return db_selection_print(client, selection, true, error);
 }
 
 static bool
@@ -218,9 +218,9 @@ PrintUniqueTag(Client *client, enum tag_type tag_type,
 bool
 listAllUniqueTags(Client *client, int type,
 		  const SongFilter *filter,
-		  GError **error_r)
+		  Error &error)
 {
-	const Database *db = GetDatabase(error_r);
+	const Database *db = GetDatabase(error);
 	if (db == nullptr)
 		return false;
 
@@ -229,12 +229,12 @@ listAllUniqueTags(Client *client, int type,
 	if (type == LOCATE_TAG_FILE_TYPE) {
 		using namespace std::placeholders;
 		const auto f = std::bind(PrintSongURIVisitor, client, _1);
-		return db->Visit(selection, f, error_r);
+		return db->Visit(selection, f, error);
 	} else {
 		using namespace std::placeholders;
 		const auto f = std::bind(PrintUniqueTag, client,
 					 (enum tag_type)type, _1);
 		return db->VisitUniqueTags(selection, (enum tag_type)type,
-					   f, error_r);
+					   f, error);
 	}
 }

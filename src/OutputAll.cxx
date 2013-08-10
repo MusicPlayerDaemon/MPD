@@ -27,6 +27,7 @@
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
 #include "system/FatalError.hxx"
+#include "util/Error.hxx"
 #include "conf.h"
 #include "notify.hxx"
 
@@ -104,7 +105,7 @@ audio_output_all_init(struct player_control *pc)
 {
 	const struct config_param *param = NULL;
 	unsigned int i;
-	GError *error = NULL;
+	Error error;
 
 	num_audio_outputs = audio_output_config_count();
 	audio_outputs = g_new(struct audio_output *, num_audio_outputs);
@@ -125,11 +126,12 @@ audio_output_all_init(struct player_control *pc)
 			param = &empty;
 		}
 
-		struct audio_output *output = audio_output_new(*param, pc, &error);
+		audio_output *output = audio_output_new(*param, pc, error);
 		if (output == NULL) {
 			if (param != NULL)
 				FormatFatalError("line %i: %s",
-						 param->line, error->message);
+						 param->line,
+						 error.GetMessage());
 			else
 				FatalError(error);
 		}
@@ -271,7 +273,7 @@ audio_output_all_set_replay_gain_mode(enum replay_gain_mode mode)
 }
 
 bool
-audio_output_all_play(struct music_chunk *chunk, GError **error_r)
+audio_output_all_play(struct music_chunk *chunk, Error &error)
 {
 	bool ret;
 	unsigned int i;
@@ -284,8 +286,7 @@ audio_output_all_play(struct music_chunk *chunk, GError **error_r)
 	ret = audio_output_all_update();
 	if (!ret) {
 		/* TODO: obtain real error */
-		g_set_error(error_r, output_quark(), 0,
-			    "Failed to open audio output");
+		error.Set(output_domain, "Failed to open audio output");
 		return false;
 	}
 
@@ -300,7 +301,7 @@ audio_output_all_play(struct music_chunk *chunk, GError **error_r)
 bool
 audio_output_all_open(const AudioFormat audio_format,
 		      struct music_buffer *buffer,
-		      GError **error_r)
+		      Error &error)
 {
 	bool ret = false, enabled = false;
 	unsigned int i;
@@ -338,12 +339,10 @@ audio_output_all_open(const AudioFormat audio_format,
 	}
 
 	if (!enabled)
-		g_set_error(error_r, output_quark(), 0,
-			    "All audio outputs are disabled");
+		error.Set(output_domain, "All audio outputs are disabled");
 	else if (!ret)
 		/* TODO: obtain real error */
-		g_set_error(error_r, output_quark(), 0,
-			    "Failed to open audio output");
+		error.Set(output_domain, "Failed to open audio output");
 
 	if (!ret)
 		/* close all devices if there was an error */

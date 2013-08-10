@@ -22,6 +22,7 @@
 #include "FlacCommon.hxx"
 #include "FlacMetadata.hxx"
 #include "OggCodec.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -330,7 +331,7 @@ oggflac_decode(struct decoder *decoder, struct input_stream *input_stream)
 
 	/* rewind the stream, because ogg_codec_detect() has
 	   moved it */
-	input_stream_lock_seek(input_stream, 0, SEEK_SET, nullptr);
+	input_stream_lock_seek(input_stream, 0, SEEK_SET, IgnoreError());
 
 	flac_decode_internal(decoder, input_stream, true);
 }

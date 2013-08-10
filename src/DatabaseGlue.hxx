@@ -21,10 +21,10 @@
 #define MPD_DATABASE_GLUE_HXX
 
 #include "gcc.h"
-#include "gerror.h"
 
 struct config_param;
 class Database;
+class Error;
 
 /**
  * Initialize the database library.
@@ -32,13 +32,13 @@ class Database;
  * @param param the database configuration block
  */
 bool
-DatabaseGlobalInit(const config_param &param, GError **error_r);
+DatabaseGlobalInit(const config_param &param, Error &error);
 
 void
 DatabaseGlobalDeinit(void);
 
 bool
-DatabaseGlobalOpen(GError **error);
+DatabaseGlobalOpen(Error &error);
 
 /**
  * Returns the global #Database instance.  May return NULL if this MPD
@@ -54,6 +54,6 @@ GetDatabase();
  */
 gcc_pure
 const Database *
-GetDatabase(GError **error_r);
+GetDatabase(Error &error);
 
 #endif

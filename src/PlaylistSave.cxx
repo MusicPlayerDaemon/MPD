@@ -27,6 +27,7 @@
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/UriUtil.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -99,14 +100,11 @@ bool
 playlist_load_spl(struct playlist *playlist, struct player_control *pc,
 		  const char *name_utf8,
 		  unsigned start_index, unsigned end_index,
-		  GError **error_r)
+		  Error &error)
 {
-	GError *error = NULL;
-	PlaylistFileContents contents = LoadPlaylistFile(name_utf8, &error);
-	if (contents.empty() && error != nullptr) {
-		g_propagate_error(error_r, error);
+	PlaylistFileContents contents = LoadPlaylistFile(name_utf8, error);
+	if (contents.empty() && error.IsDefined())
 		return false;
-	}
 
 	if (end_index > contents.size())
 		end_index = contents.size();

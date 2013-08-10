@@ -28,6 +28,8 @@
 #include "gcc.h"
 #include "conf.h"
 #include "Tag.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #undef MPD_DIRECTORY_H
 #undef MPD_SONG_H
@@ -46,39 +48,34 @@ class ProxyDatabase : public Database {
 
 public:
 	static Database *Create(const config_param &param,
-				GError **error_r);
+				Error &error);
 
-	virtual bool Open(GError **error_r) override;
+	virtual bool Open(Error &error) override;
 	virtual void Close() override;
 	virtual Song *GetSong(const char *uri_utf8,
-				     GError **error_r) const override;
+				     Error &error) const override;
 	virtual void ReturnSong(Song *song) const;
 
 	virtual bool Visit(const DatabaseSelection &selection,
 			   VisitDirectory visit_directory,
 			   VisitSong visit_song,
 			   VisitPlaylist visit_playlist,
-			   GError **error_r) const override;
+			   Error &error) const override;
 
 	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
 				     enum tag_type tag_type,
 				     VisitString visit_string,
-				     GError **error_r) const override;
+				     Error &error) const override;
 
 	virtual bool GetStats(const DatabaseSelection &selection,
 			      DatabaseStats &stats,
-			      GError **error_r) const override;
+			      Error &error) const override;
 
 protected:
-	bool Configure(const config_param &param, GError **error_r);
+	bool Configure(const config_param &param, Error &error);
 };
 
-gcc_pure
-static inline GQuark
-libmpdclient_quark(void)
-{
-	return g_quark_from_static_string("libmpdclient");
-}
+static constexpr Domain libmpdclient_domain("libmpdclient");
 
 static constexpr struct {
 	enum tag_type d;
@@ -116,23 +113,23 @@ Convert(enum tag_type tag_type)
 }
 
 static bool
-CheckError(struct mpd_connection *connection, GError **error_r)
+CheckError(struct mpd_connection *connection, Error &error)
 {
-	const auto error = mpd_connection_get_error(connection);
-	if (error == MPD_ERROR_SUCCESS)
+	const auto code = mpd_connection_get_error(connection);
+	if (code == MPD_ERROR_SUCCESS)
 		return true;
 
-	g_set_error_literal(error_r, libmpdclient_quark(), (int)error,
-			    mpd_connection_get_error_message(connection));
+	error.Set(libmpdclient_domain, (int)code,
+		  mpd_connection_get_error_message(connection));
 	mpd_connection_clear_error(connection);
 	return false;
 }
 
 Database *
-ProxyDatabase::Create(const config_param &param, GError **error_r)
+ProxyDatabase::Create(const config_param &param, Error &error)
 {
 	ProxyDatabase *db = new ProxyDatabase();
-	if (!db->Configure(param, error_r)) {
+	if (!db->Configure(param, error)) {
 		delete db;
 		db = NULL;
 	}
@@ -141,7 +138,7 @@ ProxyDatabase::Create(const config_param &param, GError **error_r)
 }
 
 bool
-ProxyDatabase::Configure(const config_param &param, GError **)
+ProxyDatabase::Configure(const config_param &param, gcc_unused Error &error)
 {
 	host = param.GetBlockValue("host", "");
 	port = param.GetBlockValue("port", 0u);
@@ -150,17 +147,16 @@ ProxyDatabase::Configure(const config_param &param, GError **)
 }
 
 bool
-ProxyDatabase::Open(GError **error_r)
+ProxyDatabase::Open(Error &error)
 {
 	connection = mpd_connection_new(host.empty() ? NULL : host.c_str(),
 					port, 0);
 	if (connection == NULL) {
-		g_set_error_literal(error_r, libmpdclient_quark(),
-				    (int)MPD_ERROR_OOM, "Out of memory");
+		error.Set(libmpdclient_domain, (int)MPD_ERROR_OOM, "Out of memory");
 		return false;
 	}
 
-	if (!CheckError(connection, error_r)) {
+	if (!CheckError(connection, error)) {
 		mpd_connection_free(connection);
 		return false;
 	}
@@ -183,13 +179,13 @@ static Song *
 Convert(const struct mpd_song *song);
 
 Song *
-ProxyDatabase::GetSong(const char *uri, GError **error_r) const
+ProxyDatabase::GetSong(const char *uri, Error &error) const
 {
 	// TODO: implement
 	// TODO: auto-reconnect
 
 	if (!mpd_send_list_meta(connection, uri)) {
-		CheckError(connection, error_r);
+		CheckError(connection, error);
 		return nullptr;
 	}
 
@@ -202,13 +198,12 @@ ProxyDatabase::GetSong(const char *uri, GError **error_r) const
 		if (song2 != nullptr)
 			song2->Free();
 
-		CheckError(connection, error_r);
+		CheckError(connection, error);
 		return nullptr;
 	}
 
 	if (song2 == nullptr)
-		g_set_error(error_r, db_quark(), DB_NOT_FOUND,
-			    "No such song: %s", uri);
+		error.Format(db_domain, DB_NOT_FOUND, "No such song: %s", uri);
 
 	return song2;
 }
@@ -226,19 +221,19 @@ ProxyDatabase::ReturnSong(Song *song) const
 static bool
 Visit(struct mpd_connection *connection, const char *uri,
       bool recursive, VisitDirectory visit_directory, VisitSong visit_song,
-      VisitPlaylist visit_playlist, GError **error_r);
+      VisitPlaylist visit_playlist, Error &error);
 
 static bool
 Visit(struct mpd_connection *connection,
       bool recursive, const struct mpd_directory *directory,
       VisitDirectory visit_directory, VisitSong visit_song,
-      VisitPlaylist visit_playlist, GError **error_r)
+      VisitPlaylist visit_playlist, Error &error)
 {
 	const char *path = mpd_directory_get_path(directory);
 
 	if (visit_directory) {
 		Directory *d = Directory::NewGeneric(path, &detached_root);
-		bool success = visit_directory(*d, error_r);
+		bool success = visit_directory(*d, error);
 		d->Free();
 		if (!success)
 			return false;
@@ -246,7 +241,7 @@ Visit(struct mpd_connection *connection,
 
 	if (recursive &&
 	    !Visit(connection, path, recursive,
-		   visit_directory, visit_song, visit_playlist, error_r))
+		   visit_directory, visit_song, visit_playlist, error))
 		return false;
 
 	return true;
@@ -290,13 +285,13 @@ Convert(const struct mpd_song *song)
 
 static bool
 Visit(const struct mpd_song *song,
-      VisitSong visit_song, GError **error_r)
+      VisitSong visit_song, Error &error)
 {
 	if (!visit_song)
 		return true;
 
 	Song *s = Convert(song);
-	bool success = visit_song(*s, error_r);
+	bool success = visit_song(*s, error);
 	s->Free();
 
 	return success;
@@ -304,7 +299,7 @@ Visit(const struct mpd_song *song,
 
 static bool
 Visit(const struct mpd_playlist *playlist,
-      VisitPlaylist visit_playlist, GError **error_r)
+      VisitPlaylist visit_playlist, Error &error)
 {
 	if (!visit_playlist)
 		return true;
@@ -312,7 +307,7 @@ Visit(const struct mpd_playlist *playlist,
 	PlaylistInfo p(mpd_playlist_get_path(playlist),
 		       mpd_playlist_get_last_modified(playlist));
 
-	return visit_playlist(p, detached_root, error_r);
+	return visit_playlist(p, detached_root, error);
 }
 
 class ProxyEntity {
@@ -356,13 +351,13 @@ ReceiveEntities(struct mpd_connection *connection)
 static bool
 Visit(struct mpd_connection *connection, const char *uri,
       bool recursive, VisitDirectory visit_directory, VisitSong visit_song,
-      VisitPlaylist visit_playlist, GError **error_r)
+      VisitPlaylist visit_playlist, Error &error)
 {
 	if (!mpd_send_list_meta(connection, uri))
-		return CheckError(connection, error_r);
+		return CheckError(connection, error);
 
 	std::list<ProxyEntity> entities(ReceiveEntities(connection));
-	if (!CheckError(connection, error_r))
+	if (!CheckError(connection, error))
 		return false;
 
 	for (const auto &entity : entities) {
@@ -374,25 +369,25 @@ Visit(struct mpd_connection *connection, const char *uri,
 			if (!Visit(connection, recursive,
 				   mpd_entity_get_directory(entity),
 				   visit_directory, visit_song, visit_playlist,
-				   error_r))
+				   error))
 				return false;
 			break;
 
 		case MPD_ENTITY_TYPE_SONG:
 			if (!Visit(mpd_entity_get_song(entity), visit_song,
-				   error_r))
+				   error))
 				return false;
 			break;
 
 		case MPD_ENTITY_TYPE_PLAYLIST:
 			if (!Visit(mpd_entity_get_playlist(entity),
-				   visit_playlist, error_r))
+				   visit_playlist, error))
 				return false;
 			break;
 		}
 	}
 
-	return CheckError(connection, error_r);
+	return CheckError(connection, error);
 }
 
 bool
@@ -400,55 +395,54 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 		     VisitDirectory visit_directory,
 		     VisitSong visit_song,
 		     VisitPlaylist visit_playlist,
-		     GError **error_r) const
+		     Error &error) const
 {
 	// TODO: match
 	// TODO: auto-reconnect
 
 	return ::Visit(connection, selection.uri, selection.recursive,
 		       visit_directory, visit_song, visit_playlist,
-		       error_r);
+		       error);
 }
 
 bool
 ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 			       enum tag_type tag_type,
 			       VisitString visit_string,
-			       GError **error_r) const
+			       Error &error) const
 {
 	enum mpd_tag_type tag_type2 = Convert(tag_type);
 	if (tag_type2 == MPD_TAG_COUNT) {
-		g_set_error_literal(error_r, libmpdclient_quark(), 0,
-				    "Unsupported tag");
+		error.Set(libmpdclient_domain, "Unsupported tag");
 		return false;
 	}
 
 	if (!mpd_search_db_tags(connection, tag_type2))
-		return CheckError(connection, error_r);
+		return CheckError(connection, error);
 
 	// TODO: match
 	(void)selection;
 
 	if (!mpd_search_commit(connection))
-		return CheckError(connection, error_r);
+		return CheckError(connection, error);
 
 	bool result = true;
 
 	struct mpd_pair *pair;
 	while (result &&
 	       (pair = mpd_recv_pair_tag(connection, tag_type2)) != nullptr) {
-		result = visit_string(pair->value, error_r);
+		result = visit_string(pair->value, error);
 		mpd_return_pair(connection, pair);
 	}
 
 	return mpd_response_finish(connection) &&
-		CheckError(connection, error_r) &&
+		CheckError(connection, error) &&
 		result;
 }
 
 bool
 ProxyDatabase::GetStats(const DatabaseSelection &selection,
-			DatabaseStats &stats, GError **error_r) const
+			DatabaseStats &stats, Error &error) const
 {
 	// TODO: match
 	(void)selection;
@@ -456,7 +450,7 @@ ProxyDatabase::GetStats(const DatabaseSelection &selection,
 	struct mpd_stats *stats2 =
 		mpd_run_stats(connection);
 	if (stats2 == nullptr)
-		return CheckError(connection, error_r);
+		return CheckError(connection, error);
 
 	stats.song_count = mpd_stats_get_number_of_songs(stats2);
 	stats.total_duration = mpd_stats_get_db_play_time(stats2);

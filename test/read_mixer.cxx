@@ -26,6 +26,7 @@
 #include "Main.hxx"
 #include "event/Loop.hxx"
 #include "ConfigData.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -63,7 +64,7 @@ pulse_output_clear_mixer(gcc_unused PulseOutput *po,
 bool
 pulse_output_set_volume(gcc_unused PulseOutput *po,
 			gcc_unused const struct pa_cvolume *volume,
-			gcc_unused GError **error_r)
+			gcc_unused Error &error)
 {
 	return false;
 }
@@ -111,8 +112,6 @@ pcm_volume(gcc_unused void *buffer, gcc_unused size_t length,
 
 int main(int argc, gcc_unused char **argv)
 {
-	GError *error = NULL;
-	bool success;
 	int volume;
 
 	if (argc != 2) {
@@ -126,23 +125,21 @@ int main(int argc, gcc_unused char **argv)
 
 	main_loop = new EventLoop(EventLoop::Default());
 
+	Error error;
 	Mixer *mixer = mixer_new(&alsa_mixer_plugin, nullptr,
-				 config_param(), &error);
+				 config_param(), error);
 	if (mixer == NULL) {
-		g_printerr("mixer_new() failed: %s\n", error->message);
-		g_error_free(error);
+		g_printerr("mixer_new() failed: %s\n", error.GetMessage());
 		return 2;
 	}
 
-	success = mixer_open(mixer, &error);
-	if (!success) {
+	if (!mixer_open(mixer, error)) {
 		mixer_free(mixer);
-		g_printerr("failed to open the mixer: %s\n", error->message);
-		g_error_free(error);
+		g_printerr("failed to open the mixer: %s\n", error.GetMessage());
 		return 2;
 	}
 
-	volume = mixer_get_volume(mixer, &error);
+	volume = mixer_get_volume(mixer, error);
 	mixer_close(mixer);
 	mixer_free(mixer);
 
@@ -151,10 +148,9 @@ int main(int argc, gcc_unused char **argv)
 	assert(volume >= -1 && volume <= 100);
 
 	if (volume < 0) {
-		if (error != NULL) {
+		if (error.IsDefined()) {
 			g_printerr("failed to read volume: %s\n",
-				   error->message);
-			g_error_free(error);
+				   error.GetMessage());
 		} else
 			g_printerr("failed to read volume\n");
 		return 2;

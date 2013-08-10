@@ -24,35 +24,31 @@
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
+#include "ConfigError.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
 #include <string.h>
 
-static GQuark
-filter_quark(void)
-{
-	return g_quark_from_static_string("filter");
-}
-
 /**
  * Find the "filter" configuration block for the specified name.
  *
  * @param filter_template_name the name of the filter template
- * @param error_r space to return an error description
+ * @param error space to return an error description
  * @return the configuration block, or NULL if none was configured
  */
 static const struct config_param *
-filter_plugin_config(const char *filter_template_name, GError **error_r)
+filter_plugin_config(const char *filter_template_name, Error &error)
 {
 	const struct config_param *param = NULL;
 
 	while ((param = config_get_next_param(CONF_AUDIO_FILTER, param)) != NULL) {
 		const char *name = param->GetBlockValue("name");
 		if (name == NULL) {
-			g_set_error(error_r, filter_quark(), 1,
-				    "filter configuration without 'name' name in line %d",
-				    param->line);
+			error.Format(config_domain,
+				     "filter configuration without 'name' name in line %d",
+				     param->line);
 			return NULL;
 		}
 
@@ -60,10 +56,9 @@ filter_plugin_config(const char *filter_template_name, GError **error_r)
 			return param;
 	}
 
-	g_set_error(error_r, filter_quark(), 1,
-		    "filter template not found: %s",
-		    filter_template_name);
-
+	error.Format(config_domain,
+		     "filter template not found: %s",
+		     filter_template_name);
 	return NULL;
 }
 
@@ -73,11 +68,11 @@ filter_plugin_config(const char *filter_template_name, GError **error_r)
  * configured filter sections.
  * @param chain the chain to append filters on
  * @param spec the filter chain specification
- * @param error_r space to return an error description
+ * @param error space to return an error description
  * @return the number of filters which were successfully added
  */
 unsigned int
-filter_chain_parse(Filter &chain, const char *spec, GError **error_r)
+filter_chain_parse(Filter &chain, const char *spec, Error &error)
 {
 
 	// Split on comma
@@ -92,14 +87,14 @@ filter_chain_parse(Filter &chain, const char *spec, GError **error_r)
 		g_strstrip(*template_names);
 
 		const struct config_param *cfg =
-			filter_plugin_config(*template_names, error_r);
+			filter_plugin_config(*template_names, error);
 		if (cfg == NULL) {
 			// The error has already been set, just stop.
 			break;
 		}
 
 		// Instantiate one of those filter plugins with the template name as a hint
-		Filter *f = filter_configured_new(*cfg, error_r);
+		Filter *f = filter_configured_new(*cfg, error);
 		if (f == NULL) {
 			// The error has already been set, just stop.
 			break;

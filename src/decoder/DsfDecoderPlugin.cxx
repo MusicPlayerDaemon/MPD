@@ -32,6 +32,7 @@
 #include "DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/bit_reverse.h"
+#include "util/Error.hxx"
 #include "DsdLib.hxx"
 #include "TagHandler.hxx"
 
@@ -284,13 +285,12 @@ dsf_stream_decode(struct decoder *decoder, struct input_stream *is)
 	if (!dsf_read_metadata(decoder, is, &metadata))
 		return;
 
-	GError *error = NULL;
+	Error error;
 	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8,
 				       SampleFormat::DSD,
-				       metadata.channels, &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+				       metadata.channels, error)) {
+		g_warning("%s", error.GetMessage());
 		return;
 	}
 	/* Calculate song time from DSD chunk size and sample frequency */
@@ -320,7 +320,7 @@ dsf_scan_stream(struct input_stream *is,
 	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8,
 				       SampleFormat::DSD,
-				       metadata.channels, NULL))
+				       metadata.channels, IgnoreError()))
 		/* refuse to parse files which we cannot play anyway */
 		return false;
 

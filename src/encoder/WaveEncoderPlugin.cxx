@@ -84,7 +84,7 @@ fill_wave_header(struct wave_header *header, int channels, int bits,
 
 static Encoder *
 wave_encoder_init(gcc_unused const config_param &param,
-		  gcc_unused GError **error)
+		  gcc_unused Error &error)
 {
 	WaveEncoder *encoder = new WaveEncoder();
 	return &encoder->encoder;
@@ -101,7 +101,7 @@ wave_encoder_finish(Encoder *_encoder)
 static bool
 wave_encoder_open(Encoder *_encoder,
 		  AudioFormat &audio_format,
-		  gcc_unused GError **error)
+		  gcc_unused Error &error)
 {
 	WaveEncoder *encoder = (WaveEncoder *)_encoder;
 
@@ -196,7 +196,7 @@ pcm24_to_wave(uint8_t *dst8, const uint32_t *src32, size_t length)
 static bool
 wave_encoder_write(Encoder *_encoder,
 		   const void *src, size_t length,
-		   gcc_unused GError **error)
+		   gcc_unused Error &error)
 {
 	WaveEncoder *encoder = (WaveEncoder *)_encoder;
 

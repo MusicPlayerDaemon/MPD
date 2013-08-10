@@ -21,6 +21,7 @@
 #include "FluidsynthDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
+#include "util/Error.hxx"
 #include "conf.h"
 
 #include <glib.h>
@@ -73,12 +74,11 @@ fluidsynth_mpd_log_function(int level, char *message, gcc_unused void *data)
 static bool
 fluidsynth_init(const config_param &param)
 {
-	GError *error = nullptr;
+	Error error;
 
 	sample_rate = param.GetBlockValue("sample_rate", 48000u);
-	if (!audio_check_sample_rate(sample_rate, &error)) {
-		g_warning("%s\n", error->message);
-		g_error_free(error);
+	if (!audio_check_sample_rate(sample_rate, error)) {
+		g_warning("%s", error.GetMessage());
 		return false;
 	}
 

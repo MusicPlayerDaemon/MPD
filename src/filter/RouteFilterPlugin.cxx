@@ -41,13 +41,16 @@
 
 #include "config.h"
 #include "conf.h"
-#include "ConfigQuark.hxx"
+#include "ConfigError.hxx"
 #include "AudioFormat.hxx"
 #include "CheckAudioFormat.hxx"
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
 #include "pcm/PcmBuffer.hxx"
+#include "util/Error.hxx"
+
+#include <glib.h>
 
 #include <assert.h>
 #include <string.h>
@@ -118,16 +121,16 @@ public:
 	 * @param filter a route_filter whose min_channels and sources[] to set
 	 * @return true on success, false on error
 	 */
-	bool Configure(const config_param &param, GError **error_r);
+	bool Configure(const config_param &param, Error &error);
 
-	virtual AudioFormat Open(AudioFormat &af, GError **error_r) override;
+	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
 	virtual void Close();
 	virtual const void *FilterPCM(const void *src, size_t src_size,
-				      size_t *dest_size_r, GError **error_r);
+				      size_t *dest_size_r, Error &error);
 };
 
 bool
-RouteFilter::Configure(const config_param &param, GError **error_r) {
+RouteFilter::Configure(const config_param &param, Error &error) {
 
 	/* TODO:
 	 * With a more clever way of marking "don't copy to output N",
@@ -160,9 +163,9 @@ RouteFilter::Configure(const config_param &param, GError **error_r) {
 		// Split the a>b string into source and destination
 		sd = g_strsplit(tokens[c], ">", 2);
 		if (g_strv_length(sd) != 2) {
-			g_set_error(error_r, config_quark(), 1,
-				"Invalid copy around %d in routes spec: %s",
-				param.line, tokens[c]);
+			error.Format(config_domain,
+				     "Invalid copy around %d in routes spec: %s",
+				     param.line, tokens[c]);
 			g_strfreev(sd);
 			g_strfreev(tokens);
 			return false;
@@ -183,9 +186,9 @@ RouteFilter::Configure(const config_param &param, GError **error_r) {
 
 	if (!audio_valid_channel_count(min_output_channels)) {
 		g_strfreev(tokens);
-		g_set_error(error_r, audio_format_quark(), 0,
-			    "Invalid number of output channels requested: %d",
-			    min_output_channels);
+		error.Format(config_domain,
+			     "Invalid number of output channels requested: %d",
+			     min_output_channels);
 		return false;
 	}
 
@@ -207,9 +210,9 @@ RouteFilter::Configure(const config_param &param, GError **error_r) {
 		// Split the a>b string into source and destination
 		sd = g_strsplit(tokens[c], ">", 2);
 		if (g_strv_length(sd) != 2) {
-			g_set_error(error_r, config_quark(), 1,
-				"Invalid copy around %d in routes spec: %s",
-				param.line, tokens[c]);
+			error.Format(config_domain,
+				     "Invalid copy around %d in routes spec: %s",
+				     param.line, tokens[c]);
 			g_strfreev(sd);
 			g_strfreev(tokens);
 			return false;
@@ -229,10 +232,10 @@ RouteFilter::Configure(const config_param &param, GError **error_r) {
 }
 
 static Filter *
-route_filter_init(const config_param &param, GError **error_r)
+route_filter_init(const config_param &param, Error &error)
 {
 	RouteFilter *filter = new RouteFilter();
-	if (!filter->Configure(param, error_r)) {
+	if (!filter->Configure(param, error)) {
 		delete filter;
 		return nullptr;
 	}
@@ -241,7 +244,7 @@ route_filter_init(const config_param &param, GError **error_r)
 }
 
 AudioFormat
-RouteFilter::Open(AudioFormat &audio_format, gcc_unused GError **error_r)
+RouteFilter::Open(AudioFormat &audio_format, gcc_unused Error &error)
 {
 	// Copy the input format for later reference
 	input_format = audio_format;
@@ -266,7 +269,7 @@ RouteFilter::Close()
 
 const void *
 RouteFilter::FilterPCM(const void *src, size_t src_size,
-		       size_t *dest_size_r, gcc_unused GError **error_r)
+		       size_t *dest_size_r, gcc_unused Error &error)
 {
 	size_t number_of_frames = src_size / input_frame_size;
 

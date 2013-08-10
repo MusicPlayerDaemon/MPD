@@ -124,7 +124,7 @@ static void callback(gcc_unused struct despotify_session* ds,
 static struct input_stream *
 input_despotify_open(const char *url,
 		     Mutex &mutex, Cond &cond,
-		     gcc_unused GError **error_r)
+		     gcc_unused Error &error)
 {
 	struct despotify_session *session;
 	struct ds_link *ds_link;
@@ -172,7 +172,7 @@ input_despotify_open(const char *url,
 
 static size_t
 input_despotify_read(struct input_stream *is, void *ptr, size_t size,
-		     gcc_unused GError **error_r)
+		     gcc_unused Error &error)
 {
 	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
 	size_t to_cpy = size;

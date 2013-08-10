@@ -33,6 +33,7 @@
 #include <forward_list>
 
 struct config_param;
+class Error;
 class EventLoop;
 class ServerSocket;
 class HttpdClient;
@@ -123,21 +124,20 @@ struct HttpdOutput final : private ServerSocket {
 	HttpdOutput(EventLoop &_loop);
 	~HttpdOutput();
 
-	bool Configure(const config_param &param, GError **error_r);
+	bool Configure(const config_param &param, Error &error);
 
-	bool Bind(GError **error_r);
+	bool Bind(Error &error);
 	void Unbind();
 
 	/**
 	 * Caller must lock the mutex.
 	 */
-	bool OpenEncoder(AudioFormat &audio_format,
-			 GError **error_r);
+	bool OpenEncoder(AudioFormat &audio_format, Error &error);
 
 	/**
 	 * Caller must lock the mutex.
 	 */
-	bool Open(AudioFormat &audio_format, GError **error_r);
+	bool Open(AudioFormat &audio_format, Error &error);
 
 	/**
 	 * Caller must lock the mutex.
@@ -194,7 +194,7 @@ struct HttpdOutput final : private ServerSocket {
 	 */
 	void BroadcastFromEncoder();
 
-	bool EncodeAndPlay(const void *chunk, size_t size, GError **error_r);
+	bool EncodeAndPlay(const void *chunk, size_t size, Error &error);
 
 	void SendTag(const Tag *tag);
 

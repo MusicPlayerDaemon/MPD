@@ -25,9 +25,8 @@
 #ifndef MPD_AUDIO_PARSER_HXX
 #define MPD_AUDIO_PARSER_HXX
 
-#include "gerror.h"
-
 struct AudioFormat;
+class Error;
 
 /**
  * Parses a string in the form "SAMPLE_RATE:BITS:CHANNELS" into an
@@ -42,6 +41,6 @@ struct AudioFormat;
  */
 bool
 audio_format_parse(AudioFormat &dest, const char *src,
-		   bool mask, GError **error_r);
+		   bool mask, Error &error);
 
 #endif

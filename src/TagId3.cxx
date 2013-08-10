@@ -22,6 +22,7 @@
 #include "TagHandler.hxx"
 #include "TagTable.hxx"
 #include "Tag.hxx"
+#include "util/Error.hxx"
 
 extern "C" {
 #include "riff.h"
@@ -29,7 +30,6 @@ extern "C" {
 }
 
 #include "conf.h"
-#include "io_error.h"
 
 #include <glib.h>
 #include <id3tag.h>
@@ -545,13 +545,11 @@ tag_id3_riff_aiff_load(FILE *file)
 }
 
 struct id3_tag *
-tag_id3_load(const char *path_fs, GError **error_r)
+tag_id3_load(const char *path_fs, Error &error)
 {
 	FILE *file = fopen(path_fs, "rb");
 	if (file == nullptr) {
-		g_set_error(error_r, errno_quark(), errno,
-			    "Failed to open file %s: %s",
-			    path_fs, g_strerror(errno));
+		error.FormatErrno("Failed to open file %s", path_fs);
 		return nullptr;
 	}
 
@@ -570,13 +568,11 @@ bool
 tag_id3_scan(const char *path_fs,
 	     const struct tag_handler *handler, void *handler_ctx)
 {
-	GError *error = nullptr;
-	struct id3_tag *tag = tag_id3_load(path_fs, &error);
+	Error error;
+	struct id3_tag *tag = tag_id3_load(path_fs, error);
 	if (tag == nullptr) {
-		if (error != nullptr) {
-			g_warning("%s", error->message);
-			g_error_free(error);
-		}
+		if (error.IsDefined())
+			g_warning("%s", error.GetMessage());
 
 		return false;
 	}

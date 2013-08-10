@@ -19,11 +19,14 @@
 
 #include "config.h"
 #include "FifoOutputPlugin.hxx"
+#include "ConfigError.hxx"
 #include "OutputAPI.hxx"
 #include "Timer.hxx"
 #include "system/fd_util.h"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 #include "open.h"
 
 #include <glib.h>
@@ -53,31 +56,24 @@ struct FifoOutput {
 	FifoOutput()
 		:path(Path::Null()), input(-1), output(-1), created(false) {}
 
-	bool Initialize(const config_param &param, GError **error_r) {
+	bool Initialize(const config_param &param, Error &error) {
 		return ao_base_init(&base, &fifo_output_plugin, param,
-				    error_r);
+				    error);
 	}
 
 	void Deinitialize() {
 		ao_base_finish(&base);
 	}
 
-	bool Create(GError **error_r);
-	bool Check(GError **error_r);
+	bool Create(Error &error);
+	bool Check(Error &error);
 	void Delete();
 
-	bool Open(GError **error_r);
+	bool Open(Error &error);
 	void Close();
 };
 
-/**
- * The quark used for GError.domain.
- */
-static inline GQuark
-fifo_output_quark(void)
-{
-	return g_quark_from_static_string("fifo_output");
-}
+static constexpr Domain fifo_output_domain("fifo_output");
 
 inline void
 FifoOutput::Delete()
@@ -112,12 +108,11 @@ FifoOutput::Close()
 }
 
 inline bool
-FifoOutput::Create(GError **error_r)
+FifoOutput::Create(Error &error)
 {
 	if (!MakeFifo(path, 0666)) {
-		g_set_error(error_r, fifo_output_quark(), errno,
-			    "Couldn't create FIFO \"%s\": %s",
-			    path_utf8.c_str(), g_strerror(errno));
+		error.FormatErrno("Couldn't create FIFO \"%s\"",
+				  path_utf8.c_str());
 		return false;
 	}
 
@@ -126,25 +121,24 @@ FifoOutput::Create(GError **error_r)
 }
 
 inline bool
-FifoOutput::Check(GError **error_r)
+FifoOutput::Check(Error &error)
 {
 	struct stat st;
 	if (!StatFile(path, st)) {
 		if (errno == ENOENT) {
 			/* Path doesn't exist */
-			return Create(error_r);
+			return Create(error);
 		}
 
-		g_set_error(error_r, fifo_output_quark(), errno,
-			    "Failed to stat FIFO \"%s\": %s",
-			    path_utf8.c_str(), g_strerror(errno));
+		error.FormatErrno("Failed to stat FIFO \"%s\"",
+				  path_utf8.c_str());
 		return false;
 	}
 
 	if (!S_ISFIFO(st.st_mode)) {
-		g_set_error(error_r, fifo_output_quark(), 0,
-			    "\"%s\" already exists, but is not a FIFO",
-			    path_utf8.c_str());
+		error.Format(fifo_output_domain,
+			     "\"%s\" already exists, but is not a FIFO",
+			     path_utf8.c_str());
 		return false;
 	}
 
@@ -152,25 +146,23 @@ FifoOutput::Check(GError **error_r)
 }
 
 inline bool
-FifoOutput::Open(GError **error_r)
+FifoOutput::Open(Error &error)
 {
-	if (!Check(error_r))
+	if (!Check(error))
 		return false;
 
 	input = OpenFile(path, O_RDONLY|O_NONBLOCK|O_BINARY, 0);
 	if (input < 0) {
-		g_set_error(error_r, fifo_output_quark(), errno,
-			    "Could not open FIFO \"%s\" for reading: %s",
-			    path_utf8.c_str(), g_strerror(errno));
+		error.FormatErrno("Could not open FIFO \"%s\" for reading",
+				  path_utf8.c_str());
 		Close();
 		return false;
 	}
 
 	output = OpenFile(path, O_WRONLY|O_NONBLOCK|O_BINARY, 0);
 	if (output < 0) {
-		g_set_error(error_r, fifo_output_quark(), errno,
-			    "Could not open FIFO \"%s\" for writing: %s",
-			    path_utf8.c_str(), g_strerror(errno));
+		error.FormatErrno("Could not open FIFO \"%s\" for writing",
+				  path_utf8.c_str());
 		Close();
 		return false;
 	}
@@ -179,37 +171,34 @@ FifoOutput::Open(GError **error_r)
 }
 
 static bool
-fifo_open(FifoOutput *fd, GError **error_r)
+fifo_open(FifoOutput *fd, Error &error)
 {
-	return fd->Open(error_r);
+	return fd->Open(error);
 }
 
 static struct audio_output *
-fifo_output_init(const config_param &param, GError **error_r)
+fifo_output_init(const config_param &param, Error &error)
 {
-	GError *error = nullptr;
-
 	FifoOutput *fd = new FifoOutput();
 
-	fd->path = param.GetBlockPath("path", &error);
+	fd->path = param.GetBlockPath("path", error);
 	if (fd->path.IsNull()) {
 		delete fd;
-		if (error != nullptr)
-			g_propagate_error(error_r, error);
-		else
-			g_set_error(error_r, fifo_output_quark(), 0,
-				    "No \"path\" parameter specified");
+
+		if (!error.IsDefined())
+			error.Set(config_domain,
+				  "No \"path\" parameter specified");
 		return nullptr;
 	}
 
 	fd->path_utf8 = fd->path.ToUTF8();
 
-	if (!fd->Initialize(param, error_r)) {
+	if (!fd->Initialize(param, error)) {
 		delete fd;
 		return nullptr;
 	}
 
-	if (!fifo_open(fd, error_r)) {
+	if (!fifo_open(fd, error)) {
 		fd->Deinitialize();
 		delete fd;
 		return nullptr;
@@ -230,7 +219,7 @@ fifo_output_finish(struct audio_output *ao)
 
 static bool
 fifo_output_open(struct audio_output *ao, AudioFormat &audio_format,
-		 gcc_unused GError **error)
+		 gcc_unused Error &error)
 {
 	FifoOutput *fd = (FifoOutput *)ao;
 
@@ -277,7 +266,7 @@ fifo_output_delay(struct audio_output *ao)
 
 static size_t
 fifo_output_play(struct audio_output *ao, const void *chunk, size_t size,
-		 GError **error)
+		 Error &error)
 {
 	FifoOutput *fd = (FifoOutput *)ao;
 	ssize_t bytes;
@@ -301,9 +290,8 @@ fifo_output_play(struct audio_output *ao, const void *chunk, size_t size,
 				continue;
 			}
 
-			g_set_error(error, fifo_output_quark(), errno,
-				    "Failed to write to FIFO %s: %s",
-				    fd->path_utf8.c_str(), g_strerror(errno));
+			error.FormatErrno("Failed to write to FIFO %s",
+					  fd->path_utf8.c_str());
 			return 0;
 		}
 	}

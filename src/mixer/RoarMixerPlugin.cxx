@@ -35,7 +35,7 @@ struct RoarMixer final : public Mixer {
 
 static Mixer *
 roar_mixer_init(void *ao, gcc_unused const config_param &param,
-		gcc_unused GError **error_r)
+		gcc_unused Error &error)
 {
 	return new RoarMixer((RoarOutput *)ao);
 }
@@ -49,7 +49,7 @@ roar_mixer_finish(Mixer *data)
 }
 
 static int
-roar_mixer_get_volume(Mixer *mixer, gcc_unused GError **error_r)
+roar_mixer_get_volume(Mixer *mixer, gcc_unused Error &error)
 {
 	RoarMixer *self = (RoarMixer *)mixer;
 	return roar_output_get_volume(self->self);
@@ -57,7 +57,7 @@ roar_mixer_get_volume(Mixer *mixer, gcc_unused GError **error_r)
 
 static bool
 roar_mixer_set_volume(Mixer *mixer, unsigned volume,
-		      gcc_unused GError **error_r)
+		      gcc_unused Error &error)
 {
 	RoarMixer *self = (RoarMixer *)mixer;
 	return roar_output_set_volume(self->self, volume);

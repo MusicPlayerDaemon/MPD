@@ -26,6 +26,7 @@
 #include "Tag.hxx"
 #include "fs/Path.hxx"
 #include "util/UriUtil.hxx"
+#include "util/Error.hxx"
 #include "Song.hxx"
 
 #include <glib.h>
@@ -102,11 +103,11 @@ playlist_check_load_song(const Song *song, const char *uri, bool secure)
 		if (dest == NULL)
 			return NULL;
 	} else {
-		const Database *db = GetDatabase(nullptr);
+		const Database *db = GetDatabase(IgnoreError());
 		if (db == nullptr)
 			return nullptr;
 
-		Song *tmp = db->GetSong(uri, nullptr);
+		Song *tmp = db->GetSong(uri, IgnoreError());
 		if (tmp == NULL)
 			/* not found in database */
 			return NULL;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2013 The Music Player Daemon Project
+ * Copyright (C) 2003-2011 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,35 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_IO_ERROR_H
-#define MPD_IO_ERROR_H
+#include "config.h"
+#include "Ack.hxx"
+#include "util/Domain.hxx"
 
-#include <glib.h>
-
-#include <errno.h>
-
-/**
- * A GQuark for GError for I/O errors.  The code is an errno value.
- */
-gcc_const
-static inline GQuark
-errno_quark(void)
-{
-	return g_quark_from_static_string("errno");
-}
-
-static inline void
-set_error_errno(GError **error_r)
-{
-	g_set_error_literal(error_r, errno_quark(), errno,
-			    g_strerror(errno));
-}
-
-static inline GError *
-new_error_errno(void)
-{
-	return g_error_new_literal(errno_quark(), errno,
-				   g_strerror(errno));
-}
-
-#endif
+const Domain ack_domain("ack");

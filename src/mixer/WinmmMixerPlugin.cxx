@@ -21,6 +21,8 @@
 #include "MixerInternal.hxx"
 #include "OutputAPI.hxx"
 #include "output/WinmmOutputPlugin.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <mmsystem.h>
 
@@ -40,11 +42,7 @@ struct WinmmMixer final : public Mixer {
 	}
 };
 
-static inline GQuark
-winmm_mixer_quark(void)
-{
-	return g_quark_from_static_string("winmm_mixer");
-}
+static constexpr Domain winmm_mixer_domain("winmm_mixer");
 
 static inline int
 winmm_volume_decode(DWORD volume)
@@ -61,7 +59,7 @@ winmm_volume_encode(int volume)
 
 static Mixer *
 winmm_mixer_init(void *ao, gcc_unused const config_param &param,
-		 gcc_unused GError **error_r)
+		 gcc_unused Error &error)
 {
 	assert(ao != nullptr);
 
@@ -77,7 +75,7 @@ winmm_mixer_finish(Mixer *data)
 }
 
 static int
-winmm_mixer_get_volume(Mixer *mixer, GError **error_r)
+winmm_mixer_get_volume(Mixer *mixer, Error &error)
 {
 	WinmmMixer *wm = (WinmmMixer *) mixer;
 	DWORD volume;
@@ -85,8 +83,7 @@ winmm_mixer_get_volume(Mixer *mixer, GError **error_r)
 	MMRESULT result = waveOutGetVolume(handle, &volume);
 
 	if (result != MMSYSERR_NOERROR) {
-		g_set_error(error_r, 0, winmm_mixer_quark(),
-			    "Failed to get winmm volume");
+		error.Set(winmm_mixer_domain, "Failed to get winmm volume");
 		return -1;
 	}
 
@@ -94,7 +91,7 @@ winmm_mixer_get_volume(Mixer *mixer, GError **error_r)
 }
 
 static bool
-winmm_mixer_set_volume(Mixer *mixer, unsigned volume, GError **error_r)
+winmm_mixer_set_volume(Mixer *mixer, unsigned volume, Error &error)
 {
 	WinmmMixer *wm = (WinmmMixer *) mixer;
 	DWORD value = winmm_volume_encode(volume);
@@ -102,8 +99,7 @@ winmm_mixer_set_volume(Mixer *mixer, unsigned volume, GError **error_r)
 	MMRESULT result = waveOutSetVolume(handle, value);
 
 	if (result != MMSYSERR_NOERROR) {
-		g_set_error(error_r, 0, winmm_mixer_quark(),
-			    "Failed to set winmm volume");
+		error.Set(winmm_mixer_domain, "Failed to set winmm volume");
 		return false;
 	}
 

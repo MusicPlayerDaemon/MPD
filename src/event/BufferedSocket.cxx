@@ -21,6 +21,8 @@
 #include "BufferedSocket.hxx"
 #include "system/SocketError.hxx"
 #include "util/fifo_buffer.h"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <assert.h>
 #include <stdint.h>
@@ -97,8 +99,11 @@ BufferedSocket::ResumeInput()
 		case InputResult::MORE:
 			if (fifo_buffer_is_full(input)) {
 				// TODO
-				OnSocketError(g_error_new_literal(g_quark_from_static_string("buffered_socket"),
-								  0, "Input buffer is full"));
+				static constexpr Domain buffered_socket_domain("buffered_socket");
+				Error error;
+				error.Set(buffered_socket_domain,
+					  "Input buffer is full");
+				OnSocketError(std::move(error));
 				return false;
 			}
 

@@ -25,9 +25,10 @@
 #include "PcmResample.hxx"
 #include "PcmBuffer.hxx"
 
-#include <glib.h>
+#include <stddef.h>
 
 struct AudioFormat;
+class Error;
 
 /**
  * This object is statically allocated (within another struct), and
@@ -75,38 +76,34 @@ public:
 			    const void *src, size_t src_size,
 			    AudioFormat dest_format,
 			    size_t *dest_size_r,
-			    GError **error_r);
+			    Error &error);
 
 private:
 	const int16_t *Convert16(AudioFormat src_format,
 				 const void *src_buffer, size_t src_size,
 				 AudioFormat dest_format,
 				 size_t *dest_size_r,
-				 GError **error_r);
+				 Error &error);
 
 	const int32_t *Convert24(AudioFormat src_format,
 				 const void *src_buffer, size_t src_size,
 				 AudioFormat dest_format,
 				 size_t *dest_size_r,
-				 GError **error_r);
+				 Error &error);
 
 	const int32_t *Convert32(AudioFormat src_format,
 				 const void *src_buffer, size_t src_size,
 				 AudioFormat dest_format,
 				 size_t *dest_size_r,
-				 GError **error_r);
+				 Error &error);
 
 	const float *ConvertFloat(AudioFormat src_format,
 				  const void *src_buffer, size_t src_size,
 				  AudioFormat dest_format,
 				  size_t *dest_size_r,
-				  GError **error_r);
+				  Error &error);
 };
 
-static inline GQuark
-pcm_convert_quark(void)
-{
-	return g_quark_from_static_string("pcm_convert");
-}
+extern const class Domain pcm_convert_domain;
 
 #endif

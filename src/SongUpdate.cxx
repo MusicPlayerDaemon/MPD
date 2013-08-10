@@ -20,6 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "Song.hxx"
 #include "util/UriUtil.hxx"
+#include "util/Error.hxx"
 #include "Directory.hxx"
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
@@ -127,9 +128,10 @@ Song::UpdateFile()
 			/* open the input_stream (if not already
 			   open) */
 			if (is == NULL) {
+				Error error;
 				is = input_stream_open(path_fs.c_str(),
 						       mutex, cond,
-						       NULL);
+						       error);
 			}
 
 			/* now try the stream_tag() method */
@@ -143,7 +145,8 @@ Song::UpdateFile()
 				delete tag;
 				tag = nullptr;
 
-				input_stream_lock_seek(is, 0, SEEK_SET, NULL);
+				Error error;
+				input_stream_lock_seek(is, 0, SEEK_SET, error);
 			}
 		}
 

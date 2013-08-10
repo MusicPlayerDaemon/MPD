@@ -25,7 +25,6 @@
 #include "gcc.h"
 #include "DatabaseVisitor.hxx"
 #include "PlaylistVector.hxx"
-#include "gerror.h"
 
 #include <sys/types.h>
 
@@ -47,6 +46,7 @@
 struct Song;
 struct db_visitor;
 class SongFilter;
+class Error;
 
 struct Directory {
 	/**
@@ -251,7 +251,7 @@ public:
 	bool Walk(bool recursive, const SongFilter *match,
 		  VisitDirectory visit_directory, VisitSong visit_song,
 		  VisitPlaylist visit_playlist,
-		  GError **error_r) const;
+		  Error &error) const;
 };
 
 static inline bool

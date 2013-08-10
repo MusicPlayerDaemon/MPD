@@ -40,7 +40,6 @@ player_control::player_control(unsigned _buffer_chunks,
 	 command(PLAYER_COMMAND_NONE),
 	 state(PLAYER_STATE_STOP),
 	 error_type(PLAYER_ERROR_NONE),
-	 error(nullptr),
 	 next_song(nullptr),
 	 cross_fade_seconds(0),
 	 mixramp_db(0),
@@ -216,16 +215,13 @@ player_control::GetStatus()
 }
 
 void
-player_control::SetError(player_error type, GError *_error)
+player_control::SetError(player_error type, Error &&_error)
 {
 	assert(type != PLAYER_ERROR_NONE);
-	assert(_error != NULL);
-
-	if (error_type != PLAYER_ERROR_NONE)
-	    g_error_free(error);
+	assert(_error.IsDefined());
 
 	error_type = type;
-	error = _error;
+	error = std::move(_error);
 }
 
 void
@@ -235,7 +231,7 @@ player_control::ClearError()
 
 	if (error_type != PLAYER_ERROR_NONE) {
 	    error_type = PLAYER_ERROR_NONE;
-	    g_error_free(error);
+	    error.Clear();
 	}
 
 	Unlock();
@@ -246,7 +242,7 @@ player_control::GetErrorMessage() const
 {
 	Lock();
 	char *message = error_type != PLAYER_ERROR_NONE
-		? g_strdup(error->message)
+		? g_strdup(error.GetMessage())
 		: NULL;
 	Unlock();
 	return message;

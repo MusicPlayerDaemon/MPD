@@ -24,6 +24,7 @@
 #include "InputLegacy.hxx"
 #include "Song.hxx"
 #include "Tag.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 #include <yajl/yajl_parse.h>
@@ -244,18 +245,15 @@ static int
 soundcloud_parse_json(const char *url, yajl_handle hand,
 		      Mutex &mutex, Cond &cond)
 {
-	struct input_stream *input_stream;
-	GError *error = NULL;
 	char buffer[4096];
 	unsigned char *ubuffer = (unsigned char *)buffer;
-	size_t nbytes;
 
-	input_stream = input_stream_open(url, mutex, cond, &error);
+	Error error;
+	input_stream *input_stream = input_stream_open(url, mutex, cond,
+						       error);
 	if (input_stream == NULL) {
-		if (error != NULL) {
-			g_warning("%s", error->message);
-			g_error_free(error);
-		}
+		if (error.IsDefined())
+			g_warning("%s", error.GetMessage());
 		return -1;
 	}
 
@@ -266,12 +264,13 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 	int done = 0;
 
 	while (!done) {
-		nbytes = input_stream_read(input_stream, buffer, sizeof(buffer), &error);
+		const size_t nbytes =
+			input_stream_read(input_stream, buffer, sizeof(buffer),
+					  error);
 		if (nbytes == 0) {
-			if (error != NULL) {
-				g_warning("%s", error->message);
-				g_error_free(error);
-			}
+			if (error.IsDefined())
+				g_warning("%s", error.GetMessage());
+
 			if (input_stream_eof(input_stream)) {
 				done = true;
 			} else {

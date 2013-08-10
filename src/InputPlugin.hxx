@@ -23,10 +23,10 @@
 #include "InputLegacy.hxx"
 
 #include <stddef.h>
-#include <sys/types.h>
 
 struct config_param;
 struct input_stream;
+class Error;
 
 struct input_plugin {
 	const char *name;
@@ -39,7 +39,7 @@ struct input_plugin {
 	 * @return true on success, false if the plugin should be
 	 * disabled
 	 */
-	bool (*init)(const config_param &param, GError **error_r);
+	bool (*init)(const config_param &param, Error &error);
 
 	/**
 	 * Global deinitialization.  Called once before MPD shuts
@@ -49,7 +49,7 @@ struct input_plugin {
 
 	struct input_stream *(*open)(const char *uri,
 				     Mutex &mutex, Cond &cond,
-				     GError **error_r);
+				     Error &error);
 	void (*close)(struct input_stream *is);
 
 	/**
@@ -58,7 +58,7 @@ struct input_plugin {
 	 *
 	 * @return false on error
 	 */
-	bool (*check)(struct input_stream *is, GError **error_r);
+	bool (*check)(struct input_stream *is, Error &error);
 
 	/**
 	 * Update the public attributes.  Call before access.  Can be
@@ -79,10 +79,10 @@ struct input_plugin {
 	bool (*available)(struct input_stream *is);
 
 	size_t (*read)(struct input_stream *is, void *ptr, size_t size,
-		       GError **error_r);
+		       Error &error);
 	bool (*eof)(struct input_stream *is);
 	bool (*seek)(struct input_stream *is, goffset offset, int whence,
-		     GError **error_r);
+		     Error &error);
 };
 
 #endif

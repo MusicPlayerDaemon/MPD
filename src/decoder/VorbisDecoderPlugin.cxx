@@ -23,6 +23,7 @@
 #include "DecoderAPI.hxx"
 #include "InputStream.hxx"
 #include "OggCodec.hxx"
+#include "util/Error.hxx"
 #include "util/UriUtil.hxx"
 #include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
@@ -80,9 +81,10 @@ static int ogg_seek_cb(void *data, ogg_int64_t offset, int whence)
 {
 	struct vorbis_input_stream *vis = (struct vorbis_input_stream *)data;
 
+	Error error;
 	return vis->seekable &&
 		(!vis->decoder || decoder_get_command(vis->decoder) != DECODE_COMMAND_STOP) &&
-		input_stream_lock_seek(vis->input_stream, offset, whence, NULL)
+		input_stream_lock_seek(vis->input_stream, offset, whence, error)
 		? 0 : -1;
 }
 
@@ -182,14 +184,12 @@ static void
 vorbis_stream_decode(struct decoder *decoder,
 		     struct input_stream *input_stream)
 {
-	GError *error = NULL;
-
 	if (ogg_codec_detect(decoder, input_stream) != OGG_CODEC_VORBIS)
 		return;
 
 	/* rewind the stream, because ogg_codec_detect() has
 	   moved it */
-	input_stream_lock_seek(input_stream, 0, SEEK_SET, NULL);
+	input_stream_lock_seek(input_stream, 0, SEEK_SET, IgnoreError());
 
 	struct vorbis_input_stream vis;
 	OggVorbis_File vf;
@@ -202,6 +202,7 @@ vorbis_stream_decode(struct decoder *decoder,
 		return;
 	}
 
+	Error error;
 	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format, vi->rate,
 #ifdef HAVE_TREMOR
@@ -209,9 +210,8 @@ vorbis_stream_decode(struct decoder *decoder,
 #else
 				       SampleFormat::FLOAT,
 #endif
-				       vi->channels, &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+				       vi->channels, error)) {
+		g_warning("%s", error.GetMessage());
 		return;
 	}
 

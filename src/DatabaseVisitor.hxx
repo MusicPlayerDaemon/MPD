@@ -20,19 +20,18 @@
 #ifndef MPD_DATABASE_VISITOR_HXX
 #define MPD_DATABASE_VISITOR_HXX
 
-#include "gerror.h"
-
 #include <functional>
 
 struct Directory;
 struct Song;
 struct PlaylistInfo;
+class Error;
 
-typedef std::function<bool(const Directory &, GError **)> VisitDirectory;
-typedef std::function<bool(struct Song &, GError **)> VisitSong;
+typedef std::function<bool(const Directory &, Error &)> VisitDirectory;
+typedef std::function<bool(struct Song &, Error &)> VisitSong;
 typedef std::function<bool(const PlaylistInfo &, const Directory &,
-			   GError **)> VisitPlaylist;
+			   Error &)> VisitPlaylist;
 
-typedef std::function<bool(const char *, GError **)> VisitString;
+typedef std::function<bool(const char *, Error &)> VisitString;
 
 #endif

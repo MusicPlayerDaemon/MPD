@@ -20,6 +20,8 @@
 #include "config.h"
 #include "PcmResampleInternal.hxx"
 #include "conf.h"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <glib.h>
 
@@ -32,11 +34,7 @@
 
 static int lsr_converter = SRC_SINC_FASTEST;
 
-static inline GQuark
-libsamplerate_quark(void)
-{
-	return g_quark_from_static_string("libsamplerate");
-}
+static constexpr Domain libsamplerate_domain("libsamplerate");
 
 static bool
 lsr_parse_converter(const char *s)
@@ -69,11 +67,11 @@ lsr_parse_converter(const char *s)
 }
 
 bool
-pcm_resample_lsr_global_init(const char *converter, GError **error_r)
+pcm_resample_lsr_global_init(const char *converter, Error &error)
 {
 	if (!lsr_parse_converter(converter)) {
-		g_set_error(error_r, libsamplerate_quark(), 0,
-			    "unknown samplerate converter '%s'", converter);
+		error.Format(libsamplerate_domain,
+			     "unknown samplerate converter '%s'", converter);
 		return false;
 	}
 
@@ -109,7 +107,7 @@ pcm_resample_lsr_reset(PcmResampler *state)
 static bool
 pcm_resample_set(PcmResampler *state,
 		 unsigned channels, unsigned src_rate, unsigned dest_rate,
-		 GError **error_r)
+		 Error &error_r)
 {
 	/* (re)set the state/ratio if the in or out format changed */
 	if (channels == state->prev.channels &&
@@ -128,9 +126,9 @@ pcm_resample_set(PcmResampler *state,
 	int error;
 	state->state = src_new(lsr_converter, channels, &error);
 	if (!state->state) {
-		g_set_error(error_r, libsamplerate_quark(), state->error,
-			    "libsamplerate initialization has failed: %s",
-			    src_strerror(error));
+		error_r.Format(libsamplerate_domain, error,
+			       "libsamplerate initialization has failed: %s",
+			       src_strerror(error));
 		return false;
 	}
 
@@ -144,14 +142,14 @@ pcm_resample_set(PcmResampler *state,
 }
 
 static bool
-lsr_process(PcmResampler *state, GError **error_r)
+lsr_process(PcmResampler *state, Error &error)
 {
 	if (state->error == 0)
 		state->error = src_process(state->state, &state->data);
 	if (state->error) {
-		g_set_error(error_r, libsamplerate_quark(), state->error,
-			    "libsamplerate has failed: %s",
-			    src_strerror(state->error));
+		error.Format(libsamplerate_domain, state->error,
+			     "libsamplerate has failed: %s",
+			     src_strerror(state->error));
 		return false;
 	}
 
@@ -164,15 +162,14 @@ pcm_resample_lsr_float(PcmResampler *state,
 		       unsigned src_rate,
 		       const float *src_buffer, size_t src_size,
 		       unsigned dest_rate, size_t *dest_size_r,
-		       GError **error_r)
+		       Error &error)
 {
 	SRC_DATA *data = &state->data;
 
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
 
-	if (!pcm_resample_set(state, channels, src_rate, dest_rate, error_r))
+	if (!pcm_resample_set(state, channels, src_rate, dest_rate, error))
 		return nullptr;
-
 
 	data->input_frames = src_size / sizeof(*src_buffer) / channels;
 	data->data_in = const_cast<float *>(src_buffer);
@@ -181,7 +178,7 @@ pcm_resample_lsr_float(PcmResampler *state,
 	size_t data_out_size = data->output_frames * sizeof(float) * channels;
 	data->data_out = (float *)state->out.Get(data_out_size);
 
-	if (!lsr_process(state, error_r))
+	if (!lsr_process(state, error))
 		return nullptr;
 
 	*dest_size_r = data->output_frames_gen *
@@ -195,14 +192,14 @@ pcm_resample_lsr_16(PcmResampler *state,
 		    unsigned src_rate,
 		    const int16_t *src_buffer, size_t src_size,
 		    unsigned dest_rate, size_t *dest_size_r,
-		    GError **error_r)
+		    Error &error)
 {
 	SRC_DATA *data = &state->data;
 
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
 
 	if (!pcm_resample_set(state, channels, src_rate, dest_rate,
-			      error_r))
+			      error))
 		return nullptr;
 
 	data->input_frames = src_size / sizeof(*src_buffer) / channels;
@@ -216,7 +213,7 @@ pcm_resample_lsr_16(PcmResampler *state,
 	src_short_to_float_array(src_buffer, data->data_in,
 				 data->input_frames * channels);
 
-	if (!lsr_process(state, error_r))
+	if (!lsr_process(state, error))
 		return nullptr;
 
 	int16_t *dest_buffer;
@@ -255,14 +252,14 @@ pcm_resample_lsr_32(PcmResampler *state,
 		    unsigned src_rate,
 		    const int32_t *src_buffer, size_t src_size,
 		    unsigned dest_rate, size_t *dest_size_r,
-		    GError **error_r)
+		    Error &error)
 {
 	SRC_DATA *data = &state->data;
 
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
 
 	if (!pcm_resample_set(state, channels, src_rate, dest_rate,
-			      error_r))
+			      error))
 		return nullptr;
 
 	data->input_frames = src_size / sizeof(*src_buffer) / channels;
@@ -276,7 +273,7 @@ pcm_resample_lsr_32(PcmResampler *state,
 	src_int_to_float_array(src_buffer, data->data_in,
 			       data->input_frames * channels);
 
-	if (!lsr_process(state, error_r))
+	if (!lsr_process(state, error))
 		return nullptr;
 
 	int32_t *dest_buffer;

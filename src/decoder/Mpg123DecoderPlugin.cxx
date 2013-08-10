@@ -22,6 +22,7 @@
 #include "DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -58,7 +59,6 @@ static bool
 mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 		AudioFormat &audio_format)
 {
-	GError *gerror = nullptr;
 	char *path_dup;
 	int error;
 	int channels, encoding;
@@ -90,10 +90,10 @@ mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 		return false;
 	}
 
+	Error error2;
 	if (!audio_format_init_checked(audio_format, rate, SampleFormat::S16,
-				       channels, &gerror)) {
-		g_warning("%s", gerror->message);
-		g_error_free(gerror);
+				       channels, error2)) {
+		g_warning("%s", error2.GetMessage());
 		return false;
 	}
 

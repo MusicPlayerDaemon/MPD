@@ -26,9 +26,17 @@
 #include "filter/VolumeFilterPlugin.hxx"
 #include "pcm/PcmVolume.hxx"
 #include "ConfigData.hxx"
+#include "util/Error.hxx"
 
 #include <assert.h>
 #include <math.h>
+
+static Filter *
+CreateVolumeFilter()
+{
+	Error error;
+	return filter_new(&volume_filter_plugin, config_param(), error);
+}
 
 struct SoftwareMixer final : public Mixer {
 	Filter *filter;
@@ -37,8 +45,7 @@ struct SoftwareMixer final : public Mixer {
 
 	SoftwareMixer()
 		:Mixer(software_mixer_plugin),
-		filter(filter_new(&volume_filter_plugin, config_param(),
-				  nullptr)),
+		filter(CreateVolumeFilter()),
 		volume(100)
 	{
 		assert(filter != nullptr);
@@ -52,7 +59,7 @@ struct SoftwareMixer final : public Mixer {
 static Mixer *
 software_mixer_init(gcc_unused void *ao,
 		    gcc_unused const config_param &param,
-		    gcc_unused GError **error_r)
+		    gcc_unused Error &error)
 {
 	return new SoftwareMixer();
 }
@@ -66,7 +73,7 @@ software_mixer_finish(Mixer *data)
 }
 
 static int
-software_mixer_get_volume(Mixer *mixer, gcc_unused GError **error_r)
+software_mixer_get_volume(Mixer *mixer, gcc_unused Error &error)
 {
 	SoftwareMixer *sm = (SoftwareMixer *)mixer;
 
@@ -75,7 +82,7 @@ software_mixer_get_volume(Mixer *mixer, gcc_unused GError **error_r)
 
 static bool
 software_mixer_set_volume(Mixer *mixer, unsigned volume,
-			  gcc_unused GError **error_r)
+			  gcc_unused Error &error)
 {
 	SoftwareMixer *sm = (SoftwareMixer *)mixer;
 

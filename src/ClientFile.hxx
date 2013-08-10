@@ -20,10 +20,9 @@
 #ifndef MPD_CLIENT_FILE_HXX
 #define MPD_CLIENT_FILE_HXX
 
-#include "gerror.h"
-
 class Client;
 class Path;
+class Error;
 
 /**
  * Is this client allowed to use the specified local file?
@@ -37,6 +36,6 @@ class Path;
  */
 bool
 client_allow_file(const Client *client, const Path &path_fs,
-		  GError **error_r);
+		  Error &error);
 
 #endif

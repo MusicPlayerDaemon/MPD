@@ -20,9 +20,7 @@
 #ifndef MPD_PLAYLIST_ERROR_HXX
 #define MPD_PLAYLIST_ERROR_HXX
 
-#include "gcc.h"
-
-#include <glib.h>
+class Domain;
 
 enum playlist_result {
 	PLAYLIST_RESULT_SUCCESS,
@@ -38,14 +36,6 @@ enum playlist_result {
 	PLAYLIST_RESULT_DISABLED,
 };
 
-/**
- * Quark for GError.domain; the code is an enum #playlist_result.
- */
-gcc_const
-static inline GQuark
-playlist_quark(void)
-{
-	return g_quark_from_static_string("playlist");
-}
+extern const Domain playlist_domain;
 
 #endif

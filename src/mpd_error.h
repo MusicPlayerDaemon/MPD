@@ -24,7 +24,7 @@
 #include <stdlib.h>
 
 /* This macro is used as an intermediate step to a proper error handling
- * using GError in mpd. It is used for unrecoverable error conditions
+ * using #Error in mpd. It is used for unrecoverable error conditions
  * and exits immediately. The long-term goal is to replace this macro by
  * proper error handling. */
 

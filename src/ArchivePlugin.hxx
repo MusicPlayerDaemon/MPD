@@ -22,11 +22,11 @@
 
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
-#include "gerror.h"
 
 struct input_stream;
 class ArchiveFile;
 class ArchiveVisitor;
+class Error;
 
 struct archive_plugin {
 	const char *name;
@@ -49,7 +49,7 @@ struct archive_plugin {
 	 * returns pointer to handle used is all operations with this archive
 	 * or NULL when opening fails
 	 */
-	ArchiveFile *(*open)(const char *path_fs, GError **error_r);
+	ArchiveFile *(*open)(const char *path_fs, Error &error);
 
 	/**
 	 * suffixes handled by this plugin.
@@ -60,6 +60,6 @@ struct archive_plugin {
 
 ArchiveFile *
 archive_file_open(const struct archive_plugin *plugin, const char *path,
-		  GError **error_r);
+		  Error &error);
 
 #endif

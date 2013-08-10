@@ -24,6 +24,7 @@
 #include "TagType.h"
 #include "gcc.h"
 
+class Error;
 class Database;
 struct DatabaseSelection;
 struct DatabaseStats;
@@ -32,10 +33,10 @@ bool
 VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
 		enum tag_type tag_type,
 		VisitString visit_string,
-		GError **error_r);
+		Error &error);
 
 bool
 GetStats(const Database &db, const DatabaseSelection &selection,
-	 DatabaseStats &stats, GError **error_r);
+	 DatabaseStats &stats, Error &error);
 
 #endif

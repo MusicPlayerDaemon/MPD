@@ -26,8 +26,6 @@ extern "C" {
 }
 #include "gcc.h"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <string.h>
 
@@ -41,7 +39,7 @@ struct NullEncoder final {
 
 static Encoder *
 null_encoder_init(gcc_unused const config_param &param,
-		  gcc_unused GError **error)
+		  gcc_unused Error &error)
 {
 	NullEncoder *encoder = new NullEncoder();
 	return &encoder->encoder;
@@ -67,7 +65,7 @@ null_encoder_close(Encoder *_encoder)
 static bool
 null_encoder_open(Encoder *_encoder,
 		  gcc_unused AudioFormat &audio_format,
-		  gcc_unused GError **error)
+		  gcc_unused Error &error)
 {
 	NullEncoder *encoder = (NullEncoder *)_encoder;
 	encoder->buffer = growing_fifo_new();
@@ -77,7 +75,7 @@ null_encoder_open(Encoder *_encoder,
 static bool
 null_encoder_write(Encoder *_encoder,
 		   const void *data, size_t length,
-		   gcc_unused GError **error)
+		   gcc_unused Error &error)
 {
 	NullEncoder *encoder = (NullEncoder *)_encoder;
 

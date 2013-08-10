@@ -21,7 +21,6 @@
 #define MPD_CONFIG_DATA_HXX
 
 #include "ConfigOption.hxx"
-#include "gerror.h"
 #include "gcc.h"
 
 #include <string>
@@ -29,6 +28,7 @@
 #include <vector>
 
 class Path;
+class Error;
 
 struct block_param {
 	std::string name;
@@ -113,9 +113,9 @@ struct config_param {
 	 * specified block.
 	 */
 	Path GetBlockPath(const char *name, const char *default_value,
-			  GError **error_r) const;
+			  Error &error) const;
 
-	Path GetBlockPath(const char *name, GError **error_r) const;
+	Path GetBlockPath(const char *name, Error &error) const;
 
 	gcc_pure
 	unsigned GetBlockValue(const char *name, unsigned default_value) const;

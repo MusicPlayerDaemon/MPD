@@ -22,17 +22,13 @@
 
 #include "gcc.h"
 
-#include <glib.h>
+#include <stddef.h>
 
 struct sockaddr;
 struct addrinfo;
+class Error;
 
-gcc_const
-static inline GQuark
-resolver_quark(void)
-{
-	return g_quark_from_static_string("resolver");
-}
+extern const class Domain resolver_domain;
 
 /**
  * Converts the specified socket address into a string in the form
@@ -46,7 +42,7 @@ resolver_quark(void)
  */
 gcc_malloc
 char *
-sockaddr_to_string(const struct sockaddr *sa, size_t length, GError **error);
+sockaddr_to_string(const struct sockaddr *sa, size_t length, Error &error);
 
 /**
  * Resolve a specification in the form "host", "host:port",
@@ -61,6 +57,6 @@ sockaddr_to_string(const struct sockaddr *sa, size_t length, GError **error);
 struct addrinfo *
 resolve_host_port(const char *host_port, unsigned default_port,
 		  int flags, int socktype,
-		  GError **error_r);
+		  Error &error);
 
 #endif

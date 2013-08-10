@@ -21,14 +21,14 @@
 #define MPD_DATABASE_PLAYLIST_HXX
 
 #include "gcc.h"
-#include "gerror.h"
 
 class SongFilter;
+class Error;
 
 gcc_nonnull(1,2)
 bool
 search_add_to_playlist(const char *uri, const char *path_utf8,
 		       const SongFilter *filter,
-		       GError **error_r);
+		       Error &error);
 
 #endif

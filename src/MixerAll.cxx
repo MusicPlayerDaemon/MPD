@@ -25,6 +25,7 @@
 #include "OutputAll.hxx"
 #include "pcm/PcmVolume.hxx"
 #include "OutputInternal.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -38,7 +39,6 @@ output_mixer_get_volume(unsigned i)
 {
 	struct audio_output *output;
 	int volume;
-	GError *error = NULL;
 
 	assert(i < audio_output_count());
 
@@ -50,12 +50,11 @@ output_mixer_get_volume(unsigned i)
 	if (mixer == NULL)
 		return -1;
 
-	volume = mixer_get_volume(mixer, &error);
-	if (volume < 0 && error != NULL) {
+	Error error;
+	volume = mixer_get_volume(mixer, error);
+	if (volume < 0 && error.IsDefined())
 		g_warning("Failed to read mixer for '%s': %s",
-			  output->name, error->message);
-		g_error_free(error);
-	}
+			  output->name, error.GetMessage());
 
 	return volume;
 }
@@ -85,7 +84,6 @@ output_mixer_set_volume(unsigned i, unsigned volume)
 {
 	struct audio_output *output;
 	bool success;
-	GError *error = NULL;
 
 	assert(i < audio_output_count());
 	assert(volume <= 100);
@@ -98,12 +96,11 @@ output_mixer_set_volume(unsigned i, unsigned volume)
 	if (mixer == NULL)
 		return false;
 
-	success = mixer_set_volume(mixer, volume, &error);
-	if (!success && error != NULL) {
+	Error error;
+	success = mixer_set_volume(mixer, volume, error);
+	if (!success && error.IsDefined())
 		g_warning("Failed to set mixer for '%s': %s",
-			  output->name, error->message);
-		g_error_free(error);
-	}
+			  output->name, error.GetMessage());
 
 	return success;
 }
@@ -138,7 +135,7 @@ output_mixer_get_software_volume(unsigned i)
 	if (mixer == NULL || !mixer->IsPlugin(software_mixer_plugin))
 		return -1;
 
-	return mixer_get_volume(mixer, NULL);
+	return mixer_get_volume(mixer, IgnoreError());
 }
 
 int
@@ -172,6 +169,6 @@ mixer_all_set_software_volume(unsigned volume)
 		struct audio_output *output = audio_output_get(i);
 		if (output->mixer != NULL &&
 		    output->mixer->plugin == &software_mixer_plugin)
-			mixer_set_volume(output->mixer, volume, NULL);
+			mixer_set_volume(output->mixer, volume, IgnoreError());
 	}
 }

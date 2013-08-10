@@ -21,8 +21,11 @@
 #include "LameEncoderPlugin.hxx"
 #include "EncoderAPI.hxx"
 #include "AudioFormat.hxx"
+#include "ConfigError.hxx"
 #include "util/ReusableArray.hxx"
 #include "util/Manual.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <lame/lame.h>
 
@@ -45,17 +48,13 @@ struct LameEncoder final {
 
 	LameEncoder():encoder(lame_encoder_plugin) {}
 
-	bool Configure(const config_param &param, GError **error);
+	bool Configure(const config_param &param, Error &error);
 };
 
-static inline GQuark
-lame_encoder_quark(void)
-{
-	return g_quark_from_static_string("lame_encoder");
-}
+static constexpr Domain lame_encoder_domain("lame_encoder");
 
 bool
-LameEncoder::Configure(const config_param &param, GError **error)
+LameEncoder::Configure(const config_param &param, Error &error)
 {
 	const char *value;
 	char *endptr;
@@ -67,18 +66,18 @@ LameEncoder::Configure(const config_param &param, GError **error)
 		quality = g_ascii_strtod(value, &endptr);
 
 		if (*endptr != '\0' || quality < -1.0 || quality > 10.0) {
-			g_set_error(error, lame_encoder_quark(), 0,
-				    "quality \"%s\" is not a number in the "
-				    "range -1 to 10, line %i",
-				    value, param.line);
+			error.Format(config_domain,
+				     "quality \"%s\" is not a number in the "
+				     "range -1 to 10, line %i",
+				     value, param.line);
 			return false;
 		}
 
 		if (param.GetBlockValue("bitrate") != nullptr) {
-			g_set_error(error, lame_encoder_quark(), 0,
-				    "quality and bitrate are "
-				    "both defined (line %i)",
-				    param.line);
+			error.Format(config_domain,
+				     "quality and bitrate are "
+				     "both defined (line %i)",
+				     param.line);
 			return false;
 		}
 	} else {
@@ -86,10 +85,10 @@ LameEncoder::Configure(const config_param &param, GError **error)
 
 		value = param.GetBlockValue("bitrate");
 		if (value == nullptr) {
-			g_set_error(error, lame_encoder_quark(), 0,
-				    "neither bitrate nor quality defined "
-				    "at line %i",
-				    param.line);
+			error.Format(config_domain,
+				     "neither bitrate nor quality defined "
+				     "at line %i",
+				     param.line);
 			return false;
 		}
 
@@ -97,9 +96,9 @@ LameEncoder::Configure(const config_param &param, GError **error)
 		bitrate = g_ascii_strtoll(value, &endptr, 10);
 
 		if (*endptr != '\0' || bitrate <= 0) {
-			g_set_error(error, lame_encoder_quark(), 0,
-				    "bitrate at line %i should be a positive integer",
-				    param.line);
+			error.Format(config_domain,
+				     "bitrate at line %i should be a positive integer",
+				     param.line);
 			return false;
 		}
 	}
@@ -108,12 +107,12 @@ LameEncoder::Configure(const config_param &param, GError **error)
 }
 
 static Encoder *
-lame_encoder_init(const config_param &param, GError **error_r)
+lame_encoder_init(const config_param &param, Error &error)
 {
 	LameEncoder *encoder = new LameEncoder();
 
 	/* load configuration from "param" */
-	if (!encoder->Configure(param, error_r)) {
+	if (!encoder->Configure(param, error)) {
 		/* configuration has failed, roll back and return error */
 		delete encoder;
 		return nullptr;
@@ -133,55 +132,55 @@ lame_encoder_finish(Encoder *_encoder)
 }
 
 static bool
-lame_encoder_setup(LameEncoder *encoder, GError **error)
+lame_encoder_setup(LameEncoder *encoder, Error &error)
 {
 	if (encoder->quality >= -1.0) {
 		/* a quality was configured (VBR) */
 
 		if (0 != lame_set_VBR(encoder->gfp, vbr_rh)) {
-			g_set_error(error, lame_encoder_quark(), 0,
-				    "error setting lame VBR mode");
+			error.Set(lame_encoder_domain,
+				  "error setting lame VBR mode");
 			return false;
 		}
 		if (0 != lame_set_VBR_q(encoder->gfp, encoder->quality)) {
-			g_set_error(error, lame_encoder_quark(), 0,
-				    "error setting lame VBR quality");
+			error.Set(lame_encoder_domain,
+				  "error setting lame VBR quality");
 			return false;
 		}
 	} else {
 		/* a bit rate was configured */
 
 		if (0 != lame_set_brate(encoder->gfp, encoder->bitrate)) {
-			g_set_error(error, lame_encoder_quark(), 0,
-				    "error setting lame bitrate");
+			error.Set(lame_encoder_domain,
+				  "error setting lame bitrate");
 			return false;
 		}
 	}
 
 	if (0 != lame_set_num_channels(encoder->gfp,
 				       encoder->audio_format.channels)) {
-		g_set_error(error, lame_encoder_quark(), 0,
-			    "error setting lame num channels");
+		error.Set(lame_encoder_domain,
+			  "error setting lame num channels");
 		return false;
 	}
 
 	if (0 != lame_set_in_samplerate(encoder->gfp,
 					encoder->audio_format.sample_rate)) {
-		g_set_error(error, lame_encoder_quark(), 0,
-			    "error setting lame sample rate");
+		error.Set(lame_encoder_domain,
+			  "error setting lame sample rate");
 		return false;
 	}
 
 	if (0 != lame_set_out_samplerate(encoder->gfp,
 					 encoder->audio_format.sample_rate)) {
-		g_set_error(error, lame_encoder_quark(), 0,
-			    "error setting lame out sample rate");
+		error.Set(lame_encoder_domain,
+			  "error setting lame out sample rate");
 		return false;
 	}
 
 	if (0 > lame_init_params(encoder->gfp)) {
-		g_set_error(error, lame_encoder_quark(), 0,
-			    "error initializing lame params");
+		error.Set(lame_encoder_domain,
+			  "error initializing lame params");
 		return false;
 	}
 
@@ -189,8 +188,7 @@ lame_encoder_setup(LameEncoder *encoder, GError **error)
 }
 
 static bool
-lame_encoder_open(Encoder *_encoder, AudioFormat &audio_format,
-		  GError **error)
+lame_encoder_open(Encoder *_encoder, AudioFormat &audio_format, Error &error)
 {
 	LameEncoder *encoder = (LameEncoder *)_encoder;
 
@@ -201,8 +199,7 @@ lame_encoder_open(Encoder *_encoder, AudioFormat &audio_format,
 
 	encoder->gfp = lame_init();
 	if (encoder->gfp == nullptr) {
-		g_set_error(error, lame_encoder_quark(), 0,
-			    "lame_init() failed");
+		error.Set(lame_encoder_domain, "lame_init() failed");
 		return false;
 	}
 
@@ -229,7 +226,7 @@ lame_encoder_close(Encoder *_encoder)
 static bool
 lame_encoder_write(Encoder *_encoder,
 		   const void *data, size_t length,
-		   gcc_unused GError **error)
+		   gcc_unused Error &error)
 {
 	LameEncoder *encoder = (LameEncoder *)_encoder;
 	const int16_t *src = (const int16_t*)data;
@@ -254,8 +251,7 @@ lame_encoder_write(Encoder *_encoder,
 						       output_buffer_size);
 
 	if (bytes_out < 0) {
-		g_set_error(error, lame_encoder_quark(), 0,
-			    "lame encoder failed");
+		error.Set(lame_encoder_domain, "lame encoder failed");
 		return false;
 	}
 

@@ -20,9 +20,7 @@
 #ifndef MPD_ACK_H
 #define MPD_ACK_H
 
-#include "gcc.h"
-
-#include <glib.h>
+class Domain;
 
 enum ack {
 	ACK_ERROR_NOT_LIST = 1,
@@ -40,14 +38,6 @@ enum ack {
 	ACK_ERROR_EXIST = 56,
 };
 
-/**
- * Quark for GError.domain; the code is an enum #ack.
- */
-gcc_const
-static inline GQuark
-ack_quark(void)
-{
-	return g_quark_from_static_string("ack");
-}
+extern const Domain ack_domain;
 
 #endif

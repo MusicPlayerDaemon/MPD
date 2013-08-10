@@ -20,6 +20,7 @@
 #include "config.h"
 #include "TagFile.hxx"
 #include "util/UriUtil.hxx"
+#include "util/Error.hxx"
 #include "DecoderList.hxx"
 #include "DecoderPlugin.hxx"
 #include "InputLegacy.hxx"
@@ -59,9 +60,11 @@ tag_file_scan(const char *path_fs,
 		if (plugin->scan_stream != NULL) {
 			/* open the input_stream (if not already
 			   open) */
-			if (is == nullptr)
+			if (is == nullptr) {
+				Error error;
 				is = input_stream_open(path_fs, mutex, cond,
-						       NULL);
+						       error);
+			}
 
 			/* now try the stream_tag() method */
 			if (is != NULL) {
@@ -70,7 +73,8 @@ tag_file_scan(const char *path_fs,
 							       handler_ctx))
 					break;
 
-				input_stream_lock_seek(is, 0, SEEK_SET, NULL);
+				Error error;
+				input_stream_lock_seek(is, 0, SEEK_SET, error);
 			}
 		}
 

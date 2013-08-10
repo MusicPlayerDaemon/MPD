@@ -19,14 +19,14 @@
 
 #include "config.h"
 #include "ClientInternal.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
 void
-Client::OnSocketError(GError *error)
+Client::OnSocketError(Error &&error)
 {
-	g_warning("error on client %d: %s", num, error->message);
-	g_error_free(error);
+	g_warning("error on client %d: %s", num, error.GetMessage());
 
 	SetExpired();
 }

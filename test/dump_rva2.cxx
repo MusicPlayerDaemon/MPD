@@ -23,6 +23,7 @@
 #include "replay_gain_info.h"
 #include "conf.h"
 #include "Tag.hxx"
+#include "util/Error.hxx"
 
 #include <id3tag.h>
 
@@ -51,8 +52,6 @@ Tag::~Tag() {}
 
 int main(int argc, char **argv)
 {
-	GError *error = NULL;
-
 #ifdef HAVE_LOCALE_H
 	/* initialize locale */
 	setlocale(LC_CTYPE,"");
@@ -65,12 +64,12 @@ int main(int argc, char **argv)
 
 	const char *path = argv[1];
 
-	struct id3_tag *tag = tag_id3_load(path, &error);
+	Error error;
+	struct id3_tag *tag = tag_id3_load(path, error);
 	if (tag == NULL) {
-		if (error != NULL) {
-			g_printerr("%s\n", error->message);
-			g_error_free(error);
-		} else
+		if (error.IsDefined())
+			g_printerr("%s\n", error.GetMessage());
+		else
 			g_printerr("No ID3 tag found\n");
 
 		return EXIT_FAILURE;

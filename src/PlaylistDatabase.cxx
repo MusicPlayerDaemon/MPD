@@ -22,15 +22,13 @@
 #include "PlaylistVector.hxx"
 #include "TextFile.hxx"
 #include "util/StringUtil.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <string.h>
 #include <stdlib.h>
 
-static GQuark
-playlist_database_quark(void)
-{
-	return g_quark_from_static_string("playlist_database");
-}
+static constexpr Domain playlist_database_domain("playlist_database");
 
 void
 playlist_vector_save(FILE *fp, const PlaylistVector &pv)
@@ -44,7 +42,7 @@ playlist_vector_save(FILE *fp, const PlaylistVector &pv)
 
 bool
 playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name,
-		       GError **error_r)
+		       Error &error)
 {
 	PlaylistInfo pm(name, 0);
 
@@ -55,8 +53,8 @@ playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name,
 	       strcmp(line, "playlist_end") != 0) {
 		colon = strchr(line, ':');
 		if (colon == NULL || colon == line) {
-			g_set_error(error_r, playlist_database_quark(), 0,
-				    "unknown line in db: %s", line);
+			error.Format(playlist_database_domain,
+				     "unknown line in db: %s", line);
 			return false;
 		}
 
@@ -66,8 +64,8 @@ playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name,
 		if (strcmp(line, "mtime") == 0)
 			pm.mtime = strtol(value, NULL, 10);
 		else {
-			g_set_error(error_r, playlist_database_quark(), 0,
-				    "unknown line in db: %s", line);
+			error.Format(playlist_database_domain,
+				     "unknown line in db: %s", line);
 			return false;
 		}
 	}

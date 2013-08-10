@@ -25,7 +25,6 @@
 #define MPD_MAPPER_HXX
 
 #include "gcc.h"
-#include "gerror.h"
 
 #define PLAYLIST_FILE_SUFFIX ".m3u"
 

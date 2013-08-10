@@ -56,6 +56,7 @@
 #include "pcm/PcmResample.hxx"
 #include "Daemon.hxx"
 #include "system/FatalError.hxx"
+#include "util/Error.hxx"
 
 extern "C" {
 #include "stats.h"
@@ -107,15 +108,11 @@ static inline GQuark main_quark()
 }
 
 static bool
-glue_daemonize_init(const struct options *options, GError **error_r)
+glue_daemonize_init(const struct options *options, Error &error)
 {
-	GError *error = NULL;
-
-	Path pid_file = config_get_path(CONF_PID_FILE, &error);
-	if (pid_file.IsNull() && error != NULL) {
-		g_propagate_error(error_r, error);
+	Path pid_file = config_get_path(CONF_PID_FILE, error);
+	if (pid_file.IsNull() && error.IsDefined())
 		return false;
-	}
 
 	daemonize_init(config_get_string(CONF_USER, NULL),
 		       config_get_string(CONF_GROUP, NULL),
@@ -128,20 +125,15 @@ glue_daemonize_init(const struct options *options, GError **error_r)
 }
 
 static bool
-glue_mapper_init(GError **error_r)
+glue_mapper_init(Error &error)
 {
-	GError *error = NULL;
-	Path music_dir = config_get_path(CONF_MUSIC_DIR, &error);
-	if (music_dir.IsNull() && error != NULL) {
-		g_propagate_error(error_r, error);
+	Path music_dir = config_get_path(CONF_MUSIC_DIR, error);
+	if (music_dir.IsNull() && error.IsDefined())
 		return false;
-	}
 
-	Path playlist_dir = config_get_path(CONF_PLAYLIST_DIR, &error);
-	if (playlist_dir.IsNull() && error != NULL) {
-		g_propagate_error(error_r, error);
+	Path playlist_dir = config_get_path(CONF_PLAYLIST_DIR, error);
+	if (playlist_dir.IsNull() && error.IsDefined())
 		return false;
-	}
 
 	if (music_dir.IsNull())
 		music_dir = Path::FromUTF8(g_get_user_special_dir(G_USER_DIRECTORY_MUSIC));
@@ -164,9 +156,6 @@ glue_db_init_and_load(void)
 	if (param != NULL && path != NULL)
 		g_message("Found both 'database' and 'db_file' setting - ignoring the latter");
 
-	GError *error = NULL;
-	bool ret;
-
 	if (!mapper_has_music_directory()) {
 		if (param != NULL)
 			g_message("Found database setting without "
@@ -185,13 +174,13 @@ glue_db_init_and_load(void)
 		param = allocated;
 	}
 
-	if (!DatabaseGlobalInit(*param, &error))
+	Error error;
+	if (!DatabaseGlobalInit(*param, error))
 		FatalError(error);
 
 	delete allocated;
 
-	ret = DatabaseGlobalOpen(&error);
-	if (!ret)
+	if (!DatabaseGlobalOpen(error))
 		FatalError(error);
 
 	/* run database update after daemonization? */
@@ -205,36 +194,22 @@ static void
 glue_sticker_init(void)
 {
 #ifdef ENABLE_SQLITE
-	GError *error = NULL;
-	Path sticker_file = config_get_path(CONF_STICKER_FILE, &error);
-	if (sticker_file.IsNull() && error != NULL)
+	Error error;
+	Path sticker_file = config_get_path(CONF_STICKER_FILE, error);
+	if (sticker_file.IsNull() && error.IsDefined())
 		FatalError(error);
 
-	if (!sticker_global_init(std::move(sticker_file), &error))
+	if (!sticker_global_init(std::move(sticker_file), error))
 		FatalError(error);
 #endif
 }
 
 static bool
-glue_state_file_init(GError **error_r)
+glue_state_file_init(Error &error)
 {
-	GError *error = NULL;
-
-	Path path_fs = config_get_path(CONF_STATE_FILE, &error);
-	if (path_fs.IsNull()) {
-		if (error != nullptr) {
-			g_propagate_error(error_r, error);
-			return false;
-		}
-
-		return true;
-	}
-
-	if (path_fs.IsNull()) {
-		g_set_error(error_r, main_quark(), 0,
-			    "Failed to convert state file path to FS encoding");
-		return false;
-	}
+	Path path_fs = config_get_path(CONF_STATE_FILE, error);
+	if (path_fs.IsNull())
+		return !error.IsDefined();
 
 	state_file = new StateFile(std::move(path_fs),
 				   *instance->partition, *main_loop);
@@ -364,7 +339,7 @@ int mpd_main(int argc, char *argv[])
 	struct options options;
 	clock_t start;
 	bool create_db;
-	GError *error = NULL;
+	Error error;
 	bool success;
 
 	daemonize_close_stdin();
@@ -385,25 +360,22 @@ int mpd_main(int argc, char *argv[])
 	winsock_init();
 	config_global_init();
 
-	success = parse_cmdline(argc, argv, &options, &error);
+	success = parse_cmdline(argc, argv, &options, error);
 	if (!success) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+		g_warning("%s", error.GetMessage());
 		return EXIT_FAILURE;
 	}
 
-	if (!glue_daemonize_init(&options, &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	if (!glue_daemonize_init(&options, error)) {
+		g_printerr("%s\n", error.GetMessage());
 		return EXIT_FAILURE;
 	}
 
 	stats_global_init();
 	tag_lib_init();
 
-	if (!log_init(options.verbose, options.log_stderr, &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	if (!log_init(options.verbose, options.log_stderr, error)) {
+		g_warning("%s", error.GetMessage());
 		return EXIT_FAILURE;
 	}
 
@@ -415,10 +387,9 @@ int mpd_main(int argc, char *argv[])
 	const unsigned max_clients = config_get_positive(CONF_MAX_CONN, 10);
 	instance->client_list = new ClientList(max_clients);
 
-	success = listen_global_init(&error);
+	success = listen_global_init(error);
 	if (!success) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+		g_warning("%s", error.GetMessage());
 		return EXIT_FAILURE;
 	}
 
@@ -432,9 +403,8 @@ int mpd_main(int argc, char *argv[])
 
 	Path::GlobalInit();
 
-	if (!glue_mapper_init(&error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	if (!glue_mapper_init(error)) {
+		g_printerr("%s\n", error.GetMessage());
 		return EXIT_FAILURE;
 	}
 
@@ -445,9 +415,8 @@ int mpd_main(int argc, char *argv[])
 	archive_plugin_init_all();
 #endif
 
-	if (!pcm_resample_global_init(&error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	if (!pcm_resample_global_init(error)) {
+		g_warning("%s", error.GetMessage());
 		return EXIT_FAILURE;
 	}
 
@@ -466,9 +435,8 @@ int mpd_main(int argc, char *argv[])
 	client_manager_init();
 	replay_gain_global_init();
 
-	if (!input_stream_global_init(&error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	if (!input_stream_global_init(error)) {
+		g_warning("%s", error.GetMessage());
 		return EXIT_FAILURE;
 	}
 
@@ -494,9 +462,8 @@ int mpd_main(int argc, char *argv[])
 			FatalError("directory update failed");
 	}
 
-	if (!glue_state_file_init(&error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	if (!glue_state_file_init(error)) {
+		g_printerr("%s\n", error.GetMessage());
 		return EXIT_FAILURE;
 	}
 

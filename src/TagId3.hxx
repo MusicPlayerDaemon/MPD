@@ -22,11 +22,11 @@
 
 #include "check.h"
 #include "gcc.h"
-#include "gerror.h"
 
 struct tag_handler;
 struct Tag;
 struct id3_tag;
+class Error;
 
 #ifdef HAVE_ID3TAG
 
@@ -42,10 +42,10 @@ tag_id3_import(struct id3_tag *);
  * return value must be freed with id3_tag_delete().
  *
  * @return NULL on error or if no ID3 tag was found in the file (no
- * GError will be set)
+ * Error will be set)
  */
 struct id3_tag *
-tag_id3_load(const char *path_fs, GError **error_r);
+tag_id3_load(const char *path_fs, Error &error);
 
 /**
  * Import all tags from the provided id3_tag *tag

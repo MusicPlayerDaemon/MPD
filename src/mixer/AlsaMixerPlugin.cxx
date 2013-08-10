@@ -25,6 +25,8 @@
 #include "event/MultiSocketMonitor.hxx"
 #include "event/Loop.hxx"
 #include "util/ReusableArray.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <algorithm>
 
@@ -68,23 +70,15 @@ public:
 	AlsaMixer():Mixer(alsa_mixer_plugin) {}
 
 	void Configure(const config_param &param);
-	bool Setup(GError **error_r);
-	bool Open(GError **error_r);
+	bool Setup(Error &error);
+	bool Open(Error &error);
 	void Close();
 
-	int GetVolume(GError **error_r);
-	bool SetVolume(unsigned volume, GError **error_r);
+	int GetVolume(Error &error);
+	bool SetVolume(unsigned volume, Error &error);
 };
 
-/**
- * The quark used for GError.domain.
- */
-gcc_const
-static inline GQuark
-alsa_mixer_quark(void)
-{
-	return g_quark_from_static_string("alsa_mixer");
-}
+static constexpr Domain alsa_mixer_domain("alsa_mixer");
 
 int
 AlsaMixerMonitor::PrepareSockets()
@@ -158,7 +152,7 @@ AlsaMixer::Configure(const config_param &param)
 
 static Mixer *
 alsa_mixer_init(gcc_unused void *ao, const config_param &param,
-		gcc_unused GError **error_r)
+		gcc_unused Error &error)
 {
 	AlsaMixer *am = new AlsaMixer();
 	am->Configure(param);
@@ -194,35 +188,35 @@ alsa_mixer_lookup_elem(snd_mixer_t *handle, const char *name, unsigned idx)
 }
 
 inline bool
-AlsaMixer::Setup(GError **error_r)
+AlsaMixer::Setup(Error &error)
 {
 	int err;
 
 	if ((err = snd_mixer_attach(handle, device)) < 0) {
-		g_set_error(error_r, alsa_mixer_quark(), err,
-			    "failed to attach to %s: %s",
-			    device, snd_strerror(err));
+		error.Format(alsa_mixer_domain, err,
+			     "failed to attach to %s: %s",
+			     device, snd_strerror(err));
 		return false;
 	}
 
 	if ((err = snd_mixer_selem_register(handle, NULL,
 		    NULL)) < 0) {
-		g_set_error(error_r, alsa_mixer_quark(), err,
-			    "snd_mixer_selem_register() failed: %s",
-			    snd_strerror(err));
+		error.Format(alsa_mixer_domain, err,
+			     "snd_mixer_selem_register() failed: %s",
+			     snd_strerror(err));
 		return false;
 	}
 
 	if ((err = snd_mixer_load(handle)) < 0) {
-		g_set_error(error_r, alsa_mixer_quark(), err,
-			    "snd_mixer_load() failed: %s\n",
-			    snd_strerror(err));
+		error.Format(alsa_mixer_domain, err,
+			     "snd_mixer_load() failed: %s\n",
+			     snd_strerror(err));
 		return false;
 	}
 
 	elem = alsa_mixer_lookup_elem(handle, control, index);
 	if (elem == NULL) {
-		g_set_error(error_r, alsa_mixer_quark(), 0,
+		error.Format(alsa_mixer_domain, 0,
 			    "no such mixer control: %s", control);
 		return false;
 	}
@@ -238,7 +232,7 @@ AlsaMixer::Setup(GError **error_r)
 }
 
 inline bool
-AlsaMixer::Open(GError **error_r)
+AlsaMixer::Open(Error &error)
 {
 	int err;
 
@@ -246,12 +240,12 @@ AlsaMixer::Open(GError **error_r)
 
 	err = snd_mixer_open(&handle, 0);
 	if (err < 0) {
-		g_set_error(error_r, alsa_mixer_quark(), err,
-			    "snd_mixer_open() failed: %s", snd_strerror(err));
+		error.Format(alsa_mixer_domain, err,
+			     "snd_mixer_open() failed: %s", snd_strerror(err));
 		return false;
 	}
 
-	if (!Setup(error_r)) {
+	if (!Setup(error)) {
 		snd_mixer_close(handle);
 		return false;
 	}
@@ -260,11 +254,11 @@ AlsaMixer::Open(GError **error_r)
 }
 
 static bool
-alsa_mixer_open(Mixer *data, GError **error_r)
+alsa_mixer_open(Mixer *data, Error &error)
 {
 	AlsaMixer *am = (AlsaMixer *)data;
 
-	return am->Open(error_r);
+	return am->Open(error);
 }
 
 inline void
@@ -286,7 +280,7 @@ alsa_mixer_close(Mixer *data)
 }
 
 inline int
-AlsaMixer::GetVolume(GError **error_r)
+AlsaMixer::GetVolume(Error &error)
 {
 	int err;
 	int ret;
@@ -296,9 +290,9 @@ AlsaMixer::GetVolume(GError **error_r)
 
 	err = snd_mixer_handle_events(handle);
 	if (err < 0) {
-		g_set_error(error_r, alsa_mixer_quark(), err,
-			    "snd_mixer_handle_events() failed: %s",
-			    snd_strerror(err));
+		error.Format(alsa_mixer_domain, err,
+			     "snd_mixer_handle_events() failed: %s",
+			     snd_strerror(err));
 		return false;
 	}
 
@@ -306,9 +300,9 @@ AlsaMixer::GetVolume(GError **error_r)
 						  SND_MIXER_SCHN_FRONT_LEFT,
 						  &level);
 	if (err < 0) {
-		g_set_error(error_r, alsa_mixer_quark(), err,
-			    "failed to read ALSA volume: %s",
-			    snd_strerror(err));
+		error.Format(alsa_mixer_domain, err,
+			     "failed to read ALSA volume: %s",
+			     snd_strerror(err));
 		return false;
 	}
 
@@ -325,14 +319,14 @@ AlsaMixer::GetVolume(GError **error_r)
 }
 
 static int
-alsa_mixer_get_volume(Mixer *mixer, GError **error_r)
+alsa_mixer_get_volume(Mixer *mixer, Error &error)
 {
 	AlsaMixer *am = (AlsaMixer *)mixer;
-	return am->GetVolume(error_r);
+	return am->GetVolume(error);
 }
 
 inline bool
-AlsaMixer::SetVolume(unsigned volume, GError **error_r)
+AlsaMixer::SetVolume(unsigned volume, Error &error)
 {
 	float vol;
 	long level;
@@ -351,9 +345,9 @@ AlsaMixer::SetVolume(unsigned volume, GError **error_r)
 
 	err = snd_mixer_selem_set_playback_volume_all(elem, level);
 	if (err < 0) {
-		g_set_error(error_r, alsa_mixer_quark(), err,
-			    "failed to set ALSA volume: %s",
-			    snd_strerror(err));
+		error.Format(alsa_mixer_domain, err,
+			     "failed to set ALSA volume: %s",
+			     snd_strerror(err));
 		return false;
 	}
 
@@ -361,10 +355,10 @@ AlsaMixer::SetVolume(unsigned volume, GError **error_r)
 }
 
 static bool
-alsa_mixer_set_volume(Mixer *mixer, unsigned volume, GError **error_r)
+alsa_mixer_set_volume(Mixer *mixer, unsigned volume, Error &error)
 {
 	AlsaMixer *am = (AlsaMixer *)mixer;
-	return am->SetVolume(volume, error_r);
+	return am->SetVolume(volume, error);
 }
 
 const struct mixer_plugin alsa_mixer_plugin = {

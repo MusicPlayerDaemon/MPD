@@ -22,26 +22,18 @@
 
 #include "AudioFormat.hxx"
 
-#include <glib.h>
+class Error;
 
-/**
- * The GLib quark used for errors reported by this library.
- */
-gcc_const
-static inline GQuark
-audio_format_quark(void)
-{
-	return g_quark_from_static_string("audio_format");
-}
+extern const class Domain audio_format_domain;
 
 bool
-audio_check_sample_rate(unsigned long sample_rate, GError **error_r);
+audio_check_sample_rate(unsigned long sample_rate, Error &error);
 
 bool
-audio_check_sample_format(SampleFormat sample_format, GError **error_r);
+audio_check_sample_format(SampleFormat sample_format, Error &error);
 
 bool
-audio_check_channel_count(unsigned sample_format, GError **error_r);
+audio_check_channel_count(unsigned sample_format, Error &error);
 
 /**
  * Wrapper for audio_format_init(), which checks all attributes.
@@ -49,6 +41,6 @@ audio_check_channel_count(unsigned sample_format, GError **error_r);
 bool
 audio_format_init_checked(AudioFormat &af, unsigned long sample_rate,
 			  SampleFormat sample_format, unsigned channels,
-			  GError **error_r);
+			  Error &error);
 
 #endif

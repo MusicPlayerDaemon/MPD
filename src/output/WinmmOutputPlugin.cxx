@@ -22,6 +22,8 @@
 #include "OutputAPI.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "MixerList.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <stdlib.h>
 #include <string.h>
@@ -51,14 +53,7 @@ struct WinmmOutput {
 	unsigned next_buffer;
 };
 
-/**
- * The quark used for GError.domain.
- */
-static inline GQuark
-winmm_output_quark(void)
-{
-	return g_quark_from_static_string("winmm_output");
-}
+static constexpr Domain winmm_output_domain("winmm_output");
 
 HWAVEOUT
 winmm_output_get_handle(WinmmOutput *output)
@@ -73,7 +68,7 @@ winmm_output_test_default_device(void)
 }
 
 static bool
-get_device_id(const char *device_name, UINT *device_id, GError **error_r)
+get_device_id(const char *device_name, UINT *device_id, Error &error)
 {
 	/* if device is not specified use wave mapper */
 	if (device_name == nullptr) {
@@ -108,22 +103,22 @@ get_device_id(const char *device_name, UINT *device_id, GError **error_r)
 	}
 
 fail:
-	g_set_error(error_r, winmm_output_quark(), 0,
-		    "device \"%s\" is not found", device_name);
+	error.Format(winmm_output_domain,
+		     "device \"%s\" is not found", device_name);
 	return false;
 }
 
 static struct audio_output *
-winmm_output_init(const config_param &param, GError **error_r)
+winmm_output_init(const config_param &param, Error &error)
 {
 	WinmmOutput *wo = new WinmmOutput();
-	if (!ao_base_init(&wo->base, &winmm_output_plugin, param, error_r)) {
+	if (!ao_base_init(&wo->base, &winmm_output_plugin, param, error)) {
 		g_free(wo);
 		return nullptr;
 	}
 
 	const char *device = param.GetBlockValue("device");
-	if (!get_device_id(device, &wo->device_id, error_r)) {
+	if (!get_device_id(device, &wo->device_id, error)) {
 		ao_base_finish(&wo->base);
 		g_free(wo);
 		return nullptr;
@@ -143,14 +138,13 @@ winmm_output_finish(struct audio_output *ao)
 
 static bool
 winmm_output_open(struct audio_output *ao, AudioFormat &audio_format,
-		  GError **error_r)
+		  Error &error)
 {
 	WinmmOutput *wo = (WinmmOutput *)ao;
 
 	wo->event = CreateEvent(nullptr, false, false, nullptr);
 	if (wo->event == nullptr) {
-		g_set_error(error_r, winmm_output_quark(), 0,
-			    "CreateEvent() failed");
+		error.Set(winmm_output_domain, "CreateEvent() failed");
 		return false;
 	}
 
@@ -186,8 +180,7 @@ winmm_output_open(struct audio_output *ao, AudioFormat &audio_format,
 				      (DWORD_PTR)wo->event, 0, CALLBACK_EVENT);
 	if (result != MMSYSERR_NOERROR) {
 		CloseHandle(wo->event);
-		g_set_error(error_r, winmm_output_quark(), result,
-			    "waveOutOpen() failed");
+		error.Set(winmm_output_domain, "waveOutOpen() failed");
 		return false;
 	}
 
@@ -219,7 +212,7 @@ winmm_output_close(struct audio_output *ao)
 static bool
 winmm_set_buffer(WinmmOutput *wo, WinmmBuffer *buffer,
 		 const void *data, size_t size,
-		 GError **error_r)
+		 Error &error)
 {
 	void *dest = buffer->buffer.Get(size);
 	assert(dest != nullptr);
@@ -233,8 +226,8 @@ winmm_set_buffer(WinmmOutput *wo, WinmmBuffer *buffer,
 	MMRESULT result = waveOutPrepareHeader(wo->handle, &buffer->hdr,
 					       sizeof(buffer->hdr));
 	if (result != MMSYSERR_NOERROR) {
-		g_set_error(error_r, winmm_output_quark(), result,
-			    "waveOutPrepareHeader() failed");
+		error.Set(winmm_output_domain, result,
+			  "waveOutPrepareHeader() failed");
 		return false;
 	}
 
@@ -246,7 +239,7 @@ winmm_set_buffer(WinmmOutput *wo, WinmmBuffer *buffer,
  */
 static bool
 winmm_drain_buffer(WinmmOutput *wo, WinmmBuffer *buffer,
-		   GError **error_r)
+		   Error &error)
 {
 	if ((buffer->hdr.dwFlags & WHDR_DONE) == WHDR_DONE)
 		/* already finished */
@@ -259,8 +252,8 @@ winmm_drain_buffer(WinmmOutput *wo, WinmmBuffer *buffer,
 		if (result == MMSYSERR_NOERROR)
 			return true;
 		else if (result != WAVERR_STILLPLAYING) {
-			g_set_error(error_r, winmm_output_quark(), result,
-				    "waveOutUnprepareHeader() failed");
+			error.Set(winmm_output_domain, result,
+				  "waveOutUnprepareHeader() failed");
 			return false;
 		}
 
@@ -270,14 +263,14 @@ winmm_drain_buffer(WinmmOutput *wo, WinmmBuffer *buffer,
 }
 
 static size_t
-winmm_output_play(struct audio_output *ao, const void *chunk, size_t size, GError **error_r)
+winmm_output_play(struct audio_output *ao, const void *chunk, size_t size, Error &error)
 {
 	WinmmOutput *wo = (WinmmOutput *)ao;
 
 	/* get the next buffer from the ring and prepare it */
 	WinmmBuffer *buffer = &wo->buffers[wo->next_buffer];
-	if (!winmm_drain_buffer(wo, buffer, error_r) ||
-	    !winmm_set_buffer(wo, buffer, chunk, size, error_r))
+	if (!winmm_drain_buffer(wo, buffer, error) ||
+	    !winmm_set_buffer(wo, buffer, chunk, size, error))
 		return 0;
 
 	/* enqueue the buffer */
@@ -286,8 +279,8 @@ winmm_output_play(struct audio_output *ao, const void *chunk, size_t size, GErro
 	if (result != MMSYSERR_NOERROR) {
 		waveOutUnprepareHeader(wo->handle, &buffer->hdr,
 				       sizeof(buffer->hdr));
-		g_set_error(error_r, winmm_output_quark(), result,
-			    "waveOutWrite() failed");
+		error.Set(winmm_output_domain, result,
+			  "waveOutWrite() failed");
 		return 0;
 	}
 
@@ -299,14 +292,14 @@ winmm_output_play(struct audio_output *ao, const void *chunk, size_t size, GErro
 }
 
 static bool
-winmm_drain_all_buffers(WinmmOutput *wo, GError **error_r)
+winmm_drain_all_buffers(WinmmOutput *wo, Error &error)
 {
 	for (unsigned i = wo->next_buffer; i < G_N_ELEMENTS(wo->buffers); ++i)
-		if (!winmm_drain_buffer(wo, &wo->buffers[i], error_r))
+		if (!winmm_drain_buffer(wo, &wo->buffers[i], error))
 			return false;
 
 	for (unsigned i = 0; i < wo->next_buffer; ++i)
-		if (!winmm_drain_buffer(wo, &wo->buffers[i], error_r))
+		if (!winmm_drain_buffer(wo, &wo->buffers[i], error))
 			return false;
 
 	return true;
@@ -329,7 +322,7 @@ winmm_output_drain(struct audio_output *ao)
 {
 	WinmmOutput *wo = (WinmmOutput *)ao;
 
-	if (!winmm_drain_all_buffers(wo, nullptr))
+	if (!winmm_drain_all_buffers(wo, IgnoreError()))
 		winmm_stop(wo);
 }
 

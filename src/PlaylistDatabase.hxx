@@ -21,7 +21,6 @@
 #define MPD_PLAYLIST_DATABASE_HXX
 
 #include "check.h"
-#include "gerror.h"
 
 #include <stdio.h>
 
@@ -29,12 +28,13 @@
 
 class PlaylistVector;
 class TextFile;
+class Error;
 
 void
 playlist_vector_save(FILE *fp, const PlaylistVector &pv);
 
 bool
 playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name,
-		       GError **error_r);
+		       Error &error);
 
 #endif

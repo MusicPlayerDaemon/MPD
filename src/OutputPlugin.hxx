@@ -21,13 +21,13 @@
 #define MPD_OUTPUT_PLUGIN_HXX
 
 #include "gcc.h"
-#include "gerror.h"
 
 #include <stddef.h>
 
 struct config_param;
 struct AudioFormat;
 struct Tag;
+class Error;
 
 /**
  * A plugin which controls an audio output device.
@@ -56,7 +56,7 @@ struct audio_output_plugin {
 	 * data
 	 */
 	struct audio_output *(*init)(const config_param &param,
-				     GError **error);
+				     Error &error);
 
 	/**
 	 * Free resources allocated by this device.
@@ -73,7 +73,7 @@ struct audio_output_plugin {
 	 * NULL to ignore errors
 	 * @return true on success, false on error
 	 */
-	bool (*enable)(struct audio_output *data, GError **error_r);
+	bool (*enable)(struct audio_output *data, Error &error);
 
 	/**
 	 * Disables the device.  It is closed before this method is
@@ -90,7 +90,7 @@ struct audio_output_plugin {
 	 * to ignore errors
 	 */
 	bool (*open)(struct audio_output *data, AudioFormat &audio_format,
-		     GError **error);
+		     Error &error);
 
 	/**
 	 * Close the device.
@@ -122,7 +122,7 @@ struct audio_output_plugin {
 	 */
 	size_t (*play)(struct audio_output *data,
 		       const void *chunk, size_t size,
-		       GError **error);
+		       Error &error);
 
 	/**
 	 * Wait until the device has finished playing.
@@ -169,20 +169,20 @@ gcc_malloc
 struct audio_output *
 ao_plugin_init(const struct audio_output_plugin *plugin,
 	       const config_param &param,
-	       GError **error);
+	       Error &error);
 
 void
 ao_plugin_finish(struct audio_output *ao);
 
 bool
-ao_plugin_enable(struct audio_output *ao, GError **error_r);
+ao_plugin_enable(struct audio_output *ao, Error &error);
 
 void
 ao_plugin_disable(struct audio_output *ao);
 
 bool
 ao_plugin_open(struct audio_output *ao, AudioFormat &audio_format,
-	       GError **error);
+	       Error &error);
 
 void
 ao_plugin_close(struct audio_output *ao);
@@ -196,7 +196,7 @@ ao_plugin_send_tag(struct audio_output *ao, const Tag *tag);
 
 size_t
 ao_plugin_play(struct audio_output *ao, const void *chunk, size_t size,
-	       GError **error);
+	       Error &error);
 
 void
 ao_plugin_drain(struct audio_output *ao);

@@ -22,7 +22,6 @@
 
 #include "check.h"
 #include "PcmBuffer.hxx"
-#include "gerror.h"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -30,6 +29,8 @@
 #ifdef HAVE_LIBSAMPLERATE
 #include <samplerate.h>
 #endif
+
+class Error;
 
 /**
  * This object is statically allocated (within another struct), and
@@ -75,7 +76,7 @@ struct PcmResampler {
 	const float *ResampleFloat(unsigned channels, unsigned src_rate,
 				   const float *src_buffer, size_t src_size,
 				   unsigned dest_rate, size_t *dest_size_r,
-				   GError **error_r);
+				   Error &error_r);
 
 	/**
 	 * Resamples 16 bit PCM data.
@@ -91,7 +92,7 @@ struct PcmResampler {
 	const int16_t *Resample16(unsigned channels, unsigned src_rate,
 				  const int16_t *src_buffer, size_t src_size,
 				  unsigned dest_rate, size_t *dest_size_r,
-				  GError **error_r);
+				  Error &error_r);
 
 	/**
 	 * Resamples 32 bit PCM data.
@@ -107,7 +108,7 @@ struct PcmResampler {
 	const int32_t *Resample32(unsigned channels, unsigned src_rate,
 				  const int32_t *src_buffer, size_t src_size,
 				  unsigned dest_rate, size_t *dest_size_r,
-				  GError **error_r);
+				  Error &error_r);
 
 	/**
 	 * Resamples 24 bit PCM data.
@@ -123,7 +124,7 @@ struct PcmResampler {
 	const int32_t *Resample24(unsigned channels, unsigned src_rate,
 				  const int32_t *src_buffer, size_t src_size,
 				  unsigned dest_rate, size_t *dest_size_r,
-				  GError **error_r)
+				  Error &error_r)
 	{
 		/* reuse the 32 bit code - the resampler code doesn't care if
 		   the upper 8 bits are actually used */
@@ -133,6 +134,6 @@ struct PcmResampler {
 };
 
 bool
-pcm_resample_global_init(GError **error_r);
+pcm_resample_global_init(Error &error);
 
 #endif

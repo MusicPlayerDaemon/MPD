@@ -26,6 +26,8 @@
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -71,11 +73,7 @@ struct CdioParanoiaInputStream {
 	}
 };
 
-static inline GQuark
-cdio_quark(void)
-{
-	return g_quark_from_static_string("cdio");
-}
+static constexpr Domain cdio_domain("cdio");
 
 static void
 input_cdio_close(struct input_stream *is)
@@ -91,7 +89,7 @@ struct cdio_uri {
 };
 
 static bool
-parse_cdio_uri(struct cdio_uri *dest, const char *src, GError **error_r)
+parse_cdio_uri(struct cdio_uri *dest, const char *src, Error &error)
 {
 	if (!g_str_has_prefix(src, "cdda://"))
 		return false;
@@ -125,8 +123,7 @@ parse_cdio_uri(struct cdio_uri *dest, const char *src, GError **error_r)
 	char *endptr;
 	dest->track = strtoul(track, &endptr, 10);
 	if (*endptr != 0) {
-		g_set_error(error_r, cdio_quark(), 0,
-			    "Malformed track number");
+		error.Set(cdio_domain, "Malformed track number");
 		return false;
 	}
 
@@ -154,10 +151,10 @@ cdio_detect_device(void)
 static struct input_stream *
 input_cdio_open(const char *uri,
 		Mutex &mutex, Cond &cond,
-		GError **error_r)
+		Error &error)
 {
 	struct cdio_uri parsed_uri;
-	if (!parse_cdio_uri(&parsed_uri, uri, error_r))
+	if (!parse_cdio_uri(&parsed_uri, uri, error))
 		return nullptr;
 
 	CdioParanoiaInputStream *i =
@@ -169,8 +166,8 @@ input_cdio_open(const char *uri,
 		? g_strdup(parsed_uri.device)
 		: cdio_detect_device();
 	if (device == nullptr) {
-		g_set_error(error_r, cdio_quark(), 0,
-			    "Unable find or access a CD-ROM drive with an audio CD in it.");
+		error.Set(cdio_domain,
+			  "Unable find or access a CD-ROM drive with an audio CD in it.");
 		delete i;
 		return nullptr;
 	}
@@ -182,8 +179,7 @@ input_cdio_open(const char *uri,
 	i->drv = cdio_cddap_identify_cdio(i->cdio, 1, nullptr);
 
 	if ( !i->drv ) {
-		g_set_error(error_r, cdio_quark(), 0,
-			    "Unable to identify audio CD disc.");
+		error.Set(cdio_domain, "Unable to identify audio CD disc.");
 		delete i;
 		return nullptr;
 	}
@@ -191,7 +187,7 @@ input_cdio_open(const char *uri,
 	cdda_verbose_set(i->drv, CDDA_MESSAGE_FORGETIT, CDDA_MESSAGE_FORGETIT);
 
 	if ( 0 != cdio_cddap_open(i->drv) ) {
-		g_set_error(error_r, cdio_quark(), 0, "Unable to open disc.");
+		error.Set(cdio_domain, "Unable to open disc.");
 		delete i;
 		return nullptr;
 	}
@@ -211,9 +207,8 @@ input_cdio_open(const char *uri,
 		reverse_endian = G_BYTE_ORDER == G_LITTLE_ENDIAN;
 		break;
 	default:
-		g_set_error(error_r, cdio_quark(), 0,
-			    "Drive returns unknown data type %d",
-			    data_bigendianp(i->drv));
+		error.Format(cdio_domain, "Drive returns unknown data type %d",
+			     data_bigendianp(i->drv));
 		delete i;
 		return nullptr;
 	}
@@ -250,7 +245,7 @@ input_cdio_open(const char *uri,
 
 static bool
 input_cdio_seek(struct input_stream *is,
-		goffset offset, int whence, GError **error_r)
+		goffset offset, int whence, Error &error)
 {
 	CdioParanoiaInputStream *cis = (CdioParanoiaInputStream *)is;
 
@@ -267,9 +262,8 @@ input_cdio_seek(struct input_stream *is,
 	}
 
 	if (offset < 0 || offset > cis->base.size) {
-		g_set_error(error_r, cdio_quark(), 0,
-			    "Invalid offset to seek %ld (%ld)",
-			    (long int)offset, (long int)cis->base.size);
+		error.Format(cdio_domain, "Invalid offset to seek %ld (%ld)",
+			     (long int)offset, (long int)cis->base.size);
 		return false;
 	}
 
@@ -288,7 +282,7 @@ input_cdio_seek(struct input_stream *is,
 
 static size_t
 input_cdio_read(struct input_stream *is, void *ptr, size_t length,
-		GError **error_r)
+		Error &error)
 {
 	CdioParanoiaInputStream *cis = (CdioParanoiaInputStream *)is;
 	size_t nbytes = 0;
@@ -319,8 +313,8 @@ input_cdio_read(struct input_stream *is, void *ptr, size_t length,
 				free(s_mess);
 			}
 			if (!rbuf) {
-				g_set_error(error_r, cdio_quark(), 0,
-					"paranoia read error. Stopping.");
+				error.Set(cdio_domain,
+					  "paranoia read error. Stopping.");
 				return 0;
 			}
 			//store current buffer

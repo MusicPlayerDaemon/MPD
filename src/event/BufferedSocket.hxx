@@ -22,10 +22,10 @@
 
 #include "check.h"
 #include "SocketMonitor.hxx"
-#include "gerror.h"
 #include "gcc.h"
 
 struct fifo_buffer;
+class Error;
 
 /**
  * A #SocketMonitor specialization that adds an input buffer.
@@ -96,7 +96,7 @@ protected:
 	};
 
 	virtual InputResult OnSocketInput(const void *data, size_t length) = 0;
-	virtual void OnSocketError(GError *error) = 0;
+	virtual void OnSocketError(Error &&error) = 0;
 	virtual void OnSocketClosed() = 0;
 
 	virtual bool OnSocketReady(unsigned flags) override;

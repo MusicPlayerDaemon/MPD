@@ -23,6 +23,8 @@
 #include "DecoderBuffer.hxx"
 #include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <neaacdec.h>
 
@@ -42,14 +44,7 @@ static const unsigned adts_sample_rates[] =
 	16000, 12000, 11025, 8000, 7350, 0, 0, 0
 };
 
-/**
- * The GLib quark used for errors reported by this plugin.
- */
-static inline GQuark
-faad_decoder_quark(void)
-{
-	return g_quark_from_static_string("faad");
-}
+static constexpr Domain faad_decoder_domain("faad_decoder");
 
 /**
  * Check whether the buffer head is an AAC frame, and return the frame
@@ -211,7 +206,7 @@ faad_song_duration(DecoderBuffer *buffer, struct input_stream *is)
 		/* obtain the duration from the ADTS header */
 		float song_length = adts_song_duration(buffer);
 
-		input_stream_lock_seek(is, tagsize, SEEK_SET, nullptr);
+		input_stream_lock_seek(is, tagsize, SEEK_SET, IgnoreError());
 
 		data = (const uint8_t *)decoder_buffer_read(buffer, &length);
 		if (data != nullptr)
@@ -248,7 +243,7 @@ faad_song_duration(DecoderBuffer *buffer, struct input_stream *is)
  */
 static bool
 faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer *buffer,
-		  AudioFormat &audio_format, GError **error_r)
+		  AudioFormat &audio_format, Error &error)
 {
 	int32_t nbytes;
 	uint32_t sample_rate;
@@ -266,8 +261,7 @@ faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer *buffer,
 	const unsigned char *data = (const unsigned char *)
 		decoder_buffer_read(buffer, &length);
 	if (data == nullptr) {
-		g_set_error(error_r, faad_decoder_quark(), 0,
-			    "Empty file");
+		error.Set(faad_decoder_domain, "Empty file");
 		return false;
 	}
 
@@ -277,15 +271,14 @@ faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer *buffer,
 			     length,
 			     sample_rate_p, &channels);
 	if (nbytes < 0) {
-		g_set_error(error_r, faad_decoder_quark(), 0,
-			    "Not an AAC stream");
+		error.Set(faad_decoder_domain, "Not an AAC stream");
 		return false;
 	}
 
 	decoder_buffer_consume(buffer, nbytes);
 
 	return audio_format_init_checked(audio_format, sample_rate,
-					 SampleFormat::S16, channels, error_r);
+					 SampleFormat::S16, channels, error);
 }
 
 /**
@@ -336,7 +329,8 @@ faad_get_file_time_float(struct input_stream *is)
 
 		decoder_buffer_fill(buffer);
 
-		ret = faad_decoder_init(decoder, buffer, audio_format, nullptr);
+		ret = faad_decoder_init(decoder, buffer, audio_format,
+					IgnoreError());
 		if (ret)
 			length = 0;
 
@@ -368,7 +362,6 @@ faad_get_file_time(struct input_stream *is)
 static void
 faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 {
-	GError *error = nullptr;
 	float total_time = 0;
 	AudioFormat audio_format;
 	bool ret;
@@ -400,10 +393,10 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 	/* initialize it */
 
-	ret = faad_decoder_init(decoder, buffer, audio_format, &error);
+	Error error;
+	ret = faad_decoder_init(decoder, buffer, audio_format, error);
 	if (!ret) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+		g_warning("%s", error.GetMessage());
 		NeAACDecClose(decoder);
 		return;
 	}

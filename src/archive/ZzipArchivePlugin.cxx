@@ -30,9 +30,11 @@
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
 #include "util/RefCount.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <zzip/zzip.h>
-#include <glib.h>
+
 #include <string.h>
 
 class ZzipArchiveFile final : public ArchiveFile {
@@ -61,26 +63,22 @@ public:
 
 	virtual input_stream *OpenStream(const char *path,
 					 Mutex &mutex, Cond &cond,
-					 GError **error_r) override;
+					 Error &error) override;
 };
 
 extern const struct input_plugin zzip_input_plugin;
 
-static inline GQuark
-zzip_quark(void)
-{
-	return g_quark_from_static_string("zzip");
-}
+static constexpr Domain zzip_domain("zzip");
 
 /* archive open && listing routine */
 
 static ArchiveFile *
-zzip_archive_open(const char *pathname, GError **error_r)
+zzip_archive_open(const char *pathname, Error &error)
 {
 	ZZIP_DIR *dir = zzip_dir_open(pathname, NULL);
 	if (dir == nullptr) {
-		g_set_error(error_r, zzip_quark(), 0,
-			    "Failed to open ZIP file %s", pathname);
+		error.Format(zzip_domain, "Failed to open ZIP file %s",
+			     pathname);
 		return NULL;
 	}
 
@@ -133,12 +131,12 @@ struct ZzipInputStream {
 input_stream *
 ZzipArchiveFile::OpenStream(const char *pathname,
 			    Mutex &mutex, Cond &cond,
-			    GError **error_r)
+			    Error &error)
 {
 	ZZIP_FILE *_file = zzip_file_open(dir, pathname, 0);
 	if (_file == nullptr) {
-		g_set_error(error_r, zzip_quark(), 0,
-			    "not found in the ZIP file: %s", pathname);
+		error.Format(zzip_domain, "not found in the ZIP file: %s",
+			     pathname);
 		return NULL;
 	}
 
@@ -159,15 +157,14 @@ zzip_input_close(struct input_stream *is)
 
 static size_t
 zzip_input_read(struct input_stream *is, void *ptr, size_t size,
-		GError **error_r)
+		Error &error)
 {
 	ZzipInputStream *zis = (ZzipInputStream *)is;
 	int ret;
 
 	ret = zzip_file_read(zis->file, ptr, size);
 	if (ret < 0) {
-		g_set_error(error_r, zzip_quark(), ret,
-			    "zzip_file_read() has failed");
+		error.Set(zzip_domain, "zzip_file_read() has failed");
 		return 0;
 	}
 
@@ -186,13 +183,12 @@ zzip_input_eof(struct input_stream *is)
 
 static bool
 zzip_input_seek(struct input_stream *is,
-		goffset offset, int whence, GError **error_r)
+		goffset offset, int whence, Error &error)
 {
 	ZzipInputStream *zis = (ZzipInputStream *)is;
 	zzip_off_t ofs = zzip_seek(zis->file, offset, whence);
 	if (ofs != -1) {
-		g_set_error(error_r, zzip_quark(), ofs,
-			    "zzip_seek() has failed");
+		error.Set(zzip_domain, "zzip_seek() has failed");
 		is->offset = ofs;
 		return true;
 	}

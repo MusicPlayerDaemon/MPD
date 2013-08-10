@@ -20,18 +20,6 @@
 #ifndef MPD_DECODER_ERROR_HXX
 #define MPD_DECODER_ERROR_HXX
 
-#include "gcc.h"
-
-#include <glib.h>
-
-/**
- * Quark for GError.domain.
- */
-gcc_pure
-static inline GQuark
-decoder_quark(void)
-{
-	return g_quark_from_static_string("decoder");
-}
+extern const class Domain decoder_domain;
 
 #endif

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "FlacIOHandle.hxx"
-#include "io_error.h"
+#include "util/Error.hxx"
 #include "gcc.h"
 
 #include <errno.h>
@@ -35,21 +35,20 @@ FlacIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)
 	/* libFLAC is very picky about short reads, and expects the IO
 	   callback to fill the whole buffer (undocumented!) */
 
-	GError *error = nullptr;
+	Error error;
 	while (p < end) {
-		size_t nbytes = input_stream_lock_read(is, p, end - p, &error);
+		size_t nbytes = input_stream_lock_read(is, p, end - p, error);
 		if (nbytes == 0) {
-			if (error == nullptr)
+			if (!error.IsDefined())
 				/* end of file */
 				break;
 
-			if (error->domain == errno_quark())
-				errno = error->code;
+			if (error.IsDomain(errno_domain))
+				errno = error.GetCode();
 			else
 				/* just some random non-zero
 				   errno value */
 				errno = EINVAL;
-			g_error_free(error);
 			return 0;
 		}
 
@@ -67,7 +66,8 @@ FlacIOSeek(FLAC__IOHandle handle, FLAC__int64 offset, int whence)
 {
 	input_stream *is = (input_stream *)handle;
 
-	return input_stream_lock_seek(is, offset, whence, nullptr) ? 0 : -1;
+	Error error;
+	return input_stream_lock_seek(is, offset, whence, error) ? 0 : -1;
 }
 
 static FLAC__int64

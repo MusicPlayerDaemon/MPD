@@ -24,7 +24,7 @@
 struct audio_output *
 ao_plugin_init(const struct audio_output_plugin *plugin,
 	       const config_param &param,
-	       GError **error)
+	       Error &error)
 {
 	assert(plugin != NULL);
 	assert(plugin->init != NULL);
@@ -39,7 +39,7 @@ ao_plugin_finish(struct audio_output *ao)
 }
 
 bool
-ao_plugin_enable(struct audio_output *ao, GError **error_r)
+ao_plugin_enable(struct audio_output *ao, Error &error_r)
 {
 	return ao->plugin->enable != NULL
 		? ao->plugin->enable(ao, error_r)
@@ -55,7 +55,7 @@ ao_plugin_disable(struct audio_output *ao)
 
 bool
 ao_plugin_open(struct audio_output *ao, AudioFormat &audio_format,
-	       GError **error)
+	       Error &error)
 {
 	return ao->plugin->open(ao, audio_format, error);
 }
@@ -83,7 +83,7 @@ ao_plugin_send_tag(struct audio_output *ao, const Tag *tag)
 
 size_t
 ao_plugin_play(struct audio_output *ao, const void *chunk, size_t size,
-	       GError **error)
+	       Error &error)
 {
 	return ao->plugin->play(ao, chunk, size, error);
 }

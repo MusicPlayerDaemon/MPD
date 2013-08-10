@@ -22,6 +22,7 @@
 #include "MemoryPlaylistProvider.hxx"
 #include "InputLegacy.hxx"
 #include "Tag.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -224,6 +225,7 @@ xspf_open_stream(struct input_stream *is)
 	char buffer[1024];
 	size_t nbytes;
 	bool success;
+	Error error2;
 	GError *error = NULL;
 
 	/* parse the XSPF XML file */
@@ -234,12 +236,11 @@ xspf_open_stream(struct input_stream *is)
 
 	while (true) {
 		nbytes = input_stream_lock_read(is, buffer, sizeof(buffer),
-						&error);
+						error2);
 		if (nbytes == 0) {
-			if (error != NULL) {
+			if (error2.IsDefined()) {
 				g_markup_parse_context_free(context);
-				g_warning("%s", error->message);
-				g_error_free(error);
+				g_warning("%s", error2.GetMessage());
 				return NULL;
 			}
 

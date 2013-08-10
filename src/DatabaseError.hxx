@@ -20,9 +20,7 @@
 #ifndef MPD_DB_ERROR_HXX
 #define MPD_DB_ERROR_HXX
 
-#include "gcc.h"
-
-#include <glib.h>
+class Domain;
 
 enum db_error {
 	/**
@@ -34,14 +32,6 @@ enum db_error {
 	DB_NOT_FOUND,
 };
 
-/**
- * Quark for GError.domain; the code is an enum #db_error.
- */
-gcc_const
-static inline GQuark
-db_quark(void)
-{
-	return g_quark_from_static_string("db");
-}
+extern const Domain db_domain;
 
 #endif

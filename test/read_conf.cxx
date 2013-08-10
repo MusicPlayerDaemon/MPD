@@ -20,6 +20,7 @@
 #include "config.h"
 #include "conf.h"
 #include "fs/Path.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -50,10 +51,9 @@ int main(int argc, char **argv)
 
 	config_global_init();
 
-	GError *error = NULL;
-	if (!ReadConfigFile(config_path, &error)) {
-		g_printerr("%s:", error->message);
-		g_error_free(error);
+	Error error;
+	if (!ReadConfigFile(config_path, error)) {
+		g_printerr("%s:", error.GetMessage());
 		return 1;
 	}
 

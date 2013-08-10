@@ -26,24 +26,16 @@
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
 #include "CheckAudioFormat.hxx"
+#include "util/Error.hxx"
 #include "gcc.h"
 
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 
-/**
- * The GLib quark used for errors reported by this library.
- */
-static inline GQuark
-audio_parser_quark(void)
-{
-	return g_quark_from_static_string("audio_parser");
-}
-
 static bool
 parse_sample_rate(const char *src, bool mask, uint32_t *sample_rate_r,
-		  const char **endptr_r, GError **error_r)
+		  const char **endptr_r, Error &error)
 {
 	unsigned long value;
 	char *endptr;
@@ -56,10 +48,10 @@ parse_sample_rate(const char *src, bool mask, uint32_t *sample_rate_r,
 
 	value = strtoul(src, &endptr, 10);
 	if (endptr == src) {
-		g_set_error(error_r, audio_parser_quark(), 0,
-			    "Failed to parse the sample rate");
+		error.Set(audio_format_domain,
+			  "Failed to parse the sample rate");
 		return false;
-	} else if (!audio_check_sample_rate(value, error_r))
+	} else if (!audio_check_sample_rate(value, error))
 		return false;
 
 	*sample_rate_r = value;
@@ -70,7 +62,7 @@ parse_sample_rate(const char *src, bool mask, uint32_t *sample_rate_r,
 static bool
 parse_sample_format(const char *src, bool mask,
 		    SampleFormat *sample_format_r,
-		    const char **endptr_r, GError **error_r)
+		    const char **endptr_r, Error &error)
 {
 	unsigned long value;
 	char *endptr;
@@ -96,8 +88,8 @@ parse_sample_format(const char *src, bool mask,
 
 	value = strtoul(src, &endptr, 10);
 	if (endptr == src) {
-		g_set_error(error_r, audio_parser_quark(), 0,
-			    "Failed to parse the sample format");
+		error.Set(audio_format_domain,
+			  "Failed to parse the sample format");
 		return false;
 	}
 
@@ -123,8 +115,8 @@ parse_sample_format(const char *src, bool mask,
 		break;
 
 	default:
-		g_set_error(error_r, audio_parser_quark(), 0,
-			    "Invalid sample format: %lu", value);
+		error.Format(audio_format_domain,
+			     "Invalid sample format: %lu", value);
 		return false;
 	}
 
@@ -137,7 +129,7 @@ parse_sample_format(const char *src, bool mask,
 
 static bool
 parse_channel_count(const char *src, bool mask, uint8_t *channels_r,
-		    const char **endptr_r, GError **error_r)
+		    const char **endptr_r, Error &error)
 {
 	unsigned long value;
 	char *endptr;
@@ -150,10 +142,10 @@ parse_channel_count(const char *src, bool mask, uint8_t *channels_r,
 
 	value = strtoul(src, &endptr, 10);
 	if (endptr == src) {
-		g_set_error(error_r, audio_parser_quark(), 0,
-			    "Failed to parse the channel count");
+		error.Set(audio_format_domain,
+			  "Failed to parse the channel count");
 		return false;
-	} else if (!audio_check_channel_count(value, error_r))
+	} else if (!audio_check_channel_count(value, error))
 		return false;
 
 	*channels_r = value;
@@ -163,7 +155,7 @@ parse_channel_count(const char *src, bool mask, uint8_t *channels_r,
 
 bool
 audio_format_parse(AudioFormat &dest, const char *src,
-		   bool mask, GError **error_r)
+		   bool mask, Error &error)
 {
 	uint32_t rate;
 	SampleFormat sample_format;
@@ -178,12 +170,11 @@ audio_format_parse(AudioFormat &dest, const char *src,
 	rate = 0;
 #endif
 
-	if (!parse_sample_rate(src, mask, &rate, &src, error_r))
+	if (!parse_sample_rate(src, mask, &rate, &src, error))
 		return false;
 
 	if (*src++ != ':') {
-		g_set_error(error_r, audio_parser_quark(), 0,
-			    "Sample format missing");
+		error.Set(audio_format_domain, "Sample format missing");
 		return false;
 	}
 
@@ -194,22 +185,21 @@ audio_format_parse(AudioFormat &dest, const char *src,
 	sample_format = SampleFormat::UNDEFINED;
 #endif
 
-	if (!parse_sample_format(src, mask, &sample_format, &src, error_r))
+	if (!parse_sample_format(src, mask, &sample_format, &src, error))
 		return false;
 
 	if (*src++ != ':') {
-		g_set_error(error_r, audio_parser_quark(), 0,
-			    "Channel count missing");
+		error.Set(audio_format_domain, "Channel count missing");
 		return false;
 	}
 
 	/* parse channel count */
 
-	if (!parse_channel_count(src, mask, &channels, &src, error_r))
+	if (!parse_channel_count(src, mask, &channels, &src, error))
 		return false;
 
 	if (*src != 0) {
-		g_set_error(error_r, audio_parser_quark(), 0,
+		error.Format(audio_format_domain,
 			    "Extra data after channel count: %s", src);
 		return false;
 	}

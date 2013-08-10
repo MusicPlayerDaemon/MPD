@@ -22,6 +22,7 @@
 #include "PlaylistMapper.hxx"
 #include "PlaylistRegistry.hxx"
 #include "util/UriUtil.hxx"
+#include "util/Error.hxx"
 #include "InputLegacy.hxx"
 
 #include <assert.h>
@@ -39,14 +40,12 @@ playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond,
 		return playlist;
 	}
 
-	GError *error = NULL;
-	struct input_stream *is = input_stream_open(uri, mutex, cond, &error);
+	Error error;
+	input_stream *is = input_stream_open(uri, mutex, cond, error);
 	if (is == NULL) {
-		if (error != NULL) {
+		if (error.IsDefined())
 			g_warning("Failed to open %s: %s",
-				  uri, error->message);
-			g_error_free(error);
-		}
+				  uri, error.GetMessage());
 
 		return NULL;
 	}

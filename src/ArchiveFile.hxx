@@ -20,6 +20,8 @@
 #ifndef MPD_ARCHIVE_FILE_HXX
 #define MPD_ARCHIVE_FILE_HXX
 
+class Error;
+
 class ArchiveFile {
 public:
 	const struct archive_plugin &plugin;
@@ -50,7 +52,7 @@ public:
 	 */
 	virtual input_stream *OpenStream(const char *path,
 					 Mutex &mutex, Cond &cond,
-					 GError **error_r) = 0;
+					 Error &error) = 0;
 };
 
 #endif

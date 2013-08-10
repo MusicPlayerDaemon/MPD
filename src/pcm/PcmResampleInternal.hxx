@@ -33,7 +33,7 @@
 #ifdef HAVE_LIBSAMPLERATE
 
 bool
-pcm_resample_lsr_global_init(const char *converter, GError **error_r);
+pcm_resample_lsr_global_init(const char *converter, Error &error);
 
 void
 pcm_resample_lsr_init(PcmResampler *state);
@@ -50,7 +50,7 @@ pcm_resample_lsr_float(PcmResampler *state,
 		       unsigned src_rate,
 		       const float *src_buffer, size_t src_size,
 		       unsigned dest_rate, size_t *dest_size_r,
-		       GError **error_r);
+		       Error &error);
 
 const int16_t *
 pcm_resample_lsr_16(PcmResampler *state,
@@ -58,7 +58,7 @@ pcm_resample_lsr_16(PcmResampler *state,
 		    unsigned src_rate,
 		    const int16_t *src_buffer, size_t src_size,
 		    unsigned dest_rate, size_t *dest_size_r,
-		    GError **error_r);
+		    Error &error);
 
 const int32_t *
 pcm_resample_lsr_32(PcmResampler *state,
@@ -67,7 +67,7 @@ pcm_resample_lsr_32(PcmResampler *state,
 		    const int32_t *src_buffer,
 		    size_t src_size,
 		    unsigned dest_rate, size_t *dest_size_r,
-		    GError **error_r);
+		    Error &error);
 
 #endif
 

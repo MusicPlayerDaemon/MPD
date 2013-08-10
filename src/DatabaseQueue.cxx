@@ -23,17 +23,17 @@
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 #include "Partition.hxx"
+#include "util/Error.hxx"
 
 #include <functional>
 
 static bool
-AddToQueue(Partition &partition, Song &song, GError **error_r)
+AddToQueue(Partition &partition, Song &song, Error &error)
 {
 	enum playlist_result result =
 		partition.playlist.AppendSong(partition.pc, &song, NULL);
 	if (result != PLAYLIST_RESULT_SUCCESS) {
-		g_set_error(error_r, playlist_quark(), result,
-			    "Playlist error");
+		error.Set(playlist_domain, result, "Playlist error");
 		return false;
 	}
 
@@ -42,13 +42,13 @@ AddToQueue(Partition &partition, Song &song, GError **error_r)
 
 bool
 AddFromDatabase(Partition &partition, const DatabaseSelection &selection,
-		GError **error_r)
+		Error &error)
 {
-	const Database *db = GetDatabase(error_r);
+	const Database *db = GetDatabase(error);
 	if (db == nullptr)
 		return false;
 
 	using namespace std::placeholders;
 	const auto f = std::bind(AddToQueue, std::ref(partition), _1, _2);
-	return db->Visit(selection, f, error_r);
+	return db->Visit(selection, f, error);
 }

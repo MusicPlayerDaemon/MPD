@@ -29,6 +29,9 @@
 #include "StickerDatabase.hxx"
 #include "CommandError.hxx"
 #include "protocol/Result.hxx"
+#include "util/Error.hxx"
+
+#include <glib.h>
 
 #include <string.h>
 
@@ -39,7 +42,7 @@ struct sticker_song_find_data {
 
 static void
 sticker_song_find_print_cb(Song *song, const char *value,
-			   gpointer user_data)
+			   void *user_data)
 {
 	struct sticker_song_find_data *data =
 		(struct sticker_song_find_data *)user_data;
@@ -51,14 +54,14 @@ sticker_song_find_print_cb(Song *song, const char *value,
 static enum command_return
 handle_sticker_song(Client *client, int argc, char *argv[])
 {
-	GError *error = nullptr;
-	const Database *db = GetDatabase(&error);
+	Error error;
+	const Database *db = GetDatabase(error);
 	if (db == nullptr)
 		return print_error(client, error);
 
 	/* get song song_id key */
 	if (argc == 5 && strcmp(argv[1], "get") == 0) {
-		Song *song = db->GetSong(argv[3], &error);
+		Song *song = db->GetSong(argv[3], error);
 		if (song == nullptr)
 			return print_error(client, error);
 
@@ -76,7 +79,7 @@ handle_sticker_song(Client *client, int argc, char *argv[])
 		return COMMAND_RETURN_OK;
 	/* list song song_id */
 	} else if (argc == 4 && strcmp(argv[1], "list") == 0) {
-		Song *song = db->GetSong(argv[3], &error);
+		Song *song = db->GetSong(argv[3], error);
 		if (song == nullptr)
 			return print_error(client, error);
 
@@ -90,7 +93,7 @@ handle_sticker_song(Client *client, int argc, char *argv[])
 		return COMMAND_RETURN_OK;
 	/* set song song_id id key */
 	} else if (argc == 6 && strcmp(argv[1], "set") == 0) {
-		Song *song = db->GetSong(argv[3], &error);
+		Song *song = db->GetSong(argv[3], error);
 		if (song == nullptr)
 			return print_error(client, error);
 
@@ -106,7 +109,7 @@ handle_sticker_song(Client *client, int argc, char *argv[])
 	/* delete song song_id [key] */
 	} else if ((argc == 4 || argc == 5) &&
 		   strcmp(argv[1], "delete") == 0) {
-		Song *song = db->GetSong(argv[3], &error);
+		Song *song = db->GetSong(argv[3], error);
 		if (song == nullptr)
 			return print_error(client, error);
 

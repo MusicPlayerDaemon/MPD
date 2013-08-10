@@ -24,8 +24,7 @@
 #include "conf.h"
 #include "stdbin.h"
 #include "Tag.hxx"
-
-#include <glib.h>
+#include "util/Error.hxx"
 
 #include <stddef.h>
 #include <unistd.h>
@@ -56,27 +55,27 @@ main(gcc_unused int argc, gcc_unused char **argv)
 	config_param param;
 	param.AddBlockParam("quality", "5.0", -1);
 
-	const auto encoder = encoder_init(*plugin, param, NULL);
+	const auto encoder = encoder_init(*plugin, param, IgnoreError());
 	assert(encoder != NULL);
 
 	/* open the encoder */
 
 	AudioFormat audio_format(44100, SampleFormat::S16, 2);
-	success = encoder_open(encoder, audio_format, NULL);
+	success = encoder_open(encoder, audio_format, IgnoreError());
 	assert(success);
 
 	encoder_to_stdout(*encoder);
 
 	/* write a block of data */
 
-	success = encoder_write(encoder, zero, sizeof(zero), NULL);
+	success = encoder_write(encoder, zero, sizeof(zero), IgnoreError());
 	assert(success);
 
 	encoder_to_stdout(*encoder);
 
 	/* write a tag */
 
-	success = encoder_pre_tag(encoder, NULL);
+	success = encoder_pre_tag(encoder, IgnoreError());
 	assert(success);
 
 	encoder_to_stdout(*encoder);
@@ -85,19 +84,19 @@ main(gcc_unused int argc, gcc_unused char **argv)
 	tag.AddItem(TAG_ARTIST, "Foo");
 	tag.AddItem(TAG_TITLE, "Bar");
 
-	success = encoder_tag(encoder, &tag, NULL);
+	success = encoder_tag(encoder, &tag, IgnoreError());
 	assert(success);
 
 	encoder_to_stdout(*encoder);
 
 	/* write another block of data */
 
-	success = encoder_write(encoder, zero, sizeof(zero), NULL);
+	success = encoder_write(encoder, zero, sizeof(zero), IgnoreError());
 	assert(success);
 
 	/* finish */
 
-	success = encoder_end(encoder, NULL);
+	success = encoder_end(encoder, IgnoreError());
 	assert(success);
 
 	encoder_to_stdout(*encoder);

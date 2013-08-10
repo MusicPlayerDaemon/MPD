@@ -21,8 +21,7 @@
 #include "SolarisOutputPlugin.hxx"
 #include "OutputAPI.hxx"
 #include "system/fd_util.h"
-
-#include <glib.h>
+#include "util/Error.hxx"
 
 #include <sys/stropts.h>
 #include <sys/types.h>
@@ -61,7 +60,7 @@ struct SolarisOutput {
 
 	int fd;
 
-	bool Initialize(const config_param &param, GError **error_r) {
+	bool Initialize(const config_param &param, Error &error_r) {
 		return ao_base_init(&base, &solaris_output_plugin, param,
 				    error_r);
 	}
@@ -70,15 +69,6 @@ struct SolarisOutput {
 		ao_base_finish(&base);
 	}
 };
-
-/**
- * The quark used for GError.domain.
- */
-static inline GQuark
-solaris_output_quark(void)
-{
-	return g_quark_from_static_string("solaris_output");
-}
 
 static bool
 solaris_output_test_default_device(void)
@@ -90,7 +80,7 @@ solaris_output_test_default_device(void)
 }
 
 static struct audio_output *
-solaris_output_init(const config_param &param, GError **error_r)
+solaris_output_init(const config_param &param, Error &error_r)
 {
 	SolarisOutput *so = new SolarisOutput();
 	if (!so->Initialize(param, error_r)) {
@@ -114,7 +104,7 @@ solaris_output_finish(struct audio_output *ao)
 
 static bool
 solaris_output_open(struct audio_output *ao, AudioFormat &audio_format,
-		    GError **error)
+		    Error &error)
 {
 	SolarisOutput *so = (SolarisOutput *)ao;
 	struct audio_info info;
@@ -128,9 +118,8 @@ solaris_output_open(struct audio_output *ao, AudioFormat &audio_format,
 
 	so->fd = open_cloexec(so->device, O_WRONLY|O_NONBLOCK, 0);
 	if (so->fd < 0) {
-		g_set_error(error, solaris_output_quark(), errno,
-			    "Failed to open %s: %s",
-			    so->device, g_strerror(errno));
+		error.FormatErrno("Failed to open %s",
+				  so->device);
 		return false;
 	}
 
@@ -144,8 +133,7 @@ solaris_output_open(struct audio_output *ao, AudioFormat &audio_format,
 
 	ret = ioctl(so->fd, AUDIO_GETINFO, &info);
 	if (ret < 0) {
-		g_set_error(error, solaris_output_quark(), errno,
-			    "AUDIO_GETINFO failed: %s", g_strerror(errno));
+		error.SetErrno("AUDIO_GETINFO failed");
 		close(so->fd);
 		return false;
 	}
@@ -157,8 +145,7 @@ solaris_output_open(struct audio_output *ao, AudioFormat &audio_format,
 
 	ret = ioctl(so->fd, AUDIO_SETINFO, &info);
 	if (ret < 0) {
-		g_set_error(error, solaris_output_quark(), errno,
-			    "AUDIO_SETINFO failed: %s", g_strerror(errno));
+		error.SetErrno("AUDIO_SETINFO failed");
 		close(so->fd);
 		return false;
 	}
@@ -176,15 +163,14 @@ solaris_output_close(struct audio_output *ao)
 
 static size_t
 solaris_output_play(struct audio_output *ao, const void *chunk, size_t size,
-		    GError **error)
+		    Error &error)
 {
 	SolarisOutput *so = (SolarisOutput *)ao;
 	ssize_t nbytes;
 
 	nbytes = write(so->fd, chunk, size);
 	if (nbytes <= 0) {
-		g_set_error(error, solaris_output_quark(), errno,
-			    "Write failed: %s", g_strerror(errno));
+		error.SetErrno("Write failed");
 		return 0;
 	}
 

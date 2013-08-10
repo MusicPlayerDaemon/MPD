@@ -20,13 +20,12 @@
 #ifndef MPD_DATABASE_QUEUE_HXX
 #define MPD_DATABASE_QUEUE_HXX
 
-#include "gerror.h"
-
 struct Partition;
 struct DatabaseSelection;
+class Error;
 
 bool
 AddFromDatabase(Partition &partition, const DatabaseSelection &selection,
-		GError **error_r);
+		Error &error);
 
 #endif

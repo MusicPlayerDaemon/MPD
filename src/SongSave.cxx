@@ -25,6 +25,8 @@
 #include "TextFile.hxx"
 #include "Tag.hxx"
 #include "util/StringUtil.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <glib.h>
 
@@ -36,11 +38,7 @@
 #define SONG_MTIME "mtime"
 #define SONG_END "song_end"
 
-static GQuark
-song_save_quark(void)
-{
-	return g_quark_from_static_string("song_save");
-}
+static constexpr Domain song_save_domain("song_save");
 
 void
 song_save(FILE *fp, const Song *song)
@@ -61,7 +59,7 @@ song_save(FILE *fp, const Song *song)
 
 Song *
 song_load(TextFile &file, Directory *parent, const char *uri,
-	  GError **error_r)
+	  Error &error)
 {
 	Song *song = parent != NULL
 		? Song::NewFile(uri, parent)
@@ -78,8 +76,8 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 				song->tag->EndAdd();
 			song->Free();
 
-			g_set_error(error_r, song_save_quark(), 0,
-				    "unknown line in db: %s", line);
+			error.Format(song_save_domain,
+				     "unknown line in db: %s", line);
 			return NULL;
 		}
 
@@ -120,8 +118,8 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 				song->tag->EndAdd();
 			song->Free();
 
-			g_set_error(error_r, song_save_quark(), 0,
-				    "unknown line in db: %s", line);
+			error.Format(song_save_domain,
+				     "unknown line in db: %s", line);
 			return NULL;
 		}
 	}

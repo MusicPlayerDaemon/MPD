@@ -31,9 +31,9 @@ struct NullOutput {
 
 	Timer *timer;
 
-	bool Initialize(const config_param &param, GError **error_r) {
+	bool Initialize(const config_param &param, Error &error) {
 		return ao_base_init(&base, &null_output_plugin, param,
-				    error_r);
+				    error);
 	}
 
 	void Deinitialize() {
@@ -42,11 +42,11 @@ struct NullOutput {
 };
 
 static struct audio_output *
-null_init(const config_param &param, GError **error_r)
+null_init(const config_param &param, Error &error)
 {
 	NullOutput *nd = new NullOutput();
 
-	if (!nd->Initialize(param, error_r)) {
+	if (!nd->Initialize(param, error)) {
 		delete nd;
 		return nullptr;
 	}
@@ -67,7 +67,7 @@ null_finish(struct audio_output *ao)
 
 static bool
 null_open(struct audio_output *ao, AudioFormat &audio_format,
-	  gcc_unused GError **error)
+	  gcc_unused Error &error)
 {
 	NullOutput *nd = (NullOutput *)ao;
 
@@ -98,7 +98,7 @@ null_delay(struct audio_output *ao)
 
 static size_t
 null_play(struct audio_output *ao, gcc_unused const void *chunk, size_t size,
-	  gcc_unused GError **error)
+	  gcc_unused Error &error)
 {
 	NullOutput *nd = (NullOutput *)ao;
 	Timer *timer = nd->timer;

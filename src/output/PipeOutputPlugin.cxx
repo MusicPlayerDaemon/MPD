@@ -20,6 +20,9 @@
 #include "config.h"
 #include "PipeOutputPlugin.hxx"
 #include "OutputAPI.hxx"
+#include "ConfigError.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <stdio.h>
 #include <errno.h>
@@ -30,34 +33,27 @@ struct PipeOutput {
 	char *cmd;
 	FILE *fh;
 
-	bool Initialize(const config_param &param, GError **error_r) {
+	bool Initialize(const config_param &param, Error &error) {
 		return ao_base_init(&base, &pipe_output_plugin, param,
-				    error_r);
+				    error);
 	}
 
 	void Deinitialize() {
 		ao_base_finish(&base);
 	}
 
-	bool Configure(const config_param &param, GError **error_r);
+	bool Configure(const config_param &param, Error &error);
 };
 
-/**
- * The quark used for GError.domain.
- */
-static inline GQuark
-pipe_output_quark(void)
-{
-	return g_quark_from_static_string("pipe_output");
-}
+static constexpr Domain pipe_output_domain("pipe_output");
 
 inline bool
-PipeOutput::Configure(const config_param &param, GError **error_r)
+PipeOutput::Configure(const config_param &param, Error &error)
 {
 	cmd = param.DupBlockString("command");
 	if (cmd == nullptr) {
-		g_set_error(error_r, pipe_output_quark(), 0,
-			    "No \"command\" parameter specified");
+		error.Set(config_domain,
+			  "No \"command\" parameter specified");
 		return false;
 	}
 
@@ -65,16 +61,16 @@ PipeOutput::Configure(const config_param &param, GError **error_r)
 }
 
 static struct audio_output *
-pipe_output_init(const config_param &param, GError **error_r)
+pipe_output_init(const config_param &param, Error &error)
 {
 	PipeOutput *pd = new PipeOutput();
 
-	if (!pd->Initialize(param, error_r)) {
+	if (!pd->Initialize(param, error)) {
 		delete pd;
 		return nullptr;
 	}
 
-	if (!pd->Configure(param, error_r)) {
+	if (!pd->Configure(param, error)) {
 		pd->Deinitialize();
 		delete pd;
 		return nullptr;
@@ -96,15 +92,14 @@ pipe_output_finish(struct audio_output *ao)
 static bool
 pipe_output_open(struct audio_output *ao,
 		 gcc_unused AudioFormat &audio_format,
-		 gcc_unused GError **error)
+		 Error &error)
 {
 	PipeOutput *pd = (PipeOutput *)ao;
 
 	pd->fh = popen(pd->cmd, "w");
 	if (pd->fh == nullptr) {
-		g_set_error(error, pipe_output_quark(), errno,
-			    "Error opening pipe \"%s\": %s",
-			    pd->cmd, g_strerror(errno));
+		error.FormatErrno("Error opening pipe \"%s\"",
+				  pd->cmd);
 		return false;
 	}
 
@@ -120,15 +115,15 @@ pipe_output_close(struct audio_output *ao)
 }
 
 static size_t
-pipe_output_play(struct audio_output *ao, const void *chunk, size_t size, GError **error)
+pipe_output_play(struct audio_output *ao, const void *chunk, size_t size,
+		 Error &error)
 {
 	PipeOutput *pd = (PipeOutput *)ao;
 	size_t ret;
 
 	ret = fwrite(chunk, 1, size, pd->fh);
 	if (ret == 0)
-		g_set_error(error, pipe_output_quark(), errno,
-			    "Write error on pipe: %s", g_strerror(errno));
+		error.SetErrno("Write error on pipe");
 
 	return ret;
 }

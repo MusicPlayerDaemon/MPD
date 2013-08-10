@@ -24,6 +24,7 @@
 #include "ConfigFile.hxx"
 #include "ConfigPath.hxx"
 #include "fs/Path.hxx"
+#include "util/Error.hxx"
 #include "mpd_error.h"
 
 #include <glib.h>
@@ -47,9 +48,9 @@ void config_global_init(void)
 }
 
 bool
-ReadConfigFile(const Path &path, GError **error_r)
+ReadConfigFile(const Path &path, Error &error)
 {
-	return ReadConfigFile(config_data, path, error_r);
+	return ReadConfigFile(config_data, path, error);
 }
 
 static void
@@ -98,20 +99,16 @@ config_get_string(ConfigOption option, const char *default_value)
 }
 
 Path
-config_get_path(ConfigOption option, GError **error_r)
+config_get_path(ConfigOption option, Error &error)
 {
-	assert(error_r != NULL);
-	assert(*error_r == NULL);
-
 	const struct config_param *param = config_get_param(option);
 	if (param == NULL)
 		return Path::Null();
 
-	Path path = ParsePath(param->value, error_r);
+	Path path = ParsePath(param->value, error);
 	if (gcc_unlikely(path.IsNull()))
-		g_prefix_error(error_r,
-			       "Invalid path at line %i: ",
-			       param->line);
+		error.FormatPrefix("Invalid path at line %i: ",
+				   param->line);
 
 	return path;
 }

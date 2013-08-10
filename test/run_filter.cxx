@@ -27,6 +27,8 @@
 #include "pcm/PcmVolume.hxx"
 #include "MixerControl.hxx"
 #include "stdbin.h"
+#include "util/Error.hxx"
+#include "system/FatalError.hxx"
 
 #include <glib.h>
 
@@ -37,7 +39,7 @@
 
 bool
 mixer_set_volume(gcc_unused Mixer *mixer,
-		 gcc_unused unsigned volume, gcc_unused GError **error_r)
+		 gcc_unused unsigned volume, gcc_unused Error &error)
 {
 	return true;
 }
@@ -70,7 +72,6 @@ static Filter *
 load_filter(const char *name)
 {
 	const struct config_param *param;
-	GError *error = NULL;
 
 	param = find_named_config_block(CONF_AUDIO_FILTER, name);
 	if (param == NULL) {
@@ -78,10 +79,10 @@ load_filter(const char *name)
 		return nullptr;
 	}
 
-	Filter *filter = filter_configured_new(*param, &error);
+	Error error;
+	Filter *filter = filter_configured_new(*param, error);
 	if (filter == NULL) {
-		g_printerr("Failed to load filter: %s\n", error->message);
-		g_error_free(error);
+		g_printerr("Failed to load filter: %s\n", error.GetMessage());
 		return NULL;
 	}
 
@@ -91,8 +92,7 @@ load_filter(const char *name)
 int main(int argc, char **argv)
 {
 	struct audio_format_string af_string;
-	bool success;
-	GError *error = NULL;
+	Error error2;
 	char buffer[4096];
 
 	if (argc < 3 || argc > 4) {
@@ -115,21 +115,16 @@ int main(int argc, char **argv)
 	/* read configuration file (mpd.conf) */
 
 	config_global_init();
-	if (!ReadConfigFile(config_path, &error)) {
-		g_printerr("%s:", error->message);
-		g_error_free(error);
-		return 1;
-	}
+	if (!ReadConfigFile(config_path, error2))
+		FatalError(error2);
 
 	/* parse the audio format */
 
 	if (argc > 3) {
-		success = audio_format_parse(audio_format, argv[3],
-					     false, &error);
-		if (!success) {
+		Error error;
+		if (!audio_format_parse(audio_format, argv[3], false, error)) {
 			g_printerr("Failed to parse audio format: %s\n",
-				   error->message);
-			g_error_free(error);
+				   error.GetMessage());
 			return 1;
 		}
 	}
@@ -142,11 +137,10 @@ int main(int argc, char **argv)
 
 	/* open the filter */
 
-	const AudioFormat out_audio_format =
-		filter->Open(audio_format, &error);
+	Error error;
+	const AudioFormat out_audio_format = filter->Open(audio_format, error);
 	if (!out_audio_format.IsDefined()) {
-		g_printerr("Failed to open filter: %s\n", error->message);
-		g_error_free(error);
+		g_printerr("Failed to open filter: %s\n", error.GetMessage());
 		delete filter;
 		return 1;
 	}
@@ -166,9 +160,9 @@ int main(int argc, char **argv)
 			break;
 
 		dest = filter->FilterPCM(buffer, (size_t)nbytes,
-					 &length, &error);
+					 &length, error);
 		if (dest == NULL) {
-			g_printerr("Filter failed: %s\n", error->message);
+			g_printerr("Filter failed: %s\n", error.GetMessage());
 			filter->Close();
 			delete filter;
 			return 1;

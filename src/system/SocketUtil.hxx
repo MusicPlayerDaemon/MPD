@@ -26,11 +26,10 @@
 #ifndef MPD_SOCKET_UTIL_HXX
 #define MPD_SOCKET_UTIL_HXX
 
-#include "gerror.h"
-
 #include <stddef.h>
 
 struct sockaddr;
+class Error;
 
 /**
  * Creates a socket listening on the specified address.  This is a
@@ -50,7 +49,7 @@ int
 socket_bind_listen(int domain, int type, int protocol,
 		   const struct sockaddr *address, size_t address_length,
 		   int backlog,
-		   GError **error);
+		   Error &error);
 
 int
 socket_keepalive(int fd);

@@ -23,6 +23,7 @@
 #include "AudioFormat.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -127,7 +128,7 @@ struct player_control {
 	 * #PLAYER_ERROR_NONE.  The object must be freed when this
 	 * object transitions back to #PLAYER_ERROR_NONE.
 	 */
-	GError *error;
+	Error error;
 
 	uint16_t bit_rate;
 	AudioFormat audio_format;
@@ -262,10 +263,9 @@ struct player_control {
 	 * Caller must lock the object.
 	 *
 	 * @param type the error type; must not be #PLAYER_ERROR_NONE
-	 * @param error detailed error information; must not be NULL; the
-	 * #player_control takes over ownership of this #GError instance
+	 * @param error detailed error information; must be defined.
 	 */
-	void SetError(player_error type, GError *error);
+	void SetError(player_error type, Error &&error);
 
 	void ClearError();
 

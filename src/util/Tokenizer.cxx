@@ -20,18 +20,15 @@
 #include "config.h"
 #include "Tokenizer.hxx"
 #include "StringUtil.hxx"
+#include "Error.hxx"
+#include "Domain.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <string.h>
 
-gcc_const
-static GQuark
-tokenizer_quark(void)
-{
-	return g_quark_from_static_string("tokenizer");
-}
+static constexpr Domain tokenizer_domain("tokenizer");
 
 static inline bool
 valid_word_first_char(char ch)
@@ -46,7 +43,7 @@ valid_word_char(char ch)
 }
 
 char *
-Tokenizer::NextWord(GError **error_r)
+Tokenizer::NextWord(Error &error)
 {
 	char *const word = input;
 
@@ -56,8 +53,7 @@ Tokenizer::NextWord(GError **error_r)
 	/* check the first character */
 
 	if (!valid_word_first_char(*input)) {
-		g_set_error(error_r, tokenizer_quark(), 0,
-			    "Letter expected");
+		error.Set(tokenizer_domain, "Letter expected");
 		return nullptr;
 	}
 
@@ -74,8 +70,7 @@ Tokenizer::NextWord(GError **error_r)
 		}
 
 		if (!valid_word_char(*input)) {
-			g_set_error(error_r, tokenizer_quark(), 0,
-				    "Invalid word character");
+			error.Set(tokenizer_domain, "Invalid word character");
 			return nullptr;
 		}
 	}
@@ -93,7 +88,7 @@ valid_unquoted_char(char ch)
 }
 
 char *
-Tokenizer::NextUnquoted(GError **error_r)
+Tokenizer::NextUnquoted(Error &error)
 {
 	char *const word = input;
 
@@ -103,8 +98,7 @@ Tokenizer::NextUnquoted(GError **error_r)
 	/* check the first character */
 
 	if (!valid_unquoted_char(*input)) {
-		g_set_error(error_r, tokenizer_quark(), 0,
-			    "Invalid unquoted character");
+		error.Set(tokenizer_domain, "Invalid unquoted character");
 		return nullptr;
 	}
 
@@ -121,8 +115,8 @@ Tokenizer::NextUnquoted(GError **error_r)
 		}
 
 		if (!valid_unquoted_char(*input)) {
-			g_set_error(error_r, tokenizer_quark(), 0,
-				    "Invalid unquoted character");
+			error.Set(tokenizer_domain,
+				  "Invalid unquoted character");
 			return nullptr;
 		}
 	}
@@ -134,7 +128,7 @@ Tokenizer::NextUnquoted(GError **error_r)
 }
 
 char *
-Tokenizer::NextString(GError **error_r)
+Tokenizer::NextString(Error &error)
 {
 	char *const word = input, *dest = input;
 
@@ -145,8 +139,7 @@ Tokenizer::NextString(GError **error_r)
 	/* check for the opening " */
 
 	if (*input != '"') {
-		g_set_error(error_r, tokenizer_quark(), 0,
-			    "'\"' expected");
+		error.Set(tokenizer_domain, "'\"' expected");
 		return nullptr;
 	}
 
@@ -165,8 +158,7 @@ Tokenizer::NextString(GError **error_r)
 			   difference between "end of line" and
 			   "error" */
 			--input;
-			g_set_error(error_r, tokenizer_quark(), 0,
-				    "Missing closing '\"'");
+			error.Set(tokenizer_domain, "Missing closing '\"'");
 			return nullptr;
 		}
 
@@ -179,8 +171,8 @@ Tokenizer::NextString(GError **error_r)
 
 	++input;
 	if (*input != 0 && !g_ascii_isspace(*input)) {
-		g_set_error(error_r, tokenizer_quark(), 0,
-			    "Space expected after closing '\"'");
+		error.Set(tokenizer_domain,
+			  "Space expected after closing '\"'");
 		return nullptr;
 	}
 
@@ -192,10 +184,10 @@ Tokenizer::NextString(GError **error_r)
 }
 
 char *
-Tokenizer::NextParam(GError **error_r)
+Tokenizer::NextParam(Error &error)
 {
 	if (*input == '"')
-		return NextString(error_r);
+		return NextString(error);
 	else
-		return NextUnquoted(error_r);
+		return NextUnquoted(error);
 }

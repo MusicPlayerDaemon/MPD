@@ -31,6 +31,7 @@
 
 struct Tag;
 struct input_stream;
+class Error;
 
 /**
  * Opens a new input stream.  You may not access it until the "ready"
@@ -48,7 +49,7 @@ gcc_malloc
 struct input_stream *
 input_stream_open(const char *uri,
 		  Mutex &mutex, Cond &cond,
-		  GError **error_r);
+		  Error &error);
 
 /**
  * Close the input stream and free resources.
@@ -66,7 +67,7 @@ input_stream_close(struct input_stream *is);
  */
 gcc_nonnull(1)
 bool
-input_stream_check(struct input_stream *is, GError **error_r);
+input_stream_check(struct input_stream *is, Error &error);
 
 /**
  * Update the public attributes.  Call before accessing attributes
@@ -133,7 +134,7 @@ input_stream_cheap_seeking(const struct input_stream *is);
 gcc_nonnull(1)
 bool
 input_stream_seek(struct input_stream *is, goffset offset, int whence,
-		  GError **error_r);
+		  Error &error);
 
 /**
  * Wrapper for input_stream_seek() which locks and unlocks the
@@ -142,7 +143,7 @@ input_stream_seek(struct input_stream *is, goffset offset, int whence,
 gcc_nonnull(1)
 bool
 input_stream_lock_seek(struct input_stream *is, goffset offset, int whence,
-		       GError **error_r);
+		       Error &error);
 
 /**
  * Returns true if the stream has reached end-of-file.
@@ -210,7 +211,7 @@ input_stream_available(struct input_stream *is);
 gcc_nonnull(1, 2)
 size_t
 input_stream_read(struct input_stream *is, void *ptr, size_t size,
-		  GError **error_r);
+		  Error &error);
 
 /**
  * Wrapper for input_stream_tag() which locks and unlocks the
@@ -219,6 +220,6 @@ input_stream_read(struct input_stream *is, void *ptr, size_t size,
 gcc_nonnull(1, 2)
 size_t
 input_stream_lock_read(struct input_stream *is, void *ptr, size_t size,
-		       GError **error_r);
+		       Error &error);
 
 #endif

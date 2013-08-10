@@ -23,29 +23,22 @@
 #include "InputPlugin.hxx"
 #include "input/RewindInputPlugin.hxx"
 #include "util/UriUtil.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
-#include <glib.h>
 #include <assert.h>
 
-static inline GQuark
-input_quark(void)
-{
-	return g_quark_from_static_string("input");
-}
+static constexpr Domain input_domain("input");
 
 struct input_stream *
 input_stream_open(const char *url,
 		  Mutex &mutex, Cond &cond,
-		  GError **error_r)
+		  Error &error)
 {
-	GError *error = NULL;
-
-	assert(error_r == NULL || *error_r == NULL);
-
 	input_plugins_for_each_enabled(plugin) {
 		struct input_stream *is;
 
-		is = plugin->open(url, mutex, cond, &error);
+		is = plugin->open(url, mutex, cond, error);
 		if (is != NULL) {
 			assert(is->plugin.close != NULL);
 			assert(is->plugin.read != NULL);
@@ -55,23 +48,21 @@ input_stream_open(const char *url,
 			is = input_rewind_open(is);
 
 			return is;
-		} else if (error != NULL) {
-			g_propagate_error(error_r, error);
+		} else if (error.IsDefined())
 			return NULL;
-		}
 	}
 
-	g_set_error(error_r, input_quark(), 0, "Unrecognized URI");
+	error.Set(input_domain, "Unrecognized URI");
 	return NULL;
 }
 
 bool
-input_stream_check(struct input_stream *is, GError **error_r)
+input_stream_check(struct input_stream *is, Error &error)
 {
 	assert(is != NULL);
 
 	return is->plugin.check == NULL ||
-		is->plugin.check(is, error_r);
+		is->plugin.check(is, error);
 }
 
 void
@@ -159,19 +150,19 @@ input_stream_cheap_seeking(const struct input_stream *is)
 
 bool
 input_stream_seek(struct input_stream *is, goffset offset, int whence,
-		  GError **error_r)
+		  Error &error)
 {
 	assert(is != NULL);
 
 	if (is->plugin.seek == NULL)
 		return false;
 
-	return is->plugin.seek(is, offset, whence, error_r);
+	return is->plugin.seek(is, offset, whence, error);
 }
 
 bool
 input_stream_lock_seek(struct input_stream *is, goffset offset, int whence,
-		       GError **error_r)
+		       Error &error)
 {
 	assert(is != NULL);
 
@@ -179,7 +170,7 @@ input_stream_lock_seek(struct input_stream *is, goffset offset, int whence,
 		return false;
 
 	const ScopeLock protect(is->mutex);
-	return input_stream_seek(is, offset, whence, error_r);
+	return input_stream_seek(is, offset, whence, error);
 }
 
 Tag *
@@ -216,23 +207,23 @@ input_stream_available(struct input_stream *is)
 
 size_t
 input_stream_read(struct input_stream *is, void *ptr, size_t size,
-		  GError **error_r)
+		  Error &error)
 {
 	assert(ptr != NULL);
 	assert(size > 0);
 
-	return is->plugin.read(is, ptr, size, error_r);
+	return is->plugin.read(is, ptr, size, error);
 }
 
 size_t
 input_stream_lock_read(struct input_stream *is, void *ptr, size_t size,
-		       GError **error_r)
+		       Error &error)
 {
 	assert(ptr != NULL);
 	assert(size > 0);
 
 	const ScopeLock protect(is->mutex);
-	return input_stream_read(is, ptr, size, error_r);
+	return input_stream_read(is, ptr, size, error);
 }
 
 void input_stream_close(struct input_stream *is)

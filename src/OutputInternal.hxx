@@ -29,6 +29,7 @@
 
 #include <time.h>
 
+class Error;
 class Filter;
 struct config_param;
 
@@ -263,12 +264,12 @@ audio_output_command_is_finished(const struct audio_output *ao)
 struct audio_output *
 audio_output_new(const config_param &param,
 		 struct player_control *pc,
-		 GError **error_r);
+		 Error &error);
 
 bool
 ao_base_init(struct audio_output *ao,
 	     const struct audio_output_plugin *plugin,
-	     const config_param &param, GError **error_r);
+	     const config_param &param, Error &error);
 
 void
 ao_base_finish(struct audio_output *ao);

@@ -24,6 +24,7 @@
 #include "AudioFormat.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -77,7 +78,7 @@ struct decoder_control {
 	 * The object must be freed when this object transitions to
 	 * any other state (usually #DECODE_STATE_START).
 	 */
-	GError *error;
+	Error error;
 
 	bool quit;
 	bool seek_error;
@@ -218,38 +219,41 @@ struct decoder_control {
 	}
 
 	/**
-	 * Checks whether an error has occurred, and if so, returns a newly
-	 * allocated copy of the #GError object.
+	 * Checks whether an error has occurred, and if so, returns a
+	 * copy of the #Error object.
 	 *
 	 * Caller must lock the object.
 	 */
-	GError *GetError() const {
+	gcc_pure
+	Error GetError() const {
 		assert(command == DECODE_COMMAND_NONE);
-		assert(state != DECODE_STATE_ERROR || error != nullptr);
+		assert(state != DECODE_STATE_ERROR || error.IsDefined());
 
-		return state == DECODE_STATE_ERROR
-			? g_error_copy(error)
-			: nullptr;
+		Error result;
+		if (state == DECODE_STATE_ERROR)
+			result.Set(error);
+		return result;
 	}
 
 	/**
 	 * Like dc_get_error(), but locks and unlocks the object.
 	 */
-	GError *LockGetError() const {
+	gcc_pure
+	Error LockGetError() const {
 		Lock();
-		GError *result = GetError();
+		Error result = GetError();
 		Unlock();
 		return result;
 	}
 
 	/**
-	 * Clear the error condition and free the #GError object (if any).
+	 * Clear the error condition and free the #Error object (if any).
 	 *
 	 * Caller must lock the object.
 	 */
 	void ClearError() {
 		if (state == DECODE_STATE_ERROR) {
-			g_error_free(error);
+			error.Clear();
 			state = DECODE_STATE_STOP;
 		}
 	}

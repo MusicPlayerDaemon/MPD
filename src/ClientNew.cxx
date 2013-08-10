@@ -25,6 +25,7 @@
 #include "system/fd_util.h"
 #include "system/Resolver.hxx"
 #include "Permission.hxx"
+#include "util/Error.hxx"
 
 #include <assert.h>
 #include <sys/types.h>
@@ -70,7 +71,8 @@ client_new(EventLoop &loop, Partition &partition,
 
 #ifdef HAVE_LIBWRAP
 	if (sa->sa_family != AF_UNIX) {
-		char *hostaddr = sockaddr_to_string(sa, sa_length, NULL);
+		char *hostaddr = sockaddr_to_string(sa, sa_length,
+						    IgnoreError());
 		const char *progname = g_get_prgname();
 
 		struct request_info req;
@@ -107,7 +109,7 @@ client_new(EventLoop &loop, Partition &partition,
 
 	client_list.Add(*client);
 
-	remote = sockaddr_to_string(sa, sa_length, NULL);
+	remote = sockaddr_to_string(sa, sa_length, IgnoreError());
 	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
 	      "[%u] opened from %s", client->num, remote);
 	g_free(remote);

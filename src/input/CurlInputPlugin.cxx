@@ -28,6 +28,8 @@
 #include "event/MultiSocketMonitor.hxx"
 #include "event/Call.hxx"
 #include "IOThread.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <assert.h>
 
@@ -162,16 +164,14 @@ struct input_curl {
 	    input_stream_tag() */
 	Tag *tag;
 
-	GError *postponed_error;
+	Error postponed_error;
 
 	input_curl(const char *url, Mutex &mutex, Cond &cond)
 		:base(input_plugin_curl, url, mutex, cond),
 		 range(nullptr), request_headers(nullptr),
 		 paused(false),
 		 meta_name(nullptr),
-		 tag(nullptr),
-		 postponed_error(nullptr) {
-	}
+		 tag(nullptr) {}
 
 	~input_curl();
 
@@ -215,12 +215,9 @@ static struct {
 	CurlSockets *sockets;
 } curl;
 
-gcc_const
-static inline GQuark
-curl_quark(void)
-{
-	return g_quark_from_static_string("curl");
-}
+static constexpr Domain http_domain("http");
+static constexpr Domain curl_domain("curl");
+static constexpr Domain curlm_domain("curlm");
 
 /**
  * Find a request by its CURL "easy" handle.
@@ -319,7 +316,7 @@ CurlSockets::UpdateSockets()
  * Runs in the I/O thread.  No lock needed.
  */
 static bool
-input_curl_easy_add(struct input_curl *c, GError **error_r)
+input_curl_easy_add(struct input_curl *c, Error &error)
 {
 	assert(io_thread_inside());
 	assert(c != NULL);
@@ -330,9 +327,9 @@ input_curl_easy_add(struct input_curl *c, GError **error_r)
 
 	CURLMcode mcode = curl_multi_add_handle(curl.multi, c->easy);
 	if (mcode != CURLM_OK) {
-		g_set_error(error_r, curl_quark(), mcode,
-			    "curl_multi_add_handle() failed: %s",
-			    curl_multi_strerror(mcode));
+		error.Format(curlm_domain, mcode,
+			     "curl_multi_add_handle() failed: %s",
+			     curl_multi_strerror(mcode));
 		return false;
 	}
 
@@ -346,14 +343,14 @@ input_curl_easy_add(struct input_curl *c, GError **error_r)
  * any thread.  Caller must not hold a mutex.
  */
 static bool
-input_curl_easy_add_indirect(struct input_curl *c, GError **error_r)
+input_curl_easy_add_indirect(struct input_curl *c, Error &error)
 {
 	assert(c != NULL);
 	assert(c->easy != NULL);
 
 	bool result;
-	BlockingCall(io_thread_get(), [c, error_r, &result](){
-			result = input_curl_easy_add(c, error_r);
+	BlockingCall(io_thread_get(), [c, &error, &result](){
+			result = input_curl_easy_add(c, error);
 		});
 	return result;
 }
@@ -409,26 +406,24 @@ input_curl_easy_free_indirect(struct input_curl *c)
  * Runs in the I/O thread.  The caller must not hold locks.
  */
 static void
-input_curl_abort_all_requests(GError *error)
+input_curl_abort_all_requests(const Error &error)
 {
 	assert(io_thread_inside());
-	assert(error != NULL);
+	assert(error.IsDefined());
 
 	while (!curl.requests.empty()) {
 		struct input_curl *c = curl.requests.front();
-		assert(c->postponed_error == NULL);
+		assert(!c->postponed_error.IsDefined());
 
 		input_curl_easy_free(c);
 
 		const ScopeLock protect(c->base.mutex);
 
-		c->postponed_error = g_error_copy(error);
+		c->postponed_error.Set(error);
 		c->base.ready = true;
 
 		c->base.cond.broadcast();
 	}
-
-	g_error_free(error);
 
 }
 
@@ -443,18 +438,17 @@ input_curl_request_done(struct input_curl *c, CURLcode result, long status)
 	assert(io_thread_inside());
 	assert(c != NULL);
 	assert(c->easy == NULL);
-	assert(c->postponed_error == NULL);
+	assert(!c->postponed_error.IsDefined());
 
 	const ScopeLock protect(c->base.mutex);
 
 	if (result != CURLE_OK) {
-		c->postponed_error = g_error_new(curl_quark(), result,
-						 "curl failed: %s",
-						 c->error);
+		c->postponed_error.Format(curl_domain, result,
+					  "curl failed: %s", c->error);
 	} else if (status < 200 || status >= 300) {
-		c->postponed_error = g_error_new(curl_quark(), 0,
-						 "got HTTP status %ld",
-						 status);
+		c->postponed_error.Format(http_domain, status,
+					  "got HTTP status %ld",
+					  status);
 	}
 
 	c->base.ready = true;
@@ -513,9 +507,10 @@ input_curl_perform(void)
 	} while (mcode == CURLM_CALL_MULTI_PERFORM);
 
 	if (mcode != CURLM_OK && mcode != CURLM_CALL_MULTI_PERFORM) {
-		GError *error = g_error_new(curl_quark(), mcode,
-					    "curl_multi_perform() failed: %s",
-					    curl_multi_strerror(mcode));
+		Error error;
+		error.Format(curlm_domain, mcode,
+			     "curl_multi_perform() failed: %s",
+			     curl_multi_strerror(mcode));
 		input_curl_abort_all_requests(error);
 		return false;
 	}
@@ -559,14 +554,13 @@ CurlSockets::DispatchSockets()
  */
 
 static bool
-input_curl_init(const config_param &param,
-		gcc_unused GError **error_r)
+input_curl_init(const config_param &param, Error &error)
 {
 	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
 	if (code != CURLE_OK) {
-		g_set_error(error_r, curl_quark(), code,
-			    "curl_global_init() failed: %s\n",
-			    curl_easy_strerror(code));
+		error.Format(curl_domain, code,
+			     "curl_global_init() failed: %s",
+			     curl_easy_strerror(code));
 		return false;
 	}
 
@@ -588,8 +582,7 @@ input_curl_init(const config_param &param,
 
 	curl.multi = curl_multi_init();
 	if (curl.multi == NULL) {
-		g_set_error(error_r, curl_quark(), 0,
-			    "curl_multi_init() failed");
+		error.Set(curl_domain, 0, "curl_multi_init() failed");
 		return false;
 	}
 
@@ -639,20 +632,17 @@ input_curl::~input_curl()
 	g_free(meta_name);
 
 	input_curl_easy_free_indirect(this);
-
-	if (postponed_error != NULL)
-		g_error_free(postponed_error);
 }
 
 static bool
-input_curl_check(struct input_stream *is, GError **error_r)
+input_curl_check(struct input_stream *is, Error &error)
 {
 	struct input_curl *c = (struct input_curl *)is;
 
-	bool success = c->postponed_error == NULL;
+	bool success = !c->postponed_error.IsDefined();
 	if (!success) {
-		g_propagate_error(error_r, c->postponed_error);
-		c->postponed_error = NULL;
+		error = std::move(c->postponed_error);
+		c->postponed_error.Clear();
 	}
 
 	return success;
@@ -669,14 +659,14 @@ input_curl_tag(struct input_stream *is)
 }
 
 static bool
-fill_buffer(struct input_curl *c, GError **error_r)
+fill_buffer(struct input_curl *c, Error &error)
 {
 	while (c->easy != NULL && c->buffers.empty())
 		c->base.cond.wait(c->base.mutex);
 
-	if (c->postponed_error != NULL) {
-		g_propagate_error(error_r, c->postponed_error);
-		c->postponed_error = NULL;
+	if (c->postponed_error.IsDefined()) {
+		error = std::move(c->postponed_error);
+		c->postponed_error.Clear();
 		return false;
 	}
 
@@ -754,13 +744,13 @@ input_curl_available(struct input_stream *is)
 {
 	struct input_curl *c = (struct input_curl *)is;
 
-	return c->postponed_error != NULL || c->easy == NULL ||
+	return c->postponed_error.IsDefined() || c->easy == NULL ||
 		!c->buffers.empty();
 }
 
 static size_t
 input_curl_read(struct input_stream *is, void *ptr, size_t size,
-		GError **error_r)
+		Error &error)
 {
 	struct input_curl *c = (struct input_curl *)is;
 	bool success;
@@ -770,7 +760,7 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size,
 	do {
 		/* fill the buffer */
 
-		success = fill_buffer(c, error_r);
+		success = fill_buffer(c, error);
 		if (!success)
 			return 0;
 
@@ -927,14 +917,13 @@ input_curl_writefunction(void *ptr, size_t size, size_t nmemb, void *stream)
 }
 
 static bool
-input_curl_easy_init(struct input_curl *c, GError **error_r)
+input_curl_easy_init(struct input_curl *c, Error &error)
 {
 	CURLcode code;
 
 	c->easy = curl_easy_init();
 	if (c->easy == NULL) {
-		g_set_error(error_r, curl_quark(), 0,
-			    "curl_easy_init() failed");
+		error.Set(curl_domain, "curl_easy_init() failed");
 		return false;
 	}
 
@@ -971,9 +960,9 @@ input_curl_easy_init(struct input_curl *c, GError **error_r)
 
 	code = curl_easy_setopt(c->easy, CURLOPT_URL, c->base.uri.c_str());
 	if (code != CURLE_OK) {
-		g_set_error(error_r, curl_quark(), code,
-			    "curl_easy_setopt() failed: %s",
-			    curl_easy_strerror(code));
+		error.Format(curl_domain, code,
+			     "curl_easy_setopt() failed: %s",
+			     curl_easy_strerror(code));
 		return false;
 	}
 
@@ -987,7 +976,7 @@ input_curl_easy_init(struct input_curl *c, GError **error_r)
 
 static bool
 input_curl_seek(struct input_stream *is, goffset offset, int whence,
-		GError **error_r)
+		Error &error)
 {
 	struct input_curl *c = (struct input_curl *)is;
 	bool ret;
@@ -1059,7 +1048,7 @@ input_curl_seek(struct input_stream *is, goffset offset, int whence,
 		return true;
 	}
 
-	ret = input_curl_easy_init(c, error_r);
+	ret = input_curl_easy_init(c, error);
 	if (!ret)
 		return false;
 
@@ -1072,7 +1061,7 @@ input_curl_seek(struct input_stream *is, goffset offset, int whence,
 
 	c->base.ready = false;
 
-	if (!input_curl_easy_add_indirect(c, error_r))
+	if (!input_curl_easy_add_indirect(c, error))
 		return false;
 
 	c->base.mutex.lock();
@@ -1080,9 +1069,9 @@ input_curl_seek(struct input_stream *is, goffset offset, int whence,
 	while (!c->base.ready)
 		c->base.cond.wait(c->base.mutex);
 
-	if (c->postponed_error != NULL) {
-		g_propagate_error(error_r, c->postponed_error);
-		c->postponed_error = NULL;
+	if (c->postponed_error.IsDefined()) {
+		error = std::move(c->postponed_error);
+		c->postponed_error.Clear();
 		return false;
 	}
 
@@ -1091,19 +1080,19 @@ input_curl_seek(struct input_stream *is, goffset offset, int whence,
 
 static struct input_stream *
 input_curl_open(const char *url, Mutex &mutex, Cond &cond,
-		GError **error_r)
+		Error &error)
 {
 	if (strncmp(url, "http://", 7) != 0)
 		return NULL;
 
 	struct input_curl *c = new input_curl(url, mutex, cond);
 
-	if (!input_curl_easy_init(c, error_r)) {
+	if (!input_curl_easy_init(c, error)) {
 		delete c;
 		return NULL;
 	}
 
-	if (!input_curl_easy_add_indirect(c, error_r)) {
+	if (!input_curl_easy_add_indirect(c, error)) {
 		delete c;
 		return NULL;
 	}

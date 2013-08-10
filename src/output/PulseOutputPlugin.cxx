@@ -22,6 +22,8 @@
 #include "OutputAPI.hxx"
 #include "MixerList.hxx"
 #include "mixer/PulseMixerPlugin.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <glib.h>
 
@@ -54,13 +56,13 @@ struct PulseOutput {
 	size_t writable;
 };
 
-/**
- * The quark used for GError.domain.
- */
-static inline GQuark
-pulse_output_quark(void)
+static constexpr Domain pulse_output_domain("pulse_output");
+
+static void
+SetError(Error &error, pa_context *context, const char *msg)
 {
-	return g_quark_from_static_string("pulse_output");
+	const int e = pa_context_errno(context);
+	error.Format(pulse_output_domain, e, "%s: %s", msg, pa_strerror(e));
 }
 
 void
@@ -112,14 +114,14 @@ pulse_output_clear_mixer(PulseOutput *po, gcc_unused PulseMixer *pm)
 }
 
 bool
-pulse_output_set_volume(PulseOutput *po,
-			const struct pa_cvolume *volume, GError **error_r)
+pulse_output_set_volume(PulseOutput *po, const pa_cvolume *volume,
+			Error &error)
 {
 	pa_operation *o;
 
 	if (po->context == nullptr || po->stream == nullptr ||
 	    pa_stream_get_state(po->stream) != PA_STREAM_READY) {
-		g_set_error(error_r, pulse_output_quark(), 0, "disconnected");
+		error.Set(pulse_output_domain, "disconnected");
 		return false;
 	}
 
@@ -127,9 +129,8 @@ pulse_output_set_volume(PulseOutput *po,
 					     pa_stream_get_index(po->stream),
 					     volume, nullptr, nullptr);
 	if (o == nullptr) {
-		g_set_error(error_r, pulse_output_quark(), 0,
-			    "failed to set PulseAudio volume: %s",
-			    pa_strerror(pa_context_errno(po->context)));
+		SetError(error, po->context,
+			 "failed to set PulseAudio volume");
 		return false;
 	}
 
@@ -235,19 +236,15 @@ pulse_output_subscribe_cb(pa_context *context,
  * @return true on success, false on error
  */
 static bool
-pulse_output_connect(PulseOutput *po, GError **error_r)
+pulse_output_connect(PulseOutput *po, Error &error)
 {
 	assert(po != nullptr);
 	assert(po->context != nullptr);
 
-	int error;
-
-	error = pa_context_connect(po->context, po->server,
-				   (pa_context_flags_t)0, nullptr);
-	if (error < 0) {
-		g_set_error(error_r, pulse_output_quark(), 0,
-			    "pa_context_connect() has failed: %s",
-			    pa_strerror(pa_context_errno(po->context)));
+	if (pa_context_connect(po->context, po->server,
+			       (pa_context_flags_t)0, nullptr) < 0) {
+		SetError(error, po->context,
+			 "pa_context_connect() has failed");
 		return false;
 	}
 
@@ -300,7 +297,7 @@ pulse_output_delete_context(PulseOutput *po)
  * @return true on success, false on error
  */
 static bool
-pulse_output_setup_context(PulseOutput *po, GError **error_r)
+pulse_output_setup_context(PulseOutput *po, Error &error)
 {
 	assert(po != nullptr);
 	assert(po->mainloop != nullptr);
@@ -308,8 +305,7 @@ pulse_output_setup_context(PulseOutput *po, GError **error_r)
 	po->context = pa_context_new(pa_threaded_mainloop_get_api(po->mainloop),
 				     MPD_PULSE_NAME);
 	if (po->context == nullptr) {
-		g_set_error(error_r, pulse_output_quark(), 0,
-			    "pa_context_new() has failed");
+		error.Set(pulse_output_domain, "pa_context_new() has failed");
 		return false;
 	}
 
@@ -318,7 +314,7 @@ pulse_output_setup_context(PulseOutput *po, GError **error_r)
 	pa_context_set_subscribe_callback(po->context,
 					  pulse_output_subscribe_cb, po);
 
-	if (!pulse_output_connect(po, error_r)) {
+	if (!pulse_output_connect(po, error)) {
 		pulse_output_delete_context(po);
 		return false;
 	}
@@ -327,14 +323,14 @@ pulse_output_setup_context(PulseOutput *po, GError **error_r)
 }
 
 static struct audio_output *
-pulse_output_init(const config_param &param, GError **error_r)
+pulse_output_init(const config_param &param, Error &error)
 {
 	PulseOutput *po;
 
 	g_setenv("PULSE_PROP_media.role", "music", true);
 
 	po = new PulseOutput();
-	if (!ao_base_init(&po->base, &pulse_output_plugin, param, error_r)) {
+	if (!ao_base_init(&po->base, &pulse_output_plugin, param, error)) {
 		delete po;
 		return nullptr;
 	}
@@ -361,7 +357,7 @@ pulse_output_finish(struct audio_output *ao)
 }
 
 static bool
-pulse_output_enable(struct audio_output *ao, GError **error_r)
+pulse_output_enable(struct audio_output *ao, Error &error)
 {
 	PulseOutput *po = (PulseOutput *)ao;
 
@@ -374,8 +370,8 @@ pulse_output_enable(struct audio_output *ao, GError **error_r)
 	if (po->mainloop == nullptr) {
 		g_free(po);
 
-		g_set_error(error_r, pulse_output_quark(), 0,
-			    "pa_threaded_mainloop_new() has failed");
+		error.Set(pulse_output_domain,
+			  "pa_threaded_mainloop_new() has failed");
 		return false;
 	}
 
@@ -386,14 +382,14 @@ pulse_output_enable(struct audio_output *ao, GError **error_r)
 		pa_threaded_mainloop_free(po->mainloop);
 		po->mainloop = nullptr;
 
-		g_set_error(error_r, pulse_output_quark(), 0,
-			    "pa_threaded_mainloop_start() has failed");
+		error.Set(pulse_output_domain,
+			  "pa_threaded_mainloop_start() has failed");
 		return false;
 	}
 
 	/* create the libpulse context and connect it */
 
-	if (!pulse_output_setup_context(po, error_r)) {
+	if (!pulse_output_setup_context(po, error)) {
 		pa_threaded_mainloop_unlock(po->mainloop);
 		pa_threaded_mainloop_stop(po->mainloop);
 		pa_threaded_mainloop_free(po->mainloop);
@@ -429,13 +425,13 @@ pulse_output_disable(struct audio_output *ao)
  * @return true on success, false on error
  */
 static bool
-pulse_output_wait_connection(PulseOutput *po, GError **error_r)
+pulse_output_wait_connection(PulseOutput *po, Error &error)
 {
 	assert(po->mainloop != nullptr);
 
 	pa_context_state_t state;
 
-	if (po->context == nullptr && !pulse_output_setup_context(po, error_r))
+	if (po->context == nullptr && !pulse_output_setup_context(po, error))
 		return false;
 
 	while (true) {
@@ -449,9 +445,7 @@ pulse_output_wait_connection(PulseOutput *po, GError **error_r)
 		case PA_CONTEXT_TERMINATED:
 		case PA_CONTEXT_FAILED:
 			/* failure */
-			g_set_error(error_r, pulse_output_quark(), 0,
-				    "failed to connect: %s",
-				    pa_strerror(pa_context_errno(po->context)));
+			SetError(error, po->context, "failed to connect");
 			pulse_output_delete_context(po);
 			return false;
 
@@ -530,16 +524,14 @@ pulse_output_stream_write_cb(gcc_unused pa_stream *stream, size_t nbytes,
  */
 static bool
 pulse_output_setup_stream(PulseOutput *po, const pa_sample_spec *ss,
-			  GError **error_r)
+			  Error &error)
 {
 	assert(po != nullptr);
 	assert(po->context != nullptr);
 
 	po->stream = pa_stream_new(po->context, po->name, ss, nullptr);
 	if (po->stream == nullptr) {
-		g_set_error(error_r, pulse_output_quark(), 0,
-			    "pa_stream_new() has failed: %s",
-			    pa_strerror(pa_context_errno(po->context)));
+		SetError(error, po->context, "pa_stream_new() has failed");
 		return false;
 	}
 
@@ -556,11 +548,10 @@ pulse_output_setup_stream(PulseOutput *po, const pa_sample_spec *ss,
 
 static bool
 pulse_output_open(struct audio_output *ao, AudioFormat &audio_format,
-		  GError **error_r)
+		  Error &error)
 {
 	PulseOutput *po = (PulseOutput *)ao;
 	pa_sample_spec ss;
-	int error;
 
 	assert(po->mainloop != nullptr);
 
@@ -585,7 +576,7 @@ pulse_output_open(struct audio_output *ao, AudioFormat &audio_format,
 		}
 	}
 
-	if (!pulse_output_wait_connection(po, error_r)) {
+	if (!pulse_output_wait_connection(po, error)) {
 		pa_threaded_mainloop_unlock(po->mainloop);
 		return false;
 	}
@@ -600,22 +591,20 @@ pulse_output_open(struct audio_output *ao, AudioFormat &audio_format,
 
 	/* create a stream .. */
 
-	if (!pulse_output_setup_stream(po, &ss, error_r)) {
+	if (!pulse_output_setup_stream(po, &ss, error)) {
 		pa_threaded_mainloop_unlock(po->mainloop);
 		return false;
 	}
 
 	/* .. and connect it (asynchronously) */
 
-	error = pa_stream_connect_playback(po->stream, po->sink,
-					   nullptr, pa_stream_flags_t(0),
-					   nullptr, nullptr);
-	if (error < 0) {
+	if (pa_stream_connect_playback(po->stream, po->sink,
+				       nullptr, pa_stream_flags_t(0),
+				       nullptr, nullptr) < 0) {
 		pulse_output_delete_stream(po);
 
-		g_set_error(error_r, pulse_output_quark(), 0,
-			    "pa_stream_connect_playback() has failed: %s",
-			    pa_strerror(pa_context_errno(po->context)));
+		SetError(error, po->context,
+			 "pa_stream_connect_playback() has failed");
 		pa_threaded_mainloop_unlock(po->mainloop);
 		return false;
 	}
@@ -661,7 +650,7 @@ pulse_output_close(struct audio_output *ao)
  * @return true on success, false on error
  */
 static bool
-pulse_output_wait_stream(PulseOutput *po, GError **error_r)
+pulse_output_wait_stream(PulseOutput *po, Error &error)
 {
 	while (true) {
 		switch (pa_stream_get_state(po->stream)) {
@@ -671,10 +660,8 @@ pulse_output_wait_stream(PulseOutput *po, GError **error_r)
 		case PA_STREAM_FAILED:
 		case PA_STREAM_TERMINATED:
 		case PA_STREAM_UNCONNECTED:
-			g_set_error(error_r, pulse_output_quark(),
-				    pa_context_errno(po->context),
-				    "failed to connect the stream: %s",
-				    pa_strerror(pa_context_errno(po->context)));
+			SetError(error, po->context,
+				 "failed to connect the stream");
 			return false;
 
 		case PA_STREAM_CREATING:
@@ -689,7 +676,7 @@ pulse_output_wait_stream(PulseOutput *po, GError **error_r)
  */
 static bool
 pulse_output_stream_pause(PulseOutput *po, bool pause,
-			  GError **error_r)
+			  Error &error)
 {
 	pa_operation *o;
 
@@ -700,16 +687,12 @@ pulse_output_stream_pause(PulseOutput *po, bool pause,
 	o = pa_stream_cork(po->stream, pause,
 			   pulse_output_stream_success_cb, po);
 	if (o == nullptr) {
-		g_set_error(error_r, pulse_output_quark(), 0,
-			    "pa_stream_cork() has failed: %s",
-			    pa_strerror(pa_context_errno(po->context)));
+		SetError(error, po->context, "pa_stream_cork() has failed");
 		return false;
 	}
 
 	if (!pulse_wait_for_operation(po->mainloop, o)) {
-		g_set_error(error_r, pulse_output_quark(), 0,
-			    "pa_stream_cork() has failed: %s",
-			    pa_strerror(pa_context_errno(po->context)));
+		SetError(error, po->context, "pa_stream_cork() has failed");
 		return false;
 	}
 
@@ -736,10 +719,9 @@ pulse_output_delay(struct audio_output *ao)
 
 static size_t
 pulse_output_play(struct audio_output *ao, const void *chunk, size_t size,
-		  GError **error_r)
+		  Error &error)
 {
 	PulseOutput *po = (PulseOutput *)ao;
-	int error;
 
 	assert(po->mainloop != nullptr);
 	assert(po->stream != nullptr);
@@ -748,7 +730,7 @@ pulse_output_play(struct audio_output *ao, const void *chunk, size_t size,
 
 	/* check if the stream is (already) connected */
 
-	if (!pulse_output_wait_stream(po, error_r)) {
+	if (!pulse_output_wait_stream(po, error)) {
 		pa_threaded_mainloop_unlock(po->mainloop);
 		return 0;
 	}
@@ -758,7 +740,7 @@ pulse_output_play(struct audio_output *ao, const void *chunk, size_t size,
 	/* unpause if previously paused */
 
 	if (pa_stream_is_corked(po->stream) &&
-	    !pulse_output_stream_pause(po, false, error_r)) {
+	    !pulse_output_stream_pause(po, false, error)) {
 		pa_threaded_mainloop_unlock(po->mainloop);
 		return 0;
 	}
@@ -768,8 +750,7 @@ pulse_output_play(struct audio_output *ao, const void *chunk, size_t size,
 	while (po->writable == 0) {
 		if (pa_stream_is_suspended(po->stream)) {
 			pa_threaded_mainloop_unlock(po->mainloop);
-			g_set_error(error_r, pulse_output_quark(), 0,
-				    "suspended");
+			error.Set(pulse_output_domain, "suspended");
 			return 0;
 		}
 
@@ -777,8 +758,7 @@ pulse_output_play(struct audio_output *ao, const void *chunk, size_t size,
 
 		if (pa_stream_get_state(po->stream) != PA_STREAM_READY) {
 			pa_threaded_mainloop_unlock(po->mainloop);
-			g_set_error(error_r, pulse_output_quark(), 0,
-				    "disconnected");
+			error.Set(pulse_output_domain, "disconnected");
 			return 0;
 		}
 	}
@@ -791,12 +771,11 @@ pulse_output_play(struct audio_output *ao, const void *chunk, size_t size,
 
 	po->writable -= size;
 
-	error = pa_stream_write(po->stream, chunk, size, nullptr,
-				0, PA_SEEK_RELATIVE);
+	int result = pa_stream_write(po->stream, chunk, size, nullptr,
+				     0, PA_SEEK_RELATIVE);
 	pa_threaded_mainloop_unlock(po->mainloop);
-	if (error < 0) {
-		g_set_error(error_r, pulse_output_quark(), error,
-			    "%s", pa_strerror(error));
+	if (result < 0) {
+		SetError(error, po->context, "pa_stream_write() failed");
 		return 0;
 	}
 
@@ -839,7 +818,6 @@ static bool
 pulse_output_pause(struct audio_output *ao)
 {
 	PulseOutput *po = (PulseOutput *)ao;
-	GError *error = nullptr;
 
 	assert(po->mainloop != nullptr);
 	assert(po->stream != nullptr);
@@ -848,10 +826,10 @@ pulse_output_pause(struct audio_output *ao)
 
 	/* check if the stream is (already/still) connected */
 
-	if (!pulse_output_wait_stream(po, &error)) {
+	Error error;
+	if (!pulse_output_wait_stream(po, error)) {
 		pa_threaded_mainloop_unlock(po->mainloop);
-		g_warning("%s", error->message);
-		g_error_free(error);
+		g_warning("%s", error.GetMessage());
 		return false;
 	}
 
@@ -860,10 +838,9 @@ pulse_output_pause(struct audio_output *ao)
 	/* cork the stream */
 
 	if (!pa_stream_is_corked(po->stream) &&
-	    !pulse_output_stream_pause(po, true, &error)) {
+	    !pulse_output_stream_pause(po, true, error)) {
 		pa_threaded_mainloop_unlock(po->mainloop);
-		g_warning("%s", error->message);
-		g_error_free(error);
+		g_warning("%s", error.GetMessage());
 		return false;
 	}
 
@@ -878,11 +855,12 @@ pulse_output_test_default_device(void)
 	bool success;
 
 	const config_param empty;
-	PulseOutput *po = (PulseOutput *)pulse_output_init(empty, nullptr);
+	PulseOutput *po = (PulseOutput *)
+		pulse_output_init(empty, IgnoreError());
 	if (po == nullptr)
 		return false;
 
-	success = pulse_output_wait_connection(po, nullptr);
+	success = pulse_output_wait_connection(po, IgnoreError());
 	pulse_output_finish(&po->base);
 
 	return success;

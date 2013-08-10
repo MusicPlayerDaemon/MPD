@@ -27,6 +27,7 @@
 #include "TagHandler.hxx"
 #include "TagId3.hxx"
 #include "ApeTag.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -70,7 +71,8 @@ decoder_read(gcc_unused struct decoder *decoder,
 	     struct input_stream *is,
 	     void *buffer, size_t length)
 {
-	return input_stream_lock_read(is, buffer, length, NULL);
+	Error error;
+	return input_stream_lock_read(is, buffer, length, error);
 }
 
 void
@@ -140,7 +142,6 @@ static const struct tag_handler print_handler = {
 
 int main(int argc, char **argv)
 {
-	GError *error = NULL;
 	const char *decoder_name, *path;
 	const struct decoder_plugin *plugin;
 
@@ -164,9 +165,9 @@ int main(int argc, char **argv)
 	io_thread_init();
 	io_thread_start();
 
-	if (!input_stream_global_init(&error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	Error error;
+	if (!input_stream_global_init(error)) {
+		g_warning("%s", error.GetMessage());
 		return 2;
 	}
 
@@ -185,12 +186,11 @@ int main(int argc, char **argv)
 		Cond cond;
 
 		struct input_stream *is =
-			input_stream_open(path, mutex, cond, &error);
+			input_stream_open(path, mutex, cond, error);
 
 		if (is == NULL) {
 			g_printerr("Failed to open %s: %s\n",
-				   path, error->message);
-			g_error_free(error);
+				   path, error.GetMessage());
 			return 1;
 		}
 
@@ -201,13 +201,11 @@ int main(int argc, char **argv)
 			input_stream_update(is);
 		}
 
-		if (!input_stream_check(is, &error)) {
+		if (!input_stream_check(is, error)) {
 			mutex.unlock();
 
 			g_printerr("Failed to read %s: %s\n",
-				   path, error->message);
-			g_error_free(error);
-
+				   path, error.GetMessage());
 			return EXIT_FAILURE;
 		}
 

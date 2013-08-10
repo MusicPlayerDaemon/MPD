@@ -28,6 +28,7 @@ struct Song;
 struct queue;
 struct playlist;
 struct player_control;
+class Error;
 
 void
 playlist_print_song(FILE *fp, const Song *song);
@@ -55,6 +56,6 @@ bool
 playlist_load_spl(struct playlist *playlist, struct player_control *pc,
 		  const char *name_utf8,
 		  unsigned start_index, unsigned end_index,
-		  GError **error_r);
+		  Error &error);
 
 #endif

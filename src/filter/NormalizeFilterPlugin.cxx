@@ -34,21 +34,21 @@ class NormalizeFilter final : public Filter {
 	PcmBuffer buffer;
 
 public:
-	virtual AudioFormat Open(AudioFormat &af, GError **error_r) override;
+	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
 	virtual void Close();
 	virtual const void *FilterPCM(const void *src, size_t src_size,
-				      size_t *dest_size_r, GError **error_r);
+				      size_t *dest_size_r, Error &error);
 };
 
 static Filter *
 normalize_filter_init(gcc_unused const config_param &param,
-		      gcc_unused GError **error_r)
+		      gcc_unused Error &error)
 {
 	return new NormalizeFilter();
 }
 
 AudioFormat
-NormalizeFilter::Open(AudioFormat &audio_format, gcc_unused GError **error_r)
+NormalizeFilter::Open(AudioFormat &audio_format, gcc_unused Error &error)
 {
 	audio_format.format = SampleFormat::S16;
 
@@ -66,7 +66,7 @@ NormalizeFilter::Close()
 
 const void *
 NormalizeFilter::FilterPCM(const void *src, size_t src_size,
-			   size_t *dest_size_r, gcc_unused GError **error_r)
+			   size_t *dest_size_r, gcc_unused Error &error)
 {
 	int16_t *dest = (int16_t *)buffer.Get(src_size);
 	memcpy(dest, src, src_size);

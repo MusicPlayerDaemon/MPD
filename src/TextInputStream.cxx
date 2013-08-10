@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 #include "TextInputStream.hxx"
 #include "InputLegacy.hxx"
 #include "util/fifo_buffer.h"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -40,7 +41,6 @@ TextInputStream::~TextInputStream()
 
 bool TextInputStream::ReadLine(std::string &line)
 {
-	GError *error = nullptr;
 	void *dest;
 	const char *src, *p;
 	size_t length, nbytes;
@@ -53,13 +53,13 @@ bool TextInputStream::ReadLine(std::string &line)
 			   newline character */
 			--length;
 
+			Error error;
 			nbytes = input_stream_lock_read(is, dest, length,
-							&error);
+							error);
 			if (nbytes > 0)
 				fifo_buffer_append(buffer, nbytes);
-			else if (error != nullptr) {
-				g_warning("%s", error->message);
-				g_error_free(error);
+			else if (error.IsDefined()) {
+				g_warning("%s", error.GetMessage());
 				return false;
 			}
 		} else

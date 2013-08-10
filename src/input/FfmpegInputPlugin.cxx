@@ -25,6 +25,8 @@
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 extern "C" {
 #include <libavutil/avutil.h>
@@ -62,11 +64,7 @@ struct FfmpegInputStream {
 	}
 };
 
-static inline GQuark
-ffmpeg_quark(void)
-{
-	return g_quark_from_static_string("ffmpeg");
-}
+static constexpr Domain ffmpeg_domain("ffmpeg");
 
 static inline bool
 input_ffmpeg_supported(void)
@@ -77,14 +75,13 @@ input_ffmpeg_supported(void)
 
 static bool
 input_ffmpeg_init(gcc_unused const config_param &param,
-		  gcc_unused GError **error_r)
+		  Error &error)
 {
 	av_register_all();
 
 	/* disable this plugin if there's no registered protocol */
 	if (!input_ffmpeg_supported()) {
-		g_set_error(error_r, ffmpeg_quark(), 0,
-			    "No protocol");
+		error.Set(ffmpeg_domain, "No protocol");
 		return false;
 	}
 
@@ -94,7 +91,7 @@ input_ffmpeg_init(gcc_unused const config_param &param,
 static struct input_stream *
 input_ffmpeg_open(const char *uri,
 		  Mutex &mutex, Cond &cond,
-		  GError **error_r)
+		  Error &error)
 {
 	if (!g_str_has_prefix(uri, "gopher://") &&
 	    !g_str_has_prefix(uri, "rtp://") &&
@@ -107,8 +104,8 @@ input_ffmpeg_open(const char *uri,
 	AVIOContext *h;
 	int ret = avio_open(&h, uri, AVIO_FLAG_READ);
 	if (ret != 0) {
-		g_set_error(error_r, ffmpeg_quark(), ret,
-			    "libavformat failed to open the URI");
+		error.Set(ffmpeg_domain, ret,
+			  "libavformat failed to open the URI");
 		return nullptr;
 	}
 
@@ -118,15 +115,14 @@ input_ffmpeg_open(const char *uri,
 
 static size_t
 input_ffmpeg_read(struct input_stream *is, void *ptr, size_t size,
-		  GError **error_r)
+		  Error &error)
 {
 	FfmpegInputStream *i = (FfmpegInputStream *)is;
 
 	int ret = avio_read(i->h, (unsigned char *)ptr, size);
 	if (ret <= 0) {
 		if (ret < 0)
-			g_set_error(error_r, ffmpeg_quark(), 0,
-				    "url_read() failed");
+			error.Set(ffmpeg_domain, "avio_read() failed");
 
 		i->eof = true;
 		return false;
@@ -154,7 +150,7 @@ input_ffmpeg_eof(struct input_stream *is)
 
 static bool
 input_ffmpeg_seek(struct input_stream *is, goffset offset, int whence,
-		  gcc_unused GError **error_r)
+		  Error &error)
 {
 	FfmpegInputStream *i = (FfmpegInputStream *)is;
 	int64_t ret = avio_seek(i->h, offset, whence);
@@ -163,7 +159,7 @@ input_ffmpeg_seek(struct input_stream *is, goffset offset, int whence,
 		i->eof = false;
 		return true;
 	} else {
-		g_set_error(error_r, ffmpeg_quark(), 0, "url_seek() failed");
+		error.Set(ffmpeg_domain, "avio_seek() failed");
 		return false;
 	}
 }

@@ -28,17 +28,17 @@
 
 static bool
 AddSong(const char *playlist_path_utf8,
-	Song &song, GError **error_r)
+	Song &song, Error &error)
 {
-	return spl_append_song(playlist_path_utf8, &song, error_r);
+	return spl_append_song(playlist_path_utf8, &song, error);
 }
 
 bool
 search_add_to_playlist(const char *uri, const char *playlist_path_utf8,
 		       const SongFilter *filter,
-		       GError **error_r)
+		       Error &error)
 {
-	const Database *db = GetDatabase(error_r);
+	const Database *db = GetDatabase(error);
 	if (db == nullptr)
 		return false;
 
@@ -46,5 +46,5 @@ search_add_to_playlist(const char *uri, const char *playlist_path_utf8,
 
 	using namespace std::placeholders;
 	const auto f = std::bind(AddSong, playlist_path_utf8, _1, _2);
-	return db->Visit(selection, f, error_r);
+	return db->Visit(selection, f, error);
 }

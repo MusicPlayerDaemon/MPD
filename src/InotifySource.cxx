@@ -20,6 +20,7 @@
 #include "config.h"
 #include "InotifySource.hxx"
 #include "util/fifo_buffer.h"
+#include "util/Error.hxx"
 #include "system/fd_util.h"
 #include "system/FatalError.hxx"
 
@@ -31,15 +32,6 @@
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "inotify"
-
-/**
- * A GQuark for GError instances.
- */
-static inline GQuark
-mpd_inotify_quark(void)
-{
-	return g_quark_from_static_string("inotify");
-}
 
 bool
 InotifySource::OnSocketReady(gcc_unused unsigned flags)
@@ -97,13 +89,11 @@ InotifySource::InotifySource(EventLoop &_loop,
 InotifySource *
 InotifySource::Create(EventLoop &loop,
 		      mpd_inotify_callback_t callback, void *callback_ctx,
-		      GError **error_r)
+		      Error &error)
 {
 	int fd = inotify_init_cloexec();
 	if (fd < 0) {
-		g_set_error(error_r, mpd_inotify_quark(), errno,
-			    "inotify_init() has failed: %s",
-			    g_strerror(errno));
+		error.SetErrno("inotify_init() has failed");
 		return NULL;
 	}
 
@@ -116,13 +106,11 @@ InotifySource::~InotifySource()
 }
 
 int
-InotifySource::Add(const char *path_fs, unsigned mask, GError **error_r)
+InotifySource::Add(const char *path_fs, unsigned mask, Error &error)
 {
 	int wd = inotify_add_watch(Get(), path_fs, mask);
 	if (wd < 0)
-		g_set_error(error_r, mpd_inotify_quark(), errno,
-			    "inotify_add_watch() has failed: %s",
-			    g_strerror(errno));
+		error.SetErrno("inotify_add_watch() has failed");
 
 	return wd;
 }

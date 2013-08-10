@@ -23,6 +23,8 @@
 #include "output/PulseOutputPlugin.hxx"
 #include "conf.h"
 #include "GlobalEvents.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <glib.h>
 
@@ -52,14 +54,7 @@ struct PulseMixer final : public Mixer {
 	}
 };
 
-/**
- * The quark used for GError.domain.
- */
-static inline GQuark
-pulse_mixer_quark(void)
-{
-	return g_quark_from_static_string("pulse_mixer");
-}
+static constexpr Domain pulse_mixer_domain("pulse_mixer");
 
 static void
 pulse_mixer_offline(PulseMixer *pm)
@@ -154,13 +149,13 @@ pulse_mixer_on_change(PulseMixer *pm,
 
 static Mixer *
 pulse_mixer_init(void *ao, gcc_unused const config_param &param,
-		 GError **error_r)
+		 Error &error)
 {
 	PulseOutput *po = (PulseOutput *)ao;
 
 	if (ao == NULL) {
-		g_set_error(error_r, pulse_mixer_quark(), 0,
-			    "The pulse mixer cannot work without the audio output");
+		error.Set(pulse_mixer_domain,
+			  "The pulse mixer cannot work without the audio output");
 		return nullptr;
 	}
 
@@ -182,7 +177,7 @@ pulse_mixer_finish(Mixer *data)
 }
 
 static int
-pulse_mixer_get_volume(Mixer *mixer, gcc_unused GError **error_r)
+pulse_mixer_get_volume(Mixer *mixer, gcc_unused Error &error)
 {
 	PulseMixer *pm = (PulseMixer *) mixer;
 	int ret;
@@ -199,7 +194,7 @@ pulse_mixer_get_volume(Mixer *mixer, gcc_unused GError **error_r)
 }
 
 static bool
-pulse_mixer_set_volume(Mixer *mixer, unsigned volume, GError **error_r)
+pulse_mixer_set_volume(Mixer *mixer, unsigned volume, Error &error)
 {
 	PulseMixer *pm = (PulseMixer *) mixer;
 	struct pa_cvolume cvolume;
@@ -209,13 +204,13 @@ pulse_mixer_set_volume(Mixer *mixer, unsigned volume, GError **error_r)
 
 	if (!pm->online) {
 		pulse_output_unlock(pm->output);
-		g_set_error(error_r, pulse_mixer_quark(), 0, "disconnected");
+		error.Set(pulse_mixer_domain, "disconnected");
 		return false;
 	}
 
 	pa_cvolume_set(&cvolume, pm->volume.channels,
 		       (pa_volume_t)volume * PA_VOLUME_NORM / 100 + 0.5);
-	success = pulse_output_set_volume(pm->output, &cvolume, error_r);
+	success = pulse_output_set_volume(pm->output, &cvolume, error);
 	if (success)
 		pm->volume = cvolume;
 

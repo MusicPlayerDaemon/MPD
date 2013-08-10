@@ -26,6 +26,8 @@
 #include "pcm/PcmVolume.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "AudioFormat.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <glib.h>
 
@@ -58,27 +60,23 @@ public:
 		volume = _volume;
 	}
 
-	virtual AudioFormat Open(AudioFormat &af, GError **error_r) override;
+	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
 	virtual void Close();
 	virtual const void *FilterPCM(const void *src, size_t src_size,
-				      size_t *dest_size_r, GError **error_r);
+				      size_t *dest_size_r, Error &error);
 };
 
-static inline GQuark
-volume_quark(void)
-{
-	return g_quark_from_static_string("pcm_volume");
-}
+static constexpr Domain volume_domain("pcm_volume");
 
 static Filter *
 volume_filter_init(gcc_unused const config_param &param,
-		   gcc_unused GError **error_r)
+		   gcc_unused Error &error)
 {
 	return new VolumeFilter();
 }
 
 AudioFormat
-VolumeFilter::Open(AudioFormat &audio_format, gcc_unused GError **error_r)
+VolumeFilter::Open(AudioFormat &audio_format, gcc_unused Error &error)
 {
 	format = audio_format;
 
@@ -93,7 +91,7 @@ VolumeFilter::Close()
 
 const void *
 VolumeFilter::FilterPCM(const void *src, size_t src_size,
-			size_t *dest_size_r, GError **error_r)
+			size_t *dest_size_r, Error &error)
 {
 	*dest_size_r = src_size;
 
@@ -117,8 +115,7 @@ VolumeFilter::FilterPCM(const void *src, size_t src_size,
 				  format.format,
 				  volume);
 	if (!success) {
-		g_set_error(error_r, volume_quark(), 0,
-			    "pcm_volume() has failed");
+		error.Set(volume_domain, "pcm_volume() has failed");
 		return NULL;
 	}
 

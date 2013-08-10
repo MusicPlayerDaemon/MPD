@@ -34,6 +34,7 @@
 #include "ls.hxx"
 #include "Volume.hxx"
 #include "util/UriUtil.hxx"
+#include "util/Error.hxx"
 #include "fs/Path.hxx"
 
 extern "C" {
@@ -126,8 +127,8 @@ handle_lsinfo(Client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		GError *error = NULL;
-		if (!client_allow_file(client, path_fs, &error))
+		Error error;
+		if (!client_allow_file(client, path_fs, error))
 			return print_error(client, error);
 
 		Song *song = Song::LoadFile(path_utf8, nullptr);
@@ -147,7 +148,8 @@ handle_lsinfo(Client *client, int argc, char *argv[])
 		return result;
 
 	if (isRootDirectory(uri)) {
-		const auto &list = ListPlaylistFiles(NULL);
+		Error error;
+		const auto &list = ListPlaylistFiles(error);
 		print_spl_list(client, list);
 	}
 

@@ -21,7 +21,6 @@
 #define MPD_CONFIG_GLOBAL_HXX
 
 #include "ConfigOption.hxx"
-#include "gerror.h"
 #include "gcc.h"
 
 #include <stdbool.h>
@@ -30,6 +29,7 @@
 #define DEFAULT_PLAYLIST_MAX_LENGTH (1024*16)
 #define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS false
 
+class Error;
 class Path;
 
 void config_global_init(void);
@@ -42,7 +42,7 @@ void config_global_finish(void);
 void config_global_check(void);
 
 bool
-ReadConfigFile(const Path &path, GError **error_r);
+ReadConfigFile(const Path &path, Error &error);
 
 /* don't free the returned value
    set _last_ to NULL to get first entry */
@@ -76,7 +76,7 @@ config_get_string(enum ConfigOption option, const char *default_value);
  * could not be parsed, returns Path::Null() and sets the error.
  */
 Path
-config_get_path(enum ConfigOption option, GError **error_r);
+config_get_path(enum ConfigOption option, Error &error);
 
 gcc_pure
 unsigned

@@ -41,38 +41,38 @@ int
 socket_bind_listen(int domain, int type, int protocol,
 		   const struct sockaddr *address, size_t address_length,
 		   int backlog,
-		   GError **error_r)
+		   Error &error)
 {
 	int fd, ret;
 	const int reuse = 1;
 
 	fd = socket_cloexec_nonblock(domain, type, protocol);
 	if (fd < 0) {
-		SetSocketError(error_r);
-		g_prefix_error(error_r, "Failed to create socket: ");
+		SetSocketError(error);
+		error.AddPrefix("Failed to create socket: ");
 		return -1;
 	}
 
 	ret = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR,
 			 (const char *) &reuse, sizeof(reuse));
 	if (ret < 0) {
-		SetSocketError(error_r);
-		g_prefix_error(error_r, "setsockopt() failed: ");
+		SetSocketError(error);
+		error.AddPrefix("setsockopt() failed: ");
 		close_socket(fd);
 		return -1;
 	}
 
 	ret = bind(fd, address, address_length);
 	if (ret < 0) {
-		SetSocketError(error_r);
+		SetSocketError(error);
 		close_socket(fd);
 		return -1;
 	}
 
 	ret = listen(fd, backlog);
 	if (ret < 0) {
-		SetSocketError(error_r);
-		g_prefix_error(error_r, "listen() failed: ");
+		SetSocketError(error);
+		error.AddPrefix("listen() failed: ");
 		close_socket(fd);
 		return -1;
 	}

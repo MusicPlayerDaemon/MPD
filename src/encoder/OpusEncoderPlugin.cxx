@@ -22,10 +22,14 @@
 #include "OggStream.hxx"
 #include "EncoderAPI.hxx"
 #include "AudioFormat.hxx"
-#include "mpd_error.h"
+#include "ConfigError.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <opus.h>
 #include <ogg/ogg.h>
+
+#include <glib.h>
 
 #include <assert.h>
 
@@ -66,16 +70,11 @@ struct opus_encoder {
 	opus_encoder():encoder(opus_encoder_plugin) {}
 };
 
-gcc_const
-static inline GQuark
-opus_encoder_quark(void)
-{
-	return g_quark_from_static_string("opus_encoder");
-}
+static constexpr Domain opus_encoder_domain("opus_encoder");
 
 static bool
 opus_encoder_configure(struct opus_encoder *encoder,
-		       const config_param &param, GError **error_r)
+		       const config_param &param, Error &error)
 {
 	const char *value = param.GetBlockValue("bitrate", "auto");
 	if (strcmp(value, "auto") == 0)
@@ -87,16 +86,14 @@ opus_encoder_configure(struct opus_encoder *encoder,
 		encoder->bitrate = strtoul(value, &endptr, 10);
 		if (endptr == value || *endptr != 0 ||
 		    encoder->bitrate < 500 || encoder->bitrate > 512000) {
-			g_set_error(error_r, opus_encoder_quark(), 0,
-				    "Invalid bit rate");
+			error.Set(config_domain, "Invalid bit rate");
 			return false;
 		}
 	}
 
 	encoder->complexity = param.GetBlockValue("complexity", 10u);
 	if (encoder->complexity > 10) {
-		g_set_error(error_r, opus_encoder_quark(), 0,
-			    "Invalid complexity");
+		error.Format(config_domain, "Invalid complexity");
 		return false;
 	}
 
@@ -108,8 +105,7 @@ opus_encoder_configure(struct opus_encoder *encoder,
 	else if (strcmp(value, "music") == 0)
 		encoder->signal = OPUS_SIGNAL_MUSIC;
 	else {
-		g_set_error(error_r, opus_encoder_quark(), 0,
-			    "Invalid signal");
+		error.Format(config_domain, "Invalid signal");
 		return false;
 	}
 
@@ -117,7 +113,7 @@ opus_encoder_configure(struct opus_encoder *encoder,
 }
 
 static Encoder *
-opus_encoder_init(const config_param &param, GError **error)
+opus_encoder_init(const config_param &param, Error &error)
 {
 	opus_encoder *encoder = new opus_encoder();
 
@@ -144,7 +140,7 @@ opus_encoder_finish(Encoder *_encoder)
 static bool
 opus_encoder_open(Encoder *_encoder,
 		  AudioFormat &audio_format,
-		  GError **error_r)
+		  Error &error)
 {
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
 
@@ -171,14 +167,14 @@ opus_encoder_open(Encoder *_encoder,
 	encoder->audio_format = audio_format;
 	encoder->frame_size = audio_format.GetFrameSize();
 
-	int error;
+	int error_code;
 	encoder->enc = opus_encoder_create(audio_format.sample_rate,
 					   audio_format.channels,
 					   OPUS_APPLICATION_AUDIO,
-					   &error);
+					   &error_code);
 	if (encoder->enc == nullptr) {
-		g_set_error_literal(error_r, opus_encoder_quark(), error,
-				    opus_strerror(error));
+		error.Set(opus_encoder_domain, error_code,
+			  opus_strerror(error_code));
 		return false;
 	}
 
@@ -212,7 +208,7 @@ opus_encoder_close(Encoder *_encoder)
 
 static bool
 opus_encoder_do_encode(struct opus_encoder *encoder, bool eos,
-		       GError **error_r)
+		       Error &error)
 {
 	assert(encoder->buffer_position == encoder->buffer_size);
 
@@ -229,8 +225,7 @@ opus_encoder_do_encode(struct opus_encoder *encoder, bool eos,
 				    encoder->buffer2,
 				    sizeof(encoder->buffer2));
 	if (result < 0) {
-		g_set_error_literal(error_r, opus_encoder_quark(), 0,
-				    "Opus encoder error");
+		error.Set(opus_encoder_domain, "Opus encoder error");
 		return false;
 	}
 
@@ -251,7 +246,7 @@ opus_encoder_do_encode(struct opus_encoder *encoder, bool eos,
 }
 
 static bool
-opus_encoder_end(Encoder *_encoder, GError **error_r)
+opus_encoder_end(Encoder *_encoder, Error &error)
 {
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
 
@@ -261,11 +256,11 @@ opus_encoder_end(Encoder *_encoder, GError **error_r)
 	       encoder->buffer_size - encoder->buffer_position);
 	encoder->buffer_position = encoder->buffer_size;
 
-	return opus_encoder_do_encode(encoder, true, error_r);
+	return opus_encoder_do_encode(encoder, true, error);
 }
 
 static bool
-opus_encoder_flush(Encoder *_encoder, gcc_unused GError **error)
+opus_encoder_flush(Encoder *_encoder, gcc_unused Error &error)
 {
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
 
@@ -275,7 +270,7 @@ opus_encoder_flush(Encoder *_encoder, gcc_unused GError **error)
 
 static bool
 opus_encoder_write_silence(struct opus_encoder *encoder, unsigned fill_frames,
-			   GError **error_r)
+			   Error &error)
 {
 	size_t fill_bytes = fill_frames * encoder->frame_size;
 
@@ -291,7 +286,7 @@ opus_encoder_write_silence(struct opus_encoder *encoder, unsigned fill_frames,
 		fill_bytes -= nbytes;
 
 		if (encoder->buffer_position == encoder->buffer_size &&
-		    !opus_encoder_do_encode(encoder, false, error_r))
+		    !opus_encoder_do_encode(encoder, false, error))
 			return false;
 	}
 
@@ -301,7 +296,7 @@ opus_encoder_write_silence(struct opus_encoder *encoder, unsigned fill_frames,
 static bool
 opus_encoder_write(Encoder *_encoder,
 		   const void *_data, size_t length,
-		   GError **error_r)
+		   Error &error)
 {
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
 	const uint8_t *data = (const uint8_t *)_data;
@@ -313,7 +308,7 @@ opus_encoder_write(Encoder *_encoder,
 		assert(encoder->buffer_position == 0);
 
 		if (!opus_encoder_write_silence(encoder, encoder->lookahead,
-						error_r))
+						error))
 			return false;
 
 		encoder->lookahead = 0;
@@ -332,7 +327,7 @@ opus_encoder_write(Encoder *_encoder,
 		encoder->buffer_position += nbytes;
 
 		if (encoder->buffer_position == encoder->buffer_size &&
-		    !opus_encoder_do_encode(encoder, false, error_r))
+		    !opus_encoder_do_encode(encoder, false, error))
 			return false;
 	}
 

@@ -20,6 +20,7 @@
 #include "config.h"
 #include "InotifySource.hxx"
 #include "event/Loop.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -51,7 +52,6 @@ my_inotify_callback(gcc_unused int wd, unsigned mask,
 
 int main(int argc, char **argv)
 {
-	GError *error = NULL;
 	const char *path;
 
 	if (argc != 2) {
@@ -63,20 +63,19 @@ int main(int argc, char **argv)
 
 	event_loop = new EventLoop(EventLoop::Default());
 
+	Error error;
 	InotifySource *source = InotifySource::Create(*event_loop,
 						      my_inotify_callback,
-						      nullptr, &error);
+						      nullptr, error);
 	if (source == NULL) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+		g_warning("%s", error.GetMessage());
 		return 2;
 	}
 
-	int descriptor = source->Add(path, IN_MASK, &error);
+	int descriptor = source->Add(path, IN_MASK, error);
 	if (descriptor < 0) {
 		delete source;
-		g_warning("%s", error->message);
-		g_error_free(error);
+		g_warning("%s", error.GetMessage());
 		return 2;
 	}
 

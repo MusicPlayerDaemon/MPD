@@ -34,6 +34,7 @@ struct config_param;
 struct DatabaseSelection;
 struct db_visitor;
 struct Song;
+class Error;
 
 struct DatabaseStats {
 	/**
@@ -73,7 +74,7 @@ public:
 	/**
          * Open the database.  Read it into memory if applicable.
 	 */
-	virtual bool Open(gcc_unused GError **error_r) {
+	virtual bool Open(gcc_unused Error &error) {
 		return true;
 	}
 
@@ -90,7 +91,7 @@ public:
 	 * directory (UTF-8)
 	 */
 	virtual Song *GetSong(const char *uri_utf8,
-			      GError **error_r) const = 0;
+			      Error &error) const = 0;
 
 	/**
 	 * Mark the song object as "unused".  Call this on objects
@@ -105,19 +106,19 @@ public:
 			   VisitDirectory visit_directory,
 			   VisitSong visit_song,
 			   VisitPlaylist visit_playlist,
-			   GError **error_r) const = 0;
+			   Error &error) const = 0;
 
 	bool Visit(const DatabaseSelection &selection,
 		   VisitDirectory visit_directory,
 		   VisitSong visit_song,
-		   GError **error_r) const {
+		   Error &error) const {
 		return Visit(selection, visit_directory, visit_song,
-			     VisitPlaylist(), error_r);
+			     VisitPlaylist(), error);
 	}
 
 	bool Visit(const DatabaseSelection &selection, VisitSong visit_song,
-		   GError **error_r) const {
-		return Visit(selection, VisitDirectory(), visit_song, error_r);
+		   Error &error) const {
+		return Visit(selection, VisitDirectory(), visit_song, error);
 	}
 
 	/**
@@ -126,11 +127,11 @@ public:
 	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
 				     enum tag_type tag_type,
 				     VisitString visit_string,
-				     GError **error_r) const = 0;
+				     Error &error) const = 0;
 
 	virtual bool GetStats(const DatabaseSelection &selection,
 			      DatabaseStats &stats,
-			      GError **error_r) const = 0;
+			      Error &error) const = 0;
 };
 
 struct DatabasePlugin {
@@ -140,7 +141,7 @@ struct DatabasePlugin {
 	 * Allocates and configures a database.
 	 */
 	Database *(*create)(const config_param &param,
-			    GError **error_r);
+			    Error &error);
 };
 
 #endif

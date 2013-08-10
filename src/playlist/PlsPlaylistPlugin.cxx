@@ -23,6 +23,7 @@
 #include "InputLegacy.hxx"
 #include "Song.hxx"
 #include "Tag.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -104,6 +105,7 @@ static struct playlist_provider *
 pls_open_stream(struct input_stream *is)
 {
 	GError *error = NULL;
+	Error error2;
 	size_t nbytes;
 	char buffer[1024];
 	bool success;
@@ -113,11 +115,10 @@ pls_open_stream(struct input_stream *is)
 
 	do {
 		nbytes = input_stream_lock_read(is, buffer, sizeof(buffer),
-						&error);
+						error2);
 		if (nbytes == 0) {
-			if (error != NULL) {
-				g_warning("%s", error->message);
-				g_error_free(error);
+			if (error2.IsDefined()) {
+				g_warning("%s", error2.GetMessage());
 				return NULL;
 			}
 

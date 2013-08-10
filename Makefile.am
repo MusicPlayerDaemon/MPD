@@ -91,7 +91,7 @@ src_mpd_SOURCES = \
 	src/CheckAudioFormat.cxx src/CheckAudioFormat.hxx \
 	src/AudioFormat.cxx src/AudioFormat.hxx \
 	src/AudioParser.cxx src/AudioParser.hxx \
-	src/protocol/Ack.hxx \
+	src/protocol/Ack.cxx src/protocol/Ack.hxx \
 	src/protocol/ArgParser.cxx src/protocol/ArgParser.hxx \
 	src/protocol/Result.cxx src/protocol/Result.hxx \
 	src/CommandError.cxx src/CommandError.hxx \
@@ -107,7 +107,7 @@ src_mpd_SOURCES = \
 	src/CommandLine.cxx src/CommandLine.hxx \
 	src/CrossFade.cxx src/CrossFade.hxx \
 	src/cue/CueParser.cxx src/cue/CueParser.hxx \
-	src/DecoderError.hxx \
+	src/DecoderError.cxx src/DecoderError.hxx \
 	src/DecoderThread.cxx src/DecoderThread.hxx \
 	src/DecoderCommand.hxx \
 	src/DecoderControl.cxx src/DecoderControl.hxx \
@@ -122,7 +122,7 @@ src_mpd_SOURCES = \
 	src/DatabasePrint.cxx src/DatabasePrint.hxx \
 	src/DatabaseQueue.cxx src/DatabaseQueue.hxx \
 	src/DatabasePlaylist.cxx src/DatabasePlaylist.hxx \
-	src/DatabaseError.hxx \
+	src/DatabaseError.cxx src/DatabaseError.hxx \
 	src/DatabaseLock.cxx src/DatabaseLock.hxx \
 	src/DatabaseSave.cxx src/DatabaseSave.hxx \
 	src/DatabasePlugin.hxx \
@@ -160,7 +160,6 @@ src_mpd_SOURCES = \
 	src/Listen.cxx src/Listen.hxx \
 	src/Log.cxx src/Log.hxx \
 	src/ls.cxx src/ls.hxx \
-	src/io_error.h \
 	src/IOThread.cxx src/IOThread.hxx \
 	src/Main.cxx src/Main.hxx \
 	src/Instance.cxx src/Instance.hxx \
@@ -178,7 +177,7 @@ src_mpd_SOURCES = \
 	src/PlayerThread.cxx src/PlayerThread.hxx \
 	src/PlayerControl.cxx src/PlayerControl.hxx \
 	src/Playlist.cxx \
-	src/PlaylistError.hxx \
+	src/PlaylistError.cxx src/PlaylistError.hxx \
 	src/PlaylistGlobal.cxx src/PlaylistGlobal.hxx \
 	src/PlaylistControl.cxx \
 	src/PlaylistEdit.cxx \
@@ -261,6 +260,7 @@ endif
 # Generic utility library
 
 libutil_a_SOURCES = \
+	src/util/Error.cxx src/util/Error.hxx \
 	src/util/ReusableArray.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \
@@ -284,7 +284,7 @@ libsystem_a_SOURCES = \
 	src/system/FatalError.cxx src/system/FatalError.hxx \
 	src/system/fd_util.c src/system/fd_util.h \
 	src/system/SocketUtil.cxx src/system/SocketUtil.hxx \
-	src/system/SocketError.hxx \
+	src/system/SocketError.cxx src/system/SocketError.hxx \
 	src/system/Resolver.cxx src/system/Resolver.hxx \
 	src/system/EventPipe.cxx src/system/EventPipe.hxx \
 	src/system/EventFD.cxx src/system/EventFD.hxx \
@@ -420,7 +420,7 @@ libconf_a_SOURCES = \
 	src/ConfigGlobal.cxx src/ConfigGlobal.hxx \
 	src/ConfigFile.cxx src/ConfigFile.hxx \
 	src/ConfigTemplates.cxx src/ConfigTemplates.hxx \
-	src/ConfigQuark.hxx \
+	src/ConfigError.cxx src/ConfigError.hxx \
 	src/ConfigOption.hxx
 
 # tag plugins
@@ -793,7 +793,7 @@ OUTPUT_API_SRC = \
 	src/OutputList.cxx src/OutputList.hxx \
 	src/OutputAll.cxx src/OutputAll.hxx \
 	src/OutputThread.cxx src/OutputThread.hxx \
-	src/OutputError.hxx \
+	src/OutputError.cxx src/OutputError.hxx \
 	src/OutputControl.cxx src/OutputControl.hxx \
 	src/OutputState.cxx src/OutputState.hxx \
 	src/OutputPrint.cxx src/OutputPrint.hxx \
@@ -1071,6 +1071,7 @@ test_read_conf_SOURCES = test/read_conf.cxx
 
 test_run_resolver_LDADD = \
 	libsystem.a \
+	libutil.a \
 	$(GLIB_LIBS)
 test_run_resolver_SOURCES = test/run_resolver.cxx
 
@@ -1082,6 +1083,7 @@ test_DumpDatabase_LDADD = \
 	libfs.a \
 	$(GLIB_LIBS)
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
+	src/DatabaseError.cxx \
 	src/DatabaseRegistry.cxx \
 	src/DatabaseSelection.cxx \
 	src/Directory.cxx src/DirectorySave.cxx \
@@ -1217,6 +1219,7 @@ test_read_tags_SOURCES = test/read_tags.cxx \
 if HAVE_ID3TAG
 test_dump_rva2_LDADD = \
 	$(ID3TAG_LIBS) \
+	libutil.a \
 	$(GLIB_LIBS)
 test_dump_rva2_SOURCES = test/dump_rva2.cxx \
 	src/riff.c src/aiff.c \
@@ -1296,6 +1299,7 @@ test_software_volume_SOURCES = test/software_volume.cxx \
 	src/AudioParser.cxx
 test_software_volume_LDADD = \
 	$(PCM_LIBS) \
+	libutil.a \
 	$(GLIB_LIBS)
 
 test_run_normalize_SOURCES = test/run_normalize.cxx \
@@ -1304,6 +1308,7 @@ test_run_normalize_SOURCES = test/run_normalize.cxx \
 	src/AudioParser.cxx \
 	src/AudioCompress/compress.c
 test_run_normalize_LDADD = \
+	libutil.a \
 	$(GLIB_LIBS)
 
 test_run_convert_SOURCES = test/run_convert.cxx \
@@ -1337,6 +1342,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/Timer.cxx \
 	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/Page.cxx \
+	src/OutputError.cxx \
 	src/OutputInit.cxx src/OutputFinish.cxx src/OutputList.cxx \
 	src/OutputPlugin.cxx \
 	src/MixerControl.cxx \

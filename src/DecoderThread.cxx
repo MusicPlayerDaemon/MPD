@@ -32,6 +32,7 @@
 #include "InputStream.hxx"
 #include "DecoderList.hxx"
 #include "util/UriUtil.hxx"
+#include "util/Error.hxx"
 #include "ApeReplayGain.hxx"
 
 #include <glib.h>
@@ -72,15 +73,12 @@ decoder_command_finished_locked(struct decoder_control *dc)
 static struct input_stream *
 decoder_input_stream_open(struct decoder_control *dc, const char *uri)
 {
-	GError *error = NULL;
-	struct input_stream *is;
+	Error error;
 
-	is = input_stream_open(uri, dc->mutex, dc->cond, &error);
+	input_stream *is = input_stream_open(uri, dc->mutex, dc->cond, error);
 	if (is == NULL) {
-		if (error != NULL) {
-			g_warning("%s", error->message);
-			g_error_free(error);
-		}
+		if (error.IsDefined())
+			g_warning("%s", error.GetMessage());
 
 		return NULL;
 	}
@@ -98,12 +96,10 @@ decoder_input_stream_open(struct decoder_control *dc, const char *uri)
 		input_stream_update(is);
 	}
 
-	if (!input_stream_check(is, &error)) {
+	if (!input_stream_check(is, error)) {
 		dc->Unlock();
 
-		g_warning("%s", error->message);
-		g_error_free(error);
-
+		g_warning("%s", error.GetMessage());
 		return NULL;
 	}
 
@@ -132,7 +128,10 @@ decoder_stream_decode(const struct decoder_plugin *plugin,
 		return true;
 
 	/* rewind the stream, so each plugin gets a fresh start */
-	input_stream_seek(input_stream, 0, SEEK_SET, NULL);
+	{
+		Error error;
+		input_stream_seek(input_stream, 0, SEEK_SET, error);
+	}
 
 	decoder->dc->Unlock();
 
@@ -411,8 +410,8 @@ decoder_run_song(struct decoder_control *dc,
 		if (allocated != NULL)
 			error_uri = allocated;
 
-		dc->error = g_error_new(decoder_quark(), 0,
-					"Failed to decode %s", error_uri);
+		dc->error.Format(decoder_domain,
+				 "Failed to decode %s", error_uri);
 		g_free(allocated);
 	}
 
@@ -436,8 +435,7 @@ decoder_run(struct decoder_control *dc)
 
 	if (uri == NULL) {
 		dc->state = DECODE_STATE_ERROR;
-		dc->error = g_error_new(decoder_quark(), 0,
-					"Failed to map song");
+		dc->error.Set(decoder_domain, "Failed to map song");
 
 		decoder_command_finished_locked(dc);
 		return;

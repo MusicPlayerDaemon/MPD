@@ -28,6 +28,7 @@
 #include "TagInternal.hxx"
 #include "Tag.hxx"
 #include "fs/Path.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -69,7 +70,7 @@ db_save_internal(FILE *fp, const Directory *music_root)
 }
 
 bool
-db_load_internal(TextFile &file, Directory *music_root, GError **error)
+db_load_internal(TextFile &file, Directory *music_root, Error &error)
 {
 	char *line;
 	int format = 0;
@@ -82,7 +83,7 @@ db_load_internal(TextFile &file, Directory *music_root, GError **error)
 	/* get initial info */
 	line = file.ReadLine();
 	if (line == NULL || strcmp(DIRECTORY_INFO_BEGIN, line) != 0) {
-		g_set_error(error, db_quark(), 0, "Database corrupted");
+		error.Set(db_domain, "Database corrupted");
 		return false;
 	}
 
@@ -94,8 +95,7 @@ db_load_internal(TextFile &file, Directory *music_root, GError **error)
 			format = atoi(line + sizeof(DB_FORMAT_PREFIX) - 1);
 		} else if (g_str_has_prefix(line, DIRECTORY_MPD_VERSION)) {
 			if (found_version) {
-				g_set_error(error, db_quark(), 0,
-					    "Duplicate version line");
+				error.Set(db_domain, "Duplicate version line");
 				return false;
 			}
 
@@ -104,8 +104,7 @@ db_load_internal(TextFile &file, Directory *music_root, GError **error)
 			const char *new_charset;
 
 			if (found_charset) {
-				g_set_error(error, db_quark(), 0,
-					    "Duplicate charset line");
+				error.Set(db_domain, "Duplicate charset line");
 				return false;
 			}
 
@@ -115,44 +114,43 @@ db_load_internal(TextFile &file, Directory *music_root, GError **error)
 			const std::string &old_charset = Path::GetFSCharset();
 			if (!old_charset.empty()
 			    && strcmp(new_charset, old_charset.c_str())) {
-				g_set_error(error, db_quark(), 0,
-					    "Existing database has charset "
-					    "\"%s\" instead of \"%s\"; "
-					    "discarding database file",
-					    new_charset, old_charset.c_str());
+				error.Format(db_domain,
+					     "Existing database has charset "
+					     "\"%s\" instead of \"%s\"; "
+					     "discarding database file",
+					     new_charset, old_charset.c_str());
 				return false;
 			}
 		} else if (g_str_has_prefix(line, DB_TAG_PREFIX)) {
 			const char *name = line + sizeof(DB_TAG_PREFIX) - 1;
 			enum tag_type tag = tag_name_parse(name);
 			if (tag == TAG_NUM_OF_ITEM_TYPES) {
-				g_set_error(error, db_quark(), 0,
-					    "Unrecognized tag '%s', "
-					    "discarding database file",
-					    name);
+				error.Format(db_domain,
+					     "Unrecognized tag '%s', "
+					     "discarding database file",
+					     name);
 				return false;
 			}
 
 			tags[tag] = true;
 		} else {
-			g_set_error(error, db_quark(), 0,
-				    "Malformed line: %s", line);
+			error.Format(db_domain, "Malformed line: %s", line);
 			return false;
 		}
 	}
 
 	if (format != DB_FORMAT) {
-		g_set_error(error, db_quark(), 0,
-			    "Database format mismatch, "
-			    "discarding database file");
+		error.Set(db_domain,
+			  "Database format mismatch, "
+			  "discarding database file");
 		return false;
 	}
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
 		if (!ignore_tag_items[i] && !tags[i]) {
-			g_set_error(error, db_quark(), 0,
-				    "Tag list mismatch, "
-				    "discarding database file");
+			error.Set(db_domain,
+				  "Tag list mismatch, "
+				  "discarding database file");
 			return false;
 		}
 	}

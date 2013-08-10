@@ -20,11 +20,10 @@
 #ifndef MPD_CONFIG_PATH_HXX
 #define MPD_CONFIG_PATH_HXX
 
-#include "gerror.h"
-
 class Path;
+class Error;
 
 Path
-ParsePath(const char *path, GError **error_r);
+ParsePath(const char *path, Error &error);
 
 #endif

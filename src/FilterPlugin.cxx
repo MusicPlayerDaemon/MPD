@@ -22,40 +22,38 @@
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
 #include "conf.h"
-#include "ConfigQuark.hxx"
+#include "ConfigError.hxx"
+#include "util/Error.hxx"
 
 #include <assert.h>
 
 Filter *
 filter_new(const struct filter_plugin *plugin,
-	   const config_param &param, GError **error_r)
+	   const config_param &param, Error &error)
 {
 	assert(plugin != NULL);
-	assert(error_r == NULL || *error_r == NULL);
+	assert(!error.IsDefined());
 
-	return plugin->init(param, error_r);
+	return plugin->init(param, error);
 }
 
 Filter *
-filter_configured_new(const config_param &param, GError **error_r)
+filter_configured_new(const config_param &param, Error &error)
 {
-	const struct filter_plugin *plugin;
-
-	assert(error_r == NULL || *error_r == NULL);
+	assert(!error.IsDefined());
 
 	const char *plugin_name = param.GetBlockValue("plugin");
 	if (plugin_name == NULL) {
-		g_set_error(error_r, config_quark(), 0,
-			    "No filter plugin specified");
+		error.Set(config_domain, "No filter plugin specified");
 		return NULL;
 	}
 
-	plugin = filter_plugin_by_name(plugin_name);
+	const filter_plugin *plugin = filter_plugin_by_name(plugin_name);
 	if (plugin == NULL) {
-		g_set_error(error_r, config_quark(), 0,
-			    "No such filter plugin: %s", plugin_name);
+		error.Format(config_domain,
+			     "No such filter plugin: %s", plugin_name);
 		return NULL;
 	}
 
-	return filter_new(plugin, param, error_r);
+	return filter_new(plugin, param, error);
 }

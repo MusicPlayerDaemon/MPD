@@ -24,6 +24,8 @@
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
 #include "AudioFormat.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <glib.h>
 
@@ -53,10 +55,10 @@ public:
 		children.emplace_back(name, filter);
 	}
 
-	virtual AudioFormat Open(AudioFormat &af, GError **error_r) override;
+	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
 	virtual void Close();
 	virtual const void *FilterPCM(const void *src, size_t src_size,
-				      size_t *dest_size_r, GError **error_r);
+				      size_t *dest_size_r, Error &error);
 
 private:
 	/**
@@ -66,15 +68,11 @@ private:
 	void CloseUntil(const Filter *until);
 };
 
-static inline GQuark
-filter_quark(void)
-{
-	return g_quark_from_static_string("filter");
-}
+static constexpr Domain chain_filter_domain("chain_filter");
 
 static Filter *
 chain_filter_init(gcc_unused const config_param &param,
-		  gcc_unused GError **error_r)
+		  gcc_unused Error &error)
 {
 	return new ChainFilter();
 }
@@ -99,11 +97,11 @@ ChainFilter::CloseUntil(const Filter *until)
 static AudioFormat
 chain_open_child(const char *name, Filter *filter,
 		 const AudioFormat &prev_audio_format,
-		 GError **error_r)
+		 Error &error)
 {
 	AudioFormat conv_audio_format = prev_audio_format;
 	const AudioFormat next_audio_format =
-		filter->Open(conv_audio_format, error_r);
+		filter->Open(conv_audio_format, error);
 	if (!next_audio_format.IsDefined())
 		return next_audio_format;
 
@@ -111,10 +109,11 @@ chain_open_child(const char *name, Filter *filter,
 		struct audio_format_string s;
 
 		filter->Close();
-		g_set_error(error_r, filter_quark(), 0,
-			    "Audio format not supported by filter '%s': %s",
-			    name,
-			    audio_format_to_string(prev_audio_format, &s));
+
+		error.Format(chain_filter_domain,
+			     "Audio format not supported by filter '%s': %s",
+			     name,
+			     audio_format_to_string(prev_audio_format, &s));
 		return AudioFormat::Undefined();
 	}
 
@@ -122,13 +121,13 @@ chain_open_child(const char *name, Filter *filter,
 }
 
 AudioFormat
-ChainFilter::Open(AudioFormat &in_audio_format, GError **error_r)
+ChainFilter::Open(AudioFormat &in_audio_format, Error &error)
 {
 	AudioFormat audio_format = in_audio_format;
 
 	for (auto &child : children) {
 		audio_format = chain_open_child(child.name, child.filter,
-						audio_format, error_r);
+						audio_format, error);
 		if (!audio_format.IsDefined()) {
 			/* rollback, close all children */
 			CloseUntil(child.filter);
@@ -149,13 +148,13 @@ ChainFilter::Close()
 
 const void *
 ChainFilter::FilterPCM(const void *src, size_t src_size,
-		       size_t *dest_size_r, GError **error_r)
+		       size_t *dest_size_r, Error &error)
 {
 	for (auto &child : children) {
 		/* feed the output of the previous filter as input
 		   into the current one */
 		src = child.filter->FilterPCM(src, src_size, &src_size,
-					      error_r);
+					      error);
 		if (src == NULL)
 			return NULL;
 	}

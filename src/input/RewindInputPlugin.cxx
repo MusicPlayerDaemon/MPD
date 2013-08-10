@@ -24,8 +24,6 @@
 #include "InputPlugin.hxx"
 #include "Tag.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
@@ -112,11 +110,11 @@ input_rewind_close(struct input_stream *is)
 }
 
 static bool
-input_rewind_check(struct input_stream *is, GError **error_r)
+input_rewind_check(struct input_stream *is, Error &error)
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
-	return input_stream_check(r->input, error_r);
+	return input_stream_check(r->input, error);
 }
 
 static void
@@ -146,7 +144,7 @@ input_rewind_available(struct input_stream *is)
 
 static size_t
 input_rewind_read(struct input_stream *is, void *ptr, size_t size,
-		  GError **error_r)
+		  Error &error)
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
@@ -167,7 +165,7 @@ input_rewind_read(struct input_stream *is, void *ptr, size_t size,
 	} else {
 		/* pass method call to underlying stream */
 
-		size_t nbytes = input_stream_read(r->input, ptr, size, error_r);
+		size_t nbytes = input_stream_read(r->input, ptr, size, error);
 
 		if (r->input->offset > (goffset)sizeof(r->buffer))
 			/* disable buffering */
@@ -197,7 +195,7 @@ input_rewind_eof(struct input_stream *is)
 
 static bool
 input_rewind_seek(struct input_stream *is, goffset offset, int whence,
-		  GError **error_r)
+		  Error &error)
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
@@ -216,7 +214,7 @@ input_rewind_seek(struct input_stream *is, goffset offset, int whence,
 		return true;
 	} else {
 		bool success = input_stream_seek(r->input, offset, whence,
-						 error_r);
+						 error);
 		r->CopyAttributes();
 
 		/* disable the buffer, because r->input has left the

@@ -21,6 +21,8 @@
 #include "FullyBufferedSocket.hxx"
 #include "system/SocketError.hxx"
 #include "util/fifo_buffer.h"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <assert.h>
 #include <stdint.h>
@@ -98,8 +100,10 @@ FullyBufferedSocket::Write(const void *data, size_t length)
 
 	if (!output.Append(data, length)) {
 		// TODO
-		OnSocketError(g_error_new_literal(g_quark_from_static_string("buffered_socket"),
-						  0, "Output buffer is full"));
+		static constexpr Domain buffered_socket_domain("buffered_socket");
+		Error error;
+		error.Set(buffered_socket_domain, "Output buffer is full");
+		OnSocketError(std::move(error));
 		return false;
 	}
 

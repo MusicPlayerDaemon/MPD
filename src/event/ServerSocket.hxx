@@ -20,14 +20,13 @@
 #ifndef MPD_SERVER_SOCKET_HXX
 #define MPD_SERVER_SOCKET_HXX
 
-#include "gerror.h"
-
 #include <forward_list>
 
 #include <stddef.h>
 
 struct sockaddr;
 class EventLoop;
+class Error;
 
 typedef void (*server_socket_callback_t)(int fd,
 					 const struct sockaddr *address,
@@ -79,7 +78,7 @@ public:
 	 * ignore errors
 	 * @return true on success
 	 */
-	bool AddPort(unsigned port, GError **error_r);
+	bool AddPort(unsigned port, Error &error);
 
 	/**
 	 * Resolves a host name, and adds listeners on all addresses in the
@@ -91,7 +90,7 @@ public:
 	 * ignore errors
 	 * @return true on success
 	 */
-	bool AddHost(const char *hostname, unsigned port, GError **error_r);
+	bool AddHost(const char *hostname, unsigned port, Error &error);
 
 	/**
 	 * Add a listener on a Unix domain socket.
@@ -101,16 +100,16 @@ public:
 	 * ignore errors
 	 * @return true on success
 	 */
-	bool AddPath(const char *path, GError **error_r);
+	bool AddPath(const char *path, Error &error);
 
 	/**
 	 * Add a socket descriptor that is accepting connections.  After this
 	 * has been called, don't call server_socket_open(), because the
 	 * socket is already open.
 	 */
-	bool AddFD(int fd, GError **error_r);
+	bool AddFD(int fd, Error &error);
 
-	bool Open(GError **error_r);
+	bool Open(Error &error);
 	void Close();
 
 protected:

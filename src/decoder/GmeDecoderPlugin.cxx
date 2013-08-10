@@ -23,6 +23,7 @@
 #include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
 #include "util/UriUtil.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 #include <assert.h>
@@ -152,13 +153,12 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 
 	/* initialize the MPD decoder */
 
-	GError *error = nullptr;
+	Error error;
 	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format, GME_SAMPLE_RATE,
 				       SampleFormat::S16, GME_CHANNELS,
-				       &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+				       error)) {
+		g_warning("%s", error.GetMessage());
 		gme_free_info(ti);
 		gme_delete(emu);
 		return;

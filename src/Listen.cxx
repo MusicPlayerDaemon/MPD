@@ -24,6 +24,7 @@
 #include "Client.hxx"
 #include "conf.h"
 #include "event/ServerSocket.hxx"
+#include "util/Error.hxx"
 
 #include <string.h>
 #include <assert.h>
@@ -55,7 +56,7 @@ int listen_port;
 static bool
 listen_add_config_param(unsigned int port,
 			const struct config_param *param,
-			GError **error_r)
+			Error &error_r)
 {
 	assert(param != NULL);
 
@@ -69,7 +70,7 @@ listen_add_config_param(unsigned int port,
 }
 
 static bool
-listen_systemd_activation(GError **error_r)
+listen_systemd_activation(Error &error_r)
 {
 #ifdef ENABLE_SYSTEMD_DAEMON
 	int n = sd_listen_fds(true);
@@ -93,7 +94,7 @@ listen_systemd_activation(GError **error_r)
 }
 
 bool
-listen_global_init(GError **error_r)
+listen_global_init(Error &error)
 {
 	assert(main_loop != nullptr);
 
@@ -101,29 +102,24 @@ listen_global_init(GError **error_r)
 	const struct config_param *param =
 		config_get_next_param(CONF_BIND_TO_ADDRESS, NULL);
 	bool success;
-	GError *error = NULL;
 
 	listen_socket = new ClientListener();
 
-	if (listen_systemd_activation(&error))
+	if (listen_systemd_activation(error))
 		return true;
 
-	if (error != NULL) {
-		g_propagate_error(error_r, error);
+	if (error.IsDefined())
 		return false;
-	}
 
 	if (param != NULL) {
 		/* "bind_to_address" is configured, create listeners
 		   for all values */
 
 		do {
-			success = listen_add_config_param(port, param, &error);
-			if (!success) {
+			if (!listen_add_config_param(port, param, error)) {
 				delete listen_socket;
-				g_propagate_prefixed_error(error_r, error,
-							   "Failed to listen on %s (line %i): ",
-							   param->value, param->line);
+				error.FormatPrefix("Failed to listen on %s (line %i): ",
+						   param->value, param->line);
 				return false;
 			}
 
@@ -134,17 +130,15 @@ listen_global_init(GError **error_r)
 		/* no "bind_to_address" configured, bind the
 		   configured port on all interfaces */
 
-		success = listen_socket->AddPort(port, error_r);
+		success = listen_socket->AddPort(port, error);
 		if (!success) {
 			delete listen_socket;
-			g_propagate_prefixed_error(error_r, error,
-						   "Failed to listen on *:%d: ",
-						   port);
+			error.FormatPrefix("Failed to listen on *:%d: ", port);
 			return false;
 		}
 	}
 
-	if (!listen_socket->Open(error_r)) {
+	if (!listen_socket->Open(error)) {
 		delete listen_socket;
 		return false;
 	}

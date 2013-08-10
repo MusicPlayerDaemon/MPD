@@ -20,8 +20,6 @@
 #ifndef MPD_SONG_SAVE_HXX
 #define MPD_SONG_SAVE_HXX
 
-#include "gerror.h"
-
 #include <stdio.h>
 
 #define SONG_BEGIN "song_begin: "
@@ -29,6 +27,7 @@
 struct Song;
 struct Directory;
 class TextFile;
+class Error;
 
 void
 song_save(FILE *fp, const Song *song);
@@ -37,12 +36,11 @@ song_save(FILE *fp, const Song *song);
  * Loads a song from the input file.  Reading stops after the
  * "song_end" line.
  *
- * @param error_r location to store the error occurring, or NULL to
- * ignore errors
+ * @param error location to store the error occurring
  * @return true on success, false on error
  */
 Song *
 song_load(TextFile &file, Directory *parent, const char *uri,
-	  GError **error_r);
+	  Error &error);
 
 #endif

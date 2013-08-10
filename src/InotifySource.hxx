@@ -21,8 +21,9 @@
 #define MPD_INOTIFY_SOURCE_HXX
 
 #include "event/SocketMonitor.hxx"
-#include "gerror.h"
 #include "gcc.h"
+
+class Error;
 
 typedef void (*mpd_inotify_callback_t)(int wd, unsigned mask,
 				       const char *name, void *ctx);
@@ -46,7 +47,7 @@ public:
 	static InotifySource *Create(EventLoop &_loop,
 				     mpd_inotify_callback_t callback,
 				     void *ctx,
-				     GError **error_r);
+				     Error &error);
 
 	~InotifySource();
 
@@ -56,7 +57,7 @@ public:
 	 *
 	 * @return a watch descriptor or -1 on error
 	 */
-	int Add(const char *path_fs, unsigned mask, GError **error_r);
+	int Add(const char *path_fs, unsigned mask, Error &error);
 
 	/**
 	 * Removes a path from the notify list.

@@ -17,22 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CONFIG_QUARK_HXX
-#define MPD_CONFIG_QUARK_HXX
+#include "config.h"
+#include "DatabaseError.hxx"
+#include "util/Domain.hxx"
 
-#include "gcc.h"
-
-#include <glib.h>
-
-/**
- * A GQuark for GError instances, resulting from malformed
- * configuration.
- */
-gcc_const
-static inline GQuark
-config_quark(void)
-{
-	return g_quark_from_static_string("config");
-}
-
-#endif
+const Domain db_domain("db");

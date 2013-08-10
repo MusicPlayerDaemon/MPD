@@ -21,6 +21,7 @@
 #include "ConfigData.hxx"
 #include "ConfigParser.hxx"
 #include "ConfigPath.hxx"
+#include "util/Error.hxx"
 #include "fs/Path.hxx"
 #include "system/FatalError.hxx"
 #include "mpd_error.h"
@@ -97,10 +98,9 @@ config_param::DupBlockString(const char *name, const char *default_value) const
 
 Path
 config_param::GetBlockPath(const char *name, const char *default_value,
-			   GError **error_r) const
+			   Error &error) const
 {
-	assert(error_r != nullptr);
-	assert(*error_r == nullptr);
+	assert(!error.IsDefined());
 
 	int line2 = line;
 	const char *s;
@@ -112,19 +112,18 @@ config_param::GetBlockPath(const char *name, const char *default_value,
 	} else
 		s = default_value;
 
-	Path path = ParsePath(s, error_r);
+	Path path = ParsePath(s, error);
 	if (gcc_unlikely(path.IsNull()))
-		g_prefix_error(error_r,
-			       "Invalid path in \"%s\" at line %i: ",
-			       name, line2);
+		error.FormatPrefix("Invalid path in \"%s\" at line %i: ",
+				   name, line2);
 
 	return path;
 }
 
 Path
-config_param::GetBlockPath(const char *name, GError **error_r) const
+config_param::GetBlockPath(const char *name, Error &error) const
 {
-	return GetBlockPath(name, nullptr, error_r);
+	return GetBlockPath(name, nullptr, error);
 }
 
 unsigned

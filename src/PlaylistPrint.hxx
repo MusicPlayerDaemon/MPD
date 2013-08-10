@@ -20,13 +20,12 @@
 #ifndef MPD_PLAYLIST_PRINT_HXX
 #define MPD_PLAYLIST_PRINT_HXX
 
-#include "gerror.h"
-
 #include <stdint.h>
 
 struct playlist;
 class SongFilter;
 class Client;
+class Error;
 
 /**
  * Sends the whole playlist to the client, song URIs only.
@@ -94,7 +93,7 @@ playlist_print_changes_position(Client *client,
  */
 bool
 spl_print(Client *client, const char *name_utf8, bool detail,
-	  GError **error_r);
+	  Error &error);
 
 /**
  * Send the playlist file to the client.

@@ -24,6 +24,7 @@
 #include "InputInit.hxx"
 #include "InputLegacy.hxx"
 #include "AudioFormat.hxx"
+#include "util/Error.hxx"
 #include "stdbin.h"
 
 #include <glib.h>
@@ -91,7 +92,8 @@ decoder_read(gcc_unused struct decoder *decoder,
 	     struct input_stream *is,
 	     void *buffer, size_t length)
 {
-	return input_stream_lock_read(is, buffer, length, NULL);
+	Error error;
+	return input_stream_lock_read(is, buffer, length, error);
 }
 
 void
@@ -144,7 +146,6 @@ decoder_mixramp(gcc_unused struct decoder *decoder,
 
 int main(int argc, char **argv)
 {
-	GError *error = NULL;
 	const char *decoder_name;
 	struct decoder decoder;
 
@@ -165,9 +166,9 @@ int main(int argc, char **argv)
 	io_thread_init();
 	io_thread_start();
 
-	if (!input_stream_global_init(&error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	Error error;
+	if (!input_stream_global_init(error)) {
+		g_warning("%s", error.GetMessage());
 		return 2;
 	}
 
@@ -189,12 +190,11 @@ int main(int argc, char **argv)
 		Cond cond;
 
 		struct input_stream *is =
-			input_stream_open(decoder.uri, mutex, cond, &error);
+			input_stream_open(decoder.uri, mutex, cond, error);
 		if (is == NULL) {
-			if (error != NULL) {
-				g_warning("%s", error->message);
-				g_error_free(error);
-			} else
+			if (error.IsDefined())
+				g_warning("%s", error.GetMessage());
+			else
 				g_printerr("input_stream_open() failed\n");
 
 			return 1;

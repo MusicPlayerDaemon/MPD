@@ -33,6 +33,7 @@
 #include "FilterRegistry.hxx"
 #include "PlayerControl.hxx"
 #include "stdbin.h"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -46,21 +47,6 @@ EventLoop *main_loop;
 void
 GlobalEvents::Emit(gcc_unused Event event)
 {
-}
-
-PcmConvert::PcmConvert() {}
-PcmConvert::~PcmConvert() {}
-
-const void *
-PcmConvert::Convert(gcc_unused const AudioFormat src_format,
-		    gcc_unused const void *src, gcc_unused size_t src_size,
-		    gcc_unused const AudioFormat dest_format,
-		    gcc_unused size_t *dest_size_r,
-		    gcc_unused GError **error_r)
-{
-	g_set_error(error_r, pcm_convert_quark(), 0,
-		    "Not implemented");
-	return NULL;
 }
 
 const struct filter_plugin *
@@ -92,7 +78,6 @@ static struct audio_output *
 load_audio_output(const char *name)
 {
 	const struct config_param *param;
-	GError *error = NULL;
 
 	param = find_named_config_block(CONF_AUDIO_OUTPUT, name);
 	if (param == NULL) {
@@ -102,12 +87,11 @@ load_audio_output(const char *name)
 
 	static struct player_control dummy_player_control(32, 4);
 
+	Error error;
 	struct audio_output *ao =
-		audio_output_new(*param, &dummy_player_control, &error);
-	if (ao == NULL) {
-		g_printerr("%s\n", error->message);
-		g_error_free(error);
-	}
+		audio_output_new(*param, &dummy_player_control, error);
+	if (ao == nullptr)
+		g_printerr("%s\n", error.GetMessage());
 
 	return ao;
 }
@@ -117,19 +101,17 @@ run_output(struct audio_output *ao, AudioFormat audio_format)
 {
 	/* open the audio output */
 
-	GError *error = NULL;
-	if (!ao_plugin_enable(ao, &error)) {
+	Error error;
+	if (!ao_plugin_enable(ao, error)) {
 		g_printerr("Failed to enable audio output: %s\n",
-			   error->message);
-		g_error_free(error);
+			   error.GetMessage());
 		return false;
 	}
 
-	if (!ao_plugin_open(ao, audio_format, &error)) {
+	if (!ao_plugin_open(ao, audio_format, error)) {
 		ao_plugin_disable(ao);
 		g_printerr("Failed to open audio output: %s\n",
-			   error->message);
-		g_error_free(error);
+			   error.GetMessage());
 		return false;
 	}
 
@@ -157,13 +139,12 @@ run_output(struct audio_output *ao, AudioFormat audio_format)
 		if (play_length > 0) {
 			size_t consumed = ao_plugin_play(ao,
 							 buffer, play_length,
-							 &error);
+							 error);
 			if (consumed == 0) {
 				ao_plugin_close(ao);
 				ao_plugin_disable(ao);
 				g_printerr("Failed to play: %s\n",
-					   error->message);
-				g_error_free(error);
+					   error.GetMessage());
 				return false;
 			}
 
@@ -182,8 +163,7 @@ run_output(struct audio_output *ao, AudioFormat audio_format)
 
 int main(int argc, char **argv)
 {
-	bool success;
-	GError *error = NULL;
+	Error error;
 
 	if (argc < 3 || argc > 4) {
 		g_printerr("Usage: run_output CONFIG NAME [FORMAT] <IN\n");
@@ -201,9 +181,8 @@ int main(int argc, char **argv)
 	/* read configuration file (mpd.conf) */
 
 	config_global_init();
-	if (!ReadConfigFile(config_path, &error)) {
-		g_printerr("%s:", error->message);
-		g_error_free(error);
+	if (!ReadConfigFile(config_path, error)) {
+		g_printerr("%s\n", error.GetMessage());
 		return 1;
 	}
 
@@ -221,19 +200,16 @@ int main(int argc, char **argv)
 	/* parse the audio format */
 
 	if (argc > 3) {
-		success = audio_format_parse(audio_format, argv[3],
-					     false, &error);
-		if (!success) {
+		if (!audio_format_parse(audio_format, argv[3], false, error)) {
 			g_printerr("Failed to parse audio format: %s\n",
-				   error->message);
-			g_error_free(error);
+				   error.GetMessage());
 			return 1;
 		}
 	}
 
 	/* do it */
 
-	success = run_output(ao, audio_format);
+	bool success = run_output(ao, audio_format);
 
 	/* cleanup and exit */
 

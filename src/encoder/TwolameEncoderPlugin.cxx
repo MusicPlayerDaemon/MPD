@@ -21,6 +21,9 @@
 #include "TwolameEncoderPlugin.hxx"
 #include "EncoderAPI.hxx"
 #include "AudioFormat.hxx"
+#include "ConfigError.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <twolame.h>
 
@@ -50,17 +53,13 @@ struct TwolameEncoder final {
 
 	TwolameEncoder():encoder(twolame_encoder_plugin) {}
 
-	bool Configure(const config_param &param, GError **error);
+	bool Configure(const config_param &param, Error &error);
 };
 
-static inline GQuark
-twolame_encoder_quark(void)
-{
-	return g_quark_from_static_string("twolame_encoder");
-}
+static constexpr Domain twolame_encoder_domain("twolame_encoder");
 
 bool
-TwolameEncoder::Configure(const config_param &param, GError **error)
+TwolameEncoder::Configure(const config_param &param, Error &error)
 {
 	const char *value;
 	char *endptr;
@@ -72,18 +71,18 @@ TwolameEncoder::Configure(const config_param &param, GError **error)
 		quality = g_ascii_strtod(value, &endptr);
 
 		if (*endptr != '\0' || quality < -1.0 || quality > 10.0) {
-			g_set_error(error, twolame_encoder_quark(), 0,
-				    "quality \"%s\" is not a number in the "
-				    "range -1 to 10, line %i",
-				    value, param.line);
+			error.Format(config_domain,
+				     "quality \"%s\" is not a number in the "
+				     "range -1 to 10, line %i",
+				     value, param.line);
 			return false;
 		}
 
 		if (param.GetBlockValue("bitrate") != nullptr) {
-			g_set_error(error, twolame_encoder_quark(), 0,
-				    "quality and bitrate are "
-				    "both defined (line %i)",
-				    param.line);
+			error.Format(config_domain,
+				     "quality and bitrate are "
+				     "both defined (line %i)",
+				     param.line);
 			return false;
 		}
 	} else {
@@ -91,10 +90,10 @@ TwolameEncoder::Configure(const config_param &param, GError **error)
 
 		value = param.GetBlockValue("bitrate");
 		if (value == nullptr) {
-			g_set_error(error, twolame_encoder_quark(), 0,
-				    "neither bitrate nor quality defined "
-				    "at line %i",
-				    param.line);
+			error.Format(config_domain,
+				     "neither bitrate nor quality defined "
+				     "at line %i",
+				     param.line);
 			return false;
 		}
 
@@ -102,9 +101,9 @@ TwolameEncoder::Configure(const config_param &param, GError **error)
 		bitrate = g_ascii_strtoll(value, &endptr, 10);
 
 		if (*endptr != '\0' || bitrate <= 0) {
-			g_set_error(error, twolame_encoder_quark(), 0,
-				    "bitrate at line %i should be a positive integer",
-				    param.line);
+			error.Format(config_domain,
+				     "bitrate at line %i should be a positive integer",
+				     param.line);
 			return false;
 		}
 	}
@@ -113,7 +112,7 @@ TwolameEncoder::Configure(const config_param &param, GError **error)
 }
 
 static Encoder *
-twolame_encoder_init(const config_param &param, GError **error_r)
+twolame_encoder_init(const config_param &param, Error &error_r)
 {
 	g_debug("libtwolame version %s", get_twolame_version());
 
@@ -140,48 +139,48 @@ twolame_encoder_finish(Encoder *_encoder)
 }
 
 static bool
-twolame_encoder_setup(TwolameEncoder *encoder, GError **error)
+twolame_encoder_setup(TwolameEncoder *encoder, Error &error)
 {
 	if (encoder->quality >= -1.0) {
 		/* a quality was configured (VBR) */
 
 		if (0 != twolame_set_VBR(encoder->options, true)) {
-			g_set_error(error, twolame_encoder_quark(), 0,
-				    "error setting twolame VBR mode");
+			error.Set(twolame_encoder_domain,
+				  "error setting twolame VBR mode");
 			return false;
 		}
 		if (0 != twolame_set_VBR_q(encoder->options, encoder->quality)) {
-			g_set_error(error, twolame_encoder_quark(), 0,
-				    "error setting twolame VBR quality");
+			error.Set(twolame_encoder_domain,
+				  "error setting twolame VBR quality");
 			return false;
 		}
 	} else {
 		/* a bit rate was configured */
 
 		if (0 != twolame_set_brate(encoder->options, encoder->bitrate)) {
-			g_set_error(error, twolame_encoder_quark(), 0,
-				    "error setting twolame bitrate");
+			error.Set(twolame_encoder_domain,
+				  "error setting twolame bitrate");
 			return false;
 		}
 	}
 
 	if (0 != twolame_set_num_channels(encoder->options,
 					  encoder->audio_format.channels)) {
-		g_set_error(error, twolame_encoder_quark(), 0,
-			    "error setting twolame num channels");
+		error.Set(twolame_encoder_domain,
+			  "error setting twolame num channels");
 		return false;
 	}
 
 	if (0 != twolame_set_in_samplerate(encoder->options,
 					   encoder->audio_format.sample_rate)) {
-		g_set_error(error, twolame_encoder_quark(), 0,
-			    "error setting twolame sample rate");
+		error.Set(twolame_encoder_domain,
+			  "error setting twolame sample rate");
 		return false;
 	}
 
 	if (0 > twolame_init_params(encoder->options)) {
-		g_set_error(error, twolame_encoder_quark(), 0,
-			    "error initializing twolame params");
+		error.Set(twolame_encoder_domain,
+			  "error initializing twolame params");
 		return false;
 	}
 
@@ -190,7 +189,7 @@ twolame_encoder_setup(TwolameEncoder *encoder, GError **error)
 
 static bool
 twolame_encoder_open(Encoder *_encoder, AudioFormat &audio_format,
-		     GError **error)
+		     Error &error)
 {
 	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 
@@ -201,8 +200,7 @@ twolame_encoder_open(Encoder *_encoder, AudioFormat &audio_format,
 
 	encoder->options = twolame_init();
 	if (encoder->options == nullptr) {
-		g_set_error(error, twolame_encoder_quark(), 0,
-			    "twolame_init() failed");
+		error.Set(twolame_encoder_domain, "twolame_init() failed");
 		return false;
 	}
 
@@ -227,7 +225,7 @@ twolame_encoder_close(Encoder *_encoder)
 }
 
 static bool
-twolame_encoder_flush(Encoder *_encoder, gcc_unused GError **error)
+twolame_encoder_flush(Encoder *_encoder, gcc_unused Error &error)
 {
 	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 
@@ -238,7 +236,7 @@ twolame_encoder_flush(Encoder *_encoder, gcc_unused GError **error)
 static bool
 twolame_encoder_write(Encoder *_encoder,
 		      const void *data, size_t length,
-		      gcc_unused GError **error)
+		      gcc_unused Error &error)
 {
 	TwolameEncoder *encoder = (TwolameEncoder *)_encoder;
 	const int16_t *src = (const int16_t*)data;
@@ -254,8 +252,7 @@ twolame_encoder_write(Encoder *_encoder,
 							  encoder->output_buffer,
 							  sizeof(encoder->output_buffer));
 	if (bytes_out < 0) {
-		g_set_error(error, twolame_encoder_quark(), 0,
-			    "twolame encoder failed");
+		error.Set(twolame_encoder_domain, "twolame encoder failed");
 		return false;
 	}
 

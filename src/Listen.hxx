@@ -20,12 +20,12 @@
 #ifndef MPD_LISTEN_HXX
 #define MPD_LISTEN_HXX
 
-#include "gerror.h"
+class Error;
 
 extern int listen_port;
 
 bool
-listen_global_init(GError **error_r);
+listen_global_init(Error &error);
 
 void listen_global_finish(void);
 

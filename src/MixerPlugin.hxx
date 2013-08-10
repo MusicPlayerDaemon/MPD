@@ -27,10 +27,9 @@
 #ifndef MPD_MIXER_PLUGIN_HXX
 #define MPD_MIXER_PLUGIN_HXX
 
-#include "gerror.h"
-
 struct config_param;
 class Mixer;
+class Error;
 
 struct mixer_plugin {
 	/**
@@ -43,7 +42,7 @@ struct mixer_plugin {
 	 * @return a mixer object, or NULL on error
 	 */
 	Mixer *(*init)(void *ao, const config_param &param,
-		       GError **error_r);
+		       Error &error);
 
 	/**
 	 * Finish and free mixer data
@@ -57,7 +56,7 @@ struct mixer_plugin {
 	 * NULL to ignore errors
 	 * @return true on success, false on error
 	 */
-	bool (*open)(Mixer *data, GError **error_r);
+	bool (*open)(Mixer *data, Error &error);
 
 	/**
 	 * Close mixer device
@@ -70,9 +69,9 @@ struct mixer_plugin {
 	 * @param error_r location to store the error occurring, or
 	 * NULL to ignore errors
 	 * @return the current volume (0..100 including) or -1 if
-	 * unavailable or on error (error_r set, mixer will be closed)
+	 * unavailable or on error (error set, mixer will be closed)
 	 */
-	int (*get_volume)(Mixer *mixer, GError **error_r);
+	int (*get_volume)(Mixer *mixer, Error &error);
 
 	/**
 	 * Sets the volume.
@@ -83,7 +82,7 @@ struct mixer_plugin {
 	 * @return true on success, false on error
 	 */
 	bool (*set_volume)(Mixer *mixer, unsigned volume,
-			   GError **error_r);
+			   Error &error);
 
 	/**
 	 * If true, then the mixer is automatically opened, even if

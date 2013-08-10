@@ -29,6 +29,7 @@
 #include "pcm/PcmConvert.hxx"
 #include "conf.h"
 #include "util/fifo_buffer.h"
+#include "util/Error.hxx"
 #include "stdbin.h"
 
 #include <glib.h>
@@ -56,7 +57,6 @@ config_get_string(gcc_unused enum ConfigOption option,
 
 int main(int argc, char **argv)
 {
-	GError *error = NULL;
 	AudioFormat in_audio_format, out_audio_format;
 	const void *output;
 	ssize_t nbytes;
@@ -69,18 +69,19 @@ int main(int argc, char **argv)
 
 	g_log_set_default_handler(my_log_func, NULL);
 
+	Error error;
 	if (!audio_format_parse(in_audio_format, argv[1],
-				false, &error)) {
+				false, error)) {
 		g_printerr("Failed to parse audio format: %s\n",
-			   error->message);
+			   error.GetMessage());
 		return 1;
 	}
 
 	AudioFormat out_audio_format_mask;
 	if (!audio_format_parse(out_audio_format_mask, argv[2],
-				true, &error)) {
+				true, error)) {
 		g_printerr("Failed to parse audio format: %s\n",
-			   error->message);
+			   error.GetMessage());
 		return 1;
 	}
 
@@ -113,9 +114,9 @@ int main(int argc, char **argv)
 		fifo_buffer_consume(buffer, length);
 
 		output = state.Convert(in_audio_format, src, length,
-				       out_audio_format, &length, &error);
+				       out_audio_format, &length, error);
 		if (output == NULL) {
-			g_printerr("Failed to convert: %s\n", error->message);
+			g_printerr("Failed to convert: %s\n", error.GetMessage());
 			return 2;
 		}
 

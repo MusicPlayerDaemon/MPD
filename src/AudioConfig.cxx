@@ -23,6 +23,7 @@
 #include "AudioParser.hxx"
 #include "conf.h"
 #include "mpd_error.h"
+#include "util/Error.hxx"
 
 static AudioFormat configured_audio_format;
 
@@ -37,15 +38,13 @@ getOutputAudioFormat(AudioFormat inAudioFormat)
 void initAudioConfig(void)
 {
 	const struct config_param *param = config_get_param(CONF_AUDIO_OUTPUT_FORMAT);
-	GError *error = NULL;
-	bool ret;
 
 	if (param == NULL)
 		return;
 
-	ret = audio_format_parse(configured_audio_format, param->value,
-				 true, &error);
-	if (!ret)
+	Error error;
+	if (!audio_format_parse(configured_audio_format, param->value,
+				true, error))
 		MPD_ERROR("error parsing line %i: %s",
-			  param->line, error->message);
+			  param->line, error.GetMessage());
 }

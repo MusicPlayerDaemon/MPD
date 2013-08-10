@@ -32,6 +32,7 @@
 #include "Client.hxx"
 #include "InputLegacy.hxx"
 #include "Song.hxx"
+#include "util/Error.hxx"
 
 void
 playlist_print_uris(Client *client, const struct playlist *playlist)
@@ -112,11 +113,11 @@ playlist_print_changes_position(Client *client,
 static bool
 PrintSongDetails(Client *client, const char *uri_utf8)
 {
-	const Database *db = GetDatabase(nullptr);
+	const Database *db = GetDatabase(IgnoreError());
 	if (db == nullptr)
 		return false;
 
-	Song *song = db->GetSong(uri_utf8, nullptr);
+	Song *song = db->GetSong(uri_utf8, IgnoreError());
 	if (song == nullptr)
 		return false;
 
@@ -127,14 +128,11 @@ PrintSongDetails(Client *client, const char *uri_utf8)
 
 bool
 spl_print(Client *client, const char *name_utf8, bool detail,
-	  GError **error_r)
+	  Error &error)
 {
-	GError *error = NULL;
-	PlaylistFileContents contents = LoadPlaylistFile(name_utf8, &error);
-	if (contents.empty() && error != nullptr) {
-		g_propagate_error(error_r, error);
+	PlaylistFileContents contents = LoadPlaylistFile(name_utf8, error);
+	if (contents.empty() && error.IsDefined())
 		return false;
-	}
 
 	for (const auto &uri_utf8 : contents) {
 		if (!detail || !PrintSongDetails(client, uri_utf8.c_str()))

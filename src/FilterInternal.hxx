@@ -25,7 +25,10 @@
 #ifndef MPD_FILTER_INTERNAL_HXX
 #define MPD_FILTER_INTERNAL_HXX
 
+#include <stddef.h>
+
 struct AudioFormat;
+class Error;
 
 class Filter {
 public:
@@ -43,7 +46,7 @@ public:
 	 * @return the format of outgoing data or
 	 * AudioFormat::Undefined() on error
 	 */
-	virtual AudioFormat Open(AudioFormat &af, GError **error_r) = 0;
+	virtual AudioFormat Open(AudioFormat &af, Error &error) = 0;
 
 	/**
 	 * Closes the filter.  After that, you may call Open() again.
@@ -65,7 +68,7 @@ public:
 	 */
 	virtual const void *FilterPCM(const void *src, size_t src_size,
 				      size_t *dest_size_r,
-				      GError **error_r) = 0;
+				      Error &error) = 0;
 };
 
 #endif

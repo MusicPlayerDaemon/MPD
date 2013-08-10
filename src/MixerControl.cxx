@@ -20,8 +20,7 @@
 #include "config.h"
 #include "MixerControl.hxx"
 #include "MixerInternal.hxx"
-
-#include <glib.h>
+#include "util/Error.hxx"
 
 #include <assert.h>
 #include <stddef.h>
@@ -32,13 +31,13 @@
 Mixer *
 mixer_new(const struct mixer_plugin *plugin, void *ao,
 	  const config_param &param,
-	  GError **error_r)
+	  Error &error)
 {
 	Mixer *mixer;
 
 	assert(plugin != NULL);
 
-	mixer = plugin->init(ao, param, error_r);
+	mixer = plugin->init(ao, param, error);
 
 	assert(mixer == NULL || mixer->IsPlugin(*plugin));
 
@@ -59,7 +58,7 @@ mixer_free(Mixer *mixer)
 }
 
 bool
-mixer_open(Mixer *mixer, GError **error_r)
+mixer_open(Mixer *mixer, Error &error)
 {
 	bool success;
 
@@ -73,7 +72,7 @@ mixer_open(Mixer *mixer, GError **error_r)
 	else if (mixer->plugin->open == NULL)
 		success = mixer->open = true;
 	else
-		success = mixer->open = mixer->plugin->open(mixer, error_r);
+		success = mixer->open = mixer->plugin->open(mixer, error);
 
 	mixer->failed = !success;
 
@@ -127,26 +126,22 @@ mixer_failed(Mixer *mixer)
 }
 
 int
-mixer_get_volume(Mixer *mixer, GError **error_r)
+mixer_get_volume(Mixer *mixer, Error &error)
 {
 	int volume;
 
 	assert(mixer != NULL);
 
 	if (mixer->plugin->global && !mixer->failed &&
-	    !mixer_open(mixer, error_r))
+	    !mixer_open(mixer, error))
 		return -1;
 
 	const ScopeLock protect(mixer->mutex);
 
 	if (mixer->open) {
-		GError *error = NULL;
-
-		volume = mixer->plugin->get_volume(mixer, &error);
-		if (volume < 0 && error != NULL) {
-			g_propagate_error(error_r, error);
+		volume = mixer->plugin->get_volume(mixer, error);
+		if (volume < 0 && error.IsDefined())
 			mixer_failed(mixer);
-		}
 	} else
 		volume = -1;
 
@@ -154,17 +149,17 @@ mixer_get_volume(Mixer *mixer, GError **error_r)
 }
 
 bool
-mixer_set_volume(Mixer *mixer, unsigned volume, GError **error_r)
+mixer_set_volume(Mixer *mixer, unsigned volume, Error &error)
 {
 	assert(mixer != NULL);
 	assert(volume <= 100);
 
 	if (mixer->plugin->global && !mixer->failed &&
-	    !mixer_open(mixer, error_r))
+	    !mixer_open(mixer, error))
 		return false;
 
 	const ScopeLock protect(mixer->mutex);
 
 	return mixer->open &&
-		mixer->plugin->set_volume(mixer, volume, error_r);
+		mixer->plugin->set_volume(mixer, volume, error);
 }

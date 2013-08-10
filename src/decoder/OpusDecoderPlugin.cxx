@@ -29,6 +29,7 @@
 #include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
 #include "InputStream.hxx"
+#include "util/Error.hxx"
 
 #include <opus.h>
 #include <ogg/ogg.h>
@@ -271,7 +272,7 @@ mpd_opus_stream_decode(struct decoder *decoder,
 
 	/* rewind the stream, because ogg_codec_detect() has
 	   moved it */
-	input_stream_lock_seek(input_stream, 0, SEEK_SET, nullptr);
+	input_stream_lock_seek(input_stream, 0, SEEK_SET, IgnoreError());
 
 	MPDOpusDecoder d(decoder, input_stream);
 	OggSyncState oy(*input_stream, decoder);
@@ -302,7 +303,8 @@ SeekFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet,
 
 	oy.Reset();
 
-	return input_stream_lock_seek(is, -65536, SEEK_END, nullptr) &&
+	Error error;
+	return input_stream_lock_seek(is, -65536, SEEK_END, error) &&
 		oy.ExpectPageSeekIn(os) &&
 		OggFindEOS(oy, os, packet);
 }

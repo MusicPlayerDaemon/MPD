@@ -20,17 +20,16 @@
 #ifndef MPD_DIRECTORY_SAVE_HXX
 #define MPD_DIRECTORY_SAVE_HXX
 
-#include "gerror.h"
-
 #include <stdio.h>
 
 struct Directory;
 class TextFile;
+class Error;
 
 void
 directory_save(FILE *fp, const Directory *directory);
 
 bool
-directory_load(TextFile &file, Directory *directory, GError **error);
+directory_load(TextFile &file, Directory *directory, Error &error);
 
 #endif

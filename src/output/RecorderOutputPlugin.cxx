@@ -22,6 +22,9 @@
 #include "OutputAPI.hxx"
 #include "EncoderPlugin.hxx"
 #include "EncoderList.hxx"
+#include "ConfigError.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 #include "system/fd_util.h"
 #include "open.h"
 
@@ -57,7 +60,7 @@ struct RecorderOutput {
 	 */
 	char buffer[32768];
 
-	bool Initialize(const config_param &param, GError **error_r) {
+	bool Initialize(const config_param &param, Error &error_r) {
 		return ao_base_init(&base, &recorder_output_plugin, param,
 				    error_r);
 	}
@@ -66,27 +69,20 @@ struct RecorderOutput {
 		ao_base_finish(&base);
 	}
 
-	bool Configure(const config_param &param, GError **error_r);
+	bool Configure(const config_param &param, Error &error);
 
-	bool WriteToFile(const void *data, size_t length, GError **error_r);
+	bool WriteToFile(const void *data, size_t length, Error &error);
 
 	/**
 	 * Writes pending data from the encoder to the output file.
 	 */
-	bool EncoderToFile(GError **error_r);
+	bool EncoderToFile(Error &error);
 };
 
-/**
- * The quark used for GError.domain.
- */
-static inline GQuark
-recorder_output_quark(void)
-{
-	return g_quark_from_static_string("recorder_output");
-}
+static constexpr Domain recorder_output_domain("recorder_output");
 
 inline bool
-RecorderOutput::Configure(const config_param &param, GError **error_r)
+RecorderOutput::Configure(const config_param &param, Error &error)
 {
 	/* read configuration */
 
@@ -94,21 +90,20 @@ RecorderOutput::Configure(const config_param &param, GError **error_r)
 		param.GetBlockValue("encoder", "vorbis");
 	const auto encoder_plugin = encoder_plugin_get(encoder_name);
 	if (encoder_plugin == nullptr) {
-		g_set_error(error_r, recorder_output_quark(), 0,
-			    "No such encoder: %s", encoder_name);
+		error.Format(config_domain,
+			     "No such encoder: %s", encoder_name);
 		return false;
 	}
 
 	path = param.GetBlockValue("path");
 	if (path == nullptr) {
-		g_set_error(error_r, recorder_output_quark(), 0,
-			    "'path' not configured");
+		error.Set(config_domain, "'path' not configured");
 		return false;
 	}
 
 	/* initialize encoder */
 
-	encoder = encoder_init(*encoder_plugin, param, error_r);
+	encoder = encoder_init(*encoder_plugin, param, error);
 	if (encoder == nullptr)
 		return false;
 
@@ -116,16 +111,16 @@ RecorderOutput::Configure(const config_param &param, GError **error_r)
 }
 
 static audio_output *
-recorder_output_init(const config_param &param, GError **error_r)
+recorder_output_init(const config_param &param, Error &error)
 {
 	RecorderOutput *recorder = new RecorderOutput();
 
-	if (!recorder->Initialize(param, error_r)) {
+	if (!recorder->Initialize(param, error)) {
 		delete recorder;
 		return nullptr;
 	}
 
-	if (!recorder->Configure(param, error_r)) {
+	if (!recorder->Configure(param, error)) {
 		recorder->Deinitialize();
 		delete recorder;
 		return nullptr;
@@ -145,7 +140,7 @@ recorder_output_finish(struct audio_output *ao)
 }
 
 inline bool
-RecorderOutput::WriteToFile(const void *_data, size_t length, GError **error_r)
+RecorderOutput::WriteToFile(const void *_data, size_t length, Error &error)
 {
 	assert(length > 0);
 
@@ -159,20 +154,18 @@ RecorderOutput::WriteToFile(const void *_data, size_t length, GError **error_r)
 				return true;
 		} else if (nbytes == 0) {
 			/* shouldn't happen for files */
-			g_set_error(error_r, recorder_output_quark(), 0,
-				    "write() returned 0");
+			error.Set(recorder_output_domain,
+				  "write() returned 0");
 			return false;
 		} else if (errno != EINTR) {
-			g_set_error(error_r, recorder_output_quark(), 0,
-				    "Failed to write to '%s': %s",
-				    path, g_strerror(errno));
+			error.FormatErrno("Failed to write to '%s'", path);
 			return false;
 		}
 	}
 }
 
 inline bool
-RecorderOutput::EncoderToFile(GError **error_r)
+RecorderOutput::EncoderToFile(Error &error)
 {
 	assert(fd >= 0);
 
@@ -185,7 +178,7 @@ RecorderOutput::EncoderToFile(GError **error_r)
 
 		/* write everything into the file */
 
-		if (!WriteToFile(buffer, size, error_r))
+		if (!WriteToFile(buffer, size, error))
 			return false;
 	}
 }
@@ -193,7 +186,7 @@ RecorderOutput::EncoderToFile(GError **error_r)
 static bool
 recorder_output_open(struct audio_output *ao,
 		     AudioFormat &audio_format,
-		     GError **error_r)
+		     Error &error)
 {
 	RecorderOutput *recorder = (RecorderOutput *)ao;
 
@@ -203,21 +196,19 @@ recorder_output_open(struct audio_output *ao,
 				    O_CREAT|O_WRONLY|O_TRUNC|O_BINARY,
 				    0666);
 	if (recorder->fd < 0) {
-		g_set_error(error_r, recorder_output_quark(), 0,
-			    "Failed to create '%s': %s",
-			    recorder->path, g_strerror(errno));
+		error.FormatErrno("Failed to create '%s'", recorder->path);
 		return false;
 	}
 
 	/* open the encoder */
 
-	if (!encoder_open(recorder->encoder, audio_format, error_r)) {
+	if (!encoder_open(recorder->encoder, audio_format, error)) {
 		close(recorder->fd);
 		unlink(recorder->path);
 		return false;
 	}
 
-	if (!recorder->EncoderToFile(error_r)) {
+	if (!recorder->EncoderToFile(error)) {
 		encoder_close(recorder->encoder);
 		close(recorder->fd);
 		unlink(recorder->path);
@@ -234,8 +225,8 @@ recorder_output_close(struct audio_output *ao)
 
 	/* flush the encoder and write the rest to the file */
 
-	if (encoder_end(recorder->encoder, nullptr))
-		recorder->EncoderToFile(nullptr);
+	if (encoder_end(recorder->encoder, IgnoreError()))
+		recorder->EncoderToFile(IgnoreError());
 
 	/* now really close everything */
 
@@ -246,12 +237,12 @@ recorder_output_close(struct audio_output *ao)
 
 static size_t
 recorder_output_play(struct audio_output *ao, const void *chunk, size_t size,
-		     GError **error_r)
+		     Error &error)
 {
 	RecorderOutput *recorder = (RecorderOutput *)ao;
 
-	return encoder_write(recorder->encoder, chunk, size, error_r) &&
-		recorder->EncoderToFile(error_r)
+	return encoder_write(recorder->encoder, chunk, size, error) &&
+		recorder->EncoderToFile(error)
 		? size : 0;
 }
 

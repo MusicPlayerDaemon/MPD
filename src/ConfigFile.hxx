@@ -20,12 +20,11 @@
 #ifndef MPD_CONFIG_FILE_HXX
 #define MPD_CONFIG_FILE_HXX
 
-#include "gerror.h"
-
+class Error;
 class Path;
 struct ConfigData;
 
 bool
-ReadConfigFile(ConfigData &data, const Path &path, GError **error_r);
+ReadConfigFile(ConfigData &data, const Path &path, Error &error);
 
 #endif

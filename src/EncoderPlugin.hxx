@@ -20,8 +20,6 @@
 #ifndef MPD_ENCODER_PLUGIN_HXX
 #define MPD_ENCODER_PLUGIN_HXX
 
-#include "gerror.h"
-
 #include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -30,6 +28,7 @@ struct EncoderPlugin;
 struct AudioFormat;
 struct config_param;
 struct Tag;
+class Error;
 
 struct Encoder {
 	const EncoderPlugin &plugin;
@@ -50,28 +49,28 @@ struct EncoderPlugin {
 	const char *name;
 
 	Encoder *(*init)(const config_param &param,
-			 GError **error);
+			 Error &error);
 
 	void (*finish)(Encoder *encoder);
 
 	bool (*open)(Encoder *encoder,
 		     AudioFormat &audio_format,
-		     GError **error);
+		     Error &error);
 
 	void (*close)(Encoder *encoder);
 
-	bool (*end)(Encoder *encoder, GError **error);
+	bool (*end)(Encoder *encoder, Error &error);
 
-	bool (*flush)(Encoder *encoder, GError **error);
+	bool (*flush)(Encoder *encoder, Error &error);
 
-	bool (*pre_tag)(Encoder *encoder, GError **error);
+	bool (*pre_tag)(Encoder *encoder, Error &error);
 
 	bool (*tag)(Encoder *encoder, const Tag *tag,
-		    GError **error);
+		    Error &error);
 
 	bool (*write)(Encoder *encoder,
 		      const void *data, size_t length,
-		      GError **error);
+		      Error &error);
 
 	size_t (*read)(Encoder *encoder, void *dest, size_t length);
 
@@ -88,7 +87,7 @@ struct EncoderPlugin {
  */
 static inline Encoder *
 encoder_init(const EncoderPlugin &plugin, const config_param &param,
-	     GError **error_r)
+	     Error &error_r)
 {
 	return plugin.init(param, error_r);
 }
@@ -123,7 +122,7 @@ encoder_finish(Encoder *encoder)
  */
 static inline bool
 encoder_open(Encoder *encoder, AudioFormat &audio_format,
-	     GError **error)
+	     Error &error)
 {
 	assert(!encoder->open);
 
@@ -168,7 +167,7 @@ encoder_close(Encoder *encoder)
  * @return true on success
  */
 static inline bool
-encoder_end(Encoder *encoder, GError **error)
+encoder_end(Encoder *encoder, Error &error)
 {
 	assert(encoder->open);
 	assert(!encoder->end);
@@ -192,7 +191,7 @@ encoder_end(Encoder *encoder, GError **error)
  * @return true on success
  */
 static inline bool
-encoder_flush(Encoder *encoder, GError **error)
+encoder_flush(Encoder *encoder, Error &error)
 {
 	assert(encoder->open);
 	assert(!encoder->pre_tag);
@@ -216,7 +215,7 @@ encoder_flush(Encoder *encoder, GError **error)
  * @return true on success
  */
 static inline bool
-encoder_pre_tag(Encoder *encoder, GError **error)
+encoder_pre_tag(Encoder *encoder, Error &error)
 {
 	assert(encoder->open);
 	assert(!encoder->pre_tag);
@@ -246,7 +245,7 @@ encoder_pre_tag(Encoder *encoder, GError **error)
  * @return true on success
  */
 static inline bool
-encoder_tag(Encoder *encoder, const Tag *tag, GError **error)
+encoder_tag(Encoder *encoder, const Tag *tag, Error &error)
 {
 	assert(encoder->open);
 	assert(!encoder->pre_tag);
@@ -274,7 +273,7 @@ encoder_tag(Encoder *encoder, const Tag *tag, GError **error)
  */
 static inline bool
 encoder_write(Encoder *encoder, const void *data, size_t length,
-	      GError **error)
+	      Error &error)
 {
 	assert(encoder->open);
 	assert(!encoder->pre_tag);

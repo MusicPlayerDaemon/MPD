@@ -29,6 +29,7 @@
 #include "ArchivePlugin.hxx"
 #include "ArchiveFile.hxx"
 #include "ArchiveVisitor.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -101,11 +102,10 @@ update_archive_file2(Directory *parent, const char *name,
 	const Path path_fs = map_directory_child_fs(parent, name);
 
 	/* open archive */
-	GError *error = NULL;
-	ArchiveFile *file = archive_file_open(plugin, path_fs.c_str(), &error);
+	Error error;
+	ArchiveFile *file = archive_file_open(plugin, path_fs.c_str(), error);
 	if (file == NULL) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+		g_warning("%s", error.GetMessage());
 		return;
 	}
 

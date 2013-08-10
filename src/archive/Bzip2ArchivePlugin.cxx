@@ -30,6 +30,8 @@
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
 #include "util/RefCount.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -85,7 +87,7 @@ public:
 
 	virtual input_stream *OpenStream(const char *path,
 					 Mutex &mutex, Cond &cond,
-					 GError **error_r) override;
+					 Error &error) override;
 };
 
 struct Bzip2InputStream {
@@ -103,11 +105,13 @@ struct Bzip2InputStream {
 			 Mutex &mutex, Cond &cond);
 	~Bzip2InputStream();
 
-	bool Open(GError **error_r);
+	bool Open(Error &error);
 	void Close();
 };
 
 extern const struct input_plugin bz2_inputplugin;
+
+static constexpr Domain bz2_domain("bz2");
 
 static inline GQuark
 bz2_quark(void)
@@ -118,7 +122,7 @@ bz2_quark(void)
 /* single archive handling allocation helpers */
 
 inline bool
-Bzip2InputStream::Open(GError **error_r)
+Bzip2InputStream::Open(Error &error)
 {
 	bzstream.bzalloc = nullptr;
 	bzstream.bzfree = nullptr;
@@ -129,8 +133,8 @@ Bzip2InputStream::Open(GError **error_r)
 
 	int ret = BZ2_bzDecompressInit(&bzstream, 0, 0);
 	if (ret != BZ_OK) {
-		g_set_error(error_r, bz2_quark(), ret,
-			    "BZ2_bzDecompressInit() has failed");
+		error.Set(bz2_domain, ret,
+			  "BZ2_bzDecompressInit() has failed");
 		return false;
 	}
 
@@ -147,11 +151,11 @@ Bzip2InputStream::Close()
 /* archive open && listing routine */
 
 static ArchiveFile *
-bz2_open(const char *pathname, GError **error_r)
+bz2_open(const char *pathname, Error &error)
 {
 	static Mutex mutex;
 	static Cond cond;
-	input_stream *is = input_stream_open(pathname, mutex, cond, error_r);
+	input_stream *is = input_stream_open(pathname, mutex, cond, error);
 	if (is == nullptr)
 		return nullptr;
 
@@ -176,10 +180,10 @@ Bzip2InputStream::~Bzip2InputStream()
 input_stream *
 Bzip2ArchiveFile::OpenStream(const char *path,
 			     Mutex &mutex, Cond &cond,
-			     GError **error_r)
+			     Error &error)
 {
 	Bzip2InputStream *bis = new Bzip2InputStream(*this, path, mutex, cond);
-	if (!bis->Open(error_r)) {
+	if (!bis->Open(error)) {
 		delete bis;
 		return NULL;
 	}
@@ -197,7 +201,7 @@ bz2_is_close(struct input_stream *is)
 }
 
 static bool
-bz2_fillbuffer(Bzip2InputStream *bis, GError **error_r)
+bz2_fillbuffer(Bzip2InputStream *bis, Error &error)
 {
 	size_t count;
 	bz_stream *bzstream;
@@ -209,7 +213,7 @@ bz2_fillbuffer(Bzip2InputStream *bis, GError **error_r)
 
 	count = input_stream_read(bis->archive->istream,
 				  bis->buffer, sizeof(bis->buffer),
-				  error_r);
+				  error);
 	if (count == 0)
 		return false;
 
@@ -220,7 +224,7 @@ bz2_fillbuffer(Bzip2InputStream *bis, GError **error_r)
 
 static size_t
 bz2_is_read(struct input_stream *is, void *ptr, size_t length,
-	    GError **error_r)
+	    Error &error)
 {
 	Bzip2InputStream *bis = (Bzip2InputStream *)is;
 	bz_stream *bzstream;
@@ -235,7 +239,7 @@ bz2_is_read(struct input_stream *is, void *ptr, size_t length,
 	bzstream->avail_out = length;
 
 	do {
-		if (!bz2_fillbuffer(bis, error_r))
+		if (!bz2_fillbuffer(bis, error))
 			return 0;
 
 		bz_result = BZ2_bzDecompress(bzstream);
@@ -246,8 +250,8 @@ bz2_is_read(struct input_stream *is, void *ptr, size_t length,
 		}
 
 		if (bz_result != BZ_OK) {
-			g_set_error(error_r, bz2_quark(), bz_result,
-				    "BZ2_bzDecompress() has failed");
+			error.Set(bz2_domain, bz_result,
+				  "BZ2_bzDecompress() has failed");
 			return 0;
 		}
 	} while (bzstream->avail_out == length);

@@ -24,6 +24,7 @@
 #include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
 #include "ApeTag.hxx"
+#include "util/Error.hxx"
 
 #include <wavpack/wavpack.h>
 #include <glib.h>
@@ -137,7 +138,6 @@ wavpack_bits_to_sample_format(bool is_float, int bytes_per_sample)
 static void
 wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
 {
-	GError *error = NULL;
 	bool is_float;
 	SampleFormat sample_format;
 	AudioFormat audio_format;
@@ -150,12 +150,12 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
 		wavpack_bits_to_sample_format(is_float,
 					      WavpackGetBytesPerSample(wpc));
 
+	Error error;
 	if (!audio_format_init_checked(audio_format,
 				       WavpackGetSampleRate(wpc),
 				       sample_format,
-				       WavpackGetNumChannels(wpc), &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+				       WavpackGetNumChannels(wpc), error)) {
+		g_warning("%s", error.GetMessage());
 		return;
 	}
 
@@ -401,14 +401,16 @@ wavpack_input_get_pos(void *id)
 static int
 wavpack_input_set_pos_abs(void *id, uint32_t pos)
 {
-	return input_stream_lock_seek(wpin(id)->is, pos, SEEK_SET, NULL)
+	Error error;
+	return input_stream_lock_seek(wpin(id)->is, pos, SEEK_SET, error)
 		? 0 : -1;
 }
 
 static int
 wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 {
-	return input_stream_lock_seek(wpin(id)->is, delta, mode, NULL)
+	Error error;
+	return input_stream_lock_seek(wpin(id)->is, delta, mode, error)
 		? 0 : -1;
 }
 
@@ -476,7 +478,9 @@ wavpack_open_wvc(struct decoder *decoder, const char *uri,
 		return nullptr;
 
 	wvc_url = g_strconcat(uri, "c", NULL);
-	is_wvc = input_stream_open(wvc_url, mutex, cond, NULL);
+
+	Error error;
+	is_wvc = input_stream_open(wvc_url, mutex, cond, error);
 	g_free(wvc_url);
 
 	if (is_wvc == NULL)

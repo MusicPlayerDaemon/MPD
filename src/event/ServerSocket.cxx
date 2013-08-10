@@ -29,6 +29,8 @@
 #include "event/SocketMonitor.hxx"
 #include "system/Resolver.hxx"
 #include "system/fd_util.h"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -96,7 +98,7 @@ public:
 		path = g_strdup(_path);
 	}
 
-	bool Open(GError **error_r);
+	bool Open(Error &error);
 
 	using SocketMonitor::IsDefined;
 	using SocketMonitor::Close;
@@ -114,11 +116,7 @@ private:
 	virtual bool OnSocketReady(unsigned flags) override;
 };
 
-static GQuark
-server_socket_quark(void)
-{
-	return g_quark_from_static_string("server_socket");
-}
+static constexpr Domain server_socket_domain("server_socket");
 
 /**
  * Wraper for sockaddr_to_string() which never fails.
@@ -126,7 +124,7 @@ server_socket_quark(void)
 char *
 OneServerSocket::ToString() const
 {
-	char *p = sockaddr_to_string(address, address_length, nullptr);
+	char *p = sockaddr_to_string(address, address_length, IgnoreError());
 	if (p == nullptr)
 		p = g_strdup("[unknown]");
 	return p;
@@ -190,14 +188,14 @@ OneServerSocket::OnSocketReady(gcc_unused unsigned flags)
 }
 
 inline bool
-OneServerSocket::Open(GError **error_r)
+OneServerSocket::Open(Error &error)
 {
 	assert(!IsDefined());
 
 	int _fd = socket_bind_listen(address->sa_family,
 				     SOCK_STREAM, 0,
 				     address, address_length, 5,
-				     error_r);
+				     error);
 	if (_fd < 0)
 		return false;
 
@@ -221,10 +219,10 @@ ServerSocket::ServerSocket(EventLoop &_loop)
 ServerSocket::~ServerSocket() {}
 
 bool
-ServerSocket::Open(GError **error_r)
+ServerSocket::Open(Error &error)
 {
 	OneServerSocket *good = nullptr, *bad = nullptr;
-	GError *last_error = nullptr;
+	Error last_error;
 
 	for (auto &i : sockets) {
 		assert(i.GetSerial() > 0);
@@ -232,33 +230,33 @@ ServerSocket::Open(GError **error_r)
 
 		if (bad != nullptr && i.GetSerial() != bad->GetSerial()) {
 			Close();
-			g_propagate_error(error_r, last_error);
+			error = std::move(last_error);
 			return false;
 		}
 
-		GError *error = nullptr;
-		if (!i.Open(&error)) {
+		Error error2;
+		if (!i.Open(error2)) {
 			if (good != nullptr && good->GetSerial() == i.GetSerial()) {
 				char *address_string = i.ToString();
 				char *good_string = good->ToString();
 				g_warning("bind to '%s' failed: %s "
 					  "(continuing anyway, because "
 					  "binding to '%s' succeeded)",
-					  address_string, error->message,
+					  address_string, error2.GetMessage(),
 					  good_string);
 				g_free(address_string);
 				g_free(good_string);
-				g_error_free(error);
 			} else if (bad == nullptr) {
 				bad = &i;
 
 				char *address_string = i.ToString();
-				g_propagate_prefixed_error(&last_error, error,
-							   "Failed to bind to '%s': ",
-							   address_string);
+				error2.FormatPrefix("Failed to bind to '%s': ",
+						    address_string);
 				g_free(address_string);
-			} else
-				g_error_free(error);
+
+				last_error = std::move(error2);
+			}
+
 			continue;
 		}
 
@@ -269,14 +267,13 @@ ServerSocket::Open(GError **error_r)
 
 		if (bad != nullptr) {
 			bad = nullptr;
-			g_error_free(last_error);
-			last_error = nullptr;
+			last_error.Clear();
 		}
 	}
 
 	if (bad != nullptr) {
 		Close();
-		g_propagate_error(error_r, last_error);
+		error = std::move(last_error);
 		return false;
 	}
 
@@ -301,7 +298,7 @@ ServerSocket::AddAddress(const sockaddr &address, size_t address_length)
 }
 
 bool
-ServerSocket::AddFD(int fd, GError **error_r)
+ServerSocket::AddFD(int fd, Error &error)
 {
 	assert(fd >= 0);
 
@@ -309,8 +306,8 @@ ServerSocket::AddFD(int fd, GError **error_r)
 	socklen_t address_length = sizeof(address);
 	if (getsockname(fd, (struct sockaddr *)&address,
 			&address_length) < 0) {
-		SetSocketError(error_r);
-		g_prefix_error(error_r, "Failed to get socket address");
+		SetSocketError(error);
+		error.AddPrefix("Failed to get socket address: ");
 		return false;
 	}
 
@@ -351,12 +348,11 @@ ServerSocket::AddPortIPv6(unsigned port)
 #endif /* HAVE_TCP */
 
 bool
-ServerSocket::AddPort(unsigned port, GError **error_r)
+ServerSocket::AddPort(unsigned port, Error &error)
 {
 #ifdef HAVE_TCP
 	if (port == 0 || port > 0xffff) {
-		g_set_error(error_r, server_socket_quark(), 0,
-			    "Invalid TCP port");
+		error.Set(server_socket_domain, "Invalid TCP port");
 		return false;
 	}
 
@@ -371,19 +367,18 @@ ServerSocket::AddPort(unsigned port, GError **error_r)
 #else /* HAVE_TCP */
 	(void)port;
 
-	g_set_error(error_r, server_socket_quark(), 0,
-		    "TCP support is disabled");
+	error.Set(server_socket_domain, "TCP support is disabled");
 	return false;
 #endif /* HAVE_TCP */
 }
 
 bool
-ServerSocket::AddHost(const char *hostname, unsigned port, GError **error_r)
+ServerSocket::AddHost(const char *hostname, unsigned port, Error &error)
 {
 #ifdef HAVE_TCP
 	struct addrinfo *ai = resolve_host_port(hostname, port,
 						AI_PASSIVE, SOCK_STREAM,
-						error_r);
+						error);
 	if (ai == nullptr)
 		return false;
 
@@ -399,22 +394,21 @@ ServerSocket::AddHost(const char *hostname, unsigned port, GError **error_r)
 	(void)hostname;
 	(void)port;
 
-	g_set_error(error_r, server_socket_quark(), 0,
-		    "TCP support is disabled");
+	error.Set(server_socket_domain, "TCP support is disabled");
 	return false;
 #endif /* HAVE_TCP */
 }
 
 bool
-ServerSocket::AddPath(const char *path, GError **error_r)
+ServerSocket::AddPath(const char *path, Error &error)
 {
 #ifdef HAVE_UN
 	struct sockaddr_un s_un;
 
 	size_t path_length = strlen(path);
 	if (path_length >= sizeof(s_un.sun_path)) {
-		g_set_error(error_r, server_socket_quark(), 0,
-			    "UNIX socket path is too long");
+		error.Set(server_socket_domain,
+			  "UNIX socket path is too long");
 		return false;
 	}
 
@@ -430,8 +424,8 @@ ServerSocket::AddPath(const char *path, GError **error_r)
 #else /* !HAVE_UN */
 	(void)path;
 
-	g_set_error(error_r, server_socket_quark(), 0,
-		    "UNIX domain socket support is disabled");
+	error.Set(server_socket_domain,
+		  "UNIX domain socket support is disabled");
 	return false;
 #endif /* !HAVE_UN */
 }

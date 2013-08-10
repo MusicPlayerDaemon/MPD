@@ -19,6 +19,9 @@
 
 #include "config.h"
 #include "system/Resolver.hxx"
+#include "util/Error.hxx"
+
+#include <glib.h>
 
 #ifdef WIN32
 #include <ws2tcpip.h>
@@ -37,23 +40,21 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	GError *error = NULL;
+	Error error;
 	struct addrinfo *ai =
 		resolve_host_port(argv[1], 80, AI_PASSIVE, SOCK_STREAM,
-				  &error);
+				  error);
 	if (ai == NULL) {
-		g_printerr("%s\n", error->message);
-		g_error_free(error);
+		g_warning("%s", error.GetMessage());
 		return EXIT_FAILURE;
 	}
 
 	for (const struct addrinfo *i = ai; i != NULL; i = i->ai_next) {
 		char *p = sockaddr_to_string(i->ai_addr, i->ai_addrlen,
-					     &error);
+					     error);
 		if (p == NULL) {
 			freeaddrinfo(ai);
-			g_printerr("%s\n", error->message);
-			g_error_free(error);
+			g_warning("%s", error.GetMessage());
 			return EXIT_FAILURE;
 		}
 

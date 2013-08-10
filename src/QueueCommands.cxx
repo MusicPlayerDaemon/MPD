@@ -32,6 +32,7 @@
 #include "protocol/Result.hxx"
 #include "ls.hxx"
 #include "util/UriUtil.hxx"
+#include "util/Error.hxx"
 #include "fs/Path.hxx"
 
 #include <string.h>
@@ -52,8 +53,8 @@ handle_add(Client *client, gcc_unused int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		GError *error = NULL;
-		if (!client_allow_file(client, path_fs, &error))
+		Error error;
+		if (!client_allow_file(client, path_fs, error))
 			return print_error(client, error);
 
 		result = client->partition.AppendFile(path_utf8);
@@ -72,8 +73,8 @@ handle_add(Client *client, gcc_unused int argc, char *argv[])
 	}
 
 	const DatabaseSelection selection(uri, true);
-	GError *error = NULL;
-	return AddFromDatabase(client->partition, selection, &error)
+	Error error;
+	return AddFromDatabase(client->partition, selection, error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
 }
@@ -95,8 +96,8 @@ handle_addid(Client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		GError *error = NULL;
-		if (!client_allow_file(client, path_fs, &error))
+		Error error;
+		if (!client_allow_file(client, path_fs, error))
 			return print_error(client, error);
 
 		result = client->partition.AppendFile(path_utf8, &added_id);

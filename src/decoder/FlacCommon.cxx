@@ -26,6 +26,7 @@
 #include "FlacMetadata.hxx"
 #include "FlacPcm.hxx"
 #include "CheckAudioFormat.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -68,13 +69,12 @@ flac_got_stream_info(struct flac_data *data,
 	if (data->initialized || data->unsupported)
 		return;
 
-	GError *error = nullptr;
+	Error error;
 	if (!audio_format_init_checked(data->audio_format,
 				       stream_info->sample_rate,
 				       flac_sample_format(stream_info->bits_per_sample),
-				       stream_info->channels, &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+				       stream_info->channels, error)) {
+		g_warning("%s", error.GetMessage());
 		data->unsupported = true;
 		return;
 	}
@@ -131,13 +131,12 @@ flac_got_first_frame(struct flac_data *data, const FLAC__FrameHeader *header)
 	if (data->unsupported)
 		return false;
 
-	GError *error = nullptr;
+	Error error;
 	if (!audio_format_init_checked(data->audio_format,
 				       header->sample_rate,
 				       flac_sample_format(header->bits_per_sample),
-				       header->channels, &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+				       header->channels, error)) {
+		g_warning("%s", error.GetMessage());
 		data->unsupported = true;
 		return false;
 	}

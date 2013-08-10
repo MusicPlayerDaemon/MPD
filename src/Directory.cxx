@@ -24,6 +24,7 @@
 #include "DatabaseLock.hxx"
 #include "SongSort.hxx"
 #include "Song.hxx"
+#include "util/Error.hxx"
 
 extern "C" {
 #include "util/list_sort.h"
@@ -300,34 +301,34 @@ bool
 Directory::Walk(bool recursive, const SongFilter *filter,
 		VisitDirectory visit_directory, VisitSong visit_song,
 		VisitPlaylist visit_playlist,
-		GError **error_r) const
+		Error &error) const
 {
-	assert(error_r == NULL || *error_r == NULL);
+	assert(!error.IsDefined());
 
 	if (visit_song) {
 		Song *song;
 		directory_for_each_song(song, this)
 			if ((filter == nullptr || filter->Match(*song)) &&
-			    !visit_song(*song, error_r))
+			    !visit_song(*song, error))
 				return false;
 	}
 
 	if (visit_playlist) {
 		for (const PlaylistInfo &p : playlists)
-			if (!visit_playlist(p, *this, error_r))
+			if (!visit_playlist(p, *this, error))
 				return false;
 	}
 
 	Directory *child;
 	directory_for_each_child(child, this) {
 		if (visit_directory &&
-		    !visit_directory(*child, error_r))
+		    !visit_directory(*child, error))
 			return false;
 
 		if (recursive &&
 		    !child->Walk(recursive, filter,
 				 visit_directory, visit_song, visit_playlist,
-				 error_r))
+				 error))
 			return false;
 	}
 

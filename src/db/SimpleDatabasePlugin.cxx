@@ -29,22 +29,19 @@
 #include "TextFile.hxx"
 #include "conf.h"
 #include "fs/FileSystem.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <sys/types.h>
 #include <errno.h>
 
-gcc_const
-static inline GQuark
-simple_db_quark(void)
-{
-	return g_quark_from_static_string("simple_db");
-}
+static constexpr Domain simple_db_domain("simple_db");
 
 Database *
-SimpleDatabase::Create(const config_param &param, GError **error_r)
+SimpleDatabase::Create(const config_param &param, Error &error)
 {
 	SimpleDatabase *db = new SimpleDatabase();
-	if (!db->Configure(param, error_r)) {
+	if (!db->Configure(param, error)) {
 		delete db;
 		db = NULL;
 	}
@@ -53,17 +50,13 @@ SimpleDatabase::Create(const config_param &param, GError **error_r)
 }
 
 bool
-SimpleDatabase::Configure(const config_param &param, GError **error_r)
+SimpleDatabase::Configure(const config_param &param, Error &error)
 {
-	GError *error = NULL;
-
-	path = param.GetBlockPath("path", &error);
+	path = param.GetBlockPath("path", error);
 	if (path.IsNull()) {
-		if (error != NULL)
-			g_propagate_error(error_r, error);
-		else
-			g_set_error(error_r, simple_db_quark(), 0,
-				    "No \"path\" parameter specified");
+		if (!error.IsDefined())
+			error.Set(simple_db_domain,
+				  "No \"path\" parameter specified");
 		return false;
 	}
 
@@ -73,7 +66,7 @@ SimpleDatabase::Configure(const config_param &param, GError **error_r)
 }
 
 bool
-SimpleDatabase::Check(GError **error_r) const
+SimpleDatabase::Check(Error &error) const
 {
 	assert(!path.IsNull());
 	assert(!path.empty());
@@ -88,28 +81,26 @@ SimpleDatabase::Check(GError **error_r) const
 		/* Check that the parent part of the path is a directory */
 		struct stat st;
 		if (!StatFile(dirPath, st)) {
-			g_set_error(error_r, simple_db_quark(), errno,
-				    "Couldn't stat parent directory of db file "
-				    "\"%s\": %s",
-				    path_utf8.c_str(), g_strerror(errno));
+			error.FormatErrno("Couldn't stat parent directory of db file "
+					  "\"%s\"",
+					  path_utf8.c_str());
 			return false;
 		}
 
 		if (!S_ISDIR(st.st_mode)) {
-			g_set_error(error_r, simple_db_quark(), 0,
-				    "Couldn't create db file \"%s\" because the "
-				    "parent path is not a directory",
-				    path_utf8.c_str());
+			error.Format(simple_db_domain,
+				     "Couldn't create db file \"%s\" because the "
+				     "parent path is not a directory",
+				     path_utf8.c_str());
 			return false;
 		}
 
 		/* Check if we can write to the directory */
 		if (!CheckAccess(dirPath, X_OK | W_OK)) {
-			int error = errno;
+			const int e = errno;
 			const std::string dirPath_utf8 = dirPath.ToUTF8();
-			g_set_error(error_r, simple_db_quark(), error,
-				    "Can't create db file in \"%s\": %s",
-				    dirPath_utf8.c_str(), g_strerror(error));
+			error.FormatErrno(e, "Can't create db file in \"%s\"",
+					  dirPath_utf8.c_str());
 			return false;
 		}
 
@@ -119,24 +110,22 @@ SimpleDatabase::Check(GError **error_r) const
 	/* Path exists, now check if it's a regular file */
 	struct stat st;
 	if (!StatFile(path, st)) {
-		g_set_error(error_r, simple_db_quark(), errno,
-			    "Couldn't stat db file \"%s\": %s",
-			    path_utf8.c_str(), g_strerror(errno));
+		error.FormatErrno("Couldn't stat db file \"%s\"",
+				  path_utf8.c_str());
 		return false;
 	}
 
 	if (!S_ISREG(st.st_mode)) {
-		g_set_error(error_r, simple_db_quark(), 0,
-			    "db file \"%s\" is not a regular file",
-			    path_utf8.c_str());
+		error.Format(simple_db_domain,
+			     "db file \"%s\" is not a regular file",
+			     path_utf8.c_str());
 		return false;
 	}
 
 	/* And check that we can write to it */
 	if (!CheckAccess(path, R_OK | W_OK)) {
-		g_set_error(error_r, simple_db_quark(), errno,
-			    "Can't open db file \"%s\" for reading/writing: %s",
-			    path_utf8.c_str(), g_strerror(errno));
+		error.FormatErrno("Can't open db file \"%s\" for reading/writing",
+				  path_utf8.c_str());
 		return false;
 	}
 
@@ -144,20 +133,19 @@ SimpleDatabase::Check(GError **error_r) const
 }
 
 bool
-SimpleDatabase::Load(GError **error_r)
+SimpleDatabase::Load(Error &error)
 {
 	assert(!path.empty());
 	assert(root != NULL);
 
 	TextFile file(path);
 	if (file.HasFailed()) {
-		g_set_error(error_r, simple_db_quark(), errno,
-			    "Failed to open database file \"%s\": %s",
-			    path_utf8.c_str(), g_strerror(errno));
+		error.FormatErrno("Failed to open database file \"%s\"",
+				  path_utf8.c_str());
 		return false;
 	}
 
-	if (!db_load_internal(file, root, error_r))
+	if (!db_load_internal(file, root, error))
 		return false;
 
 	struct stat st;
@@ -168,7 +156,7 @@ SimpleDatabase::Load(GError **error_r)
 }
 
 bool
-SimpleDatabase::Open(GError **error_r)
+SimpleDatabase::Open(Error &error)
 {
 	root = Directory::NewRoot();
 	mtime = 0;
@@ -177,14 +165,13 @@ SimpleDatabase::Open(GError **error_r)
 	borrowed_song_count = 0;
 #endif
 
-	GError *error = NULL;
-	if (!Load(&error)) {
+	if (!Load(error)) {
 		root->Free();
 
-		g_warning("Failed to load database: %s", error->message);
-		g_error_free(error);
+		g_warning("Failed to load database: %s", error.GetMessage());
+		error.Clear();
 
-		if (!Check(error_r))
+		if (!Check(error))
 			return false;
 
 		root = Directory::NewRoot();
@@ -203,7 +190,7 @@ SimpleDatabase::Close()
 }
 
 Song *
-SimpleDatabase::GetSong(const char *uri, GError **error_r) const
+SimpleDatabase::GetSong(const char *uri, Error &error) const
 {
 	assert(root != NULL);
 
@@ -211,8 +198,8 @@ SimpleDatabase::GetSong(const char *uri, GError **error_r) const
 	Song *song = root->LookupSong(uri);
 	db_unlock();
 	if (song == NULL)
-		g_set_error(error_r, db_quark(), DB_NOT_FOUND,
-			    "No such song: %s", uri);
+		error.Format(db_domain, DB_NOT_FOUND,
+			     "No such song: %s", uri);
 #ifndef NDEBUG
 	else
 		++const_cast<unsigned &>(borrowed_song_count);
@@ -248,7 +235,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 		      VisitDirectory visit_directory,
 		      VisitSong visit_song,
 		      VisitPlaylist visit_playlist,
-		      GError **error_r) const
+		      Error &error) const
 {
 	ScopeDatabaseLock protect;
 
@@ -258,42 +245,41 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 			Song *song = root->LookupSong(selection.uri);
 			if (song != nullptr)
 				return !selection.Match(*song) ||
-					visit_song(*song, error_r);
+					visit_song(*song, error);
 		}
 
-		g_set_error(error_r, db_quark(), DB_NOT_FOUND,
-			    "No such directory");
+		error.Set(db_domain, DB_NOT_FOUND, "No such directory");
 		return false;
 	}
 
 	if (selection.recursive && visit_directory &&
-	    !visit_directory(*directory, error_r))
+	    !visit_directory(*directory, error))
 		return false;
 
 	return directory->Walk(selection.recursive, selection.filter,
 			       visit_directory, visit_song, visit_playlist,
-			       error_r);
+			       error);
 }
 
 bool
 SimpleDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 				enum tag_type tag_type,
 				VisitString visit_string,
-				GError **error_r) const
+				Error &error) const
 {
 	return ::VisitUniqueTags(*this, selection, tag_type, visit_string,
-				 error_r);
+				 error);
 }
 
 bool
 SimpleDatabase::GetStats(const DatabaseSelection &selection,
-			 DatabaseStats &stats, GError **error_r) const
+			 DatabaseStats &stats, Error &error) const
 {
-	return ::GetStats(*this, selection, stats, error_r);
+	return ::GetStats(*this, selection, stats, error);
 }
 
 bool
-SimpleDatabase::Save(GError **error_r)
+SimpleDatabase::Save(Error &error)
 {
 	db_lock();
 
@@ -309,18 +295,15 @@ SimpleDatabase::Save(GError **error_r)
 
 	FILE *fp = FOpen(path, FOpenMode::WriteText);
 	if (!fp) {
-		g_set_error(error_r, simple_db_quark(), errno,
-			    "unable to write to db file \"%s\": %s",
-			    path_utf8.c_str(), g_strerror(errno));
+		error.FormatErrno("unable to write to db file \"%s\"",
+				  path_utf8.c_str());
 		return false;
 	}
 
 	db_save_internal(fp, root);
 
 	if (ferror(fp)) {
-		g_set_error(error_r, simple_db_quark(), errno,
-			    "Failed to write to database file: %s",
-			    g_strerror(errno));
+		error.SetErrno("Failed to write to database file");
 		fclose(fp);
 		return false;
 	}

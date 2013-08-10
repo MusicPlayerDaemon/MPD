@@ -20,6 +20,8 @@
 #include "config.h"
 #include "AoOutputPlugin.hxx"
 #include "OutputAPI.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <ao/ao.h>
 #include <glib.h>
@@ -42,26 +44,22 @@ struct AoOutput {
 	ao_option *options;
 	ao_device *device;
 
-	bool Initialize(const config_param &param, GError **error_r) {
+	bool Initialize(const config_param &param, Error &error) {
 		return ao_base_init(&base, &ao_output_plugin, param,
-				    error_r);
+				    error);
 	}
 
 	void Deinitialize() {
 		ao_base_finish(&base);
 	}
 
-	bool Configure(const config_param &param, GError **error_r);
+	bool Configure(const config_param &param, Error &error);
 };
 
-static inline GQuark
-ao_output_quark(void)
-{
-	return g_quark_from_static_string("ao_output");
-}
+static constexpr Domain ao_output_domain("ao_output");
 
 static void
-ao_output_error(GError **error_r)
+ao_output_error(Error &error_r)
 {
 	const char *error;
 
@@ -87,15 +85,15 @@ ao_output_error(GError **error_r)
 		break;
 
 	default:
-		error = g_strerror(errno);
+		error_r.SetErrno();
+		return;
 	}
 
-	g_set_error(error_r, ao_output_quark(), errno,
-		    "%s", error);
+	error_r.Set(ao_output_domain, errno, error);
 }
 
 inline bool
-AoOutput::Configure(const config_param &param, GError **error_r)
+AoOutput::Configure(const config_param &param, Error &error)
 {
 	const char *value;
 
@@ -115,16 +113,15 @@ AoOutput::Configure(const config_param &param, GError **error_r)
 		driver = ao_driver_id(value);
 
 	if (driver < 0) {
-		g_set_error(error_r, ao_output_quark(), 0,
-			    "\"%s\" is not a valid ao driver",
-			    value);
+		error.Format(ao_output_domain,
+			     "\"%s\" is not a valid ao driver",
+			     value);
 		return false;
 	}
 
 	ao_info *ai = ao_driver_info(driver);
 	if (ai == nullptr) {
-		g_set_error(error_r, ao_output_quark(), 0,
-			    "problems getting driver info");
+		error.Set(ao_output_domain, "problems getting driver info");
 		return false;
 	}
 
@@ -139,9 +136,9 @@ AoOutput::Configure(const config_param &param, GError **error_r)
 			gchar **key_value = g_strsplit(_options[i], "=", 2);
 
 			if (key_value[0] == nullptr || key_value[1] == nullptr) {
-				g_set_error(error_r, ao_output_quark(), 0,
-					    "problems parsing options \"%s\"",
-					    _options[i]);
+				error.Format(ao_output_domain,
+					     "problems parsing options \"%s\"",
+					     _options[i]);
 				return false;
 			}
 
@@ -158,16 +155,16 @@ AoOutput::Configure(const config_param &param, GError **error_r)
 }
 
 static struct audio_output *
-ao_output_init(const config_param &param, GError **error_r)
+ao_output_init(const config_param &param, Error &error)
 {
 	AoOutput *ad = new AoOutput();
 
-	if (!ad->Initialize(param, error_r)) {
+	if (!ad->Initialize(param, error)) {
 		delete ad;
 		return nullptr;
 	}
 
-	if (!ad->Configure(param, error_r)) {
+	if (!ad->Configure(param, error)) {
 		ad->Deinitialize();
 		delete ad;
 		return nullptr;
@@ -201,7 +198,7 @@ ao_output_close(struct audio_output *ao)
 
 static bool
 ao_output_open(struct audio_output *ao, AudioFormat &audio_format,
-	       GError **error)
+	       Error &error)
 {
 	ao_sample_format format = OUR_AO_FORMAT_INITIALIZER;
 	AoOutput *ad = (AoOutput *)ao;
@@ -257,7 +254,7 @@ static int ao_play_deconst(ao_device *device, const void *output_samples,
 
 static size_t
 ao_output_play(struct audio_output *ao, const void *chunk, size_t size,
-	       GError **error)
+	       Error &error)
 {
 	AoOutput *ad = (AoOutput *)ao;
 

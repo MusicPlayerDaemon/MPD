@@ -30,6 +30,8 @@
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
 #include "util/RefCount.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
@@ -69,16 +71,12 @@ public:
 
 	virtual input_stream *OpenStream(const char *path,
 					 Mutex &mutex, Cond &cond,
-					 GError **error_r) override;
+					 Error &error) override;
 };
 
 extern const struct input_plugin iso9660_input_plugin;
 
-static inline GQuark
-iso9660_quark(void)
-{
-	return g_quark_from_static_string("iso9660");
-}
+static constexpr Domain iso9660_domain("iso9660");
 
 /* archive open && listing routine */
 
@@ -115,13 +113,13 @@ Iso9660ArchiveFile::Visit(const char *psz_path, ArchiveVisitor &visitor)
 }
 
 static ArchiveFile *
-iso9660_archive_open(const char *pathname, GError **error_r)
+iso9660_archive_open(const char *pathname, Error &error)
 {
 	/* open archive */
 	auto iso = iso9660_open(pathname);
 	if (iso == nullptr) {
-		g_set_error(error_r, iso9660_quark(), 0,
-			    "Failed to open ISO9660 file %s", pathname);
+		error.Format(iso9660_domain,
+			     "Failed to open ISO9660 file %s", pathname);
 		return NULL;
 	}
 
@@ -166,12 +164,12 @@ struct Iso9660InputStream {
 input_stream *
 Iso9660ArchiveFile::OpenStream(const char *pathname,
 			       Mutex &mutex, Cond &cond,
-			       GError **error_r)
+			       Error &error)
 {
 	auto statbuf = iso9660_ifs_stat_translate(iso, pathname);
 	if (statbuf == nullptr) {
-		g_set_error(error_r, iso9660_quark(), 0,
-			    "not found in the ISO file: %s", pathname);
+		error.Format(iso9660_domain,
+			     "not found in the ISO file: %s", pathname);
 		return NULL;
 	}
 
@@ -191,7 +189,8 @@ iso9660_input_close(struct input_stream *is)
 
 
 static size_t
-iso9660_input_read(struct input_stream *is, void *ptr, size_t size, GError **error_r)
+iso9660_input_read(struct input_stream *is, void *ptr, size_t size,
+		   Error &error)
 {
 	Iso9660InputStream *iis = (Iso9660InputStream *)is;
 	int toread, readed = 0;
@@ -215,9 +214,9 @@ iso9660_input_read(struct input_stream *is, void *ptr, size_t size, GError **err
 			iis->statbuf->lsn + cur_block, no_blocks);
 
 		if (readed != no_blocks * ISO_BLOCKSIZE) {
-			g_set_error(error_r, iso9660_quark(), 0,
-				    "error reading ISO file at lsn %lu",
-				    (long unsigned int) cur_block);
+			error.Format(iso9660_domain,
+				     "error reading ISO file at lsn %lu",
+				     (unsigned long)cur_block);
 			return 0;
 		}
 		if (left_bytes < size) {

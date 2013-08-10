@@ -19,12 +19,14 @@
 
 #include "config.h"
 #include "ConfigFile.hxx"
-#include "ConfigQuark.hxx"
+#include "ConfigError.hxx"
 #include "ConfigData.hxx"
 #include "ConfigTemplates.hxx"
 #include "conf.h"
 #include "util/Tokenizer.hxx"
 #include "util/StringUtil.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
 
@@ -42,42 +44,41 @@
 
 #define CONF_COMMENT		'#'
 
+static constexpr Domain config_file_domain("config_file");
+
 static bool
 config_read_name_value(struct config_param *param, char *input, unsigned line,
-		       GError **error_r)
+		       Error &error)
 {
 	Tokenizer tokenizer(input);
 
-	const char *name = tokenizer.NextWord(error_r);
+	const char *name = tokenizer.NextWord(error);
 	if (name == NULL) {
 		assert(!tokenizer.IsEnd());
 		return false;
 	}
 
-	const char *value = tokenizer.NextString(error_r);
+	const char *value = tokenizer.NextString(error);
 	if (value == NULL) {
 		if (tokenizer.IsEnd()) {
-			assert(error_r == NULL || *error_r == NULL);
-			g_set_error(error_r, config_quark(), 0,
-				    "Value missing");
+			error.Set(config_file_domain, "Value missing");
 		} else {
-			assert(error_r == NULL || *error_r != NULL);
+			assert(error.IsDefined());
 		}
 
 		return false;
 	}
 
 	if (!tokenizer.IsEnd() && tokenizer.CurrentChar() != CONF_COMMENT) {
-		g_set_error(error_r, config_quark(), 0,
-			    "Unknown tokens after value");
+		error.Set(config_file_domain, "Unknown tokens after value");
 		return false;
 	}
 
 	const struct block_param *bp = param->GetBlockParam(name);
 	if (bp != NULL) {
-		g_set_error(error_r, config_quark(), 0,
-			    "\"%s\" is duplicate, first defined on line %i",
-			    name, bp->line);
+		error.Format(config_file_domain,
+			     "\"%s\" is duplicate, first defined on line %i",
+			     name, bp->line);
 		return false;
 	}
 
@@ -86,10 +87,9 @@ config_read_name_value(struct config_param *param, char *input, unsigned line,
 }
 
 static struct config_param *
-config_read_block(FILE *fp, int *count, char *string, GError **error_r)
+config_read_block(FILE *fp, int *count, char *string, Error &error)
 {
 	struct config_param *ret = new config_param(*count);
-	GError *error = NULL;
 
 	while (true) {
 		char *line;
@@ -97,8 +97,8 @@ config_read_block(FILE *fp, int *count, char *string, GError **error_r)
 		line = fgets(string, MAX_STRING_SIZE, fp);
 		if (line == NULL) {
 			delete ret;
-			g_set_error(error_r, config_quark(), 0,
-				    "Expected '}' before end-of-file");
+			error.Set(config_file_domain,
+				  "Expected '}' before end-of-file");
 			return NULL;
 		}
 
@@ -114,9 +114,9 @@ config_read_block(FILE *fp, int *count, char *string, GError **error_r)
 			line = strchug_fast(line + 1);
 			if (*line != 0 && *line != CONF_COMMENT) {
 				delete ret;
-				g_set_error(error_r, config_quark(), 0,
-					    "line %i: Unknown tokens after '}'",
-					    *count);
+				error.Format(config_file_domain,
+					     "line %i: Unknown tokens after '}'",
+					     *count);
 				return nullptr;
 			}
 
@@ -125,11 +125,10 @@ config_read_block(FILE *fp, int *count, char *string, GError **error_r)
 
 		/* parse name and value */
 
-		if (!config_read_name_value(ret, line, *count, &error)) {
+		if (!config_read_name_value(ret, line, *count, error)) {
 			assert(*line != 0);
 			delete ret;
-			g_propagate_prefixed_error(error_r, error,
-						   "line %i: ", *count);
+			error.FormatPrefix("line %i: ", *count);
 			return NULL;
 		}
 	}
@@ -149,7 +148,7 @@ Append(config_param *&head, config_param *p)
 }
 
 static bool
-ReadConfigFile(ConfigData &config_data, FILE *fp, GError **error_r)
+ReadConfigFile(ConfigData &config_data, FILE *fp, Error &error)
 {
 	assert(fp != nullptr);
 
@@ -160,7 +159,6 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, GError **error_r)
 	while (fgets(string, MAX_STRING_SIZE, fp)) {
 		char *line;
 		const char *name, *value;
-		GError *error = NULL;
 
 		count++;
 
@@ -172,11 +170,10 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, GError **error_r)
 		   by either the value or '{' */
 
 		Tokenizer tokenizer(line);
-		name = tokenizer.NextWord(&error);
+		name = tokenizer.NextWord(error);
 		if (name == NULL) {
 			assert(!tokenizer.IsEnd());
-			g_propagate_prefixed_error(error_r, error,
-						   "line %i: ", count);
+			error.FormatPrefix("line %i: ", count);
 			return false;
 		}
 
@@ -185,9 +182,9 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, GError **error_r)
 
 		const ConfigOption o = ParseConfigOptionName(name);
 		if (o == CONF_MAX) {
-			g_set_error(error_r, config_quark(), 0,
-				    "unrecognized parameter in config file at "
-				    "line %i: %s\n", count, name);
+			error.Format(config_file_domain,
+				     "unrecognized parameter in config file at "
+				     "line %i: %s\n", count, name);
 			return false;
 		}
 
@@ -197,10 +194,10 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, GError **error_r)
 
 		if (head != nullptr && !option.repeatable) {
 			param = head;
-			g_set_error(error_r, config_quark(), 0,
-				    "config parameter \"%s\" is first defined "
-				    "on line %i and redefined on line %i\n",
-				    name, param->line, count);
+			error.Format(config_file_domain,
+				     "config parameter \"%s\" is first defined "
+				     "on line %i and redefined on line %i\n",
+				     name, param->line, count);
 			return false;
 		}
 
@@ -210,47 +207,43 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, GError **error_r)
 			/* it's a block, call config_read_block() */
 
 			if (tokenizer.CurrentChar() != '{') {
-				g_set_error(error_r, config_quark(), 0,
-					    "line %i: '{' expected", count);
+				error.Format(config_file_domain,
+					     "line %i: '{' expected", count);
 				return false;
 			}
 
 			line = strchug_fast(tokenizer.Rest() + 1);
 			if (*line != 0 && *line != CONF_COMMENT) {
-				g_set_error(error_r, config_quark(), 0,
-					    "line %i: Unknown tokens after '{'",
-					    count);
+				error.Format(config_file_domain,
+					     "line %i: Unknown tokens after '{'",
+					     count);
 				return false;
 			}
 
-			param = config_read_block(fp, &count, string, error_r);
+			param = config_read_block(fp, &count, string, error);
 			if (param == NULL) {
 				return false;
 			}
 		} else {
 			/* a string value */
 
-			value = tokenizer.NextString(&error);
+			value = tokenizer.NextString(error);
 			if (value == NULL) {
 				if (tokenizer.IsEnd())
-					g_set_error(error_r, config_quark(), 0,
-						    "line %i: Value missing",
-						    count);
-				else {
-					g_set_error(error_r, config_quark(), 0,
-						    "line %i: %s", count,
-						    error->message);
-					g_error_free(error);
-				}
+					error.Format(config_file_domain,
+						     "line %i: Value missing",
+						     count);
+				else
+					error.FormatPrefix("line %i: ", count);
 
 				return false;
 			}
 
 			if (!tokenizer.IsEnd() &&
 			    tokenizer.CurrentChar() != CONF_COMMENT) {
-				g_set_error(error_r, config_quark(), 0,
-					    "line %i: Unknown tokens after value",
-					    count);
+				error.Format(config_file_domain,
+					     "line %i: Unknown tokens after value",
+					     count);
 				return false;
 			}
 
@@ -264,7 +257,7 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, GError **error_r)
 }
 
 bool
-ReadConfigFile(ConfigData &config_data, const Path &path, GError **error_r)
+ReadConfigFile(ConfigData &config_data, const Path &path, Error &error)
 {
 	assert(!path.IsNull());
 	const std::string path_utf8 = path.ToUTF8();
@@ -273,13 +266,11 @@ ReadConfigFile(ConfigData &config_data, const Path &path, GError **error_r)
 
 	FILE *fp = FOpen(path, FOpenMode::ReadText);
 	if (fp == nullptr) {
-		g_set_error(error_r, config_quark(), errno,
-			    "Failed to open %s: %s",
-			    path_utf8.c_str(), g_strerror(errno));
+		error.FormatErrno("Failed to open %s", path_utf8.c_str());
 		return false;
 	}
 
-	bool result = ReadConfigFile(config_data, fp, error_r);
+	bool result = ReadConfigFile(config_data, fp, error);
 	fclose(fp);
 	return result;
 }

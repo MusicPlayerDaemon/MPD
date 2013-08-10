@@ -22,6 +22,7 @@
 #include "DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
+#include "util/Error.hxx"
 
 #include <audiofile.h>
 #include <af_vfs.h>
@@ -53,13 +54,11 @@ static ssize_t
 audiofile_file_read(AFvirtualfile *vfile, void *data, size_t length)
 {
 	struct input_stream *is = (struct input_stream *) vfile->closure;
-	GError *error = nullptr;
-	size_t nbytes;
 
-	nbytes = input_stream_lock_read(is, data, length, &error);
-	if (nbytes == 0 && error != nullptr) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	Error error;
+	size_t nbytes = input_stream_lock_read(is, data, length, error);
+	if (nbytes == 0 && error.IsDefined()) {
+		g_warning("%s", error.GetMessage());
 		return -1;
 	}
 
@@ -93,7 +92,9 @@ audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset offset, int is_relative)
 {
 	struct input_stream *is = (struct input_stream *) vfile->closure;
 	int whence = (is_relative ? SEEK_CUR : SEEK_SET);
-	if (input_stream_lock_seek(is, offset, whence, nullptr)) {
+
+	Error error;
+	if (input_stream_lock_seek(is, offset, whence, error)) {
 		return input_stream_get_offset(is);
 	} else {
 		return -1;
@@ -156,7 +157,6 @@ audiofile_setup_sample_format(AFfilehandle af_fp)
 static void
 audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 {
-	GError *error = nullptr;
 	AFvirtualfile *vf;
 	int fs, frame_count;
 	AFfilehandle af_fp;
@@ -180,13 +180,13 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 		return;
 	}
 
+	Error error;
 	if (!audio_format_init_checked(audio_format,
 				       afGetRate(af_fp, AF_DEFAULT_TRACK),
 				       audiofile_setup_sample_format(af_fp),
 				       afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK),
-				       &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+				       error)) {
+		g_warning("%s", error.GetMessage());
 		afCloseFile(af_fp);
 		return;
 	}

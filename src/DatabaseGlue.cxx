@@ -24,6 +24,7 @@
 #include "DatabaseSave.hxx"
 #include "DatabaseError.hxx"
 #include "Directory.hxx"
+#include "util/Error.hxx"
 #include "conf.h"
 
 extern "C" {
@@ -50,7 +51,7 @@ static bool db_is_open;
 static bool is_simple;
 
 bool
-DatabaseGlobalInit(const config_param &param, GError **error_r)
+DatabaseGlobalInit(const config_param &param, Error &error)
 {
 	assert(db == NULL);
 	assert(!db_is_open);
@@ -61,12 +62,12 @@ DatabaseGlobalInit(const config_param &param, GError **error_r)
 
 	const DatabasePlugin *plugin = GetDatabasePluginByName(plugin_name);
 	if (plugin == NULL) {
-		g_set_error(error_r, db_quark(), 0,
-			    "No such database plugin: %s", plugin_name);
+		error.Format(db_domain,
+			     "No such database plugin: %s", plugin_name);
 		return false;
 	}
 
-	db = plugin->create(param, error_r);
+	db = plugin->create(param, error);
 	return db != NULL;
 }
 
@@ -89,13 +90,12 @@ GetDatabase()
 }
 
 const Database *
-GetDatabase(GError **error_r)
+GetDatabase(Error &error)
 {
 	assert(db == nullptr || db_is_open);
 
 	if (db == nullptr)
-		g_set_error_literal(error_r, db_quark(), DB_DISABLED,
-				    "No database");
+		error.Set(db_domain, DB_DISABLED, "No database");
 
 	return db;
 }
@@ -131,17 +131,17 @@ db_get_directory(const char *name)
 }
 
 bool
-db_save(GError **error_r)
+db_save(Error &error)
 {
 	assert(db != NULL);
 	assert(db_is_open);
 	assert(db_is_simple());
 
-	return ((SimpleDatabase *)db)->Save(error_r);
+	return ((SimpleDatabase *)db)->Save(error);
 }
 
 bool
-DatabaseGlobalOpen(GError **error)
+DatabaseGlobalOpen(Error &error)
 {
 	assert(db != NULL);
 	assert(!db_is_open);

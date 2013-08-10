@@ -21,6 +21,7 @@
 #define MPD_SOCKET_ERROR_HXX
 
 #include "gcc.h"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -33,15 +34,10 @@ typedef int socket_error_t;
 #endif
 
 /**
- * A GQuark for GError for socket I/O errors.  The code is an errno
+ * A #Domain for #Error for socket I/O errors.  The code is an errno
  * value (or WSAGetLastError() on Windows).
  */
-gcc_const
-static inline GQuark
-SocketErrorQuark(void)
-{
-	return g_quark_from_static_string("socket");
-}
+extern const class Domain socket_domain;
 
 gcc_pure
 static inline socket_error_t
@@ -121,33 +117,29 @@ public:
 };
 
 static inline void
-SetSocketError(GError **error_r, socket_error_t code)
+SetSocketError(Error &error, socket_error_t code)
 {
-#ifdef WIN32
-	if (error_r == NULL)
-		return;
-#endif
-
 	const SocketErrorMessage msg(code);
-	g_set_error_literal(error_r, SocketErrorQuark(), code, msg);
+	error.Set(socket_domain, code, msg);
 }
 
 static inline void
-SetSocketError(GError **error_r)
+SetSocketError(Error &error)
 {
-	SetSocketError(error_r, GetSocketError());
+	SetSocketError(error, GetSocketError());
 }
 
-gcc_malloc
-static inline GError *
+gcc_const
+static inline Error
 NewSocketError(socket_error_t code)
 {
-	const SocketErrorMessage msg(code);
-	return g_error_new_literal(SocketErrorQuark(), code, msg);
+	Error error;
+	SetSocketError(error, code);
+	return error;
 }
 
-gcc_malloc
-static inline GError *
+gcc_pure
+static inline Error
 NewSocketError()
 {
 	return NewSocketError(GetSocketError());

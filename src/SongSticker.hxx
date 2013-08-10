@@ -20,8 +20,6 @@
 #ifndef MPD_SONG_STICKER_HXX
 #define MPD_SONG_STICKER_HXX
 
-#include "gerror.h"
-
 struct Song;
 struct Directory;
 struct sticker;

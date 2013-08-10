@@ -22,6 +22,8 @@
 
 #include <glib.h>
 
+class Error;
+
 struct options {
 	gboolean kill;
 	gboolean daemon;
@@ -31,6 +33,6 @@ struct options {
 
 bool
 parse_cmdline(int argc, char **argv, struct options *options,
-	      GError **error_r);
+	      Error &error);
 
 #endif

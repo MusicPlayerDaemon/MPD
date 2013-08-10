@@ -20,8 +20,11 @@
 #ifndef MPD_FATAL_ERROR_HXX
 #define MPD_FATAL_ERROR_HXX
 
+#include "check.h"
 #include "gerror.h"
 #include "gcc.h"
+
+class Error;
 
 /**
  * Log the specified message and abort the process.
@@ -33,6 +36,10 @@ FatalError(const char *msg);
 gcc_noreturn
 void
 FormatFatalError(const char *fmt, ...);
+
+gcc_noreturn
+void
+FatalError(const Error &error);
 
 gcc_noreturn
 void

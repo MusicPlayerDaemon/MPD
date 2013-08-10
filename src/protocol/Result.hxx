@@ -24,6 +24,8 @@
 #include "gcc.h"
 #include "Ack.hxx"
 
+#include <stdarg.h>
+
 class Client;
 
 extern const char *current_command;

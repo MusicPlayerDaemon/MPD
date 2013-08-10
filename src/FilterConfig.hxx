@@ -25,9 +25,8 @@
 #ifndef MPD_FILTER_CONFIG_HXX
 #define MPD_FILTER_CONFIG_HXX
 
-#include "gerror.h"
-
 class Filter;
+class Error;
 
 /**
  * Builds a filter chain from a configuration string on the form
@@ -39,6 +38,6 @@ class Filter;
  * @return the number of filters which were successfully added
  */
 unsigned int
-filter_chain_parse(Filter &chain, const char *spec, GError **error_r);
+filter_chain_parse(Filter &chain, const char *spec, Error &error);
 
 #endif

@@ -26,12 +26,9 @@
 #ifndef MPD_FILTER_PLUGIN_HXX
 #define MPD_FILTER_PLUGIN_HXX
 
-#include "gerror.h"
-
-#include <stddef.h>
-
 struct config_param;
 class Filter;
+class Error;
 
 struct filter_plugin {
 	const char *name;
@@ -39,7 +36,7 @@ struct filter_plugin {
 	/**
          * Allocates and configures a filter.
 	 */
-	Filter *(*init)(const config_param &param, GError **error_r);
+	Filter *(*init)(const config_param &param, Error &error);
 };
 
 /**
@@ -53,7 +50,7 @@ struct filter_plugin {
  */
 Filter *
 filter_new(const struct filter_plugin *plugin,
-	   const config_param &param, GError **error_r);
+	   const config_param &param, Error &error);
 
 /**
  * Creates a new filter, loads configuration and the plugin name from
@@ -65,6 +62,6 @@ filter_new(const struct filter_plugin *plugin,
  * @return a new filter object, or NULL on error
  */
 Filter *
-filter_configured_new(const config_param &param, GError **error_r);
+filter_configured_new(const config_param &param, Error &error);
 
 #endif

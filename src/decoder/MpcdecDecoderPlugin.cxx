@@ -22,6 +22,7 @@
 #include "DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
+#include "util/Error.hxx"
 
 #include <mpc/mpcdec.h>
 
@@ -53,7 +54,8 @@ mpc_seek_cb(mpc_reader *reader, mpc_int32_t offset)
 	struct mpc_decoder_data *data =
 		(struct mpc_decoder_data *)reader->data;
 
-	return input_stream_lock_seek(data->is, offset, SEEK_SET, nullptr);
+	return input_stream_lock_seek(data->is, offset, SEEK_SET,
+				      IgnoreError());
 }
 
 static mpc_int32_t
@@ -153,13 +155,12 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	mpc_streaminfo info;
 	mpc_demux_get_info(demux, &info);
 
-	GError *error = nullptr;
+	Error error;
 	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format, info.sample_freq,
 				       SampleFormat::S24_P32,
-				       info.channels, &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+				       info.channels, error)) {
+		g_warning("%s", error.GetMessage());
 		mpc_demux_exit(demux);
 		return;
 	}

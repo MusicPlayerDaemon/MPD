@@ -24,6 +24,7 @@
 #include "conf.h"
 #include "Song.hxx"
 #include "InputLegacy.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -92,16 +93,14 @@ static char *
 lastfm_get(const char *url, Mutex &mutex, Cond &cond)
 {
 	struct input_stream *input_stream;
-	GError *error = NULL;
+	Error error;
 	char buffer[4096];
-	size_t length = 0, nbytes;
+	size_t length = 0;
 
-	input_stream = input_stream_open(url, mutex, cond, &error);
+	input_stream = input_stream_open(url, mutex, cond, error);
 	if (input_stream == NULL) {
-		if (error != NULL) {
-			g_warning("%s", error->message);
-			g_error_free(error);
-		}
+		if (error.IsDefined())
+			g_warning("%s", error.GetMessage());
 
 		return NULL;
 	}
@@ -111,13 +110,12 @@ lastfm_get(const char *url, Mutex &mutex, Cond &cond)
 	input_stream_wait_ready(input_stream);
 
 	do {
-		nbytes = input_stream_read(input_stream, buffer + length,
-					   sizeof(buffer) - length, &error);
+		size_t nbytes =
+			input_stream_read(input_stream, buffer + length,
+					  sizeof(buffer) - length, error);
 		if (nbytes == 0) {
-			if (error != NULL) {
-				g_warning("%s", error->message);
-				g_error_free(error);
-			}
+			if (error.IsDefined())
+				g_warning("%s", error.GetMessage());
 
 			if (input_stream_eof(input_stream))
 				break;
@@ -166,7 +164,6 @@ lastfm_find(const char *response, const char *name)
 static struct playlist_provider *
 lastfm_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 {
-	GError *error = NULL;
 	char *p, *q, *response, *session;
 
 	/* handshake */
@@ -225,15 +222,15 @@ lastfm_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 			NULL);
 	g_free(session);
 
-	const auto is = input_stream_open(p, mutex, cond, &error);
+	Error error;
+	const auto is = input_stream_open(p, mutex, cond, error);
 	g_free(p);
 
 	if (is == nullptr) {
-		if (error != NULL) {
+		if (error.IsDefined())
 			g_warning("Failed to load XSPF playlist: %s",
-				  error->message);
-			g_error_free(error);
-		} else
+				  error.GetMessage());
+		else
 			g_warning("Failed to load XSPF playlist");
 		return NULL;
 	}

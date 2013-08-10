@@ -27,6 +27,7 @@
 #include "AudioCompress/compress.h"
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
+#include "util/Error.hxx"
 #include "stdbin.h"
 
 #include <glib.h>
@@ -37,8 +38,6 @@
 
 int main(int argc, char **argv)
 {
-	GError *error = NULL;
-	bool ret;
 	struct Compressor *compressor;
 	static char buffer[4096];
 	ssize_t nbytes;
@@ -50,11 +49,10 @@ int main(int argc, char **argv)
 
 	AudioFormat audio_format(48000, SampleFormat::S16, 2);
 	if (argc > 1) {
-		ret = audio_format_parse(audio_format, argv[1],
-					 false, &error);
-		if (!ret) {
+		Error error;
+		if (!audio_format_parse(audio_format, argv[1], false, error)) {
 			g_printerr("Failed to parse audio format: %s\n",
-				   error->message);
+				   error.GetMessage());
 			return 1;
 		}
 	}

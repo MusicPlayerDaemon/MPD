@@ -27,6 +27,7 @@
 #include "Playlist.hxx"
 #include "PlayerControl.hxx"
 #include "util/UriUtil.hxx"
+#include "util/Error.hxx"
 #include "Song.hxx"
 #include "Idle.hxx"
 #include "DatabaseGlue.hxx"
@@ -110,11 +111,11 @@ playlist::AppendURI(struct player_control &pc,
 	if (uri_has_scheme(uri)) {
 		song = Song::NewRemote(uri);
 	} else {
-		db = GetDatabase(nullptr);
+		db = GetDatabase(IgnoreError());
 		if (db == nullptr)
 			return PLAYLIST_RESULT_NO_SUCH_SONG;
 
-		song = db->GetSong(uri, nullptr);
+		song = db->GetSong(uri, IgnoreError());
 		if (song == nullptr)
 			return PLAYLIST_RESULT_NO_SUCH_SONG;
 	}

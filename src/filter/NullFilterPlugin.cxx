@@ -34,15 +34,15 @@
 class NullFilter final : public Filter {
 public:
 	virtual AudioFormat Open(AudioFormat &af,
-				 gcc_unused GError **error_r) {
+				 gcc_unused Error &error) override {
 		return af;
 	}
 
-	virtual void Close() {}
+	virtual void Close() override {}
 
 	virtual const void *FilterPCM(const void *src, size_t src_size,
 				      size_t *dest_size_r,
-				      gcc_unused GError **error_r) {
+				      gcc_unused Error &error) override {
 		*dest_size_r = src_size;
 		return src;
 	}
@@ -50,7 +50,7 @@ public:
 
 static Filter *
 null_filter_init(gcc_unused const config_param &param,
-		 gcc_unused GError **error_r)
+		 gcc_unused Error &error)
 {
 	return new NullFilter();
 }

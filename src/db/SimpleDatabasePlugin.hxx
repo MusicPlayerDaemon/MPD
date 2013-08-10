@@ -53,7 +53,7 @@ public:
 		return root;
 	}
 
-	bool Save(GError **error_r);
+	bool Save(Error &error);
 
 	gcc_pure
 	time_t GetLastModified() const {
@@ -61,37 +61,37 @@ public:
 	}
 
 	static Database *Create(const config_param &param,
-				GError **error_r);
+				Error &error);
 
-	virtual bool Open(GError **error_r) override;
+	virtual bool Open(Error &error) override;
 	virtual void Close() override;
 
 	virtual Song *GetSong(const char *uri_utf8,
-				     GError **error_r) const override;
+			      Error &error) const override;
 	virtual void ReturnSong(Song *song) const;
 
 	virtual bool Visit(const DatabaseSelection &selection,
 			   VisitDirectory visit_directory,
 			   VisitSong visit_song,
 			   VisitPlaylist visit_playlist,
-			   GError **error_r) const override;
+			   Error &error) const override;
 
 	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
 				     enum tag_type tag_type,
 				     VisitString visit_string,
-				     GError **error_r) const override;
+				     Error &error) const override;
 
 	virtual bool GetStats(const DatabaseSelection &selection,
 			      DatabaseStats &stats,
-			      GError **error_r) const override;
+			      Error &error) const override;
 
 protected:
-	bool Configure(const config_param &param, GError **error_r);
+	bool Configure(const config_param &param, Error &error);
 
 	gcc_pure
-	bool Check(GError **error_r) const;
+	bool Check(Error &error) const;
 
-	bool Load(GError **error_r);
+	bool Load(Error &error);
 
 	gcc_pure
 	const Directory *LookupDirectory(const char *uri) const;

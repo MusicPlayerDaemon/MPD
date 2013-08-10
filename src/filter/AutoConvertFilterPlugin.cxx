@@ -46,21 +46,22 @@ public:
 		delete filter;
 	}
 
-	virtual AudioFormat Open(AudioFormat &af, GError **error_r);
-	virtual void Close();
+	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
+	virtual void Close() override;
 	virtual const void *FilterPCM(const void *src, size_t src_size,
-				      size_t *dest_size_r, GError **error_r);
+				      size_t *dest_size_r,
+				      Error &error) override;
 };
 
 AudioFormat
-AutoConvertFilter::Open(AudioFormat &in_audio_format, GError **error_r)
+AutoConvertFilter::Open(AudioFormat &in_audio_format, Error &error)
 {
 	assert(in_audio_format.IsValid());
 
 	/* open the "real" filter */
 
 	const AudioFormat child_audio_format = in_audio_format;
-	AudioFormat out_audio_format = filter->Open(in_audio_format, error_r);
+	AudioFormat out_audio_format = filter->Open(in_audio_format, error);
 	if (!out_audio_format.IsDefined())
 		return out_audio_format;
 
@@ -70,7 +71,7 @@ AutoConvertFilter::Open(AudioFormat &in_audio_format, GError **error_r)
 		/* yes - create a convert_filter */
 
 		const config_param empty;
-		convert = filter_new(&convert_filter_plugin, empty, error_r);
+		convert = filter_new(&convert_filter_plugin, empty, error);
 		if (convert == nullptr) {
 			filter->Close();
 			return AudioFormat::Undefined();
@@ -78,7 +79,7 @@ AutoConvertFilter::Open(AudioFormat &in_audio_format, GError **error_r)
 
 		AudioFormat audio_format2 = in_audio_format;
 		AudioFormat audio_format3 =
-			convert->Open(audio_format2, error_r);
+			convert->Open(audio_format2, error);
 		if (!audio_format3.IsDefined()) {
 			delete convert;
 			filter->Close();
@@ -108,15 +109,15 @@ AutoConvertFilter::Close()
 
 const void *
 AutoConvertFilter::FilterPCM(const void *src, size_t src_size,
-			     size_t *dest_size_r, GError **error_r)
+			     size_t *dest_size_r, Error &error)
 {
 	if (convert != nullptr) {
-		src = convert->FilterPCM(src, src_size, &src_size, error_r);
+		src = convert->FilterPCM(src, src_size, &src_size, error);
 		if (src == nullptr)
 			return nullptr;
 	}
 
-	return filter->FilterPCM(src, src_size, dest_size_r, error_r);
+	return filter->FilterPCM(src, src_size, dest_size_r, error);
 }
 
 Filter *

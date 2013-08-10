@@ -20,7 +20,7 @@
 #ifndef MPD_INPUT_INIT_HXX
 #define MPD_INPUT_INIT_HXX
 
-#include "gerror.h"
+class Error;
 
 /**
  * Initializes this library and all input_stream implementations.
@@ -29,7 +29,7 @@
  * ignore errors
  */
 bool
-input_stream_global_init(GError **error_r);
+input_stream_global_init(Error &error);
 
 /**
  * Deinitializes this library and all input_stream implementations.

@@ -20,6 +20,8 @@
 #include "config.h"
 #include "ConfigPath.hxx"
 #include "fs/Path.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 #include "conf.h"
 
 #include <glib.h>
@@ -46,31 +48,25 @@
 #include <windows.h>
 #endif
 
-gcc_const
-static inline GQuark
-parse_path_quark(void)
-{
-	return g_quark_from_static_string("path");
-}
+static constexpr Domain path_domain("path");
 
 Path
-ParsePath(const char *path, GError **error_r)
+ParsePath(const char *path, Error &error)
 {
 	assert(path != nullptr);
-	assert(error_r == nullptr || *error_r == nullptr);
 
 	Path path2 = Path::FromUTF8(path);
 	if (path2.IsNull()) {
-		g_set_error(error_r, parse_path_quark(), 0,
-			    "Failed to convert path to file system charset: %s",
-			    path);
+		error.Format(path_domain,
+			     "Failed to convert path to file system charset: %s",
+			     path);
 		return Path::Null();
 	}
 
 #ifndef WIN32
 	if (!g_path_is_absolute(path) && path[0] != '~') {
-		g_set_error(error_r, parse_path_quark(), 0,
-			    "not an absolute path: %s", path);
+		error.Format(path_domain,
+			     "not an absolute path: %s", path);
 		return Path::Null();
 	} else if (path[0] == '~') {
 		const char *home;
@@ -80,8 +76,8 @@ ParsePath(const char *path, GError **error_r)
 			if (user != nullptr) {
 				struct passwd *passwd = getpwnam(user);
 				if (!passwd) {
-					g_set_error(error_r, parse_path_quark(), 0,
-						    "no such user: %s", user);
+					error.Format(path_domain,
+						     "no such user: %s", user);
 					return Path::Null();
 				}
 
@@ -89,9 +85,9 @@ ParsePath(const char *path, GError **error_r)
 			} else {
 				home = g_get_home_dir();
 				if (home == nullptr) {
-					g_set_error_literal(error_r, parse_path_quark(), 0,
-							    "problems getting home "
-							    "for current user");
+					error.Set(path_domain,
+						  "problems getting home "
+						  "for current user");
 					return Path::Null();
 				}
 			}
@@ -107,8 +103,8 @@ ParsePath(const char *path, GError **error_r)
 
 			struct passwd *passwd = getpwnam(user);
 			if (!passwd) {
-				g_set_error(error_r, parse_path_quark(), 0,
-					    "no such user: %s", user);
+				error.Format(path_domain,
+					     "no such user: %s", user);
 				g_free(user);
 				return Path::Null();
 			}

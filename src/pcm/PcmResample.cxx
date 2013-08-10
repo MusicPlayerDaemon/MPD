@@ -39,7 +39,7 @@ pcm_resample_lsr_enabled(void)
 #endif
 
 bool
-pcm_resample_global_init(GError **error_r)
+pcm_resample_global_init(Error &error)
 {
 #ifdef HAVE_LIBSAMPLERATE
 	const char *converter =
@@ -47,11 +47,11 @@ pcm_resample_global_init(GError **error_r)
 
 	lsr_enabled = strcmp(converter, "internal") != 0;
 	if (lsr_enabled)
-		return pcm_resample_lsr_global_init(converter, error_r);
+		return pcm_resample_lsr_global_init(converter, error);
 	else
 		return true;
 #else
-	(void)error_r;
+	(void)error;
 	return true;
 #endif
 }
@@ -84,7 +84,7 @@ const float *
 PcmResampler::ResampleFloat(unsigned channels, unsigned src_rate,
 			    const float *src_buffer, size_t src_size,
 			    unsigned dest_rate, size_t *dest_size_r,
-			    GError **error_r)
+			    Error &error_r)
 {
 #ifdef HAVE_LIBSAMPLERATE
 	if (pcm_resample_lsr_enabled())
@@ -110,7 +110,7 @@ const int16_t *
 PcmResampler::Resample16(unsigned channels,
 			 unsigned src_rate, const int16_t *src_buffer, size_t src_size,
 			 unsigned dest_rate, size_t *dest_size_r,
-			 GError **error_r)
+			 Error &error_r)
 {
 #ifdef HAVE_LIBSAMPLERATE
 	if (pcm_resample_lsr_enabled())
@@ -131,7 +131,7 @@ const int32_t *
 PcmResampler::Resample32(unsigned channels, unsigned src_rate,
 			 const int32_t *src_buffer, size_t src_size,
 			 unsigned dest_rate, size_t *dest_size_r,
-			 GError **error_r)
+			 Error &error_r)
 {
 #ifdef HAVE_LIBSAMPLERATE
 	if (pcm_resample_lsr_enabled())

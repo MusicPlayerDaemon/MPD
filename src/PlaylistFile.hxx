@@ -20,14 +20,13 @@
 #ifndef MPD_PLAYLIST_FILE_HXX
 #define MPD_PLAYLIST_FILE_HXX
 
-#include "gerror.h"
-
 #include <vector>
 #include <string>
 
 struct Song;
 struct PlaylistInfo;
 class PlaylistVector;
+class Error;
 
 typedef std::vector<std::string> PlaylistFileContents;
 
@@ -51,31 +50,31 @@ spl_valid_name(const char *name_utf8);
  * NULL if an error occurred.
  */
 PlaylistVector
-ListPlaylistFiles(GError **error_r);
+ListPlaylistFiles(Error &error);
 
 PlaylistFileContents
-LoadPlaylistFile(const char *utf8path, GError **error_r);
+LoadPlaylistFile(const char *utf8path, Error &error);
 
 bool
 spl_move_index(const char *utf8path, unsigned src, unsigned dest,
-	       GError **error_r);
+	       Error &error);
 
 bool
-spl_clear(const char *utf8path, GError **error_r);
+spl_clear(const char *utf8path, Error &error);
 
 bool
-spl_delete(const char *name_utf8, GError **error_r);
+spl_delete(const char *name_utf8, Error &error);
 
 bool
-spl_remove_index(const char *utf8path, unsigned pos, GError **error_r);
+spl_remove_index(const char *utf8path, unsigned pos, Error &error);
 
 bool
-spl_append_song(const char *utf8path, Song *song, GError **error_r);
+spl_append_song(const char *utf8path, Song *song, Error &error);
 
 bool
-spl_append_uri(const char *file, const char *utf8file, GError **error_r);
+spl_append_uri(const char *file, const char *utf8file, Error &error);
 
 bool
-spl_rename(const char *utf8from, const char *utf8to, GError **error_r);
+spl_rename(const char *utf8from, const char *utf8to, Error &error);
 
 #endif

@@ -251,10 +251,10 @@ player_wait_for_decoder(struct player *player)
 
 	player->queued = false;
 
-	GError *error = dc->LockGetError();
-	if (error != NULL) {
+	Error error = dc->LockGetError();
+	if (error.IsDefined()) {
 		pc->Lock();
-		pc->SetError(PLAYER_ERROR_DECODER, error);
+		pc->SetError(PLAYER_ERROR_DECODER, std::move(error));
 
 		pc->next_song->Free();
 		pc->next_song = NULL;
@@ -327,9 +327,9 @@ player_open_output(struct player *player)
 	assert(pc->state == PLAYER_STATE_PLAY ||
 	       pc->state == PLAYER_STATE_PAUSE);
 
-	GError *error = NULL;
+	Error error;
 	if (audio_output_all_open(player->play_audio_format, player_buffer,
-				  &error)) {
+				  error)) {
 		player->output_open = true;
 		player->paused = false;
 
@@ -341,7 +341,7 @@ player_open_output(struct player *player)
 
 		return true;
 	} else {
-		g_warning("%s", error->message);
+		g_warning("%s", error.GetMessage());
 
 		player->output_open = false;
 
@@ -350,7 +350,7 @@ player_open_output(struct player *player)
 		player->paused = true;
 
 		pc->Lock();
-		pc->SetError(PLAYER_ERROR_OUTPUT, error);
+		pc->SetError(PLAYER_ERROR_OUTPUT, std::move(error));
 		pc->state = PLAYER_STATE_PAUSE;
 		pc->Unlock();
 
@@ -377,13 +377,13 @@ player_check_decoder_startup(struct player *player)
 
 	dc->Lock();
 
-	GError *error = dc->GetError();
-	if (error != NULL) {
+	Error error = dc->GetError();
+	if (error.IsDefined()) {
 		/* the decoder failed */
 		dc->Unlock();
 
 		pc->Lock();
-		pc->SetError(PLAYER_ERROR_DECODER, error);
+		pc->SetError(PLAYER_ERROR_DECODER, std::move(error));
 		pc->Unlock();
 
 		return false;
@@ -460,11 +460,9 @@ player_send_silence(struct player *player)
 	chunk->length = num_frames * frame_size;
 	memset(chunk->data, 0, chunk->length);
 
-	GError *error = NULL;
-	if (!audio_output_all_play(chunk, &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
-
+	Error error;
+	if (!audio_output_all_play(chunk, error)) {
+		g_warning("%s", error.GetMessage());
 		music_buffer_return(player_buffer, chunk);
 		return false;
 	}
@@ -689,7 +687,7 @@ static bool
 play_chunk(struct player_control *pc,
 	   Song *song, struct music_chunk *chunk,
 	   const AudioFormat format,
-	   GError **error_r)
+	   Error &error)
 {
 	assert(chunk->CheckFormat(format));
 
@@ -707,7 +705,7 @@ play_chunk(struct player_control *pc,
 
 	/* send the chunk to the audio outputs */
 
-	if (!audio_output_all_play(chunk, error_r))
+	if (!audio_output_all_play(chunk, error))
 		return false;
 
 	pc->total_play_time += (double)chunk->length /
@@ -822,16 +820,16 @@ play_next_chunk(struct player *player)
 
 	/* play the current chunk */
 
-	GError *error = NULL;
+	Error error;
 	if (!play_chunk(player->pc, player->song, chunk,
-			player->play_audio_format, &error)) {
-		g_warning("%s", error->message);
+			player->play_audio_format, error)) {
+		g_warning("%s", error.GetMessage());
 
 		music_buffer_return(player_buffer, chunk);
 
 		pc->Lock();
 
-		pc->SetError(PLAYER_ERROR_OUTPUT, error);
+		pc->SetError(PLAYER_ERROR_OUTPUT, std::move(error));
 
 		/* pause: the user may resume playback as soon as an
 		   audio output becomes available */

@@ -26,6 +26,7 @@
 #include "InputStream.hxx"
 #include "InputInit.hxx"
 #include "IOThread.hxx"
+#include "util/Error.hxx"
 
 #ifdef ENABLE_ARCHIVE
 #include "ArchiveList.hxx"
@@ -49,7 +50,7 @@ my_log_func(const gchar *log_domain, gcc_unused GLogLevelFlags log_level,
 static int
 dump_input_stream(struct input_stream *is)
 {
-	GError *error = NULL;
+	Error error;
 	char buffer[4096];
 	size_t num_read;
 	ssize_t num_written;
@@ -60,9 +61,8 @@ dump_input_stream(struct input_stream *is)
 
 	input_stream_wait_ready(is);
 
-	if (!input_stream_check(is, &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	if (!input_stream_check(is, error)) {
+		g_warning("%s", error.GetMessage());
 		input_stream_unlock(is);
 		return EXIT_FAILURE;
 	}
@@ -83,12 +83,10 @@ dump_input_stream(struct input_stream *is)
 		}
 
 		num_read = input_stream_read(is, buffer, sizeof(buffer),
-					     &error);
+					     error);
 		if (num_read == 0) {
-			if (error != NULL) {
-				g_warning("%s", error->message);
-				g_error_free(error);
-			}
+			if (error.IsDefined())
+				g_warning("%s", error.GetMessage());
 
 			break;
 		}
@@ -98,9 +96,8 @@ dump_input_stream(struct input_stream *is)
 			break;
 	}
 
-	if (!input_stream_check(is, &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	if (!input_stream_check(is, error)) {
+		g_warning("%s", error.GetMessage());
 		input_stream_unlock(is);
 		return EXIT_FAILURE;
 	}
@@ -112,7 +109,7 @@ dump_input_stream(struct input_stream *is)
 
 int main(int argc, char **argv)
 {
-	GError *error = NULL;
+	Error error;
 	struct input_stream *is;
 	int ret;
 
@@ -140,9 +137,8 @@ int main(int argc, char **argv)
 	archive_plugin_init_all();
 #endif
 
-	if (!input_stream_global_init(&error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	if (!input_stream_global_init(error)) {
+		g_warning("%s", error.GetMessage());
 		return 2;
 	}
 
@@ -151,15 +147,14 @@ int main(int argc, char **argv)
 	Mutex mutex;
 	Cond cond;
 
-	is = input_stream_open(argv[1], mutex, cond, &error);
+	is = input_stream_open(argv[1], mutex, cond, error);
 	if (is != NULL) {
 		ret = dump_input_stream(is);
 		input_stream_close(is);
 	} else {
-		if (error != NULL) {
-			g_warning("%s", error->message);
-			g_error_free(error);
-		} else
+		if (error.IsDefined())
+			g_warning("%s", error.GetMessage());
+		else
 			g_printerr("input_stream_open() failed\n");
 		ret = 2;
 	}

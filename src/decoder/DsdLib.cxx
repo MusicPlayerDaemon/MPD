@@ -29,6 +29,7 @@
 #include "util/bit_reverse.h"
 #include "TagHandler.hxx"
 #include "TagId3.hxx"
+#include "util/Error.hxx"
 
 #include <unistd.h>
 #include <string.h>
@@ -64,7 +65,7 @@ dsdlib_skip_to(struct decoder *decoder, struct input_stream *is,
 	       goffset offset)
 {
 	if (input_stream_is_seekable(is))
-		return input_stream_seek(is, offset, SEEK_SET, nullptr);
+		return input_stream_seek(is, offset, SEEK_SET, IgnoreError());
 
 	if (input_stream_get_offset(is) > offset)
 		return false;
@@ -97,7 +98,7 @@ dsdlib_skip(struct decoder *decoder, struct input_stream *is,
 		return true;
 
 	if (input_stream_is_seekable(is))
-		return input_stream_seek(is, delta, SEEK_CUR, nullptr);
+		return input_stream_seek(is, delta, SEEK_CUR, IgnoreError());
 
 	char buffer[8192];
 	while (delta > 0) {

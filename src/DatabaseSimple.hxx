@@ -21,7 +21,6 @@
 #define MPD_DATABASE_SIMPLE_HXX
 
 #include "gcc.h"
-#include "gerror.h"
 
 #include <sys/time.h>
 
@@ -29,6 +28,7 @@ struct config_param;
 struct Directory;
 struct db_selection;
 struct db_visitor;
+class Error;
 
 /**
  * Check whether the default #SimpleDatabasePlugin is used.  This
@@ -60,7 +60,7 @@ db_get_directory(const char *name);
  * May only be used if db_is_simple() returns true.
  */
 bool
-db_save(GError **error_r);
+db_save(Error &error);
 
 /**
  * May only be used if db_is_simple() returns true.

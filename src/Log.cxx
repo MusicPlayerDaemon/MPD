@@ -25,6 +25,8 @@
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
 #include "mpd_error.h"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <assert.h>
 #include <sys/types.h>
@@ -50,6 +52,8 @@
 
 #define LOG_DATE_BUF_SIZE 16
 #define LOG_DATE_LEN (LOG_DATE_BUF_SIZE - 1)
+
+static constexpr Domain log_domain("log");
 
 static GLogLevelFlags log_threshold = G_LOG_LEVEL_MESSAGE;
 
@@ -92,7 +96,7 @@ chomp_length(const char *p)
 }
 
 static void
-file_log_func(const gchar *log_domain,
+file_log_func(const gchar *domain,
 	      GLogLevelFlags log_level,
 	      const gchar *message, gcc_unused gpointer user_data)
 {
@@ -110,12 +114,12 @@ file_log_func(const gchar *log_domain,
 	} else
 		converted = NULL;
 
-	if (log_domain == NULL)
-		log_domain = "";
+	if (domain == nullptr)
+		domain = "";
 
 	fprintf(stderr, "%s%s%s%.*s\n",
 		stdout_mode ? "" : log_date(),
-		log_domain, *log_domain == 0 ? "" : ": ",
+		domain, *domain == 0 ? "" : ": ",
 		chomp_length(message), message);
 
 	g_free(converted);
@@ -136,16 +140,15 @@ open_log_file(void)
 }
 
 static bool
-log_init_file(unsigned line, GError **error_r)
+log_init_file(unsigned line, Error &error)
 {
 	assert(!out_path.IsNull());
 
 	out_fd = open_log_file();
 	if (out_fd < 0) {
 		const std::string out_path_utf8 = out_path.ToUTF8();
-		g_set_error(error_r, log_quark(), errno,
-			    "failed to open log file \"%s\" (config line %u): %s",
-			    out_path_utf8.c_str(), line, g_strerror(errno));
+		error.FormatErrno("failed to open log file \"%s\" (config line %u)",
+				  out_path_utf8.c_str(), line);
 		return false;
 	}
 
@@ -181,14 +184,14 @@ glib_to_syslog_level(GLogLevelFlags log_level)
 }
 
 static void
-syslog_log_func(const gchar *log_domain,
+syslog_log_func(const gchar *domain,
 		GLogLevelFlags log_level, const gchar *message,
 		gcc_unused gpointer user_data)
 {
 	if (stdout_mode) {
 		/* fall back to the file log function during
 		   startup */
-		file_log_func(log_domain, log_level,
+		file_log_func(domain, log_level,
 			      message, user_data);
 		return;
 	}
@@ -196,11 +199,11 @@ syslog_log_func(const gchar *log_domain,
 	if (log_level > log_threshold)
 		return;
 
-	if (log_domain == NULL)
-		log_domain = "";
+	if (domain == nullptr)
+		domain = "";
 
 	syslog(glib_to_syslog_level(log_level), "%s%s%.*s",
-	       log_domain, *log_domain == 0 ? "" : ": ",
+	       domain, *domain == 0 ? "" : ": ",
 	       chomp_length(message), message);
 }
 
@@ -241,7 +244,7 @@ log_early_init(bool verbose)
 }
 
 bool
-log_init(bool verbose, bool use_stdout, GError **error_r)
+log_init(bool verbose, bool use_stdout, Error &error)
 {
 	const struct config_param *param;
 
@@ -264,8 +267,8 @@ log_init(bool verbose, bool use_stdout, GError **error_r)
 			log_init_syslog();
 			return true;
 #else
-			g_set_error(error_r, log_quark(), 0,
-				    "config parameter 'log_file' not found");
+			error.Set(log_domain,
+				  "config parameter 'log_file' not found");
 			return false;
 #endif
 #ifdef HAVE_SYSLOG
@@ -274,9 +277,9 @@ log_init(bool verbose, bool use_stdout, GError **error_r)
 			return true;
 #endif
 		} else {
-			out_path = config_get_path(CONF_LOG_FILE, error_r);
+			out_path = config_get_path(CONF_LOG_FILE, error);
 			return !out_path.IsNull() &&
-				log_init_file(param->line, error_r);
+				log_init_file(param->line, error);
 		}
 	}
 }

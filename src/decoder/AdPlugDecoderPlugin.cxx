@@ -22,6 +22,7 @@
 #include "TagHandler.hxx"
 #include "DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
+#include "util/Error.hxx"
 
 #include <adplug/adplug.h>
 #include <adplug/emuopl.h>
@@ -38,12 +39,11 @@ static unsigned sample_rate;
 static bool
 adplug_init(const config_param &param)
 {
-	GError *error = NULL;
+	Error error;
 
 	sample_rate = param.GetBlockValue("sample_rate", 48000u);
-	if (!audio_check_sample_rate(sample_rate, &error)) {
-		g_warning("%s\n", error->message);
-		g_error_free(error);
+	if (!audio_check_sample_rate(sample_rate, error)) {
+		g_warning("%s", error.GetMessage());
 		return false;
 	}
 

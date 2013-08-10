@@ -21,37 +21,37 @@
 #define MPD_DB_PRINT_H
 
 #include "gcc.h"
-#include "gerror.h"
 
 class SongFilter;
 struct DatabaseSelection;
 struct db_visitor;
 class Client;
+class Error;
 
 gcc_nonnull(1)
 bool
 db_selection_print(Client *client, const DatabaseSelection &selection,
-		   bool full, GError **error_r);
+		   bool full, Error &error);
 
 gcc_nonnull(1,2)
 bool
-printAllIn(Client *client, const char *uri_utf8, GError **error_r);
+printAllIn(Client *client, const char *uri_utf8, Error &error);
 
 gcc_nonnull(1,2)
 bool
 printInfoForAllIn(Client *client, const char *uri_utf8,
-		  GError **error_r);
+		  Error &error);
 
 gcc_nonnull(1,2)
 bool
 searchStatsForSongsIn(Client *client, const char *name,
 		      const SongFilter *filter,
-		      GError **error_r);
+		      Error &error);
 
 gcc_nonnull(1)
 bool
 listAllUniqueTags(Client *client, int type,
 		  const SongFilter *filter,
-		  GError **error_r);
+		  Error &error);
 
 #endif

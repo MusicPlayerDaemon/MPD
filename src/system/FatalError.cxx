@@ -17,7 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "FatalError.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -50,6 +52,12 @@ FormatFatalError(const char *fmt, ...)
 	va_end(ap);
 
 	exit(EXIT_FAILURE);
+}
+
+void
+FatalError(const Error &error)
+{
+	FatalError(error.GetMessage());
 }
 
 void

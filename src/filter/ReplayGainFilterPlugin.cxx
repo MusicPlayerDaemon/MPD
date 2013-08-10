@@ -28,6 +28,8 @@
 #include "MixerControl.hxx"
 #include "pcm/PcmVolume.hxx"
 #include "pcm/PcmBuffer.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <glib.h>
 
@@ -114,17 +116,13 @@ public:
 	 */
 	void Update();
 
-	virtual AudioFormat Open(AudioFormat &af, GError **error_r) override;
+	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
 	virtual void Close();
 	virtual const void *FilterPCM(const void *src, size_t src_size,
-				      size_t *dest_size_r, GError **error_r);
+				      size_t *dest_size_r, Error &error);
 };
 
-static inline GQuark
-replay_gain_quark(void)
-{
-	return g_quark_from_static_string("replay_gain");
-}
+static constexpr Domain replay_gain_domain("replay_gain");
 
 void
 ReplayGainFilter::Update()
@@ -145,24 +143,22 @@ ReplayGainFilter::Update()
 		if (_volume > 100)
 			_volume = 100;
 
-		GError *error = NULL;
-		if (!mixer_set_volume(mixer, _volume, &error)) {
+		Error error;
+		if (!mixer_set_volume(mixer, _volume, error))
 			g_warning("Failed to update hardware mixer: %s",
-				  error->message);
-			g_error_free(error);
-		}
+				  error.GetMessage());
 	}
 }
 
 static Filter *
 replay_gain_filter_init(gcc_unused const config_param &param,
-			gcc_unused GError **error_r)
+			gcc_unused Error &error)
 {
 	return new ReplayGainFilter();
 }
 
 AudioFormat
-ReplayGainFilter::Open(AudioFormat &af, gcc_unused GError **error_r)
+ReplayGainFilter::Open(AudioFormat &af, gcc_unused Error &error)
 {
 	format = af;
 
@@ -177,7 +173,7 @@ ReplayGainFilter::Close()
 
 const void *
 ReplayGainFilter::FilterPCM(const void *src, size_t src_size,
-			    size_t *dest_size_r, GError **error_r)
+			    size_t *dest_size_r, Error &error)
 {
 
 	*dest_size_r = src_size;
@@ -201,8 +197,7 @@ ReplayGainFilter::FilterPCM(const void *src, size_t src_size,
 				  format.format,
 				  volume);
 	if (!success) {
-		g_set_error(error_r, replay_gain_quark(), 0,
-			    "pcm_volume() has failed");
+		error.Set(replay_gain_domain, "pcm_volume() has failed");
 		return NULL;
 	}
 

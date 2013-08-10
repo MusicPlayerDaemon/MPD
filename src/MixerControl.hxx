@@ -25,8 +25,7 @@
 #ifndef MPD_MIXER_CONTROL_HXX
 #define MPD_MIXER_CONTROL_HXX
 
-#include "gerror.h"
-
+class Error;
 class Mixer;
 struct mixer_plugin;
 struct config_param;
@@ -34,13 +33,13 @@ struct config_param;
 Mixer *
 mixer_new(const struct mixer_plugin *plugin, void *ao,
 	  const config_param &param,
-	  GError **error_r);
+	  Error &error);
 
 void
 mixer_free(Mixer *mixer);
 
 bool
-mixer_open(Mixer *mixer, GError **error_r);
+mixer_open(Mixer *mixer, Error &error);
 
 void
 mixer_close(Mixer *mixer);
@@ -53,9 +52,9 @@ void
 mixer_auto_close(Mixer *mixer);
 
 int
-mixer_get_volume(Mixer *mixer, GError **error_r);
+mixer_get_volume(Mixer *mixer, Error &error);
 
 bool
-mixer_set_volume(Mixer *mixer, unsigned volume, GError **error_r);
+mixer_set_volume(Mixer *mixer, unsigned volume, Error &error);
 
 #endif

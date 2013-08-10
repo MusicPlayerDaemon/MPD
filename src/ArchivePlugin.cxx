@@ -17,27 +17,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "ArchivePlugin.hxx"
 #include "ArchiveFile.hxx"
+#include "util/Error.hxx"
 
 #include <assert.h>
 
 ArchiveFile *
 archive_file_open(const struct archive_plugin *plugin, const char *path,
-		  GError **error_r)
+		  Error &error)
 {
 	assert(plugin != NULL);
 	assert(plugin->open != NULL);
 	assert(path != NULL);
-	assert(error_r == NULL || *error_r == NULL);
 
-	ArchiveFile *file = plugin->open(path, error_r);
-
-	if (file != NULL) {
-		assert(error_r == NULL || *error_r == NULL);
-	} else {
-		assert(error_r == NULL || *error_r != NULL);
-	}
+	ArchiveFile *file = plugin->open(path, error);
+	assert((file == nullptr) == error.IsDefined());
 
 	return file;
 }

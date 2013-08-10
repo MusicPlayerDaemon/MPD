@@ -19,6 +19,10 @@
 
 #include "config.h"
 #include "Resolver.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
+
+#include <glib.h>
 
 #ifndef G_OS_WIN32
 #include <sys/socket.h>
@@ -30,8 +34,10 @@
 
 #include <string.h>
 
+const Domain resolver_domain("resolver");
+
 char *
-sockaddr_to_string(const struct sockaddr *sa, size_t length, GError **error)
+sockaddr_to_string(const struct sockaddr *sa, size_t length, Error &error)
 {
 #if defined(HAVE_IPV6) && defined(IN6_IS_ADDR_V4MAPPED)
 	const struct sockaddr_in6 *a6 = (const struct sockaddr_in6 *)sa;
@@ -59,8 +65,7 @@ sockaddr_to_string(const struct sockaddr *sa, size_t length, GError **error)
 	ret = getnameinfo(sa, length, host, sizeof(host), serv, sizeof(serv),
 			  NI_NUMERICHOST|NI_NUMERICSERV);
 	if (ret != 0) {
-		g_set_error(error, g_quark_from_static_string("netdb"), ret,
-			    "%s", gai_strerror(ret));
+		error.Set(resolver_domain, ret, gai_strerror(ret));
 		return NULL;
 	}
 
@@ -82,7 +87,7 @@ sockaddr_to_string(const struct sockaddr *sa, size_t length, GError **error)
 struct addrinfo *
 resolve_host_port(const char *host_port, unsigned default_port,
 		  int flags, int socktype,
-		  GError **error_r)
+		  Error &error)
 {
 	char *p = g_strdup(host_port);
 	const char *host = p, *port = NULL;
@@ -130,9 +135,9 @@ resolve_host_port(const char *host_port, unsigned default_port,
 	int ret = getaddrinfo(host, port, &hints, &ai);
 	g_free(p);
 	if (ret != 0) {
-		g_set_error(error_r, resolver_quark(), ret,
-			    "Failed to look up '%s': %s",
-			    host_port, gai_strerror(ret));
+		error.Format(resolver_domain, ret,
+			     "Failed to look up '%s': %s",
+			     host_port, gai_strerror(ret));
 		return NULL;
 	}
 

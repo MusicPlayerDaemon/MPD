@@ -61,17 +61,17 @@ bool
 VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
 		enum tag_type tag_type,
 		VisitString visit_string,
-		GError **error_r)
+		Error &error)
 {
 	StringSet set;
 
 	using namespace std::placeholders;
 	const auto f = std::bind(CollectTags, std::ref(set), tag_type, _1);
-	if (!db.Visit(selection, f, error_r))
+	if (!db.Visit(selection, f, error))
 		return false;
 
 	for (auto value : set)
-		if (!visit_string(value, error_r))
+		if (!visit_string(value, error))
 			return false;
 
 	return true;
@@ -116,7 +116,7 @@ StatsVisitSong(DatabaseStats &stats, StringSet &artists, StringSet &albums,
 
 bool
 GetStats(const Database &db, const DatabaseSelection &selection,
-	 DatabaseStats &stats, GError **error_r)
+	 DatabaseStats &stats, Error &error)
 {
 	stats.Clear();
 
@@ -125,7 +125,7 @@ GetStats(const Database &db, const DatabaseSelection &selection,
 	const auto f = std::bind(StatsVisitSong,
 				 std::ref(stats), std::ref(artists),
 				 std::ref(albums), _1);
-	if (!db.Visit(selection, f, error_r))
+	if (!db.Visit(selection, f, error))
 		return false;
 
 	stats.artist_count = artists.size();

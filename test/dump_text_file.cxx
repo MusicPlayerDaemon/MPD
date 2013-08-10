@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 #include "conf.h"
 #include "stdbin.h"
 #include "TextInputStream.hxx"
+#include "util/Error.hxx"
 
 #ifdef ENABLE_ARCHIVE
 #include "ArchiveList.hxx"
@@ -56,7 +57,7 @@ dump_text_file(TextInputStream &is)
 static int
 dump_input_stream(struct input_stream *is)
 {
-	GError *error = NULL;
+	Error error;
 
 	input_stream_lock(is);
 
@@ -64,9 +65,8 @@ dump_input_stream(struct input_stream *is)
 
 	input_stream_wait_ready(is);
 
-	if (!input_stream_check(is, &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	if (!input_stream_check(is, error)) {
+		g_warning("%s", error.GetMessage());
 		input_stream_unlock(is);
 		return EXIT_FAILURE;
 	}
@@ -80,9 +80,8 @@ dump_input_stream(struct input_stream *is)
 	}
 	input_stream_lock(is);
 
-	if (!input_stream_check(is, &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	if (!input_stream_check(is, error)) {
+		g_warning("%s", error.GetMessage());
 		input_stream_unlock(is);
 		return EXIT_FAILURE;
 	}
@@ -94,7 +93,6 @@ dump_input_stream(struct input_stream *is)
 
 int main(int argc, char **argv)
 {
-	GError *error = NULL;
 	struct input_stream *is;
 	int ret;
 
@@ -122,9 +120,9 @@ int main(int argc, char **argv)
 	archive_plugin_init_all();
 #endif
 
-	if (!input_stream_global_init(&error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	Error error;
+	if (!input_stream_global_init(error)) {
+		g_warning("%s", error.GetMessage());
 		return 2;
 	}
 
@@ -133,15 +131,14 @@ int main(int argc, char **argv)
 	Mutex mutex;
 	Cond cond;
 
-	is = input_stream_open(argv[1], mutex, cond, &error);
+	is = input_stream_open(argv[1], mutex, cond, error);
 	if (is != NULL) {
 		ret = dump_input_stream(is);
 		input_stream_close(is);
 	} else {
-		if (error != NULL) {
-			g_warning("%s", error->message);
-			g_error_free(error);
-		} else
+		if (error.IsDefined())
+			g_warning("%s", error.GetMessage());
+		else
 			g_printerr("input_stream_open() failed\n");
 		ret = 2;
 	}

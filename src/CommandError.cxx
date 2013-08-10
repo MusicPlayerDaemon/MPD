@@ -20,8 +20,10 @@
 #include "config.h"
 #include "CommandError.hxx"
 #include "DatabaseError.hxx"
-#include "io_error.h"
 #include "protocol/Result.hxx"
+#include "util/Error.hxx"
+
+#include <glib.h>
 
 #include <assert.h>
 #include <errno.h>
@@ -85,50 +87,38 @@ print_playlist_result(Client *client, enum playlist_result result)
 	return COMMAND_RETURN_ERROR;
 }
 
-/**
- * Send the GError to the client and free the GError.
- */
 enum command_return
-print_error(Client *client, GError *error)
+print_error(Client *client, const Error &error)
 {
 	assert(client != NULL);
-	assert(error != NULL);
+	assert(error.IsDefined());
 
-	g_warning("%s", error->message);
+	g_warning("%s", error.GetMessage());
 
-	if (error->domain == playlist_quark()) {
-		enum playlist_result result = (playlist_result)error->code;
-		g_error_free(error);
-		return print_playlist_result(client, result);
-	} else if (error->domain == ack_quark()) {
-		command_error(client, (ack)error->code, "%s", error->message);
-		g_error_free(error);
+	if (error.IsDomain(playlist_domain)) {
+		return print_playlist_result(client,
+					     playlist_result(error.GetCode()));
+	} else if (error.IsDomain(ack_domain)) {
+		command_error(client, (ack)error.GetCode(),
+			      "%s", error.GetMessage());
 		return COMMAND_RETURN_ERROR;
-	} else if (error->domain == db_quark()) {
-		switch ((enum db_error)error->code) {
+	} else if (error.IsDomain(db_domain)) {
+		switch ((enum db_error)error.GetCode()) {
 		case DB_DISABLED:
 			command_error(client, ACK_ERROR_NO_EXIST, "%s",
-				      error->message);
-			g_error_free(error);
+				      error.GetMessage());
 			return COMMAND_RETURN_ERROR;
 
 		case DB_NOT_FOUND:
-			g_error_free(error);
 			command_error(client, ACK_ERROR_NO_EXIST, "Not found");
 			return COMMAND_RETURN_ERROR;
 		}
-	} else if (error->domain == errno_quark()) {
+	} else if (error.IsDomain(errno_domain)) {
 		command_error(client, ACK_ERROR_SYSTEM, "%s",
-			      g_strerror(error->code));
-		g_error_free(error);
-		return COMMAND_RETURN_ERROR;
-	} else if (error->domain == g_file_error_quark()) {
-		command_error(client, ACK_ERROR_SYSTEM, "%s", error->message);
-		g_error_free(error);
+			      g_strerror(error.GetCode()));
 		return COMMAND_RETURN_ERROR;
 	}
 
-	g_error_free(error);
 	command_error(client, ACK_ERROR_UNKNOWN, "error");
 	return COMMAND_RETURN_ERROR;
 }

@@ -28,6 +28,7 @@
 #include "ArchiveFile.hxx"
 #include "ArchiveVisitor.hxx"
 #include "fs/Path.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -54,7 +55,7 @@ class MyArchiveVisitor final : public ArchiveVisitor {
 int
 main(int argc, char **argv)
 {
-	GError *error = nullptr;
+	Error error;
 
 	if (argc != 3) {
 		fprintf(stderr, "Usage: visit_archive PLUGIN PATH\n");
@@ -81,9 +82,8 @@ main(int argc, char **argv)
 
 	archive_plugin_init_all();
 
-	if (!input_stream_global_init(&error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	if (!input_stream_global_init(error)) {
+		fprintf(stderr, "%s", error.GetMessage());
 		return 2;
 	}
 
@@ -97,14 +97,13 @@ main(int argc, char **argv)
 
 	int result = EXIT_SUCCESS;
 
-	ArchiveFile *file = archive_file_open(plugin, path.c_str(), &error);
+	ArchiveFile *file = archive_file_open(plugin, path.c_str(), error);
 	if (file != nullptr) {
 		MyArchiveVisitor visitor;
 		file->Visit(visitor);
 		file->Close();
 	} else {
-		fprintf(stderr, "%s\n", error->message);
-		g_error_free(error);
+		fprintf(stderr, "%s", error.GetMessage());
 		result = EXIT_FAILURE;
 	}
 

@@ -116,7 +116,7 @@ private:
 	/* virtual methods from class BufferedSocket */
 	virtual InputResult OnSocketInput(const void *data,
 					  size_t length) override;
-	virtual void OnSocketError(GError *error) override;
+	virtual void OnSocketError(Error &&error) override;
 	virtual void OnSocketClosed() override;
 
 	/* virtual methods from class TimeoutMonitor */

@@ -20,17 +20,16 @@
 #ifndef MPD_DATABASE_SAVE_HXX
 #define MPD_DATABASE_SAVE_HXX
 
-#include "gerror.h"
-
 #include <stdio.h>
 
 struct Directory;
 class TextFile;
+class Error;
 
 void
 db_save_internal(FILE *file, const Directory *root);
 
 bool
-db_load_internal(TextFile &file, Directory *root, GError **error);
+db_load_internal(TextFile &file, Directory *root, Error &error);
 
 #endif

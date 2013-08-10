@@ -24,6 +24,8 @@
 #include "SongSave.hxx"
 #include "PlaylistDatabase.hxx"
 #include "TextFile.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -33,14 +35,7 @@
 #define DIRECTORY_BEGIN "begin: "
 #define DIRECTORY_END "end: "
 
-/**
- * The quark used for GError.domain.
- */
-static inline GQuark
-directory_quark(void)
-{
-	return g_quark_from_static_string("directory");
-}
+static constexpr Domain directory_domain("directory");
 
 void
 directory_save(FILE *fp, const Directory *directory)
@@ -77,13 +72,13 @@ directory_save(FILE *fp, const Directory *directory)
 
 static Directory *
 directory_load_subdir(TextFile &file, Directory *parent, const char *name,
-		      GError **error_r)
+		      Error &error)
 {
 	bool success;
 
 	if (parent->FindChild(name) != nullptr) {
-		g_set_error(error_r, directory_quark(), 0,
-			    "Duplicate subdirectory '%s'", name);
+		error.Format(directory_domain,
+			     "Duplicate subdirectory '%s'", name);
 		return NULL;
 	}
 
@@ -91,8 +86,7 @@ directory_load_subdir(TextFile &file, Directory *parent, const char *name,
 
 	const char *line = file.ReadLine();
 	if (line == NULL) {
-		g_set_error(error_r, directory_quark(), 0,
-			    "Unexpected end of file");
+		error.Set(directory_domain, "Unexpected end of file");
 		directory->Delete();
 		return NULL;
 	}
@@ -104,21 +98,19 @@ directory_load_subdir(TextFile &file, Directory *parent, const char *name,
 
 		line = file.ReadLine();
 		if (line == NULL) {
-			g_set_error(error_r, directory_quark(), 0,
-				    "Unexpected end of file");
+			error.Set(directory_domain, "Unexpected end of file");
 			directory->Delete();
 			return NULL;
 		}
 	}
 
 	if (!g_str_has_prefix(line, DIRECTORY_BEGIN)) {
-		g_set_error(error_r, directory_quark(), 0,
-			    "Malformed line: %s", line);
+		error.Format(directory_domain, "Malformed line: %s", line);
 		directory->Delete();
 		return NULL;
 	}
 
-	success = directory_load(file, directory, error_r);
+	success = directory_load(file, directory, error);
 	if (!success) {
 		directory->Delete();
 		return NULL;
@@ -128,7 +120,7 @@ directory_load_subdir(TextFile &file, Directory *parent, const char *name,
 }
 
 bool
-directory_load(TextFile &file, Directory *directory, GError **error)
+directory_load(TextFile &file, Directory *directory, Error &error)
 {
 	const char *line;
 
@@ -146,8 +138,8 @@ directory_load(TextFile &file, Directory *directory, GError **error)
 			Song *song;
 
 			if (directory->FindSong(name) != nullptr) {
-				g_set_error(error, directory_quark(), 0,
-					    "Duplicate song '%s'", name);
+				error.Format(directory_domain,
+					     "Duplicate song '%s'", name);
 				return false;
 			}
 
@@ -170,8 +162,8 @@ directory_load(TextFile &file, Directory *directory, GError **error)
 
 			g_free(name);
 		} else {
-			g_set_error(error, directory_quark(), 0,
-				    "Malformed line: %s", line);
+			error.Format(directory_domain,
+				     "Malformed line: %s", line);
 			return false;
 		}
 	}

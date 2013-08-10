@@ -22,6 +22,7 @@
 #include "DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
+#include "util/Error.hxx"
 
 #include <sndfile.h>
 
@@ -40,10 +41,8 @@ static sf_count_t
 sndfile_vio_seek(sf_count_t offset, int whence, void *user_data)
 {
 	struct input_stream *is = (struct input_stream *)user_data;
-	bool success;
 
-	success = input_stream_lock_seek(is, offset, whence, nullptr);
-	if (!success)
+	if (!input_stream_lock_seek(is, offset, whence, IgnoreError()))
 		return -1;
 
 	return input_stream_get_offset(is);
@@ -53,13 +52,11 @@ static sf_count_t
 sndfile_vio_read(void *ptr, sf_count_t count, void *user_data)
 {
 	struct input_stream *is = (struct input_stream *)user_data;
-	GError *error = nullptr;
-	size_t nbytes;
 
-	nbytes = input_stream_lock_read(is, ptr, count, &error);
-	if (nbytes == 0 && error != nullptr) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+	Error error;
+	size_t nbytes = input_stream_lock_read(is, ptr, count, error);
+	if (nbytes == 0 && error.IsDefined()) {
+		g_warning("%s", error.GetMessage());
 		return -1;
 	}
 
@@ -116,7 +113,6 @@ time_to_frame(float t, const AudioFormat *audio_format)
 static void
 sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 {
-	GError *error = nullptr;
 	SNDFILE *sf;
 	SF_INFO info;
 	size_t frame_size;
@@ -135,12 +131,12 @@ sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	/* for now, always read 32 bit samples.  Later, we could lower
 	   MPD's CPU usage by reading 16 bit samples with
 	   sf_readf_short() on low-quality source files. */
+	Error error;
 	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format, info.samplerate,
 				       SampleFormat::S32,
-				       info.channels, &error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
+				       info.channels, error)) {
+		g_warning("%s", error.GetMessage());
 		return;
 	}
 

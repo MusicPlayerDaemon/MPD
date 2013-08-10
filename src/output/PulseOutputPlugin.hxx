@@ -20,11 +20,10 @@
 #ifndef MPD_PULSE_OUTPUT_PLUGIN_HXX
 #define MPD_PULSE_OUTPUT_PLUGIN_HXX
 
-#include "gerror.h"
-
 struct PulseOutput;
 struct PulseMixer;
 struct pa_cvolume;
+class Error;
 
 extern const struct audio_output_plugin pulse_output_plugin;
 
@@ -42,6 +41,6 @@ pulse_output_clear_mixer(PulseOutput *po, PulseMixer *pm);
 
 bool
 pulse_output_set_volume(PulseOutput *po,
-			const struct pa_cvolume *volume, GError **error_r);
+			const struct pa_cvolume *volume, Error &error);
 
 #endif

@@ -32,6 +32,7 @@
 #include "protocol/Result.hxx"
 #include "Client.hxx"
 #include "util/Tokenizer.hxx"
+#include "util/Error.hxx"
 
 #ifdef ENABLE_SQLITE
 #include "StickerCommands.hxx"
@@ -315,7 +316,7 @@ command_checked_lookup(Client *client, unsigned permission,
 enum command_return
 command_process(Client *client, unsigned num, char *line)
 {
-	GError *error = NULL;
+	Error error;
 	char *argv[COMMAND_ARGV_MAX] = { NULL };
 	const struct command *cmd;
 	enum command_return ret = COMMAND_RETURN_ERROR;
@@ -325,17 +326,16 @@ command_process(Client *client, unsigned num, char *line)
 	/* get the command name (first word on the line) */
 
 	Tokenizer tokenizer(line);
-	argv[0] = tokenizer.NextWord(&error);
+	argv[0] = tokenizer.NextWord(error);
 	if (argv[0] == NULL) {
 		current_command = "";
 		if (tokenizer.IsEnd())
 			command_error(client, ACK_ERROR_UNKNOWN,
 				      "No command given");
-		else {
+		else
 			command_error(client, ACK_ERROR_UNKNOWN,
-				      "%s", error->message);
-			g_error_free(error);
-		}
+				      "%s", error.GetMessage());
+
 		current_command = NULL;
 
 		return COMMAND_RETURN_ERROR;
@@ -347,7 +347,7 @@ command_process(Client *client, unsigned num, char *line)
 
 	while (argc < COMMAND_ARGV_MAX &&
 	       (argv[argc] =
-		tokenizer.NextParam(&error)) != NULL)
+		tokenizer.NextParam(error)) != NULL)
 		++argc;
 
 	/* some error checks; we have to set current_command because
@@ -362,10 +362,8 @@ command_process(Client *client, unsigned num, char *line)
 	}
 
 	if (!tokenizer.IsEnd()) {
-		command_error(client, ACK_ERROR_ARG,
-			      "%s", error->message);
+		command_error(client, ACK_ERROR_ARG, "%s", error.GetMessage());
 		current_command = NULL;
-		g_error_free(error);
 		return COMMAND_RETURN_ERROR;
 	}
 

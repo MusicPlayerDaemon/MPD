@@ -431,10 +431,9 @@ HttpdClient::OnSocketInput(const void *data, size_t length)
 }
 
 void
-HttpdClient::OnSocketError(GError *error)
+HttpdClient::OnSocketError(Error &&error)
 {
-	g_warning("error on HTTP client: %s", error->message);
-	g_error_free(error);
+	g_warning("error on HTTP client: %s", error.GetMessage());
 }
 
 void

@@ -26,6 +26,7 @@
 #include "DatabaseGlue.hxx"
 #include "TextFile.hxx"
 #include "util/UriUtil.hxx"
+#include "util/Error.hxx"
 
 #include <stdlib.h>
 
@@ -90,11 +91,10 @@ queue_load_song(TextFile &file, const char *line, queue *queue)
 		if (!uri_has_scheme(uri) && !g_path_is_absolute(uri))
 			return;
 
-		GError *error = NULL;
-		song = song_load(file, NULL, uri, &error);
+		Error error;
+		song = song_load(file, NULL, uri, error);
 		if (song == NULL) {
-			g_warning("%s", error->message);
-			g_error_free(error);
+			g_warning("%s", error.GetMessage());
 			return;
 		}
 	} else {
@@ -110,11 +110,11 @@ queue_load_song(TextFile &file, const char *line, queue *queue)
 		if (uri_has_scheme(uri)) {
 			song = Song::NewRemote(uri);
 		} else {
-			db = GetDatabase(nullptr);
+			db = GetDatabase(IgnoreError());
 			if (db == nullptr)
 				return;
 
-			song = db->GetSong(uri, nullptr);
+			song = db->GetSong(uri, IgnoreError());
 			if (song == nullptr)
 				return;
 		}

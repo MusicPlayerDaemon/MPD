@@ -20,6 +20,7 @@
 #include "config.h"
 #include "decoder/PcmDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
+#include "util/Error.hxx"
 
 extern "C" {
 #include "util/byte_reverse.h"
@@ -46,7 +47,6 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 	const bool reverse_endian = mime != nullptr &&
 		strcmp(mime, "audio/x-mpd-cdda-pcm-reverse") == 0;
 
-	GError *error = nullptr;
 	enum decoder_command cmd;
 
 	const double time_to_size = audio_format.GetTimeToSize();
@@ -81,12 +81,13 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 		if (cmd == DECODE_COMMAND_SEEK) {
 			goffset offset = (goffset)(time_to_size *
 						   decoder_seek_where(decoder));
+
+			Error error;
 			if (input_stream_lock_seek(is, offset, SEEK_SET,
-						   &error)) {
+						   error)) {
 				decoder_command_finished(decoder);
 			} else {
-				g_warning("seeking failed: %s", error->message);
-				g_error_free(error);
+				g_warning("seeking failed: %s", error.GetMessage());
 				decoder_seek_error(decoder);
 			}
 

@@ -24,6 +24,7 @@
 #include "ArchivePlugin.hxx"
 #include "ArchiveFile.hxx"
 #include "InputPlugin.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -38,7 +39,7 @@
 static struct input_stream *
 input_archive_open(const char *pathname,
 		   Mutex &mutex, Cond &cond,
-		   GError **error_r)
+		   Error &error)
 {
 	const struct archive_plugin *arplug;
 	char *archive, *filename, *suffix, *pname;
@@ -63,14 +64,14 @@ input_archive_open(const char *pathname,
 		return NULL;
 	}
 
-	auto file = archive_file_open(arplug, archive, error_r);
+	auto file = archive_file_open(arplug, archive, error);
 	if (file == NULL) {
 		g_free(pname);
 		return NULL;
 	}
 
 	//setup fileops
-	is = file->OpenStream(filename, mutex, cond, error_r);
+	is = file->OpenStream(filename, mutex, cond, error);
 	g_free(pname);
 	file->Close();
 

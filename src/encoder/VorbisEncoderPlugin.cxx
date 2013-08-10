@@ -23,9 +23,13 @@
 #include "EncoderAPI.hxx"
 #include "Tag.hxx"
 #include "AudioFormat.hxx"
-#include "mpd_error.h"
+#include "ConfigError.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <vorbis/vorbisenc.h>
+
+#include <glib.h>
 
 #include <assert.h>
 
@@ -54,15 +58,11 @@ struct vorbis_encoder {
 	vorbis_encoder():encoder(vorbis_encoder_plugin) {}
 };
 
-static inline GQuark
-vorbis_encoder_quark(void)
-{
-	return g_quark_from_static_string("vorbis_encoder");
-}
+static constexpr Domain vorbis_encoder_domain("vorbis_encoder");
 
 static bool
 vorbis_encoder_configure(struct vorbis_encoder *encoder,
-			 const config_param &param, GError **error)
+			 const config_param &param, Error &error)
 {
 	const char *value = param.GetBlockValue("quality");
 	if (value != nullptr) {
@@ -73,18 +73,18 @@ vorbis_encoder_configure(struct vorbis_encoder *encoder,
 
 		if (*endptr != '\0' || encoder->quality < -1.0 ||
 		    encoder->quality > 10.0) {
-			g_set_error(error, vorbis_encoder_quark(), 0,
-				    "quality \"%s\" is not a number in the "
-				    "range -1 to 10, line %i",
-				    value, param.line);
+			error.Format(config_domain,
+				     "quality \"%s\" is not a number in the "
+				     "range -1 to 10, line %i",
+				     value, param.line);
 			return false;
 		}
 
 		if (param.GetBlockValue("bitrate") != nullptr) {
-			g_set_error(error, vorbis_encoder_quark(), 0,
-				    "quality and bitrate are "
-				    "both defined (line %i)",
-				    param.line);
+			error.Format(config_domain,
+				     "quality and bitrate are "
+				     "both defined (line %i)",
+				     param.line);
 			return false;
 		}
 	} else {
@@ -92,10 +92,10 @@ vorbis_encoder_configure(struct vorbis_encoder *encoder,
 
 		value = param.GetBlockValue("bitrate");
 		if (value == nullptr) {
-			g_set_error(error, vorbis_encoder_quark(), 0,
-				    "neither bitrate nor quality defined "
-				    "at line %i",
-				    param.line);
+			error.Format(config_domain,
+				     "neither bitrate nor quality defined "
+				     "at line %i",
+				     param.line);
 			return false;
 		}
 
@@ -104,9 +104,9 @@ vorbis_encoder_configure(struct vorbis_encoder *encoder,
 		char *endptr;
 		encoder->bitrate = g_ascii_strtoll(value, &endptr, 10);
 		if (*endptr != '\0' || encoder->bitrate <= 0) {
-			g_set_error(error, vorbis_encoder_quark(), 0,
-				    "bitrate at line %i should be a positive integer",
-				    param.line);
+			error.Format(config_domain,
+				     "bitrate at line %i should be a positive integer",
+				     param.line);
 			return false;
 		}
 	}
@@ -115,7 +115,7 @@ vorbis_encoder_configure(struct vorbis_encoder *encoder,
 }
 
 static Encoder *
-vorbis_encoder_init(const config_param &param, GError **error)
+vorbis_encoder_init(const config_param &param, Error &error)
 {
 	vorbis_encoder *encoder = new vorbis_encoder();
 
@@ -140,7 +140,7 @@ vorbis_encoder_finish(Encoder *_encoder)
 }
 
 static bool
-vorbis_encoder_reinit(struct vorbis_encoder *encoder, GError **error)
+vorbis_encoder_reinit(struct vorbis_encoder *encoder, Error &error)
 {
 	vorbis_info_init(&encoder->vi);
 
@@ -151,8 +151,8 @@ vorbis_encoder_reinit(struct vorbis_encoder *encoder, GError **error)
 						encoder->audio_format.channels,
 						encoder->audio_format.sample_rate,
 						encoder->quality * 0.1)) {
-			g_set_error(error, vorbis_encoder_quark(), 0,
-				    "error initializing vorbis vbr");
+			error.Set(vorbis_encoder_domain,
+				  "error initializing vorbis vbr");
 			vorbis_info_clear(&encoder->vi);
 			return false;
 		}
@@ -163,8 +163,8 @@ vorbis_encoder_reinit(struct vorbis_encoder *encoder, GError **error)
 					    encoder->audio_format.channels,
 					    encoder->audio_format.sample_rate, -1.0,
 					    encoder->bitrate * 1000, -1.0)) {
-			g_set_error(error, vorbis_encoder_quark(), 0,
-				    "error initializing vorbis encoder");
+			error.Set(vorbis_encoder_domain,
+				  "error initializing vorbis encoder");
 			vorbis_info_clear(&encoder->vi);
 			return false;
 		}
@@ -203,7 +203,7 @@ vorbis_encoder_send_header(struct vorbis_encoder *encoder)
 static bool
 vorbis_encoder_open(Encoder *_encoder,
 		    AudioFormat &audio_format,
-		    GError **error)
+		    Error &error)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 
@@ -250,7 +250,7 @@ vorbis_encoder_blockout(struct vorbis_encoder *encoder)
 }
 
 static bool
-vorbis_encoder_flush(Encoder *_encoder, gcc_unused GError **error)
+vorbis_encoder_flush(Encoder *_encoder, gcc_unused Error &error)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 
@@ -259,7 +259,7 @@ vorbis_encoder_flush(Encoder *_encoder, gcc_unused GError **error)
 }
 
 static bool
-vorbis_encoder_pre_tag(Encoder *_encoder, gcc_unused GError **error)
+vorbis_encoder_pre_tag(Encoder *_encoder, gcc_unused Error &error)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 
@@ -290,7 +290,7 @@ copy_tag_to_vorbis_comment(vorbis_comment *vc, const Tag *tag)
 
 static bool
 vorbis_encoder_tag(Encoder *_encoder, const Tag *tag,
-		   gcc_unused GError **error)
+		   gcc_unused Error &error)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 	vorbis_comment comment;
@@ -324,7 +324,7 @@ interleaved_to_vorbis_buffer(float **dest, const float *src,
 static bool
 vorbis_encoder_write(Encoder *_encoder,
 		     const void *data, size_t length,
-		     gcc_unused GError **error)
+		     gcc_unused Error &error)
 {
 	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
 

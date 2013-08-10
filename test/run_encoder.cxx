@@ -23,6 +23,7 @@
 #include "AudioFormat.hxx"
 #include "AudioParser.hxx"
 #include "conf.h"
+#include "util/Error.hxx"
 #include "stdbin.h"
 
 #include <glib.h>
@@ -43,8 +44,6 @@ encoder_to_stdout(Encoder &encoder)
 
 int main(int argc, char **argv)
 {
-	GError *error = NULL;
-	bool ret;
 	const char *encoder_name;
 	static char buffer[32768];
 
@@ -71,11 +70,11 @@ int main(int argc, char **argv)
 	config_param param;
 	param.AddBlockParam("quality", "5.0", -1);
 
-	const auto encoder = encoder_init(*plugin, param, &error);
+	Error error;
+	const auto encoder = encoder_init(*plugin, param, error);
 	if (encoder == NULL) {
 		g_printerr("Failed to initialize encoder: %s\n",
-			   error->message);
-		g_error_free(error);
+			   error.GetMessage());
 		return 1;
 	}
 
@@ -83,20 +82,16 @@ int main(int argc, char **argv)
 
 	AudioFormat audio_format(44100, SampleFormat::S16, 2);
 	if (argc > 2) {
-		ret = audio_format_parse(audio_format, argv[2],
-					 false, &error);
-		if (!ret) {
+		if (!audio_format_parse(audio_format, argv[2], false, error)) {
 			g_printerr("Failed to parse audio format: %s\n",
-				   error->message);
-			g_error_free(error);
+				   error.GetMessage());
 			return 1;
 		}
 	}
 
-	if (!encoder_open(encoder, audio_format, &error)) {
+	if (!encoder_open(encoder, audio_format, error)) {
 		g_printerr("Failed to open encoder: %s\n",
-			   error->message);
-		g_error_free(error);
+			   error.GetMessage());
 		return 1;
 	}
 
@@ -106,22 +101,18 @@ int main(int argc, char **argv)
 
 	ssize_t nbytes;
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
-		ret = encoder_write(encoder, buffer, nbytes, &error);
-		if (!ret) {
+		if (!encoder_write(encoder, buffer, nbytes, error)) {
 			g_printerr("encoder_write() failed: %s\n",
-				   error->message);
-			g_error_free(error);
+				   error.GetMessage());
 			return 1;
 		}
 
 		encoder_to_stdout(*encoder);
 	}
 
-	ret = encoder_end(encoder, &error);
-	if (!ret) {
+	if (!encoder_end(encoder, error)) {
 		g_printerr("encoder_flush() failed: %s\n",
-			   error->message);
-		g_error_free(error);
+			   error.GetMessage());
 		return 1;
 	}
 
