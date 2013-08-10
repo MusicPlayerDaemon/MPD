@@ -53,6 +53,11 @@ public:
 private:
 	virtual void RunDeferred() override {
 		f();
+
+		mutex.lock();
+		done = true;
+		cond.signal();
+		mutex.unlock();
 	}
 };
 
