@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ClientFile.hxx"
 #include "Client.hxx"
-#include "ack.h"
+#include "protocol/Ack.hxx"
 #include "io_error.h"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"

@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "gcc.h"
-#include "ack.h"
+#include "Ack.hxx"
 
 class Client;
 

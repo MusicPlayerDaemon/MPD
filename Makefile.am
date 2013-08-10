@@ -52,7 +52,6 @@ src_mpd_LDADD = \
 
 mpd_headers = \
 	src/check.h \
-	src/ack.h \
 	src/command.h \
 	src/conf.h \
 	src/gerror.h \
@@ -94,6 +93,7 @@ src_mpd_SOURCES = \
 	src/CheckAudioFormat.cxx src/CheckAudioFormat.hxx \
 	src/AudioFormat.cxx src/AudioFormat.hxx \
 	src/AudioParser.cxx src/AudioParser.hxx \
+	src/protocol/Ack.hxx \
 	src/protocol/ArgParser.cxx src/protocol/ArgParser.hxx \
 	src/protocol/Result.cxx src/protocol/Result.hxx \
 	src/CommandError.cxx src/CommandError.hxx \
