@@ -61,7 +61,7 @@ public:
 		e.events = events;
 		e.data.ptr = ptr;
 
-		return Control(EPOLL_CTL_DEL, _fd, &e);
+		return Control(EPOLL_CTL_ADD, _fd, &e);
 	}
 
 	bool Modify(int _fd, uint32_t events, void *ptr) {
