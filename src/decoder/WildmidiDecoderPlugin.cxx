@@ -21,7 +21,9 @@
 #include "WildmidiDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
 #include "TagHandler.hxx"
-#include "glib_compat.h"
+#include "fs/Path.hxx"
+#include "fs/FileSystem.hxx"
+#include "system/FatalError.hxx"
 
 #include <glib.h>
 
@@ -37,18 +39,20 @@ static constexpr unsigned WILDMIDI_SAMPLE_RATE = 48000;
 static bool
 wildmidi_init(const config_param &param)
 {
-	const char *config_file;
-	int ret;
+	GError *error = nullptr;
+	const Path path = param.GetBlockPath("config_file",
+					     "/etc/timidity/timidity.cfg",
+					     &error);
+	if (path.IsNull())
+		FatalError(error);
 
-	config_file = param.GetBlockValue("config_file",
-					  "/etc/timidity/timidity.cfg");
-	if (!g_file_test(config_file, G_FILE_TEST_IS_REGULAR)) {
-		g_debug("configuration file does not exist: %s", config_file);
+	if (!FileExists(path)) {
+		const auto utf8 = path.ToUTF8();
+		g_debug("configuration file does not exist: %s", utf8.c_str());
 		return false;
 	}
 
-	ret = WildMidi_Init(config_file, WILDMIDI_SAMPLE_RATE, 0);
-	return ret == 0;
+	return WildMidi_Init(path.c_str(), WILDMIDI_SAMPLE_RATE, 0) == 0;
 }
 
 static void
