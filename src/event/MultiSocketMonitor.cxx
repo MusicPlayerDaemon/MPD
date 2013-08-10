@@ -42,7 +42,8 @@ static GSourceFuncs multi_socket_monitor_source_funcs = {
 MultiSocketMonitor::MultiSocketMonitor(EventLoop &_loop)
 	:loop(_loop),
 	 source((Source *)g_source_new(&multi_socket_monitor_source_funcs,
-				       sizeof(*source))) {
+				       sizeof(*source))),
+	 absolute_timeout_us(G_MAXINT64) {
 	source->monitor = this;
 
 	g_source_attach(&source->base, loop.GetContext());
@@ -56,9 +57,20 @@ MultiSocketMonitor::~MultiSocketMonitor()
 }
 
 bool
+MultiSocketMonitor::Prepare(gint *timeout_r)
+{
+	int timeout_ms = *timeout_r = PrepareSockets();
+	absolute_timeout_us = timeout_ms < 0
+		? G_MAXINT64
+		: GetTime() + gint64(timeout_ms) * 1000;
+
+	return false;
+}
+
+bool
 MultiSocketMonitor::Check() const
 {
-	if (CheckSockets())
+	if (GetTime() >= absolute_timeout_us)
 		return true;
 
 	for (const auto &i : fds)

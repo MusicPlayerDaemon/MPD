@@ -52,6 +52,7 @@ class MultiSocketMonitor {
 
 	EventLoop &loop;
 	Source *source;
+	gint64 absolute_timeout_us;
 	std::forward_list<GPollFD> fds;
 
 public:
@@ -105,7 +106,6 @@ protected:
 	 * @return timeout [ms] or -1 for no timeout
 	 */
 	virtual int PrepareSockets() = 0;
-	virtual bool CheckSockets() const { return false; }
 	virtual void DispatchSockets() = 0;
 
 public:
@@ -116,11 +116,7 @@ public:
 				 gpointer user_data);
 
 private:
-	bool Prepare(gint *timeout_r) {
-		*timeout_r = PrepareSockets();
-		return false;
-	}
-
+	bool Prepare(gint *timeout_r);
 	bool Check() const;
 
 	void Dispatch() {

@@ -183,18 +183,6 @@ struct input_curl {
  * This class monitors all CURL file descriptors.
  */
 class CurlSockets final : private MultiSocketMonitor {
-	/**
-	 * Did CURL give us a timeout?  If yes, then we need to call
-	 * curl_multi_perform(), even if there was no event on any
-	 * file descriptor.
-	 */
-	bool have_timeout;
-
-	/**
-	 * The absolute time stamp when the timeout expires.
-	 */
-	gint64 absolute_timeout;
-
 public:
 	CurlSockets(EventLoop &_loop)
 		:MultiSocketMonitor(_loop) {}
@@ -205,7 +193,6 @@ private:
 	void UpdateSockets();
 
 	virtual int PrepareSockets() override;
-	virtual bool CheckSockets() const override;
 	virtual void DispatchSockets() override;
 };
 
@@ -541,14 +528,9 @@ CurlSockets::PrepareSockets()
 {
 	UpdateSockets();
 
-	have_timeout = false;
-
 	long timeout2;
 	CURLMcode mcode = curl_multi_timeout(curl.multi, &timeout2);
 	if (mcode == CURLM_OK) {
-		if (timeout2 >= 0)
-			absolute_timeout = GetTime() + timeout2 * 1000;
-
 		if (timeout2 >= 0 && timeout2 < 10)
 			/* CURL 7.21.1 likes to report "timeout=0",
 			   which means we're running in a busy loop.
@@ -556,22 +538,12 @@ CurlSockets::PrepareSockets()
 			   Let's use a lower limit of 10ms. */
 			timeout2 = 10;
 
-		have_timeout = timeout2 >= 0;
 		return timeout2;
 	} else {
 		g_warning("curl_multi_timeout() failed: %s\n",
 			  curl_multi_strerror(mcode));
 		return -1;
 	}
-}
-
-bool
-CurlSockets::CheckSockets() const
-{
-	/* when a timeout has expired, we need to call
-	   curl_multi_perform(), even if there was no file descriptor
-	   event */
-	return have_timeout && GetTime() >= absolute_timeout;
 }
 
 void
