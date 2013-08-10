@@ -299,6 +299,7 @@ libevent_a_SOURCES = \
 	src/event/WakeFD.hxx \
 	src/event/SignalMonitor.hxx src/event/SignalMonitor.cxx \
 	src/event/TimeoutMonitor.hxx src/event/TimeoutMonitor.cxx \
+	src/event/IdleMonitor.hxx src/event/IdleMonitor.cxx \
 	src/event/DeferredMonitor.hxx src/event/DeferredMonitor.cxx \
 	src/event/SocketMonitor.cxx src/event/SocketMonitor.hxx \
 	src/event/BufferedSocket.cxx src/event/BufferedSocket.hxx \
