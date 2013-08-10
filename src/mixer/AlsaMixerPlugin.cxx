@@ -23,6 +23,7 @@
 #include "GlobalEvents.hxx"
 #include "Main.hxx"
 #include "event/MultiSocketMonitor.hxx"
+#include "event/Loop.hxx"
 #include "util/ReusableArray.hxx"
 
 #include <algorithm>
@@ -42,7 +43,7 @@ class AlsaMixerMonitor final : private MultiSocketMonitor {
 public:
 	AlsaMixerMonitor(EventLoop &_loop, snd_mixer_t *_mixer)
 		:MultiSocketMonitor(_loop), mixer(_mixer) {
-		InvalidateSockets();
+		_loop.AddCall([this](){ InvalidateSockets(); });
 	}
 
 private:
