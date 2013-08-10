@@ -234,6 +234,7 @@ AvahiInit(EventLoop &loop, const char *serviceName)
 #ifdef USE_EPOLL
 	// TODO
 	(void)loop;
+	if (1==1) return;
 #else
 	avahi_glib_poll = avahi_glib_poll_new(loop.GetContext(),
 					      G_PRIORITY_DEFAULT);
