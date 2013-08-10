@@ -20,7 +20,7 @@
 #ifndef MPD_PLAYLIST_SAVE_H
 #define MPD_PLAYLIST_SAVE_H
 
-#include "playlist_error.h"
+#include "PlaylistError.hxx"
 
 #include <stdio.h>
 

@@ -24,7 +24,7 @@
 #ifndef MPD_PLAYLIST_QUEUE_HXX
 #define MPD_PLAYLIST_QUEUE_HXX
 
-#include "playlist_error.h"
+#include "PlaylistError.hxx"
 
 struct playlist_provider;
 struct playlist;

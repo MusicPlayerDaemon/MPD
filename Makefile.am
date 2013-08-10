@@ -63,7 +63,6 @@ mpd_headers = \
 	src/AudioCompress/compress.h \
 	src/open.h \
 	src/Playlist.hxx \
-	src/playlist_error.h \
 	src/poison.h \
 	src/riff.h \
 	src/aiff.h \
@@ -180,6 +179,7 @@ src_mpd_SOURCES = \
 	src/PlayerThread.cxx src/PlayerThread.hxx \
 	src/PlayerControl.cxx src/PlayerControl.hxx \
 	src/Playlist.cxx \
+	src/PlaylistError.hxx \
 	src/PlaylistGlobal.cxx src/PlaylistGlobal.hxx \
 	src/PlaylistControl.cxx \
 	src/PlaylistEdit.cxx \

@@ -21,7 +21,7 @@
 #define MPD_COMMAND_ERROR_HXX
 
 #include "command.h"
-#include "playlist_error.h"
+#include "PlaylistError.hxx"
 #include "gerror.h"
 
 class Client;

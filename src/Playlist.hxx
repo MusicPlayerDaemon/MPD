@@ -21,7 +21,7 @@
 #define MPD_PLAYLIST_HXX
 
 #include "Queue.hxx"
-#include "playlist_error.h"
+#include "PlaylistError.hxx"
 
 struct player_control;
 struct Song;
