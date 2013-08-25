@@ -105,6 +105,12 @@ config_get_path(ConfigOption option, Error &error)
 	if (param == nullptr)
 		return Path::Null();
 
+	return config_parse_path(param, error);
+}
+
+Path
+config_parse_path(const struct config_param *param, Error & error)
+{
 	Path path = ParsePath(param->value, error);
 	if (gcc_unlikely(path.IsNull()))
 		error.FormatPrefix("Invalid path at line %i: ",

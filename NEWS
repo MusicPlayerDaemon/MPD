@@ -1,4 +1,6 @@
 ver 0.18 (2012/??/??)
+* configuration:
+  - allow tilde paths for socket
 * protocol:
   - new command "toggleoutput"
 * innput:

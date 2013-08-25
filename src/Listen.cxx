@@ -27,6 +27,7 @@
 #include "ConfigOption.hxx"
 #include "event/ServerSocket.hxx"
 #include "util/Error.hxx"
+#include "fs/Path.hxx"
 
 #include <string.h>
 #include <assert.h>
@@ -64,8 +65,9 @@ listen_add_config_param(unsigned int port,
 
 	if (0 == strcmp(param->value, "any")) {
 		return listen_socket->AddPort(port, error_r);
-	} else if (param->value[0] == '/') {
-		return listen_socket->AddPath(param->value, error_r);
+	} else if (param->value[0] == '/' || param->value[0] == '~') {
+		Path path = config_parse_path(param, error_r);
+		return !path.IsNull() && listen_socket->AddPath(path.c_str(), error_r);
 	} else {
 		return listen_socket->AddHost(param->value, port, error_r);
 	}
