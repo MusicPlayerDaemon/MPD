@@ -207,14 +207,6 @@ input_despotify_eof(struct input_stream *is)
 	return ctx->eof;
 }
 
-static bool
-input_despotify_seek(gcc_unused struct input_stream *is,
-		     gcc_unused goffset offset, gcc_unused int whence,
-		     gcc_unused GError **error_r)
-{
-	return false;
-}
-
 static Tag *
 input_despotify_tag(struct input_stream *is)
 {
@@ -234,9 +226,9 @@ const struct input_plugin input_plugin_despotify = {
 	input_despotify_close,
 	nullptr,
 	nullptr,
-	.tag = input_despotify_tag,
+	input_despotify_tag,
 	nullptr,
 	input_despotify_read,
 	input_despotify_eof,
-	input_despotify_seek,
+	nullptr,
 };

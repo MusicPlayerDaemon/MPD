@@ -123,14 +123,6 @@ input_mms_eof(struct input_stream *is)
 	return m->eof;
 }
 
-static bool
-input_mms_seek(gcc_unused struct input_stream *is,
-	       gcc_unused goffset offset, gcc_unused int whence,
-	       gcc_unused GError **error_r)
-{
-	return false;
-}
-
 const struct input_plugin input_plugin_mms = {
 	"mms",
 	nullptr,
@@ -143,5 +135,5 @@ const struct input_plugin input_plugin_mms = {
 	nullptr,
 	input_mms_read,
 	input_mms_eof,
-	input_mms_seek,
+	nullptr,
 };
