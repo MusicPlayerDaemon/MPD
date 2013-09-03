@@ -23,7 +23,7 @@
 #include "PlaylistAny.hxx"
 #include "PlaylistSong.hxx"
 #include "Playlist.hxx"
-#include "input_stream.h"
+#include "InputLegacy.hxx"
 #include "Song.hxx"
 
 enum playlist_result

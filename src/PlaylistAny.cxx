@@ -22,7 +22,7 @@
 #include "PlaylistMapper.hxx"
 #include "PlaylistRegistry.hxx"
 #include "util/UriUtil.hxx"
-#include "input_stream.h"
+#include "InputLegacy.hxx"
 
 #include <assert.h>
 

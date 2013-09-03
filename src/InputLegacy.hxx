@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,26 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_INPUT_STREAM_H
-#define MPD_INPUT_STREAM_H
+#ifndef MPD_INPUT_LEGACY_HXX
+#define MPD_INPUT_LEGACY_HXX
 
 #include "check.h"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 #include "gcc.h"
 
 #include <glib.h>
 
 #include <stddef.h>
-#include <stdbool.h>
-#include <sys/types.h>
 
 struct Tag;
 struct input_stream;
-
-#ifdef __cplusplus
-extern "C" {
-
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 
 /**
  * Opens a new input stream.  You may not access it until the "ready"
@@ -55,8 +49,6 @@ struct input_stream *
 input_stream_open(const char *uri,
 		  Mutex &mutex, Cond &cond,
 		  GError **error_r);
-
-#endif
 
 /**
  * Close the input stream and free resources.
@@ -228,9 +220,5 @@ gcc_nonnull(1, 2)
 size_t
 input_stream_lock_read(struct input_stream *is, void *ptr, size_t size,
 		       GError **error_r);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

@@ -21,7 +21,7 @@
 #include "SoundCloudPlaylistPlugin.hxx"
 #include "MemoryPlaylistProvider.hxx"
 #include "conf.h"
-#include "input_stream.h"
+#include "InputLegacy.hxx"
 #include "Song.hxx"
 #include "Tag.hxx"
 

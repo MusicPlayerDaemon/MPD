@@ -21,7 +21,7 @@
 #include "TagSave.hxx"
 #include "Song.hxx"
 #include "Directory.hxx"
-#include "input_stream.h"
+#include "InputLegacy.hxx"
 #include "conf.h"
 #include "DecoderAPI.hxx"
 #include "DecoderList.hxx"

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "TextInputStream.hxx"
-#include "input_stream.h"
+#include "InputLegacy.hxx"
 #include "util/fifo_buffer.h"
 
 #include <glib.h>

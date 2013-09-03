@@ -25,7 +25,7 @@
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
 #include "Tag.hxx"
-#include "input_stream.h"
+#include "InputLegacy.hxx"
 #include "DecoderPlugin.hxx"
 #include "DecoderList.hxx"
 #include "TagHandler.hxx"

@@ -22,7 +22,7 @@
 #include "util/UriUtil.hxx"
 #include "DecoderList.hxx"
 #include "DecoderPlugin.hxx"
-#include "input_stream.h"
+#include "InputLegacy.hxx"
 
 #include <assert.h>
 #include <unistd.h> /* for SEEK_SET */

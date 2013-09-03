@@ -57,7 +57,6 @@ mpd_headers = \
 	src/gerror.h \
 	src/glib_compat.h \
 	src/gcc.h \
-	src/input_stream.h \
 	src/TextInputStream.hxx \
 	src/AudioCompress/config.h \
 	src/AudioCompress/compress.h \
@@ -718,6 +717,7 @@ libinput_a_SOURCES = \
 	src/InputInit.cxx src/InputInit.hxx \
 	src/InputRegistry.cxx src/InputRegistry.hxx \
 	src/InputStream.cxx src/InputStream.hxx \
+	src/InputLegacy.hxx \
 	src/InputPlugin.hxx \
 	src/InputInternal.cxx src/InputInternal.hxx \
 	src/input/RewindInputPlugin.cxx src/input/RewindInputPlugin.hxx \

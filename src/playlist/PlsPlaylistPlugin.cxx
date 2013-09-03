@@ -20,7 +20,7 @@
 #include "config.h"
 #include "PlsPlaylistPlugin.hxx"
 #include "MemoryPlaylistProvider.hxx"
-#include "input_stream.h"
+#include "InputLegacy.hxx"
 #include "Song.hxx"
 #include "Tag.hxx"
 

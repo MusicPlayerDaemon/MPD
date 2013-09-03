@@ -22,7 +22,7 @@
 #include "DecoderList.hxx"
 #include "DecoderAPI.hxx"
 #include "InputInit.hxx"
-#include "input_stream.h"
+#include "InputLegacy.hxx"
 #include "AudioFormat.hxx"
 #include "stdbin.h"
 

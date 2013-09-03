@@ -20,7 +20,7 @@
 #ifndef MPD_INPUT_PLUGIN_HXX
 #define MPD_INPUT_PLUGIN_HXX
 
-#include "input_stream.h"
+#include "InputLegacy.hxx"
 
 #include <stddef.h>
 #include <sys/types.h>

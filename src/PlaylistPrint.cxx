@@ -30,7 +30,7 @@
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 #include "Client.hxx"
-#include "input_stream.h"
+#include "InputLegacy.hxx"
 #include "Song.hxx"
 
 void

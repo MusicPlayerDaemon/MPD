@@ -20,7 +20,7 @@
 #ifndef MPD_INPUT_STREAM_HXX
 #define MPD_INPUT_STREAM_HXX
 
-#include "input_stream.h"
+#include "InputLegacy.hxx"
 #include "check.h"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"

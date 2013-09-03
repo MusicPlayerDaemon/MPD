@@ -23,7 +23,7 @@
 #include "PlaylistRegistry.hxx"
 #include "conf.h"
 #include "Song.hxx"
-#include "input_stream.h"
+#include "InputLegacy.hxx"
 
 #include <glib.h>
 

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "XspfPlaylistPlugin.hxx"
 #include "MemoryPlaylistProvider.hxx"
-#include "input_stream.h"
+#include "InputLegacy.hxx"
 #include "Tag.hxx"
 
 #include <glib.h>

@@ -31,7 +31,7 @@
 #include "playlist/RssPlaylistPlugin.hxx"
 #include "playlist/CuePlaylistPlugin.hxx"
 #include "playlist/EmbeddedCuePlaylistPlugin.hxx"
-#include "input_stream.h"
+#include "InputLegacy.hxx"
 #include "util/UriUtil.hxx"
 #include "util/StringUtil.hxx"
 #include "conf.h"
