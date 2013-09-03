@@ -2,6 +2,7 @@ ver 0.18 (2012/??/??)
 * protocol:
   - new command "toggleoutput"
 * innput:
+  - curl: enable https
   - soup: plugin removed
 * decoder:
   - adplug: new decoder plugin using libadplug

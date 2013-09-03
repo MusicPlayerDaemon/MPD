@@ -36,6 +36,7 @@
 static const char *remoteUrlPrefixes[] = {
 #if defined(ENABLE_CURL)
 	"http://",
+	"https://",
 #endif
 #ifdef ENABLE_MMS
 	"mms://",

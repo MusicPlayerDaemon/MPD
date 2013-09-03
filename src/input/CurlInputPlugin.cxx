@@ -1083,7 +1083,8 @@ static struct input_stream *
 input_curl_open(const char *url, Mutex &mutex, Cond &cond,
 		Error &error)
 {
-	if (strncmp(url, "http://", 7) != 0)
+	if ((strncmp(url, "http://",  7) != 0) &&
+	    (strncmp(url, "https://", 8) != 0))
 		return NULL;
 
 	struct input_curl *c = new input_curl(url, mutex, cond);
