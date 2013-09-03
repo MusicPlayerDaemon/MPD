@@ -163,11 +163,7 @@ int main(int argc, char **argv)
 	g_log_set_default_handler(my_log_func, NULL);
 
 	io_thread_init();
-	if (!io_thread_start(&error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
-		return EXIT_FAILURE;
-	}
+	io_thread_start();
 
 	if (!input_stream_global_init(&error)) {
 		g_warning("%s", error->message);

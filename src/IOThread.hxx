@@ -22,15 +22,13 @@
 
 #include "gcc.h"
 
-#include <glib.h>
-
 class EventLoop;
 
 void
 io_thread_init(void);
 
-bool
-io_thread_start(GError **error_r);
+void
+io_thread_start();
 
 /**
  * Run the I/O event loop synchronously in the current thread.  This

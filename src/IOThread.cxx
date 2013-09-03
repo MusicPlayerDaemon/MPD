@@ -23,6 +23,8 @@
 #include "thread/Cond.hxx"
 #include "event/Loop.hxx"
 
+#include <glib.h>
+
 #include <assert.h>
 
 static struct {
@@ -63,8 +65,8 @@ io_thread_init(void)
 	io.loop = new EventLoop();
 }
 
-bool
-io_thread_start(gcc_unused GError **error_r)
+void
+io_thread_start()
 {
 	assert(io.loop != NULL);
 	assert(io.thread == NULL);
@@ -76,10 +78,8 @@ io_thread_start(gcc_unused GError **error_r)
 #else
 	io.thread = g_thread_create(io_thread_func, NULL, true, error_r);
 	if (io.thread == NULL)
-		return false;
+		FatalError();
 #endif
-
-	return true;
 }
 
 void

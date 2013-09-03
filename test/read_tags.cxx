@@ -162,11 +162,7 @@ int main(int argc, char **argv)
 #endif
 
 	io_thread_init();
-	if (!io_thread_start(&error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
-		return EXIT_FAILURE;
-	}
+	io_thread_start();
 
 	if (!input_stream_global_init(&error)) {
 		g_warning("%s", error->message);

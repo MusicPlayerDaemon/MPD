@@ -134,11 +134,7 @@ int main(int argc, char **argv)
 	config_global_init();
 
 	io_thread_init();
-	if (!io_thread_start(&error)) {
-		g_warning("%s", error->message);
-		g_error_free(error);
-		return EXIT_FAILURE;
-	}
+	io_thread_start();
 
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_init_all();
