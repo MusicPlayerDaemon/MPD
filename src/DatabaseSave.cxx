@@ -20,6 +20,7 @@
 #include "config.h"
 #include "DatabaseSave.hxx"
 #include "DatabaseLock.hxx"
+#include "DatabaseError.hxx"
 #include "Directory.hxx"
 #include "DirectorySave.hxx"
 #include "Song.hxx"
@@ -46,13 +47,6 @@
 enum {
 	DB_FORMAT = 1,
 };
-
-gcc_const
-static GQuark
-db_quark(void)
-{
-	return g_quark_from_static_string("database");
-}
 
 void
 db_save_internal(FILE *fp, const Directory *music_root)
