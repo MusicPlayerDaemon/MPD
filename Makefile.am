@@ -429,7 +429,7 @@ TAG_LIBS = \
 	$(ID3TAG_LIBS)
 
 libtag_a_SOURCES =\
-	src/TagTable.hxx \
+	src/tag/TagTable.cxx src/TagTable.hxx \
 	src/tag/ApeLoader.cxx src/tag/ApeLoader.hxx \
 	src/tag/ApeReplayGain.cxx src/tag/ApeReplayGain.hxx \
 	src/tag/ApeTag.cxx src/tag/ApeTag.hxx

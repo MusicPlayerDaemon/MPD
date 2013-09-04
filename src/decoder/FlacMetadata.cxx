@@ -28,7 +28,7 @@
 #include <glib.h>
 
 #include <assert.h>
-#include <stdlib.h>
+#include <string.h>
 
 static bool
 flac_find_float_comment(const FLAC__StreamMetadata *block,

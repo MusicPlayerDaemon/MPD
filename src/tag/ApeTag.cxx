@@ -24,6 +24,10 @@
 #include "TagTable.hxx"
 #include "TagHandler.hxx"
 
+#include <glib.h>
+
+#include <string.h>
+
 const struct tag_table ape_tags[] = {
 	{ "album artist", TAG_ALBUM_ARTIST },
 	{ "year", TAG_DATE },

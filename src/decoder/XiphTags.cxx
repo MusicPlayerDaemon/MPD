@@ -24,5 +24,5 @@ const struct tag_table xiph_tags[] = {
 	{ "tracknumber", TAG_TRACK },
 	{ "discnumber", TAG_DISC },
 	{ "album artist", TAG_ALBUM_ARTIST },
-	{ NULL, TAG_NUM_OF_ITEM_TYPES }
+	{ nullptr, TAG_NUM_OF_ITEM_TYPES }
 };

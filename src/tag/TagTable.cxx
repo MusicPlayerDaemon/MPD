@@ -17,34 +17,38 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAG_TABLE_HXX
-#define MPD_TAG_TABLE_HXX
+#include "TagTable.hxx"
 
-#include "TagType.h"
-#include "gcc.h"
+#include <glib.h>
 
-struct tag_table {
-	const char *name;
-
-	enum tag_type type;
-};
+#include <string.h>
 
 /**
  * Looks up a string in a tag translation table (case sensitive).
  * Returns TAG_NUM_OF_ITEM_TYPES if the specified name was not found
  * in the table.
  */
-gcc_pure
 tag_type
-tag_table_lookup(const tag_table *table, const char *name);
+tag_table_lookup(const struct tag_table *table, const char *name)
+{
+	for (; table->name != nullptr; ++table)
+		if (strcmp(name, table->name) == 0)
+			return table->type;
+
+	return TAG_NUM_OF_ITEM_TYPES;
+}
 
 /**
  * Looks up a string in a tag translation table (case insensitive).
  * Returns TAG_NUM_OF_ITEM_TYPES if the specified name was not found
  * in the table.
  */
-gcc_pure
 tag_type
-tag_table_lookup_i(const tag_table *table, const char *name);
+tag_table_lookup_i(const struct tag_table *table, const char *name)
+{
+	for (; table->name != nullptr; ++table)
+		if (g_ascii_strcasecmp(name, table->name) == 0)
+			return table->type;
 
-#endif
+	return TAG_NUM_OF_ITEM_TYPES;
+}
