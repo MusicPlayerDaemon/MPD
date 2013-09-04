@@ -21,7 +21,7 @@
 #define MPD_XIPH_TAGS_HXX
 
 #include "check.h"
-#include "TagTable.hxx"
+#include "tag/TagTable.hxx"
 
 extern const struct tag_table xiph_tags[];
 

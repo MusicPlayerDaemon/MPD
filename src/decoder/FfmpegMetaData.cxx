@@ -22,7 +22,7 @@
 
 #include "config.h"
 #include "FfmpegMetaData.hxx"
-#include "TagTable.hxx"
+#include "tag/TagTable.hxx"
 #include "TagHandler.hxx"
 
 #undef G_LOG_DOMAIN

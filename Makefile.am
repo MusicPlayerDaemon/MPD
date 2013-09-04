@@ -206,7 +206,6 @@ src_mpd_SOURCES = \
 	src/TagType.h \
 	src/Tag.cxx src/Tag.hxx \
 	src/TagInternal.hxx \
-	src/TagTable.hxx \
 	src/TagNames.c \
 	src/TagPool.cxx src/TagPool.hxx \
 	src/TagPrint.cxx src/TagPrint.hxx \
@@ -430,6 +429,7 @@ TAG_LIBS = \
 	$(ID3TAG_LIBS)
 
 libtag_a_SOURCES =\
+	src/TagTable.hxx \
 	src/tag/ApeLoader.cxx src/tag/ApeLoader.hxx \
 	src/tag/ApeReplayGain.cxx src/tag/ApeReplayGain.hxx \
 	src/tag/ApeTag.cxx src/tag/ApeTag.hxx

@@ -22,7 +22,7 @@
 #include "XiphTags.hxx"
 #include "Tag.hxx"
 #include "TagHandler.hxx"
-#include "TagTable.hxx"
+#include "tag/TagTable.hxx"
 #include "replay_gain_info.h"
 
 #include <glib.h>
