@@ -22,6 +22,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "event/Loop.hxx"
+#include "system/FatalError.hxx"
 
 #include <glib.h>
 
@@ -76,9 +77,10 @@ io_thread_start()
 #if GLIB_CHECK_VERSION(2,32,0)
 	io.thread = g_thread_new("io", io_thread_func, nullptr);
 #else
-	io.thread = g_thread_create(io_thread_func, NULL, true, error_r);
+	GError *error = nullptr;
+	io.thread = g_thread_create(io_thread_func, NULL, true, &error);
 	if (io.thread == NULL)
-		FatalError();
+		FatalError(error);
 #endif
 }
 
