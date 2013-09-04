@@ -27,7 +27,7 @@
 #include "system/SocketUtil.hxx"
 #include "system/SocketError.hxx"
 #include "event/SocketMonitor.hxx"
-#include "system/resolver.h"
+#include "system/Resolver.hxx"
 #include "system/fd_util.h"
 
 #include <sys/types.h>

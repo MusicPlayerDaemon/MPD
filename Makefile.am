@@ -285,7 +285,7 @@ libsystem_a_SOURCES = \
 	src/system/fd_util.c src/system/fd_util.h \
 	src/system/SocketUtil.cxx src/system/SocketUtil.hxx \
 	src/system/SocketError.hxx \
-	src/system/resolver.c src/system/resolver.h \
+	src/system/Resolver.cxx src/system/Resolver.hxx \
 	src/system/EventPipe.cxx src/system/EventPipe.hxx \
 	src/system/EventFD.cxx src/system/EventFD.hxx \
 	src/system/SignalFD.cxx src/system/SignalFD.hxx \
@@ -1072,7 +1072,7 @@ test_read_conf_SOURCES = test/read_conf.cxx
 test_run_resolver_LDADD = \
 	libsystem.a \
 	$(GLIB_LIBS)
-test_run_resolver_SOURCES = test/run_resolver.c
+test_run_resolver_SOURCES = test/run_resolver.cxx
 
 test_DumpDatabase_LDADD = \
 	$(DB_LIBS) \

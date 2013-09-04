@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_RESOLVER_H
-#define MPD_RESOLVER_H
+#ifndef MPD_RESOLVER_HXX
+#define MPD_RESOLVER_HXX
 
 #include "gcc.h"
 
@@ -33,10 +33,6 @@ resolver_quark(void)
 {
 	return g_quark_from_static_string("resolver");
 }
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * Converts the specified socket address into a string in the form
@@ -66,9 +62,5 @@ struct addrinfo *
 resolve_host_port(const char *host_port, unsigned default_port,
 		  int flags, int socktype,
 		  GError **error_r);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

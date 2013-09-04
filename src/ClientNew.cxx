@@ -23,9 +23,7 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "system/fd_util.h"
-extern "C" {
-#include "system/resolver.h"
-}
+#include "system/Resolver.hxx"
 #include "Permission.hxx"
 
 #include <assert.h>

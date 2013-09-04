@@ -24,7 +24,7 @@
 #include "OutputAPI.hxx"
 #include "EncoderPlugin.hxx"
 #include "EncoderList.hxx"
-#include "system/resolver.h"
+#include "system/Resolver.hxx"
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "system/fd_util.h"

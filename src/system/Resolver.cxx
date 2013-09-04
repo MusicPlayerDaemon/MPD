@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "resolver.h"
+#include "Resolver.hxx"
 
 #ifndef G_OS_WIN32
 #include <sys/socket.h>
@@ -120,11 +120,11 @@ resolve_host_port(const char *host_port, unsigned default_port,
 	if ((flags & AI_PASSIVE) != 0 && strcmp(host, "*") == 0)
 		host = NULL;
 
-	const struct addrinfo hints = {
-		.ai_flags = flags,
-		.ai_family = AF_UNSPEC,
-		.ai_socktype = socktype,
-	};
+	addrinfo hints;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_flags = flags;
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = socktype;
 
 	struct addrinfo *ai;
 	int ret = getaddrinfo(host, port, &hints, &ai);
