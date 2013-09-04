@@ -196,10 +196,7 @@ int main(int argc, char **argv)
 
 		mutex.lock();
 
-		while (!is->ready) {
-			cond.wait(mutex);
-			input_stream_update(is);
-		}
+		input_stream_wait_ready(is);
 
 		if (!input_stream_check(is, error)) {
 			mutex.unlock();
