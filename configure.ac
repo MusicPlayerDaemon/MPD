@@ -1375,7 +1375,7 @@ fi
 AM_CONDITIONAL(ENABLE_PIPE_OUTPUT, test x$enable_pipe_output = xyes)
 
 dnl -------------------------------- PulseAudio -------------------------------
-MPD_AUTO_PKG(pulse, PULSE, [libpulse],
+MPD_AUTO_PKG(pulse, PULSE, [libpulse >= 0.9.16],
 	[PulseAudio output plugin], [libpulse not found])
 if test x$enable_pulse = xyes; then
 	AC_DEFINE([HAVE_PULSE], 1,

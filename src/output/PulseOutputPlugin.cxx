@@ -38,13 +38,6 @@
 
 #define MPD_PULSE_NAME "Music Player Daemon"
 
-#if !defined(PA_CHECK_VERSION)
-/**
- * This macro was implemented in libpulse 0.9.16.
- */
-#define PA_CHECK_VERSION(a,b,c) false
-#endif
-
 struct PulseOutput {
 	struct audio_output base;
 
@@ -59,14 +52,6 @@ struct PulseOutput {
 	struct pa_stream *stream;
 
 	size_t writable;
-
-#if !PA_CHECK_VERSION(0,9,11)
-	/**
-	 * We need this variable because pa_stream_is_corked() wasn't
-	 * added before 0.9.11.
-	 */
-	bool pause;
-#endif
 };
 
 /**
@@ -278,9 +263,7 @@ pulse_output_delete_stream(PulseOutput *po)
 	assert(po != nullptr);
 	assert(po->stream != nullptr);
 
-#if PA_CHECK_VERSION(0,9,8)
 	pa_stream_set_suspended_callback(po->stream, nullptr, nullptr);
-#endif
 
 	pa_stream_set_state_callback(po->stream, nullptr, nullptr);
 	pa_stream_set_write_callback(po->stream, nullptr, nullptr);
@@ -482,8 +465,6 @@ pulse_output_wait_connection(PulseOutput *po, GError **error_r)
 	}
 }
 
-#if PA_CHECK_VERSION(0,9,8)
-
 static void
 pulse_output_stream_suspended_cb(gcc_unused pa_stream *stream, void *userdata)
 {
@@ -496,8 +477,6 @@ pulse_output_stream_suspended_cb(gcc_unused pa_stream *stream, void *userdata)
 	   pulse_output_play() */
 	pa_threaded_mainloop_signal(po->mainloop, 0);
 }
-
-#endif
 
 static void
 pulse_output_stream_state_cb(pa_stream *stream, void *userdata)
@@ -564,10 +543,8 @@ pulse_output_setup_stream(PulseOutput *po, const pa_sample_spec *ss,
 		return false;
 	}
 
-#if PA_CHECK_VERSION(0,9,8)
 	pa_stream_set_suspended_callback(po->stream,
 					 pulse_output_stream_suspended_cb, po);
-#endif
 
 	pa_stream_set_state_callback(po->stream,
 				     pulse_output_stream_state_cb, po);
@@ -645,10 +622,6 @@ pulse_output_open(struct audio_output *ao, AudioFormat &audio_format,
 
 	pa_threaded_mainloop_unlock(po->mainloop);
 
-#if !PA_CHECK_VERSION(0,9,11)
-	po->pause = false;
-#endif
-
 	return true;
 }
 
@@ -712,22 +685,6 @@ pulse_output_wait_stream(PulseOutput *po, GError **error_r)
 }
 
 /**
- * Determines whether the stream is paused.  On libpulse older than
- * 0.9.11, it uses a custom pause flag.
- */
-static bool
-pulse_output_stream_is_paused(PulseOutput *po)
-{
-	assert(po->stream != nullptr);
-
-#if !defined(PA_CHECK_VERSION) || !PA_CHECK_VERSION(0,9,11)
-	return po->pause;
-#else
-	return pa_stream_is_corked(po->stream);
-#endif
-}
-
-/**
  * Sets cork mode on the stream.
  */
 static bool
@@ -756,9 +713,6 @@ pulse_output_stream_pause(PulseOutput *po, bool pause,
 		return false;
 	}
 
-#if !PA_CHECK_VERSION(0,9,11)
-	po->pause = pause;
-#endif
 	return true;
 }
 
@@ -770,7 +724,7 @@ pulse_output_delay(struct audio_output *ao)
 
 	pa_threaded_mainloop_lock(po->mainloop);
 
-	if (po->base.pause && pulse_output_stream_is_paused(po) &&
+	if (po->base.pause && pa_stream_is_corked(po->stream) &&
 	    pa_stream_get_state(po->stream) == PA_STREAM_READY)
 		/* idle while paused */
 		result = 1000;
@@ -803,7 +757,7 @@ pulse_output_play(struct audio_output *ao, const void *chunk, size_t size,
 
 	/* unpause if previously paused */
 
-	if (pulse_output_stream_is_paused(po) &&
+	if (pa_stream_is_corked(po->stream) &&
 	    !pulse_output_stream_pause(po, false, error_r)) {
 		pa_threaded_mainloop_unlock(po->mainloop);
 		return 0;
@@ -812,14 +766,12 @@ pulse_output_play(struct audio_output *ao, const void *chunk, size_t size,
 	/* wait until the server allows us to write */
 
 	while (po->writable == 0) {
-#if PA_CHECK_VERSION(0,9,8)
 		if (pa_stream_is_suspended(po->stream)) {
 			pa_threaded_mainloop_unlock(po->mainloop);
 			g_set_error(error_r, pulse_output_quark(), 0,
 				    "suspended");
 			return 0;
 		}
-#endif
 
 		pa_threaded_mainloop_wait(po->mainloop);
 
@@ -907,7 +859,7 @@ pulse_output_pause(struct audio_output *ao)
 
 	/* cork the stream */
 
-	if (!pulse_output_stream_is_paused(po) &&
+	if (!pa_stream_is_corked(po->stream) &&
 	    !pulse_output_stream_pause(po, true, &error)) {
 		pa_threaded_mainloop_unlock(po->mainloop);
 		g_warning("%s", error->message);
