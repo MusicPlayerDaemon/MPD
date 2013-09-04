@@ -63,8 +63,6 @@ mpd_headers = \
 	src/open.h \
 	src/Playlist.hxx \
 	src/poison.h \
-	src/riff.h \
-	src/aiff.h \
 	src/replay_gain_config.h \
 	src/replay_gain_info.h \
 	src/TimePrint.cxx src/TimePrint.hxx \
@@ -432,15 +430,16 @@ TAG_LIBS = \
 	$(ID3TAG_LIBS)
 
 libtag_a_SOURCES =\
-	src/ApeLoader.cxx src/ApeLoader.hxx \
-	src/ApeReplayGain.cxx src/ApeReplayGain.hxx \
-	src/ApeTag.cxx src/ApeTag.hxx
+	src/tag/ApeLoader.cxx src/tag/ApeLoader.hxx \
+	src/tag/ApeReplayGain.cxx src/tag/ApeReplayGain.hxx \
+	src/tag/ApeTag.cxx src/tag/ApeTag.hxx
 
 if HAVE_ID3TAG
 libtag_a_SOURCES += \
-	src/TagId3.cxx src/TagId3.hxx \
-	src/TagRva2.cxx src/TagRva2.hxx \
-	src/riff.c src/aiff.c
+	src/tag/TagId3.cxx src/tag/TagId3.hxx \
+	src/tag/TagRva2.cxx src/tag/TagRva2.hxx \
+	src/tag/riff.c src/tag/riff.h \
+	src/tag/aiff.c src/tag/aiff.h
 endif
 
 # decoder plugins
@@ -1218,14 +1217,11 @@ test_read_tags_SOURCES = test/read_tags.cxx \
 
 if HAVE_ID3TAG
 test_dump_rva2_LDADD = \
-	$(ID3TAG_LIBS) \
+	$(TAG_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
 test_dump_rva2_SOURCES = test/dump_rva2.cxx \
-	src/riff.c src/aiff.c \
-	src/TagHandler.cxx \
-	src/TagId3.cxx \
-	src/TagRva2.cxx
+	src/TagHandler.cxx
 endif
 
 test_run_filter_LDADD = \

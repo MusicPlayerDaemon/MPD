@@ -23,7 +23,7 @@
 #include "InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
-#include "ApeTag.hxx"
+#include "tag/ApeTag.hxx"
 #include "util/Error.hxx"
 
 #include <wavpack/wavpack.h>

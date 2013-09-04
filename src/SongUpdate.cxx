@@ -30,8 +30,8 @@
 #include "DecoderPlugin.hxx"
 #include "DecoderList.hxx"
 #include "TagHandler.hxx"
-#include "TagId3.hxx"
-#include "ApeTag.hxx"
+#include "tag/TagId3.hxx"
+#include "tag/ApeTag.hxx"
 
 #include <glib.h>
 

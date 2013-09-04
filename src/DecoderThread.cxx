@@ -33,7 +33,7 @@
 #include "DecoderList.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
-#include "ApeReplayGain.hxx"
+#include "tag/ApeReplayGain.hxx"
 
 #include <glib.h>
 
