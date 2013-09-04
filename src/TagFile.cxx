@@ -23,7 +23,7 @@
 #include "util/Error.hxx"
 #include "DecoderList.hxx"
 #include "DecoderPlugin.hxx"
-#include "InputLegacy.hxx"
+#include "InputStream.hxx"
 
 #include <assert.h>
 #include <unistd.h> /* for SEEK_SET */
@@ -62,8 +62,8 @@ tag_file_scan(const char *path_fs,
 			   open) */
 			if (is == nullptr) {
 				Error error;
-				is = input_stream_open(path_fs, mutex, cond,
-						       error);
+				is = input_stream::Open(path_fs, mutex, cond,
+							error);
 			}
 
 			/* now try the stream_tag() method */
@@ -73,8 +73,7 @@ tag_file_scan(const char *path_fs,
 							       handler_ctx))
 					break;
 
-				Error error;
-				input_stream_lock_seek(is, 0, SEEK_SET, error);
+				is->LockSeek(0, SEEK_SET, IgnoreError());
 			}
 		}
 
@@ -82,7 +81,7 @@ tag_file_scan(const char *path_fs,
 	} while (plugin != NULL);
 
 	if (is != NULL)
-		input_stream_close(is);
+		is->Close();
 
 	return plugin != NULL;
 }

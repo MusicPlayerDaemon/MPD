@@ -26,7 +26,7 @@
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
 #include "Tag.hxx"
-#include "InputLegacy.hxx"
+#include "InputStream.hxx"
 #include "DecoderPlugin.hxx"
 #include "DecoderList.hxx"
 #include "TagHandler.hxx"
@@ -127,12 +127,10 @@ Song::UpdateFile()
 		if (plugin->scan_stream != NULL) {
 			/* open the input_stream (if not already
 			   open) */
-			if (is == NULL) {
-				Error error;
-				is = input_stream_open(path_fs.c_str(),
-						       mutex, cond,
-						       error);
-			}
+			if (is == NULL)
+				is = input_stream::Open(path_fs.c_str(),
+							mutex, cond,
+							IgnoreError());
 
 			/* now try the stream_tag() method */
 			if (is != NULL) {
@@ -145,8 +143,7 @@ Song::UpdateFile()
 				delete tag;
 				tag = nullptr;
 
-				Error error;
-				input_stream_lock_seek(is, 0, SEEK_SET, error);
+				is->LockSeek(0, SEEK_SET, IgnoreError());
 			}
 		}
 
@@ -154,7 +151,7 @@ Song::UpdateFile()
 	} while (plugin != NULL);
 
 	if (is != NULL)
-		input_stream_close(is);
+		is->Close();
 
 	if (tag != nullptr && tag->IsEmpty())
 		tag_scan_fallback(path_fs.c_str(), &full_tag_handler, tag);

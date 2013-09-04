@@ -401,17 +401,13 @@ wavpack_input_get_pos(void *id)
 static int
 wavpack_input_set_pos_abs(void *id, uint32_t pos)
 {
-	Error error;
-	return input_stream_lock_seek(wpin(id)->is, pos, SEEK_SET, error)
-		? 0 : -1;
+	return wpin(id)->is->LockSeek(pos, SEEK_SET, IgnoreError()) ? 0 : -1;
 }
 
 static int
 wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 {
-	Error error;
-	return input_stream_lock_seek(wpin(id)->is, delta, mode, error)
-		? 0 : -1;
+	return wpin(id)->is->LockSeek(delta, mode, IgnoreError()) ? 0 : -1;
 }
 
 static int
@@ -479,8 +475,7 @@ wavpack_open_wvc(struct decoder *decoder, const char *uri,
 
 	wvc_url = g_strconcat(uri, "c", NULL);
 
-	Error error;
-	is_wvc = input_stream_open(wvc_url, mutex, cond, error);
+	is_wvc = input_stream::Open(wvc_url, mutex, cond, IgnoreError());
 	g_free(wvc_url);
 
 	if (is_wvc == NULL)
@@ -494,7 +489,7 @@ wavpack_open_wvc(struct decoder *decoder, const char *uri,
 		decoder, is_wvc, &first_byte, sizeof(first_byte)
 	);
 	if (nbytes == 0) {
-		input_stream_close(is_wvc);
+		is_wvc->Close();
 		return NULL;
 	}
 
@@ -545,7 +540,7 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 
 	WavpackCloseFile(wpc);
 	if (open_flags & OPEN_WVC) {
-		input_stream_close(is_wvc);
+		is_wvc->Close();
 	}
 }
 

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "TextInputStream.hxx"
-#include "InputLegacy.hxx"
+#include "InputStream.hxx"
 #include "util/fifo_buffer.h"
 #include "util/Error.hxx"
 
@@ -54,8 +54,7 @@ bool TextInputStream::ReadLine(std::string &line)
 			--length;
 
 			Error error;
-			nbytes = input_stream_lock_read(is, dest, length,
-							error);
+			nbytes = is->LockRead(dest, length, error);
 			if (nbytes > 0)
 				fifo_buffer_append(buffer, nbytes);
 			else if (error.IsDefined()) {

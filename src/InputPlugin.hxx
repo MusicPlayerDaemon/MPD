@@ -20,13 +20,17 @@
 #ifndef MPD_INPUT_PLUGIN_HXX
 #define MPD_INPUT_PLUGIN_HXX
 
-#include "InputLegacy.hxx"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
+
+#include <glib.h>
 
 #include <stddef.h>
 
 struct config_param;
 struct input_stream;
 class Error;
+struct Tag;
 
 struct input_plugin {
 	const char *name;

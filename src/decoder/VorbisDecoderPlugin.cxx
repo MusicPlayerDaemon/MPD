@@ -84,7 +84,7 @@ static int ogg_seek_cb(void *data, ogg_int64_t offset, int whence)
 	Error error;
 	return vis->seekable &&
 		(!vis->decoder || decoder_get_command(vis->decoder) != DECODE_COMMAND_STOP) &&
-		input_stream_lock_seek(vis->input_stream, offset, whence, error)
+		vis->input_stream->LockSeek(offset, whence, error)
 		? 0 : -1;
 }
 
@@ -138,7 +138,7 @@ vorbis_is_open(struct vorbis_input_stream *vis, OggVorbis_File *vf,
 {
 	vis->decoder = decoder;
 	vis->input_stream = input_stream;
-	vis->seekable = input_stream_cheap_seeking(input_stream);
+	vis->seekable = input_stream->CheapSeeking();
 
 	int ret = ov_open_callbacks(vis, vf, NULL, 0, vorbis_is_callbacks);
 	if (ret < 0) {
@@ -189,7 +189,7 @@ vorbis_stream_decode(struct decoder *decoder,
 
 	/* rewind the stream, because ogg_codec_detect() has
 	   moved it */
-	input_stream_lock_seek(input_stream, 0, SEEK_SET, IgnoreError());
+	input_stream->LockSeek(0, SEEK_SET, IgnoreError());
 
 	struct vorbis_input_stream vis;
 	OggVorbis_File vf;

@@ -23,7 +23,7 @@
 #include "PlaylistRegistry.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
-#include "InputLegacy.hxx"
+#include "InputStream.hxx"
 
 #include <assert.h>
 
@@ -41,7 +41,7 @@ playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond,
 	}
 
 	Error error;
-	input_stream *is = input_stream_open(uri, mutex, cond, error);
+	input_stream *is = input_stream::Open(uri, mutex, cond, error);
 	if (is == NULL) {
 		if (error.IsDefined())
 			g_warning("Failed to open %s: %s",
@@ -52,7 +52,7 @@ playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond,
 
 	playlist = playlist_list_open_stream(is, uri);
 	if (playlist == NULL) {
-		input_stream_close(is);
+		is->Close();
 		return NULL;
 	}
 

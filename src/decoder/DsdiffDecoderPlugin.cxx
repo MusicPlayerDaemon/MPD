@@ -29,12 +29,12 @@
 #include "config.h"
 #include "DsdiffDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
+#include "InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/bit_reverse.h"
 #include "util/Error.hxx"
 #include "TagHandler.hxx"
 #include "DsdLib.hxx"
-#include "TagHandler.hxx"
 
 #include <unistd.h>
 #include <stdio.h> /* for SEEK_SET, SEEK_CUR */
@@ -127,11 +127,11 @@ dsdiff_read_prop_snd(struct decoder *decoder, struct input_stream *is,
 		     goffset end_offset)
 {
 	DsdiffChunkHeader header;
-	while ((goffset)(input_stream_get_offset(is) + sizeof(header)) <= end_offset) {
+	while ((goffset)(is->GetOffset() + sizeof(header)) <= end_offset) {
 		if (!dsdiff_read_chunk_header(decoder, is, &header))
 			return false;
 
-		goffset chunk_end_offset = input_stream_get_offset(is)
+		goffset chunk_end_offset = is->GetOffset()
 			+ header.GetSize();
 		if (chunk_end_offset > end_offset)
 			return false;
@@ -173,7 +173,7 @@ dsdiff_read_prop_snd(struct decoder *decoder, struct input_stream *is,
 		}
 	}
 
-	return input_stream_get_offset(is) == end_offset;
+	return is->GetOffset() == end_offset;
 }
 
 /**
@@ -185,7 +185,7 @@ dsdiff_read_prop(struct decoder *decoder, struct input_stream *is,
 		 const DsdiffChunkHeader *prop_header)
 {
 	uint64_t prop_size = prop_header->GetSize();
-	goffset end_offset = input_stream_get_offset(is) + prop_size;
+	goffset end_offset = is->GetOffset() + prop_size;
 
 	struct dsdlib_id prop_id;
 	if (prop_size < sizeof(prop_id) ||
@@ -260,8 +260,8 @@ dsdiff_read_metadata_extra(struct decoder *decoder, struct input_stream *is,
 	/* Now process all the remaining chunk headers in the stream
 	   and record their position and size */
 
-	const goffset size = input_stream_get_size(is);
-	while (input_stream_get_offset(is) < size) {
+	const goffset size = is->GetSize();
+	while (is->GetOffset() < size) {
 		uint64_t chunk_size = chunk_header->GetSize();
 
 		/* DIIN chunk, is directly followed by other chunks  */
@@ -271,19 +271,19 @@ dsdiff_read_metadata_extra(struct decoder *decoder, struct input_stream *is,
 		/* DIAR chunk - DSDIFF native tag for Artist */
 		if (dsdlib_id_equals(&chunk_header->id, "DIAR")) {
 			chunk_size = chunk_header->GetSize();
-			metadata->diar_offset = input_stream_get_offset(is);
+			metadata->diar_offset = is->GetOffset();
 		}
 
 		/* DITI chunk - DSDIFF native tag for Title */
 		if (dsdlib_id_equals(&chunk_header->id, "DITI")) {
 			chunk_size = chunk_header->GetSize();
-			metadata->diti_offset = input_stream_get_offset(is);
+			metadata->diti_offset = is->GetOffset();
 		}
 #ifdef HAVE_ID3TAG
 		/* 'ID3 ' chunk, offspec. Used by sacdextract */
 		if (dsdlib_id_equals(&chunk_header->id, "ID3 ")) {
 			chunk_size = chunk_header->GetSize();
-			metadata->id3_offset = input_stream_get_offset(is);
+			metadata->id3_offset = is->GetOffset();
 			metadata->id3_size = chunk_size;
 		}
 #endif
@@ -292,7 +292,7 @@ dsdiff_read_metadata_extra(struct decoder *decoder, struct input_stream *is,
 				break;
 		}
 
-		if (input_stream_get_offset(is) < size) {
+		if (is->GetOffset() < size) {
 			if (!dsdiff_read_chunk_header(decoder, is, chunk_header))
 				return false;
 		}
@@ -352,7 +352,7 @@ dsdiff_read_metadata(struct decoder *decoder, struct input_stream *is,
 		} else {
 			/* ignore unknown chunk */
 			const uint64_t chunk_size = chunk_header->GetSize();
-			goffset chunk_end_offset = input_stream_get_offset(is)
+			goffset chunk_end_offset = is->GetOffset()
 				+ chunk_size;
 
 			if (!dsdlib_skip_to(decoder, is, chunk_end_offset))

@@ -23,7 +23,7 @@
 #include "PlaylistRegistry.hxx"
 #include "conf.h"
 #include "Song.hxx"
-#include "InputLegacy.hxx"
+#include "InputStream.hxx"
 #include "util/Error.hxx"
 
 #include <glib.h>
@@ -45,7 +45,7 @@ struct LastfmPlaylist {
 
 	~LastfmPlaylist() {
 		playlist_plugin_close(xspf);
-		input_stream_close(is);
+		is->Close();
 	}
 };
 
@@ -97,7 +97,7 @@ lastfm_get(const char *url, Mutex &mutex, Cond &cond)
 	char buffer[4096];
 	size_t length = 0;
 
-	input_stream = input_stream_open(url, mutex, cond, error);
+	input_stream = input_stream::Open(url, mutex, cond, error);
 	if (input_stream == NULL) {
 		if (error.IsDefined())
 			g_warning("%s", error.GetMessage());
@@ -107,22 +107,22 @@ lastfm_get(const char *url, Mutex &mutex, Cond &cond)
 
 	mutex.lock();
 
-	input_stream_wait_ready(input_stream);
+	input_stream->WaitReady();
 
 	do {
 		size_t nbytes =
-			input_stream_read(input_stream, buffer + length,
-					  sizeof(buffer) - length, error);
+			input_stream->Read(buffer + length,
+					   sizeof(buffer) - length, error);
 		if (nbytes == 0) {
 			if (error.IsDefined())
 				g_warning("%s", error.GetMessage());
 
-			if (input_stream_eof(input_stream))
+			if (input_stream->IsEOF())
 				break;
 
 			/* I/O error */
 			mutex.unlock();
-			input_stream_close(input_stream);
+			input_stream->Close();
 			return NULL;
 		}
 
@@ -131,7 +131,7 @@ lastfm_get(const char *url, Mutex &mutex, Cond &cond)
 
 	mutex.unlock();
 
-	input_stream_close(input_stream);
+	input_stream->Close();
 	return g_strndup(buffer, length);
 }
 
@@ -223,7 +223,7 @@ lastfm_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	g_free(session);
 
 	Error error;
-	const auto is = input_stream_open(p, mutex, cond, error);
+	const auto is = input_stream::Open(p, mutex, cond, error);
 	g_free(p);
 
 	if (is == nullptr) {
@@ -237,11 +237,11 @@ lastfm_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 
 	mutex.lock();
 
-	input_stream_wait_ready(is);
+	is->WaitReady();
 
 	/* last.fm does not send a MIME type, we have to fake it here
 	   :-( */
-	input_stream_override_mime_type(is, "application/xspf+xml");
+	is->OverrideMimeType("application/xspf+xml");
 
 	mutex.unlock();
 
@@ -249,7 +249,7 @@ lastfm_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 
 	const auto xspf = playlist_list_open_stream(is, nullptr);
 	if (xspf == nullptr) {
-		input_stream_close(is);
+		is->Close();
 		g_warning("Failed to parse XSPF playlist");
 		return NULL;
 	}

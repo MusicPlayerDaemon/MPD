@@ -20,7 +20,6 @@
 #ifndef MPD_INPUT_STREAM_HXX
 #define MPD_INPUT_STREAM_HXX
 
-#include "InputLegacy.hxx"
 #include "check.h"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
@@ -28,7 +27,12 @@
 
 #include <string>
 
+#include <glib.h>
+
 #include <assert.h>
+
+class Error;
+struct Tag;
 
 struct input_stream {
 	/**
@@ -95,20 +99,185 @@ struct input_stream {
 		 size(-1), offset(0) {
 		assert(_uri != NULL);
 	}
+
+	/**
+	 * Opens a new input stream.  You may not access it until the "ready"
+	 * flag is set.
+	 *
+	 * @param mutex a mutex that is used to protect this object; must be
+	 * locked before calling any of the public methods
+	 * @param cond a cond that gets signalled when the state of
+	 * this object changes; may be NULL if the caller doesn't want to get
+	 * notifications
+	 * @return an #input_stream object on success, NULL on error
+	 */
+	gcc_nonnull_all
+	gcc_malloc
+	static input_stream *Open(const char *uri, Mutex &mutex, Cond &cond,
+				  Error &error);
+
+	/**
+	 * Close the input stream and free resources.
+	 *
+	 * The caller must not lock the mutex.
+	 */
+	void Close();
+
+	void Lock() {
+		mutex.lock();
+	}
+
+	void Unlock() {
+		mutex.unlock();
+	}
+
+	/**
+	 * Check for errors that may have occurred in the I/O thread.
+	 *
+	 * @return false on error
+	 */
+	bool Check(Error &error);
+
+	/**
+	 * Update the public attributes.  Call before accessing attributes
+	 * such as "ready" or "offset".
+	 */
+	void Update();
+
+	/**
+	 * Wait until the stream becomes ready.
+	 *
+	 * The caller must lock the mutex.
+	 */
+	void WaitReady();
+
+	/**
+	 * Wrapper for WaitReady() which locks and unlocks the mutex;
+	 * the caller must not be holding it already.
+	 */
+	void LockWaitReady();
+
+	gcc_pure
+	const char *GetMimeType() const {
+		assert(ready);
+
+		return mime.empty() ? nullptr : mime.c_str();
+	}
+
+	gcc_nonnull_all
+	void OverrideMimeType(const char *_mime) {
+		assert(ready);
+
+		mime = _mime;
+	}
+
+	gcc_pure
+	goffset GetSize() const {
+		assert(ready);
+
+		return size;
+	}
+
+	gcc_pure
+	goffset GetOffset() const {
+		assert(ready);
+
+		return offset;
+	}
+
+	gcc_pure
+	bool IsSeekable() const {
+		assert(ready);
+
+		return seekable;
+	}
+
+	/**
+	 * Determines whether seeking is cheap.  This is true for local files.
+	 */
+	gcc_pure
+	bool CheapSeeking() const;
+
+	/**
+	 * Seeks to the specified position in the stream.  This will most
+	 * likely fail if the "seekable" flag is false.
+	 *
+	 * The caller must lock the mutex.
+	 *
+	 * @param offset the relative offset
+	 * @param whence the base of the seek, one of SEEK_SET, SEEK_CUR, SEEK_END
+	 */
+	bool Seek(goffset offset, int whence, Error &error);
+
+	/**
+	 * Wrapper for Seek() which locks and unlocks the mutex; the
+	 * caller must not be holding it already.
+	 */
+	bool LockSeek(goffset offset, int whence, Error &error);
+
+	/**
+	 * Returns true if the stream has reached end-of-file.
+	 *
+	 * The caller must lock the mutex.
+	 */
+	gcc_pure
+	bool IsEOF();
+
+	/**
+	 * Wrapper for IsEOF() which locks and unlocks the mutex; the
+	 * caller must not be holding it already.
+	 */
+	gcc_pure
+	bool LockIsEOF();
+
+	/**
+	 * Reads the tag from the stream.
+	 *
+	 * The caller must lock the mutex.
+	 *
+	 * @return a tag object which must be freed by the caller, or
+	 * nullptr if the tag has not changed since the last call
+	 */
+	gcc_malloc
+	Tag *ReadTag();
+
+	/**
+	 * Wrapper for ReadTag() which locks and unlocks the mutex;
+	 * the caller must not be holding it already.
+	 */
+	gcc_malloc
+	Tag *LockReadTag();
+
+	/**
+	 * Returns true if the next read operation will not block: either data
+	 * is available, or end-of-stream has been reached, or an error has
+	 * occurred.
+	 *
+	 * The caller must lock the mutex.
+	 */
+	gcc_pure
+	bool IsAvailable();
+
+	/**
+	 * Reads data from the stream into the caller-supplied buffer.
+	 * Returns 0 on error or eof (check with IsEOF()).
+	 *
+	 * The caller must lock the mutex.
+	 *
+	 * @param is the input_stream object
+	 * @param ptr the buffer to read into
+	 * @param size the maximum number of bytes to read
+	 * @return the number of bytes read
+	 */
+	gcc_nonnull_all
+	size_t Read(void *ptr, size_t size, Error &error);
+
+	/**
+	 * Wrapper for Read() which locks and unlocks the mutex;
+	 * the caller must not be holding it already.
+	 */
+	gcc_nonnull_all
+	size_t LockRead(void *ptr, size_t size, Error &error);
 };
-
-gcc_nonnull(1)
-static inline void
-input_stream_lock(struct input_stream *is)
-{
-	is->mutex.lock();
-}
-
-gcc_nonnull(1)
-static inline void
-input_stream_unlock(struct input_stream *is)
-{
-	is->mutex.unlock();
-}
 
 #endif

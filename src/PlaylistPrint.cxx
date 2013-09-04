@@ -30,7 +30,7 @@
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 #include "Client.hxx"
-#include "InputLegacy.hxx"
+#include "InputStream.hxx"
 #include "Song.hxx"
 #include "util/Error.hxx"
 
@@ -182,7 +182,7 @@ playlist_file_print(Client *client, const char *uri, bool detail)
 	playlist_plugin_close(playlist);
 
 	if (is != NULL)
-		input_stream_close(is);
+		is->Close();
 
 	return true;
 }

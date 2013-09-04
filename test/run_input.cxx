@@ -22,7 +22,6 @@
 #include "stdbin.h"
 #include "Tag.hxx"
 #include "conf.h"
-#include "InputLegacy.hxx"
 #include "InputStream.hxx"
 #include "InputInit.hxx"
 #include "IOThread.hxx"
@@ -55,15 +54,15 @@ dump_input_stream(struct input_stream *is)
 	size_t num_read;
 	ssize_t num_written;
 
-	input_stream_lock(is);
+	is->Lock();
 
 	/* wait until the stream becomes ready */
 
-	input_stream_wait_ready(is);
+	is->WaitReady();
 
-	if (!input_stream_check(is, error)) {
+	if (!is->Check(error)) {
 		g_warning("%s", error.GetMessage());
-		input_stream_unlock(is);
+		is->Unlock();
 		return EXIT_FAILURE;
 	}
 
@@ -74,16 +73,15 @@ dump_input_stream(struct input_stream *is)
 
 	/* read data and tags from the stream */
 
-	while (!input_stream_eof(is)) {
-		Tag *tag = input_stream_tag(is);
+	while (!is->IsEOF()) {
+		Tag *tag = is->ReadTag();
 		if (tag != NULL) {
 			g_printerr("Received a tag:\n");
 			tag_save(stderr, *tag);
 			delete tag;
 		}
 
-		num_read = input_stream_read(is, buffer, sizeof(buffer),
-					     error);
+		num_read = is->Read(buffer, sizeof(buffer), error);
 		if (num_read == 0) {
 			if (error.IsDefined())
 				g_warning("%s", error.GetMessage());
@@ -96,13 +94,13 @@ dump_input_stream(struct input_stream *is)
 			break;
 	}
 
-	if (!input_stream_check(is, error)) {
+	if (!is->Check(error)) {
 		g_warning("%s", error.GetMessage());
-		input_stream_unlock(is);
+		is->Unlock();
 		return EXIT_FAILURE;
 	}
 
-	input_stream_unlock(is);
+	is->Unlock();
 
 	return 0;
 }
@@ -147,15 +145,15 @@ int main(int argc, char **argv)
 	Mutex mutex;
 	Cond cond;
 
-	is = input_stream_open(argv[1], mutex, cond, error);
+	is = input_stream::Open(argv[1], mutex, cond, error);
 	if (is != NULL) {
 		ret = dump_input_stream(is);
-		input_stream_close(is);
+		is->Close();
 	} else {
 		if (error.IsDefined())
 			g_warning("%s", error.GetMessage());
 		else
-			g_printerr("input_stream_open() failed\n");
+			g_printerr("input_stream::Open() failed\n");
 		ret = 2;
 	}
 

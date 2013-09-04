@@ -72,7 +72,7 @@ decoder_read(gcc_unused struct decoder *decoder,
 	     void *buffer, size_t length)
 {
 	Error error;
-	return input_stream_lock_read(is, buffer, length, error);
+	return is->LockRead(buffer, length, error);
 }
 
 void
@@ -185,9 +185,8 @@ int main(int argc, char **argv)
 		Mutex mutex;
 		Cond cond;
 
-		struct input_stream *is =
-			input_stream_open(path, mutex, cond, error);
-
+		input_stream *is = input_stream::Open(path, mutex, cond,
+						      error);
 		if (is == NULL) {
 			g_printerr("Failed to open %s: %s\n",
 				   path, error.GetMessage());
@@ -196,9 +195,9 @@ int main(int argc, char **argv)
 
 		mutex.lock();
 
-		input_stream_wait_ready(is);
+		is->WaitReady();
 
-		if (!input_stream_check(is, error)) {
+		if (!is->Check(error)) {
 			mutex.unlock();
 
 			g_printerr("Failed to read %s: %s\n",
@@ -210,7 +209,7 @@ int main(int argc, char **argv)
 
 		success = decoder_plugin_scan_stream(plugin, is,
 						     &print_handler, NULL);
-		input_stream_close(is);
+		is->Close();
 	}
 
 	decoder_plugin_deinit_all();

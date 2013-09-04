@@ -20,6 +20,7 @@
 #include "config.h"
 #include "ModplugDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
+#include "InputStream.hxx"
 #include "TagHandler.hxx"
 
 #include <glib.h>
@@ -37,7 +38,7 @@ static constexpr goffset MODPLUG_FILE_LIMIT = 100 * 1024 * 1024;
 static GByteArray *
 mod_loadfile(struct decoder *decoder, struct input_stream *is)
 {
-	const goffset size = input_stream_get_size(is);
+	const goffset size = is->GetSize();
 
 	if (size == 0) {
 		g_warning("file is empty");
@@ -63,7 +64,7 @@ mod_loadfile(struct decoder *decoder, struct input_stream *is)
 		size_t ret = decoder_read(decoder, is, data,
 					  MODPLUG_READ_BLOCK);
 		if (ret == 0) {
-			if (input_stream_lock_eof(is))
+			if (is->LockIsEOF())
 				/* end of file */
 				break;
 
@@ -125,7 +126,7 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 	assert(audio_format.IsValid());
 
 	decoder_initialized(decoder, audio_format,
-			    input_stream_is_seekable(is),
+			    is->IsSeekable(),
 			    ModPlug_GetLength(f) / 1000.0);
 
 	do {

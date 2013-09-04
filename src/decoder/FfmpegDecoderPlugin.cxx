@@ -126,7 +126,7 @@ mpd_ffmpeg_stream_seek(void *opaque, int64_t pos, int whence)
 		return stream->input->size;
 
 	Error error;
-	if (!input_stream_lock_seek(stream->input, pos, whence, error))
+	if (!stream->input->LockSeek(pos, whence, error))
 		return -1;
 
 	return stream->input->offset;
@@ -349,8 +349,7 @@ ffmpeg_probe(struct decoder *decoder, struct input_stream *is)
 
 	unsigned char *buffer = (unsigned char *)g_malloc(BUFFER_SIZE);
 	size_t nbytes = decoder_read(decoder, is, buffer, BUFFER_SIZE);
-	if (nbytes <= PADDING ||
-	    !input_stream_lock_seek(is, 0, SEEK_SET, error)) {
+	if (nbytes <= PADDING || !is->LockSeek(0, SEEK_SET, error)) {
 		g_free(buffer);
 		return NULL;
 	}

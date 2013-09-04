@@ -37,7 +37,7 @@ FlacIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)
 
 	Error error;
 	while (p < end) {
-		size_t nbytes = input_stream_lock_read(is, p, end - p, error);
+		size_t nbytes = is->LockRead(p, end - p, error);
 		if (nbytes == 0) {
 			if (!error.IsDefined())
 				/* end of file */
@@ -67,7 +67,7 @@ FlacIOSeek(FLAC__IOHandle handle, FLAC__int64 offset, int whence)
 	input_stream *is = (input_stream *)handle;
 
 	Error error;
-	return input_stream_lock_seek(is, offset, whence, error) ? 0 : -1;
+	return is->LockSeek(offset, whence, error) ? 0 : -1;
 }
 
 static FLAC__int64
@@ -83,7 +83,7 @@ FlacIOEof(FLAC__IOHandle handle)
 {
 	input_stream *is = (input_stream *)handle;
 
-	return input_stream_lock_eof(is);
+	return is->LockIsEOF();
 }
 
 static int

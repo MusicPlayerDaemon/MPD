@@ -60,7 +60,7 @@ decoder_command_finished_locked(struct decoder_control *dc)
 }
 
 /**
- * Opens the input stream with input_stream_open(), and waits until
+ * Opens the input stream with input_stream::Open(), and waits until
  * the stream gets ready.  If a decoder STOP command is received
  * during that, it cancels the operation (but does not close the
  * stream).
@@ -75,7 +75,7 @@ decoder_input_stream_open(struct decoder_control *dc, const char *uri)
 {
 	Error error;
 
-	input_stream *is = input_stream_open(uri, dc->mutex, dc->cond, error);
+	input_stream *is = input_stream::Open(uri, dc->mutex, dc->cond, error);
 	if (is == NULL) {
 		if (error.IsDefined())
 			g_warning("%s", error.GetMessage());
@@ -88,15 +88,15 @@ decoder_input_stream_open(struct decoder_control *dc, const char *uri)
 
 	dc->Lock();
 
-	input_stream_update(is);
+	is->Update();
 	while (!is->ready &&
 	       dc->command != DECODE_COMMAND_STOP) {
 		dc->Wait();
 
-		input_stream_update(is);
+		is->Update();
 	}
 
-	if (!input_stream_check(is, error)) {
+	if (!is->Check(error)) {
 		dc->Unlock();
 
 		g_warning("%s", error.GetMessage());
@@ -128,10 +128,7 @@ decoder_stream_decode(const struct decoder_plugin *plugin,
 		return true;
 
 	/* rewind the stream, so each plugin gets a fresh start */
-	{
-		Error error;
-		input_stream_seek(input_stream, 0, SEEK_SET, error);
-	}
+	input_stream->Seek(0, SEEK_SET, IgnoreError());
 
 	decoder->dc->Unlock();
 
@@ -303,7 +300,7 @@ decoder_run_stream(struct decoder *decoder, const char *uri)
 	g_slist_free(tried);
 
 	dc->Unlock();
-	input_stream_close(input_stream);
+	input_stream->Close();
 	dc->Lock();
 
 	return success;
@@ -361,7 +358,7 @@ decoder_run_file(struct decoder *decoder, const char *path_fs)
 
 			dc->Unlock();
 
-			input_stream_close(input_stream);
+			input_stream->Close();
 
 			if (success) {
 				dc->Lock();

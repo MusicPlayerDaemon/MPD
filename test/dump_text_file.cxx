@@ -59,34 +59,35 @@ dump_input_stream(struct input_stream *is)
 {
 	Error error;
 
-	input_stream_lock(is);
+	is->Lock();
 
 	/* wait until the stream becomes ready */
 
-	input_stream_wait_ready(is);
+	is->WaitReady();
 
-	if (!input_stream_check(is, error)) {
+	if (!is->Check(error)) {
 		g_warning("%s", error.GetMessage());
-		input_stream_unlock(is);
+		is->Unlock();
 		return EXIT_FAILURE;
 	}
 
 	/* read data and tags from the stream */
 
-	input_stream_unlock(is);
+	is->Unlock();
 	{
 		TextInputStream tis(is);
 		dump_text_file(tis);
 	}
-	input_stream_lock(is);
 
-	if (!input_stream_check(is, error)) {
+	is->Lock();
+
+	if (!is->Check(error)) {
 		g_warning("%s", error.GetMessage());
-		input_stream_unlock(is);
+		is->Unlock();
 		return EXIT_FAILURE;
 	}
 
-	input_stream_unlock(is);
+	is->Unlock();
 
 	return 0;
 }
@@ -131,15 +132,15 @@ int main(int argc, char **argv)
 	Mutex mutex;
 	Cond cond;
 
-	is = input_stream_open(argv[1], mutex, cond, error);
+	is = input_stream::Open(argv[1], mutex, cond, error);
 	if (is != NULL) {
 		ret = dump_input_stream(is);
-		input_stream_close(is);
+		is->Close();
 	} else {
 		if (error.IsDefined())
 			g_warning("%s", error.GetMessage());
 		else
-			g_printerr("input_stream_open() failed\n");
+			g_printerr("input_stream::Open() failed\n");
 		ret = 2;
 	}
 

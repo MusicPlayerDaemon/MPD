@@ -20,6 +20,7 @@
 #include "config.h"
 #include "MadDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
+#include "InputStream.hxx"
 #include "conf.h"
 #include "tag/TagId3.hxx"
 #include "tag/TagRva2.hxx"
@@ -205,8 +206,7 @@ inline bool
 MadDecoder::Seek(long offset)
 {
 	Error error;
-	if (!input_stream_lock_seek(input_stream, offset, SEEK_SET,
-				    error))
+	if (!input_stream->LockSeek(offset, SEEK_SET, error))
 		return false;
 
 	mad_stream_buffer(&stream, input_buffer, 0);
@@ -776,7 +776,7 @@ mp3_frame_duration(const struct mad_frame *frame)
 inline goffset
 MadDecoder::ThisFrameOffset() const
 {
-	goffset offset = input_stream_get_offset(input_stream);
+	goffset offset = input_stream->GetOffset();
 
 	if (stream.this_frame != nullptr)
 		offset -= stream.bufend - stream.this_frame;
@@ -789,7 +789,7 @@ MadDecoder::ThisFrameOffset() const
 inline goffset
 MadDecoder::RestIncludingThisFrame() const
 {
-	return input_stream_get_size(input_stream) - ThisFrameOffset();
+	return input_stream->GetSize() - ThisFrameOffset();
 }
 
 inline void
@@ -857,8 +857,7 @@ MadDecoder::DecodeFirstFrame(Tag **tag)
 		}
 
 		if (parse_lame(&lame, &ptr, &bitlen)) {
-			if (gapless_playback &&
-			    input_stream_is_seekable(input_stream)) {
+			if (gapless_playback && input_stream->IsSeekable()) {
 				drop_start_samples = lame.encoder_delay +
 				                           DECODERDELAY;
 				drop_end_samples = lame.encoder_padding;
@@ -1059,7 +1058,7 @@ MadDecoder::Read()
 		if (cmd == DECODE_COMMAND_SEEK) {
 			unsigned long j;
 
-			assert(input_stream_is_seekable(input_stream));
+			assert(input_stream->IsSeekable());
 
 			j = TimeToFrame(decoder_seek_where(decoder));
 			if (j < highest_frame) {
@@ -1139,7 +1138,7 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 	}
 
 	decoder_initialized(decoder, audio_format,
-			    input_stream_is_seekable(input_stream),
+			    input_stream->IsSeekable(),
 			    data.total_time);
 
 	if (tag != nullptr) {

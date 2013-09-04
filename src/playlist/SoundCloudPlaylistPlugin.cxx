@@ -21,7 +21,7 @@
 #include "SoundCloudPlaylistPlugin.hxx"
 #include "MemoryPlaylistProvider.hxx"
 #include "conf.h"
-#include "InputLegacy.hxx"
+#include "InputStream.hxx"
 #include "Song.hxx"
 #include "Tag.hxx"
 #include "util/Error.hxx"
@@ -249,8 +249,8 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 	unsigned char *ubuffer = (unsigned char *)buffer;
 
 	Error error;
-	input_stream *input_stream = input_stream_open(url, mutex, cond,
-						       error);
+	input_stream *input_stream = input_stream::Open(url, mutex, cond,
+							error);
 	if (input_stream == NULL) {
 		if (error.IsDefined())
 			g_warning("%s", error.GetMessage());
@@ -258,24 +258,23 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 	}
 
 	mutex.lock();
-	input_stream_wait_ready(input_stream);
+	input_stream->WaitReady();
 
 	yajl_status stat;
 	int done = 0;
 
 	while (!done) {
 		const size_t nbytes =
-			input_stream_read(input_stream, buffer, sizeof(buffer),
-					  error);
+			input_stream->Read(buffer, sizeof(buffer), error);
 		if (nbytes == 0) {
 			if (error.IsDefined())
 				g_warning("%s", error.GetMessage());
 
-			if (input_stream_eof(input_stream)) {
+			if (input_stream->IsEOF()) {
 				done = true;
 			} else {
 				mutex.unlock();
-				input_stream_close(input_stream);
+				input_stream->Close();
 				return -1;
 			}
 		}
@@ -303,7 +302,7 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 	}
 
 	mutex.unlock();
-	input_stream_close(input_stream);
+	input_stream->Close();
 
 	return 0;
 }

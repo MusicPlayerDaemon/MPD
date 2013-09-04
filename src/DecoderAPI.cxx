@@ -268,29 +268,29 @@ size_t decoder_read(struct decoder *decoder,
 	if (length == 0)
 		return 0;
 
-	input_stream_lock(is);
+	is->Lock();
 
 	while (true) {
 		if (decoder_check_cancel_read(decoder)) {
-			input_stream_unlock(is);
+			is->Unlock();
 			return 0;
 		}
 
-		if (input_stream_available(is))
+		if (is->IsAvailable())
 			break;
 
 		is->cond.wait(is->mutex);
 	}
 
 	Error error;
-	size_t nbytes = input_stream_read(is, buffer, length, error);
+	size_t nbytes = is->Read(buffer, length, error);
 	assert(nbytes == 0 || !error.IsDefined());
-	assert(nbytes > 0 || error.IsDefined() || input_stream_eof(is));
+	assert(nbytes > 0 || error.IsDefined() || is->IsEOF());
 
 	if (gcc_unlikely(nbytes == 0 && error.IsDefined()))
 		g_warning("%s", error.GetMessage());
 
-	input_stream_unlock(is);
+	is->Unlock();
 
 	return nbytes;
 }
@@ -338,7 +338,7 @@ update_stream_tag(struct decoder *decoder, struct input_stream *is)
 	Tag *tag;
 
 	tag = is != NULL
-		? input_stream_lock_tag(is)
+		? is->LockReadTag()
 		: NULL;
 	if (tag == NULL) {
 		tag = decoder->song_tag;

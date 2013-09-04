@@ -22,7 +22,6 @@
 #include "PlaylistPlugin.hxx"
 #include "Tag.hxx"
 #include "Song.hxx"
-#include "InputLegacy.hxx"
 #include "cue/CueParser.hxx"
 #include "TextInputStream.hxx"
 

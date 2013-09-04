@@ -272,7 +272,7 @@ mpd_opus_stream_decode(struct decoder *decoder,
 
 	/* rewind the stream, because ogg_codec_detect() has
 	   moved it */
-	input_stream_lock_seek(input_stream, 0, SEEK_SET, IgnoreError());
+	input_stream->LockSeek(0, SEEK_SET, IgnoreError());
 
 	MPDOpusDecoder d(decoder, input_stream);
 	OggSyncState oy(*input_stream, decoder);
@@ -298,13 +298,13 @@ SeekFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet,
 	if (is->size > 0 && is->size - is->offset < 65536)
 		return OggFindEOS(oy, os, packet);
 
-	if (!input_stream_cheap_seeking(is))
+	if (!is->CheapSeeking())
 		return false;
 
 	oy.Reset();
 
 	Error error;
-	return input_stream_lock_seek(is, -65536, SEEK_END, error) &&
+	return is->LockSeek(-65536, SEEK_END, error) &&
 		oy.ExpectPageSeekIn(os) &&
 		OggFindEOS(oy, os, packet);
 }

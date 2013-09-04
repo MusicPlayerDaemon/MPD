@@ -20,6 +20,7 @@
 #include "config.h"
 #include "MpcdecDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
+#include "InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
 #include "util/Error.hxx"
@@ -54,8 +55,7 @@ mpc_seek_cb(mpc_reader *reader, mpc_int32_t offset)
 	struct mpc_decoder_data *data =
 		(struct mpc_decoder_data *)reader->data;
 
-	return input_stream_lock_seek(data->is, offset, SEEK_SET,
-				      IgnoreError());
+	return data->is->LockSeek(offset, SEEK_SET, IgnoreError());
 }
 
 static mpc_int32_t
@@ -64,7 +64,7 @@ mpc_tell_cb(mpc_reader *reader)
 	struct mpc_decoder_data *data =
 		(struct mpc_decoder_data *)reader->data;
 
-	return (long)input_stream_get_offset(data->is);
+	return (long)data->is->GetOffset();
 }
 
 static mpc_bool_t
@@ -73,7 +73,7 @@ mpc_canseek_cb(mpc_reader *reader)
 	struct mpc_decoder_data *data =
 		(struct mpc_decoder_data *)reader->data;
 
-	return input_stream_is_seekable(data->is);
+	return data->is->IsSeekable();
 }
 
 static mpc_int32_t
@@ -82,7 +82,7 @@ mpc_getsize_cb(mpc_reader *reader)
 	struct mpc_decoder_data *data =
 		(struct mpc_decoder_data *)reader->data;
 
-	return input_stream_get_size(data->is);
+	return data->is->GetSize();
 }
 
 /* this _looks_ performance-critical, don't de-inline -- eric */
@@ -175,7 +175,7 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	decoder_replay_gain(mpd_decoder, &replay_gain_info);
 
 	decoder_initialized(mpd_decoder, audio_format,
-			    input_stream_is_seekable(is),
+			    is->IsSeekable(),
 			    mpc_streaminfo_get_length(&info));
 
 	enum decoder_command cmd = DECODE_COMMAND_NONE;

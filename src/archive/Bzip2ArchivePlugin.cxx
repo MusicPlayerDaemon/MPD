@@ -62,7 +62,7 @@ public:
 	}
 
 	~Bzip2ArchiveFile() {
-		input_stream_close(istream);
+		istream->Close();
 	}
 
 	void Ref() {
@@ -155,7 +155,7 @@ bz2_open(const char *pathname, Error &error)
 {
 	static Mutex mutex;
 	static Cond cond;
-	input_stream *is = input_stream_open(pathname, mutex, cond, error);
+	input_stream *is = input_stream::Open(pathname, mutex, cond, error);
 	if (is == nullptr)
 		return nullptr;
 
@@ -211,9 +211,8 @@ bz2_fillbuffer(Bzip2InputStream *bis, Error &error)
 	if (bzstream->avail_in > 0)
 		return true;
 
-	count = input_stream_read(bis->archive->istream,
-				  bis->buffer, sizeof(bis->buffer),
-				  error);
+	count = bis->archive->istream->Read(bis->buffer, sizeof(bis->buffer),
+					    error);
 	if (count == 0)
 		return false;
 

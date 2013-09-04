@@ -30,6 +30,7 @@
 #include "config.h"
 #include "DsfDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
+#include "InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/bit_reverse.h"
 #include "util/Error.hxx"
@@ -165,7 +166,7 @@ dsf_read_metadata(struct decoder *decoder, struct input_stream *is,
 
 	metadata->chunk_size = data_size;
 	/* data_size cannot be bigger or equal to total file size */
-	const uint64_t size = (uint64_t)input_stream_get_size(is);
+	const uint64_t size = (uint64_t)is->GetSize();
 	if (data_size >= size)
 		return false;
 

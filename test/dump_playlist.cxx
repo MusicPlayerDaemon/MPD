@@ -21,7 +21,7 @@
 #include "TagSave.hxx"
 #include "Song.hxx"
 #include "Directory.hxx"
-#include "InputLegacy.hxx"
+#include "InputStream.hxx"
 #include "conf.h"
 #include "DecoderAPI.hxx"
 #include "DecoderList.hxx"
@@ -86,7 +86,7 @@ decoder_read(gcc_unused struct decoder *decoder,
 	     void *buffer, size_t length)
 {
 	Error error;
-	return input_stream_lock_read(is, buffer, length, error);
+	return is->LockRead(buffer, length, error);
 }
 
 void
@@ -190,22 +190,22 @@ int main(int argc, char **argv)
 	if (playlist == NULL) {
 		/* open the stream and wait until it becomes ready */
 
-		is = input_stream_open(uri, mutex, cond, error);
+		is = input_stream::Open(uri, mutex, cond, error);
 		if (is == NULL) {
 			if (error.IsDefined())
 				g_warning("%s", error.GetMessage());
 			else
-				g_printerr("input_stream_open() failed\n");
+				g_printerr("input_stream::Open() failed\n");
 			return 2;
 		}
 
-		input_stream_lock_wait_ready(is);
+		is->LockWaitReady();
 
 		/* open the playlist */
 
 		playlist = playlist_list_open_stream(is, uri);
 		if (playlist == NULL) {
-			input_stream_close(is);
+			is->Close();
 			g_printerr("Failed to open playlist\n");
 			return 2;
 		}
@@ -237,7 +237,7 @@ int main(int argc, char **argv)
 
 	playlist_plugin_close(playlist);
 	if (is != NULL)
-		input_stream_close(is);
+		is->Close();
 
 	decoder_plugin_deinit_all();
 	playlist_list_global_finish();

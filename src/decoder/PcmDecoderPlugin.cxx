@@ -20,6 +20,7 @@
 #include "config.h"
 #include "decoder/PcmDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
+#include "InputStream.hxx"
 #include "util/Error.hxx"
 
 extern "C" {
@@ -43,7 +44,7 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 		2,
 	};
 
-	const char *const mime = input_stream_get_mime_type(is);
+	const char *const mime = is->GetMimeType();
 	const bool reverse_endian = mime != nullptr &&
 		strcmp(mime, "audio/x-mpd-cdda-pcm-reverse") == 0;
 
@@ -52,12 +53,12 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 	const double time_to_size = audio_format.GetTimeToSize();
 
 	float total_time = -1;
-	const goffset size = input_stream_get_size(is);
+	const goffset size = is->GetSize();
 	if (size >= 0)
 		total_time = size / time_to_size;
 
 	decoder_initialized(decoder, audio_format,
-			    input_stream_is_seekable(is), total_time);
+			    is->IsSeekable(), total_time);
 
 	do {
 		char buffer[4096];
@@ -65,7 +66,7 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 		size_t nbytes = decoder_read(decoder, is,
 					     buffer, sizeof(buffer));
 
-		if (nbytes == 0 && input_stream_lock_eof(is))
+		if (nbytes == 0 && is->LockIsEOF())
 			break;
 
 		if (reverse_endian)
@@ -83,8 +84,7 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 						   decoder_seek_where(decoder));
 
 			Error error;
-			if (input_stream_lock_seek(is, offset, SEEK_SET,
-						   error)) {
+			if (is->LockSeek(offset, SEEK_SET, error)) {
 				decoder_command_finished(decoder);
 			} else {
 				g_warning("seeking failed: %s", error.GetMessage());

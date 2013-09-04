@@ -20,6 +20,7 @@
 #include "config.h"
 #include "AudiofileDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
+#include "InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
 #include "util/Error.hxx"
@@ -56,7 +57,7 @@ audiofile_file_read(AFvirtualfile *vfile, void *data, size_t length)
 	struct input_stream *is = (struct input_stream *) vfile->closure;
 
 	Error error;
-	size_t nbytes = input_stream_lock_read(is, data, length, error);
+	size_t nbytes = is->LockRead(data, length, error);
 	if (nbytes == 0 && error.IsDefined()) {
 		g_warning("%s", error.GetMessage());
 		return -1;
@@ -69,14 +70,14 @@ static AFfileoffset
 audiofile_file_length(AFvirtualfile *vfile)
 {
 	struct input_stream *is = (struct input_stream *) vfile->closure;
-	return input_stream_get_size(is);
+	return is->GetSize();
 }
 
 static AFfileoffset
 audiofile_file_tell(AFvirtualfile *vfile)
 {
 	struct input_stream *is = (struct input_stream *) vfile->closure;
-	return input_stream_get_offset(is);
+	return is->GetOffset();
 }
 
 static void
@@ -94,8 +95,8 @@ audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset offset, int is_relative)
 	int whence = (is_relative ? SEEK_CUR : SEEK_SET);
 
 	Error error;
-	if (input_stream_lock_seek(is, offset, whence, error)) {
-		return input_stream_get_offset(is);
+	if (is->LockSeek(offset, whence, error)) {
+		return is->GetOffset();
 	} else {
 		return -1;
 	}
@@ -167,7 +168,7 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	char chunk[CHUNK_SIZE];
 	enum decoder_command cmd;
 
-	if (!input_stream_is_seekable(is)) {
+	if (!is->IsSeekable()) {
 		g_warning("not seekable");
 		return;
 	}
@@ -195,7 +196,7 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 
 	total_time = ((float)frame_count / (float)audio_format.sample_rate);
 
-	bit_rate = (uint16_t)(input_stream_get_size(is) * 8.0 / total_time / 1000.0 + 0.5);
+	bit_rate = (uint16_t)(is->GetSize() * 8.0 / total_time / 1000.0 + 0.5);
 
 	fs = (int)afGetVirtualFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
 

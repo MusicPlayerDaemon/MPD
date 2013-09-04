@@ -31,9 +31,9 @@
 static constexpr Domain input_domain("input");
 
 struct input_stream *
-input_stream_open(const char *url,
-		  Mutex &mutex, Cond &cond,
-		  Error &error)
+input_stream::Open(const char *url,
+		   Mutex &mutex, Cond &cond,
+		   Error &error)
 {
 	input_plugins_for_each_enabled(plugin) {
 		struct input_stream *is;
@@ -57,191 +57,123 @@ input_stream_open(const char *url,
 }
 
 bool
-input_stream_check(struct input_stream *is, Error &error)
+input_stream::Check(Error &error)
 {
-	assert(is != NULL);
-
-	return is->plugin.check == NULL ||
-		is->plugin.check(is, error);
+	return plugin.check == nullptr || plugin.check(this, error);
 }
 
 void
-input_stream_update(struct input_stream *is)
+input_stream::Update()
 {
-	assert(is != NULL);
-
-	if (is->plugin.update != NULL)
-		is->plugin.update(is);
+	if (plugin.update != nullptr)
+		plugin.update(this);
 }
 
 void
-input_stream_wait_ready(struct input_stream *is)
+input_stream::WaitReady()
 {
-	assert(is != NULL);
-
 	while (true) {
-		input_stream_update(is);
-		if (is->ready)
+		Update();
+		if (ready)
 			break;
 
-		is->cond.wait(is->mutex);
+		cond.wait(mutex);
 	}
 }
 
 void
-input_stream_lock_wait_ready(struct input_stream *is)
+input_stream::LockWaitReady()
 {
-	assert(is != NULL);
-
-	const ScopeLock protect(is->mutex);
-	input_stream_wait_ready(is);
-}
-
-const char *
-input_stream_get_mime_type(const struct input_stream *is)
-{
-	assert(is != NULL);
-	assert(is->ready);
-
-	return is->mime.empty() ? nullptr : is->mime.c_str();
-}
-
-void
-input_stream_override_mime_type(struct input_stream *is, const char *mime)
-{
-	assert(is != NULL);
-	assert(is->ready);
-
-	is->mime = mime;
-}
-
-goffset
-input_stream_get_size(const struct input_stream *is)
-{
-	assert(is != NULL);
-	assert(is->ready);
-
-	return is->size;
-}
-
-goffset
-input_stream_get_offset(const struct input_stream *is)
-{
-	assert(is != NULL);
-	assert(is->ready);
-
-	return is->offset;
+	const ScopeLock protect(mutex);
+	WaitReady();
 }
 
 bool
-input_stream_is_seekable(const struct input_stream *is)
+input_stream::CheapSeeking() const
 {
-	assert(is != NULL);
-	assert(is->ready);
-
-	return is->seekable;
+	return IsSeekable() && !uri_has_scheme(uri.c_str());
 }
 
 bool
-input_stream_cheap_seeking(const struct input_stream *is)
+input_stream::Seek(goffset _offset, int whence, Error &error)
 {
-	return is->seekable && !uri_has_scheme(is->uri.c_str());
-}
-
-bool
-input_stream_seek(struct input_stream *is, goffset offset, int whence,
-		  Error &error)
-{
-	assert(is != NULL);
-
-	if (is->plugin.seek == NULL)
+	if (plugin.seek == nullptr)
 		return false;
 
-	return is->plugin.seek(is, offset, whence, error);
+	return plugin.seek(this, _offset, whence, error);
 }
 
 bool
-input_stream_lock_seek(struct input_stream *is, goffset offset, int whence,
-		       Error &error)
+input_stream::LockSeek(goffset _offset, int whence, Error &error)
 {
-	assert(is != NULL);
-
-	if (is->plugin.seek == NULL)
+	if (plugin.seek == nullptr)
 		return false;
 
-	const ScopeLock protect(is->mutex);
-	return input_stream_seek(is, offset, whence, error);
+	const ScopeLock protect(mutex);
+	return Seek(_offset, whence, error);
 }
 
 Tag *
-input_stream_tag(struct input_stream *is)
+input_stream::ReadTag()
 {
-	assert(is != NULL);
-
-	return is->plugin.tag != NULL
-		? is->plugin.tag(is)
-		: NULL;
+	return plugin.tag != nullptr
+		? plugin.tag(this)
+		: nullptr;
 }
 
 Tag *
-input_stream_lock_tag(struct input_stream *is)
+input_stream::LockReadTag()
 {
-	assert(is != NULL);
-
-	if (is->plugin.tag == NULL)
+	if (plugin.tag == nullptr)
 		return nullptr;
 
-	const ScopeLock protect(is->mutex);
-	return input_stream_tag(is);
+	const ScopeLock protect(mutex);
+	return ReadTag();
 }
 
 bool
-input_stream_available(struct input_stream *is)
+input_stream::IsAvailable()
 {
-	assert(is != NULL);
-
-	return is->plugin.available != NULL
-		? is->plugin.available(is)
+	return plugin.available != nullptr
+		? plugin.available(this)
 		: true;
 }
 
 size_t
-input_stream_read(struct input_stream *is, void *ptr, size_t size,
-		  Error &error)
+input_stream::Read(void *ptr, size_t _size, Error &error)
 {
 	assert(ptr != NULL);
-	assert(size > 0);
+	assert(_size > 0);
 
-	return is->plugin.read(is, ptr, size, error);
+	return plugin.read(this, ptr, _size, error);
 }
 
 size_t
-input_stream_lock_read(struct input_stream *is, void *ptr, size_t size,
-		       Error &error)
+input_stream::LockRead(void *ptr, size_t _size, Error &error)
 {
 	assert(ptr != NULL);
-	assert(size > 0);
+	assert(_size > 0);
 
-	const ScopeLock protect(is->mutex);
-	return input_stream_read(is, ptr, size, error);
+	const ScopeLock protect(mutex);
+	return Read(ptr, _size, error);
 }
 
-void input_stream_close(struct input_stream *is)
+void
+input_stream::Close()
 {
-	is->plugin.close(is);
-}
-
-bool input_stream_eof(struct input_stream *is)
-{
-	return is->plugin.eof(is);
+	plugin.close(this);
 }
 
 bool
-input_stream_lock_eof(struct input_stream *is)
+input_stream::IsEOF()
 {
-	assert(is != NULL);
+	return plugin.eof(this);
+}
 
-	const ScopeLock protect(is->mutex);
-	return input_stream_eof(is);
+bool
+input_stream::LockIsEOF()
+{
+	const ScopeLock protect(mutex);
+	return IsEOF();
 }
 

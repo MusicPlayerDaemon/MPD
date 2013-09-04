@@ -20,6 +20,7 @@
 #include "config.h"
 #include "SndfileDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
+#include "InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
 #include "util/Error.hxx"
@@ -34,7 +35,7 @@ sndfile_vio_get_filelen(void *user_data)
 {
 	const struct input_stream *is = (const struct input_stream *)user_data;
 
-	return input_stream_get_size(is);
+	return is->GetSize();
 }
 
 static sf_count_t
@@ -42,10 +43,10 @@ sndfile_vio_seek(sf_count_t offset, int whence, void *user_data)
 {
 	struct input_stream *is = (struct input_stream *)user_data;
 
-	if (!input_stream_lock_seek(is, offset, whence, IgnoreError()))
+	if (!is->LockSeek(offset, whence, IgnoreError()))
 		return -1;
 
-	return input_stream_get_offset(is);
+	return is->GetOffset();
 }
 
 static sf_count_t
@@ -54,7 +55,7 @@ sndfile_vio_read(void *ptr, sf_count_t count, void *user_data)
 	struct input_stream *is = (struct input_stream *)user_data;
 
 	Error error;
-	size_t nbytes = input_stream_lock_read(is, ptr, count, error);
+	size_t nbytes = is->LockRead(ptr, count, error);
 	if (nbytes == 0 && error.IsDefined()) {
 		g_warning("%s", error.GetMessage());
 		return -1;
@@ -77,7 +78,7 @@ sndfile_vio_tell(void *user_data)
 {
 	const struct input_stream *is = (const struct input_stream *)user_data;
 
-	return input_stream_get_offset(is);
+	return is->GetOffset();
 }
 
 /**

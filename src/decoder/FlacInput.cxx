@@ -31,7 +31,7 @@ FlacInput::Read(FLAC__byte buffer[], size_t *bytes)
 	*bytes = r;
 
 	if (r == 0) {
-		if (input_stream_lock_eof(input_stream) ||
+		if (input_stream->LockIsEOF() ||
 		    (decoder != nullptr &&
 		     decoder_get_command(decoder) != DECODE_COMMAND_NONE))
 			return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
@@ -49,9 +49,7 @@ FlacInput::Seek(FLAC__uint64 absolute_byte_offset)
 		return FLAC__STREAM_DECODER_SEEK_STATUS_UNSUPPORTED;
 
 	::Error error;
-	if (!input_stream_lock_seek(input_stream,
-				    absolute_byte_offset, SEEK_SET,
-				    error))
+	if (!input_stream->LockSeek(absolute_byte_offset, SEEK_SET, error))
 		return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
 
 	return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
@@ -83,7 +81,7 @@ FlacInput::Eof()
 	return (decoder != nullptr &&
 		decoder_get_command(decoder) != DECODE_COMMAND_NONE &&
 		decoder_get_command(decoder) != DECODE_COMMAND_SEEK) ||
-		input_stream_lock_eof(input_stream);
+		input_stream->LockIsEOF();
 }
 
 void

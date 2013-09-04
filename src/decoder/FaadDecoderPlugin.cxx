@@ -21,6 +21,7 @@
 #include "FaadDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
 #include "DecoderBuffer.hxx"
+#include "InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "TagHandler.hxx"
 #include "util/Error.hxx"
@@ -173,7 +174,7 @@ faad_song_duration(DecoderBuffer *buffer, struct input_stream *is)
 	size_t length;
 	bool success;
 
-	const goffset size = input_stream_get_size(is);
+	const goffset size = is->GetSize();
 	fileread = size >= 0 ? size : 0;
 
 	decoder_buffer_fill(buffer);
@@ -201,12 +202,12 @@ faad_song_duration(DecoderBuffer *buffer, struct input_stream *is)
 			return -1;
 	}
 
-	if (input_stream_is_seekable(is) && length >= 2 &&
+	if (is->IsSeekable() && length >= 2 &&
 	    data[0] == 0xFF && ((data[1] & 0xF6) == 0xF0)) {
 		/* obtain the duration from the ADTS header */
 		float song_length = adts_song_duration(buffer);
 
-		input_stream_lock_seek(is, tagsize, SEEK_SET, IgnoreError());
+		is->LockSeek(tagsize, SEEK_SET, IgnoreError());
 
 		data = (const uint8_t *)decoder_buffer_read(buffer, &length);
 		if (data != nullptr)
@@ -384,8 +385,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	config->dontUpSampleImplicitSBR = 0;
 	NeAACDecSetConfiguration(decoder, config);
 
-	while (!decoder_buffer_is_full(buffer) &&
-	       !input_stream_lock_eof(is) &&
+	while (!decoder_buffer_is_full(buffer) && !is->LockIsEOF() &&
 	       decoder_get_command(mpd_decoder) == DECODE_COMMAND_NONE) {
 		adts_find_frame(buffer);
 		decoder_buffer_fill(buffer);

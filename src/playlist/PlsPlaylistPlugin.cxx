@@ -20,7 +20,7 @@
 #include "config.h"
 #include "PlsPlaylistPlugin.hxx"
 #include "MemoryPlaylistProvider.hxx"
-#include "InputLegacy.hxx"
+#include "InputStream.hxx"
 #include "Song.hxx"
 #include "Tag.hxx"
 #include "util/Error.hxx"
@@ -114,8 +114,7 @@ pls_open_stream(struct input_stream *is)
 	std::string kf_data;
 
 	do {
-		nbytes = input_stream_lock_read(is, buffer, sizeof(buffer),
-						error2);
+		nbytes = is->LockRead(buffer, sizeof(buffer), error2);
 		if (nbytes == 0) {
 			if (error2.IsDefined()) {
 				g_warning("%s", error2.GetMessage());

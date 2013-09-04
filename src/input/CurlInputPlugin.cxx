@@ -161,7 +161,7 @@ struct input_curl {
 	char *meta_name;
 
 	/** the tag object ready to be requested via
-	    input_stream_tag() */
+	    input_stream::ReadTag() */
 	Tag *tag;
 
 	Error postponed_error;

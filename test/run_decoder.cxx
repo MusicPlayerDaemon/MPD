@@ -22,7 +22,7 @@
 #include "DecoderList.hxx"
 #include "DecoderAPI.hxx"
 #include "InputInit.hxx"
-#include "InputLegacy.hxx"
+#include "InputStream.hxx"
 #include "AudioFormat.hxx"
 #include "util/Error.hxx"
 #include "stdbin.h"
@@ -92,8 +92,7 @@ decoder_read(gcc_unused struct decoder *decoder,
 	     struct input_stream *is,
 	     void *buffer, size_t length)
 {
-	Error error;
-	return input_stream_lock_read(is, buffer, length, error);
+	return is->LockRead(buffer, length, IgnoreError());
 }
 
 void
@@ -189,20 +188,20 @@ int main(int argc, char **argv)
 		Mutex mutex;
 		Cond cond;
 
-		struct input_stream *is =
-			input_stream_open(decoder.uri, mutex, cond, error);
+		input_stream *is =
+			input_stream::Open(decoder.uri, mutex, cond, error);
 		if (is == NULL) {
 			if (error.IsDefined())
 				g_warning("%s", error.GetMessage());
 			else
-				g_printerr("input_stream_open() failed\n");
+				g_printerr("input_stream::Open() failed\n");
 
 			return 1;
 		}
 
 		decoder_plugin_stream_decode(decoder.plugin, &decoder, is);
 
-		input_stream_close(is);
+		is->Close();
 	} else {
 		g_printerr("Decoder plugin is not usable\n");
 		return 1;

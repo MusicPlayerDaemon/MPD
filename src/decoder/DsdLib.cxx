@@ -26,6 +26,7 @@
 #include "config.h"
 #include "DsdLib.hxx"
 #include "DecoderAPI.hxx"
+#include "InputStream.hxx"
 #include "util/bit_reverse.h"
 #include "TagHandler.hxx"
 #include "tag/TagId3.hxx"
@@ -64,24 +65,24 @@ bool
 dsdlib_skip_to(struct decoder *decoder, struct input_stream *is,
 	       goffset offset)
 {
-	if (input_stream_is_seekable(is))
-		return input_stream_seek(is, offset, SEEK_SET, IgnoreError());
+	if (is->IsSeekable())
+		return is->Seek(offset, SEEK_SET, IgnoreError());
 
-	if (input_stream_get_offset(is) > offset)
+	if (is->GetOffset() > offset)
 		return false;
 
 	char buffer[8192];
-	while (input_stream_get_offset(is) < offset) {
+	while (is->GetOffset() < offset) {
 		size_t length = sizeof(buffer);
-		if (offset - input_stream_get_offset(is) < (goffset)length)
-			length = offset - input_stream_get_offset(is);
+		if (offset - is->GetOffset() < (goffset)length)
+			length = offset - is->GetOffset();
 
 		size_t nbytes = decoder_read(decoder, is, buffer, length);
 		if (nbytes == 0)
 			return false;
 	}
 
-	assert(input_stream_get_offset(is) == offset);
+	assert(is->GetOffset() == offset);
 	return true;
 }
 
@@ -97,8 +98,8 @@ dsdlib_skip(struct decoder *decoder, struct input_stream *is,
 	if (delta == 0)
 		return true;
 
-	if (input_stream_is_seekable(is))
-		return input_stream_seek(is, delta, SEEK_CUR, IgnoreError());
+	if (is->IsSeekable())
+		return is->Seek(delta, SEEK_CUR, IgnoreError());
 
 	char buffer[8192];
 	while (delta > 0) {
@@ -139,8 +140,8 @@ dsdlib_tag_id3(struct input_stream *is,
 	id3_length_t count;
 
 	/* Prevent broken files causing problems */
-	const goffset size = input_stream_get_size(is);
-	const goffset offset = input_stream_get_offset(is);
+	const goffset size = is->GetSize();
+	const goffset offset = is->GetOffset();
 	if (offset >= size)
 		return;
 

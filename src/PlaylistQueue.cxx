@@ -23,7 +23,7 @@
 #include "PlaylistAny.hxx"
 #include "PlaylistSong.hxx"
 #include "Playlist.hxx"
-#include "InputLegacy.hxx"
+#include "InputStream.hxx"
 #include "Song.hxx"
 
 enum playlist_result
@@ -83,7 +83,7 @@ playlist_open_into_queue(const char *uri,
 	playlist_plugin_close(playlist);
 
 	if (is != NULL)
-		input_stream_close(is);
+		is->Close();
 
 	return result;
 }

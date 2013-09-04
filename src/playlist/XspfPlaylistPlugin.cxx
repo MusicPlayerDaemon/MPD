@@ -20,7 +20,7 @@
 #include "config.h"
 #include "XspfPlaylistPlugin.hxx"
 #include "MemoryPlaylistProvider.hxx"
-#include "InputLegacy.hxx"
+#include "InputStream.hxx"
 #include "Tag.hxx"
 #include "util/Error.hxx"
 
@@ -235,8 +235,7 @@ xspf_open_stream(struct input_stream *is)
 					     &parser, xspf_parser_destroy);
 
 	while (true) {
-		nbytes = input_stream_lock_read(is, buffer, sizeof(buffer),
-						error2);
+		nbytes = is->LockRead(buffer, sizeof(buffer), error2);
 		if (nbytes == 0) {
 			if (error2.IsDefined()) {
 				g_markup_parse_context_free(context);

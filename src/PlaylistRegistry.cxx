@@ -31,7 +31,7 @@
 #include "playlist/RssPlaylistPlugin.hxx"
 #include "playlist/CuePlaylistPlugin.hxx"
 #include "playlist/EmbeddedCuePlaylistPlugin.hxx"
-#include "InputLegacy.hxx"
+#include "InputStream.hxx"
 #include "util/UriUtil.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
@@ -220,8 +220,7 @@ playlist_list_open_stream_mime2(struct input_stream *is, const char *mime)
 		    string_array_contains(plugin->mime_types, mime)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
-			Error error;
-			input_stream_seek(is, 0, SEEK_SET, error);
+			is->Seek(0, SEEK_SET, IgnoreError());
 
 			playlist = playlist_plugin_open_stream(plugin, is);
 			if (playlist != NULL)
@@ -266,8 +265,7 @@ playlist_list_open_stream_suffix(struct input_stream *is, const char *suffix)
 		    string_array_contains(plugin->suffixes, suffix)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
-			Error error;
-			input_stream_seek(is, 0, SEEK_SET, error);
+			is->Seek(0, SEEK_SET, IgnoreError());
 
 			playlist = playlist_plugin_open_stream(plugin, is);
 			if (playlist != NULL)
@@ -284,9 +282,9 @@ playlist_list_open_stream(struct input_stream *is, const char *uri)
 	const char *suffix;
 	struct playlist_provider *playlist;
 
-	input_stream_lock_wait_ready(is);
+	is->LockWaitReady();
 
-	const char *const mime = input_stream_get_mime_type(is);
+	const char *const mime = is->GetMimeType();
 	if (mime != NULL) {
 		playlist = playlist_list_open_stream_mime(is, mime);
 		if (playlist != NULL)
@@ -331,7 +329,7 @@ playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
 		return NULL;
 
 	Error error;
-	input_stream *is = input_stream_open(path_fs, mutex, cond, error);
+	input_stream *is = input_stream::Open(path_fs, mutex, cond, error);
 	if (is == NULL) {
 		if (error.IsDefined())
 			g_warning("%s", error.GetMessage());
@@ -339,13 +337,13 @@ playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
 		return NULL;
 	}
 
-	input_stream_lock_wait_ready(is);
+	is->LockWaitReady();
 
 	playlist = playlist_list_open_stream_suffix(is, suffix);
 	if (playlist != NULL)
 		*is_r = is;
 	else
-		input_stream_close(is);
+		is->Close();
 
 	return playlist;
 }
