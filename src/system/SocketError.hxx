@@ -23,8 +23,6 @@
 #include "gcc.h"
 #include "util/Error.hxx"
 
-#include <glib.h>
-
 #ifdef WIN32
 #include <winsock2.h>
 typedef DWORD socket_error_t;
@@ -97,18 +95,9 @@ class SocketErrorMessage {
 
 public:
 #ifdef WIN32
-	explicit SocketErrorMessage(socket_error_t code=GetSocketError()) {
-		DWORD nbytes = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
-					     FORMAT_MESSAGE_IGNORE_INSERTS |
-					     FORMAT_MESSAGE_MAX_WIDTH_MASK,
-					     NULL, code, 0,
-					     (LPSTR)msg, sizeof(msg), NULL);
-		if (nbytes == 0)
-			strcpy(msg, "Unknown error");
-	}
+	explicit SocketErrorMessage(socket_error_t code=GetSocketError());
 #else
-	explicit SocketErrorMessage(socket_error_t code=GetSocketError())
-		:msg(g_strerror(code)) {}
+	explicit SocketErrorMessage(socket_error_t code=GetSocketError());
 #endif
 
 	operator const char *() const {

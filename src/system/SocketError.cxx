@@ -21,4 +21,26 @@
 #include "SocketError.hxx"
 #include "util/Domain.hxx"
 
+#include <glib.h>
+
 const Domain socket_domain("socket");
+
+#ifdef WIN32
+
+SocketErrorMessage::SocketErrorMessage(socket_error_t code)
+{
+	DWORD nbytes = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
+				     FORMAT_MESSAGE_IGNORE_INSERTS |
+				     FORMAT_MESSAGE_MAX_WIDTH_MASK,
+				     NULL, code, 0,
+				     (LPSTR)msg, sizeof(msg), NULL);
+	if (nbytes == 0)
+		strcpy(msg, "Unknown error");
+}
+
+#else
+
+SocketErrorMessage::SocketErrorMessage(socket_error_t code)
+	:msg(g_strerror(code)) {}
+
+#endif

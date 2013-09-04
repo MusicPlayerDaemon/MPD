@@ -32,6 +32,8 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
+#include <glib.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
