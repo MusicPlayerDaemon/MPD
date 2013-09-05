@@ -21,15 +21,9 @@
 #include "Tag.hxx"
 #include "TagInternal.hxx"
 #include "TagPool.hxx"
-#include "ConfigGlobal.hxx"
-#include "ConfigOption.hxx"
-#include "Song.hxx"
-#include "system/FatalError.hxx"
 
 #include <glib.h>
 #include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 /**
@@ -85,52 +79,8 @@ items_size(const Tag &tag)
 
 void tag_lib_init(void)
 {
-	const char *value;
-	int quit = 0;
-	char *temp;
-	char *s;
-	char *c;
-	enum tag_type type;
-
-	/* parse the "metadata_to_use" config parameter below */
-
 	/* ignore comments by default */
 	ignore_tag_items[TAG_COMMENT] = true;
-
-	value = config_get_string(CONF_METADATA_TO_USE, nullptr);
-	if (value == nullptr)
-		return;
-
-	memset(ignore_tag_items, true, TAG_NUM_OF_ITEM_TYPES);
-
-	if (0 == g_ascii_strcasecmp(value, "none"))
-		return;
-
-	temp = c = s = g_strdup(value);
-	while (!quit) {
-		if (*s == ',' || *s == '\0') {
-			if (*s == '\0')
-				quit = 1;
-			*s = '\0';
-
-			c = g_strstrip(c);
-			if (*c == 0)
-				continue;
-
-			type = tag_name_parse_i(c);
-			if (type == TAG_NUM_OF_ITEM_TYPES)
-				FormatFatalError("error parsing metadata item \"%s\"",
-						 c);
-
-			ignore_tag_items[type] = false;
-
-			s++;
-			c = s;
-		}
-		s++;
-	}
-
-	g_free(temp);
 }
 
 void
