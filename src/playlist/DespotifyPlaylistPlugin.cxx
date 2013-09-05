@@ -42,7 +42,7 @@ add_song(std::forward_list<SongPointer> &songs, struct ds_track *track)
 	char *ds_uri;
 
 	/* Create a spt://... URI for MPD */
-	g_snprintf(uri, sizeof(uri), "%s://", dsp_scheme);
+	snprintf(uri, sizeof(uri), "%s://", dsp_scheme);
 	ds_uri = uri + strlen(dsp_scheme) + 3;
 
 	if (despotify_track_to_uri(track, ds_uri) != ds_uri) {

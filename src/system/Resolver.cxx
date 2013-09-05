@@ -33,6 +33,7 @@
 #endif /* G_OS_WIN32 */
 
 #include <string.h>
+#include <stdio.h>
 
 const Domain resolver_domain("resolver");
 
@@ -118,7 +119,7 @@ resolve_host_port(const char *host_port, unsigned default_port,
 
 	char buffer[32];
 	if (port == NULL && default_port != 0) {
-		g_snprintf(buffer, sizeof(buffer), "%u", default_port);
+		snprintf(buffer, sizeof(buffer), "%u", default_port);
 		port = buffer;
 	}
 

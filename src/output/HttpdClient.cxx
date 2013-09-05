@@ -131,18 +131,18 @@ HttpdClient::SendResponse()
 	assert(state == RESPONSE);
 
 	if (dlna_streaming_requested) {
-		g_snprintf(buffer, sizeof(buffer),
-			   "HTTP/1.1 206 OK\r\n"
-			   "Content-Type: %s\r\n"
-			   "Content-Length: 10000\r\n"
-			   "Content-RangeX: 0-1000000/1000000\r\n"
-			   "transferMode.dlna.org: Streaming\r\n"
-			   "Accept-Ranges: bytes\r\n"
-			   "Connection: close\r\n"
-			   "realTimeInfo.dlna.org: DLNA.ORG_TLAG=*\r\n"
-			   "contentFeatures.dlna.org: DLNA.ORG_OP=01;DLNA.ORG_CI=0\r\n"
-			   "\r\n",
-			   httpd->content_type);
+		snprintf(buffer, sizeof(buffer),
+			 "HTTP/1.1 206 OK\r\n"
+			 "Content-Type: %s\r\n"
+			 "Content-Length: 10000\r\n"
+			 "Content-RangeX: 0-1000000/1000000\r\n"
+			 "transferMode.dlna.org: Streaming\r\n"
+			 "Accept-Ranges: bytes\r\n"
+			 "Connection: close\r\n"
+			 "realTimeInfo.dlna.org: DLNA.ORG_TLAG=*\r\n"
+			 "contentFeatures.dlna.org: DLNA.ORG_OP=01;DLNA.ORG_CI=0\r\n"
+			 "\r\n",
+			 httpd->content_type);
 
 	} else if (metadata_requested) {
 		gchar *metadata_header;
@@ -158,14 +158,14 @@ HttpdClient::SendResponse()
 		g_free(metadata_header);
 
        } else { /* revert to a normal HTTP request */
-		g_snprintf(buffer, sizeof(buffer),
-			   "HTTP/1.1 200 OK\r\n"
-			   "Content-Type: %s\r\n"
-			   "Connection: close\r\n"
-			   "Pragma: no-cache\r\n"
-			   "Cache-Control: no-cache, no-store\r\n"
-			   "\r\n",
-			   httpd->content_type);
+		snprintf(buffer, sizeof(buffer),
+			 "HTTP/1.1 200 OK\r\n"
+			 "Content-Type: %s\r\n"
+			 "Connection: close\r\n"
+			 "Pragma: no-cache\r\n"
+			 "Cache-Control: no-cache, no-store\r\n"
+			 "\r\n",
+			 httpd->content_type);
 	}
 
 	ssize_t nbytes = SocketMonitor::Write(buffer, strlen(buffer));

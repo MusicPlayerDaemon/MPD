@@ -91,10 +91,11 @@ mpd_despotify_tag_from_track(struct ds_track *track)
 	if (!track->has_meta_data)
 		return tag;
 
-	g_snprintf(tracknum, sizeof(tracknum), "%d", track->tracknumber);
-	g_snprintf(date, sizeof(date), "%d", track->year);
-	g_snprintf(comment, sizeof(comment), "Bitrate %d Kbps, %sgeo restricted",
-			track->file_bitrate / 1000, track->geo_restricted ? "" : "not ");
+	snprintf(tracknum, sizeof(tracknum), "%d", track->tracknumber);
+	snprintf(date, sizeof(date), "%d", track->year);
+	snprintf(comment, sizeof(comment), "Bitrate %d Kbps, %sgeo restricted",
+		 track->file_bitrate / 1000,
+		 track->geo_restricted ? "" : "not ");
 	tag->AddItem(TAG_TITLE, track->title);
 	tag->AddItem(TAG_ARTIST, track->artist->name);
 	tag->AddItem(TAG_TRACK, tracknum);
