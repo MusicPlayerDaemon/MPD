@@ -61,6 +61,12 @@ FatalError(const Error &error)
 }
 
 void
+FatalError(const char *msg, const Error &error)
+{
+	FormatFatalError("%s: %s", msg, error.GetMessage());
+}
+
+void
 FatalError(GError *error)
 {
 	FatalError(error->message);

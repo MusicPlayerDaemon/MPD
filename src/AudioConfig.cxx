@@ -24,8 +24,8 @@
 #include "ConfigData.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"
-#include "mpd_error.h"
 #include "util/Error.hxx"
+#include "system/FatalError.hxx"
 
 static AudioFormat configured_audio_format;
 
@@ -47,6 +47,6 @@ void initAudioConfig(void)
 	Error error;
 	if (!audio_format_parse(configured_audio_format, param->value,
 				true, error))
-		MPD_ERROR("error parsing line %i: %s",
-			  param->line, error.GetMessage());
+		FormatFatalError("error parsing line %i: %s",
+				 param->line, error.GetMessage());
 }

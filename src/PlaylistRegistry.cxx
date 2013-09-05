@@ -37,7 +37,7 @@
 #include "util/Error.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigData.hxx"
-#include "mpd_error.h"
+#include "system/FatalError.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -87,8 +87,8 @@ playlist_plugin_config(const char *plugin_name)
 	while ((param = config_get_next_param(CONF_PLAYLIST_PLUGIN, param)) != NULL) {
 		const char *name = param->GetBlockValue("name");
 		if (name == NULL)
-			MPD_ERROR("playlist configuration without 'plugin' name in line %d",
-				param->line);
+			FormatFatalError("playlist configuration without 'plugin' name in line %d",
+					 param->line);
 
 		if (strcmp(name, plugin_name) == 0)
 			return param;

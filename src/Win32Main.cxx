@@ -23,8 +23,8 @@
 #ifdef WIN32
 
 #include "gcc.h"
-#include "mpd_error.h"
 #include "GlobalEvents.hxx"
+#include "system/FatalError.hxx"
 
 #include <cstdlib>
 #include <atomic>
@@ -92,8 +92,8 @@ service_main(gcc_unused DWORD argc, gcc_unused CHAR *argv[])
 	if (service_handle == 0) {
 		error_code = GetLastError();
 		error_message = g_win32_error_message(error_code);
-		MPD_ERROR("RegisterServiceCtrlHandlerEx() failed: %s",
-			  error_message);
+		FormatFatalError("RegisterServiceCtrlHandlerEx() failed: %s",
+				 error_message);
 	}
 
 	service_notify_status(SERVICE_START_PENDING);
@@ -150,7 +150,8 @@ int win32_main(int argc, char *argv[])
 	}
 
 	error_message = g_win32_error_message(error_code);
-	MPD_ERROR("StartServiceCtrlDispatcher() failed: %s", error_message);
+	FormatFatalError("StartServiceCtrlDispatcher() failed: %s",
+			 error_message);
 }
 
 void win32_app_started()

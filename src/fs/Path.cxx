@@ -20,7 +20,7 @@
 #include "config.h"
 #include "fs/Path.hxx"
 #include "ConfigGlobal.hxx"
-#include "mpd_error.h"
+#include "system/FatalError.hxx"
 #include "gcc.h"
 
 #include <glib.h>
@@ -105,7 +105,7 @@ SetFSCharset(const char *charset)
 	assert(charset != NULL);
 
 	if (!IsSupportedCharset(charset))
-		MPD_ERROR("invalid filesystem charset: %s", charset);
+		FormatFatalError("invalid filesystem charset: %s", charset);
 
 	fs_charset = charset;
 

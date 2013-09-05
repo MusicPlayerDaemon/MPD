@@ -25,7 +25,7 @@
 #include "ConfigError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "mpd_error.h"
+#include "system/FatalError.hxx"
 
 #include <shout/shout.h>
 #include <glib.h>
@@ -102,8 +102,8 @@ require_block_string(const config_param &param, const char *name)
 {
 	const char *value = param.GetBlockValue(name);
 	if (value == nullptr)
-		MPD_ERROR("no \"%s\" defined for shout device defined at line " \
-			  "%i\n", name, param.line);
+		FormatFatalError("no \"%s\" defined for shout device defined "
+				 "at line %u\n", name, param.line);
 
 	return value;
 }

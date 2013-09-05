@@ -25,7 +25,7 @@
 #include "ConfigPath.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
-#include "mpd_error.h"
+#include "system/FatalError.hxx"
 
 #include <glib.h>
 
@@ -125,8 +125,8 @@ config_get_unsigned(ConfigOption option, unsigned default_value)
 
 	value = strtol(param->value, &endptr, 0);
 	if (*endptr != 0 || value < 0)
-		MPD_ERROR("Not a valid non-negative number in line %i",
-			  param->line);
+		FormatFatalError("Not a valid non-negative number in line %i",
+				 param->line);
 
 	return (unsigned)value;
 }
@@ -143,10 +143,11 @@ config_get_positive(ConfigOption option, unsigned default_value)
 
 	value = strtol(param->value, &endptr, 0);
 	if (*endptr != 0)
-		MPD_ERROR("Not a valid number in line %i", param->line);
+		FormatFatalError("Not a valid number in line %i", param->line);
 
 	if (value <= 0)
-		MPD_ERROR("Not a positive number in line %i", param->line);
+		FormatFatalError("Not a positive number in line %i",
+				 param->line);
 
 	return (unsigned)value;
 }
@@ -162,9 +163,9 @@ config_get_bool(ConfigOption option, bool default_value)
 
 	success = get_bool(param->value, &value);
 	if (!success)
-		MPD_ERROR("Expected boolean value (yes, true, 1) or "
-			  "(no, false, 0) on line %i\n",
-			  param->line);
+		FormatFatalError("Expected boolean value (yes, true, 1) or "
+				 "(no, false, 0) on line %i\n",
+				 param->line);
 
 	return value;
 }

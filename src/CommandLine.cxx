@@ -30,11 +30,11 @@
 #include "InputPlugin.hxx"
 #include "PlaylistRegistry.hxx"
 #include "PlaylistPlugin.hxx"
-#include "mpd_error.h"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "system/FatalError.hxx"
 
 #ifdef ENABLE_ENCODER
 #include "EncoderList.hxx"
@@ -185,7 +185,7 @@ parse_cmdline(int argc, char **argv, struct options *options,
 	g_option_context_free(context);
 
 	if (!ret)
-		MPD_ERROR("option parsing failed: %s\n", gerror->message);
+		FatalError("option parsing failed", gerror);
 
 	if (option_version)
 		version();

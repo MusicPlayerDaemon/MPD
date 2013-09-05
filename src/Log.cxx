@@ -26,9 +26,9 @@
 #include "system/FatalError.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
-#include "mpd_error.h"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "system/FatalError.hxx"
 
 #include <assert.h>
 #include <sys/types.h>
@@ -230,8 +230,8 @@ parse_log_level(const char *value, unsigned line)
 	else if (0 == strcmp(value, "verbose"))
 		return G_LOG_LEVEL_DEBUG;
 	else {
-		MPD_ERROR("unknown log level \"%s\" at line %u\n",
-			  value, line);
+		FormatFatalError("unknown log level \"%s\" at line %u",
+				 value, line);
 		return G_LOG_LEVEL_MESSAGE;
 	}
 }

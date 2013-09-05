@@ -22,7 +22,6 @@
 #include "DecoderPlugin.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigData.hxx"
-#include "mpd_error.h"
 #include "decoder/AudiofileDecoderPlugin.hxx"
 #include "decoder/PcmDecoderPlugin.hxx"
 #include "decoder/DsdiffDecoderPlugin.hxx"
@@ -43,6 +42,7 @@
 #include "decoder/ModplugDecoderPlugin.hxx"
 #include "decoder/MpcdecDecoderPlugin.hxx"
 #include "decoder/FluidsynthDecoderPlugin.hxx"
+#include "system/FatalError.hxx"
 
 #include <glib.h>
 
@@ -204,8 +204,8 @@ decoder_plugin_config(const char *plugin_name)
 	while ((param = config_get_next_param(CONF_DECODER, param)) != NULL) {
 		const char *name = param->GetBlockValue("plugin");
 		if (name == NULL)
-			MPD_ERROR("decoder configuration without 'plugin' name in line %d",
-				  param->line);
+			FormatFatalError("decoder configuration without 'plugin' name in line %d",
+					 param->line);
 
 		if (strcmp(name, plugin_name) == 0)
 			return param;

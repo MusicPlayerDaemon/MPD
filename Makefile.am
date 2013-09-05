@@ -66,8 +66,7 @@ mpd_headers = \
 	src/replay_gain_info.h \
 	src/TimePrint.cxx src/TimePrint.hxx \
 	src/stats.h \
-	src/Timer.hxx \
-	src/mpd_error.h
+	src/Timer.hxx
 
 src_mpd_SOURCES = \
 	$(mpd_headers) \

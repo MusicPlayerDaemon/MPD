@@ -22,7 +22,7 @@
 #include "ZeroconfInternal.hxx"
 #include "Listen.hxx"
 #include "event/Loop.hxx"
-#include "mpd_error.h"
+#include "system/FatalError.hxx"
 
 #include <glib.h>
 
@@ -225,7 +225,7 @@ AvahiInit(EventLoop &loop, const char *serviceName)
 	g_debug("Initializing interface");
 
 	if (!avahi_is_valid_service_name(serviceName))
-		MPD_ERROR("Invalid zeroconf_name \"%s\"", serviceName);
+		FormatFatalError("Invalid zeroconf_name \"%s\"", serviceName);
 
 	avahiName = avahi_strdup(serviceName);
 

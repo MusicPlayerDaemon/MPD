@@ -24,7 +24,7 @@
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"
 #include "Song.hxx"
-#include "mpd_error.h"
+#include "system/FatalError.hxx"
 
 #include <glib.h>
 #include <assert.h>
@@ -119,8 +119,8 @@ void tag_lib_init(void)
 
 			type = tag_name_parse_i(c);
 			if (type == TAG_NUM_OF_ITEM_TYPES)
-				MPD_ERROR("error parsing metadata item \"%s\"",
-					  c);
+				FormatFatalError("error parsing metadata item \"%s\"",
+						 c);
 
 			ignore_tag_items[type] = false;
 

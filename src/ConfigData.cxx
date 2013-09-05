@@ -24,7 +24,6 @@
 #include "util/Error.hxx"
 #include "fs/Path.hxx"
 #include "system/FatalError.hxx"
-#include "mpd_error.h"
 
 #include <glib.h>
 

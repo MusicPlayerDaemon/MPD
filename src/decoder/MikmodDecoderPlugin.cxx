@@ -20,8 +20,8 @@
 #include "config.h"
 #include "MikmodDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
-#include "mpd_error.h"
 #include "TagHandler.hxx"
+#include "system/FatalError.hxx"
 
 #include <glib.h>
 #include <mikmod.h>
@@ -112,8 +112,8 @@ mikmod_decoder_init(const config_param &param)
 
 	mikmod_sample_rate = param.GetBlockValue("sample_rate", 44100u);
 	if (!audio_valid_sample_rate(mikmod_sample_rate))
-		MPD_ERROR("Invalid sample rate in line %d: %u",
-			  param.line, mikmod_sample_rate);
+		FormatFatalError("Invalid sample rate in line %d: %u",
+				 param.line, mikmod_sample_rate);
 
 	md_device = 0;
 	md_reverb = 0;
