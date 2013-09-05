@@ -17,32 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "TagPrint.hxx"
-#include "tag/Tag.hxx"
-#include "tag/TagSettings.h"
-#include "Song.hxx"
-#include "Client.hxx"
+#include "TagSettings.h"
 
-void tag_print_types(Client *client)
-{
-	int i;
-
-	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
-		if (!ignore_tag_items[i])
-			client_printf(client, "tagtype: %s\n",
-				      tag_item_names[i]);
-	}
-}
-
-void tag_print(Client *client, const Tag &tag)
-{
-	if (tag.time >= 0)
-		client_printf(client, SONG_TIME "%i\n", tag.time);
-
-	for (unsigned i = 0; i < tag.num_items; i++) {
-		client_printf(client, "%s: %s\n",
-			      tag_item_names[tag.items[i]->type],
-			      tag.items[i]->value);
-	}
-}
+bool ignore_tag_items[TAG_NUM_OF_ITEM_TYPES] = {
+	/* ignore comments by default */
+	[TAG_COMMENT] = true,
+};

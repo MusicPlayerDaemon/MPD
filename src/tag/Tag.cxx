@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "Tag.hxx"
-#include "TagInternal.hxx"
 #include "TagPool.hxx"
 #include "TagString.hxx"
+#include "TagSettings.h"
 
 #include <glib.h>
 #include <assert.h>
@@ -39,8 +39,6 @@ static struct {
 #endif
 	TagItem *items[BULK_MAX];
 } bulk;
-
-bool ignore_tag_items[TAG_NUM_OF_ITEM_TYPES];
 
 enum tag_type
 tag_name_parse(const char *name)
@@ -76,12 +74,6 @@ static size_t
 items_size(const Tag &tag)
 {
 	return tag.num_items * sizeof(TagItem *);
-}
-
-void tag_lib_init(void)
-{
-	/* ignore comments by default */
-	ignore_tag_items[TAG_COMMENT] = true;
 }
 
 void

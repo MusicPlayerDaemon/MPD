@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "TagConfig.hxx"
-#include "TagInternal.hxx"
+#include "TagSettings.h"
 #include "Tag.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"

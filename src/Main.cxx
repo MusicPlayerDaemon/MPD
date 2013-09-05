@@ -38,7 +38,6 @@
 #include "Partition.hxx"
 #include "Volume.hxx"
 #include "OutputAll.hxx"
-#include "tag/Tag.hxx"
 #include "tag/TagConfig.hxx"
 #include "replay_gain_config.h"
 #include "Idle.hxx"
@@ -376,7 +375,6 @@ int mpd_main(int argc, char *argv[])
 	}
 
 	stats_global_init();
-	tag_lib_init();
 	TagLoadConfig();
 
 	if (!log_init(options.verbose, options.log_stderr, error)) {

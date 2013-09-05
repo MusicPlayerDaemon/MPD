@@ -426,7 +426,7 @@ libtag_a_SOURCES =\
 	src/tag/Tag.cxx src/tag/Tag.hxx \
 	src/tag/TagItem.hxx \
 	src/tag/TagHandler.cxx src/tag/TagHandler.hxx \
-	src/tag/TagInternal.hxx \
+	src/tag/TagSettings.c src/tag/TagSettings.h \
 	src/tag/TagConfig.cxx src/tag/TagConfig.hxx \
 	src/tag/TagNames.c \
 	src/tag/TagString.cxx src/tag/TagString.hxx \

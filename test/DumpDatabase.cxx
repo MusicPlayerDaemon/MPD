@@ -26,7 +26,6 @@
 #include "PlaylistVector.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigData.hxx"
-#include "tag/Tag.hxx"
 #include "tag/TagConfig.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
@@ -105,7 +104,6 @@ main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	tag_lib_init();
 	TagLoadConfig();
 
 	/* do it */

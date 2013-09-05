@@ -17,10 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAG_INTERNAL_HXX
-#define MPD_TAG_INTERNAL_HXX
+#ifndef MPD_TAG_SETTINGS_H
+#define MPD_TAG_SETTINGS_H
 
 #include "TagType.h"
+
+#include <stdbool.h>
 
 extern bool ignore_tag_items[TAG_NUM_OF_ITEM_TYPES];
 

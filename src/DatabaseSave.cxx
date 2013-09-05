@@ -26,7 +26,7 @@
 #include "Song.hxx"
 #include "TextFile.hxx"
 #include "tag/Tag.hxx"
-#include "tag/TagInternal.hxx"
+#include "tag/TagSettings.h"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 

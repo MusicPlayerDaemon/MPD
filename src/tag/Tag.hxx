@@ -186,10 +186,4 @@ tag_name_parse(const char *name);
 enum tag_type
 tag_name_parse_i(const char *name);
 
-/**
- * Initializes the tag library.
- */
-void
-tag_lib_init();
-
 #endif
