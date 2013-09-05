@@ -19,24 +19,24 @@
 
 #include "config.h"
 #include "TagHandler.hxx"
-#include "Tag.hxx"
+#include "TagBuilder.hxx"
 
 #include <glib.h>
 
 static void
 add_tag_duration(unsigned seconds, void *ctx)
 {
-	Tag *tag = (Tag *)ctx;
+	TagBuilder &tag = *(TagBuilder *)ctx;
 
-	tag->time = seconds;
+	tag.SetTime(seconds);
 }
 
 static void
 add_tag_tag(enum tag_type type, const char *value, void *ctx)
 {
-	Tag *tag = (Tag *)ctx;
+	TagBuilder &tag = *(TagBuilder *)ctx;
 
-	tag->AddItem(type, value);
+	tag.AddItem(type, value);
 }
 
 const struct tag_handler add_tag_handler = {
@@ -48,10 +48,10 @@ const struct tag_handler add_tag_handler = {
 static void
 full_tag_pair(const char *name, gcc_unused const char *value, void *ctx)
 {
-	Tag *tag = (Tag *)ctx;
+	TagBuilder &tag = *(TagBuilder *)ctx;
 
 	if (g_ascii_strcasecmp(name, "cuesheet") == 0)
-		tag->has_playlist = true;
+		tag.SetHasPlaylist(true);
 }
 
 const struct tag_handler full_tag_handler = {

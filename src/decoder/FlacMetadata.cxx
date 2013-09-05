@@ -23,6 +23,7 @@
 #include "tag/Tag.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/TagTable.hxx"
+#include "tag/TagBuilder.hxx"
 #include "replay_gain_info.h"
 
 #include <glib.h>
@@ -231,7 +232,9 @@ void
 flac_vorbis_comments_to_tag(Tag &tag,
 			    const FLAC__StreamMetadata_VorbisComment *comment)
 {
-	flac_scan_comments(comment, &add_tag_handler, &tag);
+	TagBuilder tag_builder;
+	flac_scan_comments(comment, &add_tag_handler, &tag_builder);
+	tag_builder.Commit(tag);
 }
 
 void

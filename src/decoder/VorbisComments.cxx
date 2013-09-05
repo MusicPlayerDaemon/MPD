@@ -23,6 +23,7 @@
 #include "tag/Tag.hxx"
 #include "tag/TagTable.hxx"
 #include "tag/TagHandler.hxx"
+#include "tag/TagBuilder.hxx"
 #include "replay_gain_info.h"
 
 #include <glib.h>
@@ -138,13 +139,9 @@ vorbis_comments_scan(char **comments,
 Tag *
 vorbis_comments_to_tag(char **comments)
 {
-	Tag *tag = new Tag();
-	vorbis_comments_scan(comments, &add_tag_handler, tag);
-
-	if (tag->IsEmpty()) {
-		delete tag;
-		tag = NULL;
-	}
-
-	return tag;
+	TagBuilder tag_builder;
+	vorbis_comments_scan(comments, &add_tag_handler, &tag_builder);
+	return tag_builder.IsEmpty()
+		? nullptr
+		: tag_builder.Commit();
 }

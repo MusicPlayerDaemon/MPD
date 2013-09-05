@@ -22,6 +22,7 @@
 #include "TagHandler.hxx"
 #include "TagTable.hxx"
 #include "Tag.hxx"
+#include "TagBuilder.hxx"
 #include "util/Error.hxx"
 #include "ConfigGlobal.hxx"
 
@@ -387,16 +388,11 @@ scan_id3_tag(struct id3_tag *tag,
 Tag *
 tag_id3_import(struct id3_tag *tag)
 {
-	Tag *ret = new Tag();
-
-	scan_id3_tag(tag, &add_tag_handler, ret);
-
-	if (ret->IsEmpty()) {
-		delete ret;
-		ret = nullptr;
-	}
-
-	return ret;
+	TagBuilder tag_builder;
+	scan_id3_tag(tag, &add_tag_handler, &tag_builder);
+	return tag_builder.IsEmpty()
+		? nullptr
+		: tag_builder.Commit();
 }
 
 static int

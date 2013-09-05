@@ -28,6 +28,7 @@
 #include "OggCodec.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
+#include "tag/TagBuilder.hxx"
 #include "InputStream.hxx"
 #include "util/Error.hxx"
 
@@ -222,14 +223,16 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 inline enum decoder_command
 MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 {
-	Tag tag;
+	TagBuilder tag_builder;
 
 	enum decoder_command cmd;
 	if (ScanOpusTags(packet.packet, packet.bytes,
-			 &add_tag_handler, &tag) &&
-	    !tag.IsEmpty())
+			 &add_tag_handler, &tag_builder) &&
+	    !tag_builder.IsEmpty()) {
+		Tag tag;
+		tag_builder.Commit(tag);
 		cmd = decoder_tag(decoder, input_stream, std::move(tag));
-	else
+	} else
 		cmd = decoder_get_command(decoder);
 
 	return cmd;

@@ -28,7 +28,7 @@
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
 #include "tag/TagHandler.hxx"
-#include "tag/Tag.hxx"
+#include "tag/TagBuilder.hxx"
 
 #include <glib.h>
 
@@ -86,6 +86,7 @@ update_container_file(Directory *directory,
 
 	char *vtrack;
 	unsigned int tnum = 0;
+	TagBuilder tag_builder;
 	while ((vtrack = plugin->container_scan(pathname.c_str(), ++tnum)) != NULL) {
 		Song *song = Song::NewFile(vtrack, contdir);
 
@@ -95,9 +96,13 @@ update_container_file(Directory *directory,
 		const Path child_path_fs =
 			map_directory_child_fs(contdir, vtrack);
 
-		song->tag = new Tag();
 		decoder_plugin_scan_file(plugin, child_path_fs.c_str(),
-					 &add_tag_handler, song->tag);
+					 &add_tag_handler, &tag_builder);
+
+		if (tag_builder.IsDefined())
+			song->tag = tag_builder.Commit();
+		else
+			tag_builder.Clear();
 
 		db_lock();
 		contdir->AddSong(song);

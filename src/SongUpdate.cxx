@@ -29,6 +29,7 @@
 #include "DecoderPlugin.hxx"
 #include "DecoderList.hxx"
 #include "tag/Tag.hxx"
+#include "tag/TagBuilder.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/TagId3.hxx"
 #include "tag/ApeTag.hxx"
@@ -113,15 +114,15 @@ Song::UpdateFile()
 	Mutex mutex;
 	Cond cond;
 
+	TagBuilder tag_builder;
+
 	do {
 		/* load file tag */
-		tag = new Tag();
 		if (decoder_plugin_scan_file(plugin, path_fs.c_str(),
-					     &full_tag_handler, tag))
+					     &full_tag_handler, &tag_builder))
 			break;
 
-		delete tag;
-		tag = nullptr;
+		tag_builder.Clear();
 
 		/* fall back to stream tag */
 		if (plugin->scan_stream != NULL) {
@@ -134,14 +135,12 @@ Song::UpdateFile()
 
 			/* now try the stream_tag() method */
 			if (is != NULL) {
-				tag = new Tag();
 				if (decoder_plugin_scan_stream(plugin, is,
 							       &full_tag_handler,
-							       tag))
+							       &tag_builder))
 					break;
 
-				delete tag;
-				tag = nullptr;
+				tag_builder.Clear();
 
 				is->LockSeek(0, SEEK_SET, IgnoreError());
 			}
@@ -153,10 +152,15 @@ Song::UpdateFile()
 	if (is != NULL)
 		is->Close();
 
-	if (tag != nullptr && tag->IsEmpty())
-		tag_scan_fallback(path_fs.c_str(), &full_tag_handler, tag);
+	if (!tag_builder.IsDefined())
+		return false;
 
-	return tag != nullptr;
+	if (tag_builder.IsEmpty())
+		tag_scan_fallback(path_fs.c_str(), &full_tag_handler,
+				  &tag_builder);
+
+	tag = tag_builder.Commit();
+	return true;
 }
 
 bool
