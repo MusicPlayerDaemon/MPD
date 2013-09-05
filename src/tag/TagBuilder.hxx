@@ -66,11 +66,19 @@ public:
 	TagBuilder &operator=(const TagBuilder &other) = delete;
 
 	/**
+	 * Returns true if the tag contains no items.  This ignores the "time"
+	 * attribute.
+	 */
+	bool IsEmpty() const {
+		return items.empty();
+	}
+
+	/**
 	 * Returns true if the object contains any information.
 	 */
 	gcc_pure
 	bool IsDefined() const {
-		return time >= 0 || has_playlist || !items.empty();
+		return time >= 0 || has_playlist || !IsEmpty();
 	}
 
 	void Clear();
