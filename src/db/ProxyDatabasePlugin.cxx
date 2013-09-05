@@ -26,7 +26,7 @@
 #include "Directory.hxx"
 #include "Song.hxx"
 #include "gcc.h"
-#include "conf.h"
+#include "ConfigData.hxx"
 #include "Tag.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

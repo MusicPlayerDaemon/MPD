@@ -21,7 +21,8 @@
 #include "PcmResampleInternal.hxx"
 
 #ifdef HAVE_LIBSAMPLERATE
-#include "conf.h"
+#include "ConfigGlobal.hxx"
+#include "ConfigOption.hxx"
 #endif
 
 #include <string.h>

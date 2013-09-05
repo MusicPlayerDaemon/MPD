@@ -19,8 +19,10 @@
 
 #include "config.h"
 #include "Permission.hxx"
+#include "ConfigData.hxx"
+#include "ConfigGlobal.hxx"
+#include "ConfigOption.hxx"
 #include "mpd_error.h"
-#include "conf.h"
 
 #include <map>
 #include <string>

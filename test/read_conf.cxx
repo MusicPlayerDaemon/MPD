@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "conf.h"
+#include "ConfigGlobal.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 

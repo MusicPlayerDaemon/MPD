@@ -21,7 +21,7 @@
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
-#include "conf.h"
+#include "ConfigData.hxx"
 #include "ConfigError.hxx"
 #include "util/Error.hxx"
 

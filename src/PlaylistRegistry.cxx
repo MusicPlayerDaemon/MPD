@@ -35,7 +35,8 @@
 #include "util/UriUtil.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
-#include "conf.h"
+#include "ConfigGlobal.hxx"
+#include "ConfigData.hxx"
 #include "mpd_error.h"
 
 #include <assert.h>

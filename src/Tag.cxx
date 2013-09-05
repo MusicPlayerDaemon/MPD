@@ -21,7 +21,8 @@
 #include "Tag.hxx"
 #include "TagInternal.hxx"
 #include "TagPool.hxx"
-#include "conf.h"
+#include "ConfigGlobal.hxx"
+#include "ConfigOption.hxx"
 #include "Song.hxx"
 #include "mpd_error.h"
 

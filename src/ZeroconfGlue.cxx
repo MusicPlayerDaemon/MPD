@@ -21,7 +21,8 @@
 #include "ZeroconfGlue.hxx"
 #include "ZeroconfAvahi.hxx"
 #include "ZeroconfBonjour.hxx"
-#include "conf.h"
+#include "ConfigGlobal.hxx"
+#include "ConfigOption.hxx"
 #include "Listen.hxx"
 #include "gcc.h"
 

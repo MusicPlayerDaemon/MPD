@@ -22,7 +22,6 @@
 #include "DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
-#include "conf.h"
 
 #include <glib.h>
 

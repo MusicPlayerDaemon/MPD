@@ -24,6 +24,6 @@
 #include "OutputInternal.hxx"
 #include "AudioFormat.hxx"
 #include "Tag.hxx"
-#include "conf.h"
+#include "ConfigData.hxx"
 
 #endif

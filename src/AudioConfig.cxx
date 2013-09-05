@@ -21,7 +21,9 @@
 #include "AudioConfig.hxx"
 #include "AudioFormat.hxx"
 #include "AudioParser.hxx"
-#include "conf.h"
+#include "ConfigData.hxx"
+#include "ConfigGlobal.hxx"
+#include "ConfigOption.hxx"
 #include "mpd_error.h"
 #include "util/Error.hxx"
 

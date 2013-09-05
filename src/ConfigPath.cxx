@@ -22,7 +22,8 @@
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "conf.h"
+#include "ConfigGlobal.hxx"
+#include "ConfigOption.hxx"
 
 #include <glib.h>
 

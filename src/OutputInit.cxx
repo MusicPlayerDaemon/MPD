@@ -35,6 +35,7 @@
 #include "filter/ReplayGainFilterPlugin.hxx"
 #include "filter/ChainFilterPlugin.hxx"
 #include "ConfigError.hxx"
+#include "ConfigGlobal.hxx"
 #include "util/Error.hxx"
 
 #include <glib.h>

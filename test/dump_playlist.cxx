@@ -22,7 +22,7 @@
 #include "Song.hxx"
 #include "Directory.hxx"
 #include "InputStream.hxx"
-#include "conf.h"
+#include "ConfigGlobal.hxx"
 #include "DecoderAPI.hxx"
 #include "DecoderList.hxx"
 #include "InputInit.hxx"

@@ -33,7 +33,7 @@
 #include "replay_gain_info.h"
 #include "Tag.hxx"
 #include "AudioFormat.hxx"
-#include "conf.h"
+#include "ConfigData.hxx"
 
 /**
  * Notify the player thread that it has finished initialization and

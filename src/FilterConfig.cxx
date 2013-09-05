@@ -19,11 +19,13 @@
 
 #include "config.h"
 #include "FilterConfig.hxx"
-#include "conf.h"
 #include "filter/ChainFilterPlugin.hxx"
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
+#include "ConfigData.hxx"
+#include "ConfigOption.hxx"
+#include "ConfigGlobal.hxx"
 #include "ConfigError.hxx"
 #include "util/Error.hxx"
 

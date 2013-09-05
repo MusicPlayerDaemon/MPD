@@ -20,7 +20,8 @@
 #include "config.h"
 #include "replay_gain_config.h"
 #include "Idle.hxx"
-#include "conf.h"
+#include "ConfigData.hxx"
+#include "ConfigGlobal.hxx"
 #include "Playlist.hxx"
 #include "mpd_error.h"
 

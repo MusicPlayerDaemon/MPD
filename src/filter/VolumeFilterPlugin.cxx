@@ -22,7 +22,6 @@
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
-#include "conf.h"
 #include "pcm/PcmVolume.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "AudioFormat.hxx"

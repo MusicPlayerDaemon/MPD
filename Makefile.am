@@ -53,7 +53,6 @@ src_mpd_LDADD = \
 mpd_headers = \
 	src/check.h \
 	src/command.h \
-	src/conf.h \
 	src/gerror.h \
 	src/glib_compat.h \
 	src/gcc.h \

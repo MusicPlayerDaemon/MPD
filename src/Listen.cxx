@@ -22,7 +22,9 @@
 #include "Main.hxx"
 #include "Instance.hxx"
 #include "Client.hxx"
-#include "conf.h"
+#include "ConfigData.hxx"
+#include "ConfigGlobal.hxx"
+#include "ConfigOption.hxx"
 #include "event/ServerSocket.hxx"
 #include "util/Error.hxx"
 

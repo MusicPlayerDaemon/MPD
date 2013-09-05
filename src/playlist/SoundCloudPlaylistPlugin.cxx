@@ -20,7 +20,7 @@
 #include "config.h"
 #include "SoundCloudPlaylistPlugin.hxx"
 #include "MemoryPlaylistProvider.hxx"
-#include "conf.h"
+#include "ConfigData.hxx"
 #include "InputStream.hxx"
 #include "Song.hxx"
 #include "Tag.hxx"

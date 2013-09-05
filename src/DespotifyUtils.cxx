@@ -19,7 +19,8 @@
 
 #include "DespotifyUtils.hxx"
 #include "Tag.hxx"
-#include "conf.h"
+#include "ConfigGlobal.hxx"
+#include "ConfigOption.hxx"
 
 #include <glib.h>
 

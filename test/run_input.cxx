@@ -21,7 +21,7 @@
 #include "TagSave.hxx"
 #include "stdbin.h"
 #include "Tag.hxx"
-#include "conf.h"
+#include "ConfigGlobal.hxx"
 #include "InputStream.hxx"
 #include "InputInit.hxx"
 #include "IOThread.hxx"

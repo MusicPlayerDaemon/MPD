@@ -21,7 +21,6 @@
 #include "PulseMixerPlugin.hxx"
 #include "MixerInternal.hxx"
 #include "output/PulseOutputPlugin.hxx"
-#include "conf.h"
 #include "GlobalEvents.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

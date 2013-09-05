@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "PcmResampleInternal.hxx"
-#include "conf.h"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 

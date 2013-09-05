@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "fs/Path.hxx"
-#include "conf.h"
+#include "ConfigGlobal.hxx"
 #include "mpd_error.h"
 #include "gcc.h"
 

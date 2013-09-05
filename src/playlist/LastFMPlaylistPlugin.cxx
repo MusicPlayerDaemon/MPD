@@ -21,7 +21,7 @@
 #include "LastFMPlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
 #include "PlaylistRegistry.hxx"
-#include "conf.h"
+#include "ConfigData.hxx"
 #include "Song.hxx"
 #include "InputStream.hxx"
 #include "util/Error.hxx"

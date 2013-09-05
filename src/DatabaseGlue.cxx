@@ -25,7 +25,7 @@
 #include "DatabaseError.hxx"
 #include "Directory.hxx"
 #include "util/Error.hxx"
-#include "conf.h"
+#include "ConfigData.hxx"
 
 extern "C" {
 #include "stats.h"

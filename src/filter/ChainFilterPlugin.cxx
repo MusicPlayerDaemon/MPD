@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "ChainFilterPlugin.hxx"
-#include "conf.h"
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"

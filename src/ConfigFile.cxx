@@ -22,7 +22,6 @@
 #include "ConfigError.hxx"
 #include "ConfigData.hxx"
 #include "ConfigTemplates.hxx"
-#include "conf.h"
 #include "util/Tokenizer.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"

@@ -21,7 +21,7 @@
 #include "EncoderList.hxx"
 #include "EncoderPlugin.hxx"
 #include "AudioFormat.hxx"
-#include "conf.h"
+#include "ConfigData.hxx"
 #include "stdbin.h"
 #include "Tag.hxx"
 #include "util/Error.hxx"

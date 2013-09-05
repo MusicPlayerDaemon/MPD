@@ -27,7 +27,7 @@
 #include "DatabaseLock.hxx"
 #include "DatabaseError.hxx"
 #include "TextFile.hxx"
-#include "conf.h"
+#include "ConfigData.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

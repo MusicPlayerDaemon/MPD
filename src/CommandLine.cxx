@@ -21,7 +21,7 @@
 #include "CommandLine.hxx"
 #include "ls.hxx"
 #include "Log.hxx"
-#include "conf.h"
+#include "ConfigGlobal.hxx"
 #include "DecoderList.hxx"
 #include "DecoderPlugin.hxx"
 #include "OutputList.hxx"

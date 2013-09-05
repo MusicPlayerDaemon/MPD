@@ -40,8 +40,8 @@
  */
 
 #include "config.h"
-#include "conf.h"
 #include "ConfigError.hxx"
+#include "ConfigData.hxx"
 #include "AudioFormat.hxx"
 #include "CheckAudioFormat.hxx"
 #include "FilterPlugin.hxx"

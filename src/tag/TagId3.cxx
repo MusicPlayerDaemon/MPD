@@ -23,13 +23,12 @@
 #include "TagTable.hxx"
 #include "Tag.hxx"
 #include "util/Error.hxx"
+#include "ConfigGlobal.hxx"
 
 extern "C" {
 #include "riff.h"
 #include "aiff.h"
 }
-
-#include "conf.h"
 
 #include <glib.h>
 #include <id3tag.h>

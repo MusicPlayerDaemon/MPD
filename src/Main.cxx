@@ -39,7 +39,6 @@
 #include "Volume.hxx"
 #include "OutputAll.hxx"
 #include "Tag.hxx"
-#include "conf.h"
 #include "replay_gain_config.h"
 #include "Idle.hxx"
 #include "SignalHandlers.hxx"
@@ -57,7 +56,10 @@
 #include "Daemon.hxx"
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
+#include "ConfigGlobal.hxx"
+#include "ConfigData.hxx"
 #include "ConfigDefaults.hxx"
+#include "ConfigOption.hxx"
 
 extern "C" {
 #include "stats.h"

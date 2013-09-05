@@ -19,7 +19,9 @@
 
 #include "config.h"
 #include "Log.hxx"
-#include "conf.h"
+#include "ConfigData.hxx"
+#include "ConfigGlobal.hxx"
+#include "ConfigOption.hxx"
 #include "system/fd_util.h"
 #include "system/FatalError.hxx"
 #include "fs/Path.hxx"

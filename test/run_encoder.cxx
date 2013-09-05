@@ -22,7 +22,7 @@
 #include "EncoderPlugin.hxx"
 #include "AudioFormat.hxx"
 #include "AudioParser.hxx"
-#include "conf.h"
+#include "ConfigData.hxx"
 #include "util/Error.hxx"
 #include "stdbin.h"
 

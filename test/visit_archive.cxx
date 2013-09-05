@@ -20,7 +20,7 @@
 #include "config.h"
 #include "stdbin.h"
 #include "Tag.hxx"
-#include "conf.h"
+#include "ConfigGlobal.hxx"
 #include "IOThread.hxx"
 #include "InputInit.hxx"
 #include "ArchiveList.hxx"

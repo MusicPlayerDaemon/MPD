@@ -21,7 +21,7 @@
 #include "MadDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
 #include "InputStream.hxx"
-#include "conf.h"
+#include "ConfigGlobal.hxx"
 #include "tag/TagId3.hxx"
 #include "tag/TagRva2.hxx"
 #include "TagHandler.hxx"
