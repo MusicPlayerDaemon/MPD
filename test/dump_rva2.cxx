@@ -18,7 +18,6 @@
  */
 
 #include "config.h"
-#include "tag/Tag.hxx"
 #include "tag/TagId3.hxx"
 #include "tag/TagRva2.hxx"
 #include "replay_gain_info.h"
@@ -41,14 +40,6 @@ config_get_string(gcc_unused enum ConfigOption option,
 {
 	return default_value;
 }
-
-void
-Tag::AddItem(gcc_unused enum tag_type type,
-	     gcc_unused const char *value)
-{
-}
-
-Tag::~Tag() {}
 
 int main(int argc, char **argv)
 {
