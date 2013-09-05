@@ -21,26 +21,12 @@
 #define MPD_TAG_HXX
 
 #include "TagType.h"
+#include "TagItem.hxx"
 #include "gcc.h"
 
 #include <algorithm>
 
 #include <stddef.h>
-
-/**
- * One tag value.  It is a mapping of #tag_type to am arbitrary string
- * value.  Each tag can have multiple items of one tag type (although
- * few clients support that).
- */
-struct TagItem {
-	/** the type of this item */
-	enum tag_type type;
-
-	/**
-	 * the value of this tag; this is a variable length string
-	 */
-	char value[sizeof(long)];
-} gcc_packed;
 
 /**
  * The meta information about a song file.  It is a MPD specific
