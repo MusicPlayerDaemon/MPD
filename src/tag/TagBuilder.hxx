@@ -84,6 +84,12 @@ public:
 	void Clear();
 
 	/**
+	 * Move this object to the given #Tag instance.  This object
+	 * is empty afterwards.
+	 */
+	void Commit(Tag &tag);
+
+	/**
 	 * Create a new #Tag instance from data in this object.  The
 	 * returned object is owned by the caller.  This object is
 	 * empty afterwards.

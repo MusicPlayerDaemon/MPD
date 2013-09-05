@@ -43,27 +43,34 @@ TagBuilder::Clear()
 	items.clear();
 }
 
-Tag *
-TagBuilder::Commit()
+void
+TagBuilder::Commit(Tag &tag)
 {
-	Tag *tag = new Tag();
-	tag->time = time;
-	tag->has_playlist = has_playlist;
+	tag.Clear();
+
+	tag.time = time;
+	tag.has_playlist = has_playlist;
 
 	/* move all TagItem pointers to the new Tag object without
 	   touching the TagPool reference counters; the
 	   vector::clear() call is important to detach them from this
 	   object */
 	const unsigned n_items = items.size();
-	tag->num_items = n_items;
-	tag->items = g_new(TagItem *, n_items);
-	std::copy_n(items.begin(), n_items, tag->items);
+	tag.num_items = n_items;
+	tag.items = g_new(TagItem *, n_items);
+	std::copy_n(items.begin(), n_items, tag.items);
 	items.clear();
 
 	/* now ensure that this object is fresh (will not delete any
 	   items because we've already moved them out) */
 	Clear();
+}
 
+Tag *
+TagBuilder::Commit()
+{
+	Tag *tag = new Tag();
+	Commit(*tag);
 	return tag;
 }
 
