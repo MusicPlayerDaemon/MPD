@@ -23,8 +23,6 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
-#include <stddef.h>
-
 struct config_param;
 struct input_stream;
 struct Tag;
@@ -50,7 +48,7 @@ struct playlist_plugin {
 	/**
 	 * Initialize the plugin.  Optional method.
 	 *
-	 * @param param a configuration block for this plugin, or NULL
+	 * @param param a configuration block for this plugin, or nullptr
 	 * if none is configured
 	 * @return true if the plugin was initialized successfully,
 	 * false if the plugin is not available
@@ -89,7 +87,7 @@ struct playlist_plugin {
 /**
  * Initialize a plugin.
  *
- * @param param a configuration block for this plugin, or NULL if none
+ * @param param a configuration block for this plugin, or nullptr if none
  * is configured
  * @return true if the plugin was initialized successfully, false if
  * the plugin is not available
@@ -98,7 +96,7 @@ static inline bool
 playlist_plugin_init(const struct playlist_plugin *plugin,
 		     const config_param &param)
 {
-	return plugin->init != NULL
+	return plugin->init != nullptr
 		? plugin->init(param)
 		: true;
 }
@@ -109,7 +107,7 @@ playlist_plugin_init(const struct playlist_plugin *plugin,
 static inline void
 playlist_plugin_finish(const struct playlist_plugin *plugin)
 {
-	if (plugin->finish != NULL)
+	if (plugin->finish != nullptr)
 		plugin->finish();
 }
 

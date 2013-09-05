@@ -23,8 +23,6 @@
 #include "ConfigOption.hxx"
 #include "gcc.h"
 
-#include <stddef.h>
-
 class Error;
 class Path;
 
@@ -41,7 +39,7 @@ bool
 ReadConfigFile(const Path &path, Error &error);
 
 /* don't free the returned value
-   set _last_ to NULL to get first entry */
+   set _last_ to nullptr to get first entry */
 gcc_pure
 const struct config_param *
 config_get_next_param(enum ConfigOption option,
@@ -51,7 +49,7 @@ gcc_pure
 static inline const struct config_param *
 config_get_param(enum ConfigOption option)
 {
-	return config_get_next_param(option, NULL);
+	return config_get_next_param(option, nullptr);
 }
 
 /* Note on gcc_pure: Some of the functions declared pure are not

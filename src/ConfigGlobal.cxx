@@ -92,7 +92,7 @@ config_get_string(ConfigOption option, const char *default_value)
 {
 	const struct config_param *param = config_get_param(option);
 
-	if (param == NULL)
+	if (param == nullptr)
 		return default_value;
 
 	return param->value;
@@ -102,7 +102,7 @@ Path
 config_get_path(ConfigOption option, Error &error)
 {
 	const struct config_param *param = config_get_param(option);
-	if (param == NULL)
+	if (param == nullptr)
 		return Path::Null();
 
 	Path path = ParsePath(param->value, error);
@@ -120,7 +120,7 @@ config_get_unsigned(ConfigOption option, unsigned default_value)
 	long value;
 	char *endptr;
 
-	if (param == NULL)
+	if (param == nullptr)
 		return default_value;
 
 	value = strtol(param->value, &endptr, 0);
@@ -138,7 +138,7 @@ config_get_positive(ConfigOption option, unsigned default_value)
 	long value;
 	char *endptr;
 
-	if (param == NULL)
+	if (param == nullptr)
 		return default_value;
 
 	value = strtol(param->value, &endptr, 0);
@@ -157,7 +157,7 @@ config_get_bool(ConfigOption option, bool default_value)
 	const struct config_param *param = config_get_param(option);
 	bool success, value;
 
-	if (param == NULL)
+	if (param == nullptr)
 		return default_value;
 
 	success = get_bool(param->value, &value);
