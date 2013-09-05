@@ -21,7 +21,7 @@
 #define MPD_MEMORY_DATABASE_PLUGIN_HXX
 
 #include "DatabaseVisitor.hxx"
-#include "TagType.h"
+#include "tag/TagType.h"
 #include "gcc.h"
 
 class Error;

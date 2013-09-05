@@ -30,7 +30,7 @@
 #include "CrossFade.hxx"
 #include "PlayerControl.hxx"
 #include "OutputAll.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"
 

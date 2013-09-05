@@ -21,7 +21,7 @@
 #include "VorbisEncoderPlugin.hxx"
 #include "OggStream.hxx"
 #include "EncoderAPI.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "AudioFormat.hxx"
 #include "ConfigError.hxx"
 #include "util/Error.hxx"

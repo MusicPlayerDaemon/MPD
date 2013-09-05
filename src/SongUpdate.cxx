@@ -25,11 +25,11 @@
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
-#include "Tag.hxx"
 #include "InputStream.hxx"
 #include "DecoderPlugin.hxx"
 #include "DecoderList.hxx"
-#include "TagHandler.hxx"
+#include "tag/Tag.hxx"
+#include "tag/TagHandler.hxx"
 #include "tag/TagId3.hxx"
 #include "tag/ApeTag.hxx"
 

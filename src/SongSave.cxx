@@ -23,7 +23,7 @@
 #include "TagSave.hxx"
 #include "Directory.hxx"
 #include "TextFile.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

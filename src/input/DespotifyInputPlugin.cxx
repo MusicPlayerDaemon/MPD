@@ -23,7 +23,7 @@
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 
 extern "C" {
 #include <despotify.h>

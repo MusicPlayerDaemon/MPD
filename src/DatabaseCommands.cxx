@@ -25,7 +25,7 @@
 #include "DatabaseSelection.hxx"
 #include "CommandError.hxx"
 #include "ClientInternal.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "SongFilter.hxx"

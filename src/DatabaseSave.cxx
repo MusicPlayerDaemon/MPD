@@ -25,8 +25,8 @@
 #include "DirectorySave.hxx"
 #include "Song.hxx"
 #include "TextFile.hxx"
-#include "TagInternal.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
+#include "tag/TagInternal.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 

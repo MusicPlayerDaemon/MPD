@@ -28,7 +28,7 @@
 #include "DecoderAPI.hxx"
 #include "InputStream.hxx"
 #include "util/bit_reverse.h"
-#include "TagHandler.hxx"
+#include "tag/TagHandler.hxx"
 #include "tag/TagId3.hxx"
 #include "util/Error.hxx"
 

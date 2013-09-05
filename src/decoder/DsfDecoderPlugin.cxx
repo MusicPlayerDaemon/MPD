@@ -35,7 +35,7 @@
 #include "util/bit_reverse.h"
 #include "util/Error.hxx"
 #include "DsdLib.hxx"
-#include "TagHandler.hxx"
+#include "tag/TagHandler.hxx"
 
 #include <unistd.h>
 #include <stdio.h> /* for SEEK_SET, SEEK_CUR */

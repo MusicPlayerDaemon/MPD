@@ -20,7 +20,7 @@
 #include "config.h"
 #include "MikmodDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
-#include "TagHandler.hxx"
+#include "tag/TagHandler.hxx"
 #include "system/FatalError.hxx"
 
 #include <glib.h>

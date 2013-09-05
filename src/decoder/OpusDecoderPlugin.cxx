@@ -27,7 +27,7 @@
 #include "DecoderAPI.hxx"
 #include "OggCodec.hxx"
 #include "CheckAudioFormat.hxx"
-#include "TagHandler.hxx"
+#include "tag/TagHandler.hxx"
 #include "InputStream.hxx"
 #include "util/Error.hxx"
 

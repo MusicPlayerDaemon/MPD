@@ -38,7 +38,7 @@
 #include "Partition.hxx"
 #include "Volume.hxx"
 #include "OutputAll.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "replay_gain_config.h"
 #include "Idle.hxx"
 #include "SignalHandlers.hxx"

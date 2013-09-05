@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "TagPrint.hxx"
-#include "Tag.hxx"
-#include "TagInternal.hxx"
+#include "tag/Tag.hxx"
+#include "tag/TagInternal.hxx"
 #include "Song.hxx"
 #include "Client.hxx"
 

@@ -20,7 +20,7 @@
 #include "DatabaseHelpers.hxx"
 #include "DatabasePlugin.hxx"
 #include "Song.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 
 #include <functional>
 #include <set>

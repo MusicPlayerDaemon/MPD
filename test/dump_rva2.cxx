@@ -18,11 +18,11 @@
  */
 
 #include "config.h"
+#include "tag/Tag.hxx"
 #include "tag/TagId3.hxx"
 #include "tag/TagRva2.hxx"
 #include "replay_gain_info.h"
 #include "ConfigGlobal.hxx"
-#include "Tag.hxx"
 #include "util/Error.hxx"
 
 #include <id3tag.h>

@@ -201,14 +201,8 @@ src_mpd_SOURCES = \
 	src/SongSort.cxx src/SongSort.hxx \
 	src/StateFile.cxx src/StateFile.hxx \
 	src/Stats.cxx \
-	src/TagType.h \
-	src/Tag.cxx src/Tag.hxx \
-	src/TagInternal.hxx \
-	src/TagNames.c \
-	src/TagPool.cxx src/TagPool.hxx \
 	src/TagPrint.cxx src/TagPrint.hxx \
 	src/TagSave.cxx src/TagSave.hxx \
-	src/TagHandler.cxx src/TagHandler.hxx \
 	src/TagFile.cxx src/TagFile.hxx \
 	src/TextFile.cxx src/TextFile.hxx \
 	src/TextInputStream.cxx \
@@ -428,7 +422,13 @@ TAG_LIBS = \
 	$(ID3TAG_LIBS)
 
 libtag_a_SOURCES =\
-	src/tag/TagTable.cxx src/TagTable.hxx \
+	src/tag/TagType.h \
+	src/tag/Tag.cxx src/tag/Tag.hxx \
+	src/tag/TagHandler.cxx src/tag/TagHandler.hxx \
+	src/tag/TagInternal.hxx \
+	src/tag/TagNames.c \
+	src/tag/TagPool.cxx src/tag/TagPool.hxx \
+	src/tag/TagTable.cxx src/tag/TagTable.hxx \
 	src/tag/ApeLoader.cxx src/tag/ApeLoader.hxx \
 	src/tag/ApeReplayGain.cxx src/tag/ApeReplayGain.hxx \
 	src/tag/ApeTag.cxx src/tag/ApeTag.hxx
@@ -1074,6 +1074,7 @@ test_run_resolver_SOURCES = test/run_resolver.cxx
 
 test_DumpDatabase_LDADD = \
 	$(DB_LIBS) \
+	$(TAG_LIBS) \
 	libconf.a \
 	libutil.a \
 	libsystem.a \
@@ -1087,13 +1088,14 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/PlaylistVector.cxx src/PlaylistDatabase.cxx \
 	src/DatabaseLock.cxx src/DatabaseSave.cxx \
 	src/Song.cxx src/SongSave.cxx src/SongSort.cxx \
-	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
+	src/TagSave.cxx \
 	src/SongFilter.cxx \
 	src/TextFile.cxx
 
 test_run_input_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
+	$(TAG_LIBS) \
 	libconf.a \
 	libutil.a \
 	libevent.a \
@@ -1103,13 +1105,14 @@ test_run_input_LDADD = \
 test_run_input_SOURCES = test/run_input.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
-	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx
+	src/TagSave.cxx
 
 if ENABLE_ARCHIVE
 
 test_visit_archive_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
+	$(TAG_LIBS) \
 	libconf.a \
 	libutil.a \
 	libevent.a \
@@ -1118,8 +1121,7 @@ test_visit_archive_LDADD = \
 	$(GLIB_LIBS)
 test_visit_archive_SOURCES = test/visit_archive.cxx \
 	src/IOThread.cxx \
-	src/InputStream.cxx \
-	src/Tag.cxx src/TagNames.c src/TagPool.cxx
+	src/InputStream.cxx
 
 if ENABLE_DESPOTIFY
 test_visit_archive_SOURCES += src/DespotifyUtils.cxx
@@ -1130,6 +1132,7 @@ endif
 test_dump_text_file_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
+	$(TAG_LIBS) \
 	libconf.a \
 	libevent.a \
 	libfs.a \
@@ -1139,7 +1142,6 @@ test_dump_text_file_LDADD = \
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
-	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/TextInputStream.cxx
 
 test_dump_playlist_LDADD = \
@@ -1159,8 +1161,8 @@ test_dump_playlist_LDADD = \
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	$(DECODER_SRC) \
 	src/IOThread.cxx \
-	src/Song.cxx src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagSave.cxx \
-	src/TagHandler.cxx src/TagFile.cxx \
+	src/Song.cxx src/TagSave.cxx \
+	src/TagFile.cxx \
 	src/CheckAudioFormat.cxx \
 	src/TextInputStream.cxx \
 	src/cue/CueParser.cxx src/cue/CueParser.hxx
@@ -1186,7 +1188,6 @@ test_run_decoder_LDADD = \
 test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/stdbin.h \
 	src/IOThread.cxx \
-	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagHandler.cxx \
 	src/ReplayGainInfo.cxx \
 	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
 	$(ARCHIVE_SRC) \
@@ -1208,7 +1209,6 @@ test_read_tags_LDADD = \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.cxx \
 	src/IOThread.cxx \
-	src/Tag.cxx src/TagNames.c src/TagPool.cxx src/TagHandler.cxx \
 	src/ReplayGainInfo.cxx \
 	src/CheckAudioFormat.cxx \
 	$(DECODER_SRC)
@@ -1218,8 +1218,7 @@ test_dump_rva2_LDADD = \
 	$(TAG_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
-test_dump_rva2_SOURCES = test/dump_rva2.cxx \
-	src/TagHandler.cxx
+test_dump_rva2_SOURCES = test/dump_rva2.cxx
 endif
 
 test_run_filter_LDADD = \
@@ -1251,7 +1250,6 @@ if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
 test_run_encoder_SOURCES = test/run_encoder.cxx \
 	test/stdbin.h \
-	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
 	src/AudioParser.cxx
@@ -1270,7 +1268,6 @@ if ENABLE_VORBIS_ENCODER
 noinst_PROGRAMS += test/test_vorbis_encoder
 test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.cxx \
 	test/stdbin.h \
-	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
 	src/AudioParser.cxx \
@@ -1280,6 +1277,7 @@ test_test_vorbis_encoder_CPPFLAGS = $(AM_CPPFLAGS) \
 test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
 	$(ENCODER_LIBS) \
 	$(PCM_LIBS) \
+	$(TAG_LIBS) \
 	libconf.a \
 	libsystem.a \
 	libfs.a \
@@ -1320,6 +1318,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	$(ENCODER_LIBS) \
 	libmixer_plugins.a \
 	$(FILTER_LIBS) \
+	$(TAG_LIBS) \
 	libconf.a \
 	libevent.a \
 	libfs.a \
@@ -1334,7 +1333,6 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/AudioFormat.cxx \
 	src/AudioParser.cxx \
 	src/Timer.cxx \
-	src/Tag.cxx src/TagNames.c src/TagPool.cxx \
 	src/Page.cxx \
 	src/OutputError.cxx \
 	src/OutputInit.cxx src/OutputFinish.cxx src/OutputList.cxx \

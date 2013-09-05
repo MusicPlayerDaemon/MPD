@@ -21,7 +21,7 @@
 #include "ModplugDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
 #include "InputStream.hxx"
-#include "TagHandler.hxx"
+#include "tag/TagHandler.hxx"
 
 #include <glib.h>
 #include <modplug.h>

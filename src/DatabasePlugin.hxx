@@ -27,7 +27,7 @@
 #define MPD_DATABASE_PLUGIN_HXX
 
 #include "DatabaseVisitor.hxx"
-#include "TagType.h"
+#include "tag/TagType.h"
 #include "gcc.h"
 
 struct config_param;

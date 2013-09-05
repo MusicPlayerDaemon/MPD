@@ -22,7 +22,7 @@
 #include "DespotifyUtils.hxx"
 #include "PlaylistPlugin.hxx"
 #include "MemorySongEnumerator.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "Song.hxx"
 
 extern "C" {

@@ -23,7 +23,7 @@
 #include "DecoderBuffer.hxx"
 #include "InputStream.hxx"
 #include "CheckAudioFormat.hxx"
-#include "TagHandler.hxx"
+#include "tag/TagHandler.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 

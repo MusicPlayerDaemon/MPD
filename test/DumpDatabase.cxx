@@ -26,7 +26,7 @@
 #include "PlaylistVector.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigData.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 

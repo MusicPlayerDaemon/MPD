@@ -26,7 +26,7 @@
 #include "util/Error.hxx"
 #include "util/UriUtil.hxx"
 #include "CheckAudioFormat.hxx"
-#include "TagHandler.hxx"
+#include "tag/TagHandler.hxx"
 
 #ifndef HAVE_TREMOR
 #define OV_EXCLUDE_STATIC_CALLBACKS

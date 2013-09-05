@@ -20,7 +20,7 @@
 #include "config.h"
 #include "SongFilter.hxx"
 #include "Song.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 
 #include <glib.h>
 

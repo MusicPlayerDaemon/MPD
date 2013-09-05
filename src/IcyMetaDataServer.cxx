@@ -20,7 +20,7 @@
 #include "config.h"
 #include "IcyMetaDataServer.hxx"
 #include "Page.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 
 #include <glib.h>
 

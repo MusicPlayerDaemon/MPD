@@ -23,7 +23,7 @@
 #include "OutputPlugin.hxx"
 #include "OutputInternal.hxx"
 #include "AudioFormat.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "ConfigData.hxx"
 
 #endif

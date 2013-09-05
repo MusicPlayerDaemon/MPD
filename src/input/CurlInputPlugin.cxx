@@ -24,7 +24,7 @@
 #include "InputPlugin.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigData.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "IcyMetaDataParser.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/Call.hxx"

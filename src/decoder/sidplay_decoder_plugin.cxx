@@ -19,10 +19,7 @@
 
 #include "config.h"
 #include "../DecoderAPI.hxx"
-
-extern "C" {
-#include "TagHandler.hxx"
-}
+#include "tag/TagHandler.hxx"
 
 #include <errno.h>
 #include <stdlib.h>

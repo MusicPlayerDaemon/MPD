@@ -21,7 +21,7 @@
 #include "OpusTags.hxx"
 #include "OpusReader.hxx"
 #include "XiphTags.hxx"
-#include "TagHandler.hxx"
+#include "tag/TagHandler.hxx"
 
 #include <stdint.h>
 #include <string.h>

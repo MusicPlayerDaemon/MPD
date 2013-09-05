@@ -24,7 +24,7 @@
 #include "ConfigData.hxx"
 #include "InputStream.hxx"
 #include "Song.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "util/Error.hxx"
 
 #include <glib.h>

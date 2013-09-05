@@ -23,7 +23,7 @@
 #include "AudioFormat.hxx"
 #include "ConfigData.hxx"
 #include "stdbin.h"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "util/Error.hxx"
 
 #include <stddef.h>

@@ -20,8 +20,8 @@
 #include "config.h"
 #include "FlacMetadata.hxx"
 #include "XiphTags.hxx"
-#include "Tag.hxx"
-#include "TagHandler.hxx"
+#include "tag/Tag.hxx"
+#include "tag/TagHandler.hxx"
 #include "tag/TagTable.hxx"
 #include "replay_gain_info.h"
 

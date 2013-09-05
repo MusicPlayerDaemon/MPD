@@ -19,8 +19,7 @@
 
 #include "config.h"
 #include "TagSave.hxx"
-#include "Tag.hxx"
-#include "TagInternal.hxx"
+#include "tag/Tag.hxx"
 #include "Song.hxx"
 
 void

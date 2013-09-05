@@ -28,7 +28,7 @@
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
 #include "DecoderAPI.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "InputStream.hxx"
 #include "DecoderList.hxx"
 #include "util/UriUtil.hxx"

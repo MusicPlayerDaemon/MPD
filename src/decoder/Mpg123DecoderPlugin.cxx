@@ -21,7 +21,7 @@
 #include "Mpg123DecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
-#include "TagHandler.hxx"
+#include "tag/TagHandler.hxx"
 #include "util/Error.hxx"
 
 #include <glib.h>

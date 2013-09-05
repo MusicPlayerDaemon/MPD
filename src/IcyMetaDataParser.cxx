@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "IcyMetaDataParser.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 
 #include <glib.h>
 

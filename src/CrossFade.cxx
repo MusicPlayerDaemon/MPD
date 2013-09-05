@@ -21,7 +21,6 @@
 #include "CrossFade.hxx"
 #include "MusicChunk.hxx"
 #include "AudioFormat.hxx"
-#include "Tag.hxx"
 
 #include <cmath>
 

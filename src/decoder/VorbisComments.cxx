@@ -20,9 +20,9 @@
 #include "config.h"
 #include "VorbisComments.hxx"
 #include "XiphTags.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "tag/TagTable.hxx"
-#include "TagHandler.hxx"
+#include "tag/TagHandler.hxx"
 #include "replay_gain_info.h"
 
 #include <glib.h>

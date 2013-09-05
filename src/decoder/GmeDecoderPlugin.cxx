@@ -21,7 +21,7 @@
 #include "GmeDecoderPlugin.hxx"
 #include "DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
-#include "TagHandler.hxx"
+#include "tag/TagHandler.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 

@@ -21,7 +21,7 @@
 #include "CuePlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
 #include "SongEnumerator.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "Song.hxx"
 #include "cue/CueParser.hxx"
 #include "TextInputStream.hxx"

@@ -31,7 +31,7 @@
 #include "DecoderCommand.hxx"
 #include "DecoderPlugin.hxx"
 #include "replay_gain_info.h"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "AudioFormat.hxx"
 #include "ConfigData.hxx"
 

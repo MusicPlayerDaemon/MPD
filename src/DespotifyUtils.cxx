@@ -18,7 +18,7 @@
  */
 
 #include "DespotifyUtils.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"
 

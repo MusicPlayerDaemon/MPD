@@ -20,7 +20,7 @@
 #include "config.h"
 #include "TagSave.hxx"
 #include "stdbin.h"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "ConfigGlobal.hxx"
 #include "InputStream.hxx"
 #include "InputInit.hxx"

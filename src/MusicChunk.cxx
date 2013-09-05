@@ -20,7 +20,7 @@
 #include "config.h"
 #include "MusicChunk.hxx"
 #include "AudioFormat.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 
 #include <assert.h>
 

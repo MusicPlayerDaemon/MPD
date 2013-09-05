@@ -22,7 +22,7 @@
 #include "PlaylistPlugin.hxx"
 #include "MemorySongEnumerator.hxx"
 #include "InputStream.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 #include "util/Error.hxx"
 
 #include <glib.h>

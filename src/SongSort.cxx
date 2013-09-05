@@ -21,7 +21,7 @@
 #include "SongSort.hxx"
 #include "Song.hxx"
 #include "util/list.h"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 
 extern "C" {
 #include "util/list_sort.h"

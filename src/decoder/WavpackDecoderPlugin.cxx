@@ -22,7 +22,7 @@
 #include "DecoderAPI.hxx"
 #include "InputStream.hxx"
 #include "CheckAudioFormat.hxx"
-#include "TagHandler.hxx"
+#include "tag/TagHandler.hxx"
 #include "tag/ApeTag.hxx"
 #include "util/Error.hxx"
 

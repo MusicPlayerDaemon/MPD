@@ -24,7 +24,7 @@
 #include "ConfigGlobal.hxx"
 #include "tag/TagId3.hxx"
 #include "tag/TagRva2.hxx"
-#include "TagHandler.hxx"
+#include "tag/TagHandler.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
 

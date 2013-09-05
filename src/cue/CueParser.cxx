@@ -21,7 +21,7 @@
 #include "CueParser.hxx"
 #include "util/StringUtil.hxx"
 #include "Song.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 
 #include <glib.h>
 

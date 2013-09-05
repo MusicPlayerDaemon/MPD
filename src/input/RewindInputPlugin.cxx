@@ -22,7 +22,7 @@
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
-#include "Tag.hxx"
+#include "tag/Tag.hxx"
 
 #include <assert.h>
 #include <string.h>
