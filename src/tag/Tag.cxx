@@ -27,19 +27,6 @@
 #include <assert.h>
 #include <string.h>
 
-/**
- * Maximum number of items managed in the bulk list; if it is
- * exceeded, we switch back to "normal" reallocation.
- */
-#define BULK_MAX 64
-
-static struct {
-#ifndef NDEBUG
-	bool busy;
-#endif
-	TagItem *items[BULK_MAX];
-} bulk;
-
 enum tag_type
 tag_name_parse(const char *name)
 {
@@ -87,14 +74,7 @@ Tag::Clear()
 		tag_pool_put_item(items[i]);
 	tag_pool_lock.unlock();
 
-	if (items == bulk.items) {
-#ifndef NDEBUG
-		assert(bulk.busy);
-		bulk.busy = false;
-#endif
-	} else
-		g_free(items);
-
+	g_free(items);
 	items = nullptr;
 	num_items = 0;
 }
@@ -106,13 +86,7 @@ Tag::~Tag()
 		tag_pool_put_item(items[i]);
 	tag_pool_lock.unlock();
 
-	if (items == bulk.items) {
-#ifndef NDEBUG
-		assert(bulk.busy);
-		bulk.busy = false;
-#endif
-	} else
-		g_free(items);
+	g_free(items);
 }
 
 Tag::Tag(const Tag &other)
@@ -210,40 +184,6 @@ Tag::HasType(tag_type type) const
 }
 
 void
-Tag::BeginAdd()
-{
-	assert(!bulk.busy);
-	assert(items == nullptr);
-	assert(num_items == 0);
-
-#ifndef NDEBUG
-	bulk.busy = true;
-#endif
-	items = bulk.items;
-}
-
-void
-Tag::EndAdd()
-{
-	if (items == bulk.items) {
-		assert(num_items <= BULK_MAX);
-
-		if (num_items > 0) {
-			/* copy the tag items from the bulk list over
-			   to a new list (which fits exactly) */
-			items = (TagItem **)
-				g_malloc(items_size(*this));
-			memcpy(items, bulk.items, items_size(*this));
-		} else
-			items = nullptr;
-	}
-
-#ifndef NDEBUG
-	bulk.busy = false;
-#endif
-}
-
-void
 Tag::AddItemInternal(tag_type type, const char *value, size_t len)
 {
 	unsigned int i = num_items;
@@ -256,18 +196,7 @@ Tag::AddItemInternal(tag_type type, const char *value, size_t len)
 
 	num_items++;
 
-	if (items != bulk.items)
-		/* bulk mode disabled */
-		items = (TagItem **)
-			g_realloc(items, items_size(*this));
-	else if (num_items >= BULK_MAX) {
-		/* bulk list already full - switch back to non-bulk */
-		assert(bulk.busy);
-
-		items = (TagItem **)g_malloc(items_size(*this));
-		memcpy(items, bulk.items,
-		       items_size(*this) - sizeof(TagItem *));
-	}
+	items = (TagItem **)g_realloc(items, items_size(*this));
 
 	tag_pool_lock.lock();
 	items[i] = tag_pool_get_item(type, value, len);

@@ -104,20 +104,6 @@ struct Tag {
 	void Clear();
 
 	/**
-	 * Gives an optional hint to the tag library that we will now
-	 * add several tag items; this is used by the library to
-	 * optimize memory allocation.  Only one tag may be in this
-	 * state, and this tag must not have any items yet.  You must
-	 * call tag_end_add() when you are done.
-	 */
-	void BeginAdd();
-
-	/**
-	 * Finishes the operation started with tag_begin_add().
-	 */
-	void EndAdd();
-
-	/**
 	 * Appends a new tag item.
 	 *
 	 * @param type the type of the new tag item
