@@ -36,6 +36,10 @@ struct TagItem {
 	 * the value of this tag; this is a variable length string
 	 */
 	char value[sizeof(long)];
+
+	TagItem() = default;
+	TagItem(const TagItem &other) = delete;
+	TagItem &operator=(const TagItem &other) = delete;
 } gcc_packed;
 
 #endif
