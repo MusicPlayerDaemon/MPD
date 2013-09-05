@@ -20,7 +20,7 @@
 #include "config.h"
 #include "TagType.h"
 
-const char *tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
+const char *const tag_item_names[TAG_NUM_OF_ITEM_TYPES] = {
 	[TAG_ARTIST] = "Artist",
 	[TAG_ARTIST_SORT] = "ArtistSort",
 	[TAG_ALBUM] = "Album",

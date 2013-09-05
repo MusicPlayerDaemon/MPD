@@ -51,6 +51,6 @@ enum tag_type {
  * An array of strings, which map the #tag_type to its machine
  * readable name (specific to the MPD protocol).
  */
-extern const char *tag_item_names[];
+extern const char *const tag_item_names[];
 
 #endif
