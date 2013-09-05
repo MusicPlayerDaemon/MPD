@@ -106,42 +106,6 @@ Tag::Clear()
 	num_items = 0;
 }
 
-void
-Tag::DeleteItem(unsigned idx)
-{
-	assert(idx < num_items);
-	--num_items;
-
-	tag_pool_lock.lock();
-	tag_pool_put_item(items[idx]);
-	tag_pool_lock.unlock();
-
-	if (num_items - idx > 0) {
-		memmove(items + idx, items + idx + 1,
-			(num_items - idx) * sizeof(items[0]));
-	}
-
-	if (num_items > 0) {
-		items = (TagItem **)
-			g_realloc(items, items_size(*this));
-	} else {
-		g_free(items);
-		items = nullptr;
-	}
-}
-
-void
-Tag::ClearItemsByType(tag_type type)
-{
-	for (unsigned i = 0; i < num_items; i++) {
-		if (items[i]->type == type) {
-			DeleteItem(i);
-			/* decrement since when just deleted this node */
-			i--;
-		}
-	}
-}
-
 Tag::~Tag()
 {
 	tag_pool_lock.lock();
@@ -250,26 +214,6 @@ bool
 Tag::HasType(tag_type type) const
 {
 	return GetValue(type) != nullptr;
-}
-
-bool
-Tag::Equals(const Tag &other) const
-{
-	if (time != other.time)
-		return false;
-
-	if (num_items != other.num_items)
-		return false;
-
-	for (unsigned i = 0; i < num_items; i++) {
-		if (items[i]->type != other.items[i]->type)
-			return false;
-		if (strcmp(items[i]->value, other.items[i]->value)) {
-			return false;
-		}
-	}
-
-	return true;
 }
 
 /**

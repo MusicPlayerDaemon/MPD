@@ -117,13 +117,6 @@ struct Tag {
 	 */
 	void Clear();
 
-	void DeleteItem(unsigned i);
-
-	/**
-	 * Clear all tag items with the specified type.
-	 */
-	void ClearItemsByType(tag_type type);
-
 	/**
 	 * Gives an optional hint to the tag library that we will now
 	 * add several tag items; this is used by the library to
@@ -186,13 +179,6 @@ struct Tag {
 	 * the specified type.
 	 */
 	bool HasType(tag_type type) const;
-
-	/**
-	 * Compares two tags, including the duration and all tag items.  The
-	 * order of the tag items matters.
-	 */
-	gcc_pure
-	bool Equals(const Tag &other) const;
 
 private:
 	void AddItemInternal(tag_type type, const char *value, size_t len);
