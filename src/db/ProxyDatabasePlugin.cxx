@@ -27,7 +27,7 @@
 #include "Song.hxx"
 #include "gcc.h"
 #include "ConfigData.hxx"
-#include "tag/Tag.hxx"
+#include "tag/TagBuilder.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
@@ -248,7 +248,7 @@ Visit(struct mpd_connection *connection,
 }
 
 static void
-Copy(Tag &tag, enum tag_type d_tag,
+Copy(TagBuilder &tag, enum tag_type d_tag,
      const struct mpd_song *song, enum mpd_tag_type s_tag)
 {
 
@@ -270,15 +270,13 @@ Convert(const struct mpd_song *song)
 	s->start_ms = mpd_song_get_start(song) * 1000;
 	s->end_ms = mpd_song_get_end(song) * 1000;
 
-	Tag *tag = new Tag();
-	tag->time = mpd_song_get_duration(song);
+	TagBuilder tag;
+	tag.SetTime(mpd_song_get_duration(song));
 
-	tag->BeginAdd();
 	for (const auto *i = &tag_table[0]; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
-		Copy(*tag, i->d, song, i->s);
-	tag->EndAdd();
+		Copy(tag, i->d, song, i->s);
 
-	s->tag = tag;
+	s->tag = tag.Commit();
 
 	return s;
 }
