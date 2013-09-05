@@ -20,6 +20,7 @@
 #include "config.h"
 #include "ExtM3uPlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
+#include "SongEnumerator.hxx"
 #include "Song.hxx"
 #include "Tag.hxx"
 #include "util/StringUtil.hxx"
@@ -30,40 +31,36 @@
 #include <string.h>
 #include <stdlib.h>
 
-struct ExtM3uPlaylist {
-	struct playlist_provider base;
-
+class ExtM3uPlaylist final : public SongEnumerator {
 	TextInputStream tis;
 
+public:
 	ExtM3uPlaylist(input_stream *is)
 		:tis(is) {
-		playlist_provider_init(&base, &extm3u_playlist_plugin);
 	}
+
+	bool CheckFirstLine() {
+		std::string line;
+		return tis.ReadLine(line) &&
+			strcmp(line.c_str(), "#EXTM3U") == 0;
+	}
+
+	virtual Song *NextSong() override;
 };
 
-static struct playlist_provider *
+static SongEnumerator *
 extm3u_open_stream(struct input_stream *is)
 {
 	ExtM3uPlaylist *playlist = new ExtM3uPlaylist(is);
 
-	std::string line;
-	if (!playlist->tis.ReadLine(line)
-	   || strcmp(line.c_str(), "#EXTM3U") != 0) {
+	if (!playlist->CheckFirstLine()) {
 		/* no EXTM3U header: fall back to the plain m3u
 		   plugin */
 		delete playlist;
 		return NULL;
 	}
 
-	return &playlist->base;
-}
-
-static void
-extm3u_close(struct playlist_provider *_playlist)
-{
-	ExtM3uPlaylist *playlist = (ExtM3uPlaylist *)_playlist;
-
-	delete playlist;
+	return playlist;
 }
 
 /**
@@ -106,17 +103,16 @@ extm3u_parse_tag(const char *line)
 	return tag;
 }
 
-static Song *
-extm3u_read(struct playlist_provider *_playlist)
+Song *
+ExtM3uPlaylist::NextSong()
 {
-	ExtM3uPlaylist *playlist = (ExtM3uPlaylist *)_playlist;
 	Tag *tag = NULL;
 	std::string line;
 	const char *line_s;
 	Song *song;
 
 	do {
-		if (!playlist->tis.ReadLine(line)) {
+		if (!tis.ReadLine(line)) {
 			delete tag;
 			return NULL;
 		}
@@ -155,8 +151,6 @@ const struct playlist_plugin extm3u_playlist_plugin = {
 	nullptr,
 	nullptr,
 	extm3u_open_stream,
-	extm3u_close,
-	extm3u_read,
 
 	nullptr,
 	extm3u_suffixes,

@@ -18,50 +18,13 @@
  */
 
 #include "config.h"
-#include "MemoryPlaylistProvider.hxx"
-#include "Song.hxx"
+#include "MemorySongEnumerator.hxx"
 
-static void
-memory_playlist_close(struct playlist_provider *_playlist)
-{
-	MemoryPlaylistProvider *playlist = (MemoryPlaylistProvider *)_playlist;
-
-	delete playlist;
-}
-
-static Song *
-memory_playlist_read(struct playlist_provider *_playlist)
-{
-	MemoryPlaylistProvider *playlist = (MemoryPlaylistProvider *)_playlist;
-
-	return playlist->Read();
-}
-
-static constexpr struct playlist_plugin memory_playlist_plugin = {
-	nullptr,
-
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	memory_playlist_close,
-	memory_playlist_read,
-
-	nullptr,
-	nullptr,
-	nullptr,
-};
-
-MemoryPlaylistProvider::MemoryPlaylistProvider(std::forward_list<SongPointer> &&_songs)
-	:songs(std::move(_songs)) {
-	playlist_provider_init(this, &memory_playlist_plugin);
-}
-
-inline Song *
-MemoryPlaylistProvider::Read()
+Song *
+MemorySongEnumerator::NextSong()
 {
 	if (songs.empty())
-		return NULL;
+		return nullptr;
 
 	auto result = songs.front().Steal();
 	songs.pop_front();

@@ -20,6 +20,7 @@
 #include "config.h"
 #include "TagSave.hxx"
 #include "Song.hxx"
+#include "SongEnumerator.hxx"
 #include "Directory.hxx"
 #include "InputStream.hxx"
 #include "ConfigGlobal.hxx"
@@ -141,7 +142,6 @@ int main(int argc, char **argv)
 {
 	const char *uri;
 	struct input_stream *is = NULL;
-	struct playlist_provider *playlist;
 	Song *song;
 
 	if (argc != 3) {
@@ -186,7 +186,7 @@ int main(int argc, char **argv)
 	Mutex mutex;
 	Cond cond;
 
-	playlist = playlist_list_open_uri(uri, mutex, cond);
+	auto playlist = playlist_list_open_uri(uri, mutex, cond);
 	if (playlist == NULL) {
 		/* open the stream and wait until it becomes ready */
 
@@ -213,7 +213,7 @@ int main(int argc, char **argv)
 
 	/* dump the playlist */
 
-	while ((song = playlist_plugin_read(playlist)) != NULL) {
+	while ((song = playlist->NextSong()) != NULL) {
 		g_print("%s\n", song->uri);
 
 		if (song->end_ms > 0)
@@ -235,7 +235,7 @@ int main(int argc, char **argv)
 
 	/* deinitialize everything */
 
-	playlist_plugin_close(playlist);
+	delete playlist;
 	if (is != NULL)
 		is->Close();
 

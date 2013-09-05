@@ -26,7 +26,7 @@
 
 #include "PlaylistError.hxx"
 
-struct playlist_provider;
+class SongEnumerator;
 struct playlist;
 struct player_control;
 
@@ -40,7 +40,7 @@ struct player_control;
  * @param end_index the index of the last song (excluding)
  */
 enum playlist_result
-playlist_load_into_queue(const char *uri, struct playlist_provider *source,
+playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,
 			 struct playlist *dest, struct player_control *pc,
 			 bool secure);

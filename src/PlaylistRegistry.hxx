@@ -23,7 +23,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
-struct playlist_provider;
+class SongEnumerator;
 struct input_stream;
 
 extern const struct playlist_plugin *const playlist_plugins[];
@@ -49,7 +49,7 @@ playlist_list_global_finish(void);
 /**
  * Opens a playlist by its URI.
  */
-struct playlist_provider *
+SongEnumerator *
 playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond);
 
 /**
@@ -59,7 +59,7 @@ playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond);
  * @param uri optional URI which was used to open the stream; may be
  * used to select the appropriate playlist plugin
  */
-struct playlist_provider *
+SongEnumerator *
 playlist_list_open_stream(struct input_stream *is, const char *uri);
 
 /**
@@ -77,7 +77,7 @@ playlist_suffix_supported(const char *suffix);
  * which must be closed after the playlist_provider object is freed
  * @return a playlist, or NULL on error
  */
-struct playlist_provider *
+SongEnumerator *
 playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
 			struct input_stream **is_r);
 

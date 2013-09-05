@@ -20,47 +20,37 @@
 #include "config.h"
 #include "M3uPlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
+#include "SongEnumerator.hxx"
 #include "Song.hxx"
 #include "TextInputStream.hxx"
 
 #include <glib.h>
 
-struct M3uPlaylist {
-	struct playlist_provider base;
-
+class M3uPlaylist final : public SongEnumerator {
 	TextInputStream tis;
 
+public:
 	M3uPlaylist(input_stream *is)
 		:tis(is) {
-		playlist_provider_init(&base, &m3u_playlist_plugin);
 	}
+
+	virtual Song *NextSong() override;
 };
 
-static struct playlist_provider *
+static SongEnumerator *
 m3u_open_stream(struct input_stream *is)
 {
-	M3uPlaylist *playlist = new M3uPlaylist(is);
-
-	return &playlist->base;
+	return new M3uPlaylist(is);
 }
 
-static void
-m3u_close(struct playlist_provider *_playlist)
+Song *
+M3uPlaylist::NextSong()
 {
-	M3uPlaylist *playlist = (M3uPlaylist *)_playlist;
-
-	delete playlist;
-}
-
-static Song *
-m3u_read(struct playlist_provider *_playlist)
-{
-	M3uPlaylist *playlist = (M3uPlaylist *)_playlist;
 	std::string line;
 	const char *line_s;
 
 	do {
-		if (!playlist->tis.ReadLine(line))
+		if (!tis.ReadLine(line))
 			return NULL;
 
 		line_s = line.c_str();
@@ -89,8 +79,6 @@ const struct playlist_plugin m3u_playlist_plugin = {
 	nullptr,
 	nullptr,
 	m3u_open_stream,
-	m3u_close,
-	m3u_read,
 
 	nullptr,
 	m3u_suffixes,

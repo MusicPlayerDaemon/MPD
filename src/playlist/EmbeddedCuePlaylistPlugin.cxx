@@ -26,6 +26,7 @@
 #include "config.h"
 #include "EmbeddedCuePlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
+#include "SongEnumerator.hxx"
 #include "Tag.hxx"
 #include "TagHandler.hxx"
 #include "tag/TagId3.hxx"
@@ -41,9 +42,8 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "cue"
 
-struct EmbeddedCuePlaylist {
-	struct playlist_provider base;
-
+class EmbeddedCuePlaylist final : public SongEnumerator {
+public:
 	/**
 	 * This is an override for the CUE's "FILE".  An embedded CUE
 	 * sheet must always point to the song file it is contained
@@ -63,18 +63,18 @@ struct EmbeddedCuePlaylist {
 
 	CueParser *parser;
 
+public:
 	EmbeddedCuePlaylist()
 		:filename(nullptr), cuesheet(nullptr), parser(nullptr) {
-		playlist_provider_init(&base, &embcue_playlist_plugin);
 	}
 
-	~EmbeddedCuePlaylist() {
+	virtual ~EmbeddedCuePlaylist() {
 		delete parser;
 		g_free(cuesheet);
 		g_free(filename);
 	}
 
-	Song *Read();
+	virtual Song *NextSong() override;
 };
 
 static void
@@ -93,7 +93,7 @@ static const struct tag_handler embcue_tag_handler = {
 	embcue_tag_pair,
 };
 
-static struct playlist_provider *
+static SongEnumerator *
 embcue_playlist_open_uri(const char *uri,
 			 gcc_unused Mutex &mutex,
 			 gcc_unused Cond &cond)
@@ -122,19 +122,11 @@ embcue_playlist_open_uri(const char *uri,
 	playlist->next = playlist->cuesheet;
 	playlist->parser = new CueParser();
 
-	return &playlist->base;
+	return playlist;
 }
 
-static void
-embcue_playlist_close(struct playlist_provider *_playlist)
-{
-	EmbeddedCuePlaylist *playlist = (EmbeddedCuePlaylist *)_playlist;
-
-	delete playlist;
-}
-
-inline Song *
-EmbeddedCuePlaylist::Read()
+Song *
+EmbeddedCuePlaylist::NextSong()
 {
 	Song *song = parser->Get();
 	if (song != NULL)
@@ -165,14 +157,6 @@ EmbeddedCuePlaylist::Read()
 	return song;
 }
 
-static Song *
-embcue_playlist_read(struct playlist_provider *_playlist)
-{
-	EmbeddedCuePlaylist *playlist = (EmbeddedCuePlaylist *)_playlist;
-
-	return playlist->Read();
-}
-
 static const char *const embcue_playlist_suffixes[] = {
 	/* a few codecs that are known to be supported; there are
 	   probably many more */
@@ -192,8 +176,6 @@ const struct playlist_plugin embcue_playlist_plugin = {
 	nullptr,
 	embcue_playlist_open_uri,
 	nullptr,
-	embcue_playlist_close,
-	embcue_playlist_read,
 
 	embcue_playlist_suffixes,
 	nullptr,

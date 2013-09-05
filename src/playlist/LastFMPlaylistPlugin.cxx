@@ -21,6 +21,7 @@
 #include "LastFMPlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
 #include "PlaylistRegistry.hxx"
+#include "SongEnumerator.hxx"
 #include "ConfigData.hxx"
 #include "Song.hxx"
 #include "InputStream.hxx"
@@ -31,21 +32,23 @@
 #include <assert.h>
 #include <string.h>
 
-struct LastfmPlaylist {
-	struct playlist_provider base;
-
+class LastfmPlaylist final : public SongEnumerator {
 	struct input_stream *is;
 
-	struct playlist_provider *xspf;
+	SongEnumerator *const xspf;
 
-	LastfmPlaylist(input_stream *_is, playlist_provider *_xspf)
+public:
+	LastfmPlaylist(input_stream *_is, SongEnumerator *_xspf)
 		:is(_is), xspf(_xspf) {
-		playlist_provider_init(&base, &lastfm_playlist_plugin);
 	}
 
-	~LastfmPlaylist() {
-		playlist_plugin_close(xspf);
+	virtual ~LastfmPlaylist() {
+		delete xspf;
 		is->Close();
+	}
+
+	virtual Song *NextSong() override {
+		return xspf->NextSong();
 	}
 };
 
@@ -161,7 +164,7 @@ lastfm_find(const char *response, const char *name)
 	}
 }
 
-static struct playlist_provider *
+static SongEnumerator *
 lastfm_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 {
 	char *p, *q, *response, *session;
@@ -256,24 +259,7 @@ lastfm_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 
 	/* create the playlist object */
 
-	const auto playlist = new LastfmPlaylist(is, xspf);
-	return &playlist->base;
-}
-
-static void
-lastfm_close(struct playlist_provider *_playlist)
-{
-	LastfmPlaylist *playlist = (LastfmPlaylist *)_playlist;
-
-	delete playlist;
-}
-
-static Song *
-lastfm_read(struct playlist_provider *_playlist)
-{
-	LastfmPlaylist *playlist = (LastfmPlaylist *)_playlist;
-
-	return playlist_plugin_read(playlist->xspf);
+	return new LastfmPlaylist(is, xspf);
 }
 
 static const char *const lastfm_schemes[] = {
@@ -288,8 +274,6 @@ const struct playlist_plugin lastfm_playlist_plugin = {
 	lastfm_finish,
 	lastfm_open_uri,
 	nullptr,
-	lastfm_close,
-	lastfm_read,
 
 	lastfm_schemes,
 	nullptr,

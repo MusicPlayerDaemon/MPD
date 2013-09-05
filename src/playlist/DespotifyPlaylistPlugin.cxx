@@ -20,7 +20,8 @@
 #include "config.h"
 #include "DespotifyPlaylistPlugin.hxx"
 #include "DespotifyUtils.hxx"
-#include "MemoryPlaylistProvider.hxx"
+#include "PlaylistPlugin.hxx"
+#include "MemorySongEnumerator.hxx"
 #include "Tag.hxx"
 #include "Song.hxx"
 
@@ -86,7 +87,7 @@ parse_playlist(struct despotify_session *session,
 	return true;
 }
 
-static struct playlist_provider *
+static SongEnumerator *
 despotify_playlist_open_uri(const char *url,
 			    gcc_unused Mutex &mutex, gcc_unused Cond &cond)
 {
@@ -122,7 +123,7 @@ despotify_playlist_open_uri(const char *url,
 		return nullptr;
 
 	songs.reverse();
-	return new MemoryPlaylistProvider(std::move(songs));
+	return new MemorySongEnumerator(std::move(songs));
 }
 
 static const char *const despotify_schemes[] = {
@@ -136,8 +137,6 @@ const struct playlist_plugin despotify_playlist_plugin = {
 	nullptr,
 	nullptr,
 	despotify_playlist_open_uri,
-	nullptr,
-	nullptr,
 	nullptr,
 
 	despotify_schemes,

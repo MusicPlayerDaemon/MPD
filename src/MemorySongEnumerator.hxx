@@ -17,26 +17,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PLAYLIST_ANY_HXX
-#define MPD_PLAYLIST_ANY_HXX
+#ifndef MPD_MEMORY_PLAYLIST_PROVIDER_HXX
+#define MPD_MEMORY_PLAYLIST_PROVIDER_HXX
 
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
+#include "SongEnumerator.hxx"
+#include "SongPointer.hxx"
 
-class SongEnumerator;
-struct input_stream;
+#include <forward_list>
 
-/**
- * Opens a playlist from the specified URI, which can be either an
- * absolute remote URI (with a scheme) or a relative path to the
- * music orplaylist directory.
- *
- * @param is_r on success, an input_stream object may be returned
- * here, which must be closed after the playlist_provider object is
- * freed
- */
-SongEnumerator *
-playlist_open_any(const char *uri, Mutex &mutex, Cond &cond,
-		  struct input_stream **is_r);
+class MemorySongEnumerator final : public SongEnumerator {
+	std::forward_list<SongPointer> songs;
+
+public:
+	MemorySongEnumerator(std::forward_list<SongPointer> &&_songs)
+		:songs(std::move(_songs)) {}
+
+	virtual Song *NextSong() override;
+};
 
 #endif

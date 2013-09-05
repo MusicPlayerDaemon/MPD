@@ -19,7 +19,8 @@
 
 #include "config.h"
 #include "PlsPlaylistPlugin.hxx"
-#include "MemoryPlaylistProvider.hxx"
+#include "PlaylistPlugin.hxx"
+#include "MemorySongEnumerator.hxx"
 #include "InputStream.hxx"
 #include "Song.hxx"
 #include "Tag.hxx"
@@ -101,7 +102,7 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 
 }
 
-static struct playlist_provider *
+static SongEnumerator *
 pls_open_stream(struct input_stream *is)
 {
 	GError *error = NULL;
@@ -150,7 +151,7 @@ pls_open_stream(struct input_stream *is)
 	g_key_file_free(keyfile);
 
 	songs.reverse();
-	return new MemoryPlaylistProvider(std::move(songs));
+	return new MemorySongEnumerator(std::move(songs));
 }
 
 static const char *const pls_suffixes[] = {
@@ -170,8 +171,6 @@ const struct playlist_plugin pls_playlist_plugin = {
 	nullptr,
 	nullptr,
 	pls_open_stream,
-	nullptr,
-	nullptr,
 
 	nullptr,
 	pls_suffixes,

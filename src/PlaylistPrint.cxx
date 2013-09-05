@@ -26,6 +26,7 @@
 #include "PlaylistRegistry.hxx"
 #include "PlaylistPlugin.hxx"
 #include "QueuePrint.hxx"
+#include "SongEnumerator.hxx"
 #include "SongPrint.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
@@ -145,12 +146,12 @@ spl_print(Client *client, const char *name_utf8, bool detail,
 
 static void
 playlist_provider_print(Client *client, const char *uri,
-			struct playlist_provider *playlist, bool detail)
+			SongEnumerator &e, bool detail)
 {
 	Song *song;
 	char *base_uri = uri != NULL ? g_path_get_dirname(uri) : NULL;
 
-	while ((song = playlist_plugin_read(playlist)) != NULL) {
+	while ((song = e.NextSong()) != nullptr) {
 		song = playlist_check_translate_song(song, base_uri, false);
 		if (song == NULL)
 			continue;
@@ -173,13 +174,12 @@ playlist_file_print(Client *client, const char *uri, bool detail)
 	Cond cond;
 
 	struct input_stream *is;
-	struct playlist_provider *playlist =
-		playlist_open_any(uri, mutex, cond, &is);
+	SongEnumerator *playlist = playlist_open_any(uri, mutex, cond, &is);
 	if (playlist == NULL)
 		return false;
 
-	playlist_provider_print(client, uri, playlist, detail);
-	playlist_plugin_close(playlist);
+	playlist_provider_print(client, uri, *playlist, detail);
+	delete playlist;
 
 	if (is != NULL)
 		is->Close();

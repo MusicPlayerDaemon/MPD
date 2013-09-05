@@ -124,12 +124,12 @@ playlist_list_global_finish(void)
 		playlist_plugin_finish(plugin);
 }
 
-static struct playlist_provider *
+static SongEnumerator *
 playlist_list_open_uri_scheme(const char *uri, Mutex &mutex, Cond &cond,
 			      bool *tried)
 {
 	char *scheme;
-	struct playlist_provider *playlist = NULL;
+	SongEnumerator *playlist = nullptr;
 
 	assert(uri != NULL);
 
@@ -158,12 +158,12 @@ playlist_list_open_uri_scheme(const char *uri, Mutex &mutex, Cond &cond,
 	return playlist;
 }
 
-static struct playlist_provider *
+static SongEnumerator *
 playlist_list_open_uri_suffix(const char *uri, Mutex &mutex, Cond &cond,
 			      const bool *tried)
 {
 	const char *suffix;
-	struct playlist_provider *playlist = NULL;
+	SongEnumerator *playlist = nullptr;
 
 	assert(uri != NULL);
 
@@ -187,10 +187,9 @@ playlist_list_open_uri_suffix(const char *uri, Mutex &mutex, Cond &cond,
 	return playlist;
 }
 
-struct playlist_provider *
+SongEnumerator *
 playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 {
-	struct playlist_provider *playlist;
 	/** this array tracks which plugins have already been tried by
 	    playlist_list_open_uri_scheme() */
 	bool tried[G_N_ELEMENTS(playlist_plugins) - 1];
@@ -199,7 +198,7 @@ playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 
 	memset(tried, false, sizeof(tried));
 
-	playlist = playlist_list_open_uri_scheme(uri, mutex, cond, tried);
+	auto playlist = playlist_list_open_uri_scheme(uri, mutex, cond, tried);
 	if (playlist == NULL)
 		playlist = playlist_list_open_uri_suffix(uri, mutex, cond,
 							 tried);
@@ -207,11 +206,9 @@ playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	return playlist;
 }
 
-static struct playlist_provider *
+static SongEnumerator *
 playlist_list_open_stream_mime2(struct input_stream *is, const char *mime)
 {
-	struct playlist_provider *playlist;
-
 	assert(is != NULL);
 	assert(mime != NULL);
 
@@ -223,7 +220,7 @@ playlist_list_open_stream_mime2(struct input_stream *is, const char *mime)
 			   fresh start */
 			is->Seek(0, SEEK_SET, IgnoreError());
 
-			playlist = playlist_plugin_open_stream(plugin, is);
+			auto playlist = playlist_plugin_open_stream(plugin, is);
 			if (playlist != NULL)
 				return playlist;
 		}
@@ -232,7 +229,7 @@ playlist_list_open_stream_mime2(struct input_stream *is, const char *mime)
 	return NULL;
 }
 
-static struct playlist_provider *
+static SongEnumerator *
 playlist_list_open_stream_mime(struct input_stream *is, const char *full_mime)
 {
 	assert(full_mime != NULL);
@@ -246,17 +243,14 @@ playlist_list_open_stream_mime(struct input_stream *is, const char *full_mime)
 
 	/* probe only the portion before the semicolon*/
 	char *mime = g_strndup(full_mime, semicolon - full_mime);
-	struct playlist_provider *playlist =
-		playlist_list_open_stream_mime2(is, mime);
+	auto playlist = playlist_list_open_stream_mime2(is, mime);
 	g_free(mime);
 	return playlist;
 }
 
-static struct playlist_provider *
+static SongEnumerator *
 playlist_list_open_stream_suffix(struct input_stream *is, const char *suffix)
 {
-	struct playlist_provider *playlist;
-
 	assert(is != NULL);
 	assert(suffix != NULL);
 
@@ -268,7 +262,7 @@ playlist_list_open_stream_suffix(struct input_stream *is, const char *suffix)
 			   fresh start */
 			is->Seek(0, SEEK_SET, IgnoreError());
 
-			playlist = playlist_plugin_open_stream(plugin, is);
+			auto playlist = playlist_plugin_open_stream(plugin, is);
 			if (playlist != NULL)
 				return playlist;
 		}
@@ -277,24 +271,23 @@ playlist_list_open_stream_suffix(struct input_stream *is, const char *suffix)
 	return NULL;
 }
 
-struct playlist_provider *
+SongEnumerator *
 playlist_list_open_stream(struct input_stream *is, const char *uri)
 {
 	const char *suffix;
-	struct playlist_provider *playlist;
 
 	is->LockWaitReady();
 
 	const char *const mime = is->GetMimeType();
 	if (mime != NULL) {
-		playlist = playlist_list_open_stream_mime(is, mime);
+		auto playlist = playlist_list_open_stream_mime(is, mime);
 		if (playlist != NULL)
 			return playlist;
 	}
 
 	suffix = uri != NULL ? uri_get_suffix(uri) : NULL;
 	if (suffix != NULL) {
-		playlist = playlist_list_open_stream_suffix(is, suffix);
+		auto playlist = playlist_list_open_stream_suffix(is, suffix);
 		if (playlist != NULL)
 			return playlist;
 	}
@@ -316,12 +309,11 @@ playlist_suffix_supported(const char *suffix)
 	return false;
 }
 
-struct playlist_provider *
+SongEnumerator *
 playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
 			struct input_stream **is_r)
 {
 	const char *suffix;
-	struct playlist_provider *playlist;
 
 	assert(path_fs != NULL);
 
@@ -340,7 +332,7 @@ playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
 
 	is->LockWaitReady();
 
-	playlist = playlist_list_open_stream_suffix(is, suffix);
+	auto playlist = playlist_list_open_stream_suffix(is, suffix);
 	if (playlist != NULL)
 		*is_r = is;
 	else

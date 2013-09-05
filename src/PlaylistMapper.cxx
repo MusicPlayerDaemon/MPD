@@ -27,13 +27,11 @@
 
 #include <assert.h>
 
-static struct playlist_provider *
+static SongEnumerator *
 playlist_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
 		   struct input_stream **is_r)
 {
-	struct playlist_provider *playlist;
-
-	playlist = playlist_list_open_uri(path_fs, mutex, cond);
+	auto playlist = playlist_list_open_uri(path_fs, mutex, cond);
 	if (playlist != NULL)
 		*is_r = NULL;
 	else
@@ -45,7 +43,7 @@ playlist_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
 /**
  * Load a playlist from the configured playlist directory.
  */
-static struct playlist_provider *
+static SongEnumerator *
 playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond,
 			      struct input_stream **is_r)
 {
@@ -59,8 +57,7 @@ playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond,
 
 	path_fs = g_build_filename(playlist_directory_fs.c_str(), uri, NULL);
 
-	struct playlist_provider *playlist =
-		playlist_open_path(path_fs, mutex, cond, is_r);
+	auto playlist = playlist_open_path(path_fs, mutex, cond, is_r);
 	g_free(path_fs);
 
 	return playlist;
@@ -69,7 +66,7 @@ playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond,
 /**
  * Load a playlist from the configured music directory.
  */
-static struct playlist_provider *
+static SongEnumerator *
 playlist_open_in_music_dir(const char *uri, Mutex &mutex, Cond &cond,
 			   struct input_stream **is_r)
 {
@@ -82,21 +79,20 @@ playlist_open_in_music_dir(const char *uri, Mutex &mutex, Cond &cond,
 	return playlist_open_path(path.c_str(), mutex, cond, is_r);
 }
 
-struct playlist_provider *
+SongEnumerator *
 playlist_mapper_open(const char *uri, Mutex &mutex, Cond &cond,
 		     struct input_stream **is_r)
 {
-	struct playlist_provider *playlist;
-
 	if (spl_valid_name(uri)) {
-		playlist = playlist_open_in_playlist_dir(uri, mutex, cond,
-							 is_r);
+		auto playlist = playlist_open_in_playlist_dir(uri, mutex, cond,
+							      is_r);
 		if (playlist != NULL)
 			return playlist;
 	}
 
 	if (uri_safe_local(uri)) {
-		playlist = playlist_open_in_music_dir(uri, mutex, cond, is_r);
+		auto playlist = playlist_open_in_music_dir(uri, mutex, cond,
+							   is_r);
 		if (playlist != NULL)
 			return playlist;
 	}

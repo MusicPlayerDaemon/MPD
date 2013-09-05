@@ -19,7 +19,8 @@
 
 #include "config.h"
 #include "SoundCloudPlaylistPlugin.hxx"
-#include "MemoryPlaylistProvider.hxx"
+#include "PlaylistPlugin.hxx"
+#include "MemorySongEnumerator.hxx"
 #include "ConfigData.hxx"
 #include "InputStream.hxx"
 #include "Song.hxx"
@@ -315,7 +316,7 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
  *	soundcloud://url/<url or path of soundcloud page>
  */
 
-static struct playlist_provider *
+static SongEnumerator *
 soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 {
 	char *s, *p;
@@ -389,7 +390,7 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 		return NULL;
 
 	data.songs.reverse();
-	return new MemoryPlaylistProvider(std::move(data.songs));
+	return new MemorySongEnumerator(std::move(data.songs));
 }
 
 static const char *const soundcloud_schemes[] = {
@@ -403,8 +404,6 @@ const struct playlist_plugin soundcloud_playlist_plugin = {
 	soundcloud_init,
 	soundcloud_finish,
 	soundcloud_open_uri,
-	nullptr,
-	nullptr,
 	nullptr,
 
 	soundcloud_schemes,

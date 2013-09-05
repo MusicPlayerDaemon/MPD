@@ -24,10 +24,11 @@
 #include "PlaylistSong.hxx"
 #include "Playlist.hxx"
 #include "InputStream.hxx"
+#include "SongEnumerator.hxx"
 #include "Song.hxx"
 
 enum playlist_result
-playlist_load_into_queue(const char *uri, struct playlist_provider *source,
+playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,
 			 struct playlist *dest, struct player_control *pc,
 			 bool secure)
@@ -37,7 +38,7 @@ playlist_load_into_queue(const char *uri, struct playlist_provider *source,
 	char *base_uri = uri != NULL ? g_path_get_dirname(uri) : NULL;
 
 	for (unsigned i = 0;
-	     i < end_index && (song = playlist_plugin_read(source)) != NULL;
+	     i < end_index && (song = e.NextSong()) != NULL;
 	     ++i) {
 		if (i < start_index) {
 			/* skip songs before the start index */
@@ -72,15 +73,15 @@ playlist_open_into_queue(const char *uri,
 	Cond cond;
 
 	struct input_stream *is;
-	struct playlist_provider *playlist =
-		playlist_open_any(uri, mutex, cond, &is);
+	auto playlist = playlist_open_any(uri, mutex, cond, &is);
 	if (playlist == NULL)
 		return PLAYLIST_RESULT_NO_SUCH_LIST;
 
 	enum playlist_result result =
-		playlist_load_into_queue(uri, playlist, start_index, end_index,
+		playlist_load_into_queue(uri, *playlist,
+					 start_index, end_index,
 					 dest, pc, secure);
-	playlist_plugin_close(playlist);
+	delete playlist;
 
 	if (is != NULL)
 		is->Close();

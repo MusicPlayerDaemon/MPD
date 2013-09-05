@@ -17,23 +17,25 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_MEMORY_PLAYLIST_PROVIDER_HXX
-#define MPD_MEMORY_PLAYLIST_PROVIDER_HXX
-
-#include "PlaylistPlugin.hxx"
-#include "SongPointer.hxx"
-
-#include <forward_list>
+#ifndef MPD_SONG_ENUMERATOR_HXX
+#define MPD_SONG_ENUMERATOR_HXX
 
 struct Song;
 
-class MemoryPlaylistProvider : public playlist_provider {
-	std::forward_list<SongPointer> songs;
-
+/**
+ * An object which provides serial access to a number of #Song
+ * objects.  It is used to enumerate the contents of a playlist file.
+ */
+class SongEnumerator {
 public:
-	MemoryPlaylistProvider(std::forward_list<SongPointer> &&_songs);
+	virtual ~SongEnumerator() {}
 
-	Song *Read();
+	/**
+	 * Obtain the next song.  The caller is responsible for
+	 * freeing the returned #Song object.  Returns nullptr if
+	 * there are no more songs.
+	 */
+	virtual Song *NextSong() = 0;
 };
 
 #endif

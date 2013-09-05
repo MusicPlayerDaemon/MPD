@@ -27,14 +27,13 @@
 
 #include <assert.h>
 
-static struct playlist_provider *
+static SongEnumerator *
 playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond,
 		     struct input_stream **is_r)
 {
 	assert(uri_has_scheme(uri));
 
-	struct playlist_provider *playlist =
-		playlist_list_open_uri(uri, mutex, cond);
+	SongEnumerator *playlist = playlist_list_open_uri(uri, mutex, cond);
 	if (playlist != NULL) {
 		*is_r = NULL;
 		return playlist;
@@ -60,7 +59,7 @@ playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond,
 	return playlist;
 }
 
-struct playlist_provider *
+SongEnumerator *
 playlist_open_any(const char *uri, Mutex &mutex, Cond &cond,
 		  struct input_stream **is_r)
 {

@@ -26,21 +26,7 @@
 struct config_param;
 struct input_stream;
 struct Tag;
-struct Song;
-
-/**
- * An object which provides the contents of a playlist.
- */
-struct playlist_provider {
-	const struct playlist_plugin *plugin;
-};
-
-static inline void
-playlist_provider_init(struct playlist_provider *playlist,
-		       const struct playlist_plugin *plugin)
-{
-	playlist->plugin = plugin;
-}
+class SongEnumerator;
 
 struct playlist_plugin {
 	const char *name;
@@ -65,19 +51,15 @@ struct playlist_plugin {
 	 * Opens the playlist on the specified URI.  This URI has
 	 * either matched one of the schemes or one of the suffixes.
 	 */
-	struct playlist_provider *(*open_uri)(const char *uri,
-					      Mutex &mutex, Cond &cond);
+	SongEnumerator *(*open_uri)(const char *uri,
+				    Mutex &mutex, Cond &cond);
 
 	/**
 	 * Opens the playlist in the specified input stream.  It has
 	 * either matched one of the suffixes or one of the MIME
 	 * types.
 	 */
-	struct playlist_provider *(*open_stream)(struct input_stream *is);
-
-	void (*close)(struct playlist_provider *playlist);
-
-	Song *(*read)(struct playlist_provider *playlist);
+	SongEnumerator *(*open_stream)(struct input_stream *is);
 
 	const char *const*schemes;
 	const char *const*suffixes;
@@ -111,30 +93,18 @@ playlist_plugin_finish(const struct playlist_plugin *plugin)
 		plugin->finish();
 }
 
-static inline struct playlist_provider *
+static inline SongEnumerator *
 playlist_plugin_open_uri(const struct playlist_plugin *plugin, const char *uri,
 			 Mutex &mutex, Cond &cond)
 {
 	return plugin->open_uri(uri, mutex, cond);
 }
 
-static inline struct playlist_provider *
+static inline SongEnumerator *
 playlist_plugin_open_stream(const struct playlist_plugin *plugin,
 			    struct input_stream *is)
 {
 	return plugin->open_stream(is);
-}
-
-static inline void
-playlist_plugin_close(struct playlist_provider *playlist)
-{
-	playlist->plugin->close(playlist);
-}
-
-static inline Song *
-playlist_plugin_read(struct playlist_provider *playlist)
-{
-	return playlist->plugin->read(playlist);
 }
 
 #endif

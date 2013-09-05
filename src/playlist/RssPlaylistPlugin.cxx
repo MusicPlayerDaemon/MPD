@@ -19,7 +19,8 @@
 
 #include "config.h"
 #include "RssPlaylistPlugin.hxx"
-#include "MemoryPlaylistProvider.hxx"
+#include "PlaylistPlugin.hxx"
+#include "MemorySongEnumerator.hxx"
 #include "InputStream.hxx"
 #include "Song.hxx"
 #include "Tag.hxx"
@@ -198,7 +199,7 @@ rss_parser_destroy(gpointer data)
  *
  */
 
-static struct playlist_provider *
+static SongEnumerator *
 rss_open_stream(struct input_stream *is)
 {
 	RssParser parser;
@@ -246,8 +247,8 @@ rss_open_stream(struct input_stream *is)
 	}
 
 	parser.songs.reverse();
-	MemoryPlaylistProvider *playlist =
-		new MemoryPlaylistProvider(std::move(parser.songs));
+	MemorySongEnumerator *playlist =
+		new MemorySongEnumerator(std::move(parser.songs));
 
 	g_markup_parse_context_free(context);
 
@@ -272,8 +273,6 @@ const struct playlist_plugin rss_playlist_plugin = {
 	nullptr,
 	nullptr,
 	rss_open_stream,
-	nullptr,
-	nullptr,
 
 	nullptr,
 	rss_suffixes,

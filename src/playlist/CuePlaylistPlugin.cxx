@@ -20,67 +20,54 @@
 #include "config.h"
 #include "CuePlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
+#include "SongEnumerator.hxx"
 #include "Tag.hxx"
 #include "Song.hxx"
 #include "cue/CueParser.hxx"
 #include "TextInputStream.hxx"
 
-#include <glib.h>
 #include <assert.h>
 #include <string.h>
 
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "cue"
 
-struct CuePlaylist {
-	struct playlist_provider base;
-
+class CuePlaylist final : public SongEnumerator {
 	struct input_stream *is;
 	TextInputStream tis;
 	CueParser parser;
 
+ public:
 	CuePlaylist(struct input_stream *_is)
 		:is(_is), tis(is) {
-		playlist_provider_init(&base, &cue_playlist_plugin);
 	}
 
-	~CuePlaylist() {
-	}
+	virtual Song *NextSong() override;
 };
 
-static struct playlist_provider *
+static SongEnumerator *
 cue_playlist_open_stream(struct input_stream *is)
 {
-	CuePlaylist *playlist = new CuePlaylist(is);
-	return &playlist->base;
+	return new CuePlaylist(is);
 }
 
-static void
-cue_playlist_close(struct playlist_provider *_playlist)
+Song *
+CuePlaylist::NextSong()
 {
-	CuePlaylist *playlist = (CuePlaylist *)_playlist;
-	delete playlist;
-}
-
-static Song *
-cue_playlist_read(struct playlist_provider *_playlist)
-{
-	CuePlaylist *playlist = (CuePlaylist *)_playlist;
-
-	Song *song = playlist->parser.Get();
+	Song *song = parser.Get();
 	if (song != NULL)
 		return song;
 
 	std::string line;
-	while (playlist->tis.ReadLine(line)) {
-		playlist->parser.Feed(line.c_str());
-		song = playlist->parser.Get();
+	while (tis.ReadLine(line)) {
+		parser.Feed(line.c_str());
+		song = parser.Get();
 		if (song != NULL)
 			return song;
 	}
 
-	playlist->parser.Finish();
-	return playlist->parser.Get();
+	parser.Finish();
+	return parser.Get();
 }
 
 static const char *const cue_playlist_suffixes[] = {
@@ -100,8 +87,6 @@ const struct playlist_plugin cue_playlist_plugin = {
 	nullptr,
 	nullptr,
 	cue_playlist_open_stream,
-	cue_playlist_close,
-	cue_playlist_read,
 
 	nullptr,
 	cue_playlist_suffixes,
