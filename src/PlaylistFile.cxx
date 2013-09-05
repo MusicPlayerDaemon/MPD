@@ -28,6 +28,7 @@
 #include "Mapper.hxx"
 #include "TextFile.hxx"
 #include "conf.h"
+#include "ConfigDefaults.hxx"
 #include "Idle.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"

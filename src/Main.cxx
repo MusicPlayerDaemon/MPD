@@ -57,6 +57,7 @@
 #include "Daemon.hxx"
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
+#include "ConfigDefaults.hxx"
 
 extern "C" {
 #include "stats.h"

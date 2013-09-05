@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,12 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CONF_H
-#define MPD_CONF_H
+#ifndef MPD_CONFIG_DEFAULTS_HXX
+#define MPD_CONFIG_DEFAULTS_HXX
 
-#include "ConfigGlobal.hxx"
-#include "ConfigOption.hxx"
-#include "ConfigData.hxx"
-#include "gcc.h"
+static constexpr unsigned DEFAULT_PLAYLIST_MAX_LENGTH = 16 * 1024;
+static constexpr bool DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS = false;
 
 #endif

@@ -23,11 +23,7 @@
 #include "ConfigOption.hxx"
 #include "gcc.h"
 
-#include <stdbool.h>
 #include <stddef.h>
-
-#define DEFAULT_PLAYLIST_MAX_LENGTH (1024*16)
-#define DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS false
 
 class Error;
 class Path;
