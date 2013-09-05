@@ -24,6 +24,7 @@
 #include "Directory.hxx"
 #include "TextFile.hxx"
 #include "tag/Tag.hxx"
+#include "tag/TagBuilder.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -68,12 +69,12 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 	enum tag_type type;
 	const char *value;
 
+	TagBuilder tag;
+
 	while ((line = file.ReadLine()) != NULL &&
 	       strcmp(line, SONG_END) != 0) {
 		colon = strchr(line, ':');
 		if (colon == NULL || colon == line) {
-			if (song->tag != NULL)
-				song->tag->EndAdd();
 			song->Free();
 
 			error.Format(song_save_domain,
@@ -85,26 +86,11 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 		value = strchug_fast_c(colon);
 
 		if ((type = tag_name_parse(line)) != TAG_NUM_OF_ITEM_TYPES) {
-			if (!song->tag) {
-				song->tag = new Tag();
-				song->tag->BeginAdd();
-			}
-
-			song->tag->AddItem(type, value);
+			tag.AddItem(type, value);
 		} else if (strcmp(line, "Time") == 0) {
-			if (!song->tag) {
-				song->tag = new Tag();
-				song->tag->BeginAdd();
-			}
-
-			song->tag->time = atoi(value);
+			tag.SetTime(atoi(value));
 		} else if (strcmp(line, "Playlist") == 0) {
-			if (!song->tag) {
-				song->tag = new Tag();
-				song->tag->BeginAdd();
-			}
-
-			song->tag->has_playlist = strcmp(value, "yes") == 0;
+			tag.SetHasPlaylist(strcmp(value, "yes") == 0);
 		} else if (strcmp(line, SONG_MTIME) == 0) {
 			song->mtime = atoi(value);
 		} else if (strcmp(line, "Range") == 0) {
@@ -114,8 +100,6 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 			if (*endptr == '-')
 				song->end_ms = strtoul(endptr + 1, NULL, 10);
 		} else {
-			if (song->tag != NULL)
-				song->tag->EndAdd();
 			song->Free();
 
 			error.Format(song_save_domain,
@@ -124,8 +108,8 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 		}
 	}
 
-	if (song->tag != NULL)
-		song->tag->EndAdd();
+	if (tag.IsDefined())
+		song->tag = tag.Commit();
 
 	return song;
 }
