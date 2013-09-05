@@ -428,6 +428,7 @@ libtag_a_SOURCES =\
 	src/tag/TagInternal.hxx \
 	src/tag/TagConfig.cxx src/tag/TagConfig.hxx \
 	src/tag/TagNames.c \
+	src/tag/TagString.cxx src/tag/TagString.hxx \
 	src/tag/TagPool.cxx src/tag/TagPool.hxx \
 	src/tag/TagTable.cxx src/tag/TagTable.hxx \
 	src/tag/ApeLoader.cxx src/tag/ApeLoader.hxx \
