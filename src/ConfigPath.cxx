@@ -86,13 +86,13 @@ ParsePath(const char *path, Error &error)
 	if (path[0] == '~') {
 		Path home = Path::Null();
 
-		if (path[1] == '/' || path[1] == '\0') {
+		++path;
+
+		if (*path == '/' || *path == '\0') {
 			home = GetConfiguredHome(error);
 
 			++path;
 		} else {
-			++path;
-
 			const char *slash = strchr(path, '/');
 			char *user = slash != nullptr
 				? g_strndup(path, slash - path)
