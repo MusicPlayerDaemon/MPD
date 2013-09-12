@@ -21,6 +21,7 @@
 #include "fs/Path.hxx"
 #include "ConfigGlobal.hxx"
 #include "system/FatalError.hxx"
+#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "gcc.h"
 
@@ -87,6 +88,18 @@ Path Path::FromUTF8(const char *path_utf8)
 		      NULL, NULL, NULL);
 
 	return Path(Donate(), p);
+}
+
+Path
+Path::FromUTF8(const char *path_utf8, Error &error)
+{
+	Path path = FromUTF8(path_utf8);
+	if (path.IsNull())
+		error.Format(path_domain,
+			     "Failed to convert to file system charset: %s",
+			     path_utf8);
+
+	return path;
 }
 
 gcc_pure

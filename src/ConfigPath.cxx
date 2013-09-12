@@ -53,13 +53,9 @@ ParsePath(const char *path, Error &error)
 {
 	assert(path != nullptr);
 
-	Path path2 = Path::FromUTF8(path);
-	if (path2.IsNull()) {
-		error.Format(path_domain,
-			     "Failed to convert path to file system charset: %s",
-			     path);
+	Path path2 = Path::FromUTF8(path, error);
+	if (path2.IsNull())
 		return Path::Null();
-	}
 
 #ifndef WIN32
 	if (!g_path_is_absolute(path) && path[0] != '~') {
