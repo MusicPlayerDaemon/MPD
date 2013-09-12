@@ -87,11 +87,7 @@ ParsePath(const char *path, Error &error)
 		return Path::Null();
 
 #ifndef WIN32
-	if (!g_path_is_absolute(path) && path[0] != '~') {
-		error.Format(path_domain,
-			     "not an absolute path: %s", path);
-		return Path::Null();
-	} else if (path[0] == '~') {
+	if (path[0] == '~') {
 		Path home = Path::Null();
 
 		if (path[1] == '/' || path[1] == '\0') {
@@ -116,6 +112,10 @@ ParsePath(const char *path, Error &error)
 			return Path::Null();
 
 		return Path::Build(home, path2);
+	} else if (!g_path_is_absolute(path)) {
+		error.Format(path_domain,
+			     "not an absolute path: %s", path);
+		return Path::Null();
 	} else {
 #endif
 		return path2;
