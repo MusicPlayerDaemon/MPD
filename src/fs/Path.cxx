@@ -21,6 +21,7 @@
 #include "fs/Path.hxx"
 #include "ConfigGlobal.hxx"
 #include "system/FatalError.hxx"
+#include "util/Domain.hxx"
 #include "gcc.h"
 
 #include <glib.h>
@@ -45,6 +46,8 @@
  * sequences with single byte.
  */
 #define MPD_PATH_MAX_UTF8 ((MPD_PATH_MAX - 1) * 4 + 1)
+
+const Domain path_domain("path");
 
 std::string fs_charset;
 

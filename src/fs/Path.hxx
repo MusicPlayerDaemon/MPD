@@ -44,6 +44,8 @@
 #  endif
 #endif
 
+extern const class Domain path_domain;
+
 /**
  * A path name in the native file system character set.
  */

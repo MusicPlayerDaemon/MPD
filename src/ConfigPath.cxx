@@ -21,7 +21,6 @@
 #include "ConfigPath.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"
 
@@ -48,8 +47,6 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
-
-static constexpr Domain path_domain("path");
 
 Path
 ParsePath(const char *path, Error &error)
