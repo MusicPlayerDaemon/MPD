@@ -30,6 +30,49 @@
 
 #ifndef WIN32
 #include <pwd.h>
+
+/**
+ * Determine a given user's home directory.
+ */
+static const char *
+GetHome(const char *user, Error &error)
+{
+	passwd *pw = getpwnam(user);
+	if (pw == nullptr) {
+		error.Format(path_domain,
+			     "no such user: %s", user);
+		return nullptr;
+	}
+
+	return pw->pw_dir;
+}
+
+/**
+ * Determine the current user's home directory.
+ */
+static const char *
+GetHome(Error &error)
+{
+	const char *home = g_get_home_dir();
+	if (home == nullptr)
+		error.Set(path_domain,
+			  "problems getting home for current user");
+
+	return home;
+}
+
+/**
+ * Determine the configured user's home directory.
+ */
+static const char *
+GetConfiguredHome(Error &error)
+{
+	const char *user = config_get_string(CONF_USER, nullptr);
+	return user != nullptr
+		? GetHome(user, error)
+		: GetHome(error);
+}
+
 #endif
 
 Path
@@ -50,25 +93,7 @@ ParsePath(const char *path, Error &error)
 		const char *home;
 
 		if (path[1] == '/' || path[1] == '\0') {
-			const char *user = config_get_string(CONF_USER, nullptr);
-			if (user != nullptr) {
-				struct passwd *passwd = getpwnam(user);
-				if (!passwd) {
-					error.Format(path_domain,
-						     "no such user: %s", user);
-					return Path::Null();
-				}
-
-				home = passwd->pw_dir;
-			} else {
-				home = g_get_home_dir();
-				if (home == nullptr) {
-					error.Set(path_domain,
-						  "problems getting home "
-						  "for current user");
-					return Path::Null();
-				}
-			}
+			home = GetConfiguredHome(error);
 
 			++path;
 		} else {
@@ -79,19 +104,14 @@ ParsePath(const char *path, Error &error)
 				? g_strndup(path, slash - path)
 				: g_strdup(path);
 
-			struct passwd *passwd = getpwnam(user);
-			if (!passwd) {
-				error.Format(path_domain,
-					     "no such user: %s", user);
-				g_free(user);
-				return Path::Null();
-			}
-
+			home = GetHome(user, error);
 			g_free(user);
 
-			home = passwd->pw_dir;
 			path = slash;
 		}
+
+		if (home == nullptr)
+			return Path::Null();
 
 		return Path::Build(home, path2);
 	} else {
