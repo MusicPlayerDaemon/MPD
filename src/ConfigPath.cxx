@@ -82,10 +82,6 @@ ParsePath(const char *path, Error &error)
 {
 	assert(path != nullptr);
 
-	Path path2 = Path::FromUTF8(path, error);
-	if (path2.IsNull())
-		return Path::Null();
-
 #ifndef WIN32
 	if (path[0] == '~') {
 		Path home = Path::Null();
@@ -105,10 +101,17 @@ ParsePath(const char *path, Error &error)
 			home = GetHome(user, error);
 			g_free(user);
 
-			path = slash;
+			if (slash == nullptr)
+				return home;
+
+			path = slash + 1;
 		}
 
 		if (home.IsNull())
+			return Path::Null();
+
+		Path path2 = Path::FromUTF8(path, error);
+		if (path2.IsNull())
 			return Path::Null();
 
 		return Path::Build(home, path2);
@@ -118,7 +121,7 @@ ParsePath(const char *path, Error &error)
 		return Path::Null();
 	} else {
 #endif
-		return path2;
+		return Path::FromUTF8(path, error);
 #ifndef WIN32
 	}
 #endif
