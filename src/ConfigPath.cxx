@@ -34,37 +34,39 @@
 /**
  * Determine a given user's home directory.
  */
-static const char *
+static Path
 GetHome(const char *user, Error &error)
 {
 	passwd *pw = getpwnam(user);
 	if (pw == nullptr) {
 		error.Format(path_domain,
 			     "no such user: %s", user);
-		return nullptr;
+		return Path::Null();
 	}
 
-	return pw->pw_dir;
+	return Path::FromFS(pw->pw_dir);
 }
 
 /**
  * Determine the current user's home directory.
  */
-static const char *
+static Path
 GetHome(Error &error)
 {
 	const char *home = g_get_home_dir();
-	if (home == nullptr)
+	if (home == nullptr) {
 		error.Set(path_domain,
 			  "problems getting home for current user");
+		return Path::Null();
+	}
 
-	return home;
+	return Path::FromUTF8(home, error);
 }
 
 /**
  * Determine the configured user's home directory.
  */
-static const char *
+static Path
 GetConfiguredHome(Error &error)
 {
 	const char *user = config_get_string(CONF_USER, nullptr);
@@ -90,7 +92,7 @@ ParsePath(const char *path, Error &error)
 			     "not an absolute path: %s", path);
 		return Path::Null();
 	} else if (path[0] == '~') {
-		const char *home;
+		Path home = Path::Null();
 
 		if (path[1] == '/' || path[1] == '\0') {
 			home = GetConfiguredHome(error);
@@ -110,7 +112,7 @@ ParsePath(const char *path, Error &error)
 			path = slash;
 		}
 
-		if (home == nullptr)
+		if (home.IsNull())
 			return Path::Null();
 
 		return Path::Build(home, path2);
