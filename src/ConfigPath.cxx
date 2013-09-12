@@ -22,30 +22,14 @@
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "ConfigGlobal.hxx"
-#include "ConfigOption.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <string.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <errno.h>
 
 #ifndef WIN32
 #include <pwd.h>
-#endif
-
-#if HAVE_IPV6 && WIN32
-#include <winsock2.h>
-#endif 
-
-#if HAVE_IPV6 && ! WIN32
-#include <sys/socket.h>
-#endif
-
-#ifdef WIN32
-#include <windows.h>
 #endif
 
 Path
