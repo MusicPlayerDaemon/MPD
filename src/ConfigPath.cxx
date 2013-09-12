@@ -84,11 +84,14 @@ ParsePath(const char *path, Error &error)
 
 #ifndef WIN32
 	if (path[0] == '~') {
-		Path home = Path::Null();
-
 		++path;
 
-		if (*path == '/' || *path == '\0') {
+		if (*path == '\0')
+			return GetConfiguredHome(error);
+
+		Path home = Path::Null();
+
+		if (*path == '/') {
 			home = GetConfiguredHome(error);
 
 			++path;
