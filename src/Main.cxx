@@ -181,6 +181,9 @@ glue_db_init_and_load(void)
 		param = allocated;
 	}
 
+	if (param == nullptr)
+		return true;
+
 	Error error;
 	if (!DatabaseGlobalInit(*param, error))
 		FatalError(error);
