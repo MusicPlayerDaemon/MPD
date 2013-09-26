@@ -245,6 +245,7 @@ input_curl_resume(struct input_curl *c)
 	if (c->paused) {
 		c->paused = false;
 		curl_easy_pause(c->easy, CURLPAUSE_CONT);
+		curl.sockets->InvalidateSockets();
 	}
 }
 
