@@ -1143,13 +1143,7 @@ player_task(gpointer arg)
 			pc->Lock();
 			player_command_finished_locked(pc);
 
-#ifndef NDEBUG
-			/* in the DEBUG build, check for leaked
-			   music_chunk objects by freeing the
-			   music_buffer */
-			delete player_buffer;
-			player_buffer = new MusicBuffer(pc->buffer_chunks);
-#endif
+			assert(player_buffer->IsEmptyUnsafe());
 
 			break;
 

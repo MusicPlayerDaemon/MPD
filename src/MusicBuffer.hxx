@@ -43,6 +43,17 @@ public:
 	 */
 	MusicBuffer(unsigned num_chunks);
 
+#ifndef NDEBUG
+	/**
+	 * Check whether the buffer is empty.  This call is not
+	 * protected with the mutex, and may only be used while this
+	 * object is inaccessible to other threads.
+	 */
+	bool IsEmptyUnsafe() const {
+		return buffer.IsEmpty();
+	}
+#endif
+
 	/**
 	 * Returns the total number of reserved chunks in this buffer.  This
 	 * is the same value which was passed to the constructor
