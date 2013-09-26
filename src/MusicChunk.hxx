@@ -36,7 +36,7 @@ struct Tag;
 
 /**
  * A chunk of music data.  Its format is defined by the
- * music_pipe_append() caller.
+ * MusicPipe::Push() caller.
  */
 struct music_chunk {
 	/** the next chunk in a linked list */

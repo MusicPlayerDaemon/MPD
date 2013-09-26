@@ -31,6 +31,7 @@
 
 class Error;
 class Filter;
+class MusicPipe;
 struct config_param;
 
 enum audio_output_command {
@@ -209,7 +210,7 @@ struct audio_output {
 	/**
 	 * The music pipe which provides music chunks to be played.
 	 */
-	const struct music_pipe *pipe;
+	const MusicPipe *pipe;
 
 	/**
 	 * This mutex protects #open, #fail_timer, #chunk and

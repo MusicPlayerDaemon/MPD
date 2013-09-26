@@ -20,11 +20,14 @@
 #ifndef MPD_PIPE_H
 #define MPD_PIPE_H
 
+#include "thread/Mutex.hxx"
 #include "gcc.h"
 
 #ifndef NDEBUG
-struct AudioFormat;
+#include "AudioFormat.hxx"
 #endif
+
+#include <assert.h>
 
 struct music_chunk;
 struct music_buffer;
@@ -33,80 +36,98 @@ struct music_buffer;
  * A queue of #music_chunk objects.  One party appends chunks at the
  * tail, and the other consumes them from the head.
  */
-struct music_pipe;
+class MusicPipe {
+	/** the first chunk */
+	music_chunk *head;
 
-/**
- * Creates a new #music_pipe object.  It is empty.
- */
-gcc_malloc
-struct music_pipe *
-music_pipe_new(void);
+	/** a pointer to the tail of the chunk */
+	music_chunk **tail_r;
 
-/**
- * Frees the object.  It must be empty now.
- */
-void
-music_pipe_free(struct music_pipe *mp);
+	/** the current number of chunks */
+	unsigned size;
+
+	/** a mutex which protects #head and #tail_r */
+	mutable Mutex mutex;
 
 #ifndef NDEBUG
-
-/**
- * Checks if the audio format if the chunk is equal to the specified
- * audio_format.
- */
-bool
-music_pipe_check_format(const struct music_pipe *pipe,
-			AudioFormat audio_format);
-
-/**
- * Checks if the specified chunk is enqueued in the music pipe.
- */
-bool
-music_pipe_contains(const struct music_pipe *mp,
-		    const struct music_chunk *chunk);
-
+	AudioFormat audio_format;
 #endif
 
-/**
- * Returns the first #music_chunk from the pipe.  Returns NULL if the
- * pipe is empty.
- */
-gcc_pure
-const struct music_chunk *
-music_pipe_peek(const struct music_pipe *mp);
+public:
+	/**
+	 * Creates a new #MusicPipe object.  It is empty.
+	 */
+	MusicPipe()
+		:head(nullptr), tail_r(&head), size(0) {
+#ifndef NDEBUG
+		audio_format.Clear();
+#endif
+	}
 
-/**
- * Removes the first chunk from the head, and returns it.
- */
-struct music_chunk *
-music_pipe_shift(struct music_pipe *mp);
+	/**
+	 * Frees the object.  It must be empty now.
+	 */
+	~MusicPipe() {
+		assert(head == nullptr);
+		assert(tail_r == &head);
+	}
 
-/**
- * Clears the whole pipe and returns the chunks to the buffer.
- *
- * @param buffer the buffer object to return the chunks to
- */
-void
-music_pipe_clear(struct music_pipe *mp, struct music_buffer *buffer);
+#ifndef NDEBUG
+	/**
+	 * Checks if the audio format if the chunk is equal to the specified
+	 * audio_format.
+	 */
+	gcc_pure
+	bool CheckFormat(AudioFormat other) const {
+		return !audio_format.IsDefined() ||
+			audio_format == other;
+	}
 
-/**
- * Pushes a chunk to the tail of the pipe.
- */
-void
-music_pipe_push(struct music_pipe *mp, struct music_chunk *chunk);
+	/**
+	 * Checks if the specified chunk is enqueued in the music pipe.
+	 */
+	gcc_pure
+	bool Contains(const music_chunk *chunk) const;
+#endif
 
-/**
- * Returns the number of chunks currently in this pipe.
- */
-gcc_pure
-unsigned
-music_pipe_size(const struct music_pipe *mp);
+	/**
+	 * Returns the first #music_chunk from the pipe.  Returns
+	 * nullptr if the pipe is empty.
+	 */
+	gcc_pure
+	const music_chunk *Peek() const {
+		return head;
+	}
 
-gcc_pure
-static inline bool
-music_pipe_empty(const struct music_pipe *mp)
-{
-	return music_pipe_size(mp) == 0;
-}
+	/**
+	 * Removes the first chunk from the head, and returns it.
+	 */
+	music_chunk *Shift();
+
+	/**
+	 * Clears the whole pipe and returns the chunks to the buffer.
+	 *
+	 * @param buffer the buffer object to return the chunks to
+	 */
+	void Clear(music_buffer *buffer);
+
+	/**
+	 * Pushes a chunk to the tail of the pipe.
+	 */
+	void Push(music_chunk *chunk);
+
+	/**
+	 * Returns the number of chunks currently in this pipe.
+	 */
+	gcc_pure
+	unsigned GetSize() const {
+		return size;
+	}
+
+	gcc_pure
+	bool IsEmpty() const {
+		return GetSize() == 0;
+	}
+};
 
 #endif

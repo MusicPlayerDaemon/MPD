@@ -31,7 +31,7 @@
  *
  * The player thread itself does not do any I/O.  It synchronizes with
  * other threads via #GMutex and #GCond objects, and passes
- * #music_chunk instances around in #music_pipe objects.
+ * #music_chunk instances around in #MusicPipe objects.
  */
 
 #ifndef MPD_PLAYER_THREAD_HXX

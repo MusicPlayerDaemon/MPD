@@ -27,7 +27,7 @@
 struct audio_output;
 struct AudioFormat;
 struct config_param;
-struct music_pipe;
+class MusicPipe;
 struct player_control;
 
 void
@@ -54,7 +54,7 @@ audio_output_disable(struct audio_output *ao);
 bool
 audio_output_update(struct audio_output *ao,
 		    AudioFormat audio_format,
-		    const struct music_pipe *mp);
+		    const MusicPipe &mp);
 
 void
 audio_output_play(struct audio_output *ao);

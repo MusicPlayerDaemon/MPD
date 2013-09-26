@@ -54,7 +54,7 @@ struct player {
 
 	struct decoder_control *dc;
 
-	struct music_pipe *pipe;
+	MusicPipe *pipe;
 
 	/**
 	 * are we waiting for buffered_before_play?
@@ -166,7 +166,7 @@ player_command_finished(struct player_control *pc)
  * Player lock is not held.
  */
 static void
-player_dc_start(struct player *player, struct music_pipe *pipe)
+player_dc_start(struct player *player, MusicPipe &pipe)
 {
 	struct player_control *pc = player->pc;
 	struct decoder_control *dc = player->dc;
@@ -224,10 +224,10 @@ player_dc_stop(struct player *player)
 	if (dc->pipe != NULL) {
 		/* clear and free the decoder pipe */
 
-		music_pipe_clear(dc->pipe, player_buffer);
+		dc->pipe->Clear(player_buffer);
 
 		if (dc->pipe != player->pipe)
-			music_pipe_free(dc->pipe);
+			delete dc->pipe;
 
 		dc->pipe = NULL;
 	}
@@ -493,10 +493,10 @@ static bool player_seek_decoder(struct player *player)
 
 		/* clear music chunks which might still reside in the
 		   pipe */
-		music_pipe_clear(player->pipe, player_buffer);
+		player->pipe->Clear(player_buffer);
 
 		/* re-start the decoder */
-		player_dc_start(player, player->pipe);
+		player_dc_start(player, *player->pipe);
 		if (!player_wait_for_decoder(player)) {
 			/* decoder failure */
 			player_command_finished(pc);
@@ -506,8 +506,8 @@ static bool player_seek_decoder(struct player *player)
 		if (!player_dc_at_current_song(player)) {
 			/* the decoder is already decoding the "next" song,
 			   but it is the same song file; exchange the pipe */
-			music_pipe_clear(player->pipe, player_buffer);
-			music_pipe_free(player->pipe);
+			player->pipe->Clear(player_buffer);
+			delete player->pipe;
 			player->pipe = dc->pipe;
 		}
 
@@ -734,11 +734,10 @@ play_next_chunk(struct player *player)
 	struct music_chunk *chunk = NULL;
 	if (player->xfade == XFADE_ENABLED &&
 	    player_dc_at_next_song(player) &&
-	    (cross_fade_position = music_pipe_size(player->pipe))
+	    (cross_fade_position = player->pipe->GetSize())
 	    <= player->cross_fade_chunks) {
 		/* perform cross fade */
-		struct music_chunk *other_chunk =
-			music_pipe_shift(dc->pipe);
+		music_chunk *other_chunk = dc->pipe->Shift();
 
 		if (!player->cross_fading) {
 			/* beginning of the cross fade - adjust
@@ -750,7 +749,7 @@ play_next_chunk(struct player *player)
 		}
 
 		if (other_chunk != NULL) {
-			chunk = music_pipe_shift(player->pipe);
+			chunk = player->pipe->Shift();
 			assert(chunk != NULL);
 			assert(chunk->other == NULL);
 
@@ -806,7 +805,7 @@ play_next_chunk(struct player *player)
 	}
 
 	if (chunk == NULL)
-		chunk = music_pipe_shift(player->pipe);
+		chunk = player->pipe->Shift();
 
 	assert(chunk != NULL);
 
@@ -848,8 +847,8 @@ play_next_chunk(struct player *player)
 	   larger block at a time */
 	dc->Lock();
 	if (!dc->IsIdle() &&
-	    music_pipe_size(dc->pipe) <= (pc->buffered_before_play +
-					 music_buffer_size(player_buffer) * 3) / 4)
+	    dc->pipe->GetSize() <= (pc->buffered_before_play +
+				    music_buffer_size(player_buffer) * 3) / 4)
 		dc->Signal();
 	dc->Unlock();
 
@@ -874,7 +873,7 @@ player_song_border(struct player *player)
 	g_message("played \"%s\"", uri);
 	g_free(uri);
 
-	music_pipe_free(player->pipe);
+	delete player->pipe;
 	player->pipe = player->dc->pipe;
 
 	audio_output_all_song_border();
@@ -910,15 +909,15 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 
 	pc->Unlock();
 
-	player.pipe = music_pipe_new();
+	player.pipe = new MusicPipe();
 
-	player_dc_start(&player, player.pipe);
+	player_dc_start(&player, *player.pipe);
 	if (!player_wait_for_decoder(&player)) {
 		assert(player.song == NULL);
 
 		player_dc_stop(&player);
 		player_command_finished(pc);
-		music_pipe_free(player.pipe);
+		delete player.pipe;
 		GlobalEvents::Emit(GlobalEvents::PLAYLIST);
 		pc->Lock();
 		return;
@@ -949,7 +948,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 			   until the buffer is large enough, to
 			   prevent stuttering on slow machines */
 
-			if (music_pipe_size(player.pipe) < pc->buffered_before_play &&
+			if (player.pipe->GetSize() < pc->buffered_before_play &&
 			    !dc->LockIsIdle()) {
 				/* not enough decoded buffer space yet */
 
@@ -996,7 +995,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 
 			assert(dc->pipe == NULL || dc->pipe == player.pipe);
 
-			player_dc_start(&player, music_pipe_new());
+			player_dc_start(&player, *new MusicPipe());
 		}
 
 		if (/* no cross-fading if MPD is going to pause at the
@@ -1035,7 +1034,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 			if (pc->command == PLAYER_COMMAND_NONE)
 				pc->Wait();
 			continue;
-		} else if (!music_pipe_empty(player.pipe)) {
+		} else if (!player.pipe->IsEmpty()) {
 			/* at least one music chunk is ready - send it
 			   to the audio output */
 
@@ -1056,7 +1055,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 			/* check the size of the pipe again, because
 			   the decoder thread may have added something
 			   since we last checked */
-			if (music_pipe_empty(player.pipe)) {
+			if (player.pipe->IsEmpty()) {
 				/* wait for the hardware to finish
 				   playback */
 				audio_output_all_drain();
@@ -1075,8 +1074,8 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 
 	player_dc_stop(&player);
 
-	music_pipe_clear(player.pipe, player_buffer);
-	music_pipe_free(player.pipe);
+	player.pipe->Clear(player_buffer);
+	delete player.pipe;
 
 	delete player.cross_fade_tag;
 

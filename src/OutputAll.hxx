@@ -104,7 +104,7 @@ audio_output_all_set_replay_gain_mode(enum replay_gain_mode mode);
 
 /**
  * Enqueue a #music_chunk object for playing, i.e. pushes it to a
- * #music_pipe.
+ * #MusicPipe.
  *
  * @param chunk the #music_chunk object to be played
  * @return true on success, false if no audio output was able to play
@@ -117,13 +117,13 @@ audio_output_all_play(struct music_chunk *chunk, Error &error);
  * Checks if the output devices have drained their music pipe, and
  * returns the consumed music chunks to the #music_buffer.
  *
- * @return the number of chunks to play left in the #music_pipe
+ * @return the number of chunks to play left in the #MusicPipe
  */
 unsigned
 audio_output_all_check(void);
 
 /**
- * Checks if the size of the #music_pipe is below the #threshold.  If
+ * Checks if the size of the #MusicPipe is below the #threshold.  If
  * not, it attempts to synchronize with all output threads, and waits
  * until another #music_chunk is finished.
  *

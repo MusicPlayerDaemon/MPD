@@ -263,7 +263,7 @@ ao_reopen(struct audio_output *ao)
 {
 	if (!ao->config_audio_format.IsFullyDefined()) {
 		if (ao->open) {
-			const struct music_pipe *mp = ao->pipe;
+			const MusicPipe *mp = ao->pipe;
 			ao_close(ao, true);
 			ao->pipe = mp;
 		}
@@ -484,7 +484,7 @@ ao_next_chunk(struct audio_output *ao)
 		/* continue the previous play() call */
 		? ao->chunk->next
 		/* get the first chunk from the pipe */
-		: music_pipe_peek(ao->pipe);
+		: ao->pipe->Peek();
 }
 
 /**
@@ -621,7 +621,7 @@ static gpointer audio_output_task(gpointer arg)
 		case AO_COMMAND_DRAIN:
 			if (ao->open) {
 				assert(ao->chunk == NULL);
-				assert(music_pipe_peek(ao->pipe) == NULL);
+				assert(ao->pipe->Peek() == nullptr);
 
 				ao->mutex.unlock();
 				ao_plugin_drain(ao);

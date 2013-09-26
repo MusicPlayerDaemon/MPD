@@ -105,12 +105,11 @@ decoder_control::IsCurrentSong(const Song *_song) const
 void
 decoder_control::Start(Song *_song,
 		       unsigned _start_ms, unsigned _end_ms,
-		       music_buffer *_buffer, music_pipe *_pipe)
+		       music_buffer *_buffer, MusicPipe &_pipe)
 {
 	assert(_song != NULL);
 	assert(_buffer != NULL);
-	assert(_pipe != NULL);
-	assert(music_pipe_empty(_pipe));
+	assert(_pipe.IsEmpty());
 
 	if (song != nullptr)
 		song->Free();
@@ -119,7 +118,7 @@ decoder_control::Start(Song *_song,
 	start_ms = _start_ms;
 	end_ms = _end_ms;
 	buffer = _buffer;
-	pipe = _pipe;
+	pipe = &_pipe;
 
 	dc_command(this, DECODE_COMMAND_START);
 }

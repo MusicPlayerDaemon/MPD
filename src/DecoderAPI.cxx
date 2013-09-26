@@ -164,7 +164,7 @@ decoder_command_finished(struct decoder *decoder)
 	if (decoder->initial_seek_running) {
 		assert(!decoder->seeking);
 		assert(decoder->chunk == NULL);
-		assert(music_pipe_empty(dc->pipe));
+		assert(dc->pipe->IsEmpty());
 
 		decoder->initial_seek_running = false;
 		decoder->timestamp = dc->start_ms / 1000.;
@@ -182,7 +182,7 @@ decoder_command_finished(struct decoder *decoder)
 			decoder->chunk = NULL;
 		}
 
-		music_pipe_clear(dc->pipe, dc->buffer);
+		dc->pipe->Clear(dc->buffer);
 
 		decoder->timestamp = dc->seek_where;
 	}

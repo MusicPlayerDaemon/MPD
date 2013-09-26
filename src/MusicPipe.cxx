@@ -21,74 +21,15 @@
 #include "MusicPipe.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
-#include "thread/Mutex.hxx"
-
-#include <glib.h>
-
-#include <assert.h>
-
-struct music_pipe {
-	/** the first chunk */
-	struct music_chunk *head;
-
-	/** a pointer to the tail of the chunk */
-	struct music_chunk **tail_r;
-
-	/** the current number of chunks */
-	unsigned size;
-
-	/** a mutex which protects #head and #tail_r */
-	mutable Mutex mutex;
-
-#ifndef NDEBUG
-	AudioFormat audio_format;
-#endif
-
-	music_pipe()
-		:head(nullptr), tail_r(&head), size(0) {
-#ifndef NDEBUG
-		audio_format.Clear();
-#endif
-	}
-
-	~music_pipe() {
-		assert(head == nullptr);
-		assert(tail_r == &head);
-	}
-};
-
-struct music_pipe *
-music_pipe_new(void)
-{
-	return new music_pipe();
-}
-
-void
-music_pipe_free(struct music_pipe *mp)
-{
-	delete mp;
-}
 
 #ifndef NDEBUG
 
 bool
-music_pipe_check_format(const struct music_pipe *pipe,
-			const AudioFormat audio_format)
+MusicPipe::Contains(const music_chunk *chunk) const
 {
-	assert(pipe != NULL);
+	const ScopeLock protect(mutex);
 
-	return !pipe->audio_format.IsDefined() ||
-		pipe->audio_format == audio_format;
-}
-
-bool
-music_pipe_contains(const struct music_pipe *mp,
-		    const struct music_chunk *chunk)
-{
-	const ScopeLock protect(mp->mutex);
-
-	for (const struct music_chunk *i = mp->head;
-	     i != NULL; i = i->next)
+	for (const struct music_chunk *i = head; i != nullptr; i = i->next)
 		if (i == chunk)
 			return true;
 
@@ -97,40 +38,34 @@ music_pipe_contains(const struct music_pipe *mp,
 
 #endif
 
-const struct music_chunk *
-music_pipe_peek(const struct music_pipe *mp)
+music_chunk *
+MusicPipe::Shift()
 {
-	return mp->head;
-}
+	const ScopeLock protect(mutex);
 
-struct music_chunk *
-music_pipe_shift(struct music_pipe *mp)
-{
-	const ScopeLock protect(mp->mutex);
-
-	struct music_chunk *chunk = mp->head;
-	if (chunk != NULL) {
+	music_chunk *chunk = head;
+	if (chunk != nullptr) {
 		assert(!chunk->IsEmpty());
 
-		mp->head = chunk->next;
-		--mp->size;
+		head = chunk->next;
+		--size;
 
-		if (mp->head == NULL) {
-			assert(mp->size == 0);
-			assert(mp->tail_r == &chunk->next);
+		if (head == nullptr) {
+			assert(size == 0);
+			assert(tail_r == &chunk->next);
 
-			mp->tail_r = &mp->head;
+			tail_r = &head;
 		} else {
-			assert(mp->size > 0);
-			assert(mp->tail_r != &chunk->next);
+			assert(size > 0);
+			assert(tail_r != &chunk->next);
 		}
 
 #ifndef NDEBUG
 		/* poison the "next" reference */
-		chunk->next = (struct music_chunk *)(void *)0x01010101;
+		chunk->next = (music_chunk *)(void *)0x01010101;
 
-		if (mp->size == 0)
-			mp->audio_format.Clear();
+		if (size == 0)
+			audio_format.Clear();
 #endif
 	}
 
@@ -138,41 +73,34 @@ music_pipe_shift(struct music_pipe *mp)
 }
 
 void
-music_pipe_clear(struct music_pipe *mp, struct music_buffer *buffer)
+MusicPipe::Clear(music_buffer *buffer)
 {
-	struct music_chunk *chunk;
+	music_chunk *chunk;
 
-	while ((chunk = music_pipe_shift(mp)) != NULL)
+	while ((chunk = Shift()) != nullptr)
 		music_buffer_return(buffer, chunk);
 }
 
 void
-music_pipe_push(struct music_pipe *mp, struct music_chunk *chunk)
+MusicPipe::Push(music_chunk *chunk)
 {
 	assert(!chunk->IsEmpty());
 	assert(chunk->length == 0 || chunk->audio_format.IsValid());
 
-	const ScopeLock protect(mp->mutex);
+	const ScopeLock protect(mutex);
 
-	assert(mp->size > 0 || !mp->audio_format.IsDefined());
-	assert(!mp->audio_format.IsDefined() ||
-	       chunk->CheckFormat(mp->audio_format));
+	assert(size > 0 || !audio_format.IsDefined());
+	assert(!audio_format.IsDefined() ||
+	       chunk->CheckFormat(audio_format));
 
 #ifndef NDEBUG
-	if (!mp->audio_format.IsDefined() && chunk->length > 0)
-		mp->audio_format = chunk->audio_format;
+	if (!audio_format.IsDefined() && chunk->length > 0)
+		audio_format = chunk->audio_format;
 #endif
 
-	chunk->next = NULL;
-	*mp->tail_r = chunk;
-	mp->tail_r = &chunk->next;
+	chunk->next = nullptr;
+	*tail_r = chunk;
+	tail_r = &chunk->next;
 
-	++mp->size;
-}
-
-unsigned
-music_pipe_size(const struct music_pipe *mp)
-{
-	const ScopeLock protect(mp->mutex);
-	return mp->size;
+	++size;
 }

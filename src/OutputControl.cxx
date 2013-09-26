@@ -141,14 +141,13 @@ audio_output_disable(struct audio_output *ao)
 static bool
 audio_output_open(struct audio_output *ao,
 		  const AudioFormat audio_format,
-		  const struct music_pipe *mp)
+		  const MusicPipe &mp)
 {
 	bool open;
 
 	assert(ao != NULL);
 	assert(ao->allow_play);
 	assert(audio_format.IsValid());
-	assert(mp != NULL);
 
 	if (ao->fail_timer != NULL) {
 		g_timer_destroy(ao->fail_timer);
@@ -156,12 +155,12 @@ audio_output_open(struct audio_output *ao,
 	}
 
 	if (ao->open && audio_format == ao->in_audio_format) {
-		assert(ao->pipe == mp ||
+		assert(ao->pipe == &mp ||
 		       (ao->always_on && ao->pause));
 
 		if (ao->pause) {
 			ao->chunk = NULL;
-			ao->pipe = mp;
+			ao->pipe = &mp;
 
 			/* unpause with the CANCEL command; this is a
 			   hack, but suits well for forcing the thread
@@ -179,7 +178,7 @@ audio_output_open(struct audio_output *ao,
 	ao->in_audio_format = audio_format;
 	ao->chunk = NULL;
 
-	ao->pipe = mp;
+	ao->pipe = &mp;
 
 	if (ao->thread == NULL)
 		audio_output_thread_start(ao);
@@ -223,10 +222,8 @@ audio_output_close_locked(struct audio_output *ao)
 bool
 audio_output_update(struct audio_output *ao,
 		    const AudioFormat audio_format,
-		    const struct music_pipe *mp)
+		    const MusicPipe &mp)
 {
-	assert(mp != NULL);
-
 	const ScopeLock protect(ao->mutex);
 
 	if (ao->enabled && ao->really_enabled) {

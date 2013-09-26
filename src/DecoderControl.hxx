@@ -31,6 +31,7 @@
 #include <assert.h>
 
 struct Song;
+class MusicPipe;
 
 enum decoder_state {
 	DECODE_STATE_STOP = 0,
@@ -127,7 +128,7 @@ struct decoder_control {
 	 * The destination pipe for decoded chunks.  The caller thread
 	 * owns this object, and is responsible for freeing it.
 	 */
-	struct music_pipe *pipe;
+	MusicPipe *pipe;
 
 	float replay_gain_db;
 	float replay_gain_prev_db;
@@ -287,7 +288,7 @@ struct decoder_control {
 	 * the caller)
 	 */
 	void Start(Song *song, unsigned start_ms, unsigned end_ms,
-		   music_buffer *buffer, music_pipe *pipe);
+		   music_buffer *buffer, MusicPipe &pipe);
 
 	void Stop();
 

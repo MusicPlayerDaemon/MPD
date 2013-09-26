@@ -100,7 +100,7 @@ decoder_flush_chunk(struct decoder *decoder)
 	if (decoder->chunk->IsEmpty())
 		music_buffer_return(dc->buffer, decoder->chunk);
 	else
-		music_pipe_push(dc->pipe, decoder->chunk);
+		dc->pipe->Push(decoder->chunk);
 
 	decoder->chunk = NULL;
 }
