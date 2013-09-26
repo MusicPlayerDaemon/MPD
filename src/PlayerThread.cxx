@@ -912,8 +912,6 @@ player::SongBorder()
 inline void
 player::Run()
 {
-	pc.Unlock();
-
 	pipe = new MusicPipe();
 
 	StartDecoder(*pipe);
@@ -923,8 +921,6 @@ player::Run()
 		StopDecoder();
 		player_command_finished(pc);
 		delete pipe;
-		GlobalEvents::Emit(GlobalEvents::PLAYLIST);
-		pc.Lock();
 		return;
 	}
 
@@ -1095,10 +1091,6 @@ player::Run()
 	pc.state = PLAYER_STATE_STOP;
 
 	pc.Unlock();
-
-	GlobalEvents::Emit(GlobalEvents::PLAYLIST);
-
-	pc.Lock();
 }
 
 static void
@@ -1127,7 +1119,10 @@ player_task(gpointer arg)
 		case PLAYER_COMMAND_QUEUE:
 			assert(pc.next_song != NULL);
 
+			pc.Unlock();
 			do_play(pc, dc, buffer);
+			GlobalEvents::Emit(GlobalEvents::PLAYLIST);
+			pc.Lock();
 			break;
 
 		case PLAYER_COMMAND_STOP:
