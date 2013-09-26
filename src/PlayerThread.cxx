@@ -1107,8 +1107,8 @@ player_task(gpointer arg)
 {
 	struct player_control *pc = (struct player_control *)arg;
 
-	struct decoder_control *dc = new decoder_control();
-	decoder_thread_start(dc);
+	decoder_control dc;
+	decoder_thread_start(&dc);
 
 	MusicBuffer buffer(pc->buffer_chunks);
 
@@ -1120,7 +1120,7 @@ player_task(gpointer arg)
 		case PLAYER_COMMAND_QUEUE:
 			assert(pc->next_song != NULL);
 
-			do_play(pc, dc, buffer);
+			do_play(pc, &dc, buffer);
 			break;
 
 		case PLAYER_COMMAND_STOP:
@@ -1161,8 +1161,8 @@ player_task(gpointer arg)
 		case PLAYER_COMMAND_EXIT:
 			pc->Unlock();
 
-			dc->Quit();
-			delete dc;
+			dc.Quit();
+
 			audio_output_all_close();
 
 			player_command_finished(pc);
