@@ -142,8 +142,8 @@ ShoutOutput::Configure(const config_param &param, Error &error)
 		if (*test != '\0' || quality < -1.0 || quality > 10.0) {
 			error.Format(config_domain,
 				     "shout quality \"%s\" is not a number in the "
-				     "range -1 to 10, line %i",
-				     value, param.line);
+				     "range -1 to 10",
+				     value);
 			return false;
 		}
 

@@ -290,16 +290,15 @@ mpd_jack_test_default_device(void)
 }
 
 static unsigned
-parse_port_list(int line, const char *source, char **dest, Error &error)
+parse_port_list(const char *source, char **dest, Error &error)
 {
 	char **list = g_strsplit(source, ",", 0);
 	unsigned n = 0;
 
 	for (n = 0; list[n] != nullptr; ++n) {
 		if (n >= MAX_PORTS) {
-			error.Format(config_domain,
-				     "too many port names in line %d",
-				     line);
+			error.Set(config_domain,
+				  "too many port names");
 			return 0;
 		}
 
@@ -310,8 +309,7 @@ parse_port_list(int line, const char *source, char **dest, Error &error)
 
 	if (n == 0) {
 		error.Format(config_domain,
-			     "at least one port name expected in line %d",
-			     line);
+			     "at least one port name expected");
 		return 0;
 	}
 
@@ -350,7 +348,7 @@ mpd_jack_init(const config_param &param, Error &error)
 	/* configure the source ports */
 
 	value = param.GetBlockValue("source_ports", "left,right");
-	jd->num_source_ports = parse_port_list(param.line, value,
+	jd->num_source_ports = parse_port_list(value,
 					       jd->source_ports, error);
 	if (jd->num_source_ports == 0)
 		return nullptr;
@@ -368,7 +366,7 @@ mpd_jack_init(const config_param &param, Error &error)
 
 	if (value != nullptr) {
 		jd->num_destination_ports =
-			parse_port_list(param.line, value,
+			parse_port_list(value,
 					jd->destination_ports, error);
 		if (jd->num_destination_ports == 0)
 			return nullptr;

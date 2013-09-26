@@ -73,16 +73,14 @@ TwolameEncoder::Configure(const config_param &param, Error &error)
 		if (*endptr != '\0' || quality < -1.0 || quality > 10.0) {
 			error.Format(config_domain,
 				     "quality \"%s\" is not a number in the "
-				     "range -1 to 10, line %i",
-				     value, param.line);
+				     "range -1 to 10",
+				     value);
 			return false;
 		}
 
 		if (param.GetBlockValue("bitrate") != nullptr) {
-			error.Format(config_domain,
-				     "quality and bitrate are "
-				     "both defined (line %i)",
-				     param.line);
+			error.Set(config_domain,
+				  "quality and bitrate are both defined");
 			return false;
 		}
 	} else {
@@ -90,10 +88,8 @@ TwolameEncoder::Configure(const config_param &param, Error &error)
 
 		value = param.GetBlockValue("bitrate");
 		if (value == nullptr) {
-			error.Format(config_domain,
-				     "neither bitrate nor quality defined "
-				     "at line %i",
-				     param.line);
+			error.Set(config_domain,
+				  "neither bitrate nor quality defined");
 			return false;
 		}
 
@@ -101,9 +97,8 @@ TwolameEncoder::Configure(const config_param &param, Error &error)
 		bitrate = g_ascii_strtoll(value, &endptr, 10);
 
 		if (*endptr != '\0' || bitrate <= 0) {
-			error.Format(config_domain,
-				     "bitrate at line %i should be a positive integer",
-				     param.line);
+			error.Set(config_domain,
+				  "bitrate should be a positive integer");
 			return false;
 		}
 	}
