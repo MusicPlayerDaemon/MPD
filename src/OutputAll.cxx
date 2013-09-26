@@ -45,9 +45,9 @@ static struct audio_output **audio_outputs;
 static unsigned int num_audio_outputs;
 
 /**
- * The #music_buffer object where consumed chunks are returned.
+ * The #MusicBuffer object where consumed chunks are returned.
  */
-static struct music_buffer *g_music_buffer;
+static MusicBuffer *g_music_buffer;
 
 /**
  * The #MusicPipe object which feeds all audio outputs.  It is filled
@@ -302,17 +302,16 @@ audio_output_all_play(struct music_chunk *chunk, Error &error)
 
 bool
 audio_output_all_open(const AudioFormat audio_format,
-		      struct music_buffer *buffer,
+		      MusicBuffer &buffer,
 		      Error &error)
 {
 	bool ret = false, enabled = false;
 	unsigned int i;
 
-	assert(buffer != NULL);
-	assert(g_music_buffer == NULL || g_music_buffer == buffer);
+	assert(g_music_buffer == NULL || g_music_buffer == &buffer);
 	assert((g_mp == NULL) == (g_music_buffer == NULL));
 
-	g_music_buffer = buffer;
+	g_music_buffer = &buffer;
 
 	/* the audio format must be the same as existing chunks in the
 	   pipe */
@@ -463,7 +462,7 @@ audio_output_all_check(void)
 					audio_outputs[i]->mutex.unlock();
 
 		/* return the chunk to the buffer */
-		music_buffer_return(g_music_buffer, shifted);
+		g_music_buffer->Return(shifted);
 	}
 
 	return 0;
@@ -522,7 +521,7 @@ audio_output_all_cancel(void)
 	/* clear the music pipe and return all chunks to the buffer */
 
 	if (g_mp != NULL)
-		g_mp->Clear(g_music_buffer);
+		g_mp->Clear(*g_music_buffer);
 
 	/* the audio outputs are now waiting for a signal, to
 	   synchronize the cleared music pipe */
@@ -545,7 +544,7 @@ audio_output_all_close(void)
 	if (g_mp != NULL) {
 		assert(g_music_buffer != NULL);
 
-		g_mp->Clear(g_music_buffer);
+		g_mp->Clear(*g_music_buffer);
 		delete g_mp;
 		g_mp = NULL;
 	}
@@ -568,7 +567,7 @@ audio_output_all_release(void)
 	if (g_mp != NULL) {
 		assert(g_music_buffer != NULL);
 
-		g_mp->Clear(g_music_buffer);
+		g_mp->Clear(*g_music_buffer);
 		delete g_mp;
 		g_mp = NULL;
 	}

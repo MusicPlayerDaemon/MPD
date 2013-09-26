@@ -73,12 +73,12 @@ MusicPipe::Shift()
 }
 
 void
-MusicPipe::Clear(music_buffer *buffer)
+MusicPipe::Clear(MusicBuffer &buffer)
 {
 	music_chunk *chunk;
 
 	while ((chunk = Shift()) != nullptr)
-		music_buffer_return(buffer, chunk);
+		buffer.Return(chunk);
 }
 
 void

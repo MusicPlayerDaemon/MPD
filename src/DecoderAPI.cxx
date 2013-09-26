@@ -178,11 +178,11 @@ decoder_command_finished(struct decoder *decoder)
 		/* delete frames from the old song position */
 
 		if (decoder->chunk != NULL) {
-			music_buffer_return(dc->buffer, decoder->chunk);
+			dc->buffer->Return(decoder->chunk);
 			decoder->chunk = NULL;
 		}
 
-		dc->pipe->Clear(dc->buffer);
+		dc->pipe->Clear(*dc->buffer);
 
 		decoder->timestamp = dc->seek_where;
 	}

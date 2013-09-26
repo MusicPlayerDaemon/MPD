@@ -30,7 +30,7 @@
 #include <assert.h>
 
 struct music_chunk;
-struct music_buffer;
+class MusicBuffer;
 
 /**
  * A queue of #music_chunk objects.  One party appends chunks at the
@@ -109,7 +109,7 @@ public:
 	 *
 	 * @param buffer the buffer object to return the chunks to
 	 */
-	void Clear(music_buffer *buffer);
+	void Clear(MusicBuffer &buffer);
 
 	/**
 	 * Pushes a chunk to the tail of the pipe.

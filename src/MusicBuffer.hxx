@@ -20,48 +20,53 @@
 #ifndef MPD_MUSIC_BUFFER_HXX
 #define MPD_MUSIC_BUFFER_HXX
 
+#include "util/SliceBuffer.hxx"
+#include "thread/Mutex.hxx"
+
+struct music_chunk;
+
 /**
  * An allocator for #music_chunk objects.
  */
-struct music_buffer;
+class MusicBuffer {
+	/** a mutex which protects #buffer */
+	Mutex mutex;
 
-/**
- * Creates a new #music_buffer object.
- *
- * @param num_chunks the number of #music_chunk reserved in this
- * buffer
- */
-struct music_buffer *
-music_buffer_new(unsigned num_chunks);
+	SliceBuffer<music_chunk> buffer;
 
-/**
- * Frees the #music_buffer object
- */
-void
-music_buffer_free(struct music_buffer *buffer);
+public:
+	/**
+	 * Creates a new #MusicBuffer object.
+	 *
+	 * @param num_chunks the number of #music_chunk reserved in
+	 * this buffer
+	 */
+	MusicBuffer(unsigned num_chunks);
 
-/**
- * Returns the total number of reserved chunks in this buffer.  This
- * is the same value which was passed to the constructor
- * music_buffer_new().
- */
-unsigned
-music_buffer_size(const struct music_buffer *buffer);
+	/**
+	 * Returns the total number of reserved chunks in this buffer.  This
+	 * is the same value which was passed to the constructor
+	 * music_buffer_new().
+	 */
+	gcc_pure
+	unsigned GetSize() const {
+		return buffer.GetCapacity();
+	}
 
-/**
- * Allocates a chunk from the buffer.  When it is not used anymore,
- * call music_buffer_return().
- *
- * @return an empty chunk or NULL if there are no chunks available
- */
-struct music_chunk *
-music_buffer_allocate(struct music_buffer *buffer);
+	/**
+	 * Allocates a chunk from the buffer.  When it is not used anymore,
+	 * call Return().
+	 *
+	 * @return an empty chunk or nullptr if there are no chunks
+	 * available
+	 */
+	music_chunk *Allocate();
 
-/**
- * Returns a chunk to the buffer.  It can be reused by
- * music_buffer_allocate() then.
- */
-void
-music_buffer_return(struct music_buffer *buffer, struct music_chunk *chunk);
+	/**
+	 * Returns a chunk to the buffer.  It can be reused by
+	 * Allocate() then.
+	 */
+	void Return(music_chunk *chunk);
+};
 
 #endif

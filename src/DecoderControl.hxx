@@ -31,6 +31,7 @@
 #include <assert.h>
 
 struct Song;
+class MusicBuffer;
 class MusicPipe;
 
 enum decoder_state {
@@ -122,7 +123,7 @@ struct decoder_control {
 	float total_time;
 
 	/** the #music_chunk allocator */
-	struct music_buffer *buffer;
+	MusicBuffer *buffer;
 
 	/**
 	 * The destination pipe for decoded chunks.  The caller thread
@@ -288,7 +289,7 @@ struct decoder_control {
 	 * the caller)
 	 */
 	void Start(Song *song, unsigned start_ms, unsigned end_ms,
-		   music_buffer *buffer, MusicPipe &pipe);
+		   MusicBuffer &buffer, MusicPipe &pipe);
 
 	void Stop();
 

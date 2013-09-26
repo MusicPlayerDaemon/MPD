@@ -70,7 +70,7 @@ decoder_get_chunk(struct decoder *decoder)
 		return decoder->chunk;
 
 	do {
-		decoder->chunk = music_buffer_allocate(dc->buffer);
+		decoder->chunk = dc->buffer->Allocate();
 		if (decoder->chunk != NULL) {
 			decoder->chunk->replay_gain_serial =
 				decoder->replay_gain_serial;
@@ -98,7 +98,7 @@ decoder_flush_chunk(struct decoder *decoder)
 	assert(decoder->chunk != NULL);
 
 	if (decoder->chunk->IsEmpty())
-		music_buffer_return(dc->buffer, decoder->chunk);
+		dc->buffer->Return(decoder->chunk);
 	else
 		dc->pipe->Push(decoder->chunk);
 

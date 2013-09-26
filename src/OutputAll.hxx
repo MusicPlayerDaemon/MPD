@@ -29,7 +29,7 @@
 #include "replay_gain_info.h"
 
 struct AudioFormat;
-struct music_buffer;
+class MusicBuffer;
 struct music_chunk;
 struct player_control;
 class Error;
@@ -83,7 +83,7 @@ audio_output_all_enable_disable(void);
  */
 bool
 audio_output_all_open(AudioFormat audio_format,
-		      struct music_buffer *buffer,
+		      MusicBuffer &buffer,
 		      Error &error);
 
 /**

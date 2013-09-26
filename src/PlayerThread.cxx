@@ -141,7 +141,7 @@ struct player {
 		 elapsed_time(0.0) {}
 };
 
-static struct music_buffer *player_buffer;
+static MusicBuffer *player_buffer;
 
 static void
 player_command_finished_locked(struct player_control *pc)
@@ -180,7 +180,7 @@ player_dc_start(struct player *player, MusicPipe &pipe)
 
 	dc->Start(pc->next_song->DupDetached(),
 		  start_ms, pc->next_song->end_ms,
-		  player_buffer, pipe);
+		  *player_buffer, pipe);
 }
 
 /**
@@ -224,7 +224,7 @@ player_dc_stop(struct player *player)
 	if (dc->pipe != NULL) {
 		/* clear and free the decoder pipe */
 
-		dc->pipe->Clear(player_buffer);
+		dc->pipe->Clear(*player_buffer);
 
 		if (dc->pipe != player->pipe)
 			delete dc->pipe;
@@ -328,7 +328,7 @@ player_open_output(struct player *player)
 	       pc->state == PLAYER_STATE_PAUSE);
 
 	Error error;
-	if (audio_output_all_open(player->play_audio_format, player_buffer,
+	if (audio_output_all_open(player->play_audio_format, *player_buffer,
 				  error)) {
 		player->output_open = true;
 		player->paused = false;
@@ -441,7 +441,7 @@ player_send_silence(struct player *player)
 	assert(player->output_open);
 	assert(player->play_audio_format.IsDefined());
 
-	struct music_chunk *chunk = music_buffer_allocate(player_buffer);
+	struct music_chunk *chunk = player_buffer->Allocate();
 	if (chunk == NULL) {
 		g_warning("Failed to allocate silence buffer");
 		return false;
@@ -463,7 +463,7 @@ player_send_silence(struct player *player)
 	Error error;
 	if (!audio_output_all_play(chunk, error)) {
 		g_warning("%s", error.GetMessage());
-		music_buffer_return(player_buffer, chunk);
+		player_buffer->Return(chunk);
 		return false;
 	}
 
@@ -493,7 +493,7 @@ static bool player_seek_decoder(struct player *player)
 
 		/* clear music chunks which might still reside in the
 		   pipe */
-		player->pipe->Clear(player_buffer);
+		player->pipe->Clear(*player_buffer);
 
 		/* re-start the decoder */
 		player_dc_start(player, *player->pipe);
@@ -506,7 +506,7 @@ static bool player_seek_decoder(struct player *player)
 		if (!player_dc_at_current_song(player)) {
 			/* the decoder is already decoding the "next" song,
 			   but it is the same song file; exchange the pipe */
-			player->pipe->Clear(player_buffer);
+			player->pipe->Clear(*player_buffer);
 			delete player->pipe;
 			player->pipe = dc->pipe;
 		}
@@ -695,7 +695,7 @@ play_chunk(struct player_control *pc,
 		update_song_tag(song, *chunk->tag);
 
 	if (chunk->length == 0) {
-		music_buffer_return(player_buffer, chunk);
+		player_buffer->Return(chunk);
 		return true;
 	}
 
@@ -776,8 +776,7 @@ play_next_chunk(struct player *player)
 				   beginning of the new song, we can
 				   easily recover by throwing it away
 				   now */
-				music_buffer_return(player_buffer,
-						    other_chunk);
+				player_buffer->Return(other_chunk);
 				other_chunk = NULL;
 			}
 
@@ -824,7 +823,7 @@ play_next_chunk(struct player *player)
 			player->play_audio_format, error)) {
 		g_warning("%s", error.GetMessage());
 
-		music_buffer_return(player_buffer, chunk);
+		player_buffer->Return(chunk);
 
 		pc->Lock();
 
@@ -848,7 +847,7 @@ play_next_chunk(struct player *player)
 	dc->Lock();
 	if (!dc->IsIdle() &&
 	    dc->pipe->GetSize() <= (pc->buffered_before_play +
-				    music_buffer_size(player_buffer) * 3) / 4)
+				    player_buffer->GetSize() * 3) / 4)
 		dc->Signal();
 	dc->Unlock();
 
@@ -1017,7 +1016,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 						dc->mixramp_prev_end,
 						dc->out_audio_format,
 						player.play_audio_format,
-						music_buffer_size(player_buffer) -
+						player_buffer->GetSize() -
 						pc->buffered_before_play);
 			if (player.cross_fade_chunks > 0) {
 				player.xfade = XFADE_ENABLED;
@@ -1074,7 +1073,7 @@ static void do_play(struct player_control *pc, struct decoder_control *dc)
 
 	player_dc_stop(&player);
 
-	player.pipe->Clear(player_buffer);
+	player.pipe->Clear(*player_buffer);
 	delete player.pipe;
 
 	delete player.cross_fade_tag;
@@ -1107,7 +1106,7 @@ player_task(gpointer arg)
 	struct decoder_control *dc = new decoder_control();
 	decoder_thread_start(dc);
 
-	player_buffer = music_buffer_new(pc->buffer_chunks);
+	player_buffer = new MusicBuffer(pc->buffer_chunks);
 
 	pc->Lock();
 
@@ -1148,8 +1147,8 @@ player_task(gpointer arg)
 			/* in the DEBUG build, check for leaked
 			   music_chunk objects by freeing the
 			   music_buffer */
-			music_buffer_free(player_buffer);
-			player_buffer = music_buffer_new(pc->buffer_chunks);
+			delete player_buffer;
+			player_buffer = new MusicBuffer(pc->buffer_chunks);
 #endif
 
 			break;
@@ -1167,7 +1166,7 @@ player_task(gpointer arg)
 			dc->Quit();
 			delete dc;
 			audio_output_all_close();
-			music_buffer_free(player_buffer);
+			delete player_buffer;
 
 			player_command_finished(pc);
 			return NULL;

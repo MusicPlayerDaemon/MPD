@@ -20,60 +20,34 @@
 #include "config.h"
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
-#include "thread/Mutex.hxx"
-#include "util/SliceBuffer.hxx"
 #include "system/FatalError.hxx"
 
 #include <assert.h>
 
-struct music_buffer : public SliceBuffer<music_chunk>  {
-	/** a mutex which protects #available */
-	Mutex mutex;
+MusicBuffer::MusicBuffer(unsigned num_chunks)
+	:buffer(num_chunks) {
+	if (buffer.IsOOM())
+		FatalError("Failed to allocate buffer");
+}
 
-	music_buffer(unsigned num_chunks)
-		:SliceBuffer(num_chunks) {
-		if (IsOOM())
-			FatalError("Failed to allocate buffer");
-	}
-};
-
-struct music_buffer *
-music_buffer_new(unsigned num_chunks)
+music_chunk *
+MusicBuffer::Allocate()
 {
-	return new music_buffer(num_chunks);
+	const ScopeLock protect(mutex);
+	return buffer.Allocate();
 }
 
 void
-music_buffer_free(struct music_buffer *buffer)
+MusicBuffer::Return(music_chunk *chunk)
 {
-	delete buffer;
-}
+	assert(chunk != nullptr);
 
-unsigned
-music_buffer_size(const struct music_buffer *buffer)
-{
-	return buffer->GetCapacity();
-}
-
-struct music_chunk *
-music_buffer_allocate(struct music_buffer *buffer)
-{
-	const ScopeLock protect(buffer->mutex);
-	return buffer->Allocate();
-}
-
-void
-music_buffer_return(struct music_buffer *buffer, struct music_chunk *chunk)
-{
-	assert(buffer != NULL);
-	assert(chunk != NULL);
-
-	const ScopeLock protect(buffer->mutex);
+	const ScopeLock protect(mutex);
 
 	if (chunk->other != nullptr) {
 		assert(chunk->other->other == nullptr);
-		buffer->Free(chunk->other);
+		buffer.Free(chunk->other);
 	}
 
-	buffer->Free(chunk);
+	buffer.Free(chunk);
 }
