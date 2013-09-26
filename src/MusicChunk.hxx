@@ -29,9 +29,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-enum {
-	CHUNK_SIZE = 4096,
-};
+static constexpr size_t CHUNK_SIZE = 4096;
 
 struct AudioFormat;
 struct Tag;
