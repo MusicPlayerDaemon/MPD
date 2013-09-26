@@ -40,6 +40,6 @@
 struct player_control;
 
 void
-player_create(struct player_control *pc);
+player_create(player_control &pc);
 
 #endif

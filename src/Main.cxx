@@ -462,7 +462,7 @@ int mpd_main(int argc, char *argv[])
 
 	ZeroconfInit(*main_loop);
 
-	player_create(&instance->partition->pc);
+	player_create(instance->partition->pc);
 
 	if (create_db) {
 		/* the database failed to load: recreate the

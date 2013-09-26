@@ -50,9 +50,9 @@ enum xfade_state {
 };
 
 struct player {
-	struct player_control *pc;
+	player_control &pc;
 
-	struct decoder_control *dc;
+	decoder_control &dc;
 
 	MusicBuffer &buffer;
 
@@ -128,7 +128,7 @@ struct player {
 	 */
 	float elapsed_time;
 
-	player(player_control *_pc, decoder_control *_dc,
+	player(player_control &_pc, decoder_control &_dc,
 	       MusicBuffer &_buffer)
 		:pc(_pc), dc(_dc), buffer(_buffer),
 		 buffering(false),
@@ -145,20 +145,20 @@ struct player {
 };
 
 static void
-player_command_finished_locked(struct player_control *pc)
+player_command_finished_locked(player_control &pc)
 {
-	assert(pc->command != PLAYER_COMMAND_NONE);
+	assert(pc.command != PLAYER_COMMAND_NONE);
 
-	pc->command = PLAYER_COMMAND_NONE;
-	pc->ClientSignal();
+	pc.command = PLAYER_COMMAND_NONE;
+	pc.ClientSignal();
 }
 
 static void
-player_command_finished(struct player_control *pc)
+player_command_finished(player_control &pc)
 {
-	pc->Lock();
+	pc.Lock();
 	player_command_finished_locked(pc);
-	pc->Unlock();
+	pc.Unlock();
 }
 
 /**
@@ -169,19 +169,19 @@ player_command_finished(struct player_control *pc)
 static void
 player_dc_start(struct player *player, MusicPipe &pipe)
 {
-	struct player_control *pc = player->pc;
-	struct decoder_control *dc = player->dc;
+	player_control &pc = player->pc;
+	decoder_control &dc = player->dc;
 
-	assert(player->queued || pc->command == PLAYER_COMMAND_SEEK);
-	assert(pc->next_song != NULL);
+	assert(player->queued || pc.command == PLAYER_COMMAND_SEEK);
+	assert(pc.next_song != NULL);
 
-	unsigned start_ms = pc->next_song->start_ms;
-	if (pc->command == PLAYER_COMMAND_SEEK)
-		start_ms += (unsigned)(pc->seek_where * 1000);
+	unsigned start_ms = pc.next_song->start_ms;
+	if (pc.command == PLAYER_COMMAND_SEEK)
+		start_ms += (unsigned)(pc.seek_where * 1000);
 
-	dc->Start(pc->next_song->DupDetached(),
-		  start_ms, pc->next_song->end_ms,
-		  player->buffer, pipe);
+	dc.Start(pc.next_song->DupDetached(),
+		 start_ms, pc.next_song->end_ms,
+		 player->buffer, pipe);
 }
 
 /**
@@ -196,7 +196,7 @@ player_dc_at_current_song(const struct player *player)
 	assert(player != NULL);
 	assert(player->pipe != NULL);
 
-	return player->dc->pipe == player->pipe;
+	return player->dc.pipe == player->pipe;
 }
 
 /**
@@ -207,7 +207,7 @@ player_dc_at_current_song(const struct player *player)
 static bool
 player_dc_at_next_song(const struct player *player)
 {
-	return player->dc->pipe != NULL && !player_dc_at_current_song(player);
+	return player->dc.pipe != NULL && !player_dc_at_current_song(player);
 }
 
 /**
@@ -218,19 +218,19 @@ player_dc_at_next_song(const struct player *player)
 static void
 player_dc_stop(struct player *player)
 {
-	struct decoder_control *dc = player->dc;
+	decoder_control &dc = player->dc;
 
-	dc->Stop();
+	dc.Stop();
 
-	if (dc->pipe != NULL) {
+	if (dc.pipe != NULL) {
 		/* clear and free the decoder pipe */
 
-		dc->pipe->Clear(player->buffer);
+		dc.pipe->Clear(player->buffer);
 
-		if (dc->pipe != player->pipe)
-			delete dc->pipe;
+		if (dc.pipe != player->pipe)
+			delete dc.pipe;
 
-		dc->pipe = NULL;
+		dc.pipe = NULL;
 	}
 }
 
@@ -244,23 +244,23 @@ player_dc_stop(struct player *player)
 static bool
 player_wait_for_decoder(struct player *player)
 {
-	struct player_control *pc = player->pc;
-	struct decoder_control *dc = player->dc;
+	player_control &pc = player->pc;
+	decoder_control &dc = player->dc;
 
-	assert(player->queued || pc->command == PLAYER_COMMAND_SEEK);
-	assert(pc->next_song != NULL);
+	assert(player->queued || pc.command == PLAYER_COMMAND_SEEK);
+	assert(pc.next_song != NULL);
 
 	player->queued = false;
 
-	Error error = dc->LockGetError();
+	Error error = dc.LockGetError();
 	if (error.IsDefined()) {
-		pc->Lock();
-		pc->SetError(PLAYER_ERROR_DECODER, std::move(error));
+		pc.Lock();
+		pc.SetError(PLAYER_ERROR_DECODER, std::move(error));
 
-		pc->next_song->Free();
-		pc->next_song = NULL;
+		pc.next_song->Free();
+		pc.next_song = NULL;
 
-		pc->Unlock();
+		pc.Unlock();
 
 		return false;
 	}
@@ -268,24 +268,24 @@ player_wait_for_decoder(struct player *player)
 	if (player->song != NULL)
 		player->song->Free();
 
-	player->song = pc->next_song;
+	player->song = pc.next_song;
 	player->elapsed_time = 0.0;
 
 	/* set the "starting" flag, which will be cleared by
 	   player_check_decoder_startup() */
 	player->decoder_starting = true;
 
-	pc->Lock();
+	pc.Lock();
 
 	/* update player_control's song information */
-	pc->total_time = pc->next_song->GetDuration();
-	pc->bit_rate = 0;
-	pc->audio_format.Clear();
+	pc.total_time = pc.next_song->GetDuration();
+	pc.bit_rate = 0;
+	pc.audio_format.Clear();
 
 	/* clear the queued song */
-	pc->next_song = NULL;
+	pc.next_song = NULL;
 
-	pc->Unlock();
+	pc.Unlock();
 
 	/* call syncPlaylistWithQueue() in the main thread */
 	GlobalEvents::Emit(GlobalEvents::PLAYLIST);
@@ -322,11 +322,11 @@ real_song_duration(const Song *song, double decoder_duration)
 static bool
 player_open_output(struct player *player)
 {
-	struct player_control *pc = player->pc;
+	player_control &pc = player->pc;
 
 	assert(player->play_audio_format.IsDefined());
-	assert(pc->state == PLAYER_STATE_PLAY ||
-	       pc->state == PLAYER_STATE_PAUSE);
+	assert(pc.state == PLAYER_STATE_PLAY ||
+	       pc.state == PLAYER_STATE_PAUSE);
 
 	Error error;
 	if (audio_output_all_open(player->play_audio_format, player->buffer,
@@ -334,9 +334,9 @@ player_open_output(struct player *player)
 		player->output_open = true;
 		player->paused = false;
 
-		pc->Lock();
-		pc->state = PLAYER_STATE_PLAY;
-		pc->Unlock();
+		pc.Lock();
+		pc.state = PLAYER_STATE_PLAY;
+		pc.Unlock();
 
 		idle_add(IDLE_PLAYER);
 
@@ -350,10 +350,10 @@ player_open_output(struct player *player)
 		   audio output becomes available */
 		player->paused = true;
 
-		pc->Lock();
-		pc->SetError(PLAYER_ERROR_OUTPUT, std::move(error));
-		pc->state = PLAYER_STATE_PAUSE;
-		pc->Unlock();
+		pc.Lock();
+		pc.SetError(PLAYER_ERROR_OUTPUT, std::move(error));
+		pc.state = PLAYER_STATE_PAUSE;
+		pc.Unlock();
 
 		idle_add(IDLE_PLAYER);
 
@@ -371,46 +371,46 @@ player_open_output(struct player *player)
 static bool
 player_check_decoder_startup(struct player *player)
 {
-	struct player_control *pc = player->pc;
-	struct decoder_control *dc = player->dc;
+	player_control &pc = player->pc;
+	decoder_control &dc = player->dc;
 
 	assert(player->decoder_starting);
 
-	dc->Lock();
+	dc.Lock();
 
-	Error error = dc->GetError();
+	Error error = dc.GetError();
 	if (error.IsDefined()) {
 		/* the decoder failed */
-		dc->Unlock();
+		dc.Unlock();
 
-		pc->Lock();
-		pc->SetError(PLAYER_ERROR_DECODER, std::move(error));
-		pc->Unlock();
+		pc.Lock();
+		pc.SetError(PLAYER_ERROR_DECODER, std::move(error));
+		pc.Unlock();
 
 		return false;
-	} else if (!dc->IsStarting()) {
+	} else if (!dc.IsStarting()) {
 		/* the decoder is ready and ok */
 
-		dc->Unlock();
+		dc.Unlock();
 
 		if (player->output_open &&
-		    !audio_output_all_wait(pc, 1))
+		    !audio_output_all_wait(&pc, 1))
 			/* the output devices havn't finished playing
 			   all chunks yet - wait for that */
 			return true;
 
-		pc->Lock();
-		pc->total_time = real_song_duration(dc->song, dc->total_time);
-		pc->audio_format = dc->in_audio_format;
-		pc->Unlock();
+		pc.Lock();
+		pc.total_time = real_song_duration(dc.song, dc.total_time);
+		pc.audio_format = dc.in_audio_format;
+		pc.Unlock();
 
 		idle_add(IDLE_PLAYER);
 
-		player->play_audio_format = dc->out_audio_format;
+		player->play_audio_format = dc.out_audio_format;
 		player->decoder_starting = false;
 
 		if (!player->paused && !player_open_output(player)) {
-			char *uri = dc->song->GetURI();
+			char *uri = dc.song->GetURI();
 			g_warning("problems opening audio device "
 				  "while playing \"%s\"", uri);
 			g_free(uri);
@@ -422,8 +422,8 @@ player_check_decoder_startup(struct player *player)
 	} else {
 		/* the decoder is not yet ready; wait
 		   some more */
-		dc->WaitForDecoder();
-		dc->Unlock();
+		dc.WaitForDecoder();
+		dc.Unlock();
 
 		return true;
 	}
@@ -478,15 +478,15 @@ player_send_silence(struct player *player)
  */
 static bool player_seek_decoder(struct player *player)
 {
-	struct player_control *pc = player->pc;
-	Song *song = pc->next_song;
-	struct decoder_control *dc = player->dc;
+	player_control &pc = player->pc;
+	Song *song = pc.next_song;
+	decoder_control &dc = player->dc;
 
-	assert(pc->next_song != NULL);
+	assert(pc.next_song != NULL);
 
 	const unsigned start_ms = song->start_ms;
 
-	if (!dc->LockIsCurrentSong(song)) {
+	if (!dc.LockIsCurrentSong(song)) {
 		/* the decoder is already decoding the "next" song -
 		   stop it and start the previous song again */
 
@@ -509,11 +509,11 @@ static bool player_seek_decoder(struct player *player)
 			   but it is the same song file; exchange the pipe */
 			player->pipe->Clear(player->buffer);
 			delete player->pipe;
-			player->pipe = dc->pipe;
+			player->pipe = dc.pipe;
 		}
 
-		pc->next_song->Free();
-		pc->next_song = NULL;
+		pc.next_song->Free();
+		pc.next_song = NULL;
 		player->queued = false;
 	}
 
@@ -529,13 +529,13 @@ static bool player_seek_decoder(struct player *player)
 
 	/* send the SEEK command */
 
-	double where = pc->seek_where;
-	if (where > pc->total_time)
-		where = pc->total_time - 0.1;
+	double where = pc.seek_where;
+	if (where > pc.total_time)
+		where = pc.total_time - 0.1;
 	if (where < 0.0)
 		where = 0.0;
 
-	if (!dc->Seek(where + start_ms / 1000.0)) {
+	if (!dc.Seek(where + start_ms / 1000.0)) {
 		/* decoder failure */
 		player_command_finished(pc);
 		return false;
@@ -560,10 +560,10 @@ static bool player_seek_decoder(struct player *player)
  */
 static void player_process_command(struct player *player)
 {
-	struct player_control *pc = player->pc;
-	gcc_unused struct decoder_control *dc = player->dc;
+	player_control &pc = player->pc;
+	gcc_unused decoder_control &dc = player->dc;
 
-	switch (pc->command) {
+	switch (pc.command) {
 	case PLAYER_COMMAND_NONE:
 	case PLAYER_COMMAND_STOP:
 	case PLAYER_COMMAND_EXIT:
@@ -571,14 +571,14 @@ static void player_process_command(struct player *player)
 		break;
 
 	case PLAYER_COMMAND_UPDATE_AUDIO:
-		pc->Unlock();
+		pc.Unlock();
 		audio_output_all_enable_disable();
-		pc->Lock();
+		pc.Lock();
 		player_command_finished_locked(pc);
 		break;
 
 	case PLAYER_COMMAND_QUEUE:
-		assert(pc->next_song != NULL);
+		assert(pc.next_song != NULL);
 		assert(!player->queued);
 		assert(!player_dc_at_next_song(player));
 
@@ -587,68 +587,68 @@ static void player_process_command(struct player *player)
 		break;
 
 	case PLAYER_COMMAND_PAUSE:
-		pc->Unlock();
+		pc.Unlock();
 
 		player->paused = !player->paused;
 		if (player->paused) {
 			audio_output_all_pause();
-			pc->Lock();
+			pc.Lock();
 
-			pc->state = PLAYER_STATE_PAUSE;
+			pc.state = PLAYER_STATE_PAUSE;
 		} else if (!player->play_audio_format.IsDefined()) {
 			/* the decoder hasn't provided an audio format
 			   yet - don't open the audio device yet */
-			pc->Lock();
+			pc.Lock();
 
-			pc->state = PLAYER_STATE_PLAY;
+			pc.state = PLAYER_STATE_PLAY;
 		} else {
 			player_open_output(player);
 
-			pc->Lock();
+			pc.Lock();
 		}
 
 		player_command_finished_locked(pc);
 		break;
 
 	case PLAYER_COMMAND_SEEK:
-		pc->Unlock();
+		pc.Unlock();
 		player_seek_decoder(player);
-		pc->Lock();
+		pc.Lock();
 		break;
 
 	case PLAYER_COMMAND_CANCEL:
-		if (pc->next_song == NULL) {
+		if (pc.next_song == NULL) {
 			/* the cancel request arrived too late, we're
 			   already playing the queued song...  stop
 			   everything now */
-			pc->command = PLAYER_COMMAND_STOP;
+			pc.command = PLAYER_COMMAND_STOP;
 			return;
 		}
 
 		if (player_dc_at_next_song(player)) {
 			/* the decoder is already decoding the song -
 			   stop it and reset the position */
-			pc->Unlock();
+			pc.Unlock();
 			player_dc_stop(player);
-			pc->Lock();
+			pc.Lock();
 		}
 
-		pc->next_song->Free();
-		pc->next_song = NULL;
+		pc.next_song->Free();
+		pc.next_song = NULL;
 		player->queued = false;
 		player_command_finished_locked(pc);
 		break;
 
 	case PLAYER_COMMAND_REFRESH:
 		if (player->output_open && !player->paused) {
-			pc->Unlock();
+			pc.Unlock();
 			audio_output_all_check();
-			pc->Lock();
+			pc.Lock();
 		}
 
-		pc->elapsed_time = audio_output_all_get_elapsed_time();
-		if (pc->elapsed_time < 0.0)
-			pc->elapsed_time = player->elapsed_time;
+		pc.elapsed_time = audio_output_all_get_elapsed_time();
+		if (pc.elapsed_time < 0.0)
+			pc.elapsed_time = player->elapsed_time;
 
 		player_command_finished_locked(pc);
 		break;
@@ -685,7 +685,7 @@ update_song_tag(Song *song, const Tag &new_tag)
  * Player lock is not held.
  */
 static bool
-play_chunk(struct player_control *pc,
+play_chunk(player_control &pc,
 	   Song *song, struct music_chunk *chunk,
 	   MusicBuffer &buffer,
 	   const AudioFormat format,
@@ -701,16 +701,16 @@ play_chunk(struct player_control *pc,
 		return true;
 	}
 
-	pc->Lock();
-	pc->bit_rate = chunk->bit_rate;
-	pc->Unlock();
+	pc.Lock();
+	pc.bit_rate = chunk->bit_rate;
+	pc.Unlock();
 
 	/* send the chunk to the audio outputs */
 
 	if (!audio_output_all_play(chunk, error))
 		return false;
 
-	pc->total_play_time += (double)chunk->length /
+	pc.total_play_time += (double)chunk->length /
 		format.GetTimeToSize();
 	return true;
 }
@@ -724,10 +724,10 @@ play_chunk(struct player_control *pc,
 static bool
 play_next_chunk(struct player *player)
 {
-	struct player_control *pc = player->pc;
-	struct decoder_control *dc = player->dc;
+	player_control &pc = player->pc;
+	decoder_control &dc = player->dc;
 
-	if (!audio_output_all_wait(pc, 64))
+	if (!audio_output_all_wait(&pc, 64))
 		/* the output pipe is still large enough, don't send
 		   another chunk */
 		return true;
@@ -739,7 +739,7 @@ play_next_chunk(struct player *player)
 	    (cross_fade_position = player->pipe->GetSize())
 	    <= player->cross_fade_chunks) {
 		/* perform cross fade */
-		music_chunk *other_chunk = dc->pipe->Shift();
+		music_chunk *other_chunk = dc.pipe->Shift();
 
 		if (!player->cross_fading) {
 			/* beginning of the cross fade - adjust
@@ -763,7 +763,7 @@ play_next_chunk(struct player *player)
 						  other_chunk->tag);
 			other_chunk->tag = NULL;
 
-			if (std::isnan(pc->mixramp_delay_seconds)) {
+			if (std::isnan(pc.mixramp_delay_seconds)) {
 				chunk->mix_ratio = ((float)cross_fade_position)
 					     / player->cross_fade_chunks;
 			} else {
@@ -786,19 +786,19 @@ play_next_chunk(struct player *player)
 		} else {
 			/* there are not enough decoded chunks yet */
 
-			dc->Lock();
+			dc.Lock();
 
-			if (dc->IsIdle()) {
+			if (dc.IsIdle()) {
 				/* the decoder isn't running, abort
 				   cross fading */
-				dc->Unlock();
+				dc.Unlock();
 
 				player->xfade = XFADE_DISABLED;
 			} else {
 				/* wait for the decoder */
-				dc->Signal();
-				dc->WaitForDecoder();
-				dc->Unlock();
+				dc.Signal();
+				dc.WaitForDecoder();
+				dc.Unlock();
 
 				return true;
 			}
@@ -827,16 +827,16 @@ play_next_chunk(struct player *player)
 
 		player->buffer.Return(chunk);
 
-		pc->Lock();
+		pc.Lock();
 
-		pc->SetError(PLAYER_ERROR_OUTPUT, std::move(error));
+		pc.SetError(PLAYER_ERROR_OUTPUT, std::move(error));
 
 		/* pause: the user may resume playback as soon as an
 		   audio output becomes available */
-		pc->state = PLAYER_STATE_PAUSE;
+		pc.state = PLAYER_STATE_PAUSE;
 		player->paused = true;
 
-		pc->Unlock();
+		pc.Unlock();
 
 		idle_add(IDLE_PLAYER);
 
@@ -846,12 +846,12 @@ play_next_chunk(struct player *player)
 	/* this formula should prevent that the decoder gets woken up
 	   with each chunk; it is more efficient to make it decode a
 	   larger block at a time */
-	dc->Lock();
-	if (!dc->IsIdle() &&
-	    dc->pipe->GetSize() <= (pc->buffered_before_play +
+	dc.Lock();
+	if (!dc.IsIdle() &&
+	    dc.pipe->GetSize() <= (pc.buffered_before_play +
 				    player->buffer.GetSize() * 3) / 4)
-		dc->Signal();
-	dc->Unlock();
+		dc.Signal();
+	dc.Unlock();
 
 	return true;
 }
@@ -875,23 +875,23 @@ player_song_border(struct player *player)
 	g_free(uri);
 
 	delete player->pipe;
-	player->pipe = player->dc->pipe;
+	player->pipe = player->dc.pipe;
 
 	audio_output_all_song_border();
 
 	if (!player_wait_for_decoder(player))
 		return false;
 
-	struct player_control *const pc = player->pc;
-	pc->Lock();
+	player_control &pc = player->pc;
+	pc.Lock();
 
-	const bool border_pause = pc->border_pause;
+	const bool border_pause = pc.border_pause;
 	if (border_pause) {
 		player->paused = true;
-		pc->state = PLAYER_STATE_PAUSE;
+		pc.state = PLAYER_STATE_PAUSE;
 	}
 
-	pc->Unlock();
+	pc.Unlock();
 
 	if (border_pause)
 		idle_add(IDLE_PLAYER);
@@ -905,12 +905,12 @@ player_song_border(struct player *player)
  * decoder thread and the output threads.
  */
 static void
-do_play(struct player_control *pc, struct decoder_control *dc,
+do_play(player_control &pc, decoder_control &dc,
 	MusicBuffer &buffer)
 {
 	player player(pc, dc, buffer);
 
-	pc->Unlock();
+	pc.Unlock();
 
 	player.pipe = new MusicPipe();
 
@@ -922,37 +922,37 @@ do_play(struct player_control *pc, struct decoder_control *dc,
 		player_command_finished(pc);
 		delete player.pipe;
 		GlobalEvents::Emit(GlobalEvents::PLAYLIST);
-		pc->Lock();
+		pc.Lock();
 		return;
 	}
 
-	pc->Lock();
-	pc->state = PLAYER_STATE_PLAY;
+	pc.Lock();
+	pc.state = PLAYER_STATE_PLAY;
 
-	if (pc->command == PLAYER_COMMAND_SEEK)
-		player.elapsed_time = pc->seek_where;
+	if (pc.command == PLAYER_COMMAND_SEEK)
+		player.elapsed_time = pc.seek_where;
 
 	player_command_finished_locked(pc);
 
 	while (true) {
 		player_process_command(&player);
-		if (pc->command == PLAYER_COMMAND_STOP ||
-		    pc->command == PLAYER_COMMAND_EXIT ||
-		    pc->command == PLAYER_COMMAND_CLOSE_AUDIO) {
-			pc->Unlock();
+		if (pc.command == PLAYER_COMMAND_STOP ||
+		    pc.command == PLAYER_COMMAND_EXIT ||
+		    pc.command == PLAYER_COMMAND_CLOSE_AUDIO) {
+			pc.Unlock();
 			audio_output_all_cancel();
 			break;
 		}
 
-		pc->Unlock();
+		pc.Unlock();
 
 		if (player.buffering) {
 			/* buffering at the start of the song - wait
 			   until the buffer is large enough, to
 			   prevent stuttering on slow machines */
 
-			if (player.pipe->GetSize() < pc->buffered_before_play &&
-			    !dc->LockIsIdle()) {
+			if (player.pipe->GetSize() < pc.buffered_before_play &&
+			    !dc.LockIsIdle()) {
 				/* not enough decoded buffer space yet */
 
 				if (!player.paused &&
@@ -961,11 +961,11 @@ do_play(struct player_control *pc, struct decoder_control *dc,
 				    !player_send_silence(&player))
 					break;
 
-				dc->Lock();
+				dc.Lock();
 				/* XXX race condition: check decoder again */
-				dc->WaitForDecoder();
-				dc->Unlock();
-				pc->Lock();
+				dc.WaitForDecoder();
+				dc.Unlock();
+				pc.Lock();
 				continue;
 			} else {
 				/* buffering is complete */
@@ -979,7 +979,7 @@ do_play(struct player_control *pc, struct decoder_control *dc,
 			if (!player_check_decoder_startup(&player))
 				break;
 
-			pc->Lock();
+			pc.Lock();
 			continue;
 		}
 
@@ -987,41 +987,41 @@ do_play(struct player_control *pc, struct decoder_control *dc,
 		/*
 		music_pipe_check_format(&play_audio_format,
 					player.next_song_chunk,
-					&dc->out_audio_format);
+					&dc.out_audio_format);
 		*/
 #endif
 
-		if (dc->LockIsIdle() && player.queued &&
-		    dc->pipe == player.pipe) {
+		if (dc.LockIsIdle() && player.queued &&
+		    dc.pipe == player.pipe) {
 			/* the decoder has finished the current song;
 			   make it decode the next song */
 
-			assert(dc->pipe == NULL || dc->pipe == player.pipe);
+			assert(dc.pipe == NULL || dc.pipe == player.pipe);
 
 			player_dc_start(&player, *new MusicPipe());
 		}
 
 		if (/* no cross-fading if MPD is going to pause at the
 		       end of the current song */
-		    !pc->border_pause &&
+		    !pc.border_pause &&
 		    player_dc_at_next_song(&player) &&
 		    player.xfade == XFADE_UNKNOWN &&
-		    !dc->LockIsStarting()) {
+		    !dc.LockIsStarting()) {
 			/* enable cross fading in this song?  if yes,
 			   calculate how many chunks will be required
 			   for it */
 			player.cross_fade_chunks =
-				cross_fade_calc(pc->cross_fade_seconds, dc->total_time,
-						pc->mixramp_db,
-						pc->mixramp_delay_seconds,
-						dc->replay_gain_db,
-						dc->replay_gain_prev_db,
-						dc->mixramp_start,
-						dc->mixramp_prev_end,
-						dc->out_audio_format,
+				cross_fade_calc(pc.cross_fade_seconds, dc.total_time,
+						pc.mixramp_db,
+						pc.mixramp_delay_seconds,
+						dc.replay_gain_db,
+						dc.replay_gain_prev_db,
+						dc.mixramp_start,
+						dc.mixramp_prev_end,
+						dc.out_audio_format,
 						player.play_audio_format,
 						player.buffer.GetSize() -
-						pc->buffered_before_play);
+						pc.buffered_before_play);
 			if (player.cross_fade_chunks > 0) {
 				player.xfade = XFADE_ENABLED;
 				player.cross_fading = false;
@@ -1032,10 +1032,10 @@ do_play(struct player_control *pc, struct decoder_control *dc,
 		}
 
 		if (player.paused) {
-			pc->Lock();
+			pc.Lock();
 
-			if (pc->command == PLAYER_COMMAND_NONE)
-				pc->Wait();
+			if (pc.command == PLAYER_COMMAND_NONE)
+				pc.Wait();
 			continue;
 		} else if (!player.pipe->IsEmpty()) {
 			/* at least one music chunk is ready - send it
@@ -1054,7 +1054,7 @@ do_play(struct player_control *pc, struct decoder_control *dc,
 
 			if (!player_song_border(&player))
 				break;
-		} else if (dc->LockIsIdle()) {
+		} else if (dc.LockIsIdle()) {
 			/* check the size of the pipe again, because
 			   the decoder thread may have added something
 			   since we last checked */
@@ -1072,7 +1072,7 @@ do_play(struct player_control *pc, struct decoder_control *dc,
 				break;
 		}
 
-		pc->Lock();
+		pc.Lock();
 	}
 
 	player_dc_stop(&player);
@@ -1085,66 +1085,66 @@ do_play(struct player_control *pc, struct decoder_control *dc,
 	if (player.song != NULL)
 		player.song->Free();
 
-	pc->Lock();
+	pc.Lock();
 
 	if (player.queued) {
-		assert(pc->next_song != NULL);
-		pc->next_song->Free();
-		pc->next_song = NULL;
+		assert(pc.next_song != NULL);
+		pc.next_song->Free();
+		pc.next_song = NULL;
 	}
 
-	pc->state = PLAYER_STATE_STOP;
+	pc.state = PLAYER_STATE_STOP;
 
-	pc->Unlock();
+	pc.Unlock();
 
 	GlobalEvents::Emit(GlobalEvents::PLAYLIST);
 
-	pc->Lock();
+	pc.Lock();
 }
 
 static gpointer
 player_task(gpointer arg)
 {
-	struct player_control *pc = (struct player_control *)arg;
+	player_control &pc = *(player_control *)arg;
 
 	decoder_control dc;
 	decoder_thread_start(&dc);
 
-	MusicBuffer buffer(pc->buffer_chunks);
+	MusicBuffer buffer(pc.buffer_chunks);
 
-	pc->Lock();
+	pc.Lock();
 
 	while (1) {
-		switch (pc->command) {
+		switch (pc.command) {
 		case PLAYER_COMMAND_SEEK:
 		case PLAYER_COMMAND_QUEUE:
-			assert(pc->next_song != NULL);
+			assert(pc.next_song != NULL);
 
-			do_play(pc, &dc, buffer);
+			do_play(pc, dc, buffer);
 			break;
 
 		case PLAYER_COMMAND_STOP:
-			pc->Unlock();
+			pc.Unlock();
 			audio_output_all_cancel();
-			pc->Lock();
+			pc.Lock();
 
 			/* fall through */
 
 		case PLAYER_COMMAND_PAUSE:
-			if (pc->next_song != NULL) {
-				pc->next_song->Free();
-				pc->next_song = NULL;
+			if (pc.next_song != NULL) {
+				pc.next_song->Free();
+				pc.next_song = NULL;
 			}
 
 			player_command_finished_locked(pc);
 			break;
 
 		case PLAYER_COMMAND_CLOSE_AUDIO:
-			pc->Unlock();
+			pc.Unlock();
 
 			audio_output_all_release();
 
-			pc->Lock();
+			pc.Lock();
 			player_command_finished_locked(pc);
 
 			assert(buffer.IsEmptyUnsafe());
@@ -1152,14 +1152,14 @@ player_task(gpointer arg)
 			break;
 
 		case PLAYER_COMMAND_UPDATE_AUDIO:
-			pc->Unlock();
+			pc.Unlock();
 			audio_output_all_enable_disable();
-			pc->Lock();
+			pc.Lock();
 			player_command_finished_locked(pc);
 			break;
 
 		case PLAYER_COMMAND_EXIT:
-			pc->Unlock();
+			pc.Unlock();
 
 			dc.Quit();
 
@@ -1169,9 +1169,9 @@ player_task(gpointer arg)
 			return NULL;
 
 		case PLAYER_COMMAND_CANCEL:
-			if (pc->next_song != NULL) {
-				pc->next_song->Free();
-				pc->next_song = NULL;
+			if (pc.next_song != NULL) {
+				pc.next_song->Free();
+				pc.next_song = NULL;
 			}
 
 			player_command_finished_locked(pc);
@@ -1183,23 +1183,23 @@ player_task(gpointer arg)
 			break;
 
 		case PLAYER_COMMAND_NONE:
-			pc->Wait();
+			pc.Wait();
 			break;
 		}
 	}
 }
 
 void
-player_create(struct player_control *pc)
+player_create(player_control &pc)
 {
-	assert(pc->thread == NULL);
+	assert(pc.thread == NULL);
 
 #if GLIB_CHECK_VERSION(2,32,0)
-	pc->thread = g_thread_new("player", player_task, pc);
+	pc.thread = g_thread_new("player", player_task, &pc);
 #else
 	GError *e = NULL;
-	pc->thread = g_thread_create(player_task, pc, true, &e);
-	if (pc->thread == NULL)
+	pc.thread = g_thread_create(player_task, &pc, true, &e);
+	if (pc.thread == NULL)
 		FatalError("Failed to spawn player task", e);
 #endif
 }
