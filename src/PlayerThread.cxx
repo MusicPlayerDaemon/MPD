@@ -136,11 +136,11 @@ struct player {
 		 paused(false),
 		 queued(true),
 		 output_open(false),
-		 song(NULL),
+		 song(nullptr),
 		 xfade(XFADE_UNKNOWN),
 		 cross_fading(false),
 		 cross_fade_chunks(0),
-		 cross_fade_tag(NULL),
+		 cross_fade_tag(nullptr),
 		 elapsed_time(0.0) {}
 
 	void ClearAndDeletePipe() {
@@ -291,7 +291,7 @@ void
 player::StartDecoder(MusicPipe &_pipe)
 {
 	assert(queued || pc.command == PLAYER_COMMAND_SEEK);
-	assert(pc.next_song != NULL);
+	assert(pc.next_song != nullptr);
 
 	unsigned start_ms = pc.next_song->start_ms;
 	if (pc.command == PLAYER_COMMAND_SEEK)
@@ -307,7 +307,7 @@ player::StopDecoder()
 {
 	dc.Stop();
 
-	if (dc.pipe != NULL) {
+	if (dc.pipe != nullptr) {
 		/* clear and free the decoder pipe */
 
 		dc.pipe->Clear(buffer);
@@ -315,7 +315,7 @@ player::StopDecoder()
 		if (dc.pipe != pipe)
 			delete dc.pipe;
 
-		dc.pipe = NULL;
+		dc.pipe = nullptr;
 	}
 }
 
@@ -323,7 +323,7 @@ bool
 player::WaitForDecoder()
 {
 	assert(queued || pc.command == PLAYER_COMMAND_SEEK);
-	assert(pc.next_song != NULL);
+	assert(pc.next_song != nullptr);
 
 	queued = false;
 
@@ -333,7 +333,7 @@ player::WaitForDecoder()
 		pc.SetError(PLAYER_ERROR_DECODER, std::move(error));
 
 		pc.next_song->Free();
-		pc.next_song = NULL;
+		pc.next_song = nullptr;
 
 		pc.Unlock();
 
@@ -358,7 +358,7 @@ player::WaitForDecoder()
 	pc.audio_format.Clear();
 
 	/* clear the queued song */
-	pc.next_song = NULL;
+	pc.next_song = nullptr;
 
 	pc.Unlock();
 
@@ -375,7 +375,7 @@ player::WaitForDecoder()
 static double
 real_song_duration(const Song *song, double decoder_duration)
 {
-	assert(song != NULL);
+	assert(song != nullptr);
 
 	if (decoder_duration <= 0.0)
 		/* the decoder plugin didn't provide information; fall
@@ -492,7 +492,7 @@ player::SendSilence()
 	assert(play_audio_format.IsDefined());
 
 	struct music_chunk *chunk = buffer.Allocate();
-	if (chunk == NULL) {
+	if (chunk == nullptr) {
 		g_warning("Failed to allocate silence buffer");
 		return false;
 	}
@@ -523,7 +523,7 @@ player::SendSilence()
 inline bool
 player::SeekDecoder()
 {
-	assert(pc.next_song != NULL);
+	assert(pc.next_song != nullptr);
 
 	const unsigned start_ms = pc.next_song->start_ms;
 
@@ -552,7 +552,7 @@ player::SeekDecoder()
 		}
 
 		pc.next_song->Free();
-		pc.next_song = NULL;
+		pc.next_song = nullptr;
 		queued = false;
 	}
 
@@ -612,7 +612,7 @@ player::ProcessCommand()
 		break;
 
 	case PLAYER_COMMAND_QUEUE:
-		assert(pc.next_song != NULL);
+		assert(pc.next_song != nullptr);
 		assert(!queued);
 		assert(!IsDecoderAtNextSong());
 
@@ -651,7 +651,7 @@ player::ProcessCommand()
 		break;
 
 	case PLAYER_COMMAND_CANCEL:
-		if (pc.next_song == NULL) {
+		if (pc.next_song == nullptr) {
 			/* the cancel request arrived too late, we're
 			   already playing the queued song...  stop
 			   everything now */
@@ -668,7 +668,7 @@ player::ProcessCommand()
 		}
 
 		pc.next_song->Free();
-		pc.next_song = NULL;
+		pc.next_song = nullptr;
 		queued = false;
 		player_command_finished_locked(pc);
 		break;
@@ -727,7 +727,7 @@ play_chunk(player_control &pc,
 {
 	assert(chunk->CheckFormat(format));
 
-	if (chunk->tag != NULL)
+	if (chunk->tag != nullptr)
 		update_song_tag(song, *chunk->tag);
 
 	if (chunk->length == 0) {
@@ -758,7 +758,7 @@ player::PlayNextChunk()
 		return true;
 
 	unsigned cross_fade_position;
-	struct music_chunk *chunk = NULL;
+	struct music_chunk *chunk = nullptr;
 	if (xfade == XFADE_ENABLED && IsDecoderAtNextSong() &&
 	    (cross_fade_position = pipe->GetSize()) <= cross_fade_chunks) {
 		/* perform cross fade */
@@ -773,10 +773,10 @@ player::PlayNextChunk()
 			cross_fading = true;
 		}
 
-		if (other_chunk != NULL) {
+		if (other_chunk != nullptr) {
 			chunk = pipe->Shift();
-			assert(chunk != NULL);
-			assert(chunk->other == NULL);
+			assert(chunk != nullptr);
+			assert(chunk->other == nullptr);
 
 			/* don't send the tags of the new song (which
 			   is being faded in) yet; postpone it until
@@ -784,7 +784,7 @@ player::PlayNextChunk()
 			cross_fade_tag =
 				Tag::MergeReplace(cross_fade_tag,
 						  other_chunk->tag);
-			other_chunk->tag = NULL;
+			other_chunk->tag = nullptr;
 
 			if (std::isnan(pc.mixramp_delay_seconds)) {
 				chunk->mix_ratio = ((float)cross_fade_position)
@@ -802,7 +802,7 @@ player::PlayNextChunk()
 				   easily recover by throwing it away
 				   now */
 				buffer.Return(other_chunk);
-				other_chunk = NULL;
+				other_chunk = nullptr;
 			}
 
 			chunk->other = other_chunk;
@@ -828,10 +828,10 @@ player::PlayNextChunk()
 		}
 	}
 
-	if (chunk == NULL)
+	if (chunk == nullptr)
 		chunk = pipe->Shift();
 
-	assert(chunk != NULL);
+	assert(chunk != nullptr);
 
 	/* insert the postponed tag if cross-fading is finished */
 
@@ -916,7 +916,7 @@ player::Run()
 
 	StartDecoder(*pipe);
 	if (!WaitForDecoder()) {
-		assert(song == NULL);
+		assert(song == nullptr);
 
 		StopDecoder();
 		player_command_finished(pc);
@@ -992,7 +992,7 @@ player::Run()
 			/* the decoder has finished the current song;
 			   make it decode the next song */
 
-			assert(dc.pipe == NULL || dc.pipe == pipe);
+			assert(dc.pipe == nullptr || dc.pipe == pipe);
 
 			StartDecoder(*new MusicPipe());
 		}
@@ -1083,9 +1083,9 @@ player::Run()
 	pc.Lock();
 
 	if (queued) {
-		assert(pc.next_song != NULL);
+		assert(pc.next_song != nullptr);
 		pc.next_song->Free();
-		pc.next_song = NULL;
+		pc.next_song = nullptr;
 	}
 
 	pc.state = PLAYER_STATE_STOP;
@@ -1117,7 +1117,7 @@ player_task(gpointer arg)
 		switch (pc.command) {
 		case PLAYER_COMMAND_SEEK:
 		case PLAYER_COMMAND_QUEUE:
-			assert(pc.next_song != NULL);
+			assert(pc.next_song != nullptr);
 
 			pc.Unlock();
 			do_play(pc, dc, buffer);
@@ -1133,9 +1133,9 @@ player_task(gpointer arg)
 			/* fall through */
 
 		case PLAYER_COMMAND_PAUSE:
-			if (pc.next_song != NULL) {
+			if (pc.next_song != nullptr) {
 				pc.next_song->Free();
-				pc.next_song = NULL;
+				pc.next_song = nullptr;
 			}
 
 			player_command_finished_locked(pc);
@@ -1168,12 +1168,12 @@ player_task(gpointer arg)
 			audio_output_all_close();
 
 			player_command_finished(pc);
-			return NULL;
+			return nullptr;
 
 		case PLAYER_COMMAND_CANCEL:
-			if (pc.next_song != NULL) {
+			if (pc.next_song != nullptr) {
 				pc.next_song->Free();
-				pc.next_song = NULL;
+				pc.next_song = nullptr;
 			}
 
 			player_command_finished_locked(pc);
@@ -1194,14 +1194,14 @@ player_task(gpointer arg)
 void
 player_create(player_control &pc)
 {
-	assert(pc.thread == NULL);
+	assert(pc.thread == nullptr);
 
 #if GLIB_CHECK_VERSION(2,32,0)
 	pc.thread = g_thread_new("player", player_task, &pc);
 #else
-	GError *e = NULL;
+	GError *e = nullptr;
 	pc.thread = g_thread_create(player_task, &pc, true, &e);
-	if (pc.thread == NULL)
+	if (pc.thread == nullptr)
 		FatalError("Failed to spawn player task", e);
 #endif
 }
