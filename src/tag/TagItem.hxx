@@ -35,7 +35,7 @@ struct TagItem {
 	/**
 	 * the value of this tag; this is a variable length string
 	 */
-	char value[sizeof(long)];
+	char value[sizeof(long) - sizeof(type)];
 
 	TagItem() = default;
 	TagItem(const TagItem &other) = delete;

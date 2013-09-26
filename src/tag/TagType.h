@@ -20,10 +20,21 @@
 #ifndef MPD_TAG_TYPE_H
 #define MPD_TAG_TYPE_H
 
+#ifdef __cplusplus
+#include <stdint.h>
+#endif
+
 /**
  * Codes for the type of a tag item.
  */
-enum tag_type {
+enum tag_type
+#ifdef __cplusplus
+/* the size of this enum is 1 byte; this is only relevant for C++
+   code; the only C sources including this header don't use instances
+   of this enum, they only refer to the integer values */
+: uint8_t
+#endif
+	{
 	TAG_ARTIST,
 	TAG_ARTIST_SORT,
 	TAG_ALBUM,
