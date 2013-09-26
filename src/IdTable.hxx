@@ -38,7 +38,7 @@ class IdTable {
 
 public:
 	IdTable(unsigned _size):size(_size), next(1), data(new int[size]) {
-		std::fill(data, data + size, -1);
+		std::fill_n(data, size, -1);
 	}
 
 	~IdTable() {
