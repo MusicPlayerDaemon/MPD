@@ -23,8 +23,10 @@
 #include "InputStream.hxx"
 #include "tag/TagHandler.hxx"
 
+#include <libmodplug/modplug.h>
+
 #include <glib.h>
-#include <modplug.h>
+
 #include <assert.h>
 
 #undef G_LOG_DOMAIN
