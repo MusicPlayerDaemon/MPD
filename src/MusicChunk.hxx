@@ -67,7 +67,7 @@ struct music_chunk {
 	 * An optional tag associated with this chunk (and the
 	 * following chunks); appears at song boundaries.  The tag
 	 * object is owned by this chunk, and must be freed when this
-	 * chunk is deinitialized in music_chunk_free()
+	 * chunk is deinitialized.
 	 */
 	Tag *tag;
 
@@ -142,11 +142,5 @@ struct music_chunk {
 	 */
 	bool Expand(AudioFormat af, size_t length);
 };
-
-void
-music_chunk_init(struct music_chunk *chunk);
-
-void
-music_chunk_free(struct music_chunk *chunk);
 
 #endif
