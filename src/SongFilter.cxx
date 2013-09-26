@@ -94,15 +94,27 @@ SongFilter::Item::Match(const Tag &_tag) const
 			return true;
 	}
 
-	/** If the search critieron was not visited during the sweep
-	 * through the song's tag, it means this field is absent from
-	 * the tag or empty. Thus, if the searched string is also
-	 *  empty (first char is a \0), then it's a match as well and
-	 *  we should return true.
-	 */
-	if (*value == 0 && tag < TAG_NUM_OF_ITEM_TYPES &&
-	    !visited_types[tag])
-		return true;
+	if (tag < TAG_NUM_OF_ITEM_TYPES && !visited_types[tag]) {
+		/* If the search critieron was not visited during the
+		   sweep through the song's tag, it means this field
+		   is absent from the tag or empty. Thus, if the
+		   searched string is also empty (first char is a \0),
+		   then it's a match as well and we should return
+		   true. */
+		if (*value == 0)
+			return true;
+
+		if (tag == TAG_ALBUM_ARTIST && visited_types[TAG_ARTIST]) {
+			/* if we're looking for "album artist", but
+			   only "artist" exists, use that */
+			for (unsigned i = 0; i < _tag.num_items; i++) {
+				const TagItem &item = *_tag.items[i];
+				if (item.type == TAG_ARTIST &&
+				    StringMatch(item.value))
+					return true;
+			}
+		}
+	}
 
 	return false;
 }

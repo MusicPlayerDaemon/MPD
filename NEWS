@@ -3,6 +3,7 @@ ver 0.18 (2012/??/??)
   - allow tilde paths for socket
 * protocol:
   - new command "toggleoutput"
+  - search for album artist falls back to the artist tag
 * innput:
   - curl: enable https
   - soup: plugin removed
