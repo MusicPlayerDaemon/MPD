@@ -150,6 +150,7 @@ struct Tag {
 	 * Checks whether the tag contains one or more items with
 	 * the specified type.
 	 */
+	gcc_pure
 	bool HasType(tag_type type) const;
 
 private:
@@ -160,6 +161,7 @@ private:
  * Parse the string, and convert it into a #tag_type.  Returns
  * #TAG_NUM_OF_ITEM_TYPES if the string could not be recognized.
  */
+gcc_pure
 enum tag_type
 tag_name_parse(const char *name);
 
@@ -169,6 +171,7 @@ tag_name_parse(const char *name);
  *
  * Case does not matter.
  */
+gcc_pure
 enum tag_type
 tag_name_parse_i(const char *name);
 
