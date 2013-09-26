@@ -117,8 +117,8 @@ glue_daemonize_init(const struct options *options, Error &error)
 	if (pid_file.IsNull() && error.IsDefined())
 		return false;
 
-	daemonize_init(config_get_string(CONF_USER, NULL),
-		       config_get_string(CONF_GROUP, NULL),
+	daemonize_init(config_get_string(CONF_USER, nullptr),
+		       config_get_string(CONF_GROUP, nullptr),
 		       std::move(pid_file));
 
 	if (options->kill)
@@ -160,22 +160,22 @@ glue_db_init_and_load(void)
 	const struct config_param *param = config_get_param(CONF_DATABASE);
 	const struct config_param *path = config_get_param(CONF_DB_FILE);
 
-	if (param != NULL && path != NULL)
+	if (param != nullptr && path != nullptr)
 		g_message("Found both 'database' and 'db_file' setting - ignoring the latter");
 
 	if (!mapper_has_music_directory()) {
-		if (param != NULL)
+		if (param != nullptr)
 			g_message("Found database setting without "
 				  "music_directory - disabling database");
-		if (path != NULL)
+		if (path != nullptr)
 			g_message("Found db_file setting without "
 				  "music_directory - disabling database");
 		return true;
 	}
 
-	struct config_param *allocated = NULL;
+	struct config_param *allocated = nullptr;
 
-	if (param == NULL && path != NULL) {
+	if (param == nullptr && path != nullptr) {
 		allocated = new config_param("database", path->line);
 		allocated->AddBlockParam("path", path->value, path->line);
 		param = allocated;
@@ -258,7 +258,7 @@ initialize_decoder_and_player(void)
 	unsigned buffered_before_play;
 
 	param = config_get_param(CONF_AUDIO_BUFFER_SIZE);
-	if (param != NULL) {
+	if (param != nullptr) {
 		long tmp = strtol(param->value, &test, 10);
 		if (*test != '\0' || tmp <= 0 || tmp == LONG_MAX)
 			FormatFatalError("buffer size \"%s\" is not a "
@@ -277,7 +277,7 @@ initialize_decoder_and_player(void)
 				 (unsigned long)buffer_size);
 
 	param = config_get_param(CONF_BUFFER_BEFORE_PLAY);
-	if (param != NULL) {
+	if (param != nullptr) {
 		perc = strtod(param->value, &test);
 		if (*test != '%' || perc < 0 || perc > 100) {
 			FormatFatalError("buffered before play \"%s\" is not "
@@ -360,7 +360,7 @@ int mpd_main(int argc, char *argv[])
 
 #if !GLIB_CHECK_VERSION(2,32,0)
 	/* enable GLib's thread safety code */
-	g_thread_init(NULL);
+	g_thread_init(nullptr);
 #endif
 
 	io_thread_init();
@@ -464,7 +464,7 @@ int mpd_main(int argc, char *argv[])
 	if (create_db) {
 		/* the database failed to load: recreate the
 		   database */
-		unsigned job = update_enqueue(NULL, true);
+		unsigned job = update_enqueue(nullptr, true);
 		if (job == 0)
 			FatalError("directory update failed");
 	}
