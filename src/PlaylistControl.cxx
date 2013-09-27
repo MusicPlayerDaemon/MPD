@@ -250,8 +250,8 @@ playlist::SeekCurrent(player_control &pc, float seek_time, bool relative)
 	if (relative) {
 		const auto status = pc.GetStatus();
 
-		if (status.state != PLAYER_STATE_PLAY &&
-		    status.state != PLAYER_STATE_PAUSE)
+		if (status.state != PlayerState::PLAY &&
+		    status.state != PlayerState::PAUSE)
 			return PLAYLIST_RESULT_NOT_PLAYING;
 
 		seek_time += (int)status.elapsed_time;

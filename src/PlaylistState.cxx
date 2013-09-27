@@ -63,7 +63,7 @@ playlist_state_save(FILE *fp, const struct playlist *playlist,
 
 	if (playlist->playing) {
 		switch (player_status.state) {
-		case PLAYER_STATE_PAUSE:
+		case PlayerState::PAUSE:
 			fputs(PLAYLIST_STATE_FILE_STATE_PAUSE "\n", fp);
 			break;
 		default:
@@ -126,7 +126,6 @@ playlist_state_restore(const char *line, TextFile &file,
 {
 	int current = -1;
 	int seek_time = 0;
-	enum player_state state = PLAYER_STATE_STOP;
 	bool random_mode = false;
 
 	if (!g_str_has_prefix(line, PLAYLIST_STATE_FILE_STATE))
@@ -134,10 +133,13 @@ playlist_state_restore(const char *line, TextFile &file,
 
 	line += sizeof(PLAYLIST_STATE_FILE_STATE) - 1;
 
+	PlayerState state;
 	if (strcmp(line, PLAYLIST_STATE_FILE_STATE_PLAY) == 0)
-		state = PLAYER_STATE_PLAY;
+		state = PlayerState::PLAY;
 	else if (strcmp(line, PLAYLIST_STATE_FILE_STATE_PAUSE) == 0)
-		state = PLAYER_STATE_PAUSE;
+		state = PlayerState::PAUSE;
+	else
+		state = PlayerState::STOP;
 
 	while ((line = file.ReadLine()) != NULL) {
 		if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_TIME)) {
@@ -180,27 +182,27 @@ playlist_state_restore(const char *line, TextFile &file,
 		if (!playlist->queue.IsValidPosition(current))
 			current = 0;
 
-		if (state == PLAYER_STATE_PLAY &&
+		if (state == PlayerState::PLAY &&
 		    config_get_bool(CONF_RESTORE_PAUSED, false))
 			/* the user doesn't want MPD to auto-start
 			   playback after startup; fall back to
 			   "pause" */
-			state = PLAYER_STATE_PAUSE;
+			state = PlayerState::PAUSE;
 
 		/* enable all devices for the first time; this must be
 		   called here, after the audio output states were
 		   restored, before playback begins */
-		if (state != PLAYER_STATE_STOP)
+		if (state != PlayerState::STOP)
 			pc->UpdateAudio();
 
-		if (state == PLAYER_STATE_STOP /* && config_option */)
+		if (state == PlayerState::STOP /* && config_option */)
 			playlist->current = current;
 		else if (seek_time == 0)
 			playlist->PlayPosition(*pc, current);
 		else
 			playlist->SeekSongPosition(*pc, current, seek_time);
 
-		if (state == PLAYER_STATE_PAUSE)
+		if (state == PlayerState::PAUSE)
 			pc->Pause();
 	}
 
@@ -214,14 +216,14 @@ playlist_state_get_hash(const struct playlist *playlist,
 	const auto player_status = pc->GetStatus();
 
 	return playlist->queue.version ^
-		(player_status.state != PLAYER_STATE_STOP
+		(player_status.state != PlayerState::STOP
 		 ? ((int)player_status.elapsed_time << 8)
 		 : 0) ^
 		(playlist->current >= 0
 		 ? (playlist->queue.OrderToPosition(playlist->current) << 16)
 		 : 0) ^
 		((int)pc->GetCrossFade() << 20) ^
-		(player_status.state << 24) ^
+		(unsigned(player_status.state) << 24) ^
 		(playlist->queue.random << 27) ^
 		(playlist->queue.repeat << 28) ^
 		(playlist->queue.single << 29) ^

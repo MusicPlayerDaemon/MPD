@@ -226,7 +226,7 @@ playlist::DeleteInternal(player_control &pc,
 	unsigned songOrder = queue.PositionToOrder(song);
 
 	if (playing && current == (int)songOrder) {
-		const bool paused = pc.GetState() == PLAYER_STATE_PAUSE;
+		const bool paused = pc.GetState() == PlayerState::PAUSE;
 
 		/* the current song is going to be deleted: stop the player */
 

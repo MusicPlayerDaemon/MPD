@@ -205,7 +205,7 @@ struct player {
 	}
 
 	/**
-	 * This is the handler for the #PLAYER_COMMAND_SEEK command.
+	 * This is the handler for the #PlayerCommand::SEEK command.
 	 *
 	 * The player lock is not held.
 	 */
@@ -281,11 +281,11 @@ player_command_finished(player_control &pc)
 void
 player::StartDecoder(MusicPipe &_pipe)
 {
-	assert(queued || pc.command == PLAYER_COMMAND_SEEK);
+	assert(queued || pc.command == PlayerCommand::SEEK);
 	assert(pc.next_song != nullptr);
 
 	unsigned start_ms = pc.next_song->start_ms;
-	if (pc.command == PLAYER_COMMAND_SEEK)
+	if (pc.command == PlayerCommand::SEEK)
 		start_ms += (unsigned)(pc.seek_where * 1000);
 
 	dc.Start(pc.next_song->DupDetached(),
@@ -313,7 +313,7 @@ player::StopDecoder()
 bool
 player::WaitForDecoder()
 {
-	assert(queued || pc.command == PLAYER_COMMAND_SEEK);
+	assert(queued || pc.command == PlayerCommand::SEEK);
 	assert(pc.next_song != nullptr);
 
 	queued = false;
@@ -321,7 +321,7 @@ player::WaitForDecoder()
 	Error error = dc.LockGetError();
 	if (error.IsDefined()) {
 		pc.Lock();
-		pc.SetError(PLAYER_ERROR_DECODER, std::move(error));
+		pc.SetError(PlayerError::DECODER, std::move(error));
 
 		pc.next_song->Free();
 		pc.next_song = nullptr;
@@ -383,8 +383,8 @@ bool
 player::OpenOutput()
 {
 	assert(play_audio_format.IsDefined());
-	assert(pc.state == PLAYER_STATE_PLAY ||
-	       pc.state == PLAYER_STATE_PAUSE);
+	assert(pc.state == PlayerState::PLAY ||
+	       pc.state == PlayerState::PAUSE);
 
 	Error error;
 	if (audio_output_all_open(play_audio_format, buffer, error)) {
@@ -392,7 +392,7 @@ player::OpenOutput()
 		paused = false;
 
 		pc.Lock();
-		pc.state = PLAYER_STATE_PLAY;
+		pc.state = PlayerState::PLAY;
 		pc.Unlock();
 
 		idle_add(IDLE_PLAYER);
@@ -408,8 +408,8 @@ player::OpenOutput()
 		paused = true;
 
 		pc.Lock();
-		pc.SetError(PLAYER_ERROR_OUTPUT, std::move(error));
-		pc.state = PLAYER_STATE_PAUSE;
+		pc.SetError(PlayerError::OUTPUT, std::move(error));
+		pc.state = PlayerState::PAUSE;
 		pc.Unlock();
 
 		idle_add(IDLE_PLAYER);
@@ -431,7 +431,7 @@ player::CheckDecoderStartup()
 		dc.Unlock();
 
 		pc.Lock();
-		pc.SetError(PLAYER_ERROR_DECODER, std::move(error));
+		pc.SetError(PlayerError::DECODER, std::move(error));
 		pc.Unlock();
 
 		return false;
@@ -589,20 +589,20 @@ inline void
 player::ProcessCommand()
 {
 	switch (pc.command) {
-	case PLAYER_COMMAND_NONE:
-	case PLAYER_COMMAND_STOP:
-	case PLAYER_COMMAND_EXIT:
-	case PLAYER_COMMAND_CLOSE_AUDIO:
+	case PlayerCommand::NONE:
+	case PlayerCommand::STOP:
+	case PlayerCommand::EXIT:
+	case PlayerCommand::CLOSE_AUDIO:
 		break;
 
-	case PLAYER_COMMAND_UPDATE_AUDIO:
+	case PlayerCommand::UPDATE_AUDIO:
 		pc.Unlock();
 		audio_output_all_enable_disable();
 		pc.Lock();
 		pc.CommandFinished();
 		break;
 
-	case PLAYER_COMMAND_QUEUE:
+	case PlayerCommand::QUEUE:
 		assert(pc.next_song != nullptr);
 		assert(!queued);
 		assert(!IsDecoderAtNextSong());
@@ -611,7 +611,7 @@ player::ProcessCommand()
 		pc.CommandFinished();
 		break;
 
-	case PLAYER_COMMAND_PAUSE:
+	case PlayerCommand::PAUSE:
 		pc.Unlock();
 
 		paused = !paused;
@@ -619,13 +619,13 @@ player::ProcessCommand()
 			audio_output_all_pause();
 			pc.Lock();
 
-			pc.state = PLAYER_STATE_PAUSE;
+			pc.state = PlayerState::PAUSE;
 		} else if (!play_audio_format.IsDefined()) {
 			/* the decoder hasn't provided an audio format
 			   yet - don't open the audio device yet */
 			pc.Lock();
 
-			pc.state = PLAYER_STATE_PLAY;
+			pc.state = PlayerState::PLAY;
 		} else {
 			OpenOutput();
 
@@ -635,18 +635,18 @@ player::ProcessCommand()
 		pc.CommandFinished();
 		break;
 
-	case PLAYER_COMMAND_SEEK:
+	case PlayerCommand::SEEK:
 		pc.Unlock();
 		SeekDecoder();
 		pc.Lock();
 		break;
 
-	case PLAYER_COMMAND_CANCEL:
+	case PlayerCommand::CANCEL:
 		if (pc.next_song == nullptr) {
 			/* the cancel request arrived too late, we're
 			   already playing the queued song...  stop
 			   everything now */
-			pc.command = PLAYER_COMMAND_STOP;
+			pc.command = PlayerCommand::STOP;
 			return;
 		}
 
@@ -664,7 +664,7 @@ player::ProcessCommand()
 		pc.CommandFinished();
 		break;
 
-	case PLAYER_COMMAND_REFRESH:
+	case PlayerCommand::REFRESH:
 		if (output_open && !paused) {
 			pc.Unlock();
 			audio_output_all_check();
@@ -841,11 +841,11 @@ player::PlayNextChunk()
 
 		pc.Lock();
 
-		pc.SetError(PLAYER_ERROR_OUTPUT, std::move(error));
+		pc.SetError(PlayerError::OUTPUT, std::move(error));
 
 		/* pause: the user may resume playback as soon as an
 		   audio output becomes available */
-		pc.state = PLAYER_STATE_PAUSE;
+		pc.state = PlayerState::PAUSE;
 		paused = true;
 
 		pc.Unlock();
@@ -889,7 +889,7 @@ player::SongBorder()
 	const bool border_pause = pc.border_pause;
 	if (border_pause) {
 		paused = true;
-		pc.state = PLAYER_STATE_PAUSE;
+		pc.state = PlayerState::PAUSE;
 	}
 
 	pc.Unlock();
@@ -916,18 +916,18 @@ player::Run()
 	}
 
 	pc.Lock();
-	pc.state = PLAYER_STATE_PLAY;
+	pc.state = PlayerState::PLAY;
 
-	if (pc.command == PLAYER_COMMAND_SEEK)
+	if (pc.command == PlayerCommand::SEEK)
 		elapsed_time = pc.seek_where;
 
 	pc.CommandFinished();
 
 	while (true) {
 		ProcessCommand();
-		if (pc.command == PLAYER_COMMAND_STOP ||
-		    pc.command == PLAYER_COMMAND_EXIT ||
-		    pc.command == PLAYER_COMMAND_CLOSE_AUDIO) {
+		if (pc.command == PlayerCommand::STOP ||
+		    pc.command == PlayerCommand::EXIT ||
+		    pc.command == PlayerCommand::CLOSE_AUDIO) {
 			pc.Unlock();
 			audio_output_all_cancel();
 			break;
@@ -1021,7 +1021,7 @@ player::Run()
 		if (paused) {
 			pc.Lock();
 
-			if (pc.command == PLAYER_COMMAND_NONE)
+			if (pc.command == PlayerCommand::NONE)
 				pc.Wait();
 			continue;
 		} else if (!pipe->IsEmpty()) {
@@ -1079,7 +1079,7 @@ player::Run()
 		pc.next_song = nullptr;
 	}
 
-	pc.state = PLAYER_STATE_STOP;
+	pc.state = PlayerState::STOP;
 
 	pc.Unlock();
 }
@@ -1106,8 +1106,8 @@ player_task(gpointer arg)
 
 	while (1) {
 		switch (pc.command) {
-		case PLAYER_COMMAND_SEEK:
-		case PLAYER_COMMAND_QUEUE:
+		case PlayerCommand::SEEK:
+		case PlayerCommand::QUEUE:
 			assert(pc.next_song != nullptr);
 
 			pc.Unlock();
@@ -1116,14 +1116,14 @@ player_task(gpointer arg)
 			pc.Lock();
 			break;
 
-		case PLAYER_COMMAND_STOP:
+		case PlayerCommand::STOP:
 			pc.Unlock();
 			audio_output_all_cancel();
 			pc.Lock();
 
 			/* fall through */
 
-		case PLAYER_COMMAND_PAUSE:
+		case PlayerCommand::PAUSE:
 			if (pc.next_song != nullptr) {
 				pc.next_song->Free();
 				pc.next_song = nullptr;
@@ -1132,7 +1132,7 @@ player_task(gpointer arg)
 			pc.CommandFinished();
 			break;
 
-		case PLAYER_COMMAND_CLOSE_AUDIO:
+		case PlayerCommand::CLOSE_AUDIO:
 			pc.Unlock();
 
 			audio_output_all_release();
@@ -1144,14 +1144,14 @@ player_task(gpointer arg)
 
 			break;
 
-		case PLAYER_COMMAND_UPDATE_AUDIO:
+		case PlayerCommand::UPDATE_AUDIO:
 			pc.Unlock();
 			audio_output_all_enable_disable();
 			pc.Lock();
 			pc.CommandFinished();
 			break;
 
-		case PLAYER_COMMAND_EXIT:
+		case PlayerCommand::EXIT:
 			pc.Unlock();
 
 			dc.Quit();
@@ -1161,7 +1161,7 @@ player_task(gpointer arg)
 			player_command_finished(pc);
 			return nullptr;
 
-		case PLAYER_COMMAND_CANCEL:
+		case PlayerCommand::CANCEL:
 			if (pc.next_song != nullptr) {
 				pc.next_song->Free();
 				pc.next_song = nullptr;
@@ -1170,12 +1170,12 @@ player_task(gpointer arg)
 			pc.CommandFinished();
 			break;
 
-		case PLAYER_COMMAND_REFRESH:
+		case PlayerCommand::REFRESH:
 			/* no-op when not playing */
 			pc.CommandFinished();
 			break;
 
-		case PLAYER_COMMAND_NONE:
+		case PlayerCommand::NONE:
 			pc.Wait();
 			break;
 		}

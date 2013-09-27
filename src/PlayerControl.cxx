@@ -32,9 +32,9 @@ player_control::player_control(unsigned _buffer_chunks,
 	:buffer_chunks(_buffer_chunks),
 	 buffered_before_play(_buffered_before_play),
 	 thread(nullptr),
-	 command(PLAYER_COMMAND_NONE),
-	 state(PLAYER_STATE_STOP),
-	 error_type(PLAYER_ERROR_NONE),
+	 command(PlayerCommand::NONE),
+	 state(PlayerState::STOP),
+	 error_type(PlayerError::NONE),
 	 next_song(nullptr),
 	 cross_fade_seconds(0),
 	 mixramp_db(0),
@@ -63,8 +63,8 @@ player_control::Play(Song *song)
 
 	Lock();
 
-	if (state != PLAYER_STATE_STOP)
-		SynchronousCommand(PLAYER_COMMAND_STOP);
+	if (state != PlayerState::STOP)
+		SynchronousCommand(PlayerCommand::STOP);
 
 	assert(next_song == nullptr);
 
@@ -78,14 +78,14 @@ player_control::Play(Song *song)
 void
 player_control::Cancel()
 {
-	LockSynchronousCommand(PLAYER_COMMAND_CANCEL);
+	LockSynchronousCommand(PlayerCommand::CANCEL);
 	assert(next_song == NULL);
 }
 
 void
 player_control::Stop()
 {
-	LockSynchronousCommand(PLAYER_COMMAND_CLOSE_AUDIO);
+	LockSynchronousCommand(PlayerCommand::CLOSE_AUDIO);
 	assert(next_song == nullptr);
 
 	idle_add(IDLE_PLAYER);
@@ -94,7 +94,7 @@ player_control::Stop()
 void
 player_control::UpdateAudio()
 {
-	LockSynchronousCommand(PLAYER_COMMAND_UPDATE_AUDIO);
+	LockSynchronousCommand(PlayerCommand::UPDATE_AUDIO);
 }
 
 void
@@ -102,7 +102,7 @@ player_control::Kill()
 {
 	assert(thread != NULL);
 
-	LockSynchronousCommand(PLAYER_COMMAND_EXIT);
+	LockSynchronousCommand(PlayerCommand::EXIT);
 	g_thread_join(thread);
 	thread = NULL;
 
@@ -112,8 +112,8 @@ player_control::Kill()
 void
 player_control::PauseLocked()
 {
-	if (state != PLAYER_STATE_STOP) {
-		SynchronousCommand(PLAYER_COMMAND_PAUSE);
+	if (state != PlayerState::STOP) {
+		SynchronousCommand(PlayerCommand::PAUSE);
 		idle_add(IDLE_PLAYER);
 	}
 }
@@ -132,15 +132,15 @@ player_control::SetPause(bool pause_flag)
 	Lock();
 
 	switch (state) {
-	case PLAYER_STATE_STOP:
+	case PlayerState::STOP:
 		break;
 
-	case PLAYER_STATE_PLAY:
+	case PlayerState::PLAY:
 		if (pause_flag)
 			PauseLocked();
 		break;
 
-	case PLAYER_STATE_PAUSE:
+	case PlayerState::PAUSE:
 		if (!pause_flag)
 			PauseLocked();
 		break;
@@ -163,11 +163,11 @@ player_control::GetStatus()
 	player_status status;
 
 	Lock();
-	SynchronousCommand(PLAYER_COMMAND_REFRESH);
+	SynchronousCommand(PlayerCommand::REFRESH);
 
 	status.state = state;
 
-	if (state != PLAYER_STATE_STOP) {
+	if (state != PlayerState::STOP) {
 		status.bit_rate = bit_rate;
 		status.audio_format = audio_format;
 		status.total_time = total_time;
@@ -180,9 +180,9 @@ player_control::GetStatus()
 }
 
 void
-player_control::SetError(player_error type, Error &&_error)
+player_control::SetError(PlayerError type, Error &&_error)
 {
-	assert(type != PLAYER_ERROR_NONE);
+	assert(type != PlayerError::NONE);
 	assert(_error.IsDefined());
 
 	error_type = type;
@@ -194,8 +194,8 @@ player_control::ClearError()
 {
 	Lock();
 
-	if (error_type != PLAYER_ERROR_NONE) {
-	    error_type = PLAYER_ERROR_NONE;
+	if (error_type != PlayerError::NONE) {
+	    error_type = PlayerError::NONE;
 	    error.Clear();
 	}
 
@@ -206,7 +206,7 @@ char *
 player_control::GetErrorMessage() const
 {
 	Lock();
-	char *message = error_type != PLAYER_ERROR_NONE
+	char *message = error_type != PlayerError::NONE
 		? g_strdup(error.GetMessage())
 		: NULL;
 	Unlock();
@@ -235,7 +235,7 @@ player_control::Seek(Song *song, float seek_time)
 
 	next_song = song;
 	seek_where = seek_time;
-	SynchronousCommand(PLAYER_COMMAND_SEEK);
+	SynchronousCommand(PlayerCommand::SEEK);
 	Unlock();
 
 	assert(next_song == nullptr);

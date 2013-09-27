@@ -175,11 +175,11 @@ playlist::SyncWithPlayer(player_control &pc)
 		return;
 
 	pc.Lock();
-	const player_state pc_state = pc.GetState();
+	const PlayerState pc_state = pc.GetState();
 	const Song *pc_next_song = pc.next_song;
 	pc.Unlock();
 
-	if (pc_state == PLAYER_STATE_STOP)
+	if (pc_state == PlayerState::STOP)
 		/* the player thread has stopped: check if playback
 		   should be restarted with the next song.  That can
 		   happen if the playlist isn't filling the queue fast
@@ -210,16 +210,16 @@ static void
 playlist_resume_playback(struct playlist *playlist, struct player_control *pc)
 {
 	assert(playlist->playing);
-	assert(pc->GetState() == PLAYER_STATE_STOP);
+	assert(pc->GetState() == PlayerState::STOP);
 
 	const auto error = pc->GetErrorType();
-	if (error == PLAYER_ERROR_NONE)
+	if (error == PlayerError::NONE)
 		playlist->error_count = 0;
 	else
 		++playlist->error_count;
 
-	if ((playlist->stop_on_error && error != PLAYER_ERROR_NONE) ||
-	    error == PLAYER_ERROR_OUTPUT ||
+	if ((playlist->stop_on_error && error != PlayerError::NONE) ||
+	    error == PlayerError::OUTPUT ||
 	    playlist->error_count >= playlist->queue.GetLength())
 		/* too many errors, or critical error: stop
 		   playback */

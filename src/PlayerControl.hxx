@@ -29,62 +29,61 @@
 
 #include <stdint.h>
 
-struct decoder_control;
 struct Song;
 
-enum player_state {
-	PLAYER_STATE_STOP = 0,
-	PLAYER_STATE_PAUSE,
-	PLAYER_STATE_PLAY
+enum class PlayerState : uint8_t {
+	STOP,
+	PAUSE,
+	PLAY
 };
 
-enum player_command {
-	PLAYER_COMMAND_NONE = 0,
-	PLAYER_COMMAND_EXIT,
-	PLAYER_COMMAND_STOP,
-	PLAYER_COMMAND_PAUSE,
-	PLAYER_COMMAND_SEEK,
-	PLAYER_COMMAND_CLOSE_AUDIO,
+enum class PlayerCommand : uint8_t {
+	NONE,
+	EXIT,
+	STOP,
+	PAUSE,
+	SEEK,
+	CLOSE_AUDIO,
 
 	/**
 	 * At least one audio_output.enabled flag has been modified;
 	 * commit those changes to the output threads.
 	 */
-	PLAYER_COMMAND_UPDATE_AUDIO,
+	UPDATE_AUDIO,
 
 	/** player_control.next_song has been updated */
-	PLAYER_COMMAND_QUEUE,
+	QUEUE,
 
 	/**
 	 * cancel pre-decoding player_control.next_song; if the player
 	 * has already started playing this song, it will completely
 	 * stop
 	 */
-	PLAYER_COMMAND_CANCEL,
+	CANCEL,
 
 	/**
 	 * Refresh status information in the #player_control struct,
 	 * e.g. elapsed_time.
 	 */
-	PLAYER_COMMAND_REFRESH,
+	REFRESH,
 };
 
-enum player_error {
-	PLAYER_ERROR_NONE = 0,
+enum class PlayerError : uint8_t {
+	NONE,
 
 	/**
 	 * The decoder has failed to decode the song.
 	 */
-	PLAYER_ERROR_DECODER,
+	DECODER,
 
 	/**
 	 * The audio output has failed.
 	 */
-	PLAYER_ERROR_OUTPUT,
+	OUTPUT,
 };
 
 struct player_status {
-	enum player_state state;
+	PlayerState state;
 	uint16_t bit_rate;
 	AudioFormat audio_format;
 	float total_time;
@@ -117,16 +116,16 @@ struct player_control {
 	 */
 	Cond client_cond;
 
-	enum player_command command;
-	enum player_state state;
+	PlayerCommand command;
+	PlayerState state;
 
-	enum player_error error_type;
+	PlayerError error_type;
 
 	/**
 	 * The error that occurred in the player thread.  This
 	 * attribute is only valid if #error is not
-	 * #PLAYER_ERROR_NONE.  The object must be freed when this
-	 * object transitions back to #PLAYER_ERROR_NONE.
+	 * #PlayerError::NONE.  The object must be freed when this
+	 * object transitions back to #PlayerError::NONE.
 	 */
 	Error error;
 
@@ -236,9 +235,9 @@ struct player_control {
 	 * object.
 	 */
 	void CommandFinished() {
-		assert(command != PLAYER_COMMAND_NONE);
+		assert(command != PlayerCommand::NONE);
 
-		command = PLAYER_COMMAND_NONE;
+		command = PlayerCommand::NONE;
 		ClientSignal();
 	}
 
@@ -250,7 +249,7 @@ private:
 	 * object.
 	 */
 	void WaitCommandLocked() {
-		while (command != PLAYER_COMMAND_NONE)
+		while (command != PlayerCommand::NONE)
 			ClientWait();
 	}
 
@@ -261,8 +260,8 @@ private:
 	 * To be called from the main thread.  Caller must lock the
 	 * object.
 	 */
-	void SynchronousCommand(player_command cmd) {
-		assert(command == PLAYER_COMMAND_NONE);
+	void SynchronousCommand(PlayerCommand cmd) {
+		assert(command == PlayerCommand::NONE);
 
 		command = cmd;
 		Signal();
@@ -276,7 +275,7 @@ private:
 	 * To be called from the main thread.  This method locks the
 	 * object.
 	 */
-	void LockSynchronousCommand(player_command cmd) {
+	void LockSynchronousCommand(PlayerCommand cmd) {
 		Lock();
 		SynchronousCommand(cmd);
 		Unlock();
@@ -290,7 +289,7 @@ public:
 	void Play(Song *song);
 
 	/**
-	 * see PLAYER_COMMAND_CANCEL
+	 * see PlayerCommand::CANCEL
 	 */
 	void Cancel();
 
@@ -312,7 +311,7 @@ public:
 	gcc_pure
 	player_status GetStatus();
 
-	player_state GetState() const {
+	PlayerState GetState() const {
 		return state;
 	}
 
@@ -321,10 +320,10 @@ public:
 	 *
 	 * Caller must lock the object.
 	 *
-	 * @param type the error type; must not be #PLAYER_ERROR_NONE
+	 * @param type the error type; must not be #PlayerError::NONE
 	 * @param error detailed error information; must be defined.
 	 */
-	void SetError(player_error type, Error &&error);
+	void SetError(PlayerError type, Error &&error);
 
 	void ClearError();
 
@@ -335,7 +334,7 @@ public:
 	 */
 	char *GetErrorMessage() const;
 
-	player_error GetErrorType() const {
+	PlayerError GetErrorType() const {
 		return error_type;
 	}
 
@@ -349,7 +348,7 @@ private:
 		assert(next_song == nullptr);
 
 		next_song = song;
-		SynchronousCommand(PLAYER_COMMAND_QUEUE);
+		SynchronousCommand(PlayerCommand::QUEUE);
 	}
 
 public:

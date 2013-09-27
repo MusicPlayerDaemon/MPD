@@ -124,13 +124,13 @@ handle_status(Client *client,
 	const auto player_status = client->player_control->GetStatus();
 
 	switch (player_status.state) {
-	case PLAYER_STATE_STOP:
+	case PlayerState::STOP:
 		state = "stop";
 		break;
-	case PLAYER_STATE_PAUSE:
+	case PlayerState::PAUSE:
 		state = "pause";
 		break;
-	case PLAYER_STATE_PLAY:
+	case PlayerState::PLAY:
 		state = "play";
 		break;
 	}
@@ -168,7 +168,7 @@ handle_status(Client *client,
 			      song, playlist.PositionToId(song));
 	}
 
-	if (player_status.state != PLAYER_STATE_STOP) {
+	if (player_status.state != PlayerState::STOP) {
 		client_printf(client,
 			      COMMAND_STATUS_TIME ": %i:%i\n"
 			      "elapsed: %1.3f\n"
