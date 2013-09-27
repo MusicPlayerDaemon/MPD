@@ -278,6 +278,53 @@ struct decoder_control {
 		return result;
 	}
 
+private:
+	/**
+	 * Wait for the command to be finished by the decoder thread.
+	 *
+	 * To be called from the client thread.  Caller must lock the
+	 * object.
+	 */
+	void WaitCommandLocked() {
+		while (command != DECODE_COMMAND_NONE)
+			WaitForDecoder();
+	}
+
+	/**
+	 * Send a command to the decoder thread and synchronously wait
+	 * for it to finish.
+	 *
+	 * To be called from the client thread.  Caller must lock the
+	 * object.
+	 */
+	void SynchronousCommandLocked(decoder_command cmd) {
+		command = cmd;
+		Signal();
+		WaitCommandLocked();
+	}
+
+	/**
+	 * Send a command to the decoder thread and synchronously wait
+	 * for it to finish.
+	 *
+	 * To be called from the client thread.  This method locks the
+	 * object.
+	 */
+	void LockSynchronousCommand(decoder_command cmd) {
+		Lock();
+		ClearError();
+		SynchronousCommandLocked(cmd);
+		Unlock();
+	}
+
+	void LockAsynchronousCommand(decoder_command cmd) {
+		Lock();
+		command = cmd;
+		Signal();
+		Unlock();
+	}
+
+public:
 	/**
 	 * Start the decoder.
 	 *

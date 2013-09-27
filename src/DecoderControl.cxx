@@ -48,41 +48,6 @@ decoder_control::~decoder_control()
 	g_free(mixramp_prev_end);
 }
 
-static void
-dc_command_wait_locked(struct decoder_control *dc)
-{
-	while (dc->command != DECODE_COMMAND_NONE)
-		dc->WaitForDecoder();
-}
-
-static void
-dc_command_locked(struct decoder_control *dc, enum decoder_command cmd)
-{
-	dc->command = cmd;
-	dc->Signal();
-	dc_command_wait_locked(dc);
-}
-
-static void
-dc_command(struct decoder_control *dc, enum decoder_command cmd)
-{
-	dc->Lock();
-	dc->ClearError();
-	dc_command_locked(dc, cmd);
-	dc->Unlock();
-}
-
-static void
-dc_command_async(struct decoder_control *dc, enum decoder_command cmd)
-{
-	dc->Lock();
-
-	dc->command = cmd;
-	dc->Signal();
-
-	dc->Unlock();
-}
-
 bool
 decoder_control::IsCurrentSong(const Song *_song) const
 {
@@ -119,7 +84,7 @@ decoder_control::Start(Song *_song,
 	buffer = &_buffer;
 	pipe = &_pipe;
 
-	dc_command(this, DECODE_COMMAND_START);
+	LockSynchronousCommand(DECODE_COMMAND_START);
 }
 
 void
@@ -132,10 +97,10 @@ decoder_control::Stop()
 		   late and the decoder thread is already executing
 		   the old command, we'll call STOP again in this
 		   function (see below). */
-		dc_command_locked(this, DECODE_COMMAND_STOP);
+		SynchronousCommandLocked(DECODE_COMMAND_STOP);
 
 	if (state != DECODE_STATE_STOP && state != DECODE_STATE_ERROR)
-		dc_command_locked(this, DECODE_COMMAND_STOP);
+		SynchronousCommandLocked(DECODE_COMMAND_STOP);
 
 	Unlock();
 }
@@ -152,7 +117,7 @@ decoder_control::Seek(double where)
 
 	seek_where = where;
 	seek_error = false;
-	dc_command(this, DECODE_COMMAND_SEEK);
+	SynchronousCommandLocked(DECODE_COMMAND_SEEK);
 
 	return !seek_error;
 }
@@ -163,7 +128,7 @@ decoder_control::Quit()
 	assert(thread != nullptr);
 
 	quit = true;
-	dc_command_async(this, DECODE_COMMAND_STOP);
+	LockAsynchronousCommand(DECODE_COMMAND_STOP);
 
 	g_thread_join(thread);
 	thread = nullptr;
