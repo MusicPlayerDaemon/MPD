@@ -49,7 +49,7 @@ enum class CrossFadeState : int8_t {
 	ENABLED = 1
 };
 
-struct player {
+class Player {
 	player_control &pc;
 
 	decoder_control &dc;
@@ -128,7 +128,8 @@ struct player {
 	 */
 	float elapsed_time;
 
-	player(player_control &_pc, decoder_control &_dc,
+public:
+	Player(player_control &_pc, decoder_control &_dc,
 	       MusicBuffer &_buffer)
 		:pc(_pc), dc(_dc), buffer(_buffer),
 		 buffering(false),
@@ -143,6 +144,7 @@ struct player {
 		 cross_fade_tag(nullptr),
 		 elapsed_time(0.0) {}
 
+private:
 	void ClearAndDeletePipe() {
 		pipe->Clear(buffer);
 		delete pipe;
@@ -262,6 +264,7 @@ struct player {
 	 */
 	bool SongBorder();
 
+public:
 	/*
 	 * The main loop of the player thread, during playback.  This
 	 * is basically a state machine, which multiplexes data
@@ -279,7 +282,7 @@ player_command_finished(player_control &pc)
 }
 
 void
-player::StartDecoder(MusicPipe &_pipe)
+Player::StartDecoder(MusicPipe &_pipe)
 {
 	assert(queued || pc.command == PlayerCommand::SEEK);
 	assert(pc.next_song != nullptr);
@@ -294,7 +297,7 @@ player::StartDecoder(MusicPipe &_pipe)
 }
 
 void
-player::StopDecoder()
+Player::StopDecoder()
 {
 	dc.Stop();
 
@@ -311,7 +314,7 @@ player::StopDecoder()
 }
 
 bool
-player::WaitForDecoder()
+Player::WaitForDecoder()
 {
 	assert(queued || pc.command == PlayerCommand::SEEK);
 	assert(pc.next_song != nullptr);
@@ -380,7 +383,7 @@ real_song_duration(const Song *song, double decoder_duration)
 }
 
 bool
-player::OpenOutput()
+Player::OpenOutput()
 {
 	assert(play_audio_format.IsDefined());
 	assert(pc.state == PlayerState::PLAY ||
@@ -419,7 +422,7 @@ player::OpenOutput()
 }
 
 bool
-player::CheckDecoderStartup()
+Player::CheckDecoderStartup()
 {
 	assert(decoder_starting);
 
@@ -477,7 +480,7 @@ player::CheckDecoderStartup()
 }
 
 bool
-player::SendSilence()
+Player::SendSilence()
 {
 	assert(output_open);
 	assert(play_audio_format.IsDefined());
@@ -512,7 +515,7 @@ player::SendSilence()
 }
 
 inline bool
-player::SeekDecoder()
+Player::SeekDecoder()
 {
 	assert(pc.next_song != nullptr);
 
@@ -586,7 +589,7 @@ player::SeekDecoder()
 }
 
 inline void
-player::ProcessCommand()
+Player::ProcessCommand()
 {
 	switch (pc.command) {
 	case PlayerCommand::NONE:
@@ -741,7 +744,7 @@ play_chunk(player_control &pc,
 }
 
 inline bool
-player::PlayNextChunk()
+Player::PlayNextChunk()
 {
 	if (!audio_output_all_wait(&pc, 64))
 		/* the output pipe is still large enough, don't send
@@ -869,7 +872,7 @@ player::PlayNextChunk()
 }
 
 inline bool
-player::SongBorder()
+Player::SongBorder()
 {
 	xfade_state = CrossFadeState::UNKNOWN;
 
@@ -901,7 +904,7 @@ player::SongBorder()
 }
 
 inline void
-player::Run()
+Player::Run()
 {
 	pipe = new MusicPipe();
 
@@ -1088,7 +1091,7 @@ static void
 do_play(player_control &pc, decoder_control &dc,
 	MusicBuffer &buffer)
 {
-	player player(pc, dc, buffer);
+	Player player(pc, dc, buffer);
 	player.Run();
 }
 
