@@ -242,6 +242,47 @@ struct player_control {
 		ClientSignal();
 	}
 
+private:
+	/**
+	 * Wait for the command to be finished by the player thread.
+	 *
+	 * To be called from the main thread.  Caller must lock the
+	 * object.
+	 */
+	void WaitCommandLocked() {
+		while (command != PLAYER_COMMAND_NONE)
+			ClientWait();
+	}
+
+	/**
+	 * Send a command to the player thread and synchronously wait
+	 * for it to finish.
+	 *
+	 * To be called from the main thread.  Caller must lock the
+	 * object.
+	 */
+	void SynchronousCommand(player_command cmd) {
+		assert(command == PLAYER_COMMAND_NONE);
+
+		command = cmd;
+		Signal();
+		WaitCommandLocked();
+	}
+
+	/**
+	 * Send a command to the player thread and synchronously wait
+	 * for it to finish.
+	 *
+	 * To be called from the main thread.  This method locks the
+	 * object.
+	 */
+	void LockSynchronousCommand(player_command cmd) {
+		Lock();
+		SynchronousCommand(cmd);
+		Unlock();
+	}
+
+public:
 	/**
 	 * @param song the song to be queued; the given instance will
 	 * be owned and freed by the player
@@ -255,6 +296,10 @@ struct player_control {
 
 	void SetPause(bool pause_flag);
 
+private:
+	void PauseLocked();
+
+public:
 	void Pause();
 
 	/**
@@ -298,6 +343,16 @@ struct player_control {
 
 	void UpdateAudio();
 
+private:
+	void EnqueueSongLocked(Song *song) {
+		assert(song != nullptr);
+		assert(next_song == nullptr);
+
+		next_song = song;
+		SynchronousCommand(PLAYER_COMMAND_QUEUE);
+	}
+
+public:
 	/**
 	 * @param song the song to be queued; the given instance will be owned
 	 * and freed by the player

@@ -22,15 +22,10 @@
 #include "Idle.hxx"
 #include "Song.hxx"
 #include "DecoderControl.hxx"
-#include "Main.hxx"
 
 #include <cmath>
 
 #include <assert.h>
-#include <stdio.h>
-
-static void
-pc_enqueue_song_locked(struct player_control *pc, Song *song);
 
 player_control::player_control(unsigned _buffer_chunks,
 			       unsigned _buffered_before_play)
@@ -61,31 +56,6 @@ player_control::~player_control()
 		next_song->Free();
 }
 
-static void
-player_command_wait_locked(struct player_control *pc)
-{
-	while (pc->command != PLAYER_COMMAND_NONE)
-		pc->ClientWait();
-}
-
-static void
-player_command_locked(struct player_control *pc, enum player_command cmd)
-{
-	assert(pc->command == PLAYER_COMMAND_NONE);
-
-	pc->command = cmd;
-	pc->Signal();
-	player_command_wait_locked(pc);
-}
-
-static void
-player_command(struct player_control *pc, enum player_command cmd)
-{
-	pc->Lock();
-	player_command_locked(pc, cmd);
-	pc->Unlock();
-}
-
 void
 player_control::Play(Song *song)
 {
@@ -94,11 +64,11 @@ player_control::Play(Song *song)
 	Lock();
 
 	if (state != PLAYER_STATE_STOP)
-		player_command_locked(this, PLAYER_COMMAND_STOP);
+		SynchronousCommand(PLAYER_COMMAND_STOP);
 
 	assert(next_song == nullptr);
 
-	pc_enqueue_song_locked(this, song);
+	EnqueueSongLocked(song);
 
 	assert(next_song == nullptr);
 
@@ -108,14 +78,14 @@ player_control::Play(Song *song)
 void
 player_control::Cancel()
 {
-	player_command(this, PLAYER_COMMAND_CANCEL);
+	LockSynchronousCommand(PLAYER_COMMAND_CANCEL);
 	assert(next_song == NULL);
 }
 
 void
 player_control::Stop()
 {
-	player_command(this, PLAYER_COMMAND_CLOSE_AUDIO);
+	LockSynchronousCommand(PLAYER_COMMAND_CLOSE_AUDIO);
 	assert(next_song == nullptr);
 
 	idle_add(IDLE_PLAYER);
@@ -124,7 +94,7 @@ player_control::Stop()
 void
 player_control::UpdateAudio()
 {
-	player_command(this, PLAYER_COMMAND_UPDATE_AUDIO);
+	LockSynchronousCommand(PLAYER_COMMAND_UPDATE_AUDIO);
 }
 
 void
@@ -132,7 +102,7 @@ player_control::Kill()
 {
 	assert(thread != NULL);
 
-	player_command(this, PLAYER_COMMAND_EXIT);
+	LockSynchronousCommand(PLAYER_COMMAND_EXIT);
 	g_thread_join(thread);
 	thread = NULL;
 
@@ -140,25 +110,20 @@ player_control::Kill()
 }
 
 void
+player_control::PauseLocked()
+{
+	if (state != PLAYER_STATE_STOP) {
+		SynchronousCommand(PLAYER_COMMAND_PAUSE);
+		idle_add(IDLE_PLAYER);
+	}
+}
+
+void
 player_control::Pause()
 {
 	Lock();
-
-	if (state != PLAYER_STATE_STOP) {
-		player_command_locked(this, PLAYER_COMMAND_PAUSE);
-		idle_add(IDLE_PLAYER);
-	}
-
+	PauseLocked();
 	Unlock();
-}
-
-static void
-pc_pause_locked(struct player_control *pc)
-{
-	if (pc->state != PLAYER_STATE_STOP) {
-		player_command_locked(pc, PLAYER_COMMAND_PAUSE);
-		idle_add(IDLE_PLAYER);
-	}
 }
 
 void
@@ -172,12 +137,12 @@ player_control::SetPause(bool pause_flag)
 
 	case PLAYER_STATE_PLAY:
 		if (pause_flag)
-			pc_pause_locked(this);
+			PauseLocked();
 		break;
 
 	case PLAYER_STATE_PAUSE:
 		if (!pause_flag)
-			pc_pause_locked(this);
+			PauseLocked();
 		break;
 	}
 
@@ -198,7 +163,7 @@ player_control::GetStatus()
 	player_status status;
 
 	Lock();
-	player_command_locked(this, PLAYER_COMMAND_REFRESH);
+	SynchronousCommand(PLAYER_COMMAND_REFRESH);
 
 	status.state = state;
 
@@ -248,23 +213,13 @@ player_control::GetErrorMessage() const
 	return message;
 }
 
-static void
-pc_enqueue_song_locked(struct player_control *pc, Song *song)
-{
-	assert(song != NULL);
-	assert(pc->next_song == NULL);
-
-	pc->next_song = song;
-	player_command_locked(pc, PLAYER_COMMAND_QUEUE);
-}
-
 void
 player_control::EnqueueSong(Song *song)
 {
 	assert(song != NULL);
 
 	Lock();
-	pc_enqueue_song_locked(this, song);
+	EnqueueSongLocked(song);
 	Unlock();
 }
 
@@ -280,7 +235,7 @@ player_control::Seek(Song *song, float seek_time)
 
 	next_song = song;
 	seek_where = seek_time;
-	player_command_locked(this, PLAYER_COMMAND_SEEK);
+	SynchronousCommand(PLAYER_COMMAND_SEEK);
 	Unlock();
 
 	assert(next_song == nullptr);
