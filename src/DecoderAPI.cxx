@@ -47,7 +47,7 @@ decoder_initialized(struct decoder *decoder,
 	struct decoder_control *dc = decoder->dc;
 	struct audio_format_string af_string;
 
-	assert(dc->state == DECODE_STATE_START);
+	assert(dc->state == DecoderState::START);
 	assert(dc->pipe != NULL);
 	assert(decoder != NULL);
 	assert(decoder->stream_tag == NULL);
@@ -63,7 +63,7 @@ decoder_initialized(struct decoder *decoder,
 	dc->total_time = total_time;
 
 	dc->Lock();
-	dc->state = DECODE_STATE_DECODE;
+	dc->state = DecoderState::DECODE;
 	dc->client_cond.signal();
 	dc->Unlock();
 
@@ -88,7 +88,7 @@ decoder_prepare_initial_seek(struct decoder *decoder)
 	const struct decoder_control *dc = decoder->dc;
 	assert(dc->pipe != NULL);
 
-	if (dc->state != DECODE_STATE_DECODE)
+	if (dc->state != DecoderState::DECODE)
 		/* wait until the decoder has finished initialisation
 		   (reading file headers etc.) before emitting the
 		   virtual "SEEK" command */
@@ -247,7 +247,7 @@ decoder_check_cancel_read(const struct decoder *decoder)
 	/* ignore the SEEK command during initialization, the plugin
 	   should handle that after it has initialized successfully */
 	if (dc->command == DecoderCommand::SEEK &&
-	    (dc->state == DECODE_STATE_START || decoder->seeking))
+	    (dc->state == DecoderState::START || decoder->seeking))
 		return false;
 
 	return true;
@@ -260,8 +260,8 @@ size_t decoder_read(struct decoder *decoder,
 	/* XXX don't allow decoder==NULL */
 
 	assert(decoder == NULL ||
-	       decoder->dc->state == DECODE_STATE_START ||
-	       decoder->dc->state == DECODE_STATE_DECODE);
+	       decoder->dc->state == DecoderState::START ||
+	       decoder->dc->state == DecoderState::DECODE);
 	assert(is != NULL);
 	assert(buffer != NULL);
 
@@ -364,7 +364,7 @@ decoder_data(struct decoder *decoder,
 	struct decoder_control *dc = decoder->dc;
 	DecoderCommand cmd;
 
-	assert(dc->state == DECODE_STATE_DECODE);
+	assert(dc->state == DecoderState::DECODE);
 	assert(dc->pipe != NULL);
 	assert(length % dc->in_audio_format.GetFrameSize() == 0);
 
@@ -472,7 +472,7 @@ decoder_tag(gcc_unused struct decoder *decoder, struct input_stream *is,
 	gcc_unused const struct decoder_control *dc = decoder->dc;
 	DecoderCommand cmd;
 
-	assert(dc->state == DECODE_STATE_DECODE);
+	assert(dc->state == DecoderState::DECODE);
 	assert(dc->pipe != NULL);
 
 	/* save the tag */

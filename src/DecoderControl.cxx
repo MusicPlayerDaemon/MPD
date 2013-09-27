@@ -29,7 +29,7 @@
 
 decoder_control::decoder_control()
 	:thread(nullptr),
-	 state(DECODE_STATE_STOP),
+	 state(DecoderState::STOP),
 	 command(DecoderCommand::NONE),
 	 song(nullptr),
 	 replay_gain_db(0), replay_gain_prev_db(0),
@@ -54,12 +54,12 @@ decoder_control::IsCurrentSong(const Song *_song) const
 	assert(_song != NULL);
 
 	switch (state) {
-	case DECODE_STATE_STOP:
-	case DECODE_STATE_ERROR:
+	case DecoderState::STOP:
+	case DecoderState::ERROR:
 		return false;
 
-	case DECODE_STATE_START:
-	case DECODE_STATE_DECODE:
+	case DecoderState::START:
+	case DecoderState::DECODE:
 		return song_equals(song, _song);
 	}
 
@@ -99,7 +99,7 @@ decoder_control::Stop()
 		   function (see below). */
 		SynchronousCommandLocked(DecoderCommand::STOP);
 
-	if (state != DECODE_STATE_STOP && state != DECODE_STATE_ERROR)
+	if (state != DecoderState::STOP && state != DecoderState::ERROR)
 		SynchronousCommandLocked(DecoderCommand::STOP);
 
 	Unlock();
@@ -108,11 +108,11 @@ decoder_control::Stop()
 bool
 decoder_control::Seek(double where)
 {
-	assert(state != DECODE_STATE_START);
+	assert(state != DecoderState::START);
 	assert(where >= 0.0);
 
-	if (state == DECODE_STATE_STOP ||
-	    state == DECODE_STATE_ERROR || !seekable)
+	if (state == DecoderState::STOP ||
+	    state == DecoderState::ERROR || !seekable)
 		return false;
 
 	seek_where = where;

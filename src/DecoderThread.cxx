@@ -120,7 +120,7 @@ decoder_stream_decode(const struct decoder_plugin *plugin,
 	assert(decoder->decoder_tag == NULL);
 	assert(input_stream != NULL);
 	assert(input_stream->ready);
-	assert(decoder->dc->state == DECODE_STATE_START);
+	assert(decoder->dc->state == DecoderState::START);
 
 	g_debug("probing plugin %s", plugin->name);
 
@@ -136,10 +136,10 @@ decoder_stream_decode(const struct decoder_plugin *plugin,
 
 	decoder->dc->Lock();
 
-	assert(decoder->dc->state == DECODE_STATE_START ||
-	       decoder->dc->state == DECODE_STATE_DECODE);
+	assert(decoder->dc->state == DecoderState::START ||
+	       decoder->dc->state == DecoderState::DECODE);
 
-	return decoder->dc->state != DECODE_STATE_START;
+	return decoder->dc->state != DecoderState::START;
 }
 
 static bool
@@ -153,7 +153,7 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 	assert(decoder->decoder_tag == NULL);
 	assert(path != NULL);
 	assert(g_path_is_absolute(path));
-	assert(decoder->dc->state == DECODE_STATE_START);
+	assert(decoder->dc->state == DecoderState::START);
 
 	g_debug("probing plugin %s", plugin->name);
 
@@ -166,10 +166,10 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 
 	decoder->dc->Lock();
 
-	assert(decoder->dc->state == DECODE_STATE_START ||
-	       decoder->dc->state == DECODE_STATE_DECODE);
+	assert(decoder->dc->state == DecoderState::START ||
+	       decoder->dc->state == DecoderState::DECODE);
 
-	return decoder->dc->state != DECODE_STATE_START;
+	return decoder->dc->state != DecoderState::START;
 }
 
 /**
@@ -380,7 +380,7 @@ decoder_run_song(struct decoder_control *dc,
 			? new Tag(*song->tag) : nullptr);
 	int ret;
 
-	dc->state = DECODE_STATE_START;
+	dc->state = DecoderState::START;
 
 	decoder_command_finished_locked(dc);
 
@@ -398,9 +398,9 @@ decoder_run_song(struct decoder_control *dc,
 	dc->Lock();
 
 	if (ret)
-		dc->state = DECODE_STATE_STOP;
+		dc->state = DecoderState::STOP;
 	else {
-		dc->state = DECODE_STATE_ERROR;
+		dc->state = DecoderState::ERROR;
 
 		const char *error_uri = song->uri;
 		char *allocated = uri_remove_auth(error_uri);
@@ -431,7 +431,7 @@ decoder_run(struct decoder_control *dc)
 		uri = song->GetURI();
 
 	if (uri == NULL) {
-		dc->state = DECODE_STATE_ERROR;
+		dc->state = DecoderState::ERROR;
 		dc->error.Set(decoder_domain, "Failed to map song");
 
 		decoder_command_finished_locked(dc);
@@ -451,8 +451,8 @@ decoder_task(gpointer arg)
 	dc->Lock();
 
 	do {
-		assert(dc->state == DECODE_STATE_STOP ||
-		       dc->state == DECODE_STATE_ERROR);
+		assert(dc->state == DecoderState::STOP ||
+		       dc->state == DecoderState::ERROR);
 
 		switch (dc->command) {
 		case DecoderCommand::START:

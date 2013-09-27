@@ -29,15 +29,21 @@
 #include <glib.h>
 
 #include <assert.h>
+#include <stdint.h>
+
+/* damn you, windows.h! */
+#ifdef ERROR
+#undef ERROR
+#endif
 
 struct Song;
 class MusicBuffer;
 class MusicPipe;
 
-enum decoder_state {
-	DECODE_STATE_STOP = 0,
-	DECODE_STATE_START,
-	DECODE_STATE_DECODE,
+enum class DecoderState : uint8_t {
+	STOP = 0,
+	START,
+	DECODE,
 
 	/**
 	 * The last "START" command failed, because there was an I/O
@@ -45,7 +51,7 @@ enum decoder_state {
 	 * This state will only come after START; once the state has
 	 * turned to DECODE, by definition no such error can occur.
 	 */
-	DECODE_STATE_ERROR,
+	ERROR,
 };
 
 struct decoder_control {
@@ -71,14 +77,14 @@ struct decoder_control {
 	 */
 	Cond client_cond;
 
-	enum decoder_state state;
+	DecoderState state;
 	DecoderCommand command;
 
 	/**
 	 * The error that occurred in the decoder thread.  This
-	 * attribute is only valid if #state is #DECODE_STATE_ERROR.
+	 * attribute is only valid if #state is #DecoderState::ERROR.
 	 * The object must be freed when this object transitions to
-	 * any other state (usually #DECODE_STATE_START).
+	 * any other state (usually #DecoderState::START).
 	 */
 	Error error;
 
@@ -182,8 +188,8 @@ struct decoder_control {
 	}
 
 	bool IsIdle() const {
-		return state == DECODE_STATE_STOP ||
-			state == DECODE_STATE_ERROR;
+		return state == DecoderState::STOP ||
+			state == DecoderState::ERROR;
 	}
 
 	gcc_pure
@@ -195,7 +201,7 @@ struct decoder_control {
 	}
 
 	bool IsStarting() const {
-		return state == DECODE_STATE_START;
+		return state == DecoderState::START;
 	}
 
 	gcc_pure
@@ -209,7 +215,7 @@ struct decoder_control {
 	bool HasFailed() const {
 		assert(command == DecoderCommand::NONE);
 
-		return state == DECODE_STATE_ERROR;
+		return state == DecoderState::ERROR;
 	}
 
 	gcc_pure
@@ -229,10 +235,10 @@ struct decoder_control {
 	gcc_pure
 	Error GetError() const {
 		assert(command == DecoderCommand::NONE);
-		assert(state != DECODE_STATE_ERROR || error.IsDefined());
+		assert(state != DecoderState::ERROR || error.IsDefined());
 
 		Error result;
-		if (state == DECODE_STATE_ERROR)
+		if (state == DecoderState::ERROR)
 			result.Set(error);
 		return result;
 	}
@@ -254,9 +260,9 @@ struct decoder_control {
 	 * Caller must lock the object.
 	 */
 	void ClearError() {
-		if (state == DECODE_STATE_ERROR) {
+		if (state == DecoderState::ERROR) {
 			error.Clear();
-			state = DECODE_STATE_STOP;
+			state = DecoderState::STOP;
 		}
 	}
 
