@@ -229,6 +229,20 @@ struct player_control {
 	}
 
 	/**
+	 * A command has been finished.  This method clears the
+	 * command and signals the client.
+	 *
+	 * To be called from the player thread.  Caller must lock the
+	 * object.
+	 */
+	void CommandFinished() {
+		assert(command != PLAYER_COMMAND_NONE);
+
+		command = PLAYER_COMMAND_NONE;
+		ClientSignal();
+	}
+
+	/**
 	 * @param song the song to be queued; the given instance will
 	 * be owned and freed by the player
 	 */

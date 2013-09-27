@@ -271,19 +271,10 @@ struct player {
 };
 
 static void
-player_command_finished_locked(player_control &pc)
-{
-	assert(pc.command != PLAYER_COMMAND_NONE);
-
-	pc.command = PLAYER_COMMAND_NONE;
-	pc.ClientSignal();
-}
-
-static void
 player_command_finished(player_control &pc)
 {
 	pc.Lock();
-	player_command_finished_locked(pc);
+	pc.CommandFinished();
 	pc.Unlock();
 }
 
@@ -608,7 +599,7 @@ player::ProcessCommand()
 		pc.Unlock();
 		audio_output_all_enable_disable();
 		pc.Lock();
-		player_command_finished_locked(pc);
+		pc.CommandFinished();
 		break;
 
 	case PLAYER_COMMAND_QUEUE:
@@ -617,7 +608,7 @@ player::ProcessCommand()
 		assert(!IsDecoderAtNextSong());
 
 		queued = true;
-		player_command_finished_locked(pc);
+		pc.CommandFinished();
 		break;
 
 	case PLAYER_COMMAND_PAUSE:
@@ -641,7 +632,7 @@ player::ProcessCommand()
 			pc.Lock();
 		}
 
-		player_command_finished_locked(pc);
+		pc.CommandFinished();
 		break;
 
 	case PLAYER_COMMAND_SEEK:
@@ -670,7 +661,7 @@ player::ProcessCommand()
 		pc.next_song->Free();
 		pc.next_song = nullptr;
 		queued = false;
-		player_command_finished_locked(pc);
+		pc.CommandFinished();
 		break;
 
 	case PLAYER_COMMAND_REFRESH:
@@ -684,7 +675,7 @@ player::ProcessCommand()
 		if (pc.elapsed_time < 0.0)
 			pc.elapsed_time = elapsed_time;
 
-		player_command_finished_locked(pc);
+		pc.CommandFinished();
 		break;
 	}
 }
@@ -930,7 +921,7 @@ player::Run()
 	if (pc.command == PLAYER_COMMAND_SEEK)
 		elapsed_time = pc.seek_where;
 
-	player_command_finished_locked(pc);
+	pc.CommandFinished();
 
 	while (true) {
 		ProcessCommand();
@@ -1138,7 +1129,7 @@ player_task(gpointer arg)
 				pc.next_song = nullptr;
 			}
 
-			player_command_finished_locked(pc);
+			pc.CommandFinished();
 			break;
 
 		case PLAYER_COMMAND_CLOSE_AUDIO:
@@ -1147,7 +1138,7 @@ player_task(gpointer arg)
 			audio_output_all_release();
 
 			pc.Lock();
-			player_command_finished_locked(pc);
+			pc.CommandFinished();
 
 			assert(buffer.IsEmptyUnsafe());
 
@@ -1157,7 +1148,7 @@ player_task(gpointer arg)
 			pc.Unlock();
 			audio_output_all_enable_disable();
 			pc.Lock();
-			player_command_finished_locked(pc);
+			pc.CommandFinished();
 			break;
 
 		case PLAYER_COMMAND_EXIT:
@@ -1176,12 +1167,12 @@ player_task(gpointer arg)
 				pc.next_song = nullptr;
 			}
 
-			player_command_finished_locked(pc);
+			pc.CommandFinished();
 			break;
 
 		case PLAYER_COMMAND_REFRESH:
 			/* no-op when not playing */
-			player_command_finished_locked(pc);
+			pc.CommandFinished();
 			break;
 
 		case PLAYER_COMMAND_NONE:
