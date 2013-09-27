@@ -22,12 +22,14 @@
 #include "OutputThread.hxx"
 #include "OutputInternal.hxx"
 #include "OutputPlugin.hxx"
+#include "OutputError.hxx"
 #include "MixerPlugin.hxx"
 #include "MixerControl.hxx"
 #include "notify.hxx"
 #include "filter/ReplayGainFilterPlugin.hxx"
 #include "FilterPlugin.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -191,8 +193,9 @@ audio_output_open(struct audio_output *ao,
 	if (open && ao->mixer != NULL) {
 		Error error;
 		if (!mixer_open(ao->mixer, error))
-			g_warning("Failed to open mixer for '%s': %s",
-				  ao->name, error.GetMessage());
+			FormatWarning(output_domain,
+				      "Failed to open mixer for '%s'",
+				      ao->name);
 	}
 
 	return open;

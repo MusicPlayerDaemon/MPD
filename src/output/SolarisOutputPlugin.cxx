@@ -49,9 +49,6 @@ struct audio_info {
 
 #endif
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "solaris_output"
-
 struct SolarisOutput {
 	struct audio_output base;
 

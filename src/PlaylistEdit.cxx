@@ -25,6 +25,7 @@
 
 #include "config.h"
 #include "Playlist.hxx"
+#include "PlaylistError.hxx"
 #include "PlayerControl.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
@@ -32,6 +33,7 @@
 #include "Idle.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
+#include "Log.hxx"
 
 #include <stdlib.h>
 
@@ -104,7 +106,7 @@ enum playlist_result
 playlist::AppendURI(struct player_control &pc,
 		    const char *uri, unsigned *added_id)
 {
-	g_debug("add to playlist: %s", uri);
+	FormatDebug(playlist_domain, "add to playlist: %s", uri);
 
 	const Database *db = nullptr;
 	Song *song;

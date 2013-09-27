@@ -24,18 +24,18 @@
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <audiofile.h>
 #include <af_vfs.h>
-#include <assert.h>
-#include <glib.h>
-#include <stdio.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "audiofile"
+#include <assert.h>
 
 /* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
 #define CHUNK_SIZE		1020
+
+static constexpr Domain audiofile_domain("audiofile");
 
 static int audiofile_get_duration(const char *file)
 {
@@ -59,7 +59,7 @@ audiofile_file_read(AFvirtualfile *vfile, void *data, size_t length)
 	Error error;
 	size_t nbytes = is->LockRead(data, length, error);
 	if (nbytes == 0 && error.IsDefined()) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return -1;
 	}
 
@@ -143,8 +143,9 @@ audiofile_setup_sample_format(AFfilehandle af_fp)
 
 	afGetSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
 	if (!audio_valid_sample_format(audiofile_bits_to_sample_format(bits))) {
-		g_debug("input file has %d bit samples, converting to 16",
-			bits);
+		FormatDebug(audiofile_domain,
+			    "input file has %d bit samples, converting to 16",
+			    bits);
 		bits = 16;
 	}
 
@@ -168,7 +169,7 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	char chunk[CHUNK_SIZE];
 
 	if (!is->IsSeekable()) {
-		g_warning("not seekable");
+		LogWarning(audiofile_domain, "not seekable");
 		return;
 	}
 
@@ -176,7 +177,7 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 
 	af_fp = afOpenVirtualFile(vf, "r", nullptr);
 	if (af_fp == AF_NULL_FILEHANDLE) {
-		g_warning("failed to input stream\n");
+		LogWarning(audiofile_domain, "failed to input stream");
 		return;
 	}
 
@@ -186,7 +187,7 @@ audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
 				       audiofile_setup_sample_format(af_fp),
 				       afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK),
 				       error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		afCloseFile(af_fp);
 		return;
 	}
@@ -232,8 +233,9 @@ audiofile_scan_file(const char *file,
 	int total_time = audiofile_get_duration(file);
 
 	if (total_time < 0) {
-		g_debug("Failed to get total song time from: %s\n",
-			file);
+		FormatWarning(audiofile_domain,
+			      "Failed to get total song time from: %s",
+			      file);
 		return false;
 	}
 

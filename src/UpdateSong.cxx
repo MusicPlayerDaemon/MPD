@@ -23,13 +23,13 @@
 #include "UpdateIO.hxx"
 #include "UpdateDatabase.hxx"
 #include "UpdateContainer.hxx"
+#include "UpdateDomain.hxx"
 #include "DatabaseLock.hxx"
 #include "Directory.hxx"
 #include "Song.hxx"
 #include "DecoderPlugin.hxx"
 #include "DecoderList.hxx"
-
-#include <glib.h>
+#include "Log.hxx"
 
 #include <unistd.h>
 
@@ -43,8 +43,9 @@ update_song_file2(Directory *directory,
 	db_unlock();
 
 	if (!directory_child_access(directory, name, R_OK)) {
-		g_warning("no read permissions on %s/%s",
-			  directory->GetPath(), name);
+		FormatError(update_domain,
+			    "no read permissions on %s/%s",
+			    directory->GetPath(), name);
 		if (song != NULL) {
 			db_lock();
 			delete_song(directory, song);
@@ -67,11 +68,13 @@ update_song_file2(Directory *directory,
 	}
 
 	if (song == NULL) {
-		g_debug("reading %s/%s", directory->GetPath(), name);
+		FormatDebug(update_domain, "reading %s/%s",
+			    directory->GetPath(), name);
 		song = Song::LoadFile(name, directory);
 		if (song == NULL) {
-			g_debug("ignoring unrecognized file %s/%s",
-				directory->GetPath(), name);
+			FormatDebug(update_domain,
+				    "ignoring unrecognized file %s/%s",
+				    directory->GetPath(), name);
 			return;
 		}
 
@@ -80,14 +83,15 @@ update_song_file2(Directory *directory,
 		db_unlock();
 
 		modified = true;
-		g_message("added %s/%s",
-			  directory->GetPath(), name);
+		FormatInfo(update_domain, "added %s/%s",
+			   directory->GetPath(), name);
 	} else if (st->st_mtime != song->mtime || walk_discard) {
-		g_message("updating %s/%s",
-			  directory->GetPath(), name);
+		FormatInfo(update_domain, "updating %s/%s",
+			   directory->GetPath(), name);
 		if (!song->UpdateFile()) {
-			g_debug("deleting unrecognized file %s/%s",
-				directory->GetPath(), name);
+			FormatDebug(update_domain,
+				    "deleting unrecognized file %s/%s",
+				    directory->GetPath(), name);
 			db_lock();
 			delete_song(directory, song);
 			db_unlock();

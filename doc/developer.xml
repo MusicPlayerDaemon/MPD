@@ -61,7 +61,7 @@
 foo(const char *abc, int xyz)
 {
         if (abc == NULL) {
-                g_warning("Foo happened!\n");
+                LogWarning("Foo happened!");
                 return -1;
         }
 

@@ -19,19 +19,17 @@
 
 #include "config.h"
 #include "InotifySource.hxx"
+#include "InotifyDomain.hxx"
 #include "util/fifo_buffer.h"
 #include "util/Error.hxx"
 #include "system/fd_util.h"
 #include "system/FatalError.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
 #include <sys/inotify.h>
 #include <unistd.h>
-#include <errno.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "inotify"
 
 bool
 InotifySource::OnSocketReady(gcc_unused unsigned flags)
@@ -120,8 +118,7 @@ InotifySource::Remove(unsigned wd)
 {
 	int ret = inotify_rm_watch(Get(), wd);
 	if (ret < 0 && errno != EINVAL)
-		g_warning("inotify_rm_watch() has failed: %s",
-			  g_strerror(errno));
+		LogErrno(inotify_domain, "inotify_rm_watch() has failed");
 
 	/* EINVAL may happen here when the file has been deleted; the
 	   kernel seems to auto-unregister deleted files */

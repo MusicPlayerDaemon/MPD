@@ -24,6 +24,8 @@
 #include "tag/TagHandler.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 #include <assert.h>
@@ -32,10 +34,9 @@
 
 #include <gme/gme.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "gme"
-
 #define SUBTUNE_PREFIX "tune_"
+
+static constexpr Domain gme_domain("gme");
 
 static constexpr unsigned GME_SAMPLE_RATE = 44100;
 static constexpr unsigned GME_CHANNELS = 2;
@@ -106,7 +107,7 @@ gme_container_scan(const char *path_fs, const unsigned int tnum)
 	Music_Emu *emu;
 	const char *gme_err = gme_open_file(path_fs, &emu, GME_SAMPLE_RATE);
 	if (gme_err != nullptr) {
-		g_warning("%s", gme_err);
+		LogWarning(gme_domain, gme_err);
 		return nullptr;
 	}
 
@@ -134,7 +135,7 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 		gme_open_file(path_container, &emu, GME_SAMPLE_RATE);
 	g_free(path_container);
 	if (gme_err != nullptr) {
-		g_warning("%s", gme_err);
+		LogWarning(gme_domain, gme_err);
 		return;
 	}
 
@@ -142,7 +143,7 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 	const int song_num = get_song_num(path_fs);
 	gme_err = gme_track_info(emu, &ti, song_num);
 	if (gme_err != nullptr) {
-		g_warning("%s", gme_err);
+		LogWarning(gme_domain, gme_err);
 		gme_delete(emu);
 		return;
 	}
@@ -158,7 +159,7 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 	if (!audio_format_init_checked(audio_format, GME_SAMPLE_RATE,
 				       SampleFormat::S16, GME_CHANNELS,
 				       error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		gme_free_info(ti);
 		gme_delete(emu);
 		return;
@@ -168,7 +169,7 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 
 	gme_err = gme_start_track(emu, song_num);
 	if (gme_err != nullptr)
-		g_warning("%s", gme_err);
+		LogWarning(gme_domain, gme_err);
 
 	if (ti->length > 0)
 		gme_set_fade(emu, ti->length);
@@ -179,7 +180,7 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 		short buf[GME_BUFFER_SAMPLES];
 		gme_err = gme_play(emu, GME_BUFFER_SAMPLES, buf);
 		if (gme_err != nullptr) {
-			g_warning("%s", gme_err);
+			LogWarning(gme_domain, gme_err);
 			return;
 		}
 
@@ -188,7 +189,7 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 			float where = decoder_seek_where(decoder);
 			gme_err = gme_seek(emu, int(where * 1000));
 			if (gme_err != nullptr)
-				g_warning("%s", gme_err);
+				LogWarning(gme_domain, gme_err);
 			decoder_command_finished(decoder);
 		}
 
@@ -211,7 +212,7 @@ gme_scan_file(const char *path_fs,
 		gme_open_file(path_container, &emu, GME_SAMPLE_RATE);
 	g_free(path_container);
 	if (gme_err != nullptr) {
-		g_warning("%s", gme_err);
+		LogWarning(gme_domain, gme_err);
 		return false;
 	}
 
@@ -220,7 +221,7 @@ gme_scan_file(const char *path_fs,
 	gme_info_t *ti;
 	gme_err = gme_track_info(emu, &ti, song_num);
 	if (gme_err != nullptr) {
-		g_warning("%s", gme_err);
+		LogWarning(gme_domain, gme_err);
 		gme_delete(emu);
 		return false;
 	}

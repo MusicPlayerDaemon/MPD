@@ -32,9 +32,6 @@
 #include <string>
 #include <list>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "client"
-
 enum {
 	CLIENT_MAX_SUBSCRIPTIONS = 16,
 	CLIENT_MAX_MESSAGES = 64,
@@ -122,6 +119,8 @@ private:
 	/* virtual methods from class TimeoutMonitor */
 	virtual void OnTimeout() override;
 };
+
+extern const class Domain client_domain;
 
 extern int client_timeout;
 extern size_t client_max_command_list_size;

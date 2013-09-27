@@ -28,6 +28,8 @@
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/DirectoryReader.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -37,6 +39,8 @@
 #include <unistd.h>
 #include <errno.h>
 #include <dirent.h>
+
+static constexpr Domain mapper_domain("mapper");
 
 /**
  * The absolute path of the music directory encoded in UTF-8.
@@ -57,12 +61,6 @@ static size_t music_dir_fs_length;
  */
 static Path playlist_dir_fs = Path::Null();
 
-static inline GQuark
-mapper_quark()
-{
-  return g_quark_from_static_string ("mapper");
-}
-
 /**
  * Duplicate a string, chop all trailing slashes.
  */
@@ -82,26 +80,30 @@ check_directory(const char *path_utf8, const Path &path_fs)
 {
 	struct stat st;
 	if (!StatFile(path_fs, st)) {
-		g_warning("Failed to stat directory \"%s\": %s",
-			  path_utf8, g_strerror(errno));
+		FormatErrno(mapper_domain,
+			    "Failed to stat directory \"%s\"",
+			    path_utf8);
 		return;
 	}
 
 	if (!S_ISDIR(st.st_mode)) {
-		g_warning("Not a directory: %s", path_utf8);
+		FormatError(mapper_domain,
+			    "Not a directory: %s", path_utf8);
 		return;
 	}
 
 #ifndef WIN32
 	const Path x = Path::Build(path_fs, ".");
 	if (!StatFile(x, st) && errno == EACCES)
-		g_warning("No permission to traverse (\"execute\") directory: %s",
-			  path_utf8);
+		FormatError(mapper_domain,
+			    "No permission to traverse (\"execute\") directory: %s",
+			    path_utf8);
 #endif
 
 	const DirectoryReader reader(path_fs);
 	if (reader.HasFailed() && errno == EACCES)
-		g_warning("No permission to read directory: %s", path_utf8);
+		FormatError(mapper_domain,
+			    "No permission to read directory: %s", path_utf8);
 }
 
 static void

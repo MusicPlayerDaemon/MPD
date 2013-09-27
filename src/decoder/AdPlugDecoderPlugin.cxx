@@ -23,6 +23,7 @@
 #include "DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <adplug/adplug.h>
 #include <adplug/emuopl.h>
@@ -30,9 +31,6 @@
 #include <glib.h>
 
 #include <assert.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "adplug"
 
 static unsigned sample_rate;
 
@@ -43,7 +41,7 @@ adplug_init(const config_param &param)
 
 	sample_rate = param.GetBlockValue("sample_rate", 48000u);
 	if (!audio_check_sample_rate(sample_rate, error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return false;
 	}
 

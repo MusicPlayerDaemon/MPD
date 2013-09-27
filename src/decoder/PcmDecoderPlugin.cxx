@@ -22,6 +22,7 @@
 #include "DecoderAPI.hxx"
 #include "InputStream.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 extern "C" {
 #include "util/byte_reverse.h"
@@ -31,9 +32,6 @@ extern "C" {
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h> /* for SEEK_SET */
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "pcm"
 
 static void
 pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
@@ -86,7 +84,7 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 			if (is->LockSeek(offset, SEEK_SET, error)) {
 				decoder_command_finished(decoder);
 			} else {
-				g_warning("seeking failed: %s", error.GetMessage());
+				LogError(error);
 				decoder_seek_error(decoder);
 			}
 

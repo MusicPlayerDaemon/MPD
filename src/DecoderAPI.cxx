@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "DecoderAPI.hxx"
+#include "DecoderError.hxx"
 #include "AudioConfig.hxx"
 #include "replay_gain_config.h"
 #include "MusicChunk.hxx"
@@ -29,15 +30,11 @@
 #include "Song.hxx"
 #include "InputStream.hxx"
 #include "util/Error.hxx"
-
-#include <glib.h>
+#include "Log.hxx"
 
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "decoder"
 
 void
 decoder_initialized(struct decoder *decoder,
@@ -67,14 +64,14 @@ decoder_initialized(struct decoder *decoder,
 	dc->client_cond.signal();
 	dc->Unlock();
 
-	g_debug("audio_format=%s, seekable=%s",
-		audio_format_to_string(dc->in_audio_format, &af_string),
-		seekable ? "true" : "false");
+	FormatDebug(decoder_domain, "audio_format=%s, seekable=%s",
+		    audio_format_to_string(dc->in_audio_format, &af_string),
+		    seekable ? "true" : "false");
 
 	if (dc->in_audio_format != dc->out_audio_format)
-		g_debug("converting to %s",
-			audio_format_to_string(dc->out_audio_format,
-					       &af_string));
+		FormatDebug(decoder_domain, "converting to %s",
+			    audio_format_to_string(dc->out_audio_format,
+						   &af_string));
 }
 
 /**
@@ -288,7 +285,7 @@ size_t decoder_read(struct decoder *decoder,
 	assert(nbytes > 0 || error.IsDefined() || is->IsEOF());
 
 	if (gcc_unlikely(nbytes == 0 && error.IsDefined()))
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 
 	is->Unlock();
 
@@ -404,7 +401,7 @@ decoder_data(struct decoder *decoder,
 			/* the PCM conversion has failed - stop
 			   playback, since we have no better way to
 			   bail out */
-			g_warning("%s", error.GetMessage());
+			LogError(error);
 			return DecoderCommand::STOP;
 		}
 	}

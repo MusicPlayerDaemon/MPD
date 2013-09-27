@@ -22,14 +22,12 @@
 #include "OutputAPI.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <ao/ao.h>
 #include <glib.h>
 
 #include <string.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "ao"
 
 /* An ao_sample_format, with all fields set to zero: */
 static ao_sample_format OUR_AO_FORMAT_INITIALIZER;
@@ -125,8 +123,8 @@ AoOutput::Configure(const config_param &param, Error &error)
 		return false;
 	}
 
-	g_debug("using ao driver \"%s\" for \"%s\"\n", ai->short_name,
-		param.GetBlockValue("name", nullptr));
+	FormatDebug(ao_output_domain, "using ao driver \"%s\" for \"%s\"\n",
+		    ai->short_name, param.GetBlockValue("name", nullptr));
 
 	value = param.GetBlockValue("options", nullptr);
 	if (value != nullptr) {

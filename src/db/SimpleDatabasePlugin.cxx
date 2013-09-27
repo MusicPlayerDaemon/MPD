@@ -31,6 +31,7 @@
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -169,7 +170,7 @@ SimpleDatabase::Open(Error &error)
 	if (!Load(error)) {
 		root->Free();
 
-		g_warning("Failed to load database: %s", error.GetMessage());
+		LogError(error);
 		error.Clear();
 
 		if (!Check(error))
@@ -284,15 +285,15 @@ SimpleDatabase::Save(Error &error)
 {
 	db_lock();
 
-	g_debug("removing empty directories from DB");
+	LogDebug(simple_db_domain, "removing empty directories from DB");
 	root->PruneEmpty();
 
-	g_debug("sorting DB");
+	LogDebug(simple_db_domain, "sorting DB");
 	root->Sort();
 
 	db_unlock();
 
-	g_debug("writing DB");
+	LogDebug(simple_db_domain, "writing DB");
 
 	FILE *fp = FOpen(path, FOpenMode::WriteText);
 	if (!fp) {

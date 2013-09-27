@@ -19,12 +19,12 @@
 
 #include "config.h" /* must be first for large file support */
 #include "UpdateIO.hxx"
+#include "src/UpdateDomain.hxx"
 #include "Directory.hxx"
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
-
-#include <glib.h>
+#include "Log.hxx"
 
 #include <errno.h>
 #include <unistd.h>
@@ -39,8 +39,8 @@ stat_directory(const Directory *directory, struct stat *st)
 	if (!StatFile(path_fs, *st)) {
 		int error = errno;
 		const std::string path_utf8 = path_fs.ToUTF8();
-		g_warning("Failed to stat %s: %s",
-			  path_utf8.c_str(), g_strerror(error));
+		FormatErrno(update_domain, error,
+			    "Failed to stat %s", path_utf8.c_str());
 		return -1;
 	}
 
@@ -58,8 +58,8 @@ stat_directory_child(const Directory *parent, const char *name,
 	if (!StatFile(path_fs, *st)) {
 		int error = errno;
 		const std::string path_utf8 = path_fs.ToUTF8();
-		g_warning("Failed to stat %s: %s",
-			  path_utf8.c_str(), g_strerror(error));
+		FormatErrno(update_domain, error,
+			    "Failed to stat %s", path_utf8.c_str());
 		return -1;
 	}
 

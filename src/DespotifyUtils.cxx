@@ -21,12 +21,14 @@
 #include "tag/Tag.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"
-
-#include <glib.h>
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 extern "C" {
 #include <despotify.h>
 }
+
+const Domain despotify_domain("despotify");
 
 static struct despotify_session *g_session;
 static void (*registered_callbacks[8])(struct despotify_session *,
@@ -121,24 +123,27 @@ struct despotify_session *mpd_despotify_get_session(void)
 	high_bitrate = config_get_bool(CONF_DESPOTIFY_HIGH_BITRATE, true);
 
 	if (user == NULL || passwd == NULL) {
-		g_debug("disabling despotify because account is not configured");
+		LogDebug(despotify_domain,
+			 "disabling despotify because account is not configured");
 		return nullptr;
 	}
 
 	if (!despotify_init()) {
-		g_debug("Can't initialize despotify\n");
+		LogWarning(despotify_domain, "Can't initialize despotify");
 		return nullptr;
 	}
 
 	g_session = despotify_init_client(callback, NULL,
 					  high_bitrate, true);
 	if (!g_session) {
-		g_debug("Can't initialize despotify client\n");
+		LogWarning(despotify_domain,
+			   "Can't initialize despotify client");
 		return nullptr;
 	}
 
 	if (!despotify_authenticate(g_session, user, passwd)) {
-		g_debug("Can't authenticate despotify session\n");
+		LogWarning(despotify_domain,
+			   "Can't authenticate despotify session");
 		despotify_exit(g_session);
 		return nullptr;
 	}

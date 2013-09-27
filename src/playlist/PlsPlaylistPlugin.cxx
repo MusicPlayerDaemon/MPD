@@ -25,10 +25,14 @@
 #include "Song.hxx"
 #include "tag/Tag.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
 #include <string>
+
+static constexpr Domain pls_domain("pls");
 
 static void
 pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
@@ -40,7 +44,8 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 	int num_entries = g_key_file_get_integer(keyfile, "playlist",
 						 "NumberOfEntries", &error);
 	if (error) {
-		g_debug("Invalid PLS file: '%s'", error->message);
+		FormatError(pls_domain,
+			    "Invalid PLS file: '%s'", error->message);
 		g_error_free(error);
 		error = NULL;
 
@@ -59,7 +64,8 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 		value = g_key_file_get_string(keyfile, "playlist", key,
 					      &error);
 		if(error) {
-			g_debug("Invalid PLS entry %s: '%s'",key, error->message);
+			FormatError(pls_domain, "Invalid PLS entry %s: '%s'",
+				    key, error->message);
 			g_error_free(error);
 			g_free(key);
 			return;
@@ -118,7 +124,7 @@ pls_open_stream(struct input_stream *is)
 		nbytes = is->LockRead(buffer, sizeof(buffer), error2);
 		if (nbytes == 0) {
 			if (error2.IsDefined()) {
-				g_warning("%s", error2.GetMessage());
+				LogError(error2);
 				return NULL;
 			}
 
@@ -130,7 +136,7 @@ pls_open_stream(struct input_stream *is)
 	} while (kf_data.length() < 65536);
 
 	if (kf_data.empty()) {
-		g_warning("KeyFile parser failed: No Data");
+		LogWarning(pls_domain, "KeyFile parser failed: No Data");
 		return NULL;
 	}
 
@@ -140,7 +146,8 @@ pls_open_stream(struct input_stream *is)
 					    G_KEY_FILE_NONE, &error);
 
 	if (!success) {
-		g_warning("KeyFile parser failed: %s", error->message);
+		FormatError(pls_domain,
+			    "KeyFile parser failed: %s", error->message);
 		g_error_free(error);
 		g_key_file_free(keyfile);
 		return NULL;

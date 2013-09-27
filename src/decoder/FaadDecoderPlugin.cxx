@@ -26,17 +26,13 @@
 #include "tag/TagHandler.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <neaacdec.h>
-
-#include <glib.h>
 
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "faad"
 
 #define AAC_MAX_CHANNELS	6
 
@@ -395,7 +391,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	Error error;
 	ret = faad_decoder_init(decoder, buffer, audio_format, error);
 	if (!ret) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		NeAACDecClose(decoder);
 		return;
 	}
@@ -424,21 +420,24 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 		decoded = faad_decoder_decode(decoder, buffer, &frame_info);
 
 		if (frame_info.error > 0) {
-			g_warning("error decoding AAC stream: %s\n",
-				  NeAACDecGetErrorMessage(frame_info.error));
+			FormatWarning(faad_decoder_domain,
+				      "error decoding AAC stream: %s",
+				      NeAACDecGetErrorMessage(frame_info.error));
 			break;
 		}
 
 		if (frame_info.channels != audio_format.channels) {
-			g_warning("channel count changed from %u to %u",
-				  audio_format.channels, frame_info.channels);
+			FormatInfo(faad_decoder_domain,
+				   "channel count changed from %u to %u",
+				   audio_format.channels, frame_info.channels);
 			break;
 		}
 
 		if (frame_info.samplerate != audio_format.sample_rate) {
-			g_warning("sample rate changed from %u to %lu",
-				  audio_format.sample_rate,
-				  (unsigned long)frame_info.samplerate);
+			FormatInfo(faad_decoder_domain,
+				   "sample rate changed from %u to %lu",
+				   audio_format.sample_rate,
+				   (unsigned long)frame_info.samplerate);
 			break;
 		}
 

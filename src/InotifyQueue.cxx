@@ -19,15 +19,12 @@
 
 #include "config.h"
 #include "InotifyQueue.hxx"
+#include "InotifyDomain.hxx"
 #include "UpdateGlue.hxx"
 #include "event/Loop.hxx"
-
-#include <glib.h>
+#include "Log.hxx"
 
 #include <string.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "inotify"
 
 enum {
 	/**
@@ -53,7 +50,8 @@ InotifyQueue::OnTimeout()
 			return;
 		}
 
-		g_debug("updating '%s' job=%u", uri_utf8, id);
+		FormatDebug(inotify_domain, "updating '%s' job=%u",
+			    uri_utf8, id);
 
 		queue.pop_front();
 	}

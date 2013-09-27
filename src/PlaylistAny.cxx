@@ -21,9 +21,11 @@
 #include "PlaylistAny.hxx"
 #include "PlaylistMapper.hxx"
 #include "PlaylistRegistry.hxx"
+#include "PlaylistError.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "InputStream.hxx"
+#include "Log.hxx"
 
 #include <assert.h>
 
@@ -43,8 +45,7 @@ playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond,
 	input_stream *is = input_stream::Open(uri, mutex, cond, error);
 	if (is == nullptr) {
 		if (error.IsDefined())
-			g_warning("Failed to open %s: %s",
-				  uri, error.GetMessage());
+			FormatError(error, "Failed to open %s", uri);
 
 		return nullptr;
 	}

@@ -23,17 +23,14 @@
 #include "ConfigData.hxx"
 #include "ConfigFile.hxx"
 #include "ConfigPath.hxx"
+#include "ConfigError.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "system/FatalError.hxx"
-
-#include <glib.h>
+#include "Log.hxx"
 
 #include <assert.h>
 #include <string.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "config"
 
 static ConfigData config_data;
 
@@ -64,8 +61,9 @@ Check(const config_param *param)
 
 	for (const auto &i : param->block_params) {
 		if (!i.used)
-			g_warning("option '%s' on line %i was not recognized",
-				  i.name.c_str(), i.line);
+			FormatWarning(config_domain,
+				      "option '%s' on line %i was not recognized",
+				      i.name.c_str(), i.line);
 	}
 }
 

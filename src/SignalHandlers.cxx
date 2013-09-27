@@ -24,14 +24,16 @@
 #ifndef WIN32
 
 #include "Log.hxx"
+#include "LogInit.hxx"
 #include "Main.hxx"
 #include "event/Loop.hxx"
 #include "GlobalEvents.hxx"
 #include "system/FatalError.hxx"
-
-#include <glib.h>
+#include "util/Domain.hxx"
 
 #include <signal.h>
+
+static constexpr Domain signal_handlers_domain("signal_handlers");
 
 static EventLoop *shutdown_loop;
 
@@ -51,7 +53,7 @@ x_sigaction(int signum, const struct sigaction *act)
 static void
 handle_reload_event(void)
 {
-	g_debug("got SIGHUP, reopening log files");
+	LogDebug(signal_handlers_domain, "got SIGHUP, reopening log files");
 	cycle_log_files();
 }
 

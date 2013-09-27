@@ -43,6 +43,7 @@
 #include "Idle.hxx"
 #include "SignalHandlers.hxx"
 #include "Log.hxx"
+#include "LogInit.hxx"
 #include "GlobalEvents.hxx"
 #include "InputInit.hxx"
 #include "event/Loop.hxx"
@@ -56,6 +57,7 @@
 #include "Daemon.hxx"
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigData.hxx"
 #include "ConfigDefaults.hxx"
@@ -98,17 +100,14 @@ enum {
 	DEFAULT_BUFFER_BEFORE_PLAY = 10,
 };
 
+static constexpr Domain main_domain("main");
+
 GThread *main_task;
 EventLoop *main_loop;
 
 Instance *instance;
 
 static StateFile *state_file;
-
-static inline GQuark main_quark()
-{
-  return g_quark_from_static_string ("main");
-}
 
 static bool
 glue_daemonize_init(const struct options *options, Error &error)
@@ -161,15 +160,18 @@ glue_db_init_and_load(void)
 	const struct config_param *path = config_get_param(CONF_DB_FILE);
 
 	if (param != nullptr && path != nullptr)
-		g_message("Found both 'database' and 'db_file' setting - ignoring the latter");
+		LogInfo(main_domain,
+			"Found both 'database' and 'db_file' setting - ignoring the latter");
 
 	if (!mapper_has_music_directory()) {
 		if (param != nullptr)
-			g_message("Found database setting without "
-				  "music_directory - disabling database");
+			LogInfo(main_domain,
+				"Found database setting without "
+				"music_directory - disabling database");
 		if (path != nullptr)
-			g_message("Found db_file setting without "
-				  "music_directory - disabling database");
+			LogInfo(main_domain,
+				"Found db_file setting without "
+				"music_directory - disabling database");
 		return true;
 	}
 
@@ -372,12 +374,12 @@ int mpd_main(int argc, char *argv[])
 
 	success = parse_cmdline(argc, argv, &options, error);
 	if (!success) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return EXIT_FAILURE;
 	}
 
 	if (!glue_daemonize_init(&options, error)) {
-		g_printerr("%s\n", error.GetMessage());
+		LogError(error);
 		return EXIT_FAILURE;
 	}
 
@@ -385,7 +387,7 @@ int mpd_main(int argc, char *argv[])
 	TagLoadConfig();
 
 	if (!log_init(options.verbose, options.log_stderr, error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return EXIT_FAILURE;
 	}
 
@@ -399,7 +401,7 @@ int mpd_main(int argc, char *argv[])
 
 	success = listen_global_init(error);
 	if (!success) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return EXIT_FAILURE;
 	}
 
@@ -414,7 +416,7 @@ int mpd_main(int argc, char *argv[])
 	Path::GlobalInit();
 
 	if (!glue_mapper_init(error)) {
-		g_printerr("%s\n", error.GetMessage());
+		LogError(error);
 		return EXIT_FAILURE;
 	}
 
@@ -426,7 +428,7 @@ int mpd_main(int argc, char *argv[])
 #endif
 
 	if (!pcm_resample_global_init(error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return EXIT_FAILURE;
 	}
 
@@ -446,7 +448,7 @@ int mpd_main(int argc, char *argv[])
 	replay_gain_global_init();
 
 	if (!input_stream_global_init(error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return EXIT_FAILURE;
 	}
 
@@ -486,7 +488,8 @@ int mpd_main(int argc, char *argv[])
 						     G_MAXUINT));
 #else
 	if (success)
-		g_warning("inotify: auto_update was disabled. enable during compilation phase");
+		FormatWarning(main_domain,
+			      "inotify: auto_update was disabled. enable during compilation phase");
 #endif
 
 	config_global_check();
@@ -524,8 +527,9 @@ int mpd_main(int argc, char *argv[])
 
 	start = clock();
 	DatabaseGlobalDeinit();
-	g_debug("db_finish took %f seconds",
-		((float)(clock()-start))/CLOCKS_PER_SEC);
+	FormatDebug(main_domain,
+		    "db_finish took %f seconds",
+		    ((float)(clock()-start))/CLOCKS_PER_SEC);
 
 #ifdef ENABLE_SQLITE
 	sticker_global_finish();

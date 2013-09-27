@@ -27,9 +27,6 @@
 #include <assert.h>
 #include <string.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "icy_server"
-
 char*
 icy_server_metadata_header(const char *name,
 			   const char *genre, const char *url,

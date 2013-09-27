@@ -19,6 +19,8 @@
 
 #include "config.h" /* must be first for large file support */
 #include "Aiff.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -26,11 +28,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <errno.h>
 #include <string.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "aiff"
+static constexpr Domain aiff_domain("aiff");
 
 struct aiff_header {
 	char id[4];
@@ -50,15 +50,14 @@ aiff_seek_id3(FILE *file)
 
 	struct stat st;
 	if (fstat(fileno(file), &st) < 0) {
-		g_warning("Failed to stat file descriptor: %s",
-			  g_strerror(errno));
+		LogErrno(aiff_domain, "Failed to stat file descriptor");
 		return 0;
 	}
 
 	/* seek to the beginning and read the AIFF header */
 
 	if (fseek(file, 0, SEEK_SET) != 0) {
-		g_warning("Failed to seek: %s", g_strerror(errno));
+		LogErrno(aiff_domain, "Failed to seek");
 		return 0;
 	}
 

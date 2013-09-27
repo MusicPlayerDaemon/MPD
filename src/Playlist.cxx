@@ -19,16 +19,15 @@
 
 #include "config.h"
 #include "Playlist.hxx"
+#include "PlaylistError.hxx"
 #include "PlayerControl.hxx"
 #include "Song.hxx"
 #include "Idle.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "playlist"
 
 void
 playlist::FullIncrementVersions()
@@ -65,7 +64,8 @@ playlist_queue_song_order(struct playlist *playlist, struct player_control *pc,
 	Song *song = playlist->queue.GetOrder(order)->DupDetached();
 
 	uri = song->GetURI();
-	g_debug("queue song %i:\"%s\"", playlist->queued, uri);
+	FormatDebug(playlist_domain, "queue song %i:\"%s\"",
+		    playlist->queued, uri);
 	g_free(uri);
 
 	pc->EnqueueSong(song);
@@ -156,7 +156,7 @@ playlist::PlayOrder(player_control &pc, int order)
 	Song *song = queue.GetOrder(order)->DupDetached();
 
 	char *uri = song->GetURI();
-	g_debug("play %i:\"%s\"", order, uri);
+	FormatDebug(playlist_domain, "play %i:\"%s\"", order, uri);
 	g_free(uri);
 
 	pc.Play(song);

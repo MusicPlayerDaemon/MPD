@@ -19,15 +19,17 @@
 
 #include "config.h" /* must be first for large file support */
 #include "ArchiveLookup.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
-#include <stdio.h>
+#include <glib.h>
 
 #include <string.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
-#include <glib.h>
+
+static constexpr Domain archive_domain("archive");
 
 /**
  *
@@ -65,7 +67,8 @@ bool archive_lookup(char *pathname, char **archive, char **inpath, char **suffix
 		//try to stat if its real directory
 		if (stat(pathdupe, &st_info) == -1) {
 			if (errno != ENOTDIR) {
-				g_warning("stat %s failed (errno=%d)\n", pathdupe, errno);
+				FormatErrno(archive_domain,
+					    "Failed to stat %s", pathdupe);
 				break;
 			}
 		} else {
@@ -92,7 +95,9 @@ bool archive_lookup(char *pathname, char **archive, char **inpath, char **suffix
 				}
 				break;
 			} else {
-				g_warning("not a regular file %s\n", pathdupe);
+				FormatError(archive_domain,
+					    "Not a regular file: %s",
+					    pathdupe);
 				break;
 			}
 		}

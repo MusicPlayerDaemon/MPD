@@ -24,6 +24,7 @@
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
 #include "tag/Tag.hxx"
+#include "Log.hxx"
 
 extern "C" {
 #include <despotify.h>
@@ -85,7 +86,7 @@ refill_buffer(DespotifyInputStream *ctx)
 			break;
 
 		if (rc < 0) {
-			g_debug("despotify_get_pcm error\n");
+			LogDebug(despotify_domain, "despotify_get_pcm error");
 			ctx->eof = true;
 			break;
 		}
@@ -108,14 +109,14 @@ static void callback(gcc_unused struct despotify_session* ds,
 		break;
 
 	case DESPOTIFY_TRACK_PLAY_ERROR:
-		g_debug("Track play error\n");
+		LogWarning(despotify_domain, "Track play error");
 		ctx->eof = true;
 		ctx->len_available = 0;
 		break;
 
 	case DESPOTIFY_END_OF_PLAYLIST:
 		ctx->eof = true;
-		g_debug("End of playlist: %d\n", ctx->eof);
+		FormatDebug(despotify_domain, "End of playlist: %d", ctx->eof);
 		break;
 	}
 }
@@ -139,7 +140,7 @@ input_despotify_open(const char *url,
 
 	ds_link = despotify_link_from_uri(url + 6);
 	if (!ds_link) {
-		g_debug("Can't find %s\n", url);
+		FormatDebug(despotify_domain, "Can't find %s", url);
 		return NULL;
 	}
 	if (ds_link->type != LINK_TYPE_TRACK) {

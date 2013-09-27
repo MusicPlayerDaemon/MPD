@@ -26,6 +26,8 @@
 #include "Song.hxx"
 #include "tag/Tag.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 #include <yajl/yajl_parse.h>
@@ -36,13 +38,16 @@ static struct {
 	char *apikey;
 } soundcloud_config;
 
+static constexpr Domain soundcloud_domain("soundcloud");
+
 static bool
 soundcloud_init(const config_param &param)
 {
 	soundcloud_config.apikey = param.DupBlockString("apikey");
 	if (soundcloud_config.apikey == NULL) {
-		g_debug("disabling the soundcloud playlist plugin "
-			"because API key is not set");
+		LogDebug(soundcloud_domain,
+			 "disabling the soundcloud playlist plugin "
+			 "because API key is not set");
 		return false;
 	}
 
@@ -254,7 +259,7 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 							error);
 	if (input_stream == NULL) {
 		if (error.IsDefined())
-			g_warning("%s", error.GetMessage());
+			LogError(error);
 		return -1;
 	}
 
@@ -269,7 +274,7 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 			input_stream->Read(buffer, sizeof(buffer), error);
 		if (nbytes == 0) {
 			if (error.IsDefined())
-				g_warning("%s", error.GetMessage());
+				LogError(error);
 
 			if (input_stream->IsEOF()) {
 				done = true;
@@ -296,7 +301,7 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 		    )
 		{
 			unsigned char *str = yajl_get_error(hand, 1, ubuffer, nbytes);
-			g_warning("%s", str);
+			LogError(soundcloud_domain, (const char *)str);
 			yajl_free_error(hand, str);
 			break;
 		}
@@ -341,7 +346,9 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	rest = p;
 
 	if (strcmp(scheme, "soundcloud") != 0) {
-		g_warning("incompatible scheme for soundcloud plugin: %s", scheme);
+		FormatWarning(soundcloud_domain,
+			      "incompatible scheme for soundcloud plugin: %s",
+			      scheme);
 		g_free(s);
 		return NULL;
 	}
@@ -361,7 +368,7 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	g_free(s);
 
 	if (u == NULL) {
-		g_warning("unknown soundcloud URI");
+		LogWarning(soundcloud_domain, "unknown soundcloud URI");
 		return NULL;
 	}
 

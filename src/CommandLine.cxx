@@ -20,6 +20,7 @@
 #include "config.h"
 #include "CommandLine.hxx"
 #include "ls.hxx"
+#include "LogInit.hxx"
 #include "Log.hxx"
 #include "ConfigGlobal.hxx"
 #include "DecoderList.hxx"
@@ -197,7 +198,8 @@ parse_cmdline(int argc, char **argv, struct options *options,
 	options->daemon = !option_no_daemon;
 
 	if (option_no_config) {
-		g_debug("Ignoring config, using daemon defaults\n");
+		LogDebug(cmdline_domain,
+			 "Ignoring config, using daemon defaults");
 		return true;
 	} else if (argc <= 1) {
 		/* default configuration file path */

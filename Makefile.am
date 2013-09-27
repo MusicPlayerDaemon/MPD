@@ -129,6 +129,7 @@ src_mpd_SOURCES = \
 	src/FilterPlugin.cxx src/FilterPlugin.hxx \
 	src/FilterInternal.hxx \
 	src/FilterRegistry.cxx src/FilterRegistry.hxx \
+	src/UpdateDomain.cxx src/UpdateDomain.hxx \
 	src/UpdateGlue.cxx src/UpdateGlue.hxx \
 	src/UpdateQueue.cxx src/UpdateQueue.hxx \
 	src/UpdateIO.cxx src/UpdateIO.hxx \
@@ -154,7 +155,8 @@ src_mpd_SOURCES = \
 	src/ClientSubscribe.cxx src/ClientSubscribe.hxx \
 	src/ClientFile.cxx src/ClientFile.hxx \
 	src/Listen.cxx src/Listen.hxx \
-	src/Log.cxx src/Log.hxx \
+	src/LogInit.cxx src/LogInit.hxx \
+	src/Log.cxx src/Log.hxx src/LogV.hxx \
 	src/ls.cxx src/ls.hxx \
 	src/IOThread.cxx src/IOThread.hxx \
 	src/Main.cxx src/Main.hxx \
@@ -233,6 +235,7 @@ endif
 
 if ENABLE_INOTIFY
 src_mpd_SOURCES += \
+	src/InotifyDomain.cxx src/InotifyDomain.hxx \
 	src/InotifySource.cxx src/InotifySource.hxx \
 	src/InotifyQueue.cxx src/InotifyQueue.hxx \
 	src/InotifyUpdate.cxx src/InotifyUpdate.hxx
@@ -523,6 +526,7 @@ libdecoder_plugins_a_SOURCES += \
 	src/decoder/OggUtil.hxx \
 	src/decoder/OggSyncState.hxx \
 	src/decoder/OggFind.cxx src/decoder/OggFind.hxx \
+	src/decoder/OpusDomain.cxx src/decoder/OpusDomain.hxx \
 	src/decoder/OpusReader.hxx \
 	src/decoder/OpusHead.hxx \
 	src/decoder/OpusHead.cxx \
@@ -557,6 +561,7 @@ endif
 
 if ENABLE_VORBIS_DECODER
 libdecoder_plugins_a_SOURCES += \
+	src/decoder/VorbisDomain.cxx src/decoder/VorbisDomain.hxx \
 	src/decoder/VorbisComments.cxx src/decoder/VorbisComments.hxx \
 	src/decoder/VorbisDecoderPlugin.cxx src/decoder/VorbisDecoderPlugin.h
 endif
@@ -567,6 +572,7 @@ libdecoder_plugins_a_SOURCES += \
 	src/decoder/FlacIOHandle.cxx src/decoder/FlacIOHandle.hxx \
 	src/decoder/FlacMetadata.cxx src/decoder/FlacMetadata.hxx \
 	src/decoder/FlacPcm.cxx src/decoder/FlacPcm.hxx \
+	src/decoder/FlacDomain.cxx src/decoder/FlacDomain.hxx \
 	src/decoder/FlacCommon.cxx src/decoder/FlacCommon.hxx \
 	src/decoder/FlacDecoderPlugin.cxx \
 	src/decoder/FlacDecoderPlugin.h
@@ -1062,13 +1068,17 @@ test_read_conf_LDADD = \
 	libsystem.a \
 	libfs.a \
 	$(GLIB_LIBS)
-test_read_conf_SOURCES = test/read_conf.cxx
+test_read_conf_SOURCES = \
+	src/Log.cxx \
+	test/read_conf.cxx
 
 test_run_resolver_LDADD = \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
-test_run_resolver_SOURCES = test/run_resolver.cxx
+test_run_resolver_SOURCES = \
+	src/Log.cxx \
+	test/run_resolver.cxx
 
 test_DumpDatabase_LDADD = \
 	$(DB_LIBS) \
@@ -1079,6 +1089,7 @@ test_DumpDatabase_LDADD = \
 	libfs.a \
 	$(GLIB_LIBS)
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
+	src/Log.cxx \
 	src/DatabaseError.cxx \
 	src/DatabaseRegistry.cxx \
 	src/DatabaseSelection.cxx \
@@ -1102,6 +1113,7 @@ test_run_input_LDADD = \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.cxx \
 	test/stdbin.h \
+	src/Log.cxx \
 	src/IOThread.cxx \
 	src/TagSave.cxx
 
@@ -1118,6 +1130,7 @@ test_visit_archive_LDADD = \
 	libfs.a \
 	$(GLIB_LIBS)
 test_visit_archive_SOURCES = test/visit_archive.cxx \
+	src/Log.cxx \
 	src/IOThread.cxx \
 	src/InputStream.cxx
 
@@ -1139,6 +1152,7 @@ test_dump_text_file_LDADD = \
 	$(GLIB_LIBS)
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	test/stdbin.h \
+	src/Log.cxx \
 	src/IOThread.cxx \
 	src/TextInputStream.cxx
 
@@ -1158,6 +1172,7 @@ test_dump_playlist_LDADD = \
 	$(GLIB_LIBS)
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	$(DECODER_SRC) \
+	src/Log.cxx \
 	src/IOThread.cxx \
 	src/Song.cxx src/TagSave.cxx \
 	src/TagFile.cxx \
@@ -1185,6 +1200,7 @@ test_run_decoder_LDADD = \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/stdbin.h \
+	src/Log.cxx \
 	src/IOThread.cxx \
 	src/ReplayGainInfo.cxx \
 	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
@@ -1206,6 +1222,7 @@ test_read_tags_LDADD = \
 	libutil.a \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.cxx \
+	src/Log.cxx \
 	src/IOThread.cxx \
 	src/ReplayGainInfo.cxx \
 	src/CheckAudioFormat.cxx \
@@ -1216,7 +1233,9 @@ test_dump_rva2_LDADD = \
 	$(TAG_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
-test_dump_rva2_SOURCES = test/dump_rva2.cxx
+test_dump_rva2_SOURCES = \
+	src/Log.cxx \
+	test/dump_rva2.cxx
 endif
 
 test_run_filter_LDADD = \
@@ -1229,6 +1248,7 @@ test_run_filter_LDADD = \
 test_run_filter_SOURCES = test/run_filter.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/stdbin.h \
+	src/Log.cxx \
 	src/FilterPlugin.cxx src/FilterRegistry.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
@@ -1248,6 +1268,7 @@ if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
 test_run_encoder_SOURCES = test/run_encoder.cxx \
 	test/stdbin.h \
+	src/Log.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
 	src/AudioParser.cxx
@@ -1266,6 +1287,7 @@ if ENABLE_VORBIS_ENCODER
 noinst_PROGRAMS += test/test_vorbis_encoder
 test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.cxx \
 	test/stdbin.h \
+	src/Log.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
 	src/AudioParser.cxx \
@@ -1302,6 +1324,7 @@ test_run_normalize_LDADD = \
 	$(GLIB_LIBS)
 
 test_run_convert_SOURCES = test/run_convert.cxx \
+	src/Log.cxx \
 	src/AudioFormat.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioParser.cxx
@@ -1326,6 +1349,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 test_run_output_SOURCES = test/run_output.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/stdbin.h \
+	src/Log.cxx \
 	src/IOThread.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
@@ -1353,6 +1377,7 @@ test_read_mixer_LDADD = \
 	libfs.a \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.cxx \
+	src/Log.cxx \
 	src/MixerControl.cxx \
 	src/FilterPlugin.cxx \
 	src/filter/VolumeFilterPlugin.cxx
@@ -1372,6 +1397,8 @@ endif
 if ENABLE_INOTIFY
 noinst_PROGRAMS += test/run_inotify
 test_run_inotify_SOURCES = test/run_inotify.cxx \
+	src/Log.cxx \
+	src/InotifyDomain.cxx \
 	src/InotifySource.cxx
 test_run_inotify_LDADD = \
 	libevent.a \

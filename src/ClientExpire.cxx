@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ClientInternal.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -37,7 +38,7 @@ Client::OnTimeout()
 {
 	if (!IsExpired()) {
 		assert(!idle_waiting);
-		g_debug("[%u] timeout", num);
+		FormatDebug(client_domain, "[%u] timeout", num);
 	}
 
 	Close();

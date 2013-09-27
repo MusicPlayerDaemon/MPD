@@ -23,6 +23,7 @@
 #include "ConfigError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <assert.h>
 
@@ -37,9 +38,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "jack"
 
 enum {
 	MAX_PORTS = 16,
@@ -216,14 +214,14 @@ set_audioformat(JackOutput *jd, AudioFormat &audio_format)
 static void
 mpd_jack_error(const char *msg)
 {
-	g_warning("%s", msg);
+	LogError(jack_output_domain, msg);
 }
 
 #ifdef HAVE_JACK_SET_INFO_FUNCTION
 static void
 mpd_jack_info(const char *msg)
 {
-	g_message("%s", msg);
+	LogInfo(jack_output_domain, msg);
 }
 #endif
 
@@ -360,8 +358,9 @@ mpd_jack_init(const config_param &param, Error &error)
 		/* compatibility with MPD < 0.16 */
 		value = param.GetBlockValue("ports", nullptr);
 		if (value != nullptr)
-			g_warning("deprecated option 'ports' in line %d",
-				  param.line);
+			FormatWarning(jack_output_domain,
+				      "deprecated option 'ports' in line %d",
+				      param.line);
 	}
 
 	if (value != nullptr) {
@@ -376,10 +375,11 @@ mpd_jack_init(const config_param &param, Error &error)
 
 	if (jd->num_destination_ports > 0 &&
 	    jd->num_destination_ports != jd->num_source_ports)
-		g_warning("number of source ports (%u) mismatches the "
-			  "number of destination ports (%u) in line %d",
-			  jd->num_source_ports, jd->num_destination_ports,
-			  param.line);
+		FormatWarning(jack_output_domain,
+			      "number of source ports (%u) mismatches the "
+			      "number of destination ports (%u) in line %d",
+			      jd->num_source_ports, jd->num_destination_ports,
+			      param.line);
 
 	jd->ringbuffer_size = param.GetBlockValue("ringbuffer_size", 32768u);
 
@@ -500,9 +500,10 @@ mpd_jack_start(JackOutput *jd, Error &error)
 		     num_destination_ports < MAX_PORTS &&
 			     jports[num_destination_ports] != nullptr;
 		     ++num_destination_ports) {
-			g_debug("destination_port[%u] = '%s'\n",
-				num_destination_ports,
-				jports[num_destination_ports]);
+			FormatDebug(jack_output_domain,
+				    "destination_port[%u] = '%s'\n",
+				    num_destination_ports,
+				    jports[num_destination_ports]);
 			destination_ports[num_destination_ports] =
 				jports[num_destination_ports];
 		}

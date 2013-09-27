@@ -34,9 +34,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "recorder"
-
 struct RecorderOutput {
 	struct audio_output base;
 

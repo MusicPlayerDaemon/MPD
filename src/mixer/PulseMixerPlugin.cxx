@@ -24,6 +24,7 @@
 #include "GlobalEvents.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -36,9 +37,6 @@
 
 #include <assert.h>
 #include <string.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "pulse_mixer"
 
 struct PulseMixer final : public Mixer {
 	PulseOutput *output;
@@ -104,8 +102,9 @@ pulse_mixer_update(PulseMixer *pm,
 					   pa_stream_get_index(stream),
 					   pulse_mixer_volume_cb, pm);
 	if (o == NULL) {
-		g_warning("pa_context_get_sink_input_info() failed: %s",
-			  pa_strerror(pa_context_errno(context)));
+		FormatError(pulse_mixer_domain,
+			    "pa_context_get_sink_input_info() failed: %s",
+			    pa_strerror(pa_context_errno(context)));
 		pulse_mixer_offline(pm);
 		return;
 	}
@@ -125,8 +124,9 @@ pulse_mixer_on_connect(gcc_unused PulseMixer *pm,
 				 (pa_subscription_mask_t)PA_SUBSCRIPTION_MASK_SINK_INPUT,
 				 NULL, NULL);
 	if (o == NULL) {
-		g_warning("pa_context_subscribe() failed: %s",
-			  pa_strerror(pa_context_errno(context)));
+		FormatError(pulse_mixer_domain,
+			    "pa_context_subscribe() failed: %s",
+			    pa_strerror(pa_context_errno(context)));
 		return;
 	}
 

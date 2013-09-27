@@ -19,6 +19,8 @@
 
 #include "config.h" /* must be first for large file support */
 #include "Riff.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -26,11 +28,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <errno.h>
 #include <string.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "riff"
+static constexpr Domain riff_domain("riff");
 
 struct riff_header {
 	char id[4];
@@ -50,15 +50,14 @@ riff_seek_id3(FILE *file)
 
 	struct stat st;
 	if (fstat(fileno(file), &st) < 0) {
-		g_warning("Failed to stat file descriptor: %s",
-			  g_strerror(errno));
+		LogErrno(riff_domain, "Failed to stat file descriptor");
 		return 0;
 	}
 
 	/* seek to the beginning and read the RIFF header */
 
 	if (fseek(file, 0, SEEK_SET) != 0) {
-		g_warning("Failed to seek: %s", g_strerror(errno));
+		LogErrno(riff_domain, "Failed to seek");
 		return 0;
 	}
 

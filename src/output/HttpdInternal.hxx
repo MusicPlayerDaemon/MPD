@@ -205,4 +205,6 @@ private:
 			      size_t address_length, int uid) override;
 };
 
+extern const class Domain httpd_output_domain;
+
 #endif

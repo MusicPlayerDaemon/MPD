@@ -26,14 +26,12 @@
 #include "Volume.hxx"
 #include "event/Loop.hxx"
 #include "fs/FileSystem.hxx"
-
-#include <glib.h>
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <string.h>
-#include <errno.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "state_file"
+static constexpr Domain state_file_domain("state_file");
 
 StateFile::StateFile(Path &&_path,
 		     Partition &_partition, EventLoop &_loop)
@@ -66,12 +64,13 @@ StateFile::IsModified() const
 void
 StateFile::Write()
 {
-	g_debug("Saving state file %s", path_utf8.c_str());
+	FormatDebug(state_file_domain,
+		    "Saving state file %s", path_utf8.c_str());
 
 	FILE *fp = FOpen(path, FOpenMode::WriteText);
-	if (G_UNLIKELY(!fp)) {
-		g_warning("failed to create %s: %s",
-			  path_utf8.c_str(), g_strerror(errno));
+	if (gcc_unlikely(!fp)) {
+		FormatErrno(state_file_domain, "failed to create %s",
+			    path_utf8.c_str());
 		return;
 	}
 
@@ -89,12 +88,12 @@ StateFile::Read()
 {
 	bool success;
 
-	g_debug("Loading state file %s", path_utf8.c_str());
+	FormatDebug(state_file_domain, "Loading state file %s", path_utf8.c_str());
 
 	TextFile file(path);
 	if (file.HasFailed()) {
-		g_warning("failed to open %s: %s",
-			  path_utf8.c_str(), g_strerror(errno));
+		FormatErrno(state_file_domain, "failed to open %s",
+			    path_utf8.c_str());
 		return;
 	}
 
@@ -105,7 +104,9 @@ StateFile::Read()
 			playlist_state_restore(line, file, &partition.playlist,
 					       &partition.pc);
 		if (!success)
-			g_warning("Unrecognized line in state file: %s", line);
+			FormatError(state_file_domain,
+				    "Unrecognized line in state file: %s",
+				    line);
 	}
 
 	RememberVersions();

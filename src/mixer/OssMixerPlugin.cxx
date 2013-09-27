@@ -23,6 +23,7 @@
 #include "system/fd_util.h"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -190,8 +191,9 @@ OssMixer::GetVolume(Error &error)
 	right = (level & 0xff00) >> 8;
 
 	if (left != right) {
-		g_warning("volume for left and right is not the same, \"%i\" and "
-			  "\"%i\"\n", left, right);
+		FormatWarning(oss_mixer_domain,
+			      "volume for left and right is not the same, \"%i\" and "
+			      "\"%i\"\n", left, right);
 	}
 
 	return left;

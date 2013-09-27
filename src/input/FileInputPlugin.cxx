@@ -33,9 +33,6 @@
 #include <string.h>
 #include <glib.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "input_file"
-
 static constexpr Domain file_domain("file");
 
 struct FileInputStream {

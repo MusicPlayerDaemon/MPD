@@ -20,14 +20,15 @@
 #include "config.h"
 #include "IcyMetaDataParser.hxx"
 #include "tag/Tag.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <string.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "icy_metadata"
+static constexpr Domain icy_metadata_domain("icy_metadata");
 
 void
 IcyMetaDataParser::Reset()
@@ -88,7 +89,8 @@ icy_parse_tag_item(Tag &tag, const char *item)
 		if (strcmp(p[0], "StreamTitle") == 0)
 			icy_add_item(tag, TAG_TITLE, p[1]);
 		else
-			g_debug("unknown icy-tag: '%s'", p[0]);
+			FormatDebug(icy_metadata_domain,
+				    "unknown icy-tag: '%s'", p[0]);
 	}
 
 	g_strfreev(p);

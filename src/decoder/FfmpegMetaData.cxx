@@ -25,9 +25,6 @@
 #include "tag/TagTable.hxx"
 #include "tag/TagHandler.hxx"
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "ffmpeg"
-
 static const struct tag_table ffmpeg_tags[] = {
 	{ "year", TAG_DATE },
 	{ "author-sort", TAG_ARTIST_SORT },

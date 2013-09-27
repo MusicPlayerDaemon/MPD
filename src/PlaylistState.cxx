@@ -24,12 +24,14 @@
 
 #include "config.h"
 #include "PlaylistState.hxx"
+#include "PlaylistError.hxx"
 #include "Playlist.hxx"
 #include "QueueSave.hxx"
 #include "TextFile.hxx"
 #include "PlayerControl.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"
+#include "Log.hxx"
 
 #include <string.h>
 #include <stdlib.h>
@@ -102,7 +104,7 @@ playlist_state_load(TextFile &file, struct playlist *playlist)
 {
 	const char *line = file.ReadLine();
 	if (line == nullptr) {
-		g_warning("No playlist in state file");
+		LogWarning(playlist_domain, "No playlist in state file");
 		return;
 	}
 
@@ -111,8 +113,9 @@ playlist_state_load(TextFile &file, struct playlist *playlist)
 
 		line = file.ReadLine();
 		if (line == nullptr) {
-			g_warning("'" PLAYLIST_STATE_FILE_PLAYLIST_END
-				  "' not found in state file");
+			LogWarning(playlist_domain,
+				   "'" PLAYLIST_STATE_FILE_PLAYLIST_END
+				   "' not found in state file");
 			break;
 		}
 	}

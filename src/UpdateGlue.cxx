@@ -22,11 +22,13 @@
 #include "UpdateQueue.hxx"
 #include "UpdateWalk.hxx"
 #include "UpdateRemove.hxx"
+#include "UpdateDomain.hxx"
 #include "Mapper.hxx"
 #include "DatabaseSimple.hxx"
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 extern "C" {
 #include "stats.h"
@@ -39,9 +41,6 @@ extern "C" {
 #include <glib.h>
 
 #include <assert.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "update"
 
 static enum update_progress {
 	UPDATE_PROGRESS_IDLE = 0,
@@ -71,23 +70,22 @@ static void * update_task(void *_path)
 	const char *path = (const char *)_path;
 
 	if (path != NULL && *path != 0)
-		g_debug("starting: %s", path);
+		FormatDebug(update_domain, "starting: %s", path);
 	else
-		g_debug("starting");
+		LogDebug(update_domain, "starting");
 
 	modified = update_walk(path, discard);
 
 	if (modified || !db_exists()) {
 		Error error;
 		if (!db_save(error))
-			g_warning("Failed to save database: %s",
-				  error.GetMessage());
+			LogError(error, "Failed to save database");
 	}
 
 	if (path != NULL && *path != 0)
-		g_debug("finished: %s", path);
+		FormatDebug(update_domain, "finished: %s", path);
 	else
-		g_debug("finished");
+		LogDebug(update_domain, "finished");
 	g_free(_path);
 
 	progress = UPDATE_PROGRESS_DONE;
@@ -104,7 +102,7 @@ spawn_update_task(const char *path)
 	modified = false;
 
 #if GLIB_CHECK_VERSION(2,32,0)
-	update_thr = g_thread_new("updadte", update_task, g_strdup(path));
+	update_thr = g_thread_new("update", update_task, g_strdup(path));
 #else
 	GError *e = NULL;
 	update_thr = g_thread_create(update_task, g_strdup(path), TRUE, &e);
@@ -114,7 +112,8 @@ spawn_update_task(const char *path)
 
 	if (++update_task_id > update_task_id_max)
 		update_task_id = 1;
-	g_debug("spawned thread for update job id %i", update_task_id);
+	FormatDebug(update_domain,
+		    "spawned thread for update job id %i", update_task_id);
 }
 
 unsigned

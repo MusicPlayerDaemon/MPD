@@ -35,12 +35,10 @@
 #include "util/Error.hxx"
 #include "tag/TagHandler.hxx"
 #include "DsdLib.hxx"
+#include "Log.hxx"
 
 #include <unistd.h>
 #include <stdio.h> /* for SEEK_SET, SEEK_CUR */
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "dsdiff"
 
 struct DsdiffHeader {
 	struct dsdlib_id id;
@@ -437,7 +435,7 @@ dsdiff_stream_decode(struct decoder *decoder, struct input_stream *is)
 	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8,
 				       SampleFormat::DSD,
 				       metadata.channels, error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return;
 	}
 

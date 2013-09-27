@@ -28,6 +28,7 @@
 #include "InputPlugin.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -195,17 +196,20 @@ input_cdio_open(const char *uri,
 	bool reverse_endian;
 	switch (data_bigendianp(i->drv)) {
 	case -1:
-		g_debug("cdda: drive returns unknown audio data");
+		LogDebug(cdio_domain, "drive returns unknown audio data");
 		reverse_endian = false;
 		break;
+
 	case 0:
-		g_debug("cdda: drive returns audio data Little Endian.");
+		LogDebug(cdio_domain, "drive returns audio data Little Endian");
 		reverse_endian = G_BYTE_ORDER == G_BIG_ENDIAN;
 		break;
+
 	case 1:
-		g_debug("cdda: drive returns audio data Big Endian.");
+		LogDebug(cdio_domain, "drive returns audio data Big Endian");
 		reverse_endian = G_BYTE_ORDER == G_LITTLE_ENDIAN;
 		break;
+
 	default:
 		error.Format(cdio_domain, "Drive returns unknown data type %d",
 			     data_bigendianp(i->drv));
@@ -305,7 +309,8 @@ input_cdio_read(struct input_stream *is, void *ptr, size_t length,
 
 			s_err = cdda_errors(cis->drv);
 			if (s_err) {
-				g_warning("paranoia_read: %s", s_err );
+				FormatError(cdio_domain,
+					    "paranoia_read: %s", s_err);
 				free(s_err);
 			}
 			s_mess = cdda_messages(cis->drv);

@@ -28,6 +28,8 @@
 #include "InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
+#include "LogV.hxx"
 
 #include <glib.h>
 
@@ -50,27 +52,26 @@ extern "C" {
 #include <libavutil/dict.h>
 }
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "ffmpeg"
+static constexpr Domain ffmpeg_domain("ffmpeg");
 
 /* suppress the ffmpeg compatibility macro */
 #ifdef SampleFormat
 #undef SampleFormat
 #endif
 
-static GLogLevelFlags
-level_ffmpeg_to_glib(int level)
+static LogLevel
+import_ffmpeg_level(int level)
 {
 	if (level <= AV_LOG_FATAL)
-		return G_LOG_LEVEL_CRITICAL;
+		return LogLevel::ERROR;
 
-	if (level <= AV_LOG_ERROR)
-		return G_LOG_LEVEL_WARNING;
+	if (level <= AV_LOG_WARNING)
+		return LogLevel::WARNING;
 
 	if (level <= AV_LOG_INFO)
-		return G_LOG_LEVEL_MESSAGE;
+		return LogLevel::INFO;
 
-	return G_LOG_LEVEL_DEBUG;
+	return LogLevel::DEBUG;
 }
 
 static void
@@ -83,8 +84,9 @@ mpd_ffmpeg_log_callback(gcc_unused void *ptr, int level,
 		cls = *(const AVClass *const*)ptr;
 
 	if (cls != NULL) {
-		char *domain = g_strconcat(G_LOG_DOMAIN, "/", cls->item_name(ptr), NULL);
-		g_logv(domain, level_ffmpeg_to_glib(level), fmt, vl);
+		char *domain = g_strconcat(ffmpeg_domain.GetName(), "/", cls->item_name(ptr), NULL);
+		const Domain d(domain);
+		LogFormatV(d, import_ffmpeg_level(level), fmt, vl);
 		g_free(domain);
 	}
 }
@@ -287,7 +289,8 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 
 		if (len < 0) {
 			/* if error, we skip the frame */
-			g_message("decoding failed, frame skipped\n");
+			LogInfo(ffmpeg_domain,
+				"decoding failed, frame skipped");
 			break;
 		}
 
@@ -328,11 +331,13 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 	const char *name = av_get_sample_fmt_string(buffer, sizeof(buffer),
 						    sample_fmt);
 	if (name != NULL)
-		g_warning("Unsupported libavcodec SampleFormat value: %s (%d)",
-			  name, sample_fmt);
+		FormatError(ffmpeg_domain,
+			    "Unsupported libavcodec SampleFormat value: %s (%d)",
+			    name, sample_fmt);
 	else
-		g_warning("Unsupported libavcodec SampleFormat value: %d",
-			  sample_fmt);
+		FormatError(ffmpeg_domain,
+			    "Unsupported libavcodec SampleFormat value: %d",
+			    sample_fmt);
 	return SampleFormat::UNDEFINED;
 }
 
@@ -377,12 +382,12 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	if (input_format == NULL)
 		return;
 
-	g_debug("detected input format '%s' (%s)",
-		input_format->name, input_format->long_name);
+	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
+		    input_format->name, input_format->long_name);
 
 	AvioStream stream(decoder, input);
 	if (!stream.Open()) {
-		g_warning("Failed to open stream");
+		LogError(ffmpeg_domain, "Failed to open stream");
 		return;
 	}
 
@@ -391,21 +396,21 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	if (mpd_ffmpeg_open_input(&format_context, stream.io,
 				  input->uri.c_str(),
 				  input_format) != 0) {
-		g_warning("Open failed\n");
+		LogError(ffmpeg_domain, "Open failed");
 		return;
 	}
 
 	const int find_result =
 		avformat_find_stream_info(format_context, NULL);
 	if (find_result < 0) {
-		g_warning("Couldn't find stream info\n");
+		LogError(ffmpeg_domain, "Couldn't find stream info");
 		avformat_close_input(&format_context);
 		return;
 	}
 
 	int audio_stream = ffmpeg_find_audio_stream(format_context);
 	if (audio_stream == -1) {
-		g_warning("No audio stream inside\n");
+		LogError(ffmpeg_domain, "No audio stream inside");
 		avformat_close_input(&format_context);
 		return;
 	}
@@ -414,12 +419,13 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 
 	AVCodecContext *codec_context = av_stream->codec;
 	if (codec_context->codec_name[0] != 0)
-		g_debug("codec '%s'", codec_context->codec_name);
+		FormatDebug(ffmpeg_domain, "codec '%s'",
+			    codec_context->codec_name);
 
 	AVCodec *codec = avcodec_find_decoder(codec_context->codec_id);
 
 	if (!codec) {
-		g_warning("Unsupported audio codec\n");
+		LogError(ffmpeg_domain, "Unsupported audio codec");
 		avformat_close_input(&format_context);
 		return;
 	}
@@ -435,7 +441,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 				       codec_context->sample_rate,
 				       sample_format,
 				       codec_context->channels, error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		avformat_close_input(&format_context);
 		return;
 	}
@@ -447,7 +453,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 
 	const int open_result = avcodec_open2(codec_context, codec, NULL);
 	if (open_result < 0) {
-		g_warning("Could not open codec\n");
+		LogError(ffmpeg_domain, "Could not open codec");
 		avformat_close_input(&format_context);
 		return;
 	}
@@ -461,7 +467,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 
 	AVFrame *frame = avcodec_alloc_frame();
 	if (!frame) {
-		g_warning("Could not allocate frame\n");
+		LogError(ffmpeg_domain, "Could not allocate frame");
 		avformat_close_input(&format_context);
 		return;
 	}

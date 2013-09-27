@@ -24,12 +24,10 @@
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "system/SocketError.hxx"
+#include "Log.hxx"
 
 #include <assert.h>
 #include <string.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "httpd_output"
 
 HttpdClient::~HttpdClient()
 {
@@ -80,7 +78,8 @@ HttpdClient::HandleLine(const char *line)
 	if (state == REQUEST) {
 		if (strncmp(line, "GET /", 5) != 0) {
 			/* only GET is supported */
-			g_warning("malformed request line from client");
+			LogWarning(httpd_output_domain,
+				   "malformed request line from client");
 			return false;
 		}
 
@@ -171,7 +170,9 @@ HttpdClient::SendResponse()
 	ssize_t nbytes = SocketMonitor::Write(buffer, strlen(buffer));
 	if (gcc_unlikely(nbytes < 0)) {
 		const SocketErrorMessage msg;
-		g_warning("failed to write to client: %s", (const char *)msg);
+		FormatWarning(httpd_output_domain,
+			      "failed to write to client: %s",
+			      (const char *)msg);
 		Close();
 		return false;
 	}
@@ -278,8 +279,9 @@ HttpdClient::TryWrite()
 
 				if (!IsSocketErrorClosed(e)) {
 					SocketErrorMessage msg(e);
-					g_warning("failed to write to client: %s",
-						  (const char *)msg);
+					FormatWarning(httpd_output_domain,
+						      "failed to write to client: %s",
+						      (const char *)msg);
 				}
 
 				Close();
@@ -304,8 +306,9 @@ HttpdClient::TryWrite()
 
 				if (!IsSocketErrorClosed(e)) {
 					SocketErrorMessage msg(e);
-					g_warning("failed to write to client: %s",
-						  (const char *)msg);
+					FormatWarning(httpd_output_domain,
+						      "failed to write to client: %s",
+						      (const char *)msg);
 				}
 
 				Close();
@@ -326,8 +329,9 @@ HttpdClient::TryWrite()
 
 			if (!IsSocketErrorClosed(e)) {
 				SocketErrorMessage msg(e);
-				g_warning("failed to write to client: %s",
-					  (const char *)msg);
+				FormatWarning(httpd_output_domain,
+					      "failed to write to client: %s",
+					      (const char *)msg);
 			}
 
 			Close();
@@ -399,7 +403,8 @@ BufferedSocket::InputResult
 HttpdClient::OnSocketInput(const void *data, size_t length)
 {
 	if (state == RESPONSE) {
-		g_warning("unexpected input from client");
+		LogWarning(httpd_output_domain,
+			   "unexpected input from client");
 		LockClose();
 		return InputResult::CLOSED;
 	}
@@ -433,7 +438,7 @@ HttpdClient::OnSocketInput(const void *data, size_t length)
 void
 HttpdClient::OnSocketError(Error &&error)
 {
-	g_warning("error on HTTP client: %s", error.GetMessage());
+	LogError(error);
 }
 
 void

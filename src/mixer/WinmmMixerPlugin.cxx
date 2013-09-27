@@ -30,9 +30,6 @@
 #include <math.h>
 #include <windows.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "winmm_mixer"
-
 struct WinmmMixer final : public Mixer {
 	WinmmOutput *output;
 

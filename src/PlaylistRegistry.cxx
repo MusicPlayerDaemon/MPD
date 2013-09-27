@@ -37,6 +37,7 @@
 #include "ConfigGlobal.hxx"
 #include "ConfigData.hxx"
 #include "system/FatalError.hxx"
+#include "Log.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -321,7 +322,7 @@ playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
 	input_stream *is = input_stream::Open(path_fs, mutex, cond, error);
 	if (is == nullptr) {
 		if (error.IsDefined())
-			g_warning("%s", error.GetMessage());
+			LogError(error);
 
 		return nullptr;
 	}

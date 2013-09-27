@@ -20,6 +20,7 @@
 #include "config.h"
 #include "VorbisDecoderPlugin.h"
 #include "VorbisComments.hxx"
+#include "VorbisDomain.hxx"
 #include "DecoderAPI.hxx"
 #include "InputStream.hxx"
 #include "OggCodec.hxx"
@@ -27,6 +28,7 @@
 #include "util/UriUtil.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
+#include "Log.hxx"
 
 #ifndef HAVE_TREMOR
 #define OV_EXCLUDE_STATIC_CALLBACKS
@@ -49,9 +51,6 @@
 #include <assert.h>
 #include <errno.h>
 #include <unistd.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "vorbis"
 
 #if G_BYTE_ORDER == G_BIG_ENDIAN
 #define VORBIS_BIG_ENDIAN true
@@ -144,8 +143,9 @@ vorbis_is_open(struct vorbis_input_stream *vis, OggVorbis_File *vf,
 	if (ret < 0) {
 		if (decoder == NULL ||
 		    decoder_get_command(decoder) == DecoderCommand::NONE)
-			g_warning("Failed to open Ogg Vorbis stream: %s",
-				  vorbis_strerror(ret));
+			FormatWarning(vorbis_domain,
+				      "Failed to open Ogg Vorbis stream: %s",
+				      vorbis_strerror(ret));
 		return false;
 	}
 
@@ -198,7 +198,7 @@ vorbis_stream_decode(struct decoder *decoder,
 
 	const vorbis_info *vi = ov_info(&vf, -1);
 	if (vi == NULL) {
-		g_warning("ov_info() has failed");
+		LogWarning(vorbis_domain, "ov_info() has failed");
 		return;
 	}
 
@@ -211,7 +211,7 @@ vorbis_stream_decode(struct decoder *decoder,
 				       SampleFormat::FLOAT,
 #endif
 				       vi->channels, error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return;
 	}
 
@@ -272,7 +272,8 @@ vorbis_stream_decode(struct decoder *decoder,
 		if (current_section != prev_section) {
 			vi = ov_info(&vf, -1);
 			if (vi == NULL) {
-				g_warning("ov_info() has failed");
+				LogWarning(vorbis_domain,
+					   "ov_info() has failed");
 				break;
 			}
 
@@ -280,7 +281,8 @@ vorbis_stream_decode(struct decoder *decoder,
 			    vi->channels != (int)audio_format.channels) {
 				/* we don't support audio format
 				   change yet */
-				g_warning("audio format change, stopping here");
+				LogWarning(vorbis_domain,
+					   "audio format change, stopping here");
 				break;
 			}
 

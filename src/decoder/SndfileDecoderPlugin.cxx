@@ -24,11 +24,12 @@
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <sndfile.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "sndfile"
+static constexpr Domain sndfile_domain("sndfile");
 
 static sf_count_t
 sndfile_vio_get_filelen(void *user_data)
@@ -57,7 +58,7 @@ sndfile_vio_read(void *ptr, sf_count_t count, void *user_data)
 	Error error;
 	size_t nbytes = is->LockRead(ptr, count, error);
 	if (nbytes == 0 && error.IsDefined()) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return -1;
 	}
 
@@ -124,7 +125,7 @@ sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 
 	sf = sf_open_virtual(&vio, SFM_READ, &info, is);
 	if (sf == nullptr) {
-		g_warning("sf_open_virtual() failed");
+		LogWarning(sndfile_domain, "sf_open_virtual() failed");
 		return;
 	}
 
@@ -136,7 +137,7 @@ sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	if (!audio_format_init_checked(audio_format, info.samplerate,
 				       SampleFormat::S32,
 				       info.channels, error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return;
 	}
 
@@ -187,7 +188,8 @@ sndfile_scan_file(const char *path_fs,
 
 	if (!audio_valid_sample_rate(info.samplerate)) {
 		sf_close(sf);
-		g_warning("Invalid sample rate in %s\n", path_fs);
+		FormatWarning(sndfile_domain,
+			      "Invalid sample rate in %s", path_fs);
 		return false;
 	}
 

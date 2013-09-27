@@ -22,18 +22,17 @@
 #include "DecoderAPI.hxx"
 #include "tag/TagHandler.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
 #include "system/FatalError.hxx"
-
-#include <glib.h>
+#include "Log.hxx"
 
 extern "C" {
 #include <wildmidi_lib.h>
 }
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "wildmidi"
+static constexpr Domain wildmidi_domain("wildmidi");
 
 static constexpr unsigned WILDMIDI_SAMPLE_RATE = 48000;
 
@@ -49,7 +48,9 @@ wildmidi_init(const config_param &param)
 
 	if (!FileExists(path)) {
 		const auto utf8 = path.ToUTF8();
-		g_debug("configuration file does not exist: %s", utf8.c_str());
+		FormatDebug(wildmidi_domain,
+			    "configuration file does not exist: %s",
+			    utf8.c_str());
 		return false;
 	}
 

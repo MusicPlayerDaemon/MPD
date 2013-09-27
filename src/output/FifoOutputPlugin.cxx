@@ -27,18 +27,14 @@
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 #include "open.h"
-
-#include <glib.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "fifo"
 
 #define FIFO_BUFFER_SIZE 65536 /* pipe capacity on Linux >= 2.6.11 */
 
@@ -78,11 +74,13 @@ static constexpr Domain fifo_output_domain("fifo_output");
 inline void
 FifoOutput::Delete()
 {
-	g_debug("Removing FIFO \"%s\"", path_utf8.c_str());
+	FormatDebug(fifo_output_domain,
+		    "Removing FIFO \"%s\"", path_utf8.c_str());
 
 	if (!RemoveFile(path)) {
-		g_warning("Could not remove FIFO \"%s\": %s",
-			  path_utf8.c_str(), g_strerror(errno));
+		FormatErrno(fifo_output_domain,
+			    "Could not remove FIFO \"%s\"",
+			    path_utf8.c_str());
 		return;
 	}
 
@@ -249,8 +247,9 @@ fifo_output_cancel(struct audio_output *ao)
 		bytes = read(fd->input, buf, FIFO_BUFFER_SIZE);
 
 	if (bytes < 0 && errno != EAGAIN) {
-		g_warning("Flush of FIFO \"%s\" failed: %s",
-			  fd->path_utf8.c_str(), g_strerror(errno));
+		FormatErrno(fifo_output_domain,
+			    "Flush of FIFO \"%s\" failed",
+			    fd->path_utf8.c_str());
 	}
 }
 

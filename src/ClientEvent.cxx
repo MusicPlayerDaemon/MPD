@@ -20,13 +20,12 @@
 #include "config.h"
 #include "ClientInternal.hxx"
 #include "util/Error.hxx"
-
-#include <glib.h>
+#include "Log.hxx"
 
 void
 Client::OnSocketError(Error &&error)
 {
-	g_warning("error on client %d: %s", num, error.GetMessage());
+	FormatError(error, "error on client %d", num);
 
 	SetExpired();
 }

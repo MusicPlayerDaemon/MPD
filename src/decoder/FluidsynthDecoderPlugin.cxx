@@ -22,13 +22,14 @@
 #include "DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
 #include <fluidsynth.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "fluidsynth"
+static constexpr Domain fluidsynth_domain("fluidsynth");
 
 static unsigned sample_rate;
 static const char *soundfont_path;
@@ -36,27 +37,27 @@ static const char *soundfont_path;
 /**
  * Convert a fluidsynth log level to a GLib log level.
  */
-static GLogLevelFlags
-fluidsynth_level_to_glib(enum fluid_log_level level)
+static LogLevel
+fluidsynth_level_to_mpd(enum fluid_log_level level)
 {
 	switch (level) {
 	case FLUID_PANIC:
 	case FLUID_ERR:
-		return G_LOG_LEVEL_CRITICAL;
+		return LogLevel::ERROR;
 
 	case FLUID_WARN:
-		return G_LOG_LEVEL_WARNING;
+		return LogLevel::WARNING;
 
 	case FLUID_INFO:
-		return G_LOG_LEVEL_INFO;
+		return LogLevel::INFO;
 
 	case FLUID_DBG:
 	case LAST_LOG_LEVEL:
-		return G_LOG_LEVEL_DEBUG;
+		return LogLevel::DEBUG;
 	}
 
 	/* invalid fluidsynth log level */
-	return G_LOG_LEVEL_MESSAGE;
+	return LogLevel::INFO;
 }
 
 /**
@@ -66,8 +67,9 @@ fluidsynth_level_to_glib(enum fluid_log_level level)
 static void
 fluidsynth_mpd_log_function(int level, char *message, gcc_unused void *data)
 {
-	g_log(G_LOG_DOMAIN, fluidsynth_level_to_glib(fluid_log_level(level)),
-	      "%s", message);
+	Log(fluidsynth_domain,
+	    fluidsynth_level_to_mpd(fluid_log_level(level)),
+	    message);
 }
 
 static bool
@@ -77,7 +79,7 @@ fluidsynth_init(const config_param &param)
 
 	sample_rate = param.GetBlockValue("sample_rate", 48000u);
 	if (!audio_check_sample_rate(sample_rate, error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return false;
 	}
 
@@ -125,7 +127,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 
 	ret = fluid_synth_sfload(synth, soundfont_path, true);
 	if (ret < 0) {
-		g_warning("fluid_synth_sfload() failed");
+		LogWarning(fluidsynth_domain, "fluid_synth_sfload() failed");
 		delete_fluid_synth(synth);
 		delete_fluid_settings(settings);
 		return;
@@ -142,7 +144,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 
 	ret = fluid_player_add(player, path_fs);
 	if (ret != 0) {
-		g_warning("fluid_player_add() failed");
+		LogWarning(fluidsynth_domain, "fluid_player_add() failed");
 		delete_fluid_player(player);
 		delete_fluid_synth(synth);
 		delete_fluid_settings(settings);
@@ -153,7 +155,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 
 	ret = fluid_player_play(player);
 	if (ret != 0) {
-		g_warning("fluid_player_play() failed");
+		LogWarning(fluidsynth_domain, "fluid_player_play() failed");
 		delete_fluid_player(player);
 		delete_fluid_synth(synth);
 		delete_fluid_settings(settings);

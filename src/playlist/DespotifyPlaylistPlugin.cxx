@@ -24,12 +24,11 @@
 #include "MemorySongEnumerator.hxx"
 #include "tag/Tag.hxx"
 #include "Song.hxx"
+#include "Log.hxx"
 
 extern "C" {
 #include <despotify.h>
 }
-
-#include <glib.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -48,7 +47,8 @@ add_song(std::forward_list<SongPointer> &songs, struct ds_track *track)
 
 	if (despotify_track_to_uri(track, ds_uri) != ds_uri) {
 		/* Should never really fail, but let's be sure */
-		g_debug("Can't add track %s\n", track->title);
+		FormatDebug(despotify_domain,
+			    "Can't add track %s", track->title);
 		return;
 	}
 
@@ -99,7 +99,7 @@ despotify_playlist_open_uri(const char *url,
 	ds_link *link =
 		despotify_link_from_uri(url + strlen(despotify_playlist_plugin.schemes[0]) + 3);
 	if (link == nullptr) {
-		g_debug("Can't find %s\n", url);
+		FormatDebug(despotify_domain, "Can't find %s\n", url);
 		return nullptr;
 	}
 

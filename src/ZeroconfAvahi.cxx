@@ -23,6 +23,8 @@
 #include "Listen.hxx"
 #include "event/Loop.hxx"
 #include "system/FatalError.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -36,8 +38,7 @@
 
 #include <avahi-glib/glib-watch.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "avahi"
+static constexpr Domain avahi_domain("avahi");
 
 static char *avahiName;
 static int avahiRunning;
@@ -58,13 +59,15 @@ static void avahiGroupCallback(AvahiEntryGroup * g,
 	char *n;
 	assert(g);
 
-	g_debug("Service group changed to state %d", state);
+	FormatDebug(avahi_domain,
+		    "Service group changed to state %d", state);
 
 	switch (state) {
 	case AVAHI_ENTRY_GROUP_ESTABLISHED:
 		/* The entry group has been established successfully */
-		g_message("Service '%s' successfully established.",
-			  avahiName);
+		FormatInfo(avahi_domain,
+			   "Service '%s' successfully established.",
+			   avahiName);
 		break;
 
 	case AVAHI_ENTRY_GROUP_COLLISION:
@@ -73,43 +76,48 @@ static void avahiGroupCallback(AvahiEntryGroup * g,
 		avahi_free(avahiName);
 		avahiName = n;
 
-		g_message("Service name collision, renaming service to '%s'",
-			  avahiName);
+		FormatInfo(avahi_domain,
+			   "Service name collision, renaming service to '%s'",
+			   avahiName);
 
 		/* And recreate the services */
 		avahiRegisterService(avahi_entry_group_get_client(g));
 		break;
 
 	case AVAHI_ENTRY_GROUP_FAILURE:
-		g_warning("Entry group failure: %s",
-			  avahi_strerror(avahi_client_errno
-					 (avahi_entry_group_get_client(g))));
+		FormatError(avahi_domain,
+			    "Entry group failure: %s",
+			    avahi_strerror(avahi_client_errno
+					   (avahi_entry_group_get_client(g))));
 		/* Some kind of failure happened while we were registering our services */
 		avahiRunning = 0;
 		break;
 
 	case AVAHI_ENTRY_GROUP_UNCOMMITED:
-		g_debug("Service group is UNCOMMITED");
+		LogDebug(avahi_domain, "Service group is UNCOMMITED");
 		break;
 	case AVAHI_ENTRY_GROUP_REGISTERING:
-		g_debug("Service group is REGISTERING");
+		LogDebug(avahi_domain, "Service group is REGISTERING");
 	}
 }
 
 /* Registers a new service with avahi */
 static void avahiRegisterService(AvahiClient * c)
 {
+	FormatDebug(avahi_domain, "Registering service %s/%s",
+		    SERVICE_TYPE, avahiName);
+
 	int ret;
 	assert(c);
-	g_debug("Registering service %s/%s", SERVICE_TYPE, avahiName);
 
 	/* If this is the first time we're called,
 	 * let's create a new entry group */
 	if (!avahiGroup) {
 		avahiGroup = avahi_entry_group_new(c, avahiGroupCallback, NULL);
 		if (!avahiGroup) {
-			g_warning("Failed to create avahi EntryGroup: %s",
-				  avahi_strerror(avahi_client_errno(c)));
+			FormatError(avahi_domain,
+				    "Failed to create avahi EntryGroup: %s",
+				    avahi_strerror(avahi_client_errno(c)));
 			goto fail;
 		}
 	}
@@ -124,16 +132,16 @@ static void avahiRegisterService(AvahiClient * c)
 					    avahiName, SERVICE_TYPE, NULL,
 					    NULL, listen_port, NULL);
 	if (ret < 0) {
-		g_warning("Failed to add service %s: %s", SERVICE_TYPE,
-			  avahi_strerror(ret));
+		FormatError(avahi_domain, "Failed to add service %s: %s",
+			    SERVICE_TYPE, avahi_strerror(ret));
 		goto fail;
 	}
 
 	/* Tell the server to register the service group */
 	ret = avahi_entry_group_commit(avahiGroup);
 	if (ret < 0) {
-		g_warning("Failed to commit service group: %s",
-			  avahi_strerror(ret));
+		FormatError(avahi_domain, "Failed to commit service group: %s",
+			    avahi_strerror(ret));
 		goto fail;
 	}
 	return;
@@ -150,11 +158,11 @@ static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
 	assert(c);
 
 	/* Called whenever the client or server state changes */
-	g_debug("Client changed to state %d", state);
+	FormatDebug(avahi_domain, "Client changed to state %d", state);
 
 	switch (state) {
 	case AVAHI_CLIENT_S_RUNNING:
-		g_debug("Client is RUNNING");
+		LogDebug(avahi_domain, "Client is RUNNING");
 
 		/* The server has startup successfully and registered its host
 		 * name on the network, so it's time to create our services */
@@ -165,7 +173,8 @@ static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
 	case AVAHI_CLIENT_FAILURE:
 		reason = avahi_client_errno(c);
 		if (reason == AVAHI_ERR_DISCONNECTED) {
-			g_message("Client Disconnected, will reconnect shortly");
+			LogInfo(avahi_domain,
+				"Client Disconnected, will reconnect shortly");
 			if (avahiGroup) {
 				avahi_entry_group_free(avahiGroup);
 				avahiGroup = NULL;
@@ -178,51 +187,57 @@ static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
 					     avahiClientCallback, NULL,
 					     &reason);
 			if (!avahiClient) {
-				g_warning("Could not reconnect: %s",
-					  avahi_strerror(reason));
+				FormatWarning(avahi_domain,
+					      "Could not reconnect: %s",
+					      avahi_strerror(reason));
 				avahiRunning = 0;
 			}
 		} else {
-			g_warning("Client failure: %s (terminal)",
-				  avahi_strerror(reason));
+			FormatWarning(avahi_domain,
+				      "Client failure: %s (terminal)",
+				      avahi_strerror(reason));
 			avahiRunning = 0;
 		}
 		break;
 
 	case AVAHI_CLIENT_S_COLLISION:
-		g_debug("Client is COLLISION");
+		LogDebug(avahi_domain, "Client is COLLISION");
+
 		/* Let's drop our registered services. When the server is back
 		 * in AVAHI_SERVER_RUNNING state we will register them
 		 * again with the new host name. */
 		if (avahiGroup) {
-			g_debug("Resetting group");
+			LogDebug(avahi_domain, "Resetting group");
 			avahi_entry_group_reset(avahiGroup);
 		}
 
+		break;
+
 	case AVAHI_CLIENT_S_REGISTERING:
-		g_debug("Client is REGISTERING");
+		LogDebug(avahi_domain, "Client is REGISTERING");
+
 		/* The server records are now being established. This
 		 * might be caused by a host name change. We need to wait
 		 * for our own records to register until the host name is
 		 * properly esatblished. */
 
 		if (avahiGroup) {
-			g_debug("Resetting group");
+			LogDebug(avahi_domain, "Resetting group");
 			avahi_entry_group_reset(avahiGroup);
 		}
 
 		break;
 
 	case AVAHI_CLIENT_CONNECTING:
-		g_debug("Client is CONNECTING");
+		LogDebug(avahi_domain, "Client is CONNECTING");
+		break;
 	}
 }
 
 void
 AvahiInit(EventLoop &loop, const char *serviceName)
 {
-	int error;
-	g_debug("Initializing interface");
+	LogDebug(avahi_domain, "Initializing interface");
 
 	if (!avahi_is_valid_service_name(serviceName))
 		FormatFatalError("Invalid zeroconf_name \"%s\"", serviceName);
@@ -241,12 +256,13 @@ AvahiInit(EventLoop &loop, const char *serviceName)
 	avahi_poll = avahi_glib_poll_get(avahi_glib_poll);
 #endif
 
+	int error;
 	avahiClient = avahi_client_new(avahi_poll, AVAHI_CLIENT_NO_FAIL,
 				       avahiClientCallback, NULL, &error);
 
 	if (!avahiClient) {
-		g_warning("Failed to create client: %s",
-			  avahi_strerror(error));
+		FormatError(avahi_domain, "Failed to create client: %s",
+			    avahi_strerror(error));
 		AvahiDeinit();
 	}
 }
@@ -254,7 +270,7 @@ AvahiInit(EventLoop &loop, const char *serviceName)
 void
 AvahiDeinit(void)
 {
-	g_debug("Shutting down interface");
+	LogDebug(avahi_domain, "Shutting down interface");
 
 	if (avahiGroup) {
 		avahi_entry_group_free(avahiGroup);

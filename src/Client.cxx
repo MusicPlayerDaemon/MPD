@@ -19,6 +19,9 @@
 
 #include "config.h"
 #include "ClientInternal.hxx"
+#include "util/Domain.hxx"
+
+const Domain client_domain("client");
 
 int client_get_uid(const Client *client)
 {

@@ -33,15 +33,16 @@
 #include "DecoderList.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
 #include "tag/ApeReplayGain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
 #include <unistd.h>
 #include <stdio.h> /* for SEEK_SET */
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "decoder_thread"
+static constexpr Domain decoder_thread_domain("decoder_thread");
 
 /**
  * Marks the current decoder command as "finished" and notifies the
@@ -78,7 +79,7 @@ decoder_input_stream_open(struct decoder_control *dc, const char *uri)
 	input_stream *is = input_stream::Open(uri, dc->mutex, dc->cond, error);
 	if (is == NULL) {
 		if (error.IsDefined())
-			g_warning("%s", error.GetMessage());
+			LogError(error);
 
 		return NULL;
 	}
@@ -99,7 +100,7 @@ decoder_input_stream_open(struct decoder_control *dc, const char *uri)
 	if (!is->Check(error)) {
 		dc->Unlock();
 
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return NULL;
 	}
 
@@ -122,7 +123,7 @@ decoder_stream_decode(const struct decoder_plugin *plugin,
 	assert(input_stream->ready);
 	assert(decoder->dc->state == DecoderState::START);
 
-	g_debug("probing plugin %s", plugin->name);
+	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin->name);
 
 	if (decoder->dc->command == DecoderCommand::STOP)
 		return true;
@@ -155,7 +156,7 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 	assert(g_path_is_absolute(path));
 	assert(decoder->dc->state == DecoderState::START);
 
-	g_debug("probing plugin %s", plugin->name);
+	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin->name);
 
 	if (decoder->dc->command == DecoderCommand::STOP)
 		return true;

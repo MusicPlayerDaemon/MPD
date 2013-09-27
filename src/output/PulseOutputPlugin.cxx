@@ -24,6 +24,7 @@
 #include "mixer/PulseMixerPlugin.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -628,8 +629,9 @@ pulse_output_close(struct audio_output *ao)
 		o = pa_stream_drain(po->stream,
 				    pulse_output_stream_success_cb, po);
 		if (o == nullptr) {
-			g_warning("pa_stream_drain() has failed: %s",
-				  pa_strerror(pa_context_errno(po->context)));
+			FormatWarning(pulse_output_domain,
+				      "pa_stream_drain() has failed: %s",
+				      pa_strerror(pa_context_errno(po->context)));
 		} else
 			pulse_wait_for_operation(po->mainloop, o);
 	}
@@ -804,8 +806,9 @@ pulse_output_cancel(struct audio_output *ao)
 
 	o = pa_stream_flush(po->stream, pulse_output_stream_success_cb, po);
 	if (o == nullptr) {
-		g_warning("pa_stream_flush() has failed: %s",
-			  pa_strerror(pa_context_errno(po->context)));
+		FormatWarning(pulse_output_domain,
+			      "pa_stream_flush() has failed: %s",
+			      pa_strerror(pa_context_errno(po->context)));
 		pa_threaded_mainloop_unlock(po->mainloop);
 		return;
 	}
@@ -829,7 +832,7 @@ pulse_output_pause(struct audio_output *ao)
 	Error error;
 	if (!pulse_output_wait_stream(po, error)) {
 		pa_threaded_mainloop_unlock(po->mainloop);
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return false;
 	}
 
@@ -840,7 +843,7 @@ pulse_output_pause(struct audio_output *ao)
 	if (!pa_stream_is_corked(po->stream) &&
 	    !pulse_output_stream_pause(po, true, error)) {
 		pa_threaded_mainloop_unlock(po->mainloop);
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return false;
 	}
 

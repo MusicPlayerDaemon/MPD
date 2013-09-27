@@ -23,6 +23,7 @@
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 #include "gcc.h"
 
 #include <glib.h>
@@ -34,9 +35,6 @@
 #include <windows.h> // for GetACP()
 #include <stdio.h> // for sprintf()
 #endif
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "path"
 
 /**
  * Maximal number of bytes required to represent path name in UTF-8
@@ -145,7 +143,8 @@ SetFSCharset(const char *charset)
 
 	fs_charset = charset;
 
-	g_debug("SetFSCharset: fs charset is: %s", fs_charset.c_str());
+	FormatDebug(path_domain,
+		    "SetFSCharset: fs charset is: %s", fs_charset.c_str());
 }
 
 const std::string &Path::GetFSCharset()
@@ -180,7 +179,8 @@ void Path::GlobalInit()
 	if (charset) {
 		SetFSCharset(charset);
 	} else {
-		g_message("setting filesystem charset to ISO-8859-1");
+		LogDebug(path_domain,
+			 "setting filesystem charset to ISO-8859-1");
 		SetFSCharset("ISO-8859-1");
 	}
 }

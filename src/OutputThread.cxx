@@ -21,6 +21,7 @@
 #include "OutputThread.hxx"
 #include "OutputInternal.hxx"
 #include "OutputAPI.hxx"
+#include "OutputError.hxx"
 #include "pcm/PcmMix.hxx"
 #include "notify.hxx"
 #include "FilterInternal.hxx"
@@ -31,17 +32,13 @@
 #include "MusicChunk.hxx"
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 #include "gcc.h"
 
 #include <glib.h>
 
 #include <assert.h>
-#include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "output"
 
 static void ao_command_finished(struct audio_output *ao)
 {
@@ -66,8 +63,9 @@ ao_enable(struct audio_output *ao)
 	success = ao_plugin_enable(ao, error);
 	ao->mutex.lock();
 	if (!success) {
-		g_warning("Failed to enable \"%s\" [%s]: %s\n",
-			  ao->name, ao->plugin->name, error.GetMessage());
+		FormatError(error,
+			    "Failed to enable \"%s\" [%s]",
+			    ao->name, ao->plugin->name);
 		return false;
 	}
 
@@ -159,8 +157,8 @@ ao_open(struct audio_output *ao)
 	const AudioFormat filter_audio_format =
 		ao_filter_open(ao, ao->in_audio_format, error);
 	if (!filter_audio_format.IsDefined()) {
-		g_warning("Failed to open filter for \"%s\" [%s]: %s",
-			  ao->name, ao->plugin->name, error.GetMessage());
+		FormatError(error, "Failed to open filter for \"%s\" [%s]",
+			    ao->name, ao->plugin->name);
 
 		ao->fail_timer = g_timer_new();
 		return;
@@ -178,8 +176,8 @@ ao_open(struct audio_output *ao)
 	assert(!ao->open);
 
 	if (!success) {
-		g_warning("Failed to open \"%s\" [%s]: %s",
-			  ao->name, ao->plugin->name, error.GetMessage());
+		FormatError(error, "Failed to open \"%s\" [%s]",
+			    ao->name, ao->plugin->name);
 
 		ao_filter_close(ao);
 		ao->fail_timer = g_timer_new();
@@ -190,15 +188,15 @@ ao_open(struct audio_output *ao)
 
 	ao->open = true;
 
-	g_debug("opened plugin=%s name=\"%s\" "
-		"audio_format=%s",
-		ao->plugin->name, ao->name,
-		audio_format_to_string(ao->out_audio_format, &af_string));
+	FormatDebug(output_domain,
+		    "opened plugin=%s name=\"%s\" audio_format=%s",
+		    ao->plugin->name, ao->name,
+		    audio_format_to_string(ao->out_audio_format, &af_string));
 
 	if (ao->in_audio_format != ao->out_audio_format)
-		g_debug("converting from %s",
-			audio_format_to_string(ao->in_audio_format,
-					       &af_string));
+		FormatDebug(output_domain, "converting from %s",
+			    audio_format_to_string(ao->in_audio_format,
+						   &af_string));
 }
 
 static void
@@ -223,7 +221,8 @@ ao_close(struct audio_output *ao, bool drain)
 
 	ao->mutex.lock();
 
-	g_debug("closed plugin=%s name=\"%s\"", ao->plugin->name, ao->name);
+	FormatDebug(output_domain, "closed plugin=%s name=\"%s\"",
+		    ao->plugin->name, ao->name);
 }
 
 static void
@@ -235,8 +234,9 @@ ao_reopen_filter(struct audio_output *ao)
 	const AudioFormat filter_audio_format =
 		ao_filter_open(ao, ao->in_audio_format, error);
 	if (!filter_audio_format.IsDefined()) {
-		g_warning("Failed to open filter for \"%s\" [%s]: %s",
-			  ao->name, ao->plugin->name, error.GetMessage());
+		FormatError(error,
+			    "Failed to open filter for \"%s\" [%s]",
+			    ao->name, ao->plugin->name);
 
 		/* this is a little code duplication fro ao_close(),
 		   but we cannot call this function because we must
@@ -334,8 +334,8 @@ ao_chunk_data(struct audio_output *ao, const struct music_chunk *chunk,
 		data = replay_gain_filter->FilterPCM(data, length,
 						     &length, error);
 		if (data == NULL) {
-			g_warning("\"%s\" [%s] failed to filter: %s",
-				  ao->name, ao->plugin->name, error.GetMessage());
+			FormatError(error, "\"%s\" [%s] failed to filter",
+				    ao->name, ao->plugin->name);
 			return NULL;
 		}
 	}
@@ -390,8 +390,9 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 		if (!pcm_mix(dest, data, length,
 			     ao->in_audio_format.format,
 			     1.0 - chunk->mix_ratio)) {
-			g_warning("Cannot cross-fade format %s",
-				  sample_format_to_string(ao->in_audio_format.format));
+			FormatError(output_domain,
+				    "Cannot cross-fade format %s",
+				    sample_format_to_string(ao->in_audio_format.format));
 			return NULL;
 		}
 
@@ -404,8 +405,8 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 	Error error;
 	data = ao->filter->FilterPCM(data, length, &length, error);
 	if (data == NULL) {
-		g_warning("\"%s\" [%s] failed to filter: %s",
-			  ao->name, ao->plugin->name, error.GetMessage());
+		FormatError(error, "\"%s\" [%s] failed to filter",
+			    ao->name, ao->plugin->name);
 		return NULL;
 	}
 
@@ -453,9 +454,8 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 		ao->mutex.lock();
 		if (nbytes == 0) {
 			/* play()==0 means failure */
-			g_warning("\"%s\" [%s] failed to play: %s",
-				  ao->name, ao->plugin->name,
-				  error.GetMessage());
+			FormatError(error, "\"%s\" [%s] failed to play",
+				    ao->name, ao->plugin->name);
 
 			ao_close(ao, false);
 

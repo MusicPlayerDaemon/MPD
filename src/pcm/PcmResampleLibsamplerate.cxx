@@ -21,15 +21,13 @@
 #include "PcmResampleInternal.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "pcm"
 
 static int lsr_converter = SRC_SINC_FASTEST;
 
@@ -74,8 +72,9 @@ pcm_resample_lsr_global_init(const char *converter, Error &error)
 		return false;
 	}
 
-	g_debug("libsamplerate converter '%s'",
-		src_get_name(lsr_converter));
+	FormatDebug(libsamplerate_domain,
+		    "libsamplerate converter '%s'",
+		    src_get_name(lsr_converter));
 
 	return true;
 }
@@ -133,8 +132,9 @@ pcm_resample_set(PcmResampler *state,
 
 	SRC_DATA *data = &state->data;
 	data->src_ratio = (double)dest_rate / (double)src_rate;
-	g_debug("setting samplerate conversion ratio to %.2lf",
-		data->src_ratio);
+	FormatDebug(libsamplerate_domain,
+		    "setting samplerate conversion ratio to %.2lf",
+		    data->src_ratio);
 	src_set_ratio(state->state, data->src_ratio);
 
 	return true;

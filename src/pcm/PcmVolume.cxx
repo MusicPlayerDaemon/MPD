@@ -27,9 +27,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "pcm_volume"
-
 static void
 pcm_volume_change_8(int8_t *buffer, const int8_t *end, int volume)
 {

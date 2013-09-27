@@ -29,14 +29,12 @@
 #include "tag/TagSettings.h"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <stdlib.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "database"
 
 #define DIRECTORY_INFO_BEGIN "info_begin"
 #define DIRECTORY_INFO_END "info_end"
@@ -155,7 +153,7 @@ db_load_internal(TextFile &file, Directory *music_root, Error &error)
 		}
 	}
 
-	g_debug("reading DB");
+	LogDebug(db_domain, "reading DB");
 
 	db_lock();
 	success = directory_load(file, music_root, error);

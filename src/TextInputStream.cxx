@@ -22,6 +22,7 @@
 #include "InputStream.hxx"
 #include "util/fifo_buffer.h"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -58,7 +59,7 @@ bool TextInputStream::ReadLine(std::string &line)
 			if (nbytes > 0)
 				fifo_buffer_append(buffer, nbytes);
 			else if (error.IsDefined()) {
-				g_warning("%s", error.GetMessage());
+				LogError(error);
 				return false;
 			}
 		} else

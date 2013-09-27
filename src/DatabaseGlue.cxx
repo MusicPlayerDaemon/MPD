@@ -43,9 +43,6 @@ extern "C" {
 #include <string.h>
 #include <errno.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "database"
-
 static Database *db;
 static bool db_is_open;
 static bool is_simple;

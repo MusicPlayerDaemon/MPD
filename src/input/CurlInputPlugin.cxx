@@ -31,6 +31,7 @@
 #include "IOThread.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <assert.h>
 
@@ -52,9 +53,6 @@
 #if LIBCURL_VERSION_NUM < 0x071200
 #error libcurl is too old
 #endif
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "input_curl"
 
 /**
  * Do not buffer more than this number of bytes.  It should be a
@@ -297,8 +295,9 @@ CurlSockets::UpdateSockets()
 	CURLMcode mcode = curl_multi_fdset(curl.multi, &rfds, &wfds,
 					   &efds, &max_fd);
 	if (mcode != CURLM_OK) {
-		g_warning("curl_multi_fdset() failed: %s\n",
-			  curl_multi_strerror(mcode));
+		FormatError(curlm_domain,
+			    "curl_multi_fdset() failed: %s",
+			    curl_multi_strerror(mcode));
 		return;
 	}
 
@@ -537,8 +536,9 @@ CurlSockets::PrepareSockets()
 
 		return timeout2;
 	} else {
-		g_warning("curl_multi_timeout() failed: %s\n",
-			  curl_multi_strerror(mcode));
+		FormatWarning(curlm_domain,
+			      "curl_multi_timeout() failed: %s",
+			      curl_multi_strerror(mcode));
 		return -1;
 	}
 }
@@ -880,7 +880,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 		buffer[end - value] = 0;
 
 		icy_metaint = g_ascii_strtoull(buffer, NULL, 10);
-		g_debug("icy-metaint=%zu", icy_metaint);
+		FormatDebug(curl_domain, "icy-metaint=%zu", icy_metaint);
 
 		if (icy_metaint > 0) {
 			c->icy.Start(icy_metaint);

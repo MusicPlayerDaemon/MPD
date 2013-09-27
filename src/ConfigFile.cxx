@@ -28,16 +28,12 @@
 #include "util/Domain.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
-
-#include <glib.h>
+#include "Log.hxx"
 
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "config"
 
 #define MAX_STRING_SIZE	MPD_PATH_MAX+80
 
@@ -261,7 +257,7 @@ ReadConfigFile(ConfigData &config_data, const Path &path, Error &error)
 	assert(!path.IsNull());
 	const std::string path_utf8 = path.ToUTF8();
 
-	g_debug("loading file %s", path_utf8.c_str());
+	FormatDebug(config_file_domain, "loading file %s", path_utf8.c_str());
 
 	FILE *fp = FOpen(path, FOpenMode::ReadText);
 	if (fp == nullptr) {

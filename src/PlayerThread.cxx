@@ -33,6 +33,8 @@
 #include "tag/Tag.hxx"
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <cmath>
 
@@ -40,8 +42,7 @@
 
 #include <string.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "player_thread"
+static constexpr Domain player_domain("player");
 
 enum class CrossFadeState : int8_t {
 	DISABLED = -1,
@@ -402,7 +403,7 @@ Player::OpenOutput()
 
 		return true;
 	} else {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 
 		output_open = false;
 
@@ -461,8 +462,9 @@ Player::CheckDecoderStartup()
 
 		if (!paused && !OpenOutput()) {
 			char *uri = dc.song->GetURI();
-			g_warning("problems opening audio device "
-				  "while playing \"%s\"", uri);
+			FormatError(player_domain,
+				    "problems opening audio device "
+				    "while playing \"%s\"", uri);
 			g_free(uri);
 
 			return true;
@@ -487,7 +489,7 @@ Player::SendSilence()
 
 	struct music_chunk *chunk = buffer.Allocate();
 	if (chunk == nullptr) {
-		g_warning("Failed to allocate silence buffer");
+		LogError(player_domain, "Failed to allocate silence buffer");
 		return false;
 	}
 
@@ -506,7 +508,7 @@ Player::SendSilence()
 
 	Error error;
 	if (!audio_output_all_play(chunk, error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		buffer.Return(chunk);
 		return false;
 	}
@@ -838,7 +840,7 @@ Player::PlayNextChunk()
 
 	Error error;
 	if (!play_chunk(pc, song, chunk, buffer, play_audio_format, error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 
 		buffer.Return(chunk);
 
@@ -877,7 +879,7 @@ Player::SongBorder()
 	xfade_state = CrossFadeState::UNKNOWN;
 
 	char *uri = song->GetURI();
-	g_message("played \"%s\"", uri);
+	FormatInfo(player_domain, "played \"%s\"", uri);
 	g_free(uri);
 
 	ReplacePipe(dc.pipe);

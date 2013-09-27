@@ -29,12 +29,7 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
-#include <glib.h>
-
 #include <string.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "song"
 
 #define SONG_MTIME "mtime"
 #define SONG_END "song_end"

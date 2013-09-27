@@ -30,6 +30,7 @@ extern "C" {
 #include "DatabasePlugin.hxx"
 #include "DatabaseSimple.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 struct stats stats;
 
@@ -56,7 +57,7 @@ void stats_update(void)
 		stats.artist_count = stats2.artist_count;
 		stats.album_count = stats2.album_count;
 	} else {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 
 		stats.song_count = 0;
 		stats.song_duration = 0;

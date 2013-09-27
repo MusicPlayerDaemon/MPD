@@ -29,9 +29,6 @@
 #include <assert.h>
 #include <string.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "cue"
-
 class CuePlaylist final : public SongEnumerator {
 	struct input_stream *is;
 	TextInputStream tis;

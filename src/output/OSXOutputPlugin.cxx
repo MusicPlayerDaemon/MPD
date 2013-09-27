@@ -25,14 +25,12 @@
 #include "util/Domain.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 #include <CoreAudio/AudioHardware.h>
 #include <AudioUnit/AudioUnit.h>
 #include <CoreServices/CoreServices.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "osx"
 
 struct OSXOutput {
 	struct audio_output base;
@@ -156,15 +154,17 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 			goto done;
 		}
 		if (strcmp(oo->device_name, name) == 0) {
-			g_debug("found matching device: ID=%u, name=%s",
-				(unsigned int) deviceids[i], name);
+			FormatDebug(osx_output_domain,
+				    "found matching device: ID=%u, name=%s",
+				    (unsigned)deviceids[i], name);
 			break;
 		}
 	}
 	if (i == numdevices) {
-		g_warning("Found no audio device with name '%s' "
-			  "(will use default audio device)",
-			  oo->device_name);
+		FormatWarning(osx_output_domain,
+			      "Found no audio device with name '%s' "
+			      "(will use default audio device)",
+			      oo->device_name);
 		goto done;
 	}
 
@@ -181,8 +181,10 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 		ret = false;
 		goto done;
 	}
-	g_debug("set OS X audio output device ID=%u, name=%s",
-		(unsigned int) deviceids[i], name);
+
+	FormatDebug(osx_output_domain,
+		    "set OS X audio output device ID=%u, name=%s",
+		    (unsigned)deviceids[i], name);
 
 done:
 	delete[] deviceids;

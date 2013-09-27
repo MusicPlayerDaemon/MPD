@@ -27,6 +27,7 @@
 #include "util/ReusableArray.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <algorithm>
 
@@ -124,8 +125,9 @@ AlsaMixerMonitor::DispatchSockets()
 
 	int err = snd_mixer_handle_events(mixer);
 	if (err < 0) {
-		g_warning("snd_mixer_handle_events() failed: %s",
-			  snd_strerror(err));
+		FormatError(alsa_mixer_domain,
+			    "snd_mixer_handle_events() failed: %s",
+			    snd_strerror(err));
 
 		if (err == -ENODEV) {
 			/* the sound device was unplugged; disable

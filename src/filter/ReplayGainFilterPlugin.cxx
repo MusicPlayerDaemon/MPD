@@ -30,14 +30,12 @@
 #include "pcm/PcmBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-
-#include <glib.h>
+#include "Log.hxx"
 
 #include <assert.h>
 #include <string.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "replay_gain"
+static constexpr Domain replay_gain_domain("replay_gain");
 
 class ReplayGainFilter final : public Filter {
 	/**
@@ -105,7 +103,9 @@ public:
 			/* no change */
 			return;
 
-		g_debug("replay gain mode has changed %d->%d\n", mode, _mode);
+		FormatDebug(replay_gain_domain,
+			    "replay gain mode has changed %d->%d\n",
+			    mode, _mode);
 
 		mode = _mode;
 		Update();
@@ -122,15 +122,14 @@ public:
 				      size_t *dest_size_r, Error &error);
 };
 
-static constexpr Domain replay_gain_domain("replay_gain");
-
 void
 ReplayGainFilter::Update()
 {
 	if (mode != REPLAY_GAIN_OFF) {
 		float scale = replay_gain_tuple_scale(&info.tuples[mode],
 		    replay_gain_preamp, replay_gain_missing_preamp, replay_gain_limit);
-		g_debug("scale=%f\n", (double)scale);
+		FormatDebug(replay_gain_domain,
+			    "scale=%f\n", (double)scale);
 
 		volume = pcm_float_to_volume(scale);
 	} else
@@ -145,8 +144,7 @@ ReplayGainFilter::Update()
 
 		Error error;
 		if (!mixer_set_volume(mixer, _volume, error))
-			g_warning("Failed to update hardware mixer: %s",
-				  error.GetMessage());
+			LogError(error, "Failed to update hardware mixer");
 	}
 }
 

@@ -24,6 +24,7 @@
 #include "system/fd_util.h"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -34,9 +35,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <assert.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "oss"
 
 #if defined(__OpenBSD__) || defined(__NetBSD__)
 # include <soundcard.h>
@@ -142,8 +140,10 @@ oss_output_test_default_device(void)
 			close(fd);
 			return true;
 		}
-		g_warning("Error opening OSS device \"%s\": %s\n",
-			  default_devices[i], g_strerror(errno));
+
+		FormatErrno(oss_output_domain,
+			    "Error opening OSS device \"%s\"",
+			    default_devices[i]);
 	}
 
 	return false;
@@ -177,17 +177,20 @@ oss_open_default(Error &error)
 			/* never reached */
 			break;
 		case OSS_STAT_DOESN_T_EXIST:
-			g_warning("%s not found\n", dev);
+			FormatWarning(oss_output_domain,
+				      "%s not found", dev);
 			break;
 		case OSS_STAT_NOT_CHAR_DEV:
-			g_warning("%s is not a character device\n", dev);
+			FormatWarning(oss_output_domain,
+				      "%s is not a character device", dev);
 			break;
 		case OSS_STAT_NO_PERMS:
-			g_warning("%s: permission denied\n", dev);
+			FormatWarning(oss_output_domain,
+				      "%s: permission denied", dev);
 			break;
 		case OSS_STAT_OTHER:
-			g_warning("Error accessing %s: %s\n",
-				  dev, g_strerror(err[i]));
+			FormatErrno(oss_output_domain, err[i],
+				    "Error accessing %s", dev);
 		}
 	}
 

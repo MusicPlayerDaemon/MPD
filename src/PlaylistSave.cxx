@@ -20,6 +20,7 @@
 #include "config.h"
 #include "PlaylistSave.hxx"
 #include "PlaylistFile.hxx"
+#include "PlaylistError.hxx"
 #include "Playlist.hxx"
 #include "Song.hxx"
 #include "Mapper.hxx"
@@ -28,6 +29,7 @@
 #include "fs/FileSystem.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -123,7 +125,8 @@ playlist_load_spl(struct playlist *playlist, struct player_control *pc,
 			}
 
 			if (playlist->AppendURI(*pc, temp2) != PLAYLIST_RESULT_SUCCESS)
-				g_warning("can't add file \"%s\"", temp2);
+				FormatError(playlist_domain,
+					    "can't add file \"%s\"", temp2);
 
 			g_free(temp2);
 		}

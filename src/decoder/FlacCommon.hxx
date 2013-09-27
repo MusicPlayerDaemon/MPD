@@ -31,9 +31,6 @@
 #include <FLAC/stream_decoder.h>
 #include <FLAC/metadata.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "flac"
-
 struct flac_data : public FlacInput {
 	PcmBuffer buffer;
 

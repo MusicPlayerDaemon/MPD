@@ -31,9 +31,6 @@
 #include <string.h>
 #include <errno.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "input_mms"
-
 struct MmsInputStream {
 	struct input_stream base;
 

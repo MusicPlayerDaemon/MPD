@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2003-2011 The Music Player Daemon Project
  * http://www.musicpd.org
@@ -26,21 +27,26 @@
 #include "ExcludeList.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <assert.h>
 #include <string.h>
 #include <errno.h>
+
+static constexpr Domain exclude_list_domain("exclude_list");
 
 bool
 ExcludeList::LoadFile(const Path &path_fs)
 {
 	FILE *file = FOpen(path_fs, FOpenMode::ReadText);
 	if (file == NULL) {
-		if (errno != ENOENT) {
-			const char *msg = g_strerror(errno);
+		const int e = errno;
+		if (e != ENOENT) {
 			const auto path_utf8 = path_fs.ToUTF8();
-			g_debug("Failed to open %s: %s",
-				path_utf8.c_str(), msg);
+			FormatErrno(exclude_list_domain,
+				    "Failed to open %s",
+				    path_utf8.c_str());
 		}
 
 		return false;

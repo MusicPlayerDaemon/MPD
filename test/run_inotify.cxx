@@ -21,6 +21,7 @@
 #include "InotifySource.hxx"
 #include "event/Loop.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -68,14 +69,14 @@ int main(int argc, char **argv)
 						      my_inotify_callback,
 						      nullptr, error);
 	if (source == NULL) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return 2;
 	}
 
 	int descriptor = source->Add(path, IN_MASK, error);
 	if (descriptor < 0) {
 		delete source;
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return 2;
 	}
 

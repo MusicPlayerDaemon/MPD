@@ -33,9 +33,6 @@
 
 #include <assert.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "opus_encoder"
-
 struct opus_encoder {
 	/** the base class */
 	Encoder encoder;

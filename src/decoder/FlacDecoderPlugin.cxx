@@ -19,10 +19,12 @@
 
 #include "config.h" /* must be first for large file support */
 #include "FlacDecoderPlugin.h"
+#include "FlacDomain.hxx"
 #include "FlacCommon.hxx"
 #include "FlacMetadata.hxx"
 #include "OggCodec.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -54,7 +56,7 @@ static void flacPrintErroredState(FLAC__StreamDecoderState state)
 		break;
 	}
 
-	g_warning("%s\n", FLAC__StreamDecoderStateString[state]);
+	LogError(flac_domain, FLAC__StreamDecoderStateString[state]);
 }
 
 static void flacMetadata(gcc_unused const FLAC__StreamDecoder * dec,
@@ -90,8 +92,9 @@ flac_scan_file(const char *file,
 {
 	FlacMetadataChain chain;
 	if (!chain.Read(file)) {
-		g_debug("Failed to read FLAC tags: %s",
-			chain.GetStatusString());
+		FormatDebug(flac_domain,
+			    "Failed to read FLAC tags: %s",
+			    chain.GetStatusString());
 		return false;
 	}
 
@@ -105,8 +108,9 @@ flac_scan_stream(struct input_stream *is,
 {
 	FlacMetadataChain chain;
 	if (!chain.Read(is)) {
-		g_debug("Failed to read FLAC tags: %s",
-			chain.GetStatusString());
+		FormatDebug(flac_domain,
+			    "Failed to read FLAC tags: %s",
+			    chain.GetStatusString());
 		return false;
 	}
 
@@ -122,12 +126,14 @@ flac_decoder_new(void)
 {
 	FLAC__StreamDecoder *sd = FLAC__stream_decoder_new();
 	if (sd == nullptr) {
-		g_warning("FLAC__stream_decoder_new() failed");
+		LogError(flac_domain,
+			 "FLAC__stream_decoder_new() failed");
 		return nullptr;
 	}
 
 	if(!FLAC__stream_decoder_set_metadata_respond(sd, FLAC__METADATA_TYPE_VORBIS_COMMENT))
-		g_debug("FLAC__stream_decoder_set_metadata_respond() has failed");
+		LogDebug(flac_domain,
+			 "FLAC__stream_decoder_set_metadata_respond() has failed");
 
 	return sd;
 }
@@ -139,7 +145,7 @@ flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd,
 	data->total_frames = duration;
 
 	if (!FLAC__stream_decoder_process_until_end_of_metadata(sd)) {
-		g_warning("problem reading metadata");
+		LogWarning(flac_domain, "problem reading metadata");
 		return false;
 	}
 
@@ -265,7 +271,8 @@ flac_decode_internal(struct decoder * decoder,
 		stream_init(flac_dec, &data, is_ogg);
 	if (status != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
 		FLAC__stream_decoder_delete(flac_dec);
-		g_warning("%s", FLAC__StreamDecoderInitStatusString[status]);
+		LogWarning(flac_domain,
+			   FLAC__StreamDecoderInitStatusString[status]);
 		return;
 	}
 
@@ -299,8 +306,9 @@ oggflac_scan_file(const char *file,
 {
 	FlacMetadataChain chain;
 	if (!chain.ReadOgg(file)) {
-		g_debug("Failed to read OggFLAC tags: %s",
-			chain.GetStatusString());
+		FormatDebug(flac_domain,
+			    "Failed to read OggFLAC tags: %s",
+			    chain.GetStatusString());
 		return false;
 	}
 
@@ -314,8 +322,9 @@ oggflac_scan_stream(struct input_stream *is,
 {
 	FlacMetadataChain chain;
 	if (!chain.ReadOgg(is)) {
-		g_debug("Failed to read OggFLAC tags: %s",
-			chain.GetStatusString());
+		FormatDebug(flac_domain,
+			    "Failed to read OggFLAC tags: %s",
+			    chain.GetStatusString());
 		return false;
 	}
 

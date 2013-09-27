@@ -21,10 +21,12 @@
 #include "InotifyUpdate.hxx"
 #include "InotifySource.hxx"
 #include "InotifyQueue.hxx"
+#include "InotifyDomain.hxx"
 #include "Mapper.hxx"
 #include "Main.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -36,10 +38,6 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <dirent.h>
-#include <errno.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "inotify"
 
 enum {
 	IN_MASK = IN_ATTRIB|IN_CLOSE_WRITE|IN_CREATE|IN_DELETE|IN_DELETE_SELF
@@ -120,8 +118,9 @@ remove_watch_directory(WatchDirectory *directory)
 	assert(directory != NULL);
 
 	if (directory->parent == NULL) {
-		g_warning("music directory was removed - "
-			  "cannot continue to watch it");
+		LogWarning(inotify_domain,
+			   "music directory was removed - "
+			   "cannot continue to watch it");
 		return;
 	}
 
@@ -178,8 +177,8 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 
 	dir = opendir(path_fs);
 	if (dir == NULL) {
-		g_warning("Failed to open directory %s: %s",
-			  path_fs, g_strerror(errno));
+		FormatErrno(inotify_domain,
+			    "Failed to open directory %s", path_fs);
 		return;
 	}
 
@@ -194,8 +193,9 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 		child_path_fs = g_strconcat(path_fs, "/", ent->d_name, NULL);
 		ret = stat(child_path_fs, &st);
 		if (ret < 0) {
-			g_warning("Failed to stat %s: %s",
-				  child_path_fs, g_strerror(errno));
+			FormatErrno(inotify_domain,
+				    "Failed to stat %s",
+				    child_path_fs);
 			g_free(child_path_fs);
 			continue;
 		}
@@ -207,8 +207,8 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 
 		ret = inotify_source->Add(child_path_fs, IN_MASK, error);
 		if (ret < 0) {
-			g_warning("Failed to register %s: %s",
-				  child_path_fs, error.GetMessage());
+			FormatError(error,
+				    "Failed to register %s", child_path_fs);
 			error.Clear();
 			g_free(child_path_fs);
 			continue;
@@ -253,7 +253,7 @@ mpd_inotify_callback(int wd, unsigned mask,
 	WatchDirectory *directory;
 	char *uri_fs;
 
-	/*g_debug("wd=%d mask=0x%x name='%s'", wd, mask, name);*/
+	/*FormatDebug(inotify_domain, "wd=%d mask=0x%x name='%s'", wd, mask, name);*/
 
 	directory = tree_find_watch_directory(wd);
 	if (directory == NULL)
@@ -309,11 +309,11 @@ mpd_inotify_callback(int wd, unsigned mask,
 void
 mpd_inotify_init(unsigned max_depth)
 {
-	g_debug("initializing inotify");
+	LogDebug(inotify_domain, "initializing inotify");
 
 	const Path &path = mapper_get_music_directory_fs();
 	if (path.IsNull()) {
-		g_debug("no music directory configured");
+		LogDebug(inotify_domain, "no music directory configured");
 		return;
 	}
 
@@ -322,7 +322,7 @@ mpd_inotify_init(unsigned max_depth)
 					       mpd_inotify_callback, nullptr,
 					       error);
 	if (inotify_source == NULL) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return;
 	}
 
@@ -330,7 +330,7 @@ mpd_inotify_init(unsigned max_depth)
 
 	int descriptor = inotify_source->Add(path.c_str(), IN_MASK, error);
 	if (descriptor < 0) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		delete inotify_source;
 		inotify_source = NULL;
 		return;
@@ -344,7 +344,7 @@ mpd_inotify_init(unsigned max_depth)
 
 	inotify_queue = new InotifyQueue(*main_loop);
 
-	g_debug("watching music directory");
+	LogDebug(inotify_domain, "watching music directory");
 }
 
 void

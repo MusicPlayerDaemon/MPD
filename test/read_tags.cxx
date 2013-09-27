@@ -28,6 +28,7 @@
 #include "tag/TagId3.hxx"
 #include "tag/ApeTag.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -167,7 +168,7 @@ int main(int argc, char **argv)
 
 	Error error;
 	if (!input_stream_global_init(error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return 2;
 	}
 

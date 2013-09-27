@@ -36,12 +36,10 @@
 #include "util/Error.hxx"
 #include "DsdLib.hxx"
 #include "tag/TagHandler.hxx"
+#include "Log.hxx"
 
 #include <unistd.h>
 #include <stdio.h> /* for SEEK_SET, SEEK_CUR */
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "dsf"
 
 struct DsfMetaData {
 	unsigned sample_rate, channels;
@@ -290,7 +288,7 @@ dsf_stream_decode(struct decoder *decoder, struct input_stream *is)
 	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8,
 				       SampleFormat::DSD,
 				       metadata.channels, error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return;
 	}
 	/* Calculate song time from DSD chunk size and sample frequency */

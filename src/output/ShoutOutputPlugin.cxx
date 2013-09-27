@@ -26,6 +26,7 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "system/FatalError.hxx"
+#include "Log.hxx"
 
 #include <shout/shout.h>
 #include <glib.h>
@@ -34,9 +35,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "shout"
 
 static constexpr unsigned DEFAULT_CONN_TIMEOUT = 2;
 
@@ -358,8 +356,9 @@ static void close_shout_conn(ShoutOutput * sd)
 
 	if (shout_get_connected(sd->shout_conn) != SHOUTERR_UNCONNECTED &&
 	    shout_close(sd->shout_conn) != SHOUTERR_SUCCESS) {
-		g_warning("problem closing connection to shout server: %s\n",
-			  shout_get_error(sd->shout_conn));
+		FormatWarning(shout_output_domain,
+			      "problem closing connection to shout server: %s",
+			      shout_get_error(sd->shout_conn));
 	}
 }
 
@@ -507,7 +506,7 @@ static void my_shout_set_tag(struct audio_output *ao,
 		if (!encoder_pre_tag(sd->encoder, error) ||
 		    !write_page(sd, error) ||
 		    !encoder_tag(sd->encoder, tag, error)) {
-			g_warning("%s", error.GetMessage());
+			LogError(error);
 			return;
 		}
 	} else {
@@ -518,7 +517,8 @@ static void my_shout_set_tag(struct audio_output *ao,
 		shout_metadata_add(sd->shout_meta, "song", song);
 		if (SHOUTERR_SUCCESS != shout_set_metadata(sd->shout_conn,
 							   sd->shout_meta)) {
-			g_warning("error setting shout metadata\n");
+			LogWarning(shout_output_domain,
+				   "error setting shout metadata");
 		}
 	}
 

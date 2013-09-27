@@ -23,6 +23,7 @@
 #include "UpdateDatabase.hxx"
 #include "UpdateSong.hxx"
 #include "UpdateArchive.hxx"
+#include "UpdateDomain.hxx"
 #include "DatabaseLock.hxx"
 #include "DatabaseSimple.hxx"
 #include "Directory.hxx"
@@ -37,6 +38,7 @@
 #include "fs/FileSystem.hxx"
 #include "fs/DirectoryReader.hxx"
 #include "util/UriUtil.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -48,9 +50,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "update"
 
 bool walk_discard;
 bool modified;
@@ -185,7 +184,7 @@ find_inode_ancestor(Directory *parent, ino_t inode, dev_t device)
 			return -1;
 
 		if (parent->inode == inode && parent->device == device) {
-			g_debug("recursive directory found");
+			LogDebug(update_domain, "recursive directory found");
 			return 1;
 		}
 
@@ -257,7 +256,8 @@ update_directory_child(Directory *directory,
 			db_unlock();
 		}
 	} else {
-		g_debug("update: %s is not a directory, archive or music", name);
+		FormatDebug(update_domain,
+			    "%s is not a directory, archive or music", name);
 	}
 }
 
@@ -352,8 +352,9 @@ update_directory(Directory *directory, const struct stat *st)
 	if (reader.HasFailed()) {
 		int error = errno;
 		const auto path_utf8 = path_fs.ToUTF8();
-		g_warning("Failed to open directory %s: %s",
-			  path_utf8.c_str(), g_strerror(error));
+		FormatErrno(update_domain, error,
+			    "Failed to open directory %s",
+			    path_utf8.c_str());
 		return false;
 	}
 

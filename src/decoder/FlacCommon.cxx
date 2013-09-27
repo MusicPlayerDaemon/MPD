@@ -27,8 +27,8 @@
 #include "FlacPcm.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
-
-#include <glib.h>
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <assert.h>
 
@@ -74,7 +74,7 @@ flac_got_stream_info(struct flac_data *data,
 				       stream_info->sample_rate,
 				       flac_sample_format(stream_info->bits_per_sample),
 				       stream_info->channels, error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		data->unsupported = true;
 		return;
 	}
@@ -136,7 +136,7 @@ flac_got_first_frame(struct flac_data *data, const FLAC__FrameHeader *header)
 				       header->sample_rate,
 				       flac_sample_format(header->bits_per_sample),
 				       header->channels, error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		data->unsupported = true;
 		return false;
 	}

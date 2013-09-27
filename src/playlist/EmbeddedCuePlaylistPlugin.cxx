@@ -39,9 +39,6 @@
 #include <assert.h>
 #include <string.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "cue"
-
 class EmbeddedCuePlaylist final : public SongEnumerator {
 public:
 	/**

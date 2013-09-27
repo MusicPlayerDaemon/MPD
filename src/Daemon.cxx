@@ -22,6 +22,8 @@
 #include "system/FatalError.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -39,8 +41,7 @@
 #include <grp.h>
 #endif
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "daemon"
+static constexpr Domain daemon_domain("daemon");
 
 #ifndef WIN32
 
@@ -170,7 +171,7 @@ daemonize_detach(void)
 	FatalError("no support for daemonizing");
 #endif
 
-	g_debug("daemonized!");
+	LogDebug(daemon_domain, "daemonized");
 }
 
 void
@@ -181,7 +182,7 @@ daemonize(bool detach)
 	if (!pidfile.IsNull()) {
 		/* do this before daemon'izing so we can fail gracefully if we can't
 		 * write to the pid file */
-		g_debug("opening pid file");
+		LogDebug(daemon_domain, "opening pid file");
 		fp = FOpen(pidfile, "w+");
 		if (!fp) {
 			const std::string utf8 = pidfile.ToUTF8();
@@ -194,7 +195,7 @@ daemonize(bool detach)
 		daemonize_detach();
 
 	if (!pidfile.IsNull()) {
-		g_debug("writing pid file");
+		LogDebug(daemon_domain, "writing pid file");
 		fprintf(fp, "%lu\n", (unsigned long)getpid());
 		fclose(fp);
 	}

@@ -22,14 +22,15 @@
 #include "ZeroconfInternal.hxx"
 #include "Listen.hxx"
 #include "event/SocketMonitor.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 #include "gcc.h"
 
 #include <glib.h>
 
 #include <dns_sd.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "bonjour"
+static constexpr Domain bonjour_domain("bonjour");
 
 class BonjourMonitor final : public SocketMonitor {
 	DNSServiceRef service_ref;
@@ -64,11 +65,14 @@ dnsRegisterCallback(gcc_unused DNSServiceRef sdRef,
 		    gcc_unused void *context)
 {
 	if (errorCode != kDNSServiceErr_NoError) {
-		g_warning("Failed to register zeroconf service.");
+		LogError(bonjour_domain,
+			 "Failed to register zeroconf service");
 
 		bonjour_monitor->Cancel();
 	} else {
-		g_debug("Registered zeroconf service with name '%s'", name);
+		FormatDebug(bonjour_domain,
+			    "Registered zeroconf service with name '%s'",
+			    name);
 	}
 }
 
@@ -85,7 +89,8 @@ BonjourInit(EventLoop &loop, const char *service_name)
 						       NULL);
 
 	if (error != kDNSServiceErr_NoError) {
-		g_warning("Failed to register zeroconf service.");
+		LogError(bonjour_domain,
+			 "Failed to register zeroconf service");
 
 		if (dnsReference) {
 			DNSServiceRefDeallocate(dnsReference);

@@ -37,14 +37,10 @@
 #include "ConfigError.hxx"
 #include "ConfigGlobal.hxx"
 #include "util/Error.hxx"
-
-#include <glib.h>
+#include "Log.hxx"
 
 #include <assert.h>
 #include <string.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "output"
 
 #define AUDIO_OUTPUT_TYPE	"type"
 #define AUDIO_OUTPUT_NAME	"name"
@@ -54,14 +50,15 @@
 static const struct audio_output_plugin *
 audio_output_detect(Error &error)
 {
-	g_warning("Attempt to detect audio output device");
+	LogInfo(output_domain, "Attempt to detect audio output device");
 
 	audio_output_plugins_for_each(plugin) {
 		if (plugin->test_default_device == NULL)
 			continue;
 
-		g_warning("Attempting to detect a %s audio device",
-			  plugin->name);
+		FormatInfo(output_domain,
+			   "Attempting to detect a %s audio device",
+			   plugin->name);
 		if (ao_plugin_test_default_device(plugin))
 			return plugin;
 	}
@@ -201,8 +198,9 @@ ao_base_init(struct audio_output *ao,
 	// It's not really fatal - Part of the filter chain has been set up already
 	// and even an empty one will work (if only with unexpected behaviour)
 	if (filter_error.IsDefined())
-		g_warning("Failed to initialize filter chain for '%s': %s",
-			  ao->name, filter_error.GetMessage());
+		FormatError(filter_error,
+			    "Failed to initialize filter chain for '%s'",
+			    ao->name);
 
 	ao->thread = NULL;
 	ao->command = AO_COMMAND_NONE;
@@ -251,8 +249,9 @@ audio_output_setup(struct audio_output *ao, const config_param &param,
 					    ao->plugin->mixer_plugin,
 					    *ao->filter, mixer_error);
 	if (ao->mixer == NULL && mixer_error.IsDefined())
-		g_warning("Failed to initialize hardware mixer for '%s': %s",
-			  ao->name, mixer_error.GetMessage());
+		FormatError(mixer_error,
+			    "Failed to initialize hardware mixer for '%s'",
+			    ao->name);
 
 	/* use the hardware mixer for replay gain? */
 
@@ -261,7 +260,8 @@ audio_output_setup(struct audio_output *ao, const config_param &param,
 			replay_gain_filter_set_mixer(ao->replay_gain_filter,
 						     ao->mixer, 100);
 		else
-			g_warning("No such mixer for output '%s'", ao->name);
+			FormatError(output_domain,
+				    "No such mixer for output '%s'", ao->name);
 	} else if (strcmp(replay_gain_handler, "software") != 0 &&
 		   ao->replay_gain_filter != NULL) {
 		error.Set(config_domain,
@@ -304,14 +304,16 @@ audio_output_new(const config_param &param,
 			return nullptr;
 		}
 	} else {
-		g_warning("No 'audio_output' defined in config file\n");
+		LogWarning(output_domain,
+			   "No 'audio_output' defined in config file");
 
 		plugin = audio_output_detect(error);
 		if (plugin == NULL)
 			return nullptr;
 
-		g_message("Successfully detected a %s audio device",
-			  plugin->name);
+		FormatInfo(output_domain,
+			   "Successfully detected a %s audio device",
+			   plugin->name);
 	}
 
 	struct audio_output *ao = ao_plugin_init(plugin, param, error);

@@ -20,27 +20,95 @@
 #ifndef MPD_LOG_HXX
 #define MPD_LOG_HXX
 
+#include "gcc.h"
+
+#ifdef WIN32
+#include <windows.h>
+/* damn you, windows.h! */
+#ifdef ERROR
+#undef ERROR
+#endif
+#endif
+
 class Error;
+class Domain;
 
-/**
- * Configure a logging destination for daemon startup, before the
- * configuration file is read.  This allows the daemon to use the
- * logging library (and the command line verbose level) before it's
- * daemonized.
- *
- * @param verbose true when the program is started with --verbose
- */
-void
-log_early_init(bool verbose);
-
-bool
-log_init(bool verbose, bool use_stdout, Error &error);
+enum class LogLevel {
+	DEBUG,
+	INFO,
+	WARNING,
+	ERROR,
+};
 
 void
-log_deinit(void);
+Log(const Domain &domain, LogLevel level, const char *msg);
 
-void setup_log_output(bool use_stdout);
+gcc_fprintf_
+void
+LogFormat(const Domain &domain, LogLevel level, const char *fmt, ...);
 
-int cycle_log_files(void);
+static inline void
+LogDebug(const Domain &domain, const char *msg)
+{
+	Log(domain, LogLevel::DEBUG, msg);
+}
+
+gcc_fprintf
+void
+FormatDebug(const Domain &domain, const char *fmt, ...);
+
+static inline void
+LogInfo(const Domain &domain, const char *msg)
+{
+	Log(domain, LogLevel::INFO, msg);
+}
+
+gcc_fprintf
+void
+FormatInfo(const Domain &domain, const char *fmt, ...);
+
+static inline void
+LogWarning(const Domain &domain, const char *msg)
+{
+	Log(domain, LogLevel::WARNING, msg);
+}
+
+gcc_fprintf
+void
+FormatWarning(const Domain &domain, const char *fmt, ...);
+
+static inline void
+LogError(const Domain &domain, const char *msg)
+{
+	Log(domain, LogLevel::ERROR, msg);
+}
+
+gcc_fprintf
+void
+FormatError(const Domain &domain, const char *fmt, ...);
+
+void
+LogError(const Error &error);
+
+void
+LogError(const Error &error, const char *msg);
+
+gcc_fprintf
+void
+FormatError(const Error &error, const char *fmt, ...);
+
+void
+LogErrno(const Domain &domain, int e, const char *msg);
+
+void
+LogErrno(const Domain &domain, const char *msg);
+
+gcc_fprintf_
+void
+FormatErrno(const Domain &domain, int e, const char *fmt, ...);
+
+gcc_fprintf
+void
+FormatErrno(const Domain &domain, const char *fmt, ...);
 
 #endif /* LOG_H */

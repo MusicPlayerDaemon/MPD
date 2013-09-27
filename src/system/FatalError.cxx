@@ -20,6 +20,8 @@
 #include "config.h"
 #include "FatalError.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
+#include "LogV.hxx"
 
 #include <glib.h>
 
@@ -33,13 +35,12 @@
 #include <errno.h>
 #endif
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "FatalError"
+static constexpr Domain fatal_error_domain("fatal_error");
 
 void
 FatalError(const char *msg)
 {
-	g_critical("%s", msg);
+	LogError(fatal_error_domain, msg);
 	exit(EXIT_FAILURE);
 }
 
@@ -48,7 +49,7 @@ FormatFatalError(const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	g_logv(G_LOG_DOMAIN, G_LOG_LEVEL_CRITICAL, fmt, ap);
+	LogFormatV(fatal_error_domain, LogLevel::ERROR, fmt, ap);
 	va_end(ap);
 
 	exit(EXIT_FAILURE);
@@ -88,7 +89,7 @@ FatalSystemError(const char *msg)
 	system_error = g_strerror(errno);
 #endif
 
-	g_critical("%s: %s", msg, system_error);
+	FormatError(fatal_error_domain, "%s: %s", msg, system_error);
 	exit(EXIT_FAILURE);
 }
 

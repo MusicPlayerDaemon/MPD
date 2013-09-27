@@ -25,8 +25,12 @@
 #include "ArchiveFile.hxx"
 #include "InputPlugin.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
+
+static constexpr Domain archive_domain("archive");
 
 /**
  * select correct archive plugin to handle the input stream
@@ -51,7 +55,8 @@ input_archive_open(const char *pathname,
 	pname = g_strdup(pathname);
 	// archive_lookup will modify pname when true is returned
 	if (!archive_lookup(pname, &archive, &filename, &suffix)) {
-		g_debug("not an archive, lookup %s failed\n", pname);
+		FormatDebug(archive_domain,
+			    "not an archive, lookup %s failed", pname);
 		g_free(pname);
 		return NULL;
 	}
@@ -59,7 +64,8 @@ input_archive_open(const char *pathname,
 	//check which archive plugin to use (by ext)
 	arplug = archive_plugin_from_suffix(suffix);
 	if (!arplug) {
-		g_warning("can't handle archive %s\n",archive);
+		FormatWarning(archive_domain,
+			      "can't handle archive %s", archive);
 		g_free(pname);
 		return NULL;
 	}

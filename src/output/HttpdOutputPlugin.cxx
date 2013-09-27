@@ -31,6 +31,7 @@
 #include "Main.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <assert.h>
 
@@ -44,10 +45,7 @@
 #include <tcpd.h>
 #endif
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "httpd_output"
-
-static constexpr Domain httpd_output_domain("httpd_output");
+const Domain httpd_output_domain("httpd_output");
 
 inline
 HttpdOutput::HttpdOutput(EventLoop &_loop)
@@ -210,8 +208,9 @@ HttpdOutput::OnAccept(int fd, const sockaddr &address,
 
 		if (!hosts_access(&req)) {
 			/* tcp wrappers says no */
-			g_warning("libwrap refused connection (libwrap=%s) from %s",
-			      progname, hostaddr);
+			FormatWarning(httpd_output_domain,
+				      "libwrap refused connection (libwrap=%s) from %s",
+				      progname, hostaddr);
 			g_free(hostaddr);
 			close_socket(fd);
 			return;
@@ -233,7 +232,7 @@ HttpdOutput::OnAccept(int fd, const sockaddr &address,
 		else
 			close_socket(fd);
 	} else if (fd < 0 && errno != EINTR) {
-		g_warning("accept() failed: %s", g_strerror(errno));
+		LogErrno(httpd_output_domain, "accept() failed");
 	}
 }
 
@@ -420,7 +419,8 @@ HttpdOutput::BroadcastFromEncoder()
 	mutex.lock();
 	for (auto &client : clients) {
 		if (client.GetQueueSize() > 256 * 1024) {
-			g_debug("client is too slow, flushing its queue");
+			FormatDebug(httpd_output_domain,
+				    "client is too slow, flushing its queue");
 			client.CancelQueue();
 		}
 	}

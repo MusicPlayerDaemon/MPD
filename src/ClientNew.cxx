@@ -26,6 +26,7 @@
 #include "system/Resolver.hxx"
 #include "Permission.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <assert.h>
 #include <sys/types.h>
@@ -39,9 +40,6 @@
 #ifdef HAVE_LIBWRAP
 #include <tcpd.h>
 #endif
-
-
-#define LOG_LEVEL_SECURE G_LOG_LEVEL_INFO
 
 static const char GREETING[] = "OK MPD " PROTOCOL_VERSION "\n";
 
@@ -82,9 +80,9 @@ client_new(EventLoop &loop, Partition &partition,
 
 		if (!hosts_access(&req)) {
 			/* tcp wrappers says no */
-			g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
-			      "libwrap refused connection (libwrap=%s) from %s",
-			      progname, hostaddr);
+			FormatWarning(client_domain,
+				      "libwrap refused connection (libwrap=%s) from %s",
+				      progname, hostaddr);
 
 			g_free(hostaddr);
 			close_socket(fd);
@@ -97,7 +95,7 @@ client_new(EventLoop &loop, Partition &partition,
 
 	ClientList &client_list = *partition.instance.client_list;
 	if (client_list.IsFull()) {
-		g_warning("Max Connections Reached!");
+		LogWarning(client_domain, "Max connections reached");
 		close_socket(fd);
 		return;
 	}
@@ -110,8 +108,7 @@ client_new(EventLoop &loop, Partition &partition,
 	client_list.Add(*client);
 
 	remote = sockaddr_to_string(sa, sa_length, IgnoreError());
-	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE,
-	      "[%u] opened from %s", client->num, remote);
+	FormatInfo(client_domain, "[%u] opened from %s", client->num, remote);
 	g_free(remote);
 }
 
@@ -122,6 +119,6 @@ Client::Close()
 
 	SetExpired();
 
-	g_log(G_LOG_DOMAIN, LOG_LEVEL_SECURE, "[%u] closed", num);
+	FormatInfo(client_domain, "[%u] closed", num);
 	delete this;
 }

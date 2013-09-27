@@ -21,23 +21,25 @@
 #include "CrossFade.hxx"
 #include "MusicChunk.hxx"
 #include "AudioFormat.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <cmath>
 
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
-#include <glib.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "crossfade"
+static constexpr Domain cross_fade_domain("cross_fade");
 
-#ifdef G_OS_WIN32
+#ifdef WIN32
+
 static char *
 strtok_r(char *str, const char *delim, gcc_unused char **saveptr)
 {
 	return strtok(str, delim);
 }
+
 #endif
 
 static float mixramp_interpolate(char *ramp_list, float required_db)
@@ -123,14 +125,16 @@ unsigned cross_fade_calc(float duration, float total_time,
 		if (!std::isnan(mixramp_overlap) &&
 		    mixramp_delay <= mixramp_overlap) {
 			chunks = (chunks_f * (mixramp_overlap - mixramp_delay));
-			g_debug("will overlap %d chunks, %fs", chunks,
-				mixramp_overlap - mixramp_delay);
+			FormatDebug(cross_fade_domain,
+				    "will overlap %d chunks, %fs", chunks,
+				    mixramp_overlap - mixramp_delay);
 		}
 	}
 
 	if (chunks > max_chunks) {
 		chunks = max_chunks;
-		g_warning("audio_buffer_size too small for computed MixRamp overlap");
+		LogWarning(cross_fade_domain,
+			   "audio_buffer_size too small for computed MixRamp overlap");
 	}
 
 	return chunks;

@@ -25,6 +25,8 @@
 #include "tag/TagHandler.hxx"
 #include "tag/ApeTag.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <wavpack/wavpack.h>
 #include <glib.h>
@@ -33,10 +35,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "wavpack"
-
 #define ERRORLEN 80
+
+static constexpr Domain wavpack_domain("wavpack");
 
 /** A pointer type for format converter function. */
 typedef void (*format_samples_t)(
@@ -155,7 +156,7 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
 				       WavpackGetSampleRate(wpc),
 				       sample_format,
 				       WavpackGetNumChannels(wpc), error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return;
 	}
 
@@ -294,10 +295,9 @@ wavpack_scan_file(const char *fname,
 
 	wpc = WavpackOpenFileInput(fname, error, OPEN_TAGS, 0);
 	if (wpc == NULL) {
-		g_warning(
-			"failed to open WavPack file \"%s\": %s\n",
-			fname, error
-		);
+		FormatError(wavpack_domain,
+			    "failed to open WavPack file \"%s\": %s",
+			    fname, error);
 		return false;
 	}
 
@@ -532,7 +532,8 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 	);
 
 	if (wpc == NULL) {
-		g_warning("failed to open WavPack stream: %s\n", error);
+		FormatError(wavpack_domain,
+			    "failed to open WavPack stream: %s", error);
 		return;
 	}
 
@@ -558,10 +559,9 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 		OPEN_TAGS | OPEN_WVC | OPEN_NORMALIZE, 23
 	);
 	if (wpc == NULL) {
-		g_warning(
-			"failed to open WavPack file \"%s\": %s\n",
-			fname, error
-		);
+		FormatWarning(wavpack_domain,
+			      "failed to open WavPack file \"%s\": %s",
+			      fname, error);
 		return;
 	}
 

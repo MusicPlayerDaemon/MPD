@@ -24,13 +24,10 @@
 
 #include "config.h"
 #include "Playlist.hxx"
+#include "PlaylistError.hxx"
 #include "PlayerControl.hxx"
 #include "Song.hxx"
-
-#include <glib.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "playlist"
+#include "Log.hxx"
 
 void
 playlist::Stop(player_control &pc)
@@ -40,7 +37,7 @@ playlist::Stop(player_control &pc)
 
 	assert(current >= 0);
 
-	g_debug("stop");
+	FormatDebug(playlist_domain, "stop");
 	pc.Stop();
 	queued = -1;
 	playing = false;

@@ -31,6 +31,7 @@
 #include "system/fd_util.h"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -51,9 +52,6 @@
 #include <sys/un.h>
 #include <netdb.h>
 #endif
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "listen"
 
 #define DEFAULT_PORT	6600
 
@@ -167,14 +165,16 @@ OneServerSocket::Accept()
 					&peer_address_length);
 	if (peer_fd < 0) {
 		const SocketErrorMessage msg;
-		g_warning("accept() failed: %s", (const char *)msg);
+		FormatError(server_socket_domain,
+			    "accept() failed: %s", (const char *)msg);
 		return;
 	}
 
 	if (socket_keepalive(peer_fd)) {
 		const SocketErrorMessage msg;
-		g_warning("Could not set TCP keepalive option: %s",
-			  (const char *)msg);
+		FormatError(server_socket_domain,
+			    "Could not set TCP keepalive option: %s",
+			    (const char *)msg);
 	}
 
 	parent.OnAccept(peer_fd,
@@ -241,11 +241,12 @@ ServerSocket::Open(Error &error)
 			if (good != nullptr && good->GetSerial() == i.GetSerial()) {
 				char *address_string = i.ToString();
 				char *good_string = good->ToString();
-				g_warning("bind to '%s' failed: %s "
-					  "(continuing anyway, because "
-					  "binding to '%s' succeeded)",
-					  address_string, error2.GetMessage(),
-					  good_string);
+				FormatWarning(server_socket_domain,
+					      "bind to '%s' failed: %s "
+					      "(continuing anyway, because "
+					      "binding to '%s' succeeded)",
+					      address_string, error2.GetMessage(),
+					      good_string);
 				g_free(address_string);
 				g_free(good_string);
 			} else if (bad == nullptr) {

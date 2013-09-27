@@ -19,7 +19,8 @@
 
 #include "config.h"
 #include "QueueSave.hxx"
-#include "Playlist.hxx"
+#include "Queue.hxx"
+#include "PlaylistError.hxx"
 #include "Song.hxx"
 #include "SongSave.hxx"
 #include "DatabasePlugin.hxx"
@@ -27,6 +28,7 @@
 #include "TextFile.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -96,14 +98,15 @@ queue_load_song(TextFile &file, const char *line, queue *queue)
 		Error error;
 		song = song_load(file, NULL, uri, error);
 		if (song == NULL) {
-			g_warning("%s", error.GetMessage());
+			LogError(error);
 			return;
 		}
 	} else {
 		char *endptr;
 		long ret = strtol(line, &endptr, 10);
 		if (ret < 0 || *endptr != ':' || endptr[1] == 0) {
-			g_warning("Malformed playlist line in state file");
+			LogError(playlist_domain,
+				 "Malformed playlist line in state file");
 			return;
 		}
 

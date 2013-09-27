@@ -26,6 +26,7 @@
 #include "InputInit.hxx"
 #include "IOThread.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #ifdef ENABLE_ARCHIVE
 #include "ArchiveList.hxx"
@@ -61,7 +62,7 @@ dump_input_stream(struct input_stream *is)
 	is->WaitReady();
 
 	if (!is->Check(error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		is->Unlock();
 		return EXIT_FAILURE;
 	}
@@ -84,7 +85,7 @@ dump_input_stream(struct input_stream *is)
 		num_read = is->Read(buffer, sizeof(buffer), error);
 		if (num_read == 0) {
 			if (error.IsDefined())
-				g_warning("%s", error.GetMessage());
+				LogError(error);
 
 			break;
 		}
@@ -95,7 +96,7 @@ dump_input_stream(struct input_stream *is)
 	}
 
 	if (!is->Check(error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		is->Unlock();
 		return EXIT_FAILURE;
 	}
@@ -136,7 +137,7 @@ int main(int argc, char **argv)
 #endif
 
 	if (!input_stream_global_init(error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return 2;
 	}
 
@@ -151,7 +152,7 @@ int main(int argc, char **argv)
 		is->Close();
 	} else {
 		if (error.IsDefined())
-			g_warning("%s", error.GetMessage());
+			LogError(error);
 		else
 			g_printerr("input_stream::Open() failed\n");
 		ret = 2;

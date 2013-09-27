@@ -25,14 +25,15 @@
 #include "Song.hxx"
 #include "tag/Tag.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <string.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "asx"
+static constexpr Domain asx_domain("asx");
 
 /**
  * This is the state object for the GLib XML parser.
@@ -224,7 +225,7 @@ asx_open_stream(struct input_stream *is)
 		if (nbytes == 0) {
 			if (error2.IsDefined()) {
 				g_markup_parse_context_free(context);
-				g_warning("%s", error2.GetMessage());
+				LogError(error2);
 				return NULL;
 			}
 
@@ -234,7 +235,8 @@ asx_open_stream(struct input_stream *is)
 		success = g_markup_parse_context_parse(context, buffer, nbytes,
 						       &error);
 		if (!success) {
-			g_warning("XML parser failed: %s", error->message);
+			FormatErrno(asx_domain,
+				    "XML parser failed: %s", error->message);
 			g_error_free(error);
 			g_markup_parse_context_free(context);
 			return NULL;
@@ -243,7 +245,8 @@ asx_open_stream(struct input_stream *is)
 
 	success = g_markup_parse_context_end_parse(context, &error);
 	if (!success) {
-		g_warning("XML parser failed: %s", error->message);
+		FormatErrno(asx_domain,
+			    "XML parser failed: %s", error->message);
 		g_error_free(error);
 		g_markup_parse_context_free(context);
 		return NULL;

@@ -26,13 +26,12 @@
 #include "pcm/PcmVolume.hxx"
 #include "OutputInternal.hxx"
 #include "util/Error.hxx"
-
-#include <glib.h>
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <assert.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "mixer"
+static constexpr Domain mixer_domain("mixer");
 
 static int
 output_mixer_get_volume(unsigned i)
@@ -53,8 +52,9 @@ output_mixer_get_volume(unsigned i)
 	Error error;
 	volume = mixer_get_volume(mixer, error);
 	if (volume < 0 && error.IsDefined())
-		g_warning("Failed to read mixer for '%s': %s",
-			  output->name, error.GetMessage());
+		FormatError(error,
+			    "Failed to read mixer for '%s'",
+			    output->name);
 
 	return volume;
 }
@@ -99,8 +99,9 @@ output_mixer_set_volume(unsigned i, unsigned volume)
 	Error error;
 	success = mixer_set_volume(mixer, volume, error);
 	if (!success && error.IsDefined())
-		g_warning("Failed to set mixer for '%s': %s",
-			  output->name, error.GetMessage());
+		FormatError(error,
+			    "Failed to set mixer for '%s'",
+			    output->name);
 
 	return success;
 }

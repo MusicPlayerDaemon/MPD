@@ -28,9 +28,6 @@
 #include <assert.h>
 #include <glib.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "global_events"
-
 namespace GlobalEvents {
 	class Monitor final : public DeferredMonitor {
 	public:

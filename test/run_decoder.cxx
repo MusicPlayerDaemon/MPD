@@ -25,6 +25,7 @@
 #include "InputStream.hxx"
 #include "AudioFormat.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 #include "stdbin.h"
 
 #include <glib.h>
@@ -167,7 +168,7 @@ int main(int argc, char **argv)
 
 	Error error;
 	if (!input_stream_global_init(error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return 2;
 	}
 
@@ -192,7 +193,7 @@ int main(int argc, char **argv)
 			input_stream::Open(decoder.uri, mutex, cond, error);
 		if (is == NULL) {
 			if (error.IsDefined())
-				g_warning("%s", error.GetMessage());
+				LogError(error);
 			else
 				g_printerr("input_stream::Open() failed\n");
 

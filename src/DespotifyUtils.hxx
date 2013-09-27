@@ -24,6 +24,8 @@ struct Tag;
 struct despotify_session;
 struct ds_track;
 
+extern const class Domain despotify_domain;
+
 /**
  * Return the current despotify session.
  *

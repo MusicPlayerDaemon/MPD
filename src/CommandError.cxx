@@ -22,6 +22,7 @@
 #include "DatabaseError.hxx"
 #include "protocol/Result.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -93,7 +94,7 @@ print_error(Client *client, const Error &error)
 	assert(client != NULL);
 	assert(error.IsDefined());
 
-	g_warning("%s", error.GetMessage());
+	LogError(error);
 
 	if (error.IsDomain(playlist_domain)) {
 		return print_playlist_result(client,

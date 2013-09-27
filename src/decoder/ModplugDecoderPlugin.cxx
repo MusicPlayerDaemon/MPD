@@ -22,6 +22,8 @@
 #include "DecoderAPI.hxx"
 #include "InputStream.hxx"
 #include "tag/TagHandler.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <libmodplug/modplug.h>
 
@@ -29,8 +31,7 @@
 
 #include <assert.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "modplug"
+static constexpr Domain modplug_domain("modplug");
 
 static constexpr size_t MODPLUG_FRAME_SIZE = 4096;
 static constexpr size_t MODPLUG_PREALLOC_BLOCK = 256 * 1024;
@@ -43,12 +44,12 @@ mod_loadfile(struct decoder *decoder, struct input_stream *is)
 	const goffset size = is->GetSize();
 
 	if (size == 0) {
-		g_warning("file is empty");
+		LogWarning(modplug_domain, "file is empty");
 		return nullptr;
 	}
 
 	if (size > MODPLUG_FILE_LIMIT) {
-		g_warning("file too large");
+		LogWarning(modplug_domain, "file too large");
 		return nullptr;
 	}
 
@@ -77,7 +78,7 @@ mod_loadfile(struct decoder *decoder, struct input_stream *is)
 		}
 
 		if (goffset(bdatas->len + ret) > MODPLUG_FILE_LIMIT) {
-			g_warning("stream too large\n");
+			LogWarning(modplug_domain, "stream too large");
 			g_free(data);
 			g_byte_array_free(bdatas, TRUE);
 			return nullptr;
@@ -103,7 +104,7 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 	bdatas = mod_loadfile(decoder, is);
 
 	if (!bdatas) {
-		g_warning("could not load stream\n");
+		LogWarning(modplug_domain, "could not load stream");
 		return;
 	}
 
@@ -119,7 +120,7 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 	f = ModPlug_Load(bdatas->data, bdatas->len);
 	g_byte_array_free(bdatas, TRUE);
 	if (!f) {
-		g_warning("could not decode stream\n");
+		LogWarning(modplug_domain, "could not decode stream");
 		return;
 	}
 

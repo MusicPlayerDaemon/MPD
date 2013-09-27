@@ -24,6 +24,8 @@
 #include "Tag.hxx"
 #include "TagBuilder.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 #include "ConfigGlobal.hxx"
 #include "Riff.hxx"
 #include "Aiff.hxx"
@@ -35,9 +37,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "id3"
 
 #  ifndef ID3_FRAME_COMPOSER
 #    define ID3_FRAME_COMPOSER "TCOM"
@@ -57,6 +56,8 @@
 #ifndef ID3_FRAME_ALBUM_ARTIST
 #define ID3_FRAME_ALBUM_ARTIST "TPE2"
 #endif
+
+static constexpr Domain id3_domain("id3");
 
 static inline bool
 tag_is_id3v1(struct id3_tag *tag)
@@ -104,8 +105,9 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
 						nullptr, nullptr,
 						nullptr, nullptr);
 		if (utf8 == nullptr) {
-			g_debug("Unable to convert %s string to UTF-8: '%s'",
-				encoding, isostr);
+			FormatWarning(id3_domain,
+				      "Unable to convert %s string to UTF-8: '%s'",
+				      encoding, isostr);
 			g_free(isostr);
 			return nullptr;
 		}
@@ -526,7 +528,7 @@ tag_id3_riff_aiff_load(FILE *file)
 	id3_byte_t *buffer = (id3_byte_t *)g_malloc(size);
 	size_t ret = fread(buffer, size, 1, file);
 	if (ret != 1) {
-		g_warning("Failed to read RIFF chunk");
+		LogWarning(id3_domain, "Failed to read RIFF chunk");
 		g_free(buffer);
 		return nullptr;
 	}
@@ -564,7 +566,7 @@ tag_id3_scan(const char *path_fs,
 	struct id3_tag *tag = tag_id3_load(path_fs, error);
 	if (tag == nullptr) {
 		if (error.IsDefined())
-			g_warning("%s", error.GetMessage());
+			LogError(error);
 
 		return false;
 	}

@@ -24,6 +24,8 @@
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <mpc/mpcdec.h>
 
@@ -32,13 +34,12 @@
 #include <unistd.h>
 #include <math.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "mpcdec"
-
 struct mpc_decoder_data {
 	struct input_stream *is;
 	struct decoder *decoder;
 };
+
+static constexpr Domain mpcdec_domain("mpcdec");
 
 static mpc_int32_t
 mpc_read_cb(mpc_reader *reader, void *ptr, mpc_int32_t size)
@@ -148,7 +149,8 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	mpc_demux *demux = mpc_demux_init(&reader);
 	if (demux == nullptr) {
 		if (decoder_get_command(mpd_decoder) != DecoderCommand::STOP)
-			g_warning("Not a valid musepack stream");
+			LogWarning(mpcdec_domain,
+				   "Not a valid musepack stream");
 		return;
 	}
 
@@ -160,7 +162,7 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	if (!audio_format_init_checked(audio_format, info.sample_freq,
 				       SampleFormat::S24_P32,
 				       info.channels, error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		mpc_demux_exit(demux);
 		return;
 	}
@@ -199,7 +201,8 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 		frame.buffer = (MPC_SAMPLE_FORMAT *)sample_buffer;
 		mpc_status status = mpc_demux_decode(demux, &frame);
 		if (status != MPC_STATUS_OK) {
-			g_warning("Failed to decode sample");
+			LogWarning(mpcdec_domain,
+				   "Failed to decode sample");
 			break;
 		}
 

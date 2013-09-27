@@ -21,6 +21,7 @@
 #include "ClientInternal.hxx"
 #include "protocol/Result.hxx"
 #include "AllCommands.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -40,10 +41,9 @@ client_process_command_list(Client *client, bool list_ok,
 	for (auto &&i : list) {
 		char *cmd = &*i.begin();
 
-		g_debug("command_process_list: process command \"%s\"",
-			cmd);
+		FormatDebug(client_domain, "process command \"%s\"", cmd);
 		ret = command_process(client, num++, cmd);
-		g_debug("command_process_list: command returned %i", ret);
+		FormatDebug(client_domain, "command returned %i", ret);
 		if (ret != COMMAND_RETURN_OK || client->IsExpired())
 			break;
 		else if (list_ok)
@@ -73,23 +73,26 @@ client_process_line(Client *client, char *line)
 	} else if (client->idle_waiting) {
 		/* during idle mode, clients must not send anything
 		   except "noidle" */
-		g_warning("[%u] command \"%s\" during idle",
-			  client->num, line);
+		FormatWarning(client_domain,
+			      "[%u] command \"%s\" during idle",
+			      client->num, line);
 		return COMMAND_RETURN_CLOSE;
 	}
 
 	if (client->cmd_list.IsActive()) {
 		if (strcmp(line, CLIENT_LIST_MODE_END) == 0) {
-			g_debug("[%u] process command list",
-				client->num);
+			FormatDebug(client_domain,
+				    "[%u] process command list",
+				    client->num);
 
 			auto &&cmd_list = client->cmd_list.Commit();
 
 			ret = client_process_command_list(client,
 							  client->cmd_list.IsOKMode(),
 							  std::move(cmd_list));
-			g_debug("[%u] process command "
-				"list returned %i", client->num, ret);
+			FormatDebug(client_domain,
+				    "[%u] process command "
+				    "list returned %i", client->num, ret);
 
 			if (ret == COMMAND_RETURN_CLOSE ||
 			    client->IsExpired())
@@ -101,10 +104,11 @@ client_process_line(Client *client, char *line)
 			client->cmd_list.Reset();
 		} else {
 			if (!client->cmd_list.Add(line)) {
-				g_warning("[%u] command list size "
-					  "is larger than the max (%lu)",
-					  client->num,
-					  (unsigned long)client_max_command_list_size);
+				FormatWarning(client_domain,
+					      "[%u] command list size "
+					      "is larger than the max (%lu)",
+					      client->num,
+					      (unsigned long)client_max_command_list_size);
 				return COMMAND_RETURN_CLOSE;
 			}
 
@@ -118,11 +122,13 @@ client_process_line(Client *client, char *line)
 			client->cmd_list.Begin(true);
 			ret = COMMAND_RETURN_OK;
 		} else {
-			g_debug("[%u] process command \"%s\"",
-				client->num, line);
+			FormatDebug(client_domain,
+				    "[%u] process command \"%s\"",
+				    client->num, line);
 			ret = command_process(client, 0, line);
-			g_debug("[%u] command returned %i",
-				client->num, ret);
+			FormatDebug(client_domain,
+				    "[%u] command returned %i",
+				    client->num, ret);
 
 			if (ret == COMMAND_RETURN_CLOSE ||
 			    client->IsExpired())

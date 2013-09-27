@@ -32,6 +32,7 @@
 #include "PlaylistPlugin.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -174,7 +175,7 @@ int main(int argc, char **argv)
 	io_thread_start();
 
 	if (!input_stream_global_init(error)) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return 2;
 	}
 
@@ -193,7 +194,7 @@ int main(int argc, char **argv)
 		is = input_stream::Open(uri, mutex, cond, error);
 		if (is == NULL) {
 			if (error.IsDefined())
-				g_warning("%s", error.GetMessage());
+				LogError(error);
 			else
 				g_printerr("input_stream::Open() failed\n");
 			return 2;

@@ -33,9 +33,6 @@
 #include <OpenAL/alc.h>
 #endif
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "openal"
-
 /* should be enough for buffer size = 2048 */
 #define NUM_BUFFERS 16
 

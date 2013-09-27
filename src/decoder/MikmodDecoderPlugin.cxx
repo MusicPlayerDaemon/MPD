@@ -22,13 +22,14 @@
 #include "DecoderAPI.hxx"
 #include "tag/TagHandler.hxx"
 #include "system/FatalError.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 #include <mikmod.h>
 #include <assert.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "mikmod"
+static constexpr Domain mikmod_domain("mikmod");
 
 /* this is largely copied from alsaplayer */
 
@@ -127,8 +128,9 @@ mikmod_decoder_init(const config_param &param)
 		   DMODE_16BITS);
 
 	if (MikMod_Init(params)) {
-		g_warning("Could not init MikMod: %s\n",
-			  MikMod_strerror(MikMod_errno));
+		FormatError(mikmod_domain,
+			    "Could not init MikMod: %s",
+			    MikMod_strerror(MikMod_errno));
 		return false;
 	}
 
@@ -154,7 +156,8 @@ mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 	g_free(path2);
 
 	if (handle == nullptr) {
-		g_warning("failed to open mod: %s", path_fs);
+		FormatError(mikmod_domain,
+			    "failed to open mod: %s", path_fs);
 		return;
 	}
 
@@ -187,7 +190,8 @@ mikmod_decoder_scan_file(const char *path_fs,
 
 	if (handle == nullptr) {
 		g_free(path2);
-		g_debug("Failed to open file: %s", path_fs);
+		FormatDebug(mikmod_domain,
+			    "Failed to open file: %s", path_fs);
 		return false;
 
 	}

@@ -26,9 +26,6 @@
 
 #include <assert.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "decoder_control"
-
 decoder_control::decoder_control()
 	:thread(nullptr),
 	 state(DecoderState::STOP),

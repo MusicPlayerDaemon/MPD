@@ -34,9 +34,6 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "input_ffmpeg"
-
 struct FfmpegInputStream {
 	struct input_stream base;
 

@@ -23,14 +23,15 @@
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
 #include <mpg123.h>
 #include <stdio.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "mpg123"
+static constexpr Domain mpg123_domain("mpg123");
 
 static bool
 mpd_mpg123_init(gcc_unused const config_param &param)
@@ -70,8 +71,9 @@ mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 	error = mpg123_open(handle, path_dup);
 	g_free(path_dup);
 	if (error != MPG123_OK) {
-		g_warning("libmpg123 failed to open %s: %s",
-			  path_fs, mpg123_plain_strerror(error));
+		FormatWarning(mpg123_domain,
+			      "libmpg123 failed to open %s: %s",
+			      path_fs, mpg123_plain_strerror(error));
 		return false;
 	}
 
@@ -79,21 +81,24 @@ mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 
 	error = mpg123_getformat(handle, &rate, &channels, &encoding);
 	if (error != MPG123_OK) {
-		g_warning("mpg123_getformat() failed: %s",
-			  mpg123_plain_strerror(error));
+		FormatWarning(mpg123_domain,
+			      "mpg123_getformat() failed: %s",
+			      mpg123_plain_strerror(error));
 		return false;
 	}
 
 	if (encoding != MPG123_ENC_SIGNED_16) {
 		/* other formats not yet implemented */
-		g_warning("expected MPG123_ENC_SIGNED_16, got %d", encoding);
+		FormatWarning(mpg123_domain,
+			      "expected MPG123_ENC_SIGNED_16, got %d",
+			      encoding);
 		return false;
 	}
 
 	Error error2;
 	if (!audio_format_init_checked(audio_format, rate, SampleFormat::S16,
 				       channels, error2)) {
-		g_warning("%s", error2.GetMessage());
+		LogError(error2);
 		return false;
 	}
 
@@ -112,8 +117,9 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 
 	handle = mpg123_new(nullptr, &error);
 	if (handle == nullptr) {
-		g_warning("mpg123_new() failed: %s",
-			  mpg123_plain_strerror(error));
+		FormatError(mpg123_domain,
+			    "mpg123_new() failed: %s",
+			    mpg123_plain_strerror(error));
 		return;
 	}
 
@@ -158,8 +164,9 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 		error = mpg123_read(handle, buffer, sizeof(buffer), &nbytes);
 		if (error != MPG123_OK) {
 			if (error != MPG123_DONE)
-				g_warning("mpg123_read() failed: %s",
-					  mpg123_plain_strerror(error));
+				FormatWarning(mpg123_domain,
+					      "mpg123_read() failed: %s",
+					      mpg123_plain_strerror(error));
 			break;
 		}
 
@@ -204,8 +211,9 @@ mpd_mpg123_scan_file(const char *path_fs,
 
 	handle = mpg123_new(nullptr, &error);
 	if (handle == nullptr) {
-		g_warning("mpg123_new() failed: %s",
-			  mpg123_plain_strerror(error));
+		FormatError(mpg123_domain,
+			    "mpg123_new() failed: %s",
+			    mpg123_plain_strerror(error));
 		return false;
 	}
 

@@ -24,9 +24,11 @@
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"
 #include "Listen.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 #include "gcc.h"
 
-#include <glib.h>
+static constexpr Domain zeroconf_domain("zeroconf");
 
 /* The default service name to publish
  * (overridden by 'zeroconf_name' config parameter)
@@ -48,7 +50,8 @@ ZeroconfInit(gcc_unused EventLoop &loop)
 		return;
 
 	if (listen_port <= 0) {
-		g_warning("No global port, disabling zeroconf");
+		LogInfo(zeroconf_domain,
+			"No global port, disabling zeroconf");
 		zeroconfEnabled = false;
 		return;
 	}

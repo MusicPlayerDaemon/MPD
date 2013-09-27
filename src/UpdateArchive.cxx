@@ -20,6 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "UpdateArchive.hxx"
 #include "UpdateInternal.hxx"
+#include "UpdateDomain.hxx"
 #include "DatabaseLock.hxx"
 #include "Directory.hxx"
 #include "Song.hxx"
@@ -30,6 +31,7 @@
 #include "ArchiveFile.hxx"
 #include "ArchiveVisitor.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -53,7 +55,8 @@ update_archive_tree(Directory *directory, const char *name)
 		update_archive_tree(subdir, tmp+1);
 	} else {
 		if (strlen(name) == 0) {
-			g_warning("archive returned directory only");
+			LogWarning(update_domain,
+				   "archive returned directory only");
 			return;
 		}
 
@@ -69,8 +72,8 @@ update_archive_tree(Directory *directory, const char *name)
 				db_unlock();
 
 				modified = true;
-				g_message("added %s/%s",
-					  directory->GetPath(), name);
+				FormatInfo(update_domain, "added %s/%s",
+					   directory->GetPath(), name);
 			}
 		}
 	}
@@ -105,14 +108,15 @@ update_archive_file2(Directory *parent, const char *name,
 	Error error;
 	ArchiveFile *file = archive_file_open(plugin, path_fs.c_str(), error);
 	if (file == NULL) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return;
 	}
 
-	g_debug("archive %s opened", path_fs.c_str());
+	FormatDebug(update_domain, "archive %s opened", path_fs.c_str());
 
 	if (directory == NULL) {
-		g_debug("creating archive directory: %s", name);
+		FormatDebug(update_domain,
+			    "creating archive directory: %s", name);
 		db_lock();
 		directory = parent->CreateChild(name);
 		/* mark this directory as archive (we use device for
@@ -131,7 +135,8 @@ update_archive_file2(Directory *parent, const char *name,
 			:directory(_directory) {}
 
 		virtual void VisitArchiveEntry(const char *path_utf8) override {
-			g_debug("adding archive file: %s", path_utf8);
+			FormatDebug(update_domain,
+				    "adding archive file: %s", path_utf8);
 			update_archive_tree(directory, path_utf8);
 		}
 	};

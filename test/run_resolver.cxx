@@ -20,6 +20,7 @@
 #include "config.h"
 #include "system/Resolver.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -45,7 +46,7 @@ int main(int argc, char **argv)
 		resolve_host_port(argv[1], 80, AI_PASSIVE, SOCK_STREAM,
 				  error);
 	if (ai == NULL) {
-		g_warning("%s", error.GetMessage());
+		LogError(error);
 		return EXIT_FAILURE;
 	}
 
@@ -54,7 +55,7 @@ int main(int argc, char **argv)
 					     error);
 		if (p == NULL) {
 			freeaddrinfo(ai);
-			g_warning("%s", error.GetMessage());
+			LogError(error);
 			return EXIT_FAILURE;
 		}
 

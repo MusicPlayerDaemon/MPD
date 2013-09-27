@@ -21,6 +21,7 @@
 #include "UpdateContainer.hxx"
 #include "UpdateInternal.hxx"
 #include "UpdateDatabase.hxx"
+#include "UpdateDomain.hxx"
 #include "DatabaseLock.hxx"
 #include "Directory.hxx"
 #include "Song.hxx"
@@ -29,6 +30,7 @@
 #include "fs/Path.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -110,7 +112,8 @@ update_container_file(Directory *directory,
 
 		modified = true;
 
-		g_message("added %s/%s", directory->GetPath(), vtrack);
+		FormatInfo(update_domain, "added %s/%s",
+			   directory->GetPath(), vtrack);
 		g_free(vtrack);
 	}
 

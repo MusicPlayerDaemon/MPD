@@ -24,6 +24,7 @@
 #include "ConfigError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <twolame.h>
 
@@ -109,7 +110,8 @@ TwolameEncoder::Configure(const config_param &param, Error &error)
 static Encoder *
 twolame_encoder_init(const config_param &param, Error &error_r)
 {
-	g_debug("libtwolame version %s", get_twolame_version());
+	FormatDebug(twolame_encoder_domain,
+		    "libtwolame version %s", get_twolame_version());
 
 	TwolameEncoder *encoder = new TwolameEncoder();
 

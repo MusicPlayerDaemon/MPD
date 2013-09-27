@@ -25,9 +25,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "mixer"
-
 Mixer *
 mixer_new(const struct mixer_plugin *plugin, void *ao,
 	  const config_param &param,

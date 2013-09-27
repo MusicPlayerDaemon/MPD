@@ -28,9 +28,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "input_rewind"
-
 extern const struct input_plugin rewind_input_plugin;
 
 struct RewindInputStream {

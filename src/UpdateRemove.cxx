@@ -19,14 +19,15 @@
 
 #include "config.h" /* must be first for large file support */
 #include "UpdateRemove.hxx"
+#include "UpdateDomain.hxx"
 #include "Playlist.hxx"
 #include "GlobalEvents.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
-
 #include "Song.hxx"
 #include "Main.hxx"
 #include "Instance.hxx"
+#include "Log.hxx"
 
 #ifdef ENABLE_SQLITE
 #include "StickerDatabase.hxx"
@@ -54,7 +55,7 @@ song_remove_event(void)
 	assert(removed_song != NULL);
 
 	uri = removed_song->GetURI();
-	g_message("removing %s", uri);
+	FormatInfo(update_domain, "removing %s", uri);
 	g_free(uri);
 
 #ifdef ENABLE_SQLITE

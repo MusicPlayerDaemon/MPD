@@ -25,6 +25,7 @@
 #include "thread/Mutex.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -33,9 +34,6 @@
 #define new _new
 #include <roaraudio.h>
 #undef new
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "roaraudio"
 
 struct RoarOutput {
 	struct audio_output base;
@@ -242,7 +240,7 @@ roar_cancel_locked(RoarOutput *self)
 	if (roar_vs_stream(vss, &(self->info), ROAR_DIR_PLAY,
 			   &(self->err)) < 0) {
 		roar_vs_close(vss, ROAR_VS_TRUE, &(self->err));
-		g_warning("Failed to start stream");
+		LogError(roar_output_domain, "Failed to start stream");
 		return;
 	}
 

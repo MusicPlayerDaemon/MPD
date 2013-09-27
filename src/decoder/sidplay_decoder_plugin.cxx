@@ -20,6 +20,8 @@
 #include "config.h"
 #include "../DecoderAPI.hxx"
 #include "tag/TagHandler.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -30,10 +32,9 @@
 #include <sidplay/builders/resid.h>
 #include <sidplay/utils/SidTuneMod.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "sidplay"
-
 #define SUBTUNE_PREFIX "tune_"
+
+static constexpr Domain sidplay_domain("sidplay");
 
 static GPatternSpec *path_with_subtune;
 static const char *songlength_file;
@@ -52,8 +53,9 @@ sidplay_load_songlength_db(const char *path)
 	gsize size;
 
 	if (!g_file_get_contents(path, &data, &size, &error)) {
-		g_warning("unable to read songlengths file %s: %s",
-			  path, error->message);
+		FormatError(sidplay_domain,
+			    "unable to read songlengths file %s: %s",
+			    path, error->message);
 		g_error_free(error);
 		return NULL;
 	}
@@ -68,8 +70,9 @@ sidplay_load_songlength_db(const char *path)
 						 G_KEY_FILE_NONE, &error);
 	g_free(data);
 	if (!success) {
-		g_warning("unable to parse songlengths file %s: %s",
-			  path, error->message);
+		FormatError(sidplay_domain,
+			    "unable to parse songlengths file %s: %s",
+			    path, error->message);
 		g_error_free(error);
 		g_key_file_free(db);
 		return NULL;
@@ -162,7 +165,8 @@ get_song_length(const char *path_fs)
 	SidTuneMod tune(sid_file);
 	g_free(sid_file);
 	if(!tune) {
-		g_warning("failed to load file for calculating md5 sum");
+		LogWarning(sidplay_domain,
+			   "failed to load file for calculating md5 sum");
 		return -1;
 	}
 	char md5sum[SIDTUNE_MD5_LENGTH+1];
@@ -205,7 +209,7 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 	SidTune tune(path_container, NULL, true);
 	g_free(path_container);
 	if (!tune) {
-		g_warning("failed to load file");
+		LogWarning(sidplay_domain, "failed to load file");
 		return;
 	}
 
@@ -220,7 +224,8 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 	sidplay2 player;
 	int iret = player.load(&tune);
 	if (iret != 0) {
-		g_warning("sidplay2.load() failed: %s", player.error());
+		FormatWarning(sidplay_domain,
+			      "sidplay2.load() failed: %s", player.error());
 		return;
 	}
 
@@ -228,19 +233,20 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 
 	ReSIDBuilder builder("ReSID");
 	if (!builder) {
-		g_warning("failed to initialize ReSIDBuilder");
+		LogWarning(sidplay_domain,
+			   "failed to initialize ReSIDBuilder");
 		return;
 	}
 
 	builder.create(player.info().maxsids);
 	if (!builder) {
-		g_warning("ReSIDBuilder.create() failed");
+		LogWarning(sidplay_domain, "ReSIDBuilder.create() failed");
 		return;
 	}
 
 	builder.filter(filter_setting);
 	if (!builder) {
-		g_warning("ReSIDBuilder.filter() failed");
+		LogWarning(sidplay_domain, "ReSIDBuilder.filter() failed");
 		return;
 	}
 
@@ -274,7 +280,8 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 
 	iret = player.config(config);
 	if (iret != 0) {
-		g_warning("sidplay2.config() failed: %s", player.error());
+		FormatWarning(sidplay_domain,
+			      "sidplay2.config() failed: %s", player.error());
 		return;
 	}
 

@@ -26,6 +26,8 @@
 #include "OutputState.hxx"
 #include "OutputAll.hxx"
 #include "OutputInternal.hxx"
+#include "OutputError.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -76,7 +78,8 @@ audio_output_state_read(const char *line)
 	name = endptr + 1;
 	ao = audio_output_find(name);
 	if (ao == NULL) {
-		g_debug("Ignoring device state for '%s'", name);
+		FormatDebug(output_domain,
+			    "Ignoring device state for '%s'", name);
 		return true;
 	}
 

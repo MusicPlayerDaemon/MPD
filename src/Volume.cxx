@@ -22,16 +22,17 @@
 #include "MixerAll.hxx"
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"
+#include "util/Domain.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <stdlib.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "volume"
-
 #define SW_VOLUME_STATE                         "sw_volume: "
+
+static constexpr Domain volume_domain("volume");
 
 static unsigned volume_software_set = 100;
 
@@ -122,7 +123,8 @@ read_sw_volume_state(const char *line)
 	if (*end == 0 && sv >= 0 && sv <= 100)
 		software_volume_change(sv);
 	else
-		g_warning("Can't parse software volume: %s\n", line);
+		FormatWarning(volume_domain,
+			      "Can't parse software volume: %s", line);
 	return true;
 }
 

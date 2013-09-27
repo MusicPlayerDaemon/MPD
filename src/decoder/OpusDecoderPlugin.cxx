@@ -19,6 +19,7 @@
 
 #include "config.h" /* must be first for large file support */
 #include "OpusDecoderPlugin.h"
+#include "OpusDomain.hxx"
 #include "OpusHead.hxx"
 #include "OpusTags.hxx"
 #include "OggUtil.hxx"
@@ -31,6 +32,7 @@
 #include "tag/TagBuilder.hxx"
 #include "InputStream.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <opus.h>
 #include <ogg/ogg.h>
@@ -39,9 +41,6 @@
 
 #include <stdio.h>
 #include <string.h>
-
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "opus"
 
 static const opus_int32 opus_sample_rate = 48000;
 
@@ -62,7 +61,7 @@ IsOpusTags(const ogg_packet &packet)
 static bool
 mpd_opus_init(gcc_unused const config_param &param)
 {
-	g_debug("%s", opus_get_version_string());
+	LogDebug(opus_domain, opus_get_version_string());
 
 	return true;
 }
@@ -199,8 +198,8 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 	opus_decoder = opus_decoder_create(opus_sample_rate, channels,
 					   &opus_error);
 	if (opus_decoder == nullptr) {
-		g_warning("libopus error: %s",
-			  opus_strerror(opus_error));
+		FormatError(opus_domain, "libopus error: %s",
+			    opus_strerror(opus_error));
 		return DecoderCommand::STOP;
 	}
 
@@ -249,7 +248,7 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 				  output_buffer, output_size,
 				  0);
 	if (nframes < 0) {
-		g_warning("%s", opus_strerror(nframes));
+		LogError(opus_domain, opus_strerror(nframes));
 		return DecoderCommand::STOP;
 	}
 

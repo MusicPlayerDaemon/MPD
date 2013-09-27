@@ -31,9 +31,6 @@
 #include <assert.h>
 #include <math.h>
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "pcm"
-
 const Domain pcm_convert_domain("pcm_convert");
 
 PcmConvert::PcmConvert()

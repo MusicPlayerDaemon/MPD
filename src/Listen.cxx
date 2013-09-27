@@ -27,7 +27,9 @@
 #include "ConfigOption.hxx"
 #include "event/ServerSocket.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
 #include "fs/Path.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -38,8 +40,7 @@
 #include <systemd/sd-daemon.h>
 #endif
 
-#undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "listen"
+static constexpr Domain listen_domain("listen");
 
 #define DEFAULT_PORT	6600
 
@@ -82,8 +83,8 @@ listen_systemd_activation(Error &error_r)
 	int n = sd_listen_fds(true);
 	if (n <= 0) {
 		if (n < 0)
-			g_warning("sd_listen_fds() failed: %s",
-				  g_strerror(-n));
+			FormatErrno(listen_domain, -n,
+				    "sd_listen_fds() failed");
 		return false;
 	}
 
@@ -155,7 +156,7 @@ listen_global_init(Error &error)
 
 void listen_global_finish(void)
 {
-	g_debug("listen_global_finish called");
+	LogDebug(listen_domain, "listen_global_finish called");
 
 	assert(listen_socket != NULL);
 
