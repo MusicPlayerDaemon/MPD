@@ -68,7 +68,7 @@ adplug_file_decode(struct decoder *decoder, const char *path_fs)
 
 	int16_t buffer[2048];
 	const unsigned frames_per_buffer = G_N_ELEMENTS(buffer) / 2;
-	enum decoder_command cmd;
+	DecoderCommand cmd;
 
 	do {
 		if (!player->update())
@@ -78,7 +78,7 @@ adplug_file_decode(struct decoder *decoder, const char *path_fs)
 		cmd = decoder_data(decoder, NULL,
 				   buffer, sizeof(buffer),
 				   0);
-	} while (cmd == DECODE_COMMAND_NONE);
+	} while (cmd == DecoderCommand::NONE);
 
 	delete player;
 }

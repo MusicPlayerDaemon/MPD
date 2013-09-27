@@ -72,7 +72,7 @@ struct decoder_control {
 	Cond client_cond;
 
 	enum decoder_state state;
-	enum decoder_command command;
+	DecoderCommand command;
 
 	/**
 	 * The error that occurred in the decoder thread.  This
@@ -95,7 +95,7 @@ struct decoder_control {
 
 	/**
 	 * The song currently being decoded.  This attribute is set by
-	 * the player thread, when it sends the #DECODE_COMMAND_START
+	 * the player thread, when it sends the #DecoderCommand::START
 	 * command.
 	 *
 	 * This is a duplicate, and must be freed when this attribute
@@ -207,7 +207,7 @@ struct decoder_control {
 	}
 
 	bool HasFailed() const {
-		assert(command == DECODE_COMMAND_NONE);
+		assert(command == DecoderCommand::NONE);
 
 		return state == DECODE_STATE_ERROR;
 	}
@@ -228,7 +228,7 @@ struct decoder_control {
 	 */
 	gcc_pure
 	Error GetError() const {
-		assert(command == DECODE_COMMAND_NONE);
+		assert(command == DecoderCommand::NONE);
 		assert(state != DECODE_STATE_ERROR || error.IsDefined());
 
 		Error result;
@@ -286,7 +286,7 @@ private:
 	 * object.
 	 */
 	void WaitCommandLocked() {
-		while (command != DECODE_COMMAND_NONE)
+		while (command != DecoderCommand::NONE)
 			WaitForDecoder();
 	}
 
@@ -297,7 +297,7 @@ private:
 	 * To be called from the client thread.  Caller must lock the
 	 * object.
 	 */
-	void SynchronousCommandLocked(decoder_command cmd) {
+	void SynchronousCommandLocked(DecoderCommand cmd) {
 		command = cmd;
 		Signal();
 		WaitCommandLocked();
@@ -310,14 +310,14 @@ private:
 	 * To be called from the client thread.  This method locks the
 	 * object.
 	 */
-	void LockSynchronousCommand(decoder_command cmd) {
+	void LockSynchronousCommand(DecoderCommand cmd) {
 		Lock();
 		ClearError();
 		SynchronousCommandLocked(cmd);
 		Unlock();
 	}
 
-	void LockAsynchronousCommand(decoder_command cmd) {
+	void LockAsynchronousCommand(DecoderCommand cmd) {
 		Lock();
 		command = cmd;
 		Signal();

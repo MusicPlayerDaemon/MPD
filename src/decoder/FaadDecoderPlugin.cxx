@@ -368,7 +368,6 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	bool ret;
 	uint16_t bit_rate = 0;
 	DecoderBuffer *buffer;
-	enum decoder_command cmd;
 
 	buffer = decoder_buffer_new(mpd_decoder, is,
 				    FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
@@ -386,7 +385,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	NeAACDecSetConfiguration(decoder, config);
 
 	while (!decoder_buffer_is_full(buffer) && !is->LockIsEOF() &&
-	       decoder_get_command(mpd_decoder) == DECODE_COMMAND_NONE) {
+	       decoder_get_command(mpd_decoder) == DecoderCommand::NONE) {
 		adts_find_frame(buffer);
 		decoder_buffer_fill(buffer);
 	}
@@ -407,6 +406,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 	/* the decoder loop */
 
+	DecoderCommand cmd;
 	do {
 		size_t frame_size;
 		const void *decoded;
@@ -457,7 +457,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 		cmd = decoder_data(mpd_decoder, is, decoded,
 				   (size_t)frame_info.samples * 2,
 				   bit_rate);
-	} while (cmd != DECODE_COMMAND_STOP);
+	} while (cmd != DecoderCommand::STOP);
 
 	/* cleanup */
 

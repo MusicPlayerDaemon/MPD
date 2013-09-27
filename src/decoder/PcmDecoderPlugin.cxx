@@ -48,8 +48,6 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 	const bool reverse_endian = mime != nullptr &&
 		strcmp(mime, "audio/x-mpd-cdda-pcm-reverse") == 0;
 
-	enum decoder_command cmd;
-
 	const double time_to_size = audio_format.GetTimeToSize();
 
 	float total_time = -1;
@@ -60,6 +58,7 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 	decoder_initialized(decoder, audio_format,
 			    is->IsSeekable(), total_time);
 
+	DecoderCommand cmd;
 	do {
 		char buffer[4096];
 
@@ -79,7 +78,7 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 			? decoder_data(decoder, is,
 				       buffer, nbytes, 0)
 			: decoder_get_command(decoder);
-		if (cmd == DECODE_COMMAND_SEEK) {
+		if (cmd == DecoderCommand::SEEK) {
 			goffset offset = (goffset)(time_to_size *
 						   decoder_seek_where(decoder));
 
@@ -91,9 +90,9 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 				decoder_seek_error(decoder);
 			}
 
-			cmd = DECODE_COMMAND_NONE;
+			cmd = DecoderCommand::NONE;
 		}
-	} while (cmd == DECODE_COMMAND_NONE);
+	} while (cmd == DecoderCommand::NONE);
 }
 
 static const char *const pcm_mime_types[] = {

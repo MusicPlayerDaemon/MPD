@@ -20,11 +20,13 @@
 #ifndef MPD_DECODER_COMMAND_HXX
 #define MPD_DECODER_COMMAND_HXX
 
-enum decoder_command {
-	DECODE_COMMAND_NONE = 0,
-	DECODE_COMMAND_START,
-	DECODE_COMMAND_STOP,
-	DECODE_COMMAND_SEEK
+#include <stdint.h>
+
+enum class DecoderCommand : uint8_t {
+	NONE = 0,
+	START,
+	STOP,
+	SEEK
 };
 
 #endif

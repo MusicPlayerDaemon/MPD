@@ -52,9 +52,9 @@
 static void
 decoder_command_finished_locked(struct decoder_control *dc)
 {
-	assert(dc->command != DECODE_COMMAND_NONE);
+	assert(dc->command != DecoderCommand::NONE);
 
-	dc->command = DECODE_COMMAND_NONE;
+	dc->command = DecoderCommand::NONE;
 
 	dc->client_cond.signal();
 }
@@ -67,7 +67,7 @@ decoder_command_finished_locked(struct decoder_control *dc)
  *
  * Unlock the decoder before calling this function.
  *
- * @return an input_stream on success or if #DECODE_COMMAND_STOP is
+ * @return an input_stream on success or if #DecoderCommand::STOP is
  * received, NULL on error
  */
 static struct input_stream *
@@ -90,7 +90,7 @@ decoder_input_stream_open(struct decoder_control *dc, const char *uri)
 
 	is->Update();
 	while (!is->ready &&
-	       dc->command != DECODE_COMMAND_STOP) {
+	       dc->command != DecoderCommand::STOP) {
 		dc->Wait();
 
 		is->Update();
@@ -124,7 +124,7 @@ decoder_stream_decode(const struct decoder_plugin *plugin,
 
 	g_debug("probing plugin %s", plugin->name);
 
-	if (decoder->dc->command == DECODE_COMMAND_STOP)
+	if (decoder->dc->command == DecoderCommand::STOP)
 		return true;
 
 	/* rewind the stream, so each plugin gets a fresh start */
@@ -157,7 +157,7 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 
 	g_debug("probing plugin %s", plugin->name);
 
-	if (decoder->dc->command == DECODE_COMMAND_STOP)
+	if (decoder->dc->command == DecoderCommand::STOP)
 		return true;
 
 	decoder->dc->Unlock();
@@ -286,7 +286,7 @@ decoder_run_stream(struct decoder *decoder, const char *uri)
 
 	GSList *tried = NULL;
 
-	success = dc->command == DECODE_COMMAND_STOP ||
+	success = dc->command == DecoderCommand::STOP ||
 		/* first we try mime types: */
 		decoder_run_stream_mime_type(decoder, input_stream, &tried) ||
 		/* if that fails, try suffix matching the URL: */
@@ -455,7 +455,7 @@ decoder_task(gpointer arg)
 		       dc->state == DECODE_STATE_ERROR);
 
 		switch (dc->command) {
-		case DECODE_COMMAND_START:
+		case DecoderCommand::START:
 			dc->MixRampStart(nullptr);
 			dc->MixRampPrevEnd(dc->mixramp_end);
 			dc->mixramp_end = NULL; /* Don't free, it's copied above. */
@@ -464,19 +464,19 @@ decoder_task(gpointer arg)
 
                         /* fall through */
 
-		case DECODE_COMMAND_SEEK:
+		case DecoderCommand::SEEK:
 			decoder_run(dc);
 			break;
 
-		case DECODE_COMMAND_STOP:
+		case DecoderCommand::STOP:
 			decoder_command_finished_locked(dc);
 			break;
 
-		case DECODE_COMMAND_NONE:
+		case DecoderCommand::NONE:
 			dc->Wait();
 			break;
 		}
-	} while (dc->command != DECODE_COMMAND_NONE || !dc->quit);
+	} while (dc->command != DecoderCommand::NONE || !dc->quit);
 
 	dc->Unlock();
 

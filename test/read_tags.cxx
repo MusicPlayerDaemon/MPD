@@ -47,10 +47,10 @@ decoder_initialized(gcc_unused struct decoder *decoder,
 {
 }
 
-enum decoder_command
+DecoderCommand
 decoder_get_command(gcc_unused struct decoder *decoder)
 {
-	return DECODE_COMMAND_NONE;
+	return DecoderCommand::NONE;
 }
 
 void decoder_command_finished(gcc_unused struct decoder *decoder)
@@ -81,22 +81,22 @@ decoder_timestamp(gcc_unused struct decoder *decoder,
 {
 }
 
-enum decoder_command
+DecoderCommand
 decoder_data(gcc_unused struct decoder *decoder,
 	     gcc_unused struct input_stream *is,
 	     const void *data, size_t datalen,
 	     gcc_unused uint16_t bit_rate)
 {
 	gcc_unused ssize_t nbytes = write(1, data, datalen);
-	return DECODE_COMMAND_NONE;
+	return DecoderCommand::NONE;
 }
 
-enum decoder_command
+DecoderCommand
 decoder_tag(gcc_unused struct decoder *decoder,
 	    gcc_unused struct input_stream *is,
 	    gcc_unused Tag &&tag)
 {
-	return DECODE_COMMAND_NONE;
+	return DecoderCommand::NONE;
 }
 
 void

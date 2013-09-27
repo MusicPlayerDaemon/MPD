@@ -102,7 +102,6 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	fluid_synth_t *synth;
 	fluid_player_t *player;
 	int ret;
-	enum decoder_command cmd;
 
 	/* set up fluid settings */
 
@@ -167,6 +166,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	const AudioFormat audio_format(sample_rate, SampleFormat::S16, 2);
 	decoder_initialized(decoder, audio_format, false, -1);
 
+	DecoderCommand cmd;
 	while (fluid_player_get_status(player) == FLUID_PLAYER_PLAYING) {
 		int16_t buffer[2048];
 		const unsigned max_frames = G_N_ELEMENTS(buffer) / 2;
@@ -182,7 +182,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 
 		cmd = decoder_data(decoder, nullptr, buffer, sizeof(buffer),
 				   0);
-		if (cmd != DECODE_COMMAND_NONE)
+		if (cmd != DecoderCommand::NONE)
 			break;
 	}
 

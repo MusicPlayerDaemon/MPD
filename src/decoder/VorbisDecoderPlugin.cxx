@@ -83,7 +83,7 @@ static int ogg_seek_cb(void *data, ogg_int64_t offset, int whence)
 
 	Error error;
 	return vis->seekable &&
-		(!vis->decoder || decoder_get_command(vis->decoder) != DECODE_COMMAND_STOP) &&
+		(!vis->decoder || decoder_get_command(vis->decoder) != DecoderCommand::STOP) &&
 		vis->input_stream->LockSeek(offset, whence, error)
 		? 0 : -1;
 }
@@ -143,7 +143,7 @@ vorbis_is_open(struct vorbis_input_stream *vis, OggVorbis_File *vf,
 	int ret = ov_open_callbacks(vis, vf, NULL, 0, vorbis_is_callbacks);
 	if (ret < 0) {
 		if (decoder == NULL ||
-		    decoder_get_command(decoder) == DECODE_COMMAND_NONE)
+		    decoder_get_command(decoder) == DecoderCommand::NONE)
 			g_warning("Failed to open Ogg Vorbis stream: %s",
 				  vorbis_strerror(ret));
 		return false;
@@ -221,8 +221,6 @@ vorbis_stream_decode(struct decoder *decoder,
 
 	decoder_initialized(decoder, audio_format, vis.seekable, total_time);
 
-	enum decoder_command cmd = decoder_get_command(decoder);
-
 #ifdef HAVE_TREMOR
 	char buffer[4096];
 #else
@@ -235,8 +233,9 @@ vorbis_stream_decode(struct decoder *decoder,
 	int prev_section = -1;
 	unsigned kbit_rate = 0;
 
+	DecoderCommand cmd = decoder_get_command(decoder);
 	do {
-		if (cmd == DECODE_COMMAND_SEEK) {
+		if (cmd == DecoderCommand::SEEK) {
 			double seek_where = decoder_seek_where(decoder);
 			if (0 == ov_time_seek_page(&vf, seek_where)) {
 				decoder_command_finished(decoder);
@@ -302,7 +301,7 @@ vorbis_stream_decode(struct decoder *decoder,
 		cmd = decoder_data(decoder, input_stream,
 				   buffer, nbytes,
 				   kbit_rate);
-	} while (cmd != DECODE_COMMAND_STOP);
+	} while (cmd != DecoderCommand::STOP);
 
 	ov_clear(&vf);
 }

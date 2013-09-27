@@ -119,7 +119,6 @@ sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	size_t frame_size;
 	sf_count_t read_frames, num_frames;
 	int buffer[4096];
-	enum decoder_command cmd;
 
 	info.format = 0;
 
@@ -147,6 +146,7 @@ sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 	frame_size = audio_format.GetFrameSize();
 	read_frames = sizeof(buffer) / frame_size;
 
+	DecoderCommand cmd;
 	do {
 		num_frames = sf_readf_int(sf, buffer, read_frames);
 		if (num_frames <= 0)
@@ -155,7 +155,7 @@ sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 		cmd = decoder_data(decoder, is,
 				   buffer, num_frames * frame_size,
 				   0);
-		if (cmd == DECODE_COMMAND_SEEK) {
+		if (cmd == DecoderCommand::SEEK) {
 			sf_count_t c =
 				time_to_frame(decoder_seek_where(decoder),
 					      &audio_format);
@@ -164,9 +164,9 @@ sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
 				decoder_seek_error(decoder);
 			else
 				decoder_command_finished(decoder);
-			cmd = DECODE_COMMAND_NONE;
+			cmd = DecoderCommand::NONE;
 		}
-	} while (cmd == DECODE_COMMAND_NONE);
+	} while (cmd == DecoderCommand::NONE);
 
 	sf_close(sf);
 }

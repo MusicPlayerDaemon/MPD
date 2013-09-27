@@ -171,13 +171,13 @@ struct MadDecoder {
 	/**
 	 * Sends the synthesized current frame via decoder_data().
 	 */
-	enum decoder_command SendPCM(unsigned i, unsigned pcm_length);
+	DecoderCommand SendPCM(unsigned i, unsigned pcm_length);
 
 	/**
 	 * Synthesize the current frame and send it via
 	 * decoder_data().
 	 */
-	enum decoder_command SyncAndSend();
+	DecoderCommand SyncAndSend();
 
 	bool Read();
 };
@@ -953,7 +953,7 @@ MadDecoder::UpdateTimerNextFrame()
 	elapsed_time = mad_timer_count(timer, MAD_UNITS_MILLISECONDS) / 1000.0;
 }
 
-enum decoder_command
+DecoderCommand
 MadDecoder::SendPCM(unsigned i, unsigned pcm_length)
 {
 	unsigned max_samples;
@@ -963,7 +963,6 @@ MadDecoder::SendPCM(unsigned i, unsigned pcm_length)
 		MAD_NCHANNELS(&frame.header);
 
 	while (i < pcm_length) {
-		enum decoder_command cmd;
 		unsigned int num_samples = pcm_length - i;
 		if (num_samples > max_samples)
 			num_samples = max_samples;
@@ -975,17 +974,17 @@ MadDecoder::SendPCM(unsigned i, unsigned pcm_length)
 				       MAD_NCHANNELS(&frame.header));
 		num_samples *= MAD_NCHANNELS(&frame.header);
 
-		cmd = decoder_data(decoder, input_stream, output_buffer,
-				   sizeof(output_buffer[0]) * num_samples,
-				   bit_rate / 1000);
-		if (cmd != DECODE_COMMAND_NONE)
+		auto cmd = decoder_data(decoder, input_stream, output_buffer,
+					sizeof(output_buffer[0]) * num_samples,
+					bit_rate / 1000);
+		if (cmd != DecoderCommand::NONE)
 			return cmd;
 	}
 
-	return DECODE_COMMAND_NONE;
+	return DecoderCommand::NONE;
 }
 
-inline enum decoder_command
+inline DecoderCommand
 MadDecoder::SyncAndSend()
 {
 	mad_synth_frame(&synth, &frame);
@@ -1001,12 +1000,12 @@ MadDecoder::SyncAndSend()
 
 	if (drop_start_frames > 0) {
 		drop_start_frames--;
-		return DECODE_COMMAND_NONE;
+		return DecoderCommand::NONE;
 	} else if ((drop_end_frames > 0) &&
 		   (current_frame == (max_frames + 1 - drop_end_frames))) {
 		/* stop decoding, effectively dropping all remaining
 		   frames */
-		return DECODE_COMMAND_STOP;
+		return DecoderCommand::STOP;
 	}
 
 	unsigned i = 0;
@@ -1024,28 +1023,29 @@ MadDecoder::SyncAndSend()
 			pcm_length -= drop_end_samples;
 	}
 
-	enum decoder_command cmd = SendPCM(i, pcm_length);
-	if (cmd != DECODE_COMMAND_NONE)
+	auto cmd = SendPCM(i, pcm_length);
+	if (cmd != DecoderCommand::NONE)
 		return cmd;
 
 	if (drop_end_samples &&
 	    (current_frame == max_frames - drop_end_frames))
 		/* stop decoding, effectively dropping
 		 * all remaining samples */
-		return DECODE_COMMAND_STOP;
+		return DecoderCommand::STOP;
 
-	return DECODE_COMMAND_NONE;
+	return DecoderCommand::NONE;
 }
 
 inline bool
 MadDecoder::Read()
 {
 	enum mp3_action ret;
-	enum decoder_command cmd;
 
 	UpdateTimerNextFrame();
 
 	switch (mute_frame) {
+		DecoderCommand cmd;
+
 	case MUTEFRAME_SKIP:
 		mute_frame = MUTEFRAME_NONE;
 		break;
@@ -1055,7 +1055,7 @@ MadDecoder::Read()
 		break;
 	case MUTEFRAME_NONE:
 		cmd = SyncAndSend();
-		if (cmd == DECODE_COMMAND_SEEK) {
+		if (cmd == DecoderCommand::SEEK) {
 			unsigned long j;
 
 			assert(input_stream->IsSeekable());
@@ -1072,7 +1072,7 @@ MadDecoder::Read()
 				mute_frame = MUTEFRAME_SEEK;
 				decoder_command_finished(decoder);
 			}
-		} else if (cmd != DECODE_COMMAND_NONE)
+		} else if (cmd != DecoderCommand::NONE)
 			return false;
 	}
 
@@ -1119,7 +1119,7 @@ mp3_decode(struct decoder *decoder, struct input_stream *input_stream)
 	if (!data.DecodeFirstFrame(&tag)) {
 		delete tag;
 
-		if (decoder_get_command(decoder) == DECODE_COMMAND_NONE)
+		if (decoder_get_command(decoder) == DecoderCommand::NONE)
 			g_warning
 			    ("Input does not appear to be a mp3 bit stream.\n");
 		return;

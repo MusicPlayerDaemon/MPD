@@ -403,17 +403,16 @@ dsdiff_decode_chunk(struct decoder *decoder, struct input_stream *is,
 		if (lsbitfirst)
 			bit_reverse_buffer(buffer, buffer + nbytes);
 
-		enum decoder_command cmd =
-			decoder_data(decoder, is, buffer, nbytes, 0);
+		const auto cmd = decoder_data(decoder, is, buffer, nbytes, 0);
 		switch (cmd) {
-		case DECODE_COMMAND_NONE:
+		case DecoderCommand::NONE:
 			break;
 
-		case DECODE_COMMAND_START:
-		case DECODE_COMMAND_STOP:
+		case DecoderCommand::START:
+		case DecoderCommand::STOP:
 			return false;
 
-		case DECODE_COMMAND_SEEK:
+		case DecoderCommand::SEEK:
 
 			/* Not implemented yet */
 			decoder_seek_error(decoder);

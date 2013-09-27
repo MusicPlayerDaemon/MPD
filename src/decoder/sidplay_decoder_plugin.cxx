@@ -290,7 +290,7 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 	const unsigned timebase = player.timebase();
 	song_len *= timebase;
 
-	enum decoder_command cmd;
+	DecoderCommand cmd;
 	do {
 		char buffer[4096];
 		size_t nbytes;
@@ -303,7 +303,7 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 
 		cmd = decoder_data(decoder, NULL, buffer, nbytes, 0);
 
-		if(cmd==DECODE_COMMAND_SEEK) {
+		if (cmd == DecoderCommand::SEEK) {
 			unsigned data_time = player.time();
 			unsigned target_time = (unsigned)
 				(decoder_seek_where(decoder) * timebase);
@@ -328,7 +328,7 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 		if (song_len > 0 && player.time() >= (unsigned)song_len)
 			break;
 
-	} while (cmd != DECODE_COMMAND_STOP);
+	} while (cmd != DecoderCommand::STOP);
 }
 
 static bool

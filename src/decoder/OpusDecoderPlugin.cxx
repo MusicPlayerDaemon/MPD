@@ -96,11 +96,11 @@ public:
 	bool ReadFirstPage(OggSyncState &oy);
 	bool ReadNextPage(OggSyncState &oy);
 
-	enum decoder_command HandlePackets();
-	enum decoder_command HandlePacket(const ogg_packet &packet);
-	enum decoder_command HandleBOS(const ogg_packet &packet);
-	enum decoder_command HandleTags(const ogg_packet &packet);
-	enum decoder_command HandleAudio(const ogg_packet &packet);
+	DecoderCommand HandlePackets();
+	DecoderCommand HandlePacket(const ogg_packet &packet);
+	DecoderCommand HandleBOS(const ogg_packet &packet);
+	DecoderCommand HandleTags(const ogg_packet &packet);
+	DecoderCommand HandleAudio(const ogg_packet &packet);
 };
 
 MPDOpusDecoder::~MPDOpusDecoder()
@@ -143,29 +143,29 @@ MPDOpusDecoder::ReadNextPage(OggSyncState &oy)
 	return true;
 }
 
-inline enum decoder_command
+inline DecoderCommand
 MPDOpusDecoder::HandlePackets()
 {
 	ogg_packet packet;
 	while (ogg_stream_packetout(&os, &packet) == 1) {
-		enum decoder_command cmd = HandlePacket(packet);
-		if (cmd != DECODE_COMMAND_NONE)
+		auto cmd = HandlePacket(packet);
+		if (cmd != DecoderCommand::NONE)
 			return cmd;
 	}
 
-	return DECODE_COMMAND_NONE;
+	return DecoderCommand::NONE;
 }
 
-inline enum decoder_command
+inline DecoderCommand
 MPDOpusDecoder::HandlePacket(const ogg_packet &packet)
 {
 	if (packet.e_o_s)
-		return DECODE_COMMAND_STOP;
+		return DecoderCommand::STOP;
 
 	if (packet.b_o_s)
 		return HandleBOS(packet);
 	else if (!found_opus)
-		return DECODE_COMMAND_STOP;
+		return DecoderCommand::STOP;
 
 	if (IsOpusTags(packet))
 		return HandleTags(packet);
@@ -173,18 +173,18 @@ MPDOpusDecoder::HandlePacket(const ogg_packet &packet)
 	return HandleAudio(packet);
 }
 
-inline enum decoder_command
+inline DecoderCommand
 MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 {
 	assert(packet.b_o_s);
 
 	if (found_opus || !IsOpusHead(packet))
-		return DECODE_COMMAND_STOP;
+		return DecoderCommand::STOP;
 
 	unsigned channels;
 	if (!ScanOpusHeader(packet.packet, packet.bytes, channels) ||
 	    !audio_valid_channel_count(channels))
-		return DECODE_COMMAND_STOP;
+		return DecoderCommand::STOP;
 
 	assert(opus_decoder == nullptr);
 	assert(output_buffer == nullptr);
@@ -201,7 +201,7 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 	if (opus_decoder == nullptr) {
 		g_warning("libopus error: %s",
 			  opus_strerror(opus_error));
-		return DECODE_COMMAND_STOP;
+		return DecoderCommand::STOP;
 	}
 
 	const AudioFormat audio_format(opus_sample_rate,
@@ -220,12 +220,12 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 	return decoder_get_command(decoder);
 }
 
-inline enum decoder_command
+inline DecoderCommand
 MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 {
 	TagBuilder tag_builder;
 
-	enum decoder_command cmd;
+	DecoderCommand cmd;
 	if (ScanOpusTags(packet.packet, packet.bytes,
 			 &add_tag_handler, &tag_builder) &&
 	    !tag_builder.IsEmpty()) {
@@ -238,7 +238,7 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 	return cmd;
 }
 
-inline enum decoder_command
+inline DecoderCommand
 MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 {
 	assert(opus_decoder != nullptr);
@@ -250,20 +250,19 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 				  0);
 	if (nframes < 0) {
 		g_warning("%s", opus_strerror(nframes));
-		return DECODE_COMMAND_STOP;
+		return DecoderCommand::STOP;
 	}
 
 	if (nframes > 0) {
 		const size_t nbytes = nframes * frame_size;
-		enum decoder_command cmd =
-			decoder_data(decoder, input_stream,
-				     output_buffer, nbytes,
-				     0);
-		if (cmd != DECODE_COMMAND_NONE)
+		auto cmd = decoder_data(decoder, input_stream,
+					output_buffer, nbytes,
+					0);
+		if (cmd != DecoderCommand::NONE)
 			return cmd;
 	}
 
-	return DECODE_COMMAND_NONE;
+	return DecoderCommand::NONE;
 }
 
 static void
@@ -284,8 +283,8 @@ mpd_opus_stream_decode(struct decoder *decoder,
 		return;
 
 	while (true) {
-		enum decoder_command cmd = d.HandlePackets();
-		if (cmd != DECODE_COMMAND_NONE)
+		auto cmd = d.HandlePackets();
+		if (cmd != DecoderCommand::NONE)
 			break;
 
 		if (!d.ReadNextPage(oy))

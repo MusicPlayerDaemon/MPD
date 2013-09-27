@@ -54,10 +54,10 @@ decoder_initialized(struct decoder *decoder,
  * Determines the pending decoder command.
  *
  * @param decoder the decoder object
- * @return the current command, or DECODE_COMMAND_NONE if there is no
+ * @return the current command, or DecoderCommand::NONE if there is no
  * command pending
  */
-enum decoder_command
+DecoderCommand
 decoder_get_command(struct decoder *decoder);
 
 /**
@@ -71,7 +71,7 @@ void
 decoder_command_finished(struct decoder *decoder);
 
 /**
- * Call this when you have received the DECODE_COMMAND_SEEK command.
+ * Call this when you have received the DecoderCommand::SEEK command.
  *
  * @param decoder the decoder object
  * @return the destination position for the week
@@ -120,10 +120,10 @@ decoder_timestamp(struct decoder *decoder, double t);
  * for the player
  * @param data the source buffer
  * @param length the number of bytes in the buffer
- * @return the current command, or DECODE_COMMAND_NONE if there is no
+ * @return the current command, or DecoderCommand::NONE if there is no
  * command pending
  */
-enum decoder_command
+DecoderCommand
 decoder_data(struct decoder *decoder, struct input_stream *is,
 	     const void *data, size_t length,
 	     uint16_t kbit_rate);
@@ -136,10 +136,10 @@ decoder_data(struct decoder *decoder, struct input_stream *is,
  * @param is an input stream which is buffering while we are waiting
  * for the player
  * @param tag the tag to send
- * @return the current command, or DECODE_COMMAND_NONE if there is no
+ * @return the current command, or DecoderCommand::NONE if there is no
  * command pending
  */
-enum decoder_command
+DecoderCommand
 decoder_tag(struct decoder *decoder, struct input_stream *is, Tag &&tag);
 
 /**

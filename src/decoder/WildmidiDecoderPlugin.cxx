@@ -72,7 +72,6 @@ wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 	};
 	midi *wm;
 	const struct _WM_Info *info;
-	enum decoder_command cmd;
 
 	wm = WildMidi_Open(path_fs);
 	if (wm == nullptr)
@@ -87,6 +86,7 @@ wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 	decoder_initialized(decoder, audio_format, true,
 			    info->approx_total_samples / WILDMIDI_SAMPLE_RATE);
 
+	DecoderCommand cmd;
 	do {
 		char buffer[4096];
 		int len;
@@ -101,7 +101,7 @@ wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 
 		cmd = decoder_data(decoder, nullptr, buffer, len, 0);
 
-		if (cmd == DECODE_COMMAND_SEEK) {
+		if (cmd == DecoderCommand::SEEK) {
 			unsigned long seek_where = WILDMIDI_SAMPLE_RATE *
 				decoder_seek_where(decoder);
 
@@ -111,10 +111,10 @@ wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 			WildMidi_FastSeek(wm, &seek_where);
 #endif
 			decoder_command_finished(decoder);
-			cmd = DECODE_COMMAND_NONE;
+			cmd = DecoderCommand::NONE;
 		}
 
-	} while (cmd == DECODE_COMMAND_NONE);
+	} while (cmd == DecoderCommand::NONE);
 
 	WildMidi_Close(wm);
 }

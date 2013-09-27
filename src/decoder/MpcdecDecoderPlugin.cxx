@@ -147,7 +147,7 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 
 	mpc_demux *demux = mpc_demux_init(&reader);
 	if (demux == nullptr) {
-		if (decoder_get_command(mpd_decoder) != DECODE_COMMAND_STOP)
+		if (decoder_get_command(mpd_decoder) != DecoderCommand::STOP)
 			g_warning("Not a valid musepack stream");
 		return;
 	}
@@ -178,9 +178,9 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 			    is->IsSeekable(),
 			    mpc_streaminfo_get_length(&info));
 
-	enum decoder_command cmd = DECODE_COMMAND_NONE;
+	DecoderCommand cmd = DecoderCommand::NONE;
 	do {
-		if (cmd == DECODE_COMMAND_SEEK) {
+		if (cmd == DecoderCommand::SEEK) {
 			mpc_int64_t where = decoder_seek_where(mpd_decoder) *
 				audio_format.sample_rate;
 			bool success;
@@ -218,7 +218,7 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 		cmd = decoder_data(mpd_decoder, is,
 				   chunk, ret * sizeof(chunk[0]),
 				   bit_rate);
-	} while (cmd != DECODE_COMMAND_STOP);
+	} while (cmd != DecoderCommand::STOP);
 
 	mpc_demux_exit(demux);
 }

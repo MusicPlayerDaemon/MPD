@@ -106,7 +106,6 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 	mpg123_handle *handle;
 	int error;
 	off_t num_samples;
-	enum decoder_command cmd;
 	struct mpg123_frameinfo info;
 
 	/* open the file */
@@ -149,6 +148,7 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 
 	/* the decoder main loop */
 
+	DecoderCommand cmd;
 	do {
 		unsigned char buffer[8192];
 		size_t nbytes;
@@ -175,7 +175,7 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 
 		cmd = decoder_data(decoder, nullptr, buffer, nbytes, info.bitrate);
 
-		if (cmd == DECODE_COMMAND_SEEK) {
+		if (cmd == DecoderCommand::SEEK) {
 			off_t c = decoder_seek_where(decoder)*audio_format.sample_rate;
 			c = mpg123_seek(handle, c, SEEK_SET);
 			if (c < 0)
@@ -185,9 +185,9 @@ mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
 				decoder_timestamp(decoder, c/(double)audio_format.sample_rate);
 			}
 
-			cmd = DECODE_COMMAND_NONE;
+			cmd = DecoderCommand::NONE;
 		}
-	} while (cmd == DECODE_COMMAND_NONE);
+	} while (cmd == DecoderCommand::NONE);
 
 	/* cleanup */
 

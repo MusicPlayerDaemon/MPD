@@ -99,7 +99,6 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 	GByteArray *bdatas;
 	int ret;
 	char audio_buffer[MODPLUG_FRAME_SIZE];
-	enum decoder_command cmd = DECODE_COMMAND_NONE;
 
 	bdatas = mod_loadfile(decoder, is);
 
@@ -131,6 +130,7 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 			    is->IsSeekable(),
 			    ModPlug_GetLength(f) / 1000.0);
 
+	DecoderCommand cmd;
 	do {
 		ret = ModPlug_Read(f, audio_buffer, MODPLUG_FRAME_SIZE);
 		if (ret <= 0)
@@ -140,7 +140,7 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 				   audio_buffer, ret,
 				   0);
 
-		if (cmd == DECODE_COMMAND_SEEK) {
+		if (cmd == DecoderCommand::SEEK) {
 			float where = decoder_seek_where(decoder);
 
 			ModPlug_Seek(f, (int)(where * 1000.0));
@@ -148,7 +148,7 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 			decoder_command_finished(decoder);
 		}
 
-	} while (cmd != DECODE_COMMAND_STOP);
+	} while (cmd != DecoderCommand::STOP);
 
 	ModPlug_Unload(f);
 }

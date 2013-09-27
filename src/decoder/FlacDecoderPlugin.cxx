@@ -168,11 +168,11 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 		  FLAC__uint64 t_start, FLAC__uint64 t_end)
 {
 	struct decoder *decoder = data->decoder;
-	enum decoder_command cmd;
 
 	data->first_frame = t_start;
 
 	while (true) {
+		DecoderCommand cmd;
 		if (!data->tag.IsEmpty()) {
 			cmd = decoder_tag(data->decoder, data->input_stream,
 					  std::move(data->tag));
@@ -180,7 +180,7 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 		} else
 			cmd = decoder_get_command(decoder);
 
-		if (cmd == DECODE_COMMAND_SEEK) {
+		if (cmd == DecoderCommand::SEEK) {
 			FLAC__uint64 seek_sample = t_start +
 				decoder_seek_where(decoder) *
 				data->audio_format.sample_rate;
@@ -192,7 +192,7 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 				decoder_command_finished(decoder);
 			} else
 				decoder_seek_error(decoder);
-		} else if (cmd == DECODE_COMMAND_STOP ||
+		} else if (cmd == DecoderCommand::STOP ||
 			   FLAC__stream_decoder_get_state(flac_dec) == FLAC__STREAM_DECODER_END_OF_STREAM)
 			break;
 
@@ -201,7 +201,7 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 			break;
 
 		if (!FLAC__stream_decoder_process_single(flac_dec) &&
-		    decoder_get_command(decoder) == DECODE_COMMAND_NONE) {
+		    decoder_get_command(decoder) == DecoderCommand::NONE) {
 			/* a failure that was not triggered by a
 			   decoder command */
 			flacPrintErroredState(FLAC__stream_decoder_get_state(flac_dec));

@@ -177,9 +177,9 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
 
 	decoder_initialized(decoder, audio_format, can_seek, total_time);
 
-	enum decoder_command cmd = decoder_get_command(decoder);
-	while (cmd != DECODE_COMMAND_STOP) {
-		if (cmd == DECODE_COMMAND_SEEK) {
+	DecoderCommand cmd = decoder_get_command(decoder);
+	while (cmd != DecoderCommand::STOP) {
+		if (cmd == DecoderCommand::SEEK) {
 			if (can_seek) {
 				unsigned where = decoder_seek_where(decoder) *
 					audio_format.sample_rate;

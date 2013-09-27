@@ -253,7 +253,7 @@ copy_interleave_frame(const AVCodecContext *codec_context,
 	return data_size;
 }
 
-static enum decoder_command
+static DecoderCommand
 ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 		   const AVPacket *packet,
 		   AVCodecContext *codec_context,
@@ -269,9 +269,8 @@ ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
 
 	uint8_t *output_buffer;
 
-	enum decoder_command cmd = DECODE_COMMAND_NONE;
-	while (packet2.size > 0 &&
-	       cmd == DECODE_COMMAND_NONE) {
+	DecoderCommand cmd = DecoderCommand::NONE;
+	while (packet2.size > 0 && cmd == DecoderCommand::NONE) {
 		int audio_size = 0;
 		int got_frame = 0;
 		int len = avcodec_decode_audio4(codec_context,
@@ -470,7 +469,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	uint8_t *interleaved_buffer = NULL;
 	int interleaved_buffer_size = 0;
 
-	enum decoder_command cmd;
+	DecoderCommand cmd;
 	do {
 		AVPacket packet;
 		if (av_read_frame(format_context, &packet) < 0)
@@ -488,7 +487,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 
 		av_free_packet(&packet);
 
-		if (cmd == DECODE_COMMAND_SEEK) {
+		if (cmd == DecoderCommand::SEEK) {
 			int64_t where =
 				time_to_ffmpeg(decoder_seek_where(decoder),
 					       av_stream->time_base);
@@ -501,7 +500,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 				decoder_command_finished(decoder);
 			}
 		}
-	} while (cmd != DECODE_COMMAND_STOP);
+	} while (cmd != DecoderCommand::STOP);
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 28, 0)
 	avcodec_free_frame(&frame);

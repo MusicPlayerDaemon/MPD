@@ -41,11 +41,11 @@ decoder::~decoder()
  * All chunks are full of decoded data; wait for the player to free
  * one.
  */
-static enum decoder_command
+static DecoderCommand
 need_chunks(struct decoder_control *dc, bool do_wait)
 {
-	if (dc->command == DECODE_COMMAND_STOP ||
-	    dc->command == DECODE_COMMAND_SEEK)
+	if (dc->command == DecoderCommand::STOP ||
+	    dc->command == DecoderCommand::SEEK)
 		return dc->command;
 
 	if (do_wait) {
@@ -55,14 +55,14 @@ need_chunks(struct decoder_control *dc, bool do_wait)
 		return dc->command;
 	}
 
-	return DECODE_COMMAND_NONE;
+	return DecoderCommand::NONE;
 }
 
 struct music_chunk *
 decoder_get_chunk(struct decoder *decoder)
 {
 	struct decoder_control *dc = decoder->dc;
-	enum decoder_command cmd;
+	DecoderCommand cmd;
 
 	assert(decoder != NULL);
 
@@ -84,7 +84,7 @@ decoder_get_chunk(struct decoder *decoder)
 		dc->Lock();
 		cmd = need_chunks(dc, true);
 		dc->Unlock();
-	} while (cmd == DECODE_COMMAND_NONE);
+	} while (cmd == DecoderCommand::NONE);
 
 	return NULL;
 }

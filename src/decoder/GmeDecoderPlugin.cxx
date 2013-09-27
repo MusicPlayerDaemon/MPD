@@ -174,7 +174,7 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 		gme_set_fade(emu, ti->length);
 
 	/* play */
-	enum decoder_command cmd;
+	DecoderCommand cmd;
 	do {
 		short buf[GME_BUFFER_SAMPLES];
 		gme_err = gme_play(emu, GME_BUFFER_SAMPLES, buf);
@@ -184,7 +184,7 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 		}
 
 		cmd = decoder_data(decoder, nullptr, buf, sizeof(buf), 0);
-		if (cmd == DECODE_COMMAND_SEEK) {
+		if (cmd == DecoderCommand::SEEK) {
 			float where = decoder_seek_where(decoder);
 			gme_err = gme_seek(emu, int(where * 1000));
 			if (gme_err != nullptr)
@@ -194,7 +194,7 @@ gme_file_decode(struct decoder *decoder, const char *path_fs)
 
 		if (gme_track_ended(emu))
 			break;
-	} while (cmd != DECODE_COMMAND_STOP);
+	} while (cmd != DecoderCommand::STOP);
 
 	gme_free_info(ti);
 	gme_delete(emu);

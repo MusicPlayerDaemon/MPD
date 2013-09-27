@@ -158,7 +158,6 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 		  const FLAC__int32 *const buf[],
 		  FLAC__uint64 nbytes)
 {
-	enum decoder_command cmd;
 	void *buffer;
 	unsigned bit_rate;
 
@@ -178,19 +177,19 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 	else
 		bit_rate = 0;
 
-	cmd = decoder_data(data->decoder, data->input_stream,
-			   buffer, buffer_size,
-			   bit_rate);
+	auto cmd = decoder_data(data->decoder, data->input_stream,
+				buffer, buffer_size,
+				bit_rate);
 	data->next_frame += frame->header.blocksize;
 	switch (cmd) {
-	case DECODE_COMMAND_NONE:
-	case DECODE_COMMAND_START:
+	case DecoderCommand::NONE:
+	case DecoderCommand::START:
 		break;
 
-	case DECODE_COMMAND_STOP:
+	case DecoderCommand::STOP:
 		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 
-	case DECODE_COMMAND_SEEK:
+	case DecoderCommand::SEEK:
 		return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 	}
 

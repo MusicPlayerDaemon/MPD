@@ -30,7 +30,7 @@
 decoder_control::decoder_control()
 	:thread(nullptr),
 	 state(DECODE_STATE_STOP),
-	 command(DECODE_COMMAND_NONE),
+	 command(DecoderCommand::NONE),
 	 song(nullptr),
 	 replay_gain_db(0), replay_gain_prev_db(0),
 	 mixramp_start(nullptr), mixramp_end(nullptr),
@@ -84,7 +84,7 @@ decoder_control::Start(Song *_song,
 	buffer = &_buffer;
 	pipe = &_pipe;
 
-	LockSynchronousCommand(DECODE_COMMAND_START);
+	LockSynchronousCommand(DecoderCommand::START);
 }
 
 void
@@ -92,15 +92,15 @@ decoder_control::Stop()
 {
 	Lock();
 
-	if (command != DECODE_COMMAND_NONE)
+	if (command != DecoderCommand::NONE)
 		/* Attempt to cancel the current command.  If it's too
 		   late and the decoder thread is already executing
 		   the old command, we'll call STOP again in this
 		   function (see below). */
-		SynchronousCommandLocked(DECODE_COMMAND_STOP);
+		SynchronousCommandLocked(DecoderCommand::STOP);
 
 	if (state != DECODE_STATE_STOP && state != DECODE_STATE_ERROR)
-		SynchronousCommandLocked(DECODE_COMMAND_STOP);
+		SynchronousCommandLocked(DecoderCommand::STOP);
 
 	Unlock();
 }
@@ -117,7 +117,7 @@ decoder_control::Seek(double where)
 
 	seek_where = where;
 	seek_error = false;
-	SynchronousCommandLocked(DECODE_COMMAND_SEEK);
+	SynchronousCommandLocked(DecoderCommand::SEEK);
 
 	return !seek_error;
 }
@@ -128,7 +128,7 @@ decoder_control::Quit()
 	assert(thread != nullptr);
 
 	quit = true;
-	LockAsynchronousCommand(DECODE_COMMAND_STOP);
+	LockAsynchronousCommand(DecoderCommand::STOP);
 
 	g_thread_join(thread);
 	thread = nullptr;
