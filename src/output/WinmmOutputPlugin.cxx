@@ -25,6 +25,8 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
+#include <glib.h>
+
 #include <stdlib.h>
 #include <string.h>
 

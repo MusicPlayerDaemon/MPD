@@ -26,8 +26,6 @@
 #include "thread/Cond.hxx"
 #include "util/Error.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <stdint.h>
 
@@ -39,6 +37,7 @@
 struct Song;
 class MusicBuffer;
 class MusicPipe;
+typedef struct _GThread GThread;
 
 enum class DecoderState : uint8_t {
 	STOP = 0,

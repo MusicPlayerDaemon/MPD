@@ -22,6 +22,8 @@
 #include "Main.hxx"
 #include "event/Loop.hxx"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <string.h>
 

@@ -25,14 +25,14 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
-#include <glib.h>
-
 #include <time.h>
 
 class Error;
 class Filter;
 class MusicPipe;
 struct config_param;
+typedef struct _GThread GThread;
+typedef struct _GTimer GTimer;
 
 enum audio_output_command {
 	AO_COMMAND_NONE = 0,

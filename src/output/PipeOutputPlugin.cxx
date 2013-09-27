@@ -24,6 +24,8 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
+#include <glib.h>
+
 #include <stdio.h>
 #include <errno.h>
 

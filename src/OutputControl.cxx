@@ -29,6 +29,8 @@
 #include "FilterPlugin.hxx"
 #include "util/Error.hxx"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <stdlib.h>
 

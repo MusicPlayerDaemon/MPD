@@ -22,6 +22,8 @@
 #include "MusicPipe.hxx"
 #include "Song.hxx"
 
+#include <glib.h>
+
 #include <assert.h>
 
 #undef G_LOG_DOMAIN

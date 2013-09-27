@@ -20,10 +20,9 @@
 #ifndef MPD_MAIN_HXX
 #define MPD_MAIN_HXX
 
-#include <glib.h>
-
 class EventLoop;
 struct Instance;
+typedef struct _GThread GThread;
 
 extern GThread *main_task;
 
