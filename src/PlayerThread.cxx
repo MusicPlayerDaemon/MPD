@@ -43,10 +43,10 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "player_thread"
 
-enum xfade_state {
-	XFADE_DISABLED = -1,
-	XFADE_UNKNOWN = 0,
-	XFADE_ENABLED = 1
+enum class CrossFadeState : int8_t {
+	DISABLED = -1,
+	UNKNOWN = 0,
+	ENABLED = 1
 };
 
 struct player {
@@ -95,7 +95,7 @@ struct player {
 	/**
 	 * is cross fading enabled?
 	 */
-	enum xfade_state xfade;
+	CrossFadeState xfade_state;
 
 	/**
 	 * has cross-fading begun?
@@ -137,7 +137,7 @@ struct player {
 		 queued(true),
 		 output_open(false),
 		 song(nullptr),
-		 xfade(XFADE_UNKNOWN),
+		 xfade_state(CrossFadeState::UNKNOWN),
 		 cross_fading(false),
 		 cross_fade_chunks(0),
 		 cross_fade_tag(nullptr),
@@ -575,7 +575,7 @@ player::SeekDecoder()
 
 	player_command_finished(pc);
 
-	xfade = XFADE_UNKNOWN;
+	xfade_state = CrossFadeState::UNKNOWN;
 
 	/* re-fill the buffer after seeking */
 	buffering = true;
@@ -750,7 +750,7 @@ player::PlayNextChunk()
 
 	unsigned cross_fade_position;
 	struct music_chunk *chunk = nullptr;
-	if (xfade == XFADE_ENABLED && IsDecoderAtNextSong() &&
+	if (xfade_state == CrossFadeState::ENABLED && IsDecoderAtNextSong() &&
 	    (cross_fade_position = pipe->GetSize()) <= cross_fade_chunks) {
 		/* perform cross fade */
 		music_chunk *other_chunk = dc.pipe->Shift();
@@ -807,7 +807,7 @@ player::PlayNextChunk()
 				   cross fading */
 				dc.Unlock();
 
-				xfade = XFADE_DISABLED;
+				xfade_state = CrossFadeState::DISABLED;
 			} else {
 				/* wait for the decoder */
 				dc.Signal();
@@ -826,7 +826,7 @@ player::PlayNextChunk()
 
 	/* insert the postponed tag if cross-fading is finished */
 
-	if (xfade != XFADE_ENABLED && cross_fade_tag != nullptr) {
+	if (xfade_state != CrossFadeState::ENABLED && cross_fade_tag != nullptr) {
 		chunk->tag = Tag::MergeReplace(chunk->tag, cross_fade_tag);
 		cross_fade_tag = nullptr;
 	}
@@ -871,7 +871,7 @@ player::PlayNextChunk()
 inline bool
 player::SongBorder()
 {
-	xfade = XFADE_UNKNOWN;
+	xfade_state = CrossFadeState::UNKNOWN;
 
 	char *uri = song->GetURI();
 	g_message("played \"%s\"", uri);
@@ -992,7 +992,7 @@ player::Run()
 		       end of the current song */
 		    !pc.border_pause &&
 		    IsDecoderAtNextSong() &&
-		    xfade == XFADE_UNKNOWN &&
+		    xfade_state == CrossFadeState::UNKNOWN &&
 		    !dc.LockIsStarting()) {
 			/* enable cross fading in this song?  if yes,
 			   calculate how many chunks will be required
@@ -1010,12 +1010,12 @@ player::Run()
 						buffer.GetSize() -
 						pc.buffered_before_play);
 			if (cross_fade_chunks > 0) {
-				xfade = XFADE_ENABLED;
+				xfade_state = CrossFadeState::ENABLED;
 				cross_fading = false;
 			} else
 				/* cross fading is disabled or the
 				   next song is too short */
-				xfade = XFADE_DISABLED;
+				xfade_state = CrossFadeState::DISABLED;
 		}
 
 		if (paused) {
