@@ -89,6 +89,7 @@ audio_output_find(const char *name)
 	return NULL;
 }
 
+gcc_const
 static unsigned
 audio_output_config_count(void)
 {

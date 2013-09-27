@@ -27,6 +27,7 @@
 #define OUTPUT_ALL_H
 
 #include "replay_gain_info.h"
+#include "gcc.h"
 
 struct AudioFormat;
 class MusicBuffer;
@@ -51,11 +52,13 @@ audio_output_all_finish(void);
  * Returns the total number of audio output devices, including those
  * who are disabled right now.
  */
+gcc_const
 unsigned int audio_output_count(void);
 
 /**
  * Returns the "i"th audio output device.
  */
+gcc_const
 struct audio_output *
 audio_output_get(unsigned i);
 
@@ -63,6 +66,7 @@ audio_output_get(unsigned i);
  * Returns the audio output device with the specified name.  Returns
  * NULL if the name does not exist.
  */
+gcc_pure
 struct audio_output *
 audio_output_find(const char *name);
 
@@ -163,6 +167,7 @@ audio_output_all_song_border(void);
  * chunk.  A negative value is returned when no chunk has been
  * finished yet.
  */
+gcc_pure
 float
 audio_output_all_get_elapsed_time(void);
 
