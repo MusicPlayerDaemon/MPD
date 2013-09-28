@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "aiff.h"
+#include "Riff.hxx"
 
 #include <glib.h>
 
@@ -30,62 +30,55 @@
 #include <string.h>
 
 #undef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "aiff"
+#define G_LOG_DOMAIN "riff"
 
-struct aiff_header {
+struct riff_header {
 	char id[4];
 	uint32_t size;
 	char format[4];
 };
 
-struct aiff_chunk_header {
+struct riff_chunk_header {
 	char id[4];
 	uint32_t size;
 };
 
 size_t
-aiff_seek_id3(FILE *file)
+riff_seek_id3(FILE *file)
 {
-	int ret;
-	struct stat st;
-	struct aiff_header header;
-	struct aiff_chunk_header chunk;
-	size_t size;
-
 	/* determine the file size */
 
-	ret = fstat(fileno(file), &st);
-	if (ret < 0) {
+	struct stat st;
+	if (fstat(fileno(file), &st) < 0) {
 		g_warning("Failed to stat file descriptor: %s",
 			  g_strerror(errno));
 		return 0;
 	}
 
-	/* seek to the beginning and read the AIFF header */
+	/* seek to the beginning and read the RIFF header */
 
-	ret = fseek(file, 0, SEEK_SET);
-	if (ret != 0) {
+	if (fseek(file, 0, SEEK_SET) != 0) {
 		g_warning("Failed to seek: %s", g_strerror(errno));
 		return 0;
 	}
 
-	size = fread(&header, sizeof(header), 1, file);
+	riff_header header;
+	size_t size = fread(&header, sizeof(header), 1, file);
 	if (size != 1 ||
-	    memcmp(header.id, "FORM", 4) != 0 ||
-	    GUINT32_FROM_BE(header.size) > (uint32_t)st.st_size ||
-	    (memcmp(header.format, "AIFF", 4) != 0 &&
-	     memcmp(header.format, "AIFC", 4) != 0))
-		/* not a AIFF file */
+	    memcmp(header.id, "RIFF", 4) != 0 ||
+	    GUINT32_FROM_LE(header.size) > (uint32_t)st.st_size)
+		/* not a RIFF file */
 		return 0;
 
 	while (true) {
 		/* read the chunk header */
 
+		riff_chunk_header chunk;
 		size = fread(&chunk, sizeof(chunk), 1, file);
 		if (size != 1)
 			return 0;
 
-		size = GUINT32_FROM_BE(chunk.size);
+		size = GUINT32_FROM_LE(chunk.size);
 		if (size > G_MAXINT32)
 			/* too dangerous, bail out: possible integer
 			   underflow when casting to off_t */
@@ -95,12 +88,11 @@ aiff_seek_id3(FILE *file)
 			/* pad byte */
 			++size;
 
-		if (memcmp(chunk.id, "ID3 ", 4) == 0)
+		if (memcmp(chunk.id, "id3 ", 4) == 0)
 			/* found it! */
 			return size;
 
-		ret = fseek(file, size, SEEK_CUR);
-		if (ret != 0)
+		if (fseek(file, size, SEEK_CUR) != 0)
 			return 0;
 	}
 }

@@ -25,11 +25,8 @@
 #include "TagBuilder.hxx"
 #include "util/Error.hxx"
 #include "ConfigGlobal.hxx"
-
-extern "C" {
-#include "riff.h"
-#include "aiff.h"
-}
+#include "Riff.hxx"
+#include "Aiff.hxx"
 
 #include <glib.h>
 #include <id3tag.h>

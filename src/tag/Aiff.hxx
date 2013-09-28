@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,23 +19,22 @@
 
 /** \file
  *
- * A parser for the RIFF file format (e.g. WAV).
+ * A parser for the AIFF file format.
  */
 
-#ifndef MPD_RIFF_H
-#define MPD_RIFF_H
+#ifndef MPD_AIFF_HXX
+#define MPD_AIFF_HXX
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 
 /**
- * Seeks the RIFF file to the ID3 chunk.
+ * Seeks the AIFF file to the ID3 chunk.
  *
  * @return the size of the ID3 chunk on success, or 0 if this is not a
- * RIFF file or no ID3 chunk was found
+ * AIFF file or no ID3 chunk was found
  */
 size_t
-riff_seek_id3(FILE *file);
+aiff_seek_id3(FILE *file);
 
 #endif

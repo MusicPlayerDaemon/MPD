@@ -441,8 +441,8 @@ if HAVE_ID3TAG
 libtag_a_SOURCES += \
 	src/tag/TagId3.cxx src/tag/TagId3.hxx \
 	src/tag/TagRva2.cxx src/tag/TagRva2.hxx \
-	src/tag/riff.c src/tag/riff.h \
-	src/tag/aiff.c src/tag/aiff.h
+	src/tag/Riff.cxx src/tag/Riff.hxx \
+	src/tag/Aiff.cxx src/tag/Aiff.hxx
 endif
 
 # decoder plugins
