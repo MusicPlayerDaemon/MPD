@@ -220,7 +220,7 @@ systemctl start mpd.socket</programlisting>
       </para>
 
       <programlisting>input {
-    plugin "lastfm"
+    plugin "despotify"
     user "foo"
     password "bar"
 }
@@ -1942,45 +1942,6 @@ systemctl start mpd.socket</programlisting>
 
     <section>
       <title>Playlist plugins</title>
-
-      <section>
-        <title><varname>lastfm</varname></title>
-
-        <para>
-          Plays last.fm radio.
-        </para>
-
-        <informaltable>
-          <tgroup cols="2">
-            <thead>
-              <row>
-                <entry>Setting</entry>
-                <entry>Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>
-                  <varname>user</varname>
-                  <parameter>USERNAME</parameter>
-                </entry>
-                <entry>
-                  The last.fm user name.
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <varname>password</varname>
-                  <parameter>PWD</parameter>
-                </entry>
-                <entry>
-                  The last.fm password.
-                </entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
-      </section>
 
       <section>
         <title><varname>embcue</varname></title>

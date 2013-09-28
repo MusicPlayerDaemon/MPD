@@ -265,11 +265,6 @@ AC_ARG_ENABLE(jack,
 
 AC_SYS_LARGEFILE
 
-AC_ARG_ENABLE(lastfm,
-	AS_HELP_STRING([--enable-lastfm],
-		[enable support for last.fm radio (default: disable)]),,
-	[enable_lastfm=no])
-
 AC_ARG_ENABLE(despotify,
 	AS_HELP_STRING([--enable-despotify],
 		[enable support for despotify (default: disable)]),,
@@ -713,16 +708,6 @@ if test x$enable_curl = xyes; then
 	AC_DEFINE(ENABLE_CURL, 1, [Define when libcurl is used for HTTP streaming])
 fi
 AM_CONDITIONAL(ENABLE_CURL, test x$enable_curl = xyes)
-
-dnl --------------------------------- Last.FM ---------------------------------
-if test x$enable_lastfm = xyes; then
-	if test x$enable_curl != xyes; then
-		AC_MSG_ERROR([Cannot enable last.fm radio without curl])
-	fi
-
-	AC_DEFINE(ENABLE_LASTFM, 1, [Define when last.fm radio is enabled])
-fi
-AM_CONDITIONAL(ENABLE_LASTFM, test x$enable_lastfm = xyes)
 
 dnl --------------------------------- Despotify ---------------------------------
 MPD_AUTO_PKG(despotify, DESPOTIFY, [despotify],
@@ -1646,7 +1631,6 @@ printf '\nStreaming support:\n\t'
 results(cdio_paranoia, [CDIO_PARANOIA])
 results(curl,[CURL])
 results(despotify,[Despotify])
-results(lastfm,[Last.FM])
 results(soundcloud,[Soundcloud])
 printf '\n\t'
 results(mms,[MMS])

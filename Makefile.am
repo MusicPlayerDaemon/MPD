@@ -947,12 +947,6 @@ PLAYLIST_LIBS = \
 	libplaylist_plugins.a \
 	$(FLAC_LIBS)
 
-if ENABLE_LASTFM
-libplaylist_plugins_a_SOURCES += \
-	src/playlist/LastFMPlaylistPlugin.cxx \
-	src/playlist/LastFMPlaylistPlugin.hxx
-endif
-
 if ENABLE_DESPOTIFY
 libplaylist_plugins_a_SOURCES += \
 	src/playlist/DespotifyPlaylistPlugin.cxx \

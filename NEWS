@@ -4,9 +4,11 @@ ver 0.18 (2012/??/??)
 * protocol:
   - new command "toggleoutput"
   - search for album artist falls back to the artist tag
-* innput:
+* input:
   - curl: enable https
   - soup: plugin removed
+* playlist:
+  - lastfm: remove defunct Last.fm support
 * decoder:
   - adplug: new decoder plugin using libadplug
   - ffmpeg: drop support for pre-0.8 ffmpeg
