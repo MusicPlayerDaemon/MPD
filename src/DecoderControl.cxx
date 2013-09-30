@@ -119,7 +119,7 @@ decoder_control::Seek(double where)
 
 	seek_where = where;
 	seek_error = false;
-	SynchronousCommandLocked(DecoderCommand::SEEK);
+	LockSynchronousCommand(DecoderCommand::SEEK);
 
 	return !seek_error;
 }
