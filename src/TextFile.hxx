@@ -21,10 +21,11 @@
 #define MPD_TEXT_FILE_HXX
 
 #include "gcc.h"
-#include "fs/Path.hxx"
-#include "fs/FileSystem.hxx"
 
-#include <glib.h>
+#include <stdio.h>
+
+class Path;
+typedef struct _GString GString;
 
 class TextFile {
 	static constexpr size_t max_length = 512 * 1024;
@@ -35,18 +36,11 @@ class TextFile {
 	GString *const buffer;
 
 public:
-	TextFile(const Path &path_fs)
-		:file(FOpen(path_fs, FOpenMode::ReadText)),
-		 buffer(g_string_sized_new(step)) {}
+	TextFile(const Path &path_fs);
 
 	TextFile(const TextFile &other) = delete;
 
-	~TextFile() {
-		if (file != nullptr)
-			fclose(file);
-
-		g_string_free(buffer, true);
-	}
+	~TextFile();
 
 	bool HasFailed() const {
 		return gcc_unlikely(file == nullptr);

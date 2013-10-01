@@ -19,9 +19,25 @@
 
 #include "config.h"
 #include "TextFile.hxx"
+#include "fs/Path.hxx"
+#include "fs/FileSystem.hxx"
+
+#include <glib.h>
 
 #include <assert.h>
 #include <string.h>
+
+TextFile::TextFile(const Path &path_fs)
+	:file(FOpen(path_fs, FOpenMode::ReadText)),
+	 buffer(g_string_sized_new(step)) {}
+
+TextFile::~TextFile()
+{
+	if (file != nullptr)
+		fclose(file);
+
+	g_string_free(buffer, true);
+}
 
 char *
 TextFile::ReadLine()
