@@ -109,7 +109,7 @@ mapper_set_music_dir(Path &&path)
 {
 	assert(!path.IsNull());
 
-	music_dir_fs = path;
+	music_dir_fs = std::move(path);
 	music_dir_fs_length = music_dir_fs.length();
 
 	const auto utf8 = music_dir_fs.ToUTF8();
@@ -124,7 +124,7 @@ mapper_set_playlist_dir(Path &&path)
 {
 	assert(!path.IsNull());
 
-	playlist_dir_fs = path;
+	playlist_dir_fs = std::move(path);
 
 	const auto utf8 = playlist_dir_fs.ToUTF8();
 	check_directory(utf8.c_str(), playlist_dir_fs);

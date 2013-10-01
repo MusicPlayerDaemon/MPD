@@ -226,7 +226,7 @@ daemonize_init(const char *user, const char *group, Path &&_pidfile)
 	}
 
 
-	pidfile = _pidfile;
+	pidfile = std::move(_pidfile);
 }
 
 void
