@@ -178,7 +178,12 @@ alsa_mixer_source_dispatch(GSource *_source,
 {
 	struct alsa_mixer_source *source = (struct alsa_mixer_source *)_source;
 
-	snd_mixer_handle_events(source->mixer);
+	int err = snd_mixer_handle_events(source->mixer);
+	if (err < 0) {
+		g_warning("snd_mixer_handle_events() failed: %s",
+			  snd_strerror(err));
+	}
+
 	return true;
 }
 
