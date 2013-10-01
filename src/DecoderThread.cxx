@@ -426,7 +426,7 @@ decoder_run(struct decoder_control *dc)
 	assert(song != NULL);
 
 	if (song->IsFile())
-		uri = map_song_fs(song).Steal();
+		uri = g_strdup(map_song_fs(song).c_str());
 	else
 		uri = song->GetURI();
 

@@ -71,7 +71,6 @@ bool
 SimpleDatabase::Check(Error &error) const
 {
 	assert(!path.IsNull());
-	assert(!path.empty());
 
 	/* Check if the file exists */
 	if (!CheckAccess(path, F_OK)) {
@@ -137,7 +136,7 @@ SimpleDatabase::Check(Error &error) const
 bool
 SimpleDatabase::Load(Error &error)
 {
-	assert(!path.empty());
+	assert(!path.IsNull());
 	assert(root != NULL);
 
 	TextFile file(path);

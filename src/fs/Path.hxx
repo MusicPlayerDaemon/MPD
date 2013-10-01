@@ -23,8 +23,6 @@
 #include "check.h"
 #include "gcc.h"
 
-#include <glib.h>
-
 #include <algorithm>
 #include <string>
 
@@ -52,56 +50,37 @@ extern const class Domain path_domain;
  * A path name in the native file system character set.
  */
 class Path {
+	typedef std::string string;
+
 public:
-	typedef char value_type;
-	typedef value_type *pointer;
-	typedef const value_type *const_pointer;
+	typedef string::value_type value_type;
+	typedef string::pointer pointer;
+	typedef string::const_pointer const_pointer;
 
 private:
-	pointer value;
+	string value;
 
 	struct Donate {};
 
 	/**
 	 * Donate the allocated pointer to a new #Path object.
 	 */
-	constexpr Path(Donate, pointer _value):value(_value) {}
+	Path(Donate, pointer _value);
 
-	/**
-	 * Release memory allocated by the value, but do not clear the
-	 * value pointer.
-	 */
-	void Free() {
-		/* free() can be optimized by gcc, while g_free() can
-		   not: when the compiler knows that the value is
-		   nullptr, it will not emit a free() call in the
-		   inlined destructor; however on Windows, we need to
-		   call g_free(), because the value has been allocated
-		   by GLib, and on Windows, this matters */
-#ifdef WIN32
-		g_free(value);
-#else
-		free(value);
-#endif
-	}
+	Path(const_pointer _value):value(_value) {}
 
 public:
 	/**
 	 * Copy a #Path object.
 	 */
-	Path(const Path &other)
-		:value(g_strdup(other.value)) {}
+	Path(const Path &) = default;
 
 	/**
 	 * Move a #Path object.
 	 */
-	Path(Path &&other):value(other.value) {
-		other.value = nullptr;
-	}
+	Path(Path &&other):value(std::move(other.value)) {}
 
-	~Path() {
-		Free();
-	}
+	~Path();
 
 	/**
 	 * Return a "nulled" instance.  Its IsNull() method will
@@ -111,16 +90,14 @@ public:
 	 */
 	gcc_const
 	static Path Null() {
-		return Path(Donate(), nullptr);
+		return Path("");
 	}
 
 	/**
 	 * Join two path components with the path separator.
 	 */
 	gcc_pure gcc_nonnull_all
-	static Path Build(const_pointer a, const_pointer b) {
-		return Path(Donate(), g_build_filename(a, b, nullptr));
-	}
+	static Path Build(const_pointer a, const_pointer b);
 
 	gcc_pure gcc_nonnull_all
 	static Path Build(const_pointer a, const Path &b) {
@@ -143,7 +120,7 @@ public:
 	 */
 	gcc_pure
 	static Path FromFS(const_pointer fs) {
-		return Path(Donate(), g_strdup(fs));
+		return Path(fs);
 	}
 
 	/**
@@ -176,32 +153,14 @@ public:
 	/**
 	 * Copy a #Path object.
 	 */
-	Path &operator=(const Path &other) {
-		if (this != &other) {
-			Free();
-			value = g_strdup(other.value);
-		}
-
-		return *this;
-	}
+	Path &operator=(const Path &) = default;
 
 	/**
 	 * Move a #Path object.
 	 */
 	Path &operator=(Path &&other) {
-		std::swap(value, other.value);
+		value = std::move(other.value);
 		return *this;
-	}
-
-	/**
-	 * Steal the allocated value.  This object has an undefined
-	 * value, and the caller is response for freeing this method's
-	 * return value.
-	 */
-	pointer Steal() {
-		pointer result = value;
-		value = nullptr;
-		return result;
 	}
 
 	/**
@@ -209,7 +168,7 @@ public:
 	 * must not be used.
 	 */
 	bool IsNull() const {
-		return value == nullptr;
+		return value.empty();
 	}
 
 	/**
@@ -218,15 +177,7 @@ public:
 	 * @see IsNull()
 	 */
 	void SetNull() {
-		Free();
-		value = nullptr;
-	}
-
-	gcc_pure
-	bool empty() const {
-		assert(value != nullptr);
-
-		return *value == 0;
+		value.clear();
 	}
 
 	/**
@@ -235,9 +186,7 @@ public:
 	 */
 	gcc_pure
 	size_t length() const {
-		assert(value != nullptr);
-
-		return strlen(value);
+		return value.length();
 	}
 
 	/**
@@ -247,9 +196,7 @@ public:
 	 */
 	gcc_pure
 	const_pointer c_str() const {
-		assert(value != nullptr);
-
-		return value;
+		return value.c_str();
 	}
 
 	/**
@@ -258,17 +205,15 @@ public:
 	 * (#IsNull returns true).
 	 */
 	std::string ToUTF8() const {
-		return ToUTF8(value);
+		return ToUTF8(value.c_str());
 	}
 
 	/**
 	 * Gets directory name of this path.
 	 * Returns a "nulled" instance on error.
 	 */
-	Path GetDirectoryName() const {
-		assert(value != nullptr);
-		return Path(Donate(), g_path_get_dirname(value));
-	}
+	gcc_pure
+	Path GetDirectoryName() const;
 };
 
 #endif

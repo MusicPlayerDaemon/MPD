@@ -52,6 +52,20 @@ const Domain path_domain("path");
 
 std::string fs_charset;
 
+inline Path::Path(Donate, pointer _value)
+	:value(_value) {
+	g_free(_value);
+}
+
+/* no inlining, please */
+Path::~Path() {}
+
+Path
+Path::Build(const_pointer a, const_pointer b)
+{
+	return Path(Donate(), g_build_filename(a, b, nullptr));
+}
+
 std::string Path::ToUTF8(const_pointer path_fs)
 {
 	if (path_fs == nullptr)
@@ -100,6 +114,12 @@ Path::FromUTF8(const char *path_utf8, Error &error)
 			     path_utf8);
 
 	return path;
+}
+
+Path
+Path::GetDirectoryName() const
+{
+	return Path(Donate(), g_path_get_dirname(value.c_str()));
 }
 
 gcc_pure
