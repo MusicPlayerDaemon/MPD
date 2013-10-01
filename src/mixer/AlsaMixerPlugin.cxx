@@ -38,7 +38,7 @@
 static constexpr unsigned VOLUME_MIXER_ALSA_INDEX_DEFAULT = 0;
 
 class AlsaMixerMonitor final : private MultiSocketMonitor {
-	snd_mixer_t *const mixer;
+	snd_mixer_t *mixer;
 
 	ReusableArray<pollfd> pfd_buffer;
 
@@ -83,6 +83,9 @@ static constexpr Domain alsa_mixer_domain("alsa_mixer");
 int
 AlsaMixerMonitor::PrepareSockets()
 {
+	if (mixer == nullptr)
+		return -1;
+
 	int count = snd_mixer_poll_descriptors_count(mixer);
 	if (count < 0)
 		count = 0;
@@ -117,7 +120,21 @@ AlsaMixerMonitor::PrepareSockets()
 void
 AlsaMixerMonitor::DispatchSockets()
 {
-	snd_mixer_handle_events(mixer);
+	assert(mixer != nullptr);
+
+	int err = snd_mixer_handle_events(mixer);
+	if (err < 0) {
+		g_warning("snd_mixer_handle_events() failed: %s",
+			  snd_strerror(err));
+
+		if (err == -ENODEV) {
+			/* the sound device was unplugged; disable
+			   this GSource */
+			mixer = nullptr;
+			InvalidateSockets();
+			return;
+		}
+	}
 }
 
 /*
