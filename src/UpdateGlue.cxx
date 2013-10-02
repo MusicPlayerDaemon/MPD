@@ -29,11 +29,7 @@
 #include "GlobalEvents.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
-
-extern "C" {
-#include "stats.h"
-}
-
+#include "Stats.hxx"
 #include "Main.hxx"
 #include "Instance.hxx"
 #include "system/FatalError.hxx"

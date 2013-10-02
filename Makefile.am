@@ -65,7 +65,6 @@ mpd_headers = \
 	src/replay_gain_config.h \
 	src/replay_gain_info.h \
 	src/TimePrint.cxx src/TimePrint.hxx \
-	src/stats.h \
 	src/Timer.hxx
 
 src_mpd_SOURCES = \
@@ -202,7 +201,7 @@ src_mpd_SOURCES = \
 	src/SongSave.cxx src/SongSave.hxx \
 	src/SongSort.cxx src/SongSort.hxx \
 	src/StateFile.cxx src/StateFile.hxx \
-	src/Stats.cxx \
+	src/Stats.cxx src/Stats.hxx \
 	src/TagPrint.cxx src/TagPrint.hxx \
 	src/TagSave.cxx src/TagSave.hxx \
 	src/TagFile.cxx src/TagFile.hxx \

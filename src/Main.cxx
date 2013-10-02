@@ -62,10 +62,7 @@
 #include "ConfigData.hxx"
 #include "ConfigDefaults.hxx"
 #include "ConfigOption.hxx"
-
-extern "C" {
-#include "stats.h"
-}
+#include "Stats.hxx"
 
 #ifdef ENABLE_INOTIFY
 #include "InotifyUpdate.hxx"

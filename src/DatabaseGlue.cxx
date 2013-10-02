@@ -26,11 +26,7 @@
 #include "Directory.hxx"
 #include "util/Error.hxx"
 #include "ConfigData.hxx"
-
-extern "C" {
-#include "stats.h"
-}
-
+#include "Stats.hxx"
 #include "DatabasePlugin.hxx"
 #include "db/SimpleDatabasePlugin.hxx"
 
@@ -42,6 +38,7 @@ extern "C" {
 #include <assert.h>
 #include <string.h>
 #include <errno.h>
+
 
 static Database *db;
 static bool db_is_open;

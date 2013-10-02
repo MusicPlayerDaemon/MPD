@@ -36,11 +36,7 @@
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "fs/Path.hxx"
-
-extern "C" {
-#include "stats.h"
-}
-
+#include "Stats.hxx"
 #include "Permission.hxx"
 #include "PlaylistFile.hxx"
 #include "ClientFile.hxx"

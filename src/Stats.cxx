@@ -18,11 +18,7 @@
  */
 
 #include "config.h"
-
-extern "C" {
-#include "stats.h"
-}
-
+#include "Stats.hxx"
 #include "PlayerControl.hxx"
 #include "ClientInternal.hxx"
 #include "DatabaseSelection.hxx"
