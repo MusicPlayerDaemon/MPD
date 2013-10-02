@@ -33,6 +33,8 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
+#include <glib.h>
+
 #include <assert.h>
 
 #include <sys/types.h>
@@ -91,7 +93,7 @@ HttpdOutput::Configure(const config_param &param, Error &error)
 	genre = param.GetBlockValue("genre", "Set genre in config");
 	website = param.GetBlockValue("website", "Set website in config");
 
-	guint port = param.GetBlockValue("port", 8000u);
+	unsigned port = param.GetBlockValue("port", 8000u);
 
 	const char *encoder_name =
 		param.GetBlockValue("encoder", "vorbis");

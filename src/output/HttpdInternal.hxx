@@ -30,8 +30,6 @@
 #include "thread/Mutex.hxx"
 #include "event/ServerSocket.hxx"
 
-#include <glib.h>
-
 #include <forward_list>
 
 struct config_param;
@@ -121,7 +119,7 @@ struct HttpdOutput final : private ServerSocket {
 	 * The maximum and current number of clients connected
 	 * at the same time.
 	 */
-	guint clients_max, clients_cnt;
+	unsigned clients_max, clients_cnt;
 
 	HttpdOutput(EventLoop &_loop);
 	~HttpdOutput();
