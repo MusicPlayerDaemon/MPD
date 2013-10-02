@@ -30,6 +30,8 @@
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 
+#include <glib.h>
+
 #include <iostream>
 using std::cout;
 using std::cerr;

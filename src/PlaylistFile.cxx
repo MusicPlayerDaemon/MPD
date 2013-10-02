@@ -37,6 +37,8 @@
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>

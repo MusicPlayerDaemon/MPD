@@ -28,6 +28,8 @@
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 
+#include <glib.h>
+
 #include <stdlib.h>
 
 #define PRIO_LABEL "Prio: "

@@ -25,9 +25,10 @@
 #include "Partition.hxx"
 #include "Volume.hxx"
 #include "event/Loop.hxx"
+#include "fs/FileSystem.hxx"
 
 #include <glib.h>
-#include <assert.h>
+
 #include <string.h>
 #include <errno.h>
 
