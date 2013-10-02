@@ -226,7 +226,7 @@ playlist::SeekSongPosition(player_control &pc, unsigned song, float seek_time)
 	}
 
 	queued = -1;
-	UpdateQueuedSong(pc, NULL);
+	UpdateQueuedSong(pc, nullptr);
 
 	return PLAYLIST_RESULT_SUCCESS;
 }

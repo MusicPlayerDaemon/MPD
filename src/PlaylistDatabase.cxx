@@ -49,10 +49,10 @@ playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name,
 	char *line, *colon;
 	const char *value;
 
-	while ((line = file.ReadLine()) != NULL &&
+	while ((line = file.ReadLine()) != nullptr &&
 	       strcmp(line, "playlist_end") != 0) {
 		colon = strchr(line, ':');
-		if (colon == NULL || colon == line) {
+		if (colon == nullptr || colon == line) {
 			error.Format(playlist_database_domain,
 				     "unknown line in db: %s", line);
 			return false;
@@ -62,7 +62,7 @@ playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name,
 		value = strchug_fast_c(colon);
 
 		if (strcmp(line, "mtime") == 0)
-			pm.mtime = strtol(value, NULL, 10);
+			pm.mtime = strtol(value, nullptr, 10);
 		else {
 			error.Format(playlist_database_domain,
 				     "unknown line in db: %s", line);

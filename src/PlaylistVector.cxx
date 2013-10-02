@@ -31,7 +31,7 @@ PlaylistVector::iterator
 PlaylistVector::find(const char *name)
 {
 	assert(holding_db_lock());
-	assert(name != NULL);
+	assert(name != nullptr);
 
 	return std::find_if(begin(), end(),
 			    PlaylistInfo::CompareName(name));

@@ -38,13 +38,13 @@ static void
 merge_song_metadata(Song *dest, const Song *base,
 		    const Song *add)
 {
-	dest->tag = base->tag != NULL
-		? (add->tag != NULL
+	dest->tag = base->tag != nullptr
+		? (add->tag != nullptr
 		   ? Tag::Merge(*base->tag, *add->tag)
 		   : new Tag(*base->tag))
-		: (add->tag != NULL
+		: (add->tag != nullptr
 		   ? new Tag(*add->tag)
-		   : NULL);
+		   : nullptr);
 
 	dest->mtime = base->mtime;
 	dest->start_ms = add->start_ms;
@@ -56,10 +56,10 @@ apply_song_metadata(Song *dest, const Song *src)
 {
 	Song *tmp;
 
-	assert(dest != NULL);
-	assert(src != NULL);
+	assert(dest != nullptr);
+	assert(src != nullptr);
 
-	if (src->tag == NULL && src->start_ms == 0 && src->end_ms == 0)
+	if (src->tag == nullptr && src->start_ms == 0 && src->end_ms == 0)
 		return dest;
 
 	if (dest->IsInDatabase()) {
@@ -71,15 +71,15 @@ apply_song_metadata(Song *dest, const Song *src)
 		if (path_utf8.empty())
 			path_utf8 = path_fs.c_str();
 
-		tmp = Song::NewFile(path_utf8.c_str(), NULL);
+		tmp = Song::NewFile(path_utf8.c_str(), nullptr);
 
 		merge_song_metadata(tmp, dest, src);
 	} else {
-		tmp = Song::NewFile(dest->uri, NULL);
+		tmp = Song::NewFile(dest->uri, nullptr);
 		merge_song_metadata(tmp, dest, src);
 	}
 
-	if (dest->tag != NULL && dest->tag->time > 0 &&
+	if (dest->tag != nullptr && dest->tag->time > 0 &&
 	    src->start_ms > 0 && src->end_ms == 0 &&
 	    src->start_ms / 1000 < (unsigned)dest->tag->time)
 		/* the range is open-ended, and the playlist plugin
@@ -100,17 +100,17 @@ playlist_check_load_song(const Song *song, const char *uri, bool secure)
 		dest = Song::NewRemote(uri);
 	} else if (g_path_is_absolute(uri) && secure) {
 		dest = Song::LoadFile(uri, nullptr);
-		if (dest == NULL)
-			return NULL;
+		if (dest == nullptr)
+			return nullptr;
 	} else {
 		const Database *db = GetDatabase(IgnoreError());
 		if (db == nullptr)
 			return nullptr;
 
 		Song *tmp = db->GetSong(uri, IgnoreError());
-		if (tmp == NULL)
+		if (tmp == nullptr)
 			/* not found in database */
-			return NULL;
+			return nullptr;
 
 		dest = tmp->DupDetached();
 		db->ReturnSong(tmp);
@@ -136,21 +136,21 @@ playlist_check_translate_song(Song *song, const char *base_uri,
 		else {
 			/* unsupported remote song */
 			song->Free();
-			return NULL;
+			return nullptr;
 		}
 	}
 
-	if (base_uri != NULL && strcmp(base_uri, ".") == 0)
+	if (base_uri != nullptr && strcmp(base_uri, ".") == 0)
 		/* g_path_get_dirname() returns "." when there is no
 		   directory name in the given path; clear that now,
 		   because it would break the database lookup
 		   functions */
-		base_uri = NULL;
+		base_uri = nullptr;
 
 	if (g_path_is_absolute(uri)) {
 		/* XXX fs_charset vs utf8? */
 		const char *suffix = map_to_relative_path(uri);
-		assert(suffix != NULL);
+		assert(suffix != nullptr);
 
 		if (suffix != uri)
 			uri = suffix;
@@ -158,15 +158,15 @@ playlist_check_translate_song(Song *song, const char *base_uri,
 			/* local files must be relative to the music
 			   directory when "secure" is enabled */
 			song->Free();
-			return NULL;
+			return nullptr;
 		}
 
-		base_uri = NULL;
+		base_uri = nullptr;
 	}
 
-	char *allocated = NULL;
-	if (base_uri != NULL)
-		uri = allocated = g_build_filename(base_uri, uri, NULL);
+	char *allocated = nullptr;
+	if (base_uri != nullptr)
+		uri = allocated = g_build_filename(base_uri, uri, nullptr);
 
 	Song *dest = playlist_check_load_song(song, uri, secure);
 	song->Free();

@@ -78,7 +78,7 @@ spl_save_queue(const char *name_utf8, const struct queue *queue)
 
 	FILE *file = FOpen(path_fs, FOpenMode::WriteText);
 
-	if (file == NULL)
+	if (file == nullptr)
 		return PLAYLIST_RESULT_ERRNO;
 
 	for (unsigned i = 0; i < queue->GetLength(); i++)

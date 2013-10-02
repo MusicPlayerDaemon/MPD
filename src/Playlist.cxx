@@ -77,7 +77,7 @@ playlist_queue_song_order(struct playlist *playlist, struct player_control *pc,
 static void
 playlist_song_started(struct playlist *playlist, struct player_control *pc)
 {
-	assert(pc->next_song == NULL);
+	assert(pc->next_song == nullptr);
 	assert(playlist->queued >= -1);
 
 	/* queued song has started: copy queued to current,
@@ -108,7 +108,7 @@ playlist::UpdateQueuedSong(player_control &pc, const Song *prev)
 		return;
 
 	assert(!queue.IsEmpty());
-	assert((queued < 0) == (prev == NULL));
+	assert((queued < 0) == (prev == nullptr));
 
 	const int next_order = current >= 0
 		? queue.GetNextOrder(current)
@@ -133,7 +133,7 @@ playlist::UpdateQueuedSong(player_control &pc, const Song *prev)
 		? queue.GetOrder(next_order)
 		: nullptr;
 
-	if (prev != NULL && next_song != prev) {
+	if (prev != nullptr && next_song != prev) {
 		/* clear the currently queued song */
 		pc.Cancel();
 		queued = -1;

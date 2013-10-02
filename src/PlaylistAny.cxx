@@ -34,25 +34,25 @@ playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond,
 	assert(uri_has_scheme(uri));
 
 	SongEnumerator *playlist = playlist_list_open_uri(uri, mutex, cond);
-	if (playlist != NULL) {
-		*is_r = NULL;
+	if (playlist != nullptr) {
+		*is_r = nullptr;
 		return playlist;
 	}
 
 	Error error;
 	input_stream *is = input_stream::Open(uri, mutex, cond, error);
-	if (is == NULL) {
+	if (is == nullptr) {
 		if (error.IsDefined())
 			g_warning("Failed to open %s: %s",
 				  uri, error.GetMessage());
 
-		return NULL;
+		return nullptr;
 	}
 
 	playlist = playlist_list_open_stream(is, uri);
-	if (playlist == NULL) {
+	if (playlist == nullptr) {
 		is->Close();
-		return NULL;
+		return nullptr;
 	}
 
 	*is_r = is;

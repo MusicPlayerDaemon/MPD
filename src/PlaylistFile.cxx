@@ -77,9 +77,9 @@ spl_valid_name(const char *name_utf8)
 	 * filenames isn't going to happen, either.
 	 */
 
-	return strchr(name_utf8, '/') == NULL &&
-		strchr(name_utf8, '\n') == NULL &&
-		strchr(name_utf8, '\r') == NULL;
+	return strchr(name_utf8, '/') == nullptr &&
+		strchr(name_utf8, '\n') == nullptr &&
+		strchr(name_utf8, '\r') == nullptr;
 }
 
 static const Path &
@@ -144,7 +144,7 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 	size_t name_length = strlen(name_fs_str);
 
 	if (name_length < sizeof(PLAYLIST_FILE_SUFFIX) ||
-	    memchr(name_fs_str, '\n', name_length) != NULL)
+	    memchr(name_fs_str, '\n', name_length) != nullptr)
 		return false;
 
 	if (!g_str_has_suffix(name_fs_str, PLAYLIST_FILE_SUFFIX))
@@ -196,7 +196,7 @@ static bool
 SavePlaylistFile(const PlaylistFileContents &contents, const char *utf8path,
 		 Error &error)
 {
-	assert(utf8path != NULL);
+	assert(utf8path != nullptr);
 
 	if (spl_map(error).IsNull())
 		return false;
@@ -206,7 +206,7 @@ SavePlaylistFile(const PlaylistFileContents &contents, const char *utf8path,
 		return false;
 
 	FILE *file = FOpen(path_fs, FOpenMode::WriteText);
-	if (file == NULL) {
+	if (file == nullptr) {
 		playlist_errno(error);
 		return false;
 	}
@@ -237,7 +237,7 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 	}
 
 	char *s;
-	while ((s = file.ReadLine()) != NULL) {
+	while ((s = file.ReadLine()) != nullptr) {
 		if (*s == 0 || *s == PLAYLIST_COMMENT)
 			continue;
 
@@ -245,7 +245,7 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 			char *path_utf8;
 
 			path_utf8 = map_fs_to_utf8(s);
-			if (path_utf8 == NULL)
+			if (path_utf8 == nullptr)
 				continue;
 
 			s = path_utf8;
@@ -303,7 +303,7 @@ spl_clear(const char *utf8path, Error &error)
 		return false;
 
 	FILE *file = FOpen(path_fs, FOpenMode::WriteText);
-	if (file == NULL) {
+	if (file == nullptr) {
 		playlist_errno(error);
 		return false;
 	}
@@ -362,7 +362,7 @@ spl_append_song(const char *utf8path, Song *song, Error &error)
 		return false;
 
 	FILE *file = FOpen(path_fs, FOpenMode::AppendText);
-	if (file == NULL) {
+	if (file == nullptr) {
 		playlist_errno(error);
 		return false;
 	}

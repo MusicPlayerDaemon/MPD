@@ -31,7 +31,7 @@ extern const struct playlist_plugin *const playlist_plugins[];
 #define playlist_plugins_for_each(plugin) \
 	for (const struct playlist_plugin *plugin, \
 		*const*playlist_plugin_iterator = &playlist_plugins[0]; \
-		(plugin = *playlist_plugin_iterator) != NULL; \
+		(plugin = *playlist_plugin_iterator) != nullptr; \
 		++playlist_plugin_iterator)
 
 /**
@@ -75,7 +75,7 @@ playlist_suffix_supported(const char *suffix);
  * @param path_fs the path of the playlist file
  * @param is_r on success, an input_stream object is returned here,
  * which must be closed after the playlist_provider object is freed
- * @return a playlist, or NULL on error
+ * @return a playlist, or nullptr on error
  */
 SongEnumerator *
 playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond,

@@ -35,10 +35,10 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 {
 	enum playlist_result result;
 	Song *song;
-	char *base_uri = uri != NULL ? g_path_get_dirname(uri) : NULL;
+	char *base_uri = uri != nullptr ? g_path_get_dirname(uri) : nullptr;
 
 	for (unsigned i = 0;
-	     i < end_index && (song = e.NextSong()) != NULL;
+	     i < end_index && (song = e.NextSong()) != nullptr;
 	     ++i) {
 		if (i < start_index) {
 			/* skip songs before the start index */
@@ -47,7 +47,7 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 		}
 
 		song = playlist_check_translate_song(song, base_uri, secure);
-		if (song == NULL)
+		if (song == nullptr)
 			continue;
 
 		result = dest->AppendSong(*pc, song);
@@ -74,7 +74,7 @@ playlist_open_into_queue(const char *uri,
 
 	struct input_stream *is;
 	auto playlist = playlist_open_any(uri, mutex, cond, &is);
-	if (playlist == NULL)
+	if (playlist == nullptr)
 		return PLAYLIST_RESULT_NO_SUCH_LIST;
 
 	enum playlist_result result =
@@ -83,7 +83,7 @@ playlist_open_into_queue(const char *uri,
 					 dest, pc, secure);
 	delete playlist;
 
-	if (is != NULL)
+	if (is != nullptr)
 		is->Close();
 
 	return result;

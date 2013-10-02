@@ -149,11 +149,11 @@ playlist_provider_print(Client *client, const char *uri,
 			SongEnumerator &e, bool detail)
 {
 	Song *song;
-	char *base_uri = uri != NULL ? g_path_get_dirname(uri) : NULL;
+	char *base_uri = uri != nullptr ? g_path_get_dirname(uri) : nullptr;
 
 	while ((song = e.NextSong()) != nullptr) {
 		song = playlist_check_translate_song(song, base_uri, false);
-		if (song == NULL)
+		if (song == nullptr)
 			continue;
 
 		if (detail)
@@ -175,13 +175,13 @@ playlist_file_print(Client *client, const char *uri, bool detail)
 
 	struct input_stream *is;
 	SongEnumerator *playlist = playlist_open_any(uri, mutex, cond, &is);
-	if (playlist == NULL)
+	if (playlist == nullptr)
 		return false;
 
 	playlist_provider_print(client, uri, *playlist, detail);
 	delete playlist;
 
-	if (is != NULL)
+	if (is != nullptr)
 		is->Close();
 
 	return true;

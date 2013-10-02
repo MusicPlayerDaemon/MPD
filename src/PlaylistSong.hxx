@@ -23,7 +23,7 @@
 struct Song;
 
 /**
- * Verifies the song, returns NULL if it is unsafe.  Translate the
+ * Verifies the song, returns nullptr if it is unsafe.  Translate the
  * song to a new song object within the database, if it is a local
  * file.  The old song object is freed.
  *

@@ -101,7 +101,7 @@ static void
 playlist_state_load(TextFile &file, struct playlist *playlist)
 {
 	const char *line = file.ReadLine();
-	if (line == NULL) {
+	if (line == nullptr) {
 		g_warning("No playlist in state file");
 		return;
 	}
@@ -110,7 +110,7 @@ playlist_state_load(TextFile &file, struct playlist *playlist)
 		queue_load_song(file, line, &playlist->queue);
 
 		line = file.ReadLine();
-		if (line == NULL) {
+		if (line == nullptr) {
 			g_warning("'" PLAYLIST_STATE_FILE_PLAYLIST_END
 				  "' not found in state file");
 			break;
@@ -141,7 +141,7 @@ playlist_state_restore(const char *line, TextFile &file,
 	else
 		state = PlayerState::STOP;
 
-	while ((line = file.ReadLine()) != NULL) {
+	while ((line = file.ReadLine()) != nullptr) {
 		if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_TIME)) {
 			seek_time =
 			    atoi(&(line[strlen(PLAYLIST_STATE_FILE_TIME)]));

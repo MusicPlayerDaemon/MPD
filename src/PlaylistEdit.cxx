@@ -59,7 +59,7 @@ playlist::AppendFile(struct player_control &pc,
 		     const char *path_utf8, unsigned *added_id)
 {
 	Song *song = Song::LoadFile(path_utf8, nullptr);
-	if (song == NULL)
+	if (song == nullptr)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
 	return AppendSong(pc, song, added_id);
@@ -247,7 +247,7 @@ playlist::DeleteInternal(player_control &pc,
 			   completely */
 			Stop(pc);
 
-		*queued_p = NULL;
+		*queued_p = nullptr;
 	} else if (current == (int)songOrder)
 		/* there's a "current song" but we're not playing
 		   currently - clear "current" */
