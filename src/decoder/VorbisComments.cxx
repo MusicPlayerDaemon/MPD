@@ -24,9 +24,10 @@
 #include "tag/TagTable.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
-#include "replay_gain_info.h"
+#include "ReplayGainInfo.hxx"
 
 #include <glib.h>
+
 #include <assert.h>
 #include <stddef.h>
 #include <string.h>

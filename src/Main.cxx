@@ -39,7 +39,7 @@
 #include "Volume.hxx"
 #include "OutputAll.hxx"
 #include "tag/TagConfig.hxx"
-#include "replay_gain_config.h"
+#include "ReplayGainConfig.hxx"
 #include "Idle.hxx"
 #include "SignalHandlers.hxx"
 #include "Log.hxx"

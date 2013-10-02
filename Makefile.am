@@ -62,8 +62,6 @@ mpd_headers = \
 	src/open.h \
 	src/Playlist.hxx \
 	src/poison.h \
-	src/replay_gain_config.h \
-	src/replay_gain_info.h \
 	src/TimePrint.cxx src/TimePrint.hxx \
 	src/Timer.hxx
 
@@ -192,8 +190,8 @@ src_mpd_SOURCES = \
 	src/Queue.cxx src/Queue.hxx \
 	src/QueuePrint.cxx src/QueuePrint.hxx \
 	src/QueueSave.cxx src/QueueSave.hxx \
-	src/ReplayGainConfig.cxx \
-	src/ReplayGainInfo.cxx \
+	src/ReplayGainConfig.cxx src/ReplayGainConfig.hxx \
+	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx \
 	src/SignalHandlers.cxx src/SignalHandlers.hxx \
 	src/Song.cxx src/Song.hxx \
 	src/SongUpdate.cxx \

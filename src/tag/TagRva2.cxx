@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "TagRva2.hxx"
-#include "replay_gain_info.h"
+#include "ReplayGainInfo.hxx"
 
 #include <stdint.h>
 #include <string.h>

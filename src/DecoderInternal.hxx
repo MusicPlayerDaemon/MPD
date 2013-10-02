@@ -22,7 +22,7 @@
 
 #include "DecoderCommand.hxx"
 #include "pcm/PcmConvert.hxx"
-#include "replay_gain_info.h"
+#include "ReplayGainInfo.hxx"
 
 struct input_stream;
 struct Tag;

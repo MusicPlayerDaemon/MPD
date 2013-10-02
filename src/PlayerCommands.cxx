@@ -29,14 +29,8 @@
 #include "Partition.hxx"
 #include "protocol/Result.hxx"
 #include "protocol/ArgParser.hxx"
-
-extern "C" {
 #include "AudioFormat.hxx"
-}
-
-#include "replay_gain_config.h"
-
-#include <errno.h>
+#include "ReplayGainConfig.hxx"
 
 #define COMMAND_STATUS_STATE            "state"
 #define COMMAND_STATUS_REPEAT           "repeat"

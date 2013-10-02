@@ -20,7 +20,7 @@
 #ifndef MPD_MUSIC_CHUNK_HXX
 #define MPD_MUSIC_CHUNK_HXX
 
-#include "replay_gain_info.h"
+#include "ReplayGainInfo.hxx"
 
 #ifndef NDEBUG
 #include "AudioFormat.hxx"

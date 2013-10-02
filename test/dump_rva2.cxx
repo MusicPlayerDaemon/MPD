@@ -20,7 +20,7 @@
 #include "config.h"
 #include "tag/TagId3.hxx"
 #include "tag/TagRva2.hxx"
-#include "replay_gain_info.h"
+#include "ReplayGainInfo.hxx"
 #include "ConfigGlobal.hxx"
 #include "util/Error.hxx"
 

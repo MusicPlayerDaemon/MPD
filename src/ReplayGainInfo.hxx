@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,17 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_REPLAY_GAIN_INFO_H
-#define MPD_REPLAY_GAIN_INFO_H
+#ifndef MPD_REPLAY_GAIN_INFO_HXX
+#define MPD_REPLAY_GAIN_INFO_HXX
 
 #include "check.h"
 
-#ifdef __cplusplus
 #include <cmath>
-#else
-#include <stdbool.h>
-#include <math.h>
-#endif
 
 enum replay_gain_mode {
 	REPLAY_GAIN_AUTO = -2,
@@ -62,16 +57,8 @@ replay_gain_info_init(struct replay_gain_info *info)
 static inline bool
 replay_gain_tuple_defined(const struct replay_gain_tuple *tuple)
 {
-#ifdef __cplusplus
 	return !std::isinf(tuple->gain);
-#else
-	return !isinf(tuple->gain);
-#endif
 }
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 float
 replay_gain_tuple_scale(const struct replay_gain_tuple *tuple, float preamp, float missing_preamp, bool peak_limit);
@@ -82,9 +69,5 @@ replay_gain_tuple_scale(const struct replay_gain_tuple *tuple, float preamp, flo
  */
 void
 replay_gain_info_complete(struct replay_gain_info *info);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

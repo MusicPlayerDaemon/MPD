@@ -21,7 +21,7 @@
 #include "DecoderAPI.hxx"
 #include "DecoderError.hxx"
 #include "AudioConfig.hxx"
-#include "replay_gain_config.h"
+#include "ReplayGainConfig.hxx"
 #include "MusicChunk.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicPipe.hxx"

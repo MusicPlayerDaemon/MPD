@@ -30,7 +30,7 @@
 #include "check.h"
 #include "DecoderCommand.hxx"
 #include "DecoderPlugin.hxx"
-#include "replay_gain_info.h"
+#include "ReplayGainInfo.hxx"
 #include "tag/Tag.hxx"
 #include "AudioFormat.hxx"
 #include "ConfigData.hxx"

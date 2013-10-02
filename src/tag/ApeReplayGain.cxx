@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ApeReplayGain.hxx"
 #include "ApeLoader.hxx"
-#include "replay_gain_info.h"
+#include "ReplayGainInfo.hxx"
 
 #include <glib.h>
 

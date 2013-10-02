@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "replay_gain_config.h"
+#include "ReplayGainConfig.hxx"
 #include "Idle.hxx"
 #include "ConfigData.hxx"
 #include "ConfigGlobal.hxx"

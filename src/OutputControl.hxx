@@ -20,7 +20,7 @@
 #ifndef MPD_OUTPUT_CONTROL_HXX
 #define MPD_OUTPUT_CONTROL_HXX
 
-#include "replay_gain_info.h"
+#include "ReplayGainInfo.hxx"
 
 #include <stddef.h>
 

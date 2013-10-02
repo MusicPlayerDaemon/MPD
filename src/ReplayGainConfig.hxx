@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,22 +17,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_REPLAY_GAIN_CONFIG_H
-#define MPD_REPLAY_GAIN_CONFIG_H
+#ifndef MPD_REPLAY_GAIN_CONFIG_HXX
+#define MPD_REPLAY_GAIN_CONFIG_HXX
 
 #include "check.h"
-#include "replay_gain_info.h"
-
-#include <stdbool.h>
+#include "ReplayGainInfo.hxx"
 
 extern enum replay_gain_mode replay_gain_mode;
 extern float replay_gain_preamp;
 extern float replay_gain_missing_preamp;
 extern bool replay_gain_limit;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 void replay_gain_global_init(void);
 
@@ -55,9 +49,5 @@ replay_gain_set_mode_string(const char *p);
   */
 enum replay_gain_mode
 replay_gain_get_real_mode(bool random_mode);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

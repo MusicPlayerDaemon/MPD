@@ -26,7 +26,7 @@
 #ifndef OUTPUT_ALL_H
 #define OUTPUT_ALL_H
 
-#include "replay_gain_info.h"
+#include "ReplayGainInfo.hxx"
 #include "gcc.h"
 
 struct AudioFormat;

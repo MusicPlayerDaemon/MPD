@@ -20,7 +20,7 @@
 #ifndef MPD_REPLAY_GAIN_FILTER_PLUGIN_HXX
 #define MPD_REPLAY_GAIN_FILTER_PLUGIN_HXX
 
-#include "replay_gain_info.h"
+#include "ReplayGainInfo.hxx"
 
 class Filter;
 class Mixer;

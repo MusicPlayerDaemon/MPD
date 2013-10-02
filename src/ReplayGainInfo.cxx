@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "replay_gain_info.h"
+#include "ReplayGainInfo.hxx"
 
 float
 replay_gain_tuple_scale(const struct replay_gain_tuple *tuple, float preamp, float missing_preamp, bool peak_limit)
