@@ -47,6 +47,8 @@
 #include "StickerDatabase.hxx"
 #endif
 
+#include <glib.h>
+
 #include <assert.h>
 #include <string.h>
 

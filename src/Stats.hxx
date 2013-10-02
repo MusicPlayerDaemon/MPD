@@ -20,9 +20,8 @@
 #ifndef MPD_STATS_HXX
 #define MPD_STATS_HXX
 
-#include <glib.h>
-
 class Client;
+typedef struct _GTimer GTimer;
 
 struct stats {
 	GTimer *timer;

@@ -28,6 +28,8 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
+#include <glib.h>
+
 struct stats stats;
 
 void stats_global_init(void)
