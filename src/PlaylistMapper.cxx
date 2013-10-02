@@ -53,13 +53,14 @@ playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond,
 	if (playlist_directory_fs.IsNull())
 		return nullptr;
 
-	char *path_fs = g_build_filename(playlist_directory_fs.c_str(), uri,
-					 nullptr);
+	const Path uri_fs = Path::FromUTF8(uri);
+	if (uri_fs.IsNull())
+		return nullptr;
 
-	auto playlist = playlist_open_path(path_fs, mutex, cond, is_r);
-	g_free(path_fs);
+	const Path path_fs = Path::Build(playlist_directory_fs, uri_fs);
+	assert(!path_fs.IsNull());
 
-	return playlist;
+	return playlist_open_path(path_fs.c_str(), mutex, cond, is_r);
 }
 
 /**
