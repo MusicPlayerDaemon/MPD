@@ -108,8 +108,12 @@ config_param::GetBlockPath(const char *name, const char *default_value,
 	if (bp != nullptr) {
 		line2 = bp->line;
 		s = bp->value.c_str();
-	} else
+	} else {
+		if (default_value == nullptr)
+			return Path::Null();
+
 		s = default_value;
+	}
 
 	Path path = ParsePath(s, error);
 	if (gcc_unlikely(path.IsNull()))
