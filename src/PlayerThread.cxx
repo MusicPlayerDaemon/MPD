@@ -724,7 +724,7 @@ play_chunk(player_control &pc,
 	if (chunk->tag != nullptr)
 		update_song_tag(song, *chunk->tag);
 
-	if (chunk->length == 0) {
+	if (chunk->IsEmpty()) {
 		buffer.Return(chunk);
 		return true;
 	}
