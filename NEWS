@@ -1,4 +1,4 @@
-ver 0.17.6 (not yet released)
+ver 0.17.6 (2013/10/14)
 * mixer:
   - alsa: fix busy loop when USB sound device gets unplugged
 * decoder:
