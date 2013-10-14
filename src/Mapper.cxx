@@ -251,17 +251,11 @@ map_song_fs(const Song *song)
 std::string
 map_fs_to_utf8(const char *path_fs)
 {
-	if (!music_dir_fs.IsNull() &&
-	    memcmp(path_fs, music_dir_fs.data(), music_dir_fs_length) == 0 &&
-	    G_IS_DIR_SEPARATOR(path_fs[music_dir_fs_length]))
-		/* remove musicDir prefix */
-		path_fs += music_dir_fs_length + 1;
-	else if (G_IS_DIR_SEPARATOR(path_fs[0]))
-		/* not within musicDir */
-		return NULL;
-
-	while (path_fs[0] == G_DIR_SEPARATOR)
-		++path_fs;
+	if (G_IS_DIR_SEPARATOR(path_fs[0])) {
+		path_fs = music_dir_fs.RelativeFS(path_fs);
+		if (path_fs == nullptr || *path_fs == 0)
+			return std::string();
+	}
 
 	return Path::ToUTF8(path_fs);
 }

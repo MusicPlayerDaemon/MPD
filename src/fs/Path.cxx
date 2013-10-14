@@ -184,3 +184,25 @@ void Path::GlobalInit()
 		SetFSCharset("ISO-8859-1");
 	}
 }
+
+const char *
+Path::RelativeFS(const char *other_fs) const
+{
+	const size_t l = length();
+	if (memcmp(data(), other_fs, l) != 0)
+		return nullptr;
+
+	other_fs += l;
+	if (*other_fs != 0) {
+		if (!G_IS_DIR_SEPARATOR(*other_fs))
+			/* mismatch */
+			return nullptr;
+
+		/* skip remaining path separators */
+		do {
+			++other_fs;
+		} while (G_IS_DIR_SEPARATOR(*other_fs));
+	}
+
+	return other_fs;
+}

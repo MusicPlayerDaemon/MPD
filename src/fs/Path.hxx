@@ -223,6 +223,15 @@ public:
 	 */
 	gcc_pure
 	Path GetDirectoryName() const;
+
+	/**
+	 * Determine the relative part of the given path to this
+	 * object, not including the directory separator.  Returns an
+	 * empty string if the given path equals this object or
+	 * nullptr on mismatch.
+	 */
+	gcc_pure
+	const char *RelativeFS(const char *other_fs) const;
 };
 
 #endif
