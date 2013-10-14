@@ -33,6 +33,8 @@
 
 #include <glib.h>
 
+#include <string.h>
+
 void
 playlist_print_song(FILE *file, const Song *song)
 {
@@ -113,6 +115,14 @@ playlist_load_spl(struct playlist *playlist, struct player_control *pc,
 
 	for (unsigned i = start_index; i < end_index; ++i) {
 		const auto &uri_utf8 = contents[i];
+
+		if (memcmp(uri_utf8.c_str(), "file:///", 8) == 0) {
+			const char *path_utf8 = uri_utf8.c_str() + 7;
+
+			if (playlist->AppendFile(*pc, path_utf8) != PLAYLIST_RESULT_SUCCESS)
+				g_warning("can't add file \"%s\"", path_utf8);
+			continue;
+		}
 
 		if ((playlist->AppendURI(*pc, uri_utf8.c_str())) != PLAYLIST_RESULT_SUCCESS) {
 			/* for windows compatibility, convert slashes */

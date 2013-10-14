@@ -28,9 +28,14 @@ ver 0.18 (2012/??/??)
 * improved decoder/output error reporting
 * eliminate timer wakeup on idle MPD
 
-ver 0.17.6 (not yet released)
+ver 0.17.6 (2013/10/14)
 * mixer:
   - alsa: fix busy loop when USB sound device gets unplugged
+* decoder:
+  - modplug: fix build with Debian package 1:0.8.8.4-4
+* stored playlists:
+  - fix loading playlists with references to local files
+  - obey filesystem_charset for URLs
 
 ver 0.17.5 (2013/08/04)
 * protocol:

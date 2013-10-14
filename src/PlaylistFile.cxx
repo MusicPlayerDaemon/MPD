@@ -241,7 +241,13 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 		if (*s == 0 || *s == PLAYLIST_COMMENT)
 			continue;
 
-		if (!uri_has_scheme(s)) {
+		if (g_path_is_absolute(s)) {
+			const auto path = Path::ToUTF8(s);
+			if (path.empty())
+				continue;
+
+			s = g_strconcat("file://", path.c_str(), NULL);
+		} else if (!uri_has_scheme(s)) {
 			char *path_utf8;
 
 			path_utf8 = map_fs_to_utf8(s);
@@ -249,8 +255,13 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 				continue;
 
 			s = path_utf8;
-		} else
-			s = g_strdup(s);
+		} else {
+			const auto path = Path::ToUTF8(s);
+			if (path.empty())
+				continue;
+
+			s = g_strdup(path.c_str());
+		}
 
 		contents.emplace_back(s);
 		if (contents.size() >= playlist_max_length)
