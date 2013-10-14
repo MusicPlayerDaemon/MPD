@@ -1,6 +1,8 @@
 ver 0.17.6 (not yet released)
 * mixer:
   - alsa: fix busy loop when USB sound device gets unplugged
+* decoder:
+  - modplug: fix build with Debian package 1:0.8.8.4-4
 * stored playlists:
   - fix loading playlists with references to local files
   - obey filesystem_charset for URLs

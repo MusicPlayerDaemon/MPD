@@ -22,7 +22,7 @@
 #include "tag_handler.h"
 
 #include <glib.h>
-#include <modplug.h>
+#include <libmodplug/modplug.h>
 #include <assert.h>
 
 #undef G_LOG_DOMAIN
