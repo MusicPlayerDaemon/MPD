@@ -57,6 +57,14 @@ public:
 	typedef string::pointer pointer;
 	typedef string::const_pointer const_pointer;
 
+#ifdef WIN32
+	static constexpr value_type SEPARATOR_FS = '\\';
+	static constexpr char SEPARATOR_UTF8 = '/';
+#else
+	static constexpr value_type SEPARATOR_FS = '/';
+	static constexpr char SEPARATOR_UTF8 = '/';
+#endif
+
 private:
 	string value;
 
@@ -232,6 +240,27 @@ public:
 	 */
 	gcc_pure
 	const char *RelativeFS(const char *other_fs) const;
+
+	/**
+	 * Chop trailing directory separators.
+	 */
+	void ChopSeparators();
+
+	static constexpr bool IsSeparatorFS(value_type ch) {
+		return
+#ifdef WIN32
+			ch == '/' ||
+#endif
+			ch == SEPARATOR_FS;
+	}
+
+	static constexpr bool IsSeparatorUTF8(char ch) {
+		return
+#ifdef WIN32
+			ch == '/' ||
+#endif
+			ch == SEPARATOR_UTF8;
+	}
 };
 
 #endif

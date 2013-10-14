@@ -194,15 +194,32 @@ Path::RelativeFS(const char *other_fs) const
 
 	other_fs += l;
 	if (*other_fs != 0) {
-		if (!G_IS_DIR_SEPARATOR(*other_fs))
+		if (!IsSeparatorFS(*other_fs))
 			/* mismatch */
 			return nullptr;
 
 		/* skip remaining path separators */
 		do {
 			++other_fs;
-		} while (G_IS_DIR_SEPARATOR(*other_fs));
+		} while (IsSeparatorFS(*other_fs));
 	}
 
 	return other_fs;
+}
+
+void
+Path::ChopSeparators()
+{
+	size_t l = length();
+	const char *p = data();
+
+	while (l >= 2 && IsSeparatorFS(p[l - 1])) {
+		--l;
+
+#if GCC_CHECK_VERSION(4,7) && !defined(__clang__)
+		value.pop_back();
+#else
+		value.erase(value.end() - 1, value.end());
+#endif
+	}
 }

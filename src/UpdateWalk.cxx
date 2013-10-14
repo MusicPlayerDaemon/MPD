@@ -306,7 +306,7 @@ skip_symlink(const Directory *directory, const char *utf8_name)
 
 	const char *p = target_str;
 	while (*p == '.') {
-		if (p[1] == '.' && G_IS_DIR_SEPARATOR(p[2])) {
+		if (p[1] == '.' && Path::IsSeparatorFS(p[2])) {
 			/* "../" moves to parent directory */
 			directory = directory->parent;
 			if (directory == NULL) {
@@ -316,7 +316,7 @@ skip_symlink(const Directory *directory, const char *utf8_name)
 				return !follow_outside_symlinks;
 			}
 			p += 3;
-		} else if (G_IS_DIR_SEPARATOR(p[1]))
+		} else if (Path::IsSeparatorFS(p[1]))
 			/* eliminate "./" */
 			p += 2;
 		else

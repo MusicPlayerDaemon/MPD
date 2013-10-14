@@ -61,20 +61,6 @@ static size_t music_dir_fs_length;
  */
 static Path playlist_dir_fs = Path::Null();
 
-/**
- * Duplicate a string, chop all trailing slashes.
- */
-static char *
-strdup_chop_slash(const char *path_fs)
-{
-	size_t length = strlen(path_fs);
-
-	while (length > 0 && path_fs[length - 1] == G_DIR_SEPARATOR)
-		--length;
-
-	return g_strndup(path_fs, length);
-}
-
 static void
 check_directory(const char *path_utf8, const Path &path_fs)
 {
@@ -112,10 +98,11 @@ mapper_set_music_dir(Path &&path)
 	assert(!path.IsNull());
 
 	music_dir_fs = std::move(path);
+	music_dir_fs.ChopSeparators();
 	music_dir_fs_length = music_dir_fs.length();
 
 	const auto utf8 = music_dir_fs.ToUTF8();
-	music_dir_utf8 = strdup_chop_slash(utf8.c_str());
+	music_dir_utf8 = g_strdup(utf8.c_str());
 	music_dir_utf8_length = strlen(music_dir_utf8);
 
 	check_directory(music_dir_utf8, music_dir_fs);
@@ -165,7 +152,7 @@ map_to_relative_path(const char *path_utf8)
 	return music_dir_utf8 != NULL &&
 		memcmp(path_utf8, music_dir_utf8,
 		       music_dir_utf8_length) == 0 &&
-		G_IS_DIR_SEPARATOR(path_utf8[music_dir_utf8_length])
+		Path::IsSeparatorUTF8(path_utf8[music_dir_utf8_length])
 		? path_utf8 + music_dir_utf8_length + 1
 		: path_utf8;
 }
@@ -251,7 +238,7 @@ map_song_fs(const Song *song)
 std::string
 map_fs_to_utf8(const char *path_fs)
 {
-	if (G_IS_DIR_SEPARATOR(path_fs[0])) {
+	if (Path::IsSeparatorFS(path_fs[0])) {
 		path_fs = music_dir_fs.RelativeFS(path_fs);
 		if (path_fs == nullptr || *path_fs == 0)
 			return std::string();
