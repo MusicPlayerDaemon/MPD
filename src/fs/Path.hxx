@@ -200,6 +200,15 @@ public:
 	}
 
 	/**
+	 * Returns a pointer to the raw value, not necessarily
+	 * null-terminated.
+	 */
+	gcc_pure
+	const_pointer data() const {
+		return value.data();
+	}
+
+	/**
 	 * Convert the path to UTF-8.
 	 * Returns empty string on error or if this instance is "nulled"
 	 * (#IsNull returns true).
