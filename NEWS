@@ -1,6 +1,8 @@
 ver 0.17.6 (not yet released)
 * mixer:
   - alsa: fix busy loop when USB sound device gets unplugged
+* stored playlists:
+  - fix loading playlists with references to local files
 
 ver 0.17.5 (2013/08/04)
 * protocol:

@@ -32,6 +32,8 @@
 
 #include <glib.h>
 
+#include <string.h>
+
 void
 playlist_print_song(FILE *file, const struct song *song)
 {
@@ -128,6 +130,15 @@ playlist_load_spl(struct playlist *playlist, struct player_control *pc,
 
 	for (unsigned i = start_index; i < end_index; ++i) {
 		const char *temp = g_ptr_array_index(list, i);
+
+		if (memcmp(temp, "file:///", 8) == 0) {
+			const char *path = temp + 7;
+
+			if (playlist_append_file(playlist, pc, path, NULL) != PLAYLIST_RESULT_SUCCESS)
+				g_warning("can't add file \"%s\"", path);
+			continue;
+		}
+
 		if ((playlist_append_uri(playlist, pc, temp, NULL)) != PLAYLIST_RESULT_SUCCESS) {
 			/* for windows compatibility, convert slashes */
 			char *temp2 = g_strdup(temp);
