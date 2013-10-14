@@ -98,7 +98,7 @@ playlist_check_load_song(const Song *song, const char *uri, bool secure)
 
 	if (uri_has_scheme(uri)) {
 		dest = Song::NewRemote(uri);
-	} else if (g_path_is_absolute(uri) && secure) {
+	} else if (Path::IsAbsoluteUTF8(uri) && secure) {
 		dest = Song::LoadFile(uri, nullptr);
 		if (dest == nullptr)
 			return nullptr;
@@ -147,7 +147,7 @@ playlist_check_translate_song(Song *song, const char *base_uri,
 		   functions */
 		base_uri = nullptr;
 
-	if (g_path_is_absolute(uri)) {
+	if (Path::IsAbsoluteUTF8(uri)) {
 		/* XXX fs_charset vs utf8? */
 		const char *suffix = map_to_relative_path(uri);
 		assert(suffix != nullptr);

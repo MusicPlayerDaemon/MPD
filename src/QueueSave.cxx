@@ -28,6 +28,7 @@
 #include "TextFile.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
+#include "fs/Path.hxx"
 #include "Log.hxx"
 
 #include <glib.h>
@@ -92,7 +93,7 @@ queue_load_song(TextFile &file, const char *line, queue *queue)
 
 	if (g_str_has_prefix(line, SONG_BEGIN)) {
 		const char *uri = line + sizeof(SONG_BEGIN) - 1;
-		if (!uri_has_scheme(uri) && !g_path_is_absolute(uri))
+		if (!uri_has_scheme(uri) && !Path::IsAbsoluteUTF8(uri))
 			return;
 
 		Error error;

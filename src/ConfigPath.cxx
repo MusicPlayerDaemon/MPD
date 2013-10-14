@@ -118,7 +118,7 @@ ParsePath(const char *path, Error &error)
 			return Path::Null();
 
 		return Path::Build(home, path2);
-	} else if (!g_path_is_absolute(path)) {
+	} else if (!Path::IsAbsoluteUTF8(path)) {
 		error.Format(path_domain,
 			     "not an absolute path: %s", path);
 		return Path::Null();

@@ -295,7 +295,7 @@ skip_symlink(const Directory *directory, const char *utf8_name)
 
 	const char *target_str = target.c_str();
 
-	if (g_path_is_absolute(target_str)) {
+	if (Path::IsAbsoluteFS(target_str)) {
 		/* if the symlink points to an absolute path, see if
 		   that path is inside the music directory */
 		const char *relative = map_to_relative_path(target_str);

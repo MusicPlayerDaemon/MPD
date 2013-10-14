@@ -153,7 +153,7 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 	assert(decoder->stream_tag == NULL);
 	assert(decoder->decoder_tag == NULL);
 	assert(path != NULL);
-	assert(g_path_is_absolute(path));
+	assert(Path::IsAbsoluteFS(path));
 	assert(decoder->dc->state == DecoderState::START);
 
 	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin->name);

@@ -23,6 +23,10 @@
 #include "check.h"
 #include "gcc.h"
 
+#ifdef WIN32
+#include <glib.h>
+#endif
+
 #include <algorithm>
 #include <string>
 
@@ -260,6 +264,33 @@ public:
 			ch == '/' ||
 #endif
 			ch == SEPARATOR_UTF8;
+	}
+
+	gcc_pure
+	static bool IsAbsoluteFS(const_pointer p) {
+		assert(p != nullptr);
+
+#ifdef WIN32
+		return g_path_is_absolute(p);
+#else
+		return IsSeparatorFS(*p);
+#endif
+	}
+
+	gcc_pure
+	static bool IsAbsoluteUTF8(const char *p) {
+		assert(p != nullptr);
+
+#ifdef WIN32
+		return g_path_is_absolute(p);
+#else
+		return IsSeparatorUTF8(*p);
+#endif
+	}
+
+	gcc_pure
+	bool IsAbsolute() {
+		return IsAbsoluteFS(c_str());
 	}
 };
 
