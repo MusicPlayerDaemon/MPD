@@ -272,7 +272,14 @@ spl_load(const char *utf8path, GError **error_r)
 		if (*s == 0 || *s == PLAYLIST_COMMENT)
 			continue;
 
-		if (!uri_has_scheme(s)) {
+		if (g_path_is_absolute(s)) {
+			char *t = fs_charset_to_utf8(s);
+			if (t == NULL)
+				continue;
+
+			s = g_strconcat("file://", t, NULL);
+			g_free(t);
+		} else if (!uri_has_scheme(s)) {
 			char *path_utf8;
 
 			path_utf8 = map_fs_to_utf8(s);
