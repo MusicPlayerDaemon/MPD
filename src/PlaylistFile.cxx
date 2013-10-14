@@ -243,16 +243,18 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 
 		std::string uri_utf8;
 
-		if (g_path_is_absolute(s)) {
-			uri_utf8 = Path::ToUTF8(s);
-			if (uri_utf8.empty())
-				continue;
-
-			uri_utf8.insert(0, "file://");
-		} else if (!uri_has_scheme(s)) {
+		if (!uri_has_scheme(s)) {
 			uri_utf8 = map_fs_to_utf8(s);
-			if (uri_utf8.empty())
-				continue;
+			if (uri_utf8.empty()) {
+				if (g_path_is_absolute(s)) {
+					uri_utf8 = Path::ToUTF8(s);
+					if (uri_utf8.empty())
+						continue;
+
+					uri_utf8.insert(0, "file://");
+				} else
+					continue;
+			}
 		} else {
 			uri_utf8 = Path::ToUTF8(s);
 			if (uri_utf8.empty())
