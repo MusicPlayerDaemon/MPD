@@ -24,6 +24,8 @@
 #ifndef MPD_MAPPER_HXX
 #define MPD_MAPPER_HXX
 
+#include <string>
+
 #include "gcc.h"
 
 #define PLAYLIST_FILE_SUFFIX ".m3u"
@@ -118,10 +120,11 @@ map_song_fs(const Song *song);
  * absolute) to a relative path in UTF-8 encoding.
  *
  * @param path_fs a path in file system encoding
- * @return the relative path in UTF-8, or nullptr if mapping failed
+ * @return the relative path in UTF-8, or an empty string if mapping
+ * failed
  */
-gcc_malloc
-char *
+gcc_pure
+std::string
 map_fs_to_utf8(const char *path_fs);
 
 /**

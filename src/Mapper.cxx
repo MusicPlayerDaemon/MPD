@@ -248,7 +248,7 @@ map_song_fs(const Song *song)
 		return Path::FromUTF8(song->uri);
 }
 
-char *
+std::string
 map_fs_to_utf8(const char *path_fs)
 {
 	if (!music_dir_fs.IsNull() &&
@@ -263,11 +263,7 @@ map_fs_to_utf8(const char *path_fs)
 	while (path_fs[0] == G_DIR_SEPARATOR)
 		++path_fs;
 
-	const std::string path_utf8 = Path::ToUTF8(path_fs);
-	if (path_utf8.empty())
-		return nullptr;
-
-	return g_strdup(path_utf8.c_str());
+	return Path::ToUTF8(path_fs);
 }
 
 const Path &

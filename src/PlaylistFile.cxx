@@ -248,13 +248,11 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 
 			s = g_strconcat("file://", path.c_str(), NULL);
 		} else if (!uri_has_scheme(s)) {
-			char *path_utf8;
-
-			path_utf8 = map_fs_to_utf8(s);
-			if (path_utf8 == nullptr)
+			const auto path = map_fs_to_utf8(s);
+			if (path.empty())
 				continue;
 
-			s = path_utf8;
+			s = g_strdup(path.c_str());
 		} else {
 			const auto path = Path::ToUTF8(s);
 			if (path.empty())
