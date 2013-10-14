@@ -3,6 +3,7 @@ ver 0.17.6 (not yet released)
   - alsa: fix busy loop when USB sound device gets unplugged
 * stored playlists:
   - fix loading playlists with references to local files
+  - obey filesystem_charset for URLs
 
 ver 0.17.5 (2013/08/04)
 * protocol:

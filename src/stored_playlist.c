@@ -287,8 +287,11 @@ spl_load(const char *utf8path, GError **error_r)
 				continue;
 
 			s = path_utf8;
-		} else
-			s = g_strdup(s);
+		} else {
+			s = fs_charset_to_utf8(s);
+			if (s == NULL)
+				continue;
+		}
 
 		g_ptr_array_add(list, s);
 
