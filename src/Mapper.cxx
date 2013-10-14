@@ -252,7 +252,7 @@ std::string
 map_fs_to_utf8(const char *path_fs)
 {
 	if (!music_dir_fs.IsNull() &&
-	    strncmp(path_fs, music_dir_fs.c_str(), music_dir_fs_length) == 0 &&
+	    memcmp(path_fs, music_dir_fs.data(), music_dir_fs_length) == 0 &&
 	    G_IS_DIR_SEPARATOR(path_fs[music_dir_fs_length]))
 		/* remove musicDir prefix */
 		path_fs += music_dir_fs_length + 1;

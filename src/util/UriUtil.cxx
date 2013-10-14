@@ -86,9 +86,9 @@ uri_remove_auth(const char *uri)
 	const char *auth, *slash, *at;
 	char *p;
 
-	if (strncmp(uri, "http://", 7) == 0)
+	if (memcmp(uri, "http://", 7) == 0)
 		auth = uri + 7;
-	else if (strncmp(uri, "https://", 8) == 0)
+	else if (memcmp(uri, "https://", 8) == 0)
 		auth = uri + 8;
 	else
 		/* unrecognized URI */

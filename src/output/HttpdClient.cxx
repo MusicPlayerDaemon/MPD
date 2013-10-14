@@ -78,7 +78,7 @@ HttpdClient::HandleLine(const char *line)
 	assert(state != RESPONSE);
 
 	if (state == REQUEST) {
-		if (strncmp(line, "GET /", 5) != 0) {
+		if (memcmp(line, "GET /", 5) != 0) {
 			/* only GET is supported */
 			LogWarning(httpd_output_domain,
 				   "malformed request line from client");
@@ -86,7 +86,7 @@ HttpdClient::HandleLine(const char *line)
 		}
 
 		line = strchr(line + 5, ' ');
-		if (line == nullptr || strncmp(line + 1, "HTTP/", 5) != 0) {
+		if (line == nullptr || memcmp(line + 1, "HTTP/", 5) != 0) {
 			/* HTTP/0.9 without request headers */
 			BeginResponse();
 			return true;

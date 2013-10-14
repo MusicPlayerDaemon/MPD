@@ -175,7 +175,7 @@ static int handle_mapkey(void *ctx, const unsigned char* stringval,
 	data->key = Other;
 
 	for (i = 0; i < Other; ++i) {
-		if (strncmp((const char *)stringval, key_str[i], stringlen) == 0) {
+		if (memcmp((const char *)stringval, key_str[i], stringlen) == 0) {
 			data->key = i;
 			break;
 		}

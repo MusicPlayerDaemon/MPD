@@ -43,7 +43,7 @@ handle_add(Client *client, gcc_unused int argc, char *argv[])
 	char *uri = argv[1];
 	enum playlist_result result;
 
-	if (strncmp(uri, "file:///", 8) == 0) {
+	if (memcmp(uri, "file:///", 8) == 0) {
 		const char *path_utf8 = uri + 7;
 		const Path path_fs = Path::FromUTF8(path_utf8);
 
@@ -86,7 +86,7 @@ handle_addid(Client *client, int argc, char *argv[])
 	unsigned added_id;
 	enum playlist_result result;
 
-	if (strncmp(uri, "file:///", 8) == 0) {
+	if (memcmp(uri, "file:///", 8) == 0) {
 		const char *path_utf8 = uri + 7;
 		const Path path_fs = Path::FromUTF8(path_utf8);
 

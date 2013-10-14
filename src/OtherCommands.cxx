@@ -114,7 +114,7 @@ handle_lsinfo(Client *client, int argc, char *argv[])
 		/* default is root directory */
 		uri = "";
 
-	if (strncmp(uri, "file:///", 8) == 0) {
+	if (memcmp(uri, "file:///", 8) == 0) {
 		/* print information about an arbitrary local file */
 		const char *path_utf8 = uri + 7;
 		const Path path_fs = Path::FromUTF8(path_utf8);
