@@ -241,27 +241,25 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 		if (*s == 0 || *s == PLAYLIST_COMMENT)
 			continue;
 
+		std::string uri_utf8;
+
 		if (g_path_is_absolute(s)) {
-			const auto path = Path::ToUTF8(s);
-			if (path.empty())
+			uri_utf8 = Path::ToUTF8(s);
+			if (uri_utf8.empty())
 				continue;
 
-			s = g_strconcat("file://", path.c_str(), NULL);
+			uri_utf8.insert(0, "file://");
 		} else if (!uri_has_scheme(s)) {
-			const auto path = map_fs_to_utf8(s);
-			if (path.empty())
+			uri_utf8 = map_fs_to_utf8(s);
+			if (uri_utf8.empty())
 				continue;
-
-			s = g_strdup(path.c_str());
 		} else {
-			const auto path = Path::ToUTF8(s);
-			if (path.empty())
+			uri_utf8 = Path::ToUTF8(s);
+			if (uri_utf8.empty())
 				continue;
-
-			s = g_strdup(path.c_str());
 		}
 
-		contents.emplace_back(s);
+		contents.emplace_back(std::move(uri_utf8));
 		if (contents.size() >= playlist_max_length)
 			break;
 	}
