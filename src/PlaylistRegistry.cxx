@@ -243,10 +243,8 @@ playlist_list_open_stream_mime(struct input_stream *is, const char *full_mime)
 		return nullptr;
 
 	/* probe only the portion before the semicolon*/
-	char *mime = g_strndup(full_mime, semicolon - full_mime);
-	auto playlist = playlist_list_open_stream_mime2(is, mime);
-	g_free(mime);
-	return playlist;
+	const std::string mime(full_mime, semicolon);
+	return playlist_list_open_stream_mime2(is, mime.c_str());
 }
 
 static SongEnumerator *
