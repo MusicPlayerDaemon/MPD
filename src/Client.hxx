@@ -72,7 +72,7 @@ void client_vprintf(Client *client, const char *fmt, va_list args);
 /**
  * Write a printf-like formatted string to the client.
  */
-gcc_fprintf
+gcc_printf(2,3)
 void
 client_printf(Client *client, const char *fmt, ...);
 

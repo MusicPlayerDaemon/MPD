@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2011 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,64 +21,148 @@
 #define MPD_GCC_H
 
 #define GCC_CHECK_VERSION(major, minor) \
-	(defined(__GNUC__) && \
-	 (__GNUC__ > (major) || \
-	  (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor))))
+  (defined(__GNUC__) &&                                                 \
+   (__GNUC__ > (major) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor))))
 
-/* this allows us to take advantage of special gcc features while still
- * allowing other compilers to compile:
- *
- * example taken from: http://rlove.org/log/2005102601
- */
+#ifdef __GNUC__
+#define GCC_VERSION (__GNUC__ * 10000 \
+                     + __GNUC_MINOR__ * 100 \
+                     + __GNUC_PATCHLEVEL__)
+#else
+#define GCC_VERSION 0
+#endif
 
-#if GCC_CHECK_VERSION(3,0)
-#  define gcc_const __attribute__((const))
-#  define gcc_pure __attribute__((pure))
-#  define gcc_malloc __attribute__((malloc))
-#  define gcc_noreturn __attribute__((noreturn))
-#  define gcc_must_check	__attribute__ ((warn_unused_result))
-#  define gcc_packed		__attribute__ ((packed))
-/* these are very useful for type checking */
-#  define gcc_printf		__attribute__ ((format(printf,1,2)))
-#  define gcc_fprintf		__attribute__ ((format(printf,2,3)))
-#  define gcc_fprintf_		__attribute__ ((format(printf,3,4)))
-#  define gcc_fprintf__		__attribute__ ((format(printf,4,5)))
-#  define gcc_scanf		__attribute__ ((format(scanf,1,2)))
-#  define gcc_used		__attribute__ ((used))
-#  define gcc_unused __attribute__((unused))
-#  define gcc_warn_unused_result __attribute__((warn_unused_result))
-/* #  define inline	inline __attribute__ ((always_inline)) */
-#  define gcc_noinline		__attribute__ ((noinline))
-#  define gcc_nonnull(...) __attribute__((nonnull(__VA_ARGS__)))
-#  define gcc_nonnull_all __attribute__((nonnull))
+#ifdef __clang__
+#  define CLANG_VERSION (__clang_major__ * 10000 \
+			 + __clang_minor__ * 100 \
+			 + __clang_patchlevel__)
+#  if __clang_major__ < 3
+#    error Sorry, your clang version is too old.  You need at least version 3.1.
+#  endif
+#elif defined(__GNUC__)
+#  if !GCC_CHECK_VERSION(4,6)
+#    error Sorry, your gcc version is too old.  You need at least version 4.6.
+#  endif
+#else
+#  warning Untested compiler.  Use at your own risk!
+#endif
 
-#  define gcc_likely(x) __builtin_expect (!!(x), 1)
-#  define gcc_unlikely(x) __builtin_expect (!!(x), 0)
+#if GCC_CHECK_VERSION(4,0)
+
+/* GCC 4.x */
+
+#define gcc_const __attribute__((const))
+#define gcc_deprecated __attribute__((deprecated))
+#define gcc_may_alias __attribute__((may_alias))
+#define gcc_malloc __attribute__((malloc))
+#define gcc_noreturn __attribute__((noreturn))
+#define gcc_packed __attribute__((packed))
+#define gcc_printf(a,b) __attribute__((format(printf, a, b)))
+#define gcc_pure __attribute__((pure))
+#define gcc_sentinel __attribute__((sentinel))
+#define gcc_unused __attribute__((unused))
+#define gcc_warn_unused_result __attribute__((warn_unused_result))
+
+#define gcc_nonnull(...) __attribute__((nonnull(__VA_ARGS__)))
+#define gcc_nonnull_all __attribute__((nonnull))
+
+#define gcc_likely(x) __builtin_expect (!!(x), 1)
+#define gcc_unlikely(x) __builtin_expect (!!(x), 0)
+
+#define gcc_aligned(n) __attribute__((aligned(n)))
+
+#define gcc_visibility_hidden __attribute__((visibility("hidden")))
+#define gcc_visibility_default __attribute__((visibility("default")))
+
+#define gcc_always_inline __attribute__((always_inline))
 
 #else
-#  define gcc_unused
-#  define gcc_const
-#  define gcc_pure
-#  define gcc_malloc
-#  define gcc_noreturn
-#  define gcc_must_check
-#  define gcc_packed
-#  define gcc_printf
-#  define gcc_fprintf
-#  define gcc_fprintf_
-#  define gcc_fprintf__
-#  define gcc_scanf
-#  define gcc_used
-#  define gcc_unused
-#  define gcc_warn_unused_result
-/* #  define inline */
-#  define gcc_noinline
-#  define gcc_nonnull(...)
-#  define gcc_nonnull_all
 
-#  define gcc_likely(x) (x)
-#  define gcc_unlikely(x) (x)
+/* generic C compiler */
 
+#define gcc_const
+#define gcc_deprecated
+#define gcc_may_alias
+#define gcc_malloc
+#define gcc_noreturn
+#define gcc_packed
+#define gcc_printf(a,b)
+#define gcc_pure
+#define gcc_sentinel
+#define gcc_unused
+#define gcc_warn_unused_result
+
+#define gcc_nonnull(...)
+#define gcc_nonnull_all
+
+#define gcc_likely(x) (x)
+#define gcc_unlikely(x) (x)
+
+#define gcc_aligned(n)
+
+#define gcc_visibility_hidden
+#define gcc_visibility_default
+
+#define gcc_always_inline inline
+
+#endif
+
+#if GCC_CHECK_VERSION(4,3)
+
+#define gcc_hot __attribute__((hot))
+#define gcc_cold __attribute__((cold))
+
+#else /* ! GCC_UNUSED >= 40300 */
+
+#define gcc_hot
+#define gcc_cold
+
+#endif /* ! GCC_UNUSED >= 40300 */
+
+#if GCC_CHECK_VERSION(4,6) && !defined(__clang__)
+#define gcc_flatten __attribute__((flatten))
+#else
+#define gcc_flatten
+#endif
+
+#ifndef __cplusplus
+/* plain C99 has "restrict" */
+#define gcc_restrict restrict
+#elif GCC_CHECK_VERSION(4,0)
+/* "__restrict__" is a GCC extension for C++ */
+#define gcc_restrict __restrict__
+#else
+/* disable it on other compilers */
+#define gcc_restrict
+#endif
+
+/* C++11 features */
+
+#if defined(__cplusplus)
+
+/* support for C++11 "override" was added in gcc 4.7 */
+#if !defined(__clang__) && !GCC_CHECK_VERSION(4,7)
+#define override
+#define final
+#endif
+
+#if defined(__clang__) || GCC_CHECK_VERSION(4,8)
+#define gcc_alignas(T, fallback) alignas(T)
+#else
+#define gcc_alignas(T, fallback) gcc_aligned(fallback)
+#endif
+
+#endif
+
+#ifndef __has_feature
+  // define dummy macro for non-clang compilers
+  #define __has_feature(x) 0
+#endif
+
+#if __has_feature(attribute_unused_on_fields)
+#define gcc_unused_field gcc_unused
+#else
+#define gcc_unused_field
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
@@ -87,26 +171,4 @@
 #define gcc_unreachable()
 #endif
 
-#ifdef __cplusplus
-
-#ifdef __GNUC__
-/* "__restrict__" is a GCC extension for C++ */
-#define restrict __restrict__
-#else
-/* disable it on other compilers */
-#define restrict
 #endif
-
-#if !defined(__clang__) && defined(__GNUC__) && !GCC_CHECK_VERSION(4,6)
-#error Your gcc version is too old.  MPD requires gcc 4.6 or newer.
-#endif
-
-/* support for C++11 "override" was added in gcc 4.7 */
-#if !defined(__clang__) && defined(__GNUC__) && !GCC_CHECK_VERSION(4,7)
-#define override
-#define final
-#endif
-
-#endif
-
-#endif /* MPD_GCC_H */

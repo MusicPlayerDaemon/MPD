@@ -38,9 +38,9 @@ MonoToStereo(D dest, S src, S end)
 }
 
 static void
-pcm_convert_channels_16_2_to_1(int16_t *restrict dest,
-			       const int16_t *restrict src,
-			       const int16_t *restrict src_end)
+pcm_convert_channels_16_2_to_1(int16_t *gcc_restrict dest,
+			       const int16_t *gcc_restrict src,
+			       const int16_t *gcc_restrict src_end)
 {
 	while (src < src_end) {
 		int32_t a = *src++, b = *src++;
@@ -50,10 +50,10 @@ pcm_convert_channels_16_2_to_1(int16_t *restrict dest,
 }
 
 static void
-pcm_convert_channels_16_n_to_2(int16_t *restrict dest,
+pcm_convert_channels_16_n_to_2(int16_t *gcc_restrict dest,
 			       unsigned src_channels,
-			       const int16_t *restrict src,
-			       const int16_t *restrict src_end)
+			       const int16_t *gcc_restrict src,
+			       const int16_t *gcc_restrict src_end)
 {
 	unsigned c;
 
@@ -101,9 +101,9 @@ pcm_convert_channels_16(PcmBuffer &buffer,
 }
 
 static void
-pcm_convert_channels_24_2_to_1(int32_t *restrict dest,
-			       const int32_t *restrict src,
-			       const int32_t *restrict src_end)
+pcm_convert_channels_24_2_to_1(int32_t *gcc_restrict dest,
+			       const int32_t *gcc_restrict src,
+			       const int32_t *gcc_restrict src_end)
 {
 	while (src < src_end) {
 		int32_t a = *src++, b = *src++;
@@ -113,10 +113,10 @@ pcm_convert_channels_24_2_to_1(int32_t *restrict dest,
 }
 
 static void
-pcm_convert_channels_24_n_to_2(int32_t *restrict dest,
+pcm_convert_channels_24_n_to_2(int32_t *gcc_restrict dest,
 			       unsigned src_channels,
-			       const int32_t *restrict src,
-			       const int32_t *restrict src_end)
+			       const int32_t *gcc_restrict src,
+			       const int32_t *gcc_restrict src_end)
 {
 	unsigned c;
 
@@ -165,9 +165,9 @@ pcm_convert_channels_24(PcmBuffer &buffer,
 }
 
 static void
-pcm_convert_channels_32_2_to_1(int32_t *restrict dest,
-			       const int32_t *restrict src,
-			       const int32_t *restrict src_end)
+pcm_convert_channels_32_2_to_1(int32_t *gcc_restrict dest,
+			       const int32_t *gcc_restrict src,
+			       const int32_t *gcc_restrict src_end)
 {
 	while (src < src_end) {
 		int64_t a = *src++, b = *src++;
@@ -228,9 +228,9 @@ pcm_convert_channels_32(PcmBuffer &buffer,
 }
 
 static void
-pcm_convert_channels_float_2_to_1(float *restrict dest,
-				  const float *restrict src,
-				  const float *restrict src_end)
+pcm_convert_channels_float_2_to_1(float *gcc_restrict dest,
+				  const float *gcc_restrict src,
+				  const float *gcc_restrict src_end)
 {
 	while (src < src_end) {
 		double a = *src++, b = *src++;

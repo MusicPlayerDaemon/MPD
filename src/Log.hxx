@@ -43,7 +43,7 @@ enum class LogLevel {
 void
 Log(const Domain &domain, LogLevel level, const char *msg);
 
-gcc_fprintf_
+gcc_printf(3,4)
 void
 LogFormat(const Domain &domain, LogLevel level, const char *fmt, ...);
 
@@ -53,7 +53,7 @@ LogDebug(const Domain &domain, const char *msg)
 	Log(domain, LogLevel::DEBUG, msg);
 }
 
-gcc_fprintf
+gcc_printf(2,3)
 void
 FormatDebug(const Domain &domain, const char *fmt, ...);
 
@@ -63,7 +63,7 @@ LogInfo(const Domain &domain, const char *msg)
 	Log(domain, LogLevel::INFO, msg);
 }
 
-gcc_fprintf
+gcc_printf(2,3)
 void
 FormatInfo(const Domain &domain, const char *fmt, ...);
 
@@ -73,7 +73,7 @@ LogWarning(const Domain &domain, const char *msg)
 	Log(domain, LogLevel::WARNING, msg);
 }
 
-gcc_fprintf
+gcc_printf(2,3)
 void
 FormatWarning(const Domain &domain, const char *fmt, ...);
 
@@ -83,7 +83,7 @@ LogError(const Domain &domain, const char *msg)
 	Log(domain, LogLevel::ERROR, msg);
 }
 
-gcc_fprintf
+gcc_printf(2,3)
 void
 FormatError(const Domain &domain, const char *fmt, ...);
 
@@ -93,7 +93,7 @@ LogError(const Error &error);
 void
 LogError(const Error &error, const char *msg);
 
-gcc_fprintf
+gcc_printf(2,3)
 void
 FormatError(const Error &error, const char *fmt, ...);
 
@@ -103,11 +103,11 @@ LogErrno(const Domain &domain, int e, const char *msg);
 void
 LogErrno(const Domain &domain, const char *msg);
 
-gcc_fprintf_
+gcc_printf(3,4)
 void
 FormatErrno(const Domain &domain, int e, const char *fmt, ...);
 
-gcc_fprintf
+gcc_printf(2,3)
 void
 FormatErrno(const Domain &domain, const char *fmt, ...);
 

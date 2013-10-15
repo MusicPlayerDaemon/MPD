@@ -38,7 +38,7 @@ void
 command_error_v(Client *client, enum ack error,
 		const char *fmt, va_list args);
 
-gcc_fprintf_
+gcc_printf(3,4)
 void
 command_error(Client *client, enum ack error, const char *fmt, ...);
 
