@@ -75,7 +75,6 @@ static unsigned parsePermissions(const char *string)
 
 void initPermissions(void)
 {
-	char *password;
 	unsigned permission;
 	const struct config_param *param;
 
@@ -97,12 +96,11 @@ void initPermissions(void)
 						 PERMISSION_PASSWORD_CHAR,
 						 param->value, param->line);
 
-			password = g_strndup(param->value,
-					     separator - param->value);
+			std::string password((const char *)param->value, separator);
 
 			permission = parsePermissions(separator + 1);
 
-			permission_passwords.insert(std::make_pair(password,
+			permission_passwords.insert(std::make_pair(std::move(password),
 								   permission));
 		} while ((param = config_get_next_param(CONF_PASSWORD, param)));
 	}
