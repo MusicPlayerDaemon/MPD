@@ -26,7 +26,7 @@
 void
 time_print(Client *client, const char *name, time_t t)
 {
-#ifdef G_OS_WIN32
+#ifdef WIN32
 	const struct tm *tm2 = gmtime(&t);
 #else
 	struct tm tm;
@@ -37,7 +37,7 @@ time_print(Client *client, const char *name, time_t t)
 
 	char buffer[32];
 	strftime(buffer, sizeof(buffer),
-#ifdef G_OS_WIN32
+#ifdef WIN32
 		 "%Y-%m-%dT%H:%M:%SZ",
 #else
 		 "%FT%TZ",

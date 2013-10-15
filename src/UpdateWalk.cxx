@@ -162,7 +162,7 @@ purge_deleted_from_directory(Directory *directory)
 	}
 }
 
-#ifndef G_OS_WIN32
+#ifndef WIN32
 static int
 update_directory_stat(Directory *directory)
 {
@@ -178,7 +178,7 @@ update_directory_stat(Directory *directory)
 static int
 find_inode_ancestor(Directory *parent, ino_t inode, dev_t device)
 {
-#ifndef G_OS_WIN32
+#ifndef WIN32
 	while (parent) {
 		if (!parent->have_stat && update_directory_stat(parent) < 0)
 			return -1;

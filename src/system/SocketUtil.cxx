@@ -26,12 +26,12 @@
 
 #include <unistd.h>
 
-#ifndef G_OS_WIN32
+#ifndef WIN32
 #include <sys/socket.h>
-#else /* G_OS_WIN32 */
+#else
 #include <ws2tcpip.h>
 #include <winsock.h>
-#endif /* G_OS_WIN32 */
+#endif
 
 #ifdef HAVE_IPV6
 #include <string.h>

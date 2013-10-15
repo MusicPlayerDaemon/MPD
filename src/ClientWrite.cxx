@@ -47,7 +47,7 @@ client_puts(Client *client, const char *s)
 void
 client_vprintf(Client *client, const char *fmt, va_list args)
 {
-#ifndef G_OS_WIN32
+#ifndef WIN32
 	va_list tmp;
 	int length;
 

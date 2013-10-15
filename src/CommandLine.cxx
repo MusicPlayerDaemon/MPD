@@ -54,7 +54,7 @@
 
 #ifdef WIN32
 #define CONFIG_FILE_LOCATION		"\\mpd\\mpd.conf"
-#else /* G_OS_WIN32 */
+#else
 #define USER_CONFIG_FILE_LOCATION1	".mpdconf"
 #define USER_CONFIG_FILE_LOCATION2	".mpd/mpd.conf"
 #define USER_CONFIG_FILE_LOCATION_XDG	"mpd/mpd.conf"
@@ -219,7 +219,7 @@ parse_cmdline(int argc, char **argv, struct options *options,
 			if (!path.IsNull() && FileExists(path))
 				return ReadConfigFile(path, error);
 		}
-#else /* G_OS_WIN32 */
+#else
 		Path path = PathBuildChecked(Path::FromUTF8(g_get_user_config_dir()),
 					     USER_CONFIG_FILE_LOCATION_XDG);
 		if (!path.IsNull() && FileExists(path))

@@ -31,7 +31,7 @@
 #include <assert.h>
 #include <string.h>
 
-#ifdef G_OS_WIN32
+#ifdef WIN32
 #include <windows.h> // for GetACP()
 #include <stdio.h> // for sprintf()
 #endif
@@ -158,13 +158,13 @@ void Path::GlobalInit()
 
 	charset = config_get_string(CONF_FS_CHARSET, NULL);
 	if (charset == NULL) {
-#ifndef G_OS_WIN32
+#ifndef WIN32
 		const gchar **encodings;
 		g_get_filename_charsets(&encodings);
 
 		if (encodings[0] != NULL && *encodings[0] != '\0')
 			charset = encodings[0];
-#else /* G_OS_WIN32 */
+#else
 		/* Glib claims that file system encoding is always utf-8
 		 * on native Win32 (i.e. not Cygwin).
 		 * However this is true only if <gstdio.h> helpers are used.
