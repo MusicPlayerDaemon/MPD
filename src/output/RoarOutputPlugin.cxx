@@ -29,6 +29,8 @@
 
 #include <glib.h>
 
+#include <string>
+
 /* libroar/services.h declares roar_service_stream::new - work around
    this C++ problem */
 #define new _new
@@ -38,10 +40,10 @@
 class RoarOutput {
 	struct audio_output base;
 
+	std::string host, name;
+
 	roar_vs_t * vss;
 	int err;
-	char *host;
-	char *name;
 	int role;
 	struct roar_connection con;
 	struct roar_audio_info info;
@@ -50,13 +52,7 @@ class RoarOutput {
 
 public:
 	RoarOutput()
-		:err(ROAR_ERROR_NONE),
-		 host(nullptr), name(nullptr) {}
-
-	~RoarOutput() {
-		g_free(host);
-		g_free(name);
-	}
+		:err(ROAR_ERROR_NONE) {}
 
 	operator audio_output *() {
 		return &base;
@@ -133,8 +129,8 @@ roar_output_set_volume(RoarOutput *roar, unsigned volume)
 inline void
 RoarOutput::Configure(const config_param &param)
 {
-	host = param.DupBlockString("server", nullptr);
-	name = param.DupBlockString("name", "MPD");
+	host = param.GetBlockValue("server", "");
+	name = param.GetBlockValue("name", "MPD");
 
 	const char *_role = param.GetBlockValue("role", "music");
 	role = _role != nullptr
@@ -205,7 +201,9 @@ RoarOutput::Open(AudioFormat &audio_format, Error &error)
 {
 	const ScopeLock protect(mutex);
 
-	if (roar_simple_connect(&con, host, name) < 0) {
+	if (roar_simple_connect(&con,
+				host.empty() ? nullptr : host.c_str(),
+				name.c_str()) < 0) {
 		error.Set(roar_output_domain,
 			  "Failed to connect to Roar server");
 		return false;
