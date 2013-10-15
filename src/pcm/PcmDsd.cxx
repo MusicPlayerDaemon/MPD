@@ -20,8 +20,7 @@
 #include "config.h"
 #include "PcmDsd.hxx"
 #include "dsd2pcm/dsd2pcm.h"
-
-#include <glib.h>
+#include "util/Macros.hxx"
 
 #include <algorithm>
 
@@ -30,12 +29,12 @@
 
 PcmDsd::PcmDsd()
 {
-	std::fill_n(dsd2pcm, G_N_ELEMENTS(dsd2pcm), nullptr);
+	std::fill_n(dsd2pcm, ARRAY_SIZE(dsd2pcm), nullptr);
 }
 
 PcmDsd::~PcmDsd()
 {
-	for (unsigned i = 0; i < G_N_ELEMENTS(dsd2pcm); ++i)
+	for (unsigned i = 0; i < ARRAY_SIZE(dsd2pcm); ++i)
 		if (dsd2pcm[i] != nullptr)
 			dsd2pcm_destroy(dsd2pcm[i]);
 }
@@ -43,7 +42,7 @@ PcmDsd::~PcmDsd()
 void
 PcmDsd::Reset()
 {
-	for (unsigned i = 0; i < G_N_ELEMENTS(dsd2pcm); ++i)
+	for (unsigned i = 0; i < ARRAY_SIZE(dsd2pcm); ++i)
 		if (dsd2pcm[i] != nullptr)
 			dsd2pcm_reset(dsd2pcm[i]);
 }
@@ -56,7 +55,7 @@ PcmDsd::ToFloat(unsigned channels, bool lsbfirst,
 	assert(src != nullptr);
 	assert(src_size > 0);
 	assert(src_size % channels == 0);
-	assert(channels <= G_N_ELEMENTS(dsd2pcm));
+	assert(channels <= ARRAY_SIZE(dsd2pcm));
 
 	const unsigned num_samples = src_size;
 	const unsigned num_frames = src_size / channels;

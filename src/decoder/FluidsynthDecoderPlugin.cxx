@@ -23,9 +23,8 @@
 #include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/Macros.hxx"
 #include "Log.hxx"
-
-#include <glib.h>
 
 #include <fluidsynth.h>
 
@@ -171,7 +170,7 @@ fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
 	DecoderCommand cmd;
 	while (fluid_player_get_status(player) == FLUID_PLAYER_PLAYING) {
 		int16_t buffer[2048];
-		const unsigned max_frames = G_N_ELEMENTS(buffer) / 2;
+		const unsigned max_frames = ARRAY_SIZE(buffer) / 2;
 
 		/* read samples from fluidsynth and send them to the
 		   MPD core */

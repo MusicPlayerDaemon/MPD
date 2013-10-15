@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "InputRegistry.hxx"
+#include "util/Macros.hxx"
 #include "input/FileInputPlugin.hxx"
 
 #ifdef ENABLE_ARCHIVE
@@ -45,8 +46,6 @@
 #include "input/DespotifyInputPlugin.hxx"
 #endif
 
-#include <glib.h>
-
 const struct input_plugin *const input_plugins[] = {
 	&input_plugin_file,
 #ifdef ENABLE_ARCHIVE
@@ -67,7 +66,7 @@ const struct input_plugin *const input_plugins[] = {
 #ifdef ENABLE_DESPOTIFY
 	&input_plugin_despotify,
 #endif
-	NULL
+	nullptr
 };
 
-bool input_plugins_enabled[G_N_ELEMENTS(input_plugins) - 1];
+bool input_plugins_enabled[ARRAY_SIZE(input_plugins) - 1];

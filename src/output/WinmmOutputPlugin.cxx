@@ -24,6 +24,7 @@
 #include "MixerList.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/Macros.hxx"
 
 #include <glib.h>
 
@@ -183,7 +184,7 @@ winmm_output_open(struct audio_output *ao, AudioFormat &audio_format,
 		return false;
 	}
 
-	for (unsigned i = 0; i < G_N_ELEMENTS(wo->buffers); ++i) {
+	for (unsigned i = 0; i < ARRAY_SIZE(wo->buffers); ++i) {
 		memset(&wo->buffers[i].hdr, 0, sizeof(wo->buffers[i].hdr));
 	}
 
@@ -197,7 +198,7 @@ winmm_output_close(struct audio_output *ao)
 {
 	WinmmOutput *wo = (WinmmOutput *)ao;
 
-	for (unsigned i = 0; i < G_N_ELEMENTS(wo->buffers); ++i)
+	for (unsigned i = 0; i < ARRAY_SIZE(wo->buffers); ++i)
 		wo->buffers[i].buffer.Clear();
 
 	waveOutClose(wo->handle);
@@ -285,7 +286,7 @@ winmm_output_play(struct audio_output *ao, const void *chunk, size_t size, Error
 
 	/* mark our buffer as "used" */
 	wo->next_buffer = (wo->next_buffer + 1) %
-		G_N_ELEMENTS(wo->buffers);
+		ARRAY_SIZE(wo->buffers);
 
 	return size;
 }
@@ -293,7 +294,7 @@ winmm_output_play(struct audio_output *ao, const void *chunk, size_t size, Error
 static bool
 winmm_drain_all_buffers(WinmmOutput *wo, Error &error)
 {
-	for (unsigned i = wo->next_buffer; i < G_N_ELEMENTS(wo->buffers); ++i)
+	for (unsigned i = wo->next_buffer; i < ARRAY_SIZE(wo->buffers); ++i)
 		if (!winmm_drain_buffer(wo, &wo->buffers[i], error))
 			return false;
 
@@ -309,7 +310,7 @@ winmm_stop(WinmmOutput *wo)
 {
 	waveOutReset(wo->handle);
 
-	for (unsigned i = 0; i < G_N_ELEMENTS(wo->buffers); ++i) {
+	for (unsigned i = 0; i < ARRAY_SIZE(wo->buffers); ++i) {
 		WinmmBuffer *buffer = &wo->buffers[i];
 		waveOutUnprepareHeader(wo->handle, &buffer->hdr,
 				       sizeof(buffer->hdr));

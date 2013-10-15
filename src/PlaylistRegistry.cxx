@@ -34,6 +34,7 @@
 #include "util/UriUtil.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
+#include "util/Macros.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigData.hxx"
 #include "system/FatalError.hxx"
@@ -61,8 +62,11 @@ const struct playlist_plugin *const playlist_plugins[] = {
 	nullptr
 };
 
+static constexpr unsigned n_playlist_plugins =
+	ARRAY_SIZE(playlist_plugins) - 1;
+
 /** which plugins have been initialized successfully? */
-static bool playlist_plugins_enabled[G_N_ELEMENTS(playlist_plugins)];
+static bool playlist_plugins_enabled[n_playlist_plugins];
 
 #define playlist_plugins_for_each_enabled(plugin) \
 	playlist_plugins_for_each(plugin) \
@@ -189,7 +193,7 @@ playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 {
 	/** this array tracks which plugins have already been tried by
 	    playlist_list_open_uri_scheme() */
-	bool tried[G_N_ELEMENTS(playlist_plugins) - 1];
+	bool tried[n_playlist_plugins];
 
 	assert(uri != nullptr);
 

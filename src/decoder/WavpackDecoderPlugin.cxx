@@ -26,6 +26,7 @@
 #include "tag/ApeTag.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/Macros.hxx"
 #include "Log.hxx"
 
 #include <wavpack/wavpack.h>
@@ -173,7 +174,7 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
 
 	/* wavpack gives us all kind of samples in a 32-bit space */
 	int32_t chunk[1024];
-	const uint32_t samples_requested = G_N_ELEMENTS(chunk) /
+	const uint32_t samples_requested = ARRAY_SIZE(chunk) /
 		audio_format.channels;
 
 	decoder_initialized(decoder, audio_format, can_seek, total_time);

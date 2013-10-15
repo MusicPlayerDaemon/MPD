@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "UpdateQueue.hxx"
+#include "util/Macros.hxx"
 
 #include <glib.h>
 
@@ -36,9 +37,9 @@ static size_t update_queue_length;
 unsigned
 update_queue_push(const char *path, bool discard, unsigned base)
 {
-	assert(update_queue_length <= G_N_ELEMENTS(update_queue));
+	assert(update_queue_length <= ARRAY_SIZE(update_queue));
 
-	if (update_queue_length == G_N_ELEMENTS(update_queue))
+	if (update_queue_length == ARRAY_SIZE(update_queue))
 		return 0;
 
 	update_queue[update_queue_length].path = g_strdup(path);

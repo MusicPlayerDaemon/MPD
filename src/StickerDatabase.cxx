@@ -23,6 +23,7 @@
 #include "Idle.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/Macros.hxx"
 #include "Log.hxx"
 
 #include <string>
@@ -79,7 +80,7 @@ static const char sticker_sql_create[] =
 	"";
 
 static sqlite3 *sticker_db;
-static sqlite3_stmt *sticker_stmt[G_N_ELEMENTS(sticker_sql)];
+static sqlite3_stmt *sticker_stmt[ARRAY_SIZE(sticker_sql)];
 
 static constexpr Domain sticker_domain("sticker");
 
@@ -138,7 +139,7 @@ sticker_global_init(Path &&path, Error &error)
 
 	/* prepare the statements we're going to use */
 
-	for (unsigned i = 0; i < G_N_ELEMENTS(sticker_sql); ++i) {
+	for (unsigned i = 0; i < ARRAY_SIZE(sticker_sql); ++i) {
 		assert(sticker_sql[i] != NULL);
 
 		sticker_stmt[i] = sticker_prepare(sticker_sql[i], error);
@@ -156,7 +157,7 @@ sticker_global_finish(void)
 		/* not configured */
 		return;
 
-	for (unsigned i = 0; i < G_N_ELEMENTS(sticker_stmt); ++i) {
+	for (unsigned i = 0; i < ARRAY_SIZE(sticker_stmt); ++i) {
 		assert(sticker_stmt[i] != NULL);
 
 		sqlite3_finalize(sticker_stmt[i]);

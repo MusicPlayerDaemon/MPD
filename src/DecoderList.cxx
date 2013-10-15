@@ -43,8 +43,7 @@
 #include "decoder/MpcdecDecoderPlugin.hxx"
 #include "decoder/FluidsynthDecoderPlugin.hxx"
 #include "system/FatalError.hxx"
-
-#include <glib.h>
+#include "util/Macros.hxx"
 
 #include <string.h>
 
@@ -114,9 +113,8 @@ const struct decoder_plugin *const decoder_plugins[] = {
 	NULL
 };
 
-enum {
-	num_decoder_plugins = G_N_ELEMENTS(decoder_plugins) - 1,
-};
+static constexpr unsigned num_decoder_plugins =
+	ARRAY_SIZE(decoder_plugins) - 1;
 
 /** which plugins have been initialized successfully? */
 bool decoder_plugins_enabled[num_decoder_plugins];

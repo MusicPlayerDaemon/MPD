@@ -18,6 +18,7 @@
  */
 
 #include "util/byte_reverse.h"
+#include "util/Macros.hxx"
 
 #include <glib.h>
 
@@ -26,10 +27,10 @@ test_byte_reverse_2(void)
 {
 	static const char src[] = "123456";
 	static const char result[] = "214365";
-	static uint8_t dest[G_N_ELEMENTS(src)];
+	static uint8_t dest[ARRAY_SIZE(src)];
 
 	reverse_bytes(dest, (const uint8_t *)src,
-		      (const uint8_t *)(src + G_N_ELEMENTS(src) - 1), 2);
+		      (const uint8_t *)(src + ARRAY_SIZE(src) - 1), 2);
 	g_assert_cmpstr((const char *)dest, ==, result);
 }
 
@@ -38,10 +39,10 @@ test_byte_reverse_3(void)
 {
 	static const char src[] = "123456";
 	static const char result[] = "321654";
-	static uint8_t dest[G_N_ELEMENTS(src)];
+	static uint8_t dest[ARRAY_SIZE(src)];
 
 	reverse_bytes(dest, (const uint8_t *)src,
-		      (const uint8_t *)(src + G_N_ELEMENTS(src) - 1), 3);
+		      (const uint8_t *)(src + ARRAY_SIZE(src) - 1), 3);
 	g_assert_cmpstr((const char *)dest, ==, result);
 }
 
@@ -50,10 +51,10 @@ test_byte_reverse_4(void)
 {
 	static const char src[] = "12345678";
 	static const char result[] = "43218765";
-	static uint8_t dest[G_N_ELEMENTS(src)];
+	static uint8_t dest[ARRAY_SIZE(src)];
 
 	reverse_bytes(dest, (const uint8_t *)src,
-		      (const uint8_t *)(src + G_N_ELEMENTS(src) - 1), 4);
+		      (const uint8_t *)(src + ARRAY_SIZE(src) - 1), 4);
 	g_assert_cmpstr((const char *)dest, ==, result);
 }
 
@@ -62,10 +63,10 @@ test_byte_reverse_5(void)
 {
 	static const char src[] = "1234567890";
 	static const char result[] = "5432109876";
-	static uint8_t dest[G_N_ELEMENTS(src)];
+	static uint8_t dest[ARRAY_SIZE(src)];
 
 	reverse_bytes(dest, (const uint8_t *)src,
-		      (const uint8_t *)(src + G_N_ELEMENTS(src) - 1), 5);
+		      (const uint8_t *)(src + ARRAY_SIZE(src) - 1), 5);
 	g_assert_cmpstr((const char *)dest, ==, result);
 }
 

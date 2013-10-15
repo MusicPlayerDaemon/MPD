@@ -24,6 +24,7 @@
 #include "system/fd_util.h"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/Macros.hxx"
 #include "Log.hxx"
 
 #include <glib.h>
@@ -133,7 +134,7 @@ oss_output_test_default_device(void)
 {
 	int fd, i;
 
-	for (i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
+	for (i = ARRAY_SIZE(default_devices); --i >= 0; ) {
 		fd = open_cloexec(default_devices[i], O_WRONLY, 0);
 
 		if (fd >= 0) {
@@ -152,11 +153,11 @@ oss_output_test_default_device(void)
 static struct audio_output *
 oss_open_default(Error &error)
 {
-	int err[G_N_ELEMENTS(default_devices)];
-	enum oss_stat ret[G_N_ELEMENTS(default_devices)];
+	int err[ARRAY_SIZE(default_devices)];
+	enum oss_stat ret[ARRAY_SIZE(default_devices)];
 
 	const config_param empty;
-	for (int i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
+	for (int i = ARRAY_SIZE(default_devices); --i >= 0; ) {
 		ret[i] = oss_stat_device(default_devices[i], &err[i]);
 		if (ret[i] == OSS_STAT_NO_ERROR) {
 			OssOutput *od = new OssOutput();
@@ -170,7 +171,7 @@ oss_open_default(Error &error)
 		}
 	}
 
-	for (int i = G_N_ELEMENTS(default_devices); --i >= 0; ) {
+	for (int i = ARRAY_SIZE(default_devices); --i >= 0; ) {
 		const char *dev = default_devices[i];
 		switch(ret[i]) {
 		case OSS_STAT_NO_ERROR:

@@ -26,6 +26,7 @@
 #include "OggCodec.hxx"
 #include "util/Error.hxx"
 #include "util/UriUtil.hxx"
+#include "util/Macros.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "Log.hxx"
@@ -226,7 +227,7 @@ vorbis_stream_decode(struct decoder *decoder,
 #else
 	float buffer[2048];
 	const int frames_per_buffer =
-		G_N_ELEMENTS(buffer) / audio_format.channels;
+		ARRAY_SIZE(buffer) / audio_format.channels;
 	const unsigned frame_size = sizeof(buffer[0]) * audio_format.channels;
 #endif
 

@@ -2,6 +2,7 @@
 #include "Queue.hxx"
 #include "Song.hxx"
 #include "Directory.hxx"
+#include "util/Macros.hxx"
 
 #include <glib.h>
 
@@ -54,10 +55,10 @@ main(gcc_unused int argc, gcc_unused char **argv)
 
 	struct queue queue(32);
 
-	for (unsigned i = 0; i < G_N_ELEMENTS(songs); ++i)
+	for (unsigned i = 0; i < ARRAY_SIZE(songs); ++i)
 		queue.Append(&songs[i], 0);
 
-	assert(queue.GetLength() == G_N_ELEMENTS(songs));
+	assert(queue.GetLength() == ARRAY_SIZE(songs));
 
 	/* priority=10 for 4 items */
 
@@ -75,7 +76,7 @@ main(gcc_unused int argc, gcc_unused char **argv)
 		assert(queue.PositionToOrder(i) < 4);
 	}
 
-	for (unsigned i = 8; i < G_N_ELEMENTS(songs); ++i) {
+	for (unsigned i = 8; i < ARRAY_SIZE(songs); ++i) {
 		assert(queue.PositionToOrder(i) >= 4);
 	}
 

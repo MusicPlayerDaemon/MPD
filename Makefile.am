@@ -248,6 +248,7 @@ endif
 # Generic utility library
 
 libutil_a_SOURCES = \
+	src/util/Macros.hxx \
 	src/util/Error.cxx src/util/Error.hxx \
 	src/util/ReusableArray.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \

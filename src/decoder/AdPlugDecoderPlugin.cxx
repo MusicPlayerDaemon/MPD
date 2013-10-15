@@ -23,12 +23,11 @@
 #include "DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
+#include "util/Macros.hxx"
 #include "Log.hxx"
 
 #include <adplug/adplug.h>
 #include <adplug/emuopl.h>
-
-#include <glib.h>
 
 #include <assert.h>
 
@@ -65,7 +64,7 @@ adplug_file_decode(struct decoder *decoder, const char *path_fs)
 		player->songlength() / 1000.);
 
 	int16_t buffer[2048];
-	const unsigned frames_per_buffer = G_N_ELEMENTS(buffer) / 2;
+	const unsigned frames_per_buffer = ARRAY_SIZE(buffer) / 2;
 	DecoderCommand cmd;
 
 	do {

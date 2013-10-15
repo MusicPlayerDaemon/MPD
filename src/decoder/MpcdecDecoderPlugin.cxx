@@ -25,11 +25,11 @@
 #include "tag/TagHandler.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/Macros.hxx"
 #include "Log.hxx"
 
 #include <mpc/mpcdec.h>
 
-#include <glib.h>
 #include <assert.h>
 #include <unistd.h>
 #include <math.h>
@@ -212,7 +212,7 @@ mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
 		mpc_uint32_t ret = frame.samples;
 		ret *= info.channels;
 
-		int32_t chunk[G_N_ELEMENTS(sample_buffer)];
+		int32_t chunk[ARRAY_SIZE(sample_buffer)];
 		mpc_to_mpd_buffer(chunk, sample_buffer, ret);
 
 		long bit_rate = vbr_update_bits * audio_format.sample_rate
