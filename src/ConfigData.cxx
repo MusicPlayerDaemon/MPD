@@ -58,12 +58,11 @@ block_param::GetBoolValue() const
 }
 
 config_param::config_param(const char *_value, int _line)
-	:next(nullptr), value(g_strdup(_value)), line(_line) {}
+	:next(nullptr), value(_value), line(_line) {}
 
 config_param::~config_param()
 {
 	delete next;
-	g_free(value);
 }
 
 const block_param *

@@ -85,25 +85,28 @@ void replay_gain_global_init(void)
 {
 	const struct config_param *param = config_get_param(CONF_REPLAYGAIN);
 
-	if (param != NULL && !replay_gain_set_mode_string(param->value)) {
+	if (param != NULL &&
+	    !replay_gain_set_mode_string(param->value.c_str())) {
 		FormatFatalError("replaygain value \"%s\" at line %i is invalid\n",
-				 param->value, param->line);
+				 param->value.c_str(), param->line);
 	}
 
 	param = config_get_param(CONF_REPLAYGAIN_PREAMP);
 
 	if (param) {
 		char *test;
-		float f = strtod(param->value, &test);
+		float f = strtod(param->value.c_str(), &test);
 
 		if (*test != '\0') {
 			FormatFatalError("Replaygain preamp \"%s\" is not a number at "
-					 "line %i\n", param->value, param->line);
+					 "line %i\n",
+					 param->value.c_str(), param->line);
 		}
 
 		if (f < -15 || f > 15) {
 			FormatFatalError("Replaygain preamp \"%s\" is not between -15 and"
-					 "15 at line %i\n", param->value, param->line);
+					 "15 at line %i\n",
+					 param->value.c_str(), param->line);
 		}
 
 		replay_gain_preamp = pow(10, f / 20.0);
@@ -113,16 +116,18 @@ void replay_gain_global_init(void)
 
 	if (param) {
 		char *test;
-		float f = strtod(param->value, &test);
+		float f = strtod(param->value.c_str(), &test);
 
 		if (*test != '\0') {
 			FormatFatalError("Replaygain missing preamp \"%s\" is not a number at "
-					 "line %i\n", param->value, param->line);
+					 "line %i\n",
+					 param->value.c_str(), param->line);
 		}
 
 		if (f < -15 || f > 15) {
 			FormatFatalError("Replaygain missing preamp \"%s\" is not between -15 and"
-					 "15 at line %i\n", param->value, param->line);
+					 "15 at line %i\n",
+					 param->value.c_str(), param->line);
 		}
 
 		replay_gain_missing_preamp = pow(10, f / 20.0);

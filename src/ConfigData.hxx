@@ -59,7 +59,8 @@ struct config_param {
 	 */
 	struct config_param *next;
 
-	char *value;
+	std::string value;
+
 	unsigned int line;
 
 	std::vector<block_param> block_params;
@@ -71,7 +72,7 @@ struct config_param {
 	bool used;
 
 	config_param(int _line=-1)
-		:next(nullptr), value(nullptr), line(_line), used(false) {}
+		:next(nullptr), line(_line), used(false) {}
 
 	gcc_nonnull_all
 	config_param(const char *_value, int _line=-1);

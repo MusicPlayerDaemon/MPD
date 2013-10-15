@@ -93,7 +93,7 @@ config_get_string(ConfigOption option, const char *default_value)
 	if (param == nullptr)
 		return default_value;
 
-	return param->value;
+	return param->value.c_str();
 }
 
 Path
@@ -109,7 +109,7 @@ config_get_path(ConfigOption option, Error &error)
 Path
 config_parse_path(const struct config_param *param, Error & error)
 {
-	Path path = ParsePath(param->value, error);
+	Path path = ParsePath(param->value.c_str(), error);
 	if (gcc_unlikely(path.IsNull()))
 		error.FormatPrefix("Invalid path at line %i: ",
 				   param->line);
@@ -127,7 +127,7 @@ config_get_unsigned(ConfigOption option, unsigned default_value)
 	if (param == nullptr)
 		return default_value;
 
-	value = strtol(param->value, &endptr, 0);
+	value = strtol(param->value.c_str(), &endptr, 0);
 	if (*endptr != 0 || value < 0)
 		FormatFatalError("Not a valid non-negative number in line %i",
 				 param->line);
@@ -145,7 +145,7 @@ config_get_positive(ConfigOption option, unsigned default_value)
 	if (param == nullptr)
 		return default_value;
 
-	value = strtol(param->value, &endptr, 0);
+	value = strtol(param->value.c_str(), &endptr, 0);
 	if (*endptr != 0)
 		FormatFatalError("Not a valid number in line %i", param->line);
 
@@ -165,7 +165,7 @@ config_get_bool(ConfigOption option, bool default_value)
 	if (param == nullptr)
 		return default_value;
 
-	success = get_bool(param->value, &value);
+	success = get_bool(param->value.c_str(), &value);
 	if (!success)
 		FormatFatalError("Expected boolean value (yes, true, 1) or "
 				 "(no, false, 0) on line %i\n",

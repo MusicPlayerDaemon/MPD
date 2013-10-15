@@ -66,13 +66,14 @@ listen_add_config_param(unsigned int port,
 {
 	assert(param != NULL);
 
-	if (0 == strcmp(param->value, "any")) {
+	if (0 == strcmp(param->value.c_str(), "any")) {
 		return listen_socket->AddPort(port, error_r);
 	} else if (param->value[0] == '/' || param->value[0] == '~') {
 		Path path = config_parse_path(param, error_r);
 		return !path.IsNull() && listen_socket->AddPath(path.c_str(), error_r);
 	} else {
-		return listen_socket->AddHost(param->value, port, error_r);
+		return listen_socket->AddHost(param->value.c_str(), port,
+					      error_r);
 	}
 }
 
@@ -126,7 +127,8 @@ listen_global_init(Error &error)
 			if (!listen_add_config_param(port, param, error)) {
 				delete listen_socket;
 				error.FormatPrefix("Failed to listen on %s (line %i): ",
-						   param->value, param->line);
+						   param->value.c_str(),
+						   param->line);
 				return false;
 			}
 

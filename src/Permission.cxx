@@ -88,15 +88,17 @@ void initPermissions(void)
 
 		do {
 			const char *separator =
-				strchr(param->value, PERMISSION_PASSWORD_CHAR);
+				strchr(param->value.c_str(),
+				       PERMISSION_PASSWORD_CHAR);
 
 			if (separator == NULL)
 				FormatFatalError("\"%c\" not found in password string "
 						 "\"%s\", line %i",
 						 PERMISSION_PASSWORD_CHAR,
-						 param->value, param->line);
+						 param->value.c_str(),
+						 param->line);
 
-			std::string password((const char *)param->value, separator);
+			std::string password(param->value.c_str(), separator);
 
 			permission = parsePermissions(separator + 1);
 
@@ -108,7 +110,7 @@ void initPermissions(void)
 	param = config_get_param(CONF_DEFAULT_PERMS);
 
 	if (param)
-		permission_default = parsePermissions(param->value);
+		permission_default = parsePermissions(param->value.c_str());
 }
 
 int getPermissionFromPassword(char const* password, unsigned* permission)

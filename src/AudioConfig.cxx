@@ -45,7 +45,7 @@ void initAudioConfig(void)
 		return;
 
 	Error error;
-	if (!audio_format_parse(configured_audio_format, param->value,
+	if (!audio_format_parse(configured_audio_format, param->value.c_str(),
 				true, error))
 		FormatFatalError("error parsing line %i: %s",
 				 param->line, error.GetMessage());

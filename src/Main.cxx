@@ -176,7 +176,8 @@ glue_db_init_and_load(void)
 
 	if (param == nullptr && path != nullptr) {
 		allocated = new config_param("database", path->line);
-		allocated->AddBlockParam("path", path->value, path->line);
+		allocated->AddBlockParam("path", path->value.c_str(),
+					 path->line);
 		param = allocated;
 	}
 
@@ -261,11 +262,11 @@ initialize_decoder_and_player(void)
 
 	param = config_get_param(CONF_AUDIO_BUFFER_SIZE);
 	if (param != nullptr) {
-		long tmp = strtol(param->value, &test, 10);
+		long tmp = strtol(param->value.c_str(), &test, 10);
 		if (*test != '\0' || tmp <= 0 || tmp == LONG_MAX)
 			FormatFatalError("buffer size \"%s\" is not a "
 					 "positive integer, line %i",
-					 param->value, param->line);
+					 param->value.c_str(), param->line);
 		buffer_size = tmp;
 	} else
 		buffer_size = DEFAULT_BUFFER_SIZE;
@@ -280,12 +281,12 @@ initialize_decoder_and_player(void)
 
 	param = config_get_param(CONF_BUFFER_BEFORE_PLAY);
 	if (param != nullptr) {
-		perc = strtod(param->value, &test);
+		perc = strtod(param->value.c_str(), &test);
 		if (*test != '%' || perc < 0 || perc > 100) {
 			FormatFatalError("buffered before play \"%s\" is not "
 					 "a positive percentage and less "
 					 "than 100 percent, line %i",
-					 param->value, param->line);
+					 param->value.c_str(), param->line);
 		}
 	} else
 		perc = DEFAULT_BUFFER_BEFORE_PLAY;

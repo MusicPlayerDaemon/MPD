@@ -253,7 +253,8 @@ log_init(bool verbose, bool use_stdout, Error &error)
 	if (verbose)
 		log_threshold = G_LOG_LEVEL_DEBUG;
 	else if ((param = config_get_param(CONF_LOG_LEVEL)) != NULL)
-		log_threshold = parse_log_level(param->value, param->line);
+		log_threshold = parse_log_level(param->value.c_str(),
+						param->line);
 
 	if (use_stdout) {
 		log_init_stdout();
@@ -272,7 +273,7 @@ log_init(bool verbose, bool use_stdout, Error &error)
 			return false;
 #endif
 #ifdef HAVE_SYSLOG
-		} else if (strcmp(param->value, "syslog") == 0) {
+		} else if (strcmp(param->value.c_str(), "syslog") == 0) {
 			log_init_syslog();
 			return true;
 #endif
