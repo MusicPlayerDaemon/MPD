@@ -20,6 +20,8 @@
 #ifndef MPD_TEXT_INPUT_STREAM_HXX
 #define MPD_TEXT_INPUT_STREAM_HXX
 
+#include "util/FifoBuffer.hxx"
+
 #include <string>
 
 struct input_stream;
@@ -27,7 +29,8 @@ struct fifo_buffer;
 
 class TextInputStream {
 	struct input_stream *is;
-	struct fifo_buffer *buffer;
+	FifoBuffer<char, 4096> buffer;
+
 public:
 	/**
 	 * Wraps an existing #input_stream object into a #TextInputStream,
@@ -35,13 +38,8 @@ public:
 	 *
 	 * @param _is an open #input_stream object
 	 */
-	explicit TextInputStream(struct input_stream *_is);
-
-	/**
-	 * Frees the #TextInputStream object.  Does not close or free the
-	 * underlying #input_stream.
-	 */
-	~TextInputStream();
+	explicit TextInputStream(struct input_stream *_is)
+		:is(_is) {}
 
 	TextInputStream(const TextInputStream &) = delete;
 	TextInputStream& operator=(const TextInputStream &) = delete;

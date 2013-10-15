@@ -20,7 +20,6 @@
 #include "config.h"
 #include "InotifySource.hxx"
 #include "InotifyDomain.hxx"
-#include "util/fifo_buffer.h"
 #include "util/Error.hxx"
 #include "system/fd_util.h"
 #include "system/FatalError.hxx"
@@ -34,30 +33,27 @@
 bool
 InotifySource::OnSocketReady(gcc_unused unsigned flags)
 {
-	void *dest;
-	size_t length;
-	ssize_t nbytes;
-
-	dest = fifo_buffer_write(buffer, &length);
-	if (dest == NULL)
+	const auto dest = buffer.Write();
+	if (dest.IsEmpty())
 		FatalError("buffer full");
 
-	nbytes = read(Get(), dest, length);
+	ssize_t nbytes = read(Get(), dest.data, dest.size);
 	if (nbytes < 0)
 		FatalSystemError("Failed to read from inotify");
 	if (nbytes == 0)
 		FatalError("end of file from inotify");
 
-	fifo_buffer_append(buffer, nbytes);
+	buffer.Append(nbytes);
 
 	while (true) {
 		const char *name;
 
+		auto range = buffer.Read();
 		const struct inotify_event *event =
 			(const struct inotify_event *)
-			fifo_buffer_read(buffer, &length);
-		if (event == NULL || length < sizeof(*event) ||
-		    length < sizeof(*event) + event->len)
+			range.data;
+		if (range.size < sizeof(*event) ||
+		    range.size < sizeof(*event) + event->len)
 			break;
 
 		if (event->len > 0 && event->name[event->len - 1] == 0)
@@ -66,7 +62,7 @@ InotifySource::OnSocketReady(gcc_unused unsigned flags)
 			name = NULL;
 
 		callback(event->wd, event->mask, name, callback_ctx);
-		fifo_buffer_consume(buffer, sizeof(*event) + event->len);
+		buffer.Consume(sizeof(*event) + event->len);
 	}
 
 	return true;
@@ -77,8 +73,7 @@ InotifySource::InotifySource(EventLoop &_loop,
 			     mpd_inotify_callback_t _callback, void *_ctx,
 			     int _fd)
 	:SocketMonitor(_fd, _loop),
-	 callback(_callback), callback_ctx(_ctx),
-	 buffer(fifo_buffer_new(4096))
+	 callback(_callback), callback_ctx(_ctx)
 {
 	ScheduleRead();
 
@@ -96,11 +91,6 @@ InotifySource::Create(EventLoop &loop,
 	}
 
 	return new InotifySource(loop, callback, callback_ctx, fd);
-}
-
-InotifySource::~InotifySource()
-{
-	fifo_buffer_free(buffer);
 }
 
 int

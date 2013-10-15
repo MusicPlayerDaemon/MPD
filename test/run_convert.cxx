@@ -28,7 +28,7 @@
 #include "AudioFormat.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "ConfigGlobal.hxx"
-#include "util/fifo_buffer.h"
+#include "util/FifoBuffer.hxx"
 #include "util/Error.hxx"
 #include "stdbin.h"
 
@@ -59,8 +59,6 @@ int main(int argc, char **argv)
 {
 	AudioFormat in_audio_format, out_audio_format;
 	const void *output;
-	ssize_t nbytes;
-	size_t length;
 
 	if (argc != 3) {
 		g_printerr("Usage: run_convert IN_FORMAT OUT_FORMAT <IN >OUT\n");
@@ -92,28 +90,31 @@ int main(int argc, char **argv)
 
 	PcmConvert state;
 
-	struct fifo_buffer *buffer = fifo_buffer_new(4096);
+	FifoBuffer<uint8_t, 4096> buffer;
 
 	while (true) {
-		void *p = fifo_buffer_write(buffer, &length);
-		assert(p != NULL);
+		{
+			const auto dest = buffer.Write();
+			assert(!dest.IsEmpty());
 
-		nbytes = read(0, p, length);
-		if (nbytes <= 0)
-			break;
+			ssize_t nbytes = read(0, dest.data, dest.size);
+			if (nbytes <= 0)
+				break;
 
-		fifo_buffer_append(buffer, nbytes);
+			buffer.Append(nbytes);
+		}
 
-		const void *src = fifo_buffer_read(buffer, &length);
-		assert(src != NULL);
+		auto src = buffer.Read();
+		assert(!src.IsEmpty());
 
-		length -= length % in_frame_size;
-		if (length == 0)
+		src.size -= src.size % in_frame_size;
+		if (src.IsEmpty())
 			continue;
 
-		fifo_buffer_consume(buffer, length);
+		buffer.Consume(src.size);
 
-		output = state.Convert(in_audio_format, src, length,
+		size_t length;
+		output = state.Convert(in_audio_format, src.data, src.size,
 				       out_audio_format, &length, error);
 		if (output == NULL) {
 			g_printerr("Failed to convert: %s\n", error.GetMessage());

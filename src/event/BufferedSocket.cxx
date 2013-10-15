@@ -20,19 +20,8 @@
 #include "config.h"
 #include "BufferedSocket.hxx"
 #include "system/SocketError.hxx"
-#include "util/fifo_buffer.h"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-
-#include <assert.h>
-#include <stdint.h>
-#include <string.h>
-
-BufferedSocket::~BufferedSocket()
-{
-	if (input != nullptr)
-		fifo_buffer_free(input);
-}
 
 BufferedSocket::ssize_t
 BufferedSocket::DirectRead(void *data, size_t length)
@@ -62,16 +51,12 @@ BufferedSocket::ReadToBuffer()
 {
 	assert(IsDefined());
 
-	if (input == nullptr)
-		input = fifo_buffer_new(8192);
+	const auto buffer = input.Write();
+	assert(!buffer.IsEmpty());
 
-	size_t length;
-	void *buffer = fifo_buffer_write(input, &length);
-	assert(buffer != nullptr);
-
-	const auto nbytes = DirectRead(buffer, length);
+	const auto nbytes = DirectRead(buffer.data, buffer.size);
 	if (nbytes > 0)
-		fifo_buffer_append(input, nbytes);
+		input.Append(nbytes);
 
 	return nbytes >= 0;
 }
@@ -81,23 +66,17 @@ BufferedSocket::ResumeInput()
 {
 	assert(IsDefined());
 
-	if (input == nullptr) {
-		ScheduleRead();
-		return true;
-	}
-
 	while (true) {
-		size_t length;
-		const void *data = fifo_buffer_read(input, &length);
-		if (data == nullptr) {
+		const auto buffer = input.Read();
+		if (buffer.IsEmpty()) {
 			ScheduleRead();
 			return true;
 		}
 
-		const auto result = OnSocketInput(data, length);
+		const auto result = OnSocketInput(buffer.data, buffer.size);
 		switch (result) {
 		case InputResult::MORE:
-			if (fifo_buffer_is_full(input)) {
+			if (input.IsFull()) {
 				// TODO
 				static constexpr Domain buffered_socket_domain("buffered_socket");
 				Error error;
@@ -123,14 +102,6 @@ BufferedSocket::ResumeInput()
 	}
 }
 
-void
-BufferedSocket::ConsumeInput(size_t nbytes)
-{
-	assert(IsDefined());
-
-	fifo_buffer_consume(input, nbytes);
-}
-
 bool
 BufferedSocket::OnSocketReady(unsigned flags)
 {
@@ -142,12 +113,12 @@ BufferedSocket::OnSocketReady(unsigned flags)
 	}
 
 	if (flags & READ) {
-		assert(input == nullptr || !fifo_buffer_is_full(input));
+		assert(!input.IsFull());
 
 		if (!ReadToBuffer() || !ResumeInput())
 			return false;
 
-		if (input == nullptr || !fifo_buffer_is_full(input))
+		if (input.IsFull())
 			ScheduleRead();
 	}
 

@@ -21,6 +21,7 @@
 #define MPD_INOTIFY_SOURCE_HXX
 
 #include "event/SocketMonitor.hxx"
+#include "util/FifoBuffer.hxx"
 #include "Compiler.h"
 
 class Error;
@@ -32,7 +33,7 @@ class InotifySource final : private SocketMonitor {
 	mpd_inotify_callback_t callback;
 	void *callback_ctx;
 
-	struct fifo_buffer *buffer;
+	FifoBuffer<uint8_t, 4096> buffer;
 
 	InotifySource(EventLoop &_loop,
 		      mpd_inotify_callback_t callback, void *ctx, int fd);
@@ -48,9 +49,6 @@ public:
 				     mpd_inotify_callback_t callback,
 				     void *ctx,
 				     Error &error);
-
-	~InotifySource();
-
 
 	/**
 	 * Adds a path to the notify list.

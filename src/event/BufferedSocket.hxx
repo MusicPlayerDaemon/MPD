@@ -22,7 +22,11 @@
 
 #include "check.h"
 #include "SocketMonitor.hxx"
+#include "util/FifoBuffer.hxx"
 #include "Compiler.h"
+
+#include <assert.h>
+#include <stdint.h>
 
 struct fifo_buffer;
 class Error;
@@ -31,15 +35,13 @@ class Error;
  * A #SocketMonitor specialization that adds an input buffer.
  */
 class BufferedSocket : protected SocketMonitor {
-	fifo_buffer *input;
+	FifoBuffer<uint8_t, 8192> input;
 
 public:
 	BufferedSocket(int _fd, EventLoop &_loop)
-		:SocketMonitor(_fd, _loop), input(nullptr) {
+		:SocketMonitor(_fd, _loop) {
 		ScheduleRead();
 	}
-
-	~BufferedSocket();
 
 	using SocketMonitor::IsDefined;
 	using SocketMonitor::Close;
@@ -67,7 +69,11 @@ protected:
 	 * does not invalidate the pointer passed to OnSocketInput()
 	 * yet.
 	 */
-	void ConsumeInput(size_t nbytes);
+	void ConsumeInput(size_t nbytes) {
+		assert(IsDefined());
+
+		input.Consume(nbytes);
+	}
 
 	enum class InputResult {
 		/**

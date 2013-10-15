@@ -29,35 +29,23 @@
 #include <assert.h>
 #include <string.h>
 
-TextInputStream::TextInputStream(struct input_stream *_is)
-	: is(_is),
-	  buffer(fifo_buffer_new(4096))
-{
-}
-
-TextInputStream::~TextInputStream()
-{
-	fifo_buffer_free(buffer);
-}
-
 bool TextInputStream::ReadLine(std::string &line)
 {
-	void *dest;
 	const char *src, *p;
-	size_t length, nbytes;
 
 	do {
-		dest = fifo_buffer_write(buffer, &length);
-		if (dest != nullptr && length >= 2) {
+		size_t nbytes;
+		auto dest = buffer.Write();
+		if (dest.size >= 2) {
 			/* reserve one byte for the null terminator if
 			   the last line is not terminated by a
 			   newline character */
-			--length;
+			--dest.size;
 
 			Error error;
-			nbytes = is->LockRead(dest, length, error);
+			nbytes = is->LockRead(dest.data, dest.size, error);
 			if (nbytes > 0)
-				fifo_buffer_append(buffer, nbytes);
+				buffer.Append(nbytes);
 			else if (error.IsDefined()) {
 				LogError(error);
 				return false;
@@ -65,28 +53,28 @@ bool TextInputStream::ReadLine(std::string &line)
 		} else
 			nbytes = 0;
 
-		auto src_p = fifo_buffer_read(buffer, &length);
-		src = reinterpret_cast<const char *>(src_p);
-
-		if (src == nullptr)
+		auto src_p = buffer.Read();
+		if (src_p.IsEmpty())
 			return false;
 
-		p = reinterpret_cast<const char*>(memchr(src, '\n', length));
+		src = src_p.data;
+
+		p = reinterpret_cast<const char*>(memchr(src, '\n', src_p.size));
 		if (p == nullptr && nbytes == 0) {
 			/* end of file (or line too long): terminate
 			   the current line */
-			dest = fifo_buffer_write(buffer, &nbytes);
-			assert(dest != nullptr);
-			*(char *)dest = '\n';
-			fifo_buffer_append(buffer, 1);
+			dest = buffer.Write();
+			assert(!dest.IsEmpty());
+			dest.data[0] = '\n';
+			buffer.Append(1);
 		}
 	} while (p == nullptr);
 
-	length = p - src + 1;
+	size_t length = p - src + 1;
 	while (p > src && g_ascii_isspace(p[-1]))
 		--p;
 
 	line = std::string(src, p - src);
-	fifo_buffer_consume(buffer, length);
+	buffer.Consume(length);
 	return true;
 }
