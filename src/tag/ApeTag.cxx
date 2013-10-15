@@ -24,7 +24,7 @@
 #include "TagTable.hxx"
 #include "TagHandler.hxx"
 
-#include <glib.h>
+#include <string>
 
 #include <string.h>
 
@@ -76,10 +76,9 @@ tag_ape_import_item(unsigned long flags,
 
 			value = n + 1;
 		} else {
-			char *p = g_strndup(value, end - value);
+			const std::string value2(value, end);
 			tag_handler_invoke_tag(handler, handler_ctx,
-					       type, p);
-			g_free(p);
+					       type, value2.c_str());
 			recognized = true;
 			break;
 		}
