@@ -363,6 +363,7 @@ src_mpd_SOURCES +=  \
 	src/UpdateArchive.cxx src/UpdateArchive.hxx
 
 libarchive_a_SOURCES = \
+	src/ArchiveDomain.cxx src/ArchiveDomain.hxx \
 	src/ArchiveLookup.cxx src/ArchiveLookup.hxx \
 	src/ArchiveList.cxx src/ArchiveList.hxx \
 	src/ArchivePlugin.cxx src/ArchivePlugin.hxx \

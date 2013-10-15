@@ -19,19 +19,17 @@
 
 #include "config.h"
 #include "ArchiveInputPlugin.hxx"
+#include "ArchiveDomain.hxx"
 #include "ArchiveLookup.hxx"
 #include "ArchiveList.hxx"
 #include "ArchivePlugin.hxx"
 #include "ArchiveFile.hxx"
 #include "InputPlugin.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "fs/Path.hxx"
 #include "Log.hxx"
 
 #include <glib.h>
-
-static constexpr Domain archive_domain("archive");
 
 /**
  * select correct archive plugin to handle the input stream

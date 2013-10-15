@@ -19,7 +19,7 @@
 
 #include "config.h" /* must be first for large file support */
 #include "ArchiveLookup.hxx"
-#include "util/Domain.hxx"
+#include "ArchiveDomain.hxx"
 #include "Log.hxx"
 
 #include <glib.h>
@@ -28,8 +28,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
-
-static constexpr Domain archive_domain("archive");
 
 /**
  *
