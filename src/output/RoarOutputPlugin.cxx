@@ -27,8 +27,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <string>
 
 /* libroar/services.h declares roar_service_stream::new - work around
@@ -372,14 +370,13 @@ RoarOutput::SendTag(const Tag &tag)
 
 	size_t cnt = 1;
 	struct roar_keyval vals[32];
-	memset(vals, 0, sizeof(vals));
 	char uuid_buf[32][64];
 
 	char timebuf[16];
 	snprintf(timebuf, sizeof(timebuf), "%02d:%02d:%02d",
 		 tag.time / 3600, (tag.time % 3600) / 60, tag.time % 60);
 
-	vals[0].key = g_strdup("LENGTH");
+	vals[0].key = const_cast<char *>("LENGTH");
 	vals[0].value = timebuf;
 
 	for (unsigned i = 0; i < tag.num_items && cnt < 32; i++)
@@ -388,13 +385,13 @@ RoarOutput::SendTag(const Tag &tag)
 		const char *key = roar_tag_convert(tag.items[i]->type,
 						   &is_uuid);
 		if (key != nullptr) {
+			vals[cnt].key = const_cast<char *>(key);
+
 			if (is_uuid) {
 				snprintf(uuid_buf[cnt], sizeof(uuid_buf[0]), "{UUID}%s",
 					 tag.items[i]->value);
-				vals[cnt].key = g_strdup(key);
 				vals[cnt].value = uuid_buf[cnt];
 			} else {
-				vals[cnt].key = g_strdup(key);
 				vals[cnt].value = tag.items[i]->value;
 			}
 
@@ -403,9 +400,6 @@ RoarOutput::SendTag(const Tag &tag)
 	}
 
 	roar_vs_meta(vss, vals, cnt, &(err));
-
-	for (unsigned i = 0; i < 32; i++)
-		g_free(vals[i].key);
 }
 
 static void
