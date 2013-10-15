@@ -24,15 +24,14 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
-#include <glib.h>
+#include <string>
 
 #include <stdio.h>
-#include <errno.h>
 
 struct PipeOutput {
 	struct audio_output base;
 
-	char *cmd;
+	std::string cmd;
 	FILE *fh;
 
 	bool Initialize(const config_param &param, Error &error) {
@@ -52,8 +51,8 @@ static constexpr Domain pipe_output_domain("pipe_output");
 inline bool
 PipeOutput::Configure(const config_param &param, Error &error)
 {
-	cmd = param.DupBlockString("command");
-	if (cmd == nullptr) {
+	cmd = param.GetBlockValue("command", "");
+	if (cmd.empty()) {
 		error.Set(config_domain,
 			  "No \"command\" parameter specified");
 		return false;
@@ -86,7 +85,6 @@ pipe_output_finish(struct audio_output *ao)
 {
 	PipeOutput *pd = (PipeOutput *)ao;
 
-	g_free(pd->cmd);
 	pd->Deinitialize();
 	delete pd;
 }
@@ -98,10 +96,10 @@ pipe_output_open(struct audio_output *ao,
 {
 	PipeOutput *pd = (PipeOutput *)ao;
 
-	pd->fh = popen(pd->cmd, "w");
+	pd->fh = popen(pd->cmd.c_str(), "w");
 	if (pd->fh == nullptr) {
 		error.FormatErrno("Error opening pipe \"%s\"",
-				  pd->cmd);
+				  pd->cmd.c_str());
 		return false;
 	}
 
