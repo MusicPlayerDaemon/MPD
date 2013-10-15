@@ -32,10 +32,12 @@
 #include <glib.h>
 #include <yajl/yajl_parse.h>
 
+#include <string>
+
 #include <string.h>
 
 static struct {
-	char *apikey;
+	std::string apikey;
 } soundcloud_config;
 
 static constexpr Domain soundcloud_domain("soundcloud");
@@ -43,8 +45,8 @@ static constexpr Domain soundcloud_domain("soundcloud");
 static bool
 soundcloud_init(const config_param &param)
 {
-	soundcloud_config.apikey = param.DupBlockString("apikey");
-	if (soundcloud_config.apikey == NULL) {
+	soundcloud_config.apikey = param.GetBlockValue("apikey", "");
+	if (soundcloud_config.apikey.empty()) {
 		LogDebug(soundcloud_domain,
 			 "disabling the soundcloud playlist plugin "
 			 "because API key is not set");
@@ -52,12 +54,6 @@ soundcloud_init(const config_param &param)
 	}
 
 	return true;
-}
-
-static void
-soundcloud_finish(void)
-{
-	g_free(soundcloud_config.apikey);
 }
 
 /**
@@ -79,7 +75,8 @@ soundcloud_resolve(const char* uri) {
 	}
 
 	ru = g_strconcat("http://api.soundcloud.com/resolve.json?url=",
-			u, "&client_id=", soundcloud_config.apikey, NULL);
+			 u, "&client_id=",
+			 soundcloud_config.apikey.c_str(), nullptr);
 	g_free(u);
 
 	return ru;
@@ -212,7 +209,8 @@ static int handle_end_map(void *ctx)
 	Song *s;
 	char *u;
 
-	u = g_strconcat(data->stream_url, "?client_id=", soundcloud_config.apikey, NULL);
+	u = g_strconcat(data->stream_url, "?client_id=",
+			soundcloud_config.apikey.c_str(), nullptr);
 	s = Song::NewRemote(u);
 	g_free(u);
 
@@ -356,10 +354,12 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	char *u = NULL;
 	if (strcmp(arg, "track") == 0) {
 		u = g_strconcat("http://api.soundcloud.com/tracks/",
-			rest, ".json?client_id=", soundcloud_config.apikey, NULL);
+				rest, ".json?client_id=",
+				soundcloud_config.apikey.c_str(), nullptr);
 	} else if (strcmp(arg, "playlist") == 0) {
 		u = g_strconcat("http://api.soundcloud.com/playlists/",
-			rest, ".json?client_id=", soundcloud_config.apikey, NULL);
+				rest, ".json?client_id=",
+				soundcloud_config.apikey.c_str(), nullptr);
 	} else if (strcmp(arg, "url") == 0) {
 		/* Translate to soundcloud resolver call. libcurl will automatically
 		   follow the redirect to the right resource. */
@@ -409,7 +409,7 @@ const struct playlist_plugin soundcloud_playlist_plugin = {
 	"soundcloud",
 
 	soundcloud_init,
-	soundcloud_finish,
+	nullptr,
 	soundcloud_open_uri,
 	nullptr,
 
