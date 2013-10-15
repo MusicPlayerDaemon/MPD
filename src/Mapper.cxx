@@ -53,7 +53,6 @@ static size_t music_dir_utf8_length;
  * character set.
  */
 static Path music_dir_fs = Path::Null();
-static size_t music_dir_fs_length;
 
 /**
  * The absolute path of the playlist directory encoded in the
@@ -99,7 +98,6 @@ mapper_set_music_dir(Path &&path)
 
 	music_dir_fs = std::move(path);
 	music_dir_fs.ChopSeparators();
-	music_dir_fs_length = music_dir_fs.length();
 
 	const auto utf8 = music_dir_fs.ToUTF8();
 	music_dir_utf8 = g_strdup(utf8.c_str());
