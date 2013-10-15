@@ -20,7 +20,7 @@
 #ifndef MPD_ROAR_OUTPUT_PLUGIN_H
 #define MPD_ROAR_OUTPUT_PLUGIN_H
 
-struct RoarOutput;
+class RoarOutput;
 
 extern const struct audio_output_plugin roar_output_plugin;
 

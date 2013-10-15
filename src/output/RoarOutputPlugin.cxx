@@ -35,7 +35,7 @@
 #include <roaraudio.h>
 #undef new
 
-struct RoarOutput {
+class RoarOutput {
 	struct audio_output base;
 
 	roar_vs_t * vss;
@@ -45,9 +45,10 @@ struct RoarOutput {
 	int role;
 	struct roar_connection con;
 	struct roar_audio_info info;
-	Mutex mutex;
+	mutable Mutex mutex;
 	volatile bool alive;
 
+public:
 	RoarOutput()
 		:err(ROAR_ERROR_NONE),
 		 host(nullptr), name(nullptr) {}
@@ -56,19 +57,46 @@ struct RoarOutput {
 		g_free(host);
 		g_free(name);
 	}
+
+	operator audio_output *() {
+		return &base;
+	}
+
+	bool Initialize(const config_param &param, Error &error) {
+		return ao_base_init(&base, &roar_output_plugin, param,
+				    error);
+	}
+
+	void Deinitialize() {
+		ao_base_finish(&base);
+	}
+
+	void Configure(const config_param &param);
+
+	bool Open(AudioFormat &audio_format, Error &error);
+	void Close();
+
+	void SendTag(const Tag &tag);
+	size_t Play(const void *chunk, size_t size, Error &error);
+	void Cancel();
+
+	int GetVolume() const;
+	bool SetVolume(unsigned volume);
 };
 
 static constexpr Domain roar_output_domain("roar_output");
 
-static int
-roar_output_get_volume_locked(RoarOutput *roar)
+inline int
+RoarOutput::GetVolume() const
 {
-	if (roar->vss == nullptr || !roar->alive)
+	const ScopeLock protect(mutex);
+
+	if (vss == nullptr || !alive)
 		return -1;
 
 	float l, r;
 	int error;
-	if (roar_vs_volume_get(roar->vss, &l, &r, &error) < 0)
+	if (roar_vs_volume_get(vss, &l, &r, &error) < 0)
 		return -1;
 
 	return (l + r) * 50;
@@ -77,41 +105,40 @@ roar_output_get_volume_locked(RoarOutput *roar)
 int
 roar_output_get_volume(RoarOutput *roar)
 {
-	const ScopeLock protect(roar->mutex);
-	return roar_output_get_volume_locked(roar);
+	return roar->GetVolume();
 }
 
-static bool
-roar_output_set_volume_locked(RoarOutput *roar, unsigned volume)
+bool
+RoarOutput::SetVolume(unsigned volume)
 {
 	assert(volume <= 100);
 
-	if (roar->vss == nullptr || !roar->alive)
+	const ScopeLock protect(mutex);
+	if (vss == nullptr || !alive)
 		return false;
 
 	int error;
 	float level = volume / 100.0;
 
-	roar_vs_volume_mono(roar->vss, level, &error);
+	roar_vs_volume_mono(vss, level, &error);
 	return true;
 }
 
 bool
 roar_output_set_volume(RoarOutput *roar, unsigned volume)
 {
-	const ScopeLock protect(roar->mutex);
-	return roar_output_set_volume_locked(roar, volume);
+	return roar->SetVolume(volume);
 }
 
-static void
-roar_configure(RoarOutput *self, const config_param &param)
+inline void
+RoarOutput::Configure(const config_param &param)
 {
-	self->host = param.DupBlockString("server", nullptr);
-	self->name = param.DupBlockString("name", "MPD");
+	host = param.DupBlockString("server", nullptr);
+	name = param.DupBlockString("name", "MPD");
 
-	const char *role = param.GetBlockValue("role", "music");
-	self->role = role != nullptr
-		? roar_str2role(role)
+	const char *_role = param.GetBlockValue("role", "music");
+	role = _role != nullptr
+		? roar_str2role(_role)
 		: ROAR_ROLE_MUSIC;
 }
 
@@ -120,13 +147,13 @@ roar_init(const config_param &param, Error &error)
 {
 	RoarOutput *self = new RoarOutput();
 
-	if (!ao_base_init(&self->base, &roar_output_plugin, param, error)) {
+	if (!self->Initialize(param, error)) {
 		delete self;
 		return nullptr;
 	}
 
-	roar_configure(self, param);
-	return &self->base;
+	self->Configure(param);
+	return *self;
 }
 
 static void
@@ -134,7 +161,7 @@ roar_finish(struct audio_output *ao)
 {
 	RoarOutput *self = (RoarOutput *)ao;
 
-	ao_base_finish(&self->base);
+	self->Deinitialize();
 	delete self;
 }
 
@@ -173,80 +200,90 @@ roar_use_audio_format(struct roar_audio_info *info,
 	}
 }
 
-static bool
-roar_open(struct audio_output *ao, AudioFormat &audio_format, Error &error)
+inline bool
+RoarOutput::Open(AudioFormat &audio_format, Error &error)
 {
-	RoarOutput *self = (RoarOutput *)ao;
-	const ScopeLock protect(self->mutex);
+	const ScopeLock protect(mutex);
 
-	if (roar_simple_connect(&(self->con), self->host, self->name) < 0)
-	{
+	if (roar_simple_connect(&con, host, name) < 0) {
 		error.Set(roar_output_domain,
 			  "Failed to connect to Roar server");
 		return false;
 	}
 
-	self->vss = roar_vs_new_from_con(&(self->con), &(self->err));
+	vss = roar_vs_new_from_con(&con, &err);
 
-	if (self->vss == nullptr || self->err != ROAR_ERROR_NONE)
-	{
+	if (vss == nullptr || err != ROAR_ERROR_NONE) {
 		error.Set(roar_output_domain, "Failed to connect to server");
 		return false;
 	}
 
-	roar_use_audio_format(&self->info, audio_format);
+	roar_use_audio_format(&info, audio_format);
 
-	if (roar_vs_stream(self->vss, &(self->info), ROAR_DIR_PLAY,
-				&(self->err)) < 0)
-	{
+	if (roar_vs_stream(vss, &info, ROAR_DIR_PLAY, &err) < 0) {
 		error.Set(roar_output_domain, "Failed to start stream");
 		return false;
 	}
-	roar_vs_role(self->vss, self->role, &(self->err));
-	self->alive = true;
 
+	roar_vs_role(vss, role, &err);
+	alive = true;
 	return true;
+}
+
+static bool
+roar_open(struct audio_output *ao, AudioFormat &audio_format, Error &error)
+{
+	RoarOutput *self = (RoarOutput *)ao;
+
+	return self->Open(audio_format, error);
+}
+
+inline void
+RoarOutput::Close()
+{
+	const ScopeLock protect(mutex);
+
+	alive = false;
+
+	if (vss != nullptr)
+		roar_vs_close(vss, ROAR_VS_TRUE, &err);
+	vss = nullptr;
+	roar_disconnect(&con);
 }
 
 static void
 roar_close(struct audio_output *ao)
 {
 	RoarOutput *self = (RoarOutput *)ao;
-	const ScopeLock protect(self->mutex);
-
-	self->alive = false;
-
-	if (self->vss != nullptr)
-		roar_vs_close(self->vss, ROAR_VS_TRUE, &(self->err));
-	self->vss = nullptr;
-	roar_disconnect(&(self->con));
+	self->Close();
 }
 
-static void
-roar_cancel_locked(RoarOutput *self)
+inline void
+RoarOutput::Cancel()
 {
-	if (self->vss == nullptr)
-		return;
+	const ScopeLock protect(mutex);
 
-	roar_vs_t *vss = self->vss;
-	self->vss = nullptr;
-	roar_vs_close(vss, ROAR_VS_TRUE, &(self->err));
-	self->alive = false;
-
-	vss = roar_vs_new_from_con(&(self->con), &(self->err));
 	if (vss == nullptr)
 		return;
 
-	if (roar_vs_stream(vss, &(self->info), ROAR_DIR_PLAY,
-			   &(self->err)) < 0) {
-		roar_vs_close(vss, ROAR_VS_TRUE, &(self->err));
+	roar_vs_t *_vss = vss;
+	vss = nullptr;
+	roar_vs_close(_vss, ROAR_VS_TRUE, &err);
+	alive = false;
+
+	_vss = roar_vs_new_from_con(&con, &err);
+	if (_vss == nullptr)
+		return;
+
+	if (roar_vs_stream(_vss, &info, ROAR_DIR_PLAY, &err) < 0) {
+		roar_vs_close(_vss, ROAR_VS_TRUE, &err);
 		LogError(roar_output_domain, "Failed to start stream");
 		return;
 	}
 
-	roar_vs_role(vss, self->role, &(self->err));
-	self->vss = vss;
-	self->alive = true;
+	roar_vs_role(_vss, role, &err);
+	vss = _vss;
+	alive = true;
 }
 
 static void
@@ -254,8 +291,24 @@ roar_cancel(struct audio_output *ao)
 {
 	RoarOutput *self = (RoarOutput *)ao;
 
-	const ScopeLock protect(self->mutex);
-	roar_cancel_locked(self);
+	self->Cancel();
+}
+
+inline size_t
+RoarOutput::Play(const void *chunk, size_t size, Error &error)
+{
+	if (vss == nullptr) {
+		error.Set(roar_output_domain, "Connection is invalid");
+		return 0;
+	}
+
+	ssize_t nbytes = roar_vs_write(vss, chunk, size, &err);
+	if (nbytes <= 0) {
+		error.Set(roar_output_domain, "Failed to play data");
+		return 0;
+	}
+
+	return nbytes;
 }
 
 static size_t
@@ -263,22 +316,7 @@ roar_play(struct audio_output *ao, const void *chunk, size_t size,
 	  Error &error)
 {
 	RoarOutput *self = (RoarOutput *)ao;
-	ssize_t rc;
-
-	if (self->vss == nullptr)
-	{
-		error.Set(roar_output_domain, "Connection is invalid");
-		return 0;
-	}
-
-	rc = roar_vs_write(self->vss, chunk, size, &(self->err));
-	if ( rc <= 0 )
-	{
-		error.Set(roar_output_domain, "Failed to play data");
-		return 0;
-	}
-
-	return rc;
+	return self->Play(chunk, size, error);
 }
 
 static const char*
@@ -326,15 +364,13 @@ roar_tag_convert(enum tag_type type, bool *is_uuid)
 	}
 }
 
-static void
-roar_send_tag(struct audio_output *ao, const Tag *meta)
+inline void
+RoarOutput::SendTag(const Tag &tag)
 {
-	RoarOutput *self = (RoarOutput *)ao;
-
-	if (self->vss == nullptr)
+	if (vss == nullptr)
 		return;
 
-	const ScopeLock protect(self->mutex);
+	const ScopeLock protect(mutex);
 
 	size_t cnt = 1;
 	struct roar_keyval vals[32];
@@ -343,37 +379,42 @@ roar_send_tag(struct audio_output *ao, const Tag *meta)
 
 	char timebuf[16];
 	snprintf(timebuf, sizeof(timebuf), "%02d:%02d:%02d",
-			meta->time / 3600, (meta->time % 3600) / 60, meta->time % 60);
+		 tag.time / 3600, (tag.time % 3600) / 60, tag.time % 60);
 
 	vals[0].key = g_strdup("LENGTH");
 	vals[0].value = timebuf;
 
-	for (unsigned i = 0; i < meta->num_items && cnt < 32; i++)
+	for (unsigned i = 0; i < tag.num_items && cnt < 32; i++)
 	{
 		bool is_uuid = false;
-		const char *key = roar_tag_convert(meta->items[i]->type, &is_uuid);
-		if (key != nullptr)
-		{
-			if (is_uuid)
-			{
+		const char *key = roar_tag_convert(tag.items[i]->type,
+						   &is_uuid);
+		if (key != nullptr) {
+			if (is_uuid) {
 				snprintf(uuid_buf[cnt], sizeof(uuid_buf[0]), "{UUID}%s",
-						meta->items[i]->value);
+					 tag.items[i]->value);
 				vals[cnt].key = g_strdup(key);
 				vals[cnt].value = uuid_buf[cnt];
-			}
-			else
-			{
+			} else {
 				vals[cnt].key = g_strdup(key);
-				vals[cnt].value = meta->items[i]->value;
+				vals[cnt].value = tag.items[i]->value;
 			}
+
 			cnt++;
 		}
 	}
 
-	roar_vs_meta(self->vss, vals, cnt, &(self->err));
+	roar_vs_meta(vss, vals, cnt, &(err));
 
 	for (unsigned i = 0; i < 32; i++)
 		g_free(vals[i].key);
+}
+
+static void
+roar_send_tag(struct audio_output *ao, const Tag *meta)
+{
+	RoarOutput *self = (RoarOutput *)ao;
+	self->SendTag(*meta);
 }
 
 const struct audio_output_plugin roar_output_plugin = {
