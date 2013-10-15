@@ -28,9 +28,7 @@
 #include "TimeoutMonitor.hxx"
 #include "SocketMonitor.hxx"
 #else
-#include "glib_compat.h"
 #include <glib.h>
-
 #endif
 
 #include <forward_list>

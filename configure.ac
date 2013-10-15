@@ -459,8 +459,8 @@ AC_ARG_WITH(tremor-includes,
 dnl ---------------------------------------------------------------------------
 dnl Mandatory Libraries
 dnl ---------------------------------------------------------------------------
-PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.24 gthread-2.0],,
-		[AC_MSG_ERROR([GLib 2.24 is required])])
+PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.28 gthread-2.0],,
+		[AC_MSG_ERROR([GLib 2.28 is required])])
 
 if test x$GCC = xyes; then
 	# suppress warnings in the GLib headers

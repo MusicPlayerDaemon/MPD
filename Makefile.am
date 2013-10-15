@@ -54,7 +54,6 @@ mpd_headers = \
 	src/check.h \
 	src/command.h \
 	src/gerror.h \
-	src/glib_compat.h \
 	src/TextInputStream.hxx \
 	src/AudioCompress/config.h \
 	src/AudioCompress/compress.h \
