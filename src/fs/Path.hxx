@@ -21,7 +21,7 @@
 #define MPD_FS_PATH_HXX
 
 #include "check.h"
-#include "gcc.h"
+#include "Compiler.h"
 
 #ifdef WIN32
 #include <glib.h>

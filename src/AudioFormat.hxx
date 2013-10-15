@@ -20,7 +20,7 @@
 #ifndef MPD_AUDIO_FORMAT_HXX
 #define MPD_AUDIO_FORMAT_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <stdint.h>
 #include <assert.h>

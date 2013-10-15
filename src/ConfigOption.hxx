@@ -20,7 +20,7 @@
 #ifndef MPD_CONFIG_OPTION_HXX
 #define MPD_CONFIG_OPTION_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 
 enum ConfigOption {
 	CONF_MUSIC_DIR,

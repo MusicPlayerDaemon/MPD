@@ -21,7 +21,7 @@
 #define MPD_INOTIFY_QUEUE_HXX
 
 #include "event/TimeoutMonitor.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <list>
 #include <string>

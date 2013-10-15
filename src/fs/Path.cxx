@@ -24,7 +24,7 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <glib.h>
 

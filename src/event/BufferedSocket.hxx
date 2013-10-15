@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "SocketMonitor.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 struct fifo_buffer;
 class Error;

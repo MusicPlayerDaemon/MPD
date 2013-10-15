@@ -25,7 +25,7 @@
 #include "PlaylistVector.hxx"
 #include "Directory.hxx"
 #include "Song.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 #include "ConfigData.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/Error.hxx"

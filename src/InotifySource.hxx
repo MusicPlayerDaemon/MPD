@@ -21,7 +21,7 @@
 #define MPD_INOTIFY_SOURCE_HXX
 
 #include "event/SocketMonitor.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 class Error;
 

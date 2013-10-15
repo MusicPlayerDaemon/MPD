@@ -30,7 +30,7 @@
 #ifndef MPD_MANUAL_HXX
 #define MPD_MANUAL_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <new>
 #include <utility>

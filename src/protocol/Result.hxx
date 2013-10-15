@@ -21,7 +21,7 @@
 #define MPD_PROTOCOL_RESULT_HXX
 
 #include "check.h"
-#include "gcc.h"
+#include "Compiler.h"
 #include "Ack.hxx"
 
 #include <stdarg.h>

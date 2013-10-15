@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Song.hxx"
 #include "directory.h"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <stdlib.h>
 

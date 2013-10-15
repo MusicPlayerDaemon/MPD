@@ -20,7 +20,7 @@
 #ifndef MPD_FLAC_METADATA_H
 #define MPD_FLAC_METADATA_H
 
-#include "gcc.h"
+#include "Compiler.h"
 #include "FlacIOHandle.hxx"
 
 #include <FLAC/metadata.h>

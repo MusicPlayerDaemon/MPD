@@ -20,7 +20,7 @@
 #ifndef MPD_RESOLVER_HXX
 #define MPD_RESOLVER_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <stddef.h>
 

@@ -20,7 +20,7 @@
 #ifndef MPD_QUEUE_HXX
 #define MPD_QUEUE_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 #include "IdTable.hxx"
 #include "util/LazyRandomEngine.hxx"
 

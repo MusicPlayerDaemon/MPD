@@ -27,7 +27,7 @@
 #define OUTPUT_ALL_H
 
 #include "ReplayGainInfo.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 struct AudioFormat;
 class MusicBuffer;

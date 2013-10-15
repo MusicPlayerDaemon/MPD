@@ -27,7 +27,7 @@
 #include "AudioFormat.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <assert.h>
 #include <string.h>

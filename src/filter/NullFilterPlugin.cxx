@@ -29,7 +29,7 @@
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
 #include "AudioFormat.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 class NullFilter final : public Filter {
 public:

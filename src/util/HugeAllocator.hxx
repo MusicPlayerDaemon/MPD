@@ -20,7 +20,7 @@
 #ifndef MPD_HUGE_ALLOCATOR_HXX
 #define MPD_HUGE_ALLOCATOR_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <stddef.h>
 

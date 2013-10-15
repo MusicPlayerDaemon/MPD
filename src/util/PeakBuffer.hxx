@@ -20,7 +20,7 @@
 #ifndef MPD_PEAK_BUFFER_HXX
 #define MPD_PEAK_BUFFER_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <stddef.h>
 

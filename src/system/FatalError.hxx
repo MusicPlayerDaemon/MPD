@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "gerror.h"
-#include "gcc.h"
+#include "Compiler.h"
 
 class Error;
 

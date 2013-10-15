@@ -21,7 +21,7 @@
 #define MPD_SONG_HXX
 
 #include "util/list.h"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <assert.h>
 #include <sys/time.h>

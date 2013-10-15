@@ -24,7 +24,7 @@
 extern "C" {
 #include "util/growing_fifo.h"
 }
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <assert.h>
 #include <string.h>

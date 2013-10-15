@@ -21,7 +21,7 @@
 #define MPD_TAG_BUILDER_HXX
 
 #include "TagType.h"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <vector>
 

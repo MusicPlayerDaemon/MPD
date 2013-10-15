@@ -21,7 +21,7 @@
 #define MPD_PIPE_H
 
 #include "thread/Mutex.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #ifndef NDEBUG
 #include "AudioFormat.hxx"

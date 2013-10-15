@@ -21,7 +21,7 @@
 #define MPD_PLAYLIST_VECTOR_HXX
 
 #include "PlaylistInfo.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <list>
 

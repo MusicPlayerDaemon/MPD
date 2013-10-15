@@ -21,7 +21,7 @@
 #define MPD_SOCKET_DEFERRED_MONITOR_HXX
 
 #include "check.h"
-#include "gcc.h"
+#include "Compiler.h"
 
 #ifdef USE_EPOLL
 #include "SocketMonitor.hxx"

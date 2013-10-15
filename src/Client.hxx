@@ -20,7 +20,7 @@
 #ifndef MPD_CLIENT_H
 #define MPD_CLIENT_H
 
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <stddef.h>
 #include <stdarg.h>

@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "thread/Id.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #ifdef USE_EPOLL
 #include "system/EPollFD.hxx"

@@ -21,7 +21,7 @@
 #define MPD_CONFIG_GLOBAL_HXX
 
 #include "ConfigOption.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 class Error;
 class Path;

@@ -21,7 +21,7 @@
 #define MPD_UPDATE_ARCHIVE_HXX
 
 #include "check.h"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <sys/stat.h>
 

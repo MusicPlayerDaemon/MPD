@@ -20,7 +20,7 @@
 #ifndef MPD_DATABASE_GLUE_HXX
 #define MPD_DATABASE_GLUE_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 
 struct config_param;
 class Database;

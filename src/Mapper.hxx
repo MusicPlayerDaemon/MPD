@@ -26,7 +26,7 @@
 
 #include <string>
 
-#include "gcc.h"
+#include "Compiler.h"
 
 #define PLAYLIST_FILE_SUFFIX ".m3u"
 

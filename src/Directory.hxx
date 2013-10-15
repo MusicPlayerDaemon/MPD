@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "util/list.h"
-#include "gcc.h"
+#include "Compiler.h"
 #include "DatabaseVisitor.hxx"
 #include "PlaylistVector.hxx"
 

@@ -32,7 +32,7 @@
 
 #include <stddef.h>
 
-#include "gcc.h"
+#include "Compiler.h"
 
 /**
  * Manager for a temporary array which grows as needed.  This attempts

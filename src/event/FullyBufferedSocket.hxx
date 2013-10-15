@@ -23,7 +23,7 @@
 #include "check.h"
 #include "BufferedSocket.hxx"
 #include "util/PeakBuffer.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 /**
  * A #BufferedSocket specialization that adds an output buffer.

@@ -21,7 +21,7 @@
 #define PCM_BUFFER_HXX
 
 #include "util/ReusableArray.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <stdint.h>
 

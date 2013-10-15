@@ -21,7 +21,7 @@
 #define MPD_PLAYLIST_INFO_HXX
 
 #include "check.h"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <string>
 

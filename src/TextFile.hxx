@@ -20,7 +20,7 @@
 #ifndef MPD_TEXT_FILE_HXX
 #define MPD_TEXT_FILE_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <stdio.h>
 

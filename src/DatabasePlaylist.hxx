@@ -20,7 +20,7 @@
 #ifndef MPD_DATABASE_PLAYLIST_HXX
 #define MPD_DATABASE_PLAYLIST_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 
 class SongFilter;
 class Error;

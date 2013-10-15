@@ -22,7 +22,7 @@
 
 #include "TagType.h"
 #include "TagItem.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <algorithm>
 

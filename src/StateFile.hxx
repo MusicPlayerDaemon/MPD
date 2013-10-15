@@ -22,7 +22,7 @@
 
 #include "event/TimeoutMonitor.hxx"
 #include "fs/Path.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <string>
 

@@ -25,7 +25,7 @@
 #ifndef MPD_EXCLUDE_H
 #define MPD_EXCLUDE_H
 
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <forward_list>
 

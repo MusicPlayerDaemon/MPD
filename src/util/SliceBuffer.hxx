@@ -21,7 +21,7 @@
 #define MPD_SLICE_BUFFER_HXX
 
 #include "HugeAllocator.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <utility>
 #include <new>

@@ -21,7 +21,7 @@
 #define MPD_TAG_ID3_HXX
 
 #include "check.h"
-#include "gcc.h"
+#include "Compiler.h"
 
 struct tag_handler;
 struct Tag;

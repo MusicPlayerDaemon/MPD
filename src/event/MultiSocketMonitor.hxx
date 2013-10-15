@@ -21,7 +21,7 @@
 #define MPD_MULTI_SOCKET_MONITOR_HXX
 
 #include "check.h"
-#include "gcc.h"
+#include "Compiler.h"
 
 #ifdef USE_EPOLL
 #include "IdleMonitor.hxx"

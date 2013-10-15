@@ -20,7 +20,7 @@
 #ifndef MPD_URI_UTIL_HXX
 #define MPD_URI_UTIL_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 
 /**
  * Checks whether the specified URI has a scheme in the form

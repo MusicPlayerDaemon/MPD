@@ -20,7 +20,7 @@
 #ifndef MPD_SONG_FILTER_HXX
 #define MPD_SONG_FILTER_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <list>
 

@@ -20,7 +20,7 @@
 #ifndef MPD_DB_PRINT_H
 #define MPD_DB_PRINT_H
 
-#include "gcc.h"
+#include "Compiler.h"
 
 class SongFilter;
 struct DatabaseSelection;

@@ -21,7 +21,7 @@
 #include "GlobalEvents.hxx"
 #include "util/Manual.hxx"
 #include "event/DeferredMonitor.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <atomic>
 

@@ -33,7 +33,7 @@
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <glib.h>
 

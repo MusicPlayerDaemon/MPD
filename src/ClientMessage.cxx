@@ -18,7 +18,7 @@
  */
 
 #include "ClientMessage.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <glib.h>
 

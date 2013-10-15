@@ -21,7 +21,7 @@
 #define MPD_PCM_MIX_HXX
 
 #include "AudioFormat.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <stddef.h>
 

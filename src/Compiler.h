@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_GCC_H
-#define MPD_GCC_H
+#ifndef COMPILER_H
+#define COMPILER_H
 
 #define GCC_CHECK_VERSION(major, minor) \
   (defined(__GNUC__) &&                                                 \

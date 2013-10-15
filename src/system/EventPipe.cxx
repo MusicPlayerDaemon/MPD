@@ -21,7 +21,7 @@
 #include "EventPipe.hxx"
 #include "system/fd_util.h"
 #include "system/FatalError.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <assert.h>
 #include <unistd.h>

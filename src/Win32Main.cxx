@@ -22,7 +22,7 @@
 
 #ifdef WIN32
 
-#include "gcc.h"
+#include "Compiler.h"
 #include "GlobalEvents.hxx"
 #include "system/FatalError.hxx"
 

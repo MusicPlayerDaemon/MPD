@@ -21,7 +21,7 @@
 #define MPD_TAG_TABLE_HXX
 
 #include "TagType.h"
-#include "gcc.h"
+#include "Compiler.h"
 
 struct tag_table {
 	const char *name;

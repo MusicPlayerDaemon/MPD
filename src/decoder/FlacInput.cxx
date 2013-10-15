@@ -24,7 +24,7 @@
 #include "InputStream.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 FLAC__StreamDecoderReadStatus
 FlacInput::Read(FLAC__byte buffer[], size_t *bytes)

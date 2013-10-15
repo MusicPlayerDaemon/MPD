@@ -21,7 +21,7 @@
 #define MPD_TAG_ITEM_HXX
 
 #include "TagType.h"
-#include "gcc.h"
+#include "Compiler.h"
 
 /**
  * One tag value.  It is a mapping of #tag_type to am arbitrary string

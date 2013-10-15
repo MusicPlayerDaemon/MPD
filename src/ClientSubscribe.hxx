@@ -20,7 +20,7 @@
 #ifndef MPD_CLIENT_SUBSCRIBE_HXX
 #define MPD_CLIENT_SUBSCRIBE_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 
 class Client;
 class ClientMessage;

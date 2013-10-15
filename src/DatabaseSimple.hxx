@@ -20,7 +20,7 @@
 #ifndef MPD_DATABASE_SIMPLE_HXX
 #define MPD_DATABASE_SIMPLE_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <sys/time.h>
 

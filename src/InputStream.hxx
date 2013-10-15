@@ -23,7 +23,7 @@
 #include "check.h"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <string>
 

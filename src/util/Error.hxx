@@ -21,7 +21,7 @@
 #define MPD_ERROR_HXX
 
 #include "check.h"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <string>
 

@@ -20,7 +20,7 @@
 #ifndef MPD_STRING_UTIL_HXX
 #define MPD_STRING_UTIL_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 
 /**
  * Returns a pointer to the first non-whitespace character in the

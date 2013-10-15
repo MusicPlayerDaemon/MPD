@@ -21,7 +21,7 @@
 #define MPD_OUTPUT_HTTPD_CLIENT_HXX
 
 #include "event/BufferedSocket.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <list>
 

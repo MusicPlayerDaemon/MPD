@@ -20,7 +20,7 @@
 #ifndef MPD_LOG_HXX
 #define MPD_LOG_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 
 #ifdef WIN32
 #include <windows.h>

@@ -20,7 +20,7 @@
 #ifndef MPD_IO_THREAD_HXX
 #define MPD_IO_THREAD_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 
 class EventLoop;
 

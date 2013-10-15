@@ -28,7 +28,7 @@
 
 #include "DatabaseVisitor.hxx"
 #include "tag/TagType.h"
-#include "gcc.h"
+#include "Compiler.h"
 
 struct config_param;
 struct DatabaseSelection;

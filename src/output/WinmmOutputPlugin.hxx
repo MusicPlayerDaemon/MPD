@@ -24,7 +24,7 @@
 
 #ifdef ENABLE_WINMM_OUTPUT
 
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <windows.h>
 #include <mmsystem.h>

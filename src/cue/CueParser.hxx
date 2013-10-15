@@ -21,7 +21,7 @@
 #define MPD_CUE_PARSER_HXX
 
 #include "check.h"
-#include "gcc.h"
+#include "Compiler.h"
 
 struct Song;
 struct Tag;

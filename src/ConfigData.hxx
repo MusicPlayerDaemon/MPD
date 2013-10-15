@@ -21,7 +21,7 @@
 #define MPD_CONFIG_DATA_HXX
 
 #include "ConfigOption.hxx"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <string>
 #include <array>

@@ -20,7 +20,7 @@
 #ifndef MPD_SOCKET_ERROR_HXX
 #define MPD_SOCKET_ERROR_HXX
 
-#include "gcc.h"
+#include "Compiler.h"
 #include "util/Error.hxx"
 
 #ifdef WIN32

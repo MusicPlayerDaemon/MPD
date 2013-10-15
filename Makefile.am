@@ -55,7 +55,6 @@ mpd_headers = \
 	src/command.h \
 	src/gerror.h \
 	src/glib_compat.h \
-	src/gcc.h \
 	src/TextInputStream.hxx \
 	src/AudioCompress/config.h \
 	src/AudioCompress/compress.h \
@@ -70,6 +69,7 @@ src_mpd_SOURCES = \
 	$(DECODER_SRC) \
 	$(OUTPUT_API_SRC) \
 	$(MIXER_API_SRC) \
+	src/Compiler.h \
 	src/thread/Id.hxx \
 	src/thread/Mutex.hxx \
 	src/thread/PosixMutex.hxx \

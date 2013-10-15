@@ -21,7 +21,7 @@
 #include "MultiSocketMonitor.hxx"
 #include "Loop.hxx"
 #include "system/fd_util.h"
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <assert.h>
 

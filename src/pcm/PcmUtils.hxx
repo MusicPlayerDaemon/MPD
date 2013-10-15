@@ -20,7 +20,7 @@
 #ifndef MPD_PCM_UTILS_H
 #define MPD_PCM_UTILS_H
 
-#include "gcc.h"
+#include "Compiler.h"
 
 #include <limits>
 
