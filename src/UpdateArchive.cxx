@@ -33,7 +33,7 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
+#include <string>
 
 #include <string.h>
 
@@ -42,14 +42,13 @@ update_archive_tree(Directory *directory, const char *name)
 {
 	const char *tmp = strchr(name, '/');
 	if (tmp) {
-		char *child_name = g_strndup(name, tmp - name);
+		const std::string child_name(name, tmp);
 		//add dir is not there already
 		db_lock();
 		Directory *subdir =
-			directory->MakeChild(child_name);
+			directory->MakeChild(child_name.c_str());
 		subdir->device = DEVICE_INARCHIVE;
 		db_unlock();
-		g_free(child_name);
 
 		//create directories first
 		update_archive_tree(subdir, tmp+1);
