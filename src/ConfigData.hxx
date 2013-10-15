@@ -105,10 +105,6 @@ struct config_param {
 	const char *GetBlockValue(const char *name,
 				  const char *default_value=nullptr) const;
 
-	gcc_malloc
-	char *DupBlockString(const char *name,
-			     const char *default_value=nullptr) const;
-
 	/**
 	 * Same as config_dup_path(), but looks up the setting in the
 	 * specified block.

@@ -25,8 +25,6 @@
 #include "fs/Path.hxx"
 #include "system/FatalError.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -86,12 +84,6 @@ config_param::GetBlockValue(const char *name, const char *default_value) const
 		return default_value;
 
 	return bp->value.c_str();
-}
-
-char *
-config_param::DupBlockString(const char *name, const char *default_value) const
-{
-	return g_strdup(GetBlockValue(name, default_value));
 }
 
 Path
