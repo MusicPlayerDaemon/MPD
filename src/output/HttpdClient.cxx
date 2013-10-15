@@ -402,7 +402,7 @@ HttpdClient::OnSocketReady(unsigned flags)
 }
 
 BufferedSocket::InputResult
-HttpdClient::OnSocketInput(const void *data, size_t length)
+HttpdClient::OnSocketInput(void *data, size_t length)
 {
 	if (state == RESPONSE) {
 		LogWarning(httpd_output_domain,
@@ -411,8 +411,8 @@ HttpdClient::OnSocketInput(const void *data, size_t length)
 		return InputResult::CLOSED;
 	}
 
-	const char *line = (const char *)data;
-	const char *newline = (const char *)memchr(line, '\n', length);
+	char *line = (char *)data;
+	char *newline = (char *)memchr(line, '\n', length);
 	if (newline == nullptr)
 		return InputResult::MORE;
 
@@ -421,9 +421,8 @@ HttpdClient::OnSocketInput(const void *data, size_t length)
 	if (newline > line && newline[-1] == '\r')
 		--newline;
 
-	/* terminate the string at the end of the line; the const_cast
-	   is a dirty hack */
-	*const_cast<char *>(newline) = 0;
+	/* terminate the string at the end of the line */
+	*newline = 0;
 
 	if (!HandleLine(line)) {
 		assert(state == RESPONSE);

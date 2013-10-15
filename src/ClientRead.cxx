@@ -22,27 +22,25 @@
 #include "Main.hxx"
 #include "event/Loop.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <string.h>
 
 BufferedSocket::InputResult
-Client::OnSocketInput(const void *data, size_t length)
+Client::OnSocketInput(void *data, size_t length)
 {
-	const char *p = (const char *)data;
-	const char *newline = (const char *)memchr(p, '\n', length);
+	char *p = (char *)data;
+	char *newline = (char *)memchr(p, '\n', length);
 	if (newline == NULL)
 		return InputResult::MORE;
 
 	TimeoutMonitor::ScheduleSeconds(client_timeout);
 
-	char *line = g_strndup(p, newline - p);
+	/* terminate the string at the end of the line */
+	*newline = 0;
+
 	BufferedSocket::ConsumeInput(newline + 1 - p);
 
-	enum command_return result = client_process_line(this, line);
-	g_free(line);
-
+	enum command_return result = client_process_line(this, p);
 	switch (result) {
 	case COMMAND_RETURN_OK:
 	case COMMAND_RETURN_IDLE:

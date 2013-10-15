@@ -101,7 +101,15 @@ protected:
 		CLOSED,
 	};
 
-	virtual InputResult OnSocketInput(const void *data, size_t length) = 0;
+	/**
+	 * Data has been received on the socket.
+	 *
+	 * @param data a pointer to the beginning of the buffer; the
+	 * buffer may be modified by the method while it processes the
+	 * data
+	 */
+	virtual InputResult OnSocketInput(void *data, size_t length) = 0;
+
 	virtual void OnSocketError(Error &&error) = 0;
 	virtual void OnSocketClosed() = 0;
 
