@@ -60,7 +60,7 @@ struct DespotifyInputStream {
 		memset(&pcm, 0, sizeof(pcm));
 
 		/* Despotify outputs pcm data */
-		base.mime = g_strdup("audio/x-mpd-cdda-pcm");
+		base.mime = "audio/x-mpd-cdda-pcm";
 		base.ready = true;
 	}
 

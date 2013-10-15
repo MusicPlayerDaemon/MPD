@@ -240,9 +240,9 @@ input_cdio_open(const char *uri,
 	i->base.size = (i->lsn_to - i->lsn_from + 1) * CDIO_CD_FRAMESIZE_RAW;
 
 	/* hack to make MPD select the "pcm" decoder plugin */
-	i->base.mime = g_strdup(reverse_endian
-				? "audio/x-mpd-cdda-pcm-reverse"
-				: "audio/x-mpd-cdda-pcm");
+	i->base.mime = reverse_endian
+		? "audio/x-mpd-cdda-pcm-reverse"
+		: "audio/x-mpd-cdda-pcm";
 
 	return &i->base;
 }

@@ -45,7 +45,7 @@ struct MmsInputStream {
 		 mms(_mms), eof(false) {
 		/* XX is this correct?  at least this selects the ffmpeg
 		   decoder, which seems to work fine*/
-		base.mime = g_strdup("audio/x-ms-wma");
+		base.mime = "audio/x-ms-wma";
 
 		base.ready = true;
 	}
