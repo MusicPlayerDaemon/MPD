@@ -112,14 +112,14 @@ winmm_output_init(const config_param &param, Error &error)
 {
 	WinmmOutput *wo = new WinmmOutput();
 	if (!ao_base_init(&wo->base, &winmm_output_plugin, param, error)) {
-		g_free(wo);
+		delete wo;
 		return nullptr;
 	}
 
 	const char *device = param.GetBlockValue("device");
 	if (!get_device_id(device, &wo->device_id, error)) {
 		ao_base_finish(&wo->base);
-		g_free(wo);
+		delete wo;
 		return nullptr;
 	}
 
