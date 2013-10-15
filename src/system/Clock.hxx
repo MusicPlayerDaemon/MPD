@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,26 +24,18 @@
 
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * Returns the value of a monotonic clock in milliseconds.
  */
 gcc_pure
 unsigned
-monotonic_clock_ms(void);
+MonotonicClockMS();
 
 /**
  * Returns the value of a monotonic clock in microseconds.
  */
 gcc_pure
 uint64_t
-monotonic_clock_us(void);
-
-#ifdef __cplusplus
-}
-#endif
+MonotonicClockUS();
 
 #endif

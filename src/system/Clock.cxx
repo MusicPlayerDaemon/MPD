@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "clock.h"
+#include "Clock.hxx"
 
 #ifdef WIN32
 #include <windows.h>
@@ -31,7 +31,7 @@
 #endif
 
 unsigned
-monotonic_clock_ms(void)
+MonotonicClockMS(void)
 {
 #ifdef WIN32
 	return GetTickCount();
@@ -55,7 +55,7 @@ monotonic_clock_ms(void)
 }
 
 uint64_t
-monotonic_clock_us(void)
+MonotonicClockUS(void)
 {
 #ifdef WIN32
 	LARGE_INTEGER l_value, l_frequency;

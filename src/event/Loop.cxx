@@ -19,10 +19,10 @@
 
 #include "config.h"
 #include "Loop.hxx"
-#include "system/clock.h"
 
 #ifdef USE_EPOLL
 
+#include "system/Clock.hxx"
 #include "TimeoutMonitor.hxx"
 #include "SocketMonitor.hxx"
 #include "IdleMonitor.hxx"
@@ -31,7 +31,7 @@
 
 EventLoop::EventLoop(Default)
 	:SocketMonitor(*this),
-	 now_ms(::monotonic_clock_ms()),
+	 now_ms(::MonotonicClockMS()),
 	 quit(false),
 	 n_events(0),
 	 thread(ThreadId::Null())
@@ -114,7 +114,7 @@ EventLoop::Run()
 	assert(!quit);
 
 	do {
-		now_ms = ::monotonic_clock_ms();
+		now_ms = ::MonotonicClockMS();
 
 		/* invoke timers */
 
@@ -162,7 +162,7 @@ EventLoop::Run()
 		const int n = epoll.Wait(events, MAX_EVENTS, timeout_ms);
 		n_events = std::max(n, 0);
 
-		now_ms = ::monotonic_clock_ms();
+		now_ms = ::MonotonicClockMS();
 
 		assert(!quit);
 

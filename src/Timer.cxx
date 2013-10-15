@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Timer.hxx"
 #include "AudioFormat.hxx"
-#include "system/clock.h"
+#include "system/Clock.hxx"
 
 #include <glib.h>
 
@@ -37,7 +37,7 @@ Timer::Timer(const AudioFormat af)
 
 void Timer::Start()
 {
-	time = monotonic_clock_us();
+	time = MonotonicClockUS();
 	started = true;
 }
 
@@ -58,7 +58,7 @@ void Timer::Add(int size)
 
 unsigned Timer::GetDelay() const
 {
-	int64_t delay = (int64_t)(time - monotonic_clock_us()) / 1000;
+	int64_t delay = (int64_t)(time - MonotonicClockUS()) / 1000;
 	if (delay < 0)
 		return 0;
 
@@ -74,7 +74,7 @@ void Timer::Synchronize() const
 
 	assert(started);
 
-	sleep_duration = time - monotonic_clock_us();
+	sleep_duration = time - MonotonicClockUS();
 	if (sleep_duration > 0)
 		g_usleep(sleep_duration);
 }
