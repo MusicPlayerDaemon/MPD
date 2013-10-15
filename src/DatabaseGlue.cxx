@@ -30,8 +30,6 @@
 #include "DatabasePlugin.hxx"
 #include "db/SimpleDatabasePlugin.hxx"
 
-#include <glib.h>
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>

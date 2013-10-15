@@ -31,8 +31,6 @@
 #include "fs/Path.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <string.h>
 #include <assert.h>
 

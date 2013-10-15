@@ -26,7 +26,6 @@
 #include <atomic>
 
 #include <assert.h>
-#include <glib.h>
 
 namespace GlobalEvents {
 	class Monitor final : public DeferredMonitor {

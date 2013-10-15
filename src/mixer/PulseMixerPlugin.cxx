@@ -26,8 +26,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <pulse/thread-mainloop.h>
 #include <pulse/context.h>
 #include <pulse/introspect.h>

@@ -25,8 +25,6 @@
 #include "system/FatalError.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <sys/inotify.h>
 #include <unistd.h>
 

@@ -22,8 +22,6 @@
 #include "PcmUtils.hxx"
 #include "AudioFormat.hxx"
 
-#include <glib.h>
-
 #include <stdint.h>
 #include <string.h>
 

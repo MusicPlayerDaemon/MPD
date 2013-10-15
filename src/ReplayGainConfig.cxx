@@ -25,8 +25,6 @@
 #include "Playlist.hxx"
 #include "system/FatalError.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>

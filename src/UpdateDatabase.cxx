@@ -25,8 +25,8 @@
 #include "Song.hxx"
 #include "DatabaseLock.hxx"
 
-#include <glib.h>
 #include <assert.h>
+#include <stddef.h>
 
 void
 delete_song(Directory *dir, Song *del)

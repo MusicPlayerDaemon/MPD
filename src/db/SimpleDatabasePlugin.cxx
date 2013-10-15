@@ -33,8 +33,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <sys/types.h>
 #include <errno.h>
 

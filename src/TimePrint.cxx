@@ -21,8 +21,6 @@
 #include "TimePrint.hxx"
 #include "Client.hxx"
 
-#include <glib.h>
-
 void
 time_print(Client *client, const char *name, time_t t)
 {

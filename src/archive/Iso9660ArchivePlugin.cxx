@@ -36,8 +36,6 @@
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
 
-#include <glib.h>
-
 #include <stdlib.h>
 #include <string.h>
 

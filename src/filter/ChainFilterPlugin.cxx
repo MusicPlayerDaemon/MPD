@@ -26,8 +26,6 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
-#include <glib.h>
-
 #include <list>
 
 #include <assert.h>

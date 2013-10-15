@@ -23,8 +23,6 @@
 #include "AllCommands.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <string.h>
 
 #define CLIENT_LIST_MODE_BEGIN "command_list_begin"

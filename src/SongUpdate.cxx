@@ -34,8 +34,6 @@
 #include "tag/TagId3.hxx"
 #include "tag/ApeTag.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>

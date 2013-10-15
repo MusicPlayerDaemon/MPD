@@ -21,8 +21,6 @@
 #include "ClientInternal.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 void
 Client::SetExpired()
 {
