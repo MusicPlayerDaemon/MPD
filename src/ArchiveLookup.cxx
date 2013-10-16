@@ -22,8 +22,6 @@
 #include "ArchiveDomain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -42,11 +40,11 @@ FindSlash(char *p, size_t i)
 
 gcc_pure
 static const char *
-FindSuffix(const char *p, size_t i)
+FindSuffix(const char *p, const char *i)
 {
-	for (; i > 0; --i) {
-		if (p[i] == '.')
-			return p + i + 1;
+	for (; i > p; --i) {
+		if (*i == '.')
+			return i + 1;
 	}
 
 	return nullptr;
@@ -56,54 +54,51 @@ bool
 archive_lookup(char *pathname, const char **archive,
 	       const char **inpath, const char **suffix)
 {
-	bool ret = false;
+	size_t idx = strlen(pathname);
 
-	char *const pathdupe = g_strdup(pathname);
-	const size_t len = strlen(pathname);
-	size_t idx = len;
+	char *slash = nullptr;
 
-	while (idx > 0) {
+	while (true) {
 		//try to stat if its real directory
 		struct stat st_info;
-		if (stat(pathdupe, &st_info) == -1) {
+		if (stat(pathname, &st_info) == -1) {
 			if (errno != ENOTDIR) {
 				FormatErrno(archive_domain,
-					    "Failed to stat %s", pathdupe);
-				break;
+					    "Failed to stat %s", pathname);
+				return false;
 			}
 		} else {
 			//is something found ins original path (is not an archive)
-			if (idx == len) {
-				break;
-			}
+			if (slash == nullptr)
+				return false;
+
 			//its a file ?
 			if (S_ISREG(st_info.st_mode)) {
 				//so the upper should be file
-				pathname[idx] = 0;
-				ret = true;
 				*archive = pathname;
-				*inpath = pathname + idx+1;
+				*inpath = slash + 1;
 
 				//try to get suffix
-				*suffix = FindSuffix(pathname, idx);
-				break;
+				*suffix = FindSuffix(pathname, slash - 1);
+				return true;
 			} else {
 				FormatError(archive_domain,
 					    "Not a regular file: %s",
-					    pathdupe);
-				break;
+					    pathname);
+				return false;
 			}
 		}
 
 		//find one dir up
-		char *slash = FindSlash(pathdupe, idx);
+		if (slash != nullptr)
+			*slash = '/';
+
+		slash = FindSlash(pathname, idx - 1);
 		if (slash == nullptr)
-			break;
+			return false;
 
 		*slash = 0;
-		idx = slash - pathdupe;
+		idx = slash - pathname;
 	}
-	g_free(pathdupe);
-	return ret;
 }
 
