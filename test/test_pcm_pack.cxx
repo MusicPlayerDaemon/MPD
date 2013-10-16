@@ -25,7 +25,7 @@
 #include <glib.h>
 
 void
-test_pcm_pack_24()
+PcmPackTest::TestPack24()
 {
 	constexpr unsigned N = 256;
 	const auto src = TestDataBuffer<int32_t, N>(GlibRandomInt24());
@@ -44,12 +44,12 @@ test_pcm_pack_24()
 		if (d & 0x800000)
 			d |= 0xff000000;
 
-		g_assert_cmpint(d, ==, src[i]);
+		CPPUNIT_ASSERT_EQUAL(d, src[i]);
 	}
 }
 
 void
-test_pcm_unpack_24()
+PcmPackTest::TestUnpack24()
 {
 	constexpr unsigned N = 256;
 	const auto src = TestDataBuffer<uint8_t, N * 3>();
@@ -68,6 +68,6 @@ test_pcm_unpack_24()
 		if (s & 0x800000)
 			s |= 0xff000000;
 
-		g_assert_cmpint(s, ==, dest[i]);
+		CPPUNIT_ASSERT_EQUAL(s, dest[i]);
 	}
 }

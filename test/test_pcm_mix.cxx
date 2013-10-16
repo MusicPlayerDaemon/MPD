@@ -22,10 +22,8 @@
 #include "test_pcm_util.hxx"
 #include "pcm/PcmMix.hxx"
 
-#include <glib.h>
-
 template<typename T, SampleFormat format, typename G=GlibRandomInt<T>>
-void
+static void
 TestPcmMix(G g=G())
 {
 	constexpr unsigned N = 256;
@@ -36,21 +34,21 @@ TestPcmMix(G g=G())
 	auto result = src1;
 	bool success = pcm_mix(result.begin(), src2.begin(), sizeof(result),
 			       format, 1.0);
-	g_assert(success);
+	CPPUNIT_ASSERT(success);
 	AssertEqualWithTolerance(result, src1, 1);
 
 	/* portion1=0.0: result must be equal to src2 */
 	result = src1;
 	success = pcm_mix(result.begin(), src2.begin(), sizeof(result),
 			  format, 0.0);
-	g_assert(success);
+	CPPUNIT_ASSERT(success);
 	AssertEqualWithTolerance(result, src2, 1);
 
 	/* portion1=0.5 */
 	result = src1;
 	success = pcm_mix(result.begin(), src2.begin(), sizeof(result),
 			  format, 0.5);
-	g_assert(success);
+	CPPUNIT_ASSERT(success);
 
 	auto expected = src1;
 	for (unsigned i = 0; i < N; ++i)
@@ -60,25 +58,25 @@ TestPcmMix(G g=G())
 }
 
 void
-test_pcm_mix_8()
+PcmMixTest::TestMix8()
 {
 	TestPcmMix<int8_t, SampleFormat::S8>();
 }
 
 void
-test_pcm_mix_16()
+PcmMixTest::TestMix16()
 {
 	TestPcmMix<int16_t, SampleFormat::S16>();
 }
 
 void
-test_pcm_mix_24()
+PcmMixTest::TestMix24()
 {
 	TestPcmMix<int32_t, SampleFormat::S24_P32>(GlibRandomInt24());
 }
 
 void
-test_pcm_mix_32()
+PcmMixTest::TestMix32()
 {
 	TestPcmMix<int32_t, SampleFormat::S32>();
 }

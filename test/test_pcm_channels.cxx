@@ -23,10 +23,8 @@
 #include "pcm/PcmChannels.hxx"
 #include "pcm/PcmBuffer.hxx"
 
-#include <glib.h>
-
 void
-test_pcm_channels_16()
+PcmChannelsTest::TestChannels16()
 {
 	constexpr unsigned N = 256;
 	const auto src = TestDataBuffer<int16_t, N * 2>();
@@ -39,26 +37,26 @@ test_pcm_channels_16()
 	const int16_t *dest =
 		pcm_convert_channels_16(buffer, 1, 2, src, sizeof(src),
 					&dest_size);
-	g_assert(dest != NULL);
-	g_assert_cmpint(dest_size, ==, sizeof(src) / 2);
+	CPPUNIT_ASSERT(dest != NULL);
+	CPPUNIT_ASSERT_EQUAL(sizeof(src) / 2, dest_size);
 	for (unsigned i = 0; i < N; ++i)
-		g_assert_cmpint(dest[i], ==,
-				(src[i * 2] + src[i * 2 + 1]) / 2);
+		CPPUNIT_ASSERT_EQUAL(int16_t((src[i * 2] + src[i * 2 + 1]) / 2),
+				     dest[i]);
 
 	/* mono to stereo */
 
 	dest = pcm_convert_channels_16(buffer, 2, 1, src, sizeof(src),
 				       &dest_size);
-	g_assert(dest != NULL);
-	g_assert_cmpint(dest_size, ==, sizeof(src) * 2);
+	CPPUNIT_ASSERT(dest != NULL);
+	CPPUNIT_ASSERT_EQUAL(sizeof(src) * 2, dest_size);
 	for (unsigned i = 0; i < N; ++i) {
-		g_assert_cmpint(dest[i * 2], ==, src[i]);
-		g_assert_cmpint(dest[i * 2 + 1], ==, src[i]);
+		CPPUNIT_ASSERT_EQUAL(src[i], dest[i * 2]);
+		CPPUNIT_ASSERT_EQUAL(src[i], dest[i * 2 + 1]);
 	}
 }
 
 void
-test_pcm_channels_32()
+PcmChannelsTest::TestChannels32()
 {
 	constexpr unsigned N = 256;
 	const auto src = TestDataBuffer<int32_t, N * 2>();
@@ -71,20 +69,20 @@ test_pcm_channels_32()
 	const int32_t *dest =
 		pcm_convert_channels_32(buffer, 1, 2, src, sizeof(src),
 					&dest_size);
-	g_assert(dest != NULL);
-	g_assert_cmpint(dest_size, ==, sizeof(src) / 2);
+	CPPUNIT_ASSERT(dest != NULL);
+	CPPUNIT_ASSERT_EQUAL(sizeof(src) / 2, dest_size);
 	for (unsigned i = 0; i < N; ++i)
-		g_assert_cmpint(dest[i], ==,
-				((int64_t)src[i * 2] + (int64_t)src[i * 2 + 1]) / 2);
+		CPPUNIT_ASSERT_EQUAL(int32_t(((int64_t)src[i * 2] + (int64_t)src[i * 2 + 1]) / 2),
+				     dest[i]);
 
 	/* mono to stereo */
 
 	dest = pcm_convert_channels_32(buffer, 2, 1, src, sizeof(src),
 				       &dest_size);
-	g_assert(dest != NULL);
-	g_assert_cmpint(dest_size, ==, sizeof(src) * 2);
+	CPPUNIT_ASSERT(dest != NULL);
+	CPPUNIT_ASSERT_EQUAL(sizeof(src) * 2, dest_size);
 	for (unsigned i = 0; i < N; ++i) {
-		g_assert_cmpint(dest[i * 2], ==, src[i]);
-		g_assert_cmpint(dest[i * 2 + 1], ==, src[i]);
+		CPPUNIT_ASSERT_EQUAL(src[i], dest[i * 2]);
+		CPPUNIT_ASSERT_EQUAL(src[i], dest[i * 2 + 1]);
 	}
 }

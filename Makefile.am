@@ -1411,9 +1411,11 @@ endif
 
 test_test_byte_reverse_SOURCES = \
 	test/test_byte_reverse.cxx
+test_test_byte_reverse_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_byte_reverse_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_byte_reverse_LDADD = \
 	libutil.a \
-	$(GLIB_LIBS)
+	$(CPPUNIT_LIBS)
 
 test_test_pcm_SOURCES = \
 	test/test_pcm_util.hxx \
@@ -1425,18 +1427,23 @@ test_test_pcm_SOURCES = \
 	test/test_pcm_mix.cxx \
 	test/test_pcm_all.hxx \
 	test/test_pcm_main.cxx
+test_test_pcm_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_pcm_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_pcm_LDADD = \
 	$(PCM_LIBS) \
 	libutil.a \
+	$(CPPUNIT_LIBS) \
 	$(GLIB_LIBS)
 
 test_test_queue_priority_SOURCES = \
 	src/Queue.cxx \
 	test/test_queue_priority.cxx
+test_test_queue_priority_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_queue_priority_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_queue_priority_LDADD = \
 	libsystem.a \
 	libutil.a \
-	$(GLIB_LIBS)
+	$(CPPUNIT_LIBS)
 
 noinst_PROGRAMS += src/pcm/dsd2pcm/dsd2pcm
 

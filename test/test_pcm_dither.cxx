@@ -21,10 +21,8 @@
 #include "test_pcm_util.hxx"
 #include "pcm/PcmDither.hxx"
 
-#include <glib.h>
-
 void
-test_pcm_dither_24()
+PcmDitherTest::TestDither24()
 {
 	constexpr unsigned N = 256;
 	const auto src = TestDataBuffer<int32_t, N>(GlibRandomInt24());
@@ -34,13 +32,13 @@ test_pcm_dither_24()
 	dither.Dither24To16(dest, src.begin(), src.end());
 
 	for (unsigned i = 0; i < N; ++i) {
-		g_assert_cmpint(dest[i], >=, (src[i] >> 8) - 8);
-		g_assert_cmpint(dest[i], <, (src[i] >> 8) + 8);
+		CPPUNIT_ASSERT(dest[i] >= (src[i] >> 8) - 8);
+		CPPUNIT_ASSERT(dest[i] < (src[i] >> 8) + 8);
 	}
 }
 
 void
-test_pcm_dither_32()
+PcmDitherTest::TestDither32()
 {
 	constexpr unsigned N = 256;
 	const auto src = TestDataBuffer<int32_t, N>();
@@ -50,7 +48,7 @@ test_pcm_dither_32()
 	dither.Dither32To16(dest, src.begin(), src.end());
 
 	for (unsigned i = 0; i < N; ++i) {
-		g_assert_cmpint(dest[i], >=, (src[i] >> 16) - 8);
-		g_assert_cmpint(dest[i], <, (src[i] >> 16) + 8);
+		CPPUNIT_ASSERT(dest[i] >= (src[i] >> 16) - 8);
+		CPPUNIT_ASSERT(dest[i] < (src[i] >> 16) + 8);
 	}
 }

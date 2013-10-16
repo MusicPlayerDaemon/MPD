@@ -1483,6 +1483,12 @@ AM_CONDITIONAL(ENABLE_DOCUMENTATION, test x$enable_documentation = xyes)
 dnl ---------------------------------------------------------------------------
 dnl test suite
 dnl ---------------------------------------------------------------------------
+
+if test "x$enable_test" = xyes; then
+	PKG_CHECK_MODULES([CPPUNIT], [cppunit],,
+		[AC_MSG_ERROR([cppunit not found])])
+fi
+
 AM_CONDITIONAL(ENABLE_TEST, test "x$enable_test" = xyes)
 
 dnl ---------------------------------------------------------------------------

@@ -19,11 +19,34 @@
 
 #include "util/ByteReverse.hxx"
 #include "util/Macros.hxx"
+#include "Compiler.h"
 
-#include <glib.h>
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/ui/text/TestRunner.h>
 
-static void
-test_byte_reverse_2(void)
+#include <string.h>
+
+class ByteReverseTest : public CppUnit::TestFixture {
+	CPPUNIT_TEST_SUITE(ByteReverseTest);
+	CPPUNIT_TEST(TestByteReverse2);
+	CPPUNIT_TEST(TestByteReverse3);
+	CPPUNIT_TEST(TestByteReverse4);
+	CPPUNIT_TEST(TestByteReverse5);
+	CPPUNIT_TEST_SUITE_END();
+
+public:
+	void TestByteReverse2();
+	void TestByteReverse3();
+	void TestByteReverse4();
+	void TestByteReverse5();
+};
+
+CPPUNIT_TEST_SUITE_REGISTRATION(ByteReverseTest);
+
+void
+ByteReverseTest::TestByteReverse2()
 {
 	static const char src[] = "123456";
 	static const char result[] = "214365";
@@ -31,11 +54,11 @@ test_byte_reverse_2(void)
 
 	reverse_bytes(dest, (const uint8_t *)src,
 		      (const uint8_t *)(src + ARRAY_SIZE(src) - 1), 2);
-	g_assert_cmpstr((const char *)dest, ==, result);
+	CPPUNIT_ASSERT(strcmp(result, (const char *)dest) == 0);
 }
 
-static void
-test_byte_reverse_3(void)
+void
+ByteReverseTest::TestByteReverse3()
 {
 	static const char src[] = "123456";
 	static const char result[] = "321654";
@@ -43,11 +66,11 @@ test_byte_reverse_3(void)
 
 	reverse_bytes(dest, (const uint8_t *)src,
 		      (const uint8_t *)(src + ARRAY_SIZE(src) - 1), 3);
-	g_assert_cmpstr((const char *)dest, ==, result);
+	CPPUNIT_ASSERT(strcmp(result, (const char *)dest) == 0);
 }
 
-static void
-test_byte_reverse_4(void)
+void
+ByteReverseTest::TestByteReverse4()
 {
 	static const char src[] = "12345678";
 	static const char result[] = "43218765";
@@ -55,11 +78,11 @@ test_byte_reverse_4(void)
 
 	reverse_bytes(dest, (const uint8_t *)src,
 		      (const uint8_t *)(src + ARRAY_SIZE(src) - 1), 4);
-	g_assert_cmpstr((const char *)dest, ==, result);
+	CPPUNIT_ASSERT(strcmp(result, (const char *)dest) == 0);
 }
 
-static void
-test_byte_reverse_5(void)
+void
+ByteReverseTest::TestByteReverse5()
 {
 	static const char src[] = "1234567890";
 	static const char result[] = "5432109876";
@@ -67,17 +90,14 @@ test_byte_reverse_5(void)
 
 	reverse_bytes(dest, (const uint8_t *)src,
 		      (const uint8_t *)(src + ARRAY_SIZE(src) - 1), 5);
-	g_assert_cmpstr((const char *)dest, ==, result);
+	CPPUNIT_ASSERT(strcmp(result, (const char *)dest) == 0);
 }
 
 int
-main(int argc, char **argv)
+main(gcc_unused int argc, gcc_unused char **argv)
 {
-	g_test_init (&argc, &argv, NULL);
-	g_test_add_func("/util/byte_reverse/2", test_byte_reverse_2);
-	g_test_add_func("/util/byte_reverse/3", test_byte_reverse_3);
-	g_test_add_func("/util/byte_reverse/4", test_byte_reverse_4);
-	g_test_add_func("/util/byte_reverse/5", test_byte_reverse_5);
-
-	g_test_run();
+	CppUnit::TextUi::TestRunner runner;
+	auto &registry = CppUnit::TestFactoryRegistry::getRegistry();
+	runner.addTest(registry.makeTest());
+	return runner.run() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

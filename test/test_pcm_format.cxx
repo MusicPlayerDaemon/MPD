@@ -26,10 +26,8 @@
 #include "pcm/PcmBuffer.hxx"
 #include "AudioFormat.hxx"
 
-#include <glib.h>
-
 void
-test_pcm_format_8_to_16()
+PcmFormatTest::TestFormat8to16()
 {
 	constexpr unsigned N = 256;
 	const auto src = TestDataBuffer<int8_t, N>();
@@ -41,14 +39,14 @@ test_pcm_format_8_to_16()
 	auto d = pcm_convert_to_16(buffer, dither, SampleFormat::S8,
 				   src, sizeof(src), &d_size);
 	auto d_end = pcm_end_pointer(d, d_size);
-	g_assert_cmpint(d_end - d, ==, N);
+	CPPUNIT_ASSERT_EQUAL(N, unsigned(d_end - d));
 
 	for (size_t i = 0; i < N; ++i)
-		g_assert_cmpint(src[i], ==, d[i] >> 8);
+		CPPUNIT_ASSERT_EQUAL(int(src[i]), d[i] >> 8);
 }
 
 void
-test_pcm_format_16_to_24()
+PcmFormatTest::TestFormat16to24()
 {
 	constexpr unsigned N = 256;
 	const auto src = TestDataBuffer<int16_t, N>();
@@ -59,14 +57,14 @@ test_pcm_format_16_to_24()
 	auto d = pcm_convert_to_24(buffer, SampleFormat::S16,
 				   src, sizeof(src), &d_size);
 	auto d_end = pcm_end_pointer(d, d_size);
-	g_assert_cmpint(d_end - d, ==, N);
+	CPPUNIT_ASSERT_EQUAL(N, unsigned(d_end - d));
 
 	for (size_t i = 0; i < N; ++i)
-		g_assert_cmpint(src[i], ==, d[i] >> 8);
+		CPPUNIT_ASSERT_EQUAL(int(src[i]), d[i] >> 8);
 }
 
 void
-test_pcm_format_16_to_32()
+PcmFormatTest::TestFormat16to32()
 {
 	constexpr unsigned N = 256;
 	const auto src = TestDataBuffer<int16_t, N>();
@@ -77,14 +75,14 @@ test_pcm_format_16_to_32()
 	auto d = pcm_convert_to_32(buffer, SampleFormat::S16,
 				   src, sizeof(src), &d_size);
 	auto d_end = pcm_end_pointer(d, d_size);
-	g_assert_cmpint(d_end - d, ==, N);
+	CPPUNIT_ASSERT_EQUAL(N, unsigned(d_end - d));
 
 	for (size_t i = 0; i < N; ++i)
-		g_assert_cmpint(src[i], ==, d[i] >> 16);
+		CPPUNIT_ASSERT_EQUAL(int(src[i]), d[i] >> 16);
 }
 
 void
-test_pcm_format_float()
+PcmFormatTest::TestFormatFloat()
 {
 	constexpr unsigned N = 256;
 	const auto src = TestDataBuffer<int16_t, N>();
@@ -95,11 +93,11 @@ test_pcm_format_float()
 	auto f = pcm_convert_to_float(buffer1, SampleFormat::S16,
 				      src, sizeof(src), &f_size);
 	auto f_end = pcm_end_pointer(f, f_size);
-	g_assert_cmpint(f_end - f, ==, N);
+	CPPUNIT_ASSERT_EQUAL(N, unsigned(f_end - f));
 
 	for (auto i = f; i != f_end; ++i) {
-		g_assert(*i >= -1.);
-		g_assert(*i <= 1.);
+		CPPUNIT_ASSERT(*i >= -1.);
+		CPPUNIT_ASSERT(*i <= 1.);
 	}
 
 	PcmDither dither;
@@ -109,8 +107,8 @@ test_pcm_format_float()
 				   SampleFormat::FLOAT,
 				   f, f_size, &d_size);
 	auto d_end = pcm_end_pointer(d, d_size);
-	g_assert_cmpint(d_end - d, ==, N);
+	CPPUNIT_ASSERT_EQUAL(N, unsigned(d_end - d));
 
 	for (size_t i = 0; i < N; ++i)
-		g_assert_cmpint(src[i], ==, d[i]);
+		CPPUNIT_ASSERT_EQUAL(src[i], d[i]);
 }

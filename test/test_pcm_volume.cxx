@@ -21,14 +21,12 @@
 #include "pcm/PcmVolume.hxx"
 #include "test_pcm_util.hxx"
 
-#include <glib.h>
-
 #include <algorithm>
 
 #include <string.h>
 
 void
-test_pcm_volume_8()
+PcmVolumeTest::TestVolume8()
 {
 	constexpr unsigned N = 256;
 	static int8_t zero[N];
@@ -37,27 +35,30 @@ test_pcm_volume_8()
 	int8_t dest[N];
 
 	std::copy(src.begin(), src.end(), dest);
-	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SampleFormat::S8,
-				   0), ==, true);
-	g_assert_cmpint(memcmp(dest, zero, sizeof(zero)), ==, 0);
+	CPPUNIT_ASSERT_EQUAL(true,
+			     pcm_volume(dest, sizeof(dest),
+					SampleFormat::S8, 0));
+	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, zero, sizeof(zero)));
 
 	std::copy(src.begin(), src.end(), dest);
-	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SampleFormat::S8,
-				   PCM_VOLUME_1), ==, true);
-	g_assert_cmpint(memcmp(dest, src, sizeof(src)), ==, 0);
+	CPPUNIT_ASSERT_EQUAL(true,
+			     pcm_volume(dest, sizeof(dest),
+					SampleFormat::S8, PCM_VOLUME_1));
+	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, src, sizeof(src)));
 
 	std::copy(src.begin(), src.end(), dest);
-	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SampleFormat::S8,
-				   PCM_VOLUME_1 / 2), ==, true);
+	CPPUNIT_ASSERT_EQUAL(true,
+			     pcm_volume(dest, sizeof(dest),
+					SampleFormat::S8, PCM_VOLUME_1 / 2));
 
 	for (unsigned i = 0; i < N; ++i) {
-		g_assert_cmpint(dest[i], >=, (src[i] - 1) / 2);
-		g_assert_cmpint(dest[i], <=, src[i] / 2 + 1);
+		CPPUNIT_ASSERT(dest[i] >= (src[i] - 1) / 2);
+		CPPUNIT_ASSERT(dest[i] <= src[i] / 2 + 1);
 	}
 }
 
 void
-test_pcm_volume_16()
+PcmVolumeTest::TestVolume16()
 {
 	constexpr unsigned N = 256;
 	static int16_t zero[N];
@@ -66,27 +67,30 @@ test_pcm_volume_16()
 	int16_t dest[N];
 
 	std::copy(src.begin(), src.end(), dest);
-	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SampleFormat::S16,
-				   0), ==, true);
-	g_assert_cmpint(memcmp(dest, zero, sizeof(zero)), ==, 0);
+	CPPUNIT_ASSERT_EQUAL(true,
+			     pcm_volume(dest, sizeof(dest),
+					SampleFormat::S16, 0));
+	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, zero, sizeof(zero)));
 
 	std::copy(src.begin(), src.end(), dest);
-	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SampleFormat::S16,
-				   PCM_VOLUME_1), ==, true);
-	g_assert_cmpint(memcmp(dest, src, sizeof(src)), ==, 0);
+	CPPUNIT_ASSERT_EQUAL(true,
+			     pcm_volume(dest, sizeof(dest),
+					SampleFormat::S16, PCM_VOLUME_1));
+	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, src, sizeof(src)));
 
 	std::copy(src.begin(), src.end(), dest);
-	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SampleFormat::S16,
-				   PCM_VOLUME_1 / 2), ==, true);
+	CPPUNIT_ASSERT_EQUAL(true,
+			     pcm_volume(dest, sizeof(dest),
+					SampleFormat::S16, PCM_VOLUME_1 / 2));
 
 	for (unsigned i = 0; i < N; ++i) {
-		g_assert_cmpint(dest[i], >=, (src[i] - 1) / 2);
-		g_assert_cmpint(dest[i], <=, src[i] / 2 + 1);
+		CPPUNIT_ASSERT(dest[i] >= (src[i] - 1) / 2);
+		CPPUNIT_ASSERT(dest[i] <= src[i] / 2 + 1);
 	}
 }
 
 void
-test_pcm_volume_24()
+PcmVolumeTest::TestVolume24()
 {
 	constexpr unsigned N = 256;
 	static int32_t zero[N];
@@ -95,27 +99,30 @@ test_pcm_volume_24()
 	int32_t dest[N];
 
 	std::copy(src.begin(), src.end(), dest);
-	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SampleFormat::S24_P32,
-				   0), ==, true);
-	g_assert_cmpint(memcmp(dest, zero, sizeof(zero)), ==, 0);
+	CPPUNIT_ASSERT_EQUAL(true,
+			     pcm_volume(dest, sizeof(dest),
+					SampleFormat::S24_P32, 0));
+	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, zero, sizeof(zero)));
 
 	std::copy(src.begin(), src.end(), dest);
-	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SampleFormat::S24_P32,
-				   PCM_VOLUME_1), ==, true);
-	g_assert_cmpint(memcmp(dest, src, sizeof(src)), ==, 0);
+	CPPUNIT_ASSERT_EQUAL(true,
+			     pcm_volume(dest, sizeof(dest),
+					SampleFormat::S24_P32, PCM_VOLUME_1));
+	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, src, sizeof(src)));
 
 	std::copy(src.begin(), src.end(), dest);
-	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SampleFormat::S24_P32,
-				   PCM_VOLUME_1 / 2), ==, true);
+	CPPUNIT_ASSERT_EQUAL(true,
+			     pcm_volume(dest, sizeof(dest),
+					SampleFormat::S24_P32, PCM_VOLUME_1 / 2));
 
 	for (unsigned i = 0; i < N; ++i) {
-		g_assert_cmpint(dest[i], >=, (src[i] - 1) / 2);
-		g_assert_cmpint(dest[i], <=, src[i] / 2 + 1);
+		CPPUNIT_ASSERT(dest[i] >= (src[i] - 1) / 2);
+		CPPUNIT_ASSERT(dest[i] <= src[i] / 2 + 1);
 	}
 }
 
 void
-test_pcm_volume_32()
+PcmVolumeTest::TestVolume32()
 {
 	constexpr unsigned N = 256;
 	static int32_t zero[N];
@@ -124,27 +131,30 @@ test_pcm_volume_32()
 	int32_t dest[N];
 
 	std::copy(src.begin(), src.end(), dest);
-	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SampleFormat::S32,
-				   0), ==, true);
-	g_assert_cmpint(memcmp(dest, zero, sizeof(zero)), ==, 0);
+	CPPUNIT_ASSERT_EQUAL(true,
+			     pcm_volume(dest, sizeof(dest),
+					SampleFormat::S32, 0));
+	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, zero, sizeof(zero)));
 
 	std::copy(src.begin(), src.end(), dest);
-	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SampleFormat::S32,
-				   PCM_VOLUME_1), ==, true);
-	g_assert_cmpint(memcmp(dest, src, sizeof(src)), ==, 0);
+	CPPUNIT_ASSERT_EQUAL(true,
+			     pcm_volume(dest, sizeof(dest),
+					SampleFormat::S32, PCM_VOLUME_1));
+	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, src, sizeof(src)));
 
 	std::copy(src.begin(), src.end(), dest);
-	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SampleFormat::S32,
-				   PCM_VOLUME_1 / 2), ==, true);
+	CPPUNIT_ASSERT_EQUAL(true,
+			     pcm_volume(dest, sizeof(dest),
+					SampleFormat::S32, PCM_VOLUME_1 / 2));
 
 	for (unsigned i = 0; i < N; ++i) {
-		g_assert_cmpint(dest[i], >=, (src[i] - 1) / 2);
-		g_assert_cmpint(dest[i], <=, src[i] / 2 + 1);
+		CPPUNIT_ASSERT(dest[i] >= (src[i] - 1) / 2);
+		CPPUNIT_ASSERT(dest[i] <= src[i] / 2 + 1);
 	}
 }
 
 void
-test_pcm_volume_float()
+PcmVolumeTest::TestVolumeFloat()
 {
 	constexpr unsigned N = 256;
 	static float zero[N];
@@ -153,19 +163,23 @@ test_pcm_volume_float()
 	float dest[N];
 
 	std::copy(src.begin(), src.end(), dest);
-	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SampleFormat::FLOAT,
-				   0), ==, true);
-	g_assert_cmpint(memcmp(dest, zero, sizeof(zero)), ==, 0);
+	CPPUNIT_ASSERT_EQUAL(true,
+			     pcm_volume(dest, sizeof(dest),
+					SampleFormat::FLOAT, 0));
+	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, zero, sizeof(zero)));
 
 	std::copy(src.begin(), src.end(), dest);
-	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SampleFormat::FLOAT,
-				   PCM_VOLUME_1), ==, true);
-	g_assert_cmpint(memcmp(dest, src, sizeof(src)), ==, 0);
+	CPPUNIT_ASSERT_EQUAL(true,
+			     pcm_volume(dest, sizeof(dest),
+					SampleFormat::FLOAT, PCM_VOLUME_1));
+	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, src, sizeof(src)));
 
 	std::copy(src.begin(), src.end(), dest);
-	g_assert_cmpint(pcm_volume(dest, sizeof(dest), SampleFormat::FLOAT,
-				   PCM_VOLUME_1 / 2), ==, true);
+	CPPUNIT_ASSERT_EQUAL(true,
+			     pcm_volume(dest, sizeof(dest),
+					SampleFormat::FLOAT,
+					PCM_VOLUME_1 / 2));
 
 	for (unsigned i = 0; i < N; ++i)
-		g_assert_cmpfloat(dest[i], ==, src[i] / 2);
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(src[i] / 2, dest[i], 1);
 }

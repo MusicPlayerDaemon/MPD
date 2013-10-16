@@ -72,13 +72,13 @@ template<typename T>
 bool
 AssertEqualWithTolerance(const T &a, const T &b, unsigned tolerance)
 {
-	g_assert_cmpint(a.size(), ==, b.size());
+	CPPUNIT_ASSERT_EQUAL(a.size(), b.size());
 
 	for (unsigned i = 0; i < a.size(); ++i) {
 		int64_t x = a[i], y = b[i];
 
-		g_assert_cmpint(x, >=, y - int64_t(tolerance));
-		g_assert_cmpint(x, <=, y + int64_t(tolerance));
+		CPPUNIT_ASSERT(x >= y - int64_t(tolerance));
+		CPPUNIT_ASSERT(x <= y + int64_t(tolerance));
 	}
 
 	return true;

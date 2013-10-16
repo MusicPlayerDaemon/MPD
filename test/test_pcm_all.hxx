@@ -20,61 +20,99 @@
 #ifndef MPD_TEST_PCM_ALL_HXX
 #define MPD_TEST_PCM_ALL_HXX
 
-void
-test_pcm_dither_24();
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 
-void
-test_pcm_dither_32();
+class PcmDitherTest : public CppUnit::TestFixture {
+	CPPUNIT_TEST_SUITE(PcmDitherTest);
+	CPPUNIT_TEST(TestDither24);
+	CPPUNIT_TEST(TestDither32);
+	CPPUNIT_TEST_SUITE_END();
 
-void
-test_pcm_pack_24();
+public:
+	void TestDither24();
+	void TestDither32();
+};
 
-void
-test_pcm_unpack_24();
+CPPUNIT_TEST_SUITE_REGISTRATION(PcmDitherTest);
 
-void
-test_pcm_channels_16();
+class PcmPackTest : public CppUnit::TestFixture {
+	CPPUNIT_TEST_SUITE(PcmPackTest);
+	CPPUNIT_TEST(TestPack24);
+	CPPUNIT_TEST(TestUnpack24);
+	CPPUNIT_TEST_SUITE_END();
 
-void
-test_pcm_channels_32();
+public:
+	void TestPack24();
+	void TestUnpack24();
+};
 
-void
-test_pcm_volume_8();
+CPPUNIT_TEST_SUITE_REGISTRATION(PcmPackTest);
 
-void
-test_pcm_volume_16();
+class PcmChannelsTest : public CppUnit::TestFixture {
+	CPPUNIT_TEST_SUITE(PcmChannelsTest);
+	CPPUNIT_TEST(TestChannels16);
+	CPPUNIT_TEST(TestChannels32);
+	CPPUNIT_TEST_SUITE_END();
 
-void
-test_pcm_volume_24();
+public:
+	void TestChannels16();
+	void TestChannels32();
+};
 
-void
-test_pcm_volume_32();
+CPPUNIT_TEST_SUITE_REGISTRATION(PcmChannelsTest);
 
-void
-test_pcm_volume_float();
+class PcmVolumeTest : public CppUnit::TestFixture {
+	CPPUNIT_TEST_SUITE(PcmVolumeTest);
+	CPPUNIT_TEST(TestVolume8);
+	CPPUNIT_TEST(TestVolume16);
+	CPPUNIT_TEST(TestVolume24);
+	CPPUNIT_TEST(TestVolume32);
+	CPPUNIT_TEST(TestVolumeFloat);
+	CPPUNIT_TEST_SUITE_END();
 
-void
-test_pcm_format_8_to_16();
+public:
+	void TestVolume8();
+	void TestVolume16();
+	void TestVolume24();
+	void TestVolume32();
+	void TestVolumeFloat();
+};
 
-void
-test_pcm_format_16_to_24();
+CPPUNIT_TEST_SUITE_REGISTRATION(PcmVolumeTest);
 
-void
-test_pcm_format_16_to_32();
+class PcmFormatTest : public CppUnit::TestFixture {
+	CPPUNIT_TEST_SUITE(PcmFormatTest);
+	CPPUNIT_TEST(TestFormat8to16);
+	CPPUNIT_TEST(TestFormat16to24);
+	CPPUNIT_TEST(TestFormat16to32);
+	CPPUNIT_TEST(TestFormatFloat);
+	CPPUNIT_TEST_SUITE_END();
 
-void
-test_pcm_format_float();
+public:
+	void TestFormat8to16();
+	void TestFormat16to24();
+	void TestFormat16to32();
+	void TestFormatFloat();
+};
 
-void
-test_pcm_mix_8();
+CPPUNIT_TEST_SUITE_REGISTRATION(PcmFormatTest);
 
-void
-test_pcm_mix_16();
+class PcmMixTest : public CppUnit::TestFixture {
+	CPPUNIT_TEST_SUITE(PcmMixTest);
+	CPPUNIT_TEST(TestMix8);
+	CPPUNIT_TEST(TestMix16);
+	CPPUNIT_TEST(TestMix24);
+	CPPUNIT_TEST(TestMix32);
+	CPPUNIT_TEST_SUITE_END();
 
-void
-test_pcm_mix_24();
+public:
+	void TestMix8();
+	void TestMix16();
+	void TestMix24();
+	void TestMix32();
+};
 
-void
-test_pcm_mix_32();
+CPPUNIT_TEST_SUITE_REGISTRATION(PcmMixTest);
 
 #endif

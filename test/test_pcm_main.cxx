@@ -18,35 +18,16 @@
  */
 
 #include "test_pcm_all.hxx"
+#include "Compiler.h"
 
-#include <glib.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/ui/text/TestRunner.h>
 
 int
-main(int argc, char **argv)
+main(gcc_unused int argc, gcc_unused char **argv)
 {
-	g_test_init (&argc, &argv, NULL);
-	g_test_add_func("/pcm/dither/24", test_pcm_dither_24);
-	g_test_add_func("/pcm/dither/32", test_pcm_dither_32);
-	g_test_add_func("/pcm/pack/pack24", test_pcm_pack_24);
-	g_test_add_func("/pcm/pack/unpack24", test_pcm_unpack_24);
-	g_test_add_func("/pcm/channels/16", test_pcm_channels_16);
-	g_test_add_func("/pcm/channels/32", test_pcm_channels_32);
-
-	g_test_add_func("/pcm/volume/8", test_pcm_volume_8);
-	g_test_add_func("/pcm/volume/16", test_pcm_volume_16);
-	g_test_add_func("/pcm/volume/24", test_pcm_volume_24);
-	g_test_add_func("/pcm/volume/32", test_pcm_volume_32);
-	g_test_add_func("/pcm/volume/float", test_pcm_volume_float);
-
-	g_test_add_func("/pcm/format/8_to_16", test_pcm_format_8_to_16);
-	g_test_add_func("/pcm/format/16_to_24", test_pcm_format_16_to_24);
-	g_test_add_func("/pcm/format/16_to_32", test_pcm_format_16_to_32);
-	g_test_add_func("/pcm/format/float", test_pcm_format_float);
-
-	g_test_add_func("/pcm/mix/8", test_pcm_mix_8);
-	g_test_add_func("/pcm/mix/16", test_pcm_mix_16);
-	g_test_add_func("/pcm/mix/24", test_pcm_mix_24);
-	g_test_add_func("/pcm/mix/32", test_pcm_mix_32);
-
-	g_test_run();
+	CppUnit::TextUi::TestRunner runner;
+	auto &registry = CppUnit::TestFactoryRegistry::getRegistry();
+	runner.addTest(registry.makeTest());
+	return runner.run() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
