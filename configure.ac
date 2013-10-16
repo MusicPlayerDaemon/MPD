@@ -964,6 +964,10 @@ if test x$enable_mpc = xyes; then
 	fi
 fi
 
+if test x$enable_mpc = xyes; then
+	AC_DEFINE(HAVE_MPCDEC, 1, [Define to use libmpcdec for MPC decoding])
+fi
+
 AC_SUBST(MPCDEC_LIBS)
 AC_SUBST(MPCDEC_CFLAGS)
 AM_CONDITIONAL(HAVE_MPCDEC, test x$enable_mpc = xyes)
