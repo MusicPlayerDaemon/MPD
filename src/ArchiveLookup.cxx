@@ -30,6 +30,17 @@
 #include <errno.h>
 
 gcc_pure
+static char *
+FindSlash(char *p, size_t i)
+{
+	for (; i > 0; --i)
+		if (p[i] == '/')
+			return p + i;
+
+	return nullptr;
+}
+
+gcc_pure
 static const char *
 FindSuffix(const char *p, size_t i)
 {
@@ -88,14 +99,14 @@ archive_lookup(char *pathname, const char **archive,
 				break;
 			}
 		}
+
 		//find one dir up
-		while (idx > 0) {
-			if (pathdupe[idx] == '/') {
-				pathdupe[idx] = 0;
-				break;
-			}
-			idx--;
-		}
+		char *slash = FindSlash(pathdupe, idx);
+		if (slash == nullptr)
+			break;
+
+		*slash = 0;
+		idx = slash - pathdupe;
 	}
 	g_free(pathdupe);
 	return ret;
