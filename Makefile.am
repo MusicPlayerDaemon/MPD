@@ -1033,6 +1033,10 @@ C_TESTS = \
 	test/test_pcm \
 	test/test_queue_priority
 
+if ENABLE_ARCHIVE
+C_TESTS += test/test_archive
+endif
+
 TESTS = $(C_TESTS)
 
 noinst_PROGRAMS = \
@@ -1434,6 +1438,16 @@ test_test_pcm_LDADD = \
 	libutil.a \
 	$(CPPUNIT_LIBS) \
 	$(GLIB_LIBS)
+
+test_test_archive_SOURCES = \
+	src/Log.cxx \
+	test/test_archive.cxx
+test_test_archive_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_archive_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
+test_test_archive_LDADD = \
+	libarchive.a \
+	$(GLIB_LIBS) \
+	$(CPPUNIT_LIBS)
 
 test_test_queue_priority_SOURCES = \
 	src/Queue.cxx \
