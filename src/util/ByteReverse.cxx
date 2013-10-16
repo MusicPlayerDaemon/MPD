@@ -18,12 +18,14 @@
  */
 
 #include "ByteReverse.hxx"
+#include "Compiler.h"
 
 #include <glib.h>
 #include <assert.h>
 
 void
-reverse_bytes_16(uint16_t *dest, const uint16_t *src, const uint16_t *src_end)
+reverse_bytes_16(uint16_t *gcc_restrict dest,
+		 const uint16_t *gcc_restrict src, const uint16_t *src_end)
 {
 	assert(dest != nullptr);
 	assert(src != nullptr);
@@ -36,7 +38,8 @@ reverse_bytes_16(uint16_t *dest, const uint16_t *src, const uint16_t *src_end)
 }
 
 void
-reverse_bytes_32(uint32_t *dest, const uint32_t *src, const uint32_t *src_end)
+reverse_bytes_32(uint32_t *gcc_restrict dest,
+		 const uint32_t *gcc_restrict src, const uint32_t *src_end)
 {
 	assert(dest != nullptr);
 	assert(src != nullptr);
@@ -49,7 +52,8 @@ reverse_bytes_32(uint32_t *dest, const uint32_t *src, const uint32_t *src_end)
 }
 
 void
-reverse_bytes_64(uint64_t *dest, const uint64_t *src, const uint64_t *src_end)
+reverse_bytes_64(uint64_t *gcc_restrict dest,
+		 const uint64_t *gcc_restrict src, const uint64_t *src_end)
 {
 	assert(dest != nullptr);
 	assert(src != nullptr);
@@ -62,7 +66,8 @@ reverse_bytes_64(uint64_t *dest, const uint64_t *src, const uint64_t *src_end)
 }
 
 static void
-reverse_bytes_linear(uint8_t *dest, const uint8_t *src, size_t n)
+reverse_bytes_linear(uint8_t *gcc_restrict dest,
+		     const uint8_t *gcc_restrict src, size_t n)
 {
 	src += n;
 
@@ -71,8 +76,8 @@ reverse_bytes_linear(uint8_t *dest, const uint8_t *src, size_t n)
 }
 
 static void
-reverse_bytes_generic(uint8_t *dest,
-		      const uint8_t *src, const uint8_t *src_end,
+reverse_bytes_generic(uint8_t *gcc_restrict dest,
+		      const uint8_t *gcc_restrict src, const uint8_t *src_end,
 		      size_t frame_size)
 {
 	assert(dest != nullptr);
@@ -89,7 +94,8 @@ reverse_bytes_generic(uint8_t *dest,
 }
 
 void
-reverse_bytes(uint8_t *dest, const uint8_t *src, const uint8_t *src_end,
+reverse_bytes(uint8_t *gcc_restrict dest,
+	      const uint8_t *gcc_restrict src, const uint8_t *src_end,
 	      size_t frame_size)
 {
 	assert(dest != nullptr);
