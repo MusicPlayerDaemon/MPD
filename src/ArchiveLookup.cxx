@@ -29,6 +29,18 @@
 #include <unistd.h>
 #include <errno.h>
 
+gcc_pure
+static const char *
+FindSuffix(const char *p, size_t i)
+{
+	for (; i > 0; --i) {
+		if (p[i] == '.')
+			return p + i + 1;
+	}
+
+	return nullptr;
+}
+
 bool
 archive_lookup(char *pathname, const char **archive,
 	       const char **inpath, const char **suffix)
@@ -67,14 +79,7 @@ archive_lookup(char *pathname, const char **archive,
 				*inpath = pathname + idx+1;
 
 				//try to get suffix
-				*suffix = NULL;
-				while (idx > 0) {
-					if (pathname[idx] == '.') {
-						*suffix = pathname + idx + 1;
-						break;
-					}
-					idx--;
-				}
+				*suffix = FindSuffix(pathname, idx);
 				break;
 			} else {
 				FormatError(archive_domain,
