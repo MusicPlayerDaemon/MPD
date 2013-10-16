@@ -79,3 +79,20 @@ AC_DEFUN([MPD_AUTO_PKG_LIB], [
 
 	MPD_AUTO_RESULT([$1], [$8], [$9])
 ])
+
+dnl Wrapper for AC_CHECK_LIB.
+dnl
+dnl Parameters: varname1, varname2, libname, symname, libs, cflags, description, errmsg
+AC_DEFUN([MPD_AUTO_LIB], [
+	AC_SUBST([$2_LIBS], [])
+	AC_SUBST([$2_CFLAGS], [])
+
+	if eval "test x`echo '$'enable_$1` != xno"; then
+		AC_CHECK_LIB($3, $4,
+			[eval "found_$1=yes $2_LIBS='$5' $2_CFLAGS='$6'"],
+			[eval "found_$1=no"],
+			[$5])
+	fi
+
+	MPD_AUTO_RESULT([$1], [$7], [$8])
+])

@@ -185,8 +185,8 @@ AC_ARG_ENABLE(audiofile,
 
 AC_ARG_ENABLE(bzip2,
 	AS_HELP_STRING([--enable-bzip2],
-		[enable bzip2 archive support (default: disabled)]),,
-	enable_bzip2=no)
+		[enable bzip2 archive support (default: auto)]),,
+	enable_bzip2=auto)
 
 AC_ARG_ENABLE(cdio-paranoia,
 	AS_HELP_STRING([--enable-cdio-paranoia],
@@ -310,9 +310,9 @@ AC_ARG_ENABLE(modplug,
 	enable_modplug=auto)
 
 AC_ARG_ENABLE(mpc,
-	AS_HELP_STRING([--disable-mpc],
-		[disable musepack (MPC) support (default: enable)]),,
-	enable_mpc=yes)
+	AS_HELP_STRING([--enable-mpc],
+		[disable musepack (MPC) support (default: auto)]),,
+	enable_mpc=auto)
 
 AC_ARG_ENABLE(mpg123,
 	AS_HELP_STRING([--enable-mpg123],
@@ -432,8 +432,8 @@ AC_ARG_ENABLE(werror,
 
 AC_ARG_ENABLE(wildmidi,
 	AS_HELP_STRING([--enable-wildmidi],
-		[enable MIDI support via wildmidi (default: disable)]),,
-	enable_wildmidi=no)
+		[enable MIDI support via wildmidi (default: auto)]),,
+	enable_wildmidi=auto)
 
 AC_ARG_WITH(zeroconf,
 	AS_HELP_STRING([--with-zeroconf=@<:@auto|avahi|bonjour|no@:>@],
@@ -771,12 +771,9 @@ fi
 AM_CONDITIONAL(ENABLE_ISO9660_TEST, test x$MKISOFS != xno)
 
 dnl ---------------------------------- libbz2 ---------------------------------
-if test x$enable_bzip2 = xyes; then
-	AC_CHECK_LIB(bz2, BZ2_bzDecompressInit,
-		[BZ2_LIBS="-lbz2"],
-		[AC_MSG_ERROR([libbz2 not found])])
-fi
-AC_SUBST(BZ2_LIBS)
+
+MPD_AUTO_LIB(bzip2, BZ2, bz2, BZ2_bzDecompressInit, [-lbz2], [],
+	[bzip2], [libbz2 not found])
 
 AM_CONDITIONAL(HAVE_BZ2, test x$enable_bzip2 = xyes)
 if test x$enable_bzip2 = xyes; then
@@ -948,28 +945,12 @@ fi
 AM_CONDITIONAL(ENABLE_SNDFILE, test x$enable_sndfile = xyes)
 
 dnl --------------------------------- musepack --------------------------------
-if test x$enable_mpc = xyes; then
-	oldcflags=$CFLAGS
-	oldlibs=$LIBS
-	oldcppflags=$CPPFLAGS
-	AC_CHECK_LIB(mpcdec,main,
-			MPCDEC_LIBS="$MPCDEC_LIBS -lmpcdec",
-			enable_mpc=no)
-	CFLAGS=$oldcflags
-	LIBS=$oldlibs
-	CPPFLAGS=$oldcppflags
 
-	if test x$enable_mpc != xyes; then
-		AC_MSG_WARN([mpcdec lib needed for MPC support -- disabling MPC support])
-	fi
-fi
-
+MPD_AUTO_LIB(mpc, MPCDEC, mpcdec, main, [-lmpcdec], [],
+	[mpcdec], [libmpcdec not found])
 if test x$enable_mpc = xyes; then
 	AC_DEFINE(HAVE_MPCDEC, 1, [Define to use libmpcdec for MPC decoding])
 fi
-
-AC_SUBST(MPCDEC_LIBS)
-AC_SUBST(MPCDEC_CFLAGS)
 AM_CONDITIONAL(HAVE_MPCDEC, test x$enable_mpc = xyes)
 
 dnl -------------------------------- Ogg Tremor -------------------------------
@@ -1076,21 +1057,9 @@ if test x$enable_wavpack = xyes; then
 fi
 
 dnl --------------------------------- WildMidi --------------------------------
+MPD_AUTO_LIB(wildmidi, WILDMIDI, WildMidi, WildMidi_Init, [-lWildMidi], [],
+	[wildmidi], [libwildmidi not found])
 if test x$enable_wildmidi = xyes; then
-	oldcflags=$CFLAGS
-	oldlibs=$LIBS
-	oldcppflags=$CPPFLAGS
-
-	AC_CHECK_LIB(WildMidi, WildMidi_Init,,
-		AC_MSG_ERROR([libwildmidi not found]))
-
-	CFLAGS=$oldcflags
-	LIBS=$oldlibs
-	CPPFLAGS=$oldcppflags
-
-	AC_SUBST(WILDMIDI_LIBS,-lWildMidi)
-	AC_SUBST(WILDMIDI_CFLAGS,)
-
 	AC_DEFINE(ENABLE_WILDMIDI, 1, [Define for wildmidi support])
 fi
 
@@ -1166,23 +1135,9 @@ fi
 AM_CONDITIONAL(ENABLE_VORBIS_ENCODER, test x$enable_vorbis_encoder = xyes)
 
 dnl ------------------------------- LAME Encoder ------------------------------
-if test x$enable_lame_encoder != xno; then
-	AC_CHECK_HEADERS(lame/lame.h,,
-		[AC_CHECK_HEADERS(lame.h,, using_lame=no)])
-	AC_CHECK_LIB(mp3lame, lame_init, [:], using_lame=no)
-	if test x$using_lame != xno; then
-		AC_DEFINE(HAVE_LAME, 1, [Define to 1 if you have lame 3.98 or greater.])
-		LAME_LIBS="-lmp3lame -lm"
-		enable_lame_encoder=yes
-	fi
 
-	if test "$enable_lame_encoder" = "yes" -a "$using_lame" = "no"; then
-		AC_MSG_ERROR([LAME libraries and development support files not found.])
-	fi
-fi
-
-AC_SUBST(LAME_LIBS)
-
+MPD_AUTO_LIB(lame_encoder, LAME, mp3lame, lame_init, [-lmp3lame], [],
+	[libmp3lame], [libmp3lame not found])
 if test x$enable_lame_encoder = xyes; then
 	AC_DEFINE(ENABLE_LAME_ENCODER, 1,
 		[Define to enable the lame encoder plugin])
