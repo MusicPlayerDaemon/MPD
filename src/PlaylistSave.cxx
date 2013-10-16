@@ -119,7 +119,8 @@ playlist_load_spl(struct playlist *playlist, struct player_control *pc,
 			const char *path_utf8 = uri_utf8.c_str() + 7;
 
 			if (playlist->AppendFile(*pc, path_utf8) != PLAYLIST_RESULT_SUCCESS)
-				g_warning("can't add file \"%s\"", path_utf8);
+				FormatError(playlist_domain,
+					    "can't add file \"%s\"", path_utf8);
 			continue;
 		}
 
