@@ -311,7 +311,7 @@ libpcm_a_SOURCES = \
 	src/pcm/PcmVolume.cxx src/pcm/PcmVolume.hxx \
 	src/pcm/PcmMix.cxx src/pcm/PcmMix.hxx \
 	src/pcm/PcmChannels.cxx src/pcm/PcmChannels.hxx \
-	src/pcm/pcm_pack.c src/pcm/pcm_pack.h \
+	src/pcm/PcmPack.cxx src/pcm/PcmPack.hxx \
 	src/pcm/PcmFormat.cxx src/pcm/PcmFormat.hxx \
 	src/pcm/PcmResample.cxx src/pcm/PcmResample.hxx \
 	src/pcm/PcmResampleFallback.cxx \

@@ -21,7 +21,6 @@
 #include "PcmFormat.hxx"
 #include "PcmDither.hxx"
 #include "PcmBuffer.hxx"
-#include "pcm_pack.h"
 #include "PcmUtils.hxx"
 
 #include <type_traits>

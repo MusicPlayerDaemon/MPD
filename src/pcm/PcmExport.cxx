@@ -20,9 +20,9 @@
 #include "config.h"
 #include "PcmExport.hxx"
 #include "PcmDsdUsb.hxx"
+#include "PcmPack.hxx"
 
 extern "C" {
-#include "pcm_pack.h"
 #include "util/byte_reverse.h"
 }
 

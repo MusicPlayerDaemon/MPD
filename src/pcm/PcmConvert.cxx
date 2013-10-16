@@ -21,7 +21,6 @@
 #include "PcmConvert.hxx"
 #include "PcmChannels.hxx"
 #include "PcmFormat.hxx"
-#include "pcm_pack.h"
 #include "AudioFormat.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

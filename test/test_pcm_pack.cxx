@@ -19,10 +19,7 @@
 
 #include "test_pcm_all.hxx"
 #include "test_pcm_util.hxx"
-
-extern "C" {
-#include "pcm/pcm_pack.h"
-}
+#include "pcm/PcmPack.hxx"
 
 #include <glib.h>
 
