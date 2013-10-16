@@ -250,6 +250,7 @@ endif
 libutil_a_SOURCES = \
 	src/util/Macros.hxx \
 	src/util/Error.cxx src/util/Error.hxx \
+	src/util/Domain.hxx \
 	src/util/ReusableArray.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \
@@ -272,6 +273,7 @@ libutil_a_SOURCES = \
 # System library
 
 libsystem_a_SOURCES = \
+	src/system/ByteOrder.hxx \
 	src/system/FatalError.cxx src/system/FatalError.hxx \
 	src/system/fd_util.c src/system/fd_util.h \
 	src/system/SocketUtil.cxx src/system/SocketUtil.hxx \
