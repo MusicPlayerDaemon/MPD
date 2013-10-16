@@ -21,10 +21,7 @@
 #include "PcmExport.hxx"
 #include "PcmDsdUsb.hxx"
 #include "PcmPack.hxx"
-
-extern "C" {
-#include "util/byte_reverse.h"
-}
+#include "util/ByteReverse.hxx"
 
 void
 PcmExport::Open(SampleFormat sample_format, unsigned _channels,

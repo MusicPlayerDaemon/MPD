@@ -266,7 +266,7 @@ libutil_a_SOURCES = \
 	src/util/PeakBuffer.cxx src/util/PeakBuffer.hxx \
 	src/util/list.h \
 	src/util/list_sort.c src/util/list_sort.h \
-	src/util/byte_reverse.c src/util/byte_reverse.h \
+	src/util/ByteReverse.cxx src/util/ByteReverse.hxx \
 	src/util/bit_reverse.c src/util/bit_reverse.h
 
 # System library
@@ -1408,7 +1408,7 @@ test_run_inotify_LDADD = \
 endif
 
 test_test_byte_reverse_SOURCES = \
-	test/test_byte_reverse.c
+	test/test_byte_reverse.cxx
 test_test_byte_reverse_LDADD = \
 	libutil.a \
 	$(GLIB_LIBS)

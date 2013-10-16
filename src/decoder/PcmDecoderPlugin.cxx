@@ -22,11 +22,8 @@
 #include "DecoderAPI.hxx"
 #include "InputStream.hxx"
 #include "util/Error.hxx"
+#include "util/ByteReverse.hxx"
 #include "Log.hxx"
-
-extern "C" {
-#include "util/byte_reverse.h"
-}
 
 #include <glib.h>
 #include <unistd.h>

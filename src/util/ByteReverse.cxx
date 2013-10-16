@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2012 The Music Player Daemon Project
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "byte_reverse.h"
+#include "ByteReverse.hxx"
 
 #include <glib.h>
 #include <assert.h>
@@ -25,8 +25,8 @@
 void
 reverse_bytes_16(uint16_t *dest, const uint16_t *src, const uint16_t *src_end)
 {
-	assert(dest != NULL);
-	assert(src != NULL);
+	assert(dest != nullptr);
+	assert(src != nullptr);
 	assert(src_end >= src);
 
 	while (src < src_end) {
@@ -38,8 +38,8 @@ reverse_bytes_16(uint16_t *dest, const uint16_t *src, const uint16_t *src_end)
 void
 reverse_bytes_32(uint32_t *dest, const uint32_t *src, const uint32_t *src_end)
 {
-	assert(dest != NULL);
-	assert(src != NULL);
+	assert(dest != nullptr);
+	assert(src != nullptr);
 	assert(src_end >= src);
 
 	while (src < src_end) {
@@ -51,8 +51,8 @@ reverse_bytes_32(uint32_t *dest, const uint32_t *src, const uint32_t *src_end)
 void
 reverse_bytes_64(uint64_t *dest, const uint64_t *src, const uint64_t *src_end)
 {
-	assert(dest != NULL);
-	assert(src != NULL);
+	assert(dest != nullptr);
+	assert(src != nullptr);
 	assert(src_end >= src);
 
 	while (src < src_end) {
@@ -75,8 +75,8 @@ reverse_bytes_generic(uint8_t *dest,
 		      const uint8_t *src, const uint8_t *src_end,
 		      size_t frame_size)
 {
-	assert(dest != NULL);
-	assert(src != NULL);
+	assert(dest != nullptr);
+	assert(src != nullptr);
 	assert(src_end >= src);
 	assert(frame_size > 0);
 	assert((src_end - src) % frame_size == 0);
@@ -92,8 +92,8 @@ void
 reverse_bytes(uint8_t *dest, const uint8_t *src, const uint8_t *src_end,
 	      size_t frame_size)
 {
-	assert(dest != NULL);
-	assert(src != NULL);
+	assert(dest != nullptr);
+	assert(src != nullptr);
 	assert(src_end >= src);
 	assert(frame_size > 0);
 	assert((src_end - src) % frame_size == 0);
