@@ -56,16 +56,15 @@ bool
 archive_lookup(char *pathname, const char **archive,
 	       const char **inpath, const char **suffix)
 {
-	char *pathdupe;
-	int len, idx;
-	struct stat st_info;
 	bool ret = false;
 
-	pathdupe = g_strdup(pathname);
-	len = idx = strlen(pathname);
+	char *const pathdupe = g_strdup(pathname);
+	const size_t len = strlen(pathname);
+	size_t idx = len;
 
 	while (idx > 0) {
 		//try to stat if its real directory
+		struct stat st_info;
 		if (stat(pathdupe, &st_info) == -1) {
 			if (errno != ENOTDIR) {
 				FormatErrno(archive_domain,
