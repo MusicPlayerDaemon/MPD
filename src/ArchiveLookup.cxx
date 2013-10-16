@@ -61,10 +61,6 @@ archive_lookup(char *pathname, const char **archive,
 	struct stat st_info;
 	bool ret = false;
 
-	*archive = NULL;
-	*inpath = NULL;
-	*suffix = NULL;
-
 	pathdupe = g_strdup(pathname);
 	len = idx = strlen(pathname);
 
