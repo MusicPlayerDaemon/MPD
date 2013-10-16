@@ -43,9 +43,8 @@ playlist_print_song(FILE *file, const Song *song)
 		if (!path.IsNull())
 			fprintf(file, "%s\n", path.c_str());
 	} else {
-		char *uri = song->GetURI();
-		const Path uri_fs = Path::FromUTF8(uri);
-		g_free(uri);
+		const auto uri_utf8 = song->GetURI();
+		const Path uri_fs = Path::FromUTF8(uri_utf8.c_str());
 
 		if (!uri_fs.IsNull())
 			fprintf(file, "%s\n", uri_fs.c_str());

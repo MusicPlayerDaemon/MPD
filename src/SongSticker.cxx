@@ -34,11 +34,8 @@ sticker_song_get_value(const Song *song, const char *name)
 	assert(song != NULL);
 	assert(song->IsInDatabase());
 
-	char *uri = song->GetURI();
-	char *value = sticker_load_value("song", uri, name);
-	g_free(uri);
-
-	return value;
+	const auto uri = song->GetURI();
+	return sticker_load_value("song", uri.c_str(), name);
 }
 
 bool
@@ -48,11 +45,8 @@ sticker_song_set_value(const Song *song,
 	assert(song != NULL);
 	assert(song->IsInDatabase());
 
-	char *uri = song->GetURI();
-	bool ret = sticker_store_value("song", uri, name, value);
-	g_free(uri);
-
-	return ret;
+	const auto uri = song->GetURI();
+	return sticker_store_value("song", uri.c_str(), name, value);
 }
 
 bool
@@ -61,11 +55,8 @@ sticker_song_delete(const Song *song)
 	assert(song != NULL);
 	assert(song->IsInDatabase());
 
-	char *uri = song->GetURI();
-	bool ret = sticker_delete("song", uri);
-	g_free(uri);
-
-	return ret;
+	const auto uri = song->GetURI();
+	return sticker_delete("song", uri.c_str());
 }
 
 bool
@@ -74,11 +65,8 @@ sticker_song_delete_value(const Song *song, const char *name)
 	assert(song != NULL);
 	assert(song->IsInDatabase());
 
-	char *uri = song->GetURI();
-	bool success = sticker_delete_value("song", uri, name);
-	g_free(uri);
-
-	return success;
+	const auto uri = song->GetURI();
+	return sticker_delete_value("song", uri.c_str(), name);
 }
 
 struct sticker *
@@ -87,11 +75,8 @@ sticker_song_get(const Song *song)
 	assert(song != NULL);
 	assert(song->IsInDatabase());
 
-	char *uri = song->GetURI();
-	struct sticker *sticker = sticker_load("song", uri);
-	g_free(uri);
-
-	return sticker;
+	const auto uri = song->GetURI();
+	return sticker_load("song", uri.c_str());
 }
 
 struct sticker_song_find_data {

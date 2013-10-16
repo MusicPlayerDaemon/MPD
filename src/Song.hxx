@@ -23,6 +23,8 @@
 #include "util/list.h"
 #include "Compiler.h"
 
+#include <string>
+
 #include <assert.h>
 #include <sys/time.h>
 
@@ -126,12 +128,9 @@ struct Song {
 	/**
 	 * Returns the URI of the song in UTF-8 encoding, including its
 	 * location within the music directory.
-	 *
-	 * The return value is allocated on the heap, and must be freed by the
-	 * caller.
 	 */
-	gcc_malloc
-	char *GetURI() const;
+	gcc_pure
+	std::string GetURI() const;
 
 	gcc_pure
 	double GetDuration() const;

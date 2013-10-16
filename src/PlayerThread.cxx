@@ -461,12 +461,10 @@ Player::CheckDecoderStartup()
 		decoder_starting = false;
 
 		if (!paused && !OpenOutput()) {
-			char *uri = dc.song->GetURI();
+			const auto uri = dc.song->GetURI();
 			FormatError(player_domain,
 				    "problems opening audio device "
-				    "while playing \"%s\"", uri);
-			g_free(uri);
-
+				    "while playing \"%s\"", uri.c_str());
 			return true;
 		}
 
@@ -878,9 +876,10 @@ Player::SongBorder()
 {
 	xfade_state = CrossFadeState::UNKNOWN;
 
-	char *uri = song->GetURI();
-	FormatInfo(player_domain, "played \"%s\"", uri);
-	g_free(uri);
+	{
+		const auto uri = song->GetURI();
+		FormatInfo(player_domain, "played \"%s\"", uri.c_str());
+	}
 
 	ReplacePipe(dc.pipe);
 

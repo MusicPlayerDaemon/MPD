@@ -40,10 +40,8 @@
 static void
 queue_save_database_song(FILE *fp, int idx, const Song *song)
 {
-	char *uri = song->GetURI();
-
-	fprintf(fp, "%i:%s\n", idx, uri);
-	g_free(uri);
+	const auto uri = song->GetURI();
+	fprintf(fp, "%i:%s\n", idx, uri.c_str());
 }
 
 static void

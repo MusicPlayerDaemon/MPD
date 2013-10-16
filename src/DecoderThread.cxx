@@ -422,16 +422,13 @@ decoder_run(struct decoder_control *dc)
 	dc->ClearError();
 
 	const Song *song = dc->song;
-	char *uri;
-
 	assert(song != NULL);
 
-	if (song->IsFile())
-		uri = g_strdup(map_song_fs(song).c_str());
-	else
-		uri = song->GetURI();
+	const std::string uri = song->IsFile()
+		? std::string(map_song_fs(song).c_str())
+		: song->GetURI();
 
-	if (uri == NULL) {
+	if (uri.empty()) {
 		dc->state = DecoderState::ERROR;
 		dc->error.Set(decoder_domain, "Failed to map song");
 
@@ -439,8 +436,7 @@ decoder_run(struct decoder_control *dc)
 		return;
 	}
 
-	decoder_run_song(dc, song, uri);
-	g_free(uri);
+	decoder_run_song(dc, song, uri.c_str());
 
 }
 

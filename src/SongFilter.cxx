@@ -123,9 +123,8 @@ bool
 SongFilter::Item::Match(const Song &song) const
 {
 	if (tag == LOCATE_TAG_FILE_TYPE || tag == LOCATE_TAG_ANY_TYPE) {
-		char *uri = song.GetURI();
-		const bool result = StringMatch(uri);
-		g_free(uri);
+		const auto uri = song.GetURI();
+		const bool result = StringMatch(uri.c_str());
 
 		if (result || tag == LOCATE_TAG_FILE_TYPE)
 			return result;

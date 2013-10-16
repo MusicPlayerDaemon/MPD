@@ -50,13 +50,12 @@ static Cond remove_cond;
 static void
 song_remove_event(void)
 {
-	char *uri;
-
 	assert(removed_song != NULL);
 
-	uri = removed_song->GetURI();
-	FormatInfo(update_domain, "removing %s", uri);
-	g_free(uri);
+	{
+		const auto uri = removed_song->GetURI();
+		FormatInfo(update_domain, "removing %s", uri.c_str());
+	}
 
 #ifdef ENABLE_SQLITE
 	/* if the song has a sticker, remove it */

@@ -89,9 +89,8 @@ Song::DupDetached() const
 {
 	Song *song;
 	if (IsInDatabase()) {
-		char *new_uri = GetURI();
-		song = NewDetached(new_uri);
-		g_free(new_uri);
+		const auto new_uri = GetURI();
+		song = NewDetached(new_uri.c_str());
 	} else
 		song = song_alloc(uri, nullptr);
 
@@ -138,28 +137,32 @@ song_equals(const Song *a, const Song *b)
 	    (a->parent == &detached_root || b->parent == &detached_root)) {
 		/* must compare the full URI if one of the objects is
 		   "detached" */
-		char *au = a->GetURI();
-		char *bu = b->GetURI();
-		const bool result = strcmp(au, bu) == 0;
-		g_free(bu);
-		g_free(au);
-		return result;
+		const auto au = a->GetURI();
+		const auto bu = b->GetURI();
+		return au == bu;
 	}
 
 	return directory_is_same(a->parent, b->parent) &&
 		strcmp(a->uri, b->uri) == 0;
 }
 
-char *
+std::string
 Song::GetURI() const
 {
 	assert(*uri);
 
 	if (!IsInDatabase() || parent->IsRoot())
-		return g_strdup(uri);
-	else
-		return g_strconcat(parent->GetPath(),
-				   "/", uri, nullptr);
+		return std::string(uri);
+	else {
+		const char *path = parent->GetPath();
+
+		std::string result;
+		result.reserve(strlen(path) + 1 + strlen(uri));
+		result.assign(path);
+		result.push_back('/');
+		result.append(uri);
+		return result;
+	}
 }
 
 double

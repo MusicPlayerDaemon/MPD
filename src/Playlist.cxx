@@ -25,8 +25,6 @@
 #include "Idle.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 
 void
@@ -55,18 +53,17 @@ static void
 playlist_queue_song_order(struct playlist *playlist, struct player_control *pc,
 			  unsigned order)
 {
-	char *uri;
-
 	assert(playlist->queue.IsValidOrder(order));
 
 	playlist->queued = order;
 
 	Song *song = playlist->queue.GetOrder(order)->DupDetached();
 
-	uri = song->GetURI();
-	FormatDebug(playlist_domain, "queue song %i:\"%s\"",
-		    playlist->queued, uri);
-	g_free(uri);
+	{
+		const auto uri = song->GetURI();
+		FormatDebug(playlist_domain, "queue song %i:\"%s\"",
+			    playlist->queued, uri.c_str());
+	}
 
 	pc->EnqueueSong(song);
 }
@@ -155,9 +152,11 @@ playlist::PlayOrder(player_control &pc, int order)
 
 	Song *song = queue.GetOrder(order)->DupDetached();
 
-	char *uri = song->GetURI();
-	FormatDebug(playlist_domain, "play %i:\"%s\"", order, uri);
-	g_free(uri);
+	{
+		const auto uri = song->GetURI();
+		FormatDebug(playlist_domain, "play %i:\"%s\"",
+			    order, uri.c_str());
+	}
 
 	pc.Play(song);
 	current = order;
