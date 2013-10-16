@@ -23,6 +23,8 @@
 #include "check.h"
 #include "Compiler.h"
 
+#include <string>
+
 struct Song;
 struct Tag;
 
@@ -56,7 +58,7 @@ class CueParser {
 
 	Tag *tag;
 
-	char *filename;
+	std::string filename;
 
 	/**
 	 * The song currently being edited.

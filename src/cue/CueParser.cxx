@@ -31,7 +31,6 @@
 
 CueParser::CueParser()
 	:state(HEADER), tag(new Tag()),
-	 filename(nullptr),
 	 current(nullptr),
 	 previous(nullptr),
 	 finished(nullptr),
@@ -40,7 +39,6 @@ CueParser::CueParser()
 CueParser::~CueParser()
 {
 	delete tag;
-	g_free(filename);
 
 	if (current != nullptr)
 		current->Free();
@@ -230,8 +228,7 @@ CueParser::Feed2(char *p)
 		}
 
 		state = WAVE;
-		g_free(filename);
-		filename = g_strdup(new_filename);
+		filename = new_filename;
 	} else if (state == IGNORE_FILE) {
 		return;
 	} else if (strcmp(command, "TRACK") == 0) {
@@ -251,7 +248,7 @@ CueParser::Feed2(char *p)
 		}
 
 		state = TRACK;
-		current = Song::NewRemote(filename);
+		current = Song::NewRemote(filename.c_str());
 		assert(current->tag == nullptr);
 		current->tag = new Tag(*tag);
 		current->tag->AddItem(TAG_TRACK, nr);
