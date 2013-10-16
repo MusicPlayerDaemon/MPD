@@ -1047,7 +1047,7 @@ if test x$enable_sidplay != xno; then
 		[found_sidplay=yes], [found_sidplay=no])
 
 	if test x$found_sidplay = xyes; then
-		AC_CHECK_LIB([sidutils],[main],[],[found_sidplay=no],[])
+		AC_CHECK_LIB([sidutils],[main],[:],[found_sidplay=no],[])
 	fi
 
 	MPD_AUTO_RESULT(sidplay, [sidplay decoder plugin],
@@ -1169,7 +1169,7 @@ dnl ------------------------------- LAME Encoder ------------------------------
 if test x$enable_lame_encoder != xno; then
 	AC_CHECK_HEADERS(lame/lame.h,,
 		[AC_CHECK_HEADERS(lame.h,, using_lame=no)])
-	AC_CHECK_LIB(mp3lame, lame_init,, using_lame=no)
+	AC_CHECK_LIB(mp3lame, lame_init, [:], using_lame=no)
 	if test x$using_lame != xno; then
 		AC_DEFINE(HAVE_LAME, 1, [Define to 1 if you have lame 3.98 or greater.])
 		LAME_LIBS="-lmp3lame -lm"
