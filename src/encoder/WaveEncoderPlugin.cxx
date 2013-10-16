@@ -95,7 +95,7 @@ wave_encoder_finish(Encoder *_encoder)
 {
 	WaveEncoder *encoder = (WaveEncoder *)_encoder;
 
-	g_free(encoder);
+	delete encoder;
 }
 
 static bool
