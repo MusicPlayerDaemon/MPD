@@ -45,14 +45,14 @@ input_archive_open(const char *pathname,
 		   Error &error)
 {
 	const struct archive_plugin *arplug;
-	char *archive, *filename, *suffix, *pname;
 	struct input_stream *is;
 
 	if (!Path::IsAbsoluteFS(pathname))
 		return NULL;
 
-	pname = g_strdup(pathname);
+	char *pname = g_strdup(pathname);
 	// archive_lookup will modify pname when true is returned
+	const char *archive, *filename, *suffix;
 	if (!archive_lookup(pname, &archive, &filename, &suffix)) {
 		FormatDebug(archive_domain,
 			    "not an archive, lookup %s failed", pname);

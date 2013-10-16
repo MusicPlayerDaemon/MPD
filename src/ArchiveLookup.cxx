@@ -29,7 +29,9 @@
 #include <unistd.h>
 #include <errno.h>
 
-bool archive_lookup(char *pathname, char **archive, char **inpath, char **suffix)
+bool
+archive_lookup(char *pathname, const char **archive,
+	       const char **inpath, const char **suffix)
 {
 	char *pathdupe;
 	int len, idx;

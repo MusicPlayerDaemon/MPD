@@ -37,7 +37,9 @@
  * inarchive pathname:		Talco - Combat Circus/12 - A la pachenka.mp3
  * and suffix:			 zip
  */
-bool archive_lookup(char *pathname, char **archive, char **inpath, char **suffix);
+bool
+archive_lookup(char *pathname, const char **archive,
+	       const char **inpath, const char **suffix);
 
 #endif
 
