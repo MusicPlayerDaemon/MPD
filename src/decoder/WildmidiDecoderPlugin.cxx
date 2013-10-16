@@ -106,11 +106,7 @@ wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
 			unsigned long seek_where = WILDMIDI_SAMPLE_RATE *
 				decoder_seek_where(decoder);
 
-#ifdef HAVE_WILDMIDI_SAMPLED_SEEK
-			WildMidi_SampledSeek(wm, &seek_where);
-#else
 			WildMidi_FastSeek(wm, &seek_where);
-#endif
 			decoder_command_finished(decoder);
 			cmd = DecoderCommand::NONE;
 		}

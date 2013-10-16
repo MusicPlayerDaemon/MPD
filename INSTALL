@@ -102,7 +102,7 @@ For C64 SID support.
 libfluidsynth - http://fluidsynth.resonance.org/
 For MIDI support.
 
-libwildmidi - http://wildmidi.sourceforge.net/
+libwildmidi 0.2.3 - http://wildmidi.sourceforge.net/
 For MIDI support.
 
 libsndfile - http://www.mega-nerd.com/libsndfile/
