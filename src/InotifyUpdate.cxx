@@ -25,11 +25,11 @@
 #include "Mapper.hxx"
 #include "Main.hxx"
 #include "fs/Path.hxx"
+#include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
+#include <string>
 #include <map>
 #include <forward_list>
 
@@ -50,23 +50,20 @@ enum {
 struct WatchDirectory {
 	WatchDirectory *parent;
 
-	char *name;
+	Path name;
 
 	int descriptor;
 
 	std::forward_list<WatchDirectory> children;
 
-	WatchDirectory(WatchDirectory *_parent, const char *_name,
+	template<typename N>
+	WatchDirectory(WatchDirectory *_parent, N &&_name,
 		       int _descriptor)
-		:parent(_parent), name(g_strdup(_name)),
+		:parent(_parent), name(std::forward<N>(_name)),
 		 descriptor(_descriptor) {}
 
 	WatchDirectory(const WatchDirectory &) = delete;
 	WatchDirectory &operator=(const WatchDirectory &) = delete;
-
-	~WatchDirectory() {
-		g_free(name);
-	}
 };
 
 static InotifySource *inotify_source;
@@ -132,22 +129,17 @@ remove_watch_directory(WatchDirectory *directory)
 		});
 }
 
-static char *
+static Path
 watch_directory_get_uri_fs(const WatchDirectory *directory)
 {
-	char *parent_uri, *uri;
-
 	if (directory->parent == NULL)
-		return NULL;
+		return Path::Null();
 
-	parent_uri = watch_directory_get_uri_fs(directory->parent);
-	if (parent_uri == NULL)
-		return g_strdup(directory->name);
+	Path uri = watch_directory_get_uri_fs(directory->parent);
+	if (uri.IsNull())
+		return directory->name;
 
-	uri = g_strconcat(parent_uri, "/", directory->name, NULL);
-	g_free(parent_uri);
-
-	return uri;
+	return Path::Build(uri, directory->name);
 }
 
 /* we don't look at "." / ".." nor files with newlines in their name */
@@ -160,7 +152,7 @@ static bool skip_path(const char *path)
 
 static void
 recursive_watch_subdirectories(WatchDirectory *directory,
-			       const char *path_fs, unsigned depth)
+			       const Path &path_fs, unsigned depth)
 {
 	Error error;
 	DIR *dir;
@@ -168,66 +160,62 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 
 	assert(directory != NULL);
 	assert(depth <= inotify_max_depth);
-	assert(path_fs != NULL);
+	assert(!path_fs.IsNull());
 
 	++depth;
 
 	if (depth > inotify_max_depth)
 		return;
 
-	dir = opendir(path_fs);
+	dir = opendir(path_fs.c_str());
 	if (dir == NULL) {
 		FormatErrno(inotify_domain,
-			    "Failed to open directory %s", path_fs);
+			    "Failed to open directory %s", path_fs.c_str());
 		return;
 	}
 
 	while ((ent = readdir(dir))) {
-		char *child_path_fs;
 		struct stat st;
 		int ret;
 
 		if (skip_path(ent->d_name))
 			continue;
 
-		child_path_fs = g_strconcat(path_fs, "/", ent->d_name, NULL);
-		ret = stat(child_path_fs, &st);
+		const Path child_path_fs = Path::Build(path_fs, ent->d_name);
+		ret = StatFile(child_path_fs, st);
 		if (ret < 0) {
 			FormatErrno(inotify_domain,
 				    "Failed to stat %s",
-				    child_path_fs);
-			g_free(child_path_fs);
+				    child_path_fs.c_str());
 			continue;
 		}
 
-		if (!S_ISDIR(st.st_mode)) {
-			g_free(child_path_fs);
+		if (!S_ISDIR(st.st_mode))
 			continue;
-		}
 
-		ret = inotify_source->Add(child_path_fs, IN_MASK, error);
+		ret = inotify_source->Add(child_path_fs.c_str(), IN_MASK,
+					  error);
 		if (ret < 0) {
 			FormatError(error,
-				    "Failed to register %s", child_path_fs);
+				    "Failed to register %s",
+				    child_path_fs.c_str());
 			error.Clear();
-			g_free(child_path_fs);
 			continue;
 		}
 
 		WatchDirectory *child = tree_find_watch_directory(ret);
-		if (child != NULL) {
+		if (child != nullptr)
 			/* already being watched */
-			g_free(child_path_fs);
 			continue;
-		}
 
-		directory->children.emplace_front(directory, ent->d_name, ret);
+		directory->children.emplace_front(directory,
+						  Path::FromFS(ent->d_name),
+						  ret);
 		child = &directory->children.front();
 
 		tree_add_watch_directory(child);
 
 		recursive_watch_subdirectories(child, child_path_fs, depth);
-		g_free(child_path_fs);
 	}
 
 	closedir(dir);
@@ -251,7 +239,6 @@ mpd_inotify_callback(int wd, unsigned mask,
 		     gcc_unused const char *name, gcc_unused void *ctx)
 {
 	WatchDirectory *directory;
-	char *uri_fs;
 
 	/*FormatDebug(inotify_domain, "wd=%d mask=0x%x name='%s'", wd, mask, name);*/
 
@@ -259,10 +246,9 @@ mpd_inotify_callback(int wd, unsigned mask,
 	if (directory == NULL)
 		return;
 
-	uri_fs = watch_directory_get_uri_fs(directory);
+	const auto uri_fs = watch_directory_get_uri_fs(directory);
 
 	if ((mask & (IN_DELETE_SELF|IN_MOVE_SELF)) != 0) {
-		g_free(uri_fs);
 		remove_watch_directory(directory);
 		return;
 	}
@@ -271,19 +257,14 @@ mpd_inotify_callback(int wd, unsigned mask,
 	    (mask & IN_ISDIR) != 0) {
 		/* a sub directory was changed: register those in
 		   inotify */
-		const char *root = mapper_get_music_directory_fs().c_str();
-		const char *path_fs;
-		char *allocated = NULL;
+		const Path &root = mapper_get_music_directory_fs();
 
-		if (uri_fs != NULL)
-			path_fs = allocated =
-				g_strconcat(root, "/", uri_fs, NULL);
-		else
-			path_fs = root;
+		const Path path_fs = uri_fs.IsNull()
+			? root
+			: Path::Build(root, uri_fs.c_str());
 
 		recursive_watch_subdirectories(directory, path_fs,
 					       watch_directory_depth(directory));
-		g_free(allocated);
 	}
 
 	if ((mask & (IN_CLOSE_WRITE|IN_MOVE|IN_DELETE)) != 0 ||
@@ -294,16 +275,14 @@ mpd_inotify_callback(int wd, unsigned mask,
 		/* a file was changed, or a directory was
 		   moved/deleted: queue a database update */
 
-		if (uri_fs != nullptr) {
-			const std::string uri_utf8 = Path::ToUTF8(uri_fs);
+		if (!uri_fs.IsNull()) {
+			const std::string uri_utf8 = uri_fs.ToUTF8();
 			if (!uri_utf8.empty())
 				inotify_queue->Enqueue(uri_utf8.c_str());
 		}
 		else
 			inotify_queue->Enqueue("");
 	}
-
-	g_free(uri_fs);
 }
 
 void
@@ -336,11 +315,11 @@ mpd_inotify_init(unsigned max_depth)
 		return;
 	}
 
-	inotify_root = new WatchDirectory(nullptr, path.c_str(), descriptor);
+	inotify_root = new WatchDirectory(nullptr, path, descriptor);
 
 	tree_add_watch_directory(inotify_root);
 
-	recursive_watch_subdirectories(inotify_root, path.c_str(), 0);
+	recursive_watch_subdirectories(inotify_root, path, 0);
 
 	inotify_queue = new InotifyQueue(*main_loop);
 
