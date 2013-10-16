@@ -33,6 +33,7 @@
 #include "CheckAudioFormat.hxx"
 #include "util/bit_reverse.h"
 #include "util/Error.hxx"
+#include "system/ByteOrder.hxx"
 #include "tag/TagHandler.hxx"
 #include "DsdLib.hxx"
 #include "Log.hxx"
@@ -56,8 +57,8 @@ struct DsdiffChunkHeader {
 	 */
 	gcc_const
 	uint64_t GetSize() const {
-		return (((uint64_t)GUINT32_FROM_BE(size_high)) << 32) |
-			((uint64_t)GUINT32_FROM_BE(size_low));
+		return (uint64_t(FromBE32(size_high)) << 32) |
+			uint64_t(FromBE32(size_low));
 	}
 };
 
@@ -141,7 +142,7 @@ dsdiff_read_prop_snd(struct decoder *decoder, struct input_stream *is,
 						 sizeof(sample_rate)))
 				return false;
 
-			metadata->sample_rate = GUINT32_FROM_BE(sample_rate);
+			metadata->sample_rate = FromBE32(sample_rate);
 		} else if (dsdlib_id_equals(&header.id, "CHNL")) {
 			uint16_t channels;
 			if (header.GetSize() < sizeof(channels) ||
@@ -150,7 +151,7 @@ dsdiff_read_prop_snd(struct decoder *decoder, struct input_stream *is,
 			    !dsdlib_skip_to(decoder, is, chunk_end_offset))
 				return false;
 
-			metadata->channels = GUINT16_FROM_BE(channels);
+			metadata->channels = FromBE16(channels);
 		} else if (dsdlib_id_equals(&header.id, "CMPR")) {
 			struct dsdlib_id type;
 			if (header.GetSize() < sizeof(type) ||
@@ -211,7 +212,7 @@ dsdiff_handle_native_tag(struct input_stream *is,
 	if (!dsdlib_read(nullptr, is, &metatag, sizeof(metatag)))
 		return;
 
-	uint32_t length = GUINT32_FROM_BE(metatag.size);
+	uint32_t length = FromBE32(metatag.size);
 
 	/* Check and limit size of the tag to prevent a stack overflow */
 	if (length == 0 || length > 60)

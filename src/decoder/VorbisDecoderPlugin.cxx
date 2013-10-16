@@ -27,6 +27,7 @@
 #include "util/Error.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Macros.hxx"
+#include "system/ByteOrder.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "Log.hxx"
@@ -47,17 +48,9 @@
 #define ov_time_seek_page(VF, S) (ov_time_seek_page(VF, (S)*1000))
 #endif /* HAVE_TREMOR */
 
-#include <glib.h>
-
 #include <assert.h>
 #include <errno.h>
 #include <unistd.h>
-
-#if G_BYTE_ORDER == G_BIG_ENDIAN
-#define VORBIS_BIG_ENDIAN true
-#else
-#define VORBIS_BIG_ENDIAN false
-#endif
 
 struct vorbis_input_stream {
 	struct decoder *decoder;
@@ -248,7 +241,7 @@ vorbis_stream_decode(struct decoder *decoder,
 
 #ifdef HAVE_TREMOR
 		long nbytes = ov_read(&vf, buffer, sizeof(buffer),
-				      VORBIS_BIG_ENDIAN, 2, 1,
+				      IsBigEndian(), 2, 1,
 				      &current_section);
 #else
 		float **per_channel;

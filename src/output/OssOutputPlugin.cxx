@@ -25,9 +25,8 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
+#include "system/ByteOrder.hxx"
 #include "Log.hxx"
-
-#include <glib.h>
 
 #include <sys/stat.h>
 #include <sys/ioctl.h>
@@ -532,7 +531,7 @@ oss_probe_sample_format(int fd, SampleFormat sample_format,
 	pcm_export.Open(sample_format, 0, false, false,
 			oss_format == AFMT_S24_PACKED,
 			oss_format == AFMT_S24_PACKED &&
-			G_BYTE_ORDER != G_LITTLE_ENDIAN);
+			!IsLittleEndian());
 #endif
 
 	return SUCCESS;

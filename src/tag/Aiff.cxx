@@ -20,6 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "Aiff.hxx"
 #include "util/Domain.hxx"
+#include "system/ByteOrder.hxx"
 #include "Log.hxx"
 
 #include <glib.h>
@@ -65,7 +66,7 @@ aiff_seek_id3(FILE *file)
 	size_t size = fread(&header, sizeof(header), 1, file);
 	if (size != 1 ||
 	    memcmp(header.id, "FORM", 4) != 0 ||
-	    GUINT32_FROM_BE(header.size) > (uint32_t)st.st_size ||
+	    FromBE32(header.size) > (uint32_t)st.st_size ||
 	    (memcmp(header.format, "AIFF", 4) != 0 &&
 	     memcmp(header.format, "AIFC", 4) != 0))
 		/* not a AIFF file */
@@ -79,7 +80,7 @@ aiff_seek_id3(FILE *file)
 		if (size != 1)
 			return 0;
 
-		size = GUINT32_FROM_BE(chunk.size);
+		size = FromBE32(chunk.size);
 		if (size > G_MAXINT32)
 			/* too dangerous, bail out: possible integer
 			   underflow when casting to off_t */

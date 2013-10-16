@@ -20,6 +20,7 @@
 #include "test_pcm_all.hxx"
 #include "test_pcm_util.hxx"
 #include "pcm/PcmPack.hxx"
+#include "system/ByteOrder.hxx"
 
 #include <glib.h>
 
@@ -34,7 +35,7 @@ test_pcm_pack_24()
 
 	for (unsigned i = 0; i < N; ++i) {
 		int32_t d;
-		if (G_BYTE_ORDER == G_BIG_ENDIAN)
+		if (IsBigEndian())
 			d = (dest[i * 3] << 16) | (dest[i * 3 + 1] << 8)
 				| dest[i * 3 + 2];
 		else
@@ -58,7 +59,7 @@ test_pcm_unpack_24()
 
 	for (unsigned i = 0; i < N; ++i) {
 		int32_t s;
-		if (G_BYTE_ORDER == G_BIG_ENDIAN)
+		if (IsBigEndian())
 			s = (src[i * 3] << 16) | (src[i * 3 + 1] << 8)
 				| src[i * 3 + 2];
 		else

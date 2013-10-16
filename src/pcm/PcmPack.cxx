@@ -18,15 +18,14 @@
  */
 
 #include "PcmPack.hxx"
-
-#include <glib.h>
+#include "system/ByteOrder.hxx"
 
 static void
 pack_sample(uint8_t *dest, const int32_t *src0)
 {
 	const uint8_t *src = (const uint8_t *)src0;
 
-	if (G_BYTE_ORDER == G_BIG_ENDIAN)
+	if (IsBigEndian())
 		++src;
 
 	*dest++ = *src++;
@@ -51,7 +50,7 @@ unpack_sample(int32_t *dest0, const uint8_t *src)
 {
 	uint8_t *dest = (uint8_t *)dest0;
 
-	if (G_BYTE_ORDER == G_BIG_ENDIAN)
+	if (IsBigEndian())
 		/* extend the sign bit to the most fourth byte */
 		*dest++ = *src & 0x80 ? 0xff : 0x00;
 
@@ -59,7 +58,7 @@ unpack_sample(int32_t *dest0, const uint8_t *src)
 	*dest++ = *src++;
 	*dest++ = *src;
 
-	if (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+	if (IsLittleEndian())
 		/* extend the sign bit to the most fourth byte */
 		*dest++ = *src & 0x80 ? 0xff : 0x00;
 }

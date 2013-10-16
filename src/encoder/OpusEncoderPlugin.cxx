@@ -25,6 +25,7 @@
 #include "ConfigError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "system/ByteOrder.hxx"
 
 #include <opus.h>
 #include <ogg/ogg.h>
@@ -338,9 +339,9 @@ opus_encoder_generate_head(struct opus_encoder *encoder)
 	memcpy(header, "OpusHead", 8);
 	header[8] = 1;
 	header[9] = encoder->audio_format.channels;
-	*(uint16_t *)(header + 10) = GUINT16_TO_LE(encoder->lookahead);
+	*(uint16_t *)(header + 10) = ToLE16(encoder->lookahead);
 	*(uint32_t *)(header + 12) =
-		GUINT32_TO_LE(encoder->audio_format.sample_rate);
+		ToLE32(encoder->audio_format.sample_rate);
 	header[16] = 0;
 	header[17] = 0;
 	header[18] = 0;
@@ -365,9 +366,9 @@ opus_encoder_generate_tags(struct opus_encoder *encoder)
 	size_t comments_size = 8 + 4 + version_length + 4;
 	unsigned char *comments = (unsigned char *)g_malloc(comments_size);
 	memcpy(comments, "OpusTags", 8);
-	*(uint32_t *)(comments + 8) = GUINT32_TO_LE(version_length);
+	*(uint32_t *)(comments + 8) = ToLE32(version_length);
 	memcpy(comments + 12, version, version_length);
-	*(uint32_t *)(comments + 12 + version_length) = GUINT32_TO_LE(0);
+	*(uint32_t *)(comments + 12 + version_length) = ToLE32(0);
 
 	ogg_packet packet;
 	packet.packet = comments;

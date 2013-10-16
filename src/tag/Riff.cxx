@@ -20,6 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "Riff.hxx"
 #include "util/Domain.hxx"
+#include "system/ByteOrder.hxx"
 #include "Log.hxx"
 
 #include <glib.h>
@@ -65,7 +66,7 @@ riff_seek_id3(FILE *file)
 	size_t size = fread(&header, sizeof(header), 1, file);
 	if (size != 1 ||
 	    memcmp(header.id, "RIFF", 4) != 0 ||
-	    GUINT32_FROM_LE(header.size) > (uint32_t)st.st_size)
+	    FromLE32(header.size) > (uint32_t)st.st_size)
 		/* not a RIFF file */
 		return 0;
 
@@ -77,7 +78,7 @@ riff_seek_id3(FILE *file)
 		if (size != 1)
 			return 0;
 
-		size = GUINT32_FROM_LE(chunk.size);
+		size = FromLE32(chunk.size);
 		if (size > G_MAXINT32)
 			/* too dangerous, bail out: possible integer
 			   underflow when casting to off_t */

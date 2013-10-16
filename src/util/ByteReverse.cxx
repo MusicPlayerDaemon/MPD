@@ -18,9 +18,9 @@
  */
 
 #include "ByteReverse.hxx"
+#include "system/ByteOrder.hxx"
 #include "Compiler.h"
 
-#include <glib.h>
 #include <assert.h>
 
 void
@@ -33,7 +33,7 @@ reverse_bytes_16(uint16_t *gcc_restrict dest,
 
 	while (src < src_end) {
 		const uint16_t x = *src++;
-		*dest++ = GUINT16_SWAP_LE_BE(x);
+		*dest++ = ByteSwap16(x);
 	}
 }
 
@@ -47,7 +47,7 @@ reverse_bytes_32(uint32_t *gcc_restrict dest,
 
 	while (src < src_end) {
 		const uint32_t x = *src++;
-		*dest++ = GUINT32_SWAP_LE_BE(x);
+		*dest++ = ByteSwap32(x);
 	}
 }
 
@@ -61,7 +61,7 @@ reverse_bytes_64(uint64_t *gcc_restrict dest,
 
 	while (src < src_end) {
 		const uint64_t x = *src++;
-		*dest++ = GUINT64_SWAP_LE_BE(x);
+		*dest++ = ByteSwap64(x);
 	}
 }
 

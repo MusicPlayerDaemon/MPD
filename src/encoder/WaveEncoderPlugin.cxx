@@ -20,6 +20,7 @@
 #include "config.h"
 #include "WaveEncoderPlugin.hxx"
 #include "EncoderAPI.hxx"
+#include "system/ByteOrder.hxx"
 #include "util/fifo_buffer.h"
 extern "C" {
 #include "util/growing_fifo.h"
@@ -62,24 +63,23 @@ fill_wave_header(struct wave_header *header, int channels, int bits,
 	int data_size = 0x0FFFFFFF;
 
 	/* constants */
-	header->id_riff = GUINT32_TO_LE(0x46464952);
-	header->id_wave = GUINT32_TO_LE(0x45564157);
-	header->id_fmt = GUINT32_TO_LE(0x20746d66);
-	header->id_data = GUINT32_TO_LE(0x61746164);
+	header->id_riff = ToLE32(0x46464952);
+	header->id_wave = ToLE32(0x45564157);
+	header->id_fmt = ToLE32(0x20746d66);
+	header->id_data = ToLE32(0x61746164);
 
         /* wave format */
-	header->format = GUINT16_TO_LE(1);		// PCM_FORMAT
-	header->channels = GUINT16_TO_LE(channels);
-	header->bits = GUINT16_TO_LE(bits);
-	header->freq = GUINT32_TO_LE(freq);
-	header->blocksize = GUINT16_TO_LE(block_size);
-	header->byterate = GUINT32_TO_LE(freq * block_size);
+	header->format = ToLE16(1); // PCM_FORMAT
+	header->channels = ToLE16(channels);
+	header->bits = ToLE16(bits);
+	header->freq = ToLE32(freq);
+	header->blocksize = ToLE16(block_size);
+	header->byterate = ToLE32(freq * block_size);
 
         /* chunk sizes (fake data length) */
-	header->fmt_size = GUINT32_TO_LE(16);
-	header->data_size = GUINT32_TO_LE(data_size);
-	header->riff_size = GUINT32_TO_LE(4 + (8 + 16) +
-					 (8 + data_size));
+	header->fmt_size = ToLE32(16);
+	header->data_size = ToLE32(data_size);
+	header->riff_size = ToLE32(4 + (8 + 16) + (8 + data_size));
 }
 
 static Encoder *
@@ -153,29 +153,29 @@ wave_encoder_close(Encoder *_encoder)
 	fifo_buffer_free(encoder->buffer);
 }
 
-static inline size_t
+static size_t
 pcm16_to_wave(uint16_t *dst16, const uint16_t *src16, size_t length)
 {
 	size_t cnt = length >> 1;
 	while (cnt > 0) {
-		*dst16++ = GUINT16_TO_LE(*src16++);
+		*dst16++ = ToLE16(*src16++);
 		cnt--;
 	}
 	return length;
 }
 
-static inline size_t
+static size_t
 pcm32_to_wave(uint32_t *dst32, const uint32_t *src32, size_t length)
 {
 	size_t cnt = length >> 2;
 	while (cnt > 0){
-		*dst32++ = GUINT32_TO_LE(*src32++);
+		*dst32++ = ToLE32(*src32++);
 		cnt--;
 	}
 	return length;
 }
 
-static inline size_t
+static size_t
 pcm24_to_wave(uint8_t *dst8, const uint32_t *src32, size_t length)
 {
 	uint32_t value;
@@ -202,35 +202,35 @@ wave_encoder_write(Encoder *_encoder,
 
 	uint8_t *dst = (uint8_t *)growing_fifo_write(&encoder->buffer, length);
 
-#if (G_BYTE_ORDER == G_LITTLE_ENDIAN)
-	switch (encoder->bits) {
-	case 8:
-	case 16:
-	case 32:// optimized cases
-		memcpy(dst, src, length);
-		break;
-	case 24:
-		length = pcm24_to_wave(dst, (const uint32_t *)src, length);
-		break;
+	if (IsLittleEndian()) {
+		switch (encoder->bits) {
+		case 8:
+		case 16:
+		case 32:// optimized cases
+			memcpy(dst, src, length);
+			break;
+		case 24:
+			length = pcm24_to_wave(dst, (const uint32_t *)src, length);
+			break;
+		}
+	} else {
+		switch (encoder->bits) {
+		case 8:
+			memcpy(dst, src, length);
+			break;
+		case 16:
+			length = pcm16_to_wave((uint16_t *)dst,
+					       (const uint16_t *)src, length);
+			break;
+		case 24:
+			length = pcm24_to_wave(dst, (const uint32_t *)src, length);
+			break;
+		case 32:
+			length = pcm32_to_wave((uint32_t *)dst,
+					       (const uint32_t *)src, length);
+			break;
+		}
 	}
-#elif (G_BYTE_ORDER == G_BIG_ENDIAN)
-	switch (encoder->bits) {
-	case 8:
-		memcpy(dst, src, length);
-		break;
-	case 16:
-		length = pcm16_to_wave(dst, (const uint16_t *)src, length);
-		break;
-	case 24:
-		length = pcm24_to_wave(dst, (const uint32_t *)src, length);
-		break;
-	case 32:
-		length = pcm32_to_wave(dst, (const uint32_t *)src, length);
-		break;
-	}
-#else
-#error G_BYTE_ORDER set to G_PDP_ENDIAN is not supported by wave_encoder
-#endif
 
 	fifo_buffer_append(encoder->buffer, length);
 	return true;

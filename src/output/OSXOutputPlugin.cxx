@@ -25,9 +25,9 @@
 #include "util/Domain.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "system/ByteOrder.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
 #include <CoreAudio/AudioHardware.h>
 #include <AudioUnit/AudioUnit.h>
 #include <CoreServices/CoreServices.h>
@@ -342,9 +342,8 @@ osx_output_open(struct audio_output *ao, AudioFormat &audio_format,
 		break;
 	}
 
-#if G_BYTE_ORDER == G_BIG_ENDIAN
-	stream_description.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
-#endif
+	if (IsBigEndian())
+		stream_description.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
 
 	stream_description.mBytesPerPacket = audio_format.GetFrameSize();
 	stream_description.mFramesPerPacket = 1;

@@ -28,6 +28,7 @@
 #include "InputPlugin.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "system/ByteOrder.hxx"
 #include "Log.hxx"
 
 #include <stdio.h>
@@ -202,12 +203,12 @@ input_cdio_open(const char *uri,
 
 	case 0:
 		LogDebug(cdio_domain, "drive returns audio data Little Endian");
-		reverse_endian = G_BYTE_ORDER == G_BIG_ENDIAN;
+		reverse_endian = IsBigEndian();
 		break;
 
 	case 1:
 		LogDebug(cdio_domain, "drive returns audio data Big Endian");
-		reverse_endian = G_BYTE_ORDER == G_LITTLE_ENDIAN;
+		reverse_endian = IsLittleEndian();
 		break;
 
 	default:

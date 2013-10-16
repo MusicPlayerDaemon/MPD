@@ -21,6 +21,7 @@
 #include "../DecoderAPI.hxx"
 #include "tag/TagHandler.hxx"
 #include "util/Domain.hxx"
+#include "system/ByteOrder.hxx"
 #include "Log.hxx"
 
 #include <errno.h>
@@ -265,11 +266,9 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 	config.sidEmulation = &builder;
 	config.sidModel = SID2_MODEL_CORRECT;
 	config.sidSamples = true;
-#if G_BYTE_ORDER == G_LITTLE_ENDIAN
-	config.sampleFormat = SID2_LITTLE_SIGNED;
-#else
-	config.sampleFormat = SID2_BIG_SIGNED;
-#endif
+	config.sampleFormat = IsLittleEndian()
+		? SID2_LITTLE_SIGNED
+		: SID2_BIG_SIGNED;
 	if (tune.isStereo()) {
 		config.playback = sid2_stereo;
 		channels = 2;

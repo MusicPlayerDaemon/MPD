@@ -34,6 +34,7 @@
 #include "CheckAudioFormat.hxx"
 #include "util/bit_reverse.h"
 #include "util/Error.hxx"
+#include "system/ByteOrder.hxx"
 #include "DsdLib.hxx"
 #include "tag/TagHandler.hxx"
 #include "Log.hxx"
@@ -107,16 +108,16 @@ dsf_read_metadata(struct decoder *decoder, struct input_stream *is,
 	    !dsdlib_id_equals(&dsf_header.id, "DSD "))
 		return false;
 
-	chunk_size = (((uint64_t)GUINT32_FROM_LE(dsf_header.size_high)) << 32) |
-		((uint64_t)GUINT32_FROM_LE(dsf_header.size_low));
+	chunk_size = (uint64_t(FromLE32(dsf_header.size_high)) << 32) |
+		uint64_t(FromLE32(dsf_header.size_low));
 
 	if (sizeof(dsf_header) != chunk_size)
 		return false;
 
 #ifdef HAVE_ID3TAG
 	uint64_t metadata_offset;
-	metadata_offset = (((uint64_t)GUINT32_FROM_LE(dsf_header.pmeta_high)) << 32) |
-			   ((uint64_t)GUINT32_FROM_LE(dsf_header.pmeta_low));
+	metadata_offset = (uint64_t(FromLE32(dsf_header.pmeta_high)) << 32) |
+		uint64_t(FromLE32(dsf_header.pmeta_low));
 #endif
 
 	/* read the 'fmt ' chunk of the DSF file */
@@ -126,13 +127,13 @@ dsf_read_metadata(struct decoder *decoder, struct input_stream *is,
 		return false;
 
 	uint64_t fmt_chunk_size;
-	fmt_chunk_size = (((uint64_t)GUINT32_FROM_LE(dsf_fmt_chunk.size_high)) << 32) |
-			  ((uint64_t)GUINT32_FROM_LE(dsf_fmt_chunk.size_low));
+	fmt_chunk_size = (uint64_t(FromLE32(dsf_fmt_chunk.size_high)) << 32) |
+		uint64_t(FromLE32(dsf_fmt_chunk.size_low));
 
 	if (fmt_chunk_size != sizeof(dsf_fmt_chunk))
 		return false;
 
-	uint32_t samplefreq = (uint32_t)GUINT32_FROM_LE(dsf_fmt_chunk.sample_freq);
+	uint32_t samplefreq = FromLE32(dsf_fmt_chunk.sample_freq);
 
 	/* for now, only support version 1 of the standard, DSD raw stereo
 	   files with a sample freq of 2822400 Hz */
@@ -143,7 +144,7 @@ dsf_read_metadata(struct decoder *decoder, struct input_stream *is,
 	    || samplefreq != 2822400)
 		return false;
 
-	uint32_t chblksize = (uint32_t)GUINT32_FROM_LE(dsf_fmt_chunk.block_size);
+	uint32_t chblksize = FromLE32(dsf_fmt_chunk.block_size);
 	/* according to the spec block size should always be 4096 */
 	if (chblksize != 4096)
 		return false;
@@ -158,8 +159,8 @@ dsf_read_metadata(struct decoder *decoder, struct input_stream *is,
 	   we use the actual data size as chunk size */
 
 	uint64_t data_size;
-	data_size = (((uint64_t)GUINT32_FROM_LE(data_chunk.size_high)) << 32) |
-		((uint64_t)GUINT32_FROM_LE(data_chunk.size_low));
+	data_size = (uint64_t(FromLE32(data_chunk.size_high)) << 32) |
+		uint64_t(FromLE32(data_chunk.size_low));
 	data_size -= sizeof(data_chunk);
 
 	metadata->chunk_size = data_size;

@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ApeLoader.hxx"
+#include "system/ByteOrder.hxx"
 
 #include <glib.h>
 
@@ -44,11 +45,11 @@ ape_scan_internal(FILE *fp, ApeTagCallback callback)
 	if (fseek(fp, -(long)sizeof(footer), SEEK_END) ||
 	    fread(&footer, 1, sizeof(footer), fp) != sizeof(footer) ||
 	    memcmp(footer.id, "APETAGEX", sizeof(footer.id)) != 0 ||
-	    GUINT32_FROM_LE(footer.version) != 2000)
+	    FromLE32(footer.version) != 2000)
 		return false;
 
 	/* find beginning of ape tag */
-	size_t remaining = GUINT32_FROM_LE(footer.length);
+	size_t remaining = FromLE32(footer.length);
 	if (remaining <= sizeof(footer) + 10 ||
 	    /* refuse to load more than one megabyte of tag data */
 	    remaining > 1024 * 1024 ||
@@ -66,13 +67,13 @@ ape_scan_internal(FILE *fp, ApeTagCallback callback)
 	}
 
 	/* read tags */
-	unsigned n = GUINT32_FROM_LE(footer.count);
+	unsigned n = FromLE32(footer.count);
 	const char *p = buffer;
 	while (n-- && remaining > 10) {
-		size_t size = GUINT32_FROM_LE(*(const uint32_t *)p);
+		size_t size = FromLE32(*(const uint32_t *)p);
 		p += 4;
 		remaining -= 4;
-		unsigned long flags = GUINT32_FROM_LE(*(const uint32_t *)p);
+		unsigned long flags = FromLE32(*(const uint32_t *)p);
 		p += 4;
 		remaining -= 4;
 
