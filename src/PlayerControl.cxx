@@ -23,8 +23,6 @@
 #include "Song.hxx"
 #include "DecoderControl.hxx"
 
-#include <glib.h>
-
 #include <cmath>
 
 #include <assert.h>
@@ -200,17 +198,6 @@ player_control::ClearError()
 	}
 
 	Unlock();
-}
-
-char *
-player_control::GetErrorMessage() const
-{
-	Lock();
-	char *message = error_type != PlayerError::NONE
-		? g_strdup(error.GetMessage())
-		: NULL;
-	Unlock();
-	return message;
 }
 
 void

@@ -325,14 +325,32 @@ public:
 	 */
 	void SetError(PlayerError type, Error &&error);
 
-	void ClearError();
+	/**
+	 * Checks whether an error has occurred, and if so, returns a
+	 * copy of the #Error object.
+	 *
+	 * Caller must lock the object.
+	 */
+	gcc_pure
+	Error GetError() const {
+		Error result;
+		if (error_type != PlayerError::NONE)
+			result.Set(error);
+		return result;
+	}
 
 	/**
-	 * Returns the human-readable message describing the last
-	 * error during playback, NULL if no error occurred.  The
-	 * caller has to free the returned string.
+	 * Like GetError(), but locks and unlocks the object.
 	 */
-	char *GetErrorMessage() const;
+	gcc_pure
+	Error LockGetError() const {
+		Lock();
+		Error result = GetError();
+		Unlock();
+		return result;
+	}
+
+	void ClearError();
 
 	PlayerError GetErrorType() const {
 		return error_type;

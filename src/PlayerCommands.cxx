@@ -32,8 +32,6 @@
 #include "AudioFormat.hxx"
 #include "ReplayGainConfig.hxx"
 
-#include <glib.h>
-
 #define COMMAND_STATUS_STATE            "state"
 #define COMMAND_STATUS_REPEAT           "repeat"
 #define COMMAND_STATUS_SINGLE           "single"
@@ -190,13 +188,11 @@ handle_status(Client *client,
 			      updateJobId);
 	}
 
-	char *error = client->player_control->GetErrorMessage();
-	if (error != NULL) {
+	Error error = client->player_control->LockGetError();
+	if (error.IsDefined())
 		client_printf(client,
 			      COMMAND_STATUS_ERROR ": %s\n",
-			      error);
-		g_free(error);
-	}
+			      error.GetMessage());
 
 	song = playlist.GetNextPosition();
 	if (song >= 0) {
