@@ -128,4 +128,6 @@ queue_load_song(TextFile &file, const char *line, queue *queue)
 
 	if (db != nullptr)
 		db->ReturnSong(song);
+	else
+		song->Free();
 }

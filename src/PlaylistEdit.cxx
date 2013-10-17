@@ -64,7 +64,9 @@ playlist::AppendFile(struct player_control &pc,
 	if (song == nullptr)
 		return PLAYLIST_RESULT_NO_SUCH_SONG;
 
-	return AppendSong(pc, song, added_id);
+	const auto result = AppendSong(pc, song, added_id);
+	song->Free();
+	return result;
 }
 
 enum playlist_result
@@ -125,6 +127,8 @@ playlist::AppendURI(struct player_control &pc,
 	enum playlist_result result = AppendSong(pc, song, added_id);
 	if (db != nullptr)
 		db->ReturnSong(song);
+	else
+		song->Free();
 
 	return result;
 }
