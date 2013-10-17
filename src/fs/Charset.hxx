@@ -37,13 +37,13 @@ SetFSCharset(const char *charset);
 
 /**
  * Convert the path to UTF-8.
- * Returns empty string on error or if #path_fs is null pointer.
+ * Returns empty string on error.
  */
-gcc_pure
+gcc_pure gcc_nonnull_all
 std::string
 PathToUTF8(const char *path_fs);
 
-gcc_malloc
+gcc_malloc gcc_nonnull_all
 char *
 PathFromUTF8(const char *path_utf8);
 

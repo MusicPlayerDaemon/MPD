@@ -123,10 +123,10 @@ public:
 	 * Convert a UTF-8 C string to a #Path instance.
 	 * Returns return a "nulled" instance on error.
 	 */
-	gcc_pure
+	gcc_pure gcc_nonnull_all
 	static Path FromUTF8(const char *path_utf8);
 
-	gcc_pure
+	gcc_pure gcc_nonnull_all
 	static Path FromUTF8(const char *path_utf8, Error &error);
 
 	/**

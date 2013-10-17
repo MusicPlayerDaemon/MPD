@@ -79,8 +79,7 @@ GetFSCharset()
 std::string
 PathToUTF8(const char *path_fs)
 {
-	if (path_fs == nullptr)
-		return std::string();
+	assert(path_fs != nullptr);
 
 	GIConv conv = g_iconv_open("utf-8", fs_charset.c_str());
 	if (conv == reinterpret_cast<GIConv>(-1))
@@ -107,6 +106,8 @@ PathToUTF8(const char *path_fs)
 char *
 PathFromUTF8(const char *path_utf8)
 {
+	assert(path_utf8 != nullptr);
+
 	return g_convert(path_utf8, -1,
 			 fs_charset.c_str(), "utf-8",
 			 nullptr, nullptr, nullptr);
