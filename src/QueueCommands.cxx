@@ -35,7 +35,7 @@
 #include "util/Error.hxx"
 #include "fs/Path.hxx"
 
-#include <glib.h>
+#include <limits>
 
 #include <string.h>
 
@@ -212,7 +212,7 @@ handle_plchangesposid(Client *client, gcc_unused int argc, char *argv[])
 enum command_return
 handle_playlistinfo(Client *client, int argc, char *argv[])
 {
-	unsigned start = 0, end = G_MAXUINT;
+	unsigned start = 0, end = std::numeric_limits<unsigned>::max();
 	bool ret;
 
 	if (argc == 2 && !check_range(client, &start, &end, argv[1]))
@@ -239,7 +239,8 @@ handle_playlistid(Client *client, int argc, char *argv[])
 			return print_playlist_result(client,
 						     PLAYLIST_RESULT_NO_SUCH_SONG);
 	} else {
-		playlist_print_info(client, &client->playlist, 0, G_MAXUINT);
+		playlist_print_info(client, &client->playlist,
+				    0, std::numeric_limits<unsigned>::max());
 	}
 
 	return COMMAND_RETURN_OK;

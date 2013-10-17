@@ -23,12 +23,11 @@
 #include "system/ByteOrder.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
+#include <limits>
 
 #include <stdint.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <string.h>
 
 static constexpr Domain riff_domain("riff");
@@ -79,7 +78,7 @@ riff_seek_id3(FILE *file)
 			return 0;
 
 		size = FromLE32(chunk.size);
-		if (size > G_MAXINT32)
+		if (size > size_t(std::numeric_limits<int>::max()))
 			/* too dangerous, bail out: possible integer
 			   underflow when casting to off_t */
 			return 0;

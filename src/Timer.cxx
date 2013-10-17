@@ -24,6 +24,8 @@
 
 #include <glib.h>
 
+#include <limits>
+
 #include <assert.h>
 #include <limits.h>
 #include <stddef.h>
@@ -62,8 +64,8 @@ unsigned Timer::GetDelay() const
 	if (delay < 0)
 		return 0;
 
-	if (delay > G_MAXINT)
-		delay = G_MAXINT;
+	if (delay > std::numeric_limits<int>::max())
+		delay = std::numeric_limits<int>::max();
 
 	return delay;
 }

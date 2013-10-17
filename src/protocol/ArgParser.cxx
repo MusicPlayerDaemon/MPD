@@ -21,7 +21,8 @@
 #include "ArgParser.hxx"
 #include "Result.hxx"
 
-#include <glib.h>
+#include <limits>
+
 #include <stdlib.h>
 
 bool
@@ -51,13 +52,12 @@ check_int(Client *client, int *value_r, const char *s)
 		return false;
 	}
 
-#if G_MAXLONG > G_MAXINT
-	if (value < G_MININT || value > G_MAXINT) {
+	if (value < std::numeric_limits<int>::min() ||
+	    value > std::numeric_limits<int>::max()) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Number too large: %s", s);
 		return false;
 	}
-#endif
 
 	*value_r = (int)value;
 	return true;
@@ -81,7 +81,7 @@ check_range(Client *client, unsigned *value_r1, unsigned *value_r2,
 		/* compatibility with older MPD versions: specifying
 		   "-1" makes MPD display the whole list */
 		*value_r1 = 0;
-		*value_r2 = G_MAXUINT;
+		*value_r2 = std::numeric_limits<unsigned>::max();
 		return true;
 	}
 
@@ -91,13 +91,11 @@ check_range(Client *client, unsigned *value_r1, unsigned *value_r2,
 		return false;
 	}
 
-#if G_MAXLONG > G_MAXUINT
-	if (value > G_MAXUINT) {
+	if (unsigned(value) > std::numeric_limits<unsigned>::max()) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Number too large: %s", s);
 		return false;
 	}
-#endif
 
 	*value_r1 = (unsigned)value;
 
@@ -110,7 +108,7 @@ check_range(Client *client, unsigned *value_r1, unsigned *value_r2,
 		}
 
 		if (test == test2)
-			value = G_MAXUINT;
+			value = std::numeric_limits<unsigned>::max();
 
 		if (value < 0) {
 			command_error(client, ACK_ERROR_ARG,
@@ -118,13 +116,12 @@ check_range(Client *client, unsigned *value_r1, unsigned *value_r2,
 			return false;
 		}
 
-#if G_MAXLONG > G_MAXUINT
-		if (value > G_MAXUINT) {
+		if (unsigned(value) > std::numeric_limits<unsigned>::max()) {
 			command_error(client, ACK_ERROR_ARG,
 				      "Number too large: %s", s);
 			return false;
 		}
-#endif
+
 		*value_r2 = (unsigned)value;
 	} else {
 		*value_r2 = (unsigned)value + 1;
@@ -146,7 +143,7 @@ check_unsigned(Client *client, unsigned *value_r, const char *s)
 		return false;
 	}
 
-	if (value > G_MAXUINT) {
+	if (value > std::numeric_limits<unsigned>::max()) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Number too large: %s", s);
 		return false;

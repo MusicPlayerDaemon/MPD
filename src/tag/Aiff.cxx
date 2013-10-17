@@ -23,7 +23,7 @@
 #include "system/ByteOrder.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
+#include <limits>
 
 #include <stdint.h>
 #include <sys/types.h>
@@ -81,7 +81,7 @@ aiff_seek_id3(FILE *file)
 			return 0;
 
 		size = FromBE32(chunk.size);
-		if (size > G_MAXINT32)
+		if (size > unsigned(std::numeric_limits<int>::max()))
 			/* too dangerous, bail out: possible integer
 			   underflow when casting to off_t */
 			return 0;
