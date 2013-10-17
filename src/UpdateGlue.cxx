@@ -36,8 +36,6 @@
 #include "thread/Id.hxx"
 #include "thread/Thread.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 
 static enum update_progress {
@@ -54,8 +52,7 @@ static const unsigned update_task_id_max = 1 << 15;
 
 static unsigned update_task_id;
 
-/* XXX this flag is passed to update_task() */
-static bool discard;
+static UpdateQueueItem next;
 
 unsigned
 isUpdatingDB(void)
@@ -64,16 +61,15 @@ isUpdatingDB(void)
 }
 
 static void
-update_task(void *_path)
+update_task(gcc_unused void *ctx)
 {
-	const char *path = (const char *)_path;
-
-	if (path != NULL && *path != 0)
-		FormatDebug(update_domain, "starting: %s", path);
+	if (!next.path_utf8.empty())
+		FormatDebug(update_domain, "starting: %s",
+			    next.path_utf8.c_str());
 	else
 		LogDebug(update_domain, "starting");
 
-	modified = update_walk(path, discard);
+	modified = update_walk(next.path_utf8.c_str(), next.discard);
 
 	if (modified || !db_exists()) {
 		Error error;
@@ -81,26 +77,28 @@ update_task(void *_path)
 			LogError(error, "Failed to save database");
 	}
 
-	if (path != NULL && *path != 0)
-		FormatDebug(update_domain, "finished: %s", path);
+	if (!next.path_utf8.empty())
+		FormatDebug(update_domain, "finished: %s",
+			    next.path_utf8.c_str());
 	else
 		LogDebug(update_domain, "finished");
-	g_free(_path);
 
 	progress = UPDATE_PROGRESS_DONE;
 	GlobalEvents::Emit(GlobalEvents::UPDATE);
 }
 
 static void
-spawn_update_task(const char *path)
+spawn_update_task(UpdateQueueItem &&i)
 {
 	assert(main_thread.IsInside());
 
 	progress = UPDATE_PROGRESS_RUNNING;
 	modified = false;
 
+	next = std::move(i);
+
 	Error error;
-	if (!update_thread.Start(update_task, g_strdup(path), error))
+	if (!update_thread.Start(update_task, nullptr, error))
 		FatalError(error);
 
 	if (++update_task_id > update_task_id_max)
@@ -110,7 +108,7 @@ spawn_update_task(const char *path)
 }
 
 unsigned
-update_enqueue(const char *path, bool _discard)
+update_enqueue(const char *path, bool discard)
 {
 	assert(main_thread.IsInside());
 
@@ -126,8 +124,7 @@ update_enqueue(const char *path, bool _discard)
 		return next_task_id > update_task_id_max ?  1 : next_task_id;
 	}
 
-	discard = _discard;
-	spawn_update_task(path);
+	spawn_update_task(UpdateQueueItem(path, discard));
 
 	idle_add(IDLE_UPDATE);
 
@@ -152,8 +149,7 @@ static void update_finished_event(void)
 	auto i = update_queue_shift();
 	if (i.IsDefined()) {
 		/* schedule the next path */
-		discard = i.discard;
-		spawn_update_task(i.path_utf8.c_str());
+		spawn_update_task(std::move(i));
 	} else {
 		progress = UPDATE_PROGRESS_IDLE;
 
