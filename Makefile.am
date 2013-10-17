@@ -9,6 +9,7 @@ bin_PROGRAMS = src/mpd
 
 noinst_LIBRARIES = \
 	libutil.a \
+	libthread.a \
 	libsystem.a \
 	libevent.a \
 	libpcm.a \
@@ -44,6 +45,7 @@ src_mpd_LDADD = \
 	$(MIXER_LIBS) \
 	libconf.a \
 	libevent.a \
+	libthread.a \
 	libsystem.a \
 	libutil.a \
 	libfs.a \
@@ -69,15 +71,6 @@ src_mpd_SOURCES = \
 	$(OUTPUT_API_SRC) \
 	$(MIXER_API_SRC) \
 	src/Compiler.h \
-	src/thread/Id.hxx \
-	src/thread/Mutex.hxx \
-	src/thread/PosixMutex.hxx \
-	src/thread/CriticalSection.hxx \
-	src/thread/GLibMutex.hxx \
-	src/thread/Cond.hxx \
-	src/thread/PosixCond.hxx \
-	src/thread/WindowsCond.hxx \
-	src/thread/GLibCond.hxx \
 	src/notify.cxx src/notify.hxx \
 	src/AudioConfig.cxx src/AudioConfig.hxx \
 	src/CheckAudioFormat.cxx src/CheckAudioFormat.hxx \
@@ -269,6 +262,19 @@ libutil_a_SOURCES = \
 	src/util/list_sort.c src/util/list_sort.h \
 	src/util/ByteReverse.cxx src/util/ByteReverse.hxx \
 	src/util/bit_reverse.c src/util/bit_reverse.h
+
+# Multi-threading library
+
+libthread_a_SOURCES = \
+	src/thread/Mutex.hxx \
+	src/thread/PosixMutex.hxx \
+	src/thread/CriticalSection.hxx \
+	src/thread/GLibMutex.hxx \
+	src/thread/Cond.hxx \
+	src/thread/PosixCond.hxx \
+	src/thread/WindowsCond.hxx \
+	src/thread/GLibCond.hxx \
+	src/thread/Id.hxx
 
 # System library
 
