@@ -27,7 +27,7 @@
 #include <glib.h>
 #endif
 
-#include <algorithm>
+#include <utility>
 #include <string>
 
 #include <assert.h>
