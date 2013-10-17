@@ -258,6 +258,14 @@
 }
 
 {
+   GnuTLS
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:gnutls_global_init
+}
+
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:?alloc
