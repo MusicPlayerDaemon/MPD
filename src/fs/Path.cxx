@@ -49,7 +49,7 @@ static constexpr size_t MPD_PATH_MAX_UTF8 = (MPD_PATH_MAX - 1) * 4 + 1;
 
 const Domain path_domain("path");
 
-std::string fs_charset;
+static std::string fs_charset;
 
 inline Path::Path(Donate, pointer _value)
 	:value(_value) {
