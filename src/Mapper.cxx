@@ -31,8 +31,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -45,7 +43,7 @@ static constexpr Domain mapper_domain("mapper");
 /**
  * The absolute path of the music directory encoded in UTF-8.
  */
-static char *music_dir_utf8;
+static std::string music_dir_utf8;
 static size_t music_dir_utf8_length;
 
 /**
@@ -99,11 +97,10 @@ mapper_set_music_dir(Path &&path)
 	music_dir_fs = std::move(path);
 	music_dir_fs.ChopSeparators();
 
-	const auto utf8 = music_dir_fs.ToUTF8();
-	music_dir_utf8 = g_strdup(utf8.c_str());
-	music_dir_utf8_length = strlen(music_dir_utf8);
+	music_dir_utf8 = music_dir_fs.ToUTF8();
+	music_dir_utf8_length = music_dir_utf8.length();
 
-	check_directory(music_dir_utf8, music_dir_fs);
+	check_directory(music_dir_utf8.c_str(), music_dir_fs);
 }
 
 static void
@@ -129,13 +126,12 @@ mapper_init(Path &&_music_dir, Path &&_playlist_dir)
 
 void mapper_finish(void)
 {
-	g_free(music_dir_utf8);
 }
 
 const char *
 mapper_get_music_directory_utf8(void)
 {
-	return music_dir_utf8;
+	return music_dir_utf8.c_str();
 }
 
 const Path &
@@ -147,8 +143,8 @@ mapper_get_music_directory_fs(void)
 const char *
 map_to_relative_path(const char *path_utf8)
 {
-	return music_dir_utf8 != NULL &&
-		memcmp(path_utf8, music_dir_utf8,
+	return !music_dir_utf8.empty() &&
+		memcmp(path_utf8, music_dir_utf8.c_str(),
 		       music_dir_utf8_length) == 0 &&
 		Path::IsSeparatorUTF8(path_utf8[music_dir_utf8_length])
 		? path_utf8 + music_dir_utf8_length + 1
@@ -174,7 +170,6 @@ map_uri_fs(const char *uri)
 Path
 map_directory_fs(const Directory *directory)
 {
-	assert(music_dir_utf8 != NULL);
 	assert(!music_dir_fs.IsNull());
 
 	if (directory->IsRoot())
@@ -186,7 +181,6 @@ map_directory_fs(const Directory *directory)
 Path
 map_directory_child_fs(const Directory *directory, const char *name)
 {
-	assert(music_dir_utf8 != NULL);
 	assert(!music_dir_fs.IsNull());
 
 	/* check for invalid or unauthorized base names */
@@ -257,9 +251,10 @@ map_spl_utf8_to_fs(const char *name)
 	if (playlist_dir_fs.IsNull())
 		return Path::Null();
 
-	char *filename_utf8 = g_strconcat(name, PLAYLIST_FILE_SUFFIX, NULL);
-	const Path filename_fs = Path::FromUTF8(filename_utf8);
-	g_free(filename_utf8);
+	std::string filename_utf8 = name;
+	filename_utf8.append(PLAYLIST_FILE_SUFFIX);
+
+	const Path filename_fs = Path::FromUTF8(filename_utf8.c_str());
 	if (filename_fs.IsNull())
 		return Path::Null();
 
