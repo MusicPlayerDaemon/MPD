@@ -21,7 +21,7 @@
 #define MPD_FS_DIRECTORY_READER_HXX
 
 #include "check.h"
-#include "Path.hxx"
+#include "AllocatedPath.hxx"
 
 #include <dirent.h>
 
@@ -35,7 +35,7 @@ public:
 	/**
 	 * Creates new directory reader for the specified #dir.
 	 */
-	explicit DirectoryReader(const Path &dir)
+	explicit DirectoryReader(Path dir)
 		: dirp(opendir(dir.c_str())),
 		  ent(nullptr) {
 	}
@@ -78,9 +78,9 @@ public:
 	/**
 	 * Extracts directory entry that was previously read by #ReadEntry.
 	 */
-	Path GetEntry() const {
+	AllocatedPath GetEntry() const {
 		assert(HasEntry());
-		return Path::FromFS(ent->d_name);
+		return AllocatedPath::FromFS(ent->d_name);
 	}
 };
 

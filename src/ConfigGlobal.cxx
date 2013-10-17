@@ -25,6 +25,7 @@
 #include "ConfigPath.hxx"
 #include "ConfigError.hxx"
 #include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "util/Error.hxx"
 #include "system/FatalError.hxx"
 #include "Log.hxx"
@@ -45,7 +46,7 @@ void config_global_init(void)
 }
 
 bool
-ReadConfigFile(const Path &path, Error &error)
+ReadConfigFile(Path path, Error &error)
 {
 	return ReadConfigFile(config_data, path, error);
 }
@@ -96,20 +97,20 @@ config_get_string(ConfigOption option, const char *default_value)
 	return param->value.c_str();
 }
 
-Path
+AllocatedPath
 config_get_path(ConfigOption option, Error &error)
 {
 	const struct config_param *param = config_get_param(option);
 	if (param == nullptr)
-		return Path::Null();
+		return AllocatedPath::Null();
 
 	return config_parse_path(param, error);
 }
 
-Path
+AllocatedPath
 config_parse_path(const struct config_param *param, Error & error)
 {
-	Path path = ParsePath(param->value.c_str(), error);
+	AllocatedPath path = ParsePath(param->value.c_str(), error);
 	if (gcc_unlikely(path.IsNull()))
 		error.FormatPrefix("Invalid path at line %i: ",
 				   param->line);

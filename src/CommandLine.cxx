@@ -31,7 +31,7 @@
 #include "InputPlugin.hxx"
 #include "PlaylistRegistry.hxx"
 #include "PlaylistPlugin.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
@@ -136,13 +136,13 @@ static const char *summary =
 	"Music Player Daemon - a daemon for playing music.";
 
 gcc_pure
-static Path
-PathBuildChecked(const Path &a, PathTraits::const_pointer b)
+static AllocatedPath
+PathBuildChecked(const AllocatedPath &a, PathTraits::const_pointer b)
 {
 	if (a.IsNull())
-		return Path::Null();
+		return AllocatedPath::Null();
 
-	return Path::Build(a, b);
+	return AllocatedPath::Build(a, b);
 }
 
 bool
@@ -206,7 +206,7 @@ parse_cmdline(int argc, char **argv, struct options *options,
 		/* default configuration file path */
 
 #ifdef WIN32
-		Path path = PathBuildChecked(Path::FromUTF8(g_get_user_config_dir()),
+		AllocatedPath path = PathBuildChecked(AllocatedPath::FromUTF8(g_get_user_config_dir()),
 					     CONFIG_FILE_LOCATION);
 		if (!path.IsNull() && FileExists(path))
 			return ReadConfigFile(path, error);
@@ -215,28 +215,28 @@ parse_cmdline(int argc, char **argv, struct options *options,
 			g_get_system_config_dirs();
 
 		for (unsigned i = 0; system_config_dirs[i] != nullptr; ++i) {
-			path = PathBuildChecked(Path::FromUTF8(system_config_dirs[i]),
+			path = PathBuildChecked(AllocatedPath::FromUTF8(system_config_dirs[i]),
 						CONFIG_FILE_LOCATION);
 			if (!path.IsNull() && FileExists(path))
 				return ReadConfigFile(path, error);
 		}
 #else
-		Path path = PathBuildChecked(Path::FromUTF8(g_get_user_config_dir()),
-					     USER_CONFIG_FILE_LOCATION_XDG);
+		AllocatedPath path = PathBuildChecked(AllocatedPath::FromUTF8(g_get_user_config_dir()),
+						      USER_CONFIG_FILE_LOCATION_XDG);
 		if (!path.IsNull() && FileExists(path))
 			return ReadConfigFile(path, error);
 
-		path = PathBuildChecked(Path::FromUTF8(g_get_home_dir()),
+		path = PathBuildChecked(AllocatedPath::FromUTF8(g_get_home_dir()),
 					     USER_CONFIG_FILE_LOCATION1);
 		if (!path.IsNull() && FileExists(path))
 			return ReadConfigFile(path, error);
 
-		path = PathBuildChecked(Path::FromUTF8(g_get_home_dir()),
+		path = PathBuildChecked(AllocatedPath::FromUTF8(g_get_home_dir()),
 					USER_CONFIG_FILE_LOCATION2);
 		if (!path.IsNull() && FileExists(path))
 			return ReadConfigFile(path, error);
 
-		path = Path::FromUTF8(SYSTEM_CONFIG_FILE_LOCATION);
+		path = AllocatedPath::FromUTF8(SYSTEM_CONFIG_FILE_LOCATION);
 		if (!path.IsNull() && FileExists(path))
 			return ReadConfigFile(path, error);
 #endif

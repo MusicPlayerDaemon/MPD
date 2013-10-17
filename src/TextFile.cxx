@@ -27,7 +27,7 @@
 #include <assert.h>
 #include <string.h>
 
-TextFile::TextFile(const Path &path_fs)
+TextFile::TextFile(Path path_fs)
 	:file(FOpen(path_fs, FOpenMode::ReadText)),
 	 buffer(g_string_sized_new(step)) {}
 

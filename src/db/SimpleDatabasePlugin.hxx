@@ -21,7 +21,7 @@
 #define MPD_SIMPLE_DATABASE_PLUGIN_HXX
 
 #include "DatabasePlugin.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "Compiler.h"
 
 #include <cassert>
@@ -31,7 +31,7 @@
 struct Directory;
 
 class SimpleDatabase : public Database {
-	Path path;
+	AllocatedPath path;
 	std::string path_utf8;
 
 	Directory *root;
@@ -43,7 +43,7 @@ class SimpleDatabase : public Database {
 #endif
 
 	SimpleDatabase()
-		:path(Path::Null()) {}
+		:path(AllocatedPath::Null()) {}
 
 public:
 	gcc_pure

@@ -27,7 +27,7 @@
 #include <array>
 #include <vector>
 
-class Path;
+class AllocatedPath;
 class Error;
 
 struct block_param {
@@ -109,10 +109,10 @@ struct config_param {
 	 * Same as config_dup_path(), but looks up the setting in the
 	 * specified block.
 	 */
-	Path GetBlockPath(const char *name, const char *default_value,
-			  Error &error) const;
+	AllocatedPath GetBlockPath(const char *name, const char *default_value,
+				   Error &error) const;
 
-	Path GetBlockPath(const char *name, Error &error) const;
+	AllocatedPath GetBlockPath(const char *name, Error &error) const;
 
 	gcc_pure
 	unsigned GetBlockValue(const char *name, unsigned default_value) const;

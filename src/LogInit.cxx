@@ -25,7 +25,7 @@
 #include "ConfigOption.hxx"
 #include "system/fd_util.h"
 #include "system/FatalError.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -61,7 +61,7 @@ static const char *log_charset;
 
 static bool stdout_mode = true;
 static int out_fd;
-static Path out_path = Path::Null();
+static AllocatedPath out_path = AllocatedPath::Null();
 
 static void redirect_logs(int fd)
 {
@@ -301,7 +301,7 @@ void
 log_deinit(void)
 {
 	close_log_files();
-	out_path = Path::Null();
+	out_path = AllocatedPath::Null();
 }
 
 

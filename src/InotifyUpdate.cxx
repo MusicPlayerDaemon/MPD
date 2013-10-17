@@ -24,7 +24,7 @@
 #include "InotifyDomain.hxx"
 #include "Mapper.hxx"
 #include "Main.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
@@ -50,7 +50,7 @@ enum {
 struct WatchDirectory {
 	WatchDirectory *parent;
 
-	Path name;
+	AllocatedPath name;
 
 	int descriptor;
 
@@ -129,17 +129,17 @@ remove_watch_directory(WatchDirectory *directory)
 		});
 }
 
-static Path
+static AllocatedPath
 watch_directory_get_uri_fs(const WatchDirectory *directory)
 {
 	if (directory->parent == NULL)
-		return Path::Null();
+		return AllocatedPath::Null();
 
-	Path uri = watch_directory_get_uri_fs(directory->parent);
+	const auto uri = watch_directory_get_uri_fs(directory->parent);
 	if (uri.IsNull())
 		return directory->name;
 
-	return Path::Build(uri, directory->name);
+	return AllocatedPath::Build(uri, directory->name);
 }
 
 /* we don't look at "." / ".." nor files with newlines in their name */
@@ -152,7 +152,7 @@ static bool skip_path(const char *path)
 
 static void
 recursive_watch_subdirectories(WatchDirectory *directory,
-			       const Path &path_fs, unsigned depth)
+			       const AllocatedPath &path_fs, unsigned depth)
 {
 	Error error;
 	DIR *dir;
@@ -181,7 +181,8 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 		if (skip_path(ent->d_name))
 			continue;
 
-		const Path child_path_fs = Path::Build(path_fs, ent->d_name);
+		const auto child_path_fs =
+			AllocatedPath::Build(path_fs, ent->d_name);
 		ret = StatFile(child_path_fs, st);
 		if (ret < 0) {
 			FormatErrno(inotify_domain,
@@ -209,7 +210,7 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 			continue;
 
 		directory->children.emplace_front(directory,
-						  Path::FromFS(ent->d_name),
+						  AllocatedPath::FromFS(ent->d_name),
 						  ret);
 		child = &directory->children.front();
 
@@ -257,11 +258,11 @@ mpd_inotify_callback(int wd, unsigned mask,
 	    (mask & IN_ISDIR) != 0) {
 		/* a sub directory was changed: register those in
 		   inotify */
-		const Path &root = mapper_get_music_directory_fs();
+		const auto &root = mapper_get_music_directory_fs();
 
-		const Path path_fs = uri_fs.IsNull()
+		const auto path_fs = uri_fs.IsNull()
 			? root
-			: Path::Build(root, uri_fs.c_str());
+			: AllocatedPath::Build(root, uri_fs.c_str());
 
 		recursive_watch_subdirectories(directory, path_fs,
 					       watch_directory_depth(directory));
@@ -290,7 +291,7 @@ mpd_inotify_init(unsigned max_depth)
 {
 	LogDebug(inotify_domain, "initializing inotify");
 
-	const Path &path = mapper_get_music_directory_fs();
+	const auto &path = mapper_get_music_directory_fs();
 	if (path.IsNull()) {
 		LogDebug(inotify_domain, "no music directory configured");
 		return;

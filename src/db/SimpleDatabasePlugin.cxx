@@ -76,7 +76,7 @@ SimpleDatabase::Check(Error &error) const
 		/* If the file doesn't exist, we can't check if we can write
 		 * it, so we are going to try to get the directory path, and
 		 * see if we can write a file in that */
-		const Path dirPath = path.GetDirectoryName();
+		const auto dirPath = path.GetDirectoryName();
 
 		/* Check that the parent part of the path is a directory */
 		struct stat st;

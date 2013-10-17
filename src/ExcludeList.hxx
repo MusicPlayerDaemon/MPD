@@ -67,13 +67,13 @@ public:
 	/**
 	 * Loads and parses a .mpdignore file.
 	 */
-	bool LoadFile(const Path &path_fs);
+	bool LoadFile(Path path_fs);
 
 	/**
 	 * Checks whether one of the patterns in the .mpdignore file matches
 	 * the specified file name.
 	 */
-	bool Check(const Path &name_fs) const;
+	bool Check(Path name_fs) const;
 };
 
 

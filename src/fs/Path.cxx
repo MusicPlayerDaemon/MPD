@@ -19,57 +19,12 @@
 
 #include "config.h"
 #include "Path.hxx"
-#include "Domain.hxx"
 #include "Charset.hxx"
-#include "util/Error.hxx"
-#include "Compiler.h"
-
-#include <glib.h>
-
-#include <assert.h>
-#include <string.h>
-
-inline Path::Path(Donate, pointer _value)
-	:value(_value) {
-	g_free(_value);
-}
-
-/* no inlining, please */
-Path::~Path() {}
-
-Path
-Path::Build(const_pointer a, const_pointer b)
-{
-	return Path(Donate(), g_build_filename(a, b, nullptr));
-}
-
-Path Path::FromUTF8(const char *path_utf8)
-{
-	return Path(Donate(), ::PathFromUTF8(path_utf8));
-}
-
-Path
-Path::FromUTF8(const char *path_utf8, Error &error)
-{
-	Path path = FromUTF8(path_utf8);
-	if (path.IsNull())
-		error.Format(path_domain,
-			     "Failed to convert to file system charset: %s",
-			     path_utf8);
-
-	return path;
-}
-
-Path
-Path::GetDirectoryName() const
-{
-	return Path(Donate(), g_path_get_dirname(value.c_str()));
-}
 
 std::string
 Path::ToUTF8() const
 {
-	return ::PathToUTF8(value.c_str());
+	return ::PathToUTF8(c_str());
 }
 
 const char *
@@ -92,21 +47,4 @@ Path::RelativeFS(const char *other_fs) const
 	}
 
 	return other_fs;
-}
-
-void
-Path::ChopSeparators()
-{
-	size_t l = length();
-	const char *p = data();
-
-	while (l >= 2 && PathTraits::IsSeparatorFS(p[l - 1])) {
-		--l;
-
-#if GCC_CHECK_VERSION(4,7) && !defined(__clang__)
-		value.pop_back();
-#else
-		value.erase(value.end() - 1, value.end());
-#endif
-	}
 }

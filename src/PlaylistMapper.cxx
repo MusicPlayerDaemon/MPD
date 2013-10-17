@@ -22,7 +22,7 @@
 #include "PlaylistFile.hxx"
 #include "PlaylistRegistry.hxx"
 #include "Mapper.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "util/UriUtil.hxx"
 
 #include <assert.h>
@@ -49,15 +49,16 @@ playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond,
 {
 	assert(spl_valid_name(uri));
 
-	const Path &playlist_directory_fs = map_spl_path();
+	const auto &playlist_directory_fs = map_spl_path();
 	if (playlist_directory_fs.IsNull())
 		return nullptr;
 
-	const Path uri_fs = Path::FromUTF8(uri);
+	const auto uri_fs = AllocatedPath::FromUTF8(uri);
 	if (uri_fs.IsNull())
 		return nullptr;
 
-	const Path path_fs = Path::Build(playlist_directory_fs, uri_fs);
+	const auto path_fs =
+		AllocatedPath::Build(playlist_directory_fs, uri_fs);
 	assert(!path_fs.IsNull());
 
 	return playlist_open_path(path_fs.c_str(), mutex, cond, is_r);
@@ -72,7 +73,7 @@ playlist_open_in_music_dir(const char *uri, Mutex &mutex, Cond &cond,
 {
 	assert(uri_safe_local(uri));
 
-	Path path = map_uri_fs(uri);
+	const auto path = map_uri_fs(uri);
 	if (path.IsNull())
 		return nullptr;
 

@@ -25,7 +25,7 @@
 #include "Song.hxx"
 #include "Mapper.hxx"
 #include "Idle.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/UriUtil.hxx"
@@ -40,12 +40,12 @@ void
 playlist_print_song(FILE *file, const Song *song)
 {
 	if (playlist_saveAbsolutePaths && song->IsInDatabase()) {
-		const Path path = map_song_fs(song);
+		const auto path = map_song_fs(song);
 		if (!path.IsNull())
 			fprintf(file, "%s\n", path.c_str());
 	} else {
 		const auto uri_utf8 = song->GetURI();
-		const Path uri_fs = Path::FromUTF8(uri_utf8.c_str());
+		const auto uri_fs = AllocatedPath::FromUTF8(uri_utf8.c_str());
 
 		if (!uri_fs.IsNull())
 			fprintf(file, "%s\n", uri_fs.c_str());
@@ -55,10 +55,10 @@ playlist_print_song(FILE *file, const Song *song)
 void
 playlist_print_uri(FILE *file, const char *uri)
 {
-	Path path = playlist_saveAbsolutePaths && !uri_has_scheme(uri) &&
+	auto path = playlist_saveAbsolutePaths && !uri_has_scheme(uri) &&
 		!PathTraits::IsAbsoluteUTF8(uri)
 		? map_uri_fs(uri)
-		: Path::FromUTF8(uri);
+		: AllocatedPath::FromUTF8(uri);
 
 	if (!path.IsNull())
 		fprintf(file, "%s\n", path.c_str());
@@ -73,7 +73,7 @@ spl_save_queue(const char *name_utf8, const struct queue *queue)
 	if (!spl_valid_name(name_utf8))
 		return PLAYLIST_RESULT_BAD_NAME;
 
-	const Path path_fs = map_spl_utf8_to_fs(name_utf8);
+	const auto path_fs = map_spl_utf8_to_fs(name_utf8);
 	if (path_fs.IsNull())
 		return PLAYLIST_RESULT_BAD_NAME;
 

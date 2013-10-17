@@ -37,7 +37,7 @@
 static constexpr Domain exclude_list_domain("exclude_list");
 
 bool
-ExcludeList::LoadFile(const Path &path_fs)
+ExcludeList::LoadFile(Path path_fs)
 {
 	FILE *file = FOpen(path_fs, FOpenMode::ReadText);
 	if (file == NULL) {
@@ -69,7 +69,7 @@ ExcludeList::LoadFile(const Path &path_fs)
 }
 
 bool
-ExcludeList::Check(const Path &name_fs) const
+ExcludeList::Check(Path name_fs) const
 {
 	assert(!name_fs.IsNull());
 

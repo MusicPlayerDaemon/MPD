@@ -23,7 +23,7 @@
 #include "OutputAPI.hxx"
 #include "Timer.hxx"
 #include "system/fd_util.h"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -41,7 +41,7 @@
 struct FifoOutput {
 	struct audio_output base;
 
-	Path path;
+	AllocatedPath path;
 	std::string path_utf8;
 
 	int input;
@@ -50,7 +50,8 @@ struct FifoOutput {
 	Timer *timer;
 
 	FifoOutput()
-		:path(Path::Null()), input(-1), output(-1), created(false) {}
+		:path(AllocatedPath::Null()), input(-1), output(-1),
+		 created(false) {}
 
 	bool Initialize(const config_param &param, Error &error) {
 		return ao_base_init(&base, &fifo_output_plugin, param,

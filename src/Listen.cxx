@@ -28,7 +28,7 @@
 #include "event/ServerSocket.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "Log.hxx"
 
 #include <string.h>
@@ -67,7 +67,7 @@ listen_add_config_param(unsigned int port,
 	if (0 == strcmp(param->value.c_str(), "any")) {
 		return listen_socket->AddPort(port, error_r);
 	} else if (param->value[0] == '/' || param->value[0] == '~') {
-		Path path = config_parse_path(param, error_r);
+		const auto path = config_parse_path(param, error_r);
 		return !path.IsNull() && listen_socket->AddPath(path.c_str(), error_r);
 	} else {
 		return listen_socket->AddHost(param->value.c_str(), port,

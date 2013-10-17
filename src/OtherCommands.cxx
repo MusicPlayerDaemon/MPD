@@ -35,7 +35,7 @@
 #include "Volume.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "Stats.hxx"
 #include "Permission.hxx"
 #include "PlaylistFile.hxx"
@@ -117,7 +117,7 @@ handle_lsinfo(Client *client, int argc, char *argv[])
 	if (memcmp(uri, "file:///", 8) == 0) {
 		/* print information about an arbitrary local file */
 		const char *path_utf8 = uri + 7;
-		const Path path_fs = Path::FromUTF8(path_utf8);
+		const auto path_fs = AllocatedPath::FromUTF8(path_utf8);
 
 		if (path_fs.IsNull()) {
 			command_error(client, ACK_ERROR_NO_EXIST,

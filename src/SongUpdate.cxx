@@ -23,7 +23,7 @@
 #include "util/Error.hxx"
 #include "Directory.hxx"
 #include "Mapper.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "InputStream.hxx"
@@ -99,7 +99,7 @@ Song::UpdateFile()
 	if (plugin == NULL)
 		return false;
 
-	const Path path_fs = map_song_fs(this);
+	const auto path_fs = map_song_fs(this);
 	if (path_fs.IsNull())
 		return false;
 

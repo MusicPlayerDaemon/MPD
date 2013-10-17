@@ -22,7 +22,7 @@
 #include "src/UpdateDomain.hxx"
 #include "Directory.hxx"
 #include "Mapper.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "Log.hxx"
 
@@ -32,7 +32,7 @@
 int
 stat_directory(const Directory *directory, struct stat *st)
 {
-	const Path path_fs = map_directory_fs(directory);
+	const auto path_fs = map_directory_fs(directory);
 	if (path_fs.IsNull())
 		return -1;
 
@@ -51,7 +51,7 @@ int
 stat_directory_child(const Directory *parent, const char *name,
 		     struct stat *st)
 {
-	const Path path_fs = map_directory_child_fs(parent, name);
+	const auto path_fs = map_directory_child_fs(parent, name);
 	if (path_fs.IsNull())
 		return -1;
 
@@ -69,7 +69,7 @@ stat_directory_child(const Directory *parent, const char *name,
 bool
 directory_exists(const Directory *directory)
 {
-	const Path path_fs = map_directory_fs(directory);
+	const auto path_fs = map_directory_fs(directory);
 	if (path_fs.IsNull())
 		/* invalid path: cannot exist */
 		return false;
@@ -84,7 +84,7 @@ bool
 directory_child_is_regular(const Directory *directory,
 			   const char *name_utf8)
 {
-	const Path path_fs = map_directory_child_fs(directory, name_utf8);
+	const auto path_fs = map_directory_child_fs(directory, name_utf8);
 	if (path_fs.IsNull())
 		return false;
 
@@ -102,7 +102,7 @@ directory_child_access(const Directory *directory,
 	(void)mode;
 	return true;
 #else
-	const Path path = map_directory_child_fs(directory, name);
+	const auto path = map_directory_child_fs(directory, name);
 	if (path.IsNull())
 		/* something went wrong, but that isn't a permission
 		   problem */

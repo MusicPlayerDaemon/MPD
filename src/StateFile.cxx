@@ -33,7 +33,7 @@
 
 static constexpr Domain state_file_domain("state_file");
 
-StateFile::StateFile(Path &&_path,
+StateFile::StateFile(AllocatedPath &&_path,
 		     Partition &_partition, EventLoop &_loop)
 	:TimeoutMonitor(_loop),
 	 path(std::move(_path)), path_utf8(path.ToUTF8()),

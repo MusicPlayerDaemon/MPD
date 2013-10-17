@@ -23,7 +23,7 @@
 #include "tag/TagHandler.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "system/FatalError.hxx"
 #include "Log.hxx"
@@ -40,9 +40,10 @@ static bool
 wildmidi_init(const config_param &param)
 {
 	Error error;
-	const Path path = param.GetBlockPath("config_file",
-					     "/etc/timidity/timidity.cfg",
-					     error);
+	const AllocatedPath path =
+		param.GetBlockPath("config_file",
+				   "/etc/timidity/timidity.cfg",
+				   error);
 	if (path.IsNull())
 		FatalError(error);
 

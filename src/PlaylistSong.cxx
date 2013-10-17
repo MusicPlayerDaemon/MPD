@@ -24,7 +24,7 @@
 #include "DatabaseGlue.hxx"
 #include "ls.hxx"
 #include "tag/Tag.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
@@ -64,7 +64,7 @@ apply_song_metadata(Song *dest, const Song *src)
 		return dest;
 
 	if (dest->IsInDatabase()) {
-		const Path &path_fs = map_song_fs(dest);
+		const auto path_fs = map_song_fs(dest);
 		if (path_fs.IsNull())
 			return dest;
 

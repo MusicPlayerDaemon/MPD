@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "ConfigPath.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/Domain.hxx"
 #include "util/Error.hxx"
@@ -36,39 +36,39 @@
 /**
  * Determine a given user's home directory.
  */
-static Path
+static AllocatedPath
 GetHome(const char *user, Error &error)
 {
 	passwd *pw = getpwnam(user);
 	if (pw == nullptr) {
 		error.Format(path_domain,
 			     "no such user: %s", user);
-		return Path::Null();
+		return AllocatedPath::Null();
 	}
 
-	return Path::FromFS(pw->pw_dir);
+	return AllocatedPath::FromFS(pw->pw_dir);
 }
 
 /**
  * Determine the current user's home directory.
  */
-static Path
+static AllocatedPath
 GetHome(Error &error)
 {
 	const char *home = g_get_home_dir();
 	if (home == nullptr) {
 		error.Set(path_domain,
 			  "problems getting home for current user");
-		return Path::Null();
+		return AllocatedPath::Null();
 	}
 
-	return Path::FromUTF8(home, error);
+	return AllocatedPath::FromUTF8(home, error);
 }
 
 /**
  * Determine the configured user's home directory.
  */
-static Path
+static AllocatedPath
 GetConfiguredHome(Error &error)
 {
 	const char *user = config_get_string(CONF_USER, nullptr);
@@ -79,7 +79,7 @@ GetConfiguredHome(Error &error)
 
 #endif
 
-Path
+AllocatedPath
 ParsePath(const char *path, Error &error)
 {
 	assert(path != nullptr);
@@ -91,7 +91,7 @@ ParsePath(const char *path, Error &error)
 		if (*path == '\0')
 			return GetConfiguredHome(error);
 
-		Path home = Path::Null();
+		AllocatedPath home = AllocatedPath::Null();
 
 		if (*path == '/') {
 			home = GetConfiguredHome(error);
@@ -113,20 +113,20 @@ ParsePath(const char *path, Error &error)
 		}
 
 		if (home.IsNull())
-			return Path::Null();
+			return AllocatedPath::Null();
 
-		Path path2 = Path::FromUTF8(path, error);
+		AllocatedPath path2 = AllocatedPath::FromUTF8(path, error);
 		if (path2.IsNull())
-			return Path::Null();
+			return AllocatedPath::Null();
 
-		return Path::Build(home, path2);
+		return AllocatedPath::Build(home, path2);
 	} else if (!PathTraits::IsAbsoluteUTF8(path)) {
 		error.Format(path_domain,
 			     "not an absolute path: %s", path);
-		return Path::Null();
+		return AllocatedPath::Null();
 	} else {
 #endif
-		return Path::FromUTF8(path, error);
+		return AllocatedPath::FromUTF8(path, error);
 #ifndef WIN32
 	}
 #endif

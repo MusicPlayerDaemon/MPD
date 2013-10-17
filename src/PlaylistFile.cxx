@@ -32,7 +32,7 @@
 #include "ConfigDefaults.hxx"
 #include "Idle.hxx"
 #include "fs/Limits.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/Charset.hxx"
 #include "fs/FileSystem.hxx"
@@ -85,10 +85,10 @@ spl_valid_name(const char *name_utf8)
 		strchr(name_utf8, '\r') == nullptr;
 }
 
-static const Path &
+static const AllocatedPath &
 spl_map(Error &error)
 {
-	const Path &path_fs = map_spl_path();
+	const AllocatedPath &path_fs = map_spl_path();
 	if (path_fs.IsNull())
 		error.Set(playlist_domain, PLAYLIST_RESULT_DISABLED,
 			  "Stored playlists are disabled");
@@ -107,13 +107,13 @@ spl_check_name(const char *name_utf8, Error &error)
 	return true;
 }
 
-static Path
+static AllocatedPath
 spl_map_to_fs(const char *name_utf8, Error &error)
 {
 	if (spl_map(error).IsNull() || !spl_check_name(name_utf8, error))
-		return Path::Null();
+		return AllocatedPath::Null();
 
-	Path path_fs = map_spl_utf8_to_fs(name_utf8);
+	auto path_fs = map_spl_utf8_to_fs(name_utf8);
 	if (path_fs.IsNull())
 		error.Set(playlist_domain, PLAYLIST_RESULT_BAD_NAME,
 			  "Bad playlist name");
@@ -141,7 +141,8 @@ playlist_errno(Error &error)
 
 static bool
 LoadPlaylistFileInfo(PlaylistInfo &info,
-		     const Path &parent_path_fs, const Path &name_fs)
+		     const AllocatedPath &parent_path_fs,
+		     const AllocatedPath &name_fs)
 {
 	const char *name_fs_str = name_fs.c_str();
 	size_t name_length = strlen(name_fs_str);
@@ -153,7 +154,7 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 	if (!g_str_has_suffix(name_fs_str, PLAYLIST_FILE_SUFFIX))
 		return false;
 
-	Path path_fs = Path::Build(parent_path_fs, name_fs);
+	const auto path_fs = AllocatedPath::Build(parent_path_fs, name_fs);
 	struct stat st;
 	if (!StatFile(path_fs, st) || !S_ISREG(st.st_mode))
 		return false;
@@ -175,7 +176,7 @@ ListPlaylistFiles(Error &error)
 {
 	PlaylistVector list;
 
-	const Path &parent_path_fs = spl_map(error);
+	const auto &parent_path_fs = spl_map(error);
 	if (parent_path_fs.IsNull())
 		return list;
 
@@ -187,7 +188,7 @@ ListPlaylistFiles(Error &error)
 
 	PlaylistInfo info;
 	while (reader.ReadEntry()) {
-		const Path entry = reader.GetEntry();
+		const auto entry = reader.GetEntry();
 		if (LoadPlaylistFileInfo(info, parent_path_fs, entry))
 			list.push_back(std::move(info));
 	}
@@ -204,7 +205,7 @@ SavePlaylistFile(const PlaylistFileContents &contents, const char *utf8path,
 	if (spl_map(error).IsNull())
 		return false;
 
-	const Path path_fs = spl_map_to_fs(utf8path, error);
+	const auto path_fs = spl_map_to_fs(utf8path, error);
 	if (path_fs.IsNull())
 		return false;
 
@@ -229,7 +230,7 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 	if (spl_map(error).IsNull())
 		return contents;
 
-	const Path path_fs = spl_map_to_fs(utf8path, error);
+	const auto path_fs = spl_map_to_fs(utf8path, error);
 	if (path_fs.IsNull())
 		return contents;
 
@@ -310,7 +311,7 @@ spl_clear(const char *utf8path, Error &error)
 	if (spl_map(error).IsNull())
 		return false;
 
-	const Path path_fs = spl_map_to_fs(utf8path, error);
+	const auto path_fs = spl_map_to_fs(utf8path, error);
 	if (path_fs.IsNull())
 		return false;
 
@@ -329,7 +330,7 @@ spl_clear(const char *utf8path, Error &error)
 bool
 spl_delete(const char *name_utf8, Error &error)
 {
-	const Path path_fs = spl_map_to_fs(name_utf8, error);
+	const auto path_fs = spl_map_to_fs(name_utf8, error);
 	if (path_fs.IsNull())
 		return false;
 
@@ -369,7 +370,7 @@ spl_append_song(const char *utf8path, Song *song, Error &error)
 	if (spl_map(error).IsNull())
 		return false;
 
-	const Path path_fs = spl_map_to_fs(utf8path, error);
+	const auto path_fs = spl_map_to_fs(utf8path, error);
 	if (path_fs.IsNull())
 		return false;
 
@@ -425,7 +426,7 @@ spl_append_uri(const char *url, const char *utf8file, Error &error)
 }
 
 static bool
-spl_rename_internal(const Path &from_path_fs, const Path &to_path_fs,
+spl_rename_internal(Path from_path_fs, Path to_path_fs,
 		    Error &error)
 {
 	if (!FileExists(from_path_fs)) {
@@ -455,11 +456,11 @@ spl_rename(const char *utf8from, const char *utf8to, Error &error)
 	if (spl_map(error).IsNull())
 		return false;
 
-	Path from_path_fs = spl_map_to_fs(utf8from, error);
+	const auto from_path_fs = spl_map_to_fs(utf8from, error);
 	if (from_path_fs.IsNull())
 		return false;
 
-	Path to_path_fs = spl_map_to_fs(utf8to, error);
+	const auto to_path_fs = spl_map_to_fs(utf8to, error);
 	if (to_path_fs.IsNull())
 		return false;
 

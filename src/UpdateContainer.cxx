@@ -27,7 +27,7 @@
 #include "Song.hxx"
 #include "DecoderPlugin.hxx"
 #include "Mapper.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
 #include "Log.hxx"
@@ -84,7 +84,7 @@ update_container_file(Directory *directory,
 	contdir->device = DEVICE_CONTAINER;
 	db_unlock();
 
-	const Path pathname = map_directory_child_fs(directory, name);
+	const auto pathname = map_directory_child_fs(directory, name);
 
 	char *vtrack;
 	unsigned int tnum = 0;
@@ -95,7 +95,7 @@ update_container_file(Directory *directory,
 		// shouldn't be necessary but it's there..
 		song->mtime = st->st_mtime;
 
-		const Path child_path_fs =
+		const auto child_path_fs =
 			map_directory_child_fs(contdir, vtrack);
 
 		decoder_plugin_scan_file(plugin, child_path_fs.c_str(),

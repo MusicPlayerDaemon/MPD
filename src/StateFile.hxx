@@ -21,7 +21,7 @@
 #define MPD_STATE_FILE_HXX
 
 #include "event/TimeoutMonitor.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "Compiler.h"
 
 #include <string>
@@ -29,7 +29,7 @@
 struct Partition;
 
 class StateFile final : private TimeoutMonitor {
-	Path path;
+	AllocatedPath path;
 	std::string path_utf8;
 
 	Partition &partition;
@@ -42,7 +42,7 @@ class StateFile final : private TimeoutMonitor {
 		prev_playlist_version;
 
 public:
-	StateFile(Path &&path, Partition &partition, EventLoop &loop);
+	StateFile(AllocatedPath &&path, Partition &partition, EventLoop &loop);
 
 	void Read();
 	void Write();

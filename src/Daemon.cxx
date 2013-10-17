@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Daemon.hxx"
 #include "system/FatalError.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -55,7 +55,7 @@ static uid_t user_uid = (uid_t)-1;
 static gid_t user_gid = (pid_t)-1;
 
 /** the absolute path of the pidfile */
-static Path pidfile = Path::Null();
+static AllocatedPath pidfile = AllocatedPath::Null();
 
 /* whether "group" conf. option was given */
 static bool had_group = false;
@@ -202,7 +202,7 @@ daemonize(bool detach)
 }
 
 void
-daemonize_init(const char *user, const char *group, Path &&_pidfile)
+daemonize_init(const char *user, const char *group, AllocatedPath &&_pidfile)
 {
 	if (user) {
 		struct passwd *pwd = getpwnam(user);
@@ -235,7 +235,7 @@ daemonize_finish(void)
 {
 	if (!pidfile.IsNull()) {
 		RemoveFile(pidfile);
-		pidfile = Path::Null();
+		pidfile = AllocatedPath::Null();
 	}
 
 	g_free(user_name);

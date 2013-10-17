@@ -25,6 +25,7 @@
 
 class Error;
 class Path;
+class AllocatedPath;
 
 void config_global_init(void);
 void config_global_finish(void);
@@ -36,7 +37,7 @@ void config_global_finish(void);
 void config_global_check(void);
 
 bool
-ReadConfigFile(const Path &path, Error &error);
+ReadConfigFile(Path path, Error &error);
 
 /* don't free the returned value
    set _last_ to nullptr to get first entry */
@@ -66,18 +67,18 @@ config_get_string(enum ConfigOption option, const char *default_value);
 /**
  * Returns an optional configuration variable which contains an
  * absolute path.  If there is a tilde prefix, it is expanded.
- * Returns Path::Null() if the value is not present.  If the path
- * could not be parsed, returns Path::Null() and sets the error.
+ * Returns AllocatedPath::Null() if the value is not present.  If the path
+ * could not be parsed, returns AllocatedPath::Null() and sets the error.
  */
-Path
+AllocatedPath
 config_get_path(enum ConfigOption option, Error &error);
 
 /**
  * Parse a configuration parameter as a path.
  * If there is a tilde prefix, it is expanded. If the path could
- * not be parsed, returns Path::Null() and sets the error.
+ * not be parsed, returns AllocatedPath::Null() and sets the error.
  */
-Path
+AllocatedPath
 config_parse_path(const struct config_param *param, Error & error_r);
 
 gcc_pure

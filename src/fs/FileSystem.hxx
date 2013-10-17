@@ -31,6 +31,8 @@
 #include <assert.h>
 #include <stdio.h>
 
+class AllocatedPath;
+
 namespace FOpenMode {
 	/**
 	 * Open mode for reading text files.
@@ -67,7 +69,7 @@ namespace FOpenMode {
  * Wrapper for fopen() that uses #Path names.
  */
 static inline FILE *
-FOpen(const Path &file, PathTraits::const_pointer mode)
+FOpen(Path file, PathTraits::const_pointer mode)
 {
 	return fopen(file.c_str(), mode);
 }
@@ -75,7 +77,8 @@ FOpen(const Path &file, PathTraits::const_pointer mode)
 /**
  * Wrapper for open_cloexec() that uses #Path names.
  */
-static inline int OpenFile(const Path &file, int flags, int mode)
+static inline int
+OpenFile(Path file, int flags, int mode)
 {
 	return open_cloexec(file.c_str(), flags, mode);
 }
@@ -83,7 +86,8 @@ static inline int OpenFile(const Path &file, int flags, int mode)
 /**
  * Wrapper for rename() that uses #Path names.
  */
-static inline bool RenameFile(const Path &oldpath, const Path &newpath)
+static inline bool
+RenameFile(Path oldpath, Path newpath)
 {
 	return rename(oldpath.c_str(), newpath.c_str()) == 0;
 }
@@ -91,8 +95,8 @@ static inline bool RenameFile(const Path &oldpath, const Path &newpath)
 /**
  * Wrapper for stat() that uses #Path names.
  */
-static inline bool StatFile(const Path &file, struct stat &buf,
-			    bool follow_symlinks = true)
+static inline bool
+StatFile(Path file, struct stat &buf, bool follow_symlinks = true)
 {
 #ifdef WIN32
 	(void)follow_symlinks;
@@ -108,7 +112,8 @@ static inline bool StatFile(const Path &file, struct stat &buf,
 /**
  * Wrapper for unlink() that uses #Path names.
  */
-static inline bool RemoveFile(const Path &file)
+static inline bool
+RemoveFile(Path file)
 {
 	return unlink(file.c_str()) == 0;
 }
@@ -116,12 +121,13 @@ static inline bool RemoveFile(const Path &file)
 /**
  * Wrapper for readlink() that uses #Path names.
  */
-Path ReadLink(const Path &path);
+AllocatedPath
+ReadLink(Path path);
 
 #ifndef WIN32
 
 static inline bool
-MakeFifo(const Path &path, mode_t mode)
+MakeFifo(Path path, mode_t mode)
 {
 	return mkfifo(path.c_str(), mode) == 0;
 }
@@ -131,7 +137,8 @@ MakeFifo(const Path &path, mode_t mode)
 /**
  * Wrapper for access() that uses #Path names.
  */
-static inline bool CheckAccess(const Path &path, int mode)
+static inline bool
+CheckAccess(Path path, int mode)
 {
 #ifdef WIN32
 	(void)path;
@@ -145,8 +152,8 @@ static inline bool CheckAccess(const Path &path, int mode)
 /**
  * Checks if #Path exists and is a regular file.
  */
-static inline bool FileExists(const Path &path,
-			      bool follow_symlinks = true)
+static inline bool
+FileExists(Path path, bool follow_symlinks = true)
 {
 	struct stat buf;
 	return StatFile(path, buf, follow_symlinks) && S_ISREG(buf.st_mode);
@@ -155,8 +162,8 @@ static inline bool FileExists(const Path &path,
 /**
  * Checks if #Path exists and is a directory.
  */
-static inline bool DirectoryExists(const Path &path,
-				   bool follow_symlinks = true)
+static inline bool
+DirectoryExists(Path path, bool follow_symlinks = true)
 {
 	struct stat buf;
 	return StatFile(path, buf, follow_symlinks) && S_ISDIR(buf.st_mode);
@@ -165,8 +172,8 @@ static inline bool DirectoryExists(const Path &path,
 /**
  * Checks if #Path exists.
  */
-static inline bool PathExists(const Path &path,
-			      bool follow_symlinks = true)
+static inline bool
+PathExists(Path path, bool follow_symlinks = true)
 {
 	struct stat buf;
 	return StatFile(path, buf, follow_symlinks);

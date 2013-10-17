@@ -253,7 +253,7 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, Error &error)
 }
 
 bool
-ReadConfigFile(ConfigData &config_data, const Path &path, Error &error)
+ReadConfigFile(ConfigData &config_data, Path path, Error &error)
 {
 	assert(!path.IsNull());
 	const std::string path_utf8 = path.ToUTF8();

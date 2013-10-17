@@ -27,7 +27,7 @@
 #include "system/FatalError.hxx"
 #include "Mapper.hxx"
 #include "fs/Traits.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "DecoderAPI.hxx"
 #include "tag/Tag.hxx"
 #include "InputStream.hxx"

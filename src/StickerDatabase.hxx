@@ -58,7 +58,7 @@ struct sticker;
  * @return true on success, false on error
  */
 bool
-sticker_global_init(Path &&path, Error &error);
+sticker_global_init(Path path, Error &error);
 
 /**
  * Close the sticker database.

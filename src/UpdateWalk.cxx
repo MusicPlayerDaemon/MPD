@@ -34,7 +34,7 @@
 #include "ExcludeList.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/DirectoryReader.hxx"
@@ -102,7 +102,7 @@ remove_excluded_from_directory(Directory *directory,
 
 	Directory *child, *n;
 	directory_for_each_child_safe(child, n, directory) {
-		const Path name_fs = Path::FromUTF8(child->GetName());
+		const auto name_fs = AllocatedPath::FromUTF8(child->GetName());
 
 		if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
 			delete_directory(child);
@@ -114,7 +114,7 @@ remove_excluded_from_directory(Directory *directory,
 	directory_for_each_song_safe(song, ns, directory) {
 		assert(song->parent == directory);
 
-		const Path name_fs = Path::FromUTF8(song->uri);
+		const auto name_fs = AllocatedPath::FromUTF8(song->uri);
 		if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
 			delete_song(directory, song);
 			modified = true;
@@ -141,7 +141,7 @@ purge_deleted_from_directory(Directory *directory)
 
 	Song *song, *ns;
 	directory_for_each_song_safe(song, ns, directory) {
-		const Path path = map_song_fs(song);
+		const auto path = map_song_fs(song);
 		if (path.IsNull() || !FileExists(path)) {
 			db_lock();
 			delete_song(directory, song);
@@ -264,7 +264,7 @@ update_directory_child(Directory *directory,
 
 /* we don't look at "." / ".." nor files with newlines in their name */
 gcc_pure
-static bool skip_path(const Path &path_fs)
+static bool skip_path(Path path_fs)
 {
 	const char *path = path_fs.c_str();
 	return (path[0] == '.' && path[1] == 0) ||
@@ -277,11 +277,11 @@ static bool
 skip_symlink(const Directory *directory, const char *utf8_name)
 {
 #ifndef WIN32
-	const Path path_fs = map_directory_child_fs(directory, utf8_name);
+	const auto path_fs = map_directory_child_fs(directory, utf8_name);
 	if (path_fs.IsNull())
 		return true;
 
-	const Path target = ReadLink(path_fs);
+	const auto target = ReadLink(path_fs);
 	if (target.IsNull())
 		/* don't skip if this is not a symlink */
 		return errno != EINVAL;
@@ -345,7 +345,7 @@ update_directory(Directory *directory, const struct stat *st)
 
 	directory_set_stat(directory, st);
 
-	const Path path_fs = map_directory_fs(directory);
+	const auto path_fs = map_directory_fs(directory);
 	if (path_fs.IsNull())
 		return false;
 
@@ -360,7 +360,7 @@ update_directory(Directory *directory, const struct stat *st)
 	}
 
 	ExcludeList exclude_list;
-	exclude_list.LoadFile(Path::Build(path_fs, ".mpdignore"));
+	exclude_list.LoadFile(AllocatedPath::Build(path_fs, ".mpdignore"));
 
 	if (!exclude_list.IsEmpty())
 		remove_excluded_from_directory(directory, exclude_list);
@@ -371,7 +371,7 @@ update_directory(Directory *directory, const struct stat *st)
 		std::string utf8;
 		struct stat st2;
 
-		const Path entry = reader.GetEntry();
+		const auto entry = reader.GetEntry();
 
 		if (skip_path(entry) || exclude_list.Check(entry))
 			continue;

@@ -25,7 +25,7 @@
 #include "Directory.hxx"
 #include "Song.hxx"
 #include "Mapper.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "ArchiveList.hxx"
 #include "ArchivePlugin.hxx"
 #include "ArchiveFile.hxx"
@@ -101,7 +101,7 @@ update_archive_file2(Directory *parent, const char *name,
 		   changed since - don't consider updating it */
 		return;
 
-	const Path path_fs = map_directory_child_fs(parent, name);
+	const auto path_fs = map_directory_child_fs(parent, name);
 
 	/* open archive */
 	Error error;

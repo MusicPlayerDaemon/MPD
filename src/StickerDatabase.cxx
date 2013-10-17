@@ -107,13 +107,11 @@ sticker_prepare(const char *sql, Error &error)
 }
 
 bool
-sticker_global_init(Path &&path, Error &error)
+sticker_global_init(Path path, Error &error)
 {
-	int ret;
+	assert(!path.IsNull());
 
-	if (path.IsNull())
-		/* not configured */
-		return true;
+	int ret;
 
 	/* open/create the sqlite database */
 

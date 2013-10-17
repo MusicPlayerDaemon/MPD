@@ -22,7 +22,7 @@
 #include "ConfigParser.hxx"
 #include "ConfigPath.hxx"
 #include "util/Error.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "system/FatalError.hxx"
 
 #include <assert.h>
@@ -86,7 +86,7 @@ config_param::GetBlockValue(const char *name, const char *default_value) const
 	return bp->value.c_str();
 }
 
-Path
+AllocatedPath
 config_param::GetBlockPath(const char *name, const char *default_value,
 			   Error &error) const
 {
@@ -101,12 +101,12 @@ config_param::GetBlockPath(const char *name, const char *default_value,
 		s = bp->value.c_str();
 	} else {
 		if (default_value == nullptr)
-			return Path::Null();
+			return AllocatedPath::Null();
 
 		s = default_value;
 	}
 
-	Path path = ParsePath(s, error);
+	AllocatedPath path = ParsePath(s, error);
 	if (gcc_unlikely(path.IsNull()))
 		error.FormatPrefix("Invalid path in \"%s\" at line %i: ",
 				   name, line2);
@@ -114,7 +114,7 @@ config_param::GetBlockPath(const char *name, const char *default_value,
 	return path;
 }
 
-Path
+AllocatedPath
 config_param::GetBlockPath(const char *name, Error &error) const
 {
 	return GetBlockPath(name, nullptr, error);

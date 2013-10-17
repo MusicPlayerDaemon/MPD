@@ -25,6 +25,6 @@ class Path;
 struct ConfigData;
 
 bool
-ReadConfigFile(ConfigData &data, const Path &path, Error &error);
+ReadConfigFile(ConfigData &data, Path path, Error &error);
 
 #endif

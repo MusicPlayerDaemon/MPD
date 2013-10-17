@@ -20,10 +20,10 @@
 #ifndef MPD_CONFIG_PATH_HXX
 #define MPD_CONFIG_PATH_HXX
 
-class Path;
+class AllocatedPath;
 class Error;
 
-Path
+AllocatedPath
 ParsePath(const char *path, Error &error);
 
 #endif

@@ -36,7 +36,7 @@ class TextFile {
 	GString *const buffer;
 
 public:
-	TextFile(const Path &path_fs);
+	TextFile(Path path_fs);
 
 	TextFile(const TextFile &other) = delete;
 

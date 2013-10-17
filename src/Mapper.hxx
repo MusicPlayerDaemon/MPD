@@ -31,11 +31,12 @@
 #define PLAYLIST_FILE_SUFFIX ".m3u"
 
 class Path;
+class AllocatedPath;
 struct Directory;
 struct Song;
 
 void
-mapper_init(Path &&music_dir, Path &&playlist_dir);
+mapper_init(AllocatedPath &&music_dir, AllocatedPath &&playlist_dir);
 
 void mapper_finish(void);
 
@@ -51,7 +52,7 @@ mapper_get_music_directory_utf8(void);
  * filesystem character set.
  */
 gcc_const
-const Path &
+const AllocatedPath &
 mapper_get_music_directory_fs(void);
 
 /**
@@ -79,7 +80,7 @@ map_to_relative_path(const char *path_utf8);
  * and prepending the music directory.
  */
 gcc_pure
-Path
+AllocatedPath
 map_uri_fs(const char *uri);
 
 /**
@@ -89,7 +90,7 @@ map_uri_fs(const char *uri);
  * @return the path in file system encoding, or nullptr if mapping failed
  */
 gcc_pure
-Path
+AllocatedPath
 map_directory_fs(const Directory *directory);
 
 /**
@@ -101,7 +102,7 @@ map_directory_fs(const Directory *directory);
  * @return the path in file system encoding, or nullptr if mapping failed
  */
 gcc_pure
-Path
+AllocatedPath
 map_directory_child_fs(const Directory *directory, const char *name);
 
 /**
@@ -112,7 +113,7 @@ map_directory_child_fs(const Directory *directory, const char *name);
  * @return the path in file system encoding, or nullptr if mapping failed
  */
 gcc_pure
-Path
+AllocatedPath
 map_song_fs(const Song *song);
 
 /**
@@ -131,7 +132,7 @@ map_fs_to_utf8(const char *path_fs);
  * Returns the playlist directory.
  */
 gcc_const
-const Path &
+const AllocatedPath &
 map_spl_path(void);
 
 /**
@@ -142,7 +143,7 @@ map_spl_path(void);
  * @return the path in file system encoding, or nullptr if mapping failed
  */
 gcc_pure
-Path
+AllocatedPath
 map_spl_utf8_to_fs(const char *name);
 
 #endif

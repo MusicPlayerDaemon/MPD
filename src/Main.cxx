@@ -48,7 +48,7 @@
 #include "InputInit.hxx"
 #include "event/Loop.hxx"
 #include "IOThread.hxx"
-#include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "fs/Config.hxx"
 #include "PlaylistRegistry.hxx"
 #include "ZeroconfGlue.hxx"
@@ -111,7 +111,7 @@ static StateFile *state_file;
 static bool
 glue_daemonize_init(const struct options *options, Error &error)
 {
-	Path pid_file = config_get_path(CONF_PID_FILE, error);
+	auto pid_file = config_get_path(CONF_PID_FILE, error);
 	if (pid_file.IsNull() && error.IsDefined())
 		return false;
 
@@ -128,17 +128,17 @@ glue_daemonize_init(const struct options *options, Error &error)
 static bool
 glue_mapper_init(Error &error)
 {
-	Path music_dir = config_get_path(CONF_MUSIC_DIR, error);
+	auto music_dir = config_get_path(CONF_MUSIC_DIR, error);
 	if (music_dir.IsNull() && error.IsDefined())
 		return false;
 
-	Path playlist_dir = config_get_path(CONF_PLAYLIST_DIR, error);
+	auto playlist_dir = config_get_path(CONF_PLAYLIST_DIR, error);
 	if (playlist_dir.IsNull() && error.IsDefined())
 		return false;
 
 	if (music_dir.IsNull()) {
-		music_dir = Path::FromUTF8(g_get_user_special_dir(G_USER_DIRECTORY_MUSIC),
-					   error);
+		music_dir = AllocatedPath::FromUTF8(g_get_user_special_dir(G_USER_DIRECTORY_MUSIC),
+						    error);
 		if (music_dir.IsNull())
 			return false;
 	}
@@ -207,9 +207,12 @@ glue_sticker_init(void)
 {
 #ifdef ENABLE_SQLITE
 	Error error;
-	Path sticker_file = config_get_path(CONF_STICKER_FILE, error);
-	if (sticker_file.IsNull() && error.IsDefined())
-		FatalError(error);
+	auto sticker_file = config_get_path(CONF_STICKER_FILE, error);
+	if (sticker_file.IsNull()) {
+		if (error.IsDefined())
+			FatalError(error);
+		return;
+	}
 
 	if (!sticker_global_init(std::move(sticker_file), error))
 		FatalError(error);
@@ -219,7 +222,7 @@ glue_sticker_init(void)
 static bool
 glue_state_file_init(Error &error)
 {
-	Path path_fs = config_get_path(CONF_STATE_FILE, error);
+	auto path_fs = config_get_path(CONF_STATE_FILE, error);
 	if (path_fs.IsNull())
 		return !error.IsDefined();
 

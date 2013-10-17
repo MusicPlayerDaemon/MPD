@@ -17,40 +17,61 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_FS_PATH_HXX
-#define MPD_FS_PATH_HXX
+#ifndef MPD_FS_ALLOCATED_PATH_HXX
+#define MPD_FS_ALLOCATED_PATH_HXX
 
 #include "check.h"
 #include "Compiler.h"
 #include "Traits.hxx"
+#include "Path.hxx"
 
+#ifdef WIN32
+#include <glib.h>
+#endif
+
+#include <utility>
 #include <string>
 
 #include <assert.h>
-#include <string.h>
 
 class Error;
 
 /**
  * A path name in the native file system character set.
  *
- * This class manages a pointer to an existing path string.  While an
- * instance lives, the string must not be invalidated.
+ * This class manages the memory chunk where this path string is
+ * stored.
  */
-class Path {
+class AllocatedPath {
+	typedef std::string string;
+
 	typedef PathTraits::value_type value_type;
 	typedef PathTraits::pointer pointer;
 	typedef PathTraits::const_pointer const_pointer;
 
-	const char *value;
+	string value;
 
-	constexpr Path(const_pointer _value):value(_value) {}
+	struct Donate {};
+
+	/**
+	 * Donate the allocated pointer to a new #AllocatedPath object.
+	 */
+	AllocatedPath(Donate, pointer _value);
+
+	AllocatedPath(const_pointer _value):value(_value) {}
 
 public:
 	/**
-	 * Copy a #Path object.
+	 * Copy a #AllocatedPath object.
 	 */
-	constexpr Path(const Path &) = default;
+	AllocatedPath(const AllocatedPath &) = default;
+
+	/**
+	 * Move a #AllocatedPath object.
+	 */
+	AllocatedPath(AllocatedPath &&other):value(std::move(other.value)) {}
+
+	~AllocatedPath();
 
 	/**
 	 * Return a "nulled" instance.  Its IsNull() method will
@@ -58,29 +79,76 @@ public:
 	 *
 	 * @see IsNull()
 	 */
-	static constexpr Path Null() {
-		return Path(nullptr);
+	gcc_const
+	static AllocatedPath Null() {
+		return AllocatedPath("");
+	}
+
+	gcc_pure
+	operator Path() const {
+		return Path::FromFS(c_str());
 	}
 
 	/**
-	 * Create a new instance pointing to the specified path
-	 * string.
+	 * Join two path components with the path separator.
 	 */
-	static constexpr Path FromFS(const_pointer fs) {
-		return Path(fs);
+	gcc_pure gcc_nonnull_all
+	static AllocatedPath Build(const_pointer a, const_pointer b);
+
+	gcc_pure gcc_nonnull_all
+	static AllocatedPath Build(const_pointer a, const AllocatedPath &b) {
+		return Build(a, b.c_str());
+	}
+
+	gcc_pure gcc_nonnull_all
+	static AllocatedPath Build(const AllocatedPath &a, const_pointer b) {
+		return Build(a.c_str(), b);
+	}
+
+	gcc_pure
+	static AllocatedPath Build(const AllocatedPath &a,
+				   const AllocatedPath &b) {
+		return Build(a.c_str(), b.c_str());
 	}
 
 	/**
-	 * Copy a #Path object.
+	 * Convert a C string that is already in the filesystem
+	 * character set to a #Path instance.
 	 */
-	Path &operator=(const Path &) = default;
+	gcc_pure
+	static AllocatedPath FromFS(const_pointer fs) {
+		return AllocatedPath(fs);
+	}
+
+	/**
+	 * Convert a UTF-8 C string to a #AllocatedPath instance.
+	 * Returns return a "nulled" instance on error.
+	 */
+	gcc_pure gcc_nonnull_all
+	static AllocatedPath FromUTF8(const char *path_utf8);
+
+	gcc_pure gcc_nonnull_all
+	static AllocatedPath FromUTF8(const char *path_utf8, Error &error);
+
+	/**
+	 * Copy a #AllocatedPath object.
+	 */
+	AllocatedPath &operator=(const AllocatedPath &) = default;
+
+	/**
+	 * Move a #AllocatedPath object.
+	 */
+	AllocatedPath &operator=(AllocatedPath &&other) {
+		value = std::move(other.value);
+		return *this;
+	}
 
 	/**
 	 * Check if this is a "nulled" instance.  A "nulled" instance
 	 * must not be used.
 	 */
 	bool IsNull() const {
-		return value == nullptr;
+		return value.empty();
 	}
 
 	/**
@@ -89,7 +157,7 @@ public:
 	 * @see IsNull()
 	 */
 	void SetNull() {
-		value = nullptr;
+		value.clear();
 	}
 
 	/**
@@ -98,9 +166,7 @@ public:
 	 */
 	gcc_pure
 	size_t length() const {
-		assert(value != nullptr);
-
-		return strlen(value);
+		return value.length();
 	}
 
 	/**
@@ -110,7 +176,7 @@ public:
 	 */
 	gcc_pure
 	const_pointer c_str() const {
-		return value;
+		return value.c_str();
 	}
 
 	/**
@@ -119,7 +185,7 @@ public:
 	 */
 	gcc_pure
 	const_pointer data() const {
-		return value;
+		return value.data();
 	}
 
 	/**
@@ -131,6 +197,13 @@ public:
 	std::string ToUTF8() const;
 
 	/**
+	 * Gets directory name of this path.
+	 * Returns a "nulled" instance on error.
+	 */
+	gcc_pure
+	AllocatedPath GetDirectoryName() const;
+
+	/**
 	 * Determine the relative part of the given path to this
 	 * object, not including the directory separator.  Returns an
 	 * empty string if the given path equals this object or
@@ -138,6 +211,11 @@ public:
 	 */
 	gcc_pure
 	const char *RelativeFS(const char *other_fs) const;
+
+	/**
+	 * Chop trailing directory separators.
+	 */
+	void ChopSeparators();
 
 	gcc_pure
 	bool IsAbsolute() {

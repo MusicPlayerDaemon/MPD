@@ -19,26 +19,28 @@
 
 #include "config.h"
 #include "FileSystem.hxx"
+#include "AllocatedPath.hxx"
 #include "Limits.hxx"
 
 #include <errno.h>
 
-Path ReadLink(const Path &path)
+AllocatedPath
+ReadLink(Path path)
 {
 #ifdef WIN32
 	(void)path;
 	errno = EINVAL;
-	return Path::Null();
+	return AllocatedPath::Null();
 #else
 	char buffer[MPD_PATH_MAX];
 	ssize_t size = readlink(path.c_str(), buffer, MPD_PATH_MAX);
 	if (size < 0)
-		return Path::Null();
+		return AllocatedPath::Null();
 	if (size_t(size) >= MPD_PATH_MAX) {
 		errno = ENOMEM;
-		return Path::Null();
+		return AllocatedPath::Null();
 	}
 	buffer[size] = '\0';
-	return Path::FromFS(buffer);
+	return AllocatedPath::FromFS(buffer);
 #endif
 }
