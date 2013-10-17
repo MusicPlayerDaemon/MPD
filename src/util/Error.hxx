@@ -36,6 +36,11 @@ extern const Domain errno_domain;
 #include <windows.h>
 #define IgnoreError MPDIgnoreError
 #undef GetMessage
+
+/**
+ * Domain for GetLastError().
+ */
+extern const Domain win32_domain;
 #endif
 
 /**
@@ -143,6 +148,10 @@ public:
 	void SetErrno(const char *prefix);
 	void FormatErrno(const char *prefix, ...);
 	void FormatErrno(int e, const char *prefix, ...);
+
+#ifdef WIN32
+	void SetLastError(const char *prefix);
+#endif
 };
 
 /**
