@@ -63,7 +63,7 @@ dsdlib_read(struct decoder *decoder, struct input_stream *is,
  */
 bool
 dsdlib_skip_to(struct decoder *decoder, struct input_stream *is,
-	       goffset offset)
+	       int64_t offset)
 {
 	if (is->IsSeekable())
 		return is->Seek(offset, SEEK_SET, IgnoreError());
@@ -74,7 +74,7 @@ dsdlib_skip_to(struct decoder *decoder, struct input_stream *is,
 	char buffer[8192];
 	while (is->GetOffset() < offset) {
 		size_t length = sizeof(buffer);
-		if (offset - is->GetOffset() < (goffset)length)
+		if (offset - is->GetOffset() < (int64_t)length)
 			length = offset - is->GetOffset();
 
 		size_t nbytes = decoder_read(decoder, is, buffer, length);
@@ -91,7 +91,7 @@ dsdlib_skip_to(struct decoder *decoder, struct input_stream *is,
  */
 bool
 dsdlib_skip(struct decoder *decoder, struct input_stream *is,
-	    goffset delta)
+	    int64_t delta)
 {
 	assert(delta >= 0);
 
@@ -104,7 +104,7 @@ dsdlib_skip(struct decoder *decoder, struct input_stream *is,
 	char buffer[8192];
 	while (delta > 0) {
 		size_t length = sizeof(buffer);
-		if ((goffset)length > delta)
+		if ((int64_t)length > delta)
 			length = delta;
 
 		size_t nbytes = decoder_read(decoder, is, buffer, length);
@@ -126,7 +126,7 @@ dsdlib_skip(struct decoder *decoder, struct input_stream *is,
 void
 dsdlib_tag_id3(struct input_stream *is,
 	       const struct tag_handler *handler,
-	       void *handler_ctx, goffset tagoffset)
+	       void *handler_ctx, int64_t tagoffset)
 {
 	assert(tagoffset >= 0);
 
@@ -140,8 +140,8 @@ dsdlib_tag_id3(struct input_stream *is,
 	id3_length_t count;
 
 	/* Prevent broken files causing problems */
-	const goffset size = is->GetSize();
-	const goffset offset = is->GetOffset();
+	const auto size = is->GetSize();
+	const auto offset = is->GetOffset();
 	if (offset >= size)
 		return;
 

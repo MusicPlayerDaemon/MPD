@@ -36,6 +36,8 @@
 #include "util/Error.hxx"
 #include "thread/Cond.hxx"
 
+#include <glib.h>
+
 void
 playlist_print_uris(Client *client, const struct playlist *playlist)
 {

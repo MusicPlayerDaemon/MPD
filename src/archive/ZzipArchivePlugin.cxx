@@ -178,12 +178,12 @@ zzip_input_eof(struct input_stream *is)
 {
 	ZzipInputStream *zis = (ZzipInputStream *)is;
 
-	return (goffset)zzip_tell(zis->file) == is->size;
+	return (InputPlugin::offset_type)zzip_tell(zis->file) == is->size;
 }
 
 static bool
-zzip_input_seek(struct input_stream *is,
-		goffset offset, int whence, Error &error)
+zzip_input_seek(struct input_stream *is, InputPlugin::offset_type offset,
+		int whence, Error &error)
 {
 	ZzipInputStream *zis = (ZzipInputStream *)is;
 	zzip_off_t ofs = zzip_seek(zis->file, offset, whence);

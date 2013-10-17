@@ -28,6 +28,8 @@
 #include "Song.hxx"
 #include "thread/Cond.hxx"
 
+#include <glib.h>
+
 enum playlist_result
 playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,

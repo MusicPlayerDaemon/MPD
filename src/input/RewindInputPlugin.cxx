@@ -164,7 +164,7 @@ input_rewind_read(struct input_stream *is, void *ptr, size_t size,
 
 		size_t nbytes = r->input->Read(ptr, size, error);
 
-		if (r->input->offset > (goffset)sizeof(r->buffer))
+		if (r->input->offset > (InputPlugin::offset_type)sizeof(r->buffer))
 			/* disable buffering */
 			r->tail = 0;
 		else if (r->tail == (size_t)is->offset) {
@@ -191,14 +191,16 @@ input_rewind_eof(struct input_stream *is)
 }
 
 static bool
-input_rewind_seek(struct input_stream *is, goffset offset, int whence,
+input_rewind_seek(struct input_stream *is, InputPlugin::offset_type offset,
+		  int whence,
 		  Error &error)
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
 	assert(is->ready);
 
-	if (whence == SEEK_SET && r->tail > 0 && offset <= (goffset)r->tail) {
+	if (whence == SEEK_SET && r->tail > 0 &&
+	    offset <= (InputPlugin::offset_type)r->tail) {
 		/* buffered seek */
 
 		assert(!r->ReadingFromBuffer() ||

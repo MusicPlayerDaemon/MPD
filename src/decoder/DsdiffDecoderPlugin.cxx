@@ -72,13 +72,13 @@ struct DsdiffMetaData {
 	bool bitreverse;
 	uint64_t chunk_size;
 #ifdef HAVE_ID3TAG
-	goffset id3_offset;
+	input_stream::offset_type id3_offset;
 	uint64_t id3_size;
 #endif
 	/** offset for artist tag */
-	goffset diar_offset;
+	input_stream::offset_type diar_offset;
 	/** offset for title tag */
-	goffset diti_offset;
+	input_stream::offset_type diti_offset;
 };
 
 static bool lsbitfirst;
@@ -123,14 +123,14 @@ dsdiff_read_payload(struct decoder *decoder, struct input_stream *is,
 static bool
 dsdiff_read_prop_snd(struct decoder *decoder, struct input_stream *is,
 		     DsdiffMetaData *metadata,
-		     goffset end_offset)
+		     input_stream::offset_type end_offset)
 {
 	DsdiffChunkHeader header;
-	while ((goffset)(is->GetOffset() + sizeof(header)) <= end_offset) {
+	while ((input_stream::offset_type)(is->GetOffset() + sizeof(header)) <= end_offset) {
 		if (!dsdiff_read_chunk_header(decoder, is, &header))
 			return false;
 
-		goffset chunk_end_offset = is->GetOffset()
+		input_stream::offset_type chunk_end_offset = is->GetOffset()
 			+ header.GetSize();
 		if (chunk_end_offset > end_offset)
 			return false;
@@ -184,7 +184,7 @@ dsdiff_read_prop(struct decoder *decoder, struct input_stream *is,
 		 const DsdiffChunkHeader *prop_header)
 {
 	uint64_t prop_size = prop_header->GetSize();
-	goffset end_offset = is->GetOffset() + prop_size;
+	input_stream::offset_type end_offset = is->GetOffset() + prop_size;
 
 	struct dsdlib_id prop_id;
 	if (prop_size < sizeof(prop_id) ||
@@ -201,7 +201,7 @@ dsdiff_read_prop(struct decoder *decoder, struct input_stream *is,
 static void
 dsdiff_handle_native_tag(struct input_stream *is,
 			 const struct tag_handler *handler,
-			 void *handler_ctx, goffset tagoffset,
+			 void *handler_ctx, input_stream::offset_type tagoffset,
 			 enum tag_type type)
 {
 	if (!dsdlib_skip_to(nullptr, is, tagoffset))
@@ -259,7 +259,7 @@ dsdiff_read_metadata_extra(struct decoder *decoder, struct input_stream *is,
 	/* Now process all the remaining chunk headers in the stream
 	   and record their position and size */
 
-	const goffset size = is->GetSize();
+	const auto size = is->GetSize();
 	while (is->GetOffset() < size) {
 		uint64_t chunk_size = chunk_header->GetSize();
 
@@ -351,8 +351,8 @@ dsdiff_read_metadata(struct decoder *decoder, struct input_stream *is,
 		} else {
 			/* ignore unknown chunk */
 			const uint64_t chunk_size = chunk_header->GetSize();
-			goffset chunk_end_offset = is->GetOffset()
-				+ chunk_size;
+			input_stream::offset_type chunk_end_offset =
+				is->GetOffset() + chunk_size;
 
 			if (!dsdlib_skip_to(decoder, is, chunk_end_offset))
 				return false;

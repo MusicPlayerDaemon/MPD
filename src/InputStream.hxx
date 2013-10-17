@@ -26,9 +26,8 @@
 
 #include <string>
 
-#include <glib.h>
-
 #include <assert.h>
+#include <stdint.h>
 
 class Cond;
 class Error;
@@ -36,6 +35,8 @@ struct Tag;
 struct InputPlugin;
 
 struct input_stream {
+	typedef int64_t offset_type;
+
 	/**
 	 * the plugin which implements this input stream
 	 */
@@ -80,12 +81,12 @@ struct input_stream {
 	/**
 	 * the size of the resource, or -1 if unknown
 	 */
-	goffset size;
+	offset_type size;
 
 	/**
 	 * the current offset within the stream
 	 */
-	goffset offset;
+	offset_type offset;
 
 	/**
 	 * the MIME content type of the resource, or empty if unknown.
@@ -173,14 +174,14 @@ struct input_stream {
 	}
 
 	gcc_pure
-	goffset GetSize() const {
+	offset_type GetSize() const {
 		assert(ready);
 
 		return size;
 	}
 
 	gcc_pure
-	goffset GetOffset() const {
+	offset_type GetOffset() const {
 		assert(ready);
 
 		return offset;
@@ -208,13 +209,13 @@ struct input_stream {
 	 * @param offset the relative offset
 	 * @param whence the base of the seek, one of SEEK_SET, SEEK_CUR, SEEK_END
 	 */
-	bool Seek(goffset offset, int whence, Error &error);
+	bool Seek(offset_type offset, int whence, Error &error);
 
 	/**
 	 * Wrapper for Seek() which locks and unlocks the mutex; the
 	 * caller must not be holding it already.
 	 */
-	bool LockSeek(goffset offset, int whence, Error &error);
+	bool LockSeek(offset_type offset, int whence, Error &error);
 
 	/**
 	 * Returns true if the stream has reached end-of-file.

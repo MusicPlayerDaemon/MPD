@@ -21,8 +21,7 @@
 #define MPD_DECODER_DSDLIB_HXX
 
 #include <stdlib.h>
-
-#include <glib.h>
+#include <stdint.h>
 
 struct dsdlib_id {
 	char value[4];
@@ -37,15 +36,15 @@ dsdlib_read(struct decoder *decoder, struct input_stream *is,
 
 bool
 dsdlib_skip_to(struct decoder *decoder, struct input_stream *is,
-	       goffset offset);
+	       int64_t offset);
 
 bool
 dsdlib_skip(struct decoder *decoder, struct input_stream *is,
-	    goffset delta);
+	    int64_t delta);
 
 void
 dsdlib_tag_id3(struct input_stream *is,
 	       const struct tag_handler *handler,
-	       void *handler_ctx, goffset tagoffset);
+	       void *handler_ctx, int64_t tagoffset);
 
 #endif

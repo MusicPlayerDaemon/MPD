@@ -780,7 +780,7 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size,
 	if (c->icy.IsDefined())
 		copy_icy_tag(c);
 
-	is->offset += (goffset)nbytes;
+	is->offset += (InputPlugin::offset_type)nbytes;
 
 	if (c->paused && curl_total_buffer_size(c) < CURL_RESUME_AT) {
 		c->base.mutex.unlock();
@@ -977,7 +977,8 @@ input_curl_easy_init(struct input_curl *c, Error &error)
 }
 
 static bool
-input_curl_seek(struct input_stream *is, goffset offset, int whence,
+input_curl_seek(struct input_stream *is, InputPlugin::offset_type offset,
+		int whence,
 		Error &error)
 {
 	struct input_curl *c = (struct input_curl *)is;
@@ -1022,7 +1023,7 @@ input_curl_seek(struct input_stream *is, goffset offset, int whence,
 	while (offset > is->offset && !c->buffers.empty()) {
 		auto &buffer = c->buffers.front();
 		size_t length = buffer.Available();
-		if (offset - is->offset < (goffset)length)
+		if (offset - is->offset < (InputPlugin::offset_type)length)
 			length = offset - is->offset;
 
 		const bool empty = !buffer.Consume(length);

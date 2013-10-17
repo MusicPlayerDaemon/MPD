@@ -23,9 +23,8 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
-#include <glib.h>
-
 #include <stddef.h>
+#include <stdint.h>
 
 struct config_param;
 struct input_stream;
@@ -33,6 +32,8 @@ class Error;
 struct Tag;
 
 struct InputPlugin {
+	typedef int64_t offset_type;
+
 	const char *name;
 
 	/**
@@ -85,7 +86,7 @@ struct InputPlugin {
 	size_t (*read)(struct input_stream *is, void *ptr, size_t size,
 		       Error &error);
 	bool (*eof)(struct input_stream *is);
-	bool (*seek)(struct input_stream *is, goffset offset, int whence,
+	bool (*seek)(struct input_stream *is, offset_type offset, int whence,
 		     Error &error);
 };
 

@@ -170,7 +170,7 @@ faad_song_duration(DecoderBuffer *buffer, struct input_stream *is)
 	size_t length;
 	bool success;
 
-	const goffset size = is->GetSize();
+	const auto size = is->GetSize();
 	fileread = size >= 0 ? size : 0;
 
 	decoder_buffer_fill(buffer);

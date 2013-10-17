@@ -250,7 +250,7 @@ input_cdio_open(const char *uri,
 
 static bool
 input_cdio_seek(struct input_stream *is,
-		goffset offset, int whence, Error &error)
+		InputPlugin::offset_type offset, int whence, Error &error)
 {
 	CdioParanoiaInputStream *cis = (CdioParanoiaInputStream *)is;
 

@@ -97,12 +97,13 @@ input_file_open(const char *filename,
 }
 
 static bool
-input_file_seek(struct input_stream *is, goffset offset, int whence,
+input_file_seek(struct input_stream *is, InputPlugin::offset_type offset,
+		int whence,
 		Error &error)
 {
 	FileInputStream *fis = (FileInputStream *)is;
 
-	offset = (goffset)lseek(fis->fd, (off_t)offset, whence);
+	offset = (InputPlugin::offset_type)lseek(fis->fd, (off_t)offset, whence);
 	if (offset < 0) {
 		error.SetErrno("Failed to seek");
 		return false;

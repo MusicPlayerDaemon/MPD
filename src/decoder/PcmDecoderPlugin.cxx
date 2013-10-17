@@ -46,7 +46,7 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 	const double time_to_size = audio_format.GetTimeToSize();
 
 	float total_time = -1;
-	const goffset size = is->GetSize();
+	const auto size = is->GetSize();
 	if (size >= 0)
 		total_time = size / time_to_size;
 
@@ -74,8 +74,8 @@ pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
 				       buffer, nbytes, 0)
 			: decoder_get_command(decoder);
 		if (cmd == DecoderCommand::SEEK) {
-			goffset offset = (goffset)(time_to_size *
-						   decoder_seek_where(decoder));
+			input_stream::offset_type offset(time_to_size *
+							 decoder_seek_where(decoder));
 
 			Error error;
 			if (is->LockSeek(offset, SEEK_SET, error)) {

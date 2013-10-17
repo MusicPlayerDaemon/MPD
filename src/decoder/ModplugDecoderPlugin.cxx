@@ -36,12 +36,12 @@ static constexpr Domain modplug_domain("modplug");
 static constexpr size_t MODPLUG_FRAME_SIZE = 4096;
 static constexpr size_t MODPLUG_PREALLOC_BLOCK = 256 * 1024;
 static constexpr size_t MODPLUG_READ_BLOCK = 128 * 1024;
-static constexpr goffset MODPLUG_FILE_LIMIT = 100 * 1024 * 1024;
+static constexpr input_stream::offset_type MODPLUG_FILE_LIMIT = 100 * 1024 * 1024;
 
 static GByteArray *
 mod_loadfile(struct decoder *decoder, struct input_stream *is)
 {
-	const goffset size = is->GetSize();
+	const input_stream::offset_type size = is->GetSize();
 
 	if (size == 0) {
 		LogWarning(modplug_domain, "file is empty");
@@ -77,7 +77,7 @@ mod_loadfile(struct decoder *decoder, struct input_stream *is)
 			return nullptr;
 		}
 
-		if (goffset(bdatas->len + ret) > MODPLUG_FILE_LIMIT) {
+		if (input_stream::offset_type(bdatas->len + ret) > MODPLUG_FILE_LIMIT) {
 			LogWarning(modplug_domain, "stream too large");
 			g_free(data);
 			g_byte_array_free(bdatas, TRUE);

@@ -34,6 +34,8 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
+#include <glib.h>
+
 struct FfmpegInputStream {
 	struct input_stream base;
 
@@ -146,7 +148,8 @@ input_ffmpeg_eof(struct input_stream *is)
 }
 
 static bool
-input_ffmpeg_seek(struct input_stream *is, goffset offset, int whence,
+input_ffmpeg_seek(struct input_stream *is, InputPlugin::offset_type offset,
+		  int whence,
 		  Error &error)
 {
 	FfmpegInputStream *i = (FfmpegInputStream *)is;

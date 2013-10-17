@@ -95,7 +95,7 @@ input_stream::CheapSeeking() const
 }
 
 bool
-input_stream::Seek(goffset _offset, int whence, Error &error)
+input_stream::Seek(offset_type _offset, int whence, Error &error)
 {
 	if (plugin.seek == nullptr)
 		return false;
@@ -104,7 +104,7 @@ input_stream::Seek(goffset _offset, int whence, Error &error)
 }
 
 bool
-input_stream::LockSeek(goffset _offset, int whence, Error &error)
+input_stream::LockSeek(offset_type _offset, int whence, Error &error)
 {
 	if (plugin.seek == nullptr)
 		return false;
