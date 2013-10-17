@@ -32,19 +32,6 @@
 
 #include <assert.h>
 #include <string.h>
-#include <limits.h>
-
-#if !defined(MPD_PATH_MAX)
-#  if defined(WIN32)
-#    define MPD_PATH_MAX 260
-#  elif defined(MAXPATHLEN)
-#    define MPD_PATH_MAX MAXPATHLEN
-#  elif defined(PATH_MAX)
-#    define MPD_PATH_MAX PATH_MAX
-#  else
-#    define MPD_PATH_MAX 256
-#  endif
-#endif
 
 class Error;
 

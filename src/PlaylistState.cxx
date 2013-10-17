@@ -31,6 +31,7 @@
 #include "PlayerControl.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"
+#include "fs/Limits.hxx"
 #include "Log.hxx"
 
 #include <glib.h>

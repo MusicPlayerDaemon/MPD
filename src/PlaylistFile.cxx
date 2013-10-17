@@ -31,6 +31,7 @@
 #include "ConfigOption.hxx"
 #include "ConfigDefaults.hxx"
 #include "Idle.hxx"
+#include "fs/Limits.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/DirectoryReader.hxx"

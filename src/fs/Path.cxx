@@ -18,7 +18,8 @@
  */
 
 #include "config.h"
-#include "fs/Path.hxx"
+#include "Path.hxx"
+#include "Limits.hxx"
 #include "ConfigGlobal.hxx"
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"

@@ -17,28 +17,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "FileSystem.hxx"
-#include "Limits.hxx"
+#ifndef MPD_FS_LIMITS_HXX
+#define MPD_FS_LIMITS_HXX
 
-#include <errno.h>
+#include "check.h"
 
-Path ReadLink(const Path &path)
-{
-#ifdef WIN32
-	(void)path;
-	errno = EINVAL;
-	return Path::Null();
-#else
-	char buffer[MPD_PATH_MAX];
-	ssize_t size = readlink(path.c_str(), buffer, MPD_PATH_MAX);
-	if (size < 0)
-		return Path::Null();
-	if (size >= MPD_PATH_MAX) {
-		errno = ENOMEM;
-		return Path::Null();
-	}
-	buffer[size] = '\0';
-	return Path::FromFS(buffer);
+#include <limits.h>
+
+#if !defined(MPD_PATH_MAX)
+#  if defined(WIN32)
+#    define MPD_PATH_MAX 260
+#  elif defined(MAXPATHLEN)
+#    define MPD_PATH_MAX MAXPATHLEN
+#  elif defined(PATH_MAX)
+#    define MPD_PATH_MAX PATH_MAX
+#  else
+#    define MPD_PATH_MAX 256
+#  endif
 #endif
-}
+
+#endif

@@ -26,6 +26,7 @@
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "fs/Limits.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
 #include "Log.hxx"
