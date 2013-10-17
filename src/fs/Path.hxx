@@ -130,23 +130,6 @@ public:
 	static Path FromUTF8(const char *path_utf8, Error &error);
 
 	/**
-	 * Convert the path to UTF-8.
-	 * Returns empty string on error or if #path_fs is null pointer.
-	 */
-	gcc_pure
-	static std::string ToUTF8(const_pointer path_fs);
-
-	/**
-	 * Performs global one-time initialization of this class.
-	 */
-	static void GlobalInit();
-
-	/**
-	 * Gets file system character set name.
-	 */
-	static const std::string &GetFSCharset();
-
-	/**
 	 * Copy a #Path object.
 	 */
 	Path &operator=(const Path &) = default;
@@ -209,9 +192,8 @@ public:
 	 * Returns empty string on error or if this instance is "nulled"
 	 * (#IsNull returns true).
 	 */
-	std::string ToUTF8() const {
-		return ToUTF8(value.c_str());
-	}
+	gcc_pure
+	std::string ToUTF8() const;
 
 	/**
 	 * Gets directory name of this path.

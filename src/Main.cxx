@@ -49,6 +49,7 @@
 #include "event/Loop.hxx"
 #include "IOThread.hxx"
 #include "fs/Path.hxx"
+#include "fs/Config.hxx"
 #include "PlaylistRegistry.hxx"
 #include "ZeroconfGlue.hxx"
 #include "DecoderList.hxx"
@@ -412,7 +413,7 @@ int mpd_main(int argc, char *argv[])
 	GlobalEvents::Register(GlobalEvents::SHUTDOWN, shutdown_event_emitted);
 #endif
 
-	Path::GlobalInit();
+	ConfigureFS();
 
 	if (!glue_mapper_init(error)) {
 		LogError(error);

@@ -33,6 +33,7 @@
 #include "Idle.hxx"
 #include "fs/Limits.hxx"
 #include "fs/Path.hxx"
+#include "fs/Charset.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/DirectoryReader.hxx"
 #include "util/UriUtil.hxx"
@@ -158,7 +159,7 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 
 	char *name = g_strndup(name_fs_str,
 			       name_length + 1 - sizeof(PLAYLIST_FILE_SUFFIX));
-	std::string name_utf8 = Path::ToUTF8(name);
+	std::string name_utf8 = PathToUTF8(name);
 	g_free(name);
 	if (name_utf8.empty())
 		return false;
@@ -248,7 +249,7 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 			uri_utf8 = map_fs_to_utf8(s);
 			if (uri_utf8.empty()) {
 				if (Path::IsAbsoluteFS(s)) {
-					uri_utf8 = Path::ToUTF8(s);
+					uri_utf8 = PathToUTF8(s);
 					if (uri_utf8.empty())
 						continue;
 
@@ -257,7 +258,7 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 					continue;
 			}
 		} else {
-			uri_utf8 = Path::ToUTF8(s);
+			uri_utf8 = PathToUTF8(s);
 			if (uri_utf8.empty())
 				continue;
 		}

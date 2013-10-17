@@ -27,7 +27,7 @@
 #include "TextFile.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagSettings.h"
-#include "fs/Path.hxx"
+#include "fs/Charset.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 
@@ -57,7 +57,7 @@ db_save_internal(FILE *fp, const Directory *music_root)
 	fprintf(fp, DB_FORMAT_PREFIX "%u\n", DB_FORMAT);
 	fprintf(fp, "%s%s\n", DIRECTORY_MPD_VERSION, VERSION);
 	fprintf(fp, "%s%s\n", DIRECTORY_FS_CHARSET,
-		Path::GetFSCharset().c_str());
+		GetFSCharset().c_str());
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (!ignore_tag_items[i])
@@ -110,7 +110,7 @@ db_load_internal(TextFile &file, Directory *music_root, Error &error)
 			found_charset = true;
 
 			new_charset = line + sizeof(DIRECTORY_FS_CHARSET) - 1;
-			const std::string &old_charset = Path::GetFSCharset();
+			const std::string &old_charset = GetFSCharset();
 			if (!old_charset.empty()
 			    && strcmp(new_charset, old_charset.c_str())) {
 				error.Format(db_domain,

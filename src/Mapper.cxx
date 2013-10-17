@@ -26,6 +26,7 @@
 #include "Directory.hxx"
 #include "Song.hxx"
 #include "fs/Path.hxx"
+#include "fs/Charset.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/DirectoryReader.hxx"
 #include "util/Domain.hxx"
@@ -236,7 +237,7 @@ map_fs_to_utf8(const char *path_fs)
 			return std::string();
 	}
 
-	return Path::ToUTF8(path_fs);
+	return PathToUTF8(path_fs);
 }
 
 const Path &
