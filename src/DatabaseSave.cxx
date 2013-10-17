@@ -34,6 +34,7 @@
 #include <glib.h>
 
 #include <assert.h>
+#include <string.h>
 #include <stdlib.h>
 
 #define DIRECTORY_INFO_BEGIN "info_begin"
