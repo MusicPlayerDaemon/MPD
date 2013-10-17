@@ -70,10 +70,10 @@ SetFSCharset(const char *charset)
 		    "SetFSCharset: fs charset is: %s", fs_charset.c_str());
 }
 
-const std::string &
+const char *
 GetFSCharset()
 {
-	return fs_charset;
+	return fs_charset.empty() ? "utf-8" : fs_charset.c_str();
 }
 
 std::string

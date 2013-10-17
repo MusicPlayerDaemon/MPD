@@ -56,8 +56,7 @@ db_save_internal(FILE *fp, const Directory *music_root)
 	fprintf(fp, "%s\n", DIRECTORY_INFO_BEGIN);
 	fprintf(fp, DB_FORMAT_PREFIX "%u\n", DB_FORMAT);
 	fprintf(fp, "%s%s\n", DIRECTORY_MPD_VERSION, VERSION);
-	fprintf(fp, "%s%s\n", DIRECTORY_FS_CHARSET,
-		GetFSCharset().c_str());
+	fprintf(fp, "%s%s\n", DIRECTORY_FS_CHARSET, GetFSCharset());
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (!ignore_tag_items[i])
@@ -110,14 +109,14 @@ db_load_internal(TextFile &file, Directory *music_root, Error &error)
 			found_charset = true;
 
 			new_charset = line + sizeof(DIRECTORY_FS_CHARSET) - 1;
-			const std::string &old_charset = GetFSCharset();
-			if (!old_charset.empty()
-			    && strcmp(new_charset, old_charset.c_str())) {
+			const char *const old_charset = GetFSCharset();
+			if (*old_charset != 0
+			    && strcmp(new_charset, old_charset) != 0) {
 				error.Format(db_domain,
 					     "Existing database has charset "
 					     "\"%s\" instead of \"%s\"; "
 					     "discarding database file",
-					     new_charset, old_charset.c_str());
+					     new_charset, old_charset);
 				return false;
 			}
 		} else if (g_str_has_prefix(line, DB_TAG_PREFIX)) {

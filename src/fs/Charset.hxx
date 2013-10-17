@@ -29,7 +29,7 @@
  * Gets file system character set name.
  */
 gcc_const
-const std::string &
+const char *
 GetFSCharset();
 
 void
