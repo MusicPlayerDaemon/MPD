@@ -20,11 +20,11 @@
 #ifndef MPD_MAIN_HXX
 #define MPD_MAIN_HXX
 
+class ThreadId;
 class EventLoop;
 struct Instance;
-typedef struct _GThread GThread;
 
-extern GThread *main_task;
+extern ThreadId main_thread;
 
 extern EventLoop *main_loop;
 

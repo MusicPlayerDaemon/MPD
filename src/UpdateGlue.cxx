@@ -33,6 +33,7 @@
 #include "Main.hxx"
 #include "Instance.hxx"
 #include "system/FatalError.hxx"
+#include "thread/Id.hxx"
 
 #include <glib.h>
 
@@ -92,7 +93,7 @@ static void * update_task(void *_path)
 static void
 spawn_update_task(const char *path)
 {
-	assert(g_thread_self() == main_task);
+	assert(main_thread.IsInside());
 
 	progress = UPDATE_PROGRESS_RUNNING;
 	modified = false;
@@ -115,7 +116,7 @@ spawn_update_task(const char *path)
 unsigned
 update_enqueue(const char *path, bool _discard)
 {
-	assert(g_thread_self() == main_task);
+	assert(main_thread.IsInside());
 
 	if (!db_is_simple() || !mapper_has_music_directory())
 		return 0;

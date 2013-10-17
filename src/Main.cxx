@@ -58,6 +58,7 @@
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "thread/Id.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigData.hxx"
 #include "ConfigDefaults.hxx"
@@ -99,7 +100,7 @@ enum {
 
 static constexpr Domain main_domain("main");
 
-GThread *main_task;
+ThreadId main_thread;
 EventLoop *main_loop;
 
 Instance *instance;
@@ -389,7 +390,7 @@ int mpd_main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	main_task = g_thread_self();
+	main_thread = ThreadId::GetCurrent();
 	main_loop = new EventLoop(EventLoop::Default());
 
 	instance = new Instance();
