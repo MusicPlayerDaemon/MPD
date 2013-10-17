@@ -20,6 +20,8 @@
 #ifndef MPD_ARCHIVE_FILE_HXX
 #define MPD_ARCHIVE_FILE_HXX
 
+class Mutex;
+class Cond;
 class Error;
 
 class ArchiveFile {

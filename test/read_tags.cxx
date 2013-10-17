@@ -28,6 +28,7 @@
 #include "tag/TagId3.hxx"
 #include "tag/ApeTag.hxx"
 #include "util/Error.hxx"
+#include "thread/Cond.hxx"
 #include "Log.hxx"
 
 #include <glib.h>

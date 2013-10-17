@@ -25,12 +25,12 @@
 /* mingw-w64 4.6.3 lacks a std::cond implementation */
 
 #include "WindowsCond.hxx"
-typedef WindowsCond Cond;
+class Cond : public WindowsCond {};
 
 #else
 
 #include "PosixCond.hxx"
-typedef PosixCond Cond;
+class Cond : public PosixCond {};
 
 #endif
 

@@ -20,9 +20,6 @@
 #ifndef MPD_ARCHIVE_PLUGIN_HXX
 #define MPD_ARCHIVE_PLUGIN_HXX
 
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
-
 struct input_stream;
 class ArchiveFile;
 class ArchiveVisitor;

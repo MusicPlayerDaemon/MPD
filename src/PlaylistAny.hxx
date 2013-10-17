@@ -20,9 +20,8 @@
 #ifndef MPD_PLAYLIST_ANY_HXX
 #define MPD_PLAYLIST_ANY_HXX
 
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
-
+class Mutex;
+class Cond;
 class SongEnumerator;
 struct input_stream;
 

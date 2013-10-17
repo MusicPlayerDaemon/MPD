@@ -25,13 +25,12 @@
 /* mingw-w64 4.6.3 lacks a std::mutex implementation */
 
 #include "CriticalSection.hxx"
-typedef CriticalSection Mutex;
+class Mutex : public CriticalSection {};
 
 #else
 
 #include "PosixMutex.hxx"
-
-typedef PosixMutex Mutex;
+class Mutex : public PosixMutex {};
 
 #endif
 

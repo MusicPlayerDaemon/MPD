@@ -25,6 +25,7 @@
 #include "InputStream.hxx"
 #include "AudioFormat.hxx"
 #include "util/Error.hxx"
+#include "thread/Cond.hxx"
 #include "Log.hxx"
 #include "stdbin.h"
 

@@ -22,7 +22,6 @@
 
 #include "check.h"
 #include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 #include "Compiler.h"
 
 #include <string>
@@ -31,6 +30,7 @@
 
 #include <assert.h>
 
+class Cond;
 class Error;
 struct Tag;
 

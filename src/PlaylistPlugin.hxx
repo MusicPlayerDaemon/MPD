@@ -20,12 +20,11 @@
 #ifndef MPD_PLAYLIST_PLUGIN_HXX
 #define MPD_PLAYLIST_PLUGIN_HXX
 
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
-
 struct config_param;
 struct input_stream;
 struct Tag;
+class Mutex;
+class Cond;
 class SongEnumerator;
 
 struct playlist_plugin {

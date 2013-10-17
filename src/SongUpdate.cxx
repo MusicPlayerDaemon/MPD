@@ -33,6 +33,7 @@
 #include "tag/TagHandler.hxx"
 #include "tag/TagId3.hxx"
 #include "tag/ApeTag.hxx"
+#include "thread/Cond.hxx"
 
 #include <assert.h>
 #include <sys/types.h>

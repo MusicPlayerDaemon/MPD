@@ -24,6 +24,7 @@
 #include "DecoderList.hxx"
 #include "DecoderPlugin.hxx"
 #include "InputStream.hxx"
+#include "thread/Cond.hxx"
 
 #include <assert.h>
 #include <unistd.h> /* for SEEK_SET */

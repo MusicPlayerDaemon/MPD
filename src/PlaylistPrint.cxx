@@ -34,6 +34,7 @@
 #include "InputStream.hxx"
 #include "Song.hxx"
 #include "util/Error.hxx"
+#include "thread/Cond.hxx"
 
 void
 playlist_print_uris(Client *client, const struct playlist *playlist)

@@ -26,6 +26,7 @@
 #include "InputStream.hxx"
 #include "SongEnumerator.hxx"
 #include "Song.hxx"
+#include "thread/Cond.hxx"
 
 enum playlist_result
 playlist_load_into_queue(const char *uri, SongEnumerator &e,

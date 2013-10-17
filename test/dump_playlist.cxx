@@ -32,6 +32,7 @@
 #include "PlaylistPlugin.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
+#include "thread/Cond.hxx"
 #include "Log.hxx"
 
 #include <glib.h>

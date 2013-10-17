@@ -20,6 +20,7 @@
 #include "config.h"
 #include "InputInternal.hxx"
 #include "InputStream.hxx"
+#include "thread/Cond.hxx"
 
 void
 input_stream_signal_client(struct input_stream *is)

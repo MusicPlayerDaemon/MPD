@@ -26,6 +26,7 @@
 #include "InputInit.hxx"
 #include "IOThread.hxx"
 #include "util/Error.hxx"
+#include "thread/Cond.hxx"
 #include "Log.hxx"
 
 #ifdef ENABLE_ARCHIVE
