@@ -57,7 +57,7 @@ static UpdateQueueItem next;
 unsigned
 isUpdatingDB(void)
 {
-	return (progress != UPDATE_PROGRESS_IDLE) ? update_task_id : 0;
+	return next.id;
 }
 
 static void
@@ -101,10 +101,17 @@ spawn_update_task(UpdateQueueItem &&i)
 	if (!update_thread.Start(update_task, nullptr, error))
 		FatalError(error);
 
-	if (++update_task_id > update_task_id_max)
-		update_task_id = 1;
 	FormatDebug(update_domain,
-		    "spawned thread for update job id %i", update_task_id);
+		    "spawned thread for update job id %i", next.id);
+}
+
+static unsigned
+generate_update_id()
+{
+	unsigned id = update_task_id + 1;
+	if (id > update_task_id_max)
+		id = 1;
+	return id;
 }
 
 unsigned
@@ -116,19 +123,20 @@ update_enqueue(const char *path, bool discard)
 		return 0;
 
 	if (progress != UPDATE_PROGRESS_IDLE) {
-		unsigned next_task_id =
-			update_queue_push(path, discard, update_task_id);
-		if (next_task_id == 0)
+		const unsigned id = generate_update_id();
+		if (!update_queue_push(path, discard, id))
 			return 0;
 
-		return next_task_id > update_task_id_max ?  1 : next_task_id;
+		update_task_id = id;
+		return id;
 	}
 
-	spawn_update_task(UpdateQueueItem(path, discard));
+	const unsigned id = update_task_id = generate_update_id();
+	spawn_update_task(UpdateQueueItem(path, discard, id));
 
 	idle_add(IDLE_UPDATE);
 
-	return update_task_id;
+	return id;
 }
 
 /**
@@ -137,8 +145,10 @@ update_enqueue(const char *path, bool discard)
 static void update_finished_event(void)
 {
 	assert(progress == UPDATE_PROGRESS_DONE);
+	assert(next.IsDefined());
 
 	update_thread.Join();
+	next = UpdateQueueItem();
 
 	idle_add(IDLE_UPDATE);
 

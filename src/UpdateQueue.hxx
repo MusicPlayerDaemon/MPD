@@ -26,19 +26,21 @@
 
 struct UpdateQueueItem {
 	std::string path_utf8;
+	unsigned id;
 	bool discard;
 
-	UpdateQueueItem() = default;
-	UpdateQueueItem(const char *_path, bool _discard)
-		:path_utf8(_path), discard(_discard) {}
+	UpdateQueueItem():id(0) {}
+	UpdateQueueItem(const char *_path, bool _discard,
+			unsigned _id)
+		:path_utf8(_path), id(_id), discard(_discard) {}
 
 	bool IsDefined() const {
-		return !path_utf8.empty();
+		return id != 0;
 	}
 };
 
-unsigned
-update_queue_push(const char *path, bool discard, unsigned base);
+bool
+update_queue_push(const char *path, bool discard, unsigned id);
 
 UpdateQueueItem
 update_queue_shift();

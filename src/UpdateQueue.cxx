@@ -27,14 +27,14 @@ static constexpr unsigned MAX_UPDATE_QUEUE_SIZE = 32;
 
 static std::queue<UpdateQueueItem, std::list<UpdateQueueItem>> update_queue;
 
-unsigned
-update_queue_push(const char *path, bool discard, unsigned base)
+bool
+update_queue_push(const char *path, bool discard, unsigned id)
 {
 	if (update_queue.size() >= MAX_UPDATE_QUEUE_SIZE)
-		return 0;
+		return false;
 
-	update_queue.emplace(path, discard);
-	return base + update_queue.size();
+	update_queue.emplace(path, discard, id);
+	return true;
 }
 
 UpdateQueueItem
