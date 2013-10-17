@@ -20,8 +20,6 @@
 #ifndef MPD_INPUT_CURL_HXX
 #define MPD_INPUT_CURL_HXX
 
-struct input_stream;
-
-extern const struct input_plugin input_plugin_curl;
+extern const struct InputPlugin input_plugin_curl;
 
 #endif

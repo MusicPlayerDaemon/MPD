@@ -66,7 +66,7 @@ public:
 					 Error &error) override;
 };
 
-extern const struct input_plugin zzip_input_plugin;
+extern const InputPlugin zzip_input_plugin;
 
 static constexpr Domain zzip_domain("zzip");
 
@@ -202,7 +202,7 @@ static const char *const zzip_archive_extensions[] = {
 	NULL
 };
 
-const struct input_plugin zzip_input_plugin = {
+const InputPlugin zzip_input_plugin = {
 	nullptr,
 	nullptr,
 	nullptr,

@@ -28,7 +28,7 @@
 #include <string.h>
 #include <stdio.h>
 
-extern const struct input_plugin rewind_input_plugin;
+extern const InputPlugin rewind_input_plugin;
 
 struct RewindInputStream {
 	struct input_stream base;
@@ -221,7 +221,7 @@ input_rewind_seek(struct input_stream *is, goffset offset, int whence,
 	}
 }
 
-const struct input_plugin rewind_input_plugin = {
+const InputPlugin rewind_input_plugin = {
 	nullptr,
 	nullptr,
 	nullptr,

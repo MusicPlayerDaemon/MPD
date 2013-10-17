@@ -26,12 +26,12 @@
  * NULL terminated list of all input plugins which were enabled at
  * compile time.
  */
-extern const struct input_plugin *const input_plugins[];
+extern const struct InputPlugin *const input_plugins[];
 
 extern bool input_plugins_enabled[];
 
 #define input_plugins_for_each(plugin) \
-	for (const struct input_plugin *plugin, \
+	for (const InputPlugin *plugin, \
 		*const*input_plugin_iterator = &input_plugins[0]; \
 		(plugin = *input_plugin_iterator) != NULL; \
 		++input_plugin_iterator)

@@ -20,6 +20,6 @@
 #ifndef INPUT_MMS_H
 #define INPUT_MMS_H
 
-extern const struct input_plugin input_plugin_mms;
+extern const struct InputPlugin input_plugin_mms;
 
 #endif

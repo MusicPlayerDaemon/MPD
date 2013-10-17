@@ -115,7 +115,7 @@ input_mms_eof(struct input_stream *is)
 	return m->eof;
 }
 
-const struct input_plugin input_plugin_mms = {
+const InputPlugin input_plugin_mms = {
 	"mms",
 	nullptr,
 	nullptr,

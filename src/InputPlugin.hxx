@@ -32,7 +32,7 @@ struct input_stream;
 class Error;
 struct Tag;
 
-struct input_plugin {
+struct InputPlugin {
 	const char *name;
 
 	/**

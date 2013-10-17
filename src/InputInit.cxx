@@ -65,7 +65,7 @@ input_stream_global_init(Error &error)
 	const config_param empty;
 
 	for (unsigned i = 0; input_plugins[i] != NULL; ++i) {
-		const struct input_plugin *plugin = input_plugins[i];
+		const InputPlugin *plugin = input_plugins[i];
 
 		assert(plugin->name != NULL);
 		assert(*plugin->name != 0);

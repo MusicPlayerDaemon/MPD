@@ -20,6 +20,6 @@
 #ifndef INPUT_DESPOTIFY_HXX
 #define INPUT_DESPOTIFY_HXX
 
-extern const struct input_plugin input_plugin_despotify;
+extern const struct InputPlugin input_plugin_despotify;
 
 #endif

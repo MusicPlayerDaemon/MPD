@@ -20,6 +20,6 @@
 #ifndef MPD_INPUT_ARCHIVE_HXX
 #define MPD_INPUT_ARCHIVE_HXX
 
-extern const struct input_plugin input_plugin_archive;
+extern const struct InputPlugin input_plugin_archive;
 
 #endif

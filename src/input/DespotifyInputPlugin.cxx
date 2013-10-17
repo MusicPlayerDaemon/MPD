@@ -219,7 +219,7 @@ input_despotify_tag(struct input_stream *is)
 	return tag;
 }
 
-const struct input_plugin input_plugin_despotify = {
+const InputPlugin input_plugin_despotify = {
 	"spt",
 	nullptr,
 	nullptr,

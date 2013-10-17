@@ -363,7 +363,7 @@ input_cdio_eof(struct input_stream *is)
 	return (cis->lsn_from + cis->lsn_relofs > cis->lsn_to);
 }
 
-const struct input_plugin input_plugin_cdio_paranoia = {
+const InputPlugin input_plugin_cdio_paranoia = {
 	"cdio_paranoia",
 	nullptr,
 	nullptr,

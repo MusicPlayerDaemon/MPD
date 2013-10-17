@@ -161,7 +161,7 @@ input_ffmpeg_seek(struct input_stream *is, goffset offset, int whence,
 	}
 }
 
-const struct input_plugin input_plugin_ffmpeg = {
+const InputPlugin input_plugin_ffmpeg = {
 	"ffmpeg",
 	input_ffmpeg_init,
 	nullptr,

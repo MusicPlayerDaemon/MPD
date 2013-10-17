@@ -551,7 +551,7 @@ CurlSockets::DispatchSockets()
 }
 
 /*
- * input_plugin methods
+ * InputPlugin methods
  *
  */
 
@@ -1103,7 +1103,7 @@ input_curl_open(const char *url, Mutex &mutex, Cond &cond,
 	return &c->base;
 }
 
-const struct input_plugin input_plugin_curl = {
+const struct InputPlugin input_plugin_curl = {
 	"curl",
 	input_curl_init,
 	input_curl_finish,

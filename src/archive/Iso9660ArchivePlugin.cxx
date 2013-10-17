@@ -72,7 +72,7 @@ public:
 					 Error &error) override;
 };
 
-extern const struct input_plugin iso9660_input_plugin;
+extern const InputPlugin iso9660_input_plugin;
 
 static constexpr Domain iso9660_domain("iso9660");
 
@@ -239,7 +239,7 @@ static const char *const iso9660_archive_extensions[] = {
 	NULL
 };
 
-const struct input_plugin iso9660_input_plugin = {
+const InputPlugin iso9660_input_plugin = {
 	nullptr,
 	nullptr,
 	nullptr,

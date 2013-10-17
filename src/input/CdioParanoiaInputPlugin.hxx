@@ -23,6 +23,6 @@
 /**
  * An input plugin based on libcdio_paranoia library.
  */
-extern const struct input_plugin input_plugin_cdio_paranoia;
+extern const struct InputPlugin input_plugin_cdio_paranoia;
 
 #endif

@@ -33,12 +33,13 @@
 class Cond;
 class Error;
 struct Tag;
+struct InputPlugin;
 
 struct input_stream {
 	/**
 	 * the plugin which implements this input stream
 	 */
-	const struct input_plugin &plugin;
+	const InputPlugin &plugin;
 
 	/**
 	 * The absolute URI which was used to open this stream.
@@ -91,7 +92,7 @@ struct input_stream {
 	 */
 	std::string mime;
 
-	input_stream(const input_plugin &_plugin,
+	input_stream(const InputPlugin &_plugin,
 		     const char *_uri, Mutex &_mutex, Cond &_cond)
 		:plugin(_plugin), uri(_uri),
 		 mutex(_mutex), cond(_cond),

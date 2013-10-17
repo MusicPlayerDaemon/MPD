@@ -83,7 +83,7 @@ input_archive_open(const char *pathname,
 	return is;
 }
 
-const struct input_plugin input_plugin_archive = {
+const InputPlugin input_plugin_archive = {
 	"archive",
 	nullptr,
 	nullptr,

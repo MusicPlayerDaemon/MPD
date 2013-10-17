@@ -109,7 +109,7 @@ struct Bzip2InputStream {
 	void Close();
 };
 
-extern const struct input_plugin bz2_inputplugin;
+extern const InputPlugin bz2_inputplugin;
 
 static constexpr Domain bz2_domain("bz2");
 
@@ -276,7 +276,7 @@ static const char *const bz2_extensions[] = {
 	NULL
 };
 
-const struct input_plugin bz2_inputplugin = {
+const InputPlugin bz2_inputplugin = {
 	nullptr,
 	nullptr,
 	nullptr,

@@ -46,7 +46,7 @@
 #include "input/DespotifyInputPlugin.hxx"
 #endif
 
-const struct input_plugin *const input_plugins[] = {
+const InputPlugin *const input_plugins[] = {
 	&input_plugin_file,
 #ifdef ENABLE_ARCHIVE
 	&input_plugin_archive,

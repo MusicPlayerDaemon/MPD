@@ -143,7 +143,7 @@ input_file_eof(struct input_stream *is)
 	return is->offset >= is->size;
 }
 
-const struct input_plugin input_plugin_file = {
+const InputPlugin input_plugin_file = {
 	"file",
 	nullptr,
 	nullptr,

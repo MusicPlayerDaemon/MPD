@@ -23,6 +23,6 @@
 /**
  * An input plugin based on libavformat's "avio" library.
  */
-extern const struct input_plugin input_plugin_ffmpeg;
+extern const struct InputPlugin input_plugin_ffmpeg;
 
 #endif
