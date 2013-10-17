@@ -19,49 +19,31 @@
 
 #include "config.h"
 #include "UpdateQueue.hxx"
-#include "util/Macros.hxx"
 
-#include <glib.h>
+#include <queue>
+#include <list>
 
-#include <assert.h>
-#include <string.h>
+static constexpr unsigned MAX_UPDATE_QUEUE_SIZE = 32;
 
-/* make this dynamic?, or maybe this is big enough... */
-static struct {
-	char *path;
-	bool discard;
-} update_queue[32];
-
-static size_t update_queue_length;
+static std::queue<UpdateQueueItem, std::list<UpdateQueueItem>> update_queue;
 
 unsigned
 update_queue_push(const char *path, bool discard, unsigned base)
 {
-	assert(update_queue_length <= ARRAY_SIZE(update_queue));
-
-	if (update_queue_length == ARRAY_SIZE(update_queue))
+	if (update_queue.size() >= MAX_UPDATE_QUEUE_SIZE)
 		return 0;
 
-	update_queue[update_queue_length].path = g_strdup(path);
-	update_queue[update_queue_length].discard = discard;
-
-	++update_queue_length;
-
-	return base + update_queue_length;
+	update_queue.emplace(path, discard);
+	return base + update_queue.size();
 }
 
-char *
-update_queue_shift(bool *discard_r)
+UpdateQueueItem
+update_queue_shift()
 {
-	char *path;
+	if (update_queue.empty())
+		return UpdateQueueItem();
 
-	if (update_queue_length == 0)
-		return NULL;
-
-	path = update_queue[0].path;
-	*discard_r = update_queue[0].discard;
-
-	memmove(&update_queue[0], &update_queue[1],
-		--update_queue_length * sizeof(update_queue[0]));
-	return path;
+	auto i = std::move(update_queue.front());
+	update_queue.pop();
+	return i;
 }

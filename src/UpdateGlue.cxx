@@ -139,8 +139,6 @@ update_enqueue(const char *path, bool _discard)
  */
 static void update_finished_event(void)
 {
-	char *path;
-
 	assert(progress == UPDATE_PROGRESS_DONE);
 
 	update_thread.Join();
@@ -151,11 +149,11 @@ static void update_finished_event(void)
 		/* send "idle" events */
 		instance->DatabaseModified();
 
-	path = update_queue_shift(&discard);
-	if (path != NULL) {
+	auto i = update_queue_shift();
+	if (i.IsDefined()) {
 		/* schedule the next path */
-		spawn_update_task(path);
-		g_free(path);
+		discard = i.discard;
+		spawn_update_task(i.path_utf8.c_str());
 	} else {
 		progress = UPDATE_PROGRESS_IDLE;
 

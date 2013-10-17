@@ -22,10 +22,25 @@
 
 #include "check.h"
 
+#include <string>
+
+struct UpdateQueueItem {
+	std::string path_utf8;
+	bool discard;
+
+	UpdateQueueItem() = default;
+	UpdateQueueItem(const char *_path, bool _discard)
+		:path_utf8(_path), discard(_discard) {}
+
+	bool IsDefined() const {
+		return !path_utf8.empty();
+	}
+};
+
 unsigned
 update_queue_push(const char *path, bool discard, unsigned base);
 
-char *
-update_queue_shift(bool *discard_r);
+UpdateQueueItem
+update_queue_shift();
 
 #endif
