@@ -34,6 +34,7 @@
 #include "Instance.hxx"
 #include "system/FatalError.hxx"
 #include "thread/Id.hxx"
+#include "thread/Thread.hxx"
 
 #include <glib.h>
 
@@ -47,7 +48,7 @@ static enum update_progress {
 
 static bool modified;
 
-static GThread *update_thr;
+static Thread update_thread;
 
 static const unsigned update_task_id_max = 1 << 15;
 
@@ -62,7 +63,8 @@ isUpdatingDB(void)
 	return (progress != UPDATE_PROGRESS_IDLE) ? update_task_id : 0;
 }
 
-static void * update_task(void *_path)
+static void
+update_task(void *_path)
 {
 	const char *path = (const char *)_path;
 
@@ -87,7 +89,6 @@ static void * update_task(void *_path)
 
 	progress = UPDATE_PROGRESS_DONE;
 	GlobalEvents::Emit(GlobalEvents::UPDATE);
-	return NULL;
 }
 
 static void
@@ -98,14 +99,9 @@ spawn_update_task(const char *path)
 	progress = UPDATE_PROGRESS_RUNNING;
 	modified = false;
 
-#if GLIB_CHECK_VERSION(2,32,0)
-	update_thr = g_thread_new("update", update_task, g_strdup(path));
-#else
-	GError *e = NULL;
-	update_thr = g_thread_create(update_task, g_strdup(path), TRUE, &e);
-	if (update_thr == NULL)
-		FatalError("Failed to spawn update task", e);
-#endif
+	Error error;
+	if (!update_thread.Start(update_task, g_strdup(path), error))
+		FatalError(error);
 
 	if (++update_task_id > update_task_id_max)
 		update_task_id = 1;
@@ -147,7 +143,7 @@ static void update_finished_event(void)
 
 	assert(progress == UPDATE_PROGRESS_DONE);
 
-	g_thread_join(update_thr);
+	update_thread.Join();
 
 	idle_add(IDLE_UPDATE);
 

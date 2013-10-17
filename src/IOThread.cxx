@@ -21,10 +21,10 @@
 #include "IOThread.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "thread/Thread.hxx"
 #include "event/Loop.hxx"
 #include "system/FatalError.hxx"
-
-#include <glib.h>
+#include "util/Error.hxx"
 
 #include <assert.h>
 
@@ -33,7 +33,7 @@ static struct {
 	Cond cond;
 
 	EventLoop *loop;
-	GThread *thread;
+	Thread thread;
 } io;
 
 void
@@ -45,8 +45,8 @@ io_thread_run(void)
 	io.loop->Run();
 }
 
-static gpointer
-io_thread_func(gcc_unused gpointer arg)
+static void
+io_thread_func(gcc_unused void *arg)
 {
 	/* lock+unlock to synchronize with io_thread_start(), to be
 	   sure that io.thread is set */
@@ -54,14 +54,13 @@ io_thread_func(gcc_unused gpointer arg)
 	io.mutex.unlock();
 
 	io_thread_run();
-	return NULL;
 }
 
 void
 io_thread_init(void)
 {
 	assert(io.loop == NULL);
-	assert(io.thread == NULL);
+	assert(!io.thread.IsDefined());
 
 	io.loop = new EventLoop();
 }
@@ -70,18 +69,13 @@ void
 io_thread_start()
 {
 	assert(io.loop != NULL);
-	assert(io.thread == NULL);
+	assert(!io.thread.IsDefined());
 
 	const ScopeLock protect(io.mutex);
 
-#if GLIB_CHECK_VERSION(2,32,0)
-	io.thread = g_thread_new("io", io_thread_func, nullptr);
-#else
-	GError *error = nullptr;
-	io.thread = g_thread_create(io_thread_func, NULL, true, &error);
-	if (io.thread == NULL)
+	Error error;
+	if (!io.thread.Start(io_thread_func, nullptr, error))
 		FatalError(error);
-#endif
 }
 
 void
@@ -95,10 +89,9 @@ io_thread_quit(void)
 void
 io_thread_deinit(void)
 {
-	if (io.thread != NULL) {
+	if (io.thread.IsDefined()) {
 		io_thread_quit();
-
-		g_thread_join(io.thread);
+		io.thread.Join();
 	}
 
 	delete io.loop;
@@ -115,5 +108,5 @@ io_thread_get()
 bool
 io_thread_inside(void)
 {
-	return io.thread != NULL && g_thread_self() == io.thread;
+	return io.thread.IsInside();
 }

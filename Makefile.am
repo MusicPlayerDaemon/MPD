@@ -274,6 +274,7 @@ libthread_a_SOURCES = \
 	src/thread/PosixCond.hxx \
 	src/thread/WindowsCond.hxx \
 	src/thread/GLibCond.hxx \
+	src/thread/Thread.cxx src/thread/Thread.hxx \
 	src/thread/Id.hxx
 
 # System library
@@ -1120,6 +1121,7 @@ test_run_input_LDADD = \
 	libconf.a \
 	libutil.a \
 	libevent.a \
+	libthread.a \
 	libsystem.a \
 	libfs.a \
 	$(GLIB_LIBS)
@@ -1138,6 +1140,7 @@ test_visit_archive_LDADD = \
 	libconf.a \
 	libutil.a \
 	libevent.a \
+	libthread.a \
 	libsystem.a \
 	libfs.a \
 	$(GLIB_LIBS)
@@ -1160,6 +1163,7 @@ test_dump_text_file_LDADD = \
 	libevent.a \
 	libfs.a \
 	libsystem.a \
+	libthread.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
@@ -1177,6 +1181,7 @@ test_dump_playlist_LDADD = \
 	$(TAG_LIBS) \
 	libconf.a \
 	libevent.a \
+	libthread.a \
 	libsystem.a \
 	libfs.a \
 	libutil.a \
@@ -1206,6 +1211,7 @@ test_run_decoder_LDADD = \
 	$(TAG_LIBS) \
 	libconf.a \
 	libevent.a \
+	libthread.a \
 	libsystem.a \
 	libfs.a \
 	libutil.a \
@@ -1229,6 +1235,7 @@ test_read_tags_LDADD = \
 	$(TAG_LIBS) \
 	libconf.a \
 	libevent.a \
+	libthread.a \
 	libsystem.a \
 	libfs.a \
 	libutil.a \
@@ -1289,6 +1296,7 @@ test_run_encoder_LDADD = \
 	$(TAG_LIBS) \
 	libconf.a \
 	libpcm.a \
+	libthread.a \
 	libsystem.a \
 	libfs.a \
 	libutil.a \
@@ -1356,6 +1364,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	libevent.a \
 	libfs.a \
 	libsystem.a \
+	libthread.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_run_output_SOURCES = test/run_output.cxx \

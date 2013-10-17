@@ -28,6 +28,8 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <sys/types.h>
 #ifdef WIN32

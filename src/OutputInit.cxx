@@ -202,7 +202,6 @@ ao_base_init(struct audio_output *ao,
 			    "Failed to initialize filter chain for '%s'",
 			    ao->name);
 
-	ao->thread = NULL;
 	ao->command = AO_COMMAND_NONE;
 
 	ao->mixer = NULL;

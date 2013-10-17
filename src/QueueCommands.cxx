@@ -35,6 +35,8 @@
 #include "util/Error.hxx"
 #include "fs/Path.hxx"
 
+#include <glib.h>
+
 #include <string.h>
 
 enum command_return

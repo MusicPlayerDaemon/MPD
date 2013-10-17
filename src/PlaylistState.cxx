@@ -33,6 +33,8 @@
 #include "ConfigOption.hxx"
 #include "Log.hxx"
 
+#include <glib.h>
+
 #include <string.h>
 #include <stdlib.h>
 

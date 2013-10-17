@@ -440,8 +440,8 @@ decoder_run(struct decoder_control *dc)
 
 }
 
-static gpointer
-decoder_task(gpointer arg)
+static void
+decoder_task(void *arg)
 {
 	struct decoder_control *dc = (struct decoder_control *)arg;
 
@@ -476,23 +476,16 @@ decoder_task(gpointer arg)
 	} while (dc->command != DecoderCommand::NONE || !dc->quit);
 
 	dc->Unlock();
-
-	return NULL;
 }
 
 void
 decoder_thread_start(struct decoder_control *dc)
 {
-	assert(dc->thread == NULL);
+	assert(!dc->thread.IsDefined());
 
 	dc->quit = false;
 
-#if GLIB_CHECK_VERSION(2,32,0)
-	dc->thread = g_thread_new("thread", decoder_task, dc);
-#else
-	GError *e = NULL;
-	dc->thread = g_thread_create(decoder_task, dc, true, &e);
-	if (dc->thread == NULL)
-		FatalError("Failed to spawn decoder task", e);
-#endif
+	Error error;
+	if (!dc->thread.Start(decoder_task, dc, error))
+		FatalError(error);
 }

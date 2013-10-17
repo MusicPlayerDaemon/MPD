@@ -23,9 +23,8 @@
 #include "AudioFormat.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "thread/Thread.hxx"
 #include "util/Error.hxx"
-
-#include <glib.h>
 
 #include <stdint.h>
 
@@ -95,9 +94,10 @@ struct player_control {
 
 	unsigned int buffered_before_play;
 
-	/** the handle of the player thread, or NULL if the player
-	    thread isn't running */
-	GThread *thread;
+	/**
+	 * The handle of the player thread.
+	 */
+	Thread thread;
 
 	/**
 	 * This lock protects #command, #state, #error.
@@ -199,7 +199,7 @@ struct player_control {
 	 * prior to calling this function.
 	 */
 	void Wait() {
-		assert(thread == g_thread_self());
+		assert(thread.IsInside());
 
 		cond.wait(mutex);
 	}
@@ -210,7 +210,7 @@ struct player_control {
 	 * Caller must lock the object.
 	 */
 	void ClientSignal() {
-		assert(thread == g_thread_self());
+		assert(thread.IsInside());
 
 		client_cond.signal();
 	}
@@ -222,7 +222,7 @@ struct player_control {
 	 * Caller must lock the object.
 	 */
 	void ClientWait() {
-		assert(thread != g_thread_self());
+		assert(!thread.IsInside());
 
 		client_cond.wait(mutex);
 	}

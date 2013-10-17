@@ -33,6 +33,8 @@
 #include "ConfigOption.hxx"
 #include "notify.hxx"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <string.h>
 

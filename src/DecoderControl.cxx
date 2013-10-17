@@ -27,8 +27,7 @@
 #include <assert.h>
 
 decoder_control::decoder_control()
-	:thread(nullptr),
-	 state(DecoderState::STOP),
+	:state(DecoderState::STOP),
 	 command(DecoderCommand::NONE),
 	 song(nullptr),
 	 replay_gain_db(0), replay_gain_prev_db(0),
@@ -124,13 +123,12 @@ decoder_control::Seek(double where)
 void
 decoder_control::Quit()
 {
-	assert(thread != nullptr);
+	assert(thread.IsDefined());
 
 	quit = true;
 	LockAsynchronousCommand(DecoderCommand::STOP);
 
-	g_thread_join(thread);
-	thread = nullptr;
+	thread.Join();
 }
 
 void

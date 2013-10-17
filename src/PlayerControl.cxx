@@ -23,6 +23,8 @@
 #include "Song.hxx"
 #include "DecoderControl.hxx"
 
+#include <glib.h>
+
 #include <cmath>
 
 #include <assert.h>
@@ -31,7 +33,6 @@ player_control::player_control(unsigned _buffer_chunks,
 			       unsigned _buffered_before_play)
 	:buffer_chunks(_buffer_chunks),
 	 buffered_before_play(_buffered_before_play),
-	 thread(nullptr),
 	 command(PlayerCommand::NONE),
 	 state(PlayerState::STOP),
 	 error_type(PlayerError::NONE),
@@ -100,11 +101,10 @@ player_control::UpdateAudio()
 void
 player_control::Kill()
 {
-	assert(thread != NULL);
+	assert(thread.IsDefined());
 
 	LockSynchronousCommand(PlayerCommand::EXIT);
-	g_thread_join(thread);
-	thread = NULL;
+	thread.Join();
 
 	idle_add(IDLE_PLAYER);
 }

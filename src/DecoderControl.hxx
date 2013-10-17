@@ -24,6 +24,7 @@
 #include "AudioFormat.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "thread/Thread.hxx"
 #include "util/Error.hxx"
 
 #include <assert.h>
@@ -37,7 +38,6 @@
 struct Song;
 class MusicBuffer;
 class MusicPipe;
-typedef struct _GThread GThread;
 
 enum class DecoderState : uint8_t {
 	STOP = 0,
@@ -54,9 +54,10 @@ enum class DecoderState : uint8_t {
 };
 
 struct decoder_control {
-	/** the handle of the decoder thread, or NULL if the decoder
-	    thread isn't running */
-	GThread *thread;
+	/**
+	 * The handle of the decoder thread.
+	 */
+	Thread thread;
 
 	/**
 	 * This lock protects #state and #command.

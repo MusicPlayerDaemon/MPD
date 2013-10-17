@@ -1096,8 +1096,8 @@ do_play(player_control &pc, decoder_control &dc,
 	player.Run();
 }
 
-static gpointer
-player_task(gpointer arg)
+static void
+player_task(void *arg)
 {
 	player_control &pc = *(player_control *)arg;
 
@@ -1163,7 +1163,7 @@ player_task(gpointer arg)
 			audio_output_all_close();
 
 			player_command_finished(pc);
-			return nullptr;
+			return;
 
 		case PlayerCommand::CANCEL:
 			if (pc.next_song != nullptr) {
@@ -1189,14 +1189,9 @@ player_task(gpointer arg)
 void
 player_create(player_control &pc)
 {
-	assert(pc.thread == nullptr);
+	assert(!pc.thread.IsDefined());
 
-#if GLIB_CHECK_VERSION(2,32,0)
-	pc.thread = g_thread_new("player", player_task, &pc);
-#else
-	GError *e = nullptr;
-	pc.thread = g_thread_create(player_task, &pc, true, &e);
-	if (pc.thread == nullptr)
-		FatalError("Failed to spawn player task", e);
-#endif
+	Error error;
+	if (!pc.thread.Start(player_task, &pc, error))
+		FatalError(error);
 }

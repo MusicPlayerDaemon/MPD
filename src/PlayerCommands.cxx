@@ -32,6 +32,8 @@
 #include "AudioFormat.hxx"
 #include "ReplayGainConfig.hxx"
 
+#include <glib.h>
+
 #define COMMAND_STATUS_STATE            "state"
 #define COMMAND_STATUS_REPEAT           "repeat"
 #define COMMAND_STATUS_SINGLE           "single"

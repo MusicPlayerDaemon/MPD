@@ -24,6 +24,7 @@
 #include "pcm/PcmBuffer.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "thread/Thread.hxx"
 
 #include <time.h>
 
@@ -31,7 +32,6 @@ class Error;
 class Filter;
 class MusicPipe;
 struct config_param;
-typedef struct _GThread GThread;
 typedef struct _GTimer GTimer;
 
 enum audio_output_command {
@@ -200,7 +200,7 @@ struct audio_output {
 	 * The thread handle, or NULL if the output thread isn't
 	 * running.
 	 */
-	GThread *thread;
+	Thread thread;
 
 	/**
 	 * The next command to be performed by the output thread.

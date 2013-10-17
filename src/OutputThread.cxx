@@ -562,7 +562,8 @@ static void ao_pause(struct audio_output *ao)
 	ao->pause = false;
 }
 
-static gpointer audio_output_task(gpointer arg)
+static void
+audio_output_task(void *arg)
 {
 	struct audio_output *ao = (struct audio_output *)arg;
 
@@ -647,7 +648,7 @@ static gpointer audio_output_task(gpointer arg)
 			ao->chunk = NULL;
 			ao_command_finished(ao);
 			ao->mutex.unlock();
-			return NULL;
+			return;
 		}
 
 		if (ao->open && ao->allow_play && ao_play(ao))
@@ -664,11 +665,7 @@ void audio_output_thread_start(struct audio_output *ao)
 {
 	assert(ao->command == AO_COMMAND_NONE);
 
-#if GLIB_CHECK_VERSION(2,32,0)
-	ao->thread = g_thread_new("output", audio_output_task, ao);
-#else
-	GError *e = nullptr;
-	if (!(ao->thread = g_thread_create(audio_output_task, ao, true, &e)))
-		FatalError("Failed to spawn output task", e);
-#endif
+	Error error;
+	if (!ao->thread.Start(audio_output_task, ao, error))
+		FatalError(error);
 }

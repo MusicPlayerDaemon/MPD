@@ -107,7 +107,7 @@ audio_output_set_replay_gain_mode(struct audio_output *ao,
 void
 audio_output_enable(struct audio_output *ao)
 {
-	if (ao->thread == NULL) {
+	if (!ao->thread.IsDefined()) {
 		if (ao->plugin->enable == NULL) {
 			/* don't bother to start the thread now if the
 			   device doesn't even have a enable() method;
@@ -125,7 +125,7 @@ audio_output_enable(struct audio_output *ao)
 void
 audio_output_disable(struct audio_output *ao)
 {
-	if (ao->thread == NULL) {
+	if (!ao->thread.IsDefined()) {
 		if (ao->plugin->disable == NULL)
 			ao->really_enabled = false;
 		else
@@ -184,7 +184,7 @@ audio_output_open(struct audio_output *ao,
 
 	ao->pipe = &mp;
 
-	if (ao->thread == NULL)
+	if (!ao->thread.IsDefined())
 		audio_output_thread_start(ao);
 
 	ao_command(ao, ao->open ? AO_COMMAND_REOPEN : AO_COMMAND_OPEN);
@@ -322,11 +322,10 @@ void audio_output_finish(struct audio_output *ao)
 
 	assert(ao->fail_timer == NULL);
 
-	if (ao->thread != NULL) {
+	if (ao->thread.IsDefined()) {
 		assert(ao->allow_play);
 		ao_lock_command(ao, AO_COMMAND_KILL);
-		g_thread_join(ao->thread);
-		ao->thread = NULL;
+		ao->thread.Join();
 	}
 
 	audio_output_free(ao);
