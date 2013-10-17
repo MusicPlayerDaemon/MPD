@@ -26,6 +26,7 @@
 #include "Song.hxx"
 #include "system/FatalError.hxx"
 #include "Mapper.hxx"
+#include "fs/Traits.hxx"
 #include "fs/Path.hxx"
 #include "DecoderAPI.hxx"
 #include "tag/Tag.hxx"
@@ -153,7 +154,7 @@ decoder_file_decode(const struct decoder_plugin *plugin,
 	assert(decoder->stream_tag == NULL);
 	assert(decoder->decoder_tag == NULL);
 	assert(path != NULL);
-	assert(Path::IsAbsoluteFS(path));
+	assert(PathTraits::IsAbsoluteFS(path));
 	assert(decoder->dc->state == DecoderState::START);
 
 	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin->name);

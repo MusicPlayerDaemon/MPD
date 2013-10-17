@@ -20,6 +20,7 @@
 #include "config.h"
 #include "ConfigPath.hxx"
 #include "fs/Path.hxx"
+#include "fs/Traits.hxx"
 #include "fs/Domain.hxx"
 #include "util/Error.hxx"
 #include "ConfigGlobal.hxx"
@@ -119,7 +120,7 @@ ParsePath(const char *path, Error &error)
 			return Path::Null();
 
 		return Path::Build(home, path2);
-	} else if (!Path::IsAbsoluteUTF8(path)) {
+	} else if (!PathTraits::IsAbsoluteUTF8(path)) {
 		error.Format(path_domain,
 			     "not an absolute path: %s", path);
 		return Path::Null();

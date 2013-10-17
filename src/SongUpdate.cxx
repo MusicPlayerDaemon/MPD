@@ -24,6 +24,7 @@
 #include "Directory.hxx"
 #include "Mapper.hxx"
 #include "fs/Path.hxx"
+#include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "InputStream.hxx"
 #include "DecoderPlugin.hxx"
@@ -47,7 +48,7 @@ Song::LoadFile(const char *path_utf8, Directory *parent)
 	Song *song;
 	bool ret;
 
-	assert((parent == NULL) == Path::IsAbsoluteUTF8(path_utf8));
+	assert((parent == NULL) == PathTraits::IsAbsoluteUTF8(path_utf8));
 	assert(!uri_has_scheme(path_utf8));
 	assert(strchr(path_utf8, '\n') == NULL);
 

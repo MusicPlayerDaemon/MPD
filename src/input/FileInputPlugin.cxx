@@ -24,7 +24,7 @@
 #include "InputPlugin.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "fs/Path.hxx"
+#include "fs/Traits.hxx"
 #include "system/fd_util.h"
 #include "open.h"
 
@@ -63,7 +63,7 @@ input_file_open(const char *filename,
 	int fd, ret;
 	struct stat st;
 
-	if (!Path::IsAbsoluteFS(filename))
+	if (!PathTraits::IsAbsoluteFS(filename))
 		return nullptr;
 
 	fd = open_cloexec(filename, O_RDONLY|O_BINARY, 0);

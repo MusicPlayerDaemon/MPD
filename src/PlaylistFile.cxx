@@ -33,6 +33,7 @@
 #include "Idle.hxx"
 #include "fs/Limits.hxx"
 #include "fs/Path.hxx"
+#include "fs/Traits.hxx"
 #include "fs/Charset.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/DirectoryReader.hxx"
@@ -248,7 +249,7 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 		if (!uri_has_scheme(s)) {
 			uri_utf8 = map_fs_to_utf8(s);
 			if (uri_utf8.empty()) {
-				if (Path::IsAbsoluteFS(s)) {
+				if (PathTraits::IsAbsoluteFS(s)) {
 					uri_utf8 = PathToUTF8(s);
 					if (uri_utf8.empty())
 						continue;

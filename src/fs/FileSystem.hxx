@@ -21,6 +21,7 @@
 #define MPD_FS_FILESYSTEM_HXX
 
 #include "check.h"
+#include "Traits.hxx"
 #include "system/fd_util.h"
 
 #include "Path.hxx"
@@ -31,41 +32,42 @@
 #include <stdio.h>
 
 namespace FOpenMode {
-/**
- * Open mode for reading text files.
- */
-constexpr Path::const_pointer ReadText = "r";
+	/**
+	 * Open mode for reading text files.
+	 */
+	constexpr PathTraits::const_pointer ReadText = "r";
 
-/**
- * Open mode for reading binary files.
- */
-constexpr Path::const_pointer ReadBinary = "rb";
+	/**
+	 * Open mode for reading binary files.
+	 */
+	constexpr PathTraits::const_pointer ReadBinary = "rb";
 
-/**
- * Open mode for writing text files.
- */
-constexpr Path::const_pointer WriteText = "w";
+	/**
+	 * Open mode for writing text files.
+	 */
+	constexpr PathTraits::const_pointer WriteText = "w";
 
-/**
- * Open mode for writing binary files.
- */
-constexpr Path::const_pointer WriteBinary = "wb";
+	/**
+	 * Open mode for writing binary files.
+	 */
+	constexpr PathTraits::const_pointer WriteBinary = "wb";
 
-/**
- * Open mode for appending text files.
- */
-constexpr Path::const_pointer AppendText = "a";
+	/**
+	 * Open mode for appending text files.
+	 */
+	constexpr PathTraits::const_pointer AppendText = "a";
 
-/**
- * Open mode for appending binary files.
- */
-constexpr Path::const_pointer AppendBinary = "ab";
+	/**
+	 * Open mode for appending binary files.
+	 */
+	constexpr PathTraits::const_pointer AppendBinary = "ab";
 }
 
 /**
  * Wrapper for fopen() that uses #Path names.
  */
-static inline FILE *FOpen(const Path &file, Path::const_pointer mode)
+static inline FILE *
+FOpen(const Path &file, PathTraits::const_pointer mode)
 {
 	return fopen(file.c_str(), mode);
 }

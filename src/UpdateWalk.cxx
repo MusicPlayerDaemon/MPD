@@ -35,6 +35,7 @@
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"
 #include "fs/Path.hxx"
+#include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/DirectoryReader.hxx"
 #include "util/UriUtil.hxx"
@@ -295,7 +296,7 @@ skip_symlink(const Directory *directory, const char *utf8_name)
 
 	const char *target_str = target.c_str();
 
-	if (Path::IsAbsoluteFS(target_str)) {
+	if (PathTraits::IsAbsoluteFS(target_str)) {
 		/* if the symlink points to an absolute path, see if
 		   that path is inside the music directory */
 		const char *relative = map_to_relative_path(target_str);
@@ -306,7 +307,7 @@ skip_symlink(const Directory *directory, const char *utf8_name)
 
 	const char *p = target_str;
 	while (*p == '.') {
-		if (p[1] == '.' && Path::IsSeparatorFS(p[2])) {
+		if (p[1] == '.' && PathTraits::IsSeparatorFS(p[2])) {
 			/* "../" moves to parent directory */
 			directory = directory->parent;
 			if (directory == NULL) {
@@ -316,7 +317,7 @@ skip_symlink(const Directory *directory, const char *utf8_name)
 				return !follow_outside_symlinks;
 			}
 			p += 3;
-		} else if (Path::IsSeparatorFS(p[1]))
+		} else if (PathTraits::IsSeparatorFS(p[1]))
 			/* eliminate "./" */
 			p += 2;
 		else

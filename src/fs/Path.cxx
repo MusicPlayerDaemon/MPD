@@ -29,11 +29,6 @@
 #include <assert.h>
 #include <string.h>
 
-#ifdef WIN32
-#include <windows.h> // for GetACP()
-#include <stdio.h> // for sprintf()
-#endif
-
 inline Path::Path(Donate, pointer _value)
 	:value(_value) {
 	g_free(_value);
@@ -86,14 +81,14 @@ Path::RelativeFS(const char *other_fs) const
 
 	other_fs += l;
 	if (*other_fs != 0) {
-		if (!IsSeparatorFS(*other_fs))
+		if (!PathTraits::IsSeparatorFS(*other_fs))
 			/* mismatch */
 			return nullptr;
 
 		/* skip remaining path separators */
 		do {
 			++other_fs;
-		} while (IsSeparatorFS(*other_fs));
+		} while (PathTraits::IsSeparatorFS(*other_fs));
 	}
 
 	return other_fs;
@@ -105,7 +100,7 @@ Path::ChopSeparators()
 	size_t l = length();
 	const char *p = data();
 
-	while (l >= 2 && IsSeparatorFS(p[l - 1])) {
+	while (l >= 2 && PathTraits::IsSeparatorFS(p[l - 1])) {
 		--l;
 
 #if GCC_CHECK_VERSION(4,7) && !defined(__clang__)

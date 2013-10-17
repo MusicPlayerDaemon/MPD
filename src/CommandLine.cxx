@@ -32,6 +32,7 @@
 #include "PlaylistRegistry.hxx"
 #include "PlaylistPlugin.hxx"
 #include "fs/Path.hxx"
+#include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -136,7 +137,7 @@ static const char *summary =
 
 gcc_pure
 static Path
-PathBuildChecked(const Path &a, Path::const_pointer b)
+PathBuildChecked(const Path &a, PathTraits::const_pointer b)
 {
 	if (a.IsNull())
 		return Path::Null();

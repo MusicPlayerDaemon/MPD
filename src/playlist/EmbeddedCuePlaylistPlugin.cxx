@@ -34,7 +34,7 @@
 #include "Song.hxx"
 #include "TagFile.hxx"
 #include "cue/CueParser.hxx"
-#include "fs/Path.hxx"
+#include "fs/Traits.hxx"
 
 #include <glib.h>
 #include <assert.h>
@@ -96,7 +96,7 @@ embcue_playlist_open_uri(const char *uri,
 			 gcc_unused Mutex &mutex,
 			 gcc_unused Cond &cond)
 {
-	if (!Path::IsAbsoluteUTF8(uri))
+	if (!PathTraits::IsAbsoluteUTF8(uri))
 		/* only local files supported */
 		return NULL;
 

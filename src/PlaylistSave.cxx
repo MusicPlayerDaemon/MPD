@@ -26,6 +26,7 @@
 #include "Mapper.hxx"
 #include "Idle.hxx"
 #include "fs/Path.hxx"
+#include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
@@ -55,7 +56,7 @@ void
 playlist_print_uri(FILE *file, const char *uri)
 {
 	Path path = playlist_saveAbsolutePaths && !uri_has_scheme(uri) &&
-		!Path::IsAbsoluteUTF8(uri)
+		!PathTraits::IsAbsoluteUTF8(uri)
 		? map_uri_fs(uri)
 		: Path::FromUTF8(uri);
 

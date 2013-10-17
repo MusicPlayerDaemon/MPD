@@ -26,7 +26,7 @@
 #include "ArchiveFile.hxx"
 #include "InputPlugin.hxx"
 #include "util/Error.hxx"
-#include "fs/Path.hxx"
+#include "fs/Traits.hxx"
 #include "Log.hxx"
 
 #include <glib.h>
@@ -47,7 +47,7 @@ input_archive_open(const char *pathname,
 	const struct archive_plugin *arplug;
 	struct input_stream *is;
 
-	if (!Path::IsAbsoluteFS(pathname))
+	if (!PathTraits::IsAbsoluteFS(pathname))
 		return NULL;
 
 	char *pname = g_strdup(pathname);

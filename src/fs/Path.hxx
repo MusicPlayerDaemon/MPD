@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "Compiler.h"
+#include "Traits.hxx"
 
 #ifdef WIN32
 #include <glib.h>
@@ -40,20 +41,10 @@ class Error;
 class Path {
 	typedef std::string string;
 
-public:
-	typedef string::value_type value_type;
-	typedef string::pointer pointer;
-	typedef string::const_pointer const_pointer;
+	typedef PathTraits::value_type value_type;
+	typedef PathTraits::pointer pointer;
+	typedef PathTraits::const_pointer const_pointer;
 
-#ifdef WIN32
-	static constexpr value_type SEPARATOR_FS = '\\';
-	static constexpr char SEPARATOR_UTF8 = '/';
-#else
-	static constexpr value_type SEPARATOR_FS = '/';
-	static constexpr char SEPARATOR_UTF8 = '/';
-#endif
-
-private:
 	string value;
 
 	struct Donate {};
@@ -216,47 +207,9 @@ public:
 	 */
 	void ChopSeparators();
 
-	static constexpr bool IsSeparatorFS(value_type ch) {
-		return
-#ifdef WIN32
-			ch == '/' ||
-#endif
-			ch == SEPARATOR_FS;
-	}
-
-	static constexpr bool IsSeparatorUTF8(char ch) {
-		return
-#ifdef WIN32
-			ch == '/' ||
-#endif
-			ch == SEPARATOR_UTF8;
-	}
-
-	gcc_pure
-	static bool IsAbsoluteFS(const_pointer p) {
-		assert(p != nullptr);
-
-#ifdef WIN32
-		return g_path_is_absolute(p);
-#else
-		return IsSeparatorFS(*p);
-#endif
-	}
-
-	gcc_pure
-	static bool IsAbsoluteUTF8(const char *p) {
-		assert(p != nullptr);
-
-#ifdef WIN32
-		return g_path_is_absolute(p);
-#else
-		return IsSeparatorUTF8(*p);
-#endif
-	}
-
 	gcc_pure
 	bool IsAbsolute() {
-		return IsAbsoluteFS(c_str());
+		return PathTraits::IsAbsoluteFS(c_str());
 	}
 };
 
