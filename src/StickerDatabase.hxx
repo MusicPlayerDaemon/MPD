@@ -42,6 +42,8 @@
 #ifndef MPD_STICKER_DATABASE_HXX
 #define MPD_STICKER_DATABASE_HXX
 
+#include "Compiler.h"
+
 class Error;
 class Path;
 struct sticker;
@@ -65,6 +67,7 @@ sticker_global_finish(void);
 /**
  * Returns true if the sticker database is configured and available.
  */
+gcc_const
 bool
 sticker_enabled(void);
 
@@ -112,6 +115,7 @@ sticker_free(struct sticker *sticker);
  * @param name the name of the sticker
  * @return the sticker value, or NULL if none was found
  */
+gcc_pure
 const char *
 sticker_get_value(const struct sticker *sticker, const char *name);
 
