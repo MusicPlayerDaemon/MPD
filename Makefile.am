@@ -342,6 +342,7 @@ endif
 # File system library
 
 libfs_a_SOURCES = \
+	src/fs/Domain.cxx src/fs/Domain.hxx \
 	src/fs/Limits.hxx \
 	src/fs/Path.cxx src/fs/Path.hxx \
 	src/fs/FileSystem.cxx src/fs/FileSystem.hxx \

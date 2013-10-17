@@ -20,6 +20,7 @@
 #include "config.h"
 #include "ConfigPath.hxx"
 #include "fs/Path.hxx"
+#include "fs/Domain.hxx"
 #include "util/Error.hxx"
 #include "ConfigGlobal.hxx"
 

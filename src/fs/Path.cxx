@@ -19,11 +19,11 @@
 
 #include "config.h"
 #include "Path.hxx"
+#include "Domain.hxx"
 #include "Limits.hxx"
 #include "ConfigGlobal.hxx"
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "Log.hxx"
 #include "Compiler.h"
 
@@ -46,8 +46,6 @@
  * sequences with single byte.
  */
 static constexpr size_t MPD_PATH_MAX_UTF8 = (MPD_PATH_MAX - 1) * 4 + 1;
-
-const Domain path_domain("path");
 
 static std::string fs_charset;
 
