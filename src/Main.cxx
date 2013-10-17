@@ -468,7 +468,7 @@ int mpd_main(int argc, char *argv[])
 	if (create_db) {
 		/* the database failed to load: recreate the
 		   database */
-		unsigned job = update_enqueue(nullptr, true);
+		unsigned job = update_enqueue("", true);
 		if (job == 0)
 			FatalError("directory update failed");
 	}

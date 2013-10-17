@@ -20,6 +20,8 @@
 #ifndef MPD_UPDATE_GLUE_HXX
 #define MPD_UPDATE_GLUE_HXX
 
+#include "Compiler.h"
+
 void update_global_init(void);
 
 void update_global_finish(void);
@@ -30,10 +32,11 @@ isUpdatingDB(void);
 /**
  * Add this path to the database update queue.
  *
- * @param path a path to update; if NULL or an empty string,
+ * @param path a path to update; if an empty string,
  * the whole music directory is updated
  * @return the job id, or 0 on error
  */
+gcc_nonnull_all
 unsigned
 update_enqueue(const char *path, bool discard);
 

@@ -157,7 +157,7 @@ handle_lsinfo(Client *client, int argc, char *argv[])
 enum command_return
 handle_update(Client *client, gcc_unused int argc, char *argv[])
 {
-	const char *path = NULL;
+	const char *path = "";
 	unsigned ret;
 
 	assert(argc <= 2);
@@ -166,7 +166,7 @@ handle_update(Client *client, gcc_unused int argc, char *argv[])
 
 		if (*path == 0 || strcmp(path, "/") == 0)
 			/* backwards compatibility with MPD 0.15 */
-			path = NULL;
+			path = "";
 		else if (!uri_safe_local(path)) {
 			command_error(client, ACK_ERROR_ARG,
 				      "Malformed path");
@@ -188,7 +188,7 @@ handle_update(Client *client, gcc_unused int argc, char *argv[])
 enum command_return
 handle_rescan(Client *client, gcc_unused int argc, char *argv[])
 {
-	const char *path = NULL;
+	const char *path = "";
 	unsigned ret;
 
 	assert(argc <= 2);
