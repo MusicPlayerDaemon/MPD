@@ -1,6 +1,7 @@
 ver 0.18 (2012/??/??)
 * configuration:
   - allow tilde paths for socket
+  - default filesystem charset is UTF-8 instead of ISO-8859-1
 * protocol:
   - new command "toggleoutput"
   - search for album artist falls back to the artist tag

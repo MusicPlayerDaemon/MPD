@@ -60,11 +60,6 @@ ConfigureFS()
 #endif
 	}
 
-	if (charset) {
+	if (charset != nullptr)
 		SetFSCharset(charset);
-	} else {
-		LogDebug(path_domain,
-			 "setting filesystem charset to ISO-8859-1");
-		SetFSCharset("ISO-8859-1");
-	}
 }
