@@ -44,6 +44,8 @@
 
 #include "Compiler.h"
 
+#include <string>
+
 class Error;
 class Path;
 struct sticker;
@@ -72,10 +74,10 @@ bool
 sticker_enabled(void);
 
 /**
- * Returns one value from an object's sticker record.  The caller must
- * free the return value with g_free().
+ * Returns one value from an object's sticker record.  Returns an
+ * empty string if the value doesn't exist.
  */
-char *
+std::string
 sticker_load_value(const char *type, const char *uri, const char *name);
 
 /**

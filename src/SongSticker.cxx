@@ -28,7 +28,7 @@
 #include <assert.h>
 #include <string.h>
 
-char *
+std::string
 sticker_song_get_value(const Song *song, const char *name)
 {
 	assert(song != NULL);

@@ -65,16 +65,15 @@ handle_sticker_song(Client *client, int argc, char *argv[])
 		if (song == nullptr)
 			return print_error(client, error);
 
-		char *value = sticker_song_get_value(song, argv[4]);
+		const auto value = sticker_song_get_value(song, argv[4]);
 		db->ReturnSong(song);
-		if (value == NULL) {
+		if (value.empty()) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "no such sticker");
 			return COMMAND_RETURN_ERROR;
 		}
 
-		sticker_print_value(client, argv[4], value);
-		g_free(value);
+		sticker_print_value(client, argv[4], value.c_str());
 
 		return COMMAND_RETURN_OK;
 	/* list song song_id */

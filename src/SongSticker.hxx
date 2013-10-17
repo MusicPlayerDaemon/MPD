@@ -20,6 +20,10 @@
 #ifndef MPD_SONG_STICKER_HXX
 #define MPD_SONG_STICKER_HXX
 
+#include "Compiler.h"
+
+#include <string>
+
 struct Song;
 struct Directory;
 struct sticker;
@@ -28,7 +32,8 @@ struct sticker;
  * Returns one value from a song's sticker record.  The caller must
  * free the return value with g_free().
  */
-char *
+gcc_pure
+std::string
 sticker_song_get_value(const Song *song, const char *name);
 
 /**

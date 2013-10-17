@@ -29,7 +29,6 @@
 #include <string>
 #include <map>
 
-#include <glib.h>
 #include <sqlite3.h>
 #include <assert.h>
 
@@ -172,12 +171,11 @@ sticker_enabled(void)
 	return sticker_db != NULL;
 }
 
-char *
+std::string
 sticker_load_value(const char *type, const char *uri, const char *name)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_GET];
 	int ret;
-	char *value;
 
 	assert(sticker_enabled());
 	assert(type != NULL);
@@ -185,42 +183,41 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 	assert(name != NULL);
 
 	if (*name == 0)
-		return NULL;
+		return std::string();
 
 	sqlite3_reset(stmt);
 
 	ret = sqlite3_bind_text(stmt, 1, type, -1, NULL);
 	if (ret != SQLITE_OK) {
 		LogError(sticker_db, "sqlite3_bind_text() failed");
-		return NULL;
+		return std::string();
 	}
 
 	ret = sqlite3_bind_text(stmt, 2, uri, -1, NULL);
 	if (ret != SQLITE_OK) {
 		LogError(sticker_db, "sqlite3_bind_text() failed");
-		return NULL;
+		return std::string();
 	}
 
 	ret = sqlite3_bind_text(stmt, 3, name, -1, NULL);
 	if (ret != SQLITE_OK) {
 		LogError(sticker_db, "sqlite3_bind_text() failed");
-		return NULL;
+		return std::string();
 	}
 
 	do {
 		ret = sqlite3_step(stmt);
 	} while (ret == SQLITE_BUSY);
 
+	std::string value;
 	if (ret == SQLITE_ROW) {
 		/* record found */
-		value = g_strdup((const char*)sqlite3_column_text(stmt, 0));
+		value = (const char*)sqlite3_column_text(stmt, 0);
 	} else if (ret == SQLITE_DONE) {
 		/* no record found */
-		value = NULL;
 	} else {
 		/* error */
 		LogError(sticker_db, "sqlite3_step() failed");
-		return NULL;
 	}
 
 	sqlite3_reset(stmt);
@@ -523,8 +520,8 @@ sticker_get_value(const struct sticker *sticker, const char *name)
 void
 sticker_foreach(const struct sticker *sticker,
 		void (*func)(const char *name, const char *value,
-			     gpointer user_data),
-		gpointer user_data)
+			     void *user_data),
+		void *user_data)
 {
 	for (const auto &i : sticker->table)
 		func(i.first.c_str(), i.second.c_str(), user_data);
@@ -548,8 +545,8 @@ sticker_load(const char *type, const char *uri)
 bool
 sticker_find(const char *type, const char *base_uri, const char *name,
 	     void (*func)(const char *uri, const char *value,
-			  gpointer user_data),
-	     gpointer user_data)
+			  void *user_data),
+	     void *user_data)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_FIND];
 	int ret;
