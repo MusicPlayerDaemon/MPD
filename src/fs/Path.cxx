@@ -45,7 +45,7 @@
  * and assumption that some weird encoding could represent some UTF-8 4 byte
  * sequences with single byte.
  */
-#define MPD_PATH_MAX_UTF8 ((MPD_PATH_MAX - 1) * 4 + 1)
+static constexpr size_t MPD_PATH_MAX_UTF8 = (MPD_PATH_MAX - 1) * 4 + 1;
 
 const Domain path_domain("path");
 

@@ -384,7 +384,7 @@ spl_append_song(const char *utf8path, Song *song, Error &error)
 		return false;
 	}
 
-	if (st.st_size / (MPD_PATH_MAX + 1) >= (off_t)playlist_max_length) {
+	if (st.st_size / off_t(MPD_PATH_MAX + 1) >= (off_t)playlist_max_length) {
 		fclose(file);
 		error.Set(playlist_domain, PLAYLIST_RESULT_TOO_LARGE,
 			  "Stored playlist is too large");

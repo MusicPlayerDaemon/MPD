@@ -34,7 +34,7 @@ Path ReadLink(const Path &path)
 	ssize_t size = readlink(path.c_str(), buffer, MPD_PATH_MAX);
 	if (size < 0)
 		return Path::Null();
-	if (size >= MPD_PATH_MAX) {
+	if (size_t(size) >= MPD_PATH_MAX) {
 		errno = ENOMEM;
 		return Path::Null();
 	}

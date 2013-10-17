@@ -22,18 +22,17 @@
 
 #include "check.h"
 
+#include <stddef.h>
 #include <limits.h>
 
-#if !defined(MPD_PATH_MAX)
-#  if defined(WIN32)
-#    define MPD_PATH_MAX 260
-#  elif defined(MAXPATHLEN)
-#    define MPD_PATH_MAX MAXPATHLEN
-#  elif defined(PATH_MAX)
-#    define MPD_PATH_MAX PATH_MAX
-#  else
-#    define MPD_PATH_MAX 256
-#  endif
+#if defined(WIN32)
+static constexpr size_t MPD_PATH_MAX = 260;
+#elif defined(MAXPATHLEN)
+static constexpr size_t MPD_PATH_MAX = MAXPATHLEN;
+#elif defined(PATH_MAX)
+static constexpr size_t MPD_PATH_MAX = PATH_MAX;
+#else
+static constexpr size_t MPD_PATH_MAX = 256;
 #endif
 
 #endif
