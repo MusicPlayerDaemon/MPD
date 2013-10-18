@@ -978,6 +978,16 @@ systemctl start mpd.socket</programlisting>
             <tbody>
               <row>
                 <entry>
+                  <varname>loop</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  Allow backward loops in modules.  Default is
+		  <parameter>no</parameter>.
+                </entry>
+              </row>
+              <row>
+                <entry>
                   <varname>sample_rate</varname>
                 </entry>
                 <entry>

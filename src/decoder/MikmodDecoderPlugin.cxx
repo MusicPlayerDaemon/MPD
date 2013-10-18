@@ -104,6 +104,7 @@ static MDRIVER drv_mpd = {
 	VC_VoiceRealVolume
 };
 
+static bool mikmod_loop;
 static unsigned mikmod_sample_rate;
 
 static bool
@@ -111,6 +112,7 @@ mikmod_decoder_init(const config_param &param)
 {
 	static char params[] = "";
 
+	mikmod_loop = param.GetBlockValue("loop", false);
 	mikmod_sample_rate = param.GetBlockValue("sample_rate", 44100u);
 	if (!audio_valid_sample_rate(mikmod_sample_rate))
 		FormatFatalError("Invalid sample rate in line %d: %u",
@@ -161,8 +163,7 @@ mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 		return;
 	}
 
-	/* Prevent module from looping forever */
-	handle->loop = 0;
+	handle->loop = mikmod_loop;
 
 	const AudioFormat audio_format(mikmod_sample_rate, SampleFormat::S16, 2);
 	assert(audio_format.IsValid());
