@@ -1068,6 +1068,10 @@ noinst_PROGRAMS = \
 	test/run_normalize \
 	test/software_volume
 
+if HAVE_AVAHI
+noinst_PROGRAMS += test/run_avahi
+endif
+
 if ENABLE_ARCHIVE
 noinst_PROGRAMS += test/visit_archive
 endif
@@ -1339,6 +1343,18 @@ test_software_volume_LDADD = \
 	$(PCM_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
+
+test_run_avahi_SOURCES = \
+	src/Log.cxx \
+	src/ZeroconfAvahi.cxx \
+	test/ShutdownHandler.cxx test/ShutdownHandler.hxx \
+	test/run_avahi.cxx
+test_run_avahi_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(AVAHI_CFLAGS)
+test_run_avahi_LDADD = \
+	libevent.a \
+	libsystem.a \
+	$(AVAHI_LIBS)
 
 test_run_normalize_SOURCES = test/run_normalize.cxx \
 	test/stdbin.h \
