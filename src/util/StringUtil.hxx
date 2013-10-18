@@ -31,16 +31,13 @@
  */
 gcc_pure
 const char *
-strchug_fast_c(const char *p);
+strchug_fast(const char *p);
 
-/**
- * Same as strchug_fast_c(), but works with a writable pointer.
- */
 gcc_pure
 static inline char *
 strchug_fast(char *p)
 {
-	return const_cast<char *>(strchug_fast_c(p));
+	return const_cast<char *>(strchug_fast((const char *)p));
 }
 
 /**

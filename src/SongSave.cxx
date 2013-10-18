@@ -78,7 +78,7 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 		}
 
 		*colon++ = 0;
-		value = strchug_fast_c(colon);
+		value = strchug_fast(colon);
 
 		if ((type = tag_name_parse(line)) != TAG_NUM_OF_ITEM_TYPES) {
 			tag.AddItem(type, value);

@@ -85,7 +85,7 @@ extm3u_parse_tag(const char *line)
 		/* 0 means unknown duration */
 		duration = 0;
 
-	name = strchug_fast_c(endptr + 1);
+	name = strchug_fast(endptr + 1);
 	if (*name == 0 && duration == 0)
 		/* no information available; don't allocate a tag
 		   object */

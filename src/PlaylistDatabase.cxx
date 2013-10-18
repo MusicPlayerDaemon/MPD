@@ -59,7 +59,7 @@ playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name,
 		}
 
 		*colon++ = 0;
-		value = strchug_fast_c(colon);
+		value = strchug_fast(colon);
 
 		if (strcmp(line, "mtime") == 0)
 			pm.mtime = strtol(value, nullptr, 10);

@@ -24,7 +24,7 @@
 #include <assert.h>
 
 const char *
-strchug_fast_c(const char *p)
+strchug_fast(const char *p)
 {
 	while (*p != 0 && g_ascii_isspace(*p))
 		++p;
