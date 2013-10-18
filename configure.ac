@@ -628,8 +628,8 @@ avahi)
 	;;
 esac
 
-MPD_AUTO_PKG(avahi, AVAHI, [avahi-client avahi-glib],
-	[avahi client library], [avahi client+glib not found])
+MPD_AUTO_PKG(avahi, AVAHI, [avahi-client],
+	[avahi client library], [avahi-client not found])
 if test x$enable_avahi = xyes; then
 	AC_DEFINE([HAVE_AVAHI], 1, [Define to enable Avahi Zeroconf support])
 	with_zeroconf=avahi

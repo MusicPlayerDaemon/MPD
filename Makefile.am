@@ -724,7 +724,9 @@ src_mpd_SOURCES += \
 	src/ZeroconfGlue.cxx src/ZeroconfGlue.hxx
 
 if HAVE_AVAHI
-src_mpd_SOURCES += src/ZeroconfAvahi.cxx src/ZeroconfAvahi.hxx
+src_mpd_SOURCES += \
+	src/AvahiPoll.cxx src/AvahiPoll.hxx \
+	src/ZeroconfAvahi.cxx src/ZeroconfAvahi.hxx
 endif
 
 if HAVE_BONJOUR
@@ -1346,7 +1348,7 @@ test_software_volume_LDADD = \
 
 test_run_avahi_SOURCES = \
 	src/Log.cxx \
-	src/ZeroconfAvahi.cxx \
+	src/ZeroconfAvahi.cxx src/AvahiPoll.cxx \
 	test/ShutdownHandler.cxx test/ShutdownHandler.hxx \
 	test/run_avahi.cxx
 test_run_avahi_CPPFLAGS = $(AM_CPPFLAGS) \
@@ -1354,6 +1356,7 @@ test_run_avahi_CPPFLAGS = $(AM_CPPFLAGS) \
 test_run_avahi_LDADD = \
 	libevent.a \
 	libsystem.a \
+	$(GLIB_LIBS) \
 	$(AVAHI_LIBS)
 
 test_run_normalize_SOURCES = test/run_normalize.cxx \

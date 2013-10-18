@@ -19,33 +19,29 @@
 
 #include "config.h"
 #include "ZeroconfAvahi.hxx"
+#include "AvahiPoll.hxx"
 #include "ZeroconfInternal.hxx"
 #include "Listen.hxx"
-#include "event/Loop.hxx"
 #include "system/FatalError.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <avahi-client/client.h>
 #include <avahi-client/publish.h>
 
+#include <avahi-common/watch.h>
 #include <avahi-common/alternative.h>
 #include <avahi-common/domain.h>
 #include <avahi-common/malloc.h>
 #include <avahi-common/error.h>
 
-#include <avahi-glib/glib-watch.h>
+#include <stddef.h>
 
 static constexpr Domain avahi_domain("avahi");
 
 static char *avahiName;
 static int avahiRunning;
-#ifndef USE_EPOLL
-static AvahiGLibPoll *avahi_glib_poll;
-#endif
-static const AvahiPoll *avahi_poll;
+static MyAvahiPoll *avahi_poll;
 static AvahiClient *avahiClient;
 static AvahiEntryGroup *avahiGroup;
 
@@ -246,15 +242,7 @@ AvahiInit(EventLoop &loop, const char *serviceName)
 
 	avahiRunning = 1;
 
-#ifdef USE_EPOLL
-	// TODO
-	(void)loop;
-	if (1==1) return;
-#else
-	avahi_glib_poll = avahi_glib_poll_new(loop.GetContext(),
-					      G_PRIORITY_DEFAULT);
-	avahi_poll = avahi_glib_poll_get(avahi_glib_poll);
-#endif
+	avahi_poll = new MyAvahiPoll(loop);
 
 	int error;
 	avahiClient = avahi_client_new(avahi_poll, AVAHI_CLIENT_NO_FAIL,
@@ -282,14 +270,8 @@ AvahiDeinit(void)
 		avahiClient = NULL;
 	}
 
-#ifdef USE_EPOLL
-	// TODO
-#else
-	if (avahi_glib_poll != NULL) {
-		avahi_glib_poll_free(avahi_glib_poll);
-		avahi_glib_poll = NULL;
-	}
-#endif
+	delete avahi_poll;
+	avahi_poll = nullptr;
 
 	avahi_free(avahiName);
 	avahiName = NULL;
