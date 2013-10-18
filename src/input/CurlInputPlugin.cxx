@@ -257,17 +257,20 @@ input_curl_fd_events(int fd, fd_set *rfds, fd_set *wfds, fd_set *efds)
 	gushort events = 0;
 
 	if (FD_ISSET(fd, rfds)) {
-		events |= G_IO_IN | G_IO_HUP | G_IO_ERR;
+		events |= MultiSocketMonitor::READ | MultiSocketMonitor::HANGUP
+			| MultiSocketMonitor::ERROR;
 		FD_CLR(fd, rfds);
 	}
 
 	if (FD_ISSET(fd, wfds)) {
-		events |= G_IO_OUT | G_IO_ERR;
+		events |= MultiSocketMonitor::WRITE |
+			MultiSocketMonitor::ERROR;
 		FD_CLR(fd, wfds);
 	}
 
 	if (FD_ISSET(fd, efds)) {
-		events |= G_IO_HUP | G_IO_ERR;
+		events |= MultiSocketMonitor::HANGUP |
+			MultiSocketMonitor::ERROR;
 		FD_CLR(fd, efds);
 	}
 
