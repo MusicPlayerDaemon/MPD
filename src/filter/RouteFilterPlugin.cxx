@@ -52,6 +52,8 @@
 
 #include <glib.h>
 
+#include <algorithm>
+
 #include <assert.h>
 #include <string.h>
 #include <stdint.h>
@@ -77,7 +79,7 @@ class RouteFilter final : public Filter {
 	 * a corresponding input channel from which to take the
 	 * data. A -1 means "no source"
 	 */
-	int8_t *sources;
+	int8_t sources[MAX_CHANNELS];
 
 	/**
 	 * The actual input format of our signal, once opened
@@ -107,11 +109,6 @@ class RouteFilter final : public Filter {
 	PcmBuffer output_buffer;
 
 public:
-	RouteFilter():sources(nullptr) {}
-	~RouteFilter() {
-		g_free(sources);
-	}
-
 	/**
 	 * Parse the "routes" section, a string on the form
 	 *  a>b, c>d, e>f, ...
@@ -135,7 +132,7 @@ RouteFilter::Configure(const config_param &param, Error &error) {
 	/* TODO:
 	 * With a more clever way of marking "don't copy to output N",
 	 * This could easily be merged into a single loop with some
-	 * dynamic g_realloc() instead of one count run and one g_malloc().
+	 * dynamic realloc() instead of one count run and one malloc().
 	 */
 
 	gchar **tokens;
@@ -143,6 +140,8 @@ RouteFilter::Configure(const config_param &param, Error &error) {
 
 	// A cowardly default, just passthrough stereo
 	const char *const routes = param.GetBlockValue("routes", "0>0, 1>1");
+
+	std::fill_n(sources, MAX_CHANNELS, -1);
 
 	min_input_channels = 0;
 	min_output_channels = 0;
@@ -190,13 +189,6 @@ RouteFilter::Configure(const config_param &param, Error &error) {
 			     min_output_channels);
 		return false;
 	}
-
-	// Allocate a map of "copy nothing to me"
-	sources = (int8_t *)
-		g_malloc(min_output_channels * sizeof(*sources));
-
-	for (unsigned i = 0; i < min_output_channels; ++i)
-		sources[i] = -1;
 
 	// Run through the spec again, and save the
 	// actual mapping output <- input
