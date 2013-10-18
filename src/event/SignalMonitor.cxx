@@ -63,6 +63,8 @@ public:
 			SocketMonitor::Steal();
 	}
 
+	using SocketMonitor::GetEventLoop;
+
 #ifdef USE_SIGNALFD
 	void Update(sigset_t &mask) {
 		const bool was_open = SocketMonitor::IsDefined();
@@ -151,6 +153,12 @@ SignalMonitorFinish()
 #endif
 
 	monitor.Destruct();
+}
+
+EventLoop &
+SignalMonitorGetEventLoop()
+{
+	return monitor->GetEventLoop();
 }
 
 void

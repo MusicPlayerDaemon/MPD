@@ -25,9 +25,7 @@
 
 #include "Log.hxx"
 #include "LogInit.hxx"
-#include "Main.hxx"
 #include "event/Loop.hxx"
-#include "GlobalEvents.hxx"
 #include "system/FatalError.hxx"
 #include "util/Domain.hxx"
 
@@ -35,12 +33,10 @@
 
 static constexpr Domain signal_handlers_domain("signal_handlers");
 
-static EventLoop *shutdown_loop;
-
 static void
 HandleShutdownSignal()
 {
-	shutdown_loop->Break();
+	SignalMonitorGetEventLoop().Break();
 }
 
 static void
@@ -72,7 +68,6 @@ SignalHandlersInit(EventLoop &loop)
 	sa.sa_handler = SIG_IGN;
 	x_sigaction(SIGPIPE, &sa);
 
-	shutdown_loop = &loop;
 	SignalMonitorRegister(SIGINT, HandleShutdownSignal);
 	SignalMonitorRegister(SIGTERM, HandleShutdownSignal);
 
