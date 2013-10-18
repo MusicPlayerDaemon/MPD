@@ -48,9 +48,8 @@
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
 #include "pcm/PcmBuffer.hxx"
+#include "util/StringUtil.hxx"
 #include "util/Error.hxx"
-
-#include <glib.h>
 
 #include <algorithm>
 
@@ -135,88 +134,70 @@ RouteFilter::Configure(const config_param &param, Error &error) {
 	 * dynamic realloc() instead of one count run and one malloc().
 	 */
 
-	gchar **tokens;
-	int number_of_copies;
-
-	// A cowardly default, just passthrough stereo
-	const char *const routes = param.GetBlockValue("routes", "0>0, 1>1");
-
 	std::fill_n(sources, MAX_CHANNELS, -1);
 
 	min_input_channels = 0;
 	min_output_channels = 0;
 
-	tokens = g_strsplit(routes, ",", 255);
-	number_of_copies = g_strv_length(tokens);
+	// A cowardly default, just passthrough stereo
+	const char *routes = param.GetBlockValue("routes", "0>0, 1>1");
+	while (true) {
+		routes = strchug_fast(routes);
 
-	// Start by figuring out a few basic things about the routing set
-	for (int c=0; c<number_of_copies; ++c) {
-
-		// String and int representations of the source/destination
-		gchar **sd;
-
-		// Squeeze whitespace
-		g_strstrip(tokens[c]);
-
-		// Split the a>b string into source and destination
-		sd = g_strsplit(tokens[c], ">", 2);
-		if (g_strv_length(sd) != 2) {
-			error.Format(config_domain,
-				     "Invalid copy around %d in routes spec: %s",
-				     param.line, tokens[c]);
-			g_strfreev(sd);
-			g_strfreev(tokens);
+		char *endptr;
+		const unsigned source = strtoul(routes, &endptr, 10);
+		endptr = strchug_fast(endptr);
+		if (endptr == routes || *endptr != '>') {
+			error.Set(config_domain,
+				  "Malformed 'routes' specification");
 			return false;
 		}
 
-		unsigned source = strtoul(sd[0], NULL, 10);
-		unsigned dest = strtoul(sd[1], NULL, 10);
+		if (source >= MAX_CHANNELS) {
+			error.Format(config_domain,
+				     "Invalid source channel number: %u",
+				     source);
+			return false;
+		}
 
-		// Keep track of the highest channel numbers seen
-		// as either in- or outputs
 		if (source >= min_input_channels)
 			min_input_channels = source + 1;
+
+		routes = strchug_fast(endptr + 1);
+
+		unsigned dest = strtoul(routes, &endptr, 10);
+		endptr = strchug_fast(endptr);
+		if (endptr == routes) {
+			error.Set(config_domain,
+				  "Malformed 'routes' specification");
+			return false;
+		}
+
+		if (dest >= MAX_CHANNELS) {
+			error.Format(config_domain,
+				     "Invalid destination channel number: %u",
+				     dest);
+			return false;
+		}
+
 		if (dest >= min_output_channels)
 			min_output_channels = dest + 1;
 
-		g_strfreev(sd);
-	}
+		sources[dest] = source;
 
-	if (!audio_valid_channel_count(min_output_channels)) {
-		g_strfreev(tokens);
-		error.Format(config_domain,
-			     "Invalid number of output channels requested: %d",
-			     min_output_channels);
-		return false;
-	}
+		routes = endptr;
 
-	// Run through the spec again, and save the
-	// actual mapping output <- input
-	for (int c=0; c<number_of_copies; ++c) {
+		if (*routes == 0)
+			break;
 
-		// String and int representations of the source/destination
-		gchar **sd;
-
-		// Split the a>b string into source and destination
-		sd = g_strsplit(tokens[c], ">", 2);
-		if (g_strv_length(sd) != 2) {
-			error.Format(config_domain,
-				     "Invalid copy around %d in routes spec: %s",
-				     param.line, tokens[c]);
-			g_strfreev(sd);
-			g_strfreev(tokens);
+		if (*routes != ',') {
+			error.Set(config_domain,
+				  "Malformed 'routes' specification");
 			return false;
 		}
 
-		unsigned source = strtoul(sd[0], NULL, 10);
-		unsigned dest = strtoul(sd[1], NULL, 10);
-
-		sources[dest] = source;
-
-		g_strfreev(sd);
+		++routes;
 	}
-
-	g_strfreev(tokens);
 
 	return true;
 }
