@@ -54,14 +54,14 @@
 
 #include <assert.h>
 #include <string.h>
-#include <stdlib.h>
+#include <stdint.h>
 
 class RouteFilter final : public Filter {
 	/**
 	 * The minimum number of channels we need for output
 	 * to be able to perform all the copies the user has specified
 	 */
-	unsigned char min_output_channels;
+	unsigned min_output_channels;
 
 	/**
 	 * The minimum number of input channels we need to
@@ -69,7 +69,7 @@ class RouteFilter final : public Filter {
 	 * than this many are supplied by the input, undefined
 	 * copy operations are given zeroed sources in stead.
 	 */
-	unsigned char min_input_channels;
+	unsigned min_input_channels;
 
 	/**
 	 * The set of copy operations to perform on each sample
@@ -77,7 +77,7 @@ class RouteFilter final : public Filter {
 	 * a corresponding input channel from which to take the
 	 * data. A -1 means "no source"
 	 */
-	signed char* sources;
+	int8_t *sources;
 
 	/**
 	 * The actual input format of our signal, once opened
@@ -155,7 +155,6 @@ RouteFilter::Configure(const config_param &param, Error &error) {
 
 		// String and int representations of the source/destination
 		gchar **sd;
-		int source, dest;
 
 		// Squeeze whitespace
 		g_strstrip(tokens[c]);
@@ -171,8 +170,8 @@ RouteFilter::Configure(const config_param &param, Error &error) {
 			return false;
 		}
 
-		source = strtol(sd[0], NULL, 10);
-		dest = strtol(sd[1], NULL, 10);
+		unsigned source = strtoul(sd[0], NULL, 10);
+		unsigned dest = strtoul(sd[1], NULL, 10);
 
 		// Keep track of the highest channel numbers seen
 		// as either in- or outputs
@@ -193,10 +192,10 @@ RouteFilter::Configure(const config_param &param, Error &error) {
 	}
 
 	// Allocate a map of "copy nothing to me"
-	sources = (signed char *)
-		g_malloc(min_output_channels * sizeof(signed char));
+	sources = (int8_t *)
+		g_malloc(min_output_channels * sizeof(*sources));
 
-	for (int i=0; i<min_output_channels; ++i)
+	for (unsigned i = 0; i < min_output_channels; ++i)
 		sources[i] = -1;
 
 	// Run through the spec again, and save the
@@ -205,7 +204,6 @@ RouteFilter::Configure(const config_param &param, Error &error) {
 
 		// String and int representations of the source/destination
 		gchar **sd;
-		int source, dest;
 
 		// Split the a>b string into source and destination
 		sd = g_strsplit(tokens[c], ">", 2);
@@ -218,8 +216,8 @@ RouteFilter::Configure(const config_param &param, Error &error) {
 			return false;
 		}
 
-		source = strtol(sd[0], NULL, 10);
-		dest = strtol(sd[1], NULL, 10);
+		unsigned source = strtoul(sd[0], NULL, 10);
+		unsigned dest = strtoul(sd[1], NULL, 10);
 
 		sources[dest] = source;
 
