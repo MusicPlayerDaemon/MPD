@@ -1424,6 +1424,7 @@ endif
 if ENABLE_INOTIFY
 noinst_PROGRAMS += test/run_inotify
 test_run_inotify_SOURCES = test/run_inotify.cxx \
+	test/ShutdownHandler.cxx test/ShutdownHandler.hxx \
 	src/Log.cxx \
 	src/InotifyDomain.cxx \
 	src/InotifySource.cxx

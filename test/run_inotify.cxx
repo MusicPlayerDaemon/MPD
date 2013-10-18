@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "ShutdownHandler.hxx"
 #include "InotifySource.hxx"
 #include "event/Loop.hxx"
 #include "util/Error.hxx"
@@ -26,15 +27,6 @@
 #include <glib.h>
 
 #include <sys/inotify.h>
-#include <signal.h>
-
-static EventLoop *event_loop;
-
-static void
-exit_signal_handler(gcc_unused int signum)
-{
-	event_loop->Break();
-}
 
 enum {
 	IN_MASK = IN_ATTRIB|IN_CLOSE_WRITE|IN_CREATE|IN_DELETE|IN_DELETE_SELF
@@ -62,10 +54,11 @@ int main(int argc, char **argv)
 
 	path = argv[1];
 
-	event_loop = new EventLoop(EventLoop::Default());
+	EventLoop event_loop((EventLoop::Default()));
+	const ShutdownHandler shutdown_handler(event_loop);
 
 	Error error;
-	InotifySource *source = InotifySource::Create(*event_loop,
+	InotifySource *source = InotifySource::Create(event_loop,
 						      my_inotify_callback,
 						      nullptr, error);
 	if (source == NULL) {
@@ -80,15 +73,7 @@ int main(int argc, char **argv)
 		return 2;
 	}
 
-	struct sigaction sa;
-	sa.sa_flags = 0;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_handler = exit_signal_handler;
-	sigaction(SIGINT, &sa, NULL);
-	sigaction(SIGTERM, &sa, NULL);
-
-	event_loop->Run();
+	event_loop.Run();
 
 	delete source;
-	delete event_loop;
 }
