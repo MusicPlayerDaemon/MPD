@@ -30,55 +30,55 @@
 #include <errno.h>
 
 enum command_return
-print_playlist_result(Client &client, enum playlist_result result)
+print_playlist_result(Client &client, PlaylistResult result)
 {
 	switch (result) {
-	case PLAYLIST_RESULT_SUCCESS:
+	case PlaylistResult::SUCCESS:
 		return COMMAND_RETURN_OK;
 
-	case PLAYLIST_RESULT_ERRNO:
+	case PlaylistResult::ERRNO:
 		command_error(client, ACK_ERROR_SYSTEM, "%s",
 			      g_strerror(errno));
 		return COMMAND_RETURN_ERROR;
 
-	case PLAYLIST_RESULT_DENIED:
+	case PlaylistResult::DENIED:
 		command_error(client, ACK_ERROR_PERMISSION, "Access denied");
 		return COMMAND_RETURN_ERROR;
 
-	case PLAYLIST_RESULT_NO_SUCH_SONG:
+	case PlaylistResult::NO_SUCH_SONG:
 		command_error(client, ACK_ERROR_NO_EXIST, "No such song");
 		return COMMAND_RETURN_ERROR;
 
-	case PLAYLIST_RESULT_NO_SUCH_LIST:
+	case PlaylistResult::NO_SUCH_LIST:
 		command_error(client, ACK_ERROR_NO_EXIST, "No such playlist");
 		return COMMAND_RETURN_ERROR;
 
-	case PLAYLIST_RESULT_LIST_EXISTS:
+	case PlaylistResult::LIST_EXISTS:
 		command_error(client, ACK_ERROR_EXIST,
 			      "Playlist already exists");
 		return COMMAND_RETURN_ERROR;
 
-	case PLAYLIST_RESULT_BAD_NAME:
+	case PlaylistResult::BAD_NAME:
 		command_error(client, ACK_ERROR_ARG,
 			      "playlist name is invalid: "
 			      "playlist names may not contain slashes,"
 			      " newlines or carriage returns");
 		return COMMAND_RETURN_ERROR;
 
-	case PLAYLIST_RESULT_BAD_RANGE:
+	case PlaylistResult::BAD_RANGE:
 		command_error(client, ACK_ERROR_ARG, "Bad song index");
 		return COMMAND_RETURN_ERROR;
 
-	case PLAYLIST_RESULT_NOT_PLAYING:
+	case PlaylistResult::NOT_PLAYING:
 		command_error(client, ACK_ERROR_PLAYER_SYNC, "Not playing");
 		return COMMAND_RETURN_ERROR;
 
-	case PLAYLIST_RESULT_TOO_LARGE:
+	case PlaylistResult::TOO_LARGE:
 		command_error(client, ACK_ERROR_PLAYLIST_MAX,
 			      "playlist is at the max size");
 		return COMMAND_RETURN_ERROR;
 
-	case PLAYLIST_RESULT_DISABLED:
+	case PlaylistResult::DISABLED:
 		command_error(client, ACK_ERROR_UNKNOWN,
 			      "stored playlist support is disabled");
 		return COMMAND_RETURN_ERROR;
@@ -97,7 +97,7 @@ print_error(Client &client, const Error &error)
 
 	if (error.IsDomain(playlist_domain)) {
 		return print_playlist_result(client,
-					     playlist_result(error.GetCode()));
+					     PlaylistResult(error.GetCode()));
 	} else if (error.IsDomain(ack_domain)) {
 		command_error(client, (ack)error.GetCode(),
 			      "%s", error.GetMessage());

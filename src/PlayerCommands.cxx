@@ -59,7 +59,7 @@ handle_play(Client &client, int argc, char *argv[])
 
 	if (argc == 2 && !check_int(client, &song, argv[1]))
 		return COMMAND_RETURN_ERROR;
-	enum playlist_result result = client.partition.PlayPosition(song);
+	PlaylistResult result = client.partition.PlayPosition(song);
 	return print_playlist_result(client, result);
 }
 
@@ -71,7 +71,7 @@ handle_playid(Client &client, int argc, char *argv[])
 	if (argc == 2 && !check_int(client, &id, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	enum playlist_result result = client.partition.PlayId(id);
+	PlaylistResult result = client.partition.PlayId(id);
 	return print_playlist_result(client, result);
 }
 
@@ -293,7 +293,7 @@ handle_seek(Client &client, gcc_unused int argc, char *argv[])
 	if (!check_unsigned(client, &seek_time, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
-	enum playlist_result result =
+	PlaylistResult result =
 		client.partition.SeekSongPosition(song, seek_time);
 	return print_playlist_result(client, result);
 }
@@ -308,7 +308,7 @@ handle_seekid(Client &client, gcc_unused int argc, char *argv[])
 	if (!check_unsigned(client, &seek_time, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
-	enum playlist_result result =
+	PlaylistResult result =
 		client.partition.SeekSongId(id, seek_time);
 	return print_playlist_result(client, result);
 }
@@ -322,7 +322,7 @@ handle_seekcur(Client &client, gcc_unused int argc, char *argv[])
 	if (!check_int(client, &seek_time, p))
 		return COMMAND_RETURN_ERROR;
 
-	enum playlist_result result =
+	PlaylistResult result =
 		client.partition.SeekCurrent(seek_time, relative);
 	return print_playlist_result(client, result);
 }

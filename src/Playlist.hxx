@@ -132,9 +132,9 @@ public:
 
 	void FullIncrementVersions();
 
-	enum playlist_result AppendSong(player_control &pc,
-					Song *song,
-					unsigned *added_id=nullptr);
+	PlaylistResult AppendSong(player_control &pc,
+				  Song *song,
+				  unsigned *added_id=nullptr);
 
 	/**
 	 * Appends a local file (outside the music database) to the
@@ -142,28 +142,28 @@ public:
 	 *
 	 * Note: the caller is responsible for checking permissions.
 	 */
-	enum playlist_result AppendFile(player_control &pc,
-					const char *path_utf8,
-					unsigned *added_id=nullptr);
+	PlaylistResult AppendFile(player_control &pc,
+				  const char *path_utf8,
+				  unsigned *added_id=nullptr);
 
-	enum playlist_result AppendURI(player_control &pc,
-				       const char *uri_utf8,
-				       unsigned *added_id=nullptr);
+	PlaylistResult AppendURI(player_control &pc,
+				 const char *uri_utf8,
+				 unsigned *added_id=nullptr);
 
 protected:
 	void DeleteInternal(player_control &pc,
 			    unsigned song, const Song **queued_p);
 
 public:
-	enum playlist_result DeletePosition(player_control &pc,
-					    unsigned position);
+	PlaylistResult DeletePosition(player_control &pc,
+				      unsigned position);
 
-	enum playlist_result DeleteOrder(player_control &pc,
-					 unsigned order) {
+	PlaylistResult DeleteOrder(player_control &pc,
+				   unsigned order) {
 		return DeletePosition(pc, queue.OrderToPosition(order));
 	}
 
-	enum playlist_result DeleteId(player_control &pc, unsigned id);
+	PlaylistResult DeleteId(player_control &pc, unsigned id);
 
 	/**
 	 * Deletes a range of songs from the playlist.
@@ -171,50 +171,50 @@ public:
 	 * @param start the position of the first song to delete
 	 * @param end the position after the last song to delete
 	 */
-	enum playlist_result DeleteRange(player_control &pc,
-					 unsigned start, unsigned end);
+	PlaylistResult DeleteRange(player_control &pc,
+				   unsigned start, unsigned end);
 
 	void DeleteSong(player_control &pc, const Song &song);
 
 	void Shuffle(player_control &pc, unsigned start, unsigned end);
 
-	enum playlist_result MoveRange(player_control &pc,
-				       unsigned start, unsigned end, int to);
+	PlaylistResult MoveRange(player_control &pc,
+				 unsigned start, unsigned end, int to);
 
-	enum playlist_result MoveId(player_control &pc, unsigned id, int to);
+	PlaylistResult MoveId(player_control &pc, unsigned id, int to);
 
-	enum playlist_result SwapPositions(player_control &pc,
-					   unsigned song1, unsigned song2);
+	PlaylistResult SwapPositions(player_control &pc,
+				     unsigned song1, unsigned song2);
 
-	enum playlist_result SwapIds(player_control &pc,
-				     unsigned id1, unsigned id2);
+	PlaylistResult SwapIds(player_control &pc,
+			       unsigned id1, unsigned id2);
 
-	enum playlist_result SetPriorityRange(player_control &pc,
-					      unsigned start_position,
-					      unsigned end_position,
-					      uint8_t priority);
+	PlaylistResult SetPriorityRange(player_control &pc,
+					unsigned start_position,
+					unsigned end_position,
+					uint8_t priority);
 
-	enum playlist_result SetPriorityId(player_control &pc,
-					   unsigned song_id, uint8_t priority);
+	PlaylistResult SetPriorityId(player_control &pc,
+				     unsigned song_id, uint8_t priority);
 
 	void Stop(player_control &pc);
 
-	enum playlist_result PlayPosition(player_control &pc, int position);
+	PlaylistResult PlayPosition(player_control &pc, int position);
 
 	void PlayOrder(player_control &pc, int order);
 
-	enum playlist_result PlayId(player_control &pc, int id);
+	PlaylistResult PlayId(player_control &pc, int id);
 
 	void PlayNext(player_control &pc);
 
 	void PlayPrevious(player_control &pc);
 
-	enum playlist_result SeekSongPosition(player_control &pc,
-					      unsigned song_position,
-					      float seek_time);
+	PlaylistResult SeekSongPosition(player_control &pc,
+					unsigned song_position,
+					float seek_time);
 
-	enum playlist_result SeekSongId(player_control &pc,
-					unsigned song_id, float seek_time);
+	PlaylistResult SeekSongId(player_control &pc,
+				  unsigned song_id, float seek_time);
 
 	/**
 	 * Seek within the current song.  Fails if MPD is not currently
@@ -224,8 +224,8 @@ public:
 	 * @param relative if true, then the specified time is relative to the
 	 * current position
 	 */
-	enum playlist_result SeekCurrent(player_control &pc,
-					 float seek_time, bool relative);
+	PlaylistResult SeekCurrent(player_control &pc,
+				   float seek_time, bool relative);
 
 	bool GetRepeat() const {
 		return queue.repeat;

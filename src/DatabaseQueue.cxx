@@ -30,10 +30,10 @@
 static bool
 AddToQueue(Partition &partition, Song &song, Error &error)
 {
-	enum playlist_result result =
+	PlaylistResult result =
 		partition.playlist.AppendSong(partition.pc, &song, NULL);
-	if (result != PLAYLIST_RESULT_SUCCESS) {
-		error.Set(playlist_domain, result, "Playlist error");
+	if (result != PlaylistResult::SUCCESS) {
+		error.Set(playlist_domain, int(result), "Playlist error");
 		return false;
 	}
 

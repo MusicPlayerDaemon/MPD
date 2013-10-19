@@ -64,26 +64,26 @@ playlist_print_uri(FILE *file, const char *uri)
 		fprintf(file, "%s\n", path.c_str());
 }
 
-enum playlist_result
+PlaylistResult
 spl_save_queue(const char *name_utf8, const queue &queue)
 {
 	if (map_spl_path().IsNull())
-		return PLAYLIST_RESULT_DISABLED;
+		return PlaylistResult::DISABLED;
 
 	if (!spl_valid_name(name_utf8))
-		return PLAYLIST_RESULT_BAD_NAME;
+		return PlaylistResult::BAD_NAME;
 
 	const auto path_fs = map_spl_utf8_to_fs(name_utf8);
 	if (path_fs.IsNull())
-		return PLAYLIST_RESULT_BAD_NAME;
+		return PlaylistResult::BAD_NAME;
 
 	if (FileExists(path_fs))
-		return PLAYLIST_RESULT_LIST_EXISTS;
+		return PlaylistResult::LIST_EXISTS;
 
 	FILE *file = FOpen(path_fs, FOpenMode::WriteText);
 
 	if (file == nullptr)
-		return PLAYLIST_RESULT_ERRNO;
+		return PlaylistResult::ERRNO;
 
 	for (unsigned i = 0; i < queue.GetLength(); i++)
 		playlist_print_song(file, queue.Get(i));
@@ -91,10 +91,10 @@ spl_save_queue(const char *name_utf8, const queue &queue)
 	fclose(file);
 
 	idle_add(IDLE_STORED_PLAYLIST);
-	return PLAYLIST_RESULT_SUCCESS;
+	return PlaylistResult::SUCCESS;
 }
 
-enum playlist_result
+PlaylistResult
 spl_save_playlist(const char *name_utf8, const playlist &playlist)
 {
 	return spl_save_queue(name_utf8, playlist.queue);
@@ -119,13 +119,13 @@ playlist_load_spl(struct playlist &playlist, player_control &pc,
 		if (memcmp(uri_utf8.c_str(), "file:///", 8) == 0) {
 			const char *path_utf8 = uri_utf8.c_str() + 7;
 
-			if (playlist.AppendFile(pc, path_utf8) != PLAYLIST_RESULT_SUCCESS)
+			if (playlist.AppendFile(pc, path_utf8) != PlaylistResult::SUCCESS)
 				FormatError(playlist_domain,
 					    "can't add file \"%s\"", path_utf8);
 			continue;
 		}
 
-		if ((playlist.AppendURI(pc, uri_utf8.c_str())) != PLAYLIST_RESULT_SUCCESS) {
+		if ((playlist.AppendURI(pc, uri_utf8.c_str())) != PlaylistResult::SUCCESS) {
 			/* for windows compatibility, convert slashes */
 			char *temp2 = g_strdup(uri_utf8.c_str());
 			char *p = temp2;
@@ -135,7 +135,7 @@ playlist_load_spl(struct playlist &playlist, player_control &pc,
 				p++;
 			}
 
-			if (playlist.AppendURI(pc, temp2) != PLAYLIST_RESULT_SUCCESS)
+			if (playlist.AppendURI(pc, temp2) != PlaylistResult::SUCCESS)
 				FormatError(playlist_domain,
 					    "can't add file \"%s\"", temp2);
 

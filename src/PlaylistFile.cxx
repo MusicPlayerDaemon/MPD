@@ -90,7 +90,7 @@ spl_map(Error &error)
 {
 	const AllocatedPath &path_fs = map_spl_path();
 	if (path_fs.IsNull())
-		error.Set(playlist_domain, PLAYLIST_RESULT_DISABLED,
+		error.Set(playlist_domain, int(PlaylistResult::DISABLED),
 			  "Stored playlists are disabled");
 	return path_fs;
 }
@@ -99,7 +99,7 @@ static bool
 spl_check_name(const char *name_utf8, Error &error)
 {
 	if (!spl_valid_name(name_utf8)) {
-		error.Set(playlist_domain, PLAYLIST_RESULT_BAD_NAME,
+		error.Set(playlist_domain, int(PlaylistResult::BAD_NAME),
 				    "Bad playlist name");
 		return false;
 	}
@@ -115,7 +115,7 @@ spl_map_to_fs(const char *name_utf8, Error &error)
 
 	auto path_fs = map_spl_utf8_to_fs(name_utf8);
 	if (path_fs.IsNull())
-		error.Set(playlist_domain, PLAYLIST_RESULT_BAD_NAME,
+		error.Set(playlist_domain, int(PlaylistResult::BAD_NAME),
 			  "Bad playlist name");
 
 	return path_fs;
@@ -129,7 +129,7 @@ playlist_errno(Error &error)
 {
 	switch (errno) {
 	case ENOENT:
-		error.Set(playlist_domain, PLAYLIST_RESULT_NO_SUCH_LIST,
+		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_LIST),
 			  "No such playlist");
 		break;
 
@@ -287,7 +287,7 @@ spl_move_index(const char *utf8path, unsigned src, unsigned dest,
 		return false;
 
 	if (src >= contents.size() || dest >= contents.size()) {
-		error.Set(playlist_domain, PLAYLIST_RESULT_BAD_RANGE,
+		error.Set(playlist_domain, int(PlaylistResult::BAD_RANGE),
 			  "Bad range");
 		return false;
 	}
@@ -351,7 +351,7 @@ spl_remove_index(const char *utf8path, unsigned pos, Error &error)
 		return false;
 
 	if (pos >= contents.size()) {
-		error.Set(playlist_domain, PLAYLIST_RESULT_BAD_RANGE,
+		error.Set(playlist_domain, int(PlaylistResult::BAD_RANGE),
 			  "Bad range");
 		return false;
 	}
@@ -389,7 +389,7 @@ spl_append_song(const char *utf8path, const Song &song, Error &error)
 
 	if (st.st_size / off_t(MPD_PATH_MAX + 1) >= (off_t)playlist_max_length) {
 		fclose(file);
-		error.Set(playlist_domain, PLAYLIST_RESULT_TOO_LARGE,
+		error.Set(playlist_domain, int(PlaylistResult::TOO_LARGE),
 			  "Stored playlist is too large");
 		return false;
 	}
@@ -430,13 +430,13 @@ spl_rename_internal(Path from_path_fs, Path to_path_fs,
 		    Error &error)
 {
 	if (!FileExists(from_path_fs)) {
-		error.Set(playlist_domain, PLAYLIST_RESULT_NO_SUCH_LIST,
+		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_LIST),
 			  "No such playlist");
 		return false;
 	}
 
 	if (FileExists(to_path_fs)) {
-		error.Set(playlist_domain, PLAYLIST_RESULT_LIST_EXISTS,
+		error.Set(playlist_domain, int(PlaylistResult::LIST_EXISTS),
 			  "Playlist exists already");
 		return false;
 	}

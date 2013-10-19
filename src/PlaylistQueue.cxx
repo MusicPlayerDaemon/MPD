@@ -30,13 +30,13 @@
 
 #include <glib.h>
 
-enum playlist_result
+PlaylistResult
 playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, player_control &pc,
 			 bool secure)
 {
-	enum playlist_result result;
+	PlaylistResult result;
 	Song *song;
 	char *base_uri = uri != nullptr ? g_path_get_dirname(uri) : nullptr;
 
@@ -55,7 +55,7 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 
 		result = dest.AppendSong(pc, song);
 		song->Free();
-		if (result != PLAYLIST_RESULT_SUCCESS) {
+		if (result != PlaylistResult::SUCCESS) {
 			g_free(base_uri);
 			return result;
 		}
@@ -63,10 +63,10 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 
 	g_free(base_uri);
 
-	return PLAYLIST_RESULT_SUCCESS;
+	return PlaylistResult::SUCCESS;
 }
 
-enum playlist_result
+PlaylistResult
 playlist_open_into_queue(const char *uri,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, player_control &pc,
@@ -78,9 +78,9 @@ playlist_open_into_queue(const char *uri,
 	struct input_stream *is;
 	auto playlist = playlist_open_any(uri, mutex, cond, &is);
 	if (playlist == nullptr)
-		return PLAYLIST_RESULT_NO_SUCH_LIST;
+		return PlaylistResult::NO_SUCH_LIST;
 
-	enum playlist_result result =
+	PlaylistResult result =
 		playlist_load_into_queue(uri, *playlist,
 					 start_index, end_index,
 					 dest, pc, secure);

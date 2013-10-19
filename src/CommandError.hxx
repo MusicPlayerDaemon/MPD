@@ -27,7 +27,7 @@ class Client;
 class Error;
 
 enum command_return
-print_playlist_result(Client &client, enum playlist_result result);
+print_playlist_result(Client &client, PlaylistResult result);
 
 /**
  * Send the #Error to the client.

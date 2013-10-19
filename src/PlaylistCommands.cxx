@@ -52,9 +52,7 @@ print_spl_list(Client &client, const PlaylistVector &list)
 enum command_return
 handle_save(Client &client, gcc_unused int argc, char *argv[])
 {
-	enum playlist_result result;
-
-	result = spl_save_playlist(argv[1], client.playlist);
+	PlaylistResult result = spl_save_playlist(argv[1], client.playlist);
 	return print_playlist_result(client, result);
 }
 
@@ -69,13 +67,12 @@ handle_load(Client &client, int argc, char *argv[])
 	} else if (!check_range(client, &start_index, &end_index, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
-	enum playlist_result result;
-
-	result = playlist_open_into_queue(argv[1],
-					  start_index, end_index,
-					  client.playlist,
-					  client.player_control, true);
-	if (result != PLAYLIST_RESULT_NO_SUCH_LIST)
+	const PlaylistResult result =
+		playlist_open_into_queue(argv[1],
+					 start_index, end_index,
+					 client.playlist,
+					 client.player_control, true);
+	if (result != PlaylistResult::NO_SUCH_LIST)
 		return print_playlist_result(client, result);
 
 	Error error;
@@ -85,12 +82,12 @@ handle_load(Client &client, int argc, char *argv[])
 		return COMMAND_RETURN_OK;
 
 	if (error.IsDomain(playlist_domain) &&
-	    error.GetCode() == PLAYLIST_RESULT_BAD_NAME) {
+	    PlaylistResult(error.GetCode()) == PlaylistResult::BAD_NAME) {
 		/* the message for BAD_NAME is confusing when the
 		   client wants to load a playlist file from the music
 		   directory; patch the Error object to show "no such
 		   playlist" instead */
-		Error error2(playlist_domain, PLAYLIST_RESULT_NO_SUCH_LIST,
+		Error error2(playlist_domain, int(PlaylistResult::NO_SUCH_LIST),
 			     error.GetMessage());
 		error = std::move(error2);
 	}
