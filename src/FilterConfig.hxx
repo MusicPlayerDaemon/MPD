@@ -35,9 +35,9 @@ class Error;
  * @param chain the chain to append filters on
  * @param spec the filter chain specification
  * @param error_r space to return an error description
- * @return the number of filters which were successfully added
+ * @return true on success
  */
-unsigned int
+bool
 filter_chain_parse(Filter &chain, const char *spec, Error &error);
 
 #endif

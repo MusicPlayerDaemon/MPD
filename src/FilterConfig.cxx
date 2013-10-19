@@ -86,14 +86,11 @@ filter_chain_append_new(Filter &chain, const char *template_name, Error &error)
 	return true;
 }
 
-unsigned int
+bool
 filter_chain_parse(Filter &chain, const char *spec, Error &error)
 {
-
 	// Split on comma
 	gchar** tokens = g_strsplit_set(spec, ",", 255);
-
-	unsigned added_filters = 0;
 
 	// Add each name to the filter chain by instantiating an actual filter
 	char **template_names = tokens;
@@ -102,14 +99,12 @@ filter_chain_parse(Filter &chain, const char *spec, Error &error)
 		g_strstrip(*template_names);
 
 		if (!filter_chain_append_new(chain, *template_names, error))
-			break;
-
-		++added_filters;
+			return false;
 
 		++template_names;
 	}
 
 	g_strfreev(tokens);
 
-	return added_filters;
+	return true;
 }
