@@ -20,11 +20,10 @@
 #include "config.h"
 #include "TextInputStream.hxx"
 #include "InputStream.hxx"
+#include "util/CharUtil.hxx"
 #include "util/fifo_buffer.h"
 #include "util/Error.hxx"
 #include "Log.hxx"
-
-#include <glib.h>
 
 #include <assert.h>
 #include <string.h>
@@ -71,7 +70,7 @@ bool TextInputStream::ReadLine(std::string &line)
 	} while (p == nullptr);
 
 	size_t length = p - src + 1;
-	while (p > src && g_ascii_isspace(p[-1]))
+	while (p > src && IsWhitespaceOrNull(p[-1]))
 		--p;
 
 	line = std::string(src, p - src);

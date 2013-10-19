@@ -29,6 +29,7 @@
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/CharUtil.hxx"
 #include "system/FatalError.hxx"
 
 #include <assert.h>
@@ -89,7 +90,7 @@ chomp_length(const char *p)
 {
 	size_t length = strlen(p);
 
-	while (length > 0 && g_ascii_isspace(p[length - 1]))
+	while (length > 0 && IsWhitespaceOrNull(p[length - 1]))
 		--length;
 
 	return (int)length;

@@ -18,6 +18,7 @@
  */
 
 #include "StringUtil.hxx"
+#include "CharUtil.hxx"
 
 #include <glib.h>
 
@@ -26,7 +27,7 @@
 const char *
 strchug_fast(const char *p)
 {
-	while (*p != 0 && g_ascii_isspace(*p))
+	while (IsWhitespaceNotNull(*p))
 		++p;
 
 	return p;

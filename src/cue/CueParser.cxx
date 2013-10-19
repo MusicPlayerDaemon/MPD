@@ -20,6 +20,7 @@
 #include "config.h"
 #include "CueParser.hxx"
 #include "util/StringUtil.hxx"
+#include "util/CharUtil.hxx"
 #include "Song.hxx"
 #include "tag/Tag.hxx"
 
@@ -54,10 +55,10 @@ static const char *
 cue_next_word(char *p, char **pp)
 {
 	assert(p >= *pp);
-	assert(!g_ascii_isspace(*p));
+	assert(!IsWhitespaceNotNull(*p));
 
 	const char *word = p;
-	while (*p != 0 && !g_ascii_isspace(*p))
+	while (!IsWhitespaceOrNull(*p))
 		++p;
 
 	*p = 0;

@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Tokenizer.hxx"
+#include "CharUtil.hxx"
 #include "StringUtil.hxx"
 #include "Error.hxx"
 #include "Domain.hxx"
@@ -33,13 +34,13 @@ static constexpr Domain tokenizer_domain("tokenizer");
 static inline bool
 valid_word_first_char(char ch)
 {
-	return g_ascii_isalpha(ch);
+	return IsAlphaASCII(ch);
 }
 
 static inline bool
 valid_word_char(char ch)
 {
-	return g_ascii_isalnum(ch) || ch == '_';
+	return IsAlphaNumericASCII(ch) || ch == '_';
 }
 
 char *
@@ -61,7 +62,7 @@ Tokenizer::NextWord(Error &error)
 	   whitespace or end-of-string */
 
 	while (*++input != 0) {
-		if (g_ascii_isspace(*input)) {
+		if (IsWhitespaceOrNull(*input)) {
 			/* a whitespace: the word ends here */
 			*input = 0;
 			/* skip all following spaces, too */
@@ -106,7 +107,7 @@ Tokenizer::NextUnquoted(Error &error)
 	   whitespace or end-of-string */
 
 	while (*++input != 0) {
-		if (g_ascii_isspace(*input)) {
+		if (IsWhitespaceOrNull(*input)) {
 			/* a whitespace: the word ends here */
 			*input = 0;
 			/* skip all following spaces, too */
@@ -170,7 +171,7 @@ Tokenizer::NextString(Error &error)
 	   line) */
 
 	++input;
-	if (*input != 0 && !g_ascii_isspace(*input)) {
+	if (!IsWhitespaceOrNull(*input)) {
 		error.Set(tokenizer_domain,
 			  "Space expected after closing '\"'");
 		return nullptr;

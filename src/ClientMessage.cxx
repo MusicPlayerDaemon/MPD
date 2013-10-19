@@ -18,15 +18,14 @@
  */
 
 #include "ClientMessage.hxx"
+#include "util/CharUtil.hxx"
 #include "Compiler.h"
-
-#include <glib.h>
 
 gcc_const
 static bool
 valid_channel_char(const char ch)
 {
-	return g_ascii_isalnum(ch) ||
+	return IsAlphaNumericASCII(ch) ||
 		ch == '_' || ch == '-' || ch == '.' || ch == ':';
 }
 

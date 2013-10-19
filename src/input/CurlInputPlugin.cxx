@@ -29,6 +29,7 @@
 #include "event/MultiSocketMonitor.hxx"
 #include "event/Call.hxx"
 #include "IOThread.hxx"
+#include "util/CharUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -839,10 +840,10 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 
 	/* strip the value */
 
-	while (value < end && g_ascii_isspace(*value))
+	while (value < end && IsWhitespaceOrNull(*value))
 		++value;
 
-	while (end > value && g_ascii_isspace(end[-1]))
+	while (end > value && IsWhitespaceOrNull(end[-1]))
 		--end;
 
 	if (g_ascii_strcasecmp(name, "accept-ranges") == 0) {
