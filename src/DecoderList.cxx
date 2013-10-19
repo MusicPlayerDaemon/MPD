@@ -110,7 +110,7 @@ const struct decoder_plugin *const decoder_plugins[] = {
 	&gme_decoder_plugin,
 #endif
 	&pcm_decoder_plugin,
-	NULL
+	nullptr
 };
 
 static constexpr unsigned num_decoder_plugins =
@@ -142,18 +142,18 @@ const struct decoder_plugin *
 decoder_plugin_from_suffix(const char *suffix,
 			   const struct decoder_plugin *plugin)
 {
-	if (suffix == NULL)
-		return NULL;
+	if (suffix == nullptr)
+		return nullptr;
 
 	for (unsigned i = decoder_plugin_next_index(plugin);
-	     decoder_plugins[i] != NULL; ++i) {
+	     decoder_plugins[i] != nullptr; ++i) {
 		plugin = decoder_plugins[i];
 		if (decoder_plugins_enabled[i] &&
 		    decoder_plugin_supports_suffix(plugin, suffix))
 			return plugin;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 const struct decoder_plugin *
@@ -161,12 +161,12 @@ decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
 {
 	static unsigned i = num_decoder_plugins;
 
-	if (mimeType == NULL)
-		return NULL;
+	if (mimeType == nullptr)
+		return nullptr;
 
 	if (!next)
 		i = 0;
-	for (; decoder_plugins[i] != NULL; ++i) {
+	for (; decoder_plugins[i] != nullptr; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
 		if (decoder_plugins_enabled[i] &&
 		    decoder_plugin_supports_mime_type(plugin, mimeType)) {
@@ -175,7 +175,7 @@ decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 const struct decoder_plugin *
@@ -185,23 +185,23 @@ decoder_plugin_from_name(const char *name)
 		if (strcmp(plugin->name, name) == 0)
 			return plugin;
 
-	return NULL;
+	return nullptr;
 }
 
 /**
  * Find the "decoder" configuration block for the specified plugin.
  *
  * @param plugin_name the name of the decoder plugin
- * @return the configuration block, or NULL if none was configured
+ * @return the configuration block, or nullptr if none was configured
  */
 static const struct config_param *
 decoder_plugin_config(const char *plugin_name)
 {
-	const struct config_param *param = NULL;
+	const struct config_param *param = nullptr;
 
-	while ((param = config_get_next_param(CONF_DECODER, param)) != NULL) {
+	while ((param = config_get_next_param(CONF_DECODER, param)) != nullptr) {
 		const char *name = param->GetBlockValue("plugin");
-		if (name == NULL)
+		if (name == nullptr)
 			FormatFatalError("decoder configuration without 'plugin' name in line %d",
 					 param->line);
 
@@ -209,14 +209,14 @@ decoder_plugin_config(const char *plugin_name)
 			return param;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void decoder_plugin_init_all(void)
 {
 	struct config_param empty;
 
-	for (unsigned i = 0; decoder_plugins[i] != NULL; ++i) {
+	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
 		const struct config_param *param =
 			decoder_plugin_config(plugin->name);

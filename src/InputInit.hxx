@@ -24,9 +24,6 @@ class Error;
 
 /**
  * Initializes this library and all input_stream implementations.
- *
- * @param error_r location to store the error occurring, or NULL to
- * ignore errors
  */
 bool
 input_stream_global_init(Error &error);

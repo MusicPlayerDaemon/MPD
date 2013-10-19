@@ -164,7 +164,7 @@ public:
 	 * Looks up a directory by its relative URI.
 	 *
 	 * @param uri the relative URI
-	 * @return the Directory, or NULL if none was found
+	 * @return the Directory, or nullptr if none was found
 	 */
 	gcc_pure
 	Directory *LookupDirectory(const char *uri);
@@ -192,7 +192,7 @@ public:
 	 */
 	gcc_pure
 	bool IsRoot() const {
-		return parent == NULL;
+		return parent == nullptr;
 	}
 
 	/**
@@ -215,7 +215,7 @@ public:
 	 * Caller must lock the #db_mutex.
 	 *
 	 * @param uri the relative URI
-	 * @return the song, or NULL if none was found
+	 * @return the song, or nullptr if none was found
 	 */
 	gcc_pure
 	Song *LookupSong(const char *uri);

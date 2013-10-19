@@ -31,7 +31,7 @@ Filter *
 filter_new(const struct filter_plugin *plugin,
 	   const config_param &param, Error &error)
 {
-	assert(plugin != NULL);
+	assert(plugin != nullptr);
 	assert(!error.IsDefined());
 
 	return plugin->init(param, error);
@@ -43,16 +43,16 @@ filter_configured_new(const config_param &param, Error &error)
 	assert(!error.IsDefined());
 
 	const char *plugin_name = param.GetBlockValue("plugin");
-	if (plugin_name == NULL) {
+	if (plugin_name == nullptr) {
 		error.Set(config_domain, "No filter plugin specified");
-		return NULL;
+		return nullptr;
 	}
 
 	const filter_plugin *plugin = filter_plugin_by_name(plugin_name);
-	if (plugin == NULL) {
+	if (plugin == nullptr) {
 		error.Format(config_domain,
 			     "No such filter plugin: %s", plugin_name);
-		return NULL;
+		return nullptr;
 	}
 
 	return filter_new(plugin, param, error);

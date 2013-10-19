@@ -232,7 +232,7 @@ input_curl_find_request(CURL *easy)
 		if (c->easy == easy)
 			return c;
 
-	return NULL;
+	return nullptr;
 }
 
 static void
@@ -323,9 +323,9 @@ static bool
 input_curl_easy_add(struct input_curl *c, Error &error)
 {
 	assert(io_thread_inside());
-	assert(c != NULL);
-	assert(c->easy != NULL);
-	assert(input_curl_find_request(c->easy) == NULL);
+	assert(c != nullptr);
+	assert(c->easy != nullptr);
+	assert(input_curl_find_request(c->easy) == nullptr);
 
 	curl.requests.push_front(c);
 
@@ -349,8 +349,8 @@ input_curl_easy_add(struct input_curl *c, Error &error)
 static bool
 input_curl_easy_add_indirect(struct input_curl *c, Error &error)
 {
-	assert(c != NULL);
-	assert(c->easy != NULL);
+	assert(c != nullptr);
+	assert(c->easy != nullptr);
 
 	bool result;
 	BlockingCall(io_thread_get(), [c, &error, &result](){
@@ -369,19 +369,19 @@ static void
 input_curl_easy_free(struct input_curl *c)
 {
 	assert(io_thread_inside());
-	assert(c != NULL);
+	assert(c != nullptr);
 
-	if (c->easy == NULL)
+	if (c->easy == nullptr)
 		return;
 
 	curl.requests.remove(c);
 
 	curl_multi_remove_handle(curl.multi, c->easy);
 	curl_easy_cleanup(c->easy);
-	c->easy = NULL;
+	c->easy = nullptr;
 
 	curl_slist_free_all(c->request_headers);
-	c->request_headers = NULL;
+	c->request_headers = nullptr;
 }
 
 /**
@@ -398,7 +398,7 @@ input_curl_easy_free_indirect(struct input_curl *c)
 			curl.sockets->InvalidateSockets();
 		});
 
-	assert(c->easy == NULL);
+	assert(c->easy == nullptr);
 }
 
 /**
@@ -437,8 +437,8 @@ static void
 input_curl_request_done(struct input_curl *c, CURLcode result, long status)
 {
 	assert(io_thread_inside());
-	assert(c != NULL);
-	assert(c->easy == NULL);
+	assert(c != nullptr);
+	assert(c->easy == nullptr);
 	assert(!c->postponed_error.IsDefined());
 
 	const ScopeLock protect(c->base.mutex);
@@ -461,7 +461,7 @@ static void
 input_curl_handle_done(CURL *easy_handle, CURLcode result)
 {
 	struct input_curl *c = input_curl_find_request(easy_handle);
-	assert(c != NULL);
+	assert(c != nullptr);
 
 	long status = 0;
 	curl_easy_getinfo(easy_handle, CURLINFO_RESPONSE_CODE, &status);
@@ -484,7 +484,7 @@ input_curl_info_read(void)
 	int msgs_in_queue;
 
 	while ((msg = curl_multi_info_read(curl.multi,
-					   &msgs_in_queue)) != NULL) {
+					   &msgs_in_queue)) != nullptr) {
 		if (msg->msg == CURLMSG_DONE)
 			input_curl_handle_done(msg->easy_handle, msg->data.result);
 	}
@@ -573,17 +573,17 @@ input_curl_init(const config_param &param, Error &error)
 	proxy_user = param.GetBlockValue("proxy_user");
 	proxy_password = param.GetBlockValue("proxy_password");
 
-	if (proxy == NULL) {
+	if (proxy == nullptr) {
 		/* deprecated proxy configuration */
-		proxy = config_get_string(CONF_HTTP_PROXY_HOST, NULL);
+		proxy = config_get_string(CONF_HTTP_PROXY_HOST, nullptr);
 		proxy_port = config_get_positive(CONF_HTTP_PROXY_PORT, 0);
-		proxy_user = config_get_string(CONF_HTTP_PROXY_USER, NULL);
+		proxy_user = config_get_string(CONF_HTTP_PROXY_USER, nullptr);
 		proxy_password = config_get_string(CONF_HTTP_PROXY_PASSWORD,
 						   "");
 	}
 
 	curl.multi = curl_multi_init();
-	if (curl.multi == NULL) {
+	if (curl.multi == nullptr) {
 		error.Set(curl_domain, 0, "curl_multi_init() failed");
 		return false;
 	}
@@ -654,14 +654,14 @@ input_curl_tag(struct input_stream *is)
 	struct input_curl *c = (struct input_curl *)is;
 	Tag *tag = c->tag;
 
-	c->tag = NULL;
+	c->tag = nullptr;
 	return tag;
 }
 
 static bool
 fill_buffer(struct input_curl *c, Error &error)
 {
-	while (c->easy != NULL && c->buffers.empty())
+	while (c->easy != nullptr && c->buffers.empty())
 		c->base.cond.wait(c->base.mutex);
 
 	if (c->postponed_error.IsDefined()) {
@@ -728,7 +728,7 @@ copy_icy_tag(struct input_curl *c)
 {
 	Tag *tag = c->icy.ReadTag();
 
-	if (tag == NULL)
+	if (tag == nullptr)
 		return;
 
 	delete c->tag;
@@ -744,7 +744,7 @@ input_curl_available(struct input_stream *is)
 {
 	struct input_curl *c = (struct input_curl *)is;
 
-	return c->postponed_error.IsDefined() || c->easy == NULL ||
+	return c->postponed_error.IsDefined() || c->easy == nullptr ||
 		!c->buffers.empty();
 }
 
@@ -806,7 +806,7 @@ input_curl_eof(gcc_unused struct input_stream *is)
 {
 	struct input_curl *c = (struct input_curl *)is;
 
-	return c->easy == NULL && c->buffers.empty();
+	return c->easy == nullptr && c->buffers.empty();
 }
 
 /** called by curl when new data is available */
@@ -822,7 +822,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	const char *end = header + size;
 
 	const char *value = (const char *)memchr(header, ':', size);
-	if (value == NULL || (size_t)(value - header) >= sizeof(name))
+	if (value == nullptr || (size_t)(value - header) >= sizeof(name))
 		return size;
 
 	memcpy(name, header, value - header);
@@ -853,7 +853,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 		memcpy(buffer, value, end - value);
 		buffer[end - value] = 0;
 
-		c->base.size = c->base.offset + g_ascii_strtoull(buffer, NULL, 10);
+		c->base.size = c->base.offset + g_ascii_strtoull(buffer, nullptr, 10);
 	} else if (g_ascii_strcasecmp(name, "content-type") == 0) {
 		c->base.mime.assign(value, end);
 	} else if (g_ascii_strcasecmp(name, "icy-name") == 0 ||
@@ -876,7 +876,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 		memcpy(buffer, value, end - value);
 		buffer[end - value] = 0;
 
-		icy_metaint = g_ascii_strtoull(buffer, NULL, 10);
+		icy_metaint = g_ascii_strtoull(buffer, nullptr, 10);
 		FormatDebug(curl_domain, "icy-metaint=%zu", icy_metaint);
 
 		if (icy_metaint > 0) {
@@ -921,7 +921,7 @@ input_curl_easy_init(struct input_curl *c, Error &error)
 	CURLcode code;
 
 	c->easy = curl_easy_init();
-	if (c->easy == NULL) {
+	if (c->easy == nullptr) {
 		error.Set(curl_domain, "curl_easy_init() failed");
 		return false;
 	}
@@ -944,13 +944,13 @@ input_curl_easy_init(struct input_curl *c, Error &error)
 	curl_easy_setopt(c->easy, CURLOPT_NOSIGNAL, 1l);
 	curl_easy_setopt(c->easy, CURLOPT_CONNECTTIMEOUT, 10l);
 
-	if (proxy != NULL)
+	if (proxy != nullptr)
 		curl_easy_setopt(c->easy, CURLOPT_PROXY, proxy);
 
 	if (proxy_port > 0)
 		curl_easy_setopt(c->easy, CURLOPT_PROXYPORT, (long)proxy_port);
 
-	if (proxy_user != NULL && proxy_password != NULL) {
+	if (proxy_user != nullptr && proxy_password != nullptr) {
 		char proxy_auth_str[1024];
 		snprintf(proxy_auth_str, sizeof(proxy_auth_str),
 			 "%s:%s",
@@ -966,7 +966,7 @@ input_curl_easy_init(struct input_curl *c, Error &error)
 		return false;
 	}
 
-	c->request_headers = NULL;
+	c->request_headers = nullptr;
 	c->request_headers = curl_slist_append(c->request_headers,
 					       "Icy-Metadata: 1");
 	curl_easy_setopt(c->easy, CURLOPT_HTTPHEADER, c->request_headers);
@@ -1085,18 +1085,18 @@ input_curl_open(const char *url, Mutex &mutex, Cond &cond,
 {
 	if (memcmp(url, "http://",  7) != 0 &&
 	    memcmp(url, "https://", 8) != 0)
-		return NULL;
+		return nullptr;
 
 	struct input_curl *c = new input_curl(url, mutex, cond);
 
 	if (!input_curl_easy_init(c, error)) {
 		delete c;
-		return NULL;
+		return nullptr;
 	}
 
 	if (!input_curl_easy_add_indirect(c, error)) {
 		delete c;
-		return NULL;
+		return nullptr;
 	}
 
 	return &c->base;

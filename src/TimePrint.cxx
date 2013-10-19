@@ -30,7 +30,7 @@ time_print(Client *client, const char *name, time_t t)
 	struct tm tm;
 	const struct tm *tm2 = gmtime_r(&t, &tm);
 #endif
-	if (tm2 == NULL)
+	if (tm2 == nullptr)
 		return;
 
 	char buffer[32];

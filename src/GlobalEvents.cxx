@@ -49,7 +49,7 @@ static void
 InvokeGlobalEvent(GlobalEvents::Event event)
 {
 	assert((unsigned)event < GlobalEvents::MAX);
-	assert(GlobalEvents::handlers[event] != NULL);
+	assert(GlobalEvents::handlers[event] != nullptr);
 
 	GlobalEvents::handlers[event]();
 }
@@ -81,7 +81,7 @@ void
 GlobalEvents::Register(Event event, Handler callback)
 {
 	assert((unsigned)event < MAX);
-	assert(handlers[event] == NULL);
+	assert(handlers[event] == nullptr);
 
 	handlers[event] = callback;
 }

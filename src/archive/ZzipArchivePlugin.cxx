@@ -75,11 +75,11 @@ static constexpr Domain zzip_domain("zzip");
 static ArchiveFile *
 zzip_archive_open(const char *pathname, Error &error)
 {
-	ZZIP_DIR *dir = zzip_dir_open(pathname, NULL);
+	ZZIP_DIR *dir = zzip_dir_open(pathname, nullptr);
 	if (dir == nullptr) {
 		error.Format(zzip_domain, "Failed to open ZIP file %s",
 			     pathname);
-		return NULL;
+		return nullptr;
 	}
 
 	return new ZzipArchiveFile(dir);
@@ -137,7 +137,7 @@ ZzipArchiveFile::OpenStream(const char *pathname,
 	if (_file == nullptr) {
 		error.Format(zzip_domain, "not found in the ZIP file: %s",
 			     pathname);
-		return NULL;
+		return nullptr;
 	}
 
 	ZzipInputStream *zis =
@@ -199,7 +199,7 @@ zzip_input_seek(struct input_stream *is, InputPlugin::offset_type offset,
 
 static const char *const zzip_archive_extensions[] = {
 	"zip",
-	NULL
+	nullptr
 };
 
 const InputPlugin zzip_input_plugin = {

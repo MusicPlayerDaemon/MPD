@@ -185,7 +185,7 @@ Bzip2ArchiveFile::OpenStream(const char *path,
 	Bzip2InputStream *bis = new Bzip2InputStream(*this, path, mutex, cond);
 	if (!bis->Open(error)) {
 		delete bis;
-		return NULL;
+		return nullptr;
 	}
 
 	return &bis->base;
@@ -273,7 +273,7 @@ bz2_is_eof(struct input_stream *is)
 
 static const char *const bz2_extensions[] = {
 	"bz2",
-	NULL
+	nullptr
 };
 
 const InputPlugin bz2_inputplugin = {

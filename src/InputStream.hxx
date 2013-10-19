@@ -60,7 +60,7 @@ struct input_stream {
 	/**
 	 * A cond that gets signalled when the state of this object
 	 * changes from the I/O thread.  The client of this object may
-	 * wait on it.  Optional, may be NULL.
+	 * wait on it.  Optional, may be nullptr.
 	 *
 	 * This object is allocated by the client, and the client is
 	 * responsible for freeing it.
@@ -99,7 +99,7 @@ struct input_stream {
 		 mutex(_mutex), cond(_cond),
 		 ready(false), seekable(false),
 		 size(-1), offset(0) {
-		assert(_uri != NULL);
+		assert(_uri != nullptr);
 	}
 
 	/**
@@ -109,9 +109,9 @@ struct input_stream {
 	 * @param mutex a mutex that is used to protect this object; must be
 	 * locked before calling any of the public methods
 	 * @param cond a cond that gets signalled when the state of
-	 * this object changes; may be NULL if the caller doesn't want to get
+	 * this object changes; may be nullptr if the caller doesn't want to get
 	 * notifications
-	 * @return an #input_stream object on success, NULL on error
+	 * @return an #input_stream object on success, nullptr on error
 	 */
 	gcc_nonnull_all
 	gcc_malloc

@@ -28,8 +28,8 @@
 enum client_subscribe_result
 client_subscribe(Client *client, const char *channel)
 {
-	assert(client != NULL);
-	assert(channel != NULL);
+	assert(client != nullptr);
+	assert(channel != nullptr);
 
 	if (!client_message_valid_channel_name(channel))
 		return CLIENT_SUBSCRIBE_INVALID;
@@ -78,7 +78,7 @@ client_unsubscribe_all(Client *client)
 bool
 client_push_message(Client *client, const ClientMessage &msg)
 {
-	assert(client != NULL);
+	assert(client != nullptr);
 
 	if (client->messages.size() >= CLIENT_MAX_MESSAGES ||
 	    !client->IsSubscribed(msg.GetChannel()))

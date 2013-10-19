@@ -68,10 +68,10 @@ void volume_init(void)
 
 int volume_level_get(void)
 {
-	assert(hardware_volume_timer != NULL);
+	assert(hardware_volume_timer != nullptr);
 
 	if (last_hardware_volume >= 0 &&
-	    g_timer_elapsed(hardware_volume_timer, NULL) < 1.0)
+	    g_timer_elapsed(hardware_volume_timer, nullptr) < 1.0)
 		/* throttle access to hardware mixers */
 		return last_hardware_volume;
 
@@ -112,7 +112,7 @@ bool volume_level_change(unsigned volume)
 bool
 read_sw_volume_state(const char *line)
 {
-	char *end = NULL;
+	char *end = nullptr;
 	long int sv;
 
 	if (!g_str_has_prefix(line, SW_VOLUME_STATE))

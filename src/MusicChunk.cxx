@@ -58,7 +58,7 @@ music_chunk::Write(const AudioFormat af,
 	const size_t frame_size = af.GetFrameSize();
 	size_t num_frames = (sizeof(data) - length) / frame_size;
 	if (num_frames == 0)
-		return NULL;
+		return nullptr;
 
 #ifndef NDEBUG
 	audio_format = af;

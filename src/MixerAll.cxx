@@ -46,7 +46,7 @@ output_mixer_get_volume(unsigned i)
 		return -1;
 
 	Mixer *mixer = output->mixer;
-	if (mixer == NULL)
+	if (mixer == nullptr)
 		return -1;
 
 	Error error;
@@ -93,7 +93,7 @@ output_mixer_set_volume(unsigned i, unsigned volume)
 		return false;
 
 	Mixer *mixer = output->mixer;
-	if (mixer == NULL)
+	if (mixer == nullptr)
 		return false;
 
 	Error error;
@@ -133,7 +133,7 @@ output_mixer_get_software_volume(unsigned i)
 		return -1;
 
 	Mixer *mixer = output->mixer;
-	if (mixer == NULL || !mixer->IsPlugin(software_mixer_plugin))
+	if (mixer == nullptr || !mixer->IsPlugin(software_mixer_plugin))
 		return -1;
 
 	return mixer_get_volume(mixer, IgnoreError());
@@ -168,7 +168,7 @@ mixer_all_set_software_volume(unsigned volume)
 
 	for (unsigned i = 0; i < count; i++) {
 		struct audio_output *output = audio_output_get(i);
-		if (output->mixer != NULL &&
+		if (output->mixer != nullptr &&
 		    output->mixer->plugin == &software_mixer_plugin)
 			mixer_set_volume(output->mixer, volume, IgnoreError());
 	}

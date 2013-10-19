@@ -79,10 +79,10 @@ queue_load_song(TextFile &file, const char *line, queue *queue)
 
 	uint8_t priority = 0;
 	if (g_str_has_prefix(line, PRIO_LABEL)) {
-		priority = strtoul(line + sizeof(PRIO_LABEL) - 1, NULL, 10);
+		priority = strtoul(line + sizeof(PRIO_LABEL) - 1, nullptr, 10);
 
 		line = file.ReadLine();
-		if (line == NULL)
+		if (line == nullptr)
 			return;
 	}
 
@@ -95,8 +95,8 @@ queue_load_song(TextFile &file, const char *line, queue *queue)
 			return;
 
 		Error error;
-		song = song_load(file, NULL, uri, error);
-		if (song == NULL) {
+		song = song_load(file, nullptr, uri, error);
+		if (song == nullptr) {
 			LogError(error);
 			return;
 		}

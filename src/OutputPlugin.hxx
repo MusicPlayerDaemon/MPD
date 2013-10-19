@@ -48,11 +48,9 @@ struct audio_output_plugin {
 	 * Configure and initialize the device, but do not open it
 	 * yet.
 	 *
-	 * @param param the configuration section, or NULL if there is
+	 * @param param the configuration section, or nullptr if there is
 	 * no configuration
-	 * @param error location to store the error occurring, or NULL
-	 * to ignore errors
-	 * @return NULL on error, or an opaque pointer to the plugin's
+	 * @return nullptr on error, or an opaque pointer to the plugin's
 	 * data
 	 */
 	struct audio_output *(*init)(const config_param &param,
@@ -69,8 +67,6 @@ struct audio_output_plugin {
 	 * fail: if an error occurs during that, it should be reported
 	 * by the open() method.
 	 *
-	 * @param error_r location to store the error occurring, or
-	 * NULL to ignore errors
 	 * @return true on success, false on error
 	 */
 	bool (*enable)(struct audio_output *data, Error &error);
@@ -86,8 +82,6 @@ struct audio_output_plugin {
 	 *
 	 * @param audio_format the audio format in which data is going
 	 * to be delivered; may be modified by the plugin
-	 * @param error location to store the error occurring, or NULL
-	 * to ignore errors
 	 */
 	bool (*open)(struct audio_output *data, AudioFormat &audio_format,
 		     Error &error);
@@ -116,8 +110,6 @@ struct audio_output_plugin {
 	/**
 	 * Play a chunk of audio data.
 	 *
-	 * @param error location to store the error occurring, or NULL
-	 * to ignore errors
 	 * @return the number of bytes played, or 0 on error
 	 */
 	size_t (*play)(struct audio_output *data,
@@ -150,7 +142,7 @@ struct audio_output_plugin {
 
 	/**
 	 * The mixer plugin associated with this output plugin.  This
-	 * may be NULL if no mixer plugin is implemented.  When
+	 * may be nullptr if no mixer plugin is implemented.  When
 	 * created, this mixer plugin gets the same #config_param as
 	 * this audio output device.
 	 */
@@ -160,7 +152,7 @@ struct audio_output_plugin {
 static inline bool
 ao_plugin_test_default_device(const struct audio_output_plugin *plugin)
 {
-	return plugin->test_default_device != NULL
+	return plugin->test_default_device != nullptr
 		? plugin->test_default_device()
 		: false;
 }

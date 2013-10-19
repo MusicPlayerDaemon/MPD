@@ -58,7 +58,7 @@ player_control::~player_control()
 void
 player_control::Play(Song *song)
 {
-	assert(song != NULL);
+	assert(song != nullptr);
 
 	Lock();
 
@@ -78,7 +78,7 @@ void
 player_control::Cancel()
 {
 	LockSynchronousCommand(PlayerCommand::CANCEL);
-	assert(next_song == NULL);
+	assert(next_song == nullptr);
 }
 
 void
@@ -203,7 +203,7 @@ player_control::ClearError()
 void
 player_control::EnqueueSong(Song *song)
 {
-	assert(song != NULL);
+	assert(song != nullptr);
 
 	Lock();
 	EnqueueSongLocked(song);
@@ -213,7 +213,7 @@ player_control::EnqueueSong(Song *song)
 bool
 player_control::Seek(Song *song, float seek_time)
 {
-	assert(song != NULL);
+	assert(song != nullptr);
 
 	Lock();
 

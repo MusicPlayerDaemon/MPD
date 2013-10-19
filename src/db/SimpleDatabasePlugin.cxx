@@ -44,7 +44,7 @@ SimpleDatabase::Create(const config_param &param, Error &error)
 	SimpleDatabase *db = new SimpleDatabase();
 	if (!db->Configure(param, error)) {
 		delete db;
-		db = NULL;
+		db = nullptr;
 	}
 
 	return db;
@@ -136,7 +136,7 @@ bool
 SimpleDatabase::Load(Error &error)
 {
 	assert(!path.IsNull());
-	assert(root != NULL);
+	assert(root != nullptr);
 
 	TextFile file(path);
 	if (file.HasFailed()) {
@@ -183,7 +183,7 @@ SimpleDatabase::Open(Error &error)
 void
 SimpleDatabase::Close()
 {
-	assert(root != NULL);
+	assert(root != nullptr);
 	assert(borrowed_song_count == 0);
 
 	root->Free();
@@ -192,12 +192,12 @@ SimpleDatabase::Close()
 Song *
 SimpleDatabase::GetSong(const char *uri, Error &error) const
 {
-	assert(root != NULL);
+	assert(root != nullptr);
 
 	db_lock();
 	Song *song = root->LookupSong(uri);
 	db_unlock();
-	if (song == NULL)
+	if (song == nullptr)
 		error.Format(db_domain, DB_NOT_FOUND,
 			     "No such song: %s", uri);
 #ifndef NDEBUG
@@ -223,8 +223,8 @@ gcc_pure
 const Directory *
 SimpleDatabase::LookupDirectory(const char *uri) const
 {
-	assert(root != NULL);
-	assert(uri != NULL);
+	assert(root != nullptr);
+	assert(uri != nullptr);
 
 	ScopeDatabaseLock protect;
 	return root->LookupDirectory(uri);
@@ -240,7 +240,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 	ScopeDatabaseLock protect;
 
 	const Directory *directory = root->LookupDirectory(selection.uri);
-	if (directory == NULL) {
+	if (directory == nullptr) {
 		if (visit_song) {
 			Song *song = root->LookupSong(selection.uri);
 			if (song != nullptr)

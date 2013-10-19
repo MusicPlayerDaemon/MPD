@@ -222,7 +222,7 @@ update_regular_file(Directory *directory,
 		    const char *name, const struct stat *st)
 {
 	const char *suffix = uri_get_suffix(name);
-	if (suffix == NULL)
+	if (suffix == nullptr)
 		return false;
 
 	return update_song_file(directory, name, suffix, st) ||
@@ -237,7 +237,7 @@ static void
 update_directory_child(Directory *directory,
 		       const char *name, const struct stat *st)
 {
-	assert(strchr(name, '/') == NULL);
+	assert(strchr(name, '/') == nullptr);
 
 	if (S_ISREG(st->st_mode)) {
 		update_regular_file(directory, name, st);
@@ -269,7 +269,7 @@ static bool skip_path(Path path_fs)
 	const char *path = path_fs.c_str();
 	return (path[0] == '.' && path[1] == 0) ||
 		(path[0] == '.' && path[1] == '.' && path[2] == 0) ||
-		strchr(path, '\n') != NULL;
+		strchr(path, '\n') != nullptr;
 }
 
 gcc_pure
@@ -310,7 +310,7 @@ skip_symlink(const Directory *directory, const char *utf8_name)
 		if (p[1] == '.' && PathTraits::IsSeparatorFS(p[2])) {
 			/* "../" moves to parent directory */
 			directory = directory->parent;
-			if (directory == NULL) {
+			if (directory == nullptr) {
 				/* we have moved outside the music
 				   directory - skip this symlink
 				   if such symlinks are not allowed */
@@ -403,16 +403,16 @@ directory_make_child_checked(Directory *parent, const char *name_utf8)
 	Directory *directory = parent->FindChild(name_utf8);
 	db_unlock();
 
-	if (directory != NULL)
+	if (directory != nullptr)
 		return directory;
 
 	struct stat st;
 	if (stat_directory_child(parent, name_utf8, &st) < 0 ||
 	    find_inode_ancestor(parent, st.st_ino, st.st_dev))
-		return NULL;
+		return nullptr;
 
 	if (skip_symlink(parent, name_utf8))
-		return NULL;
+		return nullptr;
 
 	/* if we're adding directory paths, make sure to delete filenames
 	   with potentially the same name */
@@ -435,14 +435,14 @@ directory_make_uri_parent_checked(const char *uri)
 	char *duplicated = g_strdup(uri);
 	char *name_utf8 = duplicated, *slash;
 
-	while ((slash = strchr(name_utf8, '/')) != NULL) {
+	while ((slash = strchr(name_utf8, '/')) != nullptr) {
 		*slash = 0;
 
 		if (*name_utf8 == 0)
 			continue;
 
 		directory = directory_make_child_checked(directory, name_utf8);
-		if (directory == NULL)
+		if (directory == nullptr)
 			break;
 
 		name_utf8 = slash + 1;
@@ -456,7 +456,7 @@ static void
 update_uri(const char *uri)
 {
 	Directory *parent = directory_make_uri_parent_checked(uri);
-	if (parent == NULL)
+	if (parent == nullptr)
 		return;
 
 	char *name = g_path_get_basename(uri);
@@ -477,7 +477,7 @@ update_walk(const char *path, bool discard)
 	walk_discard = discard;
 	modified = false;
 
-	if (path != NULL && !isRootDirectory(path)) {
+	if (path != nullptr && !isRootDirectory(path)) {
 		update_uri(path);
 	} else {
 		Directory *directory = db_get_root();

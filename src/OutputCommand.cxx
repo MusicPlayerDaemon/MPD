@@ -73,7 +73,7 @@ audio_output_disable_index(unsigned idx)
 	idle_add(IDLE_OUTPUT);
 
 	Mixer *mixer = ao->mixer;
-	if (mixer != NULL) {
+	if (mixer != nullptr) {
 		mixer_close(mixer);
 		idle_add(IDLE_MIXER);
 	}

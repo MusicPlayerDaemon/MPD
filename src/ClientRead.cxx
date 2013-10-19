@@ -30,7 +30,7 @@ Client::OnSocketInput(void *data, size_t length)
 {
 	char *p = (char *)data;
 	char *newline = (char *)memchr(p, '\n', length);
-	if (newline == NULL)
+	if (newline == nullptr)
 		return InputResult::MORE;
 
 	TimeoutMonitor::ScheduleSeconds(client_timeout);

@@ -70,7 +70,7 @@ decoder_command_finished_locked(struct decoder_control *dc)
  * Unlock the decoder before calling this function.
  *
  * @return an input_stream on success or if #DecoderCommand::STOP is
- * received, NULL on error
+ * received, nullptr on error
  */
 static struct input_stream *
 decoder_input_stream_open(struct decoder_control *dc, const char *uri)
@@ -78,11 +78,11 @@ decoder_input_stream_open(struct decoder_control *dc, const char *uri)
 	Error error;
 
 	input_stream *is = input_stream::Open(uri, dc->mutex, dc->cond, error);
-	if (is == NULL) {
+	if (is == nullptr) {
 		if (error.IsDefined())
 			LogError(error);
 
-		return NULL;
+		return nullptr;
 	}
 
 	/* wait for the input stream to become ready; its metadata
@@ -102,7 +102,7 @@ decoder_input_stream_open(struct decoder_control *dc, const char *uri)
 		dc->Unlock();
 
 		LogError(error);
-		return NULL;
+		return nullptr;
 	}
 
 	dc->Unlock();
@@ -115,12 +115,12 @@ decoder_stream_decode(const struct decoder_plugin *plugin,
 		      struct decoder *decoder,
 		      struct input_stream *input_stream)
 {
-	assert(plugin != NULL);
-	assert(plugin->stream_decode != NULL);
-	assert(decoder != NULL);
-	assert(decoder->stream_tag == NULL);
-	assert(decoder->decoder_tag == NULL);
-	assert(input_stream != NULL);
+	assert(plugin != nullptr);
+	assert(plugin->stream_decode != nullptr);
+	assert(decoder != nullptr);
+	assert(decoder->stream_tag == nullptr);
+	assert(decoder->decoder_tag == nullptr);
+	assert(input_stream != nullptr);
 	assert(input_stream->ready);
 	assert(decoder->dc->state == DecoderState::START);
 
@@ -148,12 +148,12 @@ static bool
 decoder_file_decode(const struct decoder_plugin *plugin,
 		    struct decoder *decoder, const char *path)
 {
-	assert(plugin != NULL);
-	assert(plugin->file_decode != NULL);
-	assert(decoder != NULL);
-	assert(decoder->stream_tag == NULL);
-	assert(decoder->decoder_tag == NULL);
-	assert(path != NULL);
+	assert(plugin != nullptr);
+	assert(plugin->file_decode != nullptr);
+	assert(decoder != nullptr);
+	assert(decoder->stream_tag == nullptr);
+	assert(decoder->decoder_tag == nullptr);
+	assert(path != nullptr);
 	assert(PathTraits::IsAbsoluteFS(path));
 	assert(decoder->dc->state == DecoderState::START);
 
@@ -192,7 +192,7 @@ static bool
 decoder_run_stream_mime_type(struct decoder *decoder, struct input_stream *is,
 			     GSList **tried_r)
 {
-	assert(tried_r != NULL);
+	assert(tried_r != nullptr);
 
 	const struct decoder_plugin *plugin;
 	unsigned int next = 0;
@@ -202,10 +202,10 @@ decoder_run_stream_mime_type(struct decoder *decoder, struct input_stream *is,
 
 	while ((plugin = decoder_plugin_from_mime_type(is->mime.c_str(),
 						       next++))) {
-		if (plugin->stream_decode == NULL)
+		if (plugin->stream_decode == nullptr)
 			continue;
 
-		if (g_slist_find(*tried_r, plugin) != NULL)
+		if (g_slist_find(*tried_r, plugin) != nullptr)
 			/* don't try a plugin twice */
 			continue;
 
@@ -228,19 +228,19 @@ static bool
 decoder_run_stream_suffix(struct decoder *decoder, struct input_stream *is,
 			  const char *uri, GSList **tried_r)
 {
-	assert(tried_r != NULL);
+	assert(tried_r != nullptr);
 
 	const char *suffix = uri_get_suffix(uri);
-	const struct decoder_plugin *plugin = NULL;
+	const struct decoder_plugin *plugin = nullptr;
 
-	if (suffix == NULL)
+	if (suffix == nullptr)
 		return false;
 
-	while ((plugin = decoder_plugin_from_suffix(suffix, plugin)) != NULL) {
-		if (plugin->stream_decode == NULL)
+	while ((plugin = decoder_plugin_from_suffix(suffix, plugin)) != nullptr) {
+		if (plugin->stream_decode == nullptr)
 			continue;
 
-		if (g_slist_find(*tried_r, plugin) != NULL)
+		if (g_slist_find(*tried_r, plugin) != nullptr)
 			/* don't try a plugin twice */
 			continue;
 
@@ -262,7 +262,7 @@ decoder_run_stream_fallback(struct decoder *decoder, struct input_stream *is)
 	const struct decoder_plugin *plugin;
 
 	plugin = decoder_plugin_from_name("mad");
-	return plugin != NULL && plugin->stream_decode != NULL &&
+	return plugin != nullptr && plugin->stream_decode != nullptr &&
 		decoder_stream_decode(plugin, decoder, is);
 }
 
@@ -279,14 +279,14 @@ decoder_run_stream(struct decoder *decoder, const char *uri)
 	dc->Unlock();
 
 	input_stream = decoder_input_stream_open(dc, uri);
-	if (input_stream == NULL) {
+	if (input_stream == nullptr) {
 		dc->Lock();
 		return false;
 	}
 
 	dc->Lock();
 
-	GSList *tried = NULL;
+	GSList *tried = nullptr;
 
 	success = dc->command == DecoderCommand::STOP ||
 		/* first we try mime types: */
@@ -296,7 +296,7 @@ decoder_run_stream(struct decoder *decoder, const char *uri)
 					  &tried) ||
 		/* fallback to mp3: this is needed for bastard streams
 		   that don't have a suffix or set the mimeType */
-		(tried == NULL &&
+		(tried == nullptr &&
 		 decoder_run_stream_fallback(decoder, input_stream));
 
 	g_slist_free(tried);
@@ -328,29 +328,29 @@ decoder_run_file(struct decoder *decoder, const char *path_fs)
 {
 	struct decoder_control *dc = decoder->dc;
 	const char *suffix = uri_get_suffix(path_fs);
-	const struct decoder_plugin *plugin = NULL;
+	const struct decoder_plugin *plugin = nullptr;
 
-	if (suffix == NULL)
+	if (suffix == nullptr)
 		return false;
 
 	dc->Unlock();
 
 	decoder_load_replay_gain(decoder, path_fs);
 
-	while ((plugin = decoder_plugin_from_suffix(suffix, plugin)) != NULL) {
-		if (plugin->file_decode != NULL) {
+	while ((plugin = decoder_plugin_from_suffix(suffix, plugin)) != nullptr) {
+		if (plugin->file_decode != nullptr) {
 			dc->Lock();
 
 			if (decoder_file_decode(plugin, decoder, path_fs))
 				return true;
 
 			dc->Unlock();
-		} else if (plugin->stream_decode != NULL) {
+		} else if (plugin->stream_decode != nullptr) {
 			struct input_stream *input_stream;
 			bool success;
 
 			input_stream = decoder_input_stream_open(dc, path_fs);
-			if (input_stream == NULL)
+			if (input_stream == nullptr)
 				continue;
 
 			dc->Lock();
@@ -378,7 +378,7 @@ decoder_run_song(struct decoder_control *dc,
 		 const Song *song, const char *uri)
 {
 	decoder decoder(dc, dc->start_ms > 0,
-			song->tag != NULL && song->IsFile()
+			song->tag != nullptr && song->IsFile()
 			? new Tag(*song->tag) : nullptr);
 	int ret;
 
@@ -394,7 +394,7 @@ decoder_run_song(struct decoder_control *dc,
 
 	/* flush the last chunk */
 
-	if (decoder.chunk != NULL)
+	if (decoder.chunk != nullptr)
 		decoder_flush_chunk(&decoder);
 
 	dc->Lock();
@@ -406,7 +406,7 @@ decoder_run_song(struct decoder_control *dc,
 
 		const char *error_uri = song->uri;
 		char *allocated = uri_remove_auth(error_uri);
-		if (allocated != NULL)
+		if (allocated != nullptr)
 			error_uri = allocated;
 
 		dc->error.Format(decoder_domain,
@@ -423,7 +423,7 @@ decoder_run(struct decoder_control *dc)
 	dc->ClearError();
 
 	const Song *song = dc->song;
-	assert(song != NULL);
+	assert(song != nullptr);
 
 	const std::string uri = song->IsFile()
 		? std::string(map_song_fs(song).c_str())
@@ -456,11 +456,11 @@ decoder_task(void *arg)
 		case DecoderCommand::START:
 			dc->MixRampStart(nullptr);
 			dc->MixRampPrevEnd(dc->mixramp_end);
-			dc->mixramp_end = NULL; /* Don't free, it's copied above. */
+			dc->mixramp_end = nullptr; /* Don't free, it's copied above. */
 			dc->replay_gain_prev_db = dc->replay_gain_db;
 			dc->replay_gain_db = 0;
 
-                        /* fall through */
+			/* fall through */
 
 		case DecoderCommand::SEEK:
 			decoder_run(dc);

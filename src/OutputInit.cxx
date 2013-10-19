@@ -53,7 +53,7 @@ audio_output_detect(Error &error)
 	LogInfo(output_domain, "Attempt to detect audio output device");
 
 	audio_output_plugins_for_each(plugin) {
-		if (plugin->test_default_device == NULL)
+		if (plugin->test_default_device == nullptr)
 			continue;
 
 		FormatInfo(output_domain,
@@ -64,7 +64,7 @@ audio_output_detect(Error &error)
 	}
 
 	error.Set(output_domain, "Unable to detect an audio device");
-	return NULL;
+	return nullptr;
 }
 
 /**
@@ -80,7 +80,7 @@ audio_output_mixer_type(const config_param &param)
 {
 	/* read the local "mixer_type" setting */
 	const char *p = param.GetBlockValue("mixer_type");
-	if (p != NULL)
+	if (p != nullptr)
 		return mixer_type_parse(p);
 
 	/* try the local "mixer_enabled" setting next (deprecated) */
@@ -105,11 +105,11 @@ audio_output_load_mixer(struct audio_output *ao,
 	switch (audio_output_mixer_type(param)) {
 	case MIXER_TYPE_NONE:
 	case MIXER_TYPE_UNKNOWN:
-		return NULL;
+		return nullptr;
 
 	case MIXER_TYPE_HARDWARE:
-		if (plugin == NULL)
-			return NULL;
+		if (plugin == nullptr)
+			return nullptr;
 
 		return mixer_new(plugin, ao, param, error);
 
@@ -117,7 +117,7 @@ audio_output_load_mixer(struct audio_output *ao,
 		mixer = mixer_new(&software_mixer_plugin, nullptr,
 				  config_param(),
 				  IgnoreError());
-		assert(mixer != NULL);
+		assert(mixer != nullptr);
 
 		filter_chain_append(filter_chain, "software_mixer",
 				    software_mixer_get_filter(mixer));
@@ -133,23 +133,23 @@ ao_base_init(struct audio_output *ao,
 	     const struct audio_output_plugin *plugin,
 	     const config_param &param, Error &error)
 {
-	assert(ao != NULL);
-	assert(plugin != NULL);
-	assert(plugin->finish != NULL);
-	assert(plugin->open != NULL);
-	assert(plugin->close != NULL);
-	assert(plugin->play != NULL);
+	assert(ao != nullptr);
+	assert(plugin != nullptr);
+	assert(plugin->finish != nullptr);
+	assert(plugin->open != nullptr);
+	assert(plugin->close != nullptr);
+	assert(plugin->play != nullptr);
 
 	if (!param.IsNull()) {
 		ao->name = param.GetBlockValue(AUDIO_OUTPUT_NAME);
-		if (ao->name == NULL) {
+		if (ao->name == nullptr) {
 			error.Set(config_domain,
 				  "Missing \"name\" configuration");
 			return false;
 		}
 
 		const char *p = param.GetBlockValue(AUDIO_OUTPUT_FORMAT);
-		if (p != NULL) {
+		if (p != nullptr) {
 			bool success =
 				audio_format_parse(ao->config_audio_format,
 						   p, true, error);
@@ -171,12 +171,12 @@ ao_base_init(struct audio_output *ao,
 	ao->open = false;
 	ao->pause = false;
 	ao->allow_play = true;
-	ao->fail_timer = NULL;
+	ao->fail_timer = nullptr;
 
 	/* set up the filter chain */
 
 	ao->filter = filter_chain_new();
-	assert(ao->filter != NULL);
+	assert(ao->filter != nullptr);
 
 	/* create the normalization filter (if configured) */
 
@@ -184,7 +184,7 @@ ao_base_init(struct audio_output *ao,
 		Filter *normalize_filter =
 			filter_new(&normalize_filter_plugin, config_param(),
 				   IgnoreError());
-		assert(normalize_filter != NULL);
+		assert(normalize_filter != nullptr);
 
 		filter_chain_append(*ao->filter, "normalize",
 				    autoconvert_filter_new(normalize_filter));
@@ -204,9 +204,9 @@ ao_base_init(struct audio_output *ao,
 
 	ao->command = AO_COMMAND_NONE;
 
-	ao->mixer = NULL;
-	ao->replay_gain_filter = NULL;
-	ao->other_replay_gain_filter = NULL;
+	ao->mixer = nullptr;
+	ao->replay_gain_filter = nullptr;
+	ao->other_replay_gain_filter = nullptr;
 
 	/* done */
 
@@ -226,19 +226,19 @@ audio_output_setup(struct audio_output *ao, const config_param &param,
 	if (strcmp(replay_gain_handler, "none") != 0) {
 		ao->replay_gain_filter = filter_new(&replay_gain_filter_plugin,
 						    param, IgnoreError());
-		assert(ao->replay_gain_filter != NULL);
+		assert(ao->replay_gain_filter != nullptr);
 
 		ao->replay_gain_serial = 0;
 
 		ao->other_replay_gain_filter = filter_new(&replay_gain_filter_plugin,
 							  param,
 							  IgnoreError());
-		assert(ao->other_replay_gain_filter != NULL);
+		assert(ao->other_replay_gain_filter != nullptr);
 
 		ao->other_replay_gain_serial = 0;
 	} else {
-		ao->replay_gain_filter = NULL;
-		ao->other_replay_gain_filter = NULL;
+		ao->replay_gain_filter = nullptr;
+		ao->other_replay_gain_filter = nullptr;
 	}
 
 	/* set up the mixer */
@@ -247,7 +247,7 @@ audio_output_setup(struct audio_output *ao, const config_param &param,
 	ao->mixer = audio_output_load_mixer(ao, param,
 					    ao->plugin->mixer_plugin,
 					    *ao->filter, mixer_error);
-	if (ao->mixer == NULL && mixer_error.IsDefined())
+	if (ao->mixer == nullptr && mixer_error.IsDefined())
 		FormatError(mixer_error,
 			    "Failed to initialize hardware mixer for '%s'",
 			    ao->name);
@@ -255,14 +255,14 @@ audio_output_setup(struct audio_output *ao, const config_param &param,
 	/* use the hardware mixer for replay gain? */
 
 	if (strcmp(replay_gain_handler, "mixer") == 0) {
-		if (ao->mixer != NULL)
+		if (ao->mixer != nullptr)
 			replay_gain_filter_set_mixer(ao->replay_gain_filter,
 						     ao->mixer, 100);
 		else
 			FormatError(output_domain,
 				    "No such mixer for output '%s'", ao->name);
 	} else if (strcmp(replay_gain_handler, "software") != 0 &&
-		   ao->replay_gain_filter != NULL) {
+		   ao->replay_gain_filter != nullptr) {
 		error.Set(config_domain,
 			  "Invalid \"replay_gain_handler\" value");
 		return false;
@@ -272,7 +272,7 @@ audio_output_setup(struct audio_output *ao, const config_param &param,
 
 	ao->convert_filter = filter_new(&convert_filter_plugin, config_param(),
 					IgnoreError());
-	assert(ao->convert_filter != NULL);
+	assert(ao->convert_filter != nullptr);
 
 	filter_chain_append(*ao->filter, "convert", ao->convert_filter);
 
@@ -290,14 +290,14 @@ audio_output_new(const config_param &param,
 		const char *p;
 
 		p = param.GetBlockValue(AUDIO_OUTPUT_TYPE);
-		if (p == NULL) {
+		if (p == nullptr) {
 			error.Set(config_domain,
 				  "Missing \"type\" configuration");
 			return nullptr;
 		}
 
 		plugin = audio_output_plugin_get(p);
-		if (plugin == NULL) {
+		if (plugin == nullptr) {
 			error.Format(config_domain,
 				     "No such audio output plugin: %s", p);
 			return nullptr;
@@ -307,7 +307,7 @@ audio_output_new(const config_param &param,
 			   "No 'audio_output' defined in config file");
 
 		plugin = audio_output_detect(error);
-		if (plugin == NULL)
+		if (plugin == nullptr)
 			return nullptr;
 
 		FormatInfo(output_domain,
@@ -316,12 +316,12 @@ audio_output_new(const config_param &param,
 	}
 
 	struct audio_output *ao = ao_plugin_init(plugin, param, error);
-	if (ao == NULL)
-		return NULL;
+	if (ao == nullptr)
+		return nullptr;
 
 	if (!audio_output_setup(ao, param, error)) {
 		ao_plugin_finish(ao);
-		return NULL;
+		return nullptr;
 	}
 
 	ao->player_control = pc;

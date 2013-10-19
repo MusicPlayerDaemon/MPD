@@ -28,7 +28,7 @@ extern bool decoder_plugins_enabled[];
 #define decoder_plugins_for_each(plugin) \
 	for (const struct decoder_plugin *plugin, \
 		*const*decoder_plugin_iterator = &decoder_plugins[0]; \
-		(plugin = *decoder_plugin_iterator) != NULL; \
+		(plugin = *decoder_plugin_iterator) != nullptr; \
 		++decoder_plugin_iterator)
 
 #define decoder_plugins_for_each_enabled(plugin) \
@@ -41,8 +41,8 @@ extern bool decoder_plugins_enabled[];
  * Find the next enabled decoder plugin which supports the specified suffix.
  *
  * @param suffix the file name suffix
- * @param plugin the previous plugin, or NULL to find the first plugin
- * @return a plugin, or NULL if none matches
+ * @param plugin the previous plugin, or nullptr to find the first plugin
+ * @return a plugin, or nullptr if none matches
  */
 const struct decoder_plugin *
 decoder_plugin_from_suffix(const char *suffix,

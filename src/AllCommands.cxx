@@ -245,7 +245,7 @@ command_lookup(const char *name)
 			a = i + 1;
 	} while (a < b);
 
-	return NULL;
+	return nullptr;
 }
 
 static bool
@@ -256,7 +256,7 @@ command_check_request(const struct command *cmd, Client *client,
 	int max = cmd->max + 1;
 
 	if (cmd->permission != (permission & cmd->permission)) {
-		if (client != NULL)
+		if (client != nullptr)
 			command_error(client, ACK_ERROR_PERMISSION,
 				      "you don't have permission for \"%s\"",
 				      cmd->cmd);
@@ -267,18 +267,18 @@ command_check_request(const struct command *cmd, Client *client,
 		return true;
 
 	if (min == max && max != argc) {
-		if (client != NULL)
+		if (client != nullptr)
 			command_error(client, ACK_ERROR_ARG,
 				      "wrong number of arguments for \"%s\"",
 				      argv[0]);
 		return false;
 	} else if (argc < min) {
-		if (client != NULL)
+		if (client != nullptr)
 			command_error(client, ACK_ERROR_ARG,
 				      "too few arguments for \"%s\"", argv[0]);
 		return false;
 	} else if (argc > max && max /* != 0 */ ) {
-		if (client != NULL)
+		if (client != nullptr)
 			command_error(client, ACK_ERROR_ARG,
 				      "too many arguments for \"%s\"", argv[0]);
 		return false;
@@ -295,20 +295,20 @@ command_checked_lookup(Client *client, unsigned permission,
 	current_command = "";
 
 	if (argc == 0)
-		return NULL;
+		return nullptr;
 
 	cmd = command_lookup(argv[0]);
-	if (cmd == NULL) {
-		if (client != NULL)
+	if (cmd == nullptr) {
+		if (client != nullptr)
 			command_error(client, ACK_ERROR_UNKNOWN,
 				      "unknown command \"%s\"", argv[0]);
-		return NULL;
+		return nullptr;
 	}
 
 	current_command = cmd->cmd;
 
 	if (!command_check_request(cmd, client, permission, argc, argv))
-		return NULL;
+		return nullptr;
 
 	return cmd;
 }
@@ -317,7 +317,7 @@ enum command_return
 command_process(Client *client, unsigned num, char *line)
 {
 	Error error;
-	char *argv[COMMAND_ARGV_MAX] = { NULL };
+	char *argv[COMMAND_ARGV_MAX] = { nullptr };
 	const struct command *cmd;
 	enum command_return ret = COMMAND_RETURN_ERROR;
 
@@ -327,7 +327,7 @@ command_process(Client *client, unsigned num, char *line)
 
 	Tokenizer tokenizer(line);
 	argv[0] = tokenizer.NextWord(error);
-	if (argv[0] == NULL) {
+	if (argv[0] == nullptr) {
 		current_command = "";
 		if (tokenizer.IsEnd())
 			command_error(client, ACK_ERROR_UNKNOWN,
@@ -336,7 +336,7 @@ command_process(Client *client, unsigned num, char *line)
 			command_error(client, ACK_ERROR_UNKNOWN,
 				      "%s", error.GetMessage());
 
-		current_command = NULL;
+		current_command = nullptr;
 
 		return COMMAND_RETURN_ERROR;
 	}
@@ -347,7 +347,7 @@ command_process(Client *client, unsigned num, char *line)
 
 	while (argc < COMMAND_ARGV_MAX &&
 	       (argv[argc] =
-		tokenizer.NextParam(error)) != NULL)
+		tokenizer.NextParam(error)) != nullptr)
 		++argc;
 
 	/* some error checks; we have to set current_command because
@@ -357,13 +357,13 @@ command_process(Client *client, unsigned num, char *line)
 
 	if (argc >= COMMAND_ARGV_MAX) {
 		command_error(client, ACK_ERROR_ARG, "Too many arguments");
-		current_command = NULL;
+		current_command = nullptr;
 		return COMMAND_RETURN_ERROR;
 	}
 
 	if (!tokenizer.IsEnd()) {
 		command_error(client, ACK_ERROR_ARG, "%s", error.GetMessage());
-		current_command = NULL;
+		current_command = nullptr;
 		return COMMAND_RETURN_ERROR;
 	}
 
@@ -374,7 +374,7 @@ command_process(Client *client, unsigned num, char *line)
 	if (cmd)
 		ret = cmd->handler(client, argc, argv);
 
-	current_command = NULL;
+	current_command = nullptr;
 	command_list_num = 0;
 
 	return ret;

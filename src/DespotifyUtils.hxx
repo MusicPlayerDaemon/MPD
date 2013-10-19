@@ -32,7 +32,7 @@ extern const class Domain despotify_domain;
  * If the session isn't initialized, this function will initialize
  * it and connect to Spotify.
  *
- * @return a pointer to the despotify session, or NULL if it can't
+ * @return a pointer to the despotify session, or nullptr if it can't
  *         be initialized (e.g., if the configuration isn't supplied)
  */
 struct despotify_session *mpd_despotify_get_session(void);

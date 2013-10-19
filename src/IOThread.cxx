@@ -40,7 +40,7 @@ void
 io_thread_run(void)
 {
 	assert(io_thread_inside());
-	assert(io.loop != NULL);
+	assert(io.loop != nullptr);
 
 	io.loop->Run();
 }
@@ -59,7 +59,7 @@ io_thread_func(gcc_unused void *arg)
 void
 io_thread_init(void)
 {
-	assert(io.loop == NULL);
+	assert(io.loop == nullptr);
 	assert(!io.thread.IsDefined());
 
 	io.loop = new EventLoop();
@@ -68,7 +68,7 @@ io_thread_init(void)
 void
 io_thread_start()
 {
-	assert(io.loop != NULL);
+	assert(io.loop != nullptr);
 	assert(!io.thread.IsDefined());
 
 	const ScopeLock protect(io.mutex);
@@ -81,7 +81,7 @@ io_thread_start()
 void
 io_thread_quit(void)
 {
-	assert(io.loop != NULL);
+	assert(io.loop != nullptr);
 
 	io.loop->Break();
 }

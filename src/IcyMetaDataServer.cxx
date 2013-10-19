@@ -77,7 +77,7 @@ icy_server_metadata_string(const char *stream_title, const char* stream_url)
 
 	if (meta_length > 255) {
 		delete[] icy_metadata;
-		return NULL;
+		return nullptr;
 	}
 
 	return icy_metadata;
@@ -124,8 +124,8 @@ icy_server_metadata_page(const Tag &tag, const enum tag_type *types)
 
 	icy_string = icy_server_metadata_string(stream_title, "");
 
-	if (icy_string == NULL)
-		return NULL;
+	if (icy_string == nullptr)
+		return nullptr;
 
 	Page *icy_metadata = Page::Copy(icy_string, (icy_string[0] * 16) + 1);
 

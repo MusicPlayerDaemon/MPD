@@ -36,27 +36,27 @@ extern constexpr Domain input_domain("input");
  * Find the "input" configuration block for the specified plugin.
  *
  * @param plugin_name the name of the input plugin
- * @return the configuration block, or NULL if none was configured
+ * @return the configuration block, or nullptr if none was configured
  */
 static const struct config_param *
 input_plugin_config(const char *plugin_name, Error &error)
 {
-	const struct config_param *param = NULL;
+	const struct config_param *param = nullptr;
 
-	while ((param = config_get_next_param(CONF_INPUT, param)) != NULL) {
+	while ((param = config_get_next_param(CONF_INPUT, param)) != nullptr) {
 		const char *name = param->GetBlockValue("plugin");
-		if (name == NULL) {
+		if (name == nullptr) {
 			error.Format(input_domain,
 				     "input configuration without 'plugin' name in line %d",
 				     param->line);
-			return NULL;
+			return nullptr;
 		}
 
 		if (strcmp(name, plugin_name) == 0)
 			return param;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 bool
@@ -64,12 +64,12 @@ input_stream_global_init(Error &error)
 {
 	const config_param empty;
 
-	for (unsigned i = 0; input_plugins[i] != NULL; ++i) {
+	for (unsigned i = 0; input_plugins[i] != nullptr; ++i) {
 		const InputPlugin *plugin = input_plugins[i];
 
-		assert(plugin->name != NULL);
+		assert(plugin->name != nullptr);
 		assert(*plugin->name != 0);
-		assert(plugin->open != NULL);
+		assert(plugin->open != nullptr);
 
 		const struct config_param *param =
 			input_plugin_config(plugin->name, error);
@@ -82,7 +82,7 @@ input_stream_global_init(Error &error)
 			/* the plugin is disabled in mpd.conf */
 			continue;
 
-		if (plugin->init == NULL || plugin->init(*param, error))
+		if (plugin->init == nullptr || plugin->init(*param, error))
 			input_plugins_enabled[i] = true;
 		else {
 			error.FormatPrefix("Failed to initialize input plugin '%s': ",
@@ -97,6 +97,6 @@ input_stream_global_init(Error &error)
 void input_stream_global_finish(void)
 {
 	input_plugins_for_each_enabled(plugin)
-		if (plugin->finish != NULL)
+		if (plugin->finish != nullptr)
 			plugin->finish();
 }

@@ -39,7 +39,7 @@ extern "C" {
 inline Directory *
 Directory::Allocate(const char *path)
 {
-	assert(path != NULL);
+	assert(path != nullptr);
 
 	const size_t path_size = strlen(path) + 1;
 	Directory *directory =
@@ -81,8 +81,8 @@ Directory::~Directory()
 Directory *
 Directory::NewGeneric(const char *path, Directory *parent)
 {
-	assert(path != NULL);
-	assert((*path == 0) == (parent == NULL));
+	assert(path != nullptr);
+	assert((*path == 0) == (parent == nullptr));
 
 	Directory *directory = Allocate(path);
 
@@ -117,7 +117,7 @@ Directory::GetName() const
 	const char *slash = strrchr(path, '/');
 	assert((slash == nullptr) == parent->IsRoot());
 
-	return slash != NULL
+	return slash != nullptr
 		? slash + 1
 		: path;
 }
@@ -126,17 +126,17 @@ Directory *
 Directory::CreateChild(const char *name_utf8)
 {
 	assert(holding_db_lock());
-	assert(name_utf8 != NULL);
+	assert(name_utf8 != nullptr);
 	assert(*name_utf8 != 0);
 
 	char *allocated;
 	const char *path_utf8;
 	if (IsRoot()) {
-		allocated = NULL;
+		allocated = nullptr;
 		path_utf8 = name_utf8;
 	} else {
 		allocated = g_strconcat(GetPath(),
-					"/", name_utf8, NULL);
+					"/", name_utf8, nullptr);
 		path_utf8 = allocated;
 	}
 
@@ -157,7 +157,7 @@ Directory::FindChild(const char *name) const
 		if (strcmp(child->GetName(), name) == 0)
 			return child;
 
-	return NULL;
+	return nullptr;
 }
 
 void
@@ -178,7 +178,7 @@ Directory *
 Directory::LookupDirectory(const char *uri)
 {
 	assert(holding_db_lock());
-	assert(uri != NULL);
+	assert(uri != nullptr);
 
 	if (isRootDirectory(uri))
 		return this;
@@ -189,15 +189,15 @@ Directory::LookupDirectory(const char *uri)
 	while (1) {
 		char *slash = strchr(name, '/');
 		if (slash == name) {
-			d = NULL;
+			d = nullptr;
 			break;
 		}
 
-		if (slash != NULL)
+		if (slash != nullptr)
 			*slash = '\0';
 
 		d = d->FindChild(name);
-		if (d == NULL || slash == NULL)
+		if (d == nullptr || slash == nullptr)
 			break;
 
 		name = slash + 1;
@@ -212,7 +212,7 @@ void
 Directory::AddSong(Song *song)
 {
 	assert(holding_db_lock());
-	assert(song != NULL);
+	assert(song != nullptr);
 	assert(song->parent == this);
 
 	list_add_tail(&song->siblings, &songs);
@@ -222,7 +222,7 @@ void
 Directory::RemoveSong(Song *song)
 {
 	assert(holding_db_lock());
-	assert(song != NULL);
+	assert(song != nullptr);
 	assert(song->parent == this);
 
 	list_del(&song->siblings);
@@ -232,7 +232,7 @@ const Song *
 Directory::FindSong(const char *name_utf8) const
 {
 	assert(holding_db_lock());
-	assert(name_utf8 != NULL);
+	assert(name_utf8 != nullptr);
 
 	Song *song;
 	directory_for_each_song(song, this) {
@@ -242,7 +242,7 @@ Directory::FindSong(const char *name_utf8) const
 			return song;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 Song *
@@ -251,24 +251,24 @@ Directory::LookupSong(const char *uri)
 	char *duplicated, *base;
 
 	assert(holding_db_lock());
-	assert(uri != NULL);
+	assert(uri != nullptr);
 
 	duplicated = g_strdup(uri);
 	base = strrchr(duplicated, '/');
 
 	Directory *d = this;
-	if (base != NULL) {
+	if (base != nullptr) {
 		*base++ = 0;
 		d = d->LookupDirectory(duplicated);
 		if (d == nullptr) {
 			g_free(duplicated);
-			return NULL;
+			return nullptr;
 		}
 	} else
 		base = duplicated;
 
 	Song *song = d->FindSong(base);
-	assert(song == NULL || song->parent == d);
+	assert(song == nullptr || song->parent == d);
 
 	g_free(duplicated);
 	return song;
@@ -289,7 +289,7 @@ Directory::Sort()
 {
 	assert(holding_db_lock());
 
-	list_sort(NULL, &children, directory_cmp);
+	list_sort(nullptr, &children, directory_cmp);
 	song_list_sort(&songs);
 
 	Directory *child;

@@ -64,14 +64,14 @@ decoder_get_chunk(struct decoder *decoder)
 	struct decoder_control *dc = decoder->dc;
 	DecoderCommand cmd;
 
-	assert(decoder != NULL);
+	assert(decoder != nullptr);
 
-	if (decoder->chunk != NULL)
+	if (decoder->chunk != nullptr)
 		return decoder->chunk;
 
 	do {
 		decoder->chunk = dc->buffer->Allocate();
-		if (decoder->chunk != NULL) {
+		if (decoder->chunk != nullptr) {
 			decoder->chunk->replay_gain_serial =
 				decoder->replay_gain_serial;
 			if (decoder->replay_gain_serial != 0)
@@ -86,7 +86,7 @@ decoder_get_chunk(struct decoder *decoder)
 		dc->Unlock();
 	} while (cmd == DecoderCommand::NONE);
 
-	return NULL;
+	return nullptr;
 }
 
 void
@@ -94,13 +94,13 @@ decoder_flush_chunk(struct decoder *decoder)
 {
 	struct decoder_control *dc = decoder->dc;
 
-	assert(decoder != NULL);
-	assert(decoder->chunk != NULL);
+	assert(decoder != nullptr);
+	assert(decoder->chunk != nullptr);
 
 	if (decoder->chunk->IsEmpty())
 		dc->buffer->Return(decoder->chunk);
 	else
 		dc->pipe->Push(decoder->chunk);
 
-	decoder->chunk = NULL;
+	decoder->chunk = nullptr;
 }

@@ -57,7 +57,7 @@ Song *
 song_load(TextFile &file, Directory *parent, const char *uri,
 	  Error &error)
 {
-	Song *song = parent != NULL
+	Song *song = parent != nullptr
 		? Song::NewFile(uri, parent)
 		: Song::NewRemote(uri);
 	char *line, *colon;
@@ -66,15 +66,15 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 
 	TagBuilder tag;
 
-	while ((line = file.ReadLine()) != NULL &&
+	while ((line = file.ReadLine()) != nullptr &&
 	       strcmp(line, SONG_END) != 0) {
 		colon = strchr(line, ':');
-		if (colon == NULL || colon == line) {
+		if (colon == nullptr || colon == line) {
 			song->Free();
 
 			error.Format(song_save_domain,
 				     "unknown line in db: %s", line);
-			return NULL;
+			return nullptr;
 		}
 
 		*colon++ = 0;
@@ -93,13 +93,13 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 
 			song->start_ms = strtoul(value, &endptr, 10);
 			if (*endptr == '-')
-				song->end_ms = strtoul(endptr + 1, NULL, 10);
+				song->end_ms = strtoul(endptr + 1, nullptr, 10);
 		} else {
 			song->Free();
 
 			error.Format(song_save_domain,
 				     "unknown line in db: %s", line);
-			return NULL;
+			return nullptr;
 		}
 	}
 

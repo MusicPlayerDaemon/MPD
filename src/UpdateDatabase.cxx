@@ -70,7 +70,7 @@ clear_directory(Directory *directory)
 void
 delete_directory(Directory *directory)
 {
-	assert(directory->parent != NULL);
+	assert(directory->parent != nullptr);
 
 	clear_directory(directory);
 
@@ -85,13 +85,13 @@ delete_name_in(Directory *parent, const char *name)
 	db_lock();
 	Directory *directory = parent->FindChild(name);
 
-	if (directory != NULL) {
+	if (directory != nullptr) {
 		delete_directory(directory);
 		modified = true;
 	}
 
 	Song *song = parent->FindSong(name);
-	if (song != NULL) {
+	if (song != nullptr) {
 		delete_song(parent, song);
 		modified = true;
 	}

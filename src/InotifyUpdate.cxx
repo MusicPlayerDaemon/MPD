@@ -112,9 +112,9 @@ disable_watch_directory(WatchDirectory &directory)
 static void
 remove_watch_directory(WatchDirectory *directory)
 {
-	assert(directory != NULL);
+	assert(directory != nullptr);
 
-	if (directory->parent == NULL) {
+	if (directory->parent == nullptr) {
 		LogWarning(inotify_domain,
 			   "music directory was removed - "
 			   "cannot continue to watch it");
@@ -132,7 +132,7 @@ remove_watch_directory(WatchDirectory *directory)
 static AllocatedPath
 watch_directory_get_uri_fs(const WatchDirectory *directory)
 {
-	if (directory->parent == NULL)
+	if (directory->parent == nullptr)
 		return AllocatedPath::Null();
 
 	const auto uri = watch_directory_get_uri_fs(directory->parent);
@@ -147,7 +147,7 @@ static bool skip_path(const char *path)
 {
 	return (path[0] == '.' && path[1] == 0) ||
 		(path[0] == '.' && path[1] == '.' && path[2] == 0) ||
-		strchr(path, '\n') != NULL;
+		strchr(path, '\n') != nullptr;
 }
 
 static void
@@ -158,7 +158,7 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 	DIR *dir;
 	struct dirent *ent;
 
-	assert(directory != NULL);
+	assert(directory != nullptr);
 	assert(depth <= inotify_max_depth);
 	assert(!path_fs.IsNull());
 
@@ -168,7 +168,7 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 		return;
 
 	dir = opendir(path_fs.c_str());
-	if (dir == NULL) {
+	if (dir == nullptr) {
 		FormatErrno(inotify_domain,
 			    "Failed to open directory %s", path_fs.c_str());
 		return;
@@ -226,10 +226,10 @@ gcc_pure
 static unsigned
 watch_directory_depth(const WatchDirectory *d)
 {
-	assert(d != NULL);
+	assert(d != nullptr);
 
 	unsigned depth = 0;
-	while ((d = d->parent) != NULL)
+	while ((d = d->parent) != nullptr)
 		++depth;
 
 	return depth;
@@ -244,7 +244,7 @@ mpd_inotify_callback(int wd, unsigned mask,
 	/*FormatDebug(inotify_domain, "wd=%d mask=0x%x name='%s'", wd, mask, name);*/
 
 	directory = tree_find_watch_directory(wd);
-	if (directory == NULL)
+	if (directory == nullptr)
 		return;
 
 	const auto uri_fs = watch_directory_get_uri_fs(directory);
@@ -301,7 +301,7 @@ mpd_inotify_init(unsigned max_depth)
 	inotify_source = InotifySource::Create(*main_loop,
 					       mpd_inotify_callback, nullptr,
 					       error);
-	if (inotify_source == NULL) {
+	if (inotify_source == nullptr) {
 		LogError(error);
 		return;
 	}
@@ -312,7 +312,7 @@ mpd_inotify_init(unsigned max_depth)
 	if (descriptor < 0) {
 		LogError(error);
 		delete inotify_source;
-		inotify_source = NULL;
+		inotify_source = nullptr;
 		return;
 	}
 
@@ -330,7 +330,7 @@ mpd_inotify_init(unsigned max_depth)
 void
 mpd_inotify_finish(void)
 {
-	if (inotify_source == NULL)
+	if (inotify_source == nullptr)
 		return;
 
 	delete inotify_queue;

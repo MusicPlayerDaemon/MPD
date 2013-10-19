@@ -35,18 +35,18 @@ extern "C" {
 static const char *
 tag_get_value_checked(const Tag *tag, enum tag_type type)
 {
-	return tag != NULL
+	return tag != nullptr
 		? tag->GetValue(type)
-		: NULL;
+		: nullptr;
 }
 
 static int
 compare_utf8_string(const char *a, const char *b)
 {
-	if (a == NULL)
-		return b == NULL ? 0 : -1;
+	if (a == nullptr)
+		return b == nullptr ? 0 : -1;
 
-	if (b == NULL)
+	if (b == nullptr)
 		return 1;
 
 	return g_utf8_collate(a, b);
@@ -54,7 +54,7 @@ compare_utf8_string(const char *a, const char *b)
 
 /**
  * Compare two string tag values, ignoring case.  Either one may be
- * NULL.
+ * nullptr.
  */
 static int
 compare_string_tag_item(const Tag *a, const Tag *b,
@@ -66,13 +66,13 @@ compare_string_tag_item(const Tag *a, const Tag *b,
 
 /**
  * Compare two tag values which should contain an integer value
- * (e.g. disc or track number).  Either one may be NULL.
+ * (e.g. disc or track number).  Either one may be nullptr.
  */
 static int
 compare_number_string(const char *a, const char *b)
 {
-	long ai = a == NULL ? 0 : strtol(a, NULL, 10);
-	long bi = b == NULL ? 0 : strtol(b, NULL, 10);
+	long ai = a == nullptr ? 0 : strtol(a, nullptr, 10);
+	long bi = b == nullptr ? 0 : strtol(b, nullptr, 10);
 
 	if (ai <= 0)
 		return bi <= 0 ? 0 : -1;
@@ -120,5 +120,5 @@ song_cmp(gcc_unused void *priv, struct list_head *_a, struct list_head *_b)
 void
 song_list_sort(struct list_head *songs)
 {
-	list_sort(NULL, songs, song_cmp);
+	list_sort(nullptr, songs, song_cmp);
 }

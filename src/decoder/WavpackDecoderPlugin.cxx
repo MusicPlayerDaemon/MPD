@@ -206,7 +206,7 @@ wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
 		format_samples(bytes_per_sample, chunk,
 			       samples_got * audio_format.channels);
 
-		cmd = decoder_data(decoder, NULL, chunk,
+		cmd = decoder_data(decoder, nullptr, chunk,
 				   samples_got * output_sample_size,
 				   bitrate);
 	}
@@ -295,7 +295,7 @@ wavpack_scan_file(const char *fname,
 	char error[ERRORLEN];
 
 	wpc = WavpackOpenFileInput(fname, error, OPEN_TAGS, 0);
-	if (wpc == NULL) {
+	if (wpc == nullptr) {
 		FormatError(wavpack_domain,
 			    "failed to open WavPack file \"%s\": %s",
 			    fname, error);
@@ -311,16 +311,16 @@ wavpack_scan_file(const char *fname,
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
 		const char *name = tag_item_names[i];
-		if (name != NULL)
+		if (name != nullptr)
 			wavpack_scan_tag_item(wpc, name, (enum tag_type)i,
 					      handler, handler_ctx);
 	}
 
-	for (const struct tag_table *i = ape_tags; i->name != NULL; ++i)
+	for (const struct tag_table *i = ape_tags; i->name != nullptr; ++i)
 		wavpack_scan_tag_item(wpc, i->name, i->type,
 				      handler, handler_ctx);
 
-	if (handler->pair != NULL) {
+	if (handler->pair != nullptr) {
 		char name[64];
 
 		for (int i = 0, n = WavpackGetNumTagItems(wpc);
@@ -463,7 +463,7 @@ wavpack_open_wvc(struct decoder *decoder, const char *uri,
 		 struct wavpack_input *wpi)
 {
 	struct input_stream *is_wvc;
-	char *wvc_url = NULL;
+	char *wvc_url = nullptr;
 	char first_byte;
 	size_t nbytes;
 
@@ -471,16 +471,16 @@ wavpack_open_wvc(struct decoder *decoder, const char *uri,
 	 * As we use dc->utf8url, this function will be bad for
 	 * single files. utf8url is not absolute file path :/
 	 */
-	if (uri == NULL)
+	if (uri == nullptr)
 		return nullptr;
 
-	wvc_url = g_strconcat(uri, "c", NULL);
+	wvc_url = g_strconcat(uri, "c", nullptr);
 
 	is_wvc = input_stream::Open(wvc_url, mutex, cond, IgnoreError());
 	g_free(wvc_url);
 
-	if (is_wvc == NULL)
-		return NULL;
+	if (is_wvc == nullptr)
+		return nullptr;
 
 	/*
 	 * And we try to buffer in order to get know
@@ -491,7 +491,7 @@ wavpack_open_wvc(struct decoder *decoder, const char *uri,
 	);
 	if (nbytes == 0) {
 		is_wvc->Close();
-		return NULL;
+		return nullptr;
 	}
 
 	/* push it back */
@@ -516,7 +516,7 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 	is_wvc = wavpack_open_wvc(decoder, is->uri.c_str(),
 				  is->mutex, is->cond,
 				  &isp_wvc);
-	if (is_wvc != NULL) {
+	if (is_wvc != nullptr) {
 		open_flags |= OPEN_WVC;
 		can_seek &= is_wvc->seekable;
 	}
@@ -528,11 +528,11 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
 	wavpack_input_init(&isp, decoder, is);
 	wpc = WavpackOpenFileInputEx(
 		&mpd_is_reader, &isp,
-		open_flags & OPEN_WVC ? &isp_wvc : NULL,
+		open_flags & OPEN_WVC ? &isp_wvc : nullptr,
 		error, open_flags, 23
 	);
 
-	if (wpc == NULL) {
+	if (wpc == nullptr) {
 		FormatError(wavpack_domain,
 			    "failed to open WavPack stream: %s", error);
 		return;
@@ -559,7 +559,7 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 		fname, error,
 		OPEN_TAGS | OPEN_WVC | OPEN_NORMALIZE, 23
 	);
-	if (wpc == NULL) {
+	if (wpc == nullptr) {
 		FormatWarning(wavpack_domain,
 			      "failed to open WavPack file \"%s\": %s",
 			      fname, error);
@@ -577,12 +577,12 @@ wavpack_filedecode(struct decoder *decoder, const char *fname)
 
 static char const *const wavpack_suffixes[] = {
 	"wv",
-	NULL
+	nullptr
 };
 
 static char const *const wavpack_mime_types[] = {
 	"audio/x-wavpack",
-	NULL
+	nullptr
 };
 
 const struct decoder_plugin wavpack_decoder_plugin = {

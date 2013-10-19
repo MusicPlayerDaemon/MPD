@@ -82,11 +82,11 @@ BonjourInit(EventLoop &loop, const char *service_name)
 	DNSServiceRef dnsReference;
 	DNSServiceErrorType error = DNSServiceRegister(&dnsReference,
 						       0, 0, service_name,
-						       SERVICE_TYPE, NULL, NULL,
+						       SERVICE_TYPE, nullptr, nullptr,
 						       g_htons(listen_port), 0,
-						       NULL,
+						       nullptr,
 						       dnsRegisterCallback,
-						       NULL);
+						       nullptr);
 
 	if (error != kDNSServiceErr_NoError) {
 		LogError(bonjour_domain,
@@ -94,7 +94,7 @@ BonjourInit(EventLoop &loop, const char *service_name)
 
 		if (dnsReference) {
 			DNSServiceRefDeallocate(dnsReference);
-			dnsReference = NULL;
+			dnsReference = nullptr;
 		}
 		return;
 	}

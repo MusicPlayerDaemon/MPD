@@ -63,9 +63,9 @@ update_archive_tree(Directory *directory, const char *name)
 		db_lock();
 		Song *song = directory->FindSong(name);
 		db_unlock();
-		if (song == NULL) {
+		if (song == nullptr) {
 			song = Song::LoadFile(name, directory);
-			if (song != NULL) {
+			if (song != nullptr) {
 				db_lock();
 				directory->AddSong(song);
 				db_unlock();
@@ -95,7 +95,7 @@ update_archive_file2(Directory *parent, const char *name,
 	Directory *directory = parent->FindChild(name);
 	db_unlock();
 
-	if (directory != NULL && directory->mtime == st->st_mtime &&
+	if (directory != nullptr && directory->mtime == st->st_mtime &&
 	    !walk_discard)
 		/* MPD has already scanned the archive, and it hasn't
 		   changed since - don't consider updating it */
@@ -106,14 +106,14 @@ update_archive_file2(Directory *parent, const char *name,
 	/* open archive */
 	Error error;
 	ArchiveFile *file = archive_file_open(plugin, path_fs.c_str(), error);
-	if (file == NULL) {
+	if (file == nullptr) {
 		LogError(error);
 		return;
 	}
 
 	FormatDebug(update_domain, "archive %s opened", path_fs.c_str());
 
-	if (directory == NULL) {
+	if (directory == nullptr) {
 		FormatDebug(update_domain,
 			    "creating archive directory: %s", name);
 		db_lock();
@@ -153,7 +153,7 @@ update_archive_file(Directory *directory,
 #ifdef ENABLE_ARCHIVE
 	const struct archive_plugin *plugin =
 		archive_plugin_from_suffix(suffix);
-	if (plugin == NULL)
+	if (plugin == nullptr)
 		return false;
 
 	update_archive_file2(directory, name, st, plugin);

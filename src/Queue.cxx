@@ -281,7 +281,7 @@ queue::Clear()
 static void
 queue_sort_order_by_priority(struct queue *queue, unsigned start, unsigned end)
 {
-	assert(queue != NULL);
+	assert(queue != nullptr);
 	assert(queue->random);
 	assert(start <= end);
 	assert(end <= queue->length);

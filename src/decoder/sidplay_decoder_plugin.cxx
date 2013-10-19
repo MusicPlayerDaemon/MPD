@@ -49,7 +49,7 @@ static bool filter_setting;
 static GKeyFile *
 sidplay_load_songlength_db(const char *path)
 {
-	GError *error = NULL;
+	GError *error = nullptr;
 	gchar *data;
 	gsize size;
 
@@ -58,7 +58,7 @@ sidplay_load_songlength_db(const char *path)
 			    "unable to read songlengths file %s: %s",
 			    path, error->message);
 		g_error_free(error);
-		return NULL;
+		return nullptr;
 	}
 
 	/* replace any ; comment characters with # */
@@ -76,7 +76,7 @@ sidplay_load_songlength_db(const char *path)
 			    path, error->message);
 		g_error_free(error);
 		g_key_file_free(db);
-		return NULL;
+		return nullptr;
 	}
 
 	g_key_file_set_list_separator(db, ' ');
@@ -88,7 +88,7 @@ sidplay_init(const config_param &param)
 {
 	/* read the songlengths database file */
 	songlength_file = param.GetBlockValue("songlength_database");
-	if (songlength_file != NULL)
+	if (songlength_file != nullptr)
 		songlength_database = sidplay_load_songlength_db(songlength_file);
 
 	default_songlength = param.GetBlockValue("default_songlength", 0u);
@@ -123,7 +123,7 @@ get_container_name(const char *path_fs)
 	char *path_container=g_strdup(path_fs);
 
 	if(!g_pattern_match(path_with_subtune,
-		strlen(path_container), path_container, NULL))
+		strlen(path_container), path_container, nullptr))
 		return path_container;
 
 	char *ptr=g_strrstr(path_container, "/" SUBTUNE_PREFIX);
@@ -140,12 +140,12 @@ static unsigned
 get_song_num(const char *path_fs)
 {
 	if(g_pattern_match(path_with_subtune,
-		strlen(path_fs), path_fs, NULL)) {
+		strlen(path_fs), path_fs, nullptr)) {
 		char *sub=g_strrstr(path_fs, "/" SUBTUNE_PREFIX);
 		if(!sub) return 1;
 
 		sub+=strlen("/" SUBTUNE_PREFIX);
-		int song_num=strtol(sub, NULL, 10);
+		int song_num=strtol(sub, nullptr, 10);
 
 		if (errno == EINVAL)
 			return 1;
@@ -159,7 +159,7 @@ get_song_num(const char *path_fs)
 static int
 get_song_length(const char *path_fs)
 {
-	if (songlength_database == NULL)
+	if (songlength_database == nullptr)
 		return -1;
 
 	gchar *sid_file=get_container_name(path_fs);
@@ -177,19 +177,19 @@ get_song_length(const char *path_fs)
 
 	gsize num_items;
 	gchar **values=g_key_file_get_string_list(songlength_database,
-		"Database", md5sum, &num_items, NULL);
+		"Database", md5sum, &num_items, nullptr);
 	if(!values || song_num>num_items) {
 		g_strfreev(values);
 		return -1;
 	}
 
-	int minutes=strtol(values[song_num-1], NULL, 10);
+	int minutes=strtol(values[song_num-1], nullptr, 10);
 	if(errno==EINVAL) minutes=0;
 
 	int seconds;
 	char *ptr=strchr(values[song_num-1], ':');
 	if(ptr) {
-		seconds=strtol(ptr+1, NULL, 10);
+		seconds=strtol(ptr+1, nullptr, 10);
 		if(errno==EINVAL) seconds=0;
 	} else
 		seconds=0;
@@ -207,7 +207,7 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 	/* load the tune */
 
 	char *path_container=get_container_name(path_fs);
-	SidTune tune(path_container, NULL, true);
+	SidTune tune(path_container, nullptr, true);
 	g_free(path_container);
 	if (!tune) {
 		LogWarning(sidplay_domain, "failed to load file");
@@ -307,7 +307,7 @@ sidplay_file_decode(struct decoder *decoder, const char *path_fs)
 
 		decoder_timestamp(decoder, (double)player.time() / timebase);
 
-		cmd = decoder_data(decoder, NULL, buffer, nbytes, 0);
+		cmd = decoder_data(decoder, nullptr, buffer, nbytes, 0);
 
 		if (cmd == DecoderCommand::SEEK) {
 			unsigned data_time = player.time();
@@ -344,7 +344,7 @@ sidplay_scan_file(const char *path_fs,
 	int song_num=get_song_num(path_fs);
 	char *path_container=get_container_name(path_fs);
 
-	SidTune tune(path_container, NULL, true);
+	SidTune tune(path_container, nullptr, true);
 	g_free(path_container);
 	if (!tune)
 		return false;
@@ -353,7 +353,7 @@ sidplay_scan_file(const char *path_fs,
 
 	/* title */
 	const char *title;
-	if (info.numberOfInfoStrings > 0 && info.infoString[0] != NULL)
+	if (info.numberOfInfoStrings > 0 && info.infoString[0] != nullptr)
 		title=info.infoString[0];
 	else
 		title="";
@@ -369,7 +369,7 @@ sidplay_scan_file(const char *path_fs,
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_TITLE, title);
 
 	/* artist */
-	if (info.numberOfInfoStrings > 1 && info.infoString[1] != NULL)
+	if (info.numberOfInfoStrings > 1 && info.infoString[1] != nullptr)
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST,
 				       info.infoString[1]);
 
@@ -389,16 +389,16 @@ sidplay_scan_file(const char *path_fs,
 static char *
 sidplay_container_scan(const char *path_fs, const unsigned int tnum)
 {
-	SidTune tune(path_fs, NULL, true);
+	SidTune tune(path_fs, nullptr, true);
 	if (!tune)
-		return NULL;
+		return nullptr;
 
 	const SidTuneInfo &info=tune.getInfo();
 
 	/* Don't treat sids containing a single tune
 		as containers */
 	if(!all_files_are_containers && info.songs<2)
-		return NULL;
+		return nullptr;
 
 	/* Construct container/tune path names, eg.
 		Delta.sid/tune_001.sid */
@@ -407,7 +407,7 @@ sidplay_container_scan(const char *path_fs, const unsigned int tnum)
 			SUBTUNE_PREFIX "%03u.sid", tnum);
 		return subtune;
 	} else
-		return NULL;
+		return nullptr;
 }
 
 static const char *const sidplay_suffixes[] = {
@@ -416,7 +416,7 @@ static const char *const sidplay_suffixes[] = {
 	"str",
 	"prg",
 	"P00",
-	NULL
+	nullptr
 };
 
 extern const struct decoder_plugin sidplay_decoder_plugin;
@@ -424,11 +424,11 @@ const struct decoder_plugin sidplay_decoder_plugin = {
 	"sidplay",
 	sidplay_init,
 	sidplay_finish,
-	NULL, /* stream_decode() */
+	nullptr, /* stream_decode() */
 	sidplay_file_decode,
 	sidplay_scan_file,
-	NULL, /* stream_tag() */
+	nullptr, /* stream_tag() */
 	sidplay_container_scan,
 	sidplay_suffixes,
-	NULL, /* mime_types */
+	nullptr, /* mime_types */
 };

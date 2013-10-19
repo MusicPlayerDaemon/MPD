@@ -50,7 +50,7 @@ const EncoderPlugin *const encoder_plugins[] = {
 #ifdef ENABLE_FLAC_ENCODER
 	&flac_encoder_plugin,
 #endif
-	NULL
+	nullptr
 };
 
 const EncoderPlugin *
@@ -60,5 +60,5 @@ encoder_plugin_get(const char *name)
 		if (strcmp(plugin->name, name) == 0)
 			return plugin;
 
-	return NULL;
+	return nullptr;
 }

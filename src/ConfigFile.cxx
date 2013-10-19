@@ -49,13 +49,13 @@ config_read_name_value(struct config_param *param, char *input, unsigned line,
 	Tokenizer tokenizer(input);
 
 	const char *name = tokenizer.NextWord(error);
-	if (name == NULL) {
+	if (name == nullptr) {
 		assert(!tokenizer.IsEnd());
 		return false;
 	}
 
 	const char *value = tokenizer.NextString(error);
-	if (value == NULL) {
+	if (value == nullptr) {
 		if (tokenizer.IsEnd()) {
 			error.Set(config_file_domain, "Value missing");
 		} else {
@@ -71,7 +71,7 @@ config_read_name_value(struct config_param *param, char *input, unsigned line,
 	}
 
 	const struct block_param *bp = param->GetBlockParam(name);
-	if (bp != NULL) {
+	if (bp != nullptr) {
 		error.Format(config_file_domain,
 			     "\"%s\" is duplicate, first defined on line %i",
 			     name, bp->line);
@@ -91,11 +91,11 @@ config_read_block(FILE *fp, int *count, char *string, Error &error)
 		char *line;
 
 		line = fgets(string, MAX_STRING_SIZE, fp);
-		if (line == NULL) {
+		if (line == nullptr) {
 			delete ret;
 			error.Set(config_file_domain,
 				  "Expected '}' before end-of-file");
-			return NULL;
+			return nullptr;
 		}
 
 		(*count)++;
@@ -125,7 +125,7 @@ config_read_block(FILE *fp, int *count, char *string, Error &error)
 			assert(*line != 0);
 			delete ret;
 			error.FormatPrefix("line %i: ", *count);
-			return NULL;
+			return nullptr;
 		}
 	}
 }
@@ -167,7 +167,7 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, Error &error)
 
 		Tokenizer tokenizer(line);
 		name = tokenizer.NextWord(error);
-		if (name == NULL) {
+		if (name == nullptr) {
 			assert(!tokenizer.IsEnd());
 			error.FormatPrefix("line %i: ", count);
 			return false;
@@ -217,14 +217,14 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, Error &error)
 			}
 
 			param = config_read_block(fp, &count, string, error);
-			if (param == NULL) {
+			if (param == nullptr) {
 				return false;
 			}
 		} else {
 			/* a string value */
 
 			value = tokenizer.NextString(error);
-			if (value == NULL) {
+			if (value == nullptr) {
 				if (tokenizer.IsEnd())
 					error.Format(config_file_domain,
 						     "line %i: Value missing",

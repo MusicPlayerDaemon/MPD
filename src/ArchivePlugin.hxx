@@ -29,14 +29,14 @@ struct archive_plugin {
 	const char *name;
 
 	/**
-	 * optional, set this to NULL if the archive plugin doesn't
+	 * optional, set this to nullptr if the archive plugin doesn't
 	 * have/need one this must false if there is an error and
 	 * true otherwise
 	 */
 	bool (*init)(void);
 
 	/**
-	 * optional, set this to NULL if the archive plugin doesn't
+	 * optional, set this to nullptr if the archive plugin doesn't
 	 * have/need one
 	 */
 	void (*finish)(void);
@@ -44,13 +44,13 @@ struct archive_plugin {
 	/**
 	 * tryes to open archive file and associates handle with archive
 	 * returns pointer to handle used is all operations with this archive
-	 * or NULL when opening fails
+	 * or nullptr when opening fails
 	 */
 	ArchiveFile *(*open)(const char *path_fs, Error &error);
 
 	/**
 	 * suffixes handled by this plugin.
-	 * last element in these arrays must always be a NULL
+	 * last element in these arrays must always be a nullptr
 	 */
 	const char *const*suffixes;
 };

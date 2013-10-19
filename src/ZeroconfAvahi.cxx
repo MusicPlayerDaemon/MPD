@@ -109,7 +109,7 @@ static void avahiRegisterService(AvahiClient * c)
 	/* If this is the first time we're called,
 	 * let's create a new entry group */
 	if (!avahiGroup) {
-		avahiGroup = avahi_entry_group_new(c, avahiGroupCallback, NULL);
+		avahiGroup = avahi_entry_group_new(c, avahiGroupCallback, nullptr);
 		if (!avahiGroup) {
 			FormatError(avahi_domain,
 				    "Failed to create avahi EntryGroup: %s",
@@ -125,8 +125,8 @@ static void avahiRegisterService(AvahiClient * c)
 	ret = avahi_entry_group_add_service(avahiGroup,
 					    AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC,
 					    AvahiPublishFlags(0),
-					    avahiName, SERVICE_TYPE, NULL,
-					    NULL, listen_port, NULL);
+					    avahiName, SERVICE_TYPE, nullptr,
+					    nullptr, listen_port, nullptr);
 	if (ret < 0) {
 		FormatError(avahi_domain, "Failed to add service %s: %s",
 			    SERVICE_TYPE, avahi_strerror(ret));
@@ -173,14 +173,14 @@ static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
 				"Client Disconnected, will reconnect shortly");
 			if (avahiGroup) {
 				avahi_entry_group_free(avahiGroup);
-				avahiGroup = NULL;
+				avahiGroup = nullptr;
 			}
 			if (avahiClient)
 				avahi_client_free(avahiClient);
 			avahiClient =
 			    avahi_client_new(avahi_poll,
 					     AVAHI_CLIENT_NO_FAIL,
-					     avahiClientCallback, NULL,
+					     avahiClientCallback, nullptr,
 					     &reason);
 			if (!avahiClient) {
 				FormatWarning(avahi_domain,
@@ -246,7 +246,7 @@ AvahiInit(EventLoop &loop, const char *serviceName)
 
 	int error;
 	avahiClient = avahi_client_new(avahi_poll, AVAHI_CLIENT_NO_FAIL,
-				       avahiClientCallback, NULL, &error);
+				       avahiClientCallback, nullptr, &error);
 
 	if (!avahiClient) {
 		FormatError(avahi_domain, "Failed to create client: %s",
@@ -262,17 +262,17 @@ AvahiDeinit(void)
 
 	if (avahiGroup) {
 		avahi_entry_group_free(avahiGroup);
-		avahiGroup = NULL;
+		avahiGroup = nullptr;
 	}
 
 	if (avahiClient) {
 		avahi_client_free(avahiClient);
-		avahiClient = NULL;
+		avahiClient = nullptr;
 	}
 
 	delete avahi_poll;
 	avahi_poll = nullptr;
 
 	avahi_free(avahiName);
-	avahiName = NULL;
+	avahiName = nullptr;
 }

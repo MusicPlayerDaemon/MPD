@@ -45,7 +45,7 @@ static bool is_simple;
 bool
 DatabaseGlobalInit(const config_param &param, Error &error)
 {
-	assert(db == NULL);
+	assert(db == nullptr);
 	assert(!db_is_open);
 
 	const char *plugin_name =
@@ -53,14 +53,14 @@ DatabaseGlobalInit(const config_param &param, Error &error)
 	is_simple = strcmp(plugin_name, "simple") == 0;
 
 	const DatabasePlugin *plugin = GetDatabasePluginByName(plugin_name);
-	if (plugin == NULL) {
+	if (plugin == nullptr) {
 		error.Format(db_domain,
 			     "No such database plugin: %s", plugin_name);
 		return false;
 	}
 
 	db = plugin->create(param, error);
-	return db != NULL;
+	return db != nullptr;
 }
 
 void
@@ -69,14 +69,14 @@ DatabaseGlobalDeinit(void)
 	if (db_is_open)
 		db->Close();
 
-	if (db != NULL)
+	if (db != nullptr)
 		delete db;
 }
 
 const Database *
 GetDatabase()
 {
-	assert(db == NULL || db_is_open);
+	assert(db == nullptr || db_is_open);
 
 	return db;
 }
@@ -95,7 +95,7 @@ GetDatabase(Error &error)
 bool
 db_is_simple(void)
 {
-	assert(db == NULL || db_is_open);
+	assert(db == nullptr || db_is_open);
 
 	return is_simple;
 }
@@ -103,7 +103,7 @@ db_is_simple(void)
 Directory *
 db_get_root(void)
 {
-	assert(db != NULL);
+	assert(db != nullptr);
 	assert(db_is_simple());
 
 	return ((SimpleDatabase *)db)->GetRoot();
@@ -112,11 +112,11 @@ db_get_root(void)
 Directory *
 db_get_directory(const char *name)
 {
-	if (db == NULL)
-		return NULL;
+	if (db == nullptr)
+		return nullptr;
 
 	Directory *music_root = db_get_root();
-	if (name == NULL)
+	if (name == nullptr)
 		return music_root;
 
 	return music_root->LookupDirectory(name);
@@ -125,7 +125,7 @@ db_get_directory(const char *name)
 bool
 db_save(Error &error)
 {
-	assert(db != NULL);
+	assert(db != nullptr);
 	assert(db_is_open);
 	assert(db_is_simple());
 
@@ -135,7 +135,7 @@ db_save(Error &error)
 bool
 DatabaseGlobalOpen(Error &error)
 {
-	assert(db != NULL);
+	assert(db != nullptr);
 	assert(!db_is_open);
 
 	if (!db->Open(error))
@@ -151,7 +151,7 @@ DatabaseGlobalOpen(Error &error)
 time_t
 db_get_mtime(void)
 {
-	assert(db != NULL);
+	assert(db != nullptr);
 	assert(db_is_open);
 	assert(db_is_simple());
 

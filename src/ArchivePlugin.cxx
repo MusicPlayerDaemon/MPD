@@ -28,9 +28,9 @@ ArchiveFile *
 archive_file_open(const struct archive_plugin *plugin, const char *path,
 		  Error &error)
 {
-	assert(plugin != NULL);
-	assert(plugin->open != NULL);
-	assert(path != NULL);
+	assert(plugin != nullptr);
+	assert(plugin->open != nullptr);
+	assert(path != nullptr);
 
 	ArchiveFile *file = plugin->open(path, error);
 	assert((file == nullptr) == error.IsDefined());

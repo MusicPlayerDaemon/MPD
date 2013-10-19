@@ -76,12 +76,12 @@ static void
 mpd_ffmpeg_log_callback(gcc_unused void *ptr, int level,
 			const char *fmt, va_list vl)
 {
-	const AVClass * cls = NULL;
+	const AVClass * cls = nullptr;
 
-	if (ptr != NULL)
+	if (ptr != nullptr)
 		cls = *(const AVClass *const*)ptr;
 
-	if (cls != NULL) {
+	if (cls != nullptr) {
 		char domain[64];
 		snprintf(domain, sizeof(domain), "%s/%s",
 			 ffmpeg_domain.GetName(), cls->item_name(ptr));
@@ -155,12 +155,12 @@ mpd_ffmpeg_open_input(AVFormatContext **ic_ptr,
 		      AVInputFormat *fmt)
 {
 	AVFormatContext *context = avformat_alloc_context();
-	if (context == NULL)
+	if (context == nullptr)
 		return AVERROR(ENOMEM);
 
 	context->pb = pb;
 	*ic_ptr = context;
-	return avformat_open_input(ic_ptr, filename, fmt, NULL);
+	return avformat_open_input(ic_ptr, filename, fmt, nullptr);
 }
 
 static bool
@@ -329,7 +329,7 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 	char buffer[64];
 	const char *name = av_get_sample_fmt_string(buffer, sizeof(buffer),
 						    sample_fmt);
-	if (name != NULL)
+	if (name != nullptr)
 		FormatError(ffmpeg_domain,
 			    "Unsupported libavcodec SampleFormat value: %s (%d)",
 			    name, sample_fmt);
@@ -373,7 +373,7 @@ static void
 ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 {
 	AVInputFormat *input_format = ffmpeg_probe(decoder, input);
-	if (input_format == NULL)
+	if (input_format == nullptr)
 		return;
 
 	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
@@ -386,7 +386,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	}
 
 	//ffmpeg works with ours "fileops" helper
-	AVFormatContext *format_context = NULL;
+	AVFormatContext *format_context = nullptr;
 	if (mpd_ffmpeg_open_input(&format_context, stream.io,
 				  input->uri.c_str(),
 				  input_format) != 0) {
@@ -395,7 +395,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	}
 
 	const int find_result =
-		avformat_find_stream_info(format_context, NULL);
+		avformat_find_stream_info(format_context, nullptr);
 	if (find_result < 0) {
 		LogError(ffmpeg_domain, "Couldn't find stream info");
 		avformat_close_input(&format_context);
@@ -445,7 +445,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 	   values into AVCodecContext.channels - a change that will be
 	   reverted later by avcodec_decode_audio3() */
 
-	const int open_result = avcodec_open2(codec_context, codec, NULL);
+	const int open_result = avcodec_open2(codec_context, codec, nullptr);
 	if (open_result < 0) {
 		LogError(ffmpeg_domain, "Could not open codec");
 		avformat_close_input(&format_context);
@@ -466,7 +466,7 @@ ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
 		return;
 	}
 
-	uint8_t *interleaved_buffer = NULL;
+	uint8_t *interleaved_buffer = nullptr;
 	int interleaved_buffer_size = 0;
 
 	DecoderCommand cmd;
@@ -518,21 +518,21 @@ static bool
 ffmpeg_scan_stream(struct input_stream *is,
 		   const struct tag_handler *handler, void *handler_ctx)
 {
-	AVInputFormat *input_format = ffmpeg_probe(NULL, is);
-	if (input_format == NULL)
+	AVInputFormat *input_format = ffmpeg_probe(nullptr, is);
+	if (input_format == nullptr)
 		return false;
 
 	AvioStream stream(nullptr, is);
 	if (!stream.Open())
 		return false;
 
-	AVFormatContext *f = NULL;
+	AVFormatContext *f = nullptr;
 	if (mpd_ffmpeg_open_input(&f, stream.io, is->uri.c_str(),
 				  input_format) != 0)
 		return false;
 
 	const int find_result =
-		avformat_find_stream_info(f, NULL);
+		avformat_find_stream_info(f, nullptr);
 	if (find_result < 0) {
 		avformat_close_input(&f);
 		return false;
@@ -576,7 +576,7 @@ static const char *const ffmpeg_suffixes[] = {
 	"tsp", "tta", "xa", "xvid", "uv", "uv2", "vb", "vid", "vob", "voc",
 	"vp6", "vmd", "wav", "webm", "wma", "wmv", "wsaud", "wsvga", "wv",
 	"wve",
-	NULL
+	nullptr
 };
 
 static const char *const ffmpeg_mime_types[] = {
@@ -664,7 +664,7 @@ static const char *const ffmpeg_mime_types[] = {
 	   plugin */
 	"audio/x-mpd-ffmpeg",
 
-	NULL
+	nullptr
 };
 
 const struct decoder_plugin ffmpeg_decoder_plugin = {

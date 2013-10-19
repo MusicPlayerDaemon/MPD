@@ -69,7 +69,7 @@ audio_output_get(unsigned i)
 {
 	assert(i < num_audio_outputs);
 
-	assert(audio_outputs[i] != NULL);
+	assert(audio_outputs[i] != nullptr);
 
 	return audio_outputs[i];
 }
@@ -85,7 +85,7 @@ audio_output_find(const char *name)
 	}
 
 	/* name not found */
-	return NULL;
+	return nullptr;
 }
 
 gcc_const
@@ -93,7 +93,7 @@ static unsigned
 audio_output_config_count(void)
 {
 	unsigned int nr = 0;
-	const struct config_param *param = NULL;
+	const struct config_param *param = nullptr;
 
 	while ((param = config_get_next_param(CONF_AUDIO_OUTPUT, param)))
 		nr++;
@@ -105,7 +105,7 @@ audio_output_config_count(void)
 void
 audio_output_all_init(struct player_control *pc)
 {
-	const struct config_param *param = NULL;
+	const struct config_param *param = nullptr;
 	unsigned int i;
 	Error error;
 
@@ -129,8 +129,8 @@ audio_output_all_init(struct player_control *pc)
 		}
 
 		audio_output *output = audio_output_new(*param, pc, error);
-		if (output == NULL) {
-			if (param != NULL)
+		if (output == nullptr) {
+			if (param != nullptr)
 				FormatFatalError("line %i: %s",
 						 param->line,
 						 error.GetMessage());
@@ -161,7 +161,7 @@ audio_output_all_finish(void)
 	}
 
 	g_free(audio_outputs);
-	audio_outputs = NULL;
+	audio_outputs = nullptr;
 	num_audio_outputs = 0;
 }
 
@@ -225,9 +225,9 @@ audio_output_reset_reopen(struct audio_output *ao)
 {
 	const ScopeLock protect(ao->mutex);
 
-	if (!ao->open && ao->fail_timer != NULL) {
+	if (!ao->open && ao->fail_timer != nullptr) {
 		g_timer_destroy(ao->fail_timer);
-		ao->fail_timer = NULL;
+		ao->fail_timer = nullptr;
 	}
 }
 
@@ -280,9 +280,9 @@ audio_output_all_play(struct music_chunk *chunk, Error &error)
 	bool ret;
 	unsigned int i;
 
-	assert(g_music_buffer != NULL);
-	assert(g_mp != NULL);
-	assert(chunk != NULL);
+	assert(g_music_buffer != nullptr);
+	assert(g_mp != nullptr);
+	assert(chunk != nullptr);
 	assert(chunk->CheckFormat(input_audio_format));
 
 	ret = audio_output_all_update();
@@ -308,16 +308,16 @@ audio_output_all_open(const AudioFormat audio_format,
 	bool ret = false, enabled = false;
 	unsigned int i;
 
-	assert(g_music_buffer == NULL || g_music_buffer == &buffer);
-	assert((g_mp == NULL) == (g_music_buffer == NULL));
+	assert(g_music_buffer == nullptr || g_music_buffer == &buffer);
+	assert((g_mp == nullptr) == (g_music_buffer == nullptr));
 
 	g_music_buffer = &buffer;
 
 	/* the audio format must be the same as existing chunks in the
 	   pipe */
-	assert(g_mp == NULL || g_mp->CheckFormat(audio_format));
+	assert(g_mp == nullptr || g_mp->CheckFormat(audio_format));
 
-	if (g_mp == NULL)
+	if (g_mp == nullptr)
 		g_mp = new MusicPipe();
 	else
 		/* if the pipe hasn't been cleared, the the audio
@@ -361,17 +361,17 @@ chunk_is_consumed_in(const struct audio_output *ao,
 	if (!ao->open)
 		return true;
 
-	if (ao->chunk == NULL)
+	if (ao->chunk == nullptr)
 		return false;
 
 	assert(chunk == ao->chunk || g_mp->Contains(ao->chunk));
 
 	if (chunk != ao->chunk) {
-		assert(chunk->next != NULL);
+		assert(chunk->next != nullptr);
 		return true;
 	}
 
-	return ao->chunk_finished && chunk->next == NULL;
+	return ao->chunk_finished && chunk->next == nullptr;
 }
 
 /**
@@ -398,7 +398,7 @@ chunk_is_consumed(const struct music_chunk *chunk)
 static void
 clear_tail_chunk(gcc_unused const struct music_chunk *chunk, bool *locked)
 {
-	assert(chunk->next == NULL);
+	assert(chunk->next == nullptr);
 	assert(g_mp->Contains(chunk));
 
 	for (unsigned i = 0; i < num_audio_outputs; ++i) {
@@ -416,7 +416,7 @@ clear_tail_chunk(gcc_unused const struct music_chunk *chunk, bool *locked)
 
 		assert(ao->chunk == chunk);
 		assert(ao->chunk_finished);
-		ao->chunk = NULL;
+		ao->chunk = nullptr;
 	}
 }
 
@@ -428,8 +428,8 @@ audio_output_all_check(void)
 	struct music_chunk *shifted;
 	bool locked[num_audio_outputs];
 
-	assert(g_music_buffer != NULL);
-	assert(g_mp != NULL);
+	assert(g_music_buffer != nullptr);
+	assert(g_mp != nullptr);
 
 	while ((chunk = g_mp->Peek()) != nullptr) {
 		assert(!g_mp->IsEmpty());
@@ -444,7 +444,7 @@ audio_output_all_check(void)
 			   provides a defined value */
 			audio_output_all_elapsed_time = chunk->times;
 
-		is_tail = chunk->next == NULL;
+		is_tail = chunk->next == nullptr;
 		if (is_tail)
 			/* this is the tail of the pipe - clear the
 			   chunk reference in all outputs */
@@ -520,7 +520,7 @@ audio_output_all_cancel(void)
 
 	/* clear the music pipe and return all chunks to the buffer */
 
-	if (g_mp != NULL)
+	if (g_mp != nullptr)
 		g_mp->Clear(*g_music_buffer);
 
 	/* the audio outputs are now waiting for a signal, to
@@ -541,15 +541,15 @@ audio_output_all_close(void)
 	for (i = 0; i < num_audio_outputs; ++i)
 		audio_output_close(audio_outputs[i]);
 
-	if (g_mp != NULL) {
-		assert(g_music_buffer != NULL);
+	if (g_mp != nullptr) {
+		assert(g_music_buffer != nullptr);
 
 		g_mp->Clear(*g_music_buffer);
 		delete g_mp;
-		g_mp = NULL;
+		g_mp = nullptr;
 	}
 
-	g_music_buffer = NULL;
+	g_music_buffer = nullptr;
 
 	input_audio_format.Clear();
 
@@ -564,15 +564,15 @@ audio_output_all_release(void)
 	for (i = 0; i < num_audio_outputs; ++i)
 		audio_output_release(audio_outputs[i]);
 
-	if (g_mp != NULL) {
-		assert(g_music_buffer != NULL);
+	if (g_mp != nullptr) {
+		assert(g_music_buffer != nullptr);
 
 		g_mp->Clear(*g_music_buffer);
 		delete g_mp;
-		g_mp = NULL;
+		g_mp = nullptr;
 	}
 
-	g_music_buffer = NULL;
+	g_music_buffer = nullptr;
 
 	input_audio_format.Clear();
 

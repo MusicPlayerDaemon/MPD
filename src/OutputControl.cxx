@@ -100,7 +100,7 @@ void
 audio_output_set_replay_gain_mode(struct audio_output *ao,
 				  enum replay_gain_mode mode)
 {
-	if (ao->replay_gain_filter != NULL)
+	if (ao->replay_gain_filter != nullptr)
 		replay_gain_filter_set_mode(ao->replay_gain_filter, mode);
 }
 
@@ -108,7 +108,7 @@ void
 audio_output_enable(struct audio_output *ao)
 {
 	if (!ao->thread.IsDefined()) {
-		if (ao->plugin->enable == NULL) {
+		if (ao->plugin->enable == nullptr) {
 			/* don't bother to start the thread now if the
 			   device doesn't even have a enable() method;
 			   just assign the variable and we're done */
@@ -126,7 +126,7 @@ void
 audio_output_disable(struct audio_output *ao)
 {
 	if (!ao->thread.IsDefined()) {
-		if (ao->plugin->disable == NULL)
+		if (ao->plugin->disable == nullptr)
 			ao->really_enabled = false;
 		else
 			/* if there's no thread yet, the device cannot
@@ -149,13 +149,13 @@ audio_output_open(struct audio_output *ao,
 {
 	bool open;
 
-	assert(ao != NULL);
+	assert(ao != nullptr);
 	assert(ao->allow_play);
 	assert(audio_format.IsValid());
 
-	if (ao->fail_timer != NULL) {
+	if (ao->fail_timer != nullptr) {
 		g_timer_destroy(ao->fail_timer);
-		ao->fail_timer = NULL;
+		ao->fail_timer = nullptr;
 	}
 
 	if (ao->open && audio_format == ao->in_audio_format) {
@@ -163,7 +163,7 @@ audio_output_open(struct audio_output *ao,
 		       (ao->always_on && ao->pause));
 
 		if (ao->pause) {
-			ao->chunk = NULL;
+			ao->chunk = nullptr;
 			ao->pipe = &mp;
 
 			/* unpause with the CANCEL command; this is a
@@ -180,7 +180,7 @@ audio_output_open(struct audio_output *ao,
 	}
 
 	ao->in_audio_format = audio_format;
-	ao->chunk = NULL;
+	ao->chunk = nullptr;
 
 	ao->pipe = &mp;
 
@@ -190,7 +190,7 @@ audio_output_open(struct audio_output *ao,
 	ao_command(ao, ao->open ? AO_COMMAND_REOPEN : AO_COMMAND_OPEN);
 	open = ao->open;
 
-	if (open && ao->mixer != NULL) {
+	if (open && ao->mixer != nullptr) {
 		Error error;
 		if (!mixer_open(ao->mixer, error))
 			FormatWarning(output_domain,
@@ -208,19 +208,19 @@ audio_output_open(struct audio_output *ao,
 static void
 audio_output_close_locked(struct audio_output *ao)
 {
-	assert(ao != NULL);
+	assert(ao != nullptr);
 	assert(ao->allow_play);
 
-	if (ao->mixer != NULL)
+	if (ao->mixer != nullptr)
 		mixer_auto_close(ao->mixer);
 
-	assert(!ao->open || ao->fail_timer == NULL);
+	assert(!ao->open || ao->fail_timer == nullptr);
 
 	if (ao->open)
 		ao_command(ao, AO_COMMAND_CLOSE);
-	else if (ao->fail_timer != NULL) {
+	else if (ao->fail_timer != nullptr) {
 		g_timer_destroy(ao->fail_timer);
-		ao->fail_timer = NULL;
+		ao->fail_timer = nullptr;
 	}
 }
 
@@ -232,8 +232,8 @@ audio_output_update(struct audio_output *ao,
 	const ScopeLock protect(ao->mutex);
 
 	if (ao->enabled && ao->really_enabled) {
-		if (ao->fail_timer == NULL ||
-		    g_timer_elapsed(ao->fail_timer, NULL) > REOPEN_AFTER) {
+		if (ao->fail_timer == nullptr ||
+		    g_timer_elapsed(ao->fail_timer, nullptr) > REOPEN_AFTER) {
 			return audio_output_open(ao, audio_format, mp);
 		}
 	} else if (audio_output_is_open(ao))
@@ -255,7 +255,7 @@ audio_output_play(struct audio_output *ao)
 
 void audio_output_pause(struct audio_output *ao)
 {
-	if (ao->mixer != NULL && ao->plugin->pause == NULL)
+	if (ao->mixer != nullptr && ao->plugin->pause == nullptr)
 		/* the device has no pause mode: close the mixer,
 		   unless its "global" flag is set (checked by
 		   mixer_auto_close()) */
@@ -309,8 +309,8 @@ audio_output_release(struct audio_output *ao)
 
 void audio_output_close(struct audio_output *ao)
 {
-	assert(ao != NULL);
-	assert(!ao->open || ao->fail_timer == NULL);
+	assert(ao != nullptr);
+	assert(!ao->open || ao->fail_timer == nullptr);
 
 	const ScopeLock protect(ao->mutex);
 	audio_output_close_locked(ao);
@@ -320,7 +320,7 @@ void audio_output_finish(struct audio_output *ao)
 {
 	audio_output_close(ao);
 
-	assert(ao->fail_timer == NULL);
+	assert(ao->fail_timer == nullptr);
 
 	if (ao->thread.IsDefined()) {
 		assert(ao->allow_play);

@@ -62,7 +62,7 @@ listen_add_config_param(unsigned int port,
 			const struct config_param *param,
 			Error &error_r)
 {
-	assert(param != NULL);
+	assert(param != nullptr);
 
 	if (0 == strcmp(param->value.c_str(), "any")) {
 		return listen_socket->AddPort(port, error_r);
@@ -107,7 +107,7 @@ listen_global_init(Error &error)
 
 	int port = config_get_positive(CONF_PORT, DEFAULT_PORT);
 	const struct config_param *param =
-		config_get_next_param(CONF_BIND_TO_ADDRESS, NULL);
+		config_get_next_param(CONF_BIND_TO_ADDRESS, nullptr);
 	bool success;
 
 	listen_socket = new ClientListener();
@@ -118,7 +118,7 @@ listen_global_init(Error &error)
 	if (error.IsDefined())
 		return false;
 
-	if (param != NULL) {
+	if (param != nullptr) {
 		/* "bind_to_address" is configured, create listeners
 		   for all values */
 
@@ -133,7 +133,7 @@ listen_global_init(Error &error)
 
 			param = config_get_next_param(CONF_BIND_TO_ADDRESS,
 						      param);
-		} while (param != NULL);
+		} while (param != nullptr);
 	} else {
 		/* no "bind_to_address" configured, bind the
 		   configured port on all interfaces */
@@ -159,7 +159,7 @@ void listen_global_finish(void)
 {
 	LogDebug(listen_domain, "listen_global_finish called");
 
-	assert(listen_socket != NULL);
+	assert(listen_socket != nullptr);
 
 	delete listen_socket;
 }

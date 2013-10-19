@@ -46,7 +46,7 @@ update_song_file2(Directory *directory,
 		FormatError(update_domain,
 			    "no read permissions on %s/%s",
 			    directory->GetPath(), name);
-		if (song != NULL) {
+		if (song != nullptr) {
 			db_lock();
 			delete_song(directory, song);
 			db_unlock();
@@ -55,10 +55,10 @@ update_song_file2(Directory *directory,
 		return;
 	}
 
-	if (!(song != NULL && st->st_mtime == song->mtime &&
+	if (!(song != nullptr && st->st_mtime == song->mtime &&
 	      !walk_discard) &&
 	    update_container_file(directory, name, st, plugin)) {
-		if (song != NULL) {
+		if (song != nullptr) {
 			db_lock();
 			delete_song(directory, song);
 			db_unlock();
@@ -67,11 +67,11 @@ update_song_file2(Directory *directory,
 		return;
 	}
 
-	if (song == NULL) {
+	if (song == nullptr) {
 		FormatDebug(update_domain, "reading %s/%s",
 			    directory->GetPath(), name);
 		song = Song::LoadFile(name, directory);
-		if (song == NULL) {
+		if (song == nullptr) {
 			FormatDebug(update_domain,
 				    "ignoring unrecognized file %s/%s",
 				    directory->GetPath(), name);
@@ -108,7 +108,7 @@ update_song_file(Directory *directory,
 {
 	const struct decoder_plugin *plugin =
 		decoder_plugin_from_suffix(suffix, nullptr);
-	if (plugin == NULL)
+	if (plugin == nullptr)
 		return false;
 
 	update_song_file2(directory, name, st, plugin);

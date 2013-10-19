@@ -38,20 +38,20 @@
  *
  * @param filter_template_name the name of the filter template
  * @param error space to return an error description
- * @return the configuration block, or NULL if none was configured
+ * @return the configuration block, or nullptr if none was configured
  */
 static const struct config_param *
 filter_plugin_config(const char *filter_template_name, Error &error)
 {
-	const struct config_param *param = NULL;
+	const struct config_param *param = nullptr;
 
-	while ((param = config_get_next_param(CONF_AUDIO_FILTER, param)) != NULL) {
+	while ((param = config_get_next_param(CONF_AUDIO_FILTER, param)) != nullptr) {
 		const char *name = param->GetBlockValue("name");
-		if (name == NULL) {
+		if (name == nullptr) {
 			error.Format(config_domain,
 				     "filter configuration without 'name' name in line %d",
 				     param->line);
-			return NULL;
+			return nullptr;
 		}
 
 		if (strcmp(name, filter_template_name) == 0)
@@ -61,7 +61,7 @@ filter_plugin_config(const char *filter_template_name, Error &error)
 	error.Format(config_domain,
 		     "filter template not found: %s",
 		     filter_template_name);
-	return NULL;
+	return nullptr;
 }
 
 static bool

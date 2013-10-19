@@ -134,7 +134,7 @@ handle_sticker_song(Client *client, int argc, char *argv[])
 
 		db_lock();
 		Directory *directory = db_get_directory(argv[3]);
-		if (directory == NULL) {
+		if (directory == nullptr) {
 			db_unlock();
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "no such directory");

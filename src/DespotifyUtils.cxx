@@ -75,7 +75,7 @@ void mpd_despotify_unregister_callback(void (*cb)(struct despotify_session *, in
 	for (i = 0; i < sizeof(registered_callbacks) / sizeof(registered_callbacks[0]); i++) {
 
 		if (registered_callbacks[i] == cb) {
-			registered_callbacks[i] = NULL;
+			registered_callbacks[i] = nullptr;
 		}
 	}
 }
@@ -118,11 +118,11 @@ struct despotify_session *mpd_despotify_get_session(void)
 	if (g_session)
 		return g_session;
 
-	user = config_get_string(CONF_DESPOTIFY_USER, NULL);
-	passwd = config_get_string(CONF_DESPOTIFY_PASSWORD, NULL);
+	user = config_get_string(CONF_DESPOTIFY_USER, nullptr);
+	passwd = config_get_string(CONF_DESPOTIFY_PASSWORD, nullptr);
 	high_bitrate = config_get_bool(CONF_DESPOTIFY_HIGH_BITRATE, true);
 
-	if (user == NULL || passwd == NULL) {
+	if (user == nullptr || passwd == nullptr) {
 		LogDebug(despotify_domain,
 			 "disabling despotify because account is not configured");
 		return nullptr;
@@ -133,7 +133,7 @@ struct despotify_session *mpd_despotify_get_session(void)
 		return nullptr;
 	}
 
-	g_session = despotify_init_client(callback, NULL,
+	g_session = despotify_init_client(callback, nullptr,
 					  high_bitrate, true);
 	if (!g_session) {
 		LogWarning(despotify_domain,

@@ -50,7 +50,7 @@ static Cond remove_cond;
 static void
 song_remove_event(void)
 {
-	assert(removed_song != NULL);
+	assert(removed_song != nullptr);
 
 	{
 		const auto uri = removed_song->GetURI();
@@ -67,7 +67,7 @@ song_remove_event(void)
 
 	/* clear "removed_song" and send signal to update thread */
 	remove_mutex.lock();
-	removed_song = NULL;
+	removed_song = nullptr;
 	remove_cond.signal();
 	remove_mutex.unlock();
 }
@@ -81,7 +81,7 @@ update_remove_global_init(void)
 void
 update_remove_song(const Song *song)
 {
-	assert(removed_song == NULL);
+	assert(removed_song == nullptr);
 
 	removed_song = song;
 
@@ -89,7 +89,7 @@ update_remove_song(const Song *song)
 
 	remove_mutex.lock();
 
-	while (removed_song != NULL)
+	while (removed_song != nullptr)
 		remove_cond.wait(remove_mutex);
 
 	remove_mutex.unlock();

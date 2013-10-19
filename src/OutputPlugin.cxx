@@ -26,8 +26,8 @@ ao_plugin_init(const struct audio_output_plugin *plugin,
 	       const config_param &param,
 	       Error &error)
 {
-	assert(plugin != NULL);
-	assert(plugin->init != NULL);
+	assert(plugin != nullptr);
+	assert(plugin->init != nullptr);
 
 	return plugin->init(param, error);
 }
@@ -41,7 +41,7 @@ ao_plugin_finish(struct audio_output *ao)
 bool
 ao_plugin_enable(struct audio_output *ao, Error &error_r)
 {
-	return ao->plugin->enable != NULL
+	return ao->plugin->enable != nullptr
 		? ao->plugin->enable(ao, error_r)
 		: true;
 }
@@ -49,7 +49,7 @@ ao_plugin_enable(struct audio_output *ao, Error &error_r)
 void
 ao_plugin_disable(struct audio_output *ao)
 {
-	if (ao->plugin->disable != NULL)
+	if (ao->plugin->disable != nullptr)
 		ao->plugin->disable(ao);
 }
 
@@ -69,7 +69,7 @@ ao_plugin_close(struct audio_output *ao)
 unsigned
 ao_plugin_delay(struct audio_output *ao)
 {
-	return ao->plugin->delay != NULL
+	return ao->plugin->delay != nullptr
 		? ao->plugin->delay(ao)
 		: 0;
 }
@@ -77,7 +77,7 @@ ao_plugin_delay(struct audio_output *ao)
 void
 ao_plugin_send_tag(struct audio_output *ao, const Tag *tag)
 {
-	if (ao->plugin->send_tag != NULL)
+	if (ao->plugin->send_tag != nullptr)
 		ao->plugin->send_tag(ao, tag);
 }
 
@@ -91,19 +91,19 @@ ao_plugin_play(struct audio_output *ao, const void *chunk, size_t size,
 void
 ao_plugin_drain(struct audio_output *ao)
 {
-	if (ao->plugin->drain != NULL)
+	if (ao->plugin->drain != nullptr)
 		ao->plugin->drain(ao);
 }
 
 void
 ao_plugin_cancel(struct audio_output *ao)
 {
-	if (ao->plugin->cancel != NULL)
+	if (ao->plugin->cancel != nullptr)
 		ao->plugin->cancel(ao);
 }
 
 bool
 ao_plugin_pause(struct audio_output *ao)
 {
-	return ao->plugin->pause != NULL && ao->plugin->pause(ao);
+	return ao->plugin->pause != nullptr && ao->plugin->pause(ao);
 }

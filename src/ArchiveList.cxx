@@ -38,7 +38,7 @@ const struct archive_plugin *const archive_plugins[] = {
 #ifdef HAVE_ISO9660
 	&iso9660_archive_plugin,
 #endif
-	NULL
+	nullptr
 };
 
 /** which plugins have been initialized successfully? */
@@ -51,15 +51,15 @@ static bool archive_plugins_enabled[ARRAY_SIZE(archive_plugins) - 1];
 const struct archive_plugin *
 archive_plugin_from_suffix(const char *suffix)
 {
-	if (suffix == NULL)
-		return NULL;
+	if (suffix == nullptr)
+		return nullptr;
 
 	archive_plugins_for_each_enabled(plugin)
-		if (plugin->suffixes != NULL &&
+		if (plugin->suffixes != nullptr &&
 		    string_array_contains(plugin->suffixes, suffix))
 			return plugin;
 
-	return NULL;
+	return nullptr;
 }
 
 const struct archive_plugin *
@@ -69,14 +69,14 @@ archive_plugin_from_name(const char *name)
 		if (strcmp(plugin->name, name) == 0)
 			return plugin;
 
-	return NULL;
+	return nullptr;
 }
 
 void archive_plugin_init_all(void)
 {
-	for (unsigned i = 0; archive_plugins[i] != NULL; ++i) {
+	for (unsigned i = 0; archive_plugins[i] != nullptr; ++i) {
 		const struct archive_plugin *plugin = archive_plugins[i];
-		if (plugin->init == NULL || archive_plugins[i]->init())
+		if (plugin->init == nullptr || archive_plugins[i]->init())
 			archive_plugins_enabled[i] = true;
 	}
 }
@@ -84,7 +84,7 @@ void archive_plugin_init_all(void)
 void archive_plugin_deinit_all(void)
 {
 	archive_plugins_for_each_enabled(plugin)
-		if (plugin->finish != NULL)
+		if (plugin->finish != nullptr)
 			plugin->finish();
 }
 

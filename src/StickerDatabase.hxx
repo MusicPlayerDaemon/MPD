@@ -51,10 +51,8 @@ class Path;
 struct sticker;
 
 /**
- * Opens the sticker database (if path is not NULL).
+ * Opens the sticker database.
  *
- * @param error_r location to store the error occurring, or NULL to
- * ignore errors
  * @return true on success, false on error
  */
 bool
@@ -115,7 +113,7 @@ sticker_free(struct sticker *sticker);
  *
  * @param sticker the sticker object
  * @param name the name of the sticker
- * @return the sticker value, or NULL if none was found
+ * @return the sticker value, or nullptr if none was found
  */
 gcc_pure
 const char *
@@ -139,7 +137,7 @@ sticker_foreach(const struct sticker *sticker,
  *
  * @param type the resource type, e.g. "song"
  * @param uri the URI of the resource, e.g. the song path
- * @return a sticker object, or NULL on error or if there is no sticker
+ * @return a sticker object, or nullptr on error or if there is no sticker
  */
 struct sticker *
 sticker_load(const char *type, const char *uri);
@@ -148,7 +146,7 @@ sticker_load(const char *type, const char *uri);
  * Finds stickers with the specified name below the specified URI.
  *
  * @param type the resource type, e.g. "song"
- * @param base_uri the URI prefix of the resources, or NULL if all
+ * @param base_uri the URI prefix of the resources, or nullptr if all
  * resources should be searched
  * @param name the name of the sticker
  * @return true on success (even if no sticker was found), false on

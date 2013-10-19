@@ -53,7 +53,7 @@ public:
 	 *
 	 * @param file the source file, opened in text mode
 	 * @param buffer an allocator for the buffer
-	 * @return a pointer to the line, or NULL on end-of-file or error
+	 * @return a pointer to the line, or nullptr on end-of-file or error
 	 */
 	char *ReadLine();
 };

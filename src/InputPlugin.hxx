@@ -39,8 +39,6 @@ struct InputPlugin {
 	/**
 	 * Global initialization.  This method is called when MPD starts.
 	 *
-	 * @param error_r location to store the error occurring, or
-	 * NULL to ignore errors
 	 * @return true on success, false if the plugin should be
 	 * disabled
 	 */
@@ -67,7 +65,7 @@ struct InputPlugin {
 
 	/**
 	 * Update the public attributes.  Call before access.  Can be
-	 * NULL if the plugin always keeps its attributes up to date.
+	 * nullptr if the plugin always keeps its attributes up to date.
 	 */
 	void (*update)(struct input_stream *is);
 

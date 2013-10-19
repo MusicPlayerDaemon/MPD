@@ -44,9 +44,9 @@ struct filter_plugin {
  *
  * @param plugin the filter plugin
  * @param param optional configuration section
- * @param error location to store the error occurring, or NULL to
+ * @param error location to store the error occurring, or nullptr to
  * ignore errors.
- * @return a new filter object, or NULL on error
+ * @return a new filter object, or nullptr on error
  */
 Filter *
 filter_new(const struct filter_plugin *plugin,
@@ -57,9 +57,9 @@ filter_new(const struct filter_plugin *plugin,
  * the specified configuration section.
  *
  * @param param the configuration section
- * @param error location to store the error occurring, or NULL to
+ * @param error location to store the error occurring, or nullptr to
  * ignore errors.
- * @return a new filter object, or NULL on error
+ * @return a new filter object, or nullptr on error
  */
 Filter *
 filter_configured_new(const config_param &param, Error &error);

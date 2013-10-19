@@ -57,7 +57,7 @@ InotifySource::OnSocketReady(gcc_unused unsigned flags)
 		if (event->len > 0 && event->name[event->len - 1] == 0)
 			name = event->name;
 		else
-			name = NULL;
+			name = nullptr;
 
 		callback(event->wd, event->mask, name, callback_ctx);
 		buffer.Consume(sizeof(*event) + event->len);
@@ -85,7 +85,7 @@ InotifySource::Create(EventLoop &loop,
 	int fd = inotify_init_cloexec();
 	if (fd < 0) {
 		error.SetErrno("inotify_init() has failed");
-		return NULL;
+		return nullptr;
 	}
 
 	return new InotifySource(loop, callback, callback_ctx, fd);

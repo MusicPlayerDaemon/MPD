@@ -82,8 +82,8 @@ struct EncoderPlugin {
  *
  * @param plugin the encoder plugin
  * @param param optional configuration
- * @param error location to store the error occurring, or NULL to ignore errors.
- * @return an encoder object on success, NULL on failure
+ * @param error location to store the error occurring, or nullptr to ignore errors.
+ * @return an encoder object on success, nullptr on failure
  */
 static inline Encoder *
 encoder_init(const EncoderPlugin &plugin, const config_param &param,
@@ -117,7 +117,6 @@ encoder_finish(Encoder *encoder)
  * @param encoder the encoder
  * @param audio_format the encoder's input audio format; the plugin
  * may modify the struct to adapt it to its abilities
- * @param error location to store the error occurring, or NULL to ignore errors.
  * @return true on success
  */
 static inline bool
@@ -145,7 +144,7 @@ encoder_close(Encoder *encoder)
 {
 	assert(encoder->open);
 
-	if (encoder->plugin.close != NULL)
+	if (encoder->plugin.close != nullptr)
 		encoder->plugin.close(encoder);
 
 #ifndef NDEBUG
@@ -163,7 +162,6 @@ encoder_close(Encoder *encoder)
  * called.
  *
  * @param encoder the encoder
- * @param error location to store the error occuring, or NULL to ignore errors.
  * @return true on success
  */
 static inline bool
@@ -177,7 +175,7 @@ encoder_end(Encoder *encoder, Error &error)
 #endif
 
 	/* this method is optional */
-	return encoder->plugin.end != NULL
+	return encoder->plugin.end != nullptr
 		? encoder->plugin.end(encoder, error)
 		: true;
 }
@@ -187,7 +185,6 @@ encoder_end(Encoder *encoder, Error &error)
  * buffered available by encoder_read().
  *
  * @param encoder the encoder
- * @param error location to store the error occurring, or NULL to ignore errors.
  * @return true on success
  */
 static inline bool
@@ -199,7 +196,7 @@ encoder_flush(Encoder *encoder, Error &error)
 	assert(!encoder->end);
 
 	/* this method is optional */
-	return encoder->plugin.flush != NULL
+	return encoder->plugin.flush != nullptr
 		? encoder->plugin.flush(encoder, error)
 		: true;
 }
@@ -211,7 +208,6 @@ encoder_flush(Encoder *encoder, Error &error)
  *
  * @param encoder the encoder
  * @param tag the tag object
- * @param error location to store the error occuring, or NULL to ignore errors.
  * @return true on success
  */
 static inline bool
@@ -223,7 +219,7 @@ encoder_pre_tag(Encoder *encoder, Error &error)
 	assert(!encoder->end);
 
 	/* this method is optional */
-	bool success = encoder->plugin.pre_tag != NULL
+	bool success = encoder->plugin.pre_tag != nullptr
 		? encoder->plugin.pre_tag(encoder, error)
 		: true;
 
@@ -241,7 +237,6 @@ encoder_pre_tag(Encoder *encoder, Error &error)
  *
  * @param encoder the encoder
  * @param tag the tag object
- * @param error location to store the error occurring, or NULL to ignore errors.
  * @return true on success
  */
 static inline bool
@@ -257,7 +252,7 @@ encoder_tag(Encoder *encoder, const Tag *tag, Error &error)
 #endif
 
 	/* this method is optional */
-	return encoder->plugin.tag != NULL
+	return encoder->plugin.tag != nullptr
 		? encoder->plugin.tag(encoder, tag, error)
 		: true;
 }
@@ -268,7 +263,6 @@ encoder_tag(Encoder *encoder, const Tag *tag, Error &error)
  * @param encoder the encoder
  * @param data the buffer containing PCM samples
  * @param length the length of the buffer in bytes
- * @param error location to store the error occurring, or NULL to ignore errors.
  * @return true on success
  */
 static inline bool
@@ -313,15 +307,15 @@ encoder_read(Encoder *encoder, void *dest, size_t length)
  * Get mime type of encoded content.
  *
  * @param plugin the encoder plugin
- * @return an constant string, NULL on failure
+ * @return an constant string, nullptr on failure
  */
 static inline const char *
 encoder_get_mime_type(Encoder *encoder)
 {
 	/* this method is optional */
-	return encoder->plugin.get_mime_type != NULL
+	return encoder->plugin.get_mime_type != nullptr
 		? encoder->plugin.get_mime_type(encoder)
-		: NULL;
+		: nullptr;
 }
 
 #endif

@@ -31,7 +31,7 @@
 std::string
 sticker_song_get_value(const Song *song, const char *name)
 {
-	assert(song != NULL);
+	assert(song != nullptr);
 	assert(song->IsInDatabase());
 
 	const auto uri = song->GetURI();
@@ -42,7 +42,7 @@ bool
 sticker_song_set_value(const Song *song,
 		       const char *name, const char *value)
 {
-	assert(song != NULL);
+	assert(song != nullptr);
 	assert(song->IsInDatabase());
 
 	const auto uri = song->GetURI();
@@ -52,7 +52,7 @@ sticker_song_set_value(const Song *song,
 bool
 sticker_song_delete(const Song *song)
 {
-	assert(song != NULL);
+	assert(song != nullptr);
 	assert(song->IsInDatabase());
 
 	const auto uri = song->GetURI();
@@ -62,7 +62,7 @@ sticker_song_delete(const Song *song)
 bool
 sticker_song_delete_value(const Song *song, const char *name)
 {
-	assert(song != NULL);
+	assert(song != nullptr);
 	assert(song->IsInDatabase());
 
 	const auto uri = song->GetURI();
@@ -72,7 +72,7 @@ sticker_song_delete_value(const Song *song, const char *name)
 struct sticker *
 sticker_song_get(const Song *song)
 {
-	assert(song != NULL);
+	assert(song != nullptr);
 	assert(song->IsInDatabase());
 
 	const auto uri = song->GetURI();
@@ -100,7 +100,7 @@ sticker_song_find_cb(const char *uri, const char *value, void *user_data)
 		return;
 
 	Song *song = data->directory->LookupSong(uri + data->base_uri_length);
-	if (song != NULL)
+	if (song != nullptr)
 		data->func(song, value, data->user_data);
 }
 
@@ -120,10 +120,10 @@ sticker_song_find(Directory *directory, const char *name,
 	if (*data.base_uri != 0)
 		/* append slash to base_uri */
 		data.base_uri = allocated =
-			g_strconcat(data.base_uri, "/", NULL);
+			g_strconcat(data.base_uri, "/", nullptr);
 	else
 		/* searching in root directory - no trailing slash */
-		allocated = NULL;
+		allocated = nullptr;
 
 	data.base_uri_length = strlen(data.base_uri);
 

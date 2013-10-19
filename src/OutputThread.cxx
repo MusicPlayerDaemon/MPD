@@ -98,16 +98,16 @@ ao_filter_open(struct audio_output *ao, AudioFormat &format,
 	assert(format.IsValid());
 
 	/* the replay_gain filter cannot fail here */
-	if (ao->replay_gain_filter != NULL)
+	if (ao->replay_gain_filter != nullptr)
 		ao->replay_gain_filter->Open(format, error_r);
-	if (ao->other_replay_gain_filter != NULL)
+	if (ao->other_replay_gain_filter != nullptr)
 		ao->other_replay_gain_filter->Open(format, error_r);
 
 	const AudioFormat af = ao->filter->Open(format, error_r);
 	if (!af.IsDefined()) {
-		if (ao->replay_gain_filter != NULL)
+		if (ao->replay_gain_filter != nullptr)
 			ao->replay_gain_filter->Close();
-		if (ao->other_replay_gain_filter != NULL)
+		if (ao->other_replay_gain_filter != nullptr)
 			ao->other_replay_gain_filter->Close();
 	}
 
@@ -117,9 +117,9 @@ ao_filter_open(struct audio_output *ao, AudioFormat &format,
 static void
 ao_filter_close(struct audio_output *ao)
 {
-	if (ao->replay_gain_filter != NULL)
+	if (ao->replay_gain_filter != nullptr)
 		ao->replay_gain_filter->Close();
-	if (ao->other_replay_gain_filter != NULL)
+	if (ao->other_replay_gain_filter != nullptr)
 		ao->other_replay_gain_filter->Close();
 
 	ao->filter->Close();
@@ -133,17 +133,17 @@ ao_open(struct audio_output *ao)
 	struct audio_format_string af_string;
 
 	assert(!ao->open);
-	assert(ao->pipe != NULL);
-	assert(ao->chunk == NULL);
+	assert(ao->pipe != nullptr);
+	assert(ao->chunk == nullptr);
 	assert(ao->in_audio_format.IsValid());
 
-	if (ao->fail_timer != NULL) {
+	if (ao->fail_timer != nullptr) {
 		/* this can only happen when this
 		   output thread fails while
 		   audio_output_open() is run in the
 		   player thread */
 		g_timer_destroy(ao->fail_timer);
-		ao->fail_timer = NULL;
+		ao->fail_timer = nullptr;
 	}
 
 	/* enable the device (just in case the last enable has failed) */
@@ -204,9 +204,9 @@ ao_close(struct audio_output *ao, bool drain)
 {
 	assert(ao->open);
 
-	ao->pipe = NULL;
+	ao->pipe = nullptr;
 
-	ao->chunk = NULL;
+	ao->chunk = nullptr;
 	ao->open = false;
 
 	ao->mutex.unlock();
@@ -242,9 +242,9 @@ ao_reopen_filter(struct audio_output *ao)
 		   but we cannot call this function because we must
 		   not call filter_close(ao->filter) again */
 
-		ao->pipe = NULL;
+		ao->pipe = nullptr;
 
-		ao->chunk = NULL;
+		ao->chunk = nullptr;
 		ao->open = false;
 		ao->fail_timer = g_timer_new();
 
@@ -310,7 +310,7 @@ ao_chunk_data(struct audio_output *ao, const struct music_chunk *chunk,
 	      unsigned *replay_gain_serial_p,
 	      size_t *length_r)
 {
-	assert(chunk != NULL);
+	assert(chunk != nullptr);
 	assert(!chunk->IsEmpty());
 	assert(chunk->CheckFormat(ao->in_audio_format));
 
@@ -321,22 +321,22 @@ ao_chunk_data(struct audio_output *ao, const struct music_chunk *chunk,
 
 	assert(length % ao->in_audio_format.GetFrameSize() == 0);
 
-	if (length > 0 && replay_gain_filter != NULL) {
+	if (length > 0 && replay_gain_filter != nullptr) {
 		if (chunk->replay_gain_serial != *replay_gain_serial_p) {
 			replay_gain_filter_set_info(replay_gain_filter,
 						    chunk->replay_gain_serial != 0
 						    ? &chunk->replay_gain_info
-						    : NULL);
+						    : nullptr);
 			*replay_gain_serial_p = chunk->replay_gain_serial;
 		}
 
 		Error error;
 		data = replay_gain_filter->FilterPCM(data, length,
 						     &length, error);
-		if (data == NULL) {
+		if (data == nullptr) {
 			FormatError(error, "\"%s\" [%s] failed to filter",
 				    ao->name, ao->plugin->name);
-			return NULL;
+			return nullptr;
 		}
 	}
 
@@ -351,8 +351,8 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 	size_t length;
 	const void *data = ao_chunk_data(ao, chunk, ao->replay_gain_filter,
 					 &ao->replay_gain_serial, &length);
-	if (data == NULL)
-		return NULL;
+	if (data == nullptr)
+		return nullptr;
 
 	if (length == 0) {
 		/* empty chunk, nothing to do */
@@ -362,15 +362,15 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 
 	/* cross-fade */
 
-	if (chunk->other != NULL) {
+	if (chunk->other != nullptr) {
 		size_t other_length;
 		const void *other_data =
 			ao_chunk_data(ao, chunk->other,
 				      ao->other_replay_gain_filter,
 				      &ao->other_replay_gain_serial,
 				      &other_length);
-		if (other_data == NULL)
-			return NULL;
+		if (other_data == nullptr)
+			return nullptr;
 
 		if (other_length == 0) {
 			*length_r = 0;
@@ -393,7 +393,7 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 			FormatError(output_domain,
 				    "Cannot cross-fade format %s",
 				    sample_format_to_string(ao->in_audio_format.format));
-			return NULL;
+			return nullptr;
 		}
 
 		data = dest;
@@ -404,10 +404,10 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 
 	Error error;
 	data = ao->filter->FilterPCM(data, length, &length, error);
-	if (data == NULL) {
+	if (data == nullptr) {
 		FormatError(error, "\"%s\" [%s] failed to filter",
 			    ao->name, ao->plugin->name);
-		return NULL;
+		return nullptr;
 	}
 
 	*length_r = length;
@@ -417,10 +417,10 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 static bool
 ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 {
-	assert(ao != NULL);
-	assert(ao->filter != NULL);
+	assert(ao != nullptr);
+	assert(ao->filter != nullptr);
 
-	if (ao->tags && gcc_unlikely(chunk->tag != NULL)) {
+	if (ao->tags && gcc_unlikely(chunk->tag != nullptr)) {
 		ao->mutex.unlock();
 		ao_plugin_send_tag(ao, chunk->tag);
 		ao->mutex.lock();
@@ -432,7 +432,7 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 	size = 0;
 #endif
 	const char *data = (const char *)ao_filter_chunk(ao, chunk, &size);
-	if (data == NULL) {
+	if (data == nullptr) {
 		ao_close(ao, false);
 
 		/* don't automatically reopen this device for 10
@@ -461,7 +461,7 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 
 			/* don't automatically reopen this device for
 			   10 seconds */
-			assert(ao->fail_timer == NULL);
+			assert(ao->fail_timer == nullptr);
 			ao->fail_timer = g_timer_new();
 
 			return false;
@@ -480,7 +480,7 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 static const struct music_chunk *
 ao_next_chunk(struct audio_output *ao)
 {
-	return ao->chunk != NULL
+	return ao->chunk != nullptr
 		/* continue the previous play() call */
 		? ao->chunk->next
 		/* get the first chunk from the pipe */
@@ -501,23 +501,23 @@ ao_play(struct audio_output *ao)
 	bool success;
 	const struct music_chunk *chunk;
 
-	assert(ao->pipe != NULL);
+	assert(ao->pipe != nullptr);
 
 	chunk = ao_next_chunk(ao);
-	if (chunk == NULL)
+	if (chunk == nullptr)
 		/* no chunk available */
 		return false;
 
 	ao->chunk_finished = false;
 
-	while (chunk != NULL && ao->command == AO_COMMAND_NONE) {
+	while (chunk != nullptr && ao->command == AO_COMMAND_NONE) {
 		assert(!ao->chunk_finished);
 
 		ao->chunk = chunk;
 
 		success = ao_play_chunk(ao, chunk);
 		if (!success) {
-			assert(ao->chunk == NULL);
+			assert(ao->chunk == nullptr);
 			break;
 		}
 
@@ -596,7 +596,7 @@ audio_output_task(void *arg)
 
 		case AO_COMMAND_CLOSE:
 			assert(ao->open);
-			assert(ao->pipe != NULL);
+			assert(ao->pipe != nullptr);
 
 			ao_close(ao, false);
 			ao_command_finished(ao);
@@ -621,7 +621,7 @@ audio_output_task(void *arg)
 
 		case AO_COMMAND_DRAIN:
 			if (ao->open) {
-				assert(ao->chunk == NULL);
+				assert(ao->chunk == nullptr);
 				assert(ao->pipe->Peek() == nullptr);
 
 				ao->mutex.unlock();
@@ -633,7 +633,7 @@ audio_output_task(void *arg)
 			continue;
 
 		case AO_COMMAND_CANCEL:
-			ao->chunk = NULL;
+			ao->chunk = nullptr;
 
 			if (ao->open) {
 				ao->mutex.unlock();
@@ -645,7 +645,7 @@ audio_output_task(void *arg)
 			continue;
 
 		case AO_COMMAND_KILL:
-			ao->chunk = NULL;
+			ao->chunk = nullptr;
 			ao_command_finished(ao);
 			ao->mutex.unlock();
 			return;

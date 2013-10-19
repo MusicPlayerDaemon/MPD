@@ -30,15 +30,15 @@ const struct filter_plugin *const filter_plugins[] = {
 	&normalize_filter_plugin,
 	&volume_filter_plugin,
 	&replay_gain_filter_plugin,
-	NULL,
+	nullptr,
 };
 
 const struct filter_plugin *
 filter_plugin_by_name(const char *name)
 {
-	for (unsigned i = 0; filter_plugins[i] != NULL; ++i)
+	for (unsigned i = 0; filter_plugins[i] != nullptr; ++i)
 		if (strcmp(filter_plugins[i]->name, name) == 0)
 			return filter_plugins[i];
 
-	return NULL;
+	return nullptr;
 }

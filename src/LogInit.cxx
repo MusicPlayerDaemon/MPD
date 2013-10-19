@@ -76,7 +76,7 @@ static void redirect_logs(int fd)
 static const char *log_date(void)
 {
 	static char buf[LOG_DATE_BUF_SIZE];
-	time_t t = time(NULL);
+	time_t t = time(nullptr);
 	strftime(buf, LOG_DATE_BUF_SIZE, "%b %d %H:%M : ", localtime(&t));
 	return buf;
 }
@@ -106,14 +106,15 @@ file_log_func(const gchar *domain,
 	if (log_level > log_threshold)
 		return;
 
-	if (log_charset != NULL) {
+	if (log_charset != nullptr) {
 		converted = g_convert_with_fallback(message, -1,
 						    log_charset, "utf-8",
-						    NULL, NULL, NULL, NULL);
-		if (converted != NULL)
+						    nullptr, nullptr,
+						    nullptr, nullptr);
+		if (converted != nullptr)
 			message = converted;
 	} else
-		converted = NULL;
+		converted = nullptr;
 
 	if (domain == nullptr)
 		domain = "";
@@ -129,7 +130,7 @@ file_log_func(const gchar *domain,
 static void
 log_init_stdout(void)
 {
-	g_log_set_default_handler(file_log_func, NULL);
+	g_log_set_default_handler(file_log_func, nullptr);
 }
 
 static int
@@ -153,7 +154,7 @@ log_init_file(unsigned line, Error &error)
 		return false;
 	}
 
-	g_log_set_default_handler(file_log_func, NULL);
+	g_log_set_default_handler(file_log_func, nullptr);
 	return true;
 }
 
@@ -214,7 +215,7 @@ log_init_syslog(void)
 	assert(out_path.IsNull());
 
 	openlog(PACKAGE, 0, LOG_DAEMON);
-	g_log_set_default_handler(syslog_log_func, NULL);
+	g_log_set_default_handler(syslog_log_func, nullptr);
 }
 
 #endif
@@ -253,7 +254,7 @@ log_init(bool verbose, bool use_stdout, Error &error)
 
 	if (verbose)
 		log_threshold = G_LOG_LEVEL_DEBUG;
-	else if ((param = config_get_param(CONF_LOG_LEVEL)) != NULL)
+	else if ((param = config_get_param(CONF_LOG_LEVEL)) != nullptr)
 		log_threshold = parse_log_level(param->value.c_str(),
 						param->line);
 
@@ -262,7 +263,7 @@ log_init(bool verbose, bool use_stdout, Error &error)
 		return true;
 	} else {
 		param = config_get_param(CONF_LOG_FILE);
-		if (param == NULL) {
+		if (param == nullptr) {
 #ifdef HAVE_SYSLOG
 			/* no configuration: default to syslog (if
 			   available) */
@@ -308,7 +309,7 @@ log_deinit(void)
 
 void setup_log_output(bool use_stdout)
 {
-	fflush(NULL);
+	fflush(nullptr);
 	if (!use_stdout) {
 #ifndef WIN32
 		if (out_path.IsNull())
@@ -321,7 +322,7 @@ void setup_log_output(bool use_stdout)
 		}
 
 		stdout_mode = false;
-		log_charset = NULL;
+		log_charset = nullptr;
 	}
 }
 

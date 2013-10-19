@@ -49,8 +49,6 @@ public:
 	 * Opens an input_stream of a file within the archive.
 	 *
 	 * @param path the path within the archive
-	 * @param error_r location to store the error occurring, or
-	 * NULL to ignore errors
 	 */
 	virtual input_stream *OpenStream(const char *path,
 					 Mutex &mutex, Cond &cond,

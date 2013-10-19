@@ -39,21 +39,21 @@ input_stream::Open(const char *url,
 		struct input_stream *is;
 
 		is = plugin->open(url, mutex, cond, error);
-		if (is != NULL) {
-			assert(is->plugin.close != NULL);
-			assert(is->plugin.read != NULL);
-			assert(is->plugin.eof != NULL);
-			assert(!is->seekable || is->plugin.seek != NULL);
+		if (is != nullptr) {
+			assert(is->plugin.close != nullptr);
+			assert(is->plugin.read != nullptr);
+			assert(is->plugin.eof != nullptr);
+			assert(!is->seekable || is->plugin.seek != nullptr);
 
 			is = input_rewind_open(is);
 
 			return is;
 		} else if (error.IsDefined())
-			return NULL;
+			return nullptr;
 	}
 
 	error.Set(input_domain, "Unrecognized URI");
-	return NULL;
+	return nullptr;
 }
 
 bool
@@ -142,7 +142,7 @@ input_stream::IsAvailable()
 size_t
 input_stream::Read(void *ptr, size_t _size, Error &error)
 {
-	assert(ptr != NULL);
+	assert(ptr != nullptr);
 	assert(_size > 0);
 
 	return plugin.read(this, ptr, _size, error);
@@ -151,7 +151,7 @@ input_stream::Read(void *ptr, size_t _size, Error &error)
 size_t
 input_stream::LockRead(void *ptr, size_t _size, Error &error)
 {
-	assert(ptr != NULL);
+	assert(ptr != nullptr);
 	assert(_size > 0);
 
 	const ScopeLock protect(mutex);

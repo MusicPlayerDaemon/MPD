@@ -45,16 +45,16 @@ TextFile::ReadLine()
 	gsize length = 0, i;
 	char *p;
 
-	assert(file != NULL);
-	assert(buffer != NULL);
+	assert(file != nullptr);
+	assert(buffer != nullptr);
 	assert(buffer->allocated_len >= step);
 
 	while (buffer->len < max_length) {
 		p = fgets(buffer->str + length,
 			  buffer->allocated_len - length, file);
-		if (p == NULL) {
+		if (p == nullptr) {
 			if (length == 0 || ferror(file))
-				return NULL;
+				return nullptr;
 			break;
 		}
 

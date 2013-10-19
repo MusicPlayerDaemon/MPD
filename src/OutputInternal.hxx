@@ -72,7 +72,7 @@ struct audio_output {
 
 	/**
 	 * The #mixer object associated with this audio output device.
-	 * May be NULL if none is available, or if software volume is
+	 * May be nullptr if none is available, or if software volume is
 	 * configured.
 	 */
 	class Mixer *mixer;
@@ -127,7 +127,7 @@ struct audio_output {
 	bool allow_play;
 
 	/**
-	 * If not NULL, the device has failed, and this timer is used
+	 * If not nullptr, the device has failed, and this timer is used
 	 * to estimate how long it should stay disabled (unless
 	 * explicitly reopened with "play").
 	 */
@@ -197,7 +197,7 @@ struct audio_output {
 	Filter *convert_filter;
 
 	/**
-	 * The thread handle, or NULL if the output thread isn't
+	 * The thread handle, or nullptr if the output thread isn't
 	 * running.
 	 */
 	Thread thread;

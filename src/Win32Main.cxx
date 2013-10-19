@@ -44,7 +44,7 @@ service_main(DWORD argc, CHAR *argv[]);
 
 static SERVICE_TABLE_ENTRY service_registry[] = {
 	{service_name, service_main},
-	{NULL, NULL}
+	{nullptr, nullptr}
 };
 
 static void
@@ -87,7 +87,7 @@ service_main(gcc_unused DWORD argc, gcc_unused CHAR *argv[])
 
 	service_handle =
 		RegisterServiceCtrlHandlerEx(service_name,
-					     service_dispatcher, NULL);
+					     service_dispatcher, nullptr);
 
 	if (service_handle == 0) {
 		error_code = GetLastError();

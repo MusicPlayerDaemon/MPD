@@ -23,7 +23,6 @@
 #include "Compiler.h"
 
 #include <assert.h>
-#include <stddef.h>
 
 class SongFilter;
 struct Song;
@@ -31,7 +30,7 @@ struct Song;
 struct DatabaseSelection {
 	/**
 	 * The base URI of the search (UTF-8).  Must not begin or end
-	 * with a slash.  NULL or an empty string searches the whole
+	 * with a slash.  nullptr or an empty string searches the whole
 	 * database.
 	 */
 	const char *uri;
@@ -46,7 +45,7 @@ struct DatabaseSelection {
 	DatabaseSelection(const char *_uri, bool _recursive,
 			  const SongFilter *_filter=nullptr)
 		:uri(_uri), recursive(_recursive), filter(_filter) {
-		assert(uri != NULL);
+		assert(uri != nullptr);
 	}
 
 	gcc_pure

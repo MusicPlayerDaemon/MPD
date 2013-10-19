@@ -81,41 +81,41 @@ directory_load_subdir(TextFile &file, Directory *parent, const char *name,
 	if (parent->FindChild(name) != nullptr) {
 		error.Format(directory_domain,
 			     "Duplicate subdirectory '%s'", name);
-		return NULL;
+		return nullptr;
 	}
 
 	Directory *directory = parent->CreateChild(name);
 
 	const char *line = file.ReadLine();
-	if (line == NULL) {
+	if (line == nullptr) {
 		error.Set(directory_domain, "Unexpected end of file");
 		directory->Delete();
-		return NULL;
+		return nullptr;
 	}
 
 	if (g_str_has_prefix(line, DIRECTORY_MTIME)) {
 		directory->mtime =
 			g_ascii_strtoull(line + sizeof(DIRECTORY_MTIME) - 1,
-					 NULL, 10);
+					 nullptr, 10);
 
 		line = file.ReadLine();
-		if (line == NULL) {
+		if (line == nullptr) {
 			error.Set(directory_domain, "Unexpected end of file");
 			directory->Delete();
-			return NULL;
+			return nullptr;
 		}
 	}
 
 	if (!g_str_has_prefix(line, DIRECTORY_BEGIN)) {
 		error.Format(directory_domain, "Malformed line: %s", line);
 		directory->Delete();
-		return NULL;
+		return nullptr;
 	}
 
 	success = directory_load(file, directory, error);
 	if (!success) {
 		directory->Delete();
-		return NULL;
+		return nullptr;
 	}
 
 	return directory;
@@ -126,14 +126,14 @@ directory_load(TextFile &file, Directory *directory, Error &error)
 {
 	const char *line;
 
-	while ((line = file.ReadLine()) != NULL &&
+	while ((line = file.ReadLine()) != nullptr &&
 	       !g_str_has_prefix(line, DIRECTORY_END)) {
 		if (g_str_has_prefix(line, DIRECTORY_DIR)) {
 			Directory *subdir =
 				directory_load_subdir(file, directory,
 						      line + sizeof(DIRECTORY_DIR) - 1,
 						      error);
-			if (subdir == NULL)
+			if (subdir == nullptr)
 				return false;
 		} else if (g_str_has_prefix(line, SONG_BEGIN)) {
 			const char *name = line + sizeof(SONG_BEGIN) - 1;
@@ -146,7 +146,7 @@ directory_load(TextFile &file, Directory *directory, Error &error)
 			}
 
 			song = song_load(file, directory, name, error);
-			if (song == NULL)
+			if (song == nullptr)
 				return false;
 
 			directory->AddSong(song);

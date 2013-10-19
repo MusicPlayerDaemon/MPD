@@ -27,7 +27,7 @@ extern const struct archive_plugin *const archive_plugins[];
 #define archive_plugins_for_each(plugin) \
 	for (const struct archive_plugin *plugin, \
 		*const*archive_plugin_iterator = &archive_plugins[0]; \
-		(plugin = *archive_plugin_iterator) != NULL; \
+		(plugin = *archive_plugin_iterator) != nullptr; \
 		++archive_plugin_iterator)
 
 /* interface for using plugins */

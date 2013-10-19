@@ -48,21 +48,21 @@ Song::LoadFile(const char *path_utf8, Directory *parent)
 	Song *song;
 	bool ret;
 
-	assert((parent == NULL) == PathTraits::IsAbsoluteUTF8(path_utf8));
+	assert((parent == nullptr) == PathTraits::IsAbsoluteUTF8(path_utf8));
 	assert(!uri_has_scheme(path_utf8));
-	assert(strchr(path_utf8, '\n') == NULL);
+	assert(strchr(path_utf8, '\n') == nullptr);
 
 	song = NewFile(path_utf8, parent);
 
 	//in archive ?
-	if (parent != NULL && parent->device == DEVICE_INARCHIVE) {
+	if (parent != nullptr && parent->device == DEVICE_INARCHIVE) {
 		ret = song->UpdateFileInArchive();
 	} else {
 		ret = song->UpdateFile();
 	}
 	if (!ret) {
 		song->Free();
-		return NULL;
+		return nullptr;
 	}
 
 	return song;
@@ -85,18 +85,18 @@ Song::UpdateFile()
 	const char *suffix;
 	const struct decoder_plugin *plugin;
 	struct stat st;
-	struct input_stream *is = NULL;
+	struct input_stream *is = nullptr;
 
 	assert(IsFile());
 
 	/* check if there's a suffix and a plugin */
 
 	suffix = uri_get_suffix(uri);
-	if (suffix == NULL)
+	if (suffix == nullptr)
 		return false;
 
-	plugin = decoder_plugin_from_suffix(suffix, NULL);
-	if (plugin == NULL)
+	plugin = decoder_plugin_from_suffix(suffix, nullptr);
+	if (plugin == nullptr)
 		return false;
 
 	const auto path_fs = map_song_fs(this);
@@ -126,16 +126,16 @@ Song::UpdateFile()
 		tag_builder.Clear();
 
 		/* fall back to stream tag */
-		if (plugin->scan_stream != NULL) {
+		if (plugin->scan_stream != nullptr) {
 			/* open the input_stream (if not already
 			   open) */
-			if (is == NULL)
+			if (is == nullptr)
 				is = input_stream::Open(path_fs.c_str(),
 							mutex, cond,
 							IgnoreError());
 
 			/* now try the stream_tag() method */
-			if (is != NULL) {
+			if (is != nullptr) {
 				if (decoder_plugin_scan_stream(plugin, is,
 							       &full_tag_handler,
 							       &tag_builder))
@@ -148,9 +148,9 @@ Song::UpdateFile()
 		}
 
 		plugin = decoder_plugin_from_suffix(suffix, plugin);
-	} while (plugin != NULL);
+	} while (plugin != nullptr);
 
-	if (is != NULL)
+	if (is != nullptr)
 		is->Close();
 
 	if (!tag_builder.IsDefined())
@@ -175,11 +175,11 @@ Song::UpdateFileInArchive()
 	/* check if there's a suffix and a plugin */
 
 	suffix = uri_get_suffix(uri);
-	if (suffix == NULL)
+	if (suffix == nullptr)
 		return false;
 
-	plugin = decoder_plugin_from_suffix(suffix, NULL);
-	if (plugin == NULL)
+	plugin = decoder_plugin_from_suffix(suffix, nullptr);
+	if (plugin == nullptr)
 		return false;
 
 	delete tag;

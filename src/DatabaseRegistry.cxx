@@ -29,7 +29,7 @@ const DatabasePlugin *const database_plugins[] = {
 #ifdef HAVE_LIBMPDCLIENT
 	&proxy_db_plugin,
 #endif
-	NULL
+	nullptr
 };
 
 const DatabasePlugin *

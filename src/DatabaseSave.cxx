@@ -51,7 +51,7 @@ enum {
 void
 db_save_internal(FILE *fp, const Directory *music_root)
 {
-	assert(music_root != NULL);
+	assert(music_root != nullptr);
 
 	fprintf(fp, "%s\n", DIRECTORY_INFO_BEGIN);
 	fprintf(fp, DB_FORMAT_PREFIX "%u\n", DB_FORMAT);
@@ -76,18 +76,18 @@ db_load_internal(TextFile &file, Directory *music_root, Error &error)
 	bool success;
 	bool tags[TAG_NUM_OF_ITEM_TYPES];
 
-	assert(music_root != NULL);
+	assert(music_root != nullptr);
 
 	/* get initial info */
 	line = file.ReadLine();
-	if (line == NULL || strcmp(DIRECTORY_INFO_BEGIN, line) != 0) {
+	if (line == nullptr || strcmp(DIRECTORY_INFO_BEGIN, line) != 0) {
 		error.Set(db_domain, "Database corrupted");
 		return false;
 	}
 
 	memset(tags, false, sizeof(tags));
 
-	while ((line = file.ReadLine()) != NULL &&
+	while ((line = file.ReadLine()) != nullptr &&
 	       strcmp(line, DIRECTORY_INFO_END) != 0) {
 		if (g_str_has_prefix(line, DB_FORMAT_PREFIX)) {
 			format = atoi(line + sizeof(DB_FORMAT_PREFIX) - 1);

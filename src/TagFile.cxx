@@ -33,21 +33,21 @@ bool
 tag_file_scan(const char *path_fs,
 	      const struct tag_handler *handler, void *handler_ctx)
 {
-	assert(path_fs != NULL);
-	assert(handler != NULL);
+	assert(path_fs != nullptr);
+	assert(handler != nullptr);
 
 	/* check if there's a suffix and a plugin */
 
 	const char *suffix = uri_get_suffix(path_fs);
-	if (suffix == NULL)
+	if (suffix == nullptr)
 		return false;
 
 	const struct decoder_plugin *plugin =
-		decoder_plugin_from_suffix(suffix, NULL);
-	if (plugin == NULL)
+		decoder_plugin_from_suffix(suffix, nullptr);
+	if (plugin == nullptr)
 		return false;
 
-	struct input_stream *is = NULL;
+	struct input_stream *is = nullptr;
 	Mutex mutex;
 	Cond cond;
 
@@ -58,7 +58,7 @@ tag_file_scan(const char *path_fs,
 			break;
 
 		/* fall back to stream tag */
-		if (plugin->scan_stream != NULL) {
+		if (plugin->scan_stream != nullptr) {
 			/* open the input_stream (if not already
 			   open) */
 			if (is == nullptr) {
@@ -68,7 +68,7 @@ tag_file_scan(const char *path_fs,
 			}
 
 			/* now try the stream_tag() method */
-			if (is != NULL) {
+			if (is != nullptr) {
 				if (decoder_plugin_scan_stream(plugin, is,
 							       handler,
 							       handler_ctx))
@@ -79,10 +79,10 @@ tag_file_scan(const char *path_fs,
 		}
 
 		plugin = decoder_plugin_from_suffix(suffix, plugin);
-	} while (plugin != NULL);
+	} while (plugin != nullptr);
 
-	if (is != NULL)
+	if (is != nullptr)
 		is->Close();
 
-	return plugin != NULL;
+	return plugin != nullptr;
 }

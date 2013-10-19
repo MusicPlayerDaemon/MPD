@@ -124,7 +124,7 @@ struct music_chunk {
 	 * @param bit_rate the current bit rate of the source file
 	 * @param max_length_r the maximum write length is returned
 	 * here
-	 * @return a writable buffer, or NULL if the chunk is full
+	 * @return a writable buffer, or nullptr if the chunk is full
 	 */
 	void *Write(AudioFormat af,
 		    float data_time, uint16_t bit_rate,

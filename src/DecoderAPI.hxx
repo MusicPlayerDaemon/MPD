@@ -146,7 +146,7 @@ decoder_tag(struct decoder *decoder, struct input_stream *is, Tag &&tag);
  * Set replay gain values for the following chunks.
  *
  * @param decoder the decoder object
- * @param rgi the replay_gain_info object; may be NULL to invalidate
+ * @param rgi the replay_gain_info object; may be nullptr to invalidate
  * the previous replay gain values
  */
 void
@@ -157,8 +157,8 @@ decoder_replay_gain(struct decoder *decoder,
  * Store MixRamp tags.
  *
  * @param decoder the decoder object
- * @param mixramp_start the mixramp_start tag; may be NULL to invalidate
- * @param mixramp_end the mixramp_end tag; may be NULL to invalidate
+ * @param mixramp_start the mixramp_start tag; may be nullptr to invalidate
+ * @param mixramp_end the mixramp_end tag; may be nullptr to invalidate
  */
 void
 decoder_mixramp(struct decoder *decoder,

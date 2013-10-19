@@ -35,7 +35,7 @@ struct input_stream;
 /**
  * Creates a new buffer.
  *
- * @param decoder the decoder object, used for decoder_read(), may be NULL
+ * @param decoder the decoder object, used for decoder_read(), may be nullptr
  * @param is the input stream object where we should read from
  * @param size the maximum size of the buffer
  * @return the new decoder_buffer object
@@ -75,7 +75,7 @@ decoder_buffer_fill(DecoderBuffer *buffer);
  * @param buffer the decoder_buffer object
  * @param length_r pointer to a size_t where you will receive the
  * number of bytes available
- * @return a pointer to the read buffer, or NULL if there is no data
+ * @return a pointer to the read buffer, or nullptr if there is no data
  * available
  */
 const void *

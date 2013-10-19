@@ -37,7 +37,7 @@
 /**
  * Create the specified directory object if it does not exist already
  * or if the #stat object indicates that it has been modified since
- * the last update.  Returns NULL when it exists already and is
+ * the last update.  Returns nullptr when it exists already and is
  * unmodified.
  *
  * The caller must lock the database.
@@ -49,10 +49,10 @@ make_directory_if_modified(Directory *parent, const char *name,
 	Directory *directory = parent->FindChild(name);
 
 	// directory exists already
-	if (directory != NULL) {
+	if (directory != nullptr) {
 		if (directory->mtime == st->st_mtime && !walk_discard) {
 			/* not modified */
-			return NULL;
+			return nullptr;
 		}
 
 		delete_directory(directory);
@@ -70,12 +70,12 @@ update_container_file(Directory *directory,
 		      const struct stat *st,
 		      const struct decoder_plugin *plugin)
 {
-	if (plugin->container_scan == NULL)
+	if (plugin->container_scan == nullptr)
 		return false;
 
 	db_lock();
 	Directory *contdir = make_directory_if_modified(directory, name, st);
-	if (contdir == NULL) {
+	if (contdir == nullptr) {
 		/* not modified */
 		db_unlock();
 		return true;
@@ -89,7 +89,7 @@ update_container_file(Directory *directory,
 	char *vtrack;
 	unsigned int tnum = 0;
 	TagBuilder tag_builder;
-	while ((vtrack = plugin->container_scan(pathname.c_str(), ++tnum)) != NULL) {
+	while ((vtrack = plugin->container_scan(pathname.c_str(), ++tnum)) != nullptr) {
 		Song *song = Song::NewFile(vtrack, contdir);
 
 		// shouldn't be necessary but it's there..

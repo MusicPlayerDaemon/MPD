@@ -118,7 +118,7 @@ iso9660_archive_open(const char *pathname, Error &error)
 	if (iso == nullptr) {
 		error.Format(iso9660_domain,
 			     "Failed to open ISO9660 file %s", pathname);
-		return NULL;
+		return nullptr;
 	}
 
 	return new Iso9660ArchiveFile(iso);
@@ -168,7 +168,7 @@ Iso9660ArchiveFile::OpenStream(const char *pathname,
 	if (statbuf == nullptr) {
 		error.Format(iso9660_domain,
 			     "not found in the ISO file: %s", pathname);
-		return NULL;
+		return nullptr;
 	}
 
 	Iso9660InputStream *iis =
@@ -236,7 +236,7 @@ iso9660_input_eof(struct input_stream *is)
 
 static const char *const iso9660_archive_extensions[] = {
 	"iso",
-	NULL
+	nullptr
 };
 
 const InputPlugin iso9660_input_plugin = {

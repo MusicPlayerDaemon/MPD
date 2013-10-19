@@ -25,7 +25,7 @@
 struct DatabasePlugin;
 
 /**
- * NULL terminated list of all database plugins which were enabled at
+ * nullptr terminated list of all database plugins which were enabled at
  * compile time.
  */
 extern const DatabasePlugin *const database_plugins[];

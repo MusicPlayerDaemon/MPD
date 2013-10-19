@@ -38,7 +38,7 @@ decoder_control::~decoder_control()
 {
 	ClearError();
 
-	if (song != NULL)
+	if (song != nullptr)
 		song->Free();
 
 	g_free(mixramp_start);
@@ -49,7 +49,7 @@ decoder_control::~decoder_control()
 bool
 decoder_control::IsCurrentSong(const Song *_song) const
 {
-	assert(_song != NULL);
+	assert(_song != nullptr);
 
 	switch (state) {
 	case DecoderState::STOP:
@@ -70,7 +70,7 @@ decoder_control::Start(Song *_song,
 		       unsigned _start_ms, unsigned _end_ms,
 		       MusicBuffer &_buffer, MusicPipe &_pipe)
 {
-	assert(_song != NULL);
+	assert(_song != nullptr);
 	assert(_pipe.IsEmpty());
 
 	if (song != nullptr)

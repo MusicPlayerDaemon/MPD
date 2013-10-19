@@ -79,8 +79,8 @@ static void version(void)
 		printf(" [%s]", plugin->name);
 
 		const char *const*suffixes = plugin->suffixes;
-		if (suffixes != NULL)
-			for (; *suffixes != NULL; ++suffixes)
+		if (suffixes != nullptr)
+			for (; *suffixes != nullptr; ++suffixes)
 				printf(" %s", *suffixes);
 
 		puts("");
@@ -107,8 +107,8 @@ static void version(void)
 		printf(" [%s]", plugin->name);
 
 		const char *const*suffixes = plugin->suffixes;
-		if (suffixes != NULL)
-			for (; *suffixes != NULL; ++suffixes)
+		if (suffixes != nullptr)
+			for (; *suffixes != nullptr; ++suffixes)
 				printf(" %s", *suffixes);
 
 		puts("");
@@ -156,19 +156,19 @@ parse_cmdline(int argc, char **argv, struct options *options,
 		option_no_config;
 	const GOptionEntry entries[] = {
 		{ "kill", 0, 0, G_OPTION_ARG_NONE, &options->kill,
-		  "kill the currently running mpd session", NULL },
+		  "kill the currently running mpd session", nullptr },
 		{ "no-config", 0, 0, G_OPTION_ARG_NONE, &option_no_config,
-		  "don't read from config", NULL },
+		  "don't read from config", nullptr },
 		{ "no-daemon", 0, 0, G_OPTION_ARG_NONE, &option_no_daemon,
-		  "don't detach from console", NULL },
+		  "don't detach from console", nullptr },
 		{ "stdout", 0, 0, G_OPTION_ARG_NONE, &options->log_stderr,
-		  NULL, NULL },
+		  nullptr, nullptr },
 		{ "stderr", 0, 0, G_OPTION_ARG_NONE, &options->log_stderr,
-		  "print messages to stderr", NULL },
+		  "print messages to stderr", nullptr },
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &options->verbose,
-		  "verbose logging", NULL },
+		  "verbose logging", nullptr },
 		{ "version", 'V', 0, G_OPTION_ARG_NONE, &option_version,
-		  "print version number", NULL },
+		  "print version number", nullptr },
 		{ nullptr, 0, 0, G_OPTION_ARG_NONE, nullptr, nullptr, nullptr }
 	};
 
@@ -178,7 +178,7 @@ parse_cmdline(int argc, char **argv, struct options *options,
 	options->verbose = false;
 
 	context = g_option_context_new("[path/to/mpd.conf]");
-	g_option_context_add_main_entries(context, entries, NULL);
+	g_option_context_add_main_entries(context, entries, nullptr);
 
 	g_option_context_set_summary(context, summary);
 

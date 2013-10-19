@@ -32,11 +32,11 @@ mixer_new(const struct mixer_plugin *plugin, void *ao,
 {
 	Mixer *mixer;
 
-	assert(plugin != NULL);
+	assert(plugin != nullptr);
 
 	mixer = plugin->init(ao, param, error);
 
-	assert(mixer == NULL || mixer->IsPlugin(*plugin));
+	assert(mixer == nullptr || mixer->IsPlugin(*plugin));
 
 	return mixer;
 }
@@ -44,8 +44,8 @@ mixer_new(const struct mixer_plugin *plugin, void *ao,
 void
 mixer_free(Mixer *mixer)
 {
-	assert(mixer != NULL);
-	assert(mixer->plugin != NULL);
+	assert(mixer != nullptr);
+	assert(mixer->plugin != nullptr);
 
 	/* mixers with the "global" flag set might still be open at
 	   this point (see mixer_auto_close()) */
@@ -59,14 +59,14 @@ mixer_open(Mixer *mixer, Error &error)
 {
 	bool success;
 
-	assert(mixer != NULL);
-	assert(mixer->plugin != NULL);
+	assert(mixer != nullptr);
+	assert(mixer->plugin != nullptr);
 
 	const ScopeLock protect(mixer->mutex);
 
 	if (mixer->open)
 		success = true;
-	else if (mixer->plugin->open == NULL)
+	else if (mixer->plugin->open == nullptr)
 		success = mixer->open = true;
 	else
 		success = mixer->open = mixer->plugin->open(mixer, error);
@@ -79,11 +79,11 @@ mixer_open(Mixer *mixer, Error &error)
 static void
 mixer_close_internal(Mixer *mixer)
 {
-	assert(mixer != NULL);
-	assert(mixer->plugin != NULL);
+	assert(mixer != nullptr);
+	assert(mixer->plugin != nullptr);
 	assert(mixer->open);
 
-	if (mixer->plugin->close != NULL)
+	if (mixer->plugin->close != nullptr)
 		mixer->plugin->close(mixer);
 
 	mixer->open = false;
@@ -92,8 +92,8 @@ mixer_close_internal(Mixer *mixer)
 void
 mixer_close(Mixer *mixer)
 {
-	assert(mixer != NULL);
-	assert(mixer->plugin != NULL);
+	assert(mixer != nullptr);
+	assert(mixer->plugin != nullptr);
 
 	const ScopeLock protect(mixer->mutex);
 
@@ -127,7 +127,7 @@ mixer_get_volume(Mixer *mixer, Error &error)
 {
 	int volume;
 
-	assert(mixer != NULL);
+	assert(mixer != nullptr);
 
 	if (mixer->plugin->global && !mixer->failed &&
 	    !mixer_open(mixer, error))
@@ -148,7 +148,7 @@ mixer_get_volume(Mixer *mixer, Error &error)
 bool
 mixer_set_volume(Mixer *mixer, unsigned volume, Error &error)
 {
-	assert(mixer != NULL);
+	assert(mixer != nullptr);
 	assert(volume <= 100);
 
 	if (mixer->plugin->global && !mixer->failed &&

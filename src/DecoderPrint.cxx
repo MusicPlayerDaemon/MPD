@@ -31,17 +31,17 @@ decoder_plugin_print(Client *client,
 {
 	const char *const*p;
 
-	assert(plugin != NULL);
-	assert(plugin->name != NULL);
+	assert(plugin != nullptr);
+	assert(plugin->name != nullptr);
 
 	client_printf(client, "plugin: %s\n", plugin->name);
 
-	if (plugin->suffixes != NULL)
-		for (p = plugin->suffixes; *p != NULL; ++p)
+	if (plugin->suffixes != nullptr)
+		for (p = plugin->suffixes; *p != nullptr; ++p)
 			client_printf(client, "suffix: %s\n", *p);
 
-	if (plugin->mime_types != NULL)
-		for (p = plugin->mime_types; *p != NULL; ++p)
+	if (plugin->mime_types != nullptr)
+		for (p = plugin->mime_types; *p != nullptr; ++p)
 			client_printf(client, "mime_type: %s\n", *p);
 }
 

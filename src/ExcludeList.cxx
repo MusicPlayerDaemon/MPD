@@ -40,7 +40,7 @@ bool
 ExcludeList::LoadFile(Path path_fs)
 {
 	FILE *file = FOpen(path_fs, FOpenMode::ReadText);
-	if (file == NULL) {
+	if (file == nullptr) {
 		const int e = errno;
 		if (e != ENOENT) {
 			const auto path_utf8 = path_fs.ToUTF8();
@@ -53,9 +53,9 @@ ExcludeList::LoadFile(Path path_fs)
 	}
 
 	char line[1024];
-	while (fgets(line, sizeof(line), file) != NULL) {
+	while (fgets(line, sizeof(line), file) != nullptr) {
 		char *p = strchr(line, '#');
-		if (p != NULL)
+		if (p != nullptr)
 			*p = 0;
 
 		p = g_strstrip(line);
