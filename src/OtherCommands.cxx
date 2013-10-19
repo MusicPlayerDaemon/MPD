@@ -40,7 +40,7 @@
 #include "Permission.hxx"
 #include "PlaylistFile.hxx"
 #include "ClientFile.hxx"
-#include "ClientInternal.hxx"
+#include "Client.hxx"
 #include "Idle.hxx"
 
 #ifdef ENABLE_SQLITE

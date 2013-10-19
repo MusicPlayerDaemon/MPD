@@ -26,7 +26,7 @@
 #include "Playlist.hxx"
 #include "PlaylistPrint.hxx"
 #include "ClientFile.hxx"
-#include "ClientInternal.hxx"
+#include "Client.hxx"
 #include "Partition.hxx"
 #include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"

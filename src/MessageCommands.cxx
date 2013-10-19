@@ -20,7 +20,7 @@
 #include "config.h"
 #include "MessageCommands.hxx"
 #include "ClientSubscribe.hxx"
-#include "ClientInternal.hxx"
+#include "Client.hxx"
 #include "ClientList.hxx"
 #include "Instance.hxx"
 #include "Main.hxx"

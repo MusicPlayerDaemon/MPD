@@ -23,7 +23,7 @@
 #include "Playlist.hxx"
 #include "PlaylistPrint.hxx"
 #include "UpdateGlue.hxx"
-#include "ClientInternal.hxx"
+#include "Client.hxx"
 #include "Volume.hxx"
 #include "OutputAll.hxx"
 #include "Partition.hxx"

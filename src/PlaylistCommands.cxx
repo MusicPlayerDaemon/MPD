@@ -27,7 +27,7 @@
 #include "PlaylistVector.hxx"
 #include "PlaylistQueue.hxx"
 #include "TimePrint.hxx"
-#include "ClientInternal.hxx"
+#include "Client.hxx"
 #include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
 #include "ls.hxx"

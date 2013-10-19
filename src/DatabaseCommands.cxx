@@ -24,7 +24,7 @@
 #include "DatabasePrint.hxx"
 #include "DatabaseSelection.hxx"
 #include "CommandError.hxx"
-#include "ClientInternal.hxx"
+#include "Client.hxx"
 #include "tag/Tag.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
