@@ -99,12 +99,11 @@ ParsePath(const char *path, Error &error)
 			++path;
 		} else {
 			const char *slash = strchr(path, '/');
-			char *user = slash != nullptr
-				? g_strndup(path, slash - path)
-				: g_strdup(path);
-
-			home = GetHome(user, error);
-			g_free(user);
+			const char *end = slash == nullptr
+					? path + strlen(path)
+					: slash;
+			const std::string user(path, end);
+			home = GetHome(user.c_str(), error);
 
 			if (slash == nullptr)
 				return home;
