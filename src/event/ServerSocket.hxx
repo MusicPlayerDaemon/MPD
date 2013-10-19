@@ -27,6 +27,7 @@
 struct sockaddr;
 class EventLoop;
 class Error;
+class AllocatedPath;
 
 typedef void (*server_socket_callback_t)(int fd,
 					 const struct sockaddr *address,
@@ -100,7 +101,7 @@ public:
 	 * ignore errors
 	 * @return true on success
 	 */
-	bool AddPath(const char *path, Error &error);
+	bool AddPath(AllocatedPath &&path, Error &error);
 
 	/**
 	 * Add a socket descriptor that is accepting connections.  After this

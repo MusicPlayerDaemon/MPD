@@ -67,8 +67,9 @@ listen_add_config_param(unsigned int port,
 	if (0 == strcmp(param->value.c_str(), "any")) {
 		return listen_socket->AddPort(port, error_r);
 	} else if (param->value[0] == '/' || param->value[0] == '~') {
-		const auto path = config_parse_path(param, error_r);
-		return !path.IsNull() && listen_socket->AddPath(path.c_str(), error_r);
+		auto path = config_parse_path(param, error_r);
+		return !path.IsNull() &&
+			listen_socket->AddPath(std::move(path), error_r);
 	} else {
 		return listen_socket->AddHost(param->value.c_str(), port,
 					      error_r);

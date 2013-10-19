@@ -29,11 +29,15 @@
 #include "event/SocketMonitor.hxx"
 #include "system/Resolver.hxx"
 #include "system/fd_util.h"
+#include "fs/AllocatedPath.hxx"
+#include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
 #include <glib.h>
+
+#include <string>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -60,7 +64,7 @@ class OneServerSocket final : private SocketMonitor {
 
 	const unsigned serial;
 
-	char *path;
+	AllocatedPath path;
 
 	size_t address_length;
 	struct sockaddr *address;
@@ -72,7 +76,7 @@ public:
 			size_t _address_length)
 		:SocketMonitor(_loop),
 		 parent(_parent), serial(_serial),
-		 path(nullptr),
+		 path(AllocatedPath::Null()),
 		 address_length(_address_length),
 		 address((sockaddr *)g_memdup(_address, _address_length))
 	{
@@ -84,7 +88,6 @@ public:
 	OneServerSocket &operator=(const OneServerSocket &other) = delete;
 
 	~OneServerSocket() {
-		g_free(path);
 		g_free(address);
 	}
 
@@ -92,10 +95,10 @@ public:
 		return serial;
 	}
 
-	void SetPath(const char *_path) {
-		assert(path == nullptr);
+	void SetPath(AllocatedPath &&_path) {
+		assert(path.IsNull());
 
-		path = g_strdup(_path);
+		path = std::move(_path);
 	}
 
 	bool Open(Error &error);
@@ -203,8 +206,8 @@ OneServerSocket::Open(Error &error)
 
 	/* allow everybody to connect */
 
-	if (path != nullptr)
-		chmod(path, 0666);
+	if (!path.IsNull())
+		chmod(path.c_str(), 0666);
 
 	/* register in the GLib main loop */
 
@@ -403,25 +406,25 @@ ServerSocket::AddHost(const char *hostname, unsigned port, Error &error)
 }
 
 bool
-ServerSocket::AddPath(const char *path, Error &error)
+ServerSocket::AddPath(AllocatedPath &&path, Error &error)
 {
 #ifdef HAVE_UN
 	struct sockaddr_un s_un;
 
-	size_t path_length = strlen(path);
+	const size_t path_length = path.length();
 	if (path_length >= sizeof(s_un.sun_path)) {
 		error.Set(server_socket_domain,
 			  "UNIX socket path is too long");
 		return false;
 	}
 
-	unlink(path);
+	RemoveFile(path);
 
 	s_un.sun_family = AF_UNIX;
-	memcpy(s_un.sun_path, path, path_length + 1);
+	memcpy(s_un.sun_path, path.c_str(), path_length + 1);
 
 	OneServerSocket &s = AddAddress((const sockaddr &)s_un, sizeof(s_un));
-	s.SetPath(path);
+	s.SetPath(std::move(path));
 
 	return true;
 #else /* !HAVE_UN */
