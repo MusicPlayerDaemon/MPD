@@ -141,7 +141,7 @@ src_mpd_SOURCES = \
 	src/ClientRead.cxx \
 	src/ClientWrite.cxx \
 	src/ClientMessage.cxx src/ClientMessage.hxx \
-	src/ClientSubscribe.cxx src/ClientSubscribe.hxx \
+	src/ClientSubscribe.cxx \
 	src/ClientFile.cxx src/ClientFile.hxx \
 	src/Listen.cxx src/Listen.hxx \
 	src/LogInit.cxx src/LogInit.hxx \

@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "MessageCommands.hxx"
-#include "ClientSubscribe.hxx"
 #include "Client.hxx"
 #include "ClientList.hxx"
 #include "Instance.hxx"
@@ -37,28 +36,29 @@ handle_subscribe(Client &client, gcc_unused int argc, char *argv[])
 {
 	assert(argc == 2);
 
-	switch (client_subscribe(client, argv[1])) {
-	case CLIENT_SUBSCRIBE_OK:
+	switch (client.Subscribe(argv[1])) {
+	case Client::SubscribeResult::OK:
 		return COMMAND_RETURN_OK;
 
-	case CLIENT_SUBSCRIBE_INVALID:
+	case Client::SubscribeResult::INVALID:
 		command_error(client, ACK_ERROR_ARG,
 			      "invalid channel name");
 		return COMMAND_RETURN_ERROR;
 
-	case CLIENT_SUBSCRIBE_ALREADY:
+	case Client::SubscribeResult::ALREADY:
 		command_error(client, ACK_ERROR_EXIST,
 			      "already subscribed to this channel");
 		return COMMAND_RETURN_ERROR;
 
-	case CLIENT_SUBSCRIBE_FULL:
+	case Client::SubscribeResult::FULL:
 		command_error(client, ACK_ERROR_EXIST,
 			      "subscription list is full");
 		return COMMAND_RETURN_ERROR;
 	}
 
 	/* unreachable */
-	return COMMAND_RETURN_OK;
+	assert(false);
+	gcc_unreachable();
 }
 
 enum command_return
@@ -66,7 +66,7 @@ handle_unsubscribe(Client &client, gcc_unused int argc, char *argv[])
 {
 	assert(argc == 2);
 
-	if (client_unsubscribe(client, argv[1]))
+	if (client.Unsubscribe(argv[1]))
 		return COMMAND_RETURN_OK;
 	else {
 		command_error(client, ACK_ERROR_NO_EXIST,
@@ -124,7 +124,7 @@ handle_send_message(Client &client,
 	bool sent = false;
 	const ClientMessage msg(argv[1], argv[2]);
 	for (const auto &c : *instance->client_list)
-		if (client_push_message(*c, msg))
+		if (c->PushMessage(msg))
 			sent = true;
 
 	if (sent)

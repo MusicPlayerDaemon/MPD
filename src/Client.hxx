@@ -87,11 +87,6 @@ public:
 	}
 
 	gcc_pure
-	bool IsSubscribed(const char *channel_name) const {
-		return subscriptions.find(channel_name) != subscriptions.end();
-	}
-
-	gcc_pure
 	bool IsExpired() const {
 		return !FullyBufferedSocket::IsDefined();
 	}
@@ -131,6 +126,30 @@ public:
 	void IdleNotify();
 	void IdleAdd(unsigned flags);
 	bool IdleWait(unsigned flags);
+
+	enum class SubscribeResult {
+		/** success */
+		OK,
+
+		/** invalid channel name */
+		INVALID,
+
+		/** already subscribed to this channel */
+		ALREADY,
+
+		/** too many subscriptions */
+		FULL,
+	};
+
+	gcc_pure
+	bool IsSubscribed(const char *channel_name) const {
+		return subscriptions.find(channel_name) != subscriptions.end();
+	}
+
+	SubscribeResult Subscribe(const char *channel);
+	bool Unsubscribe(const char *channel);
+	void UnsubscribeAll();
+	bool PushMessage(const ClientMessage &msg);
 
 private:
 	/* virtual methods from class BufferedSocket */

@@ -18,72 +18,75 @@
  */
 
 #include "config.h"
-#include "ClientSubscribe.hxx"
 #include "ClientInternal.hxx"
 #include "Idle.hxx"
 
 #include <assert.h>
 #include <string.h>
 
-enum client_subscribe_result
-client_subscribe(Client &client, const char *channel)
+	bool Unsubscribe(const char *channel);
+	void UnsubscribeAll();
+	bool PushMessage(const ClientMessage &msg);
+
+Client::SubscribeResult
+Client::Subscribe(const char *channel)
 {
 	assert(channel != nullptr);
 
 	if (!client_message_valid_channel_name(channel))
-		return CLIENT_SUBSCRIBE_INVALID;
+		return Client::SubscribeResult::INVALID;
 
-	if (client.num_subscriptions >= CLIENT_MAX_SUBSCRIPTIONS)
-		return CLIENT_SUBSCRIBE_FULL;
+	if (num_subscriptions >= CLIENT_MAX_SUBSCRIPTIONS)
+		return Client::SubscribeResult::FULL;
 
-	auto r = client.subscriptions.insert(channel);
+	auto r = subscriptions.insert(channel);
 	if (!r.second)
-		return CLIENT_SUBSCRIBE_ALREADY;
+		return Client::SubscribeResult::ALREADY;
 
-	++client.num_subscriptions;
+	++num_subscriptions;
 
 	idle_add(IDLE_SUBSCRIPTION);
 
-	return CLIENT_SUBSCRIBE_OK;
+	return Client::SubscribeResult::OK;
 }
 
 bool
-client_unsubscribe(Client &client, const char *channel)
+Client::Unsubscribe(const char *channel)
 {
-	const auto i = client.subscriptions.find(channel);
-	if (i == client.subscriptions.end())
+	const auto i = subscriptions.find(channel);
+	if (i == subscriptions.end())
 		return false;
 
-	assert(client.num_subscriptions > 0);
+	assert(num_subscriptions > 0);
 
-	client.subscriptions.erase(i);
-	--client.num_subscriptions;
+	subscriptions.erase(i);
+	--num_subscriptions;
 
 	idle_add(IDLE_SUBSCRIPTION);
 
-	assert((client.num_subscriptions == 0) ==
-	       client.subscriptions.empty());
+	assert((num_subscriptions == 0) ==
+	       subscriptions.empty());
 
 	return true;
 }
 
 void
-client_unsubscribe_all(Client &client)
+Client::UnsubscribeAll()
 {
-	client.subscriptions.clear();
-	client.num_subscriptions = 0;
+	subscriptions.clear();
+	num_subscriptions = 0;
 }
 
 bool
-client_push_message(Client &client, const ClientMessage &msg)
+Client::PushMessage(const ClientMessage &msg)
 {
-	if (client.messages.size() >= CLIENT_MAX_MESSAGES ||
-	    !client.IsSubscribed(msg.GetChannel()))
+	if (messages.size() >= CLIENT_MAX_MESSAGES ||
+	    !IsSubscribed(msg.GetChannel()))
 		return false;
 
-	if (client.messages.empty())
-		client.IdleAdd(IDLE_MESSAGE);
+	if (messages.empty())
+		IdleAdd(IDLE_MESSAGE);
 
-	client.messages.push_back(msg);
+	messages.push_back(msg);
 	return true;
 }
