@@ -148,14 +148,15 @@ mikmod_decoder_finish(void)
 static void
 mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
 {
-	char *path2;
+	/* deconstify the path because libmikmod wants a non-const
+	   string pointer */
+	char *const path2 = const_cast<char *>(path_fs);
+
 	MODULE *handle;
 	int ret;
 	SBYTE buffer[MIKMOD_FRAME_SIZE];
 
-	path2 = g_strdup(path_fs);
 	handle = Player_Load(path2, 128, 0);
-	g_free(path2);
 
 	if (handle == nullptr) {
 		FormatError(mikmod_domain,
@@ -186,22 +187,21 @@ static bool
 mikmod_decoder_scan_file(const char *path_fs,
 			 const struct tag_handler *handler, void *handler_ctx)
 {
-	char *path2 = g_strdup(path_fs);
+	/* deconstify the path because libmikmod wants a non-const
+	   string pointer */
+	char *const path2 = const_cast<char *>(path_fs);
+
 	MODULE *handle = Player_Load(path2, 128, 0);
 
 	if (handle == nullptr) {
-		g_free(path2);
 		FormatDebug(mikmod_domain,
 			    "Failed to open file: %s", path_fs);
 		return false;
-
 	}
 
 	Player_Free(handle);
 
 	char *title = Player_LoadTitle(path2);
-	g_free(path2);
-
 	if (title != nullptr) {
 		tag_handler_invoke_tag(handler, handler_ctx,
 				       TAG_TITLE, title);
