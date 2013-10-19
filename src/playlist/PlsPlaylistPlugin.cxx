@@ -37,7 +37,6 @@ static constexpr Domain pls_domain("pls");
 static void
 pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 {
-	gchar *key;
 	gchar *value;
 	int length;
 	GError *error = NULL;
@@ -60,7 +59,9 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 
 	while (num_entries > 0) {
 		Song *song;
-		key = g_strdup_printf("File%i", num_entries);
+
+		char key[64];
+		sprintf(key, "File%u", num_entries);
 		value = g_key_file_get_string(keyfile, "playlist", key,
 					      &error);
 		if(error) {
@@ -70,15 +71,13 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 			g_free(key);
 			return;
 		}
-		g_free(key);
 
 		song = Song::NewRemote(value);
 		g_free(value);
 
-		key = g_strdup_printf("Title%i", num_entries);
+		sprintf(key, "Title%u", num_entries);
 		value = g_key_file_get_string(keyfile, "playlist", key,
 					      &error);
-		g_free(key);
 		if(error == NULL && value){
 			if (song->tag == NULL)
 				song->tag = new Tag();
@@ -89,10 +88,9 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 		error = NULL;
 		g_free(value);
 
-		key = g_strdup_printf("Length%i", num_entries);
+		sprintf(key, "Length%u", num_entries);
 		length = g_key_file_get_integer(keyfile, "playlist", key,
 						&error);
-		g_free(key);
 		if(error == NULL && length > 0){
 			if (song->tag == NULL)
 				song->tag = new Tag();

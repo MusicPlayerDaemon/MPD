@@ -31,8 +31,6 @@
 #include "util/Domain.hxx"
 #include "LogV.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -84,10 +82,11 @@ mpd_ffmpeg_log_callback(gcc_unused void *ptr, int level,
 		cls = *(const AVClass *const*)ptr;
 
 	if (cls != NULL) {
-		char *domain = g_strconcat(ffmpeg_domain.GetName(), "/", cls->item_name(ptr), NULL);
+		char domain[64];
+		snprintf(domain, sizeof(domain), "%s/%s",
+			 ffmpeg_domain.GetName(), cls->item_name(ptr));
 		const Domain d(domain);
 		LogFormatV(d, import_ffmpeg_level(level), fmt, vl);
-		g_free(domain);
 	}
 }
 
@@ -351,12 +350,10 @@ ffmpeg_probe(struct decoder *decoder, struct input_stream *is)
 
 	Error error;
 
-	unsigned char *buffer = (unsigned char *)g_malloc(BUFFER_SIZE);
+	unsigned char buffer[BUFFER_SIZE];
 	size_t nbytes = decoder_read(decoder, is, buffer, BUFFER_SIZE);
-	if (nbytes <= PADDING || !is->LockSeek(0, SEEK_SET, error)) {
-		g_free(buffer);
-		return NULL;
-	}
+	if (nbytes <= PADDING || !is->LockSeek(0, SEEK_SET, error))
+		return nullptr;
 
 	/* some ffmpeg parsers (e.g. ac3_parser.c) read a few bytes
 	   beyond the declared buffer limit, which makes valgrind
@@ -369,10 +366,7 @@ ffmpeg_probe(struct decoder *decoder, struct input_stream *is)
 	avpd.buf_size = nbytes;
 	avpd.filename = is->uri.c_str();
 
-	AVInputFormat *format = av_probe_input_format(&avpd, true);
-	g_free(buffer);
-
-	return format;
+	return av_probe_input_format(&avpd, true);
 }
 
 static void

@@ -359,11 +359,12 @@ sidplay_scan_file(const char *path_fs,
 		title="";
 
 	if(info.songs>1) {
-		char *tag_title=g_strdup_printf("%s (%d/%d)",
-			title, song_num, info.songs);
+		char tag_title[1024];
+		snprintf(tag_title, sizeof(tag_title),
+			 "%s (%d/%d)",
+			 title, song_num, info.songs);
 		tag_handler_invoke_tag(handler, handler_ctx,
 				       TAG_TITLE, tag_title);
-		g_free(tag_title);
 	} else
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_TITLE, title);
 
@@ -373,9 +374,9 @@ sidplay_scan_file(const char *path_fs,
 				       info.infoString[1]);
 
 	/* track */
-	char *track=g_strdup_printf("%d", song_num);
+	char track[16];
+	sprintf(track, "%d", song_num);
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, track);
-	g_free(track);
 
 	/* time */
 	int song_len=get_song_length(path_fs);

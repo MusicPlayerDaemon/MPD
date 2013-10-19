@@ -134,7 +134,7 @@ struct input_curl {
 
 	/* some buffers which were passed to libcurl, which we have
 	   too free */
-	char *range;
+	char range[32];
 	struct curl_slist *request_headers;
 
 	/** the curl handles */
@@ -168,7 +168,7 @@ struct input_curl {
 
 	input_curl(const char *url, Mutex &mutex, Cond &cond)
 		:base(input_plugin_curl, url, mutex, cond),
-		 range(nullptr), request_headers(nullptr),
+		 request_headers(nullptr),
 		 paused(false),
 		 meta_name(nullptr),
 		 tag(nullptr) {}
@@ -383,9 +383,6 @@ input_curl_easy_free(struct input_curl *c)
 
 	curl_slist_free_all(c->request_headers);
 	c->request_headers = NULL;
-
-	g_free(c->range);
-	c->range = NULL;
 }
 
 /**
@@ -958,10 +955,11 @@ input_curl_easy_init(struct input_curl *c, Error &error)
 		curl_easy_setopt(c->easy, CURLOPT_PROXYPORT, (long)proxy_port);
 
 	if (proxy_user != NULL && proxy_password != NULL) {
-		char *proxy_auth_str =
-			g_strconcat(proxy_user, ":", proxy_password, NULL);
+		char proxy_auth_str[1024];
+		snprintf(proxy_auth_str, sizeof(proxy_auth_str),
+			 "%s:%s",
+			 proxy_user, proxy_password);
 		curl_easy_setopt(c->easy, CURLOPT_PROXYUSERPWD, proxy_auth_str);
-		g_free(proxy_auth_str);
 	}
 
 	code = curl_easy_setopt(c->easy, CURLOPT_URL, c->base.uri.c_str());
@@ -1062,7 +1060,7 @@ input_curl_seek(struct input_stream *is, InputPlugin::offset_type offset,
 	/* send the "Range" header */
 
 	if (is->offset > 0) {
-		c->range = g_strdup_printf("%lld-", (long long)is->offset);
+		sprintf(c->range, "%lld-", (long long)is->offset);
 		curl_easy_setopt(c->easy, CURLOPT_RANGE, c->range);
 	}
 

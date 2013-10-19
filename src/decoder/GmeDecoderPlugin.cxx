@@ -53,10 +53,12 @@ get_container_name(const char *path_fs)
 {
 	const char *subtune_suffix = uri_get_suffix(path_fs);
 	char *path_container = g_strdup(path_fs);
-	char *pat = g_strconcat("*/" SUBTUNE_PREFIX "???.",
-				subtune_suffix, nullptr);
+
+	char pat[64];
+	snprintf(pat, sizeof(pat), "%s%s",
+		 "*/" SUBTUNE_PREFIX "???.",
+		 subtune_suffix);
 	GPatternSpec *path_with_subtune = g_pattern_spec_new(pat);
-	g_free(pat);
 	if (!g_pattern_match(path_with_subtune,
 			     strlen(path_container), path_container, nullptr)) {
 		g_pattern_spec_free(path_with_subtune);
@@ -79,10 +81,12 @@ static int
 get_song_num(const char *path_fs)
 {
 	const char *subtune_suffix = uri_get_suffix(path_fs);
-	char *pat = g_strconcat("*/" SUBTUNE_PREFIX "???.",
-				subtune_suffix, nullptr);
+
+	char pat[64];
+	snprintf(pat, sizeof(pat), "%s%s",
+		 "*/" SUBTUNE_PREFIX "???.",
+		 subtune_suffix);
 	GPatternSpec *path_with_subtune = g_pattern_spec_new(pat);
-	g_free(pat);
 
 	if (g_pattern_match(path_with_subtune,
 			    strlen(path_fs), path_fs, nullptr)) {
@@ -235,13 +239,13 @@ gme_scan_file(const char *path_fs,
 	if (ti->song != nullptr) {
 		if (gme_track_count(emu) > 1) {
 			/* start numbering subtunes from 1 */
-			char *tag_title =
-				g_strdup_printf("%s (%d/%d)",
-						ti->song, song_num + 1,
-						gme_track_count(emu));
+			char tag_title[1024];
+			snprintf(tag_title, sizeof(tag_title),
+				 "%s (%d/%d)",
+				 ti->song, song_num + 1,
+				 gme_track_count(emu));
 			tag_handler_invoke_tag(handler, handler_ctx,
 					       TAG_TITLE, tag_title);
-			g_free(tag_title);
 		} else
 			tag_handler_invoke_tag(handler, handler_ctx,
 					       TAG_TITLE, ti->song);
