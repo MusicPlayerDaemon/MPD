@@ -44,12 +44,9 @@ unsigned
 block_param::GetUnsignedValue() const
 {
 	char *endptr;
-	long value2 = strtol(value.c_str(), &endptr, 0);
+	unsigned long value2 = strtoul(value.c_str(), &endptr, 0);
 	if (*endptr != 0)
 		FormatFatalError("Not a valid number in line %i", line);
-
-	if (value2 < 0)
-		FormatFatalError("Not a positive number in line %i", line);
 
 	return (unsigned)value2;
 }
