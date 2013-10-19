@@ -60,16 +60,14 @@ static bool
 mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 		AudioFormat &audio_format)
 {
-	char *path_dup;
 	int error;
 	int channels, encoding;
 	long rate;
 
 	/* mpg123_open() wants a writable string :-( */
-	path_dup = g_strdup(path_fs);
+	char *const path2 = const_cast<char *>(path_fs);
 
-	error = mpg123_open(handle, path_dup);
-	g_free(path_dup);
+	error = mpg123_open(handle, path2);
 	if (error != MPG123_OK) {
 		FormatWarning(mpg123_domain,
 			      "libmpg123 failed to open %s: %s",
