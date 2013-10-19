@@ -1001,6 +1001,37 @@ systemctl start mpd.socket</programlisting>
       </section>
 
       <section>
+        <title><varname>modplug</varname></title>
+
+        <para>
+          Module player based on MODPlug.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>loop_count</varname>
+                </entry>
+                <entry>
+                  Number of times to loop the module if it uses backward loops.
+                  Default is <parameter>0</parameter> which prevents looping.
+                  <parameter>-1</parameter> loops forever.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
         <title><varname>wildmidi</varname></title>
 
         <para>

@@ -22,6 +22,7 @@
 #include "DecoderAPI.hxx"
 #include "InputStream.hxx"
 #include "tag/TagHandler.hxx"
+#include "system/FatalError.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -37,6 +38,19 @@ static constexpr size_t MODPLUG_FRAME_SIZE = 4096;
 static constexpr size_t MODPLUG_PREALLOC_BLOCK = 256 * 1024;
 static constexpr size_t MODPLUG_READ_BLOCK = 128 * 1024;
 static constexpr input_stream::offset_type MODPLUG_FILE_LIMIT = 100 * 1024 * 1024;
+
+static int modplug_loop_count;
+
+static bool
+modplug_decoder_init(const config_param &param)
+{
+	modplug_loop_count = param.GetBlockValue("loop_count", 0);
+	if (modplug_loop_count < -1)
+		FormatFatalError("Invalid loop count in line %d: %i",
+				 param.line, modplug_loop_count);
+
+	return true;
+}
 
 static GByteArray *
 mod_loadfile(struct decoder *decoder, struct input_stream *is)
@@ -114,6 +128,7 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 	settings.mChannels = 2;
 	settings.mBits = 16;
 	settings.mFrequency = 44100;
+	settings.mLoopCount = modplug_loop_count;
 	/* insert more setting changes here */
 	ModPlug_SetSettings(&settings);
 
@@ -192,7 +207,7 @@ static const char *const mod_suffixes[] = {
 
 const struct decoder_plugin modplug_decoder_plugin = {
 	"modplug",
-	nullptr,
+	modplug_decoder_init,
 	nullptr,
 	mod_decode,
 	nullptr,

@@ -18,6 +18,7 @@ ver 0.18 (2012/??/??)
   - opus: new decoder plugin for the Opus codec
   - vorbis: skip 16 bit quantisation, provide float samples
   - mikmod: add "loop" configuration parameter
+  - modplug: add "loop_count" configuration parameter
   - mp4ff: obsolete plugin removed
 * encoder:
   - opus: new encoder plugin for the Opus codec
