@@ -26,8 +26,6 @@ extern "C" {
 #include "util/growing_fifo.h"
 }
 
-#include <glib.h>
-
 #include <assert.h>
 #include <string.h>
 
