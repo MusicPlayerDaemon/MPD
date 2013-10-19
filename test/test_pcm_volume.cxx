@@ -94,7 +94,7 @@ PcmVolumeTest::TestVolume24()
 {
 	constexpr unsigned N = 256;
 	static int32_t zero[N];
-	const auto src = TestDataBuffer<int32_t, N>(GlibRandomInt24());
+	const auto src = TestDataBuffer<int32_t, N>(RandomInt24());
 
 	int32_t dest[N];
 
@@ -158,7 +158,7 @@ PcmVolumeTest::TestVolumeFloat()
 {
 	constexpr unsigned N = 256;
 	static float zero[N];
-	const auto src = TestDataBuffer<float, N>(GlibRandomFloat());
+	const auto src = TestDataBuffer<float, N>(RandomFloat());
 
 	float dest[N];
 

@@ -17,23 +17,28 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <glib.h>
-
 #include <array>
+#include <random>
 
 #include <stddef.h>
 #include <stdint.h>
 
 template<typename T>
-struct GlibRandomInt {
-	T operator()() const {
-		return T(g_random_int());
+struct RandomInt {
+	typedef std::minstd_rand Engine;
+	Engine engine;
+
+	static_assert(sizeof(T) <= sizeof(Engine::result_type),
+		      "RNG result type too small");
+
+	T operator()() {
+		return T(random());
 	}
 };
 
-struct GlibRandomInt24 : GlibRandomInt<int32_t> {
-	int32_t operator()() const {
-		auto t = GlibRandomInt::operator()();
+struct RandomInt24 : RandomInt<int32_t> {
+	int32_t operator()() {
+		auto t = RandomInt::operator()();
 		t &= 0xffffff;
 		if (t & 0x800000)
 			t |= 0xff000000;
@@ -41,9 +46,14 @@ struct GlibRandomInt24 : GlibRandomInt<int32_t> {
 	}
 };
 
-struct GlibRandomFloat {
-	float operator()() const {
-		return g_random_double_range(-1.0, 1.0);
+struct RandomFloat {
+	std::mt19937 gen;
+	std::uniform_real_distribution<float> dis;
+
+	RandomFloat():gen(std::random_device()()), dis(-1.0, 1.0) {}
+
+	float operator()() {
+		return dis(gen);
 	}
 };
 
@@ -56,7 +66,7 @@ public:
 	using std::array<T, N>::end;
 	using std::array<T, N>::operator[];
 
-	template<typename G=GlibRandomInt<T>>
+	template<typename G=RandomInt<T>>
 	TestDataBuffer(G g=G()):std::array<T, N>() {
 		for (auto &i : *this)
 			i = g();

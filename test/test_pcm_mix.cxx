@@ -22,7 +22,7 @@
 #include "test_pcm_util.hxx"
 #include "pcm/PcmMix.hxx"
 
-template<typename T, SampleFormat format, typename G=GlibRandomInt<T>>
+template<typename T, SampleFormat format, typename G=RandomInt<T>>
 static void
 TestPcmMix(G g=G())
 {
@@ -72,7 +72,7 @@ PcmMixTest::TestMix16()
 void
 PcmMixTest::TestMix24()
 {
-	TestPcmMix<int32_t, SampleFormat::S24_P32>(GlibRandomInt24());
+	TestPcmMix<int32_t, SampleFormat::S24_P32>(RandomInt24());
 }
 
 void

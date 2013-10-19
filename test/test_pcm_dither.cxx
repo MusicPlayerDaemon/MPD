@@ -25,7 +25,7 @@ void
 PcmDitherTest::TestDither24()
 {
 	constexpr unsigned N = 256;
-	const auto src = TestDataBuffer<int32_t, N>(GlibRandomInt24());
+	const auto src = TestDataBuffer<int32_t, N>(RandomInt24());
 
 	int16_t dest[N];
 	PcmDither dither;

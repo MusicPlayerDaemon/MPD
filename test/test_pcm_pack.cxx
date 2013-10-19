@@ -22,13 +22,11 @@
 #include "pcm/PcmPack.hxx"
 #include "system/ByteOrder.hxx"
 
-#include <glib.h>
-
 void
 PcmPackTest::TestPack24()
 {
 	constexpr unsigned N = 256;
-	const auto src = TestDataBuffer<int32_t, N>(GlibRandomInt24());
+	const auto src = TestDataBuffer<int32_t, N>(RandomInt24());
 
 	uint8_t dest[N * 3];
 	pcm_pack_24(dest, src.begin(), src.end());
