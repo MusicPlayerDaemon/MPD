@@ -64,6 +64,28 @@ filter_plugin_config(const char *filter_template_name, Error &error)
 	return NULL;
 }
 
+static bool
+filter_chain_append_new(Filter &chain, const char *template_name, Error &error)
+{
+	const struct config_param *cfg =
+		filter_plugin_config(template_name, error);
+	if (cfg == nullptr)
+		// The error has already been set, just stop.
+		return false;
+
+	// Instantiate one of those filter plugins with the template name as a hint
+	Filter *f = filter_configured_new(*cfg, error);
+	if (f == nullptr)
+		// The error has already been set, just stop.
+		return false;
+
+	const char *plugin_name = cfg->GetBlockValue("plugin",
+						     "unknown");
+	filter_chain_append(chain, plugin_name, f);
+
+	return true;
+}
+
 unsigned int
 filter_chain_parse(Filter &chain, const char *spec, Error &error)
 {
@@ -79,24 +101,9 @@ filter_chain_parse(Filter &chain, const char *spec, Error &error)
 		// Squeeze whitespace
 		g_strstrip(*template_names);
 
-		const struct config_param *cfg =
-			filter_plugin_config(*template_names, error);
-		if (cfg == NULL) {
-			// The error has already been set, just stop.
+		if (!filter_chain_append_new(chain, *template_names, error))
 			break;
-		}
 
-		// Instantiate one of those filter plugins with the template name as a hint
-		Filter *f = filter_configured_new(*cfg, error);
-		if (f == NULL) {
-			// The error has already been set, just stop.
-			break;
-		}
-
-		const char *plugin_name = cfg->GetBlockValue("plugin",
-							     "unknown");
-
-		filter_chain_append(chain, plugin_name, f);
 		++added_filters;
 
 		++template_names;
