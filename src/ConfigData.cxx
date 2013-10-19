@@ -29,6 +29,17 @@
 #include <string.h>
 #include <stdlib.h>
 
+int
+block_param::GetIntValue() const
+{
+	char *endptr;
+	long value2 = strtol(value.c_str(), &endptr, 0);
+	if (*endptr != 0)
+		FormatFatalError("Not a valid number in line %i", line);
+
+	return value2;
+}
+
 unsigned
 block_param::GetUnsignedValue() const
 {
@@ -118,6 +129,16 @@ AllocatedPath
 config_param::GetBlockPath(const char *name, Error &error) const
 {
 	return GetBlockPath(name, nullptr, error);
+}
+
+int
+config_param::GetBlockValue(const char *name, int default_value) const
+{
+	const block_param *bp = GetBlockParam(name);
+	if (bp == nullptr)
+		return default_value;
+
+	return bp->GetIntValue();
 }
 
 unsigned

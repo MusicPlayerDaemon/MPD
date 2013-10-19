@@ -46,6 +46,9 @@ struct block_param {
 		:name(_name), value(_value), line(_line), used(false) {}
 
 	gcc_pure
+	int GetIntValue() const;
+
+	gcc_pure
 	unsigned GetUnsignedValue() const;
 
 	gcc_pure
@@ -113,6 +116,9 @@ struct config_param {
 				   Error &error) const;
 
 	AllocatedPath GetBlockPath(const char *name, Error &error) const;
+
+	gcc_pure
+	int GetBlockValue(const char *name, int default_value) const;
 
 	gcc_pure
 	unsigned GetBlockValue(const char *name, unsigned default_value) const;
