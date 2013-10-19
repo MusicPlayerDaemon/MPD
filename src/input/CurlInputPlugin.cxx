@@ -158,7 +158,7 @@ struct input_curl {
 	IcyMetaDataParser icy;
 
 	/** the stream name from the icy-name response header */
-	char *meta_name;
+	std::string meta_name;
 
 	/** the tag object ready to be requested via
 	    input_stream::ReadTag() */
@@ -170,7 +170,6 @@ struct input_curl {
 		:base(input_plugin_curl, url, mutex, cond),
 		 request_headers(nullptr),
 		 paused(false),
-		 meta_name(nullptr),
 		 tag(nullptr) {}
 
 	~input_curl();
@@ -632,8 +631,6 @@ input_curl::~input_curl()
 {
 	delete tag;
 
-	g_free(meta_name);
-
 	input_curl_easy_free_indirect(this);
 }
 
@@ -736,8 +733,8 @@ copy_icy_tag(struct input_curl *c)
 
 	delete c->tag;
 
-	if (c->meta_name != NULL && !tag->HasType(TAG_NAME))
-		tag->AddItem(TAG_NAME, c->meta_name);
+	if (!c->meta_name.empty() && !tag->HasType(TAG_NAME))
+		tag->AddItem(TAG_NAME, c->meta_name.c_str());
 
 	c->tag = tag;
 }
@@ -862,13 +859,12 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	} else if (g_ascii_strcasecmp(name, "icy-name") == 0 ||
 		   g_ascii_strcasecmp(name, "ice-name") == 0 ||
 		   g_ascii_strcasecmp(name, "x-audiocast-name") == 0) {
-		g_free(c->meta_name);
-		c->meta_name = g_strndup(value, end - value);
+		c->meta_name.assign(value, end);
 
 		delete c->tag;
 
 		c->tag = new Tag();
-		c->tag->AddItem(TAG_NAME, c->meta_name);
+		c->tag->AddItem(TAG_NAME, c->meta_name.c_str());
 	} else if (g_ascii_strcasecmp(name, "icy-metaint") == 0) {
 		char buffer[64];
 		size_t icy_metaint;
