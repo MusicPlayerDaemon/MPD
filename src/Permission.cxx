@@ -31,7 +31,7 @@
 
 #include <string.h>
 
-#define PERMISSION_PASSWORD_CHAR	'@'
+static constexpr char PERMISSION_PASSWORD_CHAR = '@';
 #define PERMISSION_SEPERATOR		","
 
 #define PERMISSION_READ_STRING		"read"
