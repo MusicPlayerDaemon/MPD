@@ -24,16 +24,15 @@
 #include "ConfigOption.hxx"
 #include "system/FatalError.hxx"
 
+#include <algorithm>
 #include <map>
 #include <string>
-
-#include <glib.h>
 
 #include <assert.h>
 #include <string.h>
 
 static constexpr char PERMISSION_PASSWORD_CHAR = '@';
-#define PERMISSION_SEPERATOR		","
+static constexpr char PERMISSION_SEPARATOR = ',';
 
 static constexpr struct {
 	const char *name;
@@ -65,16 +64,22 @@ static unsigned parsePermissions(const char *string)
 {
 	assert(string != nullptr);
 
+	const char *const end = string + strlen(string);
+
 	unsigned permission = 0;
-	gchar **tokens;
+	while (true) {
+		const char *comma = std::find(string, end,
+					      PERMISSION_SEPARATOR);
+		if (comma > string) {
+			const std::string name(string, comma);
+			permission |= ParsePermission(name.c_str());
+		}
 
-	tokens = g_strsplit(string, PERMISSION_SEPERATOR, 0);
-	for (unsigned i = 0; tokens[i] != NULL; ++i) {
-		char *temp = tokens[i];
-		permission |= ParsePermission(temp);
+		if (comma == end)
+			break;
+
+		string = comma + 1;
 	}
-
-	g_strfreev(tokens);
 
 	return permission;
 }
