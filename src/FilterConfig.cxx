@@ -64,15 +64,6 @@ filter_plugin_config(const char *filter_template_name, Error &error)
 	return NULL;
 }
 
-/**
- * Builds a filter chain from a configuration string on the form
- * "name1, name2, name3, ..." by looking up each name among the
- * configured filter sections.
- * @param chain the chain to append filters on
- * @param spec the filter chain specification
- * @param error space to return an error description
- * @return the number of filters which were successfully added
- */
 unsigned int
 filter_chain_parse(Filter &chain, const char *spec, Error &error)
 {
