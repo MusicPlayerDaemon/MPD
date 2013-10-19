@@ -182,7 +182,7 @@ static enum command_return
 handle_commands(Client &client,
 		gcc_unused int argc, gcc_unused char *argv[])
 {
-	const unsigned permission = client_get_permission(client);
+	const unsigned permission = client.GetPermission();
 	const struct command *cmd;
 
 	for (unsigned i = 0; i < num_commands; ++i) {
@@ -200,7 +200,7 @@ static enum command_return
 handle_not_commands(Client &client,
 		    gcc_unused int argc, gcc_unused char *argv[])
 {
-	const unsigned permission = client_get_permission(client);
+	const unsigned permission = client.GetPermission();
 	const struct command *cmd;
 
 	for (unsigned i = 0; i < num_commands; ++i) {
@@ -364,7 +364,7 @@ command_process(Client &client, unsigned num, char *line)
 
 	/* look up and invoke the command handler */
 
-	cmd = command_checked_lookup(client, client_get_permission(client),
+	cmd = command_checked_lookup(client, client.GetPermission(),
 				     argc, argv);
 	if (cmd)
 		ret = cmd->handler(client, argc, argv);

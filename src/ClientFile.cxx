@@ -41,7 +41,7 @@ client_allow_file(const Client &client, Path path_fs, Error &error)
 	error.Set(ack_domain, ACK_ERROR_PERMISSION, "Access denied");
 	return false;
 #else
-	const int uid = client_get_uid(client);
+	const int uid = client.GetUID();
 	if (uid >= 0 && (uid_t)uid == geteuid())
 		/* always allow access if user runs his own MPD
 		   instance */

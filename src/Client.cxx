@@ -22,21 +22,3 @@
 #include "util/Domain.hxx"
 
 const Domain client_domain("client");
-
-int
-client_get_uid(const Client &client)
-{
-	return client.uid;
-}
-
-unsigned
-client_get_permission(const Client &client)
-{
-	return client.permission;
-}
-
-void
-client_set_permission(Client &client, unsigned permission)
-{
-	client.permission = permission;
-}

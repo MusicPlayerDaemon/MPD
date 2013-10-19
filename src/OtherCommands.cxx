@@ -67,7 +67,7 @@ enum command_return
 handle_urlhandlers(Client &client,
 		   gcc_unused int argc, gcc_unused char *argv[])
 {
-	if (client_is_local(client))
+	if (client.IsLocal())
 		client_puts(client, "handler: file://\n");
 	print_supported_uri_schemes(client);
 	return COMMAND_RETURN_OK;
@@ -262,7 +262,7 @@ handle_password(Client &client, gcc_unused int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	}
 
-	client_set_permission(client, permission);
+	client.SetPermission(permission);
 
 	return COMMAND_RETURN_OK;
 }
@@ -271,7 +271,7 @@ enum command_return
 handle_config(Client &client,
 	      gcc_unused int argc, gcc_unused char *argv[])
 {
-	if (!client_is_local(client)) {
+	if (!client.IsLocal()) {
 		command_error(client, ACK_ERROR_PERMISSION,
 			      "Command only permitted to local clients");
 		return COMMAND_RETURN_ERROR;

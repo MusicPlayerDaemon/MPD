@@ -102,6 +102,30 @@ public:
 	using FullyBufferedSocket::Write;
 
 	/**
+	 * returns the uid of the client process, or a negative value
+	 * if the uid is unknown
+	 */
+	int GetUID() const {
+		return uid;
+	}
+
+	/**
+	 * Is this client running on the same machine, connected with
+	 * a local (UNIX domain) socket?
+	 */
+	bool IsLocal() const {
+		return uid > 0;
+	}
+
+	unsigned GetPermission() const {
+		return permission;
+	}
+
+	void SetPermission(unsigned _permission) {
+		permission = _permission;
+	}
+
+	/**
 	 * Send "idle" response to this client.
 	 */
 	void IdleNotify();
@@ -123,31 +147,6 @@ void client_manager_init(void);
 void
 client_new(EventLoop &loop, Partition &partition,
 	   int fd, const struct sockaddr *sa, size_t sa_length, int uid);
-
-/**
- * returns the uid of the client process, or a negative value if the
- * uid is unknown
- */
-gcc_pure
-int
-client_get_uid(const Client &client);
-
-/**
- * Is this client running on the same machine, connected with a local
- * (UNIX domain) socket?
- */
-gcc_pure
-static inline bool
-client_is_local(const Client &client)
-{
-	return client_get_uid(client) > 0;
-}
-
-gcc_pure
-unsigned
-client_get_permission(const Client &client);
-
-void client_set_permission(Client &client, unsigned permission);
 
 /**
  * Write a C string to the client.
