@@ -29,6 +29,7 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "Log.hxx"
 
 #include <stdio.h>
@@ -136,18 +137,17 @@ parse_cdio_uri(struct cdio_uri *dest, const char *src, Error &error)
 	return true;
 }
 
-static char *
+static AllocatedPath
 cdio_detect_device(void)
 {
 	char **devices = cdio_get_devices_with_cap(nullptr, CDIO_FS_AUDIO,
 						   false);
 	if (devices == nullptr)
-		return nullptr;
+		return AllocatedPath::Null();
 
-	char *device = g_strdup(devices[0]);
+	AllocatedPath path = AllocatedPath::FromFS(devices[0]);
 	cdio_free_device_list(devices);
-
-	return device;
+	return path;
 }
 
 static struct input_stream *
@@ -164,10 +164,10 @@ input_cdio_open(const char *uri,
 					    parsed_uri.track);
 
 	/* get list of CD's supporting CD-DA */
-	char *device = parsed_uri.device[0] != 0
-		? g_strdup(parsed_uri.device)
+	const AllocatedPath device = parsed_uri.device[0] != 0
+		? AllocatedPath::FromFS(parsed_uri.device)
 		: cdio_detect_device();
-	if (device == nullptr) {
+	if (device.IsNull()) {
 		error.Set(cdio_domain,
 			  "Unable find or access a CD-ROM drive with an audio CD in it.");
 		delete i;
@@ -175,8 +175,7 @@ input_cdio_open(const char *uri,
 	}
 
 	/* Found such a CD-ROM with a CD-DA loaded. Use the first drive in the list. */
-	i->cdio = cdio_open(device, DRIVER_UNKNOWN);
-	g_free(device);
+	i->cdio = cdio_open(device.c_str(), DRIVER_UNKNOWN);
 
 	i->drv = cdio_cddap_identify_cdio(i->cdio, 1, nullptr);
 
