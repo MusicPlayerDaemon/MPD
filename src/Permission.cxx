@@ -35,14 +35,31 @@
 static constexpr char PERMISSION_PASSWORD_CHAR = '@';
 #define PERMISSION_SEPERATOR		","
 
-#define PERMISSION_READ_STRING		"read"
-#define PERMISSION_ADD_STRING		"add"
-#define PERMISSION_CONTROL_STRING	"control"
-#define PERMISSION_ADMIN_STRING		"admin"
+static constexpr struct {
+	const char *name;
+	unsigned value;
+} permission_names[] = {
+	{ "read", PERMISSION_READ },
+	{ "add", PERMISSION_ADD },
+	{ "control", PERMISSION_CONTROL },
+	{ "admin", PERMISSION_ADMIN },
+	{ nullptr, 0 },
+};
 
 static std::map<std::string, unsigned> permission_passwords;
 
 static unsigned permission_default;
+
+gcc_pure
+static unsigned
+ParsePermission(const char *p)
+{
+	for (auto i = permission_names; i->name != nullptr; ++i)
+		if (strcmp(p, i->name) == 0)
+			return i->value;
+
+	FormatFatalError("unknown permission \"%s\"", p);
+}
 
 static unsigned parsePermissions(const char *string)
 {
@@ -54,18 +71,7 @@ static unsigned parsePermissions(const char *string)
 	tokens = g_strsplit(string, PERMISSION_SEPERATOR, 0);
 	for (unsigned i = 0; tokens[i] != NULL; ++i) {
 		char *temp = tokens[i];
-
-		if (strcmp(temp, PERMISSION_READ_STRING) == 0) {
-			permission |= PERMISSION_READ;
-		} else if (strcmp(temp, PERMISSION_ADD_STRING) == 0) {
-			permission |= PERMISSION_ADD;
-		} else if (strcmp(temp, PERMISSION_CONTROL_STRING) == 0) {
-			permission |= PERMISSION_CONTROL;
-		} else if (strcmp(temp, PERMISSION_ADMIN_STRING) == 0) {
-			permission |= PERMISSION_ADMIN;
-		} else {
-			FormatFatalError("unknown permission \"%s\"", temp);
-		}
+		permission |= ParsePermission(temp);
 	}
 
 	g_strfreev(tokens);
