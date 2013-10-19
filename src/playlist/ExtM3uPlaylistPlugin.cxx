@@ -125,8 +125,7 @@ ExtM3uPlaylist::NextSong()
 			continue;
 		}
 
-		while (*line_s != 0 && g_ascii_isspace(*line_s))
-			++line_s;
+		line_s = strchug_fast(line_s);
 	} while (line_s[0] == '#' || *line_s == 0);
 
 	song = Song::NewRemote(line_s);

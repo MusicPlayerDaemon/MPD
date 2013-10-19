@@ -22,9 +22,8 @@
 #include "PlaylistPlugin.hxx"
 #include "SongEnumerator.hxx"
 #include "Song.hxx"
+#include "util/StringUtil.hxx"
 #include "TextInputStream.hxx"
-
-#include <glib.h>
 
 class M3uPlaylist final : public SongEnumerator {
 	TextInputStream tis;
@@ -54,9 +53,7 @@ M3uPlaylist::NextSong()
 			return NULL;
 
 		line_s = line.c_str();
-
-		while (*line_s != 0 && g_ascii_isspace(*line_s))
-			++line_s;
+		line_s = strchug_fast(line_s);
 	} while (line_s[0] == '#' || *line_s == 0);
 
 	return Song::NewRemote(line_s);
