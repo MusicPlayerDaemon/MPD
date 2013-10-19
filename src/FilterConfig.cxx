@@ -29,7 +29,7 @@
 #include "ConfigError.hxx"
 #include "util/Error.hxx"
 
-#include <glib.h>
+#include <algorithm>
 
 #include <string.h>
 
@@ -89,22 +89,22 @@ filter_chain_append_new(Filter &chain, const char *template_name, Error &error)
 bool
 filter_chain_parse(Filter &chain, const char *spec, Error &error)
 {
-	// Split on comma
-	gchar** tokens = g_strsplit_set(spec, ",", 255);
+	const char *const end = spec + strlen(spec);
 
-	// Add each name to the filter chain by instantiating an actual filter
-	char **template_names = tokens;
-	while (*template_names != NULL) {
-		// Squeeze whitespace
-		g_strstrip(*template_names);
+	while (true) {
+		const char *comma = std::find(spec, end, ',');
+		if (comma > spec) {
+			const std::string name(spec, comma);
+			if (!filter_chain_append_new(chain, name.c_str(),
+						     error))
+				return false;
+		}
 
-		if (!filter_chain_append_new(chain, *template_names, error))
-			return false;
+		if (comma == end)
+			break;
 
-		++template_names;
+		spec = comma + 1;
 	}
-
-	g_strfreev(tokens);
 
 	return true;
 }
