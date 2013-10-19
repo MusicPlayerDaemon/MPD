@@ -21,6 +21,7 @@
 #include "IcyMetaDataServer.hxx"
 #include "Page.hxx"
 #include "tag/Tag.hxx"
+#include "util/FormatString.hxx"
 
 #include <glib.h>
 
@@ -32,26 +33,26 @@ icy_server_metadata_header(const char *name,
 			   const char *genre, const char *url,
 			   const char *content_type, int metaint)
 {
-	return g_strdup_printf("ICY 200 OK\r\n"
-			       "icy-notice1:<BR>This stream requires an audio player!<BR>\r\n" /* TODO */
-			       "icy-notice2:MPD - The music player daemon<BR>\r\n"
-			       "icy-name: %s\r\n"             /* TODO */
-			       "icy-genre: %s\r\n"            /* TODO */
-			       "icy-url: %s\r\n"              /* TODO */
-			       "icy-pub:1\r\n"
-			       "icy-metaint:%d\r\n"
-			       /* TODO "icy-br:%d\r\n" */
-			       "Content-Type: %s\r\n"
-			       "Connection: close\r\n"
-			       "Pragma: no-cache\r\n"
-			       "Cache-Control: no-cache, no-store\r\n"
-			       "\r\n",
-			       name,
-			       genre,
-			       url,
-			       metaint,
-			       /* bitrate, */
-			       content_type);
+	return FormatNew("ICY 200 OK\r\n"
+			 "icy-notice1:<BR>This stream requires an audio player!<BR>\r\n" /* TODO */
+			 "icy-notice2:MPD - The music player daemon<BR>\r\n"
+			 "icy-name: %s\r\n"             /* TODO */
+			 "icy-genre: %s\r\n"            /* TODO */
+			 "icy-url: %s\r\n"              /* TODO */
+			 "icy-pub:1\r\n"
+			 "icy-metaint:%d\r\n"
+			 /* TODO "icy-br:%d\r\n" */
+			 "Content-Type: %s\r\n"
+			 "Connection: close\r\n"
+			 "Pragma: no-cache\r\n"
+			 "Cache-Control: no-cache, no-store\r\n"
+			 "\r\n",
+			 name,
+			 genre,
+			 url,
+			 metaint,
+			 /* bitrate, */
+			 content_type);
 }
 
 static char *
@@ -61,12 +62,10 @@ icy_server_metadata_string(const char *stream_title, const char* stream_url)
 	guint meta_length;
 
 	// The leading n is a placeholder for the length information
-	icy_metadata = g_strdup_printf("nStreamTitle='%s';"
-				       "StreamUrl='%s';",
-				       stream_title,
-				       stream_url);
-
-	g_return_val_if_fail(icy_metadata, NULL);
+	icy_metadata = FormatNew("nStreamTitle='%s';"
+				 "StreamUrl='%s';",
+				 stream_title,
+				 stream_url);
 
 	meta_length = strlen(icy_metadata);
 
@@ -77,7 +76,7 @@ icy_server_metadata_string(const char *stream_title, const char* stream_url)
 	icy_metadata[0] = meta_length;
 
 	if (meta_length > 255) {
-		g_free(icy_metadata);
+		delete[] icy_metadata;
 		return NULL;
 	}
 
@@ -130,7 +129,7 @@ icy_server_metadata_page(const Tag &tag, const enum tag_type *types)
 
 	Page *icy_metadata = Page::Copy(icy_string, (icy_string[0] * 16) + 1);
 
-	g_free(icy_string);
+	delete[] icy_string;
 
 	return icy_metadata;
 }

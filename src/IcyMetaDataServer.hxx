@@ -25,6 +25,9 @@
 struct Tag;
 class Page;
 
+/**
+ * Free the return value with delete[].
+ */
 char*
 icy_server_metadata_header(const char *name,
 			   const char *genre, const char *url,

@@ -22,6 +22,7 @@
 #include "DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
+#include "util/FormatString.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -122,9 +123,8 @@ gme_container_scan(const char *path_fs, const unsigned int tnum)
 
 	const char *subtune_suffix = uri_get_suffix(path_fs);
 	if (tnum <= num_songs){
-		char *subtune = g_strdup_printf(
-			SUBTUNE_PREFIX "%03u.%s", tnum, subtune_suffix);
-		return subtune;
+		return FormatNew(SUBTUNE_PREFIX "%03u.%s",
+				 tnum, subtune_suffix);
 	} else
 		return nullptr;
 }

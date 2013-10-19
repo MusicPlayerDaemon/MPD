@@ -246,6 +246,7 @@ libutil_a_SOURCES = \
 	src/util/Domain.hxx \
 	src/util/ReusableArray.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
+	src/util/FormatString.cxx src/util/FormatString.hxx \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \
 	src/util/UriUtil.cxx src/util/UriUtil.hxx \
 	src/util/Manual.hxx \

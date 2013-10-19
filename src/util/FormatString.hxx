@@ -17,45 +17,27 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "ClientInternal.hxx"
-#include "util/FormatString.hxx"
+#ifndef MPD_FORMAT_STRING_HXX
+#define MPD_FORMAT_STRING_HXX
 
-#include <string.h>
+#include "Compiler.h"
+
+#include <stdarg.h>
 
 /**
- * Write a block of data to the client.
+ * Format into a newly allocated string.  The caller frees the return
+ * value with delete[].
  */
-static void
-client_write(Client *client, const char *data, size_t length)
-{
-	/* if the client is going to be closed, do nothing */
-	if (client->IsExpired() || length == 0)
-		return;
+gcc_malloc gcc_nonnull_all
+char *
+FormatNewV(const char *fmt, va_list args);
 
-	client->Write(data, length);
-}
+/**
+ * Format into a newly allocated string.  The caller frees the return
+ * value with delete[].
+ */
+gcc_malloc gcc_nonnull(1) gcc_printf(1,2)
+char *
+FormatNew(const char *fmt, ...);
 
-void
-client_puts(Client *client, const char *s)
-{
-	client_write(client, s, strlen(s));
-}
-
-void
-client_vprintf(Client *client, const char *fmt, va_list args)
-{
-	char *p = FormatNewV(fmt, args);
-	client_write(client, p, strlen(p));
-	delete[] p;
-}
-
-void
-client_printf(Client *client, const char *fmt, ...)
-{
-	va_list args;
-
-	va_start(args, fmt);
-	client_vprintf(client, fmt, args);
-	va_end(args);
-}
+#endif

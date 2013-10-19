@@ -146,9 +146,7 @@ HttpdClient::SendResponse()
 			 httpd->content_type);
 
 	} else if (metadata_requested) {
-		gchar *metadata_header;
-
-		metadata_header =
+		char *metadata_header =
 			icy_server_metadata_header(httpd->name, httpd->genre,
 						   httpd->website,
 						   httpd->content_type,
@@ -156,7 +154,7 @@ HttpdClient::SendResponse()
 
 		g_strlcpy(buffer, metadata_header, sizeof(buffer));
 
-		g_free(metadata_header);
+		delete[] metadata_header;
 
        } else { /* revert to a normal HTTP request */
 		snprintf(buffer, sizeof(buffer),
