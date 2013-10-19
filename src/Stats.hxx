@@ -49,6 +49,6 @@ void stats_global_finish(void);
 void stats_update(void);
 
 void
-stats_print(Client *client);
+stats_print(Client &client);
 
 #endif

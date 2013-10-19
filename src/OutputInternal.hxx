@@ -264,7 +264,7 @@ audio_output_command_is_finished(const struct audio_output *ao)
 
 struct audio_output *
 audio_output_new(const config_param &param,
-		 struct player_control *pc,
+		 player_control &pc,
 		 Error &error);
 
 bool

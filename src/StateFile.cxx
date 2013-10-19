@@ -48,8 +48,8 @@ StateFile::RememberVersions()
 {
 	prev_volume_version = sw_volume_state_get_hash();
 	prev_output_version = audio_output_state_get_version();
-	prev_playlist_version = playlist_state_get_hash(&partition.playlist,
-							&partition.pc);
+	prev_playlist_version = playlist_state_get_hash(partition.playlist,
+							partition.pc);
 }
 
 bool
@@ -57,8 +57,8 @@ StateFile::IsModified() const
 {
 	return prev_volume_version != sw_volume_state_get_hash() ||
 		prev_output_version != audio_output_state_get_version() ||
-		prev_playlist_version != playlist_state_get_hash(&partition.playlist,
-								 &partition.pc);
+		prev_playlist_version != playlist_state_get_hash(partition.playlist,
+								 partition.pc);
 }
 
 void
@@ -76,7 +76,7 @@ StateFile::Write()
 
 	save_sw_volume_state(fp);
 	audio_output_state_save(fp);
-	playlist_state_save(fp, &partition.playlist, &partition.pc);
+	playlist_state_save(fp, partition.playlist, partition.pc);
 
 	fclose(fp);
 
@@ -101,8 +101,8 @@ StateFile::Read()
 	while ((line = file.ReadLine()) != NULL) {
 		success = read_sw_volume_state(line) ||
 			audio_output_state_read(line) ||
-			playlist_state_restore(line, file, &partition.playlist,
-					       &partition.pc);
+			playlist_state_restore(line, file, partition.playlist,
+					       partition.pc);
 		if (!success)
 			FormatError(state_file_domain,
 				    "Unrecognized line in state file: %s",

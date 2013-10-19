@@ -281,7 +281,7 @@ audio_output_setup(struct audio_output *ao, const config_param &param,
 
 struct audio_output *
 audio_output_new(const config_param &param,
-		 struct player_control *pc,
+		 player_control &pc,
 		 Error &error)
 {
 	const struct audio_output_plugin *plugin;
@@ -324,6 +324,6 @@ audio_output_new(const config_param &param,
 		return nullptr;
 	}
 
-	ao->player_control = pc;
+	ao->player_control = &pc;
 	return ao;
 }

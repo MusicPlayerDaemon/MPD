@@ -64,7 +64,7 @@ apply_song_metadata(Song *dest, const Song *src)
 		return dest;
 
 	if (dest->IsInDatabase()) {
-		const auto path_fs = map_song_fs(dest);
+		const auto path_fs = map_song_fs(*dest);
 		if (path_fs.IsNull())
 			return dest;
 

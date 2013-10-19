@@ -28,9 +28,9 @@ struct Directory;
 struct decoder_plugin;
 
 bool
-update_container_file(Directory *directory,
+update_container_file(Directory &directory,
 		      const char *name,
 		      const struct stat *st,
-		      const struct decoder_plugin *plugin);
+		      const decoder_plugin &plugin);
 
 #endif

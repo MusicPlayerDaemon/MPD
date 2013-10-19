@@ -145,7 +145,7 @@ SimpleDatabase::Load(Error &error)
 		return false;
 	}
 
-	if (!db_load_internal(file, root, error))
+	if (!db_load_internal(file, *root, error))
 		return false;
 
 	struct stat st;
@@ -300,7 +300,7 @@ SimpleDatabase::Save(Error &error)
 		return false;
 	}
 
-	db_save_internal(fp, root);
+	db_save_internal(fp, *root);
 
 	if (ferror(fp)) {
 		error.SetErrno("Failed to write to database file");

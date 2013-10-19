@@ -91,7 +91,7 @@ map_uri_fs(const char *uri);
  */
 gcc_pure
 AllocatedPath
-map_directory_fs(const Directory *directory);
+map_directory_fs(const Directory &directory);
 
 /**
  * Determines the file system path of a directory's child (may be a
@@ -103,7 +103,7 @@ map_directory_fs(const Directory *directory);
  */
 gcc_pure
 AllocatedPath
-map_directory_child_fs(const Directory *directory, const char *name);
+map_directory_child_fs(const Directory &directory, const char *name);
 
 /**
  * Determines the file system path of a song.  This must not be a
@@ -114,7 +114,7 @@ map_directory_child_fs(const Directory *directory, const char *name);
  */
 gcc_pure
 AllocatedPath
-map_song_fs(const Song *song);
+map_song_fs(const Song &song);
 
 /**
  * Maps a file system path (relative to the music directory or

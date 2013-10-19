@@ -507,22 +507,22 @@ sticker_free(struct sticker *sticker)
 }
 
 const char *
-sticker_get_value(const struct sticker *sticker, const char *name)
+sticker_get_value(const struct sticker &sticker, const char *name)
 {
-	auto i = sticker->table.find(name);
-	if (i == sticker->table.end())
+	auto i = sticker.table.find(name);
+	if (i == sticker.table.end())
 		return nullptr;
 
 	return i->second.c_str();
 }
 
 void
-sticker_foreach(const struct sticker *sticker,
+sticker_foreach(const sticker &sticker,
 		void (*func)(const char *name, const char *value,
 			     void *user_data),
 		void *user_data)
 {
-	for (const auto &i : sticker->table)
+	for (const auto &i : sticker.table)
 		func(i.first.c_str(), i.second.c_str(), user_data);
 }
 

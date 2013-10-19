@@ -446,7 +446,7 @@ int mpd_main(int argc, char *argv[])
 	initialize_decoder_and_player();
 	volume_init();
 	initAudioConfig();
-	audio_output_all_init(&instance->partition->pc);
+	audio_output_all_init(instance->partition->pc);
 	client_manager_init();
 	replay_gain_global_init();
 

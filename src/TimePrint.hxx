@@ -28,6 +28,6 @@ class Client;
  * Write a line with a time stamp to the client.
  */
 void
-time_print(Client *client, const char *name, time_t t);
+time_print(Client &client, const char *name, time_t t);
 
 #endif

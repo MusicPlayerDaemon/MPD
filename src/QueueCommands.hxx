@@ -25,60 +25,60 @@
 class Client;
 
 enum command_return
-handle_add(Client *client, int argc, char *argv[]);
+handle_add(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_addid(Client *client, int argc, char *argv[]);
+handle_addid(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_delete(Client *client, int argc, char *argv[]);
+handle_delete(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_deleteid(Client *client, int argc, char *argv[]);
+handle_deleteid(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_playlist(Client *client, int argc, char *argv[]);
+handle_playlist(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_shuffle(Client *client, int argc, char *argv[]);
+handle_shuffle(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_clear(Client *client, int argc, char *argv[]);
+handle_clear(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_plchanges(Client *client, int argc, char *argv[]);
+handle_plchanges(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_plchangesposid(Client *client, int argc, char *argv[]);
+handle_plchangesposid(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_playlistinfo(Client *client, int argc, char *argv[]);
+handle_playlistinfo(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_playlistid(Client *client, int argc, char *argv[]);
+handle_playlistid(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_playlistfind(Client *client, int argc, char *argv[]);
+handle_playlistfind(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_playlistsearch(Client *client, int argc, char *argv[]);
+handle_playlistsearch(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_prio(Client *client, int argc, char *argv[]);
+handle_prio(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_prioid(Client *client, int argc, char *argv[]);
+handle_prioid(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_move(Client *client, int argc, char *argv[]);
+handle_move(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_moveid(Client *client, int argc, char *argv[]);
+handle_moveid(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_swap(Client *client, int argc, char *argv[]);
+handle_swap(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_swapid(Client *client, int argc, char *argv[]);
+handle_swapid(Client &client, int argc, char *argv[]);
 
 #endif

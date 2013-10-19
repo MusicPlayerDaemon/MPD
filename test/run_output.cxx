@@ -91,7 +91,7 @@ load_audio_output(const char *name)
 
 	Error error;
 	struct audio_output *ao =
-		audio_output_new(*param, &dummy_player_control, error);
+		audio_output_new(*param, dummy_player_control, error);
 	if (ao == nullptr)
 		g_printerr("%s\n", error.GetMessage());
 

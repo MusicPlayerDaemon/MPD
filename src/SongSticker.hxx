@@ -78,8 +78,8 @@ sticker_song_get(const Song *song);
  * failure
  */
 bool
-sticker_song_find(Directory *directory, const char *name,
-		  void (*func)(Song *song, const char *value,
+sticker_song_find(Directory &directory, const char *name,
+		  void (*func)(Song &song, const char *value,
 			       void *user_data),
 		  void *user_data);
 

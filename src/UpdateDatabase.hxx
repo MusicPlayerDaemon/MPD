@@ -29,7 +29,7 @@ struct Song;
  * Caller must lock the #db_mutex.
  */
 void
-delete_song(Directory *parent, Song *song);
+delete_song(Directory &parent, Song *song);
 
 /**
  * Recursively free a directory and all its contents.
@@ -45,6 +45,6 @@ delete_directory(Directory *directory);
  * @return true if the database was modified
  */
 bool
-delete_name_in(Directory *parent, const char *name);
+delete_name_in(Directory &parent, const char *name);
 
 #endif

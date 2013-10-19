@@ -37,19 +37,19 @@
 static constexpr Domain song_save_domain("song_save");
 
 void
-song_save(FILE *fp, const Song *song)
+song_save(FILE *fp, const Song &song)
 {
-	fprintf(fp, SONG_BEGIN "%s\n", song->uri);
+	fprintf(fp, SONG_BEGIN "%s\n", song.uri);
 
-	if (song->end_ms > 0)
-		fprintf(fp, "Range: %u-%u\n", song->start_ms, song->end_ms);
-	else if (song->start_ms > 0)
-		fprintf(fp, "Range: %u-\n", song->start_ms);
+	if (song.end_ms > 0)
+		fprintf(fp, "Range: %u-%u\n", song.start_ms, song.end_ms);
+	else if (song.start_ms > 0)
+		fprintf(fp, "Range: %u-\n", song.start_ms);
 
-	if (song->tag != nullptr)
-		tag_save(fp, *song->tag);
+	if (song.tag != nullptr)
+		tag_save(fp, *song.tag);
 
-	fprintf(fp, SONG_MTIME ": %li\n", (long)song->mtime);
+	fprintf(fp, SONG_MTIME ": %li\n", (long)song.mtime);
 	fprintf(fp, SONG_END "\n");
 }
 

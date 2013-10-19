@@ -23,6 +23,6 @@
 class Client;
 
 void
-decoder_list_print(Client *client);
+decoder_list_print(Client &client);
 
 #endif

@@ -27,12 +27,12 @@ class Client;
  * Sends one sticker value to the client.
  */
 void
-sticker_print_value(Client *client, const char *name, const char *value);
+sticker_print_value(Client &client, const char *name, const char *value);
 
 /**
  * Sends all sticker values to the client.
  */
 void
-sticker_print(Client *client, const struct sticker *sticker);
+sticker_print(Client &client, const sticker &sticker);
 
 #endif

@@ -27,23 +27,23 @@
  * Write a block of data to the client.
  */
 static void
-client_write(Client *client, const char *data, size_t length)
+client_write(Client &client, const char *data, size_t length)
 {
 	/* if the client is going to be closed, do nothing */
-	if (client->IsExpired() || length == 0)
+	if (client.IsExpired() || length == 0)
 		return;
 
-	client->Write(data, length);
+	client.Write(data, length);
 }
 
 void
-client_puts(Client *client, const char *s)
+client_puts(Client &client, const char *s)
 {
 	client_write(client, s, strlen(s));
 }
 
 void
-client_vprintf(Client *client, const char *fmt, va_list args)
+client_vprintf(Client &client, const char *fmt, va_list args)
 {
 	char *p = FormatNewV(fmt, args);
 	client_write(client, p, strlen(p));
@@ -51,7 +51,7 @@ client_vprintf(Client *client, const char *fmt, va_list args)
 }
 
 void
-client_printf(Client *client, const char *fmt, ...)
+client_printf(Client &client, const char *fmt, ...)
 {
 	va_list args;
 

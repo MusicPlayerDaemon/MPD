@@ -42,7 +42,7 @@ struct player_control;
 enum playlist_result
 playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,
-			 struct playlist *dest, struct player_control *pc,
+			 playlist &dest, player_control &pc,
 			 bool secure);
 
 /**
@@ -52,7 +52,7 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 enum playlist_result
 playlist_open_into_queue(const char *uri,
 			 unsigned start_index, unsigned end_index,
-			 struct playlist *dest, struct player_control *pc,
+			 playlist &dest, player_control &pc,
 			 bool secure);
 
 #endif

@@ -27,9 +27,9 @@ class TextFile;
 class Error;
 
 void
-directory_save(FILE *fp, const Directory *directory);
+directory_save(FILE *fp, const Directory &directory);
 
 bool
-directory_load(TextFile &file, Directory *directory, Error &error);
+directory_load(TextFile &file, Directory &directory, Error &error);
 
 #endif

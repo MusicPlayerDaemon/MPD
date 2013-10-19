@@ -50,42 +50,42 @@ playlist::TagChanged()
  * Queue a song, addressed by its order number.
  */
 static void
-playlist_queue_song_order(struct playlist *playlist, struct player_control *pc,
+playlist_queue_song_order(playlist &playlist, player_control &pc,
 			  unsigned order)
 {
-	assert(playlist->queue.IsValidOrder(order));
+	assert(playlist.queue.IsValidOrder(order));
 
-	playlist->queued = order;
+	playlist.queued = order;
 
-	Song *song = playlist->queue.GetOrder(order)->DupDetached();
+	Song *song = playlist.queue.GetOrder(order).DupDetached();
 
 	{
 		const auto uri = song->GetURI();
 		FormatDebug(playlist_domain, "queue song %i:\"%s\"",
-			    playlist->queued, uri.c_str());
+			    playlist.queued, uri.c_str());
 	}
 
-	pc->EnqueueSong(song);
+	pc.EnqueueSong(song);
 }
 
 /**
  * Called if the player thread has started playing the "queued" song.
  */
 static void
-playlist_song_started(struct playlist *playlist, struct player_control *pc)
+playlist_song_started(playlist &playlist, player_control &pc)
 {
-	assert(pc->next_song == nullptr);
-	assert(playlist->queued >= -1);
+	assert(pc.next_song == nullptr);
+	assert(playlist.queued >= -1);
 
 	/* queued song has started: copy queued to current,
 	   and notify the clients */
 
-	int current = playlist->current;
-	playlist->current = playlist->queued;
-	playlist->queued = -1;
+	int current = playlist.current;
+	playlist.current = playlist.queued;
+	playlist.queued = -1;
 
-	if(playlist->queue.consume)
-		playlist->DeleteOrder(*pc, current);
+	if(playlist.queue.consume)
+		playlist.DeleteOrder(pc, current);
 
 	idle_add(IDLE_PLAYER);
 }
@@ -94,7 +94,7 @@ const Song *
 playlist::GetQueuedSong() const
 {
 	return playing && queued >= 0
-		? queue.GetOrder(queued)
+		? &queue.GetOrder(queued)
 		: nullptr;
 }
 
@@ -127,7 +127,7 @@ playlist::UpdateQueuedSong(player_control &pc, const Song *prev)
 	}
 
 	const Song *const next_song = next_order >= 0
-		? queue.GetOrder(next_order)
+		? &queue.GetOrder(next_order)
 		: nullptr;
 
 	if (prev != nullptr && next_song != prev) {
@@ -138,7 +138,7 @@ playlist::UpdateQueuedSong(player_control &pc, const Song *prev)
 
 	if (next_order >= 0) {
 		if (next_song != prev)
-			playlist_queue_song_order(this, &pc, next_order);
+			playlist_queue_song_order(*this, pc, next_order);
 		else
 			queued = next_order;
 	}
@@ -150,7 +150,7 @@ playlist::PlayOrder(player_control &pc, int order)
 	playing = true;
 	queued = -1;
 
-	Song *song = queue.GetOrder(order)->DupDetached();
+	Song *song = queue.GetOrder(order).DupDetached();
 
 	{
 		const auto uri = song->GetURI();
@@ -163,7 +163,7 @@ playlist::PlayOrder(player_control &pc, int order)
 }
 
 static void
-playlist_resume_playback(struct playlist *playlist, struct player_control *pc);
+playlist_resume_playback(playlist &playlist, player_control &pc);
 
 void
 playlist::SyncWithPlayer(player_control &pc)
@@ -183,12 +183,12 @@ playlist::SyncWithPlayer(player_control &pc)
 		   should be restarted with the next song.  That can
 		   happen if the playlist isn't filling the queue fast
 		   enough */
-		playlist_resume_playback(this, &pc);
+		playlist_resume_playback(*this, pc);
 	else {
 		/* check if the player thread has already started
 		   playing the queued song */
 		if (pc_next_song == nullptr && queued != -1)
-			playlist_song_started(this, &pc);
+			playlist_song_started(*this, pc);
 
 		pc.Lock();
 		pc_next_song = pc.next_song;
@@ -206,26 +206,26 @@ playlist::SyncWithPlayer(player_control &pc)
  * decide whether to re-start playback
  */
 static void
-playlist_resume_playback(struct playlist *playlist, struct player_control *pc)
+playlist_resume_playback(playlist &playlist, player_control &pc)
 {
-	assert(playlist->playing);
-	assert(pc->GetState() == PlayerState::STOP);
+	assert(playlist.playing);
+	assert(pc.GetState() == PlayerState::STOP);
 
-	const auto error = pc->GetErrorType();
+	const auto error = pc.GetErrorType();
 	if (error == PlayerError::NONE)
-		playlist->error_count = 0;
+		playlist.error_count = 0;
 	else
-		++playlist->error_count;
+		++playlist.error_count;
 
-	if ((playlist->stop_on_error && error != PlayerError::NONE) ||
+	if ((playlist.stop_on_error && error != PlayerError::NONE) ||
 	    error == PlayerError::OUTPUT ||
-	    playlist->error_count >= playlist->queue.GetLength())
+	    playlist.error_count >= playlist.queue.GetLength())
 		/* too many errors, or critical error: stop
 		   playback */
-		playlist->Stop(*pc);
+		playlist.Stop(pc);
 	else
 		/* continue playback at the next song */
-		playlist->PlayNext(*pc);
+		playlist.PlayNext(pc);
 }
 
 void
@@ -246,13 +246,13 @@ playlist::SetRepeat(player_control &pc, bool status)
 }
 
 static void
-playlist_order(struct playlist *playlist)
+playlist_order(playlist &playlist)
 {
-	if (playlist->current >= 0)
+	if (playlist.current >= 0)
 		/* update playlist.current, order==position now */
-		playlist->current = playlist->queue.OrderToPosition(playlist->current);
+		playlist.current = playlist.queue.OrderToPosition(playlist.current);
 
-	playlist->queue.RestoreOrder();
+	playlist.queue.RestoreOrder();
 }
 
 void
@@ -310,7 +310,7 @@ playlist::SetRandom(player_control &pc, bool status)
 		} else
 			current = -1;
 	} else
-		playlist_order(this);
+		playlist_order(*this);
 
 	UpdateQueuedSong(pc, queued_song);
 

@@ -87,15 +87,15 @@ update_walk_global_finish(void)
 }
 
 static void
-directory_set_stat(Directory *dir, const struct stat *st)
+directory_set_stat(Directory &dir, const struct stat *st)
 {
-	dir->inode = st->st_ino;
-	dir->device = st->st_dev;
-	dir->have_stat = true;
+	dir.inode = st->st_ino;
+	dir.device = st->st_dev;
+	dir.have_stat = true;
 }
 
 static void
-remove_excluded_from_directory(Directory *directory,
+remove_excluded_from_directory(Directory &directory,
 			       const ExcludeList &exclude_list)
 {
 	db_lock();
@@ -112,7 +112,7 @@ remove_excluded_from_directory(Directory *directory,
 
 	Song *song, *ns;
 	directory_for_each_song_safe(song, ns, directory) {
-		assert(song->parent == directory);
+		assert(song->parent == &directory);
 
 		const auto name_fs = AllocatedPath::FromUTF8(song->uri);
 		if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
@@ -125,11 +125,11 @@ remove_excluded_from_directory(Directory *directory,
 }
 
 static void
-purge_deleted_from_directory(Directory *directory)
+purge_deleted_from_directory(Directory &directory)
 {
 	Directory *child, *n;
 	directory_for_each_child_safe(child, n, directory) {
-		if (directory_exists(child))
+		if (directory_exists(*child))
 			continue;
 
 		db_lock();
@@ -141,7 +141,7 @@ purge_deleted_from_directory(Directory *directory)
 
 	Song *song, *ns;
 	directory_for_each_song_safe(song, ns, directory) {
-		const auto path = map_song_fs(song);
+		const auto path = map_song_fs(*song);
 		if (path.IsNull() || !FileExists(path)) {
 			db_lock();
 			delete_song(directory, song);
@@ -151,12 +151,12 @@ purge_deleted_from_directory(Directory *directory)
 		}
 	}
 
-	for (auto i = directory->playlists.begin(),
-		     end = directory->playlists.end();
+	for (auto i = directory.playlists.begin(),
+		     end = directory.playlists.end();
 	     i != end;) {
 		if (!directory_child_is_regular(directory, i->name.c_str())) {
 			db_lock();
-			i = directory->playlists.erase(i);
+			i = directory.playlists.erase(i);
 			db_unlock();
 		} else
 			++i;
@@ -165,7 +165,7 @@ purge_deleted_from_directory(Directory *directory)
 
 #ifndef WIN32
 static int
-update_directory_stat(Directory *directory)
+update_directory_stat(Directory &directory)
 {
 	struct stat st;
 	if (stat_directory(directory, &st) < 0)
@@ -181,7 +181,7 @@ find_inode_ancestor(Directory *parent, ino_t inode, dev_t device)
 {
 #ifndef WIN32
 	while (parent) {
-		if (!parent->have_stat && update_directory_stat(parent) < 0)
+		if (!parent->have_stat && update_directory_stat(*parent) < 0)
 			return -1;
 
 		if (parent->inode == inode && parent->device == device) {
@@ -201,7 +201,7 @@ find_inode_ancestor(Directory *parent, ino_t inode, dev_t device)
 }
 
 static bool
-update_playlist_file2(Directory *directory,
+update_playlist_file2(Directory &directory,
 		      const char *name, const char *suffix,
 		      const struct stat *st)
 {
@@ -211,14 +211,14 @@ update_playlist_file2(Directory *directory,
 	PlaylistInfo pi(name, st->st_mtime);
 
 	db_lock();
-	if (directory->playlists.UpdateOrInsert(std::move(pi)))
+	if (directory.playlists.UpdateOrInsert(std::move(pi)))
 		modified = true;
 	db_unlock();
 	return true;
 }
 
 static bool
-update_regular_file(Directory *directory,
+update_regular_file(Directory &directory,
 		    const char *name, const struct stat *st)
 {
 	const char *suffix = uri_get_suffix(name);
@@ -231,10 +231,10 @@ update_regular_file(Directory *directory,
 }
 
 static bool
-update_directory(Directory *directory, const struct stat *st);
+update_directory(Directory &directory, const struct stat *st);
 
 static void
-update_directory_child(Directory *directory,
+update_directory_child(Directory &directory,
 		       const char *name, const struct stat *st)
 {
 	assert(strchr(name, '/') == nullptr);
@@ -242,16 +242,16 @@ update_directory_child(Directory *directory,
 	if (S_ISREG(st->st_mode)) {
 		update_regular_file(directory, name, st);
 	} else if (S_ISDIR(st->st_mode)) {
-		if (find_inode_ancestor(directory, st->st_ino, st->st_dev))
+		if (find_inode_ancestor(&directory, st->st_ino, st->st_dev))
 			return;
 
 		db_lock();
-		Directory *subdir = directory->MakeChild(name);
+		Directory *subdir = directory.MakeChild(name);
 		db_unlock();
 
-		assert(directory == subdir->parent);
+		assert(&directory == subdir->parent);
 
-		if (!update_directory(subdir, st)) {
+		if (!update_directory(*subdir, st)) {
 			db_lock();
 			delete_directory(subdir);
 			db_unlock();
@@ -277,7 +277,7 @@ static bool
 skip_symlink(const Directory *directory, const char *utf8_name)
 {
 #ifndef WIN32
-	const auto path_fs = map_directory_child_fs(directory, utf8_name);
+	const auto path_fs = map_directory_child_fs(*directory, utf8_name);
 	if (path_fs.IsNull())
 		return true;
 
@@ -339,7 +339,7 @@ skip_symlink(const Directory *directory, const char *utf8_name)
 }
 
 static bool
-update_directory(Directory *directory, const struct stat *st)
+update_directory(Directory &directory, const struct stat *st)
 {
 	assert(S_ISDIR(st->st_mode));
 
@@ -380,7 +380,7 @@ update_directory(Directory *directory, const struct stat *st)
 		if (utf8.empty())
 			continue;
 
-		if (skip_symlink(directory, utf8.c_str())) {
+		if (skip_symlink(&directory, utf8.c_str())) {
 			modified |= delete_name_in(directory, utf8.c_str());
 			continue;
 		}
@@ -391,16 +391,16 @@ update_directory(Directory *directory, const struct stat *st)
 			modified |= delete_name_in(directory, utf8.c_str());
 	}
 
-	directory->mtime = st->st_mtime;
+	directory.mtime = st->st_mtime;
 
 	return true;
 }
 
 static Directory *
-directory_make_child_checked(Directory *parent, const char *name_utf8)
+directory_make_child_checked(Directory &parent, const char *name_utf8)
 {
 	db_lock();
-	Directory *directory = parent->FindChild(name_utf8);
+	Directory *directory = parent.FindChild(name_utf8);
 	db_unlock();
 
 	if (directory != nullptr)
@@ -408,23 +408,23 @@ directory_make_child_checked(Directory *parent, const char *name_utf8)
 
 	struct stat st;
 	if (stat_directory_child(parent, name_utf8, &st) < 0 ||
-	    find_inode_ancestor(parent, st.st_ino, st.st_dev))
+	    find_inode_ancestor(&parent, st.st_ino, st.st_dev))
 		return nullptr;
 
-	if (skip_symlink(parent, name_utf8))
+	if (skip_symlink(&parent, name_utf8))
 		return nullptr;
 
 	/* if we're adding directory paths, make sure to delete filenames
 	   with potentially the same name */
 	db_lock();
-	Song *conflicting = parent->FindSong(name_utf8);
+	Song *conflicting = parent.FindSong(name_utf8);
 	if (conflicting)
 		delete_song(parent, conflicting);
 
-	directory = parent->CreateChild(name_utf8);
+	directory = parent.CreateChild(name_utf8);
 	db_unlock();
 
-	directory_set_stat(directory, &st);
+	directory_set_stat(*directory, &st);
 	return directory;
 }
 
@@ -441,7 +441,8 @@ directory_make_uri_parent_checked(const char *uri)
 		if (*name_utf8 == 0)
 			continue;
 
-		directory = directory_make_child_checked(directory, name_utf8);
+		directory = directory_make_child_checked(*directory,
+							 name_utf8);
 		if (directory == nullptr)
 			break;
 
@@ -463,10 +464,10 @@ update_uri(const char *uri)
 
 	struct stat st;
 	if (!skip_symlink(parent, name) &&
-	    stat_directory_child(parent, name, &st) == 0)
-		update_directory_child(parent, name, &st);
+	    stat_directory_child(*parent, name, &st) == 0)
+		update_directory_child(*parent, name, &st);
 	else
-		modified |= delete_name_in(parent, name);
+		modified |= delete_name_in(*parent, name);
 
 	g_free(name);
 }
@@ -483,8 +484,8 @@ update_walk(const char *path, bool discard)
 		Directory *directory = db_get_root();
 		struct stat st;
 
-		if (stat_directory(directory, &st) == 0)
-			update_directory(directory, &st);
+		if (stat_directory(*directory, &st) == 0)
+			update_directory(*directory, &st);
 	}
 
 	return modified;

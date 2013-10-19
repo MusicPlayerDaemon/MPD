@@ -30,7 +30,7 @@
 #include <errno.h>
 
 enum command_return
-print_playlist_result(Client *client, enum playlist_result result)
+print_playlist_result(Client &client, enum playlist_result result)
 {
 	switch (result) {
 	case PLAYLIST_RESULT_SUCCESS:
@@ -89,9 +89,8 @@ print_playlist_result(Client *client, enum playlist_result result)
 }
 
 enum command_return
-print_error(Client *client, const Error &error)
+print_error(Client &client, const Error &error)
 {
-	assert(client != NULL);
 	assert(error.IsDefined());
 
 	LogError(error);

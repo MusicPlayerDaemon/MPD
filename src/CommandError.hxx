@@ -27,12 +27,12 @@ class Client;
 class Error;
 
 enum command_return
-print_playlist_result(Client *client, enum playlist_result result);
+print_playlist_result(Client &client, enum playlist_result result);
 
 /**
  * Send the #Error to the client.
  */
 enum command_return
-print_error(Client *client, const Error &error);
+print_error(Client &client, const Error &error);
 
 #endif

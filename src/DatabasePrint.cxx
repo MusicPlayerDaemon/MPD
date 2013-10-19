@@ -34,7 +34,7 @@
 #include <functional>
 
 static bool
-PrintDirectoryBrief(Client *client, const Directory &directory)
+PrintDirectoryBrief(Client &client, const Directory &directory)
 {
 	if (!directory.IsRoot())
 		client_printf(client, "directory: %s\n", directory.GetPath());
@@ -43,7 +43,7 @@ PrintDirectoryBrief(Client *client, const Directory &directory)
 }
 
 static bool
-PrintDirectoryFull(Client *client, const Directory &directory)
+PrintDirectoryFull(Client &client, const Directory &directory)
 {
 	if (!directory.IsRoot()) {
 		client_printf(client, "directory: %s\n", directory.GetPath());
@@ -55,7 +55,7 @@ PrintDirectoryFull(Client *client, const Directory &directory)
 
 
 static void
-print_playlist_in_directory(Client *client,
+print_playlist_in_directory(Client &client,
 			    const Directory &directory,
 			    const char *name_utf8)
 {
@@ -67,11 +67,11 @@ print_playlist_in_directory(Client *client,
 }
 
 static bool
-PrintSongBrief(Client *client, Song &song)
+PrintSongBrief(Client &client, const Song &song)
 {
 	assert(song.parent != nullptr);
 
-	song_print_uri(client, &song);
+	song_print_uri(client, song);
 
 	if (song.tag != nullptr && song.tag->has_playlist)
 		/* this song file has an embedded CUE sheet */
@@ -81,11 +81,11 @@ PrintSongBrief(Client *client, Song &song)
 }
 
 static bool
-PrintSongFull(Client *client, Song &song)
+PrintSongFull(Client &client, const Song &song)
 {
 	assert(song.parent != nullptr);
 
-	song_print_info(client, &song);
+	song_print_info(client, song);
 
 	if (song.tag != nullptr && song.tag->has_playlist)
 		/* this song file has an embedded CUE sheet */
@@ -95,7 +95,7 @@ PrintSongFull(Client *client, Song &song)
 }
 
 static bool
-PrintPlaylistBrief(Client *client,
+PrintPlaylistBrief(Client &client,
 		   const PlaylistInfo &playlist,
 		   const Directory &directory)
 {
@@ -104,7 +104,7 @@ PrintPlaylistBrief(Client *client,
 }
 
 static bool
-PrintPlaylistFull(Client *client,
+PrintPlaylistFull(Client &client,
 		  const PlaylistInfo &playlist,
 		  const Directory &directory)
 {
@@ -117,7 +117,7 @@ PrintPlaylistFull(Client *client,
 }
 
 bool
-db_selection_print(Client *client, const DatabaseSelection &selection,
+db_selection_print(Client &client, const DatabaseSelection &selection,
 		   bool full, Error &error)
 {
 	const Database *db = GetDatabase(error);
@@ -127,13 +127,13 @@ db_selection_print(Client *client, const DatabaseSelection &selection,
 	using namespace std::placeholders;
 	const auto d = selection.filter == nullptr
 		? std::bind(full ? PrintDirectoryFull : PrintDirectoryBrief,
-			    client, _1)
+			    std::ref(client), _1)
 		: VisitDirectory();
 	const auto s = std::bind(full ? PrintSongFull : PrintSongBrief,
-				 client, _1);
+				 std::ref(client), _1);
 	const auto p = selection.filter == nullptr
 		? std::bind(full ? PrintPlaylistFull : PrintPlaylistBrief,
-			    client, _1, _2)
+			    std::ref(client), _1, _2)
 		: VisitPlaylist();
 
 	return db->Visit(selection, d, s, p, error);
@@ -144,7 +144,7 @@ struct SearchStats {
 	unsigned long playTime;
 };
 
-static void printSearchStats(Client *client, SearchStats *stats)
+static void printSearchStats(Client &client, SearchStats *stats)
 {
 	client_printf(client, "songs: %i\n", stats->numberOfSongs);
 	client_printf(client, "playtime: %li\n", stats->playTime);
@@ -160,7 +160,7 @@ stats_visitor_song(SearchStats &stats, Song &song)
 }
 
 bool
-searchStatsForSongsIn(Client *client, const char *name,
+searchStatsForSongsIn(Client &client, const char *name,
 		      const SongFilter *filter,
 		      Error &error)
 {
@@ -185,14 +185,14 @@ searchStatsForSongsIn(Client *client, const char *name,
 }
 
 bool
-printAllIn(Client *client, const char *uri_utf8, Error &error)
+printAllIn(Client &client, const char *uri_utf8, Error &error)
 {
 	const DatabaseSelection selection(uri_utf8, true);
 	return db_selection_print(client, selection, false, error);
 }
 
 bool
-printInfoForAllIn(Client *client, const char *uri_utf8,
+printInfoForAllIn(Client &client, const char *uri_utf8,
 		  Error &error)
 {
 	const DatabaseSelection selection(uri_utf8, true);
@@ -200,15 +200,15 @@ printInfoForAllIn(Client *client, const char *uri_utf8,
 }
 
 static bool
-PrintSongURIVisitor(Client *client, Song &song)
+PrintSongURIVisitor(Client &client, Song &song)
 {
-	song_print_uri(client, &song);
+	song_print_uri(client, song);
 
 	return true;
 }
 
 static bool
-PrintUniqueTag(Client *client, enum tag_type tag_type,
+PrintUniqueTag(Client &client, enum tag_type tag_type,
 	       const char *value)
 {
 	client_printf(client, "%s: %s\n", tag_item_names[tag_type], value);
@@ -216,7 +216,7 @@ PrintUniqueTag(Client *client, enum tag_type tag_type,
 }
 
 bool
-listAllUniqueTags(Client *client, int type,
+listAllUniqueTags(Client &client, int type,
 		  const SongFilter *filter,
 		  Error &error)
 {
@@ -228,11 +228,12 @@ listAllUniqueTags(Client *client, int type,
 
 	if (type == LOCATE_TAG_FILE_TYPE) {
 		using namespace std::placeholders;
-		const auto f = std::bind(PrintSongURIVisitor, client, _1);
+		const auto f = std::bind(PrintSongURIVisitor,
+					 std::ref(client), _1);
 		return db->Visit(selection, f, error);
 	} else {
 		using namespace std::placeholders;
-		const auto f = std::bind(PrintUniqueTag, client,
+		const auto f = std::bind(PrintUniqueTag, std::ref(client),
 					 (enum tag_type)type, _1);
 		return db->VisitUniqueTags(selection, (enum tag_type)type,
 					   f, error);

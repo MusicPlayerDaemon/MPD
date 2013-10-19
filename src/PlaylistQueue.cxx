@@ -33,7 +33,7 @@
 enum playlist_result
 playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,
-			 struct playlist *dest, struct player_control *pc,
+			 playlist &dest, player_control &pc,
 			 bool secure)
 {
 	enum playlist_result result;
@@ -53,7 +53,7 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 		if (song == nullptr)
 			continue;
 
-		result = dest->AppendSong(*pc, song);
+		result = dest.AppendSong(pc, song);
 		song->Free();
 		if (result != PLAYLIST_RESULT_SUCCESS) {
 			g_free(base_uri);
@@ -69,7 +69,7 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 enum playlist_result
 playlist_open_into_queue(const char *uri,
 			 unsigned start_index, unsigned end_index,
-			 struct playlist *dest, struct player_control *pc,
+			 playlist &dest, player_control &pc,
 			 bool secure)
 {
 	Mutex mutex;

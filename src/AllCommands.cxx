@@ -56,15 +56,15 @@ struct command {
 	unsigned permission;
 	int min;
 	int max;
-	enum command_return (*handler)(Client *client, int argc, char **argv);
+	enum command_return (*handler)(Client &client, int argc, char **argv);
 };
 
 /* don't be fooled, this is the command handler for "commands" command */
 static enum command_return
-handle_commands(Client *client, int argc, char *argv[]);
+handle_commands(Client &client, int argc, char *argv[]);
 
 static enum command_return
-handle_not_commands(Client *client, int argc, char *argv[]);
+handle_not_commands(Client &client, int argc, char *argv[]);
 
 /**
  * The command registry.
@@ -179,7 +179,7 @@ command_available(gcc_unused const struct command *cmd)
 
 /* don't be fooled, this is the command handler for "commands" command */
 static enum command_return
-handle_commands(Client *client,
+handle_commands(Client &client,
 		gcc_unused int argc, gcc_unused char *argv[])
 {
 	const unsigned permission = client_get_permission(client);
@@ -197,7 +197,7 @@ handle_commands(Client *client,
 }
 
 static enum command_return
-handle_not_commands(Client *client,
+handle_not_commands(Client &client,
 		    gcc_unused int argc, gcc_unused char *argv[])
 {
 	const unsigned permission = client_get_permission(client);
@@ -249,17 +249,16 @@ command_lookup(const char *name)
 }
 
 static bool
-command_check_request(const struct command *cmd, Client *client,
+command_check_request(const struct command *cmd, Client &client,
 		      unsigned permission, int argc, char *argv[])
 {
 	int min = cmd->min + 1;
 	int max = cmd->max + 1;
 
 	if (cmd->permission != (permission & cmd->permission)) {
-		if (client != nullptr)
-			command_error(client, ACK_ERROR_PERMISSION,
-				      "you don't have permission for \"%s\"",
-				      cmd->cmd);
+		command_error(client, ACK_ERROR_PERMISSION,
+			      "you don't have permission for \"%s\"",
+			      cmd->cmd);
 		return false;
 	}
 
@@ -267,27 +266,24 @@ command_check_request(const struct command *cmd, Client *client,
 		return true;
 
 	if (min == max && max != argc) {
-		if (client != nullptr)
-			command_error(client, ACK_ERROR_ARG,
-				      "wrong number of arguments for \"%s\"",
-				      argv[0]);
+		command_error(client, ACK_ERROR_ARG,
+			      "wrong number of arguments for \"%s\"",
+			      argv[0]);
 		return false;
 	} else if (argc < min) {
-		if (client != nullptr)
-			command_error(client, ACK_ERROR_ARG,
-				      "too few arguments for \"%s\"", argv[0]);
+		command_error(client, ACK_ERROR_ARG,
+			      "too few arguments for \"%s\"", argv[0]);
 		return false;
 	} else if (argc > max && max /* != 0 */ ) {
-		if (client != nullptr)
-			command_error(client, ACK_ERROR_ARG,
-				      "too many arguments for \"%s\"", argv[0]);
+		command_error(client, ACK_ERROR_ARG,
+			      "too many arguments for \"%s\"", argv[0]);
 		return false;
 	} else
 		return true;
 }
 
 static const struct command *
-command_checked_lookup(Client *client, unsigned permission,
+command_checked_lookup(Client &client, unsigned permission,
 		       int argc, char *argv[])
 {
 	const struct command *cmd;
@@ -299,9 +295,8 @@ command_checked_lookup(Client *client, unsigned permission,
 
 	cmd = command_lookup(argv[0]);
 	if (cmd == nullptr) {
-		if (client != nullptr)
-			command_error(client, ACK_ERROR_UNKNOWN,
-				      "unknown command \"%s\"", argv[0]);
+		command_error(client, ACK_ERROR_UNKNOWN,
+			      "unknown command \"%s\"", argv[0]);
 		return nullptr;
 	}
 
@@ -314,7 +309,7 @@ command_checked_lookup(Client *client, unsigned permission,
 }
 
 enum command_return
-command_process(Client *client, unsigned num, char *line)
+command_process(Client &client, unsigned num, char *line)
 {
 	Error error;
 	char *argv[COMMAND_ARGV_MAX] = { nullptr };

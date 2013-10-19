@@ -39,22 +39,22 @@
 #include <glib.h>
 
 void
-playlist_print_uris(Client *client, const struct playlist *playlist)
+playlist_print_uris(Client &client, const playlist &playlist)
 {
-	const struct queue *queue = &playlist->queue;
+	const queue &queue = playlist.queue;
 
-	queue_print_uris(client, queue, 0, queue->GetLength());
+	queue_print_uris(client, queue, 0, queue.GetLength());
 }
 
 bool
-playlist_print_info(Client *client, const struct playlist *playlist,
+playlist_print_info(Client &client, const playlist &playlist,
 		    unsigned start, unsigned end)
 {
-	const struct queue *queue = &playlist->queue;
+	const queue &queue = playlist.queue;
 
-	if (end > queue->GetLength())
+	if (end > queue.GetLength())
 		/* correct the "end" offset */
-		end = queue->GetLength();
+		end = queue.GetLength();
 
 	if (start > end)
 		/* an invalid "start" offset is fatal */
@@ -65,13 +65,12 @@ playlist_print_info(Client *client, const struct playlist *playlist,
 }
 
 bool
-playlist_print_id(Client *client, const struct playlist *playlist,
+playlist_print_id(Client &client, const playlist &playlist,
 		  unsigned id)
 {
-	const struct queue *queue = &playlist->queue;
 	int position;
 
-	position = queue->IdToPosition(id);
+	position = playlist.queue.IdToPosition(id);
 	if (position < 0)
 		/* no such song */
 		return false;
@@ -80,42 +79,42 @@ playlist_print_id(Client *client, const struct playlist *playlist,
 }
 
 bool
-playlist_print_current(Client *client, const struct playlist *playlist)
+playlist_print_current(Client &client, const playlist &playlist)
 {
-	int current_position = playlist->GetCurrentPosition();
+	int current_position = playlist.GetCurrentPosition();
 	if (current_position < 0)
 		return false;
 
-	queue_print_info(client, &playlist->queue,
+	queue_print_info(client, playlist.queue,
 			 current_position, current_position + 1);
 	return true;
 }
 
 void
-playlist_print_find(Client *client, const struct playlist *playlist,
+playlist_print_find(Client &client, const playlist &playlist,
 		    const SongFilter &filter)
 {
-	queue_find(client, &playlist->queue, filter);
+	queue_find(client, playlist.queue, filter);
 }
 
 void
-playlist_print_changes_info(Client *client,
-			    const struct playlist *playlist,
+playlist_print_changes_info(Client &client,
+			    const playlist &playlist,
 			    uint32_t version)
 {
-	queue_print_changes_info(client, &playlist->queue, version);
+	queue_print_changes_info(client, playlist.queue, version);
 }
 
 void
-playlist_print_changes_position(Client *client,
-				const struct playlist *playlist,
+playlist_print_changes_position(Client &client,
+				const playlist &playlist,
 				uint32_t version)
 {
-	queue_print_changes_position(client, &playlist->queue, version);
+	queue_print_changes_position(client, playlist.queue, version);
 }
 
 static bool
-PrintSongDetails(Client *client, const char *uri_utf8)
+PrintSongDetails(Client &client, const char *uri_utf8)
 {
 	const Database *db = GetDatabase(IgnoreError());
 	if (db == nullptr)
@@ -125,13 +124,13 @@ PrintSongDetails(Client *client, const char *uri_utf8)
 	if (song == nullptr)
 		return false;
 
-	song_print_info(client, song);
+	song_print_info(client, *song);
 	db->ReturnSong(song);
 	return true;
 }
 
 bool
-spl_print(Client *client, const char *name_utf8, bool detail,
+spl_print(Client &client, const char *name_utf8, bool detail,
 	  Error &error)
 {
 	PlaylistFileContents contents = LoadPlaylistFile(name_utf8, error);
@@ -148,7 +147,7 @@ spl_print(Client *client, const char *name_utf8, bool detail,
 }
 
 static void
-playlist_provider_print(Client *client, const char *uri,
+playlist_provider_print(Client &client, const char *uri,
 			SongEnumerator &e, bool detail)
 {
 	Song *song;
@@ -160,9 +159,9 @@ playlist_provider_print(Client *client, const char *uri,
 			continue;
 
 		if (detail)
-			song_print_info(client, song);
+			song_print_info(client, *song);
 		else
-			song_print_uri(client, song);
+			song_print_uri(client, *song);
 
 		song->Free();
 	}
@@ -171,7 +170,7 @@ playlist_provider_print(Client *client, const char *uri,
 }
 
 bool
-playlist_file_print(Client *client, const char *uri, bool detail)
+playlist_file_print(Client &client, const char *uri, bool detail)
 {
 	Mutex mutex;
 	Cond cond;

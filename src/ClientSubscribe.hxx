@@ -40,15 +40,15 @@ enum client_subscribe_result {
 };
 
 enum client_subscribe_result
-client_subscribe(Client *client, const char *channel);
+client_subscribe(Client &client, const char *channel);
 
 bool
-client_unsubscribe(Client *client, const char *channel);
+client_unsubscribe(Client &client, const char *channel);
 
 void
-client_unsubscribe_all(Client *client);
+client_unsubscribe_all(Client &client);
 
 bool
-client_push_message(Client *client, const ClientMessage &msg);
+client_push_message(Client &client, const ClientMessage &msg);
 
 #endif

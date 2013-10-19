@@ -49,10 +49,8 @@ enum {
 };
 
 void
-db_save_internal(FILE *fp, const Directory *music_root)
+db_save_internal(FILE *fp, const Directory &music_root)
 {
-	assert(music_root != nullptr);
-
 	fprintf(fp, "%s\n", DIRECTORY_INFO_BEGIN);
 	fprintf(fp, DB_FORMAT_PREFIX "%u\n", DB_FORMAT);
 	fprintf(fp, "%s%s\n", DIRECTORY_MPD_VERSION, VERSION);
@@ -68,15 +66,13 @@ db_save_internal(FILE *fp, const Directory *music_root)
 }
 
 bool
-db_load_internal(TextFile &file, Directory *music_root, Error &error)
+db_load_internal(TextFile &file, Directory &music_root, Error &error)
 {
 	char *line;
 	int format = 0;
 	bool found_charset = false, found_version = false;
 	bool success;
 	bool tags[TAG_NUM_OF_ITEM_TYPES];
-
-	assert(music_root != nullptr);
 
 	/* get initial info */
 	line = file.ReadLine();

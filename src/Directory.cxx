@@ -70,11 +70,11 @@ Directory::Directory(const char *_path)
 Directory::~Directory()
 {
 	Song *song, *ns;
-	directory_for_each_song_safe(song, ns, this)
+	directory_for_each_song_safe(song, ns, *this)
 		song->Free();
 
 	Directory *child, *n;
-	directory_for_each_child_safe(child, n, this)
+	directory_for_each_child_safe(child, n, *this)
 		child->Free();
 }
 
@@ -153,7 +153,7 @@ Directory::FindChild(const char *name) const
 	assert(holding_db_lock());
 
 	const Directory *child;
-	directory_for_each_child(child, this)
+	directory_for_each_child(child, *this)
 		if (strcmp(child->GetName(), name) == 0)
 			return child;
 
@@ -166,7 +166,7 @@ Directory::PruneEmpty()
 	assert(holding_db_lock());
 
 	Directory *child, *n;
-	directory_for_each_child_safe(child, n, this) {
+	directory_for_each_child_safe(child, n, *this) {
 		child->PruneEmpty();
 
 		if (child->IsEmpty())
@@ -235,7 +235,7 @@ Directory::FindSong(const char *name_utf8) const
 	assert(name_utf8 != nullptr);
 
 	Song *song;
-	directory_for_each_song(song, this) {
+	directory_for_each_song(song, *this) {
 		assert(song->parent == this);
 
 		if (strcmp(song->uri, name_utf8) == 0)
@@ -293,7 +293,7 @@ Directory::Sort()
 	song_list_sort(&songs);
 
 	Directory *child;
-	directory_for_each_child(child, this)
+	directory_for_each_child(child, *this)
 		child->Sort();
 }
 
@@ -307,7 +307,7 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 
 	if (visit_song) {
 		Song *song;
-		directory_for_each_song(song, this)
+		directory_for_each_song(song, *this)
 			if ((filter == nullptr || filter->Match(*song)) &&
 			    !visit_song(*song, error))
 				return false;
@@ -320,7 +320,7 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 	}
 
 	Directory *child;
-	directory_for_each_child(child, this) {
+	directory_for_each_child(child, *this) {
 		if (visit_directory &&
 		    !visit_directory(*child, error))
 			return false;

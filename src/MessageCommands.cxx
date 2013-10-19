@@ -33,7 +33,7 @@
 #include <assert.h>
 
 enum command_return
-handle_subscribe(Client *client, gcc_unused int argc, char *argv[])
+handle_subscribe(Client &client, gcc_unused int argc, char *argv[])
 {
 	assert(argc == 2);
 
@@ -62,7 +62,7 @@ handle_subscribe(Client *client, gcc_unused int argc, char *argv[])
 }
 
 enum command_return
-handle_unsubscribe(Client *client, gcc_unused int argc, char *argv[])
+handle_unsubscribe(Client &client, gcc_unused int argc, char *argv[])
 {
 	assert(argc == 2);
 
@@ -76,7 +76,7 @@ handle_unsubscribe(Client *client, gcc_unused int argc, char *argv[])
 }
 
 enum command_return
-handle_channels(Client *client,
+handle_channels(Client &client,
 		gcc_unused int argc, gcc_unused char *argv[])
 {
 	assert(argc == 1);
@@ -93,24 +93,24 @@ handle_channels(Client *client,
 }
 
 enum command_return
-handle_read_messages(Client *client,
+handle_read_messages(Client &client,
 		     gcc_unused int argc, gcc_unused char *argv[])
 {
 	assert(argc == 1);
 
-	while (!client->messages.empty()) {
-		const ClientMessage &msg = client->messages.front();
+	while (!client.messages.empty()) {
+		const ClientMessage &msg = client.messages.front();
 
 		client_printf(client, "channel: %s\nmessage: %s\n",
 			      msg.GetChannel(), msg.GetMessage());
-		client->messages.pop_front();
+		client.messages.pop_front();
 	}
 
 	return COMMAND_RETURN_OK;
 }
 
 enum command_return
-handle_send_message(Client *client,
+handle_send_message(Client &client,
 		    gcc_unused int argc, gcc_unused char *argv[])
 {
 	assert(argc == 3);
@@ -124,7 +124,7 @@ handle_send_message(Client *client,
 	bool sent = false;
 	const ClientMessage msg(argv[1], argv[2]);
 	for (const auto &c : *instance->client_list)
-		if (client_push_message(c, msg))
+		if (client_push_message(*c, msg))
 			sent = true;
 
 	if (sent)

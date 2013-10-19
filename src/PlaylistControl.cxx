@@ -215,7 +215,7 @@ playlist::SeekSongPosition(player_control &pc, unsigned song, float seek_time)
 		queued_song = nullptr;
 	}
 
-	Song *the_song = queue.GetOrder(i)->DupDetached();
+	Song *the_song = queue.GetOrder(i).DupDetached();
 	if (!pc.Seek(the_song, seek_time)) {
 		UpdateQueuedSong(pc, queued_song);
 

@@ -30,7 +30,7 @@
 #include <unistd.h>
 
 int
-stat_directory(const Directory *directory, struct stat *st)
+stat_directory(const Directory &directory, struct stat *st)
 {
 	const auto path_fs = map_directory_fs(directory);
 	if (path_fs.IsNull())
@@ -48,7 +48,7 @@ stat_directory(const Directory *directory, struct stat *st)
 }
 
 int
-stat_directory_child(const Directory *parent, const char *name,
+stat_directory_child(const Directory &parent, const char *name,
 		     struct stat *st)
 {
 	const auto path_fs = map_directory_child_fs(parent, name);
@@ -67,21 +67,21 @@ stat_directory_child(const Directory *parent, const char *name,
 }
 
 bool
-directory_exists(const Directory *directory)
+directory_exists(const Directory &directory)
 {
 	const auto path_fs = map_directory_fs(directory);
 	if (path_fs.IsNull())
 		/* invalid path: cannot exist */
 		return false;
 
-	return directory->device == DEVICE_INARCHIVE ||
-		directory->device == DEVICE_CONTAINER
+	return directory.device == DEVICE_INARCHIVE ||
+		directory.device == DEVICE_CONTAINER
 		? FileExists(path_fs)
 		: DirectoryExists(path_fs);
 }
 
 bool
-directory_child_is_regular(const Directory *directory,
+directory_child_is_regular(const Directory &directory,
 			   const char *name_utf8)
 {
 	const auto path_fs = map_directory_child_fs(directory, name_utf8);
@@ -92,7 +92,7 @@ directory_child_is_regular(const Directory *directory,
 }
 
 bool
-directory_child_access(const Directory *directory,
+directory_child_access(const Directory &directory,
 		       const char *name, int mode)
 {
 #ifdef WIN32

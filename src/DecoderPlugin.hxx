@@ -111,11 +111,11 @@ struct decoder_plugin {
  * the plugin is not available
  */
 static inline bool
-decoder_plugin_init(const struct decoder_plugin *plugin,
+decoder_plugin_init(const decoder_plugin &plugin,
 		    const config_param &param)
 {
-	return plugin->init != nullptr
-		? plugin->init(param)
+	return plugin.init != nullptr
+		? plugin.init(param)
 		: true;
 }
 
@@ -123,42 +123,42 @@ decoder_plugin_init(const struct decoder_plugin *plugin,
  * Deinitialize a decoder plugin which was initialized successfully.
  */
 static inline void
-decoder_plugin_finish(const struct decoder_plugin *plugin)
+decoder_plugin_finish(const decoder_plugin &plugin)
 {
-	if (plugin->finish != nullptr)
-		plugin->finish();
+	if (plugin.finish != nullptr)
+		plugin.finish();
 }
 
 /**
  * Decode a stream.
  */
 static inline void
-decoder_plugin_stream_decode(const struct decoder_plugin *plugin,
+decoder_plugin_stream_decode(const decoder_plugin &plugin,
 			     struct decoder *decoder, struct input_stream *is)
 {
-	plugin->stream_decode(decoder, is);
+	plugin.stream_decode(decoder, is);
 }
 
 /**
  * Decode a file.
  */
 static inline void
-decoder_plugin_file_decode(const struct decoder_plugin *plugin,
+decoder_plugin_file_decode(const decoder_plugin &plugin,
 			   struct decoder *decoder, const char *path_fs)
 {
-	plugin->file_decode(decoder, path_fs);
+	plugin.file_decode(decoder, path_fs);
 }
 
 /**
  * Read the tag of a file.
  */
 static inline bool
-decoder_plugin_scan_file(const struct decoder_plugin *plugin,
+decoder_plugin_scan_file(const decoder_plugin &plugin,
 			 const char *path_fs,
 			 const struct tag_handler *handler, void *handler_ctx)
 {
-	return plugin->scan_file != nullptr
-		? plugin->scan_file(path_fs, handler, handler_ctx)
+	return plugin.scan_file != nullptr
+		? plugin.scan_file(path_fs, handler, handler_ctx)
 		: false;
 }
 
@@ -166,13 +166,13 @@ decoder_plugin_scan_file(const struct decoder_plugin *plugin,
  * Read the tag of a stream.
  */
 static inline bool
-decoder_plugin_scan_stream(const struct decoder_plugin *plugin,
+decoder_plugin_scan_stream(const decoder_plugin &plugin,
 			   struct input_stream *is,
 			   const struct tag_handler *handler,
 			   void *handler_ctx)
 {
-	return plugin->scan_stream != nullptr
-		? plugin->scan_stream(is, handler, handler_ctx)
+	return plugin.scan_stream != nullptr
+		? plugin.scan_stream(is, handler, handler_ctx)
 		: false;
 }
 
@@ -180,25 +180,25 @@ decoder_plugin_scan_stream(const struct decoder_plugin *plugin,
  * return "virtual" tracks in a container
  */
 static inline char *
-decoder_plugin_container_scan(	const struct decoder_plugin *plugin,
+decoder_plugin_container_scan(	const decoder_plugin &plugin,
 				const char* pathname,
 				const unsigned int tnum)
 {
-	return plugin->container_scan(pathname, tnum);
+	return plugin.container_scan(pathname, tnum);
 }
 
 /**
  * Does the plugin announce the specified file name suffix?
  */
 bool
-decoder_plugin_supports_suffix(const struct decoder_plugin *plugin,
+decoder_plugin_supports_suffix(const decoder_plugin &plugin,
 			       const char *suffix);
 
 /**
  * Does the plugin announce the specified MIME type?
  */
 bool
-decoder_plugin_supports_mime_type(const struct decoder_plugin *plugin,
+decoder_plugin_supports_mime_type(const decoder_plugin &plugin,
 				  const char *mime_type);
 
 #endif

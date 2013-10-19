@@ -170,18 +170,18 @@ map_uri_fs(const char *uri)
 }
 
 AllocatedPath
-map_directory_fs(const Directory *directory)
+map_directory_fs(const Directory &directory)
 {
 	assert(!music_dir_fs.IsNull());
 
-	if (directory->IsRoot())
+	if (directory.IsRoot())
 		return music_dir_fs;
 
-	return map_uri_fs(directory->GetPath());
+	return map_uri_fs(directory.GetPath());
 }
 
 AllocatedPath
-map_directory_child_fs(const Directory *directory, const char *name)
+map_directory_child_fs(const Directory &directory, const char *name)
 {
 	assert(!music_dir_fs.IsNull());
 
@@ -217,16 +217,16 @@ map_detached_song_fs(const char *uri_utf8)
 }
 
 AllocatedPath
-map_song_fs(const Song *song)
+map_song_fs(const Song &song)
 {
-	assert(song->IsFile());
+	assert(song.IsFile());
 
-	if (song->IsInDatabase())
-		return song->IsDetached()
-			? map_detached_song_fs(song->uri)
-			: map_directory_child_fs(song->parent, song->uri);
+	if (song.IsInDatabase())
+		return song.IsDetached()
+			? map_detached_song_fs(song.uri)
+			: map_directory_child_fs(*song.parent, song.uri);
 	else
-		return AllocatedPath::FromUTF8(song->uri);
+		return AllocatedPath::FromUTF8(song.uri);
 }
 
 std::string

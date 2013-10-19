@@ -83,6 +83,10 @@ struct Song {
 	gcc_malloc
 	static Song *LoadFile(const char *path_utf8, Directory *parent);
 
+	static Song *LoadFile(const char *path_utf8, Directory &parent) {
+		return LoadFile(path_utf8, &parent);
+	}
+
 	/**
 	 * Replaces the URI of a song object.  The given song object
 	 * is destroyed, and a newly allocated one is returned.  It

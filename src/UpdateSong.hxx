@@ -27,7 +27,7 @@
 struct Directory;
 
 bool
-update_song_file(Directory *directory,
+update_song_file(Directory &directory,
 		 const char *name, const char *suffix,
 		 const struct stat *st);
 

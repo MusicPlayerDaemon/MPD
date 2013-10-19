@@ -41,7 +41,8 @@ client_new(EventLoop &loop, Partition &partition,
  * uid is unknown
  */
 gcc_pure
-int client_get_uid(const Client *client);
+int
+client_get_uid(const Client &client);
 
 /**
  * Is this client running on the same machine, connected with a local
@@ -49,31 +50,32 @@ int client_get_uid(const Client *client);
  */
 gcc_pure
 static inline bool
-client_is_local(const Client *client)
+client_is_local(const Client &client)
 {
 	return client_get_uid(client) > 0;
 }
 
 gcc_pure
-unsigned client_get_permission(const Client *client);
+unsigned
+client_get_permission(const Client &client);
 
-void client_set_permission(Client *client, unsigned permission);
+void client_set_permission(Client &client, unsigned permission);
 
 /**
  * Write a C string to the client.
  */
-void client_puts(Client *client, const char *s);
+void client_puts(Client &client, const char *s);
 
 /**
  * Write a printf-like formatted string to the client.
  */
-void client_vprintf(Client *client, const char *fmt, va_list args);
+void client_vprintf(Client &client, const char *fmt, va_list args);
 
 /**
  * Write a printf-like formatted string to the client.
  */
 gcc_printf(2,3)
 void
-client_printf(Client *client, const char *fmt, ...);
+client_printf(Client &client, const char *fmt, ...);
 
 #endif

@@ -31,14 +31,14 @@ struct archive_plugin;
 #ifdef ENABLE_ARCHIVE
 
 bool
-update_archive_file(Directory *directory,
+update_archive_file(Directory &directory,
 		    const char *name, const char *suffix,
 		    const struct stat *st);
 
 #else
 
 static inline bool
-update_archive_file(gcc_unused Directory *directory,
+update_archive_file(gcc_unused Directory &directory,
 		    gcc_unused const char *name,
 		    gcc_unused const char *suffix,
 		    gcc_unused const struct stat *st)

@@ -24,7 +24,7 @@
 #include "Song.hxx"
 #include "Client.hxx"
 
-void tag_print_types(Client *client)
+void tag_print_types(Client &client)
 {
 	int i;
 
@@ -35,7 +35,7 @@ void tag_print_types(Client *client)
 	}
 }
 
-void tag_print(Client *client, const Tag &tag)
+void tag_print(Client &client, const Tag &tag)
 {
 	if (tag.time >= 0)
 		client_printf(client, SONG_TIME "%i\n", tag.time);

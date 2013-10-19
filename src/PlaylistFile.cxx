@@ -365,7 +365,7 @@ spl_remove_index(const char *utf8path, unsigned pos, Error &error)
 }
 
 bool
-spl_append_song(const char *utf8path, Song *song, Error &error)
+spl_append_song(const char *utf8path, const Song &song, Error &error)
 {
 	if (spl_map(error).IsNull())
 		return false;
@@ -407,7 +407,7 @@ spl_append_uri(const char *url, const char *utf8file, Error &error)
 {
 	if (uri_has_scheme(url)) {
 		Song *song = Song::NewRemote(url);
-		bool success = spl_append_song(utf8file, song, error);
+		bool success = spl_append_song(utf8file, *song, error);
 		song->Free();
 		return success;
 	} else {
@@ -419,7 +419,7 @@ spl_append_uri(const char *url, const char *utf8file, Error &error)
 		if (song == nullptr)
 			return false;
 
-		bool success = spl_append_song(utf8file, song, error);
+		bool success = spl_append_song(utf8file, *song, error);
 		db->ReturnSong(song);
 		return success;
 	}

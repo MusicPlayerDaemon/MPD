@@ -25,45 +25,45 @@
 class Client;
 
 enum command_return
-handle_urlhandlers(Client *client, int argc, char *argv[]);
+handle_urlhandlers(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_decoders(Client *client, int argc, char *argv[]);
+handle_decoders(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_tagtypes(Client *client, int argc, char *argv[]);
+handle_tagtypes(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_kill(Client *client, int argc, char *argv[]);
+handle_kill(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_close(Client *client, int argc, char *argv[]);
+handle_close(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_lsinfo(Client *client, int argc, char *argv[]);
+handle_lsinfo(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_update(Client *client, int argc, char *argv[]);
+handle_update(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_rescan(Client *client, int argc, char *argv[]);
+handle_rescan(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_setvol(Client *client, int argc, char *argv[]);
+handle_setvol(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_stats(Client *client, int argc, char *argv[]);
+handle_stats(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_ping(Client *client, int argc, char *argv[]);
+handle_ping(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_password(Client *client, int argc, char *argv[]);
+handle_password(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_config(Client *client, int argc, char *argv[]);
+handle_config(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_idle(Client *client, int argc, char *argv[]);
+handle_idle(Client &client, int argc, char *argv[]);
 
 #endif

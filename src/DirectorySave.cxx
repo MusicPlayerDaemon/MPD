@@ -40,13 +40,13 @@
 static constexpr Domain directory_domain("directory");
 
 void
-directory_save(FILE *fp, const Directory *directory)
+directory_save(FILE *fp, const Directory &directory)
 {
-	if (!directory->IsRoot()) {
+	if (!directory.IsRoot()) {
 		fprintf(fp, DIRECTORY_MTIME "%lu\n",
-			(unsigned long)directory->mtime);
+			(unsigned long)directory.mtime);
 
-		fprintf(fp, "%s%s\n", DIRECTORY_BEGIN, directory->GetPath());
+		fprintf(fp, "%s%s\n", DIRECTORY_BEGIN, directory.GetPath());
 	}
 
 	Directory *cur;
@@ -56,7 +56,7 @@ directory_save(FILE *fp, const Directory *directory)
 		fprintf(fp, DIRECTORY_DIR "%s\n", base);
 		g_free(base);
 
-		directory_save(fp, cur);
+		directory_save(fp, *cur);
 
 		if (ferror(fp))
 			return;
@@ -64,27 +64,27 @@ directory_save(FILE *fp, const Directory *directory)
 
 	Song *song;
 	directory_for_each_song(song, directory)
-		song_save(fp, song);
+		song_save(fp, *song);
 
-	playlist_vector_save(fp, directory->playlists);
+	playlist_vector_save(fp, directory.playlists);
 
-	if (!directory->IsRoot())
-		fprintf(fp, DIRECTORY_END "%s\n", directory->GetPath());
+	if (!directory.IsRoot())
+		fprintf(fp, DIRECTORY_END "%s\n", directory.GetPath());
 }
 
 static Directory *
-directory_load_subdir(TextFile &file, Directory *parent, const char *name,
+directory_load_subdir(TextFile &file, Directory &parent, const char *name,
 		      Error &error)
 {
 	bool success;
 
-	if (parent->FindChild(name) != nullptr) {
+	if (parent.FindChild(name) != nullptr) {
 		error.Format(directory_domain,
 			     "Duplicate subdirectory '%s'", name);
 		return nullptr;
 	}
 
-	Directory *directory = parent->CreateChild(name);
+	Directory *directory = parent.CreateChild(name);
 
 	const char *line = file.ReadLine();
 	if (line == nullptr) {
@@ -112,7 +112,7 @@ directory_load_subdir(TextFile &file, Directory *parent, const char *name,
 		return nullptr;
 	}
 
-	success = directory_load(file, directory, error);
+	success = directory_load(file, *directory, error);
 	if (!success) {
 		directory->Delete();
 		return nullptr;
@@ -122,7 +122,7 @@ directory_load_subdir(TextFile &file, Directory *parent, const char *name,
 }
 
 bool
-directory_load(TextFile &file, Directory *directory, Error &error)
+directory_load(TextFile &file, Directory &directory, Error &error)
 {
 	const char *line;
 
@@ -139,24 +139,24 @@ directory_load(TextFile &file, Directory *directory, Error &error)
 			const char *name = line + sizeof(SONG_BEGIN) - 1;
 			Song *song;
 
-			if (directory->FindSong(name) != nullptr) {
+			if (directory.FindSong(name) != nullptr) {
 				error.Format(directory_domain,
 					     "Duplicate song '%s'", name);
 				return false;
 			}
 
-			song = song_load(file, directory, name, error);
+			song = song_load(file, &directory, name, error);
 			if (song == nullptr)
 				return false;
 
-			directory->AddSong(song);
+			directory.AddSong(song);
 		} else if (g_str_has_prefix(line, PLAYLIST_META_BEGIN)) {
 			/* duplicate the name, because
 			   playlist_metadata_load() will overwrite the
 			   buffer */
 			char *name = g_strdup(line + sizeof(PLAYLIST_META_BEGIN) - 1);
 
-			if (!playlist_metadata_load(file, directory->playlists,
+			if (!playlist_metadata_load(file, directory.playlists,
 						    name, error)) {
 				g_free(name);
 				return false;

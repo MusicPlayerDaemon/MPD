@@ -25,36 +25,36 @@
 class Client;
 
 enum command_return
-handle_save(Client *client, int argc, char *argv[]);
+handle_save(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_load(Client *client, int argc, char *argv[]);
+handle_load(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_listplaylist(Client *client, int argc, char *argv[]);
+handle_listplaylist(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_listplaylistinfo(Client *client, int argc, char *argv[]);
+handle_listplaylistinfo(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_rm(Client *client, int argc, char *argv[]);
+handle_rm(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_rename(Client *client, int argc, char *argv[]);
+handle_rename(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_playlistdelete(Client *client, int argc, char *argv[]);
+handle_playlistdelete(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_playlistmove(Client *client, int argc, char *argv[]);
+handle_playlistmove(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_playlistclear(Client *client, int argc, char *argv[]);
+handle_playlistclear(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_playlistadd(Client *client, int argc, char *argv[]);
+handle_playlistadd(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_listplaylists(Client *client, int argc, char *argv[]);
+handle_listplaylists(Client &client, int argc, char *argv[]);
 
 #endif

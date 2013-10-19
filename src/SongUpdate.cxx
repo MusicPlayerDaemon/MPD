@@ -99,7 +99,7 @@ Song::UpdateFile()
 	if (plugin == nullptr)
 		return false;
 
-	const auto path_fs = map_song_fs(this);
+	const auto path_fs = map_song_fs(*this);
 	if (path_fs.IsNull())
 		return false;
 
@@ -119,7 +119,7 @@ Song::UpdateFile()
 
 	do {
 		/* load file tag */
-		if (decoder_plugin_scan_file(plugin, path_fs.c_str(),
+		if (decoder_plugin_scan_file(*plugin, path_fs.c_str(),
 					     &full_tag_handler, &tag_builder))
 			break;
 
@@ -136,7 +136,7 @@ Song::UpdateFile()
 
 			/* now try the stream_tag() method */
 			if (is != nullptr) {
-				if (decoder_plugin_scan_stream(plugin, is,
+				if (decoder_plugin_scan_stream(*plugin, is,
 							       &full_tag_handler,
 							       &tag_builder))
 					break;

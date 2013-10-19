@@ -30,18 +30,18 @@
 #include <glib.h>
 
 void
-song_print_uri(Client *client, Song *song)
+song_print_uri(Client &client, const Song &song)
 {
-	if (song->IsInDatabase() && !song->parent->IsRoot()) {
+	if (song.IsInDatabase() && !song.parent->IsRoot()) {
 		client_printf(client, "%s%s/%s\n", SONG_FILE,
-			      song->parent->GetPath(), song->uri);
+			      song.parent->GetPath(), song.uri);
 	} else {
 		char *allocated;
 		const char *uri;
 
-		uri = allocated = uri_remove_auth(song->uri);
+		uri = allocated = uri_remove_auth(song.uri);
 		if (uri == NULL)
-			uri = song->uri;
+			uri = song.uri;
 
 		client_printf(client, "%s%s\n", SONG_FILE,
 			      map_to_relative_path(uri));
@@ -51,24 +51,24 @@ song_print_uri(Client *client, Song *song)
 }
 
 void
-song_print_info(Client *client, Song *song)
+song_print_info(Client &client, const Song &song)
 {
 	song_print_uri(client, song);
 
-	if (song->end_ms > 0)
+	if (song.end_ms > 0)
 		client_printf(client, "Range: %u.%03u-%u.%03u\n",
-			      song->start_ms / 1000,
-			      song->start_ms % 1000,
-			      song->end_ms / 1000,
-			      song->end_ms % 1000);
-	else if (song->start_ms > 0)
+			      song.start_ms / 1000,
+			      song.start_ms % 1000,
+			      song.end_ms / 1000,
+			      song.end_ms % 1000);
+	else if (song.start_ms > 0)
 		client_printf(client, "Range: %u.%03u-\n",
-			      song->start_ms / 1000,
-			      song->start_ms % 1000);
+			      song.start_ms / 1000,
+			      song.start_ms % 1000);
 
-	if (song->mtime > 0)
-		time_print(client, "Last-Modified", song->mtime);
+	if (song.mtime > 0)
+		time_print(client, "Last-Modified", song.mtime);
 
-	if (song->tag != nullptr)
-		tag_print(client, *song->tag);
+	if (song.tag != nullptr)
+		tag_print(client, *song.tag);
 }

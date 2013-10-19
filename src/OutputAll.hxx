@@ -40,7 +40,7 @@ class Error;
  * file and initialize them.
  */
 void
-audio_output_all_init(struct player_control *pc);
+audio_output_all_init(player_control &pc);
 
 /**
  * Global finalization: free memory occupied by audio outputs.  All
@@ -135,7 +135,7 @@ audio_output_all_check(void);
  * @return true if there are less than #threshold chunks in the pipe
  */
 bool
-audio_output_all_wait(struct player_control *pc, unsigned threshold);
+audio_output_all_wait(player_control &pc, unsigned threshold);
 
 /**
  * Puts all audio outputs into pause mode.  Most implementations will

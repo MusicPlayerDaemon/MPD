@@ -36,11 +36,11 @@ Client::IdleNotify()
 	const char *const*idle_names = idle_get_names();
 	for (unsigned i = 0; idle_names[i]; ++i) {
 		if (flags & (1 << i) & idle_subscriptions)
-			client_printf(this, "changed: %s\n",
+			client_printf(*this, "changed: %s\n",
 				      idle_names[i]);
 	}
 
-	client_puts(this, "OK\n");
+	client_puts(*this, "OK\n");
 
 	TimeoutMonitor::ScheduleSeconds(client_timeout);
 }

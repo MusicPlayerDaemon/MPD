@@ -29,12 +29,12 @@
 #include <stddef.h>
 
 void
-delete_song(Directory *dir, Song *del)
+delete_song(Directory &dir, Song *del)
 {
-	assert(del->parent == dir);
+	assert(del->parent == &dir);
 
 	/* first, prevent traversers in main task from getting this */
-	dir->RemoveSong(del);
+	dir.RemoveSong(del);
 
 	db_unlock(); /* temporary unlock, because update_remove_song() blocks */
 
@@ -54,7 +54,7 @@ delete_song(Directory *dir, Song *del)
  * Caller must lock the #db_mutex.
  */
 static void
-clear_directory(Directory *directory)
+clear_directory(Directory &directory)
 {
 	Directory *child, *n;
 	directory_for_each_child_safe(child, n, directory)
@@ -62,7 +62,7 @@ clear_directory(Directory *directory)
 
 	Song *song, *ns;
 	directory_for_each_song_safe(song, ns, directory) {
-		assert(song->parent == directory);
+		assert(song->parent == &directory);
 		delete_song(directory, song);
 	}
 }
@@ -72,31 +72,31 @@ delete_directory(Directory *directory)
 {
 	assert(directory->parent != nullptr);
 
-	clear_directory(directory);
+	clear_directory(*directory);
 
 	directory->Delete();
 }
 
 bool
-delete_name_in(Directory *parent, const char *name)
+delete_name_in(Directory &parent, const char *name)
 {
 	bool modified = false;
 
 	db_lock();
-	Directory *directory = parent->FindChild(name);
+	Directory *directory = parent.FindChild(name);
 
 	if (directory != nullptr) {
 		delete_directory(directory);
 		modified = true;
 	}
 
-	Song *song = parent->FindSong(name);
+	Song *song = parent.FindSong(name);
 	if (song != nullptr) {
 		delete_song(parent, song);
 		modified = true;
 	}
 
-	parent->playlists.erase(name);
+	parent.playlists.erase(name);
 
 	db_unlock();
 

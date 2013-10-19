@@ -34,18 +34,18 @@
 #include <unistd.h>
 
 static void
-update_song_file2(Directory *directory,
+update_song_file2(Directory &directory,
 		  const char *name, const struct stat *st,
-		  const struct decoder_plugin *plugin)
+		  const decoder_plugin &plugin)
 {
 	db_lock();
-	Song *song = directory->FindSong(name);
+	Song *song = directory.FindSong(name);
 	db_unlock();
 
 	if (!directory_child_access(directory, name, R_OK)) {
 		FormatError(update_domain,
 			    "no read permissions on %s/%s",
-			    directory->GetPath(), name);
+			    directory.GetPath(), name);
 		if (song != nullptr) {
 			db_lock();
 			delete_song(directory, song);
@@ -69,29 +69,29 @@ update_song_file2(Directory *directory,
 
 	if (song == nullptr) {
 		FormatDebug(update_domain, "reading %s/%s",
-			    directory->GetPath(), name);
-		song = Song::LoadFile(name, directory);
+			    directory.GetPath(), name);
+		song = Song::LoadFile(name, &directory);
 		if (song == nullptr) {
 			FormatDebug(update_domain,
 				    "ignoring unrecognized file %s/%s",
-				    directory->GetPath(), name);
+				    directory.GetPath(), name);
 			return;
 		}
 
 		db_lock();
-		directory->AddSong(song);
+		directory.AddSong(song);
 		db_unlock();
 
 		modified = true;
 		FormatInfo(update_domain, "added %s/%s",
-			   directory->GetPath(), name);
+			   directory.GetPath(), name);
 	} else if (st->st_mtime != song->mtime || walk_discard) {
 		FormatInfo(update_domain, "updating %s/%s",
-			   directory->GetPath(), name);
+			   directory.GetPath(), name);
 		if (!song->UpdateFile()) {
 			FormatDebug(update_domain,
 				    "deleting unrecognized file %s/%s",
-				    directory->GetPath(), name);
+				    directory.GetPath(), name);
 			db_lock();
 			delete_song(directory, song);
 			db_unlock();
@@ -102,7 +102,7 @@ update_song_file2(Directory *directory,
 }
 
 bool
-update_song_file(Directory *directory,
+update_song_file(Directory &directory,
 		 const char *name, const char *suffix,
 		 const struct stat *st)
 {
@@ -111,6 +111,6 @@ update_song_file(Directory *directory,
 	if (plugin == nullptr)
 		return false;
 
-	update_song_file2(directory, name, st, plugin);
+	update_song_file2(directory, name, st, *plugin);
 	return true;
 }

@@ -200,16 +200,16 @@ struct queue {
 	/**
 	 * Returns the song at the specified position.
 	 */
-	Song *Get(unsigned position) const {
+	Song &Get(unsigned position) const {
 		assert(position < length);
 
-		return items[position].song;
+		return *items[position].song;
 	}
 
 	/**
 	 * Returns the song at the specified order number.
 	 */
-	Song *GetOrder(unsigned _order) const {
+	Song &GetOrder(unsigned _order) const {
 		return Get(OrderToPosition(_order));
 	}
 

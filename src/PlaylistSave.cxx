@@ -37,14 +37,14 @@
 #include <string.h>
 
 void
-playlist_print_song(FILE *file, const Song *song)
+playlist_print_song(FILE *file, const Song &song)
 {
-	if (playlist_saveAbsolutePaths && song->IsInDatabase()) {
+	if (playlist_saveAbsolutePaths && song.IsInDatabase()) {
 		const auto path = map_song_fs(song);
 		if (!path.IsNull())
 			fprintf(file, "%s\n", path.c_str());
 	} else {
-		const auto uri_utf8 = song->GetURI();
+		const auto uri_utf8 = song.GetURI();
 		const auto uri_fs = AllocatedPath::FromUTF8(uri_utf8.c_str());
 
 		if (!uri_fs.IsNull())
@@ -65,7 +65,7 @@ playlist_print_uri(FILE *file, const char *uri)
 }
 
 enum playlist_result
-spl_save_queue(const char *name_utf8, const struct queue *queue)
+spl_save_queue(const char *name_utf8, const queue &queue)
 {
 	if (map_spl_path().IsNull())
 		return PLAYLIST_RESULT_DISABLED;
@@ -85,8 +85,8 @@ spl_save_queue(const char *name_utf8, const struct queue *queue)
 	if (file == nullptr)
 		return PLAYLIST_RESULT_ERRNO;
 
-	for (unsigned i = 0; i < queue->GetLength(); i++)
-		playlist_print_song(file, queue->Get(i));
+	for (unsigned i = 0; i < queue.GetLength(); i++)
+		playlist_print_song(file, queue.Get(i));
 
 	fclose(file);
 
@@ -95,13 +95,13 @@ spl_save_queue(const char *name_utf8, const struct queue *queue)
 }
 
 enum playlist_result
-spl_save_playlist(const char *name_utf8, const struct playlist *playlist)
+spl_save_playlist(const char *name_utf8, const playlist &playlist)
 {
-	return spl_save_queue(name_utf8, &playlist->queue);
+	return spl_save_queue(name_utf8, playlist.queue);
 }
 
 bool
-playlist_load_spl(struct playlist *playlist, struct player_control *pc,
+playlist_load_spl(struct playlist &playlist, player_control &pc,
 		  const char *name_utf8,
 		  unsigned start_index, unsigned end_index,
 		  Error &error)
@@ -119,13 +119,13 @@ playlist_load_spl(struct playlist *playlist, struct player_control *pc,
 		if (memcmp(uri_utf8.c_str(), "file:///", 8) == 0) {
 			const char *path_utf8 = uri_utf8.c_str() + 7;
 
-			if (playlist->AppendFile(*pc, path_utf8) != PLAYLIST_RESULT_SUCCESS)
+			if (playlist.AppendFile(pc, path_utf8) != PLAYLIST_RESULT_SUCCESS)
 				FormatError(playlist_domain,
 					    "can't add file \"%s\"", path_utf8);
 			continue;
 		}
 
-		if ((playlist->AppendURI(*pc, uri_utf8.c_str())) != PLAYLIST_RESULT_SUCCESS) {
+		if ((playlist.AppendURI(pc, uri_utf8.c_str())) != PLAYLIST_RESULT_SUCCESS) {
 			/* for windows compatibility, convert slashes */
 			char *temp2 = g_strdup(uri_utf8.c_str());
 			char *p = temp2;
@@ -135,7 +135,7 @@ playlist_load_spl(struct playlist *playlist, struct player_control *pc,
 				p++;
 			}
 
-			if (playlist->AppendURI(*pc, temp2) != PLAYLIST_RESULT_SUCCESS)
+			if (playlist.AppendURI(pc, temp2) != PLAYLIST_RESULT_SUCCESS)
 				FormatError(playlist_domain,
 					    "can't add file \"%s\"", temp2);
 

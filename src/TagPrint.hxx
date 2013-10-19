@@ -23,9 +23,9 @@
 struct Tag;
 class Client;
 
-void tag_print_types(Client *client);
+void tag_print_types(Client &client);
 
 void
-tag_print(Client *client, const Tag &tag);
+tag_print(Client &client, const Tag &tag);
 
 #endif

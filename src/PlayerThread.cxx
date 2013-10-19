@@ -445,7 +445,7 @@ Player::CheckDecoderStartup()
 		dc.Unlock();
 
 		if (output_open &&
-		    !audio_output_all_wait(&pc, 1))
+		    !audio_output_all_wait(pc, 1))
 			/* the output devices havn't finished playing
 			   all chunks yet - wait for that */
 			return true;
@@ -746,7 +746,7 @@ play_chunk(player_control &pc,
 inline bool
 Player::PlayNextChunk()
 {
-	if (!audio_output_all_wait(&pc, 64))
+	if (!audio_output_all_wait(pc, 64))
 		/* the output pipe is still large enough, don't send
 		   another chunk */
 		return true;
@@ -1102,7 +1102,7 @@ player_task(void *arg)
 	player_control &pc = *(player_control *)arg;
 
 	decoder_control dc;
-	decoder_thread_start(&dc);
+	decoder_thread_start(dc);
 
 	MusicBuffer buffer(pc.buffer_chunks);
 

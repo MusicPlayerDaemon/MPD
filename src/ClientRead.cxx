@@ -40,7 +40,7 @@ Client::OnSocketInput(void *data, size_t length)
 
 	BufferedSocket::ConsumeInput(newline + 1 - p);
 
-	enum command_return result = client_process_line(this, p);
+	enum command_return result = client_process_line(*this, p);
 	switch (result) {
 	case COMMAND_RETURN_OK:
 	case COMMAND_RETURN_IDLE:

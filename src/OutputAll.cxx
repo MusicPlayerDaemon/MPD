@@ -103,7 +103,7 @@ audio_output_config_count(void)
 }
 
 void
-audio_output_all_init(struct player_control *pc)
+audio_output_all_init(player_control &pc)
 {
 	const struct config_param *param = nullptr;
 	unsigned int i;
@@ -469,17 +469,17 @@ audio_output_all_check(void)
 }
 
 bool
-audio_output_all_wait(struct player_control *pc, unsigned threshold)
+audio_output_all_wait(player_control &pc, unsigned threshold)
 {
-	pc->Lock();
+	pc.Lock();
 
 	if (audio_output_all_check() < threshold) {
-		pc->Unlock();
+		pc.Unlock();
 		return true;
 	}
 
-	pc->Wait();
-	pc->Unlock();
+	pc.Wait();
+	pc.Unlock();
 
 	return audio_output_all_check() < threshold;
 }

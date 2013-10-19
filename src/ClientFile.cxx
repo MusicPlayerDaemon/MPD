@@ -32,7 +32,7 @@
 #include <unistd.h>
 
 bool
-client_allow_file(const Client *client, Path path_fs, Error &error)
+client_allow_file(const Client &client, Path path_fs, Error &error)
 {
 #ifdef WIN32
 	(void)client;

@@ -36,12 +36,12 @@
 #include <string.h>
 
 struct sticker_song_find_data {
-	Client *client;
+	Client &client;
 	const char *name;
 };
 
 static void
-sticker_song_find_print_cb(Song *song, const char *value,
+sticker_song_find_print_cb(Song &song, const char *value,
 			   void *user_data)
 {
 	struct sticker_song_find_data *data =
@@ -52,7 +52,7 @@ sticker_song_find_print_cb(Song *song, const char *value,
 }
 
 static enum command_return
-handle_sticker_song(Client *client, int argc, char *argv[])
+handle_sticker_song(Client &client, int argc, char *argv[])
 {
 	Error error;
 	const Database *db = GetDatabase(error);
@@ -85,7 +85,7 @@ handle_sticker_song(Client *client, int argc, char *argv[])
 		sticker *sticker = sticker_song_get(song);
 		db->ReturnSong(song);
 		if (sticker) {
-			sticker_print(client, sticker);
+			sticker_print(client, *sticker);
 			sticker_free(sticker);
 		}
 
@@ -141,7 +141,7 @@ handle_sticker_song(Client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		success = sticker_song_find(directory, data.name,
+		success = sticker_song_find(*directory, data.name,
 					    sticker_song_find_print_cb, &data);
 		db_unlock();
 		if (!success) {
@@ -158,7 +158,7 @@ handle_sticker_song(Client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_sticker(Client *client, int argc, char *argv[])
+handle_sticker(Client &client, int argc, char *argv[])
 {
 	assert(argc >= 4);
 

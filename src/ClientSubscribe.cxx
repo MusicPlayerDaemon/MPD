@@ -26,22 +26,21 @@
 #include <string.h>
 
 enum client_subscribe_result
-client_subscribe(Client *client, const char *channel)
+client_subscribe(Client &client, const char *channel)
 {
-	assert(client != nullptr);
 	assert(channel != nullptr);
 
 	if (!client_message_valid_channel_name(channel))
 		return CLIENT_SUBSCRIBE_INVALID;
 
-	if (client->num_subscriptions >= CLIENT_MAX_SUBSCRIPTIONS)
+	if (client.num_subscriptions >= CLIENT_MAX_SUBSCRIPTIONS)
 		return CLIENT_SUBSCRIBE_FULL;
 
-	auto r = client->subscriptions.insert(channel);
+	auto r = client.subscriptions.insert(channel);
 	if (!r.second)
 		return CLIENT_SUBSCRIBE_ALREADY;
 
-	++client->num_subscriptions;
+	++client.num_subscriptions;
 
 	idle_add(IDLE_SUBSCRIPTION);
 
@@ -49,44 +48,42 @@ client_subscribe(Client *client, const char *channel)
 }
 
 bool
-client_unsubscribe(Client *client, const char *channel)
+client_unsubscribe(Client &client, const char *channel)
 {
-	const auto i = client->subscriptions.find(channel);
-	if (i == client->subscriptions.end())
+	const auto i = client.subscriptions.find(channel);
+	if (i == client.subscriptions.end())
 		return false;
 
-	assert(client->num_subscriptions > 0);
+	assert(client.num_subscriptions > 0);
 
-	client->subscriptions.erase(i);
-	--client->num_subscriptions;
+	client.subscriptions.erase(i);
+	--client.num_subscriptions;
 
 	idle_add(IDLE_SUBSCRIPTION);
 
-	assert((client->num_subscriptions == 0) ==
-	       client->subscriptions.empty());
+	assert((client.num_subscriptions == 0) ==
+	       client.subscriptions.empty());
 
 	return true;
 }
 
 void
-client_unsubscribe_all(Client *client)
+client_unsubscribe_all(Client &client)
 {
-	client->subscriptions.clear();
-	client->num_subscriptions = 0;
+	client.subscriptions.clear();
+	client.num_subscriptions = 0;
 }
 
 bool
-client_push_message(Client *client, const ClientMessage &msg)
+client_push_message(Client &client, const ClientMessage &msg)
 {
-	assert(client != nullptr);
-
-	if (client->messages.size() >= CLIENT_MAX_MESSAGES ||
-	    !client->IsSubscribed(msg.GetChannel()))
+	if (client.messages.size() >= CLIENT_MAX_MESSAGES ||
+	    !client.IsSubscribed(msg.GetChannel()))
 		return false;
 
-	if (client->messages.empty())
-		client->IdleAdd(IDLE_MESSAGE);
+	if (client.messages.empty())
+		client.IdleAdd(IDLE_MESSAGE);
 
-	client->messages.push_back(msg);
+	client.messages.push_back(msg);
 	return true;
 }

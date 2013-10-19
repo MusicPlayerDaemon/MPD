@@ -149,7 +149,7 @@ decoder_plugin_from_suffix(const char *suffix,
 	     decoder_plugins[i] != nullptr; ++i) {
 		plugin = decoder_plugins[i];
 		if (decoder_plugins_enabled[i] &&
-		    decoder_plugin_supports_suffix(plugin, suffix))
+		    decoder_plugin_supports_suffix(*plugin, suffix))
 			return plugin;
 	}
 
@@ -169,7 +169,7 @@ decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
 	for (; decoder_plugins[i] != nullptr; ++i) {
 		const struct decoder_plugin *plugin = decoder_plugins[i];
 		if (decoder_plugins_enabled[i] &&
-		    decoder_plugin_supports_mime_type(plugin, mimeType)) {
+		    decoder_plugin_supports_mime_type(*plugin, mimeType)) {
 			++i;
 			return plugin;
 		}
@@ -217,9 +217,9 @@ void decoder_plugin_init_all(void)
 	struct config_param empty;
 
 	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i) {
-		const struct decoder_plugin *plugin = decoder_plugins[i];
+		const decoder_plugin &plugin = *decoder_plugins[i];
 		const struct config_param *param =
-			decoder_plugin_config(plugin->name);
+			decoder_plugin_config(plugin.name);
 
 		if (param == nullptr)
 			param = &empty;
@@ -235,5 +235,5 @@ void decoder_plugin_init_all(void)
 void decoder_plugin_deinit_all(void)
 {
 	decoder_plugins_for_each_enabled(plugin)
-		decoder_plugin_finish(plugin);
+		decoder_plugin_finish(*plugin);
 }

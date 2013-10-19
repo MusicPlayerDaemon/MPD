@@ -232,9 +232,11 @@ queue::DeletePosition(unsigned position)
 {
 	assert(position < length);
 
-	Song *song = Get(position);
-	assert(!song->IsInDatabase() || song->IsDetached());
-	song->Free();
+	{
+		Song &song = Get(position);
+		assert(!song.IsInDatabase() || song.IsDetached());
+		song.Free();
+	}
 
 	const unsigned id = PositionToId(position);
 	const unsigned _order = PositionToOrder(position);

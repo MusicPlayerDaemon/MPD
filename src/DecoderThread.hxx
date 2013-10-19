@@ -23,6 +23,6 @@
 struct decoder_control;
 
 void
-decoder_thread_start(struct decoder_control *dc);
+decoder_thread_start(decoder_control &dc);
 
 #endif

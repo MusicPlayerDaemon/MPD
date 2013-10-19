@@ -43,10 +43,10 @@
  * The caller must lock the database.
  */
 static Directory *
-make_directory_if_modified(Directory *parent, const char *name,
+make_directory_if_modified(Directory &parent, const char *name,
 			   const struct stat *st)
 {
-	Directory *directory = parent->FindChild(name);
+	Directory *directory = parent.FindChild(name);
 
 	// directory exists already
 	if (directory != nullptr) {
@@ -59,18 +59,18 @@ make_directory_if_modified(Directory *parent, const char *name,
 		modified = true;
 	}
 
-	directory = parent->MakeChild(name);
+	directory = parent.MakeChild(name);
 	directory->mtime = st->st_mtime;
 	return directory;
 }
 
 bool
-update_container_file(Directory *directory,
+update_container_file(Directory &directory,
 		      const char *name,
 		      const struct stat *st,
-		      const struct decoder_plugin *plugin)
+		      const decoder_plugin &plugin)
 {
-	if (plugin->container_scan == nullptr)
+	if (plugin.container_scan == nullptr)
 		return false;
 
 	db_lock();
@@ -89,14 +89,14 @@ update_container_file(Directory *directory,
 	char *vtrack;
 	unsigned int tnum = 0;
 	TagBuilder tag_builder;
-	while ((vtrack = plugin->container_scan(pathname.c_str(), ++tnum)) != nullptr) {
+	while ((vtrack = plugin.container_scan(pathname.c_str(), ++tnum)) != nullptr) {
 		Song *song = Song::NewFile(vtrack, contdir);
 
 		// shouldn't be necessary but it's there..
 		song->mtime = st->st_mtime;
 
 		const auto child_path_fs =
-			map_directory_child_fs(contdir, vtrack);
+			map_directory_child_fs(*contdir, vtrack);
 
 		decoder_plugin_scan_file(plugin, child_path_fs.c_str(),
 					 &add_tag_handler, &tag_builder);
@@ -113,7 +113,7 @@ update_container_file(Directory *directory,
 		modified = true;
 
 		FormatInfo(update_domain, "added %s/%s",
-			   directory->GetPath(), vtrack);
+			   directory.GetPath(), vtrack);
 		g_free(vtrack);
 	}
 

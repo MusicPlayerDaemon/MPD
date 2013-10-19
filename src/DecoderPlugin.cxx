@@ -24,24 +24,22 @@
 #include <assert.h>
 
 bool
-decoder_plugin_supports_suffix(const struct decoder_plugin *plugin,
+decoder_plugin_supports_suffix(const decoder_plugin &plugin,
 			       const char *suffix)
 {
-	assert(plugin != nullptr);
 	assert(suffix != nullptr);
 
-	return plugin->suffixes != nullptr &&
-		string_array_contains(plugin->suffixes, suffix);
+	return plugin.suffixes != nullptr &&
+		string_array_contains(plugin.suffixes, suffix);
 
 }
 
 bool
-decoder_plugin_supports_mime_type(const struct decoder_plugin *plugin,
+decoder_plugin_supports_mime_type(const decoder_plugin &plugin,
 				  const char *mime_type)
 {
-	assert(plugin != nullptr);
 	assert(mime_type != nullptr);
 
-	return plugin->mime_types != nullptr &&
-		string_array_contains(plugin->mime_types, mime_type);
+	return plugin.mime_types != nullptr &&
+		string_array_contains(plugin.mime_types, mime_type);
 }

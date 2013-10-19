@@ -42,17 +42,17 @@ decoder::~decoder()
  * one.
  */
 static DecoderCommand
-need_chunks(struct decoder_control *dc, bool do_wait)
+need_chunks(decoder_control &dc, bool do_wait)
 {
-	if (dc->command == DecoderCommand::STOP ||
-	    dc->command == DecoderCommand::SEEK)
-		return dc->command;
+	if (dc.command == DecoderCommand::STOP ||
+	    dc.command == DecoderCommand::SEEK)
+		return dc.command;
 
 	if (do_wait) {
-		dc->Wait();
-		dc->client_cond.signal();
+		dc.Wait();
+		dc.client_cond.signal();
 
-		return dc->command;
+		return dc.command;
 	}
 
 	return DecoderCommand::NONE;
@@ -61,7 +61,7 @@ need_chunks(struct decoder_control *dc, bool do_wait)
 struct music_chunk *
 decoder_get_chunk(struct decoder *decoder)
 {
-	struct decoder_control *dc = decoder->dc;
+	decoder_control &dc = decoder->dc;
 	DecoderCommand cmd;
 
 	assert(decoder != nullptr);
@@ -70,7 +70,7 @@ decoder_get_chunk(struct decoder *decoder)
 		return decoder->chunk;
 
 	do {
-		decoder->chunk = dc->buffer->Allocate();
+		decoder->chunk = dc.buffer->Allocate();
 		if (decoder->chunk != nullptr) {
 			decoder->chunk->replay_gain_serial =
 				decoder->replay_gain_serial;
@@ -81,9 +81,9 @@ decoder_get_chunk(struct decoder *decoder)
 			return decoder->chunk;
 		}
 
-		dc->Lock();
+		dc.Lock();
 		cmd = need_chunks(dc, true);
-		dc->Unlock();
+		dc.Unlock();
 	} while (cmd == DecoderCommand::NONE);
 
 	return nullptr;
@@ -92,15 +92,15 @@ decoder_get_chunk(struct decoder *decoder)
 void
 decoder_flush_chunk(struct decoder *decoder)
 {
-	struct decoder_control *dc = decoder->dc;
+	decoder_control &dc = decoder->dc;
 
 	assert(decoder != nullptr);
 	assert(decoder->chunk != nullptr);
 
 	if (decoder->chunk->IsEmpty())
-		dc->buffer->Return(decoder->chunk);
+		dc.buffer->Return(decoder->chunk);
 	else
-		dc->pipe->Push(decoder->chunk);
+		dc.pipe->Push(decoder->chunk);
 
 	decoder->chunk = nullptr;
 }

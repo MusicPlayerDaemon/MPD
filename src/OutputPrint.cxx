@@ -29,7 +29,7 @@
 #include "Client.hxx"
 
 void
-printAudioDevices(Client *client)
+printAudioDevices(Client &client)
 {
 	const unsigned n = audio_output_count();
 

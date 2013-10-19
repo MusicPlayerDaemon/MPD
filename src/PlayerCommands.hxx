@@ -25,66 +25,66 @@
 class Client;
 
 enum command_return
-handle_play(Client *client, int argc, char *argv[]);
+handle_play(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_playid(Client *client, int argc, char *argv[]);
+handle_playid(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_stop(Client *client, int argc, char *argv[]);
+handle_stop(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_currentsong(Client *client, int argc, char *argv[]);
+handle_currentsong(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_pause(Client *client, int argc, char *argv[]);
+handle_pause(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_status(Client *client, int argc, char *argv[]);
+handle_status(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_next(Client *client, int argc, char *argv[]);
+handle_next(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_previous(Client *client, int argc, char *avg[]);
+handle_previous(Client &client, int argc, char *avg[]);
 
 enum command_return
-handle_repeat(Client *client, int argc, char *argv[]);
+handle_repeat(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_single(Client *client, int argc, char *argv[]);
+handle_single(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_consume(Client *client, int argc, char *argv[]);
+handle_consume(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_random(Client *client, int argc, char *argv[]);
+handle_random(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_clearerror(Client *client, int argc, char *argv[]);
+handle_clearerror(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_seek(Client *client, int argc, char *argv[]);
+handle_seek(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_seekid(Client *client, int argc, char *argv[]);
+handle_seekid(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_seekcur(Client *client, int argc, char *argv[]);
+handle_seekcur(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_crossfade(Client *client, int argc, char *argv[]);
+handle_crossfade(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_mixrampdb(Client *client, int argc, char *argv[]);
+handle_mixrampdb(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_mixrampdelay(Client *client, int argc, char *argv[]);
+handle_mixrampdelay(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_replay_gain_mode(Client *client, int argc, char *argv[]);
+handle_replay_gain_mode(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_replay_gain_status(Client *client, int argc, char *argv[]);
+handle_replay_gain_status(Client &client, int argc, char *argv[]);
 
 #endif

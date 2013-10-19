@@ -43,7 +43,7 @@ class Client final : private FullyBufferedSocket, TimeoutMonitor {
 public:
 	Partition &partition;
 	struct playlist &playlist;
-	struct player_control *player_control;
+	struct player_control &player_control;
 
 	unsigned permission;
 
@@ -126,6 +126,6 @@ extern size_t client_max_command_list_size;
 extern size_t client_max_output_buffer_size;
 
 enum command_return
-client_process_line(Client *client, char *line);
+client_process_line(Client &client, char *line);
 
 #endif

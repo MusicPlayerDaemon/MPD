@@ -27,16 +27,15 @@ const char *current_command;
 int command_list_num;
 
 void
-command_success(Client *client)
+command_success(Client &client)
 {
 	client_puts(client, "OK\n");
 }
 
 void
-command_error_v(Client *client, enum ack error,
+command_error_v(Client &client, enum ack error,
 		const char *fmt, va_list args)
 {
-	assert(client != NULL);
 	assert(current_command != NULL);
 
 	client_printf(client, "ACK [%i@%i] {%s} ",
@@ -48,7 +47,7 @@ command_error_v(Client *client, enum ack error,
 }
 
 void
-command_error(Client *client, enum ack error, const char *fmt, ...)
+command_error(Client &client, enum ack error, const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);

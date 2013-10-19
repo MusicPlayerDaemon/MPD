@@ -30,7 +30,7 @@ class TextFile;
 class Error;
 
 void
-song_save(FILE *fp, const Song *song);
+song_save(FILE *fp, const Song &song);
 
 /**
  * Loads a song from the input file.  Reading stops after the

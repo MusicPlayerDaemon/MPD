@@ -53,7 +53,7 @@ tag_file_scan(const char *path_fs,
 
 	do {
 		/* load file tag */
-		if (decoder_plugin_scan_file(plugin, path_fs,
+		if (decoder_plugin_scan_file(*plugin, path_fs,
 					     handler, handler_ctx))
 			break;
 
@@ -69,7 +69,7 @@ tag_file_scan(const char *path_fs,
 
 			/* now try the stream_tag() method */
 			if (is != nullptr) {
-				if (decoder_plugin_scan_stream(plugin, is,
+				if (decoder_plugin_scan_stream(*plugin, is,
 							       handler,
 							       handler_ctx))
 					break;

@@ -84,7 +84,7 @@ struct sticker_song_find_data {
 	const char *base_uri;
 	size_t base_uri_length;
 
-	void (*func)(Song *song, const char *value,
+	void (*func)(Song &song, const char *value,
 		     void *user_data);
 	void *user_data;
 };
@@ -101,22 +101,22 @@ sticker_song_find_cb(const char *uri, const char *value, void *user_data)
 
 	Song *song = data->directory->LookupSong(uri + data->base_uri_length);
 	if (song != nullptr)
-		data->func(song, value, data->user_data);
+		data->func(*song, value, data->user_data);
 }
 
 bool
-sticker_song_find(Directory *directory, const char *name,
-		  void (*func)(Song *song, const char *value,
+sticker_song_find(Directory &directory, const char *name,
+		  void (*func)(Song &song, const char *value,
 			       void *user_data),
 		  void *user_data)
 {
 	struct sticker_song_find_data data;
-	data.directory = directory;
+	data.directory = &directory;
 	data.func = func;
 	data.user_data = user_data;
 
 	char *allocated;
-	data.base_uri = directory->GetPath();
+	data.base_uri = directory.GetPath();
 	if (*data.base_uri != 0)
 		/* append slash to base_uri */
 		data.base_uri = allocated =

@@ -28,29 +28,27 @@ struct db_visitor;
 class Client;
 class Error;
 
-gcc_nonnull(1)
 bool
-db_selection_print(Client *client, const DatabaseSelection &selection,
+db_selection_print(Client &client, const DatabaseSelection &selection,
 		   bool full, Error &error);
 
-gcc_nonnull(1,2)
+gcc_nonnull(2)
 bool
-printAllIn(Client *client, const char *uri_utf8, Error &error);
+printAllIn(Client &client, const char *uri_utf8, Error &error);
 
-gcc_nonnull(1,2)
+gcc_nonnull(2)
 bool
-printInfoForAllIn(Client *client, const char *uri_utf8,
+printInfoForAllIn(Client &client, const char *uri_utf8,
 		  Error &error);
 
-gcc_nonnull(1,2)
+gcc_nonnull(2)
 bool
-searchStatsForSongsIn(Client *client, const char *name,
+searchStatsForSongsIn(Client &client, const char *name,
 		      const SongFilter *filter,
 		      Error &error);
 
-gcc_nonnull(1)
 bool
-listAllUniqueTags(Client *client, int type,
+listAllUniqueTags(Client &client, int type,
 		  const SongFilter *filter,
 		  Error &error);
 

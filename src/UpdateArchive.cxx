@@ -38,7 +38,7 @@
 #include <string.h>
 
 static void
-update_archive_tree(Directory *directory, const char *name)
+update_archive_tree(Directory &directory, const char *name)
 {
 	const char *tmp = strchr(name, '/');
 	if (tmp) {
@@ -46,12 +46,12 @@ update_archive_tree(Directory *directory, const char *name)
 		//add dir is not there already
 		db_lock();
 		Directory *subdir =
-			directory->MakeChild(child_name.c_str());
+			directory.MakeChild(child_name.c_str());
 		subdir->device = DEVICE_INARCHIVE;
 		db_unlock();
 
 		//create directories first
-		update_archive_tree(subdir, tmp+1);
+		update_archive_tree(*subdir, tmp+1);
 	} else {
 		if (strlen(name) == 0) {
 			LogWarning(update_domain,
@@ -61,18 +61,18 @@ update_archive_tree(Directory *directory, const char *name)
 
 		//add file
 		db_lock();
-		Song *song = directory->FindSong(name);
+		Song *song = directory.FindSong(name);
 		db_unlock();
 		if (song == nullptr) {
 			song = Song::LoadFile(name, directory);
 			if (song != nullptr) {
 				db_lock();
-				directory->AddSong(song);
+				directory.AddSong(song);
 				db_unlock();
 
 				modified = true;
 				FormatInfo(update_domain, "added %s/%s",
-					   directory->GetPath(), name);
+					   directory.GetPath(), name);
 			}
 		}
 	}
@@ -87,12 +87,12 @@ update_archive_tree(Directory *directory, const char *name)
  * @param plugin the archive plugin which fits this archive type
  */
 static void
-update_archive_file2(Directory *parent, const char *name,
+update_archive_file2(Directory &parent, const char *name,
 		     const struct stat *st,
 		     const struct archive_plugin *plugin)
 {
 	db_lock();
-	Directory *directory = parent->FindChild(name);
+	Directory *directory = parent.FindChild(name);
 	db_unlock();
 
 	if (directory != nullptr && directory->mtime == st->st_mtime &&
@@ -117,7 +117,7 @@ update_archive_file2(Directory *parent, const char *name,
 		FormatDebug(update_domain,
 			    "creating archive directory: %s", name);
 		db_lock();
-		directory = parent->CreateChild(name);
+		directory = parent.CreateChild(name);
 		/* mark this directory as archive (we use device for
 		   this) */
 		directory->device = DEVICE_INARCHIVE;
@@ -136,7 +136,7 @@ update_archive_file2(Directory *parent, const char *name,
 		virtual void VisitArchiveEntry(const char *path_utf8) override {
 			FormatDebug(update_domain,
 				    "adding archive file: %s", path_utf8);
-			update_archive_tree(directory, path_utf8);
+			update_archive_tree(*directory, path_utf8);
 		}
 	};
 
@@ -146,7 +146,7 @@ update_archive_file2(Directory *parent, const char *name,
 }
 
 bool
-update_archive_file(Directory *directory,
+update_archive_file(Directory &directory,
 		    const char *name, const char *suffix,
 		    const struct stat *st)
 {

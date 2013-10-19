@@ -24,9 +24,9 @@ struct Song;
 class Client;
 
 void
-song_print_info(Client *client, Song *song);
+song_print_info(Client &client, const Song &song);
 
 void
-song_print_uri(Client *client, Song *song);
+song_print_uri(Client &client, const Song &song);
 
 #endif

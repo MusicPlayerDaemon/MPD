@@ -32,16 +32,16 @@
 #define DEVICE_CONTAINER (dev_t)(-2)
 
 #define directory_for_each_child(pos, directory) \
-	list_for_each_entry(pos, &directory->children, siblings)
+	list_for_each_entry(pos, &(directory).children, siblings)
 
 #define directory_for_each_child_safe(pos, n, directory) \
-	list_for_each_entry_safe(pos, n, &directory->children, siblings)
+	list_for_each_entry_safe(pos, n, &(directory).children, siblings)
 
 #define directory_for_each_song(pos, directory) \
-	list_for_each_entry(pos, &directory->songs, siblings)
+	list_for_each_entry(pos, &(directory).songs, siblings)
 
 #define directory_for_each_song_safe(pos, n, directory) \
-	list_for_each_entry_safe(pos, n, &directory->songs, siblings)
+	list_for_each_entry_safe(pos, n, &(directory).songs, siblings)
 
 struct Song;
 struct db_visitor;

@@ -25,15 +25,15 @@
 class Client;
 
 enum command_return
-handle_enableoutput(Client *client, int argc, char *argv[]);
+handle_enableoutput(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_disableoutput(Client *client, int argc, char *argv[]);
+handle_disableoutput(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_toggleoutput(Client *client, int argc, char *argv[]);
+handle_toggleoutput(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_devices(Client *client, int argc, char *argv[]);
+handle_devices(Client &client, int argc, char *argv[]);
 
 #endif

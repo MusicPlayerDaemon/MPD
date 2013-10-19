@@ -53,7 +53,7 @@
 #include <string.h>
 
 static void
-print_spl_list(Client *client, const PlaylistVector &list)
+print_spl_list(Client &client, const PlaylistVector &list)
 {
 	for (const auto &i : list) {
 		client_printf(client, "playlist: %s\n", i.name.c_str());
@@ -64,7 +64,7 @@ print_spl_list(Client *client, const PlaylistVector &list)
 }
 
 enum command_return
-handle_urlhandlers(Client *client,
+handle_urlhandlers(Client &client,
 		   gcc_unused int argc, gcc_unused char *argv[])
 {
 	if (client_is_local(client))
@@ -74,7 +74,7 @@ handle_urlhandlers(Client *client,
 }
 
 enum command_return
-handle_decoders(Client *client,
+handle_decoders(Client &client,
 		gcc_unused int argc, gcc_unused char *argv[])
 {
 	decoder_list_print(client);
@@ -82,7 +82,7 @@ handle_decoders(Client *client,
 }
 
 enum command_return
-handle_tagtypes(Client *client,
+handle_tagtypes(Client &client,
 		gcc_unused int argc, gcc_unused char *argv[])
 {
 	tag_print_types(client);
@@ -90,21 +90,21 @@ handle_tagtypes(Client *client,
 }
 
 enum command_return
-handle_kill(gcc_unused Client *client,
+handle_kill(gcc_unused Client &client,
 	    gcc_unused int argc, gcc_unused char *argv[])
 {
 	return COMMAND_RETURN_KILL;
 }
 
 enum command_return
-handle_close(gcc_unused Client *client,
+handle_close(gcc_unused Client &client,
 	     gcc_unused int argc, gcc_unused char *argv[])
 {
 	return COMMAND_RETURN_CLOSE;
 }
 
 enum command_return
-handle_lsinfo(Client *client, int argc, char *argv[])
+handle_lsinfo(Client &client, int argc, char *argv[])
 {
 	const char *uri;
 
@@ -136,7 +136,7 @@ handle_lsinfo(Client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		song_print_info(client, song);
+		song_print_info(client, *song);
 		song->Free();
 		return COMMAND_RETURN_OK;
 	}
@@ -155,7 +155,7 @@ handle_lsinfo(Client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_update(Client *client, gcc_unused int argc, char *argv[])
+handle_update(Client &client, gcc_unused int argc, char *argv[])
 {
 	const char *path = "";
 	unsigned ret;
@@ -186,7 +186,7 @@ handle_update(Client *client, gcc_unused int argc, char *argv[])
 }
 
 enum command_return
-handle_rescan(Client *client, gcc_unused int argc, char *argv[])
+handle_rescan(Client &client, gcc_unused int argc, char *argv[])
 {
 	const char *path = "";
 	unsigned ret;
@@ -214,7 +214,7 @@ handle_rescan(Client *client, gcc_unused int argc, char *argv[])
 }
 
 enum command_return
-handle_setvol(Client *client, gcc_unused int argc, char *argv[])
+handle_setvol(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned level;
 	bool success;
@@ -238,7 +238,7 @@ handle_setvol(Client *client, gcc_unused int argc, char *argv[])
 }
 
 enum command_return
-handle_stats(Client *client,
+handle_stats(Client &client,
 	     gcc_unused int argc, gcc_unused char *argv[])
 {
 	stats_print(client);
@@ -246,14 +246,14 @@ handle_stats(Client *client,
 }
 
 enum command_return
-handle_ping(gcc_unused Client *client,
+handle_ping(gcc_unused Client &client,
 	    gcc_unused int argc, gcc_unused char *argv[])
 {
 	return COMMAND_RETURN_OK;
 }
 
 enum command_return
-handle_password(Client *client, gcc_unused int argc, char *argv[])
+handle_password(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned permission = 0;
 
@@ -268,7 +268,7 @@ handle_password(Client *client, gcc_unused int argc, char *argv[])
 }
 
 enum command_return
-handle_config(Client *client,
+handle_config(Client &client,
 	      gcc_unused int argc, gcc_unused char *argv[])
 {
 	if (!client_is_local(client)) {
@@ -285,7 +285,7 @@ handle_config(Client *client,
 }
 
 enum command_return
-handle_idle(Client *client,
+handle_idle(Client &client,
 	    gcc_unused int argc, gcc_unused char *argv[])
 {
 	unsigned flags = 0, j;
@@ -309,7 +309,7 @@ handle_idle(Client *client,
 		flags = ~0;
 
 	/* enable "idle" mode on this client */
-	client->IdleWait(flags);
+	client.IdleWait(flags);
 
 	return COMMAND_RETURN_IDLE;
 }

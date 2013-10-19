@@ -69,7 +69,7 @@ bool
 spl_remove_index(const char *utf8path, unsigned pos, Error &error);
 
 bool
-spl_append_song(const char *utf8path, Song *song, Error &error);
+spl_append_song(const char *utf8path, const Song &song, Error &error);
 
 bool
 spl_append_uri(const char *file, const char *utf8file, Error &error);

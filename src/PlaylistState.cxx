@@ -59,14 +59,14 @@
 #define PLAYLIST_BUFFER_SIZE	2*MPD_PATH_MAX
 
 void
-playlist_state_save(FILE *fp, const struct playlist *playlist,
-		    struct player_control *pc)
+playlist_state_save(FILE *fp, const struct playlist &playlist,
+		    player_control &pc)
 {
-	const auto player_status = pc->GetStatus();
+	const auto player_status = pc.GetStatus();
 
 	fputs(PLAYLIST_STATE_FILE_STATE, fp);
 
-	if (playlist->playing) {
+	if (playlist.playing) {
 		switch (player_status.state) {
 		case PlayerState::PAUSE:
 			fputs(PLAYLIST_STATE_FILE_STATE_PAUSE "\n", fp);
@@ -75,35 +75,35 @@ playlist_state_save(FILE *fp, const struct playlist *playlist,
 			fputs(PLAYLIST_STATE_FILE_STATE_PLAY "\n", fp);
 		}
 		fprintf(fp, PLAYLIST_STATE_FILE_CURRENT "%i\n",
-			playlist->queue.OrderToPosition(playlist->current));
+			playlist.queue.OrderToPosition(playlist.current));
 		fprintf(fp, PLAYLIST_STATE_FILE_TIME "%i\n",
 			(int)player_status.elapsed_time);
 	} else {
 		fputs(PLAYLIST_STATE_FILE_STATE_STOP "\n", fp);
 
-		if (playlist->current >= 0)
+		if (playlist.current >= 0)
 			fprintf(fp, PLAYLIST_STATE_FILE_CURRENT "%i\n",
-				playlist->queue.OrderToPosition(playlist->current));
+				playlist.queue.OrderToPosition(playlist.current));
 	}
 
-	fprintf(fp, PLAYLIST_STATE_FILE_RANDOM "%i\n", playlist->queue.random);
-	fprintf(fp, PLAYLIST_STATE_FILE_REPEAT "%i\n", playlist->queue.repeat);
-	fprintf(fp, PLAYLIST_STATE_FILE_SINGLE "%i\n", playlist->queue.single);
+	fprintf(fp, PLAYLIST_STATE_FILE_RANDOM "%i\n", playlist.queue.random);
+	fprintf(fp, PLAYLIST_STATE_FILE_REPEAT "%i\n", playlist.queue.repeat);
+	fprintf(fp, PLAYLIST_STATE_FILE_SINGLE "%i\n", playlist.queue.single);
 	fprintf(fp, PLAYLIST_STATE_FILE_CONSUME "%i\n",
-		playlist->queue.consume);
+		playlist.queue.consume);
 	fprintf(fp, PLAYLIST_STATE_FILE_CROSSFADE "%i\n",
-		(int)pc->GetCrossFade());
+		(int)pc.GetCrossFade());
 	fprintf(fp, PLAYLIST_STATE_FILE_MIXRAMPDB "%f\n",
-		pc->GetMixRampDb());
+		pc.GetMixRampDb());
 	fprintf(fp, PLAYLIST_STATE_FILE_MIXRAMPDELAY "%f\n",
-		pc->GetMixRampDelay());
+		pc.GetMixRampDelay());
 	fputs(PLAYLIST_STATE_FILE_PLAYLIST_BEGIN "\n", fp);
-	queue_save(fp, &playlist->queue);
+	queue_save(fp, playlist.queue);
 	fputs(PLAYLIST_STATE_FILE_PLAYLIST_END "\n", fp);
 }
 
 static void
-playlist_state_load(TextFile &file, struct playlist *playlist)
+playlist_state_load(TextFile &file, struct playlist &playlist)
 {
 	const char *line = file.ReadLine();
 	if (line == nullptr) {
@@ -112,7 +112,7 @@ playlist_state_load(TextFile &file, struct playlist *playlist)
 	}
 
 	while (!g_str_has_prefix(line, PLAYLIST_STATE_FILE_PLAYLIST_END)) {
-		queue_load_song(file, line, &playlist->queue);
+		queue_load_song(file, line, playlist.queue);
 
 		line = file.ReadLine();
 		if (line == nullptr) {
@@ -123,12 +123,12 @@ playlist_state_load(TextFile &file, struct playlist *playlist)
 		}
 	}
 
-	playlist->queue.IncrementVersion();
+	playlist.queue.IncrementVersion();
 }
 
 bool
 playlist_state_restore(const char *line, TextFile &file,
-		       struct playlist *playlist, struct player_control *pc)
+		       struct playlist &playlist, player_control &pc)
 {
 	int current = -1;
 	int seek_time = 0;
@@ -150,24 +150,24 @@ playlist_state_restore(const char *line, TextFile &file,
 	while ((line = file.ReadLine()) != nullptr) {
 		if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_TIME)) {
 			seek_time =
-			    atoi(&(line[strlen(PLAYLIST_STATE_FILE_TIME)]));
+				atoi(&(line[strlen(PLAYLIST_STATE_FILE_TIME)]));
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_REPEAT)) {
-			playlist->SetRepeat(*pc,
-					    strcmp(&(line[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
-						   "1") == 0);
+			playlist.SetRepeat(pc,
+					   strcmp(&(line[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
+						  "1") == 0);
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_SINGLE)) {
-			playlist->SetSingle(*pc,
-					    strcmp(&(line[strlen(PLAYLIST_STATE_FILE_SINGLE)]),
-						   "1") == 0);
+			playlist.SetSingle(pc,
+					   strcmp(&(line[strlen(PLAYLIST_STATE_FILE_SINGLE)]),
+						  "1") == 0);
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_CONSUME)) {
-			playlist->SetConsume(strcmp(&(line[strlen(PLAYLIST_STATE_FILE_CONSUME)]),
-						    "1") == 0);
+			playlist.SetConsume(strcmp(&(line[strlen(PLAYLIST_STATE_FILE_CONSUME)]),
+						   "1") == 0);
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_CROSSFADE)) {
-			pc->SetCrossFade(atoi(line + strlen(PLAYLIST_STATE_FILE_CROSSFADE)));
+			pc.SetCrossFade(atoi(line + strlen(PLAYLIST_STATE_FILE_CROSSFADE)));
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_MIXRAMPDB)) {
-			pc->SetMixRampDb(atof(line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDB)));
+			pc.SetMixRampDb(atof(line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDB)));
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_MIXRAMPDELAY)) {
-			pc->SetMixRampDelay(atof(line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDELAY)));
+			pc.SetMixRampDelay(atof(line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDELAY)));
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_RANDOM)) {
 			random_mode =
 				strcmp(line + strlen(PLAYLIST_STATE_FILE_RANDOM),
@@ -182,10 +182,10 @@ playlist_state_restore(const char *line, TextFile &file,
 		}
 	}
 
-	playlist->SetRandom(*pc, random_mode);
+	playlist.SetRandom(pc, random_mode);
 
-	if (!playlist->queue.IsEmpty()) {
-		if (!playlist->queue.IsValidPosition(current))
+	if (!playlist.queue.IsEmpty()) {
+		if (!playlist.queue.IsValidPosition(current))
 			current = 0;
 
 		if (state == PlayerState::PLAY &&
@@ -199,40 +199,40 @@ playlist_state_restore(const char *line, TextFile &file,
 		   called here, after the audio output states were
 		   restored, before playback begins */
 		if (state != PlayerState::STOP)
-			pc->UpdateAudio();
+			pc.UpdateAudio();
 
 		if (state == PlayerState::STOP /* && config_option */)
-			playlist->current = current;
+			playlist.current = current;
 		else if (seek_time == 0)
-			playlist->PlayPosition(*pc, current);
+			playlist.PlayPosition(pc, current);
 		else
-			playlist->SeekSongPosition(*pc, current, seek_time);
+			playlist.SeekSongPosition(pc, current, seek_time);
 
 		if (state == PlayerState::PAUSE)
-			pc->Pause();
+			pc.Pause();
 	}
 
 	return true;
 }
 
 unsigned
-playlist_state_get_hash(const struct playlist *playlist,
-			struct player_control *pc)
+playlist_state_get_hash(const playlist &playlist,
+			player_control &pc)
 {
-	const auto player_status = pc->GetStatus();
+	const auto player_status = pc.GetStatus();
 
-	return playlist->queue.version ^
+	return playlist.queue.version ^
 		(player_status.state != PlayerState::STOP
 		 ? ((int)player_status.elapsed_time << 8)
 		 : 0) ^
-		(playlist->current >= 0
-		 ? (playlist->queue.OrderToPosition(playlist->current) << 16)
+		(playlist.current >= 0
+		 ? (playlist.queue.OrderToPosition(playlist.current) << 16)
 		 : 0) ^
-		((int)pc->GetCrossFade() << 20) ^
+		((int)pc.GetCrossFade() << 20) ^
 		(unsigned(player_status.state) << 24) ^
-		(playlist->queue.random << 27) ^
-		(playlist->queue.repeat << 28) ^
-		(playlist->queue.single << 29) ^
-		(playlist->queue.consume << 30) ^
-		(playlist->queue.random << 31);
+		(playlist.queue.random << 27) ^
+		(playlist.queue.repeat << 28) ^
+		(playlist.queue.single << 29) ^
+		(playlist.queue.consume << 30) ^
+		(playlist.queue.random << 31);
 }

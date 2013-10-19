@@ -65,7 +65,7 @@ void stats_update(void)
 }
 
 void
-stats_print(Client *client)
+stats_print(Client &client)
 {
 	client_printf(client,
 		      "artists: %u\n"
@@ -78,7 +78,7 @@ stats_print(Client *client)
 		      stats.album_count,
 		      stats.song_count,
 		      (long)g_timer_elapsed(stats.timer, NULL),
-		      (long)(client->player_control->GetTotalPlayTime() + 0.5),
+		      (long)(client.player_control.GetTotalPlayTime() + 0.5),
 		      stats.song_duration);
 
 	if (db_is_simple())

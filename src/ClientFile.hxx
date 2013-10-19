@@ -35,6 +35,6 @@ class Error;
  * @return true if access is allowed
  */
 bool
-client_allow_file(const Client *client, Path path_fs, Error &error);
+client_allow_file(const Client &client, Path path_fs, Error &error);
 
 #endif

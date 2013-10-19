@@ -25,33 +25,33 @@
 class Client;
 
 enum command_return
-handle_lsinfo2(Client *client, int argc, char *argv[]);
+handle_lsinfo2(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_find(Client *client, int argc, char *argv[]);
+handle_find(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_findadd(Client *client, int argc, char *argv[]);
+handle_findadd(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_search(Client *client, int argc, char *argv[]);
+handle_search(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_searchadd(Client *client, int argc, char *argv[]);
+handle_searchadd(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_searchaddpl(Client *client, int argc, char *argv[]);
+handle_searchaddpl(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_count(Client *client, int argc, char *argv[]);
+handle_count(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_listall(Client *client, int argc, char *argv[]);
+handle_listall(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_list(Client *client, int argc, char *argv[]);
+handle_list(Client &client, int argc, char *argv[]);
 
 enum command_return
-handle_listallinfo(Client *client, int argc, char *argv[]);
+handle_listallinfo(Client &client, int argc, char *argv[]);
 
 #endif

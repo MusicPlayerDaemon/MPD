@@ -39,7 +39,7 @@
 #include <stdlib.h>
 
 static void
-print_spl_list(Client *client, const PlaylistVector &list)
+print_spl_list(Client &client, const PlaylistVector &list)
 {
 	for (const auto &i : list) {
 		client_printf(client, "playlist: %s\n", i.name.c_str());
@@ -50,16 +50,16 @@ print_spl_list(Client *client, const PlaylistVector &list)
 }
 
 enum command_return
-handle_save(Client *client, gcc_unused int argc, char *argv[])
+handle_save(Client &client, gcc_unused int argc, char *argv[])
 {
 	enum playlist_result result;
 
-	result = spl_save_playlist(argv[1], &client->playlist);
+	result = spl_save_playlist(argv[1], client.playlist);
 	return print_playlist_result(client, result);
 }
 
 enum command_return
-handle_load(Client *client, int argc, char *argv[])
+handle_load(Client &client, int argc, char *argv[])
 {
 	unsigned start_index, end_index;
 
@@ -73,13 +73,13 @@ handle_load(Client *client, int argc, char *argv[])
 
 	result = playlist_open_into_queue(argv[1],
 					  start_index, end_index,
-					  &client->playlist,
-					  client->player_control, true);
+					  client.playlist,
+					  client.player_control, true);
 	if (result != PLAYLIST_RESULT_NO_SUCH_LIST)
 		return print_playlist_result(client, result);
 
 	Error error;
-	if (playlist_load_spl(&client->playlist, client->player_control,
+	if (playlist_load_spl(client.playlist, client.player_control,
 			      argv[1], start_index, end_index,
 			      error))
 		return COMMAND_RETURN_OK;
@@ -99,7 +99,7 @@ handle_load(Client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_listplaylist(Client *client, gcc_unused int argc, char *argv[])
+handle_listplaylist(Client &client, gcc_unused int argc, char *argv[])
 {
 	if (playlist_file_print(client, argv[1], false))
 		return COMMAND_RETURN_OK;
@@ -111,7 +111,7 @@ handle_listplaylist(Client *client, gcc_unused int argc, char *argv[])
 }
 
 enum command_return
-handle_listplaylistinfo(Client *client,
+handle_listplaylistinfo(Client &client,
 			gcc_unused int argc, char *argv[])
 {
 	if (playlist_file_print(client, argv[1], true))
@@ -124,7 +124,7 @@ handle_listplaylistinfo(Client *client,
 }
 
 enum command_return
-handle_rm(Client *client, gcc_unused int argc, char *argv[])
+handle_rm(Client &client, gcc_unused int argc, char *argv[])
 {
 	Error error;
 	return spl_delete(argv[1], error)
@@ -133,7 +133,7 @@ handle_rm(Client *client, gcc_unused int argc, char *argv[])
 }
 
 enum command_return
-handle_rename(Client *client, gcc_unused int argc, char *argv[])
+handle_rename(Client &client, gcc_unused int argc, char *argv[])
 {
 	Error error;
 	return spl_rename(argv[1], argv[2], error)
@@ -142,7 +142,7 @@ handle_rename(Client *client, gcc_unused int argc, char *argv[])
 }
 
 enum command_return
-handle_playlistdelete(Client *client,
+handle_playlistdelete(Client &client,
 		      gcc_unused int argc, char *argv[]) {
 	char *playlist = argv[1];
 	unsigned from;
@@ -157,7 +157,7 @@ handle_playlistdelete(Client *client,
 }
 
 enum command_return
-handle_playlistmove(Client *client, gcc_unused int argc, char *argv[])
+handle_playlistmove(Client &client, gcc_unused int argc, char *argv[])
 {
 	char *playlist = argv[1];
 	unsigned from, to;
@@ -174,7 +174,7 @@ handle_playlistmove(Client *client, gcc_unused int argc, char *argv[])
 }
 
 enum command_return
-handle_playlistclear(Client *client, gcc_unused int argc, char *argv[])
+handle_playlistclear(Client &client, gcc_unused int argc, char *argv[])
 {
 	Error error;
 	return spl_clear(argv[1], error)
@@ -183,7 +183,7 @@ handle_playlistclear(Client *client, gcc_unused int argc, char *argv[])
 }
 
 enum command_return
-handle_playlistadd(Client *client, gcc_unused int argc, char *argv[])
+handle_playlistadd(Client &client, gcc_unused int argc, char *argv[])
 {
 	char *playlist = argv[1];
 	char *uri = argv[2];
@@ -212,7 +212,7 @@ handle_playlistadd(Client *client, gcc_unused int argc, char *argv[])
 }
 
 enum command_return
-handle_listplaylists(Client *client,
+handle_listplaylists(Client &client,
 		     gcc_unused int argc, gcc_unused char *argv[])
 {
 	Error error;

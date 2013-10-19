@@ -40,7 +40,7 @@
 #include <string.h>
 
 enum command_return
-handle_add(Client *client, gcc_unused int argc, char *argv[])
+handle_add(Client &client, gcc_unused int argc, char *argv[])
 {
 	char *uri = argv[1];
 	enum playlist_result result;
@@ -59,7 +59,7 @@ handle_add(Client *client, gcc_unused int argc, char *argv[])
 		if (!client_allow_file(client, path_fs, error))
 			return print_error(client, error);
 
-		result = client->partition.AppendFile(path_utf8);
+		result = client.partition.AppendFile(path_utf8);
 		return print_playlist_result(client, result);
 	}
 
@@ -70,19 +70,19 @@ handle_add(Client *client, gcc_unused int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		result = client->partition.AppendURI(uri);
+		result = client.partition.AppendURI(uri);
 		return print_playlist_result(client, result);
 	}
 
 	const DatabaseSelection selection(uri, true);
 	Error error;
-	return AddFromDatabase(client->partition, selection, error)
+	return AddFromDatabase(client.partition, selection, error)
 		? COMMAND_RETURN_OK
 		: print_error(client, error);
 }
 
 enum command_return
-handle_addid(Client *client, int argc, char *argv[])
+handle_addid(Client &client, int argc, char *argv[])
 {
 	char *uri = argv[1];
 	unsigned added_id;
@@ -102,7 +102,7 @@ handle_addid(Client *client, int argc, char *argv[])
 		if (!client_allow_file(client, path_fs, error))
 			return print_error(client, error);
 
-		result = client->partition.AppendFile(path_utf8, &added_id);
+		result = client.partition.AppendFile(path_utf8, &added_id);
 	} else {
 		if (uri_has_scheme(uri) && !uri_supported_scheme(uri)) {
 			command_error(client, ACK_ERROR_NO_EXIST,
@@ -110,7 +110,7 @@ handle_addid(Client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 		}
 
-		result = client->partition.AppendURI(uri, &added_id);
+		result = client.partition.AppendURI(uri, &added_id);
 	}
 
 	if (result != PLAYLIST_RESULT_SUCCESS)
@@ -120,11 +120,11 @@ handle_addid(Client *client, int argc, char *argv[])
 		unsigned to;
 		if (!check_unsigned(client, &to, argv[2]))
 			return COMMAND_RETURN_ERROR;
-		result = client->partition.MoveId(added_id, to);
+		result = client.partition.MoveId(added_id, to);
 		if (result != PLAYLIST_RESULT_SUCCESS) {
 			enum command_return ret =
 				print_playlist_result(client, result);
-			client->partition.DeleteId(added_id);
+			client.partition.DeleteId(added_id);
 			return ret;
 		}
 	}
@@ -134,83 +134,83 @@ handle_addid(Client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_delete(Client *client, gcc_unused int argc, char *argv[])
+handle_delete(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned start, end;
 
 	if (!check_range(client, &start, &end, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	enum playlist_result result = client->partition.DeleteRange(start, end);
+	enum playlist_result result = client.partition.DeleteRange(start, end);
 	return print_playlist_result(client, result);
 }
 
 enum command_return
-handle_deleteid(Client *client, gcc_unused int argc, char *argv[])
+handle_deleteid(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned id;
 
 	if (!check_unsigned(client, &id, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	enum playlist_result result = client->partition.DeleteId(id);
+	enum playlist_result result = client.partition.DeleteId(id);
 	return print_playlist_result(client, result);
 }
 
 enum command_return
-handle_playlist(Client *client,
+handle_playlist(Client &client,
 		gcc_unused int argc, gcc_unused char *argv[])
 {
-	playlist_print_uris(client, &client->playlist);
+	playlist_print_uris(client, client.playlist);
 	return COMMAND_RETURN_OK;
 }
 
 enum command_return
-handle_shuffle(gcc_unused Client *client,
+handle_shuffle(gcc_unused Client &client,
 	       gcc_unused int argc, gcc_unused char *argv[])
 {
-	unsigned start = 0, end = client->playlist.queue.GetLength();
+	unsigned start = 0, end = client.playlist.queue.GetLength();
 	if (argc == 2 && !check_range(client, &start, &end, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	client->partition.Shuffle(start, end);
+	client.partition.Shuffle(start, end);
 	return COMMAND_RETURN_OK;
 }
 
 enum command_return
-handle_clear(gcc_unused Client *client,
+handle_clear(gcc_unused Client &client,
 	     gcc_unused int argc, gcc_unused char *argv[])
 {
-	client->partition.ClearQueue();
+	client.partition.ClearQueue();
 	return COMMAND_RETURN_OK;
 }
 
 enum command_return
-handle_plchanges(Client *client, gcc_unused int argc, char *argv[])
+handle_plchanges(Client &client, gcc_unused int argc, char *argv[])
 {
 	uint32_t version;
 
 	if (!check_uint32(client, &version, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	playlist_print_changes_info(client, &client->playlist, version);
+	playlist_print_changes_info(client, client.playlist, version);
 	return COMMAND_RETURN_OK;
 }
 
 enum command_return
-handle_plchangesposid(Client *client, gcc_unused int argc, char *argv[])
+handle_plchangesposid(Client &client, gcc_unused int argc, char *argv[])
 {
 	uint32_t version;
 
 	if (!check_uint32(client, &version, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	playlist_print_changes_position(client, &client->playlist, version);
+	playlist_print_changes_position(client, client.playlist, version);
 	return COMMAND_RETURN_OK;
 }
 
 enum command_return
-handle_playlistinfo(Client *client, int argc, char *argv[])
+handle_playlistinfo(Client &client, int argc, char *argv[])
 {
 	unsigned start = 0, end = std::numeric_limits<unsigned>::max();
 	bool ret;
@@ -218,7 +218,7 @@ handle_playlistinfo(Client *client, int argc, char *argv[])
 	if (argc == 2 && !check_range(client, &start, &end, argv[1]))
 		return COMMAND_RETURN_ERROR;
 
-	ret = playlist_print_info(client, &client->playlist, start, end);
+	ret = playlist_print_info(client, client.playlist, start, end);
 	if (!ret)
 		return print_playlist_result(client,
 					     PLAYLIST_RESULT_BAD_RANGE);
@@ -227,19 +227,19 @@ handle_playlistinfo(Client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_playlistid(Client *client, int argc, char *argv[])
+handle_playlistid(Client &client, int argc, char *argv[])
 {
 	if (argc >= 2) {
 		unsigned id;
 		if (!check_unsigned(client, &id, argv[1]))
 			return COMMAND_RETURN_ERROR;
 
-		bool ret = playlist_print_id(client, &client->playlist, id);
+		bool ret = playlist_print_id(client, client.playlist, id);
 		if (!ret)
 			return print_playlist_result(client,
 						     PLAYLIST_RESULT_NO_SUCH_SONG);
 	} else {
-		playlist_print_info(client, &client->playlist,
+		playlist_print_info(client, client.playlist,
 				    0, std::numeric_limits<unsigned>::max());
 	}
 
@@ -247,7 +247,7 @@ handle_playlistid(Client *client, int argc, char *argv[])
 }
 
 static enum command_return
-handle_playlist_match(Client *client, int argc, char *argv[],
+handle_playlist_match(Client &client, int argc, char *argv[],
 		      bool fold_case)
 {
 	SongFilter filter;
@@ -256,24 +256,24 @@ handle_playlist_match(Client *client, int argc, char *argv[],
 		return COMMAND_RETURN_ERROR;
 	}
 
-	playlist_print_find(client, &client->playlist, filter);
+	playlist_print_find(client, client.playlist, filter);
 	return COMMAND_RETURN_OK;
 }
 
 enum command_return
-handle_playlistfind(Client *client, int argc, char *argv[])
+handle_playlistfind(Client &client, int argc, char *argv[])
 {
 	return handle_playlist_match(client, argc, argv, false);
 }
 
 enum command_return
-handle_playlistsearch(Client *client, int argc, char *argv[])
+handle_playlistsearch(Client &client, int argc, char *argv[])
 {
 	return handle_playlist_match(client, argc, argv, true);
 }
 
 enum command_return
-handle_prio(Client *client, int argc, char *argv[])
+handle_prio(Client &client, int argc, char *argv[])
 {
 	unsigned priority;
 
@@ -293,7 +293,7 @@ handle_prio(Client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 
 		enum playlist_result result =
-			client->partition.SetPriorityRange(start_position,
+			client.partition.SetPriorityRange(start_position,
 							   end_position,
 							   priority);
 		if (result != PLAYLIST_RESULT_SUCCESS)
@@ -304,7 +304,7 @@ handle_prio(Client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_prioid(Client *client, int argc, char *argv[])
+handle_prioid(Client &client, int argc, char *argv[])
 {
 	unsigned priority;
 
@@ -323,7 +323,7 @@ handle_prioid(Client *client, int argc, char *argv[])
 			return COMMAND_RETURN_ERROR;
 
 		enum playlist_result result =
-			client->partition.SetPriorityId(song_id, priority);
+			client.partition.SetPriorityId(song_id, priority);
 		if (result != PLAYLIST_RESULT_SUCCESS)
 			return print_playlist_result(client, result);
 	}
@@ -332,7 +332,7 @@ handle_prioid(Client *client, int argc, char *argv[])
 }
 
 enum command_return
-handle_move(Client *client, gcc_unused int argc, char *argv[])
+handle_move(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned start, end;
 	int to;
@@ -343,12 +343,12 @@ handle_move(Client *client, gcc_unused int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 
 	enum playlist_result result =
-		client->partition.MoveRange(start, end, to);
+		client.partition.MoveRange(start, end, to);
 	return print_playlist_result(client, result);
 }
 
 enum command_return
-handle_moveid(Client *client, gcc_unused int argc, char *argv[])
+handle_moveid(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned id;
 	int to;
@@ -357,12 +357,12 @@ handle_moveid(Client *client, gcc_unused int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 	if (!check_int(client, &to, argv[2]))
 		return COMMAND_RETURN_ERROR;
-	enum playlist_result result = client->partition.MoveId(id, to);
+	enum playlist_result result = client.partition.MoveId(id, to);
 	return print_playlist_result(client, result);
 }
 
 enum command_return
-handle_swap(Client *client, gcc_unused int argc, char *argv[])
+handle_swap(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned song1, song2;
 
@@ -372,12 +372,12 @@ handle_swap(Client *client, gcc_unused int argc, char *argv[])
 		return COMMAND_RETURN_ERROR;
 
 	enum playlist_result result =
-		client->partition.SwapPositions(song1, song2);
+		client.partition.SwapPositions(song1, song2);
 	return print_playlist_result(client, result);
 }
 
 enum command_return
-handle_swapid(Client *client, gcc_unused int argc, char *argv[])
+handle_swapid(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned id1, id2;
 
@@ -386,6 +386,6 @@ handle_swapid(Client *client, gcc_unused int argc, char *argv[])
 	if (!check_unsigned(client, &id2, argv[2]))
 		return COMMAND_RETURN_ERROR;
 
-	enum playlist_result result = client->partition.SwapIds(id1, id2);
+	enum playlist_result result = client.partition.SwapIds(id1, id2);
 	return print_playlist_result(client, result);
 }

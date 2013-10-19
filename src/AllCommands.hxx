@@ -29,6 +29,6 @@ void command_init(void);
 void command_finish(void);
 
 enum command_return
-command_process(Client *client, unsigned num, char *line);
+command_process(Client &client, unsigned num, char *line);
 
 #endif

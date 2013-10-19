@@ -31,7 +31,7 @@ struct player_control;
 class Error;
 
 void
-playlist_print_song(FILE *fp, const Song *song);
+playlist_print_song(FILE *fp, const Song &song);
 
 void
 playlist_print_uri(FILE *fp, const char *uri);
@@ -40,20 +40,20 @@ playlist_print_uri(FILE *fp, const char *uri);
  * Saves a queue object into a stored playlist file.
  */
 enum playlist_result
-spl_save_queue(const char *name_utf8, const struct queue *queue);
+spl_save_queue(const char *name_utf8, const queue &queue);
 
 /**
  * Saves a playlist object into a stored playlist file.
  */
 enum playlist_result
-spl_save_playlist(const char *name_utf8, const struct playlist *playlist);
+spl_save_playlist(const char *name_utf8, const playlist &playlist);
 
 /**
  * Loads a stored playlist file, and append all songs to the global
  * playlist.
  */
 bool
-playlist_load_spl(struct playlist *playlist, struct player_control *pc,
+playlist_load_spl(struct playlist &playlist, player_control &pc,
 		  const char *name_utf8,
 		  unsigned start_index, unsigned end_index,
 		  Error &error);

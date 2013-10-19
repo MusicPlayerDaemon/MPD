@@ -38,43 +38,43 @@
 #define PRIO_LABEL "Prio: "
 
 static void
-queue_save_database_song(FILE *fp, int idx, const Song *song)
+queue_save_database_song(FILE *fp, int idx, const Song &song)
 {
-	const auto uri = song->GetURI();
+	const auto uri = song.GetURI();
 	fprintf(fp, "%i:%s\n", idx, uri.c_str());
 }
 
 static void
-queue_save_full_song(FILE *fp, const Song *song)
+queue_save_full_song(FILE *fp, const Song &song)
 {
 	song_save(fp, song);
 }
 
 static void
-queue_save_song(FILE *fp, int idx, const Song *song)
+queue_save_song(FILE *fp, int idx, const Song &song)
 {
-	if (song->IsInDatabase())
+	if (song.IsInDatabase())
 		queue_save_database_song(fp, idx, song);
 	else
 		queue_save_full_song(fp, song);
 }
 
 void
-queue_save(FILE *fp, const struct queue *queue)
+queue_save(FILE *fp, const queue &queue)
 {
-	for (unsigned i = 0; i < queue->GetLength(); i++) {
-		uint8_t prio = queue->GetPriorityAtPosition(i);
+	for (unsigned i = 0; i < queue.GetLength(); i++) {
+		uint8_t prio = queue.GetPriorityAtPosition(i);
 		if (prio != 0)
 			fprintf(fp, PRIO_LABEL "%u\n", prio);
 
-		queue_save_song(fp, i, queue->Get(i));
+		queue_save_song(fp, i, queue.Get(i));
 	}
 }
 
 void
-queue_load_song(TextFile &file, const char *line, queue *queue)
+queue_load_song(TextFile &file, const char *line, queue &queue)
 {
-	if (queue->IsFull())
+	if (queue.IsFull())
 		return;
 
 	uint8_t priority = 0;
@@ -124,7 +124,7 @@ queue_load_song(TextFile &file, const char *line, queue *queue)
 		}
 	}
 
-	queue->Append(song, priority);
+	queue.Append(song, priority);
 
 	if (db != nullptr)
 		db->ReturnSong(song);

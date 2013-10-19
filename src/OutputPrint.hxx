@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
@@ -28,6 +29,6 @@
 class Client;
 
 void
-printAudioDevices(Client *client);
+printAudioDevices(Client &client);
 
 #endif
