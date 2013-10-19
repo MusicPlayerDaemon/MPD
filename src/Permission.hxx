@@ -20,12 +20,11 @@
 #ifndef MPD_PERMISSION_HXX
 #define MPD_PERMISSION_HXX
 
-#define PERMISSION_NONE    0
-#define PERMISSION_READ    1
-#define PERMISSION_ADD     2
-#define PERMISSION_CONTROL 4
-#define PERMISSION_ADMIN   8
-
+static constexpr unsigned PERMISSION_NONE = 0;
+static constexpr unsigned PERMISSION_READ = 1;
+static constexpr unsigned PERMISSION_ADD = 2;
+static constexpr unsigned PERMISSION_CONTROL = 4;
+static constexpr unsigned PERMISSION_ADMIN = 8;
 
 int getPermissionFromPassword(char const* password, unsigned* permission);
 
