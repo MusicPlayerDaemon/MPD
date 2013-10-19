@@ -29,6 +29,7 @@
 
 #include <glib.h>
 
+#include <assert.h>
 #include <string.h>
 
 static constexpr char PERMISSION_PASSWORD_CHAR = '@';
@@ -45,11 +46,10 @@ static unsigned permission_default;
 
 static unsigned parsePermissions(const char *string)
 {
+	assert(string != nullptr);
+
 	unsigned permission = 0;
 	gchar **tokens;
-
-	if (!string)
-		return 0;
 
 	tokens = g_strsplit(string, PERMISSION_SEPERATOR, 0);
 	for (unsigned i = 0; tokens[i] != NULL; ++i) {
