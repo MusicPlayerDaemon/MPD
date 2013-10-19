@@ -678,6 +678,12 @@ libencoder_plugins_a_SOURCES = \
 	src/encoder/NullEncoderPlugin.cxx src/encoder/NullEncoderPlugin.hxx \
 	src/EncoderList.cxx src/EncoderList.hxx
 
+if HAVE_OGG_ENCODER
+libencoder_plugins_a_SOURCES += \
+	src/encoder/OggSerial.cxx src/encoder/OggSerial.hxx \
+	src/encoder/OggStream.hxx
+endif
+
 if ENABLE_WAVE_ENCODER
 libencoder_plugins_a_SOURCES += \
 	src/encoder/WaveEncoderPlugin.cxx \

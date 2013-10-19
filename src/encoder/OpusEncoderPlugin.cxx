@@ -20,6 +20,7 @@
 #include "config.h"
 #include "OpusEncoderPlugin.hxx"
 #include "OggStream.hxx"
+#include "OggSerial.hxx"
 #include "EncoderAPI.hxx"
 #include "AudioFormat.hxx"
 #include "ConfigError.hxx"
@@ -188,7 +189,7 @@ opus_encoder_open(Encoder *_encoder,
 	encoder->buffer_position = 0;
 	encoder->buffer = (unsigned char *)g_malloc(encoder->buffer_size);
 
-	encoder->stream.Initialize(g_random_int());
+	encoder->stream.Initialize(GenerateOggSerial());
 	encoder->packetno = 0;
 
 	return true;

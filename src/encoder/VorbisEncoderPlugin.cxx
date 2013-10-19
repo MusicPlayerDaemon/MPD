@@ -20,6 +20,7 @@
 #include "config.h"
 #include "VorbisEncoderPlugin.hxx"
 #include "OggStream.hxx"
+#include "OggSerial.hxx"
 #include "EncoderAPI.hxx"
 #include "tag/Tag.hxx"
 #include "AudioFormat.hxx"
@@ -164,7 +165,7 @@ vorbis_encoder_reinit(struct vorbis_encoder *encoder, Error &error)
 
 	vorbis_analysis_init(&encoder->vd, &encoder->vi);
 	vorbis_block_init(&encoder->vd, &encoder->vb);
-	encoder->stream.Initialize(g_random_int());
+	encoder->stream.Initialize(GenerateOggSerial());
 
 	return true;
 }
@@ -294,7 +295,7 @@ vorbis_encoder_tag(Encoder *_encoder, const Tag *tag,
 
 	/* reset ogg_stream_state and begin a new stream */
 
-	encoder->stream.Reinitialize(g_random_int());
+	encoder->stream.Reinitialize(GenerateOggSerial());
 
 	/* send that vorbis_comment to the ogg_stream_state */
 

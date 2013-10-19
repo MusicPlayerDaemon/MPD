@@ -1184,6 +1184,7 @@ if test x$enable_encoder = xyes; then
 		[Define to enable the encoder plugins])
 fi
 AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_encoder = xyes)
+AM_CONDITIONAL(HAVE_OGG_ENCODER, test x$enable_vorbis_encoder = xyes || test x$enable_opus = xyes)
 
 dnl ---------------------------------------------------------------------------
 dnl Audio Output Plugins
