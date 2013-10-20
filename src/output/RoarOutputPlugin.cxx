@@ -316,7 +316,7 @@ roar_play(struct audio_output *ao, const void *chunk, size_t size,
 }
 
 static const char*
-roar_tag_convert(enum tag_type type, bool *is_uuid)
+roar_tag_convert(TagType type, bool *is_uuid)
 {
 	*is_uuid = false;
 	switch (type)

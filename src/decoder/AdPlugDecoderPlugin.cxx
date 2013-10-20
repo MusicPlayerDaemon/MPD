@@ -81,7 +81,7 @@ adplug_file_decode(struct decoder *decoder, const char *path_fs)
 }
 
 static void
-adplug_scan_tag(enum tag_type type, const std::string &value,
+adplug_scan_tag(TagType type, const std::string &value,
 		const struct tag_handler *handler, void *handler_ctx)
 {
 	if (!value.empty())

@@ -208,7 +208,7 @@ PrintSongURIVisitor(Client &client, Song &song)
 }
 
 static bool
-PrintUniqueTag(Client &client, enum tag_type tag_type,
+PrintUniqueTag(Client &client, TagType tag_type,
 	       const char *value)
 {
 	client_printf(client, "%s: %s\n", tag_item_names[tag_type], value);
@@ -234,8 +234,8 @@ listAllUniqueTags(Client &client, int type,
 	} else {
 		using namespace std::placeholders;
 		const auto f = std::bind(PrintUniqueTag, std::ref(client),
-					 (enum tag_type)type, _1);
-		return db->VisitUniqueTags(selection, (enum tag_type)type,
+					 (TagType)type, _1);
+		return db->VisitUniqueTags(selection, (TagType)type,
 					   f, error);
 	}
 }

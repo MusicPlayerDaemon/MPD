@@ -110,7 +110,7 @@ struct Tag {
 	 * @param value the value of the tag item (not null-terminated)
 	 * @param len the length of #value
 	 */
-	void AddItem(tag_type type, const char *value, size_t len);
+	void AddItem(TagType type, const char *value, size_t len);
 
 	/**
 	 * Appends a new tag item.
@@ -119,11 +119,11 @@ struct Tag {
 	 * @param type the type of the new tag item
 	 * @param value the value of the tag item (null-terminated)
 	 */
-	void AddItem(tag_type type, const char *value);
+	void AddItem(TagType type, const char *value);
 
 	/**
 	 * Merges the data from two tags.  If both tags share data for the
-	 * same tag_type, only data from "add" is used.
+	 * same TagType, only data from "add" is used.
 	 *
 	 * @return a newly allocated tag
 	 */
@@ -144,35 +144,35 @@ struct Tag {
 	 * is present in this tag object.
 	 */
 	gcc_pure
-	const char *GetValue(tag_type type) const;
+	const char *GetValue(TagType type) const;
 
 	/**
 	 * Checks whether the tag contains one or more items with
 	 * the specified type.
 	 */
 	gcc_pure
-	bool HasType(tag_type type) const;
+	bool HasType(TagType type) const;
 
 private:
-	void AddItemInternal(tag_type type, const char *value, size_t len);
+	void AddItemInternal(TagType type, const char *value, size_t len);
 };
 
 /**
- * Parse the string, and convert it into a #tag_type.  Returns
+ * Parse the string, and convert it into a #TagType.  Returns
  * #TAG_NUM_OF_ITEM_TYPES if the string could not be recognized.
  */
 gcc_pure
-enum tag_type
+TagType
 tag_name_parse(const char *name);
 
 /**
- * Parse the string, and convert it into a #tag_type.  Returns
+ * Parse the string, and convert it into a #TagType.  Returns
  * #TAG_NUM_OF_ITEM_TYPES if the string could not be recognized.
  *
  * Case does not matter.
  */
 gcc_pure
-enum tag_type
+TagType
 tag_name_parse_i(const char *name);
 
 #endif

@@ -39,7 +39,7 @@ struct slot {
 static struct slot *slots[NUM_SLOTS];
 
 static inline unsigned
-calc_hash_n(enum tag_type type, const char *p, size_t length)
+calc_hash_n(TagType type, const char *p, size_t length)
 {
 	unsigned hash = 5381;
 
@@ -52,7 +52,7 @@ calc_hash_n(enum tag_type type, const char *p, size_t length)
 }
 
 static inline unsigned
-calc_hash(enum tag_type type, const char *p)
+calc_hash(TagType type, const char *p)
 {
 	unsigned hash = 5381;
 
@@ -71,7 +71,7 @@ tag_item_to_slot(TagItem *item)
 }
 
 static struct slot *slot_alloc(struct slot *next,
-			       enum tag_type type,
+			       TagType type,
 			       const char *value, int length)
 {
 	struct slot *slot;
@@ -87,7 +87,7 @@ static struct slot *slot_alloc(struct slot *next,
 }
 
 TagItem *
-tag_pool_get_item(enum tag_type type, const char *value, size_t length)
+tag_pool_get_item(TagType type, const char *value, size_t length)
 {
 	struct slot **slot_p, *slot;
 

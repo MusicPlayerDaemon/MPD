@@ -28,7 +28,7 @@ extern Mutex tag_pool_lock;
 struct TagItem;
 
 TagItem *
-tag_pool_get_item(enum tag_type type, const char *value, size_t length);
+tag_pool_get_item(TagType type, const char *value, size_t length);
 
 TagItem *
 tag_pool_dup_item(TagItem *item);

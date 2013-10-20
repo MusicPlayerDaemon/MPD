@@ -28,7 +28,7 @@
  * Returns TAG_NUM_OF_ITEM_TYPES if the specified name was not found
  * in the table.
  */
-tag_type
+TagType
 tag_table_lookup(const struct tag_table *table, const char *name)
 {
 	for (; table->name != nullptr; ++table)
@@ -43,7 +43,7 @@ tag_table_lookup(const struct tag_table *table, const char *name)
  * Returns TAG_NUM_OF_ITEM_TYPES if the specified name was not found
  * in the table.
  */
-tag_type
+TagType
 tag_table_lookup_i(const struct tag_table *table, const char *name)
 {
 	for (; table->name != nullptr; ++table)

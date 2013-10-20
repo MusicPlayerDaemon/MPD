@@ -27,7 +27,7 @@
 #include <assert.h>
 #include <string.h>
 
-enum tag_type
+TagType
 tag_name_parse(const char *name)
 {
 	assert(name != nullptr);
@@ -36,13 +36,13 @@ tag_name_parse(const char *name)
 		assert(tag_item_names[i] != nullptr);
 
 		if (strcmp(name, tag_item_names[i]) == 0)
-			return (enum tag_type)i;
+			return (TagType)i;
 	}
 
 	return TAG_NUM_OF_ITEM_TYPES;
 }
 
-enum tag_type
+TagType
 tag_name_parse_i(const char *name)
 {
 	assert(name != nullptr);
@@ -51,7 +51,7 @@ tag_name_parse_i(const char *name)
 		assert(tag_item_names[i] != nullptr);
 
 		if (g_ascii_strcasecmp(name, tag_item_names[i]) == 0)
-			return (enum tag_type)i;
+			return (TagType)i;
 	}
 
 	return TAG_NUM_OF_ITEM_TYPES;
@@ -166,7 +166,7 @@ Tag::MergeReplace(Tag *base, Tag *add)
 }
 
 const char *
-Tag::GetValue(tag_type type) const
+Tag::GetValue(TagType type) const
 {
 	assert(type < TAG_NUM_OF_ITEM_TYPES);
 
@@ -178,13 +178,13 @@ Tag::GetValue(tag_type type) const
 }
 
 bool
-Tag::HasType(tag_type type) const
+Tag::HasType(TagType type) const
 {
 	return GetValue(type) != nullptr;
 }
 
 void
-Tag::AddItemInternal(tag_type type, const char *value, size_t len)
+Tag::AddItemInternal(TagType type, const char *value, size_t len)
 {
 	unsigned int i = num_items;
 
@@ -206,7 +206,7 @@ Tag::AddItemInternal(tag_type type, const char *value, size_t len)
 }
 
 void
-Tag::AddItem(tag_type type, const char *value, size_t len)
+Tag::AddItem(TagType type, const char *value, size_t len)
 {
 	if (ignore_tag_items[type])
 		return;
@@ -218,7 +218,7 @@ Tag::AddItem(tag_type type, const char *value, size_t len)
 }
 
 void
-Tag::AddItem(tag_type type, const char *value)
+Tag::AddItem(TagType type, const char *value)
 {
 	AddItem(type, value, strlen(value));
 }

@@ -34,7 +34,7 @@ ScanOneOpusTag(const char *name, const char *value,
 	tag_handler_invoke_pair(handler, ctx, name, value);
 
 	if (handler->tag != nullptr) {
-		enum tag_type t = tag_table_lookup_i(xiph_tags, name);
+		TagType t = tag_table_lookup_i(xiph_tags, name);
 		if (t != TAG_NUM_OF_ITEM_TYPES)
 			tag_handler_invoke_tag(handler, ctx, t, value);
 	}

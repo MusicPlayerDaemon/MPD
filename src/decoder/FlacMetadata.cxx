@@ -152,7 +152,7 @@ flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
  */
 static bool
 flac_copy_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
-		  const char *name, enum tag_type tag_type,
+		  const char *name, TagType tag_type,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
 	const char *value;
@@ -193,7 +193,7 @@ flac_scan_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (flac_copy_comment(entry,
-				      tag_item_names[i], (enum tag_type)i,
+				      tag_item_names[i], (TagType)i,
 				      handler, handler_ctx))
 			return;
 }

@@ -36,7 +36,7 @@ static const struct tag_table ffmpeg_tags[] = {
 };
 
 static void
-ffmpeg_copy_metadata(enum tag_type type,
+ffmpeg_copy_metadata(TagType type,
 		     AVDictionary *m, const char *name,
 		     const struct tag_handler *handler, void *handler_ctx)
 {
@@ -63,7 +63,7 @@ ffmpeg_scan_dictionary(AVDictionary *dict,
 		       const struct tag_handler *handler, void *handler_ctx)
 {
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
-		ffmpeg_copy_metadata(tag_type(i), dict, tag_item_names[i],
+		ffmpeg_copy_metadata(TagType(i), dict, tag_item_names[i],
 				     handler, handler_ctx);
 
 	for (const struct tag_table *i = ffmpeg_tags;

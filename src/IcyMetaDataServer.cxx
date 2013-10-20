@@ -84,7 +84,7 @@ icy_server_metadata_string(const char *stream_title, const char* stream_url)
 }
 
 Page *
-icy_server_metadata_page(const Tag &tag, const enum tag_type *types)
+icy_server_metadata_page(const Tag &tag, const TagType *types)
 {
 	const gchar *tag_items[TAG_NUM_OF_ITEM_TYPES];
 	gint last_item, item;

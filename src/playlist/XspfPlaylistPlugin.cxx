@@ -57,7 +57,7 @@ struct XspfParser {
 	 * valid if state==TRACK.  TAG_NUM_OF_ITEM_TYPES means there
 	 * is no (known) tag.
 	 */
-	enum tag_type tag;
+	TagType tag;
 
 	/**
 	 * The current song.  It is allocated after the "location"

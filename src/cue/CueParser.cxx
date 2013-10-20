@@ -109,7 +109,7 @@ cue_next_value(char **pp)
 }
 
 static void
-cue_add_tag(Tag &tag, enum tag_type type, char *p)
+cue_add_tag(Tag &tag, TagType type, char *p)
 {
 	const char *value = cue_next_value(&p);
 	if (value != nullptr)
@@ -124,7 +124,7 @@ cue_parse_rem(char *p, Tag &tag)
 	if (type == nullptr)
 		return;
 
-	enum tag_type type2 = tag_name_parse_i(type);
+	TagType type2 = tag_name_parse_i(type);
 	if (type2 != TAG_NUM_OF_ITEM_TYPES)
 		cue_add_tag(tag, type2, p);
 }
@@ -198,7 +198,7 @@ CueParser::Feed2(char *p)
 		   CD artist, while at track-level it specifies the
 		   track artist." */
 
-		enum tag_type type = state == TRACK
+		TagType type = state == TRACK
 			? TAG_ARTIST
 			: TAG_ALBUM_ARTIST;
 

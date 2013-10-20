@@ -61,7 +61,7 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 		? Song::NewFile(uri, parent)
 		: Song::NewRemote(uri);
 	char *line, *colon;
-	enum tag_type type;
+	TagType type;
 	const char *value;
 
 	TagBuilder tag;

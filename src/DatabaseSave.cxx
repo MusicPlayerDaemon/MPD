@@ -117,7 +117,7 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 			}
 		} else if (g_str_has_prefix(line, DB_TAG_PREFIX)) {
 			const char *name = line + sizeof(DB_TAG_PREFIX) - 1;
-			enum tag_type tag = tag_name_parse(name);
+			TagType tag = tag_name_parse(name);
 			if (tag == TAG_NUM_OF_ITEM_TYPES) {
 				error.Format(db_domain,
 					     "Unrecognized tag '%s', "

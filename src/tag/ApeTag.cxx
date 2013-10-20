@@ -34,10 +34,10 @@ const struct tag_table ape_tags[] = {
 	{ nullptr, TAG_NUM_OF_ITEM_TYPES }
 };
 
-static enum tag_type
+static TagType
 tag_ape_name_parse(const char *name)
 {
-	enum tag_type type = tag_table_lookup_i(ape_tags, name);
+	TagType type = tag_table_lookup_i(ape_tags, name);
 	if (type == TAG_NUM_OF_ITEM_TYPES)
 		type = tag_name_parse_i(name);
 
@@ -58,7 +58,7 @@ tag_ape_import_item(unsigned long flags,
 
 	tag_handler_invoke_pair(handler, handler_ctx, key, value);
 
-	enum tag_type type = tag_ape_name_parse(key);
+	TagType type = tag_ape_name_parse(key);
 	if (type == TAG_NUM_OF_ITEM_TYPES)
 		return false;
 

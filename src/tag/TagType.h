@@ -27,7 +27,7 @@
 /**
  * Codes for the type of a tag item.
  */
-enum tag_type
+enum TagType
 #ifdef __cplusplus
 /* the size of this enum is 1 byte; this is only relevant for C++
    code; the only C sources including this header don't use instances
@@ -59,7 +59,7 @@ enum tag_type
 };
 
 /**
- * An array of strings, which map the #tag_type to its machine
+ * An array of strings, which map the #TagType to its machine
  * readable name (specific to the MPD protocol).
  */
 extern const char *const tag_item_names[];

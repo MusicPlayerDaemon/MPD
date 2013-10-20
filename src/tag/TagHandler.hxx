@@ -42,7 +42,7 @@ struct tag_handler {
 	 * @param the value of the tag; the pointer will become
 	 * invalid after returning
 	 */
-	void (*tag)(enum tag_type type, const char *value, void *ctx);
+	void (*tag)(TagType type, const char *value, void *ctx);
 
 	/**
 	 * A name-value pair has been read.  It is the codec specific
@@ -63,7 +63,7 @@ tag_handler_invoke_duration(const struct tag_handler *handler, void *ctx,
 
 static inline void
 tag_handler_invoke_tag(const struct tag_handler *handler, void *ctx,
-		       enum tag_type type, const char *value)
+		       TagType type, const char *value)
 {
 	assert(handler != nullptr);
 	assert((unsigned)type < TAG_NUM_OF_ITEM_TYPES);

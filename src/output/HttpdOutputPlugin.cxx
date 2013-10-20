@@ -514,7 +514,7 @@ HttpdOutput::SendTag(const Tag *tag)
 		if (metadata != NULL)
 			metadata->Unref();
 
-		static constexpr tag_type types[] = {
+		static constexpr TagType types[] = {
 			TAG_ALBUM, TAG_ARTIST, TAG_TITLE,
 			TAG_NUM_OF_ITEM_TYPES
 		};

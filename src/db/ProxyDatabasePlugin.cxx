@@ -63,7 +63,7 @@ public:
 			   Error &error) const override;
 
 	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
-				     enum tag_type tag_type,
+				     TagType tag_type,
 				     VisitString visit_string,
 				     Error &error) const override;
 
@@ -78,7 +78,7 @@ protected:
 static constexpr Domain libmpdclient_domain("libmpdclient");
 
 static constexpr struct {
-	enum tag_type d;
+	TagType d;
 	enum mpd_tag_type s;
 } tag_table[] = {
 	{ TAG_ARTIST, MPD_TAG_ARTIST },
@@ -103,7 +103,7 @@ static constexpr struct {
 
 gcc_const
 static enum mpd_tag_type
-Convert(enum tag_type tag_type)
+Convert(TagType tag_type)
 {
 	for (auto i = &tag_table[0]; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (i->d == tag_type)
@@ -248,7 +248,7 @@ Visit(struct mpd_connection *connection,
 }
 
 static void
-Copy(TagBuilder &tag, enum tag_type d_tag,
+Copy(TagBuilder &tag, TagType d_tag,
      const struct mpd_song *song, enum mpd_tag_type s_tag)
 {
 
@@ -405,7 +405,7 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 
 bool
 ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
-			       enum tag_type tag_type,
+			       TagType tag_type,
 			       VisitString visit_string,
 			       Error &error) const
 {

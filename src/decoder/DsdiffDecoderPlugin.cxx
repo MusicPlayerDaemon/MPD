@@ -202,7 +202,7 @@ static void
 dsdiff_handle_native_tag(struct input_stream *is,
 			 const struct tag_handler *handler,
 			 void *handler_ctx, input_stream::offset_type tagoffset,
-			 enum tag_type type)
+			 TagType type)
 {
 	if (!dsdlib_skip_to(nullptr, is, tagoffset))
 		return;

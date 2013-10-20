@@ -32,7 +32,7 @@ add_tag_duration(unsigned seconds, void *ctx)
 }
 
 static void
-add_tag_tag(enum tag_type type, const char *value, void *ctx)
+add_tag_tag(TagType type, const char *value, void *ctx)
 {
 	TagBuilder &tag = *(TagBuilder *)ctx;
 

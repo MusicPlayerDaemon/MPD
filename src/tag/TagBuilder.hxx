@@ -116,7 +116,7 @@ public:
 	 * @param len the length of #value
 	 */
 	gcc_nonnull_all
-	void AddItem(tag_type type, const char *value, size_t length);
+	void AddItem(TagType type, const char *value, size_t length);
 
 	/**
 	 * Appends a new tag item.
@@ -125,11 +125,11 @@ public:
 	 * @param value the value of the tag item (null-terminated)
 	 */
 	gcc_nonnull_all
-	void AddItem(tag_type type, const char *value);
+	void AddItem(TagType type, const char *value);
 
 private:
 	gcc_nonnull_all
-	void AddItemInternal(tag_type type, const char *value, size_t length);
+	void AddItemInternal(TagType type, const char *value, size_t length);
 };
 
 #endif

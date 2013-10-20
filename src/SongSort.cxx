@@ -33,7 +33,7 @@ extern "C" {
 #include <stdlib.h>
 
 static const char *
-tag_get_value_checked(const Tag *tag, enum tag_type type)
+tag_get_value_checked(const Tag *tag, TagType type)
 {
 	return tag != nullptr
 		? tag->GetValue(type)
@@ -58,7 +58,7 @@ compare_utf8_string(const char *a, const char *b)
  */
 static int
 compare_string_tag_item(const Tag *a, const Tag *b,
-			enum tag_type type)
+			TagType type)
 {
 	return compare_utf8_string(tag_get_value_checked(a, type),
 				   tag_get_value_checked(b, type));
@@ -84,7 +84,7 @@ compare_number_string(const char *a, const char *b)
 }
 
 static int
-compare_tag_item(const Tag *a, const Tag *b, enum tag_type type)
+compare_tag_item(const Tag *a, const Tag *b, TagType type)
 {
 	return compare_number_string(tag_get_value_checked(a, type),
 				     tag_get_value_checked(b, type));

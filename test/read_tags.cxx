@@ -124,7 +124,7 @@ print_duration(unsigned seconds, gcc_unused void *ctx)
 }
 
 static void
-print_tag(enum tag_type type, const char *value, gcc_unused void *ctx)
+print_tag(TagType type, const char *value, gcc_unused void *ctx)
 {
 	g_print("[%s]=%s\n", tag_item_names[type], value);
 	empty = false;

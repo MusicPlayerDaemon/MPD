@@ -75,7 +75,7 @@ TagBuilder::Commit()
 }
 
 inline void
-TagBuilder::AddItemInternal(tag_type type, const char *value, size_t length)
+TagBuilder::AddItemInternal(TagType type, const char *value, size_t length)
 {
 	assert(value != nullptr);
 	assert(length > 0);
@@ -96,7 +96,7 @@ TagBuilder::AddItemInternal(tag_type type, const char *value, size_t length)
 }
 
 void
-TagBuilder::AddItem(tag_type type, const char *value, size_t length)
+TagBuilder::AddItem(TagType type, const char *value, size_t length)
 {
 	assert(value != nullptr);
 
@@ -107,7 +107,7 @@ TagBuilder::AddItem(tag_type type, const char *value, size_t length)
 }
 
 void
-TagBuilder::AddItem(tag_type type, const char *value)
+TagBuilder::AddItem(TagType type, const char *value)
 {
 	assert(value != nullptr);
 

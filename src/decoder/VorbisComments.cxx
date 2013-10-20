@@ -84,7 +84,7 @@ vorbis_comments_to_replay_gain(struct replay_gain_info *rgi, char **comments)
  */
 static bool
 vorbis_copy_comment(const char *comment,
-		    const char *name, enum tag_type tag_type,
+		    const char *name, TagType tag_type,
 		    const struct tag_handler *handler, void *handler_ctx)
 {
 	const char *value;
@@ -122,7 +122,7 @@ vorbis_scan_comment(const char *comment,
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (vorbis_copy_comment(comment,
-					tag_item_names[i], tag_type(i),
+					tag_item_names[i], TagType(i),
 					handler, handler_ctx))
 			return;
 }

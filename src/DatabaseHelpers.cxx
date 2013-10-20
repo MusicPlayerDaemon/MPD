@@ -37,7 +37,7 @@ struct StringLess {
 typedef std::set<const char *, StringLess> StringSet;
 
 static bool
-CollectTags(StringSet &set, enum tag_type tag_type, Song &song)
+CollectTags(StringSet &set, TagType tag_type, Song &song)
 {
 	Tag *tag = song.tag;
 	if (tag == nullptr)
@@ -59,7 +59,7 @@ CollectTags(StringSet &set, enum tag_type tag_type, Song &song)
 
 bool
 VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
-		enum tag_type tag_type,
+		TagType tag_type,
 		VisitString visit_string,
 		Error &error)
 {

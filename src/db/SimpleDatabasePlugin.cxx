@@ -263,7 +263,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 
 bool
 SimpleDatabase::VisitUniqueTags(const DatabaseSelection &selection,
-				enum tag_type tag_type,
+				TagType tag_type,
 				VisitString visit_string,
 				Error &error) const
 {

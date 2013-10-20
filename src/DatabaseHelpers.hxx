@@ -31,7 +31,7 @@ struct DatabaseStats;
 
 bool
 VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
-		enum tag_type tag_type,
+		TagType tag_type,
 		VisitString visit_string,
 		Error &error);
 

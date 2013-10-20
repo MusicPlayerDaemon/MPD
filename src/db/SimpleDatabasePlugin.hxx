@@ -77,7 +77,7 @@ public:
 			   Error &error) const override;
 
 	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
-				     enum tag_type tag_type,
+				     TagType tag_type,
 				     VisitString visit_string,
 				     Error &error) const override;
 

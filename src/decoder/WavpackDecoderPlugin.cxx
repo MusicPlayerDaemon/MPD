@@ -260,7 +260,7 @@ wavpack_replaygain(struct replay_gain_info *replay_gain_info,
 
 static void
 wavpack_scan_tag_item(WavpackContext *wpc, const char *name,
-		      enum tag_type type,
+		      TagType type,
 		      const struct tag_handler *handler, void *handler_ctx)
 {
 	char buffer[1024];
@@ -312,7 +312,7 @@ wavpack_scan_file(const char *fname,
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
 		const char *name = tag_item_names[i];
 		if (name != nullptr)
-			wavpack_scan_tag_item(wpc, name, (enum tag_type)i,
+			wavpack_scan_tag_item(wpc, name, (TagType)i,
 					      handler, handler_ctx);
 	}
 

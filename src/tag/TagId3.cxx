@@ -134,7 +134,7 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
  */
 static void
 tag_id3_import_text_frame(struct id3_tag *tag, const struct id3_frame *frame,
-			  enum tag_type type,
+			  TagType type,
 			  const struct tag_handler *handler, void *handler_ctx)
 {
 	id3_ucs4_t const *ucs4;
@@ -182,7 +182,7 @@ tag_id3_import_text_frame(struct id3_tag *tag, const struct id3_frame *frame,
  * 4.2).  This is a wrapper for tag_id3_import_text_frame().
  */
 static void
-tag_id3_import_text(struct id3_tag *tag, const char *id, enum tag_type type,
+tag_id3_import_text(struct id3_tag *tag, const char *id, TagType type,
 		    const struct tag_handler *handler, void *handler_ctx)
 {
 	const struct id3_frame *frame;
@@ -203,7 +203,7 @@ tag_id3_import_text(struct id3_tag *tag, const char *id, enum tag_type type,
  */
 static void
 tag_id3_import_comment_frame(struct id3_tag *tag,
-			     const struct id3_frame *frame, enum tag_type type,
+			     const struct id3_frame *frame, TagType type,
 			     const struct tag_handler *handler,
 			     void *handler_ctx)
 {
@@ -236,7 +236,7 @@ tag_id3_import_comment_frame(struct id3_tag *tag,
  * wrapper for tag_id3_import_comment_frame().
  */
 static void
-tag_id3_import_comment(struct id3_tag *tag, const char *id, enum tag_type type,
+tag_id3_import_comment(struct id3_tag *tag, const char *id, TagType type,
 		       const struct tag_handler *handler, void *handler_ctx)
 {
 	const struct id3_frame *frame;
@@ -247,10 +247,10 @@ tag_id3_import_comment(struct id3_tag *tag, const char *id, enum tag_type type,
 }
 
 /**
- * Parse a TXXX name, and convert it to a tag_type enum value.
+ * Parse a TXXX name, and convert it to a TagType enum value.
  * Returns TAG_NUM_OF_ITEM_TYPES if the TXXX name is not understood.
  */
-static enum tag_type
+static TagType
 tag_id3_parse_txxx_name(const char *name)
 {
 	static const struct tag_table txxx_tags[] = {
@@ -277,7 +277,7 @@ tag_id3_import_musicbrainz(struct id3_tag *id3_tag,
 	for (unsigned i = 0;; ++i) {
 		const struct id3_frame *frame;
 		id3_utf8_t *name, *value;
-		enum tag_type type;
+		TagType type;
 
 		frame = id3_tag_findframe(id3_tag, "TXXX", i);
 		if (frame == nullptr)

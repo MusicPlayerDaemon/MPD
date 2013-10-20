@@ -125,7 +125,7 @@ public:
 	 * Visit all unique tag values.
 	 */
 	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
-				     enum tag_type tag_type,
+				     TagType tag_type,
 				     VisitString visit_string,
 				     Error &error) const = 0;
 

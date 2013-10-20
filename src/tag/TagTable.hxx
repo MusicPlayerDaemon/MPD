@@ -26,7 +26,7 @@
 struct tag_table {
 	const char *name;
 
-	enum tag_type type;
+	TagType type;
 };
 
 /**
@@ -35,7 +35,7 @@ struct tag_table {
  * in the table.
  */
 gcc_pure
-tag_type
+TagType
 tag_table_lookup(const tag_table *table, const char *name);
 
 /**
@@ -44,7 +44,7 @@ tag_table_lookup(const tag_table *table, const char *name);
  * in the table.
  */
 gcc_pure
-tag_type
+TagType
 tag_table_lookup_i(const tag_table *table, const char *name);
 
 #endif

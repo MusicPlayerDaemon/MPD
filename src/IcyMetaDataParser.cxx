@@ -66,7 +66,7 @@ IcyMetaDataParser::Data(size_t length)
 }
 
 static void
-icy_add_item(Tag &tag, enum tag_type type, const char *value)
+icy_add_item(Tag &tag, TagType type, const char *value)
 {
 	size_t length = strlen(value);
 
