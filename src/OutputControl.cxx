@@ -36,11 +36,9 @@
 #include <assert.h>
 #include <stdlib.h>
 
-enum {
-	/** after a failure, wait this number of seconds before
-	    automatically reopening the device */
-	REOPEN_AFTER = 10,
-};
+/** after a failure, wait this number of seconds before
+    automatically reopening the device */
+static constexpr unsigned REOPEN_AFTER = 10;
 
 struct notify audio_output_client_notify;
 
