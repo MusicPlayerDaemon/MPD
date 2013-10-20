@@ -24,6 +24,7 @@
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"
 #include "system/FatalError.hxx"
+#include "util/ASCII.hxx"
 
 #include <glib.h>
 
@@ -40,7 +41,7 @@ TagLoadConfig()
 
 	std::fill_n(ignore_tag_items, TAG_NUM_OF_ITEM_TYPES, true);
 
-	if (0 == g_ascii_strcasecmp(value, "none"))
+	if (StringEqualsCaseASCII(value, "none"))
 		return;
 
 	bool quit = false;

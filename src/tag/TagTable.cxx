@@ -18,8 +18,7 @@
  */
 
 #include "TagTable.hxx"
-
-#include <glib.h>
+#include "util/ASCII.hxx"
 
 #include <string.h>
 
@@ -47,7 +46,7 @@ TagType
 tag_table_lookup_i(const struct tag_table *table, const char *name)
 {
 	for (; table->name != nullptr; ++table)
-		if (g_ascii_strcasecmp(name, table->name) == 0)
+		if (StringEqualsCaseASCII(name, table->name))
 			return table->type;
 
 	return TAG_NUM_OF_ITEM_TYPES;

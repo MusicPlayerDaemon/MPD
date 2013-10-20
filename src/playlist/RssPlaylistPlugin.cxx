@@ -24,6 +24,7 @@
 #include "InputStream.hxx"
 #include "Song.hxx"
 #include "tag/Tag.hxx"
+#include "util/ASCII.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -74,7 +75,7 @@ get_attribute(const gchar **attribute_names, const gchar **attribute_values,
 	      const gchar *name)
 {
 	for (unsigned i = 0; attribute_names[i] != NULL; ++i)
-		if (g_ascii_strcasecmp(attribute_names[i], name) == 0)
+		if (StringEqualsCaseASCII(attribute_names[i], name))
 			return attribute_values[i];
 
 	return NULL;
@@ -91,7 +92,7 @@ rss_start_element(gcc_unused GMarkupParseContext *context,
 
 	switch (parser->state) {
 	case RssParser::ROOT:
-		if (g_ascii_strcasecmp(element_name, "item") == 0) {
+		if (StringEqualsCaseASCII(element_name, "item")) {
 			parser->state = RssParser::ITEM;
 			parser->song = Song::NewRemote("rss:");
 			parser->tag = TAG_NUM_OF_ITEM_TYPES;
@@ -100,7 +101,7 @@ rss_start_element(gcc_unused GMarkupParseContext *context,
 		break;
 
 	case RssParser::ITEM:
-		if (g_ascii_strcasecmp(element_name, "enclosure") == 0) {
+		if (StringEqualsCaseASCII(element_name, "enclosure")) {
 			const gchar *href = get_attribute(attribute_names,
 							  attribute_values,
 							  "url");
@@ -120,9 +121,9 @@ rss_start_element(gcc_unused GMarkupParseContext *context,
 
 				parser->song = song;
 			}
-		} else if (g_ascii_strcasecmp(element_name, "title") == 0)
+		} else if (StringEqualsCaseASCII(element_name, "title"))
 			parser->tag = TAG_TITLE;
-		else if (g_ascii_strcasecmp(element_name, "itunes:author") == 0)
+		else if (StringEqualsCaseASCII(element_name, "itunes:author"))
 			parser->tag = TAG_ARTIST;
 
 		break;
@@ -141,7 +142,7 @@ rss_end_element(gcc_unused GMarkupParseContext *context,
 		break;
 
 	case RssParser::ITEM:
-		if (g_ascii_strcasecmp(element_name, "item") == 0) {
+		if (StringEqualsCaseASCII(element_name, "item")) {
 			if (strcmp(parser->song->uri, "rss:") != 0)
 				parser->songs.emplace_front(parser->song);
 			else

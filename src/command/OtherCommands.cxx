@@ -33,6 +33,7 @@
 #include "protocol/Result.hxx"
 #include "ls.hxx"
 #include "Volume.hxx"
+#include "util/ASCII.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -46,8 +47,6 @@
 #ifdef ENABLE_SQLITE
 #include "StickerDatabase.hxx"
 #endif
-
-#include <glib.h>
 
 #include <assert.h>
 #include <string.h>
@@ -298,7 +297,7 @@ handle_idle(Client &client,
 			continue;
 
 		for (j = 0; idle_names[j]; ++j) {
-			if (!g_ascii_strcasecmp(argv[i], idle_names[j])) {
+			if (StringEqualsCaseASCII(argv[i], idle_names[j])) {
 				flags |= (1 << j);
 			}
 		}

@@ -22,6 +22,7 @@
 #include "TagPool.hxx"
 #include "TagString.hxx"
 #include "TagSettings.h"
+#include "util/ASCII.hxx"
 
 #include <glib.h>
 #include <assert.h>
@@ -50,7 +51,7 @@ tag_name_parse_i(const char *name)
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
 		assert(tag_item_names[i] != nullptr);
 
-		if (g_ascii_strcasecmp(name, tag_item_names[i]) == 0)
+		if (StringEqualsCaseASCII(name, tag_item_names[i]))
 			return (TagType)i;
 	}
 

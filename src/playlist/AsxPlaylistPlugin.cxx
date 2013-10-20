@@ -24,6 +24,7 @@
 #include "InputStream.hxx"
 #include "Song.hxx"
 #include "tag/Tag.hxx"
+#include "util/ASCII.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -75,7 +76,7 @@ get_attribute(const gchar **attribute_names, const gchar **attribute_values,
 	      const gchar *name)
 {
 	for (unsigned i = 0; attribute_names[i] != NULL; ++i)
-		if (g_ascii_strcasecmp(attribute_names[i], name) == 0)
+		if (StringEqualsCaseASCII(attribute_names[i], name))
 			return attribute_values[i];
 
 	return NULL;
@@ -92,7 +93,7 @@ asx_start_element(gcc_unused GMarkupParseContext *context,
 
 	switch (parser->state) {
 	case AsxParser::ROOT:
-		if (g_ascii_strcasecmp(element_name, "entry") == 0) {
+		if (StringEqualsCaseASCII(element_name, "entry")) {
 			parser->state = AsxParser::ENTRY;
 			parser->song = Song::NewRemote("asx:");
 			parser->tag = TAG_NUM_OF_ITEM_TYPES;
@@ -101,7 +102,7 @@ asx_start_element(gcc_unused GMarkupParseContext *context,
 		break;
 
 	case AsxParser::ENTRY:
-		if (g_ascii_strcasecmp(element_name, "ref") == 0) {
+		if (StringEqualsCaseASCII(element_name, "ref")) {
 			const gchar *href = get_attribute(attribute_names,
 							  attribute_values,
 							  "href");
@@ -121,11 +122,11 @@ asx_start_element(gcc_unused GMarkupParseContext *context,
 
 				parser->song = song;
 			}
-		} else if (g_ascii_strcasecmp(element_name, "author") == 0)
+		} else if (StringEqualsCaseASCII(element_name, "author"))
 			/* is that correct?  or should it be COMPOSER
 			   or PERFORMER? */
 			parser->tag = TAG_ARTIST;
-		else if (g_ascii_strcasecmp(element_name, "title") == 0)
+		else if (StringEqualsCaseASCII(element_name, "title"))
 			parser->tag = TAG_TITLE;
 
 		break;
@@ -144,7 +145,7 @@ asx_end_element(gcc_unused GMarkupParseContext *context,
 		break;
 
 	case AsxParser::ENTRY:
-		if (g_ascii_strcasecmp(element_name, "entry") == 0) {
+		if (StringEqualsCaseASCII(element_name, "entry")) {
 			if (strcmp(parser->song->uri, "asx:") != 0)
 				parser->songs.emplace_front(parser->song);
 			else

@@ -20,8 +20,7 @@
 #include "config.h"
 #include "TagHandler.hxx"
 #include "TagBuilder.hxx"
-
-#include <glib.h>
+#include "util/ASCII.hxx"
 
 static void
 add_tag_duration(unsigned seconds, void *ctx)
@@ -50,7 +49,7 @@ full_tag_pair(const char *name, gcc_unused const char *value, void *ctx)
 {
 	TagBuilder &tag = *(TagBuilder *)ctx;
 
-	if (g_ascii_strcasecmp(name, "cuesheet") == 0)
+	if (StringEqualsCaseASCII(name, "cuesheet"))
 		tag.SetHasPlaylist(true);
 }
 

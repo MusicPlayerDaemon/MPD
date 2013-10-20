@@ -29,6 +29,7 @@
 #include "event/MultiSocketMonitor.hxx"
 #include "event/Call.hxx"
 #include "IOThread.hxx"
+#include "util/ASCII.hxx"
 #include "util/CharUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -840,11 +841,11 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	while (end > value && IsWhitespaceOrNull(end[-1]))
 		--end;
 
-	if (g_ascii_strcasecmp(name, "accept-ranges") == 0) {
+	if (StringEqualsCaseASCII(name, "accept-ranges")) {
 		/* a stream with icy-metadata is not seekable */
 		if (!c->icy.IsDefined())
 			c->base.seekable = true;
-	} else if (g_ascii_strcasecmp(name, "content-length") == 0) {
+	} else if (StringEqualsCaseASCII(name, "content-length")) {
 		char buffer[64];
 
 		if ((size_t)(end - header) >= sizeof(buffer))
@@ -854,18 +855,18 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 		buffer[end - value] = 0;
 
 		c->base.size = c->base.offset + g_ascii_strtoull(buffer, nullptr, 10);
-	} else if (g_ascii_strcasecmp(name, "content-type") == 0) {
+	} else if (StringEqualsCaseASCII(name, "content-type")) {
 		c->base.mime.assign(value, end);
-	} else if (g_ascii_strcasecmp(name, "icy-name") == 0 ||
-		   g_ascii_strcasecmp(name, "ice-name") == 0 ||
-		   g_ascii_strcasecmp(name, "x-audiocast-name") == 0) {
+	} else if (StringEqualsCaseASCII(name, "icy-name") ||
+		   StringEqualsCaseASCII(name, "ice-name") ||
+		   StringEqualsCaseASCII(name, "x-audiocast-name")) {
 		c->meta_name.assign(value, end);
 
 		delete c->tag;
 
 		c->tag = new Tag();
 		c->tag->AddItem(TAG_NAME, c->meta_name.c_str());
-	} else if (g_ascii_strcasecmp(name, "icy-metaint") == 0) {
+	} else if (StringEqualsCaseASCII(name, "icy-metaint")) {
 		char buffer[64];
 		size_t icy_metaint;
 

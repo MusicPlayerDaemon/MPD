@@ -19,8 +19,7 @@
 
 #include "StringUtil.hxx"
 #include "CharUtil.hxx"
-
-#include <glib.h>
+#include "ASCII.hxx"
 
 #include <assert.h>
 
@@ -40,7 +39,7 @@ string_array_contains(const char *const* haystack, const char *needle)
 	assert(needle != nullptr);
 
 	for (; *haystack != nullptr; ++haystack)
-		if (g_ascii_strcasecmp(*haystack, needle) == 0)
+		if (StringEqualsCaseASCII(*haystack, needle))
 			return true;
 
 	return false;

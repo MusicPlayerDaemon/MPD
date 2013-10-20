@@ -35,6 +35,7 @@
 #include "TagFile.hxx"
 #include "cue/CueParser.hxx"
 #include "fs/Traits.hxx"
+#include "util/ASCII.hxx"
 
 #include <glib.h>
 #include <assert.h>
@@ -81,7 +82,7 @@ embcue_tag_pair(const char *name, const char *value, void *ctx)
 	EmbeddedCuePlaylist *playlist = (EmbeddedCuePlaylist *)ctx;
 
 	if (playlist->cuesheet == NULL &&
-	    g_ascii_strcasecmp(name, "cuesheet") == 0)
+	    StringEqualsCaseASCII(name, "cuesheet"))
 		playlist->cuesheet = g_strdup(value);
 }
 

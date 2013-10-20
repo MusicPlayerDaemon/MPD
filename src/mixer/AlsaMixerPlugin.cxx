@@ -24,6 +24,7 @@
 #include "Main.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/Loop.hxx"
+#include "util/ASCII.hxx"
 #include "util/ReusableArray.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -31,7 +32,6 @@
 
 #include <algorithm>
 
-#include <glib.h>
 #include <alsa/asoundlib.h>
 
 #define VOLUME_MIXER_ALSA_DEFAULT		"default"
@@ -197,8 +197,8 @@ alsa_mixer_lookup_elem(snd_mixer_t *handle, const char *name, unsigned idx)
 	for (snd_mixer_elem_t *elem = snd_mixer_first_elem(handle);
 	     elem != NULL; elem = snd_mixer_elem_next(elem)) {
 		if (snd_mixer_elem_get_type(elem) == SND_MIXER_ELEM_SIMPLE &&
-		    g_ascii_strcasecmp(snd_mixer_selem_get_name(elem),
-				       name) == 0 &&
+		    StringEqualsCaseASCII(snd_mixer_selem_get_name(elem),
+					  name) &&
 		    snd_mixer_selem_get_index(elem) == idx)
 			return elem;
 	}

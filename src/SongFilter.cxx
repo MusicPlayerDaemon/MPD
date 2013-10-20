@@ -21,6 +21,7 @@
 #include "SongFilter.hxx"
 #include "Song.hxx"
 #include "tag/Tag.hxx"
+#include "util/ASCII.hxx"
 
 #include <glib.h>
 
@@ -35,11 +36,11 @@
 unsigned
 locate_parse_type(const char *str)
 {
-	if (0 == g_ascii_strcasecmp(str, LOCATE_TAG_FILE_KEY) ||
-	    0 == g_ascii_strcasecmp(str, LOCATE_TAG_FILE_KEY_OLD))
+	if (StringEqualsCaseASCII(str, LOCATE_TAG_FILE_KEY) ||
+	    StringEqualsCaseASCII(str, LOCATE_TAG_FILE_KEY_OLD))
 		return LOCATE_TAG_FILE_TYPE;
 
-	if (0 == g_ascii_strcasecmp(str, LOCATE_TAG_ANY_KEY))
+	if (StringEqualsCaseASCII(str, LOCATE_TAG_ANY_KEY))
 		return LOCATE_TAG_ANY_TYPE;
 
 	return tag_name_parse_i(str);

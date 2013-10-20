@@ -21,8 +21,7 @@
 #include "ApeReplayGain.hxx"
 #include "ApeLoader.hxx"
 #include "ReplayGainInfo.hxx"
-
-#include <glib.h>
+#include "util/ASCII.hxx"
 
 #include <string.h>
 #include <stdlib.h>
@@ -43,16 +42,16 @@ replay_gain_ape_callback(unsigned long flags, const char *key,
 	memcpy(value, _value, value_length);
 	value[value_length] = 0;
 
-	if (g_ascii_strcasecmp(key, "replaygain_track_gain") == 0) {
+	if (StringEqualsCaseASCII(key, "replaygain_track_gain")) {
 		info->tuples[REPLAY_GAIN_TRACK].gain = atof(value);
 		return true;
-	} else if (g_ascii_strcasecmp(key, "replaygain_album_gain") == 0) {
+	} else if (StringEqualsCaseASCII(key, "replaygain_album_gain")) {
 		info->tuples[REPLAY_GAIN_ALBUM].gain = atof(value);
 		return true;
-	} else if (g_ascii_strcasecmp(key, "replaygain_track_peak") == 0) {
+	} else if (StringEqualsCaseASCII(key, "replaygain_track_peak")) {
 		info->tuples[REPLAY_GAIN_TRACK].peak = atof(value);
 		return true;
-	} else if (g_ascii_strcasecmp(key, "replaygain_album_peak") == 0) {
+	} else if (StringEqualsCaseASCII(key, "replaygain_album_peak")) {
 		info->tuples[REPLAY_GAIN_ALBUM].peak = atof(value);
 		return true;
 	} else

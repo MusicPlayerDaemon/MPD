@@ -26,6 +26,7 @@
 #include "tag/TagRva2.hxx"
 #include "tag/TagHandler.hxx"
 #include "CheckAudioFormat.hxx"
+#include "util/ASCII.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -272,16 +273,16 @@ parse_id3_replay_gain_info(struct replay_gain_info *replay_gain_info,
 		    id3_ucs4_latin1duplicate(id3_field_getstring
 					     (&frame->fields[2]));
 
-		if (g_ascii_strcasecmp(key, "replaygain_track_gain") == 0) {
+		if (StringEqualsCaseASCII(key, "replaygain_track_gain")) {
 			replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = atof(value);
 			found = true;
-		} else if (g_ascii_strcasecmp(key, "replaygain_album_gain") == 0) {
+		} else if (StringEqualsCaseASCII(key, "replaygain_album_gain")) {
 			replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain = atof(value);
 			found = true;
-		} else if (g_ascii_strcasecmp(key, "replaygain_track_peak") == 0) {
+		} else if (StringEqualsCaseASCII(key, "replaygain_track_peak")) {
 			replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak = atof(value);
 			found = true;
-		} else if (g_ascii_strcasecmp(key, "replaygain_album_peak") == 0) {
+		} else if (StringEqualsCaseASCII(key, "replaygain_album_peak")) {
 			replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak = atof(value);
 			found = true;
 		}
@@ -321,10 +322,10 @@ parse_id3_mixramp(char **mixramp_start, char **mixramp_end,
 		    id3_ucs4_latin1duplicate(id3_field_getstring
 					     (&frame->fields[2]));
 
-		if (g_ascii_strcasecmp(key, "mixramp_start") == 0) {
+		if (StringEqualsCaseASCII(key, "mixramp_start")) {
 			*mixramp_start = g_strdup(value);
 			found = true;
-		} else if (g_ascii_strcasecmp(key, "mixramp_end") == 0) {
+		} else if (StringEqualsCaseASCII(key, "mixramp_end")) {
 			*mixramp_end = g_strdup(value);
 			found = true;
 		}
