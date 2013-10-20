@@ -44,9 +44,7 @@
 #define DIRECTORY_FS_CHARSET "fs_charset: "
 #define DB_TAG_PREFIX "tag: "
 
-enum {
-	DB_FORMAT = 1,
-};
+static constexpr unsigned DB_FORMAT = 1;
 
 void
 db_save_internal(FILE *fp, const Directory &music_root)
@@ -69,7 +67,7 @@ bool
 db_load_internal(TextFile &file, Directory &music_root, Error &error)
 {
 	char *line;
-	int format = 0;
+	unsigned format = 0;
 	bool found_charset = false, found_version = false;
 	bool success;
 	bool tags[TAG_NUM_OF_ITEM_TYPES];
