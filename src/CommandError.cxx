@@ -29,66 +29,66 @@
 #include <assert.h>
 #include <errno.h>
 
-enum command_return
+CommandResult
 print_playlist_result(Client &client, PlaylistResult result)
 {
 	switch (result) {
 	case PlaylistResult::SUCCESS:
-		return COMMAND_RETURN_OK;
+		return CommandResult::OK;
 
 	case PlaylistResult::ERRNO:
 		command_error(client, ACK_ERROR_SYSTEM, "%s",
 			      g_strerror(errno));
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	case PlaylistResult::DENIED:
 		command_error(client, ACK_ERROR_PERMISSION, "Access denied");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	case PlaylistResult::NO_SUCH_SONG:
 		command_error(client, ACK_ERROR_NO_EXIST, "No such song");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	case PlaylistResult::NO_SUCH_LIST:
 		command_error(client, ACK_ERROR_NO_EXIST, "No such playlist");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	case PlaylistResult::LIST_EXISTS:
 		command_error(client, ACK_ERROR_EXIST,
 			      "Playlist already exists");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	case PlaylistResult::BAD_NAME:
 		command_error(client, ACK_ERROR_ARG,
 			      "playlist name is invalid: "
 			      "playlist names may not contain slashes,"
 			      " newlines or carriage returns");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	case PlaylistResult::BAD_RANGE:
 		command_error(client, ACK_ERROR_ARG, "Bad song index");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	case PlaylistResult::NOT_PLAYING:
 		command_error(client, ACK_ERROR_PLAYER_SYNC, "Not playing");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	case PlaylistResult::TOO_LARGE:
 		command_error(client, ACK_ERROR_PLAYLIST_MAX,
 			      "playlist is at the max size");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	case PlaylistResult::DISABLED:
 		command_error(client, ACK_ERROR_UNKNOWN,
 			      "stored playlist support is disabled");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	assert(0);
-	return COMMAND_RETURN_ERROR;
+	return CommandResult::ERROR;
 }
 
-enum command_return
+CommandResult
 print_error(Client &client, const Error &error)
 {
 	assert(error.IsDefined());
@@ -101,24 +101,24 @@ print_error(Client &client, const Error &error)
 	} else if (error.IsDomain(ack_domain)) {
 		command_error(client, (ack)error.GetCode(),
 			      "%s", error.GetMessage());
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	} else if (error.IsDomain(db_domain)) {
 		switch ((enum db_error)error.GetCode()) {
 		case DB_DISABLED:
 			command_error(client, ACK_ERROR_NO_EXIST, "%s",
 				      error.GetMessage());
-			return COMMAND_RETURN_ERROR;
+			return CommandResult::ERROR;
 
 		case DB_NOT_FOUND:
 			command_error(client, ACK_ERROR_NO_EXIST, "Not found");
-			return COMMAND_RETURN_ERROR;
+			return CommandResult::ERROR;
 		}
 	} else if (error.IsDomain(errno_domain)) {
 		command_error(client, ACK_ERROR_SYSTEM, "%s",
 			      g_strerror(error.GetCode()));
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	command_error(client, ACK_ERROR_UNKNOWN, "error");
-	return COMMAND_RETURN_ERROR;
+	return CommandResult::ERROR;
 }

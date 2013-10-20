@@ -20,11 +20,11 @@
 #ifndef MPD_STICKER_COMMANDS_HXX
 #define MPD_STICKER_COMMANDS_HXX
 
-#include "command.h"
+#include "CommandResult.hxx"
 
 class Client;
 
-enum command_return
+CommandResult
 handle_sticker(Client &client, int argc, char *argv[]);
 
 #endif

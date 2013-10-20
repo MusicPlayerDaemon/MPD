@@ -51,7 +51,7 @@ sticker_song_find_print_cb(Song &song, const char *value,
 	sticker_print_value(data->client, data->name, value);
 }
 
-static enum command_return
+static CommandResult
 handle_sticker_song(Client &client, int argc, char *argv[])
 {
 	Error error;
@@ -70,12 +70,12 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 		if (value.empty()) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "no such sticker");
-			return COMMAND_RETURN_ERROR;
+			return CommandResult::ERROR;
 		}
 
 		sticker_print_value(client, argv[4], value.c_str());
 
-		return COMMAND_RETURN_OK;
+		return CommandResult::OK;
 	/* list song song_id */
 	} else if (argc == 4 && strcmp(argv[1], "list") == 0) {
 		Song *song = db->GetSong(argv[3], error);
@@ -89,7 +89,7 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 			sticker_free(sticker);
 		}
 
-		return COMMAND_RETURN_OK;
+		return CommandResult::OK;
 	/* set song song_id id key */
 	} else if (argc == 6 && strcmp(argv[1], "set") == 0) {
 		Song *song = db->GetSong(argv[3], error);
@@ -101,10 +101,10 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 		if (!ret) {
 			command_error(client, ACK_ERROR_SYSTEM,
 				      "failed to set sticker value");
-			return COMMAND_RETURN_ERROR;
+			return CommandResult::ERROR;
 		}
 
-		return COMMAND_RETURN_OK;
+		return CommandResult::OK;
 	/* delete song song_id [key] */
 	} else if ((argc == 4 || argc == 5) &&
 		   strcmp(argv[1], "delete") == 0) {
@@ -119,10 +119,10 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 		if (!ret) {
 			command_error(client, ACK_ERROR_SYSTEM,
 				      "no such sticker");
-			return COMMAND_RETURN_ERROR;
+			return CommandResult::ERROR;
 		}
 
-		return COMMAND_RETURN_OK;
+		return CommandResult::OK;
 	/* find song dir key */
 	} else if (argc == 5 && strcmp(argv[1], "find") == 0) {
 		/* "sticker find song a/directory name" */
@@ -138,7 +138,7 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 			db_unlock();
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "no such directory");
-			return COMMAND_RETURN_ERROR;
+			return CommandResult::ERROR;
 		}
 
 		success = sticker_song_find(*directory, data.name,
@@ -147,17 +147,17 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 		if (!success) {
 			command_error(client, ACK_ERROR_SYSTEM,
 				      "failed to set search sticker database");
-			return COMMAND_RETURN_ERROR;
+			return CommandResult::ERROR;
 		}
 
-		return COMMAND_RETURN_OK;
+		return CommandResult::OK;
 	} else {
 		command_error(client, ACK_ERROR_ARG, "bad request");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 }
 
-enum command_return
+CommandResult
 handle_sticker(Client &client, int argc, char *argv[])
 {
 	assert(argc >= 4);
@@ -165,7 +165,7 @@ handle_sticker(Client &client, int argc, char *argv[])
 	if (!sticker_enabled()) {
 		command_error(client, ACK_ERROR_UNKNOWN,
 			      "sticker database is disabled");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	if (strcmp(argv[2], "song") == 0)
@@ -173,6 +173,6 @@ handle_sticker(Client &client, int argc, char *argv[])
 	else {
 		command_error(client, ACK_ERROR_ARG,
 			      "unknown sticker domain");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 }

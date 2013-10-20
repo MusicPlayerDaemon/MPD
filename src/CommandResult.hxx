@@ -17,37 +17,45 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_COMMAND_H
-#define MPD_COMMAND_H
+#ifndef MPD_COMMAND_RESULT_HXX
+#define MPD_COMMAND_RESULT_HXX
 
-enum command_return {
+#ifdef WIN32
+#include <windows.h>
+/* damn you, windows.h! */
+#ifdef ERROR
+#undef ERROR
+#endif
+#endif
+
+enum class CommandResult {
 	/**
 	 * The command has succeeded, but the "OK" response was not
 	 * yet sent to the client.
 	 */
-	COMMAND_RETURN_OK,
+	OK,
 
 	/**
 	 * The connection is now in "idle" mode, and no response shall
 	 * be generated.
 	 */
-	COMMAND_RETURN_IDLE,
+	IDLE,
 
 	/**
 	 * There was an error.  The "ACK" response was sent to the
 	 * client.
 	 */
-	COMMAND_RETURN_ERROR,
+	ERROR,
 
 	/**
 	 * The connection to this client shall be closed.
 	 */
-	COMMAND_RETURN_CLOSE,
+	CLOSE,
 
 	/**
 	 * The MPD process shall be shut down.
 	 */
-	COMMAND_RETURN_KILL,
+	KILL,
 };
 
 #endif

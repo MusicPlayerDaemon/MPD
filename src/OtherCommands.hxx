@@ -20,50 +20,50 @@
 #ifndef MPD_OTHER_COMMANDS_HXX
 #define MPD_OTHER_COMMANDS_HXX
 
-#include "command.h"
+#include "CommandResult.hxx"
 
 class Client;
 
-enum command_return
+CommandResult
 handle_urlhandlers(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_decoders(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_tagtypes(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_kill(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_close(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_lsinfo(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_update(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_rescan(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_setvol(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_stats(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_ping(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_password(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_config(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_idle(Client &client, int argc, char *argv[]);
 
 #endif

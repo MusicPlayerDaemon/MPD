@@ -20,19 +20,19 @@
 #ifndef MPD_COMMAND_ERROR_HXX
 #define MPD_COMMAND_ERROR_HXX
 
-#include "command.h"
+#include "CommandResult.hxx"
 #include "PlaylistError.hxx"
 
 class Client;
 class Error;
 
-enum command_return
+CommandResult
 print_playlist_result(Client &client, PlaylistResult result);
 
 /**
  * Send the #Error to the client.
  */
-enum command_return
+CommandResult
 print_error(Client &client, const Error &error);
 
 #endif

@@ -34,7 +34,7 @@
 #include <assert.h>
 #include <string.h>
 
-enum command_return
+CommandResult
 handle_lsinfo2(Client &client, int argc, char *argv[])
 {
 	const char *uri;
@@ -51,67 +51,67 @@ handle_lsinfo2(Client &client, int argc, char *argv[])
 	if (!db_selection_print(client, selection, true, error))
 		return print_error(client, error);
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-static enum command_return
+static CommandResult
 handle_match(Client &client, int argc, char *argv[], bool fold_case)
 {
 	SongFilter filter;
 	if (!filter.Parse(argc - 1, argv + 1, fold_case)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	const DatabaseSelection selection("", true, &filter);
 
 	Error error;
 	return db_selection_print(client, selection, true, error)
-		? COMMAND_RETURN_OK
+		? CommandResult::OK
 		: print_error(client, error);
 }
 
-enum command_return
+CommandResult
 handle_find(Client &client, int argc, char *argv[])
 {
 	return handle_match(client, argc, argv, false);
 }
 
-enum command_return
+CommandResult
 handle_search(Client &client, int argc, char *argv[])
 {
 	return handle_match(client, argc, argv, true);
 }
 
-static enum command_return
+static CommandResult
 handle_match_add(Client &client, int argc, char *argv[], bool fold_case)
 {
 	SongFilter filter;
 	if (!filter.Parse(argc - 1, argv + 1, fold_case)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	const DatabaseSelection selection("", true, &filter);
 	Error error;
 	return AddFromDatabase(client.partition, selection, error)
-		? COMMAND_RETURN_OK
+		? CommandResult::OK
 		: print_error(client, error);
 }
 
-enum command_return
+CommandResult
 handle_findadd(Client &client, int argc, char *argv[])
 {
 	return handle_match_add(client, argc, argv, false);
 }
 
-enum command_return
+CommandResult
 handle_searchadd(Client &client, int argc, char *argv[])
 {
 	return handle_match_add(client, argc, argv, true);
 }
 
-enum command_return
+CommandResult
 handle_searchaddpl(Client &client, int argc, char *argv[])
 {
 	const char *playlist = argv[1];
@@ -119,31 +119,31 @@ handle_searchaddpl(Client &client, int argc, char *argv[])
 	SongFilter filter;
 	if (!filter.Parse(argc - 2, argv + 2, true)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	Error error;
 	return search_add_to_playlist("", playlist, &filter, error)
-		? COMMAND_RETURN_OK
+		? CommandResult::OK
 		: print_error(client, error);
 }
 
-enum command_return
+CommandResult
 handle_count(Client &client, int argc, char *argv[])
 {
 	SongFilter filter;
 	if (!filter.Parse(argc - 1, argv + 1, false)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	Error error;
 	return  searchStatsForSongsIn(client, "", &filter, error)
-		? COMMAND_RETURN_OK
+		? CommandResult::OK
 		: print_error(client, error);
 }
 
-enum command_return
+CommandResult
 handle_listall(Client &client, gcc_unused int argc, char *argv[])
 {
 	const char *directory = "";
@@ -153,24 +153,24 @@ handle_listall(Client &client, gcc_unused int argc, char *argv[])
 
 	Error error;
 	return printAllIn(client, directory, error)
-		? COMMAND_RETURN_OK
+		? CommandResult::OK
 		: print_error(client, error);
 }
 
-enum command_return
+CommandResult
 handle_list(Client &client, int argc, char *argv[])
 {
 	unsigned tagType = locate_parse_type(argv[1]);
 
 	if (tagType == TAG_NUM_OF_ITEM_TYPES) {
 		command_error(client, ACK_ERROR_ARG, "\"%s\" is not known", argv[1]);
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	if (tagType == LOCATE_TAG_ANY_TYPE) {
 		command_error(client, ACK_ERROR_ARG,
 			      "\"any\" is not a valid return tag type");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	/* for compatibility with < 0.12.0 */
@@ -180,7 +180,7 @@ handle_list(Client &client, int argc, char *argv[])
 			command_error(client, ACK_ERROR_ARG,
 				      "should be \"%s\" for 3 arguments",
 				      tag_item_names[TAG_ALBUM]);
-			return COMMAND_RETURN_ERROR;
+			return CommandResult::ERROR;
 		}
 
 		filter = new SongFilter((unsigned)TAG_ARTIST, argv[2]);
@@ -190,15 +190,15 @@ handle_list(Client &client, int argc, char *argv[])
 			delete filter;
 			command_error(client, ACK_ERROR_ARG,
 				      "not able to parse args");
-			return COMMAND_RETURN_ERROR;
+			return CommandResult::ERROR;
 		}
 	} else
 		filter = nullptr;
 
 	Error error;
-	enum command_return ret =
+	CommandResult ret =
 		listAllUniqueTags(client, tagType, filter, error)
-		? COMMAND_RETURN_OK
+		? CommandResult::OK
 		: print_error(client, error);
 
 	delete filter;
@@ -206,7 +206,7 @@ handle_list(Client &client, int argc, char *argv[])
 	return ret;
 }
 
-enum command_return
+CommandResult
 handle_listallinfo(Client &client, gcc_unused int argc, char *argv[])
 {
 	const char *directory = "";
@@ -216,6 +216,6 @@ handle_listallinfo(Client &client, gcc_unused int argc, char *argv[])
 
 	Error error;
 	return printInfoForAllIn(client, directory, error)
-		? COMMAND_RETURN_OK
+		? CommandResult::OK
 		: print_error(client, error);
 }

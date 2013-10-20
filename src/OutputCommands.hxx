@@ -20,20 +20,20 @@
 #ifndef MPD_OUTPUT_COMMANDS_HXX
 #define MPD_OUTPUT_COMMANDS_HXX
 
-#include "command.h"
+#include "CommandResult.hxx"
 
 class Client;
 
-enum command_return
+CommandResult
 handle_enableoutput(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_disableoutput(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_toggleoutput(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_devices(Client &client, int argc, char *argv[]);
 
 #endif

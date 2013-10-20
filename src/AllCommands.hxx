@@ -20,7 +20,7 @@
 #ifndef MPD_ALL_COMMANDS_HXX
 #define MPD_ALL_COMMANDS_HXX
 
-#include "command.h"
+#include "CommandResult.hxx"
 
 class Client;
 
@@ -28,7 +28,7 @@ void command_init(void);
 
 void command_finish(void);
 
-enum command_return
+CommandResult
 command_process(Client &client, unsigned num, char *line);
 
 #endif

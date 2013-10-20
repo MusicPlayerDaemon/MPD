@@ -40,19 +40,19 @@ Client::OnSocketInput(void *data, size_t length)
 
 	BufferedSocket::ConsumeInput(newline + 1 - p);
 
-	enum command_return result = client_process_line(*this, p);
+	CommandResult result = client_process_line(*this, p);
 	switch (result) {
-	case COMMAND_RETURN_OK:
-	case COMMAND_RETURN_IDLE:
-	case COMMAND_RETURN_ERROR:
+	case CommandResult::OK:
+	case CommandResult::IDLE:
+	case CommandResult::ERROR:
 		break;
 
-	case COMMAND_RETURN_KILL:
+	case CommandResult::KILL:
 		Close();
 		main_loop->Break();
 		return InputResult::CLOSED;
 
-	case COMMAND_RETURN_CLOSE:
+	case CommandResult::CLOSE:
 		Close();
 		return InputResult::CLOSED;
 	}

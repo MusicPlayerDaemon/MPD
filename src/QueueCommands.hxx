@@ -20,65 +20,65 @@
 #ifndef MPD_QUEUE_COMMANDS_HXX
 #define MPD_QUEUE_COMMANDS_HXX
 
-#include "command.h"
+#include "CommandResult.hxx"
 
 class Client;
 
-enum command_return
+CommandResult
 handle_add(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_addid(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_delete(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_deleteid(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_playlist(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_shuffle(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_clear(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_plchanges(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_plchangesposid(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_playlistinfo(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_playlistid(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_playlistfind(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_playlistsearch(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_prio(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_prioid(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_move(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_moveid(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_swap(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_swapid(Client &client, int argc, char *argv[]);
 
 #endif

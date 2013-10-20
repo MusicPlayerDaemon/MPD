@@ -20,23 +20,23 @@
 #ifndef MPD_MESSAGE_COMMANDS_HXX
 #define MPD_MESSAGE_COMMANDS_HXX
 
-#include "command.h"
+#include "CommandResult.hxx"
 
 class Client;
 
-enum command_return
+CommandResult
 handle_subscribe(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_unsubscribe(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_channels(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_read_messages(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_send_message(Client &client, int argc, char *argv[]);
 
 #endif

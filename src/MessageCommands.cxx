@@ -31,29 +31,29 @@
 
 #include <assert.h>
 
-enum command_return
+CommandResult
 handle_subscribe(Client &client, gcc_unused int argc, char *argv[])
 {
 	assert(argc == 2);
 
 	switch (client.Subscribe(argv[1])) {
 	case Client::SubscribeResult::OK:
-		return COMMAND_RETURN_OK;
+		return CommandResult::OK;
 
 	case Client::SubscribeResult::INVALID:
 		command_error(client, ACK_ERROR_ARG,
 			      "invalid channel name");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	case Client::SubscribeResult::ALREADY:
 		command_error(client, ACK_ERROR_EXIST,
 			      "already subscribed to this channel");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	case Client::SubscribeResult::FULL:
 		command_error(client, ACK_ERROR_EXIST,
 			      "subscription list is full");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	/* unreachable */
@@ -61,21 +61,21 @@ handle_subscribe(Client &client, gcc_unused int argc, char *argv[])
 	gcc_unreachable();
 }
 
-enum command_return
+CommandResult
 handle_unsubscribe(Client &client, gcc_unused int argc, char *argv[])
 {
 	assert(argc == 2);
 
 	if (client.Unsubscribe(argv[1]))
-		return COMMAND_RETURN_OK;
+		return CommandResult::OK;
 	else {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "not subscribed to this channel");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 }
 
-enum command_return
+CommandResult
 handle_channels(Client &client,
 		gcc_unused int argc, gcc_unused char *argv[])
 {
@@ -89,10 +89,10 @@ handle_channels(Client &client,
 	for (const auto &channel : channels)
 		client_printf(client, "channel: %s\n", channel.c_str());
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_read_messages(Client &client,
 		     gcc_unused int argc, gcc_unused char *argv[])
 {
@@ -106,10 +106,10 @@ handle_read_messages(Client &client,
 		client.messages.pop_front();
 	}
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_send_message(Client &client,
 		    gcc_unused int argc, gcc_unused char *argv[])
 {
@@ -118,7 +118,7 @@ handle_send_message(Client &client,
 	if (!client_message_valid_channel_name(argv[1])) {
 		command_error(client, ACK_ERROR_ARG,
 			      "invalid channel name");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	bool sent = false;
@@ -128,10 +128,10 @@ handle_send_message(Client &client,
 			sent = true;
 
 	if (sent)
-		return COMMAND_RETURN_OK;
+		return CommandResult::OK;
 	else {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "nobody is subscribed to this channel");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 }

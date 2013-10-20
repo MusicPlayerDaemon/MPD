@@ -26,65 +26,65 @@
 
 #include <string.h>
 
-enum command_return
+CommandResult
 handle_enableoutput(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned device;
 	bool ret;
 
 	if (!check_unsigned(client, &device, argv[1]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	ret = audio_output_enable_index(device);
 	if (!ret) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "No such audio output");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_disableoutput(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned device;
 	bool ret;
 
 	if (!check_unsigned(client, &device, argv[1]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	ret = audio_output_disable_index(device);
 	if (!ret) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "No such audio output");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_toggleoutput(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned device;
 	if (!check_unsigned(client, &device, argv[1]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	if (!audio_output_toggle_index(device)) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "No such audio output");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_devices(Client &client,
 	       gcc_unused int argc, gcc_unused char *argv[])
 {
 	printAudioDevices(client);
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }

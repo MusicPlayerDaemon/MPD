@@ -20,71 +20,71 @@
 #ifndef MPD_PLAYER_COMMANDS_HXX
 #define MPD_PLAYER_COMMANDS_HXX
 
-#include "command.h"
+#include "CommandResult.hxx"
 
 class Client;
 
-enum command_return
+CommandResult
 handle_play(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_playid(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_stop(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_currentsong(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_pause(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_status(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_next(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_previous(Client &client, int argc, char *avg[]);
 
-enum command_return
+CommandResult
 handle_repeat(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_single(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_consume(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_random(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_clearerror(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_seek(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_seekid(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_seekcur(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_crossfade(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_mixrampdb(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_mixrampdelay(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_replay_gain_mode(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_replay_gain_status(Client &client, int argc, char *argv[]);
 
 #endif

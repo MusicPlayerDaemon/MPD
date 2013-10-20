@@ -20,41 +20,41 @@
 #ifndef MPD_PLAYLIST_COMMANDS_HXX
 #define MPD_PLAYLIST_COMMANDS_HXX
 
-#include "command.h"
+#include "CommandResult.hxx"
 
 class Client;
 
-enum command_return
+CommandResult
 handle_save(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_load(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_listplaylist(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_listplaylistinfo(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_rm(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_rename(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_playlistdelete(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_playlistmove(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_playlistclear(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_playlistadd(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_listplaylists(Client &client, int argc, char *argv[]);
 
 #endif

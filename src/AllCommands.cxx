@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "AllCommands.hxx"
-#include "command.h"
 #include "QueueCommands.hxx"
 #include "PlayerCommands.hxx"
 #include "PlaylistCommands.hxx"
@@ -56,14 +55,14 @@ struct command {
 	unsigned permission;
 	int min;
 	int max;
-	enum command_return (*handler)(Client &client, int argc, char **argv);
+	CommandResult (*handler)(Client &client, int argc, char **argv);
 };
 
 /* don't be fooled, this is the command handler for "commands" command */
-static enum command_return
+static CommandResult
 handle_commands(Client &client, int argc, char *argv[]);
 
-static enum command_return
+static CommandResult
 handle_not_commands(Client &client, int argc, char *argv[]);
 
 /**
@@ -178,7 +177,7 @@ command_available(gcc_unused const struct command *cmd)
 }
 
 /* don't be fooled, this is the command handler for "commands" command */
-static enum command_return
+static CommandResult
 handle_commands(Client &client,
 		gcc_unused int argc, gcc_unused char *argv[])
 {
@@ -193,10 +192,10 @@ handle_commands(Client &client,
 			client_printf(client, "command: %s\n", cmd->cmd);
 	}
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-static enum command_return
+static CommandResult
 handle_not_commands(Client &client,
 		    gcc_unused int argc, gcc_unused char *argv[])
 {
@@ -210,7 +209,7 @@ handle_not_commands(Client &client,
 			client_printf(client, "command: %s\n", cmd->cmd);
 	}
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
 void command_init(void)
@@ -308,13 +307,13 @@ command_checked_lookup(Client &client, unsigned permission,
 	return cmd;
 }
 
-enum command_return
+CommandResult
 command_process(Client &client, unsigned num, char *line)
 {
 	Error error;
 	char *argv[COMMAND_ARGV_MAX] = { nullptr };
 	const struct command *cmd;
-	enum command_return ret = COMMAND_RETURN_ERROR;
+	CommandResult ret = CommandResult::ERROR;
 
 	command_list_num = num;
 
@@ -333,7 +332,7 @@ command_process(Client &client, unsigned num, char *line)
 
 		current_command = nullptr;
 
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	unsigned argc = 1;
@@ -353,13 +352,13 @@ command_process(Client &client, unsigned num, char *line)
 	if (argc >= COMMAND_ARGV_MAX) {
 		command_error(client, ACK_ERROR_ARG, "Too many arguments");
 		current_command = nullptr;
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	if (!tokenizer.IsEnd()) {
 		command_error(client, ACK_ERROR_ARG, "%s", error.GetMessage());
 		current_command = nullptr;
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	/* look up and invoke the command handler */

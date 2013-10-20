@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "Client.hxx"
-#include "command.h"
+#include "CommandResult.hxx"
 
 enum {
 	CLIENT_MAX_SUBSCRIPTIONS = 16,
@@ -35,7 +35,7 @@ extern int client_timeout;
 extern size_t client_max_command_list_size;
 extern size_t client_max_output_buffer_size;
 
-enum command_return
+CommandResult
 client_process_line(Client &client, char *line);
 
 #endif

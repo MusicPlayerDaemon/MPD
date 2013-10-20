@@ -29,11 +29,11 @@
 #define CLIENT_LIST_OK_MODE_BEGIN "command_list_ok_begin"
 #define CLIENT_LIST_MODE_END "command_list_end"
 
-static enum command_return
+static CommandResult
 client_process_command_list(Client &client, bool list_ok,
 			    std::list<std::string> &&list)
 {
-	enum command_return ret = COMMAND_RETURN_OK;
+	CommandResult ret = CommandResult::OK;
 	unsigned num = 0;
 
 	for (auto &&i : list) {
@@ -42,7 +42,7 @@ client_process_command_list(Client &client, bool list_ok,
 		FormatDebug(client_domain, "process command \"%s\"", cmd);
 		ret = command_process(client, num++, cmd);
 		FormatDebug(client_domain, "command returned %i", ret);
-		if (ret != COMMAND_RETURN_OK || client.IsExpired())
+		if (ret != CommandResult::OK || client.IsExpired())
 			break;
 		else if (list_ok)
 			client_puts(client, "list_OK\n");
@@ -51,10 +51,10 @@ client_process_command_list(Client &client, bool list_ok,
 	return ret;
 }
 
-enum command_return
+CommandResult
 client_process_line(Client &client, char *line)
 {
-	enum command_return ret;
+	CommandResult ret;
 
 	if (strcmp(line, "noidle") == 0) {
 		if (client.idle_waiting) {
@@ -67,14 +67,14 @@ client_process_line(Client &client, char *line)
 		   has already received the full idle response from
 		   client_idle_notify(), which he can now evaluate */
 
-		return COMMAND_RETURN_OK;
+		return CommandResult::OK;
 	} else if (client.idle_waiting) {
 		/* during idle mode, clients must not send anything
 		   except "noidle" */
 		FormatWarning(client_domain,
 			      "[%u] command \"%s\" during idle",
 			      client.num, line);
-		return COMMAND_RETURN_CLOSE;
+		return CommandResult::CLOSE;
 	}
 
 	if (client.cmd_list.IsActive()) {
@@ -92,11 +92,11 @@ client_process_line(Client &client, char *line)
 				    "[%u] process command "
 				    "list returned %i", client.num, ret);
 
-			if (ret == COMMAND_RETURN_CLOSE ||
+			if (ret == CommandResult::CLOSE ||
 			    client.IsExpired())
-				return COMMAND_RETURN_CLOSE;
+				return CommandResult::CLOSE;
 
-			if (ret == COMMAND_RETURN_OK)
+			if (ret == CommandResult::OK)
 				command_success(client);
 
 			client.cmd_list.Reset();
@@ -107,18 +107,18 @@ client_process_line(Client &client, char *line)
 					      "is larger than the max (%lu)",
 					      client.num,
 					      (unsigned long)client_max_command_list_size);
-				return COMMAND_RETURN_CLOSE;
+				return CommandResult::CLOSE;
 			}
 
-			ret = COMMAND_RETURN_OK;
+			ret = CommandResult::OK;
 		}
 	} else {
 		if (strcmp(line, CLIENT_LIST_MODE_BEGIN) == 0) {
 			client.cmd_list.Begin(false);
-			ret = COMMAND_RETURN_OK;
+			ret = CommandResult::OK;
 		} else if (strcmp(line, CLIENT_LIST_OK_MODE_BEGIN) == 0) {
 			client.cmd_list.Begin(true);
-			ret = COMMAND_RETURN_OK;
+			ret = CommandResult::OK;
 		} else {
 			FormatDebug(client_domain,
 				    "[%u] process command \"%s\"",
@@ -128,11 +128,11 @@ client_process_line(Client &client, char *line)
 				    "[%u] command returned %i",
 				    client.num, ret);
 
-			if (ret == COMMAND_RETURN_CLOSE ||
+			if (ret == CommandResult::CLOSE ||
 			    client.IsExpired())
-				return COMMAND_RETURN_CLOSE;
+				return CommandResult::CLOSE;
 
-			if (ret == COMMAND_RETURN_OK)
+			if (ret == CommandResult::OK)
 				command_success(client);
 		}
 	}

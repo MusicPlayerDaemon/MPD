@@ -54,7 +54,6 @@ src_mpd_LDADD = \
 
 mpd_headers = \
 	src/check.h \
-	src/command.h \
 	src/gerror.h \
 	src/TextInputStream.hxx \
 	src/AudioCompress/config.h \
@@ -79,6 +78,7 @@ src_mpd_SOURCES = \
 	src/protocol/Ack.cxx src/protocol/Ack.hxx \
 	src/protocol/ArgParser.cxx src/protocol/ArgParser.hxx \
 	src/protocol/Result.cxx src/protocol/Result.hxx \
+	src/CommandResult.hxx \
 	src/CommandError.cxx src/CommandError.hxx \
 	src/AllCommands.cxx src/AllCommands.hxx \
 	src/QueueCommands.cxx src/QueueCommands.hxx \

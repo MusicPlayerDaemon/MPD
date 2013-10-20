@@ -49,14 +49,14 @@ print_spl_list(Client &client, const PlaylistVector &list)
 	}
 }
 
-enum command_return
+CommandResult
 handle_save(Client &client, gcc_unused int argc, char *argv[])
 {
 	PlaylistResult result = spl_save_playlist(argv[1], client.playlist);
 	return print_playlist_result(client, result);
 }
 
-enum command_return
+CommandResult
 handle_load(Client &client, int argc, char *argv[])
 {
 	unsigned start_index, end_index;
@@ -65,7 +65,7 @@ handle_load(Client &client, int argc, char *argv[])
 		start_index = 0;
 		end_index = unsigned(-1);
 	} else if (!check_range(client, &start_index, &end_index, argv[2]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	const PlaylistResult result =
 		playlist_open_into_queue(argv[1],
@@ -79,7 +79,7 @@ handle_load(Client &client, int argc, char *argv[])
 	if (playlist_load_spl(client.playlist, client.player_control,
 			      argv[1], start_index, end_index,
 			      error))
-		return COMMAND_RETURN_OK;
+		return CommandResult::OK;
 
 	if (error.IsDomain(playlist_domain) &&
 	    PlaylistResult(error.GetCode()) == PlaylistResult::BAD_NAME) {
@@ -95,91 +95,91 @@ handle_load(Client &client, int argc, char *argv[])
 	return print_error(client, error);
 }
 
-enum command_return
+CommandResult
 handle_listplaylist(Client &client, gcc_unused int argc, char *argv[])
 {
 	if (playlist_file_print(client, argv[1], false))
-		return COMMAND_RETURN_OK;
+		return CommandResult::OK;
 
 	Error error;
 	return spl_print(client, argv[1], false, error)
-		? COMMAND_RETURN_OK
+		? CommandResult::OK
 		: print_error(client, error);
 }
 
-enum command_return
+CommandResult
 handle_listplaylistinfo(Client &client,
 			gcc_unused int argc, char *argv[])
 {
 	if (playlist_file_print(client, argv[1], true))
-		return COMMAND_RETURN_OK;
+		return CommandResult::OK;
 
 	Error error;
 	return spl_print(client, argv[1], true, error)
-		? COMMAND_RETURN_OK
+		? CommandResult::OK
 		: print_error(client, error);
 }
 
-enum command_return
+CommandResult
 handle_rm(Client &client, gcc_unused int argc, char *argv[])
 {
 	Error error;
 	return spl_delete(argv[1], error)
-		? COMMAND_RETURN_OK
+		? CommandResult::OK
 		: print_error(client, error);
 }
 
-enum command_return
+CommandResult
 handle_rename(Client &client, gcc_unused int argc, char *argv[])
 {
 	Error error;
 	return spl_rename(argv[1], argv[2], error)
-		? COMMAND_RETURN_OK
+		? CommandResult::OK
 		: print_error(client, error);
 }
 
-enum command_return
+CommandResult
 handle_playlistdelete(Client &client,
 		      gcc_unused int argc, char *argv[]) {
 	char *playlist = argv[1];
 	unsigned from;
 
 	if (!check_unsigned(client, &from, argv[2]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	Error error;
 	return spl_remove_index(playlist, from, error)
-		? COMMAND_RETURN_OK
+		? CommandResult::OK
 		: print_error(client, error);
 }
 
-enum command_return
+CommandResult
 handle_playlistmove(Client &client, gcc_unused int argc, char *argv[])
 {
 	char *playlist = argv[1];
 	unsigned from, to;
 
 	if (!check_unsigned(client, &from, argv[2]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	if (!check_unsigned(client, &to, argv[3]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	Error error;
 	return spl_move_index(playlist, from, to, error)
-		? COMMAND_RETURN_OK
+		? CommandResult::OK
 		: print_error(client, error);
 }
 
-enum command_return
+CommandResult
 handle_playlistclear(Client &client, gcc_unused int argc, char *argv[])
 {
 	Error error;
 	return spl_clear(argv[1], error)
-		? COMMAND_RETURN_OK
+		? CommandResult::OK
 		: print_error(client, error);
 }
 
-enum command_return
+CommandResult
 handle_playlistadd(Client &client, gcc_unused int argc, char *argv[])
 {
 	char *playlist = argv[1];
@@ -191,7 +191,7 @@ handle_playlistadd(Client &client, gcc_unused int argc, char *argv[])
 		if (!uri_supported_scheme(uri)) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "unsupported URI scheme");
-			return COMMAND_RETURN_ERROR;
+			return CommandResult::ERROR;
 		}
 
 		success = spl_append_uri(uri, playlist, error);
@@ -202,13 +202,13 @@ handle_playlistadd(Client &client, gcc_unused int argc, char *argv[])
 	if (!success && !error.IsDefined()) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "directory or file not found");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
-	return success ? COMMAND_RETURN_OK : print_error(client, error);
+	return success ? CommandResult::OK : print_error(client, error);
 }
 
-enum command_return
+CommandResult
 handle_listplaylists(Client &client,
 		     gcc_unused int argc, gcc_unused char *argv[])
 {
@@ -218,5 +218,5 @@ handle_listplaylists(Client &client,
 		return print_error(client, error);
 
 	print_spl_list(client, list);
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }

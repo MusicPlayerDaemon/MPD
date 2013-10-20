@@ -63,47 +63,47 @@ print_spl_list(Client &client, const PlaylistVector &list)
 	}
 }
 
-enum command_return
+CommandResult
 handle_urlhandlers(Client &client,
 		   gcc_unused int argc, gcc_unused char *argv[])
 {
 	if (client.IsLocal())
 		client_puts(client, "handler: file://\n");
 	print_supported_uri_schemes(client);
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_decoders(Client &client,
 		gcc_unused int argc, gcc_unused char *argv[])
 {
 	decoder_list_print(client);
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_tagtypes(Client &client,
 		gcc_unused int argc, gcc_unused char *argv[])
 {
 	tag_print_types(client);
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_kill(gcc_unused Client &client,
 	    gcc_unused int argc, gcc_unused char *argv[])
 {
-	return COMMAND_RETURN_KILL;
+	return CommandResult::KILL;
 }
 
-enum command_return
+CommandResult
 handle_close(gcc_unused Client &client,
 	     gcc_unused int argc, gcc_unused char *argv[])
 {
-	return COMMAND_RETURN_CLOSE;
+	return CommandResult::CLOSE;
 }
 
-enum command_return
+CommandResult
 handle_lsinfo(Client &client, int argc, char *argv[])
 {
 	const char *uri;
@@ -122,7 +122,7 @@ handle_lsinfo(Client &client, int argc, char *argv[])
 		if (path_fs.IsNull()) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "unsupported file name");
-			return COMMAND_RETURN_ERROR;
+			return CommandResult::ERROR;
 		}
 
 		Error error;
@@ -133,16 +133,16 @@ handle_lsinfo(Client &client, int argc, char *argv[])
 		if (song == NULL) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "No such file");
-			return COMMAND_RETURN_ERROR;
+			return CommandResult::ERROR;
 		}
 
 		song_print_info(client, *song);
 		song->Free();
-		return COMMAND_RETURN_OK;
+		return CommandResult::OK;
 	}
 
-	enum command_return result = handle_lsinfo2(client, argc, argv);
-	if (result != COMMAND_RETURN_OK)
+	CommandResult result = handle_lsinfo2(client, argc, argv);
+	if (result != CommandResult::OK)
 		return result;
 
 	if (isRootDirectory(uri)) {
@@ -151,10 +151,10 @@ handle_lsinfo(Client &client, int argc, char *argv[])
 		print_spl_list(client, list);
 	}
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_update(Client &client, gcc_unused int argc, char *argv[])
 {
 	const char *path = "";
@@ -170,22 +170,22 @@ handle_update(Client &client, gcc_unused int argc, char *argv[])
 		else if (!uri_safe_local(path)) {
 			command_error(client, ACK_ERROR_ARG,
 				      "Malformed path");
-			return COMMAND_RETURN_ERROR;
+			return CommandResult::ERROR;
 		}
 	}
 
 	ret = update_enqueue(path, false);
 	if (ret > 0) {
 		client_printf(client, "updating_db: %i\n", ret);
-		return COMMAND_RETURN_OK;
+		return CommandResult::OK;
 	} else {
 		command_error(client, ACK_ERROR_UPDATE_ALREADY,
 			      "already updating");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 }
 
-enum command_return
+CommandResult
 handle_rescan(Client &client, gcc_unused int argc, char *argv[])
 {
 	const char *path = "";
@@ -198,93 +198,93 @@ handle_rescan(Client &client, gcc_unused int argc, char *argv[])
 		if (!uri_safe_local(path)) {
 			command_error(client, ACK_ERROR_ARG,
 				      "Malformed path");
-			return COMMAND_RETURN_ERROR;
+			return CommandResult::ERROR;
 		}
 	}
 
 	ret = update_enqueue(path, true);
 	if (ret > 0) {
 		client_printf(client, "updating_db: %i\n", ret);
-		return COMMAND_RETURN_OK;
+		return CommandResult::OK;
 	} else {
 		command_error(client, ACK_ERROR_UPDATE_ALREADY,
 			      "already updating");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 }
 
-enum command_return
+CommandResult
 handle_setvol(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned level;
 	bool success;
 
 	if (!check_unsigned(client, &level, argv[1]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	if (level > 100) {
 		command_error(client, ACK_ERROR_ARG, "Invalid volume value");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	success = volume_level_change(level);
 	if (!success) {
 		command_error(client, ACK_ERROR_SYSTEM,
 			      "problems setting volume");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_stats(Client &client,
 	     gcc_unused int argc, gcc_unused char *argv[])
 {
 	stats_print(client);
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_ping(gcc_unused Client &client,
 	    gcc_unused int argc, gcc_unused char *argv[])
 {
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_password(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned permission = 0;
 
 	if (getPermissionFromPassword(argv[1], &permission) < 0) {
 		command_error(client, ACK_ERROR_PASSWORD, "incorrect password");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	client.SetPermission(permission);
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_config(Client &client,
 	      gcc_unused int argc, gcc_unused char *argv[])
 {
 	if (!client.IsLocal()) {
 		command_error(client, ACK_ERROR_PERMISSION,
 			      "Command only permitted to local clients");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	const char *path = mapper_get_music_directory_utf8();
 	if (path != NULL)
 		client_printf(client, "music_directory: %s\n", path);
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_idle(Client &client,
 	    gcc_unused int argc, gcc_unused char *argv[])
 {
@@ -311,5 +311,5 @@ handle_idle(Client &client,
 	/* enable "idle" mode on this client */
 	client.IdleWait(flags);
 
-	return COMMAND_RETURN_IDLE;
+	return CommandResult::IDLE;
 }

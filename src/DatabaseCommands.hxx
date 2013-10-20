@@ -20,38 +20,38 @@
 #ifndef MPD_DATABASE_COMMANDS_HXX
 #define MPD_DATABASE_COMMANDS_HXX
 
-#include "command.h"
+#include "CommandResult.hxx"
 
 class Client;
 
-enum command_return
+CommandResult
 handle_lsinfo2(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_find(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_findadd(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_search(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_searchadd(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_searchaddpl(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_count(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_listall(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_list(Client &client, int argc, char *argv[]);
 
-enum command_return
+CommandResult
 handle_listallinfo(Client &client, int argc, char *argv[]);
 
 #endif

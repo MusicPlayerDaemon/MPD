@@ -52,62 +52,62 @@
 #define COMMAND_STATUS_AUDIO		"audio"
 #define COMMAND_STATUS_UPDATING_DB	"updating_db"
 
-enum command_return
+CommandResult
 handle_play(Client &client, int argc, char *argv[])
 {
 	int song = -1;
 
 	if (argc == 2 && !check_int(client, &song, argv[1]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	PlaylistResult result = client.partition.PlayPosition(song);
 	return print_playlist_result(client, result);
 }
 
-enum command_return
+CommandResult
 handle_playid(Client &client, int argc, char *argv[])
 {
 	int id = -1;
 
 	if (argc == 2 && !check_int(client, &id, argv[1]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	PlaylistResult result = client.partition.PlayId(id);
 	return print_playlist_result(client, result);
 }
 
-enum command_return
+CommandResult
 handle_stop(Client &client,
 	    gcc_unused int argc, gcc_unused char *argv[])
 {
 	client.partition.Stop();
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_currentsong(Client &client,
 		   gcc_unused int argc, gcc_unused char *argv[])
 {
 	playlist_print_current(client, client.playlist);
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_pause(Client &client,
 	     int argc, char *argv[])
 {
 	if (argc == 2) {
 		bool pause_flag;
 		if (!check_bool(client, &pause_flag, argv[1]))
-			return COMMAND_RETURN_ERROR;
+			return CommandResult::ERROR;
 
 		client.player_control.SetPause(pause_flag);
 	} else
 		client.player_control.Pause();
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_status(Client &client,
 	      gcc_unused int argc, gcc_unused char *argv[])
 {
@@ -202,10 +202,10 @@ handle_status(Client &client,
 			      song, playlist.PositionToId(song));
 	}
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_next(Client &client,
 	    gcc_unused int argc, gcc_unused char *argv[])
 {
@@ -219,170 +219,170 @@ handle_next(Client &client,
 	client.partition.PlayNext();
 
 	playlist.queue.single = single;
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_previous(Client &client,
 		gcc_unused int argc, gcc_unused char *argv[])
 {
 	client.partition.PlayPrevious();
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_repeat(Client &client, gcc_unused int argc, char *argv[])
 {
 	bool status;
 	if (!check_bool(client, &status, argv[1]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	client.partition.SetRepeat(status);
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_single(Client &client, gcc_unused int argc, char *argv[])
 {
 	bool status;
 	if (!check_bool(client, &status, argv[1]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	client.partition.SetSingle(status);
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_consume(Client &client, gcc_unused int argc, char *argv[])
 {
 	bool status;
 	if (!check_bool(client, &status, argv[1]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	client.partition.SetConsume(status);
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_random(Client &client, gcc_unused int argc, char *argv[])
 {
 	bool status;
 	if (!check_bool(client, &status, argv[1]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	client.partition.SetRandom(status);
 	audio_output_all_set_replay_gain_mode(replay_gain_get_real_mode(client.partition.GetRandom()));
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_clearerror(gcc_unused Client &client,
 		  gcc_unused int argc, gcc_unused char *argv[])
 {
 	client.player_control.ClearError();
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_seek(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned song, seek_time;
 
 	if (!check_unsigned(client, &song, argv[1]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	if (!check_unsigned(client, &seek_time, argv[2]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	PlaylistResult result =
 		client.partition.SeekSongPosition(song, seek_time);
 	return print_playlist_result(client, result);
 }
 
-enum command_return
+CommandResult
 handle_seekid(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned id, seek_time;
 
 	if (!check_unsigned(client, &id, argv[1]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	if (!check_unsigned(client, &seek_time, argv[2]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	PlaylistResult result =
 		client.partition.SeekSongId(id, seek_time);
 	return print_playlist_result(client, result);
 }
 
-enum command_return
+CommandResult
 handle_seekcur(Client &client, gcc_unused int argc, char *argv[])
 {
 	const char *p = argv[1];
 	bool relative = *p == '+' || *p == '-';
 	int seek_time;
 	if (!check_int(client, &seek_time, p))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 
 	PlaylistResult result =
 		client.partition.SeekCurrent(seek_time, relative);
 	return print_playlist_result(client, result);
 }
 
-enum command_return
+CommandResult
 handle_crossfade(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned xfade_time;
 
 	if (!check_unsigned(client, &xfade_time, argv[1]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	client.player_control.SetCrossFade(xfade_time);
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_mixrampdb(Client &client, gcc_unused int argc, char *argv[])
 {
 	float db;
 
 	if (!check_float(client, &db, argv[1]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	client.player_control.SetMixRampDb(db);
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_mixrampdelay(Client &client, gcc_unused int argc, char *argv[])
 {
 	float delay_secs;
 
 	if (!check_float(client, &delay_secs, argv[1]))
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	client.player_control.SetMixRampDelay(delay_secs);
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_replay_gain_mode(Client &client,
 			gcc_unused int argc, char *argv[])
 {
 	if (!replay_gain_set_mode_string(argv[1])) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Unrecognized replay gain mode");
-		return COMMAND_RETURN_ERROR;
+		return CommandResult::ERROR;
 	}
 
 	audio_output_all_set_replay_gain_mode(replay_gain_get_real_mode(client.playlist.queue.random));
 
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
 
-enum command_return
+CommandResult
 handle_replay_gain_status(Client &client,
 			  gcc_unused int argc, gcc_unused char *argv[])
 {
 	client_printf(client, "replay_gain_mode: %s\n",
 		      replay_gain_get_mode_string());
-	return COMMAND_RETURN_OK;
+	return CommandResult::OK;
 }
