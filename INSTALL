@@ -11,7 +11,7 @@ Dependencies
 ------------
 
 gcc - http://gcc.gnu.org/
-Any other C99 compliant compiler should also work.
+Any other C++11 compliant compiler should also work.
 
 GLib 2.28 - http://www.gtk.org/
 General-purpose utility library.

@@ -32,23 +32,16 @@
 
       <listitem>
         <para>
-          don't write CPP when you can write C: use inline functions
-          and enums instead of macros
+          don't write CPP when you can write C++: use inline
+          functions and constexpr instead of macros
         </para>
       </listitem>
 
       <listitem>
         <para>
-          the code should be C99 compliant, and must compile with
-          <application>GCC</application>;
-          <application>clang</application> support is highly desirable
-        </para>
-      </listitem>
-
-      <listitem>
-        <para>
-          C++ is ok (for integrating C++ only libraries), but it
-          should be avoided
+          the code should be C++11 compliant, and must compile with
+          <application>GCC</application> 4.6 and
+          <application>clang</application> 3.2
         </para>
       </listitem>
 
