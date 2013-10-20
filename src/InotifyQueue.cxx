@@ -26,14 +26,12 @@
 
 #include <string.h>
 
-enum {
-	/**
-	 * Wait this long after the last change before calling
-	 * update_enqueue().  This increases the probability that
-	 * updates can be bundled.
-	 */
-	INOTIFY_UPDATE_DELAY_S = 5,
-};
+/**
+ * Wait this long after the last change before calling
+ * update_enqueue().  This increases the probability that updates can
+ * be bundled.
+ */
+static constexpr unsigned INOTIFY_UPDATE_DELAY_S = 5;
 
 void
 InotifyQueue::OnTimeout()

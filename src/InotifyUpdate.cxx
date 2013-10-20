@@ -39,13 +39,12 @@
 #include <string.h>
 #include <dirent.h>
 
-enum {
-	IN_MASK = IN_ATTRIB|IN_CLOSE_WRITE|IN_CREATE|IN_DELETE|IN_DELETE_SELF
-	|IN_MOVE|IN_MOVE_SELF
+static constexpr unsigned IN_MASK =
 #ifdef IN_ONLYDIR
-	|IN_ONLYDIR
+	IN_ONLYDIR|
 #endif
-};
+	IN_ATTRIB|IN_CLOSE_WRITE|IN_CREATE|IN_DELETE|IN_DELETE_SELF
+	|IN_MOVE|IN_MOVE_SELF;
 
 struct WatchDirectory {
 	WatchDirectory *parent;
