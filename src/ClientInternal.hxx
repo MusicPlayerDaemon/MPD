@@ -24,10 +24,8 @@
 #include "Client.hxx"
 #include "command/CommandResult.hxx"
 
-enum {
-	CLIENT_MAX_SUBSCRIPTIONS = 16,
-	CLIENT_MAX_MESSAGES = 64,
-};
+static constexpr unsigned CLIENT_MAX_SUBSCRIPTIONS = 16;
+static constexpr unsigned CLIENT_MAX_MESSAGES = 64;
 
 extern const class Domain client_domain;
 
