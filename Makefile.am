@@ -617,7 +617,8 @@ DECODER_LIBS += libmodplug_decoder_plugin.a $(MODPLUG_LIBS)
 endif
 
 if ENABLE_SIDPLAY
-libdecoder_plugins_a_SOURCES += src/decoder/sidplay_decoder_plugin.cxx
+libdecoder_plugins_a_SOURCES += \
+	src/decoder/SidplayDecoderPlugin.cxx
 endif
 
 if ENABLE_FLUIDSYNTH
