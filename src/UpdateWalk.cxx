@@ -57,10 +57,8 @@ bool modified;
 
 #ifndef WIN32
 
-enum {
-	DEFAULT_FOLLOW_INSIDE_SYMLINKS = true,
-	DEFAULT_FOLLOW_OUTSIDE_SYMLINKS = true,
-};
+static constexpr bool DEFAULT_FOLLOW_INSIDE_SYMLINKS = true;
+static constexpr bool DEFAULT_FOLLOW_OUTSIDE_SYMLINKS = true;
 
 static bool follow_inside_symlinks;
 static bool follow_outside_symlinks;
