@@ -94,10 +94,8 @@
 #include <ws2tcpip.h>
 #endif
 
-enum {
-	DEFAULT_BUFFER_SIZE = 2048,
-	DEFAULT_BUFFER_BEFORE_PLAY = 10,
-};
+static constexpr unsigned DEFAULT_BUFFER_SIZE = 2048;
+static constexpr unsigned DEFAULT_BUFFER_BEFORE_PLAY = 10;
 
 static constexpr Domain main_domain("main");
 
