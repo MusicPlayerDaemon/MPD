@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "SidplayDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "tag/TagHandler.hxx"
 #include "util/Domain.hxx"

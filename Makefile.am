@@ -618,7 +618,8 @@ endif
 
 if ENABLE_SIDPLAY
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/SidplayDecoderPlugin.cxx
+	src/decoder/SidplayDecoderPlugin.cxx \
+	src/decoder/SidplayDecoderPlugin.hxx
 endif
 
 if ENABLE_FLUIDSYNTH

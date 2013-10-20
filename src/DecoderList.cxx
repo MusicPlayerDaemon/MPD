@@ -42,12 +42,11 @@
 #include "decoder/ModplugDecoderPlugin.hxx"
 #include "decoder/MpcdecDecoderPlugin.hxx"
 #include "decoder/FluidsynthDecoderPlugin.hxx"
+#include "decoder/SidplayDecoderPlugin.hxx"
 #include "system/FatalError.hxx"
 #include "util/Macros.hxx"
 
 #include <string.h>
-
-extern const struct decoder_plugin sidplay_decoder_plugin;
 
 const struct decoder_plugin *const decoder_plugins[] = {
 #ifdef HAVE_MAD
