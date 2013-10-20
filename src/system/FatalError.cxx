@@ -68,12 +68,6 @@ FatalError(const char *msg, const Error &error)
 }
 
 void
-FatalError(GError *error)
-{
-	FatalError(error->message);
-}
-
-void
 FatalError(const char *msg, GError *error)
 {
 	FormatFatalError("%s: %s", msg, error->message);

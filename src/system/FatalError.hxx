@@ -47,10 +47,6 @@ FatalError(const char *msg, const Error &error);
 
 gcc_noreturn
 void
-FatalError(GError *error);
-
-gcc_noreturn
-void
 FatalError(const char *msg, GError *error);
 
 /**
