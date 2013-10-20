@@ -78,16 +78,17 @@ src_mpd_SOURCES = \
 	src/protocol/Ack.cxx src/protocol/Ack.hxx \
 	src/protocol/ArgParser.cxx src/protocol/ArgParser.hxx \
 	src/protocol/Result.cxx src/protocol/Result.hxx \
-	src/CommandResult.hxx \
-	src/CommandError.cxx src/CommandError.hxx \
-	src/AllCommands.cxx src/AllCommands.hxx \
-	src/QueueCommands.cxx src/QueueCommands.hxx \
-	src/PlayerCommands.cxx src/PlayerCommands.hxx \
-	src/PlaylistCommands.cxx src/PlaylistCommands.hxx \
-	src/DatabaseCommands.cxx src/DatabaseCommands.hxx \
-	src/OutputCommands.cxx src/OutputCommands.hxx \
-	src/MessageCommands.cxx src/MessageCommands.hxx \
-	src/OtherCommands.cxx src/OtherCommands.hxx \
+	src/command/CommandResult.hxx \
+	src/command/CommandError.cxx src/command/CommandError.hxx \
+	src/command/AllCommands.cxx src/command/AllCommands.hxx \
+	src/command/QueueCommands.cxx src/command/QueueCommands.hxx \
+	src/command/PlayerCommands.cxx src/command/PlayerCommands.hxx \
+	src/command/PlaylistCommands.cxx src/command/PlaylistCommands.hxx \
+	src/command/DatabaseCommands.cxx src/command/DatabaseCommands.hxx \
+	src/command/OutputCommands.cxx src/command/OutputCommands.hxx \
+	src/command/MessageCommands.cxx src/command/MessageCommands.hxx \
+	src/command/OtherCommands.cxx src/command/OtherCommands.hxx \
+	src/command/CommandListBuilder.cxx src/command/CommandListBuilder.hxx \
 	src/Idle.cxx src/Idle.hxx \
 	src/CommandLine.cxx src/CommandLine.hxx \
 	src/CrossFade.cxx src/CrossFade.hxx \
@@ -128,7 +129,6 @@ src_mpd_SOURCES = \
 	src/UpdateContainer.cxx src/UpdateContainer.hxx \
 	src/UpdateInternal.hxx \
 	src/UpdateRemove.cxx src/UpdateRemove.hxx \
-	src/CommandListBuilder.cxx src/CommandListBuilder.hxx \
 	src/Client.cxx src/Client.hxx \
 	src/ClientInternal.hxx \
 	src/ClientEvent.cxx \
@@ -232,7 +232,7 @@ endif
 
 if ENABLE_SQLITE
 src_mpd_SOURCES += \
-	src/StickerCommands.cxx src/StickerCommands.hxx \
+	src/command/StickerCommands.cxx src/command/StickerCommands.hxx \
 	src/StickerDatabase.cxx src/StickerDatabase.hxx \
 	src/StickerPrint.cxx src/StickerPrint.hxx \
 	src/SongSticker.cxx src/SongSticker.hxx

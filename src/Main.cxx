@@ -34,7 +34,7 @@
 #include "Listen.hxx"
 #include "Client.hxx"
 #include "ClientList.hxx"
-#include "AllCommands.hxx"
+#include "command/AllCommands.hxx"
 #include "Partition.hxx"
 #include "Volume.hxx"
 #include "OutputAll.hxx"

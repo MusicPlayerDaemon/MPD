@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "Client.hxx"
-#include "CommandResult.hxx"
+#include "command/CommandResult.hxx"
 
 enum {
 	CLIENT_MAX_SUBSCRIPTIONS = 16,

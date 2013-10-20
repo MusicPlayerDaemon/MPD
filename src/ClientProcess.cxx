@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ClientInternal.hxx"
 #include "protocol/Result.hxx"
-#include "AllCommands.hxx"
+#include "command/AllCommands.hxx"
 #include "Log.hxx"
 
 #include <string.h>

@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "ClientMessage.hxx"
-#include "CommandListBuilder.hxx"
+#include "command/CommandListBuilder.hxx"
 #include "event/FullyBufferedSocket.hxx"
 #include "event/TimeoutMonitor.hxx"
 #include "Compiler.h"
