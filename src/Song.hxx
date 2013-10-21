@@ -126,6 +126,8 @@ struct Song {
 		return parent == &detached_root;
 	}
 
+	void ReplaceTag(Tag &&tag);
+
 	bool UpdateFile();
 	bool UpdateFileInArchive();
 

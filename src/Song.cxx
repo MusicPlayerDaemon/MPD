@@ -109,6 +109,14 @@ Song::Free()
 	g_free(this);
 }
 
+void
+Song::ReplaceTag(Tag &&_tag)
+{
+	if (tag == nullptr)
+		tag = new Tag();
+	*tag = std::move(_tag);
+}
+
 gcc_pure
 static inline bool
 directory_equals(const Directory &a, const Directory &b)
