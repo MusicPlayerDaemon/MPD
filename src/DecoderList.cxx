@@ -180,11 +180,9 @@ decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
 const struct DecoderPlugin *
 decoder_plugin_from_name(const char *name)
 {
-	decoder_plugins_find([=](const DecoderPlugin &plugin){
+	return decoder_plugins_find([=](const DecoderPlugin &plugin){
 			return strcmp(plugin.name, name) == 0;
 		});
-
-	return nullptr;
 }
 
 /**
