@@ -19,11 +19,16 @@
 
 #include "config.h"
 #include "Partition.hxx"
+#include "Song.hxx"
 
 void
 Partition::TagModified()
 {
-	playlist.TagChanged();
+	Song *song = pc.LockReadTaggedSong();
+	if (song != nullptr) {
+		playlist.TagModified(std::move(*song));
+		song->Free();
+	}
 }
 
 void

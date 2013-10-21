@@ -128,7 +128,12 @@ protected:
 public:
 	void Clear(player_control &pc);
 
-	void TagChanged();
+	/**
+	 * A tag in the play queue has been modified by the player
+	 * thread.  Apply the given song's tag to the current song if
+	 * the song matches.
+	 */
+	void TagModified(Song &&song);
 
 	void FullIncrementVersions();
 

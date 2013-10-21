@@ -167,8 +167,8 @@ struct Partition {
 	}
 
 	/**
-	 * A tag in the play queue has been modified.  Propagate the
-	 * change to all subsystems.
+	 * A tag in the play queue has been modified by the player
+	 * thread.  Propagate the change to all subsystems.
 	 */
 	void TagModified();
 

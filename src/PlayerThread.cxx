@@ -335,6 +335,8 @@ Player::WaitForDecoder()
 		return false;
 	}
 
+	pc.ClearTaggedSong();
+
 	if (song != nullptr)
 		song->Free();
 
@@ -684,7 +686,7 @@ Player::ProcessCommand()
 }
 
 static void
-update_song_tag(Song *song, const Tag &new_tag)
+update_song_tag(player_control &pc, Song *song, const Tag &new_tag)
 {
 	if (song->IsFile())
 		/* don't update tags of local files, only remote
@@ -695,6 +697,8 @@ update_song_tag(Song *song, const Tag &new_tag)
 	song->tag = new Tag(new_tag);
 
 	delete old_tag;
+
+	pc.LockSetTaggedSong(*song);
 
 	/* the main thread will update the playlist version when he
 	   receives this event */
@@ -722,7 +726,7 @@ play_chunk(player_control &pc,
 	assert(chunk->CheckFormat(format));
 
 	if (chunk->tag != nullptr)
-		update_song_tag(song, *chunk->tag);
+		update_song_tag(pc, song, *chunk->tag);
 
 	if (chunk->IsEmpty()) {
 		buffer.Return(chunk);
@@ -1076,6 +1080,8 @@ Player::Run()
 		song->Free();
 
 	pc.Lock();
+
+	pc.ClearTaggedSong();
 
 	if (queued) {
 		assert(pc.next_song != nullptr);

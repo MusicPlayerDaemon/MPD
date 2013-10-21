@@ -22,6 +22,7 @@
 #include "PlaylistError.hxx"
 #include "PlayerControl.hxx"
 #include "Song.hxx"
+#include "tag/Tag.hxx"
 #include "Idle.hxx"
 #include "Log.hxx"
 
@@ -35,12 +36,16 @@ playlist::FullIncrementVersions()
 }
 
 void
-playlist::TagChanged()
+playlist::TagModified(Song &&song)
 {
-	if (!playing)
+	if (!playing || song.tag == nullptr)
 		return;
 
 	assert(current >= 0);
+
+	Song &current_song = queue.GetOrder(current);
+	if (SongEquals(song, current_song))
+		current_song.ReplaceTag(std::move(*song.tag));
 
 	queue.ModifyAtOrder(current);
 	idle_add(IDLE_PLAYLIST);

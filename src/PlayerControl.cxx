@@ -53,6 +53,9 @@ player_control::~player_control()
 {
 	if (next_song != nullptr)
 		next_song->Free();
+
+	if (tagged_song != nullptr)
+		tagged_song->Free();
 }
 
 void
@@ -198,6 +201,25 @@ player_control::ClearError()
 	}
 
 	Unlock();
+}
+
+void
+player_control::LockSetTaggedSong(const Song &song)
+{
+	Lock();
+	if (tagged_song != nullptr)
+		tagged_song->Free();
+	tagged_song = song.DupDetached();
+	Unlock();
+}
+
+void
+player_control::ClearTaggedSong()
+{
+	if (tagged_song != nullptr) {
+		tagged_song->Free();
+		tagged_song = nullptr;
+	}
 }
 
 void

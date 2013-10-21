@@ -100,7 +100,7 @@ struct player_control {
 	Thread thread;
 
 	/**
-	 * This lock protects #command, #state, #error.
+	 * This lock protects #command, #state, #error, #tagged_song.
 	 */
 	mutable Mutex mutex;
 
@@ -128,6 +128,18 @@ struct player_control {
 	 * object transitions back to #PlayerError::NONE.
 	 */
 	Error error;
+
+	/**
+	 * A copy of the current #Song after its tags have been
+	 * updated by the decoder (for example, a radio stream that
+	 * has sent a new tag after switching to the next song).  This
+	 * shall be used by the GlobalEvents::TAG handler to update
+	 * the current #Song in the queue.
+	 *
+	 * Protected by #mutex.  Set by the PlayerThread and consumed
+	 * by the main thread.
+	 */
+	Song *tagged_song;
 
 	uint16_t bit_rate;
 	AudioFormat audio_format;
@@ -354,6 +366,35 @@ public:
 
 	PlayerError GetErrorType() const {
 		return error_type;
+	}
+
+	/**
+	 * Set the #tagged_song attribute to a newly allocated copy of
+	 * the given #Song.  Locks and unlocks the object.
+	 */
+	void LockSetTaggedSong(const Song &song);
+
+	void ClearTaggedSong();
+
+	/**
+	 * Read and clear the #tagged_song attribute.
+	 *
+	 * Caller must lock the object.
+	 */
+	Song *ReadTaggedSong() {
+		Song *result = tagged_song;
+		tagged_song = nullptr;
+		return result;
+	}
+
+	/**
+	 * Like ReadTaggedSong(), but locks and unlocks the object.
+	 */
+	Song *LockReadTaggedSong() {
+		Lock();
+		Song *result = ReadTaggedSong();
+		Unlock();
+		return result;
 	}
 
 	void Stop();
