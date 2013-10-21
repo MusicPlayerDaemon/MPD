@@ -323,8 +323,7 @@ void
 playlist::DeleteSong(struct player_control &pc, const struct Song &song)
 {
 	for (int i = queue.GetLength() - 1; i >= 0; --i)
-		// TODO: compare URI instead of pointer
-		if (&song == &queue.Get(i))
+		if (SongEquals(song, queue.Get(i)))
 			DeletePosition(pc, i);
 }
 
