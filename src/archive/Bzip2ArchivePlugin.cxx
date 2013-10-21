@@ -32,12 +32,13 @@
 #include "util/RefCount.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "fs/Traits.hxx"
+
+#include <bzlib.h>
 
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
-#include <glib.h>
-#include <bzlib.h>
 
 #ifdef HAVE_OLDER_BZIP2
 #define BZ2_bzDecompressInit bzDecompressInit
@@ -48,17 +49,17 @@ class Bzip2ArchiveFile final : public ArchiveFile {
 public:
 	RefCount ref;
 
-	char *const name;
+	std::string name;
 	struct input_stream *const istream;
 
 	Bzip2ArchiveFile(const char *path, input_stream *_is)
 		:ArchiveFile(bz2_archive_plugin),
-		 name(g_path_get_basename(path)),
+		 name(PathTraits::GetBaseUTF8(path)),
 		 istream(_is) {
 		// remove .bz2 suffix
-		size_t len = strlen(name);
+		const size_t len = name.length();
 		if (len > 4)
-			name[len - 4] = 0;
+			name.erase(len - 4);
 	}
 
 	~Bzip2ArchiveFile() {
@@ -73,7 +74,6 @@ public:
 		if (!ref.Decrement())
 			return;
 
-		g_free(name);
 		delete this;
 	}
 
@@ -82,7 +82,7 @@ public:
 	}
 
 	virtual void Visit(ArchiveVisitor &visitor) override {
-		visitor.VisitArchiveEntry(name);
+		visitor.VisitArchiveEntry(name.c_str());
 	}
 
 	virtual input_stream *OpenStream(const char *path,

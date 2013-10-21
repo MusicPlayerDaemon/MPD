@@ -27,8 +27,7 @@
 #include "SongEnumerator.hxx"
 #include "Song.hxx"
 #include "thread/Cond.hxx"
-
-#include <glib.h>
+#include "fs/Traits.hxx"
 
 PlaylistResult
 playlist_load_into_queue(const char *uri, SongEnumerator &e,
@@ -36,10 +35,11 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 playlist &dest, player_control &pc,
 			 bool secure)
 {
-	PlaylistResult result;
-	Song *song;
-	char *base_uri = uri != nullptr ? g_path_get_dirname(uri) : nullptr;
+	const std::string base_uri = uri != nullptr
+		? PathTraits::GetParentUTF8(uri)
+		: std::string(".");
 
+	Song *song;
 	for (unsigned i = 0;
 	     i < end_index && (song = e.NextSong()) != nullptr;
 	     ++i) {
@@ -49,19 +49,16 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			continue;
 		}
 
-		song = playlist_check_translate_song(song, base_uri, secure);
+		song = playlist_check_translate_song(song, base_uri.c_str(),
+						     secure);
 		if (song == nullptr)
 			continue;
 
-		result = dest.AppendSong(pc, song);
+		PlaylistResult result = dest.AppendSong(pc, song);
 		song->Free();
-		if (result != PlaylistResult::SUCCESS) {
-			g_free(base_uri);
+		if (result != PlaylistResult::SUCCESS)
 			return result;
-		}
 	}
-
-	g_free(base_uri);
 
 	return PlaylistResult::SUCCESS;
 }

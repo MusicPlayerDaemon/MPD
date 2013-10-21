@@ -48,7 +48,7 @@ public:
 	 * sheet must always point to the song file it is contained
 	 * in.
 	 */
-	char *filename;
+	std::string filename;
 
 	/**
 	 * The value of the file's "CUESHEET" tag.
@@ -64,13 +64,12 @@ public:
 
 public:
 	EmbeddedCuePlaylist()
-		:filename(nullptr), cuesheet(nullptr), parser(nullptr) {
+		:cuesheet(nullptr), parser(nullptr) {
 	}
 
 	virtual ~EmbeddedCuePlaylist() {
 		delete parser;
 		g_free(cuesheet);
-		g_free(filename);
 	}
 
 	virtual Song *NextSong() override;
@@ -116,7 +115,7 @@ embcue_playlist_open_uri(const char *uri,
 		return NULL;
 	}
 
-	playlist->filename = g_path_get_basename(uri);
+	playlist->filename = PathTraits::GetBaseUTF8(uri);
 
 	playlist->next = playlist->cuesheet;
 	playlist->parser = new CueParser();
@@ -146,13 +145,13 @@ EmbeddedCuePlaylist::NextSong()
 		parser->Feed(line);
 		song = parser->Get();
 		if (song != NULL)
-			return song->ReplaceURI(filename);
+			return song->ReplaceURI(filename.c_str());
 	}
 
 	parser->Finish();
 	song = parser->Get();
 	if (song != NULL)
-		song = song->ReplaceURI(filename);
+		song = song->ReplaceURI(filename.c_str());
 	return song;
 }
 

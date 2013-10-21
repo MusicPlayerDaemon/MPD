@@ -33,10 +33,9 @@
 #include "Client.hxx"
 #include "InputStream.hxx"
 #include "Song.hxx"
+#include "fs/Traits.hxx"
 #include "util/Error.hxx"
 #include "thread/Cond.hxx"
-
-#include <glib.h>
 
 void
 playlist_print_uris(Client &client, const playlist &playlist)
@@ -150,11 +149,14 @@ static void
 playlist_provider_print(Client &client, const char *uri,
 			SongEnumerator &e, bool detail)
 {
-	Song *song;
-	char *base_uri = uri != nullptr ? g_path_get_dirname(uri) : nullptr;
+	const std::string base_uri = uri != nullptr
+		? PathTraits::GetParentUTF8(uri)
+		: std::string(".");
 
+	Song *song;
 	while ((song = e.NextSong()) != nullptr) {
-		song = playlist_check_translate_song(song, base_uri, false);
+		song = playlist_check_translate_song(song, base_uri.c_str(),
+						     false);
 		if (song == nullptr)
 			continue;
 
@@ -165,8 +167,6 @@ playlist_provider_print(Client &client, const char *uri,
 
 		song->Free();
 	}
-
-	g_free(base_uri);
 }
 
 bool

@@ -27,6 +27,8 @@
 #include <glib.h>
 #endif
 
+#include <string>
+
 #include <assert.h>
 
 class Error;
@@ -84,6 +86,21 @@ struct PathTraits {
 		return IsSeparatorUTF8(*p);
 #endif
 	}
+
+	/**
+	 * Determine the "base" file name of the given UTF-8 path.
+	 * The return value points inside the given string.
+	 */
+	gcc_pure gcc_nonnull_all
+	static const char *GetBaseUTF8(const char *p);
+
+	/**
+	 * Determine the "parent" file name of the given UTF-8 path.
+	 * As a special case, returns the string "." if there is no
+	 * separator in the given input string.
+	 */
+	gcc_pure gcc_nonnull_all
+	static std::string GetParentUTF8(const char *p);
 };
 
 #endif

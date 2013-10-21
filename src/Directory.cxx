@@ -24,6 +24,7 @@
 #include "DatabaseLock.hxx"
 #include "SongSort.hxx"
 #include "Song.hxx"
+#include "fs/Traits.hxx"
 #include "util/Error.hxx"
 
 extern "C" {
@@ -112,14 +113,8 @@ const char *
 Directory::GetName() const
 {
 	assert(!IsRoot());
-	assert(path != nullptr);
 
-	const char *slash = strrchr(path, '/');
-	assert((slash == nullptr) == parent->IsRoot());
-
-	return slash != nullptr
-		? slash + 1
-		: path;
+	return PathTraits::GetBaseUTF8(path);
 }
 
 Directory *

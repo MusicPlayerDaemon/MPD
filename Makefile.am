@@ -347,7 +347,7 @@ endif
 libfs_a_SOURCES = \
 	src/fs/Domain.cxx src/fs/Domain.hxx \
 	src/fs/Limits.hxx \
-	src/fs/Traits.hxx \
+	src/fs/Traits.cxx src/fs/Traits.hxx \
 	src/fs/Config.cxx src/fs/Config.hxx \
 	src/fs/Charset.cxx src/fs/Charset.hxx \
 	src/fs/Path.cxx src/fs/Path.hxx \

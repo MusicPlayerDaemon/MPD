@@ -142,9 +142,9 @@ playlist_check_translate_song(Song *song, const char *base_uri,
 	}
 
 	if (base_uri != nullptr && strcmp(base_uri, ".") == 0)
-		/* g_path_get_dirname() returns "." when there is no
-		   directory name in the given path; clear that now,
-		   because it would break the database lookup
+		/* PathTraits::GetParentUTF8() returns "." when there
+		   is no directory name in the given path; clear that
+		   now, because it would break the database lookup
 		   functions */
 		base_uri = nullptr;
 

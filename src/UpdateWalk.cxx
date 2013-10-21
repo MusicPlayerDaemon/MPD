@@ -458,7 +458,7 @@ update_uri(const char *uri)
 	if (parent == nullptr)
 		return;
 
-	char *name = g_path_get_basename(uri);
+	const char *name = PathTraits::GetBaseUTF8(uri);
 
 	struct stat st;
 	if (!skip_symlink(parent, name) &&
@@ -466,8 +466,6 @@ update_uri(const char *uri)
 		update_directory_child(*parent, name, &st);
 	else
 		modified |= delete_name_in(*parent, name);
-
-	g_free(name);
 }
 
 bool
