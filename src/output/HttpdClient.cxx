@@ -20,7 +20,7 @@
 #include "config.h"
 #include "HttpdClient.hxx"
 #include "HttpdInternal.hxx"
-#include "util/fifo_buffer.h"
+#include "util/ASCII.hxx"
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "system/SocketError.hxx"
@@ -102,13 +102,13 @@ HttpdClient::HandleLine(const char *line)
 			return true;
 		}
 
-		if (g_ascii_strncasecmp(line, "Icy-MetaData: 1", 15) == 0) {
+		if (StringEqualsCaseASCII(line, "Icy-MetaData: 1", 15)) {
 			/* Send icy metadata */
 			metadata_requested = metadata_supported;
 			return true;
 		}
 
-		if (g_ascii_strncasecmp(line, "transferMode.dlna.org: Streaming", 32) == 0) {
+		if (StringEqualsCaseASCII(line, "transferMode.dlna.org: Streaming", 32)) {
 			/* Send as dlna */
 			dlna_streaming_requested = true;
 			/* metadata is not supported by dlna streaming, so disable it */

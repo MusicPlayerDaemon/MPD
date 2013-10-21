@@ -25,6 +25,7 @@
 #include "tag/TagTable.hxx"
 #include "tag/TagBuilder.hxx"
 #include "ReplayGainInfo.hxx"
+#include "util/ASCII.hxx"
 
 #include <glib.h>
 
@@ -135,7 +136,7 @@ flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 	const char *comment = (const char*)entry->entry;
 
 	if (entry->length <= name_length ||
-	    g_ascii_strncasecmp(comment, name, name_length) != 0)
+	    StringEqualsCaseASCII(comment, name, name_length))
 		return nullptr;
 
 	if (comment[name_length] == '=') {

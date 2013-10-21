@@ -25,6 +25,7 @@
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
 #include "ReplayGainInfo.hxx"
+#include "util/ASCII.hxx"
 
 #include <glib.h>
 
@@ -38,7 +39,7 @@ vorbis_comment_value(const char *comment, const char *needle)
 {
 	size_t len = strlen(needle);
 
-	if (g_ascii_strncasecmp(comment, needle, len) == 0 &&
+	if (StringEqualsCaseASCII(comment, needle, len) &&
 	    comment[len] == '=')
 		return comment + len + 1;
 

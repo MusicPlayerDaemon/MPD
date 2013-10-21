@@ -19,11 +19,10 @@
 
 #include "config.h"
 #include "PcmResampleInternal.hxx"
+#include "util/ASCII.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
-
-#include <glib.h>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -54,7 +53,7 @@ lsr_parse_converter(const char *s)
 		if (name == nullptr)
 			break;
 
-		if (g_ascii_strncasecmp(s, name, length) == 0) {
+		if (StringEqualsCaseASCII(s, name, length)) {
 			lsr_converter = i;
 			return true;
 		}

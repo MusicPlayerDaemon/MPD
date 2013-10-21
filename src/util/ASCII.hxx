@@ -51,4 +51,16 @@ StringEqualsCaseASCII(const char *a, const char *b)
   return strcasecmp(a, b) == 0;
 }
 
+gcc_pure gcc_nonnull_all
+static inline bool
+StringEqualsCaseASCII(const char *a, const char *b, size_t n)
+{
+  assert(a != nullptr);
+  assert(b != nullptr);
+
+  /* note: strcasecmp() depends on the locale, but for ASCII-only
+     strings, it's safe to use */
+  return strncasecmp(a, b, n) == 0;
+}
+
 #endif
