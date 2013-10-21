@@ -241,7 +241,8 @@ struct queue {
 	void IncrementVersion();
 
 	/**
-	 * Marks the specified song as "modified" and increments the version
+	 * Marks the specified song as "modified".  Call
+	 * IncrementVersion() after all modifications have been made.
 	 * number.
 	 */
 	void ModifyAtOrder(unsigned order);

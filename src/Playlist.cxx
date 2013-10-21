@@ -48,6 +48,7 @@ playlist::TagModified(Song &&song)
 		current_song.ReplaceTag(std::move(*song.tag));
 
 	queue.ModifyAtOrder(current);
+	queue.IncrementVersion();
 	idle_add(IDLE_PLAYLIST);
 }
 

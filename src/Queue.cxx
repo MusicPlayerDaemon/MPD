@@ -83,8 +83,6 @@ queue::ModifyAtOrder(unsigned _order)
 
 	unsigned position = order[_order];
 	items[position].version = version;
-
-	IncrementVersion();
 }
 
 void
