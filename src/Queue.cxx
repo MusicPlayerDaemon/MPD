@@ -82,7 +82,7 @@ queue::ModifyAtOrder(unsigned _order)
 	assert(_order < length);
 
 	unsigned position = order[_order];
-	items[position].version = version;
+	ModifyAtPosition(position);
 }
 
 void

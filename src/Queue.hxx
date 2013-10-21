@@ -245,6 +245,17 @@ struct queue {
 	 * IncrementVersion() after all modifications have been made.
 	 * number.
 	 */
+	void ModifyAtPosition(unsigned position) {
+		assert(position < length);
+
+		items[position].version = version;
+	}
+
+	/**
+	 * Marks the specified song as "modified".  Call
+	 * IncrementVersion() after all modifications have been made.
+	 * number.
+	 */
 	void ModifyAtOrder(unsigned order);
 
 	/**
