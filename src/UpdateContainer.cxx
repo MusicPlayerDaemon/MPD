@@ -98,8 +98,8 @@ update_container_file(Directory &directory,
 		const auto child_path_fs =
 			map_directory_child_fs(*contdir, vtrack);
 
-		decoder_plugin_scan_file(plugin, child_path_fs.c_str(),
-					 &add_tag_handler, &tag_builder);
+		plugin.ScanFile(child_path_fs.c_str(),
+				add_tag_handler, &tag_builder);
 
 		if (tag_builder.IsDefined())
 			song->tag = tag_builder.Commit();

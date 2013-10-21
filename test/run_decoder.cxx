@@ -184,8 +184,7 @@ int main(int argc, char **argv)
 	decoder.initialized = false;
 
 	if (decoder.plugin->file_decode != NULL) {
-		decoder_plugin_file_decode(*decoder.plugin, &decoder,
-					   decoder.uri);
+		decoder.plugin->FileDecode(decoder, decoder.uri);
 	} else if (decoder.plugin->stream_decode != NULL) {
 		Mutex mutex;
 		Cond cond;
@@ -201,7 +200,7 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		decoder_plugin_stream_decode(*decoder.plugin, &decoder, is);
+		decoder.plugin->StreamDecode(decoder, *is);
 
 		is->Close();
 	} else {

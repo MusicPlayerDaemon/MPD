@@ -133,7 +133,7 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 
 	decoder->dc.Unlock();
 
-	decoder_plugin_stream_decode(plugin, decoder, input_stream);
+	plugin.StreamDecode(*decoder, *input_stream);
 
 	decoder->dc.Lock();
 
@@ -162,7 +162,7 @@ decoder_file_decode(const DecoderPlugin &plugin,
 
 	decoder->dc.Unlock();
 
-	decoder_plugin_file_decode(plugin, decoder, path);
+	plugin.FileDecode(*decoder, path);
 
 	decoder->dc.Lock();
 

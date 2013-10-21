@@ -181,8 +181,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	bool success = decoder_plugin_scan_file(*plugin, path,
-						&print_handler, NULL);
+	bool success = plugin->ScanFile(path, print_handler, nullptr);
 	if (!success && plugin->scan_stream != NULL) {
 		Mutex mutex;
 		Cond cond;
@@ -209,8 +208,7 @@ int main(int argc, char **argv)
 
 		mutex.unlock();
 
-		success = decoder_plugin_scan_stream(*plugin, is,
-						     &print_handler, NULL);
+		success = plugin->ScanStream(*is, print_handler, nullptr);
 		is->Close();
 	}
 

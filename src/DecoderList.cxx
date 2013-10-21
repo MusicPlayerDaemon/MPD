@@ -148,7 +148,7 @@ decoder_plugin_from_suffix(const char *suffix,
 	     decoder_plugins[i] != nullptr; ++i) {
 		plugin = decoder_plugins[i];
 		if (decoder_plugins_enabled[i] &&
-		    decoder_plugin_supports_suffix(*plugin, suffix))
+		    plugin->SupportsSuffix(suffix))
 			return plugin;
 	}
 
@@ -168,7 +168,7 @@ decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
 	for (; decoder_plugins[i] != nullptr; ++i) {
 		const struct DecoderPlugin *plugin = decoder_plugins[i];
 		if (decoder_plugins_enabled[i] &&
-		    decoder_plugin_supports_mime_type(*plugin, mimeType)) {
+		    plugin->SupportsMimeType(mimeType)) {
 			++i;
 			return plugin;
 		}
@@ -226,7 +226,7 @@ void decoder_plugin_init_all(void)
 			/* the plugin is disabled in mpd.conf */
 			continue;
 
-		if (decoder_plugin_init(plugin, *param))
+		if (plugin.Init(*param))
 			decoder_plugins_enabled[i] = true;
 	}
 }
@@ -234,5 +234,5 @@ void decoder_plugin_init_all(void)
 void decoder_plugin_deinit_all(void)
 {
 	decoder_plugins_for_each_enabled(plugin)
-		decoder_plugin_finish(*plugin);
+		plugin->Finish();
 }

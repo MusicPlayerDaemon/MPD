@@ -20,6 +20,8 @@
 #ifndef MPD_DECODER_PLUGIN_HXX
 #define MPD_DECODER_PLUGIN_HXX
 
+#include "Compiler.h"
+
 struct config_param;
 struct input_stream;
 struct Tag;
@@ -100,105 +102,81 @@ struct DecoderPlugin {
 	/* last element in these arrays must always be a nullptr: */
 	const char *const*suffixes;
 	const char *const*mime_types;
+
+	/**
+	 * Initialize a decoder plugin.
+	 *
+	 * @param param a configuration block for this plugin, or nullptr if none
+	 * is configured
+	 * @return true if the plugin was initialized successfully, false if
+	 * the plugin is not available
+	 */
+	bool Init(const config_param &param) const {
+		return init != nullptr
+			? init(param)
+			: true;
+	}
+
+	/**
+	 * Deinitialize a decoder plugin which was initialized successfully.
+	 */
+	void Finish() const {
+		if (finish != nullptr)
+			finish();
+	}
+
+	/**
+	 * Decode a stream.
+	 */
+	void StreamDecode(decoder &decoder, input_stream &is) const {
+		stream_decode(&decoder, &is);
+	}
+
+	/**
+	 * Decode a file.
+	 */
+	void FileDecode(decoder &decoder, const char *path_fs) const {
+		file_decode(&decoder, path_fs);
+	}
+
+	/**
+	 * Read the tag of a file.
+	 */
+	bool ScanFile(const char *path_fs,
+		      const tag_handler &handler, void *handler_ctx) const {
+		return scan_file != nullptr
+			? scan_file(path_fs, &handler, handler_ctx)
+			: false;
+	}
+
+	/**
+	 * Read the tag of a stream.
+	 */
+	bool ScanStream(input_stream &is,
+			const tag_handler &handler, void *handler_ctx) const {
+		return scan_stream != nullptr
+			? scan_stream(&is, &handler, handler_ctx)
+			: false;
+	}
+
+	/**
+	 * return "virtual" tracks in a container
+	 */
+	char *ContainerScan(const char *path, const unsigned int tnum) const {
+		return container_scan(path, tnum);
+	}
+
+	/**
+	 * Does the plugin announce the specified file name suffix?
+	 */
+	gcc_pure gcc_nonnull_all
+	bool SupportsSuffix(const char *suffix) const;
+
+	/**
+	 * Does the plugin announce the specified MIME type?
+	 */
+	gcc_pure gcc_nonnull_all
+	bool SupportsMimeType(const char *mime_type) const;
 };
-
-/**
- * Initialize a decoder plugin.
- *
- * @param param a configuration block for this plugin, or nullptr if none
- * is configured
- * @return true if the plugin was initialized successfully, false if
- * the plugin is not available
- */
-static inline bool
-decoder_plugin_init(const DecoderPlugin &plugin,
-		    const config_param &param)
-{
-	return plugin.init != nullptr
-		? plugin.init(param)
-		: true;
-}
-
-/**
- * Deinitialize a decoder plugin which was initialized successfully.
- */
-static inline void
-decoder_plugin_finish(const DecoderPlugin &plugin)
-{
-	if (plugin.finish != nullptr)
-		plugin.finish();
-}
-
-/**
- * Decode a stream.
- */
-static inline void
-decoder_plugin_stream_decode(const DecoderPlugin &plugin,
-			     struct decoder *decoder, struct input_stream *is)
-{
-	plugin.stream_decode(decoder, is);
-}
-
-/**
- * Decode a file.
- */
-static inline void
-decoder_plugin_file_decode(const DecoderPlugin &plugin,
-			   struct decoder *decoder, const char *path_fs)
-{
-	plugin.file_decode(decoder, path_fs);
-}
-
-/**
- * Read the tag of a file.
- */
-static inline bool
-decoder_plugin_scan_file(const DecoderPlugin &plugin,
-			 const char *path_fs,
-			 const struct tag_handler *handler, void *handler_ctx)
-{
-	return plugin.scan_file != nullptr
-		? plugin.scan_file(path_fs, handler, handler_ctx)
-		: false;
-}
-
-/**
- * Read the tag of a stream.
- */
-static inline bool
-decoder_plugin_scan_stream(const DecoderPlugin &plugin,
-			   struct input_stream *is,
-			   const struct tag_handler *handler,
-			   void *handler_ctx)
-{
-	return plugin.scan_stream != nullptr
-		? plugin.scan_stream(is, handler, handler_ctx)
-		: false;
-}
-
-/**
- * return "virtual" tracks in a container
- */
-static inline char *
-decoder_plugin_container_scan(	const DecoderPlugin &plugin,
-				const char* pathname,
-				const unsigned int tnum)
-{
-	return plugin.container_scan(pathname, tnum);
-}
-
-/**
- * Does the plugin announce the specified file name suffix?
- */
-bool
-decoder_plugin_supports_suffix(const DecoderPlugin &plugin,
-			       const char *suffix);
-
-/**
- * Does the plugin announce the specified MIME type?
- */
-bool
-decoder_plugin_supports_mime_type(const DecoderPlugin &plugin,
-				  const char *mime_type);
 
 #endif
