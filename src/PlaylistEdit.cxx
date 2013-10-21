@@ -115,7 +115,7 @@ playlist::AppendURI(struct player_control &pc,
 	if (uri_has_scheme(uri)) {
 		song = Song::NewRemote(uri);
 	} else {
-		db = GetDatabase(IgnoreError());
+		db = GetDatabase();
 		if (db == nullptr)
 			return PlaylistResult::NO_SUCH_SONG;
 

@@ -114,7 +114,7 @@ queue_load_song(TextFile &file, const char *line, queue &queue)
 		if (uri_has_scheme(uri)) {
 			song = Song::NewRemote(uri);
 		} else {
-			db = GetDatabase(IgnoreError());
+			db = GetDatabase();
 			if (db == nullptr)
 				return;
 

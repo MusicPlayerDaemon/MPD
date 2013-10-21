@@ -104,7 +104,7 @@ playlist_check_load_song(const Song *song, const char *uri, bool secure)
 		if (dest == nullptr)
 			return nullptr;
 	} else {
-		const Database *db = GetDatabase(IgnoreError());
+		const Database *db = GetDatabase();
 		if (db == nullptr)
 			return nullptr;
 

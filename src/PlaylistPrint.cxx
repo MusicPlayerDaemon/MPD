@@ -115,7 +115,7 @@ playlist_print_changes_position(Client &client,
 static bool
 PrintSongDetails(Client &client, const char *uri_utf8)
 {
-	const Database *db = GetDatabase(IgnoreError());
+	const Database *db = GetDatabase();
 	if (db == nullptr)
 		return false;
 
