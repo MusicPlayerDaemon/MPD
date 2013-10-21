@@ -113,12 +113,6 @@ extern const InputPlugin bz2_inputplugin;
 
 static constexpr Domain bz2_domain("bz2");
 
-static inline GQuark
-bz2_quark(void)
-{
-	return g_quark_from_static_string("bz2");
-}
-
 /* single archive handling allocation helpers */
 
 inline bool
