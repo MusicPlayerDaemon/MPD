@@ -25,10 +25,6 @@
 #include "Traits.hxx"
 #include "Path.hxx"
 
-#ifdef WIN32
-#include <glib.h>
-#endif
-
 #include <utility>
 #include <string>
 
