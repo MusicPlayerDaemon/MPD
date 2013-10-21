@@ -34,6 +34,7 @@
 #include "tag/TagHandler.hxx"
 #include "tag/TagId3.hxx"
 #include "tag/ApeTag.hxx"
+#include "TagFile.hxx"
 #include "thread/Cond.hxx"
 
 #include <assert.h>
@@ -82,84 +83,29 @@ tag_scan_fallback(const char *path,
 bool
 Song::UpdateFile()
 {
-	const char *suffix;
-	const struct DecoderPlugin *plugin;
-	struct stat st;
-	struct input_stream *is = nullptr;
-
 	assert(IsFile());
-
-	/* check if there's a suffix and a plugin */
-
-	suffix = uri_get_suffix(uri);
-	if (suffix == nullptr)
-		return false;
-
-	plugin = decoder_plugin_from_suffix(suffix, nullptr);
-	if (plugin == nullptr)
-		return false;
 
 	const auto path_fs = map_song_fs(*this);
 	if (path_fs.IsNull())
 		return false;
 
-	delete tag;
-	tag = nullptr;
-
-	if (!StatFile(path_fs, st) || !S_ISREG(st.st_mode)) {
+	struct stat st;
+	if (!StatFile(path_fs, st) || !S_ISREG(st.st_mode))
 		return false;
-	}
-
-	mtime = st.st_mtime;
-
-	Mutex mutex;
-	Cond cond;
 
 	TagBuilder tag_builder;
-
-	do {
-		/* load file tag */
-		if (decoder_plugin_scan_file(*plugin, path_fs.c_str(),
-					     &full_tag_handler, &tag_builder))
-			break;
-
-		tag_builder.Clear();
-
-		/* fall back to stream tag */
-		if (plugin->scan_stream != nullptr) {
-			/* open the input_stream (if not already
-			   open) */
-			if (is == nullptr)
-				is = input_stream::Open(path_fs.c_str(),
-							mutex, cond,
-							IgnoreError());
-
-			/* now try the stream_tag() method */
-			if (is != nullptr) {
-				if (decoder_plugin_scan_stream(*plugin, is,
-							       &full_tag_handler,
-							       &tag_builder))
-					break;
-
-				tag_builder.Clear();
-
-				is->LockSeek(0, SEEK_SET, IgnoreError());
-			}
-		}
-
-		plugin = decoder_plugin_from_suffix(suffix, plugin);
-	} while (plugin != nullptr);
-
-	if (is != nullptr)
-		is->Close();
-
-	if (!tag_builder.IsDefined())
+	if (!tag_file_scan(path_fs.c_str(),
+			   &full_tag_handler, &tag_builder) ||
+	    !tag_builder.IsDefined())
 		return false;
 
 	if (tag_builder.IsEmpty())
 		tag_scan_fallback(path_fs.c_str(), &full_tag_handler,
 				  &tag_builder);
 
+	mtime = st.st_mtime;
+
+	delete tag;
 	tag = tag_builder.Commit();
 	return true;
 }
