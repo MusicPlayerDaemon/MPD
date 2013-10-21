@@ -136,7 +136,7 @@ flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 	const char *comment = (const char*)entry->entry;
 
 	if (entry->length <= name_length ||
-	    StringEqualsCaseASCII(comment, name, name_length))
+	    !StringEqualsCaseASCII(comment, name, name_length))
 		return nullptr;
 
 	if (comment[name_length] == '=') {
