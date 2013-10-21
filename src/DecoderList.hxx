@@ -62,6 +62,17 @@ decoder_plugins_find(F f)
 }
 
 template<typename F>
+static inline bool
+decoder_plugins_try(F f)
+{
+	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i)
+		if (decoder_plugins_enabled[i] && f(*decoder_plugins[i]))
+			return true;
+
+	return false;
+}
+
+template<typename F>
 static inline void
 decoder_plugins_for_each(F f)
 {

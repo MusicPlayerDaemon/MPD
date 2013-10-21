@@ -179,74 +179,58 @@ deconst_plugin(const struct DecoderPlugin *plugin)
 	return const_cast<struct DecoderPlugin *>(plugin);
 }
 
-/**
- * Try decoding a stream, using plugins matching the stream's MIME type.
- *
- * @param tried_r a list of plugins which were tried
- */
+gcc_pure
 static bool
-decoder_run_stream_mime_type(Decoder &decoder, struct input_stream *is,
-			     GSList **tried_r)
+decoder_check_plugin_mime(const DecoderPlugin &plugin, const input_stream &is)
 {
-	assert(tried_r != nullptr);
+	assert(plugin.stream_decode != nullptr);
 
-	const struct DecoderPlugin *plugin;
-	unsigned int next = 0;
-
-	if (is->mime.empty())
-		return false;
-
-	while ((plugin = decoder_plugin_from_mime_type(is->mime.c_str(),
-						       next++))) {
-		if (plugin->stream_decode == nullptr)
-			continue;
-
-		if (g_slist_find(*tried_r, plugin) != nullptr)
-			/* don't try a plugin twice */
-			continue;
-
-		if (decoder_stream_decode(*plugin, decoder, is))
-			return true;
-
-		*tried_r = g_slist_prepend(*tried_r, deconst_plugin(plugin));
-	}
-
-	return false;
+	return !is.mime.empty() && plugin.SupportsMimeType(is.mime.c_str());
 }
 
-/**
- * Try decoding a stream, using plugins matching the stream's URI
- * suffix.
- *
- * @param tried_r a list of plugins which were tried
- */
+gcc_pure
 static bool
-decoder_run_stream_suffix(Decoder &decoder, struct input_stream *is,
-			  const char *uri, GSList **tried_r)
+decoder_check_plugin_suffix(const DecoderPlugin &plugin, const char *suffix)
 {
-	assert(tried_r != nullptr);
+	assert(plugin.stream_decode != nullptr);
 
-	const char *suffix = uri_get_suffix(uri);
-	const struct DecoderPlugin *plugin = nullptr;
+	return suffix != nullptr && plugin.SupportsSuffix(suffix);
+}
 
-	if (suffix == nullptr)
+gcc_pure
+static bool
+decoder_check_plugin(const DecoderPlugin &plugin, const input_stream &is,
+		     const char *suffix)
+{
+	return plugin.stream_decode != nullptr &&
+		(decoder_check_plugin_mime(plugin, is) ||
+		 decoder_check_plugin_suffix(plugin, suffix));
+}
+
+static bool
+decoder_run_stream_plugin(Decoder &decoder, input_stream &is,
+			  const char *suffix,
+			  const DecoderPlugin &plugin,
+			  bool &tried_r)
+{
+	if (!decoder_check_plugin(plugin, is, suffix))
 		return false;
 
-	while ((plugin = decoder_plugin_from_suffix(suffix, plugin)) != nullptr) {
-		if (plugin->stream_decode == nullptr)
-			continue;
+	tried_r = true;
+	return decoder_stream_decode(plugin, decoder, &is);
+}
 
-		if (g_slist_find(*tried_r, plugin) != nullptr)
-			/* don't try a plugin twice */
-			continue;
+static bool
+decoder_run_stream_locked(Decoder &decoder, input_stream &is,
+			  const char *uri, bool &tried_r)
+{
+	const char *const suffix = uri_get_suffix(uri);
 
-		if (decoder_stream_decode(*plugin, decoder, is))
-			return true;
-
-		*tried_r = g_slist_prepend(*tried_r, deconst_plugin(plugin));
-	}
-
-	return false;
+	using namespace std::placeholders;
+	const auto f = std::bind(decoder_run_stream_plugin,
+				 std::ref(decoder), std::ref(is), suffix,
+				 _1, std::ref(tried_r));
+	return decoder_plugins_try(f);
 }
 
 /**
@@ -282,20 +266,14 @@ decoder_run_stream(Decoder &decoder, const char *uri)
 
 	dc.Lock();
 
-	GSList *tried = nullptr;
-
+	bool tried = false;
 	success = dc.command == DecoderCommand::STOP ||
-		/* first we try mime types: */
-		decoder_run_stream_mime_type(decoder, input_stream, &tried) ||
-		/* if that fails, try suffix matching the URL: */
-		decoder_run_stream_suffix(decoder, input_stream, uri,
-					  &tried) ||
+		decoder_run_stream_locked(decoder, *input_stream, uri,
+					  tried) ||
 		/* fallback to mp3: this is needed for bastard streams
 		   that don't have a suffix or set the mimeType */
-		(tried == nullptr &&
+		(!tried &&
 		 decoder_run_stream_fallback(decoder, input_stream));
-
-	g_slist_free(tried);
 
 	dc.Unlock();
 	input_stream->Close();
