@@ -31,6 +31,7 @@
 #include "IOThread.hxx"
 #include "util/ASCII.hxx"
 #include "util/CharUtil.hxx"
+#include "util/NumberParser.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -50,7 +51,6 @@
 #include <forward_list>
 
 #include <curl/curl.h>
-#include <glib.h>
 
 #if LIBCURL_VERSION_NUM < 0x071200
 #error libcurl is too old
@@ -854,7 +854,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 		memcpy(buffer, value, end - value);
 		buffer[end - value] = 0;
 
-		c->base.size = c->base.offset + g_ascii_strtoull(buffer, nullptr, 10);
+		c->base.size = c->base.offset + ParseUint64(buffer);
 	} else if (StringEqualsCaseASCII(name, "content-type")) {
 		c->base.mime.assign(value, end);
 	} else if (StringEqualsCaseASCII(name, "icy-name") ||
@@ -877,7 +877,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 		memcpy(buffer, value, end - value);
 		buffer[end - value] = 0;
 
-		icy_metaint = g_ascii_strtoull(buffer, nullptr, 10);
+		icy_metaint = ParseUint64(buffer);
 		FormatDebug(curl_domain, "icy-metaint=%zu", icy_metaint);
 
 		if (icy_metaint > 0) {

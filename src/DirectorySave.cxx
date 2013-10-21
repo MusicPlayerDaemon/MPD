@@ -24,6 +24,7 @@
 #include "SongSave.hxx"
 #include "PlaylistDatabase.hxx"
 #include "TextFile.hxx"
+#include "util/NumberParser.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
@@ -95,8 +96,7 @@ directory_load_subdir(TextFile &file, Directory &parent, const char *name,
 
 	if (g_str_has_prefix(line, DIRECTORY_MTIME)) {
 		directory->mtime =
-			g_ascii_strtoull(line + sizeof(DIRECTORY_MTIME) - 1,
-					 nullptr, 10);
+			ParseUint64(line + sizeof(DIRECTORY_MTIME) - 1);
 
 		line = file.ReadLine();
 		if (line == nullptr) {

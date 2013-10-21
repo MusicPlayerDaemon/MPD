@@ -25,6 +25,7 @@
 #include "tag/Tag.hxx"
 #include "AudioFormat.hxx"
 #include "ConfigError.hxx"
+#include "util/NumberParser.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
@@ -67,7 +68,7 @@ vorbis_encoder_configure(struct vorbis_encoder *encoder,
 		/* a quality was configured (VBR) */
 
 		char *endptr;
-		encoder->quality = g_ascii_strtod(value, &endptr);
+		encoder->quality = ParseDouble(value, &endptr);
 
 		if (*endptr != '\0' || encoder->quality < -1.0 ||
 		    encoder->quality > 10.0) {
@@ -96,7 +97,7 @@ vorbis_encoder_configure(struct vorbis_encoder *encoder,
 		encoder->quality = -2.0;
 
 		char *endptr;
-		encoder->bitrate = g_ascii_strtoll(value, &endptr, 10);
+		encoder->bitrate = ParseInt(value, &endptr);
 		if (*endptr != '\0' || encoder->bitrate <= 0) {
 			error.Set(config_domain,
 				  "bitrate should be a positive integer");

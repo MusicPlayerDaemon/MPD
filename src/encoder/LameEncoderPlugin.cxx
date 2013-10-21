@@ -22,14 +22,13 @@
 #include "EncoderAPI.hxx"
 #include "AudioFormat.hxx"
 #include "ConfigError.hxx"
+#include "util/NumberParser.hxx"
 #include "util/ReusableArray.hxx"
 #include "util/Manual.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
 #include <lame/lame.h>
-
-#include <glib.h>
 
 #include <assert.h>
 #include <string.h>
@@ -63,7 +62,7 @@ LameEncoder::Configure(const config_param &param, Error &error)
 	if (value != nullptr) {
 		/* a quality was configured (VBR) */
 
-		quality = g_ascii_strtod(value, &endptr);
+		quality = ParseDouble(value, &endptr);
 
 		if (*endptr != '\0' || quality < -1.0 || quality > 10.0) {
 			error.Format(config_domain,
@@ -89,7 +88,7 @@ LameEncoder::Configure(const config_param &param, Error &error)
 		}
 
 		quality = -2.0;
-		bitrate = g_ascii_strtoll(value, &endptr, 10);
+		bitrate = ParseInt(value, &endptr);
 
 		if (*endptr != '\0' || bitrate <= 0) {
 			error.Set(config_domain,
