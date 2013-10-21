@@ -23,12 +23,11 @@
 #include "InputStream.hxx"
 #include "tag/TagHandler.hxx"
 #include "system/FatalError.hxx"
+#include "util/WritableBuffer.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
 #include <libmodplug/modplug.h>
-
-#include <glib.h>
 
 #include <assert.h>
 
@@ -36,7 +35,6 @@ static constexpr Domain modplug_domain("modplug");
 
 static constexpr size_t MODPLUG_FRAME_SIZE = 4096;
 static constexpr size_t MODPLUG_PREALLOC_BLOCK = 256 * 1024;
-static constexpr size_t MODPLUG_READ_BLOCK = 128 * 1024;
 static constexpr input_stream::offset_type MODPLUG_FILE_LIMIT = 100 * 1024 * 1024;
 
 static int modplug_loop_count;
@@ -52,71 +50,72 @@ modplug_decoder_init(const config_param &param)
 	return true;
 }
 
-static GByteArray *
+static WritableBuffer<uint8_t>
 mod_loadfile(struct decoder *decoder, struct input_stream *is)
 {
 	const input_stream::offset_type size = is->GetSize();
 
 	if (size == 0) {
 		LogWarning(modplug_domain, "file is empty");
-		return nullptr;
+		return { nullptr, 0 };
 	}
 
 	if (size > MODPLUG_FILE_LIMIT) {
 		LogWarning(modplug_domain, "file too large");
-		return nullptr;
+		return { nullptr, 0 };
 	}
 
 	//known/unknown size, preallocate array, lets read in chunks
-	GByteArray *bdatas;
-	if (size > 0) {
-		bdatas = g_byte_array_sized_new(size);
-	} else {
-		bdatas = g_byte_array_sized_new(MODPLUG_PREALLOC_BLOCK);
-	}
 
-	unsigned char *data = (unsigned char *)g_malloc(MODPLUG_READ_BLOCK);
+	const bool is_stream = size < 0;
+
+	WritableBuffer<uint8_t> buffer;
+	buffer.size = is_stream ? MODPLUG_PREALLOC_BLOCK : size;
+	buffer.data = new uint8_t[buffer.size];
+
+	uint8_t *const end = buffer.end();
+	uint8_t *p = buffer.begin();
 
 	while (true) {
-		size_t ret = decoder_read(decoder, is, data,
-					  MODPLUG_READ_BLOCK);
+		size_t ret = decoder_read(decoder, is, p, end - p);
 		if (ret == 0) {
 			if (is->LockIsEOF())
 				/* end of file */
 				break;
 
 			/* I/O error - skip this song */
-			g_free(data);
-			g_byte_array_free(bdatas, true);
-			return nullptr;
+			delete[] buffer.data;
+			buffer.data = nullptr;
+			return buffer;
 		}
 
-		if (input_stream::offset_type(bdatas->len + ret) > MODPLUG_FILE_LIMIT) {
+		p += ret;
+		if (p == end) {
+			if (!is_stream)
+				break;
+
 			LogWarning(modplug_domain, "stream too large");
-			g_free(data);
-			g_byte_array_free(bdatas, TRUE);
-			return nullptr;
+			delete[] buffer.data;
+			buffer.data = nullptr;
+			return buffer;
 		}
-
-		g_byte_array_append(bdatas, data, ret);
 	}
 
-	g_free(data);
-
-	return bdatas;
+	buffer.size = p - buffer.data;
+	return buffer;
 }
 
 static ModPlugFile *
 LoadModPlugFile(struct decoder *decoder, struct input_stream *is)
 {
-	const auto bdatas = mod_loadfile(decoder, is);
-	if (!bdatas) {
+	const auto buffer = mod_loadfile(decoder, is);
+	if (buffer.IsNull()) {
 		LogWarning(modplug_domain, "could not load stream");
 		return nullptr;
 	}
 
-	ModPlugFile *f = ModPlug_Load(bdatas->data, bdatas->len);
-	g_byte_array_free(bdatas, TRUE);
+	ModPlugFile *f = ModPlug_Load(buffer.data, buffer.size);
+	delete[] buffer.data;
 	return f;
 }
 
