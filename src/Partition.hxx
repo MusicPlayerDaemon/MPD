@@ -165,6 +165,17 @@ struct Partition {
 	void SetConsume(bool new_value) {
 		playlist.SetConsume(new_value);
 	}
+
+	/**
+	 * A tag in the play queue has been modified.  Propagate the
+	 * change to all subsystems.
+	 */
+	void TagModified();
+
+	/**
+	 * Synchronize the player with the play queue.
+	 */
+	void SyncWithPlayer();
 };
 
 #endif

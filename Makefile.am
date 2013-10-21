@@ -159,7 +159,7 @@ src_mpd_SOURCES = \
 	src/MusicChunk.cxx src/MusicChunk.hxx \
 	src/Mapper.cxx src/Mapper.hxx \
 	src/Page.cxx src/Page.hxx \
-	src/Partition.hxx \
+	src/Partition.cxx src/Partition.hxx \
 	src/Permission.cxx src/Permission.hxx \
 	src/PlayerThread.cxx src/PlayerThread.hxx \
 	src/PlayerControl.cxx src/PlayerControl.hxx \

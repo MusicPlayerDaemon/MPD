@@ -18,31 +18,16 @@
  */
 
 #include "config.h"
-#include "Instance.hxx"
 #include "Partition.hxx"
-#include "Idle.hxx"
 
 void
-Instance::DeleteSong(const Song &song)
+Partition::TagModified()
 {
-	partition->DeleteSong(song);
+	playlist.TagChanged();
 }
 
 void
-Instance::DatabaseModified()
+Partition::SyncWithPlayer()
 {
-	partition->playlist.FullIncrementVersions();
-	idle_add(IDLE_DATABASE);
-}
-
-void
-Instance::TagModified()
-{
-	partition->TagModified();
-}
-
-void
-Instance::SyncWithPlayer()
-{
-	partition->SyncWithPlayer();
+	playlist.SyncWithPlayer(pc);
 }
