@@ -106,21 +106,26 @@ mod_loadfile(struct decoder *decoder, struct input_stream *is)
 	return bdatas;
 }
 
+static ModPlugFile *
+LoadModPlugFile(struct decoder *decoder, struct input_stream *is)
+{
+	const auto bdatas = mod_loadfile(decoder, is);
+	if (!bdatas) {
+		LogWarning(modplug_domain, "could not load stream");
+		return nullptr;
+	}
+
+	ModPlugFile *f = ModPlug_Load(bdatas->data, bdatas->len);
+	g_byte_array_free(bdatas, TRUE);
+	return f;
+}
+
 static void
 mod_decode(struct decoder *decoder, struct input_stream *is)
 {
-	ModPlugFile *f;
 	ModPlug_Settings settings;
-	GByteArray *bdatas;
 	int ret;
 	char audio_buffer[MODPLUG_FRAME_SIZE];
-
-	bdatas = mod_loadfile(decoder, is);
-
-	if (!bdatas) {
-		LogWarning(modplug_domain, "could not load stream");
-		return;
-	}
 
 	ModPlug_GetSettings(&settings);
 	/* alter setting */
@@ -132,9 +137,8 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 	/* insert more setting changes here */
 	ModPlug_SetSettings(&settings);
 
-	f = ModPlug_Load(bdatas->data, bdatas->len);
-	g_byte_array_free(bdatas, TRUE);
-	if (!f) {
+	ModPlugFile *f = LoadModPlugFile(decoder, is);
+	if (f == nullptr) {
 		LogWarning(modplug_domain, "could not decode stream");
 		return;
 	}
@@ -173,15 +177,7 @@ static bool
 modplug_scan_stream(struct input_stream *is,
 		    const struct tag_handler *handler, void *handler_ctx)
 {
-	ModPlugFile *f;
-	GByteArray *bdatas;
-
-	bdatas = mod_loadfile(nullptr, is);
-	if (!bdatas)
-		return false;
-
-	f = ModPlug_Load(bdatas->data, bdatas->len);
-	g_byte_array_free(bdatas, TRUE);
+	ModPlugFile *f = LoadModPlugFile(nullptr, is);
 	if (f == nullptr)
 		return false;
 
