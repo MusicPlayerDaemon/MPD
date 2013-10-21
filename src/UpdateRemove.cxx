@@ -34,8 +34,6 @@
 #include "SongSticker.hxx"
 #endif
 
-#include <glib.h>
-
 #include <assert.h>
 
 static const Song *removed_song;
