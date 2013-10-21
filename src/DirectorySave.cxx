@@ -52,10 +52,7 @@ directory_save(FILE *fp, const Directory &directory)
 
 	Directory *cur;
 	directory_for_each_child(cur, directory) {
-		char *base = g_path_get_basename(cur->path);
-
-		fprintf(fp, DIRECTORY_DIR "%s\n", base);
-		g_free(base);
+		fprintf(fp, DIRECTORY_DIR "%s\n", cur->GetName());
 
 		directory_save(fp, *cur);
 
