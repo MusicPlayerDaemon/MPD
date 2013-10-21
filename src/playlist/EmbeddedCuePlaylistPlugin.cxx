@@ -37,7 +37,6 @@
 #include "fs/Traits.hxx"
 #include "util/ASCII.hxx"
 
-#include <glib.h>
 #include <assert.h>
 #include <string.h>
 
@@ -53,7 +52,7 @@ public:
 	/**
 	 * The value of the file's "CUESHEET" tag.
 	 */
-	char *cuesheet;
+	std::string cuesheet;
 
 	/**
 	 * The offset of the next line within "cuesheet".
@@ -64,12 +63,11 @@ public:
 
 public:
 	EmbeddedCuePlaylist()
-		:cuesheet(nullptr), parser(nullptr) {
+		:parser(nullptr) {
 	}
 
 	virtual ~EmbeddedCuePlaylist() {
 		delete parser;
-		g_free(cuesheet);
 	}
 
 	virtual Song *NextSong() override;
@@ -80,9 +78,9 @@ embcue_tag_pair(const char *name, const char *value, void *ctx)
 {
 	EmbeddedCuePlaylist *playlist = (EmbeddedCuePlaylist *)ctx;
 
-	if (playlist->cuesheet == NULL &&
+	if (playlist->cuesheet.empty() &&
 	    StringEqualsCaseASCII(name, "cuesheet"))
-		playlist->cuesheet = g_strdup(value);
+		playlist->cuesheet = value;
 }
 
 static const struct tag_handler embcue_tag_handler = {
@@ -103,13 +101,13 @@ embcue_playlist_open_uri(const char *uri,
 	const auto playlist = new EmbeddedCuePlaylist();
 
 	tag_file_scan(uri, &embcue_tag_handler, playlist);
-	if (playlist->cuesheet == NULL) {
+	if (playlist->cuesheet.empty()) {
 		tag_ape_scan2(uri, &embcue_tag_handler, playlist);
-		if (playlist->cuesheet == NULL)
+		if (playlist->cuesheet.empty())
 			tag_id3_scan(uri, &embcue_tag_handler, playlist);
 	}
 
-	if (playlist->cuesheet == NULL) {
+	if (playlist->cuesheet.empty()) {
 		/* no "CUESHEET" tag found */
 		delete playlist;
 		return NULL;
@@ -117,7 +115,7 @@ embcue_playlist_open_uri(const char *uri,
 
 	playlist->filename = PathTraits::GetBaseUTF8(uri);
 
-	playlist->next = playlist->cuesheet;
+	playlist->next = &playlist->cuesheet[0];
 	playlist->parser = new CueParser();
 
 	return playlist;
