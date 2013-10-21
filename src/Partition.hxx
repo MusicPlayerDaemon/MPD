@@ -167,6 +167,12 @@ struct Partition {
 	}
 
 	/**
+	 * The database has been modified.  Propagate the change to
+	 * all subsystems.
+	 */
+	void DatabaseModified();
+
+	/**
 	 * A tag in the play queue has been modified by the player
 	 * thread.  Propagate the change to all subsystems.
 	 */

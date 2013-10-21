@@ -22,6 +22,12 @@
 #include "Song.hxx"
 
 void
+Partition::DatabaseModified()
+{
+	playlist.FullIncrementVersions();
+}
+
+void
 Partition::TagModified()
 {
 	Song *song = pc.LockReadTaggedSong();

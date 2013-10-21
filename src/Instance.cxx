@@ -31,7 +31,7 @@ Instance::DeleteSong(const Song &song)
 void
 Instance::DatabaseModified()
 {
-	partition->playlist.FullIncrementVersions();
+	partition->DatabaseModified();
 	idle_add(IDLE_DATABASE);
 }
 
