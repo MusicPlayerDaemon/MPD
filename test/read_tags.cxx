@@ -145,7 +145,7 @@ static const struct tag_handler print_handler = {
 int main(int argc, char **argv)
 {
 	const char *decoder_name, *path;
-	const struct decoder_plugin *plugin;
+	const struct DecoderPlugin *plugin;
 
 #ifdef HAVE_LOCALE_H
 	/* initialize locale */

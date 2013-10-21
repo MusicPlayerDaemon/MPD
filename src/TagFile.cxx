@@ -42,7 +42,7 @@ tag_file_scan(const char *path_fs,
 	if (suffix == nullptr)
 		return false;
 
-	const struct decoder_plugin *plugin =
+	const struct DecoderPlugin *plugin =
 		decoder_plugin_from_suffix(suffix, nullptr);
 	if (plugin == nullptr)
 		return false;

@@ -20,6 +20,6 @@
 #ifndef MPD_DECODER_SNDFILE_HXX
 #define MPD_DECODER_SNDFILE_HXX
 
-extern const struct decoder_plugin sndfile_decoder_plugin;
+extern const struct DecoderPlugin sndfile_decoder_plugin;
 
 #endif

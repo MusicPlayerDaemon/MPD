@@ -144,7 +144,7 @@ static const char *const wildmidi_suffixes[] = {
 	nullptr
 };
 
-const struct decoder_plugin wildmidi_decoder_plugin = {
+const struct DecoderPlugin wildmidi_decoder_plugin = {
 	"wildmidi",
 	wildmidi_init,
 	wildmidi_finish,

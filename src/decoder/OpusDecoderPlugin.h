@@ -20,6 +20,6 @@
 #ifndef MPD_DECODER_OPUS_H
 #define MPD_DECODER_OPUS_H
 
-extern const struct decoder_plugin opus_decoder_plugin;
+extern const struct DecoderPlugin opus_decoder_plugin;
 
 #endif

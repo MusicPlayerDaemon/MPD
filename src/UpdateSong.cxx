@@ -36,7 +36,7 @@
 static void
 update_song_file2(Directory &directory,
 		  const char *name, const struct stat *st,
-		  const decoder_plugin &plugin)
+		  const DecoderPlugin &plugin)
 {
 	db_lock();
 	Song *song = directory.FindSong(name);
@@ -106,7 +106,7 @@ update_song_file(Directory &directory,
 		 const char *name, const char *suffix,
 		 const struct stat *st)
 {
-	const struct decoder_plugin *plugin =
+	const struct DecoderPlugin *plugin =
 		decoder_plugin_from_suffix(suffix, nullptr);
 	if (plugin == nullptr)
 		return false;

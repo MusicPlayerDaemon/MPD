@@ -20,7 +20,7 @@
 #ifndef MPD_DECODER_FLAC_H
 #define MPD_DECODER_FLAC_H
 
-extern const struct decoder_plugin flac_decoder_plugin;
-extern const struct decoder_plugin oggflac_decoder_plugin;
+extern const struct DecoderPlugin flac_decoder_plugin;
+extern const struct DecoderPlugin oggflac_decoder_plugin;
 
 #endif

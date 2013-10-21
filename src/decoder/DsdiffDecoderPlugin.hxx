@@ -20,6 +20,6 @@
 #ifndef MPD_DECODER_DSDIFF_H
 #define MPD_DECODER_DSDIFF_H
 
-extern const struct decoder_plugin dsdiff_decoder_plugin;
+extern const struct DecoderPlugin dsdiff_decoder_plugin;
 
 #endif

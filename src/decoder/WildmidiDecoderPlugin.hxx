@@ -20,6 +20,6 @@
 #ifndef MPD_DECODER_WILDMIDI_HXX
 #define MPD_DECODER_WILDMIDI_HXX
 
-extern const struct decoder_plugin wildmidi_decoder_plugin;
+extern const struct DecoderPlugin wildmidi_decoder_plugin;
 
 #endif

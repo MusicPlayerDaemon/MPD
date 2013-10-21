@@ -585,7 +585,7 @@ static char const *const wavpack_mime_types[] = {
 	nullptr
 };
 
-const struct decoder_plugin wavpack_decoder_plugin = {
+const struct DecoderPlugin wavpack_decoder_plugin = {
 	"wavpack",
 	nullptr,
 	nullptr,

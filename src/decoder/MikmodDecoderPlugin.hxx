@@ -20,6 +20,6 @@
 #ifndef MPD_DECODER_MIKMOD_HXX
 #define MPD_DECODER_MIKMOD_HXX
 
-extern const struct decoder_plugin mikmod_decoder_plugin;
+extern const struct DecoderPlugin mikmod_decoder_plugin;
 
 #endif

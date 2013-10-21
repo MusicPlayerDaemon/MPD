@@ -1171,7 +1171,7 @@ mad_decoder_scan_stream(struct input_stream *is,
 static const char *const mp3_suffixes[] = { "mp3", "mp2", nullptr };
 static const char *const mp3_mime_types[] = { "audio/mpeg", nullptr };
 
-const struct decoder_plugin mad_decoder_plugin = {
+const struct DecoderPlugin mad_decoder_plugin = {
 	"mad",
 	mp3_plugin_init,
 	nullptr,

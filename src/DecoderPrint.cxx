@@ -27,7 +27,7 @@
 
 static void
 decoder_plugin_print(Client &client,
-		     const struct decoder_plugin *plugin)
+		     const struct DecoderPlugin *plugin)
 {
 	const char *const*p;
 

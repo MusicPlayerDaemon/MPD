@@ -267,7 +267,7 @@ mpcdec_scan_stream(struct input_stream *is,
 
 static const char *const mpcdec_suffixes[] = { "mpc", nullptr };
 
-const struct decoder_plugin mpcdec_decoder_plugin = {
+const struct DecoderPlugin mpcdec_decoder_plugin = {
 	"mpcdec",
 	nullptr,
 	nullptr,

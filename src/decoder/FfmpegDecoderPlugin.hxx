@@ -20,6 +20,6 @@
 #ifndef MPD_DECODER_FFMPEG_HXX
 #define MPD_DECODER_FFMPEG_HXX
 
-extern const struct decoder_plugin ffmpeg_decoder_plugin;
+extern const struct DecoderPlugin ffmpeg_decoder_plugin;
 
 #endif

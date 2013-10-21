@@ -20,6 +20,6 @@
 #ifndef MPD_DECODER_AUDIOFILE_HXX
 #define MPD_DECODER_AUDIOFILE_HXX
 
-extern const struct decoder_plugin audiofile_decoder_plugin;
+extern const struct DecoderPlugin audiofile_decoder_plugin;
 
 #endif

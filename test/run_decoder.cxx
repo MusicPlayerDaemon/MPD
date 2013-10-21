@@ -48,7 +48,7 @@ my_log_func(const gchar *log_domain, gcc_unused GLogLevelFlags log_level,
 struct decoder {
 	const char *uri;
 
-	const struct decoder_plugin *plugin;
+	const struct DecoderPlugin *plugin;
 
 	bool initialized;
 };

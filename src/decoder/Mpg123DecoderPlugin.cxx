@@ -241,7 +241,7 @@ static const char *const mpg123_suffixes[] = {
 	nullptr
 };
 
-const struct decoder_plugin mpg123_decoder_plugin = {
+const struct DecoderPlugin mpg123_decoder_plugin = {
 	"mpg123",
 	mpd_mpg123_init,
 	mpd_mpg123_finish,

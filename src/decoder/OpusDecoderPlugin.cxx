@@ -389,7 +389,7 @@ static const char *const opus_mime_types[] = {
 	nullptr
 };
 
-const struct decoder_plugin opus_decoder_plugin = {
+const struct DecoderPlugin opus_decoder_plugin = {
 	"opus",
 	mpd_opus_init,
 	nullptr,

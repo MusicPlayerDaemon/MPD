@@ -20,6 +20,6 @@
 #ifndef MPD_DECODER_FLUIDSYNTH_HXX
 #define MPD_DECODER_FLUIDSYNTH_HXX
 
-extern const struct decoder_plugin fluidsynth_decoder_plugin;
+extern const struct DecoderPlugin fluidsynth_decoder_plugin;
 
 #endif

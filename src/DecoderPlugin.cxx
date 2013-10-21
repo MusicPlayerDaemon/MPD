@@ -24,7 +24,7 @@
 #include <assert.h>
 
 bool
-decoder_plugin_supports_suffix(const decoder_plugin &plugin,
+decoder_plugin_supports_suffix(const DecoderPlugin &plugin,
 			       const char *suffix)
 {
 	assert(suffix != nullptr);
@@ -35,7 +35,7 @@ decoder_plugin_supports_suffix(const decoder_plugin &plugin,
 }
 
 bool
-decoder_plugin_supports_mime_type(const decoder_plugin &plugin,
+decoder_plugin_supports_mime_type(const DecoderPlugin &plugin,
 				  const char *mime_type)
 {
 	assert(mime_type != nullptr);

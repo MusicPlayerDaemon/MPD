@@ -111,7 +111,7 @@ decoder_input_stream_open(decoder_control &dc, const char *uri)
 }
 
 static bool
-decoder_stream_decode(const decoder_plugin &plugin,
+decoder_stream_decode(const DecoderPlugin &plugin,
 		      struct decoder *decoder,
 		      struct input_stream *input_stream)
 {
@@ -144,7 +144,7 @@ decoder_stream_decode(const decoder_plugin &plugin,
 }
 
 static bool
-decoder_file_decode(const decoder_plugin &plugin,
+decoder_file_decode(const DecoderPlugin &plugin,
 		    struct decoder *decoder, const char *path)
 {
 	assert(plugin.file_decode != nullptr);
@@ -176,9 +176,9 @@ decoder_file_decode(const decoder_plugin &plugin,
  * Hack to allow tracking const decoder plugins in a GSList.
  */
 static inline gpointer
-deconst_plugin(const struct decoder_plugin *plugin)
+deconst_plugin(const struct DecoderPlugin *plugin)
 {
-	return const_cast<struct decoder_plugin *>(plugin);
+	return const_cast<struct DecoderPlugin *>(plugin);
 }
 
 /**
@@ -192,7 +192,7 @@ decoder_run_stream_mime_type(struct decoder *decoder, struct input_stream *is,
 {
 	assert(tried_r != nullptr);
 
-	const struct decoder_plugin *plugin;
+	const struct DecoderPlugin *plugin;
 	unsigned int next = 0;
 
 	if (is->mime.empty())
@@ -229,7 +229,7 @@ decoder_run_stream_suffix(struct decoder *decoder, struct input_stream *is,
 	assert(tried_r != nullptr);
 
 	const char *suffix = uri_get_suffix(uri);
-	const struct decoder_plugin *plugin = nullptr;
+	const struct DecoderPlugin *plugin = nullptr;
 
 	if (suffix == nullptr)
 		return false;
@@ -257,7 +257,7 @@ decoder_run_stream_suffix(struct decoder *decoder, struct input_stream *is,
 static bool
 decoder_run_stream_fallback(struct decoder *decoder, struct input_stream *is)
 {
-	const struct decoder_plugin *plugin;
+	const struct DecoderPlugin *plugin;
 
 	plugin = decoder_plugin_from_name("mad");
 	return plugin != nullptr && plugin->stream_decode != nullptr &&
@@ -326,7 +326,7 @@ decoder_run_file(struct decoder *decoder, const char *path_fs)
 {
 	decoder_control &dc = decoder->dc;
 	const char *suffix = uri_get_suffix(path_fs);
-	const struct decoder_plugin *plugin = nullptr;
+	const struct DecoderPlugin *plugin = nullptr;
 
 	if (suffix == nullptr)
 		return false;

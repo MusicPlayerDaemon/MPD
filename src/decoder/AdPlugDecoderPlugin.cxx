@@ -127,7 +127,7 @@ static const char *const adplug_suffixes[] = {
 	nullptr
 };
 
-const struct decoder_plugin adplug_decoder_plugin = {
+const struct DecoderPlugin adplug_decoder_plugin = {
 	"adplug",
 	adplug_init,
 	nullptr,

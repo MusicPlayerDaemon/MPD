@@ -48,7 +48,7 @@
 
 #include <string.h>
 
-const struct decoder_plugin *const decoder_plugins[] = {
+const struct DecoderPlugin *const decoder_plugins[] = {
 #ifdef HAVE_MAD
 	&mad_decoder_plugin,
 #endif
@@ -119,7 +119,7 @@ static constexpr unsigned num_decoder_plugins =
 bool decoder_plugins_enabled[num_decoder_plugins];
 
 static unsigned
-decoder_plugin_index(const struct decoder_plugin *plugin)
+decoder_plugin_index(const struct DecoderPlugin *plugin)
 {
 	unsigned i = 0;
 
@@ -130,16 +130,16 @@ decoder_plugin_index(const struct decoder_plugin *plugin)
 }
 
 static unsigned
-decoder_plugin_next_index(const struct decoder_plugin *plugin)
+decoder_plugin_next_index(const struct DecoderPlugin *plugin)
 {
 	return plugin == 0
 		? 0 /* start with first plugin */
 		: decoder_plugin_index(plugin) + 1;
 }
 
-const struct decoder_plugin *
+const struct DecoderPlugin *
 decoder_plugin_from_suffix(const char *suffix,
-			   const struct decoder_plugin *plugin)
+			   const struct DecoderPlugin *plugin)
 {
 	if (suffix == nullptr)
 		return nullptr;
@@ -155,7 +155,7 @@ decoder_plugin_from_suffix(const char *suffix,
 	return nullptr;
 }
 
-const struct decoder_plugin *
+const struct DecoderPlugin *
 decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
 {
 	static unsigned i = num_decoder_plugins;
@@ -166,7 +166,7 @@ decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
 	if (!next)
 		i = 0;
 	for (; decoder_plugins[i] != nullptr; ++i) {
-		const struct decoder_plugin *plugin = decoder_plugins[i];
+		const struct DecoderPlugin *plugin = decoder_plugins[i];
 		if (decoder_plugins_enabled[i] &&
 		    decoder_plugin_supports_mime_type(*plugin, mimeType)) {
 			++i;
@@ -177,7 +177,7 @@ decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
 	return nullptr;
 }
 
-const struct decoder_plugin *
+const struct DecoderPlugin *
 decoder_plugin_from_name(const char *name)
 {
 	decoder_plugins_for_each_enabled(plugin)
@@ -216,7 +216,7 @@ void decoder_plugin_init_all(void)
 	struct config_param empty;
 
 	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i) {
-		const decoder_plugin &plugin = *decoder_plugins[i];
+		const DecoderPlugin &plugin = *decoder_plugins[i];
 		const struct config_param *param =
 			decoder_plugin_config(plugin.name);
 

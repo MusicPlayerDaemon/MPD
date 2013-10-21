@@ -246,7 +246,7 @@ static const char *const sndfile_mime_types[] = {
 	nullptr
 };
 
-const struct decoder_plugin sndfile_decoder_plugin = {
+const struct DecoderPlugin sndfile_decoder_plugin = {
 	"sndfile",
 	nullptr,
 	nullptr,

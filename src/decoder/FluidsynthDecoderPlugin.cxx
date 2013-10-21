@@ -210,7 +210,7 @@ static const char *const fluidsynth_suffixes[] = {
 	nullptr
 };
 
-const struct decoder_plugin fluidsynth_decoder_plugin = {
+const struct DecoderPlugin fluidsynth_decoder_plugin = {
 	"fluidsynth",
 	fluidsynth_init,
 	nullptr,

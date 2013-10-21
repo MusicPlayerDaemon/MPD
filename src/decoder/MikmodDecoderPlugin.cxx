@@ -234,7 +234,7 @@ static const char *const mikmod_decoder_suffixes[] = {
 	nullptr
 };
 
-const struct decoder_plugin mikmod_decoder_plugin = {
+const struct DecoderPlugin mikmod_decoder_plugin = {
 	"mikmod",
 	mikmod_decoder_init,
 	mikmod_decoder_finish,

@@ -100,7 +100,7 @@ static const char *const pcm_mime_types[] = {
 	nullptr
 };
 
-const struct decoder_plugin pcm_decoder_plugin = {
+const struct DecoderPlugin pcm_decoder_plugin = {
 	"pcm",
 	nullptr,
 	nullptr,

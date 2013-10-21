@@ -20,13 +20,13 @@
 #ifndef MPD_DECODER_LIST_HXX
 #define MPD_DECODER_LIST_HXX
 
-struct decoder_plugin;
+struct DecoderPlugin;
 
-extern const struct decoder_plugin *const decoder_plugins[];
+extern const struct DecoderPlugin *const decoder_plugins[];
 extern bool decoder_plugins_enabled[];
 
 #define decoder_plugins_for_each(plugin) \
-	for (const struct decoder_plugin *plugin, \
+	for (const struct DecoderPlugin *plugin, \
 		*const*decoder_plugin_iterator = &decoder_plugins[0]; \
 		(plugin = *decoder_plugin_iterator) != nullptr; \
 		++decoder_plugin_iterator)
@@ -44,14 +44,14 @@ extern bool decoder_plugins_enabled[];
  * @param plugin the previous plugin, or nullptr to find the first plugin
  * @return a plugin, or nullptr if none matches
  */
-const struct decoder_plugin *
+const struct DecoderPlugin *
 decoder_plugin_from_suffix(const char *suffix,
-			   const struct decoder_plugin *plugin);
+			   const struct DecoderPlugin *plugin);
 
-const struct decoder_plugin *
+const struct DecoderPlugin *
 decoder_plugin_from_mime_type(const char *mimeType, unsigned int next);
 
-const struct decoder_plugin *
+const struct DecoderPlugin *
 decoder_plugin_from_name(const char *name);
 
 /* this is where we "load" all the "plugins" ;-) */

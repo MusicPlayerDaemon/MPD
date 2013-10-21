@@ -253,7 +253,7 @@ static const char *const audiofile_mime_types[] = {
 	nullptr
 };
 
-const struct decoder_plugin audiofile_decoder_plugin = {
+const struct DecoderPlugin audiofile_decoder_plugin = {
 	"audiofile",
 	nullptr,
 	nullptr,

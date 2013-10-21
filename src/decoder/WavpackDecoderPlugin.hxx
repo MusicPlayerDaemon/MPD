@@ -20,6 +20,6 @@
 #ifndef MPD_DECODER_WAVPACK_HXX
 #define MPD_DECODER_WAVPACK_HXX
 
-extern const struct decoder_plugin wavpack_decoder_plugin;
+extern const struct DecoderPlugin wavpack_decoder_plugin;
 
 #endif

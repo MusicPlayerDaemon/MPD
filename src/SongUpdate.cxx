@@ -83,7 +83,7 @@ bool
 Song::UpdateFile()
 {
 	const char *suffix;
-	const struct decoder_plugin *plugin;
+	const struct DecoderPlugin *plugin;
 	struct stat st;
 	struct input_stream *is = nullptr;
 
@@ -168,7 +168,7 @@ bool
 Song::UpdateFileInArchive()
 {
 	const char *suffix;
-	const struct decoder_plugin *plugin;
+	const struct DecoderPlugin *plugin;
 
 	assert(IsFile());
 

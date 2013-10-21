@@ -20,6 +20,6 @@
 #ifndef MPD_DECODER_MPG123_HXX
 #define MPD_DECODER_MPG123_HXX
 
-extern const struct decoder_plugin mpg123_decoder_plugin;
+extern const struct DecoderPlugin mpg123_decoder_plugin;
 
 #endif

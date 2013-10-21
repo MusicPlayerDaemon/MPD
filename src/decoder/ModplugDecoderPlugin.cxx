@@ -200,7 +200,7 @@ static const char *const mod_suffixes[] = {
 	nullptr
 };
 
-const struct decoder_plugin modplug_decoder_plugin = {
+const struct DecoderPlugin modplug_decoder_plugin = {
 	"modplug",
 	modplug_decoder_init,
 	nullptr,

@@ -514,7 +514,7 @@ static const char *const dsdiff_mime_types[] = {
 	nullptr
 };
 
-const struct decoder_plugin dsdiff_decoder_plugin = {
+const struct DecoderPlugin dsdiff_decoder_plugin = {
 	"dsdiff",
 	dsdiff_init,
 	nullptr,

@@ -28,6 +28,6 @@
 #ifndef MPD_DECODER_PCM_HXX
 #define MPD_DECODER_PCM_HXX
 
-extern const struct decoder_plugin pcm_decoder_plugin;
+extern const struct DecoderPlugin pcm_decoder_plugin;
 
 #endif

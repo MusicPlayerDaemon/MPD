@@ -355,7 +355,7 @@ static const char *const oggflac_mime_types[] = {
 	nullptr
 };
 
-const struct decoder_plugin oggflac_decoder_plugin = {
+const struct DecoderPlugin oggflac_decoder_plugin = {
 	"oggflac",
 	oggflac_init,
 	nullptr,
@@ -377,7 +377,7 @@ static const char *const flac_mime_types[] = {
 	nullptr
 };
 
-const struct decoder_plugin flac_decoder_plugin = {
+const struct DecoderPlugin flac_decoder_plugin = {
 	"flac",
 	nullptr,
 	nullptr,

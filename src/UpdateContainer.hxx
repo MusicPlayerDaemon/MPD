@@ -25,12 +25,12 @@
 #include <sys/stat.h>
 
 struct Directory;
-struct decoder_plugin;
+struct DecoderPlugin;
 
 bool
 update_container_file(Directory &directory,
 		      const char *name,
 		      const struct stat *st,
-		      const decoder_plugin &plugin);
+		      const DecoderPlugin &plugin);
 
 #endif

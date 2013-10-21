@@ -20,6 +20,6 @@
 #ifndef MPD_FAAD_DECODER_PLUGIN_HXX
 #define MPD_FAAD_DECODER_PLUGIN_HXX
 
-extern const struct decoder_plugin faad_decoder_plugin;
+extern const struct DecoderPlugin faad_decoder_plugin;
 
 #endif

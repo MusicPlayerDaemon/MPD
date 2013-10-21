@@ -481,7 +481,7 @@ static const char *const faad_mime_types[] = {
 	"audio/aac", "audio/aacp", nullptr
 };
 
-const struct decoder_plugin faad_decoder_plugin = {
+const struct DecoderPlugin faad_decoder_plugin = {
 	"faad",
 	nullptr,
 	nullptr,

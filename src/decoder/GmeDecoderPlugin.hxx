@@ -20,6 +20,6 @@
 #ifndef MPD_DECODER_GME_HXX
 #define MPD_DECODER_GME_HXX
 
-extern const struct decoder_plugin gme_decoder_plugin;
+extern const struct DecoderPlugin gme_decoder_plugin;
 
 #endif

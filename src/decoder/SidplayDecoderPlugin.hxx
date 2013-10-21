@@ -20,6 +20,6 @@
 #ifndef MPD_DECODER_SIDPLAY_HXX
 #define MPD_DECODER_SIDPLAY_HXX
 
-extern const struct decoder_plugin sidplay_decoder_plugin;
+extern const struct DecoderPlugin sidplay_decoder_plugin;
 
 #endif

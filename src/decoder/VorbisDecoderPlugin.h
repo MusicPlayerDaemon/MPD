@@ -20,6 +20,6 @@
 #ifndef MPD_DECODER_VORBIS_H
 #define MPD_DECODER_VORBIS_H
 
-extern const struct decoder_plugin vorbis_decoder_plugin;
+extern const struct DecoderPlugin vorbis_decoder_plugin;
 
 #endif

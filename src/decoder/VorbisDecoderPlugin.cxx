@@ -338,7 +338,7 @@ static const char *const vorbis_mime_types[] = {
 	NULL
 };
 
-const struct decoder_plugin vorbis_decoder_plugin = {
+const struct DecoderPlugin vorbis_decoder_plugin = {
 	"vorbis",
 	nullptr,
 	nullptr,

@@ -667,7 +667,7 @@ static const char *const ffmpeg_mime_types[] = {
 	nullptr
 };
 
-const struct decoder_plugin ffmpeg_decoder_plugin = {
+const struct DecoderPlugin ffmpeg_decoder_plugin = {
 	"ffmpeg",
 	ffmpeg_init,
 	nullptr,

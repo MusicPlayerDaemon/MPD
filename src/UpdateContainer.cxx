@@ -68,7 +68,7 @@ bool
 update_container_file(Directory &directory,
 		      const char *name,
 		      const struct stat *st,
-		      const decoder_plugin &plugin)
+		      const DecoderPlugin &plugin)
 {
 	if (plugin.container_scan == nullptr)
 		return false;

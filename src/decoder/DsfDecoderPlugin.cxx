@@ -345,7 +345,7 @@ static const char *const dsf_mime_types[] = {
 	NULL
 };
 
-const struct decoder_plugin dsf_decoder_plugin = {
+const struct DecoderPlugin dsf_decoder_plugin = {
 	"dsf",
 	nullptr,
 	nullptr,
