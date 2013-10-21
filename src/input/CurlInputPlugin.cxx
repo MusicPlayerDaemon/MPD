@@ -51,6 +51,7 @@
 #include <forward_list>
 
 #include <curl/curl.h>
+#include <glib.h>
 
 #if LIBCURL_VERSION_NUM < 0x071200
 #error libcurl is too old
@@ -255,7 +256,7 @@ input_curl_resume(struct input_curl *c)
 static unsigned
 input_curl_fd_events(int fd, fd_set *rfds, fd_set *wfds, fd_set *efds)
 {
-	gushort events = 0;
+	unsigned events = 0;
 
 	if (FD_ISSET(fd, rfds)) {
 		events |= MultiSocketMonitor::READ | MultiSocketMonitor::HANGUP
