@@ -25,16 +25,6 @@ struct DecoderPlugin;
 extern const struct DecoderPlugin *const decoder_plugins[];
 extern bool decoder_plugins_enabled[];
 
-#define decoder_plugins_for_each(plugin) \
-	for (const struct DecoderPlugin *plugin, \
-		*const*decoder_plugin_iterator = &decoder_plugins[0]; \
-		(plugin = *decoder_plugin_iterator) != nullptr; \
-		++decoder_plugin_iterator)
-
-#define decoder_plugins_for_each_enabled(plugin) \
-	decoder_plugins_for_each(plugin) \
-		if (decoder_plugins_enabled[decoder_plugin_iterator - decoder_plugins])
-
 /* interface for using plugins */
 
 /**
@@ -59,5 +49,33 @@ void decoder_plugin_init_all(void);
 
 /* this is where we "unload" all the "plugins" */
 void decoder_plugin_deinit_all(void);
+
+template<typename F>
+static inline const DecoderPlugin *
+decoder_plugins_find(F f)
+{
+	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i)
+		if (decoder_plugins_enabled[i] && f(*decoder_plugins[i]))
+			return decoder_plugins[i];
+
+	return nullptr;
+}
+
+template<typename F>
+static inline void
+decoder_plugins_for_each(F f)
+{
+	for (auto i = decoder_plugins; *i != nullptr; ++i)
+		f(**i);
+}
+
+template<typename F>
+static inline void
+decoder_plugins_for_each_enabled(F f)
+{
+	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i)
+		if (decoder_plugins_enabled[i])
+			f(*decoder_plugins[i]);
+}
 
 #endif
