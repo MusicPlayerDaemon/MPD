@@ -145,6 +145,6 @@ struct Song {
  */
 gcc_pure
 bool
-song_equals(const Song *a, const Song *b);
+SongEquals(const Song &a, const Song &b);
 
 #endif

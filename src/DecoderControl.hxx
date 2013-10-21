@@ -274,10 +274,10 @@ struct decoder_control {
 	 * Caller must lock the object.
 	 */
 	gcc_pure
-	bool IsCurrentSong(const Song *_song) const;
+	bool IsCurrentSong(const Song &_song) const;
 
 	gcc_pure
-	bool LockIsCurrentSong(const Song *_song) const {
+	bool LockIsCurrentSong(const Song &_song) const {
 		Lock();
 		const bool result = IsCurrentSong(_song);
 		Unlock();

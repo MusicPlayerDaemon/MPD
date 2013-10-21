@@ -127,23 +127,20 @@ directory_is_same(const Directory *a, const Directory *b)
 }
 
 bool
-song_equals(const Song *a, const Song *b)
+SongEquals(const Song &a, const Song &b)
 {
-	assert(a != nullptr);
-	assert(b != nullptr);
-
-	if (a->parent != nullptr && b->parent != nullptr &&
-	    !directory_equals(*a->parent, *b->parent) &&
-	    (a->parent == &detached_root || b->parent == &detached_root)) {
+	if (a.parent != nullptr && b.parent != nullptr &&
+	    !directory_equals(*a.parent, *b.parent) &&
+	    (a.parent == &detached_root || b.parent == &detached_root)) {
 		/* must compare the full URI if one of the objects is
 		   "detached" */
-		const auto au = a->GetURI();
-		const auto bu = b->GetURI();
+		const auto au = a.GetURI();
+		const auto bu = b.GetURI();
 		return au == bu;
 	}
 
-	return directory_is_same(a->parent, b->parent) &&
-		strcmp(a->uri, b->uri) == 0;
+	return directory_is_same(a.parent, b.parent) &&
+		strcmp(a.uri, b.uri) == 0;
 }
 
 std::string

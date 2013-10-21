@@ -47,10 +47,8 @@ decoder_control::~decoder_control()
 }
 
 bool
-decoder_control::IsCurrentSong(const Song *_song) const
+decoder_control::IsCurrentSong(const Song &_song) const
 {
-	assert(_song != nullptr);
-
 	switch (state) {
 	case DecoderState::STOP:
 	case DecoderState::ERROR:
@@ -58,7 +56,7 @@ decoder_control::IsCurrentSong(const Song *_song) const
 
 	case DecoderState::START:
 	case DecoderState::DECODE:
-		return song_equals(song, _song);
+		return SongEquals(*song, _song);
 	}
 
 	assert(false);

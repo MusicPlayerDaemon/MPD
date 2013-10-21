@@ -521,7 +521,7 @@ Player::SeekDecoder()
 
 	const unsigned start_ms = pc.next_song->start_ms;
 
-	if (!dc.LockIsCurrentSong(pc.next_song)) {
+	if (!dc.LockIsCurrentSong(*pc.next_song)) {
 		/* the decoder is already decoding the "next" song -
 		   stop it and start the previous song again */
 
