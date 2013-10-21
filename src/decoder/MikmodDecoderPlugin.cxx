@@ -146,7 +146,7 @@ mikmod_decoder_finish(void)
 }
 
 static void
-mikmod_decoder_file_decode(struct decoder *decoder, const char *path_fs)
+mikmod_decoder_file_decode(Decoder &decoder, const char *path_fs)
 {
 	/* deconstify the path because libmikmod wants a non-const
 	   string pointer */

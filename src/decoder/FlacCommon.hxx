@@ -75,12 +75,12 @@ struct flac_data : public FlacInput {
 
 	FLAC__uint64 position;
 
-	struct decoder *decoder;
+	Decoder &decoder;
 	struct input_stream *input_stream;
 
 	Tag tag;
 
-	flac_data(struct decoder *decoder, struct input_stream *input_stream);
+	flac_data(Decoder &decoder, struct input_stream *input_stream);
 };
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,

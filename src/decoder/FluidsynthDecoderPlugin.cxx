@@ -92,7 +92,7 @@ fluidsynth_init(const config_param &param)
 }
 
 static void
-fluidsynth_file_decode(struct decoder *decoder, const char *path_fs)
+fluidsynth_file_decode(Decoder &decoder, const char *path_fs)
 {
 	char setting_sample_rate[] = "synth.sample-rate";
 	/*

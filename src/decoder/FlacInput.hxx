@@ -22,18 +22,20 @@
 
 #include <FLAC/stream_decoder.h>
 
+struct Decoder;
+
 /**
  * This class wraps an #input_stream in libFLAC stream decoder
  * callbacks.
  */
 class FlacInput {
-	struct decoder *decoder;
+	Decoder *const decoder;
 
 	struct input_stream *input_stream;
 
 public:
 	FlacInput(struct input_stream *_input_stream,
-		  struct decoder *_decoder=nullptr)
+		  Decoder *_decoder=nullptr)
 		:decoder(_decoder), input_stream(_input_stream) {}
 
 protected:

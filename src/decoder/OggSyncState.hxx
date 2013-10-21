@@ -34,10 +34,10 @@ class OggSyncState {
 	ogg_sync_state oy;
 
 	input_stream &is;
-	struct decoder *const decoder;
+	Decoder *const decoder;
 
 public:
-	OggSyncState(input_stream &_is, struct decoder *const _decoder=nullptr)
+	OggSyncState(input_stream &_is, Decoder *const _decoder=nullptr)
 		:is(_is), decoder(_decoder) {
 		ogg_sync_init(&oy);
 	}

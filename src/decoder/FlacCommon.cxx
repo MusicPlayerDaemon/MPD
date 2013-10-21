@@ -32,9 +32,9 @@
 
 #include <assert.h>
 
-flac_data::flac_data(struct decoder *_decoder,
+flac_data::flac_data(Decoder &_decoder,
 		     struct input_stream *_input_stream)
-	:FlacInput(_input_stream, _decoder),
+	:FlacInput(_input_stream, &_decoder),
 	 initialized(false), unsupported(false),
 	 total_frames(0), first_frame(0), next_frame(0), position(0),
 	 decoder(_decoder), input_stream(_input_stream)

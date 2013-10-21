@@ -201,7 +201,7 @@ get_song_length(const char *path_fs)
 }
 
 static void
-sidplay_file_decode(struct decoder *decoder, const char *path_fs)
+sidplay_file_decode(Decoder &decoder, const char *path_fs)
 {
 	int channels;
 

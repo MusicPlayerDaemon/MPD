@@ -22,7 +22,7 @@
 #include "DecoderAPI.hxx"
 
 bool
-OggFeed(ogg_sync_state &oy, struct decoder *decoder,
+OggFeed(ogg_sync_state &oy, Decoder *decoder,
 	input_stream *input_stream, size_t size)
 {
 		char *buffer = ogg_sync_buffer(&oy, size);
@@ -40,7 +40,7 @@ OggFeed(ogg_sync_state &oy, struct decoder *decoder,
 
 bool
 OggExpectPage(ogg_sync_state &oy, ogg_page &page,
-	      decoder *decoder, input_stream *input_stream)
+	      Decoder *decoder, input_stream *input_stream)
 {
 	while (true) {
 		int r = ogg_sync_pageout(&oy, &page);
@@ -54,7 +54,7 @@ OggExpectPage(ogg_sync_state &oy, ogg_page &page,
 
 bool
 OggExpectFirstPage(ogg_sync_state &oy, ogg_stream_state &os,
-		   decoder *decoder, input_stream *is)
+		   Decoder *decoder, input_stream *is)
 {
 	ogg_page page;
 	if (!OggExpectPage(oy, page, decoder, is))
@@ -67,7 +67,7 @@ OggExpectFirstPage(ogg_sync_state &oy, ogg_stream_state &os,
 
 bool
 OggExpectPageIn(ogg_sync_state &oy, ogg_stream_state &os,
-		decoder *decoder, input_stream *is)
+		Decoder *decoder, input_stream *is)
 {
 	ogg_page page;
 	if (!OggExpectPage(oy, page, decoder, is))
@@ -79,7 +79,7 @@ OggExpectPageIn(ogg_sync_state &oy, ogg_stream_state &os,
 
 bool
 OggExpectPageSeek(ogg_sync_state &oy, ogg_page &page,
-		  decoder *decoder, input_stream *input_stream)
+		  Decoder *decoder, input_stream *input_stream)
 {
 	size_t remaining_skipped = 16384;
 
@@ -107,7 +107,7 @@ OggExpectPageSeek(ogg_sync_state &oy, ogg_page &page,
 
 bool
 OggExpectPageSeekIn(ogg_sync_state &oy, ogg_stream_state &os,
-		    decoder *decoder, input_stream *is)
+		    Decoder *decoder, input_stream *is)
 {
 	ogg_page page;
 	if (!OggExpectPageSeek(oy, page, decoder, is))

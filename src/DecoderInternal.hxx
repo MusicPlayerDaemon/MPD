@@ -28,7 +28,7 @@ struct decoder_control;
 struct input_stream;
 struct Tag;
 
-struct decoder {
+struct Decoder {
 	decoder_control &dc;
 
 	PcmConvert conv_state;
@@ -83,7 +83,7 @@ struct decoder {
 	 */
 	unsigned replay_gain_serial;
 
-	decoder(decoder_control &_dc, bool _initial_seek_pending, Tag *_tag)
+	Decoder(decoder_control &_dc, bool _initial_seek_pending, Tag *_tag)
 		:dc(_dc),
 		 timestamp(0),
 		 initial_seek_pending(_initial_seek_pending),
@@ -94,7 +94,7 @@ struct decoder {
 		 replay_gain_serial(0) {
 	}
 
-	~decoder();
+	~Decoder();
 };
 
 /**
@@ -104,12 +104,12 @@ struct decoder {
  * @return the chunk, or NULL if we have received a decoder command
  */
 struct music_chunk *
-decoder_get_chunk(struct decoder *decoder);
+decoder_get_chunk(Decoder &decoder);
 
 /**
  * Flushes the current chunk.
  */
 void
-decoder_flush_chunk(struct decoder *decoder);
+decoder_flush_chunk(Decoder &decoder);
 
 #endif

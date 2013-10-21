@@ -157,7 +157,7 @@ audiofile_setup_sample_format(AFfilehandle af_fp)
 }
 
 static void
-audiofile_stream_decode(struct decoder *decoder, struct input_stream *is)
+audiofile_stream_decode(Decoder &decoder, struct input_stream *is)
 {
 	AFvirtualfile *vf;
 	int fs, frame_count;

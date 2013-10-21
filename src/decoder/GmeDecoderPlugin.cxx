@@ -130,7 +130,7 @@ gme_container_scan(const char *path_fs, const unsigned int tnum)
 }
 
 static void
-gme_file_decode(struct decoder *decoder, const char *path_fs)
+gme_file_decode(Decoder &decoder, const char *path_fs)
 {
 	char *path_container = get_container_name(path_fs);
 

@@ -53,7 +53,7 @@
 #include <unistd.h>
 
 struct vorbis_input_stream {
-	struct decoder *decoder;
+	Decoder *decoder;
 
 	struct input_stream *input_stream;
 	bool seekable;
@@ -76,7 +76,8 @@ static int ogg_seek_cb(void *data, ogg_int64_t offset, int whence)
 
 	Error error;
 	return vis->seekable &&
-		(!vis->decoder || decoder_get_command(vis->decoder) != DecoderCommand::STOP) &&
+		(vis->decoder == nullptr ||
+		 decoder_get_command(*vis->decoder) != DecoderCommand::STOP) &&
 		vis->input_stream->LockSeek(offset, whence, error)
 		? 0 : -1;
 }
@@ -127,7 +128,7 @@ vorbis_strerror(int code)
 
 static bool
 vorbis_is_open(struct vorbis_input_stream *vis, OggVorbis_File *vf,
-	       struct decoder *decoder, struct input_stream *input_stream)
+	       Decoder *decoder, struct input_stream *input_stream)
 {
 	vis->decoder = decoder;
 	vis->input_stream = input_stream;
@@ -136,7 +137,7 @@ vorbis_is_open(struct vorbis_input_stream *vis, OggVorbis_File *vf,
 	int ret = ov_open_callbacks(vis, vf, NULL, 0, vorbis_is_callbacks);
 	if (ret < 0) {
 		if (decoder == NULL ||
-		    decoder_get_command(decoder) == DecoderCommand::NONE)
+		    decoder_get_command(*decoder) == DecoderCommand::NONE)
 			FormatWarning(vorbis_domain,
 				      "Failed to open Ogg Vorbis stream: %s",
 				      vorbis_strerror(ret));
@@ -147,7 +148,7 @@ vorbis_is_open(struct vorbis_input_stream *vis, OggVorbis_File *vf,
 }
 
 static void
-vorbis_send_comments(struct decoder *decoder, struct input_stream *is,
+vorbis_send_comments(Decoder &decoder, struct input_stream *is,
 		     char **comments)
 {
 	Tag *tag = vorbis_comments_to_tag(comments);
@@ -175,10 +176,10 @@ vorbis_interleave(float *dest, const float *const*src,
 
 /* public */
 static void
-vorbis_stream_decode(struct decoder *decoder,
+vorbis_stream_decode(Decoder &decoder,
 		     struct input_stream *input_stream)
 {
-	if (ogg_codec_detect(decoder, input_stream) != OGG_CODEC_VORBIS)
+	if (ogg_codec_detect(&decoder, input_stream) != OGG_CODEC_VORBIS)
 		return;
 
 	/* rewind the stream, because ogg_codec_detect() has
@@ -187,7 +188,7 @@ vorbis_stream_decode(struct decoder *decoder,
 
 	struct vorbis_input_stream vis;
 	OggVorbis_File vf;
-	if (!vorbis_is_open(&vis, &vf, decoder, input_stream))
+	if (!vorbis_is_open(&vis, &vf, &decoder, input_stream))
 		return;
 
 	const vorbis_info *vi = ov_info(&vf, -1);

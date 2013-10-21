@@ -51,7 +51,7 @@ dsdlib_id_equals(const struct dsdlib_id *id, const char *s)
 }
 
 bool
-dsdlib_read(struct decoder *decoder, struct input_stream *is,
+dsdlib_read(Decoder *decoder, struct input_stream *is,
 	    void *data, size_t length)
 {
 	size_t nbytes = decoder_read(decoder, is, data, length);
@@ -62,7 +62,7 @@ dsdlib_read(struct decoder *decoder, struct input_stream *is,
  * Skip the #input_stream to the specified offset.
  */
 bool
-dsdlib_skip_to(struct decoder *decoder, struct input_stream *is,
+dsdlib_skip_to(Decoder *decoder, struct input_stream *is,
 	       int64_t offset)
 {
 	if (is->IsSeekable())
@@ -90,7 +90,7 @@ dsdlib_skip_to(struct decoder *decoder, struct input_stream *is,
  * Skip some bytes from the #input_stream.
  */
 bool
-dsdlib_skip(struct decoder *decoder, struct input_stream *is,
+dsdlib_skip(Decoder *decoder, struct input_stream *is,
 	    int64_t delta)
 {
 	assert(delta >= 0);

@@ -29,6 +29,7 @@
 
 #include <libmodplug/modplug.h>
 
+
 #include <assert.h>
 
 static constexpr Domain modplug_domain("modplug");
@@ -51,7 +52,7 @@ modplug_decoder_init(const config_param &param)
 }
 
 static WritableBuffer<uint8_t>
-mod_loadfile(struct decoder *decoder, struct input_stream *is)
+mod_loadfile(Decoder *decoder, struct input_stream *is)
 {
 	const input_stream::offset_type size = is->GetSize();
 
@@ -106,7 +107,7 @@ mod_loadfile(struct decoder *decoder, struct input_stream *is)
 }
 
 static ModPlugFile *
-LoadModPlugFile(struct decoder *decoder, struct input_stream *is)
+LoadModPlugFile(Decoder *decoder, struct input_stream *is)
 {
 	const auto buffer = mod_loadfile(decoder, is);
 	if (buffer.IsNull()) {
@@ -120,7 +121,7 @@ LoadModPlugFile(struct decoder *decoder, struct input_stream *is)
 }
 
 static void
-mod_decode(struct decoder *decoder, struct input_stream *is)
+mod_decode(Decoder &decoder, struct input_stream *is)
 {
 	ModPlug_Settings settings;
 	int ret;
@@ -136,7 +137,7 @@ mod_decode(struct decoder *decoder, struct input_stream *is)
 	/* insert more setting changes here */
 	ModPlug_SetSettings(&settings);
 
-	ModPlugFile *f = LoadModPlugFile(decoder, is);
+	ModPlugFile *f = LoadModPlugFile(&decoder, is);
 	if (f == nullptr) {
 		LogWarning(modplug_domain, "could not decode stream");
 		return;

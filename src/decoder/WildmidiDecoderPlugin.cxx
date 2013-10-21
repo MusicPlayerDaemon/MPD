@@ -65,7 +65,7 @@ wildmidi_finish(void)
 }
 
 static void
-wildmidi_file_decode(struct decoder *decoder, const char *path_fs)
+wildmidi_file_decode(Decoder &decoder, const char *path_fs)
 {
 	static constexpr AudioFormat audio_format = {
 		WILDMIDI_SAMPLE_RATE,

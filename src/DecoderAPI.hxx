@@ -46,7 +46,7 @@
  * @param total_time the total number of seconds in this song; -1 if unknown
  */
 void
-decoder_initialized(struct decoder *decoder,
+decoder_initialized(Decoder &decoder,
 		    AudioFormat audio_format,
 		    bool seekable, float total_time);
 
@@ -58,7 +58,7 @@ decoder_initialized(struct decoder *decoder,
  * command pending
  */
 DecoderCommand
-decoder_get_command(struct decoder *decoder);
+decoder_get_command(Decoder &decoder);
 
 /**
  * Called by the decoder when it has performed the requested command
@@ -68,7 +68,7 @@ decoder_get_command(struct decoder *decoder);
  * @param decoder the decoder object
  */
 void
-decoder_command_finished(struct decoder *decoder);
+decoder_command_finished(Decoder &decoder);
 
 /**
  * Call this when you have received the DecoderCommand::SEEK command.
@@ -77,7 +77,7 @@ decoder_command_finished(struct decoder *decoder);
  * @return the destination position for the week
  */
 double
-decoder_seek_where(struct decoder *decoder);
+decoder_seek_where(Decoder &decoder);
 
 /**
  * Call this instead of decoder_command_finished() when seeking has
@@ -86,7 +86,7 @@ decoder_seek_where(struct decoder *decoder);
  * @param decoder the decoder object
  */
 void
-decoder_seek_error(struct decoder *decoder);
+decoder_seek_error(Decoder &decoder);
 
 /**
  * Blocking read from the input stream.
@@ -99,8 +99,15 @@ decoder_seek_error(struct decoder *decoder);
  * occurs: end of file; error; command (like SEEK or STOP).
  */
 size_t
-decoder_read(struct decoder *decoder, struct input_stream *is,
+decoder_read(Decoder *decoder, struct input_stream *is,
 	     void *buffer, size_t length);
+
+static inline size_t
+decoder_read(Decoder &decoder, input_stream *is,
+	     void *buffer, size_t length)
+{
+	return decoder_read(&decoder, is, buffer, length);
+}
 
 /**
  * Sets the time stamp for the next data chunk [seconds].  The MPD
@@ -109,7 +116,7 @@ decoder_read(struct decoder *decoder, struct input_stream *is,
  * on the buffer size won't work.
  */
 void
-decoder_timestamp(struct decoder *decoder, double t);
+decoder_timestamp(Decoder &decoder, double t);
 
 /**
  * This function is called by the decoder plugin when it has
@@ -124,7 +131,7 @@ decoder_timestamp(struct decoder *decoder, double t);
  * command pending
  */
 DecoderCommand
-decoder_data(struct decoder *decoder, struct input_stream *is,
+decoder_data(Decoder &decoder, struct input_stream *is,
 	     const void *data, size_t length,
 	     uint16_t kbit_rate);
 
@@ -140,7 +147,7 @@ decoder_data(struct decoder *decoder, struct input_stream *is,
  * command pending
  */
 DecoderCommand
-decoder_tag(struct decoder *decoder, struct input_stream *is, Tag &&tag);
+decoder_tag(Decoder &decoder, struct input_stream *is, Tag &&tag);
 
 /**
  * Set replay gain values for the following chunks.
@@ -150,7 +157,7 @@ decoder_tag(struct decoder *decoder, struct input_stream *is, Tag &&tag);
  * the previous replay gain values
  */
 void
-decoder_replay_gain(struct decoder *decoder,
+decoder_replay_gain(Decoder &decoder,
 		    const struct replay_gain_info *replay_gain_info);
 
 /**
@@ -161,7 +168,7 @@ decoder_replay_gain(struct decoder *decoder,
  * @param mixramp_end the mixramp_end tag; may be nullptr to invalidate
  */
 void
-decoder_mixramp(struct decoder *decoder,
+decoder_mixramp(Decoder &decoder,
 		char *mixramp_start, char *mixramp_end);
 
 #endif

@@ -138,7 +138,7 @@ wavpack_bits_to_sample_format(bool is_float, int bytes_per_sample)
  * Requires an already opened WavpackContext.
  */
 static void
-wavpack_decode(struct decoder *decoder, WavpackContext *wpc, bool can_seek)
+wavpack_decode(Decoder &decoder, WavpackContext *wpc, bool can_seek)
 {
 	bool is_float;
 	SampleFormat sample_format;
@@ -345,7 +345,7 @@ wavpack_scan_file(const char *fname,
 
 /* This struct is needed for per-stream last_byte storage. */
 struct wavpack_input {
-	struct decoder *decoder;
+	Decoder *decoder;
 	struct input_stream *is;
 	/* Needed for push_back_byte() */
 	int last_byte;
@@ -449,16 +449,16 @@ static WavpackStreamReader mpd_is_reader = {
 };
 
 static void
-wavpack_input_init(struct wavpack_input *isp, struct decoder *decoder,
+wavpack_input_init(struct wavpack_input *isp, Decoder &decoder,
 		   struct input_stream *is)
 {
-	isp->decoder = decoder;
+	isp->decoder = &decoder;
 	isp->is = is;
 	isp->last_byte = EOF;
 }
 
 static struct input_stream *
-wavpack_open_wvc(struct decoder *decoder, const char *uri,
+wavpack_open_wvc(Decoder &decoder, const char *uri,
 		 Mutex &mutex, Cond &cond,
 		 struct wavpack_input *wpi)
 {
@@ -504,7 +504,7 @@ wavpack_open_wvc(struct decoder *decoder, const char *uri,
  * Decodes a stream.
  */
 static void
-wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
+wavpack_streamdecode(Decoder & decoder, struct input_stream *is)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
@@ -550,7 +550,7 @@ wavpack_streamdecode(struct decoder * decoder, struct input_stream *is)
  * Decodes a file.
  */
 static void
-wavpack_filedecode(struct decoder *decoder, const char *fname)
+wavpack_filedecode(Decoder &decoder, const char *fname)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;

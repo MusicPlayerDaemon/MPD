@@ -42,7 +42,7 @@
 #endif
 
 void
-decoder_initialized(gcc_unused struct decoder *decoder,
+decoder_initialized(gcc_unused Decoder &decoder,
 		    gcc_unused const AudioFormat audio_format,
 		    gcc_unused bool seekable,
 		    gcc_unused float total_time)
@@ -50,26 +50,29 @@ decoder_initialized(gcc_unused struct decoder *decoder,
 }
 
 DecoderCommand
-decoder_get_command(gcc_unused struct decoder *decoder)
+decoder_get_command(gcc_unused Decoder &decoder)
 {
 	return DecoderCommand::NONE;
 }
 
-void decoder_command_finished(gcc_unused struct decoder *decoder)
+void
+decoder_command_finished(gcc_unused Decoder &decoder)
 {
 }
 
-double decoder_seek_where(gcc_unused struct decoder *decoder)
+double
+decoder_seek_where(gcc_unused Decoder &decoder)
 {
 	return 1.0;
 }
 
-void decoder_seek_error(gcc_unused struct decoder *decoder)
+void
+decoder_seek_error(gcc_unused Decoder &decoder)
 {
 }
 
 size_t
-decoder_read(gcc_unused struct decoder *decoder,
+decoder_read(gcc_unused Decoder *decoder,
 	     struct input_stream *is,
 	     void *buffer, size_t length)
 {
@@ -78,23 +81,23 @@ decoder_read(gcc_unused struct decoder *decoder,
 }
 
 void
-decoder_timestamp(gcc_unused struct decoder *decoder,
+decoder_timestamp(gcc_unused Decoder &decoder,
 		  gcc_unused double t)
 {
 }
 
 DecoderCommand
-decoder_data(gcc_unused struct decoder *decoder,
+decoder_data(gcc_unused Decoder &decoder,
 	     gcc_unused struct input_stream *is,
 	     const void *data, size_t datalen,
-	     gcc_unused uint16_t bit_rate)
+	     gcc_unused uint16_t kbit_rate)
 {
 	gcc_unused ssize_t nbytes = write(1, data, datalen);
 	return DecoderCommand::NONE;
 }
 
 DecoderCommand
-decoder_tag(gcc_unused struct decoder *decoder,
+decoder_tag(gcc_unused Decoder &decoder,
 	    gcc_unused struct input_stream *is,
 	    gcc_unused Tag &&tag)
 {
@@ -102,13 +105,13 @@ decoder_tag(gcc_unused struct decoder *decoder,
 }
 
 void
-decoder_replay_gain(gcc_unused struct decoder *decoder,
+decoder_replay_gain(gcc_unused Decoder &decoder,
 		    gcc_unused const struct replay_gain_info *replay_gain_info)
 {
 }
 
 void
-decoder_mixramp(gcc_unused struct decoder *decoder,
+decoder_mixramp(gcc_unused Decoder &decoder,
 		char *mixramp_start, char *mixramp_end)
 {
 	g_free(mixramp_start);

@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+struct Decoder;
+
 struct dsdlib_id {
 	char value[4];
 };
@@ -31,15 +33,15 @@ bool
 dsdlib_id_equals(const struct dsdlib_id *id, const char *s);
 
 bool
-dsdlib_read(struct decoder *decoder, struct input_stream *is,
+dsdlib_read(Decoder *decoder, struct input_stream *is,
 	    void *data, size_t length);
 
 bool
-dsdlib_skip_to(struct decoder *decoder, struct input_stream *is,
+dsdlib_skip_to(Decoder *decoder, struct input_stream *is,
 	       int64_t offset);
 
 bool
-dsdlib_skip(struct decoder *decoder, struct input_stream *is,
+dsdlib_skip(Decoder *decoder, struct input_stream *is,
 	    int64_t delta);
 
 void

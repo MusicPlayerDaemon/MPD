@@ -36,7 +36,7 @@
 
 struct mpc_decoder_data {
 	struct input_stream *is;
-	struct decoder *decoder;
+	Decoder *decoder;
 };
 
 static constexpr Domain mpcdec_domain("mpcdec");
@@ -130,13 +130,13 @@ mpc_to_mpd_buffer(int32_t *dest, const MPC_SAMPLE_FORMAT *src,
 }
 
 static void
-mpcdec_decode(struct decoder *mpd_decoder, struct input_stream *is)
+mpcdec_decode(Decoder &mpd_decoder, struct input_stream *is)
 {
 	MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
 
 	struct mpc_decoder_data data;
 	data.is = is;
-	data.decoder = mpd_decoder;
+	data.decoder = &mpd_decoder;
 
 	mpc_reader reader;
 	reader.read = mpc_read_cb;

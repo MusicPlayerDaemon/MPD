@@ -173,7 +173,7 @@ static void
 flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 		  FLAC__uint64 t_start, FLAC__uint64 t_end)
 {
-	struct decoder *decoder = data->decoder;
+	Decoder &decoder = data->decoder;
 
 	data->first_frame = t_start;
 
@@ -255,7 +255,7 @@ stream_init(FLAC__StreamDecoder *flac_dec, struct flac_data *data, bool is_ogg)
 }
 
 static void
-flac_decode_internal(struct decoder * decoder,
+flac_decode_internal(Decoder &decoder,
 		     struct input_stream *input_stream,
 		     bool is_ogg)
 {
@@ -289,7 +289,7 @@ flac_decode_internal(struct decoder * decoder,
 }
 
 static void
-flac_decode(struct decoder * decoder, struct input_stream *input_stream)
+flac_decode(Decoder &decoder, struct input_stream *input_stream)
 {
 	flac_decode_internal(decoder, input_stream, false);
 }
@@ -333,9 +333,9 @@ oggflac_scan_stream(struct input_stream *is,
 }
 
 static void
-oggflac_decode(struct decoder *decoder, struct input_stream *input_stream)
+oggflac_decode(Decoder &decoder, struct input_stream *input_stream)
 {
-	if (ogg_codec_detect(decoder, input_stream) != OGG_CODEC_FLAC)
+	if (ogg_codec_detect(&decoder, input_stream) != OGG_CODEC_FLAC)
 		return;
 
 	/* rewind the stream, because ogg_codec_detect() has

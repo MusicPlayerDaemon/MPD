@@ -112,64 +112,62 @@ decoder_input_stream_open(decoder_control &dc, const char *uri)
 
 static bool
 decoder_stream_decode(const DecoderPlugin &plugin,
-		      struct decoder *decoder,
+		      Decoder &decoder,
 		      struct input_stream *input_stream)
 {
 	assert(plugin.stream_decode != nullptr);
-	assert(decoder != nullptr);
-	assert(decoder->stream_tag == nullptr);
-	assert(decoder->decoder_tag == nullptr);
+	assert(decoder.stream_tag == nullptr);
+	assert(decoder.decoder_tag == nullptr);
 	assert(input_stream != nullptr);
 	assert(input_stream->ready);
-	assert(decoder->dc.state == DecoderState::START);
+	assert(decoder.dc.state == DecoderState::START);
 
 	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);
 
-	if (decoder->dc.command == DecoderCommand::STOP)
+	if (decoder.dc.command == DecoderCommand::STOP)
 		return true;
 
 	/* rewind the stream, so each plugin gets a fresh start */
 	input_stream->Seek(0, SEEK_SET, IgnoreError());
 
-	decoder->dc.Unlock();
+	decoder.dc.Unlock();
 
-	plugin.StreamDecode(*decoder, *input_stream);
+	plugin.StreamDecode(decoder, *input_stream);
 
-	decoder->dc.Lock();
+	decoder.dc.Lock();
 
-	assert(decoder->dc.state == DecoderState::START ||
-	       decoder->dc.state == DecoderState::DECODE);
+	assert(decoder.dc.state == DecoderState::START ||
+	       decoder.dc.state == DecoderState::DECODE);
 
-	return decoder->dc.state != DecoderState::START;
+	return decoder.dc.state != DecoderState::START;
 }
 
 static bool
 decoder_file_decode(const DecoderPlugin &plugin,
-		    struct decoder *decoder, const char *path)
+		    Decoder &decoder, const char *path)
 {
 	assert(plugin.file_decode != nullptr);
-	assert(decoder != nullptr);
-	assert(decoder->stream_tag == nullptr);
-	assert(decoder->decoder_tag == nullptr);
+	assert(decoder.stream_tag == nullptr);
+	assert(decoder.decoder_tag == nullptr);
 	assert(path != nullptr);
 	assert(PathTraits::IsAbsoluteFS(path));
-	assert(decoder->dc.state == DecoderState::START);
+	assert(decoder.dc.state == DecoderState::START);
 
 	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);
 
-	if (decoder->dc.command == DecoderCommand::STOP)
+	if (decoder.dc.command == DecoderCommand::STOP)
 		return true;
 
-	decoder->dc.Unlock();
+	decoder.dc.Unlock();
 
-	plugin.FileDecode(*decoder, path);
+	plugin.FileDecode(decoder, path);
 
-	decoder->dc.Lock();
+	decoder.dc.Lock();
 
-	assert(decoder->dc.state == DecoderState::START ||
-	       decoder->dc.state == DecoderState::DECODE);
+	assert(decoder.dc.state == DecoderState::START ||
+	       decoder.dc.state == DecoderState::DECODE);
 
-	return decoder->dc.state != DecoderState::START;
+	return decoder.dc.state != DecoderState::START;
 }
 
 /**
@@ -187,7 +185,7 @@ deconst_plugin(const struct DecoderPlugin *plugin)
  * @param tried_r a list of plugins which were tried
  */
 static bool
-decoder_run_stream_mime_type(struct decoder *decoder, struct input_stream *is,
+decoder_run_stream_mime_type(Decoder &decoder, struct input_stream *is,
 			     GSList **tried_r)
 {
 	assert(tried_r != nullptr);
@@ -223,7 +221,7 @@ decoder_run_stream_mime_type(struct decoder *decoder, struct input_stream *is,
  * @param tried_r a list of plugins which were tried
  */
 static bool
-decoder_run_stream_suffix(struct decoder *decoder, struct input_stream *is,
+decoder_run_stream_suffix(Decoder &decoder, struct input_stream *is,
 			  const char *uri, GSList **tried_r)
 {
 	assert(tried_r != nullptr);
@@ -255,7 +253,7 @@ decoder_run_stream_suffix(struct decoder *decoder, struct input_stream *is,
  * Try decoding a stream, using the fallback plugin.
  */
 static bool
-decoder_run_stream_fallback(struct decoder *decoder, struct input_stream *is)
+decoder_run_stream_fallback(Decoder &decoder, struct input_stream *is)
 {
 	const struct DecoderPlugin *plugin;
 
@@ -268,9 +266,9 @@ decoder_run_stream_fallback(struct decoder *decoder, struct input_stream *is)
  * Try decoding a stream.
  */
 static bool
-decoder_run_stream(struct decoder *decoder, const char *uri)
+decoder_run_stream(Decoder &decoder, const char *uri)
 {
-	decoder_control &dc = decoder->dc;
+	decoder_control &dc = decoder.dc;
 	struct input_stream *input_stream;
 	bool success;
 
@@ -311,7 +309,7 @@ decoder_run_stream(struct decoder *decoder, const char *uri)
  * decoder_replay_gain().
  */
 static void
-decoder_load_replay_gain(struct decoder *decoder, const char *path_fs)
+decoder_load_replay_gain(Decoder &decoder, const char *path_fs)
 {
 	struct replay_gain_info info;
 	if (replay_gain_ape_read(path_fs, &info))
@@ -322,9 +320,9 @@ decoder_load_replay_gain(struct decoder *decoder, const char *path_fs)
  * Try decoding a file.
  */
 static bool
-decoder_run_file(struct decoder *decoder, const char *path_fs)
+decoder_run_file(Decoder &decoder, const char *path_fs)
 {
-	decoder_control &dc = decoder->dc;
+	decoder_control &dc = decoder.dc;
 	const char *suffix = uri_get_suffix(path_fs);
 	const struct DecoderPlugin *plugin = nullptr;
 
@@ -375,7 +373,7 @@ static void
 decoder_run_song(decoder_control &dc,
 		 const Song *song, const char *uri)
 {
-	decoder decoder(dc, dc.start_ms > 0,
+	Decoder decoder(dc, dc.start_ms > 0,
 			song->tag != nullptr && song->IsFile()
 			? new Tag(*song->tag) : nullptr);
 	int ret;
@@ -385,15 +383,15 @@ decoder_run_song(decoder_control &dc,
 	decoder_command_finished_locked(dc);
 
 	ret = song->IsFile()
-		? decoder_run_file(&decoder, uri)
-		: decoder_run_stream(&decoder, uri);
+		? decoder_run_file(decoder, uri)
+		: decoder_run_stream(decoder, uri);
 
 	dc.Unlock();
 
 	/* flush the last chunk */
 
 	if (decoder.chunk != nullptr)
-		decoder_flush_chunk(&decoder);
+		decoder_flush_chunk(decoder);
 
 	dc.Lock();
 

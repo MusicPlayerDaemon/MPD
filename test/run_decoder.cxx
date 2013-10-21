@@ -45,7 +45,7 @@ my_log_func(const gchar *log_domain, gcc_unused GLogLevelFlags log_level,
 		g_printerr("%s\n", message);
 }
 
-struct decoder {
+struct Decoder {
 	const char *uri;
 
 	const struct DecoderPlugin *plugin;
@@ -54,43 +54,46 @@ struct decoder {
 };
 
 void
-decoder_initialized(struct decoder *decoder,
+decoder_initialized(Decoder &decoder,
 		    const AudioFormat audio_format,
 		    gcc_unused bool seekable,
 		    gcc_unused float total_time)
 {
 	struct audio_format_string af_string;
 
-	assert(!decoder->initialized);
+	assert(!decoder.initialized);
 	assert(audio_format.IsValid());
 
 	g_printerr("audio_format=%s\n",
 		   audio_format_to_string(audio_format, &af_string));
 
-	decoder->initialized = true;
+	decoder.initialized = true;
 }
 
 DecoderCommand
-decoder_get_command(gcc_unused struct decoder *decoder)
+decoder_get_command(gcc_unused Decoder &decoder)
 {
 	return DecoderCommand::NONE;
 }
 
-void decoder_command_finished(gcc_unused struct decoder *decoder)
+void
+decoder_command_finished(gcc_unused Decoder &decoder)
 {
 }
 
-double decoder_seek_where(gcc_unused struct decoder *decoder)
+double
+decoder_seek_where(gcc_unused Decoder &decoder)
 {
 	return 1.0;
 }
 
-void decoder_seek_error(gcc_unused struct decoder *decoder)
+void
+decoder_seek_error(gcc_unused Decoder &decoder)
 {
 }
 
 size_t
-decoder_read(gcc_unused struct decoder *decoder,
+decoder_read(gcc_unused Decoder *decoder,
 	     struct input_stream *is,
 	     void *buffer, size_t length)
 {
@@ -98,13 +101,13 @@ decoder_read(gcc_unused struct decoder *decoder,
 }
 
 void
-decoder_timestamp(gcc_unused struct decoder *decoder,
+decoder_timestamp(gcc_unused Decoder &decoder,
 		  gcc_unused double t)
 {
 }
 
 DecoderCommand
-decoder_data(gcc_unused struct decoder *decoder,
+decoder_data(gcc_unused Decoder &decoder,
 	     gcc_unused struct input_stream *is,
 	     const void *data, size_t datalen,
 	     gcc_unused uint16_t kbit_rate)
@@ -114,7 +117,7 @@ decoder_data(gcc_unused struct decoder *decoder,
 }
 
 DecoderCommand
-decoder_tag(gcc_unused struct decoder *decoder,
+decoder_tag(gcc_unused Decoder &decoder,
 	    gcc_unused struct input_stream *is,
 	    gcc_unused Tag &&tag)
 {
@@ -122,7 +125,7 @@ decoder_tag(gcc_unused struct decoder *decoder,
 }
 
 void
-decoder_replay_gain(gcc_unused struct decoder *decoder,
+decoder_replay_gain(gcc_unused Decoder &decoder,
 		    const struct replay_gain_info *replay_gain_info)
 {
 	const struct replay_gain_tuple *tuple =
@@ -138,7 +141,7 @@ decoder_replay_gain(gcc_unused struct decoder *decoder,
 }
 
 void
-decoder_mixramp(gcc_unused struct decoder *decoder,
+decoder_mixramp(gcc_unused Decoder &decoder,
 		char *mixramp_start, char *mixramp_end)
 {
 	g_free(mixramp_start);
@@ -148,13 +151,13 @@ decoder_mixramp(gcc_unused struct decoder *decoder,
 int main(int argc, char **argv)
 {
 	const char *decoder_name;
-	struct decoder decoder;
 
 	if (argc != 3) {
 		g_printerr("Usage: run_decoder DECODER URI >OUT\n");
 		return 1;
 	}
 
+	Decoder decoder;
 	decoder_name = argv[1];
 	decoder.uri = argv[2];
 

@@ -27,7 +27,7 @@
 
 #include <assert.h>
 
-decoder::~decoder()
+Decoder::~Decoder()
 {
 	/* caller must flush the chunk */
 	assert(chunk == nullptr);
@@ -59,26 +59,24 @@ need_chunks(decoder_control &dc, bool do_wait)
 }
 
 struct music_chunk *
-decoder_get_chunk(struct decoder *decoder)
+decoder_get_chunk(Decoder &decoder)
 {
-	decoder_control &dc = decoder->dc;
+	decoder_control &dc = decoder.dc;
 	DecoderCommand cmd;
 
-	assert(decoder != nullptr);
-
-	if (decoder->chunk != nullptr)
-		return decoder->chunk;
+	if (decoder.chunk != nullptr)
+		return decoder.chunk;
 
 	do {
-		decoder->chunk = dc.buffer->Allocate();
-		if (decoder->chunk != nullptr) {
-			decoder->chunk->replay_gain_serial =
-				decoder->replay_gain_serial;
-			if (decoder->replay_gain_serial != 0)
-				decoder->chunk->replay_gain_info =
-					decoder->replay_gain_info;
+		decoder.chunk = dc.buffer->Allocate();
+		if (decoder.chunk != nullptr) {
+			decoder.chunk->replay_gain_serial =
+				decoder.replay_gain_serial;
+			if (decoder.replay_gain_serial != 0)
+				decoder.chunk->replay_gain_info =
+					decoder.replay_gain_info;
 
-			return decoder->chunk;
+			return decoder.chunk;
 		}
 
 		dc.Lock();
@@ -90,17 +88,16 @@ decoder_get_chunk(struct decoder *decoder)
 }
 
 void
-decoder_flush_chunk(struct decoder *decoder)
+decoder_flush_chunk(Decoder &decoder)
 {
-	decoder_control &dc = decoder->dc;
+	decoder_control &dc = decoder.dc;
 
-	assert(decoder != nullptr);
-	assert(decoder->chunk != nullptr);
+	assert(decoder.chunk != nullptr);
 
-	if (decoder->chunk->IsEmpty())
-		dc.buffer->Return(decoder->chunk);
+	if (decoder.chunk->IsEmpty())
+		dc.buffer->Return(decoder.chunk);
 	else
-		dc.pipe->Push(decoder->chunk);
+		dc.pipe->Push(decoder.chunk);
 
-	decoder->chunk = nullptr;
+	decoder.chunk = nullptr;
 }

@@ -37,19 +37,18 @@
 #include <string.h>
 
 void
-decoder_initialized(struct decoder *decoder,
+decoder_initialized(Decoder &decoder,
 		    const AudioFormat audio_format,
 		    bool seekable, float total_time)
 {
-	decoder_control &dc = decoder->dc;
+	decoder_control &dc = decoder.dc;
 	struct audio_format_string af_string;
 
 	assert(dc.state == DecoderState::START);
 	assert(dc.pipe != nullptr);
-	assert(decoder != nullptr);
-	assert(decoder->stream_tag == nullptr);
-	assert(decoder->decoder_tag == nullptr);
-	assert(!decoder->seeking);
+	assert(decoder.stream_tag == nullptr);
+	assert(decoder.decoder_tag == nullptr);
+	assert(!decoder.seeking);
 	assert(audio_format.IsDefined());
 	assert(audio_format.IsValid());
 
@@ -80,9 +79,9 @@ decoder_initialized(struct decoder *decoder,
  */
 gcc_pure
 static bool
-decoder_prepare_initial_seek(struct decoder *decoder)
+decoder_prepare_initial_seek(Decoder &decoder)
 {
-	const decoder_control &dc = decoder->dc;
+	const decoder_control &dc = decoder.dc;
 	assert(dc.pipe != nullptr);
 
 	if (dc.state != DecoderState::DECODE)
@@ -91,30 +90,30 @@ decoder_prepare_initial_seek(struct decoder *decoder)
 		   virtual "SEEK" command */
 		return false;
 
-	if (decoder->initial_seek_running)
+	if (decoder.initial_seek_running)
 		/* initial seek has already begun - override any other
 		   command */
 		return true;
 
-	if (decoder->initial_seek_pending) {
+	if (decoder.initial_seek_pending) {
 		if (!dc.seekable) {
 			/* seeking is not possible */
-			decoder->initial_seek_pending = false;
+			decoder.initial_seek_pending = false;
 			return false;
 		}
 
 		if (dc.command == DecoderCommand::NONE) {
 			/* begin initial seek */
 
-			decoder->initial_seek_pending = false;
-			decoder->initial_seek_running = true;
+			decoder.initial_seek_pending = false;
+			decoder.initial_seek_running = true;
 			return true;
 		}
 
 		/* skip initial seek when there's another command
 		   (e.g. STOP) */
 
-		decoder->initial_seek_pending = false;
+		decoder.initial_seek_pending = false;
 	}
 
 	return false;
@@ -127,9 +126,9 @@ decoder_prepare_initial_seek(struct decoder *decoder)
  */
 gcc_pure
 static DecoderCommand
-decoder_get_virtual_command(struct decoder *decoder)
+decoder_get_virtual_command(Decoder &decoder)
 {
-	const decoder_control &dc = decoder->dc;
+	const decoder_control &dc = decoder.dc;
 	assert(dc.pipe != nullptr);
 
 	if (decoder_prepare_initial_seek(decoder))
@@ -139,49 +138,49 @@ decoder_get_virtual_command(struct decoder *decoder)
 }
 
 DecoderCommand
-decoder_get_command(struct decoder *decoder)
+decoder_get_command(Decoder &decoder)
 {
 	return decoder_get_virtual_command(decoder);
 }
 
 void
-decoder_command_finished(struct decoder *decoder)
+decoder_command_finished(Decoder &decoder)
 {
-	decoder_control &dc = decoder->dc;
+	decoder_control &dc = decoder.dc;
 
 	dc.Lock();
 
 	assert(dc.command != DecoderCommand::NONE ||
-	       decoder->initial_seek_running);
+	       decoder.initial_seek_running);
 	assert(dc.command != DecoderCommand::SEEK ||
-	       decoder->initial_seek_running ||
-	       dc.seek_error || decoder->seeking);
+	       decoder.initial_seek_running ||
+	       dc.seek_error || decoder.seeking);
 	assert(dc.pipe != nullptr);
 
-	if (decoder->initial_seek_running) {
-		assert(!decoder->seeking);
-		assert(decoder->chunk == nullptr);
+	if (decoder.initial_seek_running) {
+		assert(!decoder.seeking);
+		assert(decoder.chunk == nullptr);
 		assert(dc.pipe->IsEmpty());
 
-		decoder->initial_seek_running = false;
-		decoder->timestamp = dc.start_ms / 1000.;
+		decoder.initial_seek_running = false;
+		decoder.timestamp = dc.start_ms / 1000.;
 		dc.Unlock();
 		return;
 	}
 
-	if (decoder->seeking) {
-		decoder->seeking = false;
+	if (decoder.seeking) {
+		decoder.seeking = false;
 
 		/* delete frames from the old song position */
 
-		if (decoder->chunk != nullptr) {
-			dc.buffer->Return(decoder->chunk);
-			decoder->chunk = nullptr;
+		if (decoder.chunk != nullptr) {
+			dc.buffer->Return(decoder.chunk);
+			decoder.chunk = nullptr;
 		}
 
 		dc.pipe->Clear(*dc.buffer);
 
-		decoder->timestamp = dc.seek_where;
+		decoder.timestamp = dc.seek_where;
 	}
 
 	dc.command = DecoderCommand::NONE;
@@ -189,39 +188,39 @@ decoder_command_finished(struct decoder *decoder)
 	dc.Unlock();
 }
 
-double decoder_seek_where(gcc_unused struct decoder * decoder)
+double decoder_seek_where(gcc_unused Decoder & decoder)
 {
-	const decoder_control &dc = decoder->dc;
+	const decoder_control &dc = decoder.dc;
 
 	assert(dc.pipe != nullptr);
 
-	if (decoder->initial_seek_running)
+	if (decoder.initial_seek_running)
 		return dc.start_ms / 1000.;
 
 	assert(dc.command == DecoderCommand::SEEK);
 
-	decoder->seeking = true;
+	decoder.seeking = true;
 
 	return dc.seek_where;
 }
 
-void decoder_seek_error(struct decoder * decoder)
+void decoder_seek_error(Decoder & decoder)
 {
-	decoder_control &dc = decoder->dc;
+	decoder_control &dc = decoder.dc;
 
 	assert(dc.pipe != nullptr);
 
-	if (decoder->initial_seek_running) {
+	if (decoder.initial_seek_running) {
 		/* d'oh, we can't seek to the sub-song start position,
 		   what now? - no idea, ignoring the problem for now. */
-		decoder->initial_seek_running = false;
+		decoder.initial_seek_running = false;
 		return;
 	}
 
 	assert(dc.command == DecoderCommand::SEEK);
 
 	dc.seek_error = true;
-	decoder->seeking = false;
+	decoder.seeking = false;
 
 	decoder_command_finished(decoder);
 }
@@ -232,7 +231,7 @@ void decoder_seek_error(struct decoder * decoder)
  */
 gcc_pure
 static inline bool
-decoder_check_cancel_read(const struct decoder *decoder)
+decoder_check_cancel_read(const Decoder *decoder)
 {
 	if (decoder == nullptr)
 		return false;
@@ -250,9 +249,10 @@ decoder_check_cancel_read(const struct decoder *decoder)
 	return true;
 }
 
-size_t decoder_read(struct decoder *decoder,
-		    struct input_stream *is,
-		    void *buffer, size_t length)
+size_t
+decoder_read(Decoder *decoder,
+	     struct input_stream *is,
+	     void *buffer, size_t length)
 {
 	/* XXX don't allow decoder==nullptr */
 
@@ -293,12 +293,11 @@ size_t decoder_read(struct decoder *decoder,
 }
 
 void
-decoder_timestamp(struct decoder *decoder, double t)
+decoder_timestamp(Decoder &decoder, double t)
 {
-	assert(decoder != nullptr);
 	assert(t >= 0);
 
-	decoder->timestamp = t;
+	decoder.timestamp = t;
 }
 
 /**
@@ -306,23 +305,23 @@ decoder_timestamp(struct decoder *decoder, double t)
  * (decoder.chunk) if there is one.
  */
 static DecoderCommand
-do_send_tag(struct decoder *decoder, const Tag &tag)
+do_send_tag(Decoder &decoder, const Tag &tag)
 {
 	struct music_chunk *chunk;
 
-	if (decoder->chunk != nullptr) {
+	if (decoder.chunk != nullptr) {
 		/* there is a partial chunk - flush it, we want the
 		   tag in a new chunk */
 		decoder_flush_chunk(decoder);
-		decoder->dc.client_cond.signal();
+		decoder.dc.client_cond.signal();
 	}
 
-	assert(decoder->chunk == nullptr);
+	assert(decoder.chunk == nullptr);
 
 	chunk = decoder_get_chunk(decoder);
 	if (chunk == nullptr) {
-		assert(decoder->dc.command != DecoderCommand::NONE);
-		return decoder->dc.command;
+		assert(decoder.dc.command != DecoderCommand::NONE);
+		return decoder.dc.command;
 	}
 
 	chunk->tag = new Tag(tag);
@@ -330,7 +329,7 @@ do_send_tag(struct decoder *decoder, const Tag &tag)
 }
 
 static bool
-update_stream_tag(struct decoder *decoder, struct input_stream *is)
+update_stream_tag(Decoder &decoder, struct input_stream *is)
 {
 	Tag *tag;
 
@@ -338,27 +337,27 @@ update_stream_tag(struct decoder *decoder, struct input_stream *is)
 		? is->LockReadTag()
 		: nullptr;
 	if (tag == nullptr) {
-		tag = decoder->song_tag;
+		tag = decoder.song_tag;
 		if (tag == nullptr)
 			return false;
 
 		/* no stream tag present - submit the song tag
 		   instead */
-		decoder->song_tag = nullptr;
+		decoder.song_tag = nullptr;
 	}
 
-	delete decoder->stream_tag;
-	decoder->stream_tag = tag;
+	delete decoder.stream_tag;
+	decoder.stream_tag = tag;
 	return true;
 }
 
 DecoderCommand
-decoder_data(struct decoder *decoder,
+decoder_data(Decoder &decoder,
 	     struct input_stream *is,
 	     const void *data, size_t length,
 	     uint16_t kbit_rate)
 {
-	decoder_control &dc = decoder->dc;
+	decoder_control &dc = decoder.dc;
 	DecoderCommand cmd;
 
 	assert(dc.state == DecoderState::DECODE);
@@ -376,15 +375,15 @@ decoder_data(struct decoder *decoder,
 	/* send stream tags */
 
 	if (update_stream_tag(decoder, is)) {
-		if (decoder->decoder_tag != nullptr) {
+		if (decoder.decoder_tag != nullptr) {
 			/* merge with tag from decoder plugin */
-			Tag *tag = Tag::Merge(*decoder->decoder_tag,
-					      *decoder->stream_tag);
+			Tag *tag = Tag::Merge(*decoder.decoder_tag,
+					      *decoder.stream_tag);
 			cmd = do_send_tag(decoder, *tag);
 			delete tag;
 		} else
 			/* send only the stream tag */
-			cmd = do_send_tag(decoder, *decoder->stream_tag);
+			cmd = do_send_tag(decoder, *decoder.stream_tag);
 
 		if (cmd != DecoderCommand::NONE)
 			return cmd;
@@ -392,7 +391,7 @@ decoder_data(struct decoder *decoder,
 
 	if (dc.in_audio_format != dc.out_audio_format) {
 		Error error;
-		data = decoder->conv_state.Convert(dc.in_audio_format,
+		data = decoder.conv_state.Convert(dc.in_audio_format,
 						   data, length,
 						   dc.out_audio_format,
 						   &length,
@@ -418,7 +417,7 @@ decoder_data(struct decoder *decoder,
 		}
 
 		void *dest = chunk->Write(dc.out_audio_format,
-					  decoder->timestamp -
+					  decoder.timestamp -
 					  dc.song->start_ms / 1000.0,
 					  kbit_rate, &nbytes);
 		if (dest == nullptr) {
@@ -449,11 +448,11 @@ decoder_data(struct decoder *decoder,
 		data = (const uint8_t *)data + nbytes;
 		length -= nbytes;
 
-		decoder->timestamp += (double)nbytes /
+		decoder.timestamp += (double)nbytes /
 			dc.out_audio_format.GetTimeToSize();
 
 		if (dc.end_ms > 0 &&
-		    decoder->timestamp >= dc.end_ms / 1000.0)
+		    decoder.timestamp >= dc.end_ms / 1000.0)
 			/* the end of this range has been reached:
 			   stop decoding */
 			return DecoderCommand::STOP;
@@ -463,10 +462,10 @@ decoder_data(struct decoder *decoder,
 }
 
 DecoderCommand
-decoder_tag(gcc_unused struct decoder *decoder, struct input_stream *is,
+decoder_tag(Decoder &decoder, struct input_stream *is,
 	    Tag &&tag)
 {
-	gcc_unused const decoder_control &dc = decoder->dc;
+	gcc_unused const decoder_control &dc = decoder.dc;
 	DecoderCommand cmd;
 
 	assert(dc.state == DecoderState::DECODE);
@@ -474,8 +473,8 @@ decoder_tag(gcc_unused struct decoder *decoder, struct input_stream *is,
 
 	/* save the tag */
 
-	delete decoder->decoder_tag;
-	decoder->decoder_tag = new Tag(tag);
+	delete decoder.decoder_tag;
+	decoder.decoder_tag = new Tag(tag);
 
 	/* check for a new stream tag */
 
@@ -491,27 +490,25 @@ decoder_tag(gcc_unused struct decoder *decoder, struct input_stream *is,
 
 	/* send tag to music pipe */
 
-	if (decoder->stream_tag != nullptr) {
+	if (decoder.stream_tag != nullptr) {
 		/* merge with tag from input stream */
 		Tag *merged;
 
-		merged = Tag::Merge(*decoder->stream_tag,
-				    *decoder->decoder_tag);
+		merged = Tag::Merge(*decoder.stream_tag,
+				    *decoder.decoder_tag);
 		cmd = do_send_tag(decoder, *merged);
 		delete merged;
 	} else
 		/* send only the decoder tag */
-		cmd = do_send_tag(decoder, *decoder->decoder_tag);
+		cmd = do_send_tag(decoder, *decoder.decoder_tag);
 
 	return cmd;
 }
 
 void
-decoder_replay_gain(struct decoder *decoder,
+decoder_replay_gain(Decoder &decoder,
 		    const struct replay_gain_info *replay_gain_info)
 {
-	assert(decoder != nullptr);
-
 	if (replay_gain_info != nullptr) {
 		static unsigned serial;
 		if (++serial == 0)
@@ -522,33 +519,32 @@ decoder_replay_gain(struct decoder *decoder,
 			if (rgm != REPLAY_GAIN_ALBUM)
 				rgm = REPLAY_GAIN_TRACK;
 
-			decoder->dc.replay_gain_db = 20.0 * log10f(
+			decoder.dc.replay_gain_db = 20.0 * log10f(
 				replay_gain_tuple_scale(
 					&replay_gain_info->tuples[rgm],
 					replay_gain_preamp, replay_gain_missing_preamp,
 					replay_gain_limit));
 		}
 
-		decoder->replay_gain_info = *replay_gain_info;
-		decoder->replay_gain_serial = serial;
+		decoder.replay_gain_info = *replay_gain_info;
+		decoder.replay_gain_serial = serial;
 
-		if (decoder->chunk != nullptr) {
+		if (decoder.chunk != nullptr) {
 			/* flush the current chunk because the new
 			   replay gain values affect the following
 			   samples */
 			decoder_flush_chunk(decoder);
-			decoder->dc.client_cond.signal();
+			decoder.dc.client_cond.signal();
 		}
 	} else
-		decoder->replay_gain_serial = 0;
+		decoder.replay_gain_serial = 0;
 }
 
 void
-decoder_mixramp(struct decoder *decoder,
+decoder_mixramp(Decoder &decoder,
 		char *mixramp_start, char *mixramp_end)
 {
-	assert(decoder != nullptr);
-	decoder_control &dc = decoder->dc;
+	decoder_control &dc = decoder.dc;
 
 	dc.MixRampStart(mixramp_start);
 	dc.MixRampEnd(mixramp_end);

@@ -104,7 +104,7 @@ mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 }
 
 static void
-mpd_mpg123_file_decode(struct decoder *decoder, const char *path_fs)
+mpd_mpg123_file_decode(Decoder &decoder, const char *path_fs)
 {
 	mpg123_handle *handle;
 	int error;

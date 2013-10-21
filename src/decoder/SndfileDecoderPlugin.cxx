@@ -113,7 +113,7 @@ time_to_frame(float t, const AudioFormat *audio_format)
 }
 
 static void
-sndfile_stream_decode(struct decoder *decoder, struct input_stream *is)
+sndfile_stream_decode(Decoder &decoder, struct input_stream *is)
 {
 	SNDFILE *sf;
 	SF_INFO info;

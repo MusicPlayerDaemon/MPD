@@ -48,7 +48,7 @@ adplug_init(const config_param &param)
 }
 
 static void
-adplug_file_decode(struct decoder *decoder, const char *path_fs)
+adplug_file_decode(Decoder &decoder, const char *path_fs)
 {
 	CEmuopl opl(sample_rate, true, true);
 	opl.init();

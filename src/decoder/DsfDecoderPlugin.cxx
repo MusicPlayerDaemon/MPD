@@ -99,7 +99,7 @@ struct DsfDataChunk {
  * Read and parse all needed metadata chunks for DSF files.
  */
 static bool
-dsf_read_metadata(struct decoder *decoder, struct input_stream *is,
+dsf_read_metadata(Decoder *decoder, struct input_stream *is,
 		  DsfMetaData *metadata)
 {
 	uint64_t chunk_size;
@@ -219,7 +219,7 @@ dsf_to_pcm_order(uint8_t *dest, uint8_t *scratch, size_t nrbytes)
  * Decode one complete DSF 'data' chunk i.e. a complete song
  */
 static bool
-dsf_decode_chunk(struct decoder *decoder, struct input_stream *is,
+dsf_decode_chunk(Decoder &decoder, struct input_stream *is,
 		    unsigned channels,
 		    uint64_t chunk_size,
 		    bool bitreverse)
@@ -246,7 +246,7 @@ dsf_decode_chunk(struct decoder *decoder, struct input_stream *is,
 			now_size = now_frames * frame_size;
 		}
 
-		size_t nbytes = decoder_read(decoder, is, buffer, now_size);
+		size_t nbytes = decoder_read(&decoder, is, buffer, now_size);
 		if (nbytes != now_size)
 			return false;
 
@@ -273,15 +273,15 @@ dsf_decode_chunk(struct decoder *decoder, struct input_stream *is,
 			break;
 			}
 	}
-	return dsdlib_skip(decoder, is, chunk_size);
+	return dsdlib_skip(&decoder, is, chunk_size);
 }
 
 static void
-dsf_stream_decode(struct decoder *decoder, struct input_stream *is)
+dsf_stream_decode(Decoder &decoder, struct input_stream *is)
 {
 	/* check if it is a proper DSF file */
 	DsfMetaData metadata;
-	if (!dsf_read_metadata(decoder, is, &metadata))
+	if (!dsf_read_metadata(&decoder, is, &metadata))
 		return;
 
 	Error error;

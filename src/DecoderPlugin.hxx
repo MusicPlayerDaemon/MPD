@@ -31,7 +31,7 @@ struct tag_handler;
  * Opaque handle which the decoder plugin passes to the functions in
  * this header.
  */
-struct decoder;
+struct Decoder;
 
 struct DecoderPlugin {
 	const char *name;
@@ -59,15 +59,14 @@ struct DecoderPlugin {
 	 * possible, it is recommended to implement this method,
 	 * because it is more versatile.
 	 */
-	void (*stream_decode)(struct decoder *decoder,
-			      struct input_stream *is);
+	void (*stream_decode)(Decoder &decoder, input_stream *is);
 
 	/**
 	 * Decode a local file.
 	 *
 	 * Either implement this method or stream_decode().
 	 */
-	void (*file_decode)(struct decoder *decoder, const char *path_fs);
+	void (*file_decode)(Decoder &decoder, const char *path_fs);
 
 	/**
 	 * Scan metadata of a file.
@@ -128,15 +127,15 @@ struct DecoderPlugin {
 	/**
 	 * Decode a stream.
 	 */
-	void StreamDecode(decoder &decoder, input_stream &is) const {
-		stream_decode(&decoder, &is);
+	void StreamDecode(Decoder &decoder, input_stream &is) const {
+		stream_decode(decoder, &is);
 	}
 
 	/**
 	 * Decode a file.
 	 */
-	void FileDecode(decoder &decoder, const char *path_fs) const {
-		file_decode(&decoder, path_fs);
+	void FileDecode(Decoder &decoder, const char *path_fs) const {
+		file_decode(decoder, path_fs);
 	}
 
 	/**

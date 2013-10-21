@@ -357,7 +357,7 @@ faad_get_file_time(struct input_stream *is)
 }
 
 static void
-faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
+faad_stream_decode(Decoder &mpd_decoder, struct input_stream *is)
 {
 	float total_time = 0;
 	AudioFormat audio_format;
@@ -365,7 +365,7 @@ faad_stream_decode(struct decoder *mpd_decoder, struct input_stream *is)
 	uint16_t bit_rate = 0;
 	DecoderBuffer *buffer;
 
-	buffer = decoder_buffer_new(mpd_decoder, is,
+	buffer = decoder_buffer_new(&mpd_decoder, is,
 				    FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
 	total_time = faad_song_duration(buffer, is);
 

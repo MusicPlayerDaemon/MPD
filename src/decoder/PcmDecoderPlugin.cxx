@@ -31,7 +31,7 @@
 #include <stdio.h> /* for SEEK_SET */
 
 static void
-pcm_stream_decode(struct decoder *decoder, struct input_stream *is)
+pcm_stream_decode(Decoder &decoder, struct input_stream *is)
 {
 	static constexpr AudioFormat audio_format = {
 		44100,

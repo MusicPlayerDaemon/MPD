@@ -67,7 +67,7 @@ mpd_opus_init(gcc_unused const config_param &param)
 }
 
 class MPDOpusDecoder {
-	struct decoder *decoder;
+	Decoder &decoder;
 	struct input_stream *input_stream;
 
 	ogg_stream_state os;
@@ -84,7 +84,7 @@ class MPDOpusDecoder {
 	size_t frame_size;
 
 public:
-	MPDOpusDecoder(struct decoder *_decoder,
+	MPDOpusDecoder(Decoder &_decoder,
 		       struct input_stream *_input_stream)
 		:decoder(_decoder), input_stream(_input_stream),
 		 opus_decoder(nullptr),
@@ -265,10 +265,10 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 }
 
 static void
-mpd_opus_stream_decode(struct decoder *decoder,
+mpd_opus_stream_decode(Decoder &decoder,
 		       struct input_stream *input_stream)
 {
-	if (ogg_codec_detect(decoder, input_stream) != OGG_CODEC_OPUS)
+	if (ogg_codec_detect(&decoder, input_stream) != OGG_CODEC_OPUS)
 		return;
 
 	/* rewind the stream, because ogg_codec_detect() has
@@ -276,7 +276,7 @@ mpd_opus_stream_decode(struct decoder *decoder,
 	input_stream->LockSeek(0, SEEK_SET, IgnoreError());
 
 	MPDOpusDecoder d(decoder, input_stream);
-	OggSyncState oy(*input_stream, decoder);
+	OggSyncState oy(*input_stream, &decoder);
 
 	if (!d.ReadFirstPage(oy))
 		return;

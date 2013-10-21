@@ -91,14 +91,14 @@ mpd_ffmpeg_log_callback(gcc_unused void *ptr, int level,
 }
 
 struct AvioStream {
-	struct decoder *decoder;
+	Decoder *const decoder;
 	struct input_stream *input;
 
 	AVIOContext *io;
 
 	unsigned char buffer[8192];
 
-	AvioStream(struct decoder *_decoder, input_stream *_input)
+	AvioStream(Decoder *_decoder, input_stream *_input)
 		:decoder(_decoder), input(_input), io(nullptr) {}
 
 	~AvioStream() {
@@ -255,7 +255,7 @@ copy_interleave_frame(const AVCodecContext *codec_context,
 }
 
 static DecoderCommand
-ffmpeg_send_packet(struct decoder *decoder, struct input_stream *is,
+ffmpeg_send_packet(Decoder &decoder, struct input_stream *is,
 		   const AVPacket *packet,
 		   AVCodecContext *codec_context,
 		   const AVRational *time_base,
@@ -341,7 +341,7 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 }
 
 static AVInputFormat *
-ffmpeg_probe(struct decoder *decoder, struct input_stream *is)
+ffmpeg_probe(Decoder *decoder, struct input_stream *is)
 {
 	enum {
 		BUFFER_SIZE = 16384,
@@ -370,16 +370,16 @@ ffmpeg_probe(struct decoder *decoder, struct input_stream *is)
 }
 
 static void
-ffmpeg_decode(struct decoder *decoder, struct input_stream *input)
+ffmpeg_decode(Decoder &decoder, struct input_stream *input)
 {
-	AVInputFormat *input_format = ffmpeg_probe(decoder, input);
+	AVInputFormat *input_format = ffmpeg_probe(&decoder, input);
 	if (input_format == nullptr)
 		return;
 
 	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
 		    input_format->name, input_format->long_name);
 
-	AvioStream stream(decoder, input);
+	AvioStream stream(&decoder, input);
 	if (!stream.Open()) {
 		LogError(ffmpeg_domain, "Failed to open stream");
 		return;

@@ -91,21 +91,21 @@ dsdiff_init(const config_param &param)
 }
 
 static bool
-dsdiff_read_id(struct decoder *decoder, struct input_stream *is,
+dsdiff_read_id(Decoder *decoder, struct input_stream *is,
 	       struct dsdlib_id *id)
 {
 	return dsdlib_read(decoder, is, id, sizeof(*id));
 }
 
 static bool
-dsdiff_read_chunk_header(struct decoder *decoder, struct input_stream *is,
+dsdiff_read_chunk_header(Decoder *decoder, struct input_stream *is,
 			 DsdiffChunkHeader *header)
 {
 	return dsdlib_read(decoder, is, header, sizeof(*header));
 }
 
 static bool
-dsdiff_read_payload(struct decoder *decoder, struct input_stream *is,
+dsdiff_read_payload(Decoder *decoder, struct input_stream *is,
 		    const DsdiffChunkHeader *header,
 		    void *data, size_t length)
 {
@@ -121,7 +121,7 @@ dsdiff_read_payload(struct decoder *decoder, struct input_stream *is,
  * Read and parse a "SND" chunk inside "PROP".
  */
 static bool
-dsdiff_read_prop_snd(struct decoder *decoder, struct input_stream *is,
+dsdiff_read_prop_snd(Decoder *decoder, struct input_stream *is,
 		     DsdiffMetaData *metadata,
 		     input_stream::offset_type end_offset)
 {
@@ -179,7 +179,7 @@ dsdiff_read_prop_snd(struct decoder *decoder, struct input_stream *is,
  * Read and parse a "PROP" chunk.
  */
 static bool
-dsdiff_read_prop(struct decoder *decoder, struct input_stream *is,
+dsdiff_read_prop(Decoder *decoder, struct input_stream *is,
 		 DsdiffMetaData *metadata,
 		 const DsdiffChunkHeader *prop_header)
 {
@@ -239,7 +239,7 @@ dsdiff_handle_native_tag(struct input_stream *is,
  */
 
 static bool
-dsdiff_read_metadata_extra(struct decoder *decoder, struct input_stream *is,
+dsdiff_read_metadata_extra(Decoder *decoder, struct input_stream *is,
 			   DsdiffMetaData *metadata,
 			   DsdiffChunkHeader *chunk_header,
 			   const struct tag_handler *handler,
@@ -325,7 +325,7 @@ dsdiff_read_metadata_extra(struct decoder *decoder, struct input_stream *is,
  * "chunk_header" parameter.
  */
 static bool
-dsdiff_read_metadata(struct decoder *decoder, struct input_stream *is,
+dsdiff_read_metadata(Decoder *decoder, struct input_stream *is,
 		     DsdiffMetaData *metadata,
 		     DsdiffChunkHeader *chunk_header)
 {
@@ -371,7 +371,7 @@ bit_reverse_buffer(uint8_t *p, uint8_t *end)
  * Decode one "DSD" chunk.
  */
 static bool
-dsdiff_decode_chunk(struct decoder *decoder, struct input_stream *is,
+dsdiff_decode_chunk(Decoder &decoder, struct input_stream *is,
 		    unsigned channels,
 		    uint64_t chunk_size)
 {
@@ -418,17 +418,17 @@ dsdiff_decode_chunk(struct decoder *decoder, struct input_stream *is,
 			break;
 		}
 	}
-	return dsdlib_skip(decoder, is, chunk_size);
+	return dsdlib_skip(&decoder, is, chunk_size);
 }
 
 static void
-dsdiff_stream_decode(struct decoder *decoder, struct input_stream *is)
+dsdiff_stream_decode(Decoder &decoder, struct input_stream *is)
 {
 	DsdiffMetaData metadata;
 
 	DsdiffChunkHeader chunk_header;
 	/* check if it is is a proper DFF file */
-	if (!dsdiff_read_metadata(decoder, is, &metadata, &chunk_header))
+	if (!dsdiff_read_metadata(&decoder, is, &metadata, &chunk_header))
 		return;
 
 	Error error;
@@ -461,13 +461,13 @@ dsdiff_stream_decode(struct decoder *decoder, struct input_stream *is)
 					break;
 		} else {
 			/* ignore other chunks */
-			if (!dsdlib_skip(decoder, is, chunk_size))
+			if (!dsdlib_skip(&decoder, is, chunk_size))
 				break;
 		}
 
 		/* read next chunk header; the first one was read by
 		   dsdiff_read_metadata() */
-		if (!dsdiff_read_chunk_header(decoder,
+		if (!dsdiff_read_chunk_header(&decoder,
 					      is, &chunk_header))
 			break;
 	}

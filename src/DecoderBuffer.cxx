@@ -27,7 +27,7 @@
 #include <string.h>
 
 struct DecoderBuffer {
-	struct decoder *decoder;
+	Decoder *decoder;
 	struct input_stream *is;
 
 	/** the allocated size of the buffer */
@@ -45,7 +45,7 @@ struct DecoderBuffer {
 };
 
 DecoderBuffer *
-decoder_buffer_new(struct decoder *decoder, struct input_stream *is,
+decoder_buffer_new(Decoder *decoder, struct input_stream *is,
 		   size_t size)
 {
 	DecoderBuffer *buffer = (DecoderBuffer *)
