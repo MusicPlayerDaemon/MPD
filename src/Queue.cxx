@@ -85,15 +85,6 @@ queue::ModifyAtOrder(unsigned _order)
 	ModifyAtPosition(position);
 }
 
-void
-queue::ModifyAll()
-{
-	for (unsigned i = 0; i < length; i++)
-		items[i].version = version;
-
-	IncrementVersion();
-}
-
 unsigned
 queue::Append(Song *song, uint8_t priority)
 {

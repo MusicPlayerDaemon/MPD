@@ -259,11 +259,6 @@ struct queue {
 	void ModifyAtOrder(unsigned order);
 
 	/**
-	 * Marks all songs as "modified" and increments the version number.
-	 */
-	void ModifyAll();
-
-	/**
 	 * Appends a song to the queue and returns its position.  Prior to
 	 * that, the caller must check if the queue is already full.
 	 *

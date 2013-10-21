@@ -135,7 +135,10 @@ public:
 	 */
 	void TagModified(Song &&song);
 
-	void FullIncrementVersions();
+	/**
+	 * The database has been modified.  Pull all updates.
+	 */
+	void DatabaseModified();
 
 	PlaylistResult AppendSong(player_control &pc,
 				  Song *song,

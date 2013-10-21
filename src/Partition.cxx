@@ -24,7 +24,7 @@
 void
 Partition::DatabaseModified()
 {
-	playlist.FullIncrementVersions();
+	playlist.DatabaseModified();
 }
 
 void

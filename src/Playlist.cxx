@@ -29,13 +29,6 @@
 #include <assert.h>
 
 void
-playlist::FullIncrementVersions()
-{
-	queue.ModifyAll();
-	idle_add(IDLE_PLAYLIST);
-}
-
-void
 playlist::TagModified(Song &&song)
 {
 	if (!playing || song.tag == nullptr)

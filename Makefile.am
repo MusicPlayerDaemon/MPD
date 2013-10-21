@@ -178,6 +178,7 @@ src_mpd_SOURCES = \
 	src/PlaylistVector.cxx src/PlaylistVector.hxx \
 	src/PlaylistInfo.hxx \
 	src/PlaylistDatabase.cxx src/PlaylistDatabase.hxx \
+	src/PlaylistUpdate.cxx \
 	src/IdTable.hxx \
 	src/Queue.cxx src/Queue.hxx \
 	src/QueuePrint.cxx src/QueuePrint.hxx \
