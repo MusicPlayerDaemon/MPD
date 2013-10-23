@@ -54,10 +54,10 @@ static int audiofile_get_duration(const char *file)
 static ssize_t
 audiofile_file_read(AFvirtualfile *vfile, void *data, size_t length)
 {
-	struct input_stream *is = (struct input_stream *) vfile->closure;
+	InputStream &is = *(InputStream *)vfile->closure;
 
 	Error error;
-	size_t nbytes = is->LockRead(data, length, error);
+	size_t nbytes = is.LockRead(data, length, error);
 	if (nbytes == 0 && error.IsDefined()) {
 		LogError(error);
 		return -1;
@@ -69,15 +69,15 @@ audiofile_file_read(AFvirtualfile *vfile, void *data, size_t length)
 static AFfileoffset
 audiofile_file_length(AFvirtualfile *vfile)
 {
-	struct input_stream *is = (struct input_stream *) vfile->closure;
-	return is->GetSize();
+	InputStream &is = *(InputStream *)vfile->closure;
+	return is.GetSize();
 }
 
 static AFfileoffset
 audiofile_file_tell(AFvirtualfile *vfile)
 {
-	struct input_stream *is = (struct input_stream *) vfile->closure;
-	return is->GetOffset();
+	InputStream &is = *(InputStream *)vfile->closure;
+	return is.GetOffset();
 }
 
 static void
@@ -91,22 +91,22 @@ audiofile_file_destroy(AFvirtualfile *vfile)
 static AFfileoffset
 audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset offset, int is_relative)
 {
-	struct input_stream *is = (struct input_stream *) vfile->closure;
+	InputStream &is = *(InputStream *)vfile->closure;
 	int whence = (is_relative ? SEEK_CUR : SEEK_SET);
 
 	Error error;
-	if (is->LockSeek(offset, whence, error)) {
-		return is->GetOffset();
+	if (is.LockSeek(offset, whence, error)) {
+		return is.GetOffset();
 	} else {
 		return -1;
 	}
 }
 
 static AFvirtualfile *
-setup_virtual_fops(struct input_stream *stream)
+setup_virtual_fops(InputStream &stream)
 {
 	AFvirtualfile *vf = new AFvirtualfile();
-	vf->closure = stream;
+	vf->closure = &stream;
 	vf->write = nullptr;
 	vf->read    = audiofile_file_read;
 	vf->length  = audiofile_file_length;
@@ -157,7 +157,7 @@ audiofile_setup_sample_format(AFfilehandle af_fp)
 }
 
 static void
-audiofile_stream_decode(Decoder &decoder, struct input_stream *is)
+audiofile_stream_decode(Decoder &decoder, InputStream &is)
 {
 	AFvirtualfile *vf;
 	int fs, frame_count;
@@ -168,7 +168,7 @@ audiofile_stream_decode(Decoder &decoder, struct input_stream *is)
 	int ret;
 	char chunk[CHUNK_SIZE];
 
-	if (!is->IsSeekable()) {
+	if (!is.IsSeekable()) {
 		LogWarning(audiofile_domain, "not seekable");
 		return;
 	}
@@ -196,7 +196,7 @@ audiofile_stream_decode(Decoder &decoder, struct input_stream *is)
 
 	total_time = ((float)frame_count / (float)audio_format.sample_rate);
 
-	bit_rate = (uint16_t)(is->GetSize() * 8.0 / total_time / 1000.0 + 0.5);
+	bit_rate = (uint16_t)(is.GetSize() * 8.0 / total_time / 1000.0 + 0.5);
 
 	fs = (int)afGetVirtualFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
 

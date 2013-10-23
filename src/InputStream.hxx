@@ -34,7 +34,7 @@ class Error;
 struct Tag;
 struct InputPlugin;
 
-struct input_stream {
+struct InputStream {
 	typedef int64_t offset_type;
 
 	/**
@@ -93,8 +93,8 @@ struct input_stream {
 	 */
 	std::string mime;
 
-	input_stream(const InputPlugin &_plugin,
-		     const char *_uri, Mutex &_mutex, Cond &_cond)
+	InputStream(const InputPlugin &_plugin,
+		    const char *_uri, Mutex &_mutex, Cond &_cond)
 		:plugin(_plugin), uri(_uri),
 		 mutex(_mutex), cond(_cond),
 		 ready(false), seekable(false),
@@ -111,12 +111,12 @@ struct input_stream {
 	 * @param cond a cond that gets signalled when the state of
 	 * this object changes; may be nullptr if the caller doesn't want to get
 	 * notifications
-	 * @return an #input_stream object on success, nullptr on error
+	 * @return an #InputStream object on success, nullptr on error
 	 */
 	gcc_nonnull_all
 	gcc_malloc
-	static input_stream *Open(const char *uri, Mutex &mutex, Cond &cond,
-				  Error &error);
+	static InputStream *Open(const char *uri, Mutex &mutex, Cond &cond,
+				 Error &error);
 
 	/**
 	 * Close the input stream and free resources.
@@ -273,7 +273,7 @@ struct input_stream {
 	 *
 	 * The caller must lock the mutex.
 	 *
-	 * @param is the input_stream object
+	 * @param is the InputStream object
 	 * @param ptr the buffer to read into
 	 * @param size the maximum number of bytes to read
 	 * @return the number of bytes read

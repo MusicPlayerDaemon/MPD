@@ -99,7 +99,7 @@ flac_scan_file(const char *file,
 }
 
 static bool
-flac_scan_stream(struct input_stream *is,
+flac_scan_stream(InputStream &is,
 		 const struct tag_handler *handler, void *handler_ctx)
 {
 	FlacMetadataChain chain;
@@ -148,13 +148,13 @@ flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd,
 	if (data->initialized) {
 		/* done */
 		decoder_initialized(data->decoder, data->audio_format,
-				    data->input_stream->seekable,
+				    data->input_stream.seekable,
 				    (float)data->total_frames /
 				    (float)data->audio_format.sample_rate);
 		return true;
 	}
 
-	if (data->input_stream->seekable)
+	if (data->input_stream.seekable)
 		/* allow the workaround below only for nonseekable
 		   streams*/
 		return false;
@@ -252,7 +252,7 @@ stream_init(FLAC__StreamDecoder *flac_dec, struct flac_data *data, bool is_ogg)
 
 static void
 flac_decode_internal(Decoder &decoder,
-		     struct input_stream *input_stream,
+		     InputStream &input_stream,
 		     bool is_ogg)
 {
 	FLAC__StreamDecoder *flac_dec;
@@ -285,7 +285,7 @@ flac_decode_internal(Decoder &decoder,
 }
 
 static void
-flac_decode(Decoder &decoder, struct input_stream *input_stream)
+flac_decode(Decoder &decoder, InputStream &input_stream)
 {
 	flac_decode_internal(decoder, input_stream, false);
 }
@@ -313,7 +313,7 @@ oggflac_scan_file(const char *file,
 }
 
 static bool
-oggflac_scan_stream(struct input_stream *is,
+oggflac_scan_stream(InputStream &is,
 		    const struct tag_handler *handler, void *handler_ctx)
 {
 	FlacMetadataChain chain;
@@ -329,14 +329,14 @@ oggflac_scan_stream(struct input_stream *is,
 }
 
 static void
-oggflac_decode(Decoder &decoder, struct input_stream *input_stream)
+oggflac_decode(Decoder &decoder, InputStream &input_stream)
 {
 	if (ogg_codec_detect(&decoder, input_stream) != OGG_CODEC_FLAC)
 		return;
 
 	/* rewind the stream, because ogg_codec_detect() has
 	   moved it */
-	input_stream->LockRewind(IgnoreError());
+	input_stream.LockRewind(IgnoreError());
 
 	flac_decode_internal(decoder, input_stream, true);
 }

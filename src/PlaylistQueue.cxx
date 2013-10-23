@@ -72,7 +72,7 @@ playlist_open_into_queue(const char *uri,
 	Mutex mutex;
 	Cond cond;
 
-	struct input_stream *is;
+	InputStream *is;
 	auto playlist = playlist_open_any(uri, mutex, cond, &is);
 	if (playlist == nullptr)
 		return PlaylistResult::NO_SUCH_LIST;

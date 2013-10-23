@@ -99,11 +99,11 @@ decoder_seek_error(Decoder &decoder);
  * occurs: end of file; error; command (like SEEK or STOP).
  */
 size_t
-decoder_read(Decoder *decoder, struct input_stream *is,
+decoder_read(Decoder *decoder, InputStream &is,
 	     void *buffer, size_t length);
 
 static inline size_t
-decoder_read(Decoder &decoder, input_stream *is,
+decoder_read(Decoder &decoder, InputStream &is,
 	     void *buffer, size_t length)
 {
 	return decoder_read(&decoder, is, buffer, length);
@@ -131,9 +131,17 @@ decoder_timestamp(Decoder &decoder, double t);
  * command pending
  */
 DecoderCommand
-decoder_data(Decoder &decoder, struct input_stream *is,
+decoder_data(Decoder &decoder, InputStream *is,
 	     const void *data, size_t length,
 	     uint16_t kbit_rate);
+
+static inline DecoderCommand
+decoder_data(Decoder &decoder, InputStream &is,
+	     const void *data, size_t length,
+	     uint16_t kbit_rate)
+{
+	return decoder_data(decoder, &is, data, length, kbit_rate);
+}
 
 /**
  * This function is called by the decoder plugin when it has
@@ -147,7 +155,13 @@ decoder_data(Decoder &decoder, struct input_stream *is,
  * command pending
  */
 DecoderCommand
-decoder_tag(Decoder &decoder, struct input_stream *is, Tag &&tag);
+decoder_tag(Decoder &decoder, InputStream *is, Tag &&tag);
+
+static inline DecoderCommand
+decoder_tag(Decoder &decoder, InputStream &is, Tag &&tag)
+{
+	return decoder_tag(decoder, &is, std::move(tag));
+}
 
 /**
  * Set replay gain values for the following chunks.

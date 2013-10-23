@@ -27,7 +27,7 @@
 static size_t
 FlacIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)
 {
-	input_stream *is = (input_stream *)handle;
+	InputStream *is = (InputStream *)handle;
 
 	uint8_t *const p0 = (uint8_t *)ptr, *p = p0,
 		*const end = p0 + size * nmemb;
@@ -64,7 +64,7 @@ FlacIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)
 static int
 FlacIOSeek(FLAC__IOHandle handle, FLAC__int64 offset, int whence)
 {
-	input_stream *is = (input_stream *)handle;
+	InputStream *is = (InputStream *)handle;
 
 	Error error;
 	return is->LockSeek(offset, whence, error) ? 0 : -1;
@@ -73,7 +73,7 @@ FlacIOSeek(FLAC__IOHandle handle, FLAC__int64 offset, int whence)
 static FLAC__int64
 FlacIOTell(FLAC__IOHandle handle)
 {
-	input_stream *is = (input_stream *)handle;
+	InputStream *is = (InputStream *)handle;
 
 	return is->offset;
 }
@@ -81,7 +81,7 @@ FlacIOTell(FLAC__IOHandle handle)
 static int
 FlacIOEof(FLAC__IOHandle handle)
 {
-	input_stream *is = (input_stream *)handle;
+	InputStream *is = (InputStream *)handle;
 
 	return is->LockIsEOF();
 }
@@ -90,7 +90,7 @@ static int
 FlacIOClose(gcc_unused FLAC__IOHandle handle)
 {
 	/* no-op because the libFLAC caller is repsonsible for closing
-	   the #input_stream */
+	   the #InputStream */
 
 	return 0;
 }

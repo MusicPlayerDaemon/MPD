@@ -57,46 +57,45 @@ dump_text_file(TextInputStream &is)
 }
 
 static int
-dump_input_stream(struct input_stream *is)
+dump_input_stream(InputStream &is)
 {
 	Error error;
 
-	is->Lock();
+	is.Lock();
 
 	/* wait until the stream becomes ready */
 
-	is->WaitReady();
+	is.WaitReady();
 
-	if (!is->Check(error)) {
+	if (!is.Check(error)) {
 		LogError(error);
-		is->Unlock();
+		is.Unlock();
 		return EXIT_FAILURE;
 	}
 
 	/* read data and tags from the stream */
 
-	is->Unlock();
+	is.Unlock();
 	{
 		TextInputStream tis(is);
 		dump_text_file(tis);
 	}
 
-	is->Lock();
+	is.Lock();
 
-	if (!is->Check(error)) {
+	if (!is.Check(error)) {
 		LogError(error);
-		is->Unlock();
+		is.Unlock();
 		return EXIT_FAILURE;
 	}
 
-	is->Unlock();
+	is.Unlock();
 
 	return 0;
 }
 
 int main(int argc, char **argv)
 {
-	struct input_stream *is;
 	int ret;
 
 	if (argc != 2) {
@@ -134,9 +133,9 @@ int main(int argc, char **argv)
 	Mutex mutex;
 	Cond cond;
 
-	is = input_stream::Open(argv[1], mutex, cond, error);
+	InputStream *is = InputStream::Open(argv[1], mutex, cond, error);
 	if (is != NULL) {
-		ret = dump_input_stream(is);
+		ret = dump_input_stream(*is);
 		is->Close();
 	} else {
 		if (error.IsDefined())

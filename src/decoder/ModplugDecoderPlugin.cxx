@@ -36,7 +36,7 @@ static constexpr Domain modplug_domain("modplug");
 
 static constexpr size_t MODPLUG_FRAME_SIZE = 4096;
 static constexpr size_t MODPLUG_PREALLOC_BLOCK = 256 * 1024;
-static constexpr input_stream::offset_type MODPLUG_FILE_LIMIT = 100 * 1024 * 1024;
+static constexpr InputStream::offset_type MODPLUG_FILE_LIMIT = 100 * 1024 * 1024;
 
 static int modplug_loop_count;
 
@@ -52,9 +52,9 @@ modplug_decoder_init(const config_param &param)
 }
 
 static WritableBuffer<uint8_t>
-mod_loadfile(Decoder *decoder, struct input_stream *is)
+mod_loadfile(Decoder *decoder, InputStream &is)
 {
-	const input_stream::offset_type size = is->GetSize();
+	const InputStream::offset_type size = is.GetSize();
 
 	if (size == 0) {
 		LogWarning(modplug_domain, "file is empty");
@@ -80,7 +80,7 @@ mod_loadfile(Decoder *decoder, struct input_stream *is)
 	while (true) {
 		size_t ret = decoder_read(decoder, is, p, end - p);
 		if (ret == 0) {
-			if (is->LockIsEOF())
+			if (is.LockIsEOF())
 				/* end of file */
 				break;
 
@@ -107,7 +107,7 @@ mod_loadfile(Decoder *decoder, struct input_stream *is)
 }
 
 static ModPlugFile *
-LoadModPlugFile(Decoder *decoder, struct input_stream *is)
+LoadModPlugFile(Decoder *decoder, InputStream &is)
 {
 	const auto buffer = mod_loadfile(decoder, is);
 	if (buffer.IsNull()) {
@@ -121,7 +121,7 @@ LoadModPlugFile(Decoder *decoder, struct input_stream *is)
 }
 
 static void
-mod_decode(Decoder &decoder, struct input_stream *is)
+mod_decode(Decoder &decoder, InputStream &is)
 {
 	ModPlug_Settings settings;
 	int ret;
@@ -147,7 +147,7 @@ mod_decode(Decoder &decoder, struct input_stream *is)
 	assert(audio_format.IsValid());
 
 	decoder_initialized(decoder, audio_format,
-			    is->IsSeekable(),
+			    is.IsSeekable(),
 			    ModPlug_GetLength(f) / 1000.0);
 
 	DecoderCommand cmd;
@@ -174,7 +174,7 @@ mod_decode(Decoder &decoder, struct input_stream *is)
 }
 
 static bool
-modplug_scan_stream(struct input_stream *is,
+modplug_scan_stream(InputStream &is,
 		    const struct tag_handler *handler, void *handler_ctx)
 {
 	ModPlugFile *f = LoadModPlugFile(nullptr, is);

@@ -36,7 +36,7 @@
 static constexpr Domain file_domain("file");
 
 struct FileInputStream {
-	struct input_stream base;
+	InputStream base;
 
 	int fd;
 
@@ -54,7 +54,7 @@ struct FileInputStream {
 	}
 };
 
-static struct input_stream *
+static InputStream *
 input_file_open(const char *filename,
 		Mutex &mutex, Cond &cond,
 		Error &error)
@@ -96,7 +96,7 @@ input_file_open(const char *filename,
 }
 
 static bool
-input_file_seek(struct input_stream *is, InputPlugin::offset_type offset,
+input_file_seek(InputStream *is, InputPlugin::offset_type offset,
 		int whence,
 		Error &error)
 {
@@ -113,7 +113,7 @@ input_file_seek(struct input_stream *is, InputPlugin::offset_type offset,
 }
 
 static size_t
-input_file_read(struct input_stream *is, void *ptr, size_t size,
+input_file_read(InputStream *is, void *ptr, size_t size,
 		Error &error)
 {
 	FileInputStream *fis = (FileInputStream *)is;
@@ -130,7 +130,7 @@ input_file_read(struct input_stream *is, void *ptr, size_t size,
 }
 
 static void
-input_file_close(struct input_stream *is)
+input_file_close(InputStream *is)
 {
 	FileInputStream *fis = (FileInputStream *)is;
 
@@ -138,7 +138,7 @@ input_file_close(struct input_stream *is)
 }
 
 static bool
-input_file_eof(struct input_stream *is)
+input_file_eof(InputStream *is)
 {
 	return is->offset >= is->size;
 }

@@ -33,7 +33,7 @@
 #include <assert.h>
 
 flac_data::flac_data(Decoder &_decoder,
-		     struct input_stream *_input_stream)
+		     InputStream &_input_stream)
 	:FlacInput(_input_stream, &_decoder),
 	 initialized(false), unsupported(false),
 	 total_frames(0), first_frame(0), next_frame(0), position(0),
@@ -144,7 +144,7 @@ flac_got_first_frame(struct flac_data *data, const FLAC__FrameHeader *header)
 	data->frame_size = data->audio_format.GetFrameSize();
 
 	decoder_initialized(data->decoder, data->audio_format,
-			    data->input_stream->seekable,
+			    data->input_stream.seekable,
 			    (float)data->total_frames /
 			    (float)data->audio_format.sample_rate);
 

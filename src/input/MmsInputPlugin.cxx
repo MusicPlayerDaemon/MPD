@@ -31,7 +31,7 @@
 #include <errno.h>
 
 struct MmsInputStream {
-	struct input_stream base;
+	InputStream base;
 
 	mmsx_t *mms;
 
@@ -56,7 +56,7 @@ struct MmsInputStream {
 
 static constexpr Domain mms_domain("mms");
 
-static struct input_stream *
+static InputStream *
 input_mms_open(const char *url,
 	       Mutex &mutex, Cond &cond,
 	       Error &error)
@@ -78,7 +78,7 @@ input_mms_open(const char *url,
 }
 
 static size_t
-input_mms_read(struct input_stream *is, void *ptr, size_t size,
+input_mms_read(InputStream *is, void *ptr, size_t size,
 	       Error &error)
 {
 	MmsInputStream *m = (MmsInputStream *)is;
@@ -99,7 +99,7 @@ input_mms_read(struct input_stream *is, void *ptr, size_t size,
 }
 
 static void
-input_mms_close(struct input_stream *is)
+input_mms_close(InputStream *is)
 {
 	MmsInputStream *m = (MmsInputStream *)is;
 
@@ -107,7 +107,7 @@ input_mms_close(struct input_stream *is)
 }
 
 static bool
-input_mms_eof(struct input_stream *is)
+input_mms_eof(InputStream *is)
 {
 	MmsInputStream *m = (MmsInputStream *)is;
 

@@ -29,9 +29,9 @@
 
 #include "check.h"
 
-struct input_stream;
+struct InputStream;
 
-struct input_stream *
-input_rewind_open(struct input_stream *is);
+InputStream *
+input_rewind_open(InputStream *is);
 
 #endif

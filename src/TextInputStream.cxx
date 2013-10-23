@@ -42,7 +42,7 @@ bool TextInputStream::ReadLine(std::string &line)
 			--dest.size;
 
 			Error error;
-			nbytes = is->LockRead(dest.data, dest.size, error);
+			nbytes = is.LockRead(dest.data, dest.size, error);
 			if (nbytes > 0)
 				buffer.Append(nbytes);
 			else if (error.IsDefined()) {

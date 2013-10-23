@@ -66,9 +66,9 @@ public:
 
 	virtual void Visit(ArchiveVisitor &visitor) override;
 
-	virtual input_stream *OpenStream(const char *path,
-					 Mutex &mutex, Cond &cond,
-					 Error &error) override;
+	virtual InputStream *OpenStream(const char *path,
+					Mutex &mutex, Cond &cond,
+					Error &error) override;
 };
 
 extern const InputPlugin iso9660_input_plugin;
@@ -132,7 +132,7 @@ Iso9660ArchiveFile::Visit(ArchiveVisitor &visitor)
 /* single archive handling */
 
 struct Iso9660InputStream {
-	struct input_stream base;
+	InputStream base;
 
 	Iso9660ArchiveFile *archive;
 
@@ -158,7 +158,7 @@ struct Iso9660InputStream {
 	}
 };
 
-input_stream *
+InputStream *
 Iso9660ArchiveFile::OpenStream(const char *pathname,
 			       Mutex &mutex, Cond &cond,
 			       Error &error)
@@ -177,7 +177,7 @@ Iso9660ArchiveFile::OpenStream(const char *pathname,
 }
 
 static void
-iso9660_input_close(struct input_stream *is)
+iso9660_input_close(InputStream *is)
 {
 	Iso9660InputStream *iis = (Iso9660InputStream *)is;
 
@@ -186,7 +186,7 @@ iso9660_input_close(struct input_stream *is)
 
 
 static size_t
-iso9660_input_read(struct input_stream *is, void *ptr, size_t size,
+iso9660_input_read(InputStream *is, void *ptr, size_t size,
 		   Error &error)
 {
 	Iso9660InputStream *iis = (Iso9660InputStream *)is;
@@ -226,7 +226,7 @@ iso9660_input_read(struct input_stream *is, void *ptr, size_t size,
 }
 
 static bool
-iso9660_input_eof(struct input_stream *is)
+iso9660_input_eof(InputStream *is)
 {
 	return is->offset == is->size;
 }

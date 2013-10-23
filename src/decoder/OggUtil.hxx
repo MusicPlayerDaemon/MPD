@@ -26,16 +26,16 @@
 
 #include <stddef.h>
 
-struct input_stream;
+struct InputStream;
 struct Decoder;
 
 /**
- * Feed data from the #input_stream into the #ogg_sync_state.
+ * Feed data from the #InputStream into the #ogg_sync_state.
  *
  * @return false on error or end-of-file
  */
 bool
-OggFeed(ogg_sync_state &oy, Decoder *decoder, input_stream *is,
+OggFeed(ogg_sync_state &oy, Decoder *decoder, InputStream &is,
 	size_t size);
 
 /**
@@ -46,7 +46,7 @@ OggFeed(ogg_sync_state &oy, Decoder *decoder, input_stream *is,
  */
 bool
 OggExpectPage(ogg_sync_state &oy, ogg_page &page,
-	      Decoder *decoder, input_stream *input_stream);
+	      Decoder *decoder, InputStream &is);
 
 /**
  * Combines OggExpectPage(), ogg_stream_init() and
@@ -57,7 +57,7 @@ OggExpectPage(ogg_sync_state &oy, ogg_page &page,
  */
 bool
 OggExpectFirstPage(ogg_sync_state &oy, ogg_stream_state &os,
-		   Decoder *decoder, input_stream *is);
+		   Decoder *decoder, InputStream &is);
 
 /**
  * Combines OggExpectPage() and ogg_stream_pagein().
@@ -66,14 +66,14 @@ OggExpectFirstPage(ogg_sync_state &oy, ogg_stream_state &os,
  */
 bool
 OggExpectPageIn(ogg_sync_state &oy, ogg_stream_state &os,
-		Decoder *decoder, input_stream *is);
+		Decoder *decoder, InputStream &is);
 
 /**
  * Like OggExpectPage(), but allow skipping garbage (after seeking).
  */
 bool
 OggExpectPageSeek(ogg_sync_state &oy, ogg_page &page,
-		  Decoder *decoder, input_stream *input_stream);
+		  Decoder *decoder, InputStream &is);
 
 /**
  * Combines OggExpectPageSeek() and ogg_stream_pagein().
@@ -82,6 +82,6 @@ OggExpectPageSeek(ogg_sync_state &oy, ogg_page &page,
  */
 bool
 OggExpectPageSeekIn(ogg_sync_state &oy, ogg_stream_state &os,
-		    Decoder *decoder, input_stream *is);
+		    Decoder *decoder, InputStream &is);
 
 #endif

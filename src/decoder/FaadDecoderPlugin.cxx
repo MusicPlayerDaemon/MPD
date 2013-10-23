@@ -163,14 +163,14 @@ adts_song_duration(DecoderBuffer *buffer)
 }
 
 static float
-faad_song_duration(DecoderBuffer *buffer, struct input_stream *is)
+faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 {
 	size_t fileread;
 	size_t tagsize;
 	size_t length;
 	bool success;
 
-	const auto size = is->GetSize();
+	const auto size = is.GetSize();
 	fileread = size >= 0 ? size : 0;
 
 	decoder_buffer_fill(buffer);
@@ -198,12 +198,12 @@ faad_song_duration(DecoderBuffer *buffer, struct input_stream *is)
 			return -1;
 	}
 
-	if (is->IsSeekable() && length >= 2 &&
+	if (is.IsSeekable() && length >= 2 &&
 	    data[0] == 0xFF && ((data[1] & 0xF6) == 0xF0)) {
 		/* obtain the duration from the ADTS header */
 		float song_length = adts_song_duration(buffer);
 
-		is->LockSeek(tagsize, SEEK_SET, IgnoreError());
+		is.LockSeek(tagsize, SEEK_SET, IgnoreError());
 
 		data = (const uint8_t *)decoder_buffer_read(buffer, &length);
 		if (data != nullptr)
@@ -304,7 +304,7 @@ faad_decoder_decode(NeAACDecHandle decoder, DecoderBuffer *buffer,
  * file is invalid.
  */
 static float
-faad_get_file_time_float(struct input_stream *is)
+faad_get_file_time_float(InputStream &is)
 {
 	DecoderBuffer *buffer;
 	float length;
@@ -345,7 +345,7 @@ faad_get_file_time_float(struct input_stream *is)
  * file is invalid.
  */
 static int
-faad_get_file_time(struct input_stream *is)
+faad_get_file_time(InputStream &is)
 {
 	int file_time = -1;
 	float length;
@@ -357,7 +357,7 @@ faad_get_file_time(struct input_stream *is)
 }
 
 static void
-faad_stream_decode(Decoder &mpd_decoder, struct input_stream *is)
+faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 {
 	float total_time = 0;
 	AudioFormat audio_format;
@@ -380,7 +380,7 @@ faad_stream_decode(Decoder &mpd_decoder, struct input_stream *is)
 	config->dontUpSampleImplicitSBR = 0;
 	NeAACDecSetConfiguration(decoder, config);
 
-	while (!decoder_buffer_is_full(buffer) && !is->LockIsEOF() &&
+	while (!decoder_buffer_is_full(buffer) && !is.LockIsEOF() &&
 	       decoder_get_command(mpd_decoder) == DecoderCommand::NONE) {
 		adts_find_frame(buffer);
 		decoder_buffer_fill(buffer);
@@ -464,7 +464,7 @@ faad_stream_decode(Decoder &mpd_decoder, struct input_stream *is)
 }
 
 static bool
-faad_scan_stream(struct input_stream *is,
+faad_scan_stream(InputStream &is,
 		 const struct tag_handler *handler, void *handler_ctx)
 {
 	int file_time = faad_get_file_time(is);

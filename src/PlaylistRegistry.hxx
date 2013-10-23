@@ -23,7 +23,7 @@
 class Mutex;
 class Cond;
 class SongEnumerator;
-struct input_stream;
+struct InputStream;
 
 extern const struct playlist_plugin *const playlist_plugins[];
 
@@ -59,7 +59,7 @@ playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond);
  * used to select the appropriate playlist plugin
  */
 SongEnumerator *
-playlist_list_open_stream(struct input_stream *is, const char *uri);
+playlist_list_open_stream(InputStream &is, const char *uri);
 
 /**
  * Determines if there is a playlist plugin which can handle the
@@ -78,6 +78,6 @@ playlist_suffix_supported(const char *suffix);
  */
 SongEnumerator *
 playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
-			struct input_stream **is_r);
+			InputStream **is_r);
 
 #endif

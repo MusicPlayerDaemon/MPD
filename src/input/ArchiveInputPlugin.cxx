@@ -39,13 +39,13 @@
  * parent_stream so tar plugin fetches file data from gzip
  * plugin and gzip fetches file from disk
  */
-static struct input_stream *
+static InputStream *
 input_archive_open(const char *pathname,
 		   Mutex &mutex, Cond &cond,
 		   Error &error)
 {
 	const struct archive_plugin *arplug;
-	struct input_stream *is;
+	InputStream *is;
 
 	if (!PathTraits::IsAbsoluteFS(pathname))
 		return NULL;

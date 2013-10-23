@@ -25,7 +25,7 @@
 #include "ReplayGainInfo.hxx"
 
 struct decoder_control;
-struct input_stream;
+struct InputStream;
 struct Tag;
 
 struct Decoder {

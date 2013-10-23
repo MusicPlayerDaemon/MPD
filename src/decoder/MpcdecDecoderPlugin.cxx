@@ -35,8 +35,11 @@
 #include <math.h>
 
 struct mpc_decoder_data {
-	struct input_stream *is;
+	InputStream &is;
 	Decoder *decoder;
+
+	mpc_decoder_data(InputStream &_is, Decoder *_decoder)
+		:is(_is), decoder(_decoder) {}
 };
 
 static constexpr Domain mpcdec_domain("mpcdec");
@@ -56,7 +59,7 @@ mpc_seek_cb(mpc_reader *reader, mpc_int32_t offset)
 	struct mpc_decoder_data *data =
 		(struct mpc_decoder_data *)reader->data;
 
-	return data->is->LockSeek(offset, SEEK_SET, IgnoreError());
+	return data->is.LockSeek(offset, SEEK_SET, IgnoreError());
 }
 
 static mpc_int32_t
@@ -65,7 +68,7 @@ mpc_tell_cb(mpc_reader *reader)
 	struct mpc_decoder_data *data =
 		(struct mpc_decoder_data *)reader->data;
 
-	return (long)data->is->GetOffset();
+	return (long)data->is.GetOffset();
 }
 
 static mpc_bool_t
@@ -74,7 +77,7 @@ mpc_canseek_cb(mpc_reader *reader)
 	struct mpc_decoder_data *data =
 		(struct mpc_decoder_data *)reader->data;
 
-	return data->is->IsSeekable();
+	return data->is.IsSeekable();
 }
 
 static mpc_int32_t
@@ -83,7 +86,7 @@ mpc_getsize_cb(mpc_reader *reader)
 	struct mpc_decoder_data *data =
 		(struct mpc_decoder_data *)reader->data;
 
-	return data->is->GetSize();
+	return data->is.GetSize();
 }
 
 /* this _looks_ performance-critical, don't de-inline -- eric */
@@ -130,13 +133,11 @@ mpc_to_mpd_buffer(int32_t *dest, const MPC_SAMPLE_FORMAT *src,
 }
 
 static void
-mpcdec_decode(Decoder &mpd_decoder, struct input_stream *is)
+mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 {
 	MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
 
-	struct mpc_decoder_data data;
-	data.is = is;
-	data.decoder = &mpd_decoder;
+	mpc_decoder_data data(is, &mpd_decoder);
 
 	mpc_reader reader;
 	reader.read = mpc_read_cb;
@@ -177,7 +178,7 @@ mpcdec_decode(Decoder &mpd_decoder, struct input_stream *is)
 	decoder_replay_gain(mpd_decoder, &replay_gain_info);
 
 	decoder_initialized(mpd_decoder, audio_format,
-			    is->IsSeekable(),
+			    is.IsSeekable(),
 			    mpc_streaminfo_get_length(&info));
 
 	DecoderCommand cmd = DecoderCommand::NONE;
@@ -227,11 +228,9 @@ mpcdec_decode(Decoder &mpd_decoder, struct input_stream *is)
 }
 
 static float
-mpcdec_get_file_duration(struct input_stream *is)
+mpcdec_get_file_duration(InputStream &is)
 {
-	struct mpc_decoder_data data;
-	data.is = is;
-	data.decoder = nullptr;
+	mpc_decoder_data data(is, nullptr);
 
 	mpc_reader reader;
 	reader.read = mpc_read_cb;
@@ -253,7 +252,7 @@ mpcdec_get_file_duration(struct input_stream *is)
 }
 
 static bool
-mpcdec_scan_stream(struct input_stream *is,
+mpcdec_scan_stream(InputStream &is,
 		   const struct tag_handler *handler, void *handler_ctx)
 {
 	float total_time = mpcdec_get_file_duration(is);

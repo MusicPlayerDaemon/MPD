@@ -67,7 +67,7 @@ mpd_opus_init(gcc_unused const config_param &param)
 
 class MPDOpusDecoder {
 	Decoder &decoder;
-	struct input_stream *input_stream;
+	InputStream &input_stream;
 
 	ogg_stream_state os;
 
@@ -84,7 +84,7 @@ class MPDOpusDecoder {
 
 public:
 	MPDOpusDecoder(Decoder &_decoder,
-		       struct input_stream *_input_stream)
+		       InputStream &_input_stream)
 		:decoder(_decoder), input_stream(_input_stream),
 		 opus_decoder(nullptr),
 		 output_buffer(nullptr), output_size(0),
@@ -265,17 +265,17 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 
 static void
 mpd_opus_stream_decode(Decoder &decoder,
-		       struct input_stream *input_stream)
+		       InputStream &input_stream)
 {
 	if (ogg_codec_detect(&decoder, input_stream) != OGG_CODEC_OPUS)
 		return;
 
 	/* rewind the stream, because ogg_codec_detect() has
 	   moved it */
-	input_stream->LockRewind(IgnoreError());
+	input_stream.LockRewind(IgnoreError());
 
 	MPDOpusDecoder d(decoder, input_stream);
-	OggSyncState oy(*input_stream, &decoder);
+	OggSyncState oy(input_stream, &decoder);
 
 	if (!d.ReadFirstPage(oy))
 		return;
@@ -293,27 +293,27 @@ mpd_opus_stream_decode(Decoder &decoder,
 
 static bool
 SeekFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet,
-	    input_stream *is)
+	    InputStream &is)
 {
-	if (is->size > 0 && is->size - is->offset < 65536)
+	if (is.size > 0 && is.size - is.offset < 65536)
 		return OggFindEOS(oy, os, packet);
 
-	if (!is->CheapSeeking())
+	if (!is.CheapSeeking())
 		return false;
 
 	oy.Reset();
 
 	Error error;
-	return is->LockSeek(-65536, SEEK_END, error) &&
+	return is.LockSeek(-65536, SEEK_END, error) &&
 		oy.ExpectPageSeekIn(os) &&
 		OggFindEOS(oy, os, packet);
 }
 
 static bool
-mpd_opus_scan_stream(struct input_stream *is,
+mpd_opus_scan_stream(InputStream &is,
 		     const struct tag_handler *handler, void *handler_ctx)
 {
-	OggSyncState oy(*is);
+	OggSyncState oy(is);
 
 	ogg_stream_state os;
 	if (!oy.ExpectFirstPage(os))

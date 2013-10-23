@@ -29,7 +29,7 @@ class M3uPlaylist final : public SongEnumerator {
 	TextInputStream tis;
 
 public:
-	M3uPlaylist(input_stream *is)
+	M3uPlaylist(InputStream &is)
 		:tis(is) {
 	}
 
@@ -37,7 +37,7 @@ public:
 };
 
 static SongEnumerator *
-m3u_open_stream(struct input_stream *is)
+m3u_open_stream(InputStream &is)
 {
 	return new M3uPlaylist(is);
 }

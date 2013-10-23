@@ -175,7 +175,7 @@ playlist_file_print(Client &client, const char *uri, bool detail)
 	Mutex mutex;
 	Cond cond;
 
-	struct input_stream *is;
+	InputStream *is;
 	SongEnumerator *playlist = playlist_open_any(uri, mutex, cond, &is);
 	if (playlist == nullptr)
 		return false;

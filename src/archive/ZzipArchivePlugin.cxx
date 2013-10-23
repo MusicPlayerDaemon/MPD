@@ -60,9 +60,9 @@ public:
 
 	virtual void Visit(ArchiveVisitor &visitor) override;
 
-	virtual input_stream *OpenStream(const char *path,
-					 Mutex &mutex, Cond &cond,
-					 Error &error) override;
+	virtual InputStream *OpenStream(const char *path,
+					Mutex &mutex, Cond &cond,
+					Error &error) override;
 };
 
 extern const InputPlugin zzip_input_plugin;
@@ -99,7 +99,7 @@ ZzipArchiveFile::Visit(ArchiveVisitor &visitor)
 /* single archive handling */
 
 struct ZzipInputStream {
-	struct input_stream base;
+	InputStream base;
 
 	ZzipArchiveFile *archive;
 
@@ -127,7 +127,7 @@ struct ZzipInputStream {
 	}
 };
 
-input_stream *
+InputStream *
 ZzipArchiveFile::OpenStream(const char *pathname,
 			    Mutex &mutex, Cond &cond,
 			    Error &error)
@@ -147,7 +147,7 @@ ZzipArchiveFile::OpenStream(const char *pathname,
 }
 
 static void
-zzip_input_close(struct input_stream *is)
+zzip_input_close(InputStream *is)
 {
 	ZzipInputStream *zis = (ZzipInputStream *)is;
 
@@ -155,7 +155,7 @@ zzip_input_close(struct input_stream *is)
 }
 
 static size_t
-zzip_input_read(struct input_stream *is, void *ptr, size_t size,
+zzip_input_read(InputStream *is, void *ptr, size_t size,
 		Error &error)
 {
 	ZzipInputStream *zis = (ZzipInputStream *)is;
@@ -173,7 +173,7 @@ zzip_input_read(struct input_stream *is, void *ptr, size_t size,
 }
 
 static bool
-zzip_input_eof(struct input_stream *is)
+zzip_input_eof(InputStream *is)
 {
 	ZzipInputStream *zis = (ZzipInputStream *)is;
 
@@ -181,7 +181,7 @@ zzip_input_eof(struct input_stream *is)
 }
 
 static bool
-zzip_input_seek(struct input_stream *is, InputPlugin::offset_type offset,
+zzip_input_seek(InputStream *is, InputPlugin::offset_type offset,
 		int whence, Error &error)
 {
 	ZzipInputStream *zis = (ZzipInputStream *)is;

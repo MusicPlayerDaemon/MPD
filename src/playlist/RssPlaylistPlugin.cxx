@@ -202,7 +202,7 @@ rss_parser_destroy(gpointer data)
  */
 
 static SongEnumerator *
-rss_open_stream(struct input_stream *is)
+rss_open_stream(InputStream &is)
 {
 	RssParser parser;
 	GMarkupParseContext *context;
@@ -219,7 +219,7 @@ rss_open_stream(struct input_stream *is)
 					     &parser, rss_parser_destroy);
 
 	while (true) {
-		nbytes = is->LockRead(buffer, sizeof(buffer), error2);
+		nbytes = is.LockRead(buffer, sizeof(buffer), error2);
 		if (nbytes == 0) {
 			if (error2.IsDefined()) {
 				g_markup_parse_context_free(context);

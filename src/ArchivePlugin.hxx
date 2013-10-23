@@ -20,7 +20,7 @@
 #ifndef MPD_ARCHIVE_PLUGIN_HXX
 #define MPD_ARCHIVE_PLUGIN_HXX
 
-struct input_stream;
+struct InputStream;
 class ArchiveFile;
 class ArchiveVisitor;
 class Error;

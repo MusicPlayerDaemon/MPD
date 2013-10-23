@@ -31,13 +31,13 @@
 
 static constexpr Domain input_domain("input");
 
-struct input_stream *
-input_stream::Open(const char *url,
-		   Mutex &mutex, Cond &cond,
-		   Error &error)
+InputStream *
+InputStream::Open(const char *url,
+		  Mutex &mutex, Cond &cond,
+		  Error &error)
 {
 	input_plugins_for_each_enabled(plugin) {
-		struct input_stream *is;
+		InputStream *is;
 
 		is = plugin->open(url, mutex, cond, error);
 		if (is != nullptr) {
@@ -58,20 +58,20 @@ input_stream::Open(const char *url,
 }
 
 bool
-input_stream::Check(Error &error)
+InputStream::Check(Error &error)
 {
 	return plugin.check == nullptr || plugin.check(this, error);
 }
 
 void
-input_stream::Update()
+InputStream::Update()
 {
 	if (plugin.update != nullptr)
 		plugin.update(this);
 }
 
 void
-input_stream::WaitReady()
+InputStream::WaitReady()
 {
 	while (true) {
 		Update();
@@ -83,20 +83,20 @@ input_stream::WaitReady()
 }
 
 void
-input_stream::LockWaitReady()
+InputStream::LockWaitReady()
 {
 	const ScopeLock protect(mutex);
 	WaitReady();
 }
 
 bool
-input_stream::CheapSeeking() const
+InputStream::CheapSeeking() const
 {
 	return IsSeekable() && !uri_has_scheme(uri.c_str());
 }
 
 bool
-input_stream::Seek(offset_type _offset, int whence, Error &error)
+InputStream::Seek(offset_type _offset, int whence, Error &error)
 {
 	if (plugin.seek == nullptr)
 		return false;
@@ -105,7 +105,7 @@ input_stream::Seek(offset_type _offset, int whence, Error &error)
 }
 
 bool
-input_stream::LockSeek(offset_type _offset, int whence, Error &error)
+InputStream::LockSeek(offset_type _offset, int whence, Error &error)
 {
 	if (plugin.seek == nullptr)
 		return false;
@@ -115,19 +115,19 @@ input_stream::LockSeek(offset_type _offset, int whence, Error &error)
 }
 
 bool
-input_stream::Rewind(Error &error)
+InputStream::Rewind(Error &error)
 {
 	return Seek(0, SEEK_SET, error);
 }
 
 bool
-input_stream::LockRewind(Error &error)
+InputStream::LockRewind(Error &error)
 {
 	return LockSeek(0, SEEK_SET, error);
 }
 
 Tag *
-input_stream::ReadTag()
+InputStream::ReadTag()
 {
 	return plugin.tag != nullptr
 		? plugin.tag(this)
@@ -135,7 +135,7 @@ input_stream::ReadTag()
 }
 
 Tag *
-input_stream::LockReadTag()
+InputStream::LockReadTag()
 {
 	if (plugin.tag == nullptr)
 		return nullptr;
@@ -145,7 +145,7 @@ input_stream::LockReadTag()
 }
 
 bool
-input_stream::IsAvailable()
+InputStream::IsAvailable()
 {
 	return plugin.available != nullptr
 		? plugin.available(this)
@@ -153,7 +153,7 @@ input_stream::IsAvailable()
 }
 
 size_t
-input_stream::Read(void *ptr, size_t _size, Error &error)
+InputStream::Read(void *ptr, size_t _size, Error &error)
 {
 	assert(ptr != nullptr);
 	assert(_size > 0);
@@ -162,7 +162,7 @@ input_stream::Read(void *ptr, size_t _size, Error &error)
 }
 
 size_t
-input_stream::LockRead(void *ptr, size_t _size, Error &error)
+InputStream::LockRead(void *ptr, size_t _size, Error &error)
 {
 	assert(ptr != nullptr);
 	assert(_size > 0);
@@ -172,19 +172,19 @@ input_stream::LockRead(void *ptr, size_t _size, Error &error)
 }
 
 void
-input_stream::Close()
+InputStream::Close()
 {
 	plugin.close(this);
 }
 
 bool
-input_stream::IsEOF()
+InputStream::IsEOF()
 {
 	return plugin.eof(this);
 }
 
 bool
-input_stream::LockIsEOF()
+InputStream::LockIsEOF()
 {
 	const ScopeLock protect(mutex);
 	return IsEOF();

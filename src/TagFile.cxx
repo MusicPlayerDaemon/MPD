@@ -46,7 +46,7 @@ tag_file_scan(const char *path_fs,
 	if (plugin == nullptr)
 		return false;
 
-	struct input_stream *is = nullptr;
+	InputStream *is = nullptr;
 	Mutex mutex;
 	Cond cond;
 
@@ -58,11 +58,11 @@ tag_file_scan(const char *path_fs,
 
 		/* fall back to stream tag */
 		if (plugin->scan_stream != nullptr) {
-			/* open the input_stream (if not already
+			/* open the InputStream (if not already
 			   open) */
 			if (is == nullptr)
-				is = input_stream::Open(path_fs, mutex, cond,
-							IgnoreError());
+				is = InputStream::Open(path_fs, mutex, cond,
+						       IgnoreError());
 
 			/* now try the stream_tag() method */
 			if (is != nullptr) {

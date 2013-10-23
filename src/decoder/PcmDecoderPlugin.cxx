@@ -31,7 +31,7 @@
 #include <stdio.h> /* for SEEK_SET */
 
 static void
-pcm_stream_decode(Decoder &decoder, struct input_stream *is)
+pcm_stream_decode(Decoder &decoder, InputStream &is)
 {
 	static constexpr AudioFormat audio_format = {
 		44100,
@@ -39,19 +39,19 @@ pcm_stream_decode(Decoder &decoder, struct input_stream *is)
 		2,
 	};
 
-	const char *const mime = is->GetMimeType();
+	const char *const mime = is.GetMimeType();
 	const bool reverse_endian = mime != nullptr &&
 		strcmp(mime, "audio/x-mpd-cdda-pcm-reverse") == 0;
 
 	const double time_to_size = audio_format.GetTimeToSize();
 
 	float total_time = -1;
-	const auto size = is->GetSize();
+	const auto size = is.GetSize();
 	if (size >= 0)
 		total_time = size / time_to_size;
 
 	decoder_initialized(decoder, audio_format,
-			    is->IsSeekable(), total_time);
+			    is.IsSeekable(), total_time);
 
 	DecoderCommand cmd;
 	do {
@@ -60,7 +60,7 @@ pcm_stream_decode(Decoder &decoder, struct input_stream *is)
 		size_t nbytes = decoder_read(decoder, is,
 					     buffer, sizeof(buffer));
 
-		if (nbytes == 0 && is->LockIsEOF())
+		if (nbytes == 0 && is.LockIsEOF())
 			break;
 
 		if (reverse_endian)
@@ -74,11 +74,11 @@ pcm_stream_decode(Decoder &decoder, struct input_stream *is)
 				       buffer, nbytes, 0)
 			: decoder_get_command(decoder);
 		if (cmd == DecoderCommand::SEEK) {
-			input_stream::offset_type offset(time_to_size *
-							 decoder_seek_where(decoder));
+			InputStream::offset_type offset(time_to_size *
+							decoder_seek_where(decoder));
 
 			Error error;
-			if (is->LockSeek(offset, SEEK_SET, error)) {
+			if (is.LockSeek(offset, SEEK_SET, error)) {
 				decoder_command_finished(decoder);
 			} else {
 				LogError(error);

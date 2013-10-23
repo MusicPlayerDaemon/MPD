@@ -73,11 +73,10 @@ decoder_seek_error(gcc_unused Decoder &decoder)
 
 size_t
 decoder_read(gcc_unused Decoder *decoder,
-	     struct input_stream *is,
+	     InputStream &is,
 	     void *buffer, size_t length)
 {
-	Error error;
-	return is->LockRead(buffer, length, error);
+	return is.LockRead(buffer, length, IgnoreError());
 }
 
 void
@@ -88,7 +87,7 @@ decoder_timestamp(gcc_unused Decoder &decoder,
 
 DecoderCommand
 decoder_data(gcc_unused Decoder &decoder,
-	     gcc_unused struct input_stream *is,
+	     gcc_unused InputStream *is,
 	     const void *data, size_t datalen,
 	     gcc_unused uint16_t kbit_rate)
 {
@@ -98,7 +97,7 @@ decoder_data(gcc_unused Decoder &decoder,
 
 DecoderCommand
 decoder_tag(gcc_unused Decoder &decoder,
-	    gcc_unused struct input_stream *is,
+	    gcc_unused InputStream *is,
 	    gcc_unused Tag &&tag)
 {
 	return DecoderCommand::NONE;
@@ -189,8 +188,8 @@ int main(int argc, char **argv)
 		Mutex mutex;
 		Cond cond;
 
-		input_stream *is = input_stream::Open(path, mutex, cond,
-						      error);
+		InputStream *is = InputStream::Open(path, mutex, cond,
+						    error);
 		if (is == NULL) {
 			g_printerr("Failed to open %s: %s\n",
 				   path, error.GetMessage());

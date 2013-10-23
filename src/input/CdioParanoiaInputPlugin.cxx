@@ -43,7 +43,7 @@
 #include <cdio/cd_types.h>
 
 struct CdioParanoiaInputStream {
-	struct input_stream base;
+	InputStream base;
 
 	cdrom_drive_t *drv;
 	CdIo_t *cdio;
@@ -78,7 +78,7 @@ struct CdioParanoiaInputStream {
 static constexpr Domain cdio_domain("cdio");
 
 static void
-input_cdio_close(struct input_stream *is)
+input_cdio_close(InputStream *is)
 {
 	CdioParanoiaInputStream *i = (CdioParanoiaInputStream *)is;
 
@@ -149,7 +149,7 @@ cdio_detect_device(void)
 	return path;
 }
 
-static struct input_stream *
+static InputStream *
 input_cdio_open(const char *uri,
 		Mutex &mutex, Cond &cond,
 		Error &error)
@@ -247,7 +247,7 @@ input_cdio_open(const char *uri,
 }
 
 static bool
-input_cdio_seek(struct input_stream *is,
+input_cdio_seek(InputStream *is,
 		InputPlugin::offset_type offset, int whence, Error &error)
 {
 	CdioParanoiaInputStream *cis = (CdioParanoiaInputStream *)is;
@@ -284,7 +284,7 @@ input_cdio_seek(struct input_stream *is,
 }
 
 static size_t
-input_cdio_read(struct input_stream *is, void *ptr, size_t length,
+input_cdio_read(InputStream *is, void *ptr, size_t length,
 		Error &error)
 {
 	CdioParanoiaInputStream *cis = (CdioParanoiaInputStream *)is;
@@ -354,7 +354,7 @@ input_cdio_read(struct input_stream *is, void *ptr, size_t length,
 }
 
 static bool
-input_cdio_eof(struct input_stream *is)
+input_cdio_eof(InputStream *is)
 {
 	CdioParanoiaInputStream *cis = (CdioParanoiaInputStream *)is;
 

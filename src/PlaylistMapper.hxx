@@ -23,7 +23,7 @@
 class Mutex;
 class Cond;
 class SongEnumerator;
-struct input_stream;
+struct InputStream;
 
 /**
  * Opens a playlist from an URI relative to the playlist or music
@@ -35,6 +35,6 @@ struct input_stream;
  */
 SongEnumerator *
 playlist_mapper_open(const char *uri, Mutex &mutex, Cond &cond,
-		     struct input_stream **is_r);
+		     InputStream **is_r);
 
 #endif

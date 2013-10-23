@@ -346,7 +346,7 @@ wavpack_scan_file(const char *fname,
 /* This struct is needed for per-stream last_byte storage. */
 struct wavpack_input {
 	Decoder *decoder;
-	struct input_stream *is;
+	InputStream *is;
 	/* Needed for push_back_byte() */
 	int last_byte;
 };
@@ -378,7 +378,7 @@ wavpack_input_read_bytes(void *id, void *data, int32_t bcount)
 	   until the buffer is full */
 	while (bcount > 0) {
 		size_t nbytes = decoder_read(
-			wpin(id)->decoder, wpin(id)->is, buf, bcount
+			wpin(id)->decoder, *wpin(id)->is, buf, bcount
 		);
 		if (nbytes == 0) {
 			/* EOF, error or a decoder command */
@@ -450,19 +450,19 @@ static WavpackStreamReader mpd_is_reader = {
 
 static void
 wavpack_input_init(struct wavpack_input *isp, Decoder &decoder,
-		   struct input_stream *is)
+		   InputStream &is)
 {
 	isp->decoder = &decoder;
-	isp->is = is;
+	isp->is = &is;
 	isp->last_byte = EOF;
 }
 
-static struct input_stream *
+static InputStream *
 wavpack_open_wvc(Decoder &decoder, const char *uri,
 		 Mutex &mutex, Cond &cond,
 		 struct wavpack_input *wpi)
 {
-	struct input_stream *is_wvc;
+	InputStream *is_wvc;
 	char *wvc_url = nullptr;
 	char first_byte;
 	size_t nbytes;
@@ -476,7 +476,7 @@ wavpack_open_wvc(Decoder &decoder, const char *uri,
 
 	wvc_url = g_strconcat(uri, "c", nullptr);
 
-	is_wvc = input_stream::Open(wvc_url, mutex, cond, IgnoreError());
+	is_wvc = InputStream::Open(wvc_url, mutex, cond, IgnoreError());
 	g_free(wvc_url);
 
 	if (is_wvc == nullptr)
@@ -487,7 +487,7 @@ wavpack_open_wvc(Decoder &decoder, const char *uri,
 	 * about a possible 404 error.
 	 */
 	nbytes = decoder_read(
-		decoder, is_wvc, &first_byte, sizeof(first_byte)
+		decoder, *is_wvc, &first_byte, sizeof(first_byte)
 	);
 	if (nbytes == 0) {
 		is_wvc->Close();
@@ -495,7 +495,7 @@ wavpack_open_wvc(Decoder &decoder, const char *uri,
 	}
 
 	/* push it back */
-	wavpack_input_init(wpi, decoder, is_wvc);
+	wavpack_input_init(wpi, decoder, *is_wvc);
 	wpi->last_byte = first_byte;
 	return is_wvc;
 }
@@ -504,17 +504,17 @@ wavpack_open_wvc(Decoder &decoder, const char *uri,
  * Decodes a stream.
  */
 static void
-wavpack_streamdecode(Decoder & decoder, struct input_stream *is)
+wavpack_streamdecode(Decoder &decoder, InputStream &is)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc;
-	struct input_stream *is_wvc;
+	InputStream *is_wvc;
 	int open_flags = OPEN_NORMALIZE;
 	struct wavpack_input isp, isp_wvc;
-	bool can_seek = is->seekable;
+	bool can_seek = is.seekable;
 
-	is_wvc = wavpack_open_wvc(decoder, is->uri.c_str(),
-				  is->mutex, is->cond,
+	is_wvc = wavpack_open_wvc(decoder, is.uri.c_str(),
+				  is.mutex, is.cond,
 				  &isp_wvc);
 	if (is_wvc != nullptr) {
 		open_flags |= OPEN_WVC;

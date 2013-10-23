@@ -209,9 +209,8 @@ playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 }
 
 static SongEnumerator *
-playlist_list_open_stream_mime2(struct input_stream *is, const char *mime)
+playlist_list_open_stream_mime2(InputStream &is, const char *mime)
 {
-	assert(is != nullptr);
 	assert(mime != nullptr);
 
 	playlist_plugins_for_each_enabled(plugin) {
@@ -220,9 +219,10 @@ playlist_list_open_stream_mime2(struct input_stream *is, const char *mime)
 		    string_array_contains(plugin->mime_types, mime)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
-			is->Rewind(IgnoreError());
+			is.Rewind(IgnoreError());
 
-			auto playlist = playlist_plugin_open_stream(plugin, is);
+			auto playlist = playlist_plugin_open_stream(plugin,
+								    is);
 			if (playlist != nullptr)
 				return playlist;
 		}
@@ -232,7 +232,7 @@ playlist_list_open_stream_mime2(struct input_stream *is, const char *mime)
 }
 
 static SongEnumerator *
-playlist_list_open_stream_mime(struct input_stream *is, const char *full_mime)
+playlist_list_open_stream_mime(InputStream &is, const char *full_mime)
 {
 	assert(full_mime != nullptr);
 
@@ -249,9 +249,8 @@ playlist_list_open_stream_mime(struct input_stream *is, const char *full_mime)
 }
 
 static SongEnumerator *
-playlist_list_open_stream_suffix(struct input_stream *is, const char *suffix)
+playlist_list_open_stream_suffix(InputStream &is, const char *suffix)
 {
-	assert(is != nullptr);
 	assert(suffix != nullptr);
 
 	playlist_plugins_for_each_enabled(plugin) {
@@ -260,7 +259,7 @@ playlist_list_open_stream_suffix(struct input_stream *is, const char *suffix)
 		    string_array_contains(plugin->suffixes, suffix)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
-			is->Rewind(IgnoreError());
+			is.Rewind(IgnoreError());
 
 			auto playlist = playlist_plugin_open_stream(plugin, is);
 			if (playlist != nullptr)
@@ -272,13 +271,13 @@ playlist_list_open_stream_suffix(struct input_stream *is, const char *suffix)
 }
 
 SongEnumerator *
-playlist_list_open_stream(struct input_stream *is, const char *uri)
+playlist_list_open_stream(InputStream &is, const char *uri)
 {
 	const char *suffix;
 
-	is->LockWaitReady();
+	is.LockWaitReady();
 
-	const char *const mime = is->GetMimeType();
+	const char *const mime = is.GetMimeType();
 	if (mime != nullptr) {
 		auto playlist = playlist_list_open_stream_mime(is, mime);
 		if (playlist != nullptr)
@@ -311,7 +310,7 @@ playlist_suffix_supported(const char *suffix)
 
 SongEnumerator *
 playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
-			struct input_stream **is_r)
+			InputStream **is_r)
 {
 	const char *suffix;
 
@@ -322,7 +321,7 @@ playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
 		return nullptr;
 
 	Error error;
-	input_stream *is = input_stream::Open(path_fs, mutex, cond, error);
+	InputStream *is = InputStream::Open(path_fs, mutex, cond, error);
 	if (is == nullptr) {
 		if (error.IsDefined())
 			LogError(error);
@@ -332,7 +331,7 @@ playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
 
 	is->LockWaitReady();
 
-	auto playlist = playlist_list_open_stream_suffix(is, suffix);
+	auto playlist = playlist_list_open_stream_suffix(*is, suffix);
 	if (playlist != nullptr)
 		*is_r = is;
 	else

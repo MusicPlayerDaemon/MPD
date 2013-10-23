@@ -21,7 +21,7 @@
 #define MPD_PLAYLIST_PLUGIN_HXX
 
 struct config_param;
-struct input_stream;
+struct InputStream;
 struct Tag;
 class Mutex;
 class Cond;
@@ -58,7 +58,7 @@ struct playlist_plugin {
 	 * either matched one of the suffixes or one of the MIME
 	 * types.
 	 */
-	SongEnumerator *(*open_stream)(struct input_stream *is);
+	SongEnumerator *(*open_stream)(InputStream &is);
 
 	const char *const*schemes;
 	const char *const*suffixes;
@@ -101,7 +101,7 @@ playlist_plugin_open_uri(const struct playlist_plugin *plugin, const char *uri,
 
 static inline SongEnumerator *
 playlist_plugin_open_stream(const struct playlist_plugin *plugin,
-			    struct input_stream *is)
+			    InputStream &is)
 {
 	return plugin->open_stream(is);
 }

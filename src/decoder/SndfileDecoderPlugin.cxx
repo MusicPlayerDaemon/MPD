@@ -34,29 +34,29 @@ static constexpr Domain sndfile_domain("sndfile");
 static sf_count_t
 sndfile_vio_get_filelen(void *user_data)
 {
-	const struct input_stream *is = (const struct input_stream *)user_data;
+	const InputStream &is = *(const InputStream *)user_data;
 
-	return is->GetSize();
+	return is.GetSize();
 }
 
 static sf_count_t
 sndfile_vio_seek(sf_count_t offset, int whence, void *user_data)
 {
-	struct input_stream *is = (struct input_stream *)user_data;
+	InputStream &is = *(InputStream *)user_data;
 
-	if (!is->LockSeek(offset, whence, IgnoreError()))
+	if (!is.LockSeek(offset, whence, IgnoreError()))
 		return -1;
 
-	return is->GetOffset();
+	return is.GetOffset();
 }
 
 static sf_count_t
 sndfile_vio_read(void *ptr, sf_count_t count, void *user_data)
 {
-	struct input_stream *is = (struct input_stream *)user_data;
+	InputStream &is = *(InputStream *)user_data;
 
 	Error error;
-	size_t nbytes = is->LockRead(ptr, count, error);
+	size_t nbytes = is.LockRead(ptr, count, error);
 	if (nbytes == 0 && error.IsDefined()) {
 		LogError(error);
 		return -1;
@@ -77,9 +77,9 @@ sndfile_vio_write(gcc_unused const void *ptr,
 static sf_count_t
 sndfile_vio_tell(void *user_data)
 {
-	const struct input_stream *is = (const struct input_stream *)user_data;
+	const InputStream &is = *(const InputStream *)user_data;
 
-	return is->GetOffset();
+	return is.GetOffset();
 }
 
 /**
@@ -113,7 +113,7 @@ time_to_frame(float t, const AudioFormat *audio_format)
 }
 
 static void
-sndfile_stream_decode(Decoder &decoder, struct input_stream *is)
+sndfile_stream_decode(Decoder &decoder, InputStream &is)
 {
 	SNDFILE *sf;
 	SF_INFO info;
@@ -123,7 +123,7 @@ sndfile_stream_decode(Decoder &decoder, struct input_stream *is)
 
 	info.format = 0;
 
-	sf = sf_open_virtual(&vio, SFM_READ, &info, is);
+	sf = sf_open_virtual(&vio, SFM_READ, &info, &is);
 	if (sf == nullptr) {
 		LogWarning(sndfile_domain, "sf_open_virtual() failed");
 		return;

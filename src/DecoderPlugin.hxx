@@ -23,7 +23,7 @@
 #include "Compiler.h"
 
 struct config_param;
-struct input_stream;
+struct InputStream;
 struct Tag;
 struct tag_handler;
 
@@ -59,7 +59,7 @@ struct DecoderPlugin {
 	 * possible, it is recommended to implement this method,
 	 * because it is more versatile.
 	 */
-	void (*stream_decode)(Decoder &decoder, input_stream *is);
+	void (*stream_decode)(Decoder &decoder, InputStream &is);
 
 	/**
 	 * Decode a local file.
@@ -82,7 +82,7 @@ struct DecoderPlugin {
 	 *
 	 * @return false if the operation has failed
 	 */
-	bool (*scan_stream)(struct input_stream *is,
+	bool (*scan_stream)(InputStream &is,
 			    const struct tag_handler *handler,
 			    void *handler_ctx);
 
@@ -127,8 +127,8 @@ struct DecoderPlugin {
 	/**
 	 * Decode a stream.
 	 */
-	void StreamDecode(Decoder &decoder, input_stream &is) const {
-		stream_decode(decoder, &is);
+	void StreamDecode(Decoder &decoder, InputStream &is) const {
+		stream_decode(decoder, is);
 	}
 
 	/**
@@ -151,10 +151,10 @@ struct DecoderPlugin {
 	/**
 	 * Read the tag of a stream.
 	 */
-	bool ScanStream(input_stream &is,
+	bool ScanStream(InputStream &is,
 			const tag_handler &handler, void *handler_ctx) const {
 		return scan_stream != nullptr
-			? scan_stream(&is, &handler, handler_ctx)
+			? scan_stream(is, &handler, handler_ctx)
 			: false;
 	}
 

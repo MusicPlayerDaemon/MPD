@@ -23,7 +23,7 @@
 class Mutex;
 class Cond;
 class SongEnumerator;
-struct input_stream;
+struct InputStream;
 
 /**
  * Opens a playlist from the specified URI, which can be either an
@@ -36,6 +36,6 @@ struct input_stream;
  */
 SongEnumerator *
 playlist_open_any(const char *uri, Mutex &mutex, Cond &cond,
-		  struct input_stream **is_r);
+		  InputStream **is_r);
 
 #endif

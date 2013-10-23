@@ -140,10 +140,10 @@ struct MadDecoder {
 	bool decoded_first_frame;
 	unsigned long bit_rate;
 	Decoder *const decoder;
-	struct input_stream *input_stream;
+	InputStream &input_stream;
 	enum mad_layer layer;
 
-	MadDecoder(Decoder *decoder, struct input_stream *input_stream);
+	MadDecoder(Decoder *decoder, InputStream &input_stream);
 	~MadDecoder();
 
 	bool Seek(long offset);
@@ -153,10 +153,10 @@ struct MadDecoder {
 	enum mp3_action DecodeNextFrame();
 
 	gcc_pure
-	input_stream::offset_type ThisFrameOffset() const;
+	InputStream::offset_type ThisFrameOffset() const;
 
 	gcc_pure
-	input_stream::offset_type RestIncludingThisFrame() const;
+	InputStream::offset_type RestIncludingThisFrame() const;
 
 	/**
 	 * Attempt to calulcate the length of the song from filesize
@@ -185,7 +185,7 @@ struct MadDecoder {
 };
 
 MadDecoder::MadDecoder(Decoder *_decoder,
-		       struct input_stream *_input_stream)
+		       InputStream &_input_stream)
 	:mute_frame(MUTEFRAME_NONE),
 	 frame_offsets(nullptr),
 	 times(nullptr),
@@ -208,7 +208,7 @@ inline bool
 MadDecoder::Seek(long offset)
 {
 	Error error;
-	if (!input_stream->LockSeek(offset, SEEK_SET, error))
+	if (!input_stream.LockSeek(offset, SEEK_SET, error))
 		return false;
 
 	mad_stream_buffer(&stream, input_buffer, 0);
@@ -777,10 +777,10 @@ mp3_frame_duration(const struct mad_frame *frame)
 			       MAD_UNITS_MILLISECONDS) / 1000.0;
 }
 
-inline input_stream::offset_type
+inline InputStream::offset_type
 MadDecoder::ThisFrameOffset() const
 {
-	auto offset = input_stream->GetOffset();
+	auto offset = input_stream.GetOffset();
 
 	if (stream.this_frame != nullptr)
 		offset -= stream.bufend - stream.this_frame;
@@ -790,16 +790,16 @@ MadDecoder::ThisFrameOffset() const
 	return offset;
 }
 
-inline input_stream::offset_type
+inline InputStream::offset_type
 MadDecoder::RestIncludingThisFrame() const
 {
-	return input_stream->GetSize() - ThisFrameOffset();
+	return input_stream.GetSize() - ThisFrameOffset();
 }
 
 inline void
 MadDecoder::FileSizeToSongLength()
 {
-	input_stream::offset_type rest = RestIncludingThisFrame();
+	InputStream::offset_type rest = RestIncludingThisFrame();
 
 	if (rest > 0) {
 		float frame_duration = mp3_frame_duration(&frame);
@@ -861,7 +861,7 @@ MadDecoder::DecodeFirstFrame(Tag **tag)
 		}
 
 		if (parse_lame(&lame, &ptr, &bitlen)) {
-			if (gapless_playback && input_stream->IsSeekable()) {
+			if (gapless_playback && input_stream.IsSeekable()) {
 				drop_start_samples = lame.encoder_delay +
 				                           DECODERDELAY;
 				drop_end_samples = lame.encoder_padding;
@@ -908,7 +908,7 @@ MadDecoder::~MadDecoder()
 
 /* this is primarily used for getting total time for tags */
 static int
-mad_decoder_total_file_time(struct input_stream *is)
+mad_decoder_total_file_time(InputStream &is)
 {
 	MadDecoder data(nullptr, is);
 	return data.DecodeFirstFrame(nullptr)
@@ -1063,7 +1063,7 @@ MadDecoder::Read()
 		if (cmd == DecoderCommand::SEEK) {
 			unsigned long j;
 
-			assert(input_stream->IsSeekable());
+			assert(input_stream.IsSeekable());
 
 			j = TimeToFrame(decoder_seek_where(*decoder));
 			if (j < highest_frame) {
@@ -1116,7 +1116,7 @@ MadDecoder::Read()
 }
 
 static void
-mp3_decode(Decoder &decoder, struct input_stream *input_stream)
+mp3_decode(Decoder &decoder, InputStream &input_stream)
 {
 	MadDecoder data(&decoder, input_stream);
 
@@ -1143,7 +1143,7 @@ mp3_decode(Decoder &decoder, struct input_stream *input_stream)
 	}
 
 	decoder_initialized(decoder, audio_format,
-			    input_stream->IsSeekable(),
+			    input_stream.IsSeekable(),
 			    data.total_time);
 
 	if (tag != nullptr) {
@@ -1155,7 +1155,7 @@ mp3_decode(Decoder &decoder, struct input_stream *input_stream)
 }
 
 static bool
-mad_decoder_scan_stream(struct input_stream *is,
+mad_decoder_scan_stream(InputStream &is,
 			const struct tag_handler *handler, void *handler_ctx)
 {
 	int total_time;

@@ -220,7 +220,7 @@ xspf_parser_destroy(gpointer data)
  */
 
 static SongEnumerator *
-xspf_open_stream(struct input_stream *is)
+xspf_open_stream(InputStream &is)
 {
 	XspfParser parser;
 	GMarkupParseContext *context;
@@ -237,7 +237,7 @@ xspf_open_stream(struct input_stream *is)
 					     &parser, xspf_parser_destroy);
 
 	while (true) {
-		nbytes = is->LockRead(buffer, sizeof(buffer), error2);
+		nbytes = is.LockRead(buffer, sizeof(buffer), error2);
 		if (nbytes == 0) {
 			if (error2.IsDefined()) {
 				g_markup_parse_context_free(context);

@@ -49,7 +49,7 @@ my_log_func(const gchar *log_domain, gcc_unused GLogLevelFlags log_level,
 }
 
 static int
-dump_input_stream(struct input_stream *is)
+dump_input_stream(InputStream *is)
 {
 	Error error;
 	char buffer[4096];
@@ -110,7 +110,7 @@ dump_input_stream(struct input_stream *is)
 int main(int argc, char **argv)
 {
 	Error error;
-	struct input_stream *is;
+	InputStream *is;
 	int ret;
 
 	if (argc != 2) {
@@ -147,7 +147,7 @@ int main(int argc, char **argv)
 	Mutex mutex;
 	Cond cond;
 
-	is = input_stream::Open(argv[1], mutex, cond, error);
+	is = InputStream::Open(argv[1], mutex, cond, error);
 	if (is != NULL) {
 		ret = dump_input_stream(is);
 		is->Close();

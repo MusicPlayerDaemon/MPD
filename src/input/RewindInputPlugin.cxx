@@ -30,9 +30,9 @@
 extern const InputPlugin rewind_input_plugin;
 
 struct RewindInputStream {
-	struct input_stream base;
+	InputStream base;
 
-	struct input_stream *input;
+	InputStream *input;
 
 	/**
 	 * The read position within the buffer.  Undefined as long as
@@ -55,7 +55,7 @@ struct RewindInputStream {
 	 */
 	char buffer[64 * 1024];
 
-	RewindInputStream(input_stream *_input)
+	RewindInputStream(InputStream *_input)
 		:base(rewind_input_plugin, _input->uri.c_str(),
 		      _input->mutex, _input->cond),
 		 input(_input), tail(0) {
@@ -80,8 +80,8 @@ struct RewindInputStream {
 	 * attributes.
 	 */
 	void CopyAttributes() {
-		struct input_stream *dest = &base;
-		const struct input_stream *src = input;
+		InputStream *dest = &base;
+		const InputStream *src = input;
 
 		assert(dest != src);
 
@@ -98,7 +98,7 @@ struct RewindInputStream {
 };
 
 static void
-input_rewind_close(struct input_stream *is)
+input_rewind_close(InputStream *is)
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
@@ -106,7 +106,7 @@ input_rewind_close(struct input_stream *is)
 }
 
 static bool
-input_rewind_check(struct input_stream *is, Error &error)
+input_rewind_check(InputStream *is, Error &error)
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
@@ -114,7 +114,7 @@ input_rewind_check(struct input_stream *is, Error &error)
 }
 
 static void
-input_rewind_update(struct input_stream *is)
+input_rewind_update(InputStream *is)
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
@@ -123,7 +123,7 @@ input_rewind_update(struct input_stream *is)
 }
 
 static Tag *
-input_rewind_tag(struct input_stream *is)
+input_rewind_tag(InputStream *is)
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
@@ -131,7 +131,7 @@ input_rewind_tag(struct input_stream *is)
 }
 
 static bool
-input_rewind_available(struct input_stream *is)
+input_rewind_available(InputStream *is)
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
@@ -139,7 +139,7 @@ input_rewind_available(struct input_stream *is)
 }
 
 static size_t
-input_rewind_read(struct input_stream *is, void *ptr, size_t size,
+input_rewind_read(InputStream *is, void *ptr, size_t size,
 		  Error &error)
 {
 	RewindInputStream *r = (RewindInputStream *)is;
@@ -182,7 +182,7 @@ input_rewind_read(struct input_stream *is, void *ptr, size_t size,
 }
 
 static bool
-input_rewind_eof(struct input_stream *is)
+input_rewind_eof(InputStream *is)
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
@@ -190,7 +190,7 @@ input_rewind_eof(struct input_stream *is)
 }
 
 static bool
-input_rewind_seek(struct input_stream *is, InputPlugin::offset_type offset,
+input_rewind_seek(InputStream *is, InputPlugin::offset_type offset,
 		  int whence,
 		  Error &error)
 {
@@ -237,8 +237,8 @@ const InputPlugin rewind_input_plugin = {
 	input_rewind_seek,
 };
 
-struct input_stream *
-input_rewind_open(struct input_stream *is)
+InputStream *
+input_rewind_open(InputStream *is)
 {
 	assert(is != NULL);
 	assert(is->offset == 0);

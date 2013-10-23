@@ -33,7 +33,7 @@ FlacInput::Read(FLAC__byte buffer[], size_t *bytes)
 	*bytes = r;
 
 	if (r == 0) {
-		if (input_stream->LockIsEOF() ||
+		if (input_stream.LockIsEOF() ||
 		    (decoder != nullptr &&
 		     decoder_get_command(*decoder) != DecoderCommand::NONE))
 			return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
@@ -47,11 +47,11 @@ FlacInput::Read(FLAC__byte buffer[], size_t *bytes)
 FLAC__StreamDecoderSeekStatus
 FlacInput::Seek(FLAC__uint64 absolute_byte_offset)
 {
-	if (!input_stream->seekable)
+	if (!input_stream.seekable)
 		return FLAC__STREAM_DECODER_SEEK_STATUS_UNSUPPORTED;
 
 	::Error error;
-	if (!input_stream->LockSeek(absolute_byte_offset, SEEK_SET, error)) {
+	if (!input_stream.LockSeek(absolute_byte_offset, SEEK_SET, error)) {
 		LogError(error);
 		return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
 	}
@@ -62,20 +62,20 @@ FlacInput::Seek(FLAC__uint64 absolute_byte_offset)
 FLAC__StreamDecoderTellStatus
 FlacInput::Tell(FLAC__uint64 *absolute_byte_offset)
 {
-	if (!input_stream->seekable)
+	if (!input_stream.seekable)
 		return FLAC__STREAM_DECODER_TELL_STATUS_UNSUPPORTED;
 
-	*absolute_byte_offset = (FLAC__uint64)input_stream->offset;
+	*absolute_byte_offset = (FLAC__uint64)input_stream.offset;
 	return FLAC__STREAM_DECODER_TELL_STATUS_OK;
 }
 
 FLAC__StreamDecoderLengthStatus
 FlacInput::Length(FLAC__uint64 *stream_length)
 {
-	if (input_stream->size < 0)
+	if (input_stream.size < 0)
 		return FLAC__STREAM_DECODER_LENGTH_STATUS_UNSUPPORTED;
 
-	*stream_length = (FLAC__uint64)input_stream->size;
+	*stream_length = (FLAC__uint64)input_stream.size;
 	return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
 }
 
@@ -85,7 +85,7 @@ FlacInput::Eof()
 	return (decoder != nullptr &&
 		decoder_get_command(*decoder) != DecoderCommand::NONE &&
 		decoder_get_command(*decoder) != DecoderCommand::SEEK) ||
-		input_stream->LockIsEOF();
+		input_stream.LockIsEOF();
 }
 
 void

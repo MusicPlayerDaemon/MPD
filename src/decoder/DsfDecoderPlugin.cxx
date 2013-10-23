@@ -47,7 +47,7 @@ struct DsfMetaData {
 	bool bitreverse;
 	uint64_t chunk_size;
 #ifdef HAVE_ID3TAG
-	input_stream::offset_type id3_offset;
+	InputStream::offset_type id3_offset;
 	uint64_t id3_size;
 #endif
 };
@@ -99,7 +99,7 @@ struct DsfDataChunk {
  * Read and parse all needed metadata chunks for DSF files.
  */
 static bool
-dsf_read_metadata(Decoder *decoder, struct input_stream *is,
+dsf_read_metadata(Decoder *decoder, InputStream &is,
 		  DsfMetaData *metadata)
 {
 	uint64_t chunk_size;
@@ -165,7 +165,7 @@ dsf_read_metadata(Decoder *decoder, struct input_stream *is,
 
 	metadata->chunk_size = data_size;
 	/* data_size cannot be bigger or equal to total file size */
-	const uint64_t size = (uint64_t)is->GetSize();
+	const uint64_t size = (uint64_t)is.GetSize();
 	if (data_size >= size)
 		return false;
 
@@ -176,7 +176,7 @@ dsf_read_metadata(Decoder *decoder, struct input_stream *is,
 	if (metadata_offset >= size)
 		metadata->id3_offset = 0;
 	else
-		metadata->id3_offset = (input_stream::offset_type)metadata_offset;
+		metadata->id3_offset = (InputStream::offset_type)metadata_offset;
 #endif
 	/* check bits per sample format, determine if bitreverse is needed */
 	metadata->bitreverse = dsf_fmt_chunk.bitssample == 1;
@@ -219,7 +219,7 @@ dsf_to_pcm_order(uint8_t *dest, uint8_t *scratch, size_t nrbytes)
  * Decode one complete DSF 'data' chunk i.e. a complete song
  */
 static bool
-dsf_decode_chunk(Decoder &decoder, struct input_stream *is,
+dsf_decode_chunk(Decoder &decoder, InputStream &is,
 		    unsigned channels,
 		    uint64_t chunk_size,
 		    bool bitreverse)
@@ -277,7 +277,7 @@ dsf_decode_chunk(Decoder &decoder, struct input_stream *is,
 }
 
 static void
-dsf_stream_decode(Decoder &decoder, struct input_stream *is)
+dsf_stream_decode(Decoder &decoder, InputStream &is)
 {
 	/* check if it is a proper DSF file */
 	DsfMetaData metadata;
@@ -307,7 +307,7 @@ dsf_stream_decode(Decoder &decoder, struct input_stream *is)
 }
 
 static bool
-dsf_scan_stream(struct input_stream *is,
+dsf_scan_stream(InputStream &is,
 		gcc_unused const struct tag_handler *handler,
 		gcc_unused void *handler_ctx)
 {

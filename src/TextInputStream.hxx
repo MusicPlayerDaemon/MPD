@@ -24,11 +24,11 @@
 
 #include <string>
 
-struct input_stream;
+struct InputStream;
 struct fifo_buffer;
 
 class TextInputStream {
-	struct input_stream *is;
+	InputStream &is;
 	FifoBuffer<char, 4096> buffer;
 
 public:
@@ -38,7 +38,7 @@ public:
 	 *
 	 * @param _is an open #input_stream object
 	 */
-	explicit TextInputStream(struct input_stream *_is)
+	explicit TextInputStream(InputStream &_is)
 		:is(_is) {}
 
 	TextInputStream(const TextInputStream &) = delete;

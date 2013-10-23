@@ -107,7 +107,7 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 }
 
 static SongEnumerator *
-pls_open_stream(struct input_stream *is)
+pls_open_stream(InputStream &is)
 {
 	GError *error = NULL;
 	Error error2;
@@ -119,7 +119,7 @@ pls_open_stream(struct input_stream *is)
 	std::string kf_data;
 
 	do {
-		nbytes = is->LockRead(buffer, sizeof(buffer), error2);
+		nbytes = is.LockRead(buffer, sizeof(buffer), error2);
 		if (nbytes == 0) {
 			if (error2.IsDefined()) {
 				LogError(error2);

@@ -251,7 +251,7 @@ decoder_check_cancel_read(const Decoder *decoder)
 
 size_t
 decoder_read(Decoder *decoder,
-	     struct input_stream *is,
+	     InputStream &is,
 	     void *buffer, size_t length)
 {
 	/* XXX don't allow decoder==nullptr */
@@ -259,35 +259,34 @@ decoder_read(Decoder *decoder,
 	assert(decoder == nullptr ||
 	       decoder->dc.state == DecoderState::START ||
 	       decoder->dc.state == DecoderState::DECODE);
-	assert(is != nullptr);
 	assert(buffer != nullptr);
 
 	if (length == 0)
 		return 0;
 
-	is->Lock();
+	is.Lock();
 
 	while (true) {
 		if (decoder_check_cancel_read(decoder)) {
-			is->Unlock();
+			is.Unlock();
 			return 0;
 		}
 
-		if (is->IsAvailable())
+		if (is.IsAvailable())
 			break;
 
-		is->cond.wait(is->mutex);
+		is.cond.wait(is.mutex);
 	}
 
 	Error error;
-	size_t nbytes = is->Read(buffer, length, error);
+	size_t nbytes = is.Read(buffer, length, error);
 	assert(nbytes == 0 || !error.IsDefined());
-	assert(nbytes > 0 || error.IsDefined() || is->IsEOF());
+	assert(nbytes > 0 || error.IsDefined() || is.IsEOF());
 
 	if (gcc_unlikely(nbytes == 0 && error.IsDefined()))
 		LogError(error);
 
-	is->Unlock();
+	is.Unlock();
 
 	return nbytes;
 }
@@ -329,7 +328,7 @@ do_send_tag(Decoder &decoder, const Tag &tag)
 }
 
 static bool
-update_stream_tag(Decoder &decoder, struct input_stream *is)
+update_stream_tag(Decoder &decoder, InputStream *is)
 {
 	Tag *tag;
 
@@ -353,7 +352,7 @@ update_stream_tag(Decoder &decoder, struct input_stream *is)
 
 DecoderCommand
 decoder_data(Decoder &decoder,
-	     struct input_stream *is,
+	     InputStream *is,
 	     const void *data, size_t length,
 	     uint16_t kbit_rate)
 {
@@ -462,7 +461,7 @@ decoder_data(Decoder &decoder,
 }
 
 DecoderCommand
-decoder_tag(Decoder &decoder, struct input_stream *is,
+decoder_tag(Decoder &decoder, InputStream *is,
 	    Tag &&tag)
 {
 	gcc_unused const decoder_control &dc = decoder.dc;

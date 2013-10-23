@@ -72,13 +72,13 @@ struct DsdiffMetaData {
 	bool bitreverse;
 	uint64_t chunk_size;
 #ifdef HAVE_ID3TAG
-	input_stream::offset_type id3_offset;
+	InputStream::offset_type id3_offset;
 	uint64_t id3_size;
 #endif
 	/** offset for artist tag */
-	input_stream::offset_type diar_offset;
+	InputStream::offset_type diar_offset;
 	/** offset for title tag */
-	input_stream::offset_type diti_offset;
+	InputStream::offset_type diti_offset;
 };
 
 static bool lsbitfirst;
@@ -91,21 +91,21 @@ dsdiff_init(const config_param &param)
 }
 
 static bool
-dsdiff_read_id(Decoder *decoder, struct input_stream *is,
+dsdiff_read_id(Decoder *decoder, InputStream &is,
 	       struct dsdlib_id *id)
 {
 	return dsdlib_read(decoder, is, id, sizeof(*id));
 }
 
 static bool
-dsdiff_read_chunk_header(Decoder *decoder, struct input_stream *is,
+dsdiff_read_chunk_header(Decoder *decoder, InputStream &is,
 			 DsdiffChunkHeader *header)
 {
 	return dsdlib_read(decoder, is, header, sizeof(*header));
 }
 
 static bool
-dsdiff_read_payload(Decoder *decoder, struct input_stream *is,
+dsdiff_read_payload(Decoder *decoder, InputStream &is,
 		    const DsdiffChunkHeader *header,
 		    void *data, size_t length)
 {
@@ -121,16 +121,16 @@ dsdiff_read_payload(Decoder *decoder, struct input_stream *is,
  * Read and parse a "SND" chunk inside "PROP".
  */
 static bool
-dsdiff_read_prop_snd(Decoder *decoder, struct input_stream *is,
+dsdiff_read_prop_snd(Decoder *decoder, InputStream &is,
 		     DsdiffMetaData *metadata,
-		     input_stream::offset_type end_offset)
+		     InputStream::offset_type end_offset)
 {
 	DsdiffChunkHeader header;
-	while ((input_stream::offset_type)(is->GetOffset() + sizeof(header)) <= end_offset) {
+	while ((InputStream::offset_type)(is.GetOffset() + sizeof(header)) <= end_offset) {
 		if (!dsdiff_read_chunk_header(decoder, is, &header))
 			return false;
 
-		input_stream::offset_type chunk_end_offset = is->GetOffset()
+		InputStream::offset_type chunk_end_offset = is.GetOffset()
 			+ header.GetSize();
 		if (chunk_end_offset > end_offset)
 			return false;
@@ -172,19 +172,19 @@ dsdiff_read_prop_snd(Decoder *decoder, struct input_stream *is,
 		}
 	}
 
-	return is->GetOffset() == end_offset;
+	return is.GetOffset() == end_offset;
 }
 
 /**
  * Read and parse a "PROP" chunk.
  */
 static bool
-dsdiff_read_prop(Decoder *decoder, struct input_stream *is,
+dsdiff_read_prop(Decoder *decoder, InputStream &is,
 		 DsdiffMetaData *metadata,
 		 const DsdiffChunkHeader *prop_header)
 {
 	uint64_t prop_size = prop_header->GetSize();
-	input_stream::offset_type end_offset = is->GetOffset() + prop_size;
+	InputStream::offset_type end_offset = is.GetOffset() + prop_size;
 
 	struct dsdlib_id prop_id;
 	if (prop_size < sizeof(prop_id) ||
@@ -199,9 +199,9 @@ dsdiff_read_prop(Decoder *decoder, struct input_stream *is,
 }
 
 static void
-dsdiff_handle_native_tag(struct input_stream *is,
+dsdiff_handle_native_tag(InputStream &is,
 			 const struct tag_handler *handler,
-			 void *handler_ctx, input_stream::offset_type tagoffset,
+			 void *handler_ctx, InputStream::offset_type tagoffset,
 			 TagType type)
 {
 	if (!dsdlib_skip_to(nullptr, is, tagoffset))
@@ -239,7 +239,7 @@ dsdiff_handle_native_tag(struct input_stream *is,
  */
 
 static bool
-dsdiff_read_metadata_extra(Decoder *decoder, struct input_stream *is,
+dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 			   DsdiffMetaData *metadata,
 			   DsdiffChunkHeader *chunk_header,
 			   const struct tag_handler *handler,
@@ -259,8 +259,8 @@ dsdiff_read_metadata_extra(Decoder *decoder, struct input_stream *is,
 	/* Now process all the remaining chunk headers in the stream
 	   and record their position and size */
 
-	const auto size = is->GetSize();
-	while (is->GetOffset() < size) {
+	const auto size = is.GetSize();
+	while (is.GetOffset() < size) {
 		uint64_t chunk_size = chunk_header->GetSize();
 
 		/* DIIN chunk, is directly followed by other chunks  */
@@ -270,19 +270,19 @@ dsdiff_read_metadata_extra(Decoder *decoder, struct input_stream *is,
 		/* DIAR chunk - DSDIFF native tag for Artist */
 		if (dsdlib_id_equals(&chunk_header->id, "DIAR")) {
 			chunk_size = chunk_header->GetSize();
-			metadata->diar_offset = is->GetOffset();
+			metadata->diar_offset = is.GetOffset();
 		}
 
 		/* DITI chunk - DSDIFF native tag for Title */
 		if (dsdlib_id_equals(&chunk_header->id, "DITI")) {
 			chunk_size = chunk_header->GetSize();
-			metadata->diti_offset = is->GetOffset();
+			metadata->diti_offset = is.GetOffset();
 		}
 #ifdef HAVE_ID3TAG
 		/* 'ID3 ' chunk, offspec. Used by sacdextract */
 		if (dsdlib_id_equals(&chunk_header->id, "ID3 ")) {
 			chunk_size = chunk_header->GetSize();
-			metadata->id3_offset = is->GetOffset();
+			metadata->id3_offset = is.GetOffset();
 			metadata->id3_size = chunk_size;
 		}
 #endif
@@ -291,7 +291,7 @@ dsdiff_read_metadata_extra(Decoder *decoder, struct input_stream *is,
 				break;
 		}
 
-		if (is->GetOffset() < size) {
+		if (is.GetOffset() < size) {
 			if (!dsdiff_read_chunk_header(decoder, is, chunk_header))
 				return false;
 		}
@@ -325,7 +325,7 @@ dsdiff_read_metadata_extra(Decoder *decoder, struct input_stream *is,
  * "chunk_header" parameter.
  */
 static bool
-dsdiff_read_metadata(Decoder *decoder, struct input_stream *is,
+dsdiff_read_metadata(Decoder *decoder, InputStream &is,
 		     DsdiffMetaData *metadata,
 		     DsdiffChunkHeader *chunk_header)
 {
@@ -351,8 +351,8 @@ dsdiff_read_metadata(Decoder *decoder, struct input_stream *is,
 		} else {
 			/* ignore unknown chunk */
 			const uint64_t chunk_size = chunk_header->GetSize();
-			input_stream::offset_type chunk_end_offset =
-				is->GetOffset() + chunk_size;
+			InputStream::offset_type chunk_end_offset =
+				is.GetOffset() + chunk_size;
 
 			if (!dsdlib_skip_to(decoder, is, chunk_end_offset))
 				return false;
@@ -371,7 +371,7 @@ bit_reverse_buffer(uint8_t *p, uint8_t *end)
  * Decode one "DSD" chunk.
  */
 static bool
-dsdiff_decode_chunk(Decoder &decoder, struct input_stream *is,
+dsdiff_decode_chunk(Decoder &decoder, InputStream &is,
 		    unsigned channels,
 		    uint64_t chunk_size)
 {
@@ -422,7 +422,7 @@ dsdiff_decode_chunk(Decoder &decoder, struct input_stream *is,
 }
 
 static void
-dsdiff_stream_decode(Decoder &decoder, struct input_stream *is)
+dsdiff_stream_decode(Decoder &decoder, InputStream &is)
 {
 	DsdiffMetaData metadata;
 
@@ -474,7 +474,7 @@ dsdiff_stream_decode(Decoder &decoder, struct input_stream *is)
 }
 
 static bool
-dsdiff_scan_stream(struct input_stream *is,
+dsdiff_scan_stream(InputStream &is,
 		   gcc_unused const struct tag_handler *handler,
 		   gcc_unused void *handler_ctx)
 {

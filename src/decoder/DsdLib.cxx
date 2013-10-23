@@ -51,7 +51,7 @@ dsdlib_id_equals(const struct dsdlib_id *id, const char *s)
 }
 
 bool
-dsdlib_read(Decoder *decoder, struct input_stream *is,
+dsdlib_read(Decoder *decoder, InputStream &is,
 	    void *data, size_t length)
 {
 	size_t nbytes = decoder_read(decoder, is, data, length);
@@ -62,27 +62,27 @@ dsdlib_read(Decoder *decoder, struct input_stream *is,
  * Skip the #input_stream to the specified offset.
  */
 bool
-dsdlib_skip_to(Decoder *decoder, struct input_stream *is,
+dsdlib_skip_to(Decoder *decoder, InputStream &is,
 	       int64_t offset)
 {
-	if (is->IsSeekable())
-		return is->Seek(offset, SEEK_SET, IgnoreError());
+	if (is.IsSeekable())
+		return is.Seek(offset, SEEK_SET, IgnoreError());
 
-	if (is->GetOffset() > offset)
+	if (is.GetOffset() > offset)
 		return false;
 
 	char buffer[8192];
-	while (is->GetOffset() < offset) {
+	while (is.GetOffset() < offset) {
 		size_t length = sizeof(buffer);
-		if (offset - is->GetOffset() < (int64_t)length)
-			length = offset - is->GetOffset();
+		if (offset - is.GetOffset() < (int64_t)length)
+			length = offset - is.GetOffset();
 
 		size_t nbytes = decoder_read(decoder, is, buffer, length);
 		if (nbytes == 0)
 			return false;
 	}
 
-	assert(is->GetOffset() == offset);
+	assert(is.GetOffset() == offset);
 	return true;
 }
 
@@ -90,7 +90,7 @@ dsdlib_skip_to(Decoder *decoder, struct input_stream *is,
  * Skip some bytes from the #input_stream.
  */
 bool
-dsdlib_skip(Decoder *decoder, struct input_stream *is,
+dsdlib_skip(Decoder *decoder, InputStream &is,
 	    int64_t delta)
 {
 	assert(delta >= 0);
@@ -98,8 +98,8 @@ dsdlib_skip(Decoder *decoder, struct input_stream *is,
 	if (delta == 0)
 		return true;
 
-	if (is->IsSeekable())
-		return is->Seek(delta, SEEK_CUR, IgnoreError());
+	if (is.IsSeekable())
+		return is.Seek(delta, SEEK_CUR, IgnoreError());
 
 	char buffer[8192];
 	while (delta > 0) {
@@ -124,7 +124,7 @@ dsdlib_skip(Decoder *decoder, struct input_stream *is,
 
 #ifdef HAVE_ID3TAG
 void
-dsdlib_tag_id3(struct input_stream *is,
+dsdlib_tag_id3(InputStream &is,
 	       const struct tag_handler *handler,
 	       void *handler_ctx, int64_t tagoffset)
 {
@@ -140,8 +140,8 @@ dsdlib_tag_id3(struct input_stream *is,
 	id3_length_t count;
 
 	/* Prevent broken files causing problems */
-	const auto size = is->GetSize();
-	const auto offset = is->GetOffset();
+	const auto size = is.GetSize();
+	const auto offset = is.GetOffset();
 	if (offset >= size)
 		return;
 

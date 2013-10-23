@@ -54,14 +54,14 @@
 struct vorbis_input_stream {
 	Decoder *decoder;
 
-	struct input_stream *input_stream;
+	InputStream *input_stream;
 	bool seekable;
 };
 
 static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *data)
 {
 	struct vorbis_input_stream *vis = (struct vorbis_input_stream *)data;
-	size_t ret = decoder_read(vis->decoder, vis->input_stream,
+	size_t ret = decoder_read(vis->decoder, *vis->input_stream,
 				  ptr, size * nmemb);
 
 	errno = 0;
@@ -127,11 +127,11 @@ vorbis_strerror(int code)
 
 static bool
 vorbis_is_open(struct vorbis_input_stream *vis, OggVorbis_File *vf,
-	       Decoder *decoder, struct input_stream *input_stream)
+	       Decoder *decoder, InputStream &input_stream)
 {
 	vis->decoder = decoder;
-	vis->input_stream = input_stream;
-	vis->seekable = input_stream->CheapSeeking();
+	vis->input_stream = &input_stream;
+	vis->seekable = input_stream.CheapSeeking();
 
 	int ret = ov_open_callbacks(vis, vf, NULL, 0, vorbis_is_callbacks);
 	if (ret < 0) {
@@ -147,7 +147,7 @@ vorbis_is_open(struct vorbis_input_stream *vis, OggVorbis_File *vf,
 }
 
 static void
-vorbis_send_comments(Decoder &decoder, struct input_stream *is,
+vorbis_send_comments(Decoder &decoder, InputStream &is,
 		     char **comments)
 {
 	Tag *tag = vorbis_comments_to_tag(comments);
@@ -176,14 +176,14 @@ vorbis_interleave(float *dest, const float *const*src,
 /* public */
 static void
 vorbis_stream_decode(Decoder &decoder,
-		     struct input_stream *input_stream)
+		     InputStream &input_stream)
 {
 	if (ogg_codec_detect(&decoder, input_stream) != OGG_CODEC_VORBIS)
 		return;
 
 	/* rewind the stream, because ogg_codec_detect() has
 	   moved it */
-	input_stream->LockRewind(IgnoreError());
+	input_stream.LockRewind(IgnoreError());
 
 	struct vorbis_input_stream vis;
 	OggVorbis_File vf;
@@ -303,7 +303,7 @@ vorbis_stream_decode(Decoder &decoder,
 }
 
 static bool
-vorbis_scan_stream(struct input_stream *is,
+vorbis_scan_stream(InputStream &is,
 		   const struct tag_handler *handler, void *handler_ctx)
 {
 	struct vorbis_input_stream vis;

@@ -34,6 +34,6 @@ enum ogg_codec {
 };
 
 enum ogg_codec
-ogg_codec_detect(Decoder *decoder, struct input_stream *is);
+ogg_codec_detect(Decoder *decoder, InputStream &is);
 
 #endif /* _OGG_COMMON_H */

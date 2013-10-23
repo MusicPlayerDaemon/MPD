@@ -31,7 +31,7 @@
 
 static SongEnumerator *
 playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond,
-		     struct input_stream **is_r)
+		     InputStream **is_r)
 {
 	assert(uri_has_scheme(uri));
 
@@ -42,7 +42,7 @@ playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond,
 	}
 
 	Error error;
-	input_stream *is = input_stream::Open(uri, mutex, cond, error);
+	InputStream *is = InputStream::Open(uri, mutex, cond, error);
 	if (is == nullptr) {
 		if (error.IsDefined())
 			FormatError(error, "Failed to open %s", uri);
@@ -50,7 +50,7 @@ playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond,
 		return nullptr;
 	}
 
-	playlist = playlist_list_open_stream(is, uri);
+	playlist = playlist_list_open_stream(*is, uri);
 	if (playlist == nullptr) {
 		is->Close();
 		return nullptr;
@@ -62,7 +62,7 @@ playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond,
 
 SongEnumerator *
 playlist_open_any(const char *uri, Mutex &mutex, Cond &cond,
-		  struct input_stream **is_r)
+		  InputStream **is_r)
 {
 	return uri_has_scheme(uri)
 		? playlist_open_remote(uri, mutex, cond, is_r)

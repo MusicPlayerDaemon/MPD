@@ -131,7 +131,7 @@ public:
 };
 
 struct input_curl {
-	struct input_stream base;
+	InputStream base;
 
 	/* some buffers which were passed to libcurl, which we have
 	   too free */
@@ -162,7 +162,7 @@ struct input_curl {
 	std::string meta_name;
 
 	/** the tag object ready to be requested via
-	    input_stream::ReadTag() */
+	    InputStream::ReadTag() */
 	Tag *tag;
 
 	Error postponed_error;
@@ -636,7 +636,7 @@ input_curl::~input_curl()
 }
 
 static bool
-input_curl_check(struct input_stream *is, Error &error)
+input_curl_check(InputStream *is, Error &error)
 {
 	struct input_curl *c = (struct input_curl *)is;
 
@@ -650,7 +650,7 @@ input_curl_check(struct input_stream *is, Error &error)
 }
 
 static Tag *
-input_curl_tag(struct input_stream *is)
+input_curl_tag(InputStream *is)
 {
 	struct input_curl *c = (struct input_curl *)is;
 	Tag *tag = c->tag;
@@ -741,7 +741,7 @@ copy_icy_tag(struct input_curl *c)
 }
 
 static bool
-input_curl_available(struct input_stream *is)
+input_curl_available(InputStream *is)
 {
 	struct input_curl *c = (struct input_curl *)is;
 
@@ -750,7 +750,7 @@ input_curl_available(struct input_stream *is)
 }
 
 static size_t
-input_curl_read(struct input_stream *is, void *ptr, size_t size,
+input_curl_read(InputStream *is, void *ptr, size_t size,
 		Error &error)
 {
 	struct input_curl *c = (struct input_curl *)is;
@@ -795,7 +795,7 @@ input_curl_read(struct input_stream *is, void *ptr, size_t size,
 }
 
 static void
-input_curl_close(struct input_stream *is)
+input_curl_close(InputStream *is)
 {
 	struct input_curl *c = (struct input_curl *)is;
 
@@ -803,7 +803,7 @@ input_curl_close(struct input_stream *is)
 }
 
 static bool
-input_curl_eof(gcc_unused struct input_stream *is)
+input_curl_eof(gcc_unused InputStream *is)
 {
 	struct input_curl *c = (struct input_curl *)is;
 
@@ -976,7 +976,7 @@ input_curl_easy_init(struct input_curl *c, Error &error)
 }
 
 static bool
-input_curl_seek(struct input_stream *is, InputPlugin::offset_type offset,
+input_curl_seek(InputStream *is, InputPlugin::offset_type offset,
 		int whence,
 		Error &error)
 {
@@ -1080,7 +1080,7 @@ input_curl_seek(struct input_stream *is, InputPlugin::offset_type offset,
 	return true;
 }
 
-static struct input_stream *
+static InputStream *
 input_curl_open(const char *url, Mutex &mutex, Cond &cond,
 		Error &error)
 {

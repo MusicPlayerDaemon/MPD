@@ -38,7 +38,7 @@ extern "C" {
 #include <stdio.h>
 
 struct DespotifyInputStream {
-	struct input_stream base;
+	InputStream base;
 
 	struct despotify_session *session;
 	struct ds_track *track;
@@ -121,7 +121,7 @@ static void callback(gcc_unused struct despotify_session* ds,
 }
 
 
-static struct input_stream *
+static InputStream *
 input_despotify_open(const char *url,
 		     Mutex &mutex, Cond &cond,
 		     gcc_unused Error &error)
@@ -171,7 +171,7 @@ input_despotify_open(const char *url,
 }
 
 static size_t
-input_despotify_read(struct input_stream *is, void *ptr, size_t size,
+input_despotify_read(InputStream *is, void *ptr, size_t size,
 		     gcc_unused Error &error)
 {
 	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
@@ -191,7 +191,7 @@ input_despotify_read(struct input_stream *is, void *ptr, size_t size,
 }
 
 static void
-input_despotify_close(struct input_stream *is)
+input_despotify_close(InputStream *is)
 {
 	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
 
@@ -200,7 +200,7 @@ input_despotify_close(struct input_stream *is)
 }
 
 static bool
-input_despotify_eof(struct input_stream *is)
+input_despotify_eof(InputStream *is)
 {
 	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
 
@@ -208,7 +208,7 @@ input_despotify_eof(struct input_stream *is)
 }
 
 static Tag *
-input_despotify_tag(struct input_stream *is)
+input_despotify_tag(InputStream *is)
 {
 	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
 	Tag *tag = ctx->tag;

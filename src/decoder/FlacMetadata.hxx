@@ -51,7 +51,7 @@ public:
 								  callbacks);
 	}
 
-	bool Read(input_stream *is) {
+	bool Read(InputStream &is) {
 		return Read(::ToFlacIOHandle(is), ::GetFlacIOCallbacks(is));
 	}
 
@@ -65,7 +65,7 @@ public:
 								      callbacks);
 	}
 
-	bool ReadOgg(input_stream *is) {
+	bool ReadOgg(InputStream &is) {
 		return ReadOgg(::ToFlacIOHandle(is), ::GetFlacIOCallbacks(is));
 	}
 

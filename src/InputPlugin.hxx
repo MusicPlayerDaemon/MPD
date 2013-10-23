@@ -27,7 +27,7 @@
 #include <stdint.h>
 
 struct config_param;
-struct input_stream;
+struct InputStream;
 class Error;
 struct Tag;
 
@@ -50,10 +50,10 @@ struct InputPlugin {
 	 */
 	void (*finish)(void);
 
-	struct input_stream *(*open)(const char *uri,
-				     Mutex &mutex, Cond &cond,
-				     Error &error);
-	void (*close)(struct input_stream *is);
+	InputStream *(*open)(const char *uri,
+			     Mutex &mutex, Cond &cond,
+			     Error &error);
+	void (*close)(InputStream *is);
 
 	/**
 	 * Check for errors that may have occurred in the I/O thread.
@@ -61,15 +61,15 @@ struct InputPlugin {
 	 *
 	 * @return false on error
 	 */
-	bool (*check)(struct input_stream *is, Error &error);
+	bool (*check)(InputStream *is, Error &error);
 
 	/**
 	 * Update the public attributes.  Call before access.  Can be
 	 * nullptr if the plugin always keeps its attributes up to date.
 	 */
-	void (*update)(struct input_stream *is);
+	void (*update)(InputStream *is);
 
-	Tag *(*tag)(struct input_stream *is);
+	Tag *(*tag)(InputStream *is);
 
 	/**
 	 * Returns true if the next read operation will not block:
@@ -79,12 +79,12 @@ struct InputPlugin {
 	 * If this method is unimplemented, then it is assumed that
 	 * reading will never block.
 	 */
-	bool (*available)(struct input_stream *is);
+	bool (*available)(InputStream *is);
 
-	size_t (*read)(struct input_stream *is, void *ptr, size_t size,
+	size_t (*read)(InputStream *is, void *ptr, size_t size,
 		       Error &error);
-	bool (*eof)(struct input_stream *is);
-	bool (*seek)(struct input_stream *is, offset_type offset, int whence,
+	bool (*eof)(InputStream *is);
+	bool (*seek)(InputStream *is, offset_type offset, int whence,
 		     Error &error);
 };
 

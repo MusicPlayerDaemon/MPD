@@ -86,13 +86,13 @@ mpd_ffmpeg_log_callback(gcc_unused void *ptr, int level,
 
 struct AvioStream {
 	Decoder *const decoder;
-	struct input_stream *input;
+	InputStream &input;
 
 	AVIOContext *io;
 
 	unsigned char buffer[8192];
 
-	AvioStream(Decoder *_decoder, input_stream *_input)
+	AvioStream(Decoder *_decoder, InputStream &_input)
 		:decoder(_decoder), input(_input), io(nullptr) {}
 
 	~AvioStream() {
@@ -118,13 +118,13 @@ mpd_ffmpeg_stream_seek(void *opaque, int64_t pos, int whence)
 	AvioStream *stream = (AvioStream *)opaque;
 
 	if (whence == AVSEEK_SIZE)
-		return stream->input->size;
+		return stream->input.size;
 
 	Error error;
-	if (!stream->input->LockSeek(pos, whence, error))
+	if (!stream->input.LockSeek(pos, whence, error))
 		return -1;
 
-	return stream->input->offset;
+	return stream->input.offset;
 }
 
 bool
@@ -133,7 +133,7 @@ AvioStream::Open()
 	io = avio_alloc_context(buffer, sizeof(buffer),
 				false, this,
 				mpd_ffmpeg_stream_read, nullptr,
-				input->seekable
+				input.seekable
 				? mpd_ffmpeg_stream_seek : nullptr);
 	return io != nullptr;
 }
@@ -249,7 +249,7 @@ copy_interleave_frame(const AVCodecContext *codec_context,
 }
 
 static DecoderCommand
-ffmpeg_send_packet(Decoder &decoder, struct input_stream *is,
+ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		   const AVPacket *packet,
 		   AVCodecContext *codec_context,
 		   const AVRational *time_base,
@@ -335,7 +335,7 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 }
 
 static AVInputFormat *
-ffmpeg_probe(Decoder *decoder, struct input_stream *is)
+ffmpeg_probe(Decoder *decoder, InputStream &is)
 {
 	enum {
 		BUFFER_SIZE = 16384,
@@ -346,7 +346,7 @@ ffmpeg_probe(Decoder *decoder, struct input_stream *is)
 
 	unsigned char buffer[BUFFER_SIZE];
 	size_t nbytes = decoder_read(decoder, is, buffer, BUFFER_SIZE);
-	if (nbytes <= PADDING || !is->LockRewind(error))
+	if (nbytes <= PADDING || !is.LockRewind(error))
 		return nullptr;
 
 	/* some ffmpeg parsers (e.g. ac3_parser.c) read a few bytes
@@ -358,13 +358,13 @@ ffmpeg_probe(Decoder *decoder, struct input_stream *is)
 	AVProbeData avpd;
 	avpd.buf = buffer;
 	avpd.buf_size = nbytes;
-	avpd.filename = is->uri.c_str();
+	avpd.filename = is.uri.c_str();
 
 	return av_probe_input_format(&avpd, true);
 }
 
 static void
-ffmpeg_decode(Decoder &decoder, struct input_stream *input)
+ffmpeg_decode(Decoder &decoder, InputStream &input)
 {
 	AVInputFormat *input_format = ffmpeg_probe(&decoder, input);
 	if (input_format == nullptr)
@@ -382,7 +382,7 @@ ffmpeg_decode(Decoder &decoder, struct input_stream *input)
 	//ffmpeg works with ours "fileops" helper
 	AVFormatContext *format_context = nullptr;
 	if (mpd_ffmpeg_open_input(&format_context, stream.io,
-				  input->uri.c_str(),
+				  input.uri.c_str(),
 				  input_format) != 0) {
 		LogError(ffmpeg_domain, "Open failed");
 		return;
@@ -451,7 +451,7 @@ ffmpeg_decode(Decoder &decoder, struct input_stream *input)
 		: 0;
 
 	decoder_initialized(decoder, audio_format,
-			    input->seekable, total_time);
+			    input.seekable, total_time);
 
 	AVFrame *frame = avcodec_alloc_frame();
 	if (!frame) {
@@ -509,7 +509,7 @@ ffmpeg_decode(Decoder &decoder, struct input_stream *input)
 
 //no tag reading in ffmpeg, check if playable
 static bool
-ffmpeg_scan_stream(struct input_stream *is,
+ffmpeg_scan_stream(InputStream &is,
 		   const struct tag_handler *handler, void *handler_ctx)
 {
 	AVInputFormat *input_format = ffmpeg_probe(nullptr, is);
@@ -521,7 +521,7 @@ ffmpeg_scan_stream(struct input_stream *is,
 		return false;
 
 	AVFormatContext *f = nullptr;
-	if (mpd_ffmpeg_open_input(&f, stream.io, is->uri.c_str(),
+	if (mpd_ffmpeg_open_input(&f, stream.io, is.uri.c_str(),
 				  input_format) != 0)
 		return false;
 

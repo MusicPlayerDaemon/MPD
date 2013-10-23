@@ -67,12 +67,12 @@ decoder_command_finished_locked(decoder_control &dc)
  * @return an input_stream on success or if #DecoderCommand::STOP is
  * received, nullptr on error
  */
-static struct input_stream *
+static InputStream *
 decoder_input_stream_open(decoder_control &dc, const char *uri)
 {
 	Error error;
 
-	input_stream *is = input_stream::Open(uri, dc.mutex, dc.cond, error);
+	InputStream *is = InputStream::Open(uri, dc.mutex, dc.cond, error);
 	if (is == nullptr) {
 		if (error.IsDefined())
 			LogError(error);
@@ -108,13 +108,12 @@ decoder_input_stream_open(decoder_control &dc, const char *uri)
 static bool
 decoder_stream_decode(const DecoderPlugin &plugin,
 		      Decoder &decoder,
-		      struct input_stream *input_stream)
+		      InputStream &input_stream)
 {
 	assert(plugin.stream_decode != nullptr);
 	assert(decoder.stream_tag == nullptr);
 	assert(decoder.decoder_tag == nullptr);
-	assert(input_stream != nullptr);
-	assert(input_stream->ready);
+	assert(input_stream.ready);
 	assert(decoder.dc.state == DecoderState::START);
 
 	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);
@@ -123,11 +122,11 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 		return true;
 
 	/* rewind the stream, so each plugin gets a fresh start */
-	input_stream->Rewind(IgnoreError());
+	input_stream.Rewind(IgnoreError());
 
 	decoder.dc.Unlock();
 
-	plugin.StreamDecode(decoder, *input_stream);
+	plugin.StreamDecode(decoder, input_stream);
 
 	decoder.dc.Lock();
 
@@ -167,7 +166,7 @@ decoder_file_decode(const DecoderPlugin &plugin,
 
 gcc_pure
 static bool
-decoder_check_plugin_mime(const DecoderPlugin &plugin, const input_stream &is)
+decoder_check_plugin_mime(const DecoderPlugin &plugin, const InputStream &is)
 {
 	assert(plugin.stream_decode != nullptr);
 
@@ -185,7 +184,7 @@ decoder_check_plugin_suffix(const DecoderPlugin &plugin, const char *suffix)
 
 gcc_pure
 static bool
-decoder_check_plugin(const DecoderPlugin &plugin, const input_stream &is,
+decoder_check_plugin(const DecoderPlugin &plugin, const InputStream &is,
 		     const char *suffix)
 {
 	return plugin.stream_decode != nullptr &&
@@ -194,7 +193,7 @@ decoder_check_plugin(const DecoderPlugin &plugin, const input_stream &is,
 }
 
 static bool
-decoder_run_stream_plugin(Decoder &decoder, input_stream &is,
+decoder_run_stream_plugin(Decoder &decoder, InputStream &is,
 			  const char *suffix,
 			  const DecoderPlugin &plugin,
 			  bool &tried_r)
@@ -203,11 +202,11 @@ decoder_run_stream_plugin(Decoder &decoder, input_stream &is,
 		return false;
 
 	tried_r = true;
-	return decoder_stream_decode(plugin, decoder, &is);
+	return decoder_stream_decode(plugin, decoder, is);
 }
 
 static bool
-decoder_run_stream_locked(Decoder &decoder, input_stream &is,
+decoder_run_stream_locked(Decoder &decoder, InputStream &is,
 			  const char *uri, bool &tried_r)
 {
 	const char *const suffix = uri_get_suffix(uri);
@@ -223,7 +222,7 @@ decoder_run_stream_locked(Decoder &decoder, input_stream &is,
  * Try decoding a stream, using the fallback plugin.
  */
 static bool
-decoder_run_stream_fallback(Decoder &decoder, struct input_stream *is)
+decoder_run_stream_fallback(Decoder &decoder, InputStream &is)
 {
 	const struct DecoderPlugin *plugin;
 
@@ -239,7 +238,7 @@ static bool
 decoder_run_stream(Decoder &decoder, const char *uri)
 {
 	decoder_control &dc = decoder.dc;
-	struct input_stream *input_stream;
+	InputStream *input_stream;
 	bool success;
 
 	dc.Unlock();
@@ -259,7 +258,7 @@ decoder_run_stream(Decoder &decoder, const char *uri)
 		/* fallback to mp3: this is needed for bastard streams
 		   that don't have a suffix or set the mimeType */
 		(!tried &&
-		 decoder_run_stream_fallback(decoder, input_stream));
+		 decoder_run_stream_fallback(decoder, *input_stream));
 
 	dc.Unlock();
 	input_stream->Close();
@@ -306,7 +305,7 @@ decoder_run_file(Decoder &decoder, const char *path_fs)
 
 			dc.Unlock();
 		} else if (plugin->stream_decode != nullptr) {
-			struct input_stream *input_stream;
+			InputStream *input_stream;
 			bool success;
 
 			input_stream = decoder_input_stream_open(dc, path_fs);
@@ -316,7 +315,7 @@ decoder_run_file(Decoder &decoder, const char *path_fs)
 			dc.Lock();
 
 			success = decoder_stream_decode(*plugin, decoder,
-							input_stream);
+							*input_stream);
 
 			dc.Unlock();
 

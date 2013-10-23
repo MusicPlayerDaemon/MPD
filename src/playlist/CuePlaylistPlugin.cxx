@@ -30,12 +30,12 @@
 #include <string.h>
 
 class CuePlaylist final : public SongEnumerator {
-	struct input_stream *is;
+	InputStream &is;
 	TextInputStream tis;
 	CueParser parser;
 
  public:
-	CuePlaylist(struct input_stream *_is)
+	CuePlaylist(InputStream &_is)
 		:is(_is), tis(is) {
 	}
 
@@ -43,7 +43,7 @@ class CuePlaylist final : public SongEnumerator {
 };
 
 static SongEnumerator *
-cue_playlist_open_stream(struct input_stream *is)
+cue_playlist_open_stream(InputStream &is)
 {
 	return new CuePlaylist(is);
 }

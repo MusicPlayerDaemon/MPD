@@ -29,7 +29,7 @@
 
 static SongEnumerator *
 playlist_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
-		   struct input_stream **is_r)
+		   InputStream **is_r)
 {
 	auto playlist = playlist_list_open_uri(path_fs, mutex, cond);
 	if (playlist != nullptr)
@@ -45,7 +45,7 @@ playlist_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
  */
 static SongEnumerator *
 playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond,
-			      struct input_stream **is_r)
+			      InputStream **is_r)
 {
 	assert(spl_valid_name(uri));
 
@@ -69,7 +69,7 @@ playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond,
  */
 static SongEnumerator *
 playlist_open_in_music_dir(const char *uri, Mutex &mutex, Cond &cond,
-			   struct input_stream **is_r)
+			   InputStream **is_r)
 {
 	assert(uri_safe_local(uri));
 
@@ -82,7 +82,7 @@ playlist_open_in_music_dir(const char *uri, Mutex &mutex, Cond &cond,
 
 SongEnumerator *
 playlist_mapper_open(const char *uri, Mutex &mutex, Cond &cond,
-		     struct input_stream **is_r)
+		     InputStream **is_r)
 {
 	if (spl_valid_name(uri)) {
 		auto playlist = playlist_open_in_playlist_dir(uri, mutex, cond,

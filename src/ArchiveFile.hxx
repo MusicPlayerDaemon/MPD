@@ -46,13 +46,13 @@ public:
 	virtual void Visit(ArchiveVisitor &visitor) = 0;
 
 	/**
-	 * Opens an input_stream of a file within the archive.
+	 * Opens an InputStream of a file within the archive.
 	 *
 	 * @param path the path within the archive
 	 */
-	virtual input_stream *OpenStream(const char *path,
-					 Mutex &mutex, Cond &cond,
-					 Error &error) = 0;
+	virtual InputStream *OpenStream(const char *path,
+					Mutex &mutex, Cond &cond,
+					Error &error) = 0;
 };
 
 #endif

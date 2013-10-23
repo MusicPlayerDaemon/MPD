@@ -49,9 +49,9 @@ public:
 	RefCount ref;
 
 	std::string name;
-	struct input_stream *const istream;
+	InputStream *const istream;
 
-	Bzip2ArchiveFile(const char *path, input_stream *_is)
+	Bzip2ArchiveFile(const char *path, InputStream *_is)
 		:ArchiveFile(bz2_archive_plugin),
 		 name(PathTraits::GetBaseUTF8(path)),
 		 istream(_is) {
@@ -84,13 +84,13 @@ public:
 		visitor.VisitArchiveEntry(name.c_str());
 	}
 
-	virtual input_stream *OpenStream(const char *path,
-					 Mutex &mutex, Cond &cond,
-					 Error &error) override;
+	virtual InputStream *OpenStream(const char *path,
+					Mutex &mutex, Cond &cond,
+					Error &error) override;
 };
 
 struct Bzip2InputStream {
-	struct input_stream base;
+	InputStream base;
 
 	Bzip2ArchiveFile *archive;
 
@@ -148,7 +148,7 @@ bz2_open(const char *pathname, Error &error)
 {
 	static Mutex mutex;
 	static Cond cond;
-	input_stream *is = input_stream::Open(pathname, mutex, cond, error);
+	InputStream *is = InputStream::Open(pathname, mutex, cond, error);
 	if (is == nullptr)
 		return nullptr;
 
@@ -170,7 +170,7 @@ Bzip2InputStream::~Bzip2InputStream()
 	archive->Unref();
 }
 
-input_stream *
+InputStream *
 Bzip2ArchiveFile::OpenStream(const char *path,
 			     Mutex &mutex, Cond &cond,
 			     Error &error)
@@ -185,7 +185,7 @@ Bzip2ArchiveFile::OpenStream(const char *path,
 }
 
 static void
-bz2_is_close(struct input_stream *is)
+bz2_is_close(InputStream *is)
 {
 	Bzip2InputStream *bis = (Bzip2InputStream *)is;
 
@@ -215,7 +215,7 @@ bz2_fillbuffer(Bzip2InputStream *bis, Error &error)
 }
 
 static size_t
-bz2_is_read(struct input_stream *is, void *ptr, size_t length,
+bz2_is_read(InputStream *is, void *ptr, size_t length,
 	    Error &error)
 {
 	Bzip2InputStream *bis = (Bzip2InputStream *)is;
@@ -255,7 +255,7 @@ bz2_is_read(struct input_stream *is, void *ptr, size_t length,
 }
 
 static bool
-bz2_is_eof(struct input_stream *is)
+bz2_is_eof(InputStream *is)
 {
 	Bzip2InputStream *bis = (Bzip2InputStream *)is;
 

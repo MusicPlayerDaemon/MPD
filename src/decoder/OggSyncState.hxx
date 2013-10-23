@@ -33,11 +33,11 @@
 class OggSyncState {
 	ogg_sync_state oy;
 
-	input_stream &is;
+	InputStream &is;
 	Decoder *const decoder;
 
 public:
-	OggSyncState(input_stream &_is, Decoder *const _decoder=nullptr)
+	OggSyncState(InputStream &_is, Decoder *const _decoder=nullptr)
 		:is(_is), decoder(_decoder) {
 		ogg_sync_init(&oy);
 	}
@@ -51,27 +51,27 @@ public:
 	}
 
 	bool Feed(size_t size) {
-		return OggFeed(oy, decoder, &is, size);
+		return OggFeed(oy, decoder, is, size);
 	}
 
 	bool ExpectPage(ogg_page &page) {
-		return OggExpectPage(oy, page, decoder, &is);
+		return OggExpectPage(oy, page, decoder, is);
 	}
 
 	bool ExpectFirstPage(ogg_stream_state &os) {
-		return OggExpectFirstPage(oy, os, decoder, &is);
+		return OggExpectFirstPage(oy, os, decoder, is);
 	}
 
 	bool ExpectPageIn(ogg_stream_state &os) {
-		return OggExpectPageIn(oy, os, decoder, &is);
+		return OggExpectPageIn(oy, os, decoder, is);
 	}
 
 	bool ExpectPageSeek(ogg_page &page) {
-		return OggExpectPageSeek(oy, page, decoder, &is);
+		return OggExpectPageSeek(oy, page, decoder, is);
 	}
 
 	bool ExpectPageSeekIn(ogg_stream_state &os) {
-		return OggExpectPageSeekIn(oy, os, decoder, &is);
+		return OggExpectPageSeekIn(oy, os, decoder, is);
 	}
 };
 

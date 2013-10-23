@@ -36,7 +36,7 @@ extern "C" {
 #include <glib.h>
 
 struct FfmpegInputStream {
-	struct input_stream base;
+	InputStream base;
 
 	AVIOContext *h;
 
@@ -86,7 +86,7 @@ input_ffmpeg_init(gcc_unused const config_param &param,
 	return true;
 }
 
-static struct input_stream *
+static InputStream *
 input_ffmpeg_open(const char *uri,
 		  Mutex &mutex, Cond &cond,
 		  Error &error)
@@ -112,7 +112,7 @@ input_ffmpeg_open(const char *uri,
 }
 
 static size_t
-input_ffmpeg_read(struct input_stream *is, void *ptr, size_t size,
+input_ffmpeg_read(InputStream *is, void *ptr, size_t size,
 		  Error &error)
 {
 	FfmpegInputStream *i = (FfmpegInputStream *)is;
@@ -131,7 +131,7 @@ input_ffmpeg_read(struct input_stream *is, void *ptr, size_t size,
 }
 
 static void
-input_ffmpeg_close(struct input_stream *is)
+input_ffmpeg_close(InputStream *is)
 {
 	FfmpegInputStream *i = (FfmpegInputStream *)is;
 
@@ -139,7 +139,7 @@ input_ffmpeg_close(struct input_stream *is)
 }
 
 static bool
-input_ffmpeg_eof(struct input_stream *is)
+input_ffmpeg_eof(InputStream *is)
 {
 	FfmpegInputStream *i = (FfmpegInputStream *)is;
 
@@ -147,7 +147,7 @@ input_ffmpeg_eof(struct input_stream *is)
 }
 
 static bool
-input_ffmpeg_seek(struct input_stream *is, InputPlugin::offset_type offset,
+input_ffmpeg_seek(InputStream *is, InputPlugin::offset_type offset,
 		  int whence,
 		  Error &error)
 {

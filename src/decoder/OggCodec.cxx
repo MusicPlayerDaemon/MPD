@@ -27,7 +27,7 @@
 #include <string.h>
 
 enum ogg_codec
-ogg_codec_detect(Decoder *decoder, struct input_stream *is)
+ogg_codec_detect(Decoder *decoder, InputStream &is)
 {
 	/* oggflac detection based on code in ogg123 and this post
 	 * http://lists.xiph.org/pipermail/flac/2004-December/000393.html

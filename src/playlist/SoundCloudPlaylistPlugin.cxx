@@ -253,8 +253,8 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 	unsigned char *ubuffer = (unsigned char *)buffer;
 
 	Error error;
-	input_stream *input_stream = input_stream::Open(url, mutex, cond,
-							error);
+	InputStream *input_stream = InputStream::Open(url, mutex, cond,
+						      error);
 	if (input_stream == NULL) {
 		if (error.IsDefined())
 			LogError(error);

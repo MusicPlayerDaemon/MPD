@@ -28,7 +28,7 @@
 
 struct DecoderBuffer {
 	Decoder *decoder;
-	struct input_stream *is;
+	InputStream *is;
 
 	/** the allocated size of the buffer */
 	size_t size;
@@ -45,17 +45,16 @@ struct DecoderBuffer {
 };
 
 DecoderBuffer *
-decoder_buffer_new(Decoder *decoder, struct input_stream *is,
+decoder_buffer_new(Decoder *decoder, InputStream &is,
 		   size_t size)
 {
 	DecoderBuffer *buffer = (DecoderBuffer *)
 		g_malloc(sizeof(*buffer) - sizeof(buffer->data) + size);
 
-	assert(is != nullptr);
 	assert(size > 0);
 
 	buffer->decoder = decoder;
-	buffer->is = is;
+	buffer->is = &is;
 	buffer->size = size;
 	buffer->length = 0;
 	buffer->consumed = 0;
@@ -105,7 +104,7 @@ decoder_buffer_fill(DecoderBuffer *buffer)
 		/* buffer is full */
 		return false;
 
-	nbytes = decoder_read(buffer->decoder, buffer->is,
+	nbytes = decoder_read(buffer->decoder, *buffer->is,
 			      buffer->data + buffer->length,
 			      buffer->size - buffer->length);
 	if (nbytes == 0)

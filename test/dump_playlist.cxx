@@ -85,11 +85,10 @@ decoder_seek_error(gcc_unused Decoder &decoder)
 
 size_t
 decoder_read(gcc_unused Decoder *decoder,
-	     struct input_stream *is,
+	     InputStream &is,
 	     void *buffer, size_t length)
 {
-	Error error;
-	return is->LockRead(buffer, length, error);
+	return is.LockRead(buffer, length, IgnoreError());
 }
 
 void
@@ -100,7 +99,7 @@ decoder_timestamp(gcc_unused Decoder &decoder,
 
 DecoderCommand
 decoder_data(gcc_unused Decoder &decoder,
-	     gcc_unused struct input_stream *is,
+	     gcc_unused InputStream *is,
 	     const void *data, size_t datalen,
 	     gcc_unused uint16_t kbit_rate)
 {
@@ -110,7 +109,7 @@ decoder_data(gcc_unused Decoder &decoder,
 
 DecoderCommand
 decoder_tag(gcc_unused Decoder &decoder,
-	    gcc_unused struct input_stream *is,
+	    gcc_unused InputStream *is,
 	    gcc_unused Tag &&tag)
 {
 	return DecoderCommand::NONE;
@@ -143,7 +142,7 @@ decoder_mixramp(gcc_unused Decoder &decoder,
 int main(int argc, char **argv)
 {
 	const char *uri;
-	struct input_stream *is = NULL;
+	InputStream *is = NULL;
 	Song *song;
 
 	if (argc != 3) {
@@ -192,12 +191,12 @@ int main(int argc, char **argv)
 	if (playlist == NULL) {
 		/* open the stream and wait until it becomes ready */
 
-		is = input_stream::Open(uri, mutex, cond, error);
+		is = InputStream::Open(uri, mutex, cond, error);
 		if (is == NULL) {
 			if (error.IsDefined())
 				LogError(error);
 			else
-				g_printerr("input_stream::Open() failed\n");
+				g_printerr("InputStream::Open() failed\n");
 			return 2;
 		}
 
@@ -205,7 +204,7 @@ int main(int argc, char **argv)
 
 		/* open the playlist */
 
-		playlist = playlist_list_open_stream(is, uri);
+		playlist = playlist_list_open_stream(*is, uri);
 		if (playlist == NULL) {
 			is->Close();
 			g_printerr("Failed to open playlist\n");

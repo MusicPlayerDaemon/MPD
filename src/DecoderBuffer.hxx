@@ -30,7 +30,7 @@
 struct DecoderBuffer;
 
 struct Decoder;
-struct input_stream;
+struct InputStream;
 
 /**
  * Creates a new buffer.
@@ -41,7 +41,7 @@ struct input_stream;
  * @return the new decoder_buffer object
  */
 DecoderBuffer *
-decoder_buffer_new(Decoder *decoder, struct input_stream *is,
+decoder_buffer_new(Decoder *decoder, InputStream &is,
 		   size_t size);
 
 /**

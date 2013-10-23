@@ -35,7 +35,7 @@ class ExtM3uPlaylist final : public SongEnumerator {
 	TextInputStream tis;
 
 public:
-	ExtM3uPlaylist(input_stream *is)
+	ExtM3uPlaylist(InputStream &is)
 		:tis(is) {
 	}
 
@@ -49,7 +49,7 @@ public:
 };
 
 static SongEnumerator *
-extm3u_open_stream(struct input_stream *is)
+extm3u_open_stream(InputStream &is)
 {
 	ExtM3uPlaylist *playlist = new ExtM3uPlaylist(is);
 
