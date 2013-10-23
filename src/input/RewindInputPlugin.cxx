@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "RewindInputPlugin.hxx"
-#include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
 #include "tag/Tag.hxx"

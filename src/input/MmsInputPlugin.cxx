@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "MmsInputPlugin.hxx"
-#include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
 #include "util/Error.hxx"

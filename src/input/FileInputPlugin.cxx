@@ -19,7 +19,6 @@
 
 #include "config.h" /* must be first for large file support */
 #include "FileInputPlugin.hxx"
-#include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
 #include "util/Error.hxx"

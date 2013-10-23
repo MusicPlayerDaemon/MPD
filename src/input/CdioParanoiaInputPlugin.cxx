@@ -23,7 +23,6 @@
 
 #include "config.h"
 #include "CdioParanoiaInputPlugin.hxx"
-#include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
 #include "util/Error.hxx"

@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "CurlInputPlugin.hxx"
-#include "InputInternal.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
 #include "ConfigGlobal.hxx"
