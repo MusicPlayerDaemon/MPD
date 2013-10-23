@@ -1056,6 +1056,7 @@ sparse-check:
 if ENABLE_TEST
 
 C_TESTS = \
+	test/test_util \
 	test/test_byte_reverse \
 	test/test_pcm \
 	test/test_queue_priority
@@ -1465,6 +1466,15 @@ test_run_inotify_LDADD = \
 	libutil.a \
 	$(GLIB_LIBS)
 endif
+
+test_test_util_SOURCES = \
+	test/test_util.cxx
+test_test_util_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_util_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
+test_test_util_LDADD = \
+	libutil.a \
+	$(GLIB_LIBS) \
+	$(CPPUNIT_LIBS)
 
 test_test_byte_reverse_SOURCES = \
 	test/test_byte_reverse.cxx
