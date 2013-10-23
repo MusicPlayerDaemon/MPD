@@ -27,8 +27,6 @@
 #include "Client.hxx"
 #include "util/UriUtil.hxx"
 
-#include <glib.h>
-
 void
 song_print_uri(Client &client, const Song &song)
 {
@@ -36,17 +34,13 @@ song_print_uri(Client &client, const Song &song)
 		client_printf(client, "%s%s/%s\n", SONG_FILE,
 			      song.parent->GetPath(), song.uri);
 	} else {
-		char *allocated;
-		const char *uri;
-
-		uri = allocated = uri_remove_auth(song.uri);
-		if (uri == NULL)
-			uri = song.uri;
+		const char *uri = song.uri;
+		const std::string allocated = uri_remove_auth(uri);
+		if (!allocated.empty())
+			uri = allocated.c_str();
 
 		client_printf(client, "%s%s\n", SONG_FILE,
 			      map_to_relative_path(uri));
-
-		g_free(allocated);
 	}
 }
 

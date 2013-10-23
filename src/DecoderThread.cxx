@@ -38,8 +38,6 @@
 #include "tag/ApeReplayGain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 static constexpr Domain decoder_thread_domain("decoder_thread");
 
 /**
@@ -367,13 +365,12 @@ decoder_run_song(decoder_control &dc,
 		dc.state = DecoderState::ERROR;
 
 		const char *error_uri = song->uri;
-		char *allocated = uri_remove_auth(error_uri);
-		if (allocated != nullptr)
-			error_uri = allocated;
+		const std::string allocated = uri_remove_auth(error_uri);
+		if (!allocated.empty())
+			error_uri = allocated.c_str();
 
 		dc.error.Format(decoder_domain,
 				 "Failed to decode %s", error_uri);
-		g_free(allocated);
 	}
 
 	dc.client_cond.signal();

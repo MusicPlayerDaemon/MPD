@@ -19,8 +19,6 @@
 
 #include "UriUtil.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <string.h>
 
@@ -80,11 +78,10 @@ uri_safe_local(const char *uri)
 	}
 }
 
-char *
+std::string
 uri_remove_auth(const char *uri)
 {
 	const char *auth, *slash, *at;
-	char *p;
 
 	if (memcmp(uri, "http://", 7) == 0)
 		auth = uri + 7;
@@ -92,7 +89,7 @@ uri_remove_auth(const char *uri)
 		auth = uri + 8;
 	else
 		/* unrecognized URI */
-		return nullptr;
+		return std::string();
 
 	slash = strchr(auth, '/');
 	if (slash == nullptr)
@@ -101,13 +98,11 @@ uri_remove_auth(const char *uri)
 	at = (const char *)memchr(auth, '@', slash - auth);
 	if (at == nullptr)
 		/* no auth info present, do nothing */
-		return nullptr;
+		return std::string();
 
 	/* duplicate the full URI and then delete the auth
 	   information */
-	p = g_strdup(uri);
-	memmove(p + (auth - uri), p + (at + 1 - uri),
-		strlen(at));
-
-	return p;
+	std::string result(uri);
+	result.erase(auth - uri, at + 1 - auth);
+	return result;
 }

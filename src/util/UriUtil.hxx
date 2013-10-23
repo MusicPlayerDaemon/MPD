@@ -22,6 +22,8 @@
 
 #include "Compiler.h"
 
+#include <string>
+
 /**
  * Checks whether the specified URI has a scheme in the form
  * "scheme://".
@@ -48,11 +50,11 @@ uri_safe_local(const char *uri);
 /**
  * Removes HTTP username and password from the URI.  This may be
  * useful for displaying an URI without disclosing secrets.  Returns
- * NULL if nothing needs to be removed, or if the URI is not
- * recognized.
+ * an empty string if nothing needs to be removed, or if the URI is
+ * not recognized.
  */
-gcc_malloc
-char *
+gcc_pure
+std::string
 uri_remove_auth(const char *uri);
 
 #endif

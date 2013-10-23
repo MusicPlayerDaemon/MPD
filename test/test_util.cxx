@@ -31,13 +31,13 @@ public:
 	}
 
 	void TestRemoveAuth() {
-		CPPUNIT_ASSERT_EQUAL((char *)nullptr,
+		CPPUNIT_ASSERT_EQUAL(std::string(),
 				     uri_remove_auth("http://www.example.com/"));
-		CPPUNIT_ASSERT_EQUAL(0, strcmp(uri_remove_auth("http://foo:bar@www.example.com/"),
-					       "http://www.example.com/"));
-		CPPUNIT_ASSERT_EQUAL(0, strcmp(uri_remove_auth("http://foo@www.example.com/"),
-					       "http://www.example.com/"));
-		CPPUNIT_ASSERT_EQUAL((char *)nullptr,
+		CPPUNIT_ASSERT_EQUAL(std::string("http://www.example.com/"),
+				     uri_remove_auth("http://foo:bar@www.example.com/"));
+		CPPUNIT_ASSERT_EQUAL(std::string("http://www.example.com/"),
+				     uri_remove_auth("http://foo@www.example.com/"));
+		CPPUNIT_ASSERT_EQUAL(std::string(),
 				     uri_remove_auth("http://www.example.com/f:oo@bar"));
 	}
 };

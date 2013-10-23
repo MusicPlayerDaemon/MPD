@@ -1473,7 +1473,6 @@ test_test_util_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
 test_test_util_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_util_LDADD = \
 	libutil.a \
-	$(GLIB_LIBS) \
 	$(CPPUNIT_LIBS)
 
 test_test_byte_reverse_SOURCES = \
