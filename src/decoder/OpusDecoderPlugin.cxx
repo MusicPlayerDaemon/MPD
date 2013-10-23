@@ -39,7 +39,6 @@
 
 #include <glib.h>
 
-#include <stdio.h>
 #include <string.h>
 
 static const opus_int32 opus_sample_rate = 48000;
@@ -273,7 +272,7 @@ mpd_opus_stream_decode(Decoder &decoder,
 
 	/* rewind the stream, because ogg_codec_detect() has
 	   moved it */
-	input_stream->LockSeek(0, SEEK_SET, IgnoreError());
+	input_stream->LockRewind(IgnoreError());
 
 	MPDOpusDecoder d(decoder, input_stream);
 	OggSyncState oy(*input_stream, &decoder);

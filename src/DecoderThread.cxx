@@ -40,9 +40,6 @@
 
 #include <glib.h>
 
-#include <unistd.h>
-#include <stdio.h> /* for SEEK_SET */
-
 static constexpr Domain decoder_thread_domain("decoder_thread");
 
 /**
@@ -128,7 +125,7 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 		return true;
 
 	/* rewind the stream, so each plugin gets a fresh start */
-	input_stream->Seek(0, SEEK_SET, IgnoreError());
+	input_stream->Rewind(IgnoreError());
 
 	decoder.dc.Unlock();
 

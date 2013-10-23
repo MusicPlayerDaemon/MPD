@@ -31,15 +31,6 @@
 #include "util/Domain.hxx"
 #include "LogV.hxx"
 
-#include <assert.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
@@ -49,6 +40,9 @@ extern "C" {
 #include <libavutil/mathematics.h>
 #include <libavutil/dict.h>
 }
+
+#include <assert.h>
+#include <string.h>
 
 static constexpr Domain ffmpeg_domain("ffmpeg");
 
@@ -352,7 +346,7 @@ ffmpeg_probe(Decoder *decoder, struct input_stream *is)
 
 	unsigned char buffer[BUFFER_SIZE];
 	size_t nbytes = decoder_read(decoder, is, buffer, BUFFER_SIZE);
-	if (nbytes <= PADDING || !is->LockSeek(0, SEEK_SET, error))
+	if (nbytes <= PADDING || !is->LockRewind(error))
 		return nullptr;
 
 	/* some ffmpeg parsers (e.g. ac3_parser.c) read a few bytes

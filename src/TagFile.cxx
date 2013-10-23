@@ -27,7 +27,6 @@
 #include "thread/Cond.hxx"
 
 #include <assert.h>
-#include <unistd.h> /* for SEEK_SET */
 
 bool
 tag_file_scan(const char *path_fs,
@@ -71,7 +70,7 @@ tag_file_scan(const char *path_fs,
 						       *handler, handler_ctx))
 					break;
 
-				is->LockSeek(0, SEEK_SET, IgnoreError());
+				is->LockRewind(IgnoreError());
 			}
 		}
 

@@ -27,6 +27,7 @@
 #include "util/Domain.hxx"
 
 #include <assert.h>
+#include <stdio.h> /* for SEEK_SET */
 
 static constexpr Domain input_domain("input");
 
@@ -111,6 +112,18 @@ input_stream::LockSeek(offset_type _offset, int whence, Error &error)
 
 	const ScopeLock protect(mutex);
 	return Seek(_offset, whence, error);
+}
+
+bool
+input_stream::Rewind(Error &error)
+{
+	return Seek(0, SEEK_SET, error);
+}
+
+bool
+input_stream::LockRewind(Error &error)
+{
+	return LockSeek(0, SEEK_SET, error);
 }
 
 Tag *

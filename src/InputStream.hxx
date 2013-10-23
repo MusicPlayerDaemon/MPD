@@ -218,6 +218,13 @@ struct input_stream {
 	bool LockSeek(offset_type offset, int whence, Error &error);
 
 	/**
+	 * Rewind to the beginning of the stream.  This is a wrapper
+	 * for Seek(0, SEEK_SET, error).
+	 */
+	bool Rewind(Error &error);
+	bool LockRewind(Error &error);
+
+	/**
 	 * Returns true if the stream has reached end-of-file.
 	 *
 	 * The caller must lock the mutex.

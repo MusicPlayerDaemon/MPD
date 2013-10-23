@@ -29,10 +29,6 @@
 #include <glib.h>
 
 #include <assert.h>
-#include <unistd.h>
-
-#include <sys/stat.h>
-#include <sys/types.h>
 
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
 #error libFLAC is too old
@@ -340,7 +336,7 @@ oggflac_decode(Decoder &decoder, struct input_stream *input_stream)
 
 	/* rewind the stream, because ogg_codec_detect() has
 	   moved it */
-	input_stream->LockSeek(0, SEEK_SET, IgnoreError());
+	input_stream->LockRewind(IgnoreError());
 
 	flac_decode_internal(decoder, input_stream, true);
 }

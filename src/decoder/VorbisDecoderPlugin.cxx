@@ -50,7 +50,6 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <unistd.h>
 
 struct vorbis_input_stream {
 	Decoder *decoder;
@@ -184,7 +183,7 @@ vorbis_stream_decode(Decoder &decoder,
 
 	/* rewind the stream, because ogg_codec_detect() has
 	   moved it */
-	input_stream->LockSeek(0, SEEK_SET, IgnoreError());
+	input_stream->LockRewind(IgnoreError());
 
 	struct vorbis_input_stream vis;
 	OggVorbis_File vf;
