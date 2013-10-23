@@ -170,15 +170,6 @@ decoder_file_decode(const DecoderPlugin &plugin,
 	return decoder.dc.state != DecoderState::START;
 }
 
-/**
- * Hack to allow tracking const decoder plugins in a GSList.
- */
-static inline gpointer
-deconst_plugin(const struct DecoderPlugin *plugin)
-{
-	return const_cast<struct DecoderPlugin *>(plugin);
-}
-
 gcc_pure
 static bool
 decoder_check_plugin_mime(const DecoderPlugin &plugin, const input_stream &is)
