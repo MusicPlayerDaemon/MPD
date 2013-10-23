@@ -140,19 +140,13 @@ wavpack_bits_to_sample_format(bool is_float, int bytes_per_sample)
 static void
 wavpack_decode(Decoder &decoder, WavpackContext *wpc, bool can_seek)
 {
-	bool is_float;
-	SampleFormat sample_format;
-	AudioFormat audio_format;
-	format_samples_t format_samples;
-	float total_time;
-	int bytes_per_sample, output_sample_size;
-
-	is_float = (WavpackGetMode(wpc) & MODE_FLOAT) != 0;
-	sample_format =
+	bool is_float = (WavpackGetMode(wpc) & MODE_FLOAT) != 0;
+	SampleFormat sample_format =
 		wavpack_bits_to_sample_format(is_float,
 					      WavpackGetBytesPerSample(wpc));
 
 	Error error;
+	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format,
 				       WavpackGetSampleRate(wpc),
 				       sample_format,
@@ -161,16 +155,15 @@ wavpack_decode(Decoder &decoder, WavpackContext *wpc, bool can_seek)
 		return;
 	}
 
-	if (is_float) {
-		format_samples = format_samples_float;
-	} else {
-		format_samples = format_samples_int;
-	}
+	const format_samples_t format_samples = is_float
+		? format_samples_float
+		: format_samples_int;
 
-	total_time = WavpackGetNumSamples(wpc);
-	total_time /= audio_format.sample_rate;
-	bytes_per_sample = WavpackGetBytesPerSample(wpc);
-	output_sample_size = audio_format.GetFrameSize();
+	const float total_time = float(WavpackGetNumSamples(wpc))
+		/ audio_format.sample_rate;
+
+	const int bytes_per_sample = WavpackGetBytesPerSample(wpc);
+	const int output_sample_size = audio_format.GetFrameSize();
 
 	/* wavpack gives us all kind of samples in a 32-bit space */
 	int32_t chunk[1024];
@@ -220,10 +213,7 @@ static bool
 wavpack_tag_float(WavpackContext *wpc, const char *key, float *value_r)
 {
 	char buffer[64];
-	int ret;
-
-	ret = WavpackGetTagItem(wpc, key, buffer, sizeof(buffer));
-	if (ret <= 0)
+	if (WavpackGetTagItem(wpc, key, buffer, sizeof(buffer)) <= 0)
 		return false;
 
 	*value_r = atof(buffer);
@@ -291,10 +281,8 @@ static bool
 wavpack_scan_file(const char *fname,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
-	WavpackContext *wpc;
 	char error[ERRORLEN];
-
-	wpc = WavpackOpenFileInput(fname, error, OPEN_TAGS, 0);
+	WavpackContext *wpc = WavpackOpenFileInput(fname, error, OPEN_TAGS, 0);
 	if (wpc == nullptr) {
 		FormatError(wavpack_domain,
 			    "failed to open WavPack file \"%s\": %s",
@@ -462,11 +450,6 @@ wavpack_open_wvc(Decoder &decoder, const char *uri,
 		 Mutex &mutex, Cond &cond,
 		 struct wavpack_input *wpi)
 {
-	InputStream *is_wvc;
-	char *wvc_url = nullptr;
-	char first_byte;
-	size_t nbytes;
-
 	/*
 	 * As we use dc->utf8url, this function will be bad for
 	 * single files. utf8url is not absolute file path :/
@@ -474,9 +457,10 @@ wavpack_open_wvc(Decoder &decoder, const char *uri,
 	if (uri == nullptr)
 		return nullptr;
 
-	wvc_url = g_strconcat(uri, "c", nullptr);
+	char *wvc_url = g_strconcat(uri, "c", nullptr);
 
-	is_wvc = InputStream::Open(wvc_url, mutex, cond, IgnoreError());
+	InputStream *is_wvc = InputStream::Open(wvc_url, mutex, cond,
+						IgnoreError());
 	g_free(wvc_url);
 
 	if (is_wvc == nullptr)
@@ -486,9 +470,9 @@ wavpack_open_wvc(Decoder &decoder, const char *uri,
 	 * And we try to buffer in order to get know
 	 * about a possible 404 error.
 	 */
-	nbytes = decoder_read(
-		decoder, *is_wvc, &first_byte, sizeof(first_byte)
-	);
+	char first_byte;
+	size_t nbytes = decoder_read(decoder, *is_wvc,
+				     &first_byte, sizeof(first_byte));
 	if (nbytes == 0) {
 		is_wvc->Close();
 		return nullptr;
@@ -506,16 +490,13 @@ wavpack_open_wvc(Decoder &decoder, const char *uri,
 static void
 wavpack_streamdecode(Decoder &decoder, InputStream &is)
 {
-	char error[ERRORLEN];
-	WavpackContext *wpc;
-	InputStream *is_wvc;
 	int open_flags = OPEN_NORMALIZE;
-	struct wavpack_input isp, isp_wvc;
 	bool can_seek = is.seekable;
 
-	is_wvc = wavpack_open_wvc(decoder, is.uri.c_str(),
-				  is.mutex, is.cond,
-				  &isp_wvc);
+	wavpack_input isp_wvc;
+	InputStream *is_wvc = wavpack_open_wvc(decoder, is.uri.c_str(),
+					       is.mutex, is.cond,
+					       &isp_wvc);
 	if (is_wvc != nullptr) {
 		open_flags |= OPEN_WVC;
 		can_seek &= is_wvc->seekable;
@@ -525,12 +506,15 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 		open_flags |= OPEN_STREAMING;
 	}
 
+	wavpack_input isp;
 	wavpack_input_init(&isp, decoder, is);
-	wpc = WavpackOpenFileInputEx(
-		&mpd_is_reader, &isp,
-		open_flags & OPEN_WVC ? &isp_wvc : nullptr,
-		error, open_flags, 23
-	);
+
+	char error[ERRORLEN];
+	WavpackContext *wpc =
+		WavpackOpenFileInputEx(&mpd_is_reader, &isp,
+				       open_flags & OPEN_WVC
+				       ? &isp_wvc : nullptr,
+				       error, open_flags, 23);
 
 	if (wpc == nullptr) {
 		FormatError(wavpack_domain,
@@ -553,12 +537,9 @@ static void
 wavpack_filedecode(Decoder &decoder, const char *fname)
 {
 	char error[ERRORLEN];
-	WavpackContext *wpc;
-
-	wpc = WavpackOpenFileInput(
-		fname, error,
-		OPEN_TAGS | OPEN_WVC | OPEN_NORMALIZE, 23
-	);
+	WavpackContext *wpc = WavpackOpenFileInput(fname, error,
+						   OPEN_TAGS | OPEN_WVC | OPEN_NORMALIZE,
+						   23);
 	if (wpc == nullptr) {
 		FormatWarning(wavpack_domain,
 			      "failed to open WavPack file \"%s\": %s",
