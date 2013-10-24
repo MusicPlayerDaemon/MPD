@@ -27,6 +27,13 @@
 #include <string.h>
 #include <stdlib.h>
 
+gcc_pure
+static TagType
+ParseOpusTagName(const char *name)
+{
+	return tag_table_lookup_i(xiph_tags, name);
+}
+
 static void
 ScanOneOpusTag(const char *name, const char *value,
 	       const struct tag_handler *handler, void *ctx)
@@ -34,7 +41,7 @@ ScanOneOpusTag(const char *name, const char *value,
 	tag_handler_invoke_pair(handler, ctx, name, value);
 
 	if (handler->tag != nullptr) {
-		TagType t = tag_table_lookup_i(xiph_tags, name);
+		TagType t = ParseOpusTagName(name);
 		if (t != TAG_NUM_OF_ITEM_TYPES)
 			tag_handler_invoke_tag(handler, ctx, t, value);
 	}
