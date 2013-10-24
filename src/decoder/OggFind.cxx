@@ -38,6 +38,16 @@ OggFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet)
 	}
 }
 
+static bool
+OggSeekPageAtOffset(OggSyncState &oy, ogg_stream_state &os, InputStream &is,
+		    InputStream::offset_type offset, int whence)
+{
+	oy.Reset();
+
+	return is.LockSeek(offset, whence, IgnoreError()) &&
+		oy.ExpectPageSeekIn(os);
+}
+
 bool
 OggSeekFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet,
 	       InputStream &is)
@@ -48,9 +58,6 @@ OggSeekFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet,
 	if (!is.CheapSeeking())
 		return false;
 
-	oy.Reset();
-
-	return is.LockSeek(-65536, SEEK_END, IgnoreError()) &&
-		oy.ExpectPageSeekIn(os) &&
+	return OggSeekPageAtOffset(oy, os, is, -65536, SEEK_END) &&
 		OggFindEOS(oy, os, packet);
 }
