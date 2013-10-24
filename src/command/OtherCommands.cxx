@@ -237,6 +237,39 @@ handle_setvol(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
+handle_volume(Client &client, gcc_unused int argc, char *argv[])
+{
+	int relative;
+	if (!check_int(client, &relative, argv[1]))
+		return CommandResult::ERROR;
+
+	if (relative < -100 || relative > 100) {
+		command_error(client, ACK_ERROR_ARG, "Invalid volume value");
+		return CommandResult::ERROR;
+	}
+
+	const int old_volume = volume_level_get();
+	if (old_volume < 0) {
+		command_error(client, ACK_ERROR_SYSTEM, "No mixer");
+		return CommandResult::ERROR;
+	}
+
+	int new_volume = old_volume + relative;
+	if (new_volume < 0)
+		new_volume = 0;
+	else if (new_volume > 100)
+		new_volume = 100;
+
+	if (new_volume != old_volume && !volume_level_change(new_volume)) {
+		command_error(client, ACK_ERROR_SYSTEM,
+			      "problems setting volume");
+		return CommandResult::ERROR;
+	}
+
+	return CommandResult::OK;
+}
+
+CommandResult
 handle_stats(Client &client,
 	     gcc_unused int argc, gcc_unused char *argv[])
 {

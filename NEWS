@@ -5,6 +5,7 @@ ver 0.18 (2012/??/??)
 * protocol:
   - new command "toggleoutput"
   - search for album artist falls back to the artist tag
+  - re-add the "volume" command
 * input:
   - curl: enable https
   - soup: plugin removed

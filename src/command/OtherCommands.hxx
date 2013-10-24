@@ -52,6 +52,9 @@ CommandResult
 handle_setvol(Client &client, int argc, char *argv[]);
 
 CommandResult
+handle_volume(Client &client, int argc, char *argv[]);
+
+CommandResult
 handle_stats(Client &client, int argc, char *argv[]);
 
 CommandResult

@@ -768,6 +768,25 @@
             </para>
           </listitem>
         </varlistentry>
+        <varlistentry id="command_volume">
+          <term>
+            <cmdsynopsis>
+              <command>volume</command>
+              <arg choice="req"><replaceable>CHANGE</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Changes volume by amount <varname>CHANGE</varname>.
+            </para>
+            <note>
+              <para>
+                <command>volume</command> is deprecated, use
+                <command>setvol</command> instead.
+              </para>
+            </note>
+          </listitem>
+        </varlistentry>
       </variablelist>
     </section>
 

@@ -161,6 +161,7 @@ static const struct command commands[] = {
 	{ "unsubscribe", PERMISSION_READ, 1, 1, handle_unsubscribe },
 	{ "update", PERMISSION_CONTROL, 0, 1, handle_update },
 	{ "urlhandlers", PERMISSION_READ, 0, 0, handle_urlhandlers },
+	{ "volume", PERMISSION_CONTROL, 1, 1, handle_volume },
 };
 
 static const unsigned num_commands = sizeof(commands) / sizeof(commands[0]);
