@@ -22,6 +22,7 @@
 #include "OpusReader.hxx"
 #include "XiphTags.hxx"
 #include "tag/TagHandler.hxx"
+#include "tag/Tag.hxx"
 
 #include <stdint.h>
 #include <string.h>
@@ -31,6 +32,10 @@ gcc_pure
 static TagType
 ParseOpusTagName(const char *name)
 {
+	TagType type = tag_name_parse_i(name);
+	if (type != TAG_NUM_OF_ITEM_TYPES)
+		return type;
+
 	return tag_table_lookup_i(xiph_tags, name);
 }
 
