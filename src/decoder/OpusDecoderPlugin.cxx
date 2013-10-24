@@ -41,7 +41,7 @@
 
 #include <string.h>
 
-static const opus_int32 opus_sample_rate = 48000;
+static constexpr opus_int32 opus_sample_rate = 48000;
 
 gcc_pure
 static bool
