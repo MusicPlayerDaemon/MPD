@@ -24,8 +24,11 @@
 
 #include <stddef.h>
 
+struct replay_gain_info;
+
 bool
 ScanOpusTags(const void *data, size_t size,
+	     replay_gain_info *rgi,
 	     const struct tag_handler *handler, void *ctx);
 
 #endif

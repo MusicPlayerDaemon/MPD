@@ -23,6 +23,7 @@
 #include "XiphTags.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/Tag.hxx"
+#include "ReplayGainInfo.hxx"
 
 #include <stdint.h>
 #include <string.h>
@@ -41,8 +42,19 @@ ParseOpusTagName(const char *name)
 
 static void
 ScanOneOpusTag(const char *name, const char *value,
+	       replay_gain_info *rgi,
 	       const struct tag_handler *handler, void *ctx)
 {
+	if (rgi != nullptr && strcmp(name, "R128_TRACK_GAIN") == 0) {
+		/* R128_TRACK_GAIN is a Q7.8 fixed point number in
+		   dB */
+
+		char *endptr;
+		long l = strtol(value, &endptr, 10);
+		if (endptr > value && *endptr == 0)
+			rgi->tuples[REPLAY_GAIN_TRACK].gain = double(l) / 256.;
+	}
+
 	tag_handler_invoke_pair(handler, ctx, name, value);
 
 	if (handler->tag != nullptr) {
@@ -54,6 +66,7 @@ ScanOneOpusTag(const char *name, const char *value,
 
 bool
 ScanOpusTags(const void *data, size_t size,
+	     replay_gain_info *rgi,
 	     const struct tag_handler *handler, void *ctx)
 {
 	OpusReader r(data, size);
@@ -79,7 +92,7 @@ ScanOpusTags(const void *data, size_t size,
 		if (eq != nullptr && eq > p) {
 			*eq = 0;
 
-			ScanOneOpusTag(p, eq + 1, handler, ctx);
+			ScanOneOpusTag(p, eq + 1, rgi, handler, ctx);
 		}
 
 		delete[] p;

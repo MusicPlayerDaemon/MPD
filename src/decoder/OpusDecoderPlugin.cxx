@@ -282,12 +282,18 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 inline DecoderCommand
 MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 {
+	replay_gain_info rgi;
+	replay_gain_info_init(&rgi);
+
 	TagBuilder tag_builder;
 
 	DecoderCommand cmd;
 	if (ScanOpusTags(packet.packet, packet.bytes,
+			 &rgi,
 			 &add_tag_handler, &tag_builder) &&
 	    !tag_builder.IsEmpty()) {
+		decoder_replay_gain(decoder, &rgi);
+
 		Tag tag;
 		tag_builder.Commit(tag);
 		cmd = decoder_tag(decoder, input_stream, std::move(tag));
@@ -439,6 +445,7 @@ mpd_opus_scan_stream(InputStream &is,
 			break;
 		else if (IsOpusTags(packet)) {
 			if (!ScanOpusTags(packet.packet, packet.bytes,
+					  nullptr,
 					  handler, handler_ctx))
 				result = false;
 
