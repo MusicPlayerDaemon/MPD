@@ -22,6 +22,8 @@
 
 #include "check.h"
 
+#include <algorithm>
+
 #include <stdint.h>
 #include <string.h>
 
@@ -91,8 +93,7 @@ public:
 			return nullptr;
 
 		char *dest = new char[length + 1];
-		memcpy(dest, src, length);
-		dest[length] = 0;
+		*std::copy_n(src, length, dest) = 0;
 		return dest;
 	}
 };
