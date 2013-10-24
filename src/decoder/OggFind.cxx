@@ -20,6 +20,8 @@
 #include "config.h"
 #include "OggFind.hxx"
 #include "OggSyncState.hxx"
+#include "InputStream.hxx"
+#include "util/Error.hxx"
 
 bool
 OggFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet)
@@ -34,4 +36,21 @@ OggFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet)
 		} else if (r > 0 && packet.e_o_s)
 			return true;
 	}
+}
+
+bool
+OggSeekFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet,
+	       InputStream &is)
+{
+	if (is.size > 0 && is.size - is.offset < 65536)
+		return OggFindEOS(oy, os, packet);
+
+	if (!is.CheapSeeking())
+		return false;
+
+	oy.Reset();
+
+	return is.LockSeek(-65536, SEEK_END, IgnoreError()) &&
+		oy.ExpectPageSeekIn(os) &&
+		OggFindEOS(oy, os, packet);
 }

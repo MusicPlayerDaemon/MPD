@@ -24,6 +24,7 @@
 
 #include <ogg/ogg.h>
 
+struct InputStream;
 class OggSyncState;
 
 /**
@@ -34,5 +35,15 @@ class OggSyncState;
  */
 bool
 OggFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet);
+
+/**
+ * Try to find the end-of-stream (EOS) packet.  Seek to the end of the
+ * file if necessary.
+ *
+ * @return true if the EOS packet was found
+ */
+bool
+OggSeekFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet,
+	       InputStream &is);
 
 #endif

@@ -292,24 +292,6 @@ mpd_opus_stream_decode(Decoder &decoder,
 }
 
 static bool
-SeekFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet,
-	    InputStream &is)
-{
-	if (is.size > 0 && is.size - is.offset < 65536)
-		return OggFindEOS(oy, os, packet);
-
-	if (!is.CheapSeeking())
-		return false;
-
-	oy.Reset();
-
-	Error error;
-	return is.LockSeek(-65536, SEEK_END, error) &&
-		oy.ExpectPageSeekIn(os) &&
-		OggFindEOS(oy, os, packet);
-}
-
-static bool
 mpd_opus_scan_stream(InputStream &is,
 		     const struct tag_handler *handler, void *handler_ctx)
 {
@@ -367,7 +349,7 @@ mpd_opus_scan_stream(InputStream &is,
 		}
 	}
 
-	if (packet.e_o_s || SeekFindEOS(oy, os, packet, is))
+	if (packet.e_o_s || OggSeekFindEOS(oy, os, packet, is))
 		tag_handler_invoke_duration(handler, handler_ctx,
 					    packet.granulepos / opus_sample_rate);
 
