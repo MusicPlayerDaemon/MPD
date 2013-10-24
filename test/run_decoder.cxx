@@ -57,15 +57,16 @@ void
 decoder_initialized(Decoder &decoder,
 		    const AudioFormat audio_format,
 		    gcc_unused bool seekable,
-		    gcc_unused float total_time)
+		    float duration)
 {
 	struct audio_format_string af_string;
 
 	assert(!decoder.initialized);
 	assert(audio_format.IsValid());
 
-	g_printerr("audio_format=%s\n",
-		   audio_format_to_string(audio_format, &af_string));
+	g_printerr("audio_format=%s duration=%f\n",
+		   audio_format_to_string(audio_format, &af_string),
+		   duration);
 
 	decoder.initialized = true;
 }
