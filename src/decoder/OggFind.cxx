@@ -44,6 +44,10 @@ OggSeekPageAtOffset(OggSyncState &oy, ogg_stream_state &os, InputStream &is,
 {
 	oy.Reset();
 
+	/* reset the stream to clear any previous partial packet
+	   data */
+	ogg_stream_reset(&os);
+
 	return is.LockSeek(offset, whence, IgnoreError()) &&
 		oy.ExpectPageSeekIn(os);
 }
