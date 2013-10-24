@@ -423,7 +423,6 @@ HttpdClient::OnSocketInput(void *data, size_t length)
 	*newline = 0;
 
 	if (!HandleLine(line)) {
-		assert(state == RESPONSE);
 		LockClose();
 		return InputResult::CLOSED;
 	}
