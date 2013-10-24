@@ -44,6 +44,8 @@ public:
 				     uri_remove_auth("http://foo@www.example.com/"));
 		CPPUNIT_ASSERT_EQUAL(std::string(),
 				     uri_remove_auth("http://www.example.com/f:oo@bar"));
+		CPPUNIT_ASSERT_EQUAL(std::string("ftp://ftp.example.com/"),
+				     uri_remove_auth("ftp://foo:bar@ftp.example.com/"));
 	}
 };
 

@@ -98,6 +98,8 @@ uri_remove_auth(const char *uri)
 		auth = uri + 7;
 	else if (memcmp(uri, "https://", 8) == 0)
 		auth = uri + 8;
+	else if (memcmp(uri, "ftp://", 6) == 0)
+		auth = uri + 6;
 	else
 		/* unrecognized URI */
 		return std::string();
