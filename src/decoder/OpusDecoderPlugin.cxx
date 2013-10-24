@@ -314,6 +314,11 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 					0);
 		if (cmd != DecoderCommand::NONE)
 			return cmd;
+
+		if (packet.granulepos > 0)
+			decoder_timestamp(decoder,
+					  double(packet.granulepos)
+					  / opus_sample_rate);
 	}
 
 	return DecoderCommand::NONE;
