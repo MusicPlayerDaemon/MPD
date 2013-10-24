@@ -57,6 +57,7 @@ decoder_initialized(Decoder &decoder,
  * @return the current command, or DecoderCommand::NONE if there is no
  * command pending
  */
+gcc_pure
 DecoderCommand
 decoder_get_command(Decoder &decoder);
 
@@ -76,6 +77,7 @@ decoder_command_finished(Decoder &decoder);
  * @param decoder the decoder object
  * @return the destination position for the week
  */
+gcc_pure
 double
 decoder_seek_where(Decoder &decoder);
 
