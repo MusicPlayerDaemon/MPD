@@ -70,7 +70,7 @@ ScanOpusTags(const void *data, size_t size,
 			ScanOneOpusTag(p, eq + 1, handler, ctx);
 		}
 
-		free(p);
+		delete[] p;
 	}
 
 	return true;
