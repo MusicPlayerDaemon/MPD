@@ -171,6 +171,56 @@ MPDOpusDecoder::HandlePacket(const ogg_packet &packet)
 	return HandleAudio(packet);
 }
 
+/**
+ * Load the end-of-stream packet and restore the previous file
+ * position.
+ */
+static bool
+LoadEOSPacket(InputStream &is, Decoder *decoder, int serialno,
+	      ogg_packet &packet)
+{
+	if (!is.CheapSeeking())
+		/* we do this for local files only, because seeking
+		   around remote files is expensive and not worth the
+		   troubl */
+		return -1;
+
+	const auto old_offset = is.offset;
+	if (old_offset < 0)
+		return -1;
+
+	/* create temporary Ogg objects for seeking and parsing the
+	   EOS packet */
+	OggSyncState oy(is, decoder);
+	ogg_stream_state os;
+	ogg_stream_init(&os, serialno);
+
+	bool result = OggSeekFindEOS(oy, os, packet, is);
+	ogg_stream_clear(&os);
+
+	/* restore the previous file position */
+	is.Seek(old_offset, SEEK_SET, IgnoreError());
+
+	return result;
+}
+
+/**
+ * Load the end-of-stream granulepos and restore the previous file
+ * position.
+ *
+ * @return -1 on error
+ */
+gcc_pure
+static ogg_int64_t
+LoadEOSGranulePos(InputStream &is, Decoder *decoder, int serialno)
+{
+	ogg_packet packet;
+	if (!LoadEOSPacket(is, decoder, serialno, packet))
+		return -1;
+
+	return packet.granulepos;
+}
+
 inline DecoderCommand
 MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 {
@@ -202,9 +252,15 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 		return DecoderCommand::STOP;
 	}
 
+	const ogg_int64_t eos_granulepos =
+		LoadEOSGranulePos(input_stream, &decoder, opus_serialno);
+	const double duration = eos_granulepos >= 0
+		? double(eos_granulepos) / opus_sample_rate
+		: -1.0;
+
 	const AudioFormat audio_format(opus_sample_rate,
 				       SampleFormat::S16, channels);
-	decoder_initialized(decoder, audio_format, false, -1);
+	decoder_initialized(decoder, audio_format, false, duration);
 	frame_size = audio_format.GetFrameSize();
 
 	/* allocate an output buffer for 16 bit PCM samples big enough
