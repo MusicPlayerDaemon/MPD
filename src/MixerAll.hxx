@@ -25,10 +25,13 @@
 #ifndef MPD_MIXER_ALL_HXX
 #define MPD_MIXER_ALL_HXX
 
+#include "Compiler.h"
+
 /**
  * Returns the average volume of all available mixers (range 0..100).
  * Returns -1 if no mixer can be queried.
  */
+gcc_pure
 int
 mixer_all_get_volume(void);
 
@@ -46,6 +49,7 @@ mixer_all_set_volume(unsigned volume);
  * software mixers.  See #software_mixer_plugin.  This function fails
  * if no software mixer is configured.
  */
+gcc_pure
 int
 mixer_all_get_software_volume(void);
 

@@ -20,12 +20,15 @@
 #ifndef MPD_VOLUME_HXX
 #define MPD_VOLUME_HXX
 
+#include "Compiler.h"
+
 #include <stdio.h>
 
 void volume_init(void);
 
 void volume_finish(void);
 
+gcc_pure
 int volume_level_get(void);
 
 bool volume_level_change(unsigned volume);
@@ -41,6 +44,7 @@ void save_sw_volume_state(FILE *fp);
  * determine whether the state has changed and the state file should
  * be saved.
  */
+gcc_pure
 unsigned
 sw_volume_state_get_hash(void);
 
