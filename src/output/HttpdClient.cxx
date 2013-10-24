@@ -66,7 +66,8 @@ HttpdClient::BeginResponse()
 	state = RESPONSE;
 	current_page = nullptr;
 
-	httpd->SendHeader(*this);
+	if (!head_method)
+		httpd->SendHeader(*this);
 }
 
 /**
@@ -78,16 +79,25 @@ HttpdClient::HandleLine(const char *line)
 	assert(state != RESPONSE);
 
 	if (state == REQUEST) {
-		if (memcmp(line, "GET /", 5) != 0) {
+		if (memcmp(line, "HEAD /", 6) == 0) {
+			line += 6;
+			head_method = true;
+		} else if (memcmp(line, "GET /", 5) == 0) {
+			line += 5;
+		} else {
 			/* only GET is supported */
 			LogWarning(httpd_output_domain,
 				   "malformed request line from client");
 			return false;
 		}
 
-		line = strchr(line + 5, ' ');
+		line = strchr(line, ' ');
 		if (line == nullptr || memcmp(line + 1, "HTTP/", 5) != 0) {
 			/* HTTP/0.9 without request headers */
+
+			if (head_method)
+				return false;
+
 			BeginResponse();
 			return true;
 		}
@@ -98,6 +108,7 @@ HttpdClient::HandleLine(const char *line)
 	} else {
 		if (*line == 0) {
 			/* empty line: request is finished */
+
 			BeginResponse();
 			return true;
 		}
@@ -185,6 +196,7 @@ HttpdClient::HttpdClient(HttpdOutput *_httpd, int _fd, EventLoop &_loop,
 	:BufferedSocket(_fd, _loop),
 	 httpd(_httpd),
 	 state(REQUEST),
+	 head_method(false),
 	 dlna_streaming_requested(false),
 	 metadata_supported(_metadata_supported),
 	 metadata_requested(false), metadata_sent(true),
@@ -427,8 +439,15 @@ HttpdClient::OnSocketInput(void *data, size_t length)
 		return InputResult::CLOSED;
 	}
 
-	if (state == RESPONSE && !SendResponse())
-		return InputResult::CLOSED;
+	if (state == RESPONSE) {
+		if (!SendResponse())
+			return InputResult::CLOSED;
+
+		if (head_method) {
+			LockClose();
+			return InputResult::CLOSED;
+		}
+	}
 
 	return InputResult::AGAIN;
 }

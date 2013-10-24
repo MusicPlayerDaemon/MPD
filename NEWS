@@ -28,6 +28,7 @@ ver 0.18 (2012/??/??)
   - new option "tags" may be used to disable sending tags to output
   - alsa: workaround for noise after manual song change
   - ffado: remove broken plugin
+  - httpd: support HEAD requests
   - mvp: remove obsolete plugin
 * improved decoder/output error reporting
 * eliminate timer wakeup on idle MPD

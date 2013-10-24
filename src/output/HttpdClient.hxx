@@ -67,6 +67,11 @@ class HttpdClient final : public BufferedSocket {
 	size_t current_position;
 
 	/**
+	 * Is this a HEAD request?
+	 */
+	bool head_method;
+
+	/**
          * If DLNA streaming was an option.
          */
 	bool dlna_streaming_requested;
