@@ -23,7 +23,7 @@
 #include "check.h"
 
 struct id3_tag;
-struct replay_gain_info;
+struct ReplayGainInfo;
 
 /**
  * Parse the RVA2 tag, and fill the #replay_gain_info struct.  This is
@@ -32,6 +32,6 @@ struct replay_gain_info;
  * @return true on success
  */
 bool
-tag_rva2_parse(struct id3_tag *tag, struct replay_gain_info *replay_gain_info);
+tag_rva2_parse(struct id3_tag *tag, ReplayGainInfo &replay_gain_info);
 
 #endif

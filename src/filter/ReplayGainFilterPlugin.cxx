@@ -50,9 +50,9 @@ class ReplayGainFilter final : public Filter {
 	 */
 	unsigned base;
 
-	enum replay_gain_mode mode;
+	ReplayGainMode mode;
 
-	struct replay_gain_info info;
+	ReplayGainInfo info;
 
 	/**
 	 * The current volume, between 0 and a value that may or may not exceed
@@ -88,17 +88,17 @@ public:
 		Update();
 	}
 
-	void SetInfo(const struct replay_gain_info *_info) {
+	void SetInfo(const ReplayGainInfo *_info) {
 		if (_info != NULL) {
 			info = *_info;
-			replay_gain_info_complete(&info);
+			replay_gain_info_complete(info);
 		} else
 			replay_gain_info_init(&info);
 
 		Update();
 	}
 
-	void SetMode(enum replay_gain_mode _mode) {
+	void SetMode(ReplayGainMode _mode) {
 		if (_mode == mode)
 			/* no change */
 			return;
@@ -217,7 +217,7 @@ replay_gain_filter_set_mixer(Filter *_filter, Mixer *mixer,
 }
 
 void
-replay_gain_filter_set_info(Filter *_filter, const replay_gain_info *info)
+replay_gain_filter_set_info(Filter *_filter, const ReplayGainInfo *info)
 {
 	ReplayGainFilter *filter = (ReplayGainFilter *)_filter;
 
@@ -225,7 +225,7 @@ replay_gain_filter_set_info(Filter *_filter, const replay_gain_info *info)
 }
 
 void
-replay_gain_filter_set_mode(Filter *_filter, enum replay_gain_mode mode)
+replay_gain_filter_set_mode(Filter *_filter, ReplayGainMode mode)
 {
 	ReplayGainFilter *filter = (ReplayGainFilter *)_filter;
 

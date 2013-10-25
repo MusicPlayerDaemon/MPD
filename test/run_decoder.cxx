@@ -127,15 +127,14 @@ decoder_tag(gcc_unused Decoder &decoder,
 
 void
 decoder_replay_gain(gcc_unused Decoder &decoder,
-		    const struct replay_gain_info *replay_gain_info)
+		    const ReplayGainInfo *rgi)
 {
-	const struct replay_gain_tuple *tuple =
-		&replay_gain_info->tuples[REPLAY_GAIN_ALBUM];
+	const ReplayGainTuple *tuple = &rgi->tuples[REPLAY_GAIN_ALBUM];
 	if (replay_gain_tuple_defined(tuple))
 		g_printerr("replay_gain[album]: gain=%f peak=%f\n",
 			   tuple->gain, tuple->peak);
 
-	tuple = &replay_gain_info->tuples[REPLAY_GAIN_TRACK];
+	tuple = &rgi->tuples[REPLAY_GAIN_TRACK];
 	if (replay_gain_tuple_defined(tuple))
 		g_printerr("replay_gain[track]: gain=%f peak=%f\n",
 			   tuple->gain, tuple->peak);

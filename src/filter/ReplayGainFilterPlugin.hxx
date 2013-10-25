@@ -44,9 +44,9 @@ replay_gain_filter_set_mixer(Filter *_filter, Mixer *mixer,
  * gain data is available for the current song
  */
 void
-replay_gain_filter_set_info(Filter *filter, const replay_gain_info *info);
+replay_gain_filter_set_info(Filter *filter, const ReplayGainInfo *info);
 
 void
-replay_gain_filter_set_mode(Filter *filter, enum replay_gain_mode mode);
+replay_gain_filter_set_mode(Filter *filter, ReplayGainMode mode);
 
 #endif

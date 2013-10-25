@@ -93,7 +93,7 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 	if (data->unsupported)
 		return;
 
-	struct replay_gain_info rgi;
+	ReplayGainInfo rgi;
 	char *mixramp_start;
 	char *mixramp_end;
 
@@ -103,7 +103,7 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 		break;
 
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
-		if (flac_parse_replay_gain(&rgi, block))
+		if (flac_parse_replay_gain(rgi, block))
 			decoder_replay_gain(data->decoder, &rgi);
 
 		if (flac_parse_mixramp(&mixramp_start, &mixramp_end, block))

@@ -24,50 +24,50 @@
 
 #include <cmath>
 
-enum replay_gain_mode {
+enum ReplayGainMode {
 	REPLAY_GAIN_AUTO = -2,
 	REPLAY_GAIN_OFF,
 	REPLAY_GAIN_ALBUM,
 	REPLAY_GAIN_TRACK,
 };
 
-struct replay_gain_tuple {
+struct ReplayGainTuple {
 	float gain;
 	float peak;
 };
 
-struct replay_gain_info {
-	struct replay_gain_tuple tuples[2];
+struct ReplayGainInfo {
+	ReplayGainTuple tuples[2];
 };
 
 static inline void
-replay_gain_tuple_init(struct replay_gain_tuple *tuple)
+replay_gain_tuple_init(ReplayGainTuple *tuple)
 {
 	tuple->gain = INFINITY;
 	tuple->peak = 0.0;
 }
 
 static inline void
-replay_gain_info_init(struct replay_gain_info *info)
+replay_gain_info_init(struct ReplayGainInfo *info)
 {
 	replay_gain_tuple_init(&info->tuples[REPLAY_GAIN_ALBUM]);
 	replay_gain_tuple_init(&info->tuples[REPLAY_GAIN_TRACK]);
 }
 
 static inline bool
-replay_gain_tuple_defined(const struct replay_gain_tuple *tuple)
+replay_gain_tuple_defined(const ReplayGainTuple *tuple)
 {
 	return !std::isinf(tuple->gain);
 }
 
 float
-replay_gain_tuple_scale(const struct replay_gain_tuple *tuple, float preamp, float missing_preamp, bool peak_limit);
+replay_gain_tuple_scale(const ReplayGainTuple *tuple, float preamp, float missing_preamp, bool peak_limit);
 
 /**
  * Attempt to auto-complete missing data.  In particular, if album
  * information is missing, track gain is used.
  */
 void
-replay_gain_info_complete(struct replay_gain_info *info);
+replay_gain_info_complete(ReplayGainInfo &info);
 
 #endif

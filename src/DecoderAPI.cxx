@@ -506,7 +506,7 @@ decoder_tag(Decoder &decoder, InputStream *is,
 
 void
 decoder_replay_gain(Decoder &decoder,
-		    const struct replay_gain_info *replay_gain_info)
+		    const ReplayGainInfo *replay_gain_info)
 {
 	if (replay_gain_info != nullptr) {
 		static unsigned serial;
@@ -514,7 +514,7 @@ decoder_replay_gain(Decoder &decoder,
 			serial = 1;
 
 		if (REPLAY_GAIN_OFF != replay_gain_mode) {
-			enum replay_gain_mode rgm = replay_gain_mode;
+			ReplayGainMode rgm = replay_gain_mode;
 			if (rgm != REPLAY_GAIN_ALBUM)
 				rgm = REPLAY_GAIN_TRACK;
 

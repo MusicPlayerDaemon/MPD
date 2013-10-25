@@ -73,7 +73,7 @@ rva2_float_volume_adjustment(const struct rva2_data *data)
 }
 
 static inline bool
-rva2_apply_data(struct replay_gain_info *replay_gain_info,
+rva2_apply_data(ReplayGainInfo &rgi,
 		const struct rva2_data *data, const id3_latin1_t *id)
 {
 	if (data->type != CHANNEL_MASTER_VOLUME)
@@ -82,19 +82,19 @@ rva2_apply_data(struct replay_gain_info *replay_gain_info,
 	float volume_adjustment = rva2_float_volume_adjustment(data);
 
 	if (strcmp((const char *)id, "album") == 0)  {
-		replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain = volume_adjustment;
+		rgi.tuples[REPLAY_GAIN_ALBUM].gain = volume_adjustment;
 	} else if (strcmp((const char *)id, "track") == 0) {
-		replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = volume_adjustment;
+		rgi.tuples[REPLAY_GAIN_TRACK].gain = volume_adjustment;
 	} else {
-		replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain = volume_adjustment;
-		replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = volume_adjustment;
+		rgi.tuples[REPLAY_GAIN_ALBUM].gain = volume_adjustment;
+		rgi.tuples[REPLAY_GAIN_TRACK].gain = volume_adjustment;
 	}
 
 	return true;
 }
 
 static bool
-rva2_apply_frame(struct replay_gain_info *replay_gain_info,
+rva2_apply_frame(ReplayGainInfo &replay_gain_info,
 		 const struct id3_frame *frame)
 {
 	const id3_latin1_t *id = id3_field_getlatin1(id3_frame_field(frame, 0));
@@ -133,7 +133,7 @@ rva2_apply_frame(struct replay_gain_info *replay_gain_info,
 }
 
 bool
-tag_rva2_parse(struct id3_tag *tag, struct replay_gain_info *replay_gain_info)
+tag_rva2_parse(struct id3_tag *tag, ReplayGainInfo &replay_gain_info)
 {
 	bool found = false;
 

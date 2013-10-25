@@ -274,8 +274,8 @@ decoder_run_stream(Decoder &decoder, const char *uri)
 static void
 decoder_load_replay_gain(Decoder &decoder, const char *path_fs)
 {
-	struct replay_gain_info info;
-	if (replay_gain_ape_read(path_fs, &info))
+	ReplayGainInfo info;
+	if (replay_gain_ape_read(path_fs, info))
 		decoder_replay_gain(decoder, &info);
 }
 

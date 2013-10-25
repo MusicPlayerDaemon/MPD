@@ -22,9 +22,9 @@
 
 #include "check.h"
 
-struct replay_gain_info;
+struct ReplayGainInfo;
 
 bool
-replay_gain_ape_read(const char *path_fs, struct replay_gain_info *info);
+replay_gain_ape_read(const char *path_fs, ReplayGainInfo &info);
 
 #endif

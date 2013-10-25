@@ -104,7 +104,7 @@ void
 audio_output_all_release(void);
 
 void
-audio_output_all_set_replay_gain_mode(enum replay_gain_mode mode);
+audio_output_all_set_replay_gain_mode(ReplayGainMode mode);
 
 /**
  * Enqueue a #music_chunk object for playing, i.e. pushes it to a

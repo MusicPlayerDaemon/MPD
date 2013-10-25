@@ -282,7 +282,7 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 inline DecoderCommand
 MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 {
-	replay_gain_info rgi;
+	ReplayGainInfo rgi;
 	replay_gain_info_init(&rgi);
 
 	TagBuilder tag_builder;

@@ -42,7 +42,7 @@ ParseOpusTagName(const char *name)
 
 static void
 ScanOneOpusTag(const char *name, const char *value,
-	       replay_gain_info *rgi,
+	       ReplayGainInfo *rgi,
 	       const struct tag_handler *handler, void *ctx)
 {
 	if (rgi != nullptr && strcmp(name, "R128_TRACK_GAIN") == 0) {
@@ -66,7 +66,7 @@ ScanOneOpusTag(const char *name, const char *value,
 
 bool
 ScanOpusTags(const void *data, size_t size,
-	     replay_gain_info *rgi,
+	     ReplayGainInfo *rgi,
 	     const struct tag_handler *handler, void *ctx)
 {
 	OpusReader r(data, size);

@@ -110,7 +110,7 @@ public:
 
 struct tag_handler;
 struct Tag;
-struct replay_gain_info;
+struct ReplayGainInfo;
 
 static inline unsigned
 flac_duration(const FLAC__StreamMetadata_StreamInfo *stream_info)
@@ -122,7 +122,7 @@ flac_duration(const FLAC__StreamMetadata_StreamInfo *stream_info)
 }
 
 bool
-flac_parse_replay_gain(struct replay_gain_info *rgi,
+flac_parse_replay_gain(ReplayGainInfo &rgi,
 		       const FLAC__StreamMetadata *block);
 
 bool

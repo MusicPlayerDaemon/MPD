@@ -32,7 +32,7 @@ struct player_control;
 
 void
 audio_output_set_replay_gain_mode(struct audio_output *ao,
-				  enum replay_gain_mode mode);
+				  ReplayGainMode mode);
 
 /**
  * Enables the device.

@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum replay_gain_mode replay_gain_mode = REPLAY_GAIN_OFF;
+ReplayGainMode replay_gain_mode = REPLAY_GAIN_OFF;
 
 static constexpr bool DEFAULT_REPLAYGAIN_LIMIT = true;
 
@@ -134,10 +134,10 @@ void replay_gain_global_init(void)
 	replay_gain_limit = config_get_bool(CONF_REPLAYGAIN_LIMIT, DEFAULT_REPLAYGAIN_LIMIT);
 }
 
-enum replay_gain_mode
+ReplayGainMode
 replay_gain_get_real_mode(bool random_mode)
 {
-	enum replay_gain_mode rgm;
+	ReplayGainMode rgm;
 
 	rgm = replay_gain_mode;
 

@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2003-2013 The Music Player Daemon Project
  * http://www.musicpd.org
@@ -96,7 +97,7 @@ ao_lock_command(struct audio_output *ao, enum audio_output_command cmd)
 
 void
 audio_output_set_replay_gain_mode(struct audio_output *ao,
-				  enum replay_gain_mode mode)
+				  ReplayGainMode mode)
 {
 	if (ao->replay_gain_filter != nullptr)
 		replay_gain_filter_set_mode(ao->replay_gain_filter, mode);

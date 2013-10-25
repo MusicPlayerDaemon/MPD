@@ -75,7 +75,7 @@ struct music_chunk {
 	 * Replay gain information associated with this chunk.
 	 * Only valid if the serial is not 0.
 	 */
-	struct replay_gain_info replay_gain_info;
+	ReplayGainInfo replay_gain_info;
 
 	/**
 	 * A serial number for checking if replay gain info has

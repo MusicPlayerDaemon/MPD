@@ -29,7 +29,7 @@
 static bool
 replay_gain_ape_callback(unsigned long flags, const char *key,
 			 const char *_value, size_t value_length,
-			 struct replay_gain_info *info)
+			 ReplayGainInfo &info)
 {
 	/* we only care about utf-8 text tags */
 	if ((flags & (0x3 << 1)) != 0)
@@ -43,27 +43,27 @@ replay_gain_ape_callback(unsigned long flags, const char *key,
 	value[value_length] = 0;
 
 	if (StringEqualsCaseASCII(key, "replaygain_track_gain")) {
-		info->tuples[REPLAY_GAIN_TRACK].gain = atof(value);
+		info.tuples[REPLAY_GAIN_TRACK].gain = atof(value);
 		return true;
 	} else if (StringEqualsCaseASCII(key, "replaygain_album_gain")) {
-		info->tuples[REPLAY_GAIN_ALBUM].gain = atof(value);
+		info.tuples[REPLAY_GAIN_ALBUM].gain = atof(value);
 		return true;
 	} else if (StringEqualsCaseASCII(key, "replaygain_track_peak")) {
-		info->tuples[REPLAY_GAIN_TRACK].peak = atof(value);
+		info.tuples[REPLAY_GAIN_TRACK].peak = atof(value);
 		return true;
 	} else if (StringEqualsCaseASCII(key, "replaygain_album_peak")) {
-		info->tuples[REPLAY_GAIN_ALBUM].peak = atof(value);
+		info.tuples[REPLAY_GAIN_ALBUM].peak = atof(value);
 		return true;
 	} else
 		return false;
 }
 
 bool
-replay_gain_ape_read(const char *path_fs, struct replay_gain_info *info)
+replay_gain_ape_read(const char *path_fs, ReplayGainInfo &info)
 {
 	bool found = false;
 
-	auto callback = [info, &found]
+	auto callback = [&info, &found]
 		(unsigned long flags, const char *key,
 		 const char *value,
 		 size_t value_length) {

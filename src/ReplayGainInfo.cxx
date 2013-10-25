@@ -21,7 +21,7 @@
 #include "ReplayGainInfo.hxx"
 
 float
-replay_gain_tuple_scale(const struct replay_gain_tuple *tuple, float preamp, float missing_preamp, bool peak_limit)
+replay_gain_tuple_scale(const ReplayGainTuple *tuple, float preamp, float missing_preamp, bool peak_limit)
 {
 	float scale;
 
@@ -40,9 +40,9 @@ replay_gain_tuple_scale(const struct replay_gain_tuple *tuple, float preamp, flo
 }
 
 void
-replay_gain_info_complete(struct replay_gain_info *info)
+replay_gain_info_complete(ReplayGainInfo &info)
 {
-	if (!replay_gain_tuple_defined(&info->tuples[REPLAY_GAIN_ALBUM]))
-		info->tuples[REPLAY_GAIN_ALBUM] =
-			info->tuples[REPLAY_GAIN_TRACK];
+	if (!replay_gain_tuple_defined(&info.tuples[REPLAY_GAIN_ALBUM]))
+		info.tuples[REPLAY_GAIN_ALBUM] =
+			info.tuples[REPLAY_GAIN_TRACK];
 }

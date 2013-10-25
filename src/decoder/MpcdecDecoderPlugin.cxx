@@ -168,14 +168,14 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 		return;
 	}
 
-	struct replay_gain_info replay_gain_info;
-	replay_gain_info_init(&replay_gain_info);
-	replay_gain_info.tuples[REPLAY_GAIN_ALBUM].gain = MPC_OLD_GAIN_REF  - (info.gain_album  / 256.);
-	replay_gain_info.tuples[REPLAY_GAIN_ALBUM].peak = pow(10, info.peak_album / 256. / 20) / 32767;
-	replay_gain_info.tuples[REPLAY_GAIN_TRACK].gain = MPC_OLD_GAIN_REF  - (info.gain_title  / 256.);
-	replay_gain_info.tuples[REPLAY_GAIN_TRACK].peak = pow(10, info.peak_title / 256. / 20) / 32767;
+	ReplayGainInfo rgi;
+	replay_gain_info_init(&rgi);
+	rgi.tuples[REPLAY_GAIN_ALBUM].gain = MPC_OLD_GAIN_REF  - (info.gain_album  / 256.);
+	rgi.tuples[REPLAY_GAIN_ALBUM].peak = pow(10, info.peak_album / 256. / 20) / 32767;
+	rgi.tuples[REPLAY_GAIN_TRACK].gain = MPC_OLD_GAIN_REF  - (info.gain_title  / 256.);
+	rgi.tuples[REPLAY_GAIN_TRACK].peak = pow(10, info.peak_title / 256. / 20) / 32767;
 
-	decoder_replay_gain(mpd_decoder, &replay_gain_info);
+	decoder_replay_gain(mpd_decoder, &rgi);
 
 	decoder_initialized(mpd_decoder, audio_format,
 			    is.IsSeekable(),

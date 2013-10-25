@@ -251,7 +251,7 @@ MadDecoder::FillBuffer()
 
 #ifdef HAVE_ID3TAG
 static bool
-parse_id3_replay_gain_info(struct replay_gain_info *replay_gain_info,
+parse_id3_replay_gain_info(ReplayGainInfo &rgi,
 			   struct id3_tag *tag)
 {
 	int i;
@@ -260,7 +260,7 @@ parse_id3_replay_gain_info(struct replay_gain_info *replay_gain_info,
 	struct id3_frame *frame;
 	bool found = false;
 
-	replay_gain_info_init(replay_gain_info);
+	replay_gain_info_init(&rgi);
 
 	for (i = 0; (frame = id3_tag_findframe(tag, "TXXX", i)); i++) {
 		if (frame->nfields < 3)
@@ -274,16 +274,16 @@ parse_id3_replay_gain_info(struct replay_gain_info *replay_gain_info,
 					     (&frame->fields[2]));
 
 		if (StringEqualsCaseASCII(key, "replaygain_track_gain")) {
-			replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain = atof(value);
+			rgi.tuples[REPLAY_GAIN_TRACK].gain = atof(value);
 			found = true;
 		} else if (StringEqualsCaseASCII(key, "replaygain_album_gain")) {
-			replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain = atof(value);
+			rgi.tuples[REPLAY_GAIN_ALBUM].gain = atof(value);
 			found = true;
 		} else if (StringEqualsCaseASCII(key, "replaygain_track_peak")) {
-			replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak = atof(value);
+			rgi.tuples[REPLAY_GAIN_TRACK].peak = atof(value);
 			found = true;
 		} else if (StringEqualsCaseASCII(key, "replaygain_album_peak")) {
-			replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak = atof(value);
+			rgi.tuples[REPLAY_GAIN_ALBUM].peak = atof(value);
 			found = true;
 		}
 
@@ -293,7 +293,7 @@ parse_id3_replay_gain_info(struct replay_gain_info *replay_gain_info,
 
 	return found ||
 		/* fall back on RVA2 if no replaygain tags found */
-		tag_rva2_parse(tag, replay_gain_info);
+		tag_rva2_parse(tag, rgi);
 }
 #endif
 
@@ -392,11 +392,11 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 	}
 
 	if (decoder != nullptr) {
-		struct replay_gain_info rgi;
+		ReplayGainInfo rgi;
 		char *mixramp_start;
 		char *mixramp_end;
 
-		if (parse_id3_replay_gain_info(&rgi, id3_tag)) {
+		if (parse_id3_replay_gain_info(rgi, id3_tag)) {
 			decoder_replay_gain(*decoder, &rgi);
 			found_replay_gain = true;
 		}
@@ -871,7 +871,7 @@ MadDecoder::DecodeFirstFrame(Tag **tag)
 			 * parse_lame() for details. -- jat */
 			if (decoder != nullptr && !found_replay_gain &&
 			    lame.track_gain) {
-				struct replay_gain_info rgi;
+				ReplayGainInfo rgi;
 				replay_gain_info_init(&rgi);
 				rgi.tuples[REPLAY_GAIN_TRACK].gain = lame.track_gain;
 				rgi.tuples[REPLAY_GAIN_TRACK].peak = lame.peak;

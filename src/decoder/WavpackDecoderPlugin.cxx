@@ -221,29 +221,21 @@ wavpack_tag_float(WavpackContext *wpc, const char *key, float *value_r)
 }
 
 static bool
-wavpack_replaygain(struct replay_gain_info *replay_gain_info,
+wavpack_replaygain(ReplayGainInfo &rgi,
 		   WavpackContext *wpc)
 {
 	bool found = false;
 
-	replay_gain_info_init(replay_gain_info);
+	replay_gain_info_init(&rgi);
 
-	found |= wavpack_tag_float(
-		wpc, "replaygain_track_gain",
-		&replay_gain_info->tuples[REPLAY_GAIN_TRACK].gain
-	);
-	found |= wavpack_tag_float(
-		wpc, "replaygain_track_peak",
-		&replay_gain_info->tuples[REPLAY_GAIN_TRACK].peak
-	);
-	found |= wavpack_tag_float(
-		wpc, "replaygain_album_gain",
-		&replay_gain_info->tuples[REPLAY_GAIN_ALBUM].gain
-	);
-	found |= wavpack_tag_float(
-		wpc, "replaygain_album_peak",
-		&replay_gain_info->tuples[REPLAY_GAIN_ALBUM].peak
-	);
+	found |= wavpack_tag_float(wpc, "replaygain_track_gain",
+				   &rgi.tuples[REPLAY_GAIN_TRACK].gain);
+	found |= wavpack_tag_float(wpc, "replaygain_track_peak",
+				   &rgi.tuples[REPLAY_GAIN_TRACK].peak);
+	found |= wavpack_tag_float(wpc, "replaygain_album_gain",
+				   &rgi.tuples[REPLAY_GAIN_ALBUM].gain);
+	found |= wavpack_tag_float(wpc, "replaygain_album_peak",
+				   &rgi.tuples[REPLAY_GAIN_ALBUM].peak);
 
 	return found;
 }
@@ -547,9 +539,9 @@ wavpack_filedecode(Decoder &decoder, const char *fname)
 		return;
 	}
 
-	struct replay_gain_info replay_gain_info;
-	if (wavpack_replaygain(&replay_gain_info, wpc))
-		decoder_replay_gain(decoder, &replay_gain_info);
+	ReplayGainInfo rgi;
+	if (wavpack_replaygain(rgi, wpc))
+		decoder_replay_gain(decoder, &rgi);
 
 	wavpack_decode(decoder, wpc, true);
 

@@ -174,7 +174,7 @@ decoder_tag(Decoder &decoder, InputStream &is, Tag &&tag)
  */
 void
 decoder_replay_gain(Decoder &decoder,
-		    const struct replay_gain_info *replay_gain_info);
+		    const ReplayGainInfo *replay_gain_info);
 
 /**
  * Store MixRamp tags.

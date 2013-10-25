@@ -105,7 +105,7 @@ decoder_tag(gcc_unused Decoder &decoder,
 
 void
 decoder_replay_gain(gcc_unused Decoder &decoder,
-		    gcc_unused const struct replay_gain_info *replay_gain_info)
+		    gcc_unused const ReplayGainInfo *replay_gain_info)
 {
 }
 

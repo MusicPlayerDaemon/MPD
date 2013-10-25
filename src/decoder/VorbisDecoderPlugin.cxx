@@ -283,8 +283,8 @@ vorbis_stream_decode(Decoder &decoder,
 			char **comments = ov_comment(&vf, -1)->user_comments;
 			vorbis_send_comments(decoder, input_stream, comments);
 
-			struct replay_gain_info rgi;
-			if (vorbis_comments_to_replay_gain(&rgi, comments))
+			ReplayGainInfo rgi;
+			if (vorbis_comments_to_replay_gain(rgi, comments))
 				decoder_replay_gain(decoder, &rgi);
 
 			prev_section = current_section;

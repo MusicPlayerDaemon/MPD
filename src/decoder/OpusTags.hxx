@@ -24,11 +24,11 @@
 
 #include <stddef.h>
 
-struct replay_gain_info;
+struct ReplayGainInfo;
 
 bool
 ScanOpusTags(const void *data, size_t size,
-	     replay_gain_info *rgi,
+	     ReplayGainInfo *rgi,
 	     const struct tag_handler *handler, void *ctx);
 
 #endif

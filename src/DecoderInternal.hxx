@@ -75,7 +75,7 @@ struct Decoder {
 	/** the chunk currently being written to */
 	struct music_chunk *chunk;
 
-	struct replay_gain_info replay_gain_info;
+	ReplayGainInfo replay_gain_info;
 
 	/**
 	 * A positive serial number for checking if replay gain info

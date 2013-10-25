@@ -24,7 +24,7 @@
 #include "ReplayGainInfo.hxx"
 #include "Compiler.h"
 
-extern enum replay_gain_mode replay_gain_mode;
+extern ReplayGainMode replay_gain_mode;
 extern float replay_gain_preamp;
 extern float replay_gain_missing_preamp;
 extern bool replay_gain_limit;
@@ -50,7 +50,7 @@ replay_gain_set_mode_string(const char *p);
   * Returns the "real" mode according to the "auto" setting"
   */
 gcc_pure
-enum replay_gain_mode
+ReplayGainMode
 replay_gain_get_real_mode(bool random_mode);
 
 #endif

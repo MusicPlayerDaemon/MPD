@@ -47,29 +47,29 @@ vorbis_comment_value(const char *comment, const char *needle)
 }
 
 bool
-vorbis_comments_to_replay_gain(struct replay_gain_info *rgi, char **comments)
+vorbis_comments_to_replay_gain(ReplayGainInfo &rgi, char **comments)
 {
 	const char *temp;
 	bool found = false;
 
-	replay_gain_info_init(rgi);
+	replay_gain_info_init(&rgi);
 
 	while (*comments) {
 		if ((temp =
 		     vorbis_comment_value(*comments, "replaygain_track_gain"))) {
-			rgi->tuples[REPLAY_GAIN_TRACK].gain = atof(temp);
+			rgi.tuples[REPLAY_GAIN_TRACK].gain = atof(temp);
 			found = true;
 		} else if ((temp = vorbis_comment_value(*comments,
 							"replaygain_album_gain"))) {
-			rgi->tuples[REPLAY_GAIN_ALBUM].gain = atof(temp);
+			rgi.tuples[REPLAY_GAIN_ALBUM].gain = atof(temp);
 			found = true;
 		} else if ((temp = vorbis_comment_value(*comments,
 							"replaygain_track_peak"))) {
-			rgi->tuples[REPLAY_GAIN_TRACK].peak = atof(temp);
+			rgi.tuples[REPLAY_GAIN_TRACK].peak = atof(temp);
 			found = true;
 		} else if ((temp = vorbis_comment_value(*comments,
 							"replaygain_album_peak"))) {
-			rgi->tuples[REPLAY_GAIN_ALBUM].peak = atof(temp);
+			rgi.tuples[REPLAY_GAIN_ALBUM].peak = atof(temp);
 			found = true;
 		}
 
