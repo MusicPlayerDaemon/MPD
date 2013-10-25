@@ -85,6 +85,7 @@ src_mpd_SOURCES = \
 	src/command/PlayerCommands.cxx src/command/PlayerCommands.hxx \
 	src/command/PlaylistCommands.cxx src/command/PlaylistCommands.hxx \
 	src/command/DatabaseCommands.cxx src/command/DatabaseCommands.hxx \
+	src/command/FileCommands.cxx src/command/FileCommands.hxx \
 	src/command/OutputCommands.cxx src/command/OutputCommands.hxx \
 	src/command/MessageCommands.cxx src/command/MessageCommands.hxx \
 	src/command/OtherCommands.cxx src/command/OtherCommands.hxx \

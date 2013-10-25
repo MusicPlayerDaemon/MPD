@@ -3,6 +3,7 @@ ver 0.18 (2012/??/??)
   - allow tilde paths for socket
   - default filesystem charset is UTF-8 instead of ISO-8859-1
 * protocol:
+  - new command "readcomments" lists arbitrary file tags
   - new command "toggleoutput"
   - search for album artist falls back to the artist tag
   - re-add the "volume" command

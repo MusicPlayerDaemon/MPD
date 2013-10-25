@@ -1582,6 +1582,32 @@ OK
             </para>
           </listitem>
         </varlistentry>
+        <varlistentry id="command_readcomments">
+          <term>
+            <cmdsynopsis>
+              <command>readcomments</command>
+              <arg><replaceable>URI</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Read "comments" (i.e. key-value pairs) from the file
+              specified by "URI".  This "URI" can be a path relative
+              to the music directory or a URL in the form
+              "file:///foo/bar.ogg".
+            </para>
+            <para>
+              The response consists of lines in the form "KEY: VALUE".
+              Comments with suspicious characters (e.g. newlines) are
+              ignored silently.
+            </para>
+            <para>
+              The meaning of these depends on the codec, and not all
+              decoder plugins support it.  For example, on Ogg files,
+              this lists the Vorbis comments.
+            </para>
+          </listitem>
+        </varlistentry>
         <varlistentry id="command_search">
           <term>
             <cmdsynopsis>
