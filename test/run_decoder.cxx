@@ -130,12 +130,12 @@ decoder_replay_gain(gcc_unused Decoder &decoder,
 		    const ReplayGainInfo *rgi)
 {
 	const ReplayGainTuple *tuple = &rgi->tuples[REPLAY_GAIN_ALBUM];
-	if (replay_gain_tuple_defined(tuple))
+	if (tuple->IsDefined())
 		g_printerr("replay_gain[album]: gain=%f peak=%f\n",
 			   tuple->gain, tuple->peak);
 
 	tuple = &rgi->tuples[REPLAY_GAIN_TRACK];
-	if (replay_gain_tuple_defined(tuple))
+	if (tuple->IsDefined())
 		g_printerr("replay_gain[track]: gain=%f peak=%f\n",
 			   tuple->gain, tuple->peak);
 }

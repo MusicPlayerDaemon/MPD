@@ -64,10 +64,9 @@ bool
 flac_parse_replay_gain(ReplayGainInfo &rgi,
 		       const FLAC__StreamMetadata *block)
 {
+	rgi.Clear();
+
 	bool found = false;
-
-	replay_gain_info_init(&rgi);
-
 	if (flac_find_float_comment(block, "replaygain_album_gain",
 				    &rgi.tuples[REPLAY_GAIN_ALBUM].gain))
 		found = true;

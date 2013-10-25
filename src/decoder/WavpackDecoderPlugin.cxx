@@ -224,10 +224,9 @@ static bool
 wavpack_replaygain(ReplayGainInfo &rgi,
 		   WavpackContext *wpc)
 {
+	rgi.Clear();
+
 	bool found = false;
-
-	replay_gain_info_init(&rgi);
-
 	found |= wavpack_tag_float(wpc, "replaygain_track_gain",
 				   &rgi.tuples[REPLAY_GAIN_TRACK].gain);
 	found |= wavpack_tag_float(wpc, "replaygain_track_peak",

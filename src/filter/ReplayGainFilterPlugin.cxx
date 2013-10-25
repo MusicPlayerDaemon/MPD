@@ -76,7 +76,7 @@ public:
 	ReplayGainFilter()
 		:mixer(nullptr), mode(REPLAY_GAIN_OFF),
 		volume(PCM_VOLUME_1) {
-		replay_gain_info_init(&info);
+		info.Clear();
 	}
 
 	void SetMixer(Mixer *_mixer, unsigned _base) {
@@ -91,9 +91,9 @@ public:
 	void SetInfo(const ReplayGainInfo *_info) {
 		if (_info != NULL) {
 			info = *_info;
-			replay_gain_info_complete(info);
+			info.Complete();
 		} else
-			replay_gain_info_init(&info);
+			info.Clear();
 
 		Update();
 	}
@@ -126,8 +126,10 @@ void
 ReplayGainFilter::Update()
 {
 	if (mode != REPLAY_GAIN_OFF) {
-		float scale = replay_gain_tuple_scale(&info.tuples[mode],
-		    replay_gain_preamp, replay_gain_missing_preamp, replay_gain_limit);
+		const auto &tuple = info.tuples[mode];
+		float scale = tuple.CalculateScale(replay_gain_preamp,
+						   replay_gain_missing_preamp,
+						   replay_gain_limit);
 		FormatDebug(replay_gain_domain,
 			    "scale=%f\n", (double)scale);
 

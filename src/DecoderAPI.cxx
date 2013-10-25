@@ -518,11 +518,12 @@ decoder_replay_gain(Decoder &decoder,
 			if (rgm != REPLAY_GAIN_ALBUM)
 				rgm = REPLAY_GAIN_TRACK;
 
-			decoder.dc.replay_gain_db = 20.0 * log10f(
-				replay_gain_tuple_scale(
-					&replay_gain_info->tuples[rgm],
-					replay_gain_preamp, replay_gain_missing_preamp,
-					replay_gain_limit));
+			const auto &tuple = replay_gain_info->tuples[rgm];
+			const auto scale =
+				tuple.CalculateScale(replay_gain_preamp,
+						     replay_gain_missing_preamp,
+						     replay_gain_limit);
+			decoder.dc.replay_gain_db = 20.0 * log10f(scale);
 		}
 
 		decoder.replay_gain_info = *replay_gain_info;

@@ -49,10 +49,10 @@ vorbis_comment_value(const char *comment, const char *needle)
 bool
 vorbis_comments_to_replay_gain(ReplayGainInfo &rgi, char **comments)
 {
+	rgi.Clear();
+
 	const char *temp;
 	bool found = false;
-
-	replay_gain_info_init(&rgi);
 
 	while (*comments) {
 		if ((temp =

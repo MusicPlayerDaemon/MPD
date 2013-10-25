@@ -21,18 +21,19 @@
 #include "ReplayGainInfo.hxx"
 
 float
-replay_gain_tuple_scale(const ReplayGainTuple *tuple, float preamp, float missing_preamp, bool peak_limit)
+ReplayGainTuple::CalculateScale(float preamp, float missing_preamp,
+				bool peak_limit) const
 {
 	float scale;
 
-	if (replay_gain_tuple_defined(tuple)) {
-		scale = pow(10.0, tuple->gain / 20.0);
+	if (IsDefined()) {
+		scale = pow(10.0, gain / 20.0);
 		scale *= preamp;
 		if (scale > 15.0)
 			scale = 15.0;
 
-		if (peak_limit && scale * tuple->peak > 1.0)
-			scale = 1.0 / tuple->peak;
+		if (peak_limit && scale * peak > 1.0)
+			scale = 1.0 / peak;
 	} else
 		scale = missing_preamp;
 
@@ -40,9 +41,8 @@ replay_gain_tuple_scale(const ReplayGainTuple *tuple, float preamp, float missin
 }
 
 void
-replay_gain_info_complete(ReplayGainInfo &info)
+ReplayGainInfo::Complete()
 {
-	if (!replay_gain_tuple_defined(&info.tuples[REPLAY_GAIN_ALBUM]))
-		info.tuples[REPLAY_GAIN_ALBUM] =
-			info.tuples[REPLAY_GAIN_TRACK];
+	if (!tuples[REPLAY_GAIN_ALBUM].IsDefined())
+		tuples[REPLAY_GAIN_ALBUM] = tuples[REPLAY_GAIN_TRACK];
 }

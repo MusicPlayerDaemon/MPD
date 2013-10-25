@@ -260,7 +260,7 @@ parse_id3_replay_gain_info(ReplayGainInfo &rgi,
 	struct id3_frame *frame;
 	bool found = false;
 
-	replay_gain_info_init(&rgi);
+	rgi.Clear();
 
 	for (i = 0; (frame = id3_tag_findframe(tag, "TXXX", i)); i++) {
 		if (frame->nfields < 3)
@@ -872,7 +872,7 @@ MadDecoder::DecodeFirstFrame(Tag **tag)
 			if (decoder != nullptr && !found_replay_gain &&
 			    lame.track_gain) {
 				ReplayGainInfo rgi;
-				replay_gain_info_init(&rgi);
+				rgi.Clear();
 				rgi.tuples[REPLAY_GAIN_TRACK].gain = lame.track_gain;
 				rgi.tuples[REPLAY_GAIN_TRACK].peak = lame.peak;
 				decoder_replay_gain(*decoder, &rgi);

@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 	}
 
 	ReplayGainInfo replay_gain;
-	replay_gain_info_init(&replay_gain);
+	replay_gain.Clear();
 
 	bool success = tag_rva2_parse(tag, replay_gain);
 	id3_tag_delete(tag);
@@ -78,12 +78,12 @@ int main(int argc, char **argv)
 	}
 
 	const ReplayGainTuple *tuple = &replay_gain.tuples[REPLAY_GAIN_ALBUM];
-	if (replay_gain_tuple_defined(tuple))
+	if (tuple->IsDefined())
 		g_printerr("replay_gain[album]: gain=%f peak=%f\n",
 			   tuple->gain, tuple->peak);
 
 	tuple = &replay_gain.tuples[REPLAY_GAIN_TRACK];
-	if (replay_gain_tuple_defined(tuple))
+	if (tuple->IsDefined())
 		g_printerr("replay_gain[track]: gain=%f peak=%f\n",
 			   tuple->gain, tuple->peak);
 

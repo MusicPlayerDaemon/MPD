@@ -21,6 +21,7 @@
 #define MPD_REPLAY_GAIN_INFO_HXX
 
 #include "check.h"
+#include "Compiler.h"
 
 #include <cmath>
 
@@ -34,40 +35,35 @@ enum ReplayGainMode {
 struct ReplayGainTuple {
 	float gain;
 	float peak;
+
+	void Clear() {
+		gain = INFINITY;
+		peak = 0.0;
+	}
+
+	gcc_pure
+	bool IsDefined() const {
+		return !std::isinf(gain);
+	}
+
+	gcc_pure
+	float CalculateScale(float preamp, float missing_preamp,
+			     bool peak_limit) const;
 };
 
 struct ReplayGainInfo {
 	ReplayGainTuple tuples[2];
+
+	void Clear() {
+		tuples[REPLAY_GAIN_ALBUM].Clear();
+		tuples[REPLAY_GAIN_TRACK].Clear();
+	}
+
+	/**
+	 * Attempt to auto-complete missing data.  In particular, if
+	 * album information is missing, track gain is used.
+	 */
+	void Complete();
 };
-
-static inline void
-replay_gain_tuple_init(ReplayGainTuple *tuple)
-{
-	tuple->gain = INFINITY;
-	tuple->peak = 0.0;
-}
-
-static inline void
-replay_gain_info_init(struct ReplayGainInfo *info)
-{
-	replay_gain_tuple_init(&info->tuples[REPLAY_GAIN_ALBUM]);
-	replay_gain_tuple_init(&info->tuples[REPLAY_GAIN_TRACK]);
-}
-
-static inline bool
-replay_gain_tuple_defined(const ReplayGainTuple *tuple)
-{
-	return !std::isinf(tuple->gain);
-}
-
-float
-replay_gain_tuple_scale(const ReplayGainTuple *tuple, float preamp, float missing_preamp, bool peak_limit);
-
-/**
- * Attempt to auto-complete missing data.  In particular, if album
- * information is missing, track gain is used.
- */
-void
-replay_gain_info_complete(ReplayGainInfo &info);
 
 #endif

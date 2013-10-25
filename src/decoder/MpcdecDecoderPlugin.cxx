@@ -169,7 +169,7 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 	}
 
 	ReplayGainInfo rgi;
-	replay_gain_info_init(&rgi);
+	rgi.Clear();
 	rgi.tuples[REPLAY_GAIN_ALBUM].gain = MPC_OLD_GAIN_REF  - (info.gain_album  / 256.);
 	rgi.tuples[REPLAY_GAIN_ALBUM].peak = pow(10, info.peak_album / 256. / 20) / 32767;
 	rgi.tuples[REPLAY_GAIN_TRACK].gain = MPC_OLD_GAIN_REF  - (info.gain_title  / 256.);
