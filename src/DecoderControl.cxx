@@ -144,8 +144,11 @@ decoder_control::MixRampEnd(char *_mixramp_end)
 }
 
 void
-decoder_control::MixRampPrevEnd(char *_mixramp_prev_end)
+decoder_control::CycleMixRamp()
 {
+	g_free(mixramp_start);
+	mixramp_start = nullptr;
 	g_free(mixramp_prev_end);
-	mixramp_prev_end = _mixramp_prev_end;
+	mixramp_prev_end = mixramp_end;
+	mixramp_end = nullptr;
 }

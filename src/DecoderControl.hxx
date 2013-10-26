@@ -364,7 +364,12 @@ public:
 
 	void MixRampStart(char *_mixramp_start);
 	void MixRampEnd(char *_mixramp_end);
-	void MixRampPrevEnd(char *_mixramp_prev_end);
+
+	/**
+	 * Move mixramp_end to mixramp_prev_end and clear
+	 * mixramp_start/mixramp_end.
+	 */
+	void CycleMixRamp();
 };
 
 #endif

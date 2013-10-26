@@ -412,9 +412,7 @@ decoder_task(void *arg)
 
 		switch (dc.command) {
 		case DecoderCommand::START:
-			dc.MixRampStart(nullptr);
-			dc.MixRampPrevEnd(dc.mixramp_end);
-			dc.mixramp_end = nullptr; /* Don't free, it's copied above. */
+			dc.CycleMixRamp();
 			dc.replay_gain_prev_db = dc.replay_gain_db;
 			dc.replay_gain_db = 0;
 
