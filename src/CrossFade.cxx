@@ -61,14 +61,14 @@ static float mixramp_interpolate(char *ramp_list, float required_db)
 
 		/* Parse the dB value. */
 		if (nullptr == ramp_str)
-			return nan("");
+			break;
 
 		db = (float)atof(ramp_str);
 
 		/* Parse the time. */
 		ramp_str = strtok_r(nullptr, ";", &save_str);
 		if (nullptr == ramp_str)
-			return nan("");
+			break;
 
 		secs = (float)atof(ramp_str);
 
@@ -92,6 +92,8 @@ static float mixramp_interpolate(char *ramp_list, float required_db)
 		secs = last_secs + (required_db - last_db) * (secs - last_secs) / (db - last_db);
 		return secs;
 	}
+
+	return nan("");
 }
 
 unsigned cross_fade_calc(float duration, float total_time,
