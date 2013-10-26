@@ -10,7 +10,7 @@ http://mpd.wikia.com.
 Dependencies
 ------------
 
-gcc - http://gcc.gnu.org/
+gcc 4.6 or later - http://gcc.gnu.org/
 Any other C++11 compliant compiler should also work.
 
 GLib 2.28 - http://www.gtk.org/
