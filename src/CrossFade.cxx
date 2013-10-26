@@ -45,7 +45,7 @@ strtok_r(char *str, const char *delim, gcc_unused char **saveptr)
 static float mixramp_interpolate(char *ramp_list, float required_db)
 {
 	float db, secs, last_db = nan(""), last_secs = 0;
-	char *ramp_str, *save_str = NULL;
+	char *ramp_str, *save_str = nullptr;
 
 	/* ramp_list is a string of pairs of dBs and seconds that describe the
 	 * volume profile. Delimiters are semi-colons between pairs and spaces
@@ -57,19 +57,19 @@ static float mixramp_interpolate(char *ramp_list, float required_db)
 		ramp_str = strtok_r(ramp_list, " ", &save_str);
 
 		/* Tell strtok to continue next time round. */
-		ramp_list = NULL;
+		ramp_list = nullptr;
 
 		/* Parse the dB value. */
-		if (NULL == ramp_str) {
+		if (nullptr == ramp_str)
 			return nan("");
-		}
+
 		db = (float)atof(ramp_str);
 
 		/* Parse the time. */
-		ramp_str = strtok_r(NULL, ";", &save_str);
-		if (NULL == ramp_str) {
+		ramp_str = strtok_r(nullptr, ";", &save_str);
+		if (nullptr == ramp_str)
 			return nan("");
-		}
+
 		secs = (float)atof(ramp_str);
 
 		/* Check for exact match. */
