@@ -75,4 +75,10 @@ ParseDouble(const char *p, char **endptr=nullptr)
 	return (double)strtod(p, endptr);
 }
 
+static inline float
+ParseFloat(const char *p, char **endptr=nullptr)
+{
+	return (float)ParseDouble(p, endptr);
+}
+
 #endif
