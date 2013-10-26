@@ -350,6 +350,18 @@ public:
 
 	void Quit();
 
+	const char *GetMixRampStart() const {
+		return mixramp_start;
+	}
+
+	const char *GetMixRampEnd() const {
+		return mixramp_end;
+	}
+
+	const char *GetMixRampPreviousEnd() const {
+		return mixramp_prev_end;
+	}
+
 	void MixRampStart(char *_mixramp_start);
 	void MixRampEnd(char *_mixramp_end);
 	void MixRampPrevEnd(char *_mixramp_prev_end);

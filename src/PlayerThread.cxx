@@ -1011,8 +1011,8 @@ Player::Run()
 						pc.mixramp_delay_seconds,
 						dc.replay_gain_db,
 						dc.replay_gain_prev_db,
-						dc.mixramp_start,
-						dc.mixramp_prev_end,
+						dc.GetMixRampStart(),
+						dc.GetMixRampPreviousEnd(),
 						dc.out_audio_format,
 						play_audio_format,
 						buffer.GetSize() -
