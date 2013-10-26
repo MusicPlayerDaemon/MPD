@@ -56,7 +56,7 @@ IsValidValue(const char *p)
 	while (*p) {
 		const char ch = *p++;
 
-		if ((unsigned char)ch >= 0x20)
+		if ((unsigned char)ch < 0x20)
 			return false;
 	}
 
