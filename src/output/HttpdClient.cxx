@@ -113,7 +113,8 @@ HttpdClient::HandleLine(const char *line)
 			return true;
 		}
 
-		if (StringEqualsCaseASCII(line, "Icy-MetaData: 1", 15)) {
+		if (StringEqualsCaseASCII(line, "Icy-MetaData: 1", 15) ||
+		    StringEqualsCaseASCII(line, "Icy-MetaData:1", 14)) {
 			/* Send icy metadata */
 			metadata_requested = metadata_supported;
 			return true;
