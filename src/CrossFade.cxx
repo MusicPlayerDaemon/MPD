@@ -21,6 +21,7 @@
 #include "CrossFade.hxx"
 #include "MusicChunk.hxx"
 #include "AudioFormat.hxx"
+#include "util/NumberParser.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -32,20 +33,11 @@
 
 static constexpr Domain cross_fade_domain("cross_fade");
 
-#ifdef WIN32
-
-static char *
-strtok_r(char *str, const char *delim, gcc_unused char **saveptr)
+gcc_pure
+static float
+mixramp_interpolate(const char *ramp_list, float required_db)
 {
-	return strtok(str, delim);
-}
-
-#endif
-
-static float mixramp_interpolate(char *ramp_list, float required_db)
-{
-	float db, secs, last_db = nan(""), last_secs = 0;
-	char *ramp_str, *save_str = nullptr;
+	float last_db = nan(""), last_secs = 0;
 
 	/* ramp_list is a string of pairs of dBs and seconds that describe the
 	 * volume profile. Delimiters are semi-colons between pairs and spaces
@@ -53,24 +45,22 @@ static float mixramp_interpolate(char *ramp_list, float required_db)
 	 * The dB values must be monotonically increasing for this to work. */
 
 	while (1) {
-		/* Parse the dB tokens out of the input string. */
-		ramp_str = strtok_r(ramp_list, " ", &save_str);
-
-		/* Tell strtok to continue next time round. */
-		ramp_list = nullptr;
-
 		/* Parse the dB value. */
-		if (nullptr == ramp_str)
+		char *endptr;
+		const float db = ParseFloat(ramp_list, &endptr);
+		if (endptr == ramp_list || *endptr != ' ')
 			break;
 
-		db = (float)atof(ramp_str);
+		ramp_list = endptr + 1;
 
 		/* Parse the time. */
-		ramp_str = strtok_r(nullptr, ";", &save_str);
-		if (nullptr == ramp_str)
+		float secs = ParseFloat(ramp_list, &endptr);
+		if (endptr == ramp_list || (*endptr != ';' && *endptr != 0))
 			break;
 
-		secs = (float)atof(ramp_str);
+		ramp_list = endptr;
+		if (*ramp_list == ';')
+			++ramp_list;
 
 		/* Check for exact match. */
 		if (db == required_db) {
@@ -100,7 +90,7 @@ unsigned
 cross_fade_calc(float duration, float total_time,
 		float mixramp_db, float mixramp_delay,
 		float replay_gain_db, float replay_gain_prev_db,
-		char *mixramp_start, char *mixramp_prev_end,
+		const char *mixramp_start, const char *mixramp_prev_end,
 		const AudioFormat af,
 		const AudioFormat old_format,
 		unsigned max_chunks)

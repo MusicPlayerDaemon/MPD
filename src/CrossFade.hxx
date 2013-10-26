@@ -20,6 +20,8 @@
 #ifndef MPD_CROSSFADE_HXX
 #define MPD_CROSSFADE_HXX
 
+#include "Compiler.h"
+
 struct AudioFormat;
 struct music_chunk;
 
@@ -40,11 +42,12 @@ struct music_chunk;
  * @return the number of chunks for crossfading, or 0 if cross fading
  * should be disabled for this song change
  */
+gcc_pure
 unsigned
 cross_fade_calc(float duration, float total_time,
 		float mixramp_db, float mixramp_delay,
 		float replay_gain_db, float replay_gain_prev_db,
-		char *mixramp_start, char *mixramp_prev_end,
+		const char *mixramp_start, const char *mixramp_prev_end,
 		AudioFormat af, AudioFormat old_format,
 		unsigned max_chunks);
 
