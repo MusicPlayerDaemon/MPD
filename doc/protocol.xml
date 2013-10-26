@@ -1491,6 +1491,23 @@ OK
             </para>
           </listitem>
         </varlistentry>
+        <varlistentry id="command_findin">
+          <term>
+            <cmdsynopsis>
+              <command>findin</command>
+              <arg choice="req"><replaceable>URI</replaceable></arg>
+              <arg choice="req"><replaceable>TYPE</replaceable></arg>
+              <arg choice="req"><replaceable>WHAT</replaceable></arg>
+              <arg choice="opt"><replaceable>...</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Like <command>find</command>, but allows specifying a
+              base URI for the find.
+            </para>
+          </listitem>
+        </varlistentry>
         <varlistentry id="command_findadd">
           <term>
             <cmdsynopsis>
@@ -1623,6 +1640,23 @@ OK
               <varname>WHAT</varname>. Parameters have the same meaning
               as for <command>find</command>, except that search is not
               case sensitive.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_searchin">
+          <term>
+            <cmdsynopsis>
+              <command>searchin</command>
+              <arg choice="req"><replaceable>URI</replaceable></arg>
+              <arg choice="req"><replaceable>TYPE</replaceable></arg>
+              <arg choice="req"><replaceable>WHAT</replaceable></arg>
+              <arg choice="opt"><replaceable>...</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Like <command>search</command>, but allows specifying a
+              base URI for the search.
             </para>
           </listitem>
         </varlistentry>

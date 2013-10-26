@@ -55,7 +55,8 @@ handle_lsinfo2(Client &client, int argc, char *argv[])
 }
 
 static CommandResult
-handle_match(Client &client, int argc, char *argv[], bool fold_case)
+handle_match(Client &client, int argc, char *argv[],
+	     const char *uri, bool fold_case)
 {
 	SongFilter filter;
 	if (!filter.Parse(argc - 1, argv + 1, fold_case)) {
@@ -63,7 +64,7 @@ handle_match(Client &client, int argc, char *argv[], bool fold_case)
 		return CommandResult::ERROR;
 	}
 
-	const DatabaseSelection selection("", true, &filter);
+	const DatabaseSelection selection(uri, true, &filter);
 
 	Error error;
 	return db_selection_print(client, selection, true, error)
@@ -74,13 +75,25 @@ handle_match(Client &client, int argc, char *argv[], bool fold_case)
 CommandResult
 handle_find(Client &client, int argc, char *argv[])
 {
-	return handle_match(client, argc, argv, false);
+	return handle_match(client, argc, argv, "", false);
+}
+
+CommandResult
+handle_find_in(Client &client, int argc, char *argv[])
+{
+	return handle_match(client, argc - 1, argv + 1, argv[1], false);
 }
 
 CommandResult
 handle_search(Client &client, int argc, char *argv[])
 {
-	return handle_match(client, argc, argv, true);
+	return handle_match(client, argc, argv, "", true);
+}
+
+CommandResult
+handle_search_in(Client &client, int argc, char *argv[])
+{
+	return handle_match(client, argc - 1, argv + 1, argv[1], true);
 }
 
 static CommandResult

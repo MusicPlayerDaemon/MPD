@@ -31,10 +31,16 @@ CommandResult
 handle_find(Client &client, int argc, char *argv[]);
 
 CommandResult
+handle_find_in(Client &client, int argc, char *argv[]);
+
+CommandResult
 handle_findadd(Client &client, int argc, char *argv[]);
 
 CommandResult
 handle_search(Client &client, int argc, char *argv[]);
+
+CommandResult
+handle_search_in(Client &client, int argc, char *argv[]);
 
 CommandResult
 handle_searchadd(Client &client, int argc, char *argv[]);
