@@ -23,6 +23,7 @@
 #include "ReplayGainInfo.hxx"
 #include "ConfigGlobal.hxx"
 #include "util/Error.hxx"
+#include "fs/Path.hxx"
 
 #include <id3tag.h>
 
@@ -56,7 +57,7 @@ int main(int argc, char **argv)
 	const char *path = argv[1];
 
 	Error error;
-	struct id3_tag *tag = tag_id3_load(path, error);
+	struct id3_tag *tag = tag_id3_load(Path::FromFS(path), error);
 	if (tag == NULL) {
 		if (error.IsDefined())
 			g_printerr("%s\n", error.GetMessage());

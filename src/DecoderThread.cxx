@@ -275,7 +275,7 @@ static void
 decoder_load_replay_gain(Decoder &decoder, const char *path_fs)
 {
 	ReplayGainInfo info;
-	if (replay_gain_ape_read(path_fs, info))
+	if (replay_gain_ape_read(Path::FromFS(path_fs), info))
 		decoder_replay_gain(decoder, &info);
 }
 

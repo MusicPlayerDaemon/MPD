@@ -22,6 +22,7 @@
 #include "ApeLoader.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/ASCII.hxx"
+#include "fs/Path.hxx"
 
 #include <string.h>
 #include <stdlib.h>
@@ -59,7 +60,7 @@ replay_gain_ape_callback(unsigned long flags, const char *key,
 }
 
 bool
-replay_gain_ape_read(const char *path_fs, ReplayGainInfo &info)
+replay_gain_ape_read(Path path_fs, ReplayGainInfo &info)
 {
 	bool found = false;
 

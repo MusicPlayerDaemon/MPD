@@ -73,7 +73,7 @@ Song::LoadFile(const char *path_utf8, Directory *parent)
  * Attempts to load APE or ID3 tags from the specified file.
  */
 static bool
-tag_scan_fallback(const char *path,
+tag_scan_fallback(Path path,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
 	return tag_ape_scan2(path, handler, handler_ctx) ||
@@ -94,13 +94,13 @@ Song::UpdateFile()
 		return false;
 
 	TagBuilder tag_builder;
-	if (!tag_file_scan(path_fs.c_str(),
+	if (!tag_file_scan(path_fs,
 			   &full_tag_handler, &tag_builder) ||
 	    !tag_builder.IsDefined())
 		return false;
 
 	if (tag_builder.IsEmpty())
-		tag_scan_fallback(path_fs.c_str(), &full_tag_handler,
+		tag_scan_fallback(path_fs, &full_tag_handler,
 				  &tag_builder);
 
 	mtime = st.st_mtime;

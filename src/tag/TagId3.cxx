@@ -29,6 +29,8 @@
 #include "ConfigGlobal.hxx"
 #include "Riff.hxx"
 #include "Aiff.hxx"
+#include "fs/Path.hxx"
+#include "fs/FileSystem.hxx"
 
 #include <glib.h>
 #include <id3tag.h>
@@ -539,9 +541,9 @@ tag_id3_riff_aiff_load(FILE *file)
 }
 
 struct id3_tag *
-tag_id3_load(const char *path_fs, Error &error)
+tag_id3_load(Path path_fs, Error &error)
 {
-	FILE *file = fopen(path_fs, "rb");
+	FILE *file = FOpen(path_fs, "rb");
 	if (file == nullptr) {
 		error.FormatErrno("Failed to open file %s", path_fs);
 		return nullptr;
@@ -559,7 +561,7 @@ tag_id3_load(const char *path_fs, Error &error)
 }
 
 bool
-tag_id3_scan(const char *path_fs,
+tag_id3_scan(Path path_fs,
 	     const struct tag_handler *handler, void *handler_ctx)
 {
 	Error error;

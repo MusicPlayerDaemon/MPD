@@ -20,6 +20,7 @@
 #include "config.h"
 #include "ApeLoader.hxx"
 #include "system/ByteOrder.hxx"
+#include "fs/FileSystem.hxx"
 
 #include <glib.h>
 
@@ -102,11 +103,9 @@ ape_scan_internal(FILE *fp, ApeTagCallback callback)
 }
 
 bool
-tag_ape_scan(const char *path_fs, ApeTagCallback callback)
+tag_ape_scan(Path path_fs, ApeTagCallback callback)
 {
-	FILE *fp;
-
-	fp = fopen(path_fs, "rb");
+	FILE *fp = FOpen(path_fs, "rb");
 	if (fp == nullptr)
 		return false;
 

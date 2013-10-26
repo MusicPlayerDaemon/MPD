@@ -22,6 +22,7 @@
 
 #include "TagTable.hxx"
 
+class Path;
 struct tag_handler;
 
 extern const struct tag_table ape_tags[];
@@ -32,7 +33,7 @@ extern const struct tag_table ape_tags[];
  * @param path_fs the path of the file in filesystem encoding
  */
 bool
-tag_ape_scan2(const char *path_fs,
+tag_ape_scan2(Path path_fs,
 	      const struct tag_handler *handler, void *handler_ctx);
 
 #endif

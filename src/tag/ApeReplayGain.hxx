@@ -22,9 +22,10 @@
 
 #include "check.h"
 
+class Path;
 struct ReplayGainInfo;
 
 bool
-replay_gain_ape_read(const char *path_fs, ReplayGainInfo &info);
+replay_gain_ape_read(Path path_fs, ReplayGainInfo &info);
 
 #endif

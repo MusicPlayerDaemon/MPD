@@ -23,6 +23,7 @@
 #include "check.h"
 #include "Compiler.h"
 
+class Path;
 struct tag_handler;
 struct Tag;
 struct id3_tag;
@@ -31,7 +32,7 @@ class Error;
 #ifdef HAVE_ID3TAG
 
 bool
-tag_id3_scan(const char *path_fs,
+tag_id3_scan(Path path_fs,
 	     const struct tag_handler *handler, void *handler_ctx);
 
 Tag *
@@ -45,7 +46,7 @@ tag_id3_import(struct id3_tag *);
  * Error will be set)
  */
 struct id3_tag *
-tag_id3_load(const char *path_fs, Error &error);
+tag_id3_load(Path path_fs, Error &error);
 
 /**
  * Import all tags from the provided id3_tag *tag
@@ -57,8 +58,10 @@ scan_id3_tag(struct id3_tag *tag,
 
 #else
 
+#include "fs/Path.hxx"
+
 static inline bool
-tag_id3_scan(gcc_unused const char *path_fs,
+tag_id3_scan(gcc_unused Path path_fs,
 	     gcc_unused const struct tag_handler *handler,
 	     gcc_unused void *handler_ctx)
 {

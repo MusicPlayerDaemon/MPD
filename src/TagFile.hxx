@@ -22,6 +22,7 @@
 
 #include "check.h"
 
+class Path;
 struct tag_handler;
 
 /**
@@ -29,7 +30,7 @@ struct tag_handler;
  * but does not invoke the special "APE" and "ID3" scanners.
  */
 bool
-tag_file_scan(const char *path_fs,
+tag_file_scan(Path path,
 	      const struct tag_handler *handler, void *handler_ctx);
 
 #endif

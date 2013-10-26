@@ -23,6 +23,7 @@
 #include "Tag.hxx"
 #include "TagTable.hxx"
 #include "TagHandler.hxx"
+#include "fs/Path.hxx"
 
 #include <string>
 
@@ -88,7 +89,7 @@ tag_ape_import_item(unsigned long flags,
 }
 
 bool
-tag_ape_scan2(const char *path_fs,
+tag_ape_scan2(Path path_fs,
 	      const struct tag_handler *handler, void *handler_ctx)
 {
 	bool recognized = false;

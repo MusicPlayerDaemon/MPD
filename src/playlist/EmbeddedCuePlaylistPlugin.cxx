@@ -35,6 +35,7 @@
 #include "TagFile.hxx"
 #include "cue/CueParser.hxx"
 #include "fs/Traits.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "util/ASCII.hxx"
 
 #include <assert.h>
@@ -98,13 +99,17 @@ embcue_playlist_open_uri(const char *uri,
 		/* only local files supported */
 		return NULL;
 
+	const auto path_fs = AllocatedPath::FromUTF8(uri);
+	if (path_fs.IsNull())
+		return nullptr;
+
 	const auto playlist = new EmbeddedCuePlaylist();
 
-	tag_file_scan(uri, &embcue_tag_handler, playlist);
+	tag_file_scan(path_fs, &embcue_tag_handler, playlist);
 	if (playlist->cuesheet.empty()) {
-		tag_ape_scan2(uri, &embcue_tag_handler, playlist);
+		tag_ape_scan2(path_fs, &embcue_tag_handler, playlist);
 		if (playlist->cuesheet.empty())
-			tag_id3_scan(uri, &embcue_tag_handler, playlist);
+			tag_id3_scan(path_fs, &embcue_tag_handler, playlist);
 	}
 
 	if (playlist->cuesheet.empty()) {

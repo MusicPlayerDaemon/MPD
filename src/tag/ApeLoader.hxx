@@ -26,6 +26,8 @@
 
 #include <stddef.h>
 
+class Path;
+
 typedef std::function<bool(unsigned long flags, const char *key,
 			   const char *value,
 			   size_t value_length)> ApeTagCallback;
@@ -38,6 +40,6 @@ typedef std::function<bool(unsigned long flags, const char *key,
  * present
  */
 bool
-tag_ape_scan(const char *path_fs, ApeTagCallback callback);
+tag_ape_scan(Path path_fs, ApeTagCallback callback);
 
 #endif

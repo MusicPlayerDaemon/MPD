@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "TagFile.hxx"
+#include "fs/Path.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "DecoderList.hxx"
@@ -29,15 +30,15 @@
 #include <assert.h>
 
 bool
-tag_file_scan(const char *path_fs,
+tag_file_scan(Path path_fs,
 	      const struct tag_handler *handler, void *handler_ctx)
 {
-	assert(path_fs != nullptr);
+	assert(!path_fs.IsNull());
 	assert(handler != nullptr);
 
 	/* check if there's a suffix and a plugin */
 
-	const char *suffix = uri_get_suffix(path_fs);
+	const char *suffix = uri_get_suffix(path_fs.c_str());
 	if (suffix == nullptr)
 		return false;
 
@@ -52,7 +53,7 @@ tag_file_scan(const char *path_fs,
 
 	do {
 		/* load file tag */
-		if (plugin->ScanFile(path_fs,
+		if (plugin->ScanFile(path_fs.c_str(),
 				     *handler, handler_ctx))
 			break;
 
@@ -61,7 +62,8 @@ tag_file_scan(const char *path_fs,
 			/* open the InputStream (if not already
 			   open) */
 			if (is == nullptr)
-				is = InputStream::Open(path_fs, mutex, cond,
+				is = InputStream::Open(path_fs.c_str(),
+						       mutex, cond,
 						       IgnoreError());
 
 			/* now try the stream_tag() method */

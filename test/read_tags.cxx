@@ -28,6 +28,7 @@
 #include "tag/TagId3.hxx"
 #include "tag/ApeTag.hxx"
 #include "util/Error.hxx"
+#include "fs/Path.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
 
@@ -221,9 +222,9 @@ int main(int argc, char **argv)
 	}
 
 	if (empty) {
-		tag_ape_scan2(path, &print_handler, NULL);
+		tag_ape_scan2(Path::FromFS(path), &print_handler, NULL);
 		if (empty)
-			tag_id3_scan(path, &print_handler, NULL);
+			tag_id3_scan(Path::FromFS(path), &print_handler, NULL);
 	}
 
 	return 0;
