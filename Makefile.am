@@ -1058,6 +1058,7 @@ if ENABLE_TEST
 C_TESTS = \
 	test/test_util \
 	test/test_byte_reverse \
+	test/test_mixramp \
 	test/test_pcm \
 	test/test_queue_priority
 
@@ -1481,6 +1482,15 @@ test_test_byte_reverse_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAV
 test_test_byte_reverse_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_byte_reverse_LDADD = \
 	libutil.a \
+	$(CPPUNIT_LIBS)
+
+test_test_mixramp_SOURCES = \
+	src/Log.cxx \
+	test/test_mixramp.cxx
+test_test_mixramp_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_mixramp_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
+test_test_mixramp_LDADD = \
+	$(GLIB_LIBS) \
 	$(CPPUNIT_LIBS)
 
 test_test_pcm_SOURCES = \

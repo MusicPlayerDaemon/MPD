@@ -68,7 +68,9 @@ test/run_tcp_connect
 test/test_pcm
 test/dump_rva2
 test/dump_text_file
+test/test_util
 test/test_byte_reverse
+test/test_mixramp
 test/test_vorbis_encoder
 test/DumpDatabase
 
