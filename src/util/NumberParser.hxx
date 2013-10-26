@@ -38,41 +38,41 @@
 static inline unsigned
 ParseUnsigned(const char *p, char **endptr=nullptr, int base=10)
 {
-  assert(p != nullptr);
+	assert(p != nullptr);
 
-  return (unsigned)strtoul(p, endptr, base);
+	return (unsigned)strtoul(p, endptr, base);
 }
 
 static inline int
 ParseInt(const char *p, char **endptr=nullptr, int base=10)
 {
-  assert(p != nullptr);
+	assert(p != nullptr);
 
-  return (int)strtol(p, endptr, base);
+	return (int)strtol(p, endptr, base);
 }
 
 static inline uint64_t
 ParseUint64(const char *p, char **endptr=nullptr, int base=10)
 {
-  assert(p != nullptr);
+	assert(p != nullptr);
 
-  return strtoull(p, endptr, base);
+	return strtoull(p, endptr, base);
 }
 
 static inline int64_t
 ParseInt64(const char *p, char **endptr=nullptr, int base=10)
 {
-  assert(p != nullptr);
+	assert(p != nullptr);
 
-  return strtoll(p, endptr, base);
+	return strtoll(p, endptr, base);
 }
 
 static inline double
 ParseDouble(const char *p, char **endptr=nullptr)
 {
-  assert(p != nullptr);
+	assert(p != nullptr);
 
-  return (double)strtod(p, endptr);
+	return (double)strtod(p, endptr);
 }
 
 #endif
