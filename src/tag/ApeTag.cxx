@@ -63,7 +63,6 @@ tag_ape_import_item(unsigned long flags,
 	if (type == TAG_NUM_OF_ITEM_TYPES)
 		return false;
 
-	bool recognized = false;
 	const char *end = value + value_length;
 	while (true) {
 		/* multiple values are separated by null bytes */
@@ -72,7 +71,6 @@ tag_ape_import_item(unsigned long flags,
 			if (n > value) {
 				tag_handler_invoke_tag(handler, handler_ctx,
 						       type, value);
-				recognized = true;
 			}
 
 			value = n + 1;
@@ -80,12 +78,11 @@ tag_ape_import_item(unsigned long flags,
 			const std::string value2(value, end);
 			tag_handler_invoke_tag(handler, handler_ctx,
 					       type, value2.c_str());
-			recognized = true;
 			break;
 		}
 	}
 
-	return recognized;
+	return true;
 }
 
 bool
