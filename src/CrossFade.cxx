@@ -96,13 +96,14 @@ static float mixramp_interpolate(char *ramp_list, float required_db)
 	return nan("");
 }
 
-unsigned cross_fade_calc(float duration, float total_time,
-			 float mixramp_db, float mixramp_delay,
-			 float replay_gain_db, float replay_gain_prev_db,
-			 char *mixramp_start, char *mixramp_prev_end,
-			 const AudioFormat af,
-			 const AudioFormat old_format,
-			 unsigned max_chunks)
+unsigned
+cross_fade_calc(float duration, float total_time,
+		float mixramp_db, float mixramp_delay,
+		float replay_gain_db, float replay_gain_prev_db,
+		char *mixramp_start, char *mixramp_prev_end,
+		const AudioFormat af,
+		const AudioFormat old_format,
+		unsigned max_chunks)
 {
 	unsigned int chunks = 0;
 	float chunks_f;

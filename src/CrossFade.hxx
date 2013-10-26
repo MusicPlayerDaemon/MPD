@@ -40,11 +40,12 @@ struct music_chunk;
  * @return the number of chunks for crossfading, or 0 if cross fading
  * should be disabled for this song change
  */
-unsigned cross_fade_calc(float duration, float total_time,
-			 float mixramp_db, float mixramp_delay,
-			 float replay_gain_db, float replay_gain_prev_db,
-			 char *mixramp_start, char *mixramp_prev_end,
-			 AudioFormat af, AudioFormat old_format,
-			 unsigned max_chunks);
+unsigned
+cross_fade_calc(float duration, float total_time,
+		float mixramp_db, float mixramp_delay,
+		float replay_gain_db, float replay_gain_prev_db,
+		char *mixramp_start, char *mixramp_prev_end,
+		AudioFormat af, AudioFormat old_format,
+		unsigned max_chunks);
 
 #endif
