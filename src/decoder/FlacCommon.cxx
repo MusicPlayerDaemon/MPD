@@ -25,6 +25,7 @@
 #include "FlacCommon.hxx"
 #include "FlacMetadata.hxx"
 #include "FlacPcm.hxx"
+#include "MixRampInfo.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -94,8 +95,6 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 		return;
 
 	ReplayGainInfo rgi;
-	char *mixramp_start;
-	char *mixramp_end;
 
 	switch (block->type) {
 	case FLAC__METADATA_TYPE_STREAMINFO:
@@ -106,9 +105,7 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 		if (flac_parse_replay_gain(rgi, block))
 			decoder_replay_gain(data->decoder, &rgi);
 
-		if (flac_parse_mixramp(&mixramp_start, &mixramp_end, block))
-			decoder_mixramp(data->decoder,
-					mixramp_start, mixramp_end);
+		decoder_mixramp(data->decoder, flac_parse_mixramp(block));
 
 		flac_vorbis_comments_to_tag(data->tag,
 					    &block->data.vorbis_comment);

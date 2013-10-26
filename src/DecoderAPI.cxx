@@ -541,11 +541,9 @@ decoder_replay_gain(Decoder &decoder,
 }
 
 void
-decoder_mixramp(Decoder &decoder,
-		char *mixramp_start, char *mixramp_end)
+decoder_mixramp(Decoder &decoder, MixRampInfo &&mix_ramp)
 {
 	decoder_control &dc = decoder.dc;
 
-	dc.MixRampStart(mixramp_start);
-	dc.MixRampEnd(mixramp_end);
+	dc.SetMixRamp(std::move(mix_ramp));
 }

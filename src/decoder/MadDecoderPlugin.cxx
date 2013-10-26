@@ -298,18 +298,16 @@ parse_id3_replay_gain_info(ReplayGainInfo &rgi,
 #endif
 
 #ifdef HAVE_ID3TAG
-static bool
-parse_id3_mixramp(char **mixramp_start, char **mixramp_end,
-		  struct id3_tag *tag)
+gcc_pure
+static MixRampInfo
+parse_id3_mixramp(struct id3_tag *tag)
 {
 	int i;
 	char *key;
 	char *value;
 	struct id3_frame *frame;
-	bool found = false;
 
-	*mixramp_start = nullptr;
-	*mixramp_end = nullptr;
+	MixRampInfo result;
 
 	for (i = 0; (frame = id3_tag_findframe(tag, "TXXX", i)); i++) {
 		if (frame->nfields < 3)
@@ -323,18 +321,16 @@ parse_id3_mixramp(char **mixramp_start, char **mixramp_end,
 					     (&frame->fields[2]));
 
 		if (StringEqualsCaseASCII(key, "mixramp_start")) {
-			*mixramp_start = g_strdup(value);
-			found = true;
+			result.SetStart(value);
 		} else if (StringEqualsCaseASCII(key, "mixramp_end")) {
-			*mixramp_end = g_strdup(value);
-			found = true;
+			result.SetEnd(value);
 		}
 
 		free(key);
 		free(value);
 	}
 
-	return found;
+	return result;
 }
 #endif
 
@@ -393,16 +389,13 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 
 	if (decoder != nullptr) {
 		ReplayGainInfo rgi;
-		char *mixramp_start;
-		char *mixramp_end;
 
 		if (parse_id3_replay_gain_info(rgi, id3_tag)) {
 			decoder_replay_gain(*decoder, &rgi);
 			found_replay_gain = true;
 		}
 
-		if (parse_id3_mixramp(&mixramp_start, &mixramp_end, id3_tag))
-			decoder_mixramp(*decoder, mixramp_start, mixramp_end);
+		decoder_mixramp(*decoder, parse_id3_mixramp(id3_tag));
 	}
 
 	id3_tag_delete(id3_tag);

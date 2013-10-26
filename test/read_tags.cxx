@@ -110,11 +110,8 @@ decoder_replay_gain(gcc_unused Decoder &decoder,
 }
 
 void
-decoder_mixramp(gcc_unused Decoder &decoder,
-		char *mixramp_start, char *mixramp_end)
+decoder_mixramp(gcc_unused Decoder &decoder, gcc_unused MixRampInfo &&mix_ramp)
 {
-	g_free(mixramp_start);
-	g_free(mixramp_end);
 }
 
 static bool empty = true;

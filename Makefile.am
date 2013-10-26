@@ -155,6 +155,7 @@ src_mpd_SOURCES = \
 	src/GlobalEvents.cxx src/GlobalEvents.hxx \
 	src/Daemon.cxx src/Daemon.hxx \
 	src/AudioCompress/compress.c \
+	src/MixRampInfo.hxx \
 	src/MusicBuffer.cxx src/MusicBuffer.hxx \
 	src/MusicPipe.cxx src/MusicPipe.hxx \
 	src/MusicChunk.cxx src/MusicChunk.hxx \

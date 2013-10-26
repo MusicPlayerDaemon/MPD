@@ -27,6 +27,8 @@
 
 #include <assert.h>
 
+class MixRampInfo;
+
 class FlacMetadataChain {
 	FLAC__Metadata_Chain *chain;
 
@@ -125,9 +127,8 @@ bool
 flac_parse_replay_gain(ReplayGainInfo &rgi,
 		       const FLAC__StreamMetadata *block);
 
-bool
-flac_parse_mixramp(char **mixramp_start, char **mixramp_end,
-		   const FLAC__StreamMetadata *block);
+MixRampInfo
+flac_parse_mixramp(const FLAC__StreamMetadata *block);
 
 void
 flac_vorbis_comments_to_tag(Tag &tag,

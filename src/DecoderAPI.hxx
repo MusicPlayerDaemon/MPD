@@ -33,6 +33,7 @@
 #include "ReplayGainInfo.hxx"
 #include "tag/Tag.hxx"
 #include "AudioFormat.hxx"
+#include "MixRampInfo.hxx"
 #include "ConfigData.hxx"
 
 /**
@@ -184,7 +185,6 @@ decoder_replay_gain(Decoder &decoder,
  * @param mixramp_end the mixramp_end tag; may be nullptr to invalidate
  */
 void
-decoder_mixramp(Decoder &decoder,
-		char *mixramp_start, char *mixramp_end);
+decoder_mixramp(Decoder &decoder, MixRampInfo &&mix_ramp);
 
 #endif

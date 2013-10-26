@@ -22,6 +22,7 @@
 
 #include "DecoderCommand.hxx"
 #include "AudioFormat.hxx"
+#include "MixRampInfo.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
@@ -139,9 +140,8 @@ struct decoder_control {
 
 	float replay_gain_db;
 	float replay_gain_prev_db;
-	char *mixramp_start;
-	char *mixramp_end;
-	char *mixramp_prev_end;
+
+	MixRampInfo mix_ramp, previous_mix_ramp;
 
 	decoder_control();
 	~decoder_control();
@@ -351,19 +351,20 @@ public:
 	void Quit();
 
 	const char *GetMixRampStart() const {
-		return mixramp_start;
+		return mix_ramp.GetStart();
 	}
 
 	const char *GetMixRampEnd() const {
-		return mixramp_end;
+		return mix_ramp.GetEnd();
 	}
 
 	const char *GetMixRampPreviousEnd() const {
-		return mixramp_prev_end;
+		return previous_mix_ramp.GetEnd();
 	}
 
-	void MixRampStart(char *_mixramp_start);
-	void MixRampEnd(char *_mixramp_end);
+	void SetMixRamp(MixRampInfo &&new_value) {
+		mix_ramp = std::move(new_value);
+	}
 
 	/**
 	 * Move mixramp_end to mixramp_prev_end and clear

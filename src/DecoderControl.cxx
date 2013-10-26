@@ -30,9 +30,7 @@ decoder_control::decoder_control()
 	:state(DecoderState::STOP),
 	 command(DecoderCommand::NONE),
 	 song(nullptr),
-	 replay_gain_db(0), replay_gain_prev_db(0),
-	 mixramp_start(nullptr), mixramp_end(nullptr),
-	 mixramp_prev_end(nullptr) {}
+	 replay_gain_db(0), replay_gain_prev_db(0) {}
 
 decoder_control::~decoder_control()
 {
@@ -40,10 +38,6 @@ decoder_control::~decoder_control()
 
 	if (song != nullptr)
 		song->Free();
-
-	g_free(mixramp_start);
-	g_free(mixramp_end);
-	g_free(mixramp_prev_end);
 }
 
 bool
@@ -130,25 +124,8 @@ decoder_control::Quit()
 }
 
 void
-decoder_control::MixRampStart(char *_mixramp_start)
-{
-	g_free(mixramp_start);
-	mixramp_start = _mixramp_start;
-}
-
-void
-decoder_control::MixRampEnd(char *_mixramp_end)
-{
-	g_free(mixramp_end);
-	mixramp_end = _mixramp_end;
-}
-
-void
 decoder_control::CycleMixRamp()
 {
-	g_free(mixramp_start);
-	mixramp_start = nullptr;
-	g_free(mixramp_prev_end);
-	mixramp_prev_end = mixramp_end;
-	mixramp_end = nullptr;
+	previous_mix_ramp = std::move(mix_ramp);
+	mix_ramp.Clear();
 }
