@@ -83,13 +83,18 @@ tag_ape_import_item(unsigned long flags,
 	if ((flags & (0x3 << 1)) != 0)
 		return false;
 
-	tag_handler_invoke_pair(handler, handler_ctx, key, value);
+	const char *const end = value + value_length;
+
+	if (handler->pair != nullptr)
+		ForEachValue(value, end, [handler, handler_ctx,
+					  key](const char *_value) {
+				handler->pair(key, _value, handler_ctx);
+			});
 
 	TagType type = tag_ape_name_parse(key);
 	if (type == TAG_NUM_OF_ITEM_TYPES)
 		return false;
 
-	const char *end = value + value_length;
 	ForEachValue(value, end, [handler, handler_ctx,
 				    type](const char *_value) {
 			tag_handler_invoke_tag(handler, handler_ctx,
