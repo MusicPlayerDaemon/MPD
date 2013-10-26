@@ -46,6 +46,32 @@ tag_ape_name_parse(const char *name)
 }
 
 /**
+ * Invoke the given callback for each string inside the given range.
+ * The strings are separated by null bytes, but the last one may not
+ * be terminated.
+ */
+template<typename C>
+static void
+ForEachValue(const char *value, const char *end, C &&callback)
+{
+	while (true) {
+		const char *n = (const char *)memchr(value, 0, end - value);
+		if (n == nullptr)
+			break;
+
+		if (n > value)
+			callback(value);
+
+		value = n + 1;
+	}
+
+	if (value < end) {
+		const std::string value2(value, end);
+		callback(value2.c_str());
+	}
+}
+
+/**
  * @return true if the item was recognized
  */
 static bool
@@ -64,23 +90,11 @@ tag_ape_import_item(unsigned long flags,
 		return false;
 
 	const char *end = value + value_length;
-	while (true) {
-		/* multiple values are separated by null bytes */
-		const char *n = (const char *)memchr(value, 0, end - value);
-		if (n != nullptr) {
-			if (n > value) {
-				tag_handler_invoke_tag(handler, handler_ctx,
-						       type, value);
-			}
-
-			value = n + 1;
-		} else {
-			const std::string value2(value, end);
+	ForEachValue(value, end, [handler, handler_ctx,
+				    type](const char *_value) {
 			tag_handler_invoke_tag(handler, handler_ctx,
-					       type, value2.c_str());
-			break;
-		}
-	}
+					       type, _value);
+		});
 
 	return true;
 }
