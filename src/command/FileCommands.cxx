@@ -27,6 +27,8 @@
 #include "util/CharUtil.hxx"
 #include "util/Error.hxx"
 #include "tag/TagHandler.hxx"
+#include "tag/ApeTag.hxx"
+#include "tag/TagId3.hxx"
 #include "TagFile.hxx"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -117,6 +119,9 @@ handle_read_comments(Client &client, gcc_unused int argc, char *argv[])
 			      "Failed to load file");
 		return CommandResult::ERROR;
 	}
+
+	tag_ape_scan2(path_fs, &print_comment_handler, &client);
+	tag_id3_scan(path_fs, &print_comment_handler, &client);
 
 	return CommandResult::OK;
 }
