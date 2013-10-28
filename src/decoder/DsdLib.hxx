@@ -20,18 +20,20 @@
 #ifndef MPD_DECODER_DSDLIB_HXX
 #define MPD_DECODER_DSDLIB_HXX
 
+#include "Compiler.h"
+
 #include <stdlib.h>
 #include <stdint.h>
 
 struct Decoder;
 struct InputStream;
 
-struct dsdlib_id {
+struct DsdId {
 	char value[4];
-};
 
-bool
-dsdlib_id_equals(const struct dsdlib_id *id, const char *s);
+	gcc_pure
+	bool Equals(const char *s) const;
+};
 
 bool
 dsdlib_read(Decoder *decoder, InputStream &is,

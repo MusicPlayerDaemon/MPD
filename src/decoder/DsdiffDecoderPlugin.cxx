@@ -42,13 +42,13 @@
 #include <stdio.h> /* for SEEK_SET, SEEK_CUR */
 
 struct DsdiffHeader {
-	struct dsdlib_id id;
+	DsdId id;
 	uint32_t size_high, size_low;
-	struct dsdlib_id format;
+	DsdId format;
 };
 
 struct DsdiffChunkHeader {
-	struct dsdlib_id id;
+	DsdId id;
 	uint32_t size_high, size_low;
 
 	/**
@@ -92,7 +92,7 @@ dsdiff_init(const config_param &param)
 
 static bool
 dsdiff_read_id(Decoder *decoder, InputStream &is,
-	       struct dsdlib_id *id)
+	       DsdId *id)
 {
 	return dsdlib_read(decoder, is, id, sizeof(*id));
 }
@@ -135,7 +135,7 @@ dsdiff_read_prop_snd(Decoder *decoder, InputStream &is,
 		if (chunk_end_offset > end_offset)
 			return false;
 
-		if (dsdlib_id_equals(&header.id, "FS  ")) {
+		if (header.id.Equals("FS  ")) {
 			uint32_t sample_rate;
 			if (!dsdiff_read_payload(decoder, is, &header,
 						 &sample_rate,
@@ -143,7 +143,7 @@ dsdiff_read_prop_snd(Decoder *decoder, InputStream &is,
 				return false;
 
 			metadata->sample_rate = FromBE32(sample_rate);
-		} else if (dsdlib_id_equals(&header.id, "CHNL")) {
+		} else if (header.id.Equals("CHNL")) {
 			uint16_t channels;
 			if (header.GetSize() < sizeof(channels) ||
 			    !dsdlib_read(decoder, is,
@@ -152,15 +152,15 @@ dsdiff_read_prop_snd(Decoder *decoder, InputStream &is,
 				return false;
 
 			metadata->channels = FromBE16(channels);
-		} else if (dsdlib_id_equals(&header.id, "CMPR")) {
-			struct dsdlib_id type;
+		} else if (header.id.Equals("CMPR")) {
+			DsdId type;
 			if (header.GetSize() < sizeof(type) ||
 			    !dsdlib_read(decoder, is,
 					 &type, sizeof(type)) ||
 			    !dsdlib_skip_to(decoder, is, chunk_end_offset))
 				return false;
 
-			if (!dsdlib_id_equals(&type, "DSD "))
+			if (!type.Equals("DSD "))
 				/* only uncompressed DSD audio data
 				   is implemented */
 				return false;
@@ -186,12 +186,12 @@ dsdiff_read_prop(Decoder *decoder, InputStream &is,
 	uint64_t prop_size = prop_header->GetSize();
 	InputStream::offset_type end_offset = is.GetOffset() + prop_size;
 
-	struct dsdlib_id prop_id;
+	DsdId prop_id;
 	if (prop_size < sizeof(prop_id) ||
 	    !dsdiff_read_id(decoder, is, &prop_id))
 		return false;
 
-	if (dsdlib_id_equals(&prop_id, "SND "))
+	if (prop_id.Equals("SND "))
 		return dsdiff_read_prop_snd(decoder, is, metadata, end_offset);
 	else
 		/* ignore unknown PROP chunk */
@@ -264,23 +264,23 @@ dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 		uint64_t chunk_size = chunk_header->GetSize();
 
 		/* DIIN chunk, is directly followed by other chunks  */
-		if (dsdlib_id_equals(&chunk_header->id, "DIIN"))
+		if (chunk_header->id.Equals("DIIN"))
 			chunk_size = 0;
 
 		/* DIAR chunk - DSDIFF native tag for Artist */
-		if (dsdlib_id_equals(&chunk_header->id, "DIAR")) {
+		if (chunk_header->id.Equals("DIAR")) {
 			chunk_size = chunk_header->GetSize();
 			metadata->diar_offset = is.GetOffset();
 		}
 
 		/* DITI chunk - DSDIFF native tag for Title */
-		if (dsdlib_id_equals(&chunk_header->id, "DITI")) {
+		if (chunk_header->id.Equals("DITI")) {
 			chunk_size = chunk_header->GetSize();
 			metadata->diti_offset = is.GetOffset();
 		}
 #ifdef HAVE_ID3TAG
 		/* 'ID3 ' chunk, offspec. Used by sacdextract */
-		if (dsdlib_id_equals(&chunk_header->id, "ID3 ")) {
+		if (chunk_header->id.Equals("ID3 ")) {
 			chunk_size = chunk_header->GetSize();
 			metadata->id3_offset = is.GetOffset();
 			metadata->id3_size = chunk_size;
@@ -331,8 +331,8 @@ dsdiff_read_metadata(Decoder *decoder, InputStream &is,
 {
 	DsdiffHeader header;
 	if (!dsdlib_read(decoder, is, &header, sizeof(header)) ||
-	    !dsdlib_id_equals(&header.id, "FRM8") ||
-	    !dsdlib_id_equals(&header.format, "DSD "))
+	    !header.id.Equals("FRM8") ||
+	    !header.format.Equals("DSD "))
 		return false;
 
 	while (true) {
@@ -340,11 +340,11 @@ dsdiff_read_metadata(Decoder *decoder, InputStream &is,
 					      chunk_header))
 			return false;
 
-		if (dsdlib_id_equals(&chunk_header->id, "PROP")) {
+		if (chunk_header->id.Equals("PROP")) {
 			if (!dsdiff_read_prop(decoder, is, metadata,
 					      chunk_header))
 					return false;
-		} else if (dsdlib_id_equals(&chunk_header->id, "DSD ")) {
+		} else if (chunk_header->id.Equals("DSD ")) {
 			const uint64_t chunk_size = chunk_header->GetSize();
 			metadata->chunk_size = chunk_size;
 			return true;
@@ -454,7 +454,7 @@ dsdiff_stream_decode(Decoder &decoder, InputStream &is)
 	while (true) {
 		chunk_size = chunk_header.GetSize();
 
-		if (dsdlib_id_equals(&chunk_header.id, "DSD ")) {
+		if (chunk_header.id.Equals("DSD ")) {
 			if (!dsdiff_decode_chunk(decoder, is,
 						 metadata.channels,
 						 chunk_size))

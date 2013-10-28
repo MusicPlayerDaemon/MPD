@@ -54,7 +54,7 @@ struct DsfMetaData {
 
 struct DsfHeader {
 	/** DSF header id: "DSD " */
-	struct dsdlib_id id;
+	DsdId id;
 	/** DSD chunk size, including id = 28 */
 	uint32_t size_low, size_high;
 	/** total file size */
@@ -66,7 +66,7 @@ struct DsfHeader {
 /** DSF file fmt chunk */
 struct DsfFmtChunk {
 	/** id: "fmt " */
-	struct dsdlib_id id;
+	DsdId id;
 	/** fmt chunk size, including id, normally 52 */
 	uint32_t size_low, size_high;
 	/** version of this format = 1 */
@@ -90,7 +90,7 @@ struct DsfFmtChunk {
 };
 
 struct DsfDataChunk {
-	struct dsdlib_id id;
+	DsdId id;
 	/** "data" chunk size, includes header (id+size) */
 	uint32_t size_low, size_high;
 };
@@ -105,7 +105,7 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 	uint64_t chunk_size;
 	DsfHeader dsf_header;
 	if (!dsdlib_read(decoder, is, &dsf_header, sizeof(dsf_header)) ||
-	    !dsdlib_id_equals(&dsf_header.id, "DSD "))
+	    !dsf_header.id.Equals("DSD "))
 		return false;
 
 	chunk_size = (uint64_t(FromLE32(dsf_header.size_high)) << 32) |
@@ -123,7 +123,7 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 	/* read the 'fmt ' chunk of the DSF file */
 	DsfFmtChunk dsf_fmt_chunk;
 	if (!dsdlib_read(decoder, is, &dsf_fmt_chunk, sizeof(dsf_fmt_chunk)) ||
-	    !dsdlib_id_equals(&dsf_fmt_chunk.id, "fmt "))
+	    !dsf_fmt_chunk.id.Equals("fmt "))
 		return false;
 
 	uint64_t fmt_chunk_size;
@@ -152,7 +152,7 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 	/* read the 'data' chunk of the DSF file */
 	DsfDataChunk data_chunk;
 	if (!dsdlib_read(decoder, is, &data_chunk, sizeof(data_chunk)) ||
-	    !dsdlib_id_equals(&data_chunk.id, "data"))
+	    !data_chunk.id.Equals("data"))
 		return false;
 
 	/* data size of DSF files are padded to multiple of 4096,

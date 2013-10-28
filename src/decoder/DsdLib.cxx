@@ -41,13 +41,12 @@
 #endif
 
 bool
-dsdlib_id_equals(const struct dsdlib_id *id, const char *s)
+DsdId::Equals(const char *s) const
 {
-	assert(id != nullptr);
 	assert(s != nullptr);
-	assert(strlen(s) == sizeof(id->value));
+	assert(strlen(s) == sizeof(value));
 
-	return memcmp(id->value, s, sizeof(id->value)) == 0;
+	return memcmp(value, s, sizeof(value)) == 0;
 }
 
 bool
