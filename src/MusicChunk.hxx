@@ -85,7 +85,7 @@ struct music_chunk {
 	unsigned replay_gain_serial;
 
 	/** the data (probably PCM) */
-	char data[CHUNK_SIZE];
+	uint8_t data[CHUNK_SIZE];
 
 #ifndef NDEBUG
 	AudioFormat audio_format;
