@@ -25,6 +25,7 @@
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
 #include "util/Error.hxx"
+#include "CrossFade.hxx"
 
 #include <stdint.h>
 
@@ -155,9 +156,9 @@ struct PlayerControl {
 	Song *next_song;
 
 	double seek_where;
-	float cross_fade_seconds;
-	float mixramp_db;
-	float mixramp_delay_seconds;
+
+	CrossFadeSettings cross_fade;
+
 	double total_play_time;
 
 	/**
@@ -430,19 +431,19 @@ public:
 	void SetCrossFade(float cross_fade_seconds);
 
 	float GetCrossFade() const {
-		return cross_fade_seconds;
+		return cross_fade.duration;
 	}
 
 	void SetMixRampDb(float mixramp_db);
 
 	float GetMixRampDb() const {
-		return mixramp_db;
+		return cross_fade.mixramp_db;
 	}
 
 	void SetMixRampDelay(float mixramp_delay_seconds);
 
 	float GetMixRampDelay() const {
-		return mixramp_delay_seconds;
+		return cross_fade.mixramp_delay;
 	}
 
 	double GetTotalPlayTime() const {

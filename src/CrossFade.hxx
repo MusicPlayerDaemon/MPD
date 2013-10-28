@@ -22,33 +22,54 @@
 
 #include "Compiler.h"
 
-struct AudioFormat;
-struct music_chunk;
+#include <cmath>
 
-/**
- * Calculate how many music pipe chunks should be used for crossfading.
- *
- * @param duration the requested crossfade duration
- * @param total_time total_time the duration of the new song
- * @param mixramp_db the current mixramp_db setting
- * @param mixramp_delay the current mixramp_delay setting
- * @param replay_gain_db the ReplayGain adjustment used for this song
- * @param replay_gain_prev_db the ReplayGain adjustment used on the last song
- * @param mixramp_start the next songs mixramp_start tag
- * @param mixramp_prev_end the last songs mixramp_end setting
- * @param af the audio format of the new song
- * @param old_format the audio format of the current song
- * @param max_chunks the maximum number of chunks
- * @return the number of chunks for crossfading, or 0 if cross fading
- * should be disabled for this song change
- */
-gcc_pure
-unsigned
-cross_fade_calc(float duration, float total_time,
-		float mixramp_db, float mixramp_delay,
-		float replay_gain_db, float replay_gain_prev_db,
-		const char *mixramp_start, const char *mixramp_prev_end,
-		AudioFormat af, AudioFormat old_format,
-		unsigned max_chunks);
+struct AudioFormat;
+
+struct CrossFadeSettings {
+	/**
+	 * The configured cross fade duration [s].
+	 */
+	float duration;
+
+	float mixramp_db;
+
+	/**
+	 * The configured MixRapm delay [s].
+	 */
+	float mixramp_delay;
+
+	CrossFadeSettings()
+		:duration(0),
+		 mixramp_db(0),
+		 mixramp_delay(std::nanf(""))
+	{}
+
+
+	/**
+	 * Calculate how many music pipe chunks should be used for crossfading.
+	 *
+	 * @param duration the requested crossfade duration
+	 * @param total_time total_time the duration of the new song
+	 * @param mixramp_db the current mixramp_db setting
+	 * @param mixramp_delay the current mixramp_delay setting
+	 * @param replay_gain_db the ReplayGain adjustment used for this song
+	 * @param replay_gain_prev_db the ReplayGain adjustment used on the last song
+	 * @param mixramp_start the next songs mixramp_start tag
+	 * @param mixramp_prev_end the last songs mixramp_end setting
+	 * @param af the audio format of the new song
+	 * @param old_format the audio format of the current song
+	 * @param max_chunks the maximum number of chunks
+	 * @return the number of chunks for crossfading, or 0 if cross fading
+	 * should be disabled for this song change
+	 */
+	gcc_pure
+	unsigned Calculate(float total_time,
+			   float replay_gain_db, float replay_gain_prev_db,
+			   const char *mixramp_start,
+			   const char *mixramp_prev_end,
+			   AudioFormat af, AudioFormat old_format,
+			   unsigned max_chunks) const;
+};
 
 #endif

@@ -36,15 +36,6 @@ PlayerControl::PlayerControl(unsigned _buffer_chunks,
 	 error_type(PlayerError::NONE),
 	 tagged_song(nullptr),
 	 next_song(nullptr),
-	 cross_fade_seconds(0),
-	 mixramp_db(0),
-#if defined(__GLIBCXX__) && !defined(_GLIBCXX_USE_C99_MATH_TR1)
-	 /* workaround: on MacPorts, this option is disabled on gcc47,
-	    and therefore std::nanf() is not available */
-	 mixramp_delay_seconds(nanf("")),
-#else
-	 mixramp_delay_seconds(std::nanf("")),
-#endif
 	 total_play_time(0),
 	 border_pause(false)
 {
@@ -260,7 +251,7 @@ PlayerControl::SetCrossFade(float _cross_fade_seconds)
 {
 	if (_cross_fade_seconds < 0)
 		_cross_fade_seconds = 0;
-	cross_fade_seconds = _cross_fade_seconds;
+	cross_fade.duration = _cross_fade_seconds;
 
 	idle_add(IDLE_OPTIONS);
 }
@@ -268,7 +259,7 @@ PlayerControl::SetCrossFade(float _cross_fade_seconds)
 void
 PlayerControl::SetMixRampDb(float _mixramp_db)
 {
-	mixramp_db = _mixramp_db;
+	cross_fade.mixramp_db = _mixramp_db;
 
 	idle_add(IDLE_OPTIONS);
 }
@@ -276,7 +267,7 @@ PlayerControl::SetMixRampDb(float _mixramp_db)
 void
 PlayerControl::SetMixRampDelay(float _mixramp_delay_seconds)
 {
-	mixramp_delay_seconds = _mixramp_delay_seconds;
+	cross_fade.mixramp_delay = _mixramp_delay_seconds;
 
 	idle_add(IDLE_OPTIONS);
 }

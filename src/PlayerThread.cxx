@@ -779,7 +779,7 @@ Player::PlayNextChunk()
 						  other_chunk->tag);
 			other_chunk->tag = nullptr;
 
-			if (std::isnan(pc.mixramp_delay_seconds)) {
+			if (std::isnan(pc.cross_fade.mixramp_delay)) {
 				chunk->mix_ratio = ((float)cross_fade_position)
 					     / cross_fade_chunks;
 			} else {
@@ -999,17 +999,15 @@ Player::Run()
 			   calculate how many chunks will be required
 			   for it */
 			cross_fade_chunks =
-				cross_fade_calc(pc.cross_fade_seconds, dc.total_time,
-						pc.mixramp_db,
-						pc.mixramp_delay_seconds,
-						dc.replay_gain_db,
-						dc.replay_gain_prev_db,
-						dc.GetMixRampStart(),
-						dc.GetMixRampPreviousEnd(),
-						dc.out_audio_format,
-						play_audio_format,
-						buffer.GetSize() -
-						pc.buffered_before_play);
+				pc.cross_fade.Calculate(dc.total_time,
+							dc.replay_gain_db,
+							dc.replay_gain_prev_db,
+							dc.GetMixRampStart(),
+							dc.GetMixRampPreviousEnd(),
+							dc.out_audio_format,
+							play_audio_format,
+							buffer.GetSize() -
+							pc.buffered_before_play);
 			if (cross_fade_chunks > 0) {
 				xfade_state = CrossFadeState::ENABLED;
 				cross_fading = false;

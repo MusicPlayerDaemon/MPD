@@ -87,13 +87,12 @@ mixramp_interpolate(const char *ramp_list, float required_db)
 }
 
 unsigned
-cross_fade_calc(float duration, float total_time,
-		float mixramp_db, float mixramp_delay,
-		float replay_gain_db, float replay_gain_prev_db,
-		const char *mixramp_start, const char *mixramp_prev_end,
-		const AudioFormat af,
-		const AudioFormat old_format,
-		unsigned max_chunks)
+CrossFadeSettings::Calculate(float total_time,
+			     float replay_gain_db, float replay_gain_prev_db,
+			     const char *mixramp_start, const char *mixramp_prev_end,
+			     const AudioFormat af,
+			     const AudioFormat old_format,
+			     unsigned max_chunks) const
 {
 	unsigned int chunks = 0;
 	float chunks_f;
