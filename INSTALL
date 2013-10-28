@@ -41,9 +41,6 @@ This is a mostly undocumented, developer plugin to transmit raw data.
 OSS - http://www.opensound.com
 Open Sound System.
 
-OSX - http://www.apple.com
-Necessary if you are on Mac OSX.
-
 PulseAudio - http://www.pulseaudio.org/
 An advanced sound daemon.  You will need libpulse.
 

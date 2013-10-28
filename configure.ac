@@ -340,6 +340,11 @@ AC_ARG_ENABLE(oss,
 		[disable OSS support (default: enable)]),,
 	enable_oss=yes)
 
+AC_ARG_ENABLE(osx,
+	AS_HELP_STRING([--enable-osx],
+		[enable the OS X output plugin - unsupported! (default: disable)]),,
+	enable_osx=no)
+
 AC_ARG_ENABLE(pipe-output,
 	AS_HELP_STRING([--enable-pipe-output],
 		[enable support for writing audio to a pipe (default: disable)]),,
@@ -1304,7 +1309,6 @@ fi
 AM_CONDITIONAL(HAVE_OSS, test x$enable_oss = xyes)
 
 dnl ----------------------------------- OSX -----------------------------------
-enable_osx=$host_is_darwin
 if test x$enable_osx = xyes; then
 	AC_DEFINE(HAVE_OSX, 1, [Define for compiling OS X support])
 	LIBS="$LIBS -framework AudioUnit -framework CoreAudio -framework CoreServices"

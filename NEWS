@@ -32,6 +32,7 @@ ver 0.18 (2012/??/??)
   - ffado: remove broken plugin
   - httpd: support HEAD requests
   - mvp: remove obsolete plugin
+  - osx: disabled by default because it's unmaintained and unsupported
 * improved decoder/output error reporting
 * eliminate timer wakeup on idle MPD
 * fix unresponsive MPD while waiting for stream
