@@ -195,7 +195,7 @@ static snd_mixer_elem_t *
 alsa_mixer_lookup_elem(snd_mixer_t *handle, const char *name, unsigned idx)
 {
 	for (snd_mixer_elem_t *elem = snd_mixer_first_elem(handle);
-	     elem != NULL; elem = snd_mixer_elem_next(elem)) {
+	     elem != nullptr; elem = snd_mixer_elem_next(elem)) {
 		if (snd_mixer_elem_get_type(elem) == SND_MIXER_ELEM_SIMPLE &&
 		    StringEqualsCaseASCII(snd_mixer_selem_get_name(elem),
 					  name) &&
@@ -203,7 +203,7 @@ alsa_mixer_lookup_elem(snd_mixer_t *handle, const char *name, unsigned idx)
 			return elem;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 inline bool
@@ -218,8 +218,8 @@ AlsaMixer::Setup(Error &error)
 		return false;
 	}
 
-	if ((err = snd_mixer_selem_register(handle, NULL,
-		    NULL)) < 0) {
+	if ((err = snd_mixer_selem_register(handle, nullptr,
+		    nullptr)) < 0) {
 		error.Format(alsa_mixer_domain, err,
 			     "snd_mixer_selem_register() failed: %s",
 			     snd_strerror(err));
@@ -234,7 +234,7 @@ AlsaMixer::Setup(Error &error)
 	}
 
 	elem = alsa_mixer_lookup_elem(handle, control, index);
-	if (elem == NULL) {
+	if (elem == nullptr) {
 		error.Format(alsa_mixer_domain, 0,
 			    "no such mixer control: %s", control);
 		return false;
@@ -283,11 +283,11 @@ alsa_mixer_open(Mixer *data, Error &error)
 inline void
 AlsaMixer::Close()
 {
-	assert(handle != NULL);
+	assert(handle != nullptr);
 
 	delete monitor;
 
-	snd_mixer_elem_set_callback(elem, NULL);
+	snd_mixer_elem_set_callback(elem, nullptr);
 	snd_mixer_close(handle);
 }
 
@@ -305,7 +305,7 @@ AlsaMixer::GetVolume(Error &error)
 	int ret;
 	long level;
 
-	assert(handle != NULL);
+	assert(handle != nullptr);
 
 	err = snd_mixer_handle_events(handle);
 	if (err < 0) {
@@ -351,7 +351,7 @@ AlsaMixer::SetVolume(unsigned volume, Error &error)
 	long level;
 	int err;
 
-	assert(handle != NULL);
+	assert(handle != nullptr);
 
 	vol = volume;
 

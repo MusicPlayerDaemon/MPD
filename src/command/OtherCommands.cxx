@@ -129,7 +129,7 @@ handle_lsinfo(Client &client, int argc, char *argv[])
 			return print_error(client, error);
 
 		Song *song = Song::LoadFile(path_utf8, nullptr);
-		if (song == NULL) {
+		if (song == nullptr) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "No such file");
 			return CommandResult::ERROR;
@@ -310,7 +310,7 @@ handle_config(Client &client,
 	}
 
 	const char *path = mapper_get_music_directory_utf8();
-	if (path != NULL)
+	if (path != nullptr)
 		client_printf(client, "music_directory: %s\n", path);
 
 	return CommandResult::OK;

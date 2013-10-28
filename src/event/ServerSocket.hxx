@@ -75,7 +75,7 @@ public:
 	 * Add a listener on a port on all interfaces.
 	 *
 	 * @param port the TCP port
-	 * @param error_r location to store the error occurring, or NULL to
+	 * @param error_r location to store the error occurring, or nullptr to
 	 * ignore errors
 	 * @return true on success
 	 */
@@ -87,7 +87,7 @@ public:
 	 *
 	 * @param hostname the host name to be resolved
 	 * @param port the TCP port
-	 * @param error_r location to store the error occurring, or NULL to
+	 * @param error_r location to store the error occurring, or nullptr to
 	 * ignore errors
 	 * @return true on success
 	 */
@@ -97,7 +97,7 @@ public:
 	 * Add a listener on a Unix domain socket.
 	 *
 	 * @param path the absolute socket path
-	 * @param error_r location to store the error occurring, or NULL to
+	 * @param error_r location to store the error occurring, or nullptr to
 	 * ignore errors
 	 * @return true on success
 	 */

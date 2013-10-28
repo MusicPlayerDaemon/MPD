@@ -86,7 +86,7 @@ const struct audio_output_plugin *const audio_output_plugins[] = {
 #ifdef ENABLE_WINMM_OUTPUT
 	&winmm_output_plugin,
 #endif
-	NULL
+	nullptr
 };
 
 const struct audio_output_plugin *
@@ -96,5 +96,5 @@ audio_output_plugin_get(const char *name)
 		if (strcmp(plugin->name, name) == 0)
 			return plugin;
 
-	return NULL;
+	return nullptr;
 }

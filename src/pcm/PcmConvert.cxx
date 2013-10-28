@@ -60,11 +60,11 @@ PcmConvert::Convert16(const AudioFormat src_format,
 				src_format.format,
 				src_buffer, src_size,
 				&len);
-	if (buf == NULL) {
+	if (buf == nullptr) {
 		error.Format(pcm_convert_domain,
 			     "Conversion from %s to 16 bit is not implemented",
 			     sample_format_to_string(src_format.format));
-		return NULL;
+		return nullptr;
 	}
 
 	if (src_format.channels != dest_format.channels) {
@@ -72,13 +72,13 @@ PcmConvert::Convert16(const AudioFormat src_format,
 					      dest_format.channels,
 					      src_format.channels,
 					      buf, len, &len);
-		if (buf == NULL) {
+		if (buf == nullptr) {
 			error.Format(pcm_convert_domain,
 				     "Conversion from %u to %u channels "
 				     "is not implemented",
 				     src_format.channels,
 				     dest_format.channels);
-			return NULL;
+			return nullptr;
 		}
 	}
 
@@ -87,8 +87,8 @@ PcmConvert::Convert16(const AudioFormat src_format,
 					   src_format.sample_rate, buf, len,
 					   dest_format.sample_rate, &len,
 					   error);
-		if (buf == NULL)
-			return NULL;
+		if (buf == nullptr)
+			return nullptr;
 	}
 
 	*dest_size_r = len;
@@ -109,11 +109,11 @@ PcmConvert::Convert24(const AudioFormat src_format,
 	buf = pcm_convert_to_24(format_buffer,
 				src_format.format,
 				src_buffer, src_size, &len);
-	if (buf == NULL) {
+	if (buf == nullptr) {
 		error.Format(pcm_convert_domain,
 			     "Conversion from %s to 24 bit is not implemented",
 			     sample_format_to_string(src_format.format));
-		return NULL;
+		return nullptr;
 	}
 
 	if (src_format.channels != dest_format.channels) {
@@ -121,13 +121,13 @@ PcmConvert::Convert24(const AudioFormat src_format,
 					      dest_format.channels,
 					      src_format.channels,
 					      buf, len, &len);
-		if (buf == NULL) {
+		if (buf == nullptr) {
 			error.Format(pcm_convert_domain,
 				     "Conversion from %u to %u channels "
 				     "is not implemented",
 				     src_format.channels,
 				     dest_format.channels);
-			return NULL;
+			return nullptr;
 		}
 	}
 
@@ -136,8 +136,8 @@ PcmConvert::Convert24(const AudioFormat src_format,
 					   src_format.sample_rate, buf, len,
 					   dest_format.sample_rate, &len,
 					   error);
-		if (buf == NULL)
-			return NULL;
+		if (buf == nullptr)
+			return nullptr;
 	}
 
 	*dest_size_r = len;
@@ -158,11 +158,11 @@ PcmConvert::Convert32(const AudioFormat src_format,
 	buf = pcm_convert_to_32(format_buffer,
 				src_format.format,
 				src_buffer, src_size, &len);
-	if (buf == NULL) {
+	if (buf == nullptr) {
 		error.Format(pcm_convert_domain,
 			     "Conversion from %s to 32 bit is not implemented",
 			     sample_format_to_string(src_format.format));
-		return NULL;
+		return nullptr;
 	}
 
 	if (src_format.channels != dest_format.channels) {
@@ -170,13 +170,13 @@ PcmConvert::Convert32(const AudioFormat src_format,
 					      dest_format.channels,
 					      src_format.channels,
 					      buf, len, &len);
-		if (buf == NULL) {
+		if (buf == nullptr) {
 			error.Format(pcm_convert_domain,
 				     "Conversion from %u to %u channels "
 				     "is not implemented",
 				     src_format.channels,
 				     dest_format.channels);
-			return NULL;
+			return nullptr;
 		}
 	}
 
@@ -185,7 +185,7 @@ PcmConvert::Convert32(const AudioFormat src_format,
 					   src_format.sample_rate, buf, len,
 					   dest_format.sample_rate, &len,
 					   error);
-		if (buf == NULL)
+		if (buf == nullptr)
 			return buf;
 	}
 
@@ -209,11 +209,11 @@ PcmConvert::ConvertFloat(const AudioFormat src_format,
 	buffer = pcm_convert_to_float(format_buffer,
 				      src_format.format,
 				      buffer, size, &size);
-	if (buffer == NULL) {
+	if (buffer == nullptr) {
 		error.Format(pcm_convert_domain,
 			     "Conversion from %s to float is not implemented",
 			     sample_format_to_string(src_format.format));
-		return NULL;
+		return nullptr;
 	}
 
 	/* convert channels */
@@ -223,13 +223,13 @@ PcmConvert::ConvertFloat(const AudioFormat src_format,
 						    dest_format.channels,
 						    src_format.channels,
 						    buffer, size, &size);
-		if (buffer == NULL) {
+		if (buffer == nullptr) {
 			error.Format(pcm_convert_domain,
 				     "Conversion from %u to %u channels "
 				     "is not implemented",
 				     src_format.channels,
 				     dest_format.channels);
-			return NULL;
+			return nullptr;
 		}
 	}
 
@@ -242,8 +242,8 @@ PcmConvert::ConvertFloat(const AudioFormat src_format,
 						 buffer, size,
 						 dest_format.sample_rate,
 						 &size, error);
-		if (buffer == NULL)
-			return NULL;
+		if (buffer == nullptr)
+			return nullptr;
 	}
 
 	*dest_size_r = size;
@@ -263,10 +263,10 @@ PcmConvert::Convert(AudioFormat src_format,
 		const float *f = dsd.ToFloat(src_format.channels,
 					     false, (const uint8_t *)src,
 					     src_size, &f_size);
-		if (f == NULL) {
+		if (f == nullptr) {
 			error.Set(pcm_convert_domain,
 				  "DSD to PCM conversion failed");
-			return NULL;
+			return nullptr;
 		}
 
 		float_format = src_format;
@@ -302,6 +302,6 @@ PcmConvert::Convert(AudioFormat src_format,
 		error.Format(pcm_convert_domain,
 			     "PCM conversion to %s is not implemented",
 			     sample_format_to_string(dest_format.format));
-		return NULL;
+		return nullptr;
 	}
 }

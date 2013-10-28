@@ -94,7 +94,7 @@ xspf_start_element(gcc_unused GMarkupParseContext *context,
 	case XspfParser::TRACKLIST:
 		if (strcmp(element_name, "track") == 0) {
 			parser->state = XspfParser::TRACK;
-			parser->song = NULL;
+			parser->song = nullptr;
 			parser->tag = TAG_NUM_OF_ITEM_TYPES;
 		}
 
@@ -148,7 +148,7 @@ xspf_end_element(gcc_unused GMarkupParseContext *context,
 
 	case XspfParser::TRACK:
 		if (strcmp(element_name, "track") == 0) {
-			if (parser->song != NULL)
+			if (parser->song != nullptr)
 				parser->songs.emplace_front(parser->song);
 
 			parser->state = XspfParser::TRACKLIST;
@@ -177,9 +177,9 @@ xspf_text(gcc_unused GMarkupParseContext *context,
 		break;
 
 	case XspfParser::TRACK:
-		if (parser->song != NULL &&
+		if (parser->song != nullptr &&
 		    parser->tag != TAG_NUM_OF_ITEM_TYPES) {
-			if (parser->song->tag == NULL)
+			if (parser->song->tag == nullptr)
 				parser->song->tag = new Tag();
 			parser->song->tag->AddItem(parser->tag, text, text_len);
 		}
@@ -187,7 +187,7 @@ xspf_text(gcc_unused GMarkupParseContext *context,
 		break;
 
 	case XspfParser::LOCATION:
-		if (parser->song == NULL) {
+		if (parser->song == nullptr) {
 			char *uri = g_strndup(text, text_len);
 			parser->song = Song::NewRemote(uri);
 			g_free(uri);
@@ -210,7 +210,7 @@ xspf_parser_destroy(gpointer data)
 {
 	XspfParser *parser = (XspfParser *)data;
 
-	if (parser->state >= XspfParser::TRACK && parser->song != NULL)
+	if (parser->state >= XspfParser::TRACK && parser->song != nullptr)
 		parser->song->Free();
 }
 
@@ -228,7 +228,7 @@ xspf_open_stream(InputStream &is)
 	size_t nbytes;
 	bool success;
 	Error error2;
-	GError *error = NULL;
+	GError *error = nullptr;
 
 	/* parse the XSPF XML file */
 
@@ -242,7 +242,7 @@ xspf_open_stream(InputStream &is)
 			if (error2.IsDefined()) {
 				g_markup_parse_context_free(context);
 				LogError(error2);
-				return NULL;
+				return nullptr;
 			}
 
 			break;
@@ -255,7 +255,7 @@ xspf_open_stream(InputStream &is)
 				    "XML parser failed: %s", error->message);
 			g_error_free(error);
 			g_markup_parse_context_free(context);
-			return NULL;
+			return nullptr;
 		}
 	}
 
@@ -265,7 +265,7 @@ xspf_open_stream(InputStream &is)
 			    "XML parser failed: %s", error->message);
 		g_error_free(error);
 		g_markup_parse_context_free(context);
-		return NULL;
+		return nullptr;
 	}
 
 	parser.songs.reverse();
@@ -279,12 +279,12 @@ xspf_open_stream(InputStream &is)
 
 static const char *const xspf_suffixes[] = {
 	"xspf",
-	NULL
+	nullptr
 };
 
 static const char *const xspf_mime_types[] = {
 	"application/xspf+xml",
-	NULL
+	nullptr
 };
 
 const struct playlist_plugin xspf_playlist_plugin = {

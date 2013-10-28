@@ -230,7 +230,7 @@ guint
 EventLoop::AddIdle(GSourceFunc function, gpointer data)
 {
 	GSource *source = g_idle_source_new();
-	g_source_set_callback(source, function, data, NULL);
+	g_source_set_callback(source, function, data, nullptr);
 	guint id = g_source_attach(source, GetContext());
 	g_source_unref(source);
 	return id;

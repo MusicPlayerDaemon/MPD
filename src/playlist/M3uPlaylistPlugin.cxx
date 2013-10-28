@@ -50,7 +50,7 @@ M3uPlaylist::NextSong()
 
 	do {
 		if (!tis.ReadLine(line))
-			return NULL;
+			return nullptr;
 
 		line_s = line.c_str();
 		line_s = strchug_fast(line_s);
@@ -61,12 +61,12 @@ M3uPlaylist::NextSong()
 
 static const char *const m3u_suffixes[] = {
 	"m3u",
-	NULL
+	nullptr
 };
 
 static const char *const m3u_mime_types[] = {
 	"audio/x-mpegurl",
-	NULL
+	nullptr
 };
 
 const struct playlist_plugin m3u_playlist_plugin = {

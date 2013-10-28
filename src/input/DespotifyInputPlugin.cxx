@@ -131,26 +131,26 @@ input_despotify_open(const char *url,
 	struct ds_track *track;
 
 	if (!g_str_has_prefix(url, "spt://"))
-		return NULL;
+		return nullptr;
 
 	session = mpd_despotify_get_session();
 	if (!session)
-		return NULL;
+		return nullptr;
 
 	ds_link = despotify_link_from_uri(url + 6);
 	if (!ds_link) {
 		FormatDebug(despotify_domain, "Can't find %s", url);
-		return NULL;
+		return nullptr;
 	}
 	if (ds_link->type != LINK_TYPE_TRACK) {
 		despotify_free_link(ds_link);
-		return NULL;
+		return nullptr;
 	}
 
 	track = despotify_link_get_track(session, ds_link);
 	despotify_free_link(ds_link);
 	if (!track)
-		return NULL;
+		return nullptr;
 
 	DespotifyInputStream *ctx =
 		new DespotifyInputStream(url, mutex, cond,
@@ -158,13 +158,13 @@ input_despotify_open(const char *url,
 
 	if (!mpd_despotify_register_callback(callback, ctx)) {
 		delete ctx;
-		return NULL;
+		return nullptr;
 	}
 
 	if (despotify_play(ctx->session, ctx->track, false) == false) {
 		mpd_despotify_unregister_callback(callback);
 		delete ctx;
-		return NULL;
+		return nullptr;
 	}
 
 	return &ctx->base;
@@ -213,7 +213,7 @@ input_despotify_tag(InputStream *is)
 	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
 	Tag *tag = ctx->tag;
 
-	ctx->tag = NULL;
+	ctx->tag = nullptr;
 
 	return tag;
 }

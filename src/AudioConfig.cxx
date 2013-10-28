@@ -41,7 +41,7 @@ void initAudioConfig(void)
 {
 	const struct config_param *param = config_get_param(CONF_AUDIO_OUTPUT_FORMAT);
 
-	if (param == NULL)
+	if (param == nullptr)
 		return;
 
 	Error error;

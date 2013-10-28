@@ -169,7 +169,7 @@ alsa_init(const config_param &param, Error &error)
 
 	if (!ad->Init(param, error)) {
 		delete ad;
-		return NULL;
+		return nullptr;
 	}
 
 	alsa_configure(ad, param);
@@ -393,7 +393,7 @@ alsa_setup(AlsaOutput *ad, AudioFormat &audio_format,
 	unsigned int sample_rate = audio_format.sample_rate;
 	unsigned int channels = audio_format.channels;
 	int err;
-	const char *cmd = NULL;
+	const char *cmd = nullptr;
 	int retry = MPD_ALSA_RETRY_NR;
 	unsigned int period_time, period_time_ro;
 	unsigned int buffer_time;
@@ -460,7 +460,7 @@ configure_hw:
 	audio_format.channels = (int8_t)channels;
 
 	err = snd_pcm_hw_params_set_rate_near(ad->pcm, hwparams,
-					      &sample_rate, NULL);
+					      &sample_rate, nullptr);
 	if (err < 0 || sample_rate == 0) {
 		error.Format(alsa_output_domain, err,
 			     "ALSA device \"%s\" does not support %u Hz audio",
@@ -493,12 +493,12 @@ configure_hw:
 		buffer_time = ad->buffer_time;
 		cmd = "snd_pcm_hw_params_set_buffer_time_near";
 		err = snd_pcm_hw_params_set_buffer_time_near(ad->pcm, hwparams,
-							     &buffer_time, NULL);
+							     &buffer_time, nullptr);
 		if (err < 0)
 			goto error;
 	} else {
 		err = snd_pcm_hw_params_get_buffer_time(hwparams, &buffer_time,
-							NULL);
+							nullptr);
 		if (err < 0)
 			buffer_time = 0;
 	}
@@ -515,7 +515,7 @@ configure_hw:
 		period_time = period_time_ro;
 		cmd = "snd_pcm_hw_params_set_period_time_near";
 		err = snd_pcm_hw_params_set_period_time_near(ad->pcm, hwparams,
-							     &period_time, NULL);
+							     &period_time, nullptr);
 		if (err < 0)
 			goto error;
 	}
@@ -540,7 +540,7 @@ configure_hw:
 	snd_pcm_uframes_t alsa_period_size;
 	cmd = "snd_pcm_hw_params_get_period_size";
 	err = snd_pcm_hw_params_get_period_size(hwparams, &alsa_period_size,
-						NULL);
+						nullptr);
 	if (err < 0)
 		goto error;
 

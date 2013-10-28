@@ -25,8 +25,8 @@ void *
 PcmBuffer::Get(size_t new_size)
 {
 	if (new_size == 0)
-		/* never return NULL, because NULL would be assumed to
-		   be an error condition */
+		/* never return nullptr, because nullptr would be
+		   assumed to be an error condition */
 		new_size = 1;
 
 	return buffer.Get(new_size);

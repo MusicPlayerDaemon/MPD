@@ -48,7 +48,7 @@ input_archive_open(const char *pathname,
 	InputStream *is;
 
 	if (!PathTraits::IsAbsoluteFS(pathname))
-		return NULL;
+		return nullptr;
 
 	char *pname = g_strdup(pathname);
 	// archive_lookup will modify pname when true is returned
@@ -57,7 +57,7 @@ input_archive_open(const char *pathname,
 		FormatDebug(archive_domain,
 			    "not an archive, lookup %s failed", pname);
 		g_free(pname);
-		return NULL;
+		return nullptr;
 	}
 
 	//check which archive plugin to use (by ext)
@@ -66,13 +66,13 @@ input_archive_open(const char *pathname,
 		FormatWarning(archive_domain,
 			      "can't handle archive %s", archive);
 		g_free(pname);
-		return NULL;
+		return nullptr;
 	}
 
 	auto file = archive_file_open(arplug, archive, error);
-	if (file == NULL) {
+	if (file == nullptr) {
 		g_free(pname);
-		return NULL;
+		return nullptr;
 	}
 
 	//setup fileops

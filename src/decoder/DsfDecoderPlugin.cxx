@@ -314,7 +314,7 @@ dsf_scan_stream(InputStream &is,
 {
 	/* check DSF metadata */
 	DsfMetaData metadata;
-	if (!dsf_read_metadata(NULL, is, &metadata))
+	if (!dsf_read_metadata(nullptr, is, &metadata))
 		return false;
 
 	AudioFormat audio_format;
@@ -338,12 +338,12 @@ dsf_scan_stream(InputStream &is,
 
 static const char *const dsf_suffixes[] = {
 	"dsf",
-	NULL
+	nullptr
 };
 
 static const char *const dsf_mime_types[] = {
 	"application/x-dsf",
-	NULL
+	nullptr
 };
 
 const struct DecoderPlugin dsf_decoder_plugin = {

@@ -75,11 +75,11 @@ static const gchar *
 get_attribute(const gchar **attribute_names, const gchar **attribute_values,
 	      const gchar *name)
 {
-	for (unsigned i = 0; attribute_names[i] != NULL; ++i)
+	for (unsigned i = 0; attribute_names[i] != nullptr; ++i)
 		if (StringEqualsCaseASCII(attribute_names[i], name))
 			return attribute_values[i];
 
-	return NULL;
+	return nullptr;
 }
 
 static void
@@ -106,7 +106,7 @@ asx_start_element(gcc_unused GMarkupParseContext *context,
 			const gchar *href = get_attribute(attribute_names,
 							  attribute_values,
 							  "href");
-			if (href != NULL) {
+			if (href != nullptr) {
 				/* create new song object, and copy
 				   the existing tag over; we cannot
 				   replace the existing song's URI,
@@ -114,9 +114,9 @@ asx_start_element(gcc_unused GMarkupParseContext *context,
 				   immutable */
 				Song *song = Song::NewRemote(href);
 
-				if (parser->song != NULL) {
+				if (parser->song != nullptr) {
 					song->tag = parser->song->tag;
-					parser->song->tag = NULL;
+					parser->song->tag = nullptr;
 					parser->song->Free();
 				}
 
@@ -172,7 +172,7 @@ asx_text(gcc_unused GMarkupParseContext *context,
 
 	case AsxParser::ENTRY:
 		if (parser->tag != TAG_NUM_OF_ITEM_TYPES) {
-			if (parser->song->tag == NULL)
+			if (parser->song->tag == nullptr)
 				parser->song->tag = new Tag();
 			parser->song->tag->AddItem(parser->tag,
 						   text, text_len);
@@ -213,7 +213,7 @@ asx_open_stream(InputStream &is)
 	size_t nbytes;
 	bool success;
 	Error error2;
-	GError *error = NULL;
+	GError *error = nullptr;
 
 	/* parse the ASX XML file */
 
@@ -227,7 +227,7 @@ asx_open_stream(InputStream &is)
 			if (error2.IsDefined()) {
 				g_markup_parse_context_free(context);
 				LogError(error2);
-				return NULL;
+				return nullptr;
 			}
 
 			break;
@@ -240,7 +240,7 @@ asx_open_stream(InputStream &is)
 				    "XML parser failed: %s", error->message);
 			g_error_free(error);
 			g_markup_parse_context_free(context);
-			return NULL;
+			return nullptr;
 		}
 	}
 
@@ -250,7 +250,7 @@ asx_open_stream(InputStream &is)
 			    "XML parser failed: %s", error->message);
 		g_error_free(error);
 		g_markup_parse_context_free(context);
-		return NULL;
+		return nullptr;
 	}
 
 	parser.songs.reverse();
@@ -264,12 +264,12 @@ asx_open_stream(InputStream &is)
 
 static const char *const asx_suffixes[] = {
 	"asx",
-	NULL
+	nullptr
 };
 
 static const char *const asx_mime_types[] = {
 	"video/x-ms-asf",
-	NULL
+	nullptr
 };
 
 const struct playlist_plugin asx_playlist_plugin = {

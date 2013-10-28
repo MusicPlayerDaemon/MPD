@@ -28,7 +28,7 @@ class Mixer;
 /**
  * Enables or disables the hardware mixer for applying replay gain.
  *
- * @param mixer the hardware mixer, or NULL to fall back to software
+ * @param mixer the hardware mixer, or nullptr to fall back to software
  * volume
  * @param base the base volume level for scale=1.0, between 1 and 100
  * (including).
@@ -40,7 +40,7 @@ replay_gain_filter_set_mixer(Filter *_filter, Mixer *mixer,
 /**
  * Sets a new #replay_gain_info at the beginning of a new song.
  *
- * @param info the new #replay_gain_info value, or NULL if no replay
+ * @param info the new #replay_gain_info value, or nullptr if no replay
  * gain data is available for the current song
  */
 void

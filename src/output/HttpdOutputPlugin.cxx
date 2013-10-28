@@ -98,7 +98,7 @@ HttpdOutput::Configure(const config_param &param, Error &error)
 	const char *encoder_name =
 		param.GetBlockValue("encoder", "vorbis");
 	const auto encoder_plugin = encoder_plugin_get(encoder_name);
-	if (encoder_plugin == NULL) {
+	if (encoder_plugin == nullptr) {
 		error.Format(httpd_output_domain,
 			     "No such encoder: %s", encoder_name);
 		return false;
@@ -109,7 +109,7 @@ HttpdOutput::Configure(const config_param &param, Error &error)
 	/* set up bind_to_address */
 
 	const char *bind_to_address = param.GetBlockValue("bind_to_address");
-	bool success = bind_to_address != NULL &&
+	bool success = bind_to_address != nullptr &&
 		strcmp(bind_to_address, "any") != 0
 		? AddHost(bind_to_address, port, error)
 		: AddPort(port, error);
@@ -263,7 +263,7 @@ HttpdOutput::ReadPage()
 	} while (size < sizeof(buffer));
 
 	if (size == 0)
-		return NULL;
+		return nullptr;
 
 	return Page::Copy(buffer, size);
 }
@@ -344,7 +344,7 @@ HttpdOutput::Close()
 
 	clients.clear();
 
-	if (header != NULL)
+	if (header != nullptr)
 		header->Unref();
 
 	encoder_close(encoder);
@@ -378,7 +378,7 @@ HttpdOutput::RemoveClient(HttpdClient &client)
 void
 HttpdOutput::SendHeader(HttpdClient &client) const
 {
-	if (header != NULL)
+	if (header != nullptr)
 		client.PushPage(header);
 }
 
@@ -408,7 +408,7 @@ httpd_output_delay(struct audio_output *ao)
 void
 HttpdOutput::BroadcastPage(Page *page)
 {
-	assert(page != NULL);
+	assert(page != nullptr);
 
 	const ScopeLock protect(mutex);
 	for (auto &client : clients)
@@ -482,7 +482,7 @@ httpd_output_pause(struct audio_output *ao)
 inline void
 HttpdOutput::SendTag(const Tag *tag)
 {
-	assert(tag != NULL);
+	assert(tag != nullptr);
 
 	if (encoder->plugin.tag != nullptr) {
 		/* embed encoder tags */
@@ -502,8 +502,8 @@ HttpdOutput::SendTag(const Tag *tag)
 		   new clients */
 
 		Page *page = ReadPage();
-		if (page != NULL) {
-			if (header != NULL)
+		if (page != nullptr) {
+			if (header != nullptr)
 				header->Unref();
 			header = page;
 			BroadcastPage(page);
@@ -511,7 +511,7 @@ HttpdOutput::SendTag(const Tag *tag)
 	} else {
 		/* use Icy-Metadata */
 
-		if (metadata != NULL)
+		if (metadata != nullptr)
 			metadata->Unref();
 
 		static constexpr TagType types[] = {
@@ -520,7 +520,7 @@ HttpdOutput::SendTag(const Tag *tag)
 		};
 
 		metadata = icy_server_metadata_page(*tag, &types[0]);
-		if (metadata != NULL) {
+		if (metadata != nullptr) {
 			const ScopeLock protect(mutex);
 			for (auto &client : clients)
 				client.PushMetaData(metadata);

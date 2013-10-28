@@ -48,8 +48,8 @@ static bool
 IsSupportedCharset(const char *charset)
 {
 	/* convert a space to check if the charset is valid */
-	char *test = g_convert(" ", 1, charset, "UTF-8", NULL, NULL, NULL);
-	if (test == NULL)
+	char *test = g_convert(" ", 1, charset, "UTF-8", nullptr, nullptr, nullptr);
+	if (test == nullptr)
 		return false;
 
 	g_free(test);
@@ -59,7 +59,7 @@ IsSupportedCharset(const char *charset)
 void
 SetFSCharset(const char *charset)
 {
-	assert(charset != NULL);
+	assert(charset != nullptr);
 
 	if (!IsSupportedCharset(charset))
 		FormatFatalError("invalid filesystem charset: %s", charset);

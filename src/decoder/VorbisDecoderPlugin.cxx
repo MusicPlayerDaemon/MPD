@@ -133,9 +133,9 @@ vorbis_is_open(struct vorbis_input_stream *vis, OggVorbis_File *vf,
 	vis->input_stream = &input_stream;
 	vis->seekable = input_stream.CheapSeeking();
 
-	int ret = ov_open_callbacks(vis, vf, NULL, 0, vorbis_is_callbacks);
+	int ret = ov_open_callbacks(vis, vf, nullptr, 0, vorbis_is_callbacks);
 	if (ret < 0) {
-		if (decoder == NULL ||
+		if (decoder == nullptr ||
 		    decoder_get_command(*decoder) == DecoderCommand::NONE)
 			FormatWarning(vorbis_domain,
 				      "Failed to open Ogg Vorbis stream: %s",
@@ -191,7 +191,7 @@ vorbis_stream_decode(Decoder &decoder,
 		return;
 
 	const vorbis_info *vi = ov_info(&vf, -1);
-	if (vi == NULL) {
+	if (vi == nullptr) {
 		LogWarning(vorbis_domain, "ov_info() has failed");
 		return;
 	}
@@ -265,7 +265,7 @@ vorbis_stream_decode(Decoder &decoder,
 
 		if (current_section != prev_section) {
 			vi = ov_info(&vf, -1);
-			if (vi == NULL) {
+			if (vi == nullptr) {
 				LogWarning(vorbis_domain,
 					   "ov_info() has failed");
 				break;
@@ -309,7 +309,7 @@ vorbis_scan_stream(InputStream &is,
 	struct vorbis_input_stream vis;
 	OggVorbis_File vf;
 
-	if (!vorbis_is_open(&vis, &vf, NULL, is))
+	if (!vorbis_is_open(&vis, &vf, nullptr, is))
 		return false;
 
 	tag_handler_invoke_duration(handler, handler_ctx,
@@ -323,7 +323,7 @@ vorbis_scan_stream(InputStream &is,
 }
 
 static const char *const vorbis_suffixes[] = {
-	"ogg", "oga", NULL
+	"ogg", "oga", nullptr
 };
 
 static const char *const vorbis_mime_types[] = {
@@ -335,7 +335,7 @@ static const char *const vorbis_mime_types[] = {
 	"audio/x-ogg",
 	"audio/x-vorbis",
 	"audio/x-vorbis+ogg",
-	NULL
+	nullptr
 };
 
 const struct DecoderPlugin vorbis_decoder_plugin = {

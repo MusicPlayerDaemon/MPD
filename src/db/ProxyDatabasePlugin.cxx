@@ -131,7 +131,7 @@ ProxyDatabase::Create(const config_param &param, Error &error)
 	ProxyDatabase *db = new ProxyDatabase();
 	if (!db->Configure(param, error)) {
 		delete db;
-		db = NULL;
+		db = nullptr;
 	}
 
 	return db;
@@ -149,9 +149,9 @@ ProxyDatabase::Configure(const config_param &param, gcc_unused Error &error)
 bool
 ProxyDatabase::Open(Error &error)
 {
-	connection = mpd_connection_new(host.empty() ? NULL : host.c_str(),
+	connection = mpd_connection_new(host.empty() ? nullptr : host.c_str(),
 					port, 0);
-	if (connection == NULL) {
+	if (connection == nullptr) {
 		error.Set(libmpdclient_domain, (int)MPD_ERROR_OOM, "Out of memory");
 		return false;
 	}
@@ -254,7 +254,7 @@ Copy(TagBuilder &tag, TagType d_tag,
 
 	for (unsigned i = 0;; ++i) {
 		const char *value = mpd_song_get_tag(song, s_tag, i);
-		if (value == NULL)
+		if (value == nullptr)
 			break;
 
 		tag.AddItem(d_tag, value);
@@ -339,7 +339,7 @@ ReceiveEntities(struct mpd_connection *connection)
 {
 	std::list<ProxyEntity> entities;
 	struct mpd_entity *entity;
-	while ((entity = mpd_recv_entity(connection)) != NULL)
+	while ((entity = mpd_recv_entity(connection)) != nullptr)
 		entities.push_back(ProxyEntity(entity));
 
 	mpd_response_finish(connection);

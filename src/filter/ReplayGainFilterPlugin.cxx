@@ -80,7 +80,7 @@ public:
 	}
 
 	void SetMixer(Mixer *_mixer, unsigned _base) {
-		assert(_mixer == NULL || (_base > 0 && _base <= 100));
+		assert(_mixer == nullptr || (_base > 0 && _base <= 100));
 
 		mixer = _mixer;
 		base = _base;
@@ -89,7 +89,7 @@ public:
 	}
 
 	void SetInfo(const ReplayGainInfo *_info) {
-		if (_info != NULL) {
+		if (_info != nullptr) {
 			info = *_info;
 			info.Complete();
 		} else
@@ -137,7 +137,7 @@ ReplayGainFilter::Update()
 	} else
 		volume = PCM_VOLUME_1;
 
-	if (mixer != NULL) {
+	if (mixer != nullptr) {
 		/* update the hardware mixer volume */
 
 		unsigned _volume = (volume * base) / PCM_VOLUME_1;
@@ -198,7 +198,7 @@ ReplayGainFilter::FilterPCM(const void *src, size_t src_size,
 				  volume);
 	if (!success) {
 		error.Set(replay_gain_domain, "pcm_volume() has failed");
-		return NULL;
+		return nullptr;
 	}
 
 	return dest;

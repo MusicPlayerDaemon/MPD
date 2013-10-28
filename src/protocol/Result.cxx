@@ -36,14 +36,14 @@ void
 command_error_v(Client &client, enum ack error,
 		const char *fmt, va_list args)
 {
-	assert(current_command != NULL);
+	assert(current_command != nullptr);
 
 	client_printf(client, "ACK [%i@%i] {%s} ",
 		      (int)error, command_list_num, current_command);
 	client_vprintf(client, fmt, args);
 	client_puts(client, "\n");
 
-	current_command = NULL;
+	current_command = nullptr;
 }
 
 void

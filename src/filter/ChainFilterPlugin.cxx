@@ -152,8 +152,8 @@ ChainFilter::FilterPCM(const void *src, size_t src_size,
 		   into the current one */
 		src = child.filter->FilterPCM(src, src_size, &src_size,
 					      error);
-		if (src == NULL)
-			return NULL;
+		if (src == nullptr)
+			return nullptr;
 	}
 
 	/* return the output of the last filter */

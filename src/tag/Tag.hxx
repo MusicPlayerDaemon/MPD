@@ -131,7 +131,7 @@ struct Tag {
 	static Tag *Merge(const Tag &base, const Tag &add);
 
 	/**
-	 * Merges the data from two tags.  Any of the two may be NULL.  Both
+	 * Merges the data from two tags.  Any of the two may be nullptr.  Both
 	 * are freed by this function.
 	 *
 	 * @return a newly allocated tag
@@ -140,8 +140,8 @@ struct Tag {
 	static Tag *MergeReplace(Tag *base, Tag *add);
 
 	/**
-	 * Returns the first value of the specified tag type, or NULL if none
-	 * is present in this tag object.
+	 * Returns the first value of the specified tag type, or
+	 * nullptr if none is present in this tag object.
 	 */
 	gcc_pure
 	const char *GetValue(TagType type) const;

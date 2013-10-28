@@ -61,7 +61,7 @@ replay_gain_get_mode_string(void)
 bool
 replay_gain_set_mode_string(const char *p)
 {
-	assert(p != NULL);
+	assert(p != nullptr);
 
 	if (strcmp(p, "off") == 0)
 		replay_gain_mode = REPLAY_GAIN_OFF;
@@ -83,7 +83,7 @@ void replay_gain_global_init(void)
 {
 	const struct config_param *param = config_get_param(CONF_REPLAYGAIN);
 
-	if (param != NULL &&
+	if (param != nullptr &&
 	    !replay_gain_set_mode_string(param->value.c_str())) {
 		FormatFatalError("replaygain value \"%s\" at line %i is invalid\n",
 				 param->value.c_str(), param->line);

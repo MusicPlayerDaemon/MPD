@@ -68,10 +68,10 @@ soundcloud_resolve(const char* uri) {
 	if (g_str_has_prefix(uri, "http://")) {
 		u = g_strdup(uri);
 	} else if (g_str_has_prefix(uri, "soundcloud.com")) {
-		u = g_strconcat("http://", uri, NULL);
+		u = g_strconcat("http://", uri, nullptr);
 	} else {
 		/* assume it's just a path on soundcloud.com */
-		u = g_strconcat("http://soundcloud.com/", uri, NULL);
+		u = g_strconcat("http://soundcloud.com/", uri, nullptr);
 	}
 
 	ru = g_strconcat("http://api.soundcloud.com/resolve.json?url=",
@@ -95,7 +95,7 @@ const char* key_str[] = {
 	"duration",
 	"title",
 	"stream_url",
-	NULL,
+	nullptr,
 };
 
 struct parse_data {
@@ -141,12 +141,12 @@ static int handle_string(void *ctx, const unsigned char* stringval,
 
 	switch (data->key) {
 	case Title:
-		if (data->title != NULL)
+		if (data->title != nullptr)
 			g_free(data->title);
 		data->title = g_strndup(s, stringlen);
 		break;
 	case Stream_URL:
-		if (data->stream_url != NULL)
+		if (data->stream_url != nullptr)
 			g_free(data->stream_url);
 		data->stream_url = g_strndup(s, stringlen);
 		data->got_url = 1;
@@ -216,7 +216,7 @@ static int handle_end_map(void *ctx)
 
 	Tag *t = new Tag();
 	t->time = data->duration / 1000;
-	if (data->title != NULL)
+	if (data->title != nullptr)
 		t->AddItem(TAG_NAME, data->title);
 	s->tag = t;
 
@@ -226,17 +226,17 @@ static int handle_end_map(void *ctx)
 }
 
 static yajl_callbacks parse_callbacks = {
-	NULL,
-	NULL,
+	nullptr,
+	nullptr,
 	handle_integer,
-	NULL,
-	NULL,
+	nullptr,
+	nullptr,
 	handle_string,
 	handle_start_map,
 	handle_mapkey,
 	handle_end_map,
-	NULL,
-	NULL,
+	nullptr,
+	nullptr,
 };
 
 /**
@@ -255,7 +255,7 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 	Error error;
 	InputStream *input_stream = InputStream::Open(url, mutex, cond,
 						      error);
-	if (input_stream == NULL) {
+	if (input_stream == nullptr) {
 		if (error.IsDefined())
 			LogError(error);
 		return -1;
@@ -348,10 +348,10 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 			      "incompatible scheme for soundcloud plugin: %s",
 			      scheme);
 		g_free(s);
-		return NULL;
+		return nullptr;
 	}
 
-	char *u = NULL;
+	char *u = nullptr;
 	if (strcmp(arg, "track") == 0) {
 		u = g_strconcat("http://api.soundcloud.com/tracks/",
 				rest, ".json?client_id=",
@@ -367,34 +367,34 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	}
 	g_free(s);
 
-	if (u == NULL) {
+	if (u == nullptr) {
 		LogWarning(soundcloud_domain, "unknown soundcloud URI");
-		return NULL;
+		return nullptr;
 	}
 
 	yajl_handle hand;
 	struct parse_data data;
 
 	data.got_url = 0;
-	data.title = NULL;
-	data.stream_url = NULL;
+	data.title = nullptr;
+	data.stream_url = nullptr;
 #ifdef HAVE_YAJL1
-	hand = yajl_alloc(&parse_callbacks, NULL, NULL, (void *) &data);
+	hand = yajl_alloc(&parse_callbacks, nullptr, nullptr, (void *) &data);
 #else
-	hand = yajl_alloc(&parse_callbacks, NULL, (void *) &data);
+	hand = yajl_alloc(&parse_callbacks, nullptr, (void *) &data);
 #endif
 
 	int ret = soundcloud_parse_json(u, hand, mutex, cond);
 
 	g_free(u);
 	yajl_free(hand);
-	if (data.title != NULL)
+	if (data.title != nullptr)
 		g_free(data.title);
-	if (data.stream_url != NULL)
+	if (data.stream_url != nullptr)
 		g_free(data.stream_url);
 
 	if (ret == -1)
-		return NULL;
+		return nullptr;
 
 	data.songs.reverse();
 	return new MemorySongEnumerator(std::move(data.songs));
@@ -402,7 +402,7 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 
 static const char *const soundcloud_schemes[] = {
 	"soundcloud",
-	NULL
+	nullptr
 };
 
 const struct playlist_plugin soundcloud_playlist_plugin = {

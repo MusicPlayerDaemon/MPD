@@ -38,15 +38,15 @@
 void
 ConfigureFS()
 {
-	const char *charset = NULL;
+	const char *charset = nullptr;
 
-	charset = config_get_string(CONF_FS_CHARSET, NULL);
-	if (charset == NULL) {
+	charset = config_get_string(CONF_FS_CHARSET, nullptr);
+	if (charset == nullptr) {
 #ifndef WIN32
 		const gchar **encodings;
 		g_get_filename_charsets(&encodings);
 
-		if (encodings[0] != NULL && *encodings[0] != '\0')
+		if (encodings[0] != nullptr && *encodings[0] != '\0')
 			charset = encodings[0];
 #else
 		/* Glib claims that file system encoding is always utf-8

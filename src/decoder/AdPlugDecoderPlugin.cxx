@@ -72,7 +72,7 @@ adplug_file_decode(Decoder &decoder, const char *path_fs)
 			break;
 
 		opl.update(buffer, frames_per_buffer);
-		cmd = decoder_data(decoder, NULL,
+		cmd = decoder_data(decoder, nullptr,
 				   buffer, sizeof(buffer),
 				   0);
 	} while (cmd == DecoderCommand::NONE);

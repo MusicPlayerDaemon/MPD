@@ -41,7 +41,7 @@ public:
 	 * @param audio_format the audio format of incoming data; the
 	 * plugin may modify the object to enforce another input
 	 * format
-	 * @param error location to store the error occurring, or NULL
+	 * @param error location to store the error occurring, or nullptr
 	 * to ignore errors.
 	 * @return the format of outgoing data or
 	 * AudioFormat::Undefined() on error
@@ -60,10 +60,10 @@ public:
 	 * @param src the input buffer
 	 * @param src_size the size of #src_buffer in bytes
 	 * @param dest_size_r the size of the returned buffer
-	 * @param error location to store the error occurring, or NULL
+	 * @param error location to store the error occurring, or nullptr
 	 * to ignore errors.
 	 * @return the destination buffer on success (will be
-	 * invalidated by filter_close() or filter_filter()), NULL on
+	 * invalidated by filter_close() or filter_filter()), nullptr on
 	 * error
 	 */
 	virtual const void *FilterPCM(const void *src, size_t src_size,

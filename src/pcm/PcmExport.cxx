@@ -87,7 +87,7 @@ PcmExport::Export(const void *data, size_t size, size_t &dest_size_r)
 		const uint8_t *src8 = (const uint8_t *)data;
 		const uint8_t *src_end8 = src8 + size;
 		uint8_t *dest = (uint8_t *)pack_buffer.Get(dest_size);
-		assert(dest != NULL);
+		assert(dest != nullptr);
 
 		pcm_pack_24(dest, (const int32_t *)src8,
 			    (const int32_t *)src_end8);
@@ -114,7 +114,7 @@ PcmExport::Export(const void *data, size_t size, size_t &dest_size_r)
 		assert(reverse_endian >= 2);
 
 		uint8_t *dest = (uint8_t *)reverse_buffer.Get(size);
-		assert(dest != NULL);
+		assert(dest != nullptr);
 
 		const uint8_t *src = (const uint8_t *)data;
 		const uint8_t *src_end = src + size;

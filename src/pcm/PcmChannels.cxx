@@ -95,7 +95,7 @@ pcm_convert_channels_16(PcmBuffer &buffer,
 		pcm_convert_channels_16_n_to_2(dest, src_channels, src,
 					       src_end);
 	else
-		return NULL;
+		return nullptr;
 
 	return dest;
 }
@@ -159,7 +159,7 @@ pcm_convert_channels_24(PcmBuffer &buffer,
 		pcm_convert_channels_24_n_to_2(dest, src_channels, src,
 					       src_end);
 	else
-		return NULL;
+		return nullptr;
 
 	return dest;
 }
@@ -222,7 +222,7 @@ pcm_convert_channels_32(PcmBuffer &buffer,
 		pcm_convert_channels_32_n_to_2(dest, src_channels, src,
 					       src_end);
 	else
-		return NULL;
+		return nullptr;
 
 	return dest;
 }
@@ -284,7 +284,7 @@ pcm_convert_channels_float(PcmBuffer &buffer,
 		pcm_convert_channels_float_n_to_2(dest, src_channels, src,
 						  src_end);
 	else
-		return NULL;
+		return nullptr;
 
 	return dest;
 }

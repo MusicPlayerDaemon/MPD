@@ -31,7 +31,7 @@ static bool
 AddToQueue(Partition &partition, Song &song, Error &error)
 {
 	PlaylistResult result =
-		partition.playlist.AppendSong(partition.pc, &song, NULL);
+		partition.playlist.AppendSong(partition.pc, &song, nullptr);
 	if (result != PlaylistResult::SUCCESS) {
 		error.Set(playlist_domain, int(result), "Playlist error");
 		return false;

@@ -43,7 +43,7 @@ vorbis_comment_value(const char *comment, const char *needle)
 	    comment[len] == '=')
 		return comment + len + 1;
 
-	return NULL;
+	return nullptr;
 }
 
 bool
@@ -91,7 +91,7 @@ vorbis_copy_comment(const char *comment,
 	const char *value;
 
 	value = vorbis_comment_value(comment, name);
-	if (value != NULL) {
+	if (value != nullptr) {
 		tag_handler_invoke_tag(handler, handler_ctx, tag_type, value);
 		return true;
 	}
@@ -103,11 +103,11 @@ static void
 vorbis_scan_comment(const char *comment,
 		    const struct tag_handler *handler, void *handler_ctx)
 {
-	if (handler->pair != NULL) {
+	if (handler->pair != nullptr) {
 		char *name = g_strdup((const char*)comment);
 		char *value = strchr(name, '=');
 
-		if (value != NULL && value > name) {
+		if (value != nullptr && value > name) {
 			*value++ = 0;
 			tag_handler_invoke_pair(handler, handler_ctx,
 						name, value);
@@ -116,7 +116,7 @@ vorbis_scan_comment(const char *comment,
 		g_free(name);
 	}
 
-	for (const struct tag_table *i = xiph_tags; i->name != NULL; ++i)
+	for (const struct tag_table *i = xiph_tags; i->name != nullptr; ++i)
 		if (vorbis_copy_comment(comment, i->name, i->type,
 					handler, handler_ctx))
 			return;

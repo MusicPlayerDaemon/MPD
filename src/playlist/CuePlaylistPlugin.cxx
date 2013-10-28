@@ -52,14 +52,14 @@ Song *
 CuePlaylist::NextSong()
 {
 	Song *song = parser.Get();
-	if (song != NULL)
+	if (song != nullptr)
 		return song;
 
 	std::string line;
 	while (tis.ReadLine(line)) {
 		parser.Feed(line.c_str());
 		song = parser.Get();
-		if (song != NULL)
+		if (song != nullptr)
 			return song;
 	}
 
@@ -69,12 +69,12 @@ CuePlaylist::NextSong()
 
 static const char *const cue_playlist_suffixes[] = {
 	"cue",
-	NULL
+	nullptr
 };
 
 static const char *const cue_playlist_mime_types[] = {
 	"application/x-cue",
-	NULL
+	nullptr
 };
 
 const struct playlist_plugin cue_playlist_plugin = {

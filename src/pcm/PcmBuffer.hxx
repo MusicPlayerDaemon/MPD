@@ -42,9 +42,10 @@ public:
 	 * Get the buffer, and guarantee a minimum size.  This buffer becomes
 	 * invalid with the next pcm_buffer_get() call.
 	 *
-	 * This function will never return NULL, even if size is zero, because
-	 * the PCM library uses the NULL return value to signal "error".  An
-	 * empty destination buffer is not always an error.
+	 * This function will never return nullptr, even if size is
+	 * zero, because the PCM library uses the nullptr return value
+	 * to signal "error".  An empty destination buffer is not
+	 * always an error.
 	 */
 	gcc_malloc
 	void *Get(size_t size);

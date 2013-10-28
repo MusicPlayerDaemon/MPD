@@ -28,6 +28,6 @@ audio_output_plugin_get(const char *name);
 #define audio_output_plugins_for_each(plugin) \
 	for (const struct audio_output_plugin *plugin, \
 		*const*output_plugin_iterator = &audio_output_plugins[0]; \
-		(plugin = *output_plugin_iterator) != NULL; ++output_plugin_iterator)
+		(plugin = *output_plugin_iterator) != nullptr; ++output_plugin_iterator)
 
 #endif

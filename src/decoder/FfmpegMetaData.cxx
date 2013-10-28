@@ -32,7 +32,7 @@ static const struct tag_table ffmpeg_tags[] = {
 	{ "album_artist-sort", TAG_ALBUM_ARTIST_SORT },
 
 	/* sentinel */
-	{ NULL, TAG_NUM_OF_ITEM_TYPES }
+	{ nullptr, TAG_NUM_OF_ITEM_TYPES }
 };
 
 static void
@@ -40,9 +40,9 @@ ffmpeg_copy_metadata(TagType type,
 		     AVDictionary *m, const char *name,
 		     const struct tag_handler *handler, void *handler_ctx)
 {
-	AVDictionaryEntry *mt = NULL;
+	AVDictionaryEntry *mt = nullptr;
 
-	while ((mt = av_dict_get(m, name, mt, 0)) != NULL)
+	while ((mt = av_dict_get(m, name, mt, 0)) != nullptr)
 		tag_handler_invoke_tag(handler, handler_ctx,
 				       type, mt->value);
 }
@@ -51,9 +51,9 @@ static void
 ffmpeg_scan_pairs(AVDictionary *dict,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
-	AVDictionaryEntry *i = NULL;
+	AVDictionaryEntry *i = nullptr;
 
-	while ((i = av_dict_get(dict, "", i, AV_DICT_IGNORE_SUFFIX)) != NULL)
+	while ((i = av_dict_get(dict, "", i, AV_DICT_IGNORE_SUFFIX)) != nullptr)
 		tag_handler_invoke_pair(handler, handler_ctx,
 					i->key, i->value);
 }
@@ -67,10 +67,10 @@ ffmpeg_scan_dictionary(AVDictionary *dict,
 				     handler, handler_ctx);
 
 	for (const struct tag_table *i = ffmpeg_tags;
-	     i->name != NULL; ++i)
+	     i->name != nullptr; ++i)
 		ffmpeg_copy_metadata(i->type, dict, i->name,
 				     handler, handler_ctx);
 
-	if (handler->pair != NULL)
+	if (handler->pair != nullptr)
 		ffmpeg_scan_pairs(dict, handler, handler_ctx);
 }

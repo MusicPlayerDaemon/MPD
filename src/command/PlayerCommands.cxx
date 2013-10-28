@@ -111,7 +111,7 @@ CommandResult
 handle_status(Client &client,
 	      gcc_unused int argc, gcc_unused char *argv[])
 {
-	const char *state = NULL;
+	const char *state = nullptr;
 	int updateJobId;
 	int song;
 

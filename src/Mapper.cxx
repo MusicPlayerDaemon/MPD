@@ -156,7 +156,7 @@ map_to_relative_path(const char *path_utf8)
 AllocatedPath
 map_uri_fs(const char *uri)
 {
-	assert(uri != NULL);
+	assert(uri != nullptr);
 	assert(*uri != '/');
 
 	if (music_dir_fs.IsNull())
@@ -186,7 +186,7 @@ map_directory_child_fs(const Directory &directory, const char *name)
 	assert(!music_dir_fs.IsNull());
 
 	/* check for invalid or unauthorized base names */
-	if (*name == 0 || strchr(name, '/') != NULL ||
+	if (*name == 0 || strchr(name, '/') != nullptr ||
 	    strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
 		return AllocatedPath::Null();
 

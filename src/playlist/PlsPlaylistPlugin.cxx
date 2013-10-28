@@ -39,21 +39,21 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 {
 	gchar *value;
 	int length;
-	GError *error = NULL;
+	GError *error = nullptr;
 	int num_entries = g_key_file_get_integer(keyfile, "playlist",
 						 "NumberOfEntries", &error);
 	if (error) {
 		FormatError(pls_domain,
 			    "Invalid PLS file: '%s'", error->message);
 		g_error_free(error);
-		error = NULL;
+		error = nullptr;
 
 		/* Hack to work around shoutcast failure to comform to spec */
 		num_entries = g_key_file_get_integer(keyfile, "playlist",
 						     "numberofentries", &error);
 		if (error) {
 			g_error_free(error);
-			error = NULL;
+			error = nullptr;
 		}
 	}
 
@@ -78,27 +78,27 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 		sprintf(key, "Title%u", num_entries);
 		value = g_key_file_get_string(keyfile, "playlist", key,
 					      &error);
-		if(error == NULL && value){
-			if (song->tag == NULL)
+		if(error == nullptr && value){
+			if (song->tag == nullptr)
 				song->tag = new Tag();
 			song->tag->AddItem(TAG_TITLE, value);
 		}
 		/* Ignore errors? Most likely value not present */
 		if(error) g_error_free(error);
-		error = NULL;
+		error = nullptr;
 		g_free(value);
 
 		sprintf(key, "Length%u", num_entries);
 		length = g_key_file_get_integer(keyfile, "playlist", key,
 						&error);
-		if(error == NULL && length > 0){
-			if (song->tag == NULL)
+		if(error == nullptr && length > 0){
+			if (song->tag == nullptr)
 				song->tag = new Tag();
 			song->tag->time = length;
 		}
 		/* Ignore errors? Most likely value not present */
 		if(error) g_error_free(error);
-		error = NULL;
+		error = nullptr;
 
 		songs.emplace_front(song);
 		num_entries--;
@@ -109,7 +109,7 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 static SongEnumerator *
 pls_open_stream(InputStream &is)
 {
-	GError *error = NULL;
+	GError *error = nullptr;
 	Error error2;
 	size_t nbytes;
 	char buffer[1024];
@@ -123,7 +123,7 @@ pls_open_stream(InputStream &is)
 		if (nbytes == 0) {
 			if (error2.IsDefined()) {
 				LogError(error2);
-				return NULL;
+				return nullptr;
 			}
 
 			break;
@@ -135,7 +135,7 @@ pls_open_stream(InputStream &is)
 
 	if (kf_data.empty()) {
 		LogWarning(pls_domain, "KeyFile parser failed: No Data");
-		return NULL;
+		return nullptr;
 	}
 
 	keyfile = g_key_file_new();
@@ -148,7 +148,7 @@ pls_open_stream(InputStream &is)
 			    "KeyFile parser failed: %s", error->message);
 		g_error_free(error);
 		g_key_file_free(keyfile);
-		return NULL;
+		return nullptr;
 	}
 
 	std::forward_list<SongPointer> songs;
@@ -161,12 +161,12 @@ pls_open_stream(InputStream &is)
 
 static const char *const pls_suffixes[] = {
 	"pls",
-	NULL
+	nullptr
 };
 
 static const char *const pls_mime_types[] = {
 	"audio/x-scpls",
-	NULL
+	nullptr
 };
 
 const struct playlist_plugin pls_playlist_plugin = {

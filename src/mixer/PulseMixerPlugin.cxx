@@ -75,7 +75,7 @@ pulse_mixer_volume_cb(gcc_unused pa_context *context, const pa_sink_input_info *
 	if (eol)
 		return;
 
-	if (i == NULL) {
+	if (i == nullptr) {
 		pulse_mixer_offline(pm);
 		return;
 	}
@@ -92,14 +92,14 @@ pulse_mixer_update(PulseMixer *pm,
 {
 	pa_operation *o;
 
-	assert(context != NULL);
-	assert(stream != NULL);
+	assert(context != nullptr);
+	assert(stream != nullptr);
 	assert(pa_stream_get_state(stream) == PA_STREAM_READY);
 
 	o = pa_context_get_sink_input_info(context,
 					   pa_stream_get_index(stream),
 					   pulse_mixer_volume_cb, pm);
-	if (o == NULL) {
+	if (o == nullptr) {
 		FormatError(pulse_mixer_domain,
 			    "pa_context_get_sink_input_info() failed: %s",
 			    pa_strerror(pa_context_errno(context)));
@@ -116,12 +116,12 @@ pulse_mixer_on_connect(gcc_unused PulseMixer *pm,
 {
 	pa_operation *o;
 
-	assert(context != NULL);
+	assert(context != nullptr);
 
 	o = pa_context_subscribe(context,
 				 (pa_subscription_mask_t)PA_SUBSCRIPTION_MASK_SINK_INPUT,
-				 NULL, NULL);
-	if (o == NULL) {
+				 nullptr, nullptr);
+	if (o == nullptr) {
 		FormatError(pulse_mixer_domain,
 			    "pa_context_subscribe() failed: %s",
 			    pa_strerror(pa_context_errno(context)));
@@ -150,7 +150,7 @@ pulse_mixer_init(void *ao, gcc_unused const config_param &param,
 {
 	PulseOutput *po = (PulseOutput *)ao;
 
-	if (ao == NULL) {
+	if (ao == nullptr) {
 		error.Set(pulse_mixer_domain,
 			  "The pulse mixer cannot work without the audio output");
 		return nullptr;

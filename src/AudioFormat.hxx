@@ -305,7 +305,7 @@ sample_format_to_string(SampleFormat format);
  *
  * @param af the #audio_format object
  * @param s a buffer to print into
- * @return the string, or NULL if the #audio_format object is invalid
+ * @return the string, or nullptr if the #audio_format object is invalid
  */
 gcc_pure gcc_malloc
 const char *

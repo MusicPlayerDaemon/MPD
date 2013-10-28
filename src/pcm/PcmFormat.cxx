@@ -214,7 +214,7 @@ pcm_convert_to_16(PcmBuffer &buffer, PcmDither &dither,
 						dest_size_r);
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 static void
@@ -319,7 +319,7 @@ pcm_convert_to_24(PcmBuffer &buffer,
 						dest_size_r);
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 static void
@@ -430,7 +430,7 @@ pcm_convert_to_32(PcmBuffer &buffer,
 						dest_size_r);
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
@@ -540,5 +540,5 @@ pcm_convert_to_float(PcmBuffer &buffer,
 		return (const float *)src;
 	}
 
-	return NULL;
+	return nullptr;
 }

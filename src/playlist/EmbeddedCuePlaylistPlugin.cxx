@@ -97,7 +97,7 @@ embcue_playlist_open_uri(const char *uri,
 {
 	if (!PathTraits::IsAbsoluteUTF8(uri))
 		/* only local files supported */
-		return NULL;
+		return nullptr;
 
 	const auto path_fs = AllocatedPath::FromUTF8(uri);
 	if (path_fs.IsNull())
@@ -115,7 +115,7 @@ embcue_playlist_open_uri(const char *uri,
 	if (playlist->cuesheet.empty()) {
 		/* no "CUESHEET" tag found */
 		delete playlist;
-		return NULL;
+		return nullptr;
 	}
 
 	playlist->filename = PathTraits::GetBaseUTF8(uri);
@@ -130,13 +130,13 @@ Song *
 EmbeddedCuePlaylist::NextSong()
 {
 	Song *song = parser->Get();
-	if (song != NULL)
+	if (song != nullptr)
 		return song;
 
 	while (*next != 0) {
 		const char *line = next;
 		char *eol = strpbrk(next, "\r\n");
-		if (eol != NULL) {
+		if (eol != nullptr) {
 			/* null-terminate the line */
 			*eol = 0;
 			next = eol + 1;
@@ -147,13 +147,13 @@ EmbeddedCuePlaylist::NextSong()
 
 		parser->Feed(line);
 		song = parser->Get();
-		if (song != NULL)
+		if (song != nullptr)
 			return song->ReplaceURI(filename.c_str());
 	}
 
 	parser->Finish();
 	song = parser->Get();
-	if (song != NULL)
+	if (song != nullptr)
 		song = song->ReplaceURI(filename.c_str());
 	return song;
 }
@@ -167,7 +167,7 @@ static const char *const embcue_playlist_suffixes[] = {
 	"ape",
 	"wv",
 	"ogg", "oga",
-	NULL
+	nullptr
 };
 
 const struct playlist_plugin embcue_playlist_plugin = {

@@ -240,7 +240,7 @@ const InputPlugin rewind_input_plugin = {
 InputStream *
 input_rewind_open(InputStream *is)
 {
-	assert(is != NULL);
+	assert(is != nullptr);
 	assert(is->offset == 0);
 
 	if (is->seekable)
