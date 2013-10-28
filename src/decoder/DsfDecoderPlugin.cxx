@@ -156,12 +156,20 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 
 	data_size -= sizeof(data_chunk);
 
-	metadata->chunk_size = data_size;
 	/* data_size cannot be bigger or equal to total file size */
 	const uint64_t size = (uint64_t)is.GetSize();
 	if (data_size >= size)
 		return false;
 
+	/* use the sample count from the DSF header as the upper
+	   bound, because some DSF files contain junk at the end of
+	   the "data" chunk */
+	const uint64_t samplecnt = dsf_fmt_chunk.scnt.Read();
+	const uint64_t playable_size = samplecnt * 2 / 8;
+	if (data_size > playable_size)
+		data_size = playable_size;
+
+	metadata->chunk_size = data_size;
 	metadata->channels = (unsigned) dsf_fmt_chunk.channelnum;
 	metadata->sample_rate = samplefreq;
 #ifdef HAVE_ID3TAG

@@ -15,6 +15,7 @@ ver 0.18 (2012/??/??)
   - lastfm: remove defunct Last.fm support
 * decoder:
   - adplug: new decoder plugin using libadplug
+  - dsf: don't play junk at the end of the "data" chunk
   - ffmpeg: drop support for pre-0.8 ffmpeg
   - flac: require libFLAC 1.2 or newer
   - flac: support FLAC files inside archives
