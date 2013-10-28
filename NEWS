@@ -34,6 +34,7 @@ ver 0.18 (2012/??/??)
   - mvp: remove obsolete plugin
 * improved decoder/output error reporting
 * eliminate timer wakeup on idle MPD
+* fix unresponsive MPD while waiting for stream
 
 ver 0.17.6 (2013/10/14)
 * mixer:

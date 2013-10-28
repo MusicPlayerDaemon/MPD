@@ -62,8 +62,13 @@ struct DecoderControl {
 
 	/**
 	 * This lock protects #state and #command.
+	 *
+	 * This is usually a reference to PlayerControl::mutex, so
+	 * that both player thread and decoder thread share a mutex.
+	 * This simplifies synchronization with #cond and
+	 * #client_cond.
 	 */
-	mutable Mutex mutex;
+	Mutex &mutex;
 
 	/**
 	 * Trigger this object after you have modified #command.  This
@@ -75,8 +80,10 @@ struct DecoderControl {
 	/**
 	 * The trigger of this object's client.  It is signalled
 	 * whenever an event occurs.
+	 *
+	 * This is usually a reference to PlayerControl::cond.
 	 */
-	Cond client_cond;
+	Cond &client_cond;
 
 	DecoderState state;
 	DecoderCommand command;
@@ -143,7 +150,11 @@ struct DecoderControl {
 
 	MixRampInfo mix_ramp, previous_mix_ramp;
 
-	DecoderControl();
+	/**
+	 * @param _mutex see #mutex
+	 * @param _client_cond see #client_cond
+	 */
+	DecoderControl(Mutex &_mutex, Cond &_client_cond);
 	~DecoderControl();
 
 	/**

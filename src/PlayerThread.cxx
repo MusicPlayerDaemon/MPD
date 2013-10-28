@@ -322,9 +322,9 @@ Player::WaitForDecoder()
 
 	queued = false;
 
-	Error error = dc.LockGetError();
+	pc.Lock();
+	Error error = dc.GetError();
 	if (error.IsDefined()) {
-		pc.Lock();
 		pc.SetError(PlayerError::DECODER, std::move(error));
 
 		pc.next_song->Free();
@@ -346,8 +346,6 @@ Player::WaitForDecoder()
 	/* set the "starting" flag, which will be cleared by
 	   player_check_decoder_startup() */
 	decoder_starting = true;
-
-	pc.Lock();
 
 	/* update PlayerControl's song information */
 	pc.total_time = pc.next_song->GetDuration();
@@ -429,14 +427,11 @@ Player::CheckDecoderStartup()
 {
 	assert(decoder_starting);
 
-	dc.Lock();
+	pc.Lock();
 
 	Error error = dc.GetError();
 	if (error.IsDefined()) {
 		/* the decoder failed */
-		dc.Unlock();
-
-		pc.Lock();
 		pc.SetError(PlayerError::DECODER, std::move(error));
 		pc.Unlock();
 
@@ -444,7 +439,7 @@ Player::CheckDecoderStartup()
 	} else if (!dc.IsStarting()) {
 		/* the decoder is ready and ok */
 
-		dc.Unlock();
+		pc.Unlock();
 
 		if (output_open &&
 		    !audio_output_all_wait(pc, 1))
@@ -475,7 +470,7 @@ Player::CheckDecoderStartup()
 		/* the decoder is not yet ready; wait
 		   some more */
 		dc.WaitForDecoder();
-		dc.Unlock();
+		pc.Unlock();
 
 		return true;
 	}
@@ -807,19 +802,19 @@ Player::PlayNextChunk()
 		} else {
 			/* there are not enough decoded chunks yet */
 
-			dc.Lock();
+			pc.Lock();
 
 			if (dc.IsIdle()) {
 				/* the decoder isn't running, abort
 				   cross fading */
-				dc.Unlock();
+				pc.Unlock();
 
 				xfade_state = CrossFadeState::DISABLED;
 			} else {
 				/* wait for the decoder */
 				dc.Signal();
 				dc.WaitForDecoder();
-				dc.Unlock();
+				pc.Unlock();
 
 				return true;
 			}
@@ -865,12 +860,12 @@ Player::PlayNextChunk()
 	/* this formula should prevent that the decoder gets woken up
 	   with each chunk; it is more efficient to make it decode a
 	   larger block at a time */
-	dc.Lock();
+	pc.Lock();
 	if (!dc.IsIdle() &&
 	    dc.pipe->GetSize() <= (pc.buffered_before_play +
 				   buffer.GetSize() * 3) / 4)
 		dc.Signal();
-	dc.Unlock();
+	pc.Unlock();
 
 	return true;
 }
@@ -957,11 +952,9 @@ Player::Run()
 				    !SendSilence())
 					break;
 
-				dc.Lock();
+				pc.Lock();
 				/* XXX race condition: check decoder again */
 				dc.WaitForDecoder();
-				dc.Unlock();
-				pc.Lock();
 				continue;
 			} else {
 				/* buffering is complete */
@@ -1107,7 +1100,7 @@ player_task(void *arg)
 {
 	PlayerControl &pc = *(PlayerControl *)arg;
 
-	DecoderControl dc;
+	DecoderControl dc(pc.mutex, pc.cond);
 	decoder_thread_start(dc);
 
 	MusicBuffer buffer(pc.buffer_chunks);

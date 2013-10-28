@@ -26,8 +26,9 @@
 
 #include <assert.h>
 
-DecoderControl::DecoderControl()
-	:state(DecoderState::STOP),
+DecoderControl::DecoderControl(Mutex &_mutex, Cond &_client_cond)
+	:mutex(_mutex), client_cond(_client_cond),
+	 state(DecoderState::STOP),
 	 command(DecoderCommand::NONE),
 	 song(nullptr),
 	 replay_gain_db(0), replay_gain_prev_db(0) {}
