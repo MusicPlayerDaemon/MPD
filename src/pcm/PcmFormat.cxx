@@ -25,12 +25,47 @@
 
 #include <type_traits>
 
-template<typename S>
-struct DefaultSampleBits {
-	typedef decltype(*S()) T;
-	typedef typename std::remove_reference<T>::type U;
+template<SampleFormat F>
+struct SampleTraits {};
 
-	static constexpr auto value = sizeof(U) * 8;
+template<>
+struct SampleTraits<SampleFormat::S8> {
+	typedef int8_t value_type;
+	typedef value_type *pointer_type;
+	typedef const value_type *const_pointer_type;
+
+	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
+	static constexpr unsigned BITS = sizeof(value_type) * 8;
+};
+
+template<>
+struct SampleTraits<SampleFormat::S16> {
+	typedef int16_t value_type;
+	typedef value_type *pointer_type;
+	typedef const value_type *const_pointer_type;
+
+	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
+	static constexpr unsigned BITS = sizeof(value_type) * 8;
+};
+
+template<>
+struct SampleTraits<SampleFormat::S32> {
+	typedef int32_t value_type;
+	typedef value_type *pointer_type;
+	typedef const value_type *const_pointer_type;
+
+	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
+	static constexpr unsigned BITS = sizeof(value_type) * 8;
+};
+
+template<>
+struct SampleTraits<SampleFormat::S24_P32> {
+	typedef int32_t value_type;
+	typedef value_type *pointer_type;
+	typedef const value_type *const_pointer_type;
+
+	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
+	static constexpr unsigned BITS = 24;
 };
 
 static void
@@ -55,30 +90,32 @@ pcm_convert_32_to_16(PcmDither &dither,
 	dither.Dither32To16(out, in, in_end);
 }
 
-template<typename S, unsigned bits=DefaultSampleBits<S>::value>
+template<SampleFormat F, class Traits=SampleTraits<F>>
 static void
-ConvertFromFloat(S dest, const float *src, const float *end)
+ConvertFromFloat(typename Traits::pointer_type dest,
+		 const float *src, const float *end)
 {
-	typedef decltype(*S()) T;
-	typedef typename std::remove_reference<T>::type U;
+	constexpr auto bits = Traits::BITS;
 
 	const float factor = 1 << (bits - 1);
 
 	while (src != end) {
 		int sample(*src++ * factor);
-		*dest++ = PcmClamp<U, int, bits>(sample);
+		*dest++ = PcmClamp<typename Traits::value_type, int, bits>(sample);
 	}
 }
 
-template<typename S, unsigned bits=DefaultSampleBits<S>::value>
+template<SampleFormat F, class Traits=SampleTraits<F>>
 static void
-ConvertFromFloat(S dest, const float *src, size_t size)
+ConvertFromFloat(typename Traits::pointer_type dest,
+		 const float *src, size_t size)
 {
-	ConvertFromFloat<S, bits>(dest, src, pcm_end_pointer(src, size));
+	ConvertFromFloat<F, Traits>(dest, src,
+				    pcm_end_pointer(src, size));
 }
 
-template<typename S, unsigned bits=sizeof(S)*8>
-static S *
+template<SampleFormat F, class Traits=SampleTraits<F>>
+static typename Traits::pointer_type
 AllocateFromFloat(PcmBuffer &buffer, const float *src, size_t src_size,
 		  size_t *dest_size_r)
 {
@@ -86,9 +123,9 @@ AllocateFromFloat(PcmBuffer &buffer, const float *src, size_t src_size,
 	assert(src_size % src_sample_size == 0);
 
 	const size_t num_samples = src_size / src_sample_size;
-	*dest_size_r = num_samples * sizeof(S);
-	S *dest = (S *)buffer.Get(*dest_size_r);
-	ConvertFromFloat<S *, bits>(dest, src, src_size);
+	*dest_size_r = num_samples * sizeof(typename Traits::value_type);
+	auto dest = (typename Traits::pointer_type)buffer.Get(*dest_size_r);
+	ConvertFromFloat<F, Traits>(dest, src, src_size);
 	return dest;
 }
 
@@ -136,7 +173,8 @@ pcm_allocate_float_to_16(PcmBuffer &buffer,
 			 const float *src, size_t src_size,
 			 size_t *dest_size_r)
 {
-	return AllocateFromFloat<int16_t>(buffer, src, src_size, dest_size_r);
+	return AllocateFromFloat<SampleFormat::S16>(buffer, src, src_size,
+						    dest_size_r);
 }
 
 const int16_t *
@@ -240,8 +278,8 @@ pcm_allocate_float_to_24(PcmBuffer &buffer,
 			 const float *src, size_t src_size,
 			 size_t *dest_size_r)
 {
-	return AllocateFromFloat<int32_t, 24>(buffer, src, src_size,
-					      dest_size_r);
+	return AllocateFromFloat<SampleFormat::S24_P32>(buffer, src, src_size,
+							dest_size_r);
 }
 
 const int32_t *
@@ -395,35 +433,39 @@ pcm_convert_to_32(PcmBuffer &buffer,
 	return NULL;
 }
 
-template<typename S, unsigned bits=DefaultSampleBits<S>::value>
+template<SampleFormat F, class Traits=SampleTraits<F>>
 static void
-ConvertToFloat(float *dest, S src, S end)
+ConvertToFloat(float *dest,
+	       typename Traits::const_pointer_type src,
+	       typename Traits::const_pointer_type end)
 {
-	constexpr float factor = 0.5 / (1 << (bits - 2));
+	constexpr float factor = 0.5 / (1 << (Traits::BITS - 2));
 	while (src != end)
 		*dest++ = float(*src++) * factor;
 
 }
 
-template<typename S, unsigned bits=DefaultSampleBits<S>::value>
+template<SampleFormat F, class Traits=SampleTraits<F>>
 static void
-ConvertToFloat(float *dest, S src, size_t size)
+ConvertToFloat(float *dest,
+	       typename Traits::const_pointer_type src, size_t size)
 {
-	ConvertToFloat<S, bits>(dest, src, pcm_end_pointer(src, size));
+	ConvertToFloat<F, Traits>(dest, src, pcm_end_pointer(src, size));
 }
 
-template<typename S, unsigned bits=DefaultSampleBits<S>::value>
+template<SampleFormat F, class Traits=SampleTraits<F>>
 static float *
-AllocateToFloat(PcmBuffer &buffer, S src, size_t src_size,
+AllocateToFloat(PcmBuffer &buffer,
+		typename Traits::const_pointer_type src, size_t src_size,
 		size_t *dest_size_r)
 {
-	constexpr size_t src_sample_size = sizeof(*S());
+	constexpr size_t src_sample_size = Traits::SAMPLE_SIZE;
 	assert(src_size % src_sample_size == 0);
 
 	const size_t num_samples = src_size / src_sample_size;
 	*dest_size_r = num_samples * sizeof(float);
 	float *dest = (float *)buffer.Get(*dest_size_r);
-	ConvertToFloat<S, bits>(dest, src, src_size);
+	ConvertToFloat<F, Traits>(dest, src, src_size);
 	return dest;
 }
 
@@ -432,7 +474,8 @@ pcm_allocate_8_to_float(PcmBuffer &buffer,
 			const int8_t *src, size_t src_size,
 			size_t *dest_size_r)
 {
-	return AllocateToFloat(buffer, src, src_size, dest_size_r);
+	return AllocateToFloat<SampleFormat::S8>(buffer, src, src_size,
+						 dest_size_r);
 }
 
 static float *
@@ -440,7 +483,8 @@ pcm_allocate_16_to_float(PcmBuffer &buffer,
 			 const int16_t *src, size_t src_size,
 			 size_t *dest_size_r)
 {
-	return AllocateToFloat(buffer, src, src_size, dest_size_r);
+	return AllocateToFloat<SampleFormat::S16>(buffer, src, src_size,
+						  dest_size_r);
 }
 
 static float *
@@ -448,8 +492,8 @@ pcm_allocate_24p32_to_float(PcmBuffer &buffer,
 			    const int32_t *src, size_t src_size,
 			    size_t *dest_size_r)
 {
-	return AllocateToFloat<decltype(src), 24>
-		(buffer, src, src_size, dest_size_r);
+	return AllocateToFloat<SampleFormat::S24_P32>(buffer, src, src_size,
+						      dest_size_r);
 }
 
 static float *
@@ -457,7 +501,8 @@ pcm_allocate_32_to_float(PcmBuffer &buffer,
 			 const int32_t *src, size_t src_size,
 			 size_t *dest_size_r)
 {
-	return AllocateToFloat(buffer, src, src_size, dest_size_r);
+	return AllocateToFloat<SampleFormat::S32>(buffer, src, src_size,
+						  dest_size_r);
 }
 
 const float *
