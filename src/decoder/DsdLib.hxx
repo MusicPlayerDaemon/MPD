@@ -47,6 +47,10 @@ bool
 dsdlib_skip(Decoder *decoder, InputStream &is,
 	    int64_t delta);
 
+/**
+ * Add tags from ID3 tag. All tags commonly found in the ID3 tags of
+ * DSF and DSDIFF files are imported
+ */
 void
 dsdlib_tag_id3(InputStream &is,
 	       const struct tag_handler *handler,
