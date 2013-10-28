@@ -20,6 +20,7 @@
 #ifndef MPD_DECODER_DSDLIB_HXX
 #define MPD_DECODER_DSDLIB_HXX
 
+#include "system/ByteOrder.hxx"
 #include "Compiler.h"
 
 #include <stddef.h>
@@ -33,6 +34,17 @@ struct DsdId {
 
 	gcc_pure
 	bool Equals(const char *s) const;
+};
+
+class DsdUint64 {
+	uint32_t lo;
+	uint32_t hi;
+
+public:
+	constexpr uint64_t Read() const {
+		return (uint64_t(FromLE32(hi)) << 32) |
+			uint64_t(FromLE32(lo));
+	}
 };
 
 bool

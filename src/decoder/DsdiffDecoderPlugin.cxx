@@ -43,22 +43,21 @@
 
 struct DsdiffHeader {
 	DsdId id;
-	uint32_t size_high, size_low;
+	DsdUint64 size;
 	DsdId format;
 };
 
 struct DsdiffChunkHeader {
 	DsdId id;
-	uint32_t size_high, size_low;
+	DsdUint64 size;
 
 	/**
 	 * Read the "size" attribute from the specified header, converting it
 	 * to the host byte order if needed.
 	 */
-	gcc_const
+	constexpr
 	uint64_t GetSize() const {
-		return (uint64_t(FromBE32(size_high)) << 32) |
-			uint64_t(FromBE32(size_low));
+		return size.Read();
 	}
 };
 
