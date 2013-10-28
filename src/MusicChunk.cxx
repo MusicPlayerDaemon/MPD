@@ -39,10 +39,9 @@ music_chunk::CheckFormat(const AudioFormat other_format) const
 }
 #endif
 
-void *
+WritableBuffer<void>
 music_chunk::Write(const AudioFormat af,
-		   float data_time, uint16_t _bit_rate,
-		   size_t *max_length_r)
+		   float data_time, uint16_t _bit_rate)
 {
 	assert(CheckFormat(af));
 	assert(length == 0 || audio_format.IsValid());
@@ -58,14 +57,13 @@ music_chunk::Write(const AudioFormat af,
 	const size_t frame_size = af.GetFrameSize();
 	size_t num_frames = (sizeof(data) - length) / frame_size;
 	if (num_frames == 0)
-		return nullptr;
+		return WritableBuffer<void>::Null();
 
 #ifndef NDEBUG
 	audio_format = af;
 #endif
 
-	*max_length_r = num_frames * frame_size;
-	return data + length;
+	return { data + length, num_frames * frame_size };
 }
 
 bool

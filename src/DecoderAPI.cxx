@@ -406,7 +406,6 @@ decoder_data(Decoder &decoder,
 
 	while (length > 0) {
 		struct music_chunk *chunk;
-		size_t nbytes;
 		bool full;
 
 		chunk = decoder_get_chunk(decoder);
@@ -415,17 +414,19 @@ decoder_data(Decoder &decoder,
 			return dc.command;
 		}
 
-		void *dest = chunk->Write(dc.out_audio_format,
-					  decoder.timestamp -
-					  dc.song->start_ms / 1000.0,
-					  kbit_rate, &nbytes);
-		if (dest == nullptr) {
+		const auto dest =
+			chunk->Write(dc.out_audio_format,
+				     decoder.timestamp -
+				     dc.song->start_ms / 1000.0,
+				     kbit_rate);
+		if (dest.IsNull()) {
 			/* the chunk is full, flush it */
 			decoder_flush_chunk(decoder);
 			dc.client_cond.signal();
 			continue;
 		}
 
+		size_t nbytes = dest.size;
 		assert(nbytes > 0);
 
 		if (nbytes > length)
@@ -433,7 +434,7 @@ decoder_data(Decoder &decoder,
 
 		/* copy the buffer */
 
-		memcpy(dest, data, nbytes);
+		memcpy(dest.data, data, nbytes);
 
 		/* expand the music pipe chunk */
 

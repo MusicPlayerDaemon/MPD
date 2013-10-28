@@ -21,6 +21,7 @@
 #define MPD_MUSIC_CHUNK_HXX
 
 #include "ReplayGainInfo.hxx"
+#include "util/WritableBuffer.hxx"
 
 #ifndef NDEBUG
 #include "AudioFormat.hxx"
@@ -126,9 +127,8 @@ struct music_chunk {
 	 * here
 	 * @return a writable buffer, or nullptr if the chunk is full
 	 */
-	void *Write(AudioFormat af,
-		    float data_time, uint16_t bit_rate,
-		    size_t *max_length_r);
+	WritableBuffer<void> Write(AudioFormat af,
+				   float data_time, uint16_t bit_rate);
 
 	/**
 	 * Increases the length of the chunk after the caller has written to
