@@ -65,6 +65,8 @@ dnl OS Specific Defaults
 dnl ---------------------------------------------------------------------------
 AC_CANONICAL_HOST
 
+host_is_darwin=no
+
 case "$host_os" in
 mingw32* | windows*)
 	AC_CONFIG_FILES([
@@ -75,6 +77,10 @@ mingw32* | windows*)
 	AM_CPPFLAGS="$AM_CPPFLAGS -DWINVER=0x0600 -D_WIN32_WINNT=0x0600"
 	LIBS="$LIBS -lws2_32"
 	HAVE_WINDOWS=1
+	;;
+
+darwin*)
+	host_is_darwin=yes
 	;;
 esac
 AM_CONDITIONAL([HAVE_WINDOWS], [test x$HAVE_WINDOWS = x1])
@@ -1270,7 +1276,7 @@ AC_SUBST(OPENAL_CFLAGS,"")
 AC_SUBST(OPENAL_LIBS,"")
 
 if test x$enable_openal = xyes; then
-	if test x$enable_osx = xyes; then
+	if test x$host_is_darwin = xyes; then
 		AC_CHECK_HEADERS([OpenAL/al.h OpenAL/alc.h], [], [enable_openal=no])
 		if test x$enable_openal = xyes; then
 			OPENAL_LIBS="-framework OpenAL"
@@ -1298,13 +1304,11 @@ fi
 AM_CONDITIONAL(HAVE_OSS, test x$enable_oss = xyes)
 
 dnl ----------------------------------- OSX -----------------------------------
-enable_osx=no
-case "$host_os" in
-	darwin*)
-		AC_DEFINE(HAVE_OSX, 1, [Define for compiling OS X support])
-		LIBS="$LIBS -framework AudioUnit -framework CoreAudio -framework CoreServices"
-		enable_osx=yes ;;
-esac
+enable_osx=$host_is_darwin
+if test x$enable_osx = xyes; then
+	AC_DEFINE(HAVE_OSX, 1, [Define for compiling OS X support])
+	LIBS="$LIBS -framework AudioUnit -framework CoreAudio -framework CoreServices"
+fi
 
 AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
 
