@@ -28,7 +28,7 @@
 
 class SongEnumerator;
 struct playlist;
-struct player_control;
+struct PlayerControl;
 
 /**
  * Loads the contents of a playlist and append it to the specified
@@ -42,7 +42,7 @@ struct player_control;
 PlaylistResult
 playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,
-			 playlist &dest, player_control &pc,
+			 playlist &dest, PlayerControl &pc,
 			 bool secure);
 
 /**
@@ -52,7 +52,7 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 PlaylistResult
 playlist_open_into_queue(const char *uri,
 			 unsigned start_index, unsigned end_index,
-			 playlist &dest, player_control &pc,
+			 playlist &dest, PlayerControl &pc,
 			 bool secure);
 
 #endif

@@ -50,18 +50,18 @@ enum class PlayerCommand : uint8_t {
 	 */
 	UPDATE_AUDIO,
 
-	/** player_control.next_song has been updated */
+	/** PlayerControl.next_song has been updated */
 	QUEUE,
 
 	/**
-	 * cancel pre-decoding player_control.next_song; if the player
+	 * cancel pre-decoding PlayerControl.next_song; if the player
 	 * has already started playing this song, it will completely
 	 * stop
 	 */
 	CANCEL,
 
 	/**
-	 * Refresh status information in the #player_control struct,
+	 * Refresh status information in the #PlayerControl struct,
 	 * e.g. elapsed_time.
 	 */
 	REFRESH,
@@ -89,7 +89,7 @@ struct player_status {
 	float elapsed_time;
 };
 
-struct player_control {
+struct PlayerControl {
 	unsigned buffer_chunks;
 
 	unsigned int buffered_before_play;
@@ -169,9 +169,9 @@ struct player_control {
 	 */
 	bool border_pause;
 
-	player_control(unsigned buffer_chunks,
-		       unsigned buffered_before_play);
-	~player_control();
+	PlayerControl(unsigned buffer_chunks,
+		      unsigned buffered_before_play);
+	~PlayerControl();
 
 	/**
 	 * Locks the object.

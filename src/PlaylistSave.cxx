@@ -101,7 +101,7 @@ spl_save_playlist(const char *name_utf8, const playlist &playlist)
 }
 
 bool
-playlist_load_spl(struct playlist &playlist, player_control &pc,
+playlist_load_spl(struct playlist &playlist, PlayerControl &pc,
 		  const char *name_utf8,
 		  unsigned start_index, unsigned end_index,
 		  Error &error)

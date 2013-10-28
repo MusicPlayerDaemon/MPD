@@ -49,7 +49,7 @@ playlist::TagModified(Song &&song)
  * Queue a song, addressed by its order number.
  */
 static void
-playlist_queue_song_order(playlist &playlist, player_control &pc,
+playlist_queue_song_order(playlist &playlist, PlayerControl &pc,
 			  unsigned order)
 {
 	assert(playlist.queue.IsValidOrder(order));
@@ -71,7 +71,7 @@ playlist_queue_song_order(playlist &playlist, player_control &pc,
  * Called if the player thread has started playing the "queued" song.
  */
 static void
-playlist_song_started(playlist &playlist, player_control &pc)
+playlist_song_started(playlist &playlist, PlayerControl &pc)
 {
 	assert(pc.next_song == nullptr);
 	assert(playlist.queued >= -1);
@@ -98,7 +98,7 @@ playlist::GetQueuedSong() const
 }
 
 void
-playlist::UpdateQueuedSong(player_control &pc, const Song *prev)
+playlist::UpdateQueuedSong(PlayerControl &pc, const Song *prev)
 {
 	if (!playing)
 		return;
@@ -144,7 +144,7 @@ playlist::UpdateQueuedSong(player_control &pc, const Song *prev)
 }
 
 void
-playlist::PlayOrder(player_control &pc, int order)
+playlist::PlayOrder(PlayerControl &pc, int order)
 {
 	playing = true;
 	queued = -1;
@@ -162,10 +162,10 @@ playlist::PlayOrder(player_control &pc, int order)
 }
 
 static void
-playlist_resume_playback(playlist &playlist, player_control &pc);
+playlist_resume_playback(playlist &playlist, PlayerControl &pc);
 
 void
-playlist::SyncWithPlayer(player_control &pc)
+playlist::SyncWithPlayer(PlayerControl &pc)
 {
 	if (!playing)
 		/* this event has reached us out of sync: we aren't
@@ -205,7 +205,7 @@ playlist::SyncWithPlayer(player_control &pc)
  * decide whether to re-start playback
  */
 static void
-playlist_resume_playback(playlist &playlist, player_control &pc)
+playlist_resume_playback(playlist &playlist, PlayerControl &pc)
 {
 	assert(playlist.playing);
 	assert(pc.GetState() == PlayerState::STOP);
@@ -228,7 +228,7 @@ playlist_resume_playback(playlist &playlist, player_control &pc)
 }
 
 void
-playlist::SetRepeat(player_control &pc, bool status)
+playlist::SetRepeat(PlayerControl &pc, bool status)
 {
 	if (status == queue.repeat)
 		return;
@@ -255,7 +255,7 @@ playlist_order(playlist &playlist)
 }
 
 void
-playlist::SetSingle(player_control &pc, bool status)
+playlist::SetSingle(PlayerControl &pc, bool status)
 {
 	if (status == queue.single)
 		return;
@@ -282,7 +282,7 @@ playlist::SetConsume(bool status)
 }
 
 void
-playlist::SetRandom(player_control &pc, bool status)
+playlist::SetRandom(PlayerControl &pc, bool status)
 {
 	if (status == queue.random)
 		return;

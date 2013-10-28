@@ -28,7 +28,6 @@ struct audio_output;
 struct AudioFormat;
 struct config_param;
 class MusicPipe;
-struct player_control;
 
 void
 audio_output_set_replay_gain_mode(struct audio_output *ao,

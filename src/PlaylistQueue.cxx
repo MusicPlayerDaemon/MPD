@@ -32,7 +32,7 @@
 PlaylistResult
 playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,
-			 playlist &dest, player_control &pc,
+			 playlist &dest, PlayerControl &pc,
 			 bool secure)
 {
 	const std::string base_uri = uri != nullptr
@@ -66,7 +66,7 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 PlaylistResult
 playlist_open_into_queue(const char *uri,
 			 unsigned start_index, unsigned end_index,
-			 playlist &dest, player_control &pc,
+			 playlist &dest, PlayerControl &pc,
 			 bool secure)
 {
 	Mutex mutex;

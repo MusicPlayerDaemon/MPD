@@ -34,7 +34,7 @@ struct Partition {
 
 	struct playlist playlist;
 
-	player_control pc;
+	PlayerControl pc;
 
 	Partition(Instance &_instance,
 		  unsigned max_length,

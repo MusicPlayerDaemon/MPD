@@ -42,7 +42,7 @@ class Client final : private FullyBufferedSocket, TimeoutMonitor {
 public:
 	Partition &partition;
 	struct playlist &playlist;
-	struct player_control &player_control;
+	struct PlayerControl &player_control;
 
 	unsigned permission;
 

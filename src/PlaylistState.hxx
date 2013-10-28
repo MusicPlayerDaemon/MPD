@@ -28,16 +28,16 @@
 #include <stdio.h>
 
 struct playlist;
-struct player_control;
+struct PlayerControl;
 class TextFile;
 
 void
 playlist_state_save(FILE *fp, const struct playlist &playlist,
-		    player_control &pc);
+		    PlayerControl &pc);
 
 bool
 playlist_state_restore(const char *line, TextFile &file,
-		       struct playlist &playlist, player_control &pc);
+		       struct playlist &playlist, PlayerControl &pc);
 
 /**
  * Generates a hash number for the current state of the playlist and
@@ -47,6 +47,6 @@ playlist_state_restore(const char *line, TextFile &file,
  */
 unsigned
 playlist_state_get_hash(const struct playlist &playlist,
-			player_control &c);
+			PlayerControl &c);
 
 #endif

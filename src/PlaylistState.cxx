@@ -60,7 +60,7 @@
 
 void
 playlist_state_save(FILE *fp, const struct playlist &playlist,
-		    player_control &pc)
+		    PlayerControl &pc)
 {
 	const auto player_status = pc.GetStatus();
 
@@ -128,7 +128,7 @@ playlist_state_load(TextFile &file, struct playlist &playlist)
 
 bool
 playlist_state_restore(const char *line, TextFile &file,
-		       struct playlist &playlist, player_control &pc)
+		       struct playlist &playlist, PlayerControl &pc)
 {
 	int current = -1;
 	int seek_time = 0;
@@ -217,7 +217,7 @@ playlist_state_restore(const char *line, TextFile &file,
 
 unsigned
 playlist_state_get_hash(const playlist &playlist,
-			player_control &pc)
+			PlayerControl &pc)
 {
 	const auto player_status = pc.GetStatus();
 

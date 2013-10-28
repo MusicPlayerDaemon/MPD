@@ -27,8 +27,8 @@
 
 #include <assert.h>
 
-player_control::player_control(unsigned _buffer_chunks,
-			       unsigned _buffered_before_play)
+PlayerControl::PlayerControl(unsigned _buffer_chunks,
+			     unsigned _buffered_before_play)
 	:buffer_chunks(_buffer_chunks),
 	 buffered_before_play(_buffered_before_play),
 	 command(PlayerCommand::NONE),
@@ -50,7 +50,7 @@ player_control::player_control(unsigned _buffer_chunks,
 {
 }
 
-player_control::~player_control()
+PlayerControl::~PlayerControl()
 {
 	if (next_song != nullptr)
 		next_song->Free();
@@ -60,7 +60,7 @@ player_control::~player_control()
 }
 
 void
-player_control::Play(Song *song)
+PlayerControl::Play(Song *song)
 {
 	assert(song != nullptr);
 
@@ -79,14 +79,14 @@ player_control::Play(Song *song)
 }
 
 void
-player_control::Cancel()
+PlayerControl::Cancel()
 {
 	LockSynchronousCommand(PlayerCommand::CANCEL);
 	assert(next_song == nullptr);
 }
 
 void
-player_control::Stop()
+PlayerControl::Stop()
 {
 	LockSynchronousCommand(PlayerCommand::CLOSE_AUDIO);
 	assert(next_song == nullptr);
@@ -95,13 +95,13 @@ player_control::Stop()
 }
 
 void
-player_control::UpdateAudio()
+PlayerControl::UpdateAudio()
 {
 	LockSynchronousCommand(PlayerCommand::UPDATE_AUDIO);
 }
 
 void
-player_control::Kill()
+PlayerControl::Kill()
 {
 	assert(thread.IsDefined());
 
@@ -112,7 +112,7 @@ player_control::Kill()
 }
 
 void
-player_control::PauseLocked()
+PlayerControl::PauseLocked()
 {
 	if (state != PlayerState::STOP) {
 		SynchronousCommand(PlayerCommand::PAUSE);
@@ -121,7 +121,7 @@ player_control::PauseLocked()
 }
 
 void
-player_control::Pause()
+PlayerControl::Pause()
 {
 	Lock();
 	PauseLocked();
@@ -129,7 +129,7 @@ player_control::Pause()
 }
 
 void
-player_control::SetPause(bool pause_flag)
+PlayerControl::SetPause(bool pause_flag)
 {
 	Lock();
 
@@ -152,7 +152,7 @@ player_control::SetPause(bool pause_flag)
 }
 
 void
-player_control::SetBorderPause(bool _border_pause)
+PlayerControl::SetBorderPause(bool _border_pause)
 {
 	Lock();
 	border_pause = _border_pause;
@@ -160,7 +160,7 @@ player_control::SetBorderPause(bool _border_pause)
 }
 
 player_status
-player_control::GetStatus()
+PlayerControl::GetStatus()
 {
 	player_status status;
 
@@ -182,7 +182,7 @@ player_control::GetStatus()
 }
 
 void
-player_control::SetError(PlayerError type, Error &&_error)
+PlayerControl::SetError(PlayerError type, Error &&_error)
 {
 	assert(type != PlayerError::NONE);
 	assert(_error.IsDefined());
@@ -192,7 +192,7 @@ player_control::SetError(PlayerError type, Error &&_error)
 }
 
 void
-player_control::ClearError()
+PlayerControl::ClearError()
 {
 	Lock();
 
@@ -205,7 +205,7 @@ player_control::ClearError()
 }
 
 void
-player_control::LockSetTaggedSong(const Song &song)
+PlayerControl::LockSetTaggedSong(const Song &song)
 {
 	Lock();
 	if (tagged_song != nullptr)
@@ -215,7 +215,7 @@ player_control::LockSetTaggedSong(const Song &song)
 }
 
 void
-player_control::ClearTaggedSong()
+PlayerControl::ClearTaggedSong()
 {
 	if (tagged_song != nullptr) {
 		tagged_song->Free();
@@ -224,7 +224,7 @@ player_control::ClearTaggedSong()
 }
 
 void
-player_control::EnqueueSong(Song *song)
+PlayerControl::EnqueueSong(Song *song)
 {
 	assert(song != nullptr);
 
@@ -234,7 +234,7 @@ player_control::EnqueueSong(Song *song)
 }
 
 bool
-player_control::Seek(Song *song, float seek_time)
+PlayerControl::Seek(Song *song, float seek_time)
 {
 	assert(song != nullptr);
 
@@ -256,7 +256,7 @@ player_control::Seek(Song *song, float seek_time)
 }
 
 void
-player_control::SetCrossFade(float _cross_fade_seconds)
+PlayerControl::SetCrossFade(float _cross_fade_seconds)
 {
 	if (_cross_fade_seconds < 0)
 		_cross_fade_seconds = 0;
@@ -266,7 +266,7 @@ player_control::SetCrossFade(float _cross_fade_seconds)
 }
 
 void
-player_control::SetMixRampDb(float _mixramp_db)
+PlayerControl::SetMixRampDb(float _mixramp_db)
 {
 	mixramp_db = _mixramp_db;
 
@@ -274,7 +274,7 @@ player_control::SetMixRampDb(float _mixramp_db)
 }
 
 void
-player_control::SetMixRampDelay(float _mixramp_delay_seconds)
+PlayerControl::SetMixRampDelay(float _mixramp_delay_seconds)
 {
 	mixramp_delay_seconds = _mixramp_delay_seconds;
 

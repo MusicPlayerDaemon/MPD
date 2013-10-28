@@ -72,9 +72,9 @@ find_named_config_block(ConfigOption option, const char *name)
 	return NULL;
 }
 
-player_control::player_control(gcc_unused unsigned _buffer_chunks,
+PlayerControl::PlayerControl(gcc_unused unsigned _buffer_chunks,
 			       gcc_unused unsigned _buffered_before_play) {}
-player_control::~player_control() {}
+PlayerControl::~PlayerControl() {}
 
 static struct audio_output *
 load_audio_output(const char *name)
@@ -87,7 +87,7 @@ load_audio_output(const char *name)
 		return nullptr;
 	}
 
-	static struct player_control dummy_player_control(32, 4);
+	static struct PlayerControl dummy_player_control(32, 4);
 
 	Error error;
 	struct audio_output *ao =

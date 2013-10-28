@@ -23,7 +23,7 @@
 #include "Queue.hxx"
 #include "PlaylistError.hxx"
 
-struct player_control;
+struct PlayerControl;
 struct Song;
 
 struct playlist {
@@ -105,7 +105,7 @@ struct playlist {
 	 * player thread whenever it requests a new queued song, or
 	 * when it exits.
 	 */
-	void SyncWithPlayer(player_control &pc);
+	void SyncWithPlayer(PlayerControl &pc);
 
 protected:
 	/**
@@ -123,10 +123,10 @@ protected:
 	 * @param prev the song which was previously queued, as
 	 * determined by playlist_get_queued_song()
 	 */
-	void UpdateQueuedSong(player_control &pc, const Song *prev);
+	void UpdateQueuedSong(PlayerControl &pc, const Song *prev);
 
 public:
-	void Clear(player_control &pc);
+	void Clear(PlayerControl &pc);
 
 	/**
 	 * A tag in the play queue has been modified by the player
@@ -140,7 +140,7 @@ public:
 	 */
 	void DatabaseModified();
 
-	PlaylistResult AppendSong(player_control &pc,
+	PlaylistResult AppendSong(PlayerControl &pc,
 				  Song *song,
 				  unsigned *added_id=nullptr);
 
@@ -150,28 +150,28 @@ public:
 	 *
 	 * Note: the caller is responsible for checking permissions.
 	 */
-	PlaylistResult AppendFile(player_control &pc,
+	PlaylistResult AppendFile(PlayerControl &pc,
 				  const char *path_utf8,
 				  unsigned *added_id=nullptr);
 
-	PlaylistResult AppendURI(player_control &pc,
+	PlaylistResult AppendURI(PlayerControl &pc,
 				 const char *uri_utf8,
 				 unsigned *added_id=nullptr);
 
 protected:
-	void DeleteInternal(player_control &pc,
+	void DeleteInternal(PlayerControl &pc,
 			    unsigned song, const Song **queued_p);
 
 public:
-	PlaylistResult DeletePosition(player_control &pc,
+	PlaylistResult DeletePosition(PlayerControl &pc,
 				      unsigned position);
 
-	PlaylistResult DeleteOrder(player_control &pc,
+	PlaylistResult DeleteOrder(PlayerControl &pc,
 				   unsigned order) {
 		return DeletePosition(pc, queue.OrderToPosition(order));
 	}
 
-	PlaylistResult DeleteId(player_control &pc, unsigned id);
+	PlaylistResult DeleteId(PlayerControl &pc, unsigned id);
 
 	/**
 	 * Deletes a range of songs from the playlist.
@@ -179,49 +179,49 @@ public:
 	 * @param start the position of the first song to delete
 	 * @param end the position after the last song to delete
 	 */
-	PlaylistResult DeleteRange(player_control &pc,
+	PlaylistResult DeleteRange(PlayerControl &pc,
 				   unsigned start, unsigned end);
 
-	void DeleteSong(player_control &pc, const Song &song);
+	void DeleteSong(PlayerControl &pc, const Song &song);
 
-	void Shuffle(player_control &pc, unsigned start, unsigned end);
+	void Shuffle(PlayerControl &pc, unsigned start, unsigned end);
 
-	PlaylistResult MoveRange(player_control &pc,
+	PlaylistResult MoveRange(PlayerControl &pc,
 				 unsigned start, unsigned end, int to);
 
-	PlaylistResult MoveId(player_control &pc, unsigned id, int to);
+	PlaylistResult MoveId(PlayerControl &pc, unsigned id, int to);
 
-	PlaylistResult SwapPositions(player_control &pc,
+	PlaylistResult SwapPositions(PlayerControl &pc,
 				     unsigned song1, unsigned song2);
 
-	PlaylistResult SwapIds(player_control &pc,
+	PlaylistResult SwapIds(PlayerControl &pc,
 			       unsigned id1, unsigned id2);
 
-	PlaylistResult SetPriorityRange(player_control &pc,
+	PlaylistResult SetPriorityRange(PlayerControl &pc,
 					unsigned start_position,
 					unsigned end_position,
 					uint8_t priority);
 
-	PlaylistResult SetPriorityId(player_control &pc,
+	PlaylistResult SetPriorityId(PlayerControl &pc,
 				     unsigned song_id, uint8_t priority);
 
-	void Stop(player_control &pc);
+	void Stop(PlayerControl &pc);
 
-	PlaylistResult PlayPosition(player_control &pc, int position);
+	PlaylistResult PlayPosition(PlayerControl &pc, int position);
 
-	void PlayOrder(player_control &pc, int order);
+	void PlayOrder(PlayerControl &pc, int order);
 
-	PlaylistResult PlayId(player_control &pc, int id);
+	PlaylistResult PlayId(PlayerControl &pc, int id);
 
-	void PlayNext(player_control &pc);
+	void PlayNext(PlayerControl &pc);
 
-	void PlayPrevious(player_control &pc);
+	void PlayPrevious(PlayerControl &pc);
 
-	PlaylistResult SeekSongPosition(player_control &pc,
+	PlaylistResult SeekSongPosition(PlayerControl &pc,
 					unsigned song_position,
 					float seek_time);
 
-	PlaylistResult SeekSongId(player_control &pc,
+	PlaylistResult SeekSongId(PlayerControl &pc,
 				  unsigned song_id, float seek_time);
 
 	/**
@@ -232,26 +232,26 @@ public:
 	 * @param relative if true, then the specified time is relative to the
 	 * current position
 	 */
-	PlaylistResult SeekCurrent(player_control &pc,
+	PlaylistResult SeekCurrent(PlayerControl &pc,
 				   float seek_time, bool relative);
 
 	bool GetRepeat() const {
 		return queue.repeat;
 	}
 
-	void SetRepeat(player_control &pc, bool new_value);
+	void SetRepeat(PlayerControl &pc, bool new_value);
 
 	bool GetRandom() const {
 		return queue.random;
 	}
 
-	void SetRandom(player_control &pc, bool new_value);
+	void SetRandom(PlayerControl &pc, bool new_value);
 
 	bool GetSingle() const {
 		return queue.single;
 	}
 
-	void SetSingle(player_control &pc, bool new_value);
+	void SetSingle(PlayerControl &pc, bool new_value);
 
 	bool GetConsume() const {
 		return queue.consume;

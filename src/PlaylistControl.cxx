@@ -30,7 +30,7 @@
 #include "Log.hxx"
 
 void
-playlist::Stop(player_control &pc)
+playlist::Stop(PlayerControl &pc)
 {
 	if (!playing)
 		return;
@@ -57,7 +57,7 @@ playlist::Stop(player_control &pc)
 }
 
 PlaylistResult
-playlist::PlayPosition(player_control &pc, int song)
+playlist::PlayPosition(PlayerControl &pc, int song)
 {
 	pc.ClearError();
 
@@ -107,7 +107,7 @@ playlist::PlayPosition(player_control &pc, int song)
 }
 
 PlaylistResult
-playlist::PlayId(player_control &pc, int id)
+playlist::PlayId(PlayerControl &pc, int id)
 {
 	if (id == -1)
 		return PlayPosition(pc, id);
@@ -120,7 +120,7 @@ playlist::PlayId(player_control &pc, int id)
 }
 
 void
-playlist::PlayNext(player_control &pc)
+playlist::PlayNext(PlayerControl &pc)
 {
 	if (!playing)
 		return;
@@ -166,7 +166,7 @@ playlist::PlayNext(player_control &pc)
 }
 
 void
-playlist::PlayPrevious(player_control &pc)
+playlist::PlayPrevious(PlayerControl &pc)
 {
 	if (!playing)
 		return;
@@ -190,7 +190,7 @@ playlist::PlayPrevious(player_control &pc)
 }
 
 PlaylistResult
-playlist::SeekSongPosition(player_control &pc, unsigned song, float seek_time)
+playlist::SeekSongPosition(PlayerControl &pc, unsigned song, float seek_time)
 {
 	if (!queue.IsValidPosition(song))
 		return PlaylistResult::BAD_RANGE;
@@ -229,7 +229,7 @@ playlist::SeekSongPosition(player_control &pc, unsigned song, float seek_time)
 }
 
 PlaylistResult
-playlist::SeekSongId(player_control &pc, unsigned id, float seek_time)
+playlist::SeekSongId(PlayerControl &pc, unsigned id, float seek_time)
 {
 	int song = queue.IdToPosition(id);
 	if (song < 0)
@@ -239,7 +239,7 @@ playlist::SeekSongId(player_control &pc, unsigned id, float seek_time)
 }
 
 PlaylistResult
-playlist::SeekCurrent(player_control &pc, float seek_time, bool relative)
+playlist::SeekCurrent(PlayerControl &pc, float seek_time, bool relative)
 {
 	if (!playing)
 		return PlaylistResult::NOT_PLAYING;

@@ -26,7 +26,7 @@
  * audio outputs via audio_output_all_play().
  *
  * It is controlled by the main thread (the playlist code), see
- * player_control.h.  The playlist enqueues new songs into the player
+ * PlayerControl.hxx.  The playlist enqueues new songs into the player
  * thread and sends it commands.
  *
  * The player thread itself does not do any I/O.  It synchronizes with
@@ -37,9 +37,9 @@
 #ifndef MPD_PLAYER_THREAD_HXX
 #define MPD_PLAYER_THREAD_HXX
 
-struct player_control;
+struct PlayerControl;
 
 void
-player_create(player_control &pc);
+player_create(PlayerControl &pc);
 
 #endif

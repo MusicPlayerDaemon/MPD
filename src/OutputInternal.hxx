@@ -32,6 +32,7 @@ class Error;
 class Filter;
 class MusicPipe;
 struct config_param;
+struct PlayerControl;
 typedef struct _GTimer GTimer;
 
 enum audio_output_command {
@@ -225,10 +226,10 @@ struct audio_output {
 	Cond cond;
 
 	/**
-	 * The player_control object which "owns" this output.  This
+	 * The PlayerControl object which "owns" this output.  This
 	 * object is needed to signal command completion.
 	 */
-	struct player_control *player_control;
+	PlayerControl *player_control;
 
 	/**
 	 * The #music_chunk which is currently being played.  All
@@ -264,7 +265,7 @@ audio_output_command_is_finished(const struct audio_output *ao)
 
 struct audio_output *
 audio_output_new(const config_param &param,
-		 player_control &pc,
+		 PlayerControl &pc,
 		 Error &error);
 
 bool

@@ -46,7 +46,7 @@ playlist::OnModified()
 }
 
 void
-playlist::Clear(player_control &pc)
+playlist::Clear(PlayerControl &pc)
 {
 	Stop(pc);
 
@@ -57,7 +57,7 @@ playlist::Clear(player_control &pc)
 }
 
 PlaylistResult
-playlist::AppendFile(struct player_control &pc,
+playlist::AppendFile(PlayerControl &pc,
 		     const char *path_utf8, unsigned *added_id)
 {
 	Song *song = Song::LoadFile(path_utf8, nullptr);
@@ -70,7 +70,7 @@ playlist::AppendFile(struct player_control &pc,
 }
 
 PlaylistResult
-playlist::AppendSong(struct player_control &pc,
+playlist::AppendSong(PlayerControl &pc,
 		     Song *song, unsigned *added_id)
 {
 	unsigned id;
@@ -105,7 +105,7 @@ playlist::AppendSong(struct player_control &pc,
 }
 
 PlaylistResult
-playlist::AppendURI(struct player_control &pc,
+playlist::AppendURI(PlayerControl &pc,
 		    const char *uri, unsigned *added_id)
 {
 	FormatDebug(playlist_domain, "add to playlist: %s", uri);
@@ -134,7 +134,7 @@ playlist::AppendURI(struct player_control &pc,
 }
 
 PlaylistResult
-playlist::SwapPositions(player_control &pc, unsigned song1, unsigned song2)
+playlist::SwapPositions(PlayerControl &pc, unsigned song1, unsigned song2)
 {
 	if (!queue.IsValidPosition(song1) || !queue.IsValidPosition(song2))
 		return PlaylistResult::BAD_RANGE;
@@ -165,7 +165,7 @@ playlist::SwapPositions(player_control &pc, unsigned song1, unsigned song2)
 }
 
 PlaylistResult
-playlist::SwapIds(player_control &pc, unsigned id1, unsigned id2)
+playlist::SwapIds(PlayerControl &pc, unsigned id1, unsigned id2)
 {
 	int song1 = queue.IdToPosition(id1);
 	int song2 = queue.IdToPosition(id2);
@@ -177,7 +177,7 @@ playlist::SwapIds(player_control &pc, unsigned id1, unsigned id2)
 }
 
 PlaylistResult
-playlist::SetPriorityRange(player_control &pc,
+playlist::SetPriorityRange(PlayerControl &pc,
 			   unsigned start, unsigned end,
 			   uint8_t priority)
 {
@@ -211,7 +211,7 @@ playlist::SetPriorityRange(player_control &pc,
 }
 
 PlaylistResult
-playlist::SetPriorityId(struct player_control &pc,
+playlist::SetPriorityId(PlayerControl &pc,
 			unsigned song_id, uint8_t priority)
 {
 	int song_position = queue.IdToPosition(song_id);
@@ -224,7 +224,7 @@ playlist::SetPriorityId(struct player_control &pc,
 }
 
 void
-playlist::DeleteInternal(player_control &pc,
+playlist::DeleteInternal(PlayerControl &pc,
 			 unsigned song, const Song **queued_p)
 {
 	assert(song < GetLength());
@@ -270,7 +270,7 @@ playlist::DeleteInternal(player_control &pc,
 }
 
 PlaylistResult
-playlist::DeletePosition(struct player_control &pc, unsigned song)
+playlist::DeletePosition(PlayerControl &pc, unsigned song)
 {
 	if (song >= queue.GetLength())
 		return PlaylistResult::BAD_RANGE;
@@ -286,7 +286,7 @@ playlist::DeletePosition(struct player_control &pc, unsigned song)
 }
 
 PlaylistResult
-playlist::DeleteRange(struct player_control &pc, unsigned start, unsigned end)
+playlist::DeleteRange(PlayerControl &pc, unsigned start, unsigned end)
 {
 	if (start >= queue.GetLength())
 		return PlaylistResult::BAD_RANGE;
@@ -310,7 +310,7 @@ playlist::DeleteRange(struct player_control &pc, unsigned start, unsigned end)
 }
 
 PlaylistResult
-playlist::DeleteId(struct player_control &pc, unsigned id)
+playlist::DeleteId(PlayerControl &pc, unsigned id)
 {
 	int song = queue.IdToPosition(id);
 	if (song < 0)
@@ -320,7 +320,7 @@ playlist::DeleteId(struct player_control &pc, unsigned id)
 }
 
 void
-playlist::DeleteSong(struct player_control &pc, const struct Song &song)
+playlist::DeleteSong(PlayerControl &pc, const struct Song &song)
 {
 	for (int i = queue.GetLength() - 1; i >= 0; --i)
 		if (SongEquals(song, queue.Get(i)))
@@ -328,7 +328,7 @@ playlist::DeleteSong(struct player_control &pc, const struct Song &song)
 }
 
 PlaylistResult
-playlist::MoveRange(player_control &pc, unsigned start, unsigned end, int to)
+playlist::MoveRange(PlayerControl &pc, unsigned start, unsigned end, int to)
 {
 	if (!queue.IsValidPosition(start) || !queue.IsValidPosition(end - 1))
 		return PlaylistResult::BAD_RANGE;
@@ -381,7 +381,7 @@ playlist::MoveRange(player_control &pc, unsigned start, unsigned end, int to)
 }
 
 PlaylistResult
-playlist::MoveId(player_control &pc, unsigned id1, int to)
+playlist::MoveId(PlayerControl &pc, unsigned id1, int to)
 {
 	int song = queue.IdToPosition(id1);
 	if (song < 0)
@@ -391,7 +391,7 @@ playlist::MoveId(player_control &pc, unsigned id1, int to)
 }
 
 void
-playlist::Shuffle(player_control &pc, unsigned start, unsigned end)
+playlist::Shuffle(PlayerControl &pc, unsigned start, unsigned end)
 {
 	if (end > GetLength())
 		/* correct the "end" offset */

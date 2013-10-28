@@ -51,7 +51,7 @@ enum class CrossFadeState : int8_t {
 };
 
 class Player {
-	player_control &pc;
+	PlayerControl &pc;
 
 	DecoderControl &dc;
 
@@ -130,7 +130,7 @@ class Player {
 	float elapsed_time;
 
 public:
-	Player(player_control &_pc, DecoderControl &_dc,
+	Player(PlayerControl &_pc, DecoderControl &_dc,
 	       MusicBuffer &_buffer)
 		:pc(_pc), dc(_dc), buffer(_buffer),
 		 buffering(false),
@@ -275,7 +275,7 @@ public:
 };
 
 static void
-player_command_finished(player_control &pc)
+player_command_finished(PlayerControl &pc)
 {
 	pc.Lock();
 	pc.CommandFinished();
@@ -349,7 +349,7 @@ Player::WaitForDecoder()
 
 	pc.Lock();
 
-	/* update player_control's song information */
+	/* update PlayerControl's song information */
 	pc.total_time = pc.next_song->GetDuration();
 	pc.bit_rate = 0;
 	pc.audio_format.Clear();
@@ -686,7 +686,7 @@ Player::ProcessCommand()
 }
 
 static void
-update_song_tag(player_control &pc, Song *song, const Tag &new_tag)
+update_song_tag(PlayerControl &pc, Song *song, const Tag &new_tag)
 {
 	if (song->IsFile())
 		/* don't update tags of local files, only remote
@@ -717,7 +717,7 @@ update_song_tag(player_control &pc, Song *song, const Tag &new_tag)
  * Player lock is not held.
  */
 static bool
-play_chunk(player_control &pc,
+play_chunk(PlayerControl &pc,
 	   Song *song, struct music_chunk *chunk,
 	   MusicBuffer &buffer,
 	   const AudioFormat format,
@@ -1095,7 +1095,7 @@ Player::Run()
 }
 
 static void
-do_play(player_control &pc, DecoderControl &dc,
+do_play(PlayerControl &pc, DecoderControl &dc,
 	MusicBuffer &buffer)
 {
 	Player player(pc, dc, buffer);
@@ -1105,7 +1105,7 @@ do_play(player_control &pc, DecoderControl &dc,
 static void
 player_task(void *arg)
 {
-	player_control &pc = *(player_control *)arg;
+	PlayerControl &pc = *(PlayerControl *)arg;
 
 	DecoderControl dc;
 	decoder_thread_start(dc);
@@ -1193,7 +1193,7 @@ player_task(void *arg)
 }
 
 void
-player_create(player_control &pc)
+player_create(PlayerControl &pc)
 {
 	assert(!pc.thread.IsDefined());
 
