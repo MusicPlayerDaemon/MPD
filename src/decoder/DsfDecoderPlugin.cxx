@@ -151,6 +151,9 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 	   we use the actual data size as chunk size */
 
 	uint64_t data_size = data_chunk.size.Read();
+	if (data_size < sizeof(data_chunk))
+		return false;
+
 	data_size -= sizeof(data_chunk);
 
 	metadata->chunk_size = data_size;
