@@ -42,7 +42,7 @@ Decoder::~Decoder()
  * one.
  */
 static DecoderCommand
-need_chunks(decoder_control &dc, bool do_wait)
+need_chunks(DecoderControl &dc, bool do_wait)
 {
 	if (dc.command == DecoderCommand::STOP ||
 	    dc.command == DecoderCommand::SEEK)
@@ -61,7 +61,7 @@ need_chunks(decoder_control &dc, bool do_wait)
 struct music_chunk *
 decoder_get_chunk(Decoder &decoder)
 {
-	decoder_control &dc = decoder.dc;
+	DecoderControl &dc = decoder.dc;
 	DecoderCommand cmd;
 
 	if (decoder.chunk != nullptr)
@@ -90,7 +90,7 @@ decoder_get_chunk(Decoder &decoder)
 void
 decoder_flush_chunk(Decoder &decoder)
 {
-	decoder_control &dc = decoder.dc;
+	DecoderControl &dc = decoder.dc;
 
 	assert(decoder.chunk != nullptr);
 

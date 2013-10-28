@@ -24,12 +24,12 @@
 #include "pcm/PcmConvert.hxx"
 #include "ReplayGainInfo.hxx"
 
-struct decoder_control;
+struct DecoderControl;
 struct InputStream;
 struct Tag;
 
 struct Decoder {
-	decoder_control &dc;
+	DecoderControl &dc;
 
 	PcmConvert conv_state;
 
@@ -83,7 +83,7 @@ struct Decoder {
 	 */
 	unsigned replay_gain_serial;
 
-	Decoder(decoder_control &_dc, bool _initial_seek_pending, Tag *_tag)
+	Decoder(DecoderControl &_dc, bool _initial_seek_pending, Tag *_tag)
 		:dc(_dc),
 		 timestamp(0),
 		 initial_seek_pending(_initial_seek_pending),

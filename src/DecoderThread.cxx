@@ -44,10 +44,10 @@ static constexpr Domain decoder_thread_domain("decoder_thread");
  * Marks the current decoder command as "finished" and notifies the
  * player thread.
  *
- * @param dc the #decoder_control object; must be locked
+ * @param dc the #DecoderControl object; must be locked
  */
 static void
-decoder_command_finished_locked(decoder_control &dc)
+decoder_command_finished_locked(DecoderControl &dc)
 {
 	assert(dc.command != DecoderCommand::NONE);
 
@@ -68,7 +68,7 @@ decoder_command_finished_locked(decoder_control &dc)
  * received, nullptr on error
  */
 static InputStream *
-decoder_input_stream_open(decoder_control &dc, const char *uri)
+decoder_input_stream_open(DecoderControl &dc, const char *uri)
 {
 	Error error;
 
@@ -237,7 +237,7 @@ decoder_run_stream_fallback(Decoder &decoder, InputStream &is)
 static bool
 decoder_run_stream(Decoder &decoder, const char *uri)
 {
-	decoder_control &dc = decoder.dc;
+	DecoderControl &dc = decoder.dc;
 	InputStream *input_stream;
 	bool success;
 
@@ -285,7 +285,7 @@ decoder_load_replay_gain(Decoder &decoder, const char *path_fs)
 static bool
 decoder_run_file(Decoder &decoder, const char *path_fs)
 {
-	decoder_control &dc = decoder.dc;
+	DecoderControl &dc = decoder.dc;
 	const char *suffix = uri_get_suffix(path_fs);
 	const struct DecoderPlugin *plugin = nullptr;
 
@@ -333,7 +333,7 @@ decoder_run_file(Decoder &decoder, const char *path_fs)
 }
 
 static void
-decoder_run_song(decoder_control &dc,
+decoder_run_song(DecoderControl &dc,
 		 const Song *song, const char *uri)
 {
 	Decoder decoder(dc, dc.start_ms > 0,
@@ -376,7 +376,7 @@ decoder_run_song(decoder_control &dc,
 }
 
 static void
-decoder_run(decoder_control &dc)
+decoder_run(DecoderControl &dc)
 {
 	dc.ClearError();
 
@@ -402,7 +402,7 @@ decoder_run(decoder_control &dc)
 static void
 decoder_task(void *arg)
 {
-	decoder_control &dc = *(decoder_control *)arg;
+	DecoderControl &dc = *(DecoderControl *)arg;
 
 	dc.Lock();
 
@@ -436,7 +436,7 @@ decoder_task(void *arg)
 }
 
 void
-decoder_thread_start(decoder_control &dc)
+decoder_thread_start(DecoderControl &dc)
 {
 	assert(!dc.thread.IsDefined());
 

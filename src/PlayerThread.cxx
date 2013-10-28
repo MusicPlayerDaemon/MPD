@@ -53,7 +53,7 @@ enum class CrossFadeState : int8_t {
 class Player {
 	player_control &pc;
 
-	decoder_control &dc;
+	DecoderControl &dc;
 
 	MusicBuffer &buffer;
 
@@ -130,7 +130,7 @@ class Player {
 	float elapsed_time;
 
 public:
-	Player(player_control &_pc, decoder_control &_dc,
+	Player(player_control &_pc, DecoderControl &_dc,
 	       MusicBuffer &_buffer)
 		:pc(_pc), dc(_dc), buffer(_buffer),
 		 buffering(false),
@@ -1095,7 +1095,7 @@ Player::Run()
 }
 
 static void
-do_play(player_control &pc, decoder_control &dc,
+do_play(player_control &pc, DecoderControl &dc,
 	MusicBuffer &buffer)
 {
 	Player player(pc, dc, buffer);
@@ -1107,7 +1107,7 @@ player_task(void *arg)
 {
 	player_control &pc = *(player_control *)arg;
 
-	decoder_control dc;
+	DecoderControl dc;
 	decoder_thread_start(dc);
 
 	MusicBuffer buffer(pc.buffer_chunks);

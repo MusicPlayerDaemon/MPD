@@ -54,7 +54,7 @@ enum class DecoderState : uint8_t {
 	ERROR,
 };
 
-struct decoder_control {
+struct DecoderControl {
 	/**
 	 * The handle of the decoder thread.
 	 */
@@ -143,8 +143,8 @@ struct decoder_control {
 
 	MixRampInfo mix_ramp, previous_mix_ramp;
 
-	decoder_control();
-	~decoder_control();
+	DecoderControl();
+	~DecoderControl();
 
 	/**
 	 * Locks the object.
@@ -170,7 +170,7 @@ struct decoder_control {
 	}
 
 	/**
-	 * Waits for a signal on the #decoder_control object.  This function
+	 * Waits for a signal on the #DecoderControl object.  This function
 	 * is only valid in the decoder thread.  The object must be locked
 	 * prior to calling this function.
 	 */
@@ -336,8 +336,8 @@ public:
 	 *
 	 * @param song the song to be decoded; the given instance will be
 	 * owned and freed by the decoder
-	 * @param start_ms see #decoder_control
-	 * @param end_ms see #decoder_control
+	 * @param start_ms see #DecoderControl
+	 * @param end_ms see #DecoderControl
 	 * @param pipe the pipe which receives the decoded chunks (owned by
 	 * the caller)
 	 */

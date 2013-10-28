@@ -41,7 +41,7 @@ decoder_initialized(Decoder &decoder,
 		    const AudioFormat audio_format,
 		    bool seekable, float total_time)
 {
-	decoder_control &dc = decoder.dc;
+	DecoderControl &dc = decoder.dc;
 	struct audio_format_string af_string;
 
 	assert(dc.state == DecoderState::START);
@@ -81,7 +81,7 @@ gcc_pure
 static bool
 decoder_prepare_initial_seek(Decoder &decoder)
 {
-	const decoder_control &dc = decoder.dc;
+	const DecoderControl &dc = decoder.dc;
 	assert(dc.pipe != nullptr);
 
 	if (dc.state != DecoderState::DECODE)
@@ -128,7 +128,7 @@ gcc_pure
 static DecoderCommand
 decoder_get_virtual_command(Decoder &decoder)
 {
-	const decoder_control &dc = decoder.dc;
+	const DecoderControl &dc = decoder.dc;
 	assert(dc.pipe != nullptr);
 
 	if (decoder_prepare_initial_seek(decoder))
@@ -146,7 +146,7 @@ decoder_get_command(Decoder &decoder)
 void
 decoder_command_finished(Decoder &decoder)
 {
-	decoder_control &dc = decoder.dc;
+	DecoderControl &dc = decoder.dc;
 
 	dc.Lock();
 
@@ -190,7 +190,7 @@ decoder_command_finished(Decoder &decoder)
 
 double decoder_seek_where(gcc_unused Decoder & decoder)
 {
-	const decoder_control &dc = decoder.dc;
+	const DecoderControl &dc = decoder.dc;
 
 	assert(dc.pipe != nullptr);
 
@@ -206,7 +206,7 @@ double decoder_seek_where(gcc_unused Decoder & decoder)
 
 void decoder_seek_error(Decoder & decoder)
 {
-	decoder_control &dc = decoder.dc;
+	DecoderControl &dc = decoder.dc;
 
 	assert(dc.pipe != nullptr);
 
@@ -236,7 +236,7 @@ decoder_check_cancel_read(const Decoder *decoder)
 	if (decoder == nullptr)
 		return false;
 
-	const decoder_control &dc = decoder->dc;
+	const DecoderControl &dc = decoder->dc;
 	if (dc.command == DecoderCommand::NONE)
 		return false;
 
@@ -356,7 +356,7 @@ decoder_data(Decoder &decoder,
 	     const void *data, size_t length,
 	     uint16_t kbit_rate)
 {
-	decoder_control &dc = decoder.dc;
+	DecoderControl &dc = decoder.dc;
 	DecoderCommand cmd;
 
 	assert(dc.state == DecoderState::DECODE);
@@ -464,7 +464,7 @@ DecoderCommand
 decoder_tag(Decoder &decoder, InputStream *is,
 	    Tag &&tag)
 {
-	gcc_unused const decoder_control &dc = decoder.dc;
+	gcc_unused const DecoderControl &dc = decoder.dc;
 	DecoderCommand cmd;
 
 	assert(dc.state == DecoderState::DECODE);
@@ -543,7 +543,7 @@ decoder_replay_gain(Decoder &decoder,
 void
 decoder_mixramp(Decoder &decoder, MixRampInfo &&mix_ramp)
 {
-	decoder_control &dc = decoder.dc;
+	DecoderControl &dc = decoder.dc;
 
 	dc.SetMixRamp(std::move(mix_ramp));
 }

@@ -20,9 +20,9 @@
 #ifndef MPD_DECODER_THREAD_HXX
 #define MPD_DECODER_THREAD_HXX
 
-struct decoder_control;
+struct DecoderControl;
 
 void
-decoder_thread_start(decoder_control &dc);
+decoder_thread_start(DecoderControl &dc);
 
 #endif

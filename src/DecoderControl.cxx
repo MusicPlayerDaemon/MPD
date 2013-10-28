@@ -26,13 +26,13 @@
 
 #include <assert.h>
 
-decoder_control::decoder_control()
+DecoderControl::DecoderControl()
 	:state(DecoderState::STOP),
 	 command(DecoderCommand::NONE),
 	 song(nullptr),
 	 replay_gain_db(0), replay_gain_prev_db(0) {}
 
-decoder_control::~decoder_control()
+DecoderControl::~DecoderControl()
 {
 	ClearError();
 
@@ -41,7 +41,7 @@ decoder_control::~decoder_control()
 }
 
 bool
-decoder_control::IsCurrentSong(const Song &_song) const
+DecoderControl::IsCurrentSong(const Song &_song) const
 {
 	switch (state) {
 	case DecoderState::STOP:
@@ -58,9 +58,9 @@ decoder_control::IsCurrentSong(const Song &_song) const
 }
 
 void
-decoder_control::Start(Song *_song,
-		       unsigned _start_ms, unsigned _end_ms,
-		       MusicBuffer &_buffer, MusicPipe &_pipe)
+DecoderControl::Start(Song *_song,
+		      unsigned _start_ms, unsigned _end_ms,
+		      MusicBuffer &_buffer, MusicPipe &_pipe)
 {
 	assert(_song != nullptr);
 	assert(_pipe.IsEmpty());
@@ -78,7 +78,7 @@ decoder_control::Start(Song *_song,
 }
 
 void
-decoder_control::Stop()
+DecoderControl::Stop()
 {
 	Lock();
 
@@ -96,7 +96,7 @@ decoder_control::Stop()
 }
 
 bool
-decoder_control::Seek(double where)
+DecoderControl::Seek(double where)
 {
 	assert(state != DecoderState::START);
 	assert(where >= 0.0);
@@ -113,7 +113,7 @@ decoder_control::Seek(double where)
 }
 
 void
-decoder_control::Quit()
+DecoderControl::Quit()
 {
 	assert(thread.IsDefined());
 
@@ -124,7 +124,7 @@ decoder_control::Quit()
 }
 
 void
-decoder_control::CycleMixRamp()
+DecoderControl::CycleMixRamp()
 {
 	previous_mix_ramp = std::move(mix_ramp);
 	mix_ramp.Clear();
