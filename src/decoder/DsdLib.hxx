@@ -22,7 +22,7 @@
 
 #include "Compiler.h"
 
-#include <stdlib.h>
+#include <stddef.h>
 #include <stdint.h>
 
 struct Decoder;
