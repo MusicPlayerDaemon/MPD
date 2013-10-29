@@ -35,6 +35,7 @@ struct TagItem;
 struct Song;
 
 class SongFilter {
+public:
 	class Item {
 		uint8_t tag;
 
@@ -55,6 +56,10 @@ class SongFilter {
 			return tag;
 		}
 
+		const std::string &GetValue() const {
+			return value;
+		}
+
 		gcc_pure gcc_nonnull(2)
 		bool StringMatch(const char *s) const;
 
@@ -68,6 +73,7 @@ class SongFilter {
 		bool Match(const Song &song) const;
 	};
 
+private:
 	std::list<Item> items;
 
 public:
@@ -89,6 +95,10 @@ public:
 
 	gcc_pure
 	bool Match(const Song &song) const;
+
+	const std::list<Item> &GetItems() const {
+		return items;
+	}
 };
 
 /**
