@@ -58,15 +58,17 @@
 static int
 fd_mask_flags(int fd, int and_mask, int xor_mask)
 {
-	int ret;
-
 	assert(fd >= 0);
 
-	ret = fcntl(fd, F_GETFD, 0);
-	if (ret < 0)
-		return ret;
+	const int old_flags = fcntl(fd, F_GETFD, 0);
+	if (old_flags < 0)
+		return old_flags;
 
-	return fcntl(fd, F_SETFD, (ret & and_mask) ^ xor_mask);
+	const int new_flags = (old_flags & and_mask) ^ xor_mask;
+	if (new_flags == old_flags)
+		return old_flags;
+
+	return fcntl(fd, F_SETFD, new_flags);
 }
 
 #endif /* !WIN32 */
