@@ -106,3 +106,21 @@ uri_remove_auth(const char *uri)
 	result.erase(auth - uri, at + 1 - auth);
 	return result;
 }
+
+bool
+uri_is_child(const char *parent, const char *child)
+{
+	assert(parent != nullptr);
+	assert(child != nullptr);
+
+	const size_t parent_length = strlen(parent);
+	return memcmp(parent, child, parent_length) == 0 &&
+		child[parent_length] == '/';
+}
+
+
+bool
+uri_is_child_or_same(const char *parent, const char *child)
+{
+	return strcmp(parent, child) == 0 || uri_is_child(parent, child);
+}

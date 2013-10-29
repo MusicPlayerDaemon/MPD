@@ -57,4 +57,17 @@ gcc_pure
 std::string
 uri_remove_auth(const char *uri);
 
+/**
+ * Check whether #child specifies a resource "inside" the directory
+ * specified by #parent.  If the strings are equal, the function
+ * returns false.
+ */
+gcc_pure gcc_nonnull_all
+bool
+uri_is_child(const char *parent, const char *child);
+
+gcc_pure gcc_nonnull_all
+bool
+uri_is_child_or_same(const char *parent, const char *child);
+
 #endif
