@@ -27,6 +27,11 @@
 
 #include <stdint.h>
 
+/**
+ * Limit the search to files within the given directory.
+ */
+#define LOCATE_TAG_BASE_TYPE (TAG_NUM_OF_ITEM_TYPES + 1)
+
 #define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
 #define LOCATE_TAG_ANY_TYPE     TAG_NUM_OF_ITEM_TYPES+20
 
@@ -99,6 +104,13 @@ public:
 	const std::list<Item> &GetItems() const {
 		return items;
 	}
+
+	/**
+	 * Returns the "base" specification (if there is one) or an
+	 * empty string.
+	 */
+	gcc_pure
+	std::string GetBase() const;
 };
 
 /**

@@ -20,6 +20,16 @@
 #include "DatabaseSelection.hxx"
 #include "SongFilter.hxx"
 
+DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
+				     const SongFilter *_filter)
+	:uri(_uri), recursive(_recursive), filter(_filter)
+{
+	/* optimization: if the caller didn't specify a base URI, pick
+	   the one from SongFilter */
+	if (uri.empty() && filter != nullptr)
+		uri = filter->GetBase();
+}
+
 bool
 DatabaseSelection::Match(const Song &song) const
 {

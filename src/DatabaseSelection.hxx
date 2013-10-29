@@ -42,9 +42,7 @@ struct DatabaseSelection {
 	const SongFilter *filter;
 
 	DatabaseSelection(const char *_uri, bool _recursive,
-			  const SongFilter *_filter=nullptr)
-		:uri(_uri), recursive(_recursive), filter(_filter) {
-	}
+			  const SongFilter *_filter=nullptr);
 
 	gcc_pure
 	bool Match(const Song &song) const;

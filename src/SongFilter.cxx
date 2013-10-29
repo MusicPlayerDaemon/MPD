@@ -22,6 +22,7 @@
 #include "Song.hxx"
 #include "tag/Tag.hxx"
 #include "util/ASCII.hxx"
+#include "util/UriUtil.hxx"
 
 #include <glib.h>
 
@@ -42,6 +43,9 @@ locate_parse_type(const char *str)
 
 	if (StringEqualsCaseASCII(str, LOCATE_TAG_ANY_KEY))
 		return LOCATE_TAG_ANY_TYPE;
+
+	if (strcmp(str, "base") == 0)
+		return LOCATE_TAG_BASE_TYPE;
 
 	return tag_name_parse_i(str);
 }
@@ -134,6 +138,11 @@ SongFilter::Item::Match(const Tag &_tag) const
 bool
 SongFilter::Item::Match(const Song &song) const
 {
+	if (tag == LOCATE_TAG_BASE_TYPE) {
+		const auto uri = song.GetURI();
+		return uri_is_child_or_same(value.c_str(), uri.c_str());
+	}
+
 	if (tag == LOCATE_TAG_FILE_TYPE) {
 		const auto uri = song.GetURI();
 		return StringMatch(uri.c_str());
@@ -158,6 +167,14 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 	unsigned tag = locate_parse_type(tag_string);
 	if (tag == TAG_NUM_OF_ITEM_TYPES)
 		return false;
+
+	if (tag == LOCATE_TAG_BASE_TYPE) {
+		if (!uri_safe_local(value))
+			return false;
+
+		/* case folding doesn't work with "base" */
+		fold_case = false;
+	}
 
 	items.push_back(Item(tag, value, fold_case));
 	return true;
@@ -184,4 +201,14 @@ SongFilter::Match(const Song &song) const
 			return false;
 
 	return true;
+}
+
+std::string
+SongFilter::GetBase() const
+{
+	for (const auto &i : items)
+		if (i.GetTag() == LOCATE_TAG_BASE_TYPE)
+			return i.GetValue();
+
+	return std::string();
 }

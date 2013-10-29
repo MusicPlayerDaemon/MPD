@@ -6,6 +6,7 @@ ver 0.18 (2012/??/??)
   - new command "readcomments" lists arbitrary file tags
   - new command "toggleoutput"
   - "find"/"search" with "any" does not match file name
+  - "search" and "find" with base URI (keyword "base")
   - search for album artist falls back to the artist tag
   - re-add the "volume" command
 * input:
