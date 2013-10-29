@@ -25,6 +25,7 @@
 #include "PlaylistVector.hxx"
 #include "Directory.hxx"
 #include "Song.hxx"
+#include "SongFilter.hxx"
 #include "Compiler.h"
 #include "ConfigData.hxx"
 #include "tag/TagBuilder.hxx"
@@ -220,12 +221,14 @@ ProxyDatabase::ReturnSong(Song *song) const
 
 static bool
 Visit(struct mpd_connection *connection, const char *uri,
-      bool recursive, VisitDirectory visit_directory, VisitSong visit_song,
+      bool recursive, const SongFilter *filter,
+      VisitDirectory visit_directory, VisitSong visit_song,
       VisitPlaylist visit_playlist, Error &error);
 
 static bool
 Visit(struct mpd_connection *connection,
-      bool recursive, const struct mpd_directory *directory,
+      bool recursive, const SongFilter *filter,
+      const struct mpd_directory *directory,
       VisitDirectory visit_directory, VisitSong visit_song,
       VisitPlaylist visit_playlist, Error &error)
 {
@@ -240,7 +243,7 @@ Visit(struct mpd_connection *connection,
 	}
 
 	if (recursive &&
-	    !Visit(connection, path, recursive,
+	    !Visit(connection, path, recursive, filter,
 		   visit_directory, visit_song, visit_playlist, error))
 		return false;
 
@@ -281,15 +284,23 @@ Convert(const struct mpd_song *song)
 	return s;
 }
 
+gcc_pure
 static bool
-Visit(const struct mpd_song *song,
+Match(const SongFilter *filter, const Song &song)
+{
+	return filter == nullptr || filter->Match(song);
+}
+
+static bool
+Visit(const SongFilter *filter,
+      const struct mpd_song *song,
       VisitSong visit_song, Error &error)
 {
 	if (!visit_song)
 		return true;
 
 	Song *s = Convert(song);
-	bool success = visit_song(*s, error);
+	bool success = !Match(filter, *s) || visit_song(*s, error);
 	s->Free();
 
 	return success;
@@ -348,7 +359,8 @@ ReceiveEntities(struct mpd_connection *connection)
 
 static bool
 Visit(struct mpd_connection *connection, const char *uri,
-      bool recursive, VisitDirectory visit_directory, VisitSong visit_song,
+      bool recursive, const SongFilter *filter,
+      VisitDirectory visit_directory, VisitSong visit_song,
       VisitPlaylist visit_playlist, Error &error)
 {
 	if (!mpd_send_list_meta(connection, uri))
@@ -364,7 +376,7 @@ Visit(struct mpd_connection *connection, const char *uri,
 			break;
 
 		case MPD_ENTITY_TYPE_DIRECTORY:
-			if (!Visit(connection, recursive,
+			if (!Visit(connection, recursive, filter,
 				   mpd_entity_get_directory(entity),
 				   visit_directory, visit_song, visit_playlist,
 				   error))
@@ -372,7 +384,8 @@ Visit(struct mpd_connection *connection, const char *uri,
 			break;
 
 		case MPD_ENTITY_TYPE_SONG:
-			if (!Visit(mpd_entity_get_song(entity), visit_song,
+			if (!Visit(filter,
+				   mpd_entity_get_song(entity), visit_song,
 				   error))
 				return false;
 			break;
@@ -398,7 +411,8 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 	// TODO: match
 	// TODO: auto-reconnect
 
-	return ::Visit(connection, selection.uri.c_str(), selection.recursive,
+	return ::Visit(connection, selection.uri.c_str(),
+		       selection.recursive, selection.filter,
 		       visit_directory, visit_song, visit_playlist,
 		       error);
 }
