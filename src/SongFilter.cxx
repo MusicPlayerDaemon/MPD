@@ -46,32 +46,43 @@ locate_parse_type(const char *str)
 	return tag_name_parse_i(str);
 }
 
-SongFilter::Item::Item(unsigned _tag, const char *_value, bool _fold_case)
-	:tag(_tag), fold_case(_fold_case),
-	 value(fold_case
-	       ? g_utf8_casefold(_value, -1)
-	       : g_strdup(_value))
+gcc_pure
+static std::string
+CaseFold(const char *p)
 {
+	char *q = g_utf8_casefold(p, -1);
+	std::string result(q);
+	g_free(q);
+	return result;
 }
 
-SongFilter::Item::~Item()
+gcc_pure
+static std::string
+ImportString(const char *p, bool fold_case)
 {
-	g_free(value);
+	return fold_case
+		? CaseFold(p)
+		: std::string(p);
+}
+
+SongFilter::Item::Item(unsigned _tag, const char *_value, bool _fold_case)
+	:tag(_tag), fold_case(_fold_case),
+	 value(ImportString(_value, _fold_case))
+{
 }
 
 bool
 SongFilter::Item::StringMatch(const char *s) const
 {
-	assert(value != nullptr);
 	assert(s != nullptr);
 
 	if (fold_case) {
 		char *p = g_utf8_casefold(s, -1);
-		const bool result = strstr(p, value) != NULL;
+		const bool result = strstr(p, value.c_str()) != NULL;
 		g_free(p);
 		return result;
 	} else {
-		return strcmp(s, value) == 0;
+		return s == value;
 	}
 }
 
@@ -99,10 +110,10 @@ SongFilter::Item::Match(const Tag &_tag) const
 		/* If the search critieron was not visited during the
 		   sweep through the song's tag, it means this field
 		   is absent from the tag or empty. Thus, if the
-		   searched string is also empty (first char is a \0),
+		   searched string is also empty
 		   then it's a match as well and we should return
 		   true. */
-		if (*value == 0)
+		if (value.empty())
 			return true;
 
 		if (tag == TAG_ALBUM_ARTIST && visited_types[TAG_ARTIST]) {

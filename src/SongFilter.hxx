@@ -23,6 +23,7 @@
 #include "Compiler.h"
 
 #include <list>
+#include <string>
 
 #include <stdint.h>
 
@@ -39,21 +40,14 @@ class SongFilter {
 
 		bool fold_case;
 
-		char *value;
+		std::string value;
 
 	public:
 		gcc_nonnull(3)
 		Item(unsigned tag, const char *value, bool fold_case=false);
 
 		Item(const Item &other) = delete;
-
-		Item(Item &&other)
-			:tag(other.tag), fold_case(other.fold_case),
-			 value(other.value) {
-			other.value = nullptr;
-		}
-
-		~Item();
+		Item(Item &&) = default;
 
 		Item &operator=(const Item &other) = delete;
 
