@@ -239,10 +239,10 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 {
 	ScopeDatabaseLock protect;
 
-	const Directory *directory = root->LookupDirectory(selection.uri);
+	const Directory *directory = root->LookupDirectory(selection.uri.c_str());
 	if (directory == nullptr) {
 		if (visit_song) {
-			Song *song = root->LookupSong(selection.uri);
+			Song *song = root->LookupSong(selection.uri.c_str());
 			if (song != nullptr)
 				return !selection.Match(*song) ||
 					visit_song(*song, error);

@@ -398,7 +398,7 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 	// TODO: match
 	// TODO: auto-reconnect
 
-	return ::Visit(connection, selection.uri, selection.recursive,
+	return ::Visit(connection, selection.uri.c_str(), selection.recursive,
 		       visit_directory, visit_song, visit_playlist,
 		       error);
 }

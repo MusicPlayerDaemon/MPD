@@ -22,7 +22,7 @@
 
 #include "Compiler.h"
 
-#include <assert.h>
+#include <string>
 
 class SongFilter;
 struct Song;
@@ -30,10 +30,9 @@ struct Song;
 struct DatabaseSelection {
 	/**
 	 * The base URI of the search (UTF-8).  Must not begin or end
-	 * with a slash.  nullptr or an empty string searches the whole
-	 * database.
+	 * with a slash.  An empty string searches the whole database.
 	 */
-	const char *uri;
+	std::string uri;
 
 	/**
 	 * Recursively search all sub directories?
@@ -45,7 +44,6 @@ struct DatabaseSelection {
 	DatabaseSelection(const char *_uri, bool _recursive,
 			  const SongFilter *_filter=nullptr)
 		:uri(_uri), recursive(_recursive), filter(_filter) {
-		assert(uri != nullptr);
 	}
 
 	gcc_pure
