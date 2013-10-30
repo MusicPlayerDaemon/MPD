@@ -327,8 +327,8 @@ AC_ARG_ENABLE(mpg123,
 
 AC_ARG_ENABLE(openal,
 	AS_HELP_STRING([--enable-openal],
-		[enable OpenAL support (default: disable)]),,
-	enable_openal=no)
+		[enable OpenAL support (default: auto)]),,
+	enable_openal=auto)
 
 AC_ARG_ENABLE(opus,
 	AS_HELP_STRING([--enable-opus],
@@ -1280,20 +1280,24 @@ dnl ---------------------------------- OpenAL ---------------------------------
 AC_SUBST(OPENAL_CFLAGS,"")
 AC_SUBST(OPENAL_LIBS,"")
 
-if test x$enable_openal = xyes; then
-	if test x$host_is_darwin = xyes; then
-		AC_CHECK_HEADERS([OpenAL/al.h OpenAL/alc.h], [], [enable_openal=no])
-		if test x$enable_openal = xyes; then
-			OPENAL_LIBS="-framework OpenAL"
-			AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support])
-		else
-			AC_MSG_WARN(OpenAL headers not found -- disabling OpenAL support)
-		fi
-	else
-		PKG_CHECK_MODULES([OPENAL], [openal],
-			AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support]),
-			enable_openal=no)
+if test x$host_is_darwin = xyes; then
+	if test x$enable_openal != xno; then
+		AC_CHECK_HEADERS([OpenAL/al.h OpenAL/alc.h],
+			[found_openal=yes], [found_openal=no])
 	fi
+
+	MPD_AUTO_RESULT(openal, [OpenAL output plugin], [OpenAL not found])
+
+	if test x$enable_openal = xyes; then
+		OPENAL_LIBS="-framework OpenAL"
+	fi
+else
+	MPD_AUTO_PKG(openal, [OPENAL], [openal],
+		[OpenAL output plugin], [OpenAL not found])
+fi
+
+if test x$enable_openal = xyes; then
+	AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support])
 fi
 
 AM_CONDITIONAL(HAVE_OPENAL, test x$enable_openal = xyes)
