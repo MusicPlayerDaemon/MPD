@@ -1129,6 +1129,7 @@ test_DumpDatabase_LDADD = \
 	libfs.a \
 	$(GLIB_LIBS)
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
+	src/protocol/Ack.cxx \
 	src/Log.cxx \
 	src/DatabaseError.cxx \
 	src/DatabaseRegistry.cxx \
