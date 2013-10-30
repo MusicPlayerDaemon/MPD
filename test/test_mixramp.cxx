@@ -45,6 +45,10 @@ public:
 		free(foo);
 
 		foo = strdup(input);
+		CPPUNIT_ASSERT(std::isnan(mixramp_interpolate(foo, 6.1)));
+		free(foo);
+
+		foo = strdup(input);
 		CPPUNIT_ASSERT_DOUBLES_EQUAL(float(0.05),
 					     mixramp_interpolate(foo, 2),
 					     0.05);
