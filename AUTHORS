@@ -1,67 +1,25 @@
-Current Developers
-------------------
+Music Player Daemon - http://www.musicpd.org
+Copyright (C) 2003-2013 The Music Player Daemon Project
 
-Avuton Olrich <avuton@gmail.com>
-	release manager
+The following people have contributed code to MPD:
 
-Max Kellermann <max@duempel.org>
-	lead developer
-
-Laszlo Ashin <kodest@gmail.com>
-	WavPack support
-
-Viliam Mateicka <viliam.mateicka@gmail.com>
-	FFmpeg support, mixer and archive API
-
-Eric Wollesen <encoded@xmtp.net>
-	encoder API, shout output
-
-Thomas Jansen <mithi@mithi.net>
-	multithreading tweaks, miscellaneous
-
-Romain Bignon <romain@peerfuse.org>
-	playlist manipulation
-
-David Guibert <david.guibert@gmail.com>
-	PulseAudio mixer
-
-Jochen Keil <jochen.keil@gmail.com>
-	CUE sheet support
-
-Jeffrey Middleton <jefromi@gmail.com>
-	playlist manipulation
-
-Sean McNamara <smcnam@gmail.com>
-	WIN32 compatibility
-
-
-Former Developers
------------------
-
-Warren Dukes <warren.dukes@gmail.com>
-	former lead developer and project founder
-
-Niklas Hofer
-	'next' and 'previous' patch
-
-Jim Ramsay <i.am@jimramsay.com>
-	Zerconf/avahi support
-
-Guus Sliepen <guus@sliepen.eu.org>
-	libsamplerate code
-
-J. Alexander Treuman <jat@spatialrift.net>
-	general, MP3, ID3, PulseAudio, format conversion, stored playlists
-	AudioCompress, much much more...
-
-Eric Wong
-	former lead developer
-
-José Anarch <anarchsss@gmail.com>
-	JACK plugin
-
-Patrik Weiskircher <pat@icore.at>
-	Stored playlist commands
-
-Nick Welch <mack@incise.org>
-	Sighandlers
+ Warren Dukes <warren.dukes@gmail.com>
+ Avuton Olrich <avuton@gmail.com>
+ Max Kellermann <max@duempel.org>
+ Laszlo Ashin <kodest@gmail.com>
+ Viliam Mateicka <viliam.mateicka@gmail.com>
+ Eric Wollesen <encoded@xmtp.net>
+ Thomas Jansen <mithi@mithi.net>
+ Romain Bignon <romain@peerfuse.org>
+ David Guibert <david.guibert@gmail.com>
+ Jochen Keil <jochen.keil@gmail.com>
+ Jeffrey Middleton <jefromi@gmail.com>
+ Sean McNamara <smcnam@gmail.com>
+ Niklas Hofer
+ Jim Ramsay <i.am@jimramsay.com>
+ Guus Sliepen <guus@sliepen.eu.org>
+ J. Alexander Treuman <jat@spatialrift.net>
+ Eric Wong
+ José Anarch <anarchsss@gmail.com>
+ Patrik Weiskircher <pat@icore.at>
+ Nick Welch <mack@incise.org>
