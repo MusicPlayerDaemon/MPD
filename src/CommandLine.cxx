@@ -66,7 +66,7 @@ static constexpr Domain cmdline_domain("cmdline");
 gcc_noreturn
 static void version(void)
 {
-	puts(PACKAGE " (MPD: Music Player Daemon) " VERSION " \n"
+	puts("Music Player Daemon " VERSION "\n"
 	     "\n"
 	     "Copyright (C) 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
 	     "Copyright (C) 2008-2013 Max Kellermann <max@duempel.org>\n"
