@@ -135,10 +135,13 @@ glue_mapper_init(Error &error)
 		return false;
 
 	if (music_dir.IsNull()) {
-		music_dir = AllocatedPath::FromUTF8(g_get_user_special_dir(G_USER_DIRECTORY_MUSIC),
-						    error);
-		if (music_dir.IsNull())
-			return false;
+		const char *path =
+			g_get_user_special_dir(G_USER_DIRECTORY_MUSIC);
+		if (path != nullptr) {
+			music_dir = AllocatedPath::FromUTF8(path, error);
+			if (music_dir.IsNull())
+				return false;
+		}
 	}
 
 	mapper_init(std::move(music_dir), std::move(playlist_dir));
