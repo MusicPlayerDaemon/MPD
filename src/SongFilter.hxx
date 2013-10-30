@@ -61,6 +61,10 @@ public:
 			return tag;
 		}
 
+		bool GetFoldCase() const {
+			return fold_case;
+		}
+
 		const std::string &GetValue() const {
 			return value;
 		}
@@ -103,6 +107,18 @@ public:
 
 	const std::list<Item> &GetItems() const {
 		return items;
+	}
+
+	/**
+	 * Is there at least one item with "fold case" enabled?
+	 */
+	gcc_pure
+	bool HasFoldCase() const {
+		for (const auto &i : items)
+			if (i.GetFoldCase())
+				return true;
+
+		return false;
 	}
 
 	/**

@@ -472,6 +472,38 @@ Visit(struct mpd_connection *connection, const char *uri,
 	return CheckError(connection, error);
 }
 
+static bool
+SearchSongs(struct mpd_connection *connection,
+	    const DatabaseSelection &selection,
+	    VisitSong visit_song,
+	    Error &error)
+{
+	assert(selection.recursive);
+	assert(visit_song);
+
+	const bool exact = selection.filter == nullptr ||
+		!selection.filter->HasFoldCase();
+
+	if (!mpd_search_db_songs(connection, exact) ||
+	    !SendConstraints(connection, selection) ||
+	    !mpd_search_commit(connection))
+		return CheckError(connection, error);
+
+	bool result = true;
+	struct mpd_song *song;
+	while (result && (song = mpd_recv_song(connection)) != nullptr) {
+		Song *song2 = Convert(song);
+		mpd_song_free(song);
+
+		result = !Match(selection.filter, *song2) ||
+			visit_song(*song2, error);
+		song2->Free();
+	}
+
+	mpd_response_finish(connection);
+	return result && CheckError(connection, error);
+}
+
 bool
 ProxyDatabase::Visit(const DatabaseSelection &selection,
 		     VisitDirectory visit_directory,
@@ -479,9 +511,14 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 		     VisitPlaylist visit_playlist,
 		     Error &error) const
 {
-	// TODO: match
 	// TODO: auto-reconnect
 
+	if (!visit_directory && !visit_playlist && selection.recursive)
+		/* this optimized code path can only be used under
+		   certain conditions */
+		return ::SearchSongs(connection, selection, visit_song, error);
+
+	/* fall back to recursive walk (slow!) */
 	return ::Visit(connection, selection.uri.c_str(),
 		       selection.recursive, selection.filter,
 		       visit_directory, visit_song, visit_playlist,
