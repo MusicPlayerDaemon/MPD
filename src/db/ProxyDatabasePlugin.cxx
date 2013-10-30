@@ -194,7 +194,8 @@ ProxyDatabase::GetSong(const char *uri, Error &error) const
 	Song *song2 = song != nullptr
 		? Convert(song)
 		: nullptr;
-	mpd_song_free(song);
+	if (song != nullptr)
+		mpd_song_free(song);
 	if (!mpd_response_finish(connection)) {
 		if (song2 != nullptr)
 			song2->Free();
