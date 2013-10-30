@@ -83,7 +83,7 @@ mixramp_interpolate(const char *ramp_list, float required_db)
 		return secs;
 	}
 
-	return nan("");
+	return -1;
 }
 
 unsigned
@@ -96,7 +96,6 @@ CrossFadeSettings::Calculate(float total_time,
 {
 	unsigned int chunks = 0;
 	float chunks_f;
-	float mixramp_overlap;
 
 	if (duration < 0 || duration >= total_time ||
 	    /* we can't crossfade when the audio formats are different */
@@ -112,9 +111,17 @@ CrossFadeSettings::Calculate(float total_time,
 		chunks = (chunks_f * duration + 0.5);
 	} else {
 		/* Calculate mixramp overlap. */
-		mixramp_overlap = mixramp_interpolate(mixramp_start, mixramp_db - replay_gain_db)
-		  + mixramp_interpolate(mixramp_prev_end, mixramp_db - replay_gain_prev_db);
-		if (!std::isnan(mixramp_overlap) &&
+		const float mixramp_overlap_current =
+			mixramp_interpolate(mixramp_start,
+					    mixramp_db - replay_gain_db);
+		const float mixramp_overlap_prev =
+			mixramp_interpolate(mixramp_prev_end,
+					    mixramp_db - replay_gain_prev_db);
+		const float mixramp_overlap =
+			mixramp_overlap_current + mixramp_overlap_prev;
+
+		if (mixramp_overlap_current >= 0 &&
+		    mixramp_overlap_prev >= 0 &&
 		    mixramp_delay <= mixramp_overlap) {
 			chunks = (chunks_f * (mixramp_overlap - mixramp_delay));
 			FormatDebug(cross_fade_domain,

@@ -43,7 +43,7 @@ public:
 		free(foo);
 
 		foo = strdup(input);
-		CPPUNIT_ASSERT(std::isnan(mixramp_interpolate(foo, 6.1)));
+		CPPUNIT_ASSERT(mixramp_interpolate(foo, 6.1) < 0);
 		free(foo);
 
 		foo = strdup(input);
