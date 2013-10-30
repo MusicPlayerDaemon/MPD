@@ -20,6 +20,8 @@
 #include "config.h"
 #include "ReplayGainInfo.hxx"
 
+#include <math.h>
+
 float
 ReplayGainTuple::CalculateScale(float preamp, float missing_preamp,
 				bool peak_limit) const

@@ -23,8 +23,6 @@
 #include "check.h"
 #include "Compiler.h"
 
-#include <cmath>
-
 enum ReplayGainMode {
 	REPLAY_GAIN_AUTO = -2,
 	REPLAY_GAIN_OFF,
@@ -37,13 +35,13 @@ struct ReplayGainTuple {
 	float peak;
 
 	void Clear() {
-		gain = INFINITY;
+		gain = -200;
 		peak = 0.0;
 	}
 
 	gcc_pure
 	bool IsDefined() const {
-		return !std::isinf(gain);
+		return gain > -100;
 	}
 
 	gcc_pure
