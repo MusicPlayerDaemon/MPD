@@ -1,4 +1,4 @@
-ver 0.18 (2012/??/??)
+ver 0.18 (2013/10/31)
 * configuration:
   - allow tilde paths for socket
   - default filesystem charset is UTF-8 instead of ISO-8859-1
@@ -39,6 +39,7 @@ ver 0.18 (2012/??/??)
 * improved decoder/output error reporting
 * eliminate timer wakeup on idle MPD
 * fix unresponsive MPD while waiting for stream
+* port of the source code to C++11
 
 ver 0.17.6 (2013/10/14)
 * mixer:
