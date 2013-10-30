@@ -25,7 +25,7 @@
 
 #include <glib.h>
 
-#include <stdlib.h>
+#include <unistd.h>
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -41,7 +41,7 @@ gcc_noreturn
 static void
 Abort()
 {
-	exit(EXIT_FAILURE);
+	_exit(EXIT_FAILURE);
 }
 
 void
