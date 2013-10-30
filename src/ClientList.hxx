@@ -33,6 +33,9 @@ class ClientList {
 public:
 	ClientList(unsigned _max_size)
 		:max_size(_max_size), size(0) {}
+	~ClientList() {
+		CloseAll();
+	}
 
 	std::list<Client *>::iterator begin() {
 		return list.begin();
