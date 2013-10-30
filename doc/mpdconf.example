@@ -382,7 +382,7 @@ input {
 # this may have undesired effects. Don't change this if you don't know what you
 # are doing.
 #
-#audio_buffer_size		"2048"
+#audio_buffer_size		"4096"
 #
 # This setting controls the percentage of the buffer which is filled before 
 # beginning to play. Increasing this reduces the chance of audio file skipping, 
