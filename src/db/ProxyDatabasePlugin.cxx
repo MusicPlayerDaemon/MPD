@@ -126,6 +126,76 @@ CheckError(struct mpd_connection *connection, Error &error)
 	return false;
 }
 
+static bool
+SendConstraints(mpd_connection *connection, const SongFilter::Item &item)
+{
+	switch (item.GetTag()) {
+		mpd_tag_type tag;
+
+#if LIBMPDCLIENT_CHECK_VERSION(2,9,0)
+	case LOCATE_TAG_BASE_TYPE:
+		if (mpd_connection_cmp_server_version(connection, 0, 18, 0) < 0)
+			/* requires MPD 0.18 */
+			return true;
+
+		return mpd_search_add_base_constraint(connection,
+						      MPD_OPERATOR_DEFAULT,
+						      item.GetValue().c_str());
+#endif
+
+	case LOCATE_TAG_FILE_TYPE:
+		return mpd_search_add_uri_constraint(connection,
+						     MPD_OPERATOR_DEFAULT,
+						     item.GetValue().c_str());
+
+	case LOCATE_TAG_ANY_TYPE:
+		return mpd_search_add_any_tag_constraint(connection,
+							 MPD_OPERATOR_DEFAULT,
+							 item.GetValue().c_str());
+
+	default:
+		tag = Convert(TagType(item.GetTag()));
+		if (tag == MPD_TAG_COUNT)
+			return true;
+
+		return mpd_search_add_tag_constraint(connection,
+						     MPD_OPERATOR_DEFAULT,
+						     tag,
+						     item.GetValue().c_str());
+	}
+}
+
+static bool
+SendConstraints(mpd_connection *connection, const SongFilter &filter)
+{
+	for (const auto &i : filter.GetItems())
+		if (!SendConstraints(connection, i))
+			return false;
+
+	return true;
+}
+
+static bool
+SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
+{
+#if LIBMPDCLIENT_CHECK_VERSION(2,9,0)
+	if (!selection.uri.empty() &&
+	    mpd_connection_cmp_server_version(connection, 0, 18, 0) >= 0) {
+		/* requires MPD 0.18 */
+		if (!mpd_search_add_base_constraint(connection,
+						    MPD_OPERATOR_DEFAULT,
+						    selection.uri.c_str()))
+			return false;
+	}
+#endif
+
+	if (selection.filter != nullptr &&
+	    !SendConstraints(connection, *selection.filter))
+		return false;
+
+	return true;
+}
+
 Database *
 ProxyDatabase::Create(const config_param &param, Error &error)
 {
@@ -433,8 +503,8 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 	if (!mpd_search_db_tags(connection, tag_type2))
 		return CheckError(connection, error);
 
-	// TODO: match
-	(void)selection;
+	if (!SendConstraints(connection, selection))
+		return CheckError(connection, error);
 
 	if (!mpd_search_commit(connection))
 		return CheckError(connection, error);
