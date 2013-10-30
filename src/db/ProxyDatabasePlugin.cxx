@@ -33,8 +33,6 @@
 #include "util/Domain.hxx"
 #include "protocol/Ack.hxx"
 
-#undef MPD_DIRECTORY_H
-#undef MPD_SONG_H
 #include <mpd/client.h>
 
 #include <cassert>
