@@ -138,9 +138,7 @@ handle_status(Client &client,
 		      COMMAND_STATUS_CONSUME ": %i\n"
 		      COMMAND_STATUS_PLAYLIST ": %li\n"
 		      COMMAND_STATUS_PLAYLIST_LENGTH ": %i\n"
-		      COMMAND_STATUS_CROSSFADE ": %i\n"
 		      COMMAND_STATUS_MIXRAMPDB ": %f\n"
-		      COMMAND_STATUS_MIXRAMPDELAY ": %f\n"
 		      COMMAND_STATUS_STATE ": %s\n",
 		      volume_level_get(),
 		      playlist.GetRepeat(),
@@ -149,10 +147,18 @@ handle_status(Client &client,
 		      playlist.GetConsume(),
 		      (unsigned long)playlist.GetVersion(),
 		      playlist.GetLength(),
-		      (int)(client.player_control.GetCrossFade() + 0.5),
 		      client.player_control.GetMixRampDb(),
-		      client.player_control.GetMixRampDelay(),
 		      state);
+
+	if (client.player_control.GetCrossFade() > 0)
+		client_printf(client,
+			      COMMAND_STATUS_CROSSFADE ": %i\n",
+			      int(client.player_control.GetCrossFade() + 0.5));
+
+	if (client.player_control.GetMixRampDelay() > 0)
+		client_printf(client,
+			      COMMAND_STATUS_MIXRAMPDELAY ": %f\n",
+			      client.player_control.GetMixRampDelay());
 
 	song = playlist.GetCurrentPosition();
 	if (song >= 0) {
