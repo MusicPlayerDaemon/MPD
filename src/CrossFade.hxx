@@ -49,10 +49,7 @@ struct CrossFadeSettings {
 	/**
 	 * Calculate how many music pipe chunks should be used for crossfading.
 	 *
-	 * @param duration the requested crossfade duration
 	 * @param total_time total_time the duration of the new song
-	 * @param mixramp_db the current mixramp_db setting
-	 * @param mixramp_delay the current mixramp_delay setting
 	 * @param replay_gain_db the ReplayGain adjustment used for this song
 	 * @param replay_gain_prev_db the ReplayGain adjustment used on the last song
 	 * @param mixramp_start the next songs mixramp_start tag
