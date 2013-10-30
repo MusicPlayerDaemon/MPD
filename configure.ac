@@ -1460,6 +1460,8 @@ dnl CFLAGS
 dnl ---------------------------------------------------------------------------
 
 AX_APPEND_COMPILE_FLAGS([-fvisibility=hidden])
+AX_APPEND_COMPILE_FLAGS([-ffast-math])
+AX_APPEND_COMPILE_FLAGS([-ftree-vectorize])
 
 AC_LANG_PUSH([C++])
 AX_APPEND_COMPILE_FLAGS([-fvisibility=hidden])
@@ -1467,6 +1469,8 @@ AX_APPEND_COMPILE_FLAGS([-fno-threadsafe-statics])
 AX_APPEND_COMPILE_FLAGS([-fmerge-all-constants])
 AX_APPEND_COMPILE_FLAGS([-fno-exceptions])
 AX_APPEND_COMPILE_FLAGS([-fno-rtti])
+AX_APPEND_COMPILE_FLAGS([-ffast-math])
+AX_APPEND_COMPILE_FLAGS([-ftree-vectorize])
 AC_LANG_POP
 
 dnl ---------------------------------- debug ----------------------------------
