@@ -31,6 +31,7 @@
 #include "tag/TagBuilder.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "protocol/Ack.hxx"
 
 #undef MPD_DIRECTORY_H
 #undef MPD_SONG_H
@@ -120,8 +121,18 @@ CheckError(struct mpd_connection *connection, Error &error)
 	if (code == MPD_ERROR_SUCCESS)
 		return true;
 
-	error.Set(libmpdclient_domain, (int)code,
-		  mpd_connection_get_error_message(connection));
+	if (code == MPD_ERROR_SERVER) {
+		/* libmpdclient's "enum mpd_server_error" is the same
+		   as our "enum ack" */
+		const auto server_error =
+			mpd_connection_get_server_error(connection);
+		error.Set(ack_domain, (int)server_error,
+			  mpd_connection_get_error_message(connection));
+	} else {
+		error.Set(libmpdclient_domain, (int)code,
+			  mpd_connection_get_error_message(connection));
+	}
+
 	mpd_connection_clear_error(connection);
 	return false;
 }
