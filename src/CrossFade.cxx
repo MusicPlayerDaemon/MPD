@@ -108,7 +108,7 @@ CrossFadeSettings::Calculate(float total_time,
 
 	chunks_f = (float)af.GetTimeToSize() / (float)CHUNK_SIZE;
 
-	if (std::isnan(mixramp_delay) || !mixramp_start || !mixramp_prev_end) {
+	if (mixramp_delay <= 0 || !mixramp_start || !mixramp_prev_end) {
 		chunks = (chunks_f * duration + 0.5);
 	} else {
 		/* Calculate mixramp overlap. */

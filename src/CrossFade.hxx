@@ -22,8 +22,6 @@
 
 #include "Compiler.h"
 
-#include <cmath>
-
 struct AudioFormat;
 
 struct CrossFadeSettings {
@@ -35,14 +33,15 @@ struct CrossFadeSettings {
 	float mixramp_db;
 
 	/**
-	 * The configured MixRapm delay [s].
+	 * The configured MixRapm delay [s].  A non-positive value
+	 * disables MixRamp.
 	 */
 	float mixramp_delay;
 
 	CrossFadeSettings()
 		:duration(0),
 		 mixramp_db(0),
-		 mixramp_delay(std::nanf(""))
+		 mixramp_delay(-1)
 	{}
 
 

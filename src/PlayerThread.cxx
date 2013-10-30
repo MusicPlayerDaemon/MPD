@@ -779,7 +779,7 @@ Player::PlayNextChunk()
 						  other_chunk->tag);
 			other_chunk->tag = nullptr;
 
-			if (std::isnan(pc.cross_fade.mixramp_delay)) {
+			if (pc.cross_fade.mixramp_delay <= 0) {
 				chunk->mix_ratio = ((float)cross_fade_position)
 					     / cross_fade_chunks;
 			} else {
