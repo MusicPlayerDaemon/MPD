@@ -22,7 +22,9 @@ public:
 		const char *input = "1.0 0.00;3.0 0.10;6.0 2.50;";
 
 		char *foo = strdup(input);
-		CPPUNIT_ASSERT(!std::isnan(mixramp_interpolate(foo, 0)));
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(double(0),
+					     mixramp_interpolate(foo, 0),
+					     0.05);
 		free(foo);
 
 		foo = strdup(input);
@@ -38,10 +40,6 @@ public:
 		foo = strdup(input);
 		CPPUNIT_ASSERT_EQUAL(float(2.5),
 				     mixramp_interpolate(foo, 6));
-		free(foo);
-
-		foo = strdup(input);
-		CPPUNIT_ASSERT(!std::isnan(mixramp_interpolate(foo, 3)));
 		free(foo);
 
 		foo = strdup(input);
