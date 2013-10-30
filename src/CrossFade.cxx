@@ -25,8 +25,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <cmath>
-
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -37,7 +35,8 @@ gcc_pure
 static float
 mixramp_interpolate(const char *ramp_list, float required_db)
 {
-	float last_db = nan(""), last_secs = 0;
+	float last_db = 0, last_secs = 0;
+	bool have_last = false;
 
 	/* ramp_list is a string of pairs of dBs and seconds that describe the
 	 * volume profile. Delimiters are semi-colons between pairs and spaces
@@ -71,11 +70,12 @@ mixramp_interpolate(const char *ramp_list, float required_db)
 		if (db < required_db) {
 			last_db = db;
 			last_secs = secs;
+			have_last = true;
 			continue;
 		}
 
 		/* If required db < any stored value, use the least. */
-		if (std::isnan(last_db))
+		if (!have_last)
 			return secs;
 
 		/* Finally, interpolate linearly. */
