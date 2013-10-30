@@ -41,18 +41,28 @@ CreateVolumeFilter()
 struct SoftwareMixer final : public Mixer {
 	Filter *filter;
 
+	/**
+	 * If this is true, then this object "owns" the #Filter
+	 * instance (see above).  It will be set to false by
+	 * software_mixer_get_filter(); after that, the caller will be
+	 * responsible for the #Filter.
+	 */
+	bool owns_filter;
+
 	unsigned volume;
 
 	SoftwareMixer()
 		:Mixer(software_mixer_plugin),
-		filter(CreateVolumeFilter()),
-		volume(100)
+		 filter(CreateVolumeFilter()),
+		 owns_filter(true),
+		 volume(100)
 	{
 		assert(filter != nullptr);
 	}
 
 	~SoftwareMixer() {
-		delete filter;
+		if (owns_filter)
+			delete filter;
 	}
 };
 
@@ -115,6 +125,8 @@ software_mixer_get_filter(Mixer *mixer)
 {
 	SoftwareMixer *sm = (SoftwareMixer *)mixer;
 	assert(sm->IsPlugin(software_mixer_plugin));
+	assert(sm->owns_filter);
 
+	sm->owns_filter = false;
 	return sm->filter;
 }
