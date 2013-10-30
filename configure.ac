@@ -1463,6 +1463,13 @@ dnl ---------------------------------------------------------------------------
 dnl CFLAGS
 dnl ---------------------------------------------------------------------------
 
+dnl ---------------------------- warnings as errors ---------------------------
+if test "x$enable_werror" = xyes; then
+	CFLAGS="$CFLAGS -Werror -pedantic-errors"
+	CXXFLAGS="$CXXFLAGS -Werror"
+fi
+
+dnl ---------------------------- language features ----------------------------
 AX_APPEND_COMPILE_FLAGS([-fvisibility=hidden])
 AX_APPEND_COMPILE_FLAGS([-ffast-math])
 AX_APPEND_COMPILE_FLAGS([-ftree-vectorize])
@@ -1515,12 +1522,6 @@ then
 	AX_APPEND_COMPILE_FLAGS([-Wwrite-strings])
 	AX_APPEND_COMPILE_FLAGS([-Wsign-compare])
 	AC_LANG_POP
-fi
-
-dnl ---------------------------- warnings as errors ---------------------------
-if test "x$enable_werror" = xyes; then
-	AM_CFLAGS="$AM_CFLAGS -Werror -pedantic-errors"
-	AM_CXXFLAGS="$AM_CXXFLAGS -Werror"
 fi
 
 dnl ---------------------------------------------------------------------------
