@@ -37,11 +37,18 @@
 
 static constexpr Domain fatal_error_domain("fatal_error");
 
+gcc_noreturn
+static void
+Abort()
+{
+	exit(EXIT_FAILURE);
+}
+
 void
 FatalError(const char *msg)
 {
 	LogError(fatal_error_domain, msg);
-	exit(EXIT_FAILURE);
+	Abort();
 }
 
 void
@@ -52,7 +59,7 @@ FormatFatalError(const char *fmt, ...)
 	LogFormatV(fatal_error_domain, LogLevel::ERROR, fmt, ap);
 	va_end(ap);
 
-	exit(EXIT_FAILURE);
+	Abort();
 }
 
 void
@@ -84,7 +91,7 @@ FatalSystemError(const char *msg)
 #endif
 
 	FormatError(fatal_error_domain, "%s: %s", msg, system_error);
-	exit(EXIT_FAILURE);
+	Abort();
 }
 
 void
