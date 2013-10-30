@@ -73,8 +73,12 @@ public:
 			      DatabaseStats &stats,
 			      Error &error) const override;
 
-protected:
+private:
 	bool Configure(const config_param &param, Error &error);
+
+	bool Connect(Error &error);
+	bool CheckConnection(Error &error);
+	bool EnsureConnected(Error &error);
 };
 
 static constexpr Domain libmpdclient_domain("libmpdclient");
@@ -231,17 +235,8 @@ ProxyDatabase::Configure(const config_param &param, gcc_unused Error &error)
 bool
 ProxyDatabase::Open(Error &error)
 {
-	connection = mpd_connection_new(host.empty() ? nullptr : host.c_str(),
-					port, 0);
-	if (connection == nullptr) {
-		error.Set(libmpdclient_domain, (int)MPD_ERROR_OOM, "Out of memory");
+	if (!Connect(error))
 		return false;
-	}
-
-	if (!CheckError(connection, error)) {
-		mpd_connection_free(connection);
-		return false;
-	}
 
 	root = Directory::NewRoot();
 
@@ -251,10 +246,54 @@ ProxyDatabase::Open(Error &error)
 void
 ProxyDatabase::Close()
 {
+	root->Free();
+
+	if (connection != nullptr)
+		mpd_connection_free(connection);
+}
+
+bool
+ProxyDatabase::Connect(Error &error)
+{
+	const char *_host = host.empty() ? nullptr : host.c_str();
+	connection = mpd_connection_new(_host, port, 0);
+	if (connection == nullptr) {
+		error.Set(libmpdclient_domain, (int)MPD_ERROR_OOM,
+			  "Out of memory");
+		return false;
+	}
+
+	if (!CheckError(connection, error)) {
+		if (connection != nullptr) {
+			mpd_connection_free(connection);
+			connection = nullptr;
+		}
+
+		return false;
+	}
+
+	return true;
+}
+
+bool
+ProxyDatabase::CheckConnection(Error &error)
+{
 	assert(connection != nullptr);
 
-	root->Free();
-	mpd_connection_free(connection);
+	if (!mpd_connection_clear_error(connection)) {
+		mpd_connection_free(connection);
+		return Connect(error);
+	}
+
+	return true;
+}
+
+bool
+ProxyDatabase::EnsureConnected(Error &error)
+{
+	return connection != nullptr
+		? CheckConnection(error)
+		: Connect(error);
 }
 
 static Song *
@@ -263,8 +302,9 @@ Convert(const struct mpd_song *song);
 Song *
 ProxyDatabase::GetSong(const char *uri, Error &error) const
 {
-	// TODO: implement
-	// TODO: auto-reconnect
+	// TODO: eliminate the const_cast
+	if (!const_cast<ProxyDatabase *>(this)->EnsureConnected(error))
+		return nullptr;
 
 	if (!mpd_send_list_meta(connection, uri)) {
 		CheckError(connection, error);
@@ -522,7 +562,9 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 		     VisitPlaylist visit_playlist,
 		     Error &error) const
 {
-	// TODO: auto-reconnect
+	// TODO: eliminate the const_cast
+	if (!const_cast<ProxyDatabase *>(this)->EnsureConnected(error))
+		return nullptr;
 
 	if (!visit_directory && !visit_playlist && selection.recursive)
 		/* this optimized code path can only be used under
@@ -542,6 +584,10 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 			       VisitString visit_string,
 			       Error &error) const
 {
+	// TODO: eliminate the const_cast
+	if (!const_cast<ProxyDatabase *>(this)->EnsureConnected(error))
+		return nullptr;
+
 	enum mpd_tag_type tag_type2 = Convert(tag_type);
 	if (tag_type2 == MPD_TAG_COUNT) {
 		error.Set(libmpdclient_domain, "Unsupported tag");
@@ -577,6 +623,10 @@ ProxyDatabase::GetStats(const DatabaseSelection &selection,
 {
 	// TODO: match
 	(void)selection;
+
+	// TODO: eliminate the const_cast
+	if (!const_cast<ProxyDatabase *>(this)->EnsureConnected(error))
+		return nullptr;
 
 	struct mpd_stats *stats2 =
 		mpd_run_stats(connection);
