@@ -36,8 +36,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <cmath>
-
 #include <glib.h>
 
 #include <string.h>
@@ -783,7 +781,7 @@ Player::PlayNextChunk()
 				chunk->mix_ratio = ((float)cross_fade_position)
 					     / cross_fade_chunks;
 			} else {
-				chunk->mix_ratio = nan("");
+				chunk->mix_ratio = -1;
 			}
 
 			if (other_chunk->IsEmpty()) {

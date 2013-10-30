@@ -194,9 +194,9 @@ pcm_mix(void *buffer1, const void *buffer2, size_t size,
 	int vol1;
 	float s;
 
-	/* portion1 is between 0.0 and 1.0 for crossfading, MixRamp uses NaN
+	/* portion1 is between 0.0 and 1.0 for crossfading, MixRamp uses -1
 	 * to signal mixing rather than fading */
-	if (isnan(portion1))
+	if (portion1 < 0)
 		return pcm_add(buffer1, buffer2, size, format);
 
 	s = sin(M_PI_2 * portion1);

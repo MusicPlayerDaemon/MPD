@@ -36,8 +36,9 @@
  * @param size the size of both buffers in bytes
  * @param format the sample format of both buffers
  * @param portion1 a number between 0.0 and 1.0 specifying the portion
- * of the first buffer in the mix; portion2 = (1.0 - portion1). The value
- * NaN is used by the MixRamp code to specify that simple addition is required.
+ * of the first buffer in the mix; portion2 = (1.0 - portion1).
+ * Negative values are used by the MixRamp code to specify that simple
+ * addition is required.
  *
  * @return true on success, false if the format is not supported
  */
