@@ -32,6 +32,7 @@
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"
 #include "fs/Limits.hxx"
+#include "util/CharUtil.hxx"
 #include "Log.hxx"
 
 #include <glib.h>
@@ -167,7 +168,12 @@ playlist_state_restore(const char *line, TextFile &file,
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_MIXRAMPDB)) {
 			pc.SetMixRampDb(atof(line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDB)));
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_MIXRAMPDELAY)) {
-			pc.SetMixRampDelay(atof(line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDELAY)));
+			const char *p = line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDELAY);
+
+			/* this check discards "nan" which was used
+			   prior to MPD 0.18 */
+			if (IsDigitASCII(*p))
+				pc.SetMixRampDelay(atof(p));
 		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_RANDOM)) {
 			random_mode =
 				strcmp(line + strlen(PLAYLIST_STATE_FILE_RANDOM),
