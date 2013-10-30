@@ -1459,22 +1459,26 @@ dnl ---------------------------------------------------------------------------
 dnl CFLAGS
 dnl ---------------------------------------------------------------------------
 
+AX_APPEND_COMPILE_FLAGS([-fvisibility=hidden])
+
+AC_LANG_PUSH([C++])
+AX_APPEND_COMPILE_FLAGS([-fvisibility=hidden])
+AX_APPEND_COMPILE_FLAGS([-fno-threadsafe-statics])
+AX_APPEND_COMPILE_FLAGS([-fmerge-all-constants])
+AX_APPEND_COMPILE_FLAGS([-fno-exceptions])
+AX_APPEND_COMPILE_FLAGS([-fno-rtti])
+AC_LANG_POP
+
 dnl ---------------------------------- debug ----------------------------------
 if test "x$enable_debug" = xno; then
 	AM_CPPFLAGS="$AM_CPPFLAGS -DNDEBUG"
 
 	AX_APPEND_COMPILE_FLAGS([-ffunction-sections])
 	AX_APPEND_COMPILE_FLAGS([-fdata-sections])
-	AX_APPEND_COMPILE_FLAGS([-fvisibility=hidden])
 
 	AC_LANG_PUSH([C++])
 	AX_APPEND_COMPILE_FLAGS([-ffunction-sections])
 	AX_APPEND_COMPILE_FLAGS([-fdata-sections])
-	AX_APPEND_COMPILE_FLAGS([-fvisibility=hidden])
-	AX_APPEND_COMPILE_FLAGS([-fno-threadsafe-statics])
-	AX_APPEND_COMPILE_FLAGS([-fmerge-all-constants])
-	AX_APPEND_COMPILE_FLAGS([-fno-exceptions])
-	AX_APPEND_COMPILE_FLAGS([-fno-rtti])
 	AC_LANG_POP
 
 	AX_APPEND_LINK_FLAGS([-Wl,--gc-sections])
