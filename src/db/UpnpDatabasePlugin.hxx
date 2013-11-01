@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2013 The Music Player Daemon Project
+ * Copyright (C) 2003-2011 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,31 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "DatabaseRegistry.hxx"
-#include "db/SimpleDatabasePlugin.hxx"
-#include "db/ProxyDatabasePlugin.hxx"
-#include "db/UpnpDatabasePlugin.hxx"
+#ifndef MPD_UPNP_DATABASE_PLUGIN_HXX
+#define MPD_UPNP_DATABASE_PLUGIN_HXX
 
-#include <string.h>
+struct DatabasePlugin;
 
-const DatabasePlugin *const database_plugins[] = {
-	&simple_db_plugin,
-#ifdef HAVE_LIBMPDCLIENT
-	&proxy_db_plugin,
+extern const DatabasePlugin upnp_db_plugin;
+
 #endif
-#ifdef HAVE_LIBUPNP
-	&upnp_db_plugin,
-#endif
-	nullptr
-};
-
-const DatabasePlugin *
-GetDatabasePluginByName(const char *name)
-{
-	for (auto i = database_plugins; *i != nullptr; ++i)
-		if (strcmp((*i)->name, name) == 0)
-			return *i;
-
-	return nullptr;
-}

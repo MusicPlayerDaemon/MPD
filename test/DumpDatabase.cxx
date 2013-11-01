@@ -39,6 +39,15 @@ using std::endl;
 
 #include <stdlib.h>
 
+#ifdef HAVE_LIBUPNP
+#include "InputStream.hxx"
+size_t
+InputStream::LockRead(void *, size_t, Error &)
+{
+	return 0;
+}
+#endif
+
 static bool
 DumpDirectory(const Directory &directory, Error &)
 {

@@ -407,6 +407,24 @@ DB_LIBS = \
 	libdb_plugins.a \
 	$(LIBMPDCLIENT_LIBS)
 
+if HAVE_LIBUPNP
+libdb_plugins_a_SOURCES += \
+	src/db/UpnpDatabasePlugin.cxx src/db/UpnpDatabasePlugin.hxx \
+	src/db/upnp/ContentDirectoryService.cxx src/db/upnp/ContentDirectoryService.hxx \
+	src/db/upnp/Device.cxx src/db/upnp/Device.hxx \
+	src/db/upnp/Directory.cxx src/db/upnp/Directory.hxx \
+	src/db/upnp/Discovery.cxx src/db/upnp/Discovery.hxx \
+	src/db/upnp/Domain.cxx src/db/upnp/Domain.hxx \
+	src/db/upnp/ixmlwrap.cxx src/db/upnp/ixmlwrap.hxx \
+	src/db/upnp/upnpplib.cxx src/db/upnp/upnpplib.hxx \
+	src/db/upnp/Util.cxx src/db/upnp/Util.hxx \
+	src/db/upnp/WorkQueue.hxx \
+	src/db/upnp/Object.hxx
+DB_LIBS += \
+	$(EXPAT_LIBS) \
+	$(UPNP_LIBS)
+endif
+
 # archive plugins
 
 if ENABLE_ARCHIVE
@@ -1199,6 +1217,10 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/Song.cxx src/SongSave.cxx src/SongSort.cxx \
 	src/TagSave.cxx \
 	src/SongFilter.cxx
+
+if HAVE_LIBUPNP
+test_DumpDatabase_SOURCES += src/Expat.cxx
+endif
 
 test_run_input_LDADD = \
 	$(INPUT_LIBS) \

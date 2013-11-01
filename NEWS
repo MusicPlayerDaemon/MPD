@@ -2,6 +2,8 @@ ver 0.19 (not yet released)
 * protocol
   - new commands "addtagid", "cleartagid"
   - "lsinfo" and "readcomments" allowed for remote files
+* database
+  - upnp: new plugin
 * playlist
   - soundcloud: use https instead of http
 * archive

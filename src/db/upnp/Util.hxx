@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2013 The Music Player Daemon Project
+ * Copyright (C) 2003-2014 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,31 +17,30 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "DatabaseRegistry.hxx"
-#include "db/SimpleDatabasePlugin.hxx"
-#include "db/ProxyDatabasePlugin.hxx"
-#include "db/UpnpDatabasePlugin.hxx"
+#ifndef MPD_UPNP_UTIL_HXX
+#define MPD_UPNP_UTIL_HXX
 
-#include <string.h>
+#include <string>
 
-const DatabasePlugin *const database_plugins[] = {
-	&simple_db_plugin,
-#ifdef HAVE_LIBMPDCLIENT
-	&proxy_db_plugin,
+std::string
+caturl(const std::string& s1, const std::string& s2);
+
+void
+trimstring(std::string &s, const char *ws = " \t\n");
+
+std::string
+path_getfather(const std::string &s);
+
+template <class T>
+bool csvToStrings(const std::string& s, T &tokens);
+
+#define UPNPP_DEBUG
+
+#if defined(UPNPP_DEBUG) && defined(DEBUG)
+#include <upnp/upnpdebug.h>
+#define PLOGINF(...) UpnpPrintf(UPNP_INFO, API, __FILE__, __LINE__, __VA_ARGS__)
+#else
+#define PLOGINF(...)
 #endif
-#ifdef HAVE_LIBUPNP
-	&upnp_db_plugin,
-#endif
-	nullptr
-};
 
-const DatabasePlugin *
-GetDatabasePluginByName(const char *name)
-{
-	for (auto i = database_plugins; *i != nullptr; ++i)
-		if (strcmp((*i)->name, name) == 0)
-			return *i;
-
-	return nullptr;
-}
+#endif /* _UPNPP_H_X_INCLUDED_ */

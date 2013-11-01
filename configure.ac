@@ -234,6 +234,11 @@ AC_ARG_ENABLE(expat,
 		[enable the expat XML parser]),,
 	enable_expat=auto)
 
+AC_ARG_ENABLE(upnp,
+	AS_HELP_STRING([--enable-upnp],
+		[enable UPnP client support (default: auto)]),,
+	enable_upnp=auto)
+
 AC_ARG_ENABLE(adplug,
 	AS_HELP_STRING([--enable-adplug],
 		[enable the AdPlug decoder plugin (default: auto)]),,
@@ -899,6 +904,24 @@ else
 fi
 
 AM_CONDITIONAL(ENABLE_BZIP2_TEST, test x$BZIP2 != xno)
+
+dnl ---------------------------------- libupnp ---------------------------------
+
+if test x$enable_expat = xno; then
+	if test x$enable_upnp = xauto; then
+		AC_MSG_WARN([expat disabled -- disabling UPnP])
+		enable_upnp=no
+	elif test x$enable_upnp = xyes; then
+		AC_MSG_ERROR([expat disabled -- required for UPnP])
+	fi
+fi
+
+MPD_AUTO_PKG(upnp, UPNP, [libupnp],
+	[UPnP client support], [libupnp not found])
+if test x$enable_upnp = xyes; then
+	AC_DEFINE(HAVE_LIBUPNP, 1, [Define when libupnp is used])
+fi
+AM_CONDITIONAL(HAVE_LIBUPNP, test x$enable_upnp = xyes)
 
 dnl --------------------------------- libzzip ---------------------------------
 MPD_AUTO_PKG(zzip, ZZIP, [zziplib >= 0.13],
