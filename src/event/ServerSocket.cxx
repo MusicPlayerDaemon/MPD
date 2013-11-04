@@ -339,6 +339,7 @@ ServerSocket::AddPortIPv4(unsigned port)
 }
 
 #ifdef HAVE_IPV6
+
 inline void
 ServerSocket::AddPortIPv6(unsigned port)
 {
@@ -349,6 +350,22 @@ ServerSocket::AddPortIPv6(unsigned port)
 
 	AddAddress((const sockaddr &)sin, sizeof(sin));
 }
+
+/**
+ * Is IPv6 supported by the kernel?
+ */
+gcc_pure
+static bool
+SupportsIPv6()
+{
+	int fd = socket(AF_INET6, SOCK_STREAM, 0);
+	if (fd < 0)
+		return false;
+
+	close(fd);
+	return true;
+}
+
 #endif /* HAVE_IPV6 */
 
 #endif /* HAVE_TCP */
@@ -363,7 +380,8 @@ ServerSocket::AddPort(unsigned port, Error &error)
 	}
 
 #ifdef HAVE_IPV6
-	AddPortIPv6(port);
+	if (SupportsIPv6())
+		AddPortIPv6(port);
 #endif
 	AddPortIPv4(port);
 
