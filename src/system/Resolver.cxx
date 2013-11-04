@@ -32,6 +32,10 @@
 #include <winsock.h>
 #endif
 
+#ifdef HAVE_UN
+#include <sys/un.h>
+#endif
+
 #include <string.h>
 #include <stdio.h>
 
@@ -40,6 +44,17 @@ const Domain resolver_domain("resolver");
 char *
 sockaddr_to_string(const struct sockaddr *sa, size_t length, Error &error)
 {
+#ifdef HAVE_UN
+	if (sa->sa_family == AF_UNIX) {
+		/* return path of UNIX domain sockets */
+		const sockaddr_un &s_un = *(const sockaddr_un *)sa;
+		if (length < sizeof(s_un) || s_un.sun_path[0] == 0)
+			return g_strdup("local");
+
+		return g_strdup(s_un.sun_path);
+	}
+#endif
+
 #if defined(HAVE_IPV6) && defined(IN6_IS_ADDR_V4MAPPED)
 	const struct sockaddr_in6 *a6 = (const struct sockaddr_in6 *)sa;
 	struct sockaddr_in a4;
@@ -69,13 +84,6 @@ sockaddr_to_string(const struct sockaddr *sa, size_t length, Error &error)
 		error.Set(resolver_domain, ret, gai_strerror(ret));
 		return NULL;
 	}
-
-#ifdef HAVE_UN
-	if (sa->sa_family == AF_UNIX)
-		/* "serv" contains corrupt information with unix
-		   sockets */
-		return g_strdup(host);
-#endif
 
 #ifdef HAVE_IPV6
 	if (strchr(host, ':') != NULL)
