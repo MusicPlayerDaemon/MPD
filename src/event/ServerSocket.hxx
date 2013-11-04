@@ -20,7 +20,7 @@
 #ifndef MPD_SERVER_SOCKET_HXX
 #define MPD_SERVER_SOCKET_HXX
 
-#include <forward_list>
+#include <list>
 
 #include <stddef.h>
 
@@ -41,7 +41,7 @@ class ServerSocket {
 
 	EventLoop &loop;
 
-	std::forward_list<OneServerSocket> sockets;
+	std::list<OneServerSocket> sockets;
 
 	unsigned next_serial;
 

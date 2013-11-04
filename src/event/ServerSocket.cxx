@@ -297,10 +297,10 @@ ServerSocket::Close()
 OneServerSocket &
 ServerSocket::AddAddress(const sockaddr &address, size_t address_length)
 {
-	sockets.emplace_front(loop, *this, next_serial,
-			      &address, address_length);
+	sockets.emplace_back(loop, *this, next_serial,
+			     &address, address_length);
 
-	return sockets.front();
+	return sockets.back();
 }
 
 bool
