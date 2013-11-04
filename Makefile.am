@@ -1538,7 +1538,9 @@ noinst_PROGRAMS += src/pcm/dsd2pcm/dsd2pcm
 
 src_pcm_dsd2pcm_dsd2pcm_SOURCES = \
 	src/pcm/dsd2pcm/dsd2pcm.c src/pcm/dsd2pcm/dsd2pcm.h \
+	src/pcm/dsd2pcm/dsd2pcm.hpp \
 	src/pcm/dsd2pcm/noiseshape.c src/pcm/dsd2pcm/noiseshape.h \
+	src/pcm/dsd2pcm/noiseshape.hpp \
 	src/pcm/dsd2pcm/main.cpp
 src_pcm_dsd2pcm_dsd2pcm_LDADD = libutil.a
 
@@ -1612,6 +1614,9 @@ endif
 #
 
 EXTRA_DIST = $(doc_DATA) autogen.sh \
+	test/test_archive_bzip2.sh  \
+	test/test_archive_iso9660.sh \
+	test/test_archive_zzip.sh \
 	$(wildcard scripts/*.sh) \
 	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf \
 	src/win/mpd_win32_rc.rc.in src/win/mpd.ico
