@@ -34,9 +34,25 @@ class Error;
 class Domain;
 
 enum class LogLevel {
+	/**
+	 * Debug message for developers.
+	 */
 	DEBUG,
+
+	/**
+	 * Unimportant informational message.
+	 */
 	INFO,
+
+	/**
+	 * Warning: something may be wrong.
+	 */
 	WARNING,
+
+	/**
+	 * An error has occurred, an operation could not finish
+	 * successfully.
+	 */
 	ERROR,
 };
 
