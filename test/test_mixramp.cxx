@@ -28,18 +28,21 @@ public:
 		free(foo);
 
 		foo = strdup(input);
-		CPPUNIT_ASSERT_EQUAL(float(0),
-				     mixramp_interpolate(foo, 1));
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(float(0),
+					     mixramp_interpolate(foo, 1),
+					     0.005);
 		free(foo);
 
 		foo = strdup(input);
-		CPPUNIT_ASSERT_EQUAL(float(0.1),
-				     mixramp_interpolate(foo, 3));
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(float(0.1),
+					     mixramp_interpolate(foo, 3),
+					     0.005);
 		free(foo);
 
 		foo = strdup(input);
-		CPPUNIT_ASSERT_EQUAL(float(2.5),
-				     mixramp_interpolate(foo, 6));
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(float(2.5),
+					     mixramp_interpolate(foo, 6),
+					     0.01);
 		free(foo);
 
 		foo = strdup(input);
