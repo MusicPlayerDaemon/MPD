@@ -231,7 +231,7 @@ ServerSocket::Open(Error &error)
 
 	for (auto &i : sockets) {
 		assert(i.GetSerial() > 0);
-		assert(good == nullptr || i.GetSerial() <= good->GetSerial());
+		assert(good == nullptr || i.GetSerial() >= good->GetSerial());
 
 		if (bad != nullptr && i.GetSerial() != bad->GetSerial()) {
 			Close();
