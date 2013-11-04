@@ -128,12 +128,12 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 	uint32_t samplefreq = FromLE32(dsf_fmt_chunk.sample_freq);
 
 	/* for now, only support version 1 of the standard, DSD raw stereo
-	   files with a sample freq of 2822400 Hz */
+	   files with a sample freq of 2822400 or 5644800 Hz */
 
 	if (dsf_fmt_chunk.version != 1 || dsf_fmt_chunk.formatid != 0
 	    || dsf_fmt_chunk.channeltype != 2
 	    || dsf_fmt_chunk.channelnum != 2
-	    || samplefreq != 2822400)
+	    || (samplefreq != 2822400 && samplefreq != 5644800))
 		return false;
 
 	uint32_t chblksize = FromLE32(dsf_fmt_chunk.block_size);
