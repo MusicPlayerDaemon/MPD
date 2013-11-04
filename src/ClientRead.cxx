@@ -21,6 +21,7 @@
 #include "ClientInternal.hxx"
 #include "Main.hxx"
 #include "event/Loop.hxx"
+#include "util/CharUtil.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -35,10 +36,14 @@ Client::OnSocketInput(void *data, size_t length)
 
 	TimeoutMonitor::ScheduleSeconds(client_timeout);
 
+	BufferedSocket::ConsumeInput(newline + 1 - p);
+
+	/* skip whitespace at the end of the line */
+	while (newline > p && IsWhitespaceOrNull(newline[-1]))
+		--newline;
+
 	/* terminate the string at the end of the line */
 	*newline = 0;
-
-	BufferedSocket::ConsumeInput(newline + 1 - p);
 
 	CommandResult result = client_process_line(*this, p);
 	switch (result) {
