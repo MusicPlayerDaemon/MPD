@@ -60,8 +60,8 @@ AutoConvertFilter::Open(AudioFormat &in_audio_format, Error &error)
 
 	/* open the "real" filter */
 
-	const AudioFormat child_audio_format = in_audio_format;
-	AudioFormat out_audio_format = filter->Open(in_audio_format, error);
+	AudioFormat child_audio_format = in_audio_format;
+	AudioFormat out_audio_format = filter->Open(child_audio_format, error);
 	if (!out_audio_format.IsDefined())
 		return out_audio_format;
 

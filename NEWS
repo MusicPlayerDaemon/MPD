@@ -1,4 +1,6 @@
 ver 0.18.1 (2013/11/??)
+* filter:
+  - autoconvert: fix "volume_normalization" with mp3 files
 
 ver 0.18 (2013/10/31)
 * configuration:
