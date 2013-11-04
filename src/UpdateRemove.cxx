@@ -52,7 +52,7 @@ song_remove_event(void)
 
 	{
 		const auto uri = removed_song->GetURI();
-		FormatInfo(update_domain, "removing %s", uri.c_str());
+		FormatDefault(update_domain, "removing %s", uri.c_str());
 	}
 
 #ifdef ENABLE_SQLITE

@@ -50,8 +50,8 @@ ZeroconfInit(gcc_unused EventLoop &loop)
 		return;
 
 	if (listen_port <= 0) {
-		LogInfo(zeroconf_domain,
-			"No global port, disabling zeroconf");
+		LogWarning(zeroconf_domain,
+			   "No global port, disabling zeroconf");
 		zeroconfEnabled = false;
 		return;
 	}

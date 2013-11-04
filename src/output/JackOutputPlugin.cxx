@@ -221,7 +221,7 @@ mpd_jack_error(const char *msg)
 static void
 mpd_jack_info(const char *msg)
 {
-	LogInfo(jack_output_domain, msg);
+	LogDefault(jack_output_domain, msg);
 }
 #endif
 

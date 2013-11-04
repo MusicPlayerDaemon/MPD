@@ -875,7 +875,7 @@ Player::SongBorder()
 
 	{
 		const auto uri = song->GetURI();
-		FormatInfo(player_domain, "played \"%s\"", uri.c_str());
+		FormatDefault(player_domain, "played \"%s\"", uri.c_str());
 	}
 
 	ReplacePipe(dc.pipe);

@@ -112,8 +112,8 @@ update_container_file(Directory &directory,
 
 		modified = true;
 
-		FormatInfo(update_domain, "added %s/%s",
-			   directory.GetPath(), vtrack);
+		FormatDefault(update_domain, "added %s/%s",
+			      directory.GetPath(), vtrack);
 		g_free(vtrack);
 	}
 

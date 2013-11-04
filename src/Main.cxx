@@ -160,18 +160,18 @@ glue_db_init_and_load(void)
 	const struct config_param *path = config_get_param(CONF_DB_FILE);
 
 	if (param != nullptr && path != nullptr)
-		LogInfo(main_domain,
-			"Found both 'database' and 'db_file' setting - ignoring the latter");
+		LogWarning(main_domain,
+			   "Found both 'database' and 'db_file' setting - ignoring the latter");
 
 	if (!mapper_has_music_directory()) {
 		if (param != nullptr)
-			LogInfo(main_domain,
-				"Found database setting without "
-				"music_directory - disabling database");
+			LogDefault(main_domain,
+				   "Found database setting without "
+				   "music_directory - disabling database");
 		if (path != nullptr)
-			LogInfo(main_domain,
-				"Found db_file setting without "
-				"music_directory - disabling database");
+			LogDefault(main_domain,
+				   "Found db_file setting without "
+				   "music_directory - disabling database");
 		return true;
 	}
 

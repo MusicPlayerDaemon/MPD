@@ -50,15 +50,15 @@
 static const struct audio_output_plugin *
 audio_output_detect(Error &error)
 {
-	LogInfo(output_domain, "Attempt to detect audio output device");
+	LogDefault(output_domain, "Attempt to detect audio output device");
 
 	audio_output_plugins_for_each(plugin) {
 		if (plugin->test_default_device == nullptr)
 			continue;
 
-		FormatInfo(output_domain,
-			   "Attempting to detect a %s audio device",
-			   plugin->name);
+		FormatDefault(output_domain,
+			      "Attempting to detect a %s audio device",
+			      plugin->name);
 		if (ao_plugin_test_default_device(plugin))
 			return plugin;
 	}
@@ -310,9 +310,9 @@ audio_output_new(const config_param &param,
 		if (plugin == nullptr)
 			return nullptr;
 
-		FormatInfo(output_domain,
-			   "Successfully detected a %s audio device",
-			   plugin->name);
+		FormatDefault(output_domain,
+			      "Successfully detected a %s audio device",
+			      plugin->name);
 	}
 
 	struct audio_output *ao = ao_plugin_init(plugin, param, error);

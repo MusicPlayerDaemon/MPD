@@ -83,11 +83,11 @@ update_song_file2(Directory &directory,
 		db_unlock();
 
 		modified = true;
-		FormatInfo(update_domain, "added %s/%s",
-			   directory.GetPath(), name);
+		FormatDefault(update_domain, "added %s/%s",
+			      directory.GetPath(), name);
 	} else if (st->st_mtime != song->mtime || walk_discard) {
-		FormatInfo(update_domain, "updating %s/%s",
-			   directory.GetPath(), name);
+		FormatDefault(update_domain, "updating %s/%s",
+			      directory.GetPath(), name);
 		if (!song->UpdateFile()) {
 			FormatDebug(update_domain,
 				    "deleting unrecognized file %s/%s",

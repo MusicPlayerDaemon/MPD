@@ -282,8 +282,8 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 
 		if (len < 0) {
 			/* if error, we skip the frame */
-			LogInfo(ffmpeg_domain,
-				"decoding failed, frame skipped");
+			LogDefault(ffmpeg_domain,
+				   "decoding failed, frame skipped");
 			break;
 		}
 

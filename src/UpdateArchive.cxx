@@ -71,8 +71,8 @@ update_archive_tree(Directory &directory, const char *name)
 				db_unlock();
 
 				modified = true;
-				FormatInfo(update_domain, "added %s/%s",
-					   directory.GetPath(), name);
+				FormatDefault(update_domain, "added %s/%s",
+					      directory.GetPath(), name);
 			}
 		}
 	}

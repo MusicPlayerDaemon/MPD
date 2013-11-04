@@ -51,6 +51,9 @@ ToGLib(LogLevel level)
 		return G_LOG_LEVEL_DEBUG;
 
 	case LogLevel::INFO:
+		return G_LOG_LEVEL_INFO;
+
+	case LogLevel::DEFAULT:
 		return G_LOG_LEVEL_MESSAGE;
 
 	case LogLevel::WARNING:
@@ -98,6 +101,15 @@ FormatInfo(const Domain &domain, const char *fmt, ...)
 	va_list ap;
 	va_start(ap, fmt);
 	LogFormatV(domain, LogLevel::INFO, fmt, ap);
+	va_end(ap);
+}
+
+void
+FormatDefault(const Domain &domain, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	LogFormatV(domain, LogLevel::DEFAULT, fmt, ap);
 	va_end(ap);
 }
 
