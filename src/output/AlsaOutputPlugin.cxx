@@ -106,6 +106,14 @@ struct AlsaOutput {
 	snd_pcm_uframes_t period_position;
 
 	/**
+	 * Set to non-zero when the Raspberry Pi workaround has been
+	 * activated in alsa_recover(); decremented by each write.
+	 * This will avoid activating it again, leading to an endless
+	 * loop.  This problem was observed with a "RME Digi9636/52".
+	 */
+	unsigned pi_workaround;
+
+	/**
 	 * This buffer gets allocated after opening the ALSA device.
 	 * It contains silence samples, enough to fill one period (see
 	 * #period_frames).
@@ -668,6 +676,8 @@ alsa_open(struct audio_output *ao, AudioFormat &audio_format, Error &error)
 {
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
+	ad->pi_workaround = 0;
+
 	int err = snd_pcm_open(&ad->pcm, alsa_device(ad),
 			       SND_PCM_STREAM_PLAYBACK, ad->mode);
 	if (err < 0) {
@@ -727,7 +737,7 @@ alsa_recover(AlsaOutput *ad, int err)
 		ad->period_position = 0;
 		err = snd_pcm_prepare(ad->pcm);
 
-		if (err == 0) {
+		if (err == 0 && ad->pi_workaround == 0) {
 			/* this works around a driver bug observed on
 			   the Raspberry Pi: after snd_pcm_drop(), the
 			   whole ring buffer must be invalidated, but
@@ -744,6 +754,9 @@ alsa_recover(AlsaOutput *ad, int err)
 			   silence, the driver seems to avoid the
 			   bug */
 			snd_pcm_reset(ad->pcm);
+
+			/* disable the workaround for some time */
+			ad->pi_workaround = 8;
 		}
 
 		break;
@@ -820,6 +833,9 @@ alsa_play(struct audio_output *ao, const void *chunk, size_t size,
 		if (ret > 0) {
 			ad->period_position = (ad->period_position + ret)
 				% ad->period_frames;
+
+			if (ad->pi_workaround > 0)
+				--ad->pi_workaround;
 
 			size_t bytes_written = ret * ad->out_frame_size;
 			return ad->pcm_export->CalcSourceSize(bytes_written);
