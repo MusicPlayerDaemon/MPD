@@ -36,8 +36,8 @@
 #define IS_LITTLE_ENDIAN true
 #define IS_BIG_ENDIAN false
 #else
-#define IS_LITTLE_ENDIAN true
-#define IS_BIG_ENDIAN false;
+#define IS_LITTLE_ENDIAN false
+#define IS_BIG_ENDIAN true
 #endif
 
 static inline constexpr bool

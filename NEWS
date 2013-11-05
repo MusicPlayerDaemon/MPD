@@ -4,6 +4,7 @@ ver 0.18.2 (2013/??/??)
 * decoder:
   - dsf: enable DSD128
 * fix build failures due to missing includes
+* fix big-endian support
 
 ver 0.18.1 (2013/11/04)
 * protocol:
