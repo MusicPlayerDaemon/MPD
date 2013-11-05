@@ -155,7 +155,6 @@ pls_open_stream(InputStream &is)
 	pls_parser(keyfile, songs);
 	g_key_file_free(keyfile);
 
-	songs.reverse();
 	return new MemorySongEnumerator(std::move(songs));
 }
 

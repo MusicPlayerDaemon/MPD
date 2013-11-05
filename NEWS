@@ -1,4 +1,6 @@
 ver 0.18.2 (2013/??/??)
+* playlist:
+  - pls: fix reversed song order
 * decoder:
   - dsf: enable DSD128
 * fix build failures due to missing includes
