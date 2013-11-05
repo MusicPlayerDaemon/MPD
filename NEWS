@@ -1,3 +1,5 @@
+ver 0.18.2 (2013/??/??)
+
 ver 0.18.1 (2013/11/04)
 * protocol:
   - always ignore whitespace at the end of the line
