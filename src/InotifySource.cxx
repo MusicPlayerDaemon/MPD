@@ -27,6 +27,7 @@
 
 #include <sys/inotify.h>
 #include <unistd.h>
+#include <errno.h>
 
 bool
 InotifySource::OnSocketReady(gcc_unused unsigned flags)

@@ -32,6 +32,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 static ConfigData config_data;
 
