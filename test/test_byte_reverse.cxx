@@ -27,6 +27,7 @@
 #include <cppunit/ui/text/TestRunner.h>
 
 #include <string.h>
+#include <stdlib.h>
 
 class ByteReverseTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE(ByteReverseTest);

@@ -23,6 +23,8 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
 
+#include <stdlib.h>
+
 int
 main(gcc_unused int argc, gcc_unused char **argv)
 {

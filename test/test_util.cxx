@@ -11,6 +11,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <string.h>
+#include <stdlib.h>
 
 class UriUtilTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE(UriUtilTest);

@@ -10,6 +10,7 @@
 #include <glib.h>
 
 #include <string.h>
+#include <stdlib.h>
 
 class ArchiveLookupTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE(ArchiveLookupTest);
