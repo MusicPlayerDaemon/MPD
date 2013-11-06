@@ -404,33 +404,6 @@ input_curl_easy_free_indirect(struct input_curl *c)
 }
 
 /**
- * Abort and free all HTTP requests.
- *
- * Runs in the I/O thread.  The caller must not hold locks.
- */
-static void
-input_curl_abort_all_requests(const Error &error)
-{
-	assert(io_thread_inside());
-	assert(error.IsDefined());
-
-	while (!curl.requests.empty()) {
-		struct input_curl *c = curl.requests.front();
-		assert(!c->postponed_error.IsDefined());
-
-		input_curl_easy_free(c);
-
-		const ScopeLock protect(c->base.mutex);
-
-		c->postponed_error.Set(error);
-		c->base.ready = true;
-
-		c->base.cond.broadcast();
-	}
-
-}
-
-/**
  * A HTTP request is finished.
  *
  * Runs in the I/O thread.  The caller must not hold locks.
@@ -497,7 +470,7 @@ input_curl_info_read(void)
  *
  * Runs in the I/O thread.  The caller must not hold locks.
  */
-static bool
+static void
 input_curl_perform(void)
 {
 	assert(io_thread_inside());
@@ -509,16 +482,10 @@ input_curl_perform(void)
 		mcode = curl_multi_perform(curl.multi, &running_handles);
 	} while (mcode == CURLM_CALL_MULTI_PERFORM);
 
-	if (mcode != CURLM_OK && mcode != CURLM_CALL_MULTI_PERFORM) {
-		Error error;
-		error.Format(curlm_domain, mcode,
-			     "curl_multi_perform() failed: %s",
-			     curl_multi_strerror(mcode));
-		input_curl_abort_all_requests(error);
-		return false;
-	}
-
-	return true;
+	if (mcode != CURLM_OK && mcode != CURLM_CALL_MULTI_PERFORM)
+		FormatError(curlm_domain,
+			    "curl_multi_perform() failed: %s",
+			    curl_multi_strerror(mcode));
 }
 
 int
@@ -548,8 +515,8 @@ CurlSockets::PrepareSockets()
 void
 CurlSockets::DispatchSockets()
 {
-	if (input_curl_perform())
-		input_curl_info_read();
+	input_curl_perform();
+	input_curl_info_read();
 }
 
 /*
