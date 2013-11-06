@@ -838,7 +838,7 @@ fi
 AM_CONDITIONAL(HAVE_ADPLUG, test x$enable_adplug = xyes)
 
 dnl -------------------------------- audiofile --------------------------------
-MPD_AUTO_PKG(audiofile, AUDIOFILE, [audiofile >= 0.1.7],
+MPD_AUTO_PKG(audiofile, AUDIOFILE, [audiofile >= 0.3],
 	[audiofile decoder plugin], [libaudiofile not found])
 AM_CONDITIONAL(HAVE_AUDIOFILE, test x$enable_audiofile = xyes)
 if test x$enable_audiofile = xyes; then

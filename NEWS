@@ -4,6 +4,7 @@ ver 0.18.2 (2013/??/??)
 * playlist:
   - pls: fix reversed song order
 * decoder:
+  - audiofile: require libaudiofile 0.3 due to API breakage
   - dsf: enable DSD128
 * fix build failures due to missing includes
 * fix big-endian support
