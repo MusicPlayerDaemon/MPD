@@ -108,6 +108,8 @@ decoder_get_chunk(Decoder &decoder);
 
 /**
  * Flushes the current chunk.
+ *
+ * Caller must not lock the #DecoderControl object.
  */
 void
 decoder_flush_chunk(Decoder &decoder);
