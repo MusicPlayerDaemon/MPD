@@ -58,6 +58,10 @@ public:
 		Schedule(FromAvahiWatchEvent(_event));
 	}
 
+	~AvahiWatch() {
+		Steal();
+	}
+
 	static void WatchUpdate(AvahiWatch *w, AvahiWatchEvent event) {
 		w->Schedule(FromAvahiWatchEvent(event));
 	}
