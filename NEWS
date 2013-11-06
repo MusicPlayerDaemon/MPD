@@ -1,4 +1,6 @@
 ver 0.18.2 (2013/??/??)
+* input:
+  - curl: fix bug with redirected streams
 * playlist:
   - pls: fix reversed song order
 * decoder:
