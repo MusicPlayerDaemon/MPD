@@ -248,8 +248,11 @@ audio_output_play(struct audio_output *ao)
 
 	assert(ao->allow_play);
 
-	if (audio_output_is_open(ao))
+	if (audio_output_is_open(ao) && !ao->in_playback_loop &&
+	    !ao->woken_for_play) {
+		ao->woken_for_play = true;
 		ao->cond.signal();
+	}
 }
 
 void audio_output_pause(struct audio_output *ao)

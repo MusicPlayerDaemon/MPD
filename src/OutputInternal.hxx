@@ -128,6 +128,21 @@ struct audio_output {
 	bool allow_play;
 
 	/**
+	 * True while the OutputThread is inside ao_play().  This
+	 * means the PlayerThread does not need to wake up the
+	 * OutputThread when new chunks are added to the MusicPipe,
+	 * because the OutputThread is already watching that.
+	 */
+	bool in_playback_loop;
+
+	/**
+	 * Has the OutputThread been woken up to play more chunks?
+	 * This is set by audio_output_play() and reset by ao_play()
+	 * to reduce the number of duplicate wakeups.
+	 */
+	bool woken_for_play;
+
+	/**
 	 * If not nullptr, the device has failed, and this timer is used
 	 * to estimate how long it should stay disabled (unless
 	 * explicitly reopened with "play").

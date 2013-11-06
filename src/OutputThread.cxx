@@ -510,6 +510,9 @@ ao_play(struct audio_output *ao)
 
 	ao->chunk_finished = false;
 
+	assert(!ao->in_playback_loop);
+	ao->in_playback_loop = true;
+
 	while (chunk != nullptr && ao->command == AO_COMMAND_NONE) {
 		assert(!ao->chunk_finished);
 
@@ -524,6 +527,9 @@ ao_play(struct audio_output *ao)
 		assert(ao->chunk == chunk);
 		chunk = chunk->next;
 	}
+
+	assert(ao->in_playback_loop);
+	ao->in_playback_loop = false;
 
 	ao->chunk_finished = true;
 
@@ -656,8 +662,10 @@ audio_output_task(void *arg)
 			   chunks in the pipe */
 			continue;
 
-		if (ao->command == AO_COMMAND_NONE)
+		if (ao->command == AO_COMMAND_NONE) {
+			ao->woken_for_play = false;
 			ao->cond.wait(ao->mutex);
+		}
 	}
 }
 
