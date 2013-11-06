@@ -89,22 +89,6 @@ FullyBufferedSocket::Write(const void *data, size_t length)
 	if (length == 0)
 		return true;
 
-#if 0
-	/* TODO: disabled because this would add overhead on some callers (the ones that often), but it may be useful */
-
-	if (output.IsEmpty()) {
-		/* try to write it directly first */
-		const auto nbytes = DirectWrite(data, length);
-		if (gcc_likely(nbytes > 0)) {
-			data = (const uint8_t *)data + nbytes;
-			length -= nbytes;
-			if (length == 0)
-				return true;
-		} else if (nbytes < 0)
-			return false;
-	}
-#endif
-
 	const bool was_empty = output.IsEmpty();
 
 	if (!output.Append(data, length)) {
