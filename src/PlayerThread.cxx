@@ -131,7 +131,7 @@ public:
 	Player(PlayerControl &_pc, DecoderControl &_dc,
 	       MusicBuffer &_buffer)
 		:pc(_pc), dc(_dc), buffer(_buffer),
-		 buffering(false),
+		 buffering(true),
 		 decoder_starting(false),
 		 paused(false),
 		 queued(true),

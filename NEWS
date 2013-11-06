@@ -6,6 +6,7 @@ ver 0.18.2 (2013/??/??)
 * decoder:
   - audiofile: require libaudiofile 0.3 due to API breakage
   - dsf: enable DSD128
+* enable buffering when starting playback (regression fix)
 * fix build failures due to missing includes
 * fix big-endian support
 
