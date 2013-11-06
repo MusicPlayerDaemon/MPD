@@ -224,16 +224,18 @@ static constexpr Domain curlm_domain("curlm");
  *
  * Runs in the I/O thread.  No lock needed.
  */
+gcc_pure
 static struct input_curl *
 input_curl_find_request(CURL *easy)
 {
 	assert(io_thread_inside());
 
-	for (auto c : curl.requests)
-		if (c->easy == easy)
-			return c;
+	void *p;
+	CURLcode code = curl_easy_getinfo(easy, CURLINFO_PRIVATE, &p);
+	if (code != CURLE_OK)
+		return nullptr;
 
-	return nullptr;
+	return (input_curl *)p;
 }
 
 static void
@@ -326,7 +328,6 @@ input_curl_easy_add(struct input_curl *c, Error &error)
 	assert(io_thread_inside());
 	assert(c != nullptr);
 	assert(c->easy != nullptr);
-	assert(input_curl_find_request(c->easy) == nullptr);
 
 	curl.requests.push_front(c);
 
@@ -927,6 +928,7 @@ input_curl_easy_init(struct input_curl *c, Error &error)
 		return false;
 	}
 
+	curl_easy_setopt(c->easy, CURLOPT_PRIVATE, (void *)c);
 	curl_easy_setopt(c->easy, CURLOPT_USERAGENT,
 			 "Music Player Daemon " VERSION);
 	curl_easy_setopt(c->easy, CURLOPT_HEADERFUNCTION,
