@@ -102,6 +102,7 @@ decoder_flush_chunk(Decoder &decoder)
 	decoder.chunk = nullptr;
 
 	dc.Lock();
-	dc.client_cond.signal();
+	if (dc.client_is_waiting)
+		dc.client_cond.signal();
 	dc.Unlock();
 }

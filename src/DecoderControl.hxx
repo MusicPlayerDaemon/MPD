@@ -97,6 +97,14 @@ struct DecoderControl {
 	Error error;
 
 	bool quit;
+
+	/**
+	 * Is the client currently waiting for the DecoderThread?  If
+	 * false, the DecoderThread may omit invoking Cond::signal(),
+	 * reducing the number of system calls.
+	 */
+	bool client_is_waiting;
+
 	bool seek_error;
 	bool seekable;
 	double seek_where;
@@ -193,10 +201,10 @@ struct DecoderControl {
 	 * Waits for a signal from the decoder thread.  This object
 	 * must be locked prior to calling this function.  This method
 	 * is only valid in the player thread.
+	 *
+	 * Caller must hold the lock.
 	 */
-	void WaitForDecoder() {
-		client_cond.wait(mutex);
-	}
+	void WaitForDecoder();
 
 	bool IsIdle() const {
 		return state == DecoderState::STOP ||
