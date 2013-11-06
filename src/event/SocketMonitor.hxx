@@ -118,6 +118,11 @@ public:
 	 */
 	int Steal();
 
+	/**
+	 * Somebody has closed the socket.  Unregister this object.
+	 */
+	void Abandon();
+
 	void Close();
 
 	unsigned GetScheduledFlags() const {

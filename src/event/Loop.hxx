@@ -121,6 +121,13 @@ public:
 		return epoll.Modify(_fd, flags, &m);
 	}
 
+	/**
+	 * Remove the given #SocketMonitor after the file descriptor
+	 * has been closed.  This is like RemoveFD(), but does not
+	 * attempt to use #EPOLL_CTL_DEL.
+	 */
+	void Abandon(SocketMonitor &m);
+
 	bool RemoveFD(int fd, SocketMonitor &m);
 
 	void AddIdle(IdleMonitor &i);

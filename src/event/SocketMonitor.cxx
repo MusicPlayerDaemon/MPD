@@ -152,6 +152,19 @@ SocketMonitor::Steal()
 }
 
 void
+SocketMonitor::Abandon()
+{
+	assert(IsDefined());
+
+#ifdef USE_EPOLL
+	fd = -1;
+	loop.Abandon(*this);
+#else
+	Steal();
+#endif
+}
+
+void
 SocketMonitor::Close()
 {
 	close_socket(Steal());

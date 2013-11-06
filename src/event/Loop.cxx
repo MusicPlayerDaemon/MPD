@@ -58,13 +58,18 @@ EventLoop::Break()
 		AddCall([this]() { Break(); });
 }
 
-bool
-EventLoop::RemoveFD(int _fd, SocketMonitor &m)
+void
+EventLoop::Abandon(SocketMonitor &m)
 {
 	for (unsigned i = 0, n = n_events; i < n; ++i)
 		if (events[i].data.ptr == &m)
 			events[i].events = 0;
+}
 
+bool
+EventLoop::RemoveFD(int _fd, SocketMonitor &m)
+{
+	Abandon(m);
 	return epoll.Remove(_fd);
 }
 
