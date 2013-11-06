@@ -22,24 +22,29 @@
 
 #include "check.h"
 #include "BufferedSocket.hxx"
+#include "IdleMonitor.hxx"
 #include "util/PeakBuffer.hxx"
 #include "Compiler.h"
 
 /**
  * A #BufferedSocket specialization that adds an output buffer.
  */
-class FullyBufferedSocket : protected BufferedSocket {
+class FullyBufferedSocket : protected BufferedSocket, private IdleMonitor {
 	PeakBuffer output;
 
 public:
 	FullyBufferedSocket(int _fd, EventLoop &_loop,
 			    size_t normal_size, size_t peak_size=0)
-		:BufferedSocket(_fd, _loop),
+		:BufferedSocket(_fd, _loop), IdleMonitor(_loop),
 		 output(normal_size, peak_size) {
 	}
 
 	using BufferedSocket::IsDefined;
-	using BufferedSocket::Close;
+
+	void Close() {
+		IdleMonitor::Cancel();
+		BufferedSocket::Close();
+	}
 
 private:
 	ssize_t DirectWrite(const void *data, size_t length);
@@ -58,6 +63,7 @@ protected:
 	bool Write(const void *data, size_t length);
 
 	virtual bool OnSocketReady(unsigned flags) override;
+	virtual void OnIdle() override;
 };
 
 #endif

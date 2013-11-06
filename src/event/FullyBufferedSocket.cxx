@@ -42,7 +42,8 @@ FullyBufferedSocket::DirectWrite(const void *data, size_t length)
 		if (IsSocketErrorAgain(code))
 			return 0;
 
-		Cancel();
+		IdleMonitor::Cancel();
+		BufferedSocket::Cancel();
 
 		if (IsSocketErrorClosed(code))
 			OnSocketClosed();
@@ -61,6 +62,7 @@ FullyBufferedSocket::Flush()
 	size_t length;
 	const void *data = output.Read(&length);
 	if (data == nullptr) {
+		IdleMonitor::Cancel();
 		CancelWrite();
 		return true;
 	}
@@ -71,8 +73,10 @@ FullyBufferedSocket::Flush()
 
 	output.Consume(nbytes);
 
-	if (output.IsEmpty())
+	if (output.IsEmpty()) {
+		IdleMonitor::Cancel();
 		CancelWrite();
+	}
 
 	return true;
 }
@@ -81,6 +85,9 @@ bool
 FullyBufferedSocket::Write(const void *data, size_t length)
 {
 	assert(IsDefined());
+
+	if (length == 0)
+		return true;
 
 #if 0
 	/* TODO: disabled because this would add overhead on some callers (the ones that often), but it may be useful */
@@ -98,6 +105,8 @@ FullyBufferedSocket::Write(const void *data, size_t length)
 	}
 #endif
 
+	const bool was_empty = output.IsEmpty();
+
 	if (!output.Append(data, length)) {
 		// TODO
 		static constexpr Domain buffered_socket_domain("buffered_socket");
@@ -107,30 +116,31 @@ FullyBufferedSocket::Write(const void *data, size_t length)
 		return false;
 	}
 
-	ScheduleWrite();
+	if (was_empty)
+		IdleMonitor::Schedule();
 	return true;
 }
 
 bool
 FullyBufferedSocket::OnSocketReady(unsigned flags)
 {
-	const bool was_empty = output.IsEmpty();
-	if (!BufferedSocket::OnSocketReady(flags))
-		return false;
-
-	if (was_empty && !output.IsEmpty())
-		/* just in case the OnSocketInput() method has added
-		   data to the output buffer: try to send it now
-		   instead of waiting for the next event loop
-		   iteration */
-		flags |= WRITE;
-
 	if (flags & WRITE) {
 		assert(!output.IsEmpty());
+		assert(!IdleMonitor::IsActive());
 
 		if (!Flush())
 			return false;
 	}
 
+	if (!BufferedSocket::OnSocketReady(flags))
+		return false;
+
 	return true;
+}
+
+void
+FullyBufferedSocket::OnIdle()
+{
+	if (Flush() && !output.IsEmpty())
+		ScheduleWrite();
 }
