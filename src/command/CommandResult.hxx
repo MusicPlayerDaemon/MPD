@@ -48,6 +48,12 @@ enum class CommandResult {
 	ERROR,
 
 	/**
+	 * The client has asked MPD to close the connection.  MPD will
+	 * flush the remaining output buffer first.
+	 */
+	FINISH,
+
+	/**
 	 * The connection to this client shall be closed.
 	 */
 	CLOSE,

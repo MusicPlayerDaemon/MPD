@@ -99,7 +99,7 @@ CommandResult
 handle_close(gcc_unused Client &client,
 	     gcc_unused int argc, gcc_unused char *argv[])
 {
-	return CommandResult::CLOSE;
+	return CommandResult::FINISH;
 }
 
 CommandResult

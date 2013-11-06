@@ -57,6 +57,11 @@ Client::OnSocketInput(void *data, size_t length)
 		main_loop->Break();
 		return InputResult::CLOSED;
 
+	case CommandResult::FINISH:
+		if (Flush())
+			Close();
+		return InputResult::CLOSED;
+
 	case CommandResult::CLOSE:
 		Close();
 		return InputResult::CLOSED;
