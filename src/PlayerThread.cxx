@@ -69,6 +69,12 @@ class Player {
 	bool decoder_starting;
 
 	/**
+	 * Did we wake up the DecoderThread recently?  This avoids
+	 * duplicate wakeup calls.
+	 */
+	bool decoder_woken;
+
+	/**
 	 * is the player paused?
 	 */
 	bool paused;
@@ -133,6 +139,7 @@ public:
 		:pc(_pc), dc(_dc), buffer(_buffer),
 		 buffering(true),
 		 decoder_starting(false),
+		 decoder_woken(false),
 		 paused(false),
 		 queued(true),
 		 output_open(false),
@@ -861,8 +868,13 @@ Player::PlayNextChunk()
 	pc.Lock();
 	if (!dc.IsIdle() &&
 	    dc.pipe->GetSize() <= (pc.buffered_before_play +
-				   buffer.GetSize() * 3) / 4)
-		dc.Signal();
+				   buffer.GetSize() * 3) / 4) {
+		if (!decoder_woken) {
+			decoder_woken = true;
+			dc.Signal();
+		}
+	} else
+		decoder_woken = false;
 	pc.Unlock();
 
 	return true;
