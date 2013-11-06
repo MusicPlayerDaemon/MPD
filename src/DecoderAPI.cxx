@@ -312,7 +312,6 @@ do_send_tag(Decoder &decoder, const Tag &tag)
 		/* there is a partial chunk - flush it, we want the
 		   tag in a new chunk */
 		decoder_flush_chunk(decoder);
-		decoder.dc.client_cond.signal();
 	}
 
 	assert(decoder.chunk == nullptr);
@@ -422,7 +421,6 @@ decoder_data(Decoder &decoder,
 		if (dest.IsNull()) {
 			/* the chunk is full, flush it */
 			decoder_flush_chunk(decoder);
-			dc.client_cond.signal();
 			continue;
 		}
 
@@ -442,7 +440,6 @@ decoder_data(Decoder &decoder,
 		if (full) {
 			/* the chunk is full, flush it */
 			decoder_flush_chunk(decoder);
-			dc.client_cond.signal();
 		}
 
 		data = (const uint8_t *)data + nbytes;
@@ -535,7 +532,6 @@ decoder_replay_gain(Decoder &decoder,
 			   replay gain values affect the following
 			   samples */
 			decoder_flush_chunk(decoder);
-			decoder.dc.client_cond.signal();
 		}
 	} else
 		decoder.replay_gain_serial = 0;

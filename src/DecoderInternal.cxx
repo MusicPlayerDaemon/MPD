@@ -100,4 +100,6 @@ decoder_flush_chunk(Decoder &decoder)
 		dc.pipe->Push(decoder.chunk);
 
 	decoder.chunk = nullptr;
+
+	dc.client_cond.signal();
 }
