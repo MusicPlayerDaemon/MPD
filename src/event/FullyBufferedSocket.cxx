@@ -54,7 +54,7 @@ FullyBufferedSocket::DirectWrite(const void *data, size_t length)
 }
 
 bool
-FullyBufferedSocket::WriteFromBuffer()
+FullyBufferedSocket::Flush()
 {
 	assert(IsDefined());
 
@@ -128,7 +128,7 @@ FullyBufferedSocket::OnSocketReady(unsigned flags)
 	if (flags & WRITE) {
 		assert(!output.IsEmpty());
 
-		if (!WriteFromBuffer())
+		if (!Flush())
 			return false;
 	}
 

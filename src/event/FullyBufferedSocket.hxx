@@ -44,14 +44,14 @@ public:
 private:
 	ssize_t DirectWrite(const void *data, size_t length);
 
+protected:
 	/**
 	 * Send data from the output buffer to the socket.
 	 *
 	 * @return false if the socket has been closed
 	 */
-	bool WriteFromBuffer();
+	bool Flush();
 
-protected:
 	/**
 	 * @return false if the socket has been closed
 	 */
