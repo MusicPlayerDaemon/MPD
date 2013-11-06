@@ -47,7 +47,6 @@
 #include <errno.h>
 
 #include <list>
-#include <forward_list>
 
 #include <curl/curl.h>
 #include <glib.h>
@@ -206,12 +205,6 @@ static unsigned proxy_port;
 static struct {
 	CURLM *multi;
 
-	/**
-	 * A linked list of all active HTTP requests.  An active
-	 * request is one that doesn't have the "eof" flag set.
-	 */
-	std::forward_list<input_curl *> requests;
-
 	CurlSockets *sockets;
 } curl;
 
@@ -329,8 +322,6 @@ input_curl_easy_add(struct input_curl *c, Error &error)
 	assert(c != nullptr);
 	assert(c->easy != nullptr);
 
-	curl.requests.push_front(c);
-
 	CURLMcode mcode = curl_multi_add_handle(curl.multi, c->easy);
 	if (mcode != CURLM_OK) {
 		error.Format(curlm_domain, mcode,
@@ -375,8 +366,6 @@ input_curl_easy_free(struct input_curl *c)
 
 	if (c->easy == nullptr)
 		return;
-
-	curl.requests.remove(c);
 
 	curl_multi_remove_handle(curl.multi, c->easy);
 	curl_easy_cleanup(c->easy);
@@ -565,8 +554,6 @@ input_curl_init(const config_param &param, Error &error)
 static void
 input_curl_finish(void)
 {
-	assert(curl.requests.empty());
-
 	BlockingCall(io_thread_get(), [](){
 			delete curl.sockets;
 		});
