@@ -192,7 +192,15 @@ public:
 		:SocketMonitor(_fd, _loop), multi(_multi) {}
 
 	~CurlSocket() {
-		Abandon();
+		/* TODO: sometimes, CURL uses CURL_POLL_REMOVE after
+		   closing the socket, and sometimes, it uses
+		   CURL_POLL_REMOVE just to move the (still open)
+		   connection to the pool; in the first case,
+		   Abandon() would be most appropriate, but it breaks
+		   the second case - is that a CURL bug?  is there a
+		   better solution? */
+
+		Steal();
 	}
 
 	/**
