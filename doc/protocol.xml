@@ -1849,7 +1849,10 @@ OK
           </term>
           <listitem>
             <para>
-              Closes the connection to MPD.
+              Closes the connection to MPD.  MPD will try to send the
+              remaining output buffer before it actually closes the
+              connection, but that cannot be guaranteed.  This command
+              will not generate a response.
             </para>
           </listitem>
         </varlistentry>
