@@ -1,4 +1,4 @@
-ver 0.18.2 (2013/??/??)
+ver 0.18.2 (2013/11/07)
 * protocol:
   - "close" flushes the output buffer
 * input:
