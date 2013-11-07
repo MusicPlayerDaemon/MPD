@@ -714,7 +714,10 @@ systemctl start mpd.socket</programlisting>
 
         <para>
           Provides access to the database of another MPD instance
-          using <filename>libmpdclient</filename>.  Experimental!
+          using <filename>libmpdclient</filename>.  This is useful
+          when you run mount the music directory via NFS/SMB, and the
+          file server already runs a MPD instance.  Only the file
+          server needs to update the database.
         </para>
 
         <informaltable>
