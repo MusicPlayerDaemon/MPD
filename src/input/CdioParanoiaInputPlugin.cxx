@@ -30,6 +30,8 @@
 #include "system/ByteOrder.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Log.hxx"
+#include "ConfigData.hxx"
+#include "ConfigError.hxx"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -76,6 +78,28 @@ struct CdioParanoiaInputStream {
 };
 
 static constexpr Domain cdio_domain("cdio");
+
+static bool default_reverse_endian;
+
+static bool
+input_cdio_init(const config_param &param, Error &error)
+{
+	const char *value = param.GetBlockValue("default_byte_order");
+	if (value != nullptr) {
+		if (strcmp(value, "little_endian") == 0)
+			default_reverse_endian = IsBigEndian();
+		else if (strcmp(value, "big_endian") == 0)
+			default_reverse_endian = IsLittleEndian();
+		else {
+			error.Format(config_domain, 0,
+				     "Unrecognized 'default_byte_order' setting: %s",
+				     value);
+			return false;
+		}
+	}
+
+	return true;
+}
 
 static void
 input_cdio_close(InputStream *is)
@@ -196,7 +220,7 @@ input_cdio_open(const char *uri,
 	switch (data_bigendianp(i->drv)) {
 	case -1:
 		LogDebug(cdio_domain, "drive returns unknown audio data");
-		reverse_endian = false;
+		reverse_endian = default_reverse_endian;
 		break;
 
 	case 0:
@@ -363,7 +387,7 @@ input_cdio_eof(InputStream *is)
 
 const InputPlugin input_plugin_cdio_paranoia = {
 	"cdio_paranoia",
-	nullptr,
+	input_cdio_init,
 	nullptr,
 	input_cdio_open,
 	input_cdio_close,

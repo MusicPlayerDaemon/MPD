@@ -814,6 +814,30 @@ systemctl start mpd.socket</programlisting>
           simplest form <filename>cdda://</filename> plays the whole
           disc in the default drive.
         </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>default_bute_order</varname>
+                <parameter>little_endian|big_endian</parameter>
+                </entry>
+                <entry>
+                  If the CD drive does not specify a byte order, MPD
+                  assumes it is the CPU's native byte order.  This
+                  setting allows overriding this.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
 
       <section>

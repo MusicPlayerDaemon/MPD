@@ -2,6 +2,7 @@ ver 0.18.2 (2013/??/??)
 * protocol:
   - "close" flushes the output buffer
 * input:
+  - cdio_paranoia: add setting "default_byte_order"
   - curl: fix bug with redirected streams
 * playlist:
   - pls: fix reversed song order
