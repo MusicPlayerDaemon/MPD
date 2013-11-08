@@ -71,7 +71,7 @@
         page</ulink> and unpack it:
       </para>
 
-      <programlisting>tar xjf mpd-version.tar.bz
+      <programlisting>tar xf mpd-version.tar.xz
 cd mpd-version</programlisting>
 
       <para>

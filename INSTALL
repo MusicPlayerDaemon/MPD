@@ -163,13 +163,9 @@ Get the latest release from of MPD from <http://www.musicpd.org/>.
 Compile
 -------
 
-1) unzip and untar the archive
+1) unpack the archive
 
-$ tar zxvf mpd-x.x.x.tar.gz
-
-or
-
-$ tar jxvf mpd-x.x.x.tar.bz2
+$ tar xf mpd-x.x.x.tar.xz
 
 2) change to directory created
 
