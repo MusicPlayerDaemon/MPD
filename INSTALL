@@ -3,9 +3,11 @@
 
 Introduction
 ------------
+
 This document is a very small amount of documentation about what is needed to 
-install MPD. If more information is desired see the community wiki at 
-http://mpd.wikia.com.
+install MPD.  If more information is desired, read the user manual:
+
+ http://www.musicpd.org/doc/user/
 
 Dependencies
 ------------
@@ -208,6 +210,5 @@ Using MPD
 ---------
 
 You can download many different interfaces for MPD at 
-	<http://mpd.wikia.com/wiki/Clients>
 
-MPD can be interfaced directly using telnet (see COMMANDS, if you are brave).
+ http://www.musicpd.org/clients/

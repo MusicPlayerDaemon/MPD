@@ -67,7 +67,7 @@
 
       <para>
         Download the source tarball from <ulink
-        url="http://mpd.wikia.com/wiki/Server">the MPD home
+        url="http://www.musicpd.org/download.html">the MPD home
         page</ulink> and unpack it:
       </para>
 
@@ -630,7 +630,7 @@ systemctl start mpd.socket</programlisting>
       </para>
 
       <para>
-        The <ulink url="http://mpd.wikia.com/wiki/Clients">MPD
+        The <ulink url="http://www.musicpd.org/clients/">MPD
         Wiki</ulink> contains an extensive list of clients to choose
         from.
       </para>

@@ -1,5 +1,5 @@
-# An example configuration file for MPD
-# See the mpd.conf man page for a more detailed description of each parameter.
+# An example configuration file for MPD.
+# Read the user manual for documentation: http://www.musicpd.org/doc/user/
 
 
 # Files and directories #######################################################
@@ -203,9 +203,6 @@ input {
 # audio outputs at the same time, through multiple audio_output settings 
 # blocks. Setting this block is optional, though the server will only attempt
 # autodetection for one sound card.
-#
-# See <http://mpd.wikia.com/wiki/Configuration#Audio_Outputs> for examples of 
-# other audio outputs.
 #
 # An example of an ALSA output:
 #
