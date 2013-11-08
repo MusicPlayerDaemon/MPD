@@ -283,10 +283,10 @@ decoder_read(Decoder *decoder,
 	assert(nbytes == 0 || !error.IsDefined());
 	assert(nbytes > 0 || error.IsDefined() || is.IsEOF());
 
+	is.Unlock();
+
 	if (gcc_unlikely(nbytes == 0 && error.IsDefined()))
 		LogError(error);
-
-	is.Unlock();
 
 	return nbytes;
 }
