@@ -50,7 +50,6 @@ need_chunks(DecoderControl &dc, bool do_wait)
 
 	if (do_wait) {
 		dc.Wait();
-		dc.client_cond.signal();
 
 		return dc.command;
 	}
