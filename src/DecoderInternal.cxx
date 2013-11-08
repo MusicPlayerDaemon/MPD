@@ -42,19 +42,12 @@ Decoder::~Decoder()
  * one.
  */
 static DecoderCommand
-need_chunks(DecoderControl &dc, bool do_wait)
+need_chunks(DecoderControl &dc)
 {
-	if (dc.command == DecoderCommand::STOP ||
-	    dc.command == DecoderCommand::SEEK)
-		return dc.command;
-
-	if (do_wait) {
+	if (dc.command == DecoderCommand::NONE)
 		dc.Wait();
 
-		return dc.command;
-	}
-
-	return DecoderCommand::NONE;
+	return dc.command;
 }
 
 struct music_chunk *
@@ -79,7 +72,7 @@ decoder_get_chunk(Decoder &decoder)
 		}
 
 		dc.Lock();
-		cmd = need_chunks(dc, true);
+		cmd = need_chunks(dc);
 		dc.Unlock();
 	} while (cmd == DecoderCommand::NONE);
 
