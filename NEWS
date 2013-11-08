@@ -1,4 +1,5 @@
 ver 0.18.3 (2013/??/??)
+* fix stuck MPD after song change (0.18.2 regression)
 
 ver 0.18.2 (2013/11/07)
 * protocol:

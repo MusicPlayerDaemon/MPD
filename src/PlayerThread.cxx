@@ -36,8 +36,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <string.h>
 
 static constexpr Domain player_domain("player");
@@ -1043,8 +1041,14 @@ Player::Run()
 			   output thread is still busy, so it's
 			   okay */
 
-			/* XXX synchronize in a better way */
-			g_usleep(10000);
+			pc.Lock();
+
+			/* wake up the decoder (just in case it's
+			   waiting for space in the MusicBuffer) and
+			   wait for it */
+			dc.Signal();
+			dc.WaitForDecoder();
+			continue;
 		} else if (IsDecoderAtNextSong()) {
 			/* at the beginning of a new song */
 
