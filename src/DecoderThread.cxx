@@ -38,6 +38,8 @@
 #include "tag/ApeReplayGain.hxx"
 #include "Log.hxx"
 
+#include <functional>
+
 static constexpr Domain decoder_thread_domain("decoder_thread");
 
 /**
