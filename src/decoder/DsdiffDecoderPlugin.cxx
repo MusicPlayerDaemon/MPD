@@ -43,13 +43,13 @@
 
 struct DsdiffHeader {
 	DsdId id;
-	DsdUint64 size;
+	DffDsdUint64 size;
 	DsdId format;
 };
 
 struct DsdiffChunkHeader {
 	DsdId id;
-	DsdUint64 size;
+	DffDsdUint64 size;
 
 	/**
 	 * Read the "size" attribute from the specified header, converting it
