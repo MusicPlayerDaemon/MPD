@@ -347,15 +347,22 @@ libpcm_a_SOURCES = \
 	src/pcm/PcmPrng.hxx \
 	src/pcm/PcmUtils.hxx
 libpcm_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(SOXR_CFLAGS) \
 	$(SAMPLERATE_CFLAGS)
 
 PCM_LIBS = \
 	libpcm.a \
+	$(SOXR_LIBS) \
 	$(SAMPLERATE_LIBS)
 
 if HAVE_LIBSAMPLERATE
 libpcm_a_SOURCES += \
 	src/pcm/LibsamplerateResampler.cxx src/pcm/LibsamplerateResampler.hxx
+endif
+
+if HAVE_SOXR
+libpcm_a_SOURCES += \
+	src/pcm/SoxrResampler.cxx src/pcm/SoxrResampler.hxx
 endif
 
 # File system library

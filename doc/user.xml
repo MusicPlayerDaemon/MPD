@@ -655,6 +655,14 @@ systemctl start mpd.socket</programlisting>
 
           <listitem>
             <para>
+              <ulink
+              url="http://sourceforge.net/projects/soxr/">libsoxr</ulink>,
+              the SoX Resampler library
+            </para>
+          </listitem>
+
+          <listitem>
+            <para>
               internal: low CPU usage, but very poor quality.  This is
               the fallback if MPD was compiled without an external
               resampler.
@@ -687,6 +695,15 @@ systemctl start mpd.socket</programlisting>
                 <entry>
                   The internal resampler.  Low CPU usage, but very
                   poor quality.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>soxr</parameter>"
+                </entry>
+                <entry>
+                  Use libsoxr.
                 </entry>
               </row>
 

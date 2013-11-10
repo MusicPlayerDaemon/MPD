@@ -29,6 +29,10 @@
 #include "LibsamplerateResampler.hxx"
 #endif
 
+#ifdef HAVE_SOXR
+#include "SoxrResampler.hxx"
+#endif
+
 #include <string.h>
 
 enum class SelectedResampler {
@@ -36,6 +40,10 @@ enum class SelectedResampler {
 
 #ifdef HAVE_LIBSAMPLERATE
 	LIBSAMPLERATE,
+#endif
+
+#ifdef HAVE_SOXR
+	SOXR,
 #endif
 };
 
@@ -49,6 +57,13 @@ pcm_resampler_global_init(Error &error)
 
 	if (strcmp(converter, "internal") == 0)
 		return true;
+
+#ifdef HAVE_SOXR
+	if (strcmp(converter, "soxr") == 0) {
+		selected_resampler = SelectedResampler::SOXR;
+		return true;
+	}
+#endif
 
 #ifdef HAVE_LIBSAMPLERATE
 	selected_resampler = SelectedResampler::LIBSAMPLERATE;
@@ -74,6 +89,11 @@ pcm_resampler_create()
 #ifdef HAVE_LIBSAMPLERATE
 	case SelectedResampler::LIBSAMPLERATE:
 		return new LibsampleratePcmResampler();
+#endif
+
+#ifdef HAVE_SOXR
+	case SelectedResampler::SOXR:
+		return new SoxrPcmResampler();
 #endif
 	}
 

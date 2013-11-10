@@ -360,6 +360,11 @@ AC_ARG_ENABLE(lsr,
 		[enable libsamplerate support]),,
 	enable_lsr=auto)
 
+AC_ARG_ENABLE(soxr,
+	AS_HELP_STRING([--enable-soxr],
+		[enable the libsoxr resampler]),,
+	enable_soxr=auto)
+
 AC_ARG_ENABLE(mad,
 	AS_HELP_STRING([--enable-mad],
 		[enable libmad mp3 decoder plugin]),,
@@ -764,6 +769,15 @@ if test x$enable_lsr = xyes; then
 		[Define to enable libsamplerate])
 fi
 AM_CONDITIONAL(HAVE_LIBSAMPLERATE, test x$enable_lsr = xyes)
+
+dnl ------------------------------ libsoxr ------------------------------------
+MPD_AUTO_PKG(soxr, SOXR, [soxr],
+	[libsoxr resampler], [libsoxr not found])
+if test x$enable_soxr = xyes; then
+	AC_DEFINE([HAVE_SOXR], 1, [Define to enable libsoxr])
+fi
+
+AM_CONDITIONAL(HAVE_SOXR, test x$enable_soxr = xyes)
 
 dnl ---------------------------------------------------------------------------
 dnl Input Plugins
@@ -1626,6 +1640,7 @@ results(wildmidi, [WildMidi])
 
 printf '\nOther features:\n\t'
 results(lsr, [libsamplerate])
+results(soxr, [libsoxr])
 results(libmpdclient, [libmpdclient])
 results(inotify, [inotify])
 results(sqlite, [SQLite])
