@@ -56,6 +56,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 class RouteFilter final : public Filter {
 	/**

@@ -1,6 +1,7 @@
 ver 0.18.4 (not yet released)
 * decoder
   - dsdiff: fix byte order bug
+* fix build failures due to missing includes
 
 ver 0.18.3 (2013/11/08)
 * fix stuck MPD after song change (0.18.2 regression)

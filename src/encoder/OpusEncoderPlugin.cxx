@@ -34,6 +34,7 @@
 #include <glib.h>
 
 #include <assert.h>
+#include <stdlib.h>
 
 struct opus_encoder {
 	/** the base class */

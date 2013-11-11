@@ -30,6 +30,7 @@
 #include "util/Domain.hxx"
 
 #include <string.h>
+#include <stdlib.h>
 
 #define SONG_MTIME "mtime"
 #define SONG_END "song_end"
