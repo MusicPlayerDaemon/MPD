@@ -24,7 +24,7 @@
 
 /* resampling code blatantly ripped from ESD */
 const int16_t *
-pcm_resample_fallback_16(PcmResampler *state,
+pcm_resample_fallback_16(PcmBuffer &buffer,
 			 unsigned channels,
 			 unsigned src_rate,
 			 const int16_t *src_buffer, size_t src_size,
@@ -37,7 +37,7 @@ pcm_resample_fallback_16(PcmResampler *state,
 		(src_frames * dest_rate + src_rate - 1) / src_rate;
 	unsigned dest_samples = dest_frames * channels;
 	size_t dest_size = dest_samples * sizeof(*src_buffer);
-	int16_t *dest_buffer = (int16_t *)state->buffer.Get(dest_size);
+	int16_t *dest_buffer = (int16_t *)buffer.Get(dest_size);
 
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
 
@@ -65,7 +65,7 @@ pcm_resample_fallback_16(PcmResampler *state,
 }
 
 const int32_t *
-pcm_resample_fallback_32(PcmResampler *state,
+pcm_resample_fallback_32(PcmBuffer &buffer,
 			 unsigned channels,
 			 unsigned src_rate,
 			 const int32_t *src_buffer, size_t src_size,
@@ -78,7 +78,7 @@ pcm_resample_fallback_32(PcmResampler *state,
 		(src_frames * dest_rate + src_rate - 1) / src_rate;
 	unsigned dest_samples = dest_frames * channels;
 	size_t dest_size = dest_samples * sizeof(*src_buffer);
-	int32_t *dest_buffer = (int32_t *)state->buffer.Get(dest_size);
+	int32_t *dest_buffer = (int32_t *)buffer.Get(dest_size);
 
 	assert((src_size % (sizeof(*src_buffer) * channels)) == 0);
 

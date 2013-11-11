@@ -101,7 +101,7 @@ PcmResampler::ResampleFloat(unsigned channels, unsigned src_rate,
 	   not do any math on the sample values, so this hack is
 	   possible: */
 	return (const float *)
-		pcm_resample_fallback_32(this, channels,
+		pcm_resample_fallback_32(buffer, channels,
 					 src_rate, (const int32_t *)src_buffer,
 					 src_size,
 					 dest_rate, dest_size_r);
@@ -123,7 +123,7 @@ PcmResampler::Resample16(unsigned channels,
 	(void)error_r;
 #endif
 
-	return pcm_resample_fallback_16(this, channels,
+	return pcm_resample_fallback_16(buffer, channels,
 					src_rate, src_buffer, src_size,
 					dest_rate, dest_size_r);
 }
@@ -144,7 +144,7 @@ PcmResampler::Resample32(unsigned channels, unsigned src_rate,
 	(void)error_r;
 #endif
 
-	return pcm_resample_fallback_32(this, channels,
+	return pcm_resample_fallback_32(buffer, channels,
 					src_rate, src_buffer, src_size,
 					dest_rate, dest_size_r);
 }

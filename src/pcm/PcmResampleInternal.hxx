@@ -72,7 +72,7 @@ pcm_resample_lsr_32(PcmResampler *state,
 #endif
 
 const int16_t *
-pcm_resample_fallback_16(PcmResampler *state,
+pcm_resample_fallback_16(PcmBuffer &buffer,
 			 unsigned channels,
 			 unsigned src_rate,
 			 const int16_t *src_buffer, size_t src_size,
@@ -80,7 +80,7 @@ pcm_resample_fallback_16(PcmResampler *state,
 			 size_t *dest_size_r);
 
 const int32_t *
-pcm_resample_fallback_32(PcmResampler *state,
+pcm_resample_fallback_32(PcmBuffer &buffer,
 			 unsigned channels,
 			 unsigned src_rate,
 			 const int32_t *src_buffer,
