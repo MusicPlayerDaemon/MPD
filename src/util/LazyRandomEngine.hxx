@@ -49,12 +49,12 @@ public:
 	 */
 	void AutoCreate();
 
-	result_type min() const {
-		return engine->min();
+	static constexpr result_type min() {
+		return std::mt19937::min();
 	}
 
-	result_type max() const {
-		return engine->max();
+	static constexpr result_type max() {
+		return std::mt19937::max();
 	}
 
 	result_type operator()() {
