@@ -90,6 +90,11 @@ int main(int argc, char **argv)
 	const size_t in_frame_size = in_audio_format.GetFrameSize();
 
 	PcmConvert state;
+	if (!state.Open(in_audio_format, out_audio_format_mask, error)) {
+		g_printerr("Failed to open PcmConvert: %s\n",
+			   error.GetMessage());
+		return EXIT_FAILURE;
+	}
 
 	FifoBuffer<uint8_t, 4096> buffer;
 
@@ -115,15 +120,18 @@ int main(int argc, char **argv)
 		buffer.Consume(src.size);
 
 		size_t length;
-		output = state.Convert(in_audio_format, src.data, src.size,
-				       out_audio_format, &length, error);
+		output = state.Convert(src.data, src.size,
+				       &length, error);
 		if (output == NULL) {
+			state.Close();
 			g_printerr("Failed to convert: %s\n", error.GetMessage());
 			return 2;
 		}
 
 		gcc_unused ssize_t ignored = write(1, output, length);
 	}
+
+	state.Close();
 
 	return EXIT_SUCCESS;
 }

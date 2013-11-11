@@ -33,7 +33,11 @@ Decoder::~Decoder()
 	/* caller must flush the chunk */
 	assert(chunk == nullptr);
 
-	delete convert;
+	if (convert != nullptr) {
+		convert->Close();
+		delete convert;
+	}
+
 	delete song_tag;
 	delete stream_tag;
 	delete decoder_tag;

@@ -88,7 +88,11 @@ AutoConvertFilter::Open(AudioFormat &in_audio_format, Error &error)
 
 		assert(audio_format2 == in_audio_format);
 
-		convert_filter_set(convert, child_audio_format);
+		if (!convert_filter_set(convert, child_audio_format, error)) {
+			delete convert;
+			filter->Close();
+			return AudioFormat::Undefined();
+		}
 	} else
 		/* no */
 		convert = nullptr;

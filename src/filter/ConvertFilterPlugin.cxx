@@ -39,21 +39,18 @@ class ConvertFilter final : public Filter {
 
 	/**
 	 * The output audio format; the consumer of this plugin
-	 * expects PCM data in this format.  This defaults to
-	 * #in_audio_format, and can be set with convert_filter_set().
+	 * expects PCM data in this format.
+	 *
+	 * If this is AudioFormat::Undefined(), then the #PcmConvert
+	 * attribute is not open.  This can mean that Set() has failed
+	 * or that no conversion is necessary.
 	 */
 	AudioFormat out_audio_format;
 
 	Manual<PcmConvert> state;
 
 public:
-	void Set(const AudioFormat &_out_audio_format) {
-		assert(in_audio_format.IsValid());
-		assert(out_audio_format.IsValid());
-		assert(_out_audio_format.IsValid());
-
-		out_audio_format = _out_audio_format;
-	}
+	bool Set(const AudioFormat &_out_audio_format, Error &error);
 
 	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
 	virtual void Close() override;
@@ -69,12 +66,40 @@ convert_filter_init(gcc_unused const config_param &param,
 	return new ConvertFilter();
 }
 
+bool
+ConvertFilter::Set(const AudioFormat &_out_audio_format, Error &error)
+{
+	assert(in_audio_format.IsValid());
+	assert(_out_audio_format.IsValid());
+
+	if (_out_audio_format == out_audio_format)
+		/* no change */
+		return true;
+
+	if (out_audio_format.IsValid()) {
+		out_audio_format.Clear();
+		state->Close();
+	}
+
+	if (_out_audio_format == in_audio_format)
+		/* optimized special case: no-op */
+		return true;
+
+	if (!state->Open(in_audio_format, _out_audio_format, error))
+		return false;
+
+	out_audio_format = _out_audio_format;
+	return true;
+}
+
 AudioFormat
 ConvertFilter::Open(AudioFormat &audio_format, gcc_unused Error &error)
 {
 	assert(audio_format.IsValid());
 
-	in_audio_format = out_audio_format = audio_format;
+	in_audio_format = audio_format;
+	out_audio_format.Clear();
+
 	state.Construct();
 
 	return in_audio_format;
@@ -83,6 +108,11 @@ ConvertFilter::Open(AudioFormat &audio_format, gcc_unused Error &error)
 void
 ConvertFilter::Close()
 {
+	assert(in_audio_format.IsValid());
+
+	if (out_audio_format.IsValid())
+		state->Close();
+
 	state.Destruct();
 
 	poison_undefined(&in_audio_format, sizeof(in_audio_format));
@@ -93,15 +123,15 @@ const void *
 ConvertFilter::FilterPCM(const void *src, size_t src_size,
 			 size_t *dest_size_r, Error &error)
 {
-	if (in_audio_format == out_audio_format) {
+	assert(in_audio_format.IsValid());
+
+	if (!out_audio_format.IsValid()) {
 		/* optimized special case: no-op */
 		*dest_size_r = src_size;
 		return src;
 	}
 
-	return state->Convert(in_audio_format,
-			      src, src_size,
-			      out_audio_format, dest_size_r,
+	return state->Convert(src, src_size, dest_size_r,
 			      error);
 }
 
@@ -110,10 +140,11 @@ const struct filter_plugin convert_filter_plugin = {
 	convert_filter_init,
 };
 
-void
-convert_filter_set(Filter *_filter, const AudioFormat out_audio_format)
+bool
+convert_filter_set(Filter *_filter, AudioFormat out_audio_format,
+		   Error &error)
 {
 	ConvertFilter *filter = (ConvertFilter *)_filter;
 
-	filter->Set(out_audio_format);
+	return filter->Set(out_audio_format, error);
 }

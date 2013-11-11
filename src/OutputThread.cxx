@@ -184,7 +184,15 @@ ao_open(struct audio_output *ao)
 		return;
 	}
 
-	convert_filter_set(ao->convert_filter, ao->out_audio_format);
+	if (!convert_filter_set(ao->convert_filter, ao->out_audio_format,
+				error)) {
+		FormatError(error, "Failed to convert for \"%s\" [%s]",
+			    ao->name, ao->plugin->name);
+
+		ao_filter_close(ao);
+		ao->fail_timer = g_timer_new();
+		return;
+	}
 
 	ao->open = true;
 
@@ -233,7 +241,9 @@ ao_reopen_filter(struct audio_output *ao)
 	ao_filter_close(ao);
 	const AudioFormat filter_audio_format =
 		ao_filter_open(ao, ao->in_audio_format, error);
-	if (!filter_audio_format.IsDefined()) {
+	if (!filter_audio_format.IsDefined() ||
+	    !convert_filter_set(ao->convert_filter, ao->out_audio_format,
+				error)) {
 		FormatError(error,
 			    "Failed to open filter for \"%s\" [%s]",
 			    ao->name, ao->plugin->name);
@@ -254,8 +264,6 @@ ao_reopen_filter(struct audio_output *ao)
 
 		return;
 	}
-
-	convert_filter_set(ao->convert_filter, ao->out_audio_format);
 }
 
 static void

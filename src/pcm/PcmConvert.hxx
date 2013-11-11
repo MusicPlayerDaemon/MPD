@@ -24,10 +24,10 @@
 #include "PcmDsd.hxx"
 #include "PcmResample.hxx"
 #include "PcmBuffer.hxx"
+#include "AudioFormat.hxx"
 
 #include <stddef.h>
 
-struct AudioFormat;
 class Error;
 
 /**
@@ -48,17 +48,23 @@ class PcmConvert {
 	/** the buffer for converting the channel count */
 	PcmBuffer channels_buffer;
 
+	AudioFormat src_format, dest_format;
+
 public:
 	PcmConvert();
 	~PcmConvert();
 
+	/**
+	 * Prepare the object.  Call Close() when done.
+	 */
+	bool Open(AudioFormat _src_format, AudioFormat _dest_format,
+		  Error &error);
 
 	/**
-	 * Reset the pcm_convert_state object.  Use this at the
-	 * boundary between two distinct songs and each time the
-	 * format changes.
+	 * Close the object after it was prepared with Open().  After
+	 * that, it may be reused by calling Open() again.
 	 */
-	void Reset();
+	void Close();
 
 	/**
 	 * Converts PCM data between two audio formats.
@@ -72,34 +78,24 @@ public:
 	 * ignore errors
 	 * @return the destination buffer, or NULL on error
 	 */
-	const void *Convert(AudioFormat src_format,
-			    const void *src, size_t src_size,
-			    AudioFormat dest_format,
+	const void *Convert(const void *src, size_t src_size,
 			    size_t *dest_size_r,
 			    Error &error);
 
 private:
-	const int16_t *Convert16(AudioFormat src_format,
-				 const void *src_buffer, size_t src_size,
-				 AudioFormat dest_format,
+	const int16_t *Convert16(const void *src_buffer, size_t src_size,
 				 size_t *dest_size_r,
 				 Error &error);
 
-	const int32_t *Convert24(AudioFormat src_format,
-				 const void *src_buffer, size_t src_size,
-				 AudioFormat dest_format,
+	const int32_t *Convert24(const void *src_buffer, size_t src_size,
 				 size_t *dest_size_r,
 				 Error &error);
 
-	const int32_t *Convert32(AudioFormat src_format,
-				 const void *src_buffer, size_t src_size,
-				 AudioFormat dest_format,
+	const int32_t *Convert32(const void *src_buffer, size_t src_size,
 				 size_t *dest_size_r,
 				 Error &error);
 
-	const float *ConvertFloat(AudioFormat src_format,
-				  const void *src_buffer, size_t src_size,
-				  AudioFormat dest_format,
+	const float *ConvertFloat(const void *src_buffer, size_t src_size,
 				  size_t *dest_size_r,
 				  Error &error);
 };

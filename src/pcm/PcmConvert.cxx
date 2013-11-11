@@ -32,23 +32,48 @@ const Domain pcm_convert_domain("pcm_convert");
 
 PcmConvert::PcmConvert()
 {
+#ifndef NDEBUG
+	src_format.Clear();
+	dest_format.Clear();
+#endif
 }
 
 PcmConvert::~PcmConvert()
 {
+	assert(!src_format.IsValid());
+	assert(!dest_format.IsValid());
+}
+
+bool
+PcmConvert::Open(AudioFormat _src_format, AudioFormat _dest_format,
+		 gcc_unused Error &error)
+{
+	assert(!src_format.IsValid());
+	assert(!dest_format.IsValid());
+	assert(_src_format.IsValid());
+	assert(_dest_format.IsValid());
+
+	src_format = _src_format;
+	dest_format = _dest_format;
+
+	return true;
 }
 
 void
-PcmConvert::Reset()
+PcmConvert::Close()
 {
 	dsd.Reset();
 	resampler.Reset();
+
+#ifndef NDEBUG
+	src_format.Clear();
+	dest_format.Clear();
+#endif
 }
 
 inline const int16_t *
-PcmConvert::Convert16(const AudioFormat src_format,
-		      const void *src_buffer, size_t src_size,
-		      const AudioFormat dest_format, size_t *dest_size_r,
+PcmConvert::Convert16(const void *src_buffer, size_t src_size,
+		      size_t *dest_size_r,
 		      Error &error)
 {
 	const int16_t *buf;
@@ -96,9 +121,8 @@ PcmConvert::Convert16(const AudioFormat src_format,
 }
 
 inline const int32_t *
-PcmConvert::Convert24(const AudioFormat src_format,
-		      const void *src_buffer, size_t src_size,
-		      const AudioFormat dest_format, size_t *dest_size_r,
+PcmConvert::Convert24(const void *src_buffer, size_t src_size,
+		      size_t *dest_size_r,
 		      Error &error)
 {
 	const int32_t *buf;
@@ -145,9 +169,8 @@ PcmConvert::Convert24(const AudioFormat src_format,
 }
 
 inline const int32_t *
-PcmConvert::Convert32(const AudioFormat src_format,
-		      const void *src_buffer, size_t src_size,
-		      const AudioFormat dest_format, size_t *dest_size_r,
+PcmConvert::Convert32(const void *src_buffer, size_t src_size,
+		      size_t *dest_size_r,
 		      Error &error)
 {
 	const int32_t *buf;
@@ -194,9 +217,8 @@ PcmConvert::Convert32(const AudioFormat src_format,
 }
 
 inline const float *
-PcmConvert::ConvertFloat(const AudioFormat src_format,
-			 const void *src_buffer, size_t src_size,
-			 const AudioFormat dest_format, size_t *dest_size_r,
+PcmConvert::ConvertFloat(const void *src_buffer, size_t src_size,
+			 size_t *dest_size_r,
 			 Error &error)
 {
 	const float *buffer = (const float *)src_buffer;
@@ -251,9 +273,7 @@ PcmConvert::ConvertFloat(const AudioFormat src_format,
 }
 
 const void *
-PcmConvert::Convert(AudioFormat src_format,
-		    const void *src, size_t src_size,
-		    const AudioFormat dest_format,
+PcmConvert::Convert(const void *src, size_t src_size,
 		    size_t *dest_size_r,
 		    Error &error)
 {
@@ -279,23 +299,23 @@ PcmConvert::Convert(AudioFormat src_format,
 
 	switch (dest_format.format) {
 	case SampleFormat::S16:
-		return Convert16(src_format, src, src_size,
-				 dest_format, dest_size_r,
+		return Convert16(src, src_size,
+				 dest_size_r,
 				 error);
 
 	case SampleFormat::S24_P32:
-		return Convert24(src_format, src, src_size,
-				 dest_format, dest_size_r,
+		return Convert24(src, src_size,
+				 dest_size_r,
 				 error);
 
 	case SampleFormat::S32:
-		return Convert32(src_format, src, src_size,
-				 dest_format, dest_size_r,
+		return Convert32(src, src_size,
+				 dest_size_r,
 				 error);
 
 	case SampleFormat::FLOAT:
-		return ConvertFloat(src_format, src, src_size,
-				    dest_format, dest_size_r,
+		return ConvertFloat(src, src_size,
+				    dest_size_r,
 				    error);
 
 	default:

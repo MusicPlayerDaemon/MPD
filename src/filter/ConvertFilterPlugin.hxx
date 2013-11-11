@@ -21,6 +21,7 @@
 #define MPD_CONVERT_FILTER_PLUGIN_HXX
 
 class Filter;
+class Error;
 struct AudioFormat;
 
 /**
@@ -29,7 +30,8 @@ struct AudioFormat;
  * format switch is a violation of the filter API, this filter must be
  * the last in a chain.
  */
-void
-convert_filter_set(Filter *filter, AudioFormat out_audio_format);
+bool
+convert_filter_set(Filter *filter, AudioFormat out_audio_format,
+		   Error &error);
 
 #endif

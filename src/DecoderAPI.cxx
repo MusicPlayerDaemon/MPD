@@ -71,6 +71,12 @@ decoder_initialized(Decoder &decoder,
 						   &af_string));
 
 		decoder.convert = new PcmConvert();
+
+		Error error;
+		if (!decoder.convert->Open(dc.in_audio_format,
+					   dc.out_audio_format,
+					   error))
+			decoder.error = std::move(error);
 	}
 
 	dc.Lock();
@@ -401,9 +407,7 @@ decoder_data(Decoder &decoder,
 		assert(dc.in_audio_format != dc.out_audio_format);
 
 		Error error;
-		data = decoder.convert->Convert(dc.in_audio_format,
-						data, length,
-						dc.out_audio_format,
+		data = decoder.convert->Convert(data, length,
 						&length,
 						error);
 		if (data == nullptr) {
