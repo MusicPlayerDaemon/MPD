@@ -210,7 +210,6 @@ input {
 #	type		"alsa"
 #	name		"My ALSA Device"
 ##	device		"hw:0,0"	# optional
-##	format		"44100:16:2"	# optional
 ##	mixer_type      "hardware"	# optional
 ##	mixer_device	"default"	# optional
 ##	mixer_control	"PCM"		# optional
@@ -223,7 +222,6 @@ input {
 #	type		"oss"
 #	name		"My OSS Device"
 ##	device		"/dev/dsp"	# optional
-##	format		"44100:16:2"	# optional
 ##	mixer_type      "hardware"	# optional
 ##	mixer_device	"/dev/mixer"	# optional
 ##	mixer_control	"PCM"		# optional
@@ -326,12 +324,6 @@ input {
 #	name		"My Null Output"
 #	mixer_type      "none"			# optional
 #}
-#
-# This setting will change all decoded audio to be converted to the specified
-# format before being passed to the audio outputs. By default, this setting is
-# disabled.
-#
-#audio_output_format		"44100:16:2"
 #
 # If MPD has been compiled with libsamplerate support, this setting specifies 
 # the sample rate converter to use.  Possible values can be found in the 
