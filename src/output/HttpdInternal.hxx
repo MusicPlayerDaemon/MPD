@@ -30,6 +30,11 @@
 #include "thread/Mutex.hxx"
 #include "event/ServerSocket.hxx"
 
+#ifdef _LIBCPP_VERSION
+/* can't use incomplete template arguments with libc++ */
+#include "HttpdClient.hxx"
+#endif
+
 #include <forward_list>
 
 struct config_param;
