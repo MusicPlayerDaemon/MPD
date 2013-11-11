@@ -442,7 +442,6 @@ ConvertToFloat(float *dest,
 	constexpr float factor = 0.5 / (1 << (Traits::BITS - 2));
 	while (src != end)
 		*dest++ = float(*src++) * factor;
-
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>

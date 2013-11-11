@@ -22,21 +22,40 @@
 
 #include "check.h"
 #include "AudioFormat.hxx"
-#include "PcmResample.hxx"
+#include "FormatConverter.hxx"
 
 class Error;
+class PcmResampler;
 template<typename T> struct ConstBuffer;
 
+/**
+ * A glue class that integrates a #PcmResampler and automatically
+ * converts source data to the sample format required by the
+ * #PcmResampler instance.
+ */
 class GluePcmResampler {
-	PcmResampler resampler;
+	PcmResampler *const resampler;
 
-	AudioFormat src_format;
-	unsigned new_sample_rate;
+	SampleFormat src_sample_format, requested_sample_format;
+	SampleFormat output_sample_format;
+
+	/**
+	 * This object converts input data to the sample format
+	 * requested by the #PcmResampler.
+	 */
+	PcmFormatConverter format_converter;
 
 public:
+	GluePcmResampler();
+	~GluePcmResampler();
+
 	bool Open(AudioFormat src_format, unsigned new_sample_rate,
 		  Error &error);
 	void Close();
+
+	SampleFormat GetOutputSampleFormat() const {
+		return output_sample_format;
+	}
 
 	ConstBuffer<void> Resample(ConstBuffer<void> src, Error &error);
 };

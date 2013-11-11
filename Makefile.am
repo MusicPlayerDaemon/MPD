@@ -339,10 +339,10 @@ libpcm_a_SOURCES = \
 	src/pcm/PcmFormat.cxx src/pcm/PcmFormat.hxx \
 	src/pcm/FormatConverter.cxx src/pcm/FormatConverter.hxx \
 	src/pcm/ChannelsConverter.cxx src/pcm/ChannelsConverter.hxx \
+	src/pcm/Resampler.hxx \
 	src/pcm/GlueResampler.cxx src/pcm/GlueResampler.hxx \
-	src/pcm/PcmResample.cxx src/pcm/PcmResample.hxx \
-	src/pcm/PcmResampleFallback.cxx \
-	src/pcm/PcmResampleInternal.hxx \
+	src/pcm/FallbackResampler.cxx src/pcm/FallbackResampler.hxx \
+	src/pcm/ConfiguredResampler.cxx src/pcm/ConfiguredResampler.hxx \
 	src/pcm/PcmDither.cxx src/pcm/PcmDither.hxx \
 	src/pcm/PcmPrng.hxx \
 	src/pcm/PcmUtils.hxx
@@ -354,7 +354,8 @@ PCM_LIBS = \
 	$(SAMPLERATE_LIBS)
 
 if HAVE_LIBSAMPLERATE
-libpcm_a_SOURCES += src/pcm/PcmResampleLibsamplerate.cxx
+libpcm_a_SOURCES += \
+	src/pcm/LibsamplerateResampler.cxx src/pcm/LibsamplerateResampler.hxx
 endif
 
 # File system library

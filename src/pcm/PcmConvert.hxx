@@ -41,11 +41,13 @@ class Domain;
 class PcmConvert {
 	PcmDsd dsd;
 
+	GluePcmResampler resampler;
 	PcmFormatConverter format_converter;
 	PcmChannelsConverter channels_converter;
-	GluePcmResampler resampler;
 
 	AudioFormat src_format, dest_format;
+
+	bool enable_resampler, enable_format, enable_channels;
 
 public:
 	PcmConvert();

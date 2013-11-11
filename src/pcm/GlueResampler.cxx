@@ -19,76 +19,67 @@
 
 #include "config.h"
 #include "GlueResampler.hxx"
-#include "PcmConvert.hxx"
-#include "PcmFormat.hxx"
-#include "util/ConstBuffer.hxx"
-#include "util/Error.hxx"
+#include "ConfiguredResampler.hxx"
+#include "Resampler.hxx"
+
+#include <assert.h>
+
+GluePcmResampler::GluePcmResampler()
+	:resampler(pcm_resampler_create()) {}
+
+GluePcmResampler::~GluePcmResampler()
+{
+	delete resampler;
+}
 
 bool
-GluePcmResampler::Open(AudioFormat _src_format, unsigned _new_sample_rate,
-		       gcc_unused Error &error)
+GluePcmResampler::Open(AudioFormat src_format, unsigned new_sample_rate,
+		       Error &error)
 {
-	src_format = _src_format;
-	new_sample_rate = _new_sample_rate;
+	assert(src_format.IsValid());
+	assert(audio_valid_sample_rate(new_sample_rate));
 
+	AudioFormat requested_format = src_format;
+	AudioFormat dest_format = resampler->Open(requested_format,
+						  new_sample_rate,
+						  error);
+	if (!dest_format.IsValid())
+		return false;
+
+	assert(requested_format.channels == src_format.channels);
+	assert(dest_format.channels == src_format.channels);
+	assert(dest_format.sample_rate == new_sample_rate);
+
+	if (requested_format.format != src_format.format &&
+	    !format_converter.Open(src_format.format, requested_format.format,
+				   error))
+		return false;
+
+	src_sample_format = src_format.format;
+	requested_sample_format = requested_format.format;
+	output_sample_format = dest_format.format;
 	return true;
 }
 
 void
 GluePcmResampler::Close()
 {
-	resampler.Reset();
+	if (requested_sample_format != src_sample_format)
+		format_converter.Close();
+
+	resampler->Close();
 }
 
 ConstBuffer<void>
 GluePcmResampler::Resample(ConstBuffer<void> src, Error &error)
 {
-	const void *result;
-	size_t size;
+	assert(!src.IsNull());
 
-	switch (src_format.format) {
-	case SampleFormat::S16:
-		result = resampler.Resample16(src_format.channels,
-					      src_format.sample_rate,
-					      (const int16_t *)src.data,
-					      src.size,
-					      new_sample_rate, &size,
-					      error);
-		break;
-
-	case SampleFormat::S24_P32:
-		result = resampler.Resample24(src_format.channels,
-					      src_format.sample_rate,
-					      (const int32_t *)src.data,
-					      src.size,
-					      new_sample_rate, &size,
-					      error);
-		break;
-
-	case SampleFormat::S32:
-		result = resampler.Resample24(src_format.channels,
-					      src_format.sample_rate,
-					      (const int32_t *)src.data,
-					      src.size,
-					      new_sample_rate, &size,
-					      error);
-		break;
-
-	case SampleFormat::FLOAT:
-		result = resampler.ResampleFloat(src_format.channels,
-						 src_format.sample_rate,
-						 (const float *)src.data,
-						 src.size,
-						 new_sample_rate, &size,
-						 error);
-		break;
-
-	default:
-		error.Format(pcm_convert_domain,
-			     "Resampling %s is not implemented",
-			     sample_format_to_string(src_format.format));
-		return nullptr;
+	if (requested_sample_format != src_sample_format) {
+		src = format_converter.Convert(src, error);
+		if (src.IsNull())
+			return nullptr;
 	}
 
-	return { result, size };
+	return resampler->Resample(src, error);
 }
