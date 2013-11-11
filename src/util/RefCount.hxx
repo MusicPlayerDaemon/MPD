@@ -42,7 +42,12 @@ class RefCount {
 	std::atomic_uint n;
 
 public:
-	constexpr RefCount():n(1) {}
+#ifndef _LIBCPP_VERSION
+	/* the "constexpr" is missing in libc++'s "atomic"
+	   implementation */
+	constexpr
+#endif
+	RefCount():n(1) {}
 
 	void Increment() {
 		++n;
