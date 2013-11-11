@@ -259,6 +259,7 @@ libutil_a_SOURCES = \
 	src/util/RefCount.hxx \
 	src/util/fifo_buffer.c src/util/fifo_buffer.h \
 	src/util/FifoBuffer.hxx \
+	src/util/ConstBuffer.hxx \
 	src/util/WritableBuffer.hxx \
 	src/util/growing_fifo.c src/util/growing_fifo.h \
 	src/util/LazyRandomEngine.cxx src/util/LazyRandomEngine.hxx \
