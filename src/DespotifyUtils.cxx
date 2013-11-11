@@ -28,6 +28,8 @@ extern "C" {
 #include <despotify.h>
 }
 
+#include <stdio.h>
+
 const Domain despotify_domain("despotify");
 
 static struct despotify_session *g_session;
