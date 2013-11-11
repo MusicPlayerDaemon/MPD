@@ -35,6 +35,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 void
 decoder_initialized(Decoder &decoder,
