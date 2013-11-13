@@ -51,24 +51,21 @@ need_chunks(DecoderControl &dc)
 }
 
 struct music_chunk *
-decoder_get_chunk(Decoder &decoder)
+Decoder::GetChunk()
 {
-	DecoderControl &dc = decoder.dc;
 	DecoderCommand cmd;
 
-	if (decoder.chunk != nullptr)
-		return decoder.chunk;
+	if (chunk != nullptr)
+		return chunk;
 
 	do {
-		decoder.chunk = dc.buffer->Allocate();
-		if (decoder.chunk != nullptr) {
-			decoder.chunk->replay_gain_serial =
-				decoder.replay_gain_serial;
-			if (decoder.replay_gain_serial != 0)
-				decoder.chunk->replay_gain_info =
-					decoder.replay_gain_info;
+		chunk = dc.buffer->Allocate();
+		if (chunk != nullptr) {
+			chunk->replay_gain_serial = replay_gain_serial;
+			if (replay_gain_serial != 0)
+				chunk->replay_gain_info = replay_gain_info;
 
-			return decoder.chunk;
+			return chunk;
 		}
 
 		dc.Lock();
@@ -80,18 +77,16 @@ decoder_get_chunk(Decoder &decoder)
 }
 
 void
-decoder_flush_chunk(Decoder &decoder)
+Decoder::FlushChunk()
 {
-	DecoderControl &dc = decoder.dc;
+	assert(chunk != nullptr);
 
-	assert(decoder.chunk != nullptr);
-
-	if (decoder.chunk->IsEmpty())
-		dc.buffer->Return(decoder.chunk);
+	if (chunk->IsEmpty())
+		dc.buffer->Return(chunk);
 	else
-		dc.pipe->Push(decoder.chunk);
+		dc.pipe->Push(chunk);
 
-	decoder.chunk = nullptr;
+	chunk = nullptr;
 
 	dc.Lock();
 	if (dc.client_is_waiting)

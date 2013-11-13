@@ -95,23 +95,21 @@ struct Decoder {
 	}
 
 	~Decoder();
+
+	/**
+	 * Returns the current chunk the decoder writes to, or allocates a new
+	 * chunk if there is none.
+	 *
+	 * @return the chunk, or NULL if we have received a decoder command
+	 */
+	music_chunk *GetChunk();
+
+	/**
+	 * Flushes the current chunk.
+	 *
+	 * Caller must not lock the #DecoderControl object.
+	 */
+	void FlushChunk();
 };
-
-/**
- * Returns the current chunk the decoder writes to, or allocates a new
- * chunk if there is none.
- *
- * @return the chunk, or NULL if we have received a decoder command
- */
-struct music_chunk *
-decoder_get_chunk(Decoder &decoder);
-
-/**
- * Flushes the current chunk.
- *
- * Caller must not lock the #DecoderControl object.
- */
-void
-decoder_flush_chunk(Decoder &decoder);
 
 #endif

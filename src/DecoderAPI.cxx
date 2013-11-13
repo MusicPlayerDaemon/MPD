@@ -312,12 +312,12 @@ do_send_tag(Decoder &decoder, const Tag &tag)
 	if (decoder.chunk != nullptr) {
 		/* there is a partial chunk - flush it, we want the
 		   tag in a new chunk */
-		decoder_flush_chunk(decoder);
+		decoder.FlushChunk();
 	}
 
 	assert(decoder.chunk == nullptr);
 
-	chunk = decoder_get_chunk(decoder);
+	chunk = decoder.GetChunk();
 	if (chunk == nullptr) {
 		assert(decoder.dc.command != DecoderCommand::NONE);
 		return decoder.dc.command;
@@ -408,7 +408,7 @@ decoder_data(Decoder &decoder,
 		struct music_chunk *chunk;
 		bool full;
 
-		chunk = decoder_get_chunk(decoder);
+		chunk = decoder.GetChunk();
 		if (chunk == nullptr) {
 			assert(dc.command != DecoderCommand::NONE);
 			return dc.command;
@@ -421,7 +421,7 @@ decoder_data(Decoder &decoder,
 				     kbit_rate);
 		if (dest.IsNull()) {
 			/* the chunk is full, flush it */
-			decoder_flush_chunk(decoder);
+			decoder.FlushChunk();
 			continue;
 		}
 
@@ -440,7 +440,7 @@ decoder_data(Decoder &decoder,
 		full = chunk->Expand(dc.out_audio_format, nbytes);
 		if (full) {
 			/* the chunk is full, flush it */
-			decoder_flush_chunk(decoder);
+			decoder.FlushChunk();
 		}
 
 		data = (const uint8_t *)data + nbytes;
@@ -532,7 +532,7 @@ decoder_replay_gain(Decoder &decoder,
 			/* flush the current chunk because the new
 			   replay gain values affect the following
 			   samples */
-			decoder_flush_chunk(decoder);
+			decoder.FlushChunk();
 		}
 	} else
 		decoder.replay_gain_serial = 0;
