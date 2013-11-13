@@ -1,4 +1,4 @@
-ver 0.18.4 (not yet released)
+ver 0.18.4 (2013/11/13)
 * decoder
   - dsdiff: fix byte order bug
 * fix build failures due to missing includes
